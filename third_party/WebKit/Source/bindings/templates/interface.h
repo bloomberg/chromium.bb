@@ -85,7 +85,9 @@ public:
     static void installPerContextEnabledProperties(v8::Handle<v8::Object>, {{cpp_class_name}}*, v8::Isolate*){% if has_per_context_enabled_attributes %};
     {% else %} { }
     {% endif %}
-    static void installPerContextEnabledPrototypeProperties(v8::Handle<v8::Object>, v8::Isolate*) { }
+    static void installPerContextEnabledPrototypeProperties(v8::Handle<v8::Object>, v8::Isolate*){% if has_per_context_enabled_attributes %};
+    {% else %} { }
+    {% endif %}
 
 private:
     friend v8::Handle<v8::Object> wrap({{cpp_class_name}}*, v8::Handle<v8::Object> creationContext, v8::Isolate*);

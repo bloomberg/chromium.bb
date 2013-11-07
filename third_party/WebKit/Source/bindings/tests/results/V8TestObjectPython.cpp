@@ -5262,6 +5262,19 @@ static void notEnumerableVoidMethodMethodCallback(const v8::FunctionCallbackInfo
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void perContextEnabledVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    imp->perContextEnabledVoidMethod();
+}
+
+static void perContextEnabledVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::perContextEnabledVoidMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 } // namespace TestObjectPythonV8Internal
 
 static const V8DOMConfiguration::AttributeConfiguration V8TestObjectPythonAttributes[] = {
@@ -5669,6 +5682,17 @@ void V8TestObjectPython::installPerContextEnabledProperties(v8::Handle<v8::Objec
         {"perContextEnabledLongAttribute", TestObjectPythonV8Internal::perContextEnabledLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::perContextEnabledLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
         V8DOMConfiguration::installAttribute(instance, proto, attributeConfiguration, isolate);
     }
+}
+
+void V8TestObjectPython::installPerContextEnabledPrototypeProperties(v8::Handle<v8::Object> proto, v8::Isolate* isolate)
+{
+    UNUSED_PARAM(proto);
+    v8::Local<v8::Signature> defaultSignature = v8::Signature::New(GetTemplate(isolate, worldType(isolate)));
+    UNUSED_PARAM(defaultSignature);
+
+    ExecutionContext* context = toExecutionContext(proto->CreationContext());
+    if (context && context->isDocument() && ContextFeatures::featureNameEnabled(toDocument(context)))
+        proto->Set(v8::String::NewSymbol("perContextEnabledVoidMethod"), v8::FunctionTemplate::New(TestObjectPythonV8Internal::perContextEnabledVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0)->GetFunction());
 }
 
 v8::Handle<v8::Object> V8TestObjectPython::createWrapper(PassRefPtr<TestObjectPython> impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)

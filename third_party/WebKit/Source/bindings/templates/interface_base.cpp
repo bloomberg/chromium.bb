@@ -107,6 +107,7 @@ template <typename T> void V8_USE(T) { }
 {% block get_template %}{% endblock %}
 {% block has_instance_and_has_instance_in_any_world %}{% endblock %}
 {% block install_per_context_attributes %}{% endblock %}
+{% block install_per_context_methods %}{% endblock %}
 {% block create_wrapper_and_deref_object %}{% endblock %}
 } // namespace WebCore
 {% if conditional_string %}

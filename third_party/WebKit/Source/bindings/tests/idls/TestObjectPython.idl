@@ -321,4 +321,5 @@ interface TestObjectPython {
     [ImplementedAs=implementedAsMethodName] void implementedAsVoidMethod();
     [MeasureAs=TestFeature] void measureAsVoidMethod();
     [NotEnumerable] void notEnumerableVoidMethod();
+    [PerContextEnabled=FeatureName] void perContextEnabledVoidMethod();
 };

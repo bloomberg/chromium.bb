@@ -73,7 +73,9 @@ static const V8DOMConfiguration::AttributeConfiguration {{v8_class_name}}Attribu
 {# FIXME: rename to install_methods and put into configure_class_template #}
 {% if methods %}
 static const V8DOMConfiguration::MethodConfiguration {{v8_class_name}}Methods[] = {
-    {% for method in methods if method.do_not_check_signature %}
+    {% for method in methods
+       if method.do_not_check_signature and
+          not method.per_context_enabled_function_name %}
     {% filter conditional(method.conditional_string) %}
     {{method_configuration(method)}},
     {% endfilter %}
@@ -98,7 +100,8 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::H
         {%+ if methods %}{{v8_class_name}}Methods, WTF_ARRAY_LENGTH({{v8_class_name}}Methods){% else %}0, 0{% endif %},
         isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);
-    {% if constants or has_runtime_enabled_attributes %}
+    {% if constants or has_runtime_enabled_attributes or
+          has_non_per_context_enabled_methods %}
     v8::Local<v8::ObjectTemplate> instance = desc->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
     UNUSED_PARAM(instance);
@@ -217,6 +220,27 @@ void {{v8_class_name}}::installPerContextEnabledProperties(v8::Handle<v8::Object
         {{attribute_configuration(attribute)}};
         V8DOMConfiguration::installAttribute(instance, proto, attributeConfiguration, isolate);
     }
+    {% endfor %}
+}
+
+{% endif %}
+{% endblock %}
+
+
+{##############################################################################}
+{% block install_per_context_methods %}
+{% if has_per_context_enabled_methods %}
+void {{v8_class_name}}::installPerContextEnabledPrototypeProperties(v8::Handle<v8::Object> proto, v8::Isolate* isolate)
+{
+    UNUSED_PARAM(proto);
+    {# Define per-context enabled operations #}
+    v8::Local<v8::Signature> defaultSignature = v8::Signature::New(GetTemplate(isolate, worldType(isolate)));
+    UNUSED_PARAM(defaultSignature);
+
+    ExecutionContext* context = toExecutionContext(proto->CreationContext());
+    {% for method in methods if method.per_context_enabled_function_name %}
+    if (context && context->isDocument() && {{method.per_context_enabled_function_name}}(toDocument(context)))
+        proto->Set(v8::String::NewSymbol("{{method.name}}"), v8::FunctionTemplate::New({{cpp_class_name}}V8Internal::{{method.name}}MethodCallback, v8Undefined(), defaultSignature, {{method.number_of_required_arguments}})->GetFunction());
     {% endfor %}
 }
 

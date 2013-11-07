@@ -87,8 +87,13 @@ def generate_interface(interface):
         'has_runtime_enabled_attributes': any(attribute['runtime_enabled_function_name'] for attribute in attributes),
     })
 
-    template_contents['methods'] = [v8_methods.generate_method(interface, method)
-                                    for method in interface.operations]
+    methods = [v8_methods.generate_method(interface, method)
+               for method in interface.operations]
+    template_contents.update({
+        'has_non_per_context_enabled_methods': any(not method['per_context_enabled_function_name'] for method in methods),
+        'has_per_context_enabled_methods': any(method['per_context_enabled_function_name'] for method in methods),
+        'methods': methods,
+    })
 
     return template_contents
 
