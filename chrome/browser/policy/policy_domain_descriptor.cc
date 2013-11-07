@@ -12,38 +12,6 @@
 
 namespace policy {
 
-namespace {
-
-bool Matches(Schema schema, const base::Value& value) {
-  if (!schema.valid()) {
-    // Schema not found, invalid entry.
-    return false;
-  }
-
-  if (!value.IsType(schema.type()))
-    return false;
-
-  const base::DictionaryValue* dict = NULL;
-  const base::ListValue* list = NULL;
-  if (value.GetAsDictionary(&dict)) {
-    for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd();
-         it.Advance()) {
-      if (!Matches(schema.GetProperty(it.key()), it.value()))
-        return false;
-    }
-  } else if (value.GetAsList(&list)) {
-    for (base::ListValue::const_iterator it = list->begin();
-         it != list->end(); ++it) {
-      if (!*it || !Matches(schema.GetItems(), **it))
-        return false;
-    }
-  }
-
-  return true;
-}
-
-}  // namespace
-
 PolicyDomainDescriptor::PolicyDomainDescriptor(PolicyDomain domain)
     : domain_(domain) {}
 
@@ -84,7 +52,7 @@ void PolicyDomainDescriptor::FilterBundle(PolicyBundle* bundle) const {
       const base::Value* policy_value = it_map->second.value;
       Schema policy_schema = schema.GetProperty(policy_name);
       ++it_map;
-      if (!policy_value || !Matches(policy_schema, *policy_value))
+      if (!policy_value || !policy_schema.Validate(*policy_value))
         map->Erase(policy_name);
     }
   }

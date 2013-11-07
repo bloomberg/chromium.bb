@@ -299,6 +299,34 @@ Schema Schema::Wrap(const SchemaData* data) {
   return Schema(storage, storage->root_node());
 }
 
+bool Schema::Validate(const base::Value& value) const {
+  if (!valid()) {
+    // Schema not found, invalid entry.
+    return false;
+  }
+
+  if (!value.IsType(type()))
+    return false;
+
+  const base::DictionaryValue* dict = NULL;
+  const base::ListValue* list = NULL;
+  if (value.GetAsDictionary(&dict)) {
+    for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd();
+         it.Advance()) {
+      if (!GetProperty(it.key()).Validate(it.value()))
+        return false;
+    }
+  } else if (value.GetAsList(&list)) {
+    for (base::ListValue::const_iterator it = list->begin();
+         it != list->end(); ++it) {
+      if (!*it || !GetItems().Validate(**it))
+        return false;
+    }
+  }
+
+  return true;
+}
+
 // static
 Schema Schema::Parse(const std::string& content, std::string* error) {
   // Validate as a generic JSON schema.

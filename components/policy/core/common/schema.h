@@ -57,6 +57,9 @@ class POLICY_EXPORT Schema {
 
   base::Value::Type type() const;
 
+  // Returns true if |value| conforms to this Schema.
+  bool Validate(const base::Value& value) const;
+
   // Used to iterate over the known properties of TYPE_DICTIONARY schemas.
   class POLICY_EXPORT Iterator {
    public:

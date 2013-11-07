@@ -11,7 +11,46 @@ namespace policy {
 
 namespace {
 
-#define OBJECT_TYPE "\"type\":\"object\""
+const char kTestSchema[] =
+    "{"
+    "  \"type\": \"object\","
+    "  \"properties\": {"
+    "    \"Boolean\": { \"type\": \"boolean\" },"
+    "    \"Integer\": { \"type\": \"integer\" },"
+    "    \"Null\": { \"type\": \"null\" },"
+    "    \"Number\": { \"type\": \"number\" },"
+    "    \"String\": { \"type\": \"string\" },"
+    "    \"Array\": {"
+    "      \"type\": \"array\","
+    "      \"items\": { \"type\": \"string\" }"
+    "    },"
+    "    \"ArrayOfObjects\": {"
+    "      \"type\": \"array\","
+    "      \"items\": {"
+    "        \"type\": \"object\","
+    "        \"properties\": {"
+    "          \"one\": { \"type\": \"string\" },"
+    "          \"two\": { \"type\": \"integer\" }"
+    "        }"
+    "      }"
+    "    },"
+    "    \"ArrayOfArray\": {"
+    "      \"type\": \"array\","
+    "      \"items\": {"
+    "        \"type\": \"array\","
+    "        \"items\": { \"type\": \"string\" }"
+    "      }"
+    "    },"
+    "    \"Object\": {"
+    "      \"type\": \"object\","
+    "      \"properties\": {"
+    "        \"one\": { \"type\": \"boolean\" },"
+    "        \"two\": { \"type\": \"integer\" }"
+    "      },"
+    "      \"additionalProperties\": { \"type\": \"string\" }"
+    "    }"
+    "  }"
+    "}";
 
 bool ParseFails(const std::string& content) {
   std::string error;
@@ -25,10 +64,7 @@ bool ParseFails(const std::string& content) {
 }  // namespace
 
 TEST(SchemaTest, MinimalSchema) {
-  EXPECT_FALSE(ParseFails(
-      "{"
-        OBJECT_TYPE
-      "}"));
+  EXPECT_FALSE(ParseFails("{ \"type\": \"object\" }"));
 }
 
 TEST(SchemaTest, InvalidSchemas) {
@@ -42,32 +78,32 @@ TEST(SchemaTest, InvalidSchemas) {
 
   EXPECT_TRUE(ParseFails(
       "{"
-        OBJECT_TYPE ","
+      "  \"type\": \"object\","
         "\"additionalProperties\": { \"type\":\"object\" }"
       "}"));
 
   EXPECT_TRUE(ParseFails(
       "{"
-        OBJECT_TYPE ","
-        "\"patternProperties\": { \"a+b*\": { \"type\": \"object\" } }"
+      "  \"type\": \"object\","
+      "  \"patternProperties\": { \"a+b*\": { \"type\": \"object\" } }"
       "}"));
 
   EXPECT_TRUE(ParseFails(
       "{"
-        OBJECT_TYPE ","
-        "\"properties\": { \"Policy\": { \"type\": \"bogus\" } }"
+      "  \"type\": \"object\","
+      "  \"properties\": { \"Policy\": { \"type\": \"bogus\" } }"
       "}"));
 
   EXPECT_TRUE(ParseFails(
       "{"
-        OBJECT_TYPE ","
-        "\"properties\": { \"Policy\": { \"type\": [\"string\", \"number\"] } }"
+      "  \"type\": \"object\","
+      "  \"properties\": { \"Policy\": { \"type\": [\"string\", \"number\"] } }"
       "}"));
 
   EXPECT_TRUE(ParseFails(
       "{"
-        OBJECT_TYPE ","
-        "\"properties\": { \"Policy\": { \"type\": \"any\" } }"
+      "  \"type\": \"object\","
+      "  \"properties\": { \"Policy\": { \"type\": \"any\" } }"
       "}"));
 }
 
@@ -75,15 +111,15 @@ TEST(SchemaTest, Ownership) {
   std::string error;
   Schema schema = Schema::Parse(
       "{"
-        OBJECT_TYPE ","
-        "\"properties\": {"
-          "\"sub\": {"
-            "\"type\": \"object\","
-            "\"properties\": {"
-              "\"subsub\": { \"type\": \"string\" }"
-            "}"
-          "}"
-        "}"
+      "  \"type\": \"object\","
+      "  \"properties\": {"
+      "    \"sub\": {"
+      "      \"type\": \"object\","
+      "      \"properties\": {"
+      "        \"subsub\": { \"type\": \"string\" }"
+      "      }"
+      "    }"
+      "  }"
       "}", &error);
   ASSERT_TRUE(schema.valid()) << error;
   ASSERT_EQ(base::Value::TYPE_DICTIONARY, schema.type());
@@ -110,46 +146,7 @@ TEST(SchemaTest, Ownership) {
 
 TEST(SchemaTest, ValidSchema) {
   std::string error;
-  Schema schema = Schema::Parse(
-      "{"
-        OBJECT_TYPE ","
-        "\"properties\": {"
-        "  \"Boolean\": { \"type\": \"boolean\" },"
-        "  \"Integer\": { \"type\": \"integer\" },"
-        "  \"Null\": { \"type\": \"null\" },"
-        "  \"Number\": { \"type\": \"number\" },"
-        "  \"String\": { \"type\": \"string\" },"
-        "  \"Array\": {"
-        "    \"type\": \"array\","
-        "    \"items\": { \"type\": \"string\" }"
-        "  },"
-        "  \"ArrayOfObjects\": {"
-        "    \"type\": \"array\","
-        "    \"items\": {"
-        "      \"type\": \"object\","
-        "      \"properties\": {"
-        "        \"one\": { \"type\": \"string\" },"
-        "        \"two\": { \"type\": \"integer\" }"
-        "      }"
-        "    }"
-        "  },"
-        "  \"ArrayOfArray\": {"
-        "    \"type\": \"array\","
-        "    \"items\": {"
-        "      \"type\": \"array\","
-        "      \"items\": { \"type\": \"string\" }"
-        "    }"
-        "  },"
-        "  \"Object\": {"
-        "    \"type\": \"object\","
-        "    \"properties\": {"
-        "      \"one\": { \"type\": \"boolean\" },"
-        "      \"two\": { \"type\": \"integer\" }"
-        "    },"
-        "    \"additionalProperties\": { \"type\": \"string\" }"
-        "  }"
-        "}"
-      "}", &error);
+  Schema schema = Schema::Parse(kTestSchema, &error);
   ASSERT_TRUE(schema.valid()) << error;
 
   ASSERT_EQ(base::Value::TYPE_DICTIONARY, schema.type());
@@ -248,10 +245,7 @@ TEST(SchemaTest, ValidSchema) {
 TEST(SchemaTest, Lookups) {
   std::string error;
 
-  Schema schema = Schema::Parse(
-      "{"
-        OBJECT_TYPE
-      "}", &error);
+  Schema schema = Schema::Parse("{ \"type\": \"object\" }", &error);
   ASSERT_TRUE(schema.valid()) << error;
   ASSERT_EQ(base::Value::TYPE_DICTIONARY, schema.type());
 
@@ -262,10 +256,10 @@ TEST(SchemaTest, Lookups) {
 
   schema = Schema::Parse(
       "{"
-        OBJECT_TYPE ","
-        "\"properties\": {"
-        "  \"Boolean\": { \"type\": \"boolean\" }"
-        "}"
+      "  \"type\": \"object\","
+      "  \"properties\": {"
+      "    \"Boolean\": { \"type\": \"boolean\" }"
+      "  }"
       "}", &error);
   ASSERT_TRUE(schema.valid()) << error;
   ASSERT_EQ(base::Value::TYPE_DICTIONARY, schema.type());
@@ -276,14 +270,14 @@ TEST(SchemaTest, Lookups) {
 
   schema = Schema::Parse(
       "{"
-        OBJECT_TYPE ","
-        "\"properties\": {"
-          "  \"bb\" : { \"type\": \"null\" },"
-          "  \"aa\" : { \"type\": \"boolean\" },"
-          "  \"abab\" : { \"type\": \"string\" },"
-          "  \"ab\" : { \"type\": \"number\" },"
-          "  \"aba\" : { \"type\": \"integer\" }"
-        "}"
+      "  \"type\": \"object\","
+      "  \"properties\": {"
+      "    \"bb\" : { \"type\": \"null\" },"
+      "    \"aa\" : { \"type\": \"boolean\" },"
+      "    \"abab\" : { \"type\": \"string\" },"
+      "    \"ab\" : { \"type\": \"number\" },"
+      "    \"aba\" : { \"type\": \"integer\" }"
+      "  }"
       "}", &error);
   ASSERT_TRUE(schema.valid()) << error;
   ASSERT_EQ(base::Value::TYPE_DICTIONARY, schema.type());
@@ -382,6 +376,91 @@ TEST(SchemaTest, Wrap) {
   Schema subsubsub = subsub.GetItems();
   ASSERT_TRUE(subsubsub.valid());
   ASSERT_EQ(base::Value::TYPE_STRING, subsubsub.type());
+}
+
+TEST(SchemaTest, Validate) {
+  std::string error;
+  Schema schema = Schema::Parse(kTestSchema, &error);
+  ASSERT_TRUE(schema.valid()) << error;
+
+  base::DictionaryValue bundle;
+  EXPECT_TRUE(schema.Validate(bundle));
+
+  // Wrong type, expected integer.
+  bundle.SetBoolean("Integer", true);
+  EXPECT_FALSE(schema.Validate(bundle));
+
+  // Wrong type, expected list of strings.
+  {
+    bundle.Clear();
+    base::ListValue list;
+    list.AppendInteger(1);
+    bundle.Set("Array", list.DeepCopy());
+    EXPECT_FALSE(schema.Validate(bundle));
+  }
+
+  // Wrong type in a sub-object.
+  {
+    bundle.Clear();
+    base::DictionaryValue dict;
+    dict.SetString("one", "one");
+    bundle.Set("Object", dict.DeepCopy());
+    EXPECT_FALSE(schema.Validate(bundle));
+  }
+
+  // Unknown name.
+  bundle.Clear();
+  bundle.SetBoolean("Unknown", true);
+  EXPECT_FALSE(schema.Validate(bundle));
+
+  // All of these will be valid.
+  bundle.Clear();
+  bundle.SetBoolean("Boolean", true);
+  bundle.SetInteger("Integer", 123);
+  bundle.Set("Null", base::Value::CreateNullValue());
+  bundle.Set("Number", base::Value::CreateDoubleValue(3.14));
+  bundle.SetString("String", "omg");
+
+  {
+    base::ListValue list;
+    list.AppendString("a string");
+    list.AppendString("another string");
+    bundle.Set("Array", list.DeepCopy());
+  }
+
+  {
+    base::DictionaryValue dict;
+    dict.SetString("one", "string");
+    dict.SetInteger("two", 2);
+    base::ListValue list;
+    list.Append(dict.DeepCopy());
+    list.Append(dict.DeepCopy());
+    bundle.Set("ArrayOfObjects", list.DeepCopy());
+  }
+
+  {
+    base::ListValue list;
+    list.AppendString("a string");
+    list.AppendString("another string");
+    base::ListValue listlist;
+    listlist.Append(list.DeepCopy());
+    listlist.Append(list.DeepCopy());
+    bundle.Set("ArrayOfArray", listlist.DeepCopy());
+  }
+
+  {
+    base::DictionaryValue dict;
+    dict.SetBoolean("one", true);
+    dict.SetInteger("two", 2);
+    dict.SetString("additionally", "a string");
+    dict.SetString("and also", "another string");
+    bundle.Set("Object", dict.DeepCopy());
+  }
+
+  EXPECT_TRUE(schema.Validate(bundle));
+
+  bundle.SetString("boom", "bang");
+  EXPECT_FALSE(schema.Validate(bundle));
 }
 
 }  // namespace policy

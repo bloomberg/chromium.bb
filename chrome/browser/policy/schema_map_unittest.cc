@@ -1,0 +1,258 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/policy/schema_map.h"
+
+#include "base/memory/weak_ptr.h"
+#include "base/values.h"
+#include "chrome/browser/policy/external_data_fetcher.h"
+#include "chrome/browser/policy/external_data_manager.h"
+#include "chrome/browser/policy/policy_bundle.h"
+#include "chrome/browser/policy/policy_map.h"
+#include "components/policy/core/common/schema.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+namespace policy {
+
+namespace {
+
+const char kTestSchema[] =
+    "{"
+    "  \"type\": \"object\","
+    "  \"properties\": {"
+    "    \"string\": { \"type\": \"string\" },"
+    "    \"integer\": { \"type\": \"integer\" },"
+    "    \"boolean\": { \"type\": \"boolean\" },"
+    "    \"null\": { \"type\": \"null\" },"
+    "    \"double\": { \"type\": \"number\" },"
+    "    \"list\": {"
+    "      \"type\": \"array\","
+    "      \"items\": { \"type\": \"string\" }"
+    "    },"
+    "    \"object\": {"
+    "      \"type\": \"object\","
+    "      \"properties\": {"
+    "        \"a\": { \"type\": \"string\" },"
+    "        \"b\": { \"type\": \"integer\" }"
+    "      }"
+    "    }"
+    "  }"
+    "}";
+
+}  // namespace
+
+class SchemaMapTest : public testing::Test {
+ protected:
+  scoped_refptr<SchemaMap> CreateTestMap() {
+    std::string error;
+    Schema schema = Schema::Parse(kTestSchema, &error);
+    if (!schema.valid()) {
+      ADD_FAILURE() << error;
+      return NULL;
+    }
+
+    ComponentMap component_map;
+    component_map["extension-1"] = schema;
+    component_map["extension-2"] = schema;
+    component_map["legacy-extension"] = Schema();
+
+    DomainMap domain_map;
+    domain_map[POLICY_DOMAIN_EXTENSIONS] = component_map;
+
+    return new SchemaMap(domain_map);
+  }
+};
+
+TEST_F(SchemaMapTest, Empty) {
+  scoped_refptr<SchemaMap> map = new SchemaMap();
+  EXPECT_TRUE(map->GetDomains().empty());
+  EXPECT_FALSE(map->GetComponents(POLICY_DOMAIN_CHROME));
+  EXPECT_FALSE(map->GetComponents(POLICY_DOMAIN_EXTENSIONS));
+  EXPECT_FALSE(map->GetSchema(PolicyNamespace(POLICY_DOMAIN_CHROME, "")));
+}
+
+TEST_F(SchemaMapTest, Lookups) {
+  scoped_refptr<SchemaMap> map = CreateTestMap();
+  ASSERT_TRUE(map);
+
+  EXPECT_FALSE(map->GetSchema(
+      PolicyNamespace(POLICY_DOMAIN_CHROME, "")));
+  EXPECT_FALSE(map->GetSchema(
+      PolicyNamespace(POLICY_DOMAIN_CHROME, "extension-1")));
+  EXPECT_FALSE(map->GetSchema(
+      PolicyNamespace(POLICY_DOMAIN_CHROME, "legacy-extension")));
+  EXPECT_FALSE(map->GetSchema(
+      PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "")));
+  EXPECT_FALSE(map->GetSchema(
+      PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "extension-3")));
+
+  const Schema* schema =
+      map->GetSchema(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "extension-1"));
+  ASSERT_TRUE(schema);
+  EXPECT_TRUE(schema->valid());
+
+  schema = map->GetSchema(
+      PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "legacy-extension"));
+  ASSERT_TRUE(schema);
+  EXPECT_FALSE(schema->valid());
+}
+
+TEST_F(SchemaMapTest, FilterBundle) {
+  std::string error;
+  Schema schema = Schema::Parse(kTestSchema, &error);
+  ASSERT_TRUE(schema.valid()) << error;
+
+  DomainMap domain_map;
+  domain_map[POLICY_DOMAIN_EXTENSIONS]["abc"] = schema;
+  scoped_refptr<SchemaMap> schema_map = new SchemaMap(domain_map);
+
+  PolicyBundle bundle;
+  schema_map->FilterBundle(&bundle);
+  const PolicyBundle empty_bundle;
+  EXPECT_TRUE(bundle.Equals(empty_bundle));
+
+  // The Chrome namespace isn't filtered.
+  PolicyBundle expected_bundle;
+  PolicyNamespace chrome_ns(POLICY_DOMAIN_CHROME, "");
+  expected_bundle.Get(chrome_ns).Set("ChromePolicy",
+                                     POLICY_LEVEL_MANDATORY,
+                                     POLICY_SCOPE_USER,
+                                     base::Value::CreateStringValue("value"),
+                                     NULL);
+  bundle.CopyFrom(expected_bundle);
+
+  // Unknown components are filtered out.
+  PolicyNamespace another_extension_ns(POLICY_DOMAIN_EXTENSIONS, "xyz");
+  bundle.Get(another_extension_ns).Set(
+      "AnotherExtensionPolicy",
+      POLICY_LEVEL_MANDATORY,
+      POLICY_SCOPE_USER,
+      base::Value::CreateStringValue("value"),
+      NULL);
+  schema_map->FilterBundle(&bundle);
+  EXPECT_TRUE(bundle.Equals(expected_bundle));
+
+  PolicyNamespace extension_ns(POLICY_DOMAIN_EXTENSIONS, "abc");
+  PolicyMap& map = expected_bundle.Get(extension_ns);
+  base::ListValue list;
+  list.AppendString("a");
+  list.AppendString("b");
+  map.Set("list", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+          list.DeepCopy(), NULL);
+  map.Set("boolean", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+          base::Value::CreateBooleanValue(true), NULL);
+  map.Set("integer", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+          base::Value::CreateIntegerValue(1), NULL);
+  map.Set("null", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+          base::Value::CreateNullValue(), NULL);
+  map.Set("double", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+          base::Value::CreateDoubleValue(1.2), NULL);
+  base::DictionaryValue dict;
+  dict.SetString("a", "b");
+  dict.SetInteger("b", 2);
+  map.Set("object", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+          dict.DeepCopy(), NULL);
+  map.Set("string", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+          base::Value::CreateStringValue("value"), NULL);
+
+  bundle.MergeFrom(expected_bundle);
+  bundle.Get(extension_ns).Set("Unexpected",
+                               POLICY_LEVEL_MANDATORY,
+                               POLICY_SCOPE_USER,
+                               base::Value::CreateStringValue("to-be-removed"),
+                               NULL);
+
+  schema_map->FilterBundle(&bundle);
+  EXPECT_TRUE(bundle.Equals(expected_bundle));
+
+  // Mismatched types are also removed.
+  bundle.Clear();
+  PolicyMap& badmap = bundle.Get(extension_ns);
+  badmap.Set("list", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+             base::Value::CreateBooleanValue(false), NULL);
+  badmap.Set("boolean", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+             base::Value::CreateIntegerValue(0), NULL);
+  badmap.Set("integer", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+             base::Value::CreateBooleanValue(false), NULL);
+  badmap.Set("null", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+             base::Value::CreateBooleanValue(false), NULL);
+  badmap.Set("double", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+             base::Value::CreateBooleanValue(false), NULL);
+  badmap.Set("object", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+             base::Value::CreateBooleanValue(false), NULL);
+  badmap.Set("string", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+             NULL,
+             new ExternalDataFetcher(base::WeakPtr<ExternalDataManager>(),
+                                     std::string()));
+
+  schema_map->FilterBundle(&bundle);
+  EXPECT_TRUE(bundle.Equals(empty_bundle));
+}
+
+TEST_F(SchemaMapTest, LegacyComponents) {
+  std::string error;
+  Schema schema = Schema::Parse(
+      "{"
+      "  \"type\":\"object\","
+      "  \"properties\": {"
+      "    \"String\": { \"type\": \"string\" }"
+      "  }"
+      "}", &error);
+  ASSERT_TRUE(schema.valid()) << error;
+
+  DomainMap domain_map;
+  domain_map[POLICY_DOMAIN_EXTENSIONS]["with-schema"] = schema;
+  domain_map[POLICY_DOMAIN_EXTENSIONS]["without-schema"] = Schema();
+  scoped_refptr<SchemaMap> schema_map = new SchemaMap(domain_map);
+
+  // |bundle| contains policies loaded by a policy provider.
+  PolicyBundle bundle;
+
+  // Known components with schemas are filtered.
+  PolicyNamespace extension_ns(POLICY_DOMAIN_EXTENSIONS, "with-schema");
+  bundle.Get(extension_ns).Set("String",
+                               POLICY_LEVEL_MANDATORY,
+                               POLICY_SCOPE_USER,
+                               base::Value::CreateStringValue("value 1"),
+                               NULL);
+
+  // Known components without a schema are not filtered.
+  PolicyNamespace without_schema_ns(POLICY_DOMAIN_EXTENSIONS, "without-schema");
+  bundle.Get(without_schema_ns).Set("Schemaless",
+                                    POLICY_LEVEL_MANDATORY,
+                                    POLICY_SCOPE_USER,
+                                    base::Value::CreateStringValue("value 2"),
+                                    NULL);
+
+  // The Chrome namespace isn't filtered.
+  PolicyNamespace chrome_ns(POLICY_DOMAIN_CHROME, "");
+  bundle.Get(chrome_ns).Set("ChromePolicy",
+                            POLICY_LEVEL_MANDATORY,
+                            POLICY_SCOPE_USER,
+                            base::Value::CreateStringValue("value 3"),
+                            NULL);
+
+  PolicyBundle expected_bundle;
+  expected_bundle.MergeFrom(bundle);
+
+  // Unknown policies of known components with a schema are removed.
+  bundle.Get(extension_ns).Set("Surprise",
+                               POLICY_LEVEL_MANDATORY,
+                               POLICY_SCOPE_USER,
+                               base::Value::CreateStringValue("value 4"),
+                               NULL);
+
+  // Unknown components are removed.
+  PolicyNamespace unknown_ns(POLICY_DOMAIN_EXTENSIONS, "unknown");
+  bundle.Get(unknown_ns).Set("Surprise",
+                             POLICY_LEVEL_MANDATORY,
+                             POLICY_SCOPE_USER,
+                             base::Value::CreateStringValue("value 5"),
+                             NULL);
+
+  schema_map->FilterBundle(&bundle);
+  EXPECT_TRUE(bundle.Equals(expected_bundle));
+}
+
+}  // namespace policy
