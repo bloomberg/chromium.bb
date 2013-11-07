@@ -2362,6 +2362,8 @@ TEST_F(SearchProviderTest, NavigationInline) {
                                "?www.abc.com", "c.com", true },
     { "?ab",             "http://www.abc.com",
                                "?www.abc.com", "c.com", true },
+    { "?abc.com",        "http://www.abc.com",
+                               "?www.abc.com", "", true },
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {

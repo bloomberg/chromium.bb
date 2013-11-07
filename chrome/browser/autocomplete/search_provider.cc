@@ -1777,14 +1777,6 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
   bool trim_http = !AutocompleteInput::HasHTTPScheme(input) &&
       (!prefix || (match_start != 0));
 
-  // Preserve the forced query '?' prefix in |match.fill_into_edit|.
-  // Otherwise, user edits to a suggestion would show non-Search results.
-  if (input_.type() == AutocompleteInput::FORCED_QUERY) {
-    match.fill_into_edit = ASCIIToUTF16("?");
-    if (inline_autocomplete_offset != string16::npos)
-      ++inline_autocomplete_offset;
-  }
-
   const std::string languages(
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages));
   const net::FormatUrlTypes format_types =
@@ -1794,6 +1786,13 @@ AutocompleteMatch SearchProvider::NavigationToMatch(
           net::FormatUrl(navigation.url(), languages, format_types,
                          net::UnescapeRule::SPACES, NULL, NULL,
                          &inline_autocomplete_offset));
+  // Preserve the forced query '?' prefix in |match.fill_into_edit|.
+  // Otherwise, user edits to a suggestion would show non-Search results.
+  if (input_.type() == AutocompleteInput::FORCED_QUERY) {
+    match.fill_into_edit.insert(0, ASCIIToUTF16("?"));
+    if (inline_autocomplete_offset != string16::npos)
+      ++inline_autocomplete_offset;
+  }
   if (!input_.prevent_inline_autocomplete() &&
       (inline_autocomplete_offset != string16::npos)) {
     DCHECK(inline_autocomplete_offset <= match.fill_into_edit.length());
