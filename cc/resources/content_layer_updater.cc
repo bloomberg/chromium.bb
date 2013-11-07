@@ -62,12 +62,14 @@ void ContentLayerUpdater::PaintContents(SkCanvas* canvas,
   SkRect layer_sk_rect = SkRect::MakeXYWH(
       layer_rect.x(), layer_rect.y(), layer_rect.width(), layer_rect.height());
 
+  canvas->clipRect(layer_sk_rect);
+
   // If the layer has opaque contents then there is no need to
   // clear the canvas before painting.
-  if (!layer_is_opaque_)
-    canvas->clear(SK_ColorTRANSPARENT);
-
-  canvas->clipRect(layer_sk_rect);
+  if (!layer_is_opaque_) {
+    TRACE_EVENT0("cc", "Clear");
+    canvas->drawColor(SK_ColorTRANSPARENT, SkXfermode::kSrc_Mode);
+  }
 
   gfx::RectF opaque_layer_rect;
   painter_->Paint(canvas, layer_rect, &opaque_layer_rect);
