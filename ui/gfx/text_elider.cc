@@ -407,13 +407,6 @@ string16 ElideUrl(const GURL& url,
                    ELIDE_AT_END);
 }
 
-string16 ElideUrl(const GURL& url,
-                  const Font& font,
-                  float available_pixel_width,
-                  const std::string& languages) {
-  return ElideUrl(url, FontList(font), available_pixel_width, languages);
-}
-
 string16 ElideFilename(const base::FilePath& filename,
                        const FontList& font_list,
                        float available_pixel_width) {

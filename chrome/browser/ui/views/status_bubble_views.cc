@@ -664,7 +664,8 @@ void StatusBubbleViews::SetURL(const GURL& url, const std::string& languages) {
   gfx::Rect popup_bounds = popup_->GetWindowBoundsInScreen();
   int text_width = static_cast<int>(popup_bounds.width() -
       (kShadowThickness * 2) - kTextPositionX - kTextHorizPadding - 1);
-  url_text_ = gfx::ElideUrl(url, view_->Label::font(), text_width, languages);
+  url_text_ = gfx::ElideUrl(url, view_->Label::font_list(), text_width,
+                            languages);
 
   // An URL is always treated as a left-to-right string. On right-to-left UIs
   // we need to explicitly mark the URL as LTR to make sure it is displayed
@@ -821,8 +822,8 @@ void StatusBubbleViews::ExpandBubble() {
   // still be too long to fit) before expanding bubble.
   gfx::Rect popup_bounds = popup_->GetWindowBoundsInScreen();
   int max_status_bubble_width = GetMaxStatusBubbleWidth();
-  url_text_ = gfx::ElideUrl(url_, view_->Label::font(),
-      max_status_bubble_width, languages_);
+  url_text_ = gfx::ElideUrl(url_, view_->Label::font_list(),
+                            max_status_bubble_width, languages_);
   int expanded_bubble_width =std::max(GetStandardStatusBubbleWidth(),
       std::min(view_->Label::font().GetStringWidth(url_text_) +
                    (kShadowThickness * 2) + kTextPositionX +

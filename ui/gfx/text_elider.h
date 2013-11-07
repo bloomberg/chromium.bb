@@ -65,11 +65,6 @@ GFX_EXPORT string16 ElideUrl(const GURL& url,
                              const gfx::FontList& font_list,
                              float available_pixel_width,
                              const std::string& languages);
-// Obsolete version.  Use the above version which takes gfx::FontList.
-GFX_EXPORT string16 ElideUrl(const GURL& url,
-                             const gfx::Font& font,
-                             float available_pixel_width,
-                             const std::string& languages);
 
 enum ElideBehavior {
   // Add ellipsis at the end of the string.

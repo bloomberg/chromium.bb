@@ -19,9 +19,9 @@
 #import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
 #import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
 #include "ui/base/cocoa/window_size_constants.h"
-#include "ui/gfx/text_elider.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/point.h"
+#include "ui/gfx/text_elider.h"
 
 namespace {
 
@@ -150,11 +150,11 @@ void StatusBubbleMac::SetURL(const GURL& url, const std::string& languages) {
   scaled_width = [[parent_ contentView] convertSize:scaled_width fromView:nil];
   text_width = static_cast<int>(scaled_width.width);
   NSFont* font = [[window_ contentView] font];
-  gfx::Font font_chr(base::SysNSStringToUTF8([font fontName]),
-                     [font pointSize]);
+  gfx::FontList font_list_chr(
+      gfx::Font(base::SysNSStringToUTF8([font fontName]), [font pointSize]));
 
   string16 original_url_text = net::FormatUrl(url, languages);
-  string16 status = gfx::ElideUrl(url, font_chr, text_width, languages);
+  string16 status = gfx::ElideUrl(url, font_list_chr, text_width, languages);
 
   SetText(status, true);
 
@@ -621,14 +621,14 @@ void StatusBubbleMac::ExpandBubble() {
 
   // Generate the URL string that fits in the expanded bubble.
   NSFont* font = [[window_ contentView] font];
-  gfx::Font font_chr(base::SysNSStringToUTF8([font fontName]),
-      [font pointSize]);
+  gfx::FontList font_list_chr(
+      gfx::Font(base::SysNSStringToUTF8([font fontName]), [font pointSize]));
   string16 expanded_url = gfx::ElideUrl(
-      url_, font_chr, max_bubble_width, languages_);
+      url_, font_list_chr, max_bubble_width, languages_);
 
   // Scale width from gfx::Font in view coordinates to window coordinates.
   int required_width_for_string =
-      font_chr.GetStringWidth(expanded_url) +
+      font_list_chr.GetStringWidth(expanded_url) +
           kTextPadding * 2 + kBubbleViewTextPositionX;
   NSSize scaled_width = NSMakeSize(required_width_for_string, 0);
   scaled_width = [[parent_ contentView] convertSize:scaled_width toView:nil];

@@ -19,7 +19,7 @@
 #include "content/public/browser/notification_source.h"
 #include "ui/base/gtk/gtk_hig_constants.h"
 #include "ui/gfx/animation/slide_animation.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/gtk_compat.h"
 #include "ui/gfx/text_elider.h"
 
@@ -115,7 +115,7 @@ void StatusBubbleGtk::SetStatusTextToURL() {
   // TODO(tc): We don't actually use gfx::Font as the font in the status
   // bubble.  We should extend gfx::ElideUrl to take some sort of pango font.
   url_text_ = UTF16ToUTF8(
-      gfx::ElideUrl(url_, gfx::Font(), desired_width, languages_));
+      gfx::ElideUrl(url_, gfx::FontList(), desired_width, languages_));
   SetStatusTextTo(url_text_);
 }
 
