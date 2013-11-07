@@ -102,7 +102,10 @@ def main(argv):
     help='Print a list of the top <n> symbols')
   parser.add_argument('--symbol-filter', action='append',
     help='Filter out all suppressions not containing the specified symbol(s). '
-         'Matches against the mangled names')
+         'Matches against the mangled names.')
+  parser.add_argument('--exclude-symbol', action='append',
+    help='Filter out all suppressions containing the specified symbol(s). '
+         'Matches against the mangled names.')
 
   parser.add_argument('reports', metavar='report file', nargs='+',
     help='List of report files')
@@ -144,6 +147,8 @@ def main(argv):
 
     # Skip reports if none of the symbols are in the report.
     if args.symbol_filter and all(not s in r for s in args.symbol_filter):
+        skip = True
+    if args.exclude_symbol and any(s in r for s in args.exclude_symbol):
         skip = True
 
     if not skip:
