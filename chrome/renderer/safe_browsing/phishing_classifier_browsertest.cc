@@ -1,29 +1,32 @@
 // Copyright (c) 2012 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-//
-// Note that although this is not a "browser" test, it runs as part of
-// browser_tests.  This is because WebKit does not work properly if it is
-// shutdown and re-initialized.  Since browser_tests runs each test in a
-// new process, this avoids the problem.
 
 #include "chrome/renderer/safe_browsing/phishing_classifier.h"
 
 #include <string>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/safe_browsing/client_model.pb.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/renderer/safe_browsing/features.h"
 #include "chrome/renderer/safe_browsing/mock_feature_extractor_clock.h"
 #include "chrome/renderer/safe_browsing/murmurhash3_util.h"
 #include "chrome/renderer/safe_browsing/scorer.h"
-#include "content/public/test/render_view_fake_resources_test.h"
+#include "chrome/test/base/in_process_browser_test.h"
+#include "chrome/test/base/ui_test_utils.h"
+#include "content/public/renderer/render_view.h"
 #include "crypto/sha2.h"
+#include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_response.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "url/gurl.h"
 
 using ::testing::AllOf;
 using ::testing::Contains;
@@ -32,18 +35,24 @@ using ::testing::Pair;
 
 namespace safe_browsing {
 
-class PhishingClassifierTest : public content::RenderViewFakeResourcesTest {
+class PhishingClassifierTest : public InProcessBrowserTest {
  protected:
   PhishingClassifierTest()
       : url_tld_token_net_(features::kUrlTldToken + std::string("net")),
         page_link_domain_phishing_(features::kPageLinkDomain +
                                    std::string("phishing.com")),
-        page_term_login_(features::kPageTerm + std::string("login")) {}
+        page_term_login_(features::kPageTerm + std::string("login")) {
+  }
 
-  virtual void SetUp() {
-    // Set up WebKit and the RenderView.
-    content::RenderViewFakeResourcesTest::SetUp();
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    command_line->AppendSwitch(switches::kSingleProcess);
+#if defined(OS_WIN) && defined(USE_AURA)
+    // Don't want to try to create a GPU process.
+    command_line->AppendSwitch(switches::kDisableAcceleratedCompositing);
+#endif
+  }
 
+  virtual void SetUpOnMainThread() OVERRIDE {
     // Construct a model to test with.  We include one feature from each of
     // the feature extractors, which allows us to verify that they all ran.
     ClientSideModel model;
@@ -81,11 +90,14 @@ class PhishingClassifierTest : public content::RenderViewFakeResourcesTest {
     clock_ = new MockFeatureExtractorClock;
     scorer_.reset(Scorer::Create(model.SerializeAsString()));
     ASSERT_TRUE(scorer_.get());
-    classifier_.reset(new PhishingClassifier(view(), clock_));
+
+    classifier_.reset(new PhishingClassifier(
+        content::RenderView::FromRoutingID(1),
+        clock_));
   }
 
-  virtual void TearDown() {
-    content::RenderViewFakeResourcesTest::TearDown();
+  virtual void TearDownOnMainThread() OVERRIDE {
+    content::RunAllPendingInMessageLoop();
   }
 
   // Helper method to start phishing classification and wait for it to
@@ -94,63 +106,117 @@ class PhishingClassifierTest : public content::RenderViewFakeResourcesTest {
   bool RunPhishingClassifier(const string16* page_text,
                              float* phishy_score,
                              FeatureMap* features) {
-    verdict_.Clear();
+    ClientPhishingRequest verdict;
+    // The classifier accesses the RenderView and must run in the RenderThread.
+    PostTaskToInProcessRendererAndWait(
+        base::Bind(&PhishingClassifierTest::DoRunPhishingClassifier,
+                   base::Unretained(this),
+                   page_text, phishy_score, features, &verdict));
+    return verdict.is_phishing();
+  }
+
+  void DoRunPhishingClassifier(const string16* page_text,
+                               float* phishy_score,
+                               FeatureMap* features,
+                               ClientPhishingRequest* verdict) {
     *phishy_score = PhishingClassifier::kInvalidScore;
     features->Clear();
 
+    // Force synchronous behavior for ease of unittesting.
+    base::RunLoop run_loop;
     classifier_->BeginClassification(
         page_text,
         base::Bind(&PhishingClassifierTest::ClassificationFinished,
-                   base::Unretained(this)));
-    message_loop_.Run();
+                   base::Unretained(this), &run_loop, verdict));
+    content::RunThisRunLoop(&run_loop);
 
-    *phishy_score = verdict_.client_score();
-    for (int i = 0; i < verdict_.feature_map_size(); ++i) {
-      features->AddRealFeature(verdict_.feature_map(i).name(),
-                               verdict_.feature_map(i).value());
+    *phishy_score = verdict->client_score();
+    for (int i = 0; i < verdict->feature_map_size(); ++i) {
+      features->AddRealFeature(verdict->feature_map(i).name(),
+                               verdict->feature_map(i).value());
     }
-    return verdict_.is_phishing();
   }
 
   // Completion callback for classification.
-  void ClassificationFinished(const ClientPhishingRequest& verdict) {
-    verdict_ = verdict;  // copy the verdict.
-    message_loop_.Quit();
+  void ClassificationFinished(base::RunLoop* run_loop,
+                              ClientPhishingRequest* verdict_out,
+                              const ClientPhishingRequest& verdict) {
+    *verdict_out = verdict;  // Copy the verdict.
+    run_loop->Quit();
   }
 
+  scoped_ptr<net::test_server::EmbeddedTestServer> embedded_test_server_;
+  net::test_server::EmbeddedTestServer* embedded_test_server() {
+    // TODO(ajwong): Merge this into BrowserTestBase.
+    if (!embedded_test_server_) {
+      embedded_test_server_.reset(new net::test_server::EmbeddedTestServer());
+      embedded_test_server_->RegisterRequestHandler(
+          base::Bind(&PhishingClassifierTest::HandleRequest,
+                     base::Unretained(this)));
+      CHECK(embedded_test_server_->InitializeAndWaitUntilReady());
+    }
+    return embedded_test_server_.get();
+  }
+
+  void LoadHtml(const std::string& host, const std::string& content) {
+    GURL::Replacements replace_host;
+    replace_host.SetHostStr(host);
+    response_content_ = content;
+    ui_test_utils::NavigateToURL(
+        browser(),
+        embedded_test_server()->base_url().ReplaceComponents(replace_host));
+  }
+
+  void LoadHtmlPost(const std::string& host, const std::string& content) {
+    GURL::Replacements replace_host;
+    replace_host.SetHostStr(host);
+    response_content_ = content;
+    ui_test_utils::NavigateToURLWithPost(
+        browser(),
+        embedded_test_server()->base_url().ReplaceComponents(replace_host));
+  }
+
+  scoped_ptr<net::test_server::HttpResponse>
+      HandleRequest(const net::test_server::HttpRequest& request) {
+    scoped_ptr<net::test_server::BasicHttpResponse> http_response(
+        new net::test_server::BasicHttpResponse());
+    http_response->set_code(net::HTTP_OK);
+    http_response->set_content_type("text/html");
+    http_response->set_content(response_content_);
+    return http_response.PassAs<net::test_server::HttpResponse>();
+  }
+
+  std::string response_content_;
   scoped_ptr<Scorer> scorer_;
   scoped_ptr<PhishingClassifier> classifier_;
-  MockFeatureExtractorClock* clock_;  // owned by classifier_
+  MockFeatureExtractorClock* clock_;  // Owned by classifier_.
 
   // Features that are in the model.
   const std::string url_tld_token_net_;
   const std::string page_link_domain_phishing_;
   const std::string page_term_login_;
-
-  // This member holds the status from the most recent call to the
-  // ClassificationFinished callback.
-  ClientPhishingRequest verdict_;
 };
 
-TEST_F(PhishingClassifierTest, TestClassification) {
+IN_PROC_BROWSER_TEST_F(PhishingClassifierTest, TestClassification) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+
   // No scorer yet, so the classifier is not ready.
-  EXPECT_FALSE(classifier_->is_ready());
+  ASSERT_FALSE(classifier_->is_ready());
 
   // Now set the scorer.
   classifier_->set_phishing_scorer(scorer_.get());
-  EXPECT_TRUE(classifier_->is_ready());
+  ASSERT_TRUE(classifier_->is_ready());
 
   // This test doesn't exercise the extraction timing.
   EXPECT_CALL(*clock_, Now())
       .WillRepeatedly(::testing::Return(base::TimeTicks::Now()));
 
-  responses_["http://host.net/"] =
-      "<html><body><a href=\"http://phishing.com/\">login</a></body></html>";
-  LoadURL("http://host.net/");
-
   string16 page_text = ASCIIToUTF16("login");
   float phishy_score;
   FeatureMap features;
+
+  LoadHtml("host.net",
+      "<html><body><a href=\"http://phishing.com/\">login</a></body></html>");
   EXPECT_TRUE(RunPhishingClassifier(&page_text, &phishy_score, &features));
   // Note: features.features() might contain other features that simply aren't
   // in the model.
@@ -161,10 +227,8 @@ TEST_F(PhishingClassifierTest, TestClassification) {
   EXPECT_FLOAT_EQ(0.5, phishy_score);
 
   // Change the link domain to something non-phishy.
-  responses_["http://host.net/"] =
-      "<html><body><a href=\"http://safe.com/\">login</a></body></html>";
-  LoadURL("http://host.net/");
-
+  LoadHtml("host.net",
+           "<html><body><a href=\"http://safe.com/\">login</a></body></html>");
   EXPECT_FALSE(RunPhishingClassifier(&page_text, &phishy_score, &features));
   EXPECT_THAT(features.features(),
               AllOf(Contains(Pair(url_tld_token_net_, 1.0)),
@@ -174,28 +238,36 @@ TEST_F(PhishingClassifierTest, TestClassification) {
   EXPECT_GE(phishy_score, 0.0);
   EXPECT_LT(phishy_score, 0.5);
 
-  // Extraction should fail for this case, since there is no TLD.
-  responses_["http://localhost/"] = "<html><body>content</body></html>";
-  LoadURL("http://localhost/");
+  // Extraction should fail for this case since there is no TLD.
+  LoadHtml("localhost", "<html><body>content</body></html>");
   EXPECT_FALSE(RunPhishingClassifier(&page_text, &phishy_score, &features));
   EXPECT_EQ(0U, features.features().size());
   EXPECT_EQ(PhishingClassifier::kInvalidScore, phishy_score);
 
-  // Extraction should also fail for this case, because the URL is not http.
-  responses_["https://host.net/"] = "<html><body>secure</body></html>";
-  LoadURL("https://host.net/");
+  // Extraction should also fail for this case because the URL is not http.
+  net::SpawnedTestServer https_server(
+      net::SpawnedTestServer::TYPE_HTTPS,
+      net::SpawnedTestServer::kLocalhost,
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server.Start());
+  std::string host_str("host.net");  // Must outlive replace_host.
+  GURL::Replacements replace_host;
+  replace_host.SetHostStr(host_str);
+  GURL test_url = https_server.GetURL("/files/title1.html");
+  ui_test_utils::NavigateToURL(browser(),
+                               test_url.ReplaceComponents(replace_host));
   EXPECT_FALSE(RunPhishingClassifier(&page_text, &phishy_score, &features));
   EXPECT_EQ(0U, features.features().size());
   EXPECT_EQ(PhishingClassifier::kInvalidScore, phishy_score);
 
   // Extraction should fail for this case because the URL is a POST request.
-  LoadURLWithPost("http://host.net/");
+  LoadHtmlPost("host.net", "<html><body>content</body></html>");
   EXPECT_FALSE(RunPhishingClassifier(&page_text, &phishy_score, &features));
   EXPECT_EQ(0U, features.features().size());
   EXPECT_EQ(PhishingClassifier::kInvalidScore, phishy_score);
 }
 
-TEST_F(PhishingClassifierTest, DisableDetection) {
+IN_PROC_BROWSER_TEST_F(PhishingClassifierTest, DisableDetection) {
   // No scorer yet, so the classifier is not ready.
   EXPECT_FALSE(classifier_->is_ready());
 
