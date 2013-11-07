@@ -111,9 +111,9 @@ cr.define('options.passwordManager', function() {
     /**
      * Reveals the plain text password of this entry.
      */
-    showPassword: function() {
+    showPassword: function(password) {
+      this.passwordField.value = password;
       this.passwordField.type = 'text';
-      this.passwordField.focus();
 
       var button = this.passwordShowButton;
       if (button)

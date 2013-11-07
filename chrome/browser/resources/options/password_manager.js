@@ -202,13 +202,10 @@ cr.define('options', function() {
           }
         }
       }
-      // Update the data model.
-      model.item(index)[2] = password;
-      model.updateIndex(index);
 
       // Reveal the password in the UI.
       var item = this.savedPasswordsList_.getListItemByIndex(index);
-      item.showPassword();
+      item.showPassword(password);
     },
   };
 
