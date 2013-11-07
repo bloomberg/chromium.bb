@@ -1290,6 +1290,29 @@ TEST_F(WebFrameTest, SmallPermanentInitialPageScaleFactorIsClobberedWithAutoWidt
     }
 }
 
+TEST_F(WebFrameTest, PermanentInitialPageScaleFactorAffectsLayoutWidth)
+{
+    UseMockScrollbarSettings mockScrollbarSettings;
+
+    FixedLayoutTestWebViewClient client;
+    client.m_screenInfo.deviceScaleFactor = 1;
+    int viewportWidth = 640;
+    int viewportHeight = 480;
+    float enforcedPageScalePactor = 0.5;
+
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    webViewHelper.initializeAndLoad("about:blank", true, 0, &client);
+    webViewHelper.webView()->settings()->setViewportEnabled(true);
+    webViewHelper.webView()->settings()->setWideViewportQuirkEnabled(true);
+    webViewHelper.webView()->settings()->setUseWideViewport(false);
+    webViewHelper.webView()->settings()->setLoadWithOverviewMode(false);
+    webViewHelper.webView()->setInitialPageScaleOverride(enforcedPageScalePactor);
+    webViewHelper.webView()->resize(WebSize(viewportWidth, viewportHeight));
+
+    EXPECT_EQ(viewportWidth / enforcedPageScalePactor, webViewHelper.webViewImpl()->mainFrameImpl()->frameView()->contentsSize().width());
+    EXPECT_EQ(enforcedPageScalePactor, webViewHelper.webView()->pageScaleFactor());
+}
+
 TEST_F(WebFrameTest, WideViewportInitialScaleDoesNotExpandFixedLayoutWidth)
 {
     UseMockScrollbarSettings mockScrollbarSettings;
