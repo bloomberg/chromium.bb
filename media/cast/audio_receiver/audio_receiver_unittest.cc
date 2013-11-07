@@ -19,6 +19,7 @@ namespace cast {
 
 static const int64 kStartMillisecond = GG_INT64_C(12345678900000);
 
+namespace {
 class TestAudioEncoderCallback :
     public base::RefCountedThreadSafe<TestAudioEncoderCallback>  {
  public:
@@ -39,7 +40,7 @@ class TestAudioEncoderCallback :
     num_called_++;
   }
 
-  int number_times_called() { return num_called_;}
+  int number_times_called() const { return num_called_;}
 
  protected:
   virtual ~TestAudioEncoderCallback() {}
@@ -51,6 +52,7 @@ class TestAudioEncoderCallback :
   uint8 expected_frame_id_;
   base::TimeTicks expected_playout_time_;
 };
+}  // namespace
 
 class PeerAudioReceiver : public AudioReceiver {
  public:

@@ -17,6 +17,7 @@ static const uint32 kShortTimeIncrementMs = 10;
 static const uint32 kLongTimeIncrementMs = 40;
 static const int64 kStartMillisecond = GG_INT64_C(12345678900000);
 
+namespace {
 typedef std::map<uint8, size_t> MissingPacketsMap;
 
 class NackFeedbackVerification : public RtpPayloadFeedback {
@@ -74,6 +75,7 @@ class NackFeedbackVerification : public RtpPayloadFeedback {
   MissingPacketsMap missing_packets_;  // Missing packets per frame.
   uint8 last_frame_acked_;
 };
+}  // namespace
 
 class CastMessageBuilderTest : public ::testing::Test {
  protected:

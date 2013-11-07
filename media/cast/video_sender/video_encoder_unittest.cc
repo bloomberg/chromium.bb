@@ -22,6 +22,7 @@ static void ReleaseFrame(const I420VideoFrame* frame) {
   // Empty since we in this test send in the same frame.
 }
 
+namespace {
 class TestVideoEncoderCallback :
     public base::RefCountedThreadSafe<TestVideoEncoderCallback>  {
  public:
@@ -57,6 +58,7 @@ class TestVideoEncoderCallback :
   uint8 expected_last_referenced_frame_id_;
   base::TimeTicks expected_capture_time_;
 };
+}  // namespace
 
 class VideoEncoderTest : public ::testing::Test {
  protected:

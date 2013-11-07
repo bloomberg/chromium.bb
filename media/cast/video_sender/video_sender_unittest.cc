@@ -24,6 +24,7 @@ static const uint8 kPixelValue = 123;
 
 using testing::_;
 
+namespace {
 class PeerVideoSender : public VideoSender {
  public:
   PeerVideoSender(scoped_refptr<CastEnvironment> cast_environment,
@@ -46,6 +47,7 @@ static void ReleaseVideoFrame(const I420VideoFrame* frame) {
 static void ReleaseEncodedFrame(const EncodedVideoFrame* frame) {
   // Do nothing.
 }
+}  // namespace
 
 class VideoSenderTest : public ::testing::Test {
  protected:

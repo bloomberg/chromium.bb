@@ -20,6 +20,7 @@ static const uint32 kSourceSsrc = 0x40506;
 static const uint32 kUnknownSsrc = 0xDEAD;
 static const std::string kCName("test@10.1.1.1");
 
+namespace {
 class SenderFeedbackCastVerification : public RtcpSenderFeedback {
  public:
   SenderFeedbackCastVerification() : called_(false) {}
@@ -58,12 +59,12 @@ class SenderFeedbackCastVerification : public RtcpSenderFeedback {
     called_ = true;
   }
 
-  bool called() { return called_; }
+  bool called() const { return called_; }
 
  private:
   bool called_;
 };
-
+} // namespace
 
 class RtcpReceiverTest : public ::testing::Test {
  protected:

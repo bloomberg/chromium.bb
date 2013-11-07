@@ -21,7 +21,8 @@ namespace cast {
 
 using testing::_;
 
-// was thread counted thread safe.
+namespace {
+// Was thread counted thread safe.
 class TestVideoReceiverCallback :
     public base::RefCountedThreadSafe<TestVideoReceiverCallback> {
  public:
@@ -41,7 +42,7 @@ class TestVideoReceiverCallback :
     ++num_called_;
   }
 
-  int number_times_called() { return num_called_;}
+  int number_times_called() const { return num_called_;}
 
  protected:
   virtual ~TestVideoReceiverCallback() {}
@@ -51,6 +52,7 @@ class TestVideoReceiverCallback :
 
   int num_called_;
 };
+}  // namespace
 
 class PeerVideoReceiver : public VideoReceiver {
  public:

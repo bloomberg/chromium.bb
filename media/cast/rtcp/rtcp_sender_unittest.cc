@@ -43,7 +43,7 @@ class TestRtcpTransport : public PacedPacketSender {
     memcpy(expected_packet_, rtcp_buffer, length);
   }
 
-  int packet_count() { return packet_count_; }
+  int packet_count() const { return packet_count_; }
 
  private:
   uint8 expected_packet_[kIpPacketSize];
