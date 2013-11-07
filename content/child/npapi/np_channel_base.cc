@@ -12,6 +12,7 @@
 #include "ipc/ipc_sync_message.h"
 
 #if defined(OS_POSIX)
+#include "base/file_util.h"
 #include "ipc/ipc_channel_posix.h"
 #endif
 
@@ -63,6 +64,14 @@ NPChannelBase* NPChannelBase::GetChannel(
     const IPC::ChannelHandle& channel_handle, IPC::Channel::Mode mode,
     ChannelFactory factory, base::MessageLoopProxy* ipc_message_loop,
     bool create_pipe_now, base::WaitableEvent* shutdown_event) {
+#if defined(OS_POSIX)
+  // On POSIX the channel_handle conveys an FD (socket) which is duped by the
+  // kernel during the IPC message exchange (via the SCM_RIGHTS mechanism).
+  // Ensure we do not leak this FD.
+  int fd = channel_handle.socket.auto_close ? channel_handle.socket.fd : -1;
+  file_util::ScopedFD auto_close_fd(&fd);
+#endif
+
   scoped_refptr<NPChannelBase> channel;
   std::string channel_key = channel_handle.name;
   ChannelMap::const_iterator iter = GetChannelMap()->find(channel_key);
@@ -76,6 +85,9 @@ NPChannelBase* NPChannelBase::GetChannel(
 
   if (!channel->channel_valid()) {
     channel->channel_handle_ = channel_handle;
+#if defined(OS_POSIX)
+    ignore_result(auto_close_fd.release());
+#endif
     if (mode & IPC::Channel::MODE_SERVER_FLAG) {
       channel->channel_handle_.name =
           IPC::Channel::GenerateVerifiedChannelID(channel_key);
