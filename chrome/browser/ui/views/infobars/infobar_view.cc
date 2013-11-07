@@ -333,16 +333,14 @@ void InfoBarView::PlatformSpecificHide(bool animate) {
   // false); in this case the second SetFocusManager() call will silently no-op.
   SetFocusManager(NULL);
 
-#if defined(OS_WIN) && !defined(USE_AURA)
   if (!animate)
     return;
 
   // Do not restore focus (and active state with it) if some other top-level
   // window became active.
   views::Widget* widget = GetWidget();
-  if (!widget || gfx::DoesWindowBelongToActiveWindow(widget->GetNativeView()))
+  if (!widget || widget->IsActive())
     FocusLastFocusedExternalView();
-#endif
 }
 
 void InfoBarView::PlatformSpecificOnHeightsRecalculated() {
