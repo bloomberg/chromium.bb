@@ -404,13 +404,15 @@ void SessionsRestoreFunction::SetResultRestoredTab(
 }
 
 bool SessionsRestoreFunction::SetResultRestoredWindow(int window_id) {
-    WindowController* controller = NULL;
+  WindowController* controller = NULL;
   if (!windows_util::GetWindowFromWindowID(this, window_id, &controller)) {
     // error_ is set by GetWindowFromWindowId function call.
     return false;
   }
+  scoped_ptr<DictionaryValue> window_value(
+      controller->CreateWindowValueWithTabs(GetExtension()));
   scoped_ptr<windows::Window> window(windows::Window::FromValue(
-      *controller->CreateWindowValueWithTabs(GetExtension())));
+      *window_value));
   results_ = Restore::Results::Create(*CreateSessionModelHelper(
       base::Time::Now().ToTimeT(),
       scoped_ptr<tabs::Tab>(),
