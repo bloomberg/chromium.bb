@@ -78,6 +78,9 @@ WebSocketBasicStream::WebSocketBasicStream(
       sub_protocol_(sub_protocol),
       extensions_(extensions),
       generate_websocket_masking_key_(&GenerateWebSocketMaskingKey) {
+  // http_read_buffer_ should not be set if it contains no data.
+  if (http_read_buffer_ && http_read_buffer_->offset() == 0)
+    http_read_buffer_ = NULL;
   DCHECK(connection_->is_initialized());
 }
 
