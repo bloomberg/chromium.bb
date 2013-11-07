@@ -5146,7 +5146,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
       <message name="IDS_EXTENSIONS_SUSPICIOUS_DISABLED_AND_N_MORE" desc="Used for a count of additional items in the IDS_EXTENSIONS_SUSPICIOUS_DISABLED_BODY dialog shown when suspicious extensions have been disabled, if we could not fit them all in the dialog">
-        and <ph name="NUMBER_ADDITIONAL_DISABLED">#<ex>5</ex></ph> more
+        and <ph name="NUMBER_ADDITIONAL_DISABLED">$1<ex>5</ex></ph> more
       </message>
       <message name="IDS_EXTENSIONS_SUSPICIOUS_DISABLED_BUTTON" desc="Text of the button on the dialog shown when suspicious extensions have been disabled">
       OK, got it
