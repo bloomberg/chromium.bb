@@ -20,10 +20,7 @@ class RenderingStats(object):
     """
     assert(len(timeline_markers) > 0)
     self.renderer_process = renderer_process
-    self.start = timeline_markers[0].start
-    self.end = timeline_markers[-1].start + timeline_markers[-1].duration
 
-    self.frame_count = []
     self.frame_timestamps = []
     self.frame_times = []
     self.paint_time = []
@@ -62,7 +59,6 @@ class RenderingStats(object):
         frame_count = event.args['data']['frame_count']
       else:
         frame_count = event.args['data']['screen_frame_count']
-      self.frame_count.append(frame_count)
       if frame_count > 1:
         raise ValueError, 'trace contains multi-frame render stats'
       if frame_count == 1:
@@ -104,7 +100,6 @@ class RenderingStats(object):
         frame_count = event.args['data']['frame_count']
       else:
         frame_count = event.args['data']['screen_frame_count']
-      self.frame_count.append(frame_count)
       if frame_count > 1:
         raise ValueError, 'trace contains multi-frame render stats'
       if frame_count == 1:
