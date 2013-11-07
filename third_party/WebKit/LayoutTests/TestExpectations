@@ -123,20 +123,6 @@ crbug.com/66751 [ Win ] http/tests/local/link-stylesheet-load-order.html [ Failu
 
 crbug.com/86340 fast/filesystem/workers/file-writer-write-overlapped.html [ Failure Pass ]
 
-Bug(ojan) fast/dom/Window/Location/window-shadow-location-using-string.html [ NeedsRebaseline ]
-Bug(ojan) fast/dom/Window/webkitConvertPoint.html [ NeedsRebaseline ]
-Bug(ojan) fast/forms/focus-selection-textarea.html [ NeedsRebaseline ]
-Bug(ojan) fast/replaced/table-percent-height-text-controls.html [ NeedsRebaseline ]
-Bug(ojan) fast/replaced/table-percent-height.html [ NeedsRebaseline ]
-Bug(ojan) fast/dom/Window/Location/window-shadow-location-using-js-object-with-toString.html [ NeedsRebaseline ]
-Bug(ojan) fast/events/scale-and-scroll-body.html [ NeedsRebaseline ]
-Bug(ojan) fast/events/touch/gesture/touch-gesture-scroll-sideways.html [ NeedsRebaseline ]
-Bug(ojan) http/tests/storage/callbacks-are-called-in-correct-context.html [ NeedsRebaseline ]
-Bug(ojan) svg/as-object/nested-embedded-svg-size-changes.html [ NeedsRebaseline ]
-Bug(ojan) svg/custom/use-instanceRoot-event-bubbling.xhtml [ NeedsRebaseline ]
-Bug(ojan) svg/custom/use-instanceRoot-event-listeners.xhtml [ NeedsRebaseline ]
-Bug(ojan) svg/dom/SVGPathSegList-xml-dom-synchronization.xhtml [ NeedsRebaseline ]
-
 Bug(ojan) fast/dom/Window/open-window-min-size.html [ NeedsManualRebaseline ]
 Bug(ojan) svg/as-object/embedded-svg-immediate-offsetWidth-query.html [ NeedsManualRebaseline ]
 Bug(ojan) svg/zoom/page/zoom-zoom-coords.xhtml [ NeedsManualRebaseline ]
