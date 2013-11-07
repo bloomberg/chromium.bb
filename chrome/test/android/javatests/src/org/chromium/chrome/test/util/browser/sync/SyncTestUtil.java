@@ -54,7 +54,7 @@ public final class SyncTestUtil {
             newPair("Summary", "Summary");
     protected static final String UNINITIALIZED = "Uninitialized";
     protected static final Pair<String, String> USERNAME_STAT =
-            newPair("Credentials", "Username");
+            newPair("Identity", "Username");
 
     // Override the default server used for profile sync.
     // Native switch - chrome_switches::kSyncServiceURL

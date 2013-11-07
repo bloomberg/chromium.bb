@@ -33,6 +33,10 @@ Event.prototype.removeListener = function(listener) {
   this.listeners_.splice(i, 1);
 };
 
+Event.prototype.removeListeners = function() {
+  this.listeners_ = [];
+}
+
 Event.prototype.hasListener = function(listener) {
   return this.findListener_(listener) > -1;
 };
