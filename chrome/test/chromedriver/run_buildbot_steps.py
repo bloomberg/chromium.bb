@@ -232,12 +232,15 @@ def _MaybeRelease(platform):
       [])
   assert result == 0 and output, 'No release candidates found'
   candidates = [b.split('/')[-1] for b in output.strip().split('\n')]
+  candidate_pattern = re.compile('chromedriver_%s_%s\.\d+\.zip'
+      % (platform, _GetVersion()))
 
   # Release the first candidate build that passed Android, if any.
   for candidate in candidates:
-    if not candidate.startswith('chromedriver_%s' % platform):
+    if not candidate_pattern.match(candidate):
+      print 'Ignored candidate "%s"' % candidate
       continue
-    revision = candidate.split('.')[2]
+    revision = candidate.split('.')[-2]
     android_result = _RevisionState(android_test_results, int(revision))
     if android_result == 'failed':
       print 'Android tests did not pass at revision', revision
