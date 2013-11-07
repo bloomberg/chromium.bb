@@ -11,11 +11,28 @@
 #include <unistd.h>
 
 #include "base/strings/stringprintf.h"
+#include "ui/events/ozone/evdev/event_device_info.h"
 #include "ui/events/ozone/evdev/key_event_converter.h"
 #include "ui/events/ozone/evdev/touch_event_converter.h"
 #include "ui/events/ozone/event_factory_ozone.h"
 
 namespace ui {
+
+namespace {
+
+bool IsTouchPad(const EventDeviceInfo& devinfo) {
+  if (!devinfo.HasEventType(EV_ABS))
+    return false;
+
+  return devinfo.HasKeyEvent(BTN_LEFT) || devinfo.HasKeyEvent(BTN_MIDDLE) ||
+         devinfo.HasKeyEvent(BTN_RIGHT) || devinfo.HasKeyEvent(BTN_TOOL_FINGER);
+}
+
+bool IsTouchScreen(const EventDeviceInfo& devinfo) {
+  return devinfo.HasEventType(EV_ABS) && !IsTouchPad(devinfo);
+}
+
+}  // namespace
 
 EventFactoryEvdev::EventFactoryEvdev() {}
 
@@ -34,19 +51,25 @@ void EventFactoryEvdev::StartProcessingEvents() {
       DLOG(ERROR) << "Cannot open '" << path << "': " << strerror(errno);
       break;
     }
-    size_t evtype = 0;
-    COMPILE_ASSERT(sizeof(evtype) * 8 >= EV_MAX, evtype_wide_enough);
-    if (ioctl(fd, EVIOCGBIT(0, sizeof(evtype)), &evtype) == -1) {
-      DLOG(ERROR) << "failed ioctl EVIOCGBIT 0" << path;
+
+    EventDeviceInfo devinfo;
+    if (!devinfo.Initialize(fd)) {
+      DLOG(ERROR) << "failed to get device information for " << path;
+      close(fd);
+      continue;
+    }
+
+    if (IsTouchPad(devinfo)) {
+      LOG(WARNING) << "touchpad device not supported: " << path;
       close(fd);
       continue;
     }
 
     scoped_ptr<EventConverterOzone> converter;
     // TODO(rjkroege) Add more device types. Support hot-plugging.
-    if (evtype & (1 << EV_ABS))
+    if (IsTouchScreen(devinfo))
       converter.reset(new TouchEventConverterEvdev(fd, id));
-    else if (evtype & (1 << EV_KEY))
+    else if (devinfo.HasEventType(EV_KEY))
       converter.reset(new KeyEventConverterEvdev(&modifiers_));
 
     if (converter) {

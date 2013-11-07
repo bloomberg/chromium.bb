@@ -79,6 +79,8 @@
         'gestures/gesture_util.h',
         'gestures/velocity_calculator.cc',
         'gestures/velocity_calculator.h',
+        'ozone/evdev/event_device_info.cc',
+        'ozone/evdev/event_device_info.h',
         'ozone/evdev/event_factory.cc',
         'ozone/evdev/event_factory.h',
         'ozone/evdev/event_modifiers.cc',

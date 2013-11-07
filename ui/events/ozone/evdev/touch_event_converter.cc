@@ -146,7 +146,7 @@ void TouchEventConverterEvdev::OnFileCanReadWithoutBlocking(int fd) {
           altered_slots_.set(current_slot_);
           break;
         default:
-          NOTREACHED();
+          NOTREACHED() << "invalid code for EV_ABS: " << input.code;
       }
     } else if (input.type == EV_SYN) {
       switch (input.code) {
@@ -178,11 +178,18 @@ void TouchEventConverterEvdev::OnFileCanReadWithoutBlocking(int fd) {
         case SYN_MT_REPORT:
         case SYN_CONFIG:
         case SYN_DROPPED:
-          NOTREACHED() << "SYN_MT events not supported.";
+          NOTREACHED() << "invalid code for EV_SYN: " << input.code;
           break;
       }
+    } else if (input.type == EV_KEY) {
+      switch (input.code) {
+        case BTN_TOUCH:
+          break;
+        default:
+          NOTREACHED() << "invalid code for EV_KEY: " << input.code;
+      }
     } else {
-      NOTREACHED();
+      NOTREACHED() << "invalid type: " << input.type;
     }
   }
 }
