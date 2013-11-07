@@ -1402,7 +1402,7 @@ void RenderLayerScrollableArea::updateNeedsCompositedScrolling()
 
 bool RenderLayerScrollableArea::setNeedsCompositedScrolling(bool needsCompositedScrolling)
 {
-    if (this->needsCompositedScrolling() == needsCompositedScrolling)
+    if (m_needsCompositedScrolling == needsCompositedScrolling)
         return false;
 
     // Count the total number of RenderLayers which need composited scrolling at

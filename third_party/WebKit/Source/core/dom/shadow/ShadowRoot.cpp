@@ -207,7 +207,7 @@ void ShadowRoot::setApplyAuthorStyles(bool value)
     if (isOrphan())
         return;
 
-    if (applyAuthorStyles() == value)
+    if (m_applyAuthorStyles == value)
         return;
 
     m_applyAuthorStyles = value;
@@ -233,7 +233,7 @@ void ShadowRoot::setResetStyleInheritance(bool value)
     if (isOrphan())
         return;
 
-    if (value == resetStyleInheritance())
+    if (value == m_resetStyleInheritance)
         return;
 
     m_resetStyleInheritance = value;

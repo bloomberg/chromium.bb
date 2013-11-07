@@ -43,11 +43,8 @@
         '..',
       ],
       'msvs_disabled_warnings': [
-        4138, 4244, 4291, 4305, 4344, 4355, 4521, 4099, 4800, 4996, 4714,
+        4138, 4244, 4291, 4305, 4344, 4355, 4521, 4099,
       ],
-      'variables': {
-        'chromium_code': 1,
-      },
       'conditions': [
         ['OS=="win" and component=="shared_library"', {
           'defines': [
@@ -91,6 +88,12 @@
           # Due to a bug in gcc arm, we get warnings about uninitialized
           # timesNewRoman.unstatic.3258 and colorTransparent.unstatic.4879.
           'cflags': ['-Wno-uninitialized'],
+        }],
+        ['OS!="win"', {
+          # TODO: Turn this on on all platforms, http://crbug.com/312287
+          'variables': {
+            'chromium_code': 1,
+          },
         }],
         ['clang==1', {
           'cflags': ['-Wglobal-constructors'],

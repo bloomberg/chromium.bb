@@ -138,7 +138,7 @@ public:
         return m_overflowClipRect == other.overflowClipRect()
             && m_fixedClipRect == other.fixedClipRect()
             && m_posClipRect == other.posClipRect()
-            && fixed() == other.fixed();
+            && m_fixed == other.fixed();
     }
 
     ClipRects& operator=(const ClipRects& other)
