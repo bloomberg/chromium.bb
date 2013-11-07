@@ -547,3 +547,6 @@ crbug.com/315514 [ Linux ] storage/websql/sql-error-codes.html [ Failure ]
 crbug.com/315514 [ Linux ] storage/websql/test-authorizer.html [ Failure ]
 
 crbug.com/315913 [ Win7 Debug ] editing/spelling/inline-spelling-markers-hidpi.html [ ImageOnlyFailure ]
+
+crbug.com/316113 fast/js/cross-frame-really-bad-time-with-__proto__.html [ Failure Pass ]
+crbug.com/316113 fast/js/cross-frame-really-bad-time.html [ Failure Pass ]
