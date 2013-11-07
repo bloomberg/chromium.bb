@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_APP_LIST_APP_LIST_SERVICE_LINUX_H_
-#define CHROME_BROWSER_UI_APP_LIST_APP_LIST_SERVICE_LINUX_H_
+#ifndef CHROME_BROWSER_UI_VIEWS_APP_LIST_LINUX_APP_LIST_SERVICE_LINUX_H_
+#define CHROME_BROWSER_UI_VIEWS_APP_LIST_LINUX_APP_LIST_SERVICE_LINUX_H_
 
 #include "chrome/browser/ui/app_list/app_list_service_impl.h"
 
@@ -38,4 +38,4 @@ class AppListServiceLinux : public AppListServiceImpl {
   DISALLOW_COPY_AND_ASSIGN(AppListServiceLinux);
 };
 
-#endif  // CHROME_BROWSER_UI_APP_LIST_APP_LIST_SERVICE_LINUX_H_
+#endif  // CHROME_BROWSER_UI_VIEWS_APP_LIST_LINUX_APP_LIST_SERVICE_LINUX_H_
