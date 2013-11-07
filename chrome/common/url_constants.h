@@ -86,6 +86,7 @@ extern const char kChromeUIUserActionsURL[];
 extern const char kChromeUIVersionURL[];
 
 #if defined(OS_ANDROID)
+extern const char kChromeUINativeNewTabURL[];
 extern const char kChromeUIWelcomeURL[];
 #endif
 
