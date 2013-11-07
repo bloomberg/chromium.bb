@@ -117,9 +117,8 @@ inline const AtomicString getFallbackFontFamily(const FontDescription& descripti
     case FontDescription::MonospaceFamily:
         return monospaceStr;
     case FontDescription::SansSerifFamily:
-        return sansStr;
     default:
-        return AtomicString();
+        return sansStr;
     }
 }
 
