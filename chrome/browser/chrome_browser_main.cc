@@ -351,6 +351,20 @@ Profile* CreateProfile(const content::MainFunctionParams& parameters,
       GetStartupProfilePath(user_data_dir, parsed_command_line);
   profile = g_browser_process->profile_manager()->GetProfile(
       profile_path);
+
+  // If we're using the --new-profile-management flag and this profile is
+  // signed out, then we should show the user manager instead. By switching
+  // the active profile to the guest profile we ensure that no
+  // browser windows will be opened for the guest profile.
+  if (profiles::IsNewProfileManagementEnabled() && !profile->IsGuestSession()) {
+    ProfileInfoCache& cache =
+        g_browser_process->profile_manager()->GetProfileInfoCache();
+    size_t profile_index = cache.GetIndexOfProfileWithPath(profile_path);
+
+    if (cache.ProfileIsSigninRequiredAtIndex(profile_index))
+      profile = g_browser_process->profile_manager()->GetProfile(
+          ProfileManager::GetGuestProfilePath());
+  }
 #endif
   if (profile) {
     UMA_HISTOGRAM_LONG_TIMES(

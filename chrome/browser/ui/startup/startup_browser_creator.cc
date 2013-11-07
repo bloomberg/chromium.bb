@@ -42,8 +42,10 @@
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/search_engines/util.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
@@ -640,6 +642,12 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
   // |last_used_profile| is the last used incognito profile. Restoring it will
   // create a browser window for the corresponding original profile.
   if (last_opened_profiles.empty()) {
+    // If the last used profile was a guest, show the user manager instead.
+    if (profiles::IsNewProfileManagementEnabled() &&
+        last_used_profile->IsGuestSession()) {
+      chrome::ShowUserManager(base::FilePath());
+      return true;
+    }
     if (!browser_creator->LaunchBrowser(command_line, last_used_profile,
                                         cur_dir, is_process_startup,
                                         is_first_run, return_code)) {
@@ -667,6 +675,12 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
           startup_pref.type == SessionStartupPref::DEFAULT &&
           !HasPendingUncleanExit(*it))
         continue;
+
+      // Don't re-open a browser window for the guest profile.
+      if (profiles::IsNewProfileManagementEnabled() &&
+          (*it)->IsGuestSession())
+        continue;
+
       if (!browser_creator->LaunchBrowser((*it == last_used_profile) ?
           command_line : command_line_without_urls, *it, cur_dir,
           is_process_startup, is_first_run, return_code))
@@ -676,7 +690,12 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
     }
     // This must be done after all profiles have been launched so the observer
     // knows about all profiles to wait for before activating this one.
-    profile_launch_observer.Get().set_profile_to_activate(last_used_profile);
+
+    // If the last used profile was the guest one, we didn't open it so
+    // we don't need to activate it either.
+    if (!profiles::IsNewProfileManagementEnabled() &&
+        !last_used_profile->IsGuestSession())
+      profile_launch_observer.Get().set_profile_to_activate(last_used_profile);
   }
   return true;
 }
