@@ -580,7 +580,6 @@
           'conditions': [
             ['OS!="win"', {
               'dependencies': [
-                '../content/content_shell_and_tests.gyp:content_browsertests',
                 '../net/net.gyp:dns_fuzz_stub',
               ],
             }],
