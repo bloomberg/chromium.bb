@@ -24,6 +24,7 @@ protocol. However, it is enough for the purpose of this test runner.
 """
 
 
+import argparse
 import glob
 import os
 import signal
@@ -32,12 +33,6 @@ import sys
 import threading
 import websocket_handler
 
-# Name of the script to launch Chrome.
-CHROME_SCRIPT = 'google-chrome'
-
-# Name of the Chrome process's binary.
-CHROME_BINARY = 'chrome'
-
 # Location of the Camera app.
 SELF_PATH = os.path.dirname(os.path.abspath(__file__))
 CAMERA_PATH = os.path.join(SELF_PATH, '../build/tests')
@@ -45,6 +40,7 @@ CAMERA_PATH = os.path.join(SELF_PATH, '../build/tests')
 # Port to be used to communicate with the Camera app. Keep in sync with
 # src/js/test.js.
 WEBSOCKET_PORT = 47552
+
 
 def RunCommand(command):
   """Runs a command, waits and returns the error code."""
@@ -56,7 +52,7 @@ def RunCommand(command):
 class TestCaseRunner(object):
   """Test case runner."""
 
-  def __init__(self, test_case, test_timeout):
+  def __init__(self, test_case, test_timeout, chrome_binary, chrome_args):
     self.__server = None
     self.__server_thread = None
     self.__closing = False
@@ -64,6 +60,8 @@ class TestCaseRunner(object):
     self.__chrome_process = None
     self.__test_case = test_case
     self.__test_timeout = test_timeout
+    self.__chrome_binary = chrome_binary
+    self.__chrome_args = chrome_args
 
   def Close(self, returncode):
     """Closes the test runner process.
@@ -151,8 +149,8 @@ class TestCaseRunner(object):
 
     # Step 6. Install the Camera app.
     run_command = [
-        CHROME_SCRIPT, '--verbose', '--enable-logging',
-        '--load-and-launch-app=%s' % CAMERA_PATH, '--camera-run-tests']
+        self.__chrome_binary, '--verbose', '--enable-logging',
+        '--load-and-launch-app=%s' % CAMERA_PATH] + self.__chrome_args
     self.__chrome_process = subprocess.Popen(run_command, shell=False)
     self.__chrome_process.wait()
 
@@ -162,9 +160,22 @@ class TestCaseRunner(object):
 
 def main():
   """Starts the application."""
-  test_case = sys.argv[1]
-  test_timeout = int(sys.argv[2])
-  test_runner = TestCaseRunner(test_case, test_timeout)
+  parser = argparse.ArgumentParser(description='Runs a single test.')
+  parser.add_argument('--chrome',
+                      help='Path for the Chrome binary.',
+                      default='google-chrome')
+  parser.add_argument('--timeout',
+                      help='Timeout in seconds.',
+                      type=int,
+                      default=30)
+  parser.add_argument('test_case',
+                      help='Test case name to be run.', nargs=1)
+  args, chrome_args = parser.parse_known_args()
+
+  test_runner = TestCaseRunner(args.test_case[0],
+                               args.timeout,
+                               args.chrome,
+                               chrome_args or [])
   sys.exit(test_runner.Run())
 
 if __name__ == '__main__':
