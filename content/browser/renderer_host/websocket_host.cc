@@ -106,12 +106,15 @@ WebSocketEventHandler::WebSocketEventHandler(
     : dispatcher_(dispatcher), routing_id_(routing_id) {}
 
 WebSocketEventHandler::~WebSocketEventHandler() {
-  DVLOG(1) << "WebSocketEventHandler destroyed routing_id= " << routing_id_;
+  DVLOG(1) << "WebSocketEventHandler destroyed routing_id=" << routing_id_;
 }
 
 ChannelState WebSocketEventHandler::OnAddChannelResponse(
     bool fail,
     const std::string& selected_protocol) {
+  DVLOG(3) << "WebSocketEventHandler::OnAddChannelResponse"
+           << " routing_id=" << routing_id_ << " fail=" << fail
+           << " selected_protocol=\"" << selected_protocol << "\"";
   return StateCast(dispatcher_->SendAddChannelResponse(
       routing_id_, fail, selected_protocol, std::string()));
 }
@@ -120,20 +123,30 @@ ChannelState WebSocketEventHandler::OnDataFrame(
     bool fin,
     net::WebSocketFrameHeader::OpCode type,
     const std::vector<char>& data) {
+  DVLOG(3) << "WebSocketEventHandler::OnDataFrame"
+           << " routing_id=" << routing_id_ << " fin=" << fin
+           << " type=" << type << " data is " << data.size() << " bytes";
   return StateCast(dispatcher_->SendFrame(
       routing_id_, fin, OpCodeToMessageType(type), data));
 }
 
 ChannelState WebSocketEventHandler::OnClosingHandshake() {
+  DVLOG(3) << "WebSocketEventHandler::OnClosingHandshake"
+           << " routing_id=" << routing_id_;
   return StateCast(dispatcher_->SendClosing(routing_id_));
 }
 
 ChannelState WebSocketEventHandler::OnFlowControl(int64 quota) {
+  DVLOG(3) << "WebSocketEventHandler::OnFlowControl"
+           << " routing_id=" << routing_id_ << " quota=" << quota;
   return StateCast(dispatcher_->SendFlowControl(routing_id_, quota));
 }
 
 ChannelState WebSocketEventHandler::OnDropChannel(uint16 code,
                                                   const std::string& reason) {
+  DVLOG(3) << "WebSocketEventHandler::OnDropChannel"
+           << " routing_id=" << routing_id_ << " code=" << code
+           << " reason=\"" << reason << "\"";
   return StateCast(dispatcher_->DoDropChannel(routing_id_, code, reason));
 }
 
@@ -141,8 +154,9 @@ ChannelState WebSocketEventHandler::OnDropChannel(uint16 code,
 
 WebSocketHost::WebSocketHost(int routing_id,
                              WebSocketDispatcherHost* dispatcher,
-                             net::URLRequestContext* url_request_context) {
-  DVLOG(1) << "WebSocketHost: created routing_id= " << routing_id;
+                             net::URLRequestContext* url_request_context)
+    : routing_id_(routing_id) {
+  DVLOG(1) << "WebSocketHost: created routing_id=" << routing_id;
   scoped_ptr<net::WebSocketEventInterface> event_interface(
       new WebSocketEventHandler(dispatcher, routing_id));
   channel_.reset(
@@ -169,9 +183,10 @@ void WebSocketHost::OnAddChannelRequest(
     const std::vector<std::string>& requested_protocols,
     const GURL& origin) {
   DVLOG(3) << "WebSocketHost::OnAddChannelRequest"
-           << " routing_id= " << routing_id_ << " socket_url= " << socket_url
-           << " requested_protocols= " << JoinString(requested_protocols, ", ")
-           << " origin= " << origin;
+           << " routing_id=" << routing_id_ << " socket_url=\"" << socket_url
+           << "\" requested_protocols=\""
+           << JoinString(requested_protocols, ", ") << "\" origin=\"" << origin
+           << "\"";
 
   channel_->SendAddChannelRequest(socket_url, requested_protocols, origin);
 }
@@ -180,15 +195,15 @@ void WebSocketHost::OnSendFrame(bool fin,
                                 WebSocketMessageType type,
                                 const std::vector<char>& data) {
   DVLOG(3) << "WebSocketHost::OnSendFrame"
-           << " routing_id= " << routing_id_ << " fin= " << fin
-           << " type= " << type << " data is " << data.size() << " bytes";
+           << " routing_id=" << routing_id_ << " fin=" << fin
+           << " type=" << type << " data is " << data.size() << " bytes";
 
   channel_->SendFrame(fin, MessageTypeToOpCode(type), data);
 }
 
 void WebSocketHost::OnFlowControl(int64 quota) {
   DVLOG(3) << "WebSocketHost::OnFlowControl"
-           << " routing_id= " << routing_id_ << " quota= " << quota;
+           << " routing_id=" << routing_id_ << " quota=" << quota;
 
   channel_->SendFlowControl(quota);
 }
@@ -196,9 +211,9 @@ void WebSocketHost::OnFlowControl(int64 quota) {
 void WebSocketHost::OnDropChannel(bool was_clean,
                                   uint16 code,
                                   const std::string& reason) {
-  DVLOG(3) << "WebSocketDispatcherHost::OnDropChannel"
-           << " routing_id= " << routing_id_ << " was_clean = " << was_clean
-           << " code= " << code << " reason= " << reason;
+  DVLOG(3) << "WebSocketHost::OnDropChannel"
+           << " routing_id=" << routing_id_ << " was_clean=" << was_clean
+           << " code=" << code << " reason=\"" << reason << "\"";
 
   // TODO(yhirano): Handle |was_clean| appropriately.
   channel_->StartClosingHandshake(code, reason);
