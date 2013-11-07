@@ -119,12 +119,20 @@
     // Fires periodically throughout the writing operation and at least once per
     // stage.
     static void onWriteProgress(ProgressInfo info);
+
     // Fires when the write operation has completely finished, such as all
     // devices being finalized and resources released.
     static void onWriteComplete();
+
     // Fires when an error occured during writing, passing the $ref:ProgressInfo
     // of the operation at the time the error occured.
     static void onWriteError(ProgressInfo info, DOMString error);
+
+    // Fires when a removable storage device is inserted.
+    static void onDeviceInserted(RemovableStorageDevice device);
+
+    // Fires when a removable storage device is removed.
+    static void onDeviceRemoved(RemovableStorageDevice device);
   };
 
 };
