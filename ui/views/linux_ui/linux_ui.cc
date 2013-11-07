@@ -18,9 +18,7 @@ namespace views {
 void LinuxUI::SetInstance(LinuxUI* instance) {
   delete g_linux_ui;
   g_linux_ui = instance;
-#if defined(USE_X11)
   LinuxInputMethodContextFactory::SetInstance(instance);
-#endif
   LinuxShellDialog::SetInstance(instance);
 }
 

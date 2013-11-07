@@ -91,6 +91,10 @@
       'sources!': [
         'input_method_linux_x11.cc',
         'input_method_linux_x11.h',
+      ],
+    }],
+    ['use_aura==0 or desktop_linux==0', {
+      'sources!': [
         'linux/fake_input_method_context.cc',
         'linux/fake_input_method_context.h',
         'linux/fake_input_method_context_factory.cc',
