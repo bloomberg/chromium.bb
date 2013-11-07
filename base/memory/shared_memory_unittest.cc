@@ -361,6 +361,24 @@ TEST(SharedMemoryTest, AnonymousPrivate) {
   }
 }
 
+TEST(SharedMemoryTest, ShareToSelf) {
+  StringPiece contents = "Hello World";
+
+  SharedMemory shmem;
+  ASSERT_TRUE(shmem.CreateAndMapAnonymous(contents.size()));
+  memcpy(shmem.memory(), contents.data(), contents.size());
+  EXPECT_TRUE(shmem.Unmap());
+
+  SharedMemoryHandle shared_handle;
+  ASSERT_TRUE(shmem.ShareToProcess(GetCurrentProcessHandle(), &shared_handle));
+  SharedMemory shared(shared_handle, /*readonly=*/false);
+
+  ASSERT_TRUE(shared.Map(contents.size()));
+  EXPECT_EQ(
+      contents,
+      StringPiece(static_cast<const char*>(shared.memory()), contents.size()));
+}
+
 TEST(SharedMemoryTest, MapAt) {
   ASSERT_TRUE(SysInfo::VMAllocationGranularity() >= sizeof(uint32));
   const size_t kCount = SysInfo::VMAllocationGranularity();
