@@ -38,7 +38,6 @@ private:
     HTMLAppletElement(const QualifiedName&, Document&, bool createdByParser);
 
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
-    virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
 
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE;
     virtual RenderObject* createRenderer(RenderStyle*) OVERRIDE;

@@ -102,7 +102,7 @@ function HTMLAppletElement11() {
 testNode = nodeList.item(0);
       vobject = testNode.object;
 
-      assertURIEquals("object",null,null,null,"DOMTSApplet.dat",null,null,null,null,vobject);
+      assertEquals("object","DOMTSApplet.dat",vobject);
        
 }
 
