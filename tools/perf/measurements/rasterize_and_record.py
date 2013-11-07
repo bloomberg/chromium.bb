@@ -11,8 +11,6 @@ from telemetry.page import page_measurement
 from telemetry.core.timeline.model import MarkerMismatchError
 from telemetry.core.timeline.model import MarkerOverlapError
 
-TIMELINE_MARKER = 'RasterizeAndRecord'
-
 
 class RasterizeAndRecord(page_measurement.PageMeasurement):
   def __init__(self):
@@ -99,7 +97,7 @@ class RasterizeAndRecord(page_measurement.PageMeasurement):
         'window.__rafFired = false;'
         'window.webkitRequestAnimationFrame(function() {'
           'chrome.gpuBenchmarking.setNeedsDisplayOnAllLayers();'
-          'console.time("' + TIMELINE_MARKER + '");'
+          'console.time("' + rendering_stats.RENDER_PROCESS_MARKER + '");'
           'window.__rafFired  = true;'
         '});')
     # Wait until the frame was drawn.
@@ -108,15 +106,15 @@ class RasterizeAndRecord(page_measurement.PageMeasurement):
     # TODO(ernstm): replace by call-back.
     time.sleep(float(self.options.stop_wait_time))
     tab.ExecuteJavaScript(
-        'console.timeEnd("' + TIMELINE_MARKER + '")')
+        'console.timeEnd("' + rendering_stats.RENDER_PROCESS_MARKER + '")')
 
     timeline = tab.browser.StopTracing().AsTimelineModel()
     try:
-      timeline_markers = timeline.FindTimelineMarkers(TIMELINE_MARKER)
+      timeline_markers = timeline.FindTimelineMarkers(
+          rendering_stats.RENDER_PROCESS_MARKER)
     except (MarkerMismatchError, MarkerOverlapError) as e:
       raise page_measurement.MeasurementFailure(str(e))
-    renderer_process = timeline.GetRendererProcessFromTab(tab)
-    stats = rendering_stats.RenderingStats(renderer_process, timeline_markers)
+    stats = rendering_stats.RenderingStats(timeline_markers, timeline_markers)
 
     results.Add('rasterize_time', 'ms',
                 max(stats.rasterize_time))
