@@ -49,7 +49,7 @@ namespace WebCore {
 
 PassRefPtr<IDBRequest> IDBRequest::create(ExecutionContext* context, PassRefPtr<IDBAny> source, IDBTransaction* transaction)
 {
-    RefPtr<IDBRequest> request(adoptRef(new IDBRequest(context, source, IDBDatabaseBackendInterface::NormalTask, transaction)));
+    RefPtr<IDBRequest> request(adoptRef(new IDBRequest(context, source, transaction)));
     request->suspendIfNeeded();
     // Requests associated with IDBFactory (open/deleteDatabase/getDatabaseNames) are not associated with transactions.
     if (transaction)
@@ -57,17 +57,7 @@ PassRefPtr<IDBRequest> IDBRequest::create(ExecutionContext* context, PassRefPtr<
     return request.release();
 }
 
-PassRefPtr<IDBRequest> IDBRequest::create(ExecutionContext* context, PassRefPtr<IDBAny> source, IDBDatabaseBackendInterface::TaskType taskType, IDBTransaction* transaction)
-{
-    RefPtr<IDBRequest> request(adoptRef(new IDBRequest(context, source, taskType, transaction)));
-    request->suspendIfNeeded();
-    // Requests associated with IDBFactory (open/deleteDatabase/getDatabaseNames) are not associated with transactions.
-    if (transaction)
-        transaction->registerRequest(request.get());
-    return request.release();
-}
-
-IDBRequest::IDBRequest(ExecutionContext* context, PassRefPtr<IDBAny> source, IDBDatabaseBackendInterface::TaskType taskType, IDBTransaction* transaction)
+IDBRequest::IDBRequest(ExecutionContext* context, PassRefPtr<IDBAny> source, IDBTransaction* transaction)
     : ActiveDOMObject(context)
     , m_result(0)
     , m_contextStopped(false)
@@ -75,7 +65,6 @@ IDBRequest::IDBRequest(ExecutionContext* context, PassRefPtr<IDBAny> source, IDB
     , m_readyState(PENDING)
     , m_requestAborted(false)
     , m_source(source)
-    , m_taskType(taskType)
     , m_hasPendingActivity(true)
     , m_cursorType(IndexedDB::CursorKeyAndValue)
     , m_cursorDirection(IndexedDB::CursorNext)

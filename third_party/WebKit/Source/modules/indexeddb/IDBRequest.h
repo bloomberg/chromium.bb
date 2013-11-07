@@ -54,13 +54,15 @@ class IDBRequest : public ScriptWrappable, public IDBCallbacks, public EventTarg
     DEFINE_EVENT_TARGET_REFCOUNTING(IDBCallbacks);
 public:
     static PassRefPtr<IDBRequest> create(ExecutionContext*, PassRefPtr<IDBAny> source, IDBTransaction*);
-    static PassRefPtr<IDBRequest> create(ExecutionContext*, PassRefPtr<IDBAny> source, IDBDatabaseBackendInterface::TaskType, IDBTransaction*);
     virtual ~IDBRequest();
 
     PassRefPtr<IDBAny> result(ExceptionState&) const;
     PassRefPtr<DOMError> error(ExceptionState&) const;
     PassRefPtr<IDBAny> source() const;
     PassRefPtr<IDBTransaction> transaction() const;
+
+    // Requests made during index population are implementation details and so
+    // events should not be visible to script.
     void preventPropagation() { m_preventPropagation = true; }
 
     // Defined in the IDL
@@ -113,13 +115,11 @@ public:
             checkForReferenceCycle();
     }
 
-    IDBDatabaseBackendInterface::TaskType taskType() { return m_taskType; }
-
     DOMRequestState* requestState() { return &m_requestState; }
     IDBCursor* getResultCursor();
 
 protected:
-    IDBRequest(ExecutionContext*, PassRefPtr<IDBAny> source, IDBDatabaseBackendInterface::TaskType, IDBTransaction*);
+    IDBRequest(ExecutionContext*, PassRefPtr<IDBAny> source, IDBTransaction*);
     void enqueueEvent(PassRefPtr<Event>);
     virtual bool shouldEnqueueEvent() const;
     void onSuccessInternal(PassRefPtr<SerializedScriptValue>);
@@ -137,7 +137,6 @@ private:
     void checkForReferenceCycle();
 
     RefPtr<IDBAny> m_source;
-    const IDBDatabaseBackendInterface::TaskType m_taskType;
 
     bool m_hasPendingActivity;
     Vector<RefPtr<Event> > m_enqueuedEvents;
