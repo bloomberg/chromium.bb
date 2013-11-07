@@ -53,12 +53,7 @@ namespace fileSystem {
   };
 
   dictionary ChooseEntryOptions {
-    // Type of the prompt to show. The default is 'openFile'. From Chrome 31
-    // onwards, 'openWritableFile' is deprecated and 'openFile' will return a
-    // writable file entry for apps with the 'write' permission under
-    // 'fileSystem'. 'openDirectory' is new in Chrome 31 and will fail with a
-    // runtime error if the application doesn't have the 'directory' permission
-    // under 'fileSystem'.
+    // Type of the prompt to show. The default is 'openFile'.
     ChooseEntryType? type;
 
     // The suggested file name that will be presented to the user as the
