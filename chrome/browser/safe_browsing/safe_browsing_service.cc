@@ -142,7 +142,7 @@ class SafeBrowsingServiceFactoryImpl : public SafeBrowsingServiceFactory {
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingServiceFactoryImpl);
 };
 
-static base::LazyInstance<SafeBrowsingServiceFactoryImpl>
+static base::LazyInstance<SafeBrowsingServiceFactoryImpl>::Leaky
     g_safe_browsing_service_factory_impl = LAZY_INSTANCE_INITIALIZER;
 
 // static

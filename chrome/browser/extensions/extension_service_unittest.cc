@@ -3389,9 +3389,7 @@ TEST_F(ExtensionServiceTest, SetUnsetBlacklistInPrefs) {
 
 #if defined(ENABLE_BLACKLIST_TESTS)
 // Tests trying to install a blacklisted extension.
-// Disabled due to http://crbug.com/315396
-TEST_F(ExtensionServiceTest,
-       DISABLED_BlacklistedExtensionWillNotInstall) {
+TEST_F(ExtensionServiceTest, BlacklistedExtensionWillNotInstall) {
   scoped_refptr<FakeSafeBrowsingDatabaseManager> blacklist_db(
       new FakeSafeBrowsingDatabaseManager(true));
   Blacklist::ScopedDatabaseManagerForTest scoped_blacklist_db(blacklist_db);
@@ -3446,9 +3444,7 @@ TEST_F(ExtensionServiceTest, UnloadBlacklistedExtensionPolicy) {
 #if defined(ENABLE_BLACKLIST_TESTS)
 // Tests that a blacklisted extension is eventually unloaded on startup, if it
 // wasn't already.
-// Disabled due to http://crbug.com/315396
-TEST_F(ExtensionServiceTest,
-       DISABLED_WillNotLoadBlacklistedExtensionsFromDirectory) {
+TEST_F(ExtensionServiceTest, WillNotLoadBlacklistedExtensionsFromDirectory) {
   scoped_refptr<FakeSafeBrowsingDatabaseManager> blacklist_db(
       new FakeSafeBrowsingDatabaseManager(true));
   Blacklist::ScopedDatabaseManagerForTest scoped_blacklist_db(blacklist_db);
