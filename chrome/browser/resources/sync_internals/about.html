@@ -1,18 +1,81 @@
+<script src="chrome://sync-internals/about.js"></script>
 
-<div id="status">
-  <div id="dump">
-    <button id="dump-status">Dump status</button>
-    <input type="checkbox" id="include-ids">
-      Include Identifiers
-    </input>
-  </div>
-  <div id="import">
-    <button id="import-status">Import status</button>
-  </div>
-  <div id="status-data">
-    <textarea rows="10" cols="30" id="status-text"></textarea>
-  </div>
-</div>
+<style>
+div#aboutInfo {
+  -webkit-columns: 3;
+}
+
+div#aboutInfo h2 {
+  color: #4a8ee6;
+  font-size: 100%;
+  margin-bottom: 0;
+}
+
+div#aboutInfo .err {
+  color: red;
+}
+
+div#aboutInfo div.section {
+  display: inline-block;
+  width: 100%;
+  -webkit-column-break-inside: avoid;
+}
+
+table.aboutDetails {
+  width: 100%;
+}
+
+table.aboutDetails tr:nth-child(odd) {
+  background: #eff3ff;
+}
+
+div#aboutInfo div.section > td#detail {
+  width: 50%;
+}
+
+div#aboutInfo div.section > td#value {
+  width: 50%;
+}
+
+table#typeInfo tr.error {
+ background: #ffcccc;
+}
+
+table#typeInfo tr.warning {
+ background: #ffffcc;
+}
+
+table#typeInfo tr.ok {
+ background: #ccffcc;
+}
+
+@-webkit-keyframes highlight1 {
+  0% { background: #ffff00; }
+  100% { background: #ffffff; }
+}
+
+@-webkit-keyframes highlight2 {
+  0% { background: #9b9ea6; }
+  100% { background: #eff3ff; }
+}
+
+table.aboutDetails tr[highlighted] {
+  -webkit-animation-name: highlight1;
+  -webkit-animation-duration: 3s;
+  -webkit-animation-timing-function: linear;
+}
+
+table.aboutDetails tr[highlighted]:nth-child(odd) {
+  -webkit-animation-name: highlight2;
+  -webkit-animation-duration: 3s;
+  -webkit-animation-timing-function: linear;
+}
+
+table.aboutDetails tr.uninitialized {
+  color: #7f7f7f;
+}
+
+</style>
 
 <div id='aboutInfo'>
   <div class="section" jsselect="details">
