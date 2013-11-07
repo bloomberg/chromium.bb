@@ -74,6 +74,11 @@ public:
     void removeExtraNamedItem(const AtomicString& name);
     bool hasExtraNamedItem(const AtomicString& name);
 
+    using Document::write;
+    using Document::writeln;
+    void write(DOMWindow*, const Vector<String>& text);
+    void writeln(DOMWindow*, const Vector<String>& text);
+
     static bool isCaseSensitiveAttribute(const QualifiedName&);
 
     virtual PassRefPtr<Document> cloneDocumentWithoutChildren() OVERRIDE FINAL;

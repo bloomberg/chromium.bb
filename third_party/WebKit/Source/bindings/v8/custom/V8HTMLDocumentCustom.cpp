@@ -46,37 +46,10 @@
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/StdLibExtras.h"
-#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 
 // HTMLDocument ----------------------------------------------------------------
-
-// Concatenates "info" to a string. If info is empty, returns empty string.
-// Firefox/Safari/IE support non-standard arguments to document.write, ex:
-//   document.write("a", "b", "c") --> document.write("abc")
-//   document.write() --> document.write("")
-static String writeHelperGetString(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    StringBuilder builder;
-    for (int i = 0; i < info.Length(); ++i) {
-        V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<>, stringArgument, info[i], String());
-        builder.append(stringArgument);
-    }
-    return builder.toString();
-}
-
-void V8HTMLDocument::writeMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    HTMLDocument* htmlDocument = V8HTMLDocument::toNative(info.Holder());
-    htmlDocument->write(writeHelperGetString(info), activeDOMWindow()->document());
-}
-
-void V8HTMLDocument::writelnMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    HTMLDocument* htmlDocument = V8HTMLDocument::toNative(info.Holder());
-    htmlDocument->writeln(writeHelperGetString(info), activeDOMWindow()->document());
-}
 
 void V8HTMLDocument::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {

@@ -55,12 +55,14 @@
 
 #include "HTMLNames.h"
 #include "bindings/v8/ScriptController.h"
+#include "core/frame/DOMWindow.h"
+#include "core/frame/Frame.h"
+#include "core/frame/FrameView.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/page/FocusController.h"
-#include "core/frame/Frame.h"
 #include "core/page/FrameTree.h"
-#include "core/frame/FrameView.h"
 #include "core/page/Page.h"
+#include "wtf/text/StringBuilder.h"
 
 namespace WebCore {
 
@@ -324,6 +326,24 @@ void HTMLDocument::clear()
     // FIXME: This does nothing, and that seems unlikely to be correct.
     // We've long had a comment saying that IE doesn't support this.
     // But I do see it in the documentation for Mozilla.
+}
+
+void HTMLDocument::write(DOMWindow* activeWindow, const Vector<String>& text)
+{
+    ASSERT(activeWindow);
+    StringBuilder builder;
+    for (size_t i = 0; i < text.size(); ++i)
+        builder.append(text[i]);
+    write(builder.toString(), activeWindow->document());
+}
+
+void HTMLDocument::writeln(DOMWindow* activeWindow, const Vector<String>& text)
+{
+    ASSERT(activeWindow);
+    StringBuilder builder;
+    for (size_t i = 0; i < text.size(); ++i)
+        builder.append(text[i]);
+    writeln(builder.toString(), activeWindow->document());
 }
 
 }
