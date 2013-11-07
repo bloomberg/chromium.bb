@@ -163,6 +163,14 @@ void NavigateToURL(chrome::NavigateParams* params) {
   content::WaitForLoadStop(params->target_contents);
 }
 
+
+void NavigateToURLWithPost(Browser* browser, const GURL& url) {
+  chrome::NavigateParams params(browser, url,
+                                content::PAGE_TRANSITION_FORM_SUBMIT);
+  params.uses_post = true;
+  NavigateToURL(&params);
+}
+
 void NavigateToURL(Browser* browser, const GURL& url) {
   NavigateToURLWithDisposition(browser, url, CURRENT_TAB,
                                BROWSER_TEST_WAIT_FOR_NAVIGATION);
