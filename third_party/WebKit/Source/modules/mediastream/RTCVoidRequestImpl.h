@@ -32,7 +32,7 @@
 #define RTCVoidRequestImpl_h
 
 #include "core/dom/ActiveDOMObject.h"
-#include "core/platform/mediastream/RTCVoidRequest.h"
+#include "platform/mediastream/RTCVoidRequest.h"
 
 namespace WebCore {
 
