@@ -102,11 +102,6 @@ WebString WebNotification::replaceId() const
     return m_private->tag();
 }
 
-void WebNotification::detachPresenter()
-{
-    m_private->detachPresenter();
-}
-
 void WebNotification::dispatchDisplayEvent()
 {
     m_private->dispatchShowEvent();

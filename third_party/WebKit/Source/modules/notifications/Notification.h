@@ -122,9 +122,6 @@ public:
 
     void stopLoadingIcon();
 
-    // Deprecated. Use functions from NotificationCenter.
-    void detachPresenter() { }
-
     void finalize();
 
     static const String& permission(ExecutionContext*);

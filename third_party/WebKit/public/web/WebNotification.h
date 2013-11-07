@@ -83,9 +83,6 @@ public:
 
     BLINK_EXPORT WebString replaceId() const;
 
-    // Called if the presenter goes out of scope before the notification does.
-    BLINK_EXPORT void detachPresenter();
-
     // Called to indicate the notification has been displayed.
     BLINK_EXPORT void dispatchDisplayEvent();
 
