@@ -80,8 +80,7 @@ class SidenavDataSource(DataSource):
     futures = [
         self._cache.GetFromFile('%s/%s_sidenav.json' % (JSON_PATH, platform))
         for platform in ('apps', 'extensions')]
-    for future in futures:
-      future.Get()
+    return Future(delegate=Gettable(lambda: [f.Get() for f in futures]))
 
   def get(self, key):
     sidenav = copy.deepcopy(self._cache.GetFromFile(

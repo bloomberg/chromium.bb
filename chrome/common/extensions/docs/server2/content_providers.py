@@ -8,6 +8,7 @@ import posixpath
 
 from chroot_file_system import ChrootFileSystem
 from content_provider import ContentProvider
+from future import Gettable, Future
 from svn_constants import JSON_PATH
 from third_party.json_schema_compiler.memoize import memoize
 
@@ -102,5 +103,6 @@ class ContentProviders(object):
                            supports_zip=supports_zip)
 
   def Cron(self):
-    for name, config in self._GetConfig().iteritems():
-      self._CreateContentProvider(name, config).Cron()
+    futures = [self._CreateContentProvider(name, config).Cron()
+               for name, config in self._GetConfig().iteritems()]
+    return Future(delegate=Gettable(lambda: [f.Get() for f in futures]))

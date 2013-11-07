@@ -6,6 +6,7 @@ import json
 
 from data_source import DataSource
 import features_utility
+from future import Gettable, Future
 from manifest_features import ConvertDottedKeysToNested
 from third_party.json_schema_compiler.json_parse import Parse
 
@@ -105,27 +106,29 @@ class ManifestDataSource(DataSource):
         ManifestDataSource)
 
   def _CreateManifestData(self):
-    def for_templates(manifest_features, platform):
-      return _AddLevelAnnotations(
-          _ListifyAndSortDocs(
-              ConvertDottedKeysToNested(
-                  features_utility.Filtered(manifest_features, platform)),
-              app_name=platform.capitalize()))
-    manifest_features = self._features_bundle.GetManifestFeatures()
-    return {
-      'apps': for_templates(manifest_features, 'apps'),
-      'extensions': for_templates(manifest_features, 'extensions')
-    }
+    future_manifest_features = self._features_bundle.GetManifestFeatures()
+    def resolve():
+      manifest_features = future_manifest_features.Get()
+      def for_templates(manifest_features, platform):
+        return _AddLevelAnnotations(_ListifyAndSortDocs(
+            ConvertDottedKeysToNested(
+                features_utility.Filtered(manifest_features, platform)),
+            app_name=platform.capitalize()))
+      return {
+        'apps': for_templates(manifest_features, 'apps'),
+        'extensions': for_templates(manifest_features, 'extensions')
+      }
+    return Future(delegate=Gettable(resolve))
 
-  def _GetCachedManifestData(self, force_update=False):
+  def _GetCachedManifestData(self):
     data = self._object_store.Get('manifest_data').Get()
-    if data is None or force_update:
-      data = self._CreateManifestData()
+    if data is None:
+      data = self._CreateManifestData().Get()
       self._object_store.Set('manifest_data', data)
     return data
 
   def Cron(self):
-    self._GetCachedManifestData(force_update=True)
+    return self._CreateManifestData()
 
   def get(self, key):
     return self._GetCachedManifestData().get(key)

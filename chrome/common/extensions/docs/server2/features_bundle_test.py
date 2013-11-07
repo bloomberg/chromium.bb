@@ -173,7 +173,7 @@ class FeaturesBundleTest(unittest.TestCase):
     }
     self.assertEqual(
         expected_features,
-        self._server.features_bundle.GetManifestFeatures())
+        self._server.features_bundle.GetManifestFeatures().Get())
 
   def testPermissionFeatures(self):
     expected_features = {
@@ -206,7 +206,7 @@ class FeaturesBundleTest(unittest.TestCase):
     }
     self.assertEqual(
         expected_features,
-        self._server.features_bundle.GetPermissionFeatures())
+        self._server.features_bundle.GetPermissionFeatures().Get())
 
   def testAPIFeatures(self):
     expected_features = {
@@ -254,7 +254,7 @@ class FeaturesBundleTest(unittest.TestCase):
     }
     self.assertEqual(
         expected_features,
-        self._server.features_bundle.GetAPIFeatures())
+        self._server.features_bundle.GetAPIFeatures().Get())
 
 if __name__ == '__main__':
   unittest.main()

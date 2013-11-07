@@ -85,7 +85,9 @@ class CronServletTest(unittest.TestCase):
   def testSafeRevision(self):
     test_data = {
       'api': {
-        '_manifest_features.json': '{}'
+        '_api_features.json': '{}',
+        '_manifest_features.json': '{}',
+        '_permission_features.json': '{}',
       },
       'docs': {
         'examples': {
@@ -110,6 +112,7 @@ class CronServletTest(unittest.TestCase):
             'content_providers.json': ReadFile('%s/content_providers.json' %
                                                JSON_PATH),
             'manifest.json': '{}',
+            'permissions.json': '{}',
             'strings.json': '{}',
             'apps_sidenav.json': '{}',
             'extensions_sidenav.json': '{}',

@@ -85,5 +85,7 @@ class ContentProvider(object):
 
   def Cron(self):
     # Running Refresh() on the file system is enough to pull GitHub content,
-    # which is all we need for now.
-    self.file_system.Refresh().Get()
+    # which is all we need for now while the full render-every-page cron step
+    # is in effect.
+    # TODO(kalman): Walk over the whole filesystem and compile the content.
+    return self.file_system.Refresh()

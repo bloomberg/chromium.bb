@@ -6,6 +6,7 @@ import posixpath
 from urlparse import urlsplit
 
 from file_system import FileNotFoundError
+from future import Gettable, Future
 
 class Redirector(object):
   def __init__(self, compiled_fs_factory, file_system):
@@ -60,6 +61,9 @@ class Redirector(object):
   def Cron(self):
     ''' Load files during a cron run.
     '''
+    futures = []
     for root, dirs, files in self._file_system.Walk(''):
       if 'redirects.json' in files:
-        self._cache.GetFromFile(posixpath.join(root, 'redirects.json')).Get()
+        futures.append(
+            self._cache.GetFromFile(posixpath.join(root, 'redirects.json')))
+    return Future(delegate=Gettable(lambda: [f.Get() for f in futures]))

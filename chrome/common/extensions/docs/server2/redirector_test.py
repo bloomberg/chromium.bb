@@ -87,7 +87,7 @@ class RedirectorTest(unittest.TestCase):
         self._redirector.Redirect('https://code.google.com', ''))
 
   def testCron(self):
-    self._redirector.Cron()
+    self._redirector.Cron().Get()
 
     expected_paths = set([
       'redirects.json',

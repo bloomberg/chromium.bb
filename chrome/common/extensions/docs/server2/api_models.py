@@ -36,7 +36,7 @@ class APIModels(object):
     # features file. APIs are those which either implicitly or explicitly have
     # no parent feature (e.g. app, app.window, and devtools.inspectedWindow are
     # APIs; runtime.onConnectNative is not).
-    api_features = self._features_bundle.GetAPIFeatures()
+    api_features = self._features_bundle.GetAPIFeatures().Get()
     return [name for name, feature in api_features.iteritems()
             if ('.' not in name or
                 name.rsplit('.', 1)[0] not in api_features or

@@ -151,7 +151,7 @@ class SamplesDataSourceTest(unittest.TestCase):
     # Ensure Cron doesn't rely on request.
     sidenav_data_source = SidenavDataSource(
         ServerInstance.ForTest(file_system), request=None)
-    sidenav_data_source.Cron()
+    sidenav_data_source.Cron().Get()
 
     # If Cron fails, apps_sidenav.json will not be cached, and the _cache_data
     # access will fail.

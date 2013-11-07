@@ -9,6 +9,7 @@ import traceback
 from data_source import DataSource
 from docs_server_utils import FormatKey
 from file_system import FileNotFoundError
+from future import Future
 from svn_constants import PRIVATE_TEMPLATE_PATH
 
 
@@ -32,4 +33,4 @@ class TemplateDataSource(DataSource):
   def Cron(self):
     # TODO(kalman): Implement this; probably by finding all files that can be
     # compiled to templates underneath |self._partial_dir| and compiling them.
-    pass
+    return Future(value=())

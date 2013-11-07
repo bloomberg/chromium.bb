@@ -9,6 +9,7 @@ import unittest
 
 from compiled_file_system import CompiledFileSystem
 from features_bundle import FeaturesBundle
+from future import Future
 import manifest_data_source
 from object_store_creator import ObjectStoreCreator
 
@@ -246,7 +247,7 @@ class ManifestDataSourceTest(unittest.TestCase):
 
     class FakeFeaturesBundle(object):
       def GetManifestFeatures(self):
-        return manifest_features
+        return Future(value=manifest_features)
 
     class FakeServerInstance(object):
       def __init__(self):

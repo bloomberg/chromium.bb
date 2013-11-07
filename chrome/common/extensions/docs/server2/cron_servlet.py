@@ -15,6 +15,7 @@ from data_source_registry import CreateDataSources
 from empty_dir_file_system import EmptyDirFileSystem
 from environment import IsDevServer
 from file_system_util import CreateURLsFromPaths
+from future import Gettable, Future
 from github_file_system_provider import GithubFileSystemProvider
 from host_file_system_provider import HostFileSystemProvider
 from object_store_creator import ObjectStoreCreator
@@ -151,6 +152,41 @@ class CronServlet(Servlet):
     results = []
 
     try:
+      # Start running the hand-written Cron methods first; they can be run in
+      # parallel. They are resolved at the end.
+      def run_cron_for_future(target):
+        title = target.__class__.__name__
+        start_time = time.time()
+        future = target.Cron()
+        init_time = time.time() - start_time
+        assert isinstance(future, Future), (
+            '%s.Cron() did not return a Future' % title)
+        def resolve():
+          start_time = time.time()
+          try:
+            future.Get()
+          except Exception as e:
+            _cronlog.error('%s: error %s' % (title, traceback.format_exc()))
+            results.append(False)
+            if IsDeadlineExceededError(e): raise
+          finally:
+            resolve_time = time.time() - start_time
+            _cronlog.info(
+                '%s: used %s seconds, %s to initialize and %s to resolve' %
+                (title, init_time + resolve_time, init_time, resolve_time))
+        return Future(delegate=Gettable(resolve))
+
+      targets = (CreateDataSources(server_instance).values() +
+                 [server_instance.content_providers])
+      title = 'initializing %s parallel Cron targets' % len(targets)
+      start_time = time.time()
+      _cronlog.info(title)
+      try:
+        cron_futures = [run_cron_for_future(target) for target in targets]
+      finally:
+        _cronlog.info('%s took %s seconds' % (title, time.time() - start_time))
+
+
       # Rendering the public templates will also pull in all of the private
       # templates.
       results.append(request_files_in_dir(svn_constants.PUBLIC_TEMPLATE_PATH))
@@ -179,24 +215,15 @@ class CronServlet(Servlet):
             example_zips,
             lambda path: render('extensions/examples/' + path)))
 
-      def run_cron(data_source):
-        title = data_source.__class__.__name__
-        _cronlog.info('%s: starting' % title)
-        start_time = time.time()
-        try:
-          data_source.Cron()
-        except Exception as e:
-          _cronlog.error('%s: error %s' % (title, traceback.format_exc()))
-          results.append(False)
-          if IsDeadlineExceededError(e): raise
-        finally:
-          _cronlog.info(
-              '%s: took %s seconds' % (title, time.time() - start_time))
-
-      for data_source in CreateDataSources(server_instance).values():
-        run_cron(data_source)
-
-      run_cron(server_instance.content_providers)
+      # Resolve the hand-written Cron method futures.
+      title = 'resolving %s parallel Cron targets' % len(targets)
+      _cronlog.info(title)
+      start_time = time.time()
+      try:
+        for future in cron_futures:
+          future.Get()
+      finally:
+        _cronlog.info('%s took %s seconds' % (title, time.time() - start_time))
 
     except:
       results.append(False)

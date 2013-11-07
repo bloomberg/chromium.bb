@@ -3,15 +3,19 @@
 # found in the LICENSE file.
 
 import features_utility
+from future import Gettable, Future
 import svn_constants
 from third_party.json_schema_compiler.json_parse import Parse
 
 
-def _AddPlatformsFromDependencies(feature, features_bundle):
+def _AddPlatformsFromDependencies(feature,
+                                  api_features,
+                                  manifest_features,
+                                  permission_features):
   features_map = {
-    'api': features_bundle.GetAPIFeatures(),
-    'manifest': features_bundle.GetManifestFeatures(),
-    'permission': features_bundle.GetPermissionFeatures()
+    'api': api_features,
+    'manifest': manifest_features,
+    'permission': permission_features,
   }
   dependencies = feature.get('dependencies')
   if dependencies is None:
@@ -38,17 +42,19 @@ class _FeaturesCache(object):
     self._extra_paths = json_paths[1:]
 
   def _CreateCache(self, _, features_json):
+    extra_path_futures = [self._file_system.ReadSingle(path)
+                          for path in self._extra_paths]
     features = features_utility.Parse(Parse(features_json))
-    for path in self._extra_paths:
-      extra_json = self._file_system.ReadSingle(path).Get()
+    for path_future in extra_path_futures:
+      extra_json = path_future.Get()
       features = features_utility.MergedWith(
           features_utility.Parse(Parse(extra_json)), features)
     return features
 
   def GetFeatures(self):
     if self._json_path is None:
-      return {}
-    return self._cache.GetFromFile(self._json_path).Get()
+      return Future(value={})
+    return self._cache.GetFromFile(self._json_path)
 
 
 class FeaturesBundle(object):
@@ -79,14 +85,23 @@ class FeaturesBundle(object):
 
   def GetAPIFeatures(self):
     api_features = self._object_store.Get('api_features').Get()
-    if api_features is None:
-      api_features = self._api_cache.GetFeatures()
+    if api_features is not None:
+      return Future(value=api_features)
+
+    api_features_future = self._api_cache.GetFeatures()
+    manifest_features_future = self._manifest_cache.GetFeatures()
+    permission_features_future = self._permission_cache.GetFeatures()
+    def resolve():
+      api_features = api_features_future.Get()
+      manifest_features = manifest_features_future.Get()
+      permission_features = permission_features_future.Get()
       # TODO(rockot): Handle inter-API dependencies more gracefully.
       # Not yet a problem because there is only one such case (windows -> tabs).
       # If we don't store this value before annotating platforms, inter-API
       # dependencies will lead to infinite recursion.
-      self._object_store.Set('api_features', api_features)
       for feature in api_features.itervalues():
-        _AddPlatformsFromDependencies(feature, self)
+        _AddPlatformsFromDependencies(
+            feature, api_features, manifest_features, permission_features)
       self._object_store.Set('api_features', api_features)
-    return api_features
+      return api_features
+    return Future(delegate=Gettable(resolve))

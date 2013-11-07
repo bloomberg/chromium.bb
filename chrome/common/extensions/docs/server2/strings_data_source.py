@@ -13,8 +13,11 @@ class StringsDataSource(DataSource):
         server_instance.host_file_system_provider.GetTrunk())
     self._strings_json_path = server_instance.strings_json_path
 
+  def _GetStringsData(self):
+    return self._cache.GetFromFile(self._strings_json_path)
+
   def Cron(self):
-    self._cache.GetFromFile(self._strings_json_path).Get()
+    return self._GetStringsData()
 
   def get(self, key):
-    return self._cache.GetFromFile(self._strings_json_path).Get()[key]
+    return self._GetStringsData().Get().get(key)
