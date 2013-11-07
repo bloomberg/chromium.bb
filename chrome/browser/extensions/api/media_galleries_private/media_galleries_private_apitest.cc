@@ -106,7 +106,14 @@ class MediaGalleriesPrivateApiTest : public ExtensionApiTest {
   DISALLOW_COPY_AND_ASSIGN(MediaGalleriesPrivateApiTest);
 };
 
-IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateApiTest, DeviceAttachDetachEvents) {
+// Fails on official Linux bot. See http://crbug.com/315276
+#if defined(GOOGLE_CHROME_BUILD) && defined(OS_LINUX)
+#define MAYBE_DeviceAttachDetachEvents DISABLED_DeviceAttachDetachEvents
+#else
+#define MAYBE_DeviceAttachDetachEvents DeviceAttachDetachEvents
+#endif
+IN_PROC_BROWSER_TEST_F(MediaGalleriesPrivateApiTest,
+                       MAYBE_DeviceAttachDetachEvents) {
   // Setup.
   TestStorageMonitor::SyncInitialize();
   const extensions::Extension* extension =
