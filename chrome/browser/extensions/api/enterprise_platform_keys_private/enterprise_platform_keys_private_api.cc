@@ -52,6 +52,24 @@ const char EPKPChallengeKeyBase::kSignChallengeFailedError[] =
 const char EPKPChallengeKeyBase::kUserNotManaged[] =
     "The user account is not enterprise managed.";
 
+EPKPChallengeKeyBase::PrepareKeyContext::PrepareKeyContext(
+    chromeos::attestation::AttestationKeyType key_type,
+    const std::string& user_id,
+    const std::string& key_name,
+    chromeos::attestation::AttestationCertificateProfile certificate_profile,
+    bool require_user_consent,
+    const base::Callback<void(PrepareKeyResult)>& callback)
+    : key_type(key_type),
+      user_id(user_id),
+      key_name(key_name),
+      certificate_profile(certificate_profile),
+      require_user_consent(require_user_consent),
+      callback(callback) {
+}
+
+EPKPChallengeKeyBase::PrepareKeyContext::~PrepareKeyContext() {
+}
+
 EPKPChallengeKeyBase::EPKPChallengeKeyBase()
     : cryptohome_client_(
           chromeos::DBusThreadManager::Get()->GetCryptohomeClient()),
@@ -151,12 +169,12 @@ void EPKPChallengeKeyBase::PrepareKey(
     chromeos::attestation::AttestationCertificateProfile certificate_profile,
     bool require_user_consent,
     const base::Callback<void(PrepareKeyResult)>& callback) {
-  const PrepareKeyContext context = {key_type,
-                                     user_id,
-                                     key_name,
-                                     certificate_profile,
-                                     require_user_consent,
-                                     callback};
+  const PrepareKeyContext context = PrepareKeyContext(key_type,
+                                                      user_id,
+                                                      key_name,
+                                                      certificate_profile,
+                                                      require_user_consent,
+                                                      callback);
   cryptohome_client_->TpmAttestationIsPrepared(base::Bind(
       &EPKPChallengeKeyBase::IsAttestationPreparedCallback, this, context));
 }
