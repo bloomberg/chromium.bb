@@ -3156,6 +3156,13 @@ void WebContentsImpl::RequestTransferURL(
 
     // Navigations in Web UI pages count as browser-initiated navigations.
     params.is_renderer_initiated = false;
+
+    // TODO(creis): Remove this line.  In the short term, it fixes a regression
+    // (http://crbug.com/313572) by partially reverting r231370.
+    // The underlying problem is that WebDataSource::replacesCurrentHistoryItem
+    // should be returning false when the CWS goes to the sign-in page.
+    // See http://crbug.com/311721.
+    params.should_replace_current_entry = false;
   }
 
   new_contents = OpenURL(params);
