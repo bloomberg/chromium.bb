@@ -416,8 +416,26 @@ void InputMethodEngineIBus::FocusIn(ibus::TextInputType text_input_type) {
 
   InputContext context;
   context.id = context_id_;
-  // TODO: Other types
-  context.type = "text";
+  switch (text_input_type) {
+    case ibus::TEXT_INPUT_TYPE_SEARCH:
+      context.type = "search";
+      break;
+    case ibus::TEXT_INPUT_TYPE_TELEPHONE:
+      context.type = "tel";
+      break;
+    case ibus::TEXT_INPUT_TYPE_URL:
+      context.type = "url";
+      break;
+    case ibus::TEXT_INPUT_TYPE_EMAIL:
+      context.type = "email";
+      break;
+    case ibus::TEXT_INPUT_TYPE_NUMBER:
+      context.type = "number";
+      break;
+    default:
+      context.type = "text";
+      break;
+  }
 
   observer_->OnFocus(context);
 }

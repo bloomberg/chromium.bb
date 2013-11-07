@@ -29,7 +29,7 @@
         "description": "Describes an input Context",
         "properties": {
           "contextID": {"type": "integer", "description": "This is used to specify targets of text field operations.  This ID becomes invalid as soon as onBlur is called."},
-          "type": {"type": "string", "description": "Type of value this text field edits, (Text, Number, Password, etc)", "enum": ["text", "number", "password"]}
+          "type": {"type": "string", "description": "Type of value this text field edits, (Text, Number, URL, etc)", "enum": ["text", "search", "tel", "url", "email", "number"]}
         }
       },
       {
