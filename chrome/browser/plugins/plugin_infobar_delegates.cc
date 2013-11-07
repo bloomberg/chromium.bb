@@ -485,8 +485,12 @@ int PluginMetroModeInfoBarDelegate::GetButtons() const {
 
 string16 PluginMetroModeInfoBarDelegate::GetButtonLabel(
     InfoBarButton button) const {
+#if defined(USE_AURA) && defined(USE_ASH)
+  return l10n_util::GetStringUTF16(IDS_WIN8_DESKTOP_RESTART);
+#else
   return l10n_util::GetStringUTF16((mode_ == MISSING_PLUGIN) ?
       IDS_WIN8_DESKTOP_RESTART : IDS_WIN8_DESKTOP_OPEN);
+#endif
 }
 
 #if defined(USE_AURA) && defined(USE_ASH)
@@ -506,15 +510,7 @@ void LaunchDesktopInstanceHelper(const string16& url) {
 #endif
 
 bool PluginMetroModeInfoBarDelegate::Accept() {
-#if defined(USE_AURA) && defined(USE_ASH)
-  // We need to PostTask as there is some IO involved.
-  content::BrowserThread::PostTask(
-      content::BrowserThread::PROCESS_LAUNCHER, FROM_HERE,
-      base::Bind(&LaunchDesktopInstanceHelper,
-      UTF8ToUTF16(web_contents()->GetURL().spec())));
-#else
-  chrome::AttemptRestartWithModeSwitch();
-#endif
+  chrome::AttemptRestartToDesktopMode();
   return true;
 }
 
@@ -524,6 +520,9 @@ string16 PluginMetroModeInfoBarDelegate::GetLinkText() const {
 
 bool PluginMetroModeInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
+  // TODO(shrikant): We may need to change language a little at following
+  // support URLs. With new approach we will just restart for both missing
+  // and not missing mode.
   web_contents()->OpenURL(content::OpenURLParams(
       GURL((mode_ == MISSING_PLUGIN) ?
           "https://support.google.com/chrome/?p=ib_display_in_desktop" :
