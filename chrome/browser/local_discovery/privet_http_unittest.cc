@@ -73,6 +73,33 @@ const char kSampleInfoResponseRegistered[] = "{"
     "       ]"
     "}";
 
+const char kSampleInfoResponseWithCreatejob[] = "{"
+    "       \"version\": \"1.0\","
+    "       \"name\": \"Common printer\","
+    "       \"description\": \"Printer connected through Chrome connector\","
+    "       \"url\": \"https://www.google.com/cloudprint\","
+    "       \"type\": ["
+    "               \"printer\""
+    "       ],"
+    "       \"id\": \"\","
+    "       \"device_state\": \"idle\","
+    "       \"connection_state\": \"online\","
+    "       \"manufacturer\": \"Google\","
+    "       \"model\": \"Google Chrome\","
+    "       \"serial_number\": \"1111-22222-33333-4444\","
+    "       \"firmware\": \"24.0.1312.52\","
+    "       \"uptime\": 600,"
+    "       \"setup_url\": \"http://support.google.com/\","
+    "       \"support_url\": \"http://support.google.com/cloudprint/?hl=en\","
+    "       \"update_url\": \"http://support.google.com/cloudprint/?hl=en\","
+    "       \"x-privet-token\": \"SampleTokenForTesting\","
+    "       \"api\": ["
+    "               \"/privet/accesstoken\","
+    "               \"/privet/capabilities\","
+    "               \"/privet/printer/createjob\","
+    "               \"/privet/printer/submitdoc\","
+    "       ]"
+    "}";
 
 const char kSampleRegisterStartResponse[] = "{"
     "\"user\": \"example@google.com\","
@@ -134,6 +161,8 @@ const char kSampleCapabilitiesResponsePWGOnly[] = "{"
     "  ]"
     "}"
     "}";
+
+const char kSampleCreatejobResponse[] = "{ \"job_id\": \"1234\" }";
 
 class MockTestURLFetcherFactoryDelegate
     : public net::TestURLFetcher::DelegateForTests {
@@ -789,6 +818,40 @@ TEST_F(PrivetLocalPrintTest, SuccessfulPWGLocalPrint) {
       "Sample print data",
       kSampleLocalPrintResponse));
 };
+
+TEST_F(PrivetLocalPrintTest, SuccessfulLocalPrintWithCreatejob) {
+  local_print_operation_->SetUsername("sample@gmail.com");
+  local_print_operation_->SetJobname("Sample job name");
+  local_print_operation_->SetTicket("Sample print ticket");
+  local_print_operation_->Start();
+
+  EXPECT_TRUE(SuccessfulResponseToURL(
+      GURL("http://10.0.0.8:6006/privet/info"),
+      kSampleInfoResponseWithCreatejob));
+
+  EXPECT_CALL(local_print_delegate_, OnPrivetPrintingRequestPDFInternal());
+
+  EXPECT_TRUE(SuccessfulResponseToURL(
+      GURL("http://10.0.0.8:6006/privet/capabilities"),
+      kSampleCapabilitiesResponse));
+
+  local_print_operation_->SendData("Sample print data");
+
+  EXPECT_TRUE(SuccessfulResponseToURLAndData(
+      GURL("http://10.0.0.8:6006/privet/printer/createjob"),
+      "Sample print ticket",
+      kSampleCreatejobResponse));
+
+  EXPECT_CALL(local_print_delegate_, OnPrivetPrintingDoneInternal());
+
+  // TODO(noamsml): Is encoding spaces as pluses standard?
+  EXPECT_TRUE(SuccessfulResponseToURLAndData(
+      GURL("http://10.0.0.8:6006/privet/printer/submitdoc?"
+           "user=sample%40gmail.com&jobname=Sample+job+name&job_id=1234"),
+      "Sample print data",
+      kSampleLocalPrintResponse));
+};
+
 
 }  // namespace
 

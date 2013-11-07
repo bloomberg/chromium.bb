@@ -183,20 +183,18 @@ class PrivetLocalPrintOperationImpl
   typedef base::Callback<void(const base::DictionaryValue* value)>
       ResponseCallback;
 
-  void StartCurrentRequest();
-
   void StartInitialRequest();
   void GetCapabilities();
-  // TODO(noamsml): void DoCreatejob();
+  void DoCreatejob();
   void DoSubmitdoc();
 
-  void OnCapabilities(const base::DictionaryValue* value);
+  void OnCapabilitiesResponse(const base::DictionaryValue* value);
   void OnSubmitdocResponse(const base::DictionaryValue* value);
+  void OnCreatejobResponse(const base::DictionaryValue* value);
 
   PrivetHTTPClientImpl* privet_client_;
   PrivetLocalPrintOperation::Delegate* delegate_;
 
-  base::Closure current_request_;
   ResponseCallback current_response_;
 
   std::string ticket_;
@@ -210,6 +208,8 @@ class PrivetLocalPrintOperationImpl
 
   std::string user_;
   std::string jobname_;
+
+  std::string jobid_;
 
   scoped_ptr<PrivetURLFetcher> url_fetcher_;
   scoped_ptr<PrivetInfoOperation> info_operation_;

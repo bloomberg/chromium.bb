@@ -25,11 +25,14 @@ const char kPrivetURLValueOffline[] = "1";
 
 const char kPrivetContentTypePDF[] = "application/pdf";
 const char kPrivetContentTypePWGRaster[] = "image/pwg-raster";
+const char kPrivetContentTypeCJT[] = "application/json";
 
 const char kPrivetCDDKeySupportedContentTypes[] =
     "printer.supported_content_type";
 
 const char kPrivetCDDKeyContentType[] = "content_type";
+
+const char kPrivetKeyJobID[] = "job_id";
 
 const int kPrivetCancelationTimeoutSeconds = 3;
 
@@ -365,21 +368,12 @@ PrivetLocalPrintOperationImpl::~PrivetLocalPrintOperationImpl() {
 void PrivetLocalPrintOperationImpl::Start() {
   DCHECK(!started_);
 
-  current_request_ =
-      base::Bind(&PrivetLocalPrintOperationImpl::StartInitialRequest,
-                 base::Unretained(this));
-
   // We need to get the /info response so we can know which APIs are available.
   // TODO(noamsml): Use cached info when available.
   info_operation_ = privet_client_->CreateInfoOperation(this);
   info_operation_->Start();
 
   started_ = true;
-}
-
-void PrivetLocalPrintOperationImpl::StartCurrentRequest() {
-  DCHECK(!current_request_.is_null());
-  current_request_.Run();
 }
 
 void PrivetLocalPrintOperationImpl::OnPrivetInfoDone(
@@ -411,7 +405,7 @@ void PrivetLocalPrintOperationImpl::OnPrivetInfoDone(
       return;
     }
 
-    StartCurrentRequest();
+    StartInitialRequest();
   } else {
     delegate_->OnPrivetPrintingError(this, http_code);
   }
@@ -430,12 +424,24 @@ void PrivetLocalPrintOperationImpl::StartInitialRequest() {
 
 void PrivetLocalPrintOperationImpl::GetCapabilities() {
   current_response_ = base::Bind(
-      &PrivetLocalPrintOperationImpl::OnCapabilities,
+      &PrivetLocalPrintOperationImpl::OnCapabilitiesResponse,
       base::Unretained(this));
 
   url_fetcher_= privet_client_->CreateURLFetcher(
       CreatePrivetURL(kPrivetCapabilitiesPath), net::URLFetcher::GET, this);
   url_fetcher_->DoNotRetryOnTransientError();
+
+  url_fetcher_->Start();
+}
+
+void PrivetLocalPrintOperationImpl::DoCreatejob() {
+  current_response_ = base::Bind(
+      &PrivetLocalPrintOperationImpl::OnCreatejobResponse,
+      base::Unretained(this));
+
+  url_fetcher_= privet_client_->CreateURLFetcher(
+      CreatePrivetURL(kPrivetCreatejobPath), net::URLFetcher::POST, this);
+  url_fetcher_->SetUploadData(kPrivetContentTypeCJT, ticket_);
 
   url_fetcher_->Start();
 }
@@ -459,6 +465,12 @@ void PrivetLocalPrintOperationImpl::DoSubmitdoc() {
                                     jobname_);
   }
 
+  if (!jobid_.empty()) {
+    url = net::AppendQueryParameter(url,
+                                    kPrivetKeyJobID,
+                                    jobid_);
+  }
+
   if (offline_) {
     url = net::AppendQueryParameter(url,
                                     kPrivetURLKeyOffline,
@@ -476,7 +488,7 @@ void PrivetLocalPrintOperationImpl::DoSubmitdoc() {
   url_fetcher_->Start();
 }
 
-void PrivetLocalPrintOperationImpl::OnCapabilities(
+void PrivetLocalPrintOperationImpl::OnCapabilitiesResponse(
     const base::DictionaryValue* value) {
   const base::ListValue* supported_content_types;
   use_pdf_ = false;
@@ -511,6 +523,15 @@ void PrivetLocalPrintOperationImpl::OnSubmitdocResponse(
   delegate_->OnPrivetPrintingDone(this);
 }
 
+void PrivetLocalPrintOperationImpl::OnCreatejobResponse(
+    const base::DictionaryValue* value) {
+  // Try to get job ID from value. If not, jobid_ will be empty and we will use
+  // simple printing.
+  value->GetString(kPrivetKeyJobID, &jobid_);
+
+  DoSubmitdoc();
+}
+
 PrivetHTTPClient* PrivetLocalPrintOperationImpl::GetHTTPClient() {
   return privet_client_;
 }
@@ -543,11 +564,12 @@ void PrivetLocalPrintOperationImpl::OnNeedPrivetToken(
 void PrivetLocalPrintOperationImpl::SendData(const std::string& data) {
   DCHECK(started_);
   data_ = data;
-  current_request_ = base::Bind(
-      &PrivetLocalPrintOperationImpl::DoSubmitdoc,
-      base::Unretained(this));
 
-  StartCurrentRequest();
+  if (has_extended_workflow_ && !ticket_.empty()) {
+    DoCreatejob();
+  } else {
+    DoSubmitdoc();
+  }
 }
 
 void PrivetLocalPrintOperationImpl::SetTicket(const std::string& ticket) {
