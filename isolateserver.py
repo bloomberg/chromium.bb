@@ -1072,7 +1072,7 @@ class LocalCache(object):
     """Reads data from |content| generator and stores it in cache."""
     raise NotImplementedError()
 
-  def link(self, digest, dest, file_mode=None):
+  def link(self, digest, dest):
     """Ensures file at |dest| has same content as cached |digest|."""
     raise NotImplementedError()
 
@@ -1108,10 +1108,8 @@ class MemoryCache(LocalCache):
     with self._lock:
       self._contents[digest] = data
 
-  def link(self, digest, dest, file_mode=None):
+  def link(self, digest, dest):
     file_write(dest, [self.read(digest)])
-    if file_mode is not None:
-      os.chmod(dest, file_mode)
 
 
 def get_hash_algo(_namespace):
@@ -1515,7 +1513,7 @@ def fetch_isolated(
 
           # Link corresponding files to a fetched item in cache.
           for filepath, props in remaining.pop(digest):
-            cache.link(digest, os.path.join(outdir, filepath), props.get('m'))
+            cache.link(digest, os.path.join(outdir, filepath))
 
           # Report progress.
           duration = time.time() - last_update

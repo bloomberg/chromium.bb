@@ -141,7 +141,7 @@ def link_file(outfile, infile, action):
       readable_copy(outfile, infile)
 
 
-def _set_write_bit(path, read_only):
+def _set_read_only(path, read_only):
   """Sets or resets the executable bit on a file or directory."""
   mode = os.lstat(path).st_mode
   if read_only:
@@ -160,20 +160,20 @@ def _set_write_bit(path, read_only):
     os.chmod(path, mode)
 
 
-def make_writable(root, read_only):
+def make_read_only(root, read_only):
   """Toggle the writable bit on a directory tree."""
   assert os.path.isabs(root), root
   for dirpath, dirnames, filenames in os.walk(root, topdown=True):
     for filename in filenames:
-      _set_write_bit(os.path.join(dirpath, filename), read_only)
+      _set_read_only(os.path.join(dirpath, filename), read_only)
 
     for dirname in dirnames:
-      _set_write_bit(os.path.join(dirpath, dirname), read_only)
+      _set_read_only(os.path.join(dirpath, dirname), read_only)
 
 
 def rmtree(root):
   """Wrapper around shutil.rmtree() to retry automatically on Windows."""
-  make_writable(root, False)
+  make_read_only(root, False)
   if sys.platform == 'win32':
     for i in range(3):
       try:
@@ -348,10 +348,8 @@ class DiskCache(isolateserver.LocalCache):
     with self._lock:
       self._add(digest, size)
 
-  def link(self, digest, dest, file_mode=None):
+  def link(self, digest, dest):
     link_file(dest, self._path(digest), HARDLINK)
-    if file_mode is not None:
-      os.chmod(dest, file_mode)
 
   def _load(self):
     """Loads state of the cache from json file."""
@@ -502,7 +500,7 @@ def run_tha_test(isolated_hash, storage, cache, algo, outdir):
 
     if settings.read_only:
       logging.info('Making files read only')
-      make_writable(outdir, True)
+      make_read_only(outdir, True)
     cwd = os.path.normpath(os.path.join(outdir, settings.relative_cwd))
     logging.info('Running %s, cwd=%s' % (settings.command, cwd))
 
