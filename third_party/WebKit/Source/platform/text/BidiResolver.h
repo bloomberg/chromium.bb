@@ -199,7 +199,11 @@ public:
     void setDir(WTF::Unicode::Direction d) { m_direction = d; }
 
     const BidiStatus& status() const { return m_status; }
-    void setStatus(const BidiStatus s) { m_status = s; }
+    void setStatus(const BidiStatus s)
+    {
+        ASSERT(s.context);
+        m_status = s;
+    }
 
     MidpointState<Iterator>& midpointState() { return m_midpointState; }
 

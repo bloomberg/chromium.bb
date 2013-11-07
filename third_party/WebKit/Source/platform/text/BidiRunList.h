@@ -202,9 +202,7 @@ void BidiRunList<Run>::deleteRuns()
 template <class Run>
 void BidiRunList<Run>::reverseRuns(unsigned start, unsigned end)
 {
-    if (!m_runCount)
-        return;
-
+    ASSERT(m_runCount);
     if (start >= end)
         return;
 
