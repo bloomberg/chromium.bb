@@ -185,6 +185,8 @@ http/tests/download/inherited-encoding-form-submission-result.html
 http/tests/security/no-javascript-refresh.php
 inspector-protocol/input/dispatchMouseEvent.html
 loader/reload-subresource-when-type-changes.html
+media/media-load-event.html
+media/video-autoplay.html
 printing/css2.1/page-break-before-001.html
 storage/domstorage/localstorage/simple-usage.html
 storage/storagequota-query-usage.html
