@@ -210,7 +210,6 @@ protected:
                 && _page_break_after == other._page_break_after
                 && _page_break_inside == other._page_break_inside
                 && _styleType == other._styleType
-                && _affectedByFocus == other._affectedByFocus
                 && _affectedByHover == other._affectedByHover
                 && _affectedByActive == other._affectedByActive
                 && _affectedByDrag == other._affectedByDrag
@@ -252,8 +251,6 @@ protected:
         unsigned firstChildState : 1;
         unsigned lastChildState : 1;
 
-        bool affectedByFocus() const { return _affectedByFocus; }
-        void setAffectedByFocus(bool value) { _affectedByFocus = value; }
         bool affectedByHover() const { return _affectedByHover; }
         void setAffectedByHover(bool value) { _affectedByHover = value; }
         bool affectedByActive() const { return _affectedByActive; }
@@ -263,13 +260,12 @@ protected:
         bool isLink() const { return _isLink; }
         void setIsLink(bool value) { _isLink = value; }
     private:
-        unsigned _affectedByFocus : 1;
         unsigned _affectedByHover : 1;
         unsigned _affectedByActive : 1;
         unsigned _affectedByDrag : 1;
         unsigned _isLink : 1;
         // If you add more style bits here, you will also need to update RenderStyle::copyNonInheritedFrom()
-        // 60 bits
+        // 61 bits
     } noninherited_flags;
 
 // !END SYNC!
@@ -316,7 +312,6 @@ protected:
         noninherited_flags.emptyState = false;
         noninherited_flags.firstChildState = false;
         noninherited_flags.lastChildState = false;
-        noninherited_flags.setAffectedByFocus(false);
         noninherited_flags.setAffectedByHover(false);
         noninherited_flags.setAffectedByActive(false);
         noninherited_flags.setAffectedByDrag(false);
@@ -360,12 +355,10 @@ public:
     void setVariable(const AtomicString& name, const String& value) { rareInheritedData.access()->m_variables.access()->setVariable(name, value); }
     const HashMap<AtomicString, String>* variables() { return &(rareInheritedData->m_variables->m_data); }
 
-    bool affectedByFocus() const { return noninherited_flags.affectedByFocus(); }
     bool affectedByHover() const { return noninherited_flags.affectedByHover(); }
     bool affectedByActive() const { return noninherited_flags.affectedByActive(); }
     bool affectedByDrag() const { return noninherited_flags.affectedByDrag(); }
 
-    void setAffectedByFocus() { noninherited_flags.setAffectedByFocus(true); }
     void setAffectedByHover() { noninherited_flags.setAffectedByHover(true); }
     void setAffectedByActive() { noninherited_flags.setAffectedByActive(true); }
     void setAffectedByDrag() { noninherited_flags.setAffectedByDrag(true); }

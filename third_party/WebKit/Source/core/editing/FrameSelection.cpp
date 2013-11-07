@@ -1481,10 +1481,16 @@ void FrameSelection::focusedOrActiveStateChanged()
     // Update for caps lock state
     m_frame->eventHandler().capsLockStateMayHaveChanged();
 
-    // We may have lost active status even though the focusElement hasn't changed
-    // give the element a chance to recalc style if its affected by focus.
-    if (Element* element = document->focusedElement())
-        element->focusStateChanged();
+    // Because StyleResolver::checkOneSelector() and
+    // RenderTheme::isFocused() check if the frame is active, we have to
+    // update style and theme state that depended on those.
+    if (Element* element = document->focusedElement()) {
+        element->setNeedsStyleRecalc();
+        if (RenderObject* renderer = element->renderer()) {
+            if (renderer && renderer->style()->hasAppearance())
+                RenderTheme::theme().stateChanged(renderer, FocusState);
+        }
+    }
 
     // Secure keyboard entry is set by the active frame.
     if (document->useSecureKeyboardEntryWhenActive())

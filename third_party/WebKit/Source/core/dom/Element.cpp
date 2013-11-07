@@ -2363,12 +2363,6 @@ void Element::setStyleAffectedByEmpty()
     ensureElementRareData().setStyleAffectedByEmpty(true);
 }
 
-void Element::setChildrenAffectedByFocus(bool value)
-{
-    if (value || hasRareData())
-        ensureElementRareData().setChildrenAffectedByFocus(value);
-}
-
 void Element::setChildrenAffectedByHover(bool value)
 {
     if (value || hasRareData())
@@ -2424,8 +2418,7 @@ bool Element::childrenSupportStyleSharing() const
 {
     if (!hasRareData())
         return true;
-    return !rareDataChildrenAffectedByFocus()
-        && !rareDataChildrenAffectedByHover()
+    return !rareDataChildrenAffectedByHover()
         && !rareDataChildrenAffectedByActive()
         && !rareDataChildrenAffectedByDrag()
         && !rareDataChildrenAffectedByFirstChildRules()
@@ -2439,12 +2432,6 @@ bool Element::rareDataStyleAffectedByEmpty() const
 {
     ASSERT(hasRareData());
     return elementRareData()->styleAffectedByEmpty();
-}
-
-bool Element::rareDataChildrenAffectedByFocus() const
-{
-    ASSERT(hasRareData());
-    return elementRareData()->childrenAffectedByFocus();
 }
 
 bool Element::rareDataChildrenAffectedByHover() const
