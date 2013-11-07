@@ -10,30 +10,26 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "mojo/public/system/core.h"
+#include "mojo/public/system/system_export.h"
 #include "mojo/system/message_pipe_endpoint.h"
 #include "mojo/system/waiter_list.h"
 
 namespace mojo {
 namespace system {
 
-class MessageInTransit;
-
-class LocalMessagePipeEndpoint : public MessagePipeEndpoint {
+class MOJO_SYSTEM_EXPORT LocalMessagePipeEndpoint : public MessagePipeEndpoint {
  public:
   LocalMessagePipeEndpoint();
   virtual ~LocalMessagePipeEndpoint();
 
   // |MessagePipeEndpoint| implementation:
-  virtual void OnPeerClose() OVERRIDE;
-  virtual MojoResult EnqueueMessage(
-      const void* bytes, uint32_t num_bytes,
-      const MojoHandle* handles, uint32_t num_handles,
-      MojoWriteMessageFlags flags) OVERRIDE;
+  virtual void Close() OVERRIDE;
+  virtual bool OnPeerClose() OVERRIDE;
+  virtual MojoResult EnqueueMessage(MessageInTransit* message) OVERRIDE;
 
   // There's a dispatcher for |LocalMessagePipeEndpoint|s, so we have to
   // implement/override these:
   virtual void CancelAllWaiters() OVERRIDE;
-  virtual void Close() OVERRIDE;
   virtual MojoResult ReadMessage(void* bytes, uint32_t* num_bytes,
                                  MojoHandle* handles, uint32_t* num_handles,
                                  MojoReadMessageFlags flags) OVERRIDE;

@@ -45,7 +45,10 @@ MessageInTransit* MakeTestMessage(uint32_t num_bytes) {
   std::vector<unsigned char> bytes(num_bytes, 0);
   for (size_t i = 0; i < num_bytes; i++)
     bytes[i] = static_cast<unsigned char>(i + num_bytes);
-  return MessageInTransit::Create(bytes.data(), num_bytes);
+  return MessageInTransit::Create(
+      MessageInTransit::kTypeMessagePipeEndpoint,
+      MessageInTransit::kSubtypeMessagePipeEndpointData,
+      bytes.data(), num_bytes);
 }
 
 bool CheckMessageData(const void* bytes, uint32_t num_bytes) {
@@ -55,6 +58,10 @@ bool CheckMessageData(const void* bytes, uint32_t num_bytes) {
       return false;
   }
   return true;
+}
+
+void InitOnIOThread(RawChannel* raw_channel) {
+  CHECK(raw_channel->Init());
 }
 
 // -----------------------------------------------------------------------------
@@ -210,8 +217,7 @@ TEST_F(RawChannelPosixTest, WriteMessage) {
 
   test::PostTaskAndWait(io_thread_task_runner(),
                         FROM_HERE,
-                        base::Bind(&RawChannel::Init,
-                                   base::Unretained(rc.get())));
+                        base::Bind(&InitOnIOThread, rc.get()));
 
   // Write and read, for a variety of sizes.
   for (uint32_t size = 1; size < 5 * 1000 * 1000; size += size / 2 + 1) {
@@ -304,8 +310,7 @@ TEST_F(RawChannelPosixTest, OnReadMessage) {
 
   test::PostTaskAndWait(io_thread_task_runner(),
                         FROM_HERE,
-                        base::Bind(&RawChannel::Init,
-                                   base::Unretained(rc.get())));
+                        base::Bind(&InitOnIOThread, rc.get()));
 
   // Write and read, for a variety of sizes.
   for (uint32_t size = 1; size < 5 * 1000 * 1000; size += size / 2 + 1) {
@@ -416,8 +421,7 @@ TEST_F(RawChannelPosixTest, WriteMessageAndOnReadMessage) {
 
   test::PostTaskAndWait(io_thread_task_runner(),
                         FROM_HERE,
-                        base::Bind(&RawChannel::Init,
-                                   base::Unretained(writer_rc.get())));
+                        base::Bind(&InitOnIOThread, writer_rc.get()));
 
   ReadCountdownRawChannelDelegate reader_delegate(
       kNumWriterThreads * kNumWriteMessagesPerThread);
@@ -430,8 +434,7 @@ TEST_F(RawChannelPosixTest, WriteMessageAndOnReadMessage) {
 
   test::PostTaskAndWait(io_thread_task_runner(),
                         FROM_HERE,
-                        base::Bind(&RawChannel::Init,
-                                   base::Unretained(reader_rc.get())));
+                        base::Bind(&InitOnIOThread, reader_rc.get()));
 
   {
     ScopedVector<RawChannelWriterThread> writer_threads;
@@ -510,8 +513,7 @@ TEST_F(RawChannelPosixTest, OnFatalError) {
 
   test::PostTaskAndWait(io_thread_task_runner(),
                         FROM_HERE,
-                        base::Bind(&RawChannel::Init,
-                                   base::Unretained(rc.get())));
+                        base::Bind(&InitOnIOThread, rc.get()));
 
   // Close the other end, which should make writing fail.
   CHECK_EQ(close(fd(1)), 0);
@@ -545,8 +547,7 @@ TEST_F(RawChannelPosixTest, WriteMessageAfterShutdown) {
 
   test::PostTaskAndWait(io_thread_task_runner(),
                         FROM_HERE,
-                        base::Bind(&RawChannel::Init,
-                                   base::Unretained(rc.get())));
+                        base::Bind(&InitOnIOThread, rc.get()));
   test::PostTaskAndWait(io_thread_task_runner(),
                         FROM_HERE,
                         base::Bind(&RawChannel::Shutdown,

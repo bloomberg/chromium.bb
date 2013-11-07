@@ -195,9 +195,9 @@ TEST(MessagePipeTest, Basic) {
   EXPECT_EQ(345678901, buffer[0]);
   EXPECT_EQ(456, buffer[1]);
 
-  // Read again from port 1 -- it should be empty.
+  // Read again from port 1 -- it should be empty (and port 0 is closed).
   buffer_size = kBufferSize;
-  EXPECT_EQ(MOJO_RESULT_NOT_FOUND,
+  EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
             mp->ReadMessage(1,
                             buffer, &buffer_size,
                             NULL, NULL,

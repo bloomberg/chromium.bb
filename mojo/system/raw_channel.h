@@ -46,7 +46,7 @@ class MOJO_SYSTEM_EXPORT RawChannel {
 
   // The |Delegate| is only accessed on the same thread as the message loop
   // (passed in on creation).
-  class Delegate {
+  class MOJO_SYSTEM_EXPORT Delegate {
    public:
     enum FatalError {
       FATAL_ERROR_UNKNOWN = 0,
@@ -73,8 +73,9 @@ class MOJO_SYSTEM_EXPORT RawChannel {
                             Delegate* delegate,
                             base::MessageLoop* message_loop);
 
-  // This must be called (on the I/O thread) before this object is used.
-  virtual void Init() = 0;
+  // This must be called (on the I/O thread) before this object is used. Returns
+  // true on success. On failure, |Shutdown()| should *not* be called.
+  virtual bool Init() = 0;
 
   // This must be called (on the I/O thread) before this object is destroyed.
   virtual void Shutdown() = 0;

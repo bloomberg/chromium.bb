@@ -211,6 +211,14 @@ TEST(MessagePipeDispatcherTest, BasicClosed) {
     EXPECT_EQ(MOJO_RESULT_ALREADY_EXISTS,
               d_0->AddWaiter(&w, MOJO_WAIT_FLAG_READABLE, 0));
 
+    // Try reading from |d_1|; should fail (nothing to read).
+    buffer[0] = 0;
+    buffer_size = kBufferSize;
+    EXPECT_EQ(MOJO_RESULT_NOT_FOUND,
+              d_1->ReadMessage(buffer, &buffer_size,
+                               NULL, NULL,
+                               MOJO_READ_MESSAGE_FLAG_NONE));
+
     // Close |d_1|.
     EXPECT_EQ(MOJO_RESULT_OK, d_1->Close());
 
@@ -254,10 +262,11 @@ TEST(MessagePipeDispatcherTest, BasicClosed) {
     EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
               d_0->AddWaiter(&w, MOJO_WAIT_FLAG_WRITABLE, 4));
 
-    // Try reading from |d_0|; should fail (nothing to read).
+    // Try reading from |d_0|; should fail (nothing to read and other end
+    // closed).
     buffer[0] = 0;
     buffer_size = kBufferSize;
-    EXPECT_EQ(MOJO_RESULT_NOT_FOUND,
+    EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
               d_0->ReadMessage(buffer, &buffer_size,
                                NULL, NULL,
                                MOJO_READ_MESSAGE_FLAG_NONE));

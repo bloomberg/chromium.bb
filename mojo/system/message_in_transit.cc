@@ -10,8 +10,8 @@
 #include <new>
 
 #include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "build/build_config.h"
 #include "mojo/system/limits.h"
 
 namespace mojo {
@@ -27,14 +27,24 @@ COMPILE_ASSERT(sizeof(MessageInTransit) %
                    MessageInTransit::kMessageAlignment == 0,
                sizeof_MessageInTransit_not_a_multiple_of_alignment);
 
-// C++ requires that storage be declared (in a single compilation unit), but
-// MSVS isn't standards-conformant and doesn't handle this correctly.
-#if !defined(COMPILER_MSVC)
-const size_t MessageInTransit::kMessageAlignment;
-#endif
+STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Type
+    MessageInTransit::kTypeMessagePipeEndpoint;
+STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Type
+    MessageInTransit::kTypeMessagePipe;
+STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Type
+    MessageInTransit::TYPE_CHANNEL;
+STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
+    MessageInTransit::kSubtypeMessagePipeEndpointData;
+STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::Subtype
+    MessageInTransit::kSubtypeMessagePipePeerClosed;
+STATIC_CONST_MEMBER_DEFINITION const MessageInTransit::EndpointId
+    MessageInTransit::kInvalidEndpointId;
+STATIC_CONST_MEMBER_DEFINITION const size_t MessageInTransit::kMessageAlignment;
 
 // static
-MessageInTransit* MessageInTransit::Create(const void* bytes,
+MessageInTransit* MessageInTransit::Create(Type type,
+                                           Subtype subtype,
+                                           const void* bytes,
                                            uint32_t num_bytes) {
   const size_t size_with_header = sizeof(MessageInTransit) + num_bytes;
   const size_t size_with_header_and_padding =
@@ -46,7 +56,8 @@ MessageInTransit* MessageInTransit::Create(const void* bytes,
 
   // The buffer consists of the header (a |MessageInTransit|, constructed using
   // a placement new), followed by the data, followed by padding (of zeros).
-  MessageInTransit* rv = new (buffer) MessageInTransit(num_bytes);
+  MessageInTransit* rv =
+      new (buffer) MessageInTransit(num_bytes, type, subtype);
   memcpy(buffer + sizeof(MessageInTransit), bytes, num_bytes);
   memset(buffer + size_with_header, 0,
          size_with_header_and_padding - size_with_header);

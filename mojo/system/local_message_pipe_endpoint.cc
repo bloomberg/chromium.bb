@@ -21,7 +21,18 @@ LocalMessagePipeEndpoint::~LocalMessagePipeEndpoint() {
   DCHECK(!is_open_);
 }
 
-void LocalMessagePipeEndpoint::OnPeerClose() {
+void LocalMessagePipeEndpoint::Close() {
+  DCHECK(is_open_);
+  is_open_ = false;
+  for (std::deque<MessageInTransit*>::iterator it = message_queue_.begin();
+       it != message_queue_.end();
+       ++it) {
+    (*it)->Destroy();
+  }
+  message_queue_.clear();
+}
+
+bool LocalMessagePipeEndpoint::OnPeerClose() {
   DCHECK(is_open_);
   DCHECK(is_peer_open_);
 
@@ -36,21 +47,16 @@ void LocalMessagePipeEndpoint::OnPeerClose() {
     waiter_list_.AwakeWaitersForStateChange(new_satisfied_flags,
                                             new_satisfiable_flags);
   }
+
+  return true;
 }
 
-MojoResult LocalMessagePipeEndpoint::EnqueueMessage(
-    const void* bytes, uint32_t num_bytes,
-    const MojoHandle* handles, uint32_t num_handles,
-    MojoWriteMessageFlags /*flags*/) {
+MojoResult LocalMessagePipeEndpoint::EnqueueMessage(MessageInTransit* message) {
   DCHECK(is_open_);
   DCHECK(is_peer_open_);
 
   bool was_empty = message_queue_.empty();
-
-  // TODO(vtl): Eventually (with C++11), this should be an |emplace_back()|.
-  message_queue_.push_back(MessageInTransit::Create(bytes, num_bytes));
-  // TODO(vtl): Support sending handles.
-
+  message_queue_.push_back(message);
   if (was_empty) {
     waiter_list_.AwakeWaitersForStateChange(SatisfiedFlags(),
                                             SatisfiableFlags());
@@ -64,17 +70,6 @@ void LocalMessagePipeEndpoint::CancelAllWaiters() {
   waiter_list_.CancelAllWaiters();
 }
 
-void LocalMessagePipeEndpoint::Close() {
-  DCHECK(is_open_);
-  is_open_ = false;
-  for (std::deque<MessageInTransit*>::iterator it = message_queue_.begin();
-       it != message_queue_.end();
-       ++it) {
-    (*it)->Destroy();
-  }
-  message_queue_.clear();
-}
-
 MojoResult LocalMessagePipeEndpoint::ReadMessage(
     void* bytes, uint32_t* num_bytes,
     MojoHandle* handles, uint32_t* num_handles,
@@ -85,8 +80,10 @@ MojoResult LocalMessagePipeEndpoint::ReadMessage(
   // TODO(vtl): We'll need this later:
   //  const uint32_t max_handles = num_handles ? *num_handles : 0;
 
-  if (message_queue_.empty())
-    return MOJO_RESULT_NOT_FOUND;
+  if (message_queue_.empty()) {
+    return is_peer_open_ ? MOJO_RESULT_NOT_FOUND :
+                           MOJO_RESULT_FAILED_PRECONDITION;
+  }
 
   // TODO(vtl): If |flags & MOJO_READ_MESSAGE_FLAG_MAY_DISCARD|, we could pop
   // and release the lock immediately.
@@ -161,4 +158,3 @@ MojoWaitFlags LocalMessagePipeEndpoint::SatisfiableFlags() {
 
 }  // namespace system
 }  // namespace mojo
-

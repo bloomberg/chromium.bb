@@ -18,8 +18,32 @@ namespace system {
 // Note: This class is POD.
 class MOJO_SYSTEM_EXPORT MessageInTransit {
  public:
-  // Creates a |MessageInTransit| with the data given by |bytes|/|num_bytes|.
-  static MessageInTransit* Create(const void* bytes, uint32_t num_bytes);
+  typedef uint16_t Type;
+  // Messages that are forwarded to |MessagePipeEndpoint|s.
+  static const Type kTypeMessagePipeEndpoint = 0;
+  // Messages that are forwarded to |MessagePipe|s.
+  static const Type kTypeMessagePipe = 1;
+  // Messages that are consumed by the channel.
+  static const Type TYPE_CHANNEL = 2;
+
+  typedef uint16_t Subtype;
+  // Subtypes for type |kTypeMessagePipeEndpoint|:
+  static const Subtype kSubtypeMessagePipeEndpointData = 0;
+  // Subtypes for type |kTypeMessagePipe|:
+  static const Subtype kSubtypeMessagePipePeerClosed = 0;
+
+  typedef uint32_t EndpointId;
+  // Never a valid endpoint ID.
+  static const EndpointId kInvalidEndpointId = 0;
+
+  // Messages (the header and data) must always be aligned to a multiple of this
+  // quantity (which must be a power of 2).
+  static const size_t kMessageAlignment = 8;
+
+  // Creates a |MessageInTransit| of the given |type| and |subtype|, with the
+  // data given by |bytes|/|num_bytes|.
+  static MessageInTransit* Create(Type type, Subtype subtype,
+                                  const void* bytes, uint32_t num_bytes);
 
   // Destroys a |MessageInTransit| created using |Create()|.
   inline void Destroy() {
@@ -41,11 +65,17 @@ class MOJO_SYSTEM_EXPORT MessageInTransit {
     return RoundUpMessageAlignment(sizeof(*this) + size_);
   }
 
-  // TODO(vtl): Add whatever's necessary to transport handles.
+  Type type() const { return type_; }
+  Subtype subtype() const { return subtype_; }
+  EndpointId source_id() const { return source_id_; }
+  EndpointId destination_id() const { return destination_id_; }
 
-  // Messages (the header and data) must always be aligned to a multiple of this
-  // quantity (which must be a power of 2).
-  static const size_t kMessageAlignment = 8;
+  void set_source_id(EndpointId source_id) { source_id_ = source_id; }
+  void set_destination_id(EndpointId destination_id) {
+    destination_id_ = destination_id;
+  }
+
+  // TODO(vtl): Add whatever's necessary to transport handles.
 
   // Rounds |n| up to a multiple of |kMessageAlignment|.
   static inline size_t RoundUpMessageAlignment(size_t n) {
@@ -53,14 +83,19 @@ class MOJO_SYSTEM_EXPORT MessageInTransit {
   }
 
  private:
-  explicit MessageInTransit(uint32_t size)
-      : size_(size), reserved_(0), user_1_(0), user_2_(0) {}
+  explicit MessageInTransit(uint32_t size, Type type, Subtype subtype)
+      : size_(size),
+        type_(type),
+        subtype_(subtype),
+        source_id_(kInvalidEndpointId),
+        destination_id_(kInvalidEndpointId) {}
 
   // "Header" for the data.
   uint32_t size_;
-  uint32_t reserved_;
-  uint32_t user_1_;
-  uint32_t user_2_;
+  Type type_;
+  Subtype subtype_;
+  EndpointId source_id_;
+  EndpointId destination_id_;
 
   // Intentionally unimplemented (and private): Use |Destroy()| instead (which
   // simply frees the memory).
