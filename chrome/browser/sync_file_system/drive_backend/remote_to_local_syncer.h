@@ -10,7 +10,9 @@
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
 #include "chrome/browser/sync_file_system/remote_change_processor.h"
 #include "chrome/browser/sync_file_system/sync_callbacks.h"
+#include "chrome/browser/sync_file_system/sync_file_metadata.h"
 #include "chrome/browser/sync_file_system/sync_task.h"
+#include "webkit/browser/fileapi/file_system_url.h"
 
 namespace drive {
 class DriveServiceInterface;
@@ -53,9 +55,21 @@ class RemoteToLocalSyncer : public SyncTask {
                             scoped_ptr<google_apis::ResourceEntry> entry);
 
   void HandleDeletion(const SyncStatusCallback& callback);
+  void DidPrepareForDeletion(const SyncStatusCallback& callback,
+                             SyncStatusCode status);
+
   void HandleNewFile(const SyncStatusCallback& callback);
+  void DidPrepareForNewFile(const SyncStatusCallback& callback,
+                            SyncStatusCode status);
+
   void HandleContentUpdate(const SyncStatusCallback& callback);
+  void DidPrepareForContentUpdate(const SyncStatusCallback& callback,
+                                  SyncStatusCode status);
+
   void ListFolderContent(const SyncStatusCallback& callback);
+  void DidPrepareForFolderListing(const SyncStatusCallback& callback,
+                                  SyncStatusCode status);
+
   void HandleRename(const SyncStatusCallback& callback);
   void HandleReorganize(const SyncStatusCallback& callback);
   void HandleOfflineSolvable(const SyncStatusCallback& callback);
@@ -89,6 +103,11 @@ class RemoteToLocalSyncer : public SyncTask {
   bool missing_parent_;
 
   bool sync_root_modification_;
+
+  fileapi::FileSystemURL url_;
+
+  SyncFileMetadata local_metadata_;
+  FileChangeList local_changes_;
 
   base::WeakPtrFactory<RemoteToLocalSyncer> weak_ptr_factory_;
 

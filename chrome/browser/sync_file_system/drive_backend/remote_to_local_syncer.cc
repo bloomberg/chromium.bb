@@ -15,18 +15,28 @@
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_context.h"
+#include "chrome/browser/sync_file_system/syncable_file_system_util.h"
+#include "chrome/common/extensions/extension.h"
 
 namespace sync_file_system {
 namespace drive_backend {
 
 namespace {
 
-bool BuildFileSystemURLForTracker(
+bool BuildFileSystemURL(
     MetadataDatabase* metadata_database,
-    int tracker_id,
+    const FileTracker& tracker,
     fileapi::FileSystemURL* url) {
-  NOTIMPLEMENTED();
-  return false;
+  base::FilePath path;
+  if (!metadata_database->BuildPathForTracker(
+          tracker.tracker_id(), &path))
+    return false;
+
+  GURL origin =
+      extensions::Extension::GetBaseURLFromExtensionId(tracker.app_id());
+  *url = sync_file_system::CreateSyncableFileSystemURL(origin, path);
+
+  return true;
 }
 
 }  // namespace
@@ -201,24 +211,52 @@ void RemoteToLocalSyncer::DidGetRemoteResource(
 
 void RemoteToLocalSyncer::HandleDeletion(
     const SyncStatusCallback& callback) {
+  Prepare(base::Bind(&RemoteToLocalSyncer::DidPrepareForDeletion,
+                     weak_ptr_factory_.GetWeakPtr(), callback));
+}
+
+void RemoteToLocalSyncer::DidPrepareForDeletion(
+    const SyncStatusCallback& callback,
+    SyncStatusCode status) {
   NOTIMPLEMENTED();
   callback.Run(SYNC_STATUS_FAILED);
 }
 
 void RemoteToLocalSyncer::HandleNewFile(
     const SyncStatusCallback& callback) {
+  Prepare(base::Bind(&RemoteToLocalSyncer::DidPrepareForNewFile,
+                     weak_ptr_factory_.GetWeakPtr(), callback));
+}
+
+void RemoteToLocalSyncer::DidPrepareForNewFile(
+    const SyncStatusCallback& callback,
+    SyncStatusCode status) {
   NOTIMPLEMENTED();
   callback.Run(SYNC_STATUS_FAILED);
 }
 
 void RemoteToLocalSyncer::HandleContentUpdate(
     const SyncStatusCallback& callback) {
+  Prepare(base::Bind(&RemoteToLocalSyncer::DidPrepareForContentUpdate,
+                     weak_ptr_factory_.GetWeakPtr(), callback));
+}
+
+void RemoteToLocalSyncer::DidPrepareForContentUpdate(
+    const SyncStatusCallback& callback,
+    SyncStatusCode status) {
   NOTIMPLEMENTED();
   callback.Run(SYNC_STATUS_FAILED);
 }
 
 void RemoteToLocalSyncer::ListFolderContent(
     const SyncStatusCallback& callback) {
+  Prepare(base::Bind(&RemoteToLocalSyncer::DidPrepareForFolderListing,
+                     weak_ptr_factory_.GetWeakPtr(), callback));
+}
+
+void RemoteToLocalSyncer::DidPrepareForFolderListing(
+    const SyncStatusCallback& callback,
+    SyncStatusCode status) {
   NOTIMPLEMENTED();
   callback.Run(SYNC_STATUS_FAILED);
 }
@@ -248,17 +286,29 @@ void RemoteToLocalSyncer::SyncCompleted(
 }
 
 void RemoteToLocalSyncer::Prepare(const SyncStatusCallback& callback) {
-  NOTIMPLEMENTED();
-  callback.Run(SYNC_STATUS_FAILED);
-  // TODO(tzik): Call RemoteChangeProcessor::PrepareForProcessRemoteChange
+  bool should_success = BuildFileSystemURL(
+      metadata_database(), dirty_tracker_, &url_);
+  DCHECK(should_success);
+  remote_change_processor()->PrepareForProcessRemoteChange(
+      url_,
+      base::Bind(&RemoteToLocalSyncer::DidPrepare,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback));
 }
 
 void RemoteToLocalSyncer::DidPrepare(const SyncStatusCallback& callback,
                                      SyncStatusCode status,
-                                     const SyncFileMetadata& metadata,
-                                     const FileChangeList& changes) {
-  NOTIMPLEMENTED();
-  callback.Run(SYNC_STATUS_FAILED);
+                                     const SyncFileMetadata& local_metadata,
+                                     const FileChangeList& local_changes) {
+  if (status != SYNC_STATUS_OK) {
+    callback.Run(status);
+    return;
+  }
+
+  local_metadata_ = local_metadata;
+  local_changes_ = local_changes;
+
+  callback.Run(status);
 }
 
 drive::DriveServiceInterface* RemoteToLocalSyncer::drive_service() {
