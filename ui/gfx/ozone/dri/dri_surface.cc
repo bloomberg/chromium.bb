@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/ozone/impl/dri_surface.h"
+#include "ui/gfx/ozone/dri/dri_surface.h"
 
 #include <errno.h>
 #include <sys/mman.h>
@@ -13,8 +13,8 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "third_party/skia/include/core/SkCanvas.h"
-#include "ui/gfx/ozone/impl/dri_skbitmap.h"
-#include "ui/gfx/ozone/impl/hardware_display_controller.h"
+#include "ui/gfx/ozone/dri/dri_skbitmap.h"
+#include "ui/gfx/ozone/dri/hardware_display_controller.h"
 #include "ui/gfx/skia_util.h"
 
 namespace gfx {

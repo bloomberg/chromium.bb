@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_OZONE_IMPL_DRI_SKBITMAP_H_
-#define UI_GFX_OZONE_IMPL_DRI_SKBITMAP_H_
+#ifndef UI_GFX_OZONE_DRI_DRI_SKBITMAP_H_
+#define UI_GFX_OZONE_DRI_DRI_SKBITMAP_H_
 
 #include "base/basictypes.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -53,4 +53,4 @@ class DriSkBitmap : public SkBitmap {
 
 }  // namespace gfx
 
-#endif  // UI_GFX_OZONE_IMPL_DRI_SKBITMAP_H_
+#endif  // UI_GFX_OZONE_DRI_DRI_SKBITMAP_H_

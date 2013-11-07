@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gfx/ozone/impl/dri_wrapper.h"
+#include "ui/gfx/ozone/dri/dri_wrapper.h"
 
 #include <fcntl.h>
 #include <unistd.h>

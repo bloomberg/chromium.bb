@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_OZONE_IMPL_HARDWARE_DISPLAY_CONTROLLER_H_
-#define UI_GFX_OZONE_IMPL_HARDWARE_DISPLAY_CONTROLLER_H_
+#ifndef UI_GFX_OZONE_DRI_HARDWARE_DISPLAY_CONTROLLER_H_
+#define UI_GFX_OZONE_DRI_HARDWARE_DISPLAY_CONTROLLER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -12,7 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
-#include "ui/gfx/ozone/impl/dri_wrapper.h"
+#include "ui/gfx/ozone/dri/dri_wrapper.h"
 
 namespace gfx {
 
@@ -170,4 +170,4 @@ class HardwareDisplayController {
 
 }  // namespace gfx
 
-#endif  // UI_GFX_OZONE_IMPL_HARDWARE_DISPLAY_CONTROLLER_H_
+#endif  // UI_GFX_OZONE_DRI_HARDWARE_DISPLAY_CONTROLLER_H_

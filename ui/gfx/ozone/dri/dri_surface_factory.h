@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_GFX_OZONE_IMPL_DRI_SURFACE_FACTORY_H_
-#define UI_GFX_OZONE_IMPL_DRI_SURFACE_FACTORY_H_
+#ifndef UI_GFX_OZONE_DRI_DRI_SURFACE_FACTORY_H_
+#define UI_GFX_OZONE_DRI_DRI_SURFACE_FACTORY_H_
 
 #include "base/memory/scoped_ptr.h"
 #include "ui/gfx/ozone/surface_factory_ozone.h"
@@ -73,4 +73,4 @@ class GFX_EXPORT DriSurfaceFactory : public SurfaceFactoryOzone {
 
 }  // namespace gfx
 
-#endif  // UI_GFX_OZONE_IMPL_DRI_SURFACE_FACTORY_H_
+#endif  // UI_GFX_OZONE_DRI_DRI_SURFACE_FACTORY_H_

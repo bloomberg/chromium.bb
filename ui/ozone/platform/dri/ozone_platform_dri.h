@@ -6,7 +6,7 @@
 #define UI_OZONE_PLATFORM_DRI_OZONE_PLATFORM_DRI_H_
 
 #include "ui/events/ozone/evdev/event_factory.h"
-#include "ui/gfx/ozone/impl/dri_surface_factory.h"
+#include "ui/gfx/ozone/dri/dri_surface_factory.h"
 #include "ui/ozone/ozone_platform.h"
 
 namespace ui {

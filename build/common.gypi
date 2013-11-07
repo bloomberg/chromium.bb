@@ -1802,6 +1802,9 @@
         # Enable built-in ozone platforms if ozone is enabled.
         'ozone_platform_dri%': 1,
         'ozone_platform_test%': 1,
+      }, {  # use_ozone==0
+        'ozone_platform_dri%': 0,
+        'ozone_platform_test%': 0,
       }],
     ],
 
