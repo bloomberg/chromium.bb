@@ -273,7 +273,6 @@ inline PseudoElement* ElementRareData::pseudoElement(PseudoId pseudoId) const
 
 inline void ElementRareData::resetStyleState()
 {
-    setComputedStyle(0);
     setStyleAffectedByEmpty(false);
     setChildIndex(0);
 }
