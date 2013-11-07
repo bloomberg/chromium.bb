@@ -286,7 +286,7 @@ void NativeAppWindowViews::OnShortcutInfoLoaded(
 }
 
 HWND NativeAppWindowViews::GetNativeAppWindowHWND() const {
-  return views::HWNDForWidget(GetWidget()->GetTopLevelWidget());
+  return views::HWNDForWidget(window_->GetTopLevelWidget());
 }
 #endif
 
@@ -476,7 +476,7 @@ void NativeAppWindowViews::Restore() {
 }
 
 void NativeAppWindowViews::SetBounds(const gfx::Rect& bounds) {
-  GetWidget()->SetBounds(bounds);
+  window_->SetBounds(bounds);
 }
 
 void NativeAppWindowViews::FlashFrame(bool flash) {
