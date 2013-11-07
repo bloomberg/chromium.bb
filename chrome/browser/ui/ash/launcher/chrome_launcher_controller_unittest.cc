@@ -46,18 +46,26 @@
 #include "ui/base/models/menu_model.h"
 
 #if defined(OS_CHROMEOS)
+#include "apps/app_window_contents.h"
+#include "apps/shell_window_registry.h"
+#include "apps/ui/native_app_window.h"
 #include "ash/test/test_session_state_delegate.h"
 #include "ash/test/test_shell_delegate.h"
 #include "base/metrics/field_trial.h"
 #include "chrome/browser/chromeos/login/fake_user_manager.h"
+#include "chrome/browser/ui/apps/chrome_shell_window_delegate.h"
 #include "chrome/browser/ui/ash/launcher/browser_status_monitor.h"
+#include "chrome/browser/ui/ash/launcher/shell_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/multi_user_window_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/variations/entropy_provider.h"
+#include "content/public/browser/web_contents_observer.h"
+#include "content/public/test/test_utils.h"
 #include "ui/aura/window.h"
+#include "ui/views/test/test_views_delegate.h"
 #endif
 
 using extensions::Extension;
@@ -648,6 +656,7 @@ class TestBrowserWindowAura : public TestBrowserWindow {
   DISALLOW_COPY_AND_ASSIGN(TestBrowserWindowAura);
 };
 
+// Creates a test browser window which has a native window.
 scoped_ptr<TestBrowserWindowAura> CreateTestBrowserWindow(
     const Browser::CreateParams& params) {
   // Create a window.
@@ -662,6 +671,84 @@ scoped_ptr<TestBrowserWindowAura> CreateTestBrowserWindow(
   browser_window->CreateBrowser(params);
   return browser_window.Pass();
 }
+
+// A views delegate which allows creating shell windows.
+class TestViewsDelegateForAppTest : public views::TestViewsDelegate {
+ public:
+  TestViewsDelegateForAppTest() {}
+  virtual ~TestViewsDelegateForAppTest() {}
+
+  // views::TestViewsDelegate overrides.
+  virtual void OnBeforeWidgetInit(
+      views::Widget::InitParams* params,
+      views::internal::NativeWidgetDelegate* delegate) OVERRIDE {
+    if (!params->parent && !params->context) {
+      // If the window has neither a parent nor a context we add the root window
+      // as parent.
+      params->parent = ash::Shell::GetInstance()->GetPrimaryRootWindow();
+    }
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestViewsDelegateForAppTest);
+};
+
+// Watches WebContents and blocks until it is destroyed. This is needed for
+// the destruction of a V2 application.
+class WebContentsDestroyedWatcher : public content::WebContentsObserver {
+ public:
+  explicit WebContentsDestroyedWatcher(content::WebContents* web_contents)
+      : content::WebContentsObserver(web_contents),
+        message_loop_runner_(new content::MessageLoopRunner) {
+    EXPECT_TRUE(web_contents != NULL);
+  }
+  virtual ~WebContentsDestroyedWatcher() {}
+
+  // Waits until the WebContents is destroyed.
+  void Wait() {
+    message_loop_runner_->Run();
+  }
+
+ private:
+  // Overridden WebContentsObserver methods.
+  virtual void WebContentsDestroyed(
+      content::WebContents* web_contents) OVERRIDE {
+    message_loop_runner_->Quit();
+  }
+
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebContentsDestroyedWatcher);
+};
+
+// A V2 application which gets created with an |extension| and for a |profile|.
+// Upon destruction it will properly close the application.
+class V2App {
+ public:
+  V2App(Profile* profile, const extensions::Extension* extension) {
+    window_ = new apps::ShellWindow(profile,
+                                    new ChromeShellWindowDelegate(),
+                                    extension);
+    apps::ShellWindow::CreateParams params = apps::ShellWindow::CreateParams();
+    window_->Init(GURL(std::string()),
+                  new apps::AppWindowContents(window_),
+                  params);
+  }
+
+  virtual ~V2App() {
+    WebContentsDestroyedWatcher destroyed_watcher(window_->web_contents());
+    window_->GetBaseWindow()->Close();
+    destroyed_watcher.Wait();
+  }
+
+ private:
+  // The shell window which represents the application. Note that the window
+  // deletes itself asynchronously after window_->GetBaseWindow()->Close() gets
+  // called.
+  apps::ShellWindow* window_;
+
+  DISALLOW_COPY_AND_ASSIGN(V2App);
+};
 
 // The testing framework to test multi profile scenarios.
 class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
@@ -753,6 +840,8 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
     session_delegate()->SwitchActiveUser(name);
     GetFakeUserManager()->SwitchActiveUser(name);
     launcher_controller_->browser_status_monitor_for_test()->
+        ActiveUserChanged(name);
+    launcher_controller_->shell_window_controller_for_test()->
         ActiveUserChanged(name);
   }
 
@@ -2105,6 +2194,75 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
       launcher_controller_.get(), item_browser, 0, NULL, true));
   EXPECT_TRUE(CheckMenuCreation(
       launcher_controller_.get(), item_gmail, 0, NULL, false));
+}
+
+// Check that V2 applications are creating items properly in the launcher when
+// instantiated by the current user.
+TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
+       V2AppHandlingTwoUsers) {
+  InitLauncherController();
+  // We need to create a dummy views delegate to be able to create a V2 app.
+  scoped_ptr<TestViewsDelegateForAppTest> views_delegate(
+      new TestViewsDelegateForAppTest());
+  // Create a profile for our second user (will be destroyed by the framework).
+  TestingProfile* profile2 = CreateMultiUserProfile("user2");
+  // Check that there is a browser and a app launcher.
+  EXPECT_EQ(2, model_->item_count());
+
+  // Add a v2 app.
+  V2App v2_app(profile(), extension1_);
+  EXPECT_EQ(3, model_->item_count());
+
+  // After switching users the item should go away.
+  SwitchActiveUser(profile2->GetProfileName());
+  EXPECT_EQ(2, model_->item_count());
+
+  // And it should come back when switching back.
+  SwitchActiveUser(profile()->GetProfileName());
+  EXPECT_EQ(3, model_->item_count());
+}
+
+// Check that V2 applications are creating items properly in edge cases:
+// a background user creates a V2 app, gets active and inactive again and then
+// deletes the app.
+TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
+       V2AppHandlingTwoUsersEdgeCases) {
+  InitLauncherController();
+  // We need to create a dummy views delegate to be able to create a V2 app.
+  scoped_ptr<TestViewsDelegateForAppTest> views_delegate(
+      new TestViewsDelegateForAppTest());
+  // Create a profile for our second user (will be destroyed by the framework).
+  TestingProfile* profile2 = CreateMultiUserProfile("user2");
+  // Check that there is a browser and a app launcher.
+  EXPECT_EQ(2, model_->item_count());
+
+  // Switch to an inactive user.
+  SwitchActiveUser(profile2->GetProfileName());
+  EXPECT_EQ(2, model_->item_count());
+
+  // Add the v2 app to the inactive user and check that no item was added to
+  // the launcher.
+  {
+    V2App v2_app(profile(), extension1_);
+    EXPECT_EQ(2, model_->item_count());
+
+    // Switch to the primary user and check that the item is shown.
+    SwitchActiveUser(profile()->GetProfileName());
+    EXPECT_EQ(3, model_->item_count());
+
+    // Switch to the second user and check that the item goes away - even if the
+    // item gets closed.
+    SwitchActiveUser(profile2->GetProfileName());
+    EXPECT_EQ(2, model_->item_count());
+  }
+
+  // After the application was killed there should be still 2 items.
+  EXPECT_EQ(2, model_->item_count());
+
+  // Switching then back to the default user should not show the additional item
+  // anymore.
+  SwitchActiveUser(profile()->GetProfileName());
+  EXPECT_EQ(2, model_->item_count());
 }
 #endif  // defined(OS_CHROMEOS)
 

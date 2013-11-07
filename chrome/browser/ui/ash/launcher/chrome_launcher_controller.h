@@ -384,6 +384,11 @@ class ChromeLauncherController : public ash::LauncherDelegate,
     return browser_status_monitor_.get();
   }
 
+  // Access to the ShellWindowController for tests.
+  ShellWindowLauncherController* shell_window_controller_for_test() {
+    return shell_window_controller_.get();
+  }
+
  protected:
   // Creates a new app shortcut item and controller on the launcher at |index|.
   // Use kInsertItemAtEnd to add a shortcut as the last item.
