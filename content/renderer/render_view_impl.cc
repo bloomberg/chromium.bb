@@ -1640,10 +1640,13 @@ void RenderViewImpl::OnNavigate(const ViewMsg_Navigate_Params& params) {
       // Set post data.
       WebHTTPBody http_body;
       http_body.initialize();
-      http_body.appendData(WebData(
-          reinterpret_cast<const char*>(
-              &params.browser_initiated_post_data.front()),
-          params.browser_initiated_post_data.size()));
+      const char* data = NULL;
+      if (params.browser_initiated_post_data.size()) {
+        data = reinterpret_cast<const char*>(
+            &params.browser_initiated_post_data.front());
+      }
+      http_body.appendData(
+          WebData(data, params.browser_initiated_post_data.size()));
       request.setHTTPBody(http_body);
     }
 
