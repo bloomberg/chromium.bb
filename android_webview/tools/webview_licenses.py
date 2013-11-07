@@ -109,6 +109,8 @@ def _CheckLicenseHeaders(excluded_dirs_list, whitelisted_files):
   excluded_dirs_list.append('data/dom_perf')
   # Histogram tools, doesn't exist in the snapshot
   excluded_dirs_list.append('tools/histograms')
+  # Swarming tools, doesn't exist in the snapshot
+  excluded_dirs_list.append('tools/swarming_client')
   # Arm sysroot tools, doesn't exist in the snapshot
   excluded_dirs_list.append('arm-sysroot')
   # Data is not part of open source chromium, but are included on some bots.
