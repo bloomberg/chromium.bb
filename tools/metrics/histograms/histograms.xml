@@ -16156,7 +16156,14 @@ other types of suffix sets.
   <summary>
     The id of a tracked preference whose last value isn't known. We may be just
     starting to track the preference, or local state may have been changed
-    outside of Chrome.
+    outside of Chrome. This should only happen once per pref per profile.
+  </summary>
+</histogram>
+
+<histogram name="Settings.TrackedPreferenceMigrated" enum="TrackedPreference">
+  <summary>
+    Logs the tracked preference id when it is migrated to the new MAC algorithm.
+    This should only happen once per pref per profile.
   </summary>
 </histogram>
 

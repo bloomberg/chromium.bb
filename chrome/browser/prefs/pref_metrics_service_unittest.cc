@@ -9,6 +9,7 @@
 #include "base/prefs/testing_pref_service.h"
 #include "base/values.h"
 #include "chrome/browser/prefs/pref_metrics_service.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
@@ -27,6 +28,9 @@ const char* kTrackedPrefs[] = {
 
 const int kTrackedPrefCount = arraysize(kTrackedPrefs);
 
+const char kTestDeviceId[] = "test_device_id1";
+const char kOtherTestDeviceId[] = "test_device_id2";
+
 }  // namespace
 
 class PrefMetricsServiceTest : public testing::Test {
@@ -38,6 +42,8 @@ class PrefMetricsServiceTest : public testing::Test {
     pref2_cleared_ = 0;
     pref1_initialized_ = 0;
     pref2_initialized_ = 0;
+    pref1_migrated_ = 0;
+    pref2_migrated_ = 0;
     pref1_unchanged_ = 0;
     pref2_unchanged_ = 0;
 
@@ -50,6 +56,8 @@ class PrefMetricsServiceTest : public testing::Test {
 
     // Check that PrefMetricsService behaves with a '.' in the profile name.
     profile_ = profile_manager_->CreateTestingProfile("test@example.com");
+
+    profile_name_ = profile_->GetPath().AsUTF8Unsafe();
 
     prefs_ = profile_->GetTestingPrefService();
 
@@ -68,18 +76,28 @@ class PrefMetricsServiceTest : public testing::Test {
     UpdateHistogramSamples();
   }
 
-  scoped_ptr<PrefMetricsService> CreatePrefMetricsService() {
+  scoped_ptr<PrefMetricsService> CreatePrefMetricsService(
+      const std::string& device_id) {
     return scoped_ptr<PrefMetricsService>(
         new PrefMetricsService(profile_,
                                &local_state_,
-                               "test_device_id",
+                               device_id,
                                kTrackedPrefs,
                                kTrackedPrefCount));
   }
 
   std::string GetHashedPrefValue(PrefMetricsService* service,
-                                 const char* path, base::Value* value) {
-    return service->GetHashedPrefValue(path, value);
+                                 const char* path,
+                                 const base::Value* value) {
+    return service->GetHashedPrefValue(
+        path, value, PrefMetricsService::HASHED_PREF_STYLE_NEW);
+  }
+
+  std::string GetOldStyleHashedPrefValue(PrefMetricsService* service,
+                                         const char* path,
+                                         const base::Value* value) {
+    return service->GetHashedPrefValue(
+        path, value, PrefMetricsService::HASHED_PREF_STYLE_DEPRECATED);
   }
 
   void GetSamples(const char* histogram_name, int* bucket1, int* bucket2) {
@@ -117,6 +135,13 @@ class PrefMetricsServiceTest : public testing::Test {
     pref1_initialized_total = inited1;
     pref2_initialized_total = inited2;
 
+    int migrated1, migrated2;
+    GetSamples("Settings.TrackedPreferenceMigrated", &migrated1, &migrated2);
+    pref1_migrated_ = migrated1 - pref1_migrated_total;
+    pref2_migrated_ = migrated2 - pref2_migrated_total;
+    pref1_migrated_total = migrated1;
+    pref2_migrated_total = migrated2;
+
     int unchanged1, unchanged2;
     GetSamples("Settings.TrackedPreferenceUnchanged", &unchanged1, &unchanged2);
     pref1_unchanged_ = unchanged1 - pref1_unchanged_total;
@@ -126,6 +151,7 @@ class PrefMetricsServiceTest : public testing::Test {
   }
 
   TestingProfile* profile_;
+  std::string profile_name_;
   scoped_ptr<TestingProfileManager> profile_manager_;
   TestingPrefServiceSyncable* prefs_;
   TestingPrefServiceSimple local_state_;
@@ -139,6 +165,8 @@ class PrefMetricsServiceTest : public testing::Test {
   static int pref2_cleared_total;
   static int pref1_initialized_total;
   static int pref2_initialized_total;
+  static int pref1_migrated_total;
+  static int pref2_migrated_total;
   static int pref1_unchanged_total;
   static int pref2_unchanged_total;
 
@@ -149,6 +177,8 @@ class PrefMetricsServiceTest : public testing::Test {
   int pref2_cleared_;
   int pref1_initialized_;
   int pref2_initialized_;
+  int pref1_migrated_;
+  int pref2_migrated_;
   int pref1_unchanged_;
   int pref2_unchanged_;
 };
@@ -159,6 +189,8 @@ int PrefMetricsServiceTest::pref1_cleared_total;
 int PrefMetricsServiceTest::pref2_cleared_total;
 int PrefMetricsServiceTest::pref1_initialized_total;
 int PrefMetricsServiceTest::pref2_initialized_total;
+int PrefMetricsServiceTest::pref1_migrated_total;
+int PrefMetricsServiceTest::pref2_migrated_total;
 int PrefMetricsServiceTest::pref1_unchanged_total;
 int PrefMetricsServiceTest::pref2_unchanged_total;
 
@@ -166,7 +198,8 @@ TEST_F(PrefMetricsServiceTest, StartupNoUserPref) {
   // Local state is empty and no user prefs are set. We should record that we
   // checked preferences once but since there are no user preference values, no
   // other histogram data should be collected.
-  scoped_ptr<PrefMetricsService> test = CreatePrefMetricsService();
+  scoped_ptr<PrefMetricsService> service =
+      CreatePrefMetricsService(kTestDeviceId);
   UpdateHistogramSamples();
   EXPECT_EQ(0, pref1_changed_);
   EXPECT_EQ(0, pref2_changed_);
@@ -174,6 +207,8 @@ TEST_F(PrefMetricsServiceTest, StartupNoUserPref) {
   EXPECT_EQ(0, pref2_cleared_);
   EXPECT_EQ(0, pref1_initialized_);
   EXPECT_EQ(0, pref2_initialized_);
+  EXPECT_EQ(0, pref1_migrated_);
+  EXPECT_EQ(0, pref2_migrated_);
   EXPECT_EQ(1, pref1_unchanged_);
   EXPECT_EQ(1, pref2_unchanged_);
 }
@@ -183,7 +218,8 @@ TEST_F(PrefMetricsServiceTest, StartupUserPref) {
   // that we checked preferences once and initialized a hash for the pref.
   prefs_->SetString(kTrackedPrefs[0], "foo");
   {
-    scoped_ptr<PrefMetricsService> test = CreatePrefMetricsService();
+    scoped_ptr<PrefMetricsService> service =
+        CreatePrefMetricsService(kTestDeviceId);
     UpdateHistogramSamples();
     EXPECT_EQ(0, pref1_changed_);
     EXPECT_EQ(0, pref2_changed_);
@@ -191,6 +227,8 @@ TEST_F(PrefMetricsServiceTest, StartupUserPref) {
     EXPECT_EQ(0, pref2_cleared_);
     EXPECT_EQ(1, pref1_initialized_);
     EXPECT_EQ(0, pref2_initialized_);
+    EXPECT_EQ(0, pref1_migrated_);
+    EXPECT_EQ(0, pref2_migrated_);
     EXPECT_EQ(0, pref1_unchanged_);
     EXPECT_EQ(1, pref2_unchanged_);
 
@@ -200,7 +238,8 @@ TEST_F(PrefMetricsServiceTest, StartupUserPref) {
   }
   // The next startup should record no changes.
   {
-    scoped_ptr<PrefMetricsService> test = CreatePrefMetricsService();
+    scoped_ptr<PrefMetricsService> service =
+        CreatePrefMetricsService(kTestDeviceId);
     UpdateHistogramSamples();
     EXPECT_EQ(0, pref1_changed_);
     EXPECT_EQ(0, pref2_changed_);
@@ -208,6 +247,8 @@ TEST_F(PrefMetricsServiceTest, StartupUserPref) {
     EXPECT_EQ(0, pref2_cleared_);
     EXPECT_EQ(0, pref1_initialized_);
     EXPECT_EQ(0, pref2_initialized_);
+    EXPECT_EQ(0, pref1_migrated_);
+    EXPECT_EQ(0, pref2_migrated_);
     EXPECT_EQ(1, pref1_unchanged_);
     EXPECT_EQ(1, pref2_unchanged_);
   }
@@ -218,7 +259,8 @@ TEST_F(PrefMetricsServiceTest, ChangedUserPref) {
   // that we checked preferences once and initialized a hash for the pref.
   prefs_->SetString(kTrackedPrefs[0], "foo");
   {
-    scoped_ptr<PrefMetricsService> test = CreatePrefMetricsService();
+    scoped_ptr<PrefMetricsService> service =
+        CreatePrefMetricsService(kTestDeviceId);
     UpdateHistogramSamples();
     EXPECT_EQ(0, pref1_changed_);
     EXPECT_EQ(0, pref2_changed_);
@@ -226,6 +268,8 @@ TEST_F(PrefMetricsServiceTest, ChangedUserPref) {
     EXPECT_EQ(0, pref2_cleared_);
     EXPECT_EQ(1, pref1_initialized_);
     EXPECT_EQ(0, pref2_initialized_);
+    EXPECT_EQ(0, pref1_migrated_);
+    EXPECT_EQ(0, pref2_migrated_);
     EXPECT_EQ(0, pref1_unchanged_);
     EXPECT_EQ(1, pref2_unchanged_);
     // Hashed prefs should now be stored in local state.
@@ -234,7 +278,8 @@ TEST_F(PrefMetricsServiceTest, ChangedUserPref) {
   // to update the hash. We should observe a pref value change.
   prefs_->SetString(kTrackedPrefs[0], "bar");
   {
-    scoped_ptr<PrefMetricsService> test = CreatePrefMetricsService();
+    scoped_ptr<PrefMetricsService> service =
+        CreatePrefMetricsService(kTestDeviceId);
     UpdateHistogramSamples();
     EXPECT_EQ(1, pref1_changed_);
     EXPECT_EQ(0, pref2_changed_);
@@ -242,6 +287,8 @@ TEST_F(PrefMetricsServiceTest, ChangedUserPref) {
     EXPECT_EQ(0, pref2_cleared_);
     EXPECT_EQ(0, pref1_initialized_);
     EXPECT_EQ(0, pref2_initialized_);
+    EXPECT_EQ(0, pref1_migrated_);
+    EXPECT_EQ(0, pref2_migrated_);
     EXPECT_EQ(0, pref1_unchanged_);
     EXPECT_EQ(1, pref2_unchanged_);
   }
@@ -249,7 +296,8 @@ TEST_F(PrefMetricsServiceTest, ChangedUserPref) {
   // to update the hash. We should observe a pref value removal.
   prefs_->ClearPref(kTrackedPrefs[0]);
   {
-    scoped_ptr<PrefMetricsService> test = CreatePrefMetricsService();
+    scoped_ptr<PrefMetricsService> service =
+        CreatePrefMetricsService(kTestDeviceId);
     UpdateHistogramSamples();
     EXPECT_EQ(0, pref1_changed_);
     EXPECT_EQ(0, pref2_changed_);
@@ -257,29 +305,153 @@ TEST_F(PrefMetricsServiceTest, ChangedUserPref) {
     EXPECT_EQ(0, pref2_cleared_);
     EXPECT_EQ(0, pref1_initialized_);
     EXPECT_EQ(0, pref2_initialized_);
+    EXPECT_EQ(0, pref1_migrated_);
+    EXPECT_EQ(0, pref2_migrated_);
     EXPECT_EQ(0, pref1_unchanged_);
     EXPECT_EQ(1, pref2_unchanged_);
   }
 }
 
-// Tests that serialization of dictionary values is stable. If the order of
-// the entries or any whitespace changes, it would cause a spike in pref change
-// UMA events as every hash would change.
-TEST_F(PrefMetricsServiceTest, PrefHashStability) {
-  scoped_ptr<PrefMetricsService> test = CreatePrefMetricsService();
+TEST_F(PrefMetricsServiceTest, MigratedUserPref) {
+  // Initialize both preferences and get the old style hash for the first pref
+  // from the PrefMetricsService before shutting it down.
+  prefs_->SetString(kTrackedPrefs[0], "foo");
+  prefs_->SetString(kTrackedPrefs[1], "bar");
+  std::string old_style_hash;
+  {
+    scoped_ptr<PrefMetricsService> service =
+        CreatePrefMetricsService(kTestDeviceId);
+    UpdateHistogramSamples();
+    EXPECT_EQ(0, pref1_changed_);
+    EXPECT_EQ(0, pref2_changed_);
+    EXPECT_EQ(0, pref1_cleared_);
+    EXPECT_EQ(0, pref2_cleared_);
+    EXPECT_EQ(1, pref1_initialized_);
+    EXPECT_EQ(1, pref2_initialized_);
+    EXPECT_EQ(0, pref1_migrated_);
+    EXPECT_EQ(0, pref2_migrated_);
+    EXPECT_EQ(0, pref1_unchanged_);
+    EXPECT_EQ(0, pref2_unchanged_);
 
+    old_style_hash =
+        GetOldStyleHashedPrefValue(service.get(), kTrackedPrefs[0],
+                                   prefs_->GetUserPrefValue(kTrackedPrefs[0]));
+  }
+
+  // Update the pref's hash to use the old style while the PrefMetricsService
+  // isn't running.
+  {
+    DictionaryPrefUpdate update(&local_state_, prefs::kProfilePreferenceHashes);
+    DictionaryValue* child_dictionary = NULL;
+    // Get the dictionary corresponding to the profile name,
+    // which may have a '.'
+    ASSERT_TRUE(update->GetDictionaryWithoutPathExpansion(profile_name_,
+                                                          &child_dictionary));
+    child_dictionary->SetString(kTrackedPrefs[0], old_style_hash);
+  }
+
+  // Relaunch the service and make sure the first preference got migrated.
+  {
+    scoped_ptr<PrefMetricsService> service =
+        CreatePrefMetricsService(kTestDeviceId);
+    UpdateHistogramSamples();
+    EXPECT_EQ(0, pref1_changed_);
+    EXPECT_EQ(0, pref2_changed_);
+    EXPECT_EQ(0, pref1_cleared_);
+    EXPECT_EQ(0, pref2_cleared_);
+    EXPECT_EQ(0, pref1_initialized_);
+    EXPECT_EQ(0, pref2_initialized_);
+    EXPECT_EQ(1, pref1_migrated_);
+    EXPECT_EQ(0, pref2_migrated_);
+    EXPECT_EQ(0, pref1_unchanged_);
+    EXPECT_EQ(1, pref2_unchanged_);
+  }
+  // Make sure the migration happens only once.
+  {
+    scoped_ptr<PrefMetricsService> service =
+        CreatePrefMetricsService(kTestDeviceId);
+    UpdateHistogramSamples();
+    EXPECT_EQ(0, pref1_changed_);
+    EXPECT_EQ(0, pref2_changed_);
+    EXPECT_EQ(0, pref1_cleared_);
+    EXPECT_EQ(0, pref2_cleared_);
+    EXPECT_EQ(0, pref1_initialized_);
+    EXPECT_EQ(0, pref2_initialized_);
+    EXPECT_EQ(0, pref1_migrated_);
+    EXPECT_EQ(0, pref2_migrated_);
+    EXPECT_EQ(1, pref1_unchanged_);
+    EXPECT_EQ(1, pref2_unchanged_);
+  }
+}
+
+// Make sure that the new algorithm is still able to generate old style hashes
+// as they were before this change.
+TEST_F(PrefMetricsServiceTest, OldStyleHashAsExpected) {
+  scoped_ptr<PrefMetricsService> service =
+      CreatePrefMetricsService(kTestDeviceId);
+
+  // Verify the hashes match the values previously used in the
+  // "PrefHashStability" test below.
   DictionaryValue dict;
   dict.Set("a", new StringValue("foo"));
   dict.Set("d", new StringValue("bad"));
   dict.Set("b", new StringValue("bar"));
   dict.Set("c", new StringValue("baz"));
   EXPECT_EQ("C503FB7C65EEFD5C07185F616A0AA67923C069909933F362022B1F187E73E9A2",
-            GetHashedPrefValue(test.get(), "pref.path1", &dict));
-
+            GetOldStyleHashedPrefValue(service.get(), "pref.path1", &dict));
   ListValue list;
   list.Set(0, new base::FundamentalValue(true));
   list.Set(1, new base::FundamentalValue(100));
   list.Set(2, new base::FundamentalValue(1.0));
   EXPECT_EQ("3163EC3C96263143AF83EA5C9860DFB960EE2263413C7D7D8A9973FCC00E7692",
-            GetHashedPrefValue(test.get(), "pref.path2", &list));
+            GetOldStyleHashedPrefValue(service.get(), "pref.path2", &list));
+}
+
+// Tests that serialization of dictionary values is stable. If the order of
+// the entries or any whitespace changes, it would cause a spike in pref change
+// UMA events as every hash would change.
+TEST_F(PrefMetricsServiceTest, PrefHashStability) {
+  scoped_ptr<PrefMetricsService> service =
+      CreatePrefMetricsService(kTestDeviceId);
+
+  DictionaryValue dict;
+  dict.Set("a", new StringValue("foo"));
+  dict.Set("d", new StringValue("bad"));
+  dict.Set("b", new StringValue("bar"));
+  dict.Set("c", new StringValue("baz"));
+  EXPECT_EQ("A50FE7EB31BFBC32B8A27E71730AF15421178A9B5815644ACE174B18966735B9",
+            GetHashedPrefValue(service.get(), "pref.path1", &dict));
+
+  ListValue list;
+  list.Set(0, new base::FundamentalValue(true));
+  list.Set(1, new base::FundamentalValue(100));
+  list.Set(2, new base::FundamentalValue(1.0));
+  EXPECT_EQ("5CE37D7EBCBC9BE510F0F5E7C326CA92C1673713C3717839610AEA1A217D8BB8",
+            GetHashedPrefValue(service.get(), "pref.path2", &list));
+}
+
+// Tests that different hashes are generated for different device IDs.
+TEST_F(PrefMetricsServiceTest, HashIsBasedOnDeviceId) {
+  scoped_ptr<PrefMetricsService> service =
+      CreatePrefMetricsService(kTestDeviceId);
+  scoped_ptr<PrefMetricsService> other_service =
+      CreatePrefMetricsService(kOtherTestDeviceId);
+
+  StringValue test_value("test value");
+  EXPECT_EQ("49CA276F9F2AEDCF6BFA1CD9FC4747476E1315BBBBC27DD33548B23CD36E2EEE",
+            GetHashedPrefValue(service.get(), "pref.path", &test_value));
+  EXPECT_EQ("13EEDA99C38777ADA8B87C23A3C5CD1FD31ADE1491823E255D3520E5B56C4BC7",
+            GetHashedPrefValue(other_service.get(), "pref.path", &test_value));
+}
+
+// Tests that different hashes are generated for different paths.
+TEST_F(PrefMetricsServiceTest, HashIsBasedOnPath) {
+  scoped_ptr<PrefMetricsService> service =
+      CreatePrefMetricsService(kTestDeviceId);
+
+  StringValue test_value("test value");
+  EXPECT_EQ("2A5DCB1294F212DB26DF9C08C46F11C272D80136AAD3B4AAE5B7D008DF5F3F22",
+            GetHashedPrefValue(service.get(), "pref.path1", &test_value));
+  EXPECT_EQ("455EC2A7E192E9F1C06294BBB3B66BBD81B8D1A8550D518EA5D5C8F70FCF6EF3",
+            GetHashedPrefValue(service.get(), "pref.path2", &test_value));
 }

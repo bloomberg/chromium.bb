@@ -305,15 +305,28 @@ void PrefMetricsService::CheckTrackedPreferences() {
     const base::Value* value = prefs_->GetUserPrefValue(tracked_pref_paths_[i]);
     if (value) {
       std::string value_hash =
-          GetHashedPrefValue(tracked_pref_paths_[i], value);
+          GetHashedPrefValue(tracked_pref_paths_[i], value,
+                             HASHED_PREF_STYLE_NEW);
       std::string last_hash;
       if (hashed_prefs &&
           hashed_prefs->GetString(tracked_pref_paths_[i], &last_hash)) {
         if (value_hash != last_hash) {
           changed = true;
-          // Record that the preference changed from its last value.
-          UMA_HISTOGRAM_ENUMERATION("Settings.TrackedPreferenceChanged",
-              i, tracked_pref_path_count_);
+
+          std::string old_style_hash =
+              GetHashedPrefValue(tracked_pref_paths_[i], value,
+                                 HASHED_PREF_STYLE_DEPRECATED);
+          if (old_style_hash == last_hash) {
+            // Record that the last hash used the old style and was migrated to
+            // the new style.
+            UMA_HISTOGRAM_ENUMERATION("Settings.TrackedPreferenceMigrated",
+                i, tracked_pref_path_count_);
+          } else {
+            // Record that the preference changed from its last value.
+            UMA_HISTOGRAM_ENUMERATION("Settings.TrackedPreferenceChanged",
+                i, tracked_pref_path_count_);
+          }
+
           UpdateTrackedPreference(tracked_pref_paths_[i]);
         }
       } else {
@@ -371,7 +384,9 @@ void PrefMetricsService::UpdateTrackedPreference(const char* path) {
       child_dictionary = new DictionaryValue;
       update->SetWithoutPathExpansion(profile_name_, child_dictionary);
     }
-    child_dictionary->SetString(path, GetHashedPrefValue(path, value));
+    child_dictionary->SetString(path,
+                                GetHashedPrefValue(path, value,
+                                                   HASHED_PREF_STYLE_NEW));
   }
 }
 
@@ -388,7 +403,8 @@ bool PrefMetricsService::RemoveTrackedPreference(const char* path) {
 
 std::string PrefMetricsService::GetHashedPrefValue(
     const char* path,
-    const base::Value* value) {
+    const base::Value* value,
+    HashedPrefStyle desired_style) {
   DCHECK(value);
 
   // Dictionary values may contain empty lists and sub-dictionaries. Make a
@@ -400,10 +416,17 @@ std::string PrefMetricsService::GetHashedPrefValue(
     value = canonical_dict_value.get();
   }
 
-  std::string string_to_hash(device_id_);
-  string_to_hash.append(path);
-  JSONStringValueSerializer serializer(&string_to_hash);
+  std::string value_as_string;
+  JSONStringValueSerializer serializer(&value_as_string);
   serializer.Serialize(*value);
+
+  std::string string_to_hash;
+  // TODO(gab): Remove this as the old style is phased out.
+  if (desired_style == HASHED_PREF_STYLE_NEW) {
+    string_to_hash.append(device_id_);
+    string_to_hash.append(path);
+  }
+  string_to_hash.append(value_as_string);
 
   crypto::HMAC hmac(crypto::HMAC::SHA256);
   unsigned char digest[kSHA256DigestSize];

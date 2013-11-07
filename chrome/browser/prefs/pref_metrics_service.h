@@ -22,6 +22,11 @@ class PrefRegistrySimple;
 // PrefMetricsService is responsible for recording prefs-related UMA stats.
 class PrefMetricsService : public BrowserContextKeyedService {
  public:
+  enum HashedPrefStyle {
+    HASHED_PREF_STYLE_NEW,
+    HASHED_PREF_STYLE_DEPRECATED,
+  };
+
   explicit PrefMetricsService(Profile* profile);
   virtual ~PrefMetricsService();
 
@@ -109,7 +114,10 @@ class PrefMetricsService : public BrowserContextKeyedService {
   bool RemoveTrackedPreference(const char* path);
 
   // Computes an MD5 hash for the given preference value.
-  std::string GetHashedPrefValue(const char* path, const base::Value* value);
+  std::string GetHashedPrefValue(
+      const char* path,
+      const base::Value* value,
+      HashedPrefStyle desired_style);
 
   void InitializePrefObservers();
 
