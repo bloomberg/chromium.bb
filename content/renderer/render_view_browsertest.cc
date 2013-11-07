@@ -1958,6 +1958,37 @@ TEST_F(RenderViewImplTest, GetSSLStatusOfFrame) {
   EXPECT_TRUE(net::IsCertStatusError(ssl_status.cert_status));
 }
 
+TEST_F(RenderViewImplTest, MessageOrderInDidChangeSelection) {
+  view()->OnSetInputMethodActive(true);
+  view()->set_send_content_state_immediately(true);
+  LoadHTML("<textarea id=\"test\"></textarea>");
+
+  view()->handling_input_event_ = true;
+  ExecuteJavaScript("document.getElementById('test').focus();");
+
+  bool is_input_type_called = false;
+  bool is_selection_called = false;
+  size_t last_input_type = 0;
+  size_t last_selection = 0;
+
+  for (size_t i = 0; i < render_thread_->sink().message_count(); ++i) {
+    const uint32 type = render_thread_->sink().GetMessageAt(i)->type();
+    if (type == ViewHostMsg_TextInputTypeChanged::ID) {
+      is_input_type_called = true;
+      last_input_type = i;
+    } else if (type == ViewHostMsg_SelectionChanged::ID) {
+      is_selection_called = true;
+      last_selection = i;
+    }
+  }
+
+  EXPECT_TRUE(is_input_type_called);
+  EXPECT_TRUE(is_selection_called);
+
+  // InputTypeChange shold be called earlier than SelectionChanged.
+  EXPECT_LT(last_input_type, last_selection);
+}
+
 class SuppressErrorPageTest : public RenderViewTest {
  public:
   virtual void SetUp() OVERRIDE {

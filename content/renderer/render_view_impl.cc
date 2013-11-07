@@ -2603,8 +2603,13 @@ void RenderViewImpl::didChangeSelection(bool is_empty_selection) {
   if (is_empty_selection)
     selection_text_.clear();
 
-  SyncSelectionIfRequired();
+  // UpdateTextInputType should be called before SyncSelectionIfRequired.
+  // UpdateTextInputType may send TextInputTypeChanged to notify the focus
+  // was changed, and SyncSelectionIfRequired may send SelectionChanged
+  // to notify the selection was changed.  Focus change should be notified
+  // before selection change.
   UpdateTextInputType();
+  SyncSelectionIfRequired();
 #if defined(OS_ANDROID)
   UpdateTextInputState(false, true);
 #endif
