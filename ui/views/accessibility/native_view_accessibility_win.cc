@@ -253,7 +253,7 @@ STDMETHODIMP NativeViewAccessibilityWin::accHitTest(
   if (!child)
     return E_INVALIDARG;
 
-  if (!view_)
+  if (!view_ || !view_->GetWidget())
     return E_FAIL;
 
   // If this is a root view, our widget might have child widgets.
@@ -461,7 +461,7 @@ STDMETHODIMP NativeViewAccessibilityWin::get_accChild(VARIANT var_child,
   if (var_child.vt != VT_I4 || !disp_child)
     return E_INVALIDARG;
 
-  if (!view_)
+  if (!view_ || !view_->GetWidget())
     return E_FAIL;
 
   LONG child_id = V_I4(&var_child);
@@ -530,10 +530,10 @@ STDMETHODIMP NativeViewAccessibilityWin::get_accChild(VARIANT var_child,
 }
 
 STDMETHODIMP NativeViewAccessibilityWin::get_accChildCount(LONG* child_count) {
-  if (!child_count || !view_)
+  if (!child_count)
     return E_INVALIDARG;
 
-  if (!view_)
+  if (!view_ || !view_->GetWidget())
     return E_FAIL;
 
   *child_count = view_->child_count();
@@ -1392,6 +1392,9 @@ LONG NativeViewAccessibilityWin::FindBoundary(
 void NativeViewAccessibilityWin::PopulateChildWidgetVector(
     std::vector<Widget*>* result_child_widgets) {
   const Widget* widget = view()->GetWidget();
+  if (!widget)
+    return;
+
   std::set<Widget*> child_widgets;
   Widget::GetAllChildWidgets(widget->GetNativeView(), &child_widgets);
   Widget::GetAllOwnedWidgets(widget->GetNativeView(), &child_widgets);
