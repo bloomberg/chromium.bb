@@ -405,9 +405,6 @@ void RuleSet::addChildRules(const Vector<RefPtr<StyleRuleBase> >& rules, const M
             resolver->ensureScopedStyleResolver(scope->shadowHost())->addHostRule(static_cast<StyleRuleHost*>(rule), hasDocumentSecurityOrigin, scope);
             resolver->setBuildScopedStyleTreeInDocumentOrder(enabled);
         } else if (rule->isViewportRule()) {
-            // @viewport should not be scoped.
-            if (!isDocumentScope(scope))
-                continue;
             addViewportRule(static_cast<StyleRuleViewport*>(rule));
         }
         else if (rule->isSupportsRule() && static_cast<StyleRuleSupports*>(rule)->conditionIsSupported())

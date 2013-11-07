@@ -427,9 +427,9 @@ void ScopedStyleResolver::matchPageRules(PageRuleCollector& collector)
 void ScopedStyleResolver::collectViewportRulesTo(StyleResolver* resolver) const
 {
     // Only consider the global author RuleSet for @viewport rules.
-    ASSERT(m_scopingNode.isDocumentNode());
-    if (m_authorStyle)
-        resolver->viewportStyleResolver()->collectViewportRules(m_authorStyle.get(), ViewportStyleResolver::AuthorOrigin);
+    if (!m_scopingNode.isDocumentNode() || !m_authorStyle)
+        return;
+    resolver->viewportStyleResolver()->collectViewportRules(m_authorStyle.get(), ViewportStyleResolver::AuthorOrigin);
 }
 
 } // namespace WebCore
