@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/cocoa/extensions/media_galleries_dialog_cocoa.h"
 
+#include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/browser/ui/chrome_style.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_alert.h"
@@ -14,9 +15,12 @@
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #import "ui/base/cocoa/flipped_view.h"
+#import "ui/base/cocoa/menu_controller.h"
+#import "ui/base/models/menu_model.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
+// Controller for UI events on items in the media galleries dialog.
 @interface MediaGalleriesCocoaController : NSObject {
  @private
   MediaGalleriesDialogCocoa* dialog_;
@@ -46,6 +50,41 @@
 - (void)onCheckboxToggled:(id)sender {
   DCHECK(dialog_);
   dialog_->OnCheckboxToggled(sender);
+}
+
+@end
+
+@interface MediaGalleriesCheckbox : NSButton {
+ @private
+  MediaGalleriesDialogCocoa* dialog_;
+  MediaGalleryPrefId prefId_;
+  base::scoped_nsobject<MenuController> menu_controller_;
+}
+
+- (id)initWithFrame:(NSRect)frameRect
+             dialog:(MediaGalleriesDialogCocoa*)dialog
+             prefId:(MediaGalleryPrefId)prefId;
+- (NSMenu*)menuForEvent:(NSEvent*)theEvent;
+
+@end
+
+@implementation MediaGalleriesCheckbox
+
+- (id)initWithFrame:(NSRect)frameRect
+             dialog:(MediaGalleriesDialogCocoa*)dialog
+             prefId:(MediaGalleryPrefId)prefId {
+  if ((self = [super initWithFrame:frameRect])) {
+    dialog_ = dialog;
+    prefId_ = prefId;
+  }
+  return self;
+}
+
+- (NSMenu*)menuForEvent:(NSEvent*)theEvent {
+  menu_controller_.reset(
+    [[MenuController alloc] initWithModel:dialog_->GetContextMenuModel(prefId_)
+                   useWithPopUpButtonCell:NO]);
+  return [menu_controller_ menu];
 }
 
 @end
@@ -288,8 +327,10 @@ void MediaGalleriesDialogCocoa::UpdateGalleryCheckbox(
     const MediaGalleryPrefInfo& gallery,
     bool permitted,
     CGFloat y_pos) {
-  base::scoped_nsobject<NSButton> checkbox(
-      [[NSButton alloc] initWithFrame:NSZeroRect]);
+  base::scoped_nsobject<MediaGalleriesCheckbox> checkbox(
+      [[MediaGalleriesCheckbox alloc] initWithFrame:NSZeroRect
+                                             dialog:this
+                                             prefId:gallery.pref_id]);
   NSString* unique_id = GetUniqueIDForGallery(gallery);
   [[checkbox cell] setRepresentedObject:unique_id];
   [[checkbox cell] setLineBreakMode:NSLineBreakByTruncatingMiddle];
@@ -345,6 +386,11 @@ void MediaGalleriesDialogCocoa::UpdateGalleries() {
 void MediaGalleriesDialogCocoa::OnConstrainedWindowClosed(
     ConstrainedWindowMac* window) {
   controller_->DialogFinished(accepted_);
+}
+
+ui::MenuModel* MediaGalleriesDialogCocoa::GetContextMenuModel(
+    MediaGalleryPrefId prefid) {
+  return controller_->GetContextMenuModel(prefid);
 }
 
 // static

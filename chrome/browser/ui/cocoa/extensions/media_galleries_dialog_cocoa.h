@@ -17,6 +17,10 @@
 class MediaGalleriesDialogBrowserTest;
 class MediaGalleriesDialogTest;
 
+namespace ui {
+class MenuModel;
+}
+
 // This class displays an alert that can be used to grant permission for
 // extensions to access a gallery (media folders).
 class MediaGalleriesDialogCocoa : public ConstrainedWindowMacDelegate,
@@ -42,6 +46,8 @@ class MediaGalleriesDialogCocoa : public ConstrainedWindowMacDelegate,
   // ConstrainedWindowMacDelegate implementation.
   virtual void OnConstrainedWindowClosed(
       ConstrainedWindowMac* window) OVERRIDE;
+
+  ui::MenuModel* GetContextMenuModel(MediaGalleryPrefId prefid);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaGalleriesDialogBrowserTest, Close);
