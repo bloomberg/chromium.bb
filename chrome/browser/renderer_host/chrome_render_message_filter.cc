@@ -87,6 +87,7 @@ ChromeRenderMessageFilter::ChromeRenderMessageFilter(
     : render_process_id_(render_process_id),
       profile_(profile),
       off_the_record_(profile_->IsOffTheRecord()),
+      predictor_(profile_->GetNetworkPredictor()),
       request_context_(request_context),
       extension_info_map_(
           extensions::ExtensionSystem::Get(profile)->info_map()),
@@ -202,13 +203,13 @@ net::HostResolver* ChromeRenderMessageFilter::GetHostResolver() {
 
 void ChromeRenderMessageFilter::OnDnsPrefetch(
     const std::vector<std::string>& hostnames) {
-  if (profile_->GetNetworkPredictor())
-    profile_->GetNetworkPredictor()->DnsPrefetchList(hostnames);
+  if (predictor_)
+    predictor_->DnsPrefetchList(hostnames);
 }
 
 void ChromeRenderMessageFilter::OnPreconnect(const GURL& url) {
-  if (profile_->GetNetworkPredictor())
-    profile_->GetNetworkPredictor()->PreconnectUrl(
+  if (predictor_)
+    predictor_->PreconnectUrl(
         url, GURL(), chrome_browser_net::UrlInfo::MOUSE_OVER_MOTIVATED, 1);
 }
 

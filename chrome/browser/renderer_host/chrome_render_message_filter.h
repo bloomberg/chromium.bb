@@ -195,6 +195,9 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
   Profile* profile_;
   // Copied from the profile so that it can be read on the IO thread.
   bool off_the_record_;
+  // The Predictor for the associated Profile. It is stored so that it can be
+  // used on the IO thread.
+  chrome_browser_net::Predictor* predictor_;
   scoped_refptr<net::URLRequestContextGetter> request_context_;
   scoped_refptr<ExtensionInfoMap> extension_info_map_;
   // Used to look up permissions at database creation time.
