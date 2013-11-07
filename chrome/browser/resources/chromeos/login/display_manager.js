@@ -229,10 +229,8 @@ cr.define('cr.ui.login', function() {
         if (this.isOobeUI())
           this.showDeviceRequisitionPrompt_();
       } else if (name == ACCELERATOR_DEVICE_REQUISITION_REMORA) {
-        if (this.isOobeUI()) {
-          this.deviceRequisition_ = 'remora';
-          this.showDeviceRequisitionPrompt_();
-        }
+        if (this.isOobeUI())
+          this.showDeviceRequisitionRemoraPrompt_();
       } else if (name == ACCELERATOR_APP_LAUNCH_BAILOUT) {
         var currentStepId = this.screens_[this.currentStep_];
         if (currentStepId == SCREEN_APP_LAUNCH_SPLASH)
@@ -587,6 +585,24 @@ cr.define('cr.ui.login', function() {
      */
     updateDeviceRequisition: function(requisition) {
       this.deviceRequisition_ = requisition;
+    },
+
+    /**
+     * Shows the special remora device requisition prompt.
+     * @private
+     */
+    showDeviceRequisitionRemoraPrompt_: function() {
+      if (!this.deviceRequisitionRemoraDialog_) {
+        this.deviceRequisitionRemoraDialog_ =
+            new cr.ui.dialogs.AlertDialog(document.body);
+        this.deviceRequisitionRemoraDialog_.setOkLabel(
+            loadTimeData.getString('deviceRequisitionPromptOk'));
+      }
+      this.deviceRequisitionRemoraDialog_.show(
+          loadTimeData.getString('deviceRequisitionRemoraPromptText'),
+          function() {
+            chrome.send('setDeviceRequisition', ['remora']);
+          });
     },
 
     /**
