@@ -178,8 +178,7 @@ def GetBotStepMap():
           extra_gyp='include_tests=1 enable_tracing=1')),
       B('webrtc-chromium-tests', H(std_test_steps),
         T(['webrtc_chromium'], [flakiness_server])),
-      B('webrtc-native-tests',
-        H(['download_webrtc_resources'] + std_test_steps),
+      B('webrtc-native-tests', H(std_test_steps),
         T(['webrtc_native'], [flakiness_server])),
 
       # Generic builder config (for substring match).
