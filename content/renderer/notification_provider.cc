@@ -32,7 +32,6 @@ NotificationProvider::NotificationProvider(RenderViewImpl* render_view)
 }
 
 NotificationProvider::~NotificationProvider() {
-  manager_.DetachAll();
 }
 
 bool NotificationProvider::show(const WebNotification& notification) {
