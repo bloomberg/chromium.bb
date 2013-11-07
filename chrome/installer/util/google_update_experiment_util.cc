@@ -24,7 +24,7 @@ const char* const kMonths[] =
 
 }
 
-string16 BuildExperimentDateString() {
+string16 BuildExperimentDateString(const base::Time& current_time) {
   // The Google Update experiment_labels timestamp format is:
   // "DAY, DD0 MON YYYY HH0:MI0:SE0 TZ"
   //  DAY = 3 character day of week,
@@ -36,7 +36,7 @@ string16 BuildExperimentDateString() {
   //  SE0 = 2 digit second,
   //  TZ = 3 character timezone
   base::Time::Exploded then = {};
-  base::Time::Now().UTCExplode(&then);
+  current_time.UTCExplode(&then);
   then.year += 1;
   DCHECK(then.HasValidValues());
 

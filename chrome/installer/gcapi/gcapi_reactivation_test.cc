@@ -5,16 +5,13 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/guid.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
-#include "base/strings/utf_string_conversions.h"
-#include "base/test/test_reg_util_win.h"
 #include "base/time/time.h"
 #include "base/win/registry.h"
 #include "chrome/installer/gcapi/gcapi.h"
 #include "chrome/installer/gcapi/gcapi_omaha_experiment.h"
 #include "chrome/installer/gcapi/gcapi_reactivation.h"
+#include "chrome/installer/gcapi/gcapi_test_registry_overrider.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -24,15 +21,7 @@ using base::win::RegKey;
 
 class GCAPIReactivationTest : public ::testing::Test {
  protected:
-  void SetUp() {
-    // Override keys - this is undone during destruction.
-    std::wstring hkcu_override = base::StringPrintf(
-        L"hkcu_override\\%ls", ASCIIToWide(base::GenerateGUID()));
-    override_manager_.OverrideRegistry(HKEY_CURRENT_USER, hkcu_override);
-    std::wstring hklm_override = base::StringPrintf(
-        L"hklm_override\\%ls", ASCIIToWide(base::GenerateGUID()));
-    override_manager_.OverrideRegistry(HKEY_LOCAL_MACHINE, hklm_override);
-  }
+  GCAPIReactivationTest() {}
 
   bool SetChromeInstallMarker(HKEY hive) {
     // Create the client state keys in the right places.
@@ -100,8 +89,7 @@ class GCAPIReactivationTest : public ::testing::Test {
     return L"ERROR";
   }
 
- private:
-  registry_util::RegistryOverrideManager override_manager_;
+  const GCAPITestRegistryOverrider gcapi_test_registry_overrider_;
 };
 
 TEST_F(GCAPIReactivationTest, CheckSetReactivationBrandCode) {
@@ -109,7 +97,6 @@ TEST_F(GCAPIReactivationTest, CheckSetReactivationBrandCode) {
   EXPECT_EQ(L"GAGA", GetReactivationString(HKEY_CURRENT_USER));
 
   EXPECT_TRUE(HasBeenReactivated());
-
 }
 
 TEST_F(GCAPIReactivationTest, CanOfferReactivation_Basic) {

@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 
+#include "base/at_exit.h"
 #include "base/command_line.h"
 #include "chrome/installer/gcapi/gcapi.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -60,6 +61,7 @@ void call_dynamically() {
 const char kManualLaunchTests[] = "launch-chrome";
 
 int main(int argc, char* argv[]) {
+  base::AtExitManager exit_manager;
   CommandLine::Init(argc, argv);
 
   testing::InitGoogleTest(&argc, argv);

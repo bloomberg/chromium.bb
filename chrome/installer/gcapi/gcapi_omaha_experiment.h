@@ -5,6 +5,20 @@
 #ifndef CHROME_INSTALLER_GCAPI_GCAPI_OMAHA_EXPERIMENT_H_
 #define CHROME_INSTALLER_GCAPI_GCAPI_OMAHA_EXPERIMENT_H_
 
+#include "base/strings/string16.h"
+
+namespace gcapi_internals {
+
+extern const wchar_t kReactivationLabel[];
+extern const wchar_t kRelaunchLabel[];
+
+// Returns the full experiment label to be used by |label| (which is one of the
+// labels declared above) for |brand_code|.
+string16 GetGCAPIExperimentLabel(const wchar_t* brand_code,
+                                 const string16& label);
+
+}  // namespace gcapi_internals
+
 // Writes a reactivation brand code experiment label in the Chrome product and
 // binaries registry keys for |brand_code|. This experiment label will have a
 // expiration date of now plus one year. If |shell_mode| is set to

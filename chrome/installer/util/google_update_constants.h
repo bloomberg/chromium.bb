@@ -16,6 +16,9 @@ extern const wchar_t kChromeUpgradeCode[];
 // itself and Chrome.
 extern const wchar_t kExperimentLabels[];
 
+// The separator used to separate items in kExperimentLabels.
+extern const wchar_t kExperimentLabelSep[];
+
 // The GUID Google Update uses to keep track of Google Update self-upgrades.
 extern const wchar_t kGoogleUpdateUpgradeCode[];
 

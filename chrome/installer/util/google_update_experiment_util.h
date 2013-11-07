@@ -7,11 +7,15 @@
 
 #include "base/strings/string16.h"
 
+namespace base {
+class Time;
+}
+
 namespace installer {
 
 // Constructs a date string in the format understood by Google Update for the
-// current time plus one year.
-string16 BuildExperimentDateString();
+// |current_time| plus one year.
+string16 BuildExperimentDateString(const base::Time& current_time);
 
 }  // namespace installer
 

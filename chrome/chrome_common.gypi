@@ -336,6 +336,8 @@
         'common/metrics/metrics_log_manager.h',
         'common/metrics/metrics_service_base.cc',
         'common/metrics/metrics_service_base.h',
+        'common/metrics/variations/experiment_labels_win.cc',
+        'common/metrics/variations/experiment_labels_win.h',
         'common/metrics/variations/uniformity_field_trials.cc',
         'common/metrics/variations/uniformity_field_trials.h',
         'common/metrics/variations/variations_util.cc',

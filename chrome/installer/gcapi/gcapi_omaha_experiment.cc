@@ -4,55 +4,102 @@
 
 #include "chrome/installer/gcapi/gcapi_omaha_experiment.h"
 
-#include "base/strings/string16.h"
+#include "base/basictypes.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "chrome/installer/gcapi/gcapi.h"
+#include "chrome/installer/util/google_update_constants.h"
 #include "chrome/installer/util/google_update_experiment_util.h"
 #include "chrome/installer/util/google_update_settings.h"
-
-using base::Time;
-using base::TimeDelta;
 
 namespace {
 
 // Returns the number of weeks since 2/3/2003.
-int GetCurrentRlzWeek() {
-  Time::Exploded february_third_2003_exploded = {2003, 2, 1, 3, 0, 0, 0, 0};
-  Time f = Time::FromUTCExploded(february_third_2003_exploded);
-  TimeDelta delta = Time::Now() - f;
+int GetCurrentRlzWeek(const base::Time& current_time) {
+  base::Time::Exploded february_third_2003_exploded =
+      {2003, 2, 1, 3, 0, 0, 0, 0};
+  base::Time f = base::Time::FromUTCExploded(february_third_2003_exploded);
+  base::TimeDelta delta = current_time - f;
   return delta.InDays() / 7;
 }
 
-bool SetLabel(const wchar_t* brand_code, const wchar_t* label, int shell_mode) {
+bool SetExperimentLabel(const wchar_t* brand_code,
+                        const string16& label,
+                        int shell_mode) {
   if (!brand_code) {
     return false;
   }
 
-  int week_number = GetCurrentRlzWeek();
-  if (week_number < 0 || week_number > 999)
-    week_number = 999;
+  const bool system_level = shell_mode == GCAPI_INVOKED_UAC_ELEVATION;
 
-  string16 experiment_labels;
-  base::SStringPrintf(&experiment_labels,
-                      L"%ls=%ls_%d|%ls",
-                      label,
-                      brand_code,
-                      week_number,
-                      installer::BuildExperimentDateString().c_str());
+  string16 original_labels;
+  if (!GoogleUpdateSettings::ReadExperimentLabels(system_level,
+                                                  &original_labels)) {
+    return false;
+  }
 
-  return GoogleUpdateSettings::SetExperimentLabels(
-      shell_mode == GCAPI_INVOKED_UAC_ELEVATION,
-      experiment_labels);
+  // Split the original labels by the label separator.
+  std::vector<string16> entries;
+  base::SplitStringUsingSubstr(
+      original_labels, google_update::kExperimentLabelSep, &entries);
+
+  // Keep all labels, but the one we want to add/replace.
+  string16 new_labels;
+  for (std::vector<string16>::const_iterator it = entries.begin();
+       it != entries.end(); ++it) {
+    if (!it->empty() && !StartsWith(*it, label + L"=", true)) {
+      new_labels += *it;
+      new_labels += google_update::kExperimentLabelSep;
+    }
+  }
+
+  new_labels.append(
+      gcapi_internals::GetGCAPIExperimentLabel(brand_code, label));
+
+  return GoogleUpdateSettings::SetExperimentLabels(system_level,
+                                                   new_labels);
 }
 
 }  // namespace
 
+namespace gcapi_internals {
+
+const wchar_t kReactivationLabel[] = L"reacbrand";
+const wchar_t kRelaunchLabel[] = L"relaunchbrand";
+
+string16 GetGCAPIExperimentLabel(const wchar_t* brand_code,
+                                 const string16& label) {
+  // Keeps a fixed time state for this GCAPI instance; this makes tests reliable
+  // when crossing time boundaries on the system clock and doesn't otherwise
+  // affect results of this short lived binary.
+  static time_t instance_time_value = 0;
+  if (instance_time_value == 0)
+    instance_time_value = base::Time::Now().ToTimeT();
+
+  base::Time instance_time = base::Time::FromTimeT(instance_time_value);
+
+  string16 gcapi_experiment_label;
+  base::SStringPrintf(&gcapi_experiment_label,
+                      L"%ls=%ls_%d|%ls",
+                      label.c_str(),
+                      brand_code,
+                      GetCurrentRlzWeek(instance_time),
+                      installer::BuildExperimentDateString(
+                          instance_time).c_str());
+  return gcapi_experiment_label;
+}
+
+}  // namespace gcapi_internals
+
 bool SetReactivationExperimentLabels(const wchar_t* brand_code,
                                      int shell_mode) {
-  return SetLabel(brand_code, L"reacbrand", shell_mode);
+  return SetExperimentLabel(brand_code, gcapi_internals::kReactivationLabel,
+                            shell_mode);
 }
 
 bool SetRelaunchExperimentLabels(const wchar_t* brand_code, int shell_mode) {
-  return SetLabel(brand_code, L"relaunchbrand", shell_mode);
+  return SetExperimentLabel(brand_code, gcapi_internals::kRelaunchLabel,
+                            shell_mode);
 }
