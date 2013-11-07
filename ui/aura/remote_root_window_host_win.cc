@@ -150,7 +150,8 @@ void RemoteRootWindowHostWin::Connected(IPC::Sender* host, HWND remote_window) {
 }
 
 void RemoteRootWindowHostWin::Disconnected() {
-  CHECK(host_ != NULL);
+  // Don't CHECK here, Disconnected is called on a channel error which can
+  // happen before we're successfully Connected.
   host_ = NULL;
   remote_window_ = NULL;
 }
