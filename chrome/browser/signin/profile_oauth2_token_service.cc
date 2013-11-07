@@ -147,7 +147,8 @@ void ProfileOAuth2TokenService::UpdateAuthError(
   // Do not report connection errors as these are not actually auth errors.
   // We also want to avoid masking a "real" auth error just because we
   // subsequently get a transient network error.
-  if (error.state() == GoogleServiceAuthError::CONNECTION_FAILED)
+  if (error.state() == GoogleServiceAuthError::CONNECTION_FAILED ||
+      error.state() == GoogleServiceAuthError::SERVICE_UNAVAILABLE)
     return;
 
   DCHECK_GT(refresh_tokens_.count(account_id), 0u);

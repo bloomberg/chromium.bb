@@ -325,7 +325,7 @@ TEST_F(ProfileOAuth2TokenServiceTest, TokenServiceUpdateClearsCache) {
 
   EXPECT_EQ(0, oauth2_service_->cache_size_for_testing());
   oauth2_service_->UpdateCredentials(oauth2_service_->GetPrimaryAccountId(),
-                                    "refreshToken");
+                                     "refreshToken");
   ExpectOneTokenAvailableNotification();
 
   request = oauth2_service_->StartRequest(
@@ -339,5 +339,26 @@ TEST_F(ProfileOAuth2TokenServiceTest, TokenServiceUpdateClearsCache) {
   EXPECT_EQ(0, consumer_.number_of_errors_);
   EXPECT_EQ("another token", consumer_.last_token_);
   EXPECT_EQ(1, oauth2_service_->cache_size_for_testing());
+}
+
+TEST_F(ProfileOAuth2TokenServiceTest, FetchTransientError) {
+  EXPECT_EQ(0, oauth2_service_->cache_size_for_testing());
+  CreateSigninManager(kEmail);
+  std::set<std::string> scope_list;
+  scope_list.insert("scope");
+  oauth2_service_->set_max_authorization_token_fetch_retries_for_testing(0);
+  oauth2_service_->UpdateCredentials(oauth2_service_->GetPrimaryAccountId(),
+                                     "refreshToken");
+  ExpectOneTokenAvailableNotification();
+
+  scoped_ptr<OAuth2TokenService::Request> request(oauth2_service_->StartRequest(
+      oauth2_service_->GetPrimaryAccountId(), scope_list, &consumer_));
+  base::RunLoop().RunUntilIdle();
+  net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
+  fetcher->set_response_code(net::HTTP_FORBIDDEN);
+  fetcher->SetResponseString("");
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+  EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
+      oauth2_service_->signin_global_error()->GetLastAuthError());
 }
 
