@@ -92,14 +92,10 @@ TEST_F(DataReductionProxySettingsAndroidTest, TestSetProxyPac) {
   base::Base64Encode(raw_pac, &pac);
   std::string expected_pac_url =
       "data:application/x-ns-proxy-autoconfig;base64," + pac;
-  // Test setting the PAC, without generating histograms.
-  Settings()->SetHasTurnedOn();
   Settings()->SetProxyConfigs(true, false);
   CheckProxyPacPref(expected_pac_url,
                     ProxyModeToString(ProxyPrefs::MODE_PAC_SCRIPT));
 
-  // Test disabling the PAC, without generating histograms.
-  Settings()->SetHasTurnedOff();
   Settings()->SetProxyConfigs(false, false);
   CheckProxyPacPref(std::string(), ProxyModeToString(ProxyPrefs::MODE_SYSTEM));
 }

@@ -204,12 +204,6 @@ bool DataReductionProxySettingsAndroid::Register(JNIEnv* env) {
   return register_natives_impl_result;
 }
 
-// Metrics methods -- obsolete; see crbug/241518
-void DataReductionProxySettingsAndroid::RecordDataReductionInit() {
-  UMA_HISTOGRAM_ENUMERATION("SpdyProxyAuth.State", CHROME_STARTUP,
-                            NUM_SPDY_PROXY_AUTH_STATE);
-}
-
 void DataReductionProxySettingsAndroid::AddDefaultProxyBypassRules() {
    DataReductionProxySettings::AddDefaultProxyBypassRules();
 
@@ -233,7 +227,6 @@ void DataReductionProxySettingsAndroid::SetProxyConfigs(bool enabled,
   DCHECK(prefs);
   DictionaryPrefUpdate update(prefs, prefs::kProxy);
   base::DictionaryValue* dict = update.Get();
-  // TODO(marq): All of the UMA in here are obsolete.
   if (enabled) {
     // Convert to a data URI and update the PAC settings.
     std::string base64_pac;
@@ -246,29 +239,10 @@ void DataReductionProxySettingsAndroid::SetProxyConfigs(bool enabled,
                     ProxyModeToString(ProxyPrefs::MODE_PAC_SCRIPT));
     dict->SetString(kProxyBypassList, JoinString(BypassRules(), ", "));
 
-    if (at_startup) {
-      UMA_HISTOGRAM_ENUMERATION("SpdyProxyAuth.State",
-                                SPDY_PROXY_AUTH_ON_AT_STARTUP,
-                                NUM_SPDY_PROXY_AUTH_STATE);
-    } else if (!DataReductionProxySettings::HasTurnedOn()) {
-      // SPDY proxy auth is turned on by user action for the first time in
-      // this session.
-      UMA_HISTOGRAM_ENUMERATION("SpdyProxyAuth.State",
-                                SPDY_PROXY_AUTH_ON_BY_USER,
-                                NUM_SPDY_PROXY_AUTH_STATE);
-      DataReductionProxySettings::SetHasTurnedOn();
-    }
   } else {
     dict->SetString(kProxyMode, ProxyModeToString(ProxyPrefs::MODE_SYSTEM));
     dict->SetString(kProxyPacURL, "");
     dict->SetString(kProxyBypassList, "");
-
-    if (!at_startup && !DataReductionProxySettings::HasTurnedOff()) {
-      UMA_HISTOGRAM_ENUMERATION("SpdyProxyAuth.State",
-                                SPDY_PROXY_AUTH_OFF_BY_USER,
-                                NUM_SPDY_PROXY_AUTH_STATE);
-      DataReductionProxySettings::SetHasTurnedOff();
-    }
   }
 }
 

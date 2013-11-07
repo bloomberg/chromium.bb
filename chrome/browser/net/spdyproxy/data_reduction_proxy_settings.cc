@@ -76,9 +76,7 @@ bool IsProxyOriginSetOnCommandLine() {
 }  // namespace
 
 DataReductionProxySettings::DataReductionProxySettings()
-    : has_turned_on_(false),
-      has_turned_off_(false),
-      disabled_by_carrier_(false),
+    : disabled_by_carrier_(false),
       enabled_by_user_(false) {
 }
 

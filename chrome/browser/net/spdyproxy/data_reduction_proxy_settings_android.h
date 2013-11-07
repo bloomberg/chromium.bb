@@ -85,8 +85,6 @@ class DataReductionProxySettingsAndroid : public DataReductionProxySettings {
   // file.
   virtual void SetProxyConfigs(bool enabled, bool at_startup) OVERRIDE;
 
-  virtual void RecordDataReductionInit() OVERRIDE;
-
  private:
   friend class DataReductionProxySettingsAndroidTest;
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsAndroidTest,

@@ -159,12 +159,6 @@ class DataReductionProxySettings
   // customer feedback. Virtual so tests can mock it for verification.
   virtual void LogProxyState(bool enabled, bool at_startup);
 
-  bool HasTurnedOn() { return has_turned_on_; }
-  bool HasTurnedOff() { return has_turned_off_; }
-  // Note that these flags may only be toggled to true, never back to false.
-  void SetHasTurnedOn() { has_turned_on_ = true; }
-  void SetHasTurnedOff() { has_turned_off_ = true; }
-
   // Accessor for unit tests.
   std::vector<std::string> BypassRules() { return bypass_rules_;}
 
@@ -223,14 +217,6 @@ class DataReductionProxySettings
   static base::string16 AuthHashForSalt(int64 salt);
 
   std::vector<std::string> bypass_rules_;
-
-  // Indicate whether a user has turned on the data reduction proxy previously
-  // in this session.
-  bool has_turned_on_;
-
-  // Indicate whether a user has turned off the data reduction proxy previously
-  // in this session.
-  bool has_turned_off_;
 
   bool disabled_by_carrier_;
   bool enabled_by_user_;
