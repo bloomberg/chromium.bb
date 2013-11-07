@@ -151,6 +151,16 @@ void ProfileOAuth2TokenService::UpdateAuthError(
       error.state() == GoogleServiceAuthError::SERVICE_UNAVAILABLE)
     return;
 
+#if defined(OS_IOS)
+  // ProfileOauth2TokenService does not manage the refresh tokens on iOS - the
+  // account info on iOS is only used to manage the authentication error state.
+  // Simply add an account info entry with empty refresh token if none exists.
+  if (refresh_tokens_.count(account_id) == 0) {
+      refresh_tokens_[account_id].reset(
+          new AccountInfo(this, account_id, std::string()));
+  }
+#endif
+
   DCHECK_GT(refresh_tokens_.count(account_id), 0u);
   refresh_tokens_[account_id]->SetLastAuthError(error);
 }
