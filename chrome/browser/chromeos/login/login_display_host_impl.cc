@@ -982,6 +982,10 @@ void LoginDisplayHostImpl::PlayStartupSound() {
     return;
   startup_sound_played_ = true;
 
+  // TODO (ygorshenin@): remove this as soon as crbug.com/315108 will
+  // be fixed.
+  return;
+
   const base::TimeDelta delay =
       base::TimeDelta::FromMilliseconds(kStartupSoundInitialDelayMs);
   const base::TimeDelta delta =
