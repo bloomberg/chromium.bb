@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/autofill/autofill_dialog_common.h"
 
+#include "chrome/browser/browser_process.h"
+#include "components/autofill/core/browser/autofill_country.h"
 #include "components/autofill/core/browser/autofill_field.h"
 #include "components/autofill/core/browser/autofill_type.h"
 #include "grit/chromium_strings.h"
@@ -174,6 +176,15 @@ AutofillMetrics::DialogUiEvent DialogSectionToUiSelectionChangedEvent(
 
   NOTREACHED();
   return AutofillMetrics::NUM_DIALOG_UI_EVENTS;
+}
+
+string16 GetHardcodedValueForType(ServerFieldType type) {
+  if (AutofillType(type).GetStorableType() == ADDRESS_HOME_COUNTRY) {
+    AutofillCountry country("US", g_browser_process->GetApplicationLocale());
+    return country.name();
+  }
+
+  return string16();
 }
 
 }  // namespace common

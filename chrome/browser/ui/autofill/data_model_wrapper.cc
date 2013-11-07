@@ -8,6 +8,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/ui/autofill/autofill_dialog_common.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_models.h"
 #include "components/autofill/content/browser/wallet/full_wallet.h"
 #include "components/autofill/content/browser/wallet/wallet_address.h"
@@ -27,7 +28,10 @@ DataModelWrapper::~DataModelWrapper() {}
 
 void DataModelWrapper::FillInputs(DetailInputs* inputs) {
   for (size_t i = 0; i < inputs->size(); ++i) {
-    (*inputs)[i].initial_value = GetInfo(AutofillType((*inputs)[i].type));
+    DetailInput* input = &(*inputs)[i];
+    input->initial_value = common::GetHardcodedValueForType(input->type);
+    if (input->initial_value.empty())
+      input->initial_value = GetInfo(AutofillType(input->type));
   }
 }
 

@@ -46,6 +46,10 @@ AutofillMetrics::DialogUiEvent DialogSectionToUiItemAddedEvent(
 AutofillMetrics::DialogUiEvent DialogSectionToUiSelectionChangedEvent(
     DialogSection section);
 
+// We hardcode some values. In particular, we don't yet allow the user to change
+// the country: http://crbug.com/247518
+string16 GetHardcodedValueForType(ServerFieldType type);
+
 }  // namespace common
 }  // namespace autofill
 

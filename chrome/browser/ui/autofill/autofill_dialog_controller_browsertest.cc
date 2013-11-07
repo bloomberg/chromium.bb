@@ -498,6 +498,64 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillInputFromAutofill) {
   }
 }
 
+// For now, no matter what, the country must always be US. See
+// http://crbug.com/247518
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
+                       FillInputFromForeignProfile) {
+  AutofillProfile full_profile(test::GetFullProfile());
+  full_profile.SetInfo(AutofillType(ADDRESS_HOME_COUNTRY),
+                       ASCIIToUTF16("France"), "en-US");
+  controller()->GetTestingManager()->AddTestingProfile(&full_profile);
+
+  const DetailInputs& inputs =
+      controller()->RequestedFieldsForSection(SECTION_SHIPPING);
+  const DetailInput& triggering_input = inputs[0];
+  string16 value = full_profile.GetRawInfo(triggering_input.type);
+  TestableAutofillDialogView* view = controller()->GetTestableView();
+  view->SetTextContentsOfInput(triggering_input,
+                               value.substr(0, value.size() / 2));
+  view->ActivateInput(triggering_input);
+
+  ASSERT_EQ(&triggering_input, controller()->input_showing_popup());
+  controller()->DidAcceptSuggestion(string16(), 0);
+
+  // All inputs should be filled.
+  AutofillProfileWrapper wrapper(&full_profile);
+  for (size_t i = 0; i < inputs.size(); ++i) {
+    string16 expectation =
+        AutofillType(inputs[i].type).GetStorableType() == ADDRESS_HOME_COUNTRY ?
+        ASCIIToUTF16("United States") :
+        wrapper.GetInfo(AutofillType(inputs[i].type));
+    EXPECT_EQ(expectation, view->GetTextContentsOfInput(inputs[i]));
+  }
+
+  // Now simulate some user edits and try again.
+  std::vector<string16> expectations;
+  for (size_t i = 0; i < inputs.size(); ++i) {
+    string16 users_input = i % 2 == 0 ? string16() : ASCIIToUTF16("dummy");
+    view->SetTextContentsOfInput(inputs[i], users_input);
+    // Empty inputs should be filled, others should be left alone.
+    string16 expectation =
+        &inputs[i] == &triggering_input || users_input.empty() ?
+        wrapper.GetInfo(AutofillType(inputs[i].type)) :
+        users_input;
+    if (AutofillType(inputs[i].type).GetStorableType() == ADDRESS_HOME_COUNTRY)
+      expectation = ASCIIToUTF16("United States");
+
+    expectations.push_back(expectation);
+  }
+
+  view->SetTextContentsOfInput(triggering_input,
+                               value.substr(0, value.size() / 2));
+  view->ActivateInput(triggering_input);
+  ASSERT_EQ(&triggering_input, controller()->input_showing_popup());
+  controller()->DidAcceptSuggestion(string16(), 0);
+
+  for (size_t i = 0; i < inputs.size(); ++i) {
+    EXPECT_EQ(expectations[i], view->GetTextContentsOfInput(inputs[i]));
+  }
+}
+
 // This test makes sure that picking a profile variant in the Autofill
 // popup works as expected.
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,

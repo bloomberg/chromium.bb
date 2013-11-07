@@ -1176,7 +1176,7 @@ void AutofillDialogControllerImpl::ResetSectionInput(DialogSection section) {
 
   DetailInputs* inputs = MutableRequestedFieldsForSection(section);
   for (DetailInputs::iterator it = inputs->begin(); it != inputs->end(); ++it) {
-    it->initial_value.clear();
+    it->initial_value = common::GetHardcodedValueForType(it->type);
   }
 }
 
