@@ -37,8 +37,8 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/FileError.h"
 #include "core/page/Page.h"
+#include "core/workers/WorkerGlobalScope.h"
 #include "modules/filesystem/FileSystemClient.h"
-#include "modules/filesystem/WorkerLocalFileSystem.h"
 #include "platform/AsyncFileSystemCallbacks.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebFileSystem.h"
@@ -54,11 +54,16 @@ void fileSystemNotAllowed(ExecutionContext*, PassOwnPtr<AsyncFileSystemCallbacks
 
 } // namespace
 
-LocalFileSystemBase::~LocalFileSystemBase()
+PassOwnPtr<LocalFileSystem> LocalFileSystem::create(PassOwnPtr<FileSystemClient> client)
+{
+    return adoptPtr(new LocalFileSystem(client));
+}
+
+LocalFileSystem::~LocalFileSystem()
 {
 }
 
-void LocalFileSystemBase::resolveURL(ExecutionContext* context, const KURL& fileSystemURL, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
+void LocalFileSystem::resolveURL(ExecutionContext* context, const KURL& fileSystemURL, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
 {
     if (!client() || !client()->allowFileSystem(context)) {
         context->postTask(createCallbackTask(&fileSystemNotAllowed, callbacks));
@@ -67,7 +72,7 @@ void LocalFileSystemBase::resolveURL(ExecutionContext* context, const KURL& file
     blink::Platform::current()->fileSystem()->resolveURL(fileSystemURL, callbacks);
 }
 
-void LocalFileSystemBase::requestFileSystem(ExecutionContext* context, FileSystemType type, long long size, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
+void LocalFileSystem::requestFileSystem(ExecutionContext* context, FileSystemType type, long long size, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
 {
     if (!client() || !client()->allowFileSystem(context)) {
         context->postTask(createCallbackTask(&fileSystemNotAllowed, callbacks));
@@ -77,7 +82,7 @@ void LocalFileSystemBase::requestFileSystem(ExecutionContext* context, FileSyste
     blink::Platform::current()->fileSystem()->openFileSystem(storagePartition, static_cast<blink::WebFileSystemType>(type), callbacks);
 }
 
-void LocalFileSystemBase::deleteFileSystem(ExecutionContext* context, FileSystemType type, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
+void LocalFileSystem::deleteFileSystem(ExecutionContext* context, FileSystemType type, PassOwnPtr<AsyncFileSystemCallbacks> callbacks)
 {
     ASSERT(context);
     ASSERT_WITH_SECURITY_IMPLICATION(context->isDocument());
@@ -90,14 +95,9 @@ void LocalFileSystemBase::deleteFileSystem(ExecutionContext* context, FileSystem
     blink::Platform::current()->fileSystem()->deleteFileSystem(storagePartition, static_cast<blink::WebFileSystemType>(type), callbacks);
 }
 
-LocalFileSystemBase::LocalFileSystemBase(PassOwnPtr<FileSystemClient> client)
+LocalFileSystem::LocalFileSystem(PassOwnPtr<FileSystemClient> client)
     : m_client(client)
 {
-}
-
-PassOwnPtr<LocalFileSystem> LocalFileSystem::create(PassOwnPtr<FileSystemClient> client)
-{
-    return adoptPtr(new LocalFileSystem(client));
 }
 
 const char* LocalFileSystem::supplementName()
@@ -105,23 +105,23 @@ const char* LocalFileSystem::supplementName()
     return "LocalFileSystem";
 }
 
-LocalFileSystem::LocalFileSystem(PassOwnPtr<FileSystemClient> client)
-    : LocalFileSystemBase(client)
-{
-}
-
-LocalFileSystem::~LocalFileSystem()
-{
-}
-
 LocalFileSystem* LocalFileSystem::from(ExecutionContext* context)
 {
-    return static_cast<LocalFileSystem*>(Supplement<Page>::from(toDocument(context)->page(), supplementName()));
+    if (context->isDocument()) {
+        return static_cast<LocalFileSystem*>(Supplement<Page>::from(toDocument(context)->page(), supplementName()));
+    }
+    ASSERT(context->isWorkerGlobalScope());
+    return static_cast<LocalFileSystem*>(Supplement<WorkerClients>::from(toWorkerGlobalScope(context)->clients(), supplementName()));
 }
 
 void provideLocalFileSystemTo(Page* page, PassOwnPtr<FileSystemClient> client)
 {
-    LocalFileSystem::provideTo(page, LocalFileSystem::supplementName(), LocalFileSystem::create(client));
+    page->provideSupplement(LocalFileSystem::supplementName(), LocalFileSystem::create(client));
+}
+
+void provideLocalFileSystemToWorker(WorkerClients* clients, PassOwnPtr<FileSystemClient> client)
+{
+    clients->provideSupplement(LocalFileSystem::supplementName(), LocalFileSystem::create(client));
 }
 
 } // namespace WebCore

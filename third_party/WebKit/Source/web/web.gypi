@@ -258,8 +258,6 @@
       'WebWorkerClientImpl.h',
       'WebWorkerInfo.cpp',
       'WebWorkerRunLoop.cpp',
-      'WorkerFileSystemClient.cpp',
-      'WorkerFileSystemClient.h',
       'WorkerPermissionClient.cpp',
       'WorkerPermissionClient.h',
       'default/WebRenderTheme.cpp',

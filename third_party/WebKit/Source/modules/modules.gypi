@@ -337,8 +337,6 @@
       'filesystem/SyncCallbackHelper.h',
       'filesystem/WorkerGlobalScopeFileSystem.cpp',
       'filesystem/WorkerGlobalScopeFileSystem.h',
-      'filesystem/WorkerLocalFileSystem.cpp',
-      'filesystem/WorkerLocalFileSystem.h',
       'gamepad/Gamepad.cpp',
       'gamepad/Gamepad.h',
       'gamepad/GamepadList.cpp',

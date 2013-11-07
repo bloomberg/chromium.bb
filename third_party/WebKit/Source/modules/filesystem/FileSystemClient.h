@@ -37,15 +37,9 @@
 
 namespace WebCore {
 
-class AsyncFileSystemCallbacks;
 class Page;
 class ExecutionContext;
 class WorkerClients;
-
-enum OpenFileSystemMode {
-    OpenExistingFileSystem,
-    CreateFileSystemIfNotPresent
-};
 
 class FileSystemClient {
     WTF_MAKE_NONCOPYABLE(FileSystemClient);

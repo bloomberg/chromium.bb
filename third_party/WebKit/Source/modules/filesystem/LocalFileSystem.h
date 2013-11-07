@@ -32,6 +32,7 @@
 #define LocalFileSystem_h
 
 #include "core/page/Page.h"
+#include "core/workers/WorkerClients.h"
 #include "platform/FileSystemType.h"
 #include "wtf/Forward.h"
 
@@ -41,37 +42,26 @@ class AsyncFileSystemCallbacks;
 class FileSystemClient;
 class ExecutionContext;
 
-// Base class of LocalFileSystem and WorkerLocalFileSystem.
-class LocalFileSystemBase {
-    WTF_MAKE_NONCOPYABLE(LocalFileSystemBase);
+class LocalFileSystem : public Supplement<Page>, public Supplement<WorkerClients> {
+    WTF_MAKE_NONCOPYABLE(LocalFileSystem);
 public:
-    virtual ~LocalFileSystemBase();
+    static PassOwnPtr<LocalFileSystem> create(PassOwnPtr<FileSystemClient>);
+    virtual ~LocalFileSystem();
 
     void resolveURL(ExecutionContext*, const KURL&, PassOwnPtr<AsyncFileSystemCallbacks>);
-
     void requestFileSystem(ExecutionContext*, FileSystemType, long long size, PassOwnPtr<AsyncFileSystemCallbacks>);
-
     void deleteFileSystem(ExecutionContext*, FileSystemType, PassOwnPtr<AsyncFileSystemCallbacks>);
 
     FileSystemClient* client() { return m_client.get(); }
 
+    static const char* supplementName();
+    static LocalFileSystem* from(ExecutionContext*);
+
 protected:
-    explicit LocalFileSystemBase(PassOwnPtr<FileSystemClient>);
+    explicit LocalFileSystem(PassOwnPtr<FileSystemClient>);
 
     OwnPtr<FileSystemClient> m_client;
 };
-
-class LocalFileSystem : public LocalFileSystemBase, public Supplement<Page> {
-public:
-    static PassOwnPtr<LocalFileSystem> create(PassOwnPtr<FileSystemClient>);
-    static const char* supplementName();
-    static LocalFileSystem* from(ExecutionContext*);
-    virtual ~LocalFileSystem();
-
-private:
-    explicit LocalFileSystem(PassOwnPtr<FileSystemClient>);
-};
-
 
 } // namespace WebCore
 

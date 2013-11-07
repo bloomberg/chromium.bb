@@ -31,24 +31,23 @@
 #include "config.h"
 #include "WebWorkerClientImpl.h"
 
+#include "LocalFileSystemClient.h"
+#include "WebFrameImpl.h"
+#include "WebPermissionClient.h"
+#include "WebViewImpl.h"
+#include "WorkerPermissionClient.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/workers/Worker.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerMessagingProxy.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/Threading.h"
-
-#include "WebFrameImpl.h"
-#include "WebPermissionClient.h"
-#include "WebViewImpl.h"
-#include "WorkerFileSystemClient.h"
-#include "WorkerPermissionClient.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebSecurityOrigin.h"
 #include "public/web/WebWorkerPermissionClientProxy.h"
+#include "wtf/OwnPtr.h"
+#include "wtf/Threading.h"
 
 using namespace WebCore;
 
@@ -63,7 +62,7 @@ WorkerGlobalScopeProxy* WebWorkerClientImpl::createWorkerGlobalScopeProxy(Worker
         Document* document = toDocument(worker->executionContext());
         WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
         OwnPtr<WorkerClients> workerClients = WorkerClients::create();
-        provideLocalFileSystemToWorker(workerClients.get(), WorkerFileSystemClient::create());
+        provideLocalFileSystemToWorker(workerClients.get(), LocalFileSystemClient::create());
         providePermissionClientToWorker(workerClients.get(), adoptPtr(webFrame->client()->createWorkerPermissionClientProxy(webFrame)));
         WebWorkerClientImpl* proxy = new WebWorkerClientImpl(worker, webFrame, workerClients.release());
         return proxy;

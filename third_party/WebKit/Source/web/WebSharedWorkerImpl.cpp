@@ -31,11 +31,7 @@
 #include "config.h"
 #include "WebSharedWorkerImpl.h"
 
-#include "public/platform/WebFileError.h"
-#include "public/platform/WebMessagePortChannel.h"
-#include "public/platform/WebString.h"
-#include "public/platform/WebURL.h"
-#include "wtf/MainThread.h"
+#include "LocalFileSystemClient.h"
 #include "WebDataSourceImpl.h"
 #include "WebFrame.h"
 #include "WebFrameClient.h"
@@ -44,7 +40,6 @@
 #include "WebSettings.h"
 #include "WebSharedWorkerClient.h"
 #include "WebView.h"
-#include "WorkerFileSystemClient.h"
 #include "WorkerPermissionClient.h"
 #include "core/dom/CrossThreadTask.h"
 #include "core/dom/Document.h"
@@ -66,10 +61,15 @@
 #include "core/workers/WorkerThread.h"
 #include "core/workers/WorkerThreadStartupData.h"
 #include "modules/webdatabase/DatabaseTask.h"
+#include "public/platform/WebFileError.h"
+#include "public/platform/WebMessagePortChannel.h"
+#include "public/platform/WebString.h"
+#include "public/platform/WebURL.h"
 #include "public/web/WebWorkerPermissionClientProxy.h"
 #include "weborigin/KURL.h"
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/Functional.h"
+#include "wtf/MainThread.h"
 
 using namespace WebCore;
 
@@ -265,7 +265,7 @@ void WebSharedWorkerImpl::startWorkerContext(const WebURL& url, const WebString&
 
     WorkerThreadStartMode startMode = m_pauseWorkerContextOnStart ? PauseWorkerGlobalScopeOnStart : DontPauseWorkerGlobalScopeOnStart;
     OwnPtr<WorkerClients> workerClients = WorkerClients::create();
-    provideLocalFileSystemToWorker(workerClients.get(), WorkerFileSystemClient::create());
+    provideLocalFileSystemToWorker(workerClients.get(), LocalFileSystemClient::create());
     WebSecurityOrigin webSecurityOrigin(m_loadingDocument->securityOrigin());
     providePermissionClientToWorker(workerClients.get(), adoptPtr(client()->createWorkerPermissionClientProxy(webSecurityOrigin)));
     OwnPtr<WorkerThreadStartupData> startupData = WorkerThreadStartupData::create(url, userAgent, sourceCode, startMode, contentSecurityPolicy, static_cast<WebCore::ContentSecurityPolicy::HeaderType>(policyType), workerClients.release());
