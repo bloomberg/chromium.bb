@@ -434,15 +434,14 @@ STDMETHODIMP TSFTextStore::QueryInsert(
     ULONG text_size,
     LONG* acp_result_start,
     LONG* acp_result_end) {
-  if (!acp_result_start || !acp_result_end)
+  if (!acp_result_start || !acp_result_end || acp_test_start > acp_test_end)
     return E_INVALIDARG;
-  if (!((static_cast<LONG>(committed_size_) <= acp_test_start) &&
-        (acp_test_start <= acp_test_end) &&
-        (acp_test_end <= static_cast<LONG>(string_buffer_.size())))) {
-    return E_INVALIDARG;
-  }
-  *acp_result_start = acp_test_start;
-  *acp_result_end = acp_test_end;
+  const LONG committed_size = static_cast<LONG>(committed_size_);
+  const LONG buffer_size = static_cast<LONG>(string_buffer_.size());
+  *acp_result_start = std::min(std::max(committed_size, acp_test_start),
+                               buffer_size);
+  *acp_result_end = std::min(std::max(committed_size, acp_test_end),
+                             buffer_size);
   return S_OK;
 }
 

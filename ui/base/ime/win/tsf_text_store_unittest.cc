@@ -323,8 +323,10 @@ TEST_F(TSFTextStoreTest, QueryInsertTest) {
   EXPECT_EQ(0, result_end);
   *string_buffer() = L"1234";
   *committed_size() = 1;
-  EXPECT_EQ(E_INVALIDARG,
+  EXPECT_EQ(S_OK,
             text_store_->QueryInsert(0, 1, 0, &result_start, &result_end));
+  EXPECT_EQ(1, result_start);
+  EXPECT_EQ(1, result_end);
   EXPECT_EQ(E_INVALIDARG,
             text_store_->QueryInsert(1, 0, 0, &result_start, &result_end));
   EXPECT_EQ(S_OK,
@@ -341,8 +343,10 @@ TEST_F(TSFTextStoreTest, QueryInsertTest) {
             text_store_->QueryInsert(3, 4, 0, &result_start, &result_end));
   EXPECT_EQ(3, result_start);
   EXPECT_EQ(4, result_end);
-  EXPECT_EQ(E_INVALIDARG,
+  EXPECT_EQ(S_OK,
             text_store_->QueryInsert(3, 5, 0, &result_start, &result_end));
+  EXPECT_EQ(3, result_start);
+  EXPECT_EQ(4, result_end);
 }
 
 class SyncRequestLockTestCallback : public TSFTextStoreTestCallback {
