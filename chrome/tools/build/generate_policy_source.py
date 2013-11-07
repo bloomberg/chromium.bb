@@ -53,12 +53,9 @@ class PolicyDetails:
     self.name = policy['name']
     self.is_deprecated = policy.get('deprecated', False)
     self.is_device_only = policy.get('device_only', False)
+    self.schema = policy.get('schema', {})
 
-    if is_chromium_os:
-      expected_platform = 'chrome_os'
-    else:
-      expected_platform = os.lower()
-
+    expected_platform = 'chrome_os' if is_chromium_os else os.lower()
     self.platforms = []
     for platform, version in [ p.split(':') for p in policy['supported_on'] ]:
       if not version.endswith('-'):
@@ -216,7 +213,11 @@ def _WritePolicyConstantHeader(policies, os, f):
           '#include "base/basictypes.h"\n'
           '#include "base/values.h"\n'
           '\n'
-          'namespace policy {\n\n')
+          'namespace policy {\n'
+          '\n'
+          'namespace internal {\n'
+          'struct SchemaData;\n'
+          '}\n\n')
 
   if os == 'win':
     f.write('// The windows registry path where Chrome policy '
@@ -243,7 +244,11 @@ def _WritePolicyConstantHeader(policies, os, f):
           'bool IsDeprecatedPolicy(const std::string& policy);\n'
           '\n'
           '// Returns the default policy definition list for Chrome.\n'
-          'const PolicyDefinitionList* GetChromePolicyDefinitionList();\n\n')
+          'const PolicyDefinitionList* GetChromePolicyDefinitionList();\n'
+          '\n'
+          '// Returns the schema data of the Chrome policy schema.\n'
+          'const internal::SchemaData* GetChromeSchemaData();\n'
+          '\n')
   f.write('// Key names for the policy settings.\n'
           'namespace key {\n\n')
   for policy in policies:
@@ -263,14 +268,163 @@ def _GetValueType(policy_type):
   return policy_type if policy_type != 'TYPE_EXTERNAL' else 'TYPE_DICTIONARY'
 
 
+# A mapping of the simple schema types to base::Value::Types.
+SIMPLE_SCHEMA_NAME_MAP = {
+  'boolean': 'TYPE_BOOLEAN',
+  'integer': 'TYPE_INTEGER',
+  'null'   : 'TYPE_NULL',
+  'number' : 'TYPE_DOUBLE',
+  'string' : 'TYPE_STRING',
+}
+
+
+class SchemaNodesGenerator:
+  """Builds the internal structs to represent a JSON schema."""
+
+  def __init__(self, shared_strings):
+    """Creates a new generator.
+
+    |shared_strings| is a map of strings to a C expression that evaluates to
+    that string at runtime. This mapping can be used to reuse existing string
+    constants."""
+    self.shared_strings = shared_strings
+    self.schema_nodes = []
+    self.property_nodes = []
+    self.properties_nodes = []
+    self.simple_types = {
+      'boolean': None,
+      'integer': None,
+      'null': None,
+      'number': None,
+      'string': None,
+    }
+    self.stringlist_type = None
+
+  def GetString(self, s):
+    return self.shared_strings[s] if s in self.shared_strings else '"%s"' % s
+
+  def AppendSchema(self, type, extra, comment=''):
+    index = len(self.schema_nodes)
+    self.schema_nodes.append((type, extra, comment))
+    return index
+
+  def GetSimpleType(self, name):
+    if self.simple_types[name] == None:
+      self.simple_types[name] = self.AppendSchema(
+          SIMPLE_SCHEMA_NAME_MAP[name],
+          -1,
+          'simple type: ' + name)
+    return self.simple_types[name]
+
+  def GetStringList(self):
+    if self.stringlist_type == None:
+      self.stringlist_type = self.AppendSchema(
+          'TYPE_LIST',
+          self.GetSimpleType('string'),
+          'simple type: stringlist')
+    return self.stringlist_type
+
+  def Generate(self, schema, name):
+    """Generates the structs for the given schema.
+
+    |schema|: a valid JSON schema in a dictionary.
+    |name|: the name of the current node, for the generated comments."""
+    # Simple types use shared nodes.
+    if schema['type'] in self.simple_types:
+      return self.GetSimpleType(schema['type'])
+
+    if schema['type'] == 'array':
+      # Special case for lists of strings, which is a common policy type.
+      if schema['items']['type'] == 'string':
+        return self.GetStringList()
+      return self.AppendSchema(
+          'TYPE_LIST',
+          self.Generate(schema['items'], 'items of ' + name))
+    elif schema['type'] == 'object':
+      # Reserve an index first, so that dictionaries come before their
+      # properties. This makes sure that the root node is the first in the
+      # SchemaNodes array.
+      index = self.AppendSchema('TYPE_DICTIONARY', -1)
+
+      if 'additionalProperties' in schema:
+        additionalProperties = self.Generate(
+            schema['additionalProperties'],
+            'additionalProperties of ' + name)
+      else:
+        additionalProperties = -1
+
+      # Properties must be sorted by name, for the binary search lookup.
+      # Note that |properties| must be evaluated immediately, so that all the
+      # recursive calls to Generate() append the necessary child nodes; if
+      # |properties| were a generator then this wouldn't work.
+      sorted_properties = sorted(schema.get('properties', {}).items())
+      properties = [ (self.GetString(key), self.Generate(schema, key))
+                     for key, schema in sorted_properties ]
+      begin = len(self.property_nodes)
+      self.property_nodes += properties
+      end = len(self.property_nodes)
+
+      extra = len(self.properties_nodes)
+      self.properties_nodes.append((begin, end, additionalProperties, name))
+
+      # Set the right data at |index| now.
+      self.schema_nodes[index] = ('TYPE_DICTIONARY', extra, name)
+      return index
+    else:
+      assert False
+
+  def Write(self, f):
+    """Writes the generated structs to the given file.
+
+    |f| an open file to write to."""
+    f.write('const internal::SchemaNode kSchemas[] = {\n'
+            '//  Type                          Extra\n')
+    for type, extra, comment in self.schema_nodes:
+      type += ','
+      f.write('  { base::Value::%-18s %3d },  // %s\n' % (type, extra, comment))
+    f.write('};\n\n')
+
+    f.write('const internal::PropertyNode kPropertyNodes[] = {\n'
+            '//  Property                                           #Schema\n')
+    for key, schema in self.property_nodes:
+      key += ','
+      f.write('  { %-50s %7d },\n' % (key, schema))
+    f.write('};\n\n')
+
+    f.write('const internal::PropertiesNode kProperties[] = {\n'
+            '//  Begin    End  Additional Properties\n')
+    for node in self.properties_nodes:
+      f.write('  { %5d, %5d, %5d },  // %s\n' % node)
+    f.write('};\n\n')
+
+    f.write('const internal::SchemaData kChromeSchemaData = {\n'
+            '  kSchemas,\n'
+            '  kPropertyNodes,\n'
+            '  kProperties,\n'
+            '};\n\n')
+
+
 def _WritePolicyConstantSource(policies, os, f):
   f.write('#include "base/basictypes.h"\n'
           '#include "base/logging.h"\n'
+          '#include "components/policy/core/common/schema_internal.h"\n'
           '#include "policy/policy_constants.h"\n'
           '\n'
-          'namespace policy {\n\n')
+          'namespace policy {\n'
+          '\n'
+          'namespace {\n'
+          '\n')
 
-  f.write('namespace {\n\n')
+  # Generate the Chrome schema.
+  chrome_schema = {
+    'type': 'object',
+    'properties': {},
+  }
+  shared_strings = {}
+  for policy in policies:
+    shared_strings[policy.name] = "key::k%s" % policy.name
+    if policy.is_supported:
+      chrome_schema['properties'][policy.name] = policy.schema
 
   f.write('const PolicyDefinitionList::Entry kEntries[] = {\n')
   for policy in policies:
@@ -297,6 +451,10 @@ def _WritePolicyConstantSource(policies, os, f):
         f.write('  key::k%s,\n' % policy.name)
     f.write('};\n\n')
 
+  schema_generator = SchemaNodesGenerator(shared_strings)
+  schema_generator.Generate(chrome_schema, 'root node')
+  schema_generator.Write(f)
+
   f.write('}  // namespace\n\n')
 
   if os == 'win':
@@ -321,6 +479,10 @@ def _WritePolicyConstantSource(policies, os, f):
 
   f.write('const PolicyDefinitionList* GetChromePolicyDefinitionList() {\n'
           '  return &kChromePolicyList;\n'
+          '}\n\n')
+
+  f.write('const internal::SchemaData* GetChromeSchemaData() {\n'
+          '  return &kChromeSchemaData;\n'
           '}\n\n')
 
   f.write('namespace key {\n\n')

@@ -39,6 +39,7 @@
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/pref_names.h"
 #include "components/policy/core/common/policy_pref_names.h"
+#include "components/policy/core/common/schema.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_client.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -424,6 +425,7 @@ scoped_ptr<PolicyService> BrowserPolicyConnector::CreatePolicyService(
   scoped_ptr<PolicyService> service(new PolicyServiceImpl(providers));
   scoped_refptr<PolicyDomainDescriptor> descriptor = new PolicyDomainDescriptor(
       POLICY_DOMAIN_CHROME);
+  descriptor->RegisterComponent("", SchemaOwner::Wrap(GetChromeSchemaData()));
   service->RegisterPolicyDomain(descriptor);
   return service.Pass();
 }

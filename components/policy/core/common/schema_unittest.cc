@@ -13,11 +13,6 @@ namespace {
 
 #define OBJECT_TYPE "\"type\":\"object\""
 
-const internal::SchemaNode kTypeBoolean = { base::Value::TYPE_BOOLEAN, NULL, };
-const internal::SchemaNode kTypeInteger = { base::Value::TYPE_INTEGER, NULL, };
-const internal::SchemaNode kTypeNumber = { base::Value::TYPE_DOUBLE, NULL, };
-const internal::SchemaNode kTypeString = { base::Value::TYPE_STRING, NULL, };
-
 bool ParseFails(const std::string& content) {
   std::string error;
   scoped_ptr<SchemaOwner> schema = SchemaOwner::Parse(content, &error);
@@ -284,55 +279,82 @@ TEST(SchemaTest, Lookups) {
   }
 }
 
-TEST(SchemaTest, WrapSimpleNode) {
-  scoped_ptr<SchemaOwner> policy_schema = SchemaOwner::Wrap(&kTypeString);
-  ASSERT_TRUE(policy_schema);
-  Schema schema = policy_schema->schema();
-  ASSERT_TRUE(schema.valid());
-  EXPECT_EQ(base::Value::TYPE_STRING, schema.type());
-}
-
-TEST(SchemaTest, WrapDictionary) {
-  const internal::SchemaNode kList = {
-    base::Value::TYPE_LIST,
-    &kTypeString,
+TEST(SchemaTest, Wrap) {
+  const internal::SchemaNode kSchemas[] = {
+    { base::Value::TYPE_DICTIONARY,   0 },    // 0: root node
+    { base::Value::TYPE_BOOLEAN,      -1 },   // 1
+    { base::Value::TYPE_INTEGER,      -1 },   // 2
+    { base::Value::TYPE_DOUBLE,       -1 },   // 3
+    { base::Value::TYPE_STRING,       -1 },   // 4
+    { base::Value::TYPE_LIST,         4 },    // 5: list of strings.
+    { base::Value::TYPE_LIST,         5 },    // 6: list of lists of strings.
   };
 
   const internal::PropertyNode kPropertyNodes[] = {
-    { "Boolean",  &kTypeBoolean },
-    { "Integer",  &kTypeInteger },
-    { "List",     &kList },
-    { "Number",   &kTypeNumber },
-    { "String",   &kTypeString },
+    { "Boolean",  1 },
+    { "Integer",  2 },
+    { "Number",   3 },
+    { "String",   4 },
+    { "List",     5 },
   };
 
-  const internal::PropertiesNode kProperties = {
+  const internal::PropertiesNode kProperties[] = {
+    // Properties 0 to 5 (exclusive) are known, from kPropertyNodes.
+    // SchemaNode offset 6 is for additionalProperties (list of lists).
+    { 0, 5, 6 },
+  };
+
+  const internal::SchemaData kData = {
+    kSchemas,
     kPropertyNodes,
-    kPropertyNodes + arraysize(kPropertyNodes),
-    NULL,
+    kProperties,
   };
 
-  const internal::SchemaNode root = {
-    base::Value::TYPE_DICTIONARY,
-    &kProperties,
-  };
-
-  scoped_ptr<SchemaOwner> policy_schema = SchemaOwner::Wrap(&root);
+  scoped_ptr<SchemaOwner> policy_schema = SchemaOwner::Wrap(&kData);
   ASSERT_TRUE(policy_schema);
   Schema schema = policy_schema->schema();
   ASSERT_TRUE(schema.valid());
   EXPECT_EQ(base::Value::TYPE_DICTIONARY, schema.type());
 
+  struct {
+    const char* key;
+    base::Value::Type type;
+  } kExpectedProperties[] = {
+    { "Boolean", base::Value::TYPE_BOOLEAN },
+    { "Integer", base::Value::TYPE_INTEGER },
+    { "Number", base::Value::TYPE_DOUBLE },
+    { "String", base::Value::TYPE_STRING },
+    { "List", base::Value::TYPE_LIST },
+  };
+
   Schema::Iterator it = schema.GetPropertiesIterator();
-  for (size_t i = 0; i < arraysize(kPropertyNodes); ++i) {
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kExpectedProperties); ++i) {
     ASSERT_FALSE(it.IsAtEnd());
-    EXPECT_STREQ(kPropertyNodes[i].key, it.key());
+    EXPECT_STREQ(kExpectedProperties[i].key, it.key());
     Schema sub = it.schema();
     ASSERT_TRUE(sub.valid());
-    EXPECT_EQ(kPropertyNodes[i].schema->type, sub.type());
+    EXPECT_EQ(kExpectedProperties[i].type, sub.type());
+
+    if (sub.type() == base::Value::TYPE_LIST) {
+      ASSERT_EQ(base::Value::TYPE_LIST, sub.type());
+      Schema items = sub.GetItems();
+      ASSERT_TRUE(items.valid());
+      EXPECT_EQ(base::Value::TYPE_STRING, items.type());
+    }
+
     it.Advance();
   }
   EXPECT_TRUE(it.IsAtEnd());
+
+  Schema sub = schema.GetAdditionalProperties();
+  ASSERT_TRUE(sub.valid());
+  ASSERT_EQ(base::Value::TYPE_LIST, sub.type());
+  Schema subsub = sub.GetItems();
+  ASSERT_TRUE(subsub.valid());
+  ASSERT_EQ(base::Value::TYPE_LIST, subsub.type());
+  Schema subsubsub = subsub.GetItems();
+  ASSERT_TRUE(subsubsub.valid());
+  ASSERT_EQ(base::Value::TYPE_STRING, subsubsub.type());
 }
 
 }  // namespace policy
