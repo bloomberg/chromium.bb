@@ -450,6 +450,10 @@ void RenderThreadImpl::Shutdown() {
     input_event_filter_ = NULL;
   }
 
+  // Ramp down IDB before we ramp down WebKit (and V8), since IDB classes might
+  // hold pointers to V8 objects (e.g., via pending requests).
+  main_thread_indexed_db_dispatcher_.reset();
+
   if (webkit_platform_support_)
     WebKit::shutdown();
 
