@@ -495,6 +495,9 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // Used by ProfileSyncServiceHarness.  May return NULL.
   browser_sync::BackendMigrator* GetBackendMigratorForTest();
 
+  // Used by tests to inspect interaction with OAuth2TokenService.
+  bool IsRetryingAccessTokenFetchForTest() const;
+
   // TODO(sync): This is only used in tests.  Can we remove it?
   void GetModelSafeRoutingInfo(syncer::ModelSafeRoutingInfo* out) const;
 

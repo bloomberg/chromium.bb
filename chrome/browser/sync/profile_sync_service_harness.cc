@@ -349,6 +349,12 @@ bool ProfileSyncServiceHarness::RunStateChangeMachine() {
     }
     case WAITING_FOR_FULL_SYNC: {
       DVLOG(1) << GetClientInfoString("WAITING_FOR_FULL_SYNC");
+      if (service()->GetAuthError().state() ==
+          GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS) {
+        // Our credentials were rejected. Do not wait any more.
+        SignalStateCompleteWithNextState(CREDENTIALS_REJECTED);
+        break;
+      }
       if (IsFullySynced()) {
         // The sync cycle we were waiting for is complete.
         SignalStateCompleteWithNextState(FULLY_SYNCED);

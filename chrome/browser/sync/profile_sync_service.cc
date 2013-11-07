@@ -2144,6 +2144,10 @@ void ProfileSyncService::OnInternalUnrecoverableError(
   OnUnrecoverableErrorImpl(from_here, message, delete_sync_database);
 }
 
+bool ProfileSyncService::IsRetryingAccessTokenFetchForTest() const {
+  return request_access_token_retry_timer_.IsRunning();
+}
+
 std::string ProfileSyncService::GetEffectiveUsername() {
   if (profile_->IsManaged()) {
 #if defined(ENABLE_MANAGED_USERS)

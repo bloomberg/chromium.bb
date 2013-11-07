@@ -140,42 +140,6 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest,
       protocol_error.error_description);
 }
 
-// TODO(pavely): Fix this test. Test needs to successfully setup sync. Then
-// setup server to trigger auth error and setup FakeURLFetcher to return
-// INVALID_CREDENTIALS failure for access token request. Then it should
-// trigger sync and verify that error surfaced through
-// ProfileSyncService::GetAuthError()
-//
-// Trigger an auth error and make sure the sync client displays a warning in the
-// UI.
-IN_PROC_BROWSER_TEST_F(SyncErrorTest, DISABLED_AuthErrorTest) {
-  ASSERT_TRUE(SetupClients());
-  TriggerAuthError();
-
-  ASSERT_FALSE(GetClient(0)->SetupSync());
-  ASSERT_EQ(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS,
-            GetClient(0)->service()->GetAuthError().state());
-}
-
-// TODO(pavely): Fix this test. Test needs to successfully setup sync. Then
-// setup server to trigger xmpp auth error and setup FakeURLFetcher to return
-// INVALID_CREDENTIALS failure for access token request. Then it should
-// trigger sync and verify that error surfaced through
-// ProfileSyncService::GetAuthError()
-//
-// Trigger an XMPP auth error, and make sure sync treats it like any
-// other auth error.
-IN_PROC_BROWSER_TEST_F(SyncErrorTest, DISABLED_XmppAuthErrorTest) {
-  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
-
-  TriggerXmppAuthError();
-
-  ASSERT_FALSE(GetClient(0)->SetupSync());
-
-  ASSERT_EQ(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS,
-            GetClient(0)->service()->GetAuthError().state());
-}
-
 // TODO(lipalani): Fix the typed_url dtc so this test case can pass.
 IN_PROC_BROWSER_TEST_F(SyncErrorTest, DISABLED_DisableDatatypeWhileRunning) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";

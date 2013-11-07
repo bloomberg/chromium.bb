@@ -14,6 +14,8 @@
 #include "base/memory/scoped_vector.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/http/http_status_code.h"
+#include "net/url_request/url_request_status.h"
 #include "sync/internal_api/public/base/model_type.h"
 #include "sync/protocol/sync_protocol_error.h"
 #include "sync/test/local_sync_test_server.h"
@@ -78,6 +80,15 @@ class SyncTest : public InProcessBrowserTest {
     // Note this is not random. The server would send the
     // error on the first 2 requests of every 3 requests.
     ERROR_FREQUENCY_TWO_THIRDS
+  };
+
+  // Authentication state used by the python sync server.
+  enum PythonServerAuthState {
+    // Python server processes sync requests normally.
+    AUTHENTICATED_TRUE,
+
+    // Python server responds to sync requests with an authentication error.
+    AUTHENTICATED_FALSE
   };
 
   // A SyncTest must be associated with a particular test type.
@@ -162,6 +173,12 @@ class SyncTest : public InProcessBrowserTest {
   // only if ServerSupportsNotificationControl() returned true.
   void EnableNotifications();
 
+  // Sets the mock gaia response for when an OAuth2 token is requested.
+  // Each call to this method will overwrite responses that were previously set.
+  void SetOAuth2TokenResponse(const std::string& response_data,
+                              net::HttpStatusCode response_code,
+                              net::URLRequestStatus::Status status);
+
   // Trigger a notification to be sent to all clients.  This operation
   // is available only if ServerSupportsNotificationControl() returned
   // true.
@@ -183,10 +200,11 @@ class SyncTest : public InProcessBrowserTest {
   // this state until shut down.
   void TriggerTransientError();
 
-  // Triggers an auth error on the server, simulating the case when the gaia
-  // password is changed at another location. Note the server will stay in
-  // this state until shut down.
-  void TriggerAuthError();
+  // Sets / unsets an auth error on the server. Can be used to simulate the case
+  // when the user's gaia password is changed at another location, or their
+  // OAuth2 tokens have expired. The server will stay in this state until
+  // this method is called with a different value.
+  void TriggerAuthState(PythonServerAuthState auth_state);
 
   // Triggers an XMPP auth error on the server.  Note the server will
   // stay in this state until shut down.
