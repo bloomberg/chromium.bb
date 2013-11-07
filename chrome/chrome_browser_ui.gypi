@@ -500,6 +500,8 @@
         'browser/ui/cocoa/autofill/autofill_dialog_cocoa.h',
         'browser/ui/cocoa/autofill/autofill_dialog_cocoa.mm',
         'browser/ui/cocoa/autofill/autofill_dialog_constants.h',
+        'browser/ui/cocoa/autofill/autofill_error_bubble_controller.h',
+        'browser/ui/cocoa/autofill/autofill_error_bubble_controller.mm',
         'browser/ui/cocoa/autofill/autofill_layout.h',
         'browser/ui/cocoa/autofill/autofill_notification_container.h',
         'browser/ui/cocoa/autofill/autofill_notification_container.mm',

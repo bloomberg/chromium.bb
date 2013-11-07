@@ -8,21 +8,8 @@
 
 #include "base/mac/foundation_util.h"
 #include "chrome/browser/ui/autofill/autofill_dialog_view_delegate.h"
+#import "chrome/browser/ui/cocoa/autofill/autofill_error_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/autofill/autofill_section_container.h"
-#import "chrome/browser/ui/cocoa/info_bubble_view.h"
-#include "skia/ext/skia_utils_mac.h"
-
-namespace {
-
-// Imported constant from Views version. TODO(groby): Share.
-SkColor const kWarningColor = 0xffde4932;  // SkColorSetRGB(0xde, 0x49, 0x32);
-
-}  // namespace
-
-@interface AutofillDetailsContainer ()
-// Compute infobubble origin based on anchor/view.
-- (NSPoint)originFromAnchorView:(NSView*)view;
-@end
 
 @implementation AutofillDetailsContainer
 
@@ -60,22 +47,6 @@ SkColor const kWarningColor = 0xffde4932;  // SkColorSetRGB(0xde, 0x49, 0x32);
 
   for (AutofillSectionContainer* container in details_.get())
     [[scrollView_ documentView] addSubview:[container view]];
-
-  errorBubble_.reset([[InfoBubbleView alloc] initWithFrame:NSZeroRect]);
-  [errorBubble_ setBackgroundColor:
-      gfx::SkColorToCalibratedNSColor(kWarningColor)];
-  [errorBubble_ setArrowLocation:info_bubble::kTopCenter];
-  [errorBubble_ setAlignment:info_bubble::kAlignArrowToAnchor];
-  [errorBubble_ setHidden:YES];
-
-  base::scoped_nsobject<NSTextField> label([[NSTextField alloc] init]);
-  [label setEditable:NO];
-  [label setBordered:NO];
-  [label setDrawsBackground:NO];
-  [label setTextColor:[NSColor whiteColor]];
-  [errorBubble_ addSubview:label];
-
-  [[scrollView_ documentView] addSubview:errorBubble_];
 
   [self performLayout];
 }
@@ -127,21 +98,52 @@ SkColor const kWarningColor = 0xffde4932;  // SkColorSetRGB(0xde, 0x49, 0x32);
 }
 
 - (void)updateErrorBubble {
-  if (!delegate_->ShouldShowErrorBubble())
-    [errorBubble_ setHidden:YES];
+  if (!delegate_->ShouldShowErrorBubble()) {
+    [errorBubbleController_ close];
+  }
 }
 
-// TODO(groby): Unify with BaseBubbleController's originFromAnchor:view:.
-- (NSPoint)originFromAnchorView:(NSView*)view {
+- (NSPoint)anchorPointFromView:(NSView*)view {
   // All math done in window coordinates, since views might be flipped.
   NSRect viewRect = [view convertRect:[view bounds] toView:nil];
   NSPoint anchorPoint =
       NSMakePoint(NSMidX(viewRect), NSMinY(viewRect));
-  NSRect bubbleRect = [errorBubble_ convertRect:[errorBubble_ bounds]
-                                         toView:nil];
-  NSPoint bubbleOrigin = NSMakePoint(anchorPoint.x - NSWidth(bubbleRect) / 2.0,
-                                     anchorPoint.y - NSHeight(bubbleRect));
-  return [[errorBubble_ superview] convertPoint:bubbleOrigin fromView:nil];
+  return [[view window] convertBaseToScreen:anchorPoint];
+}
+
+- (void)errorBubbleWindowWillClose:(NSNotification*)notification {
+  DCHECK_EQ([notification object], [errorBubbleController_ window]);
+
+  NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+  [center removeObserver:self
+                    name:NSWindowWillCloseNotification
+                  object:[errorBubbleController_ window]];
+  errorBubbleController_ = nil;
+}
+
+- (void)showErrorBubbleForField:(NSControl<AutofillInputField>*)field {
+  DCHECK(!errorBubbleController_);
+  NSWindow* parentWindow = [field window];
+  DCHECK(parentWindow);
+  errorBubbleController_ =
+        [[AutofillErrorBubbleController alloc]
+            initWithParentWindow:parentWindow
+                         message:[field validityMessage]];
+
+  // Handle bubble self-deleting.
+  NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+  [center addObserver:self
+             selector:@selector(errorBubbleWindowWillClose:)
+                 name:NSWindowWillCloseNotification
+               object:[errorBubbleController_ window]];
+
+  // Compute anchor point (in window coords - views might be flipped).
+  NSRect viewRect = [field convertRect:[field bounds] toView:nil];
+  NSPoint anchorPoint = NSMakePoint(NSMidX(viewRect), NSMinY(viewRect));
+  [errorBubbleController_ setAnchorPoint:
+      [parentWindow convertBaseToScreen:anchorPoint]];
+
+  [errorBubbleController_ showWindow:self];
 }
 
 - (void)hideErrorBubble {
@@ -156,27 +158,15 @@ SkColor const kWarningColor = 0xffde4932;  // SkColorSetRGB(0xde, 0x49, 0x32);
       base::mac::ObjCCast<NSView>([[field window] firstResponder]);
   if (![firstResponderView isDescendantOf:field])
     return;
-
   if (!delegate_->ShouldShowErrorBubble()) {
-    DCHECK([errorBubble_ isHidden]);
+    DCHECK(!errorBubbleController_);
     return;
   }
 
   if ([field invalid]) {
-    const CGFloat labelInset = 3.0;
-
-    NSTextField* label = [[errorBubble_ subviews] objectAtIndex:0];
-    [label setStringValue:[field validityMessage]];
-    [label sizeToFit];
-    NSSize bubbleSize = [label frame].size;
-    bubbleSize.width += 2 * labelInset;
-    bubbleSize.height += 2 * labelInset + info_bubble::kBubbleArrowHeight;
-    [errorBubble_ setFrameSize:bubbleSize];
-    [label setFrameOrigin:NSMakePoint(labelInset, labelInset)];
-    [errorBubble_ setFrameOrigin:[self originFromAnchorView:field]];
-    [errorBubble_ setHidden:NO];
+    [self showErrorBubbleForField:field];
   } else {
-    [errorBubble_ setHidden:YES];
+    [errorBubbleController_ close];
   }
 }
 

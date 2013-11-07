@@ -29,6 +29,7 @@
 @synthesize anchorPoint = anchor_;
 @synthesize bubble = bubble_;
 @synthesize shouldOpenAsKeyWindow = shouldOpenAsKeyWindow_;
+@synthesize shouldCloseOnResignKey = shouldCloseOnResignKey_;
 
 - (id)initWithWindowNibPath:(NSString*)nibPath
                parentWindow:(NSWindow*)parentWindow
@@ -72,6 +73,7 @@
     parentWindow_ = parentWindow;
     anchor_ = anchoredAt;
     shouldOpenAsKeyWindow_ = YES;
+    shouldCloseOnResignKey_ = YES;
 
     DCHECK(![[self window] delegate]);
     [theWindow setDelegate:self];
@@ -184,7 +186,7 @@
 - (void)windowDidResignKey:(NSNotification*)notification {
   NSWindow* window = [self window];
   DCHECK_EQ([notification object], window);
-  if ([window isVisible]) {
+  if ([window isVisible] && [self shouldCloseOnResignKey]) {
     // If the window isn't visible, it is already closed, and this notification
     // has been sent as part of the closing operation, so no need to close.
     [self close];

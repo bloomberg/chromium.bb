@@ -1466,6 +1466,7 @@
         'browser/ui/cocoa/applescript/bookmark_item_applescript_unittest.mm',
         'browser/ui/cocoa/autofill/autofill_account_chooser_unittest.mm',
         'browser/ui/cocoa/autofill/autofill_details_container_unittest.mm',
+        'browser/ui/cocoa/autofill/autofill_error_bubble_controller_unittest.mm',
         'browser/ui/cocoa/autofill/autofill_main_container_unittest.mm',
         'browser/ui/cocoa/autofill/autofill_notification_container_unittest.mm',
         'browser/ui/cocoa/autofill/autofill_notification_controller_unittest.mm',

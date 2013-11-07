@@ -156,7 +156,8 @@ TEST_F(BaseBubbleControllerTest, ResignKeyCloses) {
   EXPECT_TRUE([other_window isVisible]);
 }
 
-// Test that clicking outside the window causes the bubble to close.
+// Test that clicking outside the window causes the bubble to close if
+// shouldCloseOnResignKey is YES.
 TEST_F(BaseBubbleControllerTest, LionClickOutsideCloses) {
   // The event tap is only installed on 10.7+.
   if (!base::mac::IsOSLionOrLater())
@@ -166,13 +167,23 @@ TEST_F(BaseBubbleControllerTest, LionClickOutsideCloses) {
   base::scoped_nsobject<BaseBubbleController> keep_alive([controller_ retain]);
   NSWindow* window = [controller_ window];
 
+  EXPECT_TRUE([controller_ shouldCloseOnResignKey]);  // Verify default value.
   EXPECT_FALSE([window isVisible]);
 
   [controller_ showWindow:nil];
 
   EXPECT_TRUE([window isVisible]);
 
+  [controller_ setShouldCloseOnResignKey:NO];
   NSEvent* event = cocoa_test_event_utils::LeftMouseDownAtPointInWindow(
+      NSMakePoint(10, 10), test_window());
+  [NSApp sendEvent:event];
+  chrome::testing::NSRunLoopRunAllPending();
+
+  EXPECT_TRUE([window isVisible]);
+
+  [controller_ setShouldCloseOnResignKey:YES];
+  event = cocoa_test_event_utils::LeftMouseDownAtPointInWindow(
       NSMakePoint(10, 10), test_window());
   [NSApp sendEvent:event];
   chrome::testing::NSRunLoopRunAllPending();
