@@ -16,7 +16,7 @@ about:memory template page
   <script src="chrome://memory-redirect/strings.js"></script>
 </head>
 <body i18n-values=".style.fontFamily:fontfamily;.style.fontSize:fontsize">
-    <div id='header'>
+    <div id="header">
       <h1>
         About memory
       </h1>
@@ -25,28 +25,28 @@ about:memory template page
       </p>
     </div>
 
-    <div id='content'>
+    <div id="content">
       <h2>
         Summary
-        <div class='help'>
+        <div class="help">
           <div>
-            <p class='summary-desc' i18n-values=".innerHTML:summary_desc"></p>
+            <p class="summary-desc" i18n-values=".innerHTML:summary_desc"></p>
           </div>
         </div>
       </h2>
 
-      <table class='list' id='browserComparison'>
+      <table class="list" id="browserComparison">
         <colgroup>
-          <col class='name'>
-          <col class='number'>
-          <col class='number'>
+          <col class="name">
+          <col class="number">
+          <col class="number">
         </colgroup>
-        <tr class='firstRow doNotFilter'>
+        <tr class="firstRow doNotFilter">
           <th>
           </th>
-          <th colspan='2'>
+          <th colspan="2">
             Memory
-            <div class='help'>
+            <div class="help">
               <div>
                 <p>
                   <strong>Memory</strong>
@@ -69,41 +69,46 @@ about:memory template page
             </div>
           </th>
         </tr>
-        <tr class='secondRow doNotFilter'>
-          <th class='name'>
+        <tr class="secondRow doNotFilter">
+          <th class="name">
             Browser
           </th>
-          <th class='name'>
+          <th class="name">
             Private
           </th>
-          <th class='number'>
+          <th class="number">
             Proportional
           </th>
         </tr>
         <tr jsselect="browsers">
-          <td class='name'>
+          <td class="name">
             <div>
               <strong jscontent="name"></strong> <span jscontent="version"></span>
             </div>
           </td>
-          <td class='number'>
-            <span class='th' jscontent="formatNumber(ws_priv)"></span><span class='k'>k</span>
+          <td class="number">
+            <span class="th" jscontent="formatNumber(ws_priv)"></span><span class="k">k</span>
           </td>
-          <td class='number'>
-            <span class='th' jscontent="formatNumber(ws_shared)"></span><span class='k'>k</span>
+          <td class="number">
+            <span class="th" jscontent="formatNumber(ws_shared)"></span><span class="k">k</span>
           </td>
         </tr>
       </table>
-      <div class=otherbrowsers jsdisplay="show_other_browsers && browsers.length == 1">
-        Note: If other browsers (e.g. IE, Firefox, Safari) are running,
-        I'll show their memory details here.
+      <div class="otherbrowsers"
+           jsdisplay="show_other_browsers && browsers.length == 1">
+        Note: This page will show memory use for all running browsers,
+        not just Chrome.
+      </div>
+      <div class="otherbrowsers"
+           jsdisplay="show_other_browsers && browsers.length > 1">
+        Note: Chrome includes memory used by plug-ins, other browsers may not.
       </div>
 
-      <br><br><br >
+      <br><br><br>
 
       <h2>
         Processes
-        <div class='help'>
+        <div class="help">
           <div>
             <p>
                 Details of memory usage for each of Chromium's processes.
@@ -112,85 +117,85 @@ about:memory template page
         </div>
       </h2>
 
-      <table class='list' id='memoryDetails'>
+      <table class="list" id="memoryDetails">
         <colgroup>
-          <col class='pid'>
-          <col class='name' >
-          <col class='number'>
-          <col class='number'>
+          <col class="pid">
+          <col class="name" >
+          <col class="number">
+          <col class="number">
         </colgroup>
-        <tr class='firstRow doNotFilter'>
+        <tr class="firstRow doNotFilter">
           <th>
           </th>
           <th>
           </th>
-          <th colspan='2'>
+          <th colspan="2">
             Memory
           </th>
         </tr>
-        <tr class='secondRow doNotFilter'>
-          <th class='pid'>
+        <tr class="secondRow doNotFilter">
+          <th class="pid">
             PID
           </th>
-          <th class='name'>
+          <th class="name">
             Name
           </th>
-          <th class='number'>
+          <th class="number">
             Private
           </th>
-          <th class='number'>
+          <th class="number">
             Proportional
           </th>
         </tr>
 
         <tr jsselect="browzr_data">
-          <td class='pid'>
-            <span class='th' jscontent="pid"></span>
+          <td class="pid">
+            <span class="th" jscontent="pid"></span>
           </td>
-          <td class='name'>
+          <td class="name">
             <div>
               Browser
             </div>
           </td>
-          <td class='number'>
-            <span class='th' jseval="addToSum('tot_ws_priv', $this.ws_priv)" jscontent="formatNumber(ws_priv)"></span><span class='k'>k</span>
+          <td class="number">
+            <span class="th" jseval="addToSum("tot_ws_priv", $this.ws_priv)" jscontent="formatNumber(ws_priv)"></span><span class="k">k</span>
           </td>
-          <td class='number'>
-            <span class='th' jscontent="formatNumber(ws_shared)"></span><span class='k'>k</span>
+          <td class="number">
+            <span class="th" jscontent="formatNumber(ws_shared)"></span><span class="k">k</span>
           </td>
         </tr>
         <tr jsselect="child_data">
-          <td class='pid'>
-            <span class='th' jscontent="pid"></span>
+          <td class="pid">
+            <span class="th" jscontent="pid"></span>
           </td>
-          <td class='name'>
+          <td class="name">
             <div jscontent="child_name"></div>
             <div jsselect="titles">
               <span jscontent="$this"></span><br>
             </div>
           </td>
-          <td class='number'>
-            <span class='th' jseval="addToSum('tot_ws_priv', $this.ws_priv)" jscontent="formatNumber(ws_priv)"></span><span class='k'>k</span>
+          <td class="number">
+            <span class="th" jseval="addToSum("tot_ws_priv", $this.ws_priv)" jscontent="formatNumber(ws_priv)"></span><span class="k">k</span>
           </td>
-          <td class='number'>
-            <span class='th' jscontent="formatNumber(ws_shared)"></span><span class='k'>k</span>
+          <td class="number">
+            <span class="th" jscontent="formatNumber(ws_shared)"></span><span class="k">k</span>
           </td>
         </tr>
-        <tr class='total doNotFilter'>
-          <td class='pid'>
+        <tr class="total doNotFilter">
+          <td class="pid">
           </td>
-          <td class='name'>
+          <td class="name">
             &Sigma;
           </td>
-          <td class='number'>
-            <span class='th' id="tot_ws_priv">0</span><span class='k'>k</span>
+          <td class="number">
+            <span class="th" id="tot_ws_priv">0</span><span class="k">k</span>
           </td>
-          <td class='number'>
+          <td class="number">
           </td>
         </tr>
 
-        <tr class='noResults'>
-          <td colspan='99'>
+        <tr class="noResults">
+          <td colspan="99">
             No results found.
           </td>
         </tr>
