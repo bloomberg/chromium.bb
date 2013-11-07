@@ -41,7 +41,7 @@ class WebDeviceOrientationData;
 
 namespace WebCore {
 
-class NewDeviceOrientationController;
+class DeviceOrientationController;
 class DeviceOrientationData;
 
 // This class listens to device motion data and dispatches it to all
@@ -56,8 +56,8 @@ public:
 
     // This method is called every time new device motion data is available.
     virtual void didChangeDeviceOrientation(const blink::WebDeviceOrientationData&) OVERRIDE;
-    void addDeviceOrientationController(NewDeviceOrientationController*);
-    void removeDeviceOrientationController(NewDeviceOrientationController*);
+    void addDeviceOrientationController(DeviceOrientationController*);
+    void removeDeviceOrientationController(DeviceOrientationController*);
 
 private:
     DeviceOrientationDispatcher();

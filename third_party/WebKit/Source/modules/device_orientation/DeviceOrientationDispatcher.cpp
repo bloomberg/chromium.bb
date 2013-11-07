@@ -31,8 +31,8 @@
 #include "config.h"
 #include "modules/device_orientation/DeviceOrientationDispatcher.h"
 
+#include "modules/device_orientation/DeviceOrientationController.h"
 #include "modules/device_orientation/DeviceOrientationData.h"
-#include "modules/device_orientation/NewDeviceOrientationController.h"
 #include "public/platform/Platform.h"
 #include "wtf/TemporaryChange.h"
 
@@ -52,12 +52,12 @@ DeviceOrientationDispatcher::~DeviceOrientationDispatcher()
 {
 }
 
-void DeviceOrientationDispatcher::addDeviceOrientationController(NewDeviceOrientationController* controller)
+void DeviceOrientationDispatcher::addDeviceOrientationController(DeviceOrientationController* controller)
 {
     addController(controller);
 }
 
-void DeviceOrientationDispatcher::removeDeviceOrientationController(NewDeviceOrientationController* controller)
+void DeviceOrientationDispatcher::removeDeviceOrientationController(DeviceOrientationController* controller)
 {
     removeController(controller);
 }
@@ -83,7 +83,7 @@ void DeviceOrientationDispatcher::didChangeDeviceOrientation(const blink::WebDev
         size_t size = m_controllers.size();
         for (size_t i = 0; i < size; ++i) {
             if (m_controllers[i])
-                static_cast<NewDeviceOrientationController*>(m_controllers[i])->didChangeDeviceOrientation(m_lastDeviceOrientationData.get());
+                static_cast<DeviceOrientationController*>(m_controllers[i])->didChangeDeviceOrientation(m_lastDeviceOrientationData.get());
         }
     }
 

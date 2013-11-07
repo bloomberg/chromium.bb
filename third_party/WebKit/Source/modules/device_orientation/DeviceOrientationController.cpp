@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "modules/device_orientation/NewDeviceOrientationController.h"
+#include "modules/device_orientation/DeviceOrientationController.h"
 
 #include "RuntimeEnabledFeatures.h"
 #include "core/dom/Document.h"
@@ -37,64 +37,64 @@
 
 namespace WebCore {
 
-NewDeviceOrientationController::NewDeviceOrientationController(Document* document)
+DeviceOrientationController::DeviceOrientationController(Document* document)
     : DeviceSensorEventController(document)
     , DOMWindowLifecycleObserver(document->domWindow())
 {
 }
 
-NewDeviceOrientationController::~NewDeviceOrientationController()
+DeviceOrientationController::~DeviceOrientationController()
 {
 }
 
-void NewDeviceOrientationController::didChangeDeviceOrientation(DeviceOrientationData* deviceOrientationData)
+void DeviceOrientationController::didChangeDeviceOrientation(DeviceOrientationData* deviceOrientationData)
 {
     dispatchDeviceEvent(DeviceOrientationEvent::create(EventTypeNames::deviceorientation, deviceOrientationData));
 }
 
-const char* NewDeviceOrientationController::supplementName()
+const char* DeviceOrientationController::supplementName()
 {
-    return "NewDeviceOrientationController";
+    return "DeviceOrientationController";
 }
 
-NewDeviceOrientationController* NewDeviceOrientationController::from(Document* document)
+DeviceOrientationController* DeviceOrientationController::from(Document* document)
 {
-    NewDeviceOrientationController* controller = static_cast<NewDeviceOrientationController*>(DocumentSupplement::from(document, supplementName()));
+    DeviceOrientationController* controller = static_cast<DeviceOrientationController*>(DocumentSupplement::from(document, supplementName()));
     if (!controller) {
-        controller = new NewDeviceOrientationController(document);
+        controller = new DeviceOrientationController(document);
         DocumentSupplement::provideTo(document, supplementName(), adoptPtr(controller));
     }
     return controller;
 }
 
-bool NewDeviceOrientationController::hasLastData()
+bool DeviceOrientationController::hasLastData()
 {
     return DeviceOrientationDispatcher::instance().latestDeviceOrientationData();
 }
 
-PassRefPtr<Event> NewDeviceOrientationController::getLastEvent()
+PassRefPtr<Event> DeviceOrientationController::getLastEvent()
 {
     return DeviceOrientationEvent::create(EventTypeNames::deviceorientation,
         DeviceOrientationDispatcher::instance().latestDeviceOrientationData());
 }
 
-void NewDeviceOrientationController::registerWithDispatcher()
+void DeviceOrientationController::registerWithDispatcher()
 {
     DeviceOrientationDispatcher::instance().addDeviceOrientationController(this);
 }
 
-void NewDeviceOrientationController::unregisterWithDispatcher()
+void DeviceOrientationController::unregisterWithDispatcher()
 {
     DeviceOrientationDispatcher::instance().removeDeviceOrientationController(this);
 }
 
-bool NewDeviceOrientationController::isNullEvent(Event* event)
+bool DeviceOrientationController::isNullEvent(Event* event)
 {
     DeviceOrientationEvent* orientationEvent = toDeviceOrientationEvent(event);
     return !orientationEvent->orientation()->canProvideEventData();
 }
 
-void NewDeviceOrientationController::didAddEventListener(DOMWindow* window, const AtomicString& eventType)
+void DeviceOrientationController::didAddEventListener(DOMWindow* window, const AtomicString& eventType)
 {
     if (eventType == EventTypeNames::deviceorientation && RuntimeEnabledFeatures::deviceOrientationEnabled()) {
         if (page() && page()->visibilityState() == PageVisibilityStateVisible)
@@ -103,7 +103,7 @@ void NewDeviceOrientationController::didAddEventListener(DOMWindow* window, cons
     }
 }
 
-void NewDeviceOrientationController::didRemoveEventListener(DOMWindow* window, const AtomicString& eventType)
+void DeviceOrientationController::didRemoveEventListener(DOMWindow* window, const AtomicString& eventType)
 {
     if (eventType == EventTypeNames::deviceorientation) {
         stopUpdating();
@@ -111,7 +111,7 @@ void NewDeviceOrientationController::didRemoveEventListener(DOMWindow* window, c
     }
 }
 
-void NewDeviceOrientationController::didRemoveAllEventListeners(DOMWindow* window)
+void DeviceOrientationController::didRemoveAllEventListeners(DOMWindow* window)
 {
     stopUpdating();
     m_hasEventListener = false;

@@ -75,7 +75,7 @@
 #include "core/platform/mediastream/RTCPeerConnectionHandler.h"
 #include "core/rendering/HitTestResult.h"
 #include "modules/device_orientation/DeviceMotionController.h"
-#include "modules/device_orientation/NewDeviceOrientationController.h"
+#include "modules/device_orientation/DeviceOrientationController.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/exported/WrappedResourceRequest.h"
@@ -130,7 +130,7 @@ void FrameLoaderClientImpl::dispatchDidClearWindowObjectInWorld(DOMWrapperWorld*
             if (RuntimeEnabledFeatures::deviceMotionEnabled())
                 DeviceMotionController::from(document);
             if (RuntimeEnabledFeatures::deviceOrientationEnabled())
-                NewDeviceOrientationController::from(document);
+                DeviceOrientationController::from(document);
         }
     }
 }

@@ -24,8 +24,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef NewDeviceOrientationController_h
-#define NewDeviceOrientationController_h
+#ifndef DeviceOrientationController_h
+#define DeviceOrientationController_h
 
 #include "core/dom/DocumentSupplementable.h"
 #include "core/events/Event.h"
@@ -36,15 +36,13 @@ namespace WebCore {
 
 class DeviceOrientationData;
 
-// FIXME: rename this class to DeviceOrientationController once Device Orientation is completely implemented
-// and the old implementation deleted from core/dom.
-class NewDeviceOrientationController : public DeviceSensorEventController, public DocumentSupplement, public DOMWindowLifecycleObserver {
+class DeviceOrientationController : public DeviceSensorEventController, public DocumentSupplement, public DOMWindowLifecycleObserver {
 
 public:
-    virtual ~NewDeviceOrientationController();
+    virtual ~DeviceOrientationController();
 
     static const char* supplementName();
-    static NewDeviceOrientationController* from(Document*);
+    static DeviceOrientationController* from(Document*);
 
     void didChangeDeviceOrientation(WebCore::DeviceOrientationData*);
 
@@ -54,7 +52,7 @@ public:
     virtual void didRemoveAllEventListeners(DOMWindow*) OVERRIDE;
 
 private:
-    explicit NewDeviceOrientationController(Document*);
+    explicit DeviceOrientationController(Document*);
     virtual void registerWithDispatcher() OVERRIDE;
     virtual void unregisterWithDispatcher() OVERRIDE;
 
@@ -65,4 +63,4 @@ private:
 
 } // namespace WebCore
 
-#endif // NewDeviceOrientationController_h
+#endif // DeviceOrientationController_h

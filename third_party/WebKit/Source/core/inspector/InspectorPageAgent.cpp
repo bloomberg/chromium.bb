@@ -65,8 +65,8 @@
 #include "core/page/PageConsole.h"
 #include "core/page/Settings.h"
 #include "core/platform/text/RegularExpression.h"
+#include "modules/device_orientation/DeviceOrientationController.h"
 #include "modules/device_orientation/DeviceOrientationData.h"
-#include "modules/device_orientation/NewDeviceOrientationController.h"
 #include "modules/geolocation/GeolocationController.h"
 #include "platform/Cookie.h"
 #include "platform/JSONValues.h"
@@ -1144,7 +1144,7 @@ GeolocationPosition* InspectorPageAgent::overrideGeolocationPosition(Geolocation
 
 void InspectorPageAgent::setDeviceOrientationOverride(ErrorString* error, double alpha, double beta, double gamma)
 {
-    NewDeviceOrientationController* controller = NewDeviceOrientationController::from(mainFrame()->document());
+    DeviceOrientationController* controller = DeviceOrientationController::from(mainFrame()->document());
     if (!controller) {
         *error = "Internal error: unable to override device orientation";
         return;
