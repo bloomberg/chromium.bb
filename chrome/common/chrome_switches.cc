@@ -694,7 +694,7 @@ const char kEnableOmniboxAutoCompletionForIme[] =
 const char kEnablePanels[]                  = "enable-panels";
 
 // Enables searching for people from the apps list search box.
-const char kEnablePeopleSearch[]            = "enable-people-search";
+const char kDisablePeopleSearch[]           = "disable-people-search";
 
 // Disables the usage of Portable Native Client.
 const char kDisablePnacl[]                  = "disable-pnacl";
