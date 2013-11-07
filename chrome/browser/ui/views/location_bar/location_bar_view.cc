@@ -146,7 +146,13 @@ gfx::FontList GetLargestFontListWithHeightBound(
   for (int font_size = font_list.GetFontSize(); font_size > 1; --font_size) {
     const int internal_leading =
         font_list.GetBaseline() - font_list.GetCapHeight();
-    const int space = height - font_list.GetCapHeight();
+    // Some platforms don't support getting the cap height, and simply return
+    // the entire font ascent from GetCapHeight().  Centering the ascent makes
+    // the font look too low, so if GetCapHeight() returns the ascent, center
+    // the entire font height instead.
+    const int space =
+        height - ((internal_leading != 0) ?
+                  font_list.GetCapHeight() : font_list.GetHeight());
     const int y_offset = space / 2 - internal_leading;
     const int space_at_bottom = height - (y_offset + font_list.GetHeight());
     if ((y_offset >= 0) && (space_at_bottom >= 0))
