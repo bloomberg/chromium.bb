@@ -697,6 +697,8 @@
         'browser/extensions/extension_function_util.h',
         'browser/extensions/extension_host.cc',
         'browser/extensions/extension_host.h',
+        'browser/extensions/extension_host_factory.cc',
+        'browser/extensions/extension_host_factory.h',
         'browser/extensions/extension_host_mac.h',
         'browser/extensions/extension_host_mac.mm',
         'browser/extensions/extension_icon_image.cc',

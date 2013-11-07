@@ -6,8 +6,7 @@
 
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/extensions/extension_process_manager.h"
-#include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_host_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/constrained_window_views.h"
 #include "chrome/browser/ui/views/extensions/extension_dialog_observer.h"
@@ -56,7 +55,8 @@ ExtensionDialog* ExtensionDialog::Show(
     int min_height,
     const string16& title,
     ExtensionDialogObserver* observer) {
-  extensions::ExtensionHost* host = CreateExtensionHost(url, profile);
+  extensions::ExtensionHost* host =
+      extensions::ExtensionHostFactory::CreateDialogHost(url, profile);
   if (!host)
     return NULL;
   // Preferred size must be set before views::Widget::CreateWindowWithParent
@@ -78,20 +78,6 @@ ExtensionDialog* ExtensionDialog::Show(
   // Ensure the DOM JavaScript can respond immediately to keyboard shortcuts.
   host->host_contents()->GetView()->Focus();
   return dialog;
-}
-
-// static
-extensions::ExtensionHost* ExtensionDialog::CreateExtensionHost(
-    const GURL& url,
-    Profile* profile) {
-  DCHECK(profile);
-  ExtensionProcessManager* manager =
-      extensions::ExtensionSystem::Get(profile)->process_manager();
-
-  DCHECK(manager);
-  if (!manager)
-    return NULL;
-  return manager->CreateDialogHost(url);
 }
 
 void ExtensionDialog::InitWindow(ui::BaseWindow* base_window,

@@ -6,8 +6,7 @@
 
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/extensions/extension_process_manager.h"
-#include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_host_factory.h"
 #include "chrome/browser/infobars/infobar.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -15,7 +14,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
-
 
 ExtensionInfoBarDelegate::~ExtensionInfoBarDelegate() {
   if (observer_)
@@ -47,9 +45,8 @@ ExtensionInfoBarDelegate::ExtensionInfoBarDelegate(
       observer_(NULL),
       extension_(extension),
       closing_(false) {
-  ExtensionProcessManager* manager =
-      extensions::ExtensionSystem::Get(browser->profile())->process_manager();
-  extension_host_.reset(manager->CreateInfobarHost(url, browser));
+  extension_host_.reset(
+      extensions::ExtensionHostFactory::CreateInfobarHost(url, browser));
   extension_host_->SetAssociatedWebContents(web_contents);
 
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE,

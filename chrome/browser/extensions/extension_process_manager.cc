@@ -16,16 +16,13 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/runtime/runtime_api.h"
 #include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_util.h"
-#include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
-#include "chrome/common/extensions/manifest_url_handler.h"
-#include "chrome/common/url_constants.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/devtools_manager.h"
@@ -88,11 +85,6 @@ class IncognitoExtensionProcessManager : public ExtensionProcessManager {
   IncognitoExtensionProcessManager(BrowserContext* incognito_context,
                                    BrowserContext* original_context);
   virtual ~IncognitoExtensionProcessManager();
-  virtual ExtensionHost* CreateViewHost(
-      const Extension* extension,
-      const GURL& url,
-      Browser* browser,
-      extensions::ViewType view_type) OVERRIDE;
   virtual ExtensionHost* CreateBackgroundHost(const Extension* extension,
                                               const GURL& url) OVERRIDE;
   virtual SiteInstance* GetSiteInstanceForURL(const GURL& url) OVERRIDE;
@@ -248,80 +240,6 @@ ExtensionProcessManager::GetAllViews() const {
   return result;
 }
 
-void ExtensionProcessManager::EnsureBrowserWhenRequired(
-    Browser* browser,
-    extensions::ViewType view_type) {
-  if (!browser) {
-    // A NULL browser may only be given for pop-up views and dialogs.
-    DCHECK(view_type == extensions::VIEW_TYPE_EXTENSION_POPUP ||
-           view_type == extensions::VIEW_TYPE_EXTENSION_DIALOG);
-  }
-}
-
-ExtensionHost* ExtensionProcessManager::CreateViewHost(
-    const Extension* extension,
-    const GURL& url,
-    Browser* browser,
-    extensions::ViewType view_type) {
-  DVLOG(1) << "CreateViewHost";
-  DCHECK(extension);
-  EnsureBrowserWhenRequired(browser, view_type);
-  ExtensionHost* host =
-#if defined(OS_MACOSX)
-      new extensions::ExtensionHostMac(
-          extension, GetSiteInstanceForURL(url), url, view_type);
-#else
-      new ExtensionHost(extension, GetSiteInstanceForURL(url), url, view_type);
-#endif
-  host->CreateView(browser);
-  OnExtensionHostCreated(host, false);
-  return host;
-}
-
-ExtensionHost* ExtensionProcessManager::CreateViewHost(
-    const GURL& url, Browser* browser, extensions::ViewType view_type) {
-  EnsureBrowserWhenRequired(browser, view_type);
-  ExtensionService* service = ExtensionSystem::GetForBrowserContext(
-      GetBrowserContext())->extension_service();
-  if (service) {
-    std::string extension_id = url.host();
-    if (url.SchemeIs(chrome::kChromeUIScheme) &&
-        url.host() == chrome::kChromeUIExtensionInfoHost)
-      extension_id = url.path().substr(1);
-    const Extension* extension =
-        service->extensions()->GetByID(extension_id);
-    if (extension)
-      return CreateViewHost(extension, url, browser, view_type);
-  }
-  return NULL;
-}
-
-ExtensionHost* ExtensionProcessManager::CreatePopupHost(
-    const Extension* extension, const GURL& url, Browser* browser) {
-  return CreateViewHost(
-      extension, url, browser, extensions::VIEW_TYPE_EXTENSION_POPUP);
-}
-
-ExtensionHost* ExtensionProcessManager::CreatePopupHost(
-    const GURL& url, Browser* browser) {
-  return CreateViewHost(url, browser, extensions::VIEW_TYPE_EXTENSION_POPUP);
-}
-
-ExtensionHost* ExtensionProcessManager::CreateDialogHost(const GURL& url) {
-  return CreateViewHost(url, NULL, extensions::VIEW_TYPE_EXTENSION_DIALOG);
-}
-
-ExtensionHost* ExtensionProcessManager::CreateInfobarHost(
-    const Extension* extension, const GURL& url, Browser* browser) {
-  return CreateViewHost(
-      extension, url, browser, extensions::VIEW_TYPE_EXTENSION_INFOBAR);
-}
-
-ExtensionHost* ExtensionProcessManager::CreateInfobarHost(
-    const GURL& url, Browser* browser) {
-  return CreateViewHost(url, browser, extensions::VIEW_TYPE_EXTENSION_INFOBAR);
-}
-
 ExtensionHost* ExtensionProcessManager::CreateBackgroundHost(
     const Extension* extension, const GURL& url) {
   DVLOG(1) << "CreateBackgroundHost " << url.spec();
@@ -345,7 +263,7 @@ ExtensionHost* ExtensionProcessManager::CreateBackgroundHost(
 #endif
 
   host->CreateRenderViewSoon();
-  OnExtensionHostCreated(host, true);
+  OnBackgroundHostCreated(host);
   return host;
 }
 
@@ -792,20 +710,17 @@ void ExtensionProcessManager::CreateBackgroundHostsForProfileStartup() {
   }
 }
 
-void ExtensionProcessManager::OnExtensionHostCreated(ExtensionHost* host,
-                                                     bool is_background) {
-  DCHECK_EQ(site_instance_->GetBrowserContext(), host->browser_context());
-  if (is_background) {
-    background_hosts_.insert(host);
+void ExtensionProcessManager::OnBackgroundHostCreated(ExtensionHost* host) {
+  DCHECK_EQ(GetBrowserContext(), host->browser_context());
+  background_hosts_.insert(host);
 
-    if (BackgroundInfo::HasLazyBackgroundPage(host->extension())) {
-      linked_ptr<base::ElapsedTimer> since_suspended(
-          background_page_data_[host->extension()->id()].
-              since_suspended.release());
-      if (since_suspended.get()) {
-        UMA_HISTOGRAM_LONG_TIMES("Extensions.EventPageIdleTime",
-                                 since_suspended->Elapsed());
-      }
+  if (BackgroundInfo::HasLazyBackgroundPage(host->extension())) {
+    linked_ptr<base::ElapsedTimer> since_suspended(
+        background_page_data_[host->extension()->id()].
+            since_suspended.release());
+    if (since_suspended.get()) {
+      UMA_HISTOGRAM_LONG_TIMES("Extensions.EventPageIdleTime",
+                               since_suspended->Elapsed());
     }
   }
 }
@@ -900,27 +815,6 @@ IncognitoExtensionProcessManager::~IncognitoExtensionProcessManager() {
       GetBrowserContext())->extension_service();
   if (service)
     service->menu_manager()->RemoveAllIncognitoContextItems();
-}
-
-ExtensionHost* IncognitoExtensionProcessManager::CreateViewHost(
-    const Extension* extension,
-    const GURL& url,
-    Browser* browser,
-    extensions::ViewType view_type) {
-  if (extensions::IncognitoInfo::IsSplitMode(extension)) {
-    if (IsIncognitoEnabled(extension)) {
-      return ExtensionProcessManager::CreateViewHost(extension, url,
-                                                     browser, view_type);
-    } else {
-      NOTREACHED() <<
-          "We shouldn't be trying to create an incognito extension view unless "
-          "it has been enabled for incognito.";
-      return NULL;
-    }
-  } else {
-    return original_manager_->CreateViewHost(extension, url,
-                                             browser, view_type);
-  }
 }
 
 ExtensionHost* IncognitoExtensionProcessManager::CreateBackgroundHost(

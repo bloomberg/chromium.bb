@@ -1245,6 +1245,7 @@
         'browser/extensions/extension_function_test_utils.h',
         'browser/extensions/extension_geolocation_apitest.cc',
         'browser/extensions/extension_get_views_apitest.cc',
+        'browser/extensions/extension_host_factory_browsertest.cc',
         'browser/extensions/extension_icon_source_apitest.cc',
         'browser/extensions/extension_incognito_apitest.cc',
         'browser/extensions/extension_install_ui_browsertest.cc',

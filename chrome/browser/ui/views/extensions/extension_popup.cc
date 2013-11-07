@@ -8,8 +8,8 @@
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/devtools_window.h"
-#include "chrome/browser/extensions/extension_process_manager.h"
-#include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/extensions/extension_host_factory.h"
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -167,9 +167,8 @@ ExtensionPopup* ExtensionPopup::ShowPopup(const GURL& url,
                                           views::View* anchor_view,
                                           views::BubbleBorder::Arrow arrow,
                                           ShowAction show_action) {
-  ExtensionProcessManager* manager =
-      extensions::ExtensionSystem::Get(browser->profile())->process_manager();
-  extensions::ExtensionHost* host = manager->CreatePopupHost(url, browser);
+  extensions::ExtensionHost* host =
+      extensions::ExtensionHostFactory::CreatePopupHost(url, browser);
   ExtensionPopup* popup = new ExtensionPopup(host, anchor_view, arrow,
       show_action);
   views::BubbleDelegateView::CreateBubble(popup);

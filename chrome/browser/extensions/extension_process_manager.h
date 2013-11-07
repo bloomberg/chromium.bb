@@ -18,7 +18,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/common/view_type.h"
 
-class Browser;
 class GURL;
 
 namespace content {
@@ -50,30 +49,6 @@ class ExtensionProcessManager : public content::NotificationObserver {
 
   typedef std::set<content::RenderViewHost*> ViewSet;
   const ViewSet GetAllViews() const;
-
-  // Creates a new ExtensionHost with its associated view, grouping it in the
-  // appropriate SiteInstance (and therefore process) based on the URL and
-  // profile.
-  virtual extensions::ExtensionHost* CreateViewHost(
-      const extensions::Extension* extension,
-      const GURL& url,
-      Browser* browser,
-      extensions::ViewType view_type);
-  extensions::ExtensionHost* CreateViewHost(const GURL& url,
-                                            Browser* browser,
-                                            extensions::ViewType view_type);
-  extensions::ExtensionHost* CreatePopupHost(
-      const extensions::Extension* extension,
-      const GURL& url,
-      Browser* browser);
-  extensions::ExtensionHost* CreatePopupHost(const GURL& url, Browser* browser);
-  extensions::ExtensionHost* CreateDialogHost(const GURL& url);
-  extensions::ExtensionHost* CreateInfobarHost(
-      const extensions::Extension* extension,
-      const GURL& url,
-      Browser* browser);
-  extensions::ExtensionHost* CreateInfobarHost(const GURL& url,
-                                               Browser* browser);
 
   // Creates a new UI-less extension instance.  Like CreateViewHost, but not
   // displayed anywhere.
@@ -153,10 +128,6 @@ class ExtensionProcessManager : public content::NotificationObserver {
   ExtensionProcessManager(content::BrowserContext* context,
                           content::BrowserContext* original_context);
 
-  // Called just after |host| is created so it can be registered in our lists.
-  void OnExtensionHostCreated(extensions::ExtensionHost* host,
-                              bool is_background);
-
   // Called on browser shutdown to close our extension hosts.
   void CloseBackgroundHosts();
 
@@ -189,12 +160,11 @@ class ExtensionProcessManager : public content::NotificationObserver {
   typedef std::map<content::RenderViewHost*,
       extensions::ViewType> ExtensionRenderViews;
 
+  // Called just after |host| is created so it can be registered in our lists.
+  void OnBackgroundHostCreated(extensions::ExtensionHost* host);
+
   // Close the given |host| iff it's a background page.
   void CloseBackgroundHost(extensions::ExtensionHost* host);
-
-  // Ensure browser object is not null except for certain situations.
-  void EnsureBrowserWhenRequired(Browser* browser,
-                                 extensions::ViewType view_type);
 
   // These are called when the extension transitions between idle and active.
   // They control the process of closing the background page when idle.

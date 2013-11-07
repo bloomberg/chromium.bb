@@ -10,8 +10,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/extensions/extension_process_manager.h"
-#include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_host_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #import "chrome/browser/ui/cocoa/browser_window_cocoa.h"
@@ -272,13 +271,8 @@ class DevtoolsNotificationBridge : public content::NotificationObserver {
   if (!browser)
     return nil;
 
-  ExtensionProcessManager* manager =
-      extensions::ExtensionSystem::Get(browser->profile())->process_manager();
-  DCHECK(manager);
-  if (!manager)
-    return nil;
-
-  extensions::ExtensionHost* host = manager->CreatePopupHost(url, browser);
+  extensions::ExtensionHost* host =
+      extensions::ExtensionHostFactory::CreatePopupHost(url, browser);
   DCHECK(host);
   if (!host)
     return nil;

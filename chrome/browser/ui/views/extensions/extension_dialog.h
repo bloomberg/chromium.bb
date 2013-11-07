@@ -101,9 +101,6 @@ class ExtensionDialog : public views::DialogDelegate,
                                        const string16& title,
                                        ExtensionDialogObserver* observer);
 
-  static extensions::ExtensionHost* CreateExtensionHost(const GURL& url,
-                                                        Profile* profile);
-
   void InitWindow(ui::BaseWindow* base_window, int width, int height);
 
   // Window Title
