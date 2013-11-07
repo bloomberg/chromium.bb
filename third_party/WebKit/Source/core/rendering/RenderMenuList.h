@@ -24,9 +24,9 @@
 #ifndef RenderMenuList_h
 #define RenderMenuList_h
 
-#include "core/platform/PopupMenu.h"
 #include "core/platform/PopupMenuClient.h"
 #include "core/rendering/RenderFlexibleBox.h"
+#include "platform/PopupMenu.h"
 #include "platform/geometry/LayoutRect.h"
 
 namespace WebCore {

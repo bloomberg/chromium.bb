@@ -21,6 +21,7 @@
 #ifndef PopupMenu_h
 #define PopupMenu_h
 
+#include "platform/PlatformExport.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {

@@ -31,7 +31,7 @@
 #ifndef PopupMenuChromium_h
 #define PopupMenuChromium_h
 
-#include "core/platform/PopupMenu.h"
+#include "platform/PopupMenu.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {
