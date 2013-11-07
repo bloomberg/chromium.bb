@@ -82,6 +82,9 @@ const char kEnableCarrierSwitching[]        = "enable-carrier-switching";
 const char kEnableChromeCaptivePortalDetector[] =
     "enable-chrome-captive-portal-detector";
 
+// Enables automatically initializing Google Drive offline mode on first run.
+const char kEnableDriveOfflineFirstRun[] = "enable-drive-offline-first-run";
+
 // Enables reporting recently logged in users for enterprise-managed devices.
 const char kEnableEnterpriseUserReporting[] =
     "enable-enterprise-user-reporting";

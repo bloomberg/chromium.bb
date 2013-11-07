@@ -26,6 +26,7 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/customization_document.h"
+#include "chrome/browser/chromeos/first_run/drive_first_run_controller.h"
 #include "chrome/browser/chromeos/first_run/first_run_controller.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
@@ -317,6 +318,16 @@ LoginDisplayHostImpl::~LoginDisplayHostImpl() {
     // FirstRunController manages its lifetime and destructs after tutorial
     // completion.
     (new FirstRunController())->Start();
+  }
+
+  // TODO(tengs): This should be refactored together with the first run UI.
+  // See crbug.com/314934.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableDriveOfflineFirstRun)) {
+    if (UserManager::Get()->IsCurrentUserNew()) {
+      // DriveOptInController will delete itself when finished.
+      (new DriveFirstRunController())->EnableOfflineMode();
+    }
   }
 }
 
