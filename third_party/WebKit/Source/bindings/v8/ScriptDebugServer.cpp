@@ -179,11 +179,6 @@ bool ScriptDebugServer::canBreakProgram()
 {
     if (!m_breakpointsActivated)
         return false;
-
-    // FIXME: Remove this check once m_isolate->GetCurrentContext() does not crash.
-    if (!v8::Context::InContext())
-        return false;
-
     v8::HandleScope scope(m_isolate);
     return !m_isolate->GetCurrentContext().IsEmpty();
 }
