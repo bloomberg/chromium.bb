@@ -64,6 +64,9 @@ class SettingsOverridesAPI : public ProfileKeyedAPI,
   DISALLOW_COPY_AND_ASSIGN(SettingsOverridesAPI);
 };
 
+template <>
+void ProfileKeyedAPIFactory<SettingsOverridesAPI>::DeclareFactoryDependencies();
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_SETTINGS_OVERRIDES_SETTINGS_OVERRIDES_API_H_

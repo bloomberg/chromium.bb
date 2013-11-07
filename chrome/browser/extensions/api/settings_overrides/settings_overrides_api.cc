@@ -9,6 +9,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/preference/preference_api.h"
 #include "chrome/browser/extensions/extension_prefs.h"
+#include "chrome/browser/extensions/extension_prefs_factory.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
@@ -210,6 +211,14 @@ void SettingsOverridesAPI::RegisterSearchProvider(
   TemplateURLData data = ConvertSearchProvider(*settings->search_engine);
   url_service_->AddExtensionControlledTURL(new TemplateURL(profile_, data),
                                            info.Pass());
+}
+
+template <>
+void ProfileKeyedAPIFactory<SettingsOverridesAPI>::
+    DeclareFactoryDependencies() {
+  DependsOn(ExtensionPrefsFactory::GetInstance());
+  DependsOn(PreferenceAPI::GetFactoryInstance());
+  DependsOn(TemplateURLServiceFactory::GetInstance());
 }
 
 }  // namespace extensions
