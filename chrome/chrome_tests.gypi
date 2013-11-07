@@ -331,10 +331,13 @@
             'test/base/view_event_test_base.h',
           ],
         }],
-        ['OS=="linux" and use_aura==1 and chromeos==0', {
+        ['OS=="linux" and chromeos==0', {
           'sources!': [
-            # TODO(port): Disable all the interactive panel tests. All of this
-            # is currently very flaky.
+            # TODO(port): Disable all the interactive panel tests on all linux
+            # platforms. These are badly busted on linux_aura, also time out
+            # when run under openbox.
+            #
+            # Merge this back into the next block post switch to linux_aura.
             'browser/ui/panels/base_panel_browser_test.cc',
             'browser/ui/panels/base_panel_browser_test.h',
             'browser/ui/panels/detached_panel_browsertest.cc',
@@ -344,6 +347,10 @@
             'browser/ui/panels/panel_resize_browsertest.cc',
             'browser/ui/panels/stacked_panel_browsertest.cc',
             'browser/ui/views/panels/panel_view_browsertest.cc',
+          ],
+        }],
+        ['OS=="linux" and use_aura==1 and chromeos==0', {
+          'sources!': [
             # TODO(port): These tests fail because they don't have a Screen,
             # but expect one.
             'browser/notifications/desktop_notifications_unittest.cc',
