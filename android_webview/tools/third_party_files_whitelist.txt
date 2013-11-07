@@ -45,8 +45,6 @@ chrome/browser/resources/file_manager/foreground/js/media/mediaplayer_scripts.js
 # String 'copyright' used in code.
 chrome/browser/resources/file_manager/foreground/js/media/video_player_scripts.js
 # String 'copyright' used in code.
-chrome/browser/resources/file_manager/foreground/js/photo/photo_import_scripts.js
-# String 'copyright' used in code.
 chrome/common/importer/firefox_importer_utils.cc
 # Copyright Netscape Communications Corporation; MPL, GPL v2 or LGPL v2
 # license. Not used on Android.
@@ -137,6 +135,14 @@ net/proxy/proxy_resolver_script.h
 # Copyright The Chromium Authors and Netscape Communications Corporation; BSD
 # and (MPL, GPL v2 or LGPL v2) licenses. Not used on Android.
 net/socket/ssl_client_socket_nss.cc
+# Contains the word 'Copyright' in comments
+ppapi/generators/idl_c_proto.py
+ppapi/generators/idl_outfile.py
+# Copyright (c) 2007-2009 The Khronos Group Inc.  Not used on Android
+ppapi/lib/gl/include/EGL/egl.h
+ppapi/lib/gl/include/EGL/eglext.h
+ppapi/lib/gl/include/EGL/eglplatform.h
+ppapi/lib/gl/include/KHR/khrplatform.h
 # Copyright The Android Open Source Project; ASL v2 license.
 skia/config/SkUserConfig.h
 # Contains word 'copyright' in comments.

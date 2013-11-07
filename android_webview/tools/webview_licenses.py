@@ -91,7 +91,7 @@ def _CheckLicenseHeaders(excluded_dirs_list, whitelisted_files):
   """
 
   excluded_dirs_list = [d for d in excluded_dirs_list if not 'third_party' in d]
-  # Using a commond pattern for third-partyies makes the ignore regexp shorter
+  # Using a common pattern for third-partyies makes the ignore regexp shorter
   excluded_dirs_list.append('third_party')
   # VCS dirs
   excluded_dirs_list.append('.git')
