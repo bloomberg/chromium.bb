@@ -483,8 +483,6 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
   }
 
   void TestHelper(const std::string& test_name,
-                  const std::string& test_passed_msg,
-                  const std::string& test_failed_msg,
                   const std::string& app_location) {
     ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
     ExtensionTestMessageListener launched_listener("Launched", false);
@@ -503,8 +501,8 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
         GetFirstShellWindowWebContents();
     ASSERT_TRUE(embedder_web_contents);
 
-    ExtensionTestMessageListener done_listener(test_passed_msg, false);
-    done_listener.AlsoListenForFailureMessage(test_failed_msg);
+    ExtensionTestMessageListener done_listener("TEST_PASSED", false);
+    done_listener.AlsoListenForFailureMessage("TEST_FAILED");
     EXPECT_TRUE(content::ExecuteScript(
                     embedder_web_contents,
                     base::StringPrintf("runTest('%s')", test_name.c_str())));
@@ -623,23 +621,14 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, AutoSizeSW) {
 #endif
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAutosizeAfterNavigation) {
-  TestHelper("testAutosizeAfterNavigation",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testAutosizeAfterNavigation", "web_view/shim");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAutosizeBeforeNavigation) {
-  TestHelper("testAutosizeBeforeNavigation",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testAutosizeBeforeNavigation", "web_view/shim");
 }
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAutosizeRemoveAttributes) {
-  TestHelper("testAutosizeRemoveAttributes",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testAutosizeRemoveAttributes", "web_view/shim");
 }
 
 // This test is disabled due to being flaky. http://crbug.com/282116
@@ -652,84 +641,51 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAutosizeRemoveAttributes) {
 #endif
 IN_PROC_BROWSER_TEST_F(WebViewTest,
                        MAYBE_Shim_TestAutosizeWithPartialAttributes) {
-  TestHelper("testAutosizeWithPartialAttributes",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testAutosizeWithPartialAttributes", "web_view/shim");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAPIMethodExistence) {
-  TestHelper("testAPIMethodExistence",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testAPIMethodExistence", "web_view/shim");
 }
 
 // Tests the existence of WebRequest API event objects on the request
 // object, on the webview element, and hanging directly off webview.
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestWebRequestAPIExistence) {
-  TestHelper("testWebRequestAPIExistence",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testWebRequestAPIExistence", "web_view/shim");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestChromeExtensionURL) {
-  TestHelper("testChromeExtensionURL",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testChromeExtensionURL", "web_view/shim");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestChromeExtensionRelativePath) {
-  TestHelper("testChromeExtensionRelativePath",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testChromeExtensionRelativePath", "web_view/shim");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestInvalidChromeExtensionURL) {
-  TestHelper("testInvalidChromeExtensionURL",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testInvalidChromeExtensionURL", "web_view/shim");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestEventName) {
-  TestHelper("testEventName",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testEventName", "web_view/shim");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestOnEventProperty) {
-  TestHelper("testOnEventProperties",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testOnEventProperties", "web_view/shim");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestLoadProgressEvent) {
-  TestHelper("testLoadProgressEvent",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testLoadProgressEvent", "web_view/shim");
 }
 
 // WebViewTest.Shim_TestDestroyOnEventListener is flaky, so disable it.
 // http://crbug.com/255106
 IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_Shim_TestDestroyOnEventListener) {
-  TestHelper("testDestroyOnEventListener",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testDestroyOnEventListener", "web_view/shim");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestCannotMutateEventName) {
-  TestHelper("testCannotMutateEventName",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testCannotMutateEventName", "web_view/shim");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestPartitionRaisesException) {
@@ -739,10 +695,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestPartitionRaisesException) {
     return;
 #endif
 
-  TestHelper("testPartitionRaisesException",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testPartitionRaisesException", "web_view/shim");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestExecuteScriptFail) {
@@ -752,60 +705,36 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestExecuteScriptFail) {
     return;
 #endif
 
-  TestHelper("testExecuteScriptFail",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testExecuteScriptFail", "web_view/shim");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestExecuteScript) {
-  TestHelper("testExecuteScript",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testExecuteScript", "web_view/shim");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestTerminateAfterExit) {
-  TestHelper("testTerminateAfterExit",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testTerminateAfterExit", "web_view/shim");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAssignSrcAfterCrash) {
-  TestHelper("testAssignSrcAfterCrash",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testAssignSrcAfterCrash", "web_view/shim");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest,
                        Shim_TestNavOnConsecutiveSrcAttributeChanges) {
-  TestHelper("testNavOnConsecutiveSrcAttributeChanges",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testNavOnConsecutiveSrcAttributeChanges", "web_view/shim");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestNavOnSrcAttributeChange) {
-  TestHelper("testNavOnSrcAttributeChange",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testNavOnSrcAttributeChange", "web_view/shim");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestRemoveSrcAttribute) {
-  TestHelper("testRemoveSrcAttribute",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testRemoveSrcAttribute", "web_view/shim");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestReassignSrcAttribute) {
-  TestHelper("testReassignSrcAttribute",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testReassignSrcAttribute", "web_view/shim");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestBrowserPluginNotAllowed) {
@@ -815,59 +744,35 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestBrowserPluginNotAllowed) {
     return;
 #endif
 
-  TestHelper("testBrowserPluginNotAllowed",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testBrowserPluginNotAllowed", "web_view/shim");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestNewWindow) {
-  TestHelper("testNewWindow",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testNewWindow", "web_view/shim");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestNewWindowTwoListeners) {
-  TestHelper("testNewWindowTwoListeners",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testNewWindowTwoListeners", "web_view/shim");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestNewWindowNoPreventDefault) {
-  TestHelper("testNewWindowNoPreventDefault",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testNewWindowNoPreventDefault", "web_view/shim");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestNewWindowNoReferrerLink) {
-  TestHelper("testNewWindowNoReferrerLink",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testNewWindowNoReferrerLink", "web_view/shim");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestContentLoadEvent) {
-  TestHelper("testContentLoadEvent",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testContentLoadEvent", "web_view/shim");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestWebRequestAPI) {
-  TestHelper("testWebRequestAPI",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testWebRequestAPI", "web_view/shim");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestWebRequestAPIGoogleProperty) {
-  TestHelper("testWebRequestAPIGoogleProperty",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testWebRequestAPIGoogleProperty", "web_view/shim");
 }
 
 // This test is disabled due to being flaky. http://crbug.com/309451
@@ -881,67 +786,40 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestWebRequestAPIGoogleProperty) {
 IN_PROC_BROWSER_TEST_F(
     WebViewTest,
     MAYBE_Shim_TestWebRequestListenerSurvivesReparenting) {
-  TestHelper("testWebRequestListenerSurvivesReparenting",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testWebRequestListenerSurvivesReparenting", "web_view/shim");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestLoadStartLoadRedirect) {
-  TestHelper("testLoadStartLoadRedirect",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testLoadStartLoadRedirect", "web_view/shim");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest,
                        Shim_TestLoadAbortChromeExtensionURLWrongPartition) {
-  TestHelper("testLoadAbortChromeExtensionURLWrongPartition",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testLoadAbortChromeExtensionURLWrongPartition", "web_view/shim");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestLoadAbortEmptyResponse) {
-  TestHelper("testLoadAbortEmptyResponse",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testLoadAbortEmptyResponse", "web_view/shim");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestLoadAbortIllegalChromeURL) {
-  TestHelper("testLoadAbortIllegalChromeURL",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testLoadAbortIllegalChromeURL", "web_view/shim");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestLoadAbortIllegalFileURL) {
-  TestHelper("testLoadAbortIllegalFileURL",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testLoadAbortIllegalFileURL", "web_view/shim");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestLoadAbortIllegalJavaScriptURL) {
-  TestHelper("testLoadAbortIllegalJavaScriptURL",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testLoadAbortIllegalJavaScriptURL", "web_view/shim");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestReload) {
-  TestHelper("testReload",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testReload", "web_view/shim");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestGetProcessId) {
-  TestHelper("testGetProcessId",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testGetProcessId", "web_view/shim");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestRemoveWebviewOnExit) {
@@ -997,24 +875,15 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestRemoveWebviewOnExit) {
 // Remove <webview> immediately after navigating it.
 // This is a regression test for http://crbug.com/276023.
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestRemoveWebviewAfterNavigation) {
-  TestHelper("testRemoveWebviewAfterNavigation",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testRemoveWebviewAfterNavigation", "web_view/shim");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestNavigationToExternalProtocol) {
-  TestHelper("testNavigationToExternalProtocol",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testNavigationToExternalProtocol", "web_view/shim");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestResizeWebviewResizesContent) {
-  TestHelper("testResizeWebviewResizesContent",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testResizeWebviewResizesContent", "web_view/shim");
 }
 
 // This test makes sure we do not crash if app is closed while interstitial
@@ -1547,8 +1416,8 @@ void WebViewTest::MediaAccessAPIAllowTestHelper(const std::string& test_name) {
   MockWebContentsDelegate* mock = new MockWebContentsDelegate;
   embedder_web_contents->SetDelegate(mock);
 
-  ExtensionTestMessageListener done_listener("DoneMediaTest.PASSED", false);
-  done_listener.AlsoListenForFailureMessage("DoneMediaTest.FAILED");
+  ExtensionTestMessageListener done_listener("TEST_PASSED", false);
+  done_listener.AlsoListenForFailureMessage("TEST_FAILED");
   EXPECT_TRUE(
       content::ExecuteScript(
           embedder_web_contents,
@@ -1631,15 +1500,11 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_TearDownTest) {
 // Note that the test name prefix must be "GeolocationAPI".
 IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasNoAccessAllow) {
   TestHelper("testDenyDenies",
-             "DoneGeolocationTest.PASSED",
-             "DoneGeolocationTest.FAILED",
              "web_view/geolocation/embedder_has_no_permission");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasNoAccessDeny) {
   TestHelper("testDenyDenies",
-             "DoneGeolocationTest.PASSED",
-             "DoneGeolocationTest.FAILED",
              "web_view/geolocation/embedder_has_no_permission");
 }
 
@@ -1655,16 +1520,12 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasNoAccessDeny) {
 // GeolocationAPI* test 1 of 3.
 IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasAccessAllow) {
   TestHelper("testAllow",
-             "DoneGeolocationTest.PASSED",
-             "DoneGeolocationTest.FAILED",
              "web_view/geolocation/embedder_has_permission");
 }
 
 // GeolocationAPI* test 2 of 3.
 IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasAccessDeny) {
   TestHelper("testDeny",
-             "DoneGeolocationTest.PASSED",
-             "DoneGeolocationTest.FAILED",
              "web_view/geolocation/embedder_has_permission");
 }
 
@@ -1672,8 +1533,6 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasAccessDeny) {
 IN_PROC_BROWSER_TEST_F(WebViewTest,
                        GeolocationAPIEmbedderHasAccessMultipleBridgeIdAllow) {
   TestHelper("testMultipleBridgeIdAllow",
-             "DoneGeolocationTest.PASSED",
-             "DoneGeolocationTest.FAILED",
              "web_view/geolocation/embedder_has_permission");
 }
 
@@ -1768,7 +1627,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, WhitelistedContentScript) {
   ASSERT_EQ(extension_id, content_script_whitelisted_extension->id());
 
   // Now load an app with <webview>.
-  ExtensionTestMessageListener done_listener("DoneTest", false);
+  ExtensionTestMessageListener done_listener("TEST_PASSED", false);
   LoadAndLaunchPlatformApp("web_view/content_script_whitelisted");
   ASSERT_TRUE(done_listener.WaitUntilSatisfied());
 }
@@ -1817,31 +1676,19 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, NoPermission) {
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestAlertDialog) {
-  TestHelper("testAlertDialog",
-             "DoneDialogTest.PASSED",
-             "DoneDialogTest.FAILED",
-             "web_view/dialog");
+  TestHelper("testAlertDialog", "web_view/dialog");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestConfirmDialog) {
-  TestHelper("testConfirmDialog",
-             "DoneDialogTest.PASSED",
-             "DoneDialogTest.FAILED",
-             "web_view/dialog");
+  TestHelper("testConfirmDialog", "web_view/dialog");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestConfirmDialogCancel) {
-  TestHelper("testConfirmDialogCancel",
-             "DoneDialogTest.PASSED",
-             "DoneDialogTest.FAILED",
-             "web_view/dialog");
+  TestHelper("testConfirmDialogCancel", "web_view/dialog");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestConfirmDialogDefaultCancel) {
-  TestHelper("testConfirmDialogDefaultCancel",
-             "DoneDialogTest.PASSED",
-             "DoneDialogTest.FAILED",
-             "web_view/dialog");
+  TestHelper("testConfirmDialogDefaultCancel", "web_view/dialog");
 }
 
 // TODO(fsamuel): This test consistently times out when run in parallel with
@@ -1849,17 +1696,11 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestConfirmDialogDefaultCancel) {
 // See http://crbug.com/314809
 IN_PROC_BROWSER_TEST_F(WebViewTest,
                        DISABLED_Dialog_TestConfirmDialogDefaultGCCancel) {
-  TestHelper("testConfirmDialogDefaultGCCancel",
-             "DoneDialogTest.PASSED",
-             "DoneDialogTest.FAILED",
-             "web_view/dialog");
+  TestHelper("testConfirmDialogDefaultGCCancel", "web_view/dialog");
 }
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestPromptDialog) {
-  TestHelper("testPromptDialog",
-             "DoneDialogTest.PASSED",
-             "DoneDialogTest.FAILED",
-             "web_view/dialog");
+  TestHelper("testPromptDialog", "web_view/dialog");
 }
 
 #if defined(ENABLE_PLUGINS)
@@ -1884,9 +1725,6 @@ class WebViewPluginTest : public WebViewTest {
 };
 
 IN_PROC_BROWSER_TEST_F(WebViewPluginTest, TestLoadPluginEvent) {
-  TestHelper("testPluginLoadPermission",
-             "DoneShimTest.PASSED",
-             "DoneShimTest.FAILED",
-             "web_view/shim");
+  TestHelper("testPluginLoadPermission", "web_view/shim");
 }
 #endif  // defined(ENABLE_PLUGINS)

@@ -11,14 +11,14 @@ embedder.guestURL = '';
 // has failed.
 embedder.failTest = function(msg) {
   window.console.log('test failure, reason: ' + msg);
-  chrome.test.sendMessage('DoneMediaTest.FAILED');
+  chrome.test.sendMessage('TEST_FAILED');
 };
 
 // Sends a message to WebViewTest denoting it is done and test
 // has succeeded.
 embedder.maybePassTest = function() {
   window.console.log('test passed');
-  chrome.test.sendMessage('DoneMediaTest.PASSED');
+  chrome.test.sendMessage('TEST_PASSED');
 };
 
 /** @private */

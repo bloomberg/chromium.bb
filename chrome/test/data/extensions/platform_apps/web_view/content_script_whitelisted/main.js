@@ -9,7 +9,7 @@ onload = function() {
 
   var maybePassTest = function() {
     if (contentScriptRan && webviewLoaded) {
-      chrome.test.sendMessage('DoneTest');
+      chrome.test.sendMessage('TEST_PASSED');
     }
   };
 
