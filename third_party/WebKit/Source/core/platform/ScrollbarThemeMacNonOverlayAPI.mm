@@ -68,16 +68,16 @@ void ScrollbarThemeMacNonOverlayAPI::updateButtonPlacement()
     }
 }
 
-static WebKit::WebThemeEngine::State scrollbarStateToThemeState(ScrollbarThemeClient* scrollbar)
+static blink::WebThemeEngine::State scrollbarStateToThemeState(ScrollbarThemeClient* scrollbar)
 {
     if (!scrollbar->enabled())
-        return WebKit::WebThemeEngine::StateDisabled;
+        return blink::WebThemeEngine::StateDisabled;
     if (!scrollbar->isScrollableAreaActive())
-        return WebKit::WebThemeEngine::StateInactive;
+        return blink::WebThemeEngine::StateInactive;
     if (scrollbar->pressedPart() == ThumbPart)
-        return WebKit::WebThemeEngine::StatePressed;
+        return blink::WebThemeEngine::StatePressed;
 
-    return WebKit::WebThemeEngine::StateActive;
+    return blink::WebThemeEngine::StateActive;
 }
 
 // Override ScrollbarThemeMacCommon::paint() to add support for the following:
@@ -150,20 +150,20 @@ bool ScrollbarThemeMacNonOverlayAPI::paint(ScrollbarThemeClient* scrollbar, Grap
     paintGivenTickmarks(drawingContext, scrollbar, tickmarkTrackRect, tickmarks);
 
     if (hasThumb(scrollbar)) {
-        WebKit::WebThemeEngine::ScrollbarInfo scrollbarInfo;
-        scrollbarInfo.orientation = scrollbar->orientation() == HorizontalScrollbar ? WebKit::WebThemeEngine::ScrollbarOrientationHorizontal : WebKit::WebThemeEngine::ScrollbarOrientationVertical;
-        scrollbarInfo.parent = scrollbar->isScrollViewScrollbar() ? WebKit::WebThemeEngine::ScrollbarParentScrollView : WebKit::WebThemeEngine::ScrollbarParentRenderLayer;
+        blink::WebThemeEngine::ScrollbarInfo scrollbarInfo;
+        scrollbarInfo.orientation = scrollbar->orientation() == HorizontalScrollbar ? blink::WebThemeEngine::ScrollbarOrientationHorizontal : blink::WebThemeEngine::ScrollbarOrientationVertical;
+        scrollbarInfo.parent = scrollbar->isScrollViewScrollbar() ? blink::WebThemeEngine::ScrollbarParentScrollView : blink::WebThemeEngine::ScrollbarParentRenderLayer;
         scrollbarInfo.maxValue = scrollbar->maximum();
         scrollbarInfo.currentValue = scrollbar->currentPos();
         scrollbarInfo.visibleSize = scrollbar->visibleSize();
         scrollbarInfo.totalSize = scrollbar->totalSize();
 
-        WebKit::WebCanvas* webCanvas = drawingContext->canvas();
-        WebKit::Platform::current()->themeEngine()->paintScrollbarThumb(
+        blink::WebCanvas* webCanvas = drawingContext->canvas();
+        blink::Platform::current()->themeEngine()->paintScrollbarThumb(
             webCanvas,
             scrollbarStateToThemeState(scrollbar),
-            scrollbar->controlSize() == RegularScrollbar ? WebKit::WebThemeEngine::SizeRegular : WebKit::WebThemeEngine::SizeSmall,
-            WebKit::WebRect(scrollbar->frameRect()),
+            scrollbar->controlSize() == RegularScrollbar ? blink::WebThemeEngine::SizeRegular : blink::WebThemeEngine::SizeSmall,
+            blink::WebRect(scrollbar->frameRect()),
             scrollbarInfo);
     }
 

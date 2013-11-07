@@ -112,7 +112,7 @@ PassRefPtr<MemoryActivatedFont> loadFontFromBrowserProcess(NSFont* nsFont)
     CGFontRef tmpCGFont;
     uint32_t fontID;
     // Send cross-process request to load font.
-    WebKit::WebSandboxSupport* sandboxSupport = WebKit::Platform::current()->sandboxSupport();
+    blink::WebSandboxSupport* sandboxSupport = blink::Platform::current()->sandboxSupport();
     if (!sandboxSupport) {
         // This function should only be called in response to an error loading a
         // font due to being blocked by the sandbox.

@@ -54,7 +54,7 @@
 
 using namespace WebCore;
 
-namespace WebKit {
+namespace blink {
 
 NSAttributedString* WebSubstringUtil::attributedSubstringInRange(WebFrame* webFrame, size_t location, size_t length)
 {
@@ -115,4 +115,4 @@ NSAttributedString* WebSubstringUtil::attributedSubstringInRange(WebFrame* webFr
     return [string autorelease];
 }
 
-} // namespace WebKit
+} // namespace blink

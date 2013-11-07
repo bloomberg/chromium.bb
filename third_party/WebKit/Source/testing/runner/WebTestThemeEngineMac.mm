@@ -39,9 +39,9 @@
 #import <AppKit/NSWindow.h>
 #include <Carbon/Carbon.h>
 
-using WebKit::WebCanvas;
-using WebKit::WebRect;
-using WebKit::WebThemeEngine;
+using blink::WebCanvas;
+using blink::WebRect;
+using blink::WebThemeEngine;
 
 // We can't directly tell the NSScroller to draw itself as active or inactive,
 // instead we have to make it a child of an (in)active window. This class lets

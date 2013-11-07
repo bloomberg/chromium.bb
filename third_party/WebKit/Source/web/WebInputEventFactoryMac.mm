@@ -64,7 +64,7 @@ enum {
 
 #endif  // __MAC_OS_X_VERSION_MAX_ALLOWED < 1080
 
-namespace WebKit {
+namespace blink {
 
 static int windowsKeyCodeForKeyCode(uint16_t keyCode)
 {
@@ -849,7 +849,7 @@ WebKeyboardEvent WebInputEventFactory::keyboardEvent(wchar_t character,
     // such methods, this function creates a WebInputEvent::Char event without
     // using a NSEvent object.
     WebKeyboardEvent result;
-    result.type = WebKit::WebInputEvent::Char;
+    result.type = blink::WebInputEvent::Char;
     result.timeStampSeconds = timeStampSeconds;
     result.modifiers = modifiers;
     result.windowsKeyCode = character;
@@ -1145,4 +1145,4 @@ WebGestureEvent WebInputEventFactory::gestureEvent(NSEvent *event, NSView *view)
     return result;
 }
 
-} // namespace WebKit
+} // namespace blink
