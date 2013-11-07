@@ -1988,19 +1988,16 @@ static void CalculateDrawPropertiesInternal(
     return;
   }
 
-  if (layer->DrawsContent()) {
-    gfx::Rect local_drawable_content_rect = rect_in_target_space;
-    if (layer_or_ancestor_clips_descendants)
-      local_drawable_content_rect.Intersect(clip_rect_in_target_space);
-    local_drawable_content_rect_of_subtree.Union(local_drawable_content_rect);
-  }
-
   // Compute the layer's drawable content rect (the rect is in target surface
   // space).
   layer_draw_properties.drawable_content_rect = rect_in_target_space;
   if (layer_or_ancestor_clips_descendants) {
-    layer_draw_properties.drawable_content_rect.
-        Intersect(clip_rect_in_target_space);
+    layer_draw_properties.drawable_content_rect.Intersect(
+        clip_rect_in_target_space);
+  }
+  if (layer->DrawsContent()) {
+    local_drawable_content_rect_of_subtree.Union(
+        layer_draw_properties.drawable_content_rect);
   }
 
   // Compute the layer's visible content rect (the rect is in content space).
