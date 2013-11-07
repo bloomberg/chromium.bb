@@ -376,10 +376,7 @@ void ToplevelWindowEventHandler::EndMoveLoop() {
     return;
 
   in_move_loop_ = false;
-  if (window_resizer_) {
-    window_resizer_->resizer()->RevertDrag();
-    window_resizer_.reset();
-  }
+  CompleteDrag(DRAG_REVERT, 0);
   quit_closure_.Run();
 }
 
@@ -387,9 +384,8 @@ void ToplevelWindowEventHandler::OnDisplayConfigurationChanging() {
   if (in_move_loop_) {
     move_cancelled_ = true;
     EndMoveLoop();
-  } else if (window_resizer_) {
-    window_resizer_->resizer()->RevertDrag();
-    window_resizer_.reset();
+  } else {
+    CompleteDrag(DRAG_REVERT, 0);
   }
 }
 
