@@ -270,15 +270,12 @@ class WebViewInteractiveTest
     rwh->ForwardMouseEvent(mouse_event);
   }
 
+  // TODO(lazyboy): implement
   class PopupCreatedObserver {
    public:
     PopupCreatedObserver() : created_(false), last_render_widget_host_(NULL) {
-      created_callback_ = base::Bind(
-          &PopupCreatedObserver::CreatedCallback, base::Unretained(this));
-      content::RenderWidgetHost::AddCreatedCallback(created_callback_);
     }
     virtual ~PopupCreatedObserver() {
-      content::RenderWidgetHost::RemoveCreatedCallback(created_callback_);
     }
     void Reset() {
       created_ = false;
@@ -294,14 +291,6 @@ class WebViewInteractiveTest
     }
 
    private:
-    void CreatedCallback(content::RenderWidgetHost* rwh) {
-      last_render_widget_host_ = rwh;
-      if (message_loop_.get())
-        message_loop_->Quit();
-      else
-        created_ = true;
-    }
-    content::RenderWidgetHost::CreatedCallback created_callback_;
     scoped_refptr<content::MessageLoopRunner> message_loop_;
     bool created_;
     content::RenderWidgetHost* last_render_widget_host_;

@@ -91,9 +91,6 @@ bool g_check_for_pending_resize_ack = true;
 // This timeout impacts the "choppiness" of our window resize perf.
 const int kPaintMsgTimeoutMS = 50;
 
-base::LazyInstance<std::vector<RenderWidgetHost::CreatedCallback> >
-g_created_callbacks = LAZY_INSTANCE_INITIALIZER;
-
 typedef std::pair<int32, int32> RenderWidgetHostID;
 typedef base::hash_map<RenderWidgetHostID, RenderWidgetHostImpl*>
     RoutingIDWidgetMap;
@@ -225,9 +222,6 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
   accessibility_mode_ =
       BrowserAccessibilityStateImpl::GetInstance()->accessibility_mode();
 
-  for (size_t i = 0; i < g_created_callbacks.Get().size(); i++)
-    g_created_callbacks.Get().at(i).Run(this);
-
   input_router_.reset(
       new ImmediateInputRouter(process_, this, this, routing_id_));
 
@@ -313,21 +307,6 @@ RenderWidgetHostImpl::GetAllRenderWidgetHosts() {
 // static
 RenderWidgetHostImpl* RenderWidgetHostImpl::From(RenderWidgetHost* rwh) {
   return rwh->AsRenderWidgetHostImpl();
-}
-
-// static
-void RenderWidgetHost::AddCreatedCallback(const CreatedCallback& callback) {
-  g_created_callbacks.Get().push_back(callback);
-}
-
-// static
-void RenderWidgetHost::RemoveCreatedCallback(const CreatedCallback& callback) {
-  for (size_t i = 0; i < g_created_callbacks.Get().size(); ++i) {
-    if (g_created_callbacks.Get().at(i).Equals(callback)) {
-      g_created_callbacks.Get().erase(g_created_callbacks.Get().begin() + i);
-      return;
-    }
-  }
 }
 
 void RenderWidgetHostImpl::SetView(RenderWidgetHostView* view) {
