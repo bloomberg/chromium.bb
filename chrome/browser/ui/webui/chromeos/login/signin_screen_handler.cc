@@ -565,6 +565,7 @@ void SigninScreenHandler::SetNativeWindowDelegate(
 }
 
 void SigninScreenHandler::OnNetworkReady() {
+  LOG(WARNING) << "OnNetworkReady() call.";
   MaybePreloadAuthExtension();
 }
 
@@ -1058,6 +1059,8 @@ void SigninScreenHandler::SetUserInputMethod(const std::string& username) {
 }
 
 void SigninScreenHandler::ShowSigninScreenIfReady() {
+  LOG(WARNING) << "ShowSigninScreenIfReady() call.";
+
   if (!dns_cleared_ || !cookies_cleared_ || !delegate_)
     return;
 
@@ -1134,6 +1137,8 @@ void SigninScreenHandler::UpdateAuthParams(DictionaryValue* params) {
 
 void SigninScreenHandler::LoadAuthExtension(
     bool force, bool silent_load, bool offline) {
+  LOG(WARNING) << "LoadAuthExtension() call.";
+
   DictionaryValue params;
 
   params.SetBoolean("forceReload", force);
@@ -1687,6 +1692,8 @@ void SigninScreenHandler::StartClearingCookies(
 }
 
 void SigninScreenHandler::MaybePreloadAuthExtension() {
+  LOG(WARNING) << "MaybePreloadAuthExtension() call.";
+
   // Fetching of the extension is not started before account picker page is
   // loaded because it can affect the loading speed. Also if cookies clearing
   // was initiated or |dns_clear_task_running_| then auth extension showing has
