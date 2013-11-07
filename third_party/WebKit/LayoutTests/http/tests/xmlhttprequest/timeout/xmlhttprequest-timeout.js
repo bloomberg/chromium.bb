@@ -193,16 +193,21 @@ AbortedRequest.prototype = {
     req.ontimeout = handleEvent;
 
     req.timeout = TIME_REGULAR_TIMEOUT;
-    var _this = this;
 
     function abortReq() {
-      req.abort();
+      if (me.request.readyState == XMLHttpRequest.DONE || me.request.readyState > XMLHttpRequest.OPENED) {
+        if (me.abortDelay > TIME_REGULAR_TIMEOUT)
+          me.timeoutEventFired()
+        else
+          me.noEventsFired();
+      } else
+          req.abort();
     }
 
     if (!this.shouldAbort) {
       self.setTimeout(function() {
         try {
-          _this.noEventsFired();
+          me.noEventsFired();
         }
         catch (e) {
           ok(false, "Unexpected error: " + e);
@@ -232,6 +237,14 @@ AbortedRequest.prototype = {
   },
 
   /**
+   * Ensure that an event fired, our timeout event.
+   */
+  timeoutEventFired: function() {
+    ok(this.hasFired && this.eventFired == "timeout", "A timeout event should have fired");
+    TestCounter.testComplete();
+  },
+
+  /**
    * Get a message describing this test.
    *
    * @returns {String} The test description.
@@ -243,20 +256,17 @@ AbortedRequest.prototype = {
   /**
    * Check the event received, and if it's the right (and only) one we get.
    *
-   * WebKit fires abort events even for DONE and UNSENT states, which is 
-   * discussed in http://webkit.org/b/98404
-   * That's why we chose to accept secondary "abort" events in this test.
-   *
    * @param {DOMProgressEvent} evt An event of type "load" or "timeout".
    */
   handleEvent: function(evt) {
-    if (this.hasFired && evt.type != "abort") {
-      ok(false, "Only abort event should fire: " + this.getMessage());
+    if (this.hasFired) {
+      ok(false, "Only one event should fire: " + this.getMessage());
       return;
     }
 
-    var expectedEvent = (this.abortDelay >= TIME_REGULAR_TIMEOUT && !this.hasFired) ? "timeout" : "abort";
+    var expectedEvent = (this.abortDelay >= TIME_REGULAR_TIMEOUT) ? "timeout" : "abort";
     this.hasFired = true;
+    this.eventFired = evt.type;
     is(evt.type, expectedEvent, this.getMessage());
     TestCounter.testComplete();
   }

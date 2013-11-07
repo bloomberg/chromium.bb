@@ -95,6 +95,7 @@ var tests = [
         x.upload.addEventListener("abort", f3, false);
 
         x.open("POST", "resources/does-not-exist");
+        x.send();
         x.abort();
 
         reportResult(arguments.callee.name, [ "f1", "f2" ]);

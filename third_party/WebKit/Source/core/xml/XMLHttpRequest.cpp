@@ -856,13 +856,15 @@ void XMLHttpRequest::abort()
     // Clear headers as required by the spec
     m_requestHeaders.clear();
 
-    if ((m_state <= OPENED && !sendFlag) || m_state == DONE)
+    if ((m_state <= OPENED && !sendFlag) || m_state == DONE) {
+        // No readystatechange event is dispatched.
         m_state = UNSENT;
-    else {
-        ASSERT(!m_loader);
-        changeState(DONE);
-        m_state = UNSENT;
+        return;
     }
+
+    ASSERT(!m_loader);
+    changeState(DONE);
+    m_state = UNSENT;
 
     m_progressEventThrottle.dispatchEventAndLoadEnd(XMLHttpRequestProgressEvent::create(EventTypeNames::abort));
     if (!m_uploadComplete) {

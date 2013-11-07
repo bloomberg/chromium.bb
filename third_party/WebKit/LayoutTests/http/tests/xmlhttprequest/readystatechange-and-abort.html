@@ -4,15 +4,22 @@
 <script src="../resources/testharness.js"></script>
 <script src="../resources/testharnessreport.js"></script>
 <script type="text/javascript">
+
+// Interval prepared to wait until deciding if 'abort' has been delivered (or not.)
+var TIME_DELAY_ABORT_DELIVERY = 200;
+
 test(function()
 {
     var xhr = new XMLHttpRequest;
     xhr.onreadystatechange = this.step_func(function() {
         assert_unreached("Received readystatechange event unexpectedly: readyState=" + xhr.readyState)
     });
+    xhr.onabort = this.step_func(function () {
+        assert_unreached("Unexpected 'abort' event in state UNSENT.");
+    });
     xhr.abort();
     assert_equals(xhr.readyState, xhr.UNSENT, "xhr.readyState after abort() call");
-}, "Test onreadystatechange invocation when abort()-ed in UNSENT state.");
+}, "Test onreadystatechange + onabort invocation when abort()-ed in UNSENT state.");
 
 test(function()
 {
@@ -33,14 +40,18 @@ test(function()
             assert_unreached("Unexpected readyState: " + xhr.readyState);
             return;
         }
+    });
+    xhr.onabort = this.step_func(function () {
+        assert_unreached("Unexpected 'abort' event in state OPENED.");
     });
     xhr.open("GET", "resources/test.ogv", true);
     xhr.abort();
     assert_equals(xhr.readyState, xhr.UNSENT, "xhr.readyState after abort() call");
     assert_array_equals(seenStates, [xhr.OPENED]);
-}, "Test onreadystatechange invocation when abort()-ed in OPENED state.");
+}, "Test onreadystatechange + onabort invocation when abort()-ed in OPENED state.");
 
-test(function()
+var abortAfterSendTest = async_test("Test onreadystatechange + onabort invocation when abort()-ed right after calling send().");
+abortAfterSendTest.step(function()
 {
     var xhr = new XMLHttpRequest;
     var seenStates = [];
@@ -60,14 +71,22 @@ test(function()
             return;
         }
     });
+    var abortFired = false;
+    xhr.onabort = function () {
+        abortFired = true;
+    };
     xhr.open("GET", "resources/test.ogv", true);
     xhr.send();
     xhr.abort();
     assert_equals(xhr.readyState, xhr.UNSENT, "xhr.readyState after abort() call");
     assert_array_equals(seenStates, [xhr.OPENED, xhr.DONE]);
-}, "Test onreadystatechange invocation when abort()-ed right after calling send().");
+    setTimeout(abortAfterSendTest.step_func(function () {
+        assert_true(abortFired, "Expected 'abort' event to have fired in sent request.");
+        abortAfterSendTest.done();
+    }), TIME_DELAY_ABORT_DELIVERY);
+});
 
-var abortInHeadersReceivedTest = async_test("Test onreadystatechange invocation when abort()-ed in HEADERS_RECEIVED state.");
+var abortInHeadersReceivedTest = async_test("Test onreadystatechange + onabort invocation when abort()-ed in HEADERS_RECEIVED state.");
 abortInHeadersReceivedTest.step(function()
 {
     var xhr = new XMLHttpRequest;
@@ -82,9 +101,14 @@ abortInHeadersReceivedTest.step(function()
 
         case xhr.HEADERS_RECEIVED:
             xhr.abort();
-            assert_equals(xhr.readyState, xhr.UNSENT, "xhr.readyState after abort() call");
-            assert_array_equals(seenStates, [xhr.OPENED, xhr.HEADERS_RECEIVED, xhr.DONE]);
-            abortInHeadersReceivedTest.done();
+            abortInHeadersReceivedTest.step(function () {
+                assert_equals(xhr.readyState, xhr.UNSENT, "xhr.readyState after abort() call");
+                assert_array_equals(seenStates, [xhr.OPENED, xhr.HEADERS_RECEIVED, xhr.DONE]);
+            });
+            setTimeout(abortInHeadersReceivedTest.step_func(function() {
+                assert_true(abortFired, "Expected 'abort' event to have fired in HEADERS_RECEIVED state.");
+                abortInHeadersReceivedTest.done();
+            }), TIME_DELAY_ABORT_DELIVERY);
             return;
 
         case xhr.UNSENT:
@@ -94,11 +118,15 @@ abortInHeadersReceivedTest.step(function()
             return;
         }
     });
+    var abortFired = false;
+    xhr.onabort = function () {
+        abortFired = true;
+    };
     xhr.open("GET", "resources/test.ogv", true);
     xhr.send();
 });
 
-var abortInLoadingTest = async_test("Test onreadystatechange invocation when abort()-ed in LOADING state.");
+var abortInLoadingTest = async_test("Test onreadystatechange + onabort invocation when abort()-ed in LOADING state.");
 abortInLoadingTest.step(function()
 {
     var xhr = new XMLHttpRequest;
@@ -114,9 +142,14 @@ abortInLoadingTest.step(function()
 
         case xhr.LOADING:
             xhr.abort();
-            assert_equals(xhr.readyState, xhr.UNSENT, "xhr.readyState after abort() call");
-            assert_array_equals(seenStates, [xhr.OPENED, xhr.HEADERS_RECEIVED, xhr.LOADING, xhr.DONE]);
-            abortInLoadingTest.done();
+            abortInLoadingTest.step(function () {
+                assert_equals(xhr.readyState, xhr.UNSENT, "xhr.readyState after abort() call");
+                assert_array_equals(seenStates, [xhr.OPENED, xhr.HEADERS_RECEIVED, xhr.LOADING, xhr.DONE]);
+            });
+            setTimeout(abortInLoadingTest.step_func(function() {
+                assert_true(abortFired, "Expected 'abort' event to have fired in LOADING state.");
+                abortInLoadingTest.done();
+            }), TIME_DELAY_ABORT_DELIVERY);
             return;
 
         case xhr.UNSENT:
@@ -125,11 +158,15 @@ abortInLoadingTest.step(function()
             return;
         }
     });
+    var abortFired = false;
+    xhr.onabort = function () {
+        abortFired = true;
+    };
     xhr.open("GET", "resources/test.ogv", true);
     xhr.send();
 });
 
-var abortInDoneTest = async_test("Test onreadystatechange invocation when abort()-ed in DONE state.");
+var abortInDoneTest = async_test("Test onreadystatechange + onabort invocation when abort()-ed in DONE state.");
 abortInDoneTest.step(function()
 {
     var xhr = new XMLHttpRequest;
@@ -145,9 +182,14 @@ abortInDoneTest.step(function()
 
         case xhr.DONE:
             xhr.abort();
-            assert_equals(xhr.readyState, xhr.UNSENT, "xhr.readyState after abort() call");
-            assert_array_equals(seenStates, [xhr.OPENED, xhr.HEADERS_RECEIVED, xhr.LOADING, xhr.DONE]);
-            abortInDoneTest.done();
+            abortInDoneTest.step(function () {
+                assert_equals(xhr.readyState, xhr.UNSENT, "xhr.readyState after abort() call");
+                assert_array_equals(seenStates, [xhr.OPENED, xhr.HEADERS_RECEIVED, xhr.LOADING, xhr.DONE]);
+            });
+
+            setTimeout(abortInDoneTest.step_func(function() {
+                abortInDoneTest.done();
+            }), TIME_DELAY_ABORT_DELIVERY);
             return;
 
         case xhr.UNSENT:
@@ -155,6 +197,9 @@ abortInDoneTest.step(function()
             assert_unreached("Unexpected readyState: " + xhr.readyState)
             return;
         }
+    });
+    xhr.onabort = abortInDoneTest.step_func(function () {
+        assert_unreached("abort() should not cause the abort event to fire");
     });
     xhr.open("GET", "resources/test.ogv", true);
     xhr.send();
