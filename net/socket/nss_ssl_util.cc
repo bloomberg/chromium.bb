@@ -70,6 +70,11 @@ class NSSSSLInitSingleton {
           enabled = false;
         }
 
+        // We also disable ChaCha20 based cipher suites for now because we
+        // aren't quite ready to use them in M32.
+        if (info.symCipher == ssl_calg_chacha20)
+          enabled = false;
+
         if (ssl_ciphers[i] == TLS_DHE_DSS_WITH_AES_128_CBC_SHA) {
           // Enabled to allow servers with only a DSA certificate to function.
           enabled = true;
