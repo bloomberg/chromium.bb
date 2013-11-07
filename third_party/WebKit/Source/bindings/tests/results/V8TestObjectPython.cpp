@@ -5195,6 +5195,20 @@ static void customElementCallbacksVoidMethodMethodCallback(const v8::FunctionCal
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void deprecatedVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    imp->deprecatedVoidMethod();
+}
+
+static void deprecatedVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    UseCounter::countDeprecation(activeExecutionContext(), UseCounter::voidMethod);
+    TestObjectPythonV8Internal::deprecatedVoidMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 } // namespace TestObjectPythonV8Internal
 
 static const V8DOMConfiguration::AttributeConfiguration V8TestObjectPythonAttributes[] = {
@@ -5420,6 +5434,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectPythonMethods[]
     {"conditionalConditionCustomVoidMethod", TestObjectPythonV8Internal::conditionalConditionCustomVoidMethodMethodCallback, 0, 0},
 #endif // ENABLE(Condition)
     {"customElementCallbacksVoidMethod", TestObjectPythonV8Internal::customElementCallbacksVoidMethodMethodCallback, 0, 0},
+    {"deprecatedVoidMethod", TestObjectPythonV8Internal::deprecatedVoidMethodMethodCallback, 0, 0},
 };
 
 static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectPythonTemplate(v8::Handle<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)

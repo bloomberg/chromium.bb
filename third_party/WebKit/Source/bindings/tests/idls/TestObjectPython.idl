@@ -316,4 +316,5 @@ interface TestObjectPython {
     [Custom] void customVoidMethod();
     [Conditional=Condition, Custom] void conditionalConditionCustomVoidMethod();
     [CustomElementCallbacks] void customElementCallbacksVoidMethod();
+    [DeprecateAs=voidMethod] void deprecatedVoidMethod();
 };
