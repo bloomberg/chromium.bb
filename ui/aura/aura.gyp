@@ -126,6 +126,11 @@
             'input_state_lookup.cc',
           ],
         }],
+        ['use_ozone==1', {
+          'dependencies': [
+            '../ozone/ozone.gyp:ozone',
+          ],
+        }],
       ],
     },
     {
