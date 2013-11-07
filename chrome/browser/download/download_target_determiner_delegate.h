@@ -62,11 +62,6 @@ class DownloadTargetDeterminerDelegate {
   typedef base::Callback<void(content::DownloadDangerType danger_type)>
   CheckDownloadUrlCallback;
 
-  // Callback to be invoked after GetFileMimeType() completes. The parameter
-  // should be the MIME type of the requested file. If no MIME type can be
-  // determined, it should be set to the empty string.
-  typedef base::Callback<void(const std::string&)> GetFileMimeTypeCallback;
-
   // Notifies extensions of the impending filename determination. |virtual_path|
   // is the current suggested virtual path. The |callback| should be invoked to
   // indicate whether any extensions wish to override the path.
@@ -115,9 +110,6 @@ class DownloadTargetDeterminerDelegate {
                                 const base::FilePath& virtual_path,
                                 const CheckDownloadUrlCallback& callback) = 0;
 
-  // Get the MIME type for the given file.
-  virtual void GetFileMimeType(const base::FilePath& path,
-                               const GetFileMimeTypeCallback& callback) = 0;
  protected:
   virtual ~DownloadTargetDeterminerDelegate();
 };

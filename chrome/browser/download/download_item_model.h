@@ -126,18 +126,6 @@ class DownloadItemModel {
   // Change what's returned by ShouldNotifyUI().
   void SetShouldNotifyUI(bool should_notify);
 
-  // Returns |true| if opening in the browser is preferred for this download. If
-  // |false|, the download should be opened with the system default application.
-  bool ShouldPreferOpeningInBrowser() const;
-
-  // Change what's returned by ShouldPreferOpeningInBrowser to |preference|.
-  void SetShouldPreferOpeningInBrowser(bool preference);
-
-  // Open the download using the platform handler for the download. The behavior
-  // of this method will be different from DownloadItem::OpenDownload() if
-  // ShouldPreferOpeningInBrowser().
-  void OpenUsingPlatformHandler();
-
   content::DownloadItem* download() { return download_; }
 
  private:

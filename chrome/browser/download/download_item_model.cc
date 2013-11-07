@@ -12,11 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/supports_user_data.h"
 #include "base/time/time.h"
-#include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_crx_util.h"
-#include "chrome/browser/download/download_service.h"
-#include "chrome/browser/download/download_service_factory.h"
-#include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/safe_browsing/download_feedback_service.h"
 #include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_interrupt_reasons.h"
@@ -56,13 +52,6 @@ class DownloadItemModelData : public base::SupportsUserData::Data {
     should_notify_ui_ = should_notify_ui;
   }
 
-  bool should_prefer_opening_in_browser() const {
-    return should_prefer_opening_in_browser_;
-  }
-  void set_should_prefer_opening_in_browser(bool preference) {
-    should_prefer_opening_in_browser_ = preference;
-  }
-
  private:
   DownloadItemModelData();
   virtual ~DownloadItemModelData() {}
@@ -76,10 +65,6 @@ class DownloadItemModelData : public base::SupportsUserData::Data {
   // Whether the UI should be notified when the download is ready to be
   // presented.
   bool should_notify_ui_;
-
-  // Whether the download should be opened in the browser vs. the system handler
-  // for the file type.
-  bool should_prefer_opening_in_browser_;
 };
 
 // static
@@ -105,8 +90,7 @@ DownloadItemModelData* DownloadItemModelData::GetOrCreate(
 
 DownloadItemModelData::DownloadItemModelData()
     : should_show_in_shelf_(true),
-      should_notify_ui_(false),
-      should_prefer_opening_in_browser_(false) {
+      should_notify_ui_(false) {
 }
 
 string16 InterruptReasonStatusMessage(int reason) {
@@ -548,16 +532,6 @@ void DownloadItemModel::SetShouldNotifyUI(bool should_notify) {
   data->set_should_notify_ui(should_notify);
 }
 
-bool DownloadItemModel::ShouldPreferOpeningInBrowser() const {
-  const DownloadItemModelData* data = DownloadItemModelData::Get(download_);
-  return data && data->should_prefer_opening_in_browser();
-}
-
-void DownloadItemModel::SetShouldPreferOpeningInBrowser(bool preference) {
-  DownloadItemModelData* data = DownloadItemModelData::GetOrCreate(download_);
-  data->set_should_prefer_opening_in_browser(preference);
-}
-
 string16 DownloadItemModel::GetProgressSizesString() const {
   string16 size_ratio;
   int64 size = GetCompletedBytes();
@@ -630,19 +604,4 @@ string16 DownloadItemModel::GetInProgressStatusString() const {
 
   // Instead of displaying "0 B" we say "Starting..."
   return l10n_util::GetStringUTF16(IDS_DOWNLOAD_STATUS_STARTING);
-}
-
-void DownloadItemModel::OpenUsingPlatformHandler() {
-  DownloadService* download_service =
-      DownloadServiceFactory::GetForBrowserContext(
-          download_->GetBrowserContext());
-  if (!download_service)
-    return;
-
-  ChromeDownloadManagerDelegate* delegate =
-      download_service->GetDownloadManagerDelegate();
-  if (!delegate)
-    return;
-  delegate->OpenDownloadUsingPlatformHandler(download_);
-  RecordDownloadOpenMethod(DOWNLOAD_OPEN_METHOD_USER_PLATFORM);
 }
