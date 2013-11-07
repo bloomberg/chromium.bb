@@ -213,3 +213,22 @@ def Percentile(values, percentile):
     alpha = n * percentile - 0.5 - floor_index
     return floor_value + alpha * (ceil_value - floor_value)
 
+
+def GeometricMean(values):
+  """Compute a rounded geometric mean from an array of values."""
+  if not values:
+    return None
+  # To avoid infinite value errors, make sure no value is less than 0.001.
+  new_values = []
+  for value in values:
+    if value > 0.001:
+      new_values.append(value)
+    else:
+      new_values.append(0.001)
+  # Compute the sum of the log of the values.
+  log_sum = sum(map(math.log, new_values))
+  # Raise e to that sum over the number of values.
+  mean = math.pow(math.e, (log_sum / len(new_values)))
+  # Return the rounded mean.
+  return int(round(mean))
+

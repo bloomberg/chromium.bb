@@ -1,0 +1,13 @@
+{
+    "page_set": "../peacekeeper_string.json", 
+    "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.", 
+    "archives": {
+        "peacekeeper_string_000.wpr": [
+            "http://peacekeeper.futuremark.com/run.action?debug=true&repeat=false&forceSuiteName=string&forceTestName=stringChat", 
+            "http://peacekeeper.futuremark.com/run.action?debug=true&repeat=false&forceSuiteName=string&forceTestName=stringDetectBrowser", 
+            "http://peacekeeper.futuremark.com/run.action?debug=true&repeat=false&forceSuiteName=string&forceTestName=stringFilter", 
+            "http://peacekeeper.futuremark.com/run.action?debug=true&repeat=false&forceSuiteName=string&forceTestName=stringWeighted", 
+            "http://peacekeeper.futuremark.com/run.action?debug=true&repeat=false&forceSuiteName=string&forceTestName=stringValidateForm"
+        ]
+    }
+}

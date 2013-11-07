@@ -1,0 +1,12 @@
+{
+    "page_set": "../peacekeeper_render.json", 
+    "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.", 
+    "archives": {
+        "peacekeeper_render_000.wpr": [
+            "http://peacekeeper.futuremark.com/run.action?debug=true&repeat=false&forceSuiteName=render&forceTestName=renderGrid01", 
+            "http://peacekeeper.futuremark.com/run.action?debug=true&repeat=false&forceSuiteName=render&forceTestName=renderGrid02", 
+            "http://peacekeeper.futuremark.com/run.action?debug=true&repeat=false&forceSuiteName=render&forceTestName=renderGrid03", 
+            "http://peacekeeper.futuremark.com/run.action?debug=true&repeat=false&forceSuiteName=render&forceTestName=renderPhysics"
+        ]
+    }
+}

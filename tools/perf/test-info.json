@@ -8,7 +8,7 @@
     ]
   },
   "canvasmark": {
-    "description": "Runs Canvasmark HTML5, Canvas 2D rendering and javascript benchmark.\n\nCanvasMark tests the HTML5 <canvas> rendering performance for commonly used operations in HTML5 games: bitmaps, canvas drawing, alpha blending, polygon fills, shadows and text functions.(http://www.kevs3d.co.uk/dev/canvasmark/)",
+    "description": "Runs Canvasmark HTML5, Canvas 2D rendering and javascript benchmark.\n\nCanvasMark tests the HTML5 <canvas> rendering performance for commonly used operations in HTML5 games: bitmaps, canvas drawing, alpha blending, polygon fills, shadows and text functions.[HTML5 Canvas demo by Kevin Roast](http://www.kevs3d.co.uk/dev/canvasmark/)",
     "code": ["chrome/src/tools/perf/benchmarks/canvasmark.py"]
   },
   "cc_perftests":{
@@ -157,6 +157,12 @@
   },
   "robohornet_pro":{
     "description":"Milliseconds to complete the [RoboHornetPro demo by Microsoft](http://ie.microsoft.com/testdrive/performance/robohornetpro/)"
+  },
+  "peacekeeper":{
+    "description":"Peacekeeper measures browser's performance by testing its JavaScript functionality.\n\nJavaScript is a widely used programming language used in the creation of modern websites to provide features such as animation, navigation,forms and other common requirements. By measuring a browser's ability to handle commonly used JavaScript functions Peacekeeper can evaluate its performance. Peacekeeper scores are measured in operations per second or rendered frames per second depending on the test. Final Score is computed by calculating geometric mean of individual tests scores. [Peacekeeper by Futuremark](http://peacekeeper.futuremark.com)",
+    "code":[
+      "chrome/src/tools/perf/benchmark/peacekeeper.py"
+    ]
   },
   "sizes":{
     "description":"Tracks binary sizes and number of static initializers.",

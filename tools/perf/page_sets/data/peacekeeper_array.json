@@ -1,0 +1,10 @@
+{
+    "page_set": "../peacekeeper_array.json", 
+    "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.", 
+    "archives": {
+        "peacekeeper_array_000.wpr": [
+            "http://peacekeeper.futuremark.com/run.action?debug=true&repeat=false&forceSuiteName=array&forceTestName=arrayCombined01", 
+            "http://peacekeeper.futuremark.com/run.action?debug=true&repeat=false&forceSuiteName=array&forceTestName=arrayWeighted"
+        ]
+    }
+}
