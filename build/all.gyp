@@ -354,6 +354,17 @@
             '../printing/printing.gyp:printing_unittests',
           ],
         }],
+        ['use_aura==1', {
+          'dependencies': [
+            '../ui/aura/aura.gyp:aura_unittests',
+            '../ui/compositor/compositor.gyp:compositor_unittests',
+          ],
+        }],
+        ['use_ash==1', {
+          'dependencies': [
+            '../ash/ash.gyp:ash_unittests',
+          ],
+        }],
       ],
     }, # target_name: chromium_builder_tests
     {
