@@ -570,8 +570,8 @@ class PatchSeries(object):
       A sequence of the necessary cros_patch.GitRepoPatch objects for
       this transaction.
     """
-    plan, stack = [], cros_patch.PatchCache()
-    self._ResolveChange(change, plan, stack, limit_to=limit_to)
+    plan, seen = [], cros_patch.PatchCache()
+    self._AddChangeToPlanWithDeps(change, plan, seen, limit_to=limit_to)
     return plan
 
   def CreateTransactions(self, changes, limit_to=None):
@@ -656,41 +656,53 @@ class PatchSeries(object):
 
     return ordered_plans, failed
 
-  def _ResolveChange(self, change, plan, stack, limit_to=None):
-    """Helper for resolving a node and its dependencies into the plan.
-
-    No external code should call this; all internal code should invoke this
-    rather than ResolveTransaction since this maintains the necessary stack
-    tracking that is used to detect and handle cyclic dependencies.
+  @_PatchWrapException
+  def _AddChangeToPlanWithDeps(self, change, plan, seen, limit_to=None):
+    """Add a change and its dependencies into a plan.
 
     Raises:
-      If the change couldn't be resolved, a DependencyError or
-      cros_patch.PatchException can be raised.
+      DependencyError: If we could not resolve a dependency.
+      GerritException or GOBError: If there is a failure in querying gerrit.
     """
-    if change in self._committed_cache:
+    if change in self._committed_cache or change in plan:
+      # If the requested change is already in the plan, then we have already
+      # processed its dependencies.
       return
-    if change in stack:
-      # If the requested change is already in the stack, then immediately
-      # return- it's a cycle (requires CQ-DEPEND for it to occur); if
-      # the earlier resolution attempt succeeds, than implicitly this
-      # attempt will.
-      # TODO(ferringb,sosa): this check actually doesn't handle gerrit
-      # change numbers; support for that is broken currently anyways,
-      # but this is one of the spots that needs fixing for that support.
-      return
-    stack.Inject(change)
-    try:
-      self._PerformResolveChange(change, plan, stack, limit_to=limit_to)
-    finally:
-      stack.Remove(change)
+
+    # Get a list of the changes that haven't been committed.
+    # These are returned as strings (e.g., the Change ID or
+    # change number of the patch we need to look up.)
+    gerrit_deps, paladin_deps = self.GetDepsForChange(change)
+
+    # Only process the dependencies for each change once. We prioritize Gerrit
+    # dependencies over CQ dependencies, since Gerrit dependencies might be
+    # required in order for the change to apply.
+    if change not in seen:
+      gerrit_deps = self._LookupUncommittedChanges(
+          change, gerrit_deps, limit_to=limit_to, parent_lookup=True)
+      seen.Inject(change)
+      for dep in gerrit_deps:
+        self._AddChangeToPlanWithDeps(dep, plan, seen, limit_to=limit_to)
+
+    # If there are cyclic dependencies, we might have already applied this
+    # patch as part of dependency resolution. If not, apply this patch.
+    if change not in plan:
+      plan.append(change)
+
+      # Process paladin deps last, so as to avoid circular dependencies between
+      # gerrit dependencies and paladin dependencies.
+      paladin_deps = self._LookupUncommittedChanges(
+          change, paladin_deps, limit_to=limit_to)
+      for dep in paladin_deps:
+        self._AddChangeToPlanWithDeps(dep, plan, seen, limit_to=limit_to)
 
   @_PatchWrapException
   def GetDepsForChange(self, change):
     """Look up the gerrit/paladin deps for a change
 
     Raises:
-      DependencyError: Thrown if there is an issue w/ the commits
-        metadata (either couldn't find the parent, or bad CQ-DEPEND).
+      DependencyError: If we could not resolve a dependency.
+      GerritException or GOBError: If there is a failure in querying gerrit.
 
     Returns:
       A tuple of the change's GerritDependencies(), and PaladinDependencies()
@@ -702,30 +714,6 @@ class PatchSeries(object):
           change.GerritDependencies(),
           change.PaladinDependencies(git_repo))
     return val
-
-  def _PerformResolveChange(self, change, plan, stack, limit_to=None):
-    """Resolve and ultimately add a change into the plan."""
-    # Pull all deps up front, then process them.  Simplifies flow, and
-    # localizes the error closer to the cause.
-    gdeps, pdeps = self.GetDepsForChange(change)
-    gdeps = self._LookupUncommittedChanges(change, gdeps, limit_to=limit_to,
-                                           parent_lookup=True)
-    pdeps = self._LookupUncommittedChanges(change, pdeps, limit_to=limit_to)
-
-    def _ProcessDeps(deps):
-      for dep in deps:
-        if dep in plan:
-          continue
-        try:
-          self._ResolveChange(dep, plan, stack, limit_to=limit_to)
-        except cros_patch.PatchException as e:
-          raise cros_patch.DependencyError, \
-                cros_patch.DependencyError(change, e), \
-                sys.exc_info()[2]
-
-    _ProcessDeps(gdeps)
-    plan.append(change)
-    _ProcessDeps(pdeps)
 
   def InjectCommittedPatches(self, changes):
     """Record that the given patches are already committed.

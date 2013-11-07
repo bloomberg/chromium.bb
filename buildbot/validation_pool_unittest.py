@@ -135,8 +135,11 @@ class Base(cros_test_lib.MockTestCase):
 
   @staticmethod
   def _LookupAliases(patch):
-    return [getattr(patch, x) for x in ('change_id', 'sha1', 'gerrit_number')
-            if hasattr(patch, x)]
+    aliases = [getattr(patch, x) for x in ('change_id', 'sha1', 'gerrit_number')
+               if hasattr(patch, x)]
+    if patch.internal:
+      aliases = ['*%s' % x for x in aliases]
+    return aliases
 
   def GetPatches(self, how_many=1, always_use_list=False, **kwargs):
     """Get a sequential list of patches.
@@ -149,7 +152,7 @@ class Base(cros_test_lib.MockTestCase):
     patches = [self.MockPatch(**kwargs) for _ in xrange(how_many)]
     if self.patch_mock:
       for i, patch in enumerate(patches):
-        self.patch_mock.AddDependencies(patch, patches[:i + 1])
+        self.patch_mock.SetGerritDependencies(patch, patches[:i + 1])
     if how_many == 1 and not always_use_list:
       return patches[0]
     return patches
@@ -382,7 +385,7 @@ class TestPatchSeries(MoxBase):
     self.SetPatchApply(patch1)
 
     self.mox.ReplayAll()
-    self.assertResults(series, patches, [patch1, patch2, patch3])
+    self.assertResults(series, patches, patches)
     self.mox.VerifyAll()
 
   def testGerritLazyMapping(self):
@@ -418,7 +421,7 @@ class TestPatchSeries(MoxBase):
   def testCrosGerritDeps(self, cros_internal=True):
     """Test that we can apply changes correctly and respect deps.
 
-    This tests a simple out-of-order change where change1 depends on change2
+    This tests a simple out-of-order change where change1 depends on change3
     but tries to get applied before change2.  What should happen is that
     we should notice change2 is a dep of change1 and apply it first.
     """
@@ -428,17 +431,16 @@ class TestPatchSeries(MoxBase):
     patch1 = self.MockPatch(remote=constants.EXTERNAL_REMOTE)
     patch2 = self.MockPatch(remote=constants.INTERNAL_REMOTE)
     patch3 = self.MockPatch(remote=constants.EXTERNAL_REMOTE)
-    patches = [patch3, patch2, patch1]
-    applied_patches = patches if cros_internal else [patch3, patch1]
+    patches = [patch1, patch2, patch3]
+    applied_patches = patches[::-1] if cros_internal else [patch3, patch1]
 
-    self.SetPatchDeps(patch1)
-    self.SetPatchDeps(patch2, cq=[patch1.id])
+    self.SetPatchDeps(patch1, [patch3.id])
+    self.SetPatchDeps(patch2)
     self.SetPatchDeps(patch3, cq=['*%s' % patch2.id])
 
-    self.SetPatchApply(patch1)
     if cros_internal:
       self.SetPatchApply(patch2)
-      self._SetQuery(series, patch2).AndReturn(patch2)
+    self.SetPatchApply(patch1)
     self.SetPatchApply(patch3)
 
     self.mox.ReplayAll()
@@ -511,7 +513,7 @@ class TestPatchSeries(MoxBase):
     self.SetPatchApply(patch1)
 
     self.mox.ReplayAll()
-    self.assertResults(series, patches, [patch2, patch1])
+    self.assertResults(series, patches, patches[::-1])
 
   def testApplyPartialFailures(self):
     """Test that can apply changes correctly when one change fails to apply.
@@ -549,8 +551,8 @@ class TestPatchSeries(MoxBase):
 
     This tests a total of 2 change chains where the first change we see
     only has a partial chain with the 3rd change having the whole chain i.e.
-    1->2, 3->1->2, 4->nothing.  Since we get these in the order 1,2,3,4 the
-    order we should apply is 2,1,3,4.
+    1->2, 3->1->2.  Since we get these in the order 1,2,3,4,5 the order we
+    should apply is 2,1,3,4,5.
 
     This test also checks the patch order to verify that Apply re-orders
     correctly based on the chain.
@@ -610,13 +612,18 @@ class MockPatchSeries(partial_mock.PartialMock):
   def __init__(self):
     partial_mock.PartialMock.__init__(self)
     self.deps = {}
+    self.cq_deps = {}
 
-  def AddDependencies(self, patch, deps):
-    """Add |deps| to the dependencies of |patch|."""
+  def SetGerritDependencies(self, patch, deps):
+    """Add |deps| to the Gerrit dependencies of |patch|."""
     self.deps[patch] = deps
 
+  def SetCQDependencies(self, patch, deps):
+    """Add |deps| to the CQ dependencies of |patch|."""
+    self.cq_deps[patch] = deps
+
   def GetDepsForChange(self, _inst, patch):
-    return self.deps.get(patch, []), []
+    return self.deps.get(patch, []), self.cq_deps.get(patch, [])
 
   def _GetGerritPatch(self, _inst, dep, **_kwargs):
     return dep
@@ -1212,7 +1219,7 @@ class TestCreateDisjointTransactions(Base):
     # It is not possible to truncate a circular plan. Verify that an error
     # is reported in this case.
     patches = self.GetPatches(5)
-    self.patch_mock.AddDependencies(patches[0], [patches[-1]])
+    self.patch_mock.SetGerritDependencies(patches[0], [patches[-1]])
     self.verifyTransactions([patches], circular=True)
     with cros_test_lib.LoggingCapturer():
       call_count = self.runUnresolvedPlan(patches, max_txn_length=3)
@@ -1280,13 +1287,12 @@ class BaseSubmitPoolTestCase(Base, cros_build_lib_unittest.RunCommandTestCase):
   def GetTracebacks(self):
     return []
 
-  def SubmitPool(self, submitted=(), rejected=(), cyclic=False, **kwargs):
+  def SubmitPool(self, submitted=(), rejected=(), **kwargs):
     """Helper function for testing that we can submit a pool successfully.
 
     Args:
       submitted: List of changes that we expect to be submitted.
       rejected: List of changes that we expect to be rejected.
-      cyclic: Whether the list of patches is cyclic.
       **kwargs: Keyword arguments for SetUpPatchPool.
     """
     # self.ignores maps projects to a list of stages to ignore. Use it.
@@ -1305,10 +1311,7 @@ class BaseSubmitPoolTestCase(Base, cros_build_lib_unittest.RunCommandTestCase):
     # Check that the right patches were submitted and rejected.
     self.assertItemsEqual(list(rejected), list(actually_rejected))
     actually_submitted = self.pool_mock.GetSubmittedChanges()
-    if cyclic:
-      self.assertItemsEqual(submitted, actually_submitted)
-    else:
-      self.assertEqual(list(submitted), actually_submitted)
+    self.assertEqual(list(submitted), actually_submitted)
 
 
 class SubmitPoolTest(BaseSubmitPoolTestCase):
@@ -1347,15 +1350,21 @@ class SubmitPoolTest(BaseSubmitPoolTestCase):
 
   def testSubmitCycle(self):
     """Submit a cyclic set of dependencies"""
-    self.patch_mock.AddDependencies(self.patches[0], [self.patches[1]])
-    self.SubmitPool(submitted=self.patches[::-1], cyclic=True)
+    self.patch_mock.SetCQDependencies(self.patches[0], [self.patches[1]])
+    self.SubmitPool(submitted=self.patches)
+
+  def testSubmitReverseCycle(self):
+    """Submit a cyclic set of dependencies, specified in reverse order."""
+    self.patch_mock.SetCQDependencies(self.patches[1], [self.patches[0]])
+    self.patch_mock.SetGerritDependencies(self.patches[1], [])
+    self.patch_mock.SetGerritDependencies(self.patches[0], [self.patches[1]])
+    self.SubmitPool(submitted=self.patches[::-1])
 
   def testSubmitPartialCycle(self):
     """Submit a failed cyclic set of dependencies"""
     self.pool_mock.max_submits = 1
-    self.patch_mock.AddDependencies(self.patches[0], [self.patches[1]])
-    self.SubmitPool(submitted=self.patches[::-1],
-                    rejected=[self.patches[0]], cyclic=True)
+    self.patch_mock.SetCQDependencies(self.patches[0], [self.patches[1]])
+    self.SubmitPool(submitted=self.patches, rejected=[self.patches[1]])
     (submitted, rejected) = self.pool_mock.GetSubmittedChanges()
     failed_submit = validation_pool.PatchFailedToSubmit(
         rejected, validation_pool.ValidationPool.INCONSISTENT_SUBMIT_MSG)
@@ -1367,9 +1376,8 @@ class SubmitPoolTest(BaseSubmitPoolTestCase):
   def testSubmitFailedCycle(self):
     """Submit a failed cyclic set of dependencies"""
     self.pool_mock.max_submits = 0
-    self.patch_mock.AddDependencies(self.patches[0], [self.patches[1]])
-    self.SubmitPool(submitted=[self.patches[1]],
-                    rejected=self.patches[::-1], cyclic=True)
+    self.patch_mock.SetCQDependencies(self.patches[0], [self.patches[1]])
+    self.SubmitPool(submitted=[self.patches[0]], rejected=self.patches)
     (attempted,) = self.pool_mock.GetSubmittedChanges()
     (rejected,) = [x for x in self.patches if x != attempted]
     failed_submit = validation_pool.PatchFailedToSubmit(
