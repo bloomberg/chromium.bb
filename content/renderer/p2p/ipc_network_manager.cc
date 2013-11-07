@@ -46,18 +46,32 @@ void IpcNetworkManager::OnNetworkListChanged(
   if (!network_list_received_)
     network_list_received_ = true;
 
+  // Note: 32 and 64 are the arbitrary(kind of) prefix length used to
+  // differentiate IPv4 and IPv6 addresses.
+  // talk_base::Network uses these prefix_length to compare network
+  // interfaces discovered.
   std::vector<talk_base::Network*> networks;
   for (net::NetworkInterfaceList::const_iterator it = list.begin();
        it != list.end(); it++) {
-    uint32 address;
-    if (it->address.size() != net::kIPv4AddressSize)
-      continue;
-    memcpy(&address, &it->address[0], sizeof(uint32));
-    address = talk_base::NetworkToHost32(address);
-    talk_base::Network* network = new talk_base::Network(
-        it->name, it->name, talk_base::IPAddress(address), 32);
-    network->AddIP(talk_base::IPAddress(address));
-    networks.push_back(network);
+    if (it->address.size() == net::kIPv4AddressSize) {
+      uint32 address;
+      memcpy(&address, &it->address[0], sizeof(uint32));
+      address = talk_base::NetworkToHost32(address);
+      talk_base::Network* network = new talk_base::Network(
+          it->name, it->name, talk_base::IPAddress(address), 32);
+      network->AddIP(talk_base::IPAddress(address));
+      networks.push_back(network);
+    } else if (it->address.size() == net::kIPv6AddressSize) {
+      in6_addr address;
+      memcpy(&address, &it->address[0], sizeof(in6_addr));
+      talk_base::IPAddress ip6_addr(address);
+      if (!talk_base::IPIsPrivate(ip6_addr)) {
+        talk_base::Network* network = new talk_base::Network(
+            it->name, it->name, ip6_addr, 64);
+        network->AddIP(ip6_addr);
+        networks.push_back(network);
+      }
+    }
   }
 
   bool changed = false;
