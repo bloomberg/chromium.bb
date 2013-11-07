@@ -117,6 +117,9 @@ if (state.hadException()) {
 static void {{method.name}}MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    {% if method.measure_as %}
+    UseCounter::count(activeDOMWindow(), UseCounter::{{method.measure_as}});
+    {% endif %}
     {% if method.deprecate_as %}
     UseCounter::countDeprecation(activeExecutionContext(), UseCounter::{{method.deprecate_as}});
     {% endif %}

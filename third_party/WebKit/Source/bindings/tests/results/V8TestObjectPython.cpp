@@ -5235,6 +5235,20 @@ static void implementedAsVoidMethodMethodCallback(const v8::FunctionCallbackInfo
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void measureAsVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    imp->measureAsVoidMethod();
+}
+
+static void measureAsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    UseCounter::count(activeDOMWindow(), UseCounter::TestFeature);
+    TestObjectPythonV8Internal::measureAsVoidMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 static void notEnumerableVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
@@ -5475,6 +5489,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectPythonMethods[]
     {"customElementCallbacksVoidMethod", TestObjectPythonV8Internal::customElementCallbacksVoidMethodMethodCallback, 0, 0},
     {"deprecatedVoidMethod", TestObjectPythonV8Internal::deprecatedVoidMethodMethodCallback, 0, 0},
     {"implementedAsVoidMethod", TestObjectPythonV8Internal::implementedAsVoidMethodMethodCallback, 0, 0},
+    {"measureAsVoidMethod", TestObjectPythonV8Internal::measureAsVoidMethodMethodCallback, 0, 0},
 };
 
 static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectPythonTemplate(v8::Handle<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)

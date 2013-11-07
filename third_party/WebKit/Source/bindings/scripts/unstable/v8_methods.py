@@ -92,6 +92,7 @@ def generate_method(interface, method):
         'is_custom': 'Custom' in extended_attributes,
         'is_custom_element_callbacks': is_custom_element_callbacks,
         'is_static': is_static,
+        'measure_as': v8_utilities.measure_as(method),  # [MeasureAs]
         'name': name,
         'number_of_arguments': len(arguments),
         'number_of_required_arguments': len([
