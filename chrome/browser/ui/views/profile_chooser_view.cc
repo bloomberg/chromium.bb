@@ -647,7 +647,7 @@ views::View* ProfileChooserView::CreateCurrentProfileAccountsView(
     views::Label* email_label = new views::Label(UTF8ToUTF16(accounts[i]));
     email_label->SetElideBehavior(views::Label::ELIDE_AS_EMAIL);
     email_label->SetFont(ui::ResourceBundle::GetSharedInstance().GetFont(
-        ui::ResourceBundle::SmallFont));
+        ui::ResourceBundle::BaseFont));
     email_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
     layout->StartRow(1, 0);

@@ -11494,7 +11494,7 @@ Would you like to start <ph name="CONTROL_PANEL_APPLET_NAME">$1<ex>Add/Remove Pr
         Create, change, or delete profiles.
       </message>
       <message name="IDS_PROFILES_PROFILE_SIGNOUT_BUTTON" desc="Button in the avatar menu bubble view to sign-out the current profile.">
-        Sign out
+        Lock
       </message>
       <message name="IDS_PROFILES_PROFILE_SIGNOUT_BUTTON_TIP" desc="Tool-tip text shown for button in the avatar menu bubble view to sign-out the current profile.">
         Sign-out user <ph name="PROFILE_USERNAME">$1<ex>user@gmail.com</ex></ph>.
