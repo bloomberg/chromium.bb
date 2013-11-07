@@ -75,6 +75,8 @@ public:
     bool isInTopLayer() const { return m_isInTopLayer; }
     void setIsInTopLayer(bool value) { m_isInTopLayer = value; }
 
+    bool childrenAffectedByFocus() const { return m_childrenAffectedByFocus; }
+    void setChildrenAffectedByFocus(bool value) { m_childrenAffectedByFocus = value; }
     bool childrenAffectedByHover() const { return m_childrenAffectedByHover; }
     void setChildrenAffectedByHover(bool value) { m_childrenAffectedByHover = value; }
     bool childrenAffectedByActive() const { return m_childrenAffectedByActive; }
@@ -158,6 +160,7 @@ private:
     unsigned m_containsFullScreenElement : 1;
     unsigned m_isInTopLayer : 1;
     unsigned m_hasPendingResources : 1;
+    unsigned m_childrenAffectedByFocus : 1;
     unsigned m_childrenAffectedByHover : 1;
     unsigned m_childrenAffectedByActive : 1;
     unsigned m_childrenAffectedByDrag : 1;
@@ -207,6 +210,7 @@ inline ElementRareData::ElementRareData(RenderObject* renderer)
     , m_containsFullScreenElement(false)
     , m_isInTopLayer(false)
     , m_hasPendingResources(false)
+    , m_childrenAffectedByFocus(false)
     , m_childrenAffectedByHover(false)
     , m_childrenAffectedByActive(false)
     , m_childrenAffectedByDrag(false)
@@ -279,6 +283,7 @@ inline void ElementRareData::resetStyleState()
 
 inline void ElementRareData::resetDynamicRestyleObservations()
 {
+    setChildrenAffectedByFocus(false);
     setChildrenAffectedByHover(false);
     setChildrenAffectedByActive(false);
     setChildrenAffectedByDrag(false);
