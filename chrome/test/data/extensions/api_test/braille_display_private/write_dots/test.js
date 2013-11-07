@@ -18,12 +18,18 @@ function createBuffer(size, element) {
 function waitForDisplay(callback) {
   var callbackCompleted = chrome.test.callbackAdded();
   var displayStateHandler = function(state) {
+    if (!callbackCompleted) {
+      return;
+    }
     chrome.test.assertTrue(state.available, "Display not available");
     chrome.test.assertEq(11, state.textCellCount);
     callback(state);
     callbackCompleted();
     chrome.brailleDisplayPrivate.onDisplayStateChanged.removeListener(
         displayStateHandler);
+    // Prevent additional runs if the onDisplayStateChanged event
+    // is fired before getDisplayState invokes the callback.
+    callbackCompleted = null;
   };
   chrome.brailleDisplayPrivate.onDisplayStateChanged.addListener(
       displayStateHandler);

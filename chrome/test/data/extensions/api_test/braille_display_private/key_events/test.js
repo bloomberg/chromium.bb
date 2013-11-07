@@ -13,13 +13,13 @@ var EXPECTED_EVENTS = [
 ]
 
 var event_number = 0;
-var callbackCompleted;
+var allEventsReceived;
 
 function eventListener(event) {
-  console.log("Received event: " + event);
+  console.log("Received event: " + JSON.stringify(event));
   chrome.test.assertEq(event, EXPECTED_EVENTS[event_number]);
   if (++event_number == EXPECTED_EVENTS.length) {
-    callbackCompleted();
+    allEventsReceived();
   }
   console.log("Event number: " + event_number);
 }
@@ -27,12 +27,18 @@ function eventListener(event) {
 function waitForDisplay(callback) {
   var callbackCompleted = chrome.test.callbackAdded();
   var displayStateHandler = function(state) {
+    if (!callbackCompleted) {
+      return;
+    }
     chrome.test.assertTrue(state.available, "Display not available");
     chrome.test.assertEq(11, state.textCellCount);
     callback(state);
     callbackCompleted();
     chrome.brailleDisplayPrivate.onDisplayStateChanged.removeListener(
         displayStateHandler);
+    // Prevent additional runs if the onDisplayStateChanged event
+    // is fired before getDisplayState invokes the callback.
+    callbackCompleted = null;
   };
   chrome.brailleDisplayPrivate.onDisplayStateChanged.addListener(
       displayStateHandler);
@@ -48,7 +54,7 @@ function waitForDisplay(callback) {
 chrome.test.runTests([
   function testKeyEvents() {
     chrome.brailleDisplayPrivate.onKeyEvent.addListener(eventListener);
-    callbackCompleted = chrome.test.callbackAdded();
+    allEventsReceived = chrome.test.callbackAdded();
     waitForDisplay(pass());
   }
 ]);
