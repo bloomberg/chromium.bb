@@ -1,0 +1,5 @@
+# http://crbug.com/315883
+WindowManagerTest.ActivateOnTouch
+DragDropControllerTest.TouchDragDropLongTapGestureIsForwarded
+DragDropControllerTest.TouchDragDropCancelsOnLongTap
+DragDropControllerTest.TouchDragDropInMultipleWindows
