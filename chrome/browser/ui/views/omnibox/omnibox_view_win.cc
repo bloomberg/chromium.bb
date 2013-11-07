@@ -523,8 +523,10 @@ OmniboxViewWin::OmniboxViewWin(OmniboxEditController* controller,
       (static_cast<float>(cap_height) * kXHeightRatio) + 0.5);
   // Determine the y offset centering cap height.
   const int location_height = location_bar_->GetInternalHeight(true);
-  font_y_adjustment_ = std::max(0,
-      int((location_height - cap_height) / 2 - tm.tmInternalLeading));
+  font_y_adjustment_ = std::max(
+      0,
+      static_cast<int>((location_height - cap_height) / 2 -
+                       tm.tmInternalLeading));
 
   // Get the number of twips per pixel, which we need below to offset our text
   // by the desired number of pixels.
