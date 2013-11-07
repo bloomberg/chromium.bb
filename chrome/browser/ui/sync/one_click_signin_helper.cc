@@ -1435,7 +1435,9 @@ void OneClickSigninHelper::OnStateChanged() {
     if (sync_service->FirstSetupInProgress())
       return;
 
-    if (sync_service->sync_initialized()) {
+    if (sync_service->sync_initialized() &&
+        signin::GetSourceForPromoURL(original_continue_url_)
+            != signin::SOURCE_SETTINGS) {
       contents->GetController().LoadURL(original_continue_url_,
                                         content::Referrer(),
                                         content::PAGE_TRANSITION_AUTO_TOPLEVEL,
