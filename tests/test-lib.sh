@@ -49,9 +49,10 @@ setup_gitsvn() {
   rm -rf git-svn
   # There appears to be no way to make git-svn completely shut up, so we
   # redirect its output.
-  git svn -q clone -s $REPO_URL git-svn >/dev/null 2>&1
+  git svn --prefix origin/ -q clone -s $REPO_URL git-svn >/dev/null 2>&1
   (
     cd git-svn
+    git remote add origin https://example.com/fake_refspec
     git config user.name 'TestDood'
     git config user.email 'TestDood@example.com'
   )
