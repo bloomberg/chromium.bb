@@ -73,35 +73,6 @@ const GURL& TopSitesCache::GetCanonicalURL(const GURL& url) const {
   return it == canonical_urls_.end() ? url : it->first.first->url;
 }
 
-GURL TopSitesCache::GetSpecializedCanonicalURL(const GURL& url) const {
-  // Perform effective binary search for URL prefix search.
-  CanonicalURLs::const_iterator it =
-      canonical_urls_.upper_bound(CanonicalURLQuery(url).entry());
-
-  // Check whether |prev_it| equals to |url|, ignoring "?query#ref". This
-  // handles exact match and equality matches with earlier "?query#ref" part.
-  if (it != canonical_urls_.begin()) {
-    CanonicalURLs::const_iterator prev_it = it;
-    --prev_it;
-    if (url.ReplaceComponents(clear_query_ref_) ==
-        GetURLFromIterator(prev_it).ReplaceComponents(clear_query_ref_)) {
-      return prev_it->first.first->url;
-    }
-  }
-
-  // Check whether |url| is a URL prefix of |it|. This handles strict
-  // specialized match and equality matches with later "?query#ref".
-  if (it != canonical_urls_.end()) {
-    GURL compare_url(GetURLFromIterator(it));
-    if (HaveSameSchemeHostAndPort(url, compare_url) &&
-        IsPathPrefix(url.path(), compare_url.path())) {
-      return it->first.first->url;
-    }
-  }
-
-  return GURL::EmptyGURL();
-}
-
 GURL TopSitesCache::GetGeneralizedCanonicalURL(const GURL& url) const {
   CanonicalURLs::const_iterator it_hi =
       canonical_urls_.lower_bound(CanonicalURLQuery(url).entry());

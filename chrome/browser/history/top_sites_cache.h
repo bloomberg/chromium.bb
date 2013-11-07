@@ -30,9 +30,6 @@ namespace history {
 //
 // The rule to "match" URL in |canonical_urls_| always favors exact match.
 // - In GetCanonicalURL(), exact match is the only case examined.
-// - In GetSpecializedCanonicalURL(), we also perform "specialized" URL matches,
-//   i.e., stored URLs in |canonical_urls_| of which the input URL is a
-//   URL prefix, ignoring "?query#ref".
 // - In GetGeneralizedCanonicalURL(), we also perform "generalized" URL matches,
 //   i.e., stored URLs in |canonical_urls_| that are prefixes of input URL,
 //   ignoring "?query#ref".
@@ -70,14 +67,10 @@ class TopSitesCache {
   // Returns the canonical URL for |url|.
   const GURL& GetCanonicalURL(const GURL& url) const;
 
-  // Searches for a URL in |canonical_urls_| that has |url| as a URL prefix.
-  // Prefers an exact match if it exists, or the least specialized match while
-  // ignoring "?query#ref". Returns the result to if match is found, otherwise
-  // returns an empty GURL.
-  GURL GetSpecializedCanonicalURL(const GURL& url) const;
-
-  // Similar to GetSpecializedCanonicalURL(), but searches for a URL in
-  // |canonical_urls_| that is a URL prefix of |url|, and leaset generalized.
+  // Searches for a URL in |canonical_urls_| that is a URL prefix of |url|.
+  // Prefers an exact match if it exists, or the least generalized match while
+  // ignoring "?query#ref". Returns the resulting canonical URL if match is
+  // found, otherwise returns an empty GURL.
   GURL GetGeneralizedCanonicalURL(const GURL& url) const;
 
   // Returns true if |url| is known.
