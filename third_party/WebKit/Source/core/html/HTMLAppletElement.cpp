@@ -68,6 +68,12 @@ void HTMLAppletElement::parseAttribute(const QualifiedName& name, const AtomicSt
     HTMLPlugInElement::parseAttribute(name, value);
 }
 
+bool HTMLAppletElement::isURLAttribute(const Attribute& attribute) const
+{
+    return attribute.name() == codebaseAttr || attribute.name() == objectAttr
+        || HTMLPlugInElement::isURLAttribute(attribute);
+}
+
 bool HTMLAppletElement::rendererIsNeeded(const RenderStyle& style)
 {
     if (!fastHasAttribute(codeAttr))
