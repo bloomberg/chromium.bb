@@ -360,6 +360,13 @@ bool InspectorController::handleTouchEvent(Frame* frame, const PlatformTouchEven
     return false;
 }
 
+bool InspectorController::handleKeyboardEvent(Frame* frame, const PlatformKeyboardEvent& event)
+{
+    // Overlay should not consume events.
+    m_overlay->handleKeyboardEvent(event);
+    return false;
+}
+
 void InspectorController::requestPageScaleFactor(float scale, const IntPoint& origin)
 {
     m_inspectorClient->requestPageScaleFactor(scale, origin);

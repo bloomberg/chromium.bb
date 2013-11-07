@@ -312,6 +312,10 @@ bool WebDevToolsAgentImpl::handleInputEvent(WebCore::Page* page, const WebInputE
         PlatformTouchEvent touchEvent = PlatformTouchEventBuilder(page->mainFrame()->view(), *static_cast<const WebTouchEvent*>(&inputEvent));
         return ic->handleTouchEvent(page->mainFrame(), touchEvent);
     }
+    if (WebInputEvent::isKeyboardEventType(inputEvent.type)) {
+        PlatformKeyboardEvent keyboardEvent = PlatformKeyboardEventBuilder(*static_cast<const WebKeyboardEvent*>(&inputEvent));
+        return ic->handleKeyboardEvent(page->mainFrame(), keyboardEvent);
+    }
     return false;
 }
 

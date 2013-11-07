@@ -315,6 +315,14 @@ bool InspectorOverlay::handleTouchEvent(const PlatformTouchEvent& event)
     return overlayPage()->mainFrame()->eventHandler().handleTouchEvent(event);
 }
 
+bool InspectorOverlay::handleKeyboardEvent(const PlatformKeyboardEvent& event)
+{
+    if (isEmpty())
+        return false;
+
+    return overlayPage()->mainFrame()->eventHandler().keyEvent(event);
+}
+
 void InspectorOverlay::drawOutline(GraphicsContext* context, const LayoutRect& rect, const Color& color)
 {
     FloatRect outlineRect = rect;

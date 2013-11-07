@@ -57,6 +57,7 @@ class IntPoint;
 class IntSize;
 class Page;
 class PlatformGestureEvent;
+class PlatformKeyboardEvent;
 class PlatformMouseEvent;
 class PlatformTouchEvent;
 class PostWorkerNotificationToFrontendTask;
@@ -99,6 +100,7 @@ public:
     bool handleGestureEvent(Frame*, const PlatformGestureEvent&);
     bool handleMouseEvent(Frame*, const PlatformMouseEvent&);
     bool handleTouchEvent(Frame*, const PlatformTouchEvent&);
+    bool handleKeyboardEvent(Frame*, const PlatformKeyboardEvent&);
 
     void requestPageScaleFactor(float scale, const IntPoint& origin);
     bool deviceEmulationEnabled();

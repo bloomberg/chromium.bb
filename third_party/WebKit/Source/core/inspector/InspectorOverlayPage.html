@@ -158,6 +158,7 @@ const gridBackgroundColor = "rgba(255, 255, 255, 0.8)";
 
 function drawPausedInDebuggerMessage(message)
 {
+    window._controlsVisible = true;
     document.querySelector(".controls-line").style.visibility = "visible";
     document.getElementById("paused-in-debugger").textContent = message;
     document.body.classList.add("dimmed");
@@ -396,6 +397,7 @@ function reset(resetData)
     window.canvasWidth = viewportSize.width;
     window.canvasHeight = viewportSize.height;
 
+    window._controlsVisible = false;
     document.querySelector(".controls-line").style.visibility = "hidden";
     document.getElementById("element-title").style.visibility = "hidden";
     document.body.classList.remove("dimmed");
@@ -658,15 +660,31 @@ function onLoaded()
     document.getElementById("step-over-button").addEventListener("click", onStepOverClick);
 }
 
+function eventHasCtrlOrMeta(event)
+{
+    return window.platform == "mac" ? (event.metaKey && !event.ctrlKey) : (event.ctrlKey && !event.metaKey);
+}
+
+function onDocumentKeyDown(event)
+{
+    if (!window._controlsVisible)
+        return;
+    if (event.keyIdentifier == "F8" || eventHasCtrlOrMeta(event) && event.keyCode == 220 /* backslash */)
+        InspectorOverlayHost.resume();
+    else if (event.keyIdentifier == "F10" || eventHasCtrlOrMeta(event) && event.keyCode == 222 /* single quote */)
+        InspectorOverlayHost.stepOver();
+}
+
 window.addEventListener("DOMContentLoaded", onLoaded);
+document.addEventListener("keydown", onDocumentKeyDown);
 
 </script>
 </head>
 <body class="fill">
 <div class="controls-line">
     <div class="message-box"><div id="paused-in-debugger"></div></div>
-    <button id="resume-button" title="Resume script execution"><div class="glyph"></div></button>
-    <button id="step-over-button" title="Step over next function call"><div class="glyph"></div></button>
+    <button id="resume-button" title="Resume script execution (F8)."><div class="glyph"></div></button>
+    <button id="step-over-button" title="Step over next function call (F10)."><div class="glyph"></div></button>
 </div>
 </body>
 <canvas id="canvas" class="fill"></canvas>
