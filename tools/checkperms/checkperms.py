@@ -147,6 +147,7 @@ IGNORED_PATHS = (
   'chrome/installer/mac/sign_versioned_dir.sh.in',
   'native_client_sdk/src/build_tools/sdk_tools/third_party/',
   'out/',
+  'tools/gn/bin/',
   # TODO(maruel): Fix these.
   'third_party/android_testrunner/',
   'third_party/bintrees/',
