@@ -25,3 +25,4 @@ Local Modifications:
   the form inet_*, to avoid problems with forward declarations in user code.
 * Added prototypes for htonl, htons, ntohl, and ntohs to netinet/in.h.
 * Modified netinet/in.h not to use u_int32_t.
+* Added SOCK_CLOEXEC and SOCK_NONBLOCK socket type flags.

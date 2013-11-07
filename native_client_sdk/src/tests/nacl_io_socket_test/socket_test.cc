@@ -167,8 +167,14 @@ class SocketTestWithServer : public ::testing::Test {
 TEST(SocketTestSimple, Socket) {
   EXPECT_EQ(-1, socket(AF_UNIX, SOCK_STREAM, 0));
   EXPECT_EQ(errno, EAFNOSUPPORT);
-  EXPECT_EQ(-1, socket(AF_INET, SOCK_RAW, 0));
+
+  // We don't support RAW sockets
+  EXPECT_EQ(-1, socket(AF_INET, SOCK_RAW, IPPROTO_TCP));
   EXPECT_EQ(errno, EPROTONOSUPPORT);
+
+  // Invalid type
+  EXPECT_EQ(-1, socket(AF_INET, -1, 0));
+  EXPECT_EQ(errno, EINVAL);
 
   int sock1_ = socket(AF_INET, SOCK_DGRAM, 0);
   EXPECT_NE(-1, sock1_);

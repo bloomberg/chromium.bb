@@ -1428,6 +1428,23 @@ int KernelProxy::socket(int domain, int type, int protocol) {
     return -1;
   }
 
+  int open_flags = O_RDWR;
+
+  if (type & SOCK_CLOEXEC) {
+#ifdef O_CLOEXEC
+    // The NaCl newlib version of fcntl.h doesn't currently define
+    // O_CLOEXEC.
+    // TODO(sbc): remove this guard once it gets added.
+    open_flags |= O_CLOEXEC;
+#endif
+    type &= ~SOCK_CLOEXEC;
+  }
+
+  if (type & SOCK_NONBLOCK) {
+    open_flags |= O_NONBLOCK;
+    type &= ~SOCK_NONBLOCK;
+  }
+
   MountNodeSocket* sock = NULL;
   switch (type) {
     case SOCK_DGRAM:
@@ -1438,8 +1455,14 @@ int KernelProxy::socket(int domain, int type, int protocol) {
       sock = new MountNodeTCP(stream_mount_.get());
       break;
 
-    default:
+    case SOCK_SEQPACKET:
+    case SOCK_RDM:
+    case SOCK_RAW:
       errno = EPROTONOSUPPORT;
+      return -1;
+
+    default:
+      errno = EINVAL;
       return -1;
   }
 
@@ -1451,7 +1474,7 @@ int KernelProxy::socket(int domain, int type, int protocol) {
   }
 
   ScopedKernelHandle handle(new KernelHandle(stream_mount_, node));
-  rtn = handle->Init(O_RDWR);
+  rtn = handle->Init(open_flags);
   if (rtn != 0) {
     errno = rtn;
     return -1;
