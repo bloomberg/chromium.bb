@@ -338,25 +338,25 @@ PP_FileHandle OpenNaClExecutable(PP_Instance instance,
   return handle;
 }
 
-WebKit::WebString EventTypeToString(PP_NaClEventType event_type) {
+blink::WebString EventTypeToString(PP_NaClEventType event_type) {
   switch (event_type) {
     case PP_NACL_EVENT_LOADSTART:
-      return WebKit::WebString::fromUTF8("loadstart");
+      return blink::WebString::fromUTF8("loadstart");
     case PP_NACL_EVENT_PROGRESS:
-      return WebKit::WebString::fromUTF8("progress");
+      return blink::WebString::fromUTF8("progress");
     case PP_NACL_EVENT_ERROR:
-      return WebKit::WebString::fromUTF8("error");
+      return blink::WebString::fromUTF8("error");
     case PP_NACL_EVENT_ABORT:
-      return WebKit::WebString::fromUTF8("abort");
+      return blink::WebString::fromUTF8("abort");
     case PP_NACL_EVENT_LOAD:
-      return WebKit::WebString::fromUTF8("load");
+      return blink::WebString::fromUTF8("load");
     case PP_NACL_EVENT_LOADEND:
-      return WebKit::WebString::fromUTF8("loadend");
+      return blink::WebString::fromUTF8("loadend");
     case PP_NACL_EVENT_CRASH:
-      return WebKit::WebString::fromUTF8("crash");
+      return blink::WebString::fromUTF8("crash");
   }
   NOTIMPLEMENTED();
-  return WebKit::WebString();
+  return blink::WebString();
 }
 
 void DispatchEvent(PP_Instance instance,
@@ -371,12 +371,12 @@ void DispatchEvent(PP_Instance instance,
     NOTREACHED();
     return;
   }
-  WebKit::WebPluginContainer* container = plugin_instance->GetContainer();
+  blink::WebPluginContainer* container = plugin_instance->GetContainer();
   // It's possible that container() is NULL if the plugin has been removed from
   // the DOM (but the PluginInstance is not destroyed yet).
   if (!container)
     return;
-  WebKit::WebFrame* frame = container->element().document().frame();
+  blink::WebFrame* frame = container->element().document().frame();
   if (!frame)
     return;
   v8::HandleScope handle_scope(plugin_instance->GetIsolate());
@@ -390,16 +390,16 @@ void DispatchEvent(PP_Instance instance,
 
   ppapi::StringVar* url_var = ppapi::StringVar::FromPPVar(resource_url);
   if (url_var) {
-    WebKit::WebString url_string = WebKit::WebString::fromUTF8(
+    blink::WebString url_string = blink::WebString::fromUTF8(
         url_var->value().data(), url_var->value().size());
-    WebKit::WebDOMResourceProgressEvent event(EventTypeToString(event_type),
+    blink::WebDOMResourceProgressEvent event(EventTypeToString(event_type),
                                               PP_ToBool(length_is_computable),
                                               loaded_bytes,
                                               total_bytes,
                                               url_string);
     container->element().dispatchEvent(event);
   } else {
-    WebKit::WebDOMProgressEvent event(EventTypeToString(event_type),
+    blink::WebDOMProgressEvent event(EventTypeToString(event_type),
                                       PP_ToBool(length_is_computable),
                                       loaded_bytes,
                                       total_bytes);

@@ -12,23 +12,23 @@ namespace content {
 class RenderView;
 }
 
-// An impelemntation of WebKit::WebValidationMessageClient. This dispatches
+// An impelemntation of blink::WebValidationMessageClient. This dispatches
 // messages to the browser processes.
 class ValidationMessageAgent : public content::RenderViewObserver,
-                               public WebKit::WebValidationMessageClient {
+                               public blink::WebValidationMessageClient {
  public:
   explicit ValidationMessageAgent(content::RenderView* render_view);
   virtual ~ValidationMessageAgent();
 
  private:
   // WebValidationMessageClient functions:
-  virtual void showValidationMessage(const WebKit::WebRect& anchor_in_root_view,
-                                     const WebKit::WebString& main_text,
-                                     const WebKit::WebString& sub_text,
-                                     WebKit::WebTextDirection hint) OVERRIDE;
+  virtual void showValidationMessage(const blink::WebRect& anchor_in_root_view,
+                                     const blink::WebString& main_text,
+                                     const blink::WebString& sub_text,
+                                     blink::WebTextDirection hint) OVERRIDE;
   virtual void hideValidationMessage() OVERRIDE;
   virtual void moveValidationMessage(
-      const WebKit::WebRect& anchor_in_root_view);
+      const blink::WebRect& anchor_in_root_view);
 
   DISALLOW_COPY_AND_ASSIGN(ValidationMessageAgent);
 };

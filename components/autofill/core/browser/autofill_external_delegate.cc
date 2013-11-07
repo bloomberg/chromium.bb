@@ -16,7 +16,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 using content::RenderViewHost;
-using WebKit::WebAutofillClient;
+using blink::WebAutofillClient;
 
 namespace autofill {
 

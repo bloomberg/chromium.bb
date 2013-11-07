@@ -363,7 +363,7 @@ class AutofillInteractiveTest : public InProcessBrowserTest {
     // Route popup-targeted key presses via the render view host.
     content::NativeWebKeyboardEvent event;
     event.windowsKeyCode = key;
-    event.type = WebKit::WebKeyboardEvent::RawKeyDown;
+    event.type = blink::WebKeyboardEvent::RawKeyDown;
     test_delegate_.Reset();
     // Install the key press event sink to ensure that any events that are not
     // handled by the installed callbacks do not end up crashing the test.

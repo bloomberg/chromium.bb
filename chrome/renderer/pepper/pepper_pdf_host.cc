@@ -234,7 +234,7 @@ int32_t PepperPDFHost::OnHostMsgHasUnsupportedFeature(
   if (!instance->IsFullPagePlugin())
     return PP_OK;
 
-  WebKit::WebView* view =
+  blink::WebView* view =
       instance->GetContainer()->element().document().frame()->view();
   content::RenderView* render_view = content::RenderView::FromWebView(view);
   render_view->Send(new ChromeViewHostMsg_PDFHasUnsupportedFeature(
@@ -250,8 +250,8 @@ int32_t PepperPDFHost::OnHostMsgPrint(
   if (!instance)
     return PP_ERROR_FAILED;
 
-  WebKit::WebElement element = instance->GetContainer()->element();
-  WebKit::WebView* view = element.document().frame()->view();
+  blink::WebElement element = instance->GetContainer()->element();
+  blink::WebView* view = element.document().frame()->view();
   content::RenderView* render_view = content::RenderView::FromWebView(view);
 
   using printing::PrintWebViewHelper;
@@ -272,7 +272,7 @@ int32_t PepperPDFHost::OnHostMsgSaveAs(
     return PP_ERROR_FAILED;
   GURL url = instance->GetPluginURL();
   content::RenderView* render_view = instance->GetRenderView();
-  WebKit::WebFrame* frame = render_view->GetWebView()->mainFrame();
+  blink::WebFrame* frame = render_view->GetWebView()->mainFrame();
   content::Referrer referrer(frame->document().url(),
                              frame->document().referrerPolicy());
   render_view->Send(new ChromeViewHostMsg_PDFSaveURLAs(

@@ -23,7 +23,7 @@
 #include "ui/views/corewm/window_animations.h"
 #endif
 
-using WebKit::WebAutofillClient;
+using blink::WebAutofillClient;
 
 namespace {
 

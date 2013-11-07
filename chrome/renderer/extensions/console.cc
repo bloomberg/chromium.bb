@@ -112,27 +112,27 @@ void Fatal(content::RenderView* render_view, const std::string& message) {
 void AddMessage(content::RenderView* render_view,
                 content::ConsoleMessageLevel level,
                 const std::string& message) {
-  WebKit::WebView* web_view = render_view->GetWebView();
+  blink::WebView* web_view = render_view->GetWebView();
   if (!web_view || !web_view->mainFrame())
     return;
-  WebKit::WebConsoleMessage::Level target_level =
-      WebKit::WebConsoleMessage::LevelLog;
+  blink::WebConsoleMessage::Level target_level =
+      blink::WebConsoleMessage::LevelLog;
   switch (level) {
     case content::CONSOLE_MESSAGE_LEVEL_DEBUG:
-      target_level = WebKit::WebConsoleMessage::LevelDebug;
+      target_level = blink::WebConsoleMessage::LevelDebug;
       break;
     case content::CONSOLE_MESSAGE_LEVEL_LOG:
-      target_level = WebKit::WebConsoleMessage::LevelLog;
+      target_level = blink::WebConsoleMessage::LevelLog;
       break;
     case content::CONSOLE_MESSAGE_LEVEL_WARNING:
-      target_level = WebKit::WebConsoleMessage::LevelWarning;
+      target_level = blink::WebConsoleMessage::LevelWarning;
       break;
     case content::CONSOLE_MESSAGE_LEVEL_ERROR:
-      target_level = WebKit::WebConsoleMessage::LevelError;
+      target_level = blink::WebConsoleMessage::LevelError;
       break;
   }
   web_view->mainFrame()->addMessageToConsole(
-      WebKit::WebConsoleMessage(target_level, ASCIIToUTF16(message)));
+      blink::WebConsoleMessage(target_level, ASCIIToUTF16(message)));
 }
 
 void Debug(v8::Handle<v8::Context> context, const std::string& message) {

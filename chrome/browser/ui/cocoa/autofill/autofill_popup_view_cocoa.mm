@@ -134,7 +134,7 @@ NSColor* SubtextColor() {
       continue;
 
     if (controller_->identifiers()[i] ==
-            WebKit::WebAutofillClient::MenuItemIDSeparator) {
+            blink::WebAutofillClient::MenuItemIDSeparator) {
       [self drawSeparatorWithBounds:rowBounds];
     } else {
       NSString* name = SysUTF16ToNSString(controller_->names()[i]);

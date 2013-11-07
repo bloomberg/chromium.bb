@@ -15,21 +15,21 @@
 
 namespace extensions {
 
-using WebKit::WebString;
-using WebKit::WebVector;
-using WebKit::WebView;
+using blink::WebString;
+using blink::WebVector;
+using blink::WebView;
 
 ContentWatcher::ContentWatcher() {}
 ContentWatcher::~ContentWatcher() {}
 
 void ContentWatcher::OnWatchPages(
     const std::vector<std::string>& new_css_selectors_utf8) {
-  WebKit::WebVector<WebKit::WebString> new_css_selectors(
+  blink::WebVector<blink::WebString> new_css_selectors(
       new_css_selectors_utf8.size());
   bool changed = new_css_selectors.size() != css_selectors_.size();
   for (size_t i = 0; i < new_css_selectors.size(); ++i) {
     new_css_selectors[i] =
-        WebKit::WebString::fromUTF8(new_css_selectors_utf8[i]);
+        blink::WebString::fromUTF8(new_css_selectors_utf8[i]);
     if (!changed && new_css_selectors[i] != css_selectors_[i])
       changed = true;
   }
@@ -47,7 +47,7 @@ void ContentWatcher::OnWatchPages(
         : css_selectors_(css_selectors) {}
 
     virtual bool Visit(content::RenderView* view) OVERRIDE {
-      for (WebKit::WebFrame* frame = view->GetWebView()->mainFrame(); frame;
+      for (blink::WebFrame* frame = view->GetWebView()->mainFrame(); frame;
            frame = frame->traverseNext(/*wrap=*/false))
         frame->document().watchCSSSelectors(css_selectors_);
 
@@ -60,12 +60,12 @@ void ContentWatcher::OnWatchPages(
   content::RenderView::ForEach(&visitor);
 }
 
-void ContentWatcher::DidCreateDocumentElement(WebKit::WebFrame* frame) {
+void ContentWatcher::DidCreateDocumentElement(blink::WebFrame* frame) {
   frame->document().watchCSSSelectors(css_selectors_);
 }
 
 void ContentWatcher::DidMatchCSS(
-    WebKit::WebFrame* frame,
+    blink::WebFrame* frame,
     const WebVector<WebString>& newly_matching_selectors,
     const WebVector<WebString>& stopped_matching_selectors) {
   std::set<std::string>& frame_selectors = matching_selectors_[frame];
@@ -81,9 +81,9 @@ void ContentWatcher::DidMatchCSS(
 }
 
 void ContentWatcher::NotifyBrowserOfChange(
-    WebKit::WebFrame* changed_frame) const {
-  WebKit::WebFrame* const top_frame = changed_frame->top();
-  const WebKit::WebSecurityOrigin top_origin =
+    blink::WebFrame* changed_frame) const {
+  blink::WebFrame* const top_frame = changed_frame->top();
+  const blink::WebSecurityOrigin top_origin =
       top_frame->document().securityOrigin();
   // Want to aggregate matched selectors from all frames where an
   // extension with access to top_origin could run on the frame.
@@ -94,10 +94,10 @@ void ContentWatcher::NotifyBrowserOfChange(
   }
 
   std::set<base::StringPiece> transitive_selectors;
-  for (WebKit::WebFrame* frame = top_frame; frame;
+  for (blink::WebFrame* frame = top_frame; frame;
        frame = frame->traverseNext(/*wrap=*/false)) {
     if (top_origin.canAccess(frame->document().securityOrigin())) {
-      std::map<WebKit::WebFrame*, std::set<std::string> >::const_iterator
+      std::map<blink::WebFrame*, std::set<std::string> >::const_iterator
           frame_selectors = matching_selectors_.find(frame);
       if (frame_selectors != matching_selectors_.end()) {
         transitive_selectors.insert(frame_selectors->second.begin(),

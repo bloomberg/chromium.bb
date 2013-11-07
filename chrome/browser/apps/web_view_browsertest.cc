@@ -1592,7 +1592,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, SpeechRecognition) {
 
   // Click on the guest (center of the WebContents), the guest is rendered in a
   // way that this will trigger clicking on speech recognition input mic.
-  SimulateMouseClick(guest_web_contents, 0, WebKit::WebMouseEvent::ButtonLeft);
+  SimulateMouseClick(guest_web_contents, 0, blink::WebMouseEvent::ButtonLeft);
 
   string16 expected_title(ASCIIToUTF16("PASSED"));
   string16 error_title(ASCIIToUTF16("FAILED"));

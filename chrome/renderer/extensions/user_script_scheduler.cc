@@ -33,11 +33,11 @@ namespace {
 const int kUserScriptIdleTimeoutMs = 200;
 }
 
-using WebKit::WebDocument;
-using WebKit::WebFrame;
-using WebKit::WebString;
-using WebKit::WebVector;
-using WebKit::WebView;
+using blink::WebDocument;
+using blink::WebFrame;
+using blink::WebString;
+using blink::WebVector;
+using blink::WebView;
 
 namespace extensions {
 
@@ -211,7 +211,7 @@ void UserScriptScheduler::ExecuteCodeImpl(
                                          extension->id());
         script_value = child_frame->executeScriptAndReturnValue(source);
       } else {
-        WebKit::WebVector<v8::Local<v8::Value> > results;
+        blink::WebVector<v8::Local<v8::Value> > results;
         std::vector<WebScriptSource> sources;
         sources.push_back(source);
         int isolated_world_id =

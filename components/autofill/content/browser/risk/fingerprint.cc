@@ -44,7 +44,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
 
-using WebKit::WebScreenInfo;
+using blink::WebScreenInfo;
 
 namespace autofill {
 namespace risk {
@@ -505,7 +505,7 @@ void GetFingerprintInternal(
     uint64 obfuscated_gaia_id,
     const gfx::Rect& window_bounds,
     const gfx::Rect& content_bounds,
-    const WebKit::WebScreenInfo& screen_info,
+    const blink::WebScreenInfo& screen_info,
     const std::string& version,
     const std::string& charset,
     const std::string& accept_languages,
@@ -535,7 +535,7 @@ void GetFingerprint(
   gfx::Rect content_bounds;
   web_contents.GetView()->GetContainerBounds(&content_bounds);
 
-  WebKit::WebScreenInfo screen_info;
+  blink::WebScreenInfo screen_info;
   content::RenderWidgetHostView* host_view =
       web_contents.GetRenderWidgetHostView();
   if (host_view)

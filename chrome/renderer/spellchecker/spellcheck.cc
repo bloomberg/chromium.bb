@@ -21,9 +21,9 @@
 #include "third_party/WebKit/public/web/WebTextDecorationType.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
-using WebKit::WebVector;
-using WebKit::WebTextCheckingResult;
-using WebKit::WebTextDecorationType;
+using blink::WebVector;
+using blink::WebTextCheckingResult;
+using blink::WebTextDecorationType;
 
 namespace {
 
@@ -72,20 +72,20 @@ bool DocumentMarkersCollector::Visit(content::RenderView* render_view) {
 class SpellCheck::SpellcheckRequest {
  public:
   SpellcheckRequest(const string16& text,
-                    WebKit::WebTextCheckingCompletion* completion)
+                    blink::WebTextCheckingCompletion* completion)
       : text_(text), completion_(completion) {
     DCHECK(completion);
   }
   ~SpellcheckRequest() {}
 
   string16 text() { return text_; }
-  WebKit::WebTextCheckingCompletion* completion() { return completion_; }
+  blink::WebTextCheckingCompletion* completion() { return completion_; }
 
  private:
   string16 text_;  // Text to be checked in this task.
 
   // The interface to send the misspelled ranges to WebKit.
-  WebKit::WebTextCheckingCompletion* completion_;
+  blink::WebTextCheckingCompletion* completion_;
 
   DISALLOW_COPY_AND_ASSIGN(SpellcheckRequest);
 };
@@ -227,7 +227,7 @@ bool SpellCheck::SpellCheckParagraph(
             text, misspelling_start + offset, misspelling_length)) {
       string16 replacement;
       textcheck_results.push_back(WebTextCheckingResult(
-          WebKit::WebTextDecorationTypeSpelling,
+          blink::WebTextDecorationTypeSpelling,
           misspelling_start + offset,
           misspelling_length,
           replacement));
@@ -299,7 +299,7 @@ string16 SpellCheck::GetAutoCorrectionWord(const string16& word, int tag) {
 #if !defined(OS_MACOSX)  // OSX uses its own spell checker
 void SpellCheck::RequestTextChecking(
     const string16& text,
-    WebKit::WebTextCheckingCompletion* completion) {
+    blink::WebTextCheckingCompletion* completion) {
   // Clean up the previous request before starting a new request.
   if (pending_request_param_.get())
     pending_request_param_->completion()->didCancelCheckingText();
@@ -337,7 +337,7 @@ void SpellCheck::PerformSpellCheck(SpellcheckRequest* param) {
   if (!spellcheck_.IsEnabled()) {
     param->completion()->didCancelCheckingText();
   } else {
-    WebVector<WebKit::WebTextCheckingResult> results;
+    WebVector<blink::WebTextCheckingResult> results;
     SpellCheckParagraph(param->text(), &results);
     param->completion()->didFinishCheckingText(results);
   }

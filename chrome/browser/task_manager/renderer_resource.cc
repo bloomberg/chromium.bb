@@ -49,7 +49,7 @@ void RendererResource::Refresh() {
   }
 }
 
-WebKit::WebCache::ResourceTypeStats
+blink::WebCache::ResourceTypeStats
 RendererResource::GetWebCoreCacheStats() const {
   return stats_;
 }
@@ -67,7 +67,7 @@ size_t RendererResource::GetV8MemoryUsed() const {
 }
 
 void RendererResource::NotifyResourceTypeStats(
-    const WebKit::WebCache::ResourceTypeStats& stats) {
+    const blink::WebCache::ResourceTypeStats& stats) {
   stats_ = stats;
   pending_stats_update_ = false;
 }

@@ -80,7 +80,7 @@
 #include "chromeos/login/login_state.h"
 #endif  // defined(OS_CHROMEOS)
 
-using WebKit::WebFindOptions;
+using blink::WebFindOptions;
 using base::Time;
 using content::BrowserThread;
 using content::DownloadItem;

@@ -18,7 +18,7 @@ class PageLoadHistograms : public content::RenderViewObserver {
 
  private:
   // RenderViewObserver implementation.
-  virtual void FrameWillClose(WebKit::WebFrame* frame) OVERRIDE;
+  virtual void FrameWillClose(blink::WebFrame* frame) OVERRIDE;
   virtual void ClosePage() OVERRIDE;
 
   // Dump all page load histograms appropriate for the given frame.
@@ -40,12 +40,12 @@ class PageLoadHistograms : public content::RenderViewObserver {
   // redirect had been done (the user never requested the page)
   // Also, it's possible to load a page without ever laying it out
   // so first_paint and first_paint_after_load can be 0.
-  void Dump(WebKit::WebFrame* frame);
+  void Dump(blink::WebFrame* frame);
 
   void ResetCrossFramePropertyAccess();
 
   void LogPageLoadTime(const content::DocumentState* load_times,
-                       const WebKit::WebDataSource* ds) const;
+                       const blink::WebDataSource* ds) const;
 
   // Site isolation metric counts.
   // These are per-page-load counts, reset to 0 after they are dumped.

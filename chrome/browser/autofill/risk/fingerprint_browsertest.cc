@@ -31,7 +31,7 @@ void GetFingerprintInternal(
     uint64 obfuscated_gaia_id,
     const gfx::Rect& window_bounds,
     const gfx::Rect& content_bounds,
-    const WebKit::WebScreenInfo& screen_info,
+    const blink::WebScreenInfo& screen_info,
     const std::string& version,
     const std::string& charset,
     const std::string& accept_languages,
@@ -185,10 +185,10 @@ IN_PROC_BROWSER_TEST_F(AutofillRiskFingerprintTest, GetFingerprint) {
       position, runner->QuitClosure());
   runner->Run();
 
-  WebKit::WebScreenInfo screen_info;
+  blink::WebScreenInfo screen_info;
   screen_info.depth = kScreenColorDepth;
-  screen_info.rect = WebKit::WebRect(screen_bounds_);
-  screen_info.availableRect = WebKit::WebRect(available_screen_bounds_);
+  screen_info.rect = blink::WebRect(screen_bounds_);
+  screen_info.availableRect = blink::WebRect(available_screen_bounds_);
 
   internal::GetFingerprintInternal(
       kObfuscatedGaiaId, window_bounds_, content_bounds_, screen_info,

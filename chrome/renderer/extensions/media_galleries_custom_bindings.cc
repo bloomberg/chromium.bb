@@ -42,16 +42,16 @@ void MediaGalleriesCustomBindings::GetMediaFileSystemObject(
     return;
   }
 
-  WebKit::WebFrame* webframe = WebKit::WebFrame::frameForCurrentContext();
+  blink::WebFrame* webframe = blink::WebFrame::frameForCurrentContext();
   const GURL origin = GURL(webframe->document().securityOrigin().toString());
   const std::string fs_name = fileapi::GetIsolatedFileSystemName(origin, fsid);
   const std::string root_url =
       fileapi::GetIsolatedFileSystemRootURIString(
           origin, fsid, extension_misc::kMediaFileSystemPathPart);
   args.GetReturnValue().Set(
-      webframe->createFileSystem(WebKit::WebFileSystemTypeIsolated,
-                                 WebKit::WebString::fromUTF8(fs_name),
-                                 WebKit::WebString::fromUTF8(root_url)));
+      webframe->createFileSystem(blink::WebFileSystemTypeIsolated,
+                                 blink::WebString::fromUTF8(fs_name),
+                                 blink::WebString::fromUTF8(root_url)));
 }
 
 }  // namespace extensions

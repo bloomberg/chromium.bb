@@ -103,14 +103,14 @@
 #include "chrome/renderer/extensions/webrtc_native_handler.h"
 #endif
 
-using WebKit::WebDataSource;
-using WebKit::WebDocument;
-using WebKit::WebFrame;
-using WebKit::WebScopedUserGesture;
-using WebKit::WebSecurityPolicy;
-using WebKit::WebString;
-using WebKit::WebVector;
-using WebKit::WebView;
+using blink::WebDataSource;
+using blink::WebDocument;
+using blink::WebFrame;
+using blink::WebScopedUserGesture;
+using blink::WebSecurityPolicy;
+using blink::WebString;
+using blink::WebVector;
+using blink::WebView;
 using content::RenderThread;
 using content::RenderView;
 
@@ -185,12 +185,12 @@ class UserGesturesNativeHandler : public ObjectBackedNativeHandler {
   void IsProcessingUserGesture(
       const v8::FunctionCallbackInfo<v8::Value>& args) {
     args.GetReturnValue().Set(v8::Boolean::New(
-        WebKit::WebUserGestureIndicator::isProcessingUserGesture()));
+        blink::WebUserGestureIndicator::isProcessingUserGesture()));
   }
 
   void RunWithUserGesture(
       const v8::FunctionCallbackInfo<v8::Value>& args) {
-    WebKit::WebScopedUserGesture user_gesture;
+    blink::WebScopedUserGesture user_gesture;
     CHECK_EQ(args.Length(), 1);
     CHECK(args[0]->IsFunction());
     v8::Handle<v8::Value> no_args;
@@ -200,7 +200,7 @@ class UserGesturesNativeHandler : public ObjectBackedNativeHandler {
 
   void RunWithoutUserGesture(
       const v8::FunctionCallbackInfo<v8::Value>& args) {
-    WebKit::WebUserGestureIndicator::consumeUserGesture();
+    blink::WebUserGestureIndicator::consumeUserGesture();
     CHECK_EQ(args.Length(), 1);
     CHECK(args[0]->IsFunction());
     v8::Handle<v8::Value> no_args;
@@ -1259,7 +1259,7 @@ void Dispatcher::WillReleaseScriptContext(
   VLOG(1) << "Num tracked contexts: " << v8_context_set_.size();
 }
 
-void Dispatcher::DidCreateDocumentElement(WebKit::WebFrame* frame) {
+void Dispatcher::DidCreateDocumentElement(blink::WebFrame* frame) {
   if (IsWithinPlatformApp()) {
     // WebKit doesn't let us define an additional user agent stylesheet, so we
     // insert the default platform app stylesheet into all documents that are
@@ -1279,9 +1279,9 @@ void Dispatcher::DidCreateDocumentElement(WebKit::WebFrame* frame) {
 }
 
 void Dispatcher::DidMatchCSS(
-    WebKit::WebFrame* frame,
-    const WebKit::WebVector<WebKit::WebString>& newly_matching_selectors,
-    const WebKit::WebVector<WebKit::WebString>& stopped_matching_selectors) {
+    blink::WebFrame* frame,
+    const blink::WebVector<blink::WebString>& newly_matching_selectors,
+    const blink::WebVector<blink::WebString>& stopped_matching_selectors) {
   content_watcher_->DidMatchCSS(
       frame, newly_matching_selectors, stopped_matching_selectors);
 }
@@ -1363,11 +1363,11 @@ void Dispatcher::AddOrRemoveOriginPermissions(
 }
 
 void Dispatcher::EnableCustomElementWhiteList() {
-  WebKit::WebRuntimeFeatures::enableEmbedderCustomElements(true);
-  WebKit::WebCustomElement::addEmbedderCustomElementName("webview");
+  blink::WebRuntimeFeatures::enableEmbedderCustomElements(true);
+  blink::WebCustomElement::addEmbedderCustomElementName("webview");
   // TODO(fsamuel): Add <adview> to the whitelist once it has been converted
   // into a custom element.
-  WebKit::WebCustomElement::addEmbedderCustomElementName("browser-plugin");
+  blink::WebCustomElement::addEmbedderCustomElementName("browser-plugin");
 }
 
 void Dispatcher::AddOrRemoveBindings(const std::string& extension_id) {
@@ -1506,7 +1506,7 @@ Feature::Context Dispatcher::ClassifyJavaScriptContext(
     const std::string& extension_id,
     int extension_group,
     const GURL& url,
-    const WebKit::WebSecurityOrigin& origin) {
+    const blink::WebSecurityOrigin& origin) {
   DCHECK_GE(extension_group, 0);
   if (extension_group == EXTENSION_GROUP_CONTENT_SCRIPTS) {
     return extensions_.Contains(extension_id) ?
@@ -1562,7 +1562,7 @@ bool Dispatcher::CheckContextAccessToExtensionAPI(
 
   // Theoretically we could end up with bindings being injected into sandboxed
   // frames, for example content scripts. Don't let them execute API functions.
-  WebKit::WebFrame* frame = context->web_frame();
+  blink::WebFrame* frame = context->web_frame();
   if (IsSandboxedPage(UserScriptSlave::GetDataSourceURLForFrame(frame))) {
     static const char kMessage[] =
         "%s cannot be used within a sandboxed frame.";

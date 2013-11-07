@@ -15,17 +15,17 @@
 #include "third_party/WebKit/public/web/WebInputEvent.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
-using WebKit::WebDOMEvent;
-using WebKit::WebDOMMouseEvent;
-using WebKit::WebElement;
-using WebKit::WebFormControlElement;
-using WebKit::WebFrame;
-using WebKit::WebInputElement;
-using WebKit::WebInputEvent;
-using WebKit::WebMouseEvent;
-using WebKit::WebNode;
-using WebKit::WebString;
-using WebKit::WebView;
+using blink::WebDOMEvent;
+using blink::WebDOMMouseEvent;
+using blink::WebElement;
+using blink::WebFormControlElement;
+using blink::WebFrame;
+using blink::WebInputElement;
+using blink::WebInputEvent;
+using blink::WebMouseEvent;
+using blink::WebNode;
+using blink::WebString;
+using blink::WebView;
 
 namespace {
 
@@ -37,7 +37,7 @@ const WebInputElement GetTextWebInputElement(const WebNode& node) {
   const WebElement element = node.toConst<WebElement>();
   if (!element.hasTagName("input"))
     return WebInputElement();
-  const WebInputElement* input = WebKit::toWebInputElement(&element);
+  const WebInputElement* input = blink::toWebInputElement(&element);
   if (!autofill::IsTextInput(input))
     return WebInputElement();
   return *input;
@@ -46,7 +46,7 @@ const WebInputElement GetTextWebInputElement(const WebNode& node) {
 // Checks to see if a text field was the previously selected node and is now
 // losing its focus.
 bool DidSelectedTextFieldLoseFocus(const WebNode& newly_clicked_node) {
-  WebKit::WebNode focused_node = newly_clicked_node.document().focusedNode();
+  blink::WebNode focused_node = newly_clicked_node.document().focusedNode();
 
   if (focused_node.isNull() || GetTextWebInputElement(focused_node).isNull())
     return false;
@@ -90,13 +90,13 @@ void PageClickTracker::DidHandleMouseEvent(const WebMouseEvent& event) {
   listener_->InputElementClicked(input_element, was_focused_, is_focused);
 }
 
-void PageClickTracker::DidFinishDocumentLoad(WebKit::WebFrame* frame) {
+void PageClickTracker::DidFinishDocumentLoad(blink::WebFrame* frame) {
   tracked_frames_.push_back(frame);
   frame->document().addEventListener("mousedown", this, false);
 }
 
-void PageClickTracker::FrameDetached(WebKit::WebFrame* frame) {
-  std::vector<WebKit::WebFrame*>::iterator iter =
+void PageClickTracker::FrameDetached(blink::WebFrame* frame) {
+  std::vector<blink::WebFrame*>::iterator iter =
       std::find(tracked_frames_.begin(), tracked_frames_.end(), frame);
   if (iter == tracked_frames_.end()) {
     // Some frames might never load contents so we may not have a listener on

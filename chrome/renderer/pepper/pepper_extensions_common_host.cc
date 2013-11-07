@@ -68,12 +68,12 @@ int32_t PepperExtensionsCommonHost::OnResourceMessageReceived(
 }
 
 extensions::ChromeV8Context* PepperExtensionsCommonHost::GetContext() {
-  WebKit::WebPluginContainer* container =
+  blink::WebPluginContainer* container =
       renderer_ppapi_host_->GetContainerForInstance(pp_instance());
   if (!container)
     return NULL;
 
-  WebKit::WebFrame* frame = container->element().document().frame();
+  blink::WebFrame* frame = container->element().document().frame();
   v8::HandleScope scope(v8::Isolate::GetCurrent());
   return dispatcher_->v8_context_set().GetByV8Context(
       frame->mainWorldScriptContext());

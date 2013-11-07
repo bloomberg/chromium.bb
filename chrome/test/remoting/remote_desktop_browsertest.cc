@@ -399,11 +399,11 @@ void RemoteDesktopBrowserTest::SimulateStringInput(const std::string& input) {
 }
 
 void RemoteDesktopBrowserTest::SimulateMouseLeftClickAt(int x, int y) {
-  SimulateMouseClickAt(0, WebKit::WebMouseEvent::ButtonLeft, x, y);
+  SimulateMouseClickAt(0, blink::WebMouseEvent::ButtonLeft, x, y);
 }
 
 void RemoteDesktopBrowserTest::SimulateMouseClickAt(
-    int modifiers, WebKit::WebMouseEvent::Button button, int x, int y) {
+    int modifiers, blink::WebMouseEvent::Button button, int x, int y) {
   // TODO(weitaosu): The coordinate translation doesn't work correctly for
   // apps v2.
   ExecuteScript(

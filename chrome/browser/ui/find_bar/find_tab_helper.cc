@@ -17,7 +17,7 @@
 #include "third_party/WebKit/public/web/WebFindOptions.h"
 #include "ui/gfx/rect_f.h"
 
-using WebKit::WebFindOptions;
+using blink::WebFindOptions;
 using content::WebContents;
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(FindTabHelper);

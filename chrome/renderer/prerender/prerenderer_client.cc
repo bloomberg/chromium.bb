@@ -26,7 +26,7 @@ PrerendererClient::~PrerendererClient() {
 }
 
 void PrerendererClient::willAddPrerender(
-    WebKit::WebPrerender* prerender) {
+    blink::WebPrerender* prerender) {
   DVLOG(3) << "PrerendererClient::willAddPrerender url = "
            << prerender->url().spec().data();
   prerender->setExtraData(new PrerenderExtraData(++s_last_prerender_id,

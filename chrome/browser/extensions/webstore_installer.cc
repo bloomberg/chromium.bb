@@ -560,7 +560,7 @@ void WebstoreInstaller::StartDownload(const base::FilePath& file) {
   if (controller_->GetVisibleEntry())
     params->set_referrer(
         content::Referrer(controller_->GetVisibleEntry()->GetURL(),
-                          WebKit::WebReferrerPolicyDefault));
+                          blink::WebReferrerPolicyDefault));
   params->set_callback(base::Bind(&WebstoreInstaller::OnDownloadStarted, this));
   download_manager->DownloadUrl(params.Pass());
 }

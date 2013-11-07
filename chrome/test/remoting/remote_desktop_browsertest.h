@@ -110,7 +110,7 @@ class RemoteDesktopBrowserTest : public extensions::PlatformAppBrowserTest {
 
   // Helper to simulate a mouse click.
   void SimulateMouseClickAt(
-      int modifiers, WebKit::WebMouseEvent::Button button, int x, int y);
+      int modifiers, blink::WebMouseEvent::Button button, int x, int y);
 
   // The following helpers each perform a composite task.
 

@@ -7,7 +7,7 @@
 
 #include "base/strings/string16.h"
 
-// This class mirrors WebKit::WebTextCheckingResult which holds a
+// This class mirrors blink::WebTextCheckingResult which holds a
 // misspelled range inside the checked text. It also contains a
 // possible replacement of the misspelling if it is available.
 struct SpellCheckResult {

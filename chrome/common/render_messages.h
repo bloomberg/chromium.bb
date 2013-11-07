@@ -128,7 +128,7 @@ IPC_ENUM_TRAITS(search_provider::InstallState)
 IPC_ENUM_TRAITS(ThemeBackgroundImageAlignment)
 IPC_ENUM_TRAITS(ThemeBackgroundImageTiling)
 IPC_ENUM_TRAITS(TranslateErrors::Type)
-IPC_ENUM_TRAITS(WebKit::WebConsoleMessage::Level)
+IPC_ENUM_TRAITS(blink::WebConsoleMessage::Level)
 IPC_ENUM_TRAITS(content::TopControlsState)
 
 IPC_STRUCT_TRAITS_BEGIN(ChromeViewHostMsg_GetPluginInfo_Status)
@@ -202,14 +202,14 @@ IPC_STRUCT_TRAITS_BEGIN(ThemeBackgroundInfo)
   IPC_STRUCT_TRAITS_MEMBER(logo_alternate)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(WebKit::WebCache::ResourceTypeStat)
+IPC_STRUCT_TRAITS_BEGIN(blink::WebCache::ResourceTypeStat)
   IPC_STRUCT_TRAITS_MEMBER(count)
   IPC_STRUCT_TRAITS_MEMBER(size)
   IPC_STRUCT_TRAITS_MEMBER(liveSize)
   IPC_STRUCT_TRAITS_MEMBER(decodedSize)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(WebKit::WebCache::ResourceTypeStats)
+IPC_STRUCT_TRAITS_BEGIN(blink::WebCache::ResourceTypeStats)
   IPC_STRUCT_TRAITS_MEMBER(images)
   IPC_STRUCT_TRAITS_MEMBER(cssStyleSheets)
   IPC_STRUCT_TRAITS_MEMBER(scripts)
@@ -217,7 +217,7 @@ IPC_STRUCT_TRAITS_BEGIN(WebKit::WebCache::ResourceTypeStats)
   IPC_STRUCT_TRAITS_MEMBER(fonts)
 IPC_STRUCT_TRAITS_END()
 
-IPC_STRUCT_TRAITS_BEGIN(WebKit::WebCache::UsageStats)
+IPC_STRUCT_TRAITS_BEGIN(blink::WebCache::UsageStats)
   IPC_STRUCT_TRAITS_MEMBER(minDeadCapacity)
   IPC_STRUCT_TRAITS_MEMBER(maxDeadCapacity)
   IPC_STRUCT_TRAITS_MEMBER(capacity)
@@ -400,7 +400,7 @@ IPC_MESSAGE_ROUTED3(ChromeViewMsg_UpdateTopControlsState,
 
 // Updates the window features of the render view.
 IPC_MESSAGE_ROUTED1(ChromeViewMsg_SetWindowFeatures,
-                    WebKit::WebWindowFeatures /* window_features */)
+                    blink::WebWindowFeatures /* window_features */)
 
 IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_RequestThumbnailForContextNode_ACK,
                     SkBitmap /* thumbnail */,
@@ -449,7 +449,7 @@ IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_TranslateLanguageDetermined,
                     bool /* whether the page needs translation */)
 
 IPC_MESSAGE_CONTROL1(ChromeViewHostMsg_UpdatedCacheStats,
-                     WebKit::WebCache::UsageStats /* stats */)
+                     blink::WebCache::UsageStats /* stats */)
 
 // Tells the browser that content in the current page was blocked due to the
 // user's content settings.
@@ -620,7 +620,7 @@ IPC_MESSAGE_ROUTED2(ChromeViewHostMsg_BlockedUnauthorizedPlugin,
 // Provide the browser process with information about the WebCore resource
 // cache and current renderer framerate.
 IPC_MESSAGE_CONTROL1(ChromeViewHostMsg_ResourceTypeStats,
-                     WebKit::WebCache::ResourceTypeStats)
+                     blink::WebCache::ResourceTypeStats)
 
 // Notifies the browser that a page has been translated.
 IPC_MESSAGE_ROUTED4(ChromeViewHostMsg_PageTranslated,

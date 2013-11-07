@@ -107,11 +107,11 @@
 #endif  // defined(ENABLE_FULL_PRINTING)
 #endif  // defined(ENABLE_PRINTING)
 
-using WebKit::WebContextMenuData;
-using WebKit::WebMediaPlayerAction;
-using WebKit::WebPluginAction;
-using WebKit::WebString;
-using WebKit::WebURL;
+using blink::WebContextMenuData;
+using blink::WebMediaPlayerAction;
+using blink::WebPluginAction;
+using blink::WebString;
+using blink::WebURL;
 using content::BrowserContext;
 using content::ChildProcessSecurityPolicy;
 using content::DownloadManager;

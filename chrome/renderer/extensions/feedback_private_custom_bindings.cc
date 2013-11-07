@@ -13,7 +13,7 @@ namespace {
 
 void GetBlobUuid(const v8::FunctionCallbackInfo<v8::Value> &args) {
   DCHECK(args.Length() == 1);
-  WebKit::WebBlob blob = WebKit::WebBlob::fromV8Value(args[0]);
+  blink::WebBlob blob = blink::WebBlob::fromV8Value(args[0]);
   args.GetReturnValue().Set(v8::String::New(blob.uuid().utf8().data()));
 }
 

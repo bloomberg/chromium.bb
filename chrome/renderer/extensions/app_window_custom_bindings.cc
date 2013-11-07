@@ -32,7 +32,7 @@ class DidCreateDocumentElementObserver : public content::RenderViewObserver {
       : content::RenderViewObserver(view), dispatcher_(dispatcher) {
   }
 
-  virtual void DidCreateDocumentElement(WebKit::WebFrame* frame) OVERRIDE {
+  virtual void DidCreateDocumentElement(blink::WebFrame* frame) OVERRIDE {
     DCHECK(frame);
     DCHECK(dispatcher_);
     // Don't attempt to inject the titlebar into iframes.
@@ -100,8 +100,8 @@ void AppWindowCustomBindings::GetView(
   content::RenderView* render_view = GetRenderView();
   if (!render_view)
     return;
-  WebKit::WebFrame* opener = render_view->GetWebView()->mainFrame();
-  WebKit::WebFrame* frame = view->GetWebView()->mainFrame();
+  blink::WebFrame* opener = render_view->GetWebView()->mainFrame();
+  blink::WebFrame* frame = view->GetWebView()->mainFrame();
   frame->setOpener(opener);
   content::RenderThread::Get()->Send(
       new ExtensionHostMsg_ResumeRequests(view->GetRoutingID()));

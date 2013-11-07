@@ -28,12 +28,12 @@
 #include "ui/gfx/size.h"
 #include "url/gurl.h"
 
-using WebKit::WebDocument;
-using WebKit::WebElement;
-using WebKit::WebFrame;
-using WebKit::WebNode;
-using WebKit::WebNodeList;
-using WebKit::WebString;
+using blink::WebDocument;
+using blink::WebElement;
+using blink::WebFrame;
+using blink::WebNode;
+using blink::WebNodeList;
+using blink::WebString;
 
 namespace web_apps {
 namespace {

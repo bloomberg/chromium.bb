@@ -9,15 +9,15 @@
 #include "third_party/WebKit/public/web/WebFormControlElement.h"
 #include "third_party/WebKit/public/web/WebPasswordFormData.h"
 
-using WebKit::WebFormElement;
-using WebKit::WebPasswordFormData;
+using blink::WebFormElement;
+using blink::WebPasswordFormData;
 
 namespace autofill {
 namespace {
 
 scoped_ptr<PasswordForm> InitPasswordFormFromWebPasswordForm(
     const WebFormElement& web_form,
-    const WebKit::WebPasswordFormData& web_password_form) {
+    const blink::WebPasswordFormData& web_password_form) {
   PasswordForm* password_form = new PasswordForm();
   password_form->signon_realm = web_password_form.signonRealm.utf8();
   password_form->origin = web_password_form.origin;
@@ -42,7 +42,7 @@ scoped_ptr<PasswordForm> InitPasswordFormFromWebPasswordForm(
   password_form->blacklisted_by_user = false;
   password_form->type = PasswordForm::TYPE_MANUAL;
   WebFormElementToFormData(web_form,
-                           WebKit::WebFormControlElement(),
+                           blink::WebFormControlElement(),
                            REQUIRE_NONE,
                            EXTRACT_NONE,
                            &password_form->form_data,

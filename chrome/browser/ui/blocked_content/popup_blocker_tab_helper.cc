@@ -25,7 +25,7 @@
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #endif
 
-using WebKit::WebWindowFeatures;
+using blink::WebWindowFeatures;
 
 const size_t kMaximumNumberOfPopups = 25;
 

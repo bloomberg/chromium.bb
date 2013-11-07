@@ -29,7 +29,7 @@
 
 using base::Time;
 using base::TimeDelta;
-using WebKit::WebCache;
+using blink::WebCache;
 
 static const int kReviseAllocationDelayMS = 200;
 

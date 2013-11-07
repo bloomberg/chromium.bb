@@ -53,12 +53,12 @@
 #include "base/win/iat_patch_function.h"
 #endif
 
-using WebKit::WebCache;
-using WebKit::WebCrossOriginPreflightResultCache;
-using WebKit::WebFontCache;
-using WebKit::WebRuntimeFeatures;
-using WebKit::WebSecurityPolicy;
-using WebKit::WebString;
+using blink::WebCache;
+using blink::WebCrossOriginPreflightResultCache;
+using blink::WebFontCache;
+using blink::WebRuntimeFeatures;
+using blink::WebSecurityPolicy;
+using blink::WebString;
 using content::RenderThread;
 
 namespace {

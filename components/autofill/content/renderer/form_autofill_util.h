@@ -9,7 +9,7 @@
 
 #include "base/strings/string16.h"
 
-namespace WebKit {
+namespace blink {
 class WebDocument;
 class WebElement;
 class WebFormElement;
@@ -52,48 +52,48 @@ enum ExtractMask {
 extern const size_t kMaxParseableFields;
 
 // Returns true if |element| is a month input element.
-bool IsMonthInput(const WebKit::WebInputElement* element);
+bool IsMonthInput(const blink::WebInputElement* element);
 
 // Returns true if |element| is a text input element.
-bool IsTextInput(const WebKit::WebInputElement* element);
+bool IsTextInput(const blink::WebInputElement* element);
 
 // Returns true if |element| is a select element.
-bool IsSelectElement(const WebKit::WebFormControlElement& element);
+bool IsSelectElement(const blink::WebFormControlElement& element);
 
 // Returns true if |element| is a textarea element.
-bool IsTextAreaElement(const WebKit::WebFormControlElement& element);
+bool IsTextAreaElement(const blink::WebFormControlElement& element);
 
 // Returns true if |element| is a checkbox or a radio button element.
-bool IsCheckableElement(const WebKit::WebInputElement* element);
+bool IsCheckableElement(const blink::WebInputElement* element);
 
 // Returns true if |element| is one of the input element types that can be
 // autofilled. {Text, Radiobutton, Checkbox}.
-bool IsAutofillableInputElement(const WebKit::WebInputElement* element);
+bool IsAutofillableInputElement(const blink::WebInputElement* element);
 
 // Recursively checks whether |node| or any of its children have a non-empty
 // bounding box.
-bool IsWebNodeVisible(const WebKit::WebNode& node);
+bool IsWebNodeVisible(const blink::WebNode& node);
 
 // Returns the form's |name| attribute if non-empty; otherwise the form's |id|
 // attribute.
-const base::string16 GetFormIdentifier(const WebKit::WebFormElement& form);
+const base::string16 GetFormIdentifier(const blink::WebFormElement& form);
 
 // Returns true if the element specified by |click_element| was successfully
 // clicked.
-bool ClickElement(const WebKit::WebDocument& document,
+bool ClickElement(const blink::WebDocument& document,
                   const WebElementDescriptor& element_descriptor);
 
 // Fills |autofillable_elements| with all the auto-fillable form control
 // elements in |form_element|.
 void ExtractAutofillableElements(
-    const WebKit::WebFormElement& form_element,
+    const blink::WebFormElement& form_element,
     RequirementsMask requirements,
-    std::vector<WebKit::WebFormControlElement>* autofillable_elements);
+    std::vector<blink::WebFormControlElement>* autofillable_elements);
 
 // Fills out a FormField object from a given WebFormControlElement.
 // |extract_mask|: See the enum ExtractMask above for details.
 void WebFormControlElementToFormField(
-    const WebKit::WebFormControlElement& element,
+    const blink::WebFormControlElement& element,
     ExtractMask extract_mask,
     FormFieldData* field);
 
@@ -105,8 +105,8 @@ void WebFormControlElementToFormField(
 // won't meet the |requirements|.  Also returns false if there are no fields or
 // too many fields in the |form|.
 bool WebFormElementToFormData(
-    const WebKit::WebFormElement& form_element,
-    const WebKit::WebFormControlElement& form_control_element,
+    const blink::WebFormElement& form_element,
+    const blink::WebFormControlElement& form_control_element,
     RequirementsMask requirements,
     ExtractMask extract_mask,
     FormData* form,
@@ -115,7 +115,7 @@ bool WebFormElementToFormData(
 // Finds the form that contains |element| and returns it in |form|.  Fills
 // |field| with the |FormField| representation for element.
 // Returns false if the form is not found or cannot be serialized.
-bool FindFormAndFieldForInputElement(const WebKit::WebInputElement& element,
+bool FindFormAndFieldForInputElement(const blink::WebInputElement& element,
                                      FormData* form,
                                      FormFieldData* field,
                                      RequirementsMask requirements);
@@ -123,34 +123,34 @@ bool FindFormAndFieldForInputElement(const WebKit::WebInputElement& element,
 // Fills the form represented by |form|.  |element| is the input element that
 // initiated the auto-fill process.
 void FillForm(const FormData& form,
-              const WebKit::WebInputElement& element);
+              const blink::WebInputElement& element);
 
 // Fills focusable and non-focusable form control elements within |form_element|
 // with field data from |form_data|.
 void FillFormIncludingNonFocusableElements(
     const FormData& form_data,
-    const WebKit::WebFormElement& form_element);
+    const blink::WebFormElement& form_element);
 
 // Fills all (including disabled, read-only and non-focusable) form control
 // elements within |form_element| with field data from |form_data|.
 void FillFormForAllElements(
     const FormData& form_data,
-    const WebKit::WebFormElement& form_element);
+    const blink::WebFormElement& form_element);
 
 // Previews the form represented by |form|.  |element| is the input element that
 // initiated the preview process.
 void PreviewForm(const FormData& form,
-                 const WebKit::WebInputElement& element);
+                 const blink::WebInputElement& element);
 
 // Clears the placeholder values and the auto-filled background for any fields
 // in the form containing |node| that have been previewed.  Resets the
 // autofilled state of |node| to |was_autofilled|.  Returns false if the form is
 // not found.
-bool ClearPreviewedFormWithElement(const WebKit::WebInputElement& element,
+bool ClearPreviewedFormWithElement(const blink::WebInputElement& element,
                                    bool was_autofilled);
 
 // Returns true if |form| has any auto-filled fields.
-bool FormWithElementIsAutofilled(const WebKit::WebInputElement& element);
+bool FormWithElementIsAutofilled(const blink::WebInputElement& element);
 
 // Checks if the webpage is empty.
 // This kind of webpage is considered as empty:
@@ -161,11 +161,11 @@ bool FormWithElementIsAutofilled(const WebKit::WebInputElement& element);
 //    <body/>
 // <html/>
 // Meta, script and title tags don't influence the emptiness of a webpage.
-bool IsWebpageEmpty(const WebKit::WebFrame* frame);
+bool IsWebpageEmpty(const blink::WebFrame* frame);
 
 // This function checks whether the children of |element|
 // are of the type <script>, <meta>, or <title>.
-bool IsWebElementEmpty(const WebKit::WebElement& element);
+bool IsWebElementEmpty(const blink::WebElement& element);
 
 }  // namespace autofill
 

@@ -49,12 +49,12 @@ void SyncFileSystemCustomBindings::GetSyncFileSystemObject(
     return;
   }
 
-  WebKit::WebFrame* webframe =
-      WebKit::WebFrame::frameForContext(context()->v8_context());
+  blink::WebFrame* webframe =
+      blink::WebFrame::frameForContext(context()->v8_context());
   args.GetReturnValue().Set(
-    webframe->createFileSystem(WebKit::WebFileSystemTypeExternal,
-                               WebKit::WebString::fromUTF8(name),
-                               WebKit::WebString::fromUTF8(root_url)));
+    webframe->createFileSystem(blink::WebFileSystemTypeExternal,
+                               blink::WebString::fromUTF8(name),
+                               blink::WebString::fromUTF8(root_url)));
 }
 
 }  // namespace extensions

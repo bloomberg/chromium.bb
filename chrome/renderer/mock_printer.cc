@@ -70,7 +70,7 @@ MockPrinter::MockPrinter()
     is_first_request_(true),
     print_to_pdf_(false),
     preview_request_id_(0),
-    print_scaling_option_(WebKit::WebPrintScalingOptionSourceSize),
+    print_scaling_option_(blink::WebPrintScalingOptionSourceSize),
     display_header_footer_(false),
     title_(ASCIIToUTF16("title")),
     url_(ASCIIToUTF16("url")),

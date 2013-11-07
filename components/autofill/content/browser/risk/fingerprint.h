@@ -33,7 +33,7 @@ namespace gfx {
 class Rect;
 }
 
-namespace WebKit {
+namespace blink {
 struct WebScreenInfo;
 }
 

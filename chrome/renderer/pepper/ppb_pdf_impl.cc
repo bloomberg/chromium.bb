@@ -38,8 +38,8 @@
 #include "ui/base/resource/resource_bundle.h"
 
 using ppapi::PpapiGlobals;
-using WebKit::WebElement;
-using WebKit::WebView;
+using blink::WebElement;
+using blink::WebView;
 using content::RenderThread;
 
 namespace {
@@ -132,25 +132,25 @@ static const ResourceImageInfo kResourceImageMap[] = {
 
 #if defined(ENABLE_FULL_PRINTING)
 
-WebKit::WebElement GetWebElement(PP_Instance instance_id) {
+blink::WebElement GetWebElement(PP_Instance instance_id) {
   content::PepperPluginInstance* instance =
       content::PepperPluginInstance::Get(instance_id);
   if (!instance)
-    return WebKit::WebElement();
+    return blink::WebElement();
   return instance->GetContainer()->element();
 }
 
 printing::PrintWebViewHelper* GetPrintWebViewHelper(
-    const WebKit::WebElement& element) {
+    const blink::WebElement& element) {
   if (element.isNull())
     return NULL;
-  WebKit::WebView* view = element.document().frame()->view();
+  blink::WebView* view = element.document().frame()->view();
   content::RenderView* render_view = content::RenderView::FromWebView(view);
   return printing::PrintWebViewHelper::Get(render_view);
 }
 
 bool IsPrintingEnabled(PP_Instance instance_id) {
-  WebKit::WebElement element = GetWebElement(instance_id);
+  blink::WebElement element = GetWebElement(instance_id);
   printing::PrintWebViewHelper* helper = GetPrintWebViewHelper(element);
   return helper && helper->IsPrintingEnabled();
 }
@@ -348,7 +348,7 @@ void SaveAs(PP_Instance instance_id) {
   GURL url = instance->GetPluginURL();
 
   content::RenderView* render_view = instance->GetRenderView();
-  WebKit::WebFrame* frame = render_view->GetWebView()->mainFrame();
+  blink::WebFrame* frame = render_view->GetWebView()->mainFrame();
   content::Referrer referrer(frame->document().url(),
                              frame->document().referrerPolicy());
   render_view->Send(new ChromeViewHostMsg_PDFSaveURLAs(
@@ -448,7 +448,7 @@ const PPB_PDF* PPB_PDF_Impl::GetInterface() {
 // static
 void PPB_PDF_Impl::InvokePrintingForInstance(PP_Instance instance_id) {
 #if defined(ENABLE_FULL_PRINTING)
-  WebKit::WebElement element = GetWebElement(instance_id);
+  blink::WebElement element = GetWebElement(instance_id);
   printing::PrintWebViewHelper* helper = GetPrintWebViewHelper(element);
   if (helper)
     helper->PrintNode(element);

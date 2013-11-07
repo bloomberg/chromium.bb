@@ -11,7 +11,7 @@
 #include "base/strings/string16.h"
 #include "ui/gfx/size.h"
 
-namespace WebKit {
+namespace blink {
 class WebFrame;
 }
 
@@ -36,7 +36,7 @@ bool ParseIconSizes(const string16& text, std::vector<gfx::Size>* sizes,
 // web_app will have manifest_url set and nothing else. The caller must fetch
 // this URL and pass the result to ParseWebAppFromDefinitionFile() for further
 // processing.
-bool ParseWebAppFromWebDocument(WebKit::WebFrame* frame,
+bool ParseWebAppFromWebDocument(blink::WebFrame* frame,
                                 WebApplicationInfo* web_app,
                                 string16* error);
 

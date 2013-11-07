@@ -22,25 +22,25 @@
 #include "third_party/WebKit/public/web/WebView.h"
 #include "webkit/common/webpreferences.h"
 
-using WebKit::WebCanvas;
-using WebKit::WebCursorInfo;
-using WebKit::WebDragData;
-using WebKit::WebDragOperationsMask;
-using WebKit::WebFrame;
-using WebKit::WebImage;
-using WebKit::WebInputEvent;
-using WebKit::WebMouseEvent;
-using WebKit::WebPlugin;
-using WebKit::WebPluginContainer;
-using WebKit::WebPoint;
-using WebKit::WebRect;
-using WebKit::WebSize;
-using WebKit::WebString;
-using WebKit::WebURLError;
-using WebKit::WebURLRequest;
-using WebKit::WebURLResponse;
-using WebKit::WebVector;
-using WebKit::WebView;
+using blink::WebCanvas;
+using blink::WebCursorInfo;
+using blink::WebDragData;
+using blink::WebDragOperationsMask;
+using blink::WebFrame;
+using blink::WebImage;
+using blink::WebInputEvent;
+using blink::WebMouseEvent;
+using blink::WebPlugin;
+using blink::WebPluginContainer;
+using blink::WebPoint;
+using blink::WebRect;
+using blink::WebSize;
+using blink::WebString;
+using blink::WebURLError;
+using blink::WebURLRequest;
+using blink::WebURLResponse;
+using blink::WebVector;
+using blink::WebView;
 
 WebViewPlugin::WebViewPlugin(WebViewPlugin::Delegate* delegate)
     : delegate_(delegate), container_(NULL), finished_loading_(false) {
@@ -189,7 +189,7 @@ void WebViewPlugin::didFailLoading(const WebURLError& error) {
 bool WebViewPlugin::acceptsLoadDrops() { return false; }
 
 void WebViewPlugin::setToolTipText(const WebString& text,
-                                   WebKit::WebTextDirection hint) {
+                                   blink::WebTextDirection hint) {
   if (container_)
     container_->element().setAttribute("title", text);
 }

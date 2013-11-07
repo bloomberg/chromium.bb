@@ -13,7 +13,7 @@
 
 WorkerPermissionClientProxy::WorkerPermissionClientProxy(
     content::RenderView* render_view,
-    WebKit::WebFrame* frame)
+    blink::WebFrame* frame)
     : routing_id_(render_view->GetRoutingID()),
       is_unique_origin_(false) {
   if (frame->document().securityOrigin().isUnique() ||
@@ -28,8 +28,8 @@ WorkerPermissionClientProxy::WorkerPermissionClientProxy(
 WorkerPermissionClientProxy::~WorkerPermissionClientProxy() {}
 
 bool WorkerPermissionClientProxy::allowDatabase(
-    const WebKit::WebString& name,
-    const WebKit::WebString& display_name,
+    const blink::WebString& name,
+    const blink::WebString& display_name,
     unsigned long estimated_size) {
   if (is_unique_origin_)
     return false;
@@ -52,7 +52,7 @@ bool WorkerPermissionClientProxy::allowFileSystem() {
 }
 
 bool WorkerPermissionClientProxy::allowIndexedDB(
-    const WebKit::WebString& name) {
+    const blink::WebString& name) {
   if (is_unique_origin_)
     return false;
 

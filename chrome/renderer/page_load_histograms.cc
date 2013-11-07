@@ -28,10 +28,10 @@
 #include "third_party/WebKit/public/web/WebView.h"
 #include "url/gurl.h"
 
-using WebKit::WebDataSource;
-using WebKit::WebFrame;
-using WebKit::WebPerformance;
-using WebKit::WebString;
+using blink::WebDataSource;
+using blink::WebFrame;
+using blink::WebPerformance;
+using blink::WebString;
 using base::Time;
 using base::TimeDelta;
 using content::DocumentState;

@@ -16,11 +16,11 @@
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebWidget.h"
 
-using WebKit::WebDocument;
-using WebKit::WebElement;
-using WebKit::WebInputElement;
-using WebKit::WebNode;
-using WebKit::WebString;
+using blink::WebDocument;
+using blink::WebElement;
+using blink::WebInputElement;
+using blink::WebNode;
+using blink::WebString;
 
 namespace autofill {
 
@@ -44,7 +44,7 @@ class TestPasswordGenerationAgent : public PasswordGenerationAgent {
   }
 
  protected:
-  virtual bool ShouldAnalyzeDocument(const WebKit::WebDocument& document) const
+  virtual bool ShouldAnalyzeDocument(const blink::WebDocument& document) const
       OVERRIDE {
     return true;
   }
@@ -78,15 +78,15 @@ class PasswordGenerationAgentTest : public ChromeRenderViewTest {
     ChromeRenderViewTest::TearDown();
   }
 
-  void SimulateClickOnDecoration(WebKit::WebInputElement* input_element) {
+  void SimulateClickOnDecoration(blink::WebInputElement* input_element) {
     generation_manager_->ClearMessages();
-    WebKit::WebElement decoration =
+    blink::WebElement decoration =
         input_element->decorationElementFor(generation_manager_.get());
     decoration.simulateClick();
   }
 
-  bool DecorationIsVisible(WebKit::WebInputElement* input_element) {
-    WebKit::WebElement decoration =
+  bool DecorationIsVisible(blink::WebInputElement* input_element) {
+    blink::WebElement decoration =
         input_element->decorationElementFor(generation_manager_.get());
     return decoration.hasNonEmptyBoundingBox();
   }

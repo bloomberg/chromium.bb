@@ -82,8 +82,8 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
 
   void OnDnsPrefetch(const std::vector<std::string>& hostnames);
   void OnPreconnect(const GURL& url);
-  void OnResourceTypeStats(const WebKit::WebCache::ResourceTypeStats& stats);
-  void OnUpdatedCacheStats(const WebKit::WebCache::UsageStats& stats);
+  void OnResourceTypeStats(const blink::WebCache::ResourceTypeStats& stats);
+  void OnUpdatedCacheStats(const blink::WebCache::UsageStats& stats);
   void OnFPS(int routing_id, float fps);
   void OnV8HeapStats(int v8_memory_allocated, int v8_memory_used);
   void OnOpenChannelToExtension(int routing_id,

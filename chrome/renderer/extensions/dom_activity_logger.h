@@ -18,7 +18,7 @@
 // extensions::ActivityLog for recording and display.
 namespace extensions {
 
-class DOMActivityLogger: public WebKit::WebDOMActivityLogger {
+class DOMActivityLogger: public blink::WebDOMActivityLogger {
  public:
   static const int kMainWorldId = 0;
   explicit DOMActivityLogger(const std::string& extension_id);
@@ -26,13 +26,13 @@ class DOMActivityLogger: public WebKit::WebDOMActivityLogger {
   // Marshalls the arguments into an ExtensionHostMsg_DOMAction_Params
   // and sends it over to the browser (via IPC) for appending it to the
   // extension activity log.
-  // (Overrides the log method in WebKit::WebDOMActivityLogger)
-  virtual void log(const WebKit::WebString& api_name,
+  // (Overrides the log method in blink::WebDOMActivityLogger)
+  virtual void log(const blink::WebString& api_name,
                    int argc,
                    const v8::Handle<v8::Value> argv[],
-                   const WebKit::WebString& call_type,
-                   const WebKit::WebURL& url,
-                   const WebKit::WebString& title);
+                   const blink::WebString& call_type,
+                   const blink::WebURL& url,
+                   const blink::WebString& title);
 
   // Check (using the WebKit API) if there is no logger attached to the world
   // corresponding to world_id, and if so, construct a new logger and attach it.

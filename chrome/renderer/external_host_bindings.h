@@ -25,7 +25,7 @@ class ExternalHostBindings : public webkit_glue::CppBoundClass {
                                       const std::string& target);
 
   // Overridden to hold onto a pointer back to the web frame.
-  void BindToJavascript(WebKit::WebFrame* frame, const std::string& classname);
+  void BindToJavascript(blink::WebFrame* frame, const std::string& classname);
 
  private:
   // Creates an uninitialized instance of a MessageEvent object.
@@ -38,7 +38,7 @@ class ExternalHostBindings : public webkit_glue::CppBoundClass {
                    webkit_glue::CppVariant* result);
 
   webkit_glue::CppVariant on_message_handler_;
-  WebKit::WebFrame* frame_;
+  blink::WebFrame* frame_;
   IPC::Sender* sender_;
   int routing_id_;
 

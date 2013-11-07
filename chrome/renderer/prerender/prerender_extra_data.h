@@ -11,7 +11,7 @@
 
 namespace prerender {
 
-class PrerenderExtraData : public WebKit::WebPrerender::ExtraData {
+class PrerenderExtraData : public blink::WebPrerender::ExtraData {
  public:
   PrerenderExtraData(int prerender_id,
                      int render_view_route_id,
@@ -23,7 +23,7 @@ class PrerenderExtraData : public WebKit::WebPrerender::ExtraData {
   const gfx::Size& size() const { return size_; }
 
   static const PrerenderExtraData& FromPrerender(
-      const WebKit::WebPrerender& prerender);
+      const blink::WebPrerender& prerender);
 
  private:
   const int prerender_id_;

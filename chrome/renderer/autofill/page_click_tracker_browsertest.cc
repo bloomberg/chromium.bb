@@ -25,7 +25,7 @@ class TestPageClickListener : public PageClickListener {
         is_focused_(false) {
   }
 
-  virtual void InputElementClicked(const WebKit::WebInputElement& element,
+  virtual void InputElementClicked(const blink::WebInputElement& element,
                                    bool was_focused,
                                    bool is_focused) OVERRIDE {
     input_element_clicked_called_ = true;
@@ -48,7 +48,7 @@ class TestPageClickListener : public PageClickListener {
 
   bool input_element_clicked_called_;
   bool input_element_lost_focus_called_;
-  WebKit::WebInputElement element_clicked_;
+  blink::WebInputElement element_clicked_;
   bool was_focused_;
   bool is_focused_;
 };
@@ -67,9 +67,9 @@ class PageClickTrackerTest : public content::RenderViewTest {
              "  <input type='text' id='text_2'></input><br>"
              "  <input type='button' id='button'></input><br>"
              "</form>");
-    GetWebWidget()->resize(WebKit::WebSize(500, 500));
+    GetWebWidget()->resize(blink::WebSize(500, 500));
     GetWebWidget()->setFocus(true);
-    WebKit::WebDocument document = view_->GetWebView()->mainFrame()->document();
+    blink::WebDocument document = view_->GetWebView()->mainFrame()->document();
     text_ = document.getElementById("text_1");
     ASSERT_FALSE(text_.isNull());
   }
@@ -83,23 +83,23 @@ class PageClickTrackerTest : public content::RenderViewTest {
 
   // Send all the messages required for a complete key press.
   void SendKeyPress(int key_code) {
-    WebKit::WebKeyboardEvent keyboard_event;
+    blink::WebKeyboardEvent keyboard_event;
     keyboard_event.windowsKeyCode = key_code;
     keyboard_event.setKeyIdentifierFromWindowsKeyCode();
 
-    keyboard_event.type = WebKit::WebInputEvent::RawKeyDown;
+    keyboard_event.type = blink::WebInputEvent::RawKeyDown;
     SendWebKeyboardEvent(keyboard_event);
 
-    keyboard_event.type = WebKit::WebInputEvent::Char;
+    keyboard_event.type = blink::WebInputEvent::Char;
     SendWebKeyboardEvent(keyboard_event);
 
-    keyboard_event.type = WebKit::WebInputEvent::KeyUp;
+    keyboard_event.type = blink::WebInputEvent::KeyUp;
     SendWebKeyboardEvent(keyboard_event);
   }
 
   scoped_ptr<PageClickTracker> page_click_tracker_;
   TestPageClickListener test_listener_;
-  WebKit::WebElement text_;
+  blink::WebElement text_;
 };
 
 // Tests that PageClickTracker does notify correctly when a node is clicked.

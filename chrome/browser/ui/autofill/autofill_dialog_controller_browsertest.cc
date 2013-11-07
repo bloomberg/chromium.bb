@@ -325,7 +325,7 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
     dom_message_queue_.reset(new content::DOMMessageQueue);
 
     // Triggers the onclick handler which invokes requestAutocomplete().
-    content::SimulateMouseClick(contents, 0, WebKit::WebMouseEvent::ButtonLeft);
+    content::SimulateMouseClick(contents, 0, blink::WebMouseEvent::ButtonLeft);
     ExpectDomMessage("clicked");
 
     AutofillDialogControllerImpl* controller =

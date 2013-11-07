@@ -12,7 +12,7 @@
 using base::Time;
 using base::TimeDelta;
 using content::BrowserThread;
-using WebKit::WebCache;
+using blink::WebCache;
 
 class WebCacheManagerTest : public testing::Test {
  protected:

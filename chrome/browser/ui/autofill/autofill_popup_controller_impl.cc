@@ -25,7 +25,7 @@
 #include "ui/gfx/vector2d.h"
 
 using base::WeakPtr;
-using WebKit::WebAutofillClient;
+using blink::WebAutofillClient;
 
 namespace autofill {
 namespace {

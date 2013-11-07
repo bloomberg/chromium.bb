@@ -12,9 +12,9 @@
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFormElement.h"
 
-using WebKit::WebFrame;
-using WebKit::WebString;
-using WebKit::WebURLError;
+using blink::WebFrame;
+using blink::WebString;
+using blink::WebURLError;
 
 typedef ChromeRenderViewTest FormAutocompleteTest;
 
@@ -101,10 +101,10 @@ TEST_F(FormAutocompleteTest, DynamicAutoCompleteOffFormSubmit) {
   LoadHTML("<html><form id='myForm'><input name='fname' value='Rick'/>"
            "<input name='lname' value='Deckard'/></form></html>");
 
-  WebKit::WebElement element =
-      GetMainFrame()->document().getElementById(WebKit::WebString("myForm"));
+  blink::WebElement element =
+      GetMainFrame()->document().getElementById(blink::WebString("myForm"));
   ASSERT_FALSE(element.isNull());
-  WebKit::WebFormElement form = element.to<WebKit::WebFormElement>();
+  blink::WebFormElement form = element.to<blink::WebFormElement>();
   EXPECT_TRUE(form.autoComplete());
 
   // Dynamically mark the form as autocomplete off.

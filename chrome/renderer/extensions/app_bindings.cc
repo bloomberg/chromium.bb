@@ -25,7 +25,7 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "v8/include/v8.h"
 
-using WebKit::WebFrame;
+using blink::WebFrame;
 using content::V8ValueConverter;
 
 namespace extensions {

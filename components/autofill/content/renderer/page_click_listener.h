@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_AUTOFILL_CONTENT_RENDERER_PAGE_CLICK_LISTENER_H_
 #define COMPONENTS_AUTOFILL_CONTENT_RENDERER_PAGE_CLICK_LISTENER_H_
 
-namespace WebKit {
+namespace blink {
 class WebInputElement;
 }
 
@@ -19,7 +19,7 @@ class PageClickListener {
   // Notification that |element| was clicked.
   // |was_focused| is true if |element| had focus BEFORE the click.
   // |is_focused| is true if |element| has focus AFTER the click was processed.
-  virtual void InputElementClicked(const WebKit::WebInputElement& element,
+  virtual void InputElementClicked(const blink::WebInputElement& element,
                                    bool was_focused,
                                    bool is_focused) = 0;
 

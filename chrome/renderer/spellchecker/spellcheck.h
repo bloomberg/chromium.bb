@@ -21,7 +21,7 @@
 
 struct SpellCheckResult;
 
-namespace WebKit {
+namespace blink {
 class WebTextCheckingCompletion;
 struct WebTextCheckingResult;
 }
@@ -78,7 +78,7 @@ class SpellCheck : public content::RenderProcessObserver,
   // If the spellchecker failed to initialize, always returns true.
   bool SpellCheckParagraph(
       const string16& text,
-      WebKit::WebVector<WebKit::WebTextCheckingResult>* results);
+      blink::WebVector<blink::WebTextCheckingResult>* results);
 
   // Find a possible correctly spelled word for a misspelled word. Computes an
   // empty string if input misspelled word is too long, there is ambiguity, or
@@ -92,7 +92,7 @@ class SpellCheck : public content::RenderProcessObserver,
   // posts a background task and calls SpellCheckParagraph() in the task.
 #if !defined (OS_MACOSX)
   void RequestTextChecking(const string16& text,
-                           WebKit::WebTextCheckingCompletion* completion);
+                           blink::WebTextCheckingCompletion* completion);
 #endif
 
   // Creates a list of WebTextCheckingResult objects (used by WebKit) from a
@@ -104,7 +104,7 @@ class SpellCheck : public content::RenderProcessObserver,
       int line_offset,
       const string16& line_text,
       const std::vector<SpellCheckResult>& spellcheck_results,
-      WebKit::WebVector<WebKit::WebTextCheckingResult>* textcheck_results);
+      blink::WebVector<blink::WebTextCheckingResult>* textcheck_results);
 
   bool is_spellcheck_enabled() { return spellcheck_enabled_; }
 

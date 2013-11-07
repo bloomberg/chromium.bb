@@ -264,7 +264,7 @@ WebContents* ChromeWebContentsDelegateAndroid::OpenURLFromTab(
       !CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisablePopupBlocking)) {
     if (popup_blocker_helper->MaybeBlockPopup(nav_params,
-                                              WebKit::WebWindowFeatures())) {
+                                              blink::WebWindowFeatures())) {
       return NULL;
     }
   }

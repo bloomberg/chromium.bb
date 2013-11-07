@@ -67,7 +67,7 @@ void SessionsSyncPerfTest::UpdateTabs(int profile) {
     browser->OpenURL(
         OpenURLParams(url,
         content::Referrer(GURL("http://localhost"),
-                          WebKit::WebReferrerPolicyDefault),
+                          blink::WebReferrerPolicyDefault),
         CURRENT_TAB,
         content::PageTransitionFromInt(0), false));
     urls.push_back(url);

@@ -20,7 +20,7 @@
 
 class GURL;
 
-namespace WebKit {
+namespace blink {
 class WebElement;
 }
 
@@ -88,11 +88,11 @@ class PhishingDOMFeatureExtractor {
   // Since some of the features (such as ratios) cannot be computed until
   // feature extraction is finished, these handlers do not add to the feature
   // map directly.  Instead, they update the values in the PageFeatureState.
-  void HandleLink(const WebKit::WebElement& element);
-  void HandleForm(const WebKit::WebElement& element);
-  void HandleImage(const WebKit::WebElement& element);
-  void HandleInput(const WebKit::WebElement& element);
-  void HandleScript(const WebKit::WebElement& element);
+  void HandleLink(const blink::WebElement& element);
+  void HandleForm(const blink::WebElement& element);
+  void HandleImage(const blink::WebElement& element);
+  void HandleInput(const blink::WebElement& element);
+  void HandleScript(const blink::WebElement& element);
 
   // Helper to verify that there is no pending feature extraction.  Dies in
   // debug builds if the state is not as expected.  This is a no-op in release
@@ -111,7 +111,7 @@ class PhishingDOMFeatureExtractor {
 
   // Returns the next document in frame-traversal order from cur_document_.
   // If there are no more documents, returns a null WebDocument.
-  WebKit::WebDocument GetNextDocument();
+  blink::WebDocument GetNextDocument();
 
   // Given a URL, checks whether the domain is different from the domain of
   // the current frame's URL.  If so, stores the domain in |domain| and returns
@@ -135,7 +135,7 @@ class PhishingDOMFeatureExtractor {
 
   // The current (sub-)document that we are processing.  May be a null document
   // (isNull()) if we are not currently extracting features.
-  WebKit::WebDocument cur_document_;
+  blink::WebDocument cur_document_;
 
   // Stores extra state for |cur_document_| that will be persisted until we
   // advance to the next frame.

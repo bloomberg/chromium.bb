@@ -143,7 +143,7 @@ void ResumeAppleEventAndSendReply(NSAppleEventManagerSuspensionID suspension_id,
   const GURL& previousURL = entry->GetVirtualURL();
   webContents_->OpenURL(OpenURLParams(
       url,
-      content::Referrer(previousURL, WebKit::WebReferrerPolicyDefault),
+      content::Referrer(previousURL, blink::WebReferrerPolicyDefault),
       CURRENT_TAB,
       content::PAGE_TRANSITION_TYPED,
       false));

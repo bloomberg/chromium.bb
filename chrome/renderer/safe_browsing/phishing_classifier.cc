@@ -103,13 +103,13 @@ void PhishingClassifier::BeginClassification(
 }
 
 void PhishingClassifier::BeginFeatureExtraction() {
-  WebKit::WebView* web_view = render_view_->GetWebView();
+  blink::WebView* web_view = render_view_->GetWebView();
   if (!web_view) {
     RunFailureCallback();
     return;
   }
 
-  WebKit::WebFrame* frame = web_view->mainFrame();
+  blink::WebFrame* frame = web_view->mainFrame();
   if (!frame) {
     RunFailureCallback();
     return;
@@ -123,7 +123,7 @@ void PhishingClassifier::BeginFeatureExtraction() {
     return;
   }
 
-  WebKit::WebDataSource* ds = frame->dataSource();
+  blink::WebDataSource* ds = frame->dataSource();
   if (!ds || !EqualsASCII(ds->request().httpMethod(), "GET")) {
     RunFailureCallback();
     return;
@@ -169,12 +169,12 @@ void PhishingClassifier::DOMExtractionFinished(bool success) {
 
 void PhishingClassifier::TermExtractionFinished(bool success) {
   if (success) {
-    WebKit::WebView* web_view = render_view_->GetWebView();
+    blink::WebView* web_view = render_view_->GetWebView();
     if (!web_view) {
       RunFailureCallback();
       return;
     }
-    WebKit::WebFrame* main_frame = web_view->mainFrame();
+    blink::WebFrame* main_frame = web_view->mainFrame();
     if (!main_frame) {
       RunFailureCallback();
       return;

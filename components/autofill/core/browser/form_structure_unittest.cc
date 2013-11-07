@@ -14,7 +14,7 @@
 #include "third_party/WebKit/public/web/WebInputElement.h"
 #include "url/gurl.h"
 
-using WebKit::WebInputElement;
+using blink::WebInputElement;
 
 namespace autofill {
 namespace {

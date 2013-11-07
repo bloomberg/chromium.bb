@@ -372,7 +372,7 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
   static TestRenderViewContextMenu* CreateContextMenu(
       content::WebContents* web_contents) {
     content::ContextMenuParams params;
-    params.media_type = WebKit::WebContextMenuData::MediaTypeNone;
+    params.media_type = blink::WebContextMenuData::MediaTypeNone;
     params.x = 0;
     params.y = 0;
     params.has_image_contents = true;
@@ -385,7 +385,7 @@ class TestRenderViewContextMenu : public RenderViewContextMenu {
     params.writing_direction_left_to_right = 0;
     params.writing_direction_right_to_left = 0;
 #endif  // OS_MACOSX
-    params.edit_flags = WebKit::WebContextMenuData::CanTranslate;
+    params.edit_flags = blink::WebContextMenuData::CanTranslate;
     return new TestRenderViewContextMenu(web_contents, params);
   }
 

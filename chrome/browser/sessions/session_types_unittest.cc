@@ -30,7 +30,7 @@ namespace {
 const int kUniqueID = 50;
 const content::Referrer kReferrer =
     content::Referrer(GURL("http://www.referrer.com"),
-                      WebKit::WebReferrerPolicyAlways);
+                      blink::WebReferrerPolicyAlways);
 const GURL kVirtualURL("http://www.virtual-url.com");
 const string16 kTitle = ASCIIToUTF16("title");
 const content::PageState kPageState =

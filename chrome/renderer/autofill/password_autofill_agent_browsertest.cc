@@ -24,12 +24,12 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 
 using autofill::PasswordForm;
-using WebKit::WebDocument;
-using WebKit::WebElement;
-using WebKit::WebFrame;
-using WebKit::WebInputElement;
-using WebKit::WebString;
-using WebKit::WebView;
+using blink::WebDocument;
+using blink::WebElement;
+using blink::WebFrame;
+using blink::WebInputElement;
+using blink::WebString;
+using blink::WebView;
 
 namespace {
 
@@ -199,10 +199,10 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
     WebElement element =
         document.getElementById(WebString::fromUTF8(kUsernameName));
     ASSERT_FALSE(element.isNull());
-    username_element_ = element.to<WebKit::WebInputElement>();
+    username_element_ = element.to<blink::WebInputElement>();
     element = document.getElementById(WebString::fromUTF8(kPasswordName));
     ASSERT_FALSE(element.isNull());
-    password_element_ = element.to<WebKit::WebInputElement>();
+    password_element_ = element.to<blink::WebInputElement>();
   }
 
   virtual void TearDown() {
@@ -235,7 +235,7 @@ class PasswordAutofillAgentTest : public ChromeRenderViewTest {
 
   void SimulateKeyDownEvent(const WebInputElement& element,
                             ui::KeyboardCode key_code) {
-    WebKit::WebKeyboardEvent key_event;
+    blink::WebKeyboardEvent key_event;
     key_event.windowsKeyCode = key_code;
     autofill_agent_->textFieldDidReceiveKeyDown(element, key_event);
   }
@@ -321,10 +321,10 @@ TEST_F(PasswordAutofillAgentTest, InitialAutocompleteForEmptyAction) {
   WebElement element =
       document.getElementById(WebString::fromUTF8(kUsernameName));
   ASSERT_FALSE(element.isNull());
-  username_element_ = element.to<WebKit::WebInputElement>();
+  username_element_ = element.to<blink::WebInputElement>();
   element = document.getElementById(WebString::fromUTF8(kPasswordName));
   ASSERT_FALSE(element.isNull());
-  password_element_ = element.to<WebKit::WebInputElement>();
+  password_element_ = element.to<blink::WebInputElement>();
 
   // Set the expected form origin and action URLs.
   std::string origin("data:text/html;charset=utf-8,");
@@ -439,10 +439,10 @@ TEST_F(PasswordAutofillAgentTest, NoAutocompleteForTextFieldPasswords) {
   WebElement element =
       document.getElementById(WebString::fromUTF8(kUsernameName));
   ASSERT_FALSE(element.isNull());
-  username_element_ = element.to<WebKit::WebInputElement>();
+  username_element_ = element.to<blink::WebInputElement>();
   element = document.getElementById(WebString::fromUTF8(kPasswordName));
   ASSERT_FALSE(element.isNull());
-  password_element_ = element.to<WebKit::WebInputElement>();
+  password_element_ = element.to<blink::WebInputElement>();
 
   // Set the expected form origin URL.
   std::string origin("data:text/html;charset=utf-8,");
@@ -469,10 +469,10 @@ TEST_F(PasswordAutofillAgentTest, NoAutocompleteForPasswordFieldUsernames) {
   WebElement element =
       document.getElementById(WebString::fromUTF8(kUsernameName));
   ASSERT_FALSE(element.isNull());
-  username_element_ = element.to<WebKit::WebInputElement>();
+  username_element_ = element.to<blink::WebInputElement>();
   element = document.getElementById(WebString::fromUTF8(kPasswordName));
   ASSERT_FALSE(element.isNull());
-  password_element_ = element.to<WebKit::WebInputElement>();
+  password_element_ = element.to<blink::WebInputElement>();
 
   // Set the expected form origin URL.
   std::string origin("data:text/html;charset=utf-8,");
@@ -620,15 +620,15 @@ TEST_F(PasswordAutofillAgentTest, SuggestionSelect) {
   // didSelectAutofillSuggestion on the renderer.
   autofill_agent_->didSelectAutofillSuggestion(username_element_,
                                                ASCIIToUTF16(kAliceUsername),
-                                               WebKit::WebString(),
+                                               blink::WebString(),
                                                0);
   // Autocomplete should not have kicked in.
   CheckTextFieldsState(std::string(), false, std::string(), false);
 }
 
 TEST_F(PasswordAutofillAgentTest, IsWebNodeVisibleTest) {
-  WebKit::WebVector<WebKit::WebFormElement> forms1, forms2, forms3;
-  WebKit::WebFrame* frame;
+  blink::WebVector<blink::WebFormElement> forms1, forms2, forms3;
+  blink::WebFrame* frame;
 
   LoadHTML(kVisibleFormHTML);
   frame = GetMainFrame();

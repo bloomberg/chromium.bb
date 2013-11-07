@@ -19,12 +19,12 @@
 #include "url/gurl.h"
 #include "v8/include/v8.h"
 
-using WebKit::WebDocument;
-using WebKit::WebElement;
-using WebKit::WebFrame;
-using WebKit::WebNode;
-using WebKit::WebNodeList;
-using WebKit::WebUserGestureIndicator;
+using blink::WebDocument;
+using blink::WebElement;
+using blink::WebFrame;
+using blink::WebNode;
+using blink::WebNodeList;
+using blink::WebUserGestureIndicator;
 
 namespace extensions {
 

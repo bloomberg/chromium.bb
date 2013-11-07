@@ -17,8 +17,8 @@
 
 namespace prerender {
 
-using WebKit::WebPrerender;
-using WebKit::WebPrerenderingSupport;
+using blink::WebPrerender;
+using blink::WebPrerenderingSupport;
 
 PrerenderDispatcher::PrerenderDispatcher() {
   WebPrerenderingSupport::initialize(this);

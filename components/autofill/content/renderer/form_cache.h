@@ -11,7 +11,7 @@
 
 #include "base/strings/string16.h"
 
-namespace WebKit {
+namespace blink {
 class WebDocument;
 class WebFormElement;
 class WebFrame;
@@ -32,7 +32,7 @@ class FormCache {
 
   // Scans the DOM in |frame| extracting and storing forms.
   // Fills |forms| with extracted forms.
-  void ExtractForms(const WebKit::WebFrame& frame,
+  void ExtractForms(const blink::WebFrame& frame,
                     std::vector<FormData>* forms);
 
   // Scans the DOM in |frame| extracting and storing forms.
@@ -40,17 +40,17 @@ class FormCache {
   // web form elements. Returns true if there are unextracted forms due to
   // |minimum_required_fields| limit, else false.
   bool ExtractFormsAndFormElements(
-      const WebKit::WebFrame& frame,
+      const blink::WebFrame& frame,
       size_t minimum_required_fields,
       std::vector<FormData>* forms,
-      std::vector<WebKit::WebFormElement>* web_form_elements);
+      std::vector<blink::WebFormElement>* web_form_elements);
 
   // Resets the forms for the specified |frame|.
-  void ResetFrame(const WebKit::WebFrame& frame);
+  void ResetFrame(const blink::WebFrame& frame);
 
   // Clears the values of all input elements in the form that contains
   // |element|.  Returns false if the form is not found.
-  bool ClearFormWithElement(const WebKit::WebInputElement& element);
+  bool ClearFormWithElement(const blink::WebInputElement& element);
 
   // For each field in the |form|, sets the field's placeholder text to the
   // field's overall predicted type.  Also sets the title to include the field's
@@ -60,14 +60,14 @@ class FormCache {
 
  private:
   // The cached web frames.
-  std::set<WebKit::WebDocument> web_documents_;
+  std::set<blink::WebDocument> web_documents_;
 
   // The cached initial values for <select> elements.
-  std::map<const WebKit::WebSelectElement, base::string16>
+  std::map<const blink::WebSelectElement, base::string16>
       initial_select_values_;
 
   // The cached initial values for checkable <input> elements.
-  std::map<const WebKit::WebInputElement, bool> initial_checked_state_;
+  std::map<const blink::WebInputElement, bool> initial_checked_state_;
 
   DISALLOW_COPY_AND_ASSIGN(FormCache);
 };

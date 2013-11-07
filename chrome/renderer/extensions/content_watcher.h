@@ -12,7 +12,7 @@
 
 #include "third_party/WebKit/public/platform/WebVector.h"
 
-namespace WebKit {
+namespace blink {
 class WebFrame;
 class WebString;
 }
@@ -40,14 +40,14 @@ class ContentWatcher {
   // Uses WebDocument::watchCSSSelectors to watch the selectors in
   // css_selectors_ and get a callback into DidMatchCSS() whenever the set of
   // matching selectors in |frame| changes.
-  void DidCreateDocumentElement(WebKit::WebFrame* frame);
+  void DidCreateDocumentElement(blink::WebFrame* frame);
 
   // Records that |newly_matching_selectors| have started matching on |*frame|,
   // and |stopped_matching_selectors| have stopped matching.
   void DidMatchCSS(
-      WebKit::WebFrame* frame,
-      const WebKit::WebVector<WebKit::WebString>& newly_matching_selectors,
-      const WebKit::WebVector<WebKit::WebString>& stopped_matching_selectors);
+      blink::WebFrame* frame,
+      const blink::WebVector<blink::WebString>& newly_matching_selectors,
+      const blink::WebVector<blink::WebString>& stopped_matching_selectors);
 
  private:
   // Given that we saw a change in the CSS selectors that |changed_frame|
@@ -55,15 +55,15 @@ class ContentWatcher {
   // top-level page.  We filter this so that if an extension were to be granted
   // activeTab permission on that top-level page, we only send CSS selectors for
   // frames that it could run on.
-  void NotifyBrowserOfChange(WebKit::WebFrame* changed_frame) const;
+  void NotifyBrowserOfChange(blink::WebFrame* changed_frame) const;
 
   // If any of these selectors match on a page, we need to send an
   // ExtensionHostMsg_OnWatchedPageChange back to the browser.
-  WebKit::WebVector<WebKit::WebString> css_selectors_;
+  blink::WebVector<blink::WebString> css_selectors_;
 
   // Maps live WebFrames to the set of CSS selectors they match. Blink sends
   // back diffs, which we apply to these sets.
-  std::map<WebKit::WebFrame*, std::set<std::string> > matching_selectors_;
+  std::map<blink::WebFrame*, std::set<std::string> > matching_selectors_;
 };
 
 }  // namespace extensions

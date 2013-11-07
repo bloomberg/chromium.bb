@@ -682,7 +682,7 @@ TEST_F(PrerenderTest, PendingPrerenderTest) {
   scoped_ptr<PrerenderHandle> pending_prerender_handle(
       prerender_manager()->AddPrerenderFromLinkRelPrerender(
           child_id, route_id, pending_url,
-          Referrer(url, WebKit::WebReferrerPolicyDefault), kSize));
+          Referrer(url, blink::WebReferrerPolicyDefault), kSize));
   CHECK(pending_prerender_handle.get());
   EXPECT_FALSE(pending_prerender_handle->IsPrerendering());
 
@@ -719,7 +719,7 @@ TEST_F(PrerenderTest, InvalidPendingPrerenderTest) {
   scoped_ptr<PrerenderHandle> pending_prerender_handle(
       prerender_manager()->AddPrerenderFromLinkRelPrerender(
           child_id, route_id, pending_url,
-          Referrer(url, WebKit::WebReferrerPolicyDefault), kSize));
+          Referrer(url, blink::WebReferrerPolicyDefault), kSize));
   DCHECK(pending_prerender_handle.get());
   EXPECT_FALSE(pending_prerender_handle->IsPrerendering());
 
@@ -747,7 +747,7 @@ TEST_F(PrerenderTest, CancelPendingPrerenderTest) {
   scoped_ptr<PrerenderHandle> pending_prerender_handle(
       prerender_manager()->AddPrerenderFromLinkRelPrerender(
           child_id, route_id, pending_url,
-          Referrer(url, WebKit::WebReferrerPolicyDefault), kSize));
+          Referrer(url, blink::WebReferrerPolicyDefault), kSize));
   CHECK(pending_prerender_handle.get());
   EXPECT_FALSE(pending_prerender_handle->IsPrerendering());
 

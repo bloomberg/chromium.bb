@@ -334,7 +334,7 @@ bool NotificationsApiFunction::CreateNotification(
                             title,
                             message,
                             icon,
-                            WebKit::WebTextDirectionDefault,
+                            blink::WebTextDirectionDefault,
                             message_center::NotifierId(
                                 message_center::NotifierId::APPLICATION,
                                 extension_->id()),

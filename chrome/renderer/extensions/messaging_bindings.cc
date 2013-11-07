@@ -118,7 +118,7 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
         renderview->GetRoutingID(), port_id,
         extensions::Message(
             *v8::String::AsciiValue(args[1]),
-            WebKit::WebUserGestureIndicator::isProcessingUserGesture())));
+            blink::WebUserGestureIndicator::isProcessingUserGesture())));
   }
 
   // Forcefully disconnects a port.
@@ -204,7 +204,7 @@ class ExtensionImpl : public extensions::ChromeV8Extension {
       if (context.IsEmpty())
         return;
       v8::Context::Scope context_scope(context);
-      WebKit::WebScopedMicrotaskSuppression suppression;
+      blink::WebScopedMicrotaskSuppression suppression;
       callback->Call(context->Global(), 0, NULL);
     }
 
@@ -322,9 +322,9 @@ void MessagingBindings::DeliverMessage(
     int target_port_id,
     const Message& message,
     content::RenderView* restrict_to_render_view) {
-  scoped_ptr<WebKit::WebScopedUserGesture> web_user_gesture;
+  scoped_ptr<blink::WebScopedUserGesture> web_user_gesture;
   if (message.user_gesture)
-    web_user_gesture.reset(new WebKit::WebScopedUserGesture);
+    web_user_gesture.reset(new blink::WebScopedUserGesture);
 
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
 

@@ -148,7 +148,7 @@ class MockPrinter {
 
   // Specifies whether to retain/crop/scale source page size to fit the
   // given printable area.
-  WebKit::WebPrintScalingOption print_scaling_option_;
+  blink::WebPrintScalingOption print_scaling_option_;
 
   // Used for displaying headers and footers.
   bool display_header_footer_;

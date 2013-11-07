@@ -19,18 +19,18 @@
 #include "third_party/WebKit/public/web/WebTextDecorationType.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
-using WebKit::WebFrame;
-using WebKit::WebString;
-using WebKit::WebTextCheckingCompletion;
-using WebKit::WebTextCheckingResult;
-using WebKit::WebTextDecorationType;
-using WebKit::WebVector;
+using blink::WebFrame;
+using blink::WebString;
+using blink::WebTextCheckingCompletion;
+using blink::WebTextCheckingResult;
+using blink::WebTextDecorationType;
+using blink::WebVector;
 
-COMPILE_ASSERT(int(WebKit::WebTextDecorationTypeSpelling) ==
+COMPILE_ASSERT(int(blink::WebTextDecorationTypeSpelling) ==
                int(SpellCheckResult::SPELLING), mismatching_enums);
-COMPILE_ASSERT(int(WebKit::WebTextDecorationTypeGrammar) ==
+COMPILE_ASSERT(int(blink::WebTextDecorationTypeGrammar) ==
                int(SpellCheckResult::GRAMMAR), mismatching_enums);
-COMPILE_ASSERT(int(WebKit::WebTextDecorationTypeInvisibleSpellcheck) ==
+COMPILE_ASSERT(int(blink::WebTextDecorationTypeInvisibleSpellcheck) ==
                int(SpellCheckResult::INVISIBLE), mismatching_enums);
 
 SpellCheckProvider::SpellCheckProvider(
@@ -67,7 +67,7 @@ void SpellCheckProvider::RequestTextChecking(
   // Send this text to a browser. A browser checks the user profile and send
   // this text to the Spelling service only if a user enables this feature.
   last_request_.clear();
-  last_results_.assign(WebKit::WebVector<WebKit::WebTextCheckingResult>());
+  last_results_.assign(blink::WebVector<blink::WebTextCheckingResult>());
 
 #if defined(OS_MACOSX)
   // Text check (unified request for grammar and spell check) is only
@@ -106,10 +106,10 @@ bool SpellCheckProvider::OnMessageReceived(const IPC::Message& message) {
   return handled;
 }
 
-void SpellCheckProvider::FocusedNodeChanged(const WebKit::WebNode& unused) {
+void SpellCheckProvider::FocusedNodeChanged(const blink::WebNode& unused) {
 #if defined(OS_MACOSX)
   bool enabled = false;
-  WebKit::WebNode node = render_view()->GetFocusedNode();
+  blink::WebNode node = render_view()->GetFocusedNode();
   if (!node.isNull())
     enabled = render_view()->IsEditableNode(node);
 
@@ -146,13 +146,13 @@ void SpellCheckProvider::spellCheck(
 }
 
 void SpellCheckProvider::checkTextOfParagraph(
-    const WebKit::WebString& text,
-    WebKit::WebTextCheckingTypeMask mask,
-    WebKit::WebVector<WebKit::WebTextCheckingResult>* results) {
+    const blink::WebString& text,
+    blink::WebTextCheckingTypeMask mask,
+    blink::WebVector<blink::WebTextCheckingResult>* results) {
   if (!results)
     return;
 
-  if (!(mask & WebKit::WebTextCheckingTypeSpelling))
+  if (!(mask & blink::WebTextCheckingTypeSpelling))
     return;
 
   // TODO(groby): As far as I can tell, this method is never invoked.
@@ -224,7 +224,7 @@ void SpellCheckProvider::OnRespondSpellingService(
 
   // Double-check the returned spellchecking results with our spellchecker to
   // visualize the differences between ours and the on-line spellchecker.
-  WebKit::WebVector<WebKit::WebTextCheckingResult> textcheck_results;
+  blink::WebVector<blink::WebTextCheckingResult> textcheck_results;
   spellcheck_->CreateTextCheckingResults(SpellCheck::USE_NATIVE_CHECKER,
                                          0,
                                          line,
@@ -271,7 +271,7 @@ void SpellCheckProvider::OnRespondTextCheck(
   if (!completion)
     return;
   text_check_completions_.Remove(identifier);
-  WebKit::WebVector<WebKit::WebTextCheckingResult> textcheck_results;
+  blink::WebVector<blink::WebTextCheckingResult> textcheck_results;
   spellcheck_->CreateTextCheckingResults(SpellCheck::DO_NOT_MODIFY,
                                          0,
                                          string16(),
@@ -344,7 +344,7 @@ bool SpellCheckProvider::SatisfyRequestFromCache(
         ++result_size;
     }
     if (result_size > 0) {
-      WebKit::WebVector<WebKit::WebTextCheckingResult> results(result_size);
+      blink::WebVector<blink::WebTextCheckingResult> results(result_size);
       for (size_t i = 0; i < result_size; ++i) {
         results[i].decoration = last_results_[i].decoration;
         results[i].location = last_results_[i].location;

@@ -34,13 +34,13 @@
 #endif
 
 using extensions::ExtensionCustomBindings;
-using WebKit::WebFrame;
-using WebKit::WebInputEvent;
-using WebKit::WebMouseEvent;
-using WebKit::WebScriptController;
-using WebKit::WebScriptSource;
-using WebKit::WebString;
-using WebKit::WebURLRequest;
+using blink::WebFrame;
+using blink::WebInputEvent;
+using blink::WebMouseEvent;
+using blink::WebScriptController;
+using blink::WebScriptSource;
+using blink::WebString;
+using blink::WebURLRequest;
 using autofill::AutofillAgent;
 using autofill::PasswordAutofillAgent;
 

@@ -92,7 +92,7 @@ int ValueCompareMember(const TaskManagerModel* model,
       OrderUnavailableValue(value1_valid, value2_valid);
 }
 
-string16 FormatStatsSize(const WebKit::WebCache::ResourceTypeStat& stat) {
+string16 FormatStatsSize(const blink::WebCache::ResourceTypeStat& stat) {
   return l10n_util::GetStringFUTF16(IDS_TASK_MANAGER_CACHE_SIZE_CELL_TEXT,
       ui::FormatBytesWithUnits(stat.size, ui::DATA_UNITS_KIBIBYTE, false),
       ui::FormatBytesWithUnits(stat.liveSize, ui::DATA_UNITS_KIBIBYTE, false));
@@ -632,7 +632,7 @@ void TaskManagerModel::GetUSERHandles(int index,
 
 bool TaskManagerModel::GetWebCoreCacheStats(
     int index,
-    WebKit::WebCache::ResourceTypeStats* result) const {
+    blink::WebCache::ResourceTypeStats* result) const {
   if (!CacheWebCoreStats(index))
     return false;
   *result = GetPerResourceValues(index).webcore_stats;
@@ -890,9 +890,9 @@ int TaskManagerModel::CompareValues(int row1, int row2, int col_id) const {
       bool row1_stats_valid = CacheWebCoreStats(row1);
       bool row2_stats_valid = CacheWebCoreStats(row2);
       if (row1_stats_valid && row2_stats_valid) {
-        const WebKit::WebCache::ResourceTypeStats& stats1(
+        const blink::WebCache::ResourceTypeStats& stats1(
             GetPerResourceValues(row1).webcore_stats);
-        const WebKit::WebCache::ResourceTypeStats& stats2(
+        const blink::WebCache::ResourceTypeStats& stats2(
             GetPerResourceValues(row2).webcore_stats);
         switch (col_id) {
           case IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN:
@@ -1219,7 +1219,7 @@ void TaskManagerModel::Refresh() {
 
 void TaskManagerModel::NotifyResourceTypeStats(
     base::ProcessId renderer_id,
-    const WebKit::WebCache::ResourceTypeStats& stats) {
+    const blink::WebCache::ResourceTypeStats& stats) {
   for (ResourceList::iterator it = resources_.begin();
        it != resources_.end(); ++it) {
     if (base::GetProcId((*it)->GetProcess()) == renderer_id) {

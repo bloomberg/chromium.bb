@@ -239,7 +239,7 @@
 #include "chrome/browser/spellchecker/spellcheck_message_filter.h"
 #endif
 
-using WebKit::WebWindowFeatures;
+using blink::WebWindowFeatures;
 using base::FileDescriptor;
 using content::AccessTokenStore;
 using content::BrowserChildProcessHostIterator;
@@ -1931,7 +1931,7 @@ void ChromeContentBrowserClient::RequestDesktopNotificationPermission(
 #endif
 }
 
-WebKit::WebNotificationPresenter::Permission
+blink::WebNotificationPresenter::Permission
     ChromeContentBrowserClient::CheckDesktopNotificationPermission(
         const GURL& source_origin,
         content::ResourceContext* context,
@@ -1941,7 +1941,7 @@ WebKit::WebNotificationPresenter::Permission
   // Sometimes a notification may be invoked during the shutdown.
   // See http://crbug.com/256638
   if (browser_shutdown::IsTryingToQuit())
-    return WebKit::WebNotificationPresenter::PermissionNotAllowed;
+    return blink::WebNotificationPresenter::PermissionNotAllowed;
 
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
 
@@ -1957,15 +1957,15 @@ WebKit::WebNotificationPresenter::Permission
          iter != extensions.end(); ++iter) {
       NotifierId notifier_id(NotifierId::APPLICATION, (*iter)->id());
       if (notification_service->IsNotifierEnabled(notifier_id))
-        return WebKit::WebNotificationPresenter::PermissionAllowed;
+        return blink::WebNotificationPresenter::PermissionAllowed;
     }
 
     return notification_service->HasPermission(source_origin);
   }
 
-  return WebKit::WebNotificationPresenter::PermissionNotAllowed;
+  return blink::WebNotificationPresenter::PermissionNotAllowed;
 #else
-  return WebKit::WebNotificationPresenter::PermissionAllowed;
+  return blink::WebNotificationPresenter::PermissionAllowed;
 #endif
 }
 

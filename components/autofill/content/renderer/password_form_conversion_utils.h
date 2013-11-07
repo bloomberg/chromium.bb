@@ -7,7 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 
-namespace WebKit {
+namespace blink {
 class WebFormElement;
 }
 
@@ -20,7 +20,7 @@ struct PasswordForm;
 // happens with a given form and compare against previously Create'd forms
 // to identify..which sucks.
 scoped_ptr<PasswordForm> CreatePasswordForm(
-    const WebKit::WebFormElement& form);
+    const blink::WebFormElement& form);
 
 }  // namespace autofill
 

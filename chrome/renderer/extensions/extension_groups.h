@@ -7,7 +7,7 @@
 
 namespace extensions {
 
-// A set of extension groups for use with WebKit::registerExtension and
+// A set of extension groups for use with blink::registerExtension and
 // WebFrame::ExecuteScriptInNewWorld to control which extensions get loaded
 // into which contexts.
 enum ExtensionGroups {

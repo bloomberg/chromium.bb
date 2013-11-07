@@ -21,7 +21,7 @@ FakeTextCheckingCompletion::FakeTextCheckingCompletion()
 FakeTextCheckingCompletion::~FakeTextCheckingCompletion() {}
 
 void FakeTextCheckingCompletion::didFinishCheckingText(
-    const WebKit::WebVector<WebKit::WebTextCheckingResult>& results) {
+    const blink::WebVector<blink::WebTextCheckingResult>& results) {
   ++completion_count_;
 }
 
@@ -67,7 +67,7 @@ void TestingSpellCheckProvider::OnCallSpellingService(int route_id,
   NOTREACHED();
 #else
   ++spelling_service_call_count_;
-  WebKit::WebTextCheckingCompletion* completion =
+  blink::WebTextCheckingCompletion* completion =
       text_check_completions_.Lookup(identifier);
   if (!completion) {
     ResetResult();
@@ -75,10 +75,10 @@ void TestingSpellCheckProvider::OnCallSpellingService(int route_id,
   }
   text_.assign(text);
   text_check_completions_.Remove(identifier);
-  std::vector<WebKit::WebTextCheckingResult> results;
-  results.push_back(WebKit::WebTextCheckingResult(
-      WebKit::WebTextDecorationTypeSpelling,
-      0, 5, WebKit::WebString("hello")));
+  std::vector<blink::WebTextCheckingResult> results;
+  results.push_back(blink::WebTextCheckingResult(
+      blink::WebTextDecorationTypeSpelling,
+      0, 5, blink::WebString("hello")));
   completion->didFinishCheckingText(results);
   last_request_ = text;
   last_results_ = results;

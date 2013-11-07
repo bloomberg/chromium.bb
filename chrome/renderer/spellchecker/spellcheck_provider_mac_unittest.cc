@@ -53,7 +53,7 @@ void FakeMessageArrival(SpellCheckProvider* provider,
 TEST_F(SpellCheckProviderMacTest, SingleRoundtripSuccess) {
   FakeTextCheckingCompletion completion;
 
-  provider_.RequestTextChecking(WebKit::WebString("hello "),
+  provider_.RequestTextChecking(blink::WebString("hello "),
                                 &completion,
                                 std::vector<SpellCheckMarker>());
   EXPECT_EQ(completion.completion_count_, 0U);
@@ -71,11 +71,11 @@ TEST_F(SpellCheckProviderMacTest, SingleRoundtripSuccess) {
 
 TEST_F(SpellCheckProviderMacTest, TwoRoundtripSuccess) {
   FakeTextCheckingCompletion completion1;
-  provider_.RequestTextChecking(WebKit::WebString("hello "),
+  provider_.RequestTextChecking(blink::WebString("hello "),
                                 &completion1,
                                 std::vector<SpellCheckMarker>());
   FakeTextCheckingCompletion completion2;
-  provider_.RequestTextChecking(WebKit::WebString("bye "),
+  provider_.RequestTextChecking(blink::WebString("bye "),
                                 &completion2,
                                 std::vector<SpellCheckMarker>());
 

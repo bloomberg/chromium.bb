@@ -36,7 +36,7 @@ class WebstoreBindings : public ChromeV8Extension,
   // parameter will be populated with the ID. On failure, false will be returned
   // and |error| will be populated with the error.
   static bool GetWebstoreItemIdFromFrame(
-      WebKit::WebFrame* frame, const std::string& preferred_store_link_url,
+      blink::WebFrame* frame, const std::string& preferred_store_link_url,
       std::string* webstore_item_id, std::string* error);
 
   DISALLOW_COPY_AND_ASSIGN(WebstoreBindings);

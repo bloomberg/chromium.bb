@@ -58,7 +58,7 @@ class WebCacheManager : public content::NotificationObserver {
   // statistics.  The more up-to-date the cache manager's statistics, the
   // better it can allocate cache resources.
   void ObserveStats(
-      int renderer_id, const WebKit::WebCache::UsageStats& stats);
+      int renderer_id, const blink::WebCache::UsageStats& stats);
 
   // The global limit on the number of bytes in all the in-memory caches.
   size_t global_size_limit() const { return global_size_limit_; }
@@ -87,7 +87,7 @@ class WebCacheManager : public content::NotificationObserver {
   static const int kRendererInactiveThresholdMinutes = 5;
 
   // Keep track of some renderer information.
-  struct RendererInfo : WebKit::WebCache::UsageStats {
+  struct RendererInfo : blink::WebCache::UsageStats {
     // The access time for this renderer.
     base::Time access;
   };
@@ -149,13 +149,13 @@ class WebCacheManager : public content::NotificationObserver {
   // Add up all the stats from the given set of renderers and place the result
   // in |stats|.
   void GatherStats(const std::set<int>& renderers,
-                   WebKit::WebCache::UsageStats* stats);
+                   blink::WebCache::UsageStats* stats);
 
   // Get the amount of memory that would be required to implement |tactic|
   // using the specified allocation tactic.  This function defines the
   // semantics for each of the tactics.
   static size_t GetSize(AllocationTactic tactic,
-                        const WebKit::WebCache::UsageStats& stats);
+                        const blink::WebCache::UsageStats& stats);
 
   // Attempt to use the specified tactics to compute an allocation strategy
   // and place the result in |strategy|.  |active_stats| and |inactive_stats|
@@ -165,9 +165,9 @@ class WebCacheManager : public content::NotificationObserver {
   // Returns |true| on success and |false| on failure.  Does not modify
   // |strategy| on failure.
   bool AttemptTactic(AllocationTactic active_tactic,
-                     const WebKit::WebCache::UsageStats& active_stats,
+                     const blink::WebCache::UsageStats& active_stats,
                      AllocationTactic inactive_tactic,
-                     const WebKit::WebCache::UsageStats& inactive_stats,
+                     const blink::WebCache::UsageStats& inactive_stats,
                      AllocationStrategy* strategy);
 
   // For each renderer in |renderers|, computes its allocation according to

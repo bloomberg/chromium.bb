@@ -9,15 +9,15 @@
 #include "chrome/renderer/net/renderer_net_predictor.h"
 #include "third_party/WebKit/public/platform/WebPrescientNetworking.h"
 
-class PrescientNetworkingDispatcher : public WebKit::WebPrescientNetworking {
+class PrescientNetworkingDispatcher : public blink::WebPrescientNetworking {
  public:
   PrescientNetworkingDispatcher();
   virtual ~PrescientNetworkingDispatcher();
 
-  virtual void prefetchDNS(const WebKit::WebString& hostname) OVERRIDE;
+  virtual void prefetchDNS(const blink::WebString& hostname) OVERRIDE;
 
-  virtual void preconnect(const WebKit::WebURL& url,
-                          WebKit::WebPreconnectMotivation motivation) OVERRIDE;
+  virtual void preconnect(const blink::WebURL& url,
+                          blink::WebPreconnectMotivation motivation) OVERRIDE;
  private:
   RendererNetPredictor net_predictor_;
 

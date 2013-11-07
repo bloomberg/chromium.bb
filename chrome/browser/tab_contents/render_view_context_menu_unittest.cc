@@ -37,7 +37,7 @@ class RenderViewContextMenuTest : public testing::Test {
 static content::ContextMenuParams CreateParams(int contexts) {
   content::ContextMenuParams rv;
   rv.is_editable = false;
-  rv.media_type = WebKit::WebContextMenuData::MediaTypeNone;
+  rv.media_type = blink::WebContextMenuData::MediaTypeNone;
   rv.page_url = GURL("http://test.page/");
 
   static const char16 selected_text[] = { 's', 'e', 'l', 0 };
@@ -52,17 +52,17 @@ static content::ContextMenuParams CreateParams(int contexts) {
 
   if (contexts & MenuItem::IMAGE) {
     rv.src_url = GURL("http://test.image/");
-    rv.media_type = WebKit::WebContextMenuData::MediaTypeImage;
+    rv.media_type = blink::WebContextMenuData::MediaTypeImage;
   }
 
   if (contexts & MenuItem::VIDEO) {
     rv.src_url = GURL("http://test.video/");
-    rv.media_type = WebKit::WebContextMenuData::MediaTypeVideo;
+    rv.media_type = blink::WebContextMenuData::MediaTypeVideo;
   }
 
   if (contexts & MenuItem::AUDIO) {
     rv.src_url = GURL("http://test.audio/");
-    rv.media_type = WebKit::WebContextMenuData::MediaTypeAudio;
+    rv.media_type = blink::WebContextMenuData::MediaTypeAudio;
   }
 
   if (contexts & MenuItem::FRAME)

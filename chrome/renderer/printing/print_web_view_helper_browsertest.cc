@@ -20,8 +20,8 @@
 #include "base/file_util.h"
 #include "printing/image.h"
 
-using WebKit::WebFrame;
-using WebKit::WebString;
+using blink::WebFrame;
+using blink::WebString;
 #endif
 
 namespace printing {
@@ -265,14 +265,14 @@ TEST_F(PrintWebViewHelperTest, AllowUserOriginatedPrinting) {
 
   gfx::Rect bounds = GetElementBounds("print");
   EXPECT_FALSE(bounds.IsEmpty());
-  WebKit::WebMouseEvent mouse_event;
-  mouse_event.type = WebKit::WebInputEvent::MouseDown;
-  mouse_event.button = WebKit::WebMouseEvent::ButtonLeft;
+  blink::WebMouseEvent mouse_event;
+  mouse_event.type = blink::WebInputEvent::MouseDown;
+  mouse_event.button = blink::WebMouseEvent::ButtonLeft;
   mouse_event.x = bounds.CenterPoint().x();
   mouse_event.y = bounds.CenterPoint().y();
   mouse_event.clickCount = 1;
   SendWebMouseEvent(mouse_event);
-  mouse_event.type = WebKit::WebInputEvent::MouseUp;
+  mouse_event.type = blink::WebInputEvent::MouseUp;
   SendWebMouseEvent(mouse_event);
   ProcessPendingMessages();
 
@@ -780,7 +780,7 @@ TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreviewForSelectedPages) {
 TEST_F(PrintWebViewHelperPreviewTest, OnPrintPreviewForSelectedText) {
   LoadHTML(kMultipageHTML);
   GetMainFrame()->selectRange(
-      WebKit::WebRange::fromDocumentRange(GetMainFrame(), 1, 3));
+      blink::WebRange::fromDocumentRange(GetMainFrame(), 1, 3));
 
   // Fill in some dummy values.
   base::DictionaryValue dict;

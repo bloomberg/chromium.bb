@@ -20,7 +20,7 @@ namespace extensions {
 class Extension;
 }
 
-namespace WebKit {
+namespace blink {
 struct WebURLError;
 }
 
@@ -37,7 +37,7 @@ class LocalizedError {
                          base::DictionaryValue* strings);
 
   // Returns a description of the encountered error.
-  static string16 GetErrorDetails(const WebKit::WebURLError& error,
+  static string16 GetErrorDetails(const blink::WebURLError& error,
                                   bool is_post);
 
   // Returns true if an error page exists for the specified parameters.

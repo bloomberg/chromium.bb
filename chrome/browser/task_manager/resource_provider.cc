@@ -24,8 +24,8 @@ bool Resource::ReportsCacheStats() const {
   return false;
 }
 
-WebKit::WebCache::ResourceTypeStats Resource::GetWebCoreCacheStats() const {
-  return WebKit::WebCache::ResourceTypeStats();
+blink::WebCache::ResourceTypeStats Resource::GetWebCoreCacheStats() const {
+  return blink::WebCache::ResourceTypeStats();
 }
 
 bool Resource::ReportsFPS() const {

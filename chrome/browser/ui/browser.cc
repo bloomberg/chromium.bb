@@ -217,7 +217,7 @@ using content::WebContents;
 using extensions::Extension;
 using ui::WebDialogDelegate;
 using web_modal::WebContentsModalDialogManager;
-using WebKit::WebWindowFeatures;
+using blink::WebWindowFeatures;
 
 ///////////////////////////////////////////////////////////////////////////////
 

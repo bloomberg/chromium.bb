@@ -19,9 +19,9 @@
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/base/resource/resource_bundle.h"
 
-using WebKit::WebDocument;
-using WebKit::WebFrame;
-using WebKit::WebView;
+using blink::WebDocument;
+using blink::WebFrame;
+using blink::WebView;
 
 namespace extensions {
 

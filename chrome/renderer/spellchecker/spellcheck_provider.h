@@ -17,7 +17,7 @@ class SpellCheck;
 class SpellCheckMarker;
 struct SpellCheckResult;
 
-namespace WebKit {
+namespace blink {
 class WebString;
 class WebTextCheckingCompletion;
 struct WebTextCheckingResult;
@@ -28,9 +28,9 @@ struct WebTextCheckingResult;
 class SpellCheckProvider
     : public content::RenderViewObserver,
       public content::RenderViewObserverTracker<SpellCheckProvider>,
-      public WebKit::WebSpellCheckClient {
+      public blink::WebSpellCheckClient {
  public:
-  typedef IDMap<WebKit::WebTextCheckingCompletion> WebTextCheckCompletions;
+  typedef IDMap<blink::WebTextCheckingCompletion> WebTextCheckCompletions;
 
   SpellCheckProvider(content::RenderView* render_view,
                      SpellCheck* spellcheck);
@@ -40,7 +40,7 @@ class SpellCheckProvider
   // checker, which is available on the browser process.
   void RequestTextChecking(
       const string16& text,
-      WebKit::WebTextCheckingCompletion* completion,
+      blink::WebTextCheckingCompletion* completion,
       const std::vector<SpellCheckMarker>& markers);
 
   // The number of ongoing IPC requests.
@@ -56,7 +56,7 @@ class SpellCheckProvider
 
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void FocusedNodeChanged(const WebKit::WebNode& node) OVERRIDE;
+  virtual void FocusedNodeChanged(const blink::WebNode& node) OVERRIDE;
 
  private:
   friend class TestingSpellCheckProvider;
@@ -65,31 +65,31 @@ class SpellCheckProvider
   // Returns true (and cancels/finishes the completion) if it can, false
   // if the provider should forward the query on.
   bool SatisfyRequestFromCache(const string16& text,
-                               WebKit::WebTextCheckingCompletion* completion);
+                               blink::WebTextCheckingCompletion* completion);
 
-  // WebKit::WebSpellCheckClient implementation.
+  // blink::WebSpellCheckClient implementation.
   virtual void spellCheck(
-      const WebKit::WebString& text,
+      const blink::WebString& text,
       int& offset,
       int& length,
-      WebKit::WebVector<WebKit::WebString>* optional_suggestions) OVERRIDE;
+      blink::WebVector<blink::WebString>* optional_suggestions) OVERRIDE;
   virtual void checkTextOfParagraph(
-      const WebKit::WebString& text,
-      WebKit::WebTextCheckingTypeMask mask,
-      WebKit::WebVector<WebKit::WebTextCheckingResult>* results) OVERRIDE;
+      const blink::WebString& text,
+      blink::WebTextCheckingTypeMask mask,
+      blink::WebVector<blink::WebTextCheckingResult>* results) OVERRIDE;
 
   virtual void requestCheckingOfText(
-      const WebKit::WebString& text,
-      const WebKit::WebVector<uint32>& markers,
-      const WebKit::WebVector<unsigned>& marker_offsets,
-      WebKit::WebTextCheckingCompletion* completion) OVERRIDE;
+      const blink::WebString& text,
+      const blink::WebVector<uint32>& markers,
+      const blink::WebVector<unsigned>& marker_offsets,
+      blink::WebTextCheckingCompletion* completion) OVERRIDE;
 
-  virtual WebKit::WebString autoCorrectWord(
-      const WebKit::WebString& misspelled_word) OVERRIDE;
+  virtual blink::WebString autoCorrectWord(
+      const blink::WebString& misspelled_word) OVERRIDE;
   virtual void showSpellingUI(bool show) OVERRIDE;
   virtual bool isShowingSpellingUI() OVERRIDE;
   virtual void updateSpellingUIWithMisspelledWord(
-      const WebKit::WebString& word) OVERRIDE;
+      const blink::WebString& word) OVERRIDE;
 
 #if !defined(OS_MACOSX)
   void OnRespondSpellingService(
@@ -117,7 +117,7 @@ class SpellCheckProvider
   // The last text sent to the browser process to spellcheck it and its
   // spellchecking results.
   string16 last_request_;
-  WebKit::WebVector<WebKit::WebTextCheckingResult> last_results_;
+  blink::WebVector<blink::WebTextCheckingResult> last_results_;
 
   // True if the browser is showing the spelling panel for us.
   bool spelling_panel_visible_;

@@ -17,8 +17,8 @@ class ChromePluginPlaceholder : public plugins::PluginPlaceholder,
 
   static ChromePluginPlaceholder* CreateBlockedPlugin(
       content::RenderView* render_view,
-      WebKit::WebFrame* frame,
-      const WebKit::WebPluginParams& params,
+      blink::WebFrame* frame,
+      const blink::WebPluginParams& params,
       const content::WebPluginInfo& info,
       const std::string& identifier,
       const string16& name,
@@ -28,8 +28,8 @@ class ChromePluginPlaceholder : public plugins::PluginPlaceholder,
   // Creates a new WebViewPlugin with a MissingPlugin as a delegate.
   static ChromePluginPlaceholder* CreateMissingPlugin(
       content::RenderView* render_view,
-      WebKit::WebFrame* frame,
-      const WebKit::WebPluginParams& params);
+      blink::WebFrame* frame,
+      const blink::WebPluginParams& params);
 
   static ChromePluginPlaceholder* CreateErrorPlugin(
       content::RenderView* render_view,
@@ -43,20 +43,20 @@ class ChromePluginPlaceholder : public plugins::PluginPlaceholder,
 
  private:
   ChromePluginPlaceholder(content::RenderView* render_view,
-                          WebKit::WebFrame* frame,
-                          const WebKit::WebPluginParams& params,
+                          blink::WebFrame* frame,
+                          const blink::WebPluginParams& params,
                           const std::string& html_data,
                           const string16& title);
   virtual ~ChromePluginPlaceholder();
 
   // WebViewPlugin::Delegate (via PluginPlaceholder) method
-  virtual void BindWebFrame(WebKit::WebFrame* frame) OVERRIDE;
+  virtual void BindWebFrame(blink::WebFrame* frame) OVERRIDE;
 
   // content::RenderViewObserver (via PluginPlaceholder) override:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // WebViewPlugin::Delegate (via PluginPlaceholder) methods:
-  virtual void ShowContextMenu(const WebKit::WebMouseEvent&) OVERRIDE;
+  virtual void ShowContextMenu(const blink::WebMouseEvent&) OVERRIDE;
 
   // content::RenderProcessObserver methods:
   virtual void PluginListChanged() OVERRIDE;

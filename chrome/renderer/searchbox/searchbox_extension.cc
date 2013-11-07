@@ -71,9 +71,9 @@ v8::Handle<v8::String> UTF8ToV8String(const std::string& s) {
   return v8::String::New(s.data(), s.size());
 }
 
-void Dispatch(WebKit::WebFrame* frame, const WebKit::WebString& script) {
+void Dispatch(blink::WebFrame* frame, const blink::WebString& script) {
   if (!frame) return;
-  frame->executeScript(WebKit::WebScriptSource(script));
+  frame->executeScript(blink::WebScriptSource(script));
 }
 
 v8::Handle<v8::String> GenerateThumbnailURL(
@@ -130,10 +130,10 @@ v8::Handle<v8::Object> GenerateMostVisitedItem(
 // most visited data to pages with origin chrome-search://most-visited and
 // chrome-search://suggestions.
 content::RenderView* GetRenderViewWithCheckedOrigin(const GURL& origin) {
-  WebKit::WebFrame* webframe = WebKit::WebFrame::frameForCurrentContext();
+  blink::WebFrame* webframe = blink::WebFrame::frameForCurrentContext();
   if (!webframe)
     return NULL;
-  WebKit::WebView* webview = webframe->view();
+  blink::WebView* webview = webframe->view();
   if (!webview)
     return NULL;  // Can happen during closing.
   content::RenderView* render_view = content::RenderView::FromWebView(webview);
@@ -149,7 +149,7 @@ content::RenderView* GetRenderViewWithCheckedOrigin(const GURL& origin) {
 
 // Returns the current URL.
 GURL GetCurrentURL(content::RenderView* render_view) {
-  WebKit::WebView* webview = render_view->GetWebView();
+  blink::WebView* webview = render_view->GetWebView();
   return webview ? GURL(webview->mainFrame()->document().url()) : GURL();
 }
 
@@ -430,20 +430,20 @@ v8::Extension* SearchBoxExtension::Get() {
 }
 
 // static
-bool SearchBoxExtension::PageSupportsInstant(WebKit::WebFrame* frame) {
+bool SearchBoxExtension::PageSupportsInstant(blink::WebFrame* frame) {
   if (!frame) return false;
   v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
   v8::Handle<v8::Value> v = frame->executeScriptAndReturnValue(
-      WebKit::WebScriptSource(kSupportsInstantScript));
+      blink::WebScriptSource(kSupportsInstantScript));
   return !v.IsEmpty() && v->BooleanValue();
 }
 
 // static
 void SearchBoxExtension::DispatchChromeIdentityCheckResult(
-    WebKit::WebFrame* frame, const string16& identity, bool identity_match) {
+    blink::WebFrame* frame, const string16& identity, bool identity_match) {
   std::string escaped_identity;
   base::JsonDoubleQuote(identity, true, &escaped_identity);
-  WebKit::WebString script(UTF8ToUTF16(base::StringPrintf(
+  blink::WebString script(UTF8ToUTF16(base::StringPrintf(
       kDispatchChromeIdentityCheckResult,
       escaped_identity.c_str(),
       identity_match ? "true" : "false")));
@@ -451,54 +451,54 @@ void SearchBoxExtension::DispatchChromeIdentityCheckResult(
 }
 
 // static
-void SearchBoxExtension::DispatchFocusChange(WebKit::WebFrame* frame) {
+void SearchBoxExtension::DispatchFocusChange(blink::WebFrame* frame) {
   Dispatch(frame, kDispatchFocusChangedScript);
 }
 
 // static
-void SearchBoxExtension::DispatchInputCancel(WebKit::WebFrame* frame) {
+void SearchBoxExtension::DispatchInputCancel(blink::WebFrame* frame) {
   Dispatch(frame, kDispatchInputCancelScript);
 }
 
 // static
-void SearchBoxExtension::DispatchInputStart(WebKit::WebFrame* frame) {
+void SearchBoxExtension::DispatchInputStart(blink::WebFrame* frame) {
   Dispatch(frame, kDispatchInputStartScript);
 }
 
 // static
-void SearchBoxExtension::DispatchKeyCaptureChange(WebKit::WebFrame* frame) {
+void SearchBoxExtension::DispatchKeyCaptureChange(blink::WebFrame* frame) {
   Dispatch(frame, kDispatchKeyCaptureChangeScript);
 }
 
 // static
-void SearchBoxExtension::DispatchMarginChange(WebKit::WebFrame* frame) {
+void SearchBoxExtension::DispatchMarginChange(blink::WebFrame* frame) {
   Dispatch(frame, kDispatchMarginChangeEventScript);
 }
 
 // static
 void SearchBoxExtension::DispatchMostVisitedChanged(
-    WebKit::WebFrame* frame) {
+    blink::WebFrame* frame) {
   Dispatch(frame, kDispatchMostVisitedChangedScript);
 }
 
 // static
-void SearchBoxExtension::DispatchSubmit(WebKit::WebFrame* frame) {
+void SearchBoxExtension::DispatchSubmit(blink::WebFrame* frame) {
   Dispatch(frame, kDispatchSubmitEventScript);
 }
 
 // static
-void SearchBoxExtension::DispatchSuggestionChange(WebKit::WebFrame* frame) {
+void SearchBoxExtension::DispatchSuggestionChange(blink::WebFrame* frame) {
   Dispatch(frame, kDispatchSuggestionChangeEventScript);
 }
 
 // static
-void SearchBoxExtension::DispatchThemeChange(WebKit::WebFrame* frame) {
+void SearchBoxExtension::DispatchThemeChange(blink::WebFrame* frame) {
   Dispatch(frame, kDispatchThemeChangeEventScript);
 }
 
 // static
 void SearchBoxExtension::DispatchToggleVoiceSearch(
-    WebKit::WebFrame* frame) {
+    blink::WebFrame* frame) {
   Dispatch(frame, kDispatchToggleVoiceSearchScript);
 }
 
@@ -560,10 +560,10 @@ v8::Handle<v8::FunctionTemplate> SearchBoxExtensionWrapper::GetNativeFunction(
 
 // static
 content::RenderView* SearchBoxExtensionWrapper::GetRenderView() {
-  WebKit::WebFrame* webframe = WebKit::WebFrame::frameForCurrentContext();
+  blink::WebFrame* webframe = blink::WebFrame::frameForCurrentContext();
   if (!webframe) return NULL;
 
-  WebKit::WebView* webview = webframe->view();
+  blink::WebView* webview = webframe->view();
   if (!webview) return NULL;  // can happen during closing
 
   return content::RenderView::FromWebView(webview);

@@ -41,7 +41,7 @@ namespace gfx {
 class Point;
 }
 
-namespace WebKit {
+namespace blink {
 struct WebMediaPlayerAction;
 struct WebPluginAction;
 }
@@ -247,9 +247,9 @@ class RenderViewContextMenu : public ui::SimpleMenuModel::Delegate,
   void WriteURLToClipboard(const GURL& url);
 
   void MediaPlayerActionAt(const gfx::Point& location,
-                           const WebKit::WebMediaPlayerAction& action);
+                           const blink::WebMediaPlayerAction& action);
   void PluginActionAt(const gfx::Point& location,
-                      const WebKit::WebPluginAction& action);
+                      const blink::WebPluginAction& action);
 
   bool IsDevCommandEnabled(int id) const;
 

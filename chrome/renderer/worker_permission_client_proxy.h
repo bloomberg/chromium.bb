@@ -18,25 +18,25 @@ namespace content {
 class RenderView;
 }
 
-namespace WebKit {
+namespace blink {
 class WebFrame;
 }
 
 // This proxy is created on the main renderer thread then passed onto
 // the blink's worker thread.
 class WorkerPermissionClientProxy
-    : public WebKit::WebWorkerPermissionClientProxy {
+    : public blink::WebWorkerPermissionClientProxy {
  public:
   WorkerPermissionClientProxy(content::RenderView* render_view,
-                              WebKit::WebFrame* frame);
+                              blink::WebFrame* frame);
   virtual ~WorkerPermissionClientProxy();
 
   // WebWorkerPermissionClientProxy overrides.
-  virtual bool allowDatabase(const WebKit::WebString& name,
-                             const WebKit::WebString& display_name,
+  virtual bool allowDatabase(const blink::WebString& name,
+                             const blink::WebString& display_name,
                              unsigned long estimated_size);
   virtual bool allowFileSystem();
-  virtual bool allowIndexedDB(const WebKit::WebString& name);
+  virtual bool allowIndexedDB(const blink::WebString& name);
 
  private:
   // Loading document context for this worker.

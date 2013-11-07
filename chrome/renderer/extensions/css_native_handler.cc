@@ -11,7 +11,7 @@
 
 namespace extensions {
 
-using WebKit::WebString;
+using blink::WebString;
 
 CssNativeHandler::CssNativeHandler(ChromeV8Context* context)
     : ObjectBackedNativeHandler(context) {
@@ -25,10 +25,10 @@ void CssNativeHandler::CanonicalizeCompoundSelector(
   CHECK_EQ(args.Length(), 1);
   CHECK(args[0]->IsString());
   WebString input_selector =
-      WebKit::WebScriptBindings::toWebString(args[0].As<v8::String>());
-  WebString output_selector = WebKit::canonicalizeSelector(
-      input_selector, WebKit::WebSelectorTypeCompound);
-  args.GetReturnValue().Set(WebKit::WebScriptBindings::toV8String(
+      blink::WebScriptBindings::toWebString(args[0].As<v8::String>());
+  WebString output_selector = blink::canonicalizeSelector(
+      input_selector, blink::WebSelectorTypeCompound);
+  args.GetReturnValue().Set(blink::WebScriptBindings::toV8String(
       output_selector, context()->v8_context()->GetIsolate()));
 }
 

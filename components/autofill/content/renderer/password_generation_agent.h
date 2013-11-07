@@ -15,7 +15,7 @@
 #include "third_party/WebKit/public/web/WebPasswordGeneratorClient.h"
 #include "url/gurl.h"
 
-namespace WebKit {
+namespace blink {
 class WebCString;
 class WebDocument;
 }
@@ -29,7 +29,7 @@ struct PasswordForm;
 // generation between the browser (which shows the popup and generates
 // passwords) and WebKit (shows the generation icon in the password field).
 class PasswordGenerationAgent : public content::RenderViewObserver,
-                                public WebKit::WebPasswordGeneratorClient {
+                                public blink::WebPasswordGeneratorClient {
  public:
   explicit PasswordGenerationAgent(content::RenderView* render_view);
   virtual ~PasswordGenerationAgent();
@@ -37,18 +37,18 @@ class PasswordGenerationAgent : public content::RenderViewObserver,
  protected:
   // Returns true if this document is one that we should consider analyzing.
   // Virtual so that it can be overriden during testing.
-  virtual bool ShouldAnalyzeDocument(const WebKit::WebDocument& document) const;
+  virtual bool ShouldAnalyzeDocument(const blink::WebDocument& document) const;
 
   // RenderViewObserver:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
 
  private:
   // RenderViewObserver:
-  virtual void DidFinishDocumentLoad(WebKit::WebFrame* frame) OVERRIDE;
-  virtual void DidFinishLoad(WebKit::WebFrame* frame) OVERRIDE;
+  virtual void DidFinishDocumentLoad(blink::WebFrame* frame) OVERRIDE;
+  virtual void DidFinishLoad(blink::WebFrame* frame) OVERRIDE;
 
   // WebPasswordGeneratorClient:
-  virtual void openPasswordGenerator(WebKit::WebInputElement& element) OVERRIDE;
+  virtual void openPasswordGenerator(blink::WebInputElement& element) OVERRIDE;
 
   // Message handlers.
   void OnFormNotBlacklisted(const PasswordForm& form);
@@ -74,7 +74,7 @@ class PasswordGenerationAgent : public content::RenderViewObserver,
   // not be sent if the feature is disabled.
   std::vector<autofill::FormData> generation_enabled_forms_;
 
-  std::vector<WebKit::WebInputElement> passwords_;
+  std::vector<blink::WebInputElement> passwords_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordGenerationAgent);
 };

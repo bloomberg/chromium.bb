@@ -21,13 +21,13 @@
 #include "third_party/WebKit/public/web/WebView.h"
 #include "webkit/child/weburlresponse_extradata_impl.h"
 
-using WebKit::WebDataSource;
-using WebKit::WebFrame;
-using WebKit::WebFrameClient;
-using WebKit::WebSecurityOrigin;
-using WebKit::WebString;
-using WebKit::WebURL;
-using WebKit::WebView;
+using blink::WebDataSource;
+using blink::WebFrame;
+using blink::WebFrameClient;
+using blink::WebSecurityOrigin;
+using blink::WebString;
+using blink::WebURL;
+using blink::WebView;
 using content::DocumentState;
 using content::NavigationState;
 
@@ -254,7 +254,7 @@ bool ContentSettingsObserver::AllowScript(WebFrame* frame,
 bool ContentSettingsObserver::AllowScriptFromSource(
     WebFrame* frame,
     bool enabled_per_settings,
-    const WebKit::WebURL& script_url) {
+    const blink::WebURL& script_url) {
   if (!enabled_per_settings)
     return false;
   if (is_interstitial_page_)

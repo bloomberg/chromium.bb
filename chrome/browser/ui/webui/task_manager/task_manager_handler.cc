@@ -349,7 +349,7 @@ base::Value* TaskManagerHandler::CreateColumnValue(
         model_->GetResourceWebCoreImageCacheSize(i));
   }
   if (column_name == "webCoreImageCacheSizeValue") {
-    WebKit::WebCache::ResourceTypeStats resource_stats;
+    blink::WebCache::ResourceTypeStats resource_stats;
     model_->GetWebCoreCacheStats(i, &resource_stats);
     return Value::CreateDoubleValue(resource_stats.images.size);
   }
@@ -358,14 +358,14 @@ base::Value* TaskManagerHandler::CreateColumnValue(
         model_->GetResourceWebCoreScriptsCacheSize(i));
   }
   if (column_name == "webCoreScriptsCacheSizeValue") {
-    WebKit::WebCache::ResourceTypeStats resource_stats;
+    blink::WebCache::ResourceTypeStats resource_stats;
     model_->GetWebCoreCacheStats(i, &resource_stats);
     return Value::CreateDoubleValue(resource_stats.scripts.size);
   }
   if (column_name == "webCoreCSSCacheSize")
     return Value::CreateStringValue(model_->GetResourceWebCoreCSSCacheSize(i));
   if (column_name == "webCoreCSSCacheSizeValue") {
-    WebKit::WebCache::ResourceTypeStats resource_stats;
+    blink::WebCache::ResourceTypeStats resource_stats;
     model_->GetWebCoreCacheStats(i, &resource_stats);
     return Value::CreateDoubleValue(resource_stats.cssStyleSheets.size);
   }

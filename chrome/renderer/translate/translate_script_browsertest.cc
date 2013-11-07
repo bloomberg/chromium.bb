@@ -11,8 +11,8 @@
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "ui/base/resource/resource_bundle.h"
 
-using WebKit::WebFrame;
-using WebKit::WebScriptSource;
+using blink::WebFrame;
+using blink::WebScriptSource;
 
 namespace {
 

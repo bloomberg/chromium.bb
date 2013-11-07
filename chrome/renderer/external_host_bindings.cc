@@ -12,7 +12,7 @@
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 
-using WebKit::WebBindings;
+using blink::WebBindings;
 using webkit_glue::CppArgumentList;
 using webkit_glue::CppVariant;
 
@@ -143,7 +143,7 @@ bool ExternalHostBindings::ForwardMessageFromExternalHost(
   return status;
 }
 
-void ExternalHostBindings::BindToJavascript(WebKit::WebFrame* frame,
+void ExternalHostBindings::BindToJavascript(blink::WebFrame* frame,
                                             const std::string& classname) {
   frame_ = frame;
   CppBoundClass::BindToJavascript(frame, classname);

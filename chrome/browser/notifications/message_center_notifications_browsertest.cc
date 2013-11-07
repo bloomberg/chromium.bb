@@ -119,7 +119,7 @@ class MessageCenterNotificationsTest : public InProcessBrowserTest {
                         GURL(),
                         ASCIIToUTF16("title"),
                         ASCIIToUTF16("message"),
-                        WebKit::WebTextDirectionDefault,
+                        blink::WebTextDirectionDefault,
                         UTF8ToUTF16("chrome-test://testing/"),
                         UTF8ToUTF16("REPLACE-ME"),
                         new_delegate);
@@ -140,7 +140,7 @@ class MessageCenterNotificationsTest : public InProcessBrowserTest {
                         ASCIIToUTF16("title"),
                         ASCIIToUTF16("message"),
                         gfx::Image(),
-                        WebKit::WebTextDirectionDefault,
+                        blink::WebTextDirectionDefault,
                         message_center::NotifierId(
                             message_center::NotifierId::APPLICATION,
                             "extension_id"),

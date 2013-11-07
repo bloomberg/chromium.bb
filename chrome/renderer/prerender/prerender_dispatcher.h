@@ -24,7 +24,7 @@ namespace prerender {
 // is triggered on navigation to those. It implements the prerendering interface
 // supplied to WebKit.
 class PrerenderDispatcher : public content::RenderProcessObserver,
-                            public WebKit::WebPrerenderingSupport {
+                            public blink::WebPrerenderingSupport {
  public:
   PrerenderDispatcher();
   virtual ~PrerenderDispatcher();
@@ -45,12 +45,12 @@ class PrerenderDispatcher : public content::RenderProcessObserver,
   virtual bool OnControlMessageReceived(const IPC::Message& message) OVERRIDE;
 
   // From WebPrerenderingSupport:
-  virtual void add(const WebKit::WebPrerender& prerender) OVERRIDE;
-  virtual void cancel(const WebKit::WebPrerender& prerender) OVERRIDE;
-  virtual void abandon(const WebKit::WebPrerender& prerender) OVERRIDE;
+  virtual void add(const blink::WebPrerender& prerender) OVERRIDE;
+  virtual void cancel(const blink::WebPrerender& prerender) OVERRIDE;
+  virtual void abandon(const blink::WebPrerender& prerender) OVERRIDE;
 
   // From WebKit, prerender elements launched by renderers in our process.
-  std::map<int, WebKit::WebPrerender> prerenders_;
+  std::map<int, blink::WebPrerender> prerenders_;
 
   // From the browser process, which prerenders are running, indexed by URL.
   // Updated by the browser processes as aliases are discovered.

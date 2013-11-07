@@ -29,7 +29,7 @@ class PageClickListener;
 //
 // There is one PageClickTracker per RenderView.
 class PageClickTracker : public content::RenderViewObserver,
-                         public WebKit::WebDOMEventListener {
+                         public blink::WebDOMEventListener {
  public:
   // The |listener| will be notified when an element is clicked.  It must
   // outlive this class.
@@ -39,26 +39,26 @@ class PageClickTracker : public content::RenderViewObserver,
 
  private:
   // RenderView::Observer implementation.
-  virtual void DidFinishDocumentLoad(WebKit::WebFrame* frame) OVERRIDE;
-  virtual void FrameDetached(WebKit::WebFrame* frame) OVERRIDE;
-  virtual void DidHandleMouseEvent(const WebKit::WebMouseEvent& event) OVERRIDE;
+  virtual void DidFinishDocumentLoad(blink::WebFrame* frame) OVERRIDE;
+  virtual void FrameDetached(blink::WebFrame* frame) OVERRIDE;
+  virtual void DidHandleMouseEvent(const blink::WebMouseEvent& event) OVERRIDE;
 
-  // WebKit::WebDOMEventListener implementation.
-  virtual void handleEvent(const WebKit::WebDOMEvent& event);
+  // blink::WebDOMEventListener implementation.
+  virtual void handleEvent(const blink::WebDOMEvent& event);
 
   // Checks to see if a text field is losing focus and inform listeners if
   // it is.
   void HandleTextFieldMaybeLosingFocus(
-      const WebKit::WebNode& newly_clicked_node);
+      const blink::WebNode& newly_clicked_node);
 
   // The last node that was clicked and had focus.
-  WebKit::WebNode last_node_clicked_;
+  blink::WebNode last_node_clicked_;
 
   // Whether the last clicked node had focused before it was clicked.
   bool was_focused_;
 
   // The frames we are listening to for mouse events.
-  std::vector<WebKit::WebFrame*> tracked_frames_;
+  std::vector<blink::WebFrame*> tracked_frames_;
 
   // The listener getting the actual notifications.
   PageClickListener* listener_;

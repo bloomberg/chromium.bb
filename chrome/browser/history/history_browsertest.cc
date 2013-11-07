@@ -248,7 +248,7 @@ IN_PROC_BROWSER_TEST_F(HistoryBrowserTest,
 
   content::SimulateMouseClick(
       browser()->tab_strip_model()->GetActiveWebContents(), 0,
-      WebKit::WebMouseEvent::ButtonLeft);
+      blink::WebMouseEvent::ButtonLeft);
   LoadAndWaitForFile("history_length_test_page_11.html");
 }
 

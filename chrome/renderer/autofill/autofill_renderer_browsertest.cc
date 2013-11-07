@@ -13,10 +13,10 @@
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
 
-using WebKit::WebDocument;
-using WebKit::WebFrame;
-using WebKit::WebInputElement;
-using WebKit::WebString;
+using blink::WebDocument;
+using blink::WebFrame;
+using blink::WebInputElement;
+using blink::WebString;
 
 namespace autofill {
 

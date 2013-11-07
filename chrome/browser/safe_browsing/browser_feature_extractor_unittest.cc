@@ -129,7 +129,7 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
                          const GURL& referrer,
                          content::PageTransition type) {
     web_contents()->GetController().LoadURL(
-        url, content::Referrer(referrer, WebKit::WebReferrerPolicyDefault),
+        url, content::Referrer(referrer, blink::WebReferrerPolicyDefault),
         type, std::string());
 
     static int page_id = 0;
@@ -141,7 +141,7 @@ class BrowserFeatureExtractorTest : public ChromeRenderViewHostTestHarness {
     WebContentsTester::For(web_contents())->ProceedWithCrossSiteNavigation();
     WebContentsTester::For(web_contents())->TestDidNavigateWithReferrer(
         rvh, ++page_id, url,
-        content::Referrer(referrer, WebKit::WebReferrerPolicyDefault), type);
+        content::Referrer(referrer, blink::WebReferrerPolicyDefault), type);
   }
 
   bool ExtractFeatures(ClientPhishingRequest* request) {

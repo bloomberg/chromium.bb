@@ -21,7 +21,7 @@
 #include "ui/gfx/pango_util.h"
 #include "ui/gfx/rect.h"
 
-using WebKit::WebAutofillClient;
+using blink::WebAutofillClient;
 
 namespace {
 

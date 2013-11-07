@@ -58,7 +58,7 @@ typedef PersonalDataManager::GUIDPair GUIDPair;
 
 using base::TimeTicks;
 using content::RenderViewHost;
-using WebKit::WebFormElement;
+using blink::WebFormElement;
 
 namespace {
 
@@ -418,7 +418,7 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
         labels.assign(1, base::string16());
         icons.assign(1, base::string16());
         unique_ids.assign(1,
-                          WebKit::WebAutofillClient::MenuItemIDWarningMessage);
+                          blink::WebAutofillClient::MenuItemIDWarningMessage);
       } else {
         bool section_is_autofilled =
             SectionIsAutofilled(*form_structure, form,

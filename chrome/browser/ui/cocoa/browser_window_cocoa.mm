@@ -571,7 +571,7 @@ bool BrowserWindowCocoa::PreHandleKeyboardEvent(
   if (![BrowserWindowUtils shouldHandleKeyboardEvent:event])
     return false;
 
-  if (event.type == WebKit::WebInputEvent::RawKeyDown &&
+  if (event.type == blink::WebInputEvent::RawKeyDown &&
       [controller_ handledByExtensionCommand:event.os_event])
     return true;
 

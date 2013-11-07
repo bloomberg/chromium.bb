@@ -13,10 +13,10 @@
 #include "third_party/WebKit/public/web/WebFormElement.h"
 #include "third_party/WebKit/public/web/WebPasswordFormData.h"
 
-using WebKit::WebFormElement;
-using WebKit::WebFrame;
-using WebKit::WebPasswordFormData;
-using WebKit::WebVector;
+using blink::WebFormElement;
+using blink::WebFrame;
+using blink::WebPasswordFormData;
+using blink::WebVector;
 
 namespace autofill {
 namespace {

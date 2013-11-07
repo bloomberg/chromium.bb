@@ -18,9 +18,9 @@
 #include "third_party/WebKit/public/web/WebPluginParams.h"
 #include "url/gurl.h"
 
-using WebKit::WebPluginParams;
-using WebKit::WebString;
-using WebKit::WebVector;
+using blink::WebPluginParams;
+using blink::WebString;
+using blink::WebVector;
 using content::WebPluginInfo;
 using content::WebPluginMimeType;
 

@@ -20,7 +20,7 @@ class BlockedWindowParams {
   BlockedWindowParams(const GURL& target_url,
                      const content::Referrer& referrer,
                      WindowOpenDisposition disposition,
-                     const WebKit::WebWindowFeatures& features,
+                     const blink::WebWindowFeatures& features,
                      bool user_gesture,
                      bool opener_suppressed,
                      int render_process_id,
@@ -29,7 +29,7 @@ class BlockedWindowParams {
   chrome::NavigateParams CreateNavigateParams(
       content::WebContents* web_contents) const;
 
-  WebKit::WebWindowFeatures features() const {
+  blink::WebWindowFeatures features() const {
     return features_;
   }
 
@@ -49,7 +49,7 @@ class BlockedWindowParams {
   GURL target_url_;
   content::Referrer referrer_;
   WindowOpenDisposition disposition_;
-  WebKit::WebWindowFeatures features_;
+  blink::WebWindowFeatures features_;
   bool user_gesture_;
   bool opener_suppressed_;
   int render_process_id_;

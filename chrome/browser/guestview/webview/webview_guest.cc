@@ -218,11 +218,11 @@ void WebViewGuest::GuestProcessGone(base::TerminationStatus status) {
 
 bool WebViewGuest::HandleKeyboardEvent(
     const content::NativeWebKeyboardEvent& event) {
-  if (event.type != WebKit::WebInputEvent::RawKeyDown)
+  if (event.type != blink::WebInputEvent::RawKeyDown)
     return false;
 
 #if defined(OS_MACOSX)
-  if (event.modifiers != WebKit::WebInputEvent::MetaKey)
+  if (event.modifiers != blink::WebInputEvent::MetaKey)
     return false;
 
   if (event.windowsKeyCode == ui::VKEY_OEM_4) {

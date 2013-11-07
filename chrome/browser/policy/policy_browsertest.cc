@@ -699,14 +699,14 @@ class PolicyTest : public InProcessBrowserTest {
   void PerformClick(int x, int y) {
     content::WebContents* contents =
         browser()->tab_strip_model()->GetActiveWebContents();
-    WebKit::WebMouseEvent click_event;
-    click_event.type = WebKit::WebInputEvent::MouseDown;
-    click_event.button = WebKit::WebMouseEvent::ButtonLeft;
+    blink::WebMouseEvent click_event;
+    click_event.type = blink::WebInputEvent::MouseDown;
+    click_event.button = blink::WebMouseEvent::ButtonLeft;
     click_event.clickCount = 1;
     click_event.x = x;
     click_event.y = y;
     contents->GetRenderViewHost()->ForwardMouseEvent(click_event);
-    click_event.type = WebKit::WebInputEvent::MouseUp;
+    click_event.type = blink::WebInputEvent::MouseUp;
     contents->GetRenderViewHost()->ForwardMouseEvent(click_event);
   }
 

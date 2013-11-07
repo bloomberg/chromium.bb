@@ -153,7 +153,7 @@ class WelcomeNotificationTest : public testing::Test {
         base::UTF8ToUTF16("Title"),
         base::UTF8ToUTF16("Body"),
         gfx::Image(),
-        WebKit::WebTextDirectionDefault,
+        blink::WebTextDirectionDefault,
         notifier_id,
         base::UTF8ToUTF16("Source"),
         base::UTF8ToUTF16(notification_id),

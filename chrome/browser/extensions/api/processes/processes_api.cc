@@ -46,7 +46,7 @@ namespace {
 #if defined(ENABLE_TASK_MANAGER)
 
 base::DictionaryValue* CreateCacheData(
-    const WebKit::WebCache::ResourceTypeStat& stat) {
+    const blink::WebCache::ResourceTypeStat& stat) {
 
   base::DictionaryValue* cache = new base::DictionaryValue();
   cache->SetDouble(keys::kCacheSize, static_cast<double>(stat.size));
@@ -169,7 +169,7 @@ base::DictionaryValue* CreateProcessFromModel(int process_id,
     result->SetDouble(keys::kSqliteMemoryKey,
         static_cast<double>(mem));
 
-  WebKit::WebCache::ResourceTypeStats cache_stats;
+  blink::WebCache::ResourceTypeStats cache_stats;
   if (model->GetWebCoreCacheStats(index, &cache_stats)) {
     result->Set(keys::kImageCacheKey,
                 CreateCacheData(cache_stats.images));

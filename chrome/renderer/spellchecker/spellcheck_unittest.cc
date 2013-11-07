@@ -89,14 +89,14 @@ class SpellCheckTest : public testing::Test {
   void TestSpellCheckParagraph(
       const string16& input,
       const std::vector<SpellCheckResult>& expected) {
-    WebKit::WebVector<WebKit::WebTextCheckingResult> results;
+    blink::WebVector<blink::WebTextCheckingResult> results;
     spell_check()->SpellCheckParagraph(input,
                                        &results);
 
     EXPECT_EQ(results.size(), expected.size());
     size_t size = std::min(results.size(), expected.size());
     for (size_t j = 0; j < size; ++j) {
-      EXPECT_EQ(results[j].decoration, WebKit::WebTextDecorationTypeSpelling);
+      EXPECT_EQ(results[j].decoration, blink::WebTextDecorationTypeSpelling);
       EXPECT_EQ(results[j].location, expected[j].location);
       EXPECT_EQ(results[j].length, expected[j].length);
     }
@@ -109,14 +109,14 @@ class SpellCheckTest : public testing::Test {
 };
 
 // A fake completion object for verification.
-class MockTextCheckingCompletion : public WebKit::WebTextCheckingCompletion {
+class MockTextCheckingCompletion : public blink::WebTextCheckingCompletion {
  public:
   MockTextCheckingCompletion()
       : completion_count_(0) {
   }
 
   virtual void didFinishCheckingText(
-      const WebKit::WebVector<WebKit::WebTextCheckingResult>& results)
+      const blink::WebVector<blink::WebTextCheckingResult>& results)
           OVERRIDE {
     completion_count_++;
     last_results_ = results;
@@ -127,7 +127,7 @@ class MockTextCheckingCompletion : public WebKit::WebTextCheckingCompletion {
   }
 
   size_t completion_count_;
-  WebKit::WebVector<WebKit::WebTextCheckingResult> last_results_;
+  blink::WebVector<blink::WebTextCheckingResult> last_results_;
 };
 
 // Operates unit tests for the webkit_glue::SpellCheckWord() function
@@ -1123,14 +1123,14 @@ TEST_F(SpellCheckTest, CreateTextCheckingResults) {
     std::vector<SpellCheckResult> spellcheck_results;
     spellcheck_results.push_back(SpellCheckResult(
         SpellCheckResult::SPELLING, 0, 2, string16()));
-    WebKit::WebVector<WebKit::WebTextCheckingResult> textcheck_results;
+    blink::WebVector<blink::WebTextCheckingResult> textcheck_results;
     spell_check()->CreateTextCheckingResults(SpellCheck::USE_NATIVE_CHECKER,
                                              0,
                                              text,
                                              spellcheck_results,
                                              &textcheck_results);
     EXPECT_EQ(spellcheck_results.size(), textcheck_results.size());
-    EXPECT_EQ(WebKit::WebTextDecorationTypeSpelling,
+    EXPECT_EQ(blink::WebTextDecorationTypeSpelling,
               textcheck_results[0].decoration);
     EXPECT_EQ(spellcheck_results[0].location, textcheck_results[0].location);
     EXPECT_EQ(spellcheck_results[0].length, textcheck_results[0].length);
@@ -1143,14 +1143,14 @@ TEST_F(SpellCheckTest, CreateTextCheckingResults) {
     std::vector<SpellCheckResult> spellcheck_results;
     spellcheck_results.push_back(SpellCheckResult(
         SpellCheckResult::SPELLING, 7, 4, string16()));
-    WebKit::WebVector<WebKit::WebTextCheckingResult> textcheck_results;
+    blink::WebVector<blink::WebTextCheckingResult> textcheck_results;
     spell_check()->CreateTextCheckingResults(SpellCheck::USE_NATIVE_CHECKER,
                                              0,
                                              text,
                                              spellcheck_results,
                                              &textcheck_results);
     EXPECT_EQ(spellcheck_results.size(), textcheck_results.size());
-    EXPECT_EQ(WebKit::WebTextDecorationTypeGrammar,
+    EXPECT_EQ(blink::WebTextDecorationTypeGrammar,
               textcheck_results[0].decoration);
     EXPECT_EQ(spellcheck_results[0].location, textcheck_results[0].location);
     EXPECT_EQ(spellcheck_results[0].length, textcheck_results[0].length);

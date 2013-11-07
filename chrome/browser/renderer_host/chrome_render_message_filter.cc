@@ -47,7 +47,7 @@
 
 using content::BrowserThread;
 using extensions::APIPermission;
-using WebKit::WebCache;
+using blink::WebCache;
 
 namespace {
 

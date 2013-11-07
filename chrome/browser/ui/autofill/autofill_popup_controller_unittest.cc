@@ -28,7 +28,7 @@ using ::testing::_;
 using ::testing::AtLeast;
 using ::testing::NiceMock;
 using base::WeakPtr;
-using WebKit::WebAutofillClient;
+using blink::WebAutofillClient;
 
 namespace autofill {
 namespace {

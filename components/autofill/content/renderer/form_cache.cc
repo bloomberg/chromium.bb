@@ -24,15 +24,15 @@
 #include "third_party/WebKit/public/web/WebTextAreaElement.h"
 #include "ui/base/l10n/l10n_util.h"
 
-using WebKit::WebDocument;
-using WebKit::WebFormControlElement;
-using WebKit::WebFormElement;
-using WebKit::WebFrame;
-using WebKit::WebInputElement;
-using WebKit::WebSelectElement;
-using WebKit::WebTextAreaElement;
-using WebKit::WebString;
-using WebKit::WebVector;
+using blink::WebDocument;
+using blink::WebFormControlElement;
+using blink::WebFormElement;
+using blink::WebFrame;
+using blink::WebInputElement;
+using blink::WebSelectElement;
+using blink::WebTextAreaElement;
+using blink::WebString;
+using blink::WebVector;
 
 namespace autofill {
 

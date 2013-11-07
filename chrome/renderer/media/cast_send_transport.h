@@ -11,9 +11,9 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 
-namespace WebKit {
+namespace blink {
 class WebMediaStreamTrack;
-}  // namespace WebKit
+}  // namespace blink
 
 class CastSession;
 class CastUdpTransport;

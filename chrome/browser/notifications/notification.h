@@ -37,7 +37,7 @@ class Notification : public message_center::Notification {
                const GURL& icon_url,
                const string16& title,
                const string16& body,
-               WebKit::WebTextDirection dir,
+               blink::WebTextDirection dir,
                const string16& display_source,
                const string16& replace_id,
                NotificationDelegate* delegate);
@@ -48,7 +48,7 @@ class Notification : public message_center::Notification {
                const gfx::Image& icon,
                const string16& title,
                const string16& body,
-               WebKit::WebTextDirection dir,
+               blink::WebTextDirection dir,
                const string16& display_source,
                const string16& replace_id,
                NotificationDelegate* delegate);
@@ -59,7 +59,7 @@ class Notification : public message_center::Notification {
       const string16& title,
       const string16& body,
       const gfx::Image& icon,
-      WebKit::WebTextDirection dir,
+      blink::WebTextDirection dir,
       const message_center::NotifierId& notifier_id,
       const string16& display_source,
       const string16& replace_id,

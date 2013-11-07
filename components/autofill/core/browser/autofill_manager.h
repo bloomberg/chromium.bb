@@ -218,7 +218,7 @@ class AutofillManager : public AutofillDownloadManager::Observer {
 
   // Tell the renderer the current interactive autocomplete finished.
   virtual void ReturnAutocompleteResult(
-      WebKit::WebFormElement::AutocompleteResult result,
+      blink::WebFormElement::AutocompleteResult result,
       const FormData& form_data);
 
  private:

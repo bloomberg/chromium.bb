@@ -440,7 +440,7 @@ Notification* ScreenshotTaker::CreateNotification(
           GetScreenshotNotificationText(screenshot_result)),
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(
           IDR_SCREENSHOT_NOTIFICATION_ICON),
-      WebKit::WebTextDirectionDefault,
+      blink::WebTextDirectionDefault,
       message_center::NotifierId(ash::system_notifier::NOTIFIER_SCREENSHOT),
       l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_NOTIFIER_SCREENSHOT_NAME),
       replace_id,

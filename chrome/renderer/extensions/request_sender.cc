@@ -80,7 +80,7 @@ void RequestSender::StartRequest(Source* source,
     return;
 
   GURL source_url;
-  if (WebKit::WebFrame* webframe = context->web_frame())
+  if (blink::WebFrame* webframe = context->web_frame())
     source_url = webframe->document().url();
 
   InsertRequest(request_id, new PendingRequest(name, source));
@@ -93,7 +93,7 @@ void RequestSender::StartRequest(Source* source,
   params.request_id = request_id;
   params.has_callback = has_callback;
   params.user_gesture =
-      WebKit::WebUserGestureIndicator::isProcessingUserGesture();
+      blink::WebUserGestureIndicator::isProcessingUserGesture();
   if (for_io_thread) {
     renderview->Send(new ExtensionHostMsg_RequestForIOThread(
         renderview->GetRoutingID(), params));

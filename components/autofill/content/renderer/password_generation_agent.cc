@@ -33,15 +33,15 @@ namespace {
 // Returns true if we think that this form is for account creation. |passwords|
 // is filled with the password field(s) in the form.
 bool GetAccountCreationPasswordFields(
-    const WebKit::WebFormElement& form,
-    std::vector<WebKit::WebInputElement>* passwords) {
+    const blink::WebFormElement& form,
+    std::vector<blink::WebInputElement>* passwords) {
   // Grab all of the passwords for the form.
-  WebKit::WebVector<WebKit::WebFormControlElement> control_elements;
+  blink::WebVector<blink::WebFormControlElement> control_elements;
   form.getFormControlElements(control_elements);
 
   size_t num_input_elements = 0;
   for (size_t i = 0; i < control_elements.size(); i++) {
-    WebKit::WebInputElement* input_element =
+    blink::WebInputElement* input_element =
         toWebInputElement(&control_elements[i]);
     // Only pay attention to visible password fields.
     if (input_element &&
@@ -103,7 +103,7 @@ PasswordGenerationAgent::PasswordGenerationAgent(
 }
 PasswordGenerationAgent::~PasswordGenerationAgent() {}
 
-void PasswordGenerationAgent::DidFinishDocumentLoad(WebKit::WebFrame* frame) {
+void PasswordGenerationAgent::DidFinishDocumentLoad(blink::WebFrame* frame) {
   // In every navigation, the IPC message sent by the password autofill manager
   // to query whether the current form is blacklisted or not happens when the
   // document load finishes, so we need to clear previous states here before we
@@ -122,13 +122,13 @@ void PasswordGenerationAgent::DidFinishDocumentLoad(WebKit::WebFrame* frame) {
   }
 }
 
-void PasswordGenerationAgent::DidFinishLoad(WebKit::WebFrame* frame) {
+void PasswordGenerationAgent::DidFinishLoad(blink::WebFrame* frame) {
   // We don't want to generate passwords if the browser won't store or sync
   // them.
   if (!ShouldAnalyzeDocument(frame->document()))
     return;
 
-  WebKit::WebVector<WebKit::WebFormElement> forms;
+  blink::WebVector<blink::WebFormElement> forms;
   frame->document().forms(forms);
   for (size_t i = 0; i < forms.size(); ++i) {
     if (forms[i].isNull())
@@ -149,7 +149,7 @@ void PasswordGenerationAgent::DidFinishLoad(WebKit::WebFrame* frame) {
     if (realm == GaiaUrls::GetInstance()->gaia_login_form_realm())
       continue;
 
-    std::vector<WebKit::WebInputElement> passwords;
+    std::vector<blink::WebInputElement> passwords;
     if (GetAccountCreationPasswordFields(forms[i], &passwords)) {
       DVLOG(2) << "Account creation form detected";
       password_generation::LogPasswordGenerationEvent(
@@ -166,10 +166,10 @@ void PasswordGenerationAgent::DidFinishLoad(WebKit::WebFrame* frame) {
 }
 
 bool PasswordGenerationAgent::ShouldAnalyzeDocument(
-    const WebKit::WebDocument& document) const {
+    const blink::WebDocument& document) const {
   // Make sure that this security origin is allowed to use password manager.
   // Generating a password that can't be saved is a bad idea.
-  WebKit::WebSecurityOrigin origin = document.securityOrigin();
+  blink::WebSecurityOrigin origin = document.securityOrigin();
   if (!origin.canAccessPasswordManager()) {
     DVLOG(1) << "No PasswordManager access";
     return false;
@@ -179,8 +179,8 @@ bool PasswordGenerationAgent::ShouldAnalyzeDocument(
 }
 
 void PasswordGenerationAgent::openPasswordGenerator(
-    WebKit::WebInputElement& element) {
-  WebKit::WebElement button(element.passwordGeneratorButtonElement());
+    blink::WebInputElement& element) {
+  blink::WebElement button(element.passwordGeneratorButtonElement());
   gfx::Rect rect(button.boundsInViewportSpace());
   scoped_ptr<PasswordForm> password_form(
       CreatePasswordForm(element.form()));
@@ -216,7 +216,7 @@ void PasswordGenerationAgent::OnFormNotBlacklisted(const PasswordForm& form) {
 
 void PasswordGenerationAgent::OnPasswordAccepted(
     const base::string16& password) {
-  for (std::vector<WebKit::WebInputElement>::iterator it = passwords_.begin();
+  for (std::vector<blink::WebInputElement>::iterator it = passwords_.begin();
        it != passwords_.end(); ++it) {
     it->setValue(password);
     it->setAutofilled(true);

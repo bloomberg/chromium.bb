@@ -65,7 +65,7 @@ class Resource {
   virtual int GetRoutingID() const;
 
   virtual bool ReportsCacheStats() const;
-  virtual WebKit::WebCache::ResourceTypeStats GetWebCoreCacheStats() const;
+  virtual blink::WebCache::ResourceTypeStats GetWebCoreCacheStats() const;
 
   virtual bool ReportsFPS() const;
   virtual float GetFPS() const;
@@ -107,7 +107,7 @@ class Resource {
   virtual void Refresh() {}
 
   virtual void NotifyResourceTypeStats(
-      const WebKit::WebCache::ResourceTypeStats& stats) {}
+      const blink::WebCache::ResourceTypeStats& stats) {}
   virtual void NotifyFPS(float fps) {}
   virtual void NotifyV8HeapStats(size_t v8_memory_allocated,
                                  size_t v8_memory_used) {}

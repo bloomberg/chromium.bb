@@ -25,7 +25,7 @@ WebViewColorOverlay::~WebViewColorOverlay() {
     render_view_->GetWebView()->removePageOverlay(this);
 }
 
-void WebViewColorOverlay::paintPageOverlay(WebKit::WebCanvas* canvas) {
+void WebViewColorOverlay::paintPageOverlay(blink::WebCanvas* canvas) {
   SkRect rect = gfx::RectToSkRect(gfx::Rect(render_view_->GetSize()));
   SkPaint paint;
   paint.setColor(color_);

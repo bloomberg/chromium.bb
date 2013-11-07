@@ -1093,7 +1093,7 @@ bool BrowserWindowGtk::PreHandleKeyboardEvent(
     const NativeWebKeyboardEvent& event, bool* is_keyboard_shortcut) {
   GdkEventKey* os_event = &event.os_event->key;
 
-  if (!os_event || event.type != WebKit::WebInputEvent::RawKeyDown)
+  if (!os_event || event.type != blink::WebInputEvent::RawKeyDown)
     return false;
 
   if (ExtensionKeybindingRegistryGtk::shortcut_handling_suspended())
@@ -1161,7 +1161,7 @@ void BrowserWindowGtk::HandleKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
   GdkEventKey* os_event = &event.os_event->key;
 
-  if (!os_event || event.type != WebKit::WebInputEvent::RawKeyDown)
+  if (!os_event || event.type != blink::WebInputEvent::RawKeyDown)
     return;
 
   // Handles a key event in following sequence:

@@ -229,7 +229,7 @@ void AutomationProvider::NavigateInExternalTab(
     NavigationController* tab = tab_tracker_->GetResource(handle);
     tab->LoadURL(
         url,
-        content::Referrer(referrer, WebKit::WebReferrerPolicyDefault),
+        content::Referrer(referrer, blink::WebReferrerPolicyDefault),
         content::PAGE_TRANSITION_TYPED, std::string());
     *status = AUTOMATION_MSG_NAVIGATION_SUCCESS;
   }

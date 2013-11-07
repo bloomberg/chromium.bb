@@ -89,8 +89,8 @@ IPC_STRUCT_TRAITS_BEGIN(autofill::PasswordAndRealm)
 IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS_MAX_VALUE(
-    WebKit::WebFormElement::AutocompleteResult,
-    WebKit::WebFormElement::AutocompleteResultErrorInvalid)
+    blink::WebFormElement::AutocompleteResult,
+    blink::WebFormElement::AutocompleteResultErrorInvalid)
 
 // Autofill messages sent from the browser to the renderer.
 
@@ -149,7 +149,7 @@ IPC_MESSAGE_ROUTED1(AutofillMsg_FormNotBlacklisted,
 // error). If it was a success, the renderer fills the form that requested
 // autocomplete with the |form_data| values input by the user.
 IPC_MESSAGE_ROUTED2(AutofillMsg_RequestAutocompleteResult,
-                    WebKit::WebFormElement::AutocompleteResult /* result */,
+                    blink::WebFormElement::AutocompleteResult /* result */,
                     autofill::FormData /* form_data */)
 
 // Sent when the current page is actually displayed in the browser, possibly

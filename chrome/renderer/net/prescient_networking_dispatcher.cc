@@ -9,7 +9,7 @@
 #include "chrome/common/render_messages.h"
 #include "content/public/renderer/render_thread.h"
 
-using WebKit::WebPrescientNetworking;
+using blink::WebPrescientNetworking;
 
 const char kMouseEventPreconnectFieldTrialName[] = "MouseEventPreconnect";
 const char kMouseEventPreconnectFieldTrialMouseDownGroup[] = "MouseDown";
@@ -24,18 +24,18 @@ namespace {
 // The preconnect via {mouse,gesture} event is enabled for limited userbase
 // for Finch field trial.
 bool isPreconnectEnabledForMotivation(
-    WebKit::WebPreconnectMotivation motivation) {
+    blink::WebPreconnectMotivation motivation) {
   std::string group =
       base::FieldTrialList::FindFullName(kMouseEventPreconnectFieldTrialName);
 
   switch (motivation) {
-    case WebKit::WebPreconnectMotivationLinkMouseDown:
+    case blink::WebPreconnectMotivationLinkMouseDown:
       return group == kMouseEventPreconnectFieldTrialMouseDownGroup;
-    case WebKit::WebPreconnectMotivationLinkMouseOver:
+    case blink::WebPreconnectMotivationLinkMouseOver:
       return group == kMouseEventPreconnectFieldTrialMouseOverGroup;
-    case WebKit::WebPreconnectMotivationLinkTapUnconfirmed:
+    case blink::WebPreconnectMotivationLinkTapUnconfirmed:
       return group == kMouseEventPreconnectFieldTrialTapUnconfirmedGroup;
-    case WebKit::WebPreconnectMotivationLinkTapDown:
+    case blink::WebPreconnectMotivationLinkTapDown:
       return group == kMouseEventPreconnectFieldTrialTapDownGroup;
     default:
       return false;
@@ -51,7 +51,7 @@ PrescientNetworkingDispatcher::~PrescientNetworkingDispatcher() {
 }
 
 void PrescientNetworkingDispatcher::prefetchDNS(
-    const WebKit::WebString& hostname) {
+    const blink::WebString& hostname) {
   if (hostname.isEmpty())
     return;
 
@@ -60,8 +60,8 @@ void PrescientNetworkingDispatcher::prefetchDNS(
 }
 
 void PrescientNetworkingDispatcher::preconnect(
-    const WebKit::WebURL& url,
-    WebKit::WebPreconnectMotivation motivation) {
+    const blink::WebURL& url,
+    blink::WebPreconnectMotivation motivation) {
   if (isPreconnectEnabledForMotivation(motivation))
     content::RenderThread::Get()->Send(new ChromeViewHostMsg_Preconnect(url));
 }

@@ -31,9 +31,9 @@ void PageCaptureCustomBindings::CreateBlob(
   CHECK(args.Length() == 2);
   CHECK(args[0]->IsString());
   CHECK(args[1]->IsInt32());
-  WebKit::WebString path(UTF8ToUTF16(*v8::String::Utf8Value(args[0])));
-  WebKit::WebBlob blob =
-      WebKit::WebBlob::createFromFile(path, args[1]->Int32Value());
+  blink::WebString path(UTF8ToUTF16(*v8::String::Utf8Value(args[0])));
+  blink::WebBlob blob =
+      blink::WebBlob::createFromFile(path, args[1]->Int32Value());
   args.GetReturnValue().Set(blob.toV8Value());
 }
 

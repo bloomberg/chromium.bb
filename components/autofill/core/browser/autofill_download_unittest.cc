@@ -22,7 +22,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
 
-using WebKit::WebInputElement;
+using blink::WebInputElement;
 
 namespace autofill {
 

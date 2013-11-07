@@ -42,16 +42,16 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
-using WebKit::WebAutofillClient;
-using WebKit::WebFormControlElement;
-using WebKit::WebFormElement;
-using WebKit::WebFrame;
-using WebKit::WebInputElement;
-using WebKit::WebKeyboardEvent;
-using WebKit::WebNode;
-using WebKit::WebNodeCollection;
-using WebKit::WebOptionElement;
-using WebKit::WebString;
+using blink::WebAutofillClient;
+using blink::WebFormControlElement;
+using blink::WebFormElement;
+using blink::WebFrame;
+using blink::WebInputElement;
+using blink::WebKeyboardEvent;
+using blink::WebNode;
+using blink::WebNodeCollection;
+using blink::WebOptionElement;
+using blink::WebString;
 
 namespace {
 
@@ -66,7 +66,7 @@ const size_t kMaximumDataListSizeForAutofill = 30;
 
 // Gets all the data list values (with corresponding label) for the given
 // element.
-void GetDataListSuggestions(const WebKit::WebInputElement& element,
+void GetDataListSuggestions(const blink::WebInputElement& element,
                             std::vector<base::string16>* values,
                             std::vector<base::string16>* labels) {
   WebNodeCollection options = element.dataListOptions();
@@ -233,11 +233,11 @@ void AutofillAgent::ZoomLevelChanged() {
   HideAutofillUI();
 }
 
-void AutofillAgent::FocusedNodeChanged(const WebKit::WebNode& node) {
+void AutofillAgent::FocusedNodeChanged(const blink::WebNode& node) {
   if (node.isNull() || !node.isElementNode())
     return;
 
-  WebKit::WebElement web_element = node.toConst<WebKit::WebElement>();
+  blink::WebElement web_element = node.toConst<blink::WebElement>();
 
   if (!web_element.document().frame())
       return;
@@ -255,11 +255,11 @@ void AutofillAgent::OrientationChangeEvent(int orientation) {
   HideAutofillUI();
 }
 
-void AutofillAgent::DidChangeScrollOffset(WebKit::WebFrame*) {
+void AutofillAgent::DidChangeScrollOffset(blink::WebFrame*) {
   HideAutofillUI();
 }
 
-void AutofillAgent::didRequestAutocomplete(WebKit::WebFrame* frame,
+void AutofillAgent::didRequestAutocomplete(blink::WebFrame* frame,
                                            const WebFormElement& form) {
   GURL url(frame->document().url());
   content::SSLStatus ssl_status = render_view()->GetSSLStatusOfFrame(frame);
@@ -595,7 +595,7 @@ void AutofillAgent::FillAutofillFormData(const WebNode& node,
 }
 
 void AutofillAgent::SetNodeText(const base::string16& value,
-                                WebKit::WebInputElement* node) {
+                                blink::WebInputElement* node) {
   did_set_node_text_ = true;
   base::string16 substring = value;
   substring = substring.substr(0, node->maxLength());
@@ -609,9 +609,9 @@ void AutofillAgent::HideAutofillUI() {
 
 // TODO(isherman): Decide if we want to support non-password autofill with AJAX.
 void AutofillAgent::didAssociateFormControls(
-    const WebKit::WebVector<WebKit::WebNode>& nodes) {
+    const blink::WebVector<blink::WebNode>& nodes) {
   for (size_t i = 0; i < nodes.size(); ++i) {
-    WebKit::WebFrame* frame = nodes[i].document().frame();
+    blink::WebFrame* frame = nodes[i].document().frame();
     // Only monitors dynamic forms created in the top frame. Dynamic forms
     // inserted in iframes are not captured yet.
     if (!frame->parent()) {

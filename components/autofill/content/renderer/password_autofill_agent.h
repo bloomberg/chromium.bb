@@ -14,7 +14,7 @@
 #include "content/public/renderer/render_view_observer.h"
 #include "third_party/WebKit/public/web/WebInputElement.h"
 
-namespace WebKit {
+namespace blink {
 class WebInputElement;
 class WebKeyboardEvent;
 class WebSecurityOrigin;
@@ -33,29 +33,29 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
   // WebViewClient editor related calls forwarded by the RenderView.
   // If they return true, it indicates the event was consumed and should not
   // be used for any other autofill activity.
-  bool TextFieldDidEndEditing(const WebKit::WebInputElement& element);
-  bool TextDidChangeInTextField(const WebKit::WebInputElement& element);
-  bool TextFieldHandlingKeyDown(const WebKit::WebInputElement& element,
-                                const WebKit::WebKeyboardEvent& event);
+  bool TextFieldDidEndEditing(const blink::WebInputElement& element);
+  bool TextDidChangeInTextField(const blink::WebInputElement& element);
+  bool TextFieldHandlingKeyDown(const blink::WebInputElement& element,
+                                const blink::WebKeyboardEvent& event);
 
   // Fills the password associated with user name |value|. Returns true if the
   // username and password fields were filled, false otherwise.
-  bool DidAcceptAutofillSuggestion(const WebKit::WebNode& node,
-                                   const WebKit::WebString& value);
+  bool DidAcceptAutofillSuggestion(const blink::WebNode& node,
+                                   const blink::WebString& value);
   // A no-op.  Password forms are not previewed, so they do not need to be
   // cleared when the selection changes.  However, this method returns
   // true when |node| is fillable by password Autofill.
-  bool DidClearAutofillSelection(const WebKit::WebNode& node);
+  bool DidClearAutofillSelection(const blink::WebNode& node);
   // Shows an Autofill popup with username suggestions for |element|.
   // Returns true if any suggestions were shown, false otherwise.
-  bool ShowSuggestions(const WebKit::WebInputElement& element);
+  bool ShowSuggestions(const blink::WebInputElement& element);
 
   // Called when new form controls are inserted.
-  void OnDynamicFormsSeen(WebKit::WebFrame* frame);
+  void OnDynamicFormsSeen(blink::WebFrame* frame);
 
  protected:
   virtual bool OriginCanAccessPasswordManager(
-      const WebKit::WebSecurityOrigin& origin);
+      const blink::WebSecurityOrigin& origin);
 
  private:
   friend class PasswordAutofillAgentTest;
@@ -70,34 +70,34 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
   };
 
   struct PasswordInfo {
-    WebKit::WebInputElement password_field;
+    blink::WebInputElement password_field;
     PasswordFormFillData fill_data;
     bool backspace_pressed_last;
     PasswordInfo() : backspace_pressed_last(false) {}
   };
-  typedef std::map<WebKit::WebElement, PasswordInfo> LoginToPasswordInfoMap;
-  typedef std::map<WebKit::WebFrame*,
+  typedef std::map<blink::WebElement, PasswordInfo> LoginToPasswordInfoMap;
+  typedef std::map<blink::WebFrame*,
                    linked_ptr<PasswordForm> > FrameToPasswordFormMap;
 
   // RenderViewObserver:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void DidStartProvisionalLoad(WebKit::WebFrame* frame) OVERRIDE;
+  virtual void DidStartProvisionalLoad(blink::WebFrame* frame) OVERRIDE;
   virtual void DidStartLoading() OVERRIDE;
-  virtual void DidFinishDocumentLoad(WebKit::WebFrame* frame) OVERRIDE;
-  virtual void DidFinishLoad(WebKit::WebFrame* frame) OVERRIDE;
-  virtual void FrameDetached(WebKit::WebFrame* frame) OVERRIDE;
-  virtual void FrameWillClose(WebKit::WebFrame* frame) OVERRIDE;
-  virtual void WillSendSubmitEvent(WebKit::WebFrame* frame,
-                                   const WebKit::WebFormElement& form) OVERRIDE;
-  virtual void WillSubmitForm(WebKit::WebFrame* frame,
-                              const WebKit::WebFormElement& form) OVERRIDE;
+  virtual void DidFinishDocumentLoad(blink::WebFrame* frame) OVERRIDE;
+  virtual void DidFinishLoad(blink::WebFrame* frame) OVERRIDE;
+  virtual void FrameDetached(blink::WebFrame* frame) OVERRIDE;
+  virtual void FrameWillClose(blink::WebFrame* frame) OVERRIDE;
+  virtual void WillSendSubmitEvent(blink::WebFrame* frame,
+                                   const blink::WebFormElement& form) OVERRIDE;
+  virtual void WillSubmitForm(blink::WebFrame* frame,
+                              const blink::WebFormElement& form) OVERRIDE;
 
   // RenderView IPC handlers:
   void OnFillPasswordForm(const PasswordFormFillData& form_data);
 
   // Scans the given frame for password forms and sends them up to the browser.
   // If |only_visible| is true, only forms visible in the layout are sent.
-  void SendPasswordForms(WebKit::WebFrame* frame, bool only_visible);
+  void SendPasswordForms(blink::WebFrame* frame, bool only_visible);
 
   void GetSuggestions(const PasswordFormFillData& fill_data,
                       const base::string16& input,
@@ -105,7 +105,7 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
                       std::vector<base::string16>* realms);
 
   bool ShowSuggestionPopup(const PasswordFormFillData& fill_data,
-                           const WebKit::WebInputElement& user_input);
+                           const blink::WebInputElement& user_input);
 
   // Attempts to fill |username_element| and |password_element| with the
   // |fill_data|.  Will use the data corresponding to the preferred username,
@@ -113,12 +113,12 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
   // attempts to fill the password matching the already filled username, if
   // such a password exists.
   void FillFormOnPasswordRecieved(const PasswordFormFillData& fill_data,
-                                  WebKit::WebInputElement username_element,
-                                  WebKit::WebInputElement password_element);
+                                  blink::WebInputElement username_element,
+                                  blink::WebInputElement password_element);
 
   bool FillUserNameAndPassword(
-      WebKit::WebInputElement* username_element,
-      WebKit::WebInputElement* password_element,
+      blink::WebInputElement* username_element,
+      blink::WebInputElement* password_element,
       const PasswordFormFillData& fill_data,
       bool exact_username_match,
       bool set_selection);
@@ -126,17 +126,17 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
   // Fills |login_input| and |password| with the most relevant suggestion from
   // |fill_data| and shows a popup with other suggestions.
   void PerformInlineAutocomplete(
-      const WebKit::WebInputElement& username,
-      const WebKit::WebInputElement& password,
+      const blink::WebInputElement& username,
+      const blink::WebInputElement& password,
       const PasswordFormFillData& fill_data);
 
   // Invoked when the passed frame is closing.  Gives us a chance to clear any
   // reference we may have to elements in that frame.
-  void FrameClosing(const WebKit::WebFrame* frame);
+  void FrameClosing(const blink::WebFrame* frame);
 
   // Finds login information for a |node| that was previously filled.
-  bool FindLoginInfo(const WebKit::WebNode& node,
-                     WebKit::WebInputElement* found_input,
+  bool FindLoginInfo(const blink::WebNode& node,
+                     blink::WebInputElement* found_input,
                      PasswordInfo* found_password);
 
   // The logins we have filled so far with their associated info.
@@ -146,7 +146,7 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
   OtherPossibleUsernamesUsage usernames_usage_;
 
   // Pointer to the WebView. Used to access page scale factor.
-  WebKit::WebView* web_view_;
+  blink::WebView* web_view_;
 
   // Set if the user might be submitting a password form on the current page,
   // but the submit may still fail (i.e. doesn't pass JavaScript validation).

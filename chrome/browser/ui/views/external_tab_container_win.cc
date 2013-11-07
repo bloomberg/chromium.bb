@@ -90,7 +90,7 @@ using content::OpenURLParams;
 using content::RenderViewHost;
 using content::SSLStatus;
 using content::WebContents;
-using WebKit::WebReferrerPolicy;
+using blink::WebReferrerPolicy;
 
 namespace {
 
@@ -167,18 +167,18 @@ bool ShouldHideReferrer(const GURL& url, const GURL& referrer) {
   return !url.SchemeIsSecure();
 }
 
-GURL GenerateReferrer(WebKit::WebReferrerPolicy policy,
+GURL GenerateReferrer(blink::WebReferrerPolicy policy,
                       const GURL& url,
                       const GURL& referrer) {
   if (referrer.is_empty())
     return GURL();
 
   switch (policy) {
-    case WebKit::WebReferrerPolicyNever:
+    case blink::WebReferrerPolicyNever:
       return GURL();
-    case WebKit::WebReferrerPolicyAlways:
+    case blink::WebReferrerPolicyAlways:
       return referrer;
-    case WebKit::WebReferrerPolicyOrigin:
+    case blink::WebReferrerPolicyOrigin:
       return referrer.GetOrigin();
     default:
       break;
@@ -1315,7 +1315,7 @@ void ExternalTabContainerWin::Navigate(const GURL& url, const GURL& referrer) {
   TRACE_EVENT_BEGIN_ETW("ExternalTabContainerWin::Navigate", 0, url.spec());
 
   web_contents_->GetController().LoadURL(
-      url, content::Referrer(referrer, WebKit::WebReferrerPolicyDefault),
+      url, content::Referrer(referrer, blink::WebReferrerPolicyDefault),
       content::PAGE_TRANSITION_AUTO_TOPLEVEL, std::string());
 }
 

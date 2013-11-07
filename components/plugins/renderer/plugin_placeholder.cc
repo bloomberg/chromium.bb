@@ -25,15 +25,15 @@
 #include "third_party/re2/re2/re2.h"
 
 using content::RenderThread;
-using WebKit::WebElement;
-using WebKit::WebFrame;
-using WebKit::WebMouseEvent;
-using WebKit::WebNode;
-using WebKit::WebPlugin;
-using WebKit::WebPluginContainer;
-using WebKit::WebPluginParams;
-using WebKit::WebScriptSource;
-using WebKit::WebURLRequest;
+using blink::WebElement;
+using blink::WebFrame;
+using blink::WebMouseEvent;
+using blink::WebNode;
+using blink::WebPlugin;
+using blink::WebPluginContainer;
+using blink::WebPluginParams;
+using blink::WebScriptSource;
+using blink::WebURLRequest;
 using webkit_glue::CppArgumentList;
 using webkit_glue::CppVariant;
 
@@ -238,9 +238,9 @@ void PluginPlaceholder::SetIdentifier(const std::string& identifier) {
   identifier_ = identifier;
 }
 
-WebKit::WebFrame* PluginPlaceholder::GetFrame() { return frame_; }
+blink::WebFrame* PluginPlaceholder::GetFrame() { return frame_; }
 
-const WebKit::WebPluginParams& PluginPlaceholder::GetPluginParams() const {
+const blink::WebPluginParams& PluginPlaceholder::GetPluginParams() const {
   return plugin_params_;
 }
 

@@ -9,7 +9,7 @@
 #include "third_party/WebKit/public/web/WebCache.h"
 #include "v8/include/v8.h"
 
-using WebKit::WebCache;
+using blink::WebCache;
 
 const char kNetBenchmarkingExtensionName[] = "v8/NetBenchmarking";
 

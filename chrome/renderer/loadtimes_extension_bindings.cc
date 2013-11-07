@@ -12,9 +12,9 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "v8/include/v8.h"
 
-using WebKit::WebDataSource;
-using WebKit::WebFrame;
-using WebKit::WebNavigationType;
+using blink::WebDataSource;
+using blink::WebFrame;
+using blink::WebNavigationType;
 using content::DocumentState;
 
 // Values for CSI "tran" property
@@ -64,17 +64,17 @@ class LoadTimesExtensionWrapper : public v8::Extension {
 
   static const char* GetNavigationType(WebNavigationType nav_type) {
     switch (nav_type) {
-      case WebKit::WebNavigationTypeLinkClicked:
+      case blink::WebNavigationTypeLinkClicked:
         return "LinkClicked";
-      case WebKit::WebNavigationTypeFormSubmitted:
+      case blink::WebNavigationTypeFormSubmitted:
         return "FormSubmitted";
-      case WebKit::WebNavigationTypeBackForward:
+      case blink::WebNavigationTypeBackForward:
         return "BackForward";
-      case WebKit::WebNavigationTypeReload:
+      case blink::WebNavigationTypeReload:
         return "Reload";
-      case WebKit::WebNavigationTypeFormResubmitted:
+      case blink::WebNavigationTypeFormResubmitted:
         return "Resubmitted";
-      case WebKit::WebNavigationTypeOther:
+      case blink::WebNavigationTypeOther:
         return "Other";
     }
     return "";
@@ -82,15 +82,15 @@ class LoadTimesExtensionWrapper : public v8::Extension {
 
   static int GetCSITransitionType(WebNavigationType nav_type) {
     switch (nav_type) {
-      case WebKit::WebNavigationTypeLinkClicked:
-      case WebKit::WebNavigationTypeFormSubmitted:
-      case WebKit::WebNavigationTypeFormResubmitted:
+      case blink::WebNavigationTypeLinkClicked:
+      case blink::WebNavigationTypeFormSubmitted:
+      case blink::WebNavigationTypeFormResubmitted:
         return kTransitionLink;
-      case WebKit::WebNavigationTypeBackForward:
+      case blink::WebNavigationTypeBackForward:
         return kTransitionForwardBack;
-      case WebKit::WebNavigationTypeReload:
+      case blink::WebNavigationTypeReload:
         return kTransitionReload;
-      case WebKit::WebNavigationTypeOther:
+      case blink::WebNavigationTypeOther:
         return kTransitionOther;
     }
     return kTransitionOther;

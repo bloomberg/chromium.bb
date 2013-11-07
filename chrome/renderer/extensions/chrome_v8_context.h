@@ -16,7 +16,7 @@
 #include "extensions/common/features/feature.h"
 #include "v8/include/v8.h"
 
-namespace WebKit {
+namespace blink {
 class WebFrame;
 }
 
@@ -31,7 +31,7 @@ class Extension;
 class ChromeV8Context : public RequestSender::Source {
  public:
   ChromeV8Context(v8::Handle<v8::Context> context,
-                  WebKit::WebFrame* frame,
+                  blink::WebFrame* frame,
                   const Extension* extension,
                   Feature::Context context_type);
   virtual ~ChromeV8Context();
@@ -54,7 +54,7 @@ class ChromeV8Context : public RequestSender::Source {
     return extension_.get();
   }
 
-  WebKit::WebFrame* web_frame() const {
+  blink::WebFrame* web_frame() const {
     return web_frame_;
   }
 
@@ -126,7 +126,7 @@ class ChromeV8Context : public RequestSender::Source {
 
   // The WebFrame associated with this context. This can be NULL because this
   // object can outlive is destroyed asynchronously.
-  WebKit::WebFrame* web_frame_;
+  blink::WebFrame* web_frame_;
 
   // The extension associated with this context, or NULL if there is none. This
   // might be a hosted app in the case that this context is hosting a web URL.

@@ -15,7 +15,7 @@ namespace base {
 class DictionaryValue;
 }
 
-namespace WebKit {
+namespace blink {
 class WebFrame;
 }
 
@@ -28,14 +28,14 @@ class NetErrorHelper : public content::RenderViewObserver {
   virtual ~NetErrorHelper();
 
   // RenderViewObserver implementation.
-  virtual void DidStartProvisionalLoad(WebKit::WebFrame* frame) OVERRIDE;
+  virtual void DidStartProvisionalLoad(blink::WebFrame* frame) OVERRIDE;
   virtual void DidFailProvisionalLoad(
-      WebKit::WebFrame* frame,
-      const WebKit::WebURLError& error) OVERRIDE;
+      blink::WebFrame* frame,
+      const blink::WebURLError& error) OVERRIDE;
   virtual void DidCommitProvisionalLoad(
-      WebKit::WebFrame* frame,
+      blink::WebFrame* frame,
       bool is_new_navigation) OVERRIDE;
-  virtual void DidFinishLoad(WebKit::WebFrame* frame) OVERRIDE;
+  virtual void DidFinishLoad(blink::WebFrame* frame) OVERRIDE;
 
   // IPC::Listener implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
@@ -46,8 +46,8 @@ class NetErrorHelper : public content::RenderViewObserver {
   // If not, returns false, in which case the caller should look up error
   // strings directly using LocalizedError::GetNavigationErrorStrings.
   static bool GetErrorStringsForDnsProbe(
-      WebKit::WebFrame* frame,
-      const WebKit::WebURLError& error,
+      blink::WebFrame* frame,
+      const blink::WebURLError& error,
       bool is_failed_post,
       const std::string& locale,
       const std::string& accept_languages,
@@ -71,7 +71,7 @@ class NetErrorHelper : public content::RenderViewObserver {
   chrome_common_net::DnsProbeStatus last_probe_status_;
 
  private:
-  WebKit::WebURLError GetUpdatedError() const;
+  blink::WebURLError GetUpdatedError() const;
 
   // Whether the last provisional load started was for an error page.
   bool last_start_was_error_page_;
@@ -94,7 +94,7 @@ class NetErrorHelper : public content::RenderViewObserver {
   bool forwarding_probe_results_;
 
   // The last main frame error seen by the helper.
-  WebKit::WebURLError last_error_;
+  blink::WebURLError last_error_;
 
   bool is_failed_post_;
 };

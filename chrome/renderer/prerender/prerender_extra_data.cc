@@ -22,7 +22,7 @@ PrerenderExtraData::~PrerenderExtraData() {
 
 // static
 const PrerenderExtraData& PrerenderExtraData::FromPrerender(
-    const WebKit::WebPrerender& prerender) {
+    const blink::WebPrerender& prerender) {
   DCHECK(prerender.extraData());
   return static_cast<const PrerenderExtraData&>(*prerender.extraData());
 }

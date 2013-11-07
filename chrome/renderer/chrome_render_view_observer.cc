@@ -59,26 +59,26 @@
 
 using base::string16;
 using extensions::APIPermission;
-using WebKit::WebAXObject;
-using WebKit::WebCString;
-using WebKit::WebDataSource;
-using WebKit::WebDocument;
-using WebKit::WebElement;
-using WebKit::WebFrame;
-using WebKit::WebGestureEvent;
-using WebKit::WebIconURL;
-using WebKit::WebNode;
-using WebKit::WebNodeList;
-using WebKit::WebRect;
-using WebKit::WebSecurityOrigin;
-using WebKit::WebSize;
-using WebKit::WebString;
-using WebKit::WebTouchEvent;
-using WebKit::WebURL;
-using WebKit::WebURLRequest;
-using WebKit::WebView;
-using WebKit::WebVector;
-using WebKit::WebWindowFeatures;
+using blink::WebAXObject;
+using blink::WebCString;
+using blink::WebDataSource;
+using blink::WebDocument;
+using blink::WebElement;
+using blink::WebFrame;
+using blink::WebGestureEvent;
+using blink::WebIconURL;
+using blink::WebNode;
+using blink::WebNodeList;
+using blink::WebRect;
+using blink::WebSecurityOrigin;
+using blink::WebSize;
+using blink::WebString;
+using blink::WebTouchEvent;
+using blink::WebURL;
+using blink::WebURLRequest;
+using blink::WebView;
+using blink::WebVector;
+using blink::WebWindowFeatures;
 
 // Delay in milliseconds that we'll wait before capturing the page contents
 // and thumbnail.
@@ -180,7 +180,7 @@ GURL StripRef(const GURL& url) {
 // |thumbnail_min_area_pixels|, we return the image unmodified.  Otherwise, we
 // scale down the image so that the width and height do not exceed
 // |thumbnail_max_size_pixels|, preserving the original aspect ratio.
-SkBitmap Downscale(WebKit::WebImage image,
+SkBitmap Downscale(blink::WebImage image,
                    int thumbnail_min_area_pixels,
                    gfx::Size thumbnail_max_size_pixels) {
   if (image.isNull())
@@ -440,8 +440,8 @@ void ChromeRenderViewObserver::OnRetrieveWebappInformation(
   bool is_only_apple_mobile_webapp_capable =
       is_apple_mobile_webapp_capable && !is_mobile_webapp_capable;
   if (main_frame && is_only_apple_mobile_webapp_capable) {
-    WebKit::WebConsoleMessage message(
-        WebKit::WebConsoleMessage::LevelWarning,
+    blink::WebConsoleMessage message(
+        blink::WebConsoleMessage::LevelWarning,
         "<meta name=\"apple-mobile-web-app-capable\" content=\"yes\"> is "
         "deprecated. Please include <meta name=\"mobile-web-app-capable\" "
         "content=\"yes\"> - "
@@ -501,7 +501,7 @@ void ChromeRenderViewObserver::OnRequestThumbnailForContextNode(
   SkBitmap thumbnail;
   gfx::Size original_size;
   if (!context_node.isNull() && context_node.isElementNode()) {
-    WebKit::WebImage image = context_node.to<WebElement>().imageContents();
+    blink::WebImage image = context_node.to<WebElement>().imageContents();
     original_size = image.size();
     thumbnail = Downscale(image,
                           thumbnail_min_area_pixels,
@@ -633,10 +633,10 @@ static void SendInsecureContentSignal(int signal) {
 }
 
 bool ChromeRenderViewObserver::allowDisplayingInsecureContent(
-    WebKit::WebFrame* frame,
+    blink::WebFrame* frame,
     bool allowed_per_settings,
-    const WebKit::WebSecurityOrigin& origin,
-    const WebKit::WebURL& resource_url) {
+    const blink::WebSecurityOrigin& origin,
+    const blink::WebURL& resource_url) {
   SendInsecureContentSignal(INSECURE_CONTENT_DISPLAY);
 
   std::string origin_host(origin.host().utf8());
@@ -689,10 +689,10 @@ bool ChromeRenderViewObserver::allowDisplayingInsecureContent(
 }
 
 bool ChromeRenderViewObserver::allowRunningInsecureContent(
-    WebKit::WebFrame* frame,
+    blink::WebFrame* frame,
     bool allowed_per_settings,
-    const WebKit::WebSecurityOrigin& origin,
-    const WebKit::WebURL& resource_url) {
+    const blink::WebSecurityOrigin& origin,
+    const blink::WebURL& resource_url) {
   std::string origin_host(origin.host().utf8());
   GURL frame_gurl(frame->document().url());
   DCHECK_EQ(frame_gurl.host(), origin_host);
@@ -833,15 +833,15 @@ void ChromeRenderViewObserver::DidClearWindowObject(WebFrame* frame) {
 
 void ChromeRenderViewObserver::DidHandleGestureEvent(
     const WebGestureEvent& event) {
-  if (event.type != WebKit::WebGestureEvent::GestureTap)
+  if (event.type != blink::WebGestureEvent::GestureTap)
     return;
 
-  WebKit::WebTextInputType text_input_type =
+  blink::WebTextInputType text_input_type =
       render_view()->GetWebView()->textInputInfo().type;
 
   render_view()->Send(new ChromeViewHostMsg_FocusedNodeTouched(
       routing_id(),
-      text_input_type != WebKit::WebTextInputTypeNone));
+      text_input_type != blink::WebTextInputTypeNone));
 }
 
 void ChromeRenderViewObserver::DetailedConsoleMessageAdded(

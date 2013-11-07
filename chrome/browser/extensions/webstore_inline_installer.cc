@@ -103,7 +103,7 @@ bool WebstoreInlineInstaller::CheckInlineInstallPermitted(
         content::OpenURLParams(
             GURL(redirect_url),
             content::Referrer(web_contents()->GetURL(),
-                              WebKit::WebReferrerPolicyDefault),
+                              blink::WebReferrerPolicyDefault),
             NEW_FOREGROUND_TAB, content::PAGE_TRANSITION_AUTO_BOOKMARK, false));
     *error = kInlineInstallSupportedError;
     return false;

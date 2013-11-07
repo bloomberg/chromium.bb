@@ -276,7 +276,7 @@ WebContents* OpenApplicationTab(const AppLaunchParams& launch_params) {
     existing_tab->OpenURL(content::OpenURLParams(
           extension_url,
           content::Referrer(existing_tab->GetURL(),
-                            WebKit::WebReferrerPolicyDefault),
+                            blink::WebReferrerPolicyDefault),
           disposition, content::PAGE_TRANSITION_LINK, false));
     // Reset existing_tab as OpenURL() may have clobbered it.
     existing_tab = browser->tab_strip_model()->GetActiveWebContents();

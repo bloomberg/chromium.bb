@@ -9,7 +9,7 @@
 #include "components/visitedlink/common/visitedlink_messages.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
-using WebKit::WebView;
+using blink::WebView;
 
 namespace visitedlink {
 

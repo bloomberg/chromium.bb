@@ -558,7 +558,7 @@ TEST_F(MenuManagerTest, ExecuteCommand) {
       static_cast<MockEventRouter*>(mock_extension_system->event_router());
 
   content::ContextMenuParams params;
-  params.media_type = WebKit::WebContextMenuData::MediaTypeImage;
+  params.media_type = blink::WebContextMenuData::MediaTypeImage;
   params.src_url = GURL("http://foo.bar/image.png");
   params.page_url = GURL("http://foo.bar");
   params.selection_text = ASCIIToUTF16("Hello World");

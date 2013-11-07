@@ -35,12 +35,12 @@
 #include "third_party/WebKit/public/web/WebView.h"
 
 using content::ConsoleMessageLevel;
-using WebKit::WebConsoleMessage;
-using WebKit::WebDataSource;
-using WebKit::WebFrame;
-using WebKit::WebURLRequest;
-using WebKit::WebScopedUserGesture;
-using WebKit::WebView;
+using blink::WebConsoleMessage;
+using blink::WebDataSource;
+using blink::WebFrame;
+using blink::WebURLRequest;
+using blink::WebScopedUserGesture;
+using blink::WebView;
 
 namespace extensions {
 
@@ -186,7 +186,7 @@ void ExtensionHelper::DidFinishDocumentLoad(WebFrame* frame) {
     i->second->DidFinishDocumentLoad();
 }
 
-void ExtensionHelper::DidFinishLoad(WebKit::WebFrame* frame) {
+void ExtensionHelper::DidFinishLoad(blink::WebFrame* frame) {
   SchedulerMap::iterator i = g_schedulers.Get().find(frame);
   if (i != g_schedulers.Get().end())
     i->second->DidFinishLoad();
@@ -202,14 +202,14 @@ void ExtensionHelper::DidCreateDocumentElement(WebFrame* frame) {
   dispatcher_->DidCreateDocumentElement(frame);
 }
 
-void ExtensionHelper::DidStartProvisionalLoad(WebKit::WebFrame* frame) {
+void ExtensionHelper::DidStartProvisionalLoad(blink::WebFrame* frame) {
   SchedulerMap::iterator i = g_schedulers.Get().find(frame);
   if (i != g_schedulers.Get().end())
     i->second->DidStartProvisionalLoad();
 }
 
-void ExtensionHelper::DraggableRegionsChanged(WebKit::WebFrame* frame) {
-  WebKit::WebVector<WebKit::WebDraggableRegion> webregions =
+void ExtensionHelper::DraggableRegionsChanged(blink::WebFrame* frame) {
+  blink::WebVector<blink::WebDraggableRegion> webregions =
       frame->document().draggableRegions();
   std::vector<DraggableRegion> regions;
   for (size_t i = 0; i < webregions.size(); ++i) {
@@ -233,9 +233,9 @@ void ExtensionHelper::FrameDetached(WebFrame* frame) {
 }
 
 void ExtensionHelper::DidMatchCSS(
-    WebKit::WebFrame* frame,
-    const WebKit::WebVector<WebKit::WebString>& newly_matching_selectors,
-    const WebKit::WebVector<WebKit::WebString>& stopped_matching_selectors) {
+    blink::WebFrame* frame,
+    const blink::WebVector<blink::WebString>& newly_matching_selectors,
+    const blink::WebVector<blink::WebString>& stopped_matching_selectors) {
   dispatcher_->DidMatchCSS(
       frame, newly_matching_selectors, stopped_matching_selectors);
 }

@@ -15,7 +15,7 @@
 class RenderView;
 struct ExtensionMsg_ExecuteCode_Params;
 
-namespace WebKit {
+namespace blink {
 class WebFrame;
 }
 
@@ -43,7 +43,7 @@ class Dispatcher;
 // which contains the mapping from WebFrame to us.
 class UserScriptScheduler {
  public:
-  UserScriptScheduler(WebKit::WebFrame* frame, Dispatcher* dispatcher);
+  UserScriptScheduler(blink::WebFrame* frame, Dispatcher* dispatcher);
   ~UserScriptScheduler();
 
   void ExecuteCode(const ExtensionMsg_ExecuteCode_Params& params);
@@ -66,8 +66,8 @@ class UserScriptScheduler {
   void ExecuteCodeImpl(const ExtensionMsg_ExecuteCode_Params& params);
 
   // Get all child frames of parent_frame, returned by frames_vector.
-  bool GetAllChildFrames(WebKit::WebFrame* parent_frame,
-                         std::vector<WebKit::WebFrame*>* frames_vector) const;
+  bool GetAllChildFrames(blink::WebFrame* parent_frame,
+                         std::vector<blink::WebFrame*>* frames_vector) const;
 
   // Call to signify thet the idle timeout has expired.
   void IdleTimeout();
@@ -75,7 +75,7 @@ class UserScriptScheduler {
   base::WeakPtrFactory<UserScriptScheduler> weak_factory_;
 
   // The Frame we will run scripts in.
-  WebKit::WebFrame* frame_;
+  blink::WebFrame* frame_;
 
   // The current location in the document loading process.
   // Will be UserScript::UNDEFINED if it is before any scripts should be run.

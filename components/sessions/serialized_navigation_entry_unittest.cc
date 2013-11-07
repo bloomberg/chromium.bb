@@ -31,7 +31,7 @@ const int kIndex = 3;
 const int kUniqueID = 50;
 const content::Referrer kReferrer =
     content::Referrer(GURL("http://www.referrer.com"),
-                      WebKit::WebReferrerPolicyAlways);
+                      blink::WebReferrerPolicyAlways);
 const GURL kVirtualURL("http://www.virtual-url.com");
 const string16 kTitle = ASCIIToUTF16("title");
 const content::PageState kPageState =
@@ -99,7 +99,7 @@ TEST(SerializedNavigationEntryTest, DefaultInitializer) {
   EXPECT_EQ(-1, navigation.index());
   EXPECT_EQ(0, navigation.unique_id());
   EXPECT_EQ(GURL(), navigation.referrer().url);
-  EXPECT_EQ(WebKit::WebReferrerPolicyDefault, navigation.referrer().policy);
+  EXPECT_EQ(blink::WebReferrerPolicyDefault, navigation.referrer().policy);
   EXPECT_EQ(GURL(), navigation.virtual_url());
   EXPECT_TRUE(navigation.title().empty());
   EXPECT_FALSE(navigation.page_state().IsValid());
@@ -153,7 +153,7 @@ TEST(SerializedNavigationEntryTest, FromSyncData) {
   EXPECT_EQ(kIndex, navigation.index());
   EXPECT_EQ(kUniqueID, navigation.unique_id());
   EXPECT_EQ(kReferrer.url, navigation.referrer().url);
-  EXPECT_EQ(WebKit::WebReferrerPolicyDefault, navigation.referrer().policy);
+  EXPECT_EQ(blink::WebReferrerPolicyDefault, navigation.referrer().policy);
   EXPECT_EQ(kVirtualURL, navigation.virtual_url());
   EXPECT_EQ(kTitle, navigation.title());
   EXPECT_EQ(kPageState, navigation.page_state());

@@ -20,11 +20,11 @@
 class ExtensionSet;
 class GURL;
 
-namespace WebKit {
+namespace blink {
 class WebFrame;
 }
 
-using WebKit::WebScriptSource;
+using blink::WebScriptSource;
 
 namespace extensions {
 class Extension;
@@ -34,7 +34,7 @@ class UserScriptSlave {
  public:
   // Utility to get the URL we will match against for a frame. If the frame has
   // committed, this is the commited URL. Otherwise it is the provisional URL.
-  static GURL GetDataSourceURLForFrame(const WebKit::WebFrame* frame);
+  static GURL GetDataSourceURLForFrame(const blink::WebFrame* frame);
 
   explicit UserScriptSlave(const ExtensionSet* extensions);
   ~UserScriptSlave();
@@ -48,13 +48,13 @@ class UserScriptSlave {
   // Inject the appropriate scripts into a frame based on its URL.
   // TODO(aa): Extract a UserScriptFrame interface out of this to improve
   // testability.
-  void InjectScripts(WebKit::WebFrame* frame, UserScript::RunLocation location);
+  void InjectScripts(blink::WebFrame* frame, UserScript::RunLocation location);
 
   // Gets the isolated world ID to use for the given |extension| in the given
   // |frame|. If no isolated world has been created for that extension,
   // one will be created and initialized.
   int GetIsolatedWorldIdForExtension(const Extension* extension,
-                                     WebKit::WebFrame* frame);
+                                     blink::WebFrame* frame);
 
   // Gets the id of the extension running in a given isolated world. If no such
   // isolated world exists, or no extension is running in it, returns empty

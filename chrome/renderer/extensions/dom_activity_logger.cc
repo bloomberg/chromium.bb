@@ -17,8 +17,8 @@
 #include "v8/include/v8.h"
 
 using content::V8ValueConverter;
-using WebKit::WebString;
-using WebKit::WebURL;
+using blink::WebString;
+using blink::WebURL;
 
 namespace extensions {
 
@@ -63,9 +63,9 @@ void DOMActivityLogger::AttachToWorld(int world_id,
 #if defined(ENABLE_EXTENSIONS)
   // If there is no logger registered for world_id, construct a new logger
   // and register it with world_id.
-  if (!WebKit::hasDOMActivityLogger(world_id)) {
+  if (!blink::hasDOMActivityLogger(world_id)) {
     DOMActivityLogger* logger = new DOMActivityLogger(extension_id);
-    WebKit::setDOMActivityLogger(world_id, logger);
+    blink::setDOMActivityLogger(world_id, logger);
   }
 #endif
 }

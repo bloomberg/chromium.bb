@@ -142,7 +142,7 @@ TEST_F(PhishingClassifierDelegateTest, Navigation) {
   // Currently, we do not start a new classification after subframe loads.
   EXPECT_CALL(*classifier, CancelPendingClassification());
   GetMainFrame()->firstChild()->loadRequest(
-      WebKit::WebURLRequest(GURL("http://sub2.com/")));
+      blink::WebURLRequest(GURL("http://sub2.com/")));
   message_loop_.Run();
   Mock::VerifyAndClearExpectations(classifier);
   OnStartPhishingDetection(delegate, GURL("http://host.com/"));
@@ -180,7 +180,7 @@ TEST_F(PhishingClassifierDelegateTest, Navigation) {
   // Note: in practice, the browser will not send a StartPhishingDetection IPC
   // in this case.  However, we want to make sure that the delegate behaves
   // correctly regardless.
-  WebKit::WebHistoryItem forward_item = GetMainFrame()->currentHistoryItem();
+  blink::WebHistoryItem forward_item = GetMainFrame()->currentHistoryItem();
   EXPECT_CALL(*classifier, CancelPendingClassification());
   GoBack();
   Mock::VerifyAndClearExpectations(classifier);

@@ -22,7 +22,7 @@
 #include "ui/gfx/rect.h"
 
 using testing::_;
-using WebKit::WebAutofillClient;
+using blink::WebAutofillClient;
 
 namespace autofill {
 

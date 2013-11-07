@@ -40,8 +40,8 @@
 #include "url/gurl.h"
 #include "v8/include/v8.h"
 
-using WebKit::WebFrame;
-using WebKit::WebURL;
+using blink::WebFrame;
+using blink::WebURL;
 using content::RenderThread;
 
 namespace extensions {

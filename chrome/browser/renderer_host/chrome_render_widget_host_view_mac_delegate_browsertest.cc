@@ -65,9 +65,9 @@ class ChromeRenderWidgetHostViewMacDelegateTest : public InProcessBrowserTest {
   }
 
   // Simulates a mouse wheel event, forwarding it to the renderer.
-  void SendWheelEvent(int dx, int dy, WebKit::WebMouseWheelEvent::Phase phase) {
-    WebKit::WebMouseWheelEvent event;
-    event.type = WebKit::WebInputEvent::MouseWheel;
+  void SendWheelEvent(int dx, int dy, blink::WebMouseWheelEvent::Phase phase) {
+    blink::WebMouseWheelEvent event;
+    event.type = blink::WebInputEvent::MouseWheel;
     event.phase = phase;
     event.deltaX = dx;
     event.deltaY = dy;
@@ -88,7 +88,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderWidgetHostViewMacDelegateTest,
   ui_test_utils::NavigateToURL(browser(), url1_);
   ASSERT_EQ(url1_, GetWebContents()->GetURL());
 
-  SendWheelEvent(0, -200, WebKit::WebMouseWheelEvent::PhaseNone);
+  SendWheelEvent(0, -200, blink::WebMouseWheelEvent::PhaseNone);
   const int scroll_offset = GetScrollTop();
   ASSERT_NE(0, scroll_offset);
 
@@ -106,7 +106,7 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderWidgetHostViewMacDelegateTest,
   ui_test_utils::NavigateToURL(browser(), url1_);
   ASSERT_EQ(url1_, GetWebContents()->GetURL());
 
-  SendWheelEvent(0, -200, WebKit::WebMouseWheelEvent::PhaseNone);
+  SendWheelEvent(0, -200, blink::WebMouseWheelEvent::PhaseNone);
   const int scroll_offset = GetScrollTop();
   ASSERT_NE(0, scroll_offset);
 
@@ -116,8 +116,8 @@ IN_PROC_BROWSER_TEST_F(ChromeRenderWidgetHostViewMacDelegateTest,
 
   // Send wheel events that shouldn't be handled by the web content since it's
   // not scrollable in the horizontal direction.
-  SendWheelEvent(500, 0, WebKit::WebMouseWheelEvent::PhaseBegan);
-  SendWheelEvent(500, 0, WebKit::WebMouseWheelEvent::PhaseEnded);
+  SendWheelEvent(500, 0, blink::WebMouseWheelEvent::PhaseBegan);
+  SendWheelEvent(500, 0, blink::WebMouseWheelEvent::PhaseEnded);
   ASSERT_EQ(0, GetScrollLeft());
 
   // Simulate a back being triggered as a result of the unhandled wheel events.

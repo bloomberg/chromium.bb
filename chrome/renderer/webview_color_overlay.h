@@ -16,14 +16,14 @@ class RenderView;
 }
 
 // This class draws the given color on a PageOverlay of a WebView.
-class WebViewColorOverlay : public WebKit::WebPageOverlay {
+class WebViewColorOverlay : public blink::WebPageOverlay {
  public:
   WebViewColorOverlay(content::RenderView* render_view, SkColor color);
   virtual ~WebViewColorOverlay();
 
  private:
-  // WebKit::WebPageOverlay implementation:
-  virtual void paintPageOverlay(WebKit::WebCanvas* canvas);
+  // blink::WebPageOverlay implementation:
+  virtual void paintPageOverlay(blink::WebCanvas* canvas);
 
   content::RenderView* render_view_;
   SkColor color_;

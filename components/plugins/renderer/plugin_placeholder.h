@@ -37,8 +37,8 @@ class PluginPlaceholder : public content::RenderViewObserver,
   // |render_view| and |frame| are weak pointers. If either one is going away,
   // our |plugin_| will be destroyed as well and will notify us.
   PluginPlaceholder(content::RenderView* render_view,
-                    WebKit::WebFrame* frame,
-                    const WebKit::WebPluginParams& params,
+                    blink::WebFrame* frame,
+                    const blink::WebPluginParams& params,
                     const std::string& html_data,
                     GURL placeholderDataUrl);
 
@@ -51,13 +51,13 @@ class PluginPlaceholder : public content::RenderViewObserver,
   void SetPluginInfo(const content::WebPluginInfo& plugin_info);
   const content::WebPluginInfo& GetPluginInfo() const;
   void SetIdentifier(const std::string& identifier);
-  WebKit::WebFrame* GetFrame();
-  const WebKit::WebPluginParams& GetPluginParams() const;
+  blink::WebFrame* GetFrame();
+  const blink::WebPluginParams& GetPluginParams() const;
   bool LoadingAllowed() const { return allow_loading_; }
 
   // Replace this placeholder with a different plugin (which could be
   // a placeholder again).
-  void ReplacePlugin(WebKit::WebPlugin* new_plugin);
+  void ReplacePlugin(blink::WebPlugin* new_plugin);
 
   // Hide this placeholder.
   void HidePlugin();
@@ -66,12 +66,12 @@ class PluginPlaceholder : public content::RenderViewObserver,
   void LoadPlugin();
 
   // WebViewPlugin::Delegate method:
-  virtual void BindWebFrame(WebKit::WebFrame* frame) OVERRIDE;
+  virtual void BindWebFrame(blink::WebFrame* frame) OVERRIDE;
 
  private:
   // WebViewPlugin::Delegate methods:
   virtual void WillDestroyPlugin() OVERRIDE;
-  virtual void ShowContextMenu(const WebKit::WebMouseEvent&) OVERRIDE;
+  virtual void ShowContextMenu(const blink::WebMouseEvent&) OVERRIDE;
 
   // Javascript callbacks:
   // All ignore arguments (which are, however, required by caller) and return
@@ -90,8 +90,8 @@ class PluginPlaceholder : public content::RenderViewObserver,
 
   void UpdateMessage();
 
-  WebKit::WebFrame* frame_;
-  WebKit::WebPluginParams plugin_params_;
+  blink::WebFrame* frame_;
+  blink::WebPluginParams plugin_params_;
   WebViewPlugin* plugin_;
 
   content::WebPluginInfo plugin_info_;

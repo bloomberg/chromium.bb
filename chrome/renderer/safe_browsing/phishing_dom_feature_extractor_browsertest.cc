@@ -79,10 +79,10 @@ class PhishingDOMFeatureExtractorTest
 
   // Does the actual work of removing the iframe "frame1" from the document.
   void RemoveIframe() {
-    WebKit::WebFrame* main_frame = GetMainFrame();
+    blink::WebFrame* main_frame = GetMainFrame();
     ASSERT_TRUE(main_frame);
     main_frame->executeScript(
-        WebKit::WebString(
+        blink::WebString(
             "document.body.removeChild(document.getElementById('frame1'));"));
   }
 

@@ -56,7 +56,7 @@
 
 using content::WebContents;
 using testing::_;
-using WebKit::WebFormElement;
+using blink::WebFormElement;
 
 namespace autofill {
 
@@ -1000,7 +1000,7 @@ TEST_F(AutofillManagerTest, GetProfileSuggestionsMethodGet) {
   base::string16 expected_labels[] = {base::string16()};
   base::string16 expected_icons[] = {base::string16()};
   int expected_unique_ids[] =
-      {WebKit::WebAutofillClient::MenuItemIDWarningMessage};
+      {blink::WebAutofillClient::MenuItemIDWarningMessage};
   external_delegate_->CheckSuggestions(
       kDefaultPageID, arraysize(expected_values), expected_values,
       expected_labels, expected_icons, expected_unique_ids);

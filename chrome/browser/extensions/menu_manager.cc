@@ -617,13 +617,13 @@ void MenuManager::ExecuteCommand(Profile* profile,
     SetIdKeyValue(properties, "parentMenuItemId", *item->parent_id());
 
   switch (params.media_type) {
-    case WebKit::WebContextMenuData::MediaTypeImage:
+    case blink::WebContextMenuData::MediaTypeImage:
       properties->SetString("mediaType", "image");
       break;
-    case WebKit::WebContextMenuData::MediaTypeVideo:
+    case blink::WebContextMenuData::MediaTypeVideo:
       properties->SetString("mediaType", "video");
       break;
-    case WebKit::WebContextMenuData::MediaTypeAudio:
+    case blink::WebContextMenuData::MediaTypeAudio:
       properties->SetString("mediaType", "audio");
       break;
     default:  {}  // Do nothing.

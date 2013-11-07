@@ -33,7 +33,7 @@ class Dispatcher;
 class Extension;
 }
 
-namespace WebKit {
+namespace blink {
 class WebView;
 struct WebWindowFeatures;
 }
@@ -45,7 +45,7 @@ class PhishingClassifierDelegate;
 // This class holds the Chrome specific parts of RenderView, and has the same
 // lifetime.
 class ChromeRenderViewObserver : public content::RenderViewObserver,
-                                 public WebKit::WebPermissionClient {
+                                 public blink::WebPermissionClient {
  public:
   // translate_helper can be NULL.
   ChromeRenderViewObserver(
@@ -69,60 +69,60 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
   virtual void DidStartLoading() OVERRIDE;
   virtual void DidStopLoading() OVERRIDE;
-  virtual void DidCommitProvisionalLoad(WebKit::WebFrame* frame,
+  virtual void DidCommitProvisionalLoad(blink::WebFrame* frame,
                                         bool is_new_navigation) OVERRIDE;
-  virtual void DidClearWindowObject(WebKit::WebFrame* frame) OVERRIDE;
+  virtual void DidClearWindowObject(blink::WebFrame* frame) OVERRIDE;
   virtual void DidHandleGestureEvent(
-      const WebKit::WebGestureEvent& event) OVERRIDE;
+      const blink::WebGestureEvent& event) OVERRIDE;
   virtual void DetailedConsoleMessageAdded(const base::string16& message,
                                            const base::string16& source,
                                            const base::string16& stack_trace,
                                            int32 line_number,
                                            int32 severity_level) OVERRIDE;
 
-  // WebKit::WebPermissionClient implementation.
-  virtual bool allowDatabase(WebKit::WebFrame* frame,
-                             const WebKit::WebString& name,
-                             const WebKit::WebString& display_name,
+  // blink::WebPermissionClient implementation.
+  virtual bool allowDatabase(blink::WebFrame* frame,
+                             const blink::WebString& name,
+                             const blink::WebString& display_name,
                              unsigned long estimated_size);
-  virtual bool allowFileSystem(WebKit::WebFrame* frame);
-  virtual bool allowImage(WebKit::WebFrame* frame,
+  virtual bool allowFileSystem(blink::WebFrame* frame);
+  virtual bool allowImage(blink::WebFrame* frame,
                           bool enabled_per_settings,
-                          const WebKit::WebURL& image_url);
-  virtual bool allowIndexedDB(WebKit::WebFrame* frame,
-                              const WebKit::WebString& name,
-                              const WebKit::WebSecurityOrigin& origin);
-  virtual bool allowPlugins(WebKit::WebFrame* frame,
+                          const blink::WebURL& image_url);
+  virtual bool allowIndexedDB(blink::WebFrame* frame,
+                              const blink::WebString& name,
+                              const blink::WebSecurityOrigin& origin);
+  virtual bool allowPlugins(blink::WebFrame* frame,
                             bool enabled_per_settings);
-  virtual bool allowScript(WebKit::WebFrame* frame,
+  virtual bool allowScript(blink::WebFrame* frame,
                            bool enabled_per_settings);
-  virtual bool allowScriptFromSource(WebKit::WebFrame* frame,
+  virtual bool allowScriptFromSource(blink::WebFrame* frame,
                                      bool enabled_per_settings,
-                                     const WebKit::WebURL& script_url);
-  virtual bool allowStorage(WebKit::WebFrame* frame, bool local);
-  virtual bool allowReadFromClipboard(WebKit::WebFrame* frame,
+                                     const blink::WebURL& script_url);
+  virtual bool allowStorage(blink::WebFrame* frame, bool local);
+  virtual bool allowReadFromClipboard(blink::WebFrame* frame,
                                       bool default_value);
-  virtual bool allowWriteToClipboard(WebKit::WebFrame* frame,
+  virtual bool allowWriteToClipboard(blink::WebFrame* frame,
                                      bool default_value);
-  virtual bool allowWebComponents(const WebKit::WebDocument&, bool);
+  virtual bool allowWebComponents(const blink::WebDocument&, bool);
   virtual bool allowHTMLNotifications(
-      const WebKit::WebDocument& document);
-  virtual bool allowMutationEvents(const WebKit::WebDocument&,
+      const blink::WebDocument& document);
+  virtual bool allowMutationEvents(const blink::WebDocument&,
                                    bool default_value);
-  virtual bool allowPushState(const WebKit::WebDocument&);
-  virtual bool allowWebGLDebugRendererInfo(WebKit::WebFrame* frame);
-  virtual void didNotAllowPlugins(WebKit::WebFrame* frame);
-  virtual void didNotAllowScript(WebKit::WebFrame* frame);
+  virtual bool allowPushState(const blink::WebDocument&);
+  virtual bool allowWebGLDebugRendererInfo(blink::WebFrame* frame);
+  virtual void didNotAllowPlugins(blink::WebFrame* frame);
+  virtual void didNotAllowScript(blink::WebFrame* frame);
   virtual bool allowDisplayingInsecureContent(
-      WebKit::WebFrame* frame,
+      blink::WebFrame* frame,
       bool allowed_per_settings,
-      const WebKit::WebSecurityOrigin& context,
-      const WebKit::WebURL& url);
+      const blink::WebSecurityOrigin& context,
+      const blink::WebURL& url);
   virtual bool allowRunningInsecureContent(
-      WebKit::WebFrame* frame,
+      blink::WebFrame* frame,
       bool allowed_per_settings,
-      const WebKit::WebSecurityOrigin& context,
-      const WebKit::WebURL& url);
+      const blink::WebSecurityOrigin& context,
+      const blink::WebURL& url);
   virtual void Navigate(const GURL& url) OVERRIDE;
 
   void OnWebUIJavaScript(const string16& frame_xpath,
@@ -149,7 +149,7 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
                                 bool animate);
   void OnRetrieveWebappInformation(const GURL& expected_url);
 #endif
-  void OnSetWindowFeatures(const WebKit::WebWindowFeatures& window_features);
+  void OnSetWindowFeatures(const blink::WebWindowFeatures& window_features);
 
   void CapturePageInfoLater(int page_id,
                             bool preliminary_capture,
@@ -161,7 +161,7 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
 
   // Retrieves the text from the given frame contents, the page text up to the
   // maximum amount kMaxIndexChars will be placed into the given buffer.
-  void CaptureText(WebKit::WebFrame* frame, string16* contents);
+  void CaptureText(blink::WebFrame* frame, string16* contents);
 
   ExternalHostBindings* GetExternalHostBindings();
 
@@ -171,10 +171,10 @@ class ChromeRenderViewObserver : public content::RenderViewObserver,
   // If |origin| corresponds to an installed extension, returns that extension.
   // Otherwise returns NULL.
   const extensions::Extension* GetExtension(
-      const WebKit::WebSecurityOrigin& origin) const;
+      const blink::WebSecurityOrigin& origin) const;
 
   // Checks if a page contains <meta http-equiv="refresh" ...> tag.
-  bool HasRefreshMetaTag(WebKit::WebFrame* frame);
+  bool HasRefreshMetaTag(blink::WebFrame* frame);
 
   // Save the JavaScript to preload if a ViewMsg_WebUIJavaScript is received.
   scoped_ptr<WebUIJavaScript> webui_javascript_;

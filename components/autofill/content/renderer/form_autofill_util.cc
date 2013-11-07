@@ -32,21 +32,21 @@
 #include "third_party/WebKit/public/web/WebSelectElement.h"
 #include "third_party/WebKit/public/web/WebTextAreaElement.h"
 
-using WebKit::WebDocument;
-using WebKit::WebElement;
-using WebKit::WebExceptionCode;
-using WebKit::WebFormControlElement;
-using WebKit::WebFormElement;
-using WebKit::WebFrame;
-using WebKit::WebInputElement;
-using WebKit::WebLabelElement;
-using WebKit::WebNode;
-using WebKit::WebNodeList;
-using WebKit::WebOptionElement;
-using WebKit::WebSelectElement;
-using WebKit::WebTextAreaElement;
-using WebKit::WebString;
-using WebKit::WebVector;
+using blink::WebDocument;
+using blink::WebElement;
+using blink::WebExceptionCode;
+using blink::WebFormControlElement;
+using blink::WebFormElement;
+using blink::WebFrame;
+using blink::WebInputElement;
+using blink::WebLabelElement;
+using blink::WebNode;
+using blink::WebNodeList;
+using blink::WebOptionElement;
+using blink::WebSelectElement;
+using blink::WebTextAreaElement;
+using blink::WebString;
+using blink::WebVector;
 
 namespace autofill {
 namespace {
@@ -80,7 +80,7 @@ bool IsNoScriptElement(const WebElement& element) {
   return element.hasTagName(kNoScript);
 }
 
-bool HasTagName(const WebNode& node, const WebKit::WebString& tag) {
+bool HasTagName(const WebNode& node, const blink::WebString& tag) {
   return node.isElementNode() && node.toConst<WebElement>().hasHTMLTagName(tag);
 }
 
@@ -462,7 +462,7 @@ void GetOptionStringsFromElement(const WebSelectElement& select_element,
 // The callback type used by |ForEachMatchingFormField()|.
 typedef void (*Callback)(const FormFieldData&,
                          bool, /* is_initiating_element */
-                         WebKit::WebFormControlElement*);
+                         blink::WebFormControlElement*);
 
 // For each autofillable field in |data| that matches a field in the |form|,
 // the |callback| is invoked with the corresponding |form| field data.
@@ -526,7 +526,7 @@ void ForEachMatchingFormField(const WebFormElement& form_element,
 // Also sets the "autofilled" attribute, causing the background to be yellow.
 void FillFormField(const FormFieldData& data,
                    bool is_initiating_node,
-                   WebKit::WebFormControlElement* field) {
+                   blink::WebFormControlElement* field) {
   // Nothing to fill.
   if (data.value.empty())
     return;
@@ -567,7 +567,7 @@ void FillFormField(const FormFieldData& data,
 // Also sets the "autofilled" attribute, causing the background to be yellow.
 void PreviewFormField(const FormFieldData& data,
                       bool is_initiating_node,
-                      WebKit::WebFormControlElement* field) {
+                      blink::WebFormControlElement* field) {
   // Nothing to preview.
   if (data.value.empty())
     return;
@@ -606,7 +606,7 @@ std::string RetrievalMethodToString(
 
 // Recursively checks whether |node| or any of its children have a non-empty
 // bounding box. The recursion depth is bounded by |depth|.
-bool IsWebNodeVisibleImpl(const WebKit::WebNode& node, const int depth) {
+bool IsWebNodeVisibleImpl(const blink::WebNode& node, const int depth) {
   if (depth < 0)
     return false;
   if (node.hasNonEmptyBoundingBox())
@@ -614,11 +614,11 @@ bool IsWebNodeVisibleImpl(const WebKit::WebNode& node, const int depth) {
 
   // The childNodes method is not a const method. Therefore it cannot be called
   // on a const reference. Therefore we need a const cast.
-  const WebKit::WebNodeList& children =
-      const_cast<WebKit::WebNode&>(node).childNodes();
+  const blink::WebNodeList& children =
+      const_cast<blink::WebNode&>(node).childNodes();
   size_t length = children.length();
   for (size_t i = 0; i < length; ++i) {
-    const WebKit::WebNode& item = children.item(i);
+    const blink::WebNode& item = children.item(i);
     if (IsWebNodeVisibleImpl(item, depth - 1))
       return true;
   }
@@ -673,7 +673,7 @@ const base::string16 GetFormIdentifier(const WebFormElement& form) {
   return identifier;
 }
 
-bool IsWebNodeVisible(const WebKit::WebNode& node) {
+bool IsWebNodeVisible(const blink::WebNode& node) {
   // In the bug http://crbug.com/237216 the form's bounding box is empty
   // however the form has non empty children. Thus we need to look at the
   // form's children.
@@ -684,7 +684,7 @@ bool IsWebNodeVisible(const WebKit::WebNode& node) {
 bool ClickElement(const WebDocument& document,
                   const WebElementDescriptor& element_descriptor) {
   WebString web_descriptor = WebString::fromUTF8(element_descriptor.descriptor);
-  WebKit::WebElement element;
+  blink::WebElement element;
 
   switch (element_descriptor.retrieval_method) {
     case WebElementDescriptor::CSS_SELECTOR: {
@@ -827,8 +827,8 @@ void WebFormControlElementToFormField(const WebFormControlElement& element,
 }
 
 bool WebFormElementToFormData(
-    const WebKit::WebFormElement& form_element,
-    const WebKit::WebFormControlElement& form_control_element,
+    const blink::WebFormElement& form_element,
+    const blink::WebFormControlElement& form_control_element,
     RequirementsMask requirements,
     ExtractMask extract_mask,
     FormData* form,
@@ -1107,14 +1107,14 @@ bool FormWithElementIsAutofilled(const WebInputElement& element) {
   return false;
 }
 
-bool IsWebpageEmpty(const WebKit::WebFrame* frame) {
-  WebKit::WebDocument document = frame->document();
+bool IsWebpageEmpty(const blink::WebFrame* frame) {
+  blink::WebDocument document = frame->document();
 
   return IsWebElementEmpty(document.head()) &&
          IsWebElementEmpty(document.body());
 }
 
-bool IsWebElementEmpty(const WebKit::WebElement& element) {
+bool IsWebElementEmpty(const blink::WebElement& element) {
   // This array contains all tags which can be present in an empty page.
   const char* const kAllowedValue[] = {
     "script",
@@ -1127,10 +1127,10 @@ bool IsWebElementEmpty(const WebKit::WebElement& element) {
     return true;
   // The childNodes method is not a const method. Therefore it cannot be called
   // on a const reference. Therefore we need a const cast.
-  const WebKit::WebNodeList& children =
-      const_cast<WebKit::WebElement&>(element).childNodes();
+  const blink::WebNodeList& children =
+      const_cast<blink::WebElement&>(element).childNodes();
   for (size_t i = 0; i < children.length(); ++i) {
-    const WebKit::WebNode& item = children.item(i);
+    const blink::WebNode& item = children.item(i);
 
     if (item.isTextNode() &&
         !ContainsOnlyWhitespaceASCII(item.nodeValue().utf8()))

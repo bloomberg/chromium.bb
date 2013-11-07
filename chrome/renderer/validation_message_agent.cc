@@ -18,20 +18,20 @@ ValidationMessageAgent::ValidationMessageAgent(content::RenderView* render_view)
 ValidationMessageAgent::~ValidationMessageAgent() {}
 
 void ValidationMessageAgent::showValidationMessage(
-    const WebKit::WebRect& anchor_in_root_view,
-    const WebKit::WebString& main_text,
-    const WebKit::WebString& sub_text,
-    WebKit::WebTextDirection hint) {
+    const blink::WebRect& anchor_in_root_view,
+    const blink::WebString& main_text,
+    const blink::WebString& sub_text,
+    blink::WebTextDirection hint) {
   string16 wrapped_main_text = main_text;
   string16 wrapped_sub_text = sub_text;
-  if (hint == WebKit::WebTextDirectionLeftToRight) {
+  if (hint == blink::WebTextDirectionLeftToRight) {
     wrapped_main_text
         = base::i18n::GetDisplayStringInLTRDirectionality(wrapped_main_text);
     if (!wrapped_sub_text.empty()) {
       wrapped_sub_text
           = base::i18n::GetDisplayStringInLTRDirectionality(wrapped_sub_text);
     }
-  } else if (hint == WebKit::WebTextDirectionRightToLeft
+  } else if (hint == blink::WebTextDirectionRightToLeft
              && !base::i18n::IsRTL()) {
     base::i18n::WrapStringWithRTLFormatting(&wrapped_main_text);
     if (!wrapped_sub_text.empty()) {
@@ -48,7 +48,7 @@ void ValidationMessageAgent::hideValidationMessage() {
 }
 
 void ValidationMessageAgent::moveValidationMessage(
-      const WebKit::WebRect& anchor_in_root_view) {
+      const blink::WebRect& anchor_in_root_view) {
   Send(new ValidationMessageMsg_MoveValidationMessage(
       routing_id(), anchor_in_root_view));
 }

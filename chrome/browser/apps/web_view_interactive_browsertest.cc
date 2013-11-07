@@ -258,15 +258,15 @@ class WebViewInteractiveTest
   }
 
   void SimulateRWHMouseClick(content::RenderWidgetHost* rwh, int x, int y) {
-    WebKit::WebMouseEvent mouse_event;
-    mouse_event.button = WebKit::WebMouseEvent::ButtonLeft;
+    blink::WebMouseEvent mouse_event;
+    mouse_event.button = blink::WebMouseEvent::ButtonLeft;
     mouse_event.x = mouse_event.windowX = x;
     mouse_event.y = mouse_event.windowY = y;
     mouse_event.modifiers = 0;
 
-    mouse_event.type = WebKit::WebInputEvent::MouseDown;
+    mouse_event.type = blink::WebInputEvent::MouseDown;
     rwh->ForwardMouseEvent(mouse_event);
-    mouse_event.type = WebKit::WebInputEvent::MouseUp;
+    mouse_event.type = blink::WebInputEvent::MouseUp;
     rwh->ForwardMouseEvent(mouse_event);
   }
 

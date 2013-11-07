@@ -36,7 +36,7 @@ class AppBindings : public ChromeV8Extension,
   void GetInstallState(const v8::FunctionCallbackInfo<v8::Value>& args);
   void GetRunningState(const v8::FunctionCallbackInfo<v8::Value>& args);
 
-  v8::Handle<v8::Value> GetDetailsForFrameImpl(WebKit::WebFrame* frame);
+  v8::Handle<v8::Value> GetDetailsForFrameImpl(blink::WebFrame* frame);
 
   void OnAppInstallStateResponse(const std::string& state, int callback_id);
 

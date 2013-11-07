@@ -11,7 +11,7 @@
 #include "third_party/WebKit/public/web/WebSecurityOrigin.h"
 #include "url/gurl.h"
 
-using WebKit::WebSecurityOrigin;
+using blink::WebSecurityOrigin;
 
 typedef testing::Test ContentSettingsObserverTest;
 

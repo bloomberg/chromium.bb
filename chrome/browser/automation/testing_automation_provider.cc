@@ -664,7 +664,7 @@ void TestingAutomationProvider::WebkitMouseClick(DictionaryValue* args,
     return;
   }
 
-  WebKit::WebMouseEvent mouse_event;
+  blink::WebMouseEvent mouse_event;
   if (!args->GetInteger("x", &mouse_event.x) ||
       !args->GetInteger("y", &mouse_event.y)) {
     AutomationJSONReply(this, reply_message)
@@ -679,23 +679,23 @@ void TestingAutomationProvider::WebkitMouseClick(DictionaryValue* args,
     return;
   }
   if (button == automation::kLeftButton) {
-    mouse_event.button = WebKit::WebMouseEvent::ButtonLeft;
+    mouse_event.button = blink::WebMouseEvent::ButtonLeft;
   } else if (button == automation::kRightButton) {
-    mouse_event.button = WebKit::WebMouseEvent::ButtonRight;
+    mouse_event.button = blink::WebMouseEvent::ButtonRight;
   } else if (button == automation::kMiddleButton) {
-    mouse_event.button = WebKit::WebMouseEvent::ButtonMiddle;
+    mouse_event.button = blink::WebMouseEvent::ButtonMiddle;
   } else {
     AutomationJSONReply(this, reply_message)
         .SendError("Invalid button press requested");
     return;
   }
 
-  mouse_event.type = WebKit::WebInputEvent::MouseDown;
+  mouse_event.type = blink::WebInputEvent::MouseDown;
   mouse_event.clickCount = 1;
 
   view->ForwardMouseEvent(mouse_event);
 
-  mouse_event.type = WebKit::WebInputEvent::MouseUp;
+  mouse_event.type = blink::WebInputEvent::MouseUp;
   new InputEventAckNotificationObserver(this, reply_message, mouse_event.type,
                                         1);
   view->ForwardMouseEvent(mouse_event);
@@ -713,7 +713,7 @@ void TestingAutomationProvider::WebkitMouseMove(
     return;
   }
 
-  WebKit::WebMouseEvent mouse_event;
+  blink::WebMouseEvent mouse_event;
   if (!args->GetInteger("x", &mouse_event.x) ||
       !args->GetInteger("y", &mouse_event.y)) {
     AutomationJSONReply(this, reply_message)
@@ -721,7 +721,7 @@ void TestingAutomationProvider::WebkitMouseMove(
     return;
   }
 
-  mouse_event.type = WebKit::WebInputEvent::MouseMove;
+  mouse_event.type = blink::WebInputEvent::MouseMove;
   new InputEventAckNotificationObserver(this, reply_message, mouse_event.type,
                                         1);
   view->ForwardMouseEvent(mouse_event);
@@ -739,7 +739,7 @@ void TestingAutomationProvider::WebkitMouseDrag(DictionaryValue* args,
     return;
   }
 
-  WebKit::WebMouseEvent mouse_event;
+  blink::WebMouseEvent mouse_event;
   int start_x, start_y, end_x, end_y;
   if (!args->GetInteger("start_x", &start_x) ||
       !args->GetInteger("start_y", &start_y) ||
@@ -750,27 +750,27 @@ void TestingAutomationProvider::WebkitMouseDrag(DictionaryValue* args,
     return;
   }
 
-  mouse_event.type = WebKit::WebInputEvent::MouseMove;
+  mouse_event.type = blink::WebInputEvent::MouseMove;
   // Step 1- Move the mouse to the start position.
   mouse_event.x = start_x;
   mouse_event.y = start_y;
   view->ForwardMouseEvent(mouse_event);
 
   // Step 2- Left click mouse down, the mouse button is fixed.
-  mouse_event.type = WebKit::WebInputEvent::MouseDown;
-  mouse_event.button = WebKit::WebMouseEvent::ButtonLeft;
+  mouse_event.type = blink::WebInputEvent::MouseDown;
+  mouse_event.button = blink::WebMouseEvent::ButtonLeft;
   mouse_event.clickCount = 1;
   view->ForwardMouseEvent(mouse_event);
 
   // Step 3 - Move the mouse to the end position.
-  mouse_event.type = WebKit::WebInputEvent::MouseMove;
+  mouse_event.type = blink::WebInputEvent::MouseMove;
   mouse_event.x = end_x;
   mouse_event.y = end_y;
   mouse_event.clickCount = 0;
   view->ForwardMouseEvent(mouse_event);
 
   // Step 4 - Release the left mouse button.
-  mouse_event.type = WebKit::WebInputEvent::MouseUp;
+  mouse_event.type = blink::WebInputEvent::MouseUp;
   mouse_event.clickCount = 1;
   new InputEventAckNotificationObserver(this, reply_message, mouse_event.type,
                                         1);
@@ -789,7 +789,7 @@ void TestingAutomationProvider::WebkitMouseButtonDown(
     return;
   }
 
-  WebKit::WebMouseEvent mouse_event;
+  blink::WebMouseEvent mouse_event;
   if (!args->GetInteger("x", &mouse_event.x) ||
       !args->GetInteger("y", &mouse_event.y)) {
     AutomationJSONReply(this, reply_message)
@@ -797,8 +797,8 @@ void TestingAutomationProvider::WebkitMouseButtonDown(
     return;
   }
 
-  mouse_event.type = WebKit::WebInputEvent::MouseDown;
-  mouse_event.button = WebKit::WebMouseEvent::ButtonLeft;
+  mouse_event.type = blink::WebInputEvent::MouseDown;
+  mouse_event.button = blink::WebMouseEvent::ButtonLeft;
   mouse_event.clickCount = 1;
   new InputEventAckNotificationObserver(this, reply_message, mouse_event.type,
                                         1);
@@ -817,7 +817,7 @@ void TestingAutomationProvider::WebkitMouseButtonUp(
     return;
   }
 
-  WebKit::WebMouseEvent mouse_event;
+  blink::WebMouseEvent mouse_event;
   if (!args->GetInteger("x", &mouse_event.x) ||
       !args->GetInteger("y", &mouse_event.y)) {
     AutomationJSONReply(this, reply_message)
@@ -825,8 +825,8 @@ void TestingAutomationProvider::WebkitMouseButtonUp(
     return;
   }
 
-  mouse_event.type = WebKit::WebInputEvent::MouseUp;
-  mouse_event.button = WebKit::WebMouseEvent::ButtonLeft;
+  mouse_event.type = blink::WebInputEvent::MouseUp;
+  mouse_event.button = blink::WebMouseEvent::ButtonLeft;
   mouse_event.clickCount = 1;
   new InputEventAckNotificationObserver(this, reply_message, mouse_event.type,
                                         1);
@@ -845,7 +845,7 @@ void TestingAutomationProvider::WebkitMouseDoubleClick(
     return;
   }
 
-  WebKit::WebMouseEvent mouse_event;
+  blink::WebMouseEvent mouse_event;
   if (!args->GetInteger("x", &mouse_event.x) ||
       !args->GetInteger("y", &mouse_event.y)) {
     AutomationJSONReply(this, reply_message)
@@ -853,21 +853,21 @@ void TestingAutomationProvider::WebkitMouseDoubleClick(
     return;
   }
 
-  mouse_event.type = WebKit::WebInputEvent::MouseDown;
-  mouse_event.button = WebKit::WebMouseEvent::ButtonLeft;
+  mouse_event.type = blink::WebInputEvent::MouseDown;
+  mouse_event.button = blink::WebMouseEvent::ButtonLeft;
   mouse_event.clickCount = 1;
   view->ForwardMouseEvent(mouse_event);
 
-  mouse_event.type = WebKit::WebInputEvent::MouseUp;
+  mouse_event.type = blink::WebInputEvent::MouseUp;
   new InputEventAckNotificationObserver(this, reply_message, mouse_event.type,
                                         2);
   view->ForwardMouseEvent(mouse_event);
 
-  mouse_event.type = WebKit::WebInputEvent::MouseDown;
+  mouse_event.type = blink::WebInputEvent::MouseDown;
   mouse_event.clickCount = 2;
   view->ForwardMouseEvent(mouse_event);
 
-  mouse_event.type = WebKit::WebInputEvent::MouseUp;
+  mouse_event.type = blink::WebInputEvent::MouseUp;
   view->ForwardMouseEvent(mouse_event);
 }
 
@@ -917,13 +917,13 @@ void TestingAutomationProvider::DragAndDropFilePaths(
   const gfx::Point screen;
 
   int operations = 0;
-  operations |= WebKit::WebDragOperationCopy;
-  operations |= WebKit::WebDragOperationLink;
-  operations |= WebKit::WebDragOperationMove;
+  operations |= blink::WebDragOperationCopy;
+  operations |= blink::WebDragOperationLink;
+  operations |= blink::WebDragOperationMove;
 
   view->DragTargetDragEnter(
       drop_data, client, screen,
-      static_cast<WebKit::WebDragOperationsMask>(operations), 0);
+      static_cast<blink::WebDragOperationsMask>(operations), 0);
   new DragTargetDropAckNotificationObserver(this, reply_message);
   view->DragTargetDrop(client, screen, 0);
 }
@@ -4110,43 +4110,43 @@ bool TestingAutomationProvider::BuildWebKeyEventFromArgs(
   if (args->GetString("keyIdentifier", &key_identifier)) {
     base::strlcpy(event->keyIdentifier,
                   key_identifier.c_str(),
-                  WebKit::WebKeyboardEvent::keyIdentifierLengthCap);
+                  blink::WebKeyboardEvent::keyIdentifierLengthCap);
   } else {
     *error = "'keyIdentifier' missing or invalid.";
     return false;
   }
 
   if (type == automation::kRawKeyDownType) {
-    event->type = WebKit::WebInputEvent::RawKeyDown;
+    event->type = blink::WebInputEvent::RawKeyDown;
   } else if (type == automation::kKeyDownType) {
-    event->type = WebKit::WebInputEvent::KeyDown;
+    event->type = blink::WebInputEvent::KeyDown;
   } else if (type == automation::kKeyUpType) {
-    event->type = WebKit::WebInputEvent::KeyUp;
+    event->type = blink::WebInputEvent::KeyUp;
   } else if (type == automation::kCharType) {
-    event->type = WebKit::WebInputEvent::Char;
+    event->type = blink::WebInputEvent::Char;
   } else {
     *error = "'type' refers to an unrecognized keyboard event type";
     return false;
   }
 
   string16 unmodified_text_truncated = unmodified_text.substr(
-      0, WebKit::WebKeyboardEvent::textLengthCap - 1);
+      0, blink::WebKeyboardEvent::textLengthCap - 1);
   memcpy(event->unmodifiedText,
          unmodified_text_truncated.c_str(),
          unmodified_text_truncated.length() + 1);
   string16 text_truncated = text.substr(
-      0, WebKit::WebKeyboardEvent::textLengthCap - 1);
+      0, blink::WebKeyboardEvent::textLengthCap - 1);
   memcpy(event->text, text_truncated.c_str(), text_truncated.length() + 1);
 
   event->modifiers = 0;
   if (modifiers & automation::kShiftKeyMask)
-    event->modifiers |= WebKit::WebInputEvent::ShiftKey;
+    event->modifiers |= blink::WebInputEvent::ShiftKey;
   if (modifiers & automation::kControlKeyMask)
-    event->modifiers |= WebKit::WebInputEvent::ControlKey;
+    event->modifiers |= blink::WebInputEvent::ControlKey;
   if (modifiers & automation::kAltKeyMask)
-    event->modifiers |= WebKit::WebInputEvent::AltKey;
+    event->modifiers |= blink::WebInputEvent::AltKey;
   if (modifiers & automation::kMetaKeyMask)
-    event->modifiers |= WebKit::WebInputEvent::MetaKey;
+    event->modifiers |= blink::WebInputEvent::MetaKey;
 
   event->isSystemKey = is_system_key;
   event->timeStampSeconds = base::Time::Now().ToDoubleT();

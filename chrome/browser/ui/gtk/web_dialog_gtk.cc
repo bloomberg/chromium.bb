@@ -193,7 +193,7 @@ bool WebDialogGtk::ShouldShowDialogTitle() const {
 void WebDialogGtk::HandleKeyboardEvent(content::WebContents* source,
                                        const NativeWebKeyboardEvent& event) {
   GdkEventKey* os_event = &event.os_event->key;
-  if (!os_event || event.type == WebKit::WebInputEvent::Char)
+  if (!os_event || event.type == blink::WebInputEvent::Char)
     return;
 
   // To make sure the default key bindings can still work, such as Escape to

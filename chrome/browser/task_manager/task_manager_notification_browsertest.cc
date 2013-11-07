@@ -63,7 +63,7 @@ IN_PROC_BROWSER_TEST_F(TaskManagerNotificationBrowserTest,
 
   string16 content = DesktopNotificationService::CreateDataUrl(
       GURL(), ASCIIToUTF16("Hello World!"), string16(),
-      WebKit::WebTextDirectionDefault);
+      blink::WebTextDirectionDefault);
 
   scoped_refptr<NotificationDelegate> del1(new MockNotificationDelegate("n1"));
   Notification n1(

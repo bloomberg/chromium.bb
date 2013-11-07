@@ -33,11 +33,11 @@ void DocumentCustomBindings::RegisterElement(
   std::string element_name(*v8::String::AsciiValue(args[0]));
   v8::Local<v8::Object> options = args[1]->ToObject();
 
-  WebKit::WebExceptionCode ec = 0;
-  WebKit::WebDocument document = context()->web_frame()->document();
+  blink::WebExceptionCode ec = 0;
+  blink::WebDocument document = context()->web_frame()->document();
   v8::Handle<v8::Value> constructor =
       document.registerEmbedderCustomElement(
-          WebKit::WebString::fromUTF8(element_name), options, ec);
+          blink::WebString::fromUTF8(element_name), options, ec);
   args.GetReturnValue().Set(constructor);
 }
 

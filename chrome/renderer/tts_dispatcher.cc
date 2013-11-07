@@ -16,11 +16,11 @@
 #include "third_party/WebKit/public/platform/WebVector.h"
 
 using content::RenderThread;
-using WebKit::WebSpeechSynthesizerClient;
-using WebKit::WebSpeechSynthesisUtterance;
-using WebKit::WebSpeechSynthesisVoice;
-using WebKit::WebString;
-using WebKit::WebVector;
+using blink::WebSpeechSynthesizerClient;
+using blink::WebSpeechSynthesisUtterance;
+using blink::WebSpeechSynthesisVoice;
+using blink::WebString;
+using blink::WebVector;
 
 int TtsDispatcher::next_utterance_id_ = 1;
 

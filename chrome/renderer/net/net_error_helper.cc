@@ -38,20 +38,20 @@ using content::kUnreachableWebDataURL;
 
 namespace {
 
-bool IsLoadingErrorPage(WebKit::WebFrame* frame) {
+bool IsLoadingErrorPage(blink::WebFrame* frame) {
   GURL url = frame->provisionalDataSource()->request().url();
   if (!url.is_valid())
     return false;
   return url.spec() == kUnreachableWebDataURL;
 }
 
-bool IsMainFrame(const WebKit::WebFrame* frame) {
+bool IsMainFrame(const blink::WebFrame* frame) {
   return !frame->parent();
 }
 
 // Returns whether |net_error| is a DNS-related error (and therefore whether
 // the tab helper should start a DNS probe after receiving it.)
-bool IsDnsError(const WebKit::WebURLError& error) {
+bool IsDnsError(const blink::WebURLError& error) {
   return std::string(error.domain.utf8()) == net::kErrorDomain &&
          (error.reason == net::ERR_NAME_NOT_RESOLVED ||
           error.reason == net::ERR_NAME_RESOLUTION_FAILED);
@@ -71,12 +71,12 @@ NetErrorHelper::NetErrorHelper(RenderView* render_view)
 NetErrorHelper::~NetErrorHelper() {
 }
 
-void NetErrorHelper::DidStartProvisionalLoad(WebKit::WebFrame* frame) {
+void NetErrorHelper::DidStartProvisionalLoad(blink::WebFrame* frame) {
   OnStartLoad(IsMainFrame(frame), IsLoadingErrorPage(frame));
 }
 
-void NetErrorHelper::DidFailProvisionalLoad(WebKit::WebFrame* frame,
-                                            const WebKit::WebURLError& error) {
+void NetErrorHelper::DidFailProvisionalLoad(blink::WebFrame* frame,
+                                            const blink::WebURLError& error) {
   const bool main_frame = IsMainFrame(frame);
   const bool dns_error = IsDnsError(error);
 
@@ -85,18 +85,18 @@ void NetErrorHelper::DidFailProvisionalLoad(WebKit::WebFrame* frame,
   if (main_frame && dns_error) {
     last_error_ = error;
 
-    WebKit::WebDataSource* data_source = frame->provisionalDataSource();
-    const WebKit::WebURLRequest& failed_request = data_source->request();
+    blink::WebDataSource* data_source = frame->provisionalDataSource();
+    const blink::WebURLRequest& failed_request = data_source->request();
     is_failed_post_ = EqualsASCII(failed_request.httpMethod(), "POST");
   }
 }
 
-void NetErrorHelper::DidCommitProvisionalLoad(WebKit::WebFrame* frame,
+void NetErrorHelper::DidCommitProvisionalLoad(blink::WebFrame* frame,
                                               bool is_new_navigation) {
   OnCommitLoad(IsMainFrame(frame));
 }
 
-void NetErrorHelper::DidFinishLoad(WebKit::WebFrame* frame) {
+void NetErrorHelper::DidFinishLoad(blink::WebFrame* frame) {
   OnFinishLoad(IsMainFrame(frame));
 }
 
@@ -170,8 +170,8 @@ bool NetErrorHelper::OnMessageReceived(const IPC::Message& message) {
 
 // static
 bool NetErrorHelper::GetErrorStringsForDnsProbe(
-    WebKit::WebFrame* frame,
-    const WebKit::WebURLError& error,
+    blink::WebFrame* frame,
+    const blink::WebURLError& error,
     bool is_failed_post,
     const std::string& locale,
     const std::string& accept_languages,
@@ -213,7 +213,7 @@ void NetErrorHelper::OnNetErrorInfo(int status_num) {
 void NetErrorHelper::UpdateErrorPage() {
   DCHECK(forwarding_probe_results_);
 
-  WebKit::WebURLError error = GetUpdatedError();
+  blink::WebURLError error = GetUpdatedError();
   base::DictionaryValue error_strings;
   LocalizedError::GetStrings(error.reason,
                              error.domain.utf8(),
@@ -246,7 +246,7 @@ void NetErrorHelper::UpdateErrorPage() {
                             chrome_common_net::DNS_PROBE_MAX);
 }
 
-WebKit::WebURLError NetErrorHelper::GetUpdatedError() const {
+blink::WebURLError NetErrorHelper::GetUpdatedError() const {
   // If a probe didn't run or wasn't conclusive, restore the original error.
   if (last_probe_status_ == chrome_common_net::DNS_PROBE_NOT_RUN ||
       last_probe_status_ ==
@@ -254,8 +254,8 @@ WebKit::WebURLError NetErrorHelper::GetUpdatedError() const {
     return last_error_;
   }
 
-  WebKit::WebURLError error;
-  error.domain = WebKit::WebString::fromUTF8(
+  blink::WebURLError error;
+  error.domain = blink::WebString::fromUTF8(
       chrome_common_net::kDnsProbeErrorDomain);
   error.reason = last_probe_status_;
   error.unreachableURL = last_error_.unreachableURL;

@@ -20,9 +20,9 @@ int g_next_prerender_id = 0;
 
 }  // namespace
 
-using WebKit::WebPrerender;
+using blink::WebPrerender;
 
-// Since we can't mock out WebKit::WebPrerender in chrome, this test can't test
+// Since we can't mock out blink::WebPrerender in chrome, this test can't test
 // signalling to or from the WebKit side. Instead, it checks only that the
 // messages received from the browser generate consistant state in the
 // PrerenderDispatcher. Since prerenders couldn't even start or stop without the

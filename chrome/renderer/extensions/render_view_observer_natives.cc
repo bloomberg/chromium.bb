@@ -26,13 +26,13 @@ class LoadWatcher : public content::RenderViewObserver {
         callback_(cb) {
   }
 
-  virtual void DidCreateDocumentElement(WebKit::WebFrame* frame) OVERRIDE {
+  virtual void DidCreateDocumentElement(blink::WebFrame* frame) OVERRIDE {
     CallbackAndDie(true);
   }
 
   virtual void DidFailProvisionalLoad(
-      WebKit::WebFrame* frame,
-      const WebKit::WebURLError& error) OVERRIDE {
+      blink::WebFrame* frame,
+      const blink::WebURLError& error) OVERRIDE {
     CallbackAndDie(false);
   }
 

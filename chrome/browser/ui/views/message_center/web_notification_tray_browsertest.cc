@@ -66,7 +66,7 @@ class WebNotificationTrayTest : public InProcessBrowserTest {
                                 GURL(),
                                 ASCIIToUTF16("Test Web Notification"),
                                 ASCIIToUTF16("Notification message body."),
-                                WebKit::WebTextDirectionDefault,
+                                blink::WebTextDirectionDefault,
                                 string16(),
                                 ASCIIToUTF16(replace_id),
                                 new TestNotificationDelegate(id));
@@ -81,7 +81,7 @@ class WebNotificationTrayTest : public InProcessBrowserTest {
                                 GURL(""),
                                 ASCIIToUTF16("Updated Web Notification"),
                                 ASCIIToUTF16("Updated message body."),
-                                WebKit::WebTextDirectionDefault,
+                                blink::WebTextDirectionDefault,
                                 string16(),
                                 ASCIIToUTF16(replace_id),
                                 new TestNotificationDelegate(new_id));

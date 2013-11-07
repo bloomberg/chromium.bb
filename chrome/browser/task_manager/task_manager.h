@@ -209,7 +209,7 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
   // Gets the statuses of webkit. Return false if the resource for the given row
   // isn't a renderer.
   bool GetWebCoreCacheStats(int index,
-                            WebKit::WebCache::ResourceTypeStats* result) const;
+                            blink::WebCache::ResourceTypeStats* result) const;
 
   // Gets the GPU memory allocated of the given page.
   bool GetVideoMemory(int index,
@@ -311,7 +311,7 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
 
   void NotifyResourceTypeStats(
         base::ProcessId renderer_id,
-        const WebKit::WebCache::ResourceTypeStats& stats);
+        const blink::WebCache::ResourceTypeStats& stats);
 
   void NotifyFPS(base::ProcessId renderer_id,
                  int routing_id,
@@ -374,7 +374,7 @@ class TaskManagerModel : public base::RefCountedThreadSafe<TaskManagerModel> {
     int goats_teleported;
 
     bool is_webcore_stats_valid;
-    WebKit::WebCache::ResourceTypeStats webcore_stats;
+    blink::WebCache::ResourceTypeStats webcore_stats;
 
     bool is_fps_valid;
     float fps;

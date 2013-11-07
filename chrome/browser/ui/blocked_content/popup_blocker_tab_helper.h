@@ -16,7 +16,7 @@ namespace chrome {
 struct NavigateParams;
 }
 
-namespace WebKit {
+namespace blink {
 struct WebWindowFeatures;
 }
 
@@ -32,7 +32,7 @@ class PopupBlockerTabHelper
   // Returns true if the popup request defined by |params| should be blocked.
   // In that case, it is also added to the |blocked_popups_| container.
   bool MaybeBlockPopup(const chrome::NavigateParams& params,
-                       const WebKit::WebWindowFeatures& window_features);
+                       const blink::WebWindowFeatures& window_features);
 
   // Adds a popup request to the |blocked_popups_| container.
   void AddBlockedPopup(const BlockedWindowParams& params);

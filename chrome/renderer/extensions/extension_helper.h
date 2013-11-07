@@ -59,19 +59,19 @@ class ExtensionHelper
  private:
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void DidFinishDocumentLoad(WebKit::WebFrame* frame) OVERRIDE;
-  virtual void DidFinishLoad(WebKit::WebFrame* frame) OVERRIDE;
-  virtual void DidCreateDocumentElement(WebKit::WebFrame* frame) OVERRIDE;
-  virtual void DidStartProvisionalLoad(WebKit::WebFrame* frame) OVERRIDE;
-  virtual void FrameDetached(WebKit::WebFrame* frame) OVERRIDE;
+  virtual void DidFinishDocumentLoad(blink::WebFrame* frame) OVERRIDE;
+  virtual void DidFinishLoad(blink::WebFrame* frame) OVERRIDE;
+  virtual void DidCreateDocumentElement(blink::WebFrame* frame) OVERRIDE;
+  virtual void DidStartProvisionalLoad(blink::WebFrame* frame) OVERRIDE;
+  virtual void FrameDetached(blink::WebFrame* frame) OVERRIDE;
   virtual void DidMatchCSS(
-      WebKit::WebFrame* frame,
-      const WebKit::WebVector<WebKit::WebString>& newly_matching_selectors,
-      const WebKit::WebVector<WebKit::WebString>& stopped_matching_selectors)
+      blink::WebFrame* frame,
+      const blink::WebVector<blink::WebString>& newly_matching_selectors,
+      const blink::WebVector<blink::WebString>& stopped_matching_selectors)
       OVERRIDE;
-  virtual void DidCreateDataSource(WebKit::WebFrame* frame,
-                                   WebKit::WebDataSource* ds) OVERRIDE;
-  virtual void DraggableRegionsChanged(WebKit::WebFrame* frame) OVERRIDE;
+  virtual void DidCreateDataSource(blink::WebFrame* frame,
+                                   blink::WebDataSource* ds) OVERRIDE;
+  virtual void DraggableRegionsChanged(blink::WebFrame* frame) OVERRIDE;
 
   void OnExtensionResponse(int request_id, bool success,
                            const base::ListValue& response,

@@ -2264,7 +2264,7 @@ class ClickModifierTest : public InProcessBrowserTest {
   void RunTest(Browser* browser,
                const GURL& url,
                int modifiers,
-               WebKit::WebMouseEvent::Button button,
+               blink::WebMouseEvent::Button button,
                WindowOpenDisposition disposition) {
     ui_test_utils::NavigateToURL(browser, url);
     EXPECT_EQ(1u, chrome::GetBrowserCount(browser->profile(),
@@ -2320,7 +2320,7 @@ class ClickModifierTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(ClickModifierTest, WindowOpenBasicClickTest) {
   int modifiers = 0;
-  WebKit::WebMouseEvent::Button button = WebKit::WebMouseEvent::ButtonLeft;
+  blink::WebMouseEvent::Button button = blink::WebMouseEvent::ButtonLeft;
   WindowOpenDisposition disposition = NEW_FOREGROUND_TAB;
   RunTest(browser(), GetWindowOpenURL(), modifiers, button, disposition);
 }
@@ -2330,8 +2330,8 @@ IN_PROC_BROWSER_TEST_F(ClickModifierTest, WindowOpenBasicClickTest) {
 
 // Shift-clicks open in a new window.
 IN_PROC_BROWSER_TEST_F(ClickModifierTest, WindowOpenShiftClickTest) {
-  int modifiers = WebKit::WebInputEvent::ShiftKey;
-  WebKit::WebMouseEvent::Button button = WebKit::WebMouseEvent::ButtonLeft;
+  int modifiers = blink::WebInputEvent::ShiftKey;
+  blink::WebMouseEvent::Button button = blink::WebMouseEvent::ButtonLeft;
   WindowOpenDisposition disposition = NEW_WINDOW;
   RunTest(browser(), GetWindowOpenURL(), modifiers, button, disposition);
 }
@@ -2340,11 +2340,11 @@ IN_PROC_BROWSER_TEST_F(ClickModifierTest, WindowOpenShiftClickTest) {
 // On OSX meta [the command key] takes the place of control.
 IN_PROC_BROWSER_TEST_F(ClickModifierTest, WindowOpenControlClickTest) {
 #if defined(OS_MACOSX)
-  int modifiers = WebKit::WebInputEvent::MetaKey;
+  int modifiers = blink::WebInputEvent::MetaKey;
 #else
-  int modifiers = WebKit::WebInputEvent::ControlKey;
+  int modifiers = blink::WebInputEvent::ControlKey;
 #endif
-  WebKit::WebMouseEvent::Button button = WebKit::WebMouseEvent::ButtonLeft;
+  blink::WebMouseEvent::Button button = blink::WebMouseEvent::ButtonLeft;
   WindowOpenDisposition disposition = NEW_BACKGROUND_TAB;
   RunTest(browser(), GetWindowOpenURL(), modifiers, button, disposition);
 }
@@ -2353,12 +2353,12 @@ IN_PROC_BROWSER_TEST_F(ClickModifierTest, WindowOpenControlClickTest) {
 // On OSX meta [the command key] takes the place of control.
 IN_PROC_BROWSER_TEST_F(ClickModifierTest, WindowOpenControlShiftClickTest) {
 #if defined(OS_MACOSX)
-  int modifiers = WebKit::WebInputEvent::MetaKey;
+  int modifiers = blink::WebInputEvent::MetaKey;
 #else
-  int modifiers = WebKit::WebInputEvent::ControlKey;
+  int modifiers = blink::WebInputEvent::ControlKey;
 #endif
-  modifiers |= WebKit::WebInputEvent::ShiftKey;
-  WebKit::WebMouseEvent::Button button = WebKit::WebMouseEvent::ButtonLeft;
+  modifiers |= blink::WebInputEvent::ShiftKey;
+  blink::WebMouseEvent::Button button = blink::WebMouseEvent::ButtonLeft;
   WindowOpenDisposition disposition = NEW_FOREGROUND_TAB;
   RunTest(browser(), GetWindowOpenURL(), modifiers, button, disposition);
 }
@@ -2372,15 +2372,15 @@ IN_PROC_BROWSER_TEST_F(ClickModifierTest, WindowOpenControlShiftClickTest) {
 #endif
 IN_PROC_BROWSER_TEST_F(ClickModifierTest, MAYBE_WindowOpenMiddleClickTest) {
   int modifiers = 0;
-  WebKit::WebMouseEvent::Button button = WebKit::WebMouseEvent::ButtonMiddle;
+  blink::WebMouseEvent::Button button = blink::WebMouseEvent::ButtonMiddle;
   WindowOpenDisposition disposition = NEW_BACKGROUND_TAB;
   RunTest(browser(), GetWindowOpenURL(), modifiers, button, disposition);
 }
 
 // Shift-middle-clicks open in a foreground tab.
 IN_PROC_BROWSER_TEST_F(ClickModifierTest, WindowOpenShiftMiddleClickTest) {
-  int modifiers = WebKit::WebInputEvent::ShiftKey;
-  WebKit::WebMouseEvent::Button button = WebKit::WebMouseEvent::ButtonMiddle;
+  int modifiers = blink::WebInputEvent::ShiftKey;
+  blink::WebMouseEvent::Button button = blink::WebMouseEvent::ButtonMiddle;
   WindowOpenDisposition disposition = NEW_FOREGROUND_TAB;
   RunTest(browser(), GetWindowOpenURL(), modifiers, button, disposition);
 }
@@ -2389,7 +2389,7 @@ IN_PROC_BROWSER_TEST_F(ClickModifierTest, WindowOpenShiftMiddleClickTest) {
 
 IN_PROC_BROWSER_TEST_F(ClickModifierTest, HrefBasicClickTest) {
   int modifiers = 0;
-  WebKit::WebMouseEvent::Button button = WebKit::WebMouseEvent::ButtonLeft;
+  blink::WebMouseEvent::Button button = blink::WebMouseEvent::ButtonLeft;
   WindowOpenDisposition disposition = CURRENT_TAB;
   RunTest(browser(), GetHrefURL(), modifiers, button, disposition);
 }
@@ -2399,8 +2399,8 @@ IN_PROC_BROWSER_TEST_F(ClickModifierTest, HrefBasicClickTest) {
 
 // Shift-clicks open in a new window.
 IN_PROC_BROWSER_TEST_F(ClickModifierTest, HrefShiftClickTest) {
-  int modifiers = WebKit::WebInputEvent::ShiftKey;
-  WebKit::WebMouseEvent::Button button = WebKit::WebMouseEvent::ButtonLeft;
+  int modifiers = blink::WebInputEvent::ShiftKey;
+  blink::WebMouseEvent::Button button = blink::WebMouseEvent::ButtonLeft;
   WindowOpenDisposition disposition = NEW_WINDOW;
   RunTest(browser(), GetHrefURL(), modifiers, button, disposition);
 }
@@ -2409,11 +2409,11 @@ IN_PROC_BROWSER_TEST_F(ClickModifierTest, HrefShiftClickTest) {
 // On OSX meta [the command key] takes the place of control.
 IN_PROC_BROWSER_TEST_F(ClickModifierTest, HrefControlClickTest) {
 #if defined(OS_MACOSX)
-  int modifiers = WebKit::WebInputEvent::MetaKey;
+  int modifiers = blink::WebInputEvent::MetaKey;
 #else
-  int modifiers = WebKit::WebInputEvent::ControlKey;
+  int modifiers = blink::WebInputEvent::ControlKey;
 #endif
-  WebKit::WebMouseEvent::Button button = WebKit::WebMouseEvent::ButtonLeft;
+  blink::WebMouseEvent::Button button = blink::WebMouseEvent::ButtonLeft;
   WindowOpenDisposition disposition = NEW_BACKGROUND_TAB;
   RunTest(browser(), GetHrefURL(), modifiers, button, disposition);
 }
@@ -2422,12 +2422,12 @@ IN_PROC_BROWSER_TEST_F(ClickModifierTest, HrefControlClickTest) {
 // On OSX meta [the command key] takes the place of control.
 IN_PROC_BROWSER_TEST_F(ClickModifierTest, HrefControlShiftClickTest) {
 #if defined(OS_MACOSX)
-  int modifiers = WebKit::WebInputEvent::MetaKey;
+  int modifiers = blink::WebInputEvent::MetaKey;
 #else
-  int modifiers = WebKit::WebInputEvent::ControlKey;
+  int modifiers = blink::WebInputEvent::ControlKey;
 #endif
-  modifiers |= WebKit::WebInputEvent::ShiftKey;
-  WebKit::WebMouseEvent::Button button = WebKit::WebMouseEvent::ButtonLeft;
+  modifiers |= blink::WebInputEvent::ShiftKey;
+  blink::WebMouseEvent::Button button = blink::WebMouseEvent::ButtonLeft;
   WindowOpenDisposition disposition = NEW_FOREGROUND_TAB;
   RunTest(browser(), GetHrefURL(), modifiers, button, disposition);
 }
@@ -2441,15 +2441,15 @@ IN_PROC_BROWSER_TEST_F(ClickModifierTest, HrefControlShiftClickTest) {
 #endif
 IN_PROC_BROWSER_TEST_F(ClickModifierTest, MAYBE_HrefMiddleClickTest) {
   int modifiers = 0;
-  WebKit::WebMouseEvent::Button button = WebKit::WebMouseEvent::ButtonMiddle;
+  blink::WebMouseEvent::Button button = blink::WebMouseEvent::ButtonMiddle;
   WindowOpenDisposition disposition = NEW_BACKGROUND_TAB;
   RunTest(browser(), GetHrefURL(), modifiers, button, disposition);
 }
 
 // Shift-middle-clicks open in a foreground tab.
 IN_PROC_BROWSER_TEST_F(ClickModifierTest, HrefShiftMiddleClickTest) {
-  int modifiers = WebKit::WebInputEvent::ShiftKey;
-  WebKit::WebMouseEvent::Button button = WebKit::WebMouseEvent::ButtonMiddle;
+  int modifiers = blink::WebInputEvent::ShiftKey;
+  blink::WebMouseEvent::Button button = blink::WebMouseEvent::ButtonMiddle;
   WindowOpenDisposition disposition = NEW_FOREGROUND_TAB;
   RunTest(browser(), GetHrefURL(), modifiers, button, disposition);
 }

@@ -14,7 +14,7 @@
 
 class GURL;
 
-namespace WebKit {
+namespace blink {
 class WebFrame;
 class WebSecurityOrigin;
 class WebURL;
@@ -43,23 +43,23 @@ class ContentSettingsObserver
   void DidBlockContentType(ContentSettingsType settings_type,
                            const std::string& resource_identifier);
 
-  // These correspond to WebKit::WebPermissionClient methods.
-  bool AllowDatabase(WebKit::WebFrame* frame,
-                     const WebKit::WebString& name,
-                     const WebKit::WebString& display_name,
+  // These correspond to blink::WebPermissionClient methods.
+  bool AllowDatabase(blink::WebFrame* frame,
+                     const blink::WebString& name,
+                     const blink::WebString& display_name,
                      unsigned long estimated_size);
-  bool AllowFileSystem(WebKit::WebFrame* frame);
-  bool AllowImage(WebKit::WebFrame* frame,
+  bool AllowFileSystem(blink::WebFrame* frame);
+  bool AllowImage(blink::WebFrame* frame,
                   bool enabled_per_settings,
-                  const WebKit::WebURL& image_url);
-  bool AllowIndexedDB(WebKit::WebFrame* frame,
-                      const WebKit::WebString& name,
-                      const WebKit::WebSecurityOrigin& origin);
-  bool AllowPlugins(WebKit::WebFrame* frame, bool enabled_per_settings);
-  bool AllowScript(WebKit::WebFrame* frame, bool enabled_per_settings);
-  bool AllowScriptFromSource(WebKit::WebFrame* frame, bool enabled_per_settings,
-                             const WebKit::WebURL& script_url);
-  bool AllowStorage(WebKit::WebFrame* frame, bool local);
+                  const blink::WebURL& image_url);
+  bool AllowIndexedDB(blink::WebFrame* frame,
+                      const blink::WebString& name,
+                      const blink::WebSecurityOrigin& origin);
+  bool AllowPlugins(blink::WebFrame* frame, bool enabled_per_settings);
+  bool AllowScript(blink::WebFrame* frame, bool enabled_per_settings);
+  bool AllowScriptFromSource(blink::WebFrame* frame, bool enabled_per_settings,
+                             const blink::WebURL& script_url);
+  bool AllowStorage(blink::WebFrame* frame, bool local);
 
   void DidNotAllowPlugins();
   void DidNotAllowScript();
@@ -77,7 +77,7 @@ class ContentSettingsObserver
 
   // RenderViewObserver implementation.
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;
-  virtual void DidCommitProvisionalLoad(WebKit::WebFrame* frame,
+  virtual void DidCommitProvisionalLoad(blink::WebFrame* frame,
                                         bool is_new_navigation) OVERRIDE;
 
   // Message handlers.
@@ -89,9 +89,9 @@ class ContentSettingsObserver
 
   // Helpers.
   // True if |frame| contains content that is white-listed for content settings.
-  static bool IsWhitelistedForContentSettings(WebKit::WebFrame* frame);
+  static bool IsWhitelistedForContentSettings(blink::WebFrame* frame);
   static bool IsWhitelistedForContentSettings(
-      const WebKit::WebSecurityOrigin& origin,
+      const blink::WebSecurityOrigin& origin,
       const GURL& document_url);
 
   // A pointer to content setting rules stored by the renderer. Normally, the
@@ -108,7 +108,7 @@ class ContentSettingsObserver
   std::map<StoragePermissionsKey, bool> cached_storage_permissions_;
 
   // Caches the result of |AllowScript|.
-  std::map<WebKit::WebFrame*, bool> cached_script_permissions_;
+  std::map<blink::WebFrame*, bool> cached_script_permissions_;
 
   std::set<std::string> temporarily_allowed_plugins_;
   bool is_interstitial_page_;

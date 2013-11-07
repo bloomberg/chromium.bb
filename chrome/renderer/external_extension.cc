@@ -14,8 +14,8 @@
 #include "third_party/WebKit/public/web/WebView.h"
 #include "v8/include/v8.h"
 
-using WebKit::WebFrame;
-using WebKit::WebView;
+using blink::WebFrame;
+using blink::WebView;
 using content::RenderView;
 
 namespace extensions_v8 {

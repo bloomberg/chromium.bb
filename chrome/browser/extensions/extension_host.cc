@@ -65,8 +65,8 @@
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #endif
 
-using WebKit::WebDragOperation;
-using WebKit::WebDragOperationsMask;
+using blink::WebDragOperation;
+using blink::WebDragOperationsMask;
 using content::NativeWebKeyboardEvent;
 using content::OpenURLParams;
 using content::RenderViewHost;
