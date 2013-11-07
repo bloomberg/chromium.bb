@@ -7,7 +7,4 @@ PASS onClickCalled is false
 PASS successfullyParsed is true
 
 TEST COMPLETE
-PASS successfullyParsed is true
-
-TEST COMPLETE
 

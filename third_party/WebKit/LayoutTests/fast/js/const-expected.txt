@@ -52,7 +52,7 @@ PASS f() is f
 PASS const a; is undefined
 FAIL bodyId should be [object HTMLBodyElement] (of type object). Was Const initialiser overwrote existing property (of type string).
 PASS ranConstInitialiser is true
-FAIL successfullyParsed should be true (of type boolean). Was undefined (of type undefined).
+FAIL successfullyParsed should be true. Was false.
 
 TEST COMPLETE
 

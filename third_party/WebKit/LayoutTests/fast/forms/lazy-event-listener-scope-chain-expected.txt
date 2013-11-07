@@ -9,7 +9,4 @@ PASS result is "abc"
 PASS successfullyParsed is true
 
 TEST COMPLETE
-PASS successfullyParsed is true
-
-TEST COMPLETE
  

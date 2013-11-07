@@ -2,9 +2,6 @@ This test checks getBoundingClientRect() on rectangles
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-PASS successfullyParsed is true
-
-TEST COMPLETE
 Checking a rectangle of absolute size at absolute coordinates:
 PASS r1.left.toFixed(2) is "20.00"
 PASS r1.top.toFixed(2) is "30.00"
@@ -35,6 +32,9 @@ PASS r4.height.toFixed(2) is "60.00"
 PASS r4.right.toFixed(2) is "510.00"
 PASS r4.bottom.toFixed(2) is "110.00"
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS successfullyParsed is true
 
 TEST COMPLETE

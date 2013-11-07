@@ -1,5 +1,5 @@
 CONSOLE ERROR: Uncaught SyntaxError: Unexpected end of input
-FAIL successfullyParsed should be true (of type boolean). Was undefined (of type undefined).
+FAIL successfullyParsed should be true. Was false.
 
 TEST COMPLETE
 

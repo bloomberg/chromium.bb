@@ -1,5 +1,2 @@
-PASS successfullyParsed is true
-
-TEST COMPLETE
 PASS: drop event is fired.
 

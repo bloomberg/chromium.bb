@@ -1,7 +1,4 @@
 PASS window.internals is defined.
-PASS successfullyParsed is true
-
-TEST COMPLETE
 test a scoped style in shadow tree.
 PASS textColor is "rgb(255, 0, 0)"
 PASS textColor is "rgb(0, 0, 0)"
@@ -52,4 +49,7 @@ PASS textColor is "rgb(255, 0, 0)"
 PASS textColor is "rgb(255, 0, 0)"
 PASS textColor is "rgb(255, 0, 0)"
 PASS textColor is "rgb(0, 0, 0)"
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

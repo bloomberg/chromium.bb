@@ -53,7 +53,7 @@ Should move from input-15 to input-13 in backward
 PASS
 Should move from input-13 to input-01 in backward
 PASS
-FAIL successfullyParsed should be true (of type boolean). Was undefined (of type undefined).
+FAIL successfullyParsed should be true. Was false.
 
 TEST COMPLETE
 

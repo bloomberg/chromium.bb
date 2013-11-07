@@ -30,7 +30,4 @@ PASS testURLReflection('src', 'source') is 'URL'
 PASS testURLReflection('src', 'video') is 'URL'
 PASS testURLReflection('longDesc', 'img') is 'URL'
 PASS testURLReflection('lowsrc', 'img') is 'URL'
-PASS successfullyParsed is true
-
-TEST COMPLETE
 

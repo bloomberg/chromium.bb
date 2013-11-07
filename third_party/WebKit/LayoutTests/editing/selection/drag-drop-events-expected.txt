@@ -4,9 +4,6 @@ This test verifies the order of events fired by drag-and-drop.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS successfullyParsed is true
-
-TEST COMPLETE
 focus src
 drop dst
 blur src
@@ -14,4 +11,7 @@ focus dst
 input src
 input dst
 change src
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

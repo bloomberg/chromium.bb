@@ -4,9 +4,6 @@ For each effectAllowed, iterates through the possible dropEffects: none, copy, m
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS successfullyParsed is true
-
-TEST COMPLETE
 
 When effectAllowed == "uninitialized"
 
@@ -105,6 +102,9 @@ PASS event.dataTransfer.effectAllowed is "uninitialized"
 PASS event.dataTransfer.dropEffect is "link"
 PASS event.dataTransfer.effectAllowed is "uninitialized"
 PASS event.dataTransfer.dropEffect is "copy"
+
+TEST COMPLETE
+PASS successfullyParsed is true
 
 TEST COMPLETE
 

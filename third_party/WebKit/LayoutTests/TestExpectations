@@ -17,8 +17,6 @@ crbug.com/305303 http/tests/security/mixedContent/insecure-xhr-in-main-frame.htm
 
 crbug.com/289002 http/tests/security/frame-loading-via-document-write.html [ Pass Failure ]
 
-crbug.com/305853 [ SnowLeopard ] svg/as-object/embedded-svg-immediate-offsetWidth-query.html [ Pass ImageOnlyFailure ]
-
 # -----------------------------------------------------------------
 # Inspector tests
 # -----------------------------------------------------------------
@@ -123,6 +121,28 @@ crbug.com/66751 [ Win ] http/tests/local/link-stylesheet-load-order-preload.html
 crbug.com/66751 [ Win ] http/tests/local/link-stylesheet-load-order.html [ Failure Timeout ]
 
 crbug.com/86340 fast/filesystem/workers/file-writer-write-overlapped.html [ Failure Pass ]
+
+Bug(ojan) fast/dom/Window/Location/window-shadow-location-using-string.html [ NeedsRebaseline ]
+Bug(ojan) fast/dom/Window/webkitConvertPoint.html [ NeedsRebaseline ]
+Bug(ojan) fast/forms/focus-selection-textarea.html [ NeedsRebaseline ]
+Bug(ojan) fast/replaced/table-percent-height-text-controls.html [ NeedsRebaseline ]
+Bug(ojan) fast/replaced/table-percent-height.html [ NeedsRebaseline ]
+Bug(ojan) fast/dom/Window/Location/window-shadow-location-using-js-object-with-toString.html [ NeedsRebaseline ]
+Bug(ojan) fast/events/scale-and-scroll-body.html [ NeedsRebaseline ]
+Bug(ojan) fast/events/touch/gesture/touch-gesture-scroll-sideways.html [ NeedsRebaseline ]
+Bug(ojan) http/tests/storage/callbacks-are-called-in-correct-context.html [ NeedsRebaseline ]
+Bug(ojan) svg/as-object/nested-embedded-svg-size-changes.html [ NeedsRebaseline ]
+Bug(ojan) svg/custom/use-instanceRoot-event-bubbling.xhtml [ NeedsRebaseline ]
+Bug(ojan) svg/custom/use-instanceRoot-event-listeners.xhtml [ NeedsRebaseline ]
+Bug(ojan) svg/dom/SVGPathSegList-xml-dom-synchronization.xhtml [ NeedsRebaseline ]
+
+Bug(ojan) fast/dom/Window/open-window-min-size.html [ NeedsManualRebaseline ]
+Bug(ojan) svg/as-object/embedded-svg-immediate-offsetWidth-query.html [ NeedsManualRebaseline ]
+Bug(ojan) svg/zoom/page/zoom-zoom-coords.xhtml [ NeedsManualRebaseline ]
+# FIXME: uncomment once the above to manual rebaselines are done.
+# crbug.com/311469 [ Mac ] svg/zoom/page/zoom-zoom-coords.xhtml [ Failure Pass ]
+# crbug.com/305853 [ SnowLeopard ] svg/as-object/embedded-svg-immediate-offsetWidth-query.html [ Pass ImageOnlyFailure ]
+# crbug.com/231880 [ Win7 Debug ] fast/dom/Window/open-window-min-size.html [ Failure Pass ]
 
 # CSS Regions tests for <dialog>
 crbug.com/244792 [ Mac ] fast/regions/dialog-fragmentation.html [ ImageOnlyFailure ]
@@ -482,8 +502,6 @@ crbug.com/310292 [ Mac ] http/tests/security/video-poster-cross-origin-crash.htm
 crbug.com/310323 [ Debug ] http/tests/plugins/third-party-cookie-accept-policy.html [ Crash Pass ]
 crbug.com/310323 [ Debug ] http/tests/security/contentSecurityPolicy/report-multiple-violations-02.html [ Crash Pass ]
 
-crbug.com/231880 [ Win7 Debug ] fast/dom/Window/open-window-min-size.html [ Failure Pass ]
-
 crbug.com/311164 fast/js/mozilla/strict/15.4.4.6.html [ Failure Pass ]
 
 crbug.com/311301 fast/history/history_reload.html [ Failure Pass ]
@@ -505,8 +523,6 @@ crbug.com/311319 webaudio/waveshaper-oversample-4x.html [ Pass Failure ]
 crbug.com/311804 [ Mac Win Linux ] storage/storagequota-query-usage.html [ Failure Pass ]
 crbug.com/311805 [ Mac ] http/tests/w3c/webperf/submission/Google/resource-timing/html/test_resource_reparenting.html [ Failure Pass ]
 crbug.com/311812 [ Mac XP ] http/tests/security/redirect-BLOCKED-to-localURL.html [ Failure Pass ]
-
-crbug.com/311469 [ Mac ] svg/zoom/page/zoom-zoom-coords.xhtml [ Failure Pass ]
 
 crbug.com/312606 [ Mac ] fast/text/international/text-combine-image-test.html [ Failure Pass ]
 

@@ -9,4 +9,4 @@ This test checks long press behavior inside an iframe when both touch drag/drop 
 
 Testing
 PASS
-FAIL
+PASS

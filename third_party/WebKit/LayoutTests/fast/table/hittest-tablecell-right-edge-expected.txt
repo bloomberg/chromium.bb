@@ -5,9 +5,6 @@ An event generated on the edge of a table cell is not being consumed by the appr
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS successfullyParsed is true
-
-TEST COMPLETE
 Executing for element tr1-td1 on the right edge of the table cell:
 PASS document.elementFromPoint(edge - 1, middleY).id is 'tr1-td1'
 PASS document.elementFromPoint(edge, middleY).id is 'tr1-td2'
@@ -72,6 +69,9 @@ Executing for element tr4-td4 on the right edge of the table cell:
 PASS document.elementFromPoint(edge - 1, middleY).id is 'tr4-td4'
 PASS document.elementFromPoint(edge, middleY).id is ''
 PASS document.elementFromPoint(edge + 1, middleY).id is ''
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS successfullyParsed is true
 
 TEST COMPLETE

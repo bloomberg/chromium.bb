@@ -42,7 +42,4 @@ PASS new Audio().src is ""
 PASS new Audio().preload is "auto"
 PASS new Audio('http://127.0.0.1/someurl').src is "http://127.0.0.1/someurl"
 PASS new Audio('http://127.0.0.1/someurl').preload is "auto"
-PASS successfullyParsed is true
-
-TEST COMPLETE
 

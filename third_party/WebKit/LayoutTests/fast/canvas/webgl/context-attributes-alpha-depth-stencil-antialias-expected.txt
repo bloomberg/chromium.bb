@@ -2,9 +2,6 @@ Verify WebGLContextAttributes are working as specified, including alpha, depth, 
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-PASS successfullyParsed is true
-
-TEST COMPLETE
 Testing alpha = true
 PASS getError was expected value: NO_ERROR : should be no errors
 PASS gl = getWebGL(1, 1, { alpha: true, depth: false, stencil: false, antialias: false }, [ 0, 0, 0, 0 ], 1, 0) is non-null.
@@ -111,6 +108,9 @@ PASS getError was expected value: NO_ERROR : should be no errors
 PASS gl = getWebGL(2, 2, { depth: false, stencil: false, alpha: false, antialias: false }, [ 0, 0, 0, 1 ], 1, 0) is non-null.
 PASS contextAttribs = gl.getContextAttributes() is non-null.
 PASS pixel[0] != 255 && pixel[0] != 0 is contextAttribs.antialias
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS successfullyParsed is true
 
 TEST COMPLETE

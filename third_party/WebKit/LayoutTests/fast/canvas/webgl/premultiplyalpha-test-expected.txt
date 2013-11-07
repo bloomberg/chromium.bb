@@ -8,9 +8,6 @@ PASS gl.getContextAttributes().premultipledAlpha is premultipledAlpha
 PASS gl.getContextAttributes().preserveDrawingBuffer is true
 PASS getError was expected value: NO_ERROR : Should be no errors from setup.
 PASS getError was expected value: NO_ERROR : Should be no errors from drawing.
-PASS successfullyParsed is true
-
-TEST COMPLETE
 PASS getError was expected value: NO_ERROR : Should be no errors from creating copy.
 PASS getError was expected value: NO_ERROR : Should be no errors from 2nd drawing.
 PASS should draw with 64,128,255,128
@@ -20,6 +17,9 @@ PASS gl.getContextAttributes().premultipledAlpha is premultipledAlpha
 PASS gl.getContextAttributes().preserveDrawingBuffer is true
 PASS getError was expected value: NO_ERROR : Should be no errors from setup.
 PASS getError was expected value: NO_ERROR : Should be no errors from drawing.
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS getError was expected value: NO_ERROR : Should be no errors from creating copy.
 PASS getError was expected value: NO_ERROR : Should be no errors from 2nd drawing.
 PASS should draw with 64,128,255,128

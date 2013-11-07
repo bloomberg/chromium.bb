@@ -1,6 +1,3 @@
-PASS successfullyParsed is true
-
-TEST COMPLETE
 host: rgb(255, 0, 0)
 host: rgb(255, 0, 0)
 hostA: rgb(255, 0, 0)
@@ -15,4 +12,7 @@ host: rgb(255, 0, 0)
 nestedHost: rgb(0, 0, 255)
 host: rgb(255, 0, 0)
 host: rgb(255, 255, 0)
+PASS successfullyParsed is true
+
+TEST COMPLETE
 Hello

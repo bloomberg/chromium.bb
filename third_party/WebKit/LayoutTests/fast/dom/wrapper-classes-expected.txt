@@ -3,9 +3,6 @@ This tests wrapper class names for JavaScript.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS successfullyParsed is true
-
-TEST COMPLETE
 Basics
 
 PASS classString(document.createAttribute()) is "Attr"
@@ -645,4 +642,7 @@ PASS tagClassString('xmp') is "HTMLPreElement"
 FAIL tagPrototypeClassString('xmp') should be HTMLPreElementPrototype. Was Object.
 PASS tagConstructorClassString('xmp') is "Function"
 PASS tagConstructorName('xmp') is "HTMLPreElement"
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

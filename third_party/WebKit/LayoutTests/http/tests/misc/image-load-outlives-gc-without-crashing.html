@@ -2,16 +2,14 @@
 <script>
 
 if (window.testRunner) {
-	testRunner.waitUntilDone();
+	window.jsTestIsAsync = true;
 	testRunner.dumpAsText();
 }
 
 function loaded() {
 	// If the garbage collection causes the image load to stop and therefore causes the load event to fire on the main frame, we failed.
 	alert("FAIL: The load event fired");
-	
-	if (window.testRunner)
-		testRunner.notifyDone();
+	finishJSTest();
 }
 
 </script>
@@ -26,8 +24,7 @@ This test has an image inside a div.  It removes the div, forces garbage collect
 
 function finished() {
 	window.stop()
-	if (window.testRunner)
-		testRunner.notifyDone();
+	finishJSTest();
 }
 
 function forceGC() {

@@ -5,9 +5,6 @@ This test checks getBoundingClientRect() on zoomed HTML and SVG elements
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
-PASS successfullyParsed is true
-
-TEST COMPLETE
 Gray rectangles: 100x50
 Green rectangles: 100x50, zoom=200%
 Blue rectangles: 200x100, zoom=50%
@@ -112,6 +109,9 @@ FAIL text3.height.toFixed(2) should be 12.31. Was 14.06.
 FAIL text3.right.toFixed(2) should be 1198.41. Was 1149.22.
 PASS text3.bottom.toFixed(2) is "577.64"
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS successfullyParsed is true
 
 TEST COMPLETE

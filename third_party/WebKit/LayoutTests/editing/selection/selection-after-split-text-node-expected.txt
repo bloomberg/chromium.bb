@@ -7,7 +7,4 @@ PASS selection.toString() is "baz"
 PASS successfullyParsed is true
 
 TEST COMPLETE
-PASS successfullyParsed is true
-
-TEST COMPLETE
 

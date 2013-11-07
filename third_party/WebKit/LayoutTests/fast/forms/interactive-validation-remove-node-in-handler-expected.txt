@@ -3,9 +3,9 @@ Should not crash or have an assertion failure if a node was removed during an "i
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+PASS The form was submitted.
+TEST COMPLETE
 PASS successfullyParsed is true
 
-TEST COMPLETE
-PASS The form was submitted.
 TEST COMPLETE
  
