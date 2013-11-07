@@ -82,12 +82,6 @@
       "default_icon": "common/images/file_types/200/archive.png",
       "file_filters": [
         "filesystem:*.rar",
-        "filesystem:*.tar",
-        "filesystem:*.tar.bz2",
-        "filesystem:*.tar.gz",
-        "filesystem:*.tbz",
-        "filesystem:*.tbz2",
-        "filesystem:*.tgz",
         "filesystem:*.zip"
       ]
     },
