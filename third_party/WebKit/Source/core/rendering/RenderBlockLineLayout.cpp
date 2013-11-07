@@ -2495,7 +2495,7 @@ static bool requiresLineBox(const InlineIterator& it, const LineInfo& lineInfo =
     return notJustWhitespace || isEmptyInline(it.m_obj);
 }
 
-bool RenderBlock::generatesLineBoxesForInlineChild(RenderObject* inlineObj)
+bool RenderBlockFlow::generatesLineBoxesForInlineChild(RenderObject* inlineObj)
 {
     ASSERT(inlineObj->parent() == this);
 

@@ -220,7 +220,7 @@ bool RenderListItem::isEmpty() const
     return lastChild() == m_marker;
 }
 
-static RenderObject* getParentOfFirstLineBox(RenderBlock* curr, RenderObject* marker)
+static RenderObject* getParentOfFirstLineBox(RenderBlockFlow* curr, RenderObject* marker)
 {
     RenderObject* firstChild = curr->firstChild();
     if (!firstChild)
@@ -237,14 +237,14 @@ static RenderObject* getParentOfFirstLineBox(RenderBlock* curr, RenderObject* ma
         if (currChild->isFloating() || currChild->isOutOfFlowPositioned())
             continue;
 
-        if (currChild->isTable() || !currChild->isRenderBlock() || (currChild->isBox() && toRenderBox(currChild)->isWritingModeRoot()))
+        if (!currChild->isRenderBlockFlow() || (currChild->isBox() && toRenderBox(currChild)->isWritingModeRoot()))
             break;
 
         if (curr->isListItem() && inQuirksMode && currChild->node() &&
             (currChild->node()->hasTagName(ulTag)|| currChild->node()->hasTagName(olTag)))
             break;
 
-        RenderObject* lineBox = getParentOfFirstLineBox(toRenderBlock(currChild), marker);
+        RenderObject* lineBox = getParentOfFirstLineBox(toRenderBlockFlow(currChild), marker);
         if (lineBox)
             return lineBox;
     }

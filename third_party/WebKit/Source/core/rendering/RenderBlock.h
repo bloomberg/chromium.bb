@@ -146,8 +146,6 @@ public:
 
     RootInlineBox* createAndAppendRootInlineBox();
 
-    bool generatesLineBoxesForInlineChild(RenderObject*);
-
     void markShapeInsideDescendantsForLayout();
     void markPositionedObjectsForLayout();
     // FIXME: Do we really need this to be virtual? It's just so we can call this on
