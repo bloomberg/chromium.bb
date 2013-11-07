@@ -966,7 +966,15 @@ TEST_F(AcceleratorControllerTest, GlobalAccelerators) {
 #endif
 }
 
-TEST_F(AcceleratorControllerTest, GlobalAcceleratorsToggleAppList) {
+#if defined(OS_WIN) && defined(USE_AURA)
+// Bug 316012.
+#define MAYBE_GlobalAcceleratorsToggleAppList \
+  DISABLED_GlobalAcceleratorsToggleAppList
+#else
+#define MAYBE_GlobalAcceleratorsToggleAppList GlobalAcceleratorsToggleAppList
+#endif
+
+TEST_F(AcceleratorControllerTest, MAYBE_GlobalAcceleratorsToggleAppList) {
   AccessibilityDelegate* delegate =
           ash::Shell::GetInstance()->accessibility_delegate();
   EXPECT_FALSE(ash::Shell::GetInstance()->GetAppListTargetVisibility());
