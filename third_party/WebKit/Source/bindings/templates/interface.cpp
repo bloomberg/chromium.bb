@@ -3,13 +3,20 @@
 
 {##############################################################################}
 {% macro attribute_configuration(attribute) %}
-{"{{attribute.name}}", {{attribute.getter_callback_name}}, {{attribute.setter_callback_name}}, {{attribute.getter_callback_name_for_main_world}}, {{attribute.setter_callback_name_for_main_world}}, {{attribute.wrapper_type_info}}, static_cast<v8::AccessControl>({{attribute.access_control_list | join(' | ')}}), static_cast<v8::PropertyAttribute>({{attribute.property_attributes | join(' | ')}}), 0 /* on instance */}
+{% set access_control = 'static_cast<v8::AccessControl>(%s)' %
+                        ' | '.join(attribute.access_control_list) %}
+{% set property_attribute = 'static_cast<v8::PropertyAttribute>(%s)' %
+                            ' | '.join(attribute.property_attributes) %}
+{"{{attribute.name}}", {{attribute.getter_callback_name}}, {{attribute.setter_callback_name}}, {{attribute.getter_callback_name_for_main_world}}, {{attribute.setter_callback_name_for_main_world}}, {{attribute.wrapper_type_info}}, {{access_control}}, {{property_attribute}}, 0 /* on instance */}
 {%- endmacro %}
 
 
 {##############################################################################}
 {% macro method_configuration(method) %}
-{"{{method.name}}", {{interface_name}}V8Internal::{{method.name}}MethodCallback, 0, {{method.number_of_required_or_variadic_arguments}}}
+{% set callback_name_for_main_world =
+   '%sV8Internal::%sMethodCallbackForMainWorld' % (interface_name, method.name)
+   if method.is_per_world_bindings else '0' %}
+{"{{method.name}}", {{interface_name}}V8Internal::{{method.name}}MethodCallback, {{callback_name_for_main_world}}, {{method.number_of_required_or_variadic_arguments}}}
 {%- endmacro %}
 
 

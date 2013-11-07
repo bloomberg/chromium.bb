@@ -91,6 +91,7 @@ def generate_method(interface, method):
         'is_check_security_for_node': is_check_security_for_node,
         'is_custom': 'Custom' in extended_attributes,
         'is_custom_element_callbacks': is_custom_element_callbacks,
+        'is_per_world_bindings': 'PerWorldBindings' in extended_attributes,
         'is_static': is_static,
         'measure_as': v8_utilities.measure_as(method),  # [MeasureAs]
         'name': name,
@@ -105,6 +106,7 @@ def generate_method(interface, method):
         'property_attributes': property_attributes(method),
         'signature': signature,
         'v8_set_return_value': v8_set_return_value(method, this_cpp_value),
+        'world_suffixes': ['', 'ForMainWorld'] if 'PerWorldBindings' in extended_attributes else [''],  # [PerWorldBindings]
     }
     return contents
 

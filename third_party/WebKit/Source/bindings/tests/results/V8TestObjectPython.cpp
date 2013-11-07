@@ -5275,6 +5275,32 @@ static void perContextEnabledVoidMethodMethodCallback(const v8::FunctionCallback
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void perWorldBindingsVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    imp->perWorldBindingsVoidMethod();
+}
+
+static void perWorldBindingsVoidMethodMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    imp->perWorldBindingsVoidMethod();
+}
+
+static void perWorldBindingsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::perWorldBindingsVoidMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void perWorldBindingsVoidMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::perWorldBindingsVoidMethodMethodForMainWorld(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 } // namespace TestObjectPythonV8Internal
 
 static const V8DOMConfiguration::AttributeConfiguration V8TestObjectPythonAttributes[] = {
@@ -5503,6 +5529,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectPythonMethods[]
     {"deprecatedVoidMethod", TestObjectPythonV8Internal::deprecatedVoidMethodMethodCallback, 0, 0},
     {"implementedAsVoidMethod", TestObjectPythonV8Internal::implementedAsVoidMethodMethodCallback, 0, 0},
     {"measureAsVoidMethod", TestObjectPythonV8Internal::measureAsVoidMethodMethodCallback, 0, 0},
+    {"perWorldBindingsVoidMethod", TestObjectPythonV8Internal::perWorldBindingsVoidMethodMethodCallback, TestObjectPythonV8Internal::perWorldBindingsVoidMethodMethodCallbackForMainWorld, 0},
 };
 
 static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectPythonTemplate(v8::Handle<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)

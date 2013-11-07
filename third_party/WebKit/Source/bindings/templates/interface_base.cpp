@@ -93,11 +93,15 @@ template <typename T> void V8_USE(T) { }
 {# Methods #}
 {% from 'methods.cpp' import generate_method, method_callback with context %}
 {% for method in methods %}
-{% set world_suffix = '' %}
+{% for world_suffix in method.world_suffixes %}
 {% if not method.is_custom %}
-{{generate_method(method)}}
+{{generate_method(method, world_suffix)}}
 {% endif %}
+{% endfor %}
+{# FIXME: merge these two |world_suffix| loops #}
+{% for world_suffix in method.world_suffixes %}
 {{method_callback(method, world_suffix)}}
+{% endfor %}
 {% endfor %}
 } // namespace {{cpp_class_name}}V8Internal
 
