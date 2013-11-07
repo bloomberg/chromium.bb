@@ -56,6 +56,7 @@ Authenticator.prototype = {
         this.continueUrl_.substring(0, this.continueUrl_.indexOf('?')) ||
         this.continueUrl_;
     this.inlineMode_ = params.inlineMode;
+    this.partitionId_ = params.partitionId || '';
 
     document.addEventListener('DOMContentLoaded', this.onPageLoad.bind(this));
     document.addEventListener('enableSAML', this.onEnableSAML_.bind(this));
@@ -128,6 +129,7 @@ Authenticator.prototype = {
 
   loadFrame_: function() {
     var gaiaFrame = $('gaia-frame');
+    gaiaFrame.partition = this.partitionId_;
     gaiaFrame.src = this.getFrameUrl_();
     if (this.inlineMode_) {
       gaiaFrame.addEventListener(

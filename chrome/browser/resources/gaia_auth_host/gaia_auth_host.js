@@ -57,7 +57,8 @@ cr.define('cr.login', function() {
     'hl',            // Language code for the user interface;
     'email',         // Pre-fill the email field in Gaia UI;
     'service',       // Name of Gaia service;
-    'continueUrl'    // Continue url to use;
+    'continueUrl',   // Continue url to use;
+    'partitionId'    // Partition ID for the embedded Gaia webview;
   ];
 
   /**

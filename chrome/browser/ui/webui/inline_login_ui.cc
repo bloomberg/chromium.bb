@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/webui/inline_login_ui.h"
 
+#include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
@@ -90,12 +91,16 @@ class InlineLoginUIOAuth2Delegate
  private:
   content::WebUI* web_ui_;
 };
-#endif // OS_CHROMEOS
+#elif !defined(OS_ANDROID)
+// Global SequenceNumber used for generating unique webview partition IDs.
+base::StaticAtomicSequenceNumber next_partition_id;
+#endif
 
 class InlineLoginUIHandler : public content::WebUIMessageHandler {
  public:
   explicit InlineLoginUIHandler(Profile* profile)
-      : profile_(profile), weak_factory_(this), choose_what_to_sync_(false) {}
+      : profile_(profile), weak_factory_(this), choose_what_to_sync_(false),
+        partition_id_("") {}
   virtual ~InlineLoginUIHandler() {}
 
   // content::WebUIMessageHandler overrides:
@@ -132,7 +137,7 @@ class InlineLoginUIHandler : public content::WebUIMessageHandler {
         enable_inline ? kInlineAuthMode : kDefaultAuthMode);
 
     // Set parameters specific for inline signin flow.
-#if !defined(OS_CHROMEOS)
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
     if (enable_inline) {
       // Set continueUrl param for the inline sign in flow. It should point to
       // the oauth2 auth code URL so that later we can grab the auth code from
@@ -165,6 +170,10 @@ class InlineLoginUIHandler : public content::WebUIMessageHandler {
       net::GetValueForKeyInQuery(current_url, "Email", &email);
       if (!email.empty())
         params.SetString("email", email);
+
+      partition_id_ =
+          "gaia-webview-" + base::IntToString(next_partition_id.GetNext());
+      params.SetString("partitionId", partition_id_);
     }
 #endif
 
@@ -200,7 +209,8 @@ class InlineLoginUIHandler : public content::WebUIMessageHandler {
     content::StoragePartition* partition =
         content::BrowserContext::GetStoragePartitionForSite(
             web_contents->GetBrowserContext(),
-            GURL("chrome-guest://mfffpogegjflfpflabcdkioaeobkgjik/?"));
+            GURL("chrome-guest://mfffpogegjflfpflabcdkioaeobkgjik/?" +
+                 partition_id_));
 
     scoped_refptr<SigninManagerCookieHelper> cookie_helper(
         new SigninManagerCookieHelper(partition->GetURLRequestContext()));
@@ -309,6 +319,8 @@ class InlineLoginUIHandler : public content::WebUIMessageHandler {
   Profile* profile_;
   base::WeakPtrFactory<InlineLoginUIHandler> weak_factory_;
   bool choose_what_to_sync_;
+  // Partition id for the gaia webview;
+  std::string partition_id_;
 
 #if defined(OS_CHROMEOS)
   scoped_ptr<chromeos::OAuth2TokenFetcher> oauth2_token_fetcher_;
