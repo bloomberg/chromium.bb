@@ -56,7 +56,7 @@ void BrowserWindowPropertyManager::UpdateWindowProperties(HWND hwnd) {
   if (profile_manager)
     shortcut_manager = profile_manager->profile_shortcut_manager();
 
-  if (shortcut_manager &&
+  if (!browser->is_app() && shortcut_manager &&
       profile->GetPrefs()->HasPrefPath(prefs::kProfileIconVersion)) {
     const base::FilePath& profile_path = profile->GetPath();
 
