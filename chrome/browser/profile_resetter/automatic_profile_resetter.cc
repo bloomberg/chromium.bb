@@ -57,8 +57,10 @@ namespace {
 const char kAutomaticProfileResetStudyName[] = "AutomaticProfileReset";
 const char kAutomaticProfileResetStudyDryRunGroupName[] = "DryRun";
 const char kAutomaticProfileResetStudyEnabledGroupName[] = "Enabled";
+#if defined(GOOGLE_CHROME_BUILD)
 const char kAutomaticProfileResetStudyProgramParameterName[] = "program";
 const char kAutomaticProfileResetStudyHashSeedParameterName[] = "hash_seed";
+#endif
 
 // How long to wait after start-up before unleashing the evaluation flow.
 const int64 kEvaluationFlowDelayInSeconds = 55;
@@ -133,18 +135,25 @@ bool ShouldPerformLiveRun() {
       kAutomaticProfileResetStudyEnabledGroupName, true);
 }
 
-// Returns whether or not the currently active experiment group prescribes the
-// program and hash seed to use instead of the baked-in ones.
-bool DoesExperimentOverrideProgramAndHashSeed() {
+// If the currently active experiment group prescribes a |program| and
+// |hash_seed| to use instead of the baked-in ones, retrieves those and returns
+// true. Otherwise, returns false.
+bool GetProgramAndHashSeedOverridesFromExperiment(std::string* program,
+                                                  std::string* hash_seed) {
+  DCHECK(program);
+  DCHECK(hash_seed);
 #if defined(GOOGLE_CHROME_BUILD)
   std::map<std::string, std::string> params;
   chrome_variations::GetVariationParams(kAutomaticProfileResetStudyName,
                                         &params);
-  return params.count(kAutomaticProfileResetStudyProgramParameterName) &&
-         params.count(kAutomaticProfileResetStudyHashSeedParameterName);
-#else
-  return false;
+  if (params.count(kAutomaticProfileResetStudyProgramParameterName) &&
+      params.count(kAutomaticProfileResetStudyHashSeedParameterName)) {
+    program->swap(params[kAutomaticProfileResetStudyProgramParameterName]);
+    hash_seed->swap(params[kAutomaticProfileResetStudyHashSeedParameterName]);
+    return true;
+  }
 #endif
+  return false;
 }
 
 // Deep-copies all preferences in |source| to a sub-tree named |value_tree_key|
@@ -209,24 +218,19 @@ void AutomaticProfileResetter::Initialize() {
     return;
   }
 
-  ui::ResourceBundle& resources(ui::ResourceBundle::GetSharedInstance());
-  if (DoesExperimentOverrideProgramAndHashSeed()) {
-    program_ = chrome_variations::GetVariationParamValue(
-        kAutomaticProfileResetStudyName,
-        kAutomaticProfileResetStudyProgramParameterName);
-    hash_seed_ = chrome_variations::GetVariationParamValue(
-        kAutomaticProfileResetStudyName,
-        kAutomaticProfileResetStudyHashSeedParameterName);
-  } else if (ShouldPerformLiveRun()) {
-    program_ = resources.GetRawDataResource(
-        IDR_AUTOMATIC_PROFILE_RESET_RULES).as_string();
-    hash_seed_ = resources.GetRawDataResource(
-        IDR_AUTOMATIC_PROFILE_RESET_HASH_SEED).as_string();
-  } else {  // ShouldPerformDryRun()
-    program_ = resources.GetRawDataResource(
-        IDR_AUTOMATIC_PROFILE_RESET_RULES_DRY).as_string();
-    hash_seed_ = resources.GetRawDataResource(
-        IDR_AUTOMATIC_PROFILE_RESET_HASH_SEED_DRY).as_string();
+  if (!GetProgramAndHashSeedOverridesFromExperiment(&program_, &hash_seed_)) {
+    ui::ResourceBundle& resources(ui::ResourceBundle::GetSharedInstance());
+    if (ShouldPerformLiveRun()) {
+      program_ = resources.GetRawDataResource(
+          IDR_AUTOMATIC_PROFILE_RESET_RULES).as_string();
+      hash_seed_ = resources.GetRawDataResource(
+          IDR_AUTOMATIC_PROFILE_RESET_HASH_SEED).as_string();
+    } else {  // ShouldPerformDryRun()
+      program_ = resources.GetRawDataResource(
+          IDR_AUTOMATIC_PROFILE_RESET_RULES_DRY).as_string();
+      hash_seed_ = resources.GetRawDataResource(
+          IDR_AUTOMATIC_PROFILE_RESET_HASH_SEED_DRY).as_string();
+    }
   }
 
   delegate_.reset(new AutomaticProfileResetterDelegateImpl(
