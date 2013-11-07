@@ -22,6 +22,7 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
+#include "chrome/browser/chromeos/boot_times_loader.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/kiosk_mode/kiosk_mode_settings.h"
 #include "chrome/browser/chromeos/login/hwid_checker.h"
@@ -1297,6 +1298,10 @@ void SigninScreenHandler::HandleRemoveUser(const std::string& email) {
 }
 
 void SigninScreenHandler::HandleShowAddUser(const base::ListValue* args) {
+  TRACE_EVENT_ASYNC_STEP_INTO0("ui",
+                               "ShowLoginWebUI",
+                               LoginDisplayHostImpl::kShowLoginWebUIid,
+                               "ShowAddUser");
   email_.clear();
   // |args| can be null if it's OOBE.
   if (args)
@@ -1395,6 +1400,11 @@ void SigninScreenHandler::FillUserDictionary(User* user,
 void SigninScreenHandler::SendUserList(bool animated) {
   if (!delegate_)
     return;
+  TRACE_EVENT_ASYNC_STEP_INTO0("ui",
+                               "ShowLoginWebUI",
+                               LoginDisplayHostImpl::kShowLoginWebUIid,
+                               "SendUserList");
+  BootTimesLoader::Get()->RecordCurrentStats("login-send-user-list");
 
   size_t max_non_owner_users = kMaxUsers - 1;
   size_t non_owner_count = 0;
