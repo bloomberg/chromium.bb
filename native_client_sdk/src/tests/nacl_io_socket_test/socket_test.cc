@@ -552,11 +552,13 @@ TEST_F(SocketTestTCP, Listen) {
   // Recv greeting from client and send reply
   char inbuf[512];
   ASSERT_EQ(greeting_len, recv(new_socket, inbuf, sizeof(inbuf), 0));
+  inbuf[greeting_len] = 0;
   ASSERT_STREQ(inbuf, client_greeting);
   ASSERT_EQ(reply_len, send(new_socket, server_reply, reply_len, 0));
 
   // Recv reply on client socket
   ASSERT_EQ(reply_len, recv(client_sock, inbuf, sizeof(inbuf), 0));
+  inbuf[reply_len] = 0;
   ASSERT_STREQ(inbuf, server_reply);
 
   ASSERT_EQ(0, close(new_socket));
