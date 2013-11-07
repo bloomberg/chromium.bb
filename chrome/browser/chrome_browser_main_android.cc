@@ -44,7 +44,6 @@ void ChromeBrowserMainPartsAndroid::PreProfileInit() {
           switches::kEnableCrashReporterForTesting);
 
   if (breakpad_enabled) {
-    breakpad::InitCrashReporter();
     base::FilePath crash_dump_dir;
     PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dump_dir);
     crash_dump_manager_.reset(new breakpad::CrashDumpManager(crash_dump_dir));

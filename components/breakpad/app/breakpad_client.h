@@ -119,10 +119,10 @@ class BreakpadClient {
   // Returns true if running in unattended mode (for automated testing).
   virtual bool IsRunningUnattended();
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
   // Returns true if the user has given consent to collect stats.
   virtual bool GetCollectStatsConsent();
 
+#if defined(OS_WIN) || defined(OS_MACOSX)
   // Returns true if breakpad is enforced via management policies. In that
   // case, |breakpad_enabled| is set to the value enforced by policies.
   virtual bool ReportingIsEnforcedByPolicy(bool* breakpad_enabled);

@@ -702,17 +702,18 @@ void ChromeMainDelegate::PreSandboxStartup() {
   }
 
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
-  // Needs to be called after we have chrome::DIR_USER_DATA.  BrowserMain
-  // sets this up for the browser process in a different manner. Zygotes
-  // need to call InitCrashReporter() in RunZygote().
-  if (!process_type.empty() && process_type != switches::kZygoteProcess) {
+  // Zygote needs to call InitCrashReporter() in RunZygote().
+  if (process_type != switches::kZygoteProcess) {
 #if defined(OS_ANDROID)
-    breakpad::InitNonBrowserCrashReporterForAndroid();
-#else
+    if (process_type.empty())
+      breakpad::InitCrashReporter();
+    else
+      breakpad::InitNonBrowserCrashReporterForAndroid();
+#else  // !defined(OS_ANDROID)
     breakpad::InitCrashReporter();
-#endif
+#endif  // defined(OS_ANDROID)
   }
-#endif
+#endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
 
   // After all the platform Breakpads have been initialized, store the command
   // line for crash reporting.

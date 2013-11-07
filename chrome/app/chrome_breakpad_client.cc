@@ -20,6 +20,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/crash_keys.h"
 #include "chrome/common/env_vars.h"
+#include "chrome/installer/util/google_update_settings.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -40,12 +41,13 @@
 #include "chrome/common/dump_without_crashing.h"
 #endif
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
-#include "chrome/installer/util/google_update_settings.h"
-#endif
-
 #if defined(OS_ANDROID)
 #include "chrome/common/descriptors_android.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "chrome/common/chrome_version_info.h"
+#include "chromeos/chromeos_switches.h"
 #endif
 
 namespace chrome {
@@ -342,11 +344,27 @@ bool ChromeBreakpadClient::IsRunningUnattended() {
   return env->HasVar(env_vars::kHeadless);
 }
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
 bool ChromeBreakpadClient::GetCollectStatsConsent() {
-  return GoogleUpdateSettings::GetCollectStatsConsent();
-}
+  // Convert #define to a variable so that we can use if() rather than
+  // #if below and so at least compile-test the Chrome code in
+  // Chromium builds.
+#if defined(GOOGLE_CHROME_BUILD)
+  bool is_chrome_build = true;
+#else
+  bool is_chrome_build = false;
 #endif
+
+#if defined(OS_CHROMEOS)
+  bool is_guest_session = CommandLine::ForCurrentProcess()->HasSwitch(
+      chromeos::switches::kGuestSession);
+  bool is_stable_channel =
+      chrome::VersionInfo::GetChannel() == chrome::VersionInfo::CHANNEL_STABLE;
+
+  if (is_guest_session && is_stable_channel)
+    return false;
+#endif
+  return is_chrome_build && GoogleUpdateSettings::GetCollectStatsConsent();
+}
 
 #if defined(OS_ANDROID)
 int ChromeBreakpadClient::GetAndroidMinidumpDescriptor() {

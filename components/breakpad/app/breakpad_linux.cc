@@ -1455,6 +1455,19 @@ void InitCrashReporter() {
   const std::string process_type =
       parsed_command_line.GetSwitchValueASCII(switches::kProcessType);
   if (process_type.empty()) {
+    bool enable_breakpad = GetBreakpadClient()->GetCollectStatsConsent() ||
+                           GetBreakpadClient()->IsRunningUnattended();
+    enable_breakpad &=
+        !parsed_command_line.HasSwitch(switches::kDisableBreakpad);
+    if (!enable_breakpad) {
+      enable_breakpad = parsed_command_line.HasSwitch(
+          switches::kEnableCrashReporterForTesting);
+    }
+    if (!enable_breakpad) {
+      VLOG(1) << "Breakpad disabled";
+      return;
+    }
+
     EnableCrashDumping(GetBreakpadClient()->IsRunningUnattended());
   } else if (process_type == switches::kRendererProcess ||
              process_type == switches::kPluginProcess ||

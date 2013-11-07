@@ -54,9 +54,9 @@ class ChromeBreakpadClient : public breakpad::BreakpadClient {
 
   virtual bool IsRunningUnattended() OVERRIDE;
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
   virtual bool GetCollectStatsConsent() OVERRIDE;
 
+#if defined(OS_WIN) || defined(OS_MACOSX)
   virtual bool ReportingIsEnforcedByPolicy(bool* breakpad_enabled) OVERRIDE;
 #endif
 

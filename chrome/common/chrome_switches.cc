@@ -1561,17 +1561,10 @@ const char kEnableCast[]                    = "enable-cast";
 const char kOpenAsh[]                       = "open-ash";
 #endif
 
-#if defined(OS_POSIX)
-// Used for turning on Breakpad crash reporting in a debug environment where
-// crash reporting is typically compiled but disabled.
-const char kEnableCrashReporterForTesting[] =
-    "enable-crash-reporter-for-testing";
-
-#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
 // Specifies which password store to use (detect, default, gnome, kwallet).
 const char kPasswordStore[]                 = "password-store";
 #endif
-#endif  // OS_POSIX
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 // Triggers migration of user data directory to another directory

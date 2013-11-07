@@ -47,18 +47,6 @@
 #endif
 #endif
 
-#if defined(OS_MACOSX)
-#include "components/breakpad/app/breakpad_mac.h"
-#endif
-
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
-#include "components/breakpad/app/breakpad_linux.h"
-#endif
-
-#if defined(OS_WIN)
-#include "components/breakpad/app/breakpad_win.h"
-#endif
-
 namespace content {
 
 namespace {
@@ -134,16 +122,13 @@ void ShellBrowserMainParts::PreEarlyInitialization() {
 }
 
 void ShellBrowserMainParts::PreMainMessageLoopRun() {
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
+#if defined(OS_ANDROID)
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableCrashReporter)) {
-    breakpad::InitCrashReporter();
-#if defined(OS_ANDROID)
     base::FilePath crash_dumps_dir =
         CommandLine::ForCurrentProcess()->GetSwitchValuePath(
             switches::kCrashDumpsDir);
     crash_dump_manager_.reset(new breakpad::CrashDumpManager(crash_dumps_dir));
-#endif
   }
 #endif
   net_log_.reset(new ShellNetLog());

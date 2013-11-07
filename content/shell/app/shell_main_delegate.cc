@@ -206,9 +206,12 @@ void ShellMainDelegate::PreSandboxStartup() {
     std::string process_type =
         CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
             switches::kProcessType);
-    if (!process_type.empty() && process_type != switches::kZygoteProcess) {
+    if (process_type != switches::kZygoteProcess) {
 #if defined(OS_ANDROID)
-      breakpad::InitNonBrowserCrashReporterForAndroid();
+      if (process_type.empty())
+        breakpad::InitCrashReporter();
+      else
+        breakpad::InitNonBrowserCrashReporterForAndroid();
 #else
       breakpad::InitCrashReporter();
 #endif

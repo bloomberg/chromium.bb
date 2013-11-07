@@ -432,11 +432,8 @@ extern const char kEnableCast[];
 extern const char kOpenAsh[];
 #endif
 
-#if defined(OS_POSIX)
-extern const char kEnableCrashReporterForTesting[];
-#if !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_CHROMEOS)
 extern const char kPasswordStore[];
-#endif
 #endif
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)

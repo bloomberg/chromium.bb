@@ -103,11 +103,11 @@ bool BreakpadClient::IsRunningUnattended() {
   return true;
 }
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
 bool BreakpadClient::GetCollectStatsConsent() {
   return false;
 }
 
+#if defined(OS_WIN) || defined(OS_MACOSX)
 bool BreakpadClient::ReportingIsEnforcedByPolicy(bool* breakpad_enabled) {
   return false;
 }
