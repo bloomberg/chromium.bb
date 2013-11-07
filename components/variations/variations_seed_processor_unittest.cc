@@ -73,7 +73,23 @@ bool IsFieldTrialActive(const std::string& trial_name) {
 
 }  // namespace
 
-TEST(VariationsSeedProcessorTest, CheckStudyChannel) {
+class VariationsSeedProcessorTest : public ::testing::Test {
+ public:
+  VariationsSeedProcessorTest() {
+  }
+
+  virtual ~VariationsSeedProcessorTest() {
+    // Ensure that the maps are cleared between tests, since they are stored as
+    // process singletons.
+    testing::ClearAllVariationIDs();
+    testing::ClearAllVariationParams();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(VariationsSeedProcessorTest);
+};
+
+TEST_F(VariationsSeedProcessorTest, CheckStudyChannel) {
   VariationsSeedProcessor seed_processor;
 
   const Study_Channel channels[] = {
@@ -119,7 +135,7 @@ TEST(VariationsSeedProcessorTest, CheckStudyChannel) {
   }
 }
 
-TEST(VariationsSeedProcessorTest, CheckStudyLocale) {
+TEST_F(VariationsSeedProcessorTest, CheckStudyLocale) {
   VariationsSeedProcessor seed_processor;
 
   struct {
@@ -152,7 +168,7 @@ TEST(VariationsSeedProcessorTest, CheckStudyLocale) {
   }
 }
 
-TEST(VariationsSeedProcessorTest, CheckStudyPlatform) {
+TEST_F(VariationsSeedProcessorTest, CheckStudyPlatform) {
   VariationsSeedProcessor seed_processor;
 
   const Study_Platform platforms[] = {
@@ -204,7 +220,7 @@ TEST(VariationsSeedProcessorTest, CheckStudyPlatform) {
   }
 }
 
-TEST(VariationsSeedProcessorTest, CheckStudyStartDate) {
+TEST_F(VariationsSeedProcessorTest, CheckStudyStartDate) {
   VariationsSeedProcessor seed_processor;
 
   const base::Time now = base::Time::Now();
@@ -231,7 +247,7 @@ TEST(VariationsSeedProcessorTest, CheckStudyStartDate) {
   }
 }
 
-TEST(VariationsSeedProcessorTest, CheckStudyVersion) {
+TEST_F(VariationsSeedProcessorTest, CheckStudyVersion) {
   VariationsSeedProcessor seed_processor;
 
   const struct {
@@ -323,7 +339,7 @@ TEST(VariationsSeedProcessorTest, CheckStudyVersion) {
 }
 
 // Test that the group for kForcingFlag1 is forced.
-TEST(VariationsSeedProcessorTest, ForceGroupWithFlag1) {
+TEST_F(VariationsSeedProcessorTest, ForceGroupWithFlag1) {
   CommandLine::ForCurrentProcess()->AppendSwitch(kForcingFlag1);
 
   base::FieldTrialList field_trial_list(NULL);
@@ -336,7 +352,7 @@ TEST(VariationsSeedProcessorTest, ForceGroupWithFlag1) {
 }
 
 // Test that the group for kForcingFlag2 is forced.
-TEST(VariationsSeedProcessorTest, ForceGroupWithFlag2) {
+TEST_F(VariationsSeedProcessorTest, ForceGroupWithFlag2) {
   CommandLine::ForCurrentProcess()->AppendSwitch(kForcingFlag2);
 
   base::FieldTrialList field_trial_list(NULL);
@@ -348,7 +364,7 @@ TEST(VariationsSeedProcessorTest, ForceGroupWithFlag2) {
             base::FieldTrialList::FindFullName(kFlagStudyName));
 }
 
-TEST(VariationsSeedProcessorTest, ForceGroup_ChooseFirstGroupWithFlag) {
+TEST_F(VariationsSeedProcessorTest, ForceGroup_ChooseFirstGroupWithFlag) {
   // Add the flag to the command line arguments so the flag group is forced.
   CommandLine::ForCurrentProcess()->AppendSwitch(kForcingFlag1);
   CommandLine::ForCurrentProcess()->AppendSwitch(kForcingFlag2);
@@ -362,7 +378,7 @@ TEST(VariationsSeedProcessorTest, ForceGroup_ChooseFirstGroupWithFlag) {
             base::FieldTrialList::FindFullName(kFlagStudyName));
 }
 
-TEST(VariationsSeedProcessorTest, ForceGroup_DontChooseGroupWithFlag) {
+TEST_F(VariationsSeedProcessorTest, ForceGroup_DontChooseGroupWithFlag) {
   base::FieldTrialList field_trial_list(NULL);
 
   // The two flag groups are given high probability, which would normally make
@@ -374,7 +390,7 @@ TEST(VariationsSeedProcessorTest, ForceGroup_DontChooseGroupWithFlag) {
             base::FieldTrialList::FindFullName(kFlagStudyName));
 }
 
-TEST(VariationsSeedProcessorTest, IsStudyExpired) {
+TEST_F(VariationsSeedProcessorTest, IsStudyExpired) {
   VariationsSeedProcessor seed_processor;
 
   const base::Time now = base::Time::Now();
@@ -401,7 +417,8 @@ TEST(VariationsSeedProcessorTest, IsStudyExpired) {
   }
 }
 
-TEST(VariationsSeedProcessorTest, NonExpiredStudyPrioritizedOverExpiredStudy) {
+TEST_F(VariationsSeedProcessorTest,
+       NonExpiredStudyPrioritizedOverExpiredStudy) {
   VariationsSeedProcessor seed_processor;
 
   const std::string kTrialName = "A";
@@ -444,7 +461,7 @@ TEST(VariationsSeedProcessorTest, NonExpiredStudyPrioritizedOverExpiredStudy) {
   }
 }
 
-TEST(VariationsSeedProcessorTest, ValidateStudy) {
+TEST_F(VariationsSeedProcessorTest, ValidateStudy) {
   VariationsSeedProcessor seed_processor;
 
   Study study;
@@ -514,7 +531,7 @@ TEST(VariationsSeedProcessorTest, ValidateStudy) {
   EXPECT_FALSE(valid);
 }
 
-TEST(VariationsSeedProcessorTest, VariationParams) {
+TEST_F(VariationsSeedProcessorTest, VariationParams) {
   base::FieldTrialList field_trial_list(NULL);
   VariationsSeedProcessor seed_processor;
 
@@ -539,7 +556,21 @@ TEST(VariationsSeedProcessorTest, VariationParams) {
   EXPECT_EQ(std::string(), GetVariationParamValue("Study2", "x"));
 }
 
-TEST(VariationsSeedProcessorTest, StartsActive) {
+TEST_F(VariationsSeedProcessorTest, VariationParamsWithForcingFlag) {
+  Study study = CreateStudyWithFlagGroups(100, 0, 0);
+  ASSERT_EQ(kForcingFlag1, study.experiment(1).forcing_flag());
+  Study_Experiment_Param* param = study.mutable_experiment(1)->add_param();
+  param->set_name("x");
+  param->set_value("y");
+
+  CommandLine::ForCurrentProcess()->AppendSwitch(kForcingFlag1);
+  base::FieldTrialList field_trial_list(NULL);
+  VariationsSeedProcessor().CreateTrialFromStudy(study, false);
+  EXPECT_EQ(kFlagGroup1Name, base::FieldTrialList::FindFullName(study.name()));
+  EXPECT_EQ("y", GetVariationParamValue(study.name(), "x"));
+}
+
+TEST_F(VariationsSeedProcessorTest, StartsActive) {
   base::FieldTrialList field_trial_list(NULL);
 
   VariationsSeed seed;

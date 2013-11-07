@@ -48,6 +48,8 @@ class VariationsSeedProcessor {
   FRIEND_TEST_ALL_PREFIXES(VariationsSeedProcessorTest, IsStudyExpired);
   FRIEND_TEST_ALL_PREFIXES(VariationsSeedProcessorTest, ValidateStudy);
   FRIEND_TEST_ALL_PREFIXES(VariationsSeedProcessorTest, VariationParams);
+  FRIEND_TEST_ALL_PREFIXES(VariationsSeedProcessorTest,
+                           VariationParamsWithForcingFlag);
 
   // Checks whether a study is applicable for the given |channel| per |filter|.
   bool CheckStudyChannel(const Study_Filter& filter, Study_Channel channel);

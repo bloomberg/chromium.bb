@@ -43,6 +43,18 @@ base::Time ConvertStudyDateToBaseTime(int64 date_time) {
   return base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(date_time);
 }
 
+// Associates the variations params of |experiment|, if present.
+void RegisterExperimentParams(const Study& study,
+                              const Study_Experiment& experiment) {
+  std::map<std::string, std::string> params;
+  for (int i = 0; i < experiment.param_size(); ++i) {
+    if (experiment.param(i).has_name() && experiment.param(i).has_value())
+      params[experiment.param(i).name()] = experiment.param(i).value();
+  }
+  if (!params.empty())
+    AssociateVariationParams(study.name(), experiment.name(), params);
+}
+
 }  // namespace
 
 VariationsSeedProcessor::VariationsSeedProcessor() {
@@ -168,6 +180,7 @@ void VariationsSeedProcessor::CreateTrialFromStudy(const Study& study,
     if (experiment.has_forcing_flag() &&
         command_line->HasSwitch(experiment.forcing_flag())) {
       base::FieldTrialList::CreateFieldTrial(study.name(), experiment.name());
+      RegisterExperimentParams(study, experiment);
       DVLOG(1) << "Trial " << study.name() << " forced by flag: "
                << experiment.forcing_flag();
       return;
@@ -195,14 +208,7 @@ void VariationsSeedProcessor::CreateTrialFromStudy(const Study& study,
 
   for (int i = 0; i < study.experiment_size(); ++i) {
     const Study_Experiment& experiment = study.experiment(i);
-
-    std::map<std::string, std::string> params;
-    for (int j = 0; j < experiment.param_size(); j++) {
-      if (experiment.param(j).has_name() && experiment.param(j).has_value())
-        params[experiment.param(j).name()] = experiment.param(j).value();
-    }
-    if (!params.empty())
-      AssociateVariationParams(study.name(), experiment.name(), params);
+    RegisterExperimentParams(study, experiment);
 
     // Groups with flags can't be selected randomly, so we don't add them to
     // the field trial.

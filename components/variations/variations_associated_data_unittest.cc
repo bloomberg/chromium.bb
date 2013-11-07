@@ -55,6 +55,7 @@ class VariationsAssociatedDataTest : public ::testing::Test {
     // Ensure that the maps are cleared between tests, since they are stored as
     // process singletons.
     testing::ClearAllVariationIDs();
+    testing::ClearAllVariationParams();
   }
 
  private:
