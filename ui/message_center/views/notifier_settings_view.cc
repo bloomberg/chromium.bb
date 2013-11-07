@@ -469,6 +469,8 @@ void NotifierSettingsView::NotifierButton::GridChanged(bool has_learn_more,
   layout->AddView(name_view_);
   if (has_learn_more)
     layout->AddView(learn_more_);
+
+  Layout();
 }
 
 NotifierSettingsView::NotifierSettingsView(NotifierSettingsProvider* provider)
