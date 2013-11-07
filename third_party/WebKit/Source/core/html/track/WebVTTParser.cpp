@@ -135,7 +135,18 @@ void WebVTTParser::getNewRegions(Vector<RefPtr<VTTRegion> >& outputRegions)
 void WebVTTParser::parseBytes(const char* data, unsigned length)
 {
     String textData = m_decoder->decode(data, length);
+    parse(textData);
+}
 
+void WebVTTParser::flush()
+{
+    String textData = m_decoder->flush();
+    parse(textData);
+    flushPendingCue();
+}
+
+void WebVTTParser::parse(const String& textData)
+{
     // 4.8.10.13.3 WHATWG WebVTT Parser algorithm.
     // 1-3 - Initial setup.
     unsigned position = 0;
@@ -191,7 +202,7 @@ void WebVTTParser::parseBytes(const char* data, unsigned length)
 
         case CueText:
             // 41-53 - Collect the cue text, create a cue, and add it to the output.
-            m_state = collectCueText(line, position >= textData.length());
+            m_state = collectCueText(line);
             break;
 
         case BadCue:
@@ -200,6 +211,13 @@ void WebVTTParser::parseBytes(const char* data, unsigned length)
             break;
         }
     }
+}
+
+void WebVTTParser::flushPendingCue()
+{
+    // If we're in the CueText state when we run out of data, we emit the pending cue.
+    if (m_state == CueText)
+        createNewCue();
 }
 
 bool WebVTTParser::hasRequiredFileIdentifier(const String& line)
@@ -281,7 +299,7 @@ WebVTTParser::ParseState WebVTTParser::collectTimingsAndSettings(const String& l
     return CueText;
 }
 
-WebVTTParser::ParseState WebVTTParser::collectCueText(const String& line, bool isAtEnd)
+WebVTTParser::ParseState WebVTTParser::collectCueText(const String& line)
 {
     if (line.isEmpty()) {
         createNewCue();
@@ -290,9 +308,6 @@ WebVTTParser::ParseState WebVTTParser::collectCueText(const String& line, bool i
     if (!m_currentContent.isEmpty())
         m_currentContent.append("\n");
     m_currentContent.append(line);
-
-    if (isAtEnd)
-        createNewCue();
 
     return CueText;
 }

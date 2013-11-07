@@ -105,6 +105,7 @@ public:
 
     // Input data to the parser to parse.
     void parseBytes(const char* data, unsigned length);
+    void flush();
 
     // Transfers ownership of last parsed cues to caller.
     void getNewCues(Vector<RefPtr<TextTrackCue> >&);
@@ -116,10 +117,12 @@ private:
     Document* m_document;
     ParseState m_state;
 
+    void parse(const String& textData);
+    void flushPendingCue();
     bool hasRequiredFileIdentifier(const String& line);
     ParseState collectCueId(const String&);
     ParseState collectTimingsAndSettings(const String&);
-    ParseState collectCueText(const String&, bool);
+    ParseState collectCueText(const String&);
     ParseState ignoreBadCue(const String&);
 
     void createNewCue();
