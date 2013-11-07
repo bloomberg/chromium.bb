@@ -16,6 +16,7 @@
 class GURL;
 
 namespace base {
+class FilePath;
 class Value;
 }  // namespace base
 
@@ -120,6 +121,10 @@ ConvertFileListToResourceList(const google_apis::FileList& file_list);
 // Converts ChangeList to ResourceList.
 scoped_ptr<google_apis::ResourceList>
 ConvertChangeListToResourceList(const google_apis::ChangeList& change_list);
+
+// Returns the (base-16 encoded) MD5 digest of the file content at |file_path|,
+// or an empty string if an error is found.
+std::string GetMd5Digest(const base::FilePath& file_path);
 
 // The resource ID for the root directory for WAPI is defined in the spec:
 // https://developers.google.com/google-apps/documents-list/

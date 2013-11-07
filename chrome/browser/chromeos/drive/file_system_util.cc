@@ -11,11 +11,9 @@
 #include "base/bind_helpers.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
-#include "base/files/scoped_platform_file_closer.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
-#include "base/md5.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/prefs/pref_service.h"
@@ -372,42 +370,6 @@ GURL ReadUrlFromGDocFile(const base::FilePath& file_path) {
 
 std::string ReadResourceIdFromGDocFile(const base::FilePath& file_path) {
   return ReadStringFromGDocFile(file_path, "resource_id");
-}
-
-std::string GetMd5Digest(const base::FilePath& file_path) {
-  const int kBufferSize = 512 * 1024;  // 512kB.
-
-  base::PlatformFile file = base::CreatePlatformFile(
-      file_path, base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ,
-      NULL, NULL);
-  if (file == base::kInvalidPlatformFileValue)
-    return std::string();
-  base::ScopedPlatformFileCloser file_closer(&file);
-
-  base::MD5Context context;
-  base::MD5Init(&context);
-
-  scoped_ptr<char[]> buffer(new char[kBufferSize]);
-  while (true) {
-    int result = base::ReadPlatformFileCurPosNoBestEffort(
-        file, buffer.get(), kBufferSize);
-
-    if (result < 0) {
-      // Found an error.
-      return std::string();
-    }
-
-    if (result == 0) {
-      // End of file.
-      break;
-    }
-
-    base::MD5Update(&context, base::StringPiece(buffer.get(), result));
-  }
-
-  base::MD5Digest digest;
-  base::MD5Final(&digest, &context);
-  return MD5DigestToBase16(digest);
 }
 
 bool IsDriveEnabledForProfile(Profile* profile) {

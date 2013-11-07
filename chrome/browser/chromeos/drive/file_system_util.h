@@ -198,10 +198,6 @@ GURL ReadUrlFromGDocFile(const base::FilePath& file_path);
 // Reads resource ID from a GDoc file.
 std::string ReadResourceIdFromGDocFile(const base::FilePath& file_path);
 
-// Returns the (base-16 encoded) MD5 digest of the file content at |file_path|,
-// or an empty string if an error is found.
-std::string GetMd5Digest(const base::FilePath& file_path);
-
 // Returns true if Drive is enabled for the given Profile.
 bool IsDriveEnabledForProfile(Profile* profile);
 

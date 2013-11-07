@@ -7,7 +7,6 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
-#include "base/md5.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/google_apis/test_util.h"
@@ -292,17 +291,6 @@ TEST(FileSystemUtilTest, GDocFile) {
   EXPECT_FALSE(HasGDocFileExtension(file));
   EXPECT_TRUE(ReadUrlFromGDocFile(file).is_empty());
   EXPECT_TRUE(ReadResourceIdFromGDocFile(file).empty());
-}
-
-TEST(FileSystemUtilTest, GetMd5Digest) {
-  base::ScopedTempDir temp_dir;
-  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-
-  base::FilePath path = temp_dir.path().AppendASCII("test.txt");
-  const char kTestData[] = "abcdefghijklmnopqrstuvwxyz0123456789";
-  ASSERT_TRUE(google_apis::test_util::WriteStringToFile(path, kTestData));
-
-  EXPECT_EQ(base::MD5String(kTestData), GetMd5Digest(path));
 }
 
 }  // namespace util
