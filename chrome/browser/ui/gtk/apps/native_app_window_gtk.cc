@@ -330,12 +330,13 @@ GdkFilterReturn NativeAppWindowGtk::OnXEvent(GdkXEvent* gdk_x_event,
                   atom_list.end(),
                   atom_cache_.GetAtom("_NET_WM_STATE_HIDDEN"));
 
+    GdkWindowState previous_state = state_;
     state_ = (it != atom_list.end()) ? GDK_WINDOW_STATE_ICONIFIED :
         static_cast<GdkWindowState>(state_ & ~GDK_WINDOW_STATE_ICONIFIED);
 
-    // TODO(mlamouri): we don't need to send a change event all the time here.
-    // Only when |state_| has actually changed.
-    shell_window_->OnNativeWindowChanged();
+    if (previous_state != state_) {
+      shell_window_->OnNativeWindowChanged();
+    }
   }
 
   return GDK_FILTER_CONTINUE;
