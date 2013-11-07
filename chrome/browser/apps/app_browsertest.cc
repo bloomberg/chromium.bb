@@ -400,12 +400,6 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, Restrictions) {
   ASSERT_TRUE(RunPlatformAppTest("platform_apps/restrictions")) << message_;
 }
 
-// Tests that platform apps can use the chrome.app.window.* API.
-// It is flaky: http://crbug.com/223467
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DISABLED_WindowsApi) {
-  ASSERT_TRUE(RunPlatformAppTest("platform_apps/windows_api")) << message_;
-}
-
 // Tests that extensions can't use platform-app-only APIs.
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, PlatformAppsOnly) {
   ASSERT_TRUE(RunExtensionTestIgnoreManifestWarnings(
