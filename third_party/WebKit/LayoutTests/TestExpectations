@@ -9,6 +9,7 @@ crbug.com/273119 [ Win ] inspector/styles/styles-new-API.html [ Pass Failure ]
 crbug.com/258949 fast/filesystem/workers/file-writer-truncate-extend.html [ Failure Pass ]
 
 crbug.com/307782 [ Win ] http/tests/cache/stopped-revalidation.html [ Pass Timeout ]
+crbug.com/316146 [ XP ] http/tests/cache/cached-main-resource.html [ Pass Timeout ]
 
 # Transient - XHR mixed content type revert will be restored.
 crbug.com/305303 http/tests/security/mixedContent/insecure-sync-post-xhr-allowed.html [ Failure Pass ]
@@ -229,6 +230,7 @@ crbug.com/285976 http/tests/serviceworker/registration.html [ NeedsManualRebasel
 
 crbug.com/237270 [ Win ] http/tests/history/replacestate-post-to-get-2.html [ Pass Timeout ]
 crbug.com/237270 [ Win ] http/tests/history/replacestate-post-to-get.html [ Pass Timeout ]
+crbug.com/316147 [ Win ] http/tests/history/back-to-post.html [ Failure Pass ]
 crbug.com/237270 http/tests/images/jpeg-partial-load.html [ Pass Timeout ]
 crbug.com/237270 http/tests/images/png-partial-load.html [ Pass Timeout ]
 crbug.com/237270 http/tests/images/png-partial-load-no-alpha.html [ Pass Timeout ]
@@ -312,6 +314,7 @@ crbug.com/268111 [ Win7 Release ] http/tests/appcache/online-whitelist.html [ Fa
 # crbug.com/268246 http/tests/inspector/search/scripts-search-scope.html [ Pass Failure ]
 
 crbug.com/268588 [ Release ] http/tests/w3c/webperf/submission/Google/HighResolutionTime/worker-shared-basic.html [ Failure Pass ]
+crbug.com/316148 [ Win ] http/tests/w3c/webperf/approved/UserTiming/idlharness.html [ Pass Crash ]
 
 crbug.com/268692 [ SnowLeopard ] svg/custom/foreign-object-skew.svg [ ImageOnlyFailure Pass ]
 
@@ -477,6 +480,7 @@ crbug.com/304841 [ Win ] inspector/styles/override-screen-size.html [ Failure ]
 
 # Complex text failures on XP (likely caused by r158845).
 crbug.com/305290 [ XP ] fast/text/international/plane2.html [ Failure ]
+crbug.com/316145 [ XP ] fast/text/justify-ideograph-complex.html [ Failure Pass ]
 
 crbug.com/306249 media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]
 
@@ -508,6 +512,7 @@ crbug.com/311301 fast/history/history_reload.html [ Failure Pass ]
 
 crbug.com/311429 [ Mac ] fast/images/png-suite/test.html [ ImageOnlyFailure Pass ]
 crbug.com/311429 [ Mac ] virtual/deferred/fast/images/png-suite/test.html [ ImageOnlyFailure Pass ]
+crbug.com/316151 [ Win ] virtual/deferred/fast/images/2-comp.html [ Pass Timeout ]
 
 crbug.com/311467 [ Win ] http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-simple.html [ Failure Timeout Pass ]
 
@@ -536,6 +541,7 @@ crbug.com/313338 inspector/debugger/debugger-proto-property.html [ Pass Timeout 
 crbug.com/312925 inspector-protocol/heap-profiler/heap-snapshot-with-detached-dom-tree.html [ Failure Pass ]
 crbug.com/313783 [ Debug ] fast/css/getComputedStyle/getComputedStyle-resolved-values.html [ Crash Pass ]
 crbug.com/313846 [ Mac Win ] http/tests/images/webp-partial-load.html [ ImageOnlyFailure Timeout Pass ]
+crbug.com/316150 inspector/timeline/timeline-network-received-data.html [ Failure Pass ]
 
 crbug.com/309760 compositing/transitions/transform-on-large-layer.html [ NeedsManualRebaseline ]
 crbug.com/309760 fast/events/attempt-scroll-with-no-scrollbars.html [ NeedsManualRebaseline ]
