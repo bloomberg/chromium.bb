@@ -629,6 +629,10 @@ function maybeCloseBackgroundPage() {
   for (var i = 0; i < views.length; i++) {
     if (views[i] !== window && !views[i].closing)
       return;
+    if (views[i].closing) {
+      setTimeout(maybeCloseBackgroundPage, 1000);
+      return;
+    }
   }
   close();
 }
