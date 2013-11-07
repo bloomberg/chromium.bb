@@ -16,7 +16,6 @@
 #include "chromeos/ime/mock_ime_property_handler.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
-#include "dbus/mock_bus.h"
 
 namespace chromeos {
 namespace input_method {
