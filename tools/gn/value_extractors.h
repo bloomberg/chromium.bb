@@ -65,4 +65,10 @@ bool ExtractListOfLabels(const Value& value,
                          LabelTargetVector* dest,
                          Err* err);
 
+bool ExtractRelativeFile(const BuildSettings* build_settings,
+                         const Value& value,
+                         const SourceDir& current_dir,
+                         SourceFile* file,
+                         Err* err);
+
 #endif  // TOOLS_GN_VALUE_EXTRACTORS_H_

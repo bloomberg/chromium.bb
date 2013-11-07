@@ -126,3 +126,12 @@ bool ExtractListOfLabels(const Value& value,
                             LabelResolver<Target>(current_dir,
                                                   current_toolchain));
 }
+
+bool ExtractRelativeFile(const BuildSettings* build_settings,
+                         const Value& value,
+                         const SourceDir& current_dir,
+                         SourceFile* file,
+                         Err* err) {
+  RelativeFileConverter converter(build_settings, current_dir);
+  return converter(value, file, err);
+}

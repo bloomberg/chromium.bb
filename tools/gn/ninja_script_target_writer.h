@@ -28,6 +28,8 @@ class NinjaScriptTargetWriter : public NinjaTargetWriter {
   FRIEND_TEST_ALL_PREFIXES(NinjaScriptTargetWriter,
                            WriteOutputFilesForBuildLine);
   FRIEND_TEST_ALL_PREFIXES(NinjaScriptTargetWriter,
+                           WriteOutputFilesForBuildLineWithDepfile);
+  FRIEND_TEST_ALL_PREFIXES(NinjaScriptTargetWriter,
                            WriteArgsSubstitutions);
 
   bool has_sources() const { return !target_->sources().empty(); }
@@ -64,6 +66,11 @@ class NinjaScriptTargetWriter : public NinjaTargetWriter {
   void WriteOutputFilesForBuildLine(const FileTemplate& output_template,
                                     const SourceFile& source,
                                     std::vector<OutputFile>* output_files);
+
+  void WriteDepfile(const SourceFile& source);
+
+  // Returns the FileTemplate for the depfile variable.
+  FileTemplate GetDepfileTemplate() const;
 
   // Path output writer that doesn't do any escaping or quoting. It does,
   // however, convert slashes.  Used for

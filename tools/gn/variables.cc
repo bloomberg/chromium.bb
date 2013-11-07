@@ -393,6 +393,38 @@ const char kDefines_Help[] =
     "Example:\n"
     "  defines = [ \"AWESOME_FEATURE\", \"LOG_LEVEL=3\" ]\n";
 
+const char kDepfile[] = "depfile";
+const char kDepfile_HelpShort[] =
+    "depfile: [string] File name for input dependencies for custom targets.";
+const char kDepfile_Help[] =
+    "depfile: [string] File name for input dependencies for custom targets.\n"
+    "\n"
+    "  If nonempty, this string specifies that the current \"custom\" target\n"
+    "  will generate the given \".d\" file containing the dependencies of the\n"
+    "  input. Empty or unset means that the script doesn't generate the\n"
+    "  files.\n"
+    "\n"
+    "  The .d file should go in the target output directory. If you have more\n"
+    "  than one source file that the script is being run over, you can use\n"
+    "  the output file expansions described in \"gn help custom\" to name the\n"
+    "  .d file according to the input."
+    "\n"
+    "  The format is that of a Makefile, and all of the paths should be\n"
+    "  relative to the root build directory.\n"
+    "\n"
+    "Example:\n"
+    "  custom(\"myscript_target\") {\n"
+    "    script = \"myscript.py\"\n"
+    "    sources = [ ... ]\n"
+    "\n"
+    "    # Locate the depfile in the output directory named like the\n"
+    "    # inputs but with a \".d\" appended.\n"
+    "    depfile = \"$relative_target_output_dir/{{source_name}}.d\"\n"
+    "\n"
+    "    # Say our script uses \"-o <d file>\" to indicate the depfile.\n"
+    "    args = [ \"{{source}}\", \"-o\", depfile ]\n"
+    "  }\n";
+
 const char kDeps[] = "deps";
 const char kDeps_HelpShort[] =
     "deps: [label list] Linked dependencies.";
@@ -767,6 +799,7 @@ const VariableInfoMap& GetTargetVariables() {
     INSERT_VARIABLE(Configs)
     INSERT_VARIABLE(Data)
     INSERT_VARIABLE(Datadeps)
+    INSERT_VARIABLE(Depfile)
     INSERT_VARIABLE(Deps)
     INSERT_VARIABLE(DirectDependentConfigs)
     INSERT_VARIABLE(External)

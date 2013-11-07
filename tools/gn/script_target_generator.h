@@ -12,9 +12,9 @@
 class ScriptTargetGenerator : public TargetGenerator {
  public:
   ScriptTargetGenerator(Target* target,
-                      Scope* scope,
-                      const Token& function_token,
-                      Err* err);
+                        Scope* scope,
+                        const Token& function_token,
+                        Err* err);
   virtual ~ScriptTargetGenerator();
 
  protected:
@@ -23,6 +23,7 @@ class ScriptTargetGenerator : public TargetGenerator {
  private:
   void FillScript();
   void FillScriptArgs();
+  void FillDepfile();
 
   DISALLOW_COPY_AND_ASSIGN(ScriptTargetGenerator);
 };

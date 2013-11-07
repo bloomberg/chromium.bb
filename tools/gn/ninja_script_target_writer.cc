@@ -38,6 +38,10 @@ void NinjaScriptTargetWriter::Run() {
     // No sources, write a rule that invokes the script once with the
     // outputs as outputs, and the data as inputs.
     out_ << "build";
+    if (target_->script_values().has_depfile()) {
+      out_ << " ";
+      WriteDepfile(SourceFile());
+    }
     const Target::FileList& outputs = target_->script_values().outputs();
     for (size_t i = 0; i < outputs.size(); i++) {
       OutputFile output_path(
@@ -48,6 +52,11 @@ void NinjaScriptTargetWriter::Run() {
       path_output_.WriteFile(out_, output_path);
     }
     out_ << ": " << custom_rule_name << implicit_deps << std::endl;
+    if (target_->script_values().has_depfile()) {
+      out_ << "  depfile = ";
+      WriteDepfile(SourceFile());
+      out_ << std::endl;
+    }
   }
   out_ << std::endl;
 
@@ -145,6 +154,12 @@ void NinjaScriptTargetWriter::WriteSourceRules(
 
     if (args_template.has_substitutions())
       WriteArgsSubstitutions(sources[i], args_template);
+
+    if (target_->script_values().has_depfile()) {
+      out_ << "  depfile = ";
+      WriteDepfile(sources[i]);
+      out_ << std::endl;
+    }
   }
 }
 
@@ -166,6 +181,12 @@ void NinjaScriptTargetWriter::WriteOutputFilesForBuildLine(
     const FileTemplate& output_template,
     const SourceFile& source,
     std::vector<OutputFile>* output_files) {
+  // If there is a depfile specified we need to list it as the first output as
+  // that is what ninja will expect the depfile to refer to itself as.
+  if (target_->script_values().has_depfile()) {
+    out_ << " ";
+    WriteDepfile(source);
+  }
   std::vector<std::string> output_template_result;
   output_template.ApplyString(source.value(), &output_template_result);
   for (size_t out_i = 0; out_i < output_template_result.size(); out_i++) {
@@ -174,4 +195,19 @@ void NinjaScriptTargetWriter::WriteOutputFilesForBuildLine(
     out_ << " ";
     path_output_.WriteFile(out_, output_path);
   }
+}
+
+void NinjaScriptTargetWriter::WriteDepfile(const SourceFile& source) {
+  std::vector<std::string> result;
+  GetDepfileTemplate().ApplyString(source.value(), &result);
+  path_output_.WriteFile(out_, OutputFile(result[0]));
+}
+
+FileTemplate NinjaScriptTargetWriter::GetDepfileTemplate() const {
+  std::vector<std::string> template_args;
+  std::string depfile_relative_to_build_dir =
+      RemovePrefix(target_->script_values().depfile().value(),
+                   settings_->build_settings()->build_dir().value());
+  template_args.push_back(depfile_relative_to_build_dir);
+  return FileTemplate(template_args);
 }
