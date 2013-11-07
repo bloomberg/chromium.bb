@@ -551,7 +551,9 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
 #endif
 
 #if defined(GOOGLE_CHROME_BUILD)
+#if !defined(OS_CHROMEOS)  // http://crbug.com/314799
   AddNetworkSpeechSynthesisExtension();
+#endif
 #endif  // defined(GOOGLE_CHROME_BUILD)
 }
 
