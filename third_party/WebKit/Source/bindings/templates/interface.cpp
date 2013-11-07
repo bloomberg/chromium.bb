@@ -73,8 +73,7 @@ static const V8DOMConfiguration::AttributeConfiguration {{v8_class_name}}Attribu
 {# FIXME: rename to install_methods and put into configure_class_template #}
 {% if methods %}
 static const V8DOMConfiguration::MethodConfiguration {{v8_class_name}}Methods[] = {
-    {% for method in methods
-       if not (method.custom_signature or method.is_static) %}
+    {% for method in methods if method.do_not_check_signature %}
     {% filter conditional(method.conditional_string) %}
     {{method_configuration(method)}},
     {% endfilter %}
@@ -114,8 +113,7 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::H
     }
     {% endfilter %}
     {% endfor %}
-    {% for method in methods
-       if method.custom_signature or method.is_static %}
+    {% for method in methods if not method.do_not_check_signature %}
     {% if method.custom_signature %}
 
     // Custom Signature '{{method.name}}'

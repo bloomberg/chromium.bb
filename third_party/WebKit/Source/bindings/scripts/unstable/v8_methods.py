@@ -45,13 +45,14 @@ def generate_method(interface, method):
     arguments = method.arguments
     extended_attributes = method.extended_attributes
     idl_type = method.idl_type
+    is_do_not_check_signature = 'DoNotCheckSignature' in extended_attributes
     is_static = method.is_static
     name = method.name
 
     this_custom_signature = custom_signature(arguments)
     if this_custom_signature:
         signature = name + 'Signature'
-    elif is_static:
+    elif is_do_not_check_signature or is_static:
         signature = 'v8::Local<v8::Signature>()'
     else:
         signature = 'defaultSignature'
@@ -80,6 +81,7 @@ def generate_method(interface, method):
         'cpp_value': this_cpp_value,
         'custom_signature': this_custom_signature,
         'deprecate_as': v8_utilities.deprecate_as(method),  # [DeprecateAs]
+        'do_not_check_signature': not(this_custom_signature or is_do_not_check_signature or is_static),
         'function_template': 'desc' if method.is_static else 'proto',
         'idl_type': idl_type,
         'is_call_with_execution_context': has_extended_attribute_value(method, 'CallWith', 'ExecutionContext'),
