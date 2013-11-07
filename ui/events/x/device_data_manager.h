@@ -14,7 +14,7 @@
 #include "base/basictypes.h"
 #include "base/event_types.h"
 #include "ui/events/event_constants.h"
-#include "ui/events/events_export.h"
+#include "ui/events/events_base_export.h"
 #include "ui/gfx/x/x11_atom_cache.h"
 
 template <typename T> struct DefaultSingletonTraits;
@@ -31,7 +31,7 @@ enum GestureMetricsType {
 
 // A class that extracts and tracks the input events data. It currently handles
 // mouse, touchpad and touchscreen devices.
-class EVENTS_EXPORT DeviceDataManager {
+class EVENTS_BASE_EXPORT DeviceDataManager {
  public:
   // Enumerate additional data that one might be interested on an input event,
   // which are usually wrapped in X valuators. If you modify any of this,
@@ -102,6 +102,9 @@ class EVENTS_EXPORT DeviceDataManager {
   void set_natural_scroll_enabled(bool enabled) {
     natural_scroll_enabled_ = enabled;
   }
+
+  // Returns if XInput2 is available on the system.
+  bool IsXInput2Available() const;
 
   // Get the natural scroll direction multiplier (1.0f or -1.0f).
   float GetNaturalScrollFactor(int sourceid) const;

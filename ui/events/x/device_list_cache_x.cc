@@ -8,12 +8,13 @@
 
 #include "base/memory/singleton.h"
 #include "base/message_loop/message_loop.h"
+#include "ui/events/x/device_data_manager.h"
 
 namespace {
 
 bool IsXI2Available() {
 #if defined(USE_AURA)
-  return base::MessagePumpForUI::HasXInput2();
+  return ui::DeviceDataManager::GetInstance()->IsXInput2Available();
 #else
   return false;
 #endif
@@ -23,8 +24,7 @@ bool IsXI2Available() {
 
 namespace ui {
 
-DeviceListCacheX::DeviceListCacheX()
-    : xi2_(IsXI2Available()) {
+DeviceListCacheX::DeviceListCacheX() {
 }
 
 DeviceListCacheX::~DeviceListCacheX() {
@@ -53,8 +53,8 @@ void DeviceListCacheX::UpdateDeviceList(Display* display) {
   XIDeviceList& new_xi_dev_list = xi_dev_list_map_[display];
   if (new_xi_dev_list.devices)
     XIFreeDeviceInfo(new_xi_dev_list.devices);
-  new_xi_dev_list.devices = xi2_ ? XIQueryDevice(display, XIAllDevices,
-                                                 &new_xi_dev_list.count) : NULL;
+  new_xi_dev_list.devices = IsXI2Available() ?
+      XIQueryDevice(display, XIAllDevices, &new_xi_dev_list.count) : NULL;
 }
 
 const XDeviceList& DeviceListCacheX::GetXDeviceList(Display* display) {
@@ -67,7 +67,7 @@ const XDeviceList& DeviceListCacheX::GetXDeviceList(Display* display) {
 
 const XIDeviceList& DeviceListCacheX::GetXI2DeviceList(Display* display) {
   XIDeviceList& xi_dev_list = xi_dev_list_map_[display];
-  if (xi2_ && !xi_dev_list.devices && !xi_dev_list.count) {
+  if (!xi_dev_list.devices && !xi_dev_list.count) {
     xi_dev_list.devices = XIQueryDevice(display, XIAllDevices,
                                        &xi_dev_list.count);
   }

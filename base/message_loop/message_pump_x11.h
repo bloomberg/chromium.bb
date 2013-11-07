@@ -40,9 +40,6 @@ class BASE_EXPORT MessagePumpX11 : public MessagePumpGlib,
   // Returns default X Display.
   static Display* GetDefaultXDisplay();
 
-  // Returns true if the system supports XINPUT2.
-  static bool HasXInput2();
-
   // Returns the UI or GPU message pump.
   static MessagePumpX11* Current();
 

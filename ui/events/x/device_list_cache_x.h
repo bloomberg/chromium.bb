@@ -11,7 +11,7 @@
 #include <map>
 
 #include "base/basictypes.h"
-#include "ui/events/events_export.h"
+#include "ui/events/events_base_export.h"
 
 template <typename T> struct DefaultSingletonTraits;
 
@@ -36,13 +36,20 @@ namespace ui {
 // A class to cache the current XInput device list. This minimized the
 // round-trip time to the X server whenever such a device list is needed. The
 // update function will be called on each incoming XI_HierarchyChanged event.
-class EVENTS_EXPORT DeviceListCacheX {
+class EVENTS_BASE_EXPORT DeviceListCacheX {
  public:
   static DeviceListCacheX* GetInstance();
 
   void UpdateDeviceList(Display* display);
 
+  // Returns the list of devices associated with |display|. Uses the old X11
+  // protocol to get the list of the devices.
   const XDeviceList& GetXDeviceList(Display* display);
+
+  // Returns the list of devices associated with |display|. Uses the newer
+  // XINPUT2 protocol to get the list of devices. Before making this call, make
+  // sure that XInput2 support is available (e.g. by calling
+  // IsXInput2Available()).
   const XIDeviceList& GetXI2DeviceList(Display* display);
 
  private:
@@ -53,8 +60,6 @@ class EVENTS_EXPORT DeviceListCacheX {
 
   std::map<Display*, XDeviceList> x_dev_list_map_;
   std::map<Display*, XIDeviceList> xi_dev_list_map_;
-
-  bool xi2_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceListCacheX);
 };

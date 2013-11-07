@@ -10,7 +10,7 @@
 #include <vector>
 
 #include "base/timer/timer.h"
-#include "ui/events/events_export.h"
+#include "ui/events/events_base_export.h"
 #include "ui/gfx/sequential_id_generator.h"
 
 template <typename T> struct DefaultSingletonTraits;
@@ -23,7 +23,7 @@ typedef union _XEvent XEvent;
 namespace ui {
 
 // Functions related to determining touch devices.
-class EVENTS_EXPORT TouchFactory {
+class EVENTS_BASE_EXPORT TouchFactory {
  private:
   TouchFactory();
   ~TouchFactory();
