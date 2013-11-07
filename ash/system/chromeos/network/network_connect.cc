@@ -4,6 +4,7 @@
 
 #include "ash/system/chromeos/network/network_connect.h"
 
+#include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/system/chromeos/network/network_state_notifier.h"
 #include "ash/system/system_notifier.h"
@@ -155,8 +156,10 @@ void OnConnectFailed(const std::string& service_path,
       chromeos::network_handler::kErrorDetail, &shill_error);
   ShowErrorNotification(error_name, shill_error, service_path);
 
-  // Show a configure dialog for ConnectFailed errors.
-  if (error_name != shill::kErrorConnectFailed)
+  // Only show a configure dialog if there was a ConnectFailed error and the
+  // screen is not locked.
+  if (error_name != shill::kErrorConnectFailed ||
+      Shell::GetInstance()->session_state_delegate()->IsScreenLocked())
     return;
 
   // If Shill reports an InProgress error, don't try to configure the network.
