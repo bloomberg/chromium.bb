@@ -319,4 +319,5 @@ interface TestObjectPython {
     [DeprecateAs=voidMethod] void deprecatedVoidMethod();
     [DoNotCheckSignature] void doNotCheckSignatureVoidMethod();
     [ImplementedAs=implementedAsMethodName] void implementedAsVoidMethod();
+    [NotEnumerable] void notEnumerableVoidMethod();
 };

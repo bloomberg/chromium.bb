@@ -45,14 +45,13 @@ def generate_method(interface, method):
     arguments = method.arguments
     extended_attributes = method.extended_attributes
     idl_type = method.idl_type
-    is_do_not_check_signature = 'DoNotCheckSignature' in extended_attributes
     is_static = method.is_static
     name = method.name
 
     this_custom_signature = custom_signature(arguments)
     if this_custom_signature:
         signature = name + 'Signature'
-    elif is_do_not_check_signature or is_static:
+    elif is_static or 'DoNotCheckSignature' in extended_attributes:
         signature = 'v8::Local<v8::Signature>()'
     else:
         signature = 'defaultSignature'
@@ -81,7 +80,9 @@ def generate_method(interface, method):
         'cpp_value': this_cpp_value,
         'custom_signature': this_custom_signature,
         'deprecate_as': v8_utilities.deprecate_as(method),  # [DeprecateAs]
-        'do_not_check_signature': not(this_custom_signature or is_do_not_check_signature or is_static),
+        'do_not_check_signature': not(this_custom_signature or is_static or
+            v8_utilities.has_extended_attribute(method,
+                ['DoNotCheckSignature', 'NotEnumerable'])),
         'function_template': 'desc' if method.is_static else 'proto',
         'idl_type': idl_type,
         'is_call_with_execution_context': has_extended_attribute_value(method, 'CallWith', 'ExecutionContext'),
@@ -99,6 +100,7 @@ def generate_method(interface, method):
         'number_of_required_or_variadic_arguments': len([
             argument for argument in arguments
             if not argument.is_optional]),
+        'property_attributes': property_attributes(method),
         'signature': signature,
         'v8_set_return_value': v8_set_return_value(method, this_cpp_value),
     }
@@ -145,6 +147,7 @@ def v8_set_return_value(method, cpp_value):
     idl_type = method.idl_type
     if idl_type == 'void':
         return None
+    # [CallWith=ScriptState]
     if has_extended_attribute_value(method, 'CallWith', 'ScriptState'):
         cpp_value = 'result'  # use local variable for value
     return v8_types.v8_set_return_value(idl_type, cpp_value)
@@ -170,6 +173,17 @@ def custom_signature(arguments):
     return ', '.join([argument_template(argument) for argument in arguments])
 
 
+# [NotEnumerable]
+def property_attributes(method):
+    extended_attributes = method.extended_attributes
+    property_attributes_list = []
+    if 'NotEnumerable' in extended_attributes:
+        property_attributes_list.append('v8::DontEnum')
+    if property_attributes_list:
+        property_attributes_list.insert(0, 'v8::DontDelete')
+    return property_attributes_list
+
+
 def v8_value_to_local_cpp_value(argument, index):
     extended_attributes = argument.extended_attributes
     idl_type = argument.idl_type
@@ -177,6 +191,7 @@ def v8_value_to_local_cpp_value(argument, index):
     if argument.is_variadic:
         return 'V8TRYCATCH_VOID(Vector<{cpp_type}>, {name}, toNativeArguments<{cpp_type}>(info, {index}))'.format(
                 cpp_type=v8_types.cpp_type(idl_type), name=name, index=index)
+    # [Default=NullString]
     if (argument.is_optional and idl_type == 'DOMString' and
         extended_attributes.get('Default') == 'NullString'):
         v8_value = 'argumentOrNull(info, %s)' % index
