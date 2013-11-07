@@ -1003,6 +1003,166 @@ def CheckChangeOnUpload(input_api, output_api):
   return results
 
 
+def GetDefaultTryConfigs(bots=None):
+  """Returns a list of ('bot', set(['tests']), optionally filtered by [bots].
+
+  To add tests to this list, they MUST be in the the corresponding master's
+  gatekeeper config. For example, anything on master.chromium would be closed by
+  /chrome/trunk/tools/build/masters/master.chromium/master_gatekeeper_cfg.py.
+
+  If 'bots' is specified, will only return configurations for bots in that list.
+  """
+
+  standard_tests = [
+      'base_unittests',
+      'browser_tests',
+      'cacheinvalidation_unittests',
+      'check_deps',
+      'content_browsertests',
+      'content_unittests',
+      'crypto_unittests',
+      #'gfx_unittests',
+      'gpu_unittests',
+      'ipc_tests',
+      'interactive_ui_tests',
+      'jingle_unittests',
+      'media_unittests',
+      'net_unittests',
+      'ppapi_unittests',
+      'printing_unittests',
+      'sql_unittests',
+      'sync_unit_tests',
+      'unit_tests',
+      # Broken in release.
+      #'url_unittests',
+      #'webkit_unit_tests',
+  ]
+
+  # Use a smaller set of tests for *_aura, since there's a lot of overlap with
+  # the corresponding *_rel builders.
+  # Note: *_aura are Release builders even if their names convey otherwise.
+  aura_tests = [
+      'app_list_unittests',
+      'aura_unittests',
+      'browser_tests',
+      'compositor_unittests',
+      'content_browsertests',
+      'content_unittests',
+      'interactive_ui_tests',
+      'unit_tests',
+      'views_unittests',
+  ]
+  linux_aura_tests = aura_tests[:]
+  linux_aura_tests.remove('views_unittests')
+  win7_aura_tests = aura_tests[:]
+  win7_aura_tests.remove('app_list_unittests')
+  builders_and_tests = {
+      # TODO(maruel): Figure out a way to run 'sizes' where people can
+      # effectively update the perf expectation correctly.  This requires a
+      # clobber=True build running 'sizes'. 'sizes' is not accurate with
+      # incremental build. Reference:
+      # http://chromium.org/developers/tree-sheriffs/perf-sheriffs.
+      # TODO(maruel): An option would be to run 'sizes' but not count a failure
+      # of this step as a try job failure.
+      'android_dbg': ['slave_steps'],
+      'android_clang_dbg': ['slave_steps'],
+      'android_aosp': ['compile'],
+      'ios_dbg_simulator': [
+          'compile',
+          'base_unittests',
+          'content_unittests',
+          'crypto_unittests',
+          'url_unittests',
+          'net_unittests',
+          'sql_unittests',
+          'ui_unittests',
+      ],
+      'ios_rel_device': ['compile'],
+      'linux_aura': linux_aura_tests,
+      'linux_asan': ['defaulttests'],
+      'linux_clang': ['compile'],
+      'linux_chromeos_clang': ['compile'],
+      # Note: It is a Release builder even if its name convey otherwise.
+      'linux_chromeos': standard_tests + [
+          'app_list_unittests',
+          'aura_unittests',
+          'ash_unittests',
+          'chromeos_unittests',
+          'components_unittests',
+          'dbus_unittests',
+          'device_unittests',
+          'sandbox_linux_unittests',
+      ],
+      'linux_rel': standard_tests + [
+          'cc_unittests',
+          'chromedriver2_unittests',
+          'components_unittests',
+          'nacl_integration',
+          'remoting_unittests',
+          'sandbox_linux_unittests',
+          'sync_integration_tests',
+      ],
+      'mac': ['compile'],
+      'mac_rel': standard_tests + [
+          'app_list_unittests',
+          'cc_unittests',
+          'chromedriver2_unittests',
+          'components_unittests',
+          'google_apis_unittests',
+          'message_center_unittests',
+          'nacl_integration',
+          'remoting_unittests',
+          'sync_integration_tests',
+          'telemetry_unittests',
+      ],
+      'win': ['compile'],
+      'win7_aura': win7_aura_tests + [
+          'ash_unittests',
+      ],
+      'win_rel': standard_tests + [
+          'app_list_unittests',
+          'cc_unittests',
+          'chrome_frame_net_tests',
+          'chrome_frame_tests',
+          'chrome_frame_unittests',
+          'chromedriver2_unittests',
+          'components_unittests',
+          'installer_util_unittests',
+          'mini_installer_test',
+          'nacl_integration',
+          'remoting_unittests',
+          'sync_integration_tests',
+          'telemetry_unittests',
+      ],
+      'win_x64_rel': [
+          'base_unittests',
+      ],
+  }
+
+  swarm_enabled_builders = (
+      'linux_rel',
+      'mac_rel',
+  )
+
+  swarm_enabled_tests = (
+      'base_unittests',
+      'browser_tests',
+      'interactive_ui_tests',
+      'net_unittests',
+      'unit_tests',
+  )
+
+  for bot in builders_and_tests:
+    if bot in swarm_enabled_builders:
+      builders_and_tests[bot] = [x + '_swarm' if x in swarm_enabled_tests else x
+                                 for x in builders_and_tests[bot]]
+
+  if bots:
+    return [(bot, set(builders_and_tests[bot])) for bot in bots]
+  else:
+    return [(bot, set(tests)) for bot, tests in builders_and_tests.iteritems()]
+
+
 def CheckChangeOnCommit(input_api, output_api):
   results = []
   results.extend(_CommonChecks(input_api, output_api))
@@ -1034,17 +1194,27 @@ def GetPreferredTrySlaves(project, change):
     return []
 
   if all(re.search('\.(m|mm)$|(^|[/_])mac[/_.]', f) for f in files):
-    return ['mac_rel', 'mac:compile']
+    return GetDefaultTryConfigs(['mac_rel']) + [
+        ('mac', set(['compile']))]
   if all(re.search('(^|[/_])win[/_.]', f) for f in files):
-    return ['win_rel', 'win7_aura', 'win:compile']
+    return GetDefaultTryConfigs(['win_rel', 'win7_aura']) + [
+        ('win', set(['compile']))]
   if all(re.search('(^|[/_])android[/_.]', f) for f in files):
-    return ['android_aosp', 'android_dbg', 'android_clang_dbg']
+    return GetDefaultTryConfigs([
+        'android_aosp',
+        'android_clang_dbg',
+        'android_dbg',
+    ])
   if all(re.search('^native_client_sdk', f) for f in files):
-    return ['linux_nacl_sdk', 'win_nacl_sdk', 'mac_nacl_sdk']
+    return GetDefaultTryConfigs([
+        'linux_nacl_sdk',
+        'mac_nacl_sdk',
+        'win_nacl_sdk',
+    ])
   if all(re.search('[/_]ios[/_.]', f) for f in files):
-    return ['ios_rel_device', 'ios_dbg_simulator']
+    return GetDefaultTryConfigs(['ios_rel_device', 'ios_dbg_simulator'])
 
-  trybots = [
+  trybots = GetDefaultTryConfigs([
       'android_clang_dbg',
       'android_dbg',
       'ios_dbg_simulator',
@@ -1052,20 +1222,21 @@ def GetPreferredTrySlaves(project, change):
       'linux_asan',
       'linux_aura',
       'linux_chromeos',
-      'linux_clang:compile',
+      'linux_clang',
       'linux_rel',
+      'mac',
       'mac_rel',
-      'mac:compile',
+      'win',
       'win7_aura',
       'win_rel',
-      'win:compile',
-      'win_x64_rel:base_unittests',
-  ]
+      'win_x64_rel',
+  ])
 
   # Match things like path/aura/file.cc and path/file_aura.cc.
   # Same for chromeos.
   if any(re.search('[/_](aura|chromeos)', f) for f in files):
-    trybots += ['linux_chromeos_clang:compile', 'linux_chromeos_asan']
+    trybots.extend(GetDefaultTryConfigs(['linux_chromeos_clang']))
+    trybots.append(('linux_chromeos_asan', set(['defaulttests'])))
 
   # If there are gyp changes to base, build, or chromeos, run a full cros build
   # in addition to the shorter linux_chromeos build. Changes to high level gyp
@@ -1073,13 +1244,13 @@ def GetPreferredTrySlaves(project, change):
   # differnt from the linux_chromeos build that most chrome developers test
   # with.
   if any(re.search('^(base|build|chromeos).*\.gypi?$', f) for f in files):
-    trybots += ['cros_x86']
+    trybots.append(('cros_x86', set(['defaulttests'])))
 
   # The AOSP bot doesn't build the chrome/ layer, so ignore any changes to it
   # unless they're .gyp(i) files as changes to those files can break the gyp
   # step on that bot.
   if (not all(re.search('^chrome', f) for f in files) or
       any(re.search('\.gypi?$', f) for f in files)):
-    trybots += ['android_aosp']
+    trybots.extend(GetDefaultTryConfigs(['android_aosp']))
 
   return trybots
