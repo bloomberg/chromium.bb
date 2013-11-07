@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/api/system_display/system_display_api.h"
 
+#include "base/debug/leak_annotations.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/extensions/api/system_display/display_info_provider.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -175,6 +176,8 @@ class SystemDisplayApiTest: public ExtensionApiTest {
 
   virtual void SetUpOnMainThread() OVERRIDE {
     ExtensionApiTest::SetUpOnMainThread();
+    ANNOTATE_LEAKING_OBJECT_PTR(
+        gfx::Screen::GetScreenByType(gfx::SCREEN_TYPE_NATIVE));
     gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen_.get());
     DisplayInfoProvider::InitializeForTesting(provider_.get());
   }
