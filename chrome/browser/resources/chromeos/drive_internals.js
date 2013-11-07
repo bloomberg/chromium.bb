@@ -251,6 +251,14 @@ function updateKeyValueList(ul, list) {
   }
 }
 
+/**
+ * Updates the text next to the 'reload' button to update the status.
+ * @param {boolean} success whether or not reloading has succeeded.
+ */
+function updateReloadStatus(success) {
+  $('reload-status-text').textContent = (success ? 'success' : 'failed');
+}
+
 document.addEventListener('DOMContentLoaded', function() {
   chrome.send('pageLoaded');
 
@@ -272,6 +280,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
   $('button-clear-refresh-token').addEventListener('click', function() {
     chrome.send('clearRefreshToken');
+  });
+
+  $('button-reload-drive-filesystem').addEventListener('click', function() {
+    $('reload-status-text').textContent = 'reloading...';
+    chrome.send('reloadDriveFileSystem');
   });
 
   $('button-show-file-entries').addEventListener('click', function() {

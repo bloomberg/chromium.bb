@@ -286,10 +286,14 @@ class DriveInternalsWebUIHandler : public content::WebUIMessageHandler {
   // Called when the page requests periodic update.
   void OnPeriodicUpdate(const base::ListValue* args);
 
+  // Called when the corresponding button on the page is pressed.
   void ClearAccessToken(const base::ListValue* args);
   void ClearRefreshToken(const base::ListValue* args);
-
+  void ReloadDriveFileSystem(const base::ListValue* args);
   void ListFileEntries(const base::ListValue* args);
+
+  // Called after file system reload for ReloadDriveFileSystem is done.
+  void ReloadFinished(bool success);
 
   // The last event sent to the JavaScript side.
   int last_sent_event_id_;
@@ -368,6 +372,10 @@ void DriveInternalsWebUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "clearRefreshToken",
       base::Bind(&DriveInternalsWebUIHandler::ClearRefreshToken,
+                 weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "reloadDriveFileSystem",
+      base::Bind(&DriveInternalsWebUIHandler::ReloadDriveFileSystem,
                  weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback(
       "listFileEntries",
@@ -557,6 +565,26 @@ void DriveInternalsWebUIHandler::ClearRefreshToken(
   drive::DriveServiceInterface* drive_service = GetDriveService();
   if (drive_service)
     drive_service->ClearRefreshToken();
+}
+
+void DriveInternalsWebUIHandler::ReloadDriveFileSystem(
+    const base::ListValue* args) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  drive::DriveIntegrationService* integration_service =
+      GetIntegrationService();
+  if (integration_service) {
+    integration_service->ClearCacheAndRemountFileSystem(
+        base::Bind(&DriveInternalsWebUIHandler::ReloadFinished,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+}
+
+void DriveInternalsWebUIHandler::ReloadFinished(bool success) {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
+
+  web_ui()->CallJavascriptFunction("updateReloadStatus",
+                                   base::FundamentalValue(success));
 }
 
 void DriveInternalsWebUIHandler::ListFileEntries(const base::ListValue* args) {
