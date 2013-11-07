@@ -6,11 +6,14 @@
 // has had the __MSG_text_color__ message replaced ('text_color' must
 // not be present in any CSS code).
 
-var p = document.getElementById('pId');
-var color = getComputedStyle(p).color;
-if (getComputedStyle(p).color == "rgb(255, 0, 0)") {
-  chrome.extension.sendRequest({tag: 'paragraph_style', message: 'passed'});
-} else {
-  chrome.extension.sendRequest({tag: 'paragraph_style', message:
-      'Paragraph is not red: ' + color});
+var message = 'Test failed to complete';
+try {
+  var p = document.getElementById('pId');
+  var color = getComputedStyle(p).color;
+  if (getComputedStyle(p).color == "rgb(255, 0, 0)")
+    message = 'passed';
+  else
+    message = 'Paragraph is not red: ' + color;
+} finally {
+  chrome.runtime.sendMessage({tag: 'paragraph_style', message: message});
 }

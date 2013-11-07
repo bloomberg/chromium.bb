@@ -6,18 +6,20 @@
 // has had the __MSG_@@extension_id__ message replaced ('extension_id' must
 // not be present in any CSS code).
 
-var rules = getMatchedCSSRules(document.getElementById('bodyId'));
-if (rules != null) {
-  for (var i = 0; i < rules.length; ++i) {
-    if (rules.item(i).cssText.indexOf('extension_id') != -1) {
-      chrome.extension.sendRequest({tag: 'extension_id', message:
-          'Found unreplaced extension_id in: ' + rules.item(i).cssText});
-      break;
+var message = 'Test failed to complete';
+try {
+  var rules = getMatchedCSSRules(document.getElementById('bodyId'));
+  if (rules != null) {
+    message = 'passed';
+    for (var i = 0; i < rules.length; ++i) {
+      if (rules.item(i).cssText.indexOf('extension_id') != -1) {
+        message = 'Found unreplaced extension_id in: ' + rules.item(i).cssText;
+        break;
+      }
     }
+  } else {
+    message = 'No CSS rules found';
   }
-  chrome.extension.sendRequest({tag: 'extension_id', message: 'passed'});
-} else {
-  chrome.extension.sendRequest({tag: 'extension_id', message:
-      'No CSS rules found.'});
+} finally {
+  chrome.runtime.sendMessage({tag: 'extension_id', message: message});
 }
-
