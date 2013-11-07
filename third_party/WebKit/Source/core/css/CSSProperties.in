@@ -256,16 +256,30 @@ text-underline-position custom_value
 
 alignment-baseline svg
 buffered-rendering svg
+clip-path svg, type_name=String, name_for_methods=ClipperResource, converter=convertFragmentIdentifier
 clip-rule svg, type_name=WindRule
 color-interpolation svg
 color-interpolation-filters svg, type_name=EColorInterpolation
 color-rendering svg
 dominant-baseline svg
+fill-opacity svg, type_name=float, converter=convertNumberOrPercentage
 fill-rule svg, type_name=WindRule
+filter svg, type_name=String, name_for_methods=FilterResource, converter=convertFragmentIdentifier
+flood-opacity svg, type_name=float, converter=convertNumberOrPercentage
+kerning svg, type_name=SVGLength, converter=convertSVGLength
+marker-start svg, type_name=String, name_for_methods=MarkerStartResource, converter=convertFragmentIdentifier
+marker-mid svg, type_name=String, name_for_methods=MarkerMidResource, converter=convertFragmentIdentifier
+marker-end svg, type_name=String, name_for_methods=MarkerEndResource, converter=convertFragmentIdentifier
+mask svg, type_name=String, name_for_methods=MaskerResource, converter=convertFragmentIdentifier
 mask-type svg
 shape-rendering svg
+stop-opacity svg, type_name=float, converter=convertNumberOrPercentage
+stroke-dashoffset svg, type_name=SVGLength, name_for_methods=StrokeDashOffset, converter=convertSVGLength
 stroke-linecap svg, type_name=LineCap, name_for_methods=CapStyle
 stroke-linejoin svg, type_name=LineJoin, name_for_methods=JoinStyle
+stroke-miterlimit svg, type_name=float, name_for_methods=StrokeMiterLimit
+stroke-opacity svg, type_name=float, converter=convertNumberOrPercentage
+stroke-width svg, type_name=SVGLength, converter=convertSVGLength
 text-anchor svg
 vector-effect svg
 writing-mode svg, type_name=SVGWritingMode
