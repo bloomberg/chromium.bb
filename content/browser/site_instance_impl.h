@@ -109,10 +109,6 @@ class CONTENT_EXPORT SiteInstanceImpl : public SiteInstance,
   // BrowsingInstance to which this SiteInstance belongs.
   scoped_refptr<BrowsingInstance> browsing_instance_;
 
-  // Factory for new RenderProcessHosts, not owned by this class. NULL indiactes
-  // that the default BrowserRenderProcessHost should be created.
-  const RenderProcessHostFactory* render_process_host_factory_;
-
   // Current RenderProcessHost that is rendering pages for this SiteInstance.
   // This pointer will only change once the RenderProcessHost is destructed.  It
   // will still remain the same even if the process crashes, since in that
