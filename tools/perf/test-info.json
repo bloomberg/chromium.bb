@@ -92,6 +92,12 @@
   "media.tough_video_cases":{
     "description":"Obtains media metrics for key user scenarios."
   },
+  "media_perftests":{
+    "description":"Microbenchmarks for media (media/) component.",
+    "code":[
+      "chrome/src/media/media.gyp",
+    ]
+  },
   "memory.reload.2012Q3":{
     "description":"Memory consumption for a set of top pages from 2012, reloading and garbage collecting on each page load."
   },
