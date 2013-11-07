@@ -571,7 +571,7 @@ int BrowserView::GetOTRIconResourceID() const {
 }
 
 int BrowserView::GetGuestIconResourceID() const {
-  return IDR_GUEST_ICON;
+  return IDR_LOGIN_GUEST;
 }
 
 bool BrowserView::ShouldShowAvatar() const {
