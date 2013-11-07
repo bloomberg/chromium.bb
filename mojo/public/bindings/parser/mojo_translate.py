@@ -31,6 +31,8 @@ def MapKind(kind):
 
 
 def MapOrdinal(ordinal):
+  if ordinal == None:
+    return None;
   return int(ordinal[1:])  # Strip leading '@'
 
 
