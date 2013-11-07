@@ -1207,6 +1207,14 @@
    ThreadSanitizer:Race
    fun:net::QuicCryptoStream::handshake_confirmed
    fun:net::QuicSession::IsCryptoHandshakeConfirmed
-   fun:net::tools::test::::EndToEndTest_LimitMaxPacketSizeAndCongestionWindowAndRTT_Test::TestBody
+   ...
    fun:testing::internal::HandleSehExceptionsInMethodIfSupported
+}
+{
+  bug_313733_e
+  ThreadSanitizer:Race
+  fun:base::TimeDelta::operator=
+  fun:net::QuicTime::Delta::operator=
+  ...
+  fun:base::::ThreadFunc
 }
