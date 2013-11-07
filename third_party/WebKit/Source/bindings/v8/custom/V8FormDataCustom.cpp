@@ -39,18 +39,6 @@
 
 namespace WebCore {
 
-void V8FormData::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    HTMLFormElement* form = 0;
-    if (info.Length() > 0 && V8HTMLFormElement::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())))
-        form = V8HTMLFormElement::toNative(info[0]->ToObject());
-    RefPtr<DOMFormData> domFormData = DOMFormData::create(form);
-
-    v8::Handle<v8::Object> wrapper = info.Holder();
-    V8DOMWrapper::associateObjectWithWrapper<V8FormData>(domFormData.release(), &wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
-    info.GetReturnValue().Set(wrapper);
-}
-
 void V8FormData::appendMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (info.Length() < 2) {

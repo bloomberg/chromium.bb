@@ -29,7 +29,7 @@
  */
 
 [
-    CustomConstructor(optional HTMLFormElement form),
+    Constructor([Default=Undefined] optional HTMLFormElement form),
     ImplementedAs=DOMFormData
 ] interface FormData {
     // void append(DOMString name, DOMString value);
