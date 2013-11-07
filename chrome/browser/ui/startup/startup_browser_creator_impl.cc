@@ -897,13 +897,11 @@ void StartupBrowserCreatorImpl::AddInfoBarsIfNecessary(
   // The below info bars are only added to the first profile which is launched.
   // Other profiles might be restoring the browsing sessions asynchronously,
   // so we cannot add the info bars to the focused tabs here.
-  if (is_process_startup == chrome::startup::IS_PROCESS_STARTUP) {
+  if (is_process_startup == chrome::startup::IS_PROCESS_STARTUP &&
+      !command_line_.HasSwitch(switches::kTestType)) {
     chrome::ShowBadFlagsPrompt(browser);
-    if (!command_line_.HasSwitch(switches::kTestType)) {
-      GoogleApiKeysInfoBarDelegate::Create(InfoBarService::FromWebContents(
-          browser->tab_strip_model()->GetActiveWebContents()));
-    }
-
+    GoogleApiKeysInfoBarDelegate::Create(InfoBarService::FromWebContents(
+        browser->tab_strip_model()->GetActiveWebContents()));
     ObsoleteOSInfoBarDelegate::Create(InfoBarService::FromWebContents(
         browser->tab_strip_model()->GetActiveWebContents()));
 
