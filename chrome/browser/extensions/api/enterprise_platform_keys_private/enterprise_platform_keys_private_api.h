@@ -108,11 +108,11 @@ class EPKPChallengeKeyBase : public ChromeAsyncExtensionFunction {
   // Holds the context of a PrepareKey() operation.
   struct PrepareKeyContext {
     chromeos::attestation::AttestationKeyType key_type;
-    const std::string user_id;
-    const std::string key_name;
+    const std::string& user_id;
+    const std::string& key_name;
     chromeos::attestation::AttestationCertificateProfile certificate_profile;
     bool require_user_consent;
-    const base::Callback<void(PrepareKeyResult)> callback;
+    const base::Callback<void(PrepareKeyResult)>& callback;
   };
 
   void IsAttestationPreparedCallback(
