@@ -1039,4 +1039,40 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillFormIncludesCVC) {
   EXPECT_EQ("123", GetValueForHTMLFieldOfType("cc-csc"));
 }
 
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AddNewClearsComboboxes) {
+  // Ensure the input under test is a combobox.
+  ASSERT_TRUE(
+      controller()->ComboboxModelForAutofillType(CREDIT_CARD_EXP_MONTH));
+
+  // Set up an expired card.
+  CreditCard card;
+  test::SetCreditCardInfo(&card, "Roy Demeo", "4111111111111111", "8", "2013");
+  card.set_origin("Chrome settings");
+  ASSERT_TRUE(card.IsVerified());
+
+  // Add the card and check that there's a menu for that section.
+  controller()->GetTestingManager()->AddTestingCreditCard(&card);
+  ASSERT_TRUE(controller()->MenuModelForSection(SECTION_CC));
+
+  // Select the invalid, suggested card from the menu.
+  controller()->MenuModelForSection(SECTION_CC)->ActivatedAt(0);
+  EXPECT_TRUE(controller()->IsEditingExistingData(SECTION_CC));
+
+  const DetailInputs& inputs =
+      controller()->RequestedFieldsForSection(SECTION_CC);
+  const DetailInput& cc_exp_month = inputs[1];
+  ASSERT_EQ(CREDIT_CARD_EXP_MONTH, cc_exp_month.type);
+
+  // Get the contents of the combobox of the credit card's expiration month.
+  TestableAutofillDialogView* view = controller()->GetTestableView();
+  base::string16 cc_exp_month_text = view->GetTextContentsOfInput(cc_exp_month);
+
+  // Select "New X..." from the suggestion menu to clear the section's inputs.
+  controller()->MenuModelForSection(SECTION_CC)->ActivatedAt(1);
+  EXPECT_FALSE(controller()->IsEditingExistingData(SECTION_CC));
+
+  // Ensure that the credit card expiration month has changed.
+  EXPECT_NE(cc_exp_month_text, view->GetTextContentsOfInput(cc_exp_month));
+}
+
 }  // namespace autofill
