@@ -311,6 +311,8 @@ void TranslateBubbleView::HandleButtonPressed(
       break;
     }
     case BUTTON_ID_DONE: {
+      if (always_translate_checkbox_)
+        model_->SetAlwaysTranslate(always_translate_checkbox_->checked());
       translate_executed_ = true;
       model_->Translate();
       break;
@@ -332,9 +334,8 @@ void TranslateBubbleView::HandleButtonPressed(
       break;
     }
     case BUTTON_ID_ALWAYS_TRANSLATE: {
-      DCHECK(always_translate_checkbox_);
-      model_->SetAlwaysTranslate(always_translate_checkbox_->checked());
-      UpdateAdvancedView();
+      // Do nothing. The state of the checkbox affects only when the 'Done'
+      // button is pressed.
       break;
     }
   }
@@ -385,12 +386,20 @@ void TranslateBubbleView::HandleComboboxSelectedIndexChanged(
       break;
     }
     case COMBOBOX_ID_SOURCE_LANGUAGE: {
+      if (model_->GetOriginalLanguageIndex() ==
+          source_language_combobox_->selected_index()) {
+        break;
+      }
       model_->UpdateOriginalLanguageIndex(
           source_language_combobox_->selected_index());
       UpdateAdvancedView();
       break;
     }
     case COMBOBOX_ID_TARGET_LANGUAGE: {
+      if (model_->GetTargetLanguageIndex() ==
+          target_language_combobox_->selected_index()) {
+        break;
+      }
       model_->UpdateTargetLanguageIndex(
           target_language_combobox_->selected_index());
       UpdateAdvancedView();

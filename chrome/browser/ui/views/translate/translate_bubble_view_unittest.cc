@@ -185,29 +185,52 @@ TEST_F(TranslateBubbleViewTest, TryAgainButton) {
   EXPECT_TRUE(mock_model_->translate_called_);
 }
 
-TEST_F(TranslateBubbleViewTest, AlwaysTranslateCheckbox) {
+TEST_F(TranslateBubbleViewTest, AlwaysTranslateCheckboxAndCancelButton) {
   bubble_->SwitchView(TranslateBubbleModel::VIEW_STATE_ADVANCED);
 
   // Click the "Always Translate" checkbox. Changing the state of this checkbox
-  // should affect the model immediately.
+  // should NOT affect the model after pressing the cancel button.
 
   // Check the initial state.
   EXPECT_FALSE(mock_model_->should_always_translate_);
   EXPECT_EQ(0, mock_model_->set_always_translate_called_count_);
   EXPECT_FALSE(bubble_->always_translate_checkbox_->checked());
 
-  // Click the checkbox.
+  // Click the checkbox. The state is not saved yet.
   bubble_->always_translate_checkbox_->SetChecked(true);
   bubble_->HandleButtonPressed(TranslateBubbleView::BUTTON_ID_ALWAYS_TRANSLATE);
-  EXPECT_TRUE(mock_model_->should_always_translate_);
-  EXPECT_EQ(1, mock_model_->set_always_translate_called_count_);
+  EXPECT_FALSE(mock_model_->should_always_translate_);
+  EXPECT_EQ(0, mock_model_->set_always_translate_called_count_);
 
-  // Click this again and check the state is reverted.
-  bubble_->always_translate_checkbox_->SetChecked(false);
+  // Click the cancel button. The state is not saved.
+  bubble_->HandleButtonPressed(TranslateBubbleView::BUTTON_ID_CANCEL);
+  EXPECT_FALSE(mock_model_->should_always_translate_);
+  EXPECT_EQ(0, mock_model_->set_always_translate_called_count_);
+}
+
+TEST_F(TranslateBubbleViewTest, AlwaysTranslateCheckboxAndDoneButton) {
+  bubble_->SwitchView(TranslateBubbleModel::VIEW_STATE_ADVANCED);
+
+  // Click the "Always Translate" checkbox. Changing the state of this checkbox
+  // should affect the model after pressing the done button.
+
+  // Check the initial state.
+  EXPECT_FALSE(mock_model_->should_always_translate_);
+  EXPECT_EQ(0, mock_model_->set_always_translate_called_count_);
+  EXPECT_FALSE(bubble_->always_translate_checkbox_->checked());
+
+  // Click the checkbox. The state is not saved yet.
+  bubble_->always_translate_checkbox_->SetChecked(true);
   bubble_->HandleButtonPressed(TranslateBubbleView::BUTTON_ID_ALWAYS_TRANSLATE);
   EXPECT_FALSE(mock_model_->should_always_translate_);
-  EXPECT_EQ(2, mock_model_->set_always_translate_called_count_);
+  EXPECT_EQ(0, mock_model_->set_always_translate_called_count_);
+
+  // Click the done button. The state is saved.
+  bubble_->HandleButtonPressed(TranslateBubbleView::BUTTON_ID_DONE);
+  EXPECT_TRUE(mock_model_->should_always_translate_);
+  EXPECT_EQ(1, mock_model_->set_always_translate_called_count_);
 }
+
 
 TEST_F(TranslateBubbleViewTest, DoneButton) {
   bubble_->SwitchView(TranslateBubbleModel::VIEW_STATE_ADVANCED);
