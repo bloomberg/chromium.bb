@@ -19,6 +19,7 @@
 #include "net/base/upload_file_element_reader.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_request_info.h"
+#include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
 #include "net/socket/client_socket_handle.h"
 #include "net/socket/socket_test_util.h"
@@ -421,5 +422,66 @@ TEST(HttpStreamParser, TruncatedHeaders) {
     }
   }
 }
+
+// Confirm that on 101 response, the headers are parsed but the data that
+// follows remains in the buffer.
+TEST(HttpStreamParser, Websocket101Response) {
+  MockRead reads[] = {
+    MockRead(SYNCHRONOUS, 1,
+             "HTTP/1.1 101 Switching Protocols\r\n"
+             "Upgrade: websocket\r\n"
+             "Connection: Upgrade\r\n"
+             "\r\n"
+             "a fake websocket frame"),
+  };
+
+  MockWrite writes[] = {
+    MockWrite(SYNCHRONOUS, 0, "GET / HTTP/1.1\r\n\r\n"),
+  };
+
+  DeterministicSocketData data(reads, arraysize(reads),
+                               writes, arraysize(writes));
+  data.set_connect_data(MockConnect(SYNCHRONOUS, OK));
+  data.SetStop(2);
+
+  scoped_ptr<DeterministicMockTCPClientSocket> transport(
+      new DeterministicMockTCPClientSocket(NULL, &data));
+  data.set_delegate(transport->AsWeakPtr());
+
+  TestCompletionCallback callback;
+  int rv = transport->Connect(callback.callback());
+  rv = callback.GetResult(rv);
+  ASSERT_EQ(OK, rv);
+
+  scoped_ptr<ClientSocketHandle> socket_handle(new ClientSocketHandle);
+  socket_handle->SetSocket(transport.PassAs<StreamSocket>());
+
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("http://localhost");
+  request_info.load_flags = LOAD_NORMAL;
+
+  scoped_refptr<GrowableIOBuffer> read_buffer(new GrowableIOBuffer);
+  HttpStreamParser parser(
+      socket_handle.get(), &request_info, read_buffer.get(), BoundNetLog());
+
+  HttpRequestHeaders request_headers;
+  HttpResponseInfo response_info;
+  rv = parser.SendRequest("GET / HTTP/1.1\r\n", request_headers,
+                          &response_info, callback.callback());
+  ASSERT_EQ(OK, rv);
+
+  rv = parser.ReadResponseHeaders(callback.callback());
+  EXPECT_EQ(OK, rv);
+  ASSERT_TRUE(response_info.headers.get());
+  EXPECT_EQ(101, response_info.headers->response_code());
+  EXPECT_TRUE(response_info.headers->HasHeaderValue("Connection", "Upgrade"));
+  EXPECT_TRUE(response_info.headers->HasHeaderValue("Upgrade", "websocket"));
+  EXPECT_EQ(read_buffer->capacity(), read_buffer->offset());
+  EXPECT_EQ("a fake websocket frame",
+            base::StringPiece(read_buffer->StartOfBuffer(),
+                              read_buffer->capacity()));
+}
+
 
 }  // namespace net
