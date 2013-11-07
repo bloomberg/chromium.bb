@@ -7,54 +7,72 @@
         margin: 10px;
     }
 
-    .animating img {
+    img {
         -webkit-animation-duration: 2s !important;
         -webkit-animation-timing-function: linear !important;
     }
 
     #grayscale-box {
-        -webkit-animation-name: grayscale-anim;
         -webkit-filter: grayscale(1);
+    }
+    .animating #grayscale-box {
+        -webkit-animation-name: grayscale-anim;
     }
 
     #sepia-box {
-        -webkit-animation: sepia-anim;
         -webkit-filter: sepia(1);
+    }
+    .animating #sepia-box {
+        -webkit-animation: sepia-anim;
     }
 
     #saturate-box {
-        -webkit-animation: saturate-anim;
         -webkit-filter: saturate(1);
+    }
+    .animating #saturate-box {
+        -webkit-animation: saturate-anim;
     }
 
     #huerotate-box {
-        -webkit-animation: huerotate-anim;
         -webkit-filter: hue-rotate(90deg);
+    }
+    .animating #huerotate-box {
+        -webkit-animation: huerotate-anim;
     }
 
     #invert-box {
-        -webkit-animation: invert-anim;
         -webkit-filter: invert(1);
+    }
+    .animating #invert-box {
+        -webkit-animation: invert-anim;
     }
 
     #opacity-box {
-        -webkit-animation: opacity-anim;
         -webkit-filter: opacity(0);
+    }
+    .animating #opacity-box {
+        -webkit-animation: opacity-anim;
     }
 
     #brightness-box {
-        -webkit-animation: brightness-anim;
         -webkit-filter: brightness(0);
+    }
+    .animating #brightness-box {
+        -webkit-animation: brightness-anim;
     }
 
     #contrast-box {
-        -webkit-animation: contrast-anim;
         -webkit-filter: contrast(0);
+    }
+    .animating #contrast-box {
+        -webkit-animation: contrast-anim;
     }
 
     #blur-box {
-        -webkit-animation: blur-anim;
         -webkit-filter: blur(10px);
+    }
+    .animating #blur-box {
+        -webkit-animation: blur-anim;
     }
 
     @-webkit-keyframes grayscale-anim {
@@ -171,10 +189,6 @@
 <img src="resources/reference.png" id="brightness-box">
 <img src="resources/reference.png" id="contrast-box">
 <img src="resources/reference.png" id="blur-box">
-
-<!-- this result element is filled in the script above, before the animations start -->
-<div id="preresult">
-</div>
 
 <!-- this result element is filled by the animation test system -->
 <div id="result">

@@ -1,0 +1,4 @@
+Tests that setting the iteration count, delay, duration, direction, fill mode or timing function does not trigger an animation.
+
+First animation completed
+PASS: Animation did not restart

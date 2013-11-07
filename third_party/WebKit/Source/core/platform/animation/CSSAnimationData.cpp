@@ -104,7 +104,7 @@ CSSAnimationData::~CSSAnimationData()
 {
 }
 
-bool CSSAnimationData::animationsMatch(const CSSAnimationData* o) const
+bool CSSAnimationData::animationsMatchForStyleRecalc(const CSSAnimationData* o) const
 {
     if (!o)
         return false;
@@ -113,21 +113,9 @@ bool CSSAnimationData::animationsMatch(const CSSAnimationData* o) const
         && m_playState == o->m_playState
         && m_property == o->m_property
         && m_mode == o->m_mode
-        && m_iterationCount == o->m_iterationCount
-        && m_delay == o->m_delay
-        && m_duration == o->m_duration
-        && *(m_timingFunction.get()) == *(o->m_timingFunction.get())
-        && m_direction == o->m_direction
-        && m_fillMode == o->m_fillMode
-        && m_delaySet == o->m_delaySet
-        && m_directionSet == o->m_directionSet
-        && m_durationSet == o->m_durationSet
-        && m_fillModeSet == o->m_fillModeSet
-        && m_iterationCountSet == o->m_iterationCountSet
         && m_nameSet == o->m_nameSet
         && m_playStateSet == o->m_playStateSet
         && m_propertySet == o->m_propertySet
-        && m_timingFunctionSet == o->m_timingFunctionSet
         && m_isNone == o->m_isNone;
 }
 

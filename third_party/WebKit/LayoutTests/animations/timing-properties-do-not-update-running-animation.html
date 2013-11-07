@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style type="text/css">
+    #wrapper div {
+      height: 30px;
+      width: 100px;
+      background-color: red;
+      margin-bottom: 10px;
+      position: relative;
+    }
+    #wrapper.animated div {
+      -webkit-animation: test 100ms forwards;
+      animation: test 100ms forwards;
+    }
+    @-webkit-keyframes test {
+        from { left: 100px; }
+        to   { left: 300px; }
+    }
+    @keyframes test {
+        from { left: 100px; }
+        to   { left: 300px; }
+    }
+    #wrapper.updated div#duration {
+      /* Test will time out if this is applied. */
+      -webkit-animation-duration: 1000s;
+      animation-duration: 1000s;
+    }
+    #wrapper.updated div#iteration-count {
+      /* Default is 1 */
+      /* Test will time out if this is applied. */
+      -webkit-animation-iteration-count: 1000000;
+      animation-iteration-count: 1000000;
+    }
+    #wrapper.updated div#delay {
+      /* Default is 0 */
+      /* Test will time out if this is applied. */
+      -webkit-animation-delay: 1000s;
+      animation-delay: 1000s;
+    }
+    #wrapper.updated div#direction {
+      /* Default is normal */
+      /* End state will be incorrect if this is applied. */
+      -webkit-animation-direction: reverse;
+      animation-direction: reverse;
+    }
+    #wrapper.updated div#fill-mode {
+      /* End state will be incorrect if this is applied. */
+      -webkit-animation-fill-mode: none;
+      animation-fill-mode: none;
+    }
+    #wrapper.updated div#timing-function {
+      /* Default is ease */
+      /* Property will overshoot if this is applied. */
+      -webkit-animation-timing-function: cubic-bezier(0, 10, 1, 10);
+      animation-timing-function: cubic-bezier(0, 10, 1, 10);
+    }
+  </style>
+  <script type="text/javascript">
+    if (window.testRunner) {
+      testRunner.dumpAsText();
+      testRunner.waitUntilDone();
+    }
+
+    function go() {
+      document.addEventListener('webkitAnimationStart', onStart);
+      document.addEventListener('webkitAnimationEnd', onEnd);
+      document.getElementById('wrapper').classList.add('animated');
+    }
+
+    var startCount = 0;
+    function onStart() {
+      if (++startCount === 6) {
+        setTimeout(update, 0);
+        setTimeout(checkOvershoot, 10);
+      }
+    }
+
+    function update() {
+      document.getElementById('wrapper').classList.add('updated');
+    }
+
+    function checkOvershoot() {
+      var left = parseInt(getComputedStyle(document.getElementById('timing-function')).left);
+      document.getElementById('log').innerHTML += (left <= 300 ?
+          'PASS: Element \'timing-function\' did not overshoot' :
+          'FAIL: Element \'timing-function\' overshot') +
+          '<br>';
+    }
+
+    var results = {};
+    function test(id, property, expected) {
+      var actual = getComputedStyle(document.getElementById(id))[property];
+      var pass = actual === expected;
+      if (results[id] === undefined) {
+        results[id] = '';
+      }
+      results[id] += (pass ?
+          'PASS: Element \'' + id + '\': ' + property + ' was ' + expected :
+          'FAIL: Element \'' + id + '\': ' + property + ' expected ' + expected + ' but saw ' + actual) +
+          '<br>';
+    }
+
+    var endCount = 0;
+    function onEnd(e) {
+      var id = e.target.id;
+      if (id === 'duration') {
+        test(id, '-webkit-animation-duration', '1000s');
+      } else if (id === 'iteration-count') {
+        test(id, '-webkit-animation-iteration-count', '1000000');
+      } else if (id === 'delay') {
+        test(id, '-webkit-animation-delay', '1000s');
+      } else if (id === 'direction') {
+        test(id, '-webkit-animation-direction', 'reverse');
+      } else if (id === 'fill-mode') {
+        test(id, '-webkit-animation-fill-mode', 'none');
+      } else if (id === 'timing-function') {
+        test(id, '-webkit-animation-timing-function', 'cubic-bezier(0, 10, 1, 10)');
+      }
+      test(id, 'left', '300px');
+      if (++endCount === 6) {
+        finishTest();
+      }
+    }
+
+    function finishTest() {
+      var elements = document.getElementById('wrapper').getElementsByTagName('div');
+      for (var i = 0; i < elements.length; ++i) {
+        document.getElementById('log').innerHTML += results[elements[i].id];
+      }
+      if (window.testRunner) {
+        testRunner.notifyDone();
+      }
+    }
+  </script>
+</head>
+<body onload="go()">
+  <p>
+    Tests that modifying the iteration count, delay, duration, direction, fill
+    mode or timing function do not cause a running animation to be updated.
+  </p>
+  <div id="wrapper">
+    <div id="duration">duration</div>
+    <div id="iteration-count">iteration-count</div>
+    <div id="delay">delay</div>
+    <div id="direction">direction</div>
+    <div id="fill-mode">fill-mode</div>
+    <div id="timing-function">timing-function</div>
+  </div>
+  <div id="log"></div>
+</body>
+</html>

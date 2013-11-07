@@ -52,7 +52,6 @@ public:
     // Evaluates the timing function at the given fraction. The accuracy parameter provides a hint as to the required
     // accuracy and is not guaranteed.
     virtual double evaluate(double fraction, double accuracy) const = 0;
-    virtual bool operator==(const TimingFunction& other) const = 0;
 
 protected:
     TimingFunction(Type type)
@@ -78,11 +77,6 @@ public:
         ASSERT(RuntimeEnabledFeatures::webAnimationsEnabled() || (fraction >= 0 && fraction <= 1));
         ASSERT_WITH_MESSAGE(!RuntimeEnabledFeatures::webAnimationsEnabled() || (fraction >= 0 && fraction <= 1), "Web Animations not yet implemented: Timing function behavior outside the range [0, 1] is not yet specified");
         return fraction;
-    }
-
-    virtual bool operator==(const TimingFunction& other) const
-    {
-        return other.type() == LinearFunction;
     }
 
 private:
@@ -149,18 +143,6 @@ public:
         if (!m_bezier)
             m_bezier = adoptPtr(new UnitBezier(m_x1, m_y1, m_x2, m_y2));
         return m_bezier->solve(fraction, accuracy);
-    }
-
-    virtual bool operator==(const TimingFunction& other) const
-    {
-        if (other.type() == CubicBezierFunction) {
-            const CubicBezierTimingFunction* ctf = static_cast<const CubicBezierTimingFunction*>(&other);
-            if (m_subType != Custom)
-                return m_subType == ctf->m_subType;
-
-            return m_x1 == ctf->m_x1 && m_y1 == ctf->m_y1 && m_x2 == ctf->m_x2 && m_y2 == ctf->m_y2;
-        }
-        return false;
     }
 
     double x1() const { return m_x1; }
@@ -231,17 +213,6 @@ public:
         return std::min(1.0, (floor(m_steps * fraction) + m_stepAtStart) / m_steps);
     }
 
-    virtual bool operator==(const TimingFunction& other) const
-    {
-        if (other.type() == StepsFunction) {
-            const StepsTimingFunction* stf = static_cast<const StepsTimingFunction*>(&other);
-            if (m_subType != Custom)
-                return m_subType == stf->m_subType;
-            return m_steps == stf->m_steps && m_stepAtStart == stf->m_stepAtStart;
-        }
-        return false;
-    }
-
     int numberOfSteps() const { return m_steps; }
     bool stepAtStart() const { return m_stepAtStart; }
 
@@ -285,13 +256,6 @@ public:
             segment = &m_segments[i++];
         }
         return segment->evaluate(fraction, accuracy);
-    }
-
-    virtual bool operator==(const TimingFunction& other) const
-    {
-        // This class is not exposed to CSS, so this method is not required.
-        ASSERT_NOT_REACHED();
-        return false;
     }
 
 private:

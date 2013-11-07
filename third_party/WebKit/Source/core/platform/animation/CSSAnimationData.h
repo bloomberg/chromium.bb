@@ -137,7 +137,7 @@ public:
     CSSAnimationData& operator=(const CSSAnimationData& o);
 
     // return true every CSSAnimationData in the chain (defined by m_next) match
-    bool operator==(const CSSAnimationData& o) const { return animationsMatch(&o); }
+    bool operator==(const CSSAnimationData& o) const { return animationsMatchForStyleRecalc(&o); }
     bool operator!=(const CSSAnimationData& o) const { return !(*this == o); }
 
     bool fillsBackwards() const { return m_fillModeSet && (m_fillMode == AnimationFillModeBackwards || m_fillMode == AnimationFillModeBoth); }
@@ -147,8 +147,9 @@ private:
     CSSAnimationData();
     explicit CSSAnimationData(const CSSAnimationData&);
 
-    // return true if all members of this class match (excluding m_next)
-    bool animationsMatch(const CSSAnimationData*) const;
+    // Return whether this object matches another CSSAnimationData object for
+    // the purposes of style recalc. This excludes some properties.
+    bool animationsMatchForStyleRecalc(const CSSAnimationData*) const;
 
     AtomicString m_name;
     CSSPropertyID m_property;
