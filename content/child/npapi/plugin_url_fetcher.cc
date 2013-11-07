@@ -145,7 +145,7 @@ void PluginURLFetcher::Cancel() {
 
 void PluginURLFetcher::URLRedirectResponse(bool allow) {
   if (allow) {
-    bridge_->SetDefersLoading(true);
+    bridge_->SetDefersLoading(false);
   } else {
     bridge_->Cancel();
     plugin_stream_->DidFail(resource_id_);  // That will delete |this|.
