@@ -137,6 +137,7 @@ class ComponentLoader {
   RegisteredComponentExtensions component_extensions_;
 
   FRIEND_TEST_ALL_PREFIXES(TtsApiTest, NetworkSpeechEngine);
+  FRIEND_TEST_ALL_PREFIXES(TtsApiTest, NoNetworkSpeechEngineWhenOffline);
 
   DISALLOW_COPY_AND_ASSIGN(ComponentLoader);
 };

@@ -14,6 +14,7 @@
 #include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/speech/tts_platform.h"
 #include "chrome/common/chrome_switches.h"
+#include "net/base/network_change_notifier.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -143,6 +144,22 @@ class MockTtsPlatformImpl : public TtsPlatformImpl {
 
  private:
   base::WeakPtrFactory<MockTtsPlatformImpl> ptr_factory_;
+};
+
+class FakeNetworkOnlineStateForTest : public net::NetworkChangeNotifier {
+ public:
+  explicit FakeNetworkOnlineStateForTest(bool online) : online_(online) {}
+  virtual ~FakeNetworkOnlineStateForTest() {}
+
+  virtual ConnectionType GetCurrentConnectionType() const OVERRIDE {
+    return online_ ?
+        net::NetworkChangeNotifier::CONNECTION_ETHERNET :
+        net::NetworkChangeNotifier::CONNECTION_NONE;
+  }
+
+ private:
+  bool online_;
+  DISALLOW_COPY_AND_ASSIGN(FakeNetworkOnlineStateForTest);
 };
 
 class TtsApiTest : public ExtensionApiTest {
@@ -381,10 +398,26 @@ IN_PROC_BROWSER_TEST_F(TtsApiTest, LangMatching) {
 }
 
 IN_PROC_BROWSER_TEST_F(TtsApiTest, NetworkSpeechEngine) {
+  // Simulate online network state.
+  net::NetworkChangeNotifier::DisableForTest disable_for_test;
+  FakeNetworkOnlineStateForTest fake_online_state(true);
+
   ExtensionService* service = extensions::ExtensionSystem::Get(
       profile())->extension_service();
   service->component_loader()->AddNetworkSpeechSynthesisExtension();
   ASSERT_TRUE(RunExtensionTest("tts_engine/network_speech_engine")) << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(TtsApiTest, NoNetworkSpeechEngineWhenOffline) {
+  // Simulate offline network state.
+  net::NetworkChangeNotifier::DisableForTest disable_for_test;
+  FakeNetworkOnlineStateForTest fake_online_state(false);
+
+  ExtensionService* service = extensions::ExtensionSystem::Get(
+      profile())->extension_service();
+  service->component_loader()->AddNetworkSpeechSynthesisExtension();
+  // Test should fail when offline.
+  ASSERT_FALSE(RunExtensionTest("tts_engine/network_speech_engine"));
 }
 
 // http://crbug.com/122474

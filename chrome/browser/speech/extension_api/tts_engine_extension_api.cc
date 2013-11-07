@@ -23,6 +23,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/console_message_level.h"
+#include "net/base/network_change_notifier.h"
 
 using extensions::EventRouter;
 using extensions::Extension;
@@ -65,6 +66,9 @@ void GetExtensionVoices(Profile* profile, std::vector<VoiceData>* out_voices) {
       ExtensionSystem::Get(profile)->event_router();
   DCHECK(event_router);
 
+  bool is_offline = (net::NetworkChangeNotifier::GetConnectionType() ==
+                     net::NetworkChangeNotifier::CONNECTION_NONE);
+
   const ExtensionSet* extensions = service->extensions();
   ExtensionSet::const_iterator iter;
   for (iter = extensions->begin(); iter != extensions->end(); ++iter) {
@@ -84,6 +88,10 @@ void GetExtensionVoices(Profile* profile, std::vector<VoiceData>* out_voices) {
 
     for (size_t i = 0; i < tts_voices->size(); ++i) {
       const extensions::TtsVoice& voice = tts_voices->at(i);
+
+      // Don't return remote voices when the system is offline.
+      if (voice.remote && is_offline)
+        continue;
 
       out_voices->push_back(VoiceData());
       VoiceData& result_voice = out_voices->back();
