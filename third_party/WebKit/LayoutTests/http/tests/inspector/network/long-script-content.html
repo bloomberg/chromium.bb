@@ -4,31 +4,12 @@
 <script src="../network-test.js"></script>
 <script src="../debugger-test.js"></script>
 <script>
-var oldCapacities;
-
-function overrideLimits()
-{
-    if (!window.internals) {
-        console.log("This test can not be run as window.internals is not available.");
-        return;
-    }
-    internals.setInspectorResourcesDataSizeLimits(300, 100);
-    oldCapacities = internals.setMemoryCacheCapacities(0, 100, 100);
-}
-
-function restoreLimits()
-{
-    if (!window.internals)
-        return;
-    resetInspectorResourcesData();
-    internals.setMemoryCacheCapacities(oldCapacities[0], oldCapacities[1], oldCapacities[2]);
-}
 
 var scriptElement;
 function loadScript()
 {
     scriptElement = document.createElement("script");
-    scriptElement.src = "resources/long_script.js";
+    scriptElement.src = "resources/long_script.cgi";
     document.head.appendChild(scriptElement);
 }
 
@@ -39,36 +20,51 @@ function unloadScript()
 
 function test()
 {
-    InspectorTest.evaluateInPage("overrideLimits()", step2);
+    InspectorTest.hardReloadPage(step1);
+
+    function generateScript()
+    {
+        var fib = [8, 18, 2, 28, 59, 41, 34, 27, 16, 13];
+        var i = 0;
+
+        var buffer = [];
+        for (var x = 0; x < 33; ++x) {
+            buffer.push("// ");
+            for (var y = 0; y < 1020; ++y) {
+                buffer.push(String.fromCharCode(fib[i % 10] + 32));
+                fib[i % 10] = (fib[i % 10] + fib[(i + 3) % 10]) % 64;
+                i++;
+            }
+            buffer.push("\n");
+        }
+        var chunk = buffer.join("");
+
+        buffer = [];
+        for (var z = 0; z < 250; ++z)
+            buffer.push(chunk);
+        return buffer.join("");
+    }
+
+    function step1()
+    {
+        InspectorTest.evaluateInPage("loadScript()", step2);
+    }
 
     function step2()
     {
-        InspectorTest.hardReloadPage(step3);
+        InspectorTest.evaluateInPage("unloadScript()", step3);
     }
 
     function step3()
     {
-        InspectorTest.evaluateInPage("loadScript()", step4);
+        InspectorTest.showScriptSource("long_script.cgi", step4);
     }
 
-    function step4()
+    function step4(sourceFrame)
     {
-        InspectorTest.evaluateInPage("unloadScript()", step5);
-    }
-
-    function step5()
-    {
-        InspectorTest.showScriptSource("long_script.js", step6);
-    }
-
-    function step6(sourceFrame)
-    {
-        InspectorTest.addResult("Dumping loaded script content: \n" + sourceFrame._textEditor.text());
-        InspectorTest.evaluateInPage("restoreLimits()", step7);
-    }
-
-    function step7()
-    {
+        var loadedScript = sourceFrame._textEditor.text();
+        var generatedScript = generateScript();
+        InspectorTest.assertTrue(loadedScript === generatedScript, "Loaded script doesn't match generated");
         InspectorTest.completeTest();
     }
 }
