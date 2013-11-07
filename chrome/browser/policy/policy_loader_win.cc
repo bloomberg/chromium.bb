@@ -222,19 +222,25 @@ PolicyLoaderWin::PolicyLoaderWin(
       machine_policy_changed_event_(false, false),
       user_policy_watcher_failed_(false),
       machine_policy_watcher_failed_(false) {
-  if (!RegisterGPNotification(user_policy_changed_event_.handle(), false)) {
+  if (!::RegisterGPNotification(user_policy_changed_event_.handle(), false)) {
     DPLOG(WARNING) << "Failed to register user group policy notification";
     user_policy_watcher_failed_ = true;
   }
-  if (!RegisterGPNotification(machine_policy_changed_event_.handle(), true)) {
+  if (!::RegisterGPNotification(machine_policy_changed_event_.handle(), true)) {
     DPLOG(WARNING) << "Failed to register machine group policy notification.";
     machine_policy_watcher_failed_ = true;
   }
 }
 
 PolicyLoaderWin::~PolicyLoaderWin() {
-  user_policy_watcher_.StopWatching();
-  machine_policy_watcher_.StopWatching();
+  if (!user_policy_watcher_failed_) {
+    ::UnregisterGPNotification(user_policy_changed_event_.handle());
+    user_policy_watcher_.StopWatching();
+  }
+  if (!machine_policy_watcher_failed_) {
+    ::UnregisterGPNotification(machine_policy_changed_event_.handle());
+    machine_policy_watcher_.StopWatching();
+  }
 }
 
 // static
