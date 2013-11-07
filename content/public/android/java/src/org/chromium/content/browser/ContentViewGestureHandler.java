@@ -56,6 +56,12 @@ class ContentViewGestureHandler implements LongPressDelegate {
      */
     static final String DELTA = "Delta";
 
+    /**
+     * Used by UMA stat for tracking accidental double tap navigations. Specifies the amount of
+     * time after a double tap within which actions will be recorded to the UMA stat.
+     */
+    private static final long ACTION_AFTER_DOUBLE_TAP_WINDOW_MS = 5000;
+
     private final Bundle mExtraParamBundleSingleTap;
     private final Bundle mExtraParamBundleFling;
     private final Bundle mExtraParamBundleScroll;
@@ -175,6 +181,10 @@ class ContentViewGestureHandler implements LongPressDelegate {
 
     // Whether the click delay should always be disabled by sending clicks for double tap gestures.
     private final boolean mDisableClickDelay;
+
+    // Used for tracking UMA ActionAfterDoubleTap to tell user's immediate
+    // action after a double tap.
+    private long mLastDoubleTapTimeMs;
 
     static final int GESTURE_SHOW_PRESSED_STATE = 0;
     static final int GESTURE_DOUBLE_TAP = 1;
@@ -342,6 +352,19 @@ class ContentViewGestureHandler implements LongPressDelegate {
          * Show the zoom picker UI.
          */
         public void invokeZoomPicker();
+
+        /**
+         * Send action after dobule tap for UMA stat tracking.
+         * @param type The action that occured
+         * @param clickDelayEnabled Whether the tap down delay is active
+         */
+        public void sendActionAfterDoubleTapUMA(int type, boolean clickDelayEnabled);
+
+        /**
+         * Send single tap UMA.
+         * @param type The tap type: delayed or undelayed
+         */
+        public void sendSingleTapUMA(int type);
     }
 
     ContentViewGestureHandler(
@@ -518,6 +541,12 @@ class ContentViewGestureHandler implements LongPressDelegate {
                                     mIgnoreSingleTap = true;
                                 }
                                 setClickXAndY((int) x, (int) y);
+
+                                mMotionEventDelegate.sendSingleTapUMA(
+                                        isDoubleTapDisabled() ?
+                                        ContentViewCore.UMASingleTapType.UNDELAYED_TAP :
+                                        ContentViewCore.UMASingleTapType.DELAYED_TAP);
+
                                 return true;
                             } else if (isDoubleTapDisabled() || mDisableClickDelay) {
                                 // If double tap has been disabled, there is no need to wait
@@ -540,6 +569,11 @@ class ContentViewGestureHandler implements LongPressDelegate {
                         // this method might be called after receiving the up event.
                         // These corner cases should be ignored.
                         if (mLongPressDetector.isInLongPress() || mIgnoreSingleTap) return true;
+
+                        mMotionEventDelegate.sendSingleTapUMA(
+                                isDoubleTapDisabled() ?
+                                ContentViewCore.UMASingleTapType.UNDELAYED_TAP :
+                                ContentViewCore.UMASingleTapType.DELAYED_TAP);
 
                         int x = (int) e.getX();
                         int y = (int) e.getY();
@@ -1148,12 +1182,16 @@ class ContentViewGestureHandler implements LongPressDelegate {
 
     private boolean sendMotionEventAsGesture(
             int type, MotionEvent event, Bundle extraParams) {
-        return mMotionEventDelegate.sendGesture(type, event.getEventTime(),
+        return sendGesture(type, event.getEventTime(),
             (int) event.getX(), (int) event.getY(), extraParams);
     }
 
     private boolean sendGesture(
             int type, long timeMs, int x, int y, Bundle extraParams) {
+        updateDoubleTapUmaTimer();
+
+        if (type == GESTURE_DOUBLE_TAP) reportDoubleTap();
+
         return mMotionEventDelegate.sendGesture(type, timeMs, x, y, extraParams);
     }
 
@@ -1162,7 +1200,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
         // VSync should only be signalled if the sent gesture was generated from a touch event.
         mSentGestureNeedsVSync = mInputEventsDeliveredAtVSync && mTouchEventHandlingStackDepth > 0;
         mLastVSyncGestureTimeMs = timeMs;
-        return mMotionEventDelegate.sendGesture(type, timeMs, x, y, extraParams);
+        return sendGesture(type, timeMs, x, y, extraParams);
     }
 
     private boolean sendTapEndingEventAsGesture(int type, MotionEvent e, Bundle extraParams) {
@@ -1288,5 +1326,47 @@ class ContentViewGestureHandler implements LongPressDelegate {
             mGestureDetector.setOnDoubleTapListener(mDoubleTapListener);
         }
 
+    }
+
+    private void reportDoubleTap() {
+        // Make sure repeated double taps don't get silently dropped from
+        // the statistics.
+        if (mLastDoubleTapTimeMs > 0) {
+            mMotionEventDelegate.sendActionAfterDoubleTapUMA(
+                    ContentViewCore.UMAActionAfterDoubleTap.NO_ACTION, !mDisableClickDelay);
+        }
+
+        mLastDoubleTapTimeMs = SystemClock.uptimeMillis();
+    }
+
+    /**
+     * Update the UMA stat tracking accidental double tap navigations with a user action.
+     * @param type The action the user performed, one of the UMAActionAfterDoubleTap values
+     *             defined in ContentViewCore.
+     */
+    public void reportActionAfterDoubleTapUMA(int type) {
+        updateDoubleTapUmaTimer();
+
+        if (mLastDoubleTapTimeMs == 0) return;
+
+        long nowMs = SystemClock.uptimeMillis();
+        if ((nowMs - mLastDoubleTapTimeMs) < ACTION_AFTER_DOUBLE_TAP_WINDOW_MS) {
+            mMotionEventDelegate.sendActionAfterDoubleTapUMA(type, !mDisableClickDelay);
+            mLastDoubleTapTimeMs = 0;
+        }
+    }
+
+    // Watch for the UMA "action after double tap" timer expiring and reset
+    // the timer if necessary.
+    private void updateDoubleTapUmaTimer() {
+        if (mLastDoubleTapTimeMs == 0) return;
+
+        long nowMs = SystemClock.uptimeMillis();
+        if ((nowMs - mLastDoubleTapTimeMs) >= ACTION_AFTER_DOUBLE_TAP_WINDOW_MS) {
+            // Time expired, user took no action (that we care about).
+            mMotionEventDelegate.sendActionAfterDoubleTapUMA(
+                    ContentViewCore.UMAActionAfterDoubleTap.NO_ACTION, !mDisableClickDelay);
+            mLastDoubleTapTimeMs = 0;
+        }
     }
 }

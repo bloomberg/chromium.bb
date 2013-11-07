@@ -223,6 +223,12 @@ class ContentViewCoreImpl : public ContentViewCore,
                                   jobject jsurface);
   void DetachExternalVideoSurface(JNIEnv* env, jobject obj, jint player_id);
   void SetAccessibilityEnabled(JNIEnv* env, jobject obj, bool enabled);
+  void SendActionAfterDoubleTapUma(JNIEnv* env,
+                                   jobject obj,
+                                   jint type,
+                                   jboolean has_delay,
+                                   jint count);
+  void SendSingleTapUma(JNIEnv* env, jobject obj, jint type, jint count);
 
   // --------------------------------------------------------------------------
   // Public methods that call to Java via JNI

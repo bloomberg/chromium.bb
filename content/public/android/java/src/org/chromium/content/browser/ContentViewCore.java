@@ -459,6 +459,18 @@ public class ContentViewCore
 
     private ViewAndroid mViewAndroid;
 
+    public static class UMAActionAfterDoubleTap {
+        public static final int NAVIGATE_BACK = 0;
+        public static final int NAVIGATE_STOP = 1;
+        public static final int NO_ACTION = 2;
+        public static final int COUNT = 3;
+    }
+
+    public static class UMASingleTapType {
+        public static final int DELAYED_TAP = 0;
+        public static final int UNDELAYED_TAP = 1;
+        public static final int COUNT = 2;
+    }
 
     /**
      * Constructs a new ContentViewCore. Embedders must call initialize() after constructing
@@ -999,6 +1011,7 @@ public class ContentViewCore
      * Stops loading the current web contents.
      */
     public void stopLoading() {
+        reportActionAfterDoubleTapUMA(ContentViewCore.UMAActionAfterDoubleTap.NAVIGATE_STOP);
         if (mNativeContentViewCore != 0) nativeStopLoading(mNativeContentViewCore);
     }
 
@@ -1202,6 +1215,7 @@ public class ContentViewCore
      * Goes to the navigation entry before the current one.
      */
     public void goBack() {
+        reportActionAfterDoubleTapUMA(ContentViewCore.UMAActionAfterDoubleTap.NAVIGATE_BACK);
         if (mNativeContentViewCore != 0) nativeGoBack(mNativeContentViewCore);
     }
 
@@ -1335,6 +1349,10 @@ public class ContentViewCore
         }
     }
 
+    private void reportActionAfterDoubleTapUMA(int type) {
+        mContentViewGestureHandler.reportActionAfterDoubleTapUMA(type);
+    }
+
     @Override
     public boolean sendGesture(int type, long timeMs, int x, int y, Bundle b) {
         if (offerGestureToEmbedder(type)) return false;
@@ -1403,6 +1421,26 @@ public class ContentViewCore
             default:
                 return false;
         }
+    }
+
+    @Override
+    public void sendSingleTapUMA(int type) {
+        if (mNativeContentViewCore == 0) return;
+        nativeSendSingleTapUma(
+                mNativeContentViewCore,
+                type,
+                UMASingleTapType.COUNT);
+    }
+
+    @Override
+    public void sendActionAfterDoubleTapUMA(int type,
+            boolean clickDelayEnabled) {
+        if (mNativeContentViewCore == 0) return;
+        nativeSendActionAfterDoubleTapUma(
+                mNativeContentViewCore,
+                type,
+                clickDelayEnabled,
+                UMAActionAfterDoubleTap.COUNT);
     }
 
     @Override
@@ -3389,4 +3427,10 @@ public class ContentViewCore
 
     private native void nativeSetAccessibilityEnabled(
             int nativeContentViewCoreImpl, boolean enabled);
+
+    private native void nativeSendSingleTapUma(int nativeContentViewCoreImpl,
+            int type, int count);
+
+    private native void nativeSendActionAfterDoubleTapUma(int nativeContentViewCoreImpl,
+            int type, boolean hasDelay, int count);
 }

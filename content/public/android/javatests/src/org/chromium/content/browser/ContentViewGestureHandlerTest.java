@@ -118,6 +118,17 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
         }
 
         @Override
+        public void sendSingleTapUMA(int type) {
+            // Not implemented.
+        }
+
+        @Override
+        public void sendActionAfterDoubleTapUMA(int type,
+                boolean clickDelayEnabled) {
+            // Not implemented.
+        }
+
+        @Override
         public void onSentLastGestureForVSync(long timeMs) {
             mTotalSentLastGestureForVSyncCount++;
         }
@@ -1242,6 +1253,17 @@ public class ContentViewGestureHandlerTest extends InstrumentationTestCase {
             mGestureTypeList.add(mMostRecentGestureEvent.mType);
             mGestureTimeList.add(timeMs);
             return true;
+        }
+
+        @Override
+        public void sendSingleTapUMA(int type) {
+            // Not implemented.
+        }
+
+        @Override
+        public void sendActionAfterDoubleTapUMA(int type,
+                boolean clickDelayEnabled) {
+            // Not implemented.
         }
 
         @Override

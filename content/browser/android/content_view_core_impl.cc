@@ -11,6 +11,7 @@
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/metrics/histogram.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "cc/layers/layer.h"
@@ -1624,6 +1625,31 @@ void ContentViewCoreImpl::SetAccessibilityEnabled(JNIEnv* env, jobject obj,
     accessibility_state->DisableAccessibility();
     if (host_impl)
       host_impl->SetAccessibilityMode(AccessibilityModeOff);
+  }
+}
+
+void ContentViewCoreImpl::SendSingleTapUma(JNIEnv* env,
+                                           jobject obj,
+                                           jint type,
+                                           jint count) {
+  UMA_HISTOGRAM_ENUMERATION("Event.SingleTapType", type, count);
+}
+
+void ContentViewCoreImpl::SendActionAfterDoubleTapUma(JNIEnv* env,
+                                                      jobject obj,
+                                                      jint type,
+                                                      jboolean has_delay,
+                                                      jint count) {
+  // This UMA stat tracks a user's action after a double tap within
+  // k seconds (where k == 5 currently). This UMA will tell us if
+  // removing the tap gesture delay will lead to significantly more
+  // accidental navigations after a double tap.
+  if (has_delay) {
+    UMA_HISTOGRAM_ENUMERATION("Event.ActionAfterDoubleTapWithDelay", type,
+                              count);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("Event.ActionAfterDoubleTapNoDelay", type,
+                              count);
   }
 }
 
