@@ -1549,9 +1549,6 @@ const char kEnableNewNTP[]                  = "enable-new-ntp";
 // Pops the translate infobar if possible.
 const char kEnableTranslate[]               = "enable-translate";
 
-// Uses the tablet specific UI components when available.
-const char kTabletUI[]                      = "tablet-ui";
-
 // Enables support for playing videos on Chromecast devices.
 const char kEnableCast[]                    = "enable-cast";
 

@@ -24,12 +24,8 @@
 #include "components/user_prefs/pref_registry_syncable.h"
 #include "content/public/browser/user_metrics.h"
 #include "net/base/url_util.h"
+#include "ui/base/device_form_factor.h"
 #include "url/gurl.h"
-
-#if defined(OS_ANDROID)
-#include "base/command_line.h"
-#include "chrome/common/chrome_switches.h"
-#endif  // defined(OS_ANDROID)
 
 using content::UserMetricsAction;
 
@@ -61,20 +57,20 @@ const char kPrefPromoClosed[] = "closed";
 std::string PlatformString() {
 #if defined(OS_WIN)
   return "win";
+#elif defined(OS_ANDROID)
+  ui::DeviceFormFactor form_factor = ui::GetDeviceFormFactor();
+  return std::string("android-") +
+      (form_factor == ui::DEVICE_FORM_FACTOR_TABLET ? "tablet" : "phone");
 #elif defined(OS_IOS)
-  // TODO(noyau): add iOS-specific implementation
-  const bool isTablet = false;
-  return std::string("ios-") + (isTablet ? "tablet" : "phone");
+  ui::DeviceFormFactor form_factor = ui::GetDeviceFormFactor();
+  return std::string("ios-") +
+      (form_factor == ui::DEVICE_FORM_FACTOR_TABLET ? "tablet" : "phone");
 #elif defined(OS_MACOSX)
   return "mac";
 #elif defined(OS_CHROMEOS)
   return "chromeos";
 #elif defined(OS_LINUX)
   return "linux";
-#elif defined(OS_ANDROID)
-  const bool isTablet =
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kTabletUI);
-  return std::string("android-") + (isTablet ? "tablet" : "phone");
 #else
   return "none";
 #endif

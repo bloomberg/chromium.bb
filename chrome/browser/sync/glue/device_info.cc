@@ -11,6 +11,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 #include "sync/util/get_session_name.h"
+#include "ui/base/device_form_factor.h"
 
 namespace browser_sync {
 
@@ -18,7 +19,7 @@ namespace {
 
 #if defined(OS_ANDROID)
 bool IsTabletUI() {
-  return CommandLine::ForCurrentProcess()->HasSwitch(switches::kTabletUI);
+  return ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET;
 }
 #endif
 

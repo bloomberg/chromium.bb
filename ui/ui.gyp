@@ -141,6 +141,10 @@
         'base/default_theme_provider.cc',
         'base/default_theme_provider.h',
         'base/default_theme_provider_mac.mm',
+        'base/device_form_factor_android.cc',
+        'base/device_form_factor_desktop.cc',
+        'base/device_form_factor_ios.mm',
+        'base/device_form_factor.h',
         'base/dragdrop/cocoa_dnd_util.h',
         'base/dragdrop/cocoa_dnd_util.mm',
         'base/dragdrop/drag_drop_types.h',
@@ -566,6 +570,11 @@
         ['OS=="android" and android_webview_build==0', {
           'dependencies': [
             'ui_java',
+          ],
+        }],
+        ['OS=="android" or OS=="ios"', {
+          'sources!': [
+            'base/device_form_factor_desktop.cc'
           ],
         }],
         ['OS=="linux"', {

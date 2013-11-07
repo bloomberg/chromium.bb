@@ -19,6 +19,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
+#include "ui/base/device_form_factor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/webui/jstemplate_builder.h"
@@ -132,7 +133,7 @@ void NTPResourceCache::CreateNewTabHTML() {
                                  GetRawDataResource(IDR_NEW_TAB_ANDROID_HTML));
   localized_strings.SetString(
       "device",
-      CommandLine::ForCurrentProcess()->HasSwitch(switches::kTabletUI) ?
+      ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_TABLET ?
           "tablet" : "phone");
 
   bool bookmark_shortcuts_allowed = false;
