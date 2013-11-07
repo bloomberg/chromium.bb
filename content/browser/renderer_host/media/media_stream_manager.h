@@ -199,7 +199,7 @@ class CONTENT_EXPORT MediaStreamManager
 
   void HandleAccessRequestResponse(const std::string& label,
                                    const MediaStreamDevices& devices);
-  void StopStreamFromUI(const std::string& label);
+  void StopMediaStreamFromBrowser(const std::string& label);
 
   // Helpers.
   // Checks if all devices that was requested in the request identififed by
@@ -227,9 +227,22 @@ class CONTENT_EXPORT MediaStreamManager
                                        StreamDeviceInfo* device_info,
                                        MediaRequestState* request_state) const;
 
+  // Returns the label of the first request for a MediaStream that uses
+  // |device|.
+  std::string FindFirstMediaStreamRequestWithDevice(
+      const MediaStreamDevice& device) const;
+
   // Sends cached device list to a client corresponding to the request
   // identified by |label|.
   void SendCachedDeviceList(EnumerationCache* cache, const std::string& label);
+
+  // This method is called when an audio or video device is plugged in or
+  // removed. It make sure all MediaStreams that use a removed device is
+  // stopped and that the render process is notified. |old_devices| is the list
+  // of previously available devices. |new_devices| is the new
+  // list of currently available devices.
+  void StopRemovedDevices(const StreamDeviceInfoArray& old_devices,
+                          const StreamDeviceInfoArray& new_devices);
 
   // Helpers to start and stop monitoring devices.
   void StartMonitoring();

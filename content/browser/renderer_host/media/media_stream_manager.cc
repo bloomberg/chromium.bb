@@ -535,6 +535,40 @@ void MediaStreamManager::SendCachedDeviceList(
   }
 }
 
+void MediaStreamManager::StopRemovedDevices(
+    const StreamDeviceInfoArray& old_devices,
+    const StreamDeviceInfoArray& new_devices) {
+  DVLOG(1) << "StopRemovedDevices("
+           << "{#old_devices = " << old_devices.size() <<  "} "
+           << "{#new_devices = " << new_devices.size() << "})";
+  for (StreamDeviceInfoArray::const_iterator old_dev_it = old_devices.begin();
+       old_dev_it != old_devices.end(); ++old_dev_it) {
+    bool device_found = false;
+    for (StreamDeviceInfoArray::const_iterator new_dev_it = new_devices.begin();
+         new_dev_it != new_devices.end(); ++new_dev_it) {
+      if (old_dev_it->device.id == new_dev_it->device.id) {
+        device_found = true;
+        break;
+      }
+    }
+
+    if (!device_found) {
+      // A device has been removed. We need to check if it is used by a
+      // MediaStream and in that case cleanup and notify the render process.
+      do {
+        std::string label =
+            FindFirstMediaStreamRequestWithDevice(old_dev_it->device);
+        if (label.empty())
+          break;
+        // TODO(perkj): We would like to stop all tracks that use the removed
+        // device, not the MediaStream. But at the moment, there is no way of
+        // doing that from the browser process. crbug/315585
+        StopMediaStreamFromBrowser(label);
+      } while(true);
+    }
+  }
+}
+
 void MediaStreamManager::StartMonitoring() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (!base::SystemMonitor::Get())
@@ -736,6 +770,25 @@ bool MediaStreamManager::FindExistingRequestedDeviceInfo(
   return false;
 }
 
+std::string MediaStreamManager::FindFirstMediaStreamRequestWithDevice(
+    const MediaStreamDevice& device) const {
+  for (DeviceRequests::const_iterator it = requests_.begin();
+       it != requests_.end() ; ++it) {
+    const DeviceRequest* request = it->second;
+    if (request->request.request_type != MEDIA_GENERATE_STREAM)
+      continue;
+    for (StreamDeviceInfoArray::const_iterator device_it =
+             request->devices.begin();
+         device_it != request->devices.end(); ++device_it) {
+      if (device_it->device.id == device.id &&
+          device_it->device.type == device.type) {
+        return it->first;
+      }
+    }
+  }
+  return std::string();
+}
+
 void MediaStreamManager::InitializeDeviceManagersOnIOThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   if (device_thread_)
@@ -839,7 +892,7 @@ void MediaStreamManager::HandleRequestDone(const std::string& label,
 
   if (request->ui_proxy.get()) {
     request->ui_proxy->OnStarted(
-        base::Bind(&MediaStreamManager::StopStreamFromUI,
+        base::Bind(&MediaStreamManager::StopMediaStreamFromBrowser,
                    base::Unretained(this), label));
   }
 }
@@ -852,6 +905,8 @@ void MediaStreamManager::Closed(MediaStreamType stream_type,
 void MediaStreamManager::DevicesEnumerated(
     MediaStreamType stream_type, const StreamDeviceInfoArray& devices) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DVLOG(1) << "DevicesEnumerated("
+           << ", {stream_type = " << stream_type <<  "})";
 
   // Only cache the device list when the device list has been changed.
   bool need_update_clients = false;
@@ -862,6 +917,7 @@ void MediaStreamManager::DevicesEnumerated(
       devices.size() != cache->devices.size() ||
       !std::equal(devices.begin(), devices.end(), cache->devices.begin(),
                   StreamDeviceInfo::IsEqual)) {
+    StopRemovedDevices(cache->devices, devices);
     cache->valid = true;
     cache->devices = devices;
     need_update_clients = true;
@@ -1096,7 +1152,7 @@ void MediaStreamManager::HandleAccessRequestResponse(
     HandleRequestDone(label, request);
 }
 
-void MediaStreamManager::StopStreamFromUI(const std::string& label) {
+void MediaStreamManager::StopMediaStreamFromBrowser(const std::string& label) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   DeviceRequests::iterator it = requests_.find(label);
