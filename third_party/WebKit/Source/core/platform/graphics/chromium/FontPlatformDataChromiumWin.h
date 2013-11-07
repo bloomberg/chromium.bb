@@ -115,16 +115,7 @@ public:
 
     bool operator==(const FontPlatformData& other) const
     {
-    // m_font is only guaranteed to be set if GDI_FONTS_ON_WINDOWS is enabled.
-#if ENABLE(GDI_FONTS_ON_WINDOWS)
-        return m_font == other.m_font
-#else
-        return m_typeface == other.m_typeface
-#endif
-            && m_textSize == other.m_textSize
-            && m_fakeBold == other.m_fakeBold
-            && m_fakeItalic == other.m_fakeItalic
-            && m_orientation == other.m_orientation;
+        return m_font == other.m_font && m_textSize == other.m_textSize && m_fakeBold == other.m_fakeBold && m_fakeItalic == other.m_fakeItalic && m_orientation == other.m_orientation;
     }
 
 #if ENABLE(OPENTYPE_VERTICAL)
