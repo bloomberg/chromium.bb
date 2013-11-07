@@ -218,7 +218,17 @@ cr.define('options', function() {
       ManageProfileOverlay.setProfileInfo(profileInfo, 'create');
       $('create-profile-name-label').hidden = false;
       $('create-profile-name').hidden = false;
-      $('create-profile-name').focus();
+      // Trying to change the focus if this isn't the topmost overlay can
+      // instead cause the FocusManager to override another overlay's focus,
+      // e.g. if an overlay above this one is in the process of being reloaded.
+      // But the C++ handler calls this method directly on ManageProfileOverlay,
+      // so check the pageDiv to also include its subclasses (in particular
+      // CreateProfileOverlay, which has higher sub-overlays).
+      if (OptionsPage.getTopmostVisiblePage().pageDiv == this.pageDiv) {
+        // This will only have an effect if the 'create-profile-name' element
+        //  is visible, i.e. if the overlay is in create mode.
+        $('create-profile-name').focus();
+      }
       $('create-profile-ok').disabled = false;
     },
 

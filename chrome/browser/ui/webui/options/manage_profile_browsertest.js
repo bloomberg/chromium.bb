@@ -66,6 +66,36 @@ ManageProfileUITest.prototype = {
   },
 };
 
+TEST_F('ManageProfileUITest', 'NewProfileDefaultsFocus', function() {
+  var self = this;
+
+  function checkFocus(pageName, expectedFocus, initialFocus) {
+    OptionsPage.showPageByName(pageName);
+    initialFocus.focus();
+    expectEquals(initialFocus, document.activeElement, pageName);
+
+    ManageProfileOverlay.receiveNewProfileDefaults(
+        self.testProfileInfo_(false));
+    expectEquals(expectedFocus, document.activeElement, pageName);
+    OptionsPage.closeOverlay();
+  }
+
+  // Receiving new profile defaults sets focus to the name field if the create
+  // overlay is open, and should not change focus at all otherwise.
+  checkFocus('manageProfile',
+             $('manage-profile-cancel'),
+             $('manage-profile-cancel'));
+  checkFocus('createProfile',
+             $('create-profile-name'),
+             $('create-profile-cancel'));
+  checkFocus('managedUserLearnMore',
+             $('managed-user-learn-more-done'),
+             $('managed-user-learn-more-done'));
+  checkFocus('managedUserLearnMore',
+             document.querySelector('#managed-user-learn-more-text a'),
+             document.querySelector('#managed-user-learn-more-text a'));
+});
+
 // The default options should be reset each time the creation overlay is shown.
 TEST_F('ManageProfileUITest', 'DefaultCreateOptions', function() {
   OptionsPage.showPageByName('createProfile');
