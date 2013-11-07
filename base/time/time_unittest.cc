@@ -639,12 +639,17 @@ TEST(TimeTicks, ThreadNow) {
   if (TimeTicks::IsThreadNowSupported()) {
     TimeTicks begin = TimeTicks::Now();
     TimeTicks begin_thread = TimeTicks::ThreadNow();
-    // Sleep for 10 milliseconds to get the thread de-scheduled
+    // Make sure that ThreadNow value is non-zero.
+    EXPECT_GT(begin_thread, TimeTicks());
+    // Sleep for 10 milliseconds to get the thread de-scheduled.
     base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(10));
     TimeTicks end_thread = TimeTicks::ThreadNow();
     TimeTicks end = TimeTicks::Now();
     TimeDelta delta = end - begin;
     TimeDelta delta_thread = end_thread - begin_thread;
+    // Make sure that some thread time have elapsed.
+    EXPECT_GT(delta_thread.InMicroseconds(), 0);
+    // But the thread time is at least 9ms less than clock time.
     TimeDelta difference = delta - delta_thread;
     EXPECT_GE(difference.InMicroseconds(), 9000);
   }

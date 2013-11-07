@@ -548,7 +548,8 @@ class BASE_EXPORT TimeTicks {
 
   // Returns true if ThreadNow() is supported on this system.
   static bool IsThreadNowSupported() {
-#if defined(_POSIX_THREAD_CPUTIME) && (_POSIX_THREAD_CPUTIME >= 0)
+#if (defined(_POSIX_THREAD_CPUTIME) && (_POSIX_THREAD_CPUTIME >= 0)) || \
+    (defined(OS_MACOSX) && !defined(OS_IOS))
     return true;
 #else
     return false;
