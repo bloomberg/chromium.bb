@@ -33,6 +33,11 @@ const char kAshDebugShortcuts[] = "ash-debug-shortcuts";
 const char kAshDebugShowPreferredNetworks[] =
     "ash-debug-show-preferred-networks";
 
+// Indicates that the wallpaper images specified by
+// kAshDefaultWallpaper{Large,Small} are OEM-specific (i.e. they are not
+// downloadable from Google).
+const char kAshDefaultWallpaperIsOem[] = "ash-default-wallpaper-is-oem";
+
 // Default wallpaper to use (as paths to trusted, non-user-writable JPEG files).
 const char kAshDefaultWallpaperLarge[] = "ash-default-wallpaper-large";
 const char kAshDefaultWallpaperSmall[] = "ash-default-wallpaper-small";
@@ -139,6 +144,9 @@ const char kAshHideNotificationsForFactory[] =
 const char kAshHostWindowBounds[] = "ash-host-window-bounds";
 
 // OEM-supplied wallpaper (as paths to trusted, non-user-writable JPEG files).
+// TODO(derat): Remove these switches once OEM wallpaper is passed via
+// kAshDefaultWallpaper{Large,Small} and kAshDefaultWallpaperIsOem is set
+// correctly: http://crbug.com/315267
 const char kAshOemWallpaperLarge[] = "ash-oem-wallpaper-large";
 const char kAshOemWallpaperSmall[] = "ash-oem-wallpaper-small";
 

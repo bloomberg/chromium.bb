@@ -56,8 +56,10 @@ const char kWallpaperManifestBaseURL[] = "https://commondatastorage.googleapis."
 #endif
 
 bool IsOEMDefaultWallpaper() {
-  return CommandLine::ForCurrentProcess()->
-      HasSwitch(ash::switches::kAshOemWallpaperSmall);
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      ash::switches::kAshDefaultWallpaperIsOem) ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          ash::switches::kAshOemWallpaperSmall);
 }
 
 // Saves |data| as |file_name| to directory with |key|. Return false if the
@@ -620,8 +622,12 @@ bool WallpaperPrivateGetThumbnailFunction::RunImpl() {
     // TODO(bshe): Small resolution wallpaper is used here as wallpaper
     // thumbnail. We should either resize it or include a wallpaper thumbnail in
     // addition to large and small wallpaper resolutions.
-    thumbnail_path = CommandLine::ForCurrentProcess()->GetSwitchValuePath(
-        ash::switches::kAshOemWallpaperSmall);
+    thumbnail_path = CommandLine::ForCurrentProcess()->HasSwitch(
+        ash::switches::kAshDefaultWallpaperIsOem) ?
+        CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+            ash::switches::kAshDefaultWallpaperSmall) :
+        CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+            ash::switches::kAshOemWallpaperSmall);
   }
 
   sequence_token_ = BrowserThread::GetBlockingPool()->
