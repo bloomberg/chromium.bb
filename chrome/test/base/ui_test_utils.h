@@ -88,10 +88,6 @@ Browser* OpenURLOffTheRecord(Profile* profile, const GURL& url);
 void NavigateToURL(chrome::NavigateParams* params);
 
 // Navigates the selected tab of |browser| to |url|, blocking until the
-// navigation finishes. Simulates a POST and uses chrome::Navigate.
-void NavigateToURLWithPost(Browser* browser, const GURL& url);
-
-// Navigates the selected tab of |browser| to |url|, blocking until the
 // navigation finishes. Uses Browser::OpenURL --> chrome::Navigate.
 void NavigateToURL(Browser* browser, const GURL& url);
 
