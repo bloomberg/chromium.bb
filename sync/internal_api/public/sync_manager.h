@@ -53,6 +53,7 @@ class SyncSessionSnapshot;
 
 // Used by SyncManager::OnConnectionStatusChange().
 enum ConnectionStatus {
+  CONNECTION_NOT_ATTEMPTED,
   CONNECTION_OK,
   CONNECTION_AUTH_ERROR,
   CONNECTION_SERVER_ERROR

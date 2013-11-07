@@ -491,5 +491,32 @@ TEST_F(ProfileSyncServiceTest, FailToDownloadControlTypes) {
   EXPECT_FALSE(service_->sync_initialized());
 }
 
+TEST_F(ProfileSyncServiceTest, GetSyncTokenStatus) {
+  StartSyncService();
+  ProfileSyncService::SyncTokenStatus token_status =
+      service_->GetSyncTokenStatus();
+  EXPECT_EQ(syncer::CONNECTION_NOT_ATTEMPTED, token_status.connection_status);
+  EXPECT_TRUE(token_status.connection_status_update_time.is_null());
+  EXPECT_TRUE(token_status.token_request_time.is_null());
+  EXPECT_TRUE(token_status.token_receive_time.is_null());
+
+  // Sync engine is given invalid token at initialization and will report
+  // auth error when trying to connect.
+  service_->OnConnectionStatusChange(syncer::CONNECTION_AUTH_ERROR);
+  token_status = service_->GetSyncTokenStatus();
+  EXPECT_EQ(syncer::CONNECTION_AUTH_ERROR, token_status.connection_status);
+  EXPECT_FALSE(token_status.connection_status_update_time.is_null());
+  EXPECT_FALSE(token_status.token_request_time.is_null());
+  EXPECT_FALSE(token_status.token_receive_time.is_null());
+  EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
+            token_status.last_get_token_error);
+  EXPECT_TRUE(token_status.next_token_request_time.is_null());
+
+  // Simulate successful connection.
+  service_->OnConnectionStatusChange(syncer::CONNECTION_OK);
+  token_status = service_->GetSyncTokenStatus();
+  EXPECT_EQ(syncer::CONNECTION_OK, token_status.connection_status);
+}
+
 }  // namespace
 }  // namespace browser_sync

@@ -209,6 +209,17 @@ void TestProfileSyncService::RequestAccessToken() {
   }
 }
 
+void TestProfileSyncService::OnGetTokenSuccess(
+    const OAuth2TokenService::Request* request,
+    const std::string& access_token,
+    const base::Time& expiration_time) {
+  ProfileSyncService::OnGetTokenSuccess(request, access_token,
+                                        expiration_time);
+  if (synchronous_backend_initialization_) {
+    base::MessageLoop::current()->Quit();
+  }
+}
+
 void TestProfileSyncService::OnGetTokenFailure(
     const OAuth2TokenService::Request* request,
     const GoogleServiceAuthError& error) {

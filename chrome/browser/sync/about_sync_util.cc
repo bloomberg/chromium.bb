@@ -7,6 +7,7 @@
 #include <string>
 
 #include "base/strings/string16.h"
+#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -155,6 +156,34 @@ std::string GetTimeStr(base::Time time, const std::string& default_msg) {
   return time_str;
 }
 
+std::string GetConnectionStatus(
+    const ProfileSyncService::SyncTokenStatus& status) {
+  std::string message;
+  switch (status.connection_status) {
+    case syncer::CONNECTION_NOT_ATTEMPTED:
+      base::StringAppendF(&message, "not attempted");
+      break;
+    case syncer::CONNECTION_OK:
+      base::StringAppendF(
+          &message, "OK since %s",
+          GetTimeStr(status.connection_status_update_time, "n/a").c_str());
+      break;
+    case syncer::CONNECTION_AUTH_ERROR:
+      base::StringAppendF(
+          &message, "auth error since %s",
+          GetTimeStr(status.connection_status_update_time, "n/a").c_str());
+      break;
+    case syncer::CONNECTION_SERVER_ERROR:
+      base::StringAppendF(
+          &message, "server error since %s",
+          GetTimeStr(status.connection_status_update_time, "n/a").c_str());
+      break;
+    default:
+      NOTREACHED();
+  }
+  return message;
+}
+
 }  // namespace
 
 namespace sync_ui_util {
@@ -182,9 +211,16 @@ scoped_ptr<DictionaryValue> ConstructAboutInformation(
   StringSyncStat sync_id(section_credentials, "Sync Client ID");
   StringSyncStat invalidator_id(section_credentials, "Invalidator Client ID");
   StringSyncStat username(section_credentials, "Username");
-  BoolSyncStat is_token_available(section_credentials, "Sync Token Available");
+  StringSyncStat request_token_time(section_credentials, "Requested Token");
+  StringSyncStat receive_token_time(section_credentials, "Received Token");
+  StringSyncStat token_request_status(section_credentials,
+                                      "Token Request Status");
+  StringSyncStat next_token_request(section_credentials,
+                                    "Next Token Request");
 
   ListValue* section_local = AddSection(stats_list, "Local State");
+  StringSyncStat server_connection(section_local,
+                                   "Server Connection");
   StringSyncStat last_synced(section_local, "Last Synced");
   BoolSyncStat is_setup_complete(section_local,
                                  "Sync First-Time Setup Complete");
@@ -296,7 +332,18 @@ scoped_ptr<DictionaryValue> ConstructAboutInformation(
     invalidator_id.SetValue(full_status.invalidator_client_id);
   if (service->signin())
     username.SetValue(service->signin()->GetAuthenticatedUsername());
-  is_token_available.SetValue(service->IsOAuthRefreshTokenAvailable());
+
+  const ProfileSyncService::SyncTokenStatus& token_status =
+      service->GetSyncTokenStatus();
+  server_connection.SetValue(GetConnectionStatus(token_status));
+  request_token_time.SetValue(GetTimeStr(token_status.token_request_time,
+                                         "n/a"));
+  receive_token_time.SetValue(GetTimeStr(token_status.token_receive_time,
+                                         "n/a"));
+  std::string err = token_status.last_get_token_error.error_message();
+  token_request_status.SetValue(err.empty() ? "OK" : err);
+  next_token_request.SetValue(
+      GetTimeStr(token_status.next_token_request_time, "not scheduled"));
 
   last_synced.SetValue(service->GetLastSyncedTimeString());
   is_setup_complete.SetValue(service->HasSyncSetupCompleted());

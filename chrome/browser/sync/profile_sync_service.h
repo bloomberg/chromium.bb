@@ -174,6 +174,25 @@ class ProfileSyncService : public ProfileSyncServiceBase,
  public:
   typedef browser_sync::SyncBackendHost::Status Status;
 
+  // Status of sync server connection, sync token and token request.
+  struct SyncTokenStatus {
+    SyncTokenStatus();
+    ~SyncTokenStatus();
+
+    // Sync server connection status reported by sync backend.
+    base::Time connection_status_update_time;
+    syncer::ConnectionStatus connection_status;
+
+    // Times when OAuth2 access token is requested and received.
+    base::Time token_request_time;
+    base::Time token_receive_time;
+
+    // Error returned by OAuth2TokenService for token request and time when
+    // next request is scheduled.
+    GoogleServiceAuthError last_get_token_error;
+    base::Time next_token_request_time;
+  };
+
   enum SyncEventCodes  {
     MIN_SYNC_EVENT_CODE = 0,
 
@@ -656,6 +675,9 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // told to MergeDataAndStartSyncing yet.
   void OnDataTypeRequestsSyncStartup(syncer::ModelType type);
 
+  // Return sync token status.
+  SyncTokenStatus GetSyncTokenStatus() const;
+
  protected:
   // Used by test classes that derive from ProfileSyncService.
   virtual browser_sync::SyncBackendHost* GetBackendForTest();
@@ -986,6 +1008,14 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   net::BackoffEntry request_access_token_backoff_;
 
   base::WeakPtrFactory<ProfileSyncService> weak_factory_;
+
+  // States related to sync token and connection.
+  base::Time connection_status_update_time_;
+  syncer::ConnectionStatus connection_status_;
+  base::Time token_request_time_;
+  base::Time token_receive_time_;
+  GoogleServiceAuthError last_get_token_error_;
+  base::Time next_token_request_time_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileSyncService);
 };

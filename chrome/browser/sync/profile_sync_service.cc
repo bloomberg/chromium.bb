@@ -178,7 +178,9 @@ ProfileSyncService::ProfileSyncService(
       setup_in_progress_(false),
       oauth2_token_service_(oauth2_token_service),
       request_access_token_backoff_(&kRequestAccessTokenBackoffPolicy),
-      weak_factory_(this) {
+      weak_factory_(this),
+      connection_status_(syncer::CONNECTION_NOT_ATTEMPTED),
+      last_get_token_error_(GoogleServiceAuthError::AuthErrorNone()) {
   // By default, dev, canary, and unbranded Chromium users will go to the
   // development servers. Development servers have more features than standard
   // sync servers. Users with officially-branded Chrome stable and beta builds
@@ -649,6 +651,8 @@ void ProfileSyncService::OnGetTokenSuccess(
   // Reset backoff time after successful response.
   request_access_token_backoff_.Reset();
   access_token_ = access_token;
+  token_receive_time_ = base::Time::Now();
+  last_get_token_error_ = GoogleServiceAuthError::AuthErrorNone();
 
   if (sync_prefs_.SyncHasAuthError()) {
     sync_prefs_.SetSyncAuthError(false);
@@ -669,11 +673,14 @@ void ProfileSyncService::OnGetTokenFailure(
   DCHECK_EQ(access_token_request_, request);
   DCHECK_NE(error.state(), GoogleServiceAuthError::NONE);
   access_token_request_.reset();
+  last_get_token_error_ = error;
   switch (error.state()) {
     case GoogleServiceAuthError::CONNECTION_FAILED:
     case GoogleServiceAuthError::SERVICE_UNAVAILABLE: {
       // Transient error. Retry after some time.
       request_access_token_backoff_.InformOfRequest(false);
+      next_token_request_time_ = base::Time::Now() +
+          request_access_token_backoff_.GetTimeUntilRelease();
       request_access_token_retry_timer_.Start(
             FROM_HERE,
             request_access_token_backoff_.GetTimeUntilRelease(),
@@ -1126,6 +1133,8 @@ AuthError ConnectionStatusToAuthError(
 
 void ProfileSyncService::OnConnectionStatusChange(
     syncer::ConnectionStatus status) {
+  connection_status_update_time_ = base::Time::Now();
+  connection_status_ = status;
   if (status == syncer::CONNECTION_AUTH_ERROR) {
     // Sync server returned error indicating that access token is invalid. It
     // could be either expired or access is revoked. Let's request another
@@ -1913,6 +1922,10 @@ void ProfileSyncService::RequestAccessToken() {
   }
 
   access_token_.clear();
+
+  token_request_time_ = base::Time::Now();
+  token_receive_time_ = base::Time();
+  next_token_request_time_ = base::Time();
   access_token_request_ =
       oauth2_token_service_->StartRequest(account_id, oauth2_scopes, this);
 }
@@ -2176,4 +2189,22 @@ std::string ProfileSyncService::GetAccountIdToUse() {
 
 WeakHandle<syncer::JsEventHandler> ProfileSyncService::GetJsEventHandler() {
   return MakeWeakHandle(sync_js_controller_.AsWeakPtr());
+}
+
+ProfileSyncService::SyncTokenStatus::SyncTokenStatus()
+    : connection_status(syncer::CONNECTION_NOT_ATTEMPTED),
+      last_get_token_error(GoogleServiceAuthError::AuthErrorNone()) {}
+ProfileSyncService::SyncTokenStatus::~SyncTokenStatus() {}
+
+ProfileSyncService::SyncTokenStatus
+ProfileSyncService::GetSyncTokenStatus() const {
+  SyncTokenStatus status;
+  status.connection_status_update_time = connection_status_update_time_;
+  status.connection_status = connection_status_;
+  status.token_request_time = token_request_time_;
+  status.token_receive_time = token_receive_time_;
+  status.last_get_token_error = last_get_token_error_;
+  if (request_access_token_retry_timer_.IsRunning())
+    status.next_token_request_time = next_token_request_time_;
+  return status;
 }

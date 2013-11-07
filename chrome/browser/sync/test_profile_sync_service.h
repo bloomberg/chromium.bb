@@ -117,6 +117,9 @@ class TestProfileSyncService : public ProfileSyncService {
   virtual ~TestProfileSyncService();
 
   virtual void RequestAccessToken() OVERRIDE;
+  virtual void OnGetTokenSuccess(const OAuth2TokenService::Request* request,
+                                 const std::string& access_token,
+                                 const base::Time& expiration_time) OVERRIDE;
   virtual void OnGetTokenFailure(const OAuth2TokenService::Request* request,
       const GoogleServiceAuthError& error) OVERRIDE;
 
