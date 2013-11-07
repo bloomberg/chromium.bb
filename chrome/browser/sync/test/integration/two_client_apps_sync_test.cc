@@ -214,8 +214,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, UninstallThenInstall) {
 }
 
 // TCM ID - 3699295.
-// Flaky: http://crbug.com/226055
-IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, DISABLED_Merge) {
+IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, Merge) {
   ASSERT_TRUE(SetupSync());
   ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
 
