@@ -50,9 +50,7 @@ class ActivityLogApiTest : public ExtensionApiTest {
 // TODO(karenlees): fix flakiness on win debug - crbug.com/299393
 #define MAYBE_TriggerEvent DISABLED_TriggerEvent
 #else
-// Disabled while waiting for Blink roll to avoid
-// https://codereview.chromium.org/52203002
-#define MAYBE_TriggerEvent DISABLED_TriggerEvent
+#define MAYBE_TriggerEvent TriggerEvent
 #endif
 
 // The test extension sends a message to its 'friend'. The test completes
