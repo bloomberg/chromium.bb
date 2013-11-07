@@ -254,13 +254,9 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest,
   EXPECT_EQ(path_profile2, browser_list->get(1)->profile()->GetPath());
 }
 
-#if defined(OS_WIN)
-// Flakily times out on Windows: http://crbug.com/314905
-#define MAYBE_EphemeralProfile DISABLED_EphemeralProfile
-#else
-#define MAYBE_EphemeralProfile EphemeralProfile
-#endif  // defined(OS_WIN)
-IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, MAYBE_EphemeralProfile) {
+// This test used to be flakily timing out on Windows: http://crbug.com/314905.
+// If this happens again please make it a MAYBE_ test and reopen that bug.
+IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, EphemeralProfile) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))
@@ -320,13 +316,6 @@ IN_PROC_BROWSER_TEST_F(ProfileManagerBrowserTest, MAYBE_EphemeralProfile) {
   // The second should though.
   browser_list->get(1)->window()->Close();
   content::RunAllPendingInMessageLoop();
-  content::RunAllPendingInMessageLoop();
   EXPECT_EQ(1U, browser_list->size());
-  ASSERT_EQ(1U, cache.GetNumberOfProfiles());
-
-  // Closing the last window should not reduce the number of profiles.
-  browser_list->get(0)->window()->Close();
-  content::RunAllPendingInMessageLoop();
-  EXPECT_EQ(0U, browser_list->size());
   ASSERT_EQ(1U, cache.GetNumberOfProfiles());
 }
