@@ -82,6 +82,10 @@ class RemoteToLocalSyncer : public SyncTask {
                   const SyncFileMetadata& metadata,
                   const FileChangeList& changes);
 
+  void DeleteLocalFile(const SyncStatusCallback& callback);
+  void DidDeleteLocalFile(const SyncStatusCallback& callback,
+                          SyncStatusCode status);
+
   drive::DriveServiceInterface* drive_service();
   MetadataDatabase* metadata_database();
   RemoteChangeProcessor* remote_change_processor();

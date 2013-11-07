@@ -150,6 +150,11 @@ void RemoteToLocalSyncer::ResolveRemoteChange(
     return;
   }
 
+  if (!dirty_tracker_.active()) {
+    HandleOfflineSolvable(callback);
+    return;
+  }
+
   if (deleted_synced_details_) {
     if (deleted_remote_details_) {
       SyncCompleted(callback);
@@ -218,8 +223,18 @@ void RemoteToLocalSyncer::HandleDeletion(
 void RemoteToLocalSyncer::DidPrepareForDeletion(
     const SyncStatusCallback& callback,
     SyncStatusCode status) {
-  NOTIMPLEMENTED();
-  callback.Run(SYNC_STATUS_FAILED);
+  if (status != SYNC_STATUS_OK) {
+    callback.Run(status);
+    return;
+  }
+
+  if (local_changes_.empty()) {
+    DeleteLocalFile(callback);
+    return;
+  }
+
+  // File is locally deleted or locally updated.
+  SyncCompleted(callback);
 }
 
 void RemoteToLocalSyncer::HandleNewFile(
@@ -283,6 +298,9 @@ void RemoteToLocalSyncer::SyncCompleted(
     const SyncStatusCallback& callback) {
   NOTIMPLEMENTED();
   callback.Run(SYNC_STATUS_FAILED);
+
+  // TODO(tzik): Clear dirty mark of the |dirty_tracker|, report operation log
+  // the observer.
 }
 
 void RemoteToLocalSyncer::Prepare(const SyncStatusCallback& callback) {
@@ -309,6 +327,40 @@ void RemoteToLocalSyncer::DidPrepare(const SyncStatusCallback& callback,
   local_changes_ = local_changes;
 
   callback.Run(status);
+}
+
+void RemoteToLocalSyncer::DeleteLocalFile(const SyncStatusCallback& callback) {
+  if (sync_root_modification_) {
+    // TODO(tzik): Sync-root is deleted. Needs special handling.
+    NOTIMPLEMENTED();
+    callback.Run(SYNC_STATUS_FAILED);
+    return;
+  }
+
+  if (dirty_tracker_.tracker_kind() == TRACKER_KIND_APP_ROOT) {
+    // TODO(tzik): Active app-root is deleted. Needs special handling.
+    NOTIMPLEMENTED();
+    callback.Run(SYNC_STATUS_FAILED);
+    return;
+  }
+
+  remote_change_processor()->ApplyRemoteChange(
+      FileChange(FileChange::FILE_CHANGE_DELETE, SYNC_FILE_TYPE_UNKNOWN),
+      base::FilePath(),
+      url_,
+      base::Bind(&RemoteToLocalSyncer::DidDeleteLocalFile,
+                 weak_ptr_factory_.GetWeakPtr(), callback));
+}
+
+void RemoteToLocalSyncer::DidDeleteLocalFile(
+    const SyncStatusCallback& callback,
+    SyncStatusCode status) {
+  if (status != SYNC_STATUS_OK) {
+    callback.Run(status);
+    return;
+  }
+
+  SyncCompleted(callback);
 }
 
 drive::DriveServiceInterface* RemoteToLocalSyncer::drive_service() {
