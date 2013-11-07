@@ -743,11 +743,9 @@ function buildAuthenticationManager() {
         if (items.lastSignedInState != signedIn) {
           chrome.storage.local.set(
               {lastSignedInState: signedIn});
-          if (items.lastSignedInState != undefined) {
-            listeners.forEach(function(callback) {
-              callback();
-            });
-          }
+          listeners.forEach(function(callback) {
+            callback();
+          });
         }
       });
     });
