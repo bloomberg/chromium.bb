@@ -155,4 +155,7 @@ class WebGLConformanceExpectations(test_expectations.TestExpectations):
         ['android'])
     self.Fail('conformance/canvas/drawingbuffer-test.html',
         ['android'], bug=314997)
-
+    self.Fail('conformance/glsl/misc/empty_main.vert.html',
+        ['android'], bug=315976)
+    self.Fail('conformance/glsl/misc/gl_position_unset.vert.html',
+        ['android'], bug=315976)
