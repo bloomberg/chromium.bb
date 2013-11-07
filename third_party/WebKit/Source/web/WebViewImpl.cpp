@@ -124,7 +124,6 @@
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/Image.h"
 #include "core/platform/graphics/ImageBuffer.h"
-#include "core/platform/graphics/chromium/LayerPainterChromium.h"
 #include "core/rendering/RenderLayerCompositor.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/RenderWidget.h"
