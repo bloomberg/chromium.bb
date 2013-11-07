@@ -43,6 +43,22 @@ base::Closure g_next_paint_callback;
 // The distance between the arrow tip and edge of the anchor view.
 const int kArrowOffset = 10;
 
+// Determines whether the current environment supports shadows bubble borders.
+bool SupportsShadow() {
+#if defined(USE_AURA) && defined(OS_WIN)
+  // Shadows are not supported on Windows Aura without Aero Glass.
+  if (!ui::win::IsAeroGlassEnabled() ||
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableDwmComposition)) {
+    return false;
+  }
+#elif defined(OS_LINUX) && !defined(USE_ASH)
+  // Shadows are not supported on (non-ChromeOS) Linux.
+  return false;
+#endif
+  return true;
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -209,14 +225,8 @@ void AppListView::InitAsBubbleInternal(gfx::NativeView parent,
                                      kArrowOffset - anchor_offset.y(),
                                      kArrowOffset - anchor_offset.x()));
   set_border_accepts_events(border_accepts_events);
-  set_shadow(views::BubbleBorder::BIG_SHADOW);
-#if defined(USE_AURA) && defined(OS_WIN)
-  if (!ui::win::IsAeroGlassEnabled() ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableDwmComposition)) {
-    set_shadow(views::BubbleBorder::NO_SHADOW_OPAQUE_BORDER);
-  }
-#endif
+  set_shadow(SupportsShadow() ? views::BubbleBorder::BIG_SHADOW
+                              : views::BubbleBorder::NO_SHADOW_OPAQUE_BORDER);
   views::BubbleDelegateView::CreateBubble(this);
   SetBubbleArrow(arrow);
 
