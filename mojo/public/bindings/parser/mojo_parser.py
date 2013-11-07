@@ -150,7 +150,8 @@ class Parser(object):
       p[0] = ListFromConcat(p[1], p[3])
 
   def p_attribute(self, p):
-    """attribute : NAME EQUALS NUMBER"""
+    """attribute : NAME EQUALS NUMBER
+                 | NAME EQUALS NAME"""
     p[0] = ('ATTRIBUTE', p[1], p[3])
 
   def p_struct(self, p):
@@ -168,8 +169,8 @@ class Parser(object):
     p[0] = ('FIELD', p[1], p[2], p[3])
 
   def p_interface(self, p):
-    """interface : INTERFACE NAME LCURLY methods RCURLY SEMICOLON"""
-    p[0] = ('INTERFACE', p[2], p[4])
+    """interface : attribute_section INTERFACE NAME LCURLY methods RCURLY SEMICOLON"""
+    p[0] = ('INTERFACE', p[3], p[1], p[5])
 
   def p_methods(self, p):
     """methods : method methods

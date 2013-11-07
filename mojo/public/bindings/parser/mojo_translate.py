@@ -76,11 +76,12 @@ class MojomBuilder():
     self.mojom['structs'].append(struct)
     # TODO(darin): Add support for |attributes|
 
-  def AddInterface(self, name, methods):
+  def AddInterface(self, name, attributes, methods):
     interface = {}
     interface['name'] = name
     interface['methods'] = MapMethods(methods)
     self.mojom['interfaces'].append(interface)
+    # TODO(darin): Add support for |attributes|
 
   def AddModule(self, name, contents):
     self.mojom['name'] = name
@@ -91,7 +92,7 @@ class MojomBuilder():
       if item[0] == 'STRUCT':
         self.AddStruct(name=item[1], attributes=item[2], fields=item[3])
       elif item[0] == 'INTERFACE':
-        self.AddInterface(name=item[1], methods=item[2])
+        self.AddInterface(name=item[1], attributes=item[2], methods=item[3])
 
   def Build(self, tree):
     if tree[0] == 'MODULE':
