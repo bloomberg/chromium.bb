@@ -36,7 +36,8 @@ class ContextTestBase : public content::ContentBrowserTest {
         WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
             gpu_channel_host.get(),
             blink::WebGraphicsContext3D::Attributes(),
-            GURL()));
+            GURL(),
+            WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits()));
     CHECK(context_.get());
     context_->makeContextCurrent();
     context_support_ = context_->GetContextSupport();
@@ -121,7 +122,8 @@ class BrowserGpuChannelHostFactoryTest : public ContextTestBase {
         WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
             GetGpuChannel(),
             blink::WebGraphicsContext3D::Attributes(),
-            GURL()));
+            GURL(),
+            WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits()));
   }
 };
 

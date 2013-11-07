@@ -904,6 +904,9 @@ const char kWaitForDebuggerChildren[]       = "wait-for-debugger-children";
 // Logging.cpp in WebKit's WebCore for a list of available channels.
 const char kWebCoreLogChannels[]            = "webcore-log-channels";
 
+// Overrides the amount of shared memory the webgl command buffer allocates
+const char kWebGLCommandBufferSizeKb[]      = "webgl-command-buffer-size-kb";
+
 // Causes the process to run as a worker subprocess.
 const char kWorkerProcess[]                 = "worker";
 

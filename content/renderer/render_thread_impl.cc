@@ -887,7 +887,8 @@ RenderThreadImpl::GetGpuFactories() {
               WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
                   gpu_channel_host.get(),
                   blink::WebGraphicsContext3D::Attributes(),
-                  GURL("chrome://gpu/RenderThreadImpl::GetGpuVDAContext3D"))),
+                  GURL("chrome://gpu/RenderThreadImpl::GetGpuVDAContext3D"),
+                  WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits())),
           "GPU-VideoAccelerator-Offscreen");
     }
   }
@@ -913,7 +914,8 @@ RenderThreadImpl::CreateOffscreenContext3d() {
       WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
           gpu_channel_host.get(),
           attributes,
-          GURL("chrome://gpu/RenderThreadImpl::CreateOffscreenContext3d")));
+          GURL("chrome://gpu/RenderThreadImpl::CreateOffscreenContext3d"),
+          WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits()));
 }
 
 scoped_refptr<cc::ContextProvider>

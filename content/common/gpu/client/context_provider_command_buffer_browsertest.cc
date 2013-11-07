@@ -34,7 +34,8 @@ class ContextProviderCommandBufferBrowserTest : public ContentBrowserTest {
         WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
             gpu_channel_host.get(),
             blink::WebGraphicsContext3D::Attributes(),
-            GURL("chrome://gpu/ContextProviderCommandBufferTest")));
+            GURL("chrome://gpu/ContextProviderCommandBufferTest"),
+            WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits()));
     return context.Pass();
   }
 };

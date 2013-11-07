@@ -75,7 +75,7 @@ class WebGraphicsContext3DCommandBufferImpl
     kNoLimit = 0,
   };
 
-  struct SharedMemoryLimits {
+  struct CONTENT_EXPORT SharedMemoryLimits {
     SharedMemoryLimits();
 
     size_t command_buffer_size;
@@ -127,7 +127,8 @@ class WebGraphicsContext3DCommandBufferImpl
       CreateOffscreenContext(
           GpuChannelHost* host,
           const WebGraphicsContext3D::Attributes& attributes,
-          const GURL& active_url);
+          const GURL& active_url,
+          const SharedMemoryLimits& limits);
 
   size_t GetMappedMemoryLimit() {
     return mem_limits_.mapped_memory_reclaim_limit;

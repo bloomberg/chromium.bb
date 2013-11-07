@@ -925,10 +925,24 @@ RendererWebKitPlatformSupportImpl::createOffscreenGraphicsContext3D(
   scoped_refptr<GpuChannelHost> gpu_channel_host(
       RenderThreadImpl::current()->EstablishGpuChannelSync(
           CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE));
+
+  WebGraphicsContext3DCommandBufferImpl::SharedMemoryLimits limits;
+
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kWebGLCommandBufferSizeKb)) {
+    std::string size_string = command_line->GetSwitchValueASCII(
+        switches::kWebGLCommandBufferSizeKb);
+    size_t buffer_size_kb;
+    if (base::StringToSizeT(size_string, &buffer_size_kb)) {
+      limits.command_buffer_size = buffer_size_kb * 1024;
+    }
+  }
+
   return WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
       gpu_channel_host.get(),
       attributes,
-      GURL(attributes.topDocumentURL));
+      GURL(attributes.topDocumentURL),
+      limits);
 }
 
 //------------------------------------------------------------------------------

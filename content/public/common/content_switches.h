@@ -255,6 +255,7 @@ extern const char kUtilityProcessAllowedDir[];
 CONTENT_EXPORT extern const char kUtilityProcessEnableMDns[];
 CONTENT_EXPORT extern const char kWaitForDebuggerChildren[];
 extern const char kWebCoreLogChannels[];
+CONTENT_EXPORT extern const char kWebGLCommandBufferSizeKb[];
 CONTENT_EXPORT extern const char kWorkerProcess[];
 CONTENT_EXPORT extern const char kZygoteCmdPrefix[];
 CONTENT_EXPORT extern const char kZygoteProcess[];

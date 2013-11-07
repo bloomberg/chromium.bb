@@ -1263,7 +1263,8 @@ WebGraphicsContext3DCommandBufferImpl*
 WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
     GpuChannelHost* host,
     const WebGraphicsContext3D::Attributes& attributes,
-    const GURL& active_url) {
+    const GURL& active_url,
+    const SharedMemoryLimits& limits) {
   if (!host)
     return NULL;
   base::WeakPtr<WebGraphicsContext3DSwapBuffersClient> null_client;
@@ -1275,7 +1276,7 @@ WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
                                                    use_echo_for_swap_ack,
                                                    attributes,
                                                    false,
-                                                   SharedMemoryLimits());
+                                                   limits);
 }
 
 void WebGraphicsContext3DCommandBufferImpl::
