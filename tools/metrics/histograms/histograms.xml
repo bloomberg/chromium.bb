@@ -18486,6 +18486,13 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Sync.SyncAuthError" enum="SyncAuthError">
+  <summary>
+    Counts the number of times sync clients have encountered an auth error and
+    number of times auth errors are fixed.
+  </summary>
+</histogram>
+
 <histogram name="SyncedNotification.Actions"
     enum="SyncedNotificationActionType">
   <summary>
@@ -28423,6 +28430,12 @@ other types of suffix sets.
   <int value="1" label="Failure"/>
   <int value="2" label="Cancelled"/>
   <int value="3" label="Attempted"/>
+</enum>
+
+<enum name="SyncAuthError" type="int">
+  <int value="0"
+      label="Number of times clients have encountered an Auth error."/>
+  <int value="1" label="Number of times clients have fixed an auth error."/>
 </enum>
 
 <enum name="SyncBackendInitializeRestoreState" type="int">

@@ -720,6 +720,13 @@ class ProfileSyncService : public ProfileSyncServiceBase,
     ERROR_REASON_ACTIONABLE_ERROR,
     ERROR_REASON_LIMIT
   };
+
+  enum AuthErrorMetric {
+    AUTH_ERROR_ENCOUNTERED,
+    AUTH_ERROR_FIXED,
+    AUTH_ERROR_LIMIT
+  };
+
   friend class ProfileSyncServicePasswordTest;
   friend class SyncTest;
   friend class TestProfileSyncService;

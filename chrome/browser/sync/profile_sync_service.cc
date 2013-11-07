@@ -649,6 +649,14 @@ void ProfileSyncService::OnGetTokenSuccess(
   // Reset backoff time after successful response.
   request_access_token_backoff_.Reset();
   access_token_ = access_token;
+
+  if (sync_prefs_.SyncHasAuthError()) {
+    sync_prefs_.SetSyncAuthError(false);
+    UMA_HISTOGRAM_ENUMERATION("Sync.SyncAuthError",
+                              AUTH_ERROR_FIXED,
+                              AUTH_ERROR_LIMIT);
+  }
+
   if (backend_)
     backend_->UpdateCredentials(GetCredentials());
   else
@@ -690,6 +698,13 @@ void ProfileSyncService::OnGetTokenFailure(
         }
         UMA_HISTOGRAM_COUNTS("Sync.AuthServerRejectedTokenAgeLong",
                              age.InDays());
+      }
+
+      if (!sync_prefs_.SyncHasAuthError()) {
+        sync_prefs_.SetSyncAuthError(true);
+        UMA_HISTOGRAM_ENUMERATION("Sync.SyncAuthError",
+                                  AUTH_ERROR_ENCOUNTERED,
+                                  AUTH_ERROR_LIMIT);
       }
       // Fallthrough.
     }

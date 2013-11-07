@@ -70,6 +70,9 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
   bool HasSyncSetupCompleted() const;
   void SetSyncSetupCompleted();
 
+  bool SyncHasAuthError() const;
+  void SetSyncAuthError(bool error);
+
   bool IsStartSuppressed() const;
   void SetStartSuppressed(bool is_suppressed);
 

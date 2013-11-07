@@ -106,6 +106,11 @@ void SyncPrefs::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 #endif
 
+  registry->RegisterBooleanPref(
+      prefs::kSyncHasAuthError,
+      false,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+
   registry->RegisterStringPref(
       prefs::kSyncSessionsGUID,
       std::string(),
@@ -167,6 +172,19 @@ void SyncPrefs::SetSyncSetupCompleted() {
   CHECK(pref_service_);
   pref_service_->SetBoolean(prefs::kSyncHasSetupCompleted, true);
   SetStartSuppressed(false);
+}
+
+bool SyncPrefs::SyncHasAuthError() const {
+  DCHECK(CalledOnValidThread());
+  return
+      pref_service_ &&
+      pref_service_->GetBoolean(prefs::kSyncHasAuthError);
+}
+
+void SyncPrefs::SetSyncAuthError(bool error) {
+  DCHECK(CalledOnValidThread());
+  CHECK(pref_service_);
+  pref_service_->SetBoolean(prefs::kSyncHasAuthError, error);
 }
 
 bool SyncPrefs::IsStartSuppressed() const {
