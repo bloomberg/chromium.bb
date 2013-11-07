@@ -137,7 +137,7 @@ def cpp_value(interface, method, number_of_arguments):
     cpp_arguments = v8_utilities.call_with_arguments(method)
     cpp_arguments.extend(cpp_argument(argument) for argument in arguments)
 
-    cpp_method_name = v8_utilities.scoped_name(interface, method, method.name)
+    cpp_method_name = v8_utilities.scoped_name(interface, method, v8_utilities.cpp_name(method))
     return '%s(%s)' % (cpp_method_name, ', '.join(cpp_arguments))
 
 

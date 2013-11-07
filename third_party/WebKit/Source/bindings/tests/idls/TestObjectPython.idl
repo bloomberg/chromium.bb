@@ -318,4 +318,5 @@ interface TestObjectPython {
     [CustomElementCallbacks] void customElementCallbacksVoidMethod();
     [DeprecateAs=voidMethod] void deprecatedVoidMethod();
     [DoNotCheckSignature] void doNotCheckSignatureVoidMethod();
+    [ImplementedAs=implementedAsMethodName] void implementedAsVoidMethod();
 };
