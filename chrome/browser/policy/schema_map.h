@@ -38,6 +38,10 @@ class SchemaMap : public base::RefCountedThreadSafe<SchemaMap> {
   // Unknown components are also dropped.
   void FilterBundle(PolicyBundle* bundle) const;
 
+  // Returns true if this map contains at least one component of a domain other
+  // than POLICY_DOMAIN_CHROME.
+  bool HasComponents() const;
+
  private:
   friend class base::RefCountedThreadSafe<SchemaMap>;
 

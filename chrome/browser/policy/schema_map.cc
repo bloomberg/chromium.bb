@@ -69,4 +69,15 @@ void SchemaMap::FilterBundle(PolicyBundle* bundle) const {
   }
 }
 
+bool SchemaMap::HasComponents() const {
+  for (DomainMap::const_iterator domain = map_.begin();
+       domain != map_.end(); ++domain) {
+    if (domain->first == POLICY_DOMAIN_CHROME)
+      continue;
+    if (!domain->second.empty())
+      return true;
+  }
+  return false;
+}
+
 }  // namespace policy

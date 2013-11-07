@@ -44,14 +44,16 @@ const char kTestSchema[] =
 
 class SchemaMapTest : public testing::Test {
  protected:
-  scoped_refptr<SchemaMap> CreateTestMap() {
+  Schema CreateTestSchema() {
     std::string error;
     Schema schema = Schema::Parse(kTestSchema, &error);
-    if (!schema.valid()) {
+    if (!schema.valid())
       ADD_FAILURE() << error;
-      return NULL;
-    }
+    return schema;
+  }
 
+  scoped_refptr<SchemaMap> CreateTestMap() {
+    Schema schema = CreateTestSchema();
     ComponentMap component_map;
     component_map["extension-1"] = schema;
     component_map["extension-2"] = schema;
@@ -70,11 +72,32 @@ TEST_F(SchemaMapTest, Empty) {
   EXPECT_FALSE(map->GetComponents(POLICY_DOMAIN_CHROME));
   EXPECT_FALSE(map->GetComponents(POLICY_DOMAIN_EXTENSIONS));
   EXPECT_FALSE(map->GetSchema(PolicyNamespace(POLICY_DOMAIN_CHROME, "")));
+  EXPECT_FALSE(map->HasComponents());
+}
+
+TEST_F(SchemaMapTest, HasComponents) {
+  scoped_refptr<SchemaMap> map = new SchemaMap();
+  EXPECT_FALSE(map->HasComponents());
+
+  // The Chrome schema does not count as a component.
+  Schema schema = CreateTestSchema();
+  ComponentMap component_map;
+  component_map[""] = schema;
+  DomainMap domain_map;
+  domain_map[POLICY_DOMAIN_CHROME] = component_map;
+  map = new SchemaMap(domain_map);
+  EXPECT_FALSE(map->HasComponents());
+
+  // An extension schema does.
+  domain_map[POLICY_DOMAIN_EXTENSIONS] = component_map;
+  map = new SchemaMap(domain_map);
+  EXPECT_TRUE(map->HasComponents());
 }
 
 TEST_F(SchemaMapTest, Lookups) {
   scoped_refptr<SchemaMap> map = CreateTestMap();
   ASSERT_TRUE(map);
+  EXPECT_TRUE(map->HasComponents());
 
   EXPECT_FALSE(map->GetSchema(
       PolicyNamespace(POLICY_DOMAIN_CHROME, "")));

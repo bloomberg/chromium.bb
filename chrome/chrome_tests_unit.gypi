@@ -1126,6 +1126,7 @@
         'browser/policy/preg_parser_win_unittest.cc',
         'browser/policy/registry_dict_win_unittest.cc',
         'browser/policy/schema_map_unittest.cc',
+        'browser/policy/schema_registry_unittest.cc',
         'browser/policy/url_blacklist_manager_unittest.cc',
         'browser/policy/url_blacklist_policy_handler_unittest.cc',
         'browser/predictors/autocomplete_action_predictor_table_unittest.cc',

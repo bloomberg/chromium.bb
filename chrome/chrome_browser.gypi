@@ -1575,6 +1575,8 @@
         'browser/policy/registry_dict_win.h',
         'browser/policy/schema_map.cc',
         'browser/policy/schema_map.h',
+        'browser/policy/schema_registry.cc',
+        'browser/policy/schema_registry.h',
         'browser/policy/url_blacklist_manager.cc',
         'browser/policy/url_blacklist_manager.h',
         'browser/policy/url_blacklist_policy_handler.cc',
