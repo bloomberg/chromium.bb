@@ -31,7 +31,22 @@
 
 #include "core/dom/Element.h"
 
+#include <v8.h>
+
 namespace WebCore {
+
+PassRefPtr<StaticNodeList> StaticNodeList::adopt(Vector<RefPtr<Node> >& nodes)
+{
+    RefPtr<StaticNodeList> nodeList = adoptRef(new StaticNodeList);
+    nodeList->m_nodes.swap(nodes);
+    v8::V8::AdjustAmountOfExternalAllocatedMemory(nodeList->m_nodes.capacity() * sizeof(RefPtr<Node>));
+    return nodeList.release();
+}
+
+StaticNodeList::~StaticNodeList()
+{
+    v8::V8::AdjustAmountOfExternalAllocatedMemory(-static_cast<int>(m_nodes.capacity() * sizeof(RefPtr<Node>)));
+}
 
 unsigned StaticNodeList::length() const
 {
