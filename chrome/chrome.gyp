@@ -703,21 +703,6 @@
         },
       ],  # targets
     }],  # OS=="mac"
-    ['OS!="mac" and OS!="ios"', {
-      'targets': [
-        {
-          'target_name': 'flush_cache',
-          'type': 'executable',
-          'dependencies': [
-            '../base/base.gyp:base',
-            '../base/base.gyp:test_support_base',
-          ],
-          'sources': [
-            'tools/perf/flush_cache/flush_cache.cc',
-          ],
-        },
-      ],
-    }],  # OS!="mac" and OS!="ios"
     ['OS=="linux"',
       { 'targets': [
         {
