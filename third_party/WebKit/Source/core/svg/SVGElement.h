@@ -198,8 +198,6 @@ private:
 
     void buildPendingResourcesIfNeeded();
 
-    virtual bool isSupported(StringImpl* feature, StringImpl* version) const;
-
     void mapInstanceToElement(SVGElementInstance*);
     void removeInstanceMapping(SVGElementInstance*);
 

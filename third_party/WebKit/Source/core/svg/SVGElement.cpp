@@ -32,7 +32,6 @@
 #include "bindings/v8/ScriptEventListener.h"
 #include "core/css/CSSCursorImageValue.h"
 #include "core/css/CSSParser.h"
-#include "core/dom/DOMImplementation.h"
 #include "core/dom/Document.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/events/Event.h"
@@ -236,12 +235,6 @@ void SVGElement::reportAttributeParsingError(SVGParsingError error, const Qualif
     }
 
     ASSERT_NOT_REACHED();
-}
-
-
-bool SVGElement::isSupported(StringImpl* feature, StringImpl* version) const
-{
-    return DOMImplementation::hasFeature(feature, version);
 }
 
 String SVGElement::title() const
