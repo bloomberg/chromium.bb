@@ -440,8 +440,30 @@ bool VaapiH264Decoder::SendSliceData(const uint8* ptr, size_t size) {
                                       non_const_ptr);
 }
 
+bool VaapiH264Decoder::PrepareRefPicLists(H264SliceHeader* slice_hdr) {
+  ref_pic_list0_.clear();
+  ref_pic_list1_.clear();
+
+  // Fill reference picture lists for B and S/SP slices.
+  if (slice_hdr->IsPSlice() || slice_hdr->IsSPSlice()) {
+    ConstructReferencePicListsP(slice_hdr);
+    return ModifyReferencePicList(slice_hdr, 0);
+  }
+
+  if (slice_hdr->IsBSlice()) {
+    ConstructReferencePicListsB(slice_hdr);
+    return ModifyReferencePicList(slice_hdr, 0) &&
+        ModifyReferencePicList(slice_hdr, 1);
+  }
+
+  return true;
+}
+
 bool VaapiH264Decoder::QueueSlice(H264SliceHeader* slice_hdr) {
   DCHECK(curr_pic_.get());
+
+  if (!PrepareRefPicLists(slice_hdr))
+    return false;
 
   if (!SendVASliceParam(slice_hdr))
     return false;
@@ -1080,21 +1102,6 @@ bool VaapiH264Decoder::StartNewFrame(H264SliceHeader* slice_hdr) {
   DCHECK_GT(max_frame_num_, 0);
 
   UpdatePicNums();
-
-  // Prepare reference picture lists if required (B and S/SP slices).
-  ref_pic_list0_.clear();
-  ref_pic_list1_.clear();
-  if (slice_hdr->IsPSlice() || slice_hdr->IsSPSlice()) {
-    ConstructReferencePicListsP(slice_hdr);
-    if (!ModifyReferencePicList(slice_hdr, 0))
-      return false;
-  } else if (slice_hdr->IsBSlice()) {
-    ConstructReferencePicListsB(slice_hdr);
-    if (!ModifyReferencePicList(slice_hdr, 0))
-      return false;
-    if (!ModifyReferencePicList(slice_hdr, 1))
-      return false;
-  }
 
   // Send parameter buffers before each new picture, before the first slice.
   if (!SendPPS())

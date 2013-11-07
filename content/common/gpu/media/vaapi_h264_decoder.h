@@ -143,6 +143,9 @@ class VaapiH264Decoder {
   // frame (see spec).
   void UpdatePicNums();
 
+  // Prepare reference picture lists (ref_pic_list[01]_).
+  bool PrepareRefPicLists(H264SliceHeader* slice_hdr);
+
   // Construct initial reference picture lists for use in decoding of
   // P and B pictures (see 8.2.4 in spec).
   void ConstructReferencePicListsP(H264SliceHeader* slice_hdr);
