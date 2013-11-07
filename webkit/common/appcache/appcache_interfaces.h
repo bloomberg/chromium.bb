@@ -178,8 +178,6 @@ WEBKIT_STORAGE_COMMON_EXPORT extern const char kHttpHEADMethod[];
 // CommandLine flag to turn this experimental feature on.
 WEBKIT_STORAGE_COMMON_EXPORT extern const char kEnableExecutableHandlers[];
 
-WEBKIT_STORAGE_COMMON_EXPORT void AddSupportedScheme(const char* scheme);
-
 WEBKIT_STORAGE_COMMON_EXPORT bool IsSchemeSupported(const GURL& url);
 WEBKIT_STORAGE_COMMON_EXPORT bool IsMethodSupported(const std::string& method);
 WEBKIT_STORAGE_COMMON_EXPORT bool IsSchemeAndMethodSupported(

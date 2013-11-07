@@ -6,22 +6,15 @@
 
 #include <set>
 
-#include "base/lazy_instance.h"
 #include "base/strings/string_util.h"
 #include "net/url_request/url_request.h"
 #include "url/gurl.h"
-
-namespace {
-
-base::LazyInstance<std::set<std::string> >::Leaky g_supported_schemes =
-    LAZY_INSTANCE_INITIALIZER;
-
-}  // namespace
 
 namespace appcache {
 
 const char kHttpScheme[] = "http";
 const char kHttpsScheme[] = "https";
+const char kDevToolsScheme[] = "chrome-devtools";
 const char kHttpGETMethod[] = "GET";
 const char kHttpHEADMethod[] = "HEAD";
 
@@ -96,15 +89,9 @@ bool Namespace::IsMatch(const GURL& url) const {
   return StartsWithASCII(url.spec(), namespace_url.spec(), true);
 }
 
-void AddSupportedScheme(const char* scheme) {
-  g_supported_schemes.Get().insert(scheme);
-}
-
 bool IsSchemeSupported(const GURL& url) {
   bool supported = url.SchemeIs(kHttpScheme) || url.SchemeIs(kHttpsScheme) ||
-      (!(g_supported_schemes == NULL) &&
-       g_supported_schemes.Get().find(url.scheme()) !=
-           g_supported_schemes.Get().end());
+      url.SchemeIs(kDevToolsScheme);
 
 #ifndef NDEBUG
   // TODO(michaeln): It would be really nice if this could optionally work for
