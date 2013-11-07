@@ -84,7 +84,7 @@ def process_file(file_name):
     return variable_name, content
 
 
-def write_header_file(header_file_name, flag, names_and_contents, namespace='WebKit'):
+def write_header_file(header_file_name, flag, names_and_contents, namespace='blink'):
     with open(header_file_name, 'w') as header_file:
         if flag:
             header_file.write('#if ' + flag + '\n')
@@ -97,7 +97,7 @@ def write_header_file(header_file_name, flag, names_and_contents, namespace='Web
             header_file.write('#endif\n')
 
 
-def write_cpp_file(cpp_file_name, flag, names_and_contents, header_file_name, namespace='WebKit'):
+def write_cpp_file(cpp_file_name, flag, names_and_contents, header_file_name, namespace='blink'):
     with open(cpp_file_name, 'w') as cpp_file:
         cpp_file.write('#include "config.h"\n')
         cpp_file.write('#include "%s"\n' % os.path.basename(header_file_name))
