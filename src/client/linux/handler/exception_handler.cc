@@ -341,10 +341,11 @@ void ExceptionHandler::SignalHandler(int sig, siginfo_t* info, void* uc) {
 
   pthread_mutex_unlock(&handler_stack_mutex_);
 
-  if (info->si_pid) {
+  if (info->si_pid || sig == SIGABRT) {
     // This signal was triggered by somebody sending us the signal with kill().
     // In order to retrigger it, we have to queue a new signal by calling
-    // kill() ourselves.
+    // kill() ourselves.  The special case (si_pid == 0 && sig == SIGABRT) is
+    // due to the kernel sending a SIGABRT from a user request via SysRQ.
     if (tgkill(getpid(), syscall(__NR_gettid), sig) < 0) {
       // If we failed to kill ourselves (e.g. because a sandbox disallows us
       // to do so), we instead resort to terminating our process. This will
