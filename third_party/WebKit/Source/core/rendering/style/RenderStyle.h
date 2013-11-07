@@ -473,8 +473,8 @@ public:
     const NinePieceImage& borderImage() const { return surround->border.image(); }
     StyleImage* borderImageSource() const { return surround->border.image().image(); }
     LengthBox borderImageSlices() const { return surround->border.image().imageSlices(); }
-    LengthBox borderImageWidth() const { return surround->border.image().borderSlices(); }
-    LengthBox borderImageOutset() const { return surround->border.image().outset(); }
+    LengthBox borderImageWidth() const { return surround->border.image().borderSlices().deprecatedLengthBox(); }
+    LengthBox borderImageOutset() const { return surround->border.image().outset().deprecatedLengthBox(); }
 
     LengthSize borderTopLeftRadius() const { return surround->border.topLeft(); }
     LengthSize borderTopRightRadius() const { return surround->border.topRight(); }
@@ -648,8 +648,8 @@ public:
     StyleImage* maskBoxImageSource() const { return rareNonInheritedData->m_maskBoxImage.image(); }
     LengthBox maskBoxImageSlices() const { return rareNonInheritedData->m_maskBoxImage.imageSlices(); }
     bool maskBoxImageSlicesFill() const { return rareNonInheritedData->m_maskBoxImage.fill(); }
-    LengthBox maskBoxImageWidth() const { return rareNonInheritedData->m_maskBoxImage.borderSlices(); }
-    LengthBox maskBoxImageOutset() const { return rareNonInheritedData->m_maskBoxImage.outset(); }
+    LengthBox maskBoxImageWidth() const { return rareNonInheritedData->m_maskBoxImage.borderSlices().deprecatedLengthBox(); }
+    LengthBox maskBoxImageOutset() const { return rareNonInheritedData->m_maskBoxImage.outset().deprecatedLengthBox(); }
 
     EBorderCollapse borderCollapse() const { return static_cast<EBorderCollapse>(inherited_flags._border_collapse); }
     short horizontalBorderSpacing() const;
@@ -1120,11 +1120,11 @@ public:
     }
     void setMaskBoxImageWidth(LengthBox slices)
     {
-        rareNonInheritedData.access()->m_maskBoxImage.setBorderSlices(slices);
+        rareNonInheritedData.access()->m_maskBoxImage.setBorderSlices(BorderImageLengthBox(slices));
     }
     void setMaskBoxImageOutset(LengthBox outset)
     {
-        rareNonInheritedData.access()->m_maskBoxImage.setOutset(outset);
+        rareNonInheritedData.access()->m_maskBoxImage.setOutset(BorderImageLengthBox(outset));
     }
     void setMaskXPosition(Length length) { SET_VAR(rareNonInheritedData, m_mask.m_xPosition, length); }
     void setMaskYPosition(Length length) { SET_VAR(rareNonInheritedData, m_mask.m_yPosition, length); }

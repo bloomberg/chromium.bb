@@ -1589,16 +1589,16 @@ void RenderStyle::setBorderImageSlices(LengthBox slices)
 
 void RenderStyle::setBorderImageWidth(LengthBox slices)
 {
-    if (surround->border.m_image.borderSlices() == slices)
+    if (surround->border.m_image.borderSlices().deprecatedLengthBox() == slices)
         return;
-    surround.access()->border.m_image.setBorderSlices(slices);
+    surround.access()->border.m_image.setBorderSlices(BorderImageLengthBox(slices));
 }
 
 void RenderStyle::setBorderImageOutset(LengthBox outset)
 {
-    if (surround->border.m_image.outset() == outset)
+    if (surround->border.m_image.outset().deprecatedLengthBox() == outset)
         return;
-    surround.access()->border.m_image.setOutset(outset);
+    surround.access()->border.m_image.setOutset(BorderImageLengthBox(outset));
 }
 
 ShapeValue* RenderStyle::initialShapeInside()

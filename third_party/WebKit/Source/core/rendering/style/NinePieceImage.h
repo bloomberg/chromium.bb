@@ -24,6 +24,7 @@
 #ifndef NinePieceImage_h
 #define NinePieceImage_h
 
+#include "core/rendering/style/BorderImageLengthBox.h"
 #include "core/rendering/style/DataRef.h"
 #include "core/rendering/style/StyleImage.h"
 #include "platform/LayoutUnit.h"
@@ -48,8 +49,8 @@ public:
     unsigned verticalRule : 2; // ENinePieceImageRule
     RefPtr<StyleImage> image;
     LengthBox imageSlices;
-    LengthBox borderSlices;
-    LengthBox outset;
+    BorderImageLengthBox borderSlices;
+    BorderImageLengthBox outset;
 
 private:
     NinePieceImageData();
@@ -59,7 +60,8 @@ private:
 class NinePieceImage {
 public:
     NinePieceImage();
-    NinePieceImage(PassRefPtr<StyleImage>, LengthBox imageSlices, bool fill, LengthBox borderSlices, LengthBox outset, ENinePieceImageRule horizontalRule, ENinePieceImageRule verticalRule);
+    NinePieceImage(PassRefPtr<StyleImage>, LengthBox imageSlices, bool fill, const BorderImageLengthBox& borderSlices,
+        const BorderImageLengthBox& outset, ENinePieceImageRule horizontalRule, ENinePieceImageRule verticalRule);
 
     bool operator==(const NinePieceImage& other) const { return m_data == other.m_data; }
     bool operator!=(const NinePieceImage& other) const { return m_data != other.m_data; }
@@ -74,11 +76,11 @@ public:
     bool fill() const { return m_data->fill; }
     void setFill(bool fill) { m_data.access()->fill = fill; }
 
-    const LengthBox& borderSlices() const { return m_data->borderSlices; }
-    void setBorderSlices(const LengthBox& slices) { m_data.access()->borderSlices = slices; }
+    const BorderImageLengthBox& borderSlices() const { return m_data->borderSlices; }
+    void setBorderSlices(const BorderImageLengthBox& slices) { m_data.access()->borderSlices = slices; }
 
-    const LengthBox& outset() const { return m_data->outset; }
-    void setOutset(const LengthBox& outset) { m_data.access()->outset = outset; }
+    const BorderImageLengthBox& outset() const { return m_data->outset; }
+    void setOutset(const BorderImageLengthBox& outset) { m_data.access()->outset = outset; }
 
     ENinePieceImageRule horizontalRule() const { return static_cast<ENinePieceImageRule>(m_data->horizontalRule); }
     void setHorizontalRule(ENinePieceImageRule rule) { m_data.access()->horizontalRule = rule; }
@@ -112,14 +114,14 @@ public:
     {
         m_data.access()->imageSlices = LengthBox(0);
         m_data.access()->fill = true;
-        m_data.access()->borderSlices = LengthBox();
+        m_data.access()->borderSlices = BorderImageLengthBox();
     }
 
-    static LayoutUnit computeOutset(Length outsetSide, LayoutUnit borderSide)
+    static LayoutUnit computeOutset(const BorderImageLength& outsetSide, LayoutUnit borderSide)
     {
-        if (outsetSide.isRelative())
-            return outsetSide.value() * borderSide;
-        return outsetSide.value();
+        if (outsetSide.isNumber())
+            return outsetSide.number() * borderSide;
+        return outsetSide.length().value();
     }
 
 private:

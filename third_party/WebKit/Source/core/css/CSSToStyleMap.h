@@ -24,7 +24,6 @@
 
 #include "CSSPropertyNames.h"
 #include "core/css/resolver/ElementStyleResources.h"
-#include "platform/LengthBox.h"
 #include "wtf/Noncopyable.h"
 
 namespace WebCore {
@@ -36,6 +35,7 @@ class RenderStyle;
 class StyleImage;
 class StyleResolverState;
 class NinePieceImage;
+class BorderImageLengthBox;
 
 // CSSToStyleMap is a short-lived helper object which
 // given the current StyleResolverState can map
@@ -71,7 +71,7 @@ public:
 
     void mapNinePieceImage(RenderStyle* mutableStyle, CSSPropertyID, CSSValue*, NinePieceImage&);
     void mapNinePieceImageSlice(CSSValue*, NinePieceImage&) const;
-    LengthBox mapNinePieceImageQuad(CSSValue*) const;
+    BorderImageLengthBox mapNinePieceImageQuad(CSSValue*) const;
     void mapNinePieceImageRepeat(CSSValue*, NinePieceImage&) const;
 
 private:

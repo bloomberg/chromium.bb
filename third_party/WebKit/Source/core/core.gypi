@@ -1585,6 +1585,8 @@
             'rendering/shapes/ShapeOutsideInfo.cpp',
             'rendering/shapes/ShapeOutsideInfo.h',
             'rendering/style/BasicShapes.cpp',
+            'rendering/style/BorderImageLength.h',
+            'rendering/style/BorderImageLengthBox.h',
             'rendering/style/CachedUAStyle.h',
             'rendering/style/ContentData.cpp',
             'rendering/style/CounterDirectives.cpp',

@@ -179,7 +179,7 @@ namespace WebCore {
 {
     NinePieceImage image(state.style()->{{getter}}());
     {%- if modifier_type == "Outset" %}
-    image.setOutset(LengthBox(0));
+    image.setOutset(BorderImageLengthBox({{ (["Length(0, Fixed)"]*4) | join(", ") }}));
     {%- elif modifier_type == "Repeat" %}
     image.setHorizontalRule(StretchImageRule);
     image.setVerticalRule(StretchImageRule);
@@ -189,7 +189,7 @@ namespace WebCore {
     image.setFill(false);
     {%- elif modifier_type == "Width" %}
     // Masks have a different initial value for widths. Preserve the value of 0 for backwards compatibility.
-    image.setBorderSlices(LengthBox({{ (["Length(1, Relative)"]*4) | join(", ") if not is_mask_box }}));
+    image.setBorderSlices(BorderImageLengthBox({{ (["1.0"]*4) | join(", ") if not is_mask_box }}));
     {%- endif %}
     state.style()->{{setter}}(image);
 }

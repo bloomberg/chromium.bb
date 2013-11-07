@@ -37,6 +37,7 @@
 #include "core/css/Rect.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/platform/animation/CSSAnimationData.h"
+#include "core/rendering/style/BorderImageLengthBox.h"
 #include "core/rendering/style/FillLayer.h"
 
 namespace WebCore {
@@ -565,14 +566,14 @@ void CSSToStyleMap::mapNinePieceImage(RenderStyle* mutableStyle, CSSPropertyID p
         // We have to preserve the legacy behavior of -webkit-border-image and make the border slices
         // also set the border widths. We don't need to worry about percentages, since we don't even support
         // those on real borders yet.
-        if (image.borderSlices().top().isFixed())
-            mutableStyle->setBorderTopWidth(image.borderSlices().top().value());
-        if (image.borderSlices().right().isFixed())
-            mutableStyle->setBorderRightWidth(image.borderSlices().right().value());
-        if (image.borderSlices().bottom().isFixed())
-            mutableStyle->setBorderBottomWidth(image.borderSlices().bottom().value());
-        if (image.borderSlices().left().isFixed())
-            mutableStyle->setBorderLeftWidth(image.borderSlices().left().value());
+        if (image.borderSlices().top().isLength() && image.borderSlices().top().length().isFixed())
+            mutableStyle->setBorderTopWidth(image.borderSlices().top().length().value());
+        if (image.borderSlices().right().isLength() && image.borderSlices().right().length().isFixed())
+            mutableStyle->setBorderRightWidth(image.borderSlices().right().length().value());
+        if (image.borderSlices().bottom().isLength() && image.borderSlices().bottom().length().isFixed())
+            mutableStyle->setBorderBottomWidth(image.borderSlices().bottom().length().value());
+        if (image.borderSlices().left().isLength() && image.borderSlices().left().length().isFixed())
+            mutableStyle->setBorderLeftWidth(image.borderSlices().left().length().value());
     }
 }
 
@@ -609,10 +610,10 @@ void CSSToStyleMap::mapNinePieceImageSlice(CSSValue* value, NinePieceImage& imag
     image.setFill(borderImageSlice->m_fill);
 }
 
-LengthBox CSSToStyleMap::mapNinePieceImageQuad(CSSValue* value) const
+BorderImageLengthBox CSSToStyleMap::mapNinePieceImageQuad(CSSValue* value) const
 {
     if (!value || !value->isPrimitiveValue())
-        return LengthBox();
+        return BorderImageLengthBox();
 
     // Get our zoom value.
     float zoom = useSVGZoomRules() ? 1.0f : style()->effectiveZoom();
@@ -621,35 +622,35 @@ LengthBox CSSToStyleMap::mapNinePieceImageQuad(CSSValue* value) const
     CSSPrimitiveValue* borderWidths = toCSSPrimitiveValue(value);
 
     // Set up a length box to represent our image slices.
-    LengthBox box; // Defaults to 'auto' so we don't have to handle that explicitly below.
+    BorderImageLengthBox box; // Defaults to 'auto' so we don't have to handle that explicitly below.
     Quad* slices = borderWidths->getQuadValue();
     if (slices->top()->isNumber())
-        box.m_top = Length(slices->top()->getIntValue(), Relative);
+        box.setTop(slices->top()->getIntValue());
     else if (slices->top()->isPercentage())
-        box.m_top = Length(slices->top()->getDoubleValue(CSSPrimitiveValue::CSS_PERCENTAGE), Percent);
+        box.setTop(Length(slices->top()->getDoubleValue(CSSPrimitiveValue::CSS_PERCENTAGE), Percent));
     else if (slices->top()->getValueID() != CSSValueAuto)
-        box.m_top = slices->top()->computeLength<Length>(style(), rootElementStyle(), zoom);
+        box.setTop(slices->top()->computeLength<Length>(style(), rootElementStyle(), zoom));
 
     if (slices->right()->isNumber())
-        box.m_right = Length(slices->right()->getIntValue(), Relative);
+        box.setRight(slices->right()->getIntValue());
     else if (slices->right()->isPercentage())
-        box.m_right = Length(slices->right()->getDoubleValue(CSSPrimitiveValue::CSS_PERCENTAGE), Percent);
+        box.setRight(Length(slices->right()->getDoubleValue(CSSPrimitiveValue::CSS_PERCENTAGE), Percent));
     else if (slices->right()->getValueID() != CSSValueAuto)
-        box.m_right = slices->right()->computeLength<Length>(style(), rootElementStyle(), zoom);
+        box.setRight(slices->right()->computeLength<Length>(style(), rootElementStyle(), zoom));
 
     if (slices->bottom()->isNumber())
-        box.m_bottom = Length(slices->bottom()->getIntValue(), Relative);
+        box.setBottom(slices->bottom()->getIntValue());
     else if (slices->bottom()->isPercentage())
-        box.m_bottom = Length(slices->bottom()->getDoubleValue(CSSPrimitiveValue::CSS_PERCENTAGE), Percent);
+        box.setBottom(Length(slices->bottom()->getDoubleValue(CSSPrimitiveValue::CSS_PERCENTAGE), Percent));
     else if (slices->bottom()->getValueID() != CSSValueAuto)
-        box.m_bottom = slices->bottom()->computeLength<Length>(style(), rootElementStyle(), zoom);
+        box.setBottom(slices->bottom()->computeLength<Length>(style(), rootElementStyle(), zoom));
 
     if (slices->left()->isNumber())
-        box.m_left = Length(slices->left()->getIntValue(), Relative);
+        box.setLeft(slices->left()->getIntValue());
     else if (slices->left()->isPercentage())
-        box.m_left = Length(slices->left()->getDoubleValue(CSSPrimitiveValue::CSS_PERCENTAGE), Percent);
+        box.setLeft(Length(slices->left()->getDoubleValue(CSSPrimitiveValue::CSS_PERCENTAGE), Percent));
     else if (slices->left()->getValueID() != CSSValueAuto)
-        box.m_left = slices->left()->computeLength<Length>(style(), rootElementStyle(), zoom);
+        box.setLeft(slices->left()->computeLength<Length>(style(), rootElementStyle(), zoom));
 
     return box;
 }
