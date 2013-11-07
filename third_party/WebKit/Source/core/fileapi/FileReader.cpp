@@ -46,6 +46,7 @@ namespace WebCore {
 
 namespace {
 
+#if !LOG_DISABLED
 const CString utf8BlobUUID(Blob* blob)
 {
     return blob->uuid().utf8();
@@ -55,6 +56,7 @@ const CString utf8FilePath(Blob* blob)
 {
     return blob->isFile() ? toFile(blob)->path().utf8() : "";
 }
+#endif
 
 } // namespace
 

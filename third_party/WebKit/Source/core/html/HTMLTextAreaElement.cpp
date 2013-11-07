@@ -59,11 +59,6 @@ static const int defaultCols = 20;
 
 // On submission, LF characters are converted into CRLF.
 // This function returns number of characters considering this.
-static inline unsigned computeLengthForSubmission(const String& text, unsigned numberOfLineBreaks)
-{
-    return text.length() + numberOfLineBreaks;
-}
-
 static unsigned numberOfLineBreaks(const String& text)
 {
     unsigned length = text.length();

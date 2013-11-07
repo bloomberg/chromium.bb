@@ -654,6 +654,7 @@ bool Node::hasNonEmptyBoundingBox() const
     return false;
 }
 
+#ifndef NDEBUG
 inline static ShadowRoot* oldestShadowRootFor(const Node* node)
 {
     if (!node->isElementNode())
@@ -662,6 +663,7 @@ inline static ShadowRoot* oldestShadowRootFor(const Node* node)
         return shadow->oldestShadowRoot();
     return 0;
 }
+#endif
 
 void Node::recalcDistribution()
 {

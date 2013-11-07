@@ -82,12 +82,6 @@ static inline LengthPoint blendFunc(const AnimationBase* anim, const LengthPoint
     return LengthPoint(blendFunc(anim, from.x(), to.x(), progress), blendFunc(anim, from.y(), to.y(), progress));
 }
 
-static inline IntSize blendFunc(const AnimationBase* anim, const IntSize& from, const IntSize& to, double progress)
-{
-    return IntSize(blendFunc(anim, from.width(), to.width(), progress),
-                   blendFunc(anim, from.height(), to.height(), progress));
-}
-
 static inline TransformOperations blendFunc(const AnimationBase* anim, const TransformOperations& from, const TransformOperations& to, double progress)
 {
     if (anim->isTransformFunctionListValid())

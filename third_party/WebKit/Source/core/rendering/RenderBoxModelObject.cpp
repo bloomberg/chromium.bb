@@ -2471,20 +2471,6 @@ bool RenderBoxModelObject::boxShadowShouldBeAppliedToBackground(BackgroundBleedA
     return true;
 }
 
-static inline IntRect areaCastingShadowInHole(const IntRect& holeRect, int shadowBlur, int shadowSpread, const IntSize& shadowOffset)
-{
-    IntRect bounds(holeRect);
-
-    bounds.inflate(shadowBlur);
-
-    if (shadowSpread < 0)
-        bounds.inflate(-shadowSpread);
-
-    IntRect offsetBounds = bounds;
-    offsetBounds.move(-shadowOffset);
-    return unionRect(bounds, offsetBounds);
-}
-
 void RenderBoxModelObject::paintBoxShadow(const PaintInfo& info, const LayoutRect& paintRect, const RenderStyle* s, ShadowStyle shadowStyle, bool includeLogicalLeftEdge, bool includeLogicalRightEdge)
 {
     // FIXME: Deal with border-image.  Would be great to use border-image as a mask.

@@ -165,6 +165,7 @@ static inline bool hasCustomFocusLogic(Element* element)
     return element->isHTMLElement() && toHTMLElement(element)->hasCustomFocusLogic();
 }
 
+#if !ASSERT_DISABLED
 static inline bool isNonFocusableShadowHost(Node* node)
 {
     ASSERT(node);
@@ -173,6 +174,7 @@ static inline bool isNonFocusableShadowHost(Node* node)
     Element* element = toElement(node);
     return !element->isFocusable() && isShadowHost(element) && !hasCustomFocusLogic(element);
 }
+#endif
 
 static inline bool isNonKeyboardFocusableShadowHost(Node* node)
 {

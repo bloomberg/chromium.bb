@@ -75,24 +75,6 @@ using namespace WebCore;
 
 namespace blink {
 
-namespace {
-
-void invokeTaskMethod(void* param)
-{
-    ExecutionContextTask* task =
-        static_cast<ExecutionContextTask*>(param);
-    task->performTask(0);
-    delete task;
-}
-
-
-void dispatchTaskToMainThread(PassOwnPtr<ExecutionContextTask> task)
-{
-    callOnMainThread(invokeTaskMethod, task.leakPtr());
-}
-
-} // namespace
-
 // This function is called on the main thread to force to initialize some static
 // values used in WebKit before any worker thread is started. This is because in
 // our worker processs, we do not run any WebKit code in main thread and thus

@@ -150,42 +150,6 @@ static inline RenderObject* endOfContinuations(RenderObject* renderer)
     return prev;
 }
 
-static inline RenderObject* childBeforeConsideringContinuations(RenderInline* r, RenderObject* child)
-{
-    RenderBoxModelObject* curContainer = r;
-    RenderObject* cur = 0;
-    RenderObject* prev = 0;
-
-    while (curContainer) {
-        if (curContainer->isRenderInline()) {
-            cur = curContainer->firstChild();
-            while (cur) {
-                if (cur == child)
-                    return prev;
-                prev = cur;
-                cur = cur->nextSibling();
-            }
-
-            curContainer = toRenderInline(curContainer)->continuation();
-        } else if (curContainer->isRenderBlock()) {
-            if (curContainer == child)
-                return prev;
-
-            prev = curContainer;
-            curContainer = toRenderBlock(curContainer)->inlineElementContinuation();
-        }
-    }
-
-    ASSERT_NOT_REACHED();
-
-    return 0;
-}
-
-static inline bool firstChildIsInlineContinuation(RenderObject* renderer)
-{
-    return renderer->firstChild() && renderer->firstChild()->isInlineElementContinuation();
-}
-
 static inline bool lastChildHasContinuation(RenderObject* renderer)
 {
     return renderer->lastChild() && isInlineWithContinuation(renderer->lastChild());

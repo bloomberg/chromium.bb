@@ -99,6 +99,7 @@ static inline int cssyyerror(void*, const char*)
     return 1;
 }
 
+#if YYDEBUG > 0
 static inline bool isCSSTokenAString(int yytype)
 {
     switch (yytype) {
@@ -125,6 +126,7 @@ static inline bool isCSSTokenAString(int yytype)
         return false;
     }
 }
+#endif
 
 inline static CSSParserValue makeOperatorValue(int value)
 {

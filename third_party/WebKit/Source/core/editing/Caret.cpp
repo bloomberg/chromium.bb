@@ -35,11 +35,6 @@
 
 namespace WebCore {
 
-static inline LayoutUnit NoXPosForVerticalArrowNavigation()
-{
-    return LayoutUnit::min();
-}
-
 CaretBase::CaretBase(CaretVisibility visibility)
     : m_caretRectNeedsUpdate(true)
     , m_caretVisibility(visibility)

@@ -93,53 +93,6 @@ private:
     CallbackMethodType m_callback;
 };
 
-void printNodeDescription(WebTestDelegate* delegate, const WebNode& node, int exception)
-{
-    if (exception) {
-        delegate->printMessage("ERROR");
-        return;
-    }
-    if (node.isNull()) {
-        delegate->printMessage("(null)");
-        return;
-    }
-    delegate->printMessage(node.nodeName().utf8().data());
-    const WebNode& parent = node.parentNode();
-    if (!parent.isNull()) {
-        delegate->printMessage(" > ");
-        printNodeDescription(delegate, parent, 0);
-    }
-}
-
-void printRangeDescription(WebTestDelegate* delegate, const WebRange& range)
-{
-    if (range.isNull()) {
-        delegate->printMessage("(null)");
-        return;
-    }
-    char buffer[100];
-    snprintf(buffer, sizeof(buffer), "range from %d of ", range.startOffset());
-    delegate->printMessage(buffer);
-    int exception = 0;
-    WebNode startNode = range.startContainer(exception);
-    printNodeDescription(delegate, startNode, exception);
-    snprintf(buffer, sizeof(buffer), " to %d of ", range.endOffset());
-    delegate->printMessage(buffer);
-    WebNode endNode = range.endContainer(exception);
-    printNodeDescription(delegate, endNode, exception);
-}
-
-string textAffinityDescription(WebTextAffinity affinity)
-{
-    switch (affinity) {
-    case blink::WebTextAffinityUpstream:
-        return "NSSelectionAffinityUpstream";
-    case blink::WebTextAffinityDownstream:
-        return "NSSelectionAffinityDownstream";
-    }
-    return "(UNKNOWN AFFINITY)";
-}
-
 void printFrameDescription(WebTestDelegate* delegate, WebFrame* frame)
 {
     string name8 = frame->uniqueName().utf8();
