@@ -78,6 +78,14 @@ TEST_F(AppKeepAliveServiceUnitTest, StartMoreThanOnce) {
   EXPECT_FALSE(chrome::WillKeepAlive());
 }
 
+// Test that OnAppStart is ignored after the service has been shut down.
+TEST_F(AppKeepAliveServiceUnitTest, StartAfterShutdown) {
+  ASSERT_FALSE(chrome::WillKeepAlive());
+  service_->Shutdown();
+  service_->OnAppStart(&profile_, "foo");
+  EXPECT_FALSE(chrome::WillKeepAlive());
+}
+
 TEST_F(AppKeepAliveServiceUnitTest, MultipleApps) {
   ASSERT_FALSE(chrome::WillKeepAlive());
   service_->OnAppStart(&profile_, "foo");

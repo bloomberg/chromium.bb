@@ -13,7 +13,7 @@
 namespace apps {
 
 AppKeepAliveService::AppKeepAliveService(content::BrowserContext* context)
-    : context_(context) {
+    : context_(context), shut_down_(false) {
   AppLifetimeMonitor* app_lifetime_monitor =
       AppLifetimeMonitorFactory::GetForProfile(static_cast<Profile*>(context));
   app_lifetime_monitor->AddObserver(this);
@@ -30,7 +30,7 @@ void AppKeepAliveService::Shutdown() {
 
 void AppKeepAliveService::OnAppStart(Profile* profile,
                                      const std::string& app_id) {
-  if (profile != context_)
+  if (profile != context_ || shut_down_)
     return;
 
   if (running_apps_.insert(app_id).second)
@@ -53,6 +53,7 @@ void AppKeepAliveService::OnAppDeactivated(Profile* profile,
                                            const std::string& app_id) {}
 
 void AppKeepAliveService::OnChromeTerminating() {
+  shut_down_ = true;
   size_t keep_alives = running_apps_.size();
   running_apps_.clear();
 

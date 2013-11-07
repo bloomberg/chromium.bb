@@ -29,6 +29,7 @@ class AppKeepAliveService : public BrowserContextKeyedService,
  private:
   content::BrowserContext* context_;
   std::set<std::string> running_apps_;
+  bool shut_down_;
 
   DISALLOW_COPY_AND_ASSIGN(AppKeepAliveService);
 };
