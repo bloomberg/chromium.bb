@@ -365,7 +365,7 @@ class GSContext(object):
           # dest_path needs to be a fully qualified local path, which is already
           # required for GSContext.Copy().
           tracker_filenames = self._GetTrackerFilenames(e.result.cmd[-1])
-          logging.warning('Potential list of tracker files: %s',
+          logging.info('Potential list of tracker files: %s',
                           tracker_filenames)
           for tracker_filename in tracker_filenames:
             tracker_file_path = os.path.join(self.DEFAULT_GSUTIL_TRACKER_DIR,
