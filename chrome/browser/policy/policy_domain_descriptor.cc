@@ -47,13 +47,9 @@ bool Matches(Schema schema, const base::Value& value) {
 PolicyDomainDescriptor::PolicyDomainDescriptor(PolicyDomain domain)
     : domain_(domain) {}
 
-void PolicyDomainDescriptor::RegisterComponent(
-    const std::string& component_id,
-    scoped_ptr<SchemaOwner> schema) {
-  SchemaOwner*& entry = schema_owner_map_[component_id];
-  delete entry;
-  entry = schema.release();
-  schema_map_[component_id] = entry ? entry->schema() : Schema();
+void PolicyDomainDescriptor::RegisterComponent(const std::string& component_id,
+                                               Schema schema) {
+  schema_map_[component_id] = schema;
 }
 
 void PolicyDomainDescriptor::FilterBundle(PolicyBundle* bundle) const {
@@ -94,8 +90,6 @@ void PolicyDomainDescriptor::FilterBundle(PolicyBundle* bundle) const {
   }
 }
 
-PolicyDomainDescriptor::~PolicyDomainDescriptor() {
-  STLDeleteValues(&schema_owner_map_);
-}
+PolicyDomainDescriptor::~PolicyDomainDescriptor() {}
 
 }  // namespace policy

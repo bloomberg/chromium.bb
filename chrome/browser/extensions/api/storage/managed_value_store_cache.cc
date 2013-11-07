@@ -112,7 +112,7 @@ void ManagedValueStoreCache::ExtensionTracker::Observe(
     }
 
     // TODO(joaodasilva): also load extensions that use the storage API for now,
-    // to support the Legacy Browser Support extension. Remove this for M30.
+    // to support the Legacy Browser Support extension. Remove this.
     // http://crbug.com/240704
     if ((*it)->HasAPIPermission(APIPermission::kStorage))
       managed_extensions->Insert(*it);
@@ -138,10 +138,9 @@ void ManagedValueStoreCache::ExtensionTracker::LoadSchemas(
     std::string schema_file;
     if (!(*it)->manifest()->GetString(
             manifest_keys::kStorageManagedSchema, &schema_file)) {
-      // TODO(joaodasilva): Remove this for M32. http://crbug.com/240704
+      // TODO(joaodasilva): Remove this. http://crbug.com/240704
       if ((*it)->HasAPIPermission(APIPermission::kStorage)) {
-        descriptor->RegisterComponent((*it)->id(),
-                                      scoped_ptr<policy::SchemaOwner>());
+        descriptor->RegisterComponent((*it)->id(), policy::Schema());
       } else {
         NOTREACHED();
       }
@@ -150,10 +149,10 @@ void ManagedValueStoreCache::ExtensionTracker::LoadSchemas(
     // The extension should have been validated, so assume the schema exists
     // and is valid.
     std::string error;
-    scoped_ptr<policy::SchemaOwner> schema =
+    policy::Schema schema =
         StorageSchemaManifestHandler::GetSchema(it->get(), &error);
-    CHECK(schema) << error;
-    descriptor->RegisterComponent((*it)->id(), schema.Pass());
+    CHECK(schema.valid()) << error;
+    descriptor->RegisterComponent((*it)->id(), schema);
   }
 
   BrowserThread::PostTask(

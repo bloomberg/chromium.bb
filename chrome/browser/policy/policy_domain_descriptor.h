@@ -33,22 +33,18 @@ class PolicyDomainDescriptor
   // Registers the given |component_id| for this domain, and sets its current
   // |schema|. This registration overrides any previously set schema for this
   // component.
-  void RegisterComponent(const std::string& component_id,
-                         scoped_ptr<SchemaOwner> schema);
+  void RegisterComponent(const std::string& component_id, Schema schema);
 
   // Removes all the policies in |bundle| that don't match this descriptor.
   // Policies of domains other than |domain_| are ignored.
   void FilterBundle(PolicyBundle* bundle) const;
 
  private:
-  typedef std::map<std::string, SchemaOwner*> SchemaOwnerMap;
-
   friend class base::RefCountedThreadSafe<PolicyDomainDescriptor>;
 
   ~PolicyDomainDescriptor();
 
   PolicyDomain domain_;
-  SchemaOwnerMap schema_owner_map_;
   SchemaMap schema_map_;
 
   DISALLOW_COPY_AND_ASSIGN(PolicyDomainDescriptor);

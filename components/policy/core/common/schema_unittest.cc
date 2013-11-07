@@ -15,12 +15,11 @@ namespace {
 
 bool ParseFails(const std::string& content) {
   std::string error;
-  scoped_ptr<SchemaOwner> schema = SchemaOwner::Parse(content, &error);
-  if (schema)
-    EXPECT_TRUE(schema->schema().valid());
-  else
-    EXPECT_FALSE(error.empty());
-  return !schema;
+  Schema schema = Schema::Parse(content, &error);
+  if (schema.valid())
+    return false;
+  EXPECT_FALSE(error.empty());
+  return true;
 }
 
 }  // namespace
@@ -72,9 +71,46 @@ TEST(SchemaTest, InvalidSchemas) {
       "}"));
 }
 
+TEST(SchemaTest, Ownership) {
+  std::string error;
+  Schema schema = Schema::Parse(
+      "{"
+        OBJECT_TYPE ","
+        "\"properties\": {"
+          "\"sub\": {"
+            "\"type\": \"object\","
+            "\"properties\": {"
+              "\"subsub\": { \"type\": \"string\" }"
+            "}"
+          "}"
+        "}"
+      "}", &error);
+  ASSERT_TRUE(schema.valid()) << error;
+  ASSERT_EQ(base::Value::TYPE_DICTIONARY, schema.type());
+
+  schema = schema.GetKnownProperty("sub");
+  ASSERT_TRUE(schema.valid());
+  ASSERT_EQ(base::Value::TYPE_DICTIONARY, schema.type());
+
+  {
+    Schema::Iterator it = schema.GetPropertiesIterator();
+    ASSERT_FALSE(it.IsAtEnd());
+    EXPECT_STREQ("subsub", it.key());
+
+    schema = it.schema();
+    it.Advance();
+    EXPECT_TRUE(it.IsAtEnd());
+  }
+
+  ASSERT_TRUE(schema.valid());
+  EXPECT_EQ(base::Value::TYPE_STRING, schema.type());
+
+  // This test shouldn't leak nor use invalid memory.
+}
+
 TEST(SchemaTest, ValidSchema) {
   std::string error;
-  scoped_ptr<SchemaOwner> policy_schema = SchemaOwner::Parse(
+  Schema schema = Schema::Parse(
       "{"
         OBJECT_TYPE ","
         "\"properties\": {"
@@ -114,10 +150,8 @@ TEST(SchemaTest, ValidSchema) {
         "  }"
         "}"
       "}", &error);
-  ASSERT_TRUE(policy_schema) << error;
-  ASSERT_TRUE(policy_schema->schema().valid());
+  ASSERT_TRUE(schema.valid()) << error;
 
-  Schema schema = policy_schema->schema();
   ASSERT_EQ(base::Value::TYPE_DICTIONARY, schema.type());
   EXPECT_FALSE(schema.GetProperty("invalid").valid());
 
@@ -213,13 +247,12 @@ TEST(SchemaTest, ValidSchema) {
 
 TEST(SchemaTest, Lookups) {
   std::string error;
-  scoped_ptr<SchemaOwner> policy_schema = SchemaOwner::Parse(
+
+  Schema schema = Schema::Parse(
       "{"
         OBJECT_TYPE
       "}", &error);
-  ASSERT_TRUE(policy_schema) << error;
-  Schema schema = policy_schema->schema();
-  ASSERT_TRUE(schema.valid());
+  ASSERT_TRUE(schema.valid()) << error;
   ASSERT_EQ(base::Value::TYPE_DICTIONARY, schema.type());
 
   // This empty schema should never find named properties.
@@ -227,23 +260,21 @@ TEST(SchemaTest, Lookups) {
   EXPECT_FALSE(schema.GetKnownProperty("xyz").valid());
   EXPECT_TRUE(schema.GetPropertiesIterator().IsAtEnd());
 
-  policy_schema = SchemaOwner::Parse(
+  schema = Schema::Parse(
       "{"
         OBJECT_TYPE ","
         "\"properties\": {"
         "  \"Boolean\": { \"type\": \"boolean\" }"
         "}"
       "}", &error);
-  ASSERT_TRUE(policy_schema) << error;
-  schema = policy_schema->schema();
-  ASSERT_TRUE(schema.valid());
+  ASSERT_TRUE(schema.valid()) << error;
   ASSERT_EQ(base::Value::TYPE_DICTIONARY, schema.type());
 
   EXPECT_FALSE(schema.GetKnownProperty("").valid());
   EXPECT_FALSE(schema.GetKnownProperty("xyz").valid());
   EXPECT_TRUE(schema.GetKnownProperty("Boolean").valid());
 
-  policy_schema = SchemaOwner::Parse(
+  schema = Schema::Parse(
       "{"
         OBJECT_TYPE ","
         "\"properties\": {"
@@ -254,9 +285,7 @@ TEST(SchemaTest, Lookups) {
           "  \"aba\" : { \"type\": \"integer\" }"
         "}"
       "}", &error);
-  ASSERT_TRUE(policy_schema) << error;
-  schema = policy_schema->schema();
-  ASSERT_TRUE(schema.valid());
+  ASSERT_TRUE(schema.valid()) << error;
   ASSERT_EQ(base::Value::TYPE_DICTIONARY, schema.type());
 
   EXPECT_FALSE(schema.GetKnownProperty("").valid());
@@ -310,9 +339,7 @@ TEST(SchemaTest, Wrap) {
     kProperties,
   };
 
-  scoped_ptr<SchemaOwner> policy_schema = SchemaOwner::Wrap(&kData);
-  ASSERT_TRUE(policy_schema);
-  Schema schema = policy_schema->schema();
+  Schema schema = Schema::Wrap(&kData);
   ASSERT_TRUE(schema.valid());
   EXPECT_EQ(base::Value::TYPE_DICTIONARY, schema.type());
 

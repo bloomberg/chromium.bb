@@ -51,22 +51,41 @@ bool SchemaTypeToValueType(const std::string& type_string,
 
 }  // namespace
 
-// A SchemaOwner can either Wrap() a SchemaData owned elsewhere (currently used
-// to wrap the Chrome schema, which is generated at compile time), or it can
-// own its own SchemaData. In that case, the InternalStorage class holds the
-// data referenced by the SchemaData substructures.
-class SchemaOwner::InternalStorage {
+// Contains the internal data representation of a Schema. This can either wrap
+// a SchemaData owned elsewhere (currently used to wrap the Chrome schema, which
+// is generated at compile time), or it can own its own SchemaData.
+class Schema::InternalStorage
+    : public base::RefCountedThreadSafe<InternalStorage> {
  public:
-  ~InternalStorage() {}
+  static scoped_refptr<const InternalStorage> Wrap(const SchemaData* data);
 
-  static scoped_ptr<InternalStorage> ParseSchema(
+  static scoped_refptr<const InternalStorage> ParseSchema(
       const base::DictionaryValue& schema,
       std::string* error);
 
-  const SchemaData* schema_data() const { return &schema_data_; }
+  const SchemaData* data() const { return &schema_data_; }
+
+  const SchemaNode* root_node() const {
+    return schema(0);
+  }
+
+  const SchemaNode* schema(int index) const {
+    return schema_data_.schema_nodes + index;
+  }
+
+  const PropertiesNode* properties(int index) const {
+    return schema_data_.properties_nodes + index;
+  }
+
+  const PropertyNode* property(int index) const {
+    return schema_data_.property_nodes + index;
+  }
 
  private:
-  InternalStorage() {}
+  friend class base::RefCountedThreadSafe<InternalStorage>;
+
+  InternalStorage();
+  ~InternalStorage();
 
   // Parses the JSON schema in |schema| and returns the index of the
   // corresponding SchemaNode in |schema_nodes_|, which gets populated with any
@@ -91,174 +110,36 @@ class SchemaOwner::InternalStorage {
   DISALLOW_COPY_AND_ASSIGN(InternalStorage);
 };
 
-Schema::Iterator::Iterator(const SchemaData* data, const PropertiesNode* node)
-    : data_(data),
-      it_(data->property_nodes + node->begin),
-      end_(data->property_nodes + node->end) {}
+Schema::InternalStorage::InternalStorage() {}
 
-Schema::Iterator::Iterator(const Iterator& iterator)
-    : data_(iterator.data_),
-      it_(iterator.it_),
-      end_(iterator.end_) {}
+Schema::InternalStorage::~InternalStorage() {}
 
-Schema::Iterator::~Iterator() {}
-
-Schema::Iterator& Schema::Iterator::operator=(const Iterator& iterator) {
-  data_ = iterator.data_;
-  it_ = iterator.it_;
-  end_ = iterator.end_;
-  return *this;
-}
-
-bool Schema::Iterator::IsAtEnd() const {
-  return it_ == end_;
-}
-
-void Schema::Iterator::Advance() {
-  ++it_;
-}
-
-const char* Schema::Iterator::key() const {
-  return it_->key;
-}
-
-Schema Schema::Iterator::schema() const {
-  return Schema(data_, data_->schema_nodes + it_->schema);
-}
-
-Schema::Schema() : data_(NULL), node_(NULL) {}
-
-Schema::Schema(const SchemaData* data, const SchemaNode* node)
-    : data_(data), node_(node) {}
-
-Schema::Schema(const Schema& schema)
-    : data_(schema.data_), node_(schema.node_) {}
-
-Schema& Schema::operator=(const Schema& schema) {
-  data_ = schema.data_;
-  node_ = schema.node_;
-  return *this;
-}
-
-base::Value::Type Schema::type() const {
-  CHECK(valid());
-  return node_->type;
-}
-
-Schema::Iterator Schema::GetPropertiesIterator() const {
-  CHECK(valid());
-  CHECK_EQ(base::Value::TYPE_DICTIONARY, type());
-  return Iterator(data_, data_->properties_nodes + node_->extra);
-}
-
-namespace {
-
-bool CompareKeys(const PropertyNode& node, const std::string& key) {
-  return node.key < key;
-}
-
-}  // namespace
-
-Schema Schema::GetKnownProperty(const std::string& key) const {
-  CHECK(valid());
-  CHECK_EQ(base::Value::TYPE_DICTIONARY, type());
-  const PropertiesNode* node = data_->properties_nodes + node_->extra;
-  const PropertyNode* begin = data_->property_nodes + node->begin;
-  const PropertyNode* end = data_->property_nodes + node->end;
-  const PropertyNode* it = std::lower_bound(begin, end, key, CompareKeys);
-  if (it != end && it->key == key)
-    return Schema(data_, data_->schema_nodes + it->schema);
-  return Schema();
-}
-
-Schema Schema::GetAdditionalProperties() const {
-  CHECK(valid());
-  CHECK_EQ(base::Value::TYPE_DICTIONARY, type());
-  const PropertiesNode* node = data_->properties_nodes + node_->extra;
-  if (node->additional == kInvalid)
-    return Schema();
-  return Schema(data_, data_->schema_nodes + node->additional);
-}
-
-Schema Schema::GetProperty(const std::string& key) const {
-  Schema schema = GetKnownProperty(key);
-  return schema.valid() ? schema : GetAdditionalProperties();
-}
-
-Schema Schema::GetItems() const {
-  CHECK(valid());
-  CHECK_EQ(base::Value::TYPE_LIST, type());
-  if (node_->extra == kInvalid)
-    return Schema();
-  return Schema(data_, data_->schema_nodes + node_->extra);
-}
-
-SchemaOwner::SchemaOwner(const SchemaData* data,
-                         scoped_ptr<InternalStorage> storage)
-    : storage_(storage.Pass()), data_(data) {}
-
-SchemaOwner::~SchemaOwner() {}
-
-Schema SchemaOwner::schema() const {
-  // data_->schema_nodes[0] is the root node.
-  return Schema(data_, data_->schema_nodes);
+// static
+scoped_refptr<const Schema::InternalStorage> Schema::InternalStorage::Wrap(
+    const SchemaData* data) {
+  InternalStorage* storage = new InternalStorage();
+  storage->schema_data_.schema_nodes = data->schema_nodes;
+  storage->schema_data_.property_nodes = data->property_nodes;
+  storage->schema_data_.properties_nodes = data->properties_nodes;
+  return storage;
 }
 
 // static
-scoped_ptr<SchemaOwner> SchemaOwner::Wrap(const SchemaData* data) {
-  return make_scoped_ptr(new SchemaOwner(data, scoped_ptr<InternalStorage>()));
-}
-
-// static
-scoped_ptr<SchemaOwner> SchemaOwner::Parse(const std::string& content,
-                                           std::string* error) {
-  // Validate as a generic JSON schema.
-  scoped_ptr<base::DictionaryValue> dict =
-      JSONSchemaValidator::IsValidSchema(content, error);
-  if (!dict)
-    return scoped_ptr<SchemaOwner>();
-
-  // Validate the main type.
-  std::string string_value;
-  if (!dict->GetString(json_schema_constants::kType, &string_value) ||
-      string_value != json_schema_constants::kObject) {
-    *error =
-        "The main schema must have a type attribute with \"object\" value.";
-    return scoped_ptr<SchemaOwner>();
-  }
-
-  // Checks for invalid attributes at the top-level.
-  if (dict->HasKey(json_schema_constants::kAdditionalProperties) ||
-      dict->HasKey(json_schema_constants::kPatternProperties)) {
-    *error = "\"additionalProperties\" and \"patternProperties\" are not "
-             "supported at the main schema.";
-    return scoped_ptr<SchemaOwner>();
-  }
-
-  scoped_ptr<InternalStorage> storage =
-      InternalStorage::ParseSchema(*dict, error);
-  if (!storage)
-    return scoped_ptr<SchemaOwner>();
-  const SchemaData* data = storage->schema_data();
-  return make_scoped_ptr(new SchemaOwner(data, storage.Pass()));
-}
-
-// static
-scoped_ptr<SchemaOwner::InternalStorage>
-SchemaOwner::InternalStorage::ParseSchema(const base::DictionaryValue& schema,
-                                          std::string* error) {
-  scoped_ptr<InternalStorage> storage(new InternalStorage);
+scoped_refptr<const Schema::InternalStorage>
+Schema::InternalStorage::ParseSchema(const base::DictionaryValue& schema,
+                                     std::string* error) {
+  scoped_refptr<InternalStorage> storage = new InternalStorage();
   if (storage->Parse(schema, error) == kInvalid)
-    return scoped_ptr<InternalStorage>();
+    return NULL;
   SchemaData* data = &storage->schema_data_;
   data->schema_nodes = vector_as_array(&storage->schema_nodes_);
   data->property_nodes = vector_as_array(&storage->property_nodes_);
   data->properties_nodes = vector_as_array(&storage->properties_nodes_);
-  return storage.Pass();
+  return storage;
 }
 
-int SchemaOwner::InternalStorage::Parse(const base::DictionaryValue& schema,
-                                        std::string* error) {
+int Schema::InternalStorage::Parse(const base::DictionaryValue& schema,
+                                   std::string* error) {
   std::string type_string;
   if (!schema.GetString(json_schema_constants::kType, &type_string)) {
     *error = "The schema type must be declared.";
@@ -285,7 +166,7 @@ int SchemaOwner::InternalStorage::Parse(const base::DictionaryValue& schema,
 }
 
 // static
-int SchemaOwner::InternalStorage::ParseDictionary(
+int Schema::InternalStorage::ParseDictionary(
     const base::DictionaryValue& schema,
     std::string* error) {
   // Note: recursive calls to Parse() invalidate iterators and references into
@@ -342,8 +223,8 @@ int SchemaOwner::InternalStorage::ParseDictionary(
 }
 
 // static
-int SchemaOwner::InternalStorage::ParseList(const base::DictionaryValue& schema,
-                                            std::string* error) {
+int Schema::InternalStorage::ParseList(const base::DictionaryValue& schema,
+                                       std::string* error) {
   const base::DictionaryValue* dict = NULL;
   if (!schema.GetDictionary(json_schema_constants::kItems, &dict)) {
     *error = "Arrays must declare a single schema for their items.";
@@ -357,6 +238,150 @@ int SchemaOwner::InternalStorage::ParseList(const base::DictionaryValue& schema,
   schema_nodes_[index].type = base::Value::TYPE_LIST;
   schema_nodes_[index].extra = extra;
   return index;
+}
+
+Schema::Iterator::Iterator(const scoped_refptr<const InternalStorage>& storage,
+                           const PropertiesNode* node)
+    : storage_(storage),
+      it_(storage->property(node->begin)),
+      end_(storage->property(node->end)) {}
+
+Schema::Iterator::Iterator(const Iterator& iterator)
+    : storage_(iterator.storage_),
+      it_(iterator.it_),
+      end_(iterator.end_) {}
+
+Schema::Iterator::~Iterator() {}
+
+Schema::Iterator& Schema::Iterator::operator=(const Iterator& iterator) {
+  storage_ = iterator.storage_;
+  it_ = iterator.it_;
+  end_ = iterator.end_;
+  return *this;
+}
+
+bool Schema::Iterator::IsAtEnd() const {
+  return it_ == end_;
+}
+
+void Schema::Iterator::Advance() {
+  ++it_;
+}
+
+const char* Schema::Iterator::key() const {
+  return it_->key;
+}
+
+Schema Schema::Iterator::schema() const {
+  return Schema(storage_, storage_->schema(it_->schema));
+}
+
+Schema::Schema() : node_(NULL) {}
+
+Schema::Schema(const scoped_refptr<const InternalStorage>& storage,
+               const SchemaNode* node)
+    : storage_(storage), node_(node) {}
+
+Schema::Schema(const Schema& schema)
+    : storage_(schema.storage_), node_(schema.node_) {}
+
+Schema::~Schema() {}
+
+Schema& Schema::operator=(const Schema& schema) {
+  storage_ = schema.storage_;
+  node_ = schema.node_;
+  return *this;
+}
+
+// static
+Schema Schema::Wrap(const SchemaData* data) {
+  scoped_refptr<const InternalStorage> storage = InternalStorage::Wrap(data);
+  return Schema(storage, storage->root_node());
+}
+
+// static
+Schema Schema::Parse(const std::string& content, std::string* error) {
+  // Validate as a generic JSON schema.
+  scoped_ptr<base::DictionaryValue> dict =
+      JSONSchemaValidator::IsValidSchema(content, error);
+  if (!dict)
+    return Schema();
+
+  // Validate the main type.
+  std::string string_value;
+  if (!dict->GetString(json_schema_constants::kType, &string_value) ||
+      string_value != json_schema_constants::kObject) {
+    *error =
+        "The main schema must have a type attribute with \"object\" value.";
+    return Schema();
+  }
+
+  // Checks for invalid attributes at the top-level.
+  if (dict->HasKey(json_schema_constants::kAdditionalProperties) ||
+      dict->HasKey(json_schema_constants::kPatternProperties)) {
+    *error = "\"additionalProperties\" and \"patternProperties\" are not "
+             "supported at the main schema.";
+    return Schema();
+  }
+
+  scoped_refptr<const InternalStorage> storage =
+      InternalStorage::ParseSchema(*dict, error);
+  if (!storage)
+    return Schema();
+  return Schema(storage, storage->root_node());
+}
+
+base::Value::Type Schema::type() const {
+  CHECK(valid());
+  return node_->type;
+}
+
+Schema::Iterator Schema::GetPropertiesIterator() const {
+  CHECK(valid());
+  CHECK_EQ(base::Value::TYPE_DICTIONARY, type());
+  return Iterator(storage_, storage_->properties(node_->extra));
+}
+
+namespace {
+
+bool CompareKeys(const PropertyNode& node, const std::string& key) {
+  return node.key < key;
+}
+
+}  // namespace
+
+Schema Schema::GetKnownProperty(const std::string& key) const {
+  CHECK(valid());
+  CHECK_EQ(base::Value::TYPE_DICTIONARY, type());
+  const PropertiesNode* node = storage_->properties(node_->extra);
+  const PropertyNode* begin = storage_->property(node->begin);
+  const PropertyNode* end = storage_->property(node->end);
+  const PropertyNode* it = std::lower_bound(begin, end, key, CompareKeys);
+  if (it != end && it->key == key)
+    return Schema(storage_, storage_->schema(it->schema));
+  return Schema();
+}
+
+Schema Schema::GetAdditionalProperties() const {
+  CHECK(valid());
+  CHECK_EQ(base::Value::TYPE_DICTIONARY, type());
+  const PropertiesNode* node = storage_->properties(node_->extra);
+  if (node->additional == kInvalid)
+    return Schema();
+  return Schema(storage_, storage_->schema(node->additional));
+}
+
+Schema Schema::GetProperty(const std::string& key) const {
+  Schema schema = GetKnownProperty(key);
+  return schema.valid() ? schema : GetAdditionalProperties();
+}
+
+Schema Schema::GetItems() const {
+  CHECK(valid());
+  CHECK_EQ(base::Value::TYPE_LIST, type());
+  if (node_->extra == kInvalid)
+    return Schema();
+  return Schema(storage_, storage_->schema(node_->extra));
 }
 
 }  // namespace policy

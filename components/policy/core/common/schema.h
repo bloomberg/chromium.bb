@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/memory/scoped_ptr.h"
+#include "base/memory/ref_counted.h"
 #include "base/values.h"
 #include "components/policy/policy_export.h"
 
@@ -26,30 +26,41 @@ struct POLICY_EXPORT PropertiesNode;
 // types of inner elements, for structured types.
 // Objects of this class refer to external, immutable data and are cheap to
 // copy.
-// Use the SchemaOwner class to parse a schema and get Schema objects.
 class POLICY_EXPORT Schema {
  public:
+  // Used internally to store shared data.
+  class InternalStorage;
+
   // Builds an empty, invalid schema.
   Schema();
 
-  // Builds a schema pointing to the inner structure of |data|,
-  // rooted at |node|.
-  Schema(const internal::SchemaData* data, const internal::SchemaNode* node);
-
+  // Makes a copy of |schema| that shares the same internal storage.
   Schema(const Schema& schema);
+
+  ~Schema();
 
   Schema& operator=(const Schema& schema);
 
+  // Returns a Schema that references static data. This can be used by
+  // the embedder to pass structures generated at compile time, which can then
+  // be quickly loaded at runtime.
+  static Schema Wrap(const internal::SchemaData* data);
+
+  // Parses the JSON schema in |schema| and returns a Schema that owns
+  // the internal representation. If |schema| is invalid then an invalid Schema
+  // is returned and |error| contains a reason for the failure.
+  static Schema Parse(const std::string& schema, std::string* error);
+
   // Returns true if this Schema is valid. Schemas returned by the methods below
   // may be invalid, and in those cases the other methods must not be used.
-  bool valid() const { return data_ != NULL; }
+  bool valid() const { return node_ != NULL; }
 
   base::Value::Type type() const;
 
   // Used to iterate over the known properties of TYPE_DICTIONARY schemas.
   class POLICY_EXPORT Iterator {
    public:
-    Iterator(const internal::SchemaData* data,
+    Iterator(const scoped_refptr<const InternalStorage>& storage,
              const internal::PropertiesNode* node);
     Iterator(const Iterator& iterator);
     ~Iterator();
@@ -69,7 +80,7 @@ class POLICY_EXPORT Schema {
     Schema schema() const;
 
    private:
-    const internal::SchemaData* data_;
+    scoped_refptr<const InternalStorage> storage_;
     const internal::PropertyNode* it_;
     const internal::PropertyNode* end_;
   };
@@ -99,42 +110,13 @@ class POLICY_EXPORT Schema {
   Schema GetItems() const;
 
  private:
-  const internal::SchemaData* data_;
+  // Builds a schema pointing to the inner structure of |storage|,
+  // rooted at |node|.
+  Schema(const scoped_refptr<const InternalStorage>& storage,
+         const internal::SchemaNode* node);
+
+  scoped_refptr<const InternalStorage> storage_;
   const internal::SchemaNode* node_;
-};
-
-// Owns schemas for policies of a given component.
-class POLICY_EXPORT SchemaOwner {
- public:
-  ~SchemaOwner();
-
-  // The returned Schema is valid only during the lifetime of the SchemaOwner
-  // that created it. It may be obtained multiple times.
-  Schema schema() const;
-
-  // Returns a SchemaOwner that references static data. This can be used by
-  // the embedder to pass structures generated at compile time, which can then
-  // be quickly loaded at runtime.
-  static scoped_ptr<SchemaOwner> Wrap(const internal::SchemaData* data);
-
-  // Parses the JSON schema in |schema| and returns a SchemaOwner that owns
-  // the internal representation. If |schema| is invalid then NULL is returned
-  // and |error| contains a reason for the failure.
-  static scoped_ptr<SchemaOwner> Parse(const std::string& schema,
-                                       std::string* error);
-
- private:
-  class InternalStorage;
-
-  SchemaOwner(const internal::SchemaData* data,
-              scoped_ptr<InternalStorage> storage);
-
-  // Holds the internal structures when a SchemaOwner is created via Parse().
-  // SchemaOwners that Wrap() a SchemaData have a NULL storage.
-  scoped_ptr<InternalStorage> storage_;
-  const internal::SchemaData* data_;
-
-  DISALLOW_COPY_AND_ASSIGN(SchemaOwner);
 };
 
 }  // namespace policy

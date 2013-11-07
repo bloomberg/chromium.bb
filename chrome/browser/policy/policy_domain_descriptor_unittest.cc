@@ -36,7 +36,7 @@ TEST_F(PolicyDomainDescriptorTest, FilterBundle) {
   EXPECT_TRUE(descriptor->components().empty());
 
   std::string error;
-  scoped_ptr<SchemaOwner> schema = SchemaOwner::Parse(
+  Schema schema = Schema::Parse(
       "{"
       "  \"type\":\"object\","
       "  \"properties\": {"
@@ -58,9 +58,9 @@ TEST_F(PolicyDomainDescriptorTest, FilterBundle) {
       "    \"String\": { \"type\": \"string\" }"
       "  }"
       "}", &error);
-  ASSERT_TRUE(schema) << error;
+  ASSERT_TRUE(schema.valid()) << error;
 
-  descriptor->RegisterComponent("abc", schema.Pass());
+  descriptor->RegisterComponent("abc", schema);
 
   EXPECT_EQ(1u, descriptor->components().size());
   EXPECT_EQ(1u, descriptor->components().count("abc"));
@@ -152,17 +152,17 @@ TEST_F(PolicyDomainDescriptorTest, LegacyComponents) {
   EXPECT_TRUE(descriptor->components().empty());
 
   std::string error;
-  scoped_ptr<SchemaOwner> schema = SchemaOwner::Parse(
+  Schema schema = Schema::Parse(
       "{"
       "  \"type\":\"object\","
       "  \"properties\": {"
       "    \"String\": { \"type\": \"string\" }"
       "  }"
       "}", &error);
-  ASSERT_TRUE(schema) << error;
+  ASSERT_TRUE(schema.valid()) << error;
 
-  descriptor->RegisterComponent("with-schema", schema.Pass());
-  descriptor->RegisterComponent("without-schema", scoped_ptr<SchemaOwner>());
+  descriptor->RegisterComponent("with-schema", schema);
+  descriptor->RegisterComponent("without-schema", Schema());
 
   EXPECT_EQ(2u, descriptor->components().size());
 

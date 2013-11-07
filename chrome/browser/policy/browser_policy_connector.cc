@@ -425,7 +425,7 @@ scoped_ptr<PolicyService> BrowserPolicyConnector::CreatePolicyService(
   scoped_ptr<PolicyService> service(new PolicyServiceImpl(providers));
   scoped_refptr<PolicyDomainDescriptor> descriptor = new PolicyDomainDescriptor(
       POLICY_DOMAIN_CHROME);
-  descriptor->RegisterComponent("", SchemaOwner::Wrap(GetChromeSchemaData()));
+  descriptor->RegisterComponent("", Schema::Wrap(GetChromeSchemaData()));
   service->RegisterPolicyDomain(descriptor);
   return service.Pass();
 }

@@ -627,7 +627,7 @@ TEST_F(PolicyServiceTest, RegisterPolicyDomain) {
 
   // Register another namespace.
   std::string error;
-  scoped_ptr<SchemaOwner> schema = SchemaOwner::Parse(
+  Schema schema = Schema::Parse(
       "{"
       "  \"type\":\"object\","
       "  \"properties\": {"
@@ -639,10 +639,10 @@ TEST_F(PolicyServiceTest, RegisterPolicyDomain) {
       "    \"String\": { \"type\": \"string\" }"
       "  }"
       "}", &error);
-  ASSERT_TRUE(schema);
+  ASSERT_TRUE(schema.valid()) << error;
   scoped_refptr<PolicyDomainDescriptor> extensions_descriptor =
       new PolicyDomainDescriptor(POLICY_DOMAIN_EXTENSIONS);
-  extensions_descriptor->RegisterComponent(kExtension, schema.Pass());
+  extensions_descriptor->RegisterComponent(kExtension, schema);
   EXPECT_CALL(provider0_, RegisterPolicyDomain(
       scoped_refptr<const PolicyDomainDescriptor>(extensions_descriptor)));
   policy_service_->RegisterPolicyDomain(extensions_descriptor);

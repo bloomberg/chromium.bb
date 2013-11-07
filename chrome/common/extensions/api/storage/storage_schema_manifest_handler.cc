@@ -33,13 +33,13 @@ StorageSchemaManifestHandler::~StorageSchemaManifestHandler() {}
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
 // static
-scoped_ptr<policy::SchemaOwner> StorageSchemaManifestHandler::GetSchema(
+policy::Schema StorageSchemaManifestHandler::GetSchema(
     const Extension* extension,
     std::string* error) {
   if (!extension->HasAPIPermission(APIPermission::kStorage)) {
     *error = base::StringPrintf("The storage permission is required to use %s",
                                 kStorageManagedSchema);
-    return scoped_ptr<policy::SchemaOwner>();
+    return policy::Schema();
   }
   std::string path;
   extension->manifest()->GetString(kStorageManagedSchema, &path);
@@ -47,20 +47,20 @@ scoped_ptr<policy::SchemaOwner> StorageSchemaManifestHandler::GetSchema(
   if (file.IsAbsolute() || file.ReferencesParent()) {
     *error = base::StringPrintf("%s must be a relative path without ..",
                                 kStorageManagedSchema);
-    return scoped_ptr<policy::SchemaOwner>();
+    return policy::Schema();
   }
   file = extension->path().AppendASCII(path);
   if (!base::PathExists(file)) {
     *error =
         base::StringPrintf("File does not exist: %s", file.value().c_str());
-    return scoped_ptr<policy::SchemaOwner>();
+    return policy::Schema();
   }
   std::string content;
   if (!base::ReadFileToString(file, &content)) {
     *error = base::StringPrintf("Can't read %s", file.value().c_str());
-    return scoped_ptr<policy::SchemaOwner>();
+    return policy::Schema();
   }
-  return policy::SchemaOwner::Parse(content, error);
+  return policy::Schema::Parse(content, error);
 }
 #endif
 
@@ -80,7 +80,7 @@ bool StorageSchemaManifestHandler::Validate(
     std::string* error,
     std::vector<InstallWarning>* warnings) const {
 #if defined(ENABLE_CONFIGURATION_POLICY)
-  return !!GetSchema(extension, error);
+  return GetSchema(extension, error).valid();
 #else
   return true;
 #endif

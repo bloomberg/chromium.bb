@@ -188,11 +188,11 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
     return builder_.GetBlob();
   }
 
-  scoped_ptr<SchemaOwner> CreateTestSchema() {
+  Schema CreateTestSchema() {
     std::string error;
-    scoped_ptr<SchemaOwner> schema = SchemaOwner::Parse(kTestSchema, &error);
-    EXPECT_TRUE(schema) << error;
-    return schema.Pass();
+    Schema schema = Schema::Parse(kTestSchema, &error);
+    EXPECT_TRUE(schema.valid()) << error;
+    return schema;
   }
 
   base::MessageLoop loop_;

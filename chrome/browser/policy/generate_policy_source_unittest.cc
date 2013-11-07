@@ -16,11 +16,8 @@
 namespace policy {
 
 TEST(GeneratePolicySource, ChromeSchemaData) {
-  scoped_ptr<SchemaOwner> schema_owner =
-      SchemaOwner::Wrap(GetChromeSchemaData());
-  ASSERT_TRUE(schema_owner);
-
-  Schema schema = schema_owner->schema();
+  Schema schema = Schema::Wrap(GetChromeSchemaData());
+  ASSERT_TRUE(schema.valid());
   EXPECT_EQ(base::Value::TYPE_DICTIONARY, schema.type());
 
   Schema subschema = schema.GetAdditionalProperties();
