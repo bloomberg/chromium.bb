@@ -633,7 +633,7 @@ hooks = [
     "name": "gn_linux",
     "pattern": "\\.sha1$",
     "action": [ "download_from_google_storage",
-                "--platform=\"linux*\"",
+                "--platform=linux*",
                 "--directory",
                 "--bucket", "chromium-gn",
                 "src/tools/gn/bin/linux",
