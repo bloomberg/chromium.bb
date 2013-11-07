@@ -14,11 +14,18 @@ import tempfile
 import constants
 
 
-def Call(args, stdout=None, stderr=None, shell=None, cwd=None, env=None):
-  return subprocess.call(
+def Popen(args, stdout=None, stderr=None, shell=None, cwd=None, env=None):
+  return subprocess.Popen(
       args=args, cwd=cwd, stdout=stdout, stderr=stderr,
       shell=shell, close_fds=True, env=env,
       preexec_fn=lambda: signal.signal(signal.SIGPIPE, signal.SIG_DFL))
+
+
+def Call(args, stdout=None, stderr=None, shell=None, cwd=None, env=None):
+  pipe = Popen(args, stdout=stdout, stderr=stderr, shell=shell, cwd=cwd,
+               env=env)
+  pipe.communicate()
+  return pipe.wait()
 
 
 def RunCmd(args, cwd=None):
