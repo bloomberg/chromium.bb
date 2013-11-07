@@ -65,6 +65,7 @@ const char kGoogleBaseURLParameterFull[] = "{google:baseURL}";
 const char kGoogleBaseSuggestURLParameter[] = "google:baseSuggestURL";
 const char kGoogleBaseSuggestURLParameterFull[] = "{google:baseSuggestURL}";
 const char kGoogleBookmarkBarPinnedParameter[] = "google:bookmarkBarPinned";
+const char kGoogleCurrentPageUrlParameter[] = "google:currentPageUrl";
 const char kGoogleCursorPositionParameter[] = "google:cursorPosition";
 const char kGoogleForceInstantResultsParameter[] = "google:forceInstantResults";
 const char kGoogleInstantExtendedEnabledParameter[] =
@@ -86,7 +87,6 @@ const char kGoogleSearchFieldtrialParameter[] =
 const char kGoogleSourceIdParameter[] = "google:sourceId";
 const char kGoogleSuggestAPIKeyParameter[] = "google:suggestAPIKeyParameter";
 const char kGoogleSuggestClient[] = "google:suggestClient";
-const char kGoogleZeroPrefixUrlParameter[] = "google:zeroPrefixUrl";
 
 // Same as kSearchTermsParameter, with no escaping.
 const char kGoogleUnescapedSearchTermsParameter[] =
@@ -559,6 +559,8 @@ bool TemplateURLRef::ParseParameter(size_t start,
     replacements->push_back(Replacement(GOOGLE_BASE_SUGGEST_URL, start));
   } else if (parameter == kGoogleBookmarkBarPinnedParameter) {
     replacements->push_back(Replacement(GOOGLE_BOOKMARK_BAR_PINNED, start));
+  } else if (parameter == kGoogleCurrentPageUrlParameter) {
+    replacements->push_back(Replacement(GOOGLE_CURRENT_PAGE_URL, start));
   } else if (parameter == kGoogleCursorPositionParameter) {
     replacements->push_back(Replacement(GOOGLE_CURSOR_POSITION, start));
   } else if (parameter == kGoogleImageOriginalHeight) {
@@ -610,8 +612,6 @@ bool TemplateURLRef::ParseParameter(size_t start,
     replacements->push_back(Replacement(GOOGLE_SUGGEST_CLIENT, start));
   } else if (parameter == kGoogleUnescapedSearchTermsParameter) {
     replacements->push_back(Replacement(GOOGLE_UNESCAPED_SEARCH_TERMS, start));
-  } else if (parameter == kGoogleZeroPrefixUrlParameter) {
-    replacements->push_back(Replacement(GOOGLE_ZERO_PREFIX_URL, start));
   } else if (parameter == kInputEncodingParameter) {
     replacements->push_back(Replacement(ENCODING, start));
   } else if (parameter == kLanguageParameter) {
@@ -862,6 +862,16 @@ std::string TemplateURLRef::HandleReplacements(
         }
         break;
 
+      case GOOGLE_CURRENT_PAGE_URL:
+        DCHECK(!i->is_post_param);
+        if (!search_terms_args.current_page_url.empty()) {
+          const std::string& escaped_current_page_url =
+              net::EscapeQueryParamValue(search_terms_args.current_page_url,
+                                         true);
+          HandleReplacement("url", escaped_current_page_url, *i, &url);
+        }
+        break;
+
       case GOOGLE_CURSOR_POSITION:
         DCHECK(!i->is_post_param);
         if (search_terms_args.cursor_position != string16::npos)
@@ -964,17 +974,6 @@ std::string TemplateURLRef::HandleReplacements(
         HandleReplacement(std::string(), unescaped_terms, *i, &url);
         break;
       }
-
-      case GOOGLE_ZERO_PREFIX_URL:
-        DCHECK(!i->is_post_param);
-        if (!search_terms_args.zero_prefix_url.empty()) {
-          const std::string& escaped_zero_prefix_url =
-              net::EscapeQueryParamValue(search_terms_args.zero_prefix_url,
-                                         true);
-          HandleReplacement("url", escaped_zero_prefix_url, *i, &url);
-        }
-
-        break;
 
       case LANGUAGE:
         HandleReplacement(

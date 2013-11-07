@@ -27,6 +27,8 @@ const char kStopTimerFieldTrialName[] = "OmniboxStopTimer";
 const char kEnableZeroSuggestGroupPrefix[] = "EnableZeroSuggest";
 const char kEnableZeroSuggestMostVisitedGroupPrefix[] =
     "EnableZeroSuggestMostVisited";
+const char kEnableZeroSuggestAfterTypingGroupPrefix[] =
+    "EnableZeroSuggestAfterTyping";
 
 // The autocomplete dynamic field trial name prefix.  Each field trial is
 // configured dynamically and is retrieved automatically by Chrome during
@@ -207,6 +209,11 @@ bool OmniboxFieldTrial::InZeroSuggestFieldTrial() {
 bool OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial() {
   return HasDynamicFieldTrialGroupPrefix(
       kEnableZeroSuggestMostVisitedGroupPrefix);
+}
+
+bool OmniboxFieldTrial::InZeroSuggestAfterTypingFieldTrial() {
+  return HasDynamicFieldTrialGroupPrefix(
+      kEnableZeroSuggestAfterTypingGroupPrefix);
 }
 
 bool OmniboxFieldTrial::ShortcutsScoringMaxRelevance(

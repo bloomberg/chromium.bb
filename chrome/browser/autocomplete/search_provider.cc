@@ -25,6 +25,7 @@
 #include "chrome/browser/autocomplete/autocomplete_result.h"
 #include "chrome/browser/autocomplete/keyword_provider.h"
 #include "chrome/browser/autocomplete/url_prefix.h"
+#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/in_memory_database.h"
@@ -35,6 +36,8 @@
 #include "chrome/browser/search_engines/template_url_prepopulate_data.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_instant_controller.h"
@@ -46,6 +49,7 @@
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_util.h"
+#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"
@@ -920,6 +924,73 @@ void SearchProvider::ApplyCalculatedNavigationRelevance(
   }
 }
 
+bool SearchProvider::CanSendURL(
+    const GURL& current_page_url,
+    const GURL& suggest_url,
+    const TemplateURL* template_url,
+    AutocompleteInput::PageClassification page_classification,
+    Profile* profile){
+  if (!current_page_url.is_valid())
+    return false;
+
+  // TODO(hfung): Show Most Visited on NTP with appropriate verbatim
+  // description when the user actively focuses on the omnibox as discussed in
+  // crbug/305366 if Most Visited (or something similar) will launch.
+  // TODO(hfung): Shorten the INSTANT_NEW_TAB_PAGE_WITH_... enums and remove
+  // the const variables.
+  const AutocompleteInput::PageClassification instant_ntp_fakebox =
+      AutocompleteInput::INSTANT_NEW_TAB_PAGE_WITH_FAKEBOX_AS_STARTING_FOCUS;
+  const AutocompleteInput::PageClassification instant_ntp_omnibox =
+      AutocompleteInput::INSTANT_NEW_TAB_PAGE_WITH_OMNIBOX_AS_STARTING_FOCUS;
+  if ((page_classification == instant_ntp_fakebox) ||
+      (page_classification == instant_ntp_omnibox))
+    return false;
+
+  // Only allow HTTP URLs or HTTPS URLs for the same domain as the search
+  // provider.
+  if ((current_page_url.scheme() != content::kHttpScheme) &&
+      ((current_page_url.scheme() != content::kHttpsScheme) ||
+       !net::registry_controlled_domains::SameDomainOrHost(
+           current_page_url, suggest_url,
+           net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES)))
+    return false;
+
+  // Make sure we are sending the suggest request through HTTPS to prevent
+  // exposing the current page URL to networks before the search provider.
+  if (!suggest_url.SchemeIs(content::kHttpsScheme))
+    return false;
+
+  // Don't run if there's no profile or in incognito mode.
+  if (profile == NULL || profile->IsOffTheRecord())
+    return false;
+
+  // Don't run if we can't get preferences or search suggest is not enabled.
+  PrefService* prefs = profile->GetPrefs();
+  if (!prefs->GetBoolean(prefs::kSearchSuggestEnabled))
+    return false;
+
+  // Only make the request if we know that the provider supports zero suggest
+  // (currently only the prepopulated Google provider).
+  if (template_url == NULL || !template_url->SupportsReplacement() ||
+      TemplateURLPrepopulateData::GetEngineType(*template_url) !=
+      SEARCH_ENGINE_GOOGLE)
+    return false;
+
+  // Check field trials and settings allow sending the URL on suggest requests.
+  ProfileSyncService* service =
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
+  browser_sync::SyncPrefs sync_prefs(prefs);
+  if (!OmniboxFieldTrial::InZeroSuggestFieldTrial() ||
+      service == NULL ||
+      !service->IsSyncEnabledAndLoggedIn() ||
+      !sync_prefs.GetPreferredDataTypes(syncer::UserTypes()).Has(
+          syncer::PROXY_TABS) ||
+      service->GetEncryptedDataTypes().Has(syncer::SESSIONS))
+    return false;
+
+  return true;
+}
+
 net::URLFetcher* SearchProvider::CreateSuggestFetcher(
     int id,
     const TemplateURL* template_url,
@@ -935,6 +1006,16 @@ net::URLFetcher* SearchProvider::CreateSuggestFetcher(
       search_term_args));
   if (!suggest_url.is_valid())
     return NULL;
+  // Send the current page URL if user setting and URL requirements are met and
+  // the user is in the field trial.
+  if (CanSendURL(current_page_url_, suggest_url, template_url,
+                 input.current_page_classification(), profile_) &&
+      OmniboxFieldTrial::InZeroSuggestAfterTypingFieldTrial()) {
+    search_term_args.current_page_url = current_page_url_.spec();
+    // Create the suggest URL again with the current page URL.
+    suggest_url = GURL(template_url->suggestions_url_ref().ReplaceSearchTerms(
+        search_term_args));
+  }
 
   suggest_results_pending_++;
   LogOmniboxSuggestRequest(REQUEST_SENT);

@@ -21,7 +21,6 @@
 #include "chrome/browser/autocomplete/history_url_provider.h"
 #include "chrome/browser/autocomplete/search_provider.h"
 #include "chrome/browser/autocomplete/url_prefix.h"
-#include "chrome/browser/google/google_util.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/history/top_sites.h"
 #include "chrome/browser/metrics/variations/variations_http_header_provider.h"
@@ -30,8 +29,6 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
-#include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/net/url_fixer_upper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -150,24 +147,38 @@ void ZeroSuggestProvider::OnURLFetchComplete(const net::URLFetcher* source) {
 }
 
 void ZeroSuggestProvider::StartZeroSuggest(
-    const GURL& url,
+    const GURL& current_page_url,
     AutocompleteInput::PageClassification page_classification,
     const string16& permanent_text) {
   Stop(true);
   field_trial_triggered_ = false;
   field_trial_triggered_in_session_ = false;
-  if (!ShouldRunZeroSuggest(url, page_classification))
+  permanent_text_ = permanent_text;
+  current_query_ = current_page_url.spec();
+  current_page_classification_ = page_classification;
+  current_url_match_ = MatchForCurrentURL();
+
+  const TemplateURL* default_provider =
+     template_url_service_->GetDefaultSearchProvider();
+  if (default_provider == NULL)
+    return;
+  string16 prefix;
+  TemplateURLRef::SearchTermsArgs search_term_args(prefix);
+  search_term_args.current_page_url = current_query_;
+  GURL suggest_url(default_provider->suggestions_url_ref().
+                   ReplaceSearchTerms(search_term_args));
+  if (!SearchProvider::CanSendURL(
+          current_page_url, suggest_url,
+          template_url_service_->GetDefaultSearchProvider(),
+          page_classification, profile_) ||
+      !OmniboxFieldTrial::InZeroSuggestFieldTrial())
     return;
   verbatim_relevance_ = kDefaultVerbatimZeroSuggestRelevance;
   done_ = false;
-  permanent_text_ = permanent_text;
-  current_query_ = url.spec();
-  current_page_classification_ = page_classification;
-  current_url_match_ = MatchForCurrentURL();
   // TODO(jered): Consider adding locally-sourced zero-suggestions here too.
   // These may be useful on the NTP or more relevant to the user than server
   // suggestions, if based on local browsing history.
-  Run();
+  Run(suggest_url);
 }
 
 ZeroSuggestProvider::ZeroSuggestProvider(
@@ -184,65 +195,6 @@ ZeroSuggestProvider::ZeroSuggestProvider(
 }
 
 ZeroSuggestProvider::~ZeroSuggestProvider() {
-}
-
-bool ZeroSuggestProvider::ShouldRunZeroSuggest(
-    const GURL& url,
-    AutocompleteInput::PageClassification page_classification) const {
-  if (!ShouldSendURL(url, page_classification))
-    return false;
-
-  // Don't run if there's no profile or in incognito mode.
-  if (profile_ == NULL || profile_->IsOffTheRecord())
-    return false;
-
-  // Don't run if we can't get preferences or search suggest is not enabled.
-  PrefService* prefs = profile_->GetPrefs();
-  if (prefs == NULL || !prefs->GetBoolean(prefs::kSearchSuggestEnabled))
-    return false;
-
-  ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
-  browser_sync::SyncPrefs sync_prefs(prefs);
-
-  // ZeroSuggest requires sending the current URL to the suggest provider, so we
-  // only want to enable it if the user is willing to have this data sent.
-  // Because tab sync involves sending the same data, we currently use
-  // "tab sync is enabled and tab sync data is unencrypted" as a proxy for
-  // "the user is OK with sending this data".  We might someday want to change
-  // this to a standalone setting or part of some other explicit general opt-in.
-  if (!OmniboxFieldTrial::InZeroSuggestFieldTrial() ||
-      service == NULL ||
-      !service->IsSyncEnabledAndLoggedIn() ||
-      !sync_prefs.GetPreferredDataTypes(syncer::UserTypes()).Has(
-          syncer::PROXY_TABS) ||
-      service->GetEncryptedDataTypes().Has(syncer::SESSIONS)) {
-    return false;
-  }
-  return true;
-}
-
-bool ZeroSuggestProvider::ShouldSendURL(
-    const GURL& url,
-    AutocompleteInput::PageClassification page_classification) const {
-  if (!url.is_valid())
-    return false;
-
-  // TODO(hfung): Show Most Visited on NTP with appropriate verbatim
-  // description when the user actively focuses on the omnibox as discussed in
-  // crbug/305366 if Most Visited (or something similar) will launch.
-  if (page_classification ==
-      AutocompleteInput::INSTANT_NEW_TAB_PAGE_WITH_FAKEBOX_AS_STARTING_FOCUS ||
-      page_classification ==
-      AutocompleteInput::INSTANT_NEW_TAB_PAGE_WITH_OMNIBOX_AS_STARTING_FOCUS)
-    return false;
-
-  // Only allow HTTP URLs or Google HTTPS URLs (including Google search
-  // result pages).  For the latter case, Google was already sent the HTTPS
-  // URLs when requesting the page, so the information is just re-sent.
-  return (url.scheme() == content::kHttpScheme) ||
-      google_util::IsGoogleDomainUrl(url, google_util::ALLOW_SUBDOMAIN,
-                                     google_util::ALLOW_NON_STANDARD_PORTS);
 }
 
 void ZeroSuggestProvider::FillResults(
@@ -393,32 +345,9 @@ AutocompleteMatch ZeroSuggestProvider::NavigationToMatch(
   return match;
 }
 
-void ZeroSuggestProvider::Run() {
+void ZeroSuggestProvider::Run(const GURL& suggest_url) {
   have_pending_request_ = false;
   const int kFetcherID = 1;
-
-  const TemplateURL* default_provider =
-     template_url_service_->GetDefaultSearchProvider();
-  // TODO(hfung): Generalize if the default provider supports zero suggest.
-  // Only make the request if we know that the provider supports zero suggest
-  // (currently only the prepopulated Google provider).
-  if (default_provider == NULL || !default_provider->SupportsReplacement() ||
-      default_provider->prepopulate_id() != 1) {
-    Stop(true);
-    return;
-  }
-  string16 prefix;
-  TemplateURLRef::SearchTermsArgs search_term_args(prefix);
-  search_term_args.zero_prefix_url = current_query_;
-  std::string req_url = default_provider->suggestions_url_ref().
-      ReplaceSearchTerms(search_term_args);
-  GURL suggest_url(req_url);
-  // Make sure we are sending the suggest request through HTTPS.
-  if (!suggest_url.SchemeIs(content::kHttpsScheme)) {
-    Stop(true);
-    return;
-  }
-
   fetcher_.reset(
       net::URLFetcher::Create(kFetcherID,
           suggest_url,

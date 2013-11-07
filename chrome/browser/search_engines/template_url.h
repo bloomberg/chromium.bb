@@ -97,7 +97,7 @@ class TemplateURLRef {
 
     // The URL of the current webpage to be used for experimental zero-prefix
     // suggestions.
-    std::string zero_prefix_url;
+    std::string current_page_url;
 
     // Which omnibox the user used to type the prefix.
     AutocompleteInput::PageClassification page_classification;
@@ -253,6 +253,7 @@ class TemplateURLRef {
     GOOGLE_BASE_URL,
     GOOGLE_BASE_SUGGEST_URL,
     GOOGLE_BOOKMARK_BAR_PINNED,
+    GOOGLE_CURRENT_PAGE_URL,
     GOOGLE_CURSOR_POSITION,
     GOOGLE_IMAGE_ORIGINAL_HEIGHT,
     GOOGLE_IMAGE_ORIGINAL_WIDTH,
@@ -270,7 +271,6 @@ class TemplateURLRef {
     GOOGLE_SEARCH_FIELDTRIAL_GROUP,
     GOOGLE_SUGGEST_CLIENT,
     GOOGLE_UNESCAPED_SEARCH_TERMS,
-    GOOGLE_ZERO_PREFIX_URL,
     LANGUAGE,
     SEARCH_TERMS,
   };

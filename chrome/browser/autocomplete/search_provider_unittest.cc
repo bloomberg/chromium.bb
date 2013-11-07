@@ -27,9 +27,14 @@
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/omnibox/omnibox_field_trial.h"
 #include "chrome/browser/search/search.h"
+#include "chrome/browser/search_engines/search_engine_type.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_service.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/common/pref_names.h"
@@ -3066,4 +3071,130 @@ TEST_F(SearchProviderTest, ReflectsBookmarkBarState) {
             provider_->matches()[0].type);
   ASSERT_TRUE(provider_->matches()[0].search_terms_args != NULL);
   EXPECT_TRUE(provider_->matches()[0].search_terms_args->bookmark_bar_pinned);
+}
+
+TEST_F(SearchProviderTest, CanSendURL) {
+  TemplateURLData template_url_data;
+  template_url_data.short_name = ASCIIToUTF16("t");
+  template_url_data.SetURL("http://www.google.com/{searchTerms}");
+  template_url_data.suggestions_url = "http://www.google.com/{searchTerms}";
+  template_url_data.instant_url = "http://does/not/exist?strk=1";
+  template_url_data.search_terms_replacement_key = "strk";
+  template_url_data.id = SEARCH_ENGINE_GOOGLE;
+  TemplateURL google_template_url(&profile_, template_url_data);
+
+  // Create field trial.
+  base::FieldTrial* field_trial = base::FieldTrialList::CreateFieldTrial(
+      "AutocompleteDynamicTrial_2", "EnableZeroSuggest");
+  field_trial->group();
+
+  // Not signed in.
+  EXPECT_FALSE(SearchProvider::CanSendURL(
+      GURL("http://www.google.com/search"),
+      GURL("https://www.google.com/complete/search"), &google_template_url,
+      AutocompleteInput::OTHER, &profile_));
+  SigninManagerBase* signin = SigninManagerFactory::GetForProfile(&profile_);
+  signin->SetAuthenticatedUsername("test");
+
+  // All conditions should be met.
+  EXPECT_TRUE(SearchProvider::CanSendURL(
+      GURL("http://www.google.com/search"),
+      GURL("https://www.google.com/complete/search"), &google_template_url,
+      AutocompleteInput::OTHER, &profile_));
+
+  // Not in field trial.
+  ResetFieldTrialList();
+  EXPECT_FALSE(SearchProvider::CanSendURL(
+      GURL("http://www.google.com/search"),
+      GURL("https://www.google.com/complete/search"), &google_template_url,
+      AutocompleteInput::OTHER, &profile_));
+  field_trial = base::FieldTrialList::CreateFieldTrial(
+      "AutocompleteDynamicTrial_2", "EnableZeroSuggest");
+  field_trial->group();
+
+  // Invalid page URL.
+  EXPECT_FALSE(SearchProvider::CanSendURL(
+      GURL("badpageurl"),
+      GURL("https://www.google.com/complete/search"), &google_template_url,
+      AutocompleteInput::OTHER, &profile_));
+
+  // Invalid page classification.
+  EXPECT_FALSE(SearchProvider::CanSendURL(
+      GURL("http://www.google.com/search"),
+      GURL("https://www.google.com/complete/search"), &google_template_url,
+      AutocompleteInput::INSTANT_NEW_TAB_PAGE_WITH_FAKEBOX_AS_STARTING_FOCUS,
+      &profile_));
+
+  // Invalid page classification.
+  EXPECT_FALSE(SearchProvider::CanSendURL(
+      GURL("http://www.google.com/search"),
+      GURL("https://www.google.com/complete/search"), &google_template_url,
+      AutocompleteInput::INSTANT_NEW_TAB_PAGE_WITH_OMNIBOX_AS_STARTING_FOCUS,
+      &profile_));
+
+  // HTTPS page URL on same domain as provider.
+  EXPECT_TRUE(SearchProvider::CanSendURL(
+      GURL("https://www.google.com/search"),
+      GURL("https://www.google.com/complete/search"),
+      &google_template_url, AutocompleteInput::OTHER, &profile_));
+
+  // Non-HTTP[S] page URL on same domain as provider.
+  EXPECT_FALSE(SearchProvider::CanSendURL(
+      GURL("ftp://www.google.com/search"),
+      GURL("https://www.google.com/complete/search"), &google_template_url,
+      AutocompleteInput::OTHER, &profile_));
+
+  // Non-HTTP page URL on different domain.
+  EXPECT_FALSE(SearchProvider::CanSendURL(
+      GURL("https://www.notgoogle.com/search"),
+      GURL("https://www.google.com/complete/search"), &google_template_url,
+      AutocompleteInput::OTHER, &profile_));
+
+  // Non-HTTPS provider.
+  EXPECT_FALSE(SearchProvider::CanSendURL(
+      GURL("http://www.google.com/search"),
+      GURL("http://www.google.com/complete/search"), &google_template_url,
+      AutocompleteInput::OTHER, &profile_));
+
+  // Suggest disabled.
+  profile_.GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, false);
+  EXPECT_FALSE(SearchProvider::CanSendURL(
+      GURL("http://www.google.com/search"),
+      GURL("https://www.google.com/complete/search"), &google_template_url,
+      AutocompleteInput::OTHER, &profile_));
+  profile_.GetPrefs()->SetBoolean(prefs::kSearchSuggestEnabled, true);
+
+  // Incognito.
+  EXPECT_FALSE(SearchProvider::CanSendURL(
+      GURL("http://www.google.com/search"),
+      GURL("https://www.google.com/complete/search"), &google_template_url,
+      AutocompleteInput::OTHER, profile_.GetOffTheRecordProfile()));
+
+  // Tab sync not enabled.
+  profile_.GetPrefs()->SetBoolean(prefs::kSyncKeepEverythingSynced, false);
+  profile_.GetPrefs()->SetBoolean(prefs::kSyncTabs, false);
+  EXPECT_FALSE(SearchProvider::CanSendURL(
+      GURL("http://www.google.com/search"),
+      GURL("https://www.google.com/complete/search"), &google_template_url,
+      AutocompleteInput::OTHER, &profile_));
+  profile_.GetPrefs()->SetBoolean(prefs::kSyncTabs, true);
+
+  // Tab sync is encrypted.
+  ProfileSyncService* service =
+      ProfileSyncServiceFactory::GetInstance()->GetForProfile(&profile_);
+  syncer::ModelTypeSet encrypted_types = service->GetEncryptedDataTypes();
+  encrypted_types.Put(syncer::SESSIONS);
+  service->OnEncryptedTypesChanged(encrypted_types, false);
+  EXPECT_FALSE(SearchProvider::CanSendURL(
+      GURL("http://www.google.com/search"),
+      GURL("https://www.google.com/complete/search"), &google_template_url,
+      AutocompleteInput::OTHER, &profile_));
+  encrypted_types.Remove(syncer::SESSIONS);
+  service->OnEncryptedTypesChanged(encrypted_types, false);
+
+  // Check that there were no side effects from previous tests.
+  EXPECT_TRUE(SearchProvider::CanSendURL(
+      GURL("http://www.google.com/search"),
+      GURL("https://www.google.com/complete/search"), &google_template_url,
+      AutocompleteInput::OTHER, &profile_));
 }

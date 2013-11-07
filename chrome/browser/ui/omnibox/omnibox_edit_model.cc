@@ -259,6 +259,11 @@ AutocompleteMatch OmniboxEditModel::CurrentMatch(
 }
 
 bool OmniboxEditModel::UpdatePermanentText() {
+  SearchProvider* search_provider =
+      autocomplete_controller()->search_provider();
+  if (search_provider && delegate_->CurrentPageExists())
+    search_provider->set_current_page_url(delegate_->GetURL());
+
   // When there's new permanent text, and the user isn't interacting with the
   // omnibox, we want to revert the edit to show the new text.  We could simply
   // define "interacting" as "the omnibox has focus", but we still allow updates

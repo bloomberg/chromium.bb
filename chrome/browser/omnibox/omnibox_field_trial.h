@@ -106,6 +106,10 @@ class OmniboxFieldTrial {
   // ZeroSuggest and most visited suggestions.
   static bool InZeroSuggestMostVisitedFieldTrial();
 
+  // Returns whether the user is in a ZeroSuggest field trial and URL-based
+  // suggestions can continue to appear after the user has started typing.
+  static bool InZeroSuggestAfterTypingFieldTrial();
+
   // ---------------------------------------------------------
   // For the ShortcutsScoringMaxRelevance experiment that's part of the
   // bundled omnibox field trial.
