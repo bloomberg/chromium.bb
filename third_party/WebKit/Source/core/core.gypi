@@ -3482,7 +3482,6 @@
             'platform/chromium/support/WebRTCSessionDescription.cpp',
             'platform/chromium/support/WebRTCSessionDescriptionRequest.cpp',
             'platform/chromium/support/WebRTCStatsRequest.cpp',
-            'platform/chromium/support/WebRTCStatsResponse.cpp',
             'platform/chromium/support/WebRTCVoidRequest.cpp',
             'platform/chromium/support/WebScrollbarImpl.cpp',
             'platform/chromium/support/WebScrollbarImpl.h',

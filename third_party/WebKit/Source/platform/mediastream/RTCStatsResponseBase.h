@@ -22,35 +22,24 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef RTCStatsResponse_h
-#define RTCStatsResponse_h
+#ifndef RTCStatsResponseBase_h
+#define RTCStatsResponseBase_h
 
-#include "bindings/v8/ScriptWrappable.h"
-#include "modules/mediastream/RTCStatsReport.h"
-#include "platform/mediastream/RTCStatsResponseBase.h"
-#include "wtf/HashMap.h"
-#include "wtf/Vector.h"
+#include "wtf/PassRefPtr.h"
+#include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
-class RTCStatsResponse : public RTCStatsResponseBase, public ScriptWrappable {
+class RTCStatsResponseBase : public RefCounted<RTCStatsResponseBase> {
 public:
-    static PassRefPtr<RTCStatsResponse> create();
+    virtual ~RTCStatsResponseBase() { }
 
-    const Vector<RefPtr<RTCStatsReport> >& result() const { return m_result; };
-
-    PassRefPtr<RTCStatsReport> namedItem(const AtomicString& name);
-
-    virtual size_t addReport(String id, String type, double timestamp) OVERRIDE;
-    virtual void addStatistic(size_t report, String name, String value) OVERRIDE;
-
-private:
-    RTCStatsResponse();
-    Vector<RefPtr<RTCStatsReport> > m_result;
-    HashMap<String, int> m_idmap;
+    virtual size_t addReport(String id, String type, double timestamp) = 0;
+    virtual void addStatistic(size_t report, String name, String value) = 0;
 };
 
 } // namespace WebCore
 
-#endif // RTCStatsResponse_h
+#endif // RTCStatsResponseBase_h
+
