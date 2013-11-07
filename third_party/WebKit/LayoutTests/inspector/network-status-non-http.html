@@ -55,6 +55,8 @@ function loadResources()
 {
     addScriptElement("../http/tests/inspector/network-test.js");
     addScriptElement("non-existent-file.js");
+
+    // Test that data-url doesn't appear in network panel.
     addScriptElement("data:application/javascript,var x = 0;");
 }
 
