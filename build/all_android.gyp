@@ -31,13 +31,22 @@
       ],
     }, # target_name: All
     {
-      'target_name': 'all_webkit',
+      'target_name': 'blink_tests',
       'type': 'none',
       'dependencies': [
         '../third_party/WebKit/public/all.gyp:all_blink',
         '../content/content_shell_and_tests.gyp:content_shell_apk',
         '../breakpad/breakpad.gyp:dump_syms#host',
         '../breakpad/breakpad.gyp:minidump_stackwalk#host',
+      ],
+    }, # target_name: blink_tests
+    {
+      # TODO(jochen): Eventually remove this target after everybody and the
+      # bots started to use blink_tests only.
+      'target_name': 'all_webkit',
+      'type': 'none',
+      'dependencies':   [
+        'blink_tests',
       ],
     }, # target_name: all_webkit
     {

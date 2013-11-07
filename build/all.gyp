@@ -379,7 +379,7 @@
     ['OS!="ios"', {
       'targets': [
         {
-          'target_name': 'all_webkit',
+          'target_name': 'blink_tests',
           'type': 'none',
           'dependencies': [
             '../third_party/WebKit/public/all.gyp:all_blink',
@@ -396,6 +396,15 @@
                 '../breakpad/breakpad.gyp:minidump_stackwalk',
               ],
             }],
+          ],
+        }, # target_name: blink_tests
+        {
+          # TODO(jochen): Eventually remove this target after everybody and
+          # the bots started to use blink_tests only.
+          'target_name': 'all_webkit',
+          'type': 'none',
+          'dependencies': [
+            'blink_tests',
           ],
         }, # target_name: all_webkit
         {
@@ -542,7 +551,7 @@
           'target_name': 'chromium_builder_perf_av',
           'type': 'none',
           'dependencies': [
-            'all_webkit', # to run layout tests
+            'blink_tests', # to run layout tests
             'chromium_builder_qa',  # needed for perf pyauto tests
           ],
         },  # target_name: chromium_builder_perf_av
@@ -584,7 +593,7 @@
           'dependencies': [
             '../chrome/chrome.gyp:chrome',
 
-            # We refer to content_shell directly rather than all_webkit
+            # We refer to content_shell directly rather than blink_tests
             # because we don't want the _unittests binaries.
             '../content/content_shell_and_tests.gyp:content_shell',
           ],
@@ -877,7 +886,7 @@
           'target_name': 'webkit_builder_win',
           'type': 'none',
           'dependencies': [
-            'all_webkit',
+            'blink_tests',
           ],
         },
       ],  # targets
@@ -958,7 +967,7 @@
             '../ui/views/views.gyp:views_unittests',
             '../ui/keyboard/keyboard.gyp:*',
             '../webkit/renderer/compositor_bindings/compositor_bindings_tests.gyp:webkit_compositor_bindings_unittests',
-            'all_webkit',
+            'blink_tests',
           ],
           'conditions': [
             ['OS=="win"', {
