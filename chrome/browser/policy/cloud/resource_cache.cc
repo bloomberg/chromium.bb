@@ -5,6 +5,7 @@
 #include "chrome/browser/policy/cloud/resource_cache.h"
 
 #include "base/base64.h"
+#include "base/callback.h"
 #include "base/file_util.h"
 #include "base/files/file_enumerator.h"
 #include "base/logging.h"
@@ -134,6 +135,32 @@ void ResourceCache::Delete(const std::string& key, const std::string& subkey) {
   // call below deletes the directory representing |key| if its last subkey was
   // just removed and does nothing otherwise.
   base::DeleteFile(subkey_path.DirName(), false);
+}
+
+void ResourceCache::FilterSubkeys(const std::string& key,
+                                  const SubkeyFilter& test) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+
+  base::FilePath key_path;
+  if (!VerifyKeyPath(key, false, &key_path))
+    return;
+
+  base::FileEnumerator enumerator(key_path, false, base::FileEnumerator::FILES);
+  for (base::FilePath subkey_path = enumerator.Next();
+       !subkey_path.empty(); subkey_path = enumerator.Next()) {
+    std::string subkey;
+    // Delete files with invalid names, and files whose subkey doesn't pass the
+    // filter.
+    if (!Base64Decode(subkey_path.BaseName().MaybeAsASCII(), &subkey) ||
+        test.Run(subkey)) {
+      base::DeleteFile(subkey_path, true);
+    }
+  }
+
+  // Delete() does nothing if the directory given to it is not empty. Hence, the
+  // call below deletes the directory representing |key| if all of its subkeys
+  // were just removed and does nothing otherwise.
+  base::DeleteFile(key_path, false);
 }
 
 void ResourceCache::PurgeOtherKeys(const std::set<std::string>& keys_to_keep) {

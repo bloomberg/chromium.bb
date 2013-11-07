@@ -5,6 +5,8 @@
 #include "chrome/browser/policy/cloud/resource_cache.h"
 
 #include "base/basictypes.h"
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/test_simple_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,6 +26,10 @@ const char kSubE[] = "eeeee";
 
 const char kData0[] = "{ \"key\": \"value\" }";
 const char kData1[] = "{}";
+
+bool Matches(const std::string& expected, const std::string& subkey) {
+  return subkey == expected;
+}
 
 }  // namespace
 
@@ -107,6 +113,45 @@ TEST(ResourceCacheTest, StoreAndLoad) {
   EXPECT_EQ(2u, contents.size());
   EXPECT_EQ(kData0, contents[kSubA]);
   EXPECT_EQ(kData1, contents[kSubB]);
+}
+
+TEST(ResourceCacheTest, FilterSubkeys) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  ResourceCache cache(temp_dir.path(),
+                      make_scoped_refptr(new base::TestSimpleTaskRunner));
+
+  // Store some data.
+  EXPECT_TRUE(cache.Store(kKey1, kSubA, kData0));
+  EXPECT_TRUE(cache.Store(kKey1, kSubB, kData1));
+  EXPECT_TRUE(cache.Store(kKey1, kSubC, kData0));
+  EXPECT_TRUE(cache.Store(kKey2, kSubA, kData0));
+  EXPECT_TRUE(cache.Store(kKey2, kSubB, kData1));
+  EXPECT_TRUE(cache.Store(kKey3, kSubA, kData0));
+  EXPECT_TRUE(cache.Store(kKey3, kSubB, kData1));
+
+  // Check the contents of kKey1.
+  std::map<std::string, std::string> contents;
+  cache.LoadAllSubkeys(kKey1, &contents);
+  EXPECT_EQ(3u, contents.size());
+  EXPECT_EQ(kData0, contents[kSubA]);
+  EXPECT_EQ(kData1, contents[kSubB]);
+  EXPECT_EQ(kData0, contents[kSubC]);
+
+  // Filter some subkeys.
+  cache.FilterSubkeys(kKey1, base::Bind(&Matches, kSubA));
+
+  // Check the contents of kKey1 again.
+  cache.LoadAllSubkeys(kKey1, &contents);
+  EXPECT_EQ(2u, contents.size());
+  EXPECT_EQ(kData1, contents[kSubB]);
+  EXPECT_EQ(kData0, contents[kSubC]);
+
+  // Other keys weren't affected.
+  cache.LoadAllSubkeys(kKey2, &contents);
+  EXPECT_EQ(2u, contents.size());
+  cache.LoadAllSubkeys(kKey3, &contents);
+  EXPECT_EQ(2u, contents.size());
 }
 
 }  // namespace policy

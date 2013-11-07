@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 
@@ -22,7 +23,7 @@ namespace policy {
 // Manages storage of data at a given path. The data is keyed by a key and
 // a subkey, and can be queried by (key, subkey) or (key) lookups.
 // The contents of the cache have to be manually cleared using Delete() or
-// PurgeOtherSubkeys().
+// Purge*().
 // The class can be instantiated on any thread but from then on, it must be
 // accessed via the |task_runner| only. The |task_runner| must support file I/O.
 class ResourceCache {
@@ -50,6 +51,10 @@ class ResourceCache {
 
   // Deletes (key, subkey).
   void Delete(const std::string& key, const std::string& subkey);
+
+  // Deletes the subkeys of |key| for which the |filter| returns true.
+  typedef base::Callback<bool(const std::string&)> SubkeyFilter;
+  void FilterSubkeys(const std::string& key, const SubkeyFilter& filter);
 
   // Deletes all keys not in |keys_to_keep|, along with their subkeys.
   void PurgeOtherKeys(const std::set<std::string>& keys_to_keep);
