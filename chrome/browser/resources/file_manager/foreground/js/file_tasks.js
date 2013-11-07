@@ -189,7 +189,6 @@ FileTasks.isInternalTask_ = function(taskId) {
           (actionId == 'play' ||
            actionId == 'watch' ||
            actionId == 'mount-archive' ||
-           actionId == 'format-device' ||
            actionId == 'gallery'));
 };
 
@@ -513,13 +512,6 @@ FileTasks.prototype.executeInternalTask_ = function(id, urls) {
 
   if (id == 'mount-archive') {
     this.mountArchivesInternal_(urls);
-    return;
-  }
-
-  if (id == 'format-device') {
-    fm.confirm.show(loadTimeData.getString('FORMATTING_WARNING'), function() {
-      chrome.fileBrowserPrivate.formatDevice(urls[0]);
-    });
     return;
   }
 
