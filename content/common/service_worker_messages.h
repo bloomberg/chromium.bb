@@ -7,9 +7,15 @@
 #include "base/strings/string16.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_param_traits.h"
+#include "third_party/WebKit/public/platform/WebServiceWorkerError.h"
 #include "url/gurl.h"
 
+#undef IPC_MESSAGE_EXPORT
+#define IPC_MESSAGE_EXPORT CONTENT_EXPORT
+
 #define IPC_MESSAGE_START ServiceWorkerMsgStart
+
+IPC_ENUM_TRAITS(WebKit::WebServiceWorkerError::ErrorType)
 
 // Messages sent from the child process to the browser.
 
@@ -36,3 +42,11 @@ IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_ServiceWorkerRegistered,
 IPC_MESSAGE_CONTROL2(ServiceWorkerMsg_ServiceWorkerUnregistered,
                      int32 /* thread_id */,
                      int32 /* request_id */)
+
+// Sent when any kind of registration error occurs during a
+// RegisterServiceWorker / UnregisterServiceWorker handler above.
+IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_ServiceWorkerRegistrationError,
+                     int32 /* thread_id */,
+                     int32 /* request_id */,
+                     WebKit::WebServiceWorkerError::ErrorType /* code */,
+                     string16 /* message */)

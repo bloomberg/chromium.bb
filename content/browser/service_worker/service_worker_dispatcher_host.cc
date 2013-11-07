@@ -4,10 +4,14 @@
 
 #include "content/browser/service_worker/service_worker_dispatcher_host.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "content/browser/service_worker/service_worker_context.h"
 #include "content/common/service_worker_messages.h"
 #include "ipc/ipc_message_macros.h"
+#include "third_party/WebKit/public/platform/WebServiceWorkerError.h"
 #include "url/gurl.h"
+
+using WebKit::WebServiceWorkerError;
 
 namespace content {
 
@@ -16,6 +20,11 @@ ServiceWorkerDispatcherHost::ServiceWorkerDispatcherHost(
     ServiceWorkerContext* context) : context_(context) {}
 
 ServiceWorkerDispatcherHost::~ServiceWorkerDispatcherHost() {}
+
+namespace {
+const char kDomainMismatchErrorMessage[] =
+    "Scope and scripts do not have the same origin";
+}
 
 bool ServiceWorkerDispatcherHost::OnMessageReceived(const IPC::Message& message,
                                                     bool* message_was_ok) {
@@ -47,13 +56,26 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
     int32 request_id,
     const GURL& scope,
     const GURL& script_url) {
-  // TODO(alecflett): add a ServiceWorker-specific policy query in
-  // ChildProcessSecurityImpl. See http://crbug.com/311631.
-
-  // TODO(alecflett): Throw an error for origin mismatch, rather than
-  // just returning.
-  if (scope.GetOrigin() != script_url.GetOrigin())
+  if (!context_->IsEnabled()) {
+    Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
+        thread_id,
+        request_id,
+        WebKit::WebServiceWorkerError::DisabledError,
+        ASCIIToUTF16("ServiceWorker is disabled")));
     return;
+  }
+
+  // TODO(alecflett): This check is insufficient for release. Add a
+  // ServiceWorker-specific policy query in
+  // ChildProcessSecurityImpl. See http://crbug.com/311631.
+  if (scope.GetOrigin() != script_url.GetOrigin()) {
+    Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
+        thread_id,
+        request_id,
+        WebKit::WebServiceWorkerError::SecurityError,
+        ASCIIToUTF16(kDomainMismatchErrorMessage)));
+    return;
+  }
 
   Send(new ServiceWorkerMsg_ServiceWorkerRegistered(
       thread_id, request_id, NextWorkerId()));
@@ -62,8 +84,17 @@ void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
 void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(int32 thread_id,
                                                             int32 request_id,
                                                             const GURL& scope) {
-  // TODO(alecflett): add a ServiceWorker-specific policy query in
+  // TODO(alecflett): This check is insufficient for release. Add a
+  // ServiceWorker-specific policy query in
   // ChildProcessSecurityImpl. See http://crbug.com/311631.
+  if (!context_->IsEnabled()) {
+    Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
+        thread_id,
+        request_id,
+        WebServiceWorkerError::DisabledError,
+        ASCIIToUTF16("ServiceWorker is disabled")));
+    return;
+  }
 
   Send(new ServiceWorkerMsg_ServiceWorkerUnregistered(thread_id, request_id));
 }

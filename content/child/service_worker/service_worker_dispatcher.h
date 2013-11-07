@@ -8,6 +8,7 @@
 #include "base/id_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
+#include "third_party/WebKit/public/platform/WebServiceWorkerError.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerProvider.h"
 #include "webkit/child/worker_task_runner.h"
 
@@ -57,11 +58,14 @@ class ServiceWorkerDispatcher : public webkit_glue::WorkerTaskRunner::Observer {
   virtual void OnWorkerRunLoopStopped() OVERRIDE;
 
   // The asynchronous success response to RegisterServiceWorker.
-  void OnServiceWorkerRegistered(int32 thread_id,
-                                 int32 request_id,
-                                 int64 service_worker_id);
+  void OnRegistered(int32 thread_id, int32 request_id, int64 service_worker_id);
   // The asynchronous success response to UregisterServiceWorker.
-  void OnServiceWorkerUnregistered(int32 thread_id, int32 request_id);
+  void OnUnregistered(int32 thread_id,
+                      int32 request_id);
+  void OnRegistrationError(int32 thread_id,
+                           int32 request_id,
+                           WebKit::WebServiceWorkerError::ErrorType error_type,
+                           const string16& message);
 
   IDMap<WebKit::WebServiceWorkerProvider::WebServiceWorkerCallbacks,
         IDMapOwnPointer> pending_callbacks_;

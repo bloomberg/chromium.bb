@@ -13,7 +13,7 @@ namespace content {
 
 class ServiceWorkerContext;
 
-class ServiceWorkerDispatcherHost : public BrowserMessageFilter {
+class CONTENT_EXPORT ServiceWorkerDispatcherHost : public BrowserMessageFilter {
  public:
   ServiceWorkerDispatcherHost(int render_process_id,
                               ServiceWorkerContext* context);

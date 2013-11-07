@@ -4,7 +4,9 @@
 
 #include "content/browser/service_worker/service_worker_context.h"
 
+#include "base/command_line.h"
 #include "base/files/file_path.h"
+#include "content/public/common/content_switches.h"
 #include "webkit/browser/quota/quota_manager.h"
 
 namespace content {
@@ -18,6 +20,11 @@ ServiceWorkerContext::ServiceWorkerContext(
     : quota_manager_proxy_(quota_manager_proxy) {
   if (!path.empty())
     path_ = path.Append(kServiceWorkerDirectory);
+}
+
+bool ServiceWorkerContext::IsEnabled() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableServiceWorker);
 }
 
 ServiceWorkerContext::~ServiceWorkerContext() {}
