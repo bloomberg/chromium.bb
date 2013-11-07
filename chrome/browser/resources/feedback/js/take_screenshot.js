@@ -8,13 +8,11 @@
  *                           screenshot.
  */
 function takeScreenshot(callback) {
-  var streaming = false;
+  var screenshotStream = null;
   var video = document.createElement('video');
 
   video.addEventListener('canplay', function(e) {
-    if (!streaming) {
-      streaming = true;
-
+    if (screenshotStream) {
       var canvas = document.createElement('canvas');
       canvas.setAttribute('width', video.videoWidth);
       canvas.setAttribute('height', video.videoHeight);
@@ -23,6 +21,9 @@ function takeScreenshot(callback) {
 
       video.pause();
       video.src = '';
+
+      screenshotStream.stop();
+      screenshotStream = null;
 
       callback(canvas.toDataURL('image/png'));
     }
@@ -39,8 +40,11 @@ function takeScreenshot(callback) {
       }
     },
     function(stream) {
-      video.src = window.webkitURL.createObjectURL(stream);
-      video.play();
+      if (stream) {
+        screenshotStream = stream;
+        video.src = window.webkitURL.createObjectURL(screenshotStream);
+        video.play();
+      }
     },
     function(err) {
       console.error('takeScreenshot failed: ' +
