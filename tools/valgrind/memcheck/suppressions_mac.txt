@@ -1111,8 +1111,8 @@
    Memcheck:Unaddressable
    fun:_ZN3WTF17ChromiumThreading16callOnMainThreadEPFvPvES1_
    fun:_ZN3WTF16callOnMainThreadEPFvPvES0_
-   fun:_ZN6WebKit13WebWorkerBase24dispatchTaskToMainThreadEN3WTF10PassOwnPtrIN7WebCore22ScriptExecutionContext4TaskEEE
-   fun:_ZN6WebKit13WebWorkerBase21reportPendingActivityEb
+   fun:_ZN5blink13WebWorkerBase24dispatchTaskToMainThreadEN3WTF10PassOwnPtrIN7WebCore22ScriptExecutionContext4TaskEEE
+   fun:_ZN5blink13WebWorkerBase21reportPendingActivityEb
 }
 {
    bug_86303a
@@ -1565,8 +1565,8 @@
    fun:_ZN7WebCore12EventHandler21handleMousePressEventERKNS_18PlatformMouseEventE
    fun:_ZN7WebCore12EventHandler29passMousePressEventToSubframeERNS_28MouseEventWithHitTestResultsEPNS_5FrameE
    fun:_ZN7WebCore12EventHandler21handleMousePressEventERKNS_18PlatformMouseEventE
-   fun:_ZN6WebKit11WebViewImpl9mouseDownERKNS_13WebMouseEventE
-   fun:_ZN6WebKit11WebViewImpl16handleInputEventERKNS_13WebInputEventE
+   fun:_ZN5blink11WebViewImpl9mouseDownERKNS_13WebMouseEventE
+   fun:_ZN5blink11WebViewImpl16handleInputEventERKNS_13WebInputEventE
    fun:_ZN46ContextMenuCapturing_ContextMenuCapturing_Test8TestBodyEv
 }
 {
@@ -1591,9 +1591,9 @@
    fun:_ZN7WebCore11RenderLayer5paintEPNS_15GraphicsContextERKNS_7IntRectEjPNS_12RenderObjectEPNS_12RenderRegionEj
    fun:_ZN7WebCore9FrameView13paintContentsEPNS_15GraphicsContextERKNS_7IntRectE
    fun:_ZN7WebCore10ScrollView5paintEPNS_15GraphicsContextERKNS_7IntRectE
-   fun:_ZN6WebKit12WebFrameImpl16paintWithContextERN7WebCore15GraphicsContextERKNS_7WebRectE
-   fun:_ZN6WebKit12WebFrameImpl5paintEP9CGContextRKNS_7WebRectE
-   fun:_ZN6WebKit11WebViewImpl5paintEP9CGContextRKNS_7WebRectE
+   fun:_ZN5blink12WebFrameImpl16paintWithContextERN7WebCore15GraphicsContextERKNS_7WebRectE
+   fun:_ZN5blink12WebFrameImpl5paintEP9CGContextRKNS_7WebRectE
+   fun:_ZN5blink11WebViewImpl5paintEP9CGContextRKNS_7WebRectE
 }
 {
    bug_105525
@@ -1805,7 +1805,7 @@
    fun:_ZN7WebCore11RenderLayer5paintEPNS_15GraphicsContextERKNS_7IntRectEjPNS_12RenderObjectEPNS_12RenderRegionEj
    fun:_ZN7WebCore9FrameView13paintContentsEPNS_15GraphicsContextERKNS_7IntRectE
    fun:_ZN7WebCore10ScrollView5paintEPNS_15GraphicsContextERKNS_7IntRectE
-   fun:_ZN6WebKit12WebFrameImpl16paintWithContextERN7WebCore15GraphicsContextERKNS_7WebRectE
+   fun:_ZN5blink12WebFrameImpl16paintWithContextERN7WebCore15GraphicsContextERKNS_7WebRectE
 }
 {
    bug_107541_a
@@ -2337,7 +2337,7 @@
    Memcheck:Leak
    fun:malloc
    fun:_NPN_Get*Identifier
-   fun:_ZN6WebKit11WebBindings*get*Identifier*
+   fun:_ZN5blink11WebBindings*get*Identifier*
 }
 {
    bug_310761_b

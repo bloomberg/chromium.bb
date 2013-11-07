@@ -472,11 +472,11 @@
    fun:WTF::fastMalloc
    fun:WTF::StringImpl::createUninitialized
    fun:WTF::StringImpl::create
-   fun:WebKit::WebString::assign
+   fun:blink::WebString::assign
    fun:*WebString*
    fun:webkit_glue::CppBoundClass::BindToJavascript
    fun:*didClearWindowObject
-   fun:WebKit::FrameLoaderClientImpl::dispatchDidClearWindowObjectInWorld
+   fun:blink::FrameLoaderClientImpl::dispatchDidClearWindowObjectInWorld
    fun:WebCore::FrameLoader::dispatchDidClearWindowObjectInWorld
 }
 {
