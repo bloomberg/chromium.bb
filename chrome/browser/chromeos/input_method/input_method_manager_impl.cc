@@ -215,15 +215,17 @@ void InputMethodManagerImpl::ReconfigureIMFramework() {
   if (component_extension_ime_manager_->IsInitialized())
     LoadNecessaryComponentExtensions();
 
-  if (ContainsOnlyKeyboardLayout(active_input_method_ids_)) {
-    // Do NOT call ibus_controller_->Stop(); here to work around a crash issue
-    // at crbug.com/27051.
-    // TODO(yusukes): We can safely call Stop(); here once crbug.com/26443
-    // is implemented.
-  } else {
+  const bool need_engine =
+      !ContainsOnlyKeyboardLayout(active_input_method_ids_);
+
+  // Initialize candidate window controller and widgets such as
+  // candidate window, infolist and mode indicator.  Note, mode
+  // indicator is used by only keyboard layout input methods.
+  if (need_engine || active_input_method_ids_.size() > 1)
     MaybeInitializeCandidateWindowController();
+
+  if (need_engine)
     IBusDaemonController::GetInstance()->Start();
-  }
 }
 
 bool InputMethodManagerImpl::EnableInputMethod(
