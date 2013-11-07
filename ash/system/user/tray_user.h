@@ -42,7 +42,6 @@ class ASH_EXPORT TrayUser : public SystemTrayItem,
   // Allows unit tests to see if the item was created.
   enum TestState {
     HIDDEN,               // The item is hidden.
-    SEPARATOR,            // the item gets shown as a separator.
     SHOWN,                // The item gets presented to the user.
     HOVERED,              // The item is hovered and presented to the user.
     ACTIVE,               // The item was clicked and can add a user.
@@ -98,9 +97,6 @@ class ASH_EXPORT TrayUser : public SystemTrayItem,
   views::View* layout_view_;
   tray::RoundedImageView* avatar_;
   views::Label* label_;
-
-  // True if this element is the separator and it is shown.
-  bool separator_shown_;
 
   DISALLOW_COPY_AND_ASSIGN(TrayUser);
 };

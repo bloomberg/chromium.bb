@@ -26,6 +26,7 @@
 #include "ash/system/tray_update.h"
 #include "ash/system/user/login_status.h"
 #include "ash/system/user/tray_user.h"
+#include "ash/system/user/tray_user_separator.h"
 #include "ash/system/web_notification/web_notification_tray.h"
 #include "base/command_line.h"
 #include "base/logging.h"
@@ -164,13 +165,16 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
   int maximum_user_profiles =
       shell->delegate()->IsMultiProfilesEnabled() ?
           shell->session_state_delegate()->GetMaximumNumberOfLoggedInUsers() :
-          0;
-  // Note: We purposely use one more item then logged in users to account for
-  // the additional separator.
-  for (int i = 0; i <= maximum_user_profiles; i++) {
+          1;
+  for (int i = 0; i < maximum_user_profiles; i++) {
     internal::TrayUser* tray_user = new internal::TrayUser(this, i);
     AddTrayItem(tray_user);
     user_items_.push_back(tray_user);
+  }
+  if (maximum_user_profiles > 1) {
+    // Add a special double line separator between users and the rest of the
+    // menu if more then one user is logged in.
+    AddTrayItem(new internal::TrayUserSeparator(this));
   }
 #endif
 

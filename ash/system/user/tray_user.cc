@@ -1128,8 +1128,7 @@ TrayUser::TrayUser(SystemTray* system_tray, MultiProfileIndex index)
       user_(NULL),
       layout_view_(NULL),
       avatar_(NULL),
-      label_(NULL),
-      separator_shown_(false) {
+      label_(NULL) {
   Shell::GetInstance()->system_tray_notifier()->AddUserObserver(this);
 }
 
@@ -1138,8 +1137,6 @@ TrayUser::~TrayUser() {
 }
 
 TrayUser::TestState TrayUser::GetStateForTest() const {
-  if (separator_shown_)
-    return SEPARATOR;
   if (!user_)
     return HIDDEN;
   return user_->GetStateForTest();
@@ -1196,15 +1193,6 @@ views::View* TrayUser::CreateDefaultView(user::LoginStatus status) {
 
   int logged_in_users = session_state_delegate->NumberOfLoggedInUsers();
 
-  // If there are multiple users logged in, the users will be separated from the
-  // rest of the menu by a separator.
-  if (multiprofile_index_ ==
-          session_state_delegate->GetMaximumNumberOfLoggedInUsers() &&
-      logged_in_users > 1) {
-    separator_shown_ = true;
-    return new views::View();
-  }
-
   // Do not show more UserView's then there are logged in users.
   if (multiprofile_index_ >= logged_in_users)
     return NULL;
@@ -1221,7 +1209,6 @@ void TrayUser::DestroyTrayView() {
   layout_view_ = NULL;
   avatar_ = NULL;
   label_ = NULL;
-  separator_shown_ = false;
 }
 
 void TrayUser::DestroyDefaultView() {
@@ -1407,7 +1394,7 @@ MultiProfileIndex TrayUser::GetTrayIndex() {
   // In case of multi profile we need to mirror the indices since the system
   // tray items are in the reverse order then the menu items.
   return shell->session_state_delegate()->GetMaximumNumberOfLoggedInUsers() -
-             multiprofile_index_;
+             1 - multiprofile_index_;
 }
 
 int TrayUser::GetTrayItemRadius() {

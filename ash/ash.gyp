@@ -393,6 +393,8 @@
         'system/user/login_status.h',
         'system/user/tray_user.cc',
         'system/user/tray_user.h',
+        'system/user/tray_user_separator.cc',
+        'system/user/tray_user_separator.h',
         'system/user/update_observer.h',
         'system/user/user_observer.h',
         'system/web_notification/web_notification_tray.cc',
