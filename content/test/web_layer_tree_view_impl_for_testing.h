@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "cc/trees/layer_tree_host_client.h"
+#include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "third_party/WebKit/public/platform/WebLayerTreeView.h"
 
 namespace cc {
@@ -17,8 +18,10 @@ namespace WebKit { class WebLayer; }
 
 namespace webkit {
 
-class WebLayerTreeViewImplForTesting : public WebKit::WebLayerTreeView,
-                                       public cc::LayerTreeHostClient {
+class WebLayerTreeViewImplForTesting
+    : public WebKit::WebLayerTreeView,
+      public cc::LayerTreeHostClient,
+      public cc::LayerTreeHostSingleThreadClient {
  public:
   WebLayerTreeViewImplForTesting();
   virtual ~WebLayerTreeViewImplForTesting();
@@ -70,9 +73,13 @@ class WebLayerTreeViewImplForTesting : public WebKit::WebLayerTreeView,
   virtual void DidCommit() OVERRIDE {}
   virtual void DidCommitAndDrawFrame() OVERRIDE {}
   virtual void DidCompleteSwapBuffers() OVERRIDE {}
-  virtual void ScheduleComposite() OVERRIDE;
   virtual scoped_refptr<cc::ContextProvider>
       OffscreenContextProvider() OVERRIDE;
+
+  // cc::LayerTreeHostSingleThreadClient implementation.
+  virtual void ScheduleComposite() OVERRIDE {}
+  virtual void DidPostSwapBuffers() OVERRIDE {}
+  virtual void DidAbortSwapBuffers() OVERRIDE {}
 
  private:
   scoped_ptr<cc::LayerTreeHost> layer_tree_host_;

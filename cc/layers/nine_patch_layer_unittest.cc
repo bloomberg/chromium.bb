@@ -10,6 +10,7 @@
 #include "cc/resources/resource_update_queue.h"
 #include "cc/resources/scoped_ui_resource.h"
 #include "cc/scheduler/texture_uploader.h"
+#include "cc/test/fake_layer_tree_host.h"
 #include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_output_surface.h"
 #include "cc/test/fake_output_surface_client.h"
@@ -29,30 +30,20 @@ using ::testing::AnyNumber;
 namespace cc {
 namespace {
 
-class MockLayerTreeHost : public LayerTreeHost {
- public:
-  explicit MockLayerTreeHost(LayerTreeHostClient* client)
-      : LayerTreeHost(client, NULL, LayerTreeSettings()) {
-    Initialize(NULL);
-  }
-};
-
 class NinePatchLayerTest : public testing::Test {
  public:
   NinePatchLayerTest() : fake_client_(FakeLayerTreeHostClient::DIRECT_3D) {}
 
-  cc::Proxy* Proxy() const { return layer_tree_host_->proxy(); }
-
  protected:
   virtual void SetUp() {
-    layer_tree_host_.reset(new MockLayerTreeHost(&fake_client_));
+    layer_tree_host_ = FakeLayerTreeHost::Create();
   }
 
   virtual void TearDown() {
     Mock::VerifyAndClearExpectations(layer_tree_host_.get());
   }
 
-  scoped_ptr<MockLayerTreeHost> layer_tree_host_;
+  scoped_ptr<FakeLayerTreeHost> layer_tree_host_;
   FakeLayerTreeHostClient fake_client_;
 };
 
@@ -65,8 +56,6 @@ TEST_F(NinePatchLayerTest, SetLayerProperties) {
   layer_tree_host_->SetRootLayer(test_layer);
   Mock::VerifyAndClearExpectations(layer_tree_host_.get());
   EXPECT_EQ(test_layer->layer_tree_host(), layer_tree_host_.get());
-
-  layer_tree_host_->InitializeOutputSurfaceIfNeeded();
 
   ResourceUpdateQueue queue;
   OcclusionTracker occlusion_tracker(gfx::Rect(), false);

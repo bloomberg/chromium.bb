@@ -48,8 +48,9 @@ class HeadsUpDisplayLayer;
 class Layer;
 class LayerTreeHostImpl;
 class LayerTreeHostImplClient;
-class PrioritizedResourceManager;
+class LayerTreeHostSingleThreadClient;
 class PrioritizedResource;
+class PrioritizedResourceManager;
 class Region;
 class RenderingStatsInstrumentation;
 class ResourceProvider;
@@ -112,11 +113,17 @@ class CC_EXPORT UIResourceRequest {
 class CC_EXPORT LayerTreeHost {
  public:
   // The SharedBitmapManager will be used on the compositor thread.
-  static scoped_ptr<LayerTreeHost> Create(
+  static scoped_ptr<LayerTreeHost> CreateThreaded(
       LayerTreeHostClient* client,
       SharedBitmapManager* manager,
       const LayerTreeSettings& settings,
       scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner);
+
+  static scoped_ptr<LayerTreeHost> CreateSingleThreaded(
+      LayerTreeHostClient* client,
+      LayerTreeHostSingleThreadClient* single_thread_client,
+      SharedBitmapManager* manager,
+      const LayerTreeSettings& settings);
   virtual ~LayerTreeHost();
 
   void SetLayerTreeHostClientReady();
@@ -164,9 +171,6 @@ class CC_EXPORT LayerTreeHost {
   void NotifyInputThrottledUntilCommit();
 
   void Composite(base::TimeTicks frame_begin_time);
-
-  // Only used when compositing on the main thread.
-  void ScheduleComposite();
 
   // Composites and attempts to read back the result into the provided
   // buffer. If it wasn't possible, e.g. due to context lost, will return
@@ -316,7 +320,10 @@ class CC_EXPORT LayerTreeHost {
   LayerTreeHost(LayerTreeHostClient* client,
                 SharedBitmapManager* manager,
                 const LayerTreeSettings& settings);
-  bool Initialize(scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner);
+  bool InitializeThreaded(
+      scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner);
+  bool InitializeSingleThreaded(
+      LayerTreeHostSingleThreadClient* single_thread_client);
   bool InitializeForTesting(scoped_ptr<Proxy> proxy_for_testing);
   void SetOutputSurfaceLostForTesting(bool is_lost) {
     output_surface_lost_ = is_lost;

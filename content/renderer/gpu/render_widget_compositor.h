@@ -12,6 +12,7 @@
 #include "cc/debug/rendering_stats.h"
 #include "cc/input/top_controls_state.h"
 #include "cc/trees/layer_tree_host_client.h"
+#include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "third_party/WebKit/public/platform/WebLayerTreeView.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -31,7 +32,8 @@ namespace content {
 class RenderWidget;
 
 class RenderWidgetCompositor : public WebKit::WebLayerTreeView,
-                               public cc::LayerTreeHostClient {
+                               public cc::LayerTreeHostClient,
+                               public cc::LayerTreeHostSingleThreadClient {
  public:
   // Attempt to construct and initialize a compositor instance for the widget
   // with the given settings. Returns NULL if initialization fails.
@@ -123,15 +125,19 @@ class RenderWidgetCompositor : public WebKit::WebLayerTreeView,
   virtual void DidCommit() OVERRIDE;
   virtual void DidCommitAndDrawFrame() OVERRIDE;
   virtual void DidCompleteSwapBuffers() OVERRIDE;
-  virtual void ScheduleComposite() OVERRIDE;
   virtual scoped_refptr<cc::ContextProvider>
       OffscreenContextProvider() OVERRIDE;
   virtual void RateLimitSharedMainThreadContext() OVERRIDE;
 
+  // cc::LayerTreeHostSingleThreadClient implementation.
+  virtual void ScheduleComposite() OVERRIDE;
+  virtual void DidPostSwapBuffers() OVERRIDE {}
+  virtual void DidAbortSwapBuffers() OVERRIDE {}
+
  private:
   RenderWidgetCompositor(RenderWidget* widget, bool threaded);
 
-  bool initialize(cc::LayerTreeSettings settings);
+  bool Initialize(cc::LayerTreeSettings settings);
 
   bool threaded_;
   bool suppress_schedule_composite_;

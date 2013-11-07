@@ -1012,7 +1012,7 @@ TEST(LayerTreeHostFlingTest, DidStopFlingingThread) {
   FakeLayerTreeHostClient client(FakeLayerTreeHostClient::DIRECT_3D);
 
   ASSERT_TRUE(impl_thread.message_loop_proxy().get());
-  scoped_ptr<LayerTreeHost> layer_tree_host = LayerTreeHost::Create(
+  scoped_ptr<LayerTreeHost> layer_tree_host = LayerTreeHost::CreateThreaded(
       &client, NULL, settings, impl_thread.message_loop_proxy());
 
   impl_thread.message_loop_proxy()

@@ -45,7 +45,8 @@ bool WebLayerTreeViewImplForTesting::Initialize() {
 
   // Accelerated animations are enabled for unit tests.
   settings.accelerated_animation_enabled = true;
-  layer_tree_host_ = cc::LayerTreeHost::Create(this, NULL, settings, NULL);
+  layer_tree_host_ =
+      cc::LayerTreeHost::CreateSingleThreaded(this, this, NULL, settings);
   if (!layer_tree_host_)
     return false;
   return true;
@@ -160,9 +161,6 @@ scoped_ptr<cc::OutputSurface>
 WebLayerTreeViewImplForTesting::CreateOutputSurface(bool fallback) {
   return make_scoped_ptr(
       new cc::OutputSurface(cc::TestContextProvider::Create()));
-}
-
-void WebLayerTreeViewImplForTesting::ScheduleComposite() {
 }
 
 scoped_refptr<cc::ContextProvider>

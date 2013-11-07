@@ -36,9 +36,6 @@ class LayerTreeHostClient {
   virtual void DidCommitAndDrawFrame() = 0;
   virtual void DidCompleteSwapBuffers() = 0;
 
-  // Used only in the single-threaded path.
-  virtual void ScheduleComposite() = 0;
-
   // If the client provides an OutputSurface bound to a 3d context for direct
   // rendering, this must return a provider that provides contexts usable from
   // the same thread as the OutputSurface's context.

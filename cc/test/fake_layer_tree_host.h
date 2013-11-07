@@ -14,7 +14,7 @@
 
 namespace cc {
 
-class FakeLayerTreeHost : protected LayerTreeHost {
+class FakeLayerTreeHost : public LayerTreeHost {
  public:
   static scoped_ptr<FakeLayerTreeHost> Create();
 
@@ -36,6 +36,7 @@ class FakeLayerTreeHost : protected LayerTreeHost {
 
   using LayerTreeHost::ScheduleMicroBenchmark;
   using LayerTreeHost::SetOutputSurfaceLostForTesting;
+  using LayerTreeHost::InitializeSingleThreaded;
   using LayerTreeHost::InitializeForTesting;
   void UpdateLayers(ResourceUpdateQueue* queue) {
     LayerTreeHost::UpdateLayers(queue);

@@ -307,7 +307,7 @@ scoped_ptr<RenderWidgetCompositor> RenderWidgetCompositor::Create(
   }
 #endif
 
-  if (!compositor->initialize(settings))
+  if (!compositor->Initialize(settings))
     return scoped_ptr<RenderWidgetCompositor>();
 
   return compositor.Pass();
@@ -413,11 +413,16 @@ bool RenderWidgetCompositor::ScheduleMicroBenchmark(
   return layer_tree_host_->ScheduleMicroBenchmark(name, value.Pass(), callback);
 }
 
-bool RenderWidgetCompositor::initialize(cc::LayerTreeSettings settings) {
+bool RenderWidgetCompositor::Initialize(cc::LayerTreeSettings settings) {
   scoped_refptr<base::MessageLoopProxy> compositor_message_loop_proxy =
       RenderThreadImpl::current()->compositor_message_loop_proxy();
-  layer_tree_host_ = cc::LayerTreeHost::Create(
-      this, NULL, settings, compositor_message_loop_proxy);
+  if (compositor_message_loop_proxy.get()) {
+    layer_tree_host_ = cc::LayerTreeHost::CreateThreaded(
+        this, NULL, settings, compositor_message_loop_proxy);
+  } else {
+    layer_tree_host_ = cc::LayerTreeHost::CreateSingleThreaded(
+        this, this, NULL, settings);
+  }
   return layer_tree_host_;
 }
 
@@ -638,14 +643,14 @@ void RenderWidgetCompositor::DidCompleteSwapBuffers() {
   widget_->didCompleteSwapBuffers();
 }
 
-void RenderWidgetCompositor::ScheduleComposite() {
-  if (!suppress_schedule_composite_)
-    widget_->scheduleComposite();
-}
-
 scoped_refptr<cc::ContextProvider>
 RenderWidgetCompositor::OffscreenContextProvider() {
   return RenderThreadImpl::current()->OffscreenCompositorContextProvider();
+}
+
+void RenderWidgetCompositor::ScheduleComposite() {
+  if (!suppress_schedule_composite_)
+    widget_->scheduleComposite();
 }
 
 void RenderWidgetCompositor::RateLimitSharedMainThreadContext() {

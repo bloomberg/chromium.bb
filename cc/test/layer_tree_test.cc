@@ -20,7 +20,9 @@
 #include "cc/test/occlusion_tracker_test_common.h"
 #include "cc/test/test_context_provider.h"
 #include "cc/test/tiled_layer_test_common.h"
+#include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_impl.h"
+#include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "cc/trees/single_thread_proxy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/gfx/frame_time.h"
@@ -194,57 +196,9 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
   bool notify_ready_to_activate_was_blocked_;
 };
 
-// Adapts LayerTreeHost for test. Injects LayerTreeHostImplForTesting.
-class LayerTreeHostForTesting : public LayerTreeHost {
- public:
-  static scoped_ptr<LayerTreeHostForTesting> Create(
-      TestHooks* test_hooks,
-      LayerTreeHostClient* host_client,
-      const LayerTreeSettings& settings,
-      scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner) {
-    scoped_ptr<LayerTreeHostForTesting> layer_tree_host(
-        new LayerTreeHostForTesting(test_hooks, host_client, settings));
-    bool success = layer_tree_host->Initialize(impl_task_runner);
-    EXPECT_TRUE(success);
-    return layer_tree_host.Pass();
-  }
-
-  virtual scoped_ptr<LayerTreeHostImpl> CreateLayerTreeHostImpl(
-      LayerTreeHostImplClient* host_impl_client) OVERRIDE {
-    return LayerTreeHostImplForTesting::Create(
-        test_hooks_,
-        settings(),
-        host_impl_client,
-        proxy(),
-        rendering_stats_instrumentation()).PassAs<LayerTreeHostImpl>();
-  }
-
-  virtual void SetNeedsCommit() OVERRIDE {
-    if (!test_started_)
-      return;
-    LayerTreeHost::SetNeedsCommit();
-  }
-
-  void set_test_started(bool started) { test_started_ = started; }
-
-  virtual void DidDeferCommit() OVERRIDE {
-    test_hooks_->DidDeferCommit();
-  }
-
- private:
-  LayerTreeHostForTesting(TestHooks* test_hooks,
-                          LayerTreeHostClient* client,
-                          const LayerTreeSettings& settings)
-      : LayerTreeHost(client, NULL, settings),
-        test_hooks_(test_hooks),
-        test_started_(false) {}
-
-  TestHooks* test_hooks_;
-  bool test_started_;
-};
-
 // Implementation of LayerTreeHost callback interface.
-class LayerTreeHostClientForTesting : public LayerTreeHostClient {
+class LayerTreeHostClientForTesting : public LayerTreeHostClient,
+                                      public LayerTreeHostSingleThreadClient {
  public:
   static scoped_ptr<LayerTreeHostClientForTesting> Create(
       TestHooks* test_hooks) {
@@ -305,6 +259,9 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient {
     test_hooks_->ScheduleComposite();
   }
 
+  virtual void DidPostSwapBuffers() OVERRIDE {}
+  virtual void DidAbortSwapBuffers() OVERRIDE {}
+
   virtual scoped_refptr<ContextProvider> OffscreenContextProvider() OVERRIDE {
     return test_hooks_->OffscreenContextProvider();
   }
@@ -314,6 +271,59 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient {
       : test_hooks_(test_hooks) {}
 
   TestHooks* test_hooks_;
+};
+
+// Adapts LayerTreeHost for test. Injects LayerTreeHostImplForTesting.
+class LayerTreeHostForTesting : public LayerTreeHost {
+ public:
+  static scoped_ptr<LayerTreeHostForTesting> Create(
+      TestHooks* test_hooks,
+      LayerTreeHostClientForTesting* client,
+      const LayerTreeSettings& settings,
+      scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner) {
+    scoped_ptr<LayerTreeHostForTesting> layer_tree_host(
+        new LayerTreeHostForTesting(test_hooks, client, settings));
+    bool success;
+    if (impl_task_runner.get())
+      success = layer_tree_host->InitializeThreaded(impl_task_runner);
+    else
+      success = layer_tree_host->InitializeSingleThreaded(client);
+    EXPECT_TRUE(success);
+    return layer_tree_host.Pass();
+  }
+
+  virtual scoped_ptr<LayerTreeHostImpl> CreateLayerTreeHostImpl(
+      LayerTreeHostImplClient* host_impl_client) OVERRIDE {
+    return LayerTreeHostImplForTesting::Create(
+        test_hooks_,
+        settings(),
+        host_impl_client,
+        proxy(),
+        rendering_stats_instrumentation()).PassAs<LayerTreeHostImpl>();
+  }
+
+  virtual void SetNeedsCommit() OVERRIDE {
+    if (!test_started_)
+      return;
+    LayerTreeHost::SetNeedsCommit();
+  }
+
+  void set_test_started(bool started) { test_started_ = started; }
+
+  virtual void DidDeferCommit() OVERRIDE {
+    test_hooks_->DidDeferCommit();
+  }
+
+ private:
+  LayerTreeHostForTesting(TestHooks* test_hooks,
+                          LayerTreeHostClient* client,
+                          const LayerTreeSettings& settings)
+      : LayerTreeHost(client, NULL, settings),
+        test_hooks_(test_hooks),
+        test_started_(false) {}
+
+  TestHooks* test_hooks_;
+  bool test_started_;
 };
 
 LayerTreeTest::LayerTreeTest()

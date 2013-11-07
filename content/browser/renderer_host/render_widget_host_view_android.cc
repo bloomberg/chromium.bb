@@ -827,11 +827,6 @@ void RenderWidgetHostViewAndroid::BuffersSwapped(
   ImageTransportFactoryAndroid* factory =
       ImageTransportFactoryAndroid::GetInstance();
 
-  // TODO(sievers): When running the impl thread in the browser we
-  // need to delay the ACK until after commit and use more than a single
-  // texture.
-  DCHECK(!CompositorImpl::IsThreadingEnabled());
-
   if (!texture_id_in_layer_) {
     texture_id_in_layer_ = factory->CreateTexture();
     texture_layer_->SetIsDrawable(true);

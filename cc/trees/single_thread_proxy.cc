@@ -14,19 +14,24 @@
 #include "cc/resources/resource_update_controller.h"
 #include "cc/trees/blocking_task_runner.h"
 #include "cc/trees/layer_tree_host.h"
+#include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "cc/trees/layer_tree_impl.h"
 #include "ui/gfx/frame_time.h"
 
 namespace cc {
 
-scoped_ptr<Proxy> SingleThreadProxy::Create(LayerTreeHost* layer_tree_host) {
+scoped_ptr<Proxy> SingleThreadProxy::Create(
+    LayerTreeHost* layer_tree_host,
+    LayerTreeHostSingleThreadClient* client) {
   return make_scoped_ptr(
-      new SingleThreadProxy(layer_tree_host)).PassAs<Proxy>();
+      new SingleThreadProxy(layer_tree_host, client)).PassAs<Proxy>();
 }
 
-SingleThreadProxy::SingleThreadProxy(LayerTreeHost* layer_tree_host)
+SingleThreadProxy::SingleThreadProxy(LayerTreeHost* layer_tree_host,
+                                     LayerTreeHostSingleThreadClient* client)
     : Proxy(NULL),
       layer_tree_host_(layer_tree_host),
+      client_(client),
       created_offscreen_context_provider_(false),
       next_frame_is_newly_committed_frame_(false),
       inside_draw_(false) {
@@ -178,7 +183,7 @@ void SingleThreadProxy::SetNeedsAnimate() {
 
 void SingleThreadProxy::SetNeedsUpdateLayers() {
   DCHECK(Proxy::IsMainThread());
-  layer_tree_host_->ScheduleComposite();
+  client_->ScheduleComposite();
 }
 
 void SingleThreadProxy::DoCommit(scoped_ptr<ResourceUpdateQueue> queue) {
@@ -237,11 +242,12 @@ void SingleThreadProxy::DoCommit(scoped_ptr<ResourceUpdateQueue> queue) {
 
 void SingleThreadProxy::SetNeedsCommit() {
   DCHECK(Proxy::IsMainThread());
-  layer_tree_host_->ScheduleComposite();
+  client_->ScheduleComposite();
 }
 
 void SingleThreadProxy::SetNeedsRedraw(gfx::Rect damage_rect) {
   SetNeedsRedrawRectOnImplThread(damage_rect);
+  client_->ScheduleComposite();
 }
 
 void SingleThreadProxy::SetNextCommitWaitsForActivation() {
@@ -286,7 +292,7 @@ void SingleThreadProxy::NotifyReadyToActivate() {
 }
 
 void SingleThreadProxy::SetNeedsRedrawOnImplThread() {
-  layer_tree_host_->ScheduleComposite();
+  client_->ScheduleComposite();
 }
 
 void SingleThreadProxy::SetNeedsManageTilesOnImplThread() {
@@ -308,7 +314,7 @@ void SingleThreadProxy::DidInitializeVisibleTileOnImplThread() {
 }
 
 void SingleThreadProxy::SetNeedsCommitOnImplThread() {
-  layer_tree_host_->ScheduleComposite();
+  client_->ScheduleComposite();
 }
 
 void SingleThreadProxy::PostAnimationEventsToMainThreadOnImplThread(

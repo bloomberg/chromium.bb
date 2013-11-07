@@ -59,10 +59,11 @@ class TiledLayerTest : public testing::Test {
 
   virtual void SetUp() {
     impl_thread_.Start();
-    layer_tree_host_ = LayerTreeHost::Create(&fake_layer_tree_host_client_,
-                                             NULL,
-                                             settings_,
-                                             impl_thread_.message_loop_proxy());
+    layer_tree_host_ = LayerTreeHost::CreateThreaded(
+        &fake_layer_tree_host_client_,
+        NULL,
+        settings_,
+        impl_thread_.message_loop_proxy());
     proxy_ = layer_tree_host_->proxy();
     resource_manager_ = PrioritizedResourceManager::Create(proxy_);
     layer_tree_host_->SetLayerTreeHostClientReady();

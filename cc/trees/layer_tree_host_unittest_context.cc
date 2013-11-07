@@ -1779,21 +1779,20 @@ class LayerTreeHostTestCannotCreateIfCannotCreateOutputSurface
   void RunTest(bool threaded,
                bool delegating_renderer,
                bool impl_side_painting) {
-    scoped_ptr<base::Thread> impl_thread;
-    if (threaded) {
-      impl_thread.reset(new base::Thread("LayerTreeTest"));
-      ASSERT_TRUE(impl_thread->Start());
-      ASSERT_TRUE(impl_thread->message_loop_proxy().get());
-    }
-
     LayerTreeSettings settings;
     settings.impl_side_painting = impl_side_painting;
-    scoped_ptr<LayerTreeHost> layer_tree_host = LayerTreeHost::Create(
-        this,
-        NULL,
-        settings,
-        impl_thread ? impl_thread->message_loop_proxy() : NULL);
-    EXPECT_FALSE(layer_tree_host);
+    if (threaded) {
+      scoped_ptr<base::Thread> impl_thread(new base::Thread("LayerTreeTest"));
+      ASSERT_TRUE(impl_thread->Start());
+      ASSERT_TRUE(impl_thread->message_loop_proxy().get());
+      scoped_ptr<LayerTreeHost> layer_tree_host = LayerTreeHost::CreateThreaded(
+          this, NULL, settings, impl_thread->message_loop_proxy());
+      EXPECT_FALSE(layer_tree_host);
+    } else {
+      scoped_ptr<LayerTreeHost> layer_tree_host =
+          LayerTreeHost::CreateSingleThreaded(this, this, NULL, settings);
+      EXPECT_FALSE(layer_tree_host);
+    }
   }
 };
 

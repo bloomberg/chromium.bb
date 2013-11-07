@@ -98,21 +98,36 @@ UIResourceRequest& UIResourceRequest::operator=(
 
 UIResourceRequest::~UIResourceRequest() {}
 
-scoped_ptr<LayerTreeHost> LayerTreeHost::Create(
+scoped_ptr<LayerTreeHost> LayerTreeHost::CreateThreaded(
     LayerTreeHostClient* client,
     SharedBitmapManager* manager,
     const LayerTreeSettings& settings,
     scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner) {
+  DCHECK(impl_task_runner);
   scoped_ptr<LayerTreeHost> layer_tree_host(
       new LayerTreeHost(client, manager, settings));
-  if (!layer_tree_host->Initialize(impl_task_runner))
+  if (!layer_tree_host->InitializeThreaded(impl_task_runner))
     return scoped_ptr<LayerTreeHost>();
   return layer_tree_host.Pass();
 }
 
-LayerTreeHost::LayerTreeHost(LayerTreeHostClient* client,
-                             SharedBitmapManager* manager,
-                             const LayerTreeSettings& settings)
+scoped_ptr<LayerTreeHost> LayerTreeHost::CreateSingleThreaded(
+    LayerTreeHostClient* client,
+    LayerTreeHostSingleThreadClient* single_thread_client,
+    SharedBitmapManager* manager,
+    const LayerTreeSettings& settings) {
+  scoped_ptr<LayerTreeHost> layer_tree_host(
+      new LayerTreeHost(client, manager, settings));
+  if (!layer_tree_host->InitializeSingleThreaded(single_thread_client))
+    return scoped_ptr<LayerTreeHost>();
+  return layer_tree_host.Pass();
+}
+
+
+LayerTreeHost::LayerTreeHost(
+    LayerTreeHostClient* client,
+    SharedBitmapManager* manager,
+    const LayerTreeSettings& settings)
     : next_ui_resource_id_(1),
       animating_(false),
       needs_full_tree_sync_(true),
@@ -147,12 +162,15 @@ LayerTreeHost::LayerTreeHost(LayerTreeHostClient* client,
       debug_state_.RecordRenderingStats());
 }
 
-bool LayerTreeHost::Initialize(
+bool LayerTreeHost::InitializeThreaded(
     scoped_refptr<base::SingleThreadTaskRunner> impl_task_runner) {
-  if (impl_task_runner.get())
-    return InitializeProxy(ThreadProxy::Create(this, impl_task_runner));
-  else
-    return InitializeProxy(SingleThreadProxy::Create(this));
+  return InitializeProxy(ThreadProxy::Create(this, impl_task_runner));
+}
+
+bool LayerTreeHost::InitializeSingleThreaded(
+    LayerTreeHostSingleThreadClient* single_thread_client) {
+    return InitializeProxy(
+        SingleThreadProxy::Create(this, single_thread_client));
 }
 
 bool LayerTreeHost::InitializeForTesting(scoped_ptr<Proxy> proxy_for_testing) {
@@ -562,8 +580,6 @@ void LayerTreeHost::SetNeedsRedraw() {
 
 void LayerTreeHost::SetNeedsRedrawRect(gfx::Rect damage_rect) {
   proxy_->SetNeedsRedraw(damage_rect);
-  if (!proxy_->HasImplThread())
-    client_->ScheduleComposite();
 }
 
 bool LayerTreeHost::CommitRequested() const {
@@ -737,10 +753,6 @@ void LayerTreeHost::Composite(base::TimeTicks frame_begin_time) {
         frame_begin_time);
   else
     SetNeedsCommit();
-}
-
-void LayerTreeHost::ScheduleComposite() {
-  client_->ScheduleComposite();
 }
 
 bool LayerTreeHost::InitializeOutputSurfaceIfNeeded() {

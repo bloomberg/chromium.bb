@@ -91,7 +91,6 @@ class OutputSurfaceWithoutParent : public cc::OutputSurface {
 };
 
 static bool g_initialized = false;
-static base::Thread* g_impl_thread = NULL;
 
 } // anonymous namespace
 
@@ -117,11 +116,6 @@ void Compositor::Initialize() {
 // static
 bool CompositorImpl::IsInitialized() {
   return g_initialized;
-}
-
-// static
-bool CompositorImpl::IsThreadingEnabled() {
-  return g_impl_thread;
 }
 
 // static
@@ -226,12 +220,7 @@ void CompositorImpl::SetVisible(bool visible) {
     settings.use_memory_management = false;
     settings.highp_threshold_min = 2048;
 
-    scoped_refptr<base::SingleThreadTaskRunner> impl_thread_task_runner =
-        g_impl_thread ? g_impl_thread->message_loop()->message_loop_proxy()
-                      : NULL;
-
-    host_ = cc::LayerTreeHost::Create(
-        this, NULL, settings, impl_thread_task_runner);
+    host_ = cc::LayerTreeHost::CreateSingleThreaded(this, this, NULL, settings);
     host_->SetRootLayer(root_layer_);
 
     host_->SetVisible(true);

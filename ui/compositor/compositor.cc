@@ -285,11 +285,12 @@ Compositor::Compositor(gfx::AcceleratedWidget widget)
   settings.initial_debug_state.show_non_occluding_rects =
       command_line->HasSwitch(cc::switches::kUIShowNonOccludingRects);
 
-  scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner =
-      g_compositor_thread ? g_compositor_thread->message_loop_proxy() : NULL;
-
-  host_ =
-      cc::LayerTreeHost::Create(this, NULL, settings, compositor_task_runner);
+  if (!!g_compositor_thread) {
+    host_ = cc::LayerTreeHost::CreateThreaded(
+        this, NULL, settings, g_compositor_thread->message_loop_proxy());
+  } else {
+    host_ = cc::LayerTreeHost::CreateSingleThreaded(this, this, NULL, settings);
+  }
   host_->SetRootLayer(root_web_layer_);
   host_->SetLayerTreeHostClientReady();
 }
@@ -557,13 +558,13 @@ void Compositor::DidCompleteSwapBuffers() {
   NotifyEnd();
 }
 
+scoped_refptr<cc::ContextProvider> Compositor::OffscreenContextProvider() {
+  return ContextFactory::GetInstance()->OffscreenCompositorContextProvider();
+}
+
 void Compositor::ScheduleComposite() {
   if (!disable_schedule_composite_)
     ScheduleDraw();
-}
-
-scoped_refptr<cc::ContextProvider> Compositor::OffscreenContextProvider() {
-  return ContextFactory::GetInstance()->OffscreenCompositorContextProvider();
 }
 
 const cc::LayerTreeDebugState& Compositor::GetLayerTreeDebugState() const {

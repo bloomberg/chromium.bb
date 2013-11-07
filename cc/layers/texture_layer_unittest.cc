@@ -43,9 +43,9 @@ namespace {
 
 class MockLayerTreeHost : public LayerTreeHost {
  public:
-  explicit MockLayerTreeHost(LayerTreeHostClient* client)
+  explicit MockLayerTreeHost(FakeLayerTreeHostClient* client)
       : LayerTreeHost(client, NULL, LayerTreeSettings()) {
-    Initialize(NULL);
+    InitializeSingleThreaded(client);
   }
 
   MOCK_METHOD0(AcquireLayerTextures, void());

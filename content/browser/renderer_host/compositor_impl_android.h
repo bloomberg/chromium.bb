@@ -12,6 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "cc/resources/ui_resource_client.h"
 #include "cc/trees/layer_tree_host_client.h"
+#include "cc/trees/layer_tree_host_single_thread_client.h"
 #include "content/browser/renderer_host/image_transport_factory_android.h"
 #include "content/common/content_export.h"
 #include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
@@ -36,6 +37,7 @@ class GraphicsContext;
 class CONTENT_EXPORT CompositorImpl
     : public Compositor,
       public cc::LayerTreeHostClient,
+      public cc::LayerTreeHostSingleThreadClient,
       public WebGraphicsContext3DSwapBuffersClient,
       public ImageTransportFactoryAndroidObserver {
  public:
@@ -43,7 +45,6 @@ class CONTENT_EXPORT CompositorImpl
   virtual ~CompositorImpl();
 
   static bool IsInitialized();
-  static bool IsThreadingEnabled();
 
   // Returns the Java Surface object for a given view surface id.
   static jobject GetSurface(int surface_id);
@@ -85,9 +86,13 @@ class CONTENT_EXPORT CompositorImpl
   virtual void DidCommit() OVERRIDE {}
   virtual void DidCommitAndDrawFrame() OVERRIDE {}
   virtual void DidCompleteSwapBuffers() OVERRIDE;
-  virtual void ScheduleComposite() OVERRIDE;
   virtual scoped_refptr<cc::ContextProvider>
       OffscreenContextProvider() OVERRIDE;
+
+  // LayerTreeHostSingleThreadClient implementation.
+  virtual void ScheduleComposite() OVERRIDE;
+  virtual void DidPostSwapBuffers() OVERRIDE {}
+  virtual void DidAbortSwapBuffers() OVERRIDE {}
 
   // WebGraphicsContext3DSwapBuffersClient implementation.
   virtual void OnViewContextSwapBuffersPosted() OVERRIDE;

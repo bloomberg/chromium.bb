@@ -38,9 +38,9 @@ namespace {
 
 class MockLayerTreeHost : public LayerTreeHost {
  public:
-  explicit MockLayerTreeHost(LayerTreeHostClient* client)
+  explicit MockLayerTreeHost(FakeLayerTreeHostClient* client)
       : LayerTreeHost(client, NULL, LayerTreeSettings()) {
-    Initialize(NULL);
+    InitializeSingleThreaded(client);
   }
 
   MOCK_METHOD0(SetNeedsCommit, void());
@@ -803,12 +803,17 @@ class LayerTreeHostFactory {
       : client_(FakeLayerTreeHostClient::DIRECT_3D) {}
 
   scoped_ptr<LayerTreeHost> Create() {
-    return LayerTreeHost::Create(&client_, NULL, LayerTreeSettings(), NULL)
-        .Pass();
+    return LayerTreeHost::CreateSingleThreaded(&client_,
+                                               &client_,
+                                               NULL,
+                                               LayerTreeSettings()).Pass();
   }
 
   scoped_ptr<LayerTreeHost> Create(LayerTreeSettings settings) {
-    return LayerTreeHost::Create(&client_, NULL, settings, NULL).Pass();
+    return LayerTreeHost::CreateSingleThreaded(&client_,
+                                               &client_,
+                                               NULL,
+                                               settings).Pass();
   }
 
  private:
