@@ -34,12 +34,12 @@ using testing::Return;
 using testing::SetArgPointee;
 using testing::StrictMock;
 using testing::_;
-using WebKit::WGC3Dbyte;
-using WebKit::WGC3Denum;
-using WebKit::WGC3Dint;
-using WebKit::WGC3Dsizei;
-using WebKit::WGC3Duint;
-using WebKit::WebGLId;
+using blink::WGC3Dbyte;
+using blink::WGC3Denum;
+using blink::WGC3Dint;
+using blink::WGC3Dsizei;
+using blink::WGC3Duint;
+using blink::WebGLId;
 
 namespace cc {
 namespace {
@@ -95,11 +95,11 @@ class TextureStateTrackingContext : public TestWebGraphicsContext3D {
 
   // Force all textures to be consecutive numbers starting at "1",
   // so we easily can test for them.
-  virtual WebKit::WebGLId NextTextureId() OVERRIDE {
+  virtual blink::WebGLId NextTextureId() OVERRIDE {
     base::AutoLock lock(namespace_->lock);
     return namespace_->next_texture_id++;
   }
-  virtual void RetireTextureId(WebKit::WebGLId) OVERRIDE {
+  virtual void RetireTextureId(blink::WebGLId) OVERRIDE {
   }
 };
 
@@ -2944,13 +2944,13 @@ INSTANTIATE_TEST_CASE_P(
 
 class TextureIdAllocationTrackingContext : public TestWebGraphicsContext3D {
  public:
-  virtual WebKit::WebGLId NextTextureId() OVERRIDE {
+  virtual blink::WebGLId NextTextureId() OVERRIDE {
     base::AutoLock lock(namespace_->lock);
     return namespace_->next_texture_id++;
   }
-  virtual void RetireTextureId(WebKit::WebGLId) OVERRIDE {
+  virtual void RetireTextureId(blink::WebGLId) OVERRIDE {
   }
-  WebKit::WebGLId PeekTextureId() {
+  blink::WebGLId PeekTextureId() {
     base::AutoLock lock(namespace_->lock);
     return namespace_->next_texture_id;
   }

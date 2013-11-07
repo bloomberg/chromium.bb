@@ -16,8 +16,8 @@
 using cc::Animation;
 using cc::AnimationIdProvider;
 
-using WebKit::WebAnimation;
-using WebKit::WebAnimationCurve;
+using blink::WebAnimation;
+using blink::WebAnimationCurve;
 
 namespace webkit {
 
@@ -63,7 +63,7 @@ WebAnimationImpl::~WebAnimationImpl() {}
 
 int WebAnimationImpl::id() { return animation_->id(); }
 
-WebKit::WebAnimation::TargetProperty WebAnimationImpl::targetProperty() const {
+blink::WebAnimation::TargetProperty WebAnimationImpl::targetProperty() const {
   return static_cast<WebAnimationImpl::TargetProperty>(
       animation_->target_property());
 }

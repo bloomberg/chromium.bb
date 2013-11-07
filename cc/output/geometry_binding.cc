@@ -11,7 +11,7 @@
 
 namespace cc {
 
-GeometryBinding::GeometryBinding(WebKit::WebGraphicsContext3D* context,
+GeometryBinding::GeometryBinding(blink::WebGraphicsContext3D* context,
                                  const gfx::RectF& quad_vertex_rect)
     : context_(context),
       quad_vertices_vbo_(0),

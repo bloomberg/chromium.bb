@@ -14,13 +14,13 @@ namespace webkit {
 
 class WebLayerImpl;
 
-class WebImageLayerImpl : public WebKit::WebImageLayer {
+class WebImageLayerImpl : public blink::WebImageLayer {
  public:
   WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebImageLayerImpl();
   virtual ~WebImageLayerImpl();
 
-  // WebKit::WebImageLayer implementation.
-  virtual WebKit::WebLayer* layer();
+  // blink::WebImageLayer implementation.
+  virtual blink::WebLayer* layer();
   virtual void setBitmap(SkBitmap);
 
  private:

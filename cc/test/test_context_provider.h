@@ -12,7 +12,7 @@
 #include "cc/output/context_provider.h"
 #include "cc/test/test_context_support.h"
 
-namespace WebKit { class WebGraphicsContext3D; }
+namespace blink { class WebGraphicsContext3D; }
 
 namespace cc {
 class TestWebGraphicsContext3D;
@@ -28,7 +28,7 @@ class TestContextProvider : public cc::ContextProvider {
 
   virtual bool BindToCurrentThread() OVERRIDE;
   virtual Capabilities ContextCapabilities() OVERRIDE;
-  virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE;
+  virtual blink::WebGraphicsContext3D* Context3d() OVERRIDE;
   virtual gpu::ContextSupport* ContextSupport() OVERRIDE;
   virtual class GrContext* GrContext() OVERRIDE;
   virtual bool IsContextLost() OVERRIDE;

@@ -38,7 +38,7 @@ static const size_t kTextureUploadFlushPeriod = 4;
 
 namespace cc {
 
-TextureUploader::Query::Query(WebKit::WebGraphicsContext3D* context)
+TextureUploader::Query::Query(blink::WebGraphicsContext3D* context)
     : context_(context),
       query_id_(0),
       value_(0),
@@ -74,7 +74,7 @@ unsigned TextureUploader::Query::Value() {
   return value_;
 }
 
-TextureUploader::TextureUploader(WebKit::WebGraphicsContext3D* context,
+TextureUploader::TextureUploader(blink::WebGraphicsContext3D* context,
                                  bool use_map_tex_sub_image,
                                  bool use_shallow_flush)
     : context_(context),

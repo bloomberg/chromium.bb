@@ -98,7 +98,7 @@ float FlingAnimatorImpl::GetCurrentVelocity()
 }
 
 bool FlingAnimatorImpl::apply(double time,
-                              WebKit::WebGestureCurveTarget* target) {
+                              blink::WebGestureCurveTarget* target) {
   if (!UpdatePosition())
     return false;
 
@@ -107,7 +107,7 @@ bool FlingAnimatorImpl::apply(double time,
   last_position_ = current_position;
   float dpi_scale = gfx::Screen::GetNativeScreen()->GetPrimaryDisplay()
       .device_scale_factor();
-  WebKit::WebFloatSize scroll_amount(diff.x() / dpi_scale,
+  blink::WebFloatSize scroll_amount(diff.x() / dpi_scale,
                                      diff.y() / dpi_scale);
 
   float delta_time = time - last_time_;
@@ -127,7 +127,7 @@ bool FlingAnimatorImpl::apply(double time,
     }
   }
   last_velocity_ = current_velocity;
-  WebKit::WebFloatSize fling_velocity(current_velocity.x() / dpi_scale,
+  blink::WebFloatSize fling_velocity(current_velocity.x() / dpi_scale,
                                       current_velocity.y() / dpi_scale);
   target->notifyCurrentFlingVelocity(fling_velocity);
 
@@ -138,8 +138,8 @@ bool FlingAnimatorImpl::apply(double time,
 }
 
 FlingAnimatorImpl* FlingAnimatorImpl::CreateAndroidGestureCurve(
-    const WebKit::WebFloatPoint& velocity,
-    const WebKit::WebSize&) {
+    const blink::WebFloatPoint& velocity,
+    const blink::WebSize&) {
   FlingAnimatorImpl* gesture_curve = new FlingAnimatorImpl();
   gesture_curve->StartFling(velocity);
   return gesture_curve;

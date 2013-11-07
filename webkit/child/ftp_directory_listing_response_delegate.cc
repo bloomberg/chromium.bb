@@ -23,9 +23,9 @@
 
 using net::FtpDirectoryListingEntry;
 
-using WebKit::WebURLLoader;
-using WebKit::WebURLLoaderClient;
-using WebKit::WebURLResponse;
+using blink::WebURLLoader;
+using blink::WebURLLoaderClient;
+using blink::WebURLResponse;
 
 namespace {
 

@@ -7,9 +7,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/renderer/compositor_bindings/web_float_animation_curve_impl.h"
 
-using WebKit::WebAnimationCurve;
-using WebKit::WebFloatAnimationCurve;
-using WebKit::WebFloatKeyframe;
+using blink::WebAnimationCurve;
+using blink::WebFloatAnimationCurve;
+using blink::WebFloatKeyframe;
 
 namespace webkit {
 namespace {

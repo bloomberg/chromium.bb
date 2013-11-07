@@ -278,13 +278,13 @@ void AwContentBrowserClient::SelectClientCertificate(
   callback.Run(NULL);
 }
 
-WebKit::WebNotificationPresenter::Permission
+blink::WebNotificationPresenter::Permission
     AwContentBrowserClient::CheckDesktopNotificationPermission(
         const GURL& source_url,
         content::ResourceContext* context,
         int render_process_id) {
   // Android WebView does not support notifications, so return Denied here.
-  return WebKit::WebNotificationPresenter::PermissionDenied;
+  return blink::WebNotificationPresenter::PermissionDenied;
 }
 
 void AwContentBrowserClient::ShowDesktopNotification(
@@ -310,7 +310,7 @@ bool AwContentBrowserClient::CanCreateWindow(
     const GURL& target_url,
     const content::Referrer& referrer,
     WindowOpenDisposition disposition,
-    const WebKit::WebWindowFeatures& features,
+    const blink::WebWindowFeatures& features,
     bool user_gesture,
     bool opener_suppressed,
     content::ResourceContext* context,

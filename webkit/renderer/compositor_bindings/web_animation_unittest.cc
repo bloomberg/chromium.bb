@@ -7,9 +7,9 @@
 #include "webkit/renderer/compositor_bindings/web_animation_impl.h"
 #include "webkit/renderer/compositor_bindings/web_float_animation_curve_impl.h"
 
-using WebKit::WebAnimation;
-using WebKit::WebAnimationCurve;
-using WebKit::WebFloatAnimationCurve;
+using blink::WebAnimation;
+using blink::WebAnimationCurve;
+using blink::WebFloatAnimationCurve;
 
 namespace webkit {
 namespace {

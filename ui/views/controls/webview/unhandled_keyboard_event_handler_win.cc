@@ -27,7 +27,7 @@ void UnhandledKeyboardEventHandler::HandleKeyboardEvent(
   // Previous calls to TranslateMessage can generate Char events as well as
   // RawKeyDown events, even if the latter triggered an accelerator.  In these
   // cases, we discard the Char events.
-  if (event.type == WebKit::WebInputEvent::Char && ignore_next_char_event_) {
+  if (event.type == blink::WebInputEvent::Char && ignore_next_char_event_) {
     ignore_next_char_event_ = false;
     return;
   }
@@ -35,7 +35,7 @@ void UnhandledKeyboardEventHandler::HandleKeyboardEvent(
   // always generate a Char event.
   ignore_next_char_event_ = false;
 
-  if (event.type == WebKit::WebInputEvent::RawKeyDown) {
+  if (event.type == blink::WebInputEvent::RawKeyDown) {
     ui::Accelerator accelerator(
         static_cast<ui::KeyboardCode>(event.windowsKeyCode),
         content::GetModifiersFromNativeWebKeyboardEvent(event));

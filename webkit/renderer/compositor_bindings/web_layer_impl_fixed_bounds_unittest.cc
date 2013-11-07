@@ -14,8 +14,8 @@
 #include "ui/gfx/point3_f.h"
 #include "webkit/renderer/compositor_bindings/web_layer_impl_fixed_bounds.h"
 
-using WebKit::WebFloatPoint;
-using WebKit::WebSize;
+using blink::WebFloatPoint;
+using blink::WebSize;
 
 namespace webkit {
 namespace {

@@ -35,7 +35,7 @@ class TestWebKitPlatformSupport
   }
 
   virtual webkit_glue::WebSocketStreamHandleBridge* CreateWebSocketStreamBridge(
-      WebKit::WebSocketStreamHandle*,
+      blink::WebSocketStreamHandle*,
       webkit_glue::WebSocketStreamHandleDelegate*) OVERRIDE {
     return NULL;
   }

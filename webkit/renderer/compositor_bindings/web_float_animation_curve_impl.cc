@@ -9,7 +9,7 @@
 #include "cc/animation/timing_function.h"
 #include "webkit/renderer/compositor_bindings/web_animation_curve_common.h"
 
-using WebKit::WebFloatKeyframe;
+using blink::WebFloatKeyframe;
 
 namespace webkit {
 
@@ -18,9 +18,9 @@ WebFloatAnimationCurveImpl::WebFloatAnimationCurveImpl()
 
 WebFloatAnimationCurveImpl::~WebFloatAnimationCurveImpl() {}
 
-WebKit::WebAnimationCurve::AnimationCurveType
+blink::WebAnimationCurve::AnimationCurveType
 WebFloatAnimationCurveImpl::type() const {
-  return WebKit::WebAnimationCurve::AnimationCurveTypeFloat;
+  return blink::WebAnimationCurve::AnimationCurveTypeFloat;
 }
 
 void WebFloatAnimationCurveImpl::add(const WebFloatKeyframe& keyframe) {

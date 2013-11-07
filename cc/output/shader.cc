@@ -16,7 +16,7 @@
 #define VERTEX_SHADER(Src) SetVertexTexCoordPrecision(SHADER0(Src))
 #define FRAGMENT_SHADER(Src) SetFragTexCoordPrecision(precision, SHADER0(Src))
 
-using WebKit::WebGraphicsContext3D;
+using blink::WebGraphicsContext3D;
 
 namespace cc {
 

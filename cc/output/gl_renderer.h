@@ -23,7 +23,7 @@
 
 class SkBitmap;
 
-namespace WebKit { class WebGraphicsContext3D; }
+namespace blink { class WebGraphicsContext3D; }
 
 namespace cc {
 
@@ -53,7 +53,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
 
   virtual const RendererCapabilities& Capabilities() const OVERRIDE;
 
-  WebKit::WebGraphicsContext3D* Context();
+  blink::WebGraphicsContext3D* Context();
 
   virtual void ViewportChanged() OVERRIDE;
 
@@ -73,7 +73,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
                                       size_t bytes_visible_and_nearby,
                                       size_t bytes_allocated) OVERRIDE;
 
-  static void DebugGLCall(WebKit::WebGraphicsContext3D* context,
+  static void DebugGLCall(blink::WebGraphicsContext3D* context,
                           const char* command,
                           const char* file,
                           int line);
@@ -417,7 +417,7 @@ class CC_EXPORT GLRenderer : public DirectRenderer {
   SolidColorProgram solid_color_program_;
   SolidColorProgramAA solid_color_program_aa_;
 
-  WebKit::WebGraphicsContext3D* context_;
+  blink::WebGraphicsContext3D* context_;
   gpu::ContextSupport* context_support_;
 
   skia::RefPtr<GrContext> gr_context_;

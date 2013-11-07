@@ -19,13 +19,13 @@ WebNinePatchLayerImpl::WebNinePatchLayerImpl() {
 
 WebNinePatchLayerImpl::~WebNinePatchLayerImpl() {}
 
-WebKit::WebLayer* WebNinePatchLayerImpl::layer() { return layer_.get(); }
+blink::WebLayer* WebNinePatchLayerImpl::layer() { return layer_.get(); }
 
 void WebNinePatchLayerImpl::setBitmap(SkBitmap bitmap,
-                                      const WebKit::WebRect& aperture) {
+                                      const blink::WebRect& aperture) {
   setBitmap(bitmap);
   setAperture(aperture);
-  setBorder(WebKit::WebRect(aperture.x, aperture.y,
+  setBorder(blink::WebRect(aperture.x, aperture.y,
                             bitmap.width() - aperture.width,
                             bitmap.height() - aperture.height));
 }
@@ -36,13 +36,13 @@ void WebNinePatchLayerImpl::setBitmap(SkBitmap bitmap) {
   nine_patch->SetBitmap(bitmap);
 }
 
-void WebNinePatchLayerImpl::setAperture(const WebKit::WebRect& aperture) {
+void WebNinePatchLayerImpl::setAperture(const blink::WebRect& aperture) {
   cc::NinePatchLayer* nine_patch =
       static_cast<cc::NinePatchLayer*>(layer_->layer());
   nine_patch->SetAperture(gfx::Rect(aperture));
 }
 
-void WebNinePatchLayerImpl::setBorder(const WebKit::WebRect& border) {
+void WebNinePatchLayerImpl::setBorder(const blink::WebRect& border) {
   cc::NinePatchLayer* nine_patch =
       static_cast<cc::NinePatchLayer*>(layer_->layer());
   nine_patch->SetBorder(gfx::Rect(border));

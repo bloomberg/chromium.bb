@@ -13,13 +13,13 @@
 #include "webkit/child/multipart_response_delegate.h"
 
 using std::string;
-using WebKit::WebString;
-using WebKit::WebURL;
-using WebKit::WebURLError;
-using WebKit::WebURLLoader;
-using WebKit::WebURLLoaderClient;
-using WebKit::WebURLRequest;
-using WebKit::WebURLResponse;
+using blink::WebString;
+using blink::WebURL;
+using blink::WebURLError;
+using blink::WebURLLoader;
+using blink::WebURLLoaderClient;
+using blink::WebURLRequest;
+using blink::WebURLResponse;
 using webkit_glue::MultipartResponseDelegate;
 using webkit_glue::MultipartResponseDelegateTester;
 
@@ -67,7 +67,7 @@ class MockWebURLLoaderClient : public WebURLLoaderClient {
     data_.clear();
   }
   virtual void didReceiveData(
-      WebKit::WebURLLoader* loader,
+      blink::WebURLLoader* loader,
       const char* data,
       int data_length,
       int encoded_data_length) {

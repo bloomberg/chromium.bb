@@ -78,7 +78,7 @@ bool FakeContextProvider::BindToCurrentThread() {
   return true;
 }
 
-WebKit::WebGraphicsContext3D* FakeContextProvider::Context3d() {
+blink::WebGraphicsContext3D* FakeContextProvider::Context3d() {
   DCHECK(context3d_);
   DCHECK(bound_);
 

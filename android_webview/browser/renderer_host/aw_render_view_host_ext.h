@@ -54,7 +54,7 @@ class AwRenderViewHostExt : public content::WebContentsObserver,
 
   // Do a hit test at the view port coordinates and asynchronously update
   // |last_hit_test_data_|. |view_x| and |view_y| are in density independent
-  // pixels used by WebKit::WebView.
+  // pixels used by blink::WebView.
   void RequestNewHitTestDataAt(int view_x, int view_y);
 
   // Optimization to avoid unnecessary Java object creation on hit test.

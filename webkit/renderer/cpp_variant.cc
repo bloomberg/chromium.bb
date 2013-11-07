@@ -12,7 +12,7 @@
 #include "third_party/WebKit/public/web/WebBindings.h"
 #include "webkit/renderer/cpp_variant.h"
 
-using WebKit::WebBindings;
+using blink::WebBindings;
 
 namespace webkit_glue {
 

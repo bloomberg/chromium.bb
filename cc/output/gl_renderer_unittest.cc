@@ -40,18 +40,18 @@ using testing::InSequence;
 using testing::Mock;
 using testing::Return;
 using testing::StrictMock;
-using WebKit::WebGLId;
-using WebKit::WebString;
-using WebKit::WGC3Dbitfield;
-using WebKit::WGC3Dboolean;
-using WebKit::WGC3Dchar;
-using WebKit::WGC3Denum;
-using WebKit::WGC3Dfloat;
-using WebKit::WGC3Dint;
-using WebKit::WGC3Dintptr;
-using WebKit::WGC3Dsizei;
-using WebKit::WGC3Dsizeiptr;
-using WebKit::WGC3Duint;
+using blink::WebGLId;
+using blink::WebString;
+using blink::WGC3Dbitfield;
+using blink::WGC3Dboolean;
+using blink::WGC3Dchar;
+using blink::WGC3Denum;
+using blink::WGC3Dfloat;
+using blink::WGC3Dint;
+using blink::WGC3Dintptr;
+using blink::WGC3Dsizei;
+using blink::WGC3Dsizeiptr;
+using blink::WGC3Duint;
 
 namespace cc {
 
@@ -1721,7 +1721,7 @@ class GLRendererTestSyncPoint : public GLRendererPixelTest {
 TEST_F(GLRendererTestSyncPoint, SignalSyncPointOnLostContext) {
   int sync_point_callback_count = 0;
   int other_callback_count = 0;
-  WebKit::WebGraphicsContext3D* context3d =
+  blink::WebGraphicsContext3D* context3d =
       output_surface_->context_provider()->Context3d();
   gpu::ContextSupport* context_support =
       output_surface_->context_provider()->ContextSupport();
@@ -1754,7 +1754,7 @@ TEST_F(GLRendererTestSyncPoint, SignalSyncPoint) {
   int sync_point_callback_count = 0;
   int other_callback_count = 0;
 
-  WebKit::WebGraphicsContext3D* context3d =
+  blink::WebGraphicsContext3D* context3d =
       output_surface_->context_provider()->Context3d();
   gpu::ContextSupport* context_support =
       output_surface_->context_provider()->ContextSupport();

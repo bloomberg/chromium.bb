@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 
-using WebKit::WebURLRequest;
+using blink::WebURLRequest;
 
 // static
 ResourceType::Type ResourceType::FromTargetType(

@@ -8,7 +8,7 @@
 #include "cc/debug/rendering_stats.h"
 #include "third_party/WebKit/public/platform/WebRenderingStats.h"
 
-namespace WebKit {
+namespace blink {
 
 struct WebRenderingStatsImpl : public WebRenderingStats {
   WebRenderingStatsImpl() {}
@@ -16,6 +16,6 @@ struct WebRenderingStatsImpl : public WebRenderingStats {
   cc::RenderingStats rendering_stats;
 };
 
-}  // namespace WebKit
+}  // namespace blink
 
 #endif  // WEBKIT_RENDERER_COMPOSITOR_BINDINGS_WEB_RENDERING_STATS_IMPL_H_

@@ -14,24 +14,24 @@ class AnimationCurve;
 class KeyframedTransformAnimationCurve;
 }
 
-namespace WebKit { class WebTransformKeyframe; }
+namespace blink { class WebTransformKeyframe; }
 
 namespace webkit {
 
 class WebTransformAnimationCurveImpl
-    : public WebKit::WebTransformAnimationCurve {
+    : public blink::WebTransformAnimationCurve {
  public:
   WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebTransformAnimationCurveImpl();
   virtual ~WebTransformAnimationCurveImpl();
 
-  // WebKit::WebAnimationCurve implementation.
+  // blink::WebAnimationCurve implementation.
   virtual AnimationCurveType type() const;
 
-  // WebKit::WebTransformAnimationCurve implementation.
-  virtual void add(const WebKit::WebTransformKeyframe& keyframe);
-  virtual void add(const WebKit::WebTransformKeyframe& keyframe,
+  // blink::WebTransformAnimationCurve implementation.
+  virtual void add(const blink::WebTransformKeyframe& keyframe);
+  virtual void add(const blink::WebTransformKeyframe& keyframe,
                    TimingFunctionType type);
-  virtual void add(const WebKit::WebTransformKeyframe& keyframe,
+  virtual void add(const blink::WebTransformKeyframe& keyframe,
                    double x1,
                    double y1,
                    double x2,

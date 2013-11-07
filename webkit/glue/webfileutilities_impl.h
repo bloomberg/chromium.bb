@@ -13,19 +13,19 @@
 namespace webkit_glue {
 
 class WEBKIT_GLUE_EXPORT WebFileUtilitiesImpl :
-    NON_EXPORTED_BASE(public WebKit::WebFileUtilities) {
+    NON_EXPORTED_BASE(public blink::WebFileUtilities) {
  public:
   WebFileUtilitiesImpl();
   virtual ~WebFileUtilitiesImpl();
 
   // WebFileUtilities methods:
   virtual bool getFileInfo(
-      const WebKit::WebString& path,
-      WebKit::WebFileInfo& result);
-  virtual WebKit::WebString directoryName(const WebKit::WebString& path);
-  virtual WebKit::WebString baseName(const WebKit::WebString& path);
-  virtual WebKit::WebURL filePathToURL(const WebKit::WebString& path);
-  virtual base::PlatformFile openFile(const WebKit::WebString& path, int mode);
+      const blink::WebString& path,
+      blink::WebFileInfo& result);
+  virtual blink::WebString directoryName(const blink::WebString& path);
+  virtual blink::WebString baseName(const blink::WebString& path);
+  virtual blink::WebURL filePathToURL(const blink::WebString& path);
+  virtual base::PlatformFile openFile(const blink::WebString& path, int mode);
   virtual void closeFile(base::PlatformFile& handle);
   virtual int readFromFile(base::PlatformFile handle, char* data, int length);
 

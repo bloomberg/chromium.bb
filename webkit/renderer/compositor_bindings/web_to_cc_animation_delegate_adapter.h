@@ -9,20 +9,20 @@
 #include "base/compiler_specific.h"
 #include "cc/animation/animation_delegate.h"
 
-namespace WebKit { class WebAnimationDelegate; }
+namespace blink { class WebAnimationDelegate; }
 
 namespace webkit {
 
 class WebToCCAnimationDelegateAdapter : public cc::AnimationDelegate {
  public:
   explicit WebToCCAnimationDelegateAdapter(
-      WebKit::WebAnimationDelegate* delegate);
+      blink::WebAnimationDelegate* delegate);
 
  private:
   virtual void NotifyAnimationStarted(double time) OVERRIDE;
   virtual void NotifyAnimationFinished(double time) OVERRIDE;
 
-  WebKit::WebAnimationDelegate* delegate_;
+  blink::WebAnimationDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(WebToCCAnimationDelegateAdapter);
 };

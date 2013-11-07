@@ -12,7 +12,7 @@ namespace cc { class TimingFunction; }
 
 namespace webkit {
 scoped_ptr<cc::TimingFunction> CreateTimingFunction(
-    WebKit::WebAnimationCurve::TimingFunctionType);
+    blink::WebAnimationCurve::TimingFunctionType);
 }
 
 #endif  // WEBKIT_RENDERER_COMPOSITOR_BINDINGS_WEB_ANIMATION_CURVE_COMMON_H_

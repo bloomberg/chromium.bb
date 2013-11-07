@@ -11,7 +11,7 @@
 
 namespace ui {
 
-// Intentionally keep sync with WebKit::WebCompositionUnderline defined in:
+// Intentionally keep sync with blink::WebCompositionUnderline defined in:
 // third_party/WebKit/public/web/WebCompositionUnderline.h
 struct CompositionUnderline {
   CompositionUnderline()
@@ -38,7 +38,7 @@ struct CompositionUnderline {
   }
 
   // Though use of unsigned is discouraged, we use it here to make sure it's
-  // identical to WebKit::WebCompositionUnderline.
+  // identical to blink::WebCompositionUnderline.
   unsigned start_offset;
   unsigned end_offset;
   SkColor color;

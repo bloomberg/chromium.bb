@@ -15,16 +15,16 @@ class WebKitPlatformSupportImpl;
 
 class WebSocketStreamHandleImpl
     : public base::SupportsUserData,
-      public WebKit::WebSocketStreamHandle {
+      public blink::WebSocketStreamHandle {
  public:
   explicit WebSocketStreamHandleImpl(WebKitPlatformSupportImpl* platform);
   virtual ~WebSocketStreamHandleImpl();
 
   // WebSocketStreamHandle methods:
   virtual void connect(
-      const WebKit::WebURL& url,
-      WebKit::WebSocketStreamHandleClient* client);
-  virtual bool send(const WebKit::WebData& data);
+      const blink::WebURL& url,
+      blink::WebSocketStreamHandleClient* client);
+  virtual bool send(const blink::WebData& data);
   virtual void close();
 
  private:

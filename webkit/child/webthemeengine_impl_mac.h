@@ -9,15 +9,15 @@
 
 namespace webkit_glue {
 
-class WebThemeEngineImpl : public WebKit::WebThemeEngine {
+class WebThemeEngineImpl : public blink::WebThemeEngine {
  public:
-  // WebKit::WebThemeEngine implementation.
+  // blink::WebThemeEngine implementation.
   virtual void paintScrollbarThumb(
-      WebKit::WebCanvas* canvas,
-      WebKit::WebThemeEngine::State part,
-      WebKit::WebThemeEngine::Size state,
-      const WebKit::WebRect& rect,
-      const WebKit::WebThemeEngine::ScrollbarInfo& extra_params);
+      blink::WebCanvas* canvas,
+      blink::WebThemeEngine::State part,
+      blink::WebThemeEngine::Size state,
+      const blink::WebRect& rect,
+      const blink::WebThemeEngine::ScrollbarInfo& extra_params);
 };
 
 }  // namespace webkit_glue

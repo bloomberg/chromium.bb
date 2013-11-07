@@ -22,8 +22,8 @@
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
-using WebKit::WebBindings;
-using WebKit::WebFrame;
+using blink::WebBindings;
+using blink::WebFrame;
 
 namespace webkit_glue {
 

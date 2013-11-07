@@ -9,13 +9,13 @@
 
 namespace gfx { class RectF; }
 
-namespace WebKit { class WebGraphicsContext3D; }
+namespace blink { class WebGraphicsContext3D; }
 
 namespace cc {
 
 class GeometryBinding {
  public:
-  GeometryBinding(WebKit::WebGraphicsContext3D* context,
+  GeometryBinding(blink::WebGraphicsContext3D* context,
                   const gfx::RectF& quad_vertex_rect);
   ~GeometryBinding();
 
@@ -29,7 +29,7 @@ class GeometryBinding {
   static int TriangleIndexAttribLocation() { return 2; }
 
  private:
-  WebKit::WebGraphicsContext3D* context_;
+  blink::WebGraphicsContext3D* context_;
 
   unsigned quad_vertices_vbo_;
   unsigned quad_elements_vbo_;

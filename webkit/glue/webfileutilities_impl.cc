@@ -14,7 +14,7 @@
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "webkit/glue/webkit_glue.h"
 
-using WebKit::WebString;
+using blink::WebString;
 
 namespace webkit_glue {
 
@@ -26,7 +26,7 @@ WebFileUtilitiesImpl::~WebFileUtilitiesImpl() {
 }
 
 bool WebFileUtilitiesImpl::getFileInfo(const WebString& path,
-                                       WebKit::WebFileInfo& web_file_info) {
+                                       blink::WebFileInfo& web_file_info) {
   if (sandbox_enabled_) {
     NOTREACHED();
     return false;
@@ -49,7 +49,7 @@ WebString WebFileUtilitiesImpl::baseName(const WebString& path) {
   return base::FilePath::FromUTF16Unsafe(path).BaseName().AsUTF16Unsafe();
 }
 
-WebKit::WebURL WebFileUtilitiesImpl::filePathToURL(const WebString& path) {
+blink::WebURL WebFileUtilitiesImpl::filePathToURL(const WebString& path) {
   return net::FilePathToFileURL(base::FilePath::FromUTF16Unsafe(path));
 }
 

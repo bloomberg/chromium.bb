@@ -17,7 +17,7 @@ namespace webkit_glue {
 
 // Base class for Chrome's implementation of the "extra data".
 class WEBKIT_CHILD_EXPORT WebURLResponseExtraDataImpl :
-    public NON_EXPORTED_BASE(WebKit::WebURLResponse::ExtraData) {
+    public NON_EXPORTED_BASE(blink::WebURLResponse::ExtraData) {
  public:
   explicit WebURLResponseExtraDataImpl(
       const std::string& npn_negotiated_protocol);

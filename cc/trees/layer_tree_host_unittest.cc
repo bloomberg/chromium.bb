@@ -2799,26 +2799,26 @@ class MockIOSurfaceWebGraphicsContext3D : public TestWebGraphicsContext3D {
     test_capabilities_.texture_rectangle = true;
   }
 
-  virtual WebKit::WebGLId createTexture() OVERRIDE {
+  virtual blink::WebGLId createTexture() OVERRIDE {
     return 1;
   }
 
-  MOCK_METHOD1(activeTexture, void(WebKit::WGC3Denum texture));
-  MOCK_METHOD2(bindTexture, void(WebKit::WGC3Denum target,
-                                 WebKit::WebGLId texture_id));
-  MOCK_METHOD3(texParameteri, void(WebKit::WGC3Denum target,
-                                   WebKit::WGC3Denum pname,
-                                   WebKit::WGC3Dint param));
-  MOCK_METHOD5(texImageIOSurface2DCHROMIUM, void(WebKit::WGC3Denum target,
-                                                 WebKit::WGC3Dint width,
-                                                 WebKit::WGC3Dint height,
-                                                 WebKit::WGC3Duint ioSurfaceId,
-                                                 WebKit::WGC3Duint plane));
-  MOCK_METHOD4(drawElements, void(WebKit::WGC3Denum mode,
-                                  WebKit::WGC3Dsizei count,
-                                  WebKit::WGC3Denum type,
-                                  WebKit::WGC3Dintptr offset));
-  MOCK_METHOD1(deleteTexture, void(WebKit::WGC3Denum texture));
+  MOCK_METHOD1(activeTexture, void(blink::WGC3Denum texture));
+  MOCK_METHOD2(bindTexture, void(blink::WGC3Denum target,
+                                 blink::WebGLId texture_id));
+  MOCK_METHOD3(texParameteri, void(blink::WGC3Denum target,
+                                   blink::WGC3Denum pname,
+                                   blink::WGC3Dint param));
+  MOCK_METHOD5(texImageIOSurface2DCHROMIUM, void(blink::WGC3Denum target,
+                                                 blink::WGC3Dint width,
+                                                 blink::WGC3Dint height,
+                                                 blink::WGC3Duint ioSurfaceId,
+                                                 blink::WGC3Duint plane));
+  MOCK_METHOD4(drawElements, void(blink::WGC3Denum mode,
+                                  blink::WGC3Dsizei count,
+                                  blink::WGC3Denum type,
+                                  blink::WGC3Dintptr offset));
+  MOCK_METHOD1(deleteTexture, void(blink::WGC3Denum texture));
 };
 
 

@@ -17,7 +17,7 @@ namespace ppapi {
 
 #pragma pack(push, 1)
 
-// This must match the definition of WebKit::Gamepad. The GamepadHost unit test
+// This must match the definition of blink::Gamepad. The GamepadHost unit test
 // has some compile asserts to validate this.
 struct WebKitGamepad {
     static const size_t kIdLengthCap = 128;
@@ -47,7 +47,7 @@ struct WebKitGamepad {
     float buttons[kButtonsLengthCap];
 };
 
-// This must match the definition of WebKit::Gamepads. The GamepadHost unit
+// This must match the definition of blink::Gamepads. The GamepadHost unit
 // test has some compile asserts to validate this.
 struct WebKitGamepads {
     static const size_t kItemsLengthCap = 4;

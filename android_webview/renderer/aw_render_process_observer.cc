@@ -35,12 +35,12 @@ void AwRenderProcessObserver::WebKitInitialized() {
 
 void AwRenderProcessObserver::OnClearCache() {
   if (webkit_initialized_)
-    WebKit::WebCache::clear();
+    blink::WebCache::clear();
 }
 
 void AwRenderProcessObserver::OnSetJsOnlineProperty(bool network_up) {
   if (webkit_initialized_)
-    WebKit::WebNetworkStateNotifier::setOnLine(network_up);
+    blink::WebNetworkStateNotifier::setOnLine(network_up);
 }
 
 }  // nanemspace android_webview

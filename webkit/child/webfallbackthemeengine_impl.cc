@@ -9,10 +9,10 @@
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "ui/native_theme/fallback_theme.h"
 
-using WebKit::WebCanvas;
-using WebKit::WebColor;
-using WebKit::WebRect;
-using WebKit::WebFallbackThemeEngine;
+using blink::WebCanvas;
+using blink::WebColor;
+using blink::WebRect;
+using blink::WebFallbackThemeEngine;
 
 namespace webkit_glue {
 
@@ -164,7 +164,7 @@ WebFallbackThemeEngineImpl::WebFallbackThemeEngineImpl()
 
 WebFallbackThemeEngineImpl::~WebFallbackThemeEngineImpl() {}
 
-WebKit::WebSize WebFallbackThemeEngineImpl::getSize(
+blink::WebSize WebFallbackThemeEngineImpl::getSize(
     WebFallbackThemeEngine::Part part) {
   ui::NativeTheme::ExtraParams extra;
   return theme_->GetPartSize(NativeThemePart(part),
@@ -173,10 +173,10 @@ WebKit::WebSize WebFallbackThemeEngineImpl::getSize(
 }
 
 void WebFallbackThemeEngineImpl::paint(
-    WebKit::WebCanvas* canvas,
+    blink::WebCanvas* canvas,
     WebFallbackThemeEngine::Part part,
     WebFallbackThemeEngine::State state,
-    const WebKit::WebRect& rect,
+    const blink::WebRect& rect,
     const WebFallbackThemeEngine::ExtraParams* extra_params) {
   ui::NativeTheme::ExtraParams native_theme_extra_params;
   GetNativeThemeExtraParams(

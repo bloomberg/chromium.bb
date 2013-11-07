@@ -21,11 +21,11 @@
 #include "webkit/child/websocketstreamhandle_bridge.h"
 #include "webkit/child/websocketstreamhandle_delegate.h"
 
-using WebKit::WebData;
-using WebKit::WebSocketStreamError;
-using WebKit::WebSocketStreamHandle;
-using WebKit::WebSocketStreamHandleClient;
-using WebKit::WebURL;
+using blink::WebData;
+using blink::WebSocketStreamError;
+using blink::WebSocketStreamHandle;
+using blink::WebSocketStreamHandleClient;
+using blink::WebURL;
 
 namespace webkit_glue {
 

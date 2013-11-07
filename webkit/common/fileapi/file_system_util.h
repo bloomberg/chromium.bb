@@ -110,7 +110,7 @@ GetFileSystemTypeString(FileSystemType type);
 // Returns false if the |type_string| is invalid.
 WEBKIT_STORAGE_COMMON_EXPORT bool GetFileSystemPublicType(
     std::string type_string,
-    WebKit::WebFileSystemType* type);
+    blink::WebFileSystemType* type);
 
 // Encodes |file_path| to a string.
 // Following conditions should be held:
@@ -128,7 +128,7 @@ WEBKIT_STORAGE_COMMON_EXPORT base::FilePath StringToFilePath(
     const std::string& file_path_string);
 
 // File error conversion
-WEBKIT_STORAGE_COMMON_EXPORT WebKit::WebFileError
+WEBKIT_STORAGE_COMMON_EXPORT blink::WebFileError
 PlatformFileErrorToWebFileError(base::PlatformFileError error_code);
 
 // Generate a file system name for the given arguments. Should only be used by

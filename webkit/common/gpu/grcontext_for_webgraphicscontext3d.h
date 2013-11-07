@@ -10,7 +10,7 @@
 #include "webkit/common/gpu/webkit_gpu_export.h"
 
 class GrContext;
-namespace WebKit { class WebGraphicsContext3D; }
+namespace blink { class WebGraphicsContext3D; }
 
 namespace webkit {
 namespace gpu {
@@ -21,7 +21,7 @@ namespace gpu {
 class WEBKIT_GPU_EXPORT GrContextForWebGraphicsContext3D {
  public:
   explicit GrContextForWebGraphicsContext3D(
-      WebKit::WebGraphicsContext3D* context3d);
+      blink::WebGraphicsContext3D* context3d);
   virtual ~GrContextForWebGraphicsContext3D();
 
   GrContext* get() { return gr_context_.get(); }

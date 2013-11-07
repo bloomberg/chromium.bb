@@ -22,7 +22,7 @@ using cc::ResourceUpdateQueue;
 namespace webkit {
 
 WebExternalTextureLayerImpl::WebExternalTextureLayerImpl(
-    WebKit::WebExternalTextureLayerClient* client)
+    blink::WebExternalTextureLayerClient* client)
     : client_(client) {
   cc::TextureLayerClient* cc_client = client_ ? this : NULL;
   scoped_refptr<TextureLayer> layer = TextureLayer::CreateForMailbox(cc_client);
@@ -34,7 +34,7 @@ WebExternalTextureLayerImpl::~WebExternalTextureLayerImpl() {
   static_cast<TextureLayer*>(layer_->layer())->ClearClient();
 }
 
-WebKit::WebLayer* WebExternalTextureLayerImpl::layer() { return layer_.get(); }
+blink::WebLayer* WebExternalTextureLayerImpl::layer() { return layer_.get(); }
 
 void WebExternalTextureLayerImpl::clearTexture() {
   TextureLayer *layer = static_cast<TextureLayer*>(layer_->layer());
@@ -70,7 +70,7 @@ bool WebExternalTextureLayerImpl::PrepareTextureMailbox(
     cc::TextureMailbox* mailbox,
     scoped_ptr<cc::SingleReleaseCallback>* release_callback,
     bool use_shared_memory) {
-  WebKit::WebExternalTextureMailbox client_mailbox;
+  blink::WebExternalTextureMailbox client_mailbox;
   WebExternalBitmapImpl* bitmap = NULL;
 
   if (use_shared_memory)
@@ -110,7 +110,7 @@ WebExternalBitmapImpl* WebExternalTextureLayerImpl::AllocateBitmap() {
 // static
 void WebExternalTextureLayerImpl::DidReleaseMailbox(
     base::WeakPtr<WebExternalTextureLayerImpl> layer,
-    const WebKit::WebExternalTextureMailbox& mailbox,
+    const blink::WebExternalTextureMailbox& mailbox,
     WebExternalBitmapImpl* bitmap,
     unsigned sync_point,
     bool lost_resource) {
@@ -119,7 +119,7 @@ void WebExternalTextureLayerImpl::DidReleaseMailbox(
     return;
   }
 
-  WebKit::WebExternalTextureMailbox available_mailbox;
+  blink::WebExternalTextureMailbox available_mailbox;
   memcpy(available_mailbox.name, mailbox.name, sizeof(available_mailbox.name));
   available_mailbox.syncPoint = sync_point;
   if (bitmap)

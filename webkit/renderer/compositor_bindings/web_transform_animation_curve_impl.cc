@@ -10,7 +10,7 @@
 #include "webkit/renderer/compositor_bindings/web_animation_curve_common.h"
 #include "webkit/renderer/compositor_bindings/web_transform_operations_impl.h"
 
-using WebKit::WebTransformKeyframe;
+using blink::WebTransformKeyframe;
 
 namespace webkit {
 
@@ -19,7 +19,7 @@ WebTransformAnimationCurveImpl::WebTransformAnimationCurveImpl()
 
 WebTransformAnimationCurveImpl::~WebTransformAnimationCurveImpl() {}
 
-WebKit::WebAnimationCurve::AnimationCurveType
+blink::WebAnimationCurve::AnimationCurveType
 WebTransformAnimationCurveImpl::type() const {
   return WebAnimationCurve::AnimationCurveTypeTransform;
 }

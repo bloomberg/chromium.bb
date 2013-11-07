@@ -9,7 +9,7 @@
 
 class GURL;
 
-namespace WebKit {
+namespace blink {
 class WebSocketStreamHandle;
 }
 
@@ -19,19 +19,19 @@ class WebSocketStreamHandleDelegate {
  public:
   WebSocketStreamHandleDelegate() {}
 
-  virtual void WillOpenStream(WebKit::WebSocketStreamHandle* handle,
+  virtual void WillOpenStream(blink::WebSocketStreamHandle* handle,
                               const GURL& url) {}
-  virtual void WillSendData(WebKit::WebSocketStreamHandle* handle,
+  virtual void WillSendData(blink::WebSocketStreamHandle* handle,
                             const char* data, int len) {}
 
-  virtual void DidOpenStream(WebKit::WebSocketStreamHandle* handle,
+  virtual void DidOpenStream(blink::WebSocketStreamHandle* handle,
                              int max_amount_send_allowed) {}
-  virtual void DidSendData(WebKit::WebSocketStreamHandle* handle,
+  virtual void DidSendData(blink::WebSocketStreamHandle* handle,
                            int amount_sent) {}
-  virtual void DidReceiveData(WebKit::WebSocketStreamHandle* handle,
+  virtual void DidReceiveData(blink::WebSocketStreamHandle* handle,
                               const char* data, int len) {}
-  virtual void DidClose(WebKit::WebSocketStreamHandle*) {}
-  virtual void DidFail(WebKit::WebSocketStreamHandle* handle,
+  virtual void DidClose(blink::WebSocketStreamHandle*) {}
+  virtual void DidFail(blink::WebSocketStreamHandle* handle,
                        int error_code,
                        const string16& error_msg) {}
 

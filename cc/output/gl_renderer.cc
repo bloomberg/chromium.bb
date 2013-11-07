@@ -54,7 +54,7 @@
 #include "ui/gfx/quad_f.h"
 #include "ui/gfx/rect_conversions.h"
 
-using WebKit::WebGraphicsContext3D;
+using blink::WebGraphicsContext3D;
 
 namespace cc {
 
@@ -2281,7 +2281,7 @@ void GLRenderer::DoGetFramebufferPixels(
                                      NULL,
                                      GL_STREAM_READ));
 
-  WebKit::WebGLId query = 0;
+  blink::WebGLId query = 0;
   if (is_async) {
     query = context_->createQueryEXT();
     GLC(context_, context_->beginQueryEXT(

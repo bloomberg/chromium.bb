@@ -16,7 +16,7 @@ namespace webkit_glue {
 // Base class for Chrome's implementation of the "extra data" stored in each
 // ResourceRequest.
 class WEBKIT_CHILD_EXPORT WebURLRequestExtraDataImpl :
-    public NON_EXPORTED_BASE(WebKit::WebURLRequest::ExtraData) {
+    public NON_EXPORTED_BASE(blink::WebURLRequest::ExtraData) {
  public:
   // |custom_user_agent| is used to communicate an overriding custom user agent
   // to |RenderViewImpl::willSendRequest()|; set to a null string to indicate no
@@ -24,20 +24,20 @@ class WEBKIT_CHILD_EXPORT WebURLRequestExtraDataImpl :
   // agent. This needs to be here, instead of content's |RequestExtraData| since
   // ppb_url_request_info_impl.cc needs to be able to set it.
   explicit WebURLRequestExtraDataImpl(
-      WebKit::WebReferrerPolicy referrer_policy,
-      const WebKit::WebString& custom_user_agent,
+      blink::WebReferrerPolicy referrer_policy,
+      const blink::WebString& custom_user_agent,
       bool was_after_preconnect_request);
   virtual ~WebURLRequestExtraDataImpl();
 
-  WebKit::WebReferrerPolicy referrer_policy() const { return referrer_policy_; }
-  const WebKit::WebString& custom_user_agent() const {
+  blink::WebReferrerPolicy referrer_policy() const { return referrer_policy_; }
+  const blink::WebString& custom_user_agent() const {
     return custom_user_agent_;
   }
   bool was_after_preconnect_request() { return was_after_preconnect_request_; }
 
  private:
-  WebKit::WebReferrerPolicy referrer_policy_;
-  WebKit::WebString custom_user_agent_;
+  blink::WebReferrerPolicy referrer_policy_;
+  blink::WebString custom_user_agent_;
   bool was_after_preconnect_request_;
 
   DISALLOW_COPY_AND_ASSIGN(WebURLRequestExtraDataImpl);

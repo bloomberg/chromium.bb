@@ -62,14 +62,14 @@ WebThreadImpl::WebThreadImpl(const char* name)
 
 void WebThreadImpl::postTask(Task* task) {
   thread_->message_loop()->PostTask(
-      FROM_HERE, base::Bind(&WebKit::WebThread::Task::run, base::Owned(task)));
+      FROM_HERE, base::Bind(&blink::WebThread::Task::run, base::Owned(task)));
 }
 
 void WebThreadImpl::postDelayedTask(
     Task* task, long long delay_ms) {
   thread_->message_loop()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&WebKit::WebThread::Task::run, base::Owned(task)),
+      base::Bind(&blink::WebThread::Task::run, base::Owned(task)),
       base::TimeDelta::FromMilliseconds(delay_ms));
 }
 
@@ -100,14 +100,14 @@ WebThreadImplForMessageLoop::WebThreadImplForMessageLoop(
 
 void WebThreadImplForMessageLoop::postTask(Task* task) {
   message_loop_->PostTask(
-      FROM_HERE, base::Bind(&WebKit::WebThread::Task::run, base::Owned(task)));
+      FROM_HERE, base::Bind(&blink::WebThread::Task::run, base::Owned(task)));
 }
 
 void WebThreadImplForMessageLoop::postDelayedTask(
     Task* task, long long delay_ms) {
   message_loop_->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&WebKit::WebThread::Task::run, base::Owned(task)),
+      base::Bind(&blink::WebThread::Task::run, base::Owned(task)),
       base::TimeDelta::FromMilliseconds(delay_ms));
 }
 

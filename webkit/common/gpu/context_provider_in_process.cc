@@ -18,7 +18,7 @@ namespace webkit {
 namespace gpu {
 
 class ContextProviderInProcess::LostContextCallbackProxy
-    : public WebKit::WebGraphicsContext3D::WebGraphicsContextLostCallback {
+    : public blink::WebGraphicsContext3D::WebGraphicsContextLostCallback {
  public:
   explicit LostContextCallbackProxy(ContextProviderInProcess* provider)
       : provider_(provider) {
@@ -38,7 +38,7 @@ class ContextProviderInProcess::LostContextCallbackProxy
 };
 
 class ContextProviderInProcess::SwapBuffersCompleteCallbackProxy
-    : public WebKit::WebGraphicsContext3D::
+    : public blink::WebGraphicsContext3D::
           WebGraphicsSwapBuffersCompleteCallbackCHROMIUM {
  public:
   explicit SwapBuffersCompleteCallbackProxy(ContextProviderInProcess* provider)
@@ -70,7 +70,7 @@ scoped_refptr<ContextProviderInProcess> ContextProviderInProcess::Create(
 // static
 scoped_refptr<ContextProviderInProcess>
 ContextProviderInProcess::CreateOffscreen() {
-  WebKit::WebGraphicsContext3D::Attributes attributes;
+  blink::WebGraphicsContext3D::Attributes attributes;
   attributes.depth = false;
   attributes.stencil = true;
   attributes.antialias = false;
@@ -133,7 +133,7 @@ ContextProviderInProcess::ContextCapabilities() {
   caps.texture_format_bgra8888 = true;
   caps.texture_rectangle = true;
 
-  WebKit::WebString extensions =
+  blink::WebString extensions =
       context3d_->getString(0x1F03 /* GL_EXTENSIONS */);
   std::vector<std::string> extension_list;
   base::SplitString(extensions.utf8(), ' ', &extension_list);
@@ -144,7 +144,7 @@ ContextProviderInProcess::ContextCapabilities() {
   return caps;
 }
 
-WebKit::WebGraphicsContext3D* ContextProviderInProcess::Context3d() {
+blink::WebGraphicsContext3D* ContextProviderInProcess::Context3d() {
   DCHECK(context3d_);
   DCHECK(lost_context_callback_proxy_);  // Is bound to thread.
   DCHECK(context_thread_checker_.CalledOnValidThread());

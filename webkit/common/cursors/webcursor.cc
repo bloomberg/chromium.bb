@@ -8,7 +8,7 @@
 #include "base/pickle.h"
 #include "third_party/WebKit/public/platform/WebImage.h"
 
-using WebKit::WebCursorInfo;
+using blink::WebCursorInfo;
 
 static const int kMaxCursorDimension = 1024;
 

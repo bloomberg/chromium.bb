@@ -41,7 +41,7 @@
 #include "media/base/media.h"
 
 using media::VideoFrame;
-using WebKit::WebGraphicsContext3D;
+using blink::WebGraphicsContext3D;
 
 namespace cc {
 namespace {
@@ -1101,7 +1101,7 @@ class LayerTreeHostContextTestDontUseLostResources
   static void EmptyReleaseCallback(unsigned sync_point, bool lost) {}
 
   virtual void SetupTree() OVERRIDE {
-    WebKit::WebGraphicsContext3D* context3d =
+    blink::WebGraphicsContext3D* context3d =
         child_output_surface_->context_provider()->Context3d();
 
     scoped_ptr<DelegatedFrameData> frame_data(new DelegatedFrameData);

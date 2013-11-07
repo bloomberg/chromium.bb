@@ -14,23 +14,23 @@ class AnimationCurve;
 class KeyframedFilterAnimationCurve;
 }
 
-namespace WebKit { class WebFilterKeyframe; }
+namespace blink { class WebFilterKeyframe; }
 
 namespace webkit {
 
 class WebFilterAnimationCurveImpl
-    : public WebKit::WebFilterAnimationCurve {
+    : public blink::WebFilterAnimationCurve {
  public:
   WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebFilterAnimationCurveImpl();
   virtual ~WebFilterAnimationCurveImpl();
 
-  // WebKit::WebAnimationCurve implementation.
+  // blink::WebAnimationCurve implementation.
   virtual AnimationCurveType type() const;
 
-  // WebKit::WebFilterAnimationCurve implementation.
-  virtual void add(const WebKit::WebFilterKeyframe& keyframe,
+  // blink::WebFilterAnimationCurve implementation.
+  virtual void add(const blink::WebFilterKeyframe& keyframe,
                    TimingFunctionType type);
-  virtual void add(const WebKit::WebFilterKeyframe& keyframe,
+  virtual void add(const blink::WebFilterKeyframe& keyframe,
                    double x1,
                    double y1,
                    double x2,

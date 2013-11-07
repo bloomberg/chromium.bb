@@ -221,7 +221,7 @@ bool RestoreNavigationEntryFromPickle(PickleIterator* iterator,
       return false;
 
     referrer.url = GURL(referrer_url);
-    referrer.policy = static_cast<WebKit::WebReferrerPolicy>(policy);
+    referrer.policy = static_cast<blink::WebReferrerPolicy>(policy);
     entry->SetReferrer(referrer);
   }
 

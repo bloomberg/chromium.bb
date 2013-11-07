@@ -31,27 +31,27 @@ class WEBKIT_CHILD_EXPORT WebKitPlatformSupportChildImpl :
   virtual ~WebKitPlatformSupportChildImpl();
 
   // Platform methods (partial implementation):
-  virtual WebKit::WebThemeEngine* themeEngine();
-  virtual WebKit::WebFallbackThemeEngine* fallbackThemeEngine();
+  virtual blink::WebThemeEngine* themeEngine();
+  virtual blink::WebFallbackThemeEngine* fallbackThemeEngine();
 
   void SetFlingCurveParameters(
     const std::vector<float>& new_touchpad,
     const std::vector<float>& new_touchscreen);
 
-  virtual WebKit::WebGestureCurve* createFlingAnimationCurve(
+  virtual blink::WebGestureCurve* createFlingAnimationCurve(
       int device_source,
-      const WebKit::WebFloatPoint& velocity,
-      const WebKit::WebSize& cumulative_scroll) OVERRIDE;
+      const blink::WebFloatPoint& velocity,
+      const blink::WebSize& cumulative_scroll) OVERRIDE;
 
-  virtual WebKit::WebThread* createThread(const char* name);
-  virtual WebKit::WebThread* currentThread();
+  virtual blink::WebThread* createThread(const char* name);
+  virtual blink::WebThread* currentThread();
 
   virtual void didStartWorkerRunLoop(
-      const WebKit::WebWorkerRunLoop& runLoop) OVERRIDE;
+      const blink::WebWorkerRunLoop& runLoop) OVERRIDE;
   virtual void didStopWorkerRunLoop(
-      const WebKit::WebWorkerRunLoop& runLoop) OVERRIDE;
+      const blink::WebWorkerRunLoop& runLoop) OVERRIDE;
 
-  virtual WebKit::WebDiscardableMemory* allocateAndLockDiscardableMemory(
+  virtual blink::WebDiscardableMemory* allocateAndLockDiscardableMemory(
       size_t bytes);
 
  private:

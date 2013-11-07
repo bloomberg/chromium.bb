@@ -12,7 +12,7 @@
 #include "third_party/WebKit/public/web/WebFindOptions.h"
 
 using content::WebContents;
-using WebKit::WebFindOptions;
+using blink::WebFindOptions;
 
 namespace android_webview {
 

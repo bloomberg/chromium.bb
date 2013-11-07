@@ -16,15 +16,15 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 
-using WebKit::WGC3Dboolean;
-using WebKit::WGC3Dchar;
-using WebKit::WGC3Denum;
-using WebKit::WGC3Dint;
-using WebKit::WGC3Dsizei;
-using WebKit::WGC3Dsizeiptr;
-using WebKit::WGC3Duint;
-using WebKit::WebGLId;
-using WebKit::WebGraphicsContext3D;
+using blink::WGC3Dboolean;
+using blink::WGC3Dchar;
+using blink::WGC3Denum;
+using blink::WGC3Dint;
+using blink::WGC3Dsizei;
+using blink::WGC3Dsizeiptr;
+using blink::WGC3Duint;
+using blink::WebGLId;
+using blink::WebGraphicsContext3D;
 
 namespace cc {
 
@@ -139,8 +139,8 @@ WebGraphicsContext3D::Attributes
   return attributes_;
 }
 
-WebKit::WebString TestWebGraphicsContext3D::getString(WGC3Denum name) {
-  return WebKit::WebString();
+blink::WebString TestWebGraphicsContext3D::getString(WGC3Denum name) {
+  return blink::WebString();
 }
 
 WGC3Dint TestWebGraphicsContext3D::getUniformLocation(
@@ -360,8 +360,8 @@ void TestWebGraphicsContext3D::bindTexture(
   used_textures_.insert(texture_id);
 }
 
-WebKit::WebGLId TestWebGraphicsContext3D::BoundTextureId(
-    WebKit::WGC3Denum target) {
+blink::WebGLId TestWebGraphicsContext3D::BoundTextureId(
+    blink::WGC3Denum target) {
   return texture_targets_.BoundTexture(target);
 }
 
@@ -386,14 +386,14 @@ void TestWebGraphicsContext3D::getQueryObjectuivEXT(
 
 void TestWebGraphicsContext3D::getIntegerv(
     WGC3Denum pname,
-    WebKit::WGC3Dint* value) {
+    blink::WGC3Dint* value) {
   if (pname == GL_MAX_TEXTURE_SIZE)
     *value = max_texture_size_;
   else if (pname == GL_ACTIVE_TEXTURE)
     *value = GL_TEXTURE0;
 }
 
-void TestWebGraphicsContext3D::genMailboxCHROMIUM(WebKit::WGC3Dbyte* mailbox) {
+void TestWebGraphicsContext3D::genMailboxCHROMIUM(blink::WGC3Dbyte* mailbox) {
   if (times_gen_mailbox_succeeds_ >= 0) {
     if (!times_gen_mailbox_succeeds_) {
       loseContextCHROMIUM(GL_GUILTY_CONTEXT_RESET_ARB,
@@ -473,8 +473,8 @@ void TestWebGraphicsContext3D::SwapBuffersComplete() {
     swap_buffers_callback_->onSwapBuffersComplete();
 }
 
-void TestWebGraphicsContext3D::bindBuffer(WebKit::WGC3Denum target,
-                                          WebKit::WebGLId buffer) {
+void TestWebGraphicsContext3D::bindBuffer(blink::WGC3Denum target,
+                                          blink::WebGLId buffer) {
   bound_buffer_ = buffer;
   if (!bound_buffer_)
     return;
@@ -492,10 +492,10 @@ void TestWebGraphicsContext3D::bindBuffer(WebKit::WGC3Denum target,
   buffers.get(bound_buffer_)->target = target;
 }
 
-void TestWebGraphicsContext3D::bufferData(WebKit::WGC3Denum target,
-                                          WebKit::WGC3Dsizeiptr size,
+void TestWebGraphicsContext3D::bufferData(blink::WGC3Denum target,
+                                          blink::WGC3Dsizeiptr size,
                                           const void* data,
-                                          WebKit::WGC3Denum usage) {
+                                          blink::WGC3Denum usage) {
   base::AutoLock lock(namespace_->lock);
   base::ScopedPtrHashMap<unsigned, Buffer>& buffers = namespace_->buffers;
   DCHECK_GT(buffers.count(bound_buffer_), 0u);
@@ -512,8 +512,8 @@ void TestWebGraphicsContext3D::bufferData(WebKit::WGC3Denum target,
     memcpy(buffer->pixels.get(), data, size);
 }
 
-void* TestWebGraphicsContext3D::mapBufferCHROMIUM(WebKit::WGC3Denum target,
-                                                  WebKit::WGC3Denum access) {
+void* TestWebGraphicsContext3D::mapBufferCHROMIUM(blink::WGC3Denum target,
+                                                  blink::WGC3Denum access) {
   base::AutoLock lock(namespace_->lock);
   base::ScopedPtrHashMap<unsigned, Buffer>& buffers = namespace_->buffers;
   DCHECK_GT(buffers.count(bound_buffer_), 0u);
@@ -527,8 +527,8 @@ void* TestWebGraphicsContext3D::mapBufferCHROMIUM(WebKit::WGC3Denum target,
   return buffers.get(bound_buffer_)->pixels.get();
 }
 
-WebKit::WGC3Dboolean TestWebGraphicsContext3D::unmapBufferCHROMIUM(
-    WebKit::WGC3Denum target) {
+blink::WGC3Dboolean TestWebGraphicsContext3D::unmapBufferCHROMIUM(
+    blink::WGC3Denum target) {
   base::AutoLock lock(namespace_->lock);
   base::ScopedPtrHashMap<unsigned, Buffer>& buffers = namespace_->buffers;
   DCHECK_GT(buffers.count(bound_buffer_), 0u);
@@ -537,11 +537,11 @@ WebKit::WGC3Dboolean TestWebGraphicsContext3D::unmapBufferCHROMIUM(
   return true;
 }
 
-WebKit::WGC3Duint TestWebGraphicsContext3D::createImageCHROMIUM(
-      WebKit::WGC3Dsizei width, WebKit::WGC3Dsizei height,
-      WebKit::WGC3Denum internalformat) {
+blink::WGC3Duint TestWebGraphicsContext3D::createImageCHROMIUM(
+      blink::WGC3Dsizei width, blink::WGC3Dsizei height,
+      blink::WGC3Denum internalformat) {
   DCHECK_EQ(GL_RGBA8_OES, static_cast<int>(internalformat));
-  WebKit::WGC3Duint image_id = NextImageId();
+  blink::WGC3Duint image_id = NextImageId();
   base::AutoLock lock(namespace_->lock);
   base::ScopedPtrHashMap<unsigned, Image>& images = namespace_->images;
   images.set(image_id, make_scoped_ptr(new Image).Pass());
@@ -550,22 +550,22 @@ WebKit::WGC3Duint TestWebGraphicsContext3D::createImageCHROMIUM(
 }
 
 void TestWebGraphicsContext3D::destroyImageCHROMIUM(
-    WebKit::WGC3Duint id) {
+    blink::WGC3Duint id) {
   RetireImageId(id);
 }
 
 void TestWebGraphicsContext3D::getImageParameterivCHROMIUM(
-    WebKit::WGC3Duint image_id,
-    WebKit::WGC3Denum pname,
-    WebKit::WGC3Dint* params) {
+    blink::WGC3Duint image_id,
+    blink::WGC3Denum pname,
+    blink::WGC3Dint* params) {
   base::AutoLock lock(namespace_->lock);
   DCHECK_GT(namespace_->images.count(image_id), 0u);
   DCHECK_EQ(GL_IMAGE_ROWBYTES_CHROMIUM, static_cast<int>(pname));
   *params = 0;
 }
 
-void* TestWebGraphicsContext3D::mapImageCHROMIUM(WebKit::WGC3Duint image_id,
-                                                 WebKit::WGC3Denum access) {
+void* TestWebGraphicsContext3D::mapImageCHROMIUM(blink::WGC3Duint image_id,
+                                                 blink::WGC3Denum access) {
   base::AutoLock lock(namespace_->lock);
   base::ScopedPtrHashMap<unsigned, Image>& images = namespace_->images;
   DCHECK_GT(images.count(image_id), 0u);
@@ -579,7 +579,7 @@ void* TestWebGraphicsContext3D::mapImageCHROMIUM(WebKit::WGC3Duint image_id,
 }
 
 void TestWebGraphicsContext3D::unmapImageCHROMIUM(
-    WebKit::WGC3Duint image_id) {
+    blink::WGC3Duint image_id) {
   base::AutoLock lock(namespace_->lock);
   DCHECK_GT(namespace_->images.count(image_id), 0u);
 }
@@ -589,7 +589,7 @@ size_t TestWebGraphicsContext3D::NumTextures() const {
   return namespace_->textures.Size();
 }
 
-WebKit::WebGLId TestWebGraphicsContext3D::TextureAt(int i) const {
+blink::WebGLId TestWebGraphicsContext3D::TextureAt(int i) const {
   base::AutoLock lock(namespace_->lock);
   return namespace_->textures.IdAt(i);
 }
@@ -628,7 +628,7 @@ void TestWebGraphicsContext3D::RetireBufferId(WebGLId id) {
   DCHECK_EQ(context_id, context_id_);
 }
 
-WebKit::WGC3Duint TestWebGraphicsContext3D::NextImageId() {
+blink::WGC3Duint TestWebGraphicsContext3D::NextImageId() {
   base::AutoLock lock(namespace_->lock);
   WGC3Duint image_id = namespace_->next_image_id++;
   DCHECK(image_id < (1 << 16));
@@ -673,15 +673,15 @@ TestWebGraphicsContext3D::TextureTargets::TextureTargets() {
 TestWebGraphicsContext3D::TextureTargets::~TextureTargets() {}
 
 void TestWebGraphicsContext3D::TextureTargets::BindTexture(
-    WebKit::WGC3Denum target,
-    WebKit::WebGLId id) {
+    blink::WGC3Denum target,
+    blink::WebGLId id) {
   // Make sure this is a supported target by seeing if it was bound to before.
   DCHECK(bound_textures_.find(target) != bound_textures_.end());
   bound_textures_[target] = id;
 }
 
 void TestWebGraphicsContext3D::TextureTargets::UnbindTexture(
-    WebKit::WebGLId id) {
+    blink::WebGLId id) {
   // Bind zero to any targets that the id is bound to.
   for (TargetTextureMap::iterator it = bound_textures_.begin();
        it != bound_textures_.end();
@@ -691,8 +691,8 @@ void TestWebGraphicsContext3D::TextureTargets::UnbindTexture(
   }
 }
 
-WebKit::WebGLId TestWebGraphicsContext3D::TextureTargets::BoundTexture(
-    WebKit::WGC3Denum target) {
+blink::WebGLId TestWebGraphicsContext3D::TextureTargets::BoundTexture(
+    blink::WGC3Denum target) {
   DCHECK(bound_textures_.find(target) != bound_textures_.end());
   return bound_textures_[target];
 }

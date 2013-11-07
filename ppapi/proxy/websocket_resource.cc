@@ -137,13 +137,13 @@ int32_t WebSocketResource::Close(uint16_t code,
   // Validate |code| and |reason|.
   scoped_refptr<StringVar> reason_string_var;
   std::string reason_string;
-  WebKit::WebSocket::CloseEventCode event_code =
-      static_cast<WebKit::WebSocket::CloseEventCode>(code);
+  blink::WebSocket::CloseEventCode event_code =
+      static_cast<blink::WebSocket::CloseEventCode>(code);
   if (code == PP_WEBSOCKETSTATUSCODE_NOT_SPECIFIED) {
     // PP_WEBSOCKETSTATUSCODE_NOT_SPECIFIED and CloseEventCodeNotSpecified are
     // assigned to different values. A conversion is needed if
     // PP_WEBSOCKETSTATUSCODE_NOT_SPECIFIED is specified.
-    event_code = WebKit::WebSocket::CloseEventCodeNotSpecified;
+    event_code = blink::WebSocket::CloseEventCodeNotSpecified;
   } else {
     if (!(code == PP_WEBSOCKETSTATUSCODE_NORMAL_CLOSURE ||
         (PP_WEBSOCKETSTATUSCODE_USER_REGISTERED_MIN <= code &&

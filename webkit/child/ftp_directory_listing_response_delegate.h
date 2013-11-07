@@ -13,7 +13,7 @@
 #include "base/basictypes.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 
-namespace WebKit {
+namespace blink {
 class WebURLLoader;
 class WebURLLoaderClient;
 }
@@ -24,9 +24,9 @@ namespace webkit_glue {
 
 class FtpDirectoryListingResponseDelegate {
  public:
-  FtpDirectoryListingResponseDelegate(WebKit::WebURLLoaderClient* client,
-                                      WebKit::WebURLLoader* loader,
-                                      const WebKit::WebURLResponse& response);
+  FtpDirectoryListingResponseDelegate(blink::WebURLLoaderClient* client,
+                                      blink::WebURLLoader* loader,
+                                      const blink::WebURLResponse& response);
 
   // Passed through from ResourceHandleInternal
   void OnReceivedData(const char* data, int data_len);
@@ -39,8 +39,8 @@ class FtpDirectoryListingResponseDelegate {
 
   // Pointers to the client and associated loader so we can make callbacks as
   // we parse pieces of data.
-  WebKit::WebURLLoaderClient* client_;
-  WebKit::WebURLLoader* loader_;
+  blink::WebURLLoaderClient* client_;
+  blink::WebURLLoader* loader_;
 
   // Buffer for data received from the network.
   std::string buffer_;

@@ -43,7 +43,7 @@ class PickleIterator;
 class WEBKIT_COMMON_EXPORT WebCursor {
  public:
   struct CursorInfo {
-    explicit CursorInfo(WebKit::WebCursorInfo::Type cursor_type)
+    explicit CursorInfo(blink::WebCursorInfo::Type cursor_type)
         : type(cursor_type),
           image_scale_factor(1) {
 #if defined(OS_WIN)
@@ -52,14 +52,14 @@ class WEBKIT_COMMON_EXPORT WebCursor {
     }
 
     CursorInfo()
-        : type(WebKit::WebCursorInfo::TypePointer),
+        : type(blink::WebCursorInfo::TypePointer),
           image_scale_factor(1) {
 #if defined(OS_WIN)
       external_handle = NULL;
 #endif
     }
 
-    WebKit::WebCursorInfo::Type type;
+    blink::WebCursorInfo::Type type;
     gfx::Point hotspot;
     float image_scale_factor;
     SkBitmap custom_image;

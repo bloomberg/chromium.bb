@@ -75,7 +75,7 @@ bool IOSurfaceLayerImpl::WillDraw(DrawMode draw_mode,
       return false;
     }
 
-    WebKit::WebGraphicsContext3D* context3d = context_provider->Context3d();
+    blink::WebGraphicsContext3D* context3d = context_provider->Context3d();
 
     // TODO(ernstm): Do this in a way that we can track memory usage.
     if (!io_surface_texture_id_) {

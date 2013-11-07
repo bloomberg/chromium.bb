@@ -11,8 +11,8 @@
 #include "net/base/mime_util.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 
-using WebKit::WebString;
-using WebKit::WebMimeRegistry;
+using blink::WebString;
+using blink::WebMimeRegistry;
 
 namespace webkit_glue {
 

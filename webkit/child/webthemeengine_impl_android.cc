@@ -10,10 +10,10 @@
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "ui/native_theme/native_theme.h"
 
-using WebKit::WebCanvas;
-using WebKit::WebColor;
-using WebKit::WebRect;
-using WebKit::WebThemeEngine;
+using blink::WebCanvas;
+using blink::WebColor;
+using blink::WebRect;
+using blink::WebThemeEngine;
 
 namespace webkit_glue {
 
@@ -161,17 +161,17 @@ static void GetNativeThemeExtraParams(
   }
 }
 
-WebKit::WebSize WebThemeEngineImpl::getSize(WebThemeEngine::Part part) {
+blink::WebSize WebThemeEngineImpl::getSize(WebThemeEngine::Part part) {
   ui::NativeTheme::ExtraParams extra;
   return ui::NativeTheme::instance()->GetPartSize(
       NativeThemePart(part), ui::NativeTheme::kNormal, extra);
 }
 
 void WebThemeEngineImpl::paint(
-    WebKit::WebCanvas* canvas,
+    blink::WebCanvas* canvas,
     WebThemeEngine::Part part,
     WebThemeEngine::State state,
-    const WebKit::WebRect& rect,
+    const blink::WebRect& rect,
     const WebThemeEngine::ExtraParams* extra_params) {
   ui::NativeTheme::ExtraParams native_theme_extra_params;
   GetNativeThemeExtraParams(

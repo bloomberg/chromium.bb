@@ -25,7 +25,7 @@
 #include "webkit/renderer/cpp_variant.h"
 #include "webkit/renderer/webkit_renderer_export.h"
 
-namespace WebKit {
+namespace blink {
 class WebFrame;
 }
 
@@ -66,7 +66,7 @@ class WEBKIT_RENDERER_EXPORT CppBoundClass {
   // JavaScript as window.<classname>. The owner of this CppBoundClass object is
   // responsible for keeping it around while the frame is alive, and for
   // destroying it afterwards.
-  void BindToJavascript(WebKit::WebFrame* frame, const std::string& classname);
+  void BindToJavascript(blink::WebFrame* frame, const std::string& classname);
 
   // The type of callbacks.
   typedef base::Callback<void(const CppArgumentList&, CppVariant*)> Callback;

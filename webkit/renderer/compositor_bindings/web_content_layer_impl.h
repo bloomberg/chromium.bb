@@ -16,18 +16,18 @@ class IntRect;
 class FloatRect;
 }
 
-namespace WebKit { class WebContentLayerClient; }
+namespace blink { class WebContentLayerClient; }
 
 namespace webkit {
 
-class WebContentLayerImpl : public WebKit::WebContentLayer,
+class WebContentLayerImpl : public blink::WebContentLayer,
                             public cc::ContentLayerClient {
  public:
   WEBKIT_COMPOSITOR_BINDINGS_EXPORT explicit WebContentLayerImpl(
-      WebKit::WebContentLayerClient*);
+      blink::WebContentLayerClient*);
 
   // WebContentLayer implementation.
-  virtual WebKit::WebLayer* layer();
+  virtual blink::WebLayer* layer();
   virtual void setDoubleSided(bool double_sided);
   virtual void setDrawCheckerboardForMissingTiles(bool checkerboard);
 
@@ -41,7 +41,7 @@ class WebContentLayerImpl : public WebKit::WebContentLayer,
   virtual void DidChangeLayerCanUseLCDText() OVERRIDE;
 
   scoped_ptr<WebLayerImpl> layer_;
-  WebKit::WebContentLayerClient* client_;
+  blink::WebContentLayerClient* client_;
   bool draws_content_;
 
  private:

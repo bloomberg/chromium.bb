@@ -12,10 +12,10 @@ namespace webkit_glue {
 class WorkerTaskRunnerTest : public testing::Test {
  public:
   void FakeStart() {
-    task_runner_.OnWorkerRunLoopStarted(WebKit::WebWorkerRunLoop());
+    task_runner_.OnWorkerRunLoopStarted(blink::WebWorkerRunLoop());
   }
   void FakeStop() {
-    task_runner_.OnWorkerRunLoopStopped(WebKit::WebWorkerRunLoop());
+    task_runner_.OnWorkerRunLoopStopped(blink::WebWorkerRunLoop());
   }
   WorkerTaskRunner task_runner_;
 };

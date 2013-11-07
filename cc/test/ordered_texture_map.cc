@@ -13,7 +13,7 @@ OrderedTextureMap::OrderedTextureMap() {}
 
 OrderedTextureMap::~OrderedTextureMap() {}
 
-void OrderedTextureMap::Append(WebKit::WebGLId id,
+void OrderedTextureMap::Append(blink::WebGLId id,
                                scoped_refptr<TestTexture> texture) {
   DCHECK(texture.get());
   DCHECK(!ContainsId(id));
@@ -22,7 +22,7 @@ void OrderedTextureMap::Append(WebKit::WebGLId id,
   ordered_textures_.push_back(id);
 }
 
-void OrderedTextureMap::Replace(WebKit::WebGLId id,
+void OrderedTextureMap::Replace(blink::WebGLId id,
                                 scoped_refptr<TestTexture> texture) {
   DCHECK(texture.get());
   DCHECK(ContainsId(id));
@@ -30,7 +30,7 @@ void OrderedTextureMap::Replace(WebKit::WebGLId id,
   textures_[id] = texture;
 }
 
-void OrderedTextureMap::Remove(WebKit::WebGLId id) {
+void OrderedTextureMap::Remove(blink::WebGLId id) {
   TextureMap::iterator map_it = textures_.find(id);
   DCHECK(map_it != textures_.end());
   textures_.erase(map_it);
@@ -43,18 +43,18 @@ void OrderedTextureMap::Remove(WebKit::WebGLId id) {
 
 size_t OrderedTextureMap::Size() { return ordered_textures_.size(); }
 
-bool OrderedTextureMap::ContainsId(WebKit::WebGLId id) {
+bool OrderedTextureMap::ContainsId(blink::WebGLId id) {
   return textures_.find(id) != textures_.end();
 }
 
-scoped_refptr<TestTexture> OrderedTextureMap::TextureForId(WebKit::WebGLId id) {
+scoped_refptr<TestTexture> OrderedTextureMap::TextureForId(blink::WebGLId id) {
   DCHECK(ContainsId(id));
   scoped_refptr<TestTexture> texture = textures_[id];
   DCHECK(texture.get());
   return texture;
 }
 
-WebKit::WebGLId OrderedTextureMap::IdAt(size_t index) {
+blink::WebGLId OrderedTextureMap::IdAt(size_t index) {
   DCHECK(index < Size());
   return ordered_textures_[index];
 }

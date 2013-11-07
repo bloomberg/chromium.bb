@@ -29,7 +29,7 @@ namespace cc { class Layer; }
 // TODO(senorblanco):  Remove this once WebKit changes have landed.
 class SkImageFilter;
 
-namespace WebKit {
+namespace blink {
 class WebFilterOperations;
 class WebLayerClient;
 struct WebFloatRect;
@@ -39,7 +39,7 @@ namespace webkit {
 
 class WebToCCAnimationDelegateAdapter;
 
-class WebLayerImpl : public WebKit::WebLayer, public cc::LayerClient {
+class WebLayerImpl : public blink::WebLayer, public cc::LayerClient {
  public:
   WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebLayerImpl();
   WEBKIT_COMPOSITOR_BINDINGS_EXPORT explicit WebLayerImpl(
@@ -50,30 +50,30 @@ class WebLayerImpl : public WebKit::WebLayer, public cc::LayerClient {
 
   // WebLayer implementation.
   virtual int id() const;
-  virtual void invalidateRect(const WebKit::WebFloatRect&);
+  virtual void invalidateRect(const blink::WebFloatRect&);
   virtual void invalidate();
-  virtual void addChild(WebKit::WebLayer* child);
-  virtual void insertChild(WebKit::WebLayer* child, size_t index);
-  virtual void replaceChild(WebKit::WebLayer* reference,
-                            WebKit::WebLayer* new_layer);
+  virtual void addChild(blink::WebLayer* child);
+  virtual void insertChild(blink::WebLayer* child, size_t index);
+  virtual void replaceChild(blink::WebLayer* reference,
+                            blink::WebLayer* new_layer);
   virtual void removeFromParent();
   virtual void removeAllChildren();
-  virtual void setAnchorPoint(const WebKit::WebFloatPoint&);
-  virtual WebKit::WebFloatPoint anchorPoint() const;
+  virtual void setAnchorPoint(const blink::WebFloatPoint&);
+  virtual blink::WebFloatPoint anchorPoint() const;
   virtual void setAnchorPointZ(float anchor_point_z);
   virtual float anchorPointZ() const;
-  virtual void setBounds(const WebKit::WebSize& bounds);
-  virtual WebKit::WebSize bounds() const;
+  virtual void setBounds(const blink::WebSize& bounds);
+  virtual blink::WebSize bounds() const;
   virtual void setMasksToBounds(bool masks_to_bounds);
   virtual bool masksToBounds() const;
-  virtual void setMaskLayer(WebKit::WebLayer* mask);
-  virtual void setReplicaLayer(WebKit::WebLayer* replica);
+  virtual void setMaskLayer(blink::WebLayer* mask);
+  virtual void setReplicaLayer(blink::WebLayer* replica);
   virtual void setOpacity(float opacity);
   virtual float opacity() const;
   virtual void setOpaque(bool opaque);
   virtual bool opaque() const;
-  virtual void setPosition(const WebKit::WebFloatPoint& position);
-  virtual WebKit::WebFloatPoint position() const;
+  virtual void setPosition(const blink::WebFloatPoint& position);
+  virtual blink::WebFloatPoint position() const;
   virtual void setSublayerTransform(const SkMatrix44&);
   virtual SkMatrix44 sublayerTransform() const;
   virtual void setTransform(const SkMatrix44& transform);
@@ -82,23 +82,23 @@ class WebLayerImpl : public WebKit::WebLayer, public cc::LayerClient {
   virtual bool drawsContent() const;
   virtual void setPreserves3D(bool preserves_3d);
   virtual void setUseParentBackfaceVisibility(bool visible);
-  virtual void setBackgroundColor(WebKit::WebColor color);
-  virtual WebKit::WebColor backgroundColor() const;
-  virtual void setFilters(const WebKit::WebFilterOperations& filters);
-  virtual void setBackgroundFilters(const WebKit::WebFilterOperations& filters);
-  virtual void setCompositingReasons(WebKit::WebCompositingReasons);
-  virtual void setAnimationDelegate(WebKit::WebAnimationDelegate* delegate);
-  virtual bool addAnimation(WebKit::WebAnimation* animation);
+  virtual void setBackgroundColor(blink::WebColor color);
+  virtual blink::WebColor backgroundColor() const;
+  virtual void setFilters(const blink::WebFilterOperations& filters);
+  virtual void setBackgroundFilters(const blink::WebFilterOperations& filters);
+  virtual void setCompositingReasons(blink::WebCompositingReasons);
+  virtual void setAnimationDelegate(blink::WebAnimationDelegate* delegate);
+  virtual bool addAnimation(blink::WebAnimation* animation);
   virtual void removeAnimation(int animation_id);
   virtual void removeAnimation(int animation_id,
-                               WebKit::WebAnimation::TargetProperty);
+                               blink::WebAnimation::TargetProperty);
   virtual void pauseAnimation(int animation_id, double time_offset);
   virtual bool hasActiveAnimation();
   virtual void setForceRenderSurface(bool force);
-  virtual void setScrollPosition(WebKit::WebPoint position);
-  virtual WebKit::WebPoint scrollPosition() const;
-  virtual void setMaxScrollPosition(WebKit::WebSize max_position);
-  virtual WebKit::WebSize maxScrollPosition() const;
+  virtual void setScrollPosition(blink::WebPoint position);
+  virtual blink::WebPoint scrollPosition() const;
+  virtual void setMaxScrollPosition(blink::WebSize max_position);
+  virtual blink::WebSize maxScrollPosition() const;
   virtual void setScrollable(bool scrollable);
   virtual bool scrollable() const;
   virtual void setUserScrollable(bool horizontal, bool vertical);
@@ -109,29 +109,29 @@ class WebLayerImpl : public WebKit::WebLayer, public cc::LayerClient {
   virtual void setShouldScrollOnMainThread(bool scroll_on_main);
   virtual bool shouldScrollOnMainThread() const;
   virtual void setNonFastScrollableRegion(
-      const WebKit::WebVector<WebKit::WebRect>& region);
-  virtual WebKit::WebVector<WebKit::WebRect> nonFastScrollableRegion() const;
+      const blink::WebVector<blink::WebRect>& region);
+  virtual blink::WebVector<blink::WebRect> nonFastScrollableRegion() const;
   virtual void setTouchEventHandlerRegion(
-      const WebKit::WebVector<WebKit::WebRect>& region);
-  virtual WebKit::WebVector<WebKit::WebRect> touchEventHandlerRegion() const;
+      const blink::WebVector<blink::WebRect>& region);
+  virtual blink::WebVector<blink::WebRect> touchEventHandlerRegion() const;
   virtual void setIsContainerForFixedPositionLayers(bool is_container);
   virtual bool isContainerForFixedPositionLayers() const;
   virtual void setPositionConstraint(
-      const WebKit::WebLayerPositionConstraint& constraint);
-  virtual WebKit::WebLayerPositionConstraint positionConstraint() const;
-  virtual void setScrollClient(WebKit::WebLayerScrollClient* client);
+      const blink::WebLayerPositionConstraint& constraint);
+  virtual blink::WebLayerPositionConstraint positionConstraint() const;
+  virtual void setScrollClient(blink::WebLayerScrollClient* client);
   virtual bool isOrphan() const;
-  virtual void setWebLayerClient(WebKit::WebLayerClient* client);
+  virtual void setWebLayerClient(blink::WebLayerClient* client);
 
   // LayerClient implementation.
   virtual std::string DebugName() OVERRIDE;
 
-  virtual void setScrollParent(WebKit::WebLayer* parent);
-  virtual void setClipParent(WebKit::WebLayer* parent);
+  virtual void setScrollParent(blink::WebLayer* parent);
+  virtual void setClipParent(blink::WebLayer* parent);
 
  protected:
   scoped_refptr<cc::Layer> layer_;
-  WebKit::WebLayerClient* web_layer_client_;
+  blink::WebLayerClient* web_layer_client_;
 
  private:
   scoped_ptr<WebToCCAnimationDelegateAdapter> animation_delegate_adapter_;

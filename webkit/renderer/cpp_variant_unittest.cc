@@ -11,7 +11,7 @@
 #include "third_party/WebKit/public/web/WebBindings.h"
 #include "webkit/renderer/cpp_variant.h"
 
-using WebKit::WebBindings;
+using blink::WebBindings;
 using webkit_glue::CppVariant;
 
 // Creates a std::string from an NPVariant of string type.  If the NPVariant

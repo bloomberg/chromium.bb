@@ -8,7 +8,7 @@
 #include "third_party/WebKit/public/web/WebCursorInfo.h"
 #include "ui/base/cursor/cursor.h"
 
-using WebKit::WebCursorInfo;
+using blink::WebCursorInfo;
 
 gfx::NativeCursor WebCursor::GetNativeCursor() {
   switch (type_) {

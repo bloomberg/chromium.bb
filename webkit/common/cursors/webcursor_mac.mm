@@ -18,8 +18,8 @@
 #include "ui/gfx/size_conversions.h"
 
 
-using WebKit::WebCursorInfo;
-using WebKit::WebSize;
+using blink::WebCursorInfo;
+using blink::WebSize;
 
 // Declare symbols that are part of the 10.7 SDK.
 #if !defined(MAC_OS_X_VERSION_10_7) || \

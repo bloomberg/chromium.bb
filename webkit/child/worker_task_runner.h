@@ -40,11 +40,11 @@ class WEBKIT_CHILD_EXPORT WorkerTaskRunner {
   friend class WebKitPlatformSupportChildImpl;
   friend class WorkerTaskRunnerTest;
 
-  typedef std::map<int, WebKit::WebWorkerRunLoop> IDToLoopMap;
+  typedef std::map<int, blink::WebWorkerRunLoop> IDToLoopMap;
 
   ~WorkerTaskRunner();
-  void OnWorkerRunLoopStarted(const WebKit::WebWorkerRunLoop& loop);
-  void OnWorkerRunLoopStopped(const WebKit::WebWorkerRunLoop& loop);
+  void OnWorkerRunLoopStarted(const blink::WebWorkerRunLoop& loop);
+  void OnWorkerRunLoopStopped(const blink::WebWorkerRunLoop& loop);
 
   struct ThreadLocalState;
   base::ThreadLocalPointer<ThreadLocalState> current_tls_;

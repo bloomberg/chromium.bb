@@ -11,7 +11,7 @@
 #include "third_party/WebKit/public/web/WebCursorInfo.h"
 #include "ui/gfx/gtk_util.h"
 
-using WebKit::WebCursorInfo;
+using blink::WebCursorInfo;
 
 namespace {
 

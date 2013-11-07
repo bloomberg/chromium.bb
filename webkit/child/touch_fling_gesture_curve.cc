@@ -14,11 +14,11 @@
 #include "third_party/WebKit/public/platform/WebGestureCurveTarget.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 
-using WebKit::WebFloatPoint;
-using WebKit::WebFloatSize;
-using WebKit::WebGestureCurve;
-using WebKit::WebGestureCurveTarget;
-using WebKit::WebSize;
+using blink::WebFloatPoint;
+using blink::WebFloatSize;
+using blink::WebGestureCurve;
+using blink::WebGestureCurveTarget;
+using blink::WebSize;
 
 namespace {
 

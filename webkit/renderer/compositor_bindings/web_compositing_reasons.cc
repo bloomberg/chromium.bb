@@ -12,136 +12,136 @@
 
 COMPILE_ASSERT_MATCHING_UINT64(
     cc::kCompositingReasonUnknown,
-    WebKit::CompositingReasonUnknown);
+    blink::CompositingReasonUnknown);
 
 COMPILE_ASSERT_MATCHING_UINT64(
     cc::kCompositingReason3DTransform,
-    WebKit::CompositingReason3DTransform);
+    blink::CompositingReason3DTransform);
 
 COMPILE_ASSERT_MATCHING_UINT64(
     cc::kCompositingReasonVideo,
-    WebKit::CompositingReasonVideo);
+    blink::CompositingReasonVideo);
 
 COMPILE_ASSERT_MATCHING_UINT64(
     cc::kCompositingReasonCanvas,
-    WebKit::CompositingReasonCanvas);
+    blink::CompositingReasonCanvas);
 
 COMPILE_ASSERT_MATCHING_UINT64(
     cc::kCompositingReasonPlugin,
-    WebKit::CompositingReasonPlugin);
+    blink::CompositingReasonPlugin);
 
 COMPILE_ASSERT_MATCHING_UINT64(
     cc::kCompositingReasonIFrame,
-    WebKit::CompositingReasonIFrame);
+    blink::CompositingReasonIFrame);
 
 COMPILE_ASSERT_MATCHING_UINT64(
     cc::kCompositingReasonBackfaceVisibilityHidden,
-    WebKit::CompositingReasonBackfaceVisibilityHidden);
+    blink::CompositingReasonBackfaceVisibilityHidden);
 
 COMPILE_ASSERT_MATCHING_UINT64(
     cc::kCompositingReasonAnimation,
-    WebKit::CompositingReasonAnimation);
+    blink::CompositingReasonAnimation);
 
 COMPILE_ASSERT_MATCHING_UINT64(
     cc::kCompositingReasonFilters,
-    WebKit::CompositingReasonFilters);
+    blink::CompositingReasonFilters);
 
 COMPILE_ASSERT_MATCHING_UINT64(
     cc::kCompositingReasonPositionFixed,
-    WebKit::CompositingReasonPositionFixed);
+    blink::CompositingReasonPositionFixed);
 
 COMPILE_ASSERT_MATCHING_UINT64(
     cc::kCompositingReasonPositionSticky,
-    WebKit::CompositingReasonPositionSticky);
+    blink::CompositingReasonPositionSticky);
 
 COMPILE_ASSERT_MATCHING_UINT64(
     cc::kCompositingReasonOverflowScrollingTouch,
-    WebKit::CompositingReasonOverflowScrollingTouch);
+    blink::CompositingReasonOverflowScrollingTouch);
 
 COMPILE_ASSERT_MATCHING_UINT64(
     cc::kCompositingReasonAssumedOverlap,
-    WebKit::CompositingReasonAssumedOverlap);
+    blink::CompositingReasonAssumedOverlap);
 
 COMPILE_ASSERT_MATCHING_UINT64(
     cc::kCompositingReasonOverlap,
-    WebKit::CompositingReasonOverlap);
+    blink::CompositingReasonOverlap);
 
 COMPILE_ASSERT_MATCHING_UINT64(
     cc::kCompositingReasonNegativeZIndexChildren,
-    WebKit::CompositingReasonNegativeZIndexChildren);
+    blink::CompositingReasonNegativeZIndexChildren);
 
 COMPILE_ASSERT_MATCHING_UINT64(
     cc::kCompositingReasonTransformWithCompositedDescendants,
-    WebKit::CompositingReasonTransformWithCompositedDescendants);
+    blink::CompositingReasonTransformWithCompositedDescendants);
 
 COMPILE_ASSERT_MATCHING_UINT64(
     cc::kCompositingReasonOpacityWithCompositedDescendants,
-    WebKit::CompositingReasonOpacityWithCompositedDescendants);
+    blink::CompositingReasonOpacityWithCompositedDescendants);
 
 COMPILE_ASSERT_MATCHING_UINT64(
     cc::kCompositingReasonMaskWithCompositedDescendants,
-    WebKit::CompositingReasonMaskWithCompositedDescendants);
+    blink::CompositingReasonMaskWithCompositedDescendants);
 
 COMPILE_ASSERT_MATCHING_UINT64(
     cc::kCompositingReasonReflectionWithCompositedDescendants,
-    WebKit::CompositingReasonReflectionWithCompositedDescendants);
+    blink::CompositingReasonReflectionWithCompositedDescendants);
 
 COMPILE_ASSERT_MATCHING_UINT64(
     cc::kCompositingReasonFilterWithCompositedDescendants,
-    WebKit::CompositingReasonFilterWithCompositedDescendants);
+    blink::CompositingReasonFilterWithCompositedDescendants);
 
 COMPILE_ASSERT_MATCHING_UINT64(
     cc::kCompositingReasonBlendingWithCompositedDescendants,
-    WebKit::CompositingReasonBlendingWithCompositedDescendants);
+    blink::CompositingReasonBlendingWithCompositedDescendants);
 
 COMPILE_ASSERT_MATCHING_UINT64(
     cc::kCompositingReasonClipsCompositingDescendants,
-    WebKit::CompositingReasonClipsCompositingDescendants);
+    blink::CompositingReasonClipsCompositingDescendants);
 
 COMPILE_ASSERT_MATCHING_UINT64(
     cc::kCompositingReasonPerspective,
-    WebKit::CompositingReasonPerspective);
+    blink::CompositingReasonPerspective);
 
 COMPILE_ASSERT_MATCHING_UINT64(
     cc::kCompositingReasonPreserve3D,
-    WebKit::CompositingReasonPreserve3D);
+    blink::CompositingReasonPreserve3D);
 
 COMPILE_ASSERT_MATCHING_UINT64(
     cc::kCompositingReasonReflectionOfCompositedParent,
-    WebKit::CompositingReasonReflectionOfCompositedParent);
+    blink::CompositingReasonReflectionOfCompositedParent);
 
 COMPILE_ASSERT_MATCHING_UINT64(
     cc::kCompositingReasonRoot,
-    WebKit::CompositingReasonRoot);
+    blink::CompositingReasonRoot);
 
 COMPILE_ASSERT_MATCHING_UINT64(
     cc::kCompositingReasonLayerForClip,
-    WebKit::CompositingReasonLayerForClip);
+    blink::CompositingReasonLayerForClip);
 
 COMPILE_ASSERT_MATCHING_UINT64(
     cc::kCompositingReasonLayerForScrollbar,
-    WebKit::CompositingReasonLayerForScrollbar);
+    blink::CompositingReasonLayerForScrollbar);
 
 COMPILE_ASSERT_MATCHING_UINT64(
     cc::kCompositingReasonLayerForScrollingContainer,
-    WebKit::CompositingReasonLayerForScrollingContainer);
+    blink::CompositingReasonLayerForScrollingContainer);
 
 COMPILE_ASSERT_MATCHING_UINT64(
     cc::kCompositingReasonLayerForForeground,
-    WebKit::CompositingReasonLayerForForeground);
+    blink::CompositingReasonLayerForForeground);
 
 COMPILE_ASSERT_MATCHING_UINT64(
     cc::kCompositingReasonLayerForBackground,
-    WebKit::CompositingReasonLayerForBackground);
+    blink::CompositingReasonLayerForBackground);
 
 COMPILE_ASSERT_MATCHING_UINT64(
     cc::kCompositingReasonLayerForMask,
-    WebKit::CompositingReasonLayerForMask);
+    blink::CompositingReasonLayerForMask);
 
 COMPILE_ASSERT_MATCHING_UINT64(
     cc::kCompositingReasonOverflowScrollingParent,
-    WebKit::CompositingReasonOverflowScrollingParent);
+    blink::CompositingReasonOverflowScrollingParent);
 
 COMPILE_ASSERT_MATCHING_UINT64(
     cc::kCompositingReasonOutOfFlowClipping,
-    WebKit::CompositingReasonOutOfFlowClipping);
+    blink::CompositingReasonOutOfFlowClipping);

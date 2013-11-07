@@ -14,11 +14,11 @@
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
 
-using WebKit::WebHTTPHeaderVisitor;
-using WebKit::WebString;
-using WebKit::WebURLLoader;
-using WebKit::WebURLLoaderClient;
-using WebKit::WebURLResponse;
+using blink::WebHTTPHeaderVisitor;
+using blink::WebString;
+using blink::WebURLLoader;
+using blink::WebURLLoaderClient;
+using blink::WebURLResponse;
 
 namespace webkit_glue {
 

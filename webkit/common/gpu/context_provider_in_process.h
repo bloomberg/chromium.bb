@@ -13,7 +13,7 @@
 #include "webkit/common/gpu/webgraphicscontext3d_in_process_command_buffer_impl.h"
 #include "webkit/common/gpu/webkit_gpu_export.h"
 
-namespace WebKit { class WebGraphicsContext3D; }
+namespace blink { class WebGraphicsContext3D; }
 
 namespace webkit {
 namespace gpu {
@@ -32,7 +32,7 @@ class WEBKIT_GPU_EXPORT ContextProviderInProcess
 
   virtual bool BindToCurrentThread() OVERRIDE;
   virtual Capabilities ContextCapabilities() OVERRIDE;
-  virtual WebKit::WebGraphicsContext3D* Context3d() OVERRIDE;
+  virtual blink::WebGraphicsContext3D* Context3d() OVERRIDE;
   virtual ::gpu::ContextSupport* ContextSupport() OVERRIDE;
   virtual class GrContext* GrContext() OVERRIDE;
   virtual bool IsContextLost() OVERRIDE;

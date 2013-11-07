@@ -18,7 +18,7 @@ WebTransformOperationsImpl::AsTransformOperations() const {
 }
 
 bool WebTransformOperationsImpl::canBlendWith(
-    const WebKit::WebTransformOperations& other) const {
+    const blink::WebTransformOperations& other) const {
   const WebTransformOperationsImpl& other_impl =
       static_cast<const WebTransformOperationsImpl&>(other);
   return transform_operations_.CanBlendWith(other_impl.transform_operations_);

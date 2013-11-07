@@ -23,21 +23,21 @@ typedef scoped_ptr<base::SharedMemory> (*SharedMemoryAllocationFunction)(
 WEBKIT_COMPOSITOR_BINDINGS_EXPORT void SetSharedMemoryAllocationFunction(
     SharedMemoryAllocationFunction);
 
-class WebExternalBitmapImpl : public WebKit::WebExternalBitmap {
+class WebExternalBitmapImpl : public blink::WebExternalBitmap {
  public:
   WEBKIT_COMPOSITOR_BINDINGS_EXPORT explicit WebExternalBitmapImpl();
   virtual ~WebExternalBitmapImpl();
 
-  // WebKit::WebExternalBitmap implementation.
-  virtual WebKit::WebSize size() OVERRIDE;
-  virtual void setSize(WebKit::WebSize size) OVERRIDE;
+  // blink::WebExternalBitmap implementation.
+  virtual blink::WebSize size() OVERRIDE;
+  virtual void setSize(blink::WebSize size) OVERRIDE;
   virtual uint8* pixels() OVERRIDE;
 
   base::SharedMemory* shared_memory() { return shared_memory_.get(); }
 
  private:
   scoped_ptr<base::SharedMemory> shared_memory_;
-  WebKit::WebSize size_;
+  blink::WebSize size_;
 
   DISALLOW_COPY_AND_ASSIGN(WebExternalBitmapImpl);
 };

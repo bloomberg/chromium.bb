@@ -59,7 +59,7 @@ class ResourceLoaderBridge {
     GURL referrer;
 
     // The referrer policy that applies to the referrer.
-    WebKit::WebReferrerPolicy referrer_policy;
+    blink::WebReferrerPolicy referrer_policy;
 
     // For HTTP(S) requests, the headers parameter can be a \r\n-delimited and
     // \r\n-terminated list of MIME headers.  They should be ASCII-encoded using
@@ -97,7 +97,7 @@ class ResourceLoaderBridge {
     bool has_user_gesture;
 
     // Extra data associated with this request.  We do not own this pointer.
-    WebKit::WebURLRequest::ExtraData* extra_data;
+    blink::WebURLRequest::ExtraData* extra_data;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(RequestInfo);

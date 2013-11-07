@@ -18,9 +18,9 @@ WebSolidColorLayerImpl::WebSolidColorLayerImpl()
 
 WebSolidColorLayerImpl::~WebSolidColorLayerImpl() {}
 
-WebKit::WebLayer* WebSolidColorLayerImpl::layer() { return layer_.get(); }
+blink::WebLayer* WebSolidColorLayerImpl::layer() { return layer_.get(); }
 
-void WebSolidColorLayerImpl::setBackgroundColor(WebKit::WebColor color) {
+void WebSolidColorLayerImpl::setBackgroundColor(blink::WebColor color) {
   layer_->setBackgroundColor(color);
 }
 

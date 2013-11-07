@@ -55,7 +55,7 @@
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
 #include "webkit/child/webkit_child_export.h"
 
-namespace WebKit {
+namespace blink {
 class WebURLLoader;
 class WebURLLoaderClient;
 }
@@ -67,9 +67,9 @@ class MultipartResponseDelegateTester;
 
 class WEBKIT_CHILD_EXPORT MultipartResponseDelegate {
  public:
-  MultipartResponseDelegate(WebKit::WebURLLoaderClient* client,
-                            WebKit::WebURLLoader* loader,
-                            const WebKit::WebURLResponse& response,
+  MultipartResponseDelegate(blink::WebURLLoaderClient* client,
+                            blink::WebURLLoader* loader,
+                            const blink::WebURLResponse& response,
                             const std::string& boundary);
 
   // Passed through from ResourceHandleInternal
@@ -85,14 +85,14 @@ class WEBKIT_CHILD_EXPORT MultipartResponseDelegate {
   // Returns the multi part boundary string from the Content-type header
   // in the response.
   // Returns true on success.
-  static bool ReadMultipartBoundary(const WebKit::WebURLResponse& response,
+  static bool ReadMultipartBoundary(const blink::WebURLResponse& response,
                                     std::string* multipart_boundary);
 
   // Returns the lower and higher content ranges from an individual multipart
   // in a multipart response.
   // Returns true on success.
   static bool ReadContentRanges(
-      const WebKit::WebURLResponse& response,
+      const blink::WebURLResponse& response,
       int64* content_range_lower_bound,
       int64* content_range_upper_bound,
       int64* content_range_instance_size);
@@ -102,12 +102,12 @@ class WEBKIT_CHILD_EXPORT MultipartResponseDelegate {
 
   // Pointers to the client and associated loader so we can make callbacks as
   // we parse pieces of data.
-  WebKit::WebURLLoaderClient* client_;
-  WebKit::WebURLLoader* loader_;
+  blink::WebURLLoaderClient* client_;
+  blink::WebURLLoader* loader_;
 
   // The original resource response for this request.  We use this as a
   // starting point for each parts response.
-  WebKit::WebURLResponse original_response_;
+  blink::WebURLResponse original_response_;
 
   // Checks to see if data[pos] character is a line break; handles crlf, lflf,
   // lf, or cr. Returns the number of characters to skip over (0, 1 or 2).

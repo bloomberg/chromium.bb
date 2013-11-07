@@ -15,7 +15,7 @@ WebGraphicsContext3DProviderImpl::WebGraphicsContext3DProviderImpl(
 
 WebGraphicsContext3DProviderImpl::~WebGraphicsContext3DProviderImpl() {}
 
-WebKit::WebGraphicsContext3D* WebGraphicsContext3DProviderImpl::context3d() {
+blink::WebGraphicsContext3D* WebGraphicsContext3DProviderImpl::context3d() {
   return provider_->Context3d();
 }
 

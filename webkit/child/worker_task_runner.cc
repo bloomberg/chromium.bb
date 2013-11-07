@@ -9,7 +9,7 @@
 #include "base/observer_list.h"
 #include "webkit/child/worker_task_runner.h"
 
-using WebKit::WebWorkerRunLoop;
+using blink::WebWorkerRunLoop;
 
 namespace {
 

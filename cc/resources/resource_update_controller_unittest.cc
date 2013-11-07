@@ -17,12 +17,12 @@
 #include "third_party/khronos/GLES2/gl2ext.h"
 
 using testing::Test;
-using WebKit::WGC3Denum;
-using WebKit::WGC3Dint;
-using WebKit::WGC3Duint;
-using WebKit::WGC3Dsizei;
-using WebKit::WebGLId;
-using WebKit::WebString;
+using blink::WGC3Denum;
+using blink::WGC3Dint;
+using blink::WGC3Duint;
+using blink::WGC3Dsizei;
+using blink::WebGLId;
+using blink::WebString;
 
 namespace cc {
 namespace {

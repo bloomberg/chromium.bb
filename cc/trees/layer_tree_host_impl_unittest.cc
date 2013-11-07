@@ -3563,27 +3563,27 @@ class FakeLayerWithQuads : public LayerImpl {
 
 class MockContext : public TestWebGraphicsContext3D {
  public:
-  MOCK_METHOD1(useProgram, void(WebKit::WebGLId program));
-  MOCK_METHOD5(uniform4f, void(WebKit::WGC3Dint location,
-                               WebKit::WGC3Dfloat x,
-                               WebKit::WGC3Dfloat y,
-                               WebKit::WGC3Dfloat z,
-                               WebKit::WGC3Dfloat w));
-  MOCK_METHOD4(uniformMatrix4fv, void(WebKit::WGC3Dint location,
-                                      WebKit::WGC3Dsizei count,
-                                      WebKit::WGC3Dboolean transpose,
-                                      const WebKit::WGC3Dfloat* value));
-  MOCK_METHOD4(drawElements, void(WebKit::WGC3Denum mode,
-                                  WebKit::WGC3Dsizei count,
-                                  WebKit::WGC3Denum type,
-                                  WebKit::WGC3Dintptr offset));
-  MOCK_METHOD0(getRequestableExtensionsCHROMIUM, WebKit::WebString());
-  MOCK_METHOD1(enable, void(WebKit::WGC3Denum cap));
-  MOCK_METHOD1(disable, void(WebKit::WGC3Denum cap));
-  MOCK_METHOD4(scissor, void(WebKit::WGC3Dint x,
-                             WebKit::WGC3Dint y,
-                             WebKit::WGC3Dsizei width,
-                             WebKit::WGC3Dsizei height));
+  MOCK_METHOD1(useProgram, void(blink::WebGLId program));
+  MOCK_METHOD5(uniform4f, void(blink::WGC3Dint location,
+                               blink::WGC3Dfloat x,
+                               blink::WGC3Dfloat y,
+                               blink::WGC3Dfloat z,
+                               blink::WGC3Dfloat w));
+  MOCK_METHOD4(uniformMatrix4fv, void(blink::WGC3Dint location,
+                                      blink::WGC3Dsizei count,
+                                      blink::WGC3Dboolean transpose,
+                                      const blink::WGC3Dfloat* value));
+  MOCK_METHOD4(drawElements, void(blink::WGC3Denum mode,
+                                  blink::WGC3Dsizei count,
+                                  blink::WGC3Denum type,
+                                  blink::WGC3Dintptr offset));
+  MOCK_METHOD0(getRequestableExtensionsCHROMIUM, blink::WebString());
+  MOCK_METHOD1(enable, void(blink::WGC3Denum cap));
+  MOCK_METHOD1(disable, void(blink::WGC3Denum cap));
+  MOCK_METHOD4(scissor, void(blink::WGC3Dint x,
+                             blink::WGC3Dint y,
+                             blink::WGC3Dsizei width,
+                             blink::WGC3Dsizei height));
 };
 
 class MockContextHarness {
@@ -3900,11 +3900,11 @@ TEST_F(LayerTreeHostImplTest, LayersFreeTextures) {
 
 class MockDrawQuadsToFillScreenContext : public TestWebGraphicsContext3D {
  public:
-  MOCK_METHOD1(useProgram, void(WebKit::WebGLId program));
-  MOCK_METHOD4(drawElements, void(WebKit::WGC3Denum mode,
-                                  WebKit::WGC3Dsizei count,
-                                  WebKit::WGC3Denum type,
-                                  WebKit::WGC3Dintptr offset));
+  MOCK_METHOD1(useProgram, void(blink::WebGLId program));
+  MOCK_METHOD4(drawElements, void(blink::WGC3Denum mode,
+                                  blink::WGC3Dsizei count,
+                                  blink::WGC3Denum type,
+                                  blink::WGC3Dintptr offset));
 };
 
 TEST_F(LayerTreeHostImplTest, HasTransparentBackground) {

@@ -10,7 +10,7 @@
 #include "webkit/renderer/compositor_bindings/web_animation_curve_common.h"
 #include "webkit/renderer/compositor_bindings/web_filter_operations_impl.h"
 
-using WebKit::WebFilterKeyframe;
+using blink::WebFilterKeyframe;
 
 namespace webkit {
 
@@ -19,7 +19,7 @@ WebFilterAnimationCurveImpl::WebFilterAnimationCurveImpl()
 
 WebFilterAnimationCurveImpl::~WebFilterAnimationCurveImpl() {}
 
-WebKit::WebAnimationCurve::AnimationCurveType
+blink::WebAnimationCurve::AnimationCurveType
 WebFilterAnimationCurveImpl::type() const {
   return WebAnimationCurve::AnimationCurveTypeFilter;
 }

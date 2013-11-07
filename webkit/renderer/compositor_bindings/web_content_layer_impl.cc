@@ -24,7 +24,7 @@ static bool usingPictureLayer() {
   return cc::switches::IsImplSidePaintingEnabled();
 }
 
-WebContentLayerImpl::WebContentLayerImpl(WebKit::WebContentLayerClient* client)
+WebContentLayerImpl::WebContentLayerImpl(blink::WebContentLayerClient* client)
     : client_(client),
       ignore_lcd_text_change_(false) {
   if (usingPictureLayer())
@@ -42,7 +42,7 @@ WebContentLayerImpl::~WebContentLayerImpl() {
     static_cast<ContentLayer*>(layer_->layer())->ClearClient();
 }
 
-WebKit::WebLayer* WebContentLayerImpl::layer() { return layer_.get(); }
+blink::WebLayer* WebContentLayerImpl::layer() { return layer_.get(); }
 
 void WebContentLayerImpl::setDoubleSided(bool double_sided) {
   layer_->layer()->SetDoubleSided(double_sided);
@@ -58,7 +58,7 @@ void WebContentLayerImpl::PaintContents(SkCanvas* canvas,
   if (!client_)
     return;
 
-  WebKit::WebFloatRect web_opaque;
+  blink::WebFloatRect web_opaque;
   // For picture layers, always record with LCD text.  PictureLayerImpl
   // will turn this off later during rasterization.
   bool use_lcd_text = usingPictureLayer() || can_use_lcd_text_;

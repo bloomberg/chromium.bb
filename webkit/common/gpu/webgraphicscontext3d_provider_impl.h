@@ -16,14 +16,14 @@ namespace webkit {
 namespace gpu {
 
 class WEBKIT_GPU_EXPORT WebGraphicsContext3DProviderImpl
-    : public NON_EXPORTED_BASE(WebKit::WebGraphicsContext3DProvider) {
+    : public NON_EXPORTED_BASE(blink::WebGraphicsContext3DProvider) {
  public:
   explicit WebGraphicsContext3DProviderImpl(
       scoped_refptr<cc::ContextProvider> provider);
   virtual ~WebGraphicsContext3DProviderImpl();
 
   // WebGraphicsContext3DProvider implementation.
-  virtual WebKit::WebGraphicsContext3D* context3d() OVERRIDE;
+  virtual blink::WebGraphicsContext3D* context3d() OVERRIDE;
   virtual GrContext* grContext() OVERRIDE;
 
  private:

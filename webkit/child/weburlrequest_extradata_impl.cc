@@ -4,8 +4,8 @@
 
 #include "webkit/child/weburlrequest_extradata_impl.h"
 
-using WebKit::WebReferrerPolicy;
-using WebKit::WebString;
+using blink::WebReferrerPolicy;
+using blink::WebString;
 
 namespace webkit_glue {
 

@@ -9,7 +9,7 @@
 namespace webkit {
 
 WebToCCAnimationDelegateAdapter::WebToCCAnimationDelegateAdapter(
-    WebKit::WebAnimationDelegate* delegate)
+    blink::WebAnimationDelegate* delegate)
     : delegate_(delegate) {}
 
 void WebToCCAnimationDelegateAdapter::NotifyAnimationStarted(double time) {

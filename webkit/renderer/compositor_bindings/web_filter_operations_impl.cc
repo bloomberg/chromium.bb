@@ -58,9 +58,9 @@ void WebFilterOperationsImpl::appendBlurFilter(float amount) {
   filter_operations_.Append(cc::FilterOperation::CreateBlurFilter(amount));
 }
 
-void WebFilterOperationsImpl::appendDropShadowFilter(WebKit::WebPoint offset,
+void WebFilterOperationsImpl::appendDropShadowFilter(blink::WebPoint offset,
                                                      float std_deviation,
-                                                     WebKit::WebColor color) {
+                                                     blink::WebColor color) {
   filter_operations_.Append(cc::FilterOperation::CreateDropShadowFilter(
       offset, std_deviation, color));
 }

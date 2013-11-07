@@ -14,19 +14,19 @@ class FallbackTheme;
 
 namespace webkit_glue {
 
-class WebFallbackThemeEngineImpl : public WebKit::WebFallbackThemeEngine {
+class WebFallbackThemeEngineImpl : public blink::WebFallbackThemeEngine {
  public:
   WebFallbackThemeEngineImpl();
   virtual ~WebFallbackThemeEngineImpl();
 
   // WebFallbackThemeEngine methods:
-  virtual WebKit::WebSize getSize(WebKit::WebFallbackThemeEngine::Part);
+  virtual blink::WebSize getSize(blink::WebFallbackThemeEngine::Part);
   virtual void paint(
-      WebKit::WebCanvas* canvas,
-      WebKit::WebFallbackThemeEngine::Part part,
-      WebKit::WebFallbackThemeEngine::State state,
-      const WebKit::WebRect& rect,
-      const WebKit::WebFallbackThemeEngine::ExtraParams* extra_params);
+      blink::WebCanvas* canvas,
+      blink::WebFallbackThemeEngine::Part part,
+      blink::WebFallbackThemeEngine::State state,
+      const blink::WebRect& rect,
+      const blink::WebFallbackThemeEngine::ExtraParams* extra_params);
 
  private:
   scoped_ptr<ui::FallbackTheme> theme_;

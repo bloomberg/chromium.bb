@@ -26,7 +26,7 @@ WebImageLayerImpl::WebImageLayerImpl() {
 
 WebImageLayerImpl::~WebImageLayerImpl() {}
 
-WebKit::WebLayer* WebImageLayerImpl::layer() { return layer_.get(); }
+blink::WebLayer* WebImageLayerImpl::layer() { return layer_.get(); }
 
 void WebImageLayerImpl::setBitmap(SkBitmap bitmap) {
   if (usingPictureLayer()) {

@@ -10,9 +10,9 @@
 #include "third_party/WebKit/public/platform/WebCanvas.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 
-using WebKit::WebCanvas;
-using WebKit::WebRect;
-using WebKit::WebThemeEngine;
+using blink::WebCanvas;
+using blink::WebRect;
+using blink::WebThemeEngine;
 
 namespace webkit_glue {
 

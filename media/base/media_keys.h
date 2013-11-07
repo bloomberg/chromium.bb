@@ -24,7 +24,7 @@ class Decryptor;
 class MEDIA_EXPORT MediaKeys {
  public:
   // Reported to UMA, so never reuse a value!
-  // Must be kept in sync with WebKit::WebMediaPlayerClient::MediaKeyErrorCode
+  // Must be kept in sync with blink::WebMediaPlayerClient::MediaKeyErrorCode
   // (enforced in webmediaplayer_impl.cc).
   enum KeyError {
     kUnknownError = 1,

@@ -24,25 +24,25 @@
 #include "webkit/renderer/compositor_bindings/web_transform_animation_curve_impl.h"
 #include "webkit/renderer/compositor_bindings/web_transform_operations_impl.h"
 
-using WebKit::WebAnimation;
-using WebKit::WebAnimationCurve;
-using WebKit::WebContentLayer;
-using WebKit::WebContentLayerClient;
-using WebKit::WebExternalTextureLayer;
-using WebKit::WebExternalTextureLayerClient;
-using WebKit::WebFilterAnimationCurve;
-using WebKit::WebFilterOperations;
-using WebKit::WebFloatAnimationCurve;
-using WebKit::WebImageLayer;
-using WebKit::WebNinePatchLayer;
-using WebKit::WebLayer;
-using WebKit::WebScrollbar;
-using WebKit::WebScrollbarLayer;
-using WebKit::WebScrollbarThemeGeometry;
-using WebKit::WebScrollbarThemePainter;
-using WebKit::WebSolidColorLayer;
-using WebKit::WebTransformAnimationCurve;
-using WebKit::WebTransformOperations;
+using blink::WebAnimation;
+using blink::WebAnimationCurve;
+using blink::WebContentLayer;
+using blink::WebContentLayerClient;
+using blink::WebExternalTextureLayer;
+using blink::WebExternalTextureLayerClient;
+using blink::WebFilterAnimationCurve;
+using blink::WebFilterOperations;
+using blink::WebFloatAnimationCurve;
+using blink::WebImageLayer;
+using blink::WebNinePatchLayer;
+using blink::WebLayer;
+using blink::WebScrollbar;
+using blink::WebScrollbarLayer;
+using blink::WebScrollbarThemeGeometry;
+using blink::WebScrollbarThemePainter;
+using blink::WebSolidColorLayer;
+using blink::WebTransformAnimationCurve;
+using blink::WebTransformOperations;
 
 namespace webkit {
 
@@ -64,11 +64,11 @@ WebExternalTextureLayer* WebCompositorSupportImpl::createExternalTextureLayer(
   return new WebExternalTextureLayerImpl(client);
 }
 
-WebKit::WebImageLayer* WebCompositorSupportImpl::createImageLayer() {
+blink::WebImageLayer* WebCompositorSupportImpl::createImageLayer() {
   return new WebImageLayerImpl();
 }
 
-WebKit::WebNinePatchLayer* WebCompositorSupportImpl::createNinePatchLayer() {
+blink::WebNinePatchLayer* WebCompositorSupportImpl::createNinePatchLayer() {
   return new WebNinePatchLayerImpl();
 }
 
@@ -91,8 +91,8 @@ WebScrollbarLayer* WebCompositorSupportImpl::createSolidColorScrollbarLayer(
 }
 
 WebAnimation* WebCompositorSupportImpl::createAnimation(
-    const WebKit::WebAnimationCurve& curve,
-    WebKit::WebAnimation::TargetProperty target,
+    const blink::WebAnimationCurve& curve,
+    blink::WebAnimation::TargetProperty target,
     int animation_id) {
   return new WebAnimationImpl(curve, target, animation_id, 0);
 }

@@ -19,7 +19,7 @@ namespace base {
 class MessageLoop;
 }
 
-namespace WebKit {
+namespace blink {
 class WebSocketStreamHandle;
 }
 
@@ -29,44 +29,44 @@ class WebSocketStreamHandleDelegate;
 class WebSocketStreamHandleBridge;
 
 class WEBKIT_CHILD_EXPORT WebKitPlatformSupportImpl :
-    NON_EXPORTED_BASE(public WebKit::Platform) {
+    NON_EXPORTED_BASE(public blink::Platform) {
  public:
   WebKitPlatformSupportImpl();
   virtual ~WebKitPlatformSupportImpl();
 
   // Platform methods (partial implementation):
   virtual base::PlatformFile databaseOpenFile(
-      const WebKit::WebString& vfs_file_name, int desired_flags);
-  virtual int databaseDeleteFile(const WebKit::WebString& vfs_file_name,
+      const blink::WebString& vfs_file_name, int desired_flags);
+  virtual int databaseDeleteFile(const blink::WebString& vfs_file_name,
                                  bool sync_dir);
   virtual long databaseGetFileAttributes(
-      const WebKit::WebString& vfs_file_name);
-  virtual long long databaseGetFileSize(const WebKit::WebString& vfs_file_name);
+      const blink::WebString& vfs_file_name);
+  virtual long long databaseGetFileSize(const blink::WebString& vfs_file_name);
   virtual long long databaseGetSpaceAvailableForOrigin(
-      const WebKit::WebString& origin_identifier);
-  virtual WebKit::WebString signedPublicKeyAndChallengeString(
-      unsigned key_size_index, const WebKit::WebString& challenge,
-      const WebKit::WebURL& url);
+      const blink::WebString& origin_identifier);
+  virtual blink::WebString signedPublicKeyAndChallengeString(
+      unsigned key_size_index, const blink::WebString& challenge,
+      const blink::WebURL& url);
   virtual size_t memoryUsageMB();
   virtual size_t actualMemoryUsageMB();
   virtual size_t physicalMemoryMB();
 
-  virtual void startHeapProfiling(const WebKit::WebString& prefix);
+  virtual void startHeapProfiling(const blink::WebString& prefix);
   virtual void stopHeapProfiling() OVERRIDE;
-  virtual void dumpHeapProfiling(const WebKit::WebString& reason);
-  virtual WebKit::WebString getHeapProfile() OVERRIDE;
+  virtual void dumpHeapProfiling(const blink::WebString& reason);
+  virtual blink::WebString getHeapProfile() OVERRIDE;
 
   virtual bool processMemorySizesInBytes(size_t* private_bytes,
                                          size_t* shared_bytes);
   virtual bool memoryAllocatorWasteInBytes(size_t* size);
   virtual size_t maxDecodedImageBytes() OVERRIDE;
-  virtual WebKit::WebURLLoader* createURLLoader();
-  virtual WebKit::WebSocketStreamHandle* createSocketStreamHandle();
-  virtual WebKit::WebString userAgent(const WebKit::WebURL& url);
-  virtual WebKit::WebData parseDataURL(
-      const WebKit::WebURL& url, WebKit::WebString& mimetype,
-      WebKit::WebString& charset);
-  virtual WebKit::WebURLError cancelledError(const WebKit::WebURL& url) const;
+  virtual blink::WebURLLoader* createURLLoader();
+  virtual blink::WebSocketStreamHandle* createSocketStreamHandle();
+  virtual blink::WebString userAgent(const blink::WebURL& url);
+  virtual blink::WebData parseDataURL(
+      const blink::WebURL& url, blink::WebString& mimetype,
+      blink::WebString& charset);
+  virtual blink::WebURLError cancelledError(const blink::WebURL& url) const;
   virtual void decrementStatsCounter(const char* name);
   virtual void incrementStatsCounter(const char* name);
   virtual void histogramCustomCounts(
@@ -88,16 +88,16 @@ class WEBKIT_CHILD_EXPORT WebKitPlatformSupportImpl :
       const unsigned long long* arg_values,
       unsigned char flags);
   virtual void updateTraceEventDuration(TraceEventHandle);
-  virtual WebKit::WebData loadResource(const char* name);
-  virtual WebKit::WebString queryLocalizedString(
-      WebKit::WebLocalizedString::Name name);
-  virtual WebKit::WebString queryLocalizedString(
-      WebKit::WebLocalizedString::Name name, int numeric_value);
-  virtual WebKit::WebString queryLocalizedString(
-      WebKit::WebLocalizedString::Name name, const WebKit::WebString& value);
-  virtual WebKit::WebString queryLocalizedString(
-      WebKit::WebLocalizedString::Name name,
-      const WebKit::WebString& value1, const WebKit::WebString& value2);
+  virtual blink::WebData loadResource(const char* name);
+  virtual blink::WebString queryLocalizedString(
+      blink::WebLocalizedString::Name name);
+  virtual blink::WebString queryLocalizedString(
+      blink::WebLocalizedString::Name name, int numeric_value);
+  virtual blink::WebString queryLocalizedString(
+      blink::WebLocalizedString::Name name, const blink::WebString& value);
+  virtual blink::WebString queryLocalizedString(
+      blink::WebLocalizedString::Name name,
+      const blink::WebString& value1, const blink::WebString& value2);
   virtual void suddenTerminationChanged(bool enabled) { }
   virtual double currentTime();
   virtual double monotonicallyIncreasingTime();
@@ -126,7 +126,7 @@ class WEBKIT_CHILD_EXPORT WebKitPlatformSupportImpl :
       const ResourceLoaderBridge::RequestInfo& request_info) = 0;
   // Creates a WebSocketStreamHandleBridge.
   virtual WebSocketStreamHandleBridge* CreateWebSocketStreamBridge(
-      WebKit::WebSocketStreamHandle* handle,
+      blink::WebSocketStreamHandle* handle,
       WebSocketStreamHandleDelegate* delegate) = 0;
 
   void SuspendSharedTimer();

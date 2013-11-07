@@ -17,7 +17,7 @@ class SingleReleaseCallback;
 class TextureMailbox;
 }
 
-namespace WebKit {
+namespace blink {
 struct WebFloatRect;
 struct WebExternalTextureMailbox;
 }
@@ -28,16 +28,16 @@ class WebLayerImpl;
 class WebExternalBitmapImpl;
 
 class WebExternalTextureLayerImpl
-    : public WebKit::WebExternalTextureLayer,
+    : public blink::WebExternalTextureLayer,
       public cc::TextureLayerClient,
       public base::SupportsWeakPtr<WebExternalTextureLayerImpl> {
  public:
   WEBKIT_COMPOSITOR_BINDINGS_EXPORT explicit WebExternalTextureLayerImpl(
-      WebKit::WebExternalTextureLayerClient*);
+      blink::WebExternalTextureLayerClient*);
   virtual ~WebExternalTextureLayerImpl();
 
-  // WebKit::WebExternalTextureLayer implementation.
-  virtual WebKit::WebLayer* layer();
+  // blink::WebExternalTextureLayer implementation.
+  virtual blink::WebLayer* layer();
   virtual void clearTexture();
   virtual void setOpaque(bool opaque);
   virtual void setPremultipliedAlpha(bool premultiplied);
@@ -54,14 +54,14 @@ class WebExternalTextureLayerImpl
  private:
   static void DidReleaseMailbox(
       base::WeakPtr<WebExternalTextureLayerImpl> layer,
-      const WebKit::WebExternalTextureMailbox& mailbox,
+      const blink::WebExternalTextureMailbox& mailbox,
       WebExternalBitmapImpl* bitmap,
       unsigned sync_point,
       bool lost_resource);
 
   WebExternalBitmapImpl* AllocateBitmap();
 
-  WebKit::WebExternalTextureLayerClient* client_;
+  blink::WebExternalTextureLayerClient* client_;
   scoped_ptr<WebLayerImpl> layer_;
   ScopedVector<WebExternalBitmapImpl> free_bitmaps_;
 

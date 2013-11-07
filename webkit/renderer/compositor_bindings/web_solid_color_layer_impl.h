@@ -13,14 +13,14 @@
 namespace webkit {
 class WebLayerImpl;
 
-class WebSolidColorLayerImpl : public WebKit::WebSolidColorLayer {
+class WebSolidColorLayerImpl : public blink::WebSolidColorLayer {
  public:
   WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebSolidColorLayerImpl();
   virtual ~WebSolidColorLayerImpl();
 
-  // WebKit::WebSolidColorLayer implementation.
-  virtual WebKit::WebLayer* layer();
-  virtual void setBackgroundColor(WebKit::WebColor);
+  // blink::WebSolidColorLayer implementation.
+  virtual blink::WebLayer* layer();
+  virtual void setBackgroundColor(blink::WebColor);
 
  private:
   scoped_ptr<WebLayerImpl> layer_;

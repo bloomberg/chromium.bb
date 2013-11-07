@@ -203,7 +203,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       if (!software_compositor) {
         DCHECK(context_provider_);
 
-        WebKit::WebGraphicsContext3D* context =
+        blink::WebGraphicsContext3D* context =
             context_provider_->Context3d();
 
         GLC(context, context->genMailboxCHROMIUM(mailbox.name));

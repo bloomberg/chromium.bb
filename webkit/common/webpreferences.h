@@ -5,7 +5,7 @@
 // A struct for managing webkit's settings.
 //
 // Adding new values to this class probably involves updating
-// WebKit::WebSettings, content/common/view_messages.h, browser/tab_contents/
+// blink::WebSettings, content/common/view_messages.h, browser/tab_contents/
 // render_view_host_delegate_helper.cc, and browser/profiles/profile.cc.
 
 #ifndef WEBKIT_COMMON_WEBPREFERENCES_H__
@@ -19,7 +19,7 @@
 #include "url/gurl.h"
 #include "webkit/common/webkit_common_export.h"
 
-namespace WebKit {
+namespace blink {
 class WebView;
 }
 

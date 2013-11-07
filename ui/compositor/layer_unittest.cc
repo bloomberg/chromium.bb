@@ -600,7 +600,7 @@ class FakeTexture : public Texture {
       : Texture(flipped, size, device_scale_factor) {}
 
   virtual unsigned int PrepareTexture() OVERRIDE { return 0; }
-  virtual WebKit::WebGraphicsContext3D* HostContext3D() OVERRIDE {
+  virtual blink::WebGraphicsContext3D* HostContext3D() OVERRIDE {
     return NULL;
   }
 

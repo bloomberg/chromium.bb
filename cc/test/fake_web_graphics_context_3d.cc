@@ -7,16 +7,16 @@
 #include "base/logging.h"
 #include "third_party/khronos/GLES2/gl2.h"
 
-using WebKit::WGC3Dboolean;
-using WebKit::WGC3Denum;
-using WebKit::WGC3Dsizei;
-using WebKit::WebGLId;
-using WebKit::WebGraphicsContext3D;
+using blink::WGC3Dboolean;
+using blink::WGC3Denum;
+using blink::WGC3Dsizei;
+using blink::WebGLId;
+using blink::WebGraphicsContext3D;
 
 namespace cc {
 
 FakeWebGraphicsContext3D::FakeWebGraphicsContext3D()
-    : WebKit::WebGraphicsContext3D() {
+    : blink::WebGraphicsContext3D() {
 }
 
 FakeWebGraphicsContext3D::~FakeWebGraphicsContext3D() {
@@ -40,27 +40,27 @@ bool FakeWebGraphicsContext3D::isContextLost() {
 
 void* FakeWebGraphicsContext3D::mapBufferSubDataCHROMIUM(
     WGC3Denum target,
-    WebKit::WGC3Dintptr offset,
-    WebKit::WGC3Dsizeiptr size,
+    blink::WGC3Dintptr offset,
+    blink::WGC3Dsizeiptr size,
     WGC3Denum access) {
   return 0;
 }
 
 void* FakeWebGraphicsContext3D::mapTexSubImage2DCHROMIUM(
     WGC3Denum target,
-    WebKit::WGC3Dint level,
-    WebKit::WGC3Dint xoffset,
-    WebKit::WGC3Dint yoffset,
-    WebKit::WGC3Dsizei width,
-    WebKit::WGC3Dsizei height,
+    blink::WGC3Dint level,
+    blink::WGC3Dint xoffset,
+    blink::WGC3Dint yoffset,
+    blink::WGC3Dsizei width,
+    blink::WGC3Dsizei height,
     WGC3Denum format,
     WGC3Denum type,
     WGC3Denum access) {
   return 0;
 }
 
-WebKit::WebString FakeWebGraphicsContext3D::getRequestableExtensionsCHROMIUM() {
-  return WebKit::WebString();
+blink::WebString FakeWebGraphicsContext3D::getRequestableExtensionsCHROMIUM() {
+  return blink::WebString();
 }
 
 WGC3Denum FakeWebGraphicsContext3D::checkFramebufferStatus(
@@ -70,21 +70,21 @@ WGC3Denum FakeWebGraphicsContext3D::checkFramebufferStatus(
 
 bool FakeWebGraphicsContext3D::getActiveAttrib(
     WebGLId program,
-    WebKit::WGC3Duint index,
+    blink::WGC3Duint index,
     ActiveInfo&) {
   return false;
 }
 
 bool FakeWebGraphicsContext3D::getActiveUniform(
     WebGLId program,
-    WebKit::WGC3Duint index,
+    blink::WGC3Duint index,
     ActiveInfo&) {
   return false;
 }
 
-WebKit::WGC3Dint FakeWebGraphicsContext3D::getAttribLocation(
+blink::WGC3Dint FakeWebGraphicsContext3D::getAttribLocation(
     WebGLId program,
-    const WebKit::WGC3Dchar* name) {
+    const blink::WGC3Dchar* name) {
   return 0;
 }
 
@@ -99,7 +99,7 @@ WGC3Denum FakeWebGraphicsContext3D::getError() {
 
 void FakeWebGraphicsContext3D::getIntegerv(
     WGC3Denum pname,
-    WebKit::WGC3Dint* value) {
+    blink::WGC3Dint* value) {
   if (pname == GL_MAX_TEXTURE_SIZE)
     *value = 1024;
   else if (pname == GL_ACTIVE_TEXTURE)
@@ -109,34 +109,34 @@ void FakeWebGraphicsContext3D::getIntegerv(
 void FakeWebGraphicsContext3D::getProgramiv(
     WebGLId program,
     WGC3Denum pname,
-    WebKit::WGC3Dint* value) {
+    blink::WGC3Dint* value) {
   if (pname == GL_LINK_STATUS)
     *value = 1;
 }
 
-WebKit::WebString FakeWebGraphicsContext3D::getProgramInfoLog(
+blink::WebString FakeWebGraphicsContext3D::getProgramInfoLog(
     WebGLId program) {
-  return WebKit::WebString();
+  return blink::WebString();
 }
 
 void FakeWebGraphicsContext3D::getShaderiv(
     WebGLId shader,
     WGC3Denum pname,
-    WebKit::WGC3Dint* value) {
+    blink::WGC3Dint* value) {
   if (pname == GL_COMPILE_STATUS)
     *value = 1;
 }
 
-WebKit::WebString FakeWebGraphicsContext3D::getShaderInfoLog(
+blink::WebString FakeWebGraphicsContext3D::getShaderInfoLog(
     WebGLId shader) {
-  return WebKit::WebString();
+  return blink::WebString();
 }
 
 void FakeWebGraphicsContext3D::getShaderPrecisionFormat(
-    WebKit::WGC3Denum shadertype,
-    WebKit::WGC3Denum precisiontype,
-    WebKit::WGC3Dint* range,
-    WebKit::WGC3Dint* precision) {
+    blink::WGC3Denum shadertype,
+    blink::WGC3Denum precisiontype,
+    blink::WGC3Dint* range,
+    blink::WGC3Dint* precision) {
   // Return the minimum precision requirements of the GLES specificatin.
   switch (precisiontype) {
     case GL_LOW_INT:
@@ -175,23 +175,23 @@ void FakeWebGraphicsContext3D::getShaderPrecisionFormat(
   }
 }
 
-WebKit::WebString FakeWebGraphicsContext3D::getShaderSource(
+blink::WebString FakeWebGraphicsContext3D::getShaderSource(
     WebGLId shader) {
-  return WebKit::WebString();
+  return blink::WebString();
 }
 
-WebKit::WebString FakeWebGraphicsContext3D::getString(WGC3Denum name) {
-  return WebKit::WebString();
+blink::WebString FakeWebGraphicsContext3D::getString(WGC3Denum name) {
+  return blink::WebString();
 }
 
-WebKit::WGC3Dint FakeWebGraphicsContext3D::getUniformLocation(
+blink::WGC3Dint FakeWebGraphicsContext3D::getUniformLocation(
     WebGLId program,
-    const WebKit::WGC3Dchar* name) {
+    const blink::WGC3Dchar* name) {
   return 0;
 }
 
-WebKit::WGC3Dsizeiptr FakeWebGraphicsContext3D::getVertexAttribOffset(
-    WebKit::WGC3Duint index,
+blink::WGC3Dsizeiptr FakeWebGraphicsContext3D::getVertexAttribOffset(
+    blink::WGC3Duint index,
     WGC3Denum pname) {
   return 0;
 }
@@ -283,13 +283,13 @@ WebGLId FakeWebGraphicsContext3D::createTexture() {
   return 1;
 }
 
-void FakeWebGraphicsContext3D::deleteBuffer(WebKit::WebGLId id) {
+void FakeWebGraphicsContext3D::deleteBuffer(blink::WebGLId id) {
 }
 
-void FakeWebGraphicsContext3D::deleteFramebuffer(WebKit::WebGLId id) {
+void FakeWebGraphicsContext3D::deleteFramebuffer(blink::WebGLId id) {
 }
 
-void FakeWebGraphicsContext3D::deleteRenderbuffer(WebKit::WebGLId id) {
+void FakeWebGraphicsContext3D::deleteRenderbuffer(blink::WebGLId id) {
 }
 
 void FakeWebGraphicsContext3D::deleteTexture(WebGLId texture_id) {
@@ -303,10 +303,10 @@ WebGLId FakeWebGraphicsContext3D::createShader(WGC3Denum) {
   return 1;
 }
 
-void FakeWebGraphicsContext3D::deleteProgram(WebKit::WebGLId id) {
+void FakeWebGraphicsContext3D::deleteProgram(blink::WebGLId id) {
 }
 
-void FakeWebGraphicsContext3D::deleteShader(WebKit::WebGLId id) {
+void FakeWebGraphicsContext3D::deleteShader(blink::WebGLId id) {
 }
 
 void FakeWebGraphicsContext3D::attachShader(WebGLId program, WebGLId shader) {
@@ -338,13 +338,13 @@ WGC3Dboolean FakeWebGraphicsContext3D::isQueryEXT(WebGLId query) {
   return true;
 }
 
-void FakeWebGraphicsContext3D::endQueryEXT(WebKit::WGC3Denum target) {
+void FakeWebGraphicsContext3D::endQueryEXT(blink::WGC3Denum target) {
 }
 
 void FakeWebGraphicsContext3D::getQueryObjectuivEXT(
-    WebKit::WebGLId query,
-    WebKit::WGC3Denum pname,
-    WebKit::WGC3Duint* params) {
+    blink::WebGLId query,
+    blink::WGC3Denum pname,
+    blink::WGC3Duint* params) {
 }
 
 void FakeWebGraphicsContext3D::setContextLostCallback(
@@ -355,14 +355,14 @@ void FakeWebGraphicsContext3D::loseContextCHROMIUM(WGC3Denum current,
                                                    WGC3Denum other) {
 }
 
-WebKit::WGC3Duint FakeWebGraphicsContext3D::createImageCHROMIUM(
-     WebKit::WGC3Dsizei width, WebKit::WGC3Dsizei height,
-     WebKit::WGC3Denum internalformat) {
+blink::WGC3Duint FakeWebGraphicsContext3D::createImageCHROMIUM(
+     blink::WGC3Dsizei width, blink::WGC3Dsizei height,
+     blink::WGC3Denum internalformat) {
   return 0;
 }
 
-void* FakeWebGraphicsContext3D::mapImageCHROMIUM(WebKit::WGC3Duint image_id,
-                                                 WebKit::WGC3Denum access) {
+void* FakeWebGraphicsContext3D::mapImageCHROMIUM(blink::WGC3Duint image_id,
+                                                 blink::WGC3Denum access) {
   return 0;
 }
 

@@ -38,7 +38,7 @@ bool ExternalPrerenderHandlerAndroid::AddPrerender(JNIEnv* env,
 
   GURL referrer_url = GURL(ConvertJavaStringToUTF16(env, jreferrer));
   content::Referrer referrer = referrer_url.is_valid() ?
-      content::Referrer(referrer_url, WebKit::WebReferrerPolicyDefault) :
+      content::Referrer(referrer_url, blink::WebReferrerPolicyDefault) :
       content::Referrer();
   PrerenderManager* prerender_manager =
       prerender::PrerenderManagerFactory::GetForProfile(profile);

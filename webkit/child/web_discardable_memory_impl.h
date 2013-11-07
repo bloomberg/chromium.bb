@@ -11,7 +11,7 @@
 #include "third_party/WebKit/public/platform/WebDiscardableMemory.h"
 #include "webkit/child/webkit_child_export.h"
 
-namespace WebKit {
+namespace blink {
 class WebDiscardableMemory;
 }
 
@@ -20,13 +20,13 @@ namespace webkit_glue {
 // Implementation of WebDiscardableMemory that is responsible for allocating
 // discardable memory.
 class WEBKIT_CHILD_EXPORT WebDiscardableMemoryImpl
-    : NON_EXPORTED_BASE(public WebKit::WebDiscardableMemory) {
+    : NON_EXPORTED_BASE(public blink::WebDiscardableMemory) {
  public:
   virtual ~WebDiscardableMemoryImpl();
 
   static scoped_ptr<WebDiscardableMemoryImpl> CreateLockedMemory(size_t size);
 
-  // WebKit::WebDiscardableMemory:
+  // blink::WebDiscardableMemory:
   virtual bool lock();
   virtual void unlock();
   virtual void* data();

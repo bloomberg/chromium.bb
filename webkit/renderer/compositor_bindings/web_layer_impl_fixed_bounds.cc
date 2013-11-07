@@ -24,28 +24,28 @@ WebLayerImplFixedBounds::WebLayerImplFixedBounds(scoped_refptr<Layer> layer)
 WebLayerImplFixedBounds::~WebLayerImplFixedBounds() {
 }
 
-void WebLayerImplFixedBounds::invalidateRect(const WebKit::WebFloatRect& rect) {
+void WebLayerImplFixedBounds::invalidateRect(const blink::WebFloatRect& rect) {
   // Partial invalidations seldom occur for such layers.
   // Simply invalidate the whole layer to avoid transformation of coordinates.
   invalidate();
 }
 
 void WebLayerImplFixedBounds::setAnchorPoint(
-    const WebKit::WebFloatPoint& anchor_point) {
+    const blink::WebFloatPoint& anchor_point) {
   if (anchor_point != this->anchorPoint()) {
     layer_->SetAnchorPoint(anchor_point);
     UpdateLayerBoundsAndTransform();
   }
 }
 
-void WebLayerImplFixedBounds::setBounds(const WebKit::WebSize& bounds) {
+void WebLayerImplFixedBounds::setBounds(const blink::WebSize& bounds) {
   if (original_bounds_ != gfx::Size(bounds)) {
       original_bounds_ = bounds;
       UpdateLayerBoundsAndTransform();
   }
 }
 
-WebKit::WebSize WebLayerImplFixedBounds::bounds() const {
+blink::WebSize WebLayerImplFixedBounds::bounds() const {
   return original_bounds_;
 }
 
@@ -125,4 +125,4 @@ void WebLayerImplFixedBounds::UpdateLayerBoundsAndTransform() {
   layer_->SetSublayerTransform(sublayer_transform_with_inverse_bounds_scale);
 }
 
-}  // namespace WebKit
+}  // namespace webkit

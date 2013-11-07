@@ -7,7 +7,7 @@
 
 #include "cc/resources/single_release_callback.h"
 
-namespace WebKit { class WebGraphicsContext3D; }
+namespace blink { class WebGraphicsContext3D; }
 
 namespace cc {
 class ResourceUpdateQueue;

@@ -44,7 +44,7 @@ using base::TimeTicks;
 using ui::Compositor;
 using ui::Layer;
 using ui::LayerDelegate;
-using WebKit::WebGraphicsContext3D;
+using blink::WebGraphicsContext3D;
 
 namespace {
 
@@ -210,7 +210,7 @@ class WebGLBench : public BenchCompositorObserver {
 
     context_provider_ =
         ui::ContextFactory::GetInstance()->SharedMainThreadContextProvider();
-    WebKit::WebGraphicsContext3D* context = context_provider_->Context3d();
+    blink::WebGraphicsContext3D* context = context_provider_->Context3d();
     context->makeContextCurrent();
     texture_ = new WebGLTexture(context, bounds.size());
     fbo_ = context->createFramebuffer();
@@ -235,7 +235,7 @@ class WebGLBench : public BenchCompositorObserver {
 
   virtual void Draw() OVERRIDE {
     if (do_draw_) {
-      WebKit::WebGraphicsContext3D* context = context_provider_->Context3d();
+      blink::WebGraphicsContext3D* context = context_provider_->Context3d();
       context->makeContextCurrent();
       context->clearColor((frames() % kFrames)*1.0/kFrames, 1.f, 0.f, 1.f);
       context->clear(GL_COLOR_BUFFER_BIT);

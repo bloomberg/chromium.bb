@@ -45,7 +45,7 @@ TEST(AndroidWebViewStateSerializerTest, TestNavigationEntrySerialization) {
   const GURL virtual_url("http://virtual_url");
   content::Referrer referrer;
   referrer.url = GURL("http://referrer_url");
-  referrer.policy = WebKit::WebReferrerPolicyOrigin;
+  referrer.policy = blink::WebReferrerPolicyOrigin;
   const string16 title(UTF8ToUTF16("title"));
   const content::PageState page_state =
       content::PageState::CreateFromEncodedData("completely bogus state");

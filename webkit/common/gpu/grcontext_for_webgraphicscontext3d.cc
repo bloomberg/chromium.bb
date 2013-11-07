@@ -13,12 +13,12 @@ namespace gpu {
 
 static void BindWebGraphicsContext3DGLContextCallback(
     const GrGLInterface* interface) {
-  reinterpret_cast<WebKit::WebGraphicsContext3D*>(
+  reinterpret_cast<blink::WebGraphicsContext3D*>(
       interface->fCallbackData)->makeContextCurrent();
 }
 
 GrContextForWebGraphicsContext3D::GrContextForWebGraphicsContext3D(
-    WebKit::WebGraphicsContext3D* context3d) {
+    blink::WebGraphicsContext3D* context3d) {
   if (!context3d)
     return;
 

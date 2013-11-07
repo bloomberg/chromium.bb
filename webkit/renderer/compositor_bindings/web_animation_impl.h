@@ -11,20 +11,20 @@
 
 namespace cc { class Animation; }
 
-namespace WebKit { class WebAnimationCurve; }
+namespace blink { class WebAnimationCurve; }
 
 namespace webkit {
 
-class WebAnimationImpl : public WebKit::WebAnimation {
+class WebAnimationImpl : public blink::WebAnimation {
  public:
   WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebAnimationImpl(
-      const WebKit::WebAnimationCurve& curve,
+      const blink::WebAnimationCurve& curve,
       TargetProperty target,
       int animation_id,
       int group_id);
   virtual ~WebAnimationImpl();
 
-  // WebKit::WebAnimation implementation
+  // blink::WebAnimation implementation
   virtual int id();
   virtual TargetProperty targetProperty() const;
   virtual int iterations() const;

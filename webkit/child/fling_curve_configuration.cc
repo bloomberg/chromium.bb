@@ -24,10 +24,10 @@ void FlingCurveConfiguration::SetCurveParameters(
   touchscreen_coefs_ = new_touchscreen;
 }
 
-WebKit::WebGestureCurve* FlingCurveConfiguration::CreateCore(
+blink::WebGestureCurve* FlingCurveConfiguration::CreateCore(
     const std::vector<float>& coefs,
-    const WebKit::WebFloatPoint& velocity,
-    const WebKit::WebSize& cumulativeScroll) {
+    const blink::WebFloatPoint& velocity,
+    const blink::WebSize& cumulativeScroll) {
   float p0, p1, p2;
 
   {
@@ -40,15 +40,15 @@ WebKit::WebGestureCurve* FlingCurveConfiguration::CreateCore(
   return TouchFlingGestureCurve::Create(velocity, p0, p1, p2, cumulativeScroll);
 }
 
-WebKit::WebGestureCurve* FlingCurveConfiguration::CreateForTouchPad(
-    const WebKit::WebFloatPoint& velocity,
-    const WebKit::WebSize& cumulativeScroll) {
+blink::WebGestureCurve* FlingCurveConfiguration::CreateForTouchPad(
+    const blink::WebFloatPoint& velocity,
+    const blink::WebSize& cumulativeScroll) {
   return CreateCore(touchpad_coefs_, velocity, cumulativeScroll);
 }
 
-WebKit::WebGestureCurve* FlingCurveConfiguration::CreateForTouchScreen(
-    const WebKit::WebFloatPoint& velocity,
-    const WebKit::WebSize& cumulativeScroll) {
+blink::WebGestureCurve* FlingCurveConfiguration::CreateForTouchScreen(
+    const blink::WebFloatPoint& velocity,
+    const blink::WebSize& cumulativeScroll) {
   return CreateCore(touchscreen_coefs_, velocity, cumulativeScroll);
 }
 

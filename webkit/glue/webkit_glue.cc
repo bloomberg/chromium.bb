@@ -16,7 +16,7 @@ void SetJavaScriptFlags(const std::string& str) {
 
 void PlatformFileInfoToWebFileInfo(
     const base::PlatformFileInfo& file_info,
-    WebKit::WebFileInfo* web_file_info) {
+    blink::WebFileInfo* web_file_info) {
   DCHECK(web_file_info);
   // WebKit now expects NaN as uninitialized/null Date.
   if (file_info.last_modified.is_null())
@@ -25,9 +25,9 @@ void PlatformFileInfoToWebFileInfo(
     web_file_info->modificationTime = file_info.last_modified.ToDoubleT();
   web_file_info->length = file_info.size;
   if (file_info.is_directory)
-    web_file_info->type = WebKit::WebFileInfo::TypeDirectory;
+    web_file_info->type = blink::WebFileInfo::TypeDirectory;
   else
-    web_file_info->type = WebKit::WebFileInfo::TypeFile;
+    web_file_info->type = blink::WebFileInfo::TypeFile;
 }
 
 COMPILE_ASSERT(std::numeric_limits<double>::has_quiet_NaN, has_quiet_NaN);

@@ -79,7 +79,7 @@ class LayerTreePixelTest : public LayerTreeTest {
       scoped_ptr<SingleReleaseCallback>* release_callback);
 
   void ReleaseTextureMailbox(
-      scoped_ptr<WebKit::WebGraphicsContext3D> context3d,
+      scoped_ptr<blink::WebGraphicsContext3D> context3d,
       uint32 texture,
       uint32 sync_point,
       bool lost_resource);

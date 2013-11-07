@@ -10,7 +10,7 @@
 #include "third_party/WebKit/public/platform/WebScrollbarLayer.h"
 #include "webkit/renderer/compositor_bindings/webkit_compositor_bindings_export.h"
 
-namespace WebKit {
+namespace blink {
 class WebScrollbarThemeGeometry;
 class WebScrollbarThemePainter;
 }
@@ -19,21 +19,21 @@ namespace webkit {
 
 class WebLayerImpl;
 
-class WebScrollbarLayerImpl : public WebKit::WebScrollbarLayer {
+class WebScrollbarLayerImpl : public blink::WebScrollbarLayer {
  public:
   WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebScrollbarLayerImpl(
-      WebKit::WebScrollbar* scrollbar,
-      WebKit::WebScrollbarThemePainter painter,
-      WebKit::WebScrollbarThemeGeometry* geometry);
+      blink::WebScrollbar* scrollbar,
+      blink::WebScrollbarThemePainter painter,
+      blink::WebScrollbarThemeGeometry* geometry);
   WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebScrollbarLayerImpl(
-      WebKit::WebScrollbar::Orientation orientation,
+      blink::WebScrollbar::Orientation orientation,
       int thumb_thickness,
       bool is_left_side_vertical_scrollbar);
   virtual ~WebScrollbarLayerImpl();
 
-  // WebKit::WebScrollbarLayer implementation.
-  virtual WebKit::WebLayer* layer();
-  virtual void setScrollLayer(WebKit::WebLayer* layer);
+  // blink::WebScrollbarLayer implementation.
+  virtual blink::WebLayer* layer();
+  virtual void setScrollLayer(blink::WebLayer* layer);
 
  private:
   scoped_ptr<WebLayerImpl> layer_;

@@ -26,7 +26,7 @@
 #include "ui/gfx/rect.h"
 #include "ui/gfx/vector2d.h"
 
-using WebKit::WebGraphicsContext3D;
+using blink::WebGraphicsContext3D;
 
 namespace cc {
 
@@ -40,14 +40,14 @@ class IdAllocator {
   IdAllocator(WebGraphicsContext3D* context3d, size_t id_allocation_chunk_size)
       : context3d_(context3d),
         id_allocation_chunk_size_(id_allocation_chunk_size),
-        ids_(new WebKit::WebGLId[id_allocation_chunk_size]),
+        ids_(new blink::WebGLId[id_allocation_chunk_size]),
         next_id_index_(id_allocation_chunk_size) {
     DCHECK(id_allocation_chunk_size_);
   }
 
   WebGraphicsContext3D* context3d_;
   const size_t id_allocation_chunk_size_;
-  scoped_ptr<WebKit::WebGLId[]> ids_;
+  scoped_ptr<blink::WebGLId[]> ids_;
   size_t next_id_index_;
 };
 
@@ -1810,7 +1810,7 @@ GLint ResourceProvider::GetActiveTextureUnit(WebGraphicsContext3D* context) {
   return active_unit;
 }
 
-WebKit::WebGraphicsContext3D* ResourceProvider::Context3d() const {
+blink::WebGraphicsContext3D* ResourceProvider::Context3d() const {
   ContextProvider* context_provider = output_surface_->context_provider();
   return context_provider ? context_provider->Context3d() : NULL;
 }

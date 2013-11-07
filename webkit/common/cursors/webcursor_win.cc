@@ -10,7 +10,7 @@
 #include "ui/gfx/icon_util.h"
 #include "webkit/common/cursors/webcursor.h"
 
-using WebKit::WebCursorInfo;
+using blink::WebCursorInfo;
 
 static LPCWSTR ToCursorID(WebCursorInfo::Type type) {
   switch (type) {

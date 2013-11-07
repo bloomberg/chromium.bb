@@ -16,7 +16,7 @@ class Point;
 class Size;
 }
 
-namespace WebKit { class WebGraphicsContext3D; }
+namespace blink { class WebGraphicsContext3D; }
 
 namespace cc {
 
@@ -31,13 +31,13 @@ enum TexCoordPrecision {
 // The caller must make sure to clear highp_threshold_cache to 0, so it can be
 // reinitialized, if a new or different context is used.
 CC_EXPORT TexCoordPrecision TexCoordPrecisionRequired(
-    WebKit::WebGraphicsContext3D* context,
+    blink::WebGraphicsContext3D* context,
     int *highp_threshold_cache,
     int highp_threshold_min,
     gfx::Point max_coordinate);
 
 CC_EXPORT TexCoordPrecision TexCoordPrecisionRequired(
-    WebKit::WebGraphicsContext3D* context,
+    blink::WebGraphicsContext3D* context,
     int *highp_threshold_cache,
     int highp_threshold_min,
     gfx::Size max_size);
@@ -46,7 +46,7 @@ class VertexShaderPosTex {
  public:
   VertexShaderPosTex();
 
-  void Init(WebKit::WebGraphicsContext3D* context,
+  void Init(blink::WebGraphicsContext3D* context,
             unsigned program,
             int* base_uniform_index);
   std::string GetShaderString() const;
@@ -63,7 +63,7 @@ class VertexShaderPosTexYUVStretch {
  public:
   VertexShaderPosTexYUVStretch();
 
-  void Init(WebKit::WebGraphicsContext3D* context,
+  void Init(blink::WebGraphicsContext3D* context,
             unsigned program,
             int* base_uniform_index);
   std::string GetShaderString() const;
@@ -82,7 +82,7 @@ class VertexShaderPos {
  public:
   VertexShaderPos();
 
-  void Init(WebKit::WebGraphicsContext3D* context,
+  void Init(blink::WebGraphicsContext3D* context,
             unsigned program,
             int* base_uniform_index);
   std::string GetShaderString() const;
@@ -97,7 +97,7 @@ class VertexShaderPos {
 
 class VertexShaderPosTexIdentity {
  public:
-  void Init(WebKit::WebGraphicsContext3D* context,
+  void Init(blink::WebGraphicsContext3D* context,
             unsigned program,
             int* base_uniform_index) {}
   std::string GetShaderString() const;
@@ -107,7 +107,7 @@ class VertexShaderPosTexTransform {
  public:
   VertexShaderPosTexTransform();
 
-  void Init(WebKit::WebGraphicsContext3D* context,
+  void Init(blink::WebGraphicsContext3D* context,
             unsigned program,
             int* base_uniform_index);
   std::string GetShaderString() const;
@@ -128,7 +128,7 @@ class VertexShaderQuad {
  public:
   VertexShaderQuad();
 
-  void Init(WebKit::WebGraphicsContext3D* context,
+  void Init(blink::WebGraphicsContext3D* context,
            unsigned program,
            int* base_uniform_index);
   std::string GetShaderString() const;
@@ -149,7 +149,7 @@ class VertexShaderQuadAA {
  public:
   VertexShaderQuadAA();
 
-  void Init(WebKit::WebGraphicsContext3D* context,
+  void Init(blink::WebGraphicsContext3D* context,
            unsigned program,
            int* base_uniform_index);
   std::string GetShaderString() const;
@@ -173,7 +173,7 @@ class VertexShaderQuadTexTransformAA {
  public:
   VertexShaderQuadTexTransformAA();
 
-  void Init(WebKit::WebGraphicsContext3D* context,
+  void Init(blink::WebGraphicsContext3D* context,
            unsigned program,
            int* base_uniform_index);
   std::string GetShaderString() const;
@@ -198,7 +198,7 @@ class VertexShaderTile {
  public:
   VertexShaderTile();
 
-  void Init(WebKit::WebGraphicsContext3D* context,
+  void Init(blink::WebGraphicsContext3D* context,
             unsigned program,
             int* base_uniform_index);
   std::string GetShaderString() const;
@@ -223,7 +223,7 @@ class VertexShaderTileAA {
  public:
   VertexShaderTileAA();
 
-  void Init(WebKit::WebGraphicsContext3D* context,
+  void Init(blink::WebGraphicsContext3D* context,
             unsigned program,
             int* base_uniform_index);
   std::string GetShaderString() const;
@@ -250,7 +250,7 @@ class VertexShaderVideoTransform {
  public:
   VertexShaderVideoTransform();
 
-  void Init(WebKit::WebGraphicsContext3D* context,
+  void Init(blink::WebGraphicsContext3D* context,
             unsigned program,
             int* base_uniform_index);
   std::string GetShaderString() const;
@@ -269,7 +269,7 @@ class FragmentTexAlphaBinding {
  public:
   FragmentTexAlphaBinding();
 
-  void Init(WebKit::WebGraphicsContext3D* context,
+  void Init(blink::WebGraphicsContext3D* context,
             unsigned program,
             int* base_uniform_index);
   int alpha_location() const { return alpha_location_; }
@@ -287,7 +287,7 @@ class FragmentTexColorMatrixAlphaBinding {
  public:
     FragmentTexColorMatrixAlphaBinding();
 
-    void Init(WebKit::WebGraphicsContext3D* context,
+    void Init(blink::WebGraphicsContext3D* context,
               unsigned program,
               int* base_uniform_index);
     int alpha_location() const { return alpha_location_; }
@@ -307,7 +307,7 @@ class FragmentTexOpaqueBinding {
  public:
   FragmentTexOpaqueBinding();
 
-  void Init(WebKit::WebGraphicsContext3D* context,
+  void Init(blink::WebGraphicsContext3D* context,
             unsigned program,
             int* base_uniform_index);
   int alpha_location() const { return -1; }
@@ -325,7 +325,7 @@ class FragmentTexBackgroundBinding {
  public:
   FragmentTexBackgroundBinding();
 
-  void Init(WebKit::WebGraphicsContext3D* context,
+  void Init(blink::WebGraphicsContext3D* context,
             unsigned program,
             int* base_uniform_index);
   int background_color_location() const { return background_color_location_; }
@@ -404,7 +404,7 @@ class FragmentShaderOESImageExternal : public FragmentTexAlphaBinding {
   FragmentShaderOESImageExternal();
 
   std::string GetShaderString(TexCoordPrecision precision) const;
-  void Init(WebKit::WebGraphicsContext3D* context,
+  void Init(blink::WebGraphicsContext3D* context,
             unsigned program,
             int* base_uniform_index);
  private:
@@ -417,7 +417,7 @@ class FragmentShaderRGBATexAlphaAA {
  public:
   FragmentShaderRGBATexAlphaAA();
 
-  void Init(WebKit::WebGraphicsContext3D* context,
+  void Init(blink::WebGraphicsContext3D* context,
             unsigned program,
             int* base_uniform_index);
   std::string GetShaderString(TexCoordPrecision precision) const;
@@ -436,7 +436,7 @@ class FragmentTexClampAlphaAABinding {
  public:
   FragmentTexClampAlphaAABinding();
 
-  void Init(WebKit::WebGraphicsContext3D* context,
+  void Init(blink::WebGraphicsContext3D* context,
             unsigned program,
             int* base_uniform_index);
   int alpha_location() const { return alpha_location_; }
@@ -471,7 +471,7 @@ class FragmentShaderRGBATexAlphaMask {
   FragmentShaderRGBATexAlphaMask();
   std::string GetShaderString(TexCoordPrecision precision) const;
 
-  void Init(WebKit::WebGraphicsContext3D* context,
+  void Init(blink::WebGraphicsContext3D* context,
             unsigned program,
             int* base_uniform_index);
   int alpha_location() const { return alpha_location_; }
@@ -499,7 +499,7 @@ class FragmentShaderRGBATexAlphaMaskAA {
   FragmentShaderRGBATexAlphaMaskAA();
   std::string GetShaderString(TexCoordPrecision precision) const;
 
-  void Init(WebKit::WebGraphicsContext3D* context,
+  void Init(blink::WebGraphicsContext3D* context,
             unsigned program,
             int* base_uniform_index);
   int alpha_location() const { return alpha_location_; }
@@ -527,7 +527,7 @@ class FragmentShaderRGBATexAlphaMaskColorMatrixAA {
   FragmentShaderRGBATexAlphaMaskColorMatrixAA();
   std::string GetShaderString(TexCoordPrecision precision) const;
 
-  void Init(WebKit::WebGraphicsContext3D* context,
+  void Init(blink::WebGraphicsContext3D* context,
             unsigned program,
             int* base_uniform_index);
   int alpha_location() const { return alpha_location_; }
@@ -557,7 +557,7 @@ class FragmentShaderRGBATexAlphaColorMatrixAA {
   FragmentShaderRGBATexAlphaColorMatrixAA();
   std::string GetShaderString(TexCoordPrecision precision) const;
 
-  void Init(WebKit::WebGraphicsContext3D* context,
+  void Init(blink::WebGraphicsContext3D* context,
             unsigned program,
             int* base_uniform_index);
   int alpha_location() const { return alpha_location_; }
@@ -577,7 +577,7 @@ class FragmentShaderRGBATexAlphaMaskColorMatrix {
   FragmentShaderRGBATexAlphaMaskColorMatrix();
   std::string GetShaderString(TexCoordPrecision precision) const;
 
-  void Init(WebKit::WebGraphicsContext3D* context,
+  void Init(blink::WebGraphicsContext3D* context,
             unsigned program,
             int* base_uniform_index);
   int alpha_location() const { return alpha_location_; }
@@ -607,7 +607,7 @@ class FragmentShaderYUVVideo {
   FragmentShaderYUVVideo();
   std::string GetShaderString(TexCoordPrecision precision) const;
 
-  void Init(WebKit::WebGraphicsContext3D* context,
+  void Init(blink::WebGraphicsContext3D* context,
             unsigned program,
             int* base_uniform_index);
   int y_texture_location() const { return y_texture_location_; }
@@ -634,7 +634,7 @@ class FragmentShaderYUVAVideo {
   FragmentShaderYUVAVideo();
   std::string GetShaderString(TexCoordPrecision precision) const;
 
-  void Init(WebKit::WebGraphicsContext3D* context,
+  void Init(blink::WebGraphicsContext3D* context,
             unsigned program,
             int* base_uniform_index);
 
@@ -663,7 +663,7 @@ class FragmentShaderColor {
   FragmentShaderColor();
   std::string GetShaderString(TexCoordPrecision precision) const;
 
-  void Init(WebKit::WebGraphicsContext3D* context,
+  void Init(blink::WebGraphicsContext3D* context,
             unsigned program,
             int* base_uniform_index);
   int color_location() const { return color_location_; }
@@ -679,7 +679,7 @@ class FragmentShaderColorAA {
   FragmentShaderColorAA();
   std::string GetShaderString(TexCoordPrecision precision) const;
 
-  void Init(WebKit::WebGraphicsContext3D* context,
+  void Init(blink::WebGraphicsContext3D* context,
             unsigned program,
             int* base_uniform_index);
   int color_location() const { return color_location_; }
@@ -695,7 +695,7 @@ class FragmentShaderCheckerboard {
   FragmentShaderCheckerboard();
   std::string GetShaderString(TexCoordPrecision precision) const;
 
-  void Init(WebKit::WebGraphicsContext3D* context,
+  void Init(blink::WebGraphicsContext3D* context,
             unsigned program,
             int* base_uniform_index);
   int alpha_location() const { return alpha_location_; }

@@ -13,23 +13,23 @@
 #include "ui/gfx/point_f.h"
 #include "webkit/child/webkit_child_export.h"
 
-namespace WebKit {
+namespace blink {
 class WebGestureCurveTarget;
 }
 
 namespace webkit_glue {
 
-class WEBKIT_CHILD_EXPORT FlingAnimatorImpl : public WebKit::WebGestureCurve {
+class WEBKIT_CHILD_EXPORT FlingAnimatorImpl : public blink::WebGestureCurve {
  public:
   FlingAnimatorImpl();
   virtual ~FlingAnimatorImpl();
 
   static FlingAnimatorImpl* CreateAndroidGestureCurve(
-      const WebKit::WebFloatPoint& velocity,
-      const WebKit::WebSize&);
+      const blink::WebFloatPoint& velocity,
+      const blink::WebSize&);
 
   virtual bool apply(double time,
-                     WebKit::WebGestureCurveTarget* target);
+                     blink::WebGestureCurveTarget* target);
 
   static bool RegisterJni(JNIEnv*);
 

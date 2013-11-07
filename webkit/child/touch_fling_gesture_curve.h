@@ -11,7 +11,7 @@
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "webkit/child/webkit_child_export.h"
 
-namespace WebKit {
+namespace blink {
 class WebGestureCurveTarget;
 }
 
@@ -21,27 +21,27 @@ namespace webkit_glue {
 // fling scroll. Starts with a flat velocity profile based on 'velocity', which
 // tails off to zero. Time is scaled to that duration of the fling is
 // proportional to the initial velocity.
-class TouchFlingGestureCurve : public WebKit::WebGestureCurve {
+class TouchFlingGestureCurve : public blink::WebGestureCurve {
  public:
 
   WEBKIT_CHILD_EXPORT static WebGestureCurve* Create(
-      const WebKit::WebFloatPoint& initial_velocity,
+      const blink::WebFloatPoint& initial_velocity,
       float p0, float p1, float p2,
-      const WebKit::WebSize& cumulativeScroll);
+      const blink::WebSize& cumulativeScroll);
 
  virtual bool apply(double monotonicTime,
-                    WebKit::WebGestureCurveTarget*) OVERRIDE;
+                    blink::WebGestureCurveTarget*) OVERRIDE;
 
  private:
-  TouchFlingGestureCurve(const WebKit::WebFloatPoint& initial_velocity,
+  TouchFlingGestureCurve(const blink::WebFloatPoint& initial_velocity,
                          float p0,
                          float p1,
                          float p2,
-                         const WebKit::WebSize& cumulativeScroll);
+                         const blink::WebSize& cumulativeScroll);
   virtual ~TouchFlingGestureCurve();
 
-  WebKit::WebFloatPoint displacement_ratio_;
-  WebKit::WebFloatSize cumulative_scroll_;
+  blink::WebFloatPoint displacement_ratio_;
+  blink::WebFloatSize cumulative_scroll_;
   float coefficients_[3];
   float time_offset_;
   float curve_duration_;

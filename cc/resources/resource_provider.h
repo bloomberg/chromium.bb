@@ -31,7 +31,7 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/size.h"
 
-namespace WebKit { class WebGraphicsContext3D; }
+namespace blink { class WebGraphicsContext3D; }
 
 namespace gfx {
 class Rect;
@@ -352,7 +352,7 @@ class CC_EXPORT ResourceProvider {
   // Indicates if we can currently lock this resource for write.
   bool CanLockForWrite(ResourceId id);
 
-  static GLint GetActiveTextureUnit(WebKit::WebGraphicsContext3D* context);
+  static GLint GetActiveTextureUnit(blink::WebGraphicsContext3D* context);
 
  private:
   struct Resource {
@@ -447,7 +447,7 @@ class CC_EXPORT ResourceProvider {
   static void PopulateSkBitmapWithResource(SkBitmap* sk_bitmap,
                                            const Resource* resource);
 
-  void TransferResource(WebKit::WebGraphicsContext3D* context,
+  void TransferResource(blink::WebGraphicsContext3D* context,
                         ResourceId id,
                         TransferableResource* resource);
   enum DeleteStyle {
@@ -470,7 +470,7 @@ class CC_EXPORT ResourceProvider {
                        GLenum filter);
 
   // Returns NULL if the output_surface_ does not have a ContextProvider.
-  WebKit::WebGraphicsContext3D* Context3d() const;
+  blink::WebGraphicsContext3D* Context3d() const;
 
   OutputSurface* output_surface_;
   SharedBitmapManager* shared_bitmap_manager_;

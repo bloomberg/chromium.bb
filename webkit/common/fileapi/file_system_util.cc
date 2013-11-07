@@ -282,53 +282,53 @@ base::FilePath StringToFilePath(const std::string& file_path_string) {
 #endif
 }
 
-WebKit::WebFileError PlatformFileErrorToWebFileError(
+blink::WebFileError PlatformFileErrorToWebFileError(
     base::PlatformFileError error_code) {
   switch (error_code) {
     case base::PLATFORM_FILE_ERROR_NOT_FOUND:
-      return WebKit::WebFileErrorNotFound;
+      return blink::WebFileErrorNotFound;
     case base::PLATFORM_FILE_ERROR_INVALID_OPERATION:
     case base::PLATFORM_FILE_ERROR_EXISTS:
     case base::PLATFORM_FILE_ERROR_NOT_EMPTY:
-      return WebKit::WebFileErrorInvalidModification;
+      return blink::WebFileErrorInvalidModification;
     case base::PLATFORM_FILE_ERROR_NOT_A_DIRECTORY:
     case base::PLATFORM_FILE_ERROR_NOT_A_FILE:
-      return WebKit::WebFileErrorTypeMismatch;
+      return blink::WebFileErrorTypeMismatch;
     case base::PLATFORM_FILE_ERROR_ACCESS_DENIED:
-      return WebKit::WebFileErrorNoModificationAllowed;
+      return blink::WebFileErrorNoModificationAllowed;
     case base::PLATFORM_FILE_ERROR_FAILED:
-      return WebKit::WebFileErrorInvalidState;
+      return blink::WebFileErrorInvalidState;
     case base::PLATFORM_FILE_ERROR_ABORT:
-      return WebKit::WebFileErrorAbort;
+      return blink::WebFileErrorAbort;
     case base::PLATFORM_FILE_ERROR_SECURITY:
-      return WebKit::WebFileErrorSecurity;
+      return blink::WebFileErrorSecurity;
     case base::PLATFORM_FILE_ERROR_NO_SPACE:
-      return WebKit::WebFileErrorQuotaExceeded;
+      return blink::WebFileErrorQuotaExceeded;
     case base::PLATFORM_FILE_ERROR_INVALID_URL:
-      return WebKit::WebFileErrorEncoding;
+      return blink::WebFileErrorEncoding;
     default:
-      return WebKit::WebFileErrorInvalidModification;
+      return blink::WebFileErrorInvalidModification;
   }
 }
 
 bool GetFileSystemPublicType(
     const std::string type_string,
-    WebKit::WebFileSystemType* type) {
+    blink::WebFileSystemType* type) {
   DCHECK(type);
   if (type_string == "Temporary") {
-    *type = WebKit::WebFileSystemTypeTemporary;
+    *type = blink::WebFileSystemTypeTemporary;
     return true;
   }
   if (type_string == "Persistent") {
-    *type = WebKit::WebFileSystemTypePersistent;
+    *type = blink::WebFileSystemTypePersistent;
     return true;
   }
   if (type_string == "Isolated") {
-    *type = WebKit::WebFileSystemTypeIsolated;
+    *type = blink::WebFileSystemTypeIsolated;
     return true;
   }
   if (type_string == "External") {
-    *type = WebKit::WebFileSystemTypeExternal;
+    *type = blink::WebFileSystemTypeExternal;
     return true;
   }
   NOTREACHED();

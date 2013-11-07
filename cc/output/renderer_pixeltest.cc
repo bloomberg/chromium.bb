@@ -1283,7 +1283,7 @@ TEST_F(GLRendererPixelTestWithBackgroundFilter, InvertFilter) {
 class ExternalStencilPixelTest : public GLRendererPixelTest {
  protected:
   void ClearBackgroundToGreen() {
-    WebKit::WebGraphicsContext3D* context3d =
+    blink::WebGraphicsContext3D* context3d =
         output_surface_->context_provider()->Context3d();
     output_surface_->EnsureBackbuffer();
     output_surface_->Reshape(device_viewport_size_, 1);
@@ -1293,7 +1293,7 @@ class ExternalStencilPixelTest : public GLRendererPixelTest {
 
   void PopulateStencilBuffer() {
     // Set two quadrants of the stencil buffer to 1.
-    WebKit::WebGraphicsContext3D* context3d =
+    blink::WebGraphicsContext3D* context3d =
         output_surface_->context_provider()->Context3d();
     ASSERT_TRUE(context3d->getContextAttributes().stencil);
     output_surface_->EnsureBackbuffer();

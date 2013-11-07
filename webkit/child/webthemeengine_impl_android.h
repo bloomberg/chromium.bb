@@ -9,16 +9,16 @@
 
 namespace webkit_glue {
 
-class WebThemeEngineImpl : public WebKit::WebThemeEngine {
+class WebThemeEngineImpl : public blink::WebThemeEngine {
  public:
   // WebThemeEngine methods:
-  virtual WebKit::WebSize getSize(WebKit::WebThemeEngine::Part);
+  virtual blink::WebSize getSize(blink::WebThemeEngine::Part);
   virtual void paint(
-      WebKit::WebCanvas* canvas,
-      WebKit::WebThemeEngine::Part part,
-      WebKit::WebThemeEngine::State state,
-      const WebKit::WebRect& rect,
-      const WebKit::WebThemeEngine::ExtraParams* extra_params);
+      blink::WebCanvas* canvas,
+      blink::WebThemeEngine::Part part,
+      blink::WebThemeEngine::State state,
+      const blink::WebRect& rect,
+      const blink::WebThemeEngine::ExtraParams* extra_params);
 };
 
 }  // namespace webkit_glue

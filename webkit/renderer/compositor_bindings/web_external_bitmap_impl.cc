@@ -23,7 +23,7 @@ WebExternalBitmapImpl::WebExternalBitmapImpl() {}
 
 WebExternalBitmapImpl::~WebExternalBitmapImpl() {}
 
-void WebExternalBitmapImpl::setSize(WebKit::WebSize size) {
+void WebExternalBitmapImpl::setSize(blink::WebSize size) {
   if (size != size_) {
     size_t byte_size = size.width * size.height * 4;
     shared_memory_ = g_memory_allocator(byte_size);
@@ -33,7 +33,7 @@ void WebExternalBitmapImpl::setSize(WebKit::WebSize size) {
   }
 }
 
-WebKit::WebSize WebExternalBitmapImpl::size() {
+blink::WebSize WebExternalBitmapImpl::size() {
   return size_;
 }
 

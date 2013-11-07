@@ -11,7 +11,7 @@
 #include "cc/output/context_provider.h"
 #include "cc/output/shader.h"
 
-namespace WebKit { class WebGraphicsContext3D; }
+namespace blink { class WebGraphicsContext3D; }
 
 namespace cc {
 
@@ -20,23 +20,23 @@ class ProgramBindingBase {
   ProgramBindingBase();
   ~ProgramBindingBase();
 
-  bool Init(WebKit::WebGraphicsContext3D* context,
+  bool Init(blink::WebGraphicsContext3D* context,
             const std::string& vertex_shader,
             const std::string& fragment_shader);
-  bool Link(WebKit::WebGraphicsContext3D* context);
-  void Cleanup(WebKit::WebGraphicsContext3D* context);
+  bool Link(blink::WebGraphicsContext3D* context);
+  void Cleanup(blink::WebGraphicsContext3D* context);
 
   unsigned program() const { return program_; }
   bool initialized() const { return initialized_; }
 
  protected:
-  unsigned LoadShader(WebKit::WebGraphicsContext3D* context,
+  unsigned LoadShader(blink::WebGraphicsContext3D* context,
                       unsigned type,
                       const std::string& shader_source);
-  unsigned CreateShaderProgram(WebKit::WebGraphicsContext3D* context,
+  unsigned CreateShaderProgram(blink::WebGraphicsContext3D* context,
                                unsigned vertex_shader,
                                unsigned fragment_shader);
-  void CleanupShaders(WebKit::WebGraphicsContext3D* context);
+  void CleanupShaders(blink::WebGraphicsContext3D* context);
 
   unsigned program_;
   unsigned vertex_shader_id_;

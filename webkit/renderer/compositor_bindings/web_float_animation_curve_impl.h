@@ -14,11 +14,11 @@ class AnimationCurve;
 class KeyframedFloatAnimationCurve;
 }
 
-namespace WebKit { struct WebFloatKeyframe; }
+namespace blink { struct WebFloatKeyframe; }
 
 namespace webkit {
 
-class WebFloatAnimationCurveImpl : public WebKit::WebFloatAnimationCurve {
+class WebFloatAnimationCurveImpl : public blink::WebFloatAnimationCurve {
  public:
   WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebFloatAnimationCurveImpl();
   virtual ~WebFloatAnimationCurveImpl();
@@ -27,10 +27,10 @@ class WebFloatAnimationCurveImpl : public WebKit::WebFloatAnimationCurve {
   virtual AnimationCurveType type() const;
 
   // WebFloatAnimationCurve implementation.
-  virtual void add(const WebKit::WebFloatKeyframe& keyframe);
-  virtual void add(const WebKit::WebFloatKeyframe& keyframe,
+  virtual void add(const blink::WebFloatKeyframe& keyframe);
+  virtual void add(const blink::WebFloatKeyframe& keyframe,
                    TimingFunctionType type);
-  virtual void add(const WebKit::WebFloatKeyframe& keyframe,
+  virtual void add(const blink::WebFloatKeyframe& keyframe,
                    double x1,
                    double y1,
                    double x2,

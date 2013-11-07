@@ -38,87 +38,87 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
 
   virtual bool isContextLost();
 
-  virtual void attachShader(WebKit::WebGLId program, WebKit::WebGLId shader);
+  virtual void attachShader(blink::WebGLId program, blink::WebGLId shader);
   virtual void bindFramebuffer(
-      WebKit::WGC3Denum target, WebKit::WebGLId framebuffer);
+      blink::WGC3Denum target, blink::WebGLId framebuffer);
   virtual void bindRenderbuffer(
-      WebKit::WGC3Denum target, WebKit::WebGLId renderbuffer);
+      blink::WGC3Denum target, blink::WebGLId renderbuffer);
   virtual void bindTexture(
-      WebKit::WGC3Denum target,
-      WebKit::WebGLId texture_id);
+      blink::WGC3Denum target,
+      blink::WebGLId texture_id);
 
-  virtual WebKit::WGC3Denum checkFramebufferStatus(WebKit::WGC3Denum target);
+  virtual blink::WGC3Denum checkFramebufferStatus(blink::WGC3Denum target);
 
   virtual Attributes getContextAttributes();
 
-  virtual WebKit::WebString getString(WebKit::WGC3Denum name);
-  virtual WebKit::WGC3Dint getUniformLocation(
-      WebKit::WebGLId program,
-      const WebKit::WGC3Dchar* name);
-  virtual WebKit::WGC3Dsizeiptr getVertexAttribOffset(
-      WebKit::WGC3Duint index,
-      WebKit::WGC3Denum pname);
+  virtual blink::WebString getString(blink::WGC3Denum name);
+  virtual blink::WGC3Dint getUniformLocation(
+      blink::WebGLId program,
+      const blink::WGC3Dchar* name);
+  virtual blink::WGC3Dsizeiptr getVertexAttribOffset(
+      blink::WGC3Duint index,
+      blink::WGC3Denum pname);
 
-  virtual WebKit::WGC3Dboolean isBuffer(WebKit::WebGLId buffer);
-  virtual WebKit::WGC3Dboolean isEnabled(WebKit::WGC3Denum cap);
-  virtual WebKit::WGC3Dboolean isFramebuffer(WebKit::WebGLId framebuffer);
-  virtual WebKit::WGC3Dboolean isProgram(WebKit::WebGLId program);
-  virtual WebKit::WGC3Dboolean isRenderbuffer(WebKit::WebGLId renderbuffer);
-  virtual WebKit::WGC3Dboolean isShader(WebKit::WebGLId shader);
-  virtual WebKit::WGC3Dboolean isTexture(WebKit::WebGLId texture);
+  virtual blink::WGC3Dboolean isBuffer(blink::WebGLId buffer);
+  virtual blink::WGC3Dboolean isEnabled(blink::WGC3Denum cap);
+  virtual blink::WGC3Dboolean isFramebuffer(blink::WebGLId framebuffer);
+  virtual blink::WGC3Dboolean isProgram(blink::WebGLId program);
+  virtual blink::WGC3Dboolean isRenderbuffer(blink::WebGLId renderbuffer);
+  virtual blink::WGC3Dboolean isShader(blink::WebGLId shader);
+  virtual blink::WGC3Dboolean isTexture(blink::WebGLId texture);
 
-  virtual void useProgram(WebKit::WebGLId program);
+  virtual void useProgram(blink::WebGLId program);
 
-  virtual void genBuffers(WebKit::WGC3Dsizei count, WebKit::WebGLId* ids);
-  virtual void genFramebuffers(WebKit::WGC3Dsizei count, WebKit::WebGLId* ids);
-  virtual void genRenderbuffers(WebKit::WGC3Dsizei count, WebKit::WebGLId* ids);
-  virtual void genTextures(WebKit::WGC3Dsizei count, WebKit::WebGLId* ids);
+  virtual void genBuffers(blink::WGC3Dsizei count, blink::WebGLId* ids);
+  virtual void genFramebuffers(blink::WGC3Dsizei count, blink::WebGLId* ids);
+  virtual void genRenderbuffers(blink::WGC3Dsizei count, blink::WebGLId* ids);
+  virtual void genTextures(blink::WGC3Dsizei count, blink::WebGLId* ids);
 
-  virtual void deleteBuffers(WebKit::WGC3Dsizei count, WebKit::WebGLId* ids);
+  virtual void deleteBuffers(blink::WGC3Dsizei count, blink::WebGLId* ids);
   virtual void deleteFramebuffers(
-      WebKit::WGC3Dsizei count, WebKit::WebGLId* ids);
+      blink::WGC3Dsizei count, blink::WebGLId* ids);
   virtual void deleteRenderbuffers(
-      WebKit::WGC3Dsizei count, WebKit::WebGLId* ids);
-  virtual void deleteTextures(WebKit::WGC3Dsizei count, WebKit::WebGLId* ids);
+      blink::WGC3Dsizei count, blink::WebGLId* ids);
+  virtual void deleteTextures(blink::WGC3Dsizei count, blink::WebGLId* ids);
 
-  virtual WebKit::WebGLId createBuffer();
-  virtual WebKit::WebGLId createFramebuffer();
-  virtual WebKit::WebGLId createRenderbuffer();
-  virtual WebKit::WebGLId createTexture();
+  virtual blink::WebGLId createBuffer();
+  virtual blink::WebGLId createFramebuffer();
+  virtual blink::WebGLId createRenderbuffer();
+  virtual blink::WebGLId createTexture();
 
-  virtual void deleteBuffer(WebKit::WebGLId id);
-  virtual void deleteFramebuffer(WebKit::WebGLId id);
-  virtual void deleteRenderbuffer(WebKit::WebGLId id);
-  virtual void deleteTexture(WebKit::WebGLId id);
+  virtual void deleteBuffer(blink::WebGLId id);
+  virtual void deleteFramebuffer(blink::WebGLId id);
+  virtual void deleteRenderbuffer(blink::WebGLId id);
+  virtual void deleteTexture(blink::WebGLId id);
 
-  virtual WebKit::WebGLId createProgram();
-  virtual WebKit::WebGLId createShader(WebKit::WGC3Denum);
-  virtual WebKit::WebGLId createExternalTexture();
+  virtual blink::WebGLId createProgram();
+  virtual blink::WebGLId createShader(blink::WGC3Denum);
+  virtual blink::WebGLId createExternalTexture();
 
-  virtual void deleteProgram(WebKit::WebGLId id);
-  virtual void deleteShader(WebKit::WebGLId id);
+  virtual void deleteProgram(blink::WebGLId id);
+  virtual void deleteShader(blink::WebGLId id);
 
-  virtual void endQueryEXT(WebKit::WGC3Denum target);
+  virtual void endQueryEXT(blink::WGC3Denum target);
   virtual void getQueryObjectuivEXT(
-      WebKit::WebGLId query,
-      WebKit::WGC3Denum pname,
-      WebKit::WGC3Duint* params);
+      blink::WebGLId query,
+      blink::WGC3Denum pname,
+      blink::WGC3Duint* params);
 
   virtual void getIntegerv(
-      WebKit::WGC3Denum pname,
-      WebKit::WGC3Dint* value);
+      blink::WGC3Denum pname,
+      blink::WGC3Dint* value);
 
-  virtual void genMailboxCHROMIUM(WebKit::WGC3Dbyte* mailbox);
-  virtual void produceTextureCHROMIUM(WebKit::WGC3Denum target,
-                                      const WebKit::WGC3Dbyte* mailbox) { }
-  virtual void consumeTextureCHROMIUM(WebKit::WGC3Denum target,
-                                      const WebKit::WGC3Dbyte* mailbox) { }
+  virtual void genMailboxCHROMIUM(blink::WGC3Dbyte* mailbox);
+  virtual void produceTextureCHROMIUM(blink::WGC3Denum target,
+                                      const blink::WGC3Dbyte* mailbox) { }
+  virtual void consumeTextureCHROMIUM(blink::WGC3Denum target,
+                                      const blink::WGC3Dbyte* mailbox) { }
 
   virtual void setContextLostCallback(
       WebGraphicsContextLostCallback* callback);
 
-  virtual void loseContextCHROMIUM(WebKit::WGC3Denum current,
-                                   WebKit::WGC3Denum other);
+  virtual void loseContextCHROMIUM(blink::WGC3Denum current,
+                                   blink::WGC3Denum other);
 
   virtual void setSwapBuffersCompleteCallbackCHROMIUM(
       WebGraphicsSwapBuffersCompleteCallbackCHROMIUM* callback);
@@ -128,28 +128,28 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   virtual void finish();
   virtual void flush();
 
-  virtual void bindBuffer(WebKit::WGC3Denum target, WebKit::WebGLId buffer);
-  virtual void bufferData(WebKit::WGC3Denum target,
-                          WebKit::WGC3Dsizeiptr size,
+  virtual void bindBuffer(blink::WGC3Denum target, blink::WebGLId buffer);
+  virtual void bufferData(blink::WGC3Denum target,
+                          blink::WGC3Dsizeiptr size,
                           const void* data,
-                          WebKit::WGC3Denum usage);
-  virtual void* mapBufferCHROMIUM(WebKit::WGC3Denum target,
-                                  WebKit::WGC3Denum access);
-  virtual WebKit::WGC3Dboolean unmapBufferCHROMIUM(WebKit::WGC3Denum target);
+                          blink::WGC3Denum usage);
+  virtual void* mapBufferCHROMIUM(blink::WGC3Denum target,
+                                  blink::WGC3Denum access);
+  virtual blink::WGC3Dboolean unmapBufferCHROMIUM(blink::WGC3Denum target);
 
-  virtual WebKit::WGC3Duint createImageCHROMIUM(
-      WebKit::WGC3Dsizei width,
-      WebKit::WGC3Dsizei height,
-      WebKit::WGC3Denum internalformat);
-  virtual void destroyImageCHROMIUM(WebKit::WGC3Duint image_id);
+  virtual blink::WGC3Duint createImageCHROMIUM(
+      blink::WGC3Dsizei width,
+      blink::WGC3Dsizei height,
+      blink::WGC3Denum internalformat);
+  virtual void destroyImageCHROMIUM(blink::WGC3Duint image_id);
   virtual void getImageParameterivCHROMIUM(
-      WebKit::WGC3Duint image_id,
-      WebKit::WGC3Denum pname,
-      WebKit::WGC3Dint* params);
+      blink::WGC3Duint image_id,
+      blink::WGC3Denum pname,
+      blink::WGC3Dint* params);
   virtual void* mapImageCHROMIUM(
-      WebKit::WGC3Duint image_id,
-      WebKit::WGC3Denum access);
-  virtual void unmapImageCHROMIUM(WebKit::WGC3Duint image_id);
+      blink::WGC3Duint image_id,
+      blink::WGC3Denum access);
+  virtual void unmapImageCHROMIUM(blink::WGC3Duint image_id);
 
   const ContextProvider::Capabilities& test_capabilities() const {
     return test_capabilities_;
@@ -179,7 +179,7 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   }
 
   size_t NumTextures() const;
-  WebKit::WebGLId TextureAt(int i) const;
+  blink::WebGLId TextureAt(int i) const;
 
   size_t NumUsedTextures() const { return used_textures_.size(); }
   bool UsedTexture(int texture) const {
@@ -208,21 +208,21 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   }
 
   // When this context is lost, all contexts in its share group are also lost.
-  void add_share_group_context(WebKit::WebGraphicsContext3D* context3d) {
+  void add_share_group_context(blink::WebGraphicsContext3D* context3d) {
     shared_contexts_.push_back(context3d);
   }
 
   void set_max_texture_size(int size) { max_texture_size_ = size; }
 
-  static const WebKit::WebGLId kExternalTextureId;
-  virtual WebKit::WebGLId NextTextureId();
-  virtual void RetireTextureId(WebKit::WebGLId id);
+  static const blink::WebGLId kExternalTextureId;
+  virtual blink::WebGLId NextTextureId();
+  virtual void RetireTextureId(blink::WebGLId id);
 
-  virtual WebKit::WebGLId NextBufferId();
-  virtual void RetireBufferId(WebKit::WebGLId id);
+  virtual blink::WebGLId NextBufferId();
+  virtual void RetireBufferId(blink::WebGLId id);
 
-  virtual WebKit::WebGLId NextImageId();
-  virtual void RetireImageId(WebKit::WebGLId id);
+  virtual blink::WebGLId NextImageId();
+  virtual void RetireImageId(blink::WebGLId id);
 
   size_t GetTransferBufferMemoryUsedBytes() const;
   void SetMaxTransferBufferUsageBytes(size_t max_transfer_buffer_usage_bytes);
@@ -254,13 +254,13 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
     TextureTargets();
     ~TextureTargets();
 
-    void BindTexture(WebKit::WGC3Denum target, WebKit::WebGLId id);
-    void UnbindTexture(WebKit::WebGLId id);
+    void BindTexture(blink::WGC3Denum target, blink::WebGLId id);
+    void UnbindTexture(blink::WebGLId id);
 
-    WebKit::WebGLId BoundTexture(WebKit::WGC3Denum target);
+    blink::WebGLId BoundTexture(blink::WGC3Denum target);
 
    private:
-    typedef base::hash_map<WebKit::WGC3Denum, WebKit::WebGLId> TargetTextureMap;
+    typedef base::hash_map<blink::WGC3Denum, blink::WebGLId> TargetTextureMap;
     TargetTextureMap bound_textures_;
   };
 
@@ -268,7 +268,7 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
     Buffer();
     ~Buffer();
 
-    WebKit::WGC3Denum target;
+    blink::WGC3Denum target;
     scoped_ptr<uint8[]> pixels;
     size_t size;
 
@@ -309,7 +309,7 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   void CallAllSyncPointCallbacks();
   void SwapBuffersComplete();
   void CreateNamespace();
-  WebKit::WebGLId BoundTextureId(WebKit::WGC3Denum target);
+  blink::WebGLId BoundTextureId(blink::WGC3Denum target);
 
   unsigned context_id_;
   Attributes attributes_;
@@ -328,7 +328,7 @@ class TestWebGraphicsContext3D : public FakeWebGraphicsContext3D {
   base::hash_set<unsigned> program_set_;
   unsigned next_shader_id_;
   base::hash_set<unsigned> shader_set_;
-  std::vector<WebKit::WebGraphicsContext3D*> shared_contexts_;
+  std::vector<blink::WebGraphicsContext3D*> shared_contexts_;
   int max_texture_size_;
   bool reshape_called_;
   int width_;

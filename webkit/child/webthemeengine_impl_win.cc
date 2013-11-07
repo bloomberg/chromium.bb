@@ -13,10 +13,10 @@
 #include "ui/gfx/win/dpi.h"
 #include "ui/native_theme/native_theme.h"
 
-using WebKit::WebCanvas;
-using WebKit::WebColor;
-using WebKit::WebRect;
-using WebKit::WebSize;
+using blink::WebCanvas;
+using blink::WebColor;
+using blink::WebRect;
+using blink::WebSize;
 
 namespace webkit_glue {
 

@@ -13,7 +13,7 @@
 
 namespace webkit_glue {
 
-class WebThreadBase : public WebKit::WebThread {
+class WebThreadBase : public blink::WebThread {
  public:
   virtual ~WebThreadBase();
 

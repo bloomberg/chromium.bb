@@ -39,20 +39,20 @@
 
 using base::Time;
 using base::TimeTicks;
-using WebKit::WebData;
-using WebKit::WebHTTPBody;
-using WebKit::WebHTTPHeaderVisitor;
-using WebKit::WebHTTPLoadInfo;
-using WebKit::WebReferrerPolicy;
-using WebKit::WebSecurityPolicy;
-using WebKit::WebString;
-using WebKit::WebURL;
-using WebKit::WebURLError;
-using WebKit::WebURLLoadTiming;
-using WebKit::WebURLLoader;
-using WebKit::WebURLLoaderClient;
-using WebKit::WebURLRequest;
-using WebKit::WebURLResponse;
+using blink::WebData;
+using blink::WebHTTPBody;
+using blink::WebHTTPHeaderVisitor;
+using blink::WebHTTPLoadInfo;
+using blink::WebReferrerPolicy;
+using blink::WebSecurityPolicy;
+using blink::WebString;
+using blink::WebURL;
+using blink::WebURLError;
+using blink::WebURLLoadTiming;
+using blink::WebURLLoader;
+using blink::WebURLLoaderClient;
+using blink::WebURLRequest;
+using blink::WebURLResponse;
 
 namespace webkit_glue {
 
@@ -269,7 +269,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context>,
 WebURLLoaderImpl::Context::Context(WebURLLoaderImpl* loader)
     : loader_(loader),
       client_(NULL),
-      referrer_policy_(WebKit::WebReferrerPolicyDefault) {
+      referrer_policy_(blink::WebReferrerPolicyDefault) {
 }
 
 void WebURLLoaderImpl::Context::Cancel() {

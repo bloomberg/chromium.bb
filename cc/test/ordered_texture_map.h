@@ -20,21 +20,21 @@ class OrderedTextureMap {
   OrderedTextureMap();
   ~OrderedTextureMap();
 
-  void Append(WebKit::WebGLId id, scoped_refptr<TestTexture> texture);
-  void Replace(WebKit::WebGLId id, scoped_refptr<TestTexture> texture);
-  void Remove(WebKit::WebGLId id);
+  void Append(blink::WebGLId id, scoped_refptr<TestTexture> texture);
+  void Replace(blink::WebGLId id, scoped_refptr<TestTexture> texture);
+  void Remove(blink::WebGLId id);
 
   size_t Size();
 
-  bool ContainsId(WebKit::WebGLId id);
+  bool ContainsId(blink::WebGLId id);
 
-  scoped_refptr<TestTexture> TextureForId(WebKit::WebGLId id);
-  WebKit::WebGLId IdAt(size_t index);
+  scoped_refptr<TestTexture> TextureForId(blink::WebGLId id);
+  blink::WebGLId IdAt(size_t index);
 
  private:
-  typedef base::hash_map<WebKit::WebGLId, scoped_refptr<TestTexture> >
+  typedef base::hash_map<blink::WebGLId, scoped_refptr<TestTexture> >
       TextureMap;
-  typedef std::vector<WebKit::WebGLId> TextureList;
+  typedef std::vector<blink::WebGLId> TextureList;
 
   TextureMap textures_;
   TextureList ordered_textures_;

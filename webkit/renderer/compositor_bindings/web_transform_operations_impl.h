@@ -12,15 +12,15 @@
 
 namespace webkit {
 
-class WebTransformOperationsImpl : public WebKit::WebTransformOperations {
+class WebTransformOperationsImpl : public blink::WebTransformOperations {
  public:
   WEBKIT_COMPOSITOR_BINDINGS_EXPORT WebTransformOperationsImpl();
   virtual ~WebTransformOperationsImpl();
 
   const cc::TransformOperations& AsTransformOperations() const;
 
-  // Implementation of WebKit::WebTransformOperations methods
-  virtual bool canBlendWith(const WebKit::WebTransformOperations& other) const;
+  // Implementation of blink::WebTransformOperations methods
+  virtual bool canBlendWith(const blink::WebTransformOperations& other) const;
   virtual void appendTranslate(double x, double y, double z);
   virtual void appendRotate(double x, double y, double z, double degrees);
   virtual void appendScale(double x, double y, double z);

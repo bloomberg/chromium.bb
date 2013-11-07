@@ -8,14 +8,14 @@
 #include "third_party/WebKit/public/platform/WebScrollbar.h"
 #include "third_party/WebKit/public/platform/WebScrollbarThemeGeometry.h"
 
-using WebKit::WebScrollbar;
+using blink::WebScrollbar;
 
 namespace webkit {
 
 ScrollbarImpl::ScrollbarImpl(
     scoped_ptr<WebScrollbar> scrollbar,
-    WebKit::WebScrollbarThemePainter painter,
-    scoped_ptr<WebKit::WebScrollbarThemeGeometry> geometry)
+    blink::WebScrollbarThemePainter painter,
+    scoped_ptr<blink::WebScrollbarThemeGeometry> geometry)
     : scrollbar_(scrollbar.Pass()),
       painter_(painter),
       geometry_(geometry.Pass()) {}

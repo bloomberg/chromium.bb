@@ -12,11 +12,11 @@
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
 
-using WebKit::WGC3Denum;
-using WebKit::WGC3Dint;
-using WebKit::WGC3Dsizei;
-using WebKit::WebGLId;
-using WebKit::WGC3Duint;
+using blink::WGC3Denum;
+using blink::WGC3Dint;
+using blink::WGC3Dsizei;
+using blink::WebGLId;
+using blink::WGC3Duint;
 
 namespace cc {
 namespace {

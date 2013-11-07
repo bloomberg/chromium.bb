@@ -223,9 +223,9 @@ scoped_ptr<SkBitmap> LayerTreePixelTest::CopyTextureMailboxToBitmap(
     return scoped_ptr<SkBitmap>();
 
   using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
-  scoped_ptr<WebKit::WebGraphicsContext3D> context3d(
+  scoped_ptr<blink::WebGraphicsContext3D> context3d(
       WebGraphicsContext3DInProcessCommandBufferImpl::CreateOffscreenContext(
-          WebKit::WebGraphicsContext3D::Attributes()));
+          blink::WebGraphicsContext3D::Attributes()));
 
   EXPECT_TRUE(context3d->makeContextCurrent());
 
@@ -293,7 +293,7 @@ scoped_ptr<SkBitmap> LayerTreePixelTest::CopyTextureMailboxToBitmap(
 }
 
 void LayerTreePixelTest::ReleaseTextureMailbox(
-    scoped_ptr<WebKit::WebGraphicsContext3D> context3d,
+    scoped_ptr<blink::WebGraphicsContext3D> context3d,
     uint32 texture,
     uint32 sync_point,
     bool lost_resource) {
@@ -314,9 +314,9 @@ void LayerTreePixelTest::CopyBitmapToTextureMailboxAsTexture(
   CHECK(gfx::InitializeGLBindings(gfx::kGLImplementationOSMesaGL));
 
   using webkit::gpu::WebGraphicsContext3DInProcessCommandBufferImpl;
-  scoped_ptr<WebKit::WebGraphicsContext3D> context3d(
+  scoped_ptr<blink::WebGraphicsContext3D> context3d(
       WebGraphicsContext3DInProcessCommandBufferImpl::CreateOffscreenContext(
-          WebKit::WebGraphicsContext3D::Attributes()));
+          blink::WebGraphicsContext3D::Attributes()));
 
   EXPECT_TRUE(context3d->makeContextCurrent());
 

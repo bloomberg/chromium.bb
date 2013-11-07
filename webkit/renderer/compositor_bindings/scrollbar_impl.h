@@ -10,7 +10,7 @@
 #include "cc/input/scrollbar.h"
 #include "third_party/WebKit/public/platform/WebScrollbarThemePainter.h"
 
-namespace WebKit {
+namespace blink {
 class WebScrollbar;
 class WebScrollbarThemeGeometry;
 }
@@ -19,9 +19,9 @@ namespace webkit {
 
 class ScrollbarImpl : public cc::Scrollbar {
  public:
-  ScrollbarImpl(scoped_ptr<WebKit::WebScrollbar> scrollbar,
-                WebKit::WebScrollbarThemePainter painter,
-                scoped_ptr<WebKit::WebScrollbarThemeGeometry> geometry);
+  ScrollbarImpl(scoped_ptr<blink::WebScrollbar> scrollbar,
+                blink::WebScrollbarThemePainter painter,
+                scoped_ptr<blink::WebScrollbarThemeGeometry> geometry);
   virtual ~ScrollbarImpl();
 
   // cc::Scrollbar implementation.
@@ -38,9 +38,9 @@ class ScrollbarImpl : public cc::Scrollbar {
                          gfx::Rect content_rect) OVERRIDE;
 
  private:
-  scoped_ptr<WebKit::WebScrollbar> scrollbar_;
-  WebKit::WebScrollbarThemePainter painter_;
-  scoped_ptr<WebKit::WebScrollbarThemeGeometry> geometry_;
+  scoped_ptr<blink::WebScrollbar> scrollbar_;
+  blink::WebScrollbarThemePainter painter_;
+  scoped_ptr<blink::WebScrollbarThemeGeometry> geometry_;
 
   DISALLOW_COPY_AND_ASSIGN(ScrollbarImpl);
 };

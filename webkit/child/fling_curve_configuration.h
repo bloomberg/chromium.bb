@@ -11,7 +11,7 @@
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 
-namespace WebKit {
+namespace blink {
 class WebGestureCurve;
 }
 
@@ -25,14 +25,14 @@ class FlingCurveConfiguration {
   virtual ~FlingCurveConfiguration();
 
   // Create a touchpad fling curve using the current parameters.
-  WebKit::WebGestureCurve* CreateForTouchPad(
-      const WebKit::WebFloatPoint& velocity,
-      const WebKit::WebSize& cumulativeScroll);
+  blink::WebGestureCurve* CreateForTouchPad(
+      const blink::WebFloatPoint& velocity,
+      const blink::WebSize& cumulativeScroll);
 
   // Create a touchscreen fling curve using the current parameters.
-  WebKit::WebGestureCurve* CreateForTouchScreen(
-      const WebKit::WebFloatPoint& velocity,
-      const WebKit::WebSize& cumulativeScroll);
+  blink::WebGestureCurve* CreateForTouchScreen(
+      const blink::WebFloatPoint& velocity,
+      const blink::WebSize& cumulativeScroll);
 
   // Set the curve parameters.
   void SetCurveParameters(
@@ -40,10 +40,10 @@ class FlingCurveConfiguration {
       const std::vector<float>& new_touchscreen);
 
  private:
-  WebKit::WebGestureCurve* CreateCore(
+  blink::WebGestureCurve* CreateCore(
     const std::vector<float>& coefs,
-    const WebKit::WebFloatPoint& velocity,
-    const WebKit::WebSize& cumulativeScroll);
+    const blink::WebFloatPoint& velocity,
+    const blink::WebSize& cumulativeScroll);
 
   // Protect access to touchpad_coefs_ and touchscreen_coefs_.
   base::Lock lock_;

@@ -11,7 +11,7 @@
 namespace webkit_glue {
 
 ResourceLoaderBridge::RequestInfo::RequestInfo()
-    : referrer_policy(WebKit::WebReferrerPolicyDefault),
+    : referrer_policy(blink::WebReferrerPolicyDefault),
       load_flags(0),
       requestor_pid(0),
       request_type(ResourceType::MAIN_FRAME),

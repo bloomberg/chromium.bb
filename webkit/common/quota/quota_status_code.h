@@ -12,11 +12,11 @@ namespace quota {
 
 enum QuotaStatusCode {
   kQuotaStatusOk = 0,
-  kQuotaErrorNotSupported = WebKit::WebStorageQuotaErrorNotSupported,
+  kQuotaErrorNotSupported = blink::WebStorageQuotaErrorNotSupported,
   kQuotaErrorInvalidModification =
-      WebKit::WebStorageQuotaErrorInvalidModification,
-  kQuotaErrorInvalidAccess = WebKit::WebStorageQuotaErrorInvalidAccess,
-  kQuotaErrorAbort = WebKit::WebStorageQuotaErrorAbort,
+      blink::WebStorageQuotaErrorInvalidModification,
+  kQuotaErrorInvalidAccess = blink::WebStorageQuotaErrorInvalidAccess,
+  kQuotaErrorAbort = blink::WebStorageQuotaErrorAbort,
   kQuotaStatusUnknown = -1,
 };
 

@@ -26,7 +26,7 @@ struct TestTexture : public base::RefCounted<TestTexture> {
 
   // TODO(mvujovic): Replace this with a hash map of texture parameter names
   // and values, which can hold this filter parameter value and more.
-  WebKit::WGC3Denum filter;
+  blink::WGC3Denum filter;
 
  private:
   friend class base::RefCounted<TestTexture>;

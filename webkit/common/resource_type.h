@@ -42,7 +42,7 @@ class ResourceType {
   }
 
   WEBKIT_COMMON_EXPORT static Type FromTargetType(
-      WebKit::WebURLRequest::TargetType type);
+      blink::WebURLRequest::TargetType type);
 
   static bool IsFrame(ResourceType::Type type) {
     return type == MAIN_FRAME || type == SUB_FRAME;

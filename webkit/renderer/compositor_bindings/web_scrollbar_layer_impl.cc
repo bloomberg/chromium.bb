@@ -16,8 +16,8 @@ using cc::SolidColorScrollbarLayer;
 namespace {
 
 cc::ScrollbarOrientation ConvertOrientation(
-    WebKit::WebScrollbar::Orientation orientation) {
-  return orientation == WebKit::WebScrollbar::Horizontal ? cc::HORIZONTAL
+    blink::WebScrollbar::Orientation orientation) {
+  return orientation == blink::WebScrollbar::Horizontal ? cc::HORIZONTAL
     : cc::VERTICAL;
 }
 
@@ -26,9 +26,9 @@ cc::ScrollbarOrientation ConvertOrientation(
 namespace webkit {
 
 WebScrollbarLayerImpl::WebScrollbarLayerImpl(
-    WebKit::WebScrollbar* scrollbar,
-    WebKit::WebScrollbarThemePainter painter,
-    WebKit::WebScrollbarThemeGeometry* geometry)
+    blink::WebScrollbar* scrollbar,
+    blink::WebScrollbarThemePainter painter,
+    blink::WebScrollbarThemeGeometry* geometry)
     : layer_(new WebLayerImpl(PaintedScrollbarLayer::Create(
           scoped_ptr<cc::Scrollbar>(new ScrollbarImpl(
               make_scoped_ptr(scrollbar),
@@ -36,7 +36,7 @@ WebScrollbarLayerImpl::WebScrollbarLayerImpl(
               make_scoped_ptr(geometry))).Pass(), 0))) {}
 
 WebScrollbarLayerImpl::WebScrollbarLayerImpl(
-    WebKit::WebScrollbar::Orientation orientation,
+    blink::WebScrollbar::Orientation orientation,
     int thumb_thickness,
     bool is_left_side_vertical_scrollbar)
     : layer_(new WebLayerImpl(
@@ -48,9 +48,9 @@ WebScrollbarLayerImpl::WebScrollbarLayerImpl(
 
 WebScrollbarLayerImpl::~WebScrollbarLayerImpl() {}
 
-WebKit::WebLayer* WebScrollbarLayerImpl::layer() { return layer_.get(); }
+blink::WebLayer* WebScrollbarLayerImpl::layer() { return layer_.get(); }
 
-void WebScrollbarLayerImpl::setScrollLayer(WebKit::WebLayer* layer) {
+void WebScrollbarLayerImpl::setScrollLayer(blink::WebLayer* layer) {
   int id = layer ? static_cast<WebLayerImpl*>(layer)->layer()->id() : 0;
   static_cast<PaintedScrollbarLayer*>(layer_->layer())->SetScrollLayerId(id);
 }

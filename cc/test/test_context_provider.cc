@@ -16,7 +16,7 @@
 namespace cc {
 
 class TestContextProvider::LostContextCallbackProxy
-    : public WebKit::WebGraphicsContext3D::WebGraphicsContextLostCallback {
+    : public blink::WebGraphicsContext3D::WebGraphicsContextLostCallback {
  public:
   explicit LostContextCallbackProxy(TestContextProvider* provider)
       : provider_(provider) {
@@ -36,7 +36,7 @@ class TestContextProvider::LostContextCallbackProxy
 };
 
 class TestContextProvider::SwapBuffersCompleteCallbackProxy
-    : public WebKit::WebGraphicsContext3D::
+    : public blink::WebGraphicsContext3D::
           WebGraphicsSwapBuffersCompleteCallbackCHROMIUM {
  public:
   explicit SwapBuffersCompleteCallbackProxy(TestContextProvider* provider)
@@ -116,7 +116,7 @@ ContextProvider::Capabilities TestContextProvider::ContextCapabilities() {
   return context3d_->test_capabilities();
 }
 
-WebKit::WebGraphicsContext3D* TestContextProvider::Context3d() {
+blink::WebGraphicsContext3D* TestContextProvider::Context3d() {
   DCHECK(context3d_);
   DCHECK(bound_);
   DCHECK(context_thread_checker_.CalledOnValidThread());

@@ -31,7 +31,7 @@ bool DefaultContextFactory::Initialize() {
 
 scoped_ptr<cc::OutputSurface> DefaultContextFactory::CreateOutputSurface(
     Compositor* compositor) {
-  WebKit::WebGraphicsContext3D::Attributes attrs;
+  blink::WebGraphicsContext3D::Attributes attrs;
   attrs.depth = false;
   attrs.stencil = false;
   attrs.antialias = false;

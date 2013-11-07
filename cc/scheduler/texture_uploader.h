@@ -13,7 +13,7 @@
 #include "cc/base/scoped_ptr_deque.h"
 #include "cc/resources/resource_provider.h"
 
-namespace WebKit { class WebGraphicsContext3D; }
+namespace blink { class WebGraphicsContext3D; }
 
 namespace gfx {
 class Rect;
@@ -26,7 +26,7 @@ namespace cc {
 class CC_EXPORT TextureUploader {
  public:
   static scoped_ptr<TextureUploader> Create(
-      WebKit::WebGraphicsContext3D* context,
+      blink::WebGraphicsContext3D* context,
       bool use_map_tex_sub_image,
       bool use_shallow_flush) {
     return make_scoped_ptr(
@@ -55,7 +55,7 @@ class CC_EXPORT TextureUploader {
  private:
   class Query {
    public:
-    static scoped_ptr<Query> Create(WebKit::WebGraphicsContext3D* context) {
+    static scoped_ptr<Query> Create(blink::WebGraphicsContext3D* context) {
       return make_scoped_ptr(new Query(context));
     }
 
@@ -74,9 +74,9 @@ class CC_EXPORT TextureUploader {
     }
 
    private:
-    explicit Query(WebKit::WebGraphicsContext3D* context);
+    explicit Query(blink::WebGraphicsContext3D* context);
 
-    WebKit::WebGraphicsContext3D* context_;
+    blink::WebGraphicsContext3D* context_;
     unsigned query_id_;
     unsigned value_;
     bool has_value_;
@@ -85,7 +85,7 @@ class CC_EXPORT TextureUploader {
     DISALLOW_COPY_AND_ASSIGN(Query);
   };
 
-  TextureUploader(WebKit::WebGraphicsContext3D* context,
+  TextureUploader(blink::WebGraphicsContext3D* context,
                   bool use_map_tex_sub_image,
                   bool use_shallow_flush);
 
@@ -105,7 +105,7 @@ class CC_EXPORT TextureUploader {
                                 ResourceFormat format);
   void UploadWithTexImageETC1(const uint8* image, gfx::Size size);
 
-  WebKit::WebGraphicsContext3D* context_;
+  blink::WebGraphicsContext3D* context_;
   ScopedPtrDeque<Query> pending_queries_;
   ScopedPtrDeque<Query> available_queries_;
   std::multiset<double> textures_per_second_history_;
