@@ -743,6 +743,8 @@
         'browser/chromeos/policy/user_cloud_policy_token_forwarder_factory.h',
         'browser/chromeos/policy/user_network_configuration_updater.cc',
         'browser/chromeos/policy/user_network_configuration_updater.h',
+        'browser/chromeos/policy/user_network_configuration_updater_factory.cc',
+        'browser/chromeos/policy/user_network_configuration_updater_factory.h',
         'browser/chromeos/policy/user_policy_disk_cache.cc',
         'browser/chromeos/policy/user_policy_disk_cache.h',
         'browser/chromeos/policy/user_policy_token_loader.cc',

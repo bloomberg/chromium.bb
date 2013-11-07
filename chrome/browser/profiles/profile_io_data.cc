@@ -91,6 +91,8 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/drive/drive_protocol_handler.h"
 #include "chrome/browser/chromeos/policy/policy_cert_verifier.h"
+#include "chrome/browser/chromeos/policy/user_network_configuration_updater.h"
+#include "chrome/browser/chromeos/policy/user_network_configuration_updater_factory.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
@@ -237,7 +239,10 @@ scoped_ptr<policy::PolicyCertVerifier> CreatePolicyCertVerifier(
                  connector->GetPolicyCertTrustedCallback());
   scoped_ptr<policy::PolicyCertVerifier> cert_verifier(
       new policy::PolicyCertVerifier(policy_cert_trusted_callback));
-  connector->SetPolicyCertVerifier(cert_verifier.get());
+  policy::UserNetworkConfigurationUpdater* network_configuration_updater =
+      policy::UserNetworkConfigurationUpdaterFactory::GetForProfile(profile);
+  if (network_configuration_updater)
+    network_configuration_updater->SetPolicyCertVerifier(cert_verifier.get());
   return cert_verifier.Pass();
 }
 #endif

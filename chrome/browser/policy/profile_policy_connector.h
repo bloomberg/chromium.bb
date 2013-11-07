@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_POLICY_PROFILE_POLICY_CONNECTOR_H_
 
 #include <string>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/callback.h"
@@ -21,11 +20,6 @@ namespace net {
 class CertTrustAnchorProvider;
 }
 
-namespace net {
-class X509Certificate;
-typedef std::vector<scoped_refptr<X509Certificate> > CertificateList;
-}
-
 namespace chromeos {
 class User;
 }
@@ -34,9 +28,7 @@ namespace policy {
 
 class CloudPolicyManager;
 class ConfigurationPolicyProvider;
-class UserNetworkConfigurationUpdater;
 class PolicyService;
-class PolicyCertVerifier;
 
 // A BrowserContextKeyedService that creates and manages the per-Profile policy
 // components.
@@ -61,22 +53,10 @@ class ProfilePolicyConnector : public BrowserContextKeyedService {
   PolicyService* policy_service() const { return policy_service_.get(); }
 
 #if defined(OS_CHROMEOS)
-  // Sets the CertVerifier on which the current list of Web trusted server and
-  // CA certificates will be set. Policy updates will trigger further calls to
-  // |cert_verifier| later. |cert_verifier| must be valid until
-  // SetPolicyCertVerifier is called again (with another CertVerifier or NULL)
-  // or until this Connector is destructed. |cert_verifier|'s methods are only
-  // called on the IO thread. This function must be called on the UI thread.
-  void SetPolicyCertVerifier(PolicyCertVerifier* cert_verifier);
-
   // Returns a callback that should be called if a policy installed certificate
   // was trusted for the associated profile. The closure can be safely used (on
   // the UI thread) even after this Connector is destructed.
   base::Closure GetPolicyCertTrustedCallback();
-
-  // Sets |certs| to the list of Web trusted server and CA certificates from the
-  // last received ONC user policy.
-  void GetWebTrustedCertificates(net::CertificateList* certs) const;
 #endif
 
   // Returns true if |profile()| has used certificates installed via policy
@@ -101,7 +81,6 @@ class ProfilePolicyConnector : public BrowserContextKeyedService {
   bool is_primary_user_;
 
   scoped_ptr<ConfigurationPolicyProvider> special_user_policy_provider_;
-  scoped_ptr<UserNetworkConfigurationUpdater> network_configuration_updater_;
 
   base::WeakPtrFactory<ProfilePolicyConnector> weak_ptr_factory_;
 #endif

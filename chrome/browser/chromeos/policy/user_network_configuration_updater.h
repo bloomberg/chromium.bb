@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/chromeos/policy/network_configuration_updater.h"
+#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 
 namespace chromeos {
 class User;
@@ -31,7 +32,8 @@ class PolicyService;
 // expansion with the user's name (or email address, etc.) and handling of "Web"
 // trust of certificates. Web trusted certificates are pushed to the
 // PolicyCertVerifier if set.
-class UserNetworkConfigurationUpdater : public NetworkConfigurationUpdater {
+class UserNetworkConfigurationUpdater : public NetworkConfigurationUpdater,
+                                        public BrowserContextKeyedService {
  public:
   virtual ~UserNetworkConfigurationUpdater();
 
