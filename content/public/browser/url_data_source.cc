@@ -52,4 +52,8 @@ bool URLDataSource::ShouldServiceRequest(const net::URLRequest* request) const {
   return false;
 }
 
+bool URLDataSource::ShouldServeMimeTypeAsContentTypeHeader() const {
+  return false;
+}
+
 }  // namespace content

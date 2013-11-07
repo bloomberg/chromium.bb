@@ -183,6 +183,10 @@ class DevToolsDataSource : public content::URLDataSource {
     return false;
   }
 
+  virtual bool ShouldServeMimeTypeAsContentTypeHeader() const OVERRIDE {
+    return true;
+  }
+
  private:
   virtual ~DevToolsDataSource() {}
   scoped_refptr<net::URLRequestContextGetter> request_context_;

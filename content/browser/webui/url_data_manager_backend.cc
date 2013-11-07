@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "content/browser/fileapi/chrome_blob_storage_context.h"
 #include "content/browser/histogram_internals_request_job.h"
 #include "content/browser/net/view_blob_internals_job_factory.h"
@@ -147,6 +148,10 @@ class URLRequestChromeJob : public net::URLRequestJob,
     deny_xframe_options_ = deny_xframe_options;
   }
 
+  void set_send_content_type_header(bool send_content_type_header) {
+    send_content_type_header_ = send_content_type_header;
+  }
+
   // Returns true when job was generated from an incognito profile.
   bool is_incognito() const {
     return is_incognito_;
@@ -188,6 +193,9 @@ class URLRequestChromeJob : public net::URLRequestJob,
   // If true, sets  the "X-Frame-Options: DENY" header.
   bool deny_xframe_options_;
 
+  // If true, sets the "Content-Type: <mime-type>" header.
+  bool send_content_type_header_;
+
   // True when job is generated from an incognito profile.
   const bool is_incognito_;
 
@@ -211,6 +219,7 @@ URLRequestChromeJob::URLRequestChromeJob(net::URLRequest* request,
       content_security_policy_object_source_("object-src 'none';"),
       content_security_policy_frame_source_("frame-src 'none';"),
       deny_xframe_options_(true),
+      send_content_type_header_(false),
       is_incognito_(is_incognito),
       backend_(backend),
       weak_factory_(this) {
@@ -267,6 +276,13 @@ void URLRequestChromeJob::GetResponseInfo(net::HttpResponseInfo* info) {
 
   if (!allow_caching_)
     info->headers->AddHeader("Cache-Control: no-cache");
+
+  if (send_content_type_header_ && !mime_type_.empty()) {
+    std::string content_type =
+        base::StringPrintf("%s:%s", net::HttpRequestHeaders::kContentType,
+                           mime_type_.c_str());
+    info->headers->AddHeader(content_type);
+  }
 }
 
 void URLRequestChromeJob::MimeTypeAvailable(const std::string& mime_type) {
@@ -511,6 +527,8 @@ bool URLDataManagerBackend::StartRequest(const net::URLRequest* request,
       source->source()->GetContentSecurityPolicyFrameSrc());
   job->set_deny_xframe_options(
       source->source()->ShouldDenyXFrameOptions());
+  job->set_send_content_type_header(
+      source->source()->ShouldServeMimeTypeAsContentTypeHeader());
 
   // Look up additional request info to pass down.
   int render_process_id = -1;
