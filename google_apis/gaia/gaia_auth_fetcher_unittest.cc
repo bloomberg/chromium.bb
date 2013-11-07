@@ -187,6 +187,7 @@ class MockGaiaConsumer : public GaiaAuthConsumer {
       const GoogleServiceAuthError& error));
   MOCK_METHOD1(OnUberAuthTokenFailure, void(
       const GoogleServiceAuthError& error));
+  MOCK_METHOD1(OnListAccountsSuccess, void(const std::string& data));
 };
 
 #if defined(OS_WIN)
@@ -787,5 +788,19 @@ TEST_F(GaiaAuthFetcherTest, StartOAuthLogin) {
   MockFetcher mock_fetcher(
       oauth_login_gurl_, status, net::HTTP_OK, cookies_, data,
       net::URLFetcher::GET, &auth);
+  auth.OnURLFetchComplete(&mock_fetcher);
+}
+
+TEST_F(GaiaAuthFetcherTest, ListAccounts) {
+  std::string data("[\"gaia.l.a.r\", ["
+      "[\"gaia.l.a\", 1, \"First Last\", \"user@gmail.com\", "
+      "\"//googleusercontent.com/A/B/C/D/photo.jpg\", 1, 1, 0]]]");
+  MockGaiaConsumer consumer;
+  EXPECT_CALL(consumer, OnListAccountsSuccess(data)).Times(1);
+
+  GaiaAuthFetcher auth(&consumer, std::string(), GetRequestContext());
+  net::URLRequestStatus status(net::URLRequestStatus::SUCCESS, 0);
+  MockFetcher mock_fetcher(GaiaUrls::GetInstance()->list_accounts_url(),
+      status, net::HTTP_OK, cookies_, data, net::URLFetcher::GET, &auth);
   auth.OnURLFetchComplete(&mock_fetcher);
 }

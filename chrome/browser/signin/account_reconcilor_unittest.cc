@@ -101,3 +101,37 @@ TEST_F(AccountReconcilorTest, ProfileAlreadyConnected) {
   ASSERT_TRUE(NULL != reconcilor);
   ASSERT_TRUE(reconcilor->IsPeriodicReconciliationRunning());
 }
+
+TEST_F(AccountReconcilorTest, ParseListAccountsData) {
+  std::vector<std::string> accounts;
+  accounts = AccountReconcilor::ParseListAccountsData("");
+  ASSERT_EQ(0u, accounts.size());
+
+  accounts = AccountReconcilor::ParseListAccountsData("1");
+  ASSERT_EQ(0u, accounts.size());
+
+  accounts = AccountReconcilor::ParseListAccountsData("[]");
+  ASSERT_EQ(0u, accounts.size());
+
+  accounts = AccountReconcilor::ParseListAccountsData("[\"foo\", \"bar\"]");
+  ASSERT_EQ(0u, accounts.size());
+
+  accounts = AccountReconcilor::ParseListAccountsData("[\"foo\", []]");
+  ASSERT_EQ(0u, accounts.size());
+
+  accounts = AccountReconcilor::ParseListAccountsData(
+      "[\"foo\", [[\"bar\", 0, \"name\", 0, \"photo\", 0, 0, 0]]]");
+  ASSERT_EQ(0u, accounts.size());
+
+  accounts = AccountReconcilor::ParseListAccountsData(
+      "[\"foo\", [[\"bar\", 0, \"name\", \"email\", \"photo\", 0, 0, 0]]]");
+  ASSERT_EQ(1u, accounts.size());
+  ASSERT_EQ("email", accounts[0]);
+
+  accounts = AccountReconcilor::ParseListAccountsData(
+      "[\"foo\", [[\"bar1\", 0, \"name1\", \"email1\", \"photo1\", 0, 0, 0], "
+                 "[\"bar2\", 0, \"name2\", \"email2\", \"photo2\", 0, 0, 0]]]");
+  ASSERT_EQ(2u, accounts.size());
+  ASSERT_EQ("email1", accounts[0]);
+  ASSERT_EQ("email2", accounts[1]);
+}

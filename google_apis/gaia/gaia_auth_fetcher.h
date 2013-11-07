@@ -158,6 +158,9 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   void StartOAuthLogin(const std::string& access_token,
                        const std::string& service);
 
+  // Starts a request to list the accounts in the GAIA cookie.
+  void StartListAccounts();
+
   // Implementation of net::URLFetcherDelegate
   virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE;
 
@@ -252,6 +255,10 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   void OnOAuth2RevokeTokenFetched(const std::string& data,
                                   const net::URLRequestStatus& status,
                                   int response_code);
+
+  void OnListAccountsFetched(const std::string& data,
+                             const net::URLRequestStatus& status,
+                             int response_code);
 
   void OnGetUserInfoFetched(const std::string& data,
                             const net::URLRequestStatus& status,
@@ -359,6 +366,7 @@ class GaiaAuthFetcher : public net::URLFetcherDelegate {
   const GURL merge_session_gurl_;
   const GURL uberauth_token_gurl_;
   const GURL oauth_login_gurl_;
+  const GURL list_accounts_gurl_;
 
   // While a fetch is going on:
   scoped_ptr<net::URLFetcher> fetcher_;
