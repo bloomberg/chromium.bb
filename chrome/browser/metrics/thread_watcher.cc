@@ -39,9 +39,11 @@ namespace {
 MSVC_DISABLE_OPTIMIZE()
 MSVC_PUSH_DISABLE_WARNING(4748)
 
+#ifndef NDEBUG
 int* NullPointer() {
   return reinterpret_cast<int*>(NULL);
 }
+#endif
 
 void NullPointerCrash(int line_number) {
 #ifndef NDEBUG

@@ -108,6 +108,7 @@ EnterpriseInstallAttributes* g_testing_install_attributes = NULL;
 // Used in BrowserPolicyConnector::SetPolicyProviderForTesting.
 ConfigurationPolicyProvider* g_testing_provider = NULL;
 
+#if defined(OS_CHROMEOS)
 // Helper that returns a new SequencedTaskRunner backed by the blocking pool.
 // Each SequencedTaskRunner returned is independent from the others.
 scoped_refptr<base::SequencedTaskRunner> GetBackgroundTaskRunner() {
@@ -116,6 +117,7 @@ scoped_refptr<base::SequencedTaskRunner> GetBackgroundTaskRunner() {
   return pool->GetSequencedTaskRunnerWithShutdownBehavior(
       pool->GetSequenceToken(), base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
 }
+#endif  // defined(OS_CHROMEOS)
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 base::FilePath GetManagedPolicyPath() {

@@ -16,19 +16,6 @@
 
 namespace media {
 
-static std::ostream& operator<<(std::ostream& os,
-                                const AudioStreamBasicDescription& format) {
-  os << "sample rate       : " << format.mSampleRate << std::endl
-     << "format ID         : " << format.mFormatID << std::endl
-     << "format flags      : " << format.mFormatFlags << std::endl
-     << "bytes per packet  : " << format.mBytesPerPacket << std::endl
-     << "frames per packet : " << format.mFramesPerPacket << std::endl
-     << "bytes per frame   : " << format.mBytesPerFrame << std::endl
-     << "channels per frame: " << format.mChannelsPerFrame << std::endl
-     << "bits per channel  : " << format.mBitsPerChannel;
-  return os;
-}
-
 static void ZeroBufferList(AudioBufferList* buffer_list) {
   for (size_t i = 0; i < buffer_list->mNumberBuffers; ++i) {
     memset(buffer_list->mBuffers[i].mData,

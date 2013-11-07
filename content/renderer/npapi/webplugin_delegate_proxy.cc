@@ -666,14 +666,6 @@ bool WebPluginDelegateProxy::CreateSharedBitmap(
   return !!canvas->get();
 }
 
-#if defined(OS_MACOSX)
-// Flips |rect| vertically within an enclosing rect with height |height|.
-// Intended for converting rects between flipped and non-flipped contexts.
-static void FlipRectVerticallyWithHeight(gfx::Rect* rect, int height) {
-  rect->set_y(height - rect->bottom());
-}
-#endif
-
 void WebPluginDelegateProxy::Paint(SkCanvas* canvas,
                                    const gfx::Rect& damaged_rect) {
   // Limit the damaged rectangle to whatever is contained inside the plugin

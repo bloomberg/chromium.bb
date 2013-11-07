@@ -62,20 +62,6 @@ bool GetProfilePathFromArgs(const ListValue* args,
   return base::GetValueAsFilePath(*file_path_value, profile_file_path);
 }
 
-void OnNewDefaultProfileCreated(
-    chrome::HostDesktopType desktop_type,
-    Profile* profile,
-    Profile::CreateStatus status) {
-  if (status == Profile::CREATE_STATUS_INITIALIZED) {
-    profiles::FindOrCreateNewWindowForProfile(
-        profile,
-        chrome::startup::IS_PROCESS_STARTUP,
-        chrome::startup::IS_FIRST_RUN,
-        desktop_type,
-        false);
-  }
-}
-
 }  // namespace
 
 ManageProfileHandler::ManageProfileHandler()

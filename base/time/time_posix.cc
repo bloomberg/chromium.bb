@@ -28,6 +28,7 @@
 
 namespace {
 
+#if !defined(OS_MACOSX)
 // Define a system-specific SysTime that wraps either to a time_t or
 // a time64_t depending on the host system, and associated convertion.
 // See crbug.com/162007
@@ -66,7 +67,6 @@ void SysTimeToTimeStruct(SysTime t, struct tm* timestruct, bool is_local) {
 }
 #endif  // OS_ANDROID
 
-#if !defined(OS_MACOSX)
 // Helper function to get results from clock_gettime() as TimeTicks object.
 // Minimum requirement is MONOTONIC_CLOCK to be supported on the system.
 // FreeBSD 6 has CLOCK_MONOTONIC but defines _POSIX_MONOTONIC_CLOCK to -1.

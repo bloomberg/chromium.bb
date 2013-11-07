@@ -29,6 +29,7 @@ namespace content {
 
 namespace {
 
+#if defined(OS_WIN) || defined(USE_AURA)
 bool ShouldSendPinchGesture() {
   static bool pinch_allowed =
       CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnablePinch);
@@ -42,6 +43,7 @@ blink::WebGestureEvent CreateFlingCancelEvent(double time_stamp) {
   gesture_event.sourceDevice = blink::WebGestureEvent::Touchscreen;
   return gesture_event;
 }
+#endif  // defined(OS_WIN) || defined(USE_AURA)
 
 }  // namespace
 

@@ -60,10 +60,6 @@ const char* kDefaultThemeGalleryID = "hkacjpbfdknhflllbcmjibkdeoafencn";
 // ExtensionService::GarbageCollectExtensions() does something similar.
 const int kRemoveUnusedThemesStartupDelay = 30;
 
-SkColor TintForUnderline(SkColor input) {
-  return SkColorSetA(input, SkColorGetA(input) / 3);
-}
-
 SkColor IncreaseLightness(SkColor color, double percent) {
   color_utils::HSL result;
   color_utils::SkColorToHSL(color, &result);

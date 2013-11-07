@@ -20,6 +20,7 @@ namespace gfx {
 
 namespace {
 
+#if defined(OS_WIN)
 // If necessary, wraps |text| with RTL/LTR directionality characters based on
 // |flags| and |text| content.
 // Returns true if the text will be rendered right-to-left.
@@ -52,6 +53,7 @@ bool AdjustStringDirection(int flags, base::string16* text) {
   // locales it will be handled by the if statement above).
   return false;
 }
+#endif  // defined(OS_WIN)
 
 // Checks each pixel immediately adjacent to the given pixel in the bitmap. If
 // any of them are not the halo color, returns true. This defines the halo of

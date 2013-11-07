@@ -32,15 +32,6 @@ static uint16 ReadLE16(const uint8* data, size_t data_size, int read_offset) {
   return base::ByteSwapToLE16(value);
 }
 
-// Returns true if the decode result was end of stream.
-static inline bool IsEndOfStream(int decoded_size,
-                                 const scoped_refptr<DecoderBuffer>& input) {
-  // Two conditions to meet to declare end of stream for this decoder:
-  // 1. Opus didn't output anything.
-  // 2. An end of stream buffer is received.
-  return decoded_size == 0 && input->end_of_stream();
-}
-
 static int TimeDeltaToAudioFrames(base::TimeDelta time_delta,
                                   int frame_rate) {
   return std::ceil(time_delta.InSecondsF() * frame_rate);

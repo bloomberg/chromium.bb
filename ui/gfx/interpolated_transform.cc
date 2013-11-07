@@ -22,10 +22,6 @@ bool IsMultipleOfNinetyDegrees(double degrees) {
   return remainder < EPSILON || 90.0 - remainder < EPSILON;
 }
 
-bool IsApproximatelyZero(double value) {
-  return fabs(value) < EPSILON;
-}
-
 // Returns false if |degrees| is not a multiple of ninety degrees or if
 // |rotation| is NULL. It does not affect |rotation| in this case. Otherwise
 // *rotation is set to be the appropriate sanitized rotation matrix. That is,

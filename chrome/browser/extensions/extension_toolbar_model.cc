@@ -30,20 +30,6 @@ using extensions::Extension;
 using extensions::ExtensionIdList;
 using extensions::ExtensionList;
 
-namespace {
-
-// Returns true if an |extension| is in an |extension_list|.
-bool IsInExtensionList(const Extension* extension,
-                       const extensions::ExtensionList& extension_list) {
-  for (size_t i = 0; i < extension_list.size(); i++) {
-    if (extension_list[i].get() == extension)
-      return true;
-  }
-  return false;
-}
-
-}  // namespace
-
 bool ExtensionToolbarModel::Observer::BrowserActionShowPopup(
     const extensions::Extension* extension) {
   return false;

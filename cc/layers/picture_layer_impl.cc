@@ -788,16 +788,6 @@ inline float PositiveRatio(float float1, float float2) {
   return float1 > float2 ? float1 / float2 : float2 / float1;
 }
 
-inline bool IsCloserToThan(
-    PictureLayerTiling* layer1,
-    PictureLayerTiling* layer2,
-    float contents_scale) {
-  // Absolute value for ratios.
-  float ratio1 = PositiveRatio(layer1->contents_scale(), contents_scale);
-  float ratio2 = PositiveRatio(layer2->contents_scale(), contents_scale);
-  return ratio1 < ratio2;
-}
-
 }  // namespace
 
 void PictureLayerImpl::ManageTilings(bool animating_transform_to_screen) {

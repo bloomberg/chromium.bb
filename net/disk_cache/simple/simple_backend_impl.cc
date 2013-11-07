@@ -123,16 +123,6 @@ void MaybeHistogramFdLimit(net::CacheType cache_type) {
   g_fd_limit_histogram_has_been_populated = true;
 }
 
-// Must run on IO Thread.
-void DeleteBackendImpl(disk_cache::Backend** backend,
-                       const net::CompletionCallback& callback,
-                       int result) {
-  DCHECK(*backend);
-  delete *backend;
-  *backend = NULL;
-  callback.Run(result);
-}
-
 // Detects if the files in the cache directory match the current disk cache
 // backend type and version. If the directory contains no cache, occupies it
 // with the fresh structure.
@@ -193,23 +183,6 @@ void RunOperationAndCallback(
   const int operation_result = operation.Run(operation_callback);
   if (operation_result != net::ERR_IO_PENDING)
     operation_callback.Run(operation_result);
-}
-
-// A short bindable thunk that Dooms an entry if it successfully opens.
-void DoomOpenedEntry(scoped_ptr<Entry*> in_entry,
-                     const net::CompletionCallback& doom_callback,
-                     int open_result) {
-  DCHECK_NE(open_result, net::ERR_IO_PENDING);
-  if (open_result == net::OK) {
-    DCHECK(in_entry);
-    SimpleEntryImpl* simple_entry = static_cast<SimpleEntryImpl*>(*in_entry);
-    const int doom_result = simple_entry->DoomEntry(doom_callback);
-    simple_entry->Close();
-    if (doom_result != net::ERR_IO_PENDING)
-      doom_callback.Run(doom_result);
-  } else {
-    doom_callback.Run(open_result);
-  }
 }
 
 void RecordIndexLoad(net::CacheType cache_type,

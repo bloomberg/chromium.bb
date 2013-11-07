@@ -18,14 +18,6 @@ struct Range {
   float end_;
 };
 
-inline bool Intersects(const Range& a, const Range& b) {
-  return a.start_ < b.end_ && b.start_ < a.end_;
-}
-
-inline Range Intersect(const Range& a, const Range& b) {
-  return Range(std::max(a.start_, b.start_), std::min(a.end_, b.end_));
-}
-
 bool Range::IsEmpty() {
   return start_ >= end_;
 }

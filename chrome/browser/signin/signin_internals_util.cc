@@ -117,17 +117,6 @@ void AddSectionEntry(ListValue* section_list,
 }
 
 
-void AddSectionEntry(ListValue* section_list,
-                     const std::string& field_name,
-                     uint32 field_val) {
-  std::stringstream ss;
-  ss << field_val;
-  scoped_ptr<DictionaryValue> entry(new DictionaryValue());
-  entry->SetString("label", field_name);
-  entry->SetString("value", ss.str());
-  section_list->Append(entry.release());
-}
-
 // Returns a string describing the chrome version environment. Version format:
 // <Build Info> <OS> <Version number> (<Last change>)<channel or "-devel">
 // If version information is unavailable, returns "invalid."

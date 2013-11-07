@@ -68,21 +68,6 @@ int ShaderTypeToIndex(GLenum shader_type) {
   }
 }
 
-ShaderTranslator* ShaderIndexToTranslator(
-    int index,
-    ShaderTranslator* vertex_translator,
-    ShaderTranslator* fragment_translator) {
-  switch (index) {
-    case 0:
-      return vertex_translator;
-    case 1:
-      return fragment_translator;
-    default:
-      NOTREACHED();
-      return NULL;
-  }
-}
-
 // Given a name like "foo.bar[123].moo[456]" sets new_name to "foo.bar[123].moo"
 // and sets element_index to 456. returns false if element expression was not a
 // whole decimal number. For example: "foo[1b2]"

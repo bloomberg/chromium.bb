@@ -34,14 +34,6 @@ const CGFloat kWindowMinWidth = 500;
 const CGFloat kButtonGap = 6;
 const CGFloat kDialogAlertBarBorderWidth = 1;
 
-// Shift the origin of |view|'s frame by the given amount in the
-// positive y direction (up).
-void ShiftOriginY(NSView* view, CGFloat amount) {
-  NSPoint origin = [view frame].origin;
-  origin.y += amount;
-  [view setFrameOrigin:origin];
-}
-
 // Determine the frame required to fit the content of a string.  Uses the
 // provided height and width as preferred dimensions, where a value of
 // 0.0 indicates no preference.
@@ -127,24 +119,6 @@ NSTextField* AddTextField(
   [parent addSubview:textField];
   return textField;
 }
-
-// Create a new link button and add it to the specified parent.
- NSButton* AddLinkButton(
-     NSView* parent,
-     const string16& message,
-     id target,
-     SEL selector) {
-   NSButton* button =
-       [HyperlinkButtonCell buttonWithString:SysUTF16ToNSString(message)];
-   [button setTarget:target];
-   [button setAction:selector];
-   HyperlinkButtonCell* cell = [button cell];
-   cell.textColor =
-       gfx::SkColorToCalibratedNSColor(chrome_style::GetLinkColor());
-   cell.shouldUnderline = NO;
-   [parent addSubview:button];
-   return button;
- }
 
 }  // namespace
 

@@ -81,10 +81,12 @@ ppapi::host::ReplyMessageContext GetPermissionOnUIThread(
   return reply;
 }
 
+#if defined(USE_ASH) && defined(OS_CHROMEOS)
 void OnTerminateRemotingEventOnUIThread(const base::Closure& stop_callback) {
   content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
                                    stop_callback);
 }
+#endif  // defined(USE_ASH) && defined(OS_CHROMEOS)
 
 ppapi::host::ReplyMessageContext StartRemotingOnUIThread(
     const base::Closure& stop_callback,

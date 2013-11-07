@@ -138,39 +138,6 @@ NSCursor* GetCoreCursorWithFallback(CrCoreCursorType type,
   return LoadCursor(resource_id, hotspot_x, hotspot_y);
 }
 
-// TODO(avi): When Skia becomes default, fold this function into the remaining
-// caller, InitFromCursor().
-CGImageRef CreateCGImageFromCustomData(const std::vector<char>& custom_data,
-                                       const gfx::Size& custom_size) {
-  // If the data is missing, leave the backing transparent.
-  void* data = NULL;
-  if (!custom_data.empty()) {
-    // This is safe since we're not going to draw into the context we're
-    // creating.
-    data = const_cast<char*>(&custom_data[0]);
-  }
-
-  // If the size is empty, use a 1x1 transparent image.
-  gfx::Size size = custom_size;
-  if (size.IsEmpty()) {
-    size.SetSize(1, 1);
-    data = NULL;
-  }
-
-  base::ScopedCFTypeRef<CGColorSpaceRef> cg_color(
-      CGColorSpaceCreateDeviceRGB());
-  // The settings here match SetCustomData() below; keep in sync.
-  base::ScopedCFTypeRef<CGContextRef> context(CGBitmapContextCreate(
-      data,
-      size.width(),
-      size.height(),
-      8,
-      size.width() * 4,
-      cg_color.get(),
-      kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big));
-  return CGBitmapContextCreateImage(context.get());
-}
-
 NSCursor* CreateCustomCursor(const std::vector<char>& custom_data,
                              const gfx::Size& custom_size,
                              float custom_scale,

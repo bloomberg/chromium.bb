@@ -44,17 +44,6 @@ base::NativeEvent CopyNativeEvent(const base::NativeEvent& event) {
 #endif
 }
 
-gfx::Point CalibratePoint(const gfx::Point& point,
-                          const gfx::Size& from,
-                          const gfx::Size& to) {
-  float calibrated_x =
-      static_cast<float>(point.x()) * to.width() / from.width();
-  float calibrated_y =
-      static_cast<float>(point.y()) * to.height() / from.height();
-  return gfx::Point(static_cast<int>(floorf(calibrated_x + 0.5f)),
-                    static_cast<int>(floorf(calibrated_y + 0.5f)));
-}
-
 std::string EventTypeName(ui::EventType type) {
 #define RETURN_IF_TYPE(t) if (type == ui::t)  return #t
 #define CASE_TYPE(t) case ui::t:  return #t

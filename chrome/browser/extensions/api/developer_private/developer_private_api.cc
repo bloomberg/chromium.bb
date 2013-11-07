@@ -125,18 +125,6 @@ GURL ToDataURL(const base::FilePath& path, developer_private::ItemType type) {
   return GetImageURLFromData(contents);
 }
 
-std::vector<base::FilePath> ListFolder(const base::FilePath path) {
-  base::FileEnumerator files(path, false,
-      base::FileEnumerator::DIRECTORIES | base::FileEnumerator::FILES);
-  std::vector<base::FilePath> paths;
-
-  for (base::FilePath current_path = files.Next(); !current_path.empty();
-       current_path = files.Next()) {
-    paths.push_back(current_path);
-  }
-  return paths;
-}
-
 bool ValidateFolderName(const base::FilePath::StringType& name) {
   base::FilePath::StringType name_sanitized(name);
   file_util::ReplaceIllegalCharactersInPath(&name_sanitized, '_');

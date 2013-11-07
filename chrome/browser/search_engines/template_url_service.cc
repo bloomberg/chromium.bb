@@ -232,33 +232,6 @@ void LogDuplicatesHistogram(
   UMA_HISTOGRAM_COUNTS_100("Search.SearchEngineDuplicateCounts", num_dupes);
 }
 
-typedef std::vector<TemplateURLService::ExtensionKeyword> ExtensionKeywords;
-
-#if !defined(OS_ANDROID)
-// Extract all installed Omnibox Extensions.
-ExtensionKeywords GetExtensionKeywords(Profile* profile) {
-  DCHECK(profile);
-  ExtensionService* extension_service = profile->GetExtensionService();
-  DCHECK(extension_service);
-  const ExtensionSet* extensions = extension_service->extensions();
-  ExtensionKeywords extension_keywords;
-  for (ExtensionSet::const_iterator it = extensions->begin();
-       it != extensions->end(); ++it) {
-    const std::string& keyword = extensions::OmniboxInfo::GetKeyword(*it);
-    if (!keyword.empty()) {
-      extension_keywords.push_back(TemplateURLService::ExtensionKeyword(
-          (*it)->id(), (*it)->name(), keyword));
-    }
-  }
-  return extension_keywords;
-}
-#else
-// Extensions are not supported.
-ExtensionKeywords GetExtensionKeywords(Profile* profile) {
-  return ExtensionKeywords();
-}
-#endif
-
 }  // namespace
 
 

@@ -76,28 +76,10 @@ void BnFree(uint32* a) {
   delete[] a;
 }
 
-void BnPrint(const std::string& title, uint32_t* a) {
-    int i = kBigIntSize - 1;
-    fprintf(stderr, "%s: ", title.c_str());
-    while (!a[i]) --i;
-    for (; i >= 0; --i)
-        fprintf(stderr, "%08x", a[i]);
-    fprintf(stderr, "\n");
-}
-
 uint32* BnCopy(uint32* a) {
   uint32* result = new uint32[kBigIntSize];
   memcpy(result, a, kBigIntSize * sizeof(uint32));
   return result;
-}
-
-void BnAdd(uint32* a, uint32* b) {
-  uint64 carry_over = 0;
-  for (size_t i = 0; i < kBigIntSize; ++i) {
-    carry_over += static_cast<uint64>(a[i]) + b[i];
-    a[i] = carry_over & kuint32max;
-    carry_over >>= 32;
-  }
 }
 
 uint32* BnMul(uint32* a, uint32 b) {

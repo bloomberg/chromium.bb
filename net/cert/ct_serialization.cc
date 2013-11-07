@@ -169,22 +169,6 @@ bool ConvertSignatureAlgorithm(
   return true;
 }
 
-// Checks and converts a log entry type.
-// |in| the numeric representation of the log type.
-// If the log type is 0 (X.509 cert) or 1 (PreCertificate), fills in |out| and
-// returns true. Otherwise, returns false.
-bool ConvertLogEntryType(int in, LogEntry::Type* out) {
-  switch (in) {
-    case LogEntry::LOG_ENTRY_TYPE_X509:
-    case LogEntry::LOG_ENTRY_TYPE_PRECERT:
-      break;
-    default:
-      return false;
-  }
-  *out = static_cast<LogEntry::Type>(in);
-  return true;
-}
-
 // Writes a TLS-encoded variable length unsigned integer to |output|.
 // |length| indicates the size (in bytes) of the integer.
 // |value| the value itself to be written.

@@ -131,15 +131,6 @@ static NSString* const NSBackingPropertyOldScaleFactorKey =
 
 #endif  // 10.7
 
-static inline int ToWebKitModifiers(NSUInteger flags) {
-  int modifiers = 0;
-  if (flags & NSControlKeyMask) modifiers |= WebInputEvent::ControlKey;
-  if (flags & NSShiftKeyMask) modifiers |= WebInputEvent::ShiftKey;
-  if (flags & NSAlternateKeyMask) modifiers |= WebInputEvent::AltKey;
-  if (flags & NSCommandKeyMask) modifiers |= WebInputEvent::MetaKey;
-  return modifiers;
-}
-
 // This method will return YES for OS X versions 10.7.3 and later, and NO
 // otherwise.
 // Used to prevent a crash when building with the 10.7 SDK and accessing the

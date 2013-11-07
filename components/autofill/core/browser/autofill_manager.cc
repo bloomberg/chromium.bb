@@ -166,16 +166,6 @@ void DeterminePossibleFieldTypesForUpload(
   }
 }
 
-// Returns true if server returned known field types to one or more fields in
-// this form.
-bool HasServerSpecifiedFieldTypes(const FormStructure& form_structure) {
-  for (size_t i = 0; i < form_structure.field_count(); ++i) {
-    if (form_structure.field(i)->server_type() != NO_SERVER_DATA)
-      return true;
-  }
-  return false;
-}
-
 }  // namespace
 
 AutofillManager::AutofillManager(

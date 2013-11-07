@@ -39,9 +39,6 @@ namespace {
 IndexedDBDispatcher* const kHasBeenDeleted =
     reinterpret_cast<IndexedDBDispatcher*>(0x1);
 
-int32 CurrentWorkerId() {
-  return WorkerTaskRunner::Instance()->CurrentWorkerId();
-}
 }  // unnamed namespace
 
 const size_t kMaxIDBValueSizeInBytes = 64 * 1024 * 1024;

@@ -158,21 +158,6 @@ void HistogramCountNotBlockedResponse(const std::string& bucket_prefix,
     IncrementHistogramCount(bucket_prefix + ".NotBlocked.MaybeJS");
 }
 
-void HistogramCountPolicyDecision(
-    const std::string& bucket_prefix,
-    bool sniffed_as_document,
-    bool sniffed_as_js,
-    const SiteIsolationPolicy::ResponseMetaData& resp_data) {
-  if (sniffed_as_document) {
-    HistogramCountBlockedResponse(bucket_prefix, resp_data, false);
-  } else {
-    if (resp_data.no_sniff)
-      HistogramCountBlockedResponse(bucket_prefix, resp_data, true);
-    else
-      HistogramCountNotBlockedResponse(bucket_prefix, sniffed_as_js);
-  }
-}
-
 }  // namespace
 
 SiteIsolationPolicy::ResponseMetaData::ResponseMetaData() {}

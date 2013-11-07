@@ -19,34 +19,6 @@
 
 namespace {
 
-// Returns the "first bit" of some script output for writing to error messages.
-std::string GetExampleOfBadInput(const std::string& input) {
-  std::string result(input);
-
-  // Maybe the result starts with a blank line or something, which we don't
-  // want.
-  TrimWhitespaceASCII(result, TRIM_ALL, &result);
-
-  // Now take the first line, or the first set of chars, whichever is shorter.
-  bool trimmed = false;
-  size_t newline_offset = result.find('\n');
-  if (newline_offset != std::string::npos) {
-    trimmed = true;
-    result.resize(newline_offset);
-  }
-  TrimWhitespaceASCII(result, TRIM_ALL, &result);
-
-  const size_t kMaxSize = 50;
-  if (result.size() > kMaxSize) {
-    trimmed = true;
-    result.resize(kMaxSize);
-  }
-
-  if (trimmed)
-    result.append("...");
-  return result;
-}
-
 // When parsing the result as a value, we may get various types of errors.
 // This creates an error message for this case with an optional nested error
 // message to reference. If there is no nested err, pass Err().

@@ -42,6 +42,7 @@ typedef std::vector<BluetoothAdapterFactory::AdapterCallback>
 base::LazyInstance<AdapterCallbackList> adapter_callbacks =
     LAZY_INSTANCE_INITIALIZER;
 
+#if defined(OS_WIN)
 void RunAdapterCallbacks() {
   CHECK(default_adapter.Get().get());
   scoped_refptr<BluetoothAdapter> adapter(default_adapter.Get().get());
@@ -53,6 +54,7 @@ void RunAdapterCallbacks() {
   }
   adapter_callbacks.Get().clear();
 }
+#endif  // defined(OS_WIN)
 
 }  // namespace
 

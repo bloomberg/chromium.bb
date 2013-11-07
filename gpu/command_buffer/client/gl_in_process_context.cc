@@ -91,11 +91,6 @@ base::LazyInstance<base::Lock> g_all_shared_contexts_lock =
 base::LazyInstance<std::set<GLInProcessContextImpl*> > g_all_shared_contexts =
     LAZY_INSTANCE_INITIALIZER;
 
-size_t SharedContextCount() {
-  base::AutoLock lock(g_all_shared_contexts_lock.Get());
-  return g_all_shared_contexts.Get().size();
-}
-
 GLInProcessContextImpl::GLInProcessContextImpl()
     : share_group_id_(0), context_lost_(false) {}
 

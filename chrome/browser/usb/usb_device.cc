@@ -22,12 +22,14 @@ using content::BrowserThread;
 
 namespace {
 
+#if defined(OS_CHROMEOS)
 void OnRequestUsbAccessReplied(
     const base::Callback<void(bool success)>& callback,
     bool success) {
   BrowserThread::PostTask(BrowserThread::FILE, FROM_HERE,
                           base::Bind(callback, success));
 }
+#endif  // defined(OS_CHROMEOS)
 
 }  // namespace
 

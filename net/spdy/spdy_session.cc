@@ -110,15 +110,6 @@ base::Value* NetLogSpdySynReplyOrHeadersReceivedCallback(
   return dict;
 }
 
-base::Value* NetLogSpdyCredentialCallback(size_t slot,
-                                          const std::string* origin,
-                                          NetLog::LogLevel /* log_level */) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
-  dict->SetInteger("slot", slot);
-  dict->SetString("origin", *origin);
-  return dict;
-}
-
 base::Value* NetLogSpdySessionCloseCallback(int net_error,
                                             const std::string* description,
                                             NetLog::LogLevel /* log_level */) {

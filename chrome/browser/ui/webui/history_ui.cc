@@ -217,20 +217,6 @@ void normalizeMonths(base::Time::Exploded* exploded) {
   }
 }
 
-// Returns the URL of a query result value.
-bool GetResultTimeAndUrl(Value* result, base::Time* time, string16* url) {
-  DictionaryValue* result_dict;
-  double timestamp;
-
-  if (result->GetAsDictionary(&result_dict) &&
-      result_dict->GetDouble("time", &timestamp) &&
-      result_dict->GetString("url", url)) {
-    *time = base::Time::FromJsTime(timestamp);
-    return true;
-  }
-  return false;
-}
-
 // Returns true if |entry| represents a local visit that had no corresponding
 // visit on the server.
 bool IsLocalOnlyResult(const BrowsingHistoryHandler::HistoryEntry& entry) {

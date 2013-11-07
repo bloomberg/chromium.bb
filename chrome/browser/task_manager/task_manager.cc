@@ -154,23 +154,6 @@ void GetWinUSERHandles(base::ProcessHandle process,
 }
 #endif
 
-// Counts the number of extension background pages associated with this profile.
-int CountExtensionBackgroundPagesForProfile(Profile* profile) {
-  int count = 0;
-  ExtensionProcessManager* manager =
-      extensions::ExtensionSystem::Get(profile)->process_manager();
-  if (!manager)
-    return count;
-
-  const ExtensionProcessManager::ExtensionHostSet& background_hosts =
-      manager->background_hosts();
-  for (ExtensionProcessManager::const_iterator iter = background_hosts.begin();
-       iter != background_hosts.end(); ++iter) {
-    ++count;
-  }
-  return count;
-}
-
 }  // namespace
 
 class TaskManagerModelGpuDataManagerObserver

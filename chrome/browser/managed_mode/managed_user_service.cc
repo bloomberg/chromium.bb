@@ -59,8 +59,6 @@ using base::DictionaryValue;
 using base::Value;
 using content::BrowserThread;
 
-namespace {
-
 const char kManagedModeFinchActive[] = "Active";
 const char kManagedModeFinchName[] = "ManagedModeLaunch";
 const char kManagedUserAccessRequestKeyPrefix[] =
@@ -71,19 +69,6 @@ const char kQuitBrowserKeyPrefix[] = "X-ManagedUser-Events-QuitBrowser";
 const char kSwitchFromManagedProfileKeyPrefix[] =
     "X-ManagedUser-Events-SwitchProfile";
 const char kEventTimestamp[] = "timestamp";
-
-std::string CanonicalizeHostname(const std::string& hostname) {
-  std::string canonicalized;
-  url_canon::StdStringCanonOutput output(&canonicalized);
-  url_parse::Component in_comp(0, hostname.length());
-  url_parse::Component out_comp;
-
-  url_canon::CanonicalizeHost(hostname.c_str(), in_comp, &output, &out_comp);
-  output.Complete();
-  return canonicalized;
-}
-
-}  // namespace
 
 ManagedUserService::URLFilterContext::URLFilterContext()
     : ui_url_filter_(new ManagedModeURLFilter),

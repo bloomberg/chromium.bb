@@ -151,13 +151,6 @@ void CreateAppListShim(const base::FilePath& profile_path) {
                           kShortcutVersion);
 }
 
-void CreateShortcutsInDefaultLocation(
-    const ShellIntegration::ShortcutInfo& shortcut_info) {
-  web_app::CreateShortcuts(shortcut_info,
-                           ShellIntegration::ShortcutLocations(),
-                           web_app::SHORTCUT_CREATION_BY_USER);
-}
-
 NSRunningApplication* ActiveApplicationNotChrome() {
   NSArray* applications = [[NSWorkspace sharedWorkspace] runningApplications];
   for (NSRunningApplication* application in applications) {

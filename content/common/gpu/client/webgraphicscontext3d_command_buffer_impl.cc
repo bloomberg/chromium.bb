@@ -50,12 +50,6 @@ typedef std::multimap<GpuChannelHost*, WebGraphicsContext3DCommandBufferImpl*>
 static base::LazyInstance<ContextMap> g_all_shared_contexts =
     LAZY_INSTANCE_INITIALIZER;
 
-size_t ClampUint64ToSizeT(uint64 value) {
-  value = std::min(value,
-                   static_cast<uint64>(std::numeric_limits<size_t>::max()));
-  return static_cast<size_t>(value);
-}
-
 uint32_t GenFlushID() {
   static base::subtle::Atomic32 flush_id = 0;
 

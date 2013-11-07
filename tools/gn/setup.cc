@@ -99,6 +99,7 @@ base::FilePath FindDotFile(const base::FilePath& current_dir) {
   return FindDotFile(up_one_dir);
 }
 
+#if defined(OS_WIN)
 // Searches the list of strings, and returns the FilePat corresponding to the
 // one ending in the given substring, or the empty path if none match.
 base::FilePath GetPathEndingIn(
@@ -111,13 +112,12 @@ base::FilePath GetPathEndingIn(
   return base::FilePath();
 }
 
-// Fins the depot tools directory in the path environment variable and returns
+// Finds the depot tools directory in the path environment variable and returns
 // its value. Returns an empty file path if not found.
 //
 // We detect the depot_tools path by looking for a directory with depot_tools
 // at the end (optionally followed by a separator).
 base::FilePath ExtractDepotToolsFromPath() {
-#if defined(OS_WIN)
   static const wchar_t kPathVarName[] = L"Path";
   DWORD env_buf_size = GetEnvironmentVariable(kPathVarName, NULL, 0);
   if (env_buf_size == 0)
@@ -132,17 +132,6 @@ base::FilePath ExtractDepotToolsFromPath() {
   base::SplitString(path, ';', &components);
 
   base::string16 ending_in1 = L"depot_tools\\";
-#else
-  static const char kPathVarName[] = "PATH";
-  const char* path = getenv(kPathVarName);
-  if (!path)
-    return base::FilePath();
-
-  std::vector<std::string> components;
-  base::SplitString(path, ':', &components);
-
-  std::string ending_in1 = "depot_tools/";
-#endif
   base::FilePath::StringType ending_in2 = FILE_PATH_LITERAL("depot_tools");
 
   base::FilePath found = GetPathEndingIn(components, ending_in1);
@@ -150,6 +139,7 @@ base::FilePath ExtractDepotToolsFromPath() {
     return found;
   return GetPathEndingIn(components, ending_in2);
 }
+#endif
 
 }  // namespace
 

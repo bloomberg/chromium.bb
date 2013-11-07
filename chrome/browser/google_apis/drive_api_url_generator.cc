@@ -33,12 +33,6 @@ GURL AddResumableUploadParam(const GURL& url) {
   return net::AppendOrReplaceQueryParameter(url, "uploadType", "resumable");
 }
 
-GURL AddMaxResultParam(const GURL& url, int max_results) {
-  DCHECK_GT(max_results, 0);
-  return net::AppendOrReplaceQueryParameter(
-      url, "maxResults", base::IntToString(max_results));
-}
-
 }  // namespace
 
 DriveApiUrlGenerator::DriveApiUrlGenerator(const GURL& base_url,

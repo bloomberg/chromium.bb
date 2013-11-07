@@ -108,11 +108,6 @@ std::string GetPlatformString() {
 #endif
 }
 
-// Converts |date_time| in Study date format to base::Time.
-base::Time ConvertStudyDateToBaseTime(int64 date_time) {
-  return base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(date_time);
-}
-
 // Gets the restrict parameter from |local_state| or from Chrome OS settings in
 // the case of that platform.
 std::string GetRestrictParameterPref(PrefService* local_state) {

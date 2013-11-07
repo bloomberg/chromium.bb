@@ -18,17 +18,6 @@
 // else       := 'else' (if | statement)*
 // assignment := ident {'=' | '+=' | '-='} expr
 
-namespace {
-
-// Returns true if the two tokens are on the same line. We assume they're in
-// the same file.
-bool IsSameLine(const Token& a, const Token& b) {
-  DCHECK(a.location().file() == b.location().file());
-  return a.location().line_number() == b.location().line_number();
-}
-
-}  // namespace
-
 enum Precedence {
   PRECEDENCE_ASSIGNMENT = 1,
   PRECEDENCE_OR = 2,

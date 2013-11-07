@@ -201,16 +201,6 @@ struct CookieSignature {
   std::string path;
 };
 
-// Determine the cookie domain to use for setting the specified cookie.
-bool GetCookieDomain(const GURL& url,
-                     const ParsedCookie& pc,
-                     std::string* result) {
-  std::string domain_string;
-  if (pc.HasDomain())
-    domain_string = pc.Domain();
-  return cookie_util::GetCookieDomainWithString(url, domain_string, result);
-}
-
 // For a CookieItVector iterator range [|it_begin|, |it_end|),
 // sorts the first |num_sort| + 1 elements by LastAccessDate().
 // The + 1 element exists so for any interval of length <= |num_sort| starting
