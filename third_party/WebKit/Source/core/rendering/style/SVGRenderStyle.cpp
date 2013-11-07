@@ -209,7 +209,8 @@ StyleDifference SVGRenderStyle::diff(const SVGRenderStyle* other) const
         || svg_inherited_flags._clipRule != other->svg_inherited_flags._clipRule
         || svg_inherited_flags._fillRule != other->svg_inherited_flags._fillRule
         || svg_inherited_flags._colorInterpolation != other->svg_inherited_flags._colorInterpolation
-        || svg_inherited_flags._colorInterpolationFilters != other->svg_inherited_flags._colorInterpolationFilters)
+        || svg_inherited_flags._colorInterpolationFilters != other->svg_inherited_flags._colorInterpolationFilters
+        || svg_inherited_flags._paintOrder != other->svg_inherited_flags._paintOrder)
         return StyleDifferenceRepaint;
 
     if (svg_noninherited_flags.f.bufferedRendering != other->svg_noninherited_flags.f.bufferedRendering)
