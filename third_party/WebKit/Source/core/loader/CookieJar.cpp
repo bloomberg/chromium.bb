@@ -34,7 +34,7 @@
 #include "core/dom/Document.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/frame/Frame.h"
-#include "core/platform/Cookie.h"
+#include "platform/Cookie.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebCookie.h"
 #include "public/platform/WebCookieJar.h"

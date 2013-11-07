@@ -13,6 +13,7 @@
       'ColorChooserClient.h',
       'ContentType.cpp',
       'ContentType.h',
+      'Cookie.h',
       'CrossThreadCopier.cpp',
       'CrossThreadCopier.h',
       'DateComponents.cpp',
