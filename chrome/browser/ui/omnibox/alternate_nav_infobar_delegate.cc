@@ -5,7 +5,12 @@
 #include "chrome/browser/ui/omnibox/alternate_nav_infobar_delegate.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/history/history_service.h"
+#include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/history/shortcuts_backend.h"
+#include "chrome/browser/history/shortcuts_backend_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -13,18 +18,33 @@
 
 
 // static
-void AlternateNavInfoBarDelegate::Create(InfoBarService* infobar_service,
-                                         const AutocompleteMatch& match) {
+void AlternateNavInfoBarDelegate::Create(
+    content::WebContents* web_contents,
+    const string16& text,
+    const AutocompleteMatch& match,
+    const GURL& search_url) {
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents);
   infobar_service->AddInfoBar(scoped_ptr<InfoBarDelegate>(
-      new AlternateNavInfoBarDelegate(infobar_service, match)));
+      new AlternateNavInfoBarDelegate(
+          infobar_service,
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()), text,
+          match, search_url)));
 }
 
 AlternateNavInfoBarDelegate::AlternateNavInfoBarDelegate(
     InfoBarService* owner,
-    const AutocompleteMatch& match)
+    Profile* profile,
+    const string16& text,
+    const AutocompleteMatch& match,
+    const GURL& search_url)
     : InfoBarDelegate(owner),
-      match_(match) {
+      profile_(profile),
+      text_(text),
+      match_(match),
+      search_url_(search_url) {
   DCHECK(match_.destination_url.is_valid());
+  DCHECK(search_url_.is_valid());
 }
 
 AlternateNavInfoBarDelegate::~AlternateNavInfoBarDelegate() {
@@ -43,6 +63,21 @@ string16 AlternateNavInfoBarDelegate::GetLinkText() const {
 
 bool AlternateNavInfoBarDelegate::LinkClicked(
     WindowOpenDisposition disposition) {
+  // Tell the shortcuts backend to remove the shortcut it added for the original
+  // search and instead add one reflecting this navigation.
+  scoped_refptr<history::ShortcutsBackend> shortcuts_backend(
+      ShortcutsBackendFactory::GetForProfile(profile_));
+  if (shortcuts_backend) {  // May be NULL in incognito.
+    shortcuts_backend->DeleteShortcutsWithUrl(search_url_);
+    shortcuts_backend->AddOrUpdateShortcut(text_, match_);
+  }
+
+  // Tell the history system to remove any saved search term for the search.
+  HistoryService* const history_service =
+      HistoryServiceFactory::GetForProfile(profile_, Profile::IMPLICIT_ACCESS);
+  if (history_service)
+    history_service->DeleteKeywordSearchTermForURL(search_url_);
+
   // Pretend the user typed this URL, so that navigating to it will be the
   // default action when it's typed again in the future.
   web_contents()->OpenURL(content::OpenURLParams(

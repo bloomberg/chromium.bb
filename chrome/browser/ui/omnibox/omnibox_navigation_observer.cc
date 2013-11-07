@@ -78,7 +78,7 @@ OmniboxNavigationObserver::~OmniboxNavigationObserver() {
 
 void OmniboxNavigationObserver::OnSuccessfulNavigation() {
   if (shortcuts_backend_)
-    shortcuts_backend_->OnOmniboxNavigation(text_, match_);
+    shortcuts_backend_->AddOrUpdateShortcut(text_, match_);
 }
 
 void OmniboxNavigationObserver::Observe(
@@ -144,7 +144,7 @@ void OmniboxNavigationObserver::OnURLFetchComplete(
 void OmniboxNavigationObserver::OnAllLoadingFinished() {
   if (fetch_state_ == FETCH_SUCCEEDED) {
     AlternateNavInfoBarDelegate::Create(
-        InfoBarService::FromWebContents(web_contents()), alternate_nav_match_);
+        web_contents(), text_, alternate_nav_match_, match_.destination_url);
   }
   delete this;
 }

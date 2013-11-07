@@ -189,7 +189,7 @@ void ShortcutsBackend::RemoveObserver(ShortcutsBackendObserver* obs) {
   observer_list_.RemoveObserver(obs);
 }
 
-void ShortcutsBackend::OnOmniboxNavigation(const string16& text,
+void ShortcutsBackend::AddOrUpdateShortcut(const string16& text,
                                            const AutocompleteMatch& match) {
   const string16 text_lowercase(base::i18n::ToLower(text));
   const base::Time now(base::Time::Now());

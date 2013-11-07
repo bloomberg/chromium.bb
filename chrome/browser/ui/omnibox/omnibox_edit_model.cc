@@ -671,7 +671,7 @@ void OmniboxEditModel::OpenMatch(AutocompleteMatch match,
     // those we set the elapsed times to something that will be ignored by
     // metrics_log.cc.
     if (match.provider &&
-        match.provider->type() == AutocompleteProvider::TYPE_ZERO_SUGGEST) {
+        (match.provider->type() == AutocompleteProvider::TYPE_ZERO_SUGGEST)) {
       elapsed_time_since_user_first_modified_omnibox =
           base::TimeDelta::FromMilliseconds(-1);
       elapsed_time_since_last_change_to_default_match =
