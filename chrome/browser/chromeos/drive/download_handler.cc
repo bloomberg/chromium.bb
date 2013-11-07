@@ -149,7 +149,7 @@ void DownloadHandler::SubstituteDriveDownloadPath(
         util::ExtractDrivePath(drive_path.DirName());
     // Check if the directory exists, and create it if the directory does not
     // exist.
-    file_system_->GetResourceEntryByPath(
+    file_system_->GetResourceEntry(
         drive_dir_path,
         base::Bind(&DownloadHandler::OnEntryFound,
                    weak_ptr_factory_.GetWeakPtr(),
@@ -195,7 +195,7 @@ bool DownloadHandler::IsDriveDownload(const DownloadItem* download) {
 void DownloadHandler::CheckForFileExistence(
     const DownloadItem* download,
     const content::CheckForFileExistenceCallback& callback) {
-  file_system_->GetResourceEntryByPath(
+  file_system_->GetResourceEntry(
       util::ExtractDrivePath(GetTargetPath(download)),
       base::Bind(&ContinueCheckingForFileExistence,
                  callback));

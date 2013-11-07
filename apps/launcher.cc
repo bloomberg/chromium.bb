@@ -203,7 +203,7 @@ class PlatformAppPathLauncher
       return;
     }
 
-    file_system->GetFileByPath(
+    file_system->GetFile(
         drive::util::ExtractDrivePath(file_path_),
         base::Bind(&PlatformAppPathLauncher::OnGotDriveFile, this));
   }

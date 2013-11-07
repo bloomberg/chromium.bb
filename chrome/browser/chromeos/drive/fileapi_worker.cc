@@ -215,7 +215,7 @@ void GetFileInfo(const base::FilePath& file_path,
                  const GetFileInfoCallback& callback,
                  FileSystemInterface* file_system) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  file_system->GetResourceEntryByPath(
+  file_system->GetResourceEntry(
       file_path,
       base::Bind(&RunGetFileInfoCallback, callback));
 }
@@ -254,9 +254,8 @@ void ReadDirectory(const base::FilePath& file_path,
                    const ReadDirectoryCallback& callback,
                    FileSystemInterface* file_system) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  file_system->ReadDirectoryByPath(
-      file_path,
-      base::Bind(&RunReadDirectoryCallback, callback));
+  file_system->ReadDirectory(file_path,
+                             base::Bind(&RunReadDirectoryCallback, callback));
 }
 
 void Remove(const base::FilePath& file_path,
@@ -303,9 +302,8 @@ void CreateSnapshotFile(const base::FilePath& file_path,
                         const CreateSnapshotFileCallback& callback,
                         FileSystemInterface* file_system) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  file_system->GetFileByPath(
-      file_path,
-      base::Bind(&RunCreateSnapshotFileCallback, callback));
+  file_system->GetFile(file_path,
+                       base::Bind(&RunCreateSnapshotFileCallback, callback));
 }
 
 void CreateWritableSnapshotFile(

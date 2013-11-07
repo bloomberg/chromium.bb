@@ -119,7 +119,7 @@ typedef base::Callback<void(FileError error,
                             const base::FilePath& file_path)>
     MarkMountedCallback;
 
-// Callback for GetCacheEntryByPath.
+// Callback for GetCacheEntry.
 // |success| indicates if the operation was successful.
 // |cache_entry| is the obtained cache entry.
 typedef base::Callback<void(bool success, const FileCacheEntry& cache_entry)>
@@ -325,8 +325,8 @@ class FileSystemInterface {
   // needs to be present in the file system.
   //
   // Returns the cache path and entry info to |callback|. It must not be null.
-  virtual void GetFileByPath(const base::FilePath& file_path,
-                             const GetFileCallback& callback) = 0;
+  virtual void GetFile(const base::FilePath& file_path,
+                       const GetFileCallback& callback) = 0;
 
   // Makes sure that |file_path| in the file system is available in the local
   // cache, and mark it as dirty. The next modification to the cache file is
@@ -334,8 +334,8 @@ class FileSystemInterface {
   // present in the file system, it is created.
   //
   // Returns the cache path and entry info to |callback|. It must not be null.
-  virtual void GetFileByPathForSaving(const base::FilePath& file_path,
-                                      const GetFileCallback& callback) = 0;
+  virtual void GetFileForSaving(const base::FilePath& file_path,
+                                const GetFileCallback& callback) = 0;
 
   // Gets a file by the given |file_path|.
   // Calls |initialized_callback| when either:
@@ -348,7 +348,7 @@ class FileSystemInterface {
   // is successfully done.
   // |initialized_callback|, |get_content_callback| and |completion_callback|
   // must not be null.
-  virtual void GetFileContentByPath(
+  virtual void GetFileContent(
       const base::FilePath& file_path,
       const GetFileContentInitializedCallback& initialized_callback,
       const google_apis::GetContentCallback& get_content_callback,
@@ -358,17 +358,15 @@ class FileSystemInterface {
   // retrieve and refresh file system content from server and disk cache.
   //
   // |callback| must not be null.
-  virtual void GetResourceEntryByPath(
-      const base::FilePath& file_path,
-      const GetResourceEntryCallback& callback) = 0;
+  virtual void GetResourceEntry(const base::FilePath& file_path,
+                                const GetResourceEntryCallback& callback) = 0;
 
   // Finds and reads a directory by |file_path|. This call will also retrieve
   // and refresh file system content from server and disk cache.
   //
   // |callback| must not be null.
-  virtual void ReadDirectoryByPath(
-      const base::FilePath& file_path,
-      const ReadDirectoryCallback& callback) = 0;
+  virtual void ReadDirectory(const base::FilePath& file_path,
+                             const ReadDirectoryCallback& callback) = 0;
 
   // Does server side content search for |search_query|.
   // If |next_link| is set, this is the search result url that will be
@@ -427,8 +425,8 @@ class FileSystemInterface {
   // |callback| with true and the found entry if the entry exists in the cache
   // map. Otherwise, runs |callback| with false.
   // |callback| must not be null.
-  virtual void GetCacheEntryByPath(const base::FilePath& drive_file_path,
-                                   const GetCacheEntryCallback& callback) = 0;
+  virtual void GetCacheEntry(const base::FilePath& drive_file_path,
+                             const GetCacheEntryCallback& callback) = 0;
 
   // Reloads the resource metadata from the server.
   virtual void Reload(const FileOperationCallback& callback) = 0;

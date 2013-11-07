@@ -245,10 +245,10 @@ void NetworkReaderProxy::OnCompleted(FileError error) {
 
 namespace {
 
-// Calls FileSystemInterface::GetFileContentByPath if the file system
+// Calls FileSystemInterface::GetFileContent if the file system
 // is available. If not, the |completion_callback| is invoked with
 // FILE_ERROR_FAILED.
-void GetFileContentByPathOnUIThread(
+void GetFileContentOnUIThread(
     const DriveFileStreamReader::FileSystemGetter& file_system_getter,
     const base::FilePath& drive_file_path,
     const GetFileContentInitializedCallback& initialized_callback,
@@ -262,14 +262,14 @@ void GetFileContentByPathOnUIThread(
     return;
   }
 
-  file_system->GetFileContentByPath(drive_file_path,
-                                    initialized_callback,
-                                    get_content_callback,
-                                    completion_callback);
+  file_system->GetFileContent(drive_file_path,
+                              initialized_callback,
+                              get_content_callback,
+                              completion_callback);
 }
 
-// Helper to run FileSystemInterface::GetFileContentByPath on UI thread.
-void GetFileContentByPath(
+// Helper to run FileSystemInterface::GetFileContent on UI thread.
+void GetFileContent(
     const DriveFileStreamReader::FileSystemGetter& file_system_getter,
     const base::FilePath& drive_file_path,
     const GetFileContentInitializedCallback& initialized_callback,
@@ -280,7 +280,7 @@ void GetFileContentByPath(
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&GetFileContentByPathOnUIThread,
+      base::Bind(&GetFileContentOnUIThread,
                  file_system_getter,
                  drive_file_path,
                  google_apis::CreateRelayCallback(initialized_callback),
@@ -314,17 +314,17 @@ void DriveFileStreamReader::Initialize(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
   DCHECK(!callback.is_null());
 
-  GetFileContentByPath(
+  GetFileContent(
       file_system_getter_,
       drive_file_path,
       base::Bind(&DriveFileStreamReader
-                     ::InitializeAfterGetFileContentByPathInitialized,
+                     ::InitializeAfterGetFileContentInitialized,
                  weak_ptr_factory_.GetWeakPtr(),
                  byte_range,
                  callback),
       base::Bind(&DriveFileStreamReader::OnGetContent,
                  weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&DriveFileStreamReader::OnGetFileContentByPathCompletion,
+      base::Bind(&DriveFileStreamReader::OnGetFileContentCompletion,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback));
 }
@@ -338,7 +338,7 @@ int DriveFileStreamReader::Read(net::IOBuffer* buffer, int buffer_length,
   return reader_proxy_->Read(buffer, buffer_length, callback);
 }
 
-void DriveFileStreamReader::InitializeAfterGetFileContentByPathInitialized(
+void DriveFileStreamReader::InitializeAfterGetFileContentInitialized(
     const net::HttpByteRange& in_byte_range,
     const InitializeCompletionCallback& callback,
     FileError error,
@@ -424,7 +424,7 @@ void DriveFileStreamReader::OnGetContent(google_apis::GDataErrorCode error_code,
   reader_proxy_->OnGetContent(data.Pass());
 }
 
-void DriveFileStreamReader::OnGetFileContentByPathCompletion(
+void DriveFileStreamReader::OnGetFileContentCompletion(
     const InitializeCompletionCallback& callback,
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));

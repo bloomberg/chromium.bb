@@ -151,8 +151,8 @@ void RunMarkMountedCallback(const MarkMountedCallback& callback,
   callback.Run(error, *cache_file_path);
 }
 
-// Used to implement GetCacheEntryByPath.
-bool GetCacheEntryByPathInternal(internal::ResourceMetadata* resource_metadata,
+// Used to implement GetCacheEntry.
+bool GetCacheEntryInternal(internal::ResourceMetadata* resource_metadata,
                                  internal::FileCache* cache,
                                  const base::FilePath& drive_file_path,
                                  FileCacheEntry* cache_entry) {
@@ -533,8 +533,8 @@ void FileSystem::FinishUnpin(const FileOperationCallback& callback,
   callback.Run(error);
 }
 
-void FileSystem::GetFileByPath(const base::FilePath& file_path,
-                               const GetFileCallback& callback) {
+void FileSystem::GetFile(const base::FilePath& file_path,
+                         const GetFileCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
@@ -546,15 +546,15 @@ void FileSystem::GetFileByPath(const base::FilePath& file_path,
       callback);
 }
 
-void FileSystem::GetFileByPathForSaving(const base::FilePath& file_path,
-                                        const GetFileCallback& callback) {
+void FileSystem::GetFileForSaving(const base::FilePath& file_path,
+                                  const GetFileCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   get_file_for_saving_operation_->GetFileForSaving(file_path, callback);
 }
 
-void FileSystem::GetFileContentByPath(
+void FileSystem::GetFileContent(
     const base::FilePath& file_path,
     const GetFileContentInitializedCallback& initialized_callback,
     const google_apis::GetContentCallback& get_content_callback,
@@ -573,7 +573,7 @@ void FileSystem::GetFileContentByPath(
                  completion_callback));
 }
 
-void FileSystem::GetResourceEntryByPath(
+void FileSystem::GetResourceEntry(
     const base::FilePath& file_path,
     const GetResourceEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -589,14 +589,14 @@ void FileSystem::GetResourceEntryByPath(
                  cache_,
                  file_path,
                  entry_ptr),
-      base::Bind(&FileSystem::GetResourceEntryByPathAfterGetEntry,
+      base::Bind(&FileSystem::GetResourceEntryAfterGetEntry,
                  weak_ptr_factory_.GetWeakPtr(),
                  file_path,
                  callback,
                  base::Passed(&entry)));
 }
 
-void FileSystem::GetResourceEntryByPathAfterGetEntry(
+void FileSystem::GetResourceEntryAfterGetEntry(
     const base::FilePath& file_path,
     const GetResourceEntryCallback& callback,
     scoped_ptr<ResourceEntry> entry,
@@ -608,14 +608,14 @@ void FileSystem::GetResourceEntryByPathAfterGetEntry(
     // If the information about the path is not in the local ResourceMetadata,
     // try fetching information of the directory and retry.
     //
-    // Note: this forms mutual recursion between GetResourceEntryByPath and
+    // Note: this forms mutual recursion between GetResourceEntry and
     // LoadDirectoryIfNeeded, because directory loading requires the existence
     // of directory entry itself. The recursion terminates because we always go
     // up the hierarchy by .DirName() bounded under the Drive root path.
     if (util::GetDriveGrandRootPath().IsParent(file_path)) {
       LoadDirectoryIfNeeded(
           file_path.DirName(),
-          base::Bind(&FileSystem::GetResourceEntryByPathAfterLoad,
+          base::Bind(&FileSystem::GetResourceEntryAfterLoad,
                      weak_ptr_factory_.GetWeakPtr(),
                      file_path,
                      callback));
@@ -626,7 +626,7 @@ void FileSystem::GetResourceEntryByPathAfterGetEntry(
   callback.Run(error, entry.Pass());
 }
 
-void FileSystem::GetResourceEntryByPathAfterLoad(
+void FileSystem::GetResourceEntryAfterLoad(
     const base::FilePath& file_path,
     const GetResourceEntryCallback& callback,
     FileError error) {
@@ -653,7 +653,7 @@ void FileSystem::GetResourceEntryByPathAfterLoad(
                  base::Passed(&entry)));
 }
 
-void FileSystem::ReadDirectoryByPath(
+void FileSystem::ReadDirectory(
     const base::FilePath& directory_path,
     const ReadDirectoryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -661,7 +661,7 @@ void FileSystem::ReadDirectoryByPath(
 
   LoadDirectoryIfNeeded(
       directory_path,
-      base::Bind(&FileSystem::ReadDirectoryByPathAfterLoad,
+      base::Bind(&FileSystem::ReadDirectoryAfterLoad,
                  weak_ptr_factory_.GetWeakPtr(),
                  directory_path,
                  callback));
@@ -672,7 +672,7 @@ void FileSystem::LoadDirectoryIfNeeded(const base::FilePath& directory_path,
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
-  GetResourceEntryByPath(
+  GetResourceEntry(
       directory_path,
       base::Bind(&FileSystem::LoadDirectoryIfNeededAfterGetEntry,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -706,7 +706,7 @@ void FileSystem::LoadDirectoryIfNeededAfterGetEntry(
   change_list_loader_->LoadIfNeeded(directory_fetch_info, callback);
 }
 
-void FileSystem::ReadDirectoryByPathAfterLoad(
+void FileSystem::ReadDirectoryAfterLoad(
     const base::FilePath& directory_path,
     const ReadDirectoryCallback& callback,
     FileError error) {
@@ -718,13 +718,13 @@ void FileSystem::ReadDirectoryByPathAfterLoad(
 
   resource_metadata_->ReadDirectoryByPathOnUIThread(
       directory_path,
-      base::Bind(&FileSystem::ReadDirectoryByPathAfterRead,
+      base::Bind(&FileSystem::ReadDirectoryAfterRead,
                  weak_ptr_factory_.GetWeakPtr(),
                  directory_path,
                  callback));
 }
 
-void FileSystem::ReadDirectoryByPathAfterRead(
+void FileSystem::ReadDirectoryAfterRead(
     const base::FilePath& directory_path,
     const ReadDirectoryCallback& callback,
     FileError error,
@@ -962,7 +962,7 @@ void FileSystem::MarkCacheFileAsUnmounted(
   cache_->MarkAsUnmountedOnUIThread(cache_file_path, callback);
 }
 
-void FileSystem::GetCacheEntryByPath(
+void FileSystem::GetCacheEntry(
     const base::FilePath& drive_file_path,
     const GetCacheEntryCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -972,7 +972,7 @@ void FileSystem::GetCacheEntryByPath(
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_,
       FROM_HERE,
-      base::Bind(&GetCacheEntryByPathInternal,
+      base::Bind(&GetCacheEntryInternal,
                  resource_metadata_,
                  cache_,
                  drive_file_path,

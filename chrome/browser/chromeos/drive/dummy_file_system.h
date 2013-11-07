@@ -55,22 +55,20 @@ class DummyFileSystem : public FileSystemInterface {
                    const FileOperationCallback& callback) OVERRIDE {}
   virtual void Unpin(const base::FilePath& file_path,
                      const FileOperationCallback& callback) OVERRIDE {}
-  virtual void GetFileByPath(const base::FilePath& file_path,
-                             const GetFileCallback& callback) OVERRIDE {}
-  virtual void GetFileByPathForSaving(
-      const base::FilePath& file_path,
-      const GetFileCallback& callback) OVERRIDE {}
-  virtual void GetFileContentByPath(
+  virtual void GetFile(const base::FilePath& file_path,
+                       const GetFileCallback& callback) OVERRIDE {}
+  virtual void GetFileForSaving(const base::FilePath& file_path,
+                                const GetFileCallback& callback) OVERRIDE {}
+  virtual void GetFileContent(
       const base::FilePath& file_path,
       const GetFileContentInitializedCallback& initialized_callback,
       const google_apis::GetContentCallback& get_content_callback,
       const FileOperationCallback& completion_callback) OVERRIDE {}
-  virtual void GetResourceEntryByPath(
+  virtual void GetResourceEntry(
       const base::FilePath& file_path,
       const GetResourceEntryCallback& callback) OVERRIDE {}
-  virtual void ReadDirectoryByPath(
-      const base::FilePath& file_path,
-      const ReadDirectoryCallback& callback) OVERRIDE {}
+  virtual void ReadDirectory(const base::FilePath& file_path,
+                             const ReadDirectoryCallback& callback) OVERRIDE {}
   virtual void Search(const std::string& search_query,
                       const GURL& next_link,
                       const SearchCallback& callback) OVERRIDE {}
@@ -81,10 +79,9 @@ class DummyFileSystem : public FileSystemInterface {
       const SearchMetadataCallback& callback) OVERRIDE {}
   virtual void GetAvailableSpace(
       const GetAvailableSpaceCallback& callback) OVERRIDE {}
-  virtual void GetShareUrl(
-      const base::FilePath& file_path,
-      const GURL& embed_origin,
-      const GetShareUrlCallback& callback) OVERRIDE {}
+  virtual void GetShareUrl(const base::FilePath& file_path,
+                           const GURL& embed_origin,
+                           const GetShareUrlCallback& callback) OVERRIDE {}
   virtual void GetMetadata(
       const GetFilesystemMetadataCallback& callback) OVERRIDE {}
   virtual void MarkCacheFileAsMounted(
@@ -93,9 +90,8 @@ class DummyFileSystem : public FileSystemInterface {
   virtual void MarkCacheFileAsUnmounted(
       const base::FilePath& cache_file_path,
       const FileOperationCallback& callback) OVERRIDE {}
-  virtual void GetCacheEntryByPath(
-      const base::FilePath& drive_file_path,
-      const GetCacheEntryCallback& callback) OVERRIDE {}
+  virtual void GetCacheEntry(const base::FilePath& drive_file_path,
+                             const GetCacheEntryCallback& callback) OVERRIDE {}
   virtual void Reload(const FileOperationCallback& callback) OVERRIDE {}
 };
 

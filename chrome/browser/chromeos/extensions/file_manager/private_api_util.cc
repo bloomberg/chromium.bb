@@ -80,14 +80,14 @@ void GetSelectedFileInfoInternal(Profile* profile,
               ui::SelectedFileInfo(file_path, base::FilePath()));
           break;
         case NEED_LOCAL_PATH_FOR_OPENING:
-          file_system->GetFileByPath(
+          file_system->GetFile(
               drive::util::ExtractDrivePath(file_path),
               base::Bind(&ContinueGetSelectedFileInfo,
                          profile,
                          base::Passed(&params)));
           return;  // Remaining work is done in ContinueGetSelectedFileInfo.
         case NEED_LOCAL_PATH_FOR_SAVING:
-          file_system->GetFileByPathForSaving(
+          file_system->GetFileForSaving(
               drive::util::ExtractDrivePath(file_path),
               base::Bind(&ContinueGetSelectedFileInfo,
                          profile,

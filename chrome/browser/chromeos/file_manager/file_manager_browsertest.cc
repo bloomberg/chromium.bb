@@ -285,7 +285,7 @@ class DriveTestVolume {
     // Obtain the parent entry.
     drive::FileError error = drive::FILE_ERROR_OK;
     scoped_ptr<drive::ResourceEntry> parent_entry(new drive::ResourceEntry);
-    integration_service_->file_system()->GetResourceEntryByPath(
+    integration_service_->file_system()->GetResourceEntry(
         drive::util::GetDriveMyDriveRootPath().Append(path).DirName(),
         google_apis::test_util::CreateCopyResultCallback(
             &error, &parent_entry));

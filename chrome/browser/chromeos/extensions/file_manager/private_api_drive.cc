@@ -112,7 +112,7 @@ bool FileBrowserPrivateGetDriveEntryPropertiesFunction::RunImpl() {
     return true;
   }
 
-  file_system->GetResourceEntryByPath(
+  file_system->GetResourceEntry(
       file_path_,
       base::Bind(&FileBrowserPrivateGetDriveEntryPropertiesFunction::
                      OnGetFileInfo, this));
@@ -179,7 +179,7 @@ void FileBrowserPrivateGetDriveEntryPropertiesFunction::OnGetFileInfo(
     }
   }
 
-  file_system->GetCacheEntryByPath(
+  file_system->GetCacheEntry(
       file_path_,
       base::Bind(&FileBrowserPrivateGetDriveEntryPropertiesFunction::
                      CacheStateReceived, this));
@@ -289,7 +289,7 @@ void FileBrowserPrivateGetDriveFilesFunction::GetFileOrSendResponse() {
     return;
   }
 
-  file_system->GetFileByPath(
+  file_system->GetFile(
       drive_path,
       base::Bind(&FileBrowserPrivateGetDriveFilesFunction::OnFileReady, this));
 }

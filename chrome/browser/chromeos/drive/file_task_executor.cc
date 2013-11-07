@@ -60,7 +60,7 @@ void FileTaskExecutor::Execute(
   current_index_ = paths.size();
 
   for (size_t i = 0; i < paths.size(); ++i) {
-    file_system->GetResourceEntryByPath(
+    file_system->GetResourceEntry(
         paths[i],
         base::Bind(&FileTaskExecutor::OnFileEntryFetched,
                    weak_ptr_factory_.GetWeakPtr()));

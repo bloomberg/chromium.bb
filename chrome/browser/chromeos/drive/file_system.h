@@ -120,19 +120,19 @@ class FileSystem : public FileSystemInterface,
                    const FileOperationCallback& callback) OVERRIDE;
   virtual void Unpin(const base::FilePath& file_path,
                      const FileOperationCallback& callback) OVERRIDE;
-  virtual void GetFileByPath(const base::FilePath& file_path,
+  virtual void GetFile(const base::FilePath& file_path,
                              const GetFileCallback& callback) OVERRIDE;
-  virtual void GetFileByPathForSaving(const base::FilePath& file_path,
+  virtual void GetFileForSaving(const base::FilePath& file_path,
                                       const GetFileCallback& callback) OVERRIDE;
-  virtual void GetFileContentByPath(
+  virtual void GetFileContent(
       const base::FilePath& file_path,
       const GetFileContentInitializedCallback& initialized_callback,
       const google_apis::GetContentCallback& get_content_callback,
       const FileOperationCallback& completion_callback) OVERRIDE;
-  virtual void GetResourceEntryByPath(
+  virtual void GetResourceEntry(
       const base::FilePath& file_path,
       const GetResourceEntryCallback& callback) OVERRIDE;
-  virtual void ReadDirectoryByPath(
+  virtual void ReadDirectory(
       const base::FilePath& directory_path,
       const ReadDirectoryCallback& callback) OVERRIDE;
   virtual void GetAvailableSpace(
@@ -149,7 +149,7 @@ class FileSystem : public FileSystemInterface,
   virtual void MarkCacheFileAsUnmounted(
       const base::FilePath& cache_file_path,
       const FileOperationCallback& callback) OVERRIDE;
-  virtual void GetCacheEntryByPath(
+  virtual void GetCacheEntry(
       const base::FilePath& drive_file_path,
       const GetCacheEntryCallback& callback) OVERRIDE;
   virtual void Reload(const FileOperationCallback& callback) OVERRIDE;
@@ -208,17 +208,16 @@ class FileSystem : public FileSystemInterface,
   // ChangeListLoader::CheckForUpdates() is complete.
   void OnUpdateChecked(FileError error);
 
-  // Part of GetResourceEntryByPath()
+  // Part of GetResourceEntry()
   // 1) Called when GetLocallyStoredResourceEntry() is complete.
   // 2) Called when LoadDirectoryIfNeeded() is complete.
-  void GetResourceEntryByPathAfterGetEntry(
-      const base::FilePath& file_path,
-      const GetResourceEntryCallback& callback,
-      scoped_ptr<ResourceEntry> entry,
-      FileError error);
-  void GetResourceEntryByPathAfterLoad(const base::FilePath& file_path,
-                                       const GetResourceEntryCallback& callback,
-                                       FileError error);
+  void GetResourceEntryAfterGetEntry(const base::FilePath& file_path,
+                                     const GetResourceEntryCallback& callback,
+                                     scoped_ptr<ResourceEntry> entry,
+                                     FileError error);
+  void GetResourceEntryAfterLoad(const base::FilePath& file_path,
+                                 const GetResourceEntryCallback& callback,
+                                 FileError error);
 
   // Loads the entry info of the children of |directory_path| to resource
   // metadata. |callback| must not be null.
@@ -230,19 +229,17 @@ class FileSystem : public FileSystemInterface,
       FileError error,
       scoped_ptr<ResourceEntry> entry);
 
-  // Part of ReadDirectoryByPath()
+  // Part of ReadDirectory()
   // 1) Called when LoadDirectoryIfNeeded() is complete.
-  // 2) Called when ResourceMetadata::ReadDirectoryByPath() is complete.
+  // 2) Called when ResourceMetadata::ReadDirectory() is complete.
   // |callback| must not be null.
-  void ReadDirectoryByPathAfterLoad(
-      const base::FilePath& directory_path,
-      const ReadDirectoryCallback& callback,
-      FileError error);
-  void ReadDirectoryByPathAfterRead(
-      const base::FilePath& directory_path,
-      const ReadDirectoryCallback& callback,
-      FileError error,
-      scoped_ptr<ResourceEntryVector> entries);
+  void ReadDirectoryAfterLoad(const base::FilePath& directory_path,
+                              const ReadDirectoryCallback& callback,
+                              FileError error);
+  void ReadDirectoryAfterRead(const base::FilePath& directory_path,
+                              const ReadDirectoryCallback& callback,
+                              FileError error,
+                              scoped_ptr<ResourceEntryVector> entries);
 
   // Part of GetShareUrl. Resolves the resource entry to get the resource it,
   // and then uses it to ask for the share url. |callback| must not be null.

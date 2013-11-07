@@ -689,13 +689,13 @@ void DriveInternalsWebUIHandler::UpdateFileSystemContentsSection() {
   // Start rendering the file system tree as text.
   const base::FilePath root_path = drive::util::GetDriveGrandRootPath();
 
-  file_system->GetResourceEntryByPath(
+  file_system->GetResourceEntry(
       root_path,
       base::Bind(&DriveInternalsWebUIHandler::OnGetResourceEntryByPath,
                  weak_ptr_factory_.GetWeakPtr(),
                  root_path));
 
-  file_system->ReadDirectoryByPath(
+  file_system->ReadDirectory(
       root_path,
       base::Bind(&DriveInternalsWebUIHandler::OnReadDirectoryByPath,
                  weak_ptr_factory_.GetWeakPtr(),
@@ -801,7 +801,7 @@ void DriveInternalsWebUIHandler::OnReadDirectoryByPath(
       file_system_as_text.append(FormatEntry(current_path, entry) + "\n");
 
       if (entry.file_info().is_directory()) {
-        file_system->ReadDirectoryByPath(
+        file_system->ReadDirectory(
             current_path,
             base::Bind(&DriveInternalsWebUIHandler::OnReadDirectoryByPath,
                        weak_ptr_factory_.GetWeakPtr(),

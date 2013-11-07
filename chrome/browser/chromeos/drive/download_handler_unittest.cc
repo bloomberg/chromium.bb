@@ -38,7 +38,7 @@ class DownloadHandlerTestFileSystem : public DummyFileSystem {
   void set_download_path_state(DownloadPathState state) { state_ = state; }
 
   // FileSystemInterface overrides.
-  virtual void GetResourceEntryByPath(
+  virtual void GetResourceEntry(
       const base::FilePath& file_path,
       const GetResourceEntryCallback& callback) OVERRIDE {
     if (state_ == PATH_EXISTS) {
