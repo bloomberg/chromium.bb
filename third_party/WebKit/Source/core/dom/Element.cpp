@@ -1495,24 +1495,25 @@ PassRefPtr<RenderStyle> Element::originalStyleForRenderer()
 bool Element::recalcStyle(StyleRecalcChange change)
 {
     ASSERT(document().inStyleRecalc());
+    ASSERT(!parentNode() || !parentNode()->needsStyleRecalc());
 
     if (hasCustomStyleCallbacks())
         willRecalcStyle(change);
 
-    if (hasRareData() && (change > NoChange || needsStyleRecalc())) {
-        ElementRareData* data = elementRareData();
-        data->resetStyleState();
-        data->clearComputedStyle();
+    if (change >= Inherit || needsStyleRecalc()) {
+        if (hasRareData()) {
+            ElementRareData* data = elementRareData();
+            data->resetStyleState();
+            data->clearComputedStyle();
+        }
+        if (parentRenderStyle())
+            change = recalcOwnStyle(change);
+        clearNeedsStyleRecalc();
     }
-
-    if ((change >= Inherit || needsStyleRecalc()) && parentRenderStyle())
-        change = recalcOwnStyle(change);
 
     // If we reattached we don't need to recalc the style of our descendants anymore.
     if ((change >= Inherit && change < Reattach) || childNeedsStyleRecalc())
         recalcChildStyle(change);
-
-    clearNeedsStyleRecalc();
     clearChildNeedsStyleRecalc();
 
     if (hasCustomStyleCallbacks())
@@ -1536,6 +1537,9 @@ static bool callbackSelectorsDiffer(RenderStyle* style1, RenderStyle* style2)
 StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
 {
     ASSERT(document().inStyleRecalc());
+    ASSERT(!parentNode() || !parentNode()->needsStyleRecalc());
+    ASSERT(change >= Inherit || needsStyleRecalc());
+    ASSERT(parentRenderStyle());
 
     CSSAnimationUpdateScope cssAnimationUpdateScope(this);
     RefPtr<RenderStyle> oldStyle = renderStyle();
@@ -1583,6 +1587,8 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
 void Element::recalcChildStyle(StyleRecalcChange change)
 {
     ASSERT(document().inStyleRecalc());
+    ASSERT(change >= Inherit || childNeedsStyleRecalc());
+    ASSERT(!needsStyleRecalc());
 
     StyleResolverParentPusher parentPusher(this);
 

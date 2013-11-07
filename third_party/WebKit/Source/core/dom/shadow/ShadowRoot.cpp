@@ -176,6 +176,9 @@ void ShadowRoot::recalcStyle(StyleRecalcChange change)
     if (styleChangeType() >= SubtreeStyleChange)
         change = Force;
 
+    // There's no style to update so just calling recalcStyle means we're updated.
+    clearNeedsStyleRecalc();
+
     // FIXME: This doesn't handle :hover + div properly like Element::recalcStyle does.
     for (Node* child = lastChild(); child; child = child->previousSibling()) {
         bool didReattach = false;
@@ -189,7 +192,7 @@ void ShadowRoot::recalcStyle(StyleRecalcChange change)
     }
 
     styleResolver->popParentShadowRoot(*this);
-    clearNeedsStyleRecalc();
+
     clearChildNeedsStyleRecalc();
     setAttached();
 }

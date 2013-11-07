@@ -55,7 +55,7 @@ String PseudoElement::pseudoElementNameForEvents(PseudoId pseudoId)
 }
 
 PseudoElement::PseudoElement(Element* parent, PseudoId pseudoId)
-    : Element(pseudoElementTagName(), &parent->document(), CreatePseudoElement)
+    : Element(pseudoElementTagName(), &parent->document(), CreateElement)
     , m_pseudoId(pseudoId)
 {
     ASSERT(pseudoId != NOPSEUDO);

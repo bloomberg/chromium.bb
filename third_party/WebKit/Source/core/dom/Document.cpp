@@ -1702,6 +1702,8 @@ void Document::recalcStyle(StyleRecalcChange change)
 
         inheritHtmlAndBodyElementStyles(change);
 
+        clearNeedsStyleRecalc();
+
         if (Element* documentElement = this->documentElement()) {
             if (shouldRecalcStyle(change, documentElement))
                 documentElement->recalcStyle(change);
@@ -1709,7 +1711,6 @@ void Document::recalcStyle(StyleRecalcChange change)
 
         view()->updateCompositingLayersAfterStyleChange();
 
-        clearNeedsStyleRecalc();
         clearChildNeedsStyleRecalc();
         unscheduleStyleRecalc();
 
