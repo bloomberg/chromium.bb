@@ -109,7 +109,7 @@ endfun
 
 fun! CrBuild(...)
   let l:targets = a:0 > 0 ? join(a:000, ' ') : ''
-  if (l:targets !~ "\i")
+  if (l:targets !~ '\i')
     let l:targets = 'chrome'
   endif
   call s:MakeWithCustomCommand(s:NinjaCommandForTargets(l:targets))
