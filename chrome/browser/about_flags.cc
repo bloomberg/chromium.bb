@@ -1846,6 +1846,13 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(views::switches::kViewsUseRectBasedTargeting)
   },
 #endif
+  {
+    "enable-apps-show-on-first-paint",
+    IDS_FLAGS_ENABLE_APPS_SHOW_ON_FIRST_PAINT_NAME,
+    IDS_FLAGS_ENABLE_APPS_SHOW_ON_FIRST_PAINT_DESCRIPTION,
+    kOsDesktop,
+    SINGLE_VALUE_TYPE(switches::kEnableAppsShowOnFirstPaint)
+  },
 };
 
 const Experiment* experiments = kExperiments;

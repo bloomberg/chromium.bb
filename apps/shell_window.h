@@ -14,6 +14,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/console_message_level.h"
 #include "ui/base/ui_base_types.h"  // WindowShowState
 #include "ui/gfx/image/image.h"
@@ -74,6 +75,7 @@ class ShellWindowContents {
 // have a WebContents but none of the chrome of normal browser windows.
 class ShellWindow : public content::NotificationObserver,
                     public content::WebContentsDelegate,
+                    public content::WebContentsObserver,
                     public web_modal::WebContentsModalDialogManagerDelegate,
                     public extensions::ExtensionKeybindingRegistry::Delegate,
                     public extensions::IconImage::Observer {
@@ -286,6 +288,19 @@ class ShellWindow : public content::NotificationObserver,
   void SetMinimumSize(const gfx::Size& min_size);
   void SetMaximumSize(const gfx::Size& max_size);
 
+  enum ShowType {
+    SHOW_ACTIVE,
+    SHOW_INACTIVE
+  };
+
+  // Shows the window if its contents have been painted; otherwise flags the
+  // window to be shown as soon as its contents are painted for the first time.
+  void Show(ShowType show_type);
+
+  // Hides the window. If the window was previously flagged to be shown on
+  // first paint, it will be unflagged.
+  void Hide();
+
   ShellWindowContents* shell_window_contents_for_test() {
     return shell_window_contents_.get();
   }
@@ -339,6 +354,9 @@ class ShellWindow : public content::NotificationObserver,
   virtual void RequestToLockMouse(content::WebContents* web_contents,
                                   bool user_gesture,
                                   bool last_unlocked_by_target) OVERRIDE;
+
+  // content::WebContentsObserver implementation.
+  virtual void DidFirstVisuallyNonEmptyPaint(int32 page_id) OVERRIDE;
 
   // content::NotificationObserver implementation.
   virtual void Observe(int type,
@@ -433,6 +451,16 @@ class ShellWindow : public content::NotificationObserver,
 
   // Size constraints on the window.
   SizeConstraints size_constraints_;
+
+  // Show has been called, so the window should be shown once the first visually
+  // non-empty paint occurs.
+  bool show_on_first_paint_;
+
+  // The first visually non-empty paint has completed.
+  bool first_paint_complete_;
+
+  // Whether the delayed Show() call was for an active or inactive window.
+  ShowType delayed_show_type_;
 
   DISALLOW_COPY_AND_ASSIGN(ShellWindow);
 };

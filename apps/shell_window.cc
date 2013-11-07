@@ -7,6 +7,7 @@
 #include "apps/shell_window_geometry_cache.h"
 #include "apps/shell_window_registry.h"
 #include "apps/ui/native_app_window.h"
+#include "base/command_line.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/extensions/suggest_permission_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
@@ -30,6 +32,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "content/public/common/media_stream_request.h"
 #include "extensions/browser/view_type_utils.h"
 #include "third_party/skia/include/core/SkRegion.h"
@@ -139,7 +142,9 @@ ShellWindow::ShellWindow(Profile* profile,
       delegate_(delegate),
       image_loader_ptr_factory_(this),
       fullscreen_for_window_api_(false),
-      fullscreen_for_tab_(false) {
+      fullscreen_for_tab_(false),
+      show_on_first_paint_(false),
+      first_paint_complete_(false) {
 }
 
 void ShellWindow::Init(const GURL& url,
@@ -149,6 +154,10 @@ void ShellWindow::Init(const GURL& url,
   shell_window_contents_.reset(shell_window_contents);
   shell_window_contents_->Initialize(profile(), url);
   WebContents* web_contents = shell_window_contents_->GetWebContents();
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableAppsShowOnFirstPaint)) {
+    content::WebContentsObserver::Observe(web_contents);
+  }
   delegate_->InitWebContents(web_contents);
   WebContentsModalDialogManager::CreateForWebContents(web_contents);
   extensions::ExtensionWebContentsObserver::CreateForWebContents(web_contents);
@@ -167,10 +176,8 @@ void ShellWindow::Init(const GURL& url,
   native_app_window_.reset(delegate_->CreateNativeAppWindow(this, new_params));
 
   if (!new_params.hidden) {
-    if (window_type_is_panel())
-      GetBaseWindow()->ShowInactive();  // Panels are not activated by default.
-    else
-      GetBaseWindow()->Show();
+    // Panels are not activated by default.
+    Show(window_type_is_panel() ? SHOW_INACTIVE : SHOW_ACTIVE);
   }
 
   if (new_params.state == ui::SHOW_STATE_FULLSCREEN)
@@ -193,6 +200,15 @@ void ShellWindow::Init(const GURL& url,
                  content::NotificationService::AllSources());
 
   shell_window_contents_->LoadContents(new_params.creator_process_id);
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableAppsShowOnFirstPaint)) {
+    // We want to show the window only when the content has been painted. For
+    // that to happen, we need to define a size for the content, otherwise the
+    // layout will happen in a 0x0 area.
+    // Note: WebContents::GetView() is guaranteed to be non-null.
+    web_contents->GetView()->SizeContents(new_params.bounds.size());
+  }
 
   // Prevent the browser process from shutting down while this window is open.
   chrome::StartKeepAlive();
@@ -282,6 +298,15 @@ void ShellWindow::RequestToLockMouse(WebContents* web_contents,
       web_contents->GetRenderViewHost());
 
   web_contents->GotResponseToLockMouseRequest(has_permission);
+}
+
+void ShellWindow::DidFirstVisuallyNonEmptyPaint(int32 page_id) {
+  first_paint_complete_ = true;
+  if (show_on_first_paint_) {
+    DCHECK(delayed_show_type_ == SHOW_ACTIVE ||
+           delayed_show_type_ == SHOW_INACTIVE);
+    Show(delayed_show_type_);
+  }
 }
 
 void ShellWindow::OnNativeClose() {
@@ -409,6 +434,36 @@ void ShellWindow::SetMinimumSize(const gfx::Size& min_size) {
 void ShellWindow::SetMaximumSize(const gfx::Size& max_size) {
   size_constraints_.set_maximum_size(max_size);
   OnSizeConstraintsChanged();
+}
+
+void ShellWindow::Show(ShowType show_type) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+        switches::kEnableAppsShowOnFirstPaint)) {
+    show_on_first_paint_ = true;
+
+    if (!first_paint_complete_) {
+      delayed_show_type_ = show_type;
+      return;
+    }
+  }
+
+  switch (show_type) {
+    case SHOW_ACTIVE:
+      GetBaseWindow()->Show();
+      break;
+    case SHOW_INACTIVE:
+      GetBaseWindow()->ShowInactive();
+      break;
+  }
+}
+
+void ShellWindow::Hide() {
+  // This is there to prevent race conditions with Hide() being called before
+  // there was a non-empty paint. It should have no effect in a non-racy
+  // scenario where the application is hiding then showing a window: the second
+  // show will not be delayed.
+  show_on_first_paint_ = false;
+  GetBaseWindow()->Hide();
 }
 
 //------------------------------------------------------------------------------

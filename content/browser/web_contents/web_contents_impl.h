@@ -661,7 +661,7 @@ class CONTENT_EXPORT WebContentsImpl
                           const std::vector<gfx::Size>& original_bitmap_sizes);
   void OnUpdateFaviconURL(int32 page_id,
                           const std::vector<FaviconURL>& candidates);
-
+  void OnFirstVisuallyNonEmptyPaint(int32 page_id);
   void OnMediaNotification(int64 player_cookie,
                            bool has_video,
                            bool has_audio,

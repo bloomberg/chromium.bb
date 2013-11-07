@@ -164,6 +164,7 @@ extern const char kEnableAdview[];
 extern const char kEnableAdviewSrcAttribute[];
 extern const char kEnableAppList[];
 extern const char kEnableAppWindowControls[];
+extern const char kEnableAppsShowOnFirstPaint[];
 extern const char kEnableAsyncDns[];
 extern const char kEnableAuthNegotiatePort[];
 extern const char kEnableAutologin[];

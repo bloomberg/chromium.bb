@@ -179,7 +179,7 @@ bool AppWindowCreateFunction::RunImpl() {
             view_id = created_view->GetRoutingID();
           }
 
-          window->GetBaseWindow()->Show();
+          window->Show(ShellWindow::SHOW_ACTIVE);
           base::DictionaryValue* result = new base::DictionaryValue;
           result->Set("viewId", new base::FundamentalValue(view_id));
           SetCreateResultFromShellWindow(window, result);

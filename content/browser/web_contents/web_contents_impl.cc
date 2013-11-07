@@ -529,6 +529,8 @@ bool WebContentsImpl::OnMessageReceived(RenderViewHost* render_view_host,
                                     OnJavaBridgeGetChannelHandle)
 #endif
     IPC_MESSAGE_HANDLER(ViewHostMsg_MediaNotification, OnMediaNotification)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DidFirstVisuallyNonEmptyPaint,
+                        OnFirstVisuallyNonEmptyPaint)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP_EX()
   message_source_ = NULL;
@@ -2458,6 +2460,10 @@ void WebContentsImpl::OnMediaNotification(int64 player_cookie,
 #endif  // !defined(OS_CHROMEOS)
 }
 
+void WebContentsImpl::OnFirstVisuallyNonEmptyPaint(int32 page_id) {
+  FOR_EACH_OBSERVER(WebContentsObserver, observers_,
+                    DidFirstVisuallyNonEmptyPaint(page_id));
+}
 
 void WebContentsImpl::DidChangeVisibleSSLState() {
   FOR_EACH_OBSERVER(WebContentsObserver, observers_,

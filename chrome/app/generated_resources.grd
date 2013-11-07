@@ -6961,6 +6961,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
     <message name="IDS_FLAGS_VIEWS_USE_RECT_BASED_TARGETING_DESCRIPTION" desc="Description of about:flags option to use rect-based targeting in views">
       Use a heuristic to determine the most probable target of a gesture, where the touch region is represented by a rectangle.
     </message>
+      <message name="IDS_FLAGS_ENABLE_APPS_SHOW_ON_FIRST_PAINT_NAME" desc="Name of the flag to enable show-on-first-paint for apps.">
+        Enable show-on-first-paint for apps.
+      </message>
+      <message name="IDS_FLAGS_ENABLE_APPS_SHOW_ON_FIRST_PAINT_DESCRIPTION" desc="Description of flag to enable show-on-first-paint for apps.">
+        Show apps windows after the first paint. Windows will be shown significantly later for heavy apps loading resources synchronously but it will be insignificant for apps that load most of their resources asynchronously.
+      </message>
 
       <!-- Crashes -->
       <message name="IDS_CRASHES_TITLE" desc="Title for the chrome://crashes page.">

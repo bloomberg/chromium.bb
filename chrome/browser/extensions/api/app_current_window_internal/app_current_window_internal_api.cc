@@ -108,13 +108,13 @@ bool AppCurrentWindowInternalClearAttentionFunction::RunWithWindow(
 
 bool AppCurrentWindowInternalShowFunction::RunWithWindow(
     ShellWindow* window) {
-  window->GetBaseWindow()->Show();
+  window->Show(ShellWindow::SHOW_ACTIVE);
   return true;
 }
 
 bool AppCurrentWindowInternalHideFunction::RunWithWindow(
     ShellWindow* window) {
-  window->GetBaseWindow()->Hide();
+  window->Hide();
   return true;
 }
 
