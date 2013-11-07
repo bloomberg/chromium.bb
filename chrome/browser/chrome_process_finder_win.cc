@@ -112,6 +112,7 @@ NotifyChromeResult AttemptToNotifyRunningChrome(HWND remote_window,
   if (!thread_id || !process_id)
     return NOTIFY_FAILED;
 
+#if !defined(USE_AURA)
   if (base::win::IsMetroProcess()) {
     // Interesting corner case. We are launched as a metro process but we
     // found another chrome running. Since metro enforces single instance then
@@ -140,10 +141,15 @@ NotifyChromeResult AttemptToNotifyRunningChrome(HWND remote_window,
   if (base::win::GetVersion() >= base::win::VERSION_WIN8 &&
       base::OpenProcessHandleWithAccess(
           process_id, PROCESS_QUERY_INFORMATION,
-          process_handle.Receive()) &&
-      base::win::IsProcessImmersive(process_handle.Get())) {
-    chrome::ActivateMetroChrome();
+          process_handle.Receive())) {
+    // Receive() causes the process handle to be set in the destructor of the
+    // temporary receiver object, which does not happen until after the if
+    // statement is complete.  So IsProcessImmersive() should only be checked
+    // as part of a separate if statement.
+    if (base::win::IsProcessImmersive(process_handle.Get()))
+      chrome::ActivateMetroChrome();
   }
+#endif
 
   CommandLine command_line(*CommandLine::ForCurrentProcess());
   command_line.AppendSwitchASCII(
