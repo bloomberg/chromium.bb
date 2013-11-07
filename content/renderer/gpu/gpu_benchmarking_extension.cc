@@ -482,7 +482,10 @@ class GpuBenchmarkingWrapper : public v8::Extension {
                                callback_local,
                                context.web_frame()->mainWorldScriptContext());
 
-    int pixels_to_scroll = args[2]->IntegerValue();
+    // Convert coordinates from CSS pixels to density independent pixels (DIPs).
+    float page_scale_factor = context.web_view()->pageScaleFactor();
+
+    int pixels_to_scroll = args[2]->IntegerValue() * page_scale_factor;
 
     int mouse_event_x = 0;
     int mouse_event_y = 0;
@@ -499,10 +502,8 @@ class GpuBenchmarkingWrapper : public v8::Extension {
         return;
       }
 
-      mouse_event_x = args[3]->IntegerValue() *
-          context.web_view()->pageScaleFactor();
-      mouse_event_y = args[4]->IntegerValue() *
-          context.web_view()->pageScaleFactor();
+      mouse_event_x = args[3]->IntegerValue() * page_scale_factor;
+      mouse_event_y = args[4]->IntegerValue() * page_scale_factor;
     }
 
     // TODO(nduca): If the render_view_impl is destroyed while the gesture is in
@@ -536,10 +537,13 @@ class GpuBenchmarkingWrapper : public v8::Extension {
       return;
     }
 
+    // Convert coordinates from CSS pixels to density independent pixels (DIPs).
+    float page_scale_factor = context.web_view()->pageScaleFactor();
+
     bool zoom_in = args[0]->BooleanValue();
-    int pixels_to_move = args[1]->IntegerValue();
-    int anchor_x = args[2]->IntegerValue();
-    int anchor_y = args[3]->IntegerValue();
+    int pixels_to_move = args[1]->IntegerValue() * page_scale_factor;
+    int anchor_x = args[2]->IntegerValue() * page_scale_factor;
+    int anchor_y = args[3]->IntegerValue() * page_scale_factor;
 
     v8::Local<v8::Function> callback_local =
         v8::Local<v8::Function>::Cast(args[4]);
