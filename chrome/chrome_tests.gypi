@@ -2314,7 +2314,6 @@
         'test_support_chrome',
         'test_support_common',
         '../net/net.gyp:net',
-        '../printing/printing.gyp:printing',
         '../skia/skia.gyp:skia',
         '../sync/sync.gyp:sync',
         '../sync/sync.gyp:test_support_sync_testserver',
@@ -2480,6 +2479,11 @@
         ['toolkit_views==1', {
           'dependencies': [
             '../ui/views/views.gyp:views',
+          ],
+        }],
+        ['enable_printing!=0', {
+          'dependencies': [
+            '../printing/printing.gyp:printing',
           ],
         }],
       ],
@@ -2951,7 +2955,6 @@
             # 'browser_tests',
             '../ipc/ipc.gyp:ipc_tests',
             '../net/net.gyp:net_unittests',
-            '../printing/printing.gyp:printing_unittests',
             '../remoting/remoting.gyp:remoting_unittests',
             '../sql/sql.gyp:sql_unittests',
             '../content/content_shell_and_tests.gyp:content_unittests',
@@ -2995,6 +2998,11 @@
               'dependencies': [
               # Placeholder; empty for now.
               ]}],
+            ['enable_printing!=0', {
+              'dependencies': [
+                '../printing/printing.gyp:printing_unittests',
+              ],
+            }],
           ],  # 'conditions'
           'actions': [
             {

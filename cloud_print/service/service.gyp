@@ -57,7 +57,6 @@
         '<(DEPTH)/google_apis/google_apis.gyp:google_apis',
         '<(DEPTH)/ipc/ipc.gyp:ipc',
         '<(DEPTH)/net/net.gyp:net',
-        '<(DEPTH)/printing/printing.gyp:printing',
         '<(DEPTH)/url/url.gyp:url_lib',
         'service_resources',
       ],
@@ -67,6 +66,11 @@
             '<(DEPTH)/chrome/chrome.gyp:chrome_version_header',
             '<(DEPTH)/chrome/chrome.gyp:launcher_support',
             '<(DEPTH)/chrome/common_constants.gyp:common_constants',
+          ],
+        }],
+        ['enable_printing!=0', {
+          'dependencies': [
+            '<(DEPTH)/printing/printing.gyp:printing',
           ],
         }],
       ],

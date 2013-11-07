@@ -251,7 +251,6 @@
             '../jingle/jingle.gyp:jingle_unittests',
             '../media/media.gyp:media_unittests',
             '../ppapi/ppapi_internal.gyp:ppapi_unittests',
-            '../printing/printing.gyp:printing_unittests',
             '../remoting/remoting.gyp:remoting_unittests',
             '../sync/sync.gyp:sync_unit_tests',
             '../third_party/WebKit/public/all.gyp:all_blink',
@@ -348,6 +347,11 @@
         ['OS!="android" and OS!="ios"', {
           'dependencies': [
             '../google_apis/gcm/gcm.gyp:gcm_unit_tests',
+          ],
+        }],
+        ['enable_printing!=0', {
+          'dependencies': [
+            '../printing/printing.gyp:printing_unittests',
           ],
         }],
       ],

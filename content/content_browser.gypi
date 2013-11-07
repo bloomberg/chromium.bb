@@ -1270,7 +1270,6 @@
         'browser/devtools/devtools_resources.gyp:devtools_resources',
         '../cc/cc.gyp:cc',
         '../net/net.gyp:http_server',
-        '../printing/printing.gyp:printing',
         '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '../ui/surface/surface.gyp:surface',
         '../webkit/common/webkit_common.gyp:webkit_common',
@@ -1278,6 +1277,11 @@
         '../webkit/storage_common.gyp:webkit_storage_common',
         '../webkit/webkit_resources.gyp:webkit_resources',
         '../webkit/webkit_resources.gyp:webkit_strings',
+      ],
+    }],
+    ['enable_printing!=0', {
+      'dependencies': [
+        '../printing/printing.gyp:printing',
       ],
     }],
     ['OS!="ios" and chrome_multiple_dll!=1', {

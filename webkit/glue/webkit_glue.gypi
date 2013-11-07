@@ -29,7 +29,6 @@
         '<(DEPTH)/gpu/gpu.gyp:gles2_c_lib',
         '<(DEPTH)/gpu/gpu.gyp:gles2_implementation',
         '<(DEPTH)/net/net.gyp:net',
-        '<(DEPTH)/printing/printing.gyp:printing',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
         '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
@@ -97,6 +96,11 @@
         ['chrome_multiple_dll!=1', {
           'dependencies': [
             '<(DEPTH)/third_party/WebKit/public/blink.gyp:blink',
+          ],
+        }],
+        ['enable_printing!=0', {
+          'dependencies': [
+            '<(DEPTH)/printing/printing.gyp:printing',
           ],
         }],
       ],

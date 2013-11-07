@@ -454,7 +454,6 @@
             '<(DEPTH)/components/components.gyp:autofill_core_common',
             '<(DEPTH)/components/nacl_common.gyp:nacl_common',
             '<(DEPTH)/ipc/ipc.gyp:ipc',
-            '<(DEPTH)/printing/printing.gyp:printing',
             '<(DEPTH)/third_party/adobe/flash/flash_player.gyp:flapper_version_h',
             '<(DEPTH)/third_party/re2/re2.gyp:re2',
             '<(DEPTH)/third_party/widevine/cdm/widevine_cdm.gyp:widevine_cdm_version_h',
@@ -489,6 +488,11 @@
           ],
           'include_dirs': [
             '<(DEPTH)/breakpad/src',
+          ],
+        }],
+        ['enable_printing!=0', {
+          'dependencies': [
+            '<(DEPTH)/printing/printing.gyp:printing',
           ],
         }],
         ['OS!="ios" and chrome_multiple_dll!=1', {

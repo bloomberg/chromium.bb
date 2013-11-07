@@ -94,11 +94,6 @@
         ],
       },
       'conditions': [
-        ['enable_printing==0', {
-          'sources/': [
-            ['exclude', '.'],
-          ],
-        }],
         ['use_aura==1', {
           'dependencies': [
             '<(DEPTH)/ui/aura/aura.gyp:aura',
@@ -261,11 +256,6 @@
         'units_unittest.cc',
       ],
       'conditions': [
-        ['enable_printing==0', {
-          'sources/': [
-            ['exclude', '.'],
-          ],
-        }],
         ['toolkit_uses_gtk == 0', {'sources/': [['exclude', '_gtk_unittest\\.cc$']]}],
         ['OS!="mac"', {'sources/': [['exclude', '_mac_unittest\\.(cc|mm?)$']]}],
         ['OS!="win"', {'sources/': [['exclude', '_win_unittest\\.cc$']]}],

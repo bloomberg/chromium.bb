@@ -2669,7 +2669,6 @@
             '../components/components.gyp:navigation_interception',
             '../media/media.gyp:media',
             '../net/net.gyp:net_with_v8',
-            '../printing/printing.gyp:printing',
             # TODO(tonyg): Remove this dependency (crbug.com/280157).
             '../testing/perf/perf_test.gyp:*',
             '../third_party/adobe/flash/flash_player.gyp:flapper_version_h',
@@ -2722,6 +2721,11 @@
             # CoreImage is iOS 5+, but iOS 4.3 is still supported.
             'xcode_settings': {'OTHER_LDFLAGS': ['-weak_framework CoreImage']},
           },
+        }],
+        ['enable_printing!=0', {
+          'dependencies': [
+            '../printing/printing.gyp:printing',
+          ],
         }],
         ['OS=="win" or OS=="mac"', {
           'sources': [

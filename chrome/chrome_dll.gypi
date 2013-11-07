@@ -110,7 +110,6 @@
                 'chrome_version_resources',
                 '../chrome/chrome_resources.gyp:chrome_unscaled_resources',
                 '../crypto/crypto.gyp:crypto',
-                '../printing/printing.gyp:printing',
                 '../net/net.gyp:net_resources',
                 '../ui/views/views.gyp:views',
                 '../webkit/webkit_resources.gyp:webkit_resources',
@@ -212,6 +211,11 @@
                 ['win_use_allocator_shim==1', {
                   'dependencies': [
                     '<(allocator_target)',
+                  ],
+                }],
+                ['enable_printing!=0', {
+                  'dependencies': [
+                    '../printing/printing.gyp:printing',
                   ],
                 }],
               ]

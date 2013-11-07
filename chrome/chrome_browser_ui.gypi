@@ -2552,7 +2552,6 @@
             '../device/bluetooth/bluetooth.gyp:device_bluetooth',
             '../media/media.gyp:media',
             '../net/net.gyp:net_with_v8',
-            '../printing/printing.gyp:printing',
             '../third_party/adobe/flash/flash_player.gyp:flapper_version_h',
             '../third_party/expat/expat.gyp:expat',
             '../third_party/hunspell/hunspell.gyp:hunspell',
@@ -2588,6 +2587,11 @@
             ['include', '(^|/)ios/'],
             # TODO(ios): Add files here as they are updated to compile on iOS.
             ['include', '^browser/ui/profile_error_dialog\\.cc$'],
+          ],
+        }],
+        ['enable_printing!=0', {
+          'dependencies': [
+            '../printing/printing.gyp:printing',
           ],
         }],
         ['OS!="ios" and chrome_multiple_dll!=1', {

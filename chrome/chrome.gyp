@@ -28,7 +28,6 @@
     'conditions': [
       ['OS!="ios"', {
         'chromium_browser_dependencies': [
-          '../printing/printing.gyp:printing',
           '../ppapi/ppapi_internal.gyp:ppapi_host',
         ],
         'chromium_child_dependencies': [
@@ -40,6 +39,11 @@
           '../content/content.gyp:content_ppapi_plugin',
           '../content/content.gyp:content_worker',
           '../third_party/WebKit/Source/devtools/devtools.gyp:devtools_frontend_resources',
+        ],
+      }],
+      ['enable_printing!=0', {
+        'chromium_browser_dependencies': [
+          '../printing/printing.gyp:printing',
         ],
       }],
       ['OS=="win"', {

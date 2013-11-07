@@ -64,7 +64,6 @@
         '../media/media.gyp:media',
         '../net/net.gyp:net',
         '../ppapi/ppapi_internal.gyp:ppapi_ipc',  # For PpapiMsg_LoadPlugin
-        '../printing/printing.gyp:printing',
         '../skia/skia.gyp:skia',
         '../sync/sync.gyp:sync',
         '../third_party/adobe/flash/flash_player.gyp:flapper_version_h',
@@ -964,6 +963,11 @@
           'sources/': [
             ['include', '^browser/chromeos/status/memory_menu_button.cc'],
             ['include', '^browser/chromeos/status/memory_menu_button.h'],
+          ],
+        }],
+        ['enable_printing != 0', {
+          'dependencies': [
+            '../printing/printing.gyp:printing',
           ],
         }],
       ],

@@ -23,7 +23,6 @@
         '../media/cast/cast.gyp:cast_config',
         '../media/cast/cast_sender.gyp:cast_sender',
         '../net/net.gyp:net',
-        '../printing/printing.gyp:printing',
         '../skia/skia.gyp:skia',
         '../third_party/WebKit/public/blink.gyp:blink',
         '../third_party/hunspell/hunspell.gyp:hunspell',
@@ -474,6 +473,11 @@
             # TODO(hclam): See crbug.com/298380 for details.
             # We should isolate the APIs needed by the renderer.
             '<(DEPTH)/chrome/common/extensions/api/api.gyp:api',
+          ],
+        }],
+        ['enable_printing!=0', {
+          'dependencies': [
+            '../printing/printing.gyp:printing',
           ],
         }],
       ],
