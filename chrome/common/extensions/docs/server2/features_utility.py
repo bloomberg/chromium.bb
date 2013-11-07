@@ -45,7 +45,22 @@ def Parse(features_json):
     if isinstance(value, list):
       available_values = [subvalue for subvalue in value
                           if not ignore_feature(name, subvalue)]
-      value = available_values[0] if available_values else value[0]
+      if len(available_values) == 0:
+        logging.warning('No available values for feature "%s"' % name)
+        value = value[0]
+      elif len(available_values) == 1:
+        value = available_values[0]
+      else:
+        # Multiple available values probably implies different feature
+        # configurations for apps vs extensions. Currently, this is 'commands'.
+        # To get the ball rolling, add a hack to combine the extension types.
+        # See http://crbug.com/316194.
+        extension_types = set()
+        for value in available_values:
+          extension_types.update(value['extension_types'])
+        value = [subvalue for subvalue in available_values
+                 if subvalue['channel'] == 'stable'][0]
+        value['extension_types'] = list(extension_types)
 
     if ignore_feature(name, value):
       continue
