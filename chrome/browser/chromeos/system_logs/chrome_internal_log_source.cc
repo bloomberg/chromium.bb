@@ -54,7 +54,7 @@ void ChromeInternalLogSource::PopulateSyncLogs(SystemLogsResponse* response) {
   scoped_ptr<base::DictionaryValue> sync_logs(
       sync_ui_util::ConstructAboutInformation(service));
 
-  // Remove credentials section.
+  // Remove identity section.
   base::ListValue* details = NULL;
   sync_logs->GetList(kDetailsKey, &details);
   if (!details)
@@ -65,7 +65,7 @@ void ChromeInternalLogSource::PopulateSyncLogs(SystemLogsResponse* response) {
     if ((*it)->GetAsDictionary(&dict)) {
       std::string title;
       dict->GetString("title", &title);
-      if (title == kCredentialsTitle) {
+      if (title == kIdentityTitle) {
         details->Erase(it, NULL);
         break;
       }

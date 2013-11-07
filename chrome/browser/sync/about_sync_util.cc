@@ -18,7 +18,7 @@
 using base::DictionaryValue;
 using base::ListValue;
 
-const char kCredentialsTitle[] = "Credentials";
+const char kIdentityTitle[] = "Identity";
 const char kDetailsKey[] = "details";
 
 namespace {
@@ -26,11 +26,26 @@ namespace {
 // Creates a 'section' for display on about:sync, consisting of a title and a
 // list of fields.  Returns a pointer to the new section.  Note that
 // |parent_list|, not the caller, owns the newly added section.
-ListValue* AddSection(ListValue* parent_list, const std::string& title) {
+ListValue* AddSection(ListValue* parent_list,
+                      const std::string& title) {
   DictionaryValue* section = new DictionaryValue();
   ListValue* section_contents = new ListValue();
   section->SetString("title", title);
   section->Set("data", section_contents);
+  section->SetBoolean("is_sensitive", false);
+  parent_list->Append(section);
+  return section_contents;
+}
+
+// Same as AddSection, but for data that should be elided when dumped into text
+// form and posted in a public forum (e.g. unique identifiers).
+ListValue* AddSensitiveSection(ListValue* parent_list,
+                               const std::string& title) {
+  DictionaryValue* section = new DictionaryValue();
+  ListValue* section_contents = new ListValue();
+  section->SetString("title", title);
+  section->Set("data", section_contents);
+  section->SetBoolean("is_sensitive", true);
   parent_list->Append(section);
   return section_contents;
 }
@@ -178,11 +193,10 @@ scoped_ptr<DictionaryValue> ConstructAboutInformation(
   StringSyncStat client_version(section_version, "Client Version");
   StringSyncStat server_url(section_version, "Server URL");
 
-  ListValue* section_credentials = AddSection(stats_list, kCredentialsTitle);
-  StringSyncStat sync_id(section_credentials, "Sync Client ID");
-  StringSyncStat invalidator_id(section_credentials, "Invalidator Client ID");
-  StringSyncStat username(section_credentials, "Username");
-  BoolSyncStat is_token_available(section_credentials, "Sync Token Available");
+  ListValue* section_identity = AddSensitiveSection(stats_list, kIdentityTitle);
+  StringSyncStat sync_id(section_identity, "Sync Client ID");
+  StringSyncStat invalidator_id(section_identity, "Invalidator Client ID");
+  StringSyncStat username(section_identity, "Username");
 
   ListValue* section_local = AddSection(stats_list, "Local State");
   StringSyncStat last_synced(section_local, "Last Synced");
@@ -191,6 +205,7 @@ scoped_ptr<DictionaryValue> ConstructAboutInformation(
   StringSyncStat backend_initialization(section_local,
                                         "Sync Backend Initialization");
   BoolSyncStat is_syncing(section_local, "Syncing");
+  BoolSyncStat is_token_available(section_local, "Sync Token Available");
 
   ListValue* section_network = AddSection(stats_list, "Network");
   BoolSyncStat is_throttled(section_network, "Throttled");

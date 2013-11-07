@@ -15,7 +15,7 @@ class DictionaryValue;
 
 // These strings are used from logs to pull out specific data from sync; we
 // don't want these to ever go out of sync between the logs and sync util.
-extern const char kCredentialsTitle[];
+extern const char kIdentityTitle[];
 extern const char kDetailsKey[];
 
 namespace sync_ui_util {
