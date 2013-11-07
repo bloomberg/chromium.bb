@@ -152,7 +152,8 @@ class ContentViewCoreImpl : public ContentViewCore,
   void LoadIfNecessary(JNIEnv* env, jobject obj);
   void RequestRestoreLoad(JNIEnv* env, jobject obj);
   void StopLoading(JNIEnv* env, jobject obj);
-  void Reload(JNIEnv* env, jobject obj);
+  void Reload(JNIEnv* env, jobject obj, jboolean check_for_repost);
+  void ReloadIgnoringCache(JNIEnv* env, jobject obj, jboolean check_for_repost);
   void CancelPendingReload(JNIEnv* env, jobject obj);
   void ContinuePendingReload(JNIEnv* env, jobject obj);
   void ClearHistory(JNIEnv* env, jobject obj);

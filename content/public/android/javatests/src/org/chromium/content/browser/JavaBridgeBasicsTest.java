@@ -7,7 +7,6 @@ package org.chromium.content.browser;
 import android.test.suitebuilder.annotation.SmallTest;
 
 import org.chromium.base.test.util.Feature;
-import org.chromium.content.browser.JavascriptInterface;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 
 import java.lang.annotation.Annotation;
@@ -105,7 +104,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
             public void run() {
                 getContentView().getContentViewCore().addPossiblyUnsafeJavascriptInterface(object,
                         name, requiredAnnotation);
-                getContentView().reload();
+                getContentView().getContentViewCore().reload(true);
             }
         });
         onPageFinishedHelper.waitForCallback(currentCallCount);
@@ -146,7 +145,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                getContentView().reload();
+                getContentView().getContentViewCore().reload(true);
             }
         });
         onPageFinishedHelper.waitForCallback(currentCallCount);
@@ -171,7 +170,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                getContentView().reload();
+                getContentView().getContentViewCore().reload(true);
             }
         });
         onPageFinishedHelper.waitForCallback(currentCallCount);
@@ -188,7 +187,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
             @Override
             public void run() {
                 getContentView().getContentViewCore().removeJavascriptInterface("foo");
-                getContentView().reload();
+                getContentView().getContentViewCore().reload(true);
             }
         });
         onPageFinishedHelper.waitForCallback(currentCallCount);
@@ -323,7 +322,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
         runTestOnUiThread(new Runnable() {
             @Override
             public void run() {
-                getContentView().reload();
+                getContentView().getContentViewCore().reload(true);
             }
         });
         onPageFinishedHelper.waitForCallback(currentCallCount);
@@ -348,7 +347,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
                         testObject, "testObject1", null);
                 getContentView().getContentViewCore().addPossiblyUnsafeJavascriptInterface(
                         testObject, "testObject2", null);
-                getContentView().reload();
+                getContentView().getContentViewCore().reload(true);
             }
         });
         onPageFinishedHelper.waitForCallback(currentCallCount);
@@ -395,7 +394,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
                         object, "testObject", null);
                 getContentView().getContentViewCore().addPossiblyUnsafeJavascriptInterface(
                         innerObject, "innerObject", null);
-                getContentView().reload();
+                getContentView().getContentViewCore().reload(true);
             }
         });
         onPageFinishedHelper.waitForCallback(currentCallCount);
@@ -457,6 +456,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
             public void method() { mTestController.setStringValue("base"); }
         }
         class Derived extends Base {
+            @Override
             public void method() { mTestController.setStringValue("derived"); }
         }
         injectObjectAndReload(new Derived(), "testObject");
@@ -695,7 +695,7 @@ public class JavaBridgeBasicsTest extends JavaBridgeTestBase {
             public void run() {
                 getContentView().getContentViewCore().addJavascriptInterface(new Test(),
                         "testObject");
-                getContentView().reload();
+                getContentView().getContentViewCore().reload(true);
             }
         });
         onPageFinishedHelper.waitForCallback(currentCallCount);

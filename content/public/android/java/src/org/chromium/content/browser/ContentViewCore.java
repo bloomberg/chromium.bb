@@ -1229,9 +1229,21 @@ public class ContentViewCore
     /**
      * Reload the current page.
      */
-    public void reload() {
+    public void reload(boolean checkForRepost) {
         mAccessibilityInjector.addOrRemoveAccessibilityApisIfNecessary();
-        if (mNativeContentViewCore != 0) nativeReload(mNativeContentViewCore);
+        if (mNativeContentViewCore != 0) {
+            nativeReload(mNativeContentViewCore, checkForRepost);
+        }
+    }
+
+    /**
+     * Reload the current page, ignoring the contents of the cache.
+     */
+    public void reloadIgnoringCache(boolean checkForRepost) {
+        mAccessibilityInjector.addOrRemoveAccessibilityApisIfNecessary();
+        if (mNativeContentViewCore != 0) {
+            nativeReloadIgnoringCache(mNativeContentViewCore, checkForRepost);
+        }
     }
 
     /**
@@ -3305,7 +3317,9 @@ public class ContentViewCore
 
     private native void nativeStopLoading(int nativeContentViewCoreImpl);
 
-    private native void nativeReload(int nativeContentViewCoreImpl);
+    private native void nativeReload(int nativeContentViewCoreImpl, boolean checkForRepost);
+    private native void nativeReloadIgnoringCache(
+            int nativeContentViewCoreImpl, boolean checkForRepost);
 
     private native void nativeCancelPendingReload(int nativeContentViewCoreImpl);
 

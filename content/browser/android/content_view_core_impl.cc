@@ -1200,13 +1200,20 @@ void ContentViewCoreImpl::StopLoading(JNIEnv* env, jobject obj) {
   web_contents_->Stop();
 }
 
-void ContentViewCoreImpl::Reload(JNIEnv* env, jobject obj) {
-  // Set check_for_repost parameter to false as we have no repost confirmation
-  // dialog ("confirm form resubmission" screen will still appear, however).
+void ContentViewCoreImpl::Reload(JNIEnv* env,
+                                 jobject obj,
+                                 jboolean check_for_repost) {
   if (web_contents_->GetController().NeedsReload())
     web_contents_->GetController().LoadIfNecessary();
   else
-    web_contents_->GetController().Reload(true);
+    web_contents_->GetController().Reload(check_for_repost);
+  UpdateTabCrashedFlag();
+}
+
+void ContentViewCoreImpl::ReloadIgnoringCache(JNIEnv* env,
+                                              jobject obj,
+                                              jboolean check_for_repost) {
+  web_contents_->GetController().ReloadIgnoringCache(check_for_repost);
   UpdateTabCrashedFlag();
 }
 

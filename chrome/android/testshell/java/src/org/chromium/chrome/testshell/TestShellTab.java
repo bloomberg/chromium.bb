@@ -79,7 +79,7 @@ public class TestShellTab extends TabBase {
 
         ContentView contentView = getContentView();
         if (TextUtils.equals(url, contentView.getUrl())) {
-            contentView.reload();
+            contentView.getContentViewCore().reload(true);
         } else {
             if (postData == null) {
                 contentView.loadUrl(new LoadUrlParams(url));

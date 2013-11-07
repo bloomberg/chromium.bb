@@ -12,8 +12,6 @@ import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content_shell_apk.ContentShellActivity;
 import org.chromium.content_shell_apk.ContentShellTestBase;
 
-import java.util.concurrent.TimeUnit;
-
 /**
  * Tests for various aspects of navigation.
  */
@@ -46,7 +44,7 @@ public class NavigationTest extends ContentShellTestBase {
                 new Runnable() {
                     @Override
                     public void run() {
-                        contentView.reload();
+                        contentView.getContentViewCore().reload(true);
                     }
                 });
     }

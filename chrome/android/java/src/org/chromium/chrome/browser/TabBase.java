@@ -5,14 +5,12 @@
 package org.chromium.chrome.browser;
 
 import android.app.Activity;
-import android.app.Dialog;
 import android.content.Context;
 import android.graphics.Color;
 import android.view.View;
 
 import org.chromium.base.CalledByNative;
 import org.chromium.base.ObserverList;
-import org.chromium.chrome.browser.RepostFormWarningDialog;
 import org.chromium.chrome.browser.infobar.AutoLoginProcessor;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -330,7 +328,15 @@ public abstract class TabBase implements NavigationClient {
      */
     public void reload() {
         // TODO(dtrainor): Should we try to rebuild the ContentView if it's frozen?
-        if (mContentViewCore != null) mContentViewCore.reload();
+        if (mContentViewCore != null) mContentViewCore.reload(true);
+    }
+
+    /**
+     * Reloads the current page content if it is a {@link ContentView}.
+     * This version ignores the cache and reloads from the network.
+     */
+    public void reloadIgnoringCache() {
+        if (mContentViewCore != null) mContentViewCore.reloadIgnoringCache(true);
     }
 
     /** Stop the current navigation. */

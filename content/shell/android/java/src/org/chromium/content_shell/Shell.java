@@ -34,7 +34,7 @@ public class Shell extends LinearLayout {
 
     private static final long COMPLETED_PROGRESS_TIMEOUT_MS = 200;
 
-    private Runnable mClearProgressRunnable = new Runnable() {
+    private final Runnable mClearProgressRunnable = new Runnable() {
         @Override
         public void run() {
             mProgressDrawable.setLevel(0);
@@ -141,7 +141,7 @@ public class Shell extends LinearLayout {
         if (url == null) return;
 
         if (TextUtils.equals(url, mContentView.getUrl())) {
-            mContentView.reload();
+            mContentView.getContentViewCore().reload(true);
         } else {
             mContentView.loadUrl(new LoadUrlParams(sanitizeUrl(url)));
         }

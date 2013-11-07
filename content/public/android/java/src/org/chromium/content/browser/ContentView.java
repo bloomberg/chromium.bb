@@ -277,13 +277,6 @@ public class ContentView extends FrameLayout
     }
 
     /**
-     * Reload the current page.
-     */
-    public void reload() {
-        mContentViewCore.reload();
-    }
-
-    /**
      * Clears the WebView's page history in both the backwards and forwards
      * directions.
      */

@@ -4,7 +4,6 @@
 
 package org.chromium.android_webview.test;
 
-import android.content.Context;
 import android.os.Message;
 import android.test.suitebuilder.annotation.SmallTest;
 
@@ -12,11 +11,9 @@ import org.apache.http.util.EncodingUtils;
 import org.chromium.android_webview.AwContents;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
-import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.net.test.util.TestWebServer;
 
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
@@ -118,7 +115,7 @@ public class AwContentsClientOnFormResubmissionTest extends AwTestBase {
         getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                mAwContents.getContentViewCore().reload();
+                mAwContents.getContentViewCore().reload(true);
             }
         });
         try {
