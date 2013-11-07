@@ -35,22 +35,6 @@ const char kTargetTypePage[] = "page";
 const char kTargetTypeWorker[] = "worker";
 const char kTargetTypeOther[] = "other";
 
-std::string GetExtensionName(WebContents* web_contents) {
-  Profile* profile =
-      Profile::FromBrowserContext(web_contents->GetBrowserContext());
-  if (!profile)
-    return std::string();
-
-  extensions::ExtensionHost* extension_host =
-      extensions::ExtensionSystem::Get(profile)->process_manager()->
-          GetBackgroundHostForExtension(web_contents->GetURL().host());
-
-  if (!extension_host || extension_host->host_contents() != web_contents)
-    return std::string();
-
-  return extension_host->extension()->name();
-}
-
 class RenderViewHostTarget : public DevToolsTargetImpl {
  public:
   explicit RenderViewHostTarget(RenderViewHost* rvh, bool is_tab);
@@ -118,12 +102,6 @@ RenderViewHostTarget::RenderViewHostTarget(RenderViewHost* rvh, bool is_tab) {
             extension, extension_misc::EXTENSION_ICON_SMALLISH,
             ExtensionIconSet::MATCH_BIGGER, false, NULL);
       }
-    }
-
-    std::string extension_name = GetExtensionName(web_contents);
-    if (!extension_name.empty()) {
-      type_ = kTargetTypeBackgroundPage;
-      title_ = extension_name;
     }
   }
 }
