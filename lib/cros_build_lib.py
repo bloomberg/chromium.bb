@@ -1411,7 +1411,7 @@ def TreeOpen(status_url, sleep_timeout, max_timeout=600,
   if max_timeout > 0:
     sleep_timeout = min(max_timeout, sleep_timeout)
 
-  acceptable_states = {'open'}
+  acceptable_states = set(['open'])
   verb = 'open'
   if throttled_ok:
     acceptable_states.add('throttled')
