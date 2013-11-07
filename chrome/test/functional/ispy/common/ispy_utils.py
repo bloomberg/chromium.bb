@@ -86,7 +86,7 @@ class ISpyUtils(object):
     self.cloud_bucket.UpdateFile(full_path, image_tools.EncodePNG(image))
 
 
-  def UploadExpectation(self, expectation, images):
+  def GenerateExpectation(self, expectation, images):
     """Creates and uploads an expectation to GS from a set of images and name.
 
     This method generates a mask from the uploaded images, then
@@ -102,7 +102,7 @@ class ISpyUtils(object):
         GetExpectationPath(expectation, 'expected.png'), images[0])
     self.UploadImage(GetExpectationPath(expectation, 'mask.png'), mask)
 
-  def RunTest(self, test_run, expectation, actual):
+  def PerformComparison(self, test_run, expectation, actual):
     """Runs an image comparison, and uploads discrepancies to GS.
 
     Args:
@@ -190,7 +190,7 @@ class ISpyUtils(object):
     for path in test_paths:
       self.cloud_bucket.RemoveFile(path)
 
-  def UploadExpectationPinkOut(self, expectation, images, pint_out, rgb):
+  def GenerateExpectationPinkOut(self, expectation, images, pint_out, rgb):
     """Uploads an ispy-test to GS with the pink_out workaround.
 
     Args:

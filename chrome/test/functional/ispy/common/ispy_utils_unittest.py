@@ -74,11 +74,11 @@ class ISpyUtilsUnitTest(unittest.TestCase):
     self.assertEquals(self.bucket.datastore['path/to/image.png'],
                       image_tools.EncodePNG(self.black))
 
-  def testUploadExpectation(self):
+  def testGenerateExpectation(self):
     self.bucket.Reset()
     # Upload some tests to the datastore.
-    self.ispy_utils.UploadExpectation('test', [self.white, self.black])
-    self.ispy_utils.UploadExpectation('test1', [self.black, self.black])
+    self.ispy_utils.GenerateExpectation('test', [self.white, self.black])
+    self.ispy_utils.GenerateExpectation('test1', [self.black, self.black])
     # Confirm that the tests were successfully uploaded.
     self.assertEquals(self.bucket.datastore[
         ispy_utils.GetExpectationPath('test', 'expected.png')],
@@ -93,22 +93,22 @@ class ISpyUtilsUnitTest(unittest.TestCase):
         ispy_utils.GetExpectationPath('test1', 'mask.png')],
         image_tools.EncodePNG(self.black))
 
-  def testRunTest(self):
+  def testPerformComparison(self):
     self.bucket.Reset()
-    self.ispy_utils.UploadExpectation('test1', [self.red, self.red])
-    self.ispy_utils.RunTest('test', 'test1', self.black)
+    self.ispy_utils.GenerateExpectation('test1', [self.red, self.red])
+    self.ispy_utils.PerformComparison('test', 'test1', self.black)
     self.assertEquals(self.bucket.datastore[
         ispy_utils.GetFailurePath('test', 'test1', 'actual.png')],
         image_tools.EncodePNG(self.black))
-    self.ispy_utils.RunTest('test', 'test1', self.red)
+    self.ispy_utils.PerformComparison('test', 'test1', self.red)
     self.assertTrue(self.bucket.datastore.has_key(
             ispy_utils.GetFailurePath('test', 'test1', 'actual.png')))
 
   def testGetExpectation(self):
     self.bucket.Reset()
     # Upload some tests to the datastore
-    self.ispy_utils.UploadExpectation('test1', [self.white, self.black])
-    self.ispy_utils.UploadExpectation('test2', [self.red, self.white])
+    self.ispy_utils.GenerateExpectation('test1', [self.white, self.black])
+    self.ispy_utils.GenerateExpectation('test2', [self.red, self.white])
     test1 = self.ispy_utils.GetExpectation('test1')
     test2 = self.ispy_utils.GetExpectation('test2')
     # Check that GetExpectation gets the appropriate tests.
@@ -126,24 +126,24 @@ class ISpyUtilsUnitTest(unittest.TestCase):
 
   def testExpectationExists(self):
     self.bucket.Reset()
-    self.ispy_utils.UploadExpectation('test1', [self.white, self.black])
-    self.ispy_utils.UploadExpectation('test2', [self.white, self.black])
+    self.ispy_utils.GenerateExpectation('test1', [self.white, self.black])
+    self.ispy_utils.GenerateExpectation('test2', [self.white, self.black])
     self.assertTrue(self.ispy_utils.ExpectationExists('test1'))
     self.assertTrue(self.ispy_utils.ExpectationExists('test2'))
     self.assertFalse(self.ispy_utils.ExpectationExists('test3'))
 
   def testFailureExists(self):
     self.bucket.Reset()
-    self.ispy_utils.UploadExpectation('test1', [self.white, self.white])
-    self.ispy_utils.RunTest('test', 'test1', self.black)
-    self.ispy_utils.RunTest('test', 'test1', self.white)
+    self.ispy_utils.GenerateExpectation('test1', [self.white, self.white])
+    self.ispy_utils.PerformComparison('test', 'test1', self.black)
+    self.ispy_utils.PerformComparison('test', 'test1', self.white)
     self.assertTrue(self.ispy_utils.FailureExists('test', 'test1'))
     self.assertFalse(self.ispy_utils.FailureExists('test', 'test2'))
 
   def testRemoveExpectation(self):
     self.bucket.Reset()
-    self.ispy_utils.UploadExpectation('test1', [self.white, self.white])
-    self.ispy_utils.UploadExpectation('test2', [self.white, self.white])
+    self.ispy_utils.GenerateExpectation('test1', [self.white, self.white])
+    self.ispy_utils.GenerateExpectation('test2', [self.white, self.white])
     self.assertTrue(self.ispy_utils.ExpectationExists('test1'))
     self.assertTrue(self.ispy_utils.ExpectationExists('test2'))
     self.ispy_utils.RemoveExpectation('test1')
@@ -155,9 +155,9 @@ class ISpyUtilsUnitTest(unittest.TestCase):
 
   def testRemoveFailure(self):
     self.bucket.Reset()
-    self.ispy_utils.UploadExpectation('test1', [self.white, self.white])
-    self.ispy_utils.UploadExpectation('test2', [self.white, self.white])
-    self.ispy_utils.RunTest('test', 'test1', self.black)
+    self.ispy_utils.GenerateExpectation('test1', [self.white, self.white])
+    self.ispy_utils.GenerateExpectation('test2', [self.white, self.white])
+    self.ispy_utils.PerformComparison('test', 'test1', self.black)
     self.ispy_utils.RemoveFailure('test', 'test1')
     self.assertFalse(self.ispy_utils.FailureExists('test', 'test1'))
     self.assertTrue(self.ispy_utils.ExpectationExists('test1'))
@@ -167,8 +167,8 @@ class ISpyUtilsUnitTest(unittest.TestCase):
   def testGetFailure(self):
     self.bucket.Reset()
     # Upload a result
-    self.ispy_utils.UploadExpectation('test1', [self.red, self.red])
-    self.ispy_utils.RunTest('test', 'test1', self.black)
+    self.ispy_utils.GenerateExpectation('test1', [self.red, self.red])
+    self.ispy_utils.PerformComparison('test', 'test1', self.black)
     res = self.ispy_utils.GetFailure('test', 'test1')
     # Check that the function correctly got the result.
     self.assertEquals(image_tools.EncodePNG(res.expected),
@@ -184,7 +184,7 @@ class ISpyUtilsUnitTest(unittest.TestCase):
   def testGetAllPaths(self):
     self.bucket.Reset()
     # Upload some tests.
-    self.ispy_utils.UploadExpectation('test1', [self.white, self.black])
+    self.ispy_utils.GenerateExpectation('test1', [self.white, self.black])
     # Check that the function gets all urls matching the prefix.
     self.assertEquals(
         set(self.ispy_utils.GetAllPaths(
