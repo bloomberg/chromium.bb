@@ -18,6 +18,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/tabs/stacked_tab_strip_layout.h"
@@ -2727,7 +2728,10 @@ bool TabStrip::GetAdjustLayout() const {
   if (!adjust_layout_)
     return false;
 
-#if !defined(OS_CHROMEOS)
+#if defined(USE_AURA)
+  return chrome::GetHostDesktopTypeForNativeView(
+      GetWidget()->GetNativeView()) == chrome::HOST_DESKTOP_TYPE_ASH;
+#else
   if (ui::GetDisplayLayout() != ui::LAYOUT_TOUCH)
     return false;
 #endif
