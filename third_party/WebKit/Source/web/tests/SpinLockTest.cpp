@@ -80,8 +80,8 @@ TEST(WTF_SpinLock, Torture)
 {
     char sharedBuffer[bufferSize];
 
-    OwnPtr<WebKit::WebThread> thread1 = adoptPtr(WebKit::Platform::current()->createThread("thread1"));
-    OwnPtr<WebKit::WebThread> thread2 = adoptPtr(WebKit::Platform::current()->createThread("thread2"));
+    OwnPtr<blink::WebThread> thread1 = adoptPtr(blink::Platform::current()->createThread("thread1"));
+    OwnPtr<blink::WebThread> thread2 = adoptPtr(blink::Platform::current()->createThread("thread2"));
 
     thread1->postTask(new Task(WTF::bind(&threadMain, static_cast<char*>(sharedBuffer))));
     thread2->postTask(new Task(WTF::bind(&threadMain, static_cast<char*>(sharedBuffer))));
