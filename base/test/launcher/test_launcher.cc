@@ -229,48 +229,61 @@ void DoLaunchChildTestProcess(
 
   LaunchOptions options;
 #if defined(OS_WIN)
-  // Make the file handle inheritable by the child.
-  SECURITY_ATTRIBUTES sa_attr;
-  sa_attr.nLength = sizeof(SECURITY_ATTRIBUTES);
-  sa_attr.lpSecurityDescriptor = NULL;
-  sa_attr.bInheritHandle = TRUE;
+  win::ScopedHandle handle;
 
-  win::ScopedHandle handle(CreateFile(output_file.value().c_str(),
-                                      GENERIC_WRITE,
-                                      FILE_SHARE_READ | FILE_SHARE_DELETE,
-                                      &sa_attr,
-                                      OPEN_EXISTING,
-                                      FILE_ATTRIBUTE_TEMPORARY,
-                                      NULL));
-  CHECK(handle.IsValid());
-  options.inherit_handles = true;
-  options.stdin_handle = INVALID_HANDLE_VALUE;
-  options.stdout_handle = handle.Get();
-  options.stderr_handle = handle.Get();
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kTestLauncherDeveloperMode)) {
+    // Make the file handle inheritable by the child.
+    SECURITY_ATTRIBUTES sa_attr;
+    sa_attr.nLength = sizeof(SECURITY_ATTRIBUTES);
+    sa_attr.lpSecurityDescriptor = NULL;
+    sa_attr.bInheritHandle = TRUE;
+
+    handle.Set(CreateFile(output_file.value().c_str(),
+                          GENERIC_WRITE,
+                          FILE_SHARE_READ | FILE_SHARE_DELETE,
+                          &sa_attr,
+                          OPEN_EXISTING,
+                          FILE_ATTRIBUTE_TEMPORARY,
+                          NULL));
+    CHECK(handle.IsValid());
+    options.inherit_handles = true;
+    options.stdin_handle = INVALID_HANDLE_VALUE;
+    options.stdout_handle = handle.Get();
+    options.stderr_handle = handle.Get();
+  }
 #elif defined(OS_POSIX)
   options.new_process_group = true;
 
-  int output_file_fd = open(output_file.value().c_str(), O_RDWR);
-  CHECK_GE(output_file_fd, 0);
-
-  file_util::ScopedFD output_file_fd_closer(&output_file_fd);
-
   base::FileHandleMappingVector fds_mapping;
-  fds_mapping.push_back(std::make_pair(output_file_fd, STDOUT_FILENO));
-  fds_mapping.push_back(std::make_pair(output_file_fd, STDERR_FILENO));
-  options.fds_to_remap = &fds_mapping;
+  file_util::ScopedFD output_file_fd_closer;
+
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kTestLauncherDeveloperMode)) {
+    int output_file_fd = open(output_file.value().c_str(), O_RDWR);
+    CHECK_GE(output_file_fd, 0);
+
+    output_file_fd_closer.reset(&output_file_fd);
+
+    fds_mapping.push_back(std::make_pair(output_file_fd, STDOUT_FILENO));
+    fds_mapping.push_back(std::make_pair(output_file_fd, STDERR_FILENO));
+    options.fds_to_remap = &fds_mapping;
+  }
 #endif
 
   bool was_timeout = false;
   int exit_code = LaunchChildTestProcessWithOptions(
       command_line, options, timeout, &was_timeout);
 
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kTestLauncherDeveloperMode)) {
 #if defined(OS_WIN)
   FlushFileBuffers(handle.Get());
   handle.Close();
 #elif defined(OS_POSIX)
   output_file_fd_closer.reset();
 #endif
+  }
 
   std::string output_file_contents;
   CHECK(base::ReadFileToString(output_file, &output_file_contents));
@@ -320,9 +333,18 @@ TestLauncher::TestLauncher(TestLauncherDelegate* launcher_delegate,
       watchdog_timer_(FROM_HERE,
                       TimeDelta::FromSeconds(kOutputTimeoutSeconds),
                       this,
-                      &TestLauncher::OnOutputTimeout),
-      worker_pool_owner_(
-          new SequencedWorkerPoolOwner(parallel_jobs, "test_launcher")) {
+                      &TestLauncher::OnOutputTimeout) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kTestLauncherDeveloperMode)) {
+    parallel_jobs = 1;
+    retry_limit_ = 0;
+    fprintf(stdout,
+            "Forcing serial test execution in developer mode.\n"
+            "Disabling test retries in developer mode.\n");
+    fflush(stdout);
+  }
+  worker_pool_owner_.reset(
+      new SequencedWorkerPoolOwner(parallel_jobs, "test_launcher"));
 }
 
 TestLauncher::~TestLauncher() {

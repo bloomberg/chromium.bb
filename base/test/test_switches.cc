@@ -11,6 +11,11 @@ const char switches::kTestLargeTimeout[] = "test-large-timeout";
 // Maximum number of tests to run in a single batch.
 const char switches::kTestLauncherBatchLimit[] = "test-launcher-batch-limit";
 
+// Behaves in a more friendly way to local debugging, e.g. serial execution,
+// no redirection of stdio, etc.
+const char switches::kTestLauncherDeveloperMode[] =
+    "test-launcher-developer-mode";
+
 // Number of parallel test launcher jobs.
 const char switches::kTestLauncherJobs[] = "test-launcher-jobs";
 
