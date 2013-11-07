@@ -21,6 +21,7 @@ const char kOpenedUnixSocketsCommand[] = "shell:cat /proc/net/unix";
 const char kDeviceModelCommand[] = "shell:getprop ro.product.model";
 const char kDumpsysCommand[] = "shell:dumpsys window policy";
 const char kListProcessesCommand[] = "shell:ps";
+const char kInstalledChromePackagesCommand[] = "shell:pm list packages";
 const char kDeviceModel[] = "Nexus 8";
 
 const char kSampleOpenedUnixSocketsWithoutBrowsers[] =
@@ -37,6 +38,8 @@ const char kSampleDumpsys[] =
 const char kSampleListProcesses[] =
     "USER     PID   PPID  VSIZE  RSS     WCHAN    PC         NAME\n"
     "root      1     0     688    508   ffffffff 00000000 S /init\n";
+
+const char kSampleListPackages[] = "package:com.example.app";
 
 static const int kBufferSize = 16*1024;
 static const int kAdbPort = 5037;
@@ -154,7 +157,7 @@ void SingleConnectionServer::AcceptConnection() {
 }
 
 void SingleConnectionServer::OnAccepted(int result) {
-  CHECK_EQ(result, 0);
+  ASSERT_EQ(result, 0);  // Fails if the socket is already in use.
   ReadData();
 }
 
@@ -280,6 +283,8 @@ class MockAdbServer: public SingleConnectionServer {
       SendResponse(kSampleDumpsys);
     } else if (command == kListProcessesCommand) {
       SendResponse(kSampleListProcesses);
+    } else if (command == kInstalledChromePackagesCommand) {
+      SendResponse(kSampleListPackages);
     } else {
       NOTREACHED() << "Unknown command - " << command;
     }
@@ -324,19 +329,23 @@ public:
       OVERRIDE {
     DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
     adb_bridge_->RemoveListener(this);
+    devices_ = *devices;
+    EndTest();
+  }
 
+  void CheckDevices() {
 #if defined(DEBUG_DEVTOOLS)
     // Mock device is added
-    ASSERT_EQ(3U, devices->size());
+    ASSERT_EQ(3U, devices_.size());
 #else
-    ASSERT_EQ(2U, devices->size());
+    ASSERT_EQ(2U, devices_.size());
 #endif
 
     scoped_refptr<DevToolsAdbBridge::RemoteDevice> online_device_;
     scoped_refptr<DevToolsAdbBridge::RemoteDevice> offline_device_;
 
     for (DevToolsAdbBridge::RemoteDevices::const_iterator it =
-        devices->begin(); it != devices->end(); ++it) {
+        devices_.begin(); it != devices_.end(); ++it) {
       if ((*it)->GetSerial() == "01498B321301A00A")
         online_device_ = *it;
       else if ((*it)->GetSerial() == "01498B2B0D01300E")
@@ -350,8 +359,6 @@ public:
     ASSERT_EQ(online_device_->GetModel(), kDeviceModel);
     ASSERT_EQ(online_device_->browsers().size(), 0U);
     ASSERT_EQ(online_device_->screen_size(), gfx::Size(720, 1184));
-
-    EndTest();
   }
 
 private:
@@ -405,6 +412,7 @@ public:
 private:
   scoped_ptr<MockAdbServer> adb_server_;
   scoped_refptr<DevToolsAdbBridge> adb_bridge_;
+  DevToolsAdbBridge::RemoteDevices devices_;
 };
 
 IN_PROC_BROWSER_TEST_F(AdbClientSocketTest, TestAdbClientSocket) {
@@ -414,4 +422,6 @@ IN_PROC_BROWSER_TEST_F(AdbClientSocketTest, TestAdbClientSocket) {
   StartTest();
 
   runner->Run();
+
+  CheckDevices();
 }

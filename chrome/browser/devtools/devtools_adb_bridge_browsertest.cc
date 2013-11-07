@@ -12,6 +12,7 @@
 const char kDeviceModelCommand[] = "shell:getprop ro.product.model";
 const char kOpenedUnixSocketsCommand[] = "shell:cat /proc/net/unix";
 const char kListProcessesCommand[] = "shell:ps";
+const char kListPackagesCommand[] = "shell:pm list packages";
 const char kDumpsysCommand[] = "shell:dumpsys window policy";
 
 const char kPageListRequest[] = "GET /json HTTP/1.1\r\n\r\n";
@@ -26,13 +27,27 @@ const char kSampleOpenedUnixSockets[] =
     "00000000: 00000002 00000000"
     " 00010000 0001 01 11810 @webview_devtools_remote_2425\n"
     "00000000: 00000002 00000000"
-    " 00010000 0001 01 20893 @chrome_devtools_remote\n";
+    " 00010000 0001 01 20893 @chrome_devtools_remote\n"
+    "00000000: 00000002 00000000"
+    " 00010000 0001 01 20894 @chrome_devtools_remote_1002\n"
+    "00000000: 00000002 00000000"
+    " 00010000 0001 01 20895 @noprocess_devtools_remote\n";
 
 const char kSampleListProcesses[] =
-    "USER     PID   PPID  VSIZE  RSS     WCHAN    PC         NAME\n"
-    "root      1     0     688    508   ffffffff 00000000 S /init\n"
-    "u0_a75    2425  123   933736 193024 ffffffff 00000000 S com.sample.feed\n"
-    "nfc       741   123   706448 26316 ffffffff 00000000 S com.android.nfc";
+    "USER   PID  PPID VSIZE  RSS    WCHAN    PC         NAME\n"
+    "root   1    0    688    508    ffffffff 00000000 S /init\r\n"
+    "u0_a75 2425 123  933736 193024 ffffffff 00000000 S com.sample.feed\r\n"
+    "nfc    741  123  706448 26316  ffffffff 00000000 S com.android.nfc\r\n"
+    "u0_a76 1001 124  111111 222222 ffffffff 00000000 S com.android.chrome\r\n"
+    "u0_a77 1002 125  111111 222222 ffffffff 00000000 S com.chrome.beta\r\n"
+    "u0_a78 1003 126  111111 222222 ffffffff 00000000 S com.noprocess.app\r\n";
+
+const char kSampleListPackages[] =
+    "package:com.sample.feed\r\n"
+    "package:com.android.nfc\r\n"
+    "package:com.android.chrome\r\n"
+    "package:com.chrome.beta\r\n"
+    "package:com.google.android.apps.chrome\r\n";
 
 const char kSampleDumpsysCommand[] =
     "WINDOW MANAGER POLICY STATE (dumpsys window policy)\r\n"
@@ -42,6 +57,14 @@ const char kSampleDumpsysCommand[] =
 
 char kSampleChromeVersion[] = "{\n"
     "   \"Browser\": \"Chrome/32.0.1679.0\",\n"
+    "   \"Protocol-Version\": \"1.0\",\n"
+    "   \"User-Agent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/32.0.1679.0 Safari/537.36\",\n"
+    "   \"WebKit-Version\": \"537.36 (@160162)\"\n"
+    "}";
+
+char kSampleChromeBetaVersion[] = "{\n"
+    "   \"Browser\": \"Chrome/31.0.1599.0\",\n"
     "   \"Protocol-Version\": \"1.0\",\n"
     "   \"User-Agent\": \"Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
     "(KHTML, like Gecko) Chrome/32.0.1679.0 Safari/537.36\",\n"
@@ -67,6 +90,8 @@ char kSampleChromePages[] = "[ {\n"
     "   \"webSocketDebuggerUrl\": \""
     "ws:///devtools/page/755DE5C9-D49F-811D-0693-51B8E15C80D2\"\n"
     "} ]";
+
+char kSampleChromeBetaPages[] = "[]";
 
 char kSampleWebViewPages[] = "[ {\n"
     "   \"description\": \"{\\\"attached\\\":false,\\\"empty\\\":false,"
@@ -117,6 +142,8 @@ class MockDeviceImpl : public AndroidDevice {
       response = kSampleOpenedUnixSockets;
     } else if (command == kListProcessesCommand) {
       response = kSampleListProcesses;
+    } else if (command == kListPackagesCommand) {
+      response = kSampleListPackages;
     } else if (command == kDumpsysCommand) {
       response = kSampleDumpsysCommand;
     } else {
@@ -149,6 +176,24 @@ class MockDeviceImpl : public AndroidDevice {
         response = kSampleChromeVersion;
       } else if (request == kPageListRequest) {
         response = kSampleChromePages;
+      } else {
+        NOTREACHED();
+        return;
+      }
+    } else if (la_name == "chrome_devtools_remote_1002") {
+      if (request == kVersionRequest) {
+        response = kSampleChromeBetaVersion;
+      } else if (request == kPageListRequest) {
+        response = kSampleChromeBetaPages;
+      } else {
+        NOTREACHED();
+        return;
+      }
+    } else if (la_name.find("noprocess_devtools_remote") == 0) {
+      if (request == kVersionRequest) {
+        response = "{}";
+      } else if (request == kPageListRequest) {
+        response = "[]";
       } else {
         NOTREACHED();
         return;
@@ -202,6 +247,15 @@ class MockDeviceProvider : public AndroidDeviceProvider {
   }
 };
 
+static scoped_refptr<DevToolsAdbBridge::RemoteBrowser>
+FindBrowserByDisplayName(DevToolsAdbBridge::RemoteBrowsers browsers,
+                         const std::string& name) {
+  for (DevToolsAdbBridge::RemoteBrowsers::iterator it = browsers.begin();
+      it != browsers.end(); ++it)
+    if ((*it)->display_name() == name)
+      return *it;
+  return NULL;
+}
 
 class DevToolsAdbBridgeTest : public InProcessBrowserTest,
                                public DevToolsAdbBridge::Listener {
@@ -210,13 +264,18 @@ class DevToolsAdbBridgeTest : public InProcessBrowserTest,
 public:
   virtual void RemoteDevicesChanged(
       DevToolsAdbBridge::RemoteDevices* devices) OVERRIDE{
-    ASSERT_EQ(2U, devices->size());
+    devices_ = *devices;
+    runner_->Quit();
+  }
+
+  void CheckDevices() {
+    ASSERT_EQ(2U, devices_.size());
 
     scoped_refptr<DevToolsAdbBridge::RemoteDevice> connected =
-        (*devices)[0]->IsConnected() ? (*devices)[0] : (*devices)[1];
+        devices_[0]->IsConnected() ? devices_[0] : devices_[1];
 
     scoped_refptr<DevToolsAdbBridge::RemoteDevice> not_connected =
-        (*devices)[0]->IsConnected() ? (*devices)[1] : (*devices)[0];
+        devices_[0]->IsConnected() ? devices_[1] : devices_[0];
 
     ASSERT_TRUE(connected->IsConnected());
     ASSERT_FALSE(not_connected->IsConnected());
@@ -231,29 +290,40 @@ public:
     ASSERT_EQ("Offline", not_connected->GetModel());
 
     const DevToolsAdbBridge::RemoteBrowsers& browsers = connected->browsers();
-    ASSERT_EQ(2U, browsers.size());
+    ASSERT_EQ(4U, browsers.size());
 
     scoped_refptr<DevToolsAdbBridge::RemoteBrowser> chrome =
-        browsers[0]->product() == "Chrome" ? browsers[0] : browsers[1];
+        FindBrowserByDisplayName(browsers, "Chrome");
+    ASSERT_TRUE(chrome);
+
+    scoped_refptr<DevToolsAdbBridge::RemoteBrowser> chrome_beta =
+        FindBrowserByDisplayName(browsers, "Chrome Beta");
+    ASSERT_TRUE(chrome_beta);
+
+    scoped_refptr<DevToolsAdbBridge::RemoteBrowser> chromium =
+        FindBrowserByDisplayName(browsers, "Chromium");
+    ASSERT_FALSE(chromium);
 
     scoped_refptr<DevToolsAdbBridge::RemoteBrowser> webview =
-            browsers[0]->product() == "Chrome" ? browsers[1] : browsers[0];
+        FindBrowserByDisplayName(browsers, "com.sample.feed");
 
-    ASSERT_EQ("Chrome", chrome->product());
+    scoped_refptr<DevToolsAdbBridge::RemoteBrowser> noprocess =
+        FindBrowserByDisplayName(browsers, "Noprocess");
+    ASSERT_TRUE(noprocess);
+
     ASSERT_EQ("32.0.1679.0", chrome->version());
-
-    ASSERT_EQ("Webview", webview->product());
+    ASSERT_EQ("31.0.1599.0", chrome_beta->version());
     ASSERT_EQ("4.0", webview->version());
-
-    // Check that we parse process list properly.
-    ASSERT_EQ("com.sample.feed", webview->package());
 
     std::vector<DevToolsTargetImpl*> chrome_pages =
         chrome->CreatePageTargets();
+    std::vector<DevToolsTargetImpl*> chrome_beta_pages =
+        chrome_beta->CreatePageTargets();
     std::vector<DevToolsTargetImpl*> webview_pages =
         webview->CreatePageTargets();
 
     ASSERT_EQ(1U, chrome_pages.size());
+    ASSERT_EQ(0U, chrome_beta_pages.size());
     ASSERT_EQ(2U, webview_pages.size());
 
     // Check that we have non-empty description for webview pages.
@@ -266,8 +336,6 @@ public:
 
     STLDeleteElements(&chrome_pages);
     STLDeleteElements(&webview_pages);
-
-    runner_->Quit();
   }
 
   void init() {
@@ -276,9 +344,10 @@ public:
 
 protected:
   scoped_refptr<content::MessageLoopRunner> runner_;
+  DevToolsAdbBridge::RemoteDevices devices_;
 };
 
-IN_PROC_BROWSER_TEST_F(DevToolsAdbBridgeTest, Main) {
+IN_PROC_BROWSER_TEST_F(DevToolsAdbBridgeTest, DiscoverAndroidBrowsers) {
   init();
 
   scoped_refptr<DevToolsAdbBridge> adb_bridge =
@@ -296,4 +365,6 @@ IN_PROC_BROWSER_TEST_F(DevToolsAdbBridgeTest, Main) {
   adb_bridge->AddListener(this);
 
   runner_->Run();
+
+  CheckDevices();
 }

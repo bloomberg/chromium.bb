@@ -27,6 +27,10 @@ function open(browserId, url) {
   chrome.send('open', [browserId, url]);
 }
 
+function launch(packageId) {
+  chrome.send('launch', [packageId]);
+}
+
 function removeChildren(element_id) {
   var element = $(element_id);
   element.textContent = '';
@@ -170,6 +174,10 @@ function populateRemoteTargets(devices) {
       browserList.className = 'browsers';
       deviceSection.appendChild(browserList);
 
+      var packageList = document.createElement('div');
+      packageList.className = 'packages';
+      deviceSection.appendChild(packageList);
+
       var authenticating = document.createElement('div');
       authenticating.className = 'device-auth';
       deviceSection.appendChild(authenticating);
@@ -217,15 +225,7 @@ function populateRemoteTargets(devices) {
     for (var b = 0; b < device.browsers.length; b++) {
       var browser = device.browsers[b];
 
-      var isChrome = browser.adbBrowserProduct &&
-          browser.adbBrowserProduct.match(/^Chrome/);
-
-      var majorChromeVersion = 0;
-      if (isChrome && browser.adbBrowserVersion) {
-        var match = browser.adbBrowserVersion.match(/^(\d+)/);
-        if (match)
-          majorChromeVersion = parseInt(match[1]);
-      }
+      var majorChromeVersion = browser.adbBrowserChromeVersion;
 
       var pageList;
       var browserSection = $(browser.adbGlobalId);
@@ -243,10 +243,7 @@ function populateRemoteTargets(devices) {
         var browserName = document.createElement('div');
         browserName.className = 'browser-name';
         browserHeader.appendChild(browserName);
-        if (browser.adbBrowserPackage && !isChrome)
-          browserName.textContent = browser.adbBrowserPackage;
-        else
-          browserName.textContent = browser.adbBrowserProduct;
+        browserName.textContent = browser.adbBrowserName;
         if (browser.adbBrowserVersion)
           browserName.textContent += ' (' + browser.adbBrowserVersion + ')';
         browserSection.appendChild(browserHeader);
@@ -291,23 +288,46 @@ function populateRemoteTargets(devices) {
         // Attached targets have no unique id until Chrome 26. For such targets
         // it is impossible to activate existing DevTools window.
         page.hasNoUniqueId = page.attached &&
-            majorChromeVersion < MIN_VERSION_TARGET_ID;
+            (majorChromeVersion && majorChromeVersion < MIN_VERSION_TARGET_ID);
         var row = addTargetToList(page, pageList, ['name', 'url']);
         if (page['description'])
           addWebViewDetails(row, page);
         else
           addFavicon(row, page);
-        if (isChrome) {
-          if (majorChromeVersion >= MIN_VERSION_TAB_ACTIVATE) {
-            addActionLink(row, 'focus tab', activate.bind(null, page), false);
-          }
+        if (majorChromeVersion >= MIN_VERSION_TAB_ACTIVATE)
+          addActionLink(row, 'focus tab', activate.bind(null, page), false);
+        if (majorChromeVersion)
           addActionLink(row, 'reload', reload.bind(null, page), page.attached);
-          if (majorChromeVersion >= MIN_VERSION_TAB_CLOSE) {
-            addActionLink(
-                row, 'close', close.bind(null, page), page.attached);
-          }
-        }
+        if (majorChromeVersion >= MIN_VERSION_TAB_CLOSE)
+          addActionLink(row, 'close', close.bind(null, page), page.attached);
       }
+    }
+
+    var packageList = deviceSection.querySelector('.packages');
+    packageList.textContent = '';
+
+    if (device.packages.length) {
+      var packagesHeader = document.createElement('div');
+      packagesHeader.className = 'packages-header';
+      packagesHeader.textContent =
+          device.browsers.length ? 'Also installed:' : 'Installed browsers:';
+      packageList.appendChild(packagesHeader);
+    }
+
+    for (var p = 0; p < device.packages.length; p++) {
+      var packageSection = document.createElement('div');
+      packageSection.className = 'package';
+      packageList.appendChild(packageSection);
+
+      var launchButton = document.createElement('button');
+      launchButton.textContent = 'Launch';
+      launchButton.addEventListener(
+          'click', launch.bind(null, device.packages[p].adbGlobalId), true);
+      packageSection.appendChild(launchButton);
+
+      var packageDisplayName = document.createElement('span');
+      packageDisplayName.textContent = device.packages[p].adbBrowserName;
+      packageSection.appendChild(packageDisplayName);
     }
   }
 }

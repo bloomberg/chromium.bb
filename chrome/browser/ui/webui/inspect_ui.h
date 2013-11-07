@@ -35,6 +35,8 @@ class InspectUI : public content::WebUIController,
                                  const std::string& id);
   scoped_refptr<DevToolsAdbBridge::RemoteBrowser> FindRemoteBrowser(
       const std::string& id);
+  scoped_refptr<DevToolsAdbBridge::RemotePackage> FindRemotePackage(
+      const std::string& id);
 
   static void InspectDevices(Browser* browser);
 
@@ -82,6 +84,10 @@ class InspectUI : public content::WebUIController,
   typedef std::map<std::string,
       scoped_refptr<DevToolsAdbBridge::RemoteBrowser> > RemoteBrowsers;
   RemoteBrowsers remote_browsers_;
+
+  typedef std::map<std::string,
+      scoped_refptr<DevToolsAdbBridge::RemotePackage> > RemotePackages;
+  RemotePackages remote_packages_;
 
   DISALLOW_COPY_AND_ASSIGN(InspectUI);
 };
