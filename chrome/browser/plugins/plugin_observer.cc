@@ -182,6 +182,25 @@ PluginObserver::~PluginObserver() {
 #endif
 }
 
+void PluginObserver::RenderViewCreated(
+    content::RenderViewHost* render_view_host) {
+#if defined(USE_AURA) && defined(OS_WIN)
+  // If the window belongs to the Ash desktop, before we navigate we need
+  // to tell the renderview that NPAPI plugins are not supported so it does
+  // not try to instantiate them. The final decision is actually done in
+  // the IO thread by PluginInfoMessageFilter of this proces,s but it's more
+  // complex to manage a map of Ash views in PluginInfoMessageFilter than
+  // just telling the renderer via IPC.
+  content::WebContentsView* wcv = web_contents()->GetView();
+  aura::Window* window = wcv->GetNativeView();
+  if (chrome::GetHostDesktopTypeForNativeView(window) ==
+      chrome::HOST_DESKTOP_TYPE_ASH) {
+    int routing_id = render_view_host->GetRoutingID();
+    render_view_host->Send(new ChromeViewMsg_NPAPINotSupported(routing_id));
+  }
+#endif
+}
+
 void PluginObserver::PluginCrashed(const base::FilePath& plugin_path,
                                    base::ProcessId plugin_pid) {
   DCHECK(!plugin_path.value().empty());
@@ -252,31 +271,6 @@ bool PluginObserver::OnMessageReceived(const IPC::Message& message) {
   IPC_END_MESSAGE_MAP()
 
   return true;
-}
-
-void PluginObserver::AboutToNavigateRenderView(
-    content::RenderViewHost* render_view_host) {
-#if defined(USE_AURA) && defined(OS_WIN)
-  // If the window belongs to the Ash desktop, before we navigate we need
-  // to tell the renderview that NPAPI plugins are not supported so it does
-  // not try to instantiate them. The final decision is actually done in
-  // the IO thread by PluginInfoMessageFilter of this proces,s but it's more
-  // complex to manage a map of Ash views in PluginInfoMessageFilter than
-  // just telling the renderer via IPC.
-  if (!web_contents())
-    return;
-
-  content::WebContentsView* wcv = web_contents()->GetView();
-  if (!wcv)
-    return;
-
-  aura::Window* window = wcv->GetNativeView();
-  if (chrome::GetHostDesktopTypeForNativeView(window) ==
-      chrome::HOST_DESKTOP_TYPE_ASH) {
-    int routing_id = render_view_host->GetRoutingID();
-    render_view_host->Send(new ChromeViewMsg_NPAPINotSupported(routing_id));
-  }
-#endif
 }
 
 void PluginObserver::OnBlockedUnauthorizedPlugin(
