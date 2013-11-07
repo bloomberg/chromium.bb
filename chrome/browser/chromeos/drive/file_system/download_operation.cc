@@ -128,14 +128,14 @@ FileError CheckPreConditionForEnsureFileDownloadedByPath(
     internal::FileCache* cache,
     const base::FilePath& file_path,
     const base::FilePath& temporary_file_directory,
-    std::string* local_id,
     base::FilePath* cache_file_path,
     ResourceEntry* entry) {
-  FileError error = metadata->GetIdByPath(file_path, local_id);
+  std::string local_id;
+  FileError error = metadata->GetIdByPath(file_path, &local_id);
   if (error != FILE_ERROR_OK)
     return error;
   return CheckPreConditionForEnsureFileDownloaded(
-      metadata, cache, temporary_file_directory, *local_id, entry,
+      metadata, cache, temporary_file_directory, local_id, entry,
       cache_file_path);
 }
 
@@ -319,7 +319,6 @@ void DownloadOperation::EnsureFileDownloadedByLocalId(
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Passed(&params),
                  context,
-                 base::Owned(new std::string(local_id)),
                  base::Owned(drive_file_path),
                  base::Owned(cache_file_path)));
 }
@@ -333,7 +332,6 @@ void DownloadOperation::EnsureFileDownloadedByPath(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!completion_callback.is_null());
 
-  std::string* local_id = new std::string;
   base::FilePath* drive_file_path = new base::FilePath(file_path);
   base::FilePath* cache_file_path = new base::FilePath;
   ResourceEntry* entry = new ResourceEntry;
@@ -348,14 +346,12 @@ void DownloadOperation::EnsureFileDownloadedByPath(
                  base::Unretained(cache_),
                  file_path,
                  temporary_file_directory_,
-                 local_id,
                  cache_file_path,
                  entry),
       base::Bind(&DownloadOperation::EnsureFileDownloadedAfterCheckPreCondition,
                  weak_ptr_factory_.GetWeakPtr(),
                  base::Passed(&params),
                  context,
-                 base::Owned(local_id),
                  base::Owned(drive_file_path),
                  base::Owned(cache_file_path)));
 }
@@ -363,13 +359,11 @@ void DownloadOperation::EnsureFileDownloadedByPath(
 void DownloadOperation::EnsureFileDownloadedAfterCheckPreCondition(
     scoped_ptr<DownloadParams> params,
     const ClientContext& context,
-    std::string* local_id,
     base::FilePath* drive_file_path,
     base::FilePath* cache_file_path,
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(params);
-  DCHECK(local_id);
   DCHECK(drive_file_path);
   DCHECK(cache_file_path);
 
@@ -406,7 +400,6 @@ void DownloadOperation::EnsureFileDownloadedAfterCheckPreCondition(
           weak_ptr_factory_.GetWeakPtr(),
           base::Passed(&params),
           context,
-          *local_id,
           *drive_file_path,
           base::Owned(temp_download_file_path)));
 }
@@ -414,7 +407,6 @@ void DownloadOperation::EnsureFileDownloadedAfterCheckPreCondition(
 void DownloadOperation::EnsureFileDownloadedAfterPrepareForDownloadFile(
     scoped_ptr<DownloadParams> params,
     const ClientContext& context,
-    const std::string& local_id,
     const base::FilePath& drive_file_path,
     base::FilePath* temp_download_file_path,
     FileError error) {
@@ -437,7 +429,6 @@ void DownloadOperation::EnsureFileDownloadedAfterPrepareForDownloadFile(
       base::Bind(&DownloadOperation::EnsureFileDownloadedAfterDownloadFile,
                  weak_ptr_factory_.GetWeakPtr(),
                  drive_file_path,
-                 local_id,
                  base::Passed(&params)),
       params_ptr->get_content_callback());
 
@@ -449,12 +440,12 @@ void DownloadOperation::EnsureFileDownloadedAfterPrepareForDownloadFile(
 
 void DownloadOperation::EnsureFileDownloadedAfterDownloadFile(
     const base::FilePath& drive_file_path,
-    const std::string& local_id,
     scoped_ptr<DownloadParams> params,
     google_apis::GDataErrorCode gdata_error,
     const base::FilePath& downloaded_file_path) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
+  const std::string& local_id = params->entry().local_id();
   const std::string& md5 = params->entry().file_specific_info().md5();
   base::FilePath* cache_file_path = new base::FilePath;
   base::PostTaskAndReplyWithResult(

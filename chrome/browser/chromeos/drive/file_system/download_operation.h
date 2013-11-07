@@ -86,7 +86,6 @@ class DownloadOperation {
   void EnsureFileDownloadedAfterCheckPreCondition(
       scoped_ptr<DownloadParams> params,
       const ClientContext& context,
-      std::string* local_id,
       base::FilePath* drive_file_path,
       base::FilePath* cache_file_path,
       FileError error);
@@ -96,7 +95,6 @@ class DownloadOperation {
   void EnsureFileDownloadedAfterPrepareForDownloadFile(
       scoped_ptr<DownloadParams> params,
       const ClientContext& context,
-      const std::string& local_id,
       const base::FilePath& drive_file_path,
       base::FilePath* temp_download_file_path,
       FileError error);
@@ -104,7 +102,6 @@ class DownloadOperation {
   // Part of EnsureFileDownloaded(). Called after the actual downloading.
   void EnsureFileDownloadedAfterDownloadFile(
       const base::FilePath& drive_file_path,
-      const std::string& local_id,
       scoped_ptr<DownloadParams> params,
       google_apis::GDataErrorCode gdata_error,
       const base::FilePath& downloaded_file_path);
