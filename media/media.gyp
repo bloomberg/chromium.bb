@@ -398,6 +398,8 @@
         'video/capture/fake_video_capture_device.h',
         'video/capture/linux/video_capture_device_linux.cc',
         'video/capture/linux/video_capture_device_linux.h',
+        'video/capture/mac/avfoundation_glue.h',
+        'video/capture/mac/avfoundation_glue.mm',
         'video/capture/mac/platform_video_capturing_mac.h',
         'video/capture/mac/video_capture_device_mac.h',
         'video/capture/mac/video_capture_device_mac.mm',
