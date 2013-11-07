@@ -755,7 +755,10 @@ std::string GetTestOutputSnippet(const TestResult& result,
   size_t end_pos = full_output.find(std::string("[  FAILED  ] ") +
                                     result.full_name,
                                     run_pos);
-  if (end_pos == std::string::npos) {
+  // Only clip the snippet to the "OK" message if the test really
+  // succeeded. It still might have e.g. crashed after printing it.
+  if (end_pos == std::string::npos &&
+      result.status == TestResult::TEST_SUCCESS) {
     end_pos = full_output.find(std::string("[       OK ] ") +
                                result.full_name,
                                run_pos);
