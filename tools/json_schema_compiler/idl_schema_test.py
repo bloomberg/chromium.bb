@@ -129,6 +129,24 @@ class IdlSchemaTest(unittest.TestCase):
     expected = None
     self.assertEquals(expected, schema['platforms'])
 
+  def testSpecificImplementNamespace(self):
+    schema = idl_schema.Load('test/idl_namespace_specific_implement.idl')[0]
+    self.assertEquals('idl_namespace_specific_implement',
+                      schema['namespace'])
+    expected = 'idl_namespace_specific_implement.idl'
+    self.assertEquals(expected, schema['compiler_options']['implemented_in'])
+
+  def testSpecificImplementOnChromeOSNamespace(self):
+    schema = idl_schema.Load(
+        'test/idl_namespace_specific_implement_chromeos.idl')[0]
+    self.assertEquals('idl_namespace_specific_implement_chromeos',
+                      schema['namespace'])
+    expected_implemented_path = 'idl_namespace_specific_implement_chromeos.idl'
+    expected_platform = ['chromeos']
+    self.assertEquals(expected_implemented_path,
+                      schema['compiler_options']['implemented_in'])
+    self.assertEquals(expected_platform, schema['platforms'])
+
   def testCallbackComment(self):
     schema = self.idl_basics
     self.assertEquals('A comment on a callback.',
