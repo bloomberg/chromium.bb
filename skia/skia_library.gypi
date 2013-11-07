@@ -441,6 +441,9 @@
 
     'SK_DEFAULT_FONT_CACHE_LIMIT=<(default_font_cache_limit)',
 
+     # http://crbug.com/314387
+    'SK_DEFAULT_FONT_CACHE_COUNT_LIMIT=64',
+
     'SK_DISABLE_BLUR_DIVISION_OPTIMIZATION',
   ],
 
