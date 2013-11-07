@@ -1653,7 +1653,7 @@ int RenderText::previousOffset(int current) const
     return result;
 }
 
-#if OS(MACOSX) || OS(POSIX)
+#if OS(POSIX)
 
 #define HANGUL_CHOSEONG_START (0x1100)
 #define HANGUL_CHOSEONG_END (0x115F)
@@ -1695,7 +1695,7 @@ inline bool isRegionalIndicator(UChar32 c)
 
 int RenderText::previousOffsetForBackwardDeletion(int current) const
 {
-#if OS(MACOSX) || OS(POSIX)
+#if OS(POSIX)
     ASSERT(m_text);
     StringImpl& text = *m_text.impl();
     UChar32 character;
@@ -1779,7 +1779,7 @@ int RenderText::previousOffsetForBackwardDeletion(int current) const
 
     return current;
 #else
-    // Platforms other than Mac or Unix delete by one code point.
+    // Platforms other than Unix-like delete by one code point.
     if (U16_IS_TRAIL(m_text[--current]))
         --current;
     if (current < 0)
