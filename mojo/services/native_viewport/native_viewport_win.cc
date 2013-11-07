@@ -4,9 +4,6 @@
 
 #include "mojo/services/native_viewport/native_viewport.h"
 
-#include "base/bind.h"
-#include "gpu/command_buffer/client/gl_in_process_context.h"
-#include "gpu/command_buffer/client/gles2_implementation.h"
 #include "ui/events/event.h"
 #include "ui/gfx/win/window_impl.h"
 
@@ -29,6 +26,11 @@ class NativeViewportWin : public gfx::WindowImpl,
 
  private:
   // Overridden from NativeViewport:
+  virtual gfx::Size GetSize() OVERRIDE {
+    RECT cr;
+    GetClientRect(hwnd(), &cr);
+    return gfx::Size(cr.right - cr.left, cr.bottom - cr.top);
+  }
   virtual void Close() OVERRIDE {
     DestroyWindow(hwnd());
   }
@@ -51,16 +53,7 @@ class NativeViewportWin : public gfx::WindowImpl,
     return 0;
   }
   LRESULT OnCreate(CREATESTRUCT* create_struct) {
-    RECT cr;
-    GetClientRect(hwnd(), &cr);
-    gpu::GLInProcessContextAttribs attribs;
-    gl_context_.reset(gpu::GLInProcessContext::CreateContext(
-        false, hwnd(), gfx::Size(cr.right - cr.left, cr.bottom - cr.top),
-        false, attribs, gfx::PreferDiscreteGpu));
-    gl_context_->SetContextLostCallback(base::Bind(
-        &NativeViewportWin::OnGLContextLost, base::Unretained(this)));
-
-    delegate_->OnGLContextAvailable(gl_context_->GetImplementation());
+    delegate_->OnAcceleratedWidgetAvailable(hwnd());
     return 0;
   }
   void OnPaint(HDC) {
@@ -83,13 +76,7 @@ class NativeViewportWin : public gfx::WindowImpl,
     delegate_->OnDestroyed();
   }
 
-  void OnGLContextLost() {
-    gl_context_.reset();
-    delegate_->OnGLContextLost();
-  }
-
   NativeViewportDelegate* delegate_;
-  scoped_ptr<gpu::GLInProcessContext> gl_context_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewportWin);
 };

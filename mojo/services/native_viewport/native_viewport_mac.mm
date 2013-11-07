@@ -9,9 +9,6 @@
 #import <AppKit/NSWindow.h>
 
 #include "base/bind.h"
-#include "base/mac/scoped_nsobject.h"
-#include "gpu/command_buffer/client/gl_in_process_context.h"
-#include "gpu/command_buffer/client/gles2_implementation.h"
 #include "ui/gfx/rect.h"
 
 namespace mojo {
@@ -31,15 +28,7 @@ class NativeViewportMac : public NativeViewport {
                               backing:NSBackingStoreBuffered
                                 defer:NO];
     [window_ orderFront:nil];
-
-    gpu::GLInProcessContextAttribs attribs;
-    gl_context_.reset(gpu::GLInProcessContext::CreateContext(
-        false, [window_ contentView], rect_.size(), false,
-        attribs, gfx::PreferDiscreteGpu));
-    gl_context_->SetContextLostCallback(base::Bind(
-        &NativeViewportMac::OnGLContextLost, base::Unretained(this)));
-
-    delegate_->OnGLContextAvailable(gl_context_->GetImplementation());
+    delegate_->OnAcceleratedWidgetAvailable([window_ contentView]);
   }
 
   virtual ~NativeViewportMac() {
@@ -49,20 +38,18 @@ class NativeViewportMac : public NativeViewport {
 
  private:
   // Overridden from NativeViewport:
+  virtual gfx::Size GetSize() OVERRIDE {
+    return rect_.size();
+  }
+
   virtual void Close() OVERRIDE {
     // TODO(beng): perform this in response to NSWindow destruction.
     delegate_->OnDestroyed();
   }
 
-  void OnGLContextLost() {
-    gl_context_.reset();
-    delegate_->OnGLContextLost();
-  }
-
   NativeViewportDelegate* delegate_;
   NSWindow* window_;
   gfx::Rect rect_;
-  scoped_ptr<gpu::GLInProcessContext> gl_context_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewportMac);
 };

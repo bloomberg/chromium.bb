@@ -33,15 +33,14 @@ class NativeViewportAndroid : public NativeViewport {
 
  private:
   // Overridden from NativeViewport:
+  virtual gfx::Size GetSize() OVERRIDE;
   virtual void Close() OVERRIDE;
 
-  void OnGLContextLost();
   void ReleaseWindow();
 
   NativeViewportDelegate* delegate_;
   ANativeWindow* window_;
   gfx::Size size_;
-  scoped_ptr<gpu::GLInProcessContext> gl_context_;
 
   base::WeakPtrFactory<NativeViewportAndroid> weak_factory_;
 

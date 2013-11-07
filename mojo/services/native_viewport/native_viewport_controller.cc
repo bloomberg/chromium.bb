@@ -4,9 +4,11 @@
 
 #include "mojo/services/native_viewport/native_viewport_controller.h"
 
+#include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
-#include "gpu/command_buffer/client/gles2_interface.h"
+#include "gpu/command_buffer/client/gl_in_process_context.h"
+#include "gpu/command_buffer/client/gles2_implementation.h"
 #include "mojo/services/native_viewport/native_viewport.h"
 #include "ui/events/event.h"
 
@@ -34,10 +36,18 @@ bool NativeViewportController::OnEvent(ui::Event* event) {
   return false;
 }
 
-void NativeViewportController::OnGLContextAvailable(
-    gpu::gles2::GLES2Interface* gl) {
+void NativeViewportController::OnAcceleratedWidgetAvailable(
+    gfx::AcceleratedWidget widget) {
+  gfx::Size size = native_viewport_->GetSize();
+  gpu::GLInProcessContextAttribs attribs;
+  gl_context_.reset(gpu::GLInProcessContext::CreateContext(
+      false, widget, size, false, attribs, gfx::PreferDiscreteGpu));
+  gl_context_->SetContextLostCallback(base::Bind(
+      &NativeViewportController::OnGLContextLost, base::Unretained(this)));
+
   // TODO(abarth): Instead of drawing green, we want to send the context over
   // pipe_ somehow.
+  gpu::gles2::GLES2Interface* gl = gl_context_->GetImplementation();
   gl->ClearColor(0, 1, 0, 0);
   gl->Clear(GL_COLOR_BUFFER_BIT);
   gl->SwapBuffers();

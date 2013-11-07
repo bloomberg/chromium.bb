@@ -10,6 +10,10 @@
 #include "mojo/public/system/core.h"
 #include "mojo/services/native_viewport/native_viewport.h"
 
+namespace gpu {
+class GLInProcessContext;
+}
+
 namespace mojo {
 namespace services {
 
@@ -26,16 +30,19 @@ class NativeViewportController : public services::NativeViewportDelegate {
 
  private:
   // Overridden from services::NativeViewportDelegate:
+  virtual void OnResized(const gfx::Size& size) OVERRIDE;
+  virtual void OnAcceleratedWidgetAvailable(
+      gfx::AcceleratedWidget widget) OVERRIDE;
   virtual bool OnEvent(ui::Event* event) OVERRIDE;
   virtual void OnDestroyed() OVERRIDE;
-  virtual void OnGLContextAvailable(gpu::gles2::GLES2Interface*) OVERRIDE;
-  virtual void OnGLContextLost() OVERRIDE;
-  virtual void OnResized(const gfx::Size& size) OVERRIDE;
+
+  void OnGLContextLost();
 
   void SendString(const std::string& string);
 
   Handle pipe_;
   scoped_ptr<NativeViewport> native_viewport_;
+  scoped_ptr<gpu::GLInProcessContext> gl_context_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewportController);
 };

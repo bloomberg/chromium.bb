@@ -6,12 +6,8 @@
 
 #include <X11/Xlib.h>
 
-#include "base/bind.h"
-#include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_pump_x11.h"
-#include "gpu/command_buffer/client/gl_in_process_context.h"
-#include "gpu/command_buffer/client/gles2_implementation.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/x/x11_types.h"
 
@@ -44,14 +40,7 @@ class NativeViewportX11 : public NativeViewport,
     XMapWindow(display, window_);
     XFlush(display);
 
-    gpu::GLInProcessContextAttribs attribs;
-    gl_context_.reset(gpu::GLInProcessContext::CreateContext(
-        false, window_, bounds_.size(), false,
-        attribs, gfx::PreferDiscreteGpu));
-    gl_context_->SetContextLostCallback(base::Bind(
-        &NativeViewportX11::OnGLContextLost, base::Unretained(this)));
-
-    delegate_->OnGLContextAvailable(gl_context_->GetImplementation());
+    delegate_->OnAcceleratedWidgetAvailable(window_);
   }
 
   virtual ~NativeViewportX11() {
@@ -63,6 +52,9 @@ class NativeViewportX11 : public NativeViewport,
 
  private:
   // Overridden from NativeViewport:
+  virtual gfx::Size GetSize() OVERRIDE {
+    return bounds_.size();
+  }
   virtual void Close() OVERRIDE {
     // TODO(beng): perform this in response to XWindow destruction.
     delegate_->OnDestroyed();
@@ -73,15 +65,9 @@ class NativeViewportX11 : public NativeViewport,
     return true;
   }
 
-  void OnGLContextLost() {
-    gl_context_.reset();
-    delegate_->OnGLContextLost();
-  }
-
   NativeViewportDelegate* delegate_;
   gfx::Rect bounds_;
   XID window_;
-  scoped_ptr<gpu::GLInProcessContext> gl_context_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeViewportX11);
 };

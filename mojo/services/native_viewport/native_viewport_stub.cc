@@ -19,6 +19,9 @@ class NativeViewportStub : public NativeViewport {
 
  private:
   // Overridden from NativeViewport:
+  virtual gfx::Size GetSize() OVERRIDE {
+    return gfx::Size();
+  }
   virtual void Close() OVERRIDE {
     delegate_->OnDestroyed();
   }

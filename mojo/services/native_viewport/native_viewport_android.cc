@@ -5,8 +5,6 @@
 #include "mojo/services/native_viewport/native_viewport_android.h"
 
 #include <android/native_window_jni.h>
-#include "gpu/command_buffer/client/gl_in_process_context.h"
-#include "gpu/command_buffer/client/gles2_implementation.h"
 #include "mojo/services/native_viewport/android/mojo_viewport.h"
 #include "mojo/shell/context.h"
 
@@ -27,19 +25,7 @@ NativeViewportAndroid::~NativeViewportAndroid() {
 void NativeViewportAndroid::OnNativeWindowCreated(ANativeWindow* window) {
   DCHECK(!window_);
   window_ = window;
-
-  gpu::GLInProcessContextAttribs attribs;
-  gl_context_.reset(gpu::GLInProcessContext::CreateContext(
-      false, window_, size_, false, attribs, gfx::PreferDiscreteGpu));
-  gl_context_->SetContextLostCallback(base::Bind(
-      &NativeViewportAndroid::OnGLContextLost, base::Unretained(this)));
-
-  delegate_->OnGLContextAvailable(gl_context_->GetImplementation());
-}
-
-void NativeViewportAndroid::OnGLContextLost() {
-  gl_context_.reset();
-  delegate_->OnGLContextLost();
+  delegate_->OnAcceleratedWidgetAvailable(window_);
 }
 
 void NativeViewportAndroid::OnNativeWindowDestroyed() {
@@ -53,9 +39,12 @@ void NativeViewportAndroid::OnResized(const gfx::Size& size) {
 }
 
 void NativeViewportAndroid::ReleaseWindow() {
-  gl_context_.reset();
   ANativeWindow_release(window_);
   window_ = NULL;
+}
+
+gfx::Size NativeViewportAndroid::GetSize() {
+  return size_;
 }
 
 void NativeViewportAndroid::Close() {
