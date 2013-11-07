@@ -101,7 +101,7 @@ function HTMLAppletElement05() {
 testNode = nodeList.item(0);
       vcodebase = testNode.codeBase;
 
-      assertEquals("codebase","applets",vcodebase);
+      assertURIEquals("codebase",null,null,null,"applets",null,null,null,null,vcodebase);
        
 }
 

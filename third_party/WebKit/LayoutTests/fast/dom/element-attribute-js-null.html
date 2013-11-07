@@ -50,7 +50,7 @@
                     result = "<span class='fail'>TEST FAILED:</span> An exception should have been thrown.";
                 else if (isUrl && element[attr] === resolve(expected))
                     result = "<span class='pass'>TEST SUCCEEDED:</span> The value was " + resultStringifier(expected) + " resolved as a URL.";
-                else if (element[attr] === expected)
+                else if (!isUrl && element[attr] === expected)
                     result = "<span class='pass'>TEST SUCCEEDED:</span> The value was " + resultStringifier(expected) + ".";
                 else
                     result = "<span class='fail'>TEST FAILED:</span> The value should have been " + resultStringifier(expected) + " but was " + resultStringifier(element[attr]) + ".";
@@ -124,17 +124,15 @@
                     type: 'HTMLAppletElement',
                     elementToUse: document.createElement('applet'),
                     attributes: [
-                        {name: 'align', expectedNull: ''},
-                        {name: 'alt', expectedNull: ''},
-                        {name: 'archive', expectedNull: ''},
-                        {name: 'code', expectedNull: ''},
-                        {name: 'codeBase', expectedNull: ''},
-                        {name: 'height', expectedNull: ''},
-                        {name: 'hspace', expectedNull: ''},
-                        {name: 'name', expectedNull: ''},
-                        {name: 'object', expectedNull: ''},
-                        {name: 'vspace', expectedNull: ''},
-                        {name: 'width', expectedNull: ''}
+                        {name: 'align', expectedNull: 'null'},
+                        {name: 'alt', expectedNull: 'null'},
+                        {name: 'archive', expectedNull: 'null'},
+                        {name: 'code', expectedNull: 'null'},
+                        {name: 'codeBase', expectedNull: 'null', isUrl: true},
+                        {name: 'height', expectedNull: 'null'},
+                        {name: 'name', expectedNull: 'null'},
+                        {name: 'object', expectedNull: 'null', isUrl: true},
+                        {name: 'width', expectedNull: 'null'}
                     ]
                 },
                 {
@@ -198,7 +196,7 @@
                     elementToUse: document.createElement('button'),
                     attributes: [
                         {name: 'accessKey', expectedNull: ''},
-                        {name: 'formAction', expectedNull: 'null', isUrl:true},
+                        {name: 'formAction', expectedNull: 'null', isUrl: true},
                         {name: 'formEnctype', expectedNull: 'application/x-www-form-urlencoded'},
                         {name: 'formMethod', expectedNull: 'get'},
                         {name: 'formTarget', expectedNull: 'null'},
@@ -514,7 +512,7 @@
                     elementToUse: document.createElement('source'),
                     attributes: [
                         {name: 'media', expectedNull: 'null'},
-                        {name: 'src', expectedNull: 'null', isUrl:true},
+                        {name: 'src', expectedNull: 'null', isUrl: true},
                         {name: 'type', expectedNull: 'null'}
                     ]
                 },
@@ -620,7 +618,7 @@
                     attributes: [
                         {name: 'kind', expectedNull: 'subtitles'},
                         {name: 'label', expectedNull: 'null'},
-                        {name: 'src', expectedNull: 'null', isUrl:true},
+                        {name: 'src', expectedNull: 'null', isUrl: true},
                         {name: 'srclang', expectedNull: 'null'}
                     ]
                 },
@@ -636,7 +634,7 @@
                     elementToUse: document.createElement('video'),
                     attributes: [
                         {name: 'mediaGroup', expectedNull: 'null'},
-                        {name: 'poster', expectedNull: 'null', isUrl:true},
+                        {name: 'poster', expectedNull: 'null', isUrl: true},
                         {name: 'preload', expectedNull: 'auto'},
                         {name: 'src', expectedNull: 'null', isUrl: true}
                     ]

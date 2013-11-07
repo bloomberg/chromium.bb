@@ -1,0 +1,6 @@
+
+PASS get HTMLAppletElement.hspace 
+PASS set HTMLAppletElement.hspace 
+PASS get HTMLAppletElement.vspace 
+PASS set HTMLAppletElement.vspace 
+
