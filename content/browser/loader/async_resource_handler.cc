@@ -310,7 +310,7 @@ bool AsyncResourceHandler::OnResponseCompleted(
     const std::string& security_info) {
   const ResourceRequestInfoImpl* info = GetRequestInfo();
   if (!info->filter())
-    return false;
+    return true;
 
   // If we crash here, figure out what URL the renderer was requesting.
   // http://crbug.com/107692

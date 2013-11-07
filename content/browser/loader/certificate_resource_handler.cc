@@ -98,7 +98,7 @@ bool CertificateResourceHandler::OnResponseCompleted(
     const net::URLRequestStatus& urs,
     const std::string& sec_info) {
   if (urs.status() != net::URLRequestStatus::SUCCESS)
-    return false;
+    return true;
 
   AssembleResource();
 

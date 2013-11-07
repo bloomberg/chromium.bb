@@ -125,7 +125,7 @@ bool SyncResourceHandler::OnResponseCompleted(
     const std::string& security_info) {
   ResourceMessageFilter* filter = GetFilter();
   if (!filter)
-    return false;
+    return true;
 
   result_.error_code = status.error();
 
