@@ -56,7 +56,6 @@ class RemoveOperation {
   // Part of Remove(). Called after CheckLocalState() completion.
   void RemoveAfterCheckLocalState(const FileOperationCallback& callback,
                                   const std::string* parent_resource_id,
-                                  const std::string* local_id,
                                   const ResourceEntry* entry,
                                   FileError error);
 

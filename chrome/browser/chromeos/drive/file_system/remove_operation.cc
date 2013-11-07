@@ -22,19 +22,18 @@ namespace {
 // Checks local metadata state before requesting remote delete.
 // |parent_resource_id| is set to the resource ID of the parent directory of
 // |path|. If it is a special folder like drive/other, empty string is set.
-// |local_id| is set to the local ID of the entry located at |path|.
 // |entry| is the resource entry for the |path|.
 FileError CheckLocalState(internal::ResourceMetadata* metadata,
                           const base::FilePath& path,
                           bool is_recursive,
                           std::string* parent_resource_id,
-                          std::string* local_id,
                           ResourceEntry* entry) {
-  FileError error = metadata->GetIdByPath(path, local_id);
+  std::string local_id;
+  FileError error = metadata->GetIdByPath(path, &local_id);
   if (error != FILE_ERROR_OK)
     return error;
 
-  error = metadata->GetResourceEntryById(*local_id, entry);
+  error = metadata->GetResourceEntryById(local_id, entry);
   if (error != FILE_ERROR_OK)
     return error;
 
@@ -123,7 +122,6 @@ void RemoveOperation::Remove(const base::FilePath& path,
   DCHECK(!callback.is_null());
 
   std::string* parent_resource_id = new std::string;
-  std::string* local_id = new std::string;
   ResourceEntry* entry = new ResourceEntry;
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(),
@@ -133,20 +131,17 @@ void RemoveOperation::Remove(const base::FilePath& path,
                  path,
                  is_recursive,
                  parent_resource_id,
-                 local_id,
                  entry),
       base::Bind(&RemoveOperation::RemoveAfterCheckLocalState,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback,
                  base::Owned(parent_resource_id),
-                 base::Owned(local_id),
                  base::Owned(entry)));
 }
 
 void RemoveOperation::RemoveAfterCheckLocalState(
     const FileOperationCallback& callback,
     const std::string* parent_resource_id,
-    const std::string* local_id,
     const ResourceEntry* entry,
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
@@ -173,7 +168,7 @@ void RemoveOperation::RemoveAfterCheckLocalState(
                    callback,
                    base::Bind(&UpdateLocalStateAfterUnparent,
                               metadata_,
-                              *local_id)));
+                              entry->local_id())));
   } else {
     // Otherwise try sending the entry to trash.
     scheduler_->DeleteResource(
@@ -184,7 +179,7 @@ void RemoveOperation::RemoveAfterCheckLocalState(
                    base::Bind(&UpdateLocalStateAfterDelete,
                               metadata_,
                               cache_,
-                              *local_id)));
+                              entry->local_id())));
   }
 }
 
