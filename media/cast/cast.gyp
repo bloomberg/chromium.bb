@@ -71,6 +71,7 @@
             'rtp_sender/rtp_packetizer/rtp_packetizer_unittest.cc',
             'rtp_sender/rtp_packetizer/test/rtp_header_parser.cc',
             'rtp_sender/rtp_packetizer/test/rtp_header_parser.h',
+            'test/audio_utility.cc',
             'test/encode_decode_test.cc',
             'test/end2end_unittest.cc',
             'test/fake_task_runner.cc',

@@ -7,37 +7,37 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/threading/thread_checker.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
-#include "media/cast/rtp_sender/rtp_sender.h"
 
-namespace webrtc {
-class AudioCodingModule;
+namespace base {
+class TimeTicks;
+}
+
+namespace media {
+class AudioBus;
 }
 
 namespace media {
 namespace cast {
 
-class WebrtEncodedDataCallback;
-
-// Thread safe class.
-// It should be called from the main cast thread; however that is not required.
 class AudioEncoder : public base::RefCountedThreadSafe<AudioEncoder> {
  public:
   typedef base::Callback<void(scoped_ptr<EncodedAudioFrame>,
                               const base::TimeTicks&)> FrameEncodedCallback;
 
-  AudioEncoder(scoped_refptr<CastEnvironment> cast_environment,
-               const AudioSenderConfig& audio_config);
+  AudioEncoder(const scoped_refptr<CastEnvironment>& cast_environment,
+               const AudioSenderConfig& audio_config,
+               const FrameEncodedCallback& frame_encoded_callback);
 
-  // The audio_frame must be valid until the closure callback is called.
-  // The closure callback is called from the main cast thread as soon as
-  // the encoder is done with the frame; it does not mean that the encoded frame
-  // has been sent out.
-  void InsertRawAudioFrame(const PcmAudioFrame* audio_frame,
-                           const base::TimeTicks& recorded_time,
-                           const FrameEncodedCallback& frame_encoded_callback,
-                           const base::Closure callback);
+  // The |audio_bus| must be valid until the |done_callback| is called.
+  // The callback is called from the main cast thread as soon as the encoder is
+  // done with |audio_bus|; it does not mean that the encoded data has been
+  // sent out.
+  void InsertAudio(const AudioBus* audio_bus,
+                   const base::TimeTicks& recorded_time,
+                   const base::Closure& done_callback);
 
  protected:
   virtual ~AudioEncoder();
@@ -45,16 +45,21 @@ class AudioEncoder : public base::RefCountedThreadSafe<AudioEncoder> {
  private:
   friend class base::RefCountedThreadSafe<AudioEncoder>;
 
-  void EncodeAudioFrameThread(
-      const PcmAudioFrame* audio_frame,
-      const base::TimeTicks& recorded_time,
-      const FrameEncodedCallback& frame_encoded_callback,
-      const base::Closure release_callback);
+  class ImplBase;
+  class OpusImpl;
+  class Pcm16Impl;
 
-  scoped_refptr<CastEnvironment> cast_environment_;
-  scoped_ptr<webrtc::AudioCodingModule> audio_encoder_;
-  scoped_ptr<WebrtEncodedDataCallback> webrtc_encoder_callback_;
-  uint32 timestamp_;
+  // Invokes |impl_|'s encode method on the AUDIO_ENCODER thread while holding
+  // a ref-count on AudioEncoder.
+  void EncodeAudio(const AudioBus* audio_bus,
+                   const base::TimeTicks& recorded_time,
+                   const base::Closure& done_callback);
+
+  const scoped_refptr<CastEnvironment> cast_environment_;
+  scoped_ptr<ImplBase> impl_;
+
+  // Used to ensure only one thread invokes InsertAudio().
+  base::ThreadChecker insert_thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioEncoder);
 };

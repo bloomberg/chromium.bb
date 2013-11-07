@@ -18,6 +18,10 @@
 #include "media/cast/rtp_sender/rtp_sender.h"
 
 namespace media {
+class AudioBus;
+}
+
+namespace media {
 namespace cast {
 
 class AudioEncoder;
@@ -36,13 +40,13 @@ class AudioSender : public base::NonThreadSafe,
 
   virtual ~AudioSender();
 
-  // The audio_frame must be valid until the closure callback is called.
-  // The closure callback is called from the main cast thread as soon as
-  // the encoder is done with the frame; it does not mean that the encoded frame
-  // has been sent out.
-  void InsertRawAudioFrame(const PcmAudioFrame* audio_frame,
-                           const base::TimeTicks& recorded_time,
-                           const base::Closure callback);
+  // The |audio_bus| must be valid until the |done_callback| is called.
+  // The callback is called from the main cast thread as soon as the encoder is
+  // done with |audio_bus|; it does not mean that the encoded data has been
+  // sent out.
+  void InsertAudio(const AudioBus* audio_bus,
+                   const base::TimeTicks& recorded_time,
+                   const base::Closure& done_callback);
 
   // The audio_frame must be valid until the closure callback is called.
   // The closure callback is called from the main cast thread as soon as
@@ -86,4 +90,3 @@ class AudioSender : public base::NonThreadSafe,
 }  // namespace media
 
 #endif  // MEDIA_CAST_AUDIO_SENDER_H_
-

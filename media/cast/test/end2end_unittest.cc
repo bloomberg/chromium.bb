@@ -14,12 +14,14 @@
 #include <list>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "media/cast/cast_config.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/cast_receiver.h"
 #include "media/cast/cast_sender.h"
+#include "media/cast/test/audio_utility.h"
 #include "media/cast/test/fake_task_runner.h"
 #include "media/cast/test/video_utility.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,8 +31,8 @@ namespace cast {
 
 static const int64 kStartMillisecond = GG_INT64_C(1245);
 static const int kAudioChannels = 2;
-static const int kAudioSamplingFrequency = 48000;
-static const int kSoundFrequency = 1234;  // Frequency of sinusoid wave.
+static const double kSoundFrequency = 314.15926535897;  // Freq of sine wave.
+static const float kSoundVolume = 0.5f;
 static const int kVideoWidth = 1280;
 static const int kVideoHeight = 720;
 static const int kCommonRtpHeaderLength = 12;
@@ -49,6 +51,13 @@ static const int kFrameTimerMs = 33;
 // frame by 10 ms if there is packets belonging to the previous frame being
 // retransmitted.
 static const int kTimerErrorMs = 11;
+
+namespace {
+// Dummy callback function that does nothing except to accept ownership of
+// |audio_bus| for destruction.
+void OwnThatAudioBus(scoped_ptr<AudioBus> audio_bus) {
+}
+}
 
 // Class that sends the packet direct from sender into the receiver with the
 // ability to drop packets between the two.
@@ -133,18 +142,13 @@ class TestReceiverAudioCallback :
   };
 
   TestReceiverAudioCallback()
-      : num_called_(0),
-       avg_snr_(0) {}
+      : num_called_(0) {}
 
-  void SetExpectedResult(int expected_sampling_frequency,
-                         int expected_min_snr,
-                         int expected_avg_snr) {
+  void SetExpectedSamplingFrequency(int expected_sampling_frequency) {
     expected_sampling_frequency_ = expected_sampling_frequency;
-    expected_min_snr_ = expected_min_snr;
-    expected_avg_snr_ = expected_avg_snr;
   }
 
-  void AddExpectedResult(PcmAudioFrame* audio_frame,
+  void AddExpectedResult(scoped_ptr<PcmAudioFrame> audio_frame,
                          int expected_num_10ms_blocks,
                          const base::TimeTicks& record_time) {
     ExpectedAudioFrame expected_audio_frame;
@@ -168,76 +172,19 @@ class TestReceiverAudioCallback :
         expected_audio_frame.num_10ms_blocks * kAudioChannels *
             expected_sampling_frequency_ / 100);
 
-    EXPECT_GE(expected_audio_frame.record_time +
+    const base::TimeTicks upper_bound = expected_audio_frame.record_time +
         base::TimeDelta::FromMilliseconds(kDefaultRtpMaxDelayMs +
-            kTimerErrorMs), playout_time);
-    EXPECT_LT(expected_audio_frame.record_time, playout_time);
+                                          kTimerErrorMs);
+    EXPECT_GE(upper_bound, playout_time)
+        << "playout_time - upper_bound == "
+        << (playout_time - upper_bound).InMicroseconds() << " usec";
+    EXPECT_LT(expected_audio_frame.record_time, playout_time)
+        << "playout_time - expected == "
+        << (playout_time - expected_audio_frame.record_time).InMicroseconds()
+        << " usec";
 
     EXPECT_EQ(audio_frame->samples.size(),
               expected_audio_frame.audio_frame.samples.size());
-  }
-
-  size_t CalculateMaxResamplingDelay(size_t src_sample_rate_hz,
-                                     size_t dst_sample_rate_hz,
-                                     size_t number_of_channels) {
-    // The sinc resampler has a known delay, which we compute here. Multiplying
-    // by two gives us a crude maximum for any resampling, as the old resampler
-    // typically (but not always) has lower delay. Since we sample up and down
-    // we need to double our delay.
-    static const size_t kInputKernelDelaySamples = 16;
-    if (src_sample_rate_hz == dst_sample_rate_hz) return 0;
-
-    return (dst_sample_rate_hz * kInputKernelDelaySamples *
-        number_of_channels * 4) / src_sample_rate_hz;
-  }
-
-  // Computes the SNR based on the error between |reference_audio_frame| and
-  // |output_audio_frame| given a sample offset of |delay|.
-  double ComputeSNR(const PcmAudioFrame& reference_audio_frame,
-                    const std::vector<int16>& output_audio_samples,
-                    size_t delay) {
-    // Check all out allowed delays.
-    double square_error = 0;
-    double variance = 0;
-    for (size_t i = 0; i < reference_audio_frame.samples.size() - delay; ++i) {
-      size_t error = reference_audio_frame.samples[i] -
-          output_audio_samples[i + delay];
-
-      square_error += error * error;
-      variance += reference_audio_frame.samples[i] *
-         reference_audio_frame.samples[i];
-    }
-    // 16-bit audio has a dynamic range of 96 dB.
-    double snr = 96.0;  // Assigning 96 dB to the zero-error case.
-    if (square_error > 0) {
-      snr = 10 * log10(variance / square_error);
-    }
-    return snr;
-  }
-
-  // Computes the best SNR based on the error between |ref_frame| and
-  // |test_frame|. It allows for up to a |max_delay| in samples between the
-  // signals to compensate for the re-sampling delay.
-  double ComputeBestSNR(const PcmAudioFrame& reference_audio_frame,
-                        const std::vector<int16>& output_audio_samples,
-                        size_t max_delay) {
-    double best_snr = 0;
-
-    // Check all out allowed delays.
-    for (size_t delay = 0; delay <= max_delay;
-        delay += reference_audio_frame.channels) {
-      double snr = ComputeSNR(reference_audio_frame, output_audio_samples,
-                              delay);
-      if (snr > best_snr) {
-        best_snr = snr;
-      }
-    }
-    if (avg_snr_ == 0) {
-      avg_snr_ = best_snr;
-    } else {
-      avg_snr_ = (avg_snr_ * 7  + best_snr) / 8;
-    }
-    return best_snr;
   }
 
   void CheckPcmAudioFrame(scoped_ptr<PcmAudioFrame> audio_frame,
@@ -249,11 +196,9 @@ class TestReceiverAudioCallback :
     expected_frame_.pop_front();
     if (audio_frame->samples.size() == 0) return;  // No more checks needed.
 
-    size_t max_delay = CalculateMaxResamplingDelay(48000, 32000,
-        expected_audio_frame.audio_frame.channels);
-    EXPECT_GE(ComputeBestSNR(expected_audio_frame.audio_frame,
-        audio_frame->samples, max_delay),
-            expected_min_snr_);
+    EXPECT_NEAR(CountZeroCrossings(expected_audio_frame.audio_frame.samples),
+                CountZeroCrossings(audio_frame->samples),
+                1);
   }
 
   void CheckCodedPcmAudioFrame(scoped_ptr<EncodedAudioFrame> audio_frame,
@@ -276,9 +221,6 @@ class TestReceiverAudioCallback :
     EXPECT_LT(expected_audio_frame.record_time, playout_time);
     if (audio_frame->data.size() == 0) return;  // No more checks needed.
 
-    size_t max_delay = CalculateMaxResamplingDelay(48000, 32000,
-        expected_audio_frame.audio_frame.channels);
-
     // We need to convert our "coded" audio frame to our raw format.
     std::vector<int16> output_audio_samples;
     size_t number_of_samples = audio_frame->data.size() / 2;
@@ -288,13 +230,13 @@ class TestReceiverAudioCallback :
             (static_cast<uint16>(audio_frame->data[i * sizeof(uint16)]) << 8);
       output_audio_samples.push_back(static_cast<int16>(sample));
     }
-    EXPECT_GE(ComputeBestSNR(expected_audio_frame.audio_frame,
-        output_audio_samples, max_delay),
-            expected_min_snr_);
+
+    EXPECT_NEAR(CountZeroCrossings(expected_audio_frame.audio_frame.samples),
+                CountZeroCrossings(output_audio_samples),
+                1);
   }
 
-  int number_times_called() {
-    EXPECT_GE(avg_snr_, expected_avg_snr_);
+  int number_times_called() const {
     return num_called_;
   }
 
@@ -306,9 +248,6 @@ class TestReceiverAudioCallback :
 
   int num_called_;
   int expected_sampling_frequency_;
-  int expected_min_snr_;
-  int expected_avg_snr_;
-  double avg_snr_;
   std::list<ExpectedAudioFrame> expected_frame_;
 };
 
@@ -348,9 +287,12 @@ class TestReceiverVideoCallback :
 
     base::TimeDelta time_since_capture =
        render_time - expected_video_frame.capture_time;
+    const base::TimeDelta upper_bound = base::TimeDelta::FromMilliseconds(
+        kDefaultRtpMaxDelayMs + kTimerErrorMs);
 
-    EXPECT_LE(time_since_capture, base::TimeDelta::FromMilliseconds(
-        kDefaultRtpMaxDelayMs + kTimerErrorMs));
+    EXPECT_GE(upper_bound, time_since_capture)
+        << "time_since_capture - upper_bound == "
+        << (time_since_capture - upper_bound).InMicroseconds() << " usec";
     EXPECT_LE(expected_video_frame.capture_time, render_time);
     EXPECT_EQ(expected_video_frame.width, video_frame->width);
     EXPECT_EQ(expected_video_frame.height, video_frame->height);
@@ -389,14 +331,14 @@ class End2EndTest : public ::testing::Test {
         sender_to_receiver_(cast_environment_),
         receiver_to_sender_(cast_environment_),
         test_receiver_audio_callback_(new TestReceiverAudioCallback()),
-        test_receiver_video_callback_(new TestReceiverVideoCallback()),
-        audio_angle_(0) {
+        test_receiver_video_callback_(new TestReceiverVideoCallback()) {
     testing_clock_.Advance(
         base::TimeDelta::FromMilliseconds(kStartMillisecond));
   }
 
   void SetupConfig(AudioCodec audio_codec,
                    int audio_sampling_frequency,
+                   // TODO(miu): 3rd arg is meaningless?!?
                    bool external_audio_decoder,
                    int max_number_of_video_buffers_used) {
     audio_sender_config_.sender_ssrc = 1;
@@ -405,7 +347,7 @@ class End2EndTest : public ::testing::Test {
     audio_sender_config_.use_external_encoder = false;
     audio_sender_config_.frequency = audio_sampling_frequency;
     audio_sender_config_.channels = kAudioChannels;
-    audio_sender_config_.bitrate = 64000;
+    audio_sender_config_.bitrate = kDefaultAudioEncoderBitrate;
     audio_sender_config_.codec = audio_codec;
 
     audio_receiver_config_.feedback_ssrc =
@@ -418,6 +360,9 @@ class End2EndTest : public ::testing::Test {
     audio_receiver_config_.frequency = audio_sender_config_.frequency;
     audio_receiver_config_.channels = kAudioChannels;
     audio_receiver_config_.codec = audio_sender_config_.codec;
+
+    test_receiver_audio_callback_->SetExpectedSamplingFrequency(
+        audio_receiver_config_.frequency);
 
     video_sender_config_.sender_ssrc = 3;
     video_sender_config_.incoming_feedback_ssrc = 4;
@@ -462,6 +407,10 @@ class End2EndTest : public ::testing::Test {
 
     frame_input_ = cast_sender_->frame_input();
     frame_receiver_ = cast_receiver_->frame_receiver();
+
+    audio_bus_factory_.reset(new TestAudioBusFactory(
+        audio_sender_config_.channels, audio_sender_config_.frequency,
+        kSoundFrequency, kSoundVolume));
   }
 
   virtual ~End2EndTest() {}
@@ -473,33 +422,6 @@ class End2EndTest : public ::testing::Test {
     PopulateVideoFrame(video_frame, start_value);
     frame_input_->InsertRawVideoFrame(video_frame, capture_time,
         base::Bind(FrameInput::DeleteVideoFrame, video_frame));
-  }
-
-  PcmAudioFrame* CreateAudioFrame(int num_10ms_blocks, int sound_frequency,
-                                  int sampling_frequency) {
-    int number_of_samples = kAudioChannels * num_10ms_blocks *
-        sampling_frequency / 100;
-    int amplitude = 1000;
-
-    PcmAudioFrame* audio_frame = new PcmAudioFrame();
-    audio_frame->channels = kAudioChannels;
-    audio_frame->frequency = sampling_frequency;
-    audio_frame->samples.reserve(number_of_samples);
-
-    // Create the sinusoid.
-    double increment = (2 * 3.1415926535897932384626433) /
-        (static_cast<double>(sampling_frequency) / sound_frequency);
-    int sample = 0;
-    while (sample < number_of_samples) {
-      int16 value = static_cast<int16>(amplitude * sin(audio_angle_));
-
-      for (int i = 0; i < kAudioChannels; ++i) {
-        audio_frame->samples.insert(audio_frame->samples.end(), value);
-        ++sample;
-      }
-      audio_angle_ += increment;
-    }
-    return audio_frame;
   }
 
   void RunTasks(int during_ms) {
@@ -530,18 +452,13 @@ class End2EndTest : public ::testing::Test {
   scoped_refptr<TestReceiverAudioCallback> test_receiver_audio_callback_;
   scoped_refptr<TestReceiverVideoCallback> test_receiver_video_callback_;
 
-  double audio_angle_;
+  scoped_ptr<TestAudioBusFactory> audio_bus_factory_;
 };
 
 // Audio and video test without packet loss using raw PCM 16 audio "codec";
-// note: even though the audio is not coded it is still re-sampled between
-// 48 and 32 KHz.
 TEST_F(End2EndTest, LoopNoLossPcm16) {
-  // Note running codec in different sampling frequency.
   SetupConfig(kPcm16, 32000, false, 1);
   Create();
-  test_receiver_audio_callback_->SetExpectedResult(kAudioSamplingFrequency, 20,
-      25);
 
   int video_start = 1;
   int audio_diff = kFrameTimerMs;
@@ -556,19 +473,21 @@ TEST_F(End2EndTest, LoopNoLossPcm16) {
     test_receiver_video_callback_->AddExpectedResult(video_start,
         video_sender_config_.width, video_sender_config_.height, send_time);
 
-    PcmAudioFrame* audio_frame = CreateAudioFrame(num_10ms_blocks,
-        kSoundFrequency, kAudioSamplingFrequency);
+    scoped_ptr<AudioBus> audio_bus(audio_bus_factory_->NextAudioBus(
+        base::TimeDelta::FromMilliseconds(10) * num_10ms_blocks));
 
     if (i != 0) {
       // Due to the re-sampler and NetEq in the webrtc AudioCodingModule the
       // first samples will be 0 and then slowly ramp up to its real amplitude;
       // ignore the first frame.
-      test_receiver_audio_callback_->AddExpectedResult(audio_frame,
+      test_receiver_audio_callback_->AddExpectedResult(
+          ToPcmAudioFrame(*audio_bus, audio_sender_config_.frequency),
           num_10ms_blocks, send_time);
     }
 
-    frame_input_->InsertRawAudioFrame(audio_frame, send_time,
-        base::Bind(FrameInput::DeleteAudioFrame, audio_frame));
+    AudioBus* const audio_bus_ptr = audio_bus.get();
+    frame_input_->InsertAudio(audio_bus_ptr, send_time,
+        base::Bind(&OwnThatAudioBus, base::Passed(&audio_bus)));
 
     SendVideoFrame(video_start, send_time);
 
@@ -577,12 +496,12 @@ TEST_F(End2EndTest, LoopNoLossPcm16) {
 
     if (i == 0) {
       frame_receiver_->GetRawAudioFrame(num_10ms_blocks,
-          kAudioSamplingFrequency,
+          audio_sender_config_.frequency,
           base::Bind(&TestReceiverAudioCallback::IgnoreAudioFrame,
               test_receiver_audio_callback_));
     } else {
       frame_receiver_->GetRawAudioFrame(num_10ms_blocks,
-          kAudioSamplingFrequency,
+          audio_sender_config_.frequency,
           base::Bind(&TestReceiverAudioCallback::CheckPcmAudioFrame,
               test_receiver_audio_callback_));
     }
@@ -604,24 +523,21 @@ TEST_F(End2EndTest, LoopNoLossPcm16) {
 // This tests our external decoder interface for Audio.
 // Audio test without packet loss using raw PCM 16 audio "codec";
 TEST_F(End2EndTest, LoopNoLossPcm16ExternalDecoder) {
-  // Note: Create an input in the same sampling frequency as the codec to avoid
-  // re-sampling.
-  const int audio_sampling_frequency = 32000;
-  SetupConfig(kPcm16, audio_sampling_frequency, true, 1);
+  SetupConfig(kPcm16, 32000, true, 1);
   Create();
-  test_receiver_audio_callback_->SetExpectedResult(audio_sampling_frequency, 96,
-      96);
 
   int i = 0;
   for (; i < 100; ++i) {
     base::TimeTicks send_time = testing_clock_.NowTicks();
-    PcmAudioFrame* audio_frame = CreateAudioFrame(1, kSoundFrequency,
-        audio_sampling_frequency);
-    test_receiver_audio_callback_->AddExpectedResult(audio_frame, 1,
-        send_time);
+    scoped_ptr<AudioBus> audio_bus(audio_bus_factory_->NextAudioBus(
+        base::TimeDelta::FromMilliseconds(10)));
+    test_receiver_audio_callback_->AddExpectedResult(
+        ToPcmAudioFrame(*audio_bus, audio_sender_config_.frequency),
+        1, send_time);
 
-    frame_input_->InsertRawAudioFrame(audio_frame, send_time,
-        base::Bind(FrameInput::DeleteAudioFrame, audio_frame));
+    AudioBus* const audio_bus_ptr = audio_bus.get();
+    frame_input_->InsertAudio(audio_bus_ptr, send_time,
+        base::Bind(&OwnThatAudioBus, base::Passed(&audio_bus)));
 
     RunTasks(10);
     frame_receiver_->GetCodedAudioFrame(
@@ -634,37 +550,37 @@ TEST_F(End2EndTest, LoopNoLossPcm16ExternalDecoder) {
 
 // This tests our Opus audio codec without video.
 TEST_F(End2EndTest, LoopNoLossOpus) {
-  SetupConfig(kOpus, kAudioSamplingFrequency, false, 1);
+  SetupConfig(kOpus, kDefaultAudioSamplingRate, false, 1);
   Create();
-  test_receiver_audio_callback_->SetExpectedResult(
-      kAudioSamplingFrequency, 18, 20);
 
   int i = 0;
   for (; i < 100; ++i) {
     int num_10ms_blocks = 3;
     base::TimeTicks send_time = testing_clock_.NowTicks();
 
-    PcmAudioFrame* audio_frame = CreateAudioFrame(num_10ms_blocks,
-        kSoundFrequency, kAudioSamplingFrequency);
+    scoped_ptr<AudioBus> audio_bus(audio_bus_factory_->NextAudioBus(
+        base::TimeDelta::FromMilliseconds(10) * num_10ms_blocks));
 
     if (i != 0) {
-      test_receiver_audio_callback_->AddExpectedResult(audio_frame,
+      test_receiver_audio_callback_->AddExpectedResult(
+          ToPcmAudioFrame(*audio_bus, audio_sender_config_.frequency),
           num_10ms_blocks, send_time);
     }
 
-    frame_input_->InsertRawAudioFrame(audio_frame, send_time,
-        base::Bind(FrameInput::DeleteAudioFrame, audio_frame));
+    AudioBus* const audio_bus_ptr = audio_bus.get();
+    frame_input_->InsertAudio(audio_bus_ptr, send_time,
+        base::Bind(&OwnThatAudioBus, base::Passed(&audio_bus)));
 
     RunTasks(30);
 
     if (i == 0) {
       frame_receiver_->GetRawAudioFrame(num_10ms_blocks,
-          kAudioSamplingFrequency,
+          audio_sender_config_.frequency,
           base::Bind(&TestReceiverAudioCallback::IgnoreAudioFrame,
               test_receiver_audio_callback_));
     } else {
       frame_receiver_->GetRawAudioFrame(num_10ms_blocks,
-          kAudioSamplingFrequency,
+          audio_sender_config_.frequency,
           base::Bind(&TestReceiverAudioCallback::CheckPcmAudioFrame,
               test_receiver_audio_callback_));
     }
@@ -678,10 +594,8 @@ TEST_F(End2EndTest, LoopNoLossOpus) {
 // TODO(miu): Test disabled because of non-determinism.
 // http://crbug.com/314233
 TEST_F(End2EndTest, DISABLED_StartSenderBeforeReceiver) {
-  SetupConfig(kOpus, kAudioSamplingFrequency, false, 1);
+  SetupConfig(kOpus, kDefaultAudioSamplingRate, false, 1);
   Create();
-  test_receiver_audio_callback_->SetExpectedResult(
-      kAudioSamplingFrequency, 18, 20);
 
   int video_start = 1;
   int audio_diff = kFrameTimerMs;
@@ -693,11 +607,12 @@ TEST_F(End2EndTest, DISABLED_StartSenderBeforeReceiver) {
     audio_diff -= num_10ms_blocks * 10;
 
     base::TimeTicks send_time = testing_clock_.NowTicks();
-    PcmAudioFrame* audio_frame = CreateAudioFrame(num_10ms_blocks,
-        kSoundFrequency, kAudioSamplingFrequency);
+    scoped_ptr<AudioBus> audio_bus(audio_bus_factory_->NextAudioBus(
+        base::TimeDelta::FromMilliseconds(10) * num_10ms_blocks));
 
-    frame_input_->InsertRawAudioFrame(audio_frame, send_time,
-       base::Bind(FrameInput::DeleteAudioFrame, audio_frame));
+    AudioBus* const audio_bus_ptr = audio_bus.get();
+    frame_input_->InsertAudio(audio_bus_ptr, send_time,
+        base::Bind(&OwnThatAudioBus, base::Passed(&audio_bus)));
 
     SendVideoFrame(video_start, send_time);
     RunTasks(kFrameTimerMs);
@@ -714,16 +629,19 @@ TEST_F(End2EndTest, DISABLED_StartSenderBeforeReceiver) {
     audio_diff -= num_10ms_blocks * 10;
     base::TimeTicks send_time = testing_clock_.NowTicks();
 
-    PcmAudioFrame* audio_frame = CreateAudioFrame(num_10ms_blocks,
-        kSoundFrequency, kAudioSamplingFrequency);
-
-    frame_input_->InsertRawAudioFrame(audio_frame, send_time,
-       base::Bind(FrameInput::DeleteAudioFrame, audio_frame));
+    scoped_ptr<AudioBus> audio_bus(audio_bus_factory_->NextAudioBus(
+        base::TimeDelta::FromMilliseconds(10) * num_10ms_blocks));
 
     if (j >= number_of_audio_frames_to_ignore) {
-      test_receiver_audio_callback_->AddExpectedResult(audio_frame,
+      test_receiver_audio_callback_->AddExpectedResult(
+          ToPcmAudioFrame(*audio_bus, audio_sender_config_.frequency),
           num_10ms_blocks, send_time);
     }
+
+    AudioBus* const audio_bus_ptr = audio_bus.get();
+    frame_input_->InsertAudio(audio_bus_ptr, send_time,
+        base::Bind(&OwnThatAudioBus, base::Passed(&audio_bus)));
+
     test_receiver_video_callback_->AddExpectedResult(video_start,
         video_sender_config_.width, video_sender_config_.height, send_time);
 
@@ -733,12 +651,12 @@ TEST_F(End2EndTest, DISABLED_StartSenderBeforeReceiver) {
 
     if (j < number_of_audio_frames_to_ignore) {
       frame_receiver_->GetRawAudioFrame(num_10ms_blocks,
-         kAudioSamplingFrequency,
+         audio_sender_config_.frequency,
          base::Bind(&TestReceiverAudioCallback::IgnoreAudioFrame,
               test_receiver_audio_callback_));
      } else {
       frame_receiver_->GetRawAudioFrame(num_10ms_blocks,
-          kAudioSamplingFrequency,
+          audio_sender_config_.frequency,
           base::Bind(&TestReceiverAudioCallback::CheckPcmAudioFrame,
               test_receiver_audio_callback_));
     }
@@ -755,7 +673,7 @@ TEST_F(End2EndTest, DISABLED_StartSenderBeforeReceiver) {
 
 // This tests a network glitch lasting for 10 video frames.
 TEST_F(End2EndTest, GlitchWith3Buffers) {
-  SetupConfig(kOpus, kAudioSamplingFrequency, false, 3);
+  SetupConfig(kOpus, kDefaultAudioSamplingRate, false, 3);
   video_sender_config_.rtp_max_delay_ms = 67;
   video_receiver_config_.rtp_max_delay_ms = 67;
   Create();
@@ -804,7 +722,7 @@ TEST_F(End2EndTest, GlitchWith3Buffers) {
 }
 
 TEST_F(End2EndTest, DropEveryOtherFrame3Buffers) {
-  SetupConfig(kOpus, kAudioSamplingFrequency, false, 3);
+  SetupConfig(kOpus, kDefaultAudioSamplingRate, false, 3);
   video_sender_config_.rtp_max_delay_ms = 67;
   video_receiver_config_.rtp_max_delay_ms = 67;
   Create();
@@ -839,7 +757,7 @@ TEST_F(End2EndTest, DropEveryOtherFrame3Buffers) {
 }
 
 TEST_F(End2EndTest, ResetReferenceFrameId) {
-  SetupConfig(kOpus, kAudioSamplingFrequency, false, 3);
+  SetupConfig(kOpus, kDefaultAudioSamplingRate, false, 3);
   video_sender_config_.rtp_max_delay_ms = 67;
   video_receiver_config_.rtp_max_delay_ms = 67;
   Create();

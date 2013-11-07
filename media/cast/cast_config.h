@@ -51,7 +51,7 @@ struct AudioSenderConfig {
   bool use_external_encoder;
   int frequency;
   int channels;
-  int bitrate;
+  int bitrate;  // Set to <= 0 for "auto variable bitrate" (libopus knows best).
   AudioCodec codec;
 };
 
@@ -128,12 +128,16 @@ struct VideoReceiverConfig {
   VideoCodec codec;
 };
 
+// DEPRECATED: Do not use in new code.  Please migrate existing code to use
+// media::VideoFrame.
 struct I420VideoPlane {
   int stride;
   int length;
   uint8* data;
 };
 
+// DEPRECATED: Do not use in new code.  Please migrate existing code to use
+// media::VideoFrame.
 struct I420VideoFrame {
   int width;
   int height;
@@ -153,6 +157,8 @@ struct EncodedVideoFrame {
   std::vector<uint8> data;
 };
 
+// DEPRECATED: Do not use in new code.  Please migrate existing code to use
+// media::AudioBus.
 struct PcmAudioFrame {
   PcmAudioFrame();
   ~PcmAudioFrame();
@@ -171,6 +177,9 @@ struct EncodedAudioFrame {
   int samples;  // Needed send side to advance the RTP timestamp.
                 // Not used receive side.
   std::vector<uint8> data;
+
+  // Support for max sampling rate of 48KHz, 2 channels, 100 ms duration.
+  static const int kMaxNumberOfSamples = 48 * 2 * 100;
 };
 
 typedef std::vector<uint8> Packet;

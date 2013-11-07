@@ -96,23 +96,21 @@ AudioSender::AudioSender(scoped_refptr<CastEnvironment> cast_environment,
   rtcp_.SetRemoteSSRC(audio_config.incoming_feedback_ssrc);
 
   if (!audio_config.use_external_encoder) {
-    audio_encoder_ = new AudioEncoder(cast_environment, audio_config);
+    audio_encoder_ = new AudioEncoder(
+        cast_environment, audio_config,
+        base::Bind(&AudioSender::SendEncodedAudioFrame,
+                   weak_factory_.GetWeakPtr()));
   }
   ScheduleNextRtcpReport();
 }
 
 AudioSender::~AudioSender() {}
 
-void AudioSender::InsertRawAudioFrame(
-    const PcmAudioFrame* audio_frame,
-    const base::TimeTicks& recorded_time,
-    const base::Closure callback) {
+void AudioSender::InsertAudio(const AudioBus* audio_bus,
+                              const base::TimeTicks& recorded_time,
+                              const base::Closure& done_callback) {
   DCHECK(audio_encoder_.get()) << "Invalid internal state";
-
-  audio_encoder_->InsertRawAudioFrame(audio_frame, recorded_time,
-      base::Bind(&AudioSender::SendEncodedAudioFrame,
-                 weak_factory_.GetWeakPtr()),
-      callback);
+  audio_encoder_->InsertAudio(audio_bus, recorded_time, done_callback);
 }
 
 void AudioSender::InsertCodedAudioFrame(const EncodedAudioFrame* audio_frame,

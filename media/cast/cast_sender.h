@@ -20,6 +20,10 @@
 #include "media/cast/cast_environment.h"
 
 namespace media {
+class AudioBus;
+}
+
+namespace media {
 namespace cast {
 
 // This Class is thread safe.
@@ -41,13 +45,13 @@ class FrameInput : public base::RefCountedThreadSafe<FrameInput> {
                                      const base::TimeTicks& capture_time,
                                      const base::Closure callback) = 0;
 
-  // The audio_frame must be valid until the  callback is called.
-  // The callback is called from the main cast thread as soon as
-  // the encoder is done with the frame; it does not mean that the encoded frame
-  // has been sent out.
-  virtual void InsertRawAudioFrame(const PcmAudioFrame* audio_frame,
-                                   const base::TimeTicks& recorded_time,
-                                   const base::Closure callback) = 0;
+  // The |audio_bus| must be valid until the |done_callback| is called.
+  // The callback is called from the main cast thread as soon as the encoder is
+  // done with |audio_bus|; it does not mean that the encoded data has been
+  // sent out.
+  virtual void InsertAudio(const AudioBus* audio_bus,
+                           const base::TimeTicks& recorded_time,
+                           const base::Closure& done_callback) = 0;
 
   // The audio_frame must be valid until the callback is called.
   // The callback is called from the main cast thread as soon as
@@ -56,8 +60,6 @@ class FrameInput : public base::RefCountedThreadSafe<FrameInput> {
   virtual void InsertCodedAudioFrame(const EncodedAudioFrame* audio_frame,
                                      const base::TimeTicks& recorded_time,
                                      const base::Closure callback) = 0;
-
-  static void DeleteAudioFrame(const PcmAudioFrame* frame);
 
   static void DeleteVideoFrame(const I420VideoFrame* video_frame);
 

@@ -4,171 +4,279 @@
 
 #include "media/cast/audio_sender/audio_encoder.h"
 
+#include <algorithm>
+
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
+#include "base/sys_byteorder.h"
+#include "base/time/time.h"
+#include "media/base/audio_bus.h"
 #include "media/cast/cast_defines.h"
 #include "media/cast/cast_environment.h"
-#include "third_party/webrtc/modules/audio_coding/main/interface/audio_coding_module.h"
-#include "third_party/webrtc/modules/interface/module_common_types.h"
+#include "third_party/opus/src/include/opus.h"
 
 namespace media {
 namespace cast {
 
-// 48KHz, 2 channels and 100 ms.
-static const int kMaxNumberOfSamples = 48 * 2 * 100;
-
-// This class is only called from the cast audio encoder thread.
-class WebrtEncodedDataCallback : public webrtc::AudioPacketizationCallback {
+// Base class that handles the common problem of feeding one or more AudioBus'
+// data into a 10 ms buffer and then, once the buffer is full, encoding the
+// signal and emitting an EncodedAudioFrame via the FrameEncodedCallback.
+//
+// Subclasses complete the implementation by handling the actual encoding
+// details.
+class AudioEncoder::ImplBase {
  public:
-  WebrtEncodedDataCallback(scoped_refptr<CastEnvironment> cast_environment,
-                           AudioCodec codec,
-                           int frequency)
-      : codec_(codec),
-        frequency_(frequency),
-        cast_environment_(cast_environment),
-        last_timestamp_(0) {}
-
-  virtual int32 SendData(
-      webrtc::FrameType /*frame_type*/,
-      uint8 /*payload_type*/,
-      uint32 timestamp,
-      const uint8* payload_data,
-      uint16 payload_size,
-      const webrtc::RTPFragmentationHeader* /*fragmentation*/) OVERRIDE {
-    scoped_ptr<EncodedAudioFrame> audio_frame(new EncodedAudioFrame());
-    audio_frame->codec = codec_;
-    audio_frame->samples = timestamp - last_timestamp_;
-    DCHECK(audio_frame->samples <= kMaxNumberOfSamples);
-    last_timestamp_ = timestamp;
-    audio_frame->data.insert(audio_frame->data.begin(),
-                             payload_data,
-                             payload_data + payload_size);
-
-    cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
-        base::Bind(*frame_encoded_callback_, base::Passed(&audio_frame),
-                   recorded_time_));
-    return 0;
+  ImplBase(CastEnvironment* cast_environment,
+           AudioCodec codec, int num_channels, int sampling_rate,
+           const FrameEncodedCallback& callback)
+      : cast_environment_(cast_environment),
+        codec_(codec), num_channels_(num_channels),
+        samples_per_10ms_(sampling_rate / 100),
+        callback_(callback),
+        buffer_fill_end_(0),
+        frame_id_(0) {
+    CHECK_GT(num_channels_, 0);
+    CHECK_GT(samples_per_10ms_, 0);
+    CHECK_EQ(sampling_rate % 100, 0);
+    CHECK_LE(samples_per_10ms_ * num_channels_,
+             EncodedAudioFrame::kMaxNumberOfSamples);
   }
 
-  void SetEncodedCallbackInfo(
-      const base::TimeTicks& recorded_time,
-      const AudioEncoder::FrameEncodedCallback* frame_encoded_callback) {
-    recorded_time_ = recorded_time;
-    frame_encoded_callback_ = frame_encoded_callback;
+  virtual ~ImplBase() {}
+
+  void EncodeAudio(const AudioBus* audio_bus,
+                   const base::TimeTicks& recorded_time,
+                   const base::Closure& done_callback) {
+    int src_pos = 0;
+    while (src_pos < audio_bus->frames()) {
+      const int num_samples_to_xfer =
+          std::min(samples_per_10ms_ - buffer_fill_end_,
+                   audio_bus->frames() - src_pos);
+      DCHECK_EQ(audio_bus->channels(), num_channels_);
+      TransferSamplesIntoBuffer(
+          audio_bus, src_pos, buffer_fill_end_, num_samples_to_xfer);
+      src_pos += num_samples_to_xfer;
+      buffer_fill_end_ += num_samples_to_xfer;
+
+      if (src_pos == audio_bus->frames()) {
+        cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
+                                    done_callback);
+        // Note: |audio_bus| is now invalid..
+      }
+
+      if (buffer_fill_end_ == samples_per_10ms_) {
+        scoped_ptr<EncodedAudioFrame> audio_frame(new EncodedAudioFrame());
+        audio_frame->codec = codec_;
+        audio_frame->frame_id = frame_id_++;
+        audio_frame->samples = samples_per_10ms_;
+        if (EncodeFromFilledBuffer(&audio_frame->data)) {
+          // Compute an offset to determine the recorded time for the first
+          // audio sample in the buffer.
+          const base::TimeDelta buffer_time_offset =
+              (buffer_fill_end_ - src_pos) *
+              base::TimeDelta::FromMilliseconds(10) / samples_per_10ms_;
+          // TODO(miu): Consider batching EncodedAudioFrames so we only post a
+          // at most one task for each call to this method.
+          cast_environment_->PostTask(
+              CastEnvironment::MAIN, FROM_HERE,
+              base::Bind(callback_, base::Passed(&audio_frame),
+                         recorded_time - buffer_time_offset));
+        }
+        buffer_fill_end_ = 0;
+      }
+    }
+  }
+
+ protected:
+  virtual void TransferSamplesIntoBuffer(const AudioBus* audio_bus,
+                                         int source_offset,
+                                         int buffer_fill_offset,
+                                         int num_samples) = 0;
+  virtual bool EncodeFromFilledBuffer(std::vector<uint8>* out) = 0;
+
+  CastEnvironment* const cast_environment_;
+  const AudioCodec codec_;
+  const int num_channels_;
+  const int samples_per_10ms_;
+  const FrameEncodedCallback callback_;
+
+ private:
+  // In the case where a call to EncodeAudio() cannot completely fill the
+  // buffer, this points to the position at which to populate data in a later
+  // call.
+  int buffer_fill_end_;
+
+  // A rotating counter used to label EncodedAudioFrames.
+  uint8 frame_id_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ImplBase);
+};
+
+class AudioEncoder::OpusImpl : public AudioEncoder::ImplBase {
+ public:
+  OpusImpl(CastEnvironment* cast_environment,
+           int num_channels, int sampling_rate, int bitrate,
+           const FrameEncodedCallback& callback)
+      : ImplBase(cast_environment, kOpus, num_channels, sampling_rate,
+                 callback),
+        encoder_memory_(new uint8[opus_encoder_get_size(num_channels)]),
+        opus_encoder_(reinterpret_cast<OpusEncoder*>(encoder_memory_.get())),
+        buffer_(new float[num_channels * samples_per_10ms_]) {
+    CHECK_EQ(opus_encoder_init(opus_encoder_, sampling_rate, num_channels,
+                               OPUS_APPLICATION_AUDIO),
+             OPUS_OK);
+    if (bitrate <= 0) {
+      // Note: As of 2013-10-31, the encoder in "auto bitrate" mode would use a
+      // variable bitrate up to 102kbps for 2-channel, 48 kHz audio and a 10 ms
+      // frame size.  The opus library authors may, of course, adjust this in
+      // later versions.
+      bitrate = OPUS_AUTO;
+    }
+    CHECK_EQ(opus_encoder_ctl(opus_encoder_, OPUS_SET_BITRATE(bitrate)),
+             OPUS_OK);
+  }
+
+  virtual ~OpusImpl() {}
+
+ private:
+  virtual void TransferSamplesIntoBuffer(const AudioBus* audio_bus,
+                                         int source_offset,
+                                         int buffer_fill_offset,
+                                         int num_samples) OVERRIDE {
+    // Opus requires channel-interleaved samples in a single array.
+    for (int ch = 0; ch < audio_bus->channels(); ++ch) {
+      const float* src = audio_bus->channel(ch) + source_offset;
+      const float* const src_end = src + num_samples;
+      float* dest = buffer_.get() + buffer_fill_offset * num_channels_ + ch;
+      for (; src < src_end; ++src, dest += num_channels_)
+        *dest = *src;
+    }
+  }
+
+  virtual bool EncodeFromFilledBuffer(std::vector<uint8>* out) OVERRIDE {
+    out->resize(kOpusMaxPayloadSize);
+    const opus_int32 result = opus_encode_float(
+        opus_encoder_, buffer_.get(), samples_per_10ms_, &out->front(),
+        kOpusMaxPayloadSize);
+    if (result > 1) {
+      out->resize(result);
+      return true;
+    } else if (result < 0) {
+      LOG(ERROR) << "Error code from opus_encode_float(): " << result;
+      return false;
+    } else {
+      // Do nothing: The documentation says that a return value of zero or
+      // one byte means the packet does not need to be transmitted.
+      return false;
+    }
+  }
+
+  const scoped_ptr<uint8[]> encoder_memory_;
+  OpusEncoder* const opus_encoder_;
+  const scoped_ptr<float[]> buffer_;
+
+  // This is the recommended value, according to documentation in
+  // third_party/opus/src/include/opus.h, so that the Opus encoder does not
+  // degrade the audio due to memory constraints.
+  //
+  // Note: Whereas other RTP implementations do not, the cast library is
+  // perfectly capable of transporting larger than MTU-sized audio frames.
+  static const int kOpusMaxPayloadSize = 4000;
+
+  DISALLOW_COPY_AND_ASSIGN(OpusImpl);
+};
+
+class AudioEncoder::Pcm16Impl : public AudioEncoder::ImplBase {
+ public:
+  Pcm16Impl(CastEnvironment* cast_environment,
+            int num_channels, int sampling_rate,
+            const FrameEncodedCallback& callback)
+      : ImplBase(cast_environment, kPcm16, num_channels, sampling_rate,
+                 callback),
+        buffer_(new int16[num_channels * samples_per_10ms_]) {}
+
+  virtual ~Pcm16Impl() {}
+
+ private:
+  virtual void TransferSamplesIntoBuffer(const AudioBus* audio_bus,
+                                         int source_offset,
+                                         int buffer_fill_offset,
+                                         int num_samples) OVERRIDE {
+    audio_bus->ToInterleavedPartial(
+        source_offset, num_samples, sizeof(int16),
+        buffer_.get() + buffer_fill_offset * num_channels_);
+  }
+
+  virtual bool EncodeFromFilledBuffer(std::vector<uint8>* out) OVERRIDE {
+    // Output 16-bit PCM integers in big-endian byte order.
+    out->resize(num_channels_ * samples_per_10ms_ * sizeof(int16));
+    const int16* src = buffer_.get();
+    const int16* const src_end = src + num_channels_ * samples_per_10ms_;
+    uint16* dest = reinterpret_cast<uint16*>(&out->front());
+    for (; src < src_end; ++src, ++dest)
+      *dest = base::HostToNet16(*src);
+    return true;
   }
 
  private:
-  const AudioCodec codec_;
-  const int frequency_;
-  scoped_refptr<CastEnvironment> cast_environment_;
-  uint32 last_timestamp_;
-  base::TimeTicks recorded_time_;
-  const AudioEncoder::FrameEncodedCallback* frame_encoded_callback_;
+  const scoped_ptr<int16[]> buffer_;
+
+  DISALLOW_COPY_AND_ASSIGN(Pcm16Impl);
 };
 
-AudioEncoder::AudioEncoder(scoped_refptr<CastEnvironment> cast_environment,
-                           const AudioSenderConfig& audio_config)
-    : cast_environment_(cast_environment),
-      audio_encoder_(webrtc::AudioCodingModule::Create(0)),
-      webrtc_encoder_callback_(
-          new WebrtEncodedDataCallback(cast_environment, audio_config.codec,
-                                       audio_config.frequency)),
-      timestamp_(0) {  // Must start at 0; used above.
-  if (audio_encoder_->InitializeSender() != 0) {
-    DCHECK(false) << "Invalid webrtc return value";
-  }
-  if (audio_encoder_->RegisterTransportCallback(
-      webrtc_encoder_callback_.get()) != 0) {
-    DCHECK(false) << "Invalid webrtc return value";
-  }
-  webrtc::CodecInst send_codec;
-  send_codec.pltype = audio_config.rtp_payload_type;
-  send_codec.plfreq = audio_config.frequency;
-  send_codec.channels = audio_config.channels;
+AudioEncoder::AudioEncoder(
+    const scoped_refptr<CastEnvironment>& cast_environment,
+    const AudioSenderConfig& audio_config,
+    const FrameEncodedCallback& frame_encoded_callback)
+    : cast_environment_(cast_environment) {
+  // Note: It doesn't matter which thread constructs AudioEncoder, just so long
+  // as all calls to InsertAudio() are by the same thread.
+  insert_thread_checker_.DetachFromThread();
 
   switch (audio_config.codec) {
     case kOpus:
-      strncpy(send_codec.plname, "opus", sizeof(send_codec.plname));
-      send_codec.pacsize = audio_config.frequency / 50;  // 20 ms
-      send_codec.rate = audio_config.bitrate;  // 64000
+      impl_.reset(new OpusImpl(
+          cast_environment, audio_config.channels, audio_config.frequency,
+          audio_config.bitrate, frame_encoded_callback));
       break;
     case kPcm16:
-      strncpy(send_codec.plname, "L16", sizeof(send_codec.plname));
-      send_codec.pacsize = audio_config.frequency / 100;  // 10 ms
-      // TODO(pwestin) bug in webrtc; it should take audio_config.channels into
-      // account.
-      send_codec.rate = 8 * 2 * audio_config.frequency;
+      impl_.reset(new Pcm16Impl(
+          cast_environment, audio_config.channels, audio_config.frequency,
+          frame_encoded_callback));
       break;
     default:
-      DCHECK(false) << "Codec must be specified for audio encoder";
-      return;
-  }
-  if (audio_encoder_->RegisterSendCodec(send_codec) != 0) {
-    DCHECK(false) << "Invalid webrtc return value; failed to register codec";
+      NOTREACHED() << "Unsupported or unspecified codec for audio encoder";
+      break;
   }
 }
 
 AudioEncoder::~AudioEncoder() {}
 
-// Called from main cast thread.
-void AudioEncoder::InsertRawAudioFrame(
-    const PcmAudioFrame* audio_frame,
+void AudioEncoder::InsertAudio(
+    const AudioBus* audio_bus,
     const base::TimeTicks& recorded_time,
-    const FrameEncodedCallback& frame_encoded_callback,
-    const base::Closure release_callback) {
+    const base::Closure& done_callback) {
+  DCHECK(insert_thread_checker_.CalledOnValidThread());
+  if (!impl_) {
+    NOTREACHED();
+    cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
+                                done_callback);
+    return;
+  }
   cast_environment_->PostTask(CastEnvironment::AUDIO_ENCODER, FROM_HERE,
-      base::Bind(&AudioEncoder::EncodeAudioFrameThread, this, audio_frame,
-          recorded_time, frame_encoded_callback, release_callback));
+      base::Bind(&AudioEncoder::EncodeAudio, this, audio_bus, recorded_time,
+                 done_callback));
 }
 
-// Called from cast audio encoder thread.
-void AudioEncoder::EncodeAudioFrameThread(
-    const PcmAudioFrame* audio_frame,
+void AudioEncoder::EncodeAudio(
+    const AudioBus* audio_bus,
     const base::TimeTicks& recorded_time,
-    const FrameEncodedCallback& frame_encoded_callback,
-    const base::Closure release_callback) {
+    const base::Closure& done_callback) {
   DCHECK(cast_environment_->CurrentlyOn(CastEnvironment::AUDIO_ENCODER));
-  size_t samples_per_10ms = audio_frame->frequency / 100;
-  size_t number_of_10ms_blocks = audio_frame->samples.size() /
-      (samples_per_10ms * audio_frame->channels);
-  DCHECK(webrtc::AudioFrame::kMaxDataSizeSamples > samples_per_10ms)
-      << "webrtc sanity check failed";
-
-  for (size_t i = 0; i < number_of_10ms_blocks; ++i) {
-    webrtc::AudioFrame webrtc_audio_frame;
-    webrtc_audio_frame.timestamp_ = timestamp_;
-
-    // Due to the webrtc::AudioFrame declaration we need to copy our data into
-    // the webrtc structure.
-    memcpy(&webrtc_audio_frame.data_[0],
-           &audio_frame->samples[i * samples_per_10ms * audio_frame->channels],
-           samples_per_10ms * audio_frame->channels * sizeof(int16));
-
-    // The webrtc API is int and we have a size_t; the cast should never be an
-    // issue since the normal values are in the 480 range.
-    DCHECK_GE(1000u, samples_per_10ms);
-    webrtc_audio_frame.samples_per_channel_ =
-        static_cast<int>(samples_per_10ms);
-    webrtc_audio_frame.sample_rate_hz_ = audio_frame->frequency;
-    webrtc_audio_frame.num_channels_ = audio_frame->channels;
-
-    // webrtc::AudioCodingModule is thread safe.
-    if (audio_encoder_->Add10MsData(webrtc_audio_frame) != 0) {
-      DCHECK(false) << "Invalid webrtc return value";
-    }
-    timestamp_ += static_cast<uint32>(samples_per_10ms);
-  }
-  // We are done with the audio frame release it.
-  cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE,
-                              release_callback);
-
-  // Note: Not all insert of 10 ms will generate a callback with encoded data.
-  webrtc_encoder_callback_->SetEncodedCallbackInfo(recorded_time,
-                                                   &frame_encoded_callback);
-  for (size_t i = 0; i < number_of_10ms_blocks; ++i) {
-    audio_encoder_->Process();
-  }
+  impl_->EncodeAudio(audio_bus, recorded_time, done_callback);
 }
 
 }  // namespace cast

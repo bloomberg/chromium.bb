@@ -30,6 +30,8 @@ const int64 kCastMessageUpdateIntervalMs = 33;
 const int64 kNackRepeatIntervalMs = 30;
 
 enum DefaultSettings {
+  kDefaultAudioEncoderBitrate = 0,  // This means "auto," and may mean VBR.
+  kDefaultAudioSamplingRate = 48000,
   kDefaultMaxQp = 56,
   kDefaultMinQp = 4,
   kDefaultMaxFrameRate = 30,
