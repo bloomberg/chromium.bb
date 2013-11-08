@@ -378,6 +378,14 @@
    fun:_ZN4base*StatisticsRecorderTest_*_Test8TestBodyEv
 }
 {
+   # According to dglazkov, UA style sheets are intentionally leaked.
+   # As such, treat any leaks originating from parseUASheet as intentional.
+   bug_121729 (Intentional)
+   Memcheck:Leak
+   ...
+   fun:_ZN7WebCoreL12parseUASheetEPKcj
+}
+{
    intentional_see_bug_156466
    Memcheck:Leak
    fun:_Znw*
@@ -3516,24 +3524,6 @@
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN13sync_notifier12_GLOBAL__N_124InvalidationNotifierTest5SetUpEv
-}
-{
-   bug_121729
-   Memcheck:Leak
-   ...
-   fun:_ZN7WebCoreL12parseUASheetERKN3WTF6StringE
-   fun:_ZN7WebCoreL12parseUASheetEPKcj
-   ...
-   fun:_ZN7WebCore7Element16styleForRendererE*
-}
-{
-   bug_121729b
-   Memcheck:Leak
-   ...
-   fun:_ZN7WebCoreL12parseUASheetERKN3WTF6StringE
-   fun:_ZN7WebCoreL12parseUASheetEPKcj
-   ...
-   fun:_ZN7WebCore8Document13styleResolverEv
 }
 {
    bug_122177
