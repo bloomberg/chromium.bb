@@ -131,8 +131,8 @@ class RenderWidgetCompositor : public blink::WebLayerTreeView,
 
   // cc::LayerTreeHostSingleThreadClient implementation.
   virtual void ScheduleComposite() OVERRIDE;
-  virtual void DidPostSwapBuffers() OVERRIDE {}
-  virtual void DidAbortSwapBuffers() OVERRIDE {}
+  virtual void DidPostSwapBuffers() OVERRIDE;
+  virtual void DidAbortSwapBuffers() OVERRIDE;
 
  private:
   RenderWidgetCompositor(RenderWidget* widget, bool threaded);

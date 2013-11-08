@@ -65,7 +65,6 @@ CmdBufferImageTransportFactory::CmdBufferImageTransportFactory() {
   blink::WebGraphicsContext3D::Attributes attrs;
   attrs.shareResources = true;
   GURL url("chrome://gpu/ImageTransportFactoryAndroid");
-  base::WeakPtr<WebGraphicsContext3DSwapBuffersClient> swap_client;
   static const size_t kBytesPerPixel = 4;
   gfx::DeviceDisplayInfo display_info;
   size_t full_screen_texture_size_in_bytes = display_info.GetDisplayHeight() *
@@ -84,7 +83,6 @@ CmdBufferImageTransportFactory::CmdBufferImageTransportFactory() {
       new WebGraphicsContext3DCommandBufferImpl(0,  // offscreen
                                                 url,
                                                 gpu_channel_host.get(),
-                                                swap_client,
                                                 use_echo_for_swap_ack,
                                                 attrs,
                                                 false,

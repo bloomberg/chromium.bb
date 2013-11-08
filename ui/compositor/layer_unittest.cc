@@ -902,7 +902,7 @@ TEST_F(LayerWithRealCompositorTest, CompositorObservers) {
   // and also signal an abort.
   observer.Reset();
   l2->SetOpacity(0.1f);
-  GetCompositor()->OnSwapBuffersAborted();
+  GetCompositor()->DidAbortSwapBuffers();
   WaitForDraw();
   EXPECT_TRUE(observer.notified());
   EXPECT_TRUE(observer.aborted());

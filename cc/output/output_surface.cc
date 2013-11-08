@@ -212,6 +212,7 @@ void OutputSurface::DidSwapBuffers() {
   pending_swap_buffers_++;
   TRACE_EVENT1("cc", "OutputSurface::DidSwapBuffers",
                "pending_swap_buffers_", pending_swap_buffers_);
+  client_->DidSwapBuffers();
   if (frame_rate_controller_)
     frame_rate_controller_->DidSwapBuffers();
   PostCheckForRetroactiveBeginImplFrame();

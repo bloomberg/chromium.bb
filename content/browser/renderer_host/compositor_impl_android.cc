@@ -134,8 +134,7 @@ CompositorImpl::CompositorImpl(CompositorClient* client)
       has_transparent_background_(false),
       window_(NULL),
       surface_id_(0),
-      client_(client),
-      weak_factory_(this) {
+      client_(client) {
   DCHECK(client);
   ImageTransportFactoryAndroid::AddObserver(this);
 }
@@ -347,12 +346,13 @@ bool CompositorImpl::CopyTextureToBitmap(blink::WebGLId texture_id,
 static scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
 CreateGpuProcessViewContext(
     const blink::WebGraphicsContext3D::Attributes attributes,
-    int surface_id,
-    base::WeakPtr<CompositorImpl> compositor_impl) {
+    int surface_id) {
   BrowserGpuChannelHostFactory* factory =
       BrowserGpuChannelHostFactory::instance();
-  scoped_refptr<GpuChannelHost> gpu_channel_host(factory->EstablishGpuChannelSync(
-      CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE));
+  CauseForGpuLaunch cause =
+      CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
+  scoped_refptr<GpuChannelHost> gpu_channel_host(
+      factory->EstablishGpuChannelSync(cause));
   if (!gpu_channel_host)
     return scoped_ptr<WebGraphicsContext3DCommandBufferImpl>();
 
@@ -375,7 +375,6 @@ CreateGpuProcessViewContext(
       new WebGraphicsContext3DCommandBufferImpl(surface_id,
                                                 url,
                                                 gpu_channel_host.get(),
-                                                compositor_impl,
                                                 use_echo_for_swap_ack,
                                                 attributes,
                                                 false,
@@ -392,8 +391,8 @@ scoped_ptr<cc::OutputSurface> CompositorImpl::CreateOutputSurface(
   DCHECK(surface_id_);
 
   scoped_refptr<ContextProviderCommandBuffer> context_provider =
-      ContextProviderCommandBuffer::Create(CreateGpuProcessViewContext(
-          attrs, surface_id_, weak_factory_.GetWeakPtr()), "BrowserCompositor");
+      ContextProviderCommandBuffer::Create(
+          CreateGpuProcessViewContext(attrs, surface_id_), "BrowserCompositor");
   if (!context_provider.get()) {
     LOG(ERROR) << "Failed to create 3D context for compositor.";
     return scoped_ptr<cc::OutputSurface>();
@@ -407,14 +406,6 @@ void CompositorImpl::OnLostResources() {
   client_->DidLoseResources();
 }
 
-void CompositorImpl::DidCompleteSwapBuffers() {
-  client_->OnSwapBuffersCompleted();
-}
-
-void CompositorImpl::ScheduleComposite() {
-  client_->ScheduleComposite();
-}
-
 scoped_refptr<cc::ContextProvider> CompositorImpl::OffscreenContextProvider() {
   // There is no support for offscreen contexts, or compositor filters that
   // would require them in this compositor instance. If they are needed,
@@ -423,19 +414,21 @@ scoped_refptr<cc::ContextProvider> CompositorImpl::OffscreenContextProvider() {
   return NULL;
 }
 
-void CompositorImpl::OnViewContextSwapBuffersPosted() {
-  TRACE_EVENT0("compositor", "CompositorImpl::OnViewContextSwapBuffersPosted");
-  client_->OnSwapBuffersPosted();
-}
-
-void CompositorImpl::OnViewContextSwapBuffersComplete() {
-  TRACE_EVENT0("compositor",
-               "CompositorImpl::OnViewContextSwapBuffersComplete");
+void CompositorImpl::DidCompleteSwapBuffers() {
   client_->OnSwapBuffersCompleted();
 }
 
-void CompositorImpl::OnViewContextSwapBuffersAborted() {
-  TRACE_EVENT0("compositor", "CompositorImpl::OnViewContextSwapBuffersAborted");
+void CompositorImpl::ScheduleComposite() {
+  client_->ScheduleComposite();
+}
+
+void CompositorImpl::DidPostSwapBuffers() {
+  TRACE_EVENT0("compositor", "CompositorImpl::DidPostSwapBuffers");
+  client_->OnSwapBuffersPosted();
+}
+
+void CompositorImpl::DidAbortSwapBuffers() {
+  TRACE_EVENT0("compositor", "CompositorImpl::DidAbortSwapBuffers");
   client_->OnSwapBuffersCompleted();
 }
 

@@ -1220,6 +1220,10 @@ void LayerTreeHostImpl::BeginImplFrame(const BeginFrameArgs& args) {
   client_->BeginImplFrame(args);
 }
 
+void LayerTreeHostImpl::DidSwapBuffers() {
+  client_->DidSwapBuffersOnImplThread();
+}
+
 void LayerTreeHostImpl::OnSwapBuffersComplete() {
   client_->OnSwapBuffersCompleteOnImplThread();
 }

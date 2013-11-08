@@ -14,10 +14,11 @@ class LayerTreeHostSingleThreadClient {
 
   // Called whenever the compositor posts a SwapBuffers (either full or
   // partial). After DidPostSwapBuffers(), exactly one of
-  // LayerTreeHostClient::DidCompleteSwapBuffers() or DidAbortSwapBuffers() will
-  // be called, thus these functions can be used to keep track of pending swap
-  // buffers calls for rate limiting.
+  // DidCompleteSwapBuffers() or DidAbortSwapBuffers() will be called, thus
+  // these functions can be used to keep track of pending swap buffers calls for
+  // rate limiting.
   virtual void DidPostSwapBuffers() = 0;
+  virtual void DidCompleteSwapBuffers() = 0;
   virtual void DidAbortSwapBuffers() = 0;
 
  protected:

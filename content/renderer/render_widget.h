@@ -12,7 +12,6 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "cc/debug/rendering_stats_instrumentation.h"
@@ -79,7 +78,6 @@ class CONTENT_EXPORT RenderWidget
     : public IPC::Listener,
       public IPC::Sender,
       NON_EXPORTED_BASE(virtual public blink::WebWidgetClient),
-      NON_EXPORTED_BASE(public WebGraphicsContext3DSwapBuffersClient),
       public base::RefCounted<RenderWidget> {
  public:
   // Creates a new RenderWidget.  The opener_id is the routing ID of the
@@ -242,6 +240,12 @@ class CONTENT_EXPORT RenderWidget
 
   void ScheduleCompositeWithForcedRedraw();
 
+  // Called by the compositor in single-threaded mode when a swap is posted,
+  // completes or is aborted.
+  void OnSwapBuffersPosted();
+  void OnSwapBuffersComplete();
+  void OnSwapBuffersAborted();
+
  protected:
   // Friend RefCounted so that the dtor can be non-public. Using this class
   // without ref-counting is an error.
@@ -399,14 +403,6 @@ class CONTENT_EXPORT RenderWidget
   virtual GURL GetURLForGraphicsContext3D();
 
   virtual bool ForceCompositingModeEnabled();
-
-  // WebGraphicsContext3DSwapBuffersClient implementation.
-
-  // Called by a GraphicsContext associated with this view when swapbuffers
-  // is posted, completes or is aborted.
-  virtual void OnViewContextSwapBuffersPosted() OVERRIDE;
-  virtual void OnViewContextSwapBuffersComplete() OVERRIDE;
-  virtual void OnViewContextSwapBuffersAborted() OVERRIDE;
 
   // Detects if a suitable opaque plugin covers the given paint bounds with no
   // compositing necessary.
@@ -791,8 +787,6 @@ class CONTENT_EXPORT RenderWidget
   float popup_origin_scale_for_emulation_;
 
   scoped_ptr<ResizingModeSelector> resizing_mode_selector_;
-
-  base::WeakPtrFactory<RenderWidget> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidget);
 };

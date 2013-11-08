@@ -358,6 +358,15 @@ bool SingleThreadProxy::IsInsideDraw() { return inside_draw_; }
 void SingleThreadProxy::DidLoseOutputSurfaceOnImplThread() {
   // Cause a commit so we can notice the lost context.
   SetNeedsCommitOnImplThread();
+  client_->DidAbortSwapBuffers();
+}
+
+void SingleThreadProxy::DidSwapBuffersOnImplThread() {
+  client_->DidPostSwapBuffers();
+}
+
+void SingleThreadProxy::OnSwapBuffersCompleteOnImplThread() {
+  client_->DidCompleteSwapBuffers();
 }
 
 // Called by the legacy scheduling path (e.g. where render_widget does the

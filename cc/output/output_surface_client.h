@@ -32,6 +32,7 @@ class CC_EXPORT OutputSurfaceClient {
   virtual void ReleaseGL() = 0;
   virtual void SetNeedsRedrawRect(gfx::Rect damage_rect) = 0;
   virtual void BeginImplFrame(const BeginFrameArgs& args) = 0;
+  virtual void DidSwapBuffers() = 0;
   virtual void OnSwapBuffersComplete() = 0;
   virtual void ReclaimResources(const CompositorFrameAck* ack) = 0;
   virtual void DidLoseOutputSurface() = 0;

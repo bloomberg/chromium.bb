@@ -641,6 +641,8 @@ void RenderWidgetCompositor::DidCommitAndDrawFrame() {
 
 void RenderWidgetCompositor::DidCompleteSwapBuffers() {
   widget_->didCompleteSwapBuffers();
+  if (!threaded_)
+    widget_->OnSwapBuffersComplete();
 }
 
 scoped_refptr<cc::ContextProvider>
@@ -651,6 +653,14 @@ RenderWidgetCompositor::OffscreenContextProvider() {
 void RenderWidgetCompositor::ScheduleComposite() {
   if (!suppress_schedule_composite_)
     widget_->scheduleComposite();
+}
+
+void RenderWidgetCompositor::DidPostSwapBuffers() {
+  widget_->OnSwapBuffersPosted();
+}
+
+void RenderWidgetCompositor::DidAbortSwapBuffers() {
+  widget_->OnSwapBuffersAborted();
 }
 
 void RenderWidgetCompositor::RateLimitSharedMainThreadContext() {

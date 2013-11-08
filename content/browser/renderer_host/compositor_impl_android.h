@@ -9,7 +9,6 @@
 #include "base/compiler_specific.h"
 #include "base/containers/scoped_ptr_hash_map.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "cc/resources/ui_resource_client.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_single_thread_client.h"
@@ -38,7 +37,6 @@ class CONTENT_EXPORT CompositorImpl
     : public Compositor,
       public cc::LayerTreeHostClient,
       public cc::LayerTreeHostSingleThreadClient,
-      public WebGraphicsContext3DSwapBuffersClient,
       public ImageTransportFactoryAndroidObserver {
  public:
   explicit CompositorImpl(CompositorClient* client);
@@ -91,13 +89,8 @@ class CONTENT_EXPORT CompositorImpl
 
   // LayerTreeHostSingleThreadClient implementation.
   virtual void ScheduleComposite() OVERRIDE;
-  virtual void DidPostSwapBuffers() OVERRIDE {}
-  virtual void DidAbortSwapBuffers() OVERRIDE {}
-
-  // WebGraphicsContext3DSwapBuffersClient implementation.
-  virtual void OnViewContextSwapBuffersPosted() OVERRIDE;
-  virtual void OnViewContextSwapBuffersComplete() OVERRIDE;
-  virtual void OnViewContextSwapBuffersAborted() OVERRIDE;
+  virtual void DidPostSwapBuffers() OVERRIDE;
+  virtual void DidAbortSwapBuffers() OVERRIDE;
 
   // ImageTransportFactoryAndroidObserver implementation.
   virtual void OnLostResources() OVERRIDE;
@@ -117,7 +110,6 @@ class CONTENT_EXPORT CompositorImpl
   int surface_id_;
 
   CompositorClient* client_;
-  base::WeakPtrFactory<CompositorImpl> weak_factory_;
 
   scoped_refptr<cc::ContextProvider> null_offscreen_context_provider_;
 

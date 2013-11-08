@@ -22,7 +22,6 @@ class CompositorSwapClient;
 class ContextProviderCommandBuffer;
 class ReflectorImpl;
 class WebGraphicsContext3DCommandBufferImpl;
-class WebGraphicsContext3DSwapBuffersClient;
 
 class GpuProcessTransportFactory
     : public ui::ContextFactory,
@@ -68,15 +67,12 @@ class GpuProcessTransportFactory
   virtual void RemoveObserver(
       ImageTransportFactoryObserver* observer) OVERRIDE;
 
-  void OnLostContext(ui::Compositor* compositor);
-
  private:
   struct PerCompositorData;
 
   PerCompositorData* CreatePerCompositorData(ui::Compositor* compositor);
-  scoped_ptr<WebGraphicsContext3DCommandBufferImpl> CreateContextCommon(
-      const base::WeakPtr<WebGraphicsContext3DSwapBuffersClient>& swap_client,
-      int surface_id);
+  scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
+      CreateContextCommon(int surface_id);
 
   void OnLostMainThreadSharedContextInsideCallback();
   void OnLostMainThreadSharedContext();

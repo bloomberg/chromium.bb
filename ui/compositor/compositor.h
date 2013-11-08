@@ -328,8 +328,8 @@ class COMPOSITOR_EXPORT Compositor
 
   // cc::LayerTreeHostSingleThreadClient implementation.
   virtual void ScheduleComposite() OVERRIDE;
-  virtual void DidPostSwapBuffers() OVERRIDE {}
-  virtual void DidAbortSwapBuffers() OVERRIDE {}
+  virtual void DidPostSwapBuffers() OVERRIDE;
+  virtual void DidAbortSwapBuffers() OVERRIDE;
 
   int last_started_frame() { return last_started_frame_; }
   int last_ended_frame() { return last_ended_frame_; }

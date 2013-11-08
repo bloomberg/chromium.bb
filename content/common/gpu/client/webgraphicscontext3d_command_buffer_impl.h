@@ -54,18 +54,6 @@ const size_t kDefaultStartTransferBufferSize = 1 * 1024 * 1024;
 const size_t kDefaultMinTransferBufferSize = 1 * 256 * 1024;
 const size_t kDefaultMaxTransferBufferSize = 16 * 1024 * 1024;
 
-// TODO(piman): move this logic to the compositor and remove it from the
-// context...
-class WebGraphicsContext3DSwapBuffersClient {
- public:
-  virtual void OnViewContextSwapBuffersPosted() = 0;
-  virtual void OnViewContextSwapBuffersComplete() = 0;
-  virtual void OnViewContextSwapBuffersAborted() = 0;
-
- protected:
-  virtual ~WebGraphicsContext3DSwapBuffersClient() {}
-};
-
 class WebGraphicsContext3DErrorMessageCallback;
 
 class WebGraphicsContext3DCommandBufferImpl
@@ -89,7 +77,6 @@ class WebGraphicsContext3DCommandBufferImpl
       int surface_id,
       const GURL& active_url,
       GpuChannelHost* host,
-      const base::WeakPtr<WebGraphicsContext3DSwapBuffersClient>& swap_client,
       bool use_echo_for_swap_ack,
       const Attributes& attributes,
       bool bind_generates_resources,
@@ -708,10 +695,6 @@ class WebGraphicsContext3DCommandBufferImpl
   virtual void OnGpuChannelLost();
   virtual void OnErrorMessage(const std::string& message, int id);
 
-  // Check if we should call into the swap client. We can only do that on the
-  // main thread.
-  bool ShouldUseSwapClient();
-
   bool initialize_failed_;
 
   bool visible_;
@@ -721,7 +704,6 @@ class WebGraphicsContext3DCommandBufferImpl
   scoped_refptr<GpuChannelHost> host_;
   int32 surface_id_;
   GURL active_url_;
-  base::WeakPtr<WebGraphicsContext3DSwapBuffersClient> swap_client_;
 
   WebGraphicsContext3D::WebGraphicsContextLostCallback* context_lost_callback_;
   WGC3Denum context_lost_reason_;

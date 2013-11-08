@@ -52,6 +52,7 @@ class PixelTest::PixelTestRendererClient
   virtual void ReleaseGL() OVERRIDE {}
   virtual void SetNeedsRedrawRect(gfx::Rect damage_rect) OVERRIDE {}
   virtual void BeginImplFrame(const BeginFrameArgs& args) OVERRIDE {}
+  virtual void DidSwapBuffers() OVERRIDE {}
   virtual void OnSwapBuffersComplete() OVERRIDE {}
   virtual void ReclaimResources(const CompositorFrameAck* ack) OVERRIDE {}
   virtual void DidLoseOutputSurface() OVERRIDE {}

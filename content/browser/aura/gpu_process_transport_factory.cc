@@ -46,7 +46,6 @@ namespace content {
 
 struct GpuProcessTransportFactory::PerCompositorData {
   int surface_id;
-  scoped_ptr<CompositorSwapClient> swap_client;
 #if defined(OS_WIN)
   scoped_ptr<AcceleratedSurface> accelerated_surface;
 #endif
@@ -143,48 +142,6 @@ class ImageTransportClientTexture : public OwnedTexture {
   DISALLOW_COPY_AND_ASSIGN(ImageTransportClientTexture);
 };
 
-class CompositorSwapClient
-    : public base::SupportsWeakPtr<CompositorSwapClient>,
-      public WebGraphicsContext3DSwapBuffersClient {
- public:
-  CompositorSwapClient(ui::Compositor* compositor,
-                       GpuProcessTransportFactory* factory)
-      : compositor_(compositor),
-        factory_(factory) {
-  }
-
-  virtual ~CompositorSwapClient() {
-  }
-
-  virtual void OnViewContextSwapBuffersPosted() OVERRIDE {
-    compositor_->OnSwapBuffersPosted();
-  }
-
-  virtual void OnViewContextSwapBuffersComplete() OVERRIDE {
-    compositor_->OnSwapBuffersComplete();
-  }
-
-  virtual void OnViewContextSwapBuffersAborted() OVERRIDE {
-    // Recreating contexts directly from here causes issues, so post a task
-    // instead.
-    // TODO(piman): Fix the underlying issues.
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&CompositorSwapClient::OnLostContext, this->AsWeakPtr()));
-  }
-
- private:
-  void OnLostContext() {
-    factory_->OnLostContext(compositor_);
-    // Note: previous line destroyed this. Don't access members from now on.
-  }
-
-  ui::Compositor* compositor_;
-  GpuProcessTransportFactory* factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(CompositorSwapClient);
-};
-
 GpuProcessTransportFactory::GpuProcessTransportFactory()
     : callback_factory_(this) {
   output_surface_proxy_ = new BrowserCompositorOutputSurfaceProxy(
@@ -200,8 +157,7 @@ GpuProcessTransportFactory::~GpuProcessTransportFactory() {
 
 scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
 GpuProcessTransportFactory::CreateOffscreenCommandBufferContext() {
-  base::WeakPtr<WebGraphicsContext3DSwapBuffersClient> swap_client;
-  return CreateContextCommon(swap_client, 0);
+  return CreateContextCommon(0);
 }
 
 scoped_ptr<cc::SoftwareOutputDevice> CreateSoftwareOutputDevice(
@@ -228,17 +184,12 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
     data = CreatePerCompositorData(compositor);
 
   scoped_refptr<ContextProviderCommandBuffer> context_provider;
-  base::WeakPtr<WebGraphicsContext3DSwapBuffersClient> swap_client_weak_ptr;
-  if (data->swap_client)
-    swap_client_weak_ptr = data->swap_client->AsWeakPtr();
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(switches::kUIEnableSoftwareCompositing)) {
     context_provider = ContextProviderCommandBuffer::Create(
-        GpuProcessTransportFactory::CreateContextCommon(
-            swap_client_weak_ptr,
-            data->surface_id),
-            "Compositor");
+        GpuProcessTransportFactory::CreateContextCommon(data->surface_id),
+        "Compositor");
   }
 
   UMA_HISTOGRAM_BOOLEAN("Aura.CreatedGpuBrowserCompositor", !!context_provider);
@@ -454,18 +405,6 @@ GpuProcessTransportFactory::SharedMainThreadContextProvider() {
   return shared_main_thread_contexts_;
 }
 
-void GpuProcessTransportFactory::OnLostContext(ui::Compositor* compositor) {
-  LOG(ERROR) << "Lost UI compositor context.";
-  PerCompositorData* data = per_compositor_data_[compositor];
-  DCHECK(data);
-
-  // Prevent callbacks from other contexts in the same share group from
-  // calling us again.
-  if (data->swap_client.get())
-    data->swap_client.reset(new CompositorSwapClient(compositor, this));
-  compositor->OnSwapBuffersAborted();
-}
-
 GpuProcessTransportFactory::PerCompositorData*
 GpuProcessTransportFactory::CreatePerCompositorData(
     ui::Compositor* compositor) {
@@ -476,8 +415,6 @@ GpuProcessTransportFactory::CreatePerCompositorData(
 
   PerCompositorData* data = new PerCompositorData;
   data->surface_id = tracker->AddSurfaceForNativeWidget(widget);
-  if (!ui::Compositor::WasInitializedWithThread())
-    data->swap_client.reset(new CompositorSwapClient(compositor, this));
 #if defined(OS_WIN)
   if (GpuDataManagerImpl::GetInstance()->IsUsingAcceleratedSurface())
     data->accelerated_surface.reset(new AcceleratedSurface(widget));
@@ -492,9 +429,7 @@ GpuProcessTransportFactory::CreatePerCompositorData(
 }
 
 scoped_ptr<WebGraphicsContext3DCommandBufferImpl>
-GpuProcessTransportFactory::CreateContextCommon(
-    const base::WeakPtr<WebGraphicsContext3DSwapBuffersClient>& swap_client,
-    int surface_id) {
+GpuProcessTransportFactory::CreateContextCommon(int surface_id) {
   if (!GpuDataManagerImpl::GetInstance()->CanUseGpuBrowserCompositor())
     return scoped_ptr<WebGraphicsContext3DCommandBufferImpl>();
   blink::WebGraphicsContext3D::Attributes attrs;
@@ -503,9 +438,10 @@ GpuProcessTransportFactory::CreateContextCommon(
   attrs.stencil = false;
   attrs.antialias = false;
   attrs.noAutomaticFlushes = true;
+  CauseForGpuLaunch cause =
+      CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
   scoped_refptr<GpuChannelHost> gpu_channel_host(
-      BrowserGpuChannelHostFactory::instance()->EstablishGpuChannelSync(
-          CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE));
+      BrowserGpuChannelHostFactory::instance()->EstablishGpuChannelSync(cause));
   if (!gpu_channel_host)
     return scoped_ptr<WebGraphicsContext3DCommandBufferImpl>();
   GURL url("chrome://gpu/GpuProcessTransportFactory::CreateContextCommon");
@@ -515,7 +451,6 @@ GpuProcessTransportFactory::CreateContextCommon(
           surface_id,
           url,
           gpu_channel_host.get(),
-          swap_client,
           use_echo_for_swap_ack,
           attrs,
           false,

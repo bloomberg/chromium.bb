@@ -376,8 +376,7 @@ RenderWidget::RenderWidget(blink::WebPopupType popup_type,
       outstanding_ime_acks_(0),
 #endif
       popup_origin_scale_for_emulation_(0.f),
-      resizing_mode_selector_(new ResizingModeSelector()),
-      weak_ptr_factory_(this) {
+      resizing_mode_selector_(new ResizingModeSelector()) {
   if (!swapped_out)
     RenderProcess::current()->AddRefProcess();
   DCHECK(RenderThread::Get());
@@ -601,8 +600,7 @@ bool RenderWidget::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_WasShown, OnWasShown)
     IPC_MESSAGE_HANDLER(ViewMsg_WasSwappedOut, OnWasSwappedOut)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateRect_ACK, OnUpdateRectAck)
-    IPC_MESSAGE_HANDLER(ViewMsg_SwapBuffers_ACK,
-                        OnViewContextSwapBuffersComplete)
+    IPC_MESSAGE_HANDLER(ViewMsg_SwapBuffers_ACK, OnSwapBuffersComplete)
     IPC_MESSAGE_HANDLER(ViewMsg_SetInputMethodActive, OnSetInputMethodActive)
     IPC_MESSAGE_HANDLER(ViewMsg_ImeSetComposition, OnImeSetComposition)
     IPC_MESSAGE_HANDLER(ViewMsg_ImeConfirmComposition, OnImeConfirmComposition)
@@ -966,7 +964,7 @@ scoped_ptr<cc::OutputSurface> RenderWidget::CreateOutputSurface(bool fallback) {
           use_swap_compositor_frame_message));
 }
 
-void RenderWidget::OnViewContextSwapBuffersAborted() {
+void RenderWidget::OnSwapBuffersAborted() {
   TRACE_EVENT0("renderer", "RenderWidget::OnSwapBuffersAborted");
   while (!updates_pending_swap_.empty()) {
     ViewHostMsg_UpdateRect* msg = updates_pending_swap_.front();
@@ -982,7 +980,7 @@ void RenderWidget::OnViewContextSwapBuffersAborted() {
   scheduleComposite();
 }
 
-void RenderWidget::OnViewContextSwapBuffersPosted() {
+void RenderWidget::OnSwapBuffersPosted() {
   TRACE_EVENT0("renderer", "RenderWidget::OnSwapBuffersPosted");
 
   if (using_asynchronous_swapbuffers_) {
@@ -999,7 +997,7 @@ void RenderWidget::OnViewContextSwapBuffersPosted() {
   }
 }
 
-void RenderWidget::OnViewContextSwapBuffersComplete() {
+void RenderWidget::OnSwapBuffersComplete() {
   TRACE_EVENT0("renderer", "RenderWidget::OnSwapBuffersComplete");
 
   // Notify subclasses that composited rendering was flushed to the screen.
@@ -2794,9 +2792,10 @@ RenderWidget::CreateGraphicsContext3D(
     return scoped_ptr<WebGraphicsContext3DCommandBufferImpl>();
   if (!RenderThreadImpl::current())
     return scoped_ptr<WebGraphicsContext3DCommandBufferImpl>();
+  CauseForGpuLaunch cause =
+      CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE;
   scoped_refptr<GpuChannelHost> gpu_channel_host(
-      RenderThreadImpl::current()->EstablishGpuChannelSync(
-          CAUSE_FOR_GPU_LAUNCH_WEBGRAPHICSCONTEXT3DCOMMANDBUFFERIMPL_INITIALIZE));
+      RenderThreadImpl::current()->EstablishGpuChannelSync(cause));
   if (!gpu_channel_host)
     return scoped_ptr<WebGraphicsContext3DCommandBufferImpl>();
 
@@ -2824,11 +2823,8 @@ RenderWidget::CreateGraphicsContext3D(
       max_transfer_buffer_usage_mb * kBytesPerMegabyte;
 #endif
 
-  base::WeakPtr<WebGraphicsContext3DSwapBuffersClient> swap_client;
-
   bool use_echo_for_swap_ack = true;
   if (!is_threaded_compositing_enabled_) {
-    swap_client = weak_ptr_factory_.GetWeakPtr();
 #if (defined(OS_MACOSX) || defined(OS_WIN)) && !defined(USE_AURA)
     // ViewMsg_SwapBuffers_ACK is used instead for single-threaded path.
     use_echo_for_swap_ack = false;
@@ -2840,7 +2836,6 @@ RenderWidget::CreateGraphicsContext3D(
           surface_id(),
           GetURLForGraphicsContext3D(),
           gpu_channel_host.get(),
-          swap_client,
           use_echo_for_swap_ack,
           attributes,
           false /* bind generates resources */,

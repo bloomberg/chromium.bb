@@ -488,37 +488,6 @@ bool Compositor::HasObserver(CompositorObserver* observer) {
   return observer_list_.HasObserver(observer);
 }
 
-void Compositor::OnSwapBuffersPosted() {
-  DCHECK(!g_compositor_thread);
-  posted_swaps_->PostSwap();
-}
-
-void Compositor::OnSwapBuffersComplete() {
-  DCHECK(!g_compositor_thread);
-  DCHECK(posted_swaps_->AreSwapsPosted());
-  DCHECK_GE(1, posted_swaps_->NumSwapsPosted(DRAW_SWAP));
-  if (posted_swaps_->NextPostedSwap() == DRAW_SWAP)
-    NotifyEnd();
-  posted_swaps_->EndSwap();
-}
-
-void Compositor::OnSwapBuffersAborted() {
-  if (!g_compositor_thread) {
-    DCHECK_GE(1, posted_swaps_->NumSwapsPosted(DRAW_SWAP));
-
-    // We've just lost the context, so unwind all posted_swaps.
-    while (posted_swaps_->AreSwapsPosted()) {
-      if (posted_swaps_->NextPostedSwap() == DRAW_SWAP)
-        NotifyEnd();
-      posted_swaps_->EndSwap();
-    }
-  }
-
-  FOR_EACH_OBSERVER(CompositorObserver,
-                    observer_list_,
-                    OnCompositingAborted(this));
-}
-
 void Compositor::OnUpdateVSyncParameters(base::TimeTicks timebase,
                                          base::TimeDelta interval) {
   FOR_EACH_OBSERVER(CompositorObserver,
@@ -554,8 +523,15 @@ void Compositor::DidCommitAndDrawFrame() {
 }
 
 void Compositor::DidCompleteSwapBuffers() {
-  DCHECK(g_compositor_thread);
-  NotifyEnd();
+  if (g_compositor_thread) {
+    NotifyEnd();
+  } else {
+    DCHECK(posted_swaps_->AreSwapsPosted());
+    DCHECK_GE(1, posted_swaps_->NumSwapsPosted(DRAW_SWAP));
+    if (posted_swaps_->NextPostedSwap() == DRAW_SWAP)
+      NotifyEnd();
+    posted_swaps_->EndSwap();
+  }
 }
 
 scoped_refptr<cc::ContextProvider> Compositor::OffscreenContextProvider() {
@@ -565,6 +541,28 @@ scoped_refptr<cc::ContextProvider> Compositor::OffscreenContextProvider() {
 void Compositor::ScheduleComposite() {
   if (!disable_schedule_composite_)
     ScheduleDraw();
+}
+
+void Compositor::DidPostSwapBuffers() {
+  DCHECK(!g_compositor_thread);
+  posted_swaps_->PostSwap();
+}
+
+void Compositor::DidAbortSwapBuffers() {
+  if (!g_compositor_thread) {
+    DCHECK_GE(1, posted_swaps_->NumSwapsPosted(DRAW_SWAP));
+
+    // We've just lost the context, so unwind all posted_swaps.
+    while (posted_swaps_->AreSwapsPosted()) {
+      if (posted_swaps_->NextPostedSwap() == DRAW_SWAP)
+        NotifyEnd();
+      posted_swaps_->EndSwap();
+    }
+  }
+
+  FOR_EACH_OBSERVER(CompositorObserver,
+                    observer_list_,
+                    OnCompositingAborted(this));
 }
 
 const cc::LayerTreeDebugState& Compositor::GetLayerTreeDebugState() const {

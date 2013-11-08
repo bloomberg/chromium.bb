@@ -206,7 +206,6 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
     int surface_id,
     const GURL& active_url,
     GpuChannelHost* host,
-    const base::WeakPtr<WebGraphicsContext3DSwapBuffersClient>& swap_client,
     bool use_echo_for_swap_ack,
     const Attributes& attributes,
     bool bind_generates_resources,
@@ -217,7 +216,6 @@ WebGraphicsContext3DCommandBufferImpl::WebGraphicsContext3DCommandBufferImpl(
       host_(host),
       surface_id_(surface_id),
       active_url_(active_url),
-      swap_client_(swap_client),
       context_lost_callback_(0),
       context_lost_reason_(GL_NO_ERROR),
       error_message_callback_(0),
@@ -503,10 +501,6 @@ void WebGraphicsContext3DCommandBufferImpl::prepareTexture() {
                 "WebGraphicsContext3DCommandBufferImpl::SwapBuffers",
                 "frame", frame_number_);
   frame_number_++;
-  // Copies the contents of the off-screen render target into the texture
-  // used by the compositor.
-  if (ShouldUseSwapClient())
-    swap_client_->OnViewContextSwapBuffersPosted();
 
   if (command_buffer_->GetLastState().error == gpu::error::kNoError)
     gl_->SwapBuffers();
@@ -516,6 +510,7 @@ void WebGraphicsContext3DCommandBufferImpl::prepareTexture() {
         &WebGraphicsContext3DCommandBufferImpl::OnSwapBuffersComplete,
         weak_ptr_factory_.GetWeakPtr()));
   }
+
 #if defined(OS_MACOSX)
   // It appears that making the compositor's on-screen context current on
   // other platforms implies this flush. TODO(kbr): this means that the
@@ -528,8 +523,6 @@ void WebGraphicsContext3DCommandBufferImpl::postSubBufferCHROMIUM(
     int x, int y, int width, int height) {
   // Same flow control as WebGraphicsContext3DCommandBufferImpl::prepareTexture
   // (see above).
-  if (ShouldUseSwapClient())
-    swap_client_->OnViewContextSwapBuffersPosted();
   gl_->PostSubBufferCHROMIUM(x, y, width, height);
   command_buffer_->Echo(base::Bind(
       &WebGraphicsContext3DCommandBufferImpl::OnSwapBuffersComplete,
@@ -1206,20 +1199,7 @@ DELEGATE_TO_GL_1(deleteProgram, DeleteProgram, WebGLId)
 
 DELEGATE_TO_GL_1(deleteShader, DeleteShader, WebGLId)
 
-bool WebGraphicsContext3DCommandBufferImpl::ShouldUseSwapClient() {
-  return !!swap_client_.get();
-}
-
 void WebGraphicsContext3DCommandBufferImpl::OnSwapBuffersComplete() {
-  typedef WebGraphicsContext3DSwapBuffersClient WGC3DSwapClient;
-  // This may be called after tear-down of the RenderView.
-  if (ShouldUseSwapClient()) {
-    base::MessageLoop::current()->PostTask(
-        FROM_HERE,
-        base::Bind(&WGC3DSwapClient::OnViewContextSwapBuffersComplete,
-                   swap_client_));
-  }
-
   if (swapbuffers_complete_callback_)
     swapbuffers_complete_callback_->onSwapBuffersComplete();
 }
@@ -1261,12 +1241,10 @@ WebGraphicsContext3DCommandBufferImpl::CreateOffscreenContext(
     const SharedMemoryLimits& limits) {
   if (!host)
     return NULL;
-  base::WeakPtr<WebGraphicsContext3DSwapBuffersClient> null_client;
   bool use_echo_for_swap_ack = true;
   return new WebGraphicsContext3DCommandBufferImpl(0,
                                                    active_url,
                                                    host,
-                                                   null_client,
                                                    use_echo_for_swap_ack,
                                                    attributes,
                                                    false,
@@ -1446,9 +1424,6 @@ void WebGraphicsContext3DCommandBufferImpl::OnGpuChannelLost() {
     base::AutoLock lock(g_all_shared_contexts_lock.Get());
     g_all_shared_contexts.Get().erase(host_.get());
   }
-
-  if (ShouldUseSwapClient())
-    swap_client_->OnViewContextSwapBuffersAborted();
 }
 
 void WebGraphicsContext3DCommandBufferImpl::OnErrorMessage(
