@@ -798,7 +798,6 @@ void RenderWidgetHostViewAura::MovePluginWindows(
     HWND window = moves[i].window;
     if (GetParent(window) != parent) {
       window = GetParent(window);
-      DCHECK(GetParent(window) == parent);
     }
     if (!GetProp(window, kWidgetOwnerProperty))
       SetProp(window, kWidgetOwnerProperty, this);
