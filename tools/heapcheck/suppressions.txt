@@ -229,6 +229,12 @@
    fun:base::internal::PostTaskAndReplyImpl::PostTaskAndReply
    fun:base::WorkerPool::PostTaskAndReply
 }
+{
+   UA style sheets are intentionally leaked - see bug 121729
+   Heapcheck:Leak
+   ...
+   fun:parseUASheet
+}
 # This one pops out too often on different leaks and the stacks are very often
 # uninformative, e.g. don't include anything related to the bug.
 # TODO(earthdok): revisit what we want to do with _Rep when we have LSan.

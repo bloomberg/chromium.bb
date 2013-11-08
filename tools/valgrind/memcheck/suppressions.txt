@@ -386,6 +386,12 @@
    fun:_ZN7WebCoreL12parseUASheetEPKcj
 }
 {
+   bug_121729_b (Intentional)
+   Memcheck:Leak
+   ...
+   fun:_ZN7WebCoreL12parseUASheetERKN3WTF6StringE
+}
+{
    intentional_see_bug_156466
    Memcheck:Leak
    fun:_Znw*
