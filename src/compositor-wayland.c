@@ -59,12 +59,7 @@ struct wayland_compositor {
 		struct wl_registry *registry;
 		struct wl_compositor *compositor;
 		struct wl_shell *shell;
-		struct wl_output *output;
 		struct wl_shm *shm;
-
-		struct {
-			int32_t x, y, width, height;
-		} screen_allocation;
 
 		struct wl_event_source *wl_source;
 		uint32_t event_mask;
@@ -814,44 +809,6 @@ static const struct wl_shell_surface_listener shell_surface_listener = {
 
 /* Events received from the wayland-server this compositor is client of: */
 
-/* parent output interface */
-static void
-display_handle_geometry(void *data,
-			struct wl_output *wl_output,
-			int x,
-			int y,
-			int physical_width,
-			int physical_height,
-			int subpixel,
-			const char *make,
-			const char *model,
-			int transform)
-{
-	struct wayland_compositor *c = data;
-
-	c->parent.screen_allocation.x = x;
-	c->parent.screen_allocation.y = y;
-}
-
-static void
-display_handle_mode(void *data,
-		    struct wl_output *wl_output,
-		    uint32_t flags,
-		    int width,
-		    int height,
-		    int refresh)
-{
-	struct wayland_compositor *c = data;
-
-	c->parent.screen_allocation.width = width;
-	c->parent.screen_allocation.height = height;
-}
-
-static const struct wl_output_listener output_listener = {
-	display_handle_geometry,
-	display_handle_mode
-};
-
 /* parent input interface */
 static void
 input_set_cursor(struct wayland_input *input)
@@ -1251,11 +1208,6 @@ registry_handle_global(void *data, struct wl_registry *registry, uint32_t name,
 		c->parent.compositor =
 			wl_registry_bind(registry, name,
 					 &wl_compositor_interface, 1);
-	} else if (strcmp(interface, "wl_output") == 0) {
-		c->parent.output =
-			wl_registry_bind(registry, name,
-					 &wl_output_interface, 1);
-		wl_output_add_listener(c->parent.output, &output_listener, c);
 	} else if (strcmp(interface, "wl_shell") == 0) {
 		c->parent.shell =
 			wl_registry_bind(registry, name,
