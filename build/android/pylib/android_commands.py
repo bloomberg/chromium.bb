@@ -1429,7 +1429,7 @@ class AndroidCommands(object):
       [0]: Dict of {metric:usage_kb}, for the process which has specified pid.
       The metric keys which may be included are: Size, Rss, Pss, Shared_Clean,
       Shared_Dirty, Private_Clean, Private_Dirty, Referenced, Swap,
-      KernelPageSize, MMUPageSize, Nvidia (tablet only).
+      KernelPageSize, MMUPageSize, Nvidia (tablet only), VmHWM.
       [1]: Detailed /proc/[PID]/smaps information.
     """
     usage_dict = collections.defaultdict(int)
@@ -1463,6 +1463,16 @@ class AndroidCommands(object):
         usage_bytes = int(match.group('usage_bytes'))
         usage_dict['Nvidia'] = int(round(usage_bytes / 1000.0))  # kB
         break
+
+    peak_value_kb = 0
+    for line in self.GetProtectedFileContents('/proc/%s/status' % pid,
+                                              log_result=False):
+      if not line.startswith('VmHWM:'):  # Format: 'VmHWM: +[0-9]+ kB'
+        continue
+      peak_value_kb = int(line.split(':')[1].strip().split(' ')[0])
+    usage_dict['VmHWM'] = peak_value_kb
+    if not peak_value_kb:
+      logging.warning('Could not find memory peak value for pid ' + str(pid))
 
     return (usage_dict, smaps)
 
