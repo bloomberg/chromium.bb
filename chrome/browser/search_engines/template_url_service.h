@@ -221,7 +221,9 @@ class TemplateURLService : public WebDataServiceConsumer,
                         const string16& keyword,
                         const std::string& search_url);
 
-  // Return true if the given |url| can be made the default.
+  // Return true if the given |url| can be made the default. This returns false
+  // regardless of |url| if the default search provider is managed by policy or
+  // controlled by an extension.
   bool CanMakeDefault(const TemplateURL* url);
 
   // Set the default search provider.  |url| may be null.
@@ -241,6 +243,9 @@ class TemplateURLService : public WebDataServiceConsumer,
 
   // Returns true if the default search is managed through group policy.
   bool is_default_search_managed() const { return is_default_search_managed_; }
+
+  // Returns true if the default search provider is controlled by an extension.
+  bool IsExtensionControlledDefaultSearch();
 
   // Returns the default search specified in the prepopulated data, if it
   // exists.  If not, returns first URL in |template_urls_|, or NULL if that's

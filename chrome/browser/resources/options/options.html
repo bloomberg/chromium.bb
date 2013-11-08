@@ -22,6 +22,7 @@
 </if>
 <link rel="stylesheet" href="clear_browser_data_overlay.css">
 <link rel="stylesheet" href="content_settings.css">
+<link rel="stylesheet" href="controlled_setting.css">
 <link rel="stylesheet" href="cookies_view.css">
 <link rel="stylesheet" href="do_not_track_confirm_overlay.css">
 <link rel="stylesheet" href="font_settings.css">
@@ -156,6 +157,17 @@
 </if>
 </div>
 <div id="overlay-container-3" class="overlay transparent" hidden>
+</div>
+<div id="extension-controlled-settings-bubble-template" hidden>
+  <div class="controlled-setting-bubble-content-row">
+    <div class="controlled-setting-bubble-extension-name"></div>
+  </div>
+  <div class="controlled-setting-bubble-content-row">
+    <div class="controlled-setting-bubble-extension-manage-link link-button"
+        i18n-content="controlledSettingManageExtensions"></div>
+    <button class='controlled-setting-bubble-extension-disable-button'
+        i18n-content="controlledSettingDisableExtension"></button>
+  </div>
 </div>
 
 <div id="main-content">

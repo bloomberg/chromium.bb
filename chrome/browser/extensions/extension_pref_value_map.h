@@ -119,6 +119,11 @@ class ExtensionPrefValueMap : public BrowserContextKeyedService {
                                 const std::string& pref_key,
                                 bool* from_incognito) const;
 
+  // Returns the ID of the extension that currently controls this preference.
+  // Returns an empty string if this preference is not controlled by an
+  // extension.
+  std::string GetExtensionControllingPref(const std::string& pref_key) const;
+
   // Tell the store it's now fully initialized.
   void NotifyInitializationCompleted();
 

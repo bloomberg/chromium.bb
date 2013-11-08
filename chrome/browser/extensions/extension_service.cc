@@ -62,6 +62,7 @@
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/browser/ui/webui/favicon_source.h"
 #include "chrome/browser/ui/webui/ntp/thumbnail_source.h"
 #include "chrome/browser/ui/webui/theme_source.h"
@@ -2401,6 +2402,21 @@ bool ExtensionService::OnExternalExtensionFileFound(
     AcknowledgeExternalExtension(id);
 
   return true;
+}
+
+scoped_ptr<DictionaryValue> ExtensionService::GetExtensionInfo(
+    const std::string& extension_id) const {
+  scoped_ptr<DictionaryValue> dictionary(new DictionaryValue);
+  const extensions::Extension* extension = extensions_.GetByID(extension_id);
+  if (extension) {
+    GURL icon = extensions::ExtensionIconSource::GetIconURL(
+        extension, extension_misc::EXTENSION_ICON_SMALLISH,
+        ExtensionIconSet::MATCH_BIGGER, false, NULL);
+    dictionary->SetString("id", extension_id);
+    dictionary->SetString("name", extension->name());
+    dictionary->SetString("icon", icon.spec());
+  }
+  return dictionary.Pass();
 }
 
 void ExtensionService::ReportExtensionLoadError(

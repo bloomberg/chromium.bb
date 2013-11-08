@@ -344,6 +344,15 @@ void ExtensionPrefValueMap::RemoveObserver(
   observers_.RemoveObserver(observer);
 }
 
+std::string ExtensionPrefValueMap::GetExtensionControllingPref(
+    const std::string& pref_key) const {
+  ExtensionEntryMap::const_iterator winner =
+      GetEffectivePrefValueController(pref_key, false, NULL);
+  if (winner == entries_.end())
+    return std::string();
+  return winner->first;
+}
+
 void ExtensionPrefValueMap::NotifyInitializationCompleted() {
   FOR_EACH_OBSERVER(ExtensionPrefValueMap::Observer, observers_,
                     OnInitializationCompleted());

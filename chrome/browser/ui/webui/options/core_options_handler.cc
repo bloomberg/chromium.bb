@@ -14,8 +14,13 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/extension_pref_value_map.h"
+#include "chrome/browser/extensions/extension_pref_value_map_factory.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/options/options_util.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/net/url_fixer_upper.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -91,6 +96,14 @@ void CoreOptionsHandler::GetStaticLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_CONTROLLED_SETTING_POLICY));
   localized_strings->SetString("controlledSettingExtension",
       l10n_util::GetStringUTF16(IDS_OPTIONS_CONTROLLED_SETTING_EXTENSION));
+  localized_strings->SetString("controlledSettingExtensionWithName",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_CONTROLLED_SETTING_EXTENSION_WITH_NAME));
+  localized_strings->SetString("controlledSettingManageExtensions",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_CONTROLLED_SETTING_MANAGE_EXTENSIONS));
+  localized_strings->SetString("controlledSettingDisableExtension",
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_DISABLE));
   localized_strings->SetString("controlledSettingRecommended",
       l10n_util::GetStringUTF16(IDS_OPTIONS_CONTROLLED_SETTING_RECOMMENDED));
   localized_strings->SetString("controlledSettingHasRecommendation",
@@ -103,6 +116,9 @@ void CoreOptionsHandler::GetStaticLocalizedValues(
       l10n_util::GetStringUTF16(IDS_OPTIONS_CONTROLLED_SETTINGS_POLICY));
   localized_strings->SetString("controlledSettingsExtension",
       l10n_util::GetStringUTF16(IDS_OPTIONS_CONTROLLED_SETTINGS_EXTENSION));
+  localized_strings->SetString("controlledSettingsExtensionWithName",
+      l10n_util::GetStringUTF16(
+          IDS_OPTIONS_CONTROLLED_SETTINGS_EXTENSION_WITH_NAME));
 
   // Search
   RegisterTitle(localized_strings, "searchPage", IDS_OPTIONS_SEARCH_PAGE_TITLE);
@@ -193,6 +209,9 @@ void CoreOptionsHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("coreOptionsUserMetricsAction",
       base::Bind(&CoreOptionsHandler::HandleUserMetricsAction,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("disableExtension",
+      base::Bind(&CoreOptionsHandler::HandleDisableExtension,
                  base::Unretained(this)));
 }
 
@@ -331,12 +350,26 @@ base::Value* CoreOptionsHandler::CreateValueForPref(
 
   DictionaryValue* dict = new DictionaryValue;
   dict->Set("value", pref->GetValue()->DeepCopy());
-  if (controlling_pref->IsManaged())
+  if (controlling_pref->IsManaged()) {
     dict->SetString("controlledBy", "policy");
-  else if (controlling_pref->IsExtensionControlled())
+  } else if (controlling_pref->IsExtensionControlled()) {
     dict->SetString("controlledBy", "extension");
-  else if (controlling_pref->IsRecommended())
+    Profile* profile = Profile::FromWebUI(web_ui());
+    ExtensionPrefValueMap* extension_pref_value_map =
+        ExtensionPrefValueMapFactory::GetForBrowserContext(profile);
+    std::string extension_id =
+        extension_pref_value_map->GetExtensionControllingPref(
+            controlling_pref->name());
+
+    ExtensionService* extension_service = extensions::ExtensionSystem::Get(
+        profile)->extension_service();
+    scoped_ptr<DictionaryValue> dictionary =
+        extension_service->GetExtensionInfo(extension_id);
+    if (!dictionary->empty())
+      dict->Set("extension", dictionary.release());
+  } else if (controlling_pref->IsRecommended()) {
     dict->SetString("controlledBy", "recommended");
+  }
 
   const base::Value* recommended_value =
       controlling_pref->GetRecommendedValue();
@@ -562,6 +595,19 @@ void CoreOptionsHandler::HandleUserMetricsAction(const ListValue* args) {
   std::string metric = UTF16ToUTF8(ExtractStringValue(args));
   if (!metric.empty())
     content::RecordComputedAction(metric);
+}
+
+void CoreOptionsHandler::HandleDisableExtension(const ListValue* args) {
+  std::string extension_id;
+  if (args->GetString(0, &extension_id)) {
+    ExtensionService* extension_service = extensions::ExtensionSystem::Get(
+        Profile::FromWebUI(web_ui()))->extension_service();
+    DCHECK(extension_service);
+    extension_service->DisableExtension(
+        extension_id, extensions::Extension::DISABLE_USER_ACTION);
+  } else {
+    NOTREACHED();
+  }
 }
 
 void CoreOptionsHandler::UpdateClearPluginLSOData() {

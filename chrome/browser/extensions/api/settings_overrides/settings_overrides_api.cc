@@ -136,6 +136,8 @@ void SettingsOverridesAPI::Observe(
                   url_list.release());
         }
         if (settings->search_engine) {
+          SetPref(extension->id(), prefs::kDefaultSearchProviderEnabled,
+                  new base::FundamentalValue(true));
           DCHECK(url_service_);
           if (url_service_->loaded()) {
             RegisterSearchProvider(extension);
@@ -166,6 +168,7 @@ void SettingsOverridesAPI::Observe(
           UnsetPref(extension->id(), prefs::kURLsToRestoreOnStartup);
         }
         if (settings->search_engine) {
+          UnsetPref(extension->id(), prefs::kDefaultSearchProviderEnabled);
           DCHECK(url_service_);
           if (url_service_->loaded())
             url_service_->RemoveExtensionControlledTURL(extension->id());

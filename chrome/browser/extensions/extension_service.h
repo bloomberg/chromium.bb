@@ -458,6 +458,12 @@ class ExtensionService
 
   extensions::MenuManager* menu_manager() { return &menu_manager_; }
 
+  // Sets the name, id and icon resource path of the given extension into the
+  // returned dictionary. Returns an empty dictionary if the given extension id
+  // is not found.
+  scoped_ptr<DictionaryValue> GetExtensionInfo(
+      const std::string& extension_id) const;
+
   // Notify the frontend that there was an error loading an extension.
   // This method is public because UnpackedInstaller and InstalledLoader
   // can post to here.

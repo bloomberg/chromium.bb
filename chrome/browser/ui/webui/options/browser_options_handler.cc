@@ -976,7 +976,8 @@ void BrowserOptionsHandler::OnTemplateURLServiceChanged() {
       search_engines,
       base::FundamentalValue(default_index),
       base::FundamentalValue(
-          template_url_service_->is_default_search_managed()));
+          template_url_service_->is_default_search_managed() ||
+          template_url_service_->IsExtensionControlledDefaultSearch()));
 }
 
 void BrowserOptionsHandler::SetDefaultSearchEngine(const ListValue* args) {

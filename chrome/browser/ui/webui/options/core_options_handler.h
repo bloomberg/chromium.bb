@@ -149,6 +149,10 @@ class CoreOptionsHandler : public OptionsPageUIHandler {
   // is an array that contains a single item, the name of the metric identifier.
   void HandleUserMetricsAction(const ListValue* args);
 
+  // Callback for the "disableExtension" message. The extension ID string is the
+  // only argument in the |args| list.
+  void HandleDisableExtension(const ListValue* args);
+
   void UpdateClearPluginLSOData();
   void UpdatePepperFlashSettingsEnabled();
 

@@ -58,9 +58,26 @@ cr.define('options', function() {
     handlePrefChange: function(event) {
       OptionsPage.hideBubble();
       if (event.value.controlledBy) {
-        this.controlledBy =
-            !this.value || String(event.value.value) == this.value ?
-            event.value.controlledBy : null;
+        if (!this.value || String(event.value.value) == this.value) {
+          this.controlledBy = event.value.controlledBy;
+          if (event.value.extension) {
+            if (this.pref == 'session.restore_on_startup' ||
+                this.pref == 'homepage_is_newtabpage') {
+              // Special case for the restore on startup, which is implied
+              // by the startup pages settings being controlled by an
+              // extension, and same for the home page as NTP, so we don't want
+              // to show two buttons in these cases.
+              // TODO(mad): Find a better way to handle this.
+              this.controlledBy = null;
+            } else {
+              this.extensionId = event.value.extension.id;
+              this.extensionIcon = event.value.extension.icon;
+              this.extensionName = event.value.extension.name;
+            }
+          }
+        } else {
+          this.controlledBy = null;
+        }
       } else if (event.value.recommendedValue != undefined) {
         this.controlledBy =
             !this.value || String(event.value.recommendedValue) == this.value ?
@@ -85,11 +102,15 @@ cr.define('options', function() {
           var defaultStrings = {
             'policy': loadTimeData.getString('controlledSettingsPolicy'),
             'extension': loadTimeData.getString('controlledSettingsExtension'),
+            'extensionWithName': loadTimeData.getString(
+                'controlledSettingsExtensionWithName'),
           };
         } else {
           var defaultStrings = {
             'policy': loadTimeData.getString('controlledSettingPolicy'),
             'extension': loadTimeData.getString('controlledSettingExtension'),
+            'extensionWithName': loadTimeData.getString(
+                'controlledSettingExtensionWithName'),
             'recommended':
                 loadTimeData.getString('controlledSettingRecommended'),
             'hasRecommendation':
@@ -106,6 +127,8 @@ cr.define('options', function() {
           return;
 
         var text = defaultStrings[this.controlledBy];
+        if (this.controlledBy == 'extension' && this.extensionName)
+          text = defaultStrings.extensionWithName;
 
         // Apply text overrides.
         if (this.hasAttribute('text' + this.controlledBy))
@@ -130,6 +153,33 @@ cr.define('options', function() {
           });
           container.appendChild(action);
           content.appendChild(container);
+        } else if (this.controlledBy == 'extension' && this.extensionName) {
+          var extensionContainer =
+              $('extension-controlled-settings-bubble-template').
+                  cloneNode(true);
+          // No need for an id anymore, and thus remove to avoid id collision.
+          extensionContainer.removeAttribute('id');
+          extensionContainer.hidden = false;
+
+          var extensionName = extensionContainer.querySelector(
+              '.controlled-setting-bubble-extension-name');
+          extensionName.textContent = this.extensionName;
+          extensionName.style.backgroundImage =
+              'url("' + this.extensionIcon + '")';
+
+          var manageLink = extensionContainer.querySelector(
+              '.controlled-setting-bubble-extension-manage-link');
+          manageLink.onclick = function() {
+            uber.invokeMethodOnWindow(
+                window.top, 'showPage', {pageId: 'extensions'});
+          };
+
+          var disableButton = extensionContainer.querySelector('button');
+          var extensionId = this.extensionId;
+          disableButton.onclick = function() {
+            chrome.send('disableExtension', [extensionId]);
+          };
+          content.appendChild(extensionContainer);
         }
 
         OptionsPage.showBubble(content, this.image, this, this.location);
