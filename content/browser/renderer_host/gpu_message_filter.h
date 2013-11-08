@@ -9,6 +9,7 @@
 
 #include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/common/gpu/gpu_process_launch_causes.h"
@@ -65,10 +66,11 @@ class GpuMessageFilter : public BrowserMessageFilter {
       const GPUCreateCommandBufferConfig& init_params,
       IPC::Message* reply);
   // Helper callbacks for the message handlers.
-  void EstablishChannelCallback(IPC::Message* reply,
+  void EstablishChannelCallback(scoped_ptr<IPC::Message> reply,
                                 const IPC::ChannelHandle& channel,
                                 const gpu::GPUInfo& gpu_info);
-  void CreateCommandBufferCallback(IPC::Message* reply, int32 route_id);
+  void CreateCommandBufferCallback(scoped_ptr<IPC::Message> reply,
+                                   int32 route_id);
 
   void BeginAllFrameSubscriptions();
   void EndAllFrameSubscriptions();
