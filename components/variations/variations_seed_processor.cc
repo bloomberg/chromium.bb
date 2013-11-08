@@ -12,6 +12,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/stl_util.h"
 #include "base/version.h"
+#include "components/variations/processed_study.h"
 #include "components/variations/variations_associated_data.h"
 
 namespace chrome_variations {
@@ -69,6 +70,21 @@ void VariationsSeedProcessor::CreateTrialsFromSeed(
     const base::Time& reference_date,
     const base::Version& version,
     Study_Channel channel) {
+  std::vector<ProcessedStudy> filtered_studies;
+  FilterAndValidateStudies(seed, locale, reference_date, version, channel,
+                           &filtered_studies);
+
+  for (size_t i = 0; i < filtered_studies.size(); ++i)
+    CreateTrialFromStudy(filtered_studies[i]);
+}
+
+void VariationsSeedProcessor::FilterAndValidateStudies(
+    const VariationsSeed& seed,
+    const std::string& locale,
+    const base::Time& reference_date,
+    const base::Version& version,
+    Study_Channel channel,
+    std::vector<ProcessedStudy>* filtered_studies) {
   DCHECK(version.IsValid());
 
   // Add expired studies (in a disabled state) only after all the non-expired
@@ -85,16 +101,27 @@ void VariationsSeedProcessor::CreateTrialsFromSeed(
 
     if (IsStudyExpired(study, reference_date)) {
       expired_studies.push_back(&study);
-    } else {
-      CreateTrialFromStudy(study, false);
+    } else if (!ContainsKey(created_studies, study.name())) {
+      ValidateAndAddStudy(study, false, filtered_studies);
       created_studies.insert(study.name());
     }
   }
 
   for (size_t i = 0; i < expired_studies.size(); ++i) {
     if (!ContainsKey(created_studies, expired_studies[i]->name()))
-      CreateTrialFromStudy(*expired_studies[i], true);
+      ValidateAndAddStudy(*expired_studies[i], true, filtered_studies);
   }
+}
+
+void VariationsSeedProcessor::ValidateAndAddStudy(
+    const Study& study,
+    bool is_expired,
+    std::vector<ProcessedStudy>* filtered_studies) {
+  base::FieldTrial::Probability total_probability = 0;
+  if (!ValidateStudyAndComputeTotalProbability(study, &total_probability))
+    return;
+  filtered_studies->push_back(ProcessedStudy(&study, total_probability,
+                                              is_expired));
 }
 
 bool VariationsSeedProcessor::CheckStudyChannel(const Study_Filter& filter,
@@ -166,11 +193,9 @@ bool VariationsSeedProcessor::CheckStudyVersion(
   return true;
 }
 
-void VariationsSeedProcessor::CreateTrialFromStudy(const Study& study,
-                                                   bool is_expired) {
-  base::FieldTrial::Probability total_probability = 0;
-  if (!ValidateStudyAndComputeTotalProbability(study, &total_probability))
-    return;
+void VariationsSeedProcessor::CreateTrialFromStudy(
+    const ProcessedStudy& processed_study) {
+  const Study& study = *processed_study.study;
 
   // Check if any experiments need to be forced due to a command line
   // flag. Force the first experiment with an existing flag.
@@ -202,7 +227,8 @@ void VariationsSeedProcessor::CreateTrialFromStudy(const Study& study,
   // the expiration check using |reference_date| is done explicitly below.
   scoped_refptr<base::FieldTrial> trial(
       base::FieldTrialList::FactoryGetFieldTrialWithRandomizationSeed(
-          study.name(), total_probability, study.default_experiment_name(),
+          study.name(), processed_study.total_probability,
+          study.default_experiment_name(),
           base::FieldTrialList::kNoExpirationYear, 1, 1, randomization_type,
           randomization_seed, NULL));
 
@@ -237,7 +263,7 @@ void VariationsSeedProcessor::CreateTrialFromStudy(const Study& study,
   }
 
   trial->SetForced();
-  if (is_expired)
+  if (processed_study.is_expired)
     trial->Disable();
   else if (study.activation_type() == Study_ActivationType_ACTIVATION_AUTO)
     trial->group();

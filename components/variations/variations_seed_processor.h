@@ -6,6 +6,7 @@
 #define COMPONENTS_VARIATIONS_VARIATIONS_SEED_PROCESSOR_H_
 
 #include <string>
+#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
@@ -16,6 +17,8 @@
 #include "components/variations/proto/variations_seed.pb.h"
 
 namespace chrome_variations {
+
+struct ProcessedStudy;
 
 // Helper class to instantiate field trials from a variations seed.
 class VariationsSeedProcessor {
@@ -38,7 +41,7 @@ class VariationsSeedProcessor {
   FRIEND_TEST_ALL_PREFIXES(VariationsSeedProcessorTest, CheckStudyStartDate);
   FRIEND_TEST_ALL_PREFIXES(VariationsSeedProcessorTest, CheckStudyVersion);
   FRIEND_TEST_ALL_PREFIXES(VariationsSeedProcessorTest,
-                           CheckStudyVersionWildcards);
+                           FilterAndValidateStudies);
   FRIEND_TEST_ALL_PREFIXES(VariationsSeedProcessorTest, ForceGroupWithFlag1);
   FRIEND_TEST_ALL_PREFIXES(VariationsSeedProcessorTest, ForceGroupWithFlag2);
   FRIEND_TEST_ALL_PREFIXES(VariationsSeedProcessorTest,
@@ -50,6 +53,22 @@ class VariationsSeedProcessor {
   FRIEND_TEST_ALL_PREFIXES(VariationsSeedProcessorTest, VariationParams);
   FRIEND_TEST_ALL_PREFIXES(VariationsSeedProcessorTest,
                            VariationParamsWithForcingFlag);
+
+  // Filters the list of studies in |seed| and validates and pre-processes them,
+  // adding any kept studies to |filtered_studies| list. Ensures that the
+  // resulting list will not have more than one study with the same name.
+  void FilterAndValidateStudies(const VariationsSeed& seed,
+                                const std::string& locale,
+                                const base::Time& reference_date,
+                                const base::Version& version,
+                                Study_Channel channel,
+                                std::vector<ProcessedStudy>* filtered_studies);
+
+  // Validates |study| and if valid, adds it to |filtered_studies| as a
+  // ProcessedStudy object.
+  void ValidateAndAddStudy(const Study& study,
+                           bool is_expired,
+                           std::vector<ProcessedStudy>* filtered_studies);
 
   // Checks whether a study is applicable for the given |channel| per |filter|.
   bool CheckStudyChannel(const Study_Filter& filter, Study_Channel channel);
@@ -68,9 +87,9 @@ class VariationsSeedProcessor {
   bool CheckStudyVersion(const Study_Filter& filter,
                          const base::Version& version);
 
-  // Creates and registers a field trial from the |study| data. Disables the
-  // trial if |is_expired| is true.
-  void CreateTrialFromStudy(const Study& study, bool is_expired);
+  // Creates and registers a field trial from the |processed_study| data.
+  // Disables the trial if |processed_study.is_expired| is true.
+  void CreateTrialFromStudy(const ProcessedStudy& processed_study);
 
   // Checks whether |study| is expired using the given date/time.
   bool IsStudyExpired(const Study& study, const base::Time& date_time);
