@@ -13,6 +13,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -89,9 +90,7 @@ IN_PROC_BROWSER_TEST_F(PageAsBrowserActionApiTest, Basic) {
   {
     // Simulate the page action being clicked.
     ResultCatcher catcher;
-    ExtensionService* service = extensions::ExtensionSystem::Get(
-        browser()->profile())->extension_service();
-    service->toolbar_model()->ExecuteBrowserAction(
+    ExtensionToolbarModel::Get(browser()->profile())->ExecuteBrowserAction(
         extension, browser(), NULL, true);
     EXPECT_TRUE(catcher.GetNextResult());
   }
@@ -134,9 +133,7 @@ IN_PROC_BROWSER_TEST_F(PageAsBrowserActionApiTest, AddPopup) {
   // install a page action popup.
   {
     ResultCatcher catcher;
-    ExtensionService* service = extensions::ExtensionSystem::Get(
-        browser()->profile())->extension_service();
-    service->toolbar_model()->ExecuteBrowserAction(
+    ExtensionToolbarModel::Get(browser()->profile())->ExecuteBrowserAction(
         extension, browser(), NULL, true);
     ASSERT_TRUE(catcher.GetNextResult());
   }

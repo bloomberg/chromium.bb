@@ -19,6 +19,7 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/extensions/location_bar_controller.h"
 #include "chrome/browser/extensions/state_store.h"
 #include "chrome/browser/extensions/tab_helper.h"
@@ -819,9 +820,7 @@ BrowserActionOpenPopupFunction::BrowserActionOpenPopupFunction()
 }
 
 bool BrowserActionOpenPopupFunction::RunImpl() {
-  ExtensionToolbarModel* model = extensions::ExtensionSystem::Get(GetProfile())
-                                     ->extension_service()
-                                     ->toolbar_model();
+  ExtensionToolbarModel* model = ExtensionToolbarModel::Get(GetProfile());
   if (!model) {
     error_ = kInternalError;
     return false;

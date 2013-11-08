@@ -760,6 +760,8 @@
         'browser/extensions/extension_tab_util.h',
         'browser/extensions/extension_toolbar_model.cc',
         'browser/extensions/extension_toolbar_model.h',
+        'browser/extensions/extension_toolbar_model_factory.cc',
+        'browser/extensions/extension_toolbar_model_factory.h',
         'browser/extensions/extension_uninstall_dialog.cc',
         'browser/extensions/extension_uninstall_dialog.h',
         'browser/extensions/extension_util.cc',

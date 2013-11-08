@@ -24,7 +24,6 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
-#include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/extensions/extensions_quota_service.h"
 #include "chrome/browser/extensions/external_provider_interface.h"
 #include "chrome/browser/extensions/management_policy.h"
@@ -455,8 +454,6 @@ class ExtensionService
   // Note that this may return NULL if autoupdate is not turned on.
   extensions::ExtensionUpdater* updater();
 
-  ExtensionToolbarModel* toolbar_model() { return &toolbar_model_; }
-
   ExtensionsQuotaService* quota_service() { return &quota_service_; }
 
   extensions::MenuManager* menu_manager() { return &menu_manager_; }
@@ -771,9 +768,6 @@ class ExtensionService
 
   // Our extension updater, if updates are turned on.
   scoped_ptr<extensions::ExtensionUpdater> updater_;
-
-  // The model that tracks extensions with BrowserAction buttons.
-  ExtensionToolbarModel toolbar_model_;
 
   // Map unloaded extensions' ids to their paths. When a temporarily loaded
   // extension is unloaded, we lose the information about it and don't have

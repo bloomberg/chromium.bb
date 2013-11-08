@@ -103,6 +103,7 @@
 #include "chrome/browser/extensions/api/webrtc_audio_private/webrtc_audio_private_api.h"
 #include "chrome/browser/extensions/extension_prefs_factory.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
+#include "chrome/browser/extensions/extension_toolbar_model_factory.h"
 #include "chrome/browser/extensions/extension_web_ui_override_registrar.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/extensions/plugin_manager.h"
@@ -294,6 +295,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::TtsAPI::GetFactoryInstance();
   extensions::WebNavigationAPI::GetFactoryInstance();
   extensions::WebrtcAudioPrivateEventService::GetFactoryInstance();
+  ExtensionToolbarModelFactory::GetInstance();
 #endif  // defined(ENABLE_EXTENSIONS)
   FaviconServiceFactory::GetInstance();
 #if defined(OS_CHROMEOS) && defined(FILE_MANAGER_EXTENSION)

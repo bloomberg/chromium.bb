@@ -282,13 +282,9 @@ class ExtensionServiceObserverBridge : public content::NotificationObserver,
     profile_ = browser->profile();
 
     observer_.reset(new ExtensionServiceObserverBridge(self, browser_));
-    ExtensionService* extensionService =
-        extensions::ExtensionSystem::Get(profile_)->extension_service();
-    // |extensionService| can be NULL in Incognito.
-    if (extensionService) {
-      toolbarModel_ = extensionService->toolbar_model();
+    toolbarModel_ = ExtensionToolbarModel::Get(profile_);
+    if (toolbarModel_)
       toolbarModel_->AddObserver(observer_.get());
-    }
 
     containerView_ = container;
     [containerView_ setPostsFrameChangedNotifications:YES];

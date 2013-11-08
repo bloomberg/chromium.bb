@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -28,9 +26,7 @@ class ExtensionToolbarModelTest : public ExtensionBrowserTest,
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {
-    ExtensionService* service = extensions::ExtensionSystem::Get(
-        browser()->profile())->extension_service();
-    model_ = service->toolbar_model();
+    model_ = ExtensionToolbarModel::Get(browser()->profile());
     model_->AddObserver(this);
   }
 

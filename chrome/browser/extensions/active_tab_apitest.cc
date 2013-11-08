@@ -4,8 +4,7 @@
 
 #include "base/logging.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -27,8 +26,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_ActiveTab) {
       LoadExtension(test_data_dir_.AppendASCII("active_tab"));
   ASSERT_TRUE(extension);
 
-  ExtensionService* service =
-      ExtensionSystem::Get(browser()->profile())->extension_service();
+  ExtensionToolbarModel* toolbar_model =
+      ExtensionToolbarModel::Get(browser()->profile());
 
   // Shouldn't be initially granted based on activeTab.
   {
@@ -43,8 +42,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_ActiveTab) {
   // Granting to the extension should give it access to page.html.
   {
     ResultCatcher catcher;
-    service->toolbar_model()->ExecuteBrowserAction(
-        extension, browser(), NULL, true);
+    toolbar_model->ExecuteBrowserAction(extension, browser(), NULL, true);
     EXPECT_TRUE(catcher.GetNextResult()) << message_;
   }
 

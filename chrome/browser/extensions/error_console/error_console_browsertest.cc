@@ -10,8 +10,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/extension.h"
@@ -244,9 +242,7 @@ class ErrorConsoleBrowserTest : public ExtensionBrowserTest {
         break;
       }
       case ACTION_BROWSER_ACTION: {
-        ExtensionService* service =
-            extensions::ExtensionSystem::Get(profile())->extension_service();
-        service->toolbar_model()->ExecuteBrowserAction(
+        ExtensionToolbarModel::Get(profile())->ExecuteBrowserAction(
             *extension, browser(), NULL, true);
         break;
       }

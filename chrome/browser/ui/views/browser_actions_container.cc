@@ -75,12 +75,9 @@ BrowserActionsContainer::BrowserActionsContainer(Browser* browser,
       show_menu_task_factory_(this) {
   set_id(VIEW_ID_BROWSER_ACTION_TOOLBAR);
 
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  if (service) {
-    model_ = service->toolbar_model();
+  model_ = ExtensionToolbarModel::Get(browser->profile());
+  if (model_)
     model_->AddObserver(this);
-  }
 
   extension_keybinding_registry_.reset(new ExtensionKeybindingRegistryViews(
       browser->profile(),
