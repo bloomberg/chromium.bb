@@ -33,6 +33,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/content_client.h"
 #include "content/public/common/page_transition_types.h"
 #include "content/public/common/referrer.h"
 #include "ipc/ipc_sender.h"
@@ -475,7 +476,10 @@ RendererOverridesHandler::PageCanScreencast(
     scoped_refptr<DevToolsProtocol::Command> command) {
   base::DictionaryValue* result = new base::DictionaryValue();
 #if defined(OS_ANDROID)
-  result->SetBoolean(devtools::kResult, true);
+  // Android WebView does not support Screencast.
+  std::string product = GetContentClient()->GetProduct();
+  bool isChrome = product.find("Chrome/") == 0;
+  result->SetBoolean(devtools::kResult, isChrome);
 #else
   result->SetBoolean(devtools::kResult, false);
 #endif  // defined(OS_ANDROID)
