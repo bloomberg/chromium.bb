@@ -99,11 +99,11 @@ class GuestView : public content::BrowserPluginGuestDelegate {
  private:
   void SendQueuedEvents();
 
-  content::WebContents* guest_web_contents_;
+  content::WebContents* const guest_web_contents_;
   content::WebContents* embedder_web_contents_;
   const std::string extension_id_;
   int embedder_render_process_id_;
-  content::BrowserContext* browser_context_;
+  content::BrowserContext* const browser_context_;
   // |guest_instance_id_| is a profile-wide unique identifier for a guest
   // WebContents.
   const int guest_instance_id_;
