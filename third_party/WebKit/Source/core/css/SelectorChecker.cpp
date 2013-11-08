@@ -650,6 +650,12 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
                 return true;
             break;
         case CSSSelector::PseudoFocus:
+            if (m_mode == ResolvingStyle) {
+                if (context.elementStyle)
+                    context.elementStyle->setAffectedByFocus();
+                else
+                    element.setChildrenAffectedByFocus(true);
+            }
             return matchesFocusPseudoClass(element);
         case CSSSelector::PseudoHover:
             // If we're in quirks mode, then hover should never match anchors with no

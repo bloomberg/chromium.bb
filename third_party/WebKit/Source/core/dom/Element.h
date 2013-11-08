@@ -320,6 +320,7 @@ public:
 
     // Methods for indicating the style is affected by dynamic updates (e.g., children changing, our position changing in our sibling list, etc.)
     bool styleAffectedByEmpty() const { return hasRareData() && rareDataStyleAffectedByEmpty(); }
+    bool childrenAffectedByFocus() const { return hasRareData() && rareDataChildrenAffectedByFocus(); }
     bool childrenAffectedByHover() const { return hasRareData() && rareDataChildrenAffectedByHover(); }
     bool childrenAffectedByActive() const { return hasRareData() && rareDataChildrenAffectedByActive(); }
     bool childrenAffectedByDrag() const { return hasRareData() && rareDataChildrenAffectedByDrag(); }
@@ -334,6 +335,7 @@ public:
     bool childrenSupportStyleSharing() const;
 
     void setStyleAffectedByEmpty();
+    void setChildrenAffectedByFocus(bool);
     void setChildrenAffectedByHover(bool);
     void setChildrenAffectedByActive(bool);
     void setChildrenAffectedByDrag(bool);
@@ -626,6 +628,7 @@ private:
 
     QualifiedName m_tagName;
     bool rareDataStyleAffectedByEmpty() const;
+    bool rareDataChildrenAffectedByFocus() const;
     bool rareDataChildrenAffectedByHover() const;
     bool rareDataChildrenAffectedByActive() const;
     bool rareDataChildrenAffectedByDrag() const;

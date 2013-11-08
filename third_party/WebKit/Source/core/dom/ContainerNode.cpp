@@ -818,6 +818,22 @@ LayoutRect ContainerNode::boundingBox() const
     return enclosingLayoutRect(FloatRect(upperLeft, lowerRight.expandedTo(upperLeft) - upperLeft));
 }
 
+// This is used by FrameSelection to denote when the active-state of the page has changed
+// independent of the focused element changing.
+void ContainerNode::focusStateChanged()
+{
+    // If we're just changing the window's active state and the focused node has no
+    // renderer we can just ignore the state change.
+    if (!renderer())
+        return;
+    // FIXME: This could probably setNeedsStyleRecalc(LocalStyleChange) in the affectedByFocus case
+    // and only setNeedsStyleRecalc(SubtreeStyleChange) in the childrenAffectedByFocus case.
+    if (renderStyle()->affectedByFocus() || (isElementNode() && toElement(this)->childrenAffectedByFocus()))
+        setNeedsStyleRecalc();
+    if (renderer() && renderer()->style()->hasAppearance())
+        RenderTheme::theme().stateChanged(renderer(), FocusState);
+}
+
 void ContainerNode::setFocus(bool received)
 {
     if (focused() == received)
@@ -825,18 +841,20 @@ void ContainerNode::setFocus(bool received)
 
     Node::setFocus(received);
 
-    // note that we need to recalc the style
-    setNeedsStyleRecalc();
+    focusStateChanged();
+    // If :focus sets display: none, we lose focus but still need to recalc our style.
+    if (!renderer() && !received)
+        setNeedsStyleRecalc();
 }
 
 void ContainerNode::setActive(bool down, bool pause)
 {
-    if (down == active()) return;
+    if (down == active())
+        return;
 
     Node::setActive(down);
 
-    // note that we need to recalc the style
-    // FIXME: Move to Element
+    // FIXME: Why does this not need to handle the display: none transition like :hover does?
     if (renderer()) {
         if (renderStyle()->affectedByActive() || (isElementNode() && toElement(this)->childrenAffectedByActive()))
             setNeedsStyleRecalc();
@@ -847,24 +865,18 @@ void ContainerNode::setActive(bool down, bool pause)
 
 void ContainerNode::setHovered(bool over)
 {
-    if (over == hovered()) return;
+    if (over == hovered())
+        return;
 
     Node::setHovered(over);
 
+    // If :hover sets display: none we lose our hover but still need to recalc our style.
     if (!renderer()) {
-        // When setting hover to false, the style needs to be recalc'd even when
-        // there's no renderer (imagine setting display:none in the :hover class,
-        // if a nil renderer would prevent this element from recalculating its
-        // style, it would never go back to its normal style and remain
-        // stuck in its hovered style).
         if (!over)
             setNeedsStyleRecalc();
-
         return;
     }
 
-    // note that we need to recalc the style
-    // FIXME: Move to Element
     if (renderer()) {
         if (renderStyle()->affectedByHover() || (isElementNode() && toElement(this)->childrenAffectedByHover()))
             setNeedsStyleRecalc();
