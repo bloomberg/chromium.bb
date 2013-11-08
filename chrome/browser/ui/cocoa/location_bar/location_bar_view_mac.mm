@@ -34,6 +34,7 @@
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h"
 #import "chrome/browser/ui/cocoa/location_bar/content_setting_decoration.h"
+#import "chrome/browser/ui/cocoa/location_bar/generated_credit_card_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/ev_bubble_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/keyword_hint_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_icon_decoration.h"
@@ -93,6 +94,8 @@ LocationBarViewMac::LocationBarViewMac(
       zoom_decoration_(new ZoomDecoration(this)),
       keyword_hint_decoration_(new KeywordHintDecoration()),
       mic_search_decoration_(new MicSearchDecoration(command_updater)),
+      generated_credit_card_decoration_(
+          new GeneratedCreditCardDecoration(this)),
       profile_(profile),
       browser_(browser),
       weak_ptr_factory_(this) {
@@ -199,8 +202,7 @@ void LocationBarViewMac::UpdateOpenPDFInReaderPrompt() {
 }
 
 void LocationBarViewMac::UpdateGeneratedCreditCardView() {
-  // TODO(dbeam): encourage groby@ to implement via prodding or chocolate.
-  NOTIMPLEMENTED();
+  generated_credit_card_decoration_->Update();
 }
 
 void LocationBarViewMac::SaveStateToContents(WebContents* contents) {
@@ -322,6 +324,16 @@ NSPoint LocationBarViewMac::GetPageInfoBubblePoint() const {
   }
 }
 
+NSPoint LocationBarViewMac::GetGeneratedCreditCardBubblePoint() const {
+  AutocompleteTextFieldCell* cell = [field_ cell];
+  const NSRect frame =
+      [cell frameForDecoration:generated_credit_card_decoration_.get()
+                       inFrame:[field_ bounds]];
+  const NSPoint point =
+      generated_credit_card_decoration_->GetBubblePointInFrame(frame);
+  return [field_ convertPoint:point toView:nil];
+}
+
 void LocationBarViewMac::OnDecorationsChanged() {
   // TODO(shess): The field-editor frame and cursor rects should not
   // change, here.
@@ -345,6 +357,7 @@ void LocationBarViewMac::Layout() {
   [cell addLeftDecoration:ev_bubble_decoration_.get()];
   [cell addRightDecoration:star_decoration_.get()];
   [cell addRightDecoration:zoom_decoration_.get()];
+  [cell addRightDecoration:generated_credit_card_decoration_.get()];
 
   // Note that display order is right to left.
   for (size_t i = 0; i < page_action_decorations_.size(); ++i) {
@@ -467,6 +480,7 @@ void LocationBarViewMac::Update(const WebContents* contents) {
   RefreshPageActionDecorations();
   RefreshContentSettingsDecorations();
   UpdateMicSearchDecorationVisibility();
+  UpdateGeneratedCreditCardView();
   if (contents)
     omnibox_view_->OnTabChanged(contents);
   else

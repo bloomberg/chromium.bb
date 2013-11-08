@@ -11,7 +11,7 @@ const int GeneratedCreditCardBubbleView::kContentsWidth = 350;
 
 GeneratedCreditCardBubbleView::~GeneratedCreditCardBubbleView() {}
 
-#if !defined(TOOLKIT_VIEWS)
+#if !defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
 // static
 base::WeakPtr<GeneratedCreditCardBubbleView>
     GeneratedCreditCardBubbleView::Create(
