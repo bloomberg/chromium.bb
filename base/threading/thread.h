@@ -8,11 +8,15 @@
 #include <string>
 
 #include "base/base_export.h"
+#include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/threading/platform_thread.h"
 
 namespace base {
+
+class MessagePump;
 
 // A simple thread abstraction that establishes a MessageLoop on a new thread.
 // The consumer uses the MessageLoop of the thread to cause code to execute on
@@ -29,13 +33,22 @@ namespace base {
 //  (3.b)    MessageLoop::DestructionObserver::WillDestroyCurrentMessageLoop
 class BASE_EXPORT Thread : PlatformThread::Delegate {
  public:
-  struct Options {
-    Options() : message_loop_type(MessageLoop::TYPE_DEFAULT), stack_size(0) {}
-    Options(MessageLoop::Type type, size_t size)
-        : message_loop_type(type), stack_size(size) {}
+  struct BASE_EXPORT Options {
+    typedef Callback<scoped_ptr<MessagePump>()> MessagePumpFactory;
+
+    Options();
+    Options(MessageLoop::Type type, size_t size);
+    ~Options();
 
     // Specifies the type of message loop that will be allocated on the thread.
+    // This is ignored if message_pump_factory.is_null() is false.
     MessageLoop::Type message_loop_type;
+
+    // Used to create the MessagePump for the MessageLoop. The callback is Run()
+    // on the thread. If message_pump_factory.is_null(), then a MessagePump
+    // appropriate for |message_loop_type| is created. Setting this forces the
+    // MessageLoop::Type to TYPE_CUSTOM.
+    MessagePumpFactory message_pump_factory;
 
     // Specifies the maximum stack size that the thread is allowed to use.
     // This does not necessarily correspond to the thread's initial stack size.

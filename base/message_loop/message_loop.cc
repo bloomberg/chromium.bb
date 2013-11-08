@@ -144,14 +144,7 @@ MessageLoop::MessageLoop(Type type)
 #endif  // OS_WIN
       message_histogram_(NULL),
       run_loop_(NULL) {
-  DCHECK(!current()) << "should only have one message loop per thread";
-  lazy_tls_ptr.Pointer()->Set(this);
-
-  incoming_task_queue_ = new internal::IncomingTaskQueue(this);
-  message_loop_proxy_ =
-      new internal::MessageLoopProxyImpl(incoming_task_queue_);
-  thread_task_runner_handle_.reset(
-      new ThreadTaskRunnerHandle(message_loop_proxy_));
+  Init();
 
 // TODO(rvargas): Get rid of the OS guards.
 #if defined(OS_WIN)
@@ -196,6 +189,20 @@ MessageLoop::MessageLoop(Type type)
     DCHECK_EQ(TYPE_DEFAULT, type_);
     pump_.reset(new MessagePumpDefault());
   }
+}
+
+MessageLoop::MessageLoop(scoped_ptr<MessagePump> pump)
+    : pump_(pump.Pass()),
+      type_(TYPE_CUSTOM),
+      exception_restoration_(false),
+      nestable_tasks_allowed_(true),
+#if defined(OS_WIN)
+      os_modal_loop_(false),
+#endif  // OS_WIN
+      message_histogram_(NULL),
+      run_loop_(NULL) {
+  DCHECK(pump_.get());
+  Init();
 }
 
 MessageLoop::~MessageLoop() {
@@ -396,6 +403,17 @@ void MessageLoop::LockWaitUnLockForTesting(WaitableEvent* caller_wait,
 }
 
 //------------------------------------------------------------------------------
+
+void MessageLoop::Init() {
+  DCHECK(!current()) << "should only have one message loop per thread";
+  lazy_tls_ptr.Pointer()->Set(this);
+
+  incoming_task_queue_ = new internal::IncomingTaskQueue(this);
+  message_loop_proxy_ =
+      new internal::MessageLoopProxyImpl(incoming_task_queue_);
+  thread_task_runner_handle_.reset(
+      new ThreadTaskRunnerHandle(message_loop_proxy_));
+}
 
 // Runs the loop in two different SEH modes:
 // enable_SEH_restoration_ = false : any unhandled exception goes to the last

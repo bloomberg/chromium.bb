@@ -296,6 +296,7 @@ class TestMessageLoop : public base::MessageLoop {
 #if defined(OS_ANDROID)
       case base::MessageLoop::TYPE_JAVA: // fall-through
 #endif // defined(OS_ANDROID)
+      case base::MessageLoop::TYPE_CUSTOM:
       case base::MessageLoop::TYPE_DEFAULT:
         return !BrowserThread::CurrentlyOn(BrowserThread::UI) &&
                !BrowserThread::CurrentlyOn(BrowserThread::IO);

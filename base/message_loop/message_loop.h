@@ -128,9 +128,13 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   //   TYPE_JAVA behaves in essence like TYPE_UI, except during construction
   //   where it does not use the main thread specific pump factory.
   //
+  // TYPE_CUSTOM
+  //   MessagePump was supplied to constructor.
+  //
   enum Type {
     TYPE_DEFAULT,
     TYPE_UI,
+    TYPE_CUSTOM,
 #if defined(TOOLKIT_GTK)
     TYPE_GPU,
 #endif
@@ -143,6 +147,9 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   // Normally, it is not necessary to instantiate a MessageLoop.  Instead, it
   // is typical to make use of the current thread's MessageLoop instance.
   explicit MessageLoop(Type type = TYPE_DEFAULT);
+  // Creates a TYPE_CUSTOM MessageLoop with the supplied MessagePump, which must
+  // be non-NULL.
+  explicit MessageLoop(scoped_ptr<base::MessagePump> pump);
   virtual ~MessageLoop();
 
   // Returns the MessageLoop object for the current thread, or null if none.
@@ -442,6 +449,9 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   friend class internal::IncomingTaskQueue;
   friend class RunLoop;
 
+  // Configures various members for the two constructors.
+  void Init();
+
   // A function to encapsulate all the exception handling capability in the
   // stacks around the running of a main message loop.  It will run the message
   // loop in a SEH try block or not depending on the set_SEH_restoration()
@@ -504,7 +514,7 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   virtual void GetQueueingInformation(size_t* queue_size,
                                       TimeDelta* queueing_delay) OVERRIDE;
 
-  Type type_;
+  const Type type_;
 
   // A list of tasks that need to be processed by this instance.  Note that
   // this queue is only accessed (push/pop) by our current thread.

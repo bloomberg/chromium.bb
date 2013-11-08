@@ -49,6 +49,20 @@ struct Thread::StartupData {
         event(false, false) {}
 };
 
+Thread::Options::Options()
+    : message_loop_type(MessageLoop::TYPE_DEFAULT),
+      stack_size(0) {
+}
+
+Thread::Options::Options(MessageLoop::Type type,
+                         size_t size)
+    : message_loop_type(type),
+      stack_size(size) {
+}
+
+Thread::Options::~Options() {
+}
+
 Thread::Thread(const char* name)
     :
 #if defined(OS_WIN)
@@ -174,8 +188,14 @@ void Thread::ThreadMain() {
   {
     // The message loop for this thread.
     // Allocated on the heap to centralize any leak reports at this line.
-    scoped_ptr<MessageLoop> message_loop(
-        new MessageLoop(startup_data_->options.message_loop_type));
+    scoped_ptr<MessageLoop> message_loop;
+    if (!startup_data_->options.message_pump_factory.is_null()) {
+      message_loop.reset(
+          new MessageLoop(startup_data_->options.message_pump_factory.Run()));
+    } else {
+      message_loop.reset(
+          new MessageLoop(startup_data_->options.message_loop_type));
+    }
 
     // Complete the initialization of our Thread object.
     thread_id_ = PlatformThread::CurrentId();
