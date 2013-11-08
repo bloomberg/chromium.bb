@@ -70,6 +70,10 @@
 #include "content/browser/android/surface_texture_peer_browser_impl.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "content/browser/theme_helper_mac.h"
+#endif
+
 #if defined(OS_WIN)
 #include <windows.h>
 #include <commctrl.h>
@@ -1021,6 +1025,10 @@ int BrowserMainLoop::BrowserThreadsStarted() {
             CAUSE_FOR_GPU_LAUNCH_BROWSER_STARTUP));
   }
 #endif  // !defined(OS_IOS)
+
+#if defined(OS_MACOSX)
+  ThemeHelperMac::GetInstance();
+#endif
   return result_code_;
 }
 

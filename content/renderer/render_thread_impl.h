@@ -380,9 +380,17 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
   void OnGetAccessibilityTree();
   void OnTempCrashWithData(const GURL& data);
   void OnSetRendererProcessID(base::ProcessId process_id);
-  void OnSetWebKitSharedTimersSuspended(bool suspend);
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
+#if defined(OS_ANDROID)
+  void OnSetWebKitSharedTimersSuspended(bool suspend);
+#endif
+#if defined(OS_MACOSX)
+  void OnUpdateScrollbarTheme(float initial_button_delay,
+                              float autoscroll_button_delay,
+                              bool jump_on_track_click,
+                              bool redraw);
+#endif
 
   void IdleHandlerInForegroundTab();
 

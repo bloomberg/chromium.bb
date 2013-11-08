@@ -1290,11 +1290,20 @@ IPC_MESSAGE_ROUTED3(ViewMsg_WindowSnapshotCompleted,
                     gfx::Size /* size */,
                     std::vector<unsigned char> /* png */)
 
+#if defined(OS_MACOSX)
+// Notification of a change in scrollbar appearance and/or behavior.
+IPC_MESSAGE_CONTROL4(ViewMsg_UpdateScrollbarTheme,
+                     float /* initial_button_delay */,
+                     float /* autoscroll_button_delay */,
+                     bool /* jump_on_track_click */,
+                     bool /* redraw */)
+#endif
+
+#if defined(OS_ANDROID)
 // Tells the renderer to suspend/resume the webkit timers.
 IPC_MESSAGE_CONTROL1(ViewMsg_SetWebKitSharedTimersSuspended,
                      bool /* suspend */)
 
-#if defined(OS_ANDROID)
 // Sent when the browser wants the bounding boxes of the current find matches.
 //
 // If match rects are already cached on the browser side, |current_version|

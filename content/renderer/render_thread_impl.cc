@@ -122,6 +122,10 @@
 #include "content/child/npapi/np_channel_base.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "third_party/WebKit/public/web/mac/WebScrollbarTheme.h"
+#endif
+
 #if defined(OS_POSIX)
 #include "ipc/ipc_channel_posix.h"
 #endif
@@ -1144,8 +1148,13 @@ bool RenderThreadImpl::OnControlMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(ViewMsg_NetworkStateChanged, OnNetworkStateChanged)
     IPC_MESSAGE_HANDLER(ViewMsg_TempCrashWithData, OnTempCrashWithData)
     IPC_MESSAGE_HANDLER(ViewMsg_SetRendererProcessID, OnSetRendererProcessID)
+#if defined(OS_ANDROID)
     IPC_MESSAGE_HANDLER(ViewMsg_SetWebKitSharedTimersSuspended,
                         OnSetWebKitSharedTimersSuspended)
+#endif
+#if defined(OS_MACOSX)
+    IPC_MESSAGE_HANDLER(ViewMsg_UpdateScrollbarTheme, OnUpdateScrollbarTheme)
+#endif
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -1285,9 +1294,23 @@ void RenderThreadImpl::OnSetRendererProcessID(base::ProcessId process_id) {
   renderer_process_id_ = process_id;
 }
 
+#if defined(OS_ANDROID)
 void RenderThreadImpl::OnSetWebKitSharedTimersSuspended(bool suspend) {
   ToggleWebKitSharedTimer(suspend);
 }
+#endif
+
+#if defined(OS_MACOSX)
+void RenderThreadImpl::OnUpdateScrollbarTheme(float initial_button_delay,
+                                              float autoscroll_button_delay,
+                                              bool jump_on_track_click,
+                                              bool redraw) {
+  blink::WebScrollbarTheme::updateScrollbars(initial_button_delay,
+                                             autoscroll_button_delay,
+                                             jump_on_track_click,
+                                             redraw);
+}
+#endif
 
 void RenderThreadImpl::OnMemoryPressure(
     base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level) {

@@ -1133,6 +1133,8 @@
     'browser/system_message_window_win.h',
     'browser/tcmalloc_internals_request_job.cc',
     'browser/tcmalloc_internals_request_job.h',
+    'browser/theme_helper_mac.mm',
+    'browser/theme_helper_mac.h',
     'browser/tracing/trace_controller_impl.cc',
     'browser/tracing/trace_controller_impl.h',
     'browser/tracing/trace_message_filter.cc',
