@@ -63,6 +63,22 @@ void PrintResult(const std::string& measurement,
                    important);
 }
 
+void PrintResult(const std::string& measurement,
+                 const std::string& modifier,
+                 const std::string& trace,
+                 double value,
+                 const std::string& units,
+                 bool important) {
+  PrintResultsImpl(measurement,
+                   modifier,
+                   trace,
+                   base::DoubleToString(value),
+                   std::string(),
+                   std::string(),
+                   units,
+                   important);
+}
+
 void AppendResult(std::string& output,
                   const std::string& measurement,
                   const std::string& modifier,

@@ -88,13 +88,9 @@ class LayerTreeHostPerfTest : public LayerTreeTest {
 
   virtual void AfterTest() OVERRIDE {
     CHECK(!test_name_.empty()) << "Must SetTestName() before AfterTest().";
-    perf_test::PrintResult("layer_tree_host_frame_count", "", test_name_,
-                           draw_timer_.NumLaps(), "frame_count", true);
     perf_test::PrintResult("layer_tree_host_frame_time", "", test_name_,
                            1000 * draw_timer_.MsPerLap(), "us", true);
     if (measure_commit_cost_) {
-      perf_test::PrintResult("layer_tree_host_commit_count", "", test_name_,
-                             commit_timer_.NumLaps(), "commit_count", true);
       perf_test::PrintResult("layer_tree_host_commit_time", "", test_name_,
                              1000 * commit_timer_.MsPerLap(), "us", true);
     }

@@ -56,12 +56,6 @@ class LayerTreeHostCommonPerfTest : public LayerTreeTest {
 
   virtual void AfterTest() OVERRIDE {
     CHECK(!test_name_.empty()) << "Must SetTestName() before TearDown().";
-    perf_test::PrintResult("calc_draw_props_count",
-                           "",
-                           test_name_,
-                           timer_.NumLaps(),
-                           "count",
-                           true);
     perf_test::PrintResult("calc_draw_props_time",
                            "",
                            test_name_,
