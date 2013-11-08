@@ -528,16 +528,16 @@ void Element::scrollByPages(int pages)
     scrollByUnits(pages, ScrollByPage);
 }
 
-static float localZoomForRenderer(RenderObject* renderer)
+static float localZoomForRenderer(RenderObject& renderer)
 {
     // FIXME: This does the wrong thing if two opposing zooms are in effect and canceled each
     // other out, but the alternative is that we'd have to crawl up the whole render tree every
     // time (or store an additional bit in the RenderStyle to indicate that a zoom was specified).
     float zoomFactor = 1;
-    if (renderer->style()->effectiveZoom() != 1) {
+    if (renderer.style()->effectiveZoom() != 1) {
         // Need to find the nearest enclosing RenderObject that set up
         // a differing zoom, and then we divide our result by it to eliminate the zoom.
-        RenderObject* prev = renderer;
+        RenderObject* prev = &renderer;
         for (RenderObject* curr = prev->parent(); curr; curr = curr->parent()) {
             if (curr->style()->effectiveZoom() != prev->style()->effectiveZoom()) {
                 zoomFactor = prev->style()->zoom();
@@ -551,7 +551,7 @@ static float localZoomForRenderer(RenderObject* renderer)
     return zoomFactor;
 }
 
-static int adjustForLocalZoom(LayoutUnit value, RenderObject* renderer)
+static int adjustForLocalZoom(LayoutUnit value, RenderObject& renderer)
 {
     float zoomFactor = localZoomForRenderer(renderer);
     if (zoomFactor == 1)
@@ -563,7 +563,7 @@ int Element::offsetLeft()
 {
     document().partialUpdateLayoutIgnorePendingStylesheets(this);
     if (RenderBoxModelObject* renderer = renderBoxModelObject())
-        return adjustForLocalZoom(renderer->pixelSnappedOffsetLeft(), renderer);
+        return adjustForLocalZoom(renderer->pixelSnappedOffsetLeft(), *renderer);
     return 0;
 }
 
@@ -571,7 +571,7 @@ int Element::offsetTop()
 {
     document().partialUpdateLayoutIgnorePendingStylesheets(this);
     if (RenderBoxModelObject* renderer = renderBoxModelObject())
-        return adjustForLocalZoom(renderer->pixelSnappedOffsetTop(), renderer);
+        return adjustForLocalZoom(renderer->pixelSnappedOffsetTop(), *renderer);
     return 0;
 }
 
@@ -581,12 +581,12 @@ int Element::offsetWidth()
 
     if (RenderBox* renderer = renderBox()) {
         if (renderer->canDetermineWidthWithoutLayout())
-            return adjustLayoutUnitForAbsoluteZoom(renderer->fixedOffsetWidth(), renderer).round();
+            return adjustLayoutUnitForAbsoluteZoom(renderer->fixedOffsetWidth(), *renderer).round();
     }
 
     document().partialUpdateLayoutIgnorePendingStylesheets(this);
     if (RenderBoxModelObject* renderer = renderBoxModelObject())
-        return adjustLayoutUnitForAbsoluteZoom(renderer->pixelSnappedOffsetWidth(), renderer).round();
+        return adjustLayoutUnitForAbsoluteZoom(renderer->pixelSnappedOffsetWidth(), *renderer).round();
     return 0;
 }
 
@@ -594,7 +594,7 @@ int Element::offsetHeight()
 {
     document().partialUpdateLayoutIgnorePendingStylesheets(this);
     if (RenderBoxModelObject* renderer = renderBoxModelObject())
-        return adjustLayoutUnitForAbsoluteZoom(renderer->pixelSnappedOffsetHeight(), renderer).round();
+        return adjustLayoutUnitForAbsoluteZoom(renderer->pixelSnappedOffsetHeight(), *renderer).round();
     return 0;
 }
 
@@ -648,7 +648,7 @@ int Element::clientWidth()
     }
 
     if (RenderBox* renderer = renderBox())
-        return adjustLayoutUnitForAbsoluteZoom(renderer->pixelSnappedClientWidth(), renderer).round();
+        return adjustLayoutUnitForAbsoluteZoom(renderer->pixelSnappedClientWidth(), *renderer).round();
     return 0;
 }
 
@@ -669,7 +669,7 @@ int Element::clientHeight()
     }
 
     if (RenderBox* renderer = renderBox())
-        return adjustLayoutUnitForAbsoluteZoom(renderer->pixelSnappedClientHeight(), renderer).round();
+        return adjustLayoutUnitForAbsoluteZoom(renderer->pixelSnappedClientHeight(), *renderer).round();
     return 0;
 }
 
@@ -828,7 +828,7 @@ PassRefPtr<ClientRectList> Element::getClientRects()
 
     Vector<FloatQuad> quads;
     renderBoxModelObject->absoluteQuads(quads);
-    document().adjustFloatQuadsForScrollAndAbsoluteZoom(quads, renderBoxModelObject);
+    document().adjustFloatQuadsForScrollAndAbsoluteZoom(quads, *renderBoxModelObject);
     return ClientRectList::create(quads);
 }
 
@@ -856,7 +856,8 @@ PassRefPtr<ClientRect> Element::getBoundingClientRect()
     for (size_t i = 1; i < quads.size(); ++i)
         result.unite(quads[i].boundingBox());
 
-    document().adjustFloatRectForScrollAndAbsoluteZoom(result, renderer());
+    ASSERT(renderer());
+    document().adjustFloatRectForScrollAndAbsoluteZoom(result, *renderer());
     return ClientRect::create(result);
 }
 

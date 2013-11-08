@@ -1376,21 +1376,22 @@ inline int adjustForAbsoluteZoom(int value, RenderObject* renderer)
     return adjustForAbsoluteZoom(value, renderer->style());
 }
 
-inline LayoutUnit adjustLayoutUnitForAbsoluteZoom(LayoutUnit value, RenderObject* renderer)
+inline LayoutUnit adjustLayoutUnitForAbsoluteZoom(LayoutUnit value, RenderObject& renderer)
 {
-    return adjustLayoutUnitForAbsoluteZoom(value, renderer->style());
+    ASSERT(renderer.style());
+    return adjustLayoutUnitForAbsoluteZoom(value, *renderer.style());
 }
 
-inline void adjustFloatQuadForAbsoluteZoom(FloatQuad& quad, RenderObject* renderer)
+inline void adjustFloatQuadForAbsoluteZoom(FloatQuad& quad, RenderObject& renderer)
 {
-    float zoom = renderer->style()->effectiveZoom();
+    float zoom = renderer.style()->effectiveZoom();
     if (zoom != 1)
         quad.scale(1 / zoom, 1 / zoom);
 }
 
-inline void adjustFloatRectForAbsoluteZoom(FloatRect& rect, RenderObject* renderer)
+inline void adjustFloatRectForAbsoluteZoom(FloatRect& rect, RenderObject& renderer)
 {
-    float zoom = renderer->style()->effectiveZoom();
+    float zoom = renderer.style()->effectiveZoom();
     if (zoom != 1)
         rect.scale(1 / zoom, 1 / zoom);
 }

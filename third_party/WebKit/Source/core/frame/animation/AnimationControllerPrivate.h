@@ -64,7 +64,7 @@ public:
     void updateAnimations(double& timeToNextService, double& timeToNextEvent, SetNeedsStyleRecalc callSetNeedsStyleRecalc = DoNotCallSetNeedsStyleRecalc);
     void scheduleService();
 
-    PassRefPtr<CompositeAnimation> accessCompositeAnimation(RenderObject*);
+    PassRefPtr<CompositeAnimation> accessCompositeAnimation(RenderObject&);
     bool clear(RenderObject*);
 
     void updateStyleIfNeededDispatcherFired(Timer<AnimationControllerPrivate>*);
@@ -98,7 +98,7 @@ public:
 
     void animationWillBeRemoved(AnimationBase*);
 
-    void scheduleServiceForRenderer(RenderObject*);
+    void scheduleServiceForRenderer(RenderObject&);
 
 private:
     void animationTimerFired(Timer<AnimationControllerPrivate>*);

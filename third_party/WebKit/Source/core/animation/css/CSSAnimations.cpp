@@ -136,9 +136,9 @@ const PassRefPtr<TimingFunction> timingFromAnimationData(const CSSAnimationData*
     return animationData->isTimingFunctionSet() ? animationData->timingFunction() : CSSAnimationData::initialAnimationTimingFunction();
 }
 
-void calculateCandidateTransitionForProperty(const CSSAnimationData* anim, CSSPropertyID id, const RenderStyle* oldStyle, const RenderStyle* newStyle, CandidateTransitionMap& candidateMap)
+static void calculateCandidateTransitionForProperty(const CSSAnimationData* anim, CSSPropertyID id, const RenderStyle& oldStyle, const RenderStyle& newStyle, CandidateTransitionMap& candidateMap)
 {
-    if (!CSSPropertyAnimation::propertiesEqual(id, oldStyle, newStyle)) {
+    if (!CSSPropertyAnimation::propertiesEqual(id, &oldStyle, &newStyle)) {
         RefPtr<AnimatableValue> from = CSSAnimatableValueFactory::create(id, oldStyle);
         RefPtr<AnimatableValue> to = CSSAnimatableValueFactory::create(id, newStyle);
         // If we have multiple transitions on the same property, we will use the
@@ -149,13 +149,13 @@ void calculateCandidateTransitionForProperty(const CSSAnimationData* anim, CSSPr
     }
 }
 
-void computeCandidateTransitions(const RenderStyle* oldStyle, const RenderStyle* newStyle, CandidateTransitionMap& candidateMap, HashSet<CSSPropertyID>& listedProperties)
+static void computeCandidateTransitions(const RenderStyle& oldStyle, const RenderStyle& newStyle, CandidateTransitionMap& candidateMap, HashSet<CSSPropertyID>& listedProperties)
 {
-    if (!newStyle->transitions())
+    if (!newStyle.transitions())
         return;
 
-    for (size_t i = 0; i < newStyle->transitions()->size(); ++i) {
-        const CSSAnimationData* anim = newStyle->transitions()->animation(i);
+    for (size_t i = 0; i < newStyle.transitions()->size(); ++i) {
+        const CSSAnimationData* anim = newStyle.transitions()->animation(i);
         CSSAnimationData::AnimationMode mode = anim->animationMode();
         if (anim->duration() + anim->delay() <= 0 || mode == CSSAnimationData::AnimateNone)
             continue;
@@ -202,7 +202,7 @@ CSSAnimationUpdateScope::~CSSAnimationUpdateScope()
         activeAnimations->cssAnimations().maybeApplyPendingUpdate(m_target);
 }
 
-PassOwnPtr<CSSAnimationUpdate> CSSAnimations::calculateUpdate(Element* element, const RenderStyle* style, StyleResolver* resolver)
+PassOwnPtr<CSSAnimationUpdate> CSSAnimations::calculateUpdate(Element* element, const RenderStyle& style, StyleResolver* resolver)
 {
     ASSERT(RuntimeEnabledFeatures::webAnimationsCSSEnabled());
     OwnPtr<CSSAnimationUpdate> update = adoptPtr(new CSSAnimationUpdate());
@@ -213,9 +213,9 @@ PassOwnPtr<CSSAnimationUpdate> CSSAnimations::calculateUpdate(Element* element, 
     return update->isEmpty() ? nullptr : update.release();
 }
 
-void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate* update, Element* element, const RenderStyle* style, StyleResolver* resolver)
+void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate* update, Element* element, const RenderStyle& style, StyleResolver* resolver)
 {
-    const CSSAnimationDataList* animationDataList = style->animations();
+    const CSSAnimationDataList* animationDataList = style.animations();
     const CSSAnimations* cssAnimations = element->activeAnimations() ? &element->activeAnimations()->cssAnimations() : 0;
 
     HashSet<AtomicString> inactive;
@@ -223,7 +223,7 @@ void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate* update, Element
         for (AnimationMap::const_iterator iter = cssAnimations->m_animations.begin(); iter != cssAnimations->m_animations.end(); ++iter)
             inactive.add(iter->key);
 
-    if (style->display() != NONE) {
+    if (style.display() != NONE) {
         for (size_t i = 0; animationDataList && i < animationDataList->size(); ++i) {
             const CSSAnimationData* animationData = animationDataList->animation(i);
             if (animationData->isNoneAnimation())
@@ -379,15 +379,15 @@ void CSSAnimations::calculateTransitionUpdateForProperty(CSSAnimationUpdate* upd
     update->startTransition(id, newTransition.from.get(), newTransition.to.get(), InertAnimation::create(effect, timing, isPaused));
 }
 
-void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate* update, const Element* element, const RenderStyle* style)
+void CSSAnimations::calculateTransitionUpdate(CSSAnimationUpdate* update, const Element* element, const RenderStyle& style)
 {
     ActiveAnimations* activeAnimations = element->activeAnimations();
     const TransitionMap* transitions = activeAnimations ? &activeAnimations->cssAnimations().m_transitions : 0;
 
     HashSet<CSSPropertyID> listedProperties;
-    if (style->display() != NONE && element->renderer() && element->renderer()->style()) {
+    if (style.display() != NONE && element->renderer() && element->renderer()->style()) {
         CandidateTransitionMap candidateMap;
-        computeCandidateTransitions(element->renderer()->style(), style, candidateMap, listedProperties);
+        computeCandidateTransitions(*element->renderer()->style(), style, candidateMap, listedProperties);
         for (CandidateTransitionMap::const_iterator iter = candidateMap.begin(); iter != candidateMap.end(); ++iter) {
             // FIXME: We should transition if an !important property changes even when an animation is running,
             // but this is a bit hard to do with the current applyMatchedProperties system.

@@ -953,8 +953,8 @@ public:
     bool haveImportsLoaded() const;
     void didLoadAllImports();
 
-    void adjustFloatQuadsForScrollAndAbsoluteZoom(Vector<FloatQuad>&, RenderObject*);
-    void adjustFloatRectForScrollAndAbsoluteZoom(FloatRect&, RenderObject*);
+    void adjustFloatQuadsForScrollAndAbsoluteZoom(Vector<FloatQuad>&, RenderObject&);
+    void adjustFloatRectForScrollAndAbsoluteZoom(FloatRect&, RenderObject&);
 
     bool hasActiveParser();
     unsigned activeParserCount() { return m_activeParserCount; }

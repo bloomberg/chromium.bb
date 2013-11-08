@@ -50,7 +50,7 @@ class AnimationBase : public RefCounted<AnimationBase> {
     friend class CSSPropertyAnimation;
 
 public:
-    AnimationBase(const CSSAnimationData* transition, RenderObject* renderer, CompositeAnimation* compAnim);
+    AnimationBase(const CSSAnimationData* transition, RenderObject& renderer, CompositeAnimation* compAnim);
     virtual ~AnimationBase() { }
 
     RenderObject* renderer() const { return m_object; }

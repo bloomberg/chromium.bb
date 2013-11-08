@@ -722,7 +722,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
     return state.takeStyle();
 }
 
-PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element* e, const RenderStyle* elementStyle, const StyleKeyframe* keyframe)
+PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element* e, const RenderStyle& elementStyle, const StyleKeyframe* keyframe)
 {
     ASSERT(document().frame());
     ASSERT(documentSettings());
@@ -738,7 +738,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForKeyframe(Element* e, const Render
     ASSERT(!state.style());
 
     // Create the style
-    state.setStyle(RenderStyle::clone(elementStyle));
+    state.setStyle(RenderStyle::clone(&elementStyle));
     state.setLineHeightValue(0);
 
     state.fontBuilder().initForStyleResolve(state.document(), state.style(), state.useSVGZoomRules());
@@ -792,7 +792,7 @@ const StyleRuleKeyframes* StyleResolver::matchScopedKeyframesRule(const Element*
     return 0;
 }
 
-void StyleResolver::keyframeStylesForAnimation(Element* e, const RenderStyle* elementStyle, KeyframeList& list)
+void StyleResolver::keyframeStylesForAnimation(Element* e, const RenderStyle& elementStyle, KeyframeList& list)
 {
     ASSERT(!RuntimeEnabledFeatures::webAnimationsCSSEnabled());
     list.clear();
@@ -851,7 +851,7 @@ void StyleResolver::keyframeStylesForAnimation(Element* e, const RenderStyle* el
     }
 }
 
-void StyleResolver::resolveKeyframes(Element* element, const RenderStyle* style, const AtomicString& name, TimingFunction* defaultTimingFunction, Vector<std::pair<KeyframeAnimationEffect::KeyframeVector, RefPtr<TimingFunction> > >& keyframesAndTimingFunctions)
+void StyleResolver::resolveKeyframes(Element* element, const RenderStyle& style, const AtomicString& name, TimingFunction* defaultTimingFunction, Vector<std::pair<KeyframeAnimationEffect::KeyframeVector, RefPtr<TimingFunction> > >& keyframesAndTimingFunctions)
 {
     ASSERT(RuntimeEnabledFeatures::webAnimationsCSSEnabled());
     const StyleRuleKeyframes* keyframesRule = matchScopedKeyframesRule(element, name.impl());
@@ -880,7 +880,7 @@ void StyleResolver::resolveKeyframes(Element* element, const RenderStyle* style,
                 // FIXME: This sometimes gets the wrong timing function. See crbug.com/288540.
                 timingFunction = KeyframeValue::timingFunction(keyframeStyle.get(), name);
             } else if (CSSAnimations::isAnimatableProperty(property)) {
-                keyframe->setPropertyValue(property, CSSAnimatableValueFactory::create(property, keyframeStyle.get()).get());
+                keyframe->setPropertyValue(property, CSSAnimatableValueFactory::create(property, *keyframeStyle).get());
             }
         }
         keyframes.append(keyframe);
@@ -1501,7 +1501,7 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
     // animatingElement may be null, for example if we're calculating the
     // style for a potential pseudo element that has yet to be created.
     if (RuntimeEnabledFeatures::webAnimationsEnabled() && animatingElement) {
-        state.setAnimationUpdate(CSSAnimations::calculateUpdate(animatingElement, state.style(), this));
+        state.setAnimationUpdate(CSSAnimations::calculateUpdate(animatingElement, *state.style(), this));
         if (state.animationUpdate()) {
             ASSERT(!applyInheritedOnly);
             const AnimationEffect::CompositableValueMap& compositableValuesForAnimations = state.animationUpdate()->compositableValuesForAnimations();

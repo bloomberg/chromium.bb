@@ -50,7 +50,7 @@ public:
     ~AnimationController();
 
     void cancelAnimations(RenderObject*);
-    PassRefPtr<RenderStyle> updateAnimations(RenderObject*, RenderStyle* newStyle);
+    PassRefPtr<RenderStyle> updateAnimations(RenderObject&, RenderStyle& newStyle);
     PassRefPtr<RenderStyle> getAnimatedStyleForRenderer(RenderObject*);
 
     // This is called when an accelerated animation or transition has actually started to animate.

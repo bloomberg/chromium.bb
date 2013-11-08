@@ -4948,7 +4948,7 @@ Node* eventTargetNodeForDocument(Document* doc)
     return node;
 }
 
-void Document::adjustFloatQuadsForScrollAndAbsoluteZoom(Vector<FloatQuad>& quads, RenderObject* renderer)
+void Document::adjustFloatQuadsForScrollAndAbsoluteZoom(Vector<FloatQuad>& quads, RenderObject& renderer)
 {
     if (!view())
         return;
@@ -4960,7 +4960,7 @@ void Document::adjustFloatQuadsForScrollAndAbsoluteZoom(Vector<FloatQuad>& quads
     }
 }
 
-void Document::adjustFloatRectForScrollAndAbsoluteZoom(FloatRect& rect, RenderObject* renderer)
+void Document::adjustFloatRectForScrollAndAbsoluteZoom(FloatRect& rect, RenderObject& renderer)
 {
     if (!view())
         return;

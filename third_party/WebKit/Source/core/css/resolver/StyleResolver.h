@@ -192,10 +192,10 @@ public:
         RuleMatchingBehavior = MatchAllRules, RenderRegion* regionForStyling = 0);
 
     // FIXME: The following logic related to animations and keyframes should be factored out of StyleResolver
-    void resolveKeyframes(Element*, const RenderStyle*, const AtomicString& animationName, TimingFunction* defaultTimingFunction, Vector<std::pair<KeyframeAnimationEffect::KeyframeVector, RefPtr<TimingFunction> > >&);
-    void keyframeStylesForAnimation(Element*, const RenderStyle*, KeyframeList&);
+    void resolveKeyframes(Element*, const RenderStyle&, const AtomicString& animationName, TimingFunction* defaultTimingFunction, Vector<std::pair<KeyframeAnimationEffect::KeyframeVector, RefPtr<TimingFunction> > >&);
+    void keyframeStylesForAnimation(Element*, const RenderStyle&, KeyframeList&);
     const StyleRuleKeyframes* matchScopedKeyframesRule(const Element*, const StringImpl* animationName);
-    PassRefPtr<RenderStyle> styleForKeyframe(Element*, const RenderStyle*, const StyleKeyframe*);
+    PassRefPtr<RenderStyle> styleForKeyframe(Element*, const RenderStyle&, const StyleKeyframe*);
 
     PassRefPtr<RenderStyle> pseudoStyleForElement(Element*, const PseudoStyleRequest&, RenderStyle* parentStyle);
 

@@ -53,7 +53,7 @@ public:
 
     void clearRenderer();
 
-    PassRefPtr<RenderStyle> animate(RenderObject*, RenderStyle* currentStyle, RenderStyle* targetStyle);
+    PassRefPtr<RenderStyle> animate(RenderObject&, RenderStyle* currentStyle, RenderStyle& targetStyle);
     PassRefPtr<RenderStyle> getAnimatedStyle() const;
 
     double timeToNextService() const;
@@ -79,8 +79,8 @@ private:
     {
     }
 
-    void updateTransitions(RenderObject*, RenderStyle* currentStyle, RenderStyle* targetStyle);
-    void updateKeyframeAnimations(RenderObject*, RenderStyle* currentStyle, RenderStyle* targetStyle);
+    void updateTransitions(RenderObject&, RenderStyle* currentStyle, RenderStyle& targetStyle);
+    void updateKeyframeAnimations(RenderObject&, RenderStyle* currentStyle, RenderStyle& targetStyle);
 
     typedef HashMap<int, RefPtr<ImplicitAnimation> > CSSPropertyTransitionsMap;
     typedef HashMap<AtomicString, RefPtr<KeyframeAnimation> > AnimationNameMap;

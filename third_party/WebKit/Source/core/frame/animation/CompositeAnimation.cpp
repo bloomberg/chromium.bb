@@ -70,10 +70,10 @@ void CompositeAnimation::clearRenderer()
     }
 }
 
-void CompositeAnimation::updateTransitions(RenderObject* renderer, RenderStyle* currentStyle, RenderStyle* targetStyle)
+void CompositeAnimation::updateTransitions(RenderObject& renderer, RenderStyle* currentStyle, RenderStyle& targetStyle)
 {
     // If currentStyle is null or there are no old or new transitions, just skip it
-    if (!currentStyle || (!targetStyle->transitions() && m_transitions.isEmpty()))
+    if (!currentStyle || (!targetStyle.transitions() && m_transitions.isEmpty()))
         return;
 
     // Mark all existing transitions as no longer active. We will mark the still active ones
@@ -85,9 +85,9 @@ void CompositeAnimation::updateTransitions(RenderObject* renderer, RenderStyle* 
     RefPtr<RenderStyle> modifiedCurrentStyle;
 
     // Check to see if we need to update the active transitions
-    if (targetStyle->transitions()) {
-        for (size_t i = 0; i < targetStyle->transitions()->size(); ++i) {
-            const CSSAnimationData* anim = targetStyle->transitions()->animation(i);
+    if (targetStyle.transitions()) {
+        for (size_t i = 0; i < targetStyle.transitions()->size(); ++i) {
+            const CSSAnimationData* anim = targetStyle.transitions()->animation(i);
             bool isActiveTransition = anim->duration() || anim->delay() > 0;
 
             CSSAnimationData::AnimationMode mode = anim->animationMode();
@@ -137,7 +137,7 @@ void CompositeAnimation::updateTransitions(RenderObject* renderer, RenderStyle* 
                     // you have both an explicit transition-property and 'all' in the same
                     // list. In this case, the latter one overrides the earlier one, so we
                     // behave as though this is a running animation being replaced.
-                    if (!implAnim->isTargetPropertyEqual(prop, targetStyle)) {
+                    if (!implAnim->isTargetPropertyEqual(prop, &targetStyle)) {
                         // For accelerated animations we need to return a new RenderStyle with the _current_ value
                         // of the property, so that restarted transitions use the correct starting point.
                         if (CSSPropertyAnimation::animationOfPropertyIsAccelerated(prop) && implAnim->isAccelerated()) {
@@ -152,7 +152,7 @@ void CompositeAnimation::updateTransitions(RenderObject* renderer, RenderStyle* 
                     }
                 } else {
                     // We need to start a transition if it is active and the properties don't match
-                    equal = !isActiveTransition || CSSPropertyAnimation::propertiesEqual(prop, fromStyle, targetStyle);
+                    equal = !isActiveTransition || CSSPropertyAnimation::propertiesEqual(prop, fromStyle, &targetStyle);
                 }
 
                 // We can be in this loop with an inactive transition (!isActiveTransition). We need
@@ -187,15 +187,15 @@ void CompositeAnimation::updateTransitions(RenderObject* renderer, RenderStyle* 
         m_transitions.remove(toBeRemoved[j]);
 }
 
-void CompositeAnimation::updateKeyframeAnimations(RenderObject* renderer, RenderStyle* currentStyle, RenderStyle* targetStyle)
+void CompositeAnimation::updateKeyframeAnimations(RenderObject& renderer, RenderStyle* currentStyle, RenderStyle& targetStyle)
 {
     // Nothing to do if we don't have any animations, and didn't have any before
-    if (m_keyframeAnimations.isEmpty() && !targetStyle->hasAnimations())
+    if (m_keyframeAnimations.isEmpty() && !targetStyle.hasAnimations())
         return;
 
     AnimationNameMap::const_iterator kfend = m_keyframeAnimations.end();
 
-    if (currentStyle && currentStyle->hasAnimations() && targetStyle->hasAnimations() && *(currentStyle->animations()) == *(targetStyle->animations())) {
+    if (currentStyle && currentStyle->hasAnimations() && targetStyle.hasAnimations() && *(currentStyle->animations()) == *(targetStyle.animations())) {
         // The current and target animations are the same so we just need to toss any
         // animation which is finished (postActive).
         for (AnimationNameMap::const_iterator it = m_keyframeAnimations.begin(); it != kfend; ++it) {
@@ -213,10 +213,10 @@ void CompositeAnimation::updateKeyframeAnimations(RenderObject* renderer, Render
         DEFINE_STATIC_LOCAL(const AtomicString, none, ("none", AtomicString::ConstructFromLiteral));
 
         // Now mark any still active animations as active and add any new animations.
-        if (targetStyle->animations()) {
-            int numAnims = targetStyle->animations()->size();
+        if (targetStyle.animations()) {
+            int numAnims = targetStyle.animations()->size();
             for (int i = 0; i < numAnims; ++i) {
-                const CSSAnimationData* anim = targetStyle->animations()->animation(i);
+                const CSSAnimationData* anim = targetStyle.animations()->animation(i);
                 if (!anim->isValidAnimation())
                     continue;
 
@@ -276,7 +276,7 @@ void CompositeAnimation::updateKeyframeAnimations(RenderObject* renderer, Render
     }
 }
 
-PassRefPtr<RenderStyle> CompositeAnimation::animate(RenderObject* renderer, RenderStyle* currentStyle, RenderStyle* targetStyle)
+PassRefPtr<RenderStyle> CompositeAnimation::animate(RenderObject& renderer, RenderStyle* currentStyle, RenderStyle& targetStyle)
 {
     RefPtr<RenderStyle> resultStyle;
 
@@ -291,7 +291,7 @@ PassRefPtr<RenderStyle> CompositeAnimation::animate(RenderObject* renderer, Rend
             CSSPropertyTransitionsMap::const_iterator end = m_transitions.end();
             for (CSSPropertyTransitionsMap::const_iterator it = m_transitions.begin(); it != end; ++it) {
                 if (ImplicitAnimation* anim = it->value.get())
-                    anim->animate(this, renderer, currentStyle, targetStyle, resultStyle);
+                    anim->animate(this, &renderer, currentStyle, &targetStyle, resultStyle);
             }
         }
     }
@@ -301,10 +301,10 @@ PassRefPtr<RenderStyle> CompositeAnimation::animate(RenderObject* renderer, Rend
     for (Vector<AtomicString>::const_iterator it = m_keyframeAnimationOrderList.begin(); it != m_keyframeAnimationOrderList.end(); ++it) {
         RefPtr<KeyframeAnimation> keyframeAnim = m_keyframeAnimations.get(*it);
         ASSERT(keyframeAnim);
-        keyframeAnim->animate(this, renderer, currentStyle, targetStyle, resultStyle);
+        keyframeAnim->animate(this, &renderer, currentStyle, &targetStyle, resultStyle);
     }
 
-    return resultStyle ? resultStyle.release() : targetStyle;
+    return resultStyle ? resultStyle.release() : PassRefPtr<RenderStyle>(targetStyle);
 }
 
 PassRefPtr<RenderStyle> CompositeAnimation::getAnimatedStyle() const

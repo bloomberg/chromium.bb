@@ -40,7 +40,7 @@ using namespace std;
 
 namespace WebCore {
 
-AnimationBase::AnimationBase(const CSSAnimationData* transition, RenderObject* renderer, CompositeAnimation* compAnim)
+AnimationBase::AnimationBase(const CSSAnimationData* transition, RenderObject& renderer, CompositeAnimation* compAnim)
     : m_animState(AnimationStateNew)
     , m_isAccelerated(false)
     , m_transformFunctionListValid(false)
@@ -50,7 +50,7 @@ AnimationBase::AnimationBase(const CSSAnimationData* transition, RenderObject* r
     , m_requestedStartTime(0)
     , m_totalDuration(-1)
     , m_nextIterationDuration(-1)
-    , m_object(renderer)
+    , m_object(&renderer)
     , m_animation(const_cast<CSSAnimationData*>(transition))
     , m_compAnim(compAnim)
 {

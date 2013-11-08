@@ -40,7 +40,7 @@
 
 namespace WebCore {
 
-ImplicitAnimation::ImplicitAnimation(const CSSAnimationData* transition, CSSPropertyID animatingProperty, RenderObject* renderer, CompositeAnimation* compAnim, RenderStyle* fromStyle)
+ImplicitAnimation::ImplicitAnimation(const CSSAnimationData* transition, CSSPropertyID animatingProperty, RenderObject& renderer, CompositeAnimation* compAnim, RenderStyle* fromStyle)
     : AnimationBase(transition, renderer, compAnim)
     , m_transitionProperty(transition->property())
     , m_animatingProperty(animatingProperty)

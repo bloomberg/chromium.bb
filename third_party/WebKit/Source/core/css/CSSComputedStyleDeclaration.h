@@ -128,12 +128,12 @@ private:
 
     virtual bool cssPropertyMatches(CSSPropertyID, const CSSValue*) const OVERRIDE;
 
-    PassRefPtr<CSSValue> valueForShadowData(const ShadowData&, const RenderStyle*, bool useSpread) const;
-    PassRefPtr<CSSValue> valueForShadowList(const ShadowList*, const RenderStyle*, bool useSpread) const;
-    PassRefPtr<CSSPrimitiveValue> currentColorOrValidColor(const RenderStyle*, const Color&) const;
-    PassRefPtr<SVGPaint> adjustSVGPaintForCurrentColor(PassRefPtr<SVGPaint>, RenderStyle*) const;
+    PassRefPtr<CSSValue> valueForShadowData(const ShadowData&, const RenderStyle&, bool useSpread) const;
+    PassRefPtr<CSSValue> valueForShadowList(const ShadowList*, const RenderStyle&, bool useSpread) const;
+    PassRefPtr<CSSPrimitiveValue> currentColorOrValidColor(const RenderStyle&, const Color&) const;
+    PassRefPtr<SVGPaint> adjustSVGPaintForCurrentColor(PassRefPtr<SVGPaint>, RenderStyle&) const;
 
-    PassRefPtr<CSSValue> valueForFilter(const RenderObject*, const RenderStyle*) const;
+    PassRefPtr<CSSValue> valueForFilter(const RenderObject*, const RenderStyle&) const;
 
     PassRefPtr<CSSValueList> valuesForShorthandProperty(const StylePropertyShorthand&) const;
     PassRefPtr<CSSValueList> valuesForSidesShorthand(const StylePropertyShorthand&) const;

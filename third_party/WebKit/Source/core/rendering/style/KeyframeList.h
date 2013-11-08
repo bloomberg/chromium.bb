@@ -68,7 +68,7 @@ private:
 
 class KeyframeList {
 public:
-    KeyframeList(RenderObject*, const AtomicString& animationName)
+    KeyframeList(RenderObject&, const AtomicString& animationName)
         : m_animationName(animationName)
     {
         insert(KeyframeValue(0, 0));

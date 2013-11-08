@@ -1786,14 +1786,14 @@ inline int adjustForAbsoluteZoom(int value, const RenderStyle* style)
     return roundForImpreciseConversion<int>(value / zoomFactor);
 }
 
-inline float adjustFloatForAbsoluteZoom(float value, const RenderStyle* style)
+inline float adjustFloatForAbsoluteZoom(float value, const RenderStyle& style)
 {
-    return value / style->effectiveZoom();
+    return value / style.effectiveZoom();
 }
 
-inline LayoutUnit adjustLayoutUnitForAbsoluteZoom(LayoutUnit value, const RenderStyle* style)
+inline LayoutUnit adjustLayoutUnitForAbsoluteZoom(LayoutUnit value, const RenderStyle& style)
 {
-    return value / style->effectiveZoom();
+    return value / style.effectiveZoom();
 }
 
 inline bool RenderStyle::setZoom(float f)

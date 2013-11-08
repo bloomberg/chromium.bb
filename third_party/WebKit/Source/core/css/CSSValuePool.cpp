@@ -116,9 +116,9 @@ PassRefPtr<CSSPrimitiveValue> CSSValuePool::createValue(double value, CSSPrimiti
     return cache[intValue];
 }
 
-PassRefPtr<CSSPrimitiveValue> CSSValuePool::createValue(const Length& value, const RenderStyle* style)
+PassRefPtr<CSSPrimitiveValue> CSSValuePool::createValue(const Length& value, const RenderStyle& style)
 {
-    return CSSPrimitiveValue::create(value, style->effectiveZoom());
+    return CSSPrimitiveValue::create(value, style.effectiveZoom());
 }
 
 PassRefPtr<CSSPrimitiveValue> CSSValuePool::createFontFamilyValue(const String& familyName)

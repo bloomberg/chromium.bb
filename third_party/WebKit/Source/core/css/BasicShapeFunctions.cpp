@@ -39,7 +39,7 @@
 
 namespace WebCore {
 
-PassRefPtr<CSSValue> valueForBasicShape(const RenderStyle* style, const BasicShape* basicShape)
+PassRefPtr<CSSValue> valueForBasicShape(const RenderStyle& style, const BasicShape* basicShape)
 {
     CSSValuePool& pool = cssValuePool();
 

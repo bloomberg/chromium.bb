@@ -62,12 +62,12 @@ AnimationControllerPrivate::~AnimationControllerPrivate()
 {
 }
 
-PassRefPtr<CompositeAnimation> AnimationControllerPrivate::accessCompositeAnimation(RenderObject* renderer)
+PassRefPtr<CompositeAnimation> AnimationControllerPrivate::accessCompositeAnimation(RenderObject& renderer)
 {
-    RefPtr<CompositeAnimation> animation = m_compositeAnimations.get(renderer);
+    RefPtr<CompositeAnimation> animation = m_compositeAnimations.get(&renderer);
     if (!animation) {
         animation = CompositeAnimation::create(this);
-        m_compositeAnimations.set(renderer, animation);
+        m_compositeAnimations.set(&renderer, animation);
     }
     return animation;
 }
@@ -118,12 +118,12 @@ void AnimationControllerPrivate::updateAnimations(double& timeToNextService, dou
     timeToNextEvent = minTimeToNextEvent;
 }
 
-void AnimationControllerPrivate::scheduleServiceForRenderer(RenderObject* renderer)
+void AnimationControllerPrivate::scheduleServiceForRenderer(RenderObject& renderer)
 {
     double timeToNextService = -1;
     double timeToNextEvent = -1;
 
-    RefPtr<CompositeAnimation> compAnim = m_compositeAnimations.get(renderer);
+    RefPtr<CompositeAnimation> compAnim = m_compositeAnimations.get(&renderer);
     if (compAnim->hasAnimations()) {
         timeToNextService = compAnim->timeToNextService();
         timeToNextEvent = compAnim->timeToNextEvent();
@@ -443,16 +443,16 @@ void AnimationController::cancelAnimations(RenderObject* renderer)
     }
 }
 
-PassRefPtr<RenderStyle> AnimationController::updateAnimations(RenderObject* renderer, RenderStyle* newStyle)
+PassRefPtr<RenderStyle> AnimationController::updateAnimations(RenderObject& renderer, RenderStyle& newStyle)
 {
-    RenderStyle* oldStyle = renderer->style();
+    RenderStyle* oldStyle = renderer.style();
 
-    if ((!oldStyle || (!oldStyle->animations() && !oldStyle->transitions())) && (!newStyle->animations() && !newStyle->transitions()))
-        return newStyle;
+    if ((!oldStyle || (!oldStyle->animations() && !oldStyle->transitions())) && (!newStyle.animations() && !newStyle.transitions()))
+        return PassRefPtr<RenderStyle>(newStyle);
 
     // Don't run transitions when printing.
-    if (renderer->view()->document().printing())
-        return newStyle;
+    if (renderer.view()->document().printing())
+        return PassRefPtr<RenderStyle>(newStyle);
 
     // Fetch our current set of implicit animations from a hashtable.  We then compare them
     // against the animations in the style and make sure we're in sync.  If destination values
@@ -460,16 +460,16 @@ PassRefPtr<RenderStyle> AnimationController::updateAnimations(RenderObject* rend
     // a new style.
 
     // We don't support anonymous pseudo elements like :first-line or :first-letter.
-    ASSERT(renderer->node());
+    ASSERT(renderer.node());
 
     RefPtr<CompositeAnimation> rendererAnimations = m_data->accessCompositeAnimation(renderer);
     RefPtr<RenderStyle> blendedStyle = rendererAnimations->animate(renderer, oldStyle, newStyle);
 
-    if (renderer->parent() || newStyle->animations() || (oldStyle && oldStyle->animations())) {
+    if (renderer.parent() || newStyle.animations() || (oldStyle && oldStyle->animations())) {
         m_data->scheduleServiceForRenderer(renderer);
     }
 
-    if (blendedStyle != newStyle) {
+    if (blendedStyle != &newStyle) {
         // If the animations/transitions change opacity or transform, we need to update
         // the style to impose the stacking rules. Note that this is also
         // done in StyleResolver::adjustRenderStyle().
