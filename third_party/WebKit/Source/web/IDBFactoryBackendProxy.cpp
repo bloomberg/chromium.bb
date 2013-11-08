@@ -29,13 +29,13 @@
 #include "config.h"
 #include "IDBFactoryBackendProxy.h"
 
+#include "public/platform/WebIDBCallbacks.h"
 #include "public/platform/WebIDBDatabase.h"
 #include "public/platform/WebIDBDatabaseError.h"
 #include "public/platform/WebIDBFactory.h"
 #include "public/platform/WebVector.h"
 #include "IDBDatabaseBackendProxy.h"
 #include "WebFrameImpl.h"
-#include "WebIDBCallbacksImpl.h"
 #include "WebIDBDatabaseCallbacksImpl.h"
 #include "WebKit.h"
 #include "WebPermissionClient.h"
@@ -98,7 +98,7 @@ void IDBFactoryBackendProxy::getDatabaseNames(PassRefPtr<IDBCallbacks> prpCallba
     if (!allowIndexedDB(context, "Database Listing", origin, callbacks))
         return;
 
-    m_webIDBFactory->getDatabaseNames(new WebIDBCallbacksImpl(callbacks), databaseIdentifier);
+    m_webIDBFactory->getDatabaseNames(new WebIDBCallbacks(callbacks), databaseIdentifier);
 }
 
 void IDBFactoryBackendProxy::open(const String& name, int64_t version, int64_t transactionId, PassRefPtr<IDBCallbacks> prpCallbacks, PassRefPtr<IDBDatabaseCallbacks> prpDatabaseCallbacks, const String& databaseIdentifier, ExecutionContext* context)
@@ -109,7 +109,7 @@ void IDBFactoryBackendProxy::open(const String& name, int64_t version, int64_t t
     if (!allowIndexedDB(context, name, origin, callbacks))
         return;
 
-    m_webIDBFactory->open(name, version, transactionId, new WebIDBCallbacksImpl(callbacks), new WebIDBDatabaseCallbacksImpl(databaseCallbacks), databaseIdentifier);
+    m_webIDBFactory->open(name, version, transactionId, new WebIDBCallbacks(callbacks), new WebIDBDatabaseCallbacksImpl(databaseCallbacks), databaseIdentifier);
 }
 
 void IDBFactoryBackendProxy::deleteDatabase(const String& name, PassRefPtr<IDBCallbacks> prpCallbacks, const String& databaseIdentifier, ExecutionContext* context)
@@ -119,7 +119,7 @@ void IDBFactoryBackendProxy::deleteDatabase(const String& name, PassRefPtr<IDBCa
     if (!allowIndexedDB(context, name, origin, callbacks))
         return;
 
-    m_webIDBFactory->deleteDatabase(name, new WebIDBCallbacksImpl(callbacks), databaseIdentifier);
+    m_webIDBFactory->deleteDatabase(name, new WebIDBCallbacks(callbacks), databaseIdentifier);
 }
 
 } // namespace blink

@@ -85,6 +85,7 @@
 #include "core/rendering/CompositingReasons.h"
 #include "modules/geolocation/GeolocationError.h"
 #include "modules/geolocation/GeolocationPosition.h"
+#include "modules/indexeddb/IDBCallbacks.h"
 #include "modules/indexeddb/IDBCursor.h"
 #include "modules/indexeddb/IDBDatabaseBackendInterface.h"
 #include "modules/indexeddb/IDBKey.h"

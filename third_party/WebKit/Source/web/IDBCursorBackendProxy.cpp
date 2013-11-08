@@ -26,8 +26,8 @@
 #include "config.h"
 #include "IDBCursorBackendProxy.h"
 
+#include "public/platform/WebIDBCallbacks.h"
 #include "public/platform/WebIDBKey.h"
-#include "WebIDBCallbacksImpl.h"
 #include "modules/indexeddb/IDBAny.h"
 #include "modules/indexeddb/IDBCallbacks.h"
 #include "modules/indexeddb/IDBKey.h"
@@ -52,12 +52,12 @@ IDBCursorBackendProxy::~IDBCursorBackendProxy()
 
 void IDBCursorBackendProxy::advance(unsigned long count, PassRefPtr<IDBCallbacks> callbacks)
 {
-    m_idbCursor->advance(count, new WebIDBCallbacksImpl(callbacks));
+    m_idbCursor->advance(count, new WebIDBCallbacks(callbacks));
 }
 
 void IDBCursorBackendProxy::continueFunction(PassRefPtr<IDBKey> key, PassRefPtr<IDBCallbacks> callbacks)
 {
-    m_idbCursor->continueFunction(key, new WebIDBCallbacksImpl(callbacks));
+    m_idbCursor->continueFunction(key, new WebIDBCallbacks(callbacks));
 }
 
 void IDBCursorBackendProxy::postSuccessHandlerCallback()
