@@ -999,7 +999,7 @@ LayoutRect RenderInline::linesVisualOverflowBoundingBox() const
 
 LayoutRect RenderInline::clippedOverflowRectForRepaint(const RenderLayerModelObject* repaintContainer) const
 {
-    ASSERT(!view() || !view()->layoutStateEnabled());
+    ASSERT(!view() || !view()->layoutStateEnabled() || RuntimeEnabledFeatures::repaintAfterLayoutEnabled());
 
     if (!firstLineBoxIncludingCulling() && !continuation())
         return LayoutRect();

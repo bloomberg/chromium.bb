@@ -1110,7 +1110,7 @@ void FrameView::layout(bool allowSubtree)
             // since first layouts and printing don't have you scrolled anywhere.
             rootForThisLayout->view()->repaint();
 
-        } else if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled()) {
+        } else if (RuntimeEnabledFeatures::repaintAfterLayoutEnabled() && !partialLayout().isStopping()) {
             repaintTree(rootForThisLayout);
         }
 
