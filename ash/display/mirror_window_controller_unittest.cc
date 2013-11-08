@@ -8,6 +8,7 @@
 #include "ash/display/display_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/display_manager_test_api.h"
 #include "ash/test/mirror_window_test_api.h"
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
@@ -235,10 +236,8 @@ TEST_F(MirrorWindowControllerTest, MAYBE_MirrorCursorLocations) {
 // from/to dock mode.
 TEST_F(MirrorWindowControllerTest, MAYBE_DockMode) {
   DisplayManager* display_manager = Shell::GetInstance()->display_manager();
-
   const int64 internal_id = 1;
   const int64 external_id = 2;
-  //const int64 invalid_id = gfx::Display::kInvalidDisplayID;
 
   const DisplayInfo internal_display_info =
       CreateDisplayInfo(internal_id, gfx::Rect(0, 0, 500, 500));
@@ -252,6 +251,11 @@ TEST_F(MirrorWindowControllerTest, MAYBE_DockMode) {
   display_info_list.push_back(internal_display_info);
   display_info_list.push_back(external_display_info);
   display_manager->OnNativeDisplaysChanged(display_info_list);
+  const int64 internal_display_id =
+      test::DisplayManagerTestApi(display_manager).
+      SetFirstDisplayAsInternalDisplay();
+  EXPECT_EQ(internal_id, internal_display_id);
+
   EXPECT_EQ(1U, display_manager->GetNumDisplays());
   EXPECT_TRUE(display_manager->IsMirrored());
   EXPECT_EQ(external_id, display_manager->mirrored_display_id());

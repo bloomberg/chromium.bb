@@ -14,6 +14,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/cursor_manager_test_api.h"
+#include "ash/test/display_manager_test_api.h"
 #include "base/command_line.h"
 #include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/client/activation_client.h"
@@ -1143,6 +1144,64 @@ TEST_F(DisplayControllerTest, ConvertHostToRootCoords) {
   EXPECT_EQ("0,0", event_handler.GetLocationAndReset());
 
   Shell::GetInstance()->RemovePreTargetHandler(&event_handler);
+}
+
+namespace {
+
+internal::DisplayInfo CreateDisplayInfo(int64 id,
+                                        int y,
+                                        gfx::Display::Rotation rotation) {
+  internal::DisplayInfo info(id, "", false);
+  info.SetBounds(gfx::Rect(0, y, 500, 500));
+  info.set_rotation(rotation);
+  return info;
+}
+
+}  // namespace
+
+// Make sure that the compositor based mirroring can switch
+// from/to dock mode.
+TEST_F(DisplayControllerTest, DockToSingle) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  internal::DisplayManager* display_manager =
+      Shell::GetInstance()->display_manager();
+
+  const int64 internal_id = 1;
+
+  const internal::DisplayInfo internal_display_info =
+      CreateDisplayInfo(internal_id, 0, gfx::Display::ROTATE_0);
+  const internal::DisplayInfo external_display_info =
+      CreateDisplayInfo(2, 1, gfx::Display::ROTATE_90);
+
+  std::vector<internal::DisplayInfo> display_info_list;
+  // Extended
+  display_info_list.push_back(internal_display_info);
+  display_info_list.push_back(external_display_info);
+  display_manager->OnNativeDisplaysChanged(display_info_list);
+  EXPECT_EQ(2U, display_manager->GetNumDisplays());
+  const int64 internal_display_id =
+      test::DisplayManagerTestApi(display_manager).
+      SetFirstDisplayAsInternalDisplay();
+  EXPECT_EQ(internal_id, internal_display_id);
+  EXPECT_EQ(2U, display_manager->GetNumDisplays());
+
+  // Dock mode.
+  display_info_list.clear();
+  display_info_list.push_back(external_display_info);
+  display_manager->OnNativeDisplaysChanged(display_info_list);
+  EXPECT_EQ(1U, display_manager->GetNumDisplays());
+  EXPECT_FALSE(Shell::GetPrimaryRootWindow()->GetDispatcher()->
+               GetRootTransform().IsIdentityOrIntegerTranslation());
+
+  // Switch to single mode and make sure the transform is the one
+  // for the internal display.
+  display_info_list.clear();
+  display_info_list.push_back(internal_display_info);
+  display_manager->OnNativeDisplaysChanged(display_info_list);
+  EXPECT_TRUE(Shell::GetPrimaryRootWindow()->GetDispatcher()->
+              GetRootTransform().IsIdentityOrIntegerTranslation());
 }
 
 #if defined(USE_X11)

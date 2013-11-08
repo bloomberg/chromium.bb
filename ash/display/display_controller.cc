@@ -613,8 +613,9 @@ void DisplayController::OnDisplayAdded(const gfx::Display& display) {
     primary_root_window_for_replace_ = NULL;
     const internal::DisplayInfo& display_info =
         GetDisplayManager()->GetDisplayInfo(display.id());
-    root_windows_[display.id()]->SetHostBounds(
-        display_info.bounds_in_native());
+    aura::RootWindow* root = root_windows_[display.id()];
+    root->SetHostBounds(display_info.bounds_in_native());
+    SetDisplayPropertiesOnHostWindow(root, display);
   } else {
     if (primary_display_id == gfx::Display::kInvalidDisplayID)
       primary_display_id = display.id();
