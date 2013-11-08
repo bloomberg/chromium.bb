@@ -15,6 +15,7 @@
 #include "cc/output/output_surface.h"
 #include "content/browser/aura/browser_compositor_output_surface.h"
 #include "content/browser/aura/browser_compositor_output_surface_proxy.h"
+#include "content/browser/aura/gpu_browser_compositor_output_surface.h"
 #include "content/browser/aura/reflector_impl.h"
 #include "content/browser/aura/software_browser_compositor_output_surface.h"
 #include "content/browser/gpu/browser_gpu_channel_host_factory.h"
@@ -202,9 +203,14 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
                  " compositing with browser threaded compositing. Aborting.";
     }
 
-    scoped_ptr<SoftwareBrowserCompositorOutputSurface> surface =
-        SoftwareBrowserCompositorOutputSurface::Create(
-            CreateSoftwareOutputDevice(compositor));
+    scoped_ptr<SoftwareBrowserCompositorOutputSurface> surface(
+        new SoftwareBrowserCompositorOutputSurface(
+            output_surface_proxy_,
+            CreateSoftwareOutputDevice(compositor),
+            per_compositor_data_[compositor]->surface_id,
+            &output_surface_map_,
+            base::MessageLoopProxy::current().get(),
+            compositor->AsWeakPtr()));
     return surface.PassAs<cc::OutputSurface>();
   }
 
@@ -219,7 +225,7 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
       compositor_thread_task_runner.get());
 
   scoped_ptr<BrowserCompositorOutputSurface> surface(
-      new BrowserCompositorOutputSurface(
+      new GpuBrowserCompositorOutputSurface(
           context_provider,
           per_compositor_data_[compositor]->surface_id,
           &output_surface_map_,

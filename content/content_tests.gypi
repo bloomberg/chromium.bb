@@ -325,6 +325,7 @@
         'browser/accessibility/browser_accessibility_manager_unittest.cc',
         'browser/accessibility/browser_accessibility_win_unittest.cc',
         'browser/appcache/chrome_appcache_service_unittest.cc',
+        'browser/aura/software_browser_compositor_output_surface_unittest.cc',
         'browser/aura/software_output_device_ozone_unittest.cc',
         'browser/browser_thread_unittest.cc',
         'browser/browser_url_handler_impl_unittest.cc',

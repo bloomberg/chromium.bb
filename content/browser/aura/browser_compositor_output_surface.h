@@ -9,8 +9,13 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "cc/output/output_surface.h"
+#include "content/common/content_export.h"
 
 namespace base { class MessageLoopProxy; }
+
+namespace cc {
+class SoftwareOutputDevice;
+}
 
 namespace ui { class Compositor; }
 
@@ -19,13 +24,23 @@ class ContextProviderCommandBuffer;
 class ReflectorImpl;
 class WebGraphicsContext3DCommandBufferImpl;
 
-// Adapts a WebGraphicsContext3DCommandBufferImpl into a
-// cc::OutputSurface that also handles vsync parameter updates
-// arriving from the GPU process.
-class BrowserCompositorOutputSurface
+class CONTENT_EXPORT BrowserCompositorOutputSurface
     : public cc::OutputSurface,
       public base::NonThreadSafe {
  public:
+  virtual ~BrowserCompositorOutputSurface();
+
+  // cc::OutputSurface implementation.
+  virtual bool BindToClient(cc::OutputSurfaceClient* client) OVERRIDE;
+  virtual void Reshape(gfx::Size size, float scale_factor) OVERRIDE;
+
+  void OnUpdateVSyncParameters(base::TimeTicks timebase,
+                               base::TimeDelta interval);
+
+  void SetReflector(ReflectorImpl* reflector);
+
+ protected:
+  // Constructor used by the accelerated implementation.
   BrowserCompositorOutputSurface(
       const scoped_refptr<ContextProviderCommandBuffer>& context,
       int surface_id,
@@ -33,25 +48,25 @@ class BrowserCompositorOutputSurface
       base::MessageLoopProxy* compositor_message_loop,
       base::WeakPtr<ui::Compositor> compositor);
 
-  virtual ~BrowserCompositorOutputSurface();
+  // Constructor used by the software implementation.
+  BrowserCompositorOutputSurface(
+      scoped_ptr<cc::SoftwareOutputDevice> software_device,
+      int surface_id,
+      IDMap<BrowserCompositorOutputSurface>* output_surface_map,
+      base::MessageLoopProxy* compositor_message_loop,
+      base::WeakPtr<ui::Compositor> compositor);
 
-  // cc::OutputSurface implementation.
-  virtual bool BindToClient(cc::OutputSurfaceClient* client) OVERRIDE;
-  virtual void Reshape(gfx::Size size, float scale_factor) OVERRIDE;
-  virtual void SwapBuffers(cc::CompositorFrame* frame) OVERRIDE;
-
-  void OnUpdateVSyncParameters(base::TimeTicks timebase,
-                               base::TimeDelta interval);
-
-  void SetReflector(ReflectorImpl* reflector);
-
- private:
   int surface_id_;
   IDMap<BrowserCompositorOutputSurface>* output_surface_map_;
 
   scoped_refptr<base::MessageLoopProxy> compositor_message_loop_;
   base::WeakPtr<ui::Compositor> compositor_;
   scoped_refptr<ReflectorImpl> reflector_;
+
+ private:
+  void Initialize();
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserCompositorOutputSurface);
 };
 
 }  // namespace content

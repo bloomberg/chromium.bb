@@ -6,6 +6,7 @@
 #define CC_OUTPUT_SOFTWARE_OUTPUT_DEVICE_H_
 
 #include "base/basictypes.h"
+#include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
 #include "skia/ext/refptr.h"
 // TODO(robertphillips): change this to "class SkBaseDevice;"
@@ -16,6 +17,10 @@
 
 class SkBitmap;
 class SkCanvas;
+
+namespace gfx {
+class VSyncProvider;
+}
 
 namespace cc {
 
@@ -65,11 +70,16 @@ class CC_EXPORT SoftwareOutputDevice {
   // displayed.
   virtual void ReclaimSoftwareFrame(unsigned id);
 
+  // VSyncProvider used to update the timer used to schedule draws with the
+  // hardware vsync. Return NULL if a provider doesn't exist.
+  virtual gfx::VSyncProvider* GetVSyncProvider();
+
  protected:
   gfx::Size viewport_size_;
   gfx::Rect damage_rect_;
   skia::RefPtr<SkBaseDevice> device_;
   skia::RefPtr<SkCanvas> canvas_;
+  scoped_ptr<gfx::VSyncProvider> vsync_provider_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SoftwareOutputDevice);

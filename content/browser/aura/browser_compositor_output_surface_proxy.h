@@ -8,6 +8,7 @@
 #include "base/id_map.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
+#include "content/common/content_export.h"
 
 namespace base { class SingleThreadTaskRunner; }
 
@@ -17,7 +18,7 @@ namespace content {
 class BrowserCompositorOutputSurface;
 
 // Directs vsync updates to the appropriate BrowserCompositorOutputSurface.
-class BrowserCompositorOutputSurfaceProxy
+class CONTENT_EXPORT BrowserCompositorOutputSurfaceProxy
     : public base::RefCountedThreadSafe<BrowserCompositorOutputSurfaceProxy> {
  public:
   BrowserCompositorOutputSurfaceProxy(
@@ -30,6 +31,7 @@ class BrowserCompositorOutputSurfaceProxy
 
  private:
   friend class base::RefCountedThreadSafe<BrowserCompositorOutputSurfaceProxy>;
+  friend class SoftwareBrowserCompositorOutputSurface;
   ~BrowserCompositorOutputSurfaceProxy();
 
   void OnMessageReceivedOnCompositorThread(const IPC::Message& message);

@@ -306,6 +306,8 @@
     'browser/aura/reflector_impl.h',
     'browser/aura/resize_lock.cc',
     'browser/aura/resize_lock.h',
+    'browser/aura/gpu_browser_compositor_output_surface.cc',
+    'browser/aura/gpu_browser_compositor_output_surface.h',
     'browser/aura/software_browser_compositor_output_surface.cc',
     'browser/aura/software_browser_compositor_output_surface.h',
     'browser/aura/software_output_device_ozone.cc',

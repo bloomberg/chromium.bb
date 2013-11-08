@@ -9,10 +9,8 @@
 #include "base/location.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_number_conversions.h"
-#include "cc/output/compositor_frame.h"
 #include "content/browser/aura/reflector_impl.h"
 #include "content/common/gpu/client/context_provider_command_buffer.h"
-#include "content/common/gpu/client/webgraphicscontext3d_command_buffer_impl.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/compositor_switches.h"
 
@@ -29,6 +27,31 @@ BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
       output_surface_map_(output_surface_map),
       compositor_message_loop_(compositor_message_loop),
       compositor_(compositor) {
+  Initialize();
+}
+
+BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
+    scoped_ptr<cc::SoftwareOutputDevice> software_device,
+    int surface_id,
+    IDMap<BrowserCompositorOutputSurface>* output_surface_map,
+    base::MessageLoopProxy* compositor_message_loop,
+    base::WeakPtr<ui::Compositor> compositor)
+    : OutputSurface(software_device.Pass()),
+      surface_id_(surface_id),
+      output_surface_map_(output_surface_map),
+      compositor_message_loop_(compositor_message_loop),
+      compositor_(compositor) {
+  Initialize();
+}
+
+BrowserCompositorOutputSurface::~BrowserCompositorOutputSurface() {
+  DCHECK(CalledOnValidThread());
+  if (!HasClient())
+    return;
+  output_surface_map_->Remove(surface_id_);
+}
+
+void BrowserCompositorOutputSurface::Initialize() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kUIMaxFramesPending)) {
     std::string string_value = command_line->GetSwitchValueASCII(
@@ -40,14 +63,8 @@ BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
       LOG(ERROR) << "Trouble parsing --" << switches::kUIMaxFramesPending;
   }
   capabilities_.adjust_deadline_for_parent = false;
-  DetachFromThread();
-}
 
-BrowserCompositorOutputSurface::~BrowserCompositorOutputSurface() {
-  DCHECK(CalledOnValidThread());
-  if (!HasClient())
-    return;
-  output_surface_map_->Remove(surface_id_);
+  DetachFromThread();
 }
 
 bool BrowserCompositorOutputSurface::BindToClient(
@@ -68,29 +85,6 @@ void BrowserCompositorOutputSurface::Reshape(gfx::Size size,
   OutputSurface::Reshape(size, scale_factor);
   if (reflector_.get())
     reflector_->OnReshape(size);
-}
-
-void BrowserCompositorOutputSurface::SwapBuffers(cc::CompositorFrame* frame) {
-  DCHECK(frame->gl_frame_data);
-
-  WebGraphicsContext3DCommandBufferImpl* command_buffer_context =
-      static_cast<WebGraphicsContext3DCommandBufferImpl*>(
-          context_provider_->Context3d());
-  CommandBufferProxyImpl* command_buffer_proxy =
-      command_buffer_context->GetCommandBufferProxy();
-  DCHECK(command_buffer_proxy);
-  context_provider_->Context3d()->shallowFlushCHROMIUM();
-  command_buffer_proxy->SetLatencyInfo(frame->metadata.latency_info);
-
-  if (reflector_.get()) {
-    if (frame->gl_frame_data->sub_buffer_rect ==
-        gfx::Rect(frame->gl_frame_data->size))
-      reflector_->OnSwapBuffers();
-    else
-      reflector_->OnPostSubBuffer(frame->gl_frame_data->sub_buffer_rect);
-  }
-
-  OutputSurface::SwapBuffers(frame);
 }
 
 void BrowserCompositorOutputSurface::OnUpdateVSyncParameters(
