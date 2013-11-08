@@ -48,6 +48,10 @@ void PrivetLocalPrinterLister::Start() {
   privet_lister_->DiscoverNewDevices(false);
 }
 
+void PrivetLocalPrinterLister::Stop() {
+  privet_lister_.reset();
+}
+
 void PrivetLocalPrinterLister::DeviceChanged(
     bool added,
     const std::string& name,
@@ -56,8 +60,6 @@ void PrivetLocalPrinterLister::DeviceChanged(
 
   if (i != device_contexts_.end()) {
     if (i->second->has_local_printing) {
-      // This line helps with the edge case of a device description changing
-      // during the /privet/info call.
       i->second->description = description;
       delegate_->LocalPrinterChanged(added, name, description);
     }
@@ -125,6 +127,13 @@ void PrivetLocalPrinterLister::DeviceRemoved(const std::string& device_name) {
       delegate_->LocalPrinterRemoved(device_name);
     }
   }
+}
+
+const DeviceDescription* PrivetLocalPrinterLister::GetDeviceDescription(
+    const std::string& name) {
+  DeviceContextMap::iterator i = device_contexts_.find(name);
+  if (i == device_contexts_.end()) return NULL;
+  return &i->second->description;
 }
 
 }  // namespace local_discovery

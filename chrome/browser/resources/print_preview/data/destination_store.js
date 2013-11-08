@@ -329,7 +329,11 @@ cr.define('print_preview', function() {
       cr.dispatchSimpleEvent(
           this, DestinationStore.EventType.DESTINATION_SELECT);
       if (destination.capabilities == null) {
-        if (destination.isLocal) {
+        if (destination.isPrivet) {
+          this.nativeLayer_.startGetPrivetDestinationCapabilities(
+              destination.id);
+        }
+        else if (destination.isLocal) {
           this.nativeLayer_.startGetLocalDestinationCapabilities(
               destination.id);
         } else {
@@ -498,7 +502,10 @@ cr.define('print_preview', function() {
           this.nativeLayer_,
           print_preview.NativeLayer.EventType.PRIVET_PRINTER_SEARCH_DONE,
           this.onPrivetPrinterSearchDone_.bind(this));
-      // TODO(noamsml): Bind PRIVET_PRINTER_REMOVED
+      this.tracker_.add(
+          this.nativeLayer_,
+          print_preview.NativeLayer.EventType.PRIVET_CAPABILITIES_SET,
+          this.onPrivetCapabilitiesSet_.bind(this));
     },
 
     /**
@@ -660,6 +667,24 @@ cr.define('print_preview', function() {
     onPrivetPrinterAdded_: function(event) {
       this.insertDestination(
           print_preview.PrivetDestinationParser.parse(event.printer));
+    },
+
+    /**
+     * Called when capabilities for a privet printer are set.
+     * @param {object} event Contains the capabilities and printer ID.
+     * @private
+     */
+    onPrivetCapabilitiesSet_: function(event) {
+      var destinationId = event.printerId;
+      var dest = print_preview.PrivetDestinationParser.parse(event.printer);
+      dest.capabilities = event.capabilities;
+
+      this.updateDestination(dest);
+      if (this.selectedDestination_ == dest) {
+        cr.dispatchSimpleEvent(
+            this,
+            DestinationStore.EventType.SELECTED_DESTINATION_CAPABILITIES_READY);
+      }
     },
 
     /**

@@ -24,6 +24,7 @@ class PrivetHTTPResolution {
   public:
   virtual ~PrivetHTTPResolution() {}
   virtual void Start() = 0;
+  virtual const std::string& GetName() = 0;
 };
 
 class PrivetHTTPAsynchronousFactory {

@@ -41,6 +41,7 @@ class PrintPreviewHandler
     : public content::WebUIMessageHandler,
 #if defined(ENABLE_MDNS)
       public local_discovery::PrivetLocalPrinterLister::Delegate,
+      public local_discovery::PrivetCapabilitiesOperation::Delegate,
 #endif
       public ui::SelectFileDialog::Listener,
       public printing::PrintViewManagerObserver
@@ -76,14 +77,20 @@ class PrintPreviewHandler
   // dialog.
   void ShowSystemDialog();
 
-  // PrivetLocalPrinterLister::Delegate implementation
 #if defined(ENABLE_MDNS)
+  // PrivetLocalPrinterLister::Delegate implementation.
   virtual void LocalPrinterChanged(
       bool added,
       const std::string& name,
       const local_discovery::DeviceDescription& description) OVERRIDE;
   virtual void LocalPrinterRemoved(const std::string& name) OVERRIDE;
   virtual void LocalPrinterCacheFlushed() OVERRIDE;
+
+  // PrivetCapabilitiesOperation::Delegate implementation.
+  virtual void OnPrivetCapabilities(
+      local_discovery::PrivetCapabilitiesOperation* capabilities_operation,
+      int http_error,
+      const base::DictionaryValue* capabilities) OVERRIDE;
 #endif  // ENABLE_MDNS
 
  private:
@@ -169,6 +176,8 @@ class PrintPreviewHandler
   // window opens behind the initiator window.
   void HandleForceOpenNewTab(const base::ListValue* args);
 
+  void HandleGetPrivetPrinterCapabilities(const base::ListValue* arg);
+
   void SendInitialSettings(const std::string& default_printer);
 
   // Send OAuth2 access token.
@@ -228,6 +237,13 @@ class PrintPreviewHandler
 
 #if defined(ENABLE_MDNS)
   void StopPrivetPrinterSearch();
+  void StartPrivetCapabilities(
+      scoped_ptr<local_discovery::PrivetHTTPClient> http_client);
+  void SendPrivetCapabilitiesError(const std::string& id);
+  void FillPrinterDescription(
+      const std::string& name,
+      const local_discovery::DeviceDescription& description,
+      base::DictionaryValue* printer_value);
 #endif
 
   // Pointer to current print system.
@@ -266,6 +282,13 @@ class PrintPreviewHandler
   scoped_refptr<local_discovery::ServiceDiscoverySharedClient>
       service_discovery_client_;
   scoped_ptr<local_discovery::PrivetLocalPrinterLister> printer_lister_;
+
+  scoped_ptr<local_discovery::PrivetHTTPAsynchronousFactory>
+      privet_http_factory_;
+  scoped_ptr<local_discovery::PrivetHTTPResolution> privet_http_resolution_;
+  scoped_ptr<local_discovery::PrivetHTTPClient> privet_http_client_;
+  scoped_ptr<local_discovery::PrivetCapabilitiesOperation>
+      privet_capabilities_operation_;
 #endif
 
   base::WeakPtrFactory<PrintPreviewHandler> weak_factory_;

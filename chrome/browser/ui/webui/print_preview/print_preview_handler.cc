@@ -68,6 +68,10 @@
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #endif
 
+#if defined(ENABLE_MDNS)
+#include "chrome/browser/local_discovery/privet_constants.h"
+#endif
+
 using content::BrowserThread;
 using content::RenderViewHost;
 using content::WebContents;
@@ -531,9 +535,13 @@ void PrintPreviewHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("forceOpenNewTab",
       base::Bind(&PrintPreviewHandler::HandleForceOpenNewTab,
-                 base::Unretained(this)));
+                   base::Unretained(this)));
   web_ui()->RegisterMessageCallback("getPrivetPrinters",
       base::Bind(&PrintPreviewHandler::HandleGetPrivetPrinters,
+                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getPrivetPrinterCapabilities",
+      base::Bind(&PrintPreviewHandler::HandleGetPrivetPrinterCapabilities,
                  base::Unretained(this)));
 }
 
@@ -585,6 +593,34 @@ void PrintPreviewHandler::HandleGetPrivetPrinters(const base::ListValue* args) {
   if (!PrivetPrintingEnabled()) {
     web_ui()->CallJavascriptFunction("onPrivetPrinterSearchDone");
   }
+}
+
+void PrintPreviewHandler::HandleGetPrivetPrinterCapabilities(
+    const base::ListValue* args) {
+#if defined(ENABLE_MDNS)
+  std::string name;
+  bool success = args->GetString(0, &name);
+  DCHECK(success);
+
+  const local_discovery::DeviceDescription* device_description =
+      printer_lister_->GetDeviceDescription(name);
+
+  if (!device_description) {
+    SendPrivetCapabilitiesError(name);
+    return;
+  }
+
+  privet_http_factory_ =
+      local_discovery::PrivetHTTPAsynchronousFactory::CreateInstance(
+      service_discovery_client_,
+      Profile::FromWebUI(web_ui())->GetRequestContext());
+  privet_http_resolution_ = privet_http_factory_->CreatePrivetHTTP(
+      name,
+      device_description->address,
+      base::Bind(&PrintPreviewHandler::StartPrivetCapabilities,
+                 base::Unretained(this)));
+  privet_http_resolution_->Start();
+#endif
 }
 
 void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
@@ -1314,8 +1350,7 @@ void PrintPreviewHandler::LocalPrinterChanged(
     const std::string& name,
     const local_discovery::DeviceDescription& description) {
   base::DictionaryValue info;
-  info.SetString("serviceName", name);
-  info.SetString("name", description.name);
+  FillPrinterDescription(name, description, &info);
 
   web_ui()->CallJavascriptFunction("onPrivetPrinterChanged", info);
 }
@@ -1327,9 +1362,70 @@ void PrintPreviewHandler::LocalPrinterCacheFlushed() {
 }
 
 void PrintPreviewHandler::StopPrivetPrinterSearch() {
-  printer_lister_.reset();
-  service_discovery_client_ = NULL;
+  printer_lister_->Stop();
   web_ui()->CallJavascriptFunction("onPrivetPrinterSearchDone");
+}
+
+void PrintPreviewHandler::StartPrivetCapabilities(
+    scoped_ptr<local_discovery::PrivetHTTPClient> http_client) {
+  if (!http_client) {
+    SendPrivetCapabilitiesError(privet_http_resolution_->GetName());
+    privet_http_resolution_.reset();
+    return;
+  }
+
+  privet_http_client_ = http_client.Pass();
+  privet_capabilities_operation_ =
+      privet_http_client_->CreateCapabilitiesOperation(
+          this);
+  privet_http_resolution_.reset();
+  privet_capabilities_operation_->Start();
+}
+
+void PrintPreviewHandler::OnPrivetCapabilities(
+    local_discovery::PrivetCapabilitiesOperation* capabilities_operation,
+    int http_error,
+    const base::DictionaryValue* capabilities) {
+  std::string name = capabilities_operation->GetHTTPClient()->GetName();
+
+  if (!capabilities || capabilities->HasKey(local_discovery::kPrivetKeyError)) {
+    SendPrivetCapabilitiesError(name);
+    return;
+  }
+
+  base::DictionaryValue printer_info;
+  const local_discovery::DeviceDescription* description =
+      printer_lister_->GetDeviceDescription(name);
+
+  if (!description) {
+    SendPrivetCapabilitiesError(name);
+    return;
+  }
+
+  FillPrinterDescription(name, *description, &printer_info);
+
+  web_ui()->CallJavascriptFunction(
+      "onPrivetCapabilitiesSet",
+      printer_info,
+      *capabilities);
+
+  privet_capabilities_operation_.reset();
+}
+
+void PrintPreviewHandler::SendPrivetCapabilitiesError(
+    const std::string& device_name) {
+  base::StringValue name_value(device_name);
+  web_ui()->CallJavascriptFunction(
+      "failedToGetPrivetPrinterCapabilities",
+      name_value);
+}
+
+void PrintPreviewHandler::FillPrinterDescription(
+    const std::string& name,
+    const local_discovery::DeviceDescription& description,
+    base::DictionaryValue* printer_value) {
+  printer_value->SetString("serviceName", name);
+  printer_value->SetString("name", description.name);
 }
 
 #endif

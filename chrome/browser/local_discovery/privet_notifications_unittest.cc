@@ -130,6 +130,10 @@ class MockPrivetHttpFactory : public PrivetHTTPAsynchronousFactory {
           new MockPrivetHTTPClient(delegate_for_tests_, name_)));
     }
 
+    virtual const std::string& GetName() OVERRIDE {
+      return name_;
+    }
+
    private:
     std::string name_;
     MockPrivetInfoOperation::DelegateForTests* delegate_for_tests_;

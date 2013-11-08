@@ -52,6 +52,7 @@ class PrivetHTTPAsynchronousFactoryImpl : public PrivetHTTPAsynchronousFactory {
     virtual ~ResolutionImpl();
 
     virtual void Start() OVERRIDE;
+    virtual const std::string& GetName() OVERRIDE;
    private:
     void ResolveComplete(bool success,
                          const net::IPAddressNumber& address_ipv4,
@@ -123,6 +124,11 @@ PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::~ResolutionImpl() {
 
 void PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::Start() {
   resolver_->Start();
+}
+
+const std::string&
+PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::GetName() {
+  return name_;
 }
 
 void PrivetHTTPAsynchronousFactoryImpl::ResolutionImpl::ResolveComplete(

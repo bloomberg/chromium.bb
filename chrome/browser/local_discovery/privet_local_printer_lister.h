@@ -39,6 +39,11 @@ class PrivetLocalPrinterLister : PrivetDeviceLister::Delegate,
 
   void Start();
 
+  // Stops listening/listing, keeps the data.
+  void Stop();
+
+  const DeviceDescription* GetDeviceDescription(const std::string& name);
+
   // PrivetDeviceLister::Delegate implementation.
   virtual void DeviceChanged(bool added,
                              const std::string& name,
