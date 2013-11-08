@@ -188,8 +188,8 @@ TEST(MountTest, MemMountRemove) {
   ScopedMountNode file;
   ScopedMountNode result_node;
 
-  EXPECT_EQ(0, mnt.Mkdir(Path("/dir"), O_RDWR));
-  EXPECT_EQ(0, mnt.Open(Path("/file"), O_RDWR | O_CREAT | O_EXCL, &file));
+  ASSERT_EQ(0, mnt.Mkdir(Path("/dir"), O_RDWR));
+  ASSERT_EQ(0, mnt.Open(Path("/file"), O_RDWR | O_CREAT | O_EXCL, &file));
   EXPECT_NE(NULL_NODE, file.get());
   EXPECT_EQ(3, mnt.num_nodes());
   file.reset();
@@ -199,11 +199,74 @@ TEST(MountTest, MemMountRemove) {
   EXPECT_EQ(0, mnt.Remove(Path("/file")));
   EXPECT_EQ(1, mnt.num_nodes());
 
-  EXPECT_EQ(ENOENT,
+  ASSERT_EQ(ENOENT,
             mnt.Open(Path("/dir/foo"), O_CREAT | O_RDWR, &result_node));
-  EXPECT_EQ(NULL_NODE, result_node.get());
-  EXPECT_EQ(ENOENT, mnt.Open(Path("/file"), O_RDONLY, &result_node));
-  EXPECT_EQ(NULL_NODE, result_node.get());
+  ASSERT_EQ(NULL_NODE, result_node.get());
+  ASSERT_EQ(ENOENT, mnt.Open(Path("/file"), O_RDONLY, &result_node));
+  ASSERT_EQ(NULL_NODE, result_node.get());
+}
+
+TEST(MountTest, MemMountRename) {
+  MountMemMock mnt;
+  ASSERT_EQ(0, mnt.Mkdir(Path("/dir1"), O_RDWR));
+  ASSERT_EQ(0, mnt.Mkdir(Path("/dir2"), O_RDWR));
+  ASSERT_EQ(3, mnt.num_nodes());
+
+  ScopedMountNode file;
+  ASSERT_EQ(0, mnt.Open(Path("/dir1/file"), O_RDWR | O_CREAT | O_EXCL, &file));
+  ASSERT_EQ(0, mnt.Access(Path("/dir1/file"), R_OK));
+  ASSERT_EQ(4, mnt.num_nodes());
+
+  // Move from one directory to another should ok
+  ASSERT_EQ(0, mnt.Rename(Path("/dir1/file"), Path("/dir2/new_file")));
+  ASSERT_NE(0, mnt.Access(Path("/dir1/file"), R_OK));
+  ASSERT_EQ(0, mnt.Access(Path("/dir2/new_file"), R_OK));
+  ASSERT_EQ(4, mnt.num_nodes());
+
+  // Move within the same directory
+  ASSERT_EQ(0, mnt.Rename(Path("/dir2/new_file"), Path("/dir2/new_file2")));
+  ASSERT_NE(0, mnt.Access(Path("/dir2/new_file"), R_OK));
+  ASSERT_EQ(0, mnt.Access(Path("/dir2/new_file2"), R_OK));
+  ASSERT_EQ(4, mnt.num_nodes());
+
+  // Move to another directory but without a filename
+  ASSERT_EQ(0, mnt.Rename(Path("/dir2/new_file2"), Path("/dir1")));
+  ASSERT_NE(0, mnt.Access(Path("/dir2/new_file2"), R_OK));
+  ASSERT_EQ(0, mnt.Access(Path("/dir1/new_file2"), R_OK));
+  ASSERT_EQ(4, mnt.num_nodes());
+}
+
+TEST(MountTest, MemMountRenameDir) {
+  MountMemMock mnt;
+
+  ASSERT_EQ(0, mnt.Mkdir(Path("/dir1"), O_RDWR));
+  ASSERT_EQ(0, mnt.Mkdir(Path("/dir2"), O_RDWR));
+  EXPECT_EQ(3, mnt.num_nodes());
+
+  // Renaming one directory to another should work
+  ASSERT_EQ(0, mnt.Rename(Path("/dir1"), Path("/dir2")));
+  ASSERT_NE(0, mnt.Access(Path("/dir1"), R_OK));
+  ASSERT_EQ(0, mnt.Access(Path("/dir2"), R_OK));
+  EXPECT_EQ(2, mnt.num_nodes());
+
+  // Reset to initial state
+  ASSERT_EQ(0, mnt.Mkdir(Path("/dir1"), O_RDWR));
+  EXPECT_EQ(3, mnt.num_nodes());
+
+  // Renaming a directory to a new name within another
+  ASSERT_EQ(0, mnt.Rename(Path("/dir1"), Path("/dir2/foo")));
+  ASSERT_EQ(0, mnt.Access(Path("/dir2"), R_OK));
+  ASSERT_EQ(0, mnt.Access(Path("/dir2/foo"), R_OK));
+  EXPECT_EQ(3, mnt.num_nodes());
+
+  // Reset to initial state
+  ASSERT_EQ(0, mnt.Rmdir(Path("/dir2/foo")));
+  ASSERT_EQ(0, mnt.Mkdir(Path("/dir1"), O_RDWR));
+  EXPECT_EQ(3, mnt.num_nodes());
+
+  // Renaming one directory to another should fail if the target is non-empty
+  ASSERT_EQ(0, mnt.Mkdir(Path("/dir2/dir3"), O_RDWR));
+  ASSERT_EQ(ENOTEMPTY, mnt.Rename(Path("/dir1"), Path("/dir2")));
 }
 
 TEST(MountTest, DevAccess) {

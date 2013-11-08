@@ -103,6 +103,21 @@ Error MountHtml5Fs::Remove(const Path& path) {
   return 0;
 }
 
+Error MountHtml5Fs::Rename(const Path& path, const Path& newpath) {
+  Error error = BlockUntilFilesystemOpen();
+  if (error)
+    return error;
+
+  ScopedResource fileref_resource(
+      ppapi(),
+      ppapi()->GetFileRefInterface()->Create(filesystem_resource_,
+                                             path.Join().c_str()));
+  if (!fileref_resource.pp_resource())
+    return ENOENT;
+
+  return EACCES;
+}
+
 MountHtml5Fs::MountHtml5Fs()
     : filesystem_resource_(0),
       filesystem_open_has_result_(false),

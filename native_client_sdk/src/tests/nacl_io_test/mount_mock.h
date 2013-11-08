@@ -29,6 +29,7 @@ class MountMock : public nacl_io::Mount {
   MOCK_METHOD2(Mkdir, Error(const Path&, int));
   MOCK_METHOD1(Rmdir, Error(const Path&));
   MOCK_METHOD1(Remove, Error(const Path&));
+  MOCK_METHOD2(Rename, Error(const Path&, const Path&));
 };
 
 #endif  // LIBRARIES_NACL_IO_TEST_MOUNT_MOCK_H_

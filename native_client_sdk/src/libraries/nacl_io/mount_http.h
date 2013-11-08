@@ -29,6 +29,7 @@ class MountHttp : public Mount {
   virtual Error Mkdir(const Path& path, int permissions);
   virtual Error Rmdir(const Path& path);
   virtual Error Remove(const Path& path);
+  virtual Error Rename(const Path& path, const Path& newpath);
 
   PP_Resource MakeUrlRequestInfo(const std::string& url,
                                  const char* method,

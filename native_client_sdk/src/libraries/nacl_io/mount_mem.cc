@@ -184,6 +184,75 @@ Error MountMem::Remove(const Path& path) {
   return RemoveInternal(path, REMOVE_ALL);
 }
 
+Error MountMem::Rename(const Path& src_path, const Path& target_path) {
+  ScopedMountNode src_node;
+  ScopedMountNode src_parent;
+  ScopedMountNode target_node;
+  ScopedMountNode target_parent;
+  int error = FindNode(src_path, 0, &src_node);
+  if (error)
+    return error;
+
+  // The source must exist
+  error = FindNode(src_path.Parent(), S_IFDIR, &src_parent);
+  if (error)
+    return error;
+
+  // The parent of the target must exist
+  error = FindNode(target_path.Parent(), 0, &target_parent);
+  if (error)
+    return error;
+
+  std::string target_name = target_path.Basename();
+
+  // The target itself need not exist but if it does there are
+  // certain restrictions
+  error = FindNode(target_path, 0, &target_node);
+  bool replacing_target = error == 0;
+  if (replacing_target) {
+    if (target_node->IsaDir()) {
+      // If the target is a direcotry it must be empty
+      if (target_node->ChildCount()) {
+        return ENOTEMPTY;
+      }
+
+      if (src_node->IsaDir()) {
+        // Replacing an existing directory.
+        RemoveInternal(target_path, REMOVE_ALL);
+      } else {
+        // Renaming into an existing directory.
+        target_name = src_path.Basename();
+        target_parent = target_node;
+      }
+    } else {
+      if (src_node->IsaDir())
+        // Can't replace a file with a direcotory
+        return EISDIR;
+
+      // Replacing an existing file.
+      target_parent->RemoveChild(target_path.Basename());
+    }
+  }
+
+  // Perform that actual rename. Simply re-parent the original source node
+  // onto its new parent node.
+  error = src_parent->RemoveChild(src_path.Basename());
+  if (error)
+    return error;
+
+  error = target_parent->AddChild(target_name, src_node);
+  if (error) {
+    // Re-parent the old target_node if we failed to add the new one.
+    if (replacing_target)
+      target_parent->AddChild(target_path.Basename(), target_node);
+    // Re-parent the src_node
+    target_parent->AddChild(target_path.Basename(), src_node);
+    return error;
+  }
+
+  return 0;
+}
+
 Error MountMem::RemoveInternal(const Path& path, int remove_type) {
   bool dir_only = remove_type == REMOVE_DIR;
   bool file_only = remove_type == REMOVE_FILE;
@@ -223,4 +292,3 @@ Error MountMem::RemoveInternal(const Path& path, int remove_type) {
 }
 
 }  // namespace nacl_io
-

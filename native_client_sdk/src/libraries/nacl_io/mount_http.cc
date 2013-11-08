@@ -138,6 +138,14 @@ Error MountHttp::Remove(const Path& path) {
   return EACCES;
 }
 
+Error MountHttp::Rename(const Path& path, const Path& newpath) {
+  NodeMap_t::iterator iter = node_cache_.find(path.Join());
+  if (iter == node_cache_.end())
+    return ENOENT;
+
+  return EACCES;
+}
+
 PP_Resource MountHttp::MakeUrlRequestInfo(const std::string& url,
                                           const char* method,
                                           StringMap_t* additional_headers) {

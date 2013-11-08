@@ -25,7 +25,6 @@ class Path {
   explicit Path(const std::string& path);
   ~Path();
 
-
   // Return true of the first path item is '/'.
   bool IsAbsolute() const;
 
@@ -60,6 +59,8 @@ class Path {
   // Operator versions
   Path& operator=(const Path& p);
   Path& operator=(const std::string& str);
+  bool operator==(const Path& other) { return Split() == other.Split(); }
+  bool operator!=(const Path& other) { return !operator==(other); }
 
  private:
   // Internal representation of the path stored an array of string representing

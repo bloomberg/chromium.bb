@@ -24,6 +24,7 @@ class MountHtml5Fs : public Mount {
   virtual Error Mkdir(const Path& path, int permissions);
   virtual Error Rmdir(const Path& path);
   virtual Error Remove(const Path& path);
+  virtual Error Rename(const Path& path, const Path& newpath);
 
   PP_Resource filesystem_resource() { return filesystem_resource_; }
 

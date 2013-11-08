@@ -612,8 +612,39 @@ int KernelProxy::lstat(const char* path, struct stat* buf) {
 }
 
 int KernelProxy::rename(const char* path, const char* newpath) {
-  errno = ENOSYS;
-  return -1;
+  ScopedMount mnt;
+  Path rel;
+  Error error = AcquireMountAndRelPath(path, &mnt, &rel);
+  if (error) {
+    errno = error;
+    return -1;
+  }
+
+  ScopedMount newmnt;
+  Path newrel;
+  error = AcquireMountAndRelPath(newpath, &newmnt, &newrel);
+  if (error) {
+    errno = error;
+    return -1;
+  }
+
+  if (newmnt.get() != mnt.get()) {
+    // Renaming accross mountpoints is not allowed
+    errno = EXDEV;
+    return -1;
+  }
+
+  // They already point to the same path
+  if (rel == newrel)
+    return 0;
+
+  error = mnt->Rename(rel, newrel);
+  if (error) {
+    errno = error;
+    return -1;
+  }
+
+  return 0;
 }
 
 int KernelProxy::remove(const char* path) {

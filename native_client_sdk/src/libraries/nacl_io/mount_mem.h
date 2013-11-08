@@ -34,6 +34,7 @@ class MountMem : public Mount {
   virtual Error Mkdir(const Path& path, int perm);
   virtual Error Rmdir(const Path& path);
   virtual Error Remove(const Path& path);
+  virtual Error Rename(const Path& path, const Path& newpath);
 
 private:
   static const int REMOVE_DIR = 1;

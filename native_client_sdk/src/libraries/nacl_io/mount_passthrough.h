@@ -25,6 +25,7 @@ class MountPassthrough : public Mount {
   virtual Error Mkdir(const Path& path, int perm);
   virtual Error Rmdir(const Path& path);
   virtual Error Remove(const Path& path);
+  virtual Error Rename(const Path& path, const Path& newpath);
 
 private:
  friend class TypedMountFactory<MountPassthrough>;

@@ -86,13 +86,21 @@ MountStream::~MountStream() {
 }
 
 Error MountStream::Access(const Path& path, int a_mode) { return EACCES; }
+
 Error MountStream::Open(const Path& path,
                         int o_flags,
                         ScopedMountNode* out_node) { return EACCES; }
 
 Error MountStream::Unlink(const Path& path) { return EACCES; }
+
 Error MountStream::Mkdir(const Path& path, int permissions) { return EACCES; }
+
 Error MountStream::Rmdir(const Path& path) { return EACCES; }
+
 Error MountStream::Remove(const Path& path) { return EACCES; }
+
+Error MountStream::Rename(const Path& path, const Path& newpath) {
+  return EACCES;
+}
 
 }  // namespace nacl_io

@@ -40,6 +40,7 @@ class MountRefMock : public Mount {
   Error Mkdir(const Path& path, int permissions) { return 0; }
   Error Rmdir(const Path& path) { return 0; }
   Error Remove(const Path& path) { return 0; }
+  Error Rename(const Path& path, const Path& newpath) { return 0; }
 };
 
 class KernelHandleRefMock : public KernelHandle {

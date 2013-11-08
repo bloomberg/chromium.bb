@@ -68,6 +68,7 @@ class Mount : public sdk_util::RefObject {
   virtual Error Mkdir(const Path& path, int permissions) = 0;
   virtual Error Rmdir(const Path& path) = 0;
   virtual Error Remove(const Path& path) = 0;
+  virtual Error Rename(const Path& path, const Path& newpath) = 0;
 
   // Assumes that |node| is non-NULL.
   void OnNodeCreated(MountNode* node);

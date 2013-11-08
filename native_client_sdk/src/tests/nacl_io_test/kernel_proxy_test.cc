@@ -127,6 +127,21 @@ TEST_F(KernelProxyTest, FileLeak) {
   ASSERT_EQ(0, root->ChildCount());
 }
 
+TEST_F(KernelProxyTest, Rename) {
+  // Create a dummy file
+  int file1 = ki_open("/test1.txt", O_RDWR | O_CREAT);
+  ASSERT_GT(file1, -1);
+  ASSERT_EQ(0, ki_close(file1));
+
+  // Test the renaming works
+  ASSERT_EQ(0, ki_rename("/test1.txt", "/test2.txt"));
+
+  // Test that renaming across mount points fails
+  ASSERT_EQ(0, ki_mount("", "/foo", "memfs", 0, ""));
+  ASSERT_EQ(-1, ki_rename("/test2.txt", "/foo/test2.txt"));
+  ASSERT_EQ(EXDEV, errno);
+}
+
 TEST_F(KernelProxyTest, WorkingDirectory) {
   char text[1024];
 
@@ -407,6 +422,7 @@ class MountMockMMap : public Mount {
   virtual Error Mkdir(const Path& path, int permissions) { return ENOSYS; }
   virtual Error Rmdir(const Path& path) { return ENOSYS; }
   virtual Error Remove(const Path& path) { return ENOSYS; }
+  virtual Error Rename(const Path& path, const Path& newpath) { return ENOSYS; }
 
   friend class TypedMountFactory<MountMockMMap>;
 };
@@ -565,4 +581,3 @@ TEST_F(KernelProxyErrorTest, ReadError) {
   // propagate through.
   EXPECT_EQ(1234, errno);
 }
-

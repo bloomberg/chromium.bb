@@ -288,13 +288,15 @@ Error MountDev::Open(const Path& path,
   return root_->FindChild(path.Join(), out_node);
 }
 
-Error MountDev::Unlink(const Path& path) { return EINVAL; }
+Error MountDev::Unlink(const Path& path) { return EPERM; }
 
-Error MountDev::Mkdir(const Path& path, int permissions) { return EINVAL; }
+Error MountDev::Mkdir(const Path& path, int permissions) { return EPERM; }
 
-Error MountDev::Rmdir(const Path& path) { return EINVAL; }
+Error MountDev::Rmdir(const Path& path) { return EPERM; }
 
-Error MountDev::Remove(const Path& path) { return EINVAL; }
+Error MountDev::Remove(const Path& path) { return EPERM; }
+
+Error MountDev::Rename(const Path& path, const Path& newpath) { return EPERM; }
 
 MountDev::MountDev() {}
 

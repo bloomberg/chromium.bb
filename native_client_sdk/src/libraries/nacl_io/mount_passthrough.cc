@@ -167,5 +167,10 @@ Error MountPassthrough::Remove(const Path& path) {
   return ENOSYS;
 }
 
+Error MountPassthrough::Rename(const Path& path, const Path& newpath) {
+  // Not implemented by NaCl.
+  return ENOSYS;
+}
+
 }  // namespace nacl_io
 
