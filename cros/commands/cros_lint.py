@@ -87,7 +87,8 @@ run other checks (e.g. pyflakes, cpplint, etc.)
       cmd = ['pylint', '--rcfile=%s' % pylintrc] + paths
       extra_env = {'PYTHONPATH': ':'.join(_GetPythonPath(paths))}
       res = cros_build_lib.RunCommand(cmd, extra_env=extra_env,
-                                      error_code_ok=True, print_cmd=False)
+                                      error_code_ok=True,
+                                      print_cmd=self.options.debug)
       if res.returncode != 0:
         errors = True
     if errors:
