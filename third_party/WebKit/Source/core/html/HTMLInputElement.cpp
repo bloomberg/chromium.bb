@@ -141,7 +141,7 @@ HTMLImageLoader* HTMLInputElement::imageLoader()
     return m_imageLoader.get();
 }
 
-void HTMLInputElement::didAddUserAgentShadowRoot(ShadowRoot*)
+void HTMLInputElement::didAddUserAgentShadowRoot(ShadowRoot&)
 {
     m_inputType->createShadowSubtree();
 }

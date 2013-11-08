@@ -38,7 +38,7 @@ private:
 
     virtual RenderObject* createRenderer(RenderStyle*);
     virtual void defaultEventHandler(Event*);
-    virtual void didAddUserAgentShadowRoot(ShadowRoot*) OVERRIDE;
+    virtual void didAddUserAgentShadowRoot(ShadowRoot&) OVERRIDE;
     HTMLDetailsElement* detailsElement() const;
 
     bool supportsFocus() const OVERRIDE;

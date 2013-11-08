@@ -50,7 +50,7 @@ HTMLKeygenElement::HTMLKeygenElement(const QualifiedName& tagName, Document& doc
     ensureUserAgentShadowRoot();
 }
 
-void HTMLKeygenElement::didAddUserAgentShadowRoot(ShadowRoot* root)
+void HTMLKeygenElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 {
     DEFINE_STATIC_LOCAL(AtomicString, keygenSelectPseudoId, ("-webkit-keygen-select", AtomicString::ConstructFromLiteral));
 
@@ -66,7 +66,7 @@ void HTMLKeygenElement::didAddUserAgentShadowRoot(ShadowRoot* root)
         select->appendChild(option);
     }
 
-    root->appendChild(select);
+    root.appendChild(select);
 }
 
 void HTMLKeygenElement::parseAttribute(const QualifiedName& name, const AtomicString& value)

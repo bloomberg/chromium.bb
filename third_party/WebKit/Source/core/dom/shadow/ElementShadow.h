@@ -50,7 +50,7 @@ public:
     ShadowRoot* oldestShadowRoot() const { return m_shadowRoots.tail(); }
     ElementShadow* containingShadow() const;
 
-    ShadowRoot* addShadowRoot(Element& shadowHost, ShadowRoot::ShadowRootType);
+    ShadowRoot& addShadowRoot(Element& shadowHost, ShadowRoot::ShadowRootType);
 
     bool applyAuthorStyles() const { return m_applyAuthorStyles; }
     bool didAffectApplyAuthorStyles();

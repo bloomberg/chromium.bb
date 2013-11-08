@@ -131,7 +131,7 @@ ElementShadow::~ElementShadow()
     removeAllShadowRoots();
 }
 
-ShadowRoot* ElementShadow::addShadowRoot(Element& shadowHost, ShadowRoot::ShadowRootType type)
+ShadowRoot& ElementShadow::addShadowRoot(Element& shadowHost, ShadowRoot::ShadowRootType type)
 {
     RefPtr<ShadowRoot> shadowRoot = ShadowRoot::create(&shadowHost.document(), type);
 
@@ -149,7 +149,9 @@ ShadowRoot* ElementShadow::addShadowRoot(Element& shadowHost, ShadowRoot::Shadow
     shadowHost.didAddShadowRoot(*shadowRoot);
     InspectorInstrumentation::didPushShadowRoot(&shadowHost, shadowRoot.get());
 
-    return shadowRoot.get();
+    ASSERT(m_shadowRoots.head());
+    ASSERT(shadowRoot.get() == m_shadowRoots.head());
+    return *m_shadowRoots.head();
 }
 
 void ElementShadow::removeAllShadowRoots()

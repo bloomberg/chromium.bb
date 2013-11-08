@@ -221,12 +221,12 @@ RenderMeter* HTMLMeterElement::renderMeter() const
     return toRenderMeter(renderObject);
 }
 
-void HTMLMeterElement::didAddUserAgentShadowRoot(ShadowRoot* root)
+void HTMLMeterElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 {
     ASSERT(!m_value);
 
     RefPtr<MeterInnerElement> inner = MeterInnerElement::create(document());
-    root->appendChild(inner);
+    root.appendChild(inner);
 
     RefPtr<MeterBarElement> bar = MeterBarElement::create(document());
     m_value = MeterValueElement::create(document());

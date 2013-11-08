@@ -95,9 +95,9 @@ PassRefPtr<HTMLTextAreaElement> HTMLTextAreaElement::create(const QualifiedName&
     return textArea.release();
 }
 
-void HTMLTextAreaElement::didAddUserAgentShadowRoot(ShadowRoot* root)
+void HTMLTextAreaElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 {
-    root->appendChild(TextControlInnerTextElement::create(document()));
+    root.appendChild(TextControlInnerTextElement::create(document()));
 }
 
 const AtomicString& HTMLTextAreaElement::formControlType() const

@@ -59,7 +59,7 @@ private:
     virtual void resetImpl() OVERRIDE;
     virtual bool shouldSaveAndRestoreFormControlState() const OVERRIDE { return false; }
 
-    virtual void didAddUserAgentShadowRoot(ShadowRoot*) OVERRIDE;
+    virtual void didAddUserAgentShadowRoot(ShadowRoot&) OVERRIDE;
 
     HTMLSelectElement* shadowSelect() const;
 };

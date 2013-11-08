@@ -62,7 +62,7 @@ private:
     virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
 
     void didElementStateChange();
-    virtual void didAddUserAgentShadowRoot(ShadowRoot*) OVERRIDE;
+    virtual void didAddUserAgentShadowRoot(ShadowRoot&) OVERRIDE;
     bool isDeterminate() const;
 
     ProgressValueElement* m_value;

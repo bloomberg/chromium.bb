@@ -145,13 +145,13 @@ void HTMLProgressElement::didElementStateChange()
     }
 }
 
-void HTMLProgressElement::didAddUserAgentShadowRoot(ShadowRoot* root)
+void HTMLProgressElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 {
     ASSERT(!m_value);
 
     RefPtr<ProgressInnerElement> inner = ProgressInnerElement::create(document());
     inner->setPart(AtomicString("-webkit-progress-inner-element", AtomicString::ConstructFromLiteral));
-    root->appendChild(inner);
+    root.appendChild(inner);
 
     RefPtr<ProgressBarElement> bar = ProgressBarElement::create(document());
     bar->setPart(AtomicString("-webkit-progress-bar", AtomicString::ConstructFromLiteral));

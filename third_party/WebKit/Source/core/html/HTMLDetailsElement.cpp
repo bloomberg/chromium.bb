@@ -54,7 +54,7 @@ RenderObject* HTMLDetailsElement::createRenderer(RenderStyle*)
     return new RenderBlockFlow(this);
 }
 
-void HTMLDetailsElement::didAddUserAgentShadowRoot(ShadowRoot* root)
+void HTMLDetailsElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 {
     DEFINE_STATIC_LOCAL(AtomicString, summarySelector, ("summary:first-of-type", AtomicString::ConstructFromLiteral));
 
@@ -65,8 +65,8 @@ void HTMLDetailsElement::didAddUserAgentShadowRoot(ShadowRoot* root)
     content->setAttribute(selectAttr, summarySelector);
     content->appendChild(defaultSummary);
 
-    root->appendChild(content);
-    root->appendChild(HTMLContentElement::create(document()));
+    root.appendChild(content);
+    root.appendChild(HTMLContentElement::create(document()));
 }
 
 Element* HTMLDetailsElement::findMainSummary() const

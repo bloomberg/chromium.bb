@@ -34,6 +34,7 @@
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/DOMTokenList.h"
 #include "core/dom/FullscreenElementStack.h"
+#include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/MouseEvent.h"
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/html/HTMLVideoElement.h"

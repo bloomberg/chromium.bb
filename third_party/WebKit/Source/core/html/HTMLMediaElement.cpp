@@ -3594,7 +3594,7 @@ bool HTMLMediaElement::createMediaControls()
     if (isFullscreen())
         mediaControls->enteredFullscreen();
 
-    ensureUserAgentShadowRoot()->appendChild(mediaControls);
+    ensureUserAgentShadowRoot().appendChild(mediaControls);
 
     if (!controls() || !inDocument())
         mediaControls->hide();

@@ -313,7 +313,7 @@ public:
     bool hasAuthorShadowRoot() const { return shadowRoot(); }
     virtual void didAddShadowRoot(ShadowRoot&);
     ShadowRoot* userAgentShadowRoot() const;
-    ShadowRoot* ensureUserAgentShadowRoot();
+    ShadowRoot& ensureUserAgentShadowRoot();
     const AtomicString& shadowPseudoId() const;
 
     RenderStyle* computedStyle(PseudoId = NOPSEUDO);
@@ -578,7 +578,7 @@ private:
 
     // FIXME: Everyone should allow author shadows.
     virtual bool areAuthorShadowsAllowed() const { return true; }
-    virtual void didAddUserAgentShadowRoot(ShadowRoot*) { }
+    virtual void didAddUserAgentShadowRoot(ShadowRoot&) { }
     virtual bool alwaysCreateUserAgentShadowRoot() const { return false; }
 
     // FIXME: Remove the need for Attr to call willModifyAttribute/didModifyAttribute.
