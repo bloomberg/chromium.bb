@@ -25,10 +25,6 @@ class InterceptedRequestDataImpl : public InterceptedRequestData {
   virtual bool GetMimeType(JNIEnv* env, std::string* mime_type) const;
   virtual bool GetCharset(JNIEnv* env, std::string* charset) const;
 
-  virtual net::URLRequestJob* CreateJobFor(
-      net::URLRequest* request,
-      net::NetworkDelegate* network_delegate) const OVERRIDE;
-
  private:
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
 

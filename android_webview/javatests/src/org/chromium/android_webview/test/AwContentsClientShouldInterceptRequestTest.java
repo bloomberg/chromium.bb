@@ -25,7 +25,9 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
 import java.util.List;
 import java.util.Random;
 
@@ -253,6 +255,70 @@ public class AwContentsClientShouldInterceptRequestTest extends AwTestBase {
 
         mShouldInterceptRequestHelper.waitForCallback(shouldInterceptRequestCallCount);
         mContentsClient.getOnPageFinishedHelper().waitForCallback(onPageFinishedCallCount);
+    }
+
+    private static class SlowInterceptedRequestData extends InterceptedRequestData {
+        private CallbackHelper mReadStartedCallbackHelper = new CallbackHelper();
+        private CountDownLatch mLatch = new CountDownLatch(1);
+
+        public SlowInterceptedRequestData(String mimeType, String encoding, InputStream data) {
+            super(mimeType, encoding, data);
+        }
+
+        @Override
+        public InputStream getData() {
+            mReadStartedCallbackHelper.notifyCalled();
+            try {
+                mLatch.await();
+            } catch (InterruptedException e) {
+                // ignore
+            }
+            return super.getData();
+        }
+
+        public void unblockReads() {
+            mLatch.countDown();
+        }
+
+        public CallbackHelper getReadStartedCallbackHelper() {
+            return mReadStartedCallbackHelper;
+        }
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView"})
+    public void testDoesNotCrashOnSlowStream() throws Throwable {
+        final String aboutPageUrl = addAboutPageToTestServer(mWebServer);
+        final String aboutPageData = makePageWithTitle("some title");
+        final String encoding = "UTF-8";
+        final SlowInterceptedRequestData slowInterceptedRequestData =
+            new SlowInterceptedRequestData("text/html", encoding,
+                    new ByteArrayInputStream(aboutPageData.getBytes(encoding)));
+
+        mShouldInterceptRequestHelper.setReturnValue(slowInterceptedRequestData);
+        int callCount = slowInterceptedRequestData.getReadStartedCallbackHelper().getCallCount();
+        loadUrlAsync(mAwContents, aboutPageUrl);
+        slowInterceptedRequestData.getReadStartedCallbackHelper().waitForCallback(callCount);
+
+        // Now the AwContents is "stuck" waiting for the SlowInputStream to finish reading so we
+        // delete it to make sure that the dangling 'read' task doesn't cause a crash. Unfortunately
+        // this will not always lead to a crash but it should happen often enough for us to notice.
+
+        runTestOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                getActivity().removeAllViews();
+            }
+        });
+        destroyAwContentsOnMainSync(mAwContents);
+        pollOnUiThread(new Callable<Boolean>() {
+            @Override
+            public Boolean call() {
+                return AwContents.getNativeInstanceCount() == 0;
+            }
+        });
+
+        slowInterceptedRequestData.unblockReads();
     }
 
     @SmallTest

@@ -22,8 +22,8 @@ class StreamReaderJobDelegateImpl :
     public AndroidStreamReaderURLRequestJob::Delegate {
  public:
     StreamReaderJobDelegateImpl(
-        const InterceptedRequestDataImpl* intercepted_request_data)
-        : intercepted_request_data_impl_(intercepted_request_data) {
+        scoped_ptr<InterceptedRequestDataImpl> intercepted_request_data)
+        : intercepted_request_data_impl_(intercepted_request_data.Pass()) {
       DCHECK(intercepted_request_data_impl_);
     }
 
@@ -53,10 +53,30 @@ class StreamReaderJobDelegateImpl :
     }
 
  private:
-    const InterceptedRequestDataImpl* intercepted_request_data_impl_;
+    scoped_ptr<InterceptedRequestDataImpl> intercepted_request_data_impl_;
 };
 
 } // namespace
+
+// static
+net::URLRequestJob* InterceptedRequestData::CreateJobFor(
+    scoped_ptr<InterceptedRequestData> intercepted_request_data,
+    net::URLRequest* request,
+    net::NetworkDelegate* network_delegate) {
+  DCHECK(intercepted_request_data);
+  DCHECK(request);
+  DCHECK(network_delegate);
+
+  return new AndroidStreamReaderURLRequestJob(
+      request,
+      network_delegate,
+      scoped_ptr<AndroidStreamReaderURLRequestJob::Delegate>(
+          new StreamReaderJobDelegateImpl(
+              // PassAs rightfully doesn't support downcasts.
+              scoped_ptr<InterceptedRequestDataImpl>(
+                  static_cast<InterceptedRequestDataImpl*>(
+                      intercepted_request_data.release())))));
+}
 
 InterceptedRequestDataImpl::InterceptedRequestDataImpl(
     const base::android::JavaRef<jobject>& obj)
@@ -97,15 +117,6 @@ bool InterceptedRequestDataImpl::GetCharset(
 
 bool RegisterInterceptedRequestData(JNIEnv* env) {
   return RegisterNativesImpl(env);
-}
-
-net::URLRequestJob* InterceptedRequestDataImpl::CreateJobFor(
-    net::URLRequest* request,
-    net::NetworkDelegate* network_delegate) const {
-  scoped_ptr<AndroidStreamReaderURLRequestJob::Delegate>
-      stream_reader_job_delegate_impl(new StreamReaderJobDelegateImpl(this));
-  return new AndroidStreamReaderURLRequestJob(
-      request, network_delegate, stream_reader_job_delegate_impl.Pass());
 }
 
 } // namespace android_webview
