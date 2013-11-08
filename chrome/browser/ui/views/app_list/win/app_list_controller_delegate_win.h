@@ -24,6 +24,7 @@ class AppListControllerDelegateWin : public AppListControllerDelegateImpl {
   virtual ~AppListControllerDelegateWin();
 
   // AppListControllerDelegate overrides:
+  virtual bool ForceNativeDesktop() const OVERRIDE;
   virtual void ViewClosing() OVERRIDE;
   virtual gfx::ImageSkia GetWindowIcon() OVERRIDE;
   virtual void OnShowExtensionPrompt() OVERRIDE;

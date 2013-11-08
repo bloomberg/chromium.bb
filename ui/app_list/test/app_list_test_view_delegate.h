@@ -24,6 +24,7 @@ class AppListTestViewDelegate  : public AppListViewDelegate {
   }
 
   // AppListViewDelegate overrides:
+  virtual bool ForceNativeDesktop() const OVERRIDE;
   virtual void SetProfileByPath(const base::FilePath& profile_path) OVERRIDE {}
   virtual void InitModel(AppListModel* model) OVERRIDE {}
   virtual SigninDelegate* GetSigninDelegate() OVERRIDE;

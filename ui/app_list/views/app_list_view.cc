@@ -32,7 +32,10 @@
 #if defined(OS_WIN)
 #include "ui/base/win/shell.h"
 #endif
+#if !defined(OS_CHROMEOS)
+#include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #endif
+#endif  // defined(USE_AURA)
 
 namespace app_list {
 
@@ -247,6 +250,15 @@ void AppListView::InitAsBubbleInternal(gfx::NativeView parent,
   // window manager do not have the SWP_SHOWWINDOW flag set which would cause
   // the border to be shown. See http://crbug.com/231687 .
   GetWidget()->Hide();
+#endif
+}
+
+void AppListView::OnBeforeBubbleWidgetInit(
+    views::Widget::InitParams* params,
+    views::Widget* widget) const {
+#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+  if (delegate_ && delegate_->ForceNativeDesktop())
+    params->native_widget = new views::DesktopNativeWidgetAura(widget);
 #endif
 }
 

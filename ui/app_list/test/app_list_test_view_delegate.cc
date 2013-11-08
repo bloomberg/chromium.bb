@@ -18,6 +18,10 @@ AppListTestViewDelegate::AppListTestViewDelegate()
 
 AppListTestViewDelegate::~AppListTestViewDelegate() {}
 
+bool AppListTestViewDelegate::ForceNativeDesktop() const {
+  return false;
+}
+
 SigninDelegate* AppListTestViewDelegate::GetSigninDelegate() {
   return test_signin_delegate_;
 }

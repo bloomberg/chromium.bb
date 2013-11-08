@@ -227,7 +227,11 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     search_box_model->SetHintText(ASCIIToUTF16("Type to search..."));
   }
 
-  // Overridden from ash::AppListViewDelegate:
+  // Overridden from app_list::AppListViewDelegate:
+  virtual bool ForceNativeDesktop() const OVERRIDE {
+    return false;
+  }
+
   virtual void SetProfileByPath(const base::FilePath& profile_path) OVERRIDE {
     // Nothing needs to be done.
   }

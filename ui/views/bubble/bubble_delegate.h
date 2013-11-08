@@ -8,6 +8,7 @@
 #include "base/gtest_prod_util.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/views/bubble/bubble_border.h"
+#include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -103,6 +104,10 @@ class VIEWS_EXPORT BubbleDelegateView : public WidgetDelegateView,
 
   // Get the arrow's anchor rect in screen space.
   virtual gfx::Rect GetAnchorRect();
+
+  // Allows delegates to provide custom parameters before widget initialization.
+  virtual void OnBeforeBubbleWidgetInit(Widget::InitParams* params,
+                                        Widget* widget) const;
 
   // Fade the bubble in or out by animation Widget transparency.
   // Fade-in calls Widget::Show; fade-out calls Widget::Close upon completion.

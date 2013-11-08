@@ -58,6 +58,7 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   void OnProfileChanged();
 
   // Overridden from app_list::AppListViewDelegate:
+  virtual bool ForceNativeDesktop() const OVERRIDE;
   virtual void SetProfileByPath(const base::FilePath& profile_path) OVERRIDE;
   virtual void InitModel(app_list::AppListModel* model) OVERRIDE;
   virtual app_list::SigninDelegate* GetSigninDelegate() OVERRIDE;

@@ -113,6 +113,11 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
                             bool border_accepts_events,
                             const gfx::Vector2d& anchor_offset);
 
+  // Overridden from views::BubbleDelegateView:
+  virtual void OnBeforeBubbleWidgetInit(
+      views::Widget::InitParams* params,
+      views::Widget* widget) const OVERRIDE;
+
   // Overridden from views::WidgetDelegateView:
   virtual views::View* GetInitiallyFocusedView() OVERRIDE;
   virtual gfx::ImageSkia GetWindowIcon() OVERRIDE;

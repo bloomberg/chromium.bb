@@ -131,6 +131,10 @@ void AppListViewDelegate::OnProfileChanged() {
   model_->SetUsers(users);
 }
 
+bool AppListViewDelegate::ForceNativeDesktop() const {
+  return controller_->ForceNativeDesktop();
+}
+
 void AppListViewDelegate::SetProfileByPath(const base::FilePath& profile_path) {
   DCHECK(model_);
 

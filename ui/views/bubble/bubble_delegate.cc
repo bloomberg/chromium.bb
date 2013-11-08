@@ -43,6 +43,7 @@ Widget* CreateBubbleWidget(BubbleDelegateView* bubble) {
   bubble_params.type = Widget::InitParams::TYPE_WINDOW_FRAMELESS;
   bubble_params.opacity = Widget::InitParams::OPAQUE_WINDOW;
 #endif
+  bubble->OnBeforeBubbleWidgetInit(&bubble_params, bubble_widget);
   bubble_widget->Init(bubble_params);
   return bubble_widget;
 }
@@ -271,6 +272,10 @@ gfx::Rect BubbleDelegateView::GetAnchorRect() {
   anchor_rect_ = GetAnchorView()->GetBoundsInScreen();
   anchor_rect_.Inset(anchor_view_insets_);
   return anchor_rect_;
+}
+
+void BubbleDelegateView::OnBeforeBubbleWidgetInit(Widget::InitParams* params,
+                                                  Widget* widget) const {
 }
 
 void BubbleDelegateView::StartFade(bool fade_in) {

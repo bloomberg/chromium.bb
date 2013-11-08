@@ -47,6 +47,10 @@ class AppListControllerDelegate {
 
   virtual ~AppListControllerDelegate();
 
+  // Whether to force the use of a native desktop widget when the app list
+  // window is first created.
+  virtual bool ForceNativeDesktop() const;
+
   // Dismisses the view.
   virtual void DismissView() = 0;
 

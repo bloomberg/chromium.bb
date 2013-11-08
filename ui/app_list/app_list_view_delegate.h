@@ -33,6 +33,10 @@ class APP_LIST_EXPORT AppListViewDelegate {
   // AppListView owns the delegate.
   virtual ~AppListViewDelegate() {}
 
+  // Whether to force the use of a native desktop widget when the app list
+  // window is first created.
+  virtual bool ForceNativeDesktop() const = 0;
+
   // Sets the delegate to use the profile at |profile_path|. This is currently
   // only used by non-Ash Windows.
   virtual void SetProfileByPath(const base::FilePath& profile_path) = 0;

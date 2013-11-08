@@ -15,6 +15,10 @@ AppListControllerDelegateWin::AppListControllerDelegateWin(
 
 AppListControllerDelegateWin::~AppListControllerDelegateWin() {}
 
+bool AppListControllerDelegateWin::ForceNativeDesktop() const {
+  return true;
+}
+
 void AppListControllerDelegateWin::ViewClosing() {
   service_->OnAppListClosing();
 }
