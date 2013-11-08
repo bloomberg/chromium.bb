@@ -46,7 +46,6 @@ namespace WebCore {
 
         static PassRefPtr<PageGroup> create() { return adoptRef(new PageGroup()); }
         static PageGroup* sharedGroup();
-        static PageGroup* inspectorGroup();
 
         const HashSet<Page*>& pages() const { return m_pages; }
 

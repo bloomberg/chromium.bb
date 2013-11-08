@@ -287,12 +287,6 @@ void WebView::resetVisitedLinkState()
 void WebView::willEnterModalLoop()
 {
     PageGroup* pageGroup = PageGroup::sharedGroup();
-
-    // We allow deferring inspector only when it is running in a separate process (no pages in a shared group)
-    // to support debugger tests in DRT.
-    if (pageGroup->pages().isEmpty())
-        pageGroup = PageGroup::inspectorGroup();
-
     if (pageGroup->pages().isEmpty())
         pageGroupLoadDeferrerStack().append(static_cast<PageGroupLoadDeferrer*>(0));
     else {

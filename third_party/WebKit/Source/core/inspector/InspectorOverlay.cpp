@@ -590,7 +590,6 @@ Page* InspectorOverlay::overlayPage()
     m_overlayChromeClient = adoptPtr(new InspectorOverlayChromeClient(m_page->chrome().client(), this));
     pageClients.chromeClient = m_overlayChromeClient.get();
     m_overlayPage = adoptPtr(new Page(pageClients));
-    m_overlayPage->setGroupType(Page::InspectorPageGroup);
 
     Settings& settings = m_page->settings();
     Settings& overlaySettings = m_overlayPage->settings();

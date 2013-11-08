@@ -123,8 +123,7 @@ public:
     // DEPRECATED. Use backForward() instead of the following function.
     void goToItem(HistoryItem*);
 
-    // FIXME: InspectorPageGroup is only needed to support single process debugger layout tests, it should be removed when DumpRenderTree is gone.
-    enum PageGroupType { InspectorPageGroup, PrivatePageGroup, SharedPageGroup };
+    enum PageGroupType { PrivatePageGroup, SharedPageGroup };
     void setGroupType(PageGroupType);
     void clearPageGroup();
     PageGroup& group()

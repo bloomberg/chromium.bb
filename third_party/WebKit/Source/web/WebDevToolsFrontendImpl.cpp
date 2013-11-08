@@ -101,10 +101,6 @@ WebDevToolsFrontendImpl::WebDevToolsFrontendImpl(
     , m_inspectorFrontendDispatchTimer(this, &WebDevToolsFrontendImpl::maybeDispatch)
 {
     m_webViewImpl->page()->inspectorController().setInspectorFrontendClient(adoptPtr(new InspectorFrontendClientImpl(m_webViewImpl->page(), m_client, this)));
-
-    // Put each DevTools frontend Page into a private group so that it's not
-    // deferred along with the inspected page.
-    m_webViewImpl->page()->setGroupType(Page::InspectorPageGroup);
 }
 
 WebDevToolsFrontendImpl::~WebDevToolsFrontendImpl()
