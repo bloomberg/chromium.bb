@@ -53,7 +53,7 @@ namespace extensions {
 //    extensions (not hosted apps), and you are on the UI thread, and you don't
 //    care about incognito version of this extension (or vice versa if you're in
 //    an incognito profile) then use
-//    extensions::ProcessManager::GetSiteInstanceForURL()->[Has|Get]Process().
+//    ExtensionProcessManager::GetSiteInstanceForURL()->[Has|Get]Process().
 //
 // 3. The process ids contained in this class are *not limited* to the Profile
 //    you got this map from. They can also be associated with that profile's

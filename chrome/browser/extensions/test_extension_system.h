@@ -44,12 +44,13 @@ class TestExtensionSystem : public ExtensionSystem {
       const base::FilePath& install_directory,
       bool autoupdate_enabled);
 
-  // Creates a ProcessManager. If not invoked, the ProcessManager is NULL.
-  void CreateProcessManager();
+  // Creates an ExtensionProcessManager. If not invoked, the
+  // ExtensionProcessManager is NULL.
+  void CreateExtensionProcessManager();
 
-  // Allows the ProcessManager to be overriden, for example by a stub
-  // implementation. Takes ownership of |manager|.
-  void SetProcessManager(ProcessManager* manager);
+  // Allows the ExtensionProcessManager to be overriden, for example by a
+  // stub implementation. Takes ownership of |manager|.
+  void SetExtensionProcessManager(ExtensionProcessManager* manager);
 
   void CreateSocketManager();
 
@@ -59,7 +60,7 @@ class TestExtensionSystem : public ExtensionSystem {
   virtual ExtensionService* extension_service() OVERRIDE;
   virtual ManagementPolicy* management_policy() OVERRIDE;
   virtual UserScriptMaster* user_script_master() OVERRIDE;
-  virtual ProcessManager* process_manager() OVERRIDE;
+  virtual ExtensionProcessManager* process_manager() OVERRIDE;
   virtual StateStore* state_store() OVERRIDE;
   virtual StateStore* rules_store() OVERRIDE;
   TestingValueStore* value_store() { return value_store_; }
@@ -91,7 +92,7 @@ class TestExtensionSystem : public ExtensionSystem {
       standard_management_policy_provider_;
   scoped_ptr<ManagementPolicy> management_policy_;
   scoped_ptr<ExtensionService> extension_service_;
-  scoped_ptr<ProcessManager> process_manager_;
+  scoped_ptr<ExtensionProcessManager> extension_process_manager_;
   scoped_refptr<ExtensionInfoMap> info_map_;
   scoped_ptr<ErrorConsole> error_console_;
   OneShotEvent ready_;

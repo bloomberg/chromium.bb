@@ -612,7 +612,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DISABLED_CloseBackgroundPage) {
   const Extension* extension = GetSingleLoadedExtension();
 
   // There is a background page and a browser action with no badge text.
-  extensions::ProcessManager* manager =
+  ExtensionProcessManager* manager =
       extensions::ExtensionSystem::Get(browser()->profile())->process_manager();
   ASSERT_TRUE(manager->GetBackgroundHostForExtension(extension->id()));
   ExtensionAction* action = GetBrowserAction(*extension);

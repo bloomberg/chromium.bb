@@ -46,7 +46,7 @@ class ExtensionManagementTest : public ExtensionBrowserTest {
     // Test that the extension's version from the manifest and reported by the
     // background page is correct.  This is to ensure that the processes are in
     // sync with the Extension.
-    extensions::ProcessManager* manager =
+    ExtensionProcessManager* manager =
         extensions::ExtensionSystem::Get(browser()->profile())->
             process_manager();
     extensions::ExtensionHost* ext_host =
@@ -138,7 +138,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, MAYBE_InstallRequiresConfirm) {
 
 // Tests that disabling and re-enabling an extension works.
 IN_PROC_BROWSER_TEST_F(ExtensionManagementTest, DisableEnable) {
-  extensions::ProcessManager* manager =
+  ExtensionProcessManager* manager =
       extensions::ExtensionSystem::Get(browser()->profile())->process_manager();
   ExtensionService* service = extensions::ExtensionSystem::Get(
       browser()->profile())->extension_service();

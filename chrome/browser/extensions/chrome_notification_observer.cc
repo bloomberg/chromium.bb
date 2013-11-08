@@ -6,16 +6,16 @@
 
 #include "base/logging.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "content/public/browser/notification_service.h"
-#include "extensions/browser/process_manager.h"
 
 namespace extensions {
 
 ChromeNotificationObserver::ChromeNotificationObserver() {
-  // Notifications for extensions::ProcessManager
+  // Notifications for ExtensionProcessManager
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_WINDOW_READY,
                  content::NotificationService::AllSources());
 }
@@ -29,7 +29,7 @@ void ChromeNotificationObserver::OnBrowserWindowReady(Browser* browser) {
   // Inform the process manager for this profile that the window is ready.
   // We continue to observe the notification in case browser windows open for
   // a related incognito profile or other regular profiles.
-  extensions::ProcessManager* manager =
+  ExtensionProcessManager* manager =
       ExtensionSystem::Get(profile)->process_manager();
   if (!manager)  // Tests may not have a process manager.
     return;
@@ -42,7 +42,7 @@ void ChromeNotificationObserver::OnBrowserWindowReady(Browser* browser) {
   // non-incognito window opened.
   if (profile->IsOffTheRecord()) {
     Profile* original_profile = profile->GetOriginalProfile();
-    extensions::ProcessManager* original_manager =
+    ExtensionProcessManager* original_manager =
         ExtensionSystem::Get(original_profile)->process_manager();
     DCHECK(original_manager);
     DCHECK_EQ(original_profile, original_manager->GetBrowserContext());

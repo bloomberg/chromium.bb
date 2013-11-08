@@ -5,12 +5,12 @@
 #include "chrome/browser/extensions/api/messaging/extension_message_port.h"
 
 #include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/render_process_host.h"
-#include "extensions/browser/process_manager.h"
 
 namespace extensions {
 
@@ -56,7 +56,7 @@ void ExtensionMessagePort::DispatchOnMessage(const Message& message,
 void ExtensionMessagePort::IncrementLazyKeepaliveCount() {
   Profile* profile =
       Profile::FromBrowserContext(process_->GetBrowserContext());
-  extensions::ProcessManager* pm =
+  ExtensionProcessManager* pm =
       ExtensionSystem::Get(profile)->process_manager();
   ExtensionHost* host = pm->GetBackgroundHostForExtension(extension_id_);
   if (host && BackgroundInfo::HasLazyBackgroundPage(host->extension()))
@@ -70,7 +70,7 @@ void ExtensionMessagePort::IncrementLazyKeepaliveCount() {
 void ExtensionMessagePort::DecrementLazyKeepaliveCount() {
   Profile* profile =
       Profile::FromBrowserContext(process_->GetBrowserContext());
-  extensions::ProcessManager* pm =
+  ExtensionProcessManager* pm =
       ExtensionSystem::Get(profile)->process_manager();
   ExtensionHost* host = pm->GetBackgroundHostForExtension(extension_id_);
   if (host && host == background_host_ptr_)

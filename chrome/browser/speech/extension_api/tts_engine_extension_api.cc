@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
@@ -22,7 +23,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/console_message_level.h"
-#include "extensions/browser/process_manager.h"
 #include "net/base/network_change_notifier.h"
 
 using extensions::EventRouter;
@@ -48,7 +48,7 @@ void WarnIfMissingPauseOrResumeListener(
   if (has_onpause == has_onresume)
     return;
 
-  extensions::ProcessManager* process_manager =
+  ExtensionProcessManager* process_manager =
       ExtensionSystem::Get(profile)->process_manager();
   extensions::ExtensionHost* host =
       process_manager->GetBackgroundHostForExtension(extension_id);

@@ -173,7 +173,7 @@ void RenderViewDevToolsAgentHost::OnClientAttached() {
       render_view_host_->GetProcess()->GetID());
 
   // TODO(kaznacheev): Move this call back to DevToolsManagerImpl when
-  // extensions::ProcessManager no longer relies on this notification.
+  // ExtensionProcessManager no longer relies on this notification.
   DevToolsManagerImpl::GetInstance()->NotifyObservers(this, true);
 
 #if defined(OS_ANDROID)
@@ -219,7 +219,7 @@ void RenderViewDevToolsAgentHost::ClientDetachedFromRenderer() {
   }
 
   // TODO(kaznacheev): Move this call back to DevToolsManagerImpl when
-  // extensions::ProcessManager no longer relies on this notification.
+  // ExtensionProcessManager no longer relies on this notification.
   DevToolsManagerImpl::GetInstance()->NotifyObservers(this, false);
 }
 

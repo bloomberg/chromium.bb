@@ -22,13 +22,10 @@
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/manifest.h"
 
+class ExtensionProcessManager;
 class ExtensionService;
 class ExtensionSet;
 class Profile;
-
-namespace extensions {
-class ProcessManager;
-}
 
 // Base class for extension browser tests. Provides utilities for loading,
 // unloading, and installing extensions.
@@ -265,11 +262,9 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
   // Looks for an ExtensionHost whose URL has the given path component
   // (including leading slash).  Also verifies that the expected number of hosts
   // are loaded.
-  extensions::ExtensionHost* FindHostWithPath(
-      extensions::ProcessManager* manager,
-      const std::string& path,
-      int expected_hosts);
-
+  extensions::ExtensionHost* FindHostWithPath(ExtensionProcessManager* manager,
+                                              const std::string& path,
+                                              int expected_hosts);
   // Returns
   // extensions::browsertest_util::ExecuteScriptInBackgroundPage(profile(),
   // extension_id, script).

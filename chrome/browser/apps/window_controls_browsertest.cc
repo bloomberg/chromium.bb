@@ -3,12 +3,12 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/apps/app_browsertest_util.h"
+#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/web_contents_view.h"
 #include "content/public/test/browser_test_utils.h"
-#include "extensions/browser/process_manager.h"
 
 class WindowControlsTest : public extensions::PlatformAppBrowserTest {
  protected:
@@ -22,7 +22,7 @@ class WindowControlsTest : public extensions::PlatformAppBrowserTest {
 
 content::WebContents* WindowControlsTest::GetWebContentsForExtensionWindow(
     const extensions::Extension* extension) {
-  extensions::ProcessManager* process_manager =
+  ExtensionProcessManager* process_manager =
       extensions::ExtensionSystem::Get(profile())->process_manager();
 
   // Lookup render view host for background page.
@@ -32,9 +32,9 @@ content::WebContents* WindowControlsTest::GetWebContentsForExtensionWindow(
       extension_host->render_view_host();
 
   // Go through all active views, looking for the first window of the extension
-  const extensions::ProcessManager::ViewSet all_views =
+  const ExtensionProcessManager::ViewSet all_views =
       process_manager->GetAllViews();
-  extensions::ProcessManager::ViewSet::const_iterator it = all_views.begin();
+  ExtensionProcessManager::ViewSet::const_iterator it = all_views.begin();
   for (; it != all_views.end(); ++it) {
     content::RenderViewHost* host = *it;
 

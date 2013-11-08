@@ -130,9 +130,6 @@
       'include_dirs': [
         '..',
         '<(INTERMEDIATE_DIR)',
-        # Needed to access generated API headers.
-        '<(SHARED_INTERMEDIATE_DIR)',
-        # Needed for grit.
         '<(SHARED_INTERMEDIATE_DIR)/chrome',
       ],
       'sources': [
@@ -151,8 +148,6 @@
         'browser/lazy_background_task_queue.h',
         'browser/pref_names.cc',
         'browser/pref_names.h',
-        'browser/process_manager.cc',
-        'browser/process_manager.h',
         'browser/view_type_utils.cc',
         'browser/view_type_utils.h',
       ],

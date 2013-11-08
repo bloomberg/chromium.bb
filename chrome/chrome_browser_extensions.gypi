@@ -727,6 +727,8 @@
         'browser/extensions/extension_prefs.h',
         'browser/extensions/extension_prefs_factory.cc',
         'browser/extensions/extension_prefs_factory.h',
+        'browser/extensions/extension_process_manager.cc',
+        'browser/extensions/extension_process_manager.h',
         'browser/extensions/extension_protocols.cc',
         'browser/extensions/extension_protocols.h',
         'browser/extensions/extension_renderer_state.cc',

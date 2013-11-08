@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_test_notification_observer.h"
 
+#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -14,7 +15,6 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/test/test_utils.h"
-#include "extensions/browser/process_manager.h"
 
 using extensions::Extension;
 
@@ -99,10 +99,10 @@ bool ExtensionTestNotificationObserver::WaitForPageActionVisibilityChangeTo(
 }
 
 bool ExtensionTestNotificationObserver::WaitForExtensionViewsToLoad() {
-  extensions::ProcessManager* manager =
+  ExtensionProcessManager* manager =
     extensions::ExtensionSystem::Get(GetProfile())->process_manager();
-  extensions::ProcessManager::ViewSet all_views = manager->GetAllViews();
-  for (extensions::ProcessManager::ViewSet::const_iterator iter =
+  ExtensionProcessManager::ViewSet all_views = manager->GetAllViews();
+  for (ExtensionProcessManager::ViewSet::const_iterator iter =
          all_views.begin();
        iter != all_views.end();) {
     if (!(*iter)->IsLoading()) {

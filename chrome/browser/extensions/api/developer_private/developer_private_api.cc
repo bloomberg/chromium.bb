@@ -473,7 +473,7 @@ ItemInspectViewList DeveloperPrivateGetItemsInfoFunction::
 
   ItemInspectViewList result;
   // Get the extension process's active views.
-  extensions::ProcessManager* process_manager =
+  ExtensionProcessManager* process_manager =
       ExtensionSystem::Get(GetProfile())->process_manager();
   GetInspectablePagesForExtensionProcess(
       extension,

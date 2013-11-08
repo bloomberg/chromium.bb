@@ -216,8 +216,8 @@ chrome.test.runTests([
   getTest(Folder2ListingTest),
 ]);
 
-// Create a dummy window to prevent the ProcessManager from suspending the
-// chrome-test app. Needed because the FileReader events do not qualify as
+// Create a dummy window to prevent the ExtensionProcessManager from suspending
+// the chrome-test app. Needed because the FileReader events do not qualify as
 // pending callbacks, so the app looks dormant.
 chrome.app.runtime.onLaunched.addListener(function() {
   chrome.app.window.create('dummy.html', {

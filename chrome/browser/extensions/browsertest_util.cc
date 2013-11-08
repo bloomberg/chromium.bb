@@ -5,9 +5,9 @@
 #include "chrome/browser/extensions/browsertest_util.h"
 
 #include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "content/public/test/browser_test_utils.h"
-#include "extensions/browser/process_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
@@ -16,7 +16,7 @@ namespace browsertest_util {
 std::string ExecuteScriptInBackgroundPage(Profile* profile,
                                           const std::string& extension_id,
                                           const std::string& script) {
-  extensions::ProcessManager* manager =
+  ExtensionProcessManager* manager =
       extensions::ExtensionSystem::Get(profile)->process_manager();
   extensions::ExtensionHost* host =
       manager->GetBackgroundHostForExtension(extension_id);

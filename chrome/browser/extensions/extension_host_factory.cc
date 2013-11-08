@@ -5,13 +5,13 @@
 #include "chrome/browser/extensions/extension_host_factory.h"
 
 #include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/url_constants.h"
-#include "extensions/browser/process_manager.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
 #include "extensions/common/view_type.h"
 
@@ -34,7 +34,7 @@ ExtensionHost* CreateViewHostForExtension(const Extension* extension,
   DCHECK(profile);
   // A NULL browser may only be given for dialogs.
   DCHECK(browser || view_type == VIEW_TYPE_EXTENSION_DIALOG);
-  ProcessManager* pm =
+  ExtensionProcessManager* pm =
       ExtensionSystem::Get(profile)->process_manager();
   content::SiteInstance* site_instance = pm->GetSiteInstanceForURL(url);
   ExtensionHost* host =

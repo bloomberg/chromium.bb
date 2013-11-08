@@ -1077,7 +1077,7 @@ ExtensionSettingsHandler::GetInspectablePagesForExtension(
   std::vector<ExtensionPage> result;
 
   // Get the extension process's active views.
-  extensions::ProcessManager* process_manager =
+  ExtensionProcessManager* process_manager =
       ExtensionSystem::Get(extension_service_->profile())->process_manager();
   GetInspectablePagesForExtensionProcess(
       extension,
@@ -1104,7 +1104,7 @@ ExtensionSettingsHandler::GetInspectablePagesForExtension(
   // shell windows for incognito processes.
   if (extension_service_->profile()->HasOffTheRecordProfile() &&
       IncognitoInfo::IsSplitMode(extension)) {
-    extensions::ProcessManager* process_manager =
+    ExtensionProcessManager* process_manager =
         ExtensionSystem::Get(extension_service_->profile()->
             GetOffTheRecordProfile())->process_manager();
     GetInspectablePagesForExtensionProcess(

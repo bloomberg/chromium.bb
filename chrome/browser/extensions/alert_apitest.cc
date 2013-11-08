@@ -5,6 +5,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_modal_dialogs/app_modal_dialog.h"
@@ -12,7 +13,6 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_view_host.h"
-#include "extensions/browser/process_manager.h"
 
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, AlertBasic) {
   ASSERT_TRUE(RunExtensionTest("alert")) << message_;

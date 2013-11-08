@@ -1331,7 +1331,7 @@ TEST_F(TranslateManagerBrowserTest, BeforeTranslateExtraButtons) {
       static_cast<TestingProfile*>(web_contents()->GetBrowserContext());
   static_cast<extensions::TestExtensionSystem*>(
       extensions::ExtensionSystem::Get(test_profile))->
-      CreateProcessManager();
+      CreateExtensionProcessManager();
   test_profile->ForceIncognito(true);
   for (int i = 0; i < 8; ++i) {
     SCOPED_TRACE(::testing::Message() << "Iteration " << i <<

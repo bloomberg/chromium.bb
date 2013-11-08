@@ -322,7 +322,7 @@ void ExtensionFunctionDispatcher::DispatchWithCallback(
   // TODO(yzshen): There is some shared logic between this method and
   // DispatchOnIOThread(). It is nice to deduplicate.
   ExtensionService* service = profile()->GetExtensionService();
-  extensions::ProcessManager* process_manager =
+  ExtensionProcessManager* process_manager =
       extensions::ExtensionSystem::Get(profile())->process_manager();
   extensions::ProcessMap* process_map = service->process_map();
   if (!service || !process_map)

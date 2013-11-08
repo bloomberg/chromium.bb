@@ -18,6 +18,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/event_router.h"
+#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -51,7 +52,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "extensions/browser/extension_error.h"
-#include "extensions/browser/process_manager.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/extension_urls.h"
 #include "grit/browser_resources.h"
@@ -480,13 +480,15 @@ void ExtensionHost::CloseContents(WebContents* contents) {
 }
 
 void ExtensionHost::WillRunJavaScriptDialog() {
-  ProcessManager* pm = ExtensionSystem::Get(profile_)->process_manager();
+  ExtensionProcessManager* pm =
+      ExtensionSystem::Get(profile_)->process_manager();
   if (pm)
     pm->IncrementLazyKeepaliveCount(extension());
 }
 
 void ExtensionHost::DidCloseJavaScriptDialog() {
-  ProcessManager* pm = ExtensionSystem::Get(profile_)->process_manager();
+  ExtensionProcessManager* pm =
+      ExtensionSystem::Get(profile_)->process_manager();
   if (pm)
     pm->DecrementLazyKeepaliveCount(extension());
 }
@@ -571,13 +573,15 @@ void ExtensionHost::OnEventAck() {
 }
 
 void ExtensionHost::OnIncrementLazyKeepaliveCount() {
-  ProcessManager* pm = ExtensionSystem::Get(profile_)->process_manager();
+  ExtensionProcessManager* pm =
+      ExtensionSystem::Get(profile_)->process_manager();
   if (pm)
     pm->IncrementLazyKeepaliveCount(extension());
 }
 
 void ExtensionHost::OnDecrementLazyKeepaliveCount() {
-  ProcessManager* pm = ExtensionSystem::Get(profile_)->process_manager();
+  ExtensionProcessManager* pm =
+      ExtensionSystem::Get(profile_)->process_manager();
   if (pm)
     pm->DecrementLazyKeepaliveCount(extension());
 }

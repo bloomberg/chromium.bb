@@ -54,7 +54,7 @@ class ExtensionServiceTestBase : public testing::Test {
 
   void InitializeEmptyExtensionService();
 
-  void InitializeProcessManager();
+  void InitializeExtensionProcessManager();
 
   void InitializeExtensionServiceWithUpdater();
 

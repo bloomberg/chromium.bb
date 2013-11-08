@@ -6,30 +6,31 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service_unittest.h"
 #include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "extensions/browser/process_manager.h"
 #include "extensions/common/extension_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace extensions {
 
-// A ProcessManager that doesn't create background host pages.
-class TestProcessManager : public ProcessManager {
+// An ExtensionProcessManager that doesn't create background host pages.
+class TestExtensionProcessManager : public ExtensionProcessManager {
  public:
-  explicit TestProcessManager(Profile* profile)
-      : ProcessManager(profile, profile->GetOriginalProfile()),
+  explicit TestExtensionProcessManager(Profile* profile)
+      : ExtensionProcessManager(profile, profile->GetOriginalProfile()),
         create_count_(0) {}
-  virtual ~TestProcessManager() {}
+  virtual ~TestExtensionProcessManager() {}
 
   int create_count() { return create_count_; }
 
-  // ProcessManager overrides:
-  virtual ExtensionHost* CreateBackgroundHost(const Extension* extension,
-                                              const GURL& url) OVERRIDE {
+  // ExtensionProcessManager overrides:
+  virtual extensions::ExtensionHost* CreateBackgroundHost(
+      const extensions::Extension* extension,
+      const GURL& url) OVERRIDE {
     // Don't actually try to create a web contents.
     create_count_++;
     return NULL;
@@ -38,7 +39,7 @@ class TestProcessManager : public ProcessManager {
  private:
   int create_count_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestProcessManager);
+  DISALLOW_COPY_AND_ASSIGN(TestExtensionProcessManager);
 };
 
 // Derives from ExtensionServiceTestBase because ExtensionService is difficult
@@ -95,7 +96,7 @@ class LazyBackgroundTaskQueueTest : public ExtensionServiceTestBase {
 // Tests that only extensions with background pages should have tasks queued.
 TEST_F(LazyBackgroundTaskQueueTest, ShouldEnqueueTask) {
   InitializeEmptyExtensionService();
-  InitializeProcessManager();
+  InitializeExtensionProcessManager();
 
   LazyBackgroundTaskQueue queue(profile_.get());
 
@@ -113,13 +114,14 @@ TEST_F(LazyBackgroundTaskQueueTest, ShouldEnqueueTask) {
 TEST_F(LazyBackgroundTaskQueueTest, AddPendingTask) {
   InitializeEmptyExtensionService();
 
-  // Swap in our stub TestProcessManager.
+  // Swap in our stub TestExtensionProcessManager.
   TestExtensionSystem* extension_system =
       static_cast<extensions::TestExtensionSystem*>(
           ExtensionSystem::Get(profile_.get()));
   // Owned by |extension_system|.
-  TestProcessManager* process_manager = new TestProcessManager(profile_.get());
-  extension_system->SetProcessManager(process_manager);
+  TestExtensionProcessManager* process_manager =
+      new TestExtensionProcessManager(profile_.get());
+  extension_system->SetExtensionProcessManager(process_manager);
 
   LazyBackgroundTaskQueue queue(profile_.get());
 

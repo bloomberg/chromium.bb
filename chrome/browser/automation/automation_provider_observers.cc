@@ -32,6 +32,7 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -76,7 +77,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/process_type.h"
-#include "extensions/browser/process_manager.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/view_type.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -522,9 +522,9 @@ void TabCountChangeObserver::CheckTabCount() {
   delete this;
 }
 
-bool DidExtensionViewsStopLoading(extensions::ProcessManager* manager) {
-  extensions::ProcessManager::ViewSet all_views = manager->GetAllViews();
-  for (extensions::ProcessManager::ViewSet::const_iterator iter =
+bool DidExtensionViewsStopLoading(ExtensionProcessManager* manager) {
+  ExtensionProcessManager::ViewSet all_views = manager->GetAllViews();
+  for (ExtensionProcessManager::ViewSet::const_iterator iter =
            all_views.begin();
        iter != all_views.end(); ++iter) {
     if ((*iter)->IsLoading())
@@ -591,7 +591,7 @@ void ExtensionUninstallObserver::Observe(
 }
 
 ExtensionReadyNotificationObserver::ExtensionReadyNotificationObserver(
-    extensions::ProcessManager* manager, ExtensionService* service,
+    ExtensionProcessManager* manager, ExtensionService* service,
     AutomationProvider* automation, IPC::Message* reply_message)
     : manager_(manager),
       service_(service),
@@ -691,7 +691,7 @@ void ExtensionUnloadNotificationObserver::Observe(
 }
 
 ExtensionsUpdatedObserver::ExtensionsUpdatedObserver(
-    extensions::ProcessManager* manager, AutomationProvider* automation,
+    ExtensionProcessManager* manager, AutomationProvider* automation,
     IPC::Message* reply_message)
     : manager_(manager), automation_(automation->AsWeakPtr()),
       reply_message_(reply_message), updater_finished_(false) {

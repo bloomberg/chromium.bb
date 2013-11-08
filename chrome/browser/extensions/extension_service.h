@@ -22,6 +22,7 @@
 #include "chrome/browser/extensions/extension_function_histogram_value.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
 #include "chrome/browser/extensions/extension_prefs.h"
+#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/browser/extensions/extensions_quota_service.h"
 #include "chrome/browser/extensions/external_provider_interface.h"
@@ -38,7 +39,6 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "extensions/browser/process_manager.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/one_shot_event.h"
 

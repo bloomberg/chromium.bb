@@ -10,6 +10,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/extensions/extension_host.h"
+#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -23,7 +24,6 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/browser/process_manager.h"
 #include "extensions/browser/view_type_utils.h"
 #include "grit/theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -150,7 +150,7 @@ void ExtensionProcessResource::SetSupportNetworkUsage() {
 const Extension* ExtensionProcessResource::GetExtension() const {
   Profile* profile = Profile::FromBrowserContext(
       render_view_host_->GetProcess()->GetBrowserContext());
-  extensions::ProcessManager* process_manager =
+  ExtensionProcessManager* process_manager =
       extensions::ExtensionSystem::Get(profile)->process_manager();
   return process_manager->GetExtensionForRenderViewHost(render_view_host_);
 }
@@ -213,13 +213,12 @@ void ExtensionProcessResourceProvider::StartUpdating() {
   }
 
   for (size_t i = 0; i < profiles.size(); ++i) {
-    extensions::ProcessManager* process_manager =
+    ExtensionProcessManager* process_manager =
         extensions::ExtensionSystem::Get(profiles[i])->process_manager();
     if (process_manager) {
-      const extensions::ProcessManager::ViewSet all_views =
+      const ExtensionProcessManager::ViewSet all_views =
           process_manager->GetAllViews();
-      extensions::ProcessManager::ViewSet::const_iterator jt =
-          all_views.begin();
+      ExtensionProcessManager::ViewSet::const_iterator jt = all_views.begin();
       for (; jt != all_views.end(); ++jt) {
         content::RenderViewHost* rvh = *jt;
         // Don't add dead extension processes.

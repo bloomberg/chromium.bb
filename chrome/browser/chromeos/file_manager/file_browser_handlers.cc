@@ -50,7 +50,7 @@ int ExtractProcessFromExtensionId(Profile* profile,
                                   const std::string& extension_id) {
   GURL extension_url =
       Extension::GetBaseURLFromExtensionId(extension_id);
-  extensions::ProcessManager* manager =
+  ExtensionProcessManager* manager =
     extensions::ExtensionSystem::Get(profile)->process_manager();
 
   SiteInstance* site_instance = manager->GetSiteInstanceForURL(extension_url);

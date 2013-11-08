@@ -18,6 +18,7 @@
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_prefs.h"
+#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
@@ -29,7 +30,6 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/lazy_background_task_queue.h"
-#include "extensions/browser/process_manager.h"
 #include "net/base/mime_util.h"
 #include "net/base/net_util.h"
 #include "url/gurl.h"
@@ -270,7 +270,7 @@ class PlatformAppPathLauncher
       return;
     }
 
-    extensions::ProcessManager* process_manager =
+    ExtensionProcessManager* process_manager =
         ExtensionSystem::Get(profile_)->process_manager();
     ExtensionHost* host =
         process_manager->GetBackgroundHostForExtension(extension_->id());
