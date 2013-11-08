@@ -88,23 +88,15 @@ static bool removingNodeRemovesPosition(Node& node, const Position& position)
     return element.containsIncludingShadowDOM(position.anchorNode());
 }
 
-static void clearRenderViewSelection(const Position& position)
-{
-    RefPtr<Document> document = position.document();
-    document->updateStyleIfNeeded();
-    if (RenderView* view = document->renderView())
-        view->clearSelection();
-}
-
 void DragCaretController::nodeWillBeRemoved(Node& node)
 {
-    if (!hasCaret() || !node.inDocument())
+    if (!hasCaret() || !node.inActiveDocument())
         return;
 
     if (!removingNodeRemovesPosition(node, m_position.deepEquivalent()))
         return;
 
-    clearRenderViewSelection(m_position.deepEquivalent());
+    m_position.deepEquivalent().document()->renderView()->clearSelection();
     clear();
 }
 

@@ -314,19 +314,11 @@ static bool removingNodeRemovesPosition(Node& node, const Position& position)
     return element.containsIncludingShadowDOM(position.anchorNode());
 }
 
-static void clearRenderViewSelection(const Position& position)
-{
-    RefPtr<Document> document = position.document();
-    document->updateStyleIfNeeded();
-    if (RenderView* view = document->renderView())
-        view->clearSelection();
-}
-
 void FrameSelection::nodeWillBeRemoved(Node& node)
 {
     // There can't be a selection inside a fragment, so if a fragment's node is being removed,
     // the selection in the document that created the fragment needs no adjustment.
-    if (isNone() || !node.inDocument())
+    if (isNone() || !node.inActiveDocument())
         return;
 
     respondToNodeModification(node, removingNodeRemovesPosition(node, m_selection.base()), removingNodeRemovesPosition(node, m_selection.extent()),
@@ -335,6 +327,8 @@ void FrameSelection::nodeWillBeRemoved(Node& node)
 
 void FrameSelection::respondToNodeModification(Node& node, bool baseRemoved, bool extentRemoved, bool startRemoved, bool endRemoved)
 {
+    ASSERT(node.document().isActive());
+
     bool clearRenderTreeSelection = false;
     bool clearDOMTreeSelection = false;
 
@@ -377,7 +371,7 @@ void FrameSelection::respondToNodeModification(Node& node, bool baseRemoved, boo
     }
 
     if (clearRenderTreeSelection)
-        clearRenderViewSelection(m_selection.start());
+        m_selection.start().document()->renderView()->clearSelection();
 
     if (clearDOMTreeSelection)
         setSelection(VisibleSelection(), DoNotSetFocus);

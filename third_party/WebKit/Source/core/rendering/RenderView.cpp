@@ -769,6 +769,11 @@ static inline RenderObject* getNextOrPrevRenderObjectBasedOnDirection(const Rend
 
 void RenderView::setSelection(RenderObject* start, int startPos, RenderObject* end, int endPos, SelectionRepaintMode blockRepaintMode)
 {
+    // This code makes no assumptions as to if the rendering tree is up to date or not
+    // and will not try to update it. Currently clearSelection calls this
+    // (intentionally) without updating the rendering tree as it doesn't care.
+    // Other callers may want to force recalc style before calling this.
+
     // Make sure both our start and end objects are defined.
     // Check www.msnbc.com and try clicking around to find the case where this happened.
     if ((start && !end) || (end && !start))
