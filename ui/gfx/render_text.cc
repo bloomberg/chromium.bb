@@ -626,6 +626,7 @@ void RenderText::SetDirectionalityMode(DirectionalityMode mode) {
 
   directionality_mode_ = mode;
   text_direction_ = base::i18n::UNKNOWN_DIRECTION;
+  cached_bounds_and_offset_valid_ = false;
   ResetLayout();
 }
 

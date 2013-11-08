@@ -605,6 +605,10 @@ bool IMM32Manager::IsCtrlShiftPressed(base::i18n::TextDirection* direction) {
   keystate[VK_CONTROL] = 0;
   keystate[VK_RCONTROL] = 0;
   keystate[VK_LCONTROL] = 0;
+  // Oddly, pressing F10 in another application seemingly breaks all subsequent
+  // calls to GetKeyboardState regarding the state of the F22 key. Perhaps this
+  // defect is limited to my keyboard driver, but ignoring F22 should be okay.
+  keystate[VK_F22] = 0;
   for (int i = 0; i <= VK_PACKET; ++i) {
     if (keystate[i] & kKeyDownMask)
       return false;

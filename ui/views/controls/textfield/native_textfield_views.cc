@@ -1090,8 +1090,17 @@ void NativeTextfieldViews::OnInputMethodChanged() {
 
 bool NativeTextfieldViews::ChangeTextDirectionAndLayoutAlignment(
     base::i18n::TextDirection direction) {
-  NOTIMPLEMENTED();
-  return false;
+  // Restore text directionality mode when the indicated direction matches the
+  // current forced mode; otherwise, force the mode indicated. This helps users
+  // manage BiDi text layout without getting stuck in forced LTR or RTL modes.
+  const gfx::DirectionalityMode mode = direction == base::i18n::RIGHT_TO_LEFT ?
+      gfx::DIRECTIONALITY_FORCE_RTL : gfx::DIRECTIONALITY_FORCE_LTR;
+  if (mode == GetRenderText()->directionality_mode())
+    GetRenderText()->SetDirectionalityMode(gfx::DIRECTIONALITY_FROM_TEXT);
+  else
+    GetRenderText()->SetDirectionalityMode(mode);
+  SchedulePaint();
+  return true;
 }
 
 void NativeTextfieldViews::ExtendSelectionAndDelete(

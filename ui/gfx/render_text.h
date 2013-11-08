@@ -307,8 +307,11 @@ class GFX_EXPORT RenderText {
   // RenderText.
   bool GetStyle(TextStyle style) const;
 
-  // Set the text directionality mode and get the text direction yielded.
+  // Set or get the text directionality mode and get the text direction yielded.
   void SetDirectionalityMode(DirectionalityMode mode);
+  DirectionalityMode directionality_mode() const {
+      return directionality_mode_;
+  }
   base::i18n::TextDirection GetTextDirection();
 
   // Returns the visual movement direction corresponding to the logical end
