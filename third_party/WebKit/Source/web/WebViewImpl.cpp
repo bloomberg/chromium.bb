@@ -438,6 +438,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     , m_showScrollBottleneckRects(false)
     , m_baseBackgroundColor(Color::white)
     , m_backgroundColorOverride(Color::transparent)
+    , m_zoomFactorOverride(0)
     , m_helperPluginCloseTimer(this, &WebViewImpl::closePendingHelperPlugins)
 {
     Page::PageClients pageClients;
@@ -2776,7 +2777,7 @@ double WebViewImpl::setZoomLevel(double zoomLevel)
     if (pluginContainer)
         pluginContainer->plugin()->setZoomLevel(m_zoomLevel, false);
     else {
-        float zoomFactor = static_cast<float>(zoomLevelToZoomFactor(m_zoomLevel));
+        float zoomFactor = m_zoomFactorOverride ? m_zoomFactorOverride : static_cast<float>(zoomLevelToZoomFactor(m_zoomLevel));
         frame->setPageZoomFactor(zoomFactor);
     }
 
@@ -3736,6 +3737,12 @@ void WebViewImpl::setBackgroundColorOverride(WebColor color)
 {
     m_backgroundColorOverride = color;
     updateLayerTreeBackgroundColor();
+}
+
+void WebViewImpl::setZoomFactorOverride(float zoomFactor)
+{
+    m_zoomFactorOverride = zoomFactor;
+    setZoomLevel(zoomLevel());
 }
 
 void WebViewImpl::addPageOverlay(WebPageOverlay* overlay, int zOrder)
