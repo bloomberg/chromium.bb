@@ -149,12 +149,6 @@ inline ManagedTileBin BinFromTilePriority(const TilePriority& prio) {
   return EVENTUALLY_BIN;
 }
 
-// Limit to the number of raster tasks that can be scheduled.
-// This is high enough to not cause unnecessary scheduling but
-// gives us an insurance that we're not spending a huge amount
-// of time scheduling one enormous set of tasks.
-const size_t kMaxRasterTasks = 256u;
-
 }  // namespace
 
 RasterTaskCompletionStats::RasterTaskCompletionStats()
@@ -177,7 +171,8 @@ scoped_ptr<TileManager> TileManager::Create(
     size_t num_raster_threads,
     RenderingStatsInstrumentation* rendering_stats_instrumentation,
     bool use_map_image,
-    size_t max_transfer_buffer_usage_bytes) {
+    size_t max_transfer_buffer_usage_bytes,
+    size_t max_raster_usage_bytes) {
   return make_scoped_ptr(
       new TileManager(client,
                       resource_provider,
@@ -189,6 +184,7 @@ scoped_ptr<TileManager> TileManager::Create(
                           num_raster_threads,
                           max_transfer_buffer_usage_bytes),
                       num_raster_threads,
+                      max_raster_usage_bytes,
                       rendering_stats_instrumentation));
 }
 
@@ -197,6 +193,7 @@ TileManager::TileManager(
     ResourceProvider* resource_provider,
     scoped_ptr<RasterWorkerPool> raster_worker_pool,
     size_t num_raster_threads,
+    size_t max_raster_usage_bytes,
     RenderingStatsInstrumentation* rendering_stats_instrumentation)
     : client_(client),
       resource_pool_(ResourcePool::Create(resource_provider)),
@@ -208,6 +205,7 @@ TileManager::TileManager(
       memory_nice_to_have_bytes_(0),
       bytes_releasable_(0),
       resources_releasable_(0),
+      max_raster_usage_bytes_(max_raster_usage_bytes),
       ever_exceeded_memory_budget_(false),
       rendering_stats_instrumentation_(rendering_stats_instrumentation),
       did_initialize_visible_tile_(false),
@@ -626,6 +624,14 @@ void TileManager::AssignGpuMemoryToTiles(
   size_t resources_left = resources_allocatable;
   bool oomed = false;
 
+  // Memory we assign to raster tasks now will be deducted from our memory
+  // in future iterations if priorities change. By assigning at most half
+  // the raster limit, we will always have another 50% left even if priorities
+  // change completely (assuming we check for completed/cancelled rasters
+  // between each call to this function).
+  size_t max_raster_bytes = max_raster_usage_bytes_ / 2;
+  size_t raster_bytes = 0;
+
   unsigned schedule_priority = 1u;
   for (PrioritizedTileSet::Iterator it(tiles, true);
        it;
@@ -650,13 +656,16 @@ void TileManager::AssignGpuMemoryToTiles(
       continue;
     }
 
+    size_t bytes_if_allocated = BytesConsumedIfAllocated(tile);
+    size_t raster_bytes_if_rastered = raster_bytes + bytes_if_allocated;
+
     size_t tile_bytes = 0;
     size_t tile_resources = 0;
 
     // It costs to maintain a resource.
     for (int mode = 0; mode < NUM_RASTER_MODES; ++mode) {
       if (mts.tile_versions[mode].resource_) {
-        tile_bytes += BytesConsumedIfAllocated(tile);
+        tile_bytes += bytes_if_allocated;
         tile_resources++;
       }
     }
@@ -664,11 +673,11 @@ void TileManager::AssignGpuMemoryToTiles(
     // Allow lower priority tiles with initialized resources to keep
     // their memory by only assigning memory to new raster tasks if
     // they can be scheduled.
-    if (tiles_that_need_to_be_rasterized->size() < kMaxRasterTasks) {
+    if (raster_bytes_if_rastered <= max_raster_bytes) {
       // If we don't have the required version, and it's not in flight
       // then we'll have to pay to create a new task.
       if (!tile_version.resource_ && tile_version.raster_task_.is_null()) {
-        tile_bytes += BytesConsumedIfAllocated(tile);
+        tile_bytes += bytes_if_allocated;
         tile_resources++;
       }
     }
@@ -703,7 +712,7 @@ void TileManager::AssignGpuMemoryToTiles(
     // 1. Tile size should not impact raster priority.
     // 2. Tiles with existing raster task could otherwise incorrectly
     //    be added as they are not affected by |bytes_allocatable|.
-    if (oomed || tiles_that_need_to_be_rasterized->size() >= kMaxRasterTasks) {
+    if (oomed || raster_bytes_if_rastered > max_raster_bytes) {
       all_tiles_that_need_to_be_rasterized_have_memory_ = false;
       if (tile->required_for_activation())
         all_tiles_required_for_activation_have_memory_ = false;
@@ -711,6 +720,7 @@ void TileManager::AssignGpuMemoryToTiles(
       continue;
     }
 
+    raster_bytes = raster_bytes_if_rastered;
     tiles_that_need_to_be_rasterized->push_back(tile);
   }
 

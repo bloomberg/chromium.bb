@@ -55,7 +55,8 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
       size_t num_raster_threads,
       RenderingStatsInstrumentation* rendering_stats_instrumentation,
       bool use_map_image,
-      size_t max_transfer_buffer_usage_bytes);
+      size_t max_transfer_buffer_usage_bytes,
+      size_t max_raster_usage_bytes);
   virtual ~TileManager();
 
   void ManageTiles(const GlobalStateThatImpactsTilePriority& state);
@@ -109,6 +110,7 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
               ResourceProvider* resource_provider,
               scoped_ptr<RasterWorkerPool> raster_worker_pool,
               size_t num_raster_threads,
+              size_t max_raster_usage_bytes,
               RenderingStatsInstrumentation* rendering_stats_instrumentation);
 
   // Methods called by Tile
@@ -184,6 +186,7 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
 
   size_t bytes_releasable_;
   size_t resources_releasable_;
+  size_t max_raster_usage_bytes_;
 
   bool ever_exceeded_memory_budget_;
   MemoryHistory::Entry memory_stats_from_last_assign_;

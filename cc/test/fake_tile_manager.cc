@@ -5,6 +5,7 @@
 #include "cc/test/fake_tile_manager.h"
 
 #include <deque>
+#include <limits>
 
 #include "cc/resources/raster_worker_pool.h"
 
@@ -50,6 +51,7 @@ FakeTileManager::FakeTileManager(TileManagerClient* client)
                   NULL,
                   make_scoped_ptr<RasterWorkerPool>(new FakeRasterWorkerPool),
                   1,
+                  std::numeric_limits<unsigned>::max(),
                   NULL) {}
 
 FakeTileManager::FakeTileManager(TileManagerClient* client,
@@ -58,6 +60,7 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
                   resource_provider,
                   make_scoped_ptr<RasterWorkerPool>(new FakeRasterWorkerPool),
                   1,
+                  std::numeric_limits<unsigned>::max(),
                   NULL) {}
 
 FakeTileManager::~FakeTileManager() {}
