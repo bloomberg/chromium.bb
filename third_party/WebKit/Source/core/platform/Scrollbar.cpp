@@ -28,14 +28,10 @@
 
 #include <algorithm>
 #include "core/platform/ScrollAnimator.h"
+#include "core/platform/ScrollView.h"
 #include "core/platform/ScrollableArea.h"
 #include "core/platform/ScrollbarTheme.h"
 #include "core/platform/graphics/GraphicsContext.h"
-
-// FIXME: The following #includes are a layering violation and should be removed.
-#include "core/page/EventHandler.h"
-#include "core/frame/Frame.h"
-#include "core/frame/FrameView.h"
 
 #include "platform/PlatformGestureEvent.h"
 #include "platform/PlatformMouseEvent.h"
@@ -131,7 +127,7 @@ bool Scrollbar::isScrollableAreaActive() const
 
 bool Scrollbar::isScrollViewScrollbar() const
 {
-    return parent() && parent()->isFrameView() && toFrameView(parent())->isScrollViewScrollbar(this);
+    return parent() && parent()->isFrameView() && toScrollView(parent())->isScrollViewScrollbar(this);
 }
 
 bool Scrollbar::isLeftSideVerticalScrollbar() const
@@ -453,9 +449,6 @@ void Scrollbar::mouseUp(const PlatformMouseEvent& mouseEvent)
         if (part == NoPart)
             m_scrollableArea->mouseExitedScrollbar(this);
     }
-
-    if (parent() && parent()->isFrameView())
-        toFrameView(parent())->frame().eventHandler().setMousePressed(false);
 }
 
 void Scrollbar::mouseDown(const PlatformMouseEvent& evt)
