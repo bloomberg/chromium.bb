@@ -160,7 +160,7 @@ class ASH_EXPORT DesktopBackgroundController
 
   // Creates and adds component for current mode (either Widget or Layer) to
   // |root_window|.
-  void InstallDesktopController(aura::RootWindow* root_window);
+  void InstallDesktopController(aura::Window* root_window);
 
   // Creates and adds component for current mode (either Widget or Layer) to
   // all root windows.

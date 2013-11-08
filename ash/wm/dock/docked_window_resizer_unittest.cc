@@ -614,7 +614,7 @@ TEST_P(DockedWindowResizerTest, DragAcrossDisplays) {
     return;
 
   UpdateDisplay("800x800,800x800");
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   EXPECT_EQ(2, static_cast<int>(root_windows.size()));
   scoped_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   gfx::Rect initial_bounds = window->GetBoundsInScreen();

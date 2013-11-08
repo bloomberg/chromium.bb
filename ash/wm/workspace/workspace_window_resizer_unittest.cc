@@ -602,7 +602,7 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
     return;
 
   UpdateDisplay("800x600,500x600");
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   EXPECT_EQ(root_windows[0], window_->GetRootWindow());
   // Window is wide enough not to get docked right away.
   window_->SetBoundsInScreen(gfx::Rect(800, 10, 400, 60),
@@ -646,7 +646,7 @@ TEST_F(WorkspaceWindowResizerTest, CancelSnapPhantom) {
     return;
 
   UpdateDisplay("800x600,800x600");
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   ASSERT_EQ(2U, root_windows.size());
 
   window_->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
@@ -1876,7 +1876,7 @@ TEST_F(WorkspaceWindowResizerTest, PhantomWindowShow) {
   UpdateDisplay("500x400,500x400");
   window_->SetBoundsInScreen(gfx::Rect(0, 0, 50, 60),
                              Shell::GetScreen()->GetPrimaryDisplay());
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   EXPECT_EQ(root_windows[0], window_->GetRootWindow());
 
   scoped_ptr<WindowResizer> resizer(CreateResizerForTest(

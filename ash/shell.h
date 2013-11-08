@@ -19,6 +19,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "ui/aura/client/activation_change_observer.h"
+#include "ui/aura/window.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/events/event_target.h"
 #include "ui/gfx/insets.h"
@@ -165,7 +166,6 @@ class ASH_EXPORT Shell
       public ui::EventTarget,
       public aura::client::ActivationChangeObserver {
  public:
-  typedef std::vector<aura::RootWindow*> RootWindowList;
   typedef std::vector<internal::RootWindowController*> RootWindowControllerList;
 
   enum Direction {
@@ -209,7 +209,7 @@ class ASH_EXPORT Shell
   static gfx::Screen* GetScreen();
 
   // Returns all root windows.
-  static RootWindowList GetAllRootWindows();
+  static aura::Window::Windows GetAllRootWindows();
 
   static aura::Window* GetContainer(aura::Window* root_window,
                                     int container_id);

@@ -223,7 +223,7 @@ gfx::Screen* Shell::GetScreen() {
 }
 
 // static
-Shell::RootWindowList Shell::GetAllRootWindows() {
+aura::Window::Windows Shell::GetAllRootWindows() {
   return Shell::GetInstance()->display_controller()->
       GetAllRootWindows();
 }
@@ -245,8 +245,8 @@ std::vector<aura::Window*> Shell::GetContainersFromAllRootWindows(
     int container_id,
     aura::Window* priority_root) {
   std::vector<aura::Window*> containers;
-  RootWindowList root_windows = GetAllRootWindows();
-  for (RootWindowList::const_iterator it = root_windows.begin();
+  aura::Window::Windows root_windows = GetAllRootWindows();
+  for (aura::Window::Windows::const_iterator it = root_windows.begin();
        it != root_windows.end(); ++it) {
     aura::Window* container = (*it)->GetChildById(container_id);
     if (container) {

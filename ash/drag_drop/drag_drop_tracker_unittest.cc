@@ -61,7 +61,7 @@ class DragDropTrackerTest : public test::AshTestBase {
 #endif
 
 TEST_F(DragDropTrackerTest, MAYBE_GetTarget) {
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   EXPECT_EQ(2U, root_windows.size());
 
   scoped_ptr<aura::Window> window0(
@@ -128,7 +128,7 @@ TEST_F(DragDropTrackerTest, MAYBE_GetTarget) {
 #endif
 
 TEST_F(DragDropTrackerTest, MAYBE_ConvertEvent) {
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   EXPECT_EQ(2U, root_windows.size());
 
   scoped_ptr<aura::Window> window0(

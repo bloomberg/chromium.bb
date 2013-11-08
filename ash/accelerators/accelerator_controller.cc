@@ -329,10 +329,11 @@ bool HandleMediaPrevTrack() {
 }
 
 bool HandlePrintLayerHierarchy() {
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   for (size_t i = 0; i < root_windows.size(); ++i) {
-    ui::PrintLayerHierarchy(root_windows[i]->layer(),
-                            root_windows[i]->GetLastMouseLocationInRoot());
+    ui::PrintLayerHierarchy(
+        root_windows[i]->layer(),
+        root_windows[i]->GetDispatcher()->GetLastMouseLocationInRoot());
   }
   return true;
 }

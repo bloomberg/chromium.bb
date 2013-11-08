@@ -743,10 +743,10 @@ bool WorkspaceWindowResizer::UpdateMagnetismWindow(const gfx::Rect& bounds,
   if (!window_state()->CanResize() || !window_state()->tracked_by_workspace())
     return false;
 
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
-  for (Shell::RootWindowList::iterator iter = root_windows.begin();
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  for (aura::Window::Windows::iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter) {
-    const aura::RootWindow* root_window = *iter;
+    const aura::Window* root_window = *iter;
     // Test all children from the desktop in each root window.
     const aura::Window::Windows& children = Shell::GetContainer(
         root_window, kShellWindowId_DefaultContainer)->children();

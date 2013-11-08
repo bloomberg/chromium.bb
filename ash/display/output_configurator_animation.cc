@@ -114,11 +114,11 @@ void OutputConfiguratorAnimation::StartFadeOutAnimation(
   // hiding the root windows, we put a black layer over a root window for
   // safety.  These layers remain to hide root windows and will be deleted
   // after the animation of OnDisplayModeChanged().
-  Shell::RootWindowList root_windows =
+  aura::Window::Windows root_windows =
       Shell::GetInstance()->GetAllRootWindows();
-  for (Shell::RootWindowList::const_iterator it = root_windows.begin();
+  for (aura::Window::Windows::const_iterator it = root_windows.begin();
        it != root_windows.end(); ++it) {
-    aura::RootWindow* root_window = *it;
+    aura::Window* root_window = *it;
     ui::Layer* hiding_layer = new ui::Layer(ui::LAYER_SOLID_COLOR);
     hiding_layer->SetColor(SK_ColorBLACK);
     hiding_layer->SetBounds(root_window->bounds());
@@ -158,7 +158,7 @@ void OutputConfiguratorAnimation::StartFadeInAnimation() {
                  base::Unretained(this)));
 
   // Ensure that layers are not animating.
-  for (std::map<aura::RootWindow*, ui::Layer*>::iterator it =
+  for (std::map<aura::Window*, ui::Layer*>::iterator it =
            hiding_layers_.begin(); it != hiding_layers_.end(); ++it) {
     ui::LayerAnimator* animator = it->second->GetAnimator();
     if (animator->is_animating())
@@ -168,11 +168,11 @@ void OutputConfiguratorAnimation::StartFadeInAnimation() {
   // Schedules the fade-in effect for all root windows.  Because we put the
   // black layers for fade-out, here we actually turn those black layers
   // invisible.
-  Shell::RootWindowList root_windows =
+  aura::Window::Windows root_windows =
       Shell::GetInstance()->GetAllRootWindows();
-  for (Shell::RootWindowList::const_iterator it = root_windows.begin();
+  for (aura::Window::Windows::const_iterator it = root_windows.begin();
        it != root_windows.end(); ++it) {
-    aura::RootWindow* root_window = *it;
+    aura::Window* root_window = *it;
     ui::Layer* hiding_layer = NULL;
     if (hiding_layers_.find(root_window) == hiding_layers_.end()) {
       // In case of the transition from mirroring->non-mirroring, new root

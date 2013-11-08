@@ -41,8 +41,8 @@ bool HasSecondaryRootWindow() {
 
 // When there are two root windows, returns one of the root windows which is not
 // |root_window|. Returns NULL if only one root window exists.
-aura::RootWindow* GetAnotherRootWindow(aura::Window* root_window) {
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+aura::Window* GetAnotherRootWindow(aura::Window* root_window) {
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   if (root_windows.size() < 2)
     return NULL;
   DCHECK_EQ(2U, root_windows.size());

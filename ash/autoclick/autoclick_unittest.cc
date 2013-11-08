@@ -218,7 +218,7 @@ TEST_F(AutoclickTest, KeyModifiersReleased) {
 TEST_F(AutoclickTest, ExtendedDisplay) {
   UpdateDisplay("1280x1024,800x600");
   RunAllPendingInMessageLoop();
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   EXPECT_EQ(2u, root_windows.size());
 
   GetAutoclickController()->SetEnabled(true);

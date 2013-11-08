@@ -13,12 +13,12 @@ namespace ash {
 namespace debug {
 
 void ToggleShowDebugBorders() {
-  Shell::RootWindowList root_windows =
+  aura::Window::Windows root_windows =
       Shell::GetInstance()->GetAllRootWindows();
   scoped_ptr<bool> value;
-  for (Shell::RootWindowList::iterator it = root_windows.begin();
+  for (aura::Window::Windows::iterator it = root_windows.begin();
        it != root_windows.end(); ++it) {
-    ui::Compositor* compositor = (*it)->compositor();
+    ui::Compositor* compositor = (*it)->GetDispatcher()->compositor();
     cc::LayerTreeDebugState state = compositor->GetLayerTreeDebugState();
     if (!value.get())
       value.reset(new bool(!state.show_debug_borders));
@@ -28,12 +28,12 @@ void ToggleShowDebugBorders() {
 }
 
 void ToggleShowFpsCounter() {
-  Shell::RootWindowList root_windows =
+  aura::Window::Windows root_windows =
       Shell::GetInstance()->GetAllRootWindows();
   scoped_ptr<bool> value;
-  for (Shell::RootWindowList::iterator it = root_windows.begin();
+  for (aura::Window::Windows::iterator it = root_windows.begin();
        it != root_windows.end(); ++it) {
-    ui::Compositor* compositor = (*it)->compositor();
+    ui::Compositor* compositor = (*it)->GetDispatcher()->compositor();
     cc::LayerTreeDebugState state = compositor->GetLayerTreeDebugState();
     if (!value.get())
       value.reset(new bool(!state.show_fps_counter));
@@ -43,12 +43,12 @@ void ToggleShowFpsCounter() {
 }
 
 void ToggleShowPaintRects() {
-  Shell::RootWindowList root_windows =
+  aura::Window::Windows root_windows =
       Shell::GetInstance()->GetAllRootWindows();
   scoped_ptr<bool> value;
-  for (Shell::RootWindowList::iterator it = root_windows.begin();
+  for (aura::Window::Windows::iterator it = root_windows.begin();
        it != root_windows.end(); ++it) {
-    ui::Compositor* compositor = (*it)->compositor();
+    ui::Compositor* compositor = (*it)->GetDispatcher()->compositor();
     cc::LayerTreeDebugState state = compositor->GetLayerTreeDebugState();
     if (!value.get())
       value.reset(new bool(!state.show_paint_rects));

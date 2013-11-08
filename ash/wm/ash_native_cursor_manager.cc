@@ -17,11 +17,11 @@ namespace ash {
 namespace  {
 
 void SetCursorOnAllRootWindows(gfx::NativeCursor cursor) {
-  Shell::RootWindowList root_windows =
+  aura::Window::Windows root_windows =
       Shell::GetInstance()->GetAllRootWindows();
-  for (Shell::RootWindowList::iterator iter = root_windows.begin();
+  for (aura::Window::Windows::iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter)
-    (*iter)->SetCursor(cursor);
+    (*iter)->GetDispatcher()->SetCursor(cursor);
 #if defined(OS_CHROMEOS)
   Shell::GetInstance()->display_controller()->
       mirror_window_controller()->SetMirroredCursor(cursor);
@@ -29,11 +29,11 @@ void SetCursorOnAllRootWindows(gfx::NativeCursor cursor) {
 }
 
 void NotifyCursorVisibilityChange(bool visible) {
-  Shell::RootWindowList root_windows =
+  aura::Window::Windows root_windows =
       Shell::GetInstance()->GetAllRootWindows();
-  for (Shell::RootWindowList::iterator iter = root_windows.begin();
+  for (aura::Window::Windows::iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter)
-    (*iter)->OnCursorVisibilityChanged(visible);
+    (*iter)->GetDispatcher()->OnCursorVisibilityChanged(visible);
 #if defined(OS_CHROMEOS)
   Shell::GetInstance()->display_controller()->mirror_window_controller()->
       SetMirroredCursorVisibility(visible);
@@ -41,11 +41,11 @@ void NotifyCursorVisibilityChange(bool visible) {
 }
 
 void NotifyMouseEventsEnableStateChange(bool enabled) {
-  Shell::RootWindowList root_windows =
+  aura::Window::Windows root_windows =
       Shell::GetInstance()->GetAllRootWindows();
-  for (Shell::RootWindowList::iterator iter = root_windows.begin();
+  for (aura::Window::Windows::iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter)
-    (*iter)->OnMouseEventsEnableStateChanged(enabled);
+    (*iter)->GetDispatcher()->OnMouseEventsEnableStateChanged(enabled);
   // Mirror window never process events.
 }
 

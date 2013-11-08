@@ -341,8 +341,8 @@ void DisplayController::CloseChildWindows() {
   }
 }
 
-std::vector<aura::RootWindow*> DisplayController::GetAllRootWindows() {
-  std::vector<aura::RootWindow*> windows;
+aura::Window::Windows DisplayController::GetAllRootWindows() {
+  aura::Window::Windows windows;
   for (std::map<int64, aura::RootWindow*>::const_iterator it =
            root_windows_.begin(); it != root_windows_.end(); ++it) {
     DCHECK(it->second);
@@ -790,7 +790,7 @@ void DisplayController::UpdateHostWindowNames() {
   // to "aura_root_0" so gtalk can find the primary root window to broadcast.
   // TODO(jhorwich) Remove this once Chrome supports window-based broadcasting.
   aura::Window* primary = Shell::GetPrimaryRootWindow();
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   for (size_t i = 0; i < root_windows.size(); ++i) {
     std::string name =
         root_windows[i] == primary ? "aura_root_0" : "aura_root_x";

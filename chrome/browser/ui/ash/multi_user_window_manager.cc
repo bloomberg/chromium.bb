@@ -69,11 +69,11 @@ bool IsProcessingUserEvent() {
   // anymore) and the root window should therefore still have the event which
   // lead to the menu invocation, but it is not. By fixing that problem this
   // would "magically work".
-  ash::Shell::RootWindowList root_window_list = ash::Shell::GetAllRootWindows();
-  for (ash::Shell::RootWindowList::iterator it = root_window_list.begin();
+  aura::Window::Windows root_window_list = ash::Shell::GetAllRootWindows();
+  for (aura::Window::Windows::iterator it = root_window_list.begin();
        it != root_window_list.end();
        ++it) {
-    if (IsUserEvent((*it)->current_event()))
+    if (IsUserEvent((*it)->GetDispatcher()->current_event()))
       return true;
   }
   return false;

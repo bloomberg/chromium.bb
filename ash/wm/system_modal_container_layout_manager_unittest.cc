@@ -443,7 +443,7 @@ TEST_F(SystemModalContainerLayoutManagerTest, MultiDisplays) {
   scoped_ptr<aura::Window> normal(OpenToplevelTestWindow(false));
   normal->SetBounds(gfx::Rect(100, 100, 50, 50));
 
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   EXPECT_EQ(2U, root_windows.size());
   aura::Window* container1 = Shell::GetContainer(
       root_windows[0], ash::internal::kShellWindowId_SystemModalContainer);
