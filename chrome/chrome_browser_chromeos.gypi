@@ -904,6 +904,8 @@
             'browser/chromeos/extensions/file_manager/private_api_tasks.h',
             'browser/chromeos/extensions/file_manager/private_api_util.cc',
             'browser/chromeos/extensions/file_manager/private_api_util.h',
+            'browser/chromeos/extensions/file_system_provider/file_system_provider_api.cc',
+            'browser/chromeos/extensions/file_system_provider/file_system_provider_api.h',
             'browser/chromeos/extensions/input_method_api.cc',
             'browser/chromeos/extensions/input_method_api.h',
             'browser/chromeos/extensions/media_player_api.cc',

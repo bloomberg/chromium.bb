@@ -302,6 +302,7 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
       APIPermissionInfo::kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_FILE_SYSTEM_DIRECTORY,
       PermissionMessage::kFileSystemDirectory },
+    { APIPermission::kFileSystemProvider, "fileSystemProvider" },
     { APIPermission::kFileSystemRetainEntries, "fileSystem.retainEntries" },
     { APIPermission::kFileSystemWrite, "fileSystem.write",
       APIPermissionInfo::kFlagNone,

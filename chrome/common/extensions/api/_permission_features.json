@@ -342,6 +342,10 @@
     "extension_types": ["extension"],
     "whitelist": [ "2FC374607C2DF285634B67C64A2E356C607091C3" ]
   }],
+  "fileSystemProvider": {
+    "channel": "trunk",
+    "extension_types": ["platform_app"]
+  },
   "fontSettings": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]

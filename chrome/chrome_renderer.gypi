@@ -209,6 +209,7 @@
         'renderer/resources/extensions/file_browser_handler_custom_bindings.js',
         'renderer/resources/extensions/file_browser_private_custom_bindings.js',
         'renderer/resources/extensions/file_system_custom_bindings.js',
+        'renderer/resources/extensions/file_system_provider_custom_bindings.js',
         'renderer/resources/extensions/greasemonkey_api.js',
         'renderer/resources/extensions/input.ime_custom_bindings.js',
         'renderer/resources/extensions/json_schema.js',

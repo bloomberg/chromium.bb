@@ -70,6 +70,7 @@
               'feedback_private.idl',
               'file_browser_private.json',
               'file_system.idl',
+              'file_system_provider.idl',
               'font_settings.json',
               'hangouts_private.idl',
               'history.json',

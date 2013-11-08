@@ -16,6 +16,7 @@
 #include "third_party/WebKit/public/platform/WebFileSystem.h"
 #include "third_party/WebKit/public/platform/WebFileSystemType.h"
 #include "third_party/WebKit/public/platform/WebString.h"
+#include "third_party/WebKit/public/web/WebDOMError.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "webkit/common/fileapi/file_system_types.h"
 #include "webkit/common/fileapi/file_system_util.h"
@@ -31,6 +32,9 @@ FileSystemNatives::FileSystemNatives(ChromeV8Context* context)
                  base::Unretained(this)));
   RouteFunction("CrackIsolatedFileSystemName",
       base::Bind(&FileSystemNatives::CrackIsolatedFileSystemName,
+                 base::Unretained(this)));
+  RouteFunction("GetDOMError",
+      base::Bind(&FileSystemNatives::GetDOMError,
                  base::Unretained(this)));
 }
 
@@ -115,6 +119,35 @@ void FileSystemNatives::CrackIsolatedFileSystemName(
 
   args.GetReturnValue().Set(
       v8::String::New(filesystem_id.c_str(), filesystem_id.size()));
+}
+
+void FileSystemNatives::GetDOMError(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  if (args.Length() != 2) {
+    NOTREACHED();
+    return;
+  }
+  if (!args[0]->IsString()) {
+    NOTREACHED();
+    return;
+  }
+  if (!args[1]->IsString()) {
+    NOTREACHED();
+    return;
+  }
+
+  std::string name(*v8::String::Utf8Value(args[0]));
+  if (name.empty()) {
+    NOTREACHED();
+    return;
+  }
+  std::string message(*v8::String::Utf8Value(args[1]));
+  // message is optional hence empty is fine.
+
+  blink::WebDOMError dom_error = blink::WebDOMError::create(
+      blink::WebString::fromUTF8(name),
+      blink::WebString::fromUTF8(message));
+  args.GetReturnValue().Set(dom_error.toV8Value());
 }
 
 }  // namespace extensions

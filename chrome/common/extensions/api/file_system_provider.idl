@@ -1,0 +1,29 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+[platforms=("chromeos"),
+ implemented_in="chrome/browser/chromeos/extensions/file_system_provider/file_system_provider_api.h"]
+namespace fileSystemProvider {
+  // Callback to receive the result of mount() function.
+  // <code>fileSystemID</code> will be a unique ID for the file system just
+  // mounted. The ID is used to distinguish multiple file systems mounted
+  // from a single File System Provider.
+  callback MountCallback = void(DOMString fileSystemId,
+                                [nodoc, instanceOf=DOMError] object error);
+
+  // Callback to handle an error raised from the browser.
+  [nocompile] callback ErrorCallback = void([instanceOf=DOMError] object error);
+
+  interface Functions {
+    // Mounts a file system with the given <code>displayName</code>.
+    // <code>displayName</code> will be shown in the left panel of
+    // Files.app. <code>displayName</code> can contain any characters
+    // including '/', but cannot be an empty string. <code>displayName</code>
+    // should be descritive but doesn't have to be unique. Duplicate display
+    // names are uniquified by adding suffix like "(1)" in the Files.app UI.
+    static void mount(DOMString displayName,
+                      MountCallback successCallback,
+                      [nocompile] ErrorCallback errorCallback);
+  };
+};

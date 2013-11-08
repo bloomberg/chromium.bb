@@ -303,6 +303,10 @@
     "dependencies": ["permission:fileSystem"],
     "contexts": ["blessed_extension"]
   },
+  "fileSystemProvider": {
+    "dependencies": ["permission:fileSystemProvider"],
+    "contexts": ["blessed_extension"]
+  },
   "fontSettings": {
     "dependencies": ["permission:fontSettings"],
     "contexts": ["blessed_extension"]

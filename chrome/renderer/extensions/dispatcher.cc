@@ -991,6 +991,8 @@ void Dispatcher::PopulateSourceMap() {
                              IDR_FILE_BROWSER_PRIVATE_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("fileSystem",
                              IDR_FILE_SYSTEM_CUSTOM_BINDINGS_JS);
+  source_map_.RegisterSource("fileSystemProvider",
+                             IDR_FILE_SYSTEM_PROVIDER_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("i18n", IDR_I18N_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("input.ime", IDR_INPUT_IME_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("mediaGalleries",
