@@ -326,8 +326,8 @@ TEST_PPAPI_OUT_OF_PROCESS(MAYBE_OUT_BrowserFont)
 TEST_PPAPI_IN_PROCESS(Buffer)
 TEST_PPAPI_OUT_OF_PROCESS(Buffer)
 
-// TCPSocket tests.
-IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, TCPSocket) {
+// TCPSocket tests.  Disabled due to flakiness: http://crbug.com/316933.
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, DISABLED_TCPSocket) {
   RunTestViaHTTP(
       LIST_TEST(TCPSocket_Connect)
       LIST_TEST(TCPSocket_ReadWrite)
@@ -337,7 +337,7 @@ IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, TCPSocket) {
       LIST_TEST(TCPSocket_Interface_1_0)
   );
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, TCPSocket) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, DISABLED_TCPSocket) {
   RunTestViaHTTP(
       LIST_TEST(TCPSocket_Connect)
       LIST_TEST(TCPSocket_ReadWrite)
@@ -347,7 +347,7 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClNewlibTest, TCPSocket) {
       LIST_TEST(TCPSocket_Interface_1_0)
   );
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(TCPSocket)) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(DISABLED_TCPSocket)) {
   RunTestViaHTTP(
       LIST_TEST(TCPSocket_Connect)
       LIST_TEST(TCPSocket_ReadWrite)
@@ -357,7 +357,7 @@ IN_PROC_BROWSER_TEST_F(PPAPINaClGLibcTest, MAYBE_GLIBC(TCPSocket)) {
       LIST_TEST(TCPSocket_Interface_1_0)
   );
 }
-IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, TCPSocket) {
+IN_PROC_BROWSER_TEST_F(PPAPINaClPNaClTest, DISABLED_TCPSocket) {
   RunTestViaHTTP(
       LIST_TEST(TCPSocket_Connect)
       LIST_TEST(TCPSocket_ReadWrite)
