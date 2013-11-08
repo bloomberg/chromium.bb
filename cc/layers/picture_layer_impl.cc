@@ -1065,6 +1065,7 @@ void PictureLayerImpl::AsValueInto(base::DictionaryValue* state) const {
   state->Set("tilings", tilings_->AsValue().release());
   state->Set("pictures", pile_->AsValue().release());
   state->Set("invalidation", invalidation_.AsValue().release());
+  state->Set("recorded_region", pile_->recorded_region().AsValue().release());
 
   scoped_ptr<base::ListValue> coverage_tiles(new base::ListValue);
   for (PictureLayerTilingSet::CoverageIterator iter(tilings_.get(),
