@@ -19,12 +19,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-// Any device that reports a physical RAM size less than this, in megabytes
-// is considered 'low-end'. IMPORTANT: Read the LinkerLowMemoryThresholdTest
-// comments in build/android/pylib/linker/test_case.py before modifying this
-// value.
-#define ANDROID_LOW_MEMORY_DEVICE_THRESHOLD_MB 512
-
 // Set this to 1 to enable debug traces to the Android log.
 // Note that LOG() from "base/logging.h" cannot be used, since it is
 // in base/ which hasn't been loaded yet.
@@ -388,30 +382,6 @@ jlong GetPageSize(JNIEnv* env, jclass clazz) {
   return result;
 }
 
-jboolean IsLowMemoryDevice(JNIEnv* env, jclass clazz) {
-  // This matches the implementation of org.chromium.base.SysUtils.isLowEnd(),
-  // however this Java method relies on native code from base/, which isn't
-  // available since the library hasn't been loaded yet.
-  // The value ANDROID_LOW_MEMORY_DEVICE_THRESHOLD_MB is the same for both
-  // sources.
-
-  // Threshold for low-end memory devices.
-  const size_t kMegaBytes = 1024 * 1024;
-  const size_t kLowMemoryDeviceThreshold =
-      ANDROID_LOW_MEMORY_DEVICE_THRESHOLD_MB * kMegaBytes;
-
-  // Compute the amount of physical RAM on the device.
-  size_t pages = static_cast<size_t>(sysconf(_SC_PHYS_PAGES));
-  size_t page_size = static_cast<size_t>(sysconf(_SC_PAGESIZE));
-  size_t physical_size = pages * page_size;
-
-  LOG_INFO("%s: System physical size is %zu MB\n",
-           __FUNCTION__,
-           physical_size / kMegaBytes);
-
-  return physical_size <= kLowMemoryDeviceThreshold;
-}
-
 const JNINativeMethod kNativeMethods[] = {
     {"nativeLoadLibrary",
      "("
@@ -445,12 +415,7 @@ const JNINativeMethod kNativeMethods[] = {
      "("
      ")"
      "J",
-     reinterpret_cast<void*>(&GetPageSize)},
-    {"nativeIsLowMemoryDevice",
-     "("
-     ")"
-     "Z",
-     reinterpret_cast<void*>(&IsLowMemoryDevice)}, };
+     reinterpret_cast<void*>(&GetPageSize)}, };
 
 }  // namespace
 

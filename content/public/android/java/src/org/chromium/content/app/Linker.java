@@ -18,6 +18,8 @@ import android.os.Parcelable;
 import android.os.ParcelFileDescriptor;
 import android.util.Log;
 
+import org.chromium.base.SysUtils;
+
 /*
  * Technical note:
  *
@@ -240,7 +242,7 @@ public class Linker {
                 }
 
                 if (sMemoryDeviceConfig == MEMORY_DEVICE_CONFIG_INIT) {
-                    sMemoryDeviceConfig = nativeIsLowMemoryDevice() ?
+                    sMemoryDeviceConfig = SysUtils.isLowEndDevice() ?
                             MEMORY_DEVICE_CONFIG_LOW : MEMORY_DEVICE_CONFIG_NORMAL;
                 }
 
@@ -885,9 +887,6 @@ public class Linker {
 
     // Returns the native page size in bytes.
     private static native long nativeGetPageSize();
-
-    // Checks whether this is a low-memory device.
-    private static native boolean nativeIsLowMemoryDevice();
 
     /**
      * Record information for a given library.

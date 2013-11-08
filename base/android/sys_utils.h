@@ -14,7 +14,11 @@ class BASE_EXPORT SysUtils {
  public:
   static bool Register(JNIEnv* env);
 
+  // Returns true iff this is a low-end device.
   static bool IsLowEndDevice();
+
+  // Return the device's RAM size in kilo-bytes. Used for testing.
+  static size_t AmountOfPhysicalMemoryKB();
 
  private:
   SysUtils();
