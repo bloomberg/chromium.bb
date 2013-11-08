@@ -21,6 +21,7 @@
         'mojo_shell_lib',
         'mojo_shell',
         'mojo_utility',
+        'mojo_js',
         'sample_app',
         'mojo_bindings',
         'mojo_bindings_test',
@@ -266,6 +267,21 @@
       'sources': [
         'public/utility/scoped_handle.cc',
         'public/utility/scoped_handle.h',
+      ],
+    },
+    {
+      'target_name': 'mojo_js',
+      'type': 'shared_library',
+      'include_dirs': [
+        '..'
+      ],
+      'dependencies': [
+        '../v8/tools/gyp/v8.gyp:v8',
+      ],
+      'sources': [
+        'apps/js/main.cc',
+        'apps/js/v8_environment.cc',
+        'apps/js/v8_environment.h',
       ],
     },
     {
