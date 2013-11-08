@@ -48,7 +48,8 @@ void ExtensionStatusesHandler::GetExtensionStatusesAsDictionary(
 
   ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(profile)->extension_service();
-  DCHECK(extension_service);
+  if (!extension_service)
+    return;
   for (std::map<GURL, std::string>::const_iterator itr = status_map.begin();
        itr != status_map.end();
        ++itr) {
@@ -57,7 +58,8 @@ void ExtensionStatusesHandler::GetExtensionStatusesAsDictionary(
     // Join with human readable extension name.
     const extensions::Extension* extension =
         extension_service->GetExtensionById(extension_id, true);
-    DCHECK(extension);
+    if (!extension)
+      continue;
 
     base::DictionaryValue* dict = new DictionaryValue;
     dict->SetString("extensionID", extension_id);

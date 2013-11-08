@@ -623,8 +623,11 @@ void DriveMetadataStore::RemoveOrigin(
 
   std::string resource_id;
   if (!EraseIfExists(&incremental_sync_origins_, origin, &resource_id) &&
-      !EraseIfExists(&disabled_origins_, origin, &resource_id))
+      !EraseIfExists(&disabled_origins_, origin, &resource_id)) {
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE, base::Bind(callback, SYNC_DATABASE_ERROR_NOT_FOUND));
     return;
+  }
   origin_by_resource_id_.erase(resource_id);
 
   scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);

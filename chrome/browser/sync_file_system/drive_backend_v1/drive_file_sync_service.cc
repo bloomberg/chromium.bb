@@ -570,7 +570,10 @@ void DriveFileSyncService::DoUninstallOrigin(
   //    origin directory on the remote drive was created.
   // 2) origin or sync root folder is deleted on Drive.
   if (resource_id.empty()) {
-    callback.Run(SYNC_STATUS_UNKNOWN_ORIGIN);
+    if (metadata_store_->IsKnownOrigin(origin))
+      DidUninstallOrigin(origin, callback, google_apis::HTTP_SUCCESS);
+    else
+      callback.Run(SYNC_STATUS_UNKNOWN_ORIGIN);
     return;
   }
 
