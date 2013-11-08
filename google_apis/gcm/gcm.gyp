@@ -30,6 +30,7 @@
       ],
       'dependencies': [
         '../../base/base.gyp:base',
+        '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
         '../../net/net.gyp:net',
         '../../third_party/protobuf/protobuf.gyp:protobuf_lite'
       ],
@@ -40,6 +41,10 @@
         'base/socket_stream.cc',
         'engine/connection_handler.h',
         'engine/connection_handler.cc',
+        'gcm_client.cc',
+        'gcm_client.h',
+        'gcm_client_impl.cc',
+        'gcm_client_impl.h',
         'protocol/mcs.proto',
       ],
       'includes': [
