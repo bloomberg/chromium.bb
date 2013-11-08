@@ -16,6 +16,8 @@ class SmoothnessTop25(test.Test):
 
 
 class SmoothnessToughCanvasCases(test.Test):
+  # TODO: Enable when crbug.com/314380 is fixed.
+  enabled = sys.platform != 'linux2'
   test = smoothness.Smoothness
   page_set = 'page_sets/tough_canvas_cases.json'
 
