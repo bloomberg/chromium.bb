@@ -267,7 +267,14 @@ IN_PROC_BROWSER_TEST_F(PhishingClassifierTest, TestClassification) {
   EXPECT_EQ(PhishingClassifier::kInvalidScore, phishy_score);
 }
 
-IN_PROC_BROWSER_TEST_F(PhishingClassifierTest, DisableDetection) {
+// Flaky on Mac Blink bots: crbug.com/316709
+#if defined(OS_MACOSX)
+#define MAYBE_DisableDetection DISABLED_DisableDetection
+#else
+#define MAYBE_DisableDetection DisableDetection
+#endif
+
+IN_PROC_BROWSER_TEST_F(PhishingClassifierTest, MAYBE_DisableDetection) {
   // No scorer yet, so the classifier is not ready.
   EXPECT_FALSE(classifier_->is_ready());
 
