@@ -936,14 +936,10 @@ bool SearchProvider::CanSendURL(
   // TODO(hfung): Show Most Visited on NTP with appropriate verbatim
   // description when the user actively focuses on the omnibox as discussed in
   // crbug/305366 if Most Visited (or something similar) will launch.
-  // TODO(hfung): Shorten the INSTANT_NEW_TAB_PAGE_WITH_... enums and remove
-  // the const variables.
-  const AutocompleteInput::PageClassification instant_ntp_fakebox =
-      AutocompleteInput::INSTANT_NEW_TAB_PAGE_WITH_FAKEBOX_AS_STARTING_FOCUS;
-  const AutocompleteInput::PageClassification instant_ntp_omnibox =
-      AutocompleteInput::INSTANT_NEW_TAB_PAGE_WITH_OMNIBOX_AS_STARTING_FOCUS;
-  if ((page_classification == instant_ntp_fakebox) ||
-      (page_classification == instant_ntp_omnibox))
+  if ((page_classification ==
+       AutocompleteInput::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS) ||
+      (page_classification ==
+       AutocompleteInput::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS))
     return false;
 
   // Only allow HTTP URLs or HTTPS URLs for the same domain as the search

@@ -3124,14 +3124,14 @@ TEST_F(SearchProviderTest, CanSendURL) {
   EXPECT_FALSE(SearchProvider::CanSendURL(
       GURL("http://www.google.com/search"),
       GURL("https://www.google.com/complete/search"), &google_template_url,
-      AutocompleteInput::INSTANT_NEW_TAB_PAGE_WITH_FAKEBOX_AS_STARTING_FOCUS,
+      AutocompleteInput::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS,
       &profile_));
 
   // Invalid page classification.
   EXPECT_FALSE(SearchProvider::CanSendURL(
       GURL("http://www.google.com/search"),
       GURL("https://www.google.com/complete/search"), &google_template_url,
-      AutocompleteInput::INSTANT_NEW_TAB_PAGE_WITH_OMNIBOX_AS_STARTING_FOCUS,
+      AutocompleteInput::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS,
       &profile_));
 
   // HTTPS page URL on same domain as provider.

@@ -138,7 +138,7 @@ IN_PROC_BROWSER_TEST_F(AutocompleteBrowserTest, MAYBE_Autocomplete) {
     location_entry->model()->SetInputInProgress(true);
     autocomplete_controller->Start(AutocompleteInput(
         ASCIIToUTF16("chrome"), string16::npos, string16(), GURL(),
-        AutocompleteInput::NEW_TAB_PAGE, true, false, true,
+        AutocompleteInput::NTP, true, false, true,
         AutocompleteInput::SYNCHRONOUS_MATCHES));
 
     EXPECT_TRUE(autocomplete_controller->done());

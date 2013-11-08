@@ -33,7 +33,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, Basic) {
   {
     autocomplete_controller->Start(
         AutocompleteInput(ASCIIToUTF16("keywor"), string16::npos, string16(),
-                          GURL(), AutocompleteInput::NEW_TAB_PAGE, true, false,
+                          GURL(), AutocompleteInput::NTP, true, false,
                           true, AutocompleteInput::ALL_MATCHES));
     WaitForAutocompleteDone(autocomplete_controller);
     EXPECT_TRUE(autocomplete_controller->done());
@@ -55,7 +55,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, Basic) {
   {
     autocomplete_controller->Start(
         AutocompleteInput(ASCIIToUTF16("keyword suggestio"), string16::npos,
-                          string16(), GURL(), AutocompleteInput::NEW_TAB_PAGE,
+                          string16(), GURL(), AutocompleteInput::NTP,
                           true, false, true, AutocompleteInput::ALL_MATCHES));
     WaitForAutocompleteDone(autocomplete_controller);
     EXPECT_TRUE(autocomplete_controller->done());
@@ -165,7 +165,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, OnInputEntered) {
 
   autocomplete_controller->Start(
       AutocompleteInput(ASCIIToUTF16("keyword command"), string16::npos,
-                        string16(), GURL(), AutocompleteInput::NEW_TAB_PAGE,
+                        string16(), GURL(), AutocompleteInput::NTP,
                         true, false, true, AutocompleteInput::ALL_MATCHES));
   location_bar->GetLocationEntry()->model()->AcceptInput(
       CURRENT_TAB,
@@ -182,7 +182,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, OnInputEntered) {
 
   autocomplete_controller->Start(
       AutocompleteInput(ASCIIToUTF16("keyword newtab"), string16::npos,
-                        string16(), GURL(), AutocompleteInput::NEW_TAB_PAGE,
+                        string16(), GURL(), AutocompleteInput::NTP,
                         true, false, true, AutocompleteInput::ALL_MATCHES));
   location_bar->GetLocationEntry()->model()->AcceptInput(
       NEW_FOREGROUND_TAB,
@@ -221,7 +221,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, DISABLED_IncognitoSplitMode) {
   {
     autocomplete_controller->Start(
         AutocompleteInput(ASCIIToUTF16("keyword suggestio"), string16::npos,
-                          string16(), GURL(), AutocompleteInput::NEW_TAB_PAGE,
+                          string16(), GURL(), AutocompleteInput::NTP,
                           true, false, true, AutocompleteInput::ALL_MATCHES));
     WaitForAutocompleteDone(autocomplete_controller);
     EXPECT_TRUE(autocomplete_controller->done());
@@ -244,7 +244,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, DISABLED_IncognitoSplitMode) {
     autocomplete_controller->Start(
         AutocompleteInput(ASCIIToUTF16("keyword command incognito"),
                           string16::npos, string16(), GURL(),
-                          AutocompleteInput::NEW_TAB_PAGE, true, false, true,
+                          AutocompleteInput::NTP, true, false, true,
                           AutocompleteInput::ALL_MATCHES));
     location_bar->AcceptInput();
     EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();

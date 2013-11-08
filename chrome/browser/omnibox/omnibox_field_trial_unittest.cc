@@ -174,7 +174,7 @@ TEST_F(OmniboxFieldTrialTest, GetDemotionsByTypeWithFallback) {
       OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
   OmniboxFieldTrial::DemotionMultipliers demotions_by_type;
   OmniboxFieldTrial::GetDemotionsByType(
-      AutocompleteInput::NEW_TAB_PAGE, &demotions_by_type);
+      AutocompleteInput::NTP, &demotions_by_type);
   ASSERT_EQ(2u, demotions_by_type.size());
   VerifyDemotion(demotions_by_type, AutocompleteMatchType::HISTORY_URL, 0.5);
   VerifyDemotion(demotions_by_type, AutocompleteMatchType::HISTORY_TITLE, 0.0);
@@ -202,7 +202,7 @@ TEST_F(OmniboxFieldTrialTest, GetUndemotableTopTypes) {
       OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
   OmniboxFieldTrial::UndemotableTopMatchTypes undemotable_types;
   undemotable_types = OmniboxFieldTrial::GetUndemotableTopTypes(
-      AutocompleteInput::NEW_TAB_PAGE);
+      AutocompleteInput::NTP);
   ASSERT_EQ(2u, undemotable_types.size());
   ASSERT_EQ(1u, undemotable_types.count(AutocompleteMatchType::HISTORY_URL));
   ASSERT_EQ(1u, undemotable_types.count(AutocompleteMatchType::HISTORY_BODY));
@@ -223,7 +223,7 @@ TEST_F(OmniboxFieldTrialTest, GetValueForRuleInContext) {
   {
     std::map<std::string, std::string> params;
     // Rule 1 has some exact matches and fallbacks at every level.
-    params["rule1:1:0"] = "rule1-1-0-value";  // NEW_TAB_PAGE
+    params["rule1:1:0"] = "rule1-1-0-value";  // NTP
     params["rule1:3:0"] = "rule1-3-0-value";  // HOME_PAGE
     params["rule1:4:1"] = "rule1-4-1-value";  // OTHER
     params["rule1:4:*"] = "rule1-4-*-value";  // OTHER
@@ -231,7 +231,7 @@ TEST_F(OmniboxFieldTrialTest, GetValueForRuleInContext) {
     params["rule1:*:*"] = "rule1-*-*-value";  // global
     // Rule 2 has no exact matches but has fallbacks.
     params["rule2:*:0"] = "rule2-*-0-value";  // global
-    params["rule2:1:*"] = "rule2-1-*-value";  // NEW_TAB_PAGE
+    params["rule2:1:*"] = "rule2-1-*-value";  // NTP
     params["rule2:*:*"] = "rule2-*-*-value";  // global
     // Rule 3 has only a global fallback.
     params["rule3:*:*"] = "rule3-*-*-value";  // global
@@ -249,9 +249,9 @@ TEST_F(OmniboxFieldTrialTest, GetValueForRuleInContext) {
   // Tests with Instant Extended disabled.
   // Tests for rule 1.
   ExpectRuleValue("rule1-1-0-value",
-                  "rule1", AutocompleteInput::NEW_TAB_PAGE);  // exact match
+                  "rule1", AutocompleteInput::NTP);  // exact match
   ExpectRuleValue("rule1-1-0-value",
-                  "rule1", AutocompleteInput::NEW_TAB_PAGE);  // exact match
+                  "rule1", AutocompleteInput::NTP);  // exact match
   ExpectRuleValue("rule1-*-*-value",
                   "rule1", AutocompleteInput::BLANK);      // fallback to global
   ExpectRuleValue("rule1-3-0-value",
@@ -301,12 +301,12 @@ TEST_F(OmniboxFieldTrialTest, GetValueForRuleInContext) {
                   "rule1", AutocompleteInput::BLANK);      // partial fallback
   ExpectRuleValue("rule1-*-1-value",
                   "rule1",
-                  AutocompleteInput::NEW_TAB_PAGE);        // partial fallback
+                  AutocompleteInput::NTP);        // partial fallback
 
   // Tests for rule 2.
   ExpectRuleValue("rule2-1-*-value",
                   "rule2",
-                  AutocompleteInput::NEW_TAB_PAGE);        // partial fallback
+                  AutocompleteInput::NTP);        // partial fallback
   ExpectRuleValue("rule2-*-*-value",
                   "rule2", AutocompleteInput::OTHER);      // global fallback
 

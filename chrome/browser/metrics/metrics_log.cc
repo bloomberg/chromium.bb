@@ -148,8 +148,8 @@ OmniboxEventProto::PageClassification AsOmniboxEventPageClassification(
   switch (page_classification) {
     case AutocompleteInput::INVALID_SPEC:
       return OmniboxEventProto::INVALID_SPEC;
-    case AutocompleteInput::NEW_TAB_PAGE:
-      return OmniboxEventProto::NEW_TAB_PAGE;
+    case AutocompleteInput::NTP:
+      return OmniboxEventProto::NTP;
     case AutocompleteInput::BLANK:
       return OmniboxEventProto::BLANK;
     case AutocompleteInput::HOME_PAGE:
@@ -159,12 +159,10 @@ OmniboxEventProto::PageClassification AsOmniboxEventPageClassification(
     case AutocompleteInput::SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT:
       return OmniboxEventProto::
           SEARCH_RESULT_PAGE_DOING_SEARCH_TERM_REPLACEMENT;
-    case AutocompleteInput::INSTANT_NEW_TAB_PAGE_WITH_OMNIBOX_AS_STARTING_FOCUS:
-      return OmniboxEventProto::
-          INSTANT_NEW_TAB_PAGE_WITH_OMNIBOX_AS_STARTING_FOCUS;
-    case AutocompleteInput::INSTANT_NEW_TAB_PAGE_WITH_FAKEBOX_AS_STARTING_FOCUS:
-      return OmniboxEventProto::
-          INSTANT_NEW_TAB_PAGE_WITH_FAKEBOX_AS_STARTING_FOCUS;
+    case AutocompleteInput::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS:
+      return OmniboxEventProto::INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS;
+    case AutocompleteInput::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS:
+      return OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS;
     case AutocompleteInput::SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT:
       return OmniboxEventProto::
           SEARCH_RESULT_PAGE_NO_SEARCH_TERM_REPLACEMENT;

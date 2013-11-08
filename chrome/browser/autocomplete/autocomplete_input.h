@@ -56,11 +56,11 @@ class AutocompleteInput {
     // chrome://newtab/.  This can be either the built-in version or a
     // replacement new tab page from an extension.  Note that when Instant
     // Extended is enabled, the new tab page will be reported as either
-    // INSTANT_NEW_TAB_PAGE_WITH_OMNIBOX_AS_STARTING_FOCUS or
-    // INSTANT_NEW_TAB_PAGE_WITH_FAKEBOX_AS_STARTING_FOCUS below,
+    // INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS or
+    // INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS below,
     // unless an extension is replacing the new tab page, in which case
-    // it will still be reported as NEW_TAB_PAGE.
-    NEW_TAB_PAGE = 1,
+    // it will still be reported as NTP.
+    NTP = 1,
 
     // about:blank.
     BLANK = 2,
@@ -81,11 +81,11 @@ class AutocompleteInput {
 
     // The new tab page in which this omnibox interaction first started
     // with the user having focus in the omnibox.
-    INSTANT_NEW_TAB_PAGE_WITH_OMNIBOX_AS_STARTING_FOCUS = 7,
+    INSTANT_NTP_WITH_OMNIBOX_AS_STARTING_FOCUS = 7,
 
     // The new tab page in which this omnibox interaction first started
     // with the user having focus in the fakebox.
-    INSTANT_NEW_TAB_PAGE_WITH_FAKEBOX_AS_STARTING_FOCUS = 8,
+    INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS = 8,
 
     // The user is on a search result page that's not doing search term
     // replacement, meaning the URL of the page should've appeared in the

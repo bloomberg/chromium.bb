@@ -1225,7 +1225,7 @@ TEST_F(TemplateURLTest, MAYBE_ReplacePageClassification) {
   std::string result = url.url_ref().ReplaceSearchTerms(search_terms_args);
   EXPECT_EQ("http://www.google.com/?q=foo", result);
 
-  search_terms_args.page_classification = AutocompleteInput::NEW_TAB_PAGE;
+  search_terms_args.page_classification = AutocompleteInput::NTP;
   result = url.url_ref().ReplaceSearchTerms(search_terms_args);
   EXPECT_EQ("http://www.google.com/?pgcl=1&q=foo", result);
 
