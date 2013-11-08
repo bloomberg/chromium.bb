@@ -406,14 +406,9 @@ void TranslateManager::InitiateTranslation(WebContents* web_contents,
   // automatically translate.  Note that in incognito mode we disable that
   // feature; the user will get an infobar, so they can control whether the
   // page's text is sent to the translate server.
-  std::string auto_target_lang;
-  if (!web_contents->GetBrowserContext()->IsOffTheRecord() &&
-      TranslatePrefs::ShouldAutoTranslate(prefs, language_code,
-          &auto_target_lang)) {
-    // We need to confirm that the saved target language is still supported.
-    // Also, GetLanguageCode will take care of removing country code if any.
-    auto_target_lang = GetLanguageCode(auto_target_lang);
-    if (IsSupportedLanguage(auto_target_lang)) {
+  if (!web_contents->GetBrowserContext()->IsOffTheRecord()) {
+    std::string auto_target_lang = GetAutoTargetLanguage(language_code, prefs);
+    if (!auto_target_lang.empty()) {
       TranslateBrowserMetrics::ReportInitiationStatus(
           TranslateBrowserMetrics::INITIATION_STATUS_AUTO_BY_CONFIG);
       TranslatePage(web_contents, language_code, auto_target_lang);
@@ -749,6 +744,22 @@ std::string TranslateManager::GetTargetLanguage(PrefService* prefs) {
     std::string lang_code = GetLanguageCode(*iter);
     if (IsSupportedLanguage(lang_code))
       return lang_code;
+  }
+  return std::string();
+}
+
+// static
+std::string TranslateManager::GetAutoTargetLanguage(
+    const std::string& original_language,
+    PrefService* prefs) {
+  std::string auto_target_lang;
+  if (TranslatePrefs::ShouldAutoTranslate(prefs, original_language,
+                                          &auto_target_lang)) {
+    // We need to confirm that the saved target language is still supported.
+    // Also, GetLanguageCode will take care of removing country code if any.
+    auto_target_lang = GetLanguageCode(auto_target_lang);
+    if (IsSupportedLanguage(auto_target_lang))
+      return auto_target_lang;
   }
   return std::string();
 }

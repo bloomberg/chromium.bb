@@ -86,6 +86,11 @@ class TranslateManager : public content::NotificationObserver {
   // If no language is found then an empty string is returned.
   static std::string GetTargetLanguage(PrefService* prefs);
 
+  // Returns the language to automatically translate to. |original_language| is
+  // the webpage's original language.
+  static std::string GetAutoTargetLanguage(const std::string& original_language,
+                                           PrefService* prefs);
+
   // Let the caller decide if and when we should fetch the language list from
   // the translate server. This is a NOOP if switches::kDisableTranslate is set
   // or if prefs::kEnableTranslate is set to false.

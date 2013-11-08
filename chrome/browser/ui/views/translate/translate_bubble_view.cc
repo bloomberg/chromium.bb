@@ -65,8 +65,20 @@ void GetTranslateLanguages(content::WebContents* web_contents,
   TranslateTabHelper* translate_tab_helper =
       TranslateTabHelper::FromWebContents(web_contents);
   *source = translate_tab_helper->language_state().original_language();
-  *target = TranslateManager::GetLanguageCode(
-      g_browser_process->GetApplicationLocale());
+
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  Profile* original_profile = profile->GetOriginalProfile();
+  PrefService* prefs = original_profile->GetPrefs();
+  if (!web_contents->GetBrowserContext()->IsOffTheRecord()) {
+    std::string auto_translate_language =
+        TranslateManager::GetAutoTargetLanguage(*source, prefs);
+    if (!auto_translate_language.empty()) {
+      *target = auto_translate_language;
+      return;
+    }
+  }
+  *target = TranslateManager::GetTargetLanguage(prefs);
 }
 
 // TODO(hajimehoshi): The interface to offer denial choices should be another
