@@ -795,67 +795,11 @@ int CompareSuffix<ExistsEntryKey>(StringPiece* slice_a,
 }
 
 template <>
-int Compare<ExistsEntryKey>(const StringPiece& a,
-                            const StringPiece& b,
-                            bool only_compare_index_keys,
-                            bool* ok) {
-  KeyPrefix prefix_a;
-  KeyPrefix prefix_b;
-  StringPiece slice_a(a);
-  StringPiece slice_b(b);
-  bool ok_a = KeyPrefix::Decode(&slice_a, &prefix_a);
-  bool ok_b = KeyPrefix::Decode(&slice_b, &prefix_b);
-  DCHECK(ok_a);
-  DCHECK(ok_b);
-  DCHECK(prefix_a.database_id_);
-  DCHECK(prefix_a.object_store_id_);
-  DCHECK_EQ(prefix_a.index_id_, ExistsEntryKey::kSpecialIndexNumber);
-  DCHECK(prefix_b.database_id_);
-  DCHECK(prefix_b.object_store_id_);
-  DCHECK_EQ(prefix_b.index_id_, ExistsEntryKey::kSpecialIndexNumber);
-  DCHECK(!slice_a.empty());
-  DCHECK(!slice_b.empty());
-  // Prefixes are not compared - it is assumed this was already done.
-  DCHECK(!prefix_a.Compare(prefix_b));
-
-  return CompareSuffix<ExistsEntryKey>(
-      &slice_a, &slice_b, only_compare_index_keys, ok);
-}
-
-template <>
 int CompareSuffix<ObjectStoreDataKey>(StringPiece* slice_a,
                                       StringPiece* slice_b,
                                       bool only_compare_index_keys,
                                       bool* ok) {
   return CompareEncodedIDBKeys(slice_a, slice_b, ok);
-}
-
-template <>
-int Compare<ObjectStoreDataKey>(const StringPiece& a,
-                                const StringPiece& b,
-                                bool only_compare_index_keys,
-                                bool* ok) {
-  KeyPrefix prefix_a;
-  KeyPrefix prefix_b;
-  StringPiece slice_a(a);
-  StringPiece slice_b(b);
-  bool ok_a = KeyPrefix::Decode(&slice_a, &prefix_a);
-  bool ok_b = KeyPrefix::Decode(&slice_b, &prefix_b);
-  DCHECK(ok_a);
-  DCHECK(ok_b);
-  DCHECK(prefix_a.database_id_);
-  DCHECK(prefix_a.object_store_id_);
-  DCHECK_EQ(prefix_a.index_id_, ObjectStoreDataKey::kSpecialIndexNumber);
-  DCHECK(prefix_b.database_id_);
-  DCHECK(prefix_b.object_store_id_);
-  DCHECK_EQ(prefix_b.index_id_, ObjectStoreDataKey::kSpecialIndexNumber);
-  DCHECK(!slice_a.empty());
-  DCHECK(!slice_b.empty());
-  // Prefixes are not compared - it is assumed this was already done.
-  DCHECK(!prefix_a.Compare(prefix_b));
-
-  return CompareSuffix<ObjectStoreDataKey>(
-      &slice_a, &slice_b, only_compare_index_keys, ok);
 }
 
 template <>
@@ -887,34 +831,6 @@ int CompareSuffix<IndexDataKey>(StringPiece* slice_a,
     return result;
 
   return CompareInts(sequence_number_a, sequence_number_b);
-}
-
-template <>
-int Compare<IndexDataKey>(const StringPiece& a,
-                          const StringPiece& b,
-                          bool only_compare_index_keys,
-                          bool* ok) {
-  KeyPrefix prefix_a;
-  KeyPrefix prefix_b;
-  StringPiece slice_a(a);
-  StringPiece slice_b(b);
-  bool ok_a = KeyPrefix::Decode(&slice_a, &prefix_a);
-  bool ok_b = KeyPrefix::Decode(&slice_b, &prefix_b);
-  DCHECK(ok_a);
-  DCHECK(ok_b);
-  DCHECK(prefix_a.database_id_);
-  DCHECK(prefix_a.object_store_id_);
-  DCHECK_GE(prefix_a.index_id_, kMinimumIndexId);
-  DCHECK(prefix_b.database_id_);
-  DCHECK(prefix_b.object_store_id_);
-  DCHECK_GE(prefix_b.index_id_, kMinimumIndexId);
-  DCHECK(!slice_a.empty());
-  DCHECK(!slice_b.empty());
-  // Prefixes are not compared - it is assumed this was already done.
-  DCHECK(!prefix_a.Compare(prefix_b));
-
-  return CompareSuffix<IndexDataKey>(
-      &slice_a, &slice_b, only_compare_index_keys, ok);
 }
 
 int Compare(const StringPiece& a,
