@@ -70,9 +70,9 @@
 #include "platform/MIMETypeRegistry.h"
 #include "platform/NotImplemented.h"
 #include "platform/UserGestureIndicator.h"
-#include "platform/graphics/media/InbandTextTrackPrivate.h"
 #include "platform/graphics/media/MediaPlayer.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebInbandTextTrack.h"
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/MathExtras.h"
@@ -92,6 +92,7 @@
 #endif
 
 using namespace std;
+using blink::WebInbandTextTrack;
 using blink::WebMimeRegistry;
 
 namespace WebCore {
@@ -2442,14 +2443,14 @@ double HTMLMediaElement::percentLoaded() const
     return buffered / duration;
 }
 
-void HTMLMediaElement::mediaPlayerDidAddTrack(PassRefPtr<InbandTextTrackPrivate> prpTrack)
+void HTMLMediaElement::mediaPlayerDidAddTrack(WebInbandTextTrack* webTrack)
 {
     if (!RuntimeEnabledFeatures::videoTrackEnabled())
         return;
 
     // 4.8.10.12.2 Sourcing in-band text tracks
     // 1. Associate the relevant data with a new text track and its corresponding new TextTrack object.
-    RefPtr<InbandTextTrack> textTrack = InbandTextTrack::create(document(), this, prpTrack);
+    RefPtr<InbandTextTrack> textTrack = InbandTextTrack::create(document(), this, webTrack);
 
     // 2. Set the new text track's kind, label, and language based on the semantics of the relevant data,
     // as defined by the relevant specification. If there is no label in that data, then the label must
@@ -2477,7 +2478,7 @@ void HTMLMediaElement::mediaPlayerDidAddTrack(PassRefPtr<InbandTextTrackPrivate>
     addTrack(textTrack.get());
 }
 
-void HTMLMediaElement::mediaPlayerDidRemoveTrack(PassRefPtr<InbandTextTrackPrivate> prpTrack)
+void HTMLMediaElement::mediaPlayerDidRemoveTrack(WebInbandTextTrack* webTrack)
 {
     if (!RuntimeEnabledFeatures::videoTrackEnabled())
         return;
@@ -2485,9 +2486,9 @@ void HTMLMediaElement::mediaPlayerDidRemoveTrack(PassRefPtr<InbandTextTrackPriva
     if (!m_textTracks)
         return;
 
-    // This cast is safe because we created the InbandTextTrack with the InbandTextTrackPrivate
+    // This cast is safe because we created the InbandTextTrack with the WebInbandTextTrack
     // passed to mediaPlayerDidAddTrack.
-    RefPtr<InbandTextTrack> textTrack = static_cast<InbandTextTrack*>(prpTrack->client());
+    RefPtr<InbandTextTrack> textTrack = static_cast<InbandTextTrack*>(webTrack->client());
     if (!textTrack)
         return;
 

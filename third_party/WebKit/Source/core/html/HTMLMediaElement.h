@@ -36,7 +36,10 @@
 #include "platform/graphics/media/MediaPlayer.h"
 #include "public/platform/WebMimeRegistry.h"
 
-namespace blink { class WebLayer; }
+namespace blink {
+class WebInbandTextTrack;
+class WebLayer;
+}
 
 namespace WebCore {
 
@@ -59,8 +62,6 @@ class TimeRanges;
 #if ENABLE(ENCRYPTED_MEDIA_V2)
 class MediaKeys;
 #endif
-
-class InbandTextTrackPrivate;
 
 typedef PODIntervalTree<double, TextTrackCue*> CueIntervalTree;
 typedef CueIntervalTree::IntervalType CueInterval;
@@ -195,8 +196,8 @@ public:
     void didAddTrack(HTMLTrackElement*);
     void didRemoveTrack(HTMLTrackElement*);
 
-    virtual void mediaPlayerDidAddTrack(PassRefPtr<InbandTextTrackPrivate>) OVERRIDE;
-    virtual void mediaPlayerDidRemoveTrack(PassRefPtr<InbandTextTrackPrivate>) OVERRIDE;
+    virtual void mediaPlayerDidAddTrack(blink::WebInbandTextTrack*) OVERRIDE;
+    virtual void mediaPlayerDidRemoveTrack(blink::WebInbandTextTrack*) OVERRIDE;
 
     struct TrackGroup {
         enum GroupKind { CaptionsAndSubtitles, Description, Chapter, Metadata, Other };

@@ -56,8 +56,6 @@
       'IDBDatabaseBackendProxy.h',
       'IDBFactoryBackendProxy.cpp',
       'IDBFactoryBackendProxy.h',
-      'InbandTextTrackPrivateImpl.cpp',
-      'InbandTextTrackPrivateImpl.h',
       'InspectorClientImpl.cpp',
       'InspectorClientImpl.h',
       'InspectorFrontendClientImpl.cpp',

@@ -27,30 +27,34 @@
 #define InbandTextTrack_h
 
 #include "core/html/track/TextTrack.h"
-#include "platform/graphics/media/InbandTextTrackPrivateClient.h"
+#include "public/platform/WebInbandTextTrackClient.h"
 #include "wtf/RefPtr.h"
+
+namespace blink {
+class WebInbandTextTrack;
+class WebString;
+}
 
 namespace WebCore {
 
 class Document;
-class InbandTextTrackPrivate;
 class MediaPlayer;
 class TextTrackCue;
 
-class InbandTextTrack : public TextTrack, public InbandTextTrackPrivateClient {
+class InbandTextTrack : public TextTrack, public blink::WebInbandTextTrackClient {
 public:
-    static PassRefPtr<InbandTextTrack> create(Document&, TextTrackClient*, PassRefPtr<InbandTextTrackPrivate>);
+    static PassRefPtr<InbandTextTrack> create(Document&, TextTrackClient*, blink::WebInbandTextTrack*);
     virtual ~InbandTextTrack();
 
     size_t inbandTrackIndex();
     void trackRemoved();
 
 private:
-    InbandTextTrack(Document&, TextTrackClient*, PassRefPtr<InbandTextTrackPrivate>);
+    InbandTextTrack(Document&, TextTrackClient*, blink::WebInbandTextTrack*);
 
-    virtual void addWebVTTCue(InbandTextTrackPrivate*, double, double, const String&, const String&, const String&) OVERRIDE;
+    virtual void addWebVTTCue(double, double, const blink::WebString&, const blink::WebString&, const blink::WebString&) OVERRIDE;
 
-    RefPtr<InbandTextTrackPrivate> m_private;
+    blink::WebInbandTextTrack* m_webTrack;
 };
 
 } // namespace WebCore

@@ -31,14 +31,16 @@
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
 
-namespace blink { class WebLayer; }
+namespace blink {
+class WebInbandTextTrack;
+class WebLayer;
+}
 
 namespace WebCore {
 
 class AudioSourceProvider;
 class GraphicsContext;
 class GraphicsContext3D;
-class InbandTextTrackPrivate;
 class IntRect;
 class IntSize;
 class KURL;
@@ -94,8 +96,8 @@ public:
 
     virtual void mediaPlayerScheduleLayerUpdate() = 0;
 
-    virtual void mediaPlayerDidAddTrack(PassRefPtr<InbandTextTrackPrivate>) = 0;
-    virtual void mediaPlayerDidRemoveTrack(PassRefPtr<InbandTextTrackPrivate>) = 0;
+    virtual void mediaPlayerDidAddTrack(blink::WebInbandTextTrack*) = 0;
+    virtual void mediaPlayerDidRemoveTrack(blink::WebInbandTextTrack*) = 0;
 };
 
 typedef PassOwnPtr<MediaPlayer> (*CreateMediaEnginePlayer)(MediaPlayerClient*);

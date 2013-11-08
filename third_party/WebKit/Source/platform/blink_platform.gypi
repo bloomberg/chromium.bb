@@ -332,8 +332,6 @@
       'graphics/filters/custom/CustomFilterProgramInfo.h',
       'graphics/filters/custom/CustomFilterTransformParameter.cpp',
       'graphics/filters/custom/CustomFilterTransformParameter.h',
-      'graphics/media/InbandTextTrackPrivate.h',
-      'graphics/media/InbandTextTrackPrivateClient.h',
       'graphics/media/MediaPlayer.cpp',
       'graphics/media/MediaPlayer.h',
       'graphics/Color.cpp',

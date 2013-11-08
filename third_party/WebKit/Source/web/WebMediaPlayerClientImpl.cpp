@@ -5,7 +5,6 @@
 #include "config.h"
 #include "WebMediaPlayerClientImpl.h"
 
-#include "InbandTextTrackPrivateImpl.h"
 #include "MediaSourcePrivateImpl.h"
 #include "WebDocument.h"
 #include "WebFrameClient.h"
@@ -197,15 +196,12 @@ void WebMediaPlayerClientImpl::setWebLayer(WebLayer* layer)
 
 void WebMediaPlayerClientImpl::addTextTrack(WebInbandTextTrack* textTrack)
 {
-    m_client->mediaPlayerDidAddTrack(adoptRef(new InbandTextTrackPrivateImpl(textTrack)));
+    m_client->mediaPlayerDidAddTrack(textTrack);
 }
 
 void WebMediaPlayerClientImpl::removeTextTrack(WebInbandTextTrack* textTrack)
 {
-    // The following static_cast is safe, because we created the object with the textTrack
-    // that was passed to addTextTrack.  (The object from which we are downcasting includes
-    // WebInbandTextTrack as one of the intefaces from which inherits.)
-    m_client->mediaPlayerDidRemoveTrack(static_cast<InbandTextTrackPrivateImpl*>(textTrack->client()));
+    m_client->mediaPlayerDidRemoveTrack(textTrack);
 }
 
 void WebMediaPlayerClientImpl::mediaSourceOpened(WebMediaSource* webMediaSource)
