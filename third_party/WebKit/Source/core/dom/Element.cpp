@@ -109,7 +109,7 @@ using namespace XMLNames;
 
 class StyleResolverParentPusher {
 public:
-    StyleResolverParentPusher(Element* parent)
+    explicit StyleResolverParentPusher(Element& parent)
         : m_parent(parent)
         , m_pushedStyleResolver(0)
     {
@@ -118,7 +118,7 @@ public:
     {
         if (m_pushedStyleResolver)
             return;
-        m_pushedStyleResolver = m_parent->document().styleResolver();
+        m_pushedStyleResolver = m_parent.document().styleResolver();
         m_pushedStyleResolver->pushParentElement(m_parent);
     }
     ~StyleResolverParentPusher()
@@ -129,15 +129,15 @@ public:
 
         // This tells us that our pushed style selector is in a bad state,
         // so we should just bail out in that scenario.
-        ASSERT(m_pushedStyleResolver == m_parent->document().styleResolver());
-        if (m_pushedStyleResolver != m_parent->document().styleResolver())
+        ASSERT(m_pushedStyleResolver == m_parent.document().styleResolver());
+        if (m_pushedStyleResolver != m_parent.document().styleResolver())
             return;
 
         m_pushedStyleResolver->popParentElement(m_parent);
     }
 
 private:
-    Element* m_parent;
+    Element& m_parent;
     StyleResolver* m_pushedStyleResolver;
 };
 
@@ -1358,7 +1358,7 @@ void Element::attach(const AttachContext& context)
 {
     ASSERT(document().inStyleRecalc());
 
-    StyleResolverParentPusher parentPusher(this);
+    StyleResolverParentPusher parentPusher(*this);
 
     // We've already been through detach when doing a lazyAttach, but we might
     // need to clear any state that's been added since then.
@@ -1590,7 +1590,7 @@ void Element::recalcChildStyle(StyleRecalcChange change)
     ASSERT(change >= Inherit || childNeedsStyleRecalc());
     ASSERT(!needsStyleRecalc());
 
-    StyleResolverParentPusher parentPusher(this);
+    StyleResolverParentPusher parentPusher(*this);
 
     for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot()) {
         if (shouldRecalcStyle(change, root)) {

@@ -39,11 +39,11 @@ class CSSSelector;
 
 class SelectorFilter {
 public:
-    void pushParentStackFrame(Element* parent);
+    void pushParentStackFrame(Element& parent);
     void popParentStackFrame();
 
-    void setupParentStack(Element* parent);
-    void pushParent(Element* parent);
+    void setupParentStack(Element& parent);
+    void pushParent(Element& parent);
     void popParent() { popParentStackFrame(); }
     bool parentStackIsEmpty() const { return m_parentStack.isEmpty(); }
     bool parentStackIsConsistent(const ContainerNode* parentNode) const { return !m_parentStack.isEmpty() && m_parentStack.last().element == parentNode; }
@@ -55,7 +55,7 @@ public:
 private:
     struct ParentStackFrame {
         ParentStackFrame() : element(0) { }
-        ParentStackFrame(Element* element) : element(element) { }
+        ParentStackFrame(Element& element) : element(&element) { }
         Element* element;
         Vector<unsigned, 4> identifierHashes;
     };

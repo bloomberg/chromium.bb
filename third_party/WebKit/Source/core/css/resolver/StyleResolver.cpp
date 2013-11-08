@@ -323,10 +323,9 @@ void StyleResolver::fontsNeedUpdate(FontSelector* fontSelector)
     m_document.setNeedsStyleRecalc();
 }
 
-void StyleResolver::pushParentElement(Element* parent)
+void StyleResolver::pushParentElement(Element& parent)
 {
-    ASSERT(parent);
-    const ContainerNode* parentsParent = parent->parentOrShadowHostElement();
+    const ContainerNode* parentsParent = parent.parentOrShadowHostElement();
 
     // We are not always invoked consistently. For example, script execution can cause us to enter
     // style recalc in the middle of tree building. We may also be invoked from somewhere within the tree.
@@ -338,18 +337,17 @@ void StyleResolver::pushParentElement(Element* parent)
         m_selectorFilter.pushParent(parent);
 
     // Note: We mustn't skip ShadowRoot nodes for the scope stack.
-    m_styleTree.pushStyleCache(*parent, parent->parentOrShadowHostNode());
+    m_styleTree.pushStyleCache(parent, parent.parentOrShadowHostNode());
 }
 
-void StyleResolver::popParentElement(Element* parent)
+void StyleResolver::popParentElement(Element& parent)
 {
-    ASSERT(parent);
     // Note that we may get invoked for some random elements in some wacky cases during style resolve.
     // Pause maintaining the stack in this case.
-    if (m_selectorFilter.parentStackIsConsistent(parent))
+    if (m_selectorFilter.parentStackIsConsistent(&parent))
         m_selectorFilter.popParent();
 
-    m_styleTree.popStyleCache(*parent);
+    m_styleTree.popStyleCache(parent);
 }
 
 void StyleResolver::pushParentShadowRoot(const ShadowRoot& shadowRoot)

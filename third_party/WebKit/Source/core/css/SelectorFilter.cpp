@@ -37,24 +37,24 @@ namespace WebCore {
 // Salt to separate otherwise identical string hashes so a class-selector like .article won't match <article> elements.
 enum { TagNameSalt = 13, IdAttributeSalt = 17, ClassAttributeSalt = 19 };
 
-static inline void collectElementIdentifierHashes(const Element* element, Vector<unsigned, 4>& identifierHashes)
+static inline void collectElementIdentifierHashes(const Element& element, Vector<unsigned, 4>& identifierHashes)
 {
-    identifierHashes.append(element->localName().impl()->existingHash() * TagNameSalt);
-    if (element->hasID())
-        identifierHashes.append(element->idForStyleResolution().impl()->existingHash() * IdAttributeSalt);
-    if (element->isStyledElement() && element->hasClass()) {
-        const SpaceSplitString& classNames = element->classNames();
+    identifierHashes.append(element.localName().impl()->existingHash() * TagNameSalt);
+    if (element.hasID())
+        identifierHashes.append(element.idForStyleResolution().impl()->existingHash() * IdAttributeSalt);
+    if (element.isStyledElement() && element.hasClass()) {
+        const SpaceSplitString& classNames = element.classNames();
         size_t count = classNames.size();
         for (size_t i = 0; i < count; ++i)
             identifierHashes.append(classNames[i].impl()->existingHash() * ClassAttributeSalt);
     }
 }
 
-void SelectorFilter::pushParentStackFrame(Element* parent)
+void SelectorFilter::pushParentStackFrame(Element& parent)
 {
     ASSERT(m_ancestorIdentifierFilter);
-    ASSERT(m_parentStack.isEmpty() || m_parentStack.last().element == parent->parentOrShadowHostElement());
-    ASSERT(!m_parentStack.isEmpty() || !parent->parentOrShadowHostElement());
+    ASSERT(m_parentStack.isEmpty() || m_parentStack.last().element == parent.parentOrShadowHostElement());
+    ASSERT(!m_parentStack.isEmpty() || !parent.parentOrShadowHostElement());
     m_parentStack.append(ParentStackFrame(parent));
     ParentStackFrame& parentFrame = m_parentStack.last();
     // Mix tags, class names and ids into some sort of weird bouillabaisse.
@@ -80,31 +80,31 @@ void SelectorFilter::popParentStackFrame()
     }
 }
 
-void SelectorFilter::setupParentStack(Element* parent)
+void SelectorFilter::setupParentStack(Element& parent)
 {
     ASSERT(m_parentStack.isEmpty() == !m_ancestorIdentifierFilter);
     // Kill whatever we stored before.
     m_parentStack.shrink(0);
     m_ancestorIdentifierFilter = adoptPtr(new BloomFilter<bloomFilterKeyBits>);
     // Fast version if parent is a root element:
-    if (!parent->parentOrShadowHostNode()) {
+    if (!parent.parentOrShadowHostNode()) {
         pushParentStackFrame(parent);
         return;
     }
     // Otherwise climb up the tree.
     Vector<Element*, 30> ancestors;
-    for (Element* ancestor = parent; ancestor; ancestor = ancestor->parentOrShadowHostElement())
+    for (Element* ancestor = &parent; ancestor; ancestor = ancestor->parentOrShadowHostElement())
         ancestors.append(ancestor);
     for (size_t n = ancestors.size(); n; --n)
-        pushParentStackFrame(ancestors[n - 1]);
+        pushParentStackFrame(*ancestors[n - 1]);
 }
 
-void SelectorFilter::pushParent(Element* parent)
+void SelectorFilter::pushParent(Element& parent)
 {
     ASSERT(m_ancestorIdentifierFilter);
     // We may get invoked for some random elements in some wacky cases during style resolve.
     // Pause maintaining the stack in this case.
-    if (m_parentStack.last().element != parent->parentOrShadowHostElement())
+    if (m_parentStack.last().element != parent.parentOrShadowHostElement())
         return;
     pushParentStackFrame(parent);
 }

@@ -183,8 +183,8 @@ public:
     // These should move to some global tree-walk state, or should be contained in a
     // TreeWalkContext or similar which is passed in to StyleResolver methods when available.
     // Using these during tree walk will allow style selector to optimize child and descendant selector lookups.
-    void pushParentElement(Element*);
-    void popParentElement(Element*);
+    void pushParentElement(Element&);
+    void popParentElement(Element&);
     void pushParentShadowRoot(const ShadowRoot&);
     void popParentShadowRoot(const ShadowRoot&);
 
