@@ -300,7 +300,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutWindowPref) {
 
   // Set a pref indicating that the user wants to open this app in a window.
   SetAppLaunchPref(extension_app->id(),
-                   extensions::ExtensionPrefs::LAUNCH_WINDOW);
+                   extensions::ExtensionPrefs::LAUNCH_TYPE_WINDOW);
 
   CommandLine command_line(CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(switches::kAppId, extension_app->id());
@@ -332,7 +332,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, OpenAppShortcutTabPref) {
 
   // Set a pref indicating that the user wants to open this app in a window.
   SetAppLaunchPref(extension_app->id(),
-                   extensions::ExtensionPrefs::LAUNCH_REGULAR);
+                   extensions::ExtensionPrefs::LAUNCH_TYPE_REGULAR);
 
   CommandLine command_line(CommandLine::NO_PROGRAM);
   command_line.AppendSwitchASCII(switches::kAppId, extension_app->id());

@@ -10,6 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/url_constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/manifest_constants.h"
@@ -58,7 +59,7 @@ const AppLaunchInfo& GetAppLaunchInfo(const Extension* extension) {
 }  // namespace
 
 AppLaunchInfo::AppLaunchInfo()
-    : launch_container_(extension_misc::LAUNCH_TAB),
+    : launch_container_(LAUNCH_TAB),
       launch_width_(0),
       launch_height_(0) {
 }
@@ -79,7 +80,7 @@ const GURL& AppLaunchInfo::GetLaunchWebURL(
 }
 
 // static
-extension_misc::LaunchContainer AppLaunchInfo::GetLaunchContainer(
+extensions::LaunchContainer AppLaunchInfo::GetLaunchContainer(
     const Extension* extension) {
   return GetAppLaunchInfo(extension).launch_container_;
 }
@@ -237,16 +238,15 @@ bool AppLaunchInfo::LoadLaunchContainer(Extension* extension,
   }
 
   if (launch_container_string == values::kLaunchContainerPanel) {
-    launch_container_ = extension_misc::LAUNCH_PANEL;
+    launch_container_ = LAUNCH_PANEL;
   } else if (launch_container_string == values::kLaunchContainerTab) {
-    launch_container_ = extension_misc::LAUNCH_TAB;
+    launch_container_ = LAUNCH_TAB;
   } else {
     *error = ASCIIToUTF16(errors::kInvalidLaunchContainer);
     return false;
   }
 
-  bool can_specify_initial_size =
-      launch_container_ == extension_misc::LAUNCH_PANEL;
+  bool can_specify_initial_size = launch_container_ == LAUNCH_PANEL;
 
   // Validate the container width if present.
   if (!ReadLaunchDimension(extension->manifest(),

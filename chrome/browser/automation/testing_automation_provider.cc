@@ -4321,13 +4321,13 @@ void TestingAutomationProvider::SetAppLaunchType(
 
   extensions::ExtensionPrefs::LaunchType launch_type;
   if (launch_type_str == "pinned") {
-    launch_type = extensions::ExtensionPrefs::LAUNCH_PINNED;
+    launch_type = extensions::ExtensionPrefs::LAUNCH_TYPE_PINNED;
   } else if (launch_type_str == "regular") {
-    launch_type = extensions::ExtensionPrefs::LAUNCH_REGULAR;
+    launch_type = extensions::ExtensionPrefs::LAUNCH_TYPE_REGULAR;
   } else if (launch_type_str == "fullscreen") {
-    launch_type = extensions::ExtensionPrefs::LAUNCH_FULLSCREEN;
+    launch_type = extensions::ExtensionPrefs::LAUNCH_TYPE_FULLSCREEN;
   } else if (launch_type_str == "window") {
-    launch_type = extensions::ExtensionPrefs::LAUNCH_WINDOW;
+    launch_type = extensions::ExtensionPrefs::LAUNCH_TYPE_WINDOW;
   } else {
     reply.SendError(base::StringPrintf(
         "Unexpected launch type '%s'.", launch_type_str.c_str()));

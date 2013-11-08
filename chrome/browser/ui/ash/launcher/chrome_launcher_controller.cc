@@ -709,11 +709,11 @@ extensions::ExtensionPrefs::LaunchType
 
   // An extension can be unloaded/updated/unavailable at any time.
   if (!extension)
-    return extensions::ExtensionPrefs::LAUNCH_DEFAULT;
+    return extensions::ExtensionPrefs::LAUNCH_TYPE_DEFAULT;
 
   return profile_->GetExtensionService()->extension_prefs()->GetLaunchType(
       extension,
-      extensions::ExtensionPrefs::LAUNCH_DEFAULT);
+      extensions::ExtensionPrefs::LAUNCH_TYPE_DEFAULT);
 }
 
 ash::LauncherID ChromeLauncherController::GetLauncherIDForAppID(

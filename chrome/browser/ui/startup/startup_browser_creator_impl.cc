@@ -87,6 +87,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "extensions/common/constants.h"
 #include "grit/locale_settings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -186,7 +187,7 @@ bool GetAppLaunchContainer(
     Profile* profile,
     const std::string& app_id,
     const Extension** out_extension,
-    extension_misc::LaunchContainer* out_launch_container) {
+    extensions::LaunchContainer* out_launch_container) {
 
   ExtensionService* extensions_service = profile->GetExtensionService();
   const Extension* extension =
@@ -202,9 +203,9 @@ bool GetAppLaunchContainer(
 
   // Look at preferences to find the right launch container.  If no
   // preference is set, launch as a window.
-  extension_misc::LaunchContainer launch_container =
+  extensions::LaunchContainer launch_container =
       extensions_service->extension_prefs()->GetLaunchContainer(
-          extension, extensions::ExtensionPrefs::LAUNCH_WINDOW);
+          extension, extensions::ExtensionPrefs::LAUNCH_TYPE_WINDOW);
 
   *out_extension = extension;
   *out_launch_container = launch_container;
@@ -366,7 +367,7 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
     if (extension) {
       RecordCmdLineAppHistogram(extensions::Manifest::TYPE_PLATFORM_APP);
       AppLaunchParams params(profile, extension,
-                             extension_misc::LAUNCH_NONE, NEW_WINDOW);
+                             extensions::LAUNCH_NONE, NEW_WINDOW);
       params.command_line = &command_line_;
       params.current_directory = cur_dir_;
       OpenApplicationWithReenablePrompt(params);
@@ -471,19 +472,19 @@ bool StartupBrowserCreatorImpl::OpenApplicationTab(Profile* profile) {
   if (!IsAppLaunch(NULL, &app_id) || app_id.empty())
     return false;
 
-  extension_misc::LaunchContainer launch_container;
+  extensions::LaunchContainer launch_container;
   const Extension* extension;
   if (!GetAppLaunchContainer(profile, app_id, &extension, &launch_container))
     return false;
 
   // If the user doesn't want to open a tab, fail.
-  if (launch_container != extension_misc::LAUNCH_TAB)
+  if (launch_container != extensions::LAUNCH_TAB)
     return false;
 
   RecordCmdLineAppHistogram(extension->GetType());
 
   WebContents* app_tab = OpenApplication(AppLaunchParams(
-      profile, extension, extension_misc::LAUNCH_TAB, NEW_FOREGROUND_TAB));
+      profile, extension, extensions::LAUNCH_TAB, NEW_FOREGROUND_TAB));
   return (app_tab != NULL);
 }
 
@@ -503,7 +504,7 @@ bool StartupBrowserCreatorImpl::OpenApplicationWindow(
   // TODO(skerner): Do something reasonable here. Pop up a warning panel?
   // Open an URL to the gallery page of the extension id?
   if (!app_id.empty()) {
-    extension_misc::LaunchContainer launch_container;
+    extensions::LaunchContainer launch_container;
     const Extension* extension;
     if (!GetAppLaunchContainer(profile, app_id, &extension, &launch_container))
       return false;
@@ -512,7 +513,7 @@ bool StartupBrowserCreatorImpl::OpenApplicationWindow(
     // and avoid calling GetAppLaunchContainer() both here and in
     // OpenApplicationTab().
 
-    if (launch_container == extension_misc::LAUNCH_TAB)
+    if (launch_container == extensions::LAUNCH_TAB)
       return false;
 
     RecordCmdLineAppHistogram(extension->GetType());

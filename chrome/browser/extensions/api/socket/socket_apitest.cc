@@ -91,8 +91,7 @@ class SocketPpapiTest : public SocketApiTest {
     ASSERT_TRUE(extension);
 
     AppLaunchParams params(browser()->profile(), extension,
-                                   extension_misc::LAUNCH_NONE,
-                                   NEW_WINDOW);
+                           extensions::LAUNCH_NONE, NEW_WINDOW);
     params.command_line = CommandLine::ForCurrentProcess();
     OpenApplication(params);
   }

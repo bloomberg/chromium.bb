@@ -32,7 +32,6 @@
 #include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/extensions/api/management.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_icon_set.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
@@ -43,6 +42,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/url_pattern.h"
@@ -434,9 +434,9 @@ bool ManagementLaunchAppFunction::RunImpl() {
   // Look at prefs to find the right launch container.
   // |default_pref_value| is set to LAUNCH_DEFAULT so that if
   // the user has not set a preference, we open the app in a tab.
-  extension_misc::LaunchContainer launch_container =
+  LaunchContainer launch_container =
       service()->extension_prefs()->GetLaunchContainer(
-          extension, ExtensionPrefs::LAUNCH_DEFAULT);
+          extension, ExtensionPrefs::LAUNCH_TYPE_DEFAULT);
   OpenApplication(AppLaunchParams(
       GetProfile(), extension, launch_container, NEW_FOREGROUND_TAB));
 #if !defined(OS_ANDROID)

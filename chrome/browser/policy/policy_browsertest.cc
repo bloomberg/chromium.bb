@@ -114,6 +114,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/test/net/url_request_failed_job.h"
 #include "content/test/net/url_request_mock_http_job.h"
+#include "extensions/common/constants.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
@@ -2022,10 +2023,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, FullscreenAllowedApp) {
   // Launch an app that tries to open a fullscreen window.
   TestAddShellWindowObserver add_window_observer(
       apps::ShellWindowRegistry::Get(browser()->profile()));
-  OpenApplication(AppLaunchParams(browser()->profile(),
-                                  extension,
-                                  extension_misc::LAUNCH_NONE,
-                                  NEW_WINDOW));
+  OpenApplication(AppLaunchParams(browser()->profile(), extension,
+                                  extensions::LAUNCH_NONE, NEW_WINDOW));
   apps::ShellWindow* window = add_window_observer.WaitForShellWindow();
   ASSERT_TRUE(window);
 

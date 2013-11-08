@@ -219,7 +219,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, DISABLED_LaunchPanelApp) {
   // Set a pref indicating that the user wants to launch in a regular tab.
   // This should be ignored, because panel apps always load in a popup.
   service->extension_prefs()->SetLaunchType(
-      app_id, extensions::ExtensionPrefs::LAUNCH_REGULAR);
+      app_id, extensions::ExtensionPrefs::LAUNCH_TYPE_REGULAR);
 
   // Load the extension again.
   std::string app_id_new;
@@ -279,7 +279,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiTest, MAYBE_LaunchTabApp) {
 
   // Set a pref indicating that the user wants to launch in a window.
   service->extension_prefs()->SetLaunchType(
-      app_id, extensions::ExtensionPrefs::LAUNCH_WINDOW);
+      app_id, extensions::ExtensionPrefs::LAUNCH_TYPE_WINDOW);
 
   std::string app_id_new;
   LoadAndWaitForLaunch("management/launch_app_tab", &app_id_new);

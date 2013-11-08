@@ -1410,7 +1410,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OpenAppWindowLikeNtp) {
   // Launch it in a window, as AppLauncherHandler::HandleLaunchApp() would.
   WebContents* app_window = OpenApplication(
       AppLaunchParams(browser()->profile(), extension_app,
-                      extension_misc::LAUNCH_WINDOW, NEW_WINDOW));
+                      extensions::LAUNCH_WINDOW, NEW_WINDOW));
   ASSERT_TRUE(app_window);
 
   // Apps launched in a window from the NTP have an extensions tab helper but

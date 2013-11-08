@@ -92,7 +92,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionFromWebAppTest, MAYBE_Basic) {
   EXPECT_EQ("", installed_extension_->description());
   EXPECT_EQ(GURL("http://www.example.com/"),
             AppLaunchInfo::GetLaunchWebURL(installed_extension_));
-  EXPECT_EQ(extension_misc::LAUNCH_TAB,
+  EXPECT_EQ(LAUNCH_TAB,
             AppLaunchInfo::GetLaunchContainer(installed_extension_));
   EXPECT_EQ(0u, installed_extension_->GetActivePermissions()->apis().size());
   EXPECT_EQ(0u, IconsInfo::GetIcons(installed_extension_).map().size());

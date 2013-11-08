@@ -1031,50 +1031,50 @@ ExtensionPrefs::LaunchType ExtensionPrefs::GetLaunchType(
     const Extension* extension,
     ExtensionPrefs::LaunchType default_pref_value) {
   int value = -1;
-  LaunchType result = LAUNCH_REGULAR;
+  LaunchType result = LAUNCH_TYPE_REGULAR;
 
   if (ReadPrefAsInteger(extension->id(), kPrefLaunchType, &value) &&
-      (value == LAUNCH_PINNED ||
-       value == LAUNCH_REGULAR ||
-       value == LAUNCH_FULLSCREEN ||
-       value == LAUNCH_WINDOW)) {
+      (value == LAUNCH_TYPE_PINNED ||
+       value == LAUNCH_TYPE_REGULAR ||
+       value == LAUNCH_TYPE_FULLSCREEN ||
+       value == LAUNCH_TYPE_WINDOW)) {
     result = static_cast<LaunchType>(value);
   } else {
     result = default_pref_value;
   }
 #if defined(OS_MACOSX)
     // App windows are not yet supported on mac.  Pref sync could make
-    // the launch type LAUNCH_WINDOW, even if there is no UI to set it
+    // the launch type LAUNCH_TYPE_WINDOW, even if there is no UI to set it
     // on mac.
-    if (!extension->is_platform_app() && result == LAUNCH_WINDOW)
-      result = LAUNCH_REGULAR;
+    if (!extension->is_platform_app() && result == LAUNCH_TYPE_WINDOW)
+      result = LAUNCH_TYPE_REGULAR;
 #endif
 
 #if defined(OS_WIN)
     // We don't support app windows in Windows 8 single window Metro mode.
-    if (win8::IsSingleWindowMetroMode() && result == LAUNCH_WINDOW)
-      result = LAUNCH_REGULAR;
+    if (win8::IsSingleWindowMetroMode() && result == LAUNCH_TYPE_WINDOW)
+      result = LAUNCH_TYPE_REGULAR;
 #endif  // OS_WIN
 
   return result;
 }
 
-extension_misc::LaunchContainer ExtensionPrefs::GetLaunchContainer(
+LaunchContainer ExtensionPrefs::GetLaunchContainer(
     const Extension* extension,
     ExtensionPrefs::LaunchType default_pref_value) {
-  extension_misc::LaunchContainer manifest_launch_container =
+  LaunchContainer manifest_launch_container =
       AppLaunchInfo::GetLaunchContainer(extension);
 
-  const extension_misc::LaunchContainer kInvalidLaunchContainer =
-      static_cast<extension_misc::LaunchContainer>(-1);
+  const LaunchContainer kInvalidLaunchContainer =
+      static_cast<LaunchContainer>(-1);
 
-  extension_misc::LaunchContainer result = kInvalidLaunchContainer;
+  LaunchContainer result = kInvalidLaunchContainer;
 
-  if (manifest_launch_container == extension_misc::LAUNCH_PANEL) {
+  if (manifest_launch_container == LAUNCH_PANEL) {
     // Apps with app.launch.container = 'panel' should always respect the
     // manifest setting.
     result = manifest_launch_container;
-  } else if (manifest_launch_container == extension_misc::LAUNCH_TAB) {
+  } else if (manifest_launch_container == LAUNCH_TAB) {
     // Look for prefs that indicate the user's choice of launch
     // container.  The app's menu on the NTP provides a UI to set
     // this preference.  If no preference is set, |default_pref_value|
@@ -1082,35 +1082,35 @@ extension_misc::LaunchContainer ExtensionPrefs::GetLaunchContainer(
     ExtensionPrefs::LaunchType prefs_launch_type =
         GetLaunchType(extension, default_pref_value);
 
-    if (prefs_launch_type == ExtensionPrefs::LAUNCH_WINDOW) {
+    if (prefs_launch_type == LAUNCH_TYPE_WINDOW) {
       // If the pref is set to launch a window (or no pref is set, and
       // window opening is the default), make the container a window.
-      result = extension_misc::LAUNCH_WINDOW;
+      result = LAUNCH_WINDOW;
 #if defined(USE_ASH)
-    } else if (prefs_launch_type == ExtensionPrefs::LAUNCH_FULLSCREEN &&
+    } else if (prefs_launch_type == LAUNCH_TYPE_FULLSCREEN &&
                chrome::GetActiveDesktop() == chrome::HOST_DESKTOP_TYPE_ASH) {
-      // LAUNCH_FULLSCREEN launches in a maximized app window in ash.
+      // LAUNCH_TYPE_FULLSCREEN launches in a maximized app window in ash.
       // For desktop chrome AURA on all platforms we should open the
       // application in full screen mode in the current tab, on the same
       // lines as non AURA chrome.
-      result = extension_misc::LAUNCH_WINDOW;
+      result = LAUNCH_WINDOW;
 #endif
     } else {
       // All other launch types (tab, pinned, fullscreen) are
       // implemented as tabs in a window.
-      result = extension_misc::LAUNCH_TAB;
+      result = LAUNCH_TAB;
     }
   } else {
-    // If a new value for app.launch.container is added, logic
-    // for it should be added here.  extension_misc::LAUNCH_WINDOW
-    // is not present because there is no way to set it in a manifest.
+    // If a new value for app.launch.container is added, logic for it should be
+    // added here.  LAUNCH_WINDOW is not present because there is no way to set
+    // it in a manifest.
     NOTREACHED() << manifest_launch_container;
   }
 
   // All paths should set |result|.
   if (result == kInvalidLaunchContainer) {
     DLOG(FATAL) << "Failed to set a launch container.";
-    result = extension_misc::LAUNCH_TAB;
+    result = LAUNCH_TAB;
   }
 
   return result;

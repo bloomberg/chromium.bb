@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
 #include "content/public/common/context_menu_params.h"
 #include "grit/chromium_strings.h"
@@ -247,9 +248,9 @@ void AppContextMenu::ExecuteCommand(int command_id, int event_flags) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(
         switches::kEnableStreamlinedHostedApps)) {
       launch_type = controller_->GetExtensionLaunchType(profile_, app_id_) ==
-                            extensions::ExtensionPrefs::LAUNCH_REGULAR
-                        ? extensions::ExtensionPrefs::LAUNCH_WINDOW
-                        : extensions::ExtensionPrefs::LAUNCH_REGULAR;
+                            extensions::ExtensionPrefs::LAUNCH_TYPE_REGULAR
+                        ? extensions::ExtensionPrefs::LAUNCH_TYPE_WINDOW
+                        : extensions::ExtensionPrefs::LAUNCH_TYPE_REGULAR;
     }
     controller_->SetExtensionLaunchType(profile_,
                                         app_id_,

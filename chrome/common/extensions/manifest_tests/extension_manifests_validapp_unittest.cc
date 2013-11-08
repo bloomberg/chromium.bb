@@ -17,7 +17,7 @@ TEST_F(ValidAppManifestTest, ValidApp) {
   AddPattern(&expected_patterns, "http://www.google.com/mail/*");
   AddPattern(&expected_patterns, "http://www.google.com/foobar/*");
   EXPECT_EQ(expected_patterns, extension->web_extent());
-  EXPECT_EQ(extension_misc::LAUNCH_TAB,
+  EXPECT_EQ(extensions::LAUNCH_TAB,
             extensions::AppLaunchInfo::GetLaunchContainer(extension.get()));
   EXPECT_EQ(GURL("http://www.google.com/mail/"),
             extensions::AppLaunchInfo::GetLaunchWebURL(extension.get()));

@@ -790,10 +790,8 @@ void ExtensionSettingsHandler::HandleLaunchMessage(
   CHECK(args->GetString(0, &extension_id));
   const Extension* extension =
       extension_service_->GetExtensionById(extension_id, false);
-  OpenApplication(AppLaunchParams(extension_service_->profile(),
-                                  extension,
-                                  extension_misc::LAUNCH_WINDOW,
-                                  NEW_WINDOW));
+  OpenApplication(AppLaunchParams(extension_service_->profile(), extension,
+                                  extensions::LAUNCH_WINDOW, NEW_WINDOW));
 }
 
 void ExtensionSettingsHandler::HandleReloadMessage(

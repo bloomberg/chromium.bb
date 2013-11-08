@@ -49,6 +49,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/favicon_url.h"
+#include "extensions/common/constants.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -154,7 +155,7 @@ void AppLauncherHandler::CreateAppInfo(
   ExtensionPrefs* prefs = service->extension_prefs();
   value->SetInteger("launch_type",
       prefs->GetLaunchType(extension,
-                           ExtensionPrefs::LAUNCH_DEFAULT));
+                           ExtensionPrefs::LAUNCH_TYPE_DEFAULT));
   value->SetBoolean("is_component",
                     extension->location() == extensions::Manifest::COMPONENT);
   value->SetBoolean("is_webstore",
@@ -517,8 +518,8 @@ void AppLauncherHandler::HandleLaunchApp(const ListValue* args) {
     // TODO(jamescook): Proper support for background tabs.
     AppLaunchParams params(profile, extension,
                            disposition == NEW_WINDOW ?
-                               extension_misc::LAUNCH_WINDOW :
-                               extension_misc::LAUNCH_TAB,
+                               extensions::LAUNCH_WINDOW :
+                               extensions::LAUNCH_TAB,
                            disposition);
     params.override_url = GURL(url);
     OpenApplication(params);

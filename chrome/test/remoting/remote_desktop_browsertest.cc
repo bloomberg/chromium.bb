@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/test/remoting/key_code_conv.h"
 #include "chrome/test/remoting/page_load_notification_observer.h"
@@ -18,6 +17,7 @@
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/common/constants.h"
 #include "ui/base/window_open_disposition.h"
 
 namespace remoting {
@@ -161,8 +161,7 @@ void RemoteDesktopBrowserTest::LaunchChromotingApp() {
   OpenApplication(AppLaunchParams(
       browser()->profile(),
       extension_,
-      is_platform_app() ? extension_misc::LAUNCH_NONE :
-                          extension_misc::LAUNCH_TAB,
+      is_platform_app() ? extensions::LAUNCH_NONE : extensions::LAUNCH_TAB,
       is_platform_app() ? NEW_WINDOW : CURRENT_TAB));
 
   observer.Wait();

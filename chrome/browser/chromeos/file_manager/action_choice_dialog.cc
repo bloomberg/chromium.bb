@@ -81,8 +81,7 @@ void OpenActionChoiceDialog(const base::FilePath& file_path,
   if (!extension)
     return;
 
-  AppLaunchParams params(profile, extension,
-                         extension_misc::LAUNCH_WINDOW,
+  AppLaunchParams params(profile, extension, extensions::LAUNCH_WINDOW,
                          NEW_FOREGROUND_TAB);
   params.override_url = dialog_url;
   params.override_bounds = bounds;

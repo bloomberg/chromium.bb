@@ -83,6 +83,17 @@ extern const char kStateStoreName[];
 // rules are stored.
 extern const char kRulesStoreName[];
 
+// Don't remove items or change the order of this enum.  It's used in
+// histograms and preferences.
+enum LaunchContainer {
+  LAUNCH_WINDOW,
+  LAUNCH_PANEL,
+  LAUNCH_TAB,
+  // For platform apps, which don't actually have a container (they just get a
+  // "onLaunched" event).
+  LAUNCH_NONE
+};
+
 }  // namespace extensions
 
 #endif  // EXTENSIONS_COMMON_CONSTANTS_H_

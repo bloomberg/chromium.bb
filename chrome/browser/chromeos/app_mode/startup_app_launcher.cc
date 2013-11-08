@@ -229,7 +229,7 @@ void StartupAppLauncher::LaunchApp() {
 
   // Always open the app in a window.
   OpenApplication(AppLaunchParams(profile_, extension,
-                                  extension_misc::LAUNCH_WINDOW, NEW_WINDOW));
+                                  extensions::LAUNCH_WINDOW, NEW_WINDOW));
   InitAppSession(profile_, app_id_);
 
   UserManager::Get()->SessionStarted();

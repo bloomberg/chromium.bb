@@ -16,8 +16,8 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_scoped_prefs.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/url_pattern_set.h"
 #include "sync/api/string_ordinal.h"
 
@@ -63,15 +63,15 @@ class ExtensionPrefs : public ExtensionScopedPrefs,
   // Do not remove items or re-order this enum as it is used in preferences
   // and histograms.
   enum LaunchType {
-    LAUNCH_PINNED,
-    LAUNCH_REGULAR,
-    LAUNCH_FULLSCREEN,
-    LAUNCH_WINDOW,
+    LAUNCH_TYPE_PINNED,
+    LAUNCH_TYPE_REGULAR,
+    LAUNCH_TYPE_FULLSCREEN,
+    LAUNCH_TYPE_WINDOW,
 
     // Launch an app in the in the way a click on the NTP would,
     // if no user pref were set.  Update this constant to change
     // the default for the NTP and chrome.management.launchApp().
-    LAUNCH_DEFAULT = LAUNCH_REGULAR
+    LAUNCH_TYPE_DEFAULT = LAUNCH_TYPE_REGULAR
   };
 
   // This enum is used to store the reason an extension's install has been
@@ -394,7 +394,7 @@ class ExtensionPrefs : public ExtensionScopedPrefs,
   // Find the right launch container based on the launch type.
   // If |extension|'s prefs do not have a launch type set, then
   // use |default_pref_value|.
-  extension_misc::LaunchContainer GetLaunchContainer(
+  LaunchContainer GetLaunchContainer(
       const Extension* extension,
       LaunchType default_pref_value);
 

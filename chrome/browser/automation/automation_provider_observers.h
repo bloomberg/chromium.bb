@@ -39,7 +39,6 @@
 #include "chrome/browser/search_engines/template_url_service_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/automation_constants.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/importer/importer_data_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
@@ -47,6 +46,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_types.h"
+#include "extensions/common/constants.h"
 #include "ui/gfx/point.h"
 #include "ui/gfx/size.h"
 
@@ -1099,7 +1099,7 @@ class AppLaunchObserver : public content::NotificationObserver {
   AppLaunchObserver(content::NavigationController* controller,
                     AutomationProvider* automation,
                     IPC::Message* reply_message,
-                    extension_misc::LaunchContainer launch_container);
+                    extensions::LaunchContainer launch_container);
   virtual ~AppLaunchObserver();
 
   // Overridden from content::NotificationObserver:
@@ -1112,7 +1112,7 @@ class AppLaunchObserver : public content::NotificationObserver {
   base::WeakPtr<AutomationProvider> automation_;
   scoped_ptr<IPC::Message> reply_message_;
   content::NotificationRegistrar registrar_;
-  extension_misc::LaunchContainer launch_container_;
+  extensions::LaunchContainer launch_container_;
   int new_window_id_;
 
   DISALLOW_COPY_AND_ASSIGN(AppLaunchObserver);

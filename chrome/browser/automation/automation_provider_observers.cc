@@ -1768,13 +1768,16 @@ std::vector<DictionaryValue*>* GetAppInfoFromExtensions(
         NOTREACHED() << "Can't get integer from key " << kLaunchType;
         continue;
       }
-      if (launch_type == extensions::ExtensionPrefs::LAUNCH_PINNED) {
+      if (launch_type == extensions::ExtensionPrefs::LAUNCH_TYPE_PINNED) {
         app_info->SetString(kLaunchType, "pinned");
-      } else if (launch_type == extensions::ExtensionPrefs::LAUNCH_REGULAR) {
+      } else if (launch_type ==
+                 extensions::ExtensionPrefs::LAUNCH_TYPE_REGULAR) {
         app_info->SetString(kLaunchType, "regular");
-      } else if (launch_type == extensions::ExtensionPrefs::LAUNCH_FULLSCREEN) {
+      } else if (launch_type ==
+                 extensions::ExtensionPrefs::LAUNCH_TYPE_FULLSCREEN) {
         app_info->SetString(kLaunchType, "fullscreen");
-      } else if (launch_type == extensions::ExtensionPrefs::LAUNCH_WINDOW) {
+      } else if (launch_type ==
+                 extensions::ExtensionPrefs::LAUNCH_TYPE_WINDOW) {
         app_info->SetString(kLaunchType, "window");
       } else {
         app_info->SetString(kLaunchType, "unknown");
@@ -1924,13 +1927,13 @@ AppLaunchObserver::AppLaunchObserver(
     NavigationController* controller,
     AutomationProvider* automation,
     IPC::Message* reply_message,
-    extension_misc::LaunchContainer launch_container)
+    extensions::LaunchContainer launch_container)
     : controller_(controller),
       automation_(automation->AsWeakPtr()),
       reply_message_(reply_message),
       launch_container_(launch_container),
       new_window_id_(extension_misc::kUnknownWindowId) {
-  if (launch_container_ == extension_misc::LAUNCH_TAB) {
+  if (launch_container_ == extensions::LAUNCH_TAB) {
     // Need to wait for the currently-active tab to reload.
     content::Source<NavigationController> source(controller_);
     registrar_.Add(this, content::NOTIFICATION_LOAD_STOP, source);
@@ -1957,7 +1960,7 @@ void AppLaunchObserver::Observe(int type,
   DCHECK_EQ(content::NOTIFICATION_LOAD_STOP, type);
   SessionTabHelper* session_tab_helper = SessionTabHelper::FromWebContents(
       content::Source<NavigationController>(source)->GetWebContents());
-  if ((launch_container_ == extension_misc::LAUNCH_TAB) ||
+  if ((launch_container_ == extensions::LAUNCH_TAB) ||
       (session_tab_helper &&
           (session_tab_helper->window_id().id() == new_window_id_))) {
     if (automation_.get()) {

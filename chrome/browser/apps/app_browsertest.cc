@@ -513,8 +513,8 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithRelativeFile) {
   ASSERT_TRUE(extension);
 
   // Run the test
-  AppLaunchParams params(browser()->profile(), extension,
-                         extension_misc::LAUNCH_NONE, NEW_WINDOW);
+  AppLaunchParams params(browser()->profile(), extension, LAUNCH_NONE,
+                         NEW_WINDOW);
   params.command_line = CommandLine::ForCurrentProcess();
   params.current_directory = test_data_dir_;
   OpenApplication(params);
@@ -841,10 +841,8 @@ void PlatformAppDevToolsBrowserTest::RunTestWithDevTools(
     content::WindowedNotificationObserver app_loaded_observer(
         content::NOTIFICATION_LOAD_COMPLETED_MAIN_FRAME,
         content::NotificationService::AllSources());
-    OpenApplication(AppLaunchParams(browser()->profile(),
-                                    extension,
-                                    extension_misc::LAUNCH_NONE,
-                                    NEW_WINDOW));
+    OpenApplication(AppLaunchParams(browser()->profile(), extension,
+                                    LAUNCH_NONE, NEW_WINDOW));
     app_loaded_observer.Wait();
     window = GetFirstShellWindow();
     ASSERT_TRUE(window);
@@ -986,9 +984,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
   ASSERT_TRUE(should_install.seen());
 
   ExtensionTestMessageListener launched_listener("Launched", false);
-  OpenApplication(AppLaunchParams(browser()->profile(),
-                                  extension,
-                                  extension_misc::LAUNCH_NONE,
+  OpenApplication(AppLaunchParams(browser()->profile(), extension, LAUNCH_NONE,
                                   NEW_WINDOW));
 
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
@@ -1011,9 +1007,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
   ASSERT_TRUE(extension);
 
   ExtensionTestMessageListener launched_listener("Launched", false);
-  OpenApplication(AppLaunchParams(browser()->profile(),
-                                  extension,
-                                  extension_misc::LAUNCH_NONE,
+  OpenApplication(AppLaunchParams(browser()->profile(), extension, LAUNCH_NONE,
                                   NEW_WINDOW));
 
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());
@@ -1052,9 +1046,7 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, ComponentAppBackgroundPage) {
   ASSERT_TRUE(should_install.seen());
 
   ExtensionTestMessageListener launched_listener("Launched", false);
-  OpenApplication(AppLaunchParams(browser()->profile(),
-                                  extension,
-                                  extension_misc::LAUNCH_NONE,
+  OpenApplication(AppLaunchParams(browser()->profile(), extension, LAUNCH_NONE,
                                   NEW_WINDOW));
 
   ASSERT_TRUE(launched_listener.WaitUntilSatisfied());

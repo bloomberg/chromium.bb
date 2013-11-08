@@ -4143,7 +4143,7 @@ other types of suffix sets.
 <histogram name="Extensions.AppLaunchContainer" enum="AppLaunchContainer">
   <summary>
     The number of times apps are launched grouped by
-    extension_misc::LaunchContainer.
+    extensions::LaunchContainer.
   </summary>
 </histogram>
 

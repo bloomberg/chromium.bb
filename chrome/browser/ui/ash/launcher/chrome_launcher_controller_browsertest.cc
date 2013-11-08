@@ -46,12 +46,12 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/app_list/views/apps_grid_view.h"
@@ -214,7 +214,7 @@ class LauncherAppBrowserTest : public ExtensionBrowserTest {
 
   const Extension* LoadAndLaunchExtension(
       const char* name,
-      extension_misc::LaunchContainer container,
+      extensions::LaunchContainer container,
       WindowOpenDisposition disposition) {
     EXPECT_TRUE(LoadExtension(test_data_dir_.AppendASCII(name)));
 
@@ -857,8 +857,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, LaunchPinned) {
 IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, LaunchUnpinned) {
   TabStripModel* tab_strip = browser()->tab_strip_model();
   int tab_count = tab_strip->count();
-  LoadAndLaunchExtension("app1", extension_misc::LAUNCH_TAB,
-                         NEW_FOREGROUND_TAB);
+  LoadAndLaunchExtension("app1", extensions::LAUNCH_TAB, NEW_FOREGROUND_TAB);
   EXPECT_EQ(++tab_count, tab_strip->count());
   ash::LauncherID shortcut_id = CreateShortcut("app1");
   EXPECT_EQ(ash::STATUS_ACTIVE, (*model_->ItemByID(shortcut_id)).status);
@@ -875,8 +874,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, LaunchUnpinned) {
 IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, LaunchInBackground) {
   TabStripModel* tab_strip = browser()->tab_strip_model();
   int tab_count = tab_strip->count();
-  LoadAndLaunchExtension("app1", extension_misc::LAUNCH_TAB,
-                         NEW_BACKGROUND_TAB);
+  LoadAndLaunchExtension("app1", extensions::LAUNCH_TAB, NEW_BACKGROUND_TAB);
   EXPECT_EQ(++tab_count, tab_strip->count());
   ChromeLauncherController::instance()->LaunchApp(last_loaded_extension_id(),
                                                   ash::LAUNCH_FROM_UNKNOWN,
@@ -1247,13 +1245,13 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTestNoDefaultBrowser,
   EXPECT_EQ(0u, items);
   EXPECT_EQ(0u, running_browser);
 
-  LoadAndLaunchExtension("app1", extension_misc::LAUNCH_WINDOW, NEW_WINDOW);
+  LoadAndLaunchExtension("app1", extensions::LAUNCH_WINDOW, NEW_WINDOW);
 
   // No new browser should get detected, even though one more is running.
   EXPECT_EQ(0u, NumberOfDetectedLauncherBrowsers(false));
   EXPECT_EQ(++running_browser, chrome::GetTotalBrowserCount());
 
-  LoadAndLaunchExtension("app1", extension_misc::LAUNCH_TAB, NEW_WINDOW);
+  LoadAndLaunchExtension("app1", extensions::LAUNCH_TAB, NEW_WINDOW);
 
   // A new browser should get detected and one more should be running.
   EXPECT_EQ(NumberOfDetectedLauncherBrowsers(false), 1u);
@@ -1264,20 +1262,18 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTestNoDefaultBrowser,
 IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTestNoDefaultBrowser,
     EnumerateALlBrowsersAndTabs) {
   // Create at least one browser.
-  LoadAndLaunchExtension("app1", extension_misc::LAUNCH_TAB, NEW_WINDOW);
+  LoadAndLaunchExtension("app1", extensions::LAUNCH_TAB, NEW_WINDOW);
   size_t browsers = NumberOfDetectedLauncherBrowsers(false);
   size_t tabs = NumberOfDetectedLauncherBrowsers(true);
 
   // Create a second browser.
-  LoadAndLaunchExtension("app1", extension_misc::LAUNCH_TAB, NEW_WINDOW);
+  LoadAndLaunchExtension("app1", extensions::LAUNCH_TAB, NEW_WINDOW);
 
   EXPECT_EQ(++browsers, NumberOfDetectedLauncherBrowsers(false));
   EXPECT_EQ(++tabs, NumberOfDetectedLauncherBrowsers(true));
 
   // Create only a tab.
-  LoadAndLaunchExtension("app1",
-                         extension_misc::LAUNCH_TAB,
-                         NEW_FOREGROUND_TAB);
+  LoadAndLaunchExtension("app1", extensions::LAUNCH_TAB, NEW_FOREGROUND_TAB);
 
   EXPECT_EQ(browsers, NumberOfDetectedLauncherBrowsers(false));
   EXPECT_EQ(++tabs, NumberOfDetectedLauncherBrowsers(true));
@@ -1469,7 +1465,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTestNoDefaultBrowser,
   EXPECT_EQ(window1, ash::wm::GetActiveWindow());
 
   // Create anther app and make sure that none of our browsers is active.
-  LoadAndLaunchExtension("app1", extension_misc::LAUNCH_TAB, NEW_WINDOW);
+  LoadAndLaunchExtension("app1", extensions::LAUNCH_TAB, NEW_WINDOW);
   EXPECT_NE(window1, ash::wm::GetActiveWindow());
   EXPECT_NE(window2, ash::wm::GetActiveWindow());
 

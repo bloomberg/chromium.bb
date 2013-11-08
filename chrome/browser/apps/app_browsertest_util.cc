@@ -65,9 +65,7 @@ const Extension* PlatformAppBrowserTest::LoadAndLaunchPlatformApp(
       test_data_dir_.AppendASCII("platform_apps").AppendASCII(name));
   EXPECT_TRUE(extension);
 
-  OpenApplication(AppLaunchParams(browser()->profile(),
-                                  extension,
-                                  extension_misc::LAUNCH_NONE,
+  OpenApplication(AppLaunchParams(browser()->profile(), extension, LAUNCH_NONE,
                                   NEW_WINDOW));
 
   app_loaded_observer.Wait();
@@ -92,9 +90,7 @@ const Extension* PlatformAppBrowserTest::InstallAndLaunchPlatformApp(
 
   const Extension* extension = InstallPlatformApp(name);
 
-  OpenApplication(AppLaunchParams(browser()->profile(),
-                                  extension,
-                                  extension_misc::LAUNCH_NONE,
+  OpenApplication(AppLaunchParams(browser()->profile(), extension, LAUNCH_NONE,
                                   NEW_WINDOW));
 
   app_loaded_observer.Wait();

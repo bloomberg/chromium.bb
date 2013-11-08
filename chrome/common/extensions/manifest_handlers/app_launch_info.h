@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_constants.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_handler.h"
 #include "url/gurl.h"
@@ -33,7 +33,7 @@ class AppLaunchInfo : public Extension::ManifestData {
   // users can override the way each app launches.  See
   // ExtensionPrefs::GetLaunchContainer(), which looks at a per-app pref
   // to decide what container an app will launch in.
-  static extension_misc::LaunchContainer GetLaunchContainer(
+  static LaunchContainer GetLaunchContainer(
       const Extension* extension);
 
   // The default size of the container when launching. Only respected for
@@ -55,7 +55,7 @@ class AppLaunchInfo : public Extension::ManifestData {
 
   GURL launch_web_url_;
 
-  extension_misc::LaunchContainer launch_container_;
+  LaunchContainer launch_container_;
 
   int launch_width_;
   int launch_height_;
