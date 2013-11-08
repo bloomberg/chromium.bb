@@ -20,48 +20,96 @@ found in the LICENSE file.
   <section>
     <div class="intro">
       <p>
-        An example of the <a
-          href="https://www.google.com/search?q=smoothlife">SmoothLife</a>
-        algorithm ported to Native Client.
+        An example of the <a href="https://www.google.com/search?q=smoothlife"
+          target="_blank">SmoothLife</a> algorithm ported to Native Client.
       </p>
       <p class="note">
-        Example courtesy <a href="https://github.com/binji">Ben Smith</a>,
-        based on <a href="http://sourceforge.net/projects/smoothlife/">this
-          source</a> by ionreq.
+        Example courtesy <a href="https://github.com/binji" target="_blank">Ben
+          Smith</a>, based on <a
+          href="http://sourceforge.net/projects/smoothlife/"
+          target="_blank">this source</a> by ionreq.
       </p>
       <p class="note">
-        Read <a href="http://arxiv.org/abs/1111.1567">Stephan Rafler's paper</a>
-        for more information about the algorithm, or browse the <a
-        href="https://github.com/binji/smoothnacl">source</a>.
+        Read <a href="http://arxiv.org/abs/1111.1567" target="_blank">Stephan
+          Rafler's paper</a> for more information about the algorithm, or
+        browse the <a href="https://github.com/binji/smoothnacl"
+          target="_blank">source</a>.
       </p>
       <p class="note">
         FPS: <span id="fps">0</span>
       </p>
 
       <div class="panel panel-info">
+        <h2>Controls</h2>
+
         <div class="panel-body">
-          <select id="preset">
-            <option value="0">Subdividers</option>
-            <option value="1">Green Hex</option>
-            <option value="2">Fire Jellies</option>
-            <option value="3">Magical Maze</option>
-            <option value="4">Waterbug Gliders</option>
-            <option value="5">Stitches 'n' Jitters</option>
-            <option value="6">Blink Tubes</option>
-            <option value="7">Oil Slick</option>
-            <option value="8">Worms</option>
-          </select>
-          <button id="reset">Reset</button>
+          <table cellspacing="0" cellpadding="0">
+            <tbody>
+              <tr>
+                <td class="name">Preset:</td>
+                <td class="value">
+                  <select id="preset">
+                    <option value="0">Subdividers</option>
+                    <option value="1">Green Hex</option>
+                    <option value="2">Fire Jellies</option>
+                    <option value="3">Magical Maze</option>
+                    <option value="4">Waterbug Gliders</option>
+                    <option value="5">Stitches 'n' Jitters</option>
+                    <option value="6">Blink Tubes</option>
+                    <option value="7">Oil Slick</option>
+                    <option value="8">Worms</option>
+                    <option value="9">Dried Moss</option>
+                    <option value="10">Hungry Dots</option>
+                    <option value="11">Wet Glass</option>
+                    <option value="12">Dissolving Chains</option>
+                  </select>
+                </td>
+              </tr>
+              <tr>
+                <td class="name">Palette:</td>
+                <td class="value">
+                  <select id="palette">
+                    <option value="0">Default</option>
+                    <option value="1">Black on White</option>
+                    <option value="2">White on Black</option>
+                    <option value="3">Purple Neon</option>
+                    <option value="4">Emerald</option>
+                    <option value="5">Green Noise</option>
+                    <option value="6">Royal Flame</option>
+                    <option value="7">Ice Aura</option>
+                    <option value="8">Rusty</option>
+                    <option value="9">Cool Blue</option>
+                    <option value="10">Frostbite</option>
+                    <option value="11">Mint Flower</option>
+                    <option value="12">Pyschedelic</option>
+                  </select>
+                </td>
+              </tr>
+              <tr>
+                <td class="name">
+                  <label for="lockPalette">Lock Palette:</label>
+                </td>
+                <td class="value">
+                  <input type="checkbox" id="lockPalette" value="0">
+                </td>
+              </tr>
+              <tr>
+                <td class="name">Brush Size:</td>
+                <td class="value">
+                  <input type="range" id="brushSizeRange" min="10.0" max="50.0"
+                      step="0.5" value="10.0">
+                  <span id="brushSize">10.0</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
+
+        <h2>Actions</h2>
         <div class="panel-body">
-          <button id="splat">Splat</button>
-          <button id="clear">Clear</button>
-        </div>
-        <div class="panel-body">
-          Brush Size:
-          <input type="range" id="brushSizeRange" min="10.0" max="50.0"
-              step="0.5" value="10.0">
-          <span id="brushSize">10.0</span>
+          <button id="reset" class="block">Reset</button>
+          <button id="splat" class="block">Splat</button>
+          <button id="clear" class="block">Clear</button>
         </div>
       </div>
 

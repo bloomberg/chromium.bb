@@ -15,6 +15,26 @@ var presets = [
   [[7.8,27.2,2.6],[3,0.21,0.714,0.056,0.175,0.838,2,0,2,0.132,0.311],[0,"#0a1340",0,"#ffffff",55,"#4da8a3",83,"#2652ab",99,"#2f1e75",46]],
   [[4,12,1],[2,0.115,0.269,0.496,0.34,0.767,3,4,4,0.028,0.147],[0,"#b8cfcf",0,"#3f5a5c",77,"#1a330a",91,"#c0e0dc",99]],
   [[10.6,31.8,1],[1,0.157,0.092,0.256,0.098,0.607,3,4,4,0.015,0.34],[0,"#4d3e3e",0,"#9a1ac9",77,"#aaf09e",100]],
+  [[3.2,34,14.8],[1,0.26,0.172,0.370,0.740,0.697,1,1,4,0.772,0.280],[0,"#3b8191",18,"#66f24f",82,"#698ffe",100]],
+  [[15.3,5.5,33.2],[1,0.746,0.283,0.586,0.702,0.148,1,2,0,0.379,0.633],[1,"#42ae80",77,"#fd1e2e",79,"#58103f",93,"#cf9750",96]],
+  [[2.5,3.5,7.7],[3,0.666,0.779,0.002,0.558,0.786,3,1,3,0.207,0.047],[0,"#a2898d",78,"#60d14e",86,"#5c4dea",90]],
+[[7.6,7.6,9.0],[1,0.158,0.387,0.234,0.810,0.100,3,0,2,0.029,0.533],[0,"#568b8a",5,"#18ce42",92]]
+];
+
+var palettePresets = [
+  [],  // Placeholder for the palette of the currently selected preset.
+  [0, '#ffffff', 0, '#000000', 100],
+  [0, '#000000', 0, '#ffffff', 100],
+  [0, '#000000', 0, '#ff00ff', 50, '#000000', 100],
+  [0,"#000000",0,"#0f8a84",38,"#f5f5c1",43,"#158a34",70,"#89e681",100],
+  [1,"#000000",3,"#f5f5c1",8,"#158a34",17,"#89e681",20],
+  [0,"#36065e",0,"#c24242",77,"#8a19b0",91,"#ff9900",99,"#f5c816",99],
+  [0,"#93afd9",11,"#9cf0ff",92,"#edfdff",100],
+  [0,"#000000",11,"#ffffff",22,"#19a68a",85,"#6b0808",98],
+  [0,"#0a1340",0,"#ffffff",55,"#4da8a3",83,"#2652ab",99,"#2f1e75",46],
+  [0,"#b8cfcf",0,"#3f5a5c",77,"#1a330a",91,"#c0e0dc",99],
+  [0,"#4d3e3e",0,"#9a1ac9",77,"#aaf09e",100],
+  [1,"#52d2a1",3,"#c7c5ca",46,"#be6e88",72,"#f5a229",79,"#f0e0d1",94,"#6278d8",100]
 ];
 
 /**
@@ -132,7 +152,7 @@ function moduleDidLoad() {
   naclModule = $('nacl_module');
   hideStatus();
   setSize(256);
-  setThreadCount(4);
+  setThreadCount(2);
   setMaxScale(1);
   loadPreset(0);
 }
@@ -193,6 +213,7 @@ function updateStatus(opt_message) {
  */
 function attachListeners() {
   $('preset').addEventListener('change', loadSelectedPreset);
+  $('palette').addEventListener('change', loadSelectedPalette);
   $('reset').addEventListener('click', loadSelectedPreset);
   $('clear').addEventListener('click', function() { clear(0); });
   $('splat').addEventListener('click', function() { splat(); });
@@ -209,12 +230,26 @@ function loadSelectedPreset() {
 
 function loadPreset(index) {
   var preset = presets[index];
+  var lockPalette = $('lockPalette').checked;
+  var selectedPalette = $('palette').value;
 
   clear(0);
   setKernel.apply(null, preset[0]);
   setSmoother.apply(null, preset[1]);
-  setPalette.apply(null, preset[2]);
+  if (!lockPalette || selectedPalette == 0)
+    setPalette.apply(null, preset[2]);
   splat();
+
+  // Save the current palette in slot 0: "Default".
+  palettePresets[0] = preset[2];
+}
+
+function loadSelectedPalette() {
+  loadPalette($('palette').value);
+}
+
+function loadPalette(index) {
+  setPalette.apply(null, palettePresets[index]);
 }
 
 function clear(color) {

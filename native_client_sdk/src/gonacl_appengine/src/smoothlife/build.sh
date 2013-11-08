@@ -12,7 +12,7 @@ cd ${SCRIPT_DIR}
 OUT_DIR=out
 SMOOTHLIFE_URL=https://github.com/binji/smoothnacl
 SMOOTHLIFE_DIR=${OUT_DIR}/smoothlife
-SMOOTHLIFE_SHA=11f22815f48a7f3044ed72a673d0e05cae343481
+SMOOTHLIFE_SHA=9984167a1c436d3da05a4922627eaf527e772bcc
 
 if [ -z "${NACL_SDK_ROOT:-}" ]; then
   echo "-------------------------------------------------------------------"
