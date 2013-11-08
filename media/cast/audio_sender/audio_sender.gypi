@@ -22,6 +22,7 @@
         '<(DEPTH)/media/media.gyp:shared_memory_support',
         '<(DEPTH)/media/cast/rtcp/rtcp.gyp:cast_rtcp',
         '<(DEPTH)/media/cast/rtp_sender/rtp_sender.gyp:*',
+        '<(DEPTH)/third_party/opus/opus.gyp:opus',
       ],
     },
   ],
