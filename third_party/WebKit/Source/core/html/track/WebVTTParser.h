@@ -35,6 +35,7 @@
 #include "RuntimeEnabledFeatures.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/fetch/TextResourceDecoder.h"
+#include "core/html/track/BufferedLineReader.h"
 #include "core/html/track/TextTrackCue.h"
 #include "core/html/track/VTTRegion.h"
 #include "core/html/track/WebVTTTokenizer.h"
@@ -117,7 +118,7 @@ private:
     Document* m_document;
     ParseState m_state;
 
-    void parse(const String& textData);
+    void parse();
     void flushPendingCue();
     bool hasRequiredFileIdentifier(const String& line);
     ParseState collectCueId(const String&);
@@ -132,12 +133,11 @@ private:
     void createNewRegion();
 
     void skipWhiteSpace(const String&, unsigned*);
-    static void skipLineTerminator(const String& data, unsigned*);
-    static String collectNextLine(const String& data, unsigned*);
 
     String m_currentHeaderName;
     String m_currentHeaderValue;
 
+    BufferedLineReader m_lineReader;
     RefPtr<TextResourceDecoder> m_decoder;
     String m_currentId;
     double m_currentStartTime;

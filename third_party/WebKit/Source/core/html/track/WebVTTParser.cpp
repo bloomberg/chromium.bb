@@ -135,25 +135,26 @@ void WebVTTParser::getNewRegions(Vector<RefPtr<VTTRegion> >& outputRegions)
 void WebVTTParser::parseBytes(const char* data, unsigned length)
 {
     String textData = m_decoder->decode(data, length);
-    parse(textData);
+    m_lineReader.append(textData);
+    parse();
 }
 
 void WebVTTParser::flush()
 {
     String textData = m_decoder->flush();
-    parse(textData);
+    m_lineReader.append(textData);
+    m_lineReader.setEndOfStream();
+    parse();
     flushPendingCue();
 }
 
-void WebVTTParser::parse(const String& textData)
+void WebVTTParser::parse()
 {
     // 4.8.10.13.3 WHATWG WebVTT Parser algorithm.
     // 1-3 - Initial setup.
-    unsigned position = 0;
 
-    while (position < textData.length()) {
-        String line = collectNextLine(textData, &position);
-
+    String line;
+    while (m_lineReader.getLine(line)) {
         switch (m_state) {
         case Initial:
             // 4-12 - Check for a valid WebVTT signature.
@@ -215,6 +216,7 @@ void WebVTTParser::parse(const String& textData)
 
 void WebVTTParser::flushPendingCue()
 {
+    ASSERT(m_lineReader.isAtEndOfStream());
     // If we're in the CueText state when we run out of data, we emit the pending cue.
     if (m_state == CueText)
         createNewCue();
@@ -562,28 +564,6 @@ void WebVTTParser::skipWhiteSpace(const String& line, unsigned* position)
 {
     while (*position < line.length() && isASpace(line[*position]))
         (*position)++;
-}
-
-void WebVTTParser::skipLineTerminator(const String& data, unsigned* position)
-{
-    if (*position >= data.length())
-        return;
-    if (data[*position] == '\r')
-        (*position)++;
-    if (*position >= data.length())
-        return;
-    if (data[*position] == '\n')
-        (*position)++;
-}
-
-String WebVTTParser::collectNextLine(const String& data, unsigned* position)
-{
-    unsigned oldPosition = *position;
-    while (*position < data.length() && data[*position] != '\r' && data[*position] != '\n')
-        (*position)++;
-    String line = data.substring(oldPosition, *position - oldPosition);
-    skipLineTerminator(data, position);
-    return line;
 }
 
 }
