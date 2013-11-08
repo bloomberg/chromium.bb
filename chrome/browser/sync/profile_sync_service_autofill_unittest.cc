@@ -531,7 +531,9 @@ class ProfileSyncServiceAutofillTest
     EXPECT_CALL(*personal_data_manager_, LoadProfiles()).Times(1);
     EXPECT_CALL(*personal_data_manager_, LoadCreditCards()).Times(1);
 
-    personal_data_manager_->Init(profile_.get(), profile_->GetPrefs());
+    personal_data_manager_->Init(profile_.get(),
+                                 profile_->GetPrefs(),
+                                 profile_->IsOffTheRecord());
 
     web_data_service_->StartSyncableService();
   }

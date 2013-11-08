@@ -257,7 +257,8 @@ class TestAutofillDialogController
 
   void Init(content::BrowserContext* browser_context) {
     test_manager_.Init(browser_context,
-                       user_prefs::UserPrefs::Get(browser_context));
+                       user_prefs::UserPrefs::Get(browser_context),
+                       browser_context->IsOffTheRecord());
   }
 
   TestAutofillDialogView* GetView() {

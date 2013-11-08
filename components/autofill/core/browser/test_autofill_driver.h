@@ -23,6 +23,7 @@ class TestAutofillDriver : public AutofillDriver,
   virtual ~TestAutofillDriver();
 
   // AutofillDriver implementation.
+  virtual bool IsOffTheRecord() const OVERRIDE;
   virtual content::WebContents* GetWebContents() OVERRIDE;
   virtual base::SequencedWorkerPool* GetBlockingPool() OVERRIDE;
   virtual bool RendererIsAvailable() OVERRIDE;

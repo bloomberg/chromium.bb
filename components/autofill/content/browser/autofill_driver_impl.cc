@@ -12,6 +12,7 @@
 #include "components/autofill/core/common/autofill_messages.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/autofill_switches.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
@@ -65,6 +66,10 @@ AutofillDriverImpl::AutofillDriverImpl(
 }
 
 AutofillDriverImpl::~AutofillDriverImpl() {}
+
+bool AutofillDriverImpl::IsOffTheRecord() const {
+  return web_contents()->GetBrowserContext()->IsOffTheRecord();
+}
 
 content::WebContents* AutofillDriverImpl::GetWebContents() {
   return web_contents();

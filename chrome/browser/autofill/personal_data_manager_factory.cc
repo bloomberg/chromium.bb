@@ -33,7 +33,9 @@ PersonalDataManagerServiceImpl::PersonalDataManagerServiceImpl(
     Profile* profile) {
   personal_data_manager_.reset(new PersonalDataManager(
       g_browser_process->GetApplicationLocale()));
-  personal_data_manager_->Init(profile, profile->GetPrefs());
+  personal_data_manager_->Init(profile,
+                               profile->GetPrefs(),
+                               profile->IsOffTheRecord());
 }
 
 PersonalDataManagerServiceImpl::~PersonalDataManagerServiceImpl() {}

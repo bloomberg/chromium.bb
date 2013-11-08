@@ -42,6 +42,7 @@ class AutofillDriverImpl : public AutofillDriver,
   static AutofillDriverImpl* FromWebContents(content::WebContents* contents);
 
   // AutofillDriver:
+  virtual bool IsOffTheRecord() const OVERRIDE;
   virtual content::WebContents* GetWebContents() OVERRIDE;
   virtual base::SequencedWorkerPool* GetBlockingPool() OVERRIDE;
   virtual bool RendererIsAvailable() OVERRIDE;

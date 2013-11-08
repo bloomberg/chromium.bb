@@ -153,14 +153,17 @@ PersonalDataManager::PersonalDataManager(const std::string& app_locale)
       pending_creditcards_query_(0),
       app_locale_(app_locale),
       metric_logger_(new AutofillMetrics),
+      is_off_the_record_(false),
       has_logged_profile_count_(false) {}
 
 void PersonalDataManager::Init(content::BrowserContext* browser_context,
-                               PrefService* pref_service) {
+                               PrefService* pref_service,
+                               bool is_off_the_record) {
   browser_context_ = browser_context;
   pref_service_ = pref_service;
+  is_off_the_record_ = is_off_the_record;
 
-  if (!browser_context_->IsOffTheRecord())
+  if (!is_off_the_record_)
     metric_logger_->LogIsAutofillEnabledAtStartup(IsAutofillEnabled());
 
   scoped_refptr<AutofillWebDataService> autofill_data(
@@ -382,7 +385,7 @@ bool PersonalDataManager::ImportFormData(
 }
 
 void PersonalDataManager::AddProfile(const AutofillProfile& profile) {
-  if (browser_context_->IsOffTheRecord())
+  if (is_off_the_record_)
     return;
 
   if (profile.IsEmpty(app_locale_))
@@ -409,7 +412,7 @@ void PersonalDataManager::AddProfile(const AutofillProfile& profile) {
 }
 
 void PersonalDataManager::UpdateProfile(const AutofillProfile& profile) {
-  if (browser_context_->IsOffTheRecord())
+  if (is_off_the_record_)
     return;
 
   AutofillProfile* existing_profile = GetProfileByGUID(profile.guid());
@@ -446,7 +449,7 @@ AutofillProfile* PersonalDataManager::GetProfileByGUID(
 }
 
 void PersonalDataManager::AddCreditCard(const CreditCard& credit_card) {
-  if (browser_context_->IsOffTheRecord())
+  if (is_off_the_record_)
     return;
 
   if (credit_card.IsEmpty(app_locale_))
@@ -472,7 +475,7 @@ void PersonalDataManager::AddCreditCard(const CreditCard& credit_card) {
 }
 
 void PersonalDataManager::UpdateCreditCard(const CreditCard& credit_card) {
-  if (browser_context_->IsOffTheRecord())
+  if (is_off_the_record_)
     return;
 
   CreditCard* existing_credit_card = GetCreditCardByGUID(credit_card.guid());
@@ -501,7 +504,7 @@ void PersonalDataManager::UpdateCreditCard(const CreditCard& credit_card) {
 }
 
 void PersonalDataManager::RemoveByGUID(const std::string& guid) {
-  if (browser_context_->IsOffTheRecord())
+  if (is_off_the_record_)
     return;
 
   bool is_credit_card = FindByGUID<CreditCard>(credit_cards_, guid);
@@ -784,7 +787,7 @@ const std::string& PersonalDataManager::GetDefaultCountryCodeForNewAddress()
 }
 
 void PersonalDataManager::SetProfiles(std::vector<AutofillProfile>* profiles) {
-  if (browser_context_->IsOffTheRecord())
+  if (is_off_the_record_)
     return;
 
   // Remove empty profiles from input.
@@ -843,7 +846,7 @@ void PersonalDataManager::SetProfiles(std::vector<AutofillProfile>* profiles) {
 
 void PersonalDataManager::SetCreditCards(
     std::vector<CreditCard>* credit_cards) {
-  if (browser_context_->IsOffTheRecord())
+  if (is_off_the_record_)
     return;
 
   // Remove empty credit cards from input.
@@ -975,7 +978,7 @@ void PersonalDataManager::CancelPendingQuery(
 
 std::string PersonalDataManager::SaveImportedProfile(
     const AutofillProfile& imported_profile) {
-  if (browser_context_->IsOffTheRecord())
+  if (is_off_the_record_)
     return std::string();
 
   // Don't save a web profile if the data in the profile is a subset of an
@@ -999,7 +1002,7 @@ std::string PersonalDataManager::SaveImportedProfile(
 std::string PersonalDataManager::SaveImportedCreditCard(
     const CreditCard& imported_card) {
   DCHECK(!imported_card.number().empty());
-  if (browser_context_->IsOffTheRecord())
+  if (is_off_the_record_)
     return std::string();
 
   // Set to true if |imported_card| is merged into the credit card list.

@@ -16,6 +16,10 @@ TestAutofillDriver::~TestAutofillDriver() {
   blocking_pool_->Shutdown();
 }
 
+bool TestAutofillDriver::IsOffTheRecord() const {
+  return false;
+}
+
 content::WebContents* TestAutofillDriver::GetWebContents() {
   return web_contents();
 }

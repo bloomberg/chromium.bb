@@ -56,8 +56,12 @@ class PersonalDataManager : public WebDataServiceConsumer,
   virtual ~PersonalDataManager();
 
   // Kicks off asynchronous loading of profiles and credit cards. |context| and
-  // |pref_service| must outlive this instance.
-  void Init(content::BrowserContext* context, PrefService* pref_service);
+  // |pref_service| must outlive this instance. |is_off_the_record| informs
+  // this instance whether the user is currently operating in an off-the-record
+  // context.
+  void Init(content::BrowserContext* context,
+            PrefService* pref_service,
+            bool is_off_the_record);
 
   // WebDataServiceConsumer:
   virtual void OnWebDataServiceRequestDone(
@@ -304,6 +308,10 @@ class PersonalDataManager : public WebDataServiceConsumer,
 
   // The PrefService that this instance uses. Must outlive this instance.
   PrefService* pref_service_;
+
+  // Whether the user is currently operating in an off-the-record context.
+  // Default value is false.
+  bool is_off_the_record_;
 
   // Whether we have already logged the number of profiles this session.
   mutable bool has_logged_profile_count_;

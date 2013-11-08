@@ -89,7 +89,9 @@ class PersonalDataManagerTest : public testing::Test {
 
   void ResetPersonalDataManager() {
     personal_data_.reset(new PersonalDataManager("en-US"));
-    personal_data_->Init(profile_.get(), profile_->GetPrefs());
+    personal_data_->Init(profile_.get(),
+                         profile_->GetPrefs(),
+                         profile_->IsOffTheRecord());
     personal_data_->AddObserver(&personal_data_observer_);
 
     // Verify that the web database has been updated and the notification sent.
@@ -2362,12 +2364,15 @@ TEST_F(PersonalDataManagerTest, IncognitoReadOnly) {
       &bill_gates, "William H. Gates", "5555555555554444", "1", "2020");
   personal_data_->AddCreditCard(bill_gates);
 
+  MakeProfileIncognito();
+
+  // The personal data manager should be able to read existing profiles in an
+  // off-the-record context.
   ResetPersonalDataManager();
   ASSERT_EQ(1U, personal_data_->GetProfiles().size());
   ASSERT_EQ(1U, personal_data_->GetCreditCards().size());
 
-  // After this point no adds, saves, or updates should take effect.
-  MakeProfileIncognito();
+  // No adds, saves, or updates should take effect.
   EXPECT_CALL(personal_data_observer_, OnPersonalDataChanged()).Times(0);
 
   // Add profiles or credit card shouldn't work.

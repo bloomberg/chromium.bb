@@ -1160,7 +1160,7 @@ bool AutofillManager::ShouldUploadForm(const FormStructure& form) {
   if (!IsAutofillEnabled())
     return false;
 
-  if (driver_->GetWebContents()->GetBrowserContext()->IsOffTheRecord())
+  if (driver_->IsOffTheRecord())
     return false;
 
   // Disregard forms that we wouldn't ever autofill in the first place.

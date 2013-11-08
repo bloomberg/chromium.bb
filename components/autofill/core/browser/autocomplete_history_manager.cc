@@ -116,7 +116,7 @@ void AutocompleteHistoryManager::OnFormSubmitted(const FormData& form) {
   if (!manager_delegate_->IsAutocompleteEnabled())
     return;
 
-  if (browser_context_->IsOffTheRecord())
+  if (driver_->IsOffTheRecord())
     return;
 
   // Don't save data that was submitted through JavaScript.
