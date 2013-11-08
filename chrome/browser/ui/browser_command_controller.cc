@@ -487,11 +487,14 @@ void BrowserCommandController::ExecuteCommandWithDisposition(
       browser_->SetMetroSnapMode(false);
       break;
     case IDC_WIN8_DESKTOP_RESTART:
+      if (!VerifyMetroSwitchForApps(window()->GetNativeWindow(), id))
+        break;
+
       chrome::AttemptRestartToDesktopMode();
       content::RecordAction(content::UserMetricsAction("Win8DesktopRestart"));
       break;
     case IDC_WIN8_METRO_RESTART:
-      if (!VerifySwitchToMetroForApps(window()->GetNativeWindow()))
+      if (!VerifyMetroSwitchForApps(window()->GetNativeWindow(), id))
         break;
 
       // SwitchToMetroUIHandler deletes itself.
