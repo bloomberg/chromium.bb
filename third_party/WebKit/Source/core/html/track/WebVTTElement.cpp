@@ -83,7 +83,7 @@ PassRefPtr<Element> WebVTTElement::cloneElementWithoutAttributesAndChildren()
     return clone;
 }
 
-PassRefPtr<HTMLElement> WebVTTElement::createEquivalentHTMLElement(Document* document)
+PassRefPtr<HTMLElement> WebVTTElement::createEquivalentHTMLElement(Document& document)
 {
     RefPtr<HTMLElement> htmlElement;
     switch (m_webVTTNodeType) {

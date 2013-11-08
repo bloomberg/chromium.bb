@@ -22,7 +22,7 @@ class {{namespace}}Element;
 class {{namespace}}ElementFactory {
 public:
     static PassRefPtr<{{namespace}}Element> create{{namespace}}Element(const QualifiedName&,
-                                                                       Document*,
+                                                                       Document&,
                                                                        {%- if namespace == 'HTML' %}
                                                                        HTMLFormElement* = 0,
                                                                        {%- endif %}

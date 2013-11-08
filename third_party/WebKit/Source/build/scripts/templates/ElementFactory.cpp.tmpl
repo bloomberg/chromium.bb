@@ -45,11 +45,11 @@ static PassRefPtr<{{namespace}}Element> {{tag|symbol}}Constructor(
 {
 {%- if tag.contextConditional %}
     if (!ContextFeatures::{{tag.contextConditional}}Enabled(&document))
-        return 0;
+        return {{fallback_interface}}::create(tagName, document);
 {%- endif %}
 {%- if tag.runtimeEnabled %}
     if (!RuntimeEnabledFeatures::{{tag.runtimeEnabled}}Enabled())
-        return 0;
+        return {{fallback_interface}}::create(tagName, document);
 {%- endif %}
     return {{tag.interface}}::create(tagName, document
 {%- if namespace == 'HTML' and tag.constructorNeedsFormElement %}, formElement{% endif -%}
@@ -81,32 +81,24 @@ static void createFunctionMap()
 
 PassRefPtr<{{namespace}}Element> {{namespace}}ElementFactory::create{{namespace}}Element(
     const QualifiedName& qName,
-    Document* document,
+    Document& document,
 {%- if namespace == 'HTML' %}
     HTMLFormElement* formElement,
 {%- endif %}
     bool createdByParser)
 {
-    if (!document)
-        return 0;
-
-    if (CustomElement::isValidName(qName.localName()) && document->registrationContext()) {
-        RefPtr<Element> element = document->registrationContext()->createCustomTagElement(*document, qName, createdByParser ? CustomElementRegistrationContext::CreatedByParser : CustomElementRegistrationContext::NotCreatedByParser);
+    if (CustomElement::isValidName(qName.localName()) && document.registrationContext()) {
+        RefPtr<Element> element = document.registrationContext()->createCustomTagElement(document, qName, createdByParser ? CustomElementRegistrationContext::CreatedByParser : CustomElementRegistrationContext::NotCreatedByParser);
         ASSERT_WITH_SECURITY_IMPLICATION(element->is{{namespace}}Element());
         return static_pointer_cast<{{namespace}}Element>(element.release());
     }
 
     if (!g_constructors)
         createFunctionMap();
-    if (ConstructorFunction function = g_constructors->get(qName.localName().impl())) {
-        if (PassRefPtr<{{namespace}}Element> element = function(qName,
-                                                                *document,
-                                                                {%- if namespace == 'HTML' %}formElement,{% endif %}
-                                                                createdByParser))
-            return element;
-    }
+    if (ConstructorFunction function = g_constructors->get(qName.localName().impl()))
+        return function(qName, document, {%- if namespace == 'HTML' %}formElement,{% endif %} createdByParser);
 
-    return {{fallback_interface}}::create(qName, *document);
+    return {{fallback_interface}}::create(qName, document);
 }
 
 } // namespace WebCore

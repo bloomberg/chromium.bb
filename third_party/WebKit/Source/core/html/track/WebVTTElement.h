@@ -43,7 +43,7 @@ class WebVTTElement FINAL : public Element {
 public:
     static PassRefPtr<WebVTTElement> create(const WebVTTNodeType, Document*);
     static PassRefPtr<WebVTTElement> create(const QualifiedName&, Document*);
-    PassRefPtr<HTMLElement> createEquivalentHTMLElement(Document*);
+    PassRefPtr<HTMLElement> createEquivalentHTMLElement(Document&);
 
     virtual PassRefPtr<Element> cloneElementWithoutAttributesAndChildren() OVERRIDE;
 
