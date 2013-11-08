@@ -150,7 +150,6 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
     settings->setUserStyleSheetLocation(prefs.user_style_sheet_location);
   else
     settings->setUserStyleSheetLocation(WebURL());
-  settings->setAuthorAndUserStylesEnabled(prefs.author_and_user_styles_enabled);
   settings->setDownloadableBinaryFontsEnabled(prefs.remote_fonts_enabled);
   settings->setJavaScriptCanAccessClipboard(
       prefs.javascript_can_access_clipboard);

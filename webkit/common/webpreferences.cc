@@ -44,7 +44,6 @@ WebPreferences::WebPreferences()
       hyperlink_auditing_enabled(true),
       is_online(true),
       user_style_sheet_enabled(false),
-      author_and_user_styles_enabled(true),
       allow_universal_access_from_file_urls(false),
       allow_file_access_from_file_urls(false),
       webaudio_enabled(false),

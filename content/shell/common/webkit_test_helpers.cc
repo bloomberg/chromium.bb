@@ -45,7 +45,6 @@ void ExportLayoutTestSpecificPreferences(
   to->asynchronous_spell_checking_enabled =
       from.asynchronousSpellCheckingEnabled;
   to->allow_file_access_from_file_urls = from.allowFileAccessFromFileURLs;
-  to->author_and_user_styles_enabled = from.authorAndUserStylesEnabled;
   to->javascript_can_open_windows_automatically =
       from.javaScriptCanOpenWindowsAutomatically;
   to->user_style_sheet_location = from.userStyleSheetLocation;

@@ -93,7 +93,6 @@ struct WEBKIT_COMMON_EXPORT WebPreferences {
   bool is_online;
   bool user_style_sheet_enabled;
   GURL user_style_sheet_location;
-  bool author_and_user_styles_enabled;
   bool allow_universal_access_from_file_urls;
   bool allow_file_access_from_file_urls;
   bool webaudio_enabled;
