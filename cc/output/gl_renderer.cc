@@ -2513,23 +2513,6 @@ bool GLRenderer::InitializeSharedObjects() {
 
   shared_geometry_ = make_scoped_ptr(
       new GeometryBinding(context_, QuadVertexRect()));
-  // We will always need these programs to render, so initialize the programs
-  // eagerly so that the shader compilation can start while we do other work.
-  // Other programs are initialized lazily on first access.
-  render_pass_program_.Initialize(output_surface_->context_provider(),
-                                  TexCoordPrecisionMedium);
-  render_pass_program_highp_.Initialize(output_surface_->context_provider(),
-                                        TexCoordPrecisionHigh);
-  tile_program_.Initialize(output_surface_->context_provider(),
-                           TexCoordPrecisionMedium);
-  tile_program_opaque_.Initialize(output_surface_->context_provider(),
-                                  TexCoordPrecisionMedium);
-  tile_program_highp_.Initialize(output_surface_->context_provider(),
-                                 TexCoordPrecisionHigh);
-  tile_program_opaque_highp_.Initialize(output_surface_->context_provider(),
-                                        TexCoordPrecisionHigh);
-
-  GLC(context_, context_->flush());
 
   return true;
 }
