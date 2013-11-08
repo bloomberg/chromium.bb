@@ -1,0 +1,9 @@
+{
+    "page_set": "../octane.json", 
+    "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.", 
+    "archives": {
+        "octane_000.wpr": [
+            "http://octane-benchmark.googlecode.com/svn/latest/index.html?auto=1"
+        ]
+    }
+}
