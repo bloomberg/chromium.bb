@@ -428,13 +428,6 @@ class CONTENT_EXPORT RenderViewImpl
       const blink::WebString& frame_name,
       blink::WebNavigationPolicy policy,
       bool suppress_opener);
-  // DEPRECATED
-  virtual blink::WebView* createView(
-      blink::WebFrame* creator,
-      const blink::WebURLRequest& request,
-      const blink::WebWindowFeatures& features,
-      const blink::WebString& frame_name,
-      blink::WebNavigationPolicy policy);
   virtual blink::WebWidget* createPopupMenu(blink::WebPopupType popup_type);
   virtual blink::WebExternalPopupMenu* createExternalPopupMenu(
       const blink::WebPopupMenuInfo& popup_menu_info,

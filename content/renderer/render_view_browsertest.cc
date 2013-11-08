@@ -422,7 +422,7 @@ TEST_F(RenderViewImplTest, DecideNavigationPolicyForWebUI) {
   blink::WebURLRequest popup_request(GURL("http://foo.com"));
   blink::WebView* new_web_view = view()->createView(
       GetMainFrame(), popup_request, blink::WebWindowFeatures(), "foo",
-      blink::WebNavigationPolicyNewForegroundTab);
+      blink::WebNavigationPolicyNewForegroundTab, false);
   RenderViewImpl* new_view = RenderViewImpl::FromWebView(new_web_view);
   policy = new_view->decidePolicyForNavigation(
       new_web_view->mainFrame(),

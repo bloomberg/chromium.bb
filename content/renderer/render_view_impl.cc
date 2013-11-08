@@ -2348,16 +2348,6 @@ WebView* RenderViewImpl::createView(
     const WebURLRequest& request,
     const WebWindowFeatures& features,
     const WebString& frame_name,
-    WebNavigationPolicy policy) {
-  return createView(creator, request, features, frame_name, policy,
-      creator->willSuppressOpenerInNewFrame());
-}
-
-WebView* RenderViewImpl::createView(
-    WebFrame* creator,
-    const WebURLRequest& request,
-    const WebWindowFeatures& features,
-    const WebString& frame_name,
     WebNavigationPolicy policy,
     bool suppress_opener) {
   ViewHostMsg_CreateWindow_Params params;
