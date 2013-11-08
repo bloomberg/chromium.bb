@@ -16,7 +16,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/font.h"
+#include "ui/gfx/font_list.h"
 #include "ui/gfx/text_elider.h"
 
 namespace {
@@ -76,8 +76,8 @@ string16 GetSigninMenuLabel(Profile* profile) {
       username = signin_manager->GetAuthenticatedUsername();
     if (!username.empty() && !signin_manager->AuthInProgress()) {
       string16 elided_username = gfx::ElideEmail(UTF8ToUTF16(username),
-                                                gfx::Font(),
-                                                kUsernameMaxWidth);
+                                                 gfx::FontList(),
+                                                 kUsernameMaxWidth);
       return l10n_util::GetStringFUTF16(IDS_SYNC_MENU_SYNCED_LABEL,
                                         elided_username);
     }

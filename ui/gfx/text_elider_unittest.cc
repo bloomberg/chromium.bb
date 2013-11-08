@@ -133,14 +133,14 @@ TEST(TextEliderTest, ElideEmailMoreSpace) {
       "supermegalongusername@withasuperlonnnggggdomain.gouv.qc.ca",
   };
 
-  const Font font;
+  const FontList font_list;
   for (size_t i = 0; i < arraysize(test_width_factors); ++i) {
-    const int test_width = test_width_factors[i] *
-                           font.GetAverageCharacterWidth();
+    const int test_width =
+        font_list.GetExpectedTextWidth(test_width_factors[i]);
     for (size_t j = 0; j < arraysize(test_emails); ++j) {
       // Extra space is available: the email should not be elided.
       const string16 test_email = UTF8ToUTF16(test_emails[j]);
-      EXPECT_EQ(test_email, ElideEmail(test_email, font, test_width));
+      EXPECT_EQ(test_email, ElideEmail(test_email, font_list, test_width));
     }
   }
 }

@@ -42,10 +42,6 @@ GFX_EXPORT extern const char16 kEllipsisUTF16[];
 GFX_EXPORT string16 ElideEmail(const string16& email,
                                const gfx::FontList& font_list,
                                float available_pixel_width);
-// Obsolete version.  Use the above version which takes gfx::FontList.
-GFX_EXPORT string16 ElideEmail(const string16& email,
-                               const gfx::Font& font,
-                               float available_pixel_width);
 
 // This function takes a GURL object and elides it. It returns a string
 // which composed of parts from subdomain, domain, path, filename and query.

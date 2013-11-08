@@ -206,12 +206,6 @@ string16 ElideEmail(const string16& email,
   return username + kAtSignUTF16 + domain;
 }
 
-string16 ElideEmail(const string16& email,
-                    const Font& font,
-                    float available_pixel_width) {
-  return ElideEmail(email, FontList(font), available_pixel_width);
-}
-
 // TODO(pkasting): http://crbug.com/77883 This whole function gets
 // kerning/ligatures/etc. issues potentially wrong by assuming that the width of
 // a rendered string is always the sum of the widths of its substrings.  Also I
