@@ -130,7 +130,7 @@ static void CopySamples(cdm::AudioFormat cdm_format,
   }
 }
 
-FFmpegCdmAudioDecoder::FFmpegCdmAudioDecoder(CdmHost* host)
+FFmpegCdmAudioDecoder::FFmpegCdmAudioDecoder(ClearKeyCdmHost* host)
     : is_initialized_(false),
       host_(host),
       samples_per_second_(0),
@@ -354,7 +354,7 @@ cdm::Status FFmpegCdmAudioDecoder::DecodeBuffer(
         const uint32_t buffer_size = decoded_audio_size + sizeof(int64) * 2;
         decoded_frames->SetFrameBuffer(host_->Allocate(buffer_size));
         if (!decoded_frames->FrameBuffer()) {
-          LOG(ERROR) << "DecodeBuffer() CdmHost::Allocate failed.";
+          LOG(ERROR) << "DecodeBuffer() ClearKeyCdmHost::Allocate failed.";
           return cdm::kDecodeError;
         }
         decoded_frames->FrameBuffer()->SetSize(buffer_size);
@@ -392,7 +392,7 @@ cdm::Status FFmpegCdmAudioDecoder::DecodeBuffer(
     decoded_frames->SetFrameBuffer(
         host_->Allocate(serialized_audio_frames_.size()));
     if (!decoded_frames->FrameBuffer()) {
-      LOG(ERROR) << "DecodeBuffer() CdmHost::Allocate failed.";
+      LOG(ERROR) << "DecodeBuffer() ClearKeyCdmHost::Allocate failed.";
       return cdm::kDecodeError;
     }
     memcpy(decoded_frames->FrameBuffer()->Data(),

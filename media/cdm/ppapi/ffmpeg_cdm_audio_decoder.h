@@ -30,7 +30,7 @@ namespace media {
 // http://crbug.com/169203
 class FFmpegCdmAudioDecoder {
  public:
-  explicit FFmpegCdmAudioDecoder(CdmHost* host);
+  explicit FFmpegCdmAudioDecoder(ClearKeyCdmHost* host);
   ~FFmpegCdmAudioDecoder();
   bool Initialize(const cdm::AudioDecoderConfig& config);
   void Deinitialize();
@@ -61,7 +61,7 @@ class FFmpegCdmAudioDecoder {
 
   bool is_initialized_;
 
-  CdmHost* const host_;
+  ClearKeyCdmHost* const host_;
 
   // FFmpeg structures owned by this object.
   scoped_ptr_malloc<AVCodecContext, ScopedPtrAVFreeContext> codec_context_;

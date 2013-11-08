@@ -21,7 +21,7 @@ class ScopedPtrAVFreeFrame;
 
 class FFmpegCdmVideoDecoder : public CdmVideoDecoder {
  public:
-  explicit FFmpegCdmVideoDecoder(CdmHost* host);
+  explicit FFmpegCdmVideoDecoder(ClearKeyCdmHost* host);
   virtual ~FFmpegCdmVideoDecoder();
 
   // CdmVideoDecoder implementation.
@@ -52,7 +52,7 @@ class FFmpegCdmVideoDecoder : public CdmVideoDecoder {
 
   bool is_initialized_;
 
-  CdmHost* const host_;
+  ClearKeyCdmHost* const host_;
 
   DISALLOW_COPY_AND_ASSIGN(FFmpegCdmVideoDecoder);
 };

@@ -21,7 +21,7 @@
 namespace media {
 
 scoped_ptr<CdmVideoDecoder> CreateVideoDecoder(
-    CdmHost* host, const cdm::VideoDecoderConfig& config) {
+    ClearKeyCdmHost* host, const cdm::VideoDecoderConfig& config) {
   scoped_ptr<CdmVideoDecoder> video_decoder;
 #if defined(CLEAR_KEY_CDM_USE_FAKE_VIDEO_DECODER)
   video_decoder.reset(new FakeCdmVideoDecoder(host));

@@ -37,7 +37,7 @@ class CdmVideoDecoder {
 // |config.codec|. Returns a scoped_ptr containing a non-null initialized
 // CdmVideoDecoder* upon success.
 scoped_ptr<CdmVideoDecoder> CreateVideoDecoder(
-    CdmHost* host, const cdm::VideoDecoderConfig& config);
+    ClearKeyCdmHost* host, const cdm::VideoDecoderConfig& config);
 
 }  // namespace media
 
