@@ -2770,6 +2770,9 @@
           ],
         }],
         ['OS=="mac"', {
+          'dependencies': [
+            'app_shim',
+          ],
           'sources': [
             'browser/media_galleries/fileapi/iphoto_data_provider.cc',
             'browser/media_galleries/fileapi/iphoto_data_provider.h',

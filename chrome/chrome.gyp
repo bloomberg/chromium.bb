@@ -368,8 +368,11 @@
         },
       ],
     }],  # OS!="ios"
-    ['OS=="mac"',
-      { 'targets': [
+    ['OS=="mac"', {
+      'includes': [
+        '../apps/app_shim/app_shim.gypi',
+      ],
+      'targets': [
         {
           'target_name': 'helper_app',
           'type': 'executable',
