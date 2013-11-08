@@ -1,0 +1,4 @@
+class $CLASS {
+ public:
+$METHODS
+};

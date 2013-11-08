@@ -6,14 +6,18 @@
 #define $HEADER_GUARD
 
 #include "mojo/public/bindings/lib/bindings.h"
+#include "mojo/public/bindings/lib/message.h"
 
 namespace $NAMESPACE {
-$FORWARDS
 
 #pragma pack(push, 1)
 
-$DECLARATION
+$STRUCT_CLASS_DECLARARTIONS
 #pragma pack(pop)
+
+$INTERFACE_CLASS_DECLARATIONS
+$INTERFACE_PROXY_DECLARATIONS
+$INTERFACE_STUB_DECLARATIONS
 
 }  // namespace $NAMESPACE
 

@@ -1,0 +1,6 @@
+bool ${CLASS}Stub::Accept(mojo::Message* message) {
+  switch (message->data->header.name) {
+$CASES
+  }
+  return true;
+}

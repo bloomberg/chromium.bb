@@ -5,16 +5,15 @@
 #ifndef $HEADER_GUARD
 #define $HEADER_GUARD
 
-#include "mojo/public/bindings/lib/message.h"
+#include "mojo/public/bindings/lib/bindings_serialization.h"
 #include "$HEADER"
 
-namespace $NAMESPACE {
+namespace mojo {
+namespace internal {
 
-class ${CLASS}Stub : public $CLASS, public mojo::MessageReceiver {
- public:
-  virtual bool Accept(mojo::Message* message) MOJO_OVERRIDE;
-};
+$TRAITS
 
-}  // namespace $NAMESPACE
+}  // namespace internal
+}  // namespace mojo
 
 #endif  // $HEADER_GUARD

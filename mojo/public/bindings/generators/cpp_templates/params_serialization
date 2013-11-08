@@ -1,0 +1,18 @@
+template <>
+class ObjectTraits<sample::Service_Frobinate_Params> {
+ public:
+  static void EncodePointersAndHandles(
+      $CLASS* $NAME,
+      std::vector<Handle>* handles) {
+$ENCODES
+$ENCODE_HANDLES
+  }
+
+  static bool DecodePointersAndHandles(
+      $CLASS* $NAME,
+      const Message& message) {
+$DECODES
+$DECODE_HANDLES
+    return true;
+  }
+};

@@ -6,6 +6,7 @@
 """The frontend for the Mojo bindings system."""
 
 
+import os
 import sys
 from optparse import OptionParser
 from parser import mojo_parser
@@ -27,10 +28,11 @@ def Main():
     sys.exit(1)
 
   for filename in args:
+    name = os.path.splitext(os.path.basename(filename))[0]
     # TODO(darin): There's clearly too many layers of translation here!  We can
     # at least avoid generating the serialized Mojom IR.
     tree = mojo_parser.Parse(filename)
-    mojom = mojo_translate.Translate(tree)
+    mojom = mojo_translate.Translate(tree, name)
     module = mojom_data.ModuleFromData(mojom)
     cpp = mojom_cpp_generator.CPPGenerator(
         module, options.include_dir, options.output_dir)

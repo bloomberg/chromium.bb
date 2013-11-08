@@ -85,9 +85,9 @@ class MojomBuilder():
     self.mojom['interfaces'].append(interface)
     # TODO(darin): Add support for |attributes|
 
-  def AddModule(self, name, contents):
+  def AddModule(self, name, namespace, contents):
     self.mojom['name'] = name
-    self.mojom['namespace'] = name
+    self.mojom['namespace'] = namespace
     self.mojom['structs'] = []
     self.mojom['interfaces'] = []
     for item in contents:
@@ -96,14 +96,14 @@ class MojomBuilder():
       elif item[0] == 'INTERFACE':
         self.AddInterface(name=item[1], attributes=item[2], methods=item[3])
 
-  def Build(self, tree):
+  def Build(self, tree, name):
     if tree[0] == 'MODULE':
-      self.AddModule(name=tree[1], contents=tree[2])
+      self.AddModule(name=name, namespace=tree[1], contents=tree[2])
     return self.mojom
 
 
-def Translate(tree):
-  return MojomBuilder().Build(tree)
+def Translate(tree, name):
+  return MojomBuilder().Build(tree, name)
 
 
 def Main():
@@ -111,7 +111,8 @@ def Main():
     print("usage: %s filename" % (sys.argv[0]))
     sys.exit(1)
   tree = eval(open(sys.argv[1]).read())
-  result = Translate(tree)
+  name = os.path.splitext(os.path.basename(sys.argv[1]))[0]
+  result = Translate(tree, name)
   print(result)
 
 
