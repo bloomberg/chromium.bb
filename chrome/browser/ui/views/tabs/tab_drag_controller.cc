@@ -818,8 +818,14 @@ void TabDragController::SaveFocus() {
 }
 
 void TabDragController::RestoreFocus() {
-  if (attached_tabstrip_ != source_tabstrip_)
+  if (attached_tabstrip_ != source_tabstrip_) {
+    if (is_dragging_new_browser_) {
+      content::WebContents* active_contents = source_dragged_contents();
+      if (active_contents && !active_contents->FocusLocationBarByDefault())
+        active_contents->GetView()->Focus();
+    }
     return;
+  }
   views::View* old_focused_view =
       views::ViewStorage::GetInstance()->RetrieveView(
       old_focused_view_id_);

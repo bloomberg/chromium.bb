@@ -538,9 +538,9 @@ class TabDragController : public content::WebContentsDelegate,
   // attached to the hidden frame and the frame moved back to these bounds.
   gfx::Rect restore_bounds_;
 
-  // ID of the last view that had focus in the window containing
-  // |source_tab_|. This is saved so that focus can be restored properly when a
-  // drag begins and ends within this same window.
+  // Storage ID in ViewStorage where the last view that had focus in the window
+  // containing |source_tab_| is saved. This is saved so that focus can be
+  // restored properly when a drag begins and ends within this same window.
   const int old_focused_view_id_;
 
   // The horizontal position of the mouse cursor in screen coordinates at the
