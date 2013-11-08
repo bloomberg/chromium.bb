@@ -58,7 +58,6 @@ class PPAPITestBase : public InProcessBrowserTest {
   void RunTestWithWebSocketServer(const std::string& test_case);
   void RunTestIfAudioOutputAvailable(const std::string& test_case);
   void RunTestViaHTTPIfAudioOutputAvailable(const std::string& test_case);
-  void RunTestAndExpectCrash(const std::string& test_case);
   std::string StripPrefixes(const std::string& test_name);
 
  protected:
