@@ -38,8 +38,8 @@ class CONTENT_EXPORT FrameTree {
   FrameTree();
   ~FrameTree();
 
-  // Returns the FrameTreeNode with the given |frame_id|.
-  FrameTreeNode* FindByID(int64 frame_id);
+  // Returns the FrameTreeNode with the given |frame_tree_node_id|.
+  FrameTreeNode* FindByID(int64 frame_tree_node_id);
 
   // Executes |on_node| on each node in the frame tree.  If |on_node| returns
   // false, terminates the iteration immediately. Returning false is useful
@@ -58,8 +58,11 @@ class CONTENT_EXPORT FrameTree {
   void OnFirstNavigationAfterSwap(int main_frame_id);
 
   // Frame tree manipulation routines.
-  void AddFrame(int render_frame_host_id, int64 parent_frame_id,
-                int64 frame_id, const std::string& frame_name);
+  // TODO(creis): These should take in RenderFrameHost routing IDs.
+  void AddFrame(int render_frame_host_id,
+                int64 parent_frame_tree_node_id,
+                int64 frame_id,
+                const std::string& frame_name);
   void RemoveFrame(int64 parent_frame_id, int64 frame_id);
   void SetFrameUrl(int64 frame_id, const GURL& url);
 
@@ -79,13 +82,21 @@ class CONTENT_EXPORT FrameTree {
   // Convenience accessor for the main frame's RenderFrameHostImpl.
   RenderFrameHostImpl* GetMainFrame() const;
 
-  // Allows a client to listen for frame removal.
+  // Allows a client to listen for frame removal.  The listener should expect
+  // to receive the RenderViewHostImpl containing the frame and the renderer-
+  // specific frame ID of the removed frame.
+  // TODO(creis): These parameters will later change to be the RenderFrameHost.
   void SetFrameRemoveListener(
       const base::Callback<void(RenderViewHostImpl*, int64)>& on_frame_removed);
 
   FrameTreeNode* GetRootForTesting() { return root_.get(); }
 
  private:
+  // Returns the FrameTreeNode with the given renderer-specific |frame_id|.
+  // For internal use only.
+  // TODO(creis): Replace this with a version that takes in a routing ID.
+  FrameTreeNode* FindByFrameID(int64 frame_id);
+
   scoped_ptr<FrameTreeNode> CreateNode(int64 frame_id,
                                        const std::string& frame_name,
                                        int render_frame_host_id,

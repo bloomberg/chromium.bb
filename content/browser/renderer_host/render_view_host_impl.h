@@ -428,6 +428,8 @@ class CONTENT_EXPORT RenderViewHostImpl
     is_subframe_ = is_subframe;
   }
 
+  // TODO(creis): Remove this when we replace frame IDs with RenderFrameHost
+  // routing IDs.
   int64 main_frame_id() const {
     return main_frame_id_;
   }

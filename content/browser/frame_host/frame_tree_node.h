@@ -25,12 +25,13 @@ class CONTENT_EXPORT FrameTreeNode {
  public:
   static const int64 kInvalidFrameId;
 
-  FrameTreeNode(int64 frame_id, const std::string& name,
+  FrameTreeNode(int64 frame_id,
+                const std::string& name,
                 scoped_ptr<RenderFrameHostImpl> render_frame_host);
   ~FrameTreeNode();
 
   void AddChild(scoped_ptr<FrameTreeNode> child);
-  void RemoveChild(int64 child_id);
+  void RemoveChild(FrameTreeNode* child);
 
   // Transitional API allowing the RenderFrameHost of a FrameTreeNode
   // representing the main frame to be provided by someone else. After
@@ -42,11 +43,16 @@ class CONTENT_EXPORT FrameTreeNode {
   // no longer owned by the RenderViewHostImpl.
   void ResetForMainFrame(RenderFrameHostImpl* new_render_frame_host);
 
+  int64 frame_tree_node_id() const {
+    return frame_tree_node_id_;
+  }
+
+  // DO NOT USE.  Only used by FrameTree until we replace renderer-specific
+  // frame IDs with RenderFrameHost routing IDs.
   void set_frame_id(int64 frame_id) {
     DCHECK_EQ(frame_id_, kInvalidFrameId);
     frame_id_ = frame_id;
   }
-
   int64 frame_id() const {
     return frame_id_;
   }
@@ -76,7 +82,17 @@ class CONTENT_EXPORT FrameTreeNode {
   }
 
  private:
-  // The unique identifier for the frame in the page.
+  // The next available browser-global FrameTreeNode ID.
+  static int64 next_frame_tree_node_id_;
+
+  // A browser-global identifier for the frame in the page, which stays stable
+  // even if the frame does a cross-process navigation.
+  const int64 frame_tree_node_id_;
+
+  // The renderer-specific identifier for the frame in the page.
+  // TODO(creis): Remove this in favor of the RenderFrameHost's routing ID once
+  // we create FrameTreeNodes for all frames (even without a flag), since this
+  // value can change after cross-process navigations.
   int64 frame_id_;
 
   // The assigned name of the frame. This name can be empty, unlike the unique

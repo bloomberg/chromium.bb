@@ -12,10 +12,13 @@
 namespace content {
 
 const int64 FrameTreeNode::kInvalidFrameId = -1;
+int64 FrameTreeNode::next_frame_tree_node_id_ = 1;
 
-FrameTreeNode::FrameTreeNode(int64 frame_id, const std::string& name,
+FrameTreeNode::FrameTreeNode(int64 frame_id,
+                             const std::string& name,
                              scoped_ptr<RenderFrameHostImpl> render_frame_host)
-  : frame_id_(frame_id),
+  : frame_tree_node_id_(next_frame_tree_node_id_++),
+    frame_id_(frame_id),
     frame_name_(name),
     owns_render_frame_host_(true),
     render_frame_host_(render_frame_host.release()) {
@@ -30,11 +33,11 @@ void FrameTreeNode::AddChild(scoped_ptr<FrameTreeNode> child) {
   children_.push_back(child.release());
 }
 
-void FrameTreeNode::RemoveChild(int64 child_id) {
+void FrameTreeNode::RemoveChild(FrameTreeNode* child) {
   std::vector<FrameTreeNode*>::iterator iter;
 
   for (iter = children_.begin(); iter != children_.end(); ++iter) {
-    if ((*iter)->frame_id() == child_id)
+    if ((*iter) == child)
       break;
   }
 
