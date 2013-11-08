@@ -16,6 +16,15 @@ cr.define('cr.ui', function() {
   }
 
   /**
+   * Returns whether an element is a tab related object.
+   * @param {HTMLElement} el The element whose tag is being checked
+   * @return {boolean} Whether the element is a tab related element.
+   */
+  function isTabElement(el) {
+    return el.tagName == 'TAB' || el.tagName == 'TABPANEL';
+  }
+
+  /**
    * Set hook for the selected property for Tab and TabPanel.
    * This sets the selectedIndex on the parent TabBox.
    * @param {boolean} newValue The new selected value
@@ -95,7 +104,7 @@ cr.define('cr.ui', function() {
      */
     handleSelectedChange_: function(e) {
       var target = e.target;
-      if (e.newValue && getTabBox(target) == this) {
+      if (e.newValue && isTabElement(target) && getTabBox(target) == this) {
         var index = Array.prototype.indexOf.call(target.parentElement.children,
                                                  target);
         this.selectedIndex = index;

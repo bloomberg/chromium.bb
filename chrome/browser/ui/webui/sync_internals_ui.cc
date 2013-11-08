@@ -103,9 +103,13 @@ bool SyncInternalsUI::OverrideHandleWebUIMessage(const GURL& source_url,
   JsArgList args(content_copy.get());
   VLOG(1) << "Received message: " << name << " with args "
           << args.ToString();
-  // We handle this case directly because it needs to work even if
-  // the sync service doesn't exist.
-  if (name == "getAboutInfo") {
+  if (name == "testResult") {
+    // Let the test framework handle test results.
+    // TODO(zea): fix this. crbug.com/316378
+    return false;
+  } else if (name == "getAboutInfo") {
+    // We handle this case directly because it needs to work even if
+    // the sync service doesn't exist.
     ListValue return_args;
     Profile* profile = Profile::FromWebUI(web_ui());
     ProfileSyncService* service = GetProfileSyncService(profile);
