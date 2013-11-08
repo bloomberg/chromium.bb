@@ -34,6 +34,7 @@
 #include "cc/quads/solid_color_draw_quad.h"
 #include "cc/quads/texture_draw_quad.h"
 #include "cc/quads/tile_draw_quad.h"
+#include "cc/resources/etc1_pixel_ref.h"
 #include "cc/resources/layer_tiling_data.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
@@ -5170,6 +5171,28 @@ TEST_F(LayerTreeHostImplTest, UIResourceManagement) {
   // Should not change state for multiple deletion on one UIResourceId
   host_impl_->DeleteUIResource(ui_resource_id);
   EXPECT_EQ(0u, context3d->NumTextures());
+}
+
+TEST_F(LayerTreeHostImplTest, CreateETC1UIResource) {
+  scoped_ptr<TestWebGraphicsContext3D> context =
+      TestWebGraphicsContext3D::Create();
+  TestWebGraphicsContext3D* context3d = context.get();
+  scoped_ptr<OutputSurface> output_surface = CreateFakeOutputSurface();
+  host_impl_->InitializeRenderer(output_surface.Pass());
+
+  EXPECT_EQ(0u, context3d->NumTextures());
+
+  scoped_ptr<uint8_t[]> pixels(new uint8_t[8]);
+  skia::RefPtr<ETC1PixelRef> etc1_pixel_ref =
+      skia::AdoptRef(new ETC1PixelRef(pixels.Pass()));
+  UIResourceBitmap bitmap(etc1_pixel_ref, gfx::Size(4, 4));
+
+  UIResourceId ui_resource_id = 1;
+  host_impl_->CreateUIResource(ui_resource_id, bitmap);
+  EXPECT_EQ(1u, context3d->NumTextures());
+  ResourceProvider::ResourceId id1 =
+      host_impl_->ResourceIdForUIResource(ui_resource_id);
+  EXPECT_NE(0u, id1);
 }
 
 void ShutdownReleasesContext_Callback(scoped_ptr<CopyOutputResult> result) {

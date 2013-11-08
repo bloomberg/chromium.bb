@@ -286,6 +286,8 @@
         'resources/caching_bitmap_content_layer_updater.h',
         'resources/content_layer_updater.cc',
         'resources/content_layer_updater.h',
+        'resources/etc1_pixel_ref.cc',
+        'resources/etc1_pixel_ref.h',
         'resources/image_layer_updater.cc',
         'resources/image_layer_updater.h',
         'resources/image_raster_worker_pool.cc',

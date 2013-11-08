@@ -147,14 +147,14 @@ void TextureUploader::Upload(const uint8* image,
     // ETC1 does not support subimage uploads.
     DCHECK(is_full_upload);
     UploadWithTexImageETC1(image, size);
-    return;
-  }
-
-  if (use_map_tex_sub_image_) {
-    UploadWithMapTexSubImage(
-        image, image_rect, source_rect, dest_offset, format);
   } else {
-    UploadWithTexSubImage(image, image_rect, source_rect, dest_offset, format);
+    if (use_map_tex_sub_image_) {
+      UploadWithMapTexSubImage(
+          image, image_rect, source_rect, dest_offset, format);
+    } else {
+      UploadWithTexSubImage(
+          image, image_rect, source_rect, dest_offset, format);
+    }
   }
 
   if (is_full_upload)

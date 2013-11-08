@@ -6,7 +6,9 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "cc/resources/etc1_pixel_ref.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkPixelRef.h"
 
 namespace cc {
 
@@ -39,10 +41,10 @@ UIResourceBitmap::UIResourceBitmap(const SkBitmap& skbitmap) {
   SetOpaque(skbitmap.isOpaque());
 }
 
-UIResourceBitmap::UIResourceBitmap(const skia::RefPtr<SkPixelRef>& pixel_ref,
-                                   UIResourceFormat format,
-                                   gfx::Size size) {
-  Create(pixel_ref, format, size);
+UIResourceBitmap::UIResourceBitmap(
+    const skia::RefPtr<ETC1PixelRef>& etc1_pixel_ref,
+    gfx::Size size) {
+  Create(etc1_pixel_ref, ETC1, size);
 }
 
 UIResourceBitmap::~UIResourceBitmap() {}

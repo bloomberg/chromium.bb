@@ -17,7 +17,9 @@ class SkBitmap;
 
 namespace cc {
 
-// A bitmap class that contains a ref-counted reference to a SkPixelRef* that
+class ETC1PixelRef;
+
+// A bitmap class that contains a ref-counted reference to a SkPixelRef that
 // holds the content of the bitmap (cannot use SkBitmap because of ETC1).
 // Thread-safety (by ways of SkPixelRef) ensures that both main and impl threads
 // can hold references to the bitmap and that asynchronous uploads are allowed.
@@ -39,13 +41,11 @@ class CC_EXPORT UIResourceBitmap {
   bool GetOpaque() const { return opaque_; }
   void SetOpaque(bool opaque) { opaque_ = opaque; }
 
-  // The constructor for the UIResourceBitmap.  User must ensure that |skbitmap|
-  // is immutable.  The SkBitmap format should be in 32-bit RGBA.  Wrap mode is
-  // unnecessary for most UI resources and is defaulted to CLAMP_TO_EDGE.
+  // User must ensure that |skbitmap| is immutable.  The SkBitmap Format should
+  // be 32-bit RGBA.
   explicit UIResourceBitmap(const SkBitmap& skbitmap);
 
-  UIResourceBitmap(const skia::RefPtr<SkPixelRef>& pixel_ref,
-                   UIResourceFormat format,
+  UIResourceBitmap(const skia::RefPtr<ETC1PixelRef>& etc1_pixel_ref,
                    gfx::Size size);
 
   ~UIResourceBitmap();

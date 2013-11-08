@@ -2746,7 +2746,6 @@ void LayerTreeHostImpl::SetDebugState(
 void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
                                          const UIResourceBitmap& bitmap) {
   DCHECK_GT(uid, 0);
-  DCHECK_EQ(bitmap.GetFormat(), UIResourceBitmap::RGBA8);
 
   GLint wrap_mode = 0;
   switch (bitmap.GetWrapMode()) {
@@ -2763,11 +2762,15 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
   ResourceProvider::ResourceId id = ResourceIdForUIResource(uid);
   if (id)
     DeleteUIResource(uid);
+
+  ResourceFormat format = resource_provider_->best_texture_format();
+  if (bitmap.GetFormat() == UIResourceBitmap::ETC1)
+    format = ETC1;
   id = resource_provider_->CreateResource(
       bitmap.GetSize(),
       wrap_mode,
       ResourceProvider::TextureUsageAny,
-      resource_provider_->best_texture_format());
+      format);
 
   UIResourceData data;
   data.resource_id = id;
