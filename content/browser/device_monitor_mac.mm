@@ -51,6 +51,11 @@ class DeviceMonitorMacImpl {
         device_arrival_(nil),
         device_removal_(nil) {
     DCHECK(monitor);
+    // Initialise the devices_cache_ with a not-valid entry. For the case in
+    // which there is one single device in the system and we get notified when
+    // it gets removed, this will prevent the system from thinking that no
+    // devices were added nor removed and not notifying the |monitor_|.
+    cached_devices_.push_back(DeviceInfo("invalid", DeviceInfo::kInvalid));
   }
   virtual ~DeviceMonitorMacImpl() {}
 
@@ -134,9 +139,6 @@ class QTKitMonitorImpl : public DeviceMonitorMacImpl {
 
 QTKitMonitorImpl::QTKitMonitorImpl(content::DeviceMonitorMac* monitor)
     : DeviceMonitorMacImpl(monitor) {
-  // Initialise the devices_cache_ with a not-valid entry.
-  cached_devices_.push_back(DeviceInfo("invalid", DeviceInfo::kInvalid));
-
   NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
   device_arrival_ =
       [nc addObserverForName:QTCaptureDeviceWasConnectedNotification
@@ -262,16 +264,11 @@ DeviceMonitorMac::DeviceMonitorMac() {
   if (AVFoundationGlue::IsAVFoundationSupported()) {
     DVLOG(1) << "Monitoring via AVFoundation";
     device_monitor_impl_.reset(new AVFoundationMonitorImpl(this));
-    // Force device enumeration to correctly list those already in the system,
-    // and more importantly to force AVFoundation NSBundle to create the devices
-    // so they can send notifications. This operation seems to take in the range
-    // of hundred of ms. and represent a startup penalty, so should be moved to
-    // the point when is needed.
-    // TODO(mcasas): Once the whole video capture moves to AVFoundation, the
-    // NSBundle devices will be created during JavaScript getUserMedia() call,
-    // so we should be able to remove this line let the AVFoundation loading
-    // happen then.
-    device_monitor_impl_->OnDeviceChanged();
+    // For the AVFoundation to start sending connect/disconnect notifications,
+    // the AVFoundation NSBundle has to be loaded and the devices enumerated.
+    // This operation seems to take in the range of hundred of ms. so should be
+    // moved to the point when is needed, and that is during
+    // DeviceVideoCaptureMac +getDeviceNames.
   } else {
     DVLOG(1) << "Monitoring via QTKit";
     device_monitor_impl_.reset(new QTKitMonitorImpl(this));

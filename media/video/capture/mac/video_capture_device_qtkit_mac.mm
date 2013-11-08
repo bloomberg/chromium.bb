@@ -48,7 +48,7 @@
 
 #pragma mark Public methods
 
-- (id)initWithFrameReceiver:(media::VideoCaptureDeviceMac *)frameReceiver {
+- (id)initWithFrameReceiver:(media::VideoCaptureDeviceMac*)frameReceiver {
   self = [super init];
   if (self) {
     frameReceiver_ = frameReceiver;
@@ -63,13 +63,13 @@
   [super dealloc];
 }
 
-- (void)setFrameReceiver:(media::VideoCaptureDeviceMac *)frameReceiver {
+- (void)setFrameReceiver:(media::VideoCaptureDeviceMac*)frameReceiver {
   [lock_ lock];
   frameReceiver_ = frameReceiver;
   [lock_ unlock];
 }
 
-- (BOOL)setCaptureDevice:(NSString *)deviceId {
+- (BOOL)setCaptureDevice:(NSString*)deviceId {
   if (deviceId) {
     // Set the capture device.
     if (captureDeviceInput_) {
@@ -233,10 +233,10 @@
 }
 
 // |captureOutput| is called by the capture device to deliver a new frame.
-- (void)captureOutput:(QTCaptureOutput *)captureOutput
+- (void)captureOutput:(QTCaptureOutput*)captureOutput
   didOutputVideoFrame:(CVImageBufferRef)videoFrame
-     withSampleBuffer:(QTSampleBuffer *)sampleBuffer
-       fromConnection:(QTCaptureConnection *)connection {
+     withSampleBuffer:(QTSampleBuffer*)sampleBuffer
+       fromConnection:(QTCaptureConnection*)connection {
   [lock_ lock];
   if(!frameReceiver_) {
     [lock_ unlock];
@@ -313,8 +313,8 @@
   [lock_ unlock];
 }
 
-- (void)handleNotification:(NSNotification *)errorNotification {
-  NSError * error = (NSError *)[[errorNotification userInfo]
+- (void)handleNotification:(NSNotification*)errorNotification {
+  NSError * error = (NSError*)[[errorNotification userInfo]
       objectForKey:QTCaptureSessionErrorKey];
   frameReceiver_->ReceiveError([[error localizedDescription] UTF8String]);
 }

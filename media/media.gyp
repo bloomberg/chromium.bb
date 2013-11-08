@@ -401,6 +401,8 @@
         'video/capture/mac/avfoundation_glue.h',
         'video/capture/mac/avfoundation_glue.mm',
         'video/capture/mac/platform_video_capturing_mac.h',
+        'video/capture/mac/video_capture_device_avfoundation_mac.h',
+        'video/capture/mac/video_capture_device_avfoundation_mac.mm',
         'video/capture/mac/video_capture_device_mac.h',
         'video/capture/mac/video_capture_device_mac.mm',
         'video/capture/mac/video_capture_device_qtkit_mac.h',

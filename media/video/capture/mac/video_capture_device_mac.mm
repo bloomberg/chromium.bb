@@ -8,8 +8,10 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/time/time.h"
+#import "media/video/capture/mac/avfoundation_glue.h"
 #import "media/video/capture/mac/platform_video_capturing_mac.h"
-#include "media/video/capture/mac/video_capture_device_qtkit_mac.h"
+#import "media/video/capture/mac/video_capture_device_avfoundation_mac.h"
+#import "media/video/capture/mac/video_capture_device_qtkit_mac.h"
 
 namespace {
 
@@ -68,7 +70,14 @@ void VideoCaptureDevice::GetDeviceNames(Names* device_names) {
   // Loop through all available devices and add to |device_names|.
   device_names->clear();
 
-  NSDictionary* capture_devices = [VideoCaptureDeviceQTKit deviceNames];
+  NSDictionary* capture_devices;
+  if (AVFoundationGlue::IsAVFoundationSupported()) {
+    DVLOG(1) << "Enumerating video capture devices using AVFoundation";
+    capture_devices = [VideoCaptureDeviceAVFoundation deviceNames];
+  } else {
+    DVLOG(1) << "Enumerating video capture devices using QTKit";
+    capture_devices = [VideoCaptureDeviceQTKit deviceNames];
+  }
   for (NSString* key in capture_devices) {
     Name name([[capture_devices valueForKey:key] UTF8String],
               [key UTF8String]);

@@ -48,6 +48,8 @@ MEDIA_EXPORT
 
 - (NSString*)uniqueID;
 
+- (NSString*)localizedName;
+
 @end
 
 MEDIA_EXPORT
