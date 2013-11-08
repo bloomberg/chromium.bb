@@ -10,8 +10,13 @@
 #include "ui/gfx/gfx_export.h"
 
 class SkPath;
+class SkRegion;
 
 namespace gfx {
+
+// Creates a new HRGN given |region|. The caller is responsible for destroying
+// the returned region.
+GFX_EXPORT HRGN CreateHRGNFromSkRegion(const SkRegion& path);
 
 // Creates a new HRGN given |path|. The caller is responsible for destroying
 // the returned region.

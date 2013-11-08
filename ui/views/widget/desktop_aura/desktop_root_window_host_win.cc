@@ -237,9 +237,7 @@ gfx::Rect DesktopRootWindowHostWin::GetWorkAreaBoundsInScreen() const {
 
 void DesktopRootWindowHostWin::SetShape(gfx::NativeRegion native_region) {
   if (native_region) {
-    SkPath path;
-    native_region->getBoundaryPath(&path);
-    message_handler_->SetRegion(gfx::CreateHRGNFromSkPath(path));
+    message_handler_->SetRegion(gfx::CreateHRGNFromSkRegion(*native_region));
   } else {
     message_handler_->SetRegion(NULL);
   }
