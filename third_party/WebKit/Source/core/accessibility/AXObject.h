@@ -537,7 +537,7 @@ public:
     virtual void childrenChanged() { }
     virtual void handleActiveDescendantChanged() { }
     virtual void handleAriaExpandedChanged() { }
-    void notifyIfIgnoredValueChanged();
+    bool notifyIfIgnoredValueChanged();
     virtual void selectionChanged();
     virtual void textChanged() { }
     virtual void updateAccessibilityRole() { }

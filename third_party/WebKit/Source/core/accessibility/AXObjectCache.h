@@ -122,6 +122,8 @@ public:
     void textChanged(RenderObject*);
     // Called when a node has just been attached, so we can make sure we have the right subclass of AXObject.
     void updateCacheAfterNodeIsAttached(Node*);
+    // Called when a modal dialog opens or closes, which may cause nodes all over the tree to become inert or not inert.
+    void handleInertSubtreesChanged();
 
     void handleActiveDescendantChanged(Node*);
     void handleAriaRoleChanged(Node*);

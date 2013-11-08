@@ -289,14 +289,15 @@ AXObjectInclusion AXObject::defaultObjectInclusion() const
 
 bool AXObject::isInertOrAriaHidden() const
 {
-    if (equalIgnoringCase(getAttribute(aria_hiddenAttr), "true"))
-        return true;
-    if (node() && node()->isInert())
-        return true;
-
-    for (AXObject* object = parentObject(); object; object = object->parentObject()) {
+    bool mightBeInInertSubtree = true;
+    for (const AXObject* object = this; object; object = object->parentObject()) {
         if (equalIgnoringCase(object->getAttribute(aria_hiddenAttr), "true"))
             return true;
+        if (mightBeInInertSubtree && object->node()) {
+            if (object->node()->isInert())
+                return true;
+            mightBeInInertSubtree = false;
+        }
     }
 
     return false;
@@ -816,13 +817,15 @@ void AXObject::scrollToGlobalPoint(const IntPoint& globalPoint) const
     }
 }
 
-void AXObject::notifyIfIgnoredValueChanged()
+bool AXObject::notifyIfIgnoredValueChanged()
 {
     bool isIgnored = accessibilityIsIgnored();
     if (lastKnownIsIgnoredValue() != isIgnored) {
         axObjectCache()->childrenChanged(parentObject());
         setLastKnownIsIgnoredValue(isIgnored);
+        return true;
     }
+    return false;
 }
 
 void AXObject::selectionChanged()
