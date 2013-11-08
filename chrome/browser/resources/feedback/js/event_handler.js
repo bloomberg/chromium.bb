@@ -11,7 +11,7 @@ var FEEDBACK_WIDTH = 500;
  * @type {number}
  * @const
  */
-var FEEDBACK_HEIGHT = 620;
+var FEEDBACK_HEIGHT = 625;
 /**
  * @type {number}
  * @const
@@ -75,10 +75,6 @@ function requestFeedbackHandler(request, sender, sendResponse) {
  * @param {Object} feedbackInfo Object containing any initial feedback info.
  */
 function startFeedbackUI(feedbackInfo) {
-  var windowHeight = FEEDBACK_HEIGHT;
-  if (feedbackInfo.traceId) {
-    windowHeight += TRACING_CHECKBOX_HEIGHT;
-  }
   initialFeedbackInfo = feedbackInfo;
   // TODO(rkc):  Remove logging once crbug.com/284662 is closed.
   console.log('FEEDBACK_DEBUG: Received onFeedbackRequested. Creating Window.');
@@ -86,12 +82,11 @@ function startFeedbackUI(feedbackInfo) {
       frame: 'none',
       id: 'default_window',
       width: FEEDBACK_WIDTH,
-      height: windowHeight,
+      height: FEEDBACK_HEIGHT,
       hidden: true,
+      resizable: false,
       singleton: true },
-      function(appWindow) {
-        appWindow.resizeTo(FEEDBACK_WIDTH, windowHeight);
-      });
+      function(appWindow) {});
 }
 
 chrome.runtime.onMessage.addListener(feedbackReadyHandler);
