@@ -945,8 +945,17 @@ void InspectorCSSAgent::getMatchedStylesForNode(ErrorString* errorString, int no
     if (elementPseudoId)
         element = element->parentOrShadowHostElement();
 
+    Document* ownerDocument = element->ownerDocument();
+    // A non-active document has no styles.
+    if (!ownerDocument->isActive())
+        return;
+
+    // FIXME: It's really gross for the inspector to reach in and access StyleResolver
+    // directly here. We need to provide the Inspector better APIs to get this information
+    // without grabbing at internal style classes!
+
     // Matched rules.
-    StyleResolver* styleResolver = element->ownerDocument()->styleResolver();
+    StyleResolver* styleResolver = ownerDocument->styleResolver();
     // FIXME: This code should not pass DoNotIncludeStyleSheetInCSSOMWrapper. All CSSOMWrappers should always have a parent sheet or rule.
     RefPtr<CSSRuleList> matchedRules = styleResolver->pseudoCSSRulesForElement(element, elementPseudoId, StyleResolver::AllCSSRules, DoNotIncludeStyleSheetInCSSOMWrapper);
     matchedCSSRules = buildArrayForMatchedRuleList(matchedRules.get(), styleResolver, originalElement);

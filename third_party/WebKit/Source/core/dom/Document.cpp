@@ -1935,6 +1935,11 @@ void Document::setIsViewSource(bool isViewSource)
 
 void Document::createStyleResolver()
 {
+    // It is a programming error to attempt to resolve style on a Document
+    // which is not in a frame. Code which hits this should have checked
+    // Document::isActive() before calling into code which could get here.
+    ASSERT(frame());
+
     bool matchAuthorAndUserStyles = true;
     if (Settings* docSettings = settings())
         matchAuthorAndUserStyles = docSettings->authorAndUserStylesEnabled();
@@ -2957,7 +2962,7 @@ void Document::setViewportDescription(const ViewportDescription& viewportDescrip
 
 void Document::updateViewportDescription()
 {
-    if (frame()->isMainFrame()) {
+    if (frame() && frame()->isMainFrame()) {
 #ifndef NDEBUG
         m_didDispatchViewportPropertiesChanged = true;
 #endif
