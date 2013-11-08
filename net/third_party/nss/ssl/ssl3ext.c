@@ -2297,3 +2297,56 @@ ssl3_ClientSendSigAlgsXtn(sslSocket * ss, PRBool append, PRUint32 maxBytes)
 loser:
     return -1;
 }
+
+unsigned int
+ssl3_CalculatePaddingExtensionLength(unsigned int clientHelloLength)
+{
+    unsigned int recordLength = 1 /* handshake message type */ +
+				3 /* handshake message length */ +
+				clientHelloLength;
+    unsigned int extensionLength;
+
+    if (recordLength < 256 || recordLength >= 512) {
+	return 0;
+    }
+
+     extensionLength = 512 - recordLength;
+     /* Extensions take at least four bytes to encode. */
+     if (extensionLength < 4) {
+	 extensionLength = 4;
+     }
+
+     return extensionLength;
+}
+
+/* ssl3_AppendPaddingExtension possibly adds an extension which ensures that a
+ * ClientHello record is either < 256 bytes or is >= 512 bytes. This ensures
+ * that we don't trigger bugs in F5 products. */
+unsigned int
+ssl3_AppendPaddingExtension(sslSocket *ss, unsigned int extensionLen,
+			    PRUint32 maxBytes)
+{
+    unsigned int paddingLen = extensionLen - 4;
+    unsigned char padding[256];
+
+    if (extensionLen == 0) {
+	return 0;
+    }
+
+    if (extensionLen < 4 ||
+	extensionLen > maxBytes ||
+	paddingLen > sizeof(padding)) {
+	PORT_Assert(0);
+	return 0;
+    }
+
+    if (SECSuccess != ssl3_AppendHandshakeNumber(ss, ssl_padding_xtn, 2))
+	return -1;
+    if (SECSuccess != ssl3_AppendHandshakeNumber(ss, paddingLen, 2))
+	return -1;
+    memset(padding, ' ', paddingLen);
+    if (SECSuccess != ssl3_AppendHandshake(ss, padding, paddingLen))
+	return -1;
+
+    return extensionLen;
+}

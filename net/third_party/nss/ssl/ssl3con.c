@@ -4975,6 +4975,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
     PRBool           isTLS = PR_FALSE;
     PRBool           requestingResume = PR_FALSE;
     PRInt32          total_exten_len = 0;
+    unsigned         paddingExtensionLen;
     unsigned         numCompressionMethods;
     PRInt32          flags;
 
@@ -5241,6 +5242,20 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
 	length += 1 + ss->ssl3.hs.cookieLen;
     }
 
+    /* A padding extension may be included to ensure that the record containing
+     * the ClientHello doesn't have a length between 256 and 511 bytes
+     * (inclusive). Initial, ClientHello records with such lengths trigger bugs
+     * in F5 devices.
+     *
+     * This is not done for DTLS nor for renegotiation. */
+    if (!IS_DTLS(ss) && !ss->firstHsDone) {
+        paddingExtensionLen = ssl3_CalculatePaddingExtensionLength(length);
+        total_exten_len += paddingExtensionLen;
+        length += paddingExtensionLen;
+    } else {
+        paddingExtensionLen = 0;
+    }
+
     rv = ssl3_AppendHandshakeHeader(ss, client_hello, length);
     if (rv != SECSuccess) {
 	return rv;	/* err set by ssl3_AppendHandshake* */
@@ -5360,6 +5375,13 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
 	    return SECFailure;
 	}
 	maxBytes -= extLen;
+
+	extLen = ssl3_AppendPaddingExtension(ss, paddingExtensionLen, maxBytes);
+	if (extLen < 0) {
+	    return SECFailure;
+	}
+	maxBytes -= extLen;
+
 	PORT_Assert(!maxBytes);
     } 
     if (ss->ssl3.hs.sendingSCSV) {

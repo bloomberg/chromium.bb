@@ -1,0 +1,142 @@
+diff --git a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
+index 8b8b758..567d481 100644
+--- a/nss/lib/ssl/ssl3con.c
++++ b/nss/lib/ssl/ssl3con.c
+@@ -4975,6 +4975,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
+     PRBool           isTLS = PR_FALSE;
+     PRBool           requestingResume = PR_FALSE;
+     PRInt32          total_exten_len = 0;
++    unsigned         paddingExtensionLen;
+     unsigned         numCompressionMethods;
+     PRInt32          flags;
+ 
+@@ -5241,6 +5242,20 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
+ 	length += 1 + ss->ssl3.hs.cookieLen;
+     }
+ 
++    /* A padding extension may be included to ensure that the record containing
++     * the ClientHello doesn't have a length between 256 and 511 bytes
++     * (inclusive). Initial, ClientHello records with such lengths trigger bugs
++     * in F5 devices.
++     *
++     * This is not done for DTLS nor for renegotiation. */
++    if (!IS_DTLS(ss) && !ss->firstHsDone) {
++        paddingExtensionLen = ssl3_CalculatePaddingExtensionLength(length);
++        total_exten_len += paddingExtensionLen;
++        length += paddingExtensionLen;
++    } else {
++        paddingExtensionLen = 0;
++    }
++
+     rv = ssl3_AppendHandshakeHeader(ss, client_hello, length);
+     if (rv != SECSuccess) {
+ 	return rv;	/* err set by ssl3_AppendHandshake* */
+@@ -5360,6 +5375,13 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
+ 	    return SECFailure;
+ 	}
+ 	maxBytes -= extLen;
++
++	extLen = ssl3_AppendPaddingExtension(ss, paddingExtensionLen, maxBytes);
++	if (extLen < 0) {
++	    return SECFailure;
++	}
++	maxBytes -= extLen;
++
+ 	PORT_Assert(!maxBytes);
+     } 
+     if (ss->ssl3.hs.sendingSCSV) {
+diff --git a/nss/lib/ssl/ssl3ext.c b/nss/lib/ssl/ssl3ext.c
+index 0415770..8be042e 100644
+--- a/nss/lib/ssl/ssl3ext.c
++++ b/nss/lib/ssl/ssl3ext.c
+@@ -2297,3 +2297,56 @@ ssl3_ClientSendSigAlgsXtn(sslSocket * ss, PRBool append, PRUint32 maxBytes)
+ loser:
+     return -1;
+ }
++
++unsigned int
++ssl3_CalculatePaddingExtensionLength(unsigned int clientHelloLength)
++{
++    unsigned int recordLength = 1 /* handshake message type */ +
++				3 /* handshake message length */ +
++				clientHelloLength;
++    unsigned int extensionLength;
++
++    if (recordLength < 256 || recordLength >= 512) {
++	return 0;
++    }
++
++     extensionLength = 512 - recordLength;
++     /* Extensions take at least four bytes to encode. */
++     if (extensionLength < 4) {
++	 extensionLength = 4;
++     }
++
++     return extensionLength;
++}
++
++/* ssl3_AppendPaddingExtension possibly adds an extension which ensures that a
++ * ClientHello record is either < 256 bytes or is >= 512 bytes. This ensures
++ * that we don't trigger bugs in F5 products. */
++unsigned int
++ssl3_AppendPaddingExtension(sslSocket *ss, unsigned int extensionLen,
++			    PRUint32 maxBytes)
++{
++    unsigned int paddingLen = extensionLen - 4;
++    unsigned char padding[256];
++
++    if (extensionLen == 0) {
++	return 0;
++    }
++
++    if (extensionLen < 4 ||
++	extensionLen > maxBytes ||
++	paddingLen > sizeof(padding)) {
++	PORT_Assert(0);
++	return 0;
++    }
++
++    if (SECSuccess != ssl3_AppendHandshakeNumber(ss, ssl_padding_xtn, 2))
++	return -1;
++    if (SECSuccess != ssl3_AppendHandshakeNumber(ss, paddingLen, 2))
++	return -1;
++    memset(padding, ' ', paddingLen);
++    if (SECSuccess != ssl3_AppendHandshake(ss, padding, paddingLen))
++	return -1;
++
++    return extensionLen;
++}
+diff --git a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
+index 614eed1..621f25e 100644
+--- a/nss/lib/ssl/sslimpl.h
++++ b/nss/lib/ssl/sslimpl.h
+@@ -237,6 +237,13 @@ extern PRInt32
+ ssl3_CallHelloExtensionSenders(sslSocket *ss, PRBool append, PRUint32 maxBytes,
+                                const ssl3HelloExtensionSender *sender);
+ 
++extern unsigned int
++ssl3_CalculatePaddingExtensionLength(unsigned int clientHelloLength);
++
++extern unsigned int
++ssl3_AppendPaddingExtension(sslSocket *ss, unsigned int extensionLen,
++			    PRUint32 maxBytes);
++
+ /* Socket ops */
+ struct sslSocketOpsStr {
+     int         (*connect) (sslSocket *, const PRNetAddr *);
+diff --git a/nss/lib/ssl/sslt.h b/nss/lib/ssl/sslt.h
+index a8007d8..e4d188f 100644
+--- a/nss/lib/ssl/sslt.h
++++ b/nss/lib/ssl/sslt.h
+@@ -205,9 +205,10 @@ typedef enum {
+     ssl_session_ticket_xtn           = 35,
+     ssl_next_proto_nego_xtn          = 13172,
+     ssl_channel_id_xtn               = 30031,
++    ssl_padding_xtn                  = 35655,
+     ssl_renegotiation_info_xtn       = 0xff01	/* experimental number */
+ } SSLExtensionType;
+ 
+-#define SSL_MAX_EXTENSIONS             11
++#define SSL_MAX_EXTENSIONS             11 /* doesn't include ssl_padding_xtn. */
+ 
+ #endif /* __sslt_h_ */
