@@ -45,6 +45,10 @@
 #include "net/proxy/proxy_config_service_android.h"
 #endif
 
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
+#include "base/metrics/histogram.h"
+#endif
+
 using base::TimeDelta;
 using base::TimeTicks;
 
@@ -1169,6 +1173,16 @@ int ProxyService::ReconsiderProxyAfterError(const GURL& url,
     return ResolveProxy(url, result, callback, pac_request, net_log);
   }
 
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
+  if (result->proxy_server().isDataReductionProxy()) {
+    RecordDataReductionProxyBypassInfo(
+        true, result->proxy_server(), ERROR_BYPASS);
+  } else if (result->proxy_server().isDataReductionProxyFallback()) {
+    RecordDataReductionProxyBypassInfo(
+        false, result->proxy_server(), ERROR_BYPASS);
+  }
+#endif
+
   // We don't have new proxy settings to try, try to fallback to the next proxy
   // in the list.
   bool did_fallback = result->Fallback(net_log);
@@ -1392,6 +1406,25 @@ scoped_ptr<ProxyService::PacPollPolicy>
   ProxyService::CreateDefaultPacPollPolicy() {
   return scoped_ptr<PacPollPolicy>(new DefaultPollPolicy());
 }
+
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
+void ProxyService::RecordDataReductionProxyBypassInfo(
+    bool is_primary,
+    const ProxyServer& proxy_server,
+    DataReductionProxyBypassEventType bypass_type) const {
+  // Only record UMA if the proxy isn't already on the retry list.
+  if (proxy_retry_info_.find(proxy_server.ToURI()) != proxy_retry_info_.end())
+    return;
+
+  if (is_primary) {
+    UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.BypassInfoPrimary",
+                              bypass_type, BYPASS_EVENT_TYPE_MAX);
+  } else {
+    UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.BypassInfoFallback",
+                              bypass_type, BYPASS_EVENT_TYPE_MAX);
+  }
+}
+#endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
 
 void ProxyService::OnProxyConfigChanged(
     const ProxyConfig& config,

@@ -1610,6 +1610,29 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="DataReductionProxy.BypassInfoFallback"
+    enum="DataReductionProxyBypassEventType">
+  <summary>
+    Counts various events that trigger Chrome to bypass the fallback
+    configuration of the data reduction proxy.
+  </summary>
+</histogram>
+
+<histogram name="DataReductionProxy.BypassInfoPrimary"
+    enum="DataReductionProxyBypassEventType">
+  <summary>
+    Counts various events that trigger Chrome to bypass the primary
+    configuration of the data reduction proxy.
+  </summary>
+</histogram>
+
+<histogram name="DataReductionProxy.ProbeURL"
+    enum="DataReductionProxyProbeURLFetchResult">
+  <summary>
+    Counts various outcomes of requesting the data reduction proxy's probe URL.
+  </summary>
+</histogram>
+
 <histogram name="DataReductionProxy.PromoAction"
     enum="DataReductionProxyPromoAction">
   <summary>
@@ -21049,6 +21072,21 @@ other types of suffix sets.
   <int value="6" label="Sheets"/>
   <int value="7" label="Slides"/>
   <int value="8" label="PlayMusic"/>
+</enum>
+
+<enum name="DataReductionProxyBypassEventType" type="int">
+  <int value="0" label="Short bypass"/>
+  <int value="1" label="Long bypass"/>
+  <int value="2" label="Bypass due to internal server error"/>
+  <int value="3" label="Bypass due to otehr error"/>
+</enum>
+
+<enum name="DataReductionProxyProbeURLFetchResult" type="int">
+  <int value="0" label="Internet disconnected"/>
+  <int value="1" label="Probe failed, proxy disabled"/>
+  <int value="2" label="Probe failed, proxy already disabled"/>
+  <int value="3" label="Probe succeeded, proxy enabled"/>
+  <int value="4" label="Probe succeeded, proxy already enabled"/>
 </enum>
 
 <enum name="DataReductionProxyPromoAction" type="int">

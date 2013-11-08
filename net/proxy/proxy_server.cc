@@ -208,6 +208,21 @@ ProxyServer::Scheme ProxyServer::GetSchemeFromURI(const std::string& scheme) {
   return GetSchemeFromURIInternal(scheme.begin(), scheme.end());
 }
 
+#if defined(SPDY_PROXY_AUTH_ORIGIN)
+  bool ProxyServer::isDataReductionProxy() const {
+    return host_port_pair_.Equals(
+        HostPortPair::FromURL(GURL(SPDY_PROXY_AUTH_ORIGIN)));
+  }
+
+  bool ProxyServer::isDataReductionProxyFallback() const {
+#if defined(DATA_REDUCTION_FALLBACK_HOST)
+    return host_port_pair_.Equals(
+        HostPortPair::FromURL(GURL(DATA_REDUCTION_FALLBACK_HOST)));
+#endif  // defined(DATA_REDUCTION_FALLBACK_HOST)
+    return false;
+  }
+#endif  // defined(SPDY_PROXY_AUTH_ORIGIN)
+
 // static
 ProxyServer ProxyServer::FromSchemeHostAndPort(
     Scheme scheme,
