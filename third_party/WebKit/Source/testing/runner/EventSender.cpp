@@ -60,6 +60,12 @@
 
 #ifdef WIN32
 #include "public/web/win/WebInputEventFactory.h"
+#elif __APPLE__
+#include "public/web/mac/WebInputEventFactory.h"
+#elif defined(ANDROID)
+#include "public/web/android/WebInputEventFactory.h"
+#elif defined(TOOLKIT_GTK)
+#include "public/web/gtk/WebInputEventFactory.h"
 #endif
 
 // FIXME: layout before each event?
@@ -150,10 +156,8 @@ void initMouseEvent(WebInputEvent::Type t, WebMouseEvent::Button b, const WebPoi
     e->clickCount = clickCount;
 }
 
-// Returns true if the specified key is the system key.
-bool applyKeyModifier(const string& modifierName, WebInputEvent* event)
+void applyKeyModifier(const string& modifierName, WebInputEvent* event)
 {
-    bool isSystemKey = false;
     const char* characters = modifierName.c_str();
     if (!strcmp(characters, "ctrlKey")
 #ifndef __APPLE__
@@ -165,21 +169,9 @@ bool applyKeyModifier(const string& modifierName, WebInputEvent* event)
         event->modifiers |= WebInputEvent::ShiftKey;
     else if (!strcmp(characters, "altKey")) {
         event->modifiers |= WebInputEvent::AltKey;
-#ifndef __APPLE__
-        // On Windows all keys with Alt modifier will be marked as system key.
-        // We keep the same behavior on Linux and everywhere non-Mac, see:
-        // WebKit/chromium/src/gtk/WebInputEventFactory.cpp
-        // If we want to change this behavior on Linux, this piece of code must be
-        // kept in sync with the related code in above file.
-        isSystemKey = true;
-#endif
 #ifdef __APPLE__
     } else if (!strcmp(characters, "metaKey") || !strcmp(characters, "addSelectionKey")) {
         event->modifiers |= WebInputEvent::MetaKey;
-        // On Mac only command key presses are marked as system key.
-        // See the related code in: WebKit/chromium/src/mac/WebInputEventFactory.cpp
-        // It must be kept in sync with the related code in above file.
-        isSystemKey = true;
 #else
     } else if (!strcmp(characters, "metaKey")) {
         event->modifiers |= WebInputEvent::MetaKey;
@@ -187,19 +179,17 @@ bool applyKeyModifier(const string& modifierName, WebInputEvent* event)
     } else if (!strcmp(characters, "autoRepeat")) {
         event->modifiers |= WebInputEvent::IsAutoRepeat;
     }
-    return isSystemKey;
 }
 
-bool applyKeyModifiers(const CppVariant* argument, WebInputEvent* event)
+void applyKeyModifiers(const CppVariant* argument, WebInputEvent* event)
 {
-    bool isSystemKey = false;
     if (argument->isObject()) {
         vector<string> modifiers = argument->toStringVector();
         for (vector<string>::const_iterator i = modifiers.begin(); i != modifiers.end(); ++i)
-            isSystemKey |= applyKeyModifier(*i, event);
-    } else if (argument->isString())
-        isSystemKey = applyKeyModifier(argument->toString(), event);
-    return isSystemKey;
+            applyKeyModifier(*i, event);
+    } else if (argument->isString()) {
+        applyKeyModifier(argument->toString(), event);
+    }
 }
 
 // Get the edit command corresponding to a keyboard event.
@@ -662,8 +652,12 @@ void EventSender::keyDown(const CppArgumentList& arguments, CppVariant* result)
     }
     eventDown.setKeyIdentifierFromWindowsKeyCode();
 
-    if (arguments.size() >= 2 && (arguments[1].isObject() || arguments[1].isString()))
-        eventDown.isSystemKey = applyKeyModifiers(&(arguments[1]), &eventDown);
+    if (arguments.size() >= 2 && (arguments[1].isObject() || arguments[1].isString())) {
+        applyKeyModifiers(&(arguments[1]), &eventDown);
+#if WIN32 || __APPLE__ || defined(ANDROID) || defined(TOOLKIT_GTK)
+        eventDown.isSystemKey = WebInputEventFactory::isSystemKeyEvent(eventDown);
+#endif
+    }
 
     if (needsShiftKeyModifier)
         eventDown.modifiers |= WebInputEvent::ShiftKey;
