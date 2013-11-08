@@ -101,10 +101,8 @@ abortInHeadersReceivedTest.step(function()
 
         case xhr.HEADERS_RECEIVED:
             xhr.abort();
-            abortInHeadersReceivedTest.step(function () {
-                assert_equals(xhr.readyState, xhr.UNSENT, "xhr.readyState after abort() call");
-                assert_array_equals(seenStates, [xhr.OPENED, xhr.HEADERS_RECEIVED, xhr.DONE]);
-            });
+            assert_equals(xhr.readyState, xhr.UNSENT, "xhr.readyState after abort() call");
+            assert_array_equals(seenStates, [xhr.OPENED, xhr.HEADERS_RECEIVED, xhr.DONE]);
             setTimeout(abortInHeadersReceivedTest.step_func(function() {
                 assert_true(abortFired, "Expected 'abort' event to have fired in HEADERS_RECEIVED state.");
                 abortInHeadersReceivedTest.done();
@@ -142,10 +140,8 @@ abortInLoadingTest.step(function()
 
         case xhr.LOADING:
             xhr.abort();
-            abortInLoadingTest.step(function () {
-                assert_equals(xhr.readyState, xhr.UNSENT, "xhr.readyState after abort() call");
-                assert_array_equals(seenStates, [xhr.OPENED, xhr.HEADERS_RECEIVED, xhr.LOADING, xhr.DONE]);
-            });
+            assert_equals(xhr.readyState, xhr.UNSENT, "xhr.readyState after abort() call");
+            assert_array_equals(seenStates, [xhr.OPENED, xhr.HEADERS_RECEIVED, xhr.LOADING, xhr.DONE]);
             setTimeout(abortInLoadingTest.step_func(function() {
                 assert_true(abortFired, "Expected 'abort' event to have fired in LOADING state.");
                 abortInLoadingTest.done();
@@ -182,10 +178,8 @@ abortInDoneTest.step(function()
 
         case xhr.DONE:
             xhr.abort();
-            abortInDoneTest.step(function () {
-                assert_equals(xhr.readyState, xhr.UNSENT, "xhr.readyState after abort() call");
-                assert_array_equals(seenStates, [xhr.OPENED, xhr.HEADERS_RECEIVED, xhr.LOADING, xhr.DONE]);
-            });
+            assert_equals(xhr.readyState, xhr.UNSENT, "xhr.readyState after abort() call");
+            assert_array_equals(seenStates, [xhr.OPENED, xhr.HEADERS_RECEIVED, xhr.LOADING, xhr.DONE]);
 
             setTimeout(abortInDoneTest.step_func(function() {
                 abortInDoneTest.done();
