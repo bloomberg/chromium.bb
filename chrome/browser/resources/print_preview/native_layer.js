@@ -41,6 +41,9 @@ cr.define('print_preview', function() {
         this.onPrintScalingDisabledForSourcePDF_.bind(this);
     global['onDidGetAccessToken'] = this.onDidGetAccessToken_.bind(this);
     global['autoCancelForTesting'] = this.autoCancelForTesting_.bind(this);
+    global['onPrivetPrinterChanged'] = this.onPrivetPrinterChanged_.bind(this);
+    global['onPrivetPrinterSearchDone'] =
+      this.onPrivetPrinterSearchDone_.bind(this);
   };
 
   /**
@@ -69,7 +72,10 @@ cr.define('print_preview', function() {
         'print_preview.NativeLayer.PREVIEW_GENERATION_FAIL',
     PREVIEW_RELOAD: 'print_preview.NativeLayer.PREVIEW_RELOAD',
     PRINT_TO_CLOUD: 'print_preview.NativeLayer.PRINT_TO_CLOUD',
-    SETTINGS_INVALID: 'print_preview.NativeLayer.SETTINGS_INVALID'
+    SETTINGS_INVALID: 'print_preview.NativeLayer.SETTINGS_INVALID',
+    PRIVET_PRINTER_CHANGED: 'print_preview.NativeLayer.PRIVET_PRINTER_CHANGED',
+    PRIVET_PRINTER_SEARCH_DONE:
+        'print_preview.NativeLayer.PRIVET_PRINTER_SEARCH_DONE'
   };
 
   /**
@@ -122,6 +128,15 @@ cr.define('print_preview', function() {
      */
     startGetLocalDestinations: function() {
       chrome.send('getPrinters');
+    },
+
+    /**
+     * Requests the network's privet print destinations. A number of
+     * PRIVET_PRINTER_CHANGED events will be fired in response, followed by a
+     * PRIVET_SEARCH_ENDED.
+     */
+    startGetPrivetDestinations: function() {
+      chrome.send('getPrivetPrinters');
     },
 
     /**
@@ -590,6 +605,28 @@ cr.define('print_preview', function() {
       var properties = {view: window, bubbles: true, cancelable: true};
       var click = new MouseEvent('click', properties);
       document.querySelector('#print-header .cancel').dispatchEvent(click);
+    },
+
+    /**
+     * @param {{serviceName: string, name: string}} printer Specifies
+     *     information about the printer that was added.
+     * @private
+     */
+    onPrivetPrinterChanged_: function(printer) {
+      var privetPrinterChangedEvent =
+            new Event(NativeLayer.EventType.PRIVET_PRINTER_CHANGED);
+      privetPrinterChangedEvent.printer = printer;
+      this.dispatchEvent(privetPrinterChangedEvent);
+    },
+
+    /**
+     * Called when the privet printer search is over.
+     * @private
+     */
+    onPrivetPrinterSearchDone_: function() {
+      var privetPrinterSearchDoneEvent = new Event(
+          NativeLayer.EventType.PRIVET_PRINTER_SEARCH_DONE);
+      this.dispatchEvent(privetPrinterSearchDoneEvent);
     }
   };
 

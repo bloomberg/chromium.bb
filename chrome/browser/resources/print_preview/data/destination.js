@@ -149,7 +149,8 @@ cr.define('print_preview', function() {
     LOCAL: 'local',
     COOKIES: 'cookies',
     PROFILE: 'profile',
-    DEVICE: 'device'
+    DEVICE: 'device',
+    PRIVET: 'privet'
   };
 
   /**
@@ -225,7 +226,13 @@ cr.define('print_preview', function() {
 
     /** @return {boolean} Whether the destination is local or cloud-based. */
     get isLocal() {
-      return this.origin_ == Destination.Origin.LOCAL;
+      return this.origin_ == Destination.Origin.LOCAL ||
+             this.origin_ == Destination.Origin.PRIVET;
+    },
+
+    /** @return {boolean} Whether the destination is a privet local printer */
+    get isPrivet() {
+      return this.origin_ == Destination.Origin.PRIVET;
     },
 
     /**

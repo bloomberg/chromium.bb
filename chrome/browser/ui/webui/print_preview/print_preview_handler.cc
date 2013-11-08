@@ -172,6 +172,10 @@ const char kCUPSsColorModel[] = "cupsColorModel";
 const char kCUPSsBWModel[] = "cupsBWModel";
 #endif
 
+#if defined(ENABLE_MDNS)
+const int kPrivetPrinterSearchDurationSeconds = 3;
+#endif
+
 // Get the print job settings dictionary from |args|. The caller takes
 // ownership of the returned DictionaryValue. Returns NULL on failure.
 DictionaryValue* GetSettingsDictionary(const ListValue* args) {
@@ -526,8 +530,21 @@ void PrintPreviewHandler::RegisterMessages() {
       base::Bind(&PrintPreviewHandler::HandlePrintWithCloudPrintDialog,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("forceOpenNewTab",
-        base::Bind(&PrintPreviewHandler::HandleForceOpenNewTab,
+      base::Bind(&PrintPreviewHandler::HandleForceOpenNewTab,
                    base::Unretained(this)));
+  web_ui()->RegisterMessageCallback("getPrivetPrinters",
+      base::Bind(&PrintPreviewHandler::HandleGetPrivetPrinters,
+                 base::Unretained(this)));
+}
+
+bool PrintPreviewHandler::PrivetPrintingEnabled() {
+#if defined(ENABLE_MDNS)
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  return !command_line->HasSwitch(switches::kDisableDeviceDiscovery) &&
+      command_line->HasSwitch(switches::kEnablePrivetLocalPrinting);
+#else
+  return false;
+#endif
 }
 
 WebContents* PrintPreviewHandler::preview_web_contents() const {
@@ -543,6 +560,31 @@ void PrintPreviewHandler::HandleGetPrinters(const ListValue* /*args*/) {
       base::Bind(&PrintPreviewHandler::SetupPrinterList,
                  weak_factory_.GetWeakPtr(),
                  base::Owned(results)));
+}
+
+void PrintPreviewHandler::HandleGetPrivetPrinters(const base::ListValue* args) {
+#if defined(ENABLE_MDNS)
+  if (PrivetPrintingEnabled()) {
+    Profile* profile = Profile::FromWebUI(web_ui());
+    service_discovery_client_ =
+        local_discovery::ServiceDiscoverySharedClient::GetInstance();
+    printer_lister_.reset(new local_discovery::PrivetLocalPrinterLister(
+        service_discovery_client_.get(),
+        profile->GetRequestContext(),
+        this));
+    printer_lister_->Start();
+
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&PrintPreviewHandler::StopPrivetPrinterSearch,
+                   weak_factory_.GetWeakPtr()),
+        base::TimeDelta::FromSeconds(kPrivetPrinterSearchDurationSeconds));
+  }
+#endif
+
+  if (!PrivetPrintingEnabled()) {
+    web_ui()->CallJavascriptFunction("onPrivetPrinterSearchDone");
+  }
 }
 
 void PrintPreviewHandler::HandleGetPreview(const ListValue* args) {
@@ -1260,6 +1302,33 @@ void PrintPreviewHandler::ConvertColorSettingToCUPSColorModel(
   printing::ColorModel color_model = cups_printer_color_models_->color_model;
   if (color_model != printing::UNKNOWN_COLOR_MODEL)
     settings->SetInteger(printing::kSettingColor, color_model);
+}
+
+#endif
+
+
+#if defined(ENABLE_MDNS)
+void PrintPreviewHandler::LocalPrinterChanged(
+    bool added,
+    const std::string& name,
+    const local_discovery::DeviceDescription& description) {
+  base::DictionaryValue info;
+  info.SetString("serviceName", name);
+  info.SetString("name", description.name);
+
+  web_ui()->CallJavascriptFunction("onPrivetPrinterChanged", info);
+}
+
+void PrintPreviewHandler::LocalPrinterRemoved(const std::string& name) {
+}
+
+void PrintPreviewHandler::LocalPrinterCacheFlushed() {
+}
+
+void PrintPreviewHandler::StopPrivetPrinterSearch() {
+  printer_lister_.reset();
+  service_discovery_client_ = NULL;
+  web_ui()->CallJavascriptFunction("onPrivetPrinterSearchDone");
 }
 
 #endif

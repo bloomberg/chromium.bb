@@ -115,6 +115,14 @@ cr.define('print_preview', function() {
      */
     this.isLocalDestinationSearchInProgress_ = false;
 
+
+    /**
+     * Whether a search for privet destinations is in progress.
+     * @type {boolean}
+     * @private
+     */
+    this.isPrivetDestinationSearchInProgress_ = false;
+
     this.addEventListeners_();
     this.reset_();
   };
@@ -197,7 +205,8 @@ cr.define('print_preview', function() {
      * @return {boolean} Whether a search for local destinations is in progress.
      */
     get isLocalDestinationSearchInProgress() {
-      return this.isLocalDestinationSearchInProgress_;
+      return this.isLocalDestinationSearchInProgress_ ||
+        this.isPrivetDestinationSearchInProgress_;
     },
 
     /**
@@ -314,7 +323,7 @@ cr.define('print_preview', function() {
       cr.dispatchSimpleEvent(
           this, DestinationStore.EventType.DESTINATION_SELECT);
       if (destination.capabilities == null) {
-         if (destination.isLocal) {
+        if (destination.isLocal) {
           this.nativeLayer_.startGetLocalDestinationCapabilities(
               destination.id);
         } else {
@@ -405,6 +414,14 @@ cr.define('print_preview', function() {
           this, DestinationStore.EventType.DESTINATION_SEARCH_STARTED);
     },
 
+    /** Initiates loading of privet print destinations. */
+    startLoadPrivetDestinations: function() {
+      this.isPrivetDestinationSearchInProgress_ = true;
+      this.nativeLayer_.startGetPrivetDestinations();
+      cr.dispatchSimpleEvent(
+          this, DestinationStore.EventType.DESTINATION_SEARCH_STARTED);
+    },
+
     /**
      * Initiates loading of cloud destinations.
      * @param {boolean} recentOnly Whether the load recet destinations only.
@@ -465,6 +482,15 @@ cr.define('print_preview', function() {
           this.nativeLayer_,
           print_preview.NativeLayer.EventType.DESTINATIONS_RELOAD,
           this.onDestinationsReload_.bind(this));
+      this.tracker_.add(
+          this.nativeLayer_,
+          print_preview.NativeLayer.EventType.PRIVET_PRINTER_CHANGED,
+          this.onPrivetPrinterAdded_.bind(this));
+      this.tracker_.add(
+          this.nativeLayer_,
+          print_preview.NativeLayer.EventType.PRIVET_PRINTER_SEARCH_DONE,
+          this.onPrivetPrinterSearchDone_.bind(this));
+      // TODO(noamsml): Bind PRIVET_PRINTER_REMOVED
     },
 
     /**
@@ -618,6 +644,26 @@ cr.define('print_preview', function() {
     },
 
     /**
+     * Called when a Privet printer is added to the local network.
+     * @param {object} event Contains information about the added printer.
+     * @private
+     */
+    onPrivetPrinterAdded_: function(event) {
+      this.insertDestination(
+          print_preview.PrivetDestinationParser.parse(event.printer));
+    },
+
+    /**
+     * Called when the search for Privet printers is done.
+     * @private
+     */
+    onPrivetPrinterSearchDone_: function() {
+      this.isPrivetDestinationSearchInProgress_ = false;
+      cr.dispatchSimpleEvent(
+        this, DestinationStore.EventType.DESTINATION_SEARCH_DONE);
+    },
+
+    /**
      * Called from native layer after the user was requested to sign in, and did
      * so successfully.
      * @private
@@ -626,6 +672,7 @@ cr.define('print_preview', function() {
       this.reset_();
       this.isInAutoSelectMode_ = true;
       this.startLoadLocalDestinations();
+      this.startLoadPrivetDestinations();
       this.startLoadCloudDestinations(true);
       this.startLoadCloudDestinations(false);
     },

@@ -60,6 +60,7 @@ PrintPreviewWebUITest.prototype = {
         __proto__: cr.EventTarget.prototype,
         startGetInitialSettings: function() {},
         startGetLocalDestinations: function() {},
+        startGetPrivetDestinations: function() {},
         startGetLocalDestinationCapabilities: function(destinationId) {}
       };
       var oldNativeLayerEventType = print_preview.NativeLayer.EventType;

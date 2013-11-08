@@ -82,9 +82,27 @@ cr.define('print_preview', function() {
     return cdd;
   };
 
+  function PrivetDestinationParser() {}
+
+  /**
+   * Parses a privet destination.
+   * @param {!Object} destinationInfo Object that describes a privet printer.
+   * @return {!print_preview.Destination} Parsed destination info.
+   */
+  PrivetDestinationParser.parse = function(destinationInfo) {
+    return new print_preview.Destination(
+        destinationInfo.serviceName,
+        print_preview.Destination.Type.LOCAL,
+        print_preview.Destination.Origin.PRIVET,
+        destinationInfo.name,
+        false /*isRecent*/,
+        print_preview.Destination.ConnectionStatus.ONLINE);
+  };
+
   // Export
   return {
     LocalCapabilitiesParser: LocalCapabilitiesParser,
-    LocalDestinationParser: LocalDestinationParser
+    LocalDestinationParser: LocalDestinationParser,
+    PrivetDestinationParser: PrivetDestinationParser
   };
 });

@@ -227,6 +227,7 @@ cr.define('print_preview', function() {
       }
       this.nativeLayer_.startGetInitialSettings();
       this.destinationStore_.startLoadLocalDestinations();
+      this.destinationStore_.startLoadPrivetDestinations();
       cr.ui.FocusOutlineManager.forDocument(document);
     },
 
