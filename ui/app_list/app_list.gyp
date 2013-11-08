@@ -180,6 +180,7 @@
         'app_list',
       ],
       'sources': [
+        'app_list_item_list_unittest.cc',
         'app_list_model_unittest.cc',
         'pagination_model_unittest.cc',
         'test/app_list_test_model.cc',

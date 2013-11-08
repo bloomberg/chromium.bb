@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "ui/app_list/app_list_export.h"
@@ -27,12 +28,21 @@ class APP_LIST_EXPORT AppListItemList {
   void AddObserver(AppListItemListObserver* observer);
   void RemoveObserver(AppListItemListObserver* observer);
 
-  // Find item matching |id|. NOTE: Requires a linear search.
+  // Finds item matching |id|. NOTE: Requires a linear search.
   AppListItemModel* FindItem(const std::string& id);
+
+  // Finds the |index| of the the item matching |id| in |app_list_items_|.
+  // Returns true if the matching item is found.
+  // Note: Requires a linear search.
+  bool FindItemIndex(const std::string& id, size_t* index);
 
   // Adds |item| to the end of |app_list_items_|. Takes ownership of |item|.
   // Triggers observers_.OnListItemAdded(). Returns the index of the added item.
   size_t AddItem(AppListItemModel* item);
+
+  // Inserts |item| at the |index| into |app_list_items_|. Takes ownership of
+  // |item|. Triggers observers_.OnListItemAdded().
+  void InsertItemAt(AppListItemModel* item, size_t index);
 
   // Finds item matching |id| in |app_list_items_| (linear search) and deletes
   // it. Triggers observers_.OnListItemRemoved() after removing the item from
@@ -44,6 +54,14 @@ class APP_LIST_EXPORT AppListItemList {
   // deletes all items. Triggers observers_.OnListItemRemoved() for each item
   // as for DeleteItem.
   void DeleteItemsByType(const char* type);
+
+  // Removes the item with matching |id| in |app_list_items_| without deleting
+  // it. Returns a scoped pointer containing the removed item.
+  scoped_ptr<AppListItemModel> RemoveItem(const std::string& id);
+
+  // Removes the item at |index| from |app_list_items_| without deleting it.
+  // Returns a scoped pointer containing the removed item.
+  scoped_ptr<AppListItemModel> RemoveItemAt(size_t index);
 
   // Moves item at |from_index| to |to_index|.
   // Triggers observers_.OnListItemMoved().

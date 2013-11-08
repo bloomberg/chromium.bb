@@ -31,6 +31,17 @@ AppListItemModel* AppListItemList::FindItem(const std::string& id) {
   return NULL;
 }
 
+bool AppListItemList::FindItemIndex(const std::string& id, size_t* index) {
+  for (size_t i = 0; i < app_list_items_.size(); ++i) {
+    AppListItemModel* item = app_list_items_[i];
+    if (item->id() == id) {
+      *index = i;
+      return true;
+    }
+  }
+  return false;
+}
+
 size_t AppListItemList::AddItem(AppListItemModel* item) {
   size_t index = GetItemSortOrderIndex(item);
   app_list_items_.insert(app_list_items_.begin() + index, item);
@@ -40,14 +51,39 @@ size_t AppListItemList::AddItem(AppListItemModel* item) {
   return index;
 }
 
-void AppListItemList::DeleteItem(const std::string& id) {
-  for (size_t i = 0; i < app_list_items_.size(); ++i) {
-    AppListItemModel* item = app_list_items_[i];
-    if (item->id() == id) {
-      DeleteItemAt(i);
-      break;
-    }
+void AppListItemList::InsertItemAt(AppListItemModel* item, size_t index) {
+  DCHECK_LE(index, item_count());
+  if (item_count() == 0) {
+    AddItem(item);
+    return;
   }
+
+  AppListItemModel* prev =
+      index > 0 ? app_list_items_[index - 1] : NULL;
+  AppListItemModel* next = index <= app_list_items_.size() - 1 ?
+      app_list_items_[index] : NULL;
+  CHECK_NE(prev, next);
+
+  if (prev && next && prev->position().Equals(next->position()))
+    prev = NULL;
+
+  if (!prev)
+    item->set_position(next->position().CreateBefore());
+  else if (!next)
+    item->set_position(prev->position().CreateAfter());
+  else
+    item->set_position(prev->position().CreateBetween(next->position()));
+
+  app_list_items_.insert(app_list_items_.begin() + index, item);
+
+  FOR_EACH_OBSERVER(AppListItemListObserver,
+                    observers_,
+                    OnListItemAdded(index, item));
+}
+
+void AppListItemList::DeleteItem(const std::string& id) {
+  scoped_ptr<AppListItemModel> item = RemoveItem(id);
+  // |item| will be deleted on destruction.
 }
 
 void AppListItemList::DeleteItemsByType(const char* type) {
@@ -57,6 +93,25 @@ void AppListItemList::DeleteItemsByType(const char* type) {
     if (!type || item->GetAppType() == type)
       DeleteItemAt(i);
   }
+}
+
+scoped_ptr<AppListItemModel> AppListItemList::RemoveItem(
+    const std::string& id) {
+  size_t index;
+  if (FindItemIndex(id, &index))
+    return RemoveItemAt(index);
+
+  return scoped_ptr<AppListItemModel>();
+}
+
+scoped_ptr<AppListItemModel> AppListItemList::RemoveItemAt(size_t index) {
+  DCHECK_LT(index, item_count());
+  AppListItemModel* item = app_list_items_[index];
+  app_list_items_.weak_erase(app_list_items_.begin() + index);
+  FOR_EACH_OBSERVER(AppListItemListObserver,
+                    observers_,
+                    OnListItemRemoved(index, item));
+  return make_scoped_ptr<AppListItemModel>(item);
 }
 
 void AppListItemList::MoveItem(size_t from_index, size_t to_index) {
@@ -98,13 +153,8 @@ void AppListItemList::MoveItem(size_t from_index, size_t to_index) {
 // AppListItemList private
 
 void AppListItemList::DeleteItemAt(size_t index) {
-  DCHECK_LT(index, item_count());
-  AppListItemModel* item = app_list_items_[index];
-  app_list_items_.weak_erase(app_list_items_.begin() + index);
-  FOR_EACH_OBSERVER(AppListItemListObserver,
-                    observers_,
-                    OnListItemRemoved(index, item));
-  delete item;
+  scoped_ptr<AppListItemModel> item = RemoveItemAt(index);
+  // |item| will be deleted on destruction.
 }
 
 size_t AppListItemList::GetItemSortOrderIndex(AppListItemModel* item) {
