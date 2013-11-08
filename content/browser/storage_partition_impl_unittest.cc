@@ -113,12 +113,6 @@ class AwaitCompletionHelper {
     }
   }
 
-// protected:
-//  // BrowsingDataRemover::Observer implementation.
-//  virtual void OnBrowsingDataRemoverDone() OVERRIDE {
-//    Notify();
-//  }
-//
  private:
   // Helps prevent from running message_loop, if the callback invoked
   // immediately.
@@ -254,11 +248,10 @@ bool IsWebSafeSchemeForTest(const std::string& scheme) {
 bool DoesOriginMatchForUnprotectedWeb(
     const GURL& origin,
     quota::SpecialStoragePolicy* special_storage_policy) {
-//  if (IsWebSafeSchemeForTest(origin.scheme())) {
+  if (IsWebSafeSchemeForTest(origin.scheme()))
     return !special_storage_policy->IsStorageProtected(origin.GetOrigin());
 
-//  }
-//  return false;
+  return false;
 }
 
 bool DoesOriginMatchForBothProtectedAndUnprotectedWeb(
