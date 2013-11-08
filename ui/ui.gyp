@@ -366,7 +366,10 @@
             ['exclude', 'base/x/root_window_property_watcher_x.h'],
             ['exclude', 'base/x/work_area_watcher_x.cc'],
             ['exclude', 'base/x/work_area_watcher_x.h'],
-           ],
+          ],
+          'dependencies': [
+            'events/events.gyp:events',
+          ],
         }, {  # use_aura!=1
           'sources!': [
             'base/cursor/cursor.cc',
