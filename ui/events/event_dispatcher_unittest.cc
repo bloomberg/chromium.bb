@@ -199,7 +199,9 @@ class TestEventDispatcher : public EventDispatcherDelegate {
   virtual ~TestEventDispatcher() {}
 
   void ProcessEvent(EventTarget* target, Event* event) {
-    DispatchEvent(target, event);
+    EventDispatchDetails details = DispatchEvent(target, event);
+    if (details.dispatcher_destroyed)
+      return;
   }
 
  private:

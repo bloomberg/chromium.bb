@@ -703,7 +703,8 @@ void RootView::SetMouseLocationAndFlags(const ui::MouseEvent& event) {
 void RootView::DispatchEventToTarget(View* target, ui::Event* event) {
   View* old_target = event_dispatch_target_;
   event_dispatch_target_ = target;
-  if (DispatchEvent(target, event))
+  ui::EventDispatchDetails details = DispatchEvent(target, event);
+  if (!details.dispatcher_destroyed)
     event_dispatch_target_ = old_target;
 }
 

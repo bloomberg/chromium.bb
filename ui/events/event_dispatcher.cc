@@ -40,7 +40,8 @@ Event* EventDispatcherDelegate::current_event() {
   return dispatcher_ ? dispatcher_->current_event() : NULL;
 }
 
-bool EventDispatcherDelegate::DispatchEvent(EventTarget* target, Event* event) {
+EventDispatchDetails EventDispatcherDelegate::DispatchEvent(EventTarget* target,
+                                                            Event* event) {
   EventDispatcher* old_dispatcher = dispatcher_;
   EventDispatcher dispatcher(this);
   dispatcher_ = &dispatcher;
@@ -50,7 +51,7 @@ bool EventDispatcherDelegate::DispatchEvent(EventTarget* target, Event* event) {
   else if (old_dispatcher)
     old_dispatcher->OnDispatcherDelegateDestroyed();
 
-  return !dispatcher.delegate_destroyed();
+  return dispatcher.details();
 }
 
 EventDispatcher::EventDispatcher(EventDispatcherDelegate* delegate)
@@ -94,8 +95,13 @@ void EventDispatcher::ProcessEvent(EventTarget* target, Event* event) {
       return;
   }
 
-  if (!delegate_ || !delegate_->CanDispatchToTarget(target))
+  if (!delegate_)
     return;
+
+  if (!delegate_->CanDispatchToTarget(target)) {
+    details_.target_destroyed = true;
+    return;
+  }
 
   handler_list_.clear();
   target->GetPostTargetHandlers(&handler_list_);
@@ -104,6 +110,7 @@ void EventDispatcher::ProcessEvent(EventTarget* target, Event* event) {
 }
 
 void EventDispatcher::OnDispatcherDelegateDestroyed() {
+  details_.dispatcher_destroyed = true;
   delegate_ = NULL;
 }
 
@@ -135,6 +142,7 @@ void EventDispatcher::DispatchEventToEventHandlers(EventHandlerList* list,
 void EventDispatcher::DispatchEvent(EventHandler* handler, Event* event) {
   // If the target has been invalidated or deleted, don't dispatch the event.
   if (!delegate_->CanDispatchToTarget(event->target())) {
+    details_.target_destroyed = true;
     if (event->cancelable())
       event->StopPropagation();
     return;

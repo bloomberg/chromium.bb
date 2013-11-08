@@ -230,61 +230,6 @@ ui::GestureEvent* CreateGesture(ui::EventType type,
       ui::GestureEventDetails(type, delta_x, delta_y), 1 << touch_id);
 }
 
-void MoveToDeviceControlBezelStartPosition(
-    aura::RootWindow* root_window,
-    DelegatePercentTracker* delegate,
-    double expected_value,
-    int xpos,
-    int ypos,
-    int ypos_half,
-    int touch_id) {
-  // Get a target for kTouchId
-  ui::TouchEvent press1(ui::ET_TOUCH_PRESSED,
-                        gfx::Point(-10, ypos + ypos_half),
-                        touch_id,
-                        ui::EventTimeForNow());
-  root_window->GetDispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(
-      &press1);
-
-  // There is a noise filter which will require several calls before it
-  // allows the touch event through.
-  int initial_count = delegate->handle_percent_count();
-
-  // Position the initial touch down slightly underneath the position of
-  // interest to avoid a conflict with the noise filter.
-  scoped_ptr<ui::GestureEvent> event1(CreateGesture(
-      ui::ET_GESTURE_SCROLL_BEGIN, xpos, ypos + ypos_half - 10,
-      0, 0, touch_id));
-  bool consumed = root_window->DispatchGestureEvent(event1.get());
-
-  EXPECT_TRUE(consumed);
-  EXPECT_EQ(initial_count, delegate->handle_percent_count());
-
-  // No move at the beginning will produce no events.
-  scoped_ptr<ui::GestureEvent> event2(CreateGesture(
-      ui::ET_GESTURE_SCROLL_UPDATE,
-      xpos, ypos + ypos_half - 10, 0, 0, touch_id));
-  consumed = root_window->DispatchGestureEvent(event2.get());
-
-  EXPECT_TRUE(consumed);
-  EXPECT_EQ(initial_count, delegate->handle_percent_count());
-
-  // A move to a new Y location will produce an event.
-  scoped_ptr<ui::GestureEvent> event3(CreateGesture(
-      ui::ET_GESTURE_SCROLL_UPDATE, xpos, ypos + ypos_half,
-      0, 10, touch_id));
-
-  int count = initial_count;
-  int loop_counter = 0;
-  while (count == initial_count && loop_counter++ < 100) {
-    EXPECT_TRUE(root_window->DispatchGestureEvent(event3.get()));
-    count = delegate->handle_percent_count();
-  }
-  EXPECT_TRUE(loop_counter && loop_counter < 100);
-  EXPECT_EQ(initial_count + 1, count);
-  EXPECT_EQ(expected_value, delegate->handle_percent());
-}
-
 TEST_P(SystemGestureEventFilterTest, LongPressAffordanceStateOnCaptureLoss) {
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
 

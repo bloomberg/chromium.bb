@@ -15,6 +15,14 @@ namespace ui {
 
 class EventDispatcher;
 
+struct EventDispatchDetails {
+  EventDispatchDetails()
+      : dispatcher_destroyed(false),
+        target_destroyed(false) {}
+  bool dispatcher_destroyed;
+  bool target_destroyed;
+};
+
 class EVENTS_EXPORT EventDispatcherDelegate {
  public:
   EventDispatcherDelegate();
@@ -33,7 +41,8 @@ class EVENTS_EXPORT EventDispatcherDelegate {
   // Dispatches the event to the target. Returns true if the delegate is still
   // alive after dispatching event, and false if the delegate was destroyed
   // during the event dispatch.
-  bool DispatchEvent(EventTarget* target, Event* event);
+  EventDispatchDetails DispatchEvent(EventTarget* target, Event* event)
+      WARN_UNUSED_RESULT;
 
  private:
   EventDispatcher* dispatcher_;
@@ -53,6 +62,7 @@ class EVENTS_EXPORT EventDispatcher {
   Event* current_event() { return current_event_; }
 
   bool delegate_destroyed() const { return !delegate_; }
+  const EventDispatchDetails& details() const { return details_; }
 
   void OnHandlerDestroyed(EventHandler* handler);
   void OnDispatcherDelegateDestroyed();
@@ -70,6 +80,8 @@ class EVENTS_EXPORT EventDispatcher {
   Event* current_event_;
 
   EventHandlerList handler_list_;
+
+  EventDispatchDetails details_;
 
   DISALLOW_COPY_AND_ASSIGN(EventDispatcher);
 };

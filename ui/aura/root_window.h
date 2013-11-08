@@ -145,7 +145,7 @@ class AURA_EXPORT RootWindow : public Window,
   // Handles a gesture event. Returns true if handled. Unlike the other
   // event-dispatching function (e.g. for touch/mouse/keyboard events), gesture
   // events are dispatched from GestureRecognizer instead of RootWindowHost.
-  bool DispatchGestureEvent(ui::GestureEvent* event);
+  void DispatchGestureEvent(ui::GestureEvent* event);
 
   // Invoked when |window| is being destroyed.
   void OnWindowDestroying(Window* window);
@@ -275,12 +275,13 @@ class AURA_EXPORT RootWindow : public Window,
 
   // Dispatches the specified event type (intended for enter/exit) to the
   // |mouse_moved_handler_|.
-  void DispatchMouseEnterOrExit(const ui::MouseEvent& event,
-                                ui::EventType type);
-
-  void ProcessEvent(Window* target, ui::Event* event);
-
-  bool ProcessGestures(ui::GestureRecognizer::Gestures* gestures);
+  ui::EventDispatchDetails DispatchMouseEnterOrExit(
+      const ui::MouseEvent& event,
+      ui::EventType type) WARN_UNUSED_RESULT;
+  ui::EventDispatchDetails ProcessEvent(Window* target,
+                                        ui::Event* event) WARN_UNUSED_RESULT;
+  ui::EventDispatchDetails ProcessGestures(
+      ui::GestureRecognizer::Gestures* gestures) WARN_UNUSED_RESULT;
 
   // Called when a Window is attached or detached from the RootWindow.
   void OnWindowAddedToRootWindow(Window* window);
@@ -342,6 +343,9 @@ class AURA_EXPORT RootWindow : public Window,
   virtual float GetDeviceScaleFactor() OVERRIDE;
   virtual RootWindow* AsRootWindow() OVERRIDE;
 
+  ui::EventDispatchDetails OnHostMouseEventImpl(ui::MouseEvent* event)
+      WARN_UNUSED_RESULT;
+
   // We hold and aggregate mouse drags and touch moves as a way of throttling
   // resizes when HoldMouseMoves() is called. The following methods are used to
   // dispatch held and newly incoming mouse and touch events, typically when an
@@ -349,19 +353,26 @@ class AURA_EXPORT RootWindow : public Window,
   // ReleaseMouseMoves()/ReleaseTouchMoves() is called.  NOTE: because these
   // methods dispatch events from RootWindowHost the coordinates are in terms of
   // the root.
-  bool DispatchMouseEventImpl(ui::MouseEvent* event);
-  void DispatchMouseEventRepost(ui::MouseEvent* event);
-  bool DispatchMouseEventToTarget(ui::MouseEvent* event, Window* target);
-  bool DispatchTouchEventImpl(ui::TouchEvent* event);
-  void DispatchHeldEvents();
+  ui::EventDispatchDetails DispatchMouseEventImpl(ui::MouseEvent* event)
+      WARN_UNUSED_RESULT;
+  ui::EventDispatchDetails DispatchMouseEventRepost(ui::MouseEvent* event)
+      WARN_UNUSED_RESULT;
+  ui::EventDispatchDetails DispatchMouseEventToTarget(ui::MouseEvent* event,
+                                                      Window* target)
+      WARN_UNUSED_RESULT;
+  ui::EventDispatchDetails DispatchTouchEventImpl(ui::TouchEvent* event)
+      WARN_UNUSED_RESULT;
+  ui::EventDispatchDetails DispatchHeldEvents() WARN_UNUSED_RESULT;
+  // Creates and dispatches synthesized mouse move event using the
+  // current mouse location.
+  ui::EventDispatchDetails SynthesizeMouseMoveEvent() WARN_UNUSED_RESULT;
+
+  void DispatchHeldEventsAsync();
+  void SynthesizeMouseMoveEventAsync();
 
   // Posts a task to send synthesized mouse move event if there
   // is no a pending task.
   void PostMouseMoveEventAfterWindowChange();
-
-  // Creates and dispatches synthesized mouse move event using the
-  // current mouse location.
-  void SynthesizeMouseMoveEvent();
 
   gfx::Transform GetInverseRootTransform() const;
 
@@ -399,8 +410,8 @@ class AURA_EXPORT RootWindow : public Window,
 
   scoped_ptr<RootWindowTransformer> transformer_;
 
-  // Used for references we don't need to invalidate.
-  base::WeakPtrFactory<RootWindow> weak_factory_;
+  // Used to schedule reposting an event.
+  base::WeakPtrFactory<RootWindow> repost_event_factory_;
 
   // Used to schedule DispatchHeldEvents() when |move_hold_count_| goes to 0.
   base::WeakPtrFactory<RootWindow> held_event_factory_;
