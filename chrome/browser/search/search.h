@@ -157,6 +157,15 @@ bool ShouldShowRecentTabsOnNTP();
 // page.
 bool ShouldSuppressInstantExtendedOnSRP();
 
+// Returns true if a search button should be shown in the omnibox when the
+// underlying state of the page would normally be to perform search term
+// replacement. See also ToolbarModel::WouldPerformSearchTermReplacement().
+bool ShouldDisplaySearchButtonForSearchTermReplacement();
+
+// Returns true if the origin chip should be shown next to the omnibox. This
+// also includes the related changes to the omnibox.
+bool ShouldDisplayOriginChip();
+
 // Transforms the input |url| into its "effective URL". The returned URL
 // facilitates grouping process-per-site. The |url| is transformed, for
 // example, from

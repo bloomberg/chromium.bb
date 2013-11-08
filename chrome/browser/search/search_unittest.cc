@@ -321,6 +321,48 @@ TEST_F(ShouldSuppressInstantExtendedOnSRPTest, SuppressOnSRP) {
   EXPECT_EQ(2ul, EmbeddedSearchPageVersion());
 }
 
+typedef InstantExtendedAPIEnabledTest SearchButtonForSearchTermReplacementTest;
+
+TEST_F(SearchButtonForSearchTermReplacementTest, NotSet) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch", "Group1 espv:2"));
+  EXPECT_FALSE(ShouldDisplaySearchButtonForSearchTermReplacement());
+}
+
+TEST_F(SearchButtonForSearchTermReplacementTest, NoSearchButtonOnSRP) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch",
+      "Group1 espv:2 search_button_for_search_term_replacement:0"));
+  EXPECT_FALSE(ShouldDisplaySearchButtonForSearchTermReplacement());
+}
+
+TEST_F(SearchButtonForSearchTermReplacementTest, SearchButtonOnSRP) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch",
+      "Group1 espv:2 search_button_for_search_term_replacement:1"));
+  EXPECT_TRUE(ShouldDisplaySearchButtonForSearchTermReplacement());
+}
+
+typedef InstantExtendedAPIEnabledTest OriginChipTest;
+
+TEST_F(OriginChipTest, NotSet) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch", "Group1 espv:2"));
+  EXPECT_FALSE(ShouldDisplayOriginChip());
+}
+
+TEST_F(OriginChipTest, NoOriginChip) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch", "Group1 espv:2 origin_chip:0"));
+  EXPECT_FALSE(ShouldDisplayOriginChip());
+}
+
+TEST_F(OriginChipTest, OriginChip) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch", "Group1 espv:2 origin_chip:1"));
+  EXPECT_TRUE(ShouldDisplayOriginChip());
+}
+
 class SearchTest : public BrowserWithTestWindowTest {
  protected:
   virtual void SetUp() OVERRIDE {

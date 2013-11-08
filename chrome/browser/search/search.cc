@@ -72,6 +72,9 @@ const char kUseCacheableNTP[] = "use_cacheable_ntp";
 const char kPrefetchSearchResultsFlagName[] = "prefetch_results";
 const char kPrefetchSearchResultsOnSRP[] = "prefetch_results_srp";
 const char kSuppressInstantExtendedOnSRPFlagName[] = "suppress_on_srp";
+const char kEnableSearchButtonForSearchTermReplacementFlagName[] =
+    "search_button_for_search_term_replacement";
+const char kEnableOriginChipFlagName[] = "origin_chip";
 
 // Constants for the field trial name and group prefix.
 // Note in M30 and below this field trial was named "InstantExtended" and in
@@ -508,10 +511,8 @@ bool ShouldPrefetchSearchResults() {
     return false;
 
   FieldTrialFlags flags;
-  if (GetFieldTrialInfo(&flags, NULL))
-    return GetBoolValueForFlagWithDefault(kPrefetchSearchResultsFlagName, false,
-                                          flags);
-  return false;
+  return GetFieldTrialInfo(&flags, NULL) && GetBoolValueForFlagWithDefault(
+      kPrefetchSearchResultsFlagName, false, flags);
 }
 
 GURL GetLocalInstantURL(Profile* profile) {
@@ -530,19 +531,14 @@ bool ShouldPreferRemoteNTPOnStartup() {
     return true;
 
   FieldTrialFlags flags;
-  if (GetFieldTrialInfo(&flags, NULL)) {
-    return GetBoolValueForFlagWithDefault(kUseRemoteNTPOnStartupFlagName, true,
-                                          flags);
-  }
-  return false;
+  return GetFieldTrialInfo(&flags, NULL) && GetBoolValueForFlagWithDefault(
+      kUseRemoteNTPOnStartupFlagName, true, flags);
 }
 
 bool ShouldHideTopVerbatimMatch() {
   FieldTrialFlags flags;
-  if (GetFieldTrialInfo(&flags, NULL)) {
-    return GetBoolValueForFlagWithDefault(kHideVerbatimFlagName, false, flags);
-  }
-  return false;
+  return GetFieldTrialInfo(&flags, NULL) && GetBoolValueForFlagWithDefault(
+      kHideVerbatimFlagName, false, flags);
 }
 
 bool ShouldUseCacheableNTP() {
@@ -551,10 +547,8 @@ bool ShouldUseCacheableNTP() {
     return true;
 
   FieldTrialFlags flags;
-  if (GetFieldTrialInfo(&flags, NULL)) {
-    return GetBoolValueForFlagWithDefault(kUseCacheableNTP, false, flags);
-  }
-  return false;
+  return GetFieldTrialInfo(&flags, NULL) && GetBoolValueForFlagWithDefault(
+      kUseCacheableNTP, false, flags);
 }
 
 bool ShouldShowInstantNTP() {
@@ -572,22 +566,26 @@ bool ShouldShowInstantNTP() {
 
 bool ShouldShowRecentTabsOnNTP() {
   FieldTrialFlags flags;
-  if (GetFieldTrialInfo(&flags, NULL)) {
-    return GetBoolValueForFlagWithDefault(
-        kRecentTabsOnNTPFlagName, false, flags);
-  }
-
-  return false;
+  return GetFieldTrialInfo(&flags, NULL) && GetBoolValueForFlagWithDefault(
+      kRecentTabsOnNTPFlagName, false, flags);
 }
 
 bool ShouldSuppressInstantExtendedOnSRP() {
   FieldTrialFlags flags;
-  if (GetFieldTrialInfo(&flags, NULL)) {
-    return GetBoolValueForFlagWithDefault(
-        kSuppressInstantExtendedOnSRPFlagName, false, flags);
-  }
+  return GetFieldTrialInfo(&flags, NULL) && GetBoolValueForFlagWithDefault(
+      kSuppressInstantExtendedOnSRPFlagName, false, flags);
+}
 
-  return false;
+bool ShouldDisplaySearchButtonForSearchTermReplacement() {
+  FieldTrialFlags flags;
+  return GetFieldTrialInfo(&flags, NULL) && GetBoolValueForFlagWithDefault(
+      kEnableSearchButtonForSearchTermReplacementFlagName, false, flags);
+}
+
+bool ShouldDisplayOriginChip() {
+  FieldTrialFlags flags;
+  return GetFieldTrialInfo(&flags, NULL) && GetBoolValueForFlagWithDefault(
+      kEnableOriginChipFlagName, false, flags);
 }
 
 GURL GetEffectiveURLForInstant(const GURL& url, Profile* profile) {
@@ -721,11 +719,8 @@ bool ShouldPrefetchSearchResultsOnSRP() {
   }
 
   FieldTrialFlags flags;
-  if (GetFieldTrialInfo(&flags, NULL)) {
-    return GetBoolValueForFlagWithDefault(kPrefetchSearchResultsOnSRP, false,
-                                          flags);
-  }
-  return false;
+  return GetFieldTrialInfo(&flags, NULL) && GetBoolValueForFlagWithDefault(
+      kPrefetchSearchResultsOnSRP, false, flags);
 }
 
 void EnableInstantExtendedAPIForTesting() {
