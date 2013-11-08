@@ -38,7 +38,7 @@
   "bluetooth": {
     "Learn More": [
       {
-        "link": "app_hardware.html",
+        "link": "app_usb.html",
         "text": "Accessing Hardware Devices"
       }
     ]
@@ -157,7 +157,7 @@
   "permissions": {
     "Learn More": [
       {
-        "link": "declare_permissions.html#host-permissions",
+        "link": "declare_permissions.html",
         "text": "Declaring permissions"
       }
     ]
@@ -189,7 +189,7 @@
   "serial": {
     "Learn More": [
       {
-        "link": "app_hardware.html",
+        "link": "app_usb.html",
         "text": "Accessing Hardware Devices"
       }
     ]
@@ -265,7 +265,7 @@
   "usb": {
     "Learn More": [
       {
-        "link": "app_hardware.html",
+        "link": "app_usb.html",
         "text": "Accessing Hardware Devices"
       }
     ]

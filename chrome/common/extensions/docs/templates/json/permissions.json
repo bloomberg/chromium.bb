@@ -1,9 +1,10 @@
 {
   "host-permissions": {
-    "anchor": "match-pattern",
+    "channel": "stable",
+    "anchor": "host-permissions",
     "name": "[scheme]:[host]/*",
     "partial": "permissions/host_permissions.html",
-    "platforms": ["app", "extension"]
+    "extension_types": ["legacy_packaged_app", "extension", "platform_app"]
   },
   "activeTab": {
     "partial": "permissions/active_tab.html"
