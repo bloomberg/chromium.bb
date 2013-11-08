@@ -139,6 +139,7 @@ crbug.com/240374 compositing/overlap-blending/children-opacity-no-overlap.html [
 
 crbug.com/248155 [ Win Debug ] fast/hidpi/gradient-with-scaled-ancestor.html [ ImageOnlyFailure ]
 crbug.com/248155 [ Win Debug ] virtual/gpu/fast/hidpi/gradient-with-scaled-ancestor.html [ ImageOnlyFailure ]
+crbug.com/316604 [ Win ] virtual/gpu/fast/hidpi/focus-rings.html [ Pass ImageOnlyFailure ]
 
 crbug.com/245611 [ Linux ] fast/hidpi/video-controls-in-hidpi.html [ ImageOnlyFailure Pass ]
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas.html [ Skip ]
