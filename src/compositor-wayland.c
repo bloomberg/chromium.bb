@@ -862,8 +862,6 @@ input_handle_pointer_enter(void *data, struct wl_pointer *pointer,
 		location = THEME_LOCATION_CLIENT_AREA;
 	}
 
-	x += wl_fixed_from_int(input->output->base.x);
-	y += wl_fixed_from_int(input->output->base.y);
 	weston_output_transform_coordinate(&input->output->base, x, y, &x, &y);
 
 	if (location == THEME_LOCATION_CLIENT_AREA) {
@@ -918,8 +916,6 @@ input_handle_motion(void *data, struct wl_pointer *pointer,
 		location = THEME_LOCATION_CLIENT_AREA;
 	}
 
-	x += wl_fixed_from_int(input->output->base.x);
-	y += wl_fixed_from_int(input->output->base.y);
 	weston_output_transform_coordinate(&input->output->base, x, y, &x, &y);
 
 	if (input->focus && location != THEME_LOCATION_CLIENT_AREA) {
