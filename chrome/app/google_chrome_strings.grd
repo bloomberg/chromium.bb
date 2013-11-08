@@ -631,9 +631,6 @@ Google Chrome is unable to recover your settings.
         <message name="IDS_FLAGS_RELAUNCH_NOTICE" desc="Notifies the user that he needs to restart Chrome OS. Shown next to a button that says 'Restart Now'.">
           Your changes will take effect the next time you restart your device.
         </message>
-        <message name="IDS_FLAGS_CHROME_CAPTIVE_PORTAL_DETECTOR" desc="Description for the option of Captive Portal detector.">
-          Chrome Captive Portal detector
-        </message>
       </if>
 
       <!-- Obsolete System info bar -->

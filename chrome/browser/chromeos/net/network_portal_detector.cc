@@ -23,11 +23,6 @@ bool IsTestMode() {
   return CommandLine::ForCurrentProcess()->HasSwitch(::switches::kTestType);
 }
 
-bool IsEnabledInCommandLine() {
-  return !CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kDisableChromeCaptivePortalDetector);
-}
-
 // Stub implementation of NetworkPortalDetector.
 class NetworkPortalDetectorStubImpl : public NetworkPortalDetector {
  protected:
@@ -67,7 +62,7 @@ void NetworkPortalDetector::Initialize() {
     return;
   CHECK(!g_network_portal_detector)
       << "NetworkPortalDetector::Initialize() is called twice";
-  if (!IsEnabledInCommandLine() || IsTestMode()) {
+  if (IsTestMode()) {
     g_network_portal_detector = new NetworkPortalDetectorStubImpl();
   } else {
     CHECK(g_browser_process);

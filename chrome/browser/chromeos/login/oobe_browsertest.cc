@@ -34,8 +34,6 @@ class OobeTest : public InProcessBrowserTest {
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     command_line->AppendSwitch(chromeos::switches::kLoginManager);
     command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
-    command_line->AppendSwitch(
-        chromeos::switches::kDisableChromeCaptivePortalDetector);
     command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
     command_line->AppendSwitchASCII(
         chromeos::switches::kAuthExtensionPath, "gaia_auth");

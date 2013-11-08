@@ -188,18 +188,6 @@ const Experiment::Choice kNaClDebugMaskChoices[] = {
       switches::kNaClDebugMask, "*://*/*debug.nmf" }
 };
 
-#if defined(OS_CHROMEOS)
-
-const Experiment::Choice kChromeCaptivePortalDetectionChoices[] = {
-  { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
-  { IDS_FLAGS_CHROME_CAPTIVE_PORTAL_DETECTOR,
-    chromeos::switches::kEnableChromeCaptivePortalDetector, "" },
-  { IDS_FLAGS_SHILL_CAPTIVE_PORTAL_DETECTOR,
-    chromeos::switches::kDisableChromeCaptivePortalDetector, "" }
-};
-
-#endif
-
 const Experiment::Choice kImplSidePaintingChoices[] = {
   { IDS_GENERIC_EXPERIMENT_CHOICE_DEFAULT, "", "" },
   { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
@@ -1107,13 +1095,6 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_DISABLE_BOOT_ANIMATION_DESCRIPTION,
     kOsCrOSOwnerOnly,
     SINGLE_VALUE_TYPE(chromeos::switches::kDisableBootAnimation),
-  },
-  {
-    "captive-portal-detector",
-    IDS_FLAGS_CAPTIVE_PORTAL_DETECTOR_NAME,
-    IDS_FLAGS_CAPTIVE_PORTAL_DETECTOR_DESCRIPTION,
-    kOsCrOSOwnerOnly,
-    MULTI_VALUE_TYPE(kChromeCaptivePortalDetectionChoices),
   },
   {
     "file-manager-show-checkboxes",

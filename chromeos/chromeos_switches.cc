@@ -27,11 +27,6 @@ const char kDefaultStubNetworkStateIdle[] = "default-stub-network-state-idle";
 // Disables wallpaper boot animation (except of OOBE case).
 const char kDisableBootAnimation[]          = "disable-boot-animation";
 
-// Disables Chrome Captive Portal detector, which initiates Captive
-// Portal detection for new active networks.
-const char kDisableChromeCaptivePortalDetector[] =
-    "disable-chrome-captive-portal-detector";
-
 // Disables Google Drive integration.
 const char kDisableDrive[]                  = "disable-drive";
 
@@ -76,11 +71,6 @@ const char kEnableBackgroundLoader[]        = "enable-background-loader";
 
 // Enables switching between different cellular carriers from the UI.
 const char kEnableCarrierSwitching[]        = "enable-carrier-switching";
-
-// Enables Chrome Captive Portal detector, which initiates Captive
-// Portal detection for new active networks.
-const char kEnableChromeCaptivePortalDetector[] =
-    "enable-chrome-captive-portal-detector";
 
 // Enables automatically initializing Google Drive offline mode on first run.
 const char kEnableDriveOfflineFirstRun[] = "enable-drive-offline-first-run";
