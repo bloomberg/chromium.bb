@@ -63,6 +63,7 @@ void DocumentRuleSets::collectRulesFromUserStyleSheets(const Vector<RefPtr<CSSSt
     for (unsigned i = 0; i < userSheets.size(); ++i) {
         ASSERT(userSheets[i]->contents()->isUserStyleSheet());
         userStyle.addRulesFromSheet(userSheets[i]->contents(), medium, &resolver);
+        resolver.addFontFaceRules(userStyle.fontFaceRules());
     }
 }
 
