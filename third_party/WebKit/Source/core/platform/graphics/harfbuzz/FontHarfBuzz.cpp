@@ -138,7 +138,7 @@ void Font::drawGlyphs(GraphicsContext* gc, const SimpleFontData* font,
                 currentWidth += glyphBuffer.advanceAt(from + glyphIndex);
             }
             horizontalOffset += currentWidth;
-            paintGlyphs(gc, font, glyphs, numGlyphs, pos, textRect);
+            paintGlyphs(gc, font, glyphs, chunkLength, pos, textRect);
         }
 
         gc->setCTM(savedMatrix);
