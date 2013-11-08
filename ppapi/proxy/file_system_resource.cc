@@ -73,6 +73,7 @@ PP_FileSystemType FileSystemResource::GetType() {
 
 int32_t FileSystemResource::InitIsolatedFileSystem(
     const std::string& fsid,
+    PP_IsolatedFileSystemType_Private type,
     const base::Callback<void(int32_t)>& callback) {
   // This call is mutually exclusive with Open() above, so we can reuse the
   // called_open state.
@@ -82,12 +83,12 @@ int32_t FileSystemResource::InitIsolatedFileSystem(
   called_open_ = true;
 
   Call<PpapiPluginMsg_FileSystem_InitIsolatedFileSystemReply>(RENDERER,
-      PpapiHostMsg_FileSystem_InitIsolatedFileSystem(fsid),
+      PpapiHostMsg_FileSystem_InitIsolatedFileSystem(fsid, type),
       base::Bind(&FileSystemResource::InitIsolatedFileSystemComplete,
       this,
       callback));
   Call<PpapiPluginMsg_FileSystem_InitIsolatedFileSystemReply>(BROWSER,
-      PpapiHostMsg_FileSystem_InitIsolatedFileSystem(fsid),
+      PpapiHostMsg_FileSystem_InitIsolatedFileSystem(fsid, type),
       base::Bind(&FileSystemResource::InitIsolatedFileSystemComplete,
       this,
       callback));

@@ -4,7 +4,7 @@
  */
 
 /* From private/ppb_ext_crx_file_system_private.idl,
- *   modified Fri May  3 09:55:27 2013.
+ *   modified Fri Nov  1 12:23:59 2013.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPB_EXT_CRX_FILE_SYSTEM_PRIVATE_H_
@@ -23,6 +23,7 @@
 
 /**
  * @file
+ * This file contains the <code>PPB_Ext_CrxFileSystem_Private</code> interface.
  */
 
 

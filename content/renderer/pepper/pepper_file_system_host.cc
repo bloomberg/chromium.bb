@@ -23,6 +23,23 @@
 
 namespace content {
 
+namespace {
+
+// TODO(nhiroki): Move this function somewhere else to be shared.
+std::string IsolatedFileSystemTypeToRootName(
+    PP_IsolatedFileSystemType_Private type) {
+  switch (type) {
+    case PP_ISOLATEDFILESYSTEMTYPE_PRIVATE_INVALID:
+      break;
+    case PP_ISOLATEDFILESYSTEMTYPE_PRIVATE_CRX:
+      return "crxfs";
+  }
+  NOTREACHED() << type;
+  return std::string();
+}
+
+}  // namespace
+
 PepperFileSystemHost::PepperFileSystemHost(RendererPpapiHost* host,
                                            PP_Instance instance,
                                            PP_Resource resource,
@@ -131,21 +148,28 @@ int32_t PepperFileSystemHost::OnHostMsgOpen(
 
 int32_t PepperFileSystemHost::OnHostMsgInitIsolatedFileSystem(
     ppapi::host::HostMessageContext* context,
-    const std::string& fsid) {
+    const std::string& fsid,
+    PP_IsolatedFileSystemType_Private type) {
   // Do not allow multiple opens.
   if (called_open_)
     return PP_ERROR_INPROGRESS;
   called_open_ = true;
+
   // Do a sanity check.
   if (!fileapi::ValidateIsolatedFileSystemId(fsid))
     return PP_ERROR_BADARGUMENT;
+
   RenderView* view =
       renderer_ppapi_host_->GetRenderViewForInstance(pp_instance());
   if (!view)
     return PP_ERROR_FAILED;
+
   const GURL& url = view->GetWebView()->mainFrame()->document().url();
+  const std::string root_name = IsolatedFileSystemTypeToRootName(type);
+  if (root_name.empty())
+    return PP_ERROR_BADARGUMENT;
   root_url_ = GURL(fileapi::GetIsolatedFileSystemRootURIString(
-      url.GetOrigin(), fsid, "crxfs"));
+      url.GetOrigin(), fsid, root_name));
   opened_ = true;
   return PP_OK;
 }

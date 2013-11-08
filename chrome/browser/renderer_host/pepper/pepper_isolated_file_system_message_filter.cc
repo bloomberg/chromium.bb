@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/renderer_host/pepper/pepper_crx_file_system_message_filter.h"
+#include "chrome/browser/renderer_host/pepper/pepper_isolated_file_system_message_filter.h"
 
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -36,7 +36,8 @@ const char* kPredefinedAllowedCrxFsOrigins[] = {
 }  // namespace
 
 // static
-PepperCrxFileSystemMessageFilter* PepperCrxFileSystemMessageFilter::Create(
+PepperIsolatedFileSystemMessageFilter*
+PepperIsolatedFileSystemMessageFilter::Create(
     PP_Instance instance, content::BrowserPpapiHost* host) {
   int render_process_id;
   int unused_render_view_id;
@@ -45,13 +46,13 @@ PepperCrxFileSystemMessageFilter* PepperCrxFileSystemMessageFilter::Create(
                                          &unused_render_view_id)) {
     return NULL;
   }
-  return new PepperCrxFileSystemMessageFilter(
+  return new PepperIsolatedFileSystemMessageFilter(
       render_process_id,
       host->GetProfileDataDirectory(),
       host->GetDocumentURLForInstance(instance));
 }
 
-PepperCrxFileSystemMessageFilter::PepperCrxFileSystemMessageFilter(
+PepperIsolatedFileSystemMessageFilter::PepperIsolatedFileSystemMessageFilter(
     int render_process_id,
     const base::FilePath& profile_directory,
     const GURL& document_url)
@@ -62,11 +63,12 @@ PepperCrxFileSystemMessageFilter::PepperCrxFileSystemMessageFilter(
     allowed_crxfs_origins_.insert(kPredefinedAllowedCrxFsOrigins[i]);
 }
 
-PepperCrxFileSystemMessageFilter::~PepperCrxFileSystemMessageFilter() {
+PepperIsolatedFileSystemMessageFilter::
+~PepperIsolatedFileSystemMessageFilter() {
 }
 
 scoped_refptr<base::TaskRunner>
-PepperCrxFileSystemMessageFilter::OverrideTaskRunnerForMessage(
+PepperIsolatedFileSystemMessageFilter::OverrideTaskRunnerForMessage(
     const IPC::Message& msg) {
   // In order to reach ExtensionSystem, we need to get ProfileManager first.
   // ProfileManager lives in UI thread, so we need to do this in UI thread.
@@ -74,23 +76,23 @@ PepperCrxFileSystemMessageFilter::OverrideTaskRunnerForMessage(
       content::BrowserThread::UI);
 }
 
-int32_t PepperCrxFileSystemMessageFilter::OnResourceMessageReceived(
+int32_t PepperIsolatedFileSystemMessageFilter::OnResourceMessageReceived(
     const IPC::Message& msg,
     ppapi::host::HostMessageContext* context) {
-  IPC_BEGIN_MESSAGE_MAP(PepperCrxFileSystemMessageFilter, msg)
-    PPAPI_DISPATCH_HOST_RESOURCE_CALL_0(
-        PpapiHostMsg_Ext_CrxFileSystem_BrowserOpen, OnOpenFileSystem);
+  IPC_BEGIN_MESSAGE_MAP(PepperIsolatedFileSystemMessageFilter, msg)
+    PPAPI_DISPATCH_HOST_RESOURCE_CALL(
+        PpapiHostMsg_IsolatedFileSystem_BrowserOpen, OnOpenFileSystem);
   IPC_END_MESSAGE_MAP()
   return PP_ERROR_FAILED;
 }
 
-Profile* PepperCrxFileSystemMessageFilter::GetProfile() {
+Profile* PepperIsolatedFileSystemMessageFilter::GetProfile() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   return profile_manager->GetProfile(profile_directory_);
 }
 
-std::string PepperCrxFileSystemMessageFilter::CreateIsolatedFileSystem(
+std::string PepperIsolatedFileSystemMessageFilter::CreateCrxFileSystem(
     Profile* profile) {
   extensions::ExtensionSystem* extension_system =
       extensions::ExtensionSystem::Get(profile);
@@ -115,7 +117,23 @@ std::string PepperCrxFileSystemMessageFilter::CreateIsolatedFileSystem(
                                 &kFirstLevelDirectory);
 }
 
-int32_t PepperCrxFileSystemMessageFilter::OnOpenFileSystem(
+int32_t PepperIsolatedFileSystemMessageFilter::OnOpenFileSystem(
+    ppapi::host::HostMessageContext* context,
+    PP_IsolatedFileSystemType_Private type) {
+  switch (type) {
+    case PP_ISOLATEDFILESYSTEMTYPE_PRIVATE_INVALID:
+      break;
+    case PP_ISOLATEDFILESYSTEMTYPE_PRIVATE_CRX:
+      return OpenCrxFileSystem(context);
+    // TODO(nhiroki): Other filesystem will be implemented. (crbug.com/286242)
+  }
+  NOTREACHED();
+  context->reply_msg =
+      PpapiPluginMsg_IsolatedFileSystem_BrowserOpenReply(std::string());
+  return PP_ERROR_FAILED;
+}
+
+int32_t PepperIsolatedFileSystemMessageFilter::OpenCrxFileSystem(
     ppapi::host::HostMessageContext* context) {
   Profile* profile = GetProfile();
   const ExtensionSet* extension_set = NULL;
@@ -134,10 +152,10 @@ int32_t PepperCrxFileSystemMessageFilter::OnOpenFileSystem(
   // TODO(raymes): When we remove FileSystem from the renderer, we should create
   // a pending PepperFileSystemBrowserHost here with the fsid and send the
   // pending host ID back to the plugin.
-  const std::string fsid = CreateIsolatedFileSystem(profile);
+  const std::string fsid = CreateCrxFileSystem(profile);
   if (fsid.empty()) {
     context->reply_msg =
-        PpapiPluginMsg_Ext_CrxFileSystem_BrowserOpenReply(std::string());
+        PpapiPluginMsg_IsolatedFileSystem_BrowserOpenReply(std::string());
     return PP_ERROR_NOTSUPPORTED;
   }
 
@@ -146,7 +164,7 @@ int32_t PepperCrxFileSystemMessageFilter::OnOpenFileSystem(
       content::ChildProcessSecurityPolicy::GetInstance();
   policy->GrantReadFileSystem(render_process_id_, fsid);
 
-  context->reply_msg = PpapiPluginMsg_Ext_CrxFileSystem_BrowserOpenReply(fsid);
+  context->reply_msg = PpapiPluginMsg_IsolatedFileSystem_BrowserOpenReply(fsid);
   return PP_OK;
 }
 

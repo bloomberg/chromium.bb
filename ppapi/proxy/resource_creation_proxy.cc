@@ -8,7 +8,6 @@
 #include "ppapi/c/pp_size.h"
 #include "ppapi/proxy/audio_input_resource.h"
 #include "ppapi/proxy/connection.h"
-#include "ppapi/proxy/ext_crx_file_system_private_resource.h"
 #include "ppapi/proxy/file_chooser_resource.h"
 #include "ppapi/proxy/file_io_resource.h"
 #include "ppapi/proxy/file_ref_resource.h"

@@ -42,6 +42,7 @@
 #include "ppapi/c/private/pp_private_font_charset.h"
 #include "ppapi/c/private/ppb_flash.h"
 #include "ppapi/c/private/ppb_host_resolver_private.h"
+#include "ppapi/c/private/ppb_isolated_file_system_private.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
 #include "ppapi/c/private/ppb_pdf.h"
 #include "ppapi/c/private/ppb_talk_private.h"
@@ -88,6 +89,8 @@ IPC_ENUM_TRAITS(PP_FlashSetting)
 IPC_ENUM_TRAITS(PP_ImageDataFormat)
 IPC_ENUM_TRAITS(PP_InputEvent_MouseButton)
 IPC_ENUM_TRAITS(PP_InputEvent_Type)
+IPC_ENUM_TRAITS_MAX_VALUE(PP_IsolatedFileSystemType_Private,
+                          PP_ISOLATEDFILESYSTEMTYPE_PRIVATE_CRX)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_NetAddressFamily_Private,
                           PP_NETADDRESSFAMILY_PRIVATE_IPV6)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_NetworkList_State, PP_NETWORKLIST_STATE_UP)
@@ -1188,12 +1191,6 @@ IPC_MESSAGE_CONTROL2(PpapiHostMsg_ExtensionsCommon_Call,
 IPC_MESSAGE_CONTROL1(PpapiPluginMsg_ExtensionsCommon_CallReply,
                      base::ListValue /* output */)
 
-// Ext_CrxFileSystem
-IPC_MESSAGE_CONTROL0(PpapiHostMsg_Ext_CrxFileSystem_Create)
-IPC_MESSAGE_CONTROL0(PpapiHostMsg_Ext_CrxFileSystem_BrowserOpen)
-IPC_MESSAGE_CONTROL1(PpapiPluginMsg_Ext_CrxFileSystem_BrowserOpenReply,
-                     std::string /* fsid */)
-
 // File chooser.
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_FileChooser_Create)
 IPC_MESSAGE_CONTROL4(PpapiHostMsg_FileChooser_Show,
@@ -1288,8 +1285,9 @@ IPC_MESSAGE_CONTROL1(PpapiHostMsg_FileSystem_Create,
 IPC_MESSAGE_CONTROL1(PpapiHostMsg_FileSystem_Open,
                      int64_t /* expected_size */)
 IPC_MESSAGE_CONTROL0(PpapiPluginMsg_FileSystem_OpenReply)
-IPC_MESSAGE_CONTROL1(PpapiHostMsg_FileSystem_InitIsolatedFileSystem,
-                     std::string /* fsid */)
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_FileSystem_InitIsolatedFileSystem,
+                     std::string /* fsid */,
+                     PP_IsolatedFileSystemType_Private /* type */)
 IPC_MESSAGE_CONTROL0(PpapiPluginMsg_FileSystem_InitIsolatedFileSystemReply)
 // Passed from renderer to browser. Creates an already-open file system with a
 // given |root_url| and |file_system_type|.
@@ -1364,6 +1362,13 @@ IPC_MESSAGE_CONTROL2(PpapiHostMsg_Graphics2D_ReadImageData,
                      PP_Resource /* image */,
                      PP_Point /* top_left */)
 IPC_MESSAGE_CONTROL0(PpapiPluginMsg_Graphics2D_ReadImageDataAck)
+
+// IsolatedFileSystem
+IPC_MESSAGE_CONTROL0(PpapiHostMsg_IsolatedFileSystem_Create)
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_IsolatedFileSystem_BrowserOpen,
+                     PP_IsolatedFileSystemType_Private /* type */)
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_IsolatedFileSystem_BrowserOpenReply,
+                     std::string /* fsid */)
 
 // NetworkMonitor.
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_NetworkMonitor_Create)

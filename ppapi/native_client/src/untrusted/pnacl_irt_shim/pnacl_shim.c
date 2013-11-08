@@ -101,6 +101,7 @@
 #include "ppapi/c/private/ppb_flash_print.h"
 #include "ppapi/c/private/ppb_host_resolver_private.h"
 #include "ppapi/c/private/ppb_instance_private.h"
+#include "ppapi/c/private/ppb_isolated_file_system_private.h"
 #include "ppapi/c/private/ppb_nacl_private.h"
 #include "ppapi/c/private/ppb_net_address_private.h"
 #include "ppapi/c/private/ppb_output_protection_private.h"
@@ -212,6 +213,7 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_DRM_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Flash_Menu_0_2;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_HostResolver_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Instance_Private_0_1;
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IsolatedFileSystem_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NaCl_Private_1_0;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetAddress_Private_0_1;
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NetAddress_Private_1_0;
@@ -3036,6 +3038,15 @@ static void Pnacl_M13_PPB_Instance_Private_ExecuteScript(struct PP_Var* _struct_
 
 /* End wrapper methods for PPB_Instance_Private_0_1 */
 
+/* Begin wrapper methods for PPB_IsolatedFileSystem_Private_0_1 */
+
+static int32_t Pnacl_M33_PPB_IsolatedFileSystem_Private_Open(PP_Instance instance, PP_IsolatedFileSystemType_Private type, PP_Resource* file_system, struct PP_CompletionCallback* callback) {
+  const struct PPB_IsolatedFileSystem_Private_0_1 *iface = Pnacl_WrapperInfo_PPB_IsolatedFileSystem_Private_0_1.real_iface;
+  return iface->Open(instance, type, file_system, *callback);
+}
+
+/* End wrapper methods for PPB_IsolatedFileSystem_Private_0_1 */
+
 /* Begin wrapper methods for PPB_NaCl_Private_1_0 */
 
 static PP_ExternalPluginResult Pnacl_M25_PPB_NaCl_Private_LaunchSelLdr(PP_Instance instance, const char* alleged_url, PP_Bool uses_irt, PP_Bool uses_ppapi, PP_Bool enable_ppapi_dev, PP_Bool enable_dyncode_syscalls, PP_Bool enable_exception_handling, PP_Bool enable_crash_throttling, void* imc_handle, struct PP_Var* error_message) {
@@ -4938,6 +4949,10 @@ struct PPB_Instance_Private_0_1 Pnacl_Wrappers_PPB_Instance_Private_0_1 = {
     .ExecuteScript = (struct PP_Var (*)(PP_Instance instance, struct PP_Var script, struct PP_Var* exception))&Pnacl_M13_PPB_Instance_Private_ExecuteScript
 };
 
+struct PPB_IsolatedFileSystem_Private_0_1 Pnacl_Wrappers_PPB_IsolatedFileSystem_Private_0_1 = {
+    .Open = (int32_t (*)(PP_Instance instance, PP_IsolatedFileSystemType_Private type, PP_Resource* file_system, struct PP_CompletionCallback callback))&Pnacl_M33_PPB_IsolatedFileSystem_Private_Open
+};
+
 struct PPB_NaCl_Private_1_0 Pnacl_Wrappers_PPB_NaCl_Private_1_0 = {
     .LaunchSelLdr = (PP_ExternalPluginResult (*)(PP_Instance instance, const char* alleged_url, PP_Bool uses_irt, PP_Bool uses_ppapi, PP_Bool enable_ppapi_dev, PP_Bool enable_dyncode_syscalls, PP_Bool enable_exception_handling, PP_Bool enable_crash_throttling, void* imc_handle, struct PP_Var* error_message))&Pnacl_M25_PPB_NaCl_Private_LaunchSelLdr,
     .StartPpapiProxy = (PP_ExternalPluginResult (*)(PP_Instance instance))&Pnacl_M25_PPB_NaCl_Private_StartPpapiProxy,
@@ -5668,6 +5683,12 @@ static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_Instance_Private_0_1 = {
   .real_iface = NULL
 };
 
+static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_IsolatedFileSystem_Private_0_1 = {
+  .iface_macro = PPB_ISOLATEDFILESYSTEM_PRIVATE_INTERFACE_0_1,
+  .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_IsolatedFileSystem_Private_0_1,
+  .real_iface = NULL
+};
+
 static struct __PnaclWrapperInfo Pnacl_WrapperInfo_PPB_NaCl_Private_1_0 = {
   .iface_macro = PPB_NACL_PRIVATE_INTERFACE_1_0,
   .wrapped_iface = (void *) &Pnacl_Wrappers_PPB_NaCl_Private_1_0,
@@ -5899,6 +5920,7 @@ static struct __PnaclWrapperInfo *s_ppb_wrappers[] = {
   &Pnacl_WrapperInfo_PPB_Flash_Menu_0_2,
   &Pnacl_WrapperInfo_PPB_HostResolver_Private_0_1,
   &Pnacl_WrapperInfo_PPB_Instance_Private_0_1,
+  &Pnacl_WrapperInfo_PPB_IsolatedFileSystem_Private_0_1,
   &Pnacl_WrapperInfo_PPB_NaCl_Private_1_0,
   &Pnacl_WrapperInfo_PPB_NetAddress_Private_0_1,
   &Pnacl_WrapperInfo_PPB_NetAddress_Private_1_0,

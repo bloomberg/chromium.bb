@@ -51,6 +51,7 @@
   F(PPB_HostResolver_Private_API) \
   F(PPB_ImageData_API) \
   F(PPB_InputEvent_API) \
+  F(PPB_IsolatedFileSystem_Private_API) \
   F(PPB_LayerCompositor_API) \
   F(PPB_MessageLoop_API) \
   F(PPB_NetAddress_API) \

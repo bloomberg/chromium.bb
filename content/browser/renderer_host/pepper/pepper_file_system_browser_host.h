@@ -5,10 +5,13 @@
 #ifndef CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_FILE_SYSTEM_BROWSER_HOST_H_
 #define CONTENT_BROWSER_RENDERER_HOST_PEPPER_PEPPER_FILE_SYSTEM_BROWSER_HOST_H_
 
+#include <string>
+
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "ppapi/c/pp_file_info.h"
+#include "ppapi/c/private/ppb_isolated_file_system_private.h"
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/host/resource_host.h"
 #include "url/gurl.h"
@@ -19,9 +22,9 @@ namespace content {
 
 class BrowserPpapiHost;
 
-class PepperFileSystemBrowserHost :
-    public ppapi::host::ResourceHost,
-    public base::SupportsWeakPtr<PepperFileSystemBrowserHost> {
+class PepperFileSystemBrowserHost
+    : public ppapi::host::ResourceHost,
+      public base::SupportsWeakPtr<PepperFileSystemBrowserHost> {
  public:
   // Creates a new PepperFileSystemBrowserHost for a file system of a given
   // |type|. The host must be opened before use.
@@ -72,7 +75,8 @@ class PepperFileSystemBrowserHost :
                         int64_t expected_size);
   int32_t OnHostMsgInitIsolatedFileSystem(
       ppapi::host::HostMessageContext* context,
-      const std::string& fsid);
+      const std::string& fsid,
+      PP_IsolatedFileSystemType_Private type);
 
   BrowserPpapiHost* browser_ppapi_host_;
 

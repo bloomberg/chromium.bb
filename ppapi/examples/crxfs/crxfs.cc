@@ -9,7 +9,7 @@
 #include "ppapi/cpp/file_ref.h"
 #include "ppapi/cpp/instance.h"
 #include "ppapi/cpp/module.h"
-#include "ppapi/cpp/private/ext_crx_file_system_private.h"
+#include "ppapi/cpp/private/isolated_file_system_private.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
 // When compiling natively on Windows, PostMessage can be #define-d to
@@ -48,7 +48,7 @@ class MyInstance : public pp::Instance {
   pp::CompletionCallbackFactory<MyInstance> factory_;
 
   pp::InstanceHandle handle_;
-  pp::ExtCrxFileSystemPrivate crxfs_;
+  pp::IsolatedFileSystemPrivate crxfs_;
   pp::FileRef file_ref_;
   pp::FileIO file_io_;
   std::string filename_;
@@ -70,7 +70,8 @@ void MyInstance::OpenCrxFsAndReadFile(const std::string& filename) {
   pp::CompletionCallbackWithOutput<pp::FileSystem> callback =
       factory_.NewCallbackWithOutput(&MyInstance::CrxFileSystemCallback);
 
-  crxfs_ = pp::ExtCrxFileSystemPrivate(this);
+  crxfs_ = pp::IsolatedFileSystemPrivate(
+      this, PP_ISOLATEDFILESYSTEMTYPE_PRIVATE_CRX);
   int32_t rv = crxfs_.Open(callback);
   if (rv != PP_OK_COMPLETIONPENDING)
     ReportResponse("ExtCrxFileSystemPrivate::Open", rv);

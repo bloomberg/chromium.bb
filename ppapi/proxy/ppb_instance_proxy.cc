@@ -18,7 +18,6 @@
 #include "ppapi/proxy/browser_font_singleton_resource.h"
 #include "ppapi/proxy/content_decryptor_private_serializer.h"
 #include "ppapi/proxy/enter_proxy.h"
-#include "ppapi/proxy/ext_crx_file_system_private_resource.h"
 #include "ppapi/proxy/extensions_common_resource.h"
 #include "ppapi/proxy/flash_clipboard_resource.h"
 #include "ppapi/proxy/flash_file_resource.h"
@@ -26,6 +25,7 @@
 #include "ppapi/proxy/flash_resource.h"
 #include "ppapi/proxy/gamepad_resource.h"
 #include "ppapi/proxy/host_dispatcher.h"
+#include "ppapi/proxy/isolated_file_system_private_resource.h"
 #include "ppapi/proxy/network_proxy_resource.h"
 #include "ppapi/proxy/pdf_resource.h"
 #include "ppapi/proxy/plugin_dispatcher.h"
@@ -371,14 +371,15 @@ Resource* PPB_Instance_Proxy::GetSingletonResource(PP_Instance instance,
     case BROKER_SINGLETON_ID:
       new_singleton = new BrokerResource(connection, instance);
       break;
-    case CRX_FILESYSTEM_SINGLETON_ID:
-      new_singleton = new ExtCrxFileSystemPrivateResource(connection, instance);
-      break;
     case EXTENSIONS_COMMON_SINGLETON_ID:
       new_singleton = new ExtensionsCommonResource(connection, instance);
       break;
     case GAMEPAD_SINGLETON_ID:
       new_singleton = new GamepadResource(connection, instance);
+      break;
+    case ISOLATED_FILESYSTEM_SINGLETON_ID:
+      new_singleton =
+          new IsolatedFileSystemPrivateResource(connection, instance);
       break;
     case NETWORK_PROXY_SINGLETON_ID:
       new_singleton = new NetworkProxyResource(connection, instance);
