@@ -805,6 +805,8 @@
             'css/StyleSheetContents.h',
             'css/StyleSheetList.cpp',
             'css/StyleSheetList.h',
+            'css/TreeBoundaryCrossingRules.cpp',
+            'css/TreeBoundaryCrossingRules.h',
             'css/ViewportStyle.cpp',
             'css/ViewportStyleAndroid.cpp',
             'css/ViewportStyle.h',

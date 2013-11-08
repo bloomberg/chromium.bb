@@ -31,38 +31,13 @@
 
 #include "core/css/CSSDefaultStyleSheets.h"
 #include "core/css/CSSStyleSheet.h"
+#include "core/css/RuleFeature.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/resolver/MatchRequest.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/StyleEngine.h"
 
 namespace WebCore {
-
-void TreeBoundaryCrossingRules::addRule(StyleRule* rule, size_t selectorIndex, ContainerNode* scopingNode, AddRuleFlags addRuleFlags)
-{
-    if (m_treeBoundaryCrossingRuleSetMap.contains(scopingNode))
-        m_treeBoundaryCrossingRuleSetMap.get(scopingNode)->addRule(rule, selectorIndex, addRuleFlags);
-    else {
-        OwnPtr<RuleSet> ruleSetForScope = RuleSet::create();
-        ruleSetForScope->addRule(rule, selectorIndex, addRuleFlags);
-        m_treeBoundaryCrossingRuleSetMap.add(scopingNode, ruleSetForScope.release());
-        m_scopingNodes.add(scopingNode);
-    }
-}
-
-void TreeBoundaryCrossingRules::reset(const ContainerNode* scopingNode)
-{
-    m_treeBoundaryCrossingRuleSetMap.remove(scopingNode);
-    m_scopingNodes.remove(scopingNode);
-}
-
-void TreeBoundaryCrossingRules::collectFeaturesTo(RuleFeatureSet& features)
-{
-    for (TreeBoundaryCrossingRuleSetMap::iterator::Values it = m_treeBoundaryCrossingRuleSetMap.values().begin(); it != m_treeBoundaryCrossingRuleSetMap.values().end(); ++it) {
-        RuleSet* ruleSet = it->get();
-        features.add(ruleSet->features());
-    }
-}
 
 DocumentRuleSets::DocumentRuleSets()
 {

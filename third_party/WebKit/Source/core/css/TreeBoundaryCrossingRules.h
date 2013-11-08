@@ -20,11 +20,11 @@
  *
  */
 
-#ifndef DocumentRuleSets_h
-#define DocumentRuleSets_h
+#ifndef TreeBoundaryCrossingRules_h
+#define TreeBoundaryCrossingRules_h
 
 #include "core/css/RuleSet.h"
-#include "core/css/TreeBoundaryCrossingRules.h"
+#include "core/dom/DocumentOrderedList.h"
 
 #include "wtf/OwnPtr.h"
 #include "wtf/RefPtr.h"
@@ -32,30 +32,26 @@
 
 namespace WebCore {
 
-class CSSStyleSheet;
-class MediaQueryEvaluator;
 class RuleFeatureSet;
-class StyleEngine;
 
-class DocumentRuleSets {
+class TreeBoundaryCrossingRules {
 public:
-    DocumentRuleSets();
-    ~DocumentRuleSets();
-    RuleSet* userStyle() const { return m_userStyle.get(); }
+    void addRule(StyleRule*, size_t selectorIndex, ContainerNode* scopingNode, AddRuleFlags);
+    void clear() { m_treeBoundaryCrossingRuleSetMap.clear(); }
+    void reset(const ContainerNode* scopingNode);
+    bool isEmpty() const { return m_treeBoundaryCrossingRuleSetMap.isEmpty(); }
+    void collectFeaturesTo(RuleFeatureSet&);
 
-    void initUserStyle(StyleEngine*, const Vector<RefPtr<StyleRule> >& watchedSelectors, const MediaQueryEvaluator&, StyleResolver&);
-    void resetAuthorStyle();
-    void collectFeaturesTo(RuleFeatureSet&, bool isViewSource);
-
-    TreeBoundaryCrossingRules& treeBoundaryCrossingRules() { return m_treeBoundaryCrossingRules; }
+    DocumentOrderedList::iterator begin() { return m_scopingNodes.begin(); }
+    DocumentOrderedList::iterator end() { return m_scopingNodes.end(); }
+    RuleSet* ruleSetScopedBy(const ContainerNode* scopingNode) { return m_treeBoundaryCrossingRuleSetMap.get(scopingNode); }
 
 private:
-    void collectRulesFromUserStyleSheets(const Vector<RefPtr<CSSStyleSheet> >&, RuleSet& userStyle, const MediaQueryEvaluator&, StyleResolver&);
-    void collectRulesFromWatchedSelectors(const Vector<RefPtr<StyleRule> >&, RuleSet& userStyle);
-    OwnPtr<RuleSet> m_userStyle;
-    TreeBoundaryCrossingRules m_treeBoundaryCrossingRules;
+    DocumentOrderedList m_scopingNodes;
+    typedef HashMap<const ContainerNode*, OwnPtr<RuleSet> > TreeBoundaryCrossingRuleSetMap;
+    TreeBoundaryCrossingRuleSetMap m_treeBoundaryCrossingRuleSetMap;
 };
 
 } // namespace WebCore
 
-#endif // DocumentRuleSets_h
+#endif // TreeBoundaryCrossingRules_h
