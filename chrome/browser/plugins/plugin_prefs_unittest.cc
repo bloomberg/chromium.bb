@@ -80,6 +80,22 @@ class PluginPrefsTest : public ::testing::Test {
     run_loop.Run();
   }
 
+  void RefreshPluginsSynchronously() {
+    PluginService::GetInstance()->RefreshPlugins();
+#if !defined(OS_WIN)
+    // Can't go out of process in unit tests.
+    content::RenderProcessHost::SetRunRendererInProcess(true);
+#endif
+    scoped_refptr<content::MessageLoopRunner> runner =
+        new content::MessageLoopRunner;
+    PluginService::GetInstance()->GetPlugins(
+        base::Bind(&GotPlugins, runner->QuitClosure()));
+    runner->Run();
+#if !defined(OS_WIN)
+    content::RenderProcessHost::SetRunRendererInProcess(false);
+#endif
+  }
+
   scoped_refptr<PluginPrefs> plugin_prefs_;
 };
 
@@ -217,18 +233,7 @@ TEST_F(PluginPrefsTest, UnifiedPepperFlashState) {
       component_updated_plugin_2, false);
   PluginService::GetInstance()->RegisterInternalPlugin(bundled_plugin, false);
 
-#if !defined(OS_WIN)
-    // Can't go out of process in unit tests.
-    content::RenderProcessHost::SetRunRendererInProcess(true);
-#endif
-  scoped_refptr<content::MessageLoopRunner> runner =
-      new content::MessageLoopRunner;
-  PluginService::GetInstance()->GetPlugins(
-      base::Bind(&GotPlugins, runner->QuitClosure()));
-  runner->Run();
-#if !defined(OS_WIN)
-    content::RenderProcessHost::SetRunRendererInProcess(false);
-#endif
+  RefreshPluginsSynchronously();
 
   // Set the state of any of the three plugins will affect the others.
   EnablePluginSynchronously(true, component_updated_plugin_1.path, true);
