@@ -7,6 +7,8 @@
 #include <android/native_window_jni.h>
 #include "mojo/services/native_viewport/android/mojo_viewport.h"
 #include "mojo/shell/context.h"
+#include "ui/events/event.h"
+#include "ui/gfx/point.h"
 
 namespace mojo {
 namespace services {
@@ -14,6 +16,7 @@ namespace services {
 NativeViewportAndroid::NativeViewportAndroid(NativeViewportDelegate* delegate)
     : delegate_(delegate),
       window_(NULL),
+      id_generator_(0),
       weak_factory_(this) {
 }
 
@@ -36,6 +39,20 @@ void NativeViewportAndroid::OnNativeWindowDestroyed() {
 void NativeViewportAndroid::OnResized(const gfx::Size& size) {
   size_ = size;
   delegate_->OnResized(size);
+}
+
+void NativeViewportAndroid::OnTouchEvent(int pointer_id,
+                                         ui::EventType action,
+                                         float x, float y,
+                                         int64 time_ms) {
+  gfx::Point location(static_cast<int>(x), static_cast<int>(y));
+  ui::TouchEvent event(action, location,
+                       id_generator_.GetGeneratedID(pointer_id),
+                       base::TimeDelta::FromMilliseconds(time_ms));
+  // TODO(beng): handle multiple touch-points.
+  delegate_->OnEvent(&event);
+  if (action == ui::ET_TOUCH_RELEASED)
+    id_generator_.ReleaseNumber(pointer_id);
 }
 
 void NativeViewportAndroid::ReleaseWindow() {

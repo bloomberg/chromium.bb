@@ -7,6 +7,8 @@
 
 #include "base/memory/weak_ptr.h"
 #include "mojo/services/native_viewport/native_viewport.h"
+#include "ui/events/event_constants.h"
+#include "ui/gfx/sequential_id_generator.h"
 #include "ui/gfx/size.h"
 
 namespace gpu {
@@ -30,6 +32,8 @@ class NativeViewportAndroid : public NativeViewport {
   void OnNativeWindowCreated(ANativeWindow* window);
   void OnNativeWindowDestroyed();
   void OnResized(const gfx::Size& size);
+  void OnTouchEvent(int pointer_id, ui::EventType action, float x, float y,
+                    int64 time_ms);
 
  private:
   // Overridden from NativeViewport:
@@ -41,6 +45,7 @@ class NativeViewportAndroid : public NativeViewport {
   NativeViewportDelegate* delegate_;
   ANativeWindow* window_;
   gfx::Size size_;
+  ui::SequentialIDGenerator id_generator_;
 
   base::WeakPtrFactory<NativeViewportAndroid> weak_factory_;
 

@@ -7,6 +7,7 @@ package org.chromium.mojo;
 import android.app.Activity;
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -62,9 +63,23 @@ public class MojoViewport extends SurfaceView {
         mNativeMojoViewport = 0;
     }
 
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        return nativeTouchEvent(mNativeMojoViewport,
+                                event.getPointerId(0),
+                                event.getAction(),
+                                event.getX(), event.getY(),
+                                event.getEventTime());
+    }
+
     private static native int nativeInit(int init);
     private static native void nativeDestroy(int nativeMojoViewport);
     private static native void nativeSurfaceCreated(int nativeMojoViewport, Surface surface);
     private static native void nativeSurfaceDestroyed(int nativeMojoViewport);
     private static native void nativeSurfaceSetSize(int nativeMojoViewport, int width, int height);
+    private static native boolean nativeTouchEvent(int nativeMojoViewport,
+                                                   int pointerId,
+                                                   int action,
+                                                   float x, float y,
+                                                   long timeMs);
 };

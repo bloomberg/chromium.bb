@@ -39,6 +39,8 @@ class MojoViewport {
   void SurfaceCreated(JNIEnv* env, jobject obj, jobject jsurface);
   void SurfaceDestroyed(JNIEnv* env, jobject obj);
   void SurfaceSetSize(JNIEnv* env, jobject obj, jint width, jint height);
+  bool TouchEvent(JNIEnv* env, jobject obj, jint pointer_id, jint action,
+                  jfloat x, jfloat y, jlong time_ms);
 
  private:
   ~MojoViewport();

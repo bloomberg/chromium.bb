@@ -4,7 +4,9 @@
 
 #include "mojo/services/native_viewport/android/mojo_viewport.h"
 
+#include <android/input.h>
 #include <android/native_window_jni.h>
+
 #include "base/android/jni_android.h"
 #include "base/bind.h"
 #include "base/location.h"
@@ -13,6 +15,20 @@
 
 namespace mojo {
 namespace services {
+
+ui::EventType MotionEventActionToEventType(jint action) {
+  switch (action) {
+    case AMOTION_EVENT_ACTION_DOWN:
+      return ui::ET_TOUCH_PRESSED;
+    case AMOTION_EVENT_ACTION_MOVE:
+      return ui::ET_TOUCH_MOVED;
+    case AMOTION_EVENT_ACTION_UP:
+      return ui::ET_TOUCH_RELEASED;
+    default:
+      NOTREACHED();
+  }
+  return ui::ET_UNKNOWN;
+}
 
 MojoViewportInit::MojoViewportInit() {
 }
@@ -68,6 +84,23 @@ void MojoViewport::SurfaceSetSize(
       &NativeViewportAndroid::OnResized,
       native_viewport_,
       gfx::Size(width, height)));
+}
+
+bool MojoViewport::TouchEvent(JNIEnv* env, jobject obj,
+                              jint pointer_id,
+                              jint action,
+                              jfloat x, jfloat y,
+                              jlong time_ms) {
+  ui_runner_->PostTask(FROM_HERE, base::Bind(
+      &NativeViewportAndroid::OnTouchEvent,
+      native_viewport_,
+      pointer_id,
+      MotionEventActionToEventType(action),
+      x, y,
+      time_ms));
+  // TODO(beng): This type needs to live on the main thread so we can respond to
+  //             this question truthfully.
+  return true;
 }
 
 bool MojoViewport::Register(JNIEnv* env) {
