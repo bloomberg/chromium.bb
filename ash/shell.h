@@ -103,6 +103,7 @@ class ScreenAsh;
 class SessionStateDelegate;
 class ShellDelegate;
 class ShellObserver;
+class StickyKeys;
 class SystemTray;
 class SystemTrayDelegate;
 class SystemTrayNotifier;
@@ -523,6 +524,10 @@ class ASH_EXPORT Shell
   // Creates instance of FirstRunHelper. Caller is responsible for deleting
   // returned object.
   ash::FirstRunHelper* CreateFirstRunHelper();
+
+  StickyKeys* sticky_keys() {
+    return sticky_keys_.get();
+  }
 #endif  // defined(OS_CHROMEOS)
 
  private:
@@ -662,6 +667,7 @@ class ASH_EXPORT Shell
   scoped_ptr<internal::PowerEventObserver> power_event_observer_;
   scoped_ptr<internal::UserActivityNotifier> user_activity_notifier_;
   scoped_ptr<internal::VideoActivityNotifier> video_activity_notifier_;
+  scoped_ptr<StickyKeys> sticky_keys_;
 #if defined(USE_X11)
   // Controls video output device state.
   scoped_ptr<chromeos::OutputConfigurator> output_configurator_;

@@ -9,6 +9,7 @@
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/wm/event_rewriter_event_filter.h"
+#include "ash/wm/sticky_keys.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/singleton.h"
 #include "base/metrics/histogram.h"
@@ -378,7 +379,7 @@ void AccessibilityManager::UpdateStickyKeysFromPref() {
   sticky_keys_enabled_ = enabled;
 #if defined(USE_ASH)
   // Sticky keys is implemented only in ash.
-  ash::Shell::GetInstance()->event_rewriter_filter()->EnableStickyKeys(enabled);
+  ash::Shell::GetInstance()->sticky_keys()->Enable(enabled);
 #endif
 }
 

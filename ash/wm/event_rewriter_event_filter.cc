@@ -8,9 +8,6 @@
 #include "base/logging.h"
 #include "ui/events/event.h"
 
-#if defined(OS_CHROMEOS)
-#include "ash/wm/sticky_keys.h"
-#endif  // OS_CHROMEOS
 namespace ash {
 namespace internal {
 
@@ -21,15 +18,6 @@ EventRewriterEventFilter::~EventRewriterEventFilter() {}
 void EventRewriterEventFilter::SetEventRewriterDelegate(
     scoped_ptr<EventRewriterDelegate> delegate) {
   delegate_ = delegate.Pass();
-}
-
-void EventRewriterEventFilter::EnableStickyKeys(bool enabled) {
-#if defined(OS_CHROMEOS)
-  if (enabled)
-    sticky_keys_.reset(new StickyKeys());
-  else
-    sticky_keys_.reset();
-#endif  // OS_CHROMEOS
 }
 
 void EventRewriterEventFilter::OnKeyEvent(ui::KeyEvent* event) {
@@ -49,14 +37,6 @@ void EventRewriterEventFilter::OnKeyEvent(ui::KeyEvent* event) {
       event->StopPropagation();
       break;
   }
-
-  if (event->stopped_propagation())
-    return;
-
-#if defined(OS_CHROMEOS)
-  if (sticky_keys_.get() && sticky_keys_->HandleKeyEvent(event))
-    event->StopPropagation();
-#endif  // OS_CHROMEOS
 }
 
 void EventRewriterEventFilter::OnMouseEvent(ui::MouseEvent* event) {
@@ -65,7 +45,7 @@ void EventRewriterEventFilter::OnMouseEvent(ui::MouseEvent* event) {
 
   switch (delegate_->RewriteOrFilterLocatedEvent(event)) {
     case EventRewriterDelegate::ACTION_REWRITE_EVENT:
-      return;
+      break;
     case EventRewriterDelegate::ACTION_DROP_EVENT:
       event->StopPropagation();
       break;

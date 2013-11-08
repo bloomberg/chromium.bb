@@ -130,6 +130,7 @@
 #include "ash/system/chromeos/power/power_status.h"
 #include "ash/system/chromeos/power/user_activity_notifier.h"
 #include "ash/system/chromeos/power/video_activity_notifier.h"
+#include "ash/wm/sticky_keys.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace ash {
@@ -767,6 +768,13 @@ void Shell::Init() {
   // The order in which event filters are added is significant.
   event_rewriter_filter_.reset(new internal::EventRewriterEventFilter);
   AddPreTargetHandler(event_rewriter_filter_.get());
+
+#if defined(OS_CHROMEOS)
+  // The StickyKeys event filter also rewrites events and must be added
+  // before observers, but after the EventRewriterEventFilter.
+  sticky_keys_.reset(new StickyKeys);
+  AddPreTargetHandler(sticky_keys_.get());
+#endif
 
   // UserActivityDetector passes events to observers, so let them get
   // rewritten first.

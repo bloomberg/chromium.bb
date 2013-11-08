@@ -45,6 +45,10 @@ class MockStickyKeysHandlerDelegate :
     key_events_.push_back(event->Copy());
   }
 
+  virtual void DispatchMouseEvent(ui::MouseEvent* event,
+                                  aura::Window* target) OVERRIDE {
+  }
+
   // Returns the count of dispatched keyboard event.
   size_t GetKeyEventCount() const {
     return key_events_.size();
