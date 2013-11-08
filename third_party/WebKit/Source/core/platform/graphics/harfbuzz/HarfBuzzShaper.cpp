@@ -768,7 +768,7 @@ void HarfBuzzShaper::fillGlyphBufferFromHarfBuzzRun(GlyphBuffer* glyphBuffer, Ha
         float glyphAdvanceX = advances[i] + nextOffset.x() - currentOffset.x();
         float glyphAdvanceY = nextOffset.y() - currentOffset.y();
         if (m_run.rtl()) {
-            if (currentCharacterIndex > m_toIndex)
+            if (currentCharacterIndex >= m_toIndex)
                 m_startOffset.move(glyphAdvanceX, glyphAdvanceY);
             else if (currentCharacterIndex >= m_fromIndex)
                 glyphBuffer->add(glyphs[i], currentRun->fontData(), createGlyphBufferAdvance(glyphAdvanceX, glyphAdvanceY));
