@@ -3,6 +3,7 @@
 # Use of this source code is governed under the Apache License, Version 2.0 that
 # can be found in the LICENSE file.
 
+import glob
 import hashlib
 import json
 import logging
@@ -49,6 +50,11 @@ def list_files_tree(directory):
   return sorted(actual)
 
 
+def read_content(filepath):
+  with open(filepath, 'rb') as f:
+    return f.read()
+
+
 def write_content(filepath, content):
   with open(filepath, 'wb') as f:
     f.write(content)
@@ -61,6 +67,7 @@ def write_json(filepath, data):
 
 class RunSwarmStep(unittest.TestCase):
   def setUp(self):
+    super(RunSwarmStep, self).setUp()
     self.tempdir = run_isolated.make_temp_dir(
         'run_isolated_smoke_test', ROOT_DIR)
     logging.debug(self.tempdir)
@@ -78,6 +85,7 @@ class RunSwarmStep(unittest.TestCase):
 
   def tearDown(self):
     shutil.rmtree(self.tempdir)
+    super(RunSwarmStep, self).tearDown()
 
   def _result_tree(self):
     return list_files_tree(self.tempdir)
@@ -238,9 +246,12 @@ class RunSwarmStep(unittest.TestCase):
     actual = list_files_tree(self.cache)
     self.assertEqual(sorted(expected), actual)
 
-  def test_delete_invalid_cache_entry(self):
+  def test_delete_quite_corrupted_cache_entry(self):
+    # Test that an entry with an invalid file size properly gets removed and
+    # fetched again. This test case also check for file modes.
     isolated_file = os.path.join(self.data_dir, 'file_with_size.isolated')
     file1_hash = self._store('file1.txt')
+    # Note that <tempdir>/table/<file1_hash> has 640 mode.
 
     # Run the test once to generate the cache.
     out, err, returncode = self._run(self._generate_args_with_isolated(
@@ -249,11 +260,21 @@ class RunSwarmStep(unittest.TestCase):
       print out
       print err
     self.assertEqual(0, returncode)
+    # Ensure all the files in the cache are read-only.
+    for item in glob.glob(os.path.join(self.cache, '*')):
+      if item.endswith('state.json'):
+        continue
+      mode = os.stat(item).st_mode & 0777
+      expected_mode = 0666 if sys.platform == 'win32' else 0664
+      self.assertEqual(expected_mode, mode, (item, oct(mode)))
 
     # Modify one of the files in the cache to be invalid.
     cached_file_path = os.path.join(self.cache, file1_hash)
-    with open(cached_file_path, 'w') as f:
-      f.write('invalid size')
+    previous_mode = os.stat(cached_file_path).st_mode
+    os.chmod(cached_file_path, 0600)
+    old_content = read_content(cached_file_path)
+    write_content(cached_file_path, old_content + ' but now invalid size')
+    os.chmod(cached_file_path, previous_mode)
     logging.info('Modified %s', cached_file_path)
     # Ensure that the cache has an invalid file.
     self.assertNotEqual(
@@ -267,9 +288,71 @@ class RunSwarmStep(unittest.TestCase):
       print out
       print err
     self.assertEqual(0, returncode)
+    for item in glob.glob(os.path.join(self.cache, '*')):
+      if item.endswith('state.json'):
+        continue
+      mode = os.stat(item).st_mode & 0777
+      expected_mode = 0666 if sys.platform == 'win32' else 0664
+      self.assertEqual(expected_mode, mode, (item, oct(mode)))
 
     self.assertEqual(os.stat(os.path.join(self.data_dir, 'file1.txt')).st_size,
                      os.stat(cached_file_path).st_size)
+    self.assertEqual(old_content, read_content(cached_file_path))
+
+  def test_delete_slightly_corrupted_cache_entry(self):
+    # Test that an entry with an invalid file size properly gets removed and
+    # fetched again. This test case also check for file modes.
+    isolated_file = os.path.join(self.data_dir, 'file_with_size.isolated')
+    file1_hash = self._store('file1.txt')
+    # Note that <tempdir>/table/<file1_hash> has 640 mode.
+
+    # Run the test once to generate the cache.
+    out, err, returncode = self._run(self._generate_args_with_isolated(
+        isolated_file))
+    if VERBOSE:
+      print out
+      print err
+    self.assertEqual(0, returncode)
+    # Ensure all the files in the cache are read-only.
+    for item in glob.glob(os.path.join(self.cache, '*')):
+      if item.endswith('state.json'):
+        continue
+      mode = os.stat(item).st_mode & 0777
+      expected_mode = 0666 if sys.platform == 'win32' else 0664
+      self.assertEqual(expected_mode, mode, (item, oct(mode)))
+
+    # Modify one of the files in the cache to be invalid.
+    cached_file_path = os.path.join(self.cache, file1_hash)
+    previous_mode = os.stat(cached_file_path).st_mode
+    os.chmod(cached_file_path, 0600)
+    old_content = read_content(cached_file_path)
+    write_content(cached_file_path, old_content[1:] + 'b')
+    os.chmod(cached_file_path, previous_mode)
+    logging.info('Modified %s', cached_file_path)
+    self.assertEqual(
+        os.stat(os.path.join(self.data_dir, 'file1.txt')).st_size,
+        os.stat(cached_file_path).st_size)
+
+    # Rerun the test and make sure the cache contains the right file afterwards.
+    out, err, returncode = self._run(self._generate_args_with_isolated(
+        isolated_file))
+    if VERBOSE:
+      print out
+      print err
+    self.assertEqual(0, returncode)
+    for item in glob.glob(os.path.join(self.cache, '*')):
+      if item.endswith('state.json'):
+        continue
+      # TODO(maruel): 'group' and 'others' have random bits at that point.
+      # This needs to be fixed.
+      mode = os.stat(item).st_mode & 0700
+      self.assertEqual(0600, mode, (item, oct(mode)))
+
+    self.assertEqual(os.stat(os.path.join(self.data_dir, 'file1.txt')).st_size,
+                     os.stat(cached_file_path).st_size)
+    # TODO(maruel): This corruption is NOT detected.
+    # This needs to be fixed.
+    self.assertNotEqual(old_content, read_content(cached_file_path))
 
 
 if __name__ == '__main__':

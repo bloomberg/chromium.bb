@@ -142,7 +142,7 @@ def link_file(outfile, infile, action):
 
 
 def _set_read_only(path, read_only):
-  """Sets or resets the executable bit on a file or directory."""
+  """Sets or resets the write bit on a file or directory."""
   mode = os.lstat(path).st_mode
   if read_only:
     mode = mode & 0500
@@ -160,20 +160,21 @@ def _set_read_only(path, read_only):
     os.chmod(path, mode)
 
 
-def make_read_only(root, read_only):
-  """Toggle the writable bit on a directory tree."""
-  assert os.path.isabs(root), root
-  for dirpath, dirnames, filenames in os.walk(root, topdown=True):
-    for filename in filenames:
-      _set_read_only(os.path.join(dirpath, filename), read_only)
+def make_directories_read_only(root, read_only):
+  """Toggle the writable bit on a directory tree.
 
+  Do not touch the files themselves, only the directories. Only this is
+  necessary to be able to delete the files.
+  """
+  assert os.path.isabs(root), root
+  for dirpath, dirnames, _filenames in os.walk(root, topdown=True):
     for dirname in dirnames:
       _set_read_only(os.path.join(dirpath, dirname), read_only)
 
 
 def rmtree(root):
   """Wrapper around shutil.rmtree() to retry automatically on Windows."""
-  make_read_only(root, False)
+  make_directories_read_only(root, False)
   if sys.platform == 'win32':
     for i in range(3):
       try:
@@ -191,6 +192,9 @@ def rmtree(root):
 def try_remove(filepath):
   """Removes a file without crashing even if it doesn't exist."""
   try:
+    # Deleting a read-only file will fail if the directory is read-only. This
+    # means make_directories_read_only(os.path.dirname(filepath), False) should
+    # have been called before this call.
     os.remove(filepath)
   except OSError:
     pass
@@ -312,8 +316,14 @@ class DiskCache(isolateserver.LocalCache):
       return self._lru.keys_set()
 
   def touch(self, digest, size):
-    # Verify an actual file is valid. Note that is doesn't compute the hash so
-    # it could still be corrupted. Do it outside the lock.
+    """Verifies an actual file is valid.
+
+    Note that is doesn't compute the hash so it could still be corrupted if the
+    file size didn't change.
+
+    TODO(maruel): More stringent verification while keeping the check fast.
+    """
+    # Do the check outside the lock.
     if not isolateserver.is_valid_file(self._path(digest), size):
       return False
 
@@ -335,6 +345,10 @@ class DiskCache(isolateserver.LocalCache):
 
   def write(self, digest, content):
     path = self._path(digest)
+    # A stale broken file may remain. It is possible for the file to have write
+    # access bit removed which would cause the file_write() call to fail to open
+    # in write mode. Take no chance here.
+    try_remove(path)
     try:
       size = isolateserver.file_write(path, content)
     except:
@@ -345,11 +359,23 @@ class DiskCache(isolateserver.LocalCache):
       # caller, it will be logged there.
       try_remove(path)
       raise
+    # TODO(maruel): Then make the file read-only in the cache.
+    # This has a few side-effects since the file node is modified, so every
+    # directory entries to this file becomes read-only. This will be changed in
+    # a follow up CL.
+    # _set_read_only(path, True)
     with self._lock:
       self._add(digest, size)
 
   def link(self, digest, dest):
-    link_file(dest, self._path(digest), HARDLINK)
+    """Hardlinks the file to |dest|.
+
+    Note that the file permission bits are on the file node, not the directory
+    entry, so changing the access bit on any of the directory entries for the
+    file node will affect them all.
+    """
+    path = self._path(digest)
+    link_file(dest, path, HARDLINK)
 
   def _load(self):
     """Loads state of the cache from json file."""
@@ -499,8 +525,10 @@ def run_tha_test(isolated_hash, storage, cache, algo, outdir):
       return 1
 
     if settings.read_only:
-      logging.info('Making files read only')
-      make_read_only(outdir, True)
+      # Note that the files themselves are read only anyway. This only inhibits
+      # creating files or deleting files in the test directory.
+      logging.info('Making directories read only')
+      make_directories_read_only(outdir, True)
     cwd = os.path.normpath(os.path.join(outdir, settings.relative_cwd))
     logging.info('Running %s, cwd=%s' % (settings.command, cwd))
 

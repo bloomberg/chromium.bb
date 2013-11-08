@@ -232,24 +232,18 @@ def create_directories(base_directory, files):
       os.mkdir(os.path.join(base_directory, d))
 
 
-def create_links(base_directory, files):
-  """Creates any links needed by the given set of files."""
+def create_symlinks(base_directory, files):
+  """Creates any symlinks needed by the given set of files."""
   for filepath, properties in files:
     if 'l' not in properties:
       continue
     if sys.platform == 'win32':
-      # TODO(maruel): Create junctions or empty text files similar to what
-      # cygwin do?
+      # TODO(maruel): Create symlink via the win32 api.
       logging.warning('Ignoring symlink %s', filepath)
       continue
     outfile = os.path.join(base_directory, filepath)
-    # symlink doesn't exist on Windows. So the 'link' property should
-    # never be specified for windows .isolated file.
+    # os.symlink() doesn't exist on Windows.
     os.symlink(properties['l'], outfile)  # pylint: disable=E1101
-    if 'm' in properties:
-      lchmod = getattr(os, 'lchmod', None)
-      if lchmod:
-        lchmod(outfile, properties['m'])
 
 
 def is_valid_file(filepath, size):
@@ -1487,7 +1481,7 @@ def fetch_isolated(
       if not os.path.isdir(outdir):
         os.makedirs(outdir)
       create_directories(outdir, settings.files)
-      create_links(outdir, settings.files.iteritems())
+      create_symlinks(outdir, settings.files.iteritems())
 
       # Ensure working directory exists.
       cwd = os.path.normpath(os.path.join(outdir, settings.relative_cwd))
