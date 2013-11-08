@@ -71,7 +71,6 @@ bool GLContextEGL::Initialize(
   if (!context_) {
     LOG(ERROR) << "eglCreateContext failed with error "
                << GetLastEGLErrorString();
-    Destroy();
     return false;
   }
 
