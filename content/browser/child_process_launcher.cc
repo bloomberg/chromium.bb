@@ -469,14 +469,19 @@ base::TerminationStatus ChildProcessLauncher::GetChildTerminationStatus(
   if (context_->zygote_) {
     context_->termination_status_ = ZygoteHostImpl::GetInstance()->
         GetTerminationStatus(handle, known_dead, &context_->exit_code_);
-  } else
+  } else {
 #elif defined(OS_MACOSX)
   if (known_dead) {
     context_->termination_status_ =
         base::GetKnownDeadTerminationStatus(handle, &context_->exit_code_);
-  } else
-#endif
+  } else {
+#elif defined(OS_ANDROID)
+  if (IsChildProcessOomProtected(handle)) {
+      context_->termination_status_ = base::TERMINATION_STATUS_OOM_PROTECTED;
+  } else {
+#else
   {
+#endif
     context_->termination_status_ =
         base::GetTerminationStatus(handle, &context_->exit_code_);
   }

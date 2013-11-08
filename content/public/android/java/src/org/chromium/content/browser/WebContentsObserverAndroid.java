@@ -19,6 +19,10 @@ public abstract class WebContentsObserverAndroid {
         mNativeWebContentsObserverAndroid = nativeInit(contentViewCore.getNativeContentViewCore());
     }
 
+    @CalledByNative
+    public void renderProcessGone(boolean wasOomProtected) {
+    }
+
     /**
      * Called when the a page starts loading.
      * @param url The validated url for the loading page.

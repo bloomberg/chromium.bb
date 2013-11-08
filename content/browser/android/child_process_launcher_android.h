@@ -29,6 +29,8 @@ void StartChildProcess(
 // StartChildProcess.
 void StopChildProcess(base::ProcessHandle handle);
 
+bool IsChildProcessOomProtected(base::ProcessHandle handle);
+
 bool RegisterChildProcessLauncher(JNIEnv* env);
 
 }  // namespace content

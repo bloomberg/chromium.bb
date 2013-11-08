@@ -393,6 +393,11 @@ public class ChildProcessLauncher {
         return sBindingManager;
     }
 
+    @CalledByNative
+    private static boolean isOomProtected(int pid) {
+        return sBindingManager.isOomProtected(pid);
+    }
+
     /**
      * Returns the child process service interface for the given pid. This may be called on
      * any thread, but the caller must assume that the service can disconnect at any time. All

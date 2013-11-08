@@ -89,7 +89,6 @@ class ContentViewCoreImpl : public ContentViewCore,
   base::android::ScopedJavaLocalRef<jstring> GetTitle(
       JNIEnv* env, jobject obj) const;
   jboolean IsIncognito(JNIEnv* env, jobject obj);
-  jboolean Crashed(JNIEnv* env, jobject obj) const { return tab_crashed_; }
   void SendOrientationChangeEvent(JNIEnv* env, jobject obj, jint orientation);
   jboolean SendTouchEvent(JNIEnv* env,
                           jobject obj,
@@ -352,10 +351,6 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   void SendGestureEvent(const blink::WebGestureEvent& event);
 
-  // Checks if there there is a corresponding renderer process and updates
-  // |tab_crashed_| accordingly.
-  void UpdateTabCrashedFlag();
-
   // Update focus state of the RenderWidgetHostView.
   void SetFocusInternal(bool focused);
 
@@ -373,9 +368,6 @@ class ContentViewCoreImpl : public ContentViewCore,
 
   // A compositor layer containing any layer that should be shown.
   scoped_refptr<cc::Layer> root_layer_;
-
-  // Whether the renderer backing this ContentViewCore has crashed.
-  bool tab_crashed_;
 
   // Device scale factor.
   float dpi_scale_;

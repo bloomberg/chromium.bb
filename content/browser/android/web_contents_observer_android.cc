@@ -60,6 +60,18 @@ void WebContentsObserverAndroid::WebContentsDestroyed(
   }
 }
 
+void WebContentsObserverAndroid::RenderProcessGone(
+    base::TerminationStatus termination_status) {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj(weak_java_observer_.get(env));
+  if (obj.is_null())
+    return;
+  jboolean was_oom_protected =
+      termination_status == base::TERMINATION_STATUS_OOM_PROTECTED;
+  Java_WebContentsObserverAndroid_renderProcessGone(
+      env, obj.obj(), was_oom_protected);
+}
+
 void WebContentsObserverAndroid::DidStartLoading(
     RenderViewHost* render_view_host) {
   JNIEnv* env = AttachCurrentThread();

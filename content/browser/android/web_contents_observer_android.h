@@ -9,6 +9,7 @@
 
 #include "base/android/jni_helper.h"
 #include "base/basictypes.h"
+#include "base/process/kill.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/frame_navigate_params.h"
@@ -31,6 +32,8 @@ class WebContentsObserverAndroid : public WebContentsObserver {
   void Destroy(JNIEnv* env, jobject obj);
 
  private:
+  virtual void RenderProcessGone(
+      base::TerminationStatus termination_status) OVERRIDE;
   virtual void DidStartLoading(RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidStopLoading(RenderViewHost* render_view_host) OVERRIDE;
   virtual void DidFailProvisionalLoad(

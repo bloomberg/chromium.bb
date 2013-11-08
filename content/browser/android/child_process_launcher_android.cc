@@ -131,6 +131,13 @@ void StopChildProcess(base::ProcessHandle handle) {
   Java_ChildProcessLauncher_stop(env, static_cast<jint>(handle));
 }
 
+bool IsChildProcessOomProtected(base::ProcessHandle handle) {
+  JNIEnv* env = AttachCurrentThread();
+  DCHECK(env);
+  return Java_ChildProcessLauncher_isOomProtected(env,
+      static_cast<jint>(handle));
+}
+
 void EstablishSurfacePeer(
     JNIEnv* env, jclass clazz,
     jint pid, jobject surface, jint primary_id, jint secondary_id) {

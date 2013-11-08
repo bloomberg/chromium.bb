@@ -25,6 +25,13 @@ enum TerminationStatus {
   TERMINATION_STATUS_PROCESS_WAS_KILLED,   // e.g. SIGKILL or task manager kill
   TERMINATION_STATUS_PROCESS_CRASHED,      // e.g. Segmentation fault
   TERMINATION_STATUS_STILL_RUNNING,        // child hasn't exited yet
+#if defined(OS_ANDROID)
+  // On Android processes are spawned from the system Zygote and we do not get
+  // the termination status.  We can't know if the termination was a crash or an
+  // oom kill for sure, but we can use status of the strong process bindings as
+  // a hint.
+  TERMINATION_STATUS_OOM_PROTECTED,        // child was protected from oom kill
+#endif
   TERMINATION_STATUS_MAX_ENUM
 };
 

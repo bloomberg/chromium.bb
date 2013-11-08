@@ -128,7 +128,7 @@ public class ContentView extends FrameLayout
 
     @Override
     public boolean isReadyForSnapshot() {
-        return !isCrashed() && isReady();
+        return isReady();
     }
 
     @Override
@@ -652,13 +652,6 @@ public class ContentView extends FrameLayout
      */
     public void setUseDesktopUserAgent(boolean override, boolean reloadOnChange) {
         mContentViewCore.setUseDesktopUserAgent(override, reloadOnChange);
-    }
-
-    /**
-     * @return Whether the native ContentView has crashed.
-     */
-    public boolean isCrashed() {
-        return mContentViewCore.isCrashed();
     }
 
     /**

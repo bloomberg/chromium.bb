@@ -368,9 +368,6 @@ public class ContentViewCore
 
     private boolean mAttachedToWindow = false;
 
-    // Pid of the renderer process backing this ContentViewCore.
-    private int mPid = 0;
-
     private ContentViewGestureHandler mContentViewGestureHandler;
     private GestureStateListener mGestureStateListener;
     private ZoomManager mZoomManager;
@@ -786,7 +783,6 @@ public class ContentViewCore
             }
         };
 
-        mPid = nativeGetCurrentRenderProcessId(mNativeContentViewCore);
         sendOrientationChangeEvent();
     }
 
@@ -1584,13 +1580,13 @@ public class ContentViewCore
     public void onAttachedToWindow() {
         mAttachedToWindow = true;
         if (mNativeContentViewCore != 0) {
-            assert mPid == nativeGetCurrentRenderProcessId(mNativeContentViewCore);
-            ChildProcessLauncher.getBindingManager().bindAsHighPriority(mPid);
+            int pid = nativeGetCurrentRenderProcessId(mNativeContentViewCore);
+            ChildProcessLauncher.getBindingManager().bindAsHighPriority(pid);
             // Normally the initial binding is removed in onRenderProcessSwap(), but it is possible
             // to construct WebContents and spawn the renderer before passing it to ContentViewCore.
             // In this case there will be no onRenderProcessSwap() call and the initial binding will
             // be removed here.
-            ChildProcessLauncher.getBindingManager().removeInitialBinding(mPid);
+            ChildProcessLauncher.getBindingManager().removeInitialBinding(pid);
         }
         setAccessibilityState(mAccessibilityManager.isEnabled());
     }
@@ -1602,8 +1598,8 @@ public class ContentViewCore
     public void onDetachedFromWindow() {
         mAttachedToWindow = false;
         if (mNativeContentViewCore != 0) {
-            assert mPid == nativeGetCurrentRenderProcessId(mNativeContentViewCore);
-            ChildProcessLauncher.getBindingManager().unbindAsHighPriority(mPid);
+            int pid = nativeGetCurrentRenderProcessId(mNativeContentViewCore);
+            ChildProcessLauncher.getBindingManager().unbindAsHighPriority(pid);
         }
         setInjectedAccessibility(false);
         hidePopupDialog();
@@ -2009,27 +2005,6 @@ public class ContentViewCore
         }
     }
 
-    /**
-     * Called by native side when the corresponding renderer crashes. Note that if a renderer is
-     * shared between tabs, this might be called multiple times while the tab is crashed. This is
-     * because the tabs sharing a renderer also share RenderProcessHost. When one of those tabs
-     * reloads and a new renderer is created for the shared RenderProcessHost, all tabs are notified
-     * in onRenderProcessSwap(), not only the one that reloads. If this renderer dies, all the other
-     * dead tabs are notified again.
-     * @param alreadyCrashed true iff this tab is already in crashed state but the shared renderer
-     *                       resurrected and died again since the last time this was called.
-     */
-    @SuppressWarnings("unused")
-    @CalledByNative
-    private void onTabCrash(boolean alreadyCrashed) {
-        assert mPid != 0;
-        if (!alreadyCrashed) {
-            getContentViewClient().onRendererCrash(
-                    ChildProcessLauncher.getBindingManager().isOomProtected(mPid));
-        }
-        mPid = 0;
-    }
-
     private void handleTapOrPress(
             long timeMs, float xPix, float yPix, int isLongPressOrTap, boolean showPress) {
         if (mContainerView.isFocusable() && mContainerView.isFocusableInTouchMode()
@@ -2362,14 +2337,6 @@ public class ContentViewCore
         nativeClearSslPreferences(mNativeContentViewCore);
     }
 
-    /**
-     * @return Whether the native ContentView has crashed.
-     */
-    public boolean isCrashed() {
-        if (mNativeContentViewCore == 0) return false;
-        return nativeCrashed(mNativeContentViewCore);
-    }
-
     private boolean isSelectionHandleShowing() {
         return mSelectionHandleController != null && mSelectionHandleController.isShowing();
     }
@@ -2683,7 +2650,6 @@ public class ContentViewCore
     @SuppressWarnings("unused")
     @CalledByNative
     private void onRenderProcessSwap(int oldPid, int newPid) {
-        assert mPid == oldPid || mPid == newPid;
         if (mAttachedToWindow && oldPid != newPid) {
             ChildProcessLauncher.getBindingManager().unbindAsHighPriority(oldPid);
             ChildProcessLauncher.getBindingManager().bindAsHighPriority(newPid);
@@ -2692,7 +2658,6 @@ public class ContentViewCore
         // We want to remove the initial binding even if the ContentView is not attached, so that
         // renderers for ContentViews loading in background do not retain the high priority.
         ChildProcessLauncher.getBindingManager().removeInitialBinding(newPid);
-        mPid = newPid;
 
         attachImeAdapter();
     }
@@ -3273,9 +3238,6 @@ public class ContentViewCore
     private native boolean nativeIsShowingInterstitialPage(int nativeContentViewCoreImpl);
 
     private native boolean nativeIsIncognito(int nativeContentViewCoreImpl);
-
-    // Returns true if the native side crashed so that java side can draw a sad tab.
-    private native boolean nativeCrashed(int nativeContentViewCoreImpl);
 
     private native void nativeSetFocus(int nativeContentViewCoreImpl, boolean focused);
 

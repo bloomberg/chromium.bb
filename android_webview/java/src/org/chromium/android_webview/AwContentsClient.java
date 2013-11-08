@@ -116,12 +116,6 @@ public abstract class AwContentsClient {
         }
 
         @Override
-        public void onRendererCrash(boolean crashedWhileOomProtected) {
-            // This is not possible so long as the webview is run single process!
-            throw new RuntimeException("Renderer crash reported.");
-        }
-
-        @Override
         public void onUpdateTitle(String title) {
             AwContentsClient.this.onReceivedTitle(title);
         }

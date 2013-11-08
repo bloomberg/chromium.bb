@@ -164,7 +164,6 @@ ContentViewCoreImpl::ContentViewCoreImpl(JNIEnv* env, jobject obj,
       java_ref_(env, obj),
       web_contents_(static_cast<WebContentsImpl*>(web_contents)),
       root_layer_(cc::Layer::Create()),
-      tab_crashed_(false),
       vsync_interval_(base::TimeDelta::FromMicroseconds(
           kDefaultVSyncIntervalMicros)),
       expected_browser_composite_time_(base::TimeDelta::FromMicroseconds(
@@ -174,11 +173,6 @@ ContentViewCoreImpl::ContentViewCoreImpl(JNIEnv* env, jobject obj,
       device_orientation_(0) {
   CHECK(web_contents) <<
       "A ContentViewCoreImpl should be created with a valid WebContents.";
-
-  // When a tab is restored (from a saved state), it does not have a renderer
-  // process. We treat it like the tab is crashed. If the content is loaded
-  // when the tab is shown, tab_crashed_ will be reset.
-  UpdateTabCrashedFlag();
 
   // TODO(leandrogracia): make use of the hardware_accelerated argument.
 
@@ -333,9 +327,6 @@ void ContentViewCoreImpl::OnShow(JNIEnv* env, jobject obj) {
 
 void ContentViewCoreImpl::Show() {
   GetWebContents()->WasShown();
-  // Displaying WebContents may trigger a lazy reload, spawning a new renderer
-  // for the tab.
-  UpdateTabCrashedFlag();
 }
 
 void ContentViewCoreImpl::Hide() {
@@ -355,18 +346,6 @@ void ContentViewCoreImpl::OnTabCrashed() {
   if (obj.is_null())
     return;
   Java_ContentViewCore_resetVSyncNotification(env, obj.obj());
-
-  // Note that we might reach this place multiple times while the
-  // ContentViewCore remains crashed. E.g. if two tabs share the render process
-  // and the process crashes, this will be called for each tab. If the user
-  // reload one tab, a new render process is created and it can be shared by the
-  // other tab. But if user closes the reloaded tab before reloading the other
-  // tab, the new render process will be shut down. This will trigger the other
-  // tab's OnTabCrashed() called again as two tabs share the same
-  // BrowserRenderProcessHost. The Java side will distinguish this case using
-  // tab_crashed_ passed below.
-  Java_ContentViewCore_onTabCrash(env, obj.obj(), tab_crashed_);
-  tab_crashed_ = true;
 }
 
 // All positions and sizes are in CSS pixels.
@@ -722,7 +701,6 @@ void ContentViewCoreImpl::RemoveLayer(scoped_refptr<cc::Layer> layer) {
 void ContentViewCoreImpl::LoadUrl(
     NavigationController::LoadURLParams& params) {
   GetWebContents()->GetController().LoadURLWithParams(params);
-  UpdateTabCrashedFlag();
 }
 
 void ContentViewCoreImpl::AddBeginFrameSubscriber() {
@@ -970,12 +948,6 @@ void ContentViewCoreImpl::SendGestureEvent(
     rwhv->SendGestureEvent(event);
 }
 
-void ContentViewCoreImpl::UpdateTabCrashedFlag() {
-  // Since RenderWidgetHostView is associated with the lifetime of the renderer
-  // process, we use it to test whether there is a renderer process.
-  tab_crashed_ = !(web_contents_->GetRenderWidgetHostView());
-}
-
 void ContentViewCoreImpl::ScrollBegin(JNIEnv* env, jobject obj, jlong time_ms,
                                       jfloat x, jfloat y) {
   WebGestureEvent event = MakeGestureEvent(
@@ -1168,29 +1140,24 @@ jboolean ContentViewCoreImpl::CanGoToOffset(JNIEnv* env, jobject obj,
 
 void ContentViewCoreImpl::GoBack(JNIEnv* env, jobject obj) {
   web_contents_->GetController().GoBack();
-  UpdateTabCrashedFlag();
 }
 
 void ContentViewCoreImpl::GoForward(JNIEnv* env, jobject obj) {
   web_contents_->GetController().GoForward();
-  UpdateTabCrashedFlag();
 }
 
 void ContentViewCoreImpl::GoToOffset(JNIEnv* env, jobject obj, jint offset) {
   web_contents_->GetController().GoToOffset(offset);
-  UpdateTabCrashedFlag();
 }
 
 void ContentViewCoreImpl::GoToNavigationIndex(JNIEnv* env,
                                               jobject obj,
                                               jint index) {
   web_contents_->GetController().GoToIndex(index);
-  UpdateTabCrashedFlag();
 }
 
 void ContentViewCoreImpl::LoadIfNecessary(JNIEnv* env, jobject obj) {
   web_contents_->GetController().LoadIfNecessary();
-  UpdateTabCrashedFlag();
 }
 
 void ContentViewCoreImpl::RequestRestoreLoad(JNIEnv* env, jobject obj) {
@@ -1208,14 +1175,12 @@ void ContentViewCoreImpl::Reload(JNIEnv* env,
     web_contents_->GetController().LoadIfNecessary();
   else
     web_contents_->GetController().Reload(check_for_repost);
-  UpdateTabCrashedFlag();
 }
 
 void ContentViewCoreImpl::ReloadIgnoringCache(JNIEnv* env,
                                               jobject obj,
                                               jboolean check_for_repost) {
   web_contents_->GetController().ReloadIgnoringCache(check_for_repost);
-  UpdateTabCrashedFlag();
 }
 
 void ContentViewCoreImpl::CancelPendingReload(JNIEnv* env, jobject obj) {
