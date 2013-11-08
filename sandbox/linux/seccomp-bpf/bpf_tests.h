@@ -89,7 +89,7 @@ class BpfTests : public UnitTests {
       // Initialize and then start the sandbox with our custom policy
       playground2::Sandbox sandbox;
       sandbox.set_proc_fd(proc_fd);
-      sandbox.SetSandboxPolicy(arg->policy(), &arg->aux_);
+      sandbox.SetSandboxPolicyDeprecated(arg->policy(), &arg->aux_);
       sandbox.Sandbox::StartSandbox();
 
       arg->test()(arg->aux_);
@@ -105,7 +105,7 @@ class BpfTests : public UnitTests {
       // Call the compiler and verify the policy. That's the least we can do,
       // if we don't have kernel support.
       playground2::Sandbox sandbox;
-      sandbox.SetSandboxPolicy(arg->policy(), &arg->aux_);
+      sandbox.SetSandboxPolicyDeprecated(arg->policy(), &arg->aux_);
       playground2::Sandbox::Program *program =
           sandbox.AssembleFilter(true /* force_verification */);
       delete program;

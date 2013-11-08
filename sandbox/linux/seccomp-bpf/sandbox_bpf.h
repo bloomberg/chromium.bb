@@ -16,6 +16,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/memory/scoped_ptr.h"
 #include "sandbox/linux/seccomp-bpf/die.h"
 #include "sandbox/linux/seccomp-bpf/errorcode.h"
 #include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
@@ -39,6 +40,7 @@ struct arch_sigsys {
 
 class CodeGen;
 class SandboxUnittestHelper;
+class SandboxBpfPolicy;
 struct Instruction;
 
 class Sandbox {
@@ -108,7 +110,12 @@ class Sandbox {
   // handler. In this case, of course, the data that is pointed to must remain
   // valid for the entire time that Trap() handlers can be called; typically,
   // this would be the lifetime of the program.
-  void SetSandboxPolicy(EvaluateSyscall syscallEvaluator, void *aux);
+  // DEPRECATED: use the policy interface below.
+  void SetSandboxPolicyDeprecated(EvaluateSyscall syscallEvaluator, void *aux);
+
+  // Set the BPF policy as |policy|. Ownership of |policy| is transfered here
+  // to the sandbox object.
+  void SetSandboxPolicy(SandboxBpfPolicy* policy);
 
   // We can use ErrorCode to request calling of a trap handler. This method
   // performs the required wrapping of the callback function into an
@@ -220,7 +227,7 @@ class Sandbox {
   bool KernelSupportSeccompBPF();
 
   // Verify that the current policy passes some basic sanity checks.
-  void PolicySanityChecks(EvaluateSyscall syscall_evaluator, void *aux);
+  void PolicySanityChecks(SandboxBpfPolicy* policy);
 
   // Assembles and installs a filter based on the policy that has previously
   // been configured with SetSandboxPolicy().
@@ -258,10 +265,11 @@ class Sandbox {
 
   static SandboxStatus status_;
 
-  bool       quiet_;
-  int        proc_fd_;
-  Evaluators *evaluators_;
-  Conds      *conds_;
+  bool quiet_;
+  int proc_fd_;
+  scoped_ptr<const SandboxBpfPolicy> policy_;
+  Conds* conds_;
+  bool sandbox_has_started_;
 
   DISALLOW_COPY_AND_ASSIGN(Sandbox);
 };

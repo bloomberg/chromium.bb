@@ -23,19 +23,18 @@
 #include "base/posix/eintr_wrapper.h"
 #endif
 
+#include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "sandbox/linux/seccomp-bpf/codegen.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
+#include "sandbox/linux/seccomp-bpf/sandbox_bpf_policy.h"
 #include "sandbox/linux/seccomp-bpf/syscall.h"
 #include "sandbox/linux/seccomp-bpf/syscall_iterator.h"
 #include "sandbox/linux/seccomp-bpf/verifier.h"
 
-namespace {
+namespace playground2 {
 
-using playground2::ErrorCode;
-using playground2::Instruction;
-using playground2::Sandbox;
-using playground2::Trap;
-using playground2::arch_seccomp_data;
+namespace {
 
 const int kExpectedExitCode = 100;
 
@@ -179,43 +178,63 @@ void RedirectToUserspace(Instruction *insn, void *aux) {
   }
 }
 
-// Stackable wrapper around an Evaluators handler. Changes ErrorCodes
-// returned by a system call evaluator to match the changes made by
-// RedirectToUserspace(). "aux" should be pointer to wrapped system call
-// evaluator.
-ErrorCode RedirectToUserspaceEvalWrapper(Sandbox *sandbox, int sysnum,
-                                         void *aux) {
-  // We need to replicate the behavior of RedirectToUserspace(), so that our
-  // Verifier can still work correctly.
-  Sandbox::Evaluators *evaluators =
-    reinterpret_cast<Sandbox::Evaluators *>(aux);
-  const std::pair<Sandbox::EvaluateSyscall, void *>& evaluator =
-    *evaluators->begin();
-
-  ErrorCode err = evaluator.first(sandbox, sysnum, evaluator.second);
-  if ((err.err() & SECCOMP_RET_ACTION) == SECCOMP_RET_ERRNO) {
-    return sandbox->Trap(ReturnErrno,
-                       reinterpret_cast<void *>(err.err() & SECCOMP_RET_DATA));
+// This wraps an existing policy and changes its behavior to match the changes
+// made by RedirectToUserspace(). This is part of the framework that allows BPF
+// evaluation in userland.
+// TODO(markus): document the code inside better.
+class RedirectToUserSpacePolicyWrapper : public SandboxBpfPolicy {
+ public:
+  explicit RedirectToUserSpacePolicyWrapper(
+      const SandboxBpfPolicy* wrapped_policy)
+      : wrapped_policy_(wrapped_policy) {
+    DCHECK(wrapped_policy_);
   }
-  return err;
-}
+
+  virtual ErrorCode EvaluateSyscall(Sandbox* sandbox_compiler,
+                                    int system_call_number) const OVERRIDE {
+    ErrorCode err =
+        wrapped_policy_->EvaluateSyscall(sandbox_compiler, system_call_number);
+    if ((err.err() & SECCOMP_RET_ACTION) == SECCOMP_RET_ERRNO) {
+      return sandbox_compiler->Trap(ReturnErrno,
+          reinterpret_cast<void*>(err.err() & SECCOMP_RET_DATA));
+    }
+    return err;
+  }
+
+ private:
+  const SandboxBpfPolicy* wrapped_policy_;
+  DISALLOW_COPY_AND_ASSIGN(RedirectToUserSpacePolicyWrapper);
+};
 
 intptr_t BpfFailure(const struct arch_seccomp_data&, void *aux) {
   SANDBOX_DIE(static_cast<char *>(aux));
 }
 
-}  // namespace
+// This class allows compatibility with the old, deprecated SetSandboxPolicy.
+class CompatibilityPolicy : public SandboxBpfPolicy {
+ public:
+  CompatibilityPolicy(Sandbox::EvaluateSyscall syscall_evaluator, void* aux)
+      : syscall_evaluator_(syscall_evaluator),
+        aux_(aux) { DCHECK(syscall_evaluator_); }
 
-// The kernel gives us a sandbox, we turn it into a playground :-)
-// This is version 2 of the playground; version 1 was built on top of
-// pre-BPF seccomp mode.
-namespace playground2 {
+  virtual ErrorCode EvaluateSyscall(Sandbox* sandbox_compiler,
+                                    int system_call_number) const OVERRIDE {
+    return syscall_evaluator_(sandbox_compiler, system_call_number, aux_);
+  }
+
+ private:
+  Sandbox::EvaluateSyscall syscall_evaluator_;
+  void* aux_;
+  DISALLOW_COPY_AND_ASSIGN(CompatibilityPolicy);
+};
+
+}  // namespace
 
 Sandbox::Sandbox()
     : quiet_(false),
       proc_fd_(-1),
-      evaluators_(new Evaluators),
-      conds_(new Conds) {
+      conds_(new Conds),
+      sandbox_has_started_(false) {
 }
 
 Sandbox::~Sandbox() {
@@ -230,9 +249,6 @@ Sandbox::~Sandbox() {
   // The "if ()" statements are technically superfluous. But let's be explicit
   // that we really don't want to run any code, when we already destroyed
   // objects before setting up the sandbox.
-  if (evaluators_) {
-    delete evaluators_;
-  }
   if (conds_) {
     delete conds_;
   }
@@ -312,7 +328,7 @@ bool Sandbox::RunFunctionInPolicy(void (*code_in_sandbox)(),
 #endif
     }
 
-    SetSandboxPolicy(syscall_evaluator, aux);
+    SetSandboxPolicyDeprecated(syscall_evaluator, aux);
     StartSandbox();
 
     // Run our code in the sandbox.
@@ -427,7 +443,7 @@ void Sandbox::StartSandbox() {
   if (status_ == STATUS_UNSUPPORTED || status_ == STATUS_UNAVAILABLE) {
     SANDBOX_DIE("Trying to start sandbox, even though it is known to be "
                 "unavailable");
-  } else if (!evaluators_ || !conds_) {
+  } else if (sandbox_has_started_ || !conds_) {
     SANDBOX_DIE("Cannot repeatedly start sandbox. Create a separate Sandbox "
                 "object instead.");
   }
@@ -459,11 +475,10 @@ void Sandbox::StartSandbox() {
   status_ = STATUS_ENABLED;
 }
 
-void Sandbox::PolicySanityChecks(EvaluateSyscall syscall_evaluator,
-                                 void *aux) {
+void Sandbox::PolicySanityChecks(SandboxBpfPolicy* policy) {
   for (SyscallIterator iter(true); !iter.Done(); ) {
     uint32_t sysnum = iter.Next();
-    if (!IsDenied(syscall_evaluator(this, sysnum, aux))) {
+    if (!IsDenied(policy->EvaluateSyscall(this, sysnum))) {
       SANDBOX_DIE("Policies should deny system calls that are outside the "
                   "expected range (typically MIN_SYSCALL..MAX_SYSCALL)");
     }
@@ -471,12 +486,23 @@ void Sandbox::PolicySanityChecks(EvaluateSyscall syscall_evaluator,
   return;
 }
 
-void Sandbox::SetSandboxPolicy(EvaluateSyscall syscall_evaluator, void *aux) {
-  if (!evaluators_ || !conds_) {
+// Deprecated API, supported with a wrapper to the new API.
+void Sandbox::SetSandboxPolicyDeprecated(EvaluateSyscall syscall_evaluator,
+                                         void* aux) {
+  if (sandbox_has_started_ || !conds_) {
     SANDBOX_DIE("Cannot change policy after sandbox has started");
   }
-  PolicySanityChecks(syscall_evaluator, aux);
-  evaluators_->push_back(std::make_pair(syscall_evaluator, aux));
+  SetSandboxPolicy(new CompatibilityPolicy(syscall_evaluator, aux));
+}
+
+// Don't take a scoped_ptr here, polymorphism make their use awkward.
+void Sandbox::SetSandboxPolicy(SandboxBpfPolicy* policy) {
+  DCHECK(!policy_);
+  if (sandbox_has_started_ || !conds_) {
+    SANDBOX_DIE("Cannot change policy after sandbox has started");
+  }
+  PolicySanityChecks(policy);
+  policy_.reset(policy);
 }
 
 void Sandbox::InstallFilter() {
@@ -499,11 +525,12 @@ void Sandbox::InstallFilter() {
   memcpy(bpf, &(*program)[0], sizeof(bpf));
   delete program;
 
-  // Release memory that is no longer needed
-  delete evaluators_;
+  // Make an attempt to release memory that is no longer needed here, rather
+  // than in the destructor. Try to avoid as much as possible to presume of
+  // what will be possible to do in the new (sandboxed) execution environment.
   delete conds_;
-  evaluators_ = NULL;
-  conds_      = NULL;
+  conds_ = NULL;
+  policy_.reset();
 
   // Install BPF filter program
   if (prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0)) {
@@ -514,6 +541,8 @@ void Sandbox::InstallFilter() {
     }
   }
 
+  sandbox_has_started_ = true;
+
   return;
 }
 
@@ -523,15 +552,7 @@ Sandbox::Program *Sandbox::AssembleFilter(bool force_verification) {
 #endif
 
   // Verify that the user pushed a policy.
-  if (evaluators_->empty()) {
-    SANDBOX_DIE("Failed to configure system call filters");
-  }
-
-  // We can't handle stacked evaluators, yet. We'll get there eventually
-  // though. Hang tight.
-  if (evaluators_->size() != 1) {
-    SANDBOX_DIE("Not implemented");
-  }
+  DCHECK(policy_);
 
   // Assemble the BPF filter program.
   CodeGen *gen = new CodeGen();
@@ -585,18 +606,16 @@ Sandbox::Program *Sandbox::AssembleFilter(bool force_verification) {
                     "architecture");
       }
 
-      EvaluateSyscall evaluateSyscall = evaluators_->begin()->first;
-      void *aux                       = evaluators_->begin()->second;
-      if (!evaluateSyscall(this, __NR_rt_sigprocmask, aux).
+      if (!policy_->EvaluateSyscall(this, __NR_rt_sigprocmask).
             Equals(ErrorCode(ErrorCode::ERR_ALLOWED)) ||
-          !evaluateSyscall(this, __NR_rt_sigreturn, aux).
+          !policy_->EvaluateSyscall(this, __NR_rt_sigreturn).
             Equals(ErrorCode(ErrorCode::ERR_ALLOWED))
 #if defined(__NR_sigprocmask)
-       || !evaluateSyscall(this, __NR_sigprocmask, aux).
+       || !policy_->EvaluateSyscall(this, __NR_sigprocmask).
             Equals(ErrorCode(ErrorCode::ERR_ALLOWED))
 #endif
 #if defined(__NR_sigreturn)
-       || !evaluateSyscall(this, __NR_sigreturn, aux).
+       || !policy_->EvaluateSyscall(this, __NR_sigreturn).
             Equals(ErrorCode(ErrorCode::ERR_ALLOWED))
 #endif
           ) {
@@ -689,15 +708,14 @@ void Sandbox::VerifyProgram(const Program& program, bool has_unsafe_traps) {
   // whenever we return an "errno" value from the filter, then we have to
   // wrap our system call evaluator to perform the same operation. Otherwise,
   // the verifier would also report a mismatch in return codes.
-  Evaluators redirected_evaluators;
-  redirected_evaluators.push_back(
-      std::make_pair(RedirectToUserspaceEvalWrapper, evaluators_));
+  scoped_ptr<const RedirectToUserSpacePolicyWrapper> redirected_policy(
+      new RedirectToUserSpacePolicyWrapper(policy_.get()));
 
-  const char *err = NULL;
+  const char* err = NULL;
   if (!Verifier::VerifyBPF(
                        this,
                        program,
-                       has_unsafe_traps ? redirected_evaluators : *evaluators_,
+                       has_unsafe_traps ? *redirected_policy : *policy_,
                        &err)) {
     CodeGen::PrintProgram(program);
     SANDBOX_DIE(err);
@@ -710,15 +728,13 @@ void Sandbox::FindRanges(Ranges *ranges) {
   // deal with this disparity by enumerating from MIN_SYSCALL to MAX_SYSCALL,
   // and then verifying that the rest of the number range (both positive and
   // negative) all return the same ErrorCode.
-  EvaluateSyscall evaluate_syscall = evaluators_->begin()->first;
-  void *aux                        = evaluators_->begin()->second;
-  uint32_t old_sysnum              = 0;
-  ErrorCode old_err                = evaluate_syscall(this, old_sysnum, aux);
-  ErrorCode invalid_err            = evaluate_syscall(this, MIN_SYSCALL - 1,
-                                                      aux);
+  uint32_t old_sysnum = 0;
+  ErrorCode old_err = policy_->EvaluateSyscall(this, old_sysnum);
+  ErrorCode invalid_err = policy_->EvaluateSyscall(this, MIN_SYSCALL - 1);
+
   for (SyscallIterator iter(false); !iter.Done(); ) {
     uint32_t sysnum = iter.Next();
-    ErrorCode err = evaluate_syscall(this, static_cast<int>(sysnum), aux);
+    ErrorCode err =  policy_->EvaluateSyscall(this, static_cast<int>(sysnum));
     if (!iter.IsValid(sysnum) && !invalid_err.Equals(err)) {
       // A proper sandbox policy should always treat system calls outside of
       // the range MIN_SYSCALL..MAX_SYSCALL (i.e. anything that returns
@@ -982,4 +998,4 @@ ErrorCode Sandbox::Kill(const char *msg) {
 
 Sandbox::SandboxStatus Sandbox::status_ = STATUS_UNKNOWN;
 
-}  // namespace
+}  // namespace playground2

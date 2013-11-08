@@ -5,6 +5,7 @@
 #include <string.h>
 
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
+#include "sandbox/linux/seccomp-bpf/sandbox_bpf_policy.h"
 #include "sandbox/linux/seccomp-bpf/syscall_iterator.h"
 #include "sandbox/linux/seccomp-bpf/verifier.h"
 
@@ -360,15 +361,9 @@ namespace playground2 {
 
 bool Verifier::VerifyBPF(Sandbox *sandbox,
                          const std::vector<struct sock_filter>& program,
-                         const Sandbox::Evaluators& evaluators,
+                         const SandboxBpfPolicy& policy,
                          const char **err) {
   *err = NULL;
-  if (evaluators.size() != 1) {
-    *err = "Not implemented";
-    return false;
-  }
-  Sandbox::EvaluateSyscall evaluate_syscall = evaluators.begin()->first;
-  void *aux                                 = evaluators.begin()->second;
   for (SyscallIterator iter(false); !iter.Done(); ) {
     uint32_t sysnum = iter.Next();
     // We ideally want to iterate over the full system call range and values
@@ -391,7 +386,7 @@ bool Verifier::VerifyBPF(Sandbox *sandbox,
     }
 #endif
 #endif
-    ErrorCode code = evaluate_syscall(sandbox, sysnum, aux);
+    ErrorCode code = policy.EvaluateSyscall(sandbox, sysnum);
     if (!VerifyErrorCode(sandbox, program, &data, code, code, err)) {
       return false;
     }

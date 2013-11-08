@@ -99,7 +99,7 @@ SANDBOX_TEST(SandboxBpf, DISABLE_ON_TSAN(VerboseAPITesting)) {
       playground2::Sandbox::STATUS_AVAILABLE) {
     pid_t test_var = 0;
     Sandbox sandbox;
-    sandbox.SetSandboxPolicy(VerboseAPITestingPolicy, &test_var);
+    sandbox.SetSandboxPolicyDeprecated(VerboseAPITestingPolicy, &test_var);
     sandbox.StartSandbox();
 
     BPF_ASSERT(test_var == 0);
@@ -317,7 +317,7 @@ BPF_TEST(SandboxBpf, StackingPolicy, StackingPolicyPartOne) {
   // Stack a second sandbox with its own policy. Verify that we can further
   // restrict filters, but we cannot relax existing filters.
   Sandbox sandbox;
-  sandbox.SetSandboxPolicy(StackingPolicyPartTwo, NULL);
+  sandbox.SetSandboxPolicyDeprecated(StackingPolicyPartTwo, NULL);
   sandbox.StartSandbox();
 
   errno = 0;

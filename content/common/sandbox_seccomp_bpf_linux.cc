@@ -1977,7 +1977,7 @@ void StartSandboxWithPolicy(Sandbox::EvaluateSyscall syscall_policy,
   // the object to be destroyed after the sandbox has been started. Note that
   // doing so does not stop the sandbox.
   Sandbox sandbox;
-  sandbox.SetSandboxPolicy(syscall_policy, broker_process);
+  sandbox.SetSandboxPolicyDeprecated(syscall_policy, broker_process);
   sandbox.StartSandbox();
 }
 

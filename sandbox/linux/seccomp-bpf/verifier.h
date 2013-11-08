@@ -13,6 +13,8 @@
 
 namespace playground2 {
 
+class SandboxBpfPolicy;
+
 class Verifier {
  public:
   // Evaluate the BPF program for all possible inputs and verify that it
@@ -24,7 +26,7 @@ class Verifier {
   // error message that does not need to be free()'d.
   static bool VerifyBPF(Sandbox *sandbox,
                         const std::vector<struct sock_filter>& program,
-                        const Sandbox::Evaluators& evaluators,
+                        const SandboxBpfPolicy& policy,
                         const char **err);
 
   // Evaluate a given BPF program for a particular set of system call
