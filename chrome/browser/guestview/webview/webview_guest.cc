@@ -538,6 +538,7 @@ void WebViewGuest::AddWebViewToExtensionRendererState() {
   // TODO(fsamuel): Partition IDs should probably be a chrome-only concept. They
   // should probably be passed in via attach args.
   webview_info.partition_id =  site_url.query();
+  webview_info.extension_id = extension_id();
   webview_info.allow_chrome_extension_urls = AllowChromeExtensionURLs();
 
   content::BrowserThread::PostTask(

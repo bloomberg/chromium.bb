@@ -23,6 +23,7 @@ class ExtensionRendererState {
     int embedder_process_id;
     int instance_id;
     std::string partition_id;
+    std::string extension_id;
     bool allow_chrome_extension_urls;
   };
 
