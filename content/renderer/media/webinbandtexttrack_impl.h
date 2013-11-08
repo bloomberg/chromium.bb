@@ -21,21 +21,15 @@ class WebInbandTextTrackImpl : public blink::WebInbandTextTrack {
   virtual void setClient(blink::WebInbandTextTrackClient* client);
   virtual blink::WebInbandTextTrackClient* client();
 
-  virtual void setMode(Mode mode);
-  virtual Mode mode() const;
-
   virtual Kind kind() const;
-  virtual bool isClosedCaptions() const;
 
   virtual blink::WebString label() const;
   virtual blink::WebString language() const;
-  virtual bool isDefault() const;
 
   virtual int textTrackIndex() const;
 
  private:
   blink::WebInbandTextTrackClient* client_;
-  Mode mode_;
   Kind kind_;
   blink::WebString label_;
   blink::WebString language_;

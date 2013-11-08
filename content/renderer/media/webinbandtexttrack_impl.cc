@@ -14,7 +14,6 @@ WebInbandTextTrackImpl::WebInbandTextTrackImpl(
     const blink::WebString& language,
     int index)
     : client_(NULL),
-      mode_(ModeDisabled),
       kind_(kind),
       label_(label),
       language_(language),
@@ -34,27 +33,8 @@ blink::WebInbandTextTrackClient* WebInbandTextTrackImpl::client() {
   return client_;
 }
 
-void WebInbandTextTrackImpl::setMode(Mode mode) {
-  mode_ = mode;
-}
-
-WebInbandTextTrackImpl::Mode WebInbandTextTrackImpl::mode() const {
-  return mode_;
-}
-
 WebInbandTextTrackImpl::Kind WebInbandTextTrackImpl::kind() const {
   return kind_;
-}
-
-bool WebInbandTextTrackImpl::isClosedCaptions() const {
-  switch (kind_) {
-  case KindCaptions:
-  case KindSubtitles:
-    return true;
-
-  default:
-    return false;
-  }
 }
 
 blink::WebString WebInbandTextTrackImpl::label() const {
@@ -63,10 +43,6 @@ blink::WebString WebInbandTextTrackImpl::label() const {
 
 blink::WebString WebInbandTextTrackImpl::language() const {
   return language_;
-}
-
-bool WebInbandTextTrackImpl::isDefault() const {
-  return false;
 }
 
 int WebInbandTextTrackImpl::textTrackIndex() const {
