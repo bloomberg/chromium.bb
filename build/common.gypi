@@ -1477,8 +1477,10 @@
             # .obj files.
             'incremental_chrome_dll%': 1,
           }],
-          # Don't do incremental linking for large modules on 32-bit.
-          ['MSVS_OS_BITS==32', {
+          # Don't do incremental linking for large modules on 32-bit or when
+          # component=static_library as the toolchain fails due to the size of
+          # the .ilk files.
+          ['MSVS_OS_BITS==32 or component=="static_library"', {
             'msvs_large_module_debug_link_mode%': '1',  # No
           },{
             'msvs_large_module_debug_link_mode%': '2',  # Yes
