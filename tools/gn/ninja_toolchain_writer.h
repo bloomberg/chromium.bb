@@ -16,20 +16,20 @@
 class BuildSettings;
 class Settings;
 class Target;
+class Toolchain;
 
 class NinjaToolchainWriter {
  public:
   // Takes the settings for the toolchain, as well as the list of all targets
-  // assicoated with the toolchain. Ninja files exactly matching "skip_files"
-  // will not be included in the subninja list.
+  // assicoated with the toolchain.
   static bool RunAndWriteFile(const Settings* settings,
-                              const std::vector<const Target*>& targets,
-                              const std::set<std::string>& skip_files);
+                              const Toolchain* toolchain,
+                              const std::vector<const Target*>& targets);
 
  private:
   NinjaToolchainWriter(const Settings* settings,
+                       const Toolchain* toolchain,
                        const std::vector<const Target*>& targets,
-                       const std::set<std::string>& skip_files,
                        std::ostream& out);
   ~NinjaToolchainWriter();
 
@@ -39,8 +39,8 @@ class NinjaToolchainWriter {
   void WriteSubninjas();
 
   const Settings* settings_;
+  const Toolchain* toolchain_;
   std::vector<const Target*> targets_;
-  const std::set<std::string>& skip_files_;
   std::ostream& out_;
   PathOutput path_output_;
 

@@ -20,6 +20,9 @@ struct LabelPtrPair {
 
   LabelPtrPair() : label(), ptr(NULL), origin(NULL) {}
 
+  explicit LabelPtrPair(const Label& l) : label(l), ptr(NULL), origin(NULL) {
+  }
+
   // This contructor is typically used in unit tests, it extracts the label
   // automatically from a given pointer.
   explicit LabelPtrPair(const T* p) : label(p->label()), ptr(p), origin(NULL) {

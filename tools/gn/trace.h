@@ -23,7 +23,8 @@ class TraceItem {
     TRACE_FILE_PARSE,
     TRACE_FILE_EXECUTE,
     TRACE_FILE_WRITE,
-    TRACE_SCRIPT_EXECUTE
+    TRACE_SCRIPT_EXECUTE,
+    TRACE_DEFINE_TARGET
   };
 
   TraceItem(Type type,
@@ -65,6 +66,7 @@ class TraceItem {
 class ScopedTrace {
  public:
   ScopedTrace(TraceItem::Type t, const std::string& name);
+  ScopedTrace(TraceItem::Type t, const Label& label);
   ~ScopedTrace();
 
   void SetToolchain(const Label& label);

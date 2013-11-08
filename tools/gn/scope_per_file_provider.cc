@@ -7,7 +7,6 @@
 #include "tools/gn/filesystem_utils.h"
 #include "tools/gn/settings.h"
 #include "tools/gn/source_file.h"
-#include "tools/gn/toolchain_manager.h"
 #include "tools/gn/value.h"
 #include "tools/gn/variables.h"
 
@@ -50,10 +49,8 @@ const Value* ScopePerFileProvider::GetCurrentToolchain() {
 
 const Value* ScopePerFileProvider::GetDefaultToolchain() {
   if (!default_toolchain_) {
-    const ToolchainManager& toolchain_manager =
-        scope_->settings()->build_settings()->toolchain_manager();
     default_toolchain_.reset(new Value(NULL,
-        toolchain_manager.GetDefaultToolchainUnlocked().GetUserVisibleName(
+        scope_->settings()->default_toolchain_label().GetUserVisibleName(
             false)));
   }
   return default_toolchain_.get();

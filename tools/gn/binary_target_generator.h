@@ -14,7 +14,7 @@ class BinaryTargetGenerator : public TargetGenerator {
  public:
   BinaryTargetGenerator(Target* target,
                         Scope* scope,
-                        const Token& function_token,
+                        const FunctionCallNode* function_call,
                         Target::OutputType type,
                         Err* err);
   virtual ~BinaryTargetGenerator();

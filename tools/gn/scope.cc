@@ -13,8 +13,7 @@ namespace {
 // FLags set in the mode_flags_ of a scope. If a bit is set, it applies
 // recursively to all dependent scopes.
 const unsigned kProcessingBuildConfigFlag = 1;
-const unsigned kProcessingDefaultBuildConfigFlag = 2;
-const unsigned kProcessingImportFlag = 4;
+const unsigned kProcessingImportFlag = 2;
 
 }  // namespace
 
@@ -300,24 +299,6 @@ bool Scope::IsProcessingBuildConfig() const {
     return true;
   if (containing())
     return containing()->IsProcessingBuildConfig();
-  return false;
-}
-
-void Scope::SetProcessingDefaultBuildConfig() {
-  DCHECK((mode_flags_ & kProcessingDefaultBuildConfigFlag) == 0);
-  mode_flags_ |= kProcessingDefaultBuildConfigFlag;
-}
-
-void Scope::ClearProcessingDefaultBuildConfig() {
-  DCHECK(mode_flags_ & kProcessingDefaultBuildConfigFlag);
-  mode_flags_ &= ~(kProcessingDefaultBuildConfigFlag);
-}
-
-bool Scope::IsProcessingDefaultBuildConfig() const {
-  if (mode_flags_ & kProcessingDefaultBuildConfigFlag)
-    return true;
-  if (containing())
-    return containing()->IsProcessingDefaultBuildConfig();
   return false;
 }
 

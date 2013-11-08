@@ -41,7 +41,7 @@ Value ExecuteGenericTarget(const char* target_type,
   if (err->has_error())
     return Value();
 
-  TargetGenerator::GenerateTarget(&block_scope, function->function(), args,
+  TargetGenerator::GenerateTarget(&block_scope, function, args,
                                   target_type, err);
   if (err->has_error())
     return Value();
@@ -109,7 +109,7 @@ Value RunComponent(Scope* scope,
   if (err->has_error())
     return Value();
 
-  TargetGenerator::GenerateTarget(&block_scope, function->function(), args,
+  TargetGenerator::GenerateTarget(&block_scope, function, args,
                                   component_mode, err);
   return Value();
 }
@@ -163,8 +163,7 @@ Value RunCopy(const FunctionCallNode* function,
   if (!EnsureNotProcessingImport(function, scope, err) ||
       !EnsureNotProcessingBuildConfig(function, scope, err))
     return Value();
-  TargetGenerator::GenerateTarget(scope, function->function(), args,
-                                  functions::kCopy, err);
+  TargetGenerator::GenerateTarget(scope, function, args, functions::kCopy, err);
   return Value();
 }
 

@@ -16,11 +16,14 @@ class Err;
 class Scope;
 class Token;
 
+// This class fills in the config values from a given scope. It's shared
+// between the "config" function call and all the different binary target types
+// (shared library, static library, etc.) since all of these support the
+// various flags stored in the ConfigValues class.
 class ConfigValuesGenerator {
  public:
   ConfigValuesGenerator(ConfigValues* dest_values,
                         Scope* scope,
-                        const Token& function_token,
                         const SourceDir& input_dir,
                         Err* err);
   ~ConfigValuesGenerator();
@@ -31,7 +34,6 @@ class ConfigValuesGenerator {
  private:
   ConfigValues* config_values_;
   Scope* scope_;
-  const Token& function_token_;
   const SourceDir input_dir_;
   Err* err_;
 

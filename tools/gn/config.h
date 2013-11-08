@@ -9,11 +9,6 @@
 #include "tools/gn/config_values.h"
 #include "tools/gn/item.h"
 
-class Err;
-class ItemTree;
-class LocationRange;
-class Settings;
-
 // Represents a named config in the dependency graph.
 class Config : public Item {
  public:
@@ -25,16 +20,6 @@ class Config : public Item {
 
   ConfigValues& config_values() { return config_values_; }
   const ConfigValues& config_values() const { return config_values_; }
-
-  // Gets or creates a config.
-  //
-  // This is like the TargetManager is for Targets, but Configs are so much
-  // simpler that this one function is all we need.
-  static Config* GetConfig(const Settings* settings,
-                           const LocationRange& specified_from_here,
-                           const Label& label,
-                           Item* dep_from,
-                           Err* err);
 
  private:
   ConfigValues config_values_;

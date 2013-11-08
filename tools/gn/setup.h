@@ -11,6 +11,8 @@
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "tools/gn/build_settings.h"
+#include "tools/gn/builder.h"
+#include "tools/gn/loader.h"
 #include "tools/gn/scheduler.h"
 #include "tools/gn/scope.h"
 #include "tools/gn/settings.h"
@@ -33,6 +35,8 @@ class CommonSetup {
   void set_check_for_bad_items(bool s) { check_for_bad_items_ = s; }
 
   BuildSettings& build_settings() { return build_settings_; }
+  Builder* builder() { return builder_.get(); }
+  LoaderImpl* loader() { return loader_.get(); }
 
  protected:
   CommonSetup();
@@ -43,8 +47,9 @@ class CommonSetup {
   void RunPreMessageLoop();
   bool RunPostMessageLoop();
 
- protected:
   BuildSettings build_settings_;
+  scoped_refptr<LoaderImpl> loader_;
+  scoped_refptr<Builder> builder_;
 
   bool check_for_bad_items_;
 
@@ -121,7 +126,7 @@ class Setup : public CommonSetup {
 // so that the main setup executes the message loop, but both are run.
 class DependentSetup : public CommonSetup {
  public:
-  DependentSetup(const Setup& main_setup);
+  DependentSetup(Setup& main_setup);
   virtual ~DependentSetup();
 
   // These are the two parts of Run() in the regular setup, not including the

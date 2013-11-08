@@ -16,6 +16,10 @@ static_library("gn_lib") {
     "binary_target_generator.h",
     "build_settings.cc",
     "build_settings.h",
+    "builder.cc",
+    "builder.h",
+    "builder_record.cc",
+    "builder_record.h",
     "command_args.cc",
     "command_desc.cc",
     "command_gen.cc",
@@ -72,13 +76,11 @@ static_library("gn_lib") {
     "input_file_manager.h",
     "item.cc",
     "item.h",
-    "item_node.cc",
-    "item_node.h",
-    "item_tree.cc",
-    "item_tree.h",
     "label.cc",
     "label.h",
     "label_ptr.h",
+    "loader.cc",
+    "loader.h",
     "location.cc",
     "location.h",
     "ninja_binary_target_writer.cc",
@@ -136,16 +138,12 @@ static_library("gn_lib") {
     "target.h",
     "target_generator.cc",
     "target_generator.h",
-    "target_manager.cc",
-    "target_manager.h",
     "token.cc",
     "token.h",
     "tokenizer.cc",
     "tokenizer.h",
     "toolchain.cc",
     "toolchain.h",
-    "toolchain_manager.cc",
-    "toolchain_manager.h",
     "trace.cc",
     "trace.h",
     "value.cc",
@@ -159,7 +157,6 @@ static_library("gn_lib") {
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
-    "//build/util:last_change",
   ]
 }
 
@@ -170,17 +167,20 @@ executable("gn") {
 
   deps = [
     ":gn_lib",
+    "//build/util:last_change",
   ]
 }
 
 test("gn_unittests") {
   sources = [
+    "builder_unittest.cc",
     "escape_unittest.cc",
     "file_template_unittest.cc",
     "filesystem_utils_unittest.cc",
     "function_rebase_path_unittest.cc",
     "input_conversion_unittest.cc",
     "label_unittest.cc",
+    "loader_unittest.cc",
     "ninja_binary_target_writer_unittest.cc",
     "ninja_copy_target_writer_unittest.cc",
     "ninja_helper_unittest.cc",
@@ -192,7 +192,6 @@ test("gn_unittests") {
     "source_dir_unittest.cc",
     "string_utils_unittest.cc",
     "target_generator_unittest.cc",
-    "target_manager_unittest.cc",
     "target_unittest.cc",
     "test_with_scope.cc",
     "test_with_scope.h",

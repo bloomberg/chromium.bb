@@ -12,7 +12,7 @@ TestWithScope::TestWithScope()
   build_settings_.SetBuildDir(SourceDir("//out/Debug/"));
 
   settings_.set_toolchain_label(toolchain_.label());
-  settings_.set_is_default(true);
+  settings_.set_default_toolchain_label(toolchain_.label());
 }
 
 TestWithScope::~TestWithScope() {

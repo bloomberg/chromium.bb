@@ -47,14 +47,13 @@ void GetDirList(
 
 }  // namespace
 
-ConfigValuesGenerator::ConfigValuesGenerator(ConfigValues* dest_values,
-                                             Scope* scope,
-                                             const Token& function_token,
-                                             const SourceDir& input_dir,
-                                             Err* err)
+ConfigValuesGenerator::ConfigValuesGenerator(
+    ConfigValues* dest_values,
+    Scope* scope,
+    const SourceDir& input_dir,
+    Err* err)
     : config_values_(dest_values),
       scope_(scope),
-      function_token_(function_token),
       input_dir_(input_dir),
       err_(err) {
 }

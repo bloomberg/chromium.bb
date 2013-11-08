@@ -7,6 +7,7 @@
 #include <set>
 
 #include "base/logging.h"
+#include "tools/gn/builder_record.h"
 #include "tools/gn/config_values_extractors.h"
 #include "tools/gn/err.h"
 #include "tools/gn/escape.h"
@@ -118,7 +119,7 @@ GypBinaryTargetWriter::Flags::~Flags() {}
 
 GypBinaryTargetWriter::GypBinaryTargetWriter(const TargetGroup& group,
                                              std::ostream& out)
-    : GypTargetWriter(group.debug, out),
+    : GypTargetWriter(group.debug->item()->AsTarget(), out),
       group_(group) {
 }
 
@@ -193,12 +194,12 @@ void GypBinaryTargetWriter::WriteVCConfiguration(int indent) {
   Indent(indent) << "'configurations': {\n";
 
   Indent(indent + kExtraIndent) << "'Debug': {\n";
-  Flags debug_flags(FlagsFromTarget(group_.debug));
+  Flags debug_flags(FlagsFromTarget(group_.debug->item()->AsTarget()));
   WriteVCFlags(debug_flags, indent + kExtraIndent * 2);
   Indent(indent + kExtraIndent) << "},\n";
 
   Indent(indent + kExtraIndent) << "'Release': {\n";
-  Flags release_flags(FlagsFromTarget(group_.release));
+  Flags release_flags(FlagsFromTarget(group_.release->item()->AsTarget()));
   WriteVCFlags(release_flags, indent + kExtraIndent * 2);
   Indent(indent + kExtraIndent) << "},\n";
 
@@ -221,15 +222,18 @@ void GypBinaryTargetWriter::WriteLinuxConfiguration(int indent) {
     Indent(indent + kExtraIndent) << "['_toolset == \"host\"', {\n";
     Indent(indent + kExtraIndent * 2) << "'configurations': {\n";
     Indent(indent + kExtraIndent * 3) << "'Debug': {\n";
-    WriteLinuxFlagsForTarget(group_.host_debug, indent + kExtraIndent * 4);
+    WriteLinuxFlagsForTarget(group_.host_debug->item()->AsTarget(),
+                             indent + kExtraIndent * 4);
     Indent(indent + kExtraIndent * 3) << "},\n";
     Indent(indent + kExtraIndent * 3) << "'Release': {\n";
-    WriteLinuxFlagsForTarget(group_.host_release, indent + kExtraIndent * 4);
+    WriteLinuxFlagsForTarget(group_.host_release->item()->AsTarget(),
+                             indent + kExtraIndent * 4);
     Indent(indent + kExtraIndent * 3) << "},\n";
     Indent(indent + kExtraIndent * 2) << "}\n";
 
     // The sources are per-toolset but shared between debug & release.
-    WriteSources(group_.host_debug, indent + kExtraIndent * 2);
+    WriteSources(group_.host_debug->item()->AsTarget(),
+                 indent + kExtraIndent * 2);
 
     Indent(indent + kExtraIndent) << "],\n";
   }
@@ -238,10 +242,12 @@ void GypBinaryTargetWriter::WriteLinuxConfiguration(int indent) {
   Indent(indent + kExtraIndent) << "['_toolset == \"target\"', {\n";
   Indent(indent + kExtraIndent * 2) << "'configurations': {\n";
   Indent(indent + kExtraIndent * 3) << "'Debug': {\n";
-  WriteLinuxFlagsForTarget(group_.debug, indent + kExtraIndent * 4);
+  WriteLinuxFlagsForTarget(group_.debug->item()->AsTarget(),
+                           indent + kExtraIndent * 4);
   Indent(indent + kExtraIndent * 3) << "},\n";
   Indent(indent + kExtraIndent * 3) << "'Release': {\n";
-  WriteLinuxFlagsForTarget(group_.release, indent + kExtraIndent * 4);
+  WriteLinuxFlagsForTarget(group_.release->item()->AsTarget(),
+                           indent + kExtraIndent * 4);
   Indent(indent + kExtraIndent * 3) << "},\n";
   Indent(indent + kExtraIndent * 2) << "},\n";
 
@@ -258,12 +264,12 @@ void GypBinaryTargetWriter::WriteMacConfiguration(int indent) {
   Indent(indent) << "'configurations': {\n";
 
   Indent(indent + kExtraIndent) << "'Debug': {\n";
-  Flags debug_flags(FlagsFromTarget(group_.debug));
+  Flags debug_flags(FlagsFromTarget(group_.debug->item()->AsTarget()));
   WriteMacFlags(debug_flags, indent + kExtraIndent * 2);
   Indent(indent + kExtraIndent) << "},\n";
 
   Indent(indent + kExtraIndent) << "'Release': {\n";
-  Flags release_flags(FlagsFromTarget(group_.release));
+  Flags release_flags(FlagsFromTarget(group_.release->item()->AsTarget()));
   WriteMacFlags(release_flags, indent + kExtraIndent * 2);
   Indent(indent + kExtraIndent) << "},\n";
 

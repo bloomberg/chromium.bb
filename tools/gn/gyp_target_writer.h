@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "tools/gn/gyp_helper.h"
 
+class BuilderRecord;
 class Err;
 class Settings;
 class SourceFile;
@@ -25,10 +26,10 @@ class GypTargetWriter {
           host_debug(NULL),
           host_release(NULL) {
     }
-    const Target* debug;
-    const Target* release;
-    const Target* host_debug;
-    const Target* host_release;
+    const BuilderRecord* debug;
+    const BuilderRecord* release;
+    const BuilderRecord* host_debug;
+    const BuilderRecord* host_release;
   };
 
   GypTargetWriter(const Target* target, std::ostream& out);

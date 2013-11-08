@@ -35,14 +35,8 @@ NinjaTargetWriter::~NinjaTargetWriter() {
 }
 
 // static
-void NinjaTargetWriter::RunAndWriteFile(const Target* target) {
-  // External targets don't get written to disk, we assume they're managed by
-  // an external program. If we're not using an external generator, this is
-  // ignored.
-  if (target->settings()->build_settings()->using_external_generator() &&
-      target->external())
-    return;
-
+void NinjaTargetWriter::RunAndWriteFile(const Target* target,
+                                        const Toolchain* toolchain) {
   const Settings* settings = target->settings();
   NinjaHelper helper(settings->build_settings());
 
@@ -57,10 +51,6 @@ void NinjaTargetWriter::RunAndWriteFile(const Target* target) {
   if (g_scheduler->verbose_logging())
     g_scheduler->Log("Writing", FilePathToUTF8(ninja_file));
 
-  const Toolchain* tc = settings->build_settings()->toolchain_manager()
-      .GetToolchainDefinitionUnlocked(settings->toolchain_label());
-  CHECK(tc);
-
   file_util::CreateDirectory(ninja_file.DirName());
 
   // It's rediculously faster to write to a string and then write that to
@@ -69,19 +59,19 @@ void NinjaTargetWriter::RunAndWriteFile(const Target* target) {
 
   // Call out to the correct sub-type of writer.
   if (target->output_type() == Target::COPY_FILES) {
-    NinjaCopyTargetWriter writer(target, tc, file);
+    NinjaCopyTargetWriter writer(target, toolchain, file);
     writer.Run();
   } else if (target->output_type() == Target::CUSTOM) {
-    NinjaScriptTargetWriter writer(target, tc, file);
+    NinjaScriptTargetWriter writer(target, toolchain, file);
     writer.Run();
   } else if (target->output_type() == Target::GROUP) {
-    NinjaGroupTargetWriter writer(target, tc, file);
+    NinjaGroupTargetWriter writer(target, toolchain, file);
     writer.Run();
   } else if (target->output_type() == Target::EXECUTABLE ||
              target->output_type() == Target::STATIC_LIBRARY ||
              target->output_type() == Target::SHARED_LIBRARY ||
              target->output_type() == Target::SOURCE_SET) {
-    NinjaBinaryTargetWriter writer(target, tc, file);
+    NinjaBinaryTargetWriter writer(target, toolchain, file);
     writer.Run();
   } else {
     CHECK(0);

@@ -165,8 +165,7 @@ class Scope {
   }
 
   // Indicates if we're currently processing the build configuration file.
-  // This is true when processing the config file for any toolchain. See also
-  // *ProcessingDefaultBuildConfig() below.
+  // This is true when processing the config file for any toolchain.
   //
   // To set or clear the flag, it must currently be in the opposite state in
   // the current scope. Note that querying the state of the flag recursively
@@ -175,12 +174,6 @@ class Scope {
   void SetProcessingBuildConfig();
   void ClearProcessingBuildConfig();
   bool IsProcessingBuildConfig() const;
-
-  // Indicates we're currently processing the default toolchain's build
-  // configuration file.
-  void SetProcessingDefaultBuildConfig();
-  void ClearProcessingDefaultBuildConfig();
-  bool IsProcessingDefaultBuildConfig() const;
 
   // Indicates if we're currently processing an import file.
   //

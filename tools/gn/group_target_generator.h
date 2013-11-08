@@ -13,7 +13,7 @@ class GroupTargetGenerator : public TargetGenerator {
  public:
   GroupTargetGenerator(Target* target,
                         Scope* scope,
-                        const Token& function_token,
+                        const FunctionCallNode* function_call,
                         Err* err);
   virtual ~GroupTargetGenerator();
 

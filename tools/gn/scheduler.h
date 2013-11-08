@@ -40,7 +40,7 @@ class Scheduler {
 
   void ScheduleWork(const base::Closure& work);
 
-  void ScheduleTargetFileWrite(const Target* target);
+  void Shutdown();
 
   // Declares that the given file was read and affected the build output.
   //
@@ -78,6 +78,11 @@ class Scheduler {
 
   mutable base::Lock lock_;
   bool is_failed_;
+
+  // Used to track whether the worker pool has been shutdown. This is necessary
+  // to clean up after tests that make a scheduler but don't run the message
+  // loop.
+  bool has_been_shutdown_;
 
   // Additional input dependencies. Protected by the lock.
   std::vector<base::FilePath> gen_dependencies_;

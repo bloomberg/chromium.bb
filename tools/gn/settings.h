@@ -46,9 +46,17 @@ class Settings {
   const Label& toolchain_label() const { return toolchain_label_; }
   void set_toolchain_label(const Label& l) { toolchain_label_ = l; }
 
+  const Label& default_toolchain_label() const {
+    return default_toolchain_label_;
+  }
+  void set_default_toolchain_label(const Label& default_label) {
+    default_toolchain_label_ = default_label;
+  }
+
   // Indicates if this corresponds to the default toolchain.
-  bool is_default() const { return is_default_; }
-  void set_is_default(bool id) { is_default_ = id; }
+  bool is_default() const {
+    return toolchain_label_ == default_toolchain_label_;
+  }
 
   bool IsMac() const { return target_os_ == MAC; }
   bool IsLinux() const { return target_os_ == LINUX; }
@@ -94,7 +102,7 @@ class Settings {
   const BuildSettings* build_settings_;
 
   Label toolchain_label_;
-  bool is_default_;
+  Label default_toolchain_label_;
 
   TargetOS target_os_;
 

@@ -134,6 +134,16 @@ ScopedTrace::ScopedTrace(TraceItem::Type t, const std::string& name)
   }
 }
 
+ScopedTrace::ScopedTrace(TraceItem::Type t, const Label& label)
+    : item_(NULL),
+      done_(false) {
+  if (trace_log) {
+    item_ = new TraceItem(t, label.GetUserVisibleName(false),
+                          base::PlatformThread::CurrentId());
+    item_->set_begin(base::TimeTicks::HighResNow());
+  }
+}
+
 ScopedTrace::~ScopedTrace() {
   Done();
 }
@@ -190,6 +200,7 @@ std::string SummarizeTraces() {
         break;
       case TraceItem::TRACE_FILE_LOAD:
       case TraceItem::TRACE_FILE_WRITE:
+      case TraceItem::TRACE_DEFINE_TARGET:
         break;  // Ignore these for the summary.
     }
   }
@@ -211,6 +222,12 @@ void SaveTraces(const base::FilePath& file_name) {
   out << "{\"traceEvents\":[";
 
   std::string quote_buffer;  // Allocate outside loop to prevent reallocationg.
+
+  // Write main thread metadata (assume this is being written on the main
+  // thread).
+  out << "{\"pid\":0,\"tid\":" << base::PlatformThread::CurrentId();
+  out << ",\"ts\":0,\"ph\":\"M\",";
+  out << "\"name\":\"thread_name\",\"args\":{\"name\":\"Main thread\"}},";
 
   std::vector<TraceItem*> events = trace_log->events();
   for (size_t i = 0; i < events.size(); i++) {
@@ -244,6 +261,8 @@ void SaveTraces(const base::FilePath& file_name) {
       case TraceItem::TRACE_SCRIPT_EXECUTE:
         out << "\"script_exec\"";
         break;
+      case TraceItem::TRACE_DEFINE_TARGET:
+        out << "\"define\"";
     }
 
     if (!item.toolchain().empty() || !item.cmdline().empty()) {

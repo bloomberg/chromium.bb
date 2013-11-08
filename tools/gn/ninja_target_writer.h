@@ -24,7 +24,7 @@ class NinjaTargetWriter {
                     std::ostream& out);
   virtual ~NinjaTargetWriter();
 
-  static void RunAndWriteFile(const Target* target);
+  static void RunAndWriteFile(const Target* target, const Toolchain* toolchain);
 
   virtual void Run() = 0;
 

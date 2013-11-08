@@ -11,12 +11,10 @@
 #include "tools/gn/config_values_generator.h"
 #include "tools/gn/err.h"
 #include "tools/gn/input_file.h"
-#include "tools/gn/item_tree.h"
 #include "tools/gn/parse_tree.h"
 #include "tools/gn/scheduler.h"
 #include "tools/gn/scope.h"
 #include "tools/gn/settings.h"
-#include "tools/gn/target_manager.h"
 #include "tools/gn/token.h"
 #include "tools/gn/value.h"
 
@@ -261,29 +259,21 @@ Value RunConfig(const FunctionCallNode* function,
   Label label(MakeLabelForScope(scope, function, args[0].string_value()));
 
   if (g_scheduler->verbose_logging())
-    g_scheduler->Log("Generating config", label.GetUserVisibleName(true));
+    g_scheduler->Log("Defining config", label.GetUserVisibleName(true));
 
-  // Create the empty config object.
-  ItemTree* tree = &scope->settings()->build_settings()->item_tree();
-  Config* config = Config::GetConfig(scope->settings(), function->GetRange(),
-                                     label, NULL, err);
-  if (err->has_error())
-    return Value();
+  // Create the new config.
+  scoped_ptr<Config> config(new Config(scope->settings(), label));
+  config->set_defined_from(function);
 
   // Fill it.
   const SourceDir& input_dir = scope->GetSourceDir();
-  ConfigValuesGenerator gen(&config->config_values(), scope,
-                            function->function(), input_dir, err);
+  ConfigValuesGenerator gen(&config->config_values(), scope, input_dir, err);
   gen.Run();
   if (err->has_error())
     return Value();
 
   // Mark as complete.
-  {
-    base::AutoLock lock(tree->lock());
-    tree->MarkItemDefinedLocked(scope->settings()->build_settings(), label,
-                                err);
-  }
+  scope->settings()->build_settings()->ItemDefined(config.PassAs<Item>());
   return Value();
 }
 

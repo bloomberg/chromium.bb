@@ -13,7 +13,7 @@ class ScriptTargetGenerator : public TargetGenerator {
  public:
   ScriptTargetGenerator(Target* target,
                         Scope* scope,
-                        const Token& function_token,
+                        const FunctionCallNode* function_call,
                         Err* err);
   virtual ~ScriptTargetGenerator();
 
@@ -29,4 +29,3 @@ class ScriptTargetGenerator : public TargetGenerator {
 };
 
 #endif  // TOOLS_GN_SCRIPT_TARGET_GENERATOR_H_
-

@@ -51,13 +51,6 @@ class Target : public Item {
   virtual const Target* AsTarget() const OVERRIDE;
   virtual void OnResolved() OVERRIDE;
 
-  // This flag indicates if we've run the TargetGenerator for this target to
-  // fill out the rest of the values. Once we've done this, we save the
-  // location of the function that started the generating so that we can detect
-  // duplicate declarations.
-  bool HasBeenGenerated() const;
-  void SetGenerated(const Token* token);
-
   OutputType output_type() const { return output_type_; }
   void set_output_type(OutputType t) { output_type_ = t; }
 
@@ -191,9 +184,6 @@ class Target : public Item {
   ScriptValues script_values_;  // Used for script (CUSTOM) targets.
 
   SourceFile gyp_file_;
-
-  bool generated_;
-  const Token* generator_function_;  // Who generated this: for error messages.
 
   DISALLOW_COPY_AND_ASSIGN(Target);
 };

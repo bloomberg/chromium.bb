@@ -10,7 +10,7 @@
 #include "tools/gn/label.h"
 
 class Config;
-class ItemNode;
+class ParseNode;
 class Settings;
 class Target;
 class Toolchain;
@@ -28,12 +28,8 @@ class Item {
   // accessed from any thread with no locking once the item is constructed.
   const Label& label() const { return label_; }
 
-  // The Item and the ItemNode make a pair. This will be set when the ItemNode
-  // is constructed that owns this Item. The ItemNode should only be
-  // dereferenced with the ItemTree lock held.
-  ItemNode* item_node() { return item_node_; }
-  const ItemNode* item_node() const { return item_node_; }
-  void set_item_node(ItemNode* in) { item_node_ = in; }
+  const ParseNode* defined_from() const { return defined_from_; }
+  void set_defined_from(const ParseNode* df) { defined_from_ = df; }
 
   // Manual RTTI.
   virtual Config* AsConfig();
@@ -54,8 +50,7 @@ class Item {
  private:
   const Settings* settings_;
   Label label_;
-
-  ItemNode* item_node_;
+  const ParseNode* defined_from_;
 };
 
 #endif  // TOOLS_GN_ITEM_H_

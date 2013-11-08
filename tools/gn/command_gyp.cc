@@ -16,7 +16,6 @@
 #include "tools/gn/err.h"
 #include "tools/gn/gyp_helper.h"
 #include "tools/gn/gyp_target_writer.h"
-#include "tools/gn/item_node.h"
 #include "tools/gn/location.h"
 #include "tools/gn/setup.h"
 #include "tools/gn/source_file.h"
@@ -32,17 +31,31 @@ typedef std::map<Label, TargetGroup> CorrelatedTargetsMap;
 typedef std::map<SourceFile, std::vector<TargetGroup> > GroupedTargetsMap;
 typedef std::map<std::string, std::string> StringStringMap;
 
+std::vector<const BuilderRecord*> GetAllResolvedTargetRecords(
+    const Builder* builder) {
+  std::vector<const BuilderRecord*> all = builder->GetAllRecords();
+  std::vector<const BuilderRecord*> result;
+  result.reserve(all.size());
+  for (size_t i = 0; i < all.size(); i++) {
+    if (all[i]->type() == BuilderRecord::ITEM_TARGET &&
+        all[i]->should_generate() &&
+        all[i]->item())
+      result.push_back(all[i]);
+  }
+  return result;
+}
+
 // Groups targets sharing the same label between debug and release.
-void CorrelateTargets(const std::vector<const Target*>& debug_targets,
-                      const std::vector<const Target*>& release_targets,
+void CorrelateTargets(const std::vector<const BuilderRecord*>& debug_targets,
+                      const std::vector<const BuilderRecord*>& release_targets,
                       CorrelatedTargetsMap* correlated) {
   for (size_t i = 0; i < debug_targets.size(); i++) {
-    const Target* target = debug_targets[i];
-    (*correlated)[target->label()].debug = target;
+    const BuilderRecord* record = debug_targets[i];
+    (*correlated)[record->label()].debug = record;
   }
   for (size_t i = 0; i < release_targets.size(); i++) {
-    const Target* target = release_targets[i];
-    (*correlated)[target->label()].release = target;
+    const BuilderRecord* record = release_targets[i];
+    (*correlated)[record->label()].release = record;
   }
 }
 
@@ -51,18 +64,21 @@ void CorrelateTargets(const std::vector<const Target*>& debug_targets,
 bool EnsureTargetsMatch(const TargetGroup& group, Err* err) {
   // Check that both debug and release made this target.
   if (!group.debug || !group.release) {
-    const Target* non_null_one = group.debug ? group.debug : group.release;
+    const BuilderRecord* non_null_one =
+        group.debug ? group.debug : group.release;
     *err = Err(Location(), "The debug and release builds did not both generate "
         "a target with the name\n" +
         non_null_one->label().GetUserVisibleName(true));
     return false;
   }
 
+  const Target* debug_target = group.debug->item()->AsTarget();
+  const Target* release_target = group.release->item()->AsTarget();
+
   // Check the flags that determine if and where we write the GYP file.
-  if (group.debug->item_node()->should_generate() !=
-          group.release->item_node()->should_generate() ||
-      group.debug->external() != group.release->external() ||
-      group.debug->gyp_file() != group.release->gyp_file()) {
+  if (group.debug->should_generate() != group.release->should_generate() ||
+      debug_target->external() != release_target->external() ||
+      debug_target->gyp_file() != release_target->gyp_file()) {
     *err = Err(Location(), "The metadata for the target\n" +
         group.debug->label().GetUserVisibleName(true) +
         "\ndoesn't match between the debug and release builds.");
@@ -70,41 +86,40 @@ bool EnsureTargetsMatch(const TargetGroup& group, Err* err) {
   }
 
   // Check that the sources match.
-  if (group.debug->sources().size() != group.release->sources().size()) {
+  if (debug_target->sources().size() != release_target->sources().size()) {
     *err = Err(Location(), "The source file count for the target\n" +
         group.debug->label().GetUserVisibleName(true) +
         "\ndoesn't have the same number of files between the debug and "
         "release builds.");
     return false;
   }
-  for (size_t i = 0; i < group.debug->sources().size(); i++) {
-    if (group.debug->sources()[i] != group.release->sources()[i]) {
+  for (size_t i = 0; i < debug_target->sources().size(); i++) {
+    if (debug_target->sources()[i] != release_target->sources()[i]) {
       *err = Err(Location(), "The debug and release version of the target \n" +
           group.debug->label().GetUserVisibleName(true) +
           "\ndon't agree on the file\n" +
-          group.debug->sources()[i].value());
+          debug_target->sources()[i].value());
       return false;
     }
   }
 
   // Check that the deps match.
-  if (group.debug->deps().size() != group.release->deps().size()) {
+  if (debug_target->deps().size() != release_target->deps().size()) {
     *err = Err(Location(), "The source file count for the target\n" +
         group.debug->label().GetUserVisibleName(true) +
         "\ndoesn't have the same number of deps between the debug and "
         "release builds.");
     return false;
   }
-  for (size_t i = 0; i < group.debug->deps().size(); i++) {
-    if (group.debug->deps()[i].label != group.release->deps()[i].label) {
+  for (size_t i = 0; i < debug_target->deps().size(); i++) {
+    if (debug_target->deps()[i].label != release_target->deps()[i].label) {
       *err = Err(Location(), "The debug and release version of the target \n" +
           group.debug->label().GetUserVisibleName(true) +
           "\ndon't agree on the dep\n" +
-          group.debug->deps()[i].label.GetUserVisibleName(true));
+          debug_target->deps()[i].label.GetUserVisibleName(true));
       return false;
     }
   }
-
   return true;
 }
 
@@ -212,16 +227,15 @@ Scope::KeyValueMap GetArgsFromGypDefines() {
   return result;
 }
 
-// Returns the number of targets, number of GYP files.
-std::pair<int, int> WriteGypFiles(
-    const BuildSettings& debug_settings,
-    const BuildSettings& release_settings,
-    Err* err) {
+// Returns the (number of targets, number of GYP files).
+std::pair<int, int> WriteGypFiles(CommonSetup* debug_setup,
+                                  CommonSetup* release_setup,
+                                  Err* err) {
   // Group all targets by output GYP file name.
-  std::vector<const Target*> debug_targets;
-  std::vector<const Target*> release_targets;
-  debug_settings.target_manager().GetAllTargets(&debug_targets);
-  release_settings.target_manager().GetAllTargets(&release_targets);
+  std::vector<const BuilderRecord*> debug_targets =
+      GetAllResolvedTargetRecords(debug_setup->builder());
+  std::vector<const BuilderRecord*> release_targets =
+      GetAllResolvedTargetRecords(release_setup->builder());
 
   // Match up the debug and release version of each target by label.
   CorrelatedTargetsMap correlated;
@@ -233,19 +247,20 @@ std::pair<int, int> WriteGypFiles(
   for (CorrelatedTargetsMap::iterator i = correlated.begin();
        i != correlated.end(); ++i) {
     const TargetGroup& group = i->second;
-    if (!group.debug->item_node()->should_generate())
+    if (!group.debug->should_generate())
       continue;  // Skip non-generated ones.
-    if (group.debug->external())
+    if (group.debug->item()->AsTarget()->external())
       continue;  // Skip external ones.
-    if (group.debug->gyp_file().is_null())
+    if (group.debug->item()->AsTarget()->gyp_file().is_null())
       continue;  // Skip ones without GYP files.
 
     if (!EnsureTargetsMatch(group, err))
       return std::make_pair(0, 0);
 
     target_count++;
-    grouped_targets[helper.GetGypFileForTarget(group.debug, err)].push_back(
-        group);
+    grouped_targets[
+            helper.GetGypFileForTarget(group.debug->item()->AsTarget(), err)]
+        .push_back(group);
     if (err->has_error())
       return std::make_pair(0, 0);
   }
@@ -358,9 +373,7 @@ int RunGyp(const std::vector<std::string>& args) {
     return 1;
 
   Err err;
-  std::pair<int, int> counts = WriteGypFiles(setup_debug->build_settings(),
-                                             setup_release->build_settings(),
-                                             &err);
+  std::pair<int, int> counts = WriteGypFiles(setup_debug, setup_release, &err);
   if (err.has_error()) {
     err.PrintToStdout();
     return 1;

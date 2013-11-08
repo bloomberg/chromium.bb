@@ -9,21 +9,19 @@
 #include "base/file_util.h"
 #include "base/strings/stringize_macros.h"
 #include "tools/gn/build_settings.h"
-#include "tools/gn/item_node.h"
 #include "tools/gn/settings.h"
 #include "tools/gn/target.h"
 #include "tools/gn/toolchain.h"
-#include "tools/gn/toolchain_manager.h"
 #include "tools/gn/trace.h"
 
 NinjaToolchainWriter::NinjaToolchainWriter(
     const Settings* settings,
+    const Toolchain* toolchain,
     const std::vector<const Target*>& targets,
-    const std::set<std::string>& skip_files,
     std::ostream& out)
     : settings_(settings),
+      toolchain_(toolchain),
       targets_(targets),
-      skip_files_(skip_files),
       out_(out),
       path_output_(settings_->build_settings()->build_dir(),
                    ESCAPE_NINJA, true),
@@ -41,8 +39,8 @@ void NinjaToolchainWriter::Run() {
 // static
 bool NinjaToolchainWriter::RunAndWriteFile(
     const Settings* settings,
-    const std::vector<const Target*>& targets,
-    const std::set<std::string>& skip_files) {
+    const Toolchain* toolchain,
+    const std::vector<const Target*>& targets) {
   NinjaHelper helper(settings->build_settings());
   base::FilePath ninja_file(settings->build_settings()->GetFullPath(
       helper.GetNinjaFileForToolchain(settings).GetSourceFile(
@@ -57,16 +55,12 @@ bool NinjaToolchainWriter::RunAndWriteFile(
   if (file.fail())
     return false;
 
-  NinjaToolchainWriter gen(settings, targets, skip_files, file);
+  NinjaToolchainWriter gen(settings, toolchain, targets, file);
   gen.Run();
   return true;
 }
 
 void NinjaToolchainWriter::WriteRules() {
-  const Toolchain* tc = settings_->build_settings()->toolchain_manager()
-      .GetToolchainDefinitionUnlocked(settings_->toolchain_label());
-  CHECK(tc);
-
   std::string indent("  ");
 
   NinjaHelper helper(settings_->build_settings());
@@ -74,7 +68,7 @@ void NinjaToolchainWriter::WriteRules() {
 
   for (int i = Toolchain::TYPE_NONE + 1; i < Toolchain::TYPE_NUMTYPES; i++) {
     Toolchain::ToolType tool_type = static_cast<Toolchain::ToolType>(i);
-    const Toolchain::Tool& tool = tc->GetTool(tool_type);
+    const Toolchain::Tool& tool = toolchain_->GetTool(tool_type);
     if (tool.command.empty())
       continue;
 
@@ -100,15 +94,7 @@ void NinjaToolchainWriter::WriteRules() {
 void NinjaToolchainWriter::WriteSubninjas() {
   // Write subninja commands for each generated target.
   for (size_t i = 0; i < targets_.size(); i++) {
-    if (!targets_[i]->item_node()->should_generate() ||
-        (targets_[i]->settings()->build_settings()->using_external_generator()
-         && targets_[i]->external()))
-      continue;
-
     OutputFile ninja_file = helper_.GetNinjaFileForTarget(targets_[i]);
-    if (skip_files_.find(ninja_file.value()) != skip_files_.end())
-      continue;
-
     out_ << "subninja ";
     path_output_.WriteFile(out_, ninja_file);
     out_ << std::endl;

@@ -152,6 +152,9 @@ const ParseNode* InputFileManager::SyncLoadFile(
         base::AutoUnlock unlock(lock_);
         data->completion_event->Wait();
       }
+      // If there were multiple waiters on the same event, we now need to wake
+      // up the next one.
+      data->completion_event->Signal();
     }
   }
 

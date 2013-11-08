@@ -6,6 +6,7 @@
 
 #include <stdlib.h>
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
@@ -141,17 +142,37 @@ base::FilePath ExtractDepotToolsFromPath() {
 }
 #endif
 
+// Called on any thread. Post the item to the builder on the main thread.
+void ItemDefinedCallback(base::MessageLoop* main_loop,
+                         scoped_refptr<Builder> builder,
+                         scoped_ptr<Item> item) {
+  DCHECK(item);
+  main_loop->PostTask(FROM_HERE, base::Bind(&Builder::ItemDefined, builder,
+                                            base::Passed(&item)));
+}
+
+void DecrementWorkCount() {
+  g_scheduler->DecrementWorkCount();
+}
+
 }  // namespace
 
 // CommonSetup -----------------------------------------------------------------
 
 CommonSetup::CommonSetup()
-    : check_for_bad_items_(true) {
+    : build_settings_(),
+      loader_(new LoaderImpl(&build_settings_)),
+      builder_(new Builder(loader_.get())),
+      check_for_bad_items_(true) {
+  loader_->set_complete_callback(base::Bind(&DecrementWorkCount));
 }
 
 CommonSetup::CommonSetup(const CommonSetup& other)
     : build_settings_(other.build_settings_),
+      loader_(new LoaderImpl(&build_settings_)),
+      builder_(new Builder(loader_.get())),
       check_for_bad_items_(other.check_for_bad_items_) {
+  loader_->set_complete_callback(base::Bind(&DecrementWorkCount));
 }
 
 CommonSetup::~CommonSetup() {
@@ -159,15 +180,16 @@ CommonSetup::~CommonSetup() {
 
 void CommonSetup::RunPreMessageLoop() {
   // Load the root build file.
-  build_settings_.toolchain_manager().StartLoadingUnlocked(
-      SourceFile("//BUILD.gn"));
+  loader_->Load(SourceFile("//BUILD.gn"), Label());
+
+  // Will be decremented with the loader is drained.
+  g_scheduler->IncrementWorkCount();
 }
 
 bool CommonSetup::RunPostMessageLoop() {
   Err err;
   if (check_for_bad_items_) {
-    err = build_settings_.item_tree().CheckForBadItems();
-    if (err.has_error()) {
+    if (!builder_->CheckForBadItems(&err)) {
       err.PrintToStdout();
       return false;
     }
@@ -195,6 +217,12 @@ Setup::Setup()
       empty_settings_(&empty_build_settings_, std::string()),
       dotfile_scope_(&empty_settings_) {
   empty_settings_.set_toolchain_label(Label());
+  build_settings_.set_item_defined_callback(
+      base::Bind(&ItemDefinedCallback, scheduler_.main_loop(), builder_));
+
+  // The scheduler's main loop wasn't created when the Loader was created, so
+  // we need to set it now.
+  loader_->set_main_loop(scheduler_.main_loop());
 }
 
 Setup::~Setup() {
@@ -411,8 +439,11 @@ bool Setup::FillOtherConfig(const CommandLine& cmdline) {
 
 // DependentSetup --------------------------------------------------------------
 
-DependentSetup::DependentSetup(const Setup& main_setup)
+DependentSetup::DependentSetup(Setup& main_setup)
     : CommonSetup(main_setup) {
+  build_settings_.set_item_defined_callback(
+      base::Bind(&ItemDefinedCallback, main_setup.scheduler().main_loop(),
+                 builder_));
 }
 
 DependentSetup::~DependentSetup() {
