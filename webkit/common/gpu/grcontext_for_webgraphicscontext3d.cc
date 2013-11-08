@@ -4,6 +4,7 @@
 
 #include "webkit/common/gpu/grcontext_for_webgraphicscontext3d.h"
 
+#include "base/debug/trace_event.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/gl/GrGLInterface.h"
@@ -61,6 +62,8 @@ void GrContextForWebGraphicsContext3D::SetMemoryLimit(bool nonzero_allocation) {
     gr_context_->setTextureCacheLimits(
         kMaxGaneshTextureCacheCount, kMaxGaneshTextureCacheBytes);
   } else {
+    TRACE_EVENT_INSTANT0("gpu", "GrContext::freeGpuResources", \
+        TRACE_EVENT_SCOPE_THREAD);
     gr_context_->freeGpuResources();
     gr_context_->setTextureCacheLimits(0, 0);
   }
