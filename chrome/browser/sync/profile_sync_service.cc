@@ -645,8 +645,6 @@ void ProfileSyncService::OnGetTokenSuccess(
     const base::Time& expiration_time) {
   DCHECK_EQ(access_token_request_, request);
   access_token_request_.reset();
-  // Reset backoff time after successful response.
-  request_access_token_backoff_.Reset();
   access_token_ = access_token;
   token_receive_time_ = base::Time::Now();
   last_get_token_error_ = GoogleServiceAuthError::AuthErrorNone();
@@ -1134,9 +1132,51 @@ void ProfileSyncService::OnConnectionStatusChange(
     // Sync server returned error indicating that access token is invalid. It
     // could be either expired or access is revoked. Let's request another
     // access token and if access is revoked then request for token will fail
-    // with corresponding error.
-    RequestAccessToken();
+    // with corresponding error. If access token is repeatedly reported
+    // invalid, there may be some issues with server, e.g. authentication
+    // state is inconsistent on sync and token server. In that case, we
+    // backoff token requests exponentially to avoid hammering token server
+    // too much and to avoid getting same token due to token server's caching
+    // policy. |request_access_token_retry_timer_| is used to backoff request
+    // triggered by both auth error and failure talking to GAIA server.
+    // Therefore, we're likely to reach the backoff ceiling more quickly than
+    // you would expect from looking at the BackoffPolicy if both types of
+    // errors happen. We shouldn't receive two errors back-to-back without
+    // attempting a token/sync request in between, thus crank up request delay
+    // unnecessary. This is because we won't make a sync request if we hit an
+    // error until GAIA succeeds at sending a new token, and we won't request
+    // a new token unless sync reports a token failure. But to be safe, don't
+    // schedule request if this happens.
+    if (request_access_token_retry_timer_.IsRunning()) {
+      NOTREACHED();
+    } else if (request_access_token_backoff_.failure_count() == 0) {
+      // First time request without delay. Currently invalid token is used
+      // to initialize sync backend and we'll always end up here. We don't
+      // want to delay initialization.
+      request_access_token_backoff_.InformOfRequest(false);
+      RequestAccessToken();
+    } else  {
+      request_access_token_backoff_.InformOfRequest(false);
+      request_access_token_retry_timer_.Start(
+          FROM_HERE,
+          request_access_token_backoff_.GetTimeUntilRelease(),
+          base::Bind(&ProfileSyncService::RequestAccessToken,
+                     weak_factory_.GetWeakPtr()));
+    }
   } else {
+    // Reset backoff time after successful connection.
+    if (status == syncer::CONNECTION_OK) {
+      // Request shouldn't be scheduled at this time. But if it is, it's
+      // possible that sync flips between OK and auth error states rapidly,
+      // thus hammers token server. To be safe, only reset backoff delay when
+      // no scheduled request.
+      if (request_access_token_retry_timer_.IsRunning()) {
+        NOTREACHED();
+      } else {
+        request_access_token_backoff_.Reset();
+      }
+    }
+
     const GoogleServiceAuthError auth_error =
         ConnectionStatusToAuthError(status);
     DVLOG(1) << "Connection status change: " << auth_error.ToString();

@@ -233,6 +233,14 @@ bool ServerConnectionManager::SetAuthToken(const std::string& auth_token) {
     previously_invalidated_token = std::string();
     return true;
   }
+
+  // This could happen in case like server outage/bug. E.g. token returned by
+  // first request is considered invalid by sync server and because
+  // of token server's caching policy, etc, same token is returned on second
+  // request. Need to notify sync frontend again to request new token,
+  // otherwise backend will stay in SYNC_AUTH_ERROR state while frontend thinks
+  // everything is fine and takes no actions.
+  SetServerStatus(HttpResponse::SYNC_AUTH_ERROR);
   return false;
 }
 
@@ -252,8 +260,12 @@ void ServerConnectionManager::InvalidateAndClearAuthToken() {
 
 void ServerConnectionManager::SetServerStatus(
     HttpResponse::ServerConnectionCode server_status) {
-  if (server_status_ == server_status)
+  // SYNC_AUTH_ERROR is permanent error. Need to notify observer to take
+  // action externally to resolve.
+  if (server_status != HttpResponse::SYNC_AUTH_ERROR &&
+      server_status_ == server_status) {
     return;
+  }
   server_status_ = server_status;
   NotifyStatusChanged();
 }
