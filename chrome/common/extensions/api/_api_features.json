@@ -44,6 +44,22 @@
     "channel": "stable",
     "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
   },
+  "app.currentWindowInternal.setMinWidth": {
+    "channel": "dev",
+    "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
+  },
+  "app.currentWindowInternal.setMinHeight": {
+    "channel": "dev",
+    "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
+  },
+  "app.currentWindowInternal.setMaxWidth": {
+    "channel": "dev",
+    "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
+  },
+  "app.currentWindowInternal.setMaxHeight": {
+    "channel": "dev",
+    "contexts": ["blessed_extension", "unblessed_extension", "content_script"]
+  },
   "app.getDetails": {
     "contexts": ["blessed_extension", "unblessed_extension", "content_script"],
     "matches": []
