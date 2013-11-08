@@ -155,19 +155,10 @@ bool IsInput(views::View* view) {
          view->GetClassName() == views::Combobox::kViewClassName;
 }
 
-void SelectComboboxValue(views::Combobox* combobox,
-                         const base::string16& value) {
-  DCHECK(combobox->model());
-
-  for (int i = 0; i < combobox->model()->GetItemCount(); ++i) {
-    if (value == combobox->model()->GetItemAt(i)) {
-      combobox->SetSelectedIndex(i);
-      return;
-    }
-  }
-
-  // If we don't find a match, return the combobox to its default state.
-  combobox->SetSelectedIndex(combobox->model()->GetDefaultIndex());
+void SelectComboboxValueOrSetToDefault(views::Combobox* combobox,
+                                       const base::string16& value) {
+  if (!combobox->SelectValue(value))
+    combobox->SetSelectedIndex(combobox->model()->GetDefaultIndex());
 }
 
 // This class handles layout for the first row of a SuggestionView.
@@ -1475,7 +1466,7 @@ void AutofillDialogViews::SetTextContentsOfInput(
 
   views::Combobox* combobox = ComboboxForInput(input);
   if (combobox) {
-    SelectComboboxValue(combobox, contents);
+    SelectComboboxValueOrSetToDefault(combobox, input.initial_value);
     return;
   }
 
@@ -1968,7 +1959,7 @@ views::View* AutofillDialogViews::InitInputsView(DialogSection section) {
       views::Combobox* combobox = new views::Combobox(input_model);
       combobox->set_listener(this);
       comboboxes->insert(std::make_pair(&input, combobox));
-      SelectComboboxValue(combobox, input.initial_value);
+      SelectComboboxValueOrSetToDefault(combobox, input.initial_value);
       view_to_add.reset(combobox);
     } else {
       DecoratedTextfield* field = new DecoratedTextfield(
@@ -2057,7 +2048,7 @@ void AutofillDialogViews::UpdateSectionImpl(
       views::Combobox* combobox = combo_mapping->second;
       if (combobox->selected_index() == combobox->model()->GetDefaultIndex() ||
           clobber_inputs) {
-        SelectComboboxValue(combobox, input.initial_value);
+        SelectComboboxValueOrSetToDefault(combobox, input.initial_value);
       }
     }
   }

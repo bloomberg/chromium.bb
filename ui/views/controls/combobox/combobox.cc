@@ -125,6 +125,16 @@ void Combobox::SetSelectedIndex(int index) {
   SchedulePaint();
 }
 
+bool Combobox::SelectValue(const base::string16& value) {
+  for (int i = 0; i < model()->GetItemCount(); ++i) {
+    if (value == model()->GetItemAt(i)) {
+      SetSelectedIndex(i);
+      return true;
+    }
+  }
+  return false;
+}
+
 void Combobox::SetAccessibleName(const string16& name) {
   accessible_name_ = name;
 }

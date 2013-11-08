@@ -53,6 +53,10 @@ class VIEWS_EXPORT Combobox
   int selected_index() const { return selected_index_; }
   void SetSelectedIndex(int index);
 
+  // Looks for the first occurrence of |value| in |model()|. If found, selects
+  // the found index and returns true. Otherwise simply noops and returns false.
+  bool SelectValue(const base::string16& value);
+
   ui::ComboboxModel* model() const { return model_; }
 
   // Set the accessible name of the combobox.

@@ -63,8 +63,11 @@ class TestComboboxModel : public ui::ComboboxModel {
     return 10;
   }
   virtual string16 GetItemAt(int index) OVERRIDE {
-    DCHECK(!IsItemSeparatorAt(index));
-    return ASCIIToUTF16(IsItemSeparatorAt(index) ? "SEPARATOR" : "ITEM");
+    if (IsItemSeparatorAt(index)) {
+      NOTREACHED();
+      return ASCIIToUTF16("SEPARATOR");
+    }
+    return ASCIIToUTF16(index % 2 == 0 ? "PEANUT BUTTER" : "JELLY");
   }
   virtual bool IsItemSeparatorAt(int index) OVERRIDE {
     return separators_.find(index) != separators_.end();
@@ -316,11 +319,25 @@ TEST_F(ComboboxTest, GetTextForRowTest) {
   separators.insert(9);
   model_->SetSeparators(separators);
   for (int i = 0; i < combobox_->GetRowCount(); ++i) {
-    if (separators.count(i) != 0)
+    if (separators.count(i) != 0) {
       EXPECT_TRUE(combobox_->GetTextForRow(i).empty()) << i;
-    else
-      EXPECT_EQ(ASCIIToUTF16("ITEM"), combobox_->GetTextForRow(i)) << i;
+    } else {
+      EXPECT_EQ(ASCIIToUTF16(i % 2 == 0 ? "PEANUT BUTTER" : "JELLY"),
+                combobox_->GetTextForRow(i)) << i;
+    }
   }
+}
+
+// Verifies selecting the first matching value (and returning whether found).
+TEST_F(ComboboxTest, SelectValue) {
+  InitCombobox();
+  ASSERT_EQ(model_->GetDefaultIndex(), combobox_->selected_index());
+  EXPECT_TRUE(combobox_->SelectValue(ASCIIToUTF16("PEANUT BUTTER")));
+  EXPECT_EQ(0, combobox_->selected_index());
+  EXPECT_TRUE(combobox_->SelectValue(ASCIIToUTF16("JELLY")));
+  EXPECT_EQ(1, combobox_->selected_index());
+  EXPECT_FALSE(combobox_->SelectValue(ASCIIToUTF16("BANANAS")));
+  EXPECT_EQ(1, combobox_->selected_index());
 }
 
 }  // namespace views
