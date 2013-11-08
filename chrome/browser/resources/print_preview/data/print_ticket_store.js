@@ -332,6 +332,57 @@ cr.define('print_preview', function() {
     },
 
     /**
+     * Creates an object that represents a Google Cloud Print print ticket.
+     * @param {!print_preview.Destination} destination Destination to print to.
+     * @return {!Object} Google Cloud Print print ticket.
+     */
+    createPrintTicket: function(destination) {
+      assert(!destination.isLocal,
+             'Trying to create a Google Cloud Print print ticket for a local ' +
+                 'destination');
+      assert(destination.capabilities,
+             'Trying to create a Google Cloud Print print ticket for a ' +
+                 'destination with no print capabilities');
+      var cjt = {
+        version: '1.0',
+        print: {}
+      };
+      if (this.collate.isCapabilityAvailable() && this.collate.isUserEdited()) {
+        cjt.print.collate = {collate: this.collate.getValue() == 'true'};
+      }
+      if (this.color.isCapabilityAvailable() && this.color.isUserEdited()) {
+        var colorType = this.color.getValue() ?
+            'STANDARD_COLOR' : 'STANDARD_MONOCHROME';
+        // Find option with this colorType to read its vendor_id.
+        var selectedOptions = destination.capabilities.printer.color.option.
+            filter(function(option) {
+              return option.type == colorType;
+            });
+        if (selectedOptions.length == 0) {
+          console.error('Could not find correct color option');
+        } else {
+          cjt.print.color = {type: colorType};
+          if (selectedOptions[0].hasOwnProperty('vendor_id')) {
+            cjt.print.color.vendor_id = selectedOptions[0].vendor_id;
+          }
+        }
+      }
+      if (this.copies.isCapabilityAvailable() && this.copies.isUserEdited()) {
+        cjt.print.copies = {copies: this.copies.getValueAsNumber()};
+      }
+      if (this.duplex.isCapabilityAvailable() && this.duplex.isUserEdited()) {
+        cjt.print.duplex =
+            {type: this.duplex.getValue() ? 'LONG_EDGE' : 'NO_DUPLEX'};
+      }
+      if (this.landscape.isCapabilityAvailable() &&
+          this.landscape.isUserEdited()) {
+        cjt.print.page_orientation =
+            {type: this.landscape.getValue() ? 'LANDSCAPE' : 'PORTRAIT'};
+      }
+      return JSON.stringify(cjt);
+    },
+
+    /**
      * Adds event listeners for the print ticket store.
      * @private
      */
