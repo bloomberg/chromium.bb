@@ -5301,6 +5301,32 @@ static void perWorldBindingsVoidMethodMethodCallbackForMainWorld(const v8::Funct
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void readOnlyVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    imp->readOnlyVoidMethod();
+}
+
+static void readOnlyVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::readOnlyVoidMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void notEnumerableReadOnlyVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    imp->notEnumerableReadOnlyVoidMethod();
+}
+
+static void notEnumerableReadOnlyVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::notEnumerableReadOnlyVoidMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 } // namespace TestObjectPythonV8Internal
 
 static const V8DOMConfiguration::AttributeConfiguration V8TestObjectPythonAttributes[] = {
@@ -5666,6 +5692,8 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectPythonTemplate(v8::
 #endif // ENABLE(Condition)
     proto->Set(v8::String::NewSymbol("doNotCheckSignatureVoidMethod"), v8::FunctionTemplate::New(TestObjectPythonV8Internal::doNotCheckSignatureVoidMethodMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
     proto->Set(v8::String::NewSymbol("notEnumerableVoidMethod"), v8::FunctionTemplate::New(TestObjectPythonV8Internal::notEnumerableVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0), static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::DontEnum));
+    proto->Set(v8::String::NewSymbol("readOnlyVoidMethod"), v8::FunctionTemplate::New(TestObjectPythonV8Internal::readOnlyVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0), static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::ReadOnly));
+    proto->Set(v8::String::NewSymbol("notEnumerableReadOnlyVoidMethod"), v8::FunctionTemplate::New(TestObjectPythonV8Internal::notEnumerableReadOnlyVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0), static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::DontEnum | v8::ReadOnly));
     desc->SetNativeDataProperty(v8::String::NewSymbol("staticStringAttribute"), TestObjectPythonV8Internal::staticStringAttributeAttributeGetterCallback, TestObjectPythonV8Internal::staticStringAttributeAttributeSetterCallback, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
     desc->SetNativeDataProperty(v8::String::NewSymbol("staticLongAttribute"), TestObjectPythonV8Internal::staticLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::staticLongAttributeAttributeSetterCallback, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
 

@@ -324,4 +324,6 @@ interface TestObjectPython {
     [PerContextEnabled=FeatureName] void perContextEnabledVoidMethod();
     [PerWorldBindings] void perWorldBindingsVoidMethod();
     // [PerWorldBindings] void perWorldBindingsVoidMethodTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg); // FIXME: need to add branch to proto->Set
+    [ReadOnly] void readOnlyVoidMethod();
+    [NotEnumerable, ReadOnly] void notEnumerableReadOnlyVoidMethod();
 };

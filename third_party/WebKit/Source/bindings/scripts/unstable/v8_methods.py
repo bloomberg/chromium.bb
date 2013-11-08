@@ -82,7 +82,7 @@ def generate_method(interface, method):
         'deprecate_as': v8_utilities.deprecate_as(method),  # [DeprecateAs]
         'do_not_check_signature': not(this_custom_signature or is_static or
             v8_utilities.has_extended_attribute(method,
-                ['DoNotCheckSignature', 'NotEnumerable'])),
+                ['DoNotCheckSignature', 'NotEnumerable', 'ReadOnly'])),
         'function_template': 'desc' if method.is_static else 'proto',
         'idl_type': idl_type,
         'is_call_with_execution_context': has_extended_attribute_value(method, 'CallWith', 'ExecutionContext'),
@@ -183,6 +183,8 @@ def property_attributes(method):
     property_attributes_list = []
     if 'NotEnumerable' in extended_attributes:
         property_attributes_list.append('v8::DontEnum')
+    if 'ReadOnly' in extended_attributes:
+        property_attributes_list.append('v8::ReadOnly')
     if property_attributes_list:
         property_attributes_list.insert(0, 'v8::DontDelete')
     return property_attributes_list
