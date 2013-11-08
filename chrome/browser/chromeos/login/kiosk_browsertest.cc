@@ -380,20 +380,23 @@ class KioskTest : public InProcessBrowserTest {
     EXPECT_TRUE(app);
 
     // App should appear with its window.
-    apps::ShellWindow* window = ShellWindowObserver(
-        apps::ShellWindowRegistry::Get(app_profile),
-        kTestKioskApp).Wait();
+    apps::ShellWindowRegistry* shell_window_registry =
+        apps::ShellWindowRegistry::Get(app_profile);
+    apps::ShellWindow* window =
+        ShellWindowObserver(shell_window_registry, kTestKioskApp).Wait();
     EXPECT_TRUE(window);
 
-    // Login screen should be fading out.
-    EXPECT_EQ(0.0f,
-              LoginDisplayHostImpl::default_host()
-                  ->GetNativeWindow()
-                  ->layer()
-                  ->GetTargetOpacity());
+    // Login screen should be gone or fading out.
+    chromeos::LoginDisplayHost* login_display_host =
+        chromeos::LoginDisplayHostImpl::default_host();
+    EXPECT_TRUE(
+        login_display_host == NULL ||
+        login_display_host->GetNativeWindow()->layer()->GetTargetOpacity() ==
+            0.0f);
 
-    // Wait until the app terminates.
-    content::RunMessageLoop();
+    // Wait until the app terminates if it is still running.
+    if (!shell_window_registry->GetShellWindowsForApp(kTestKioskApp).empty())
+      content::RunMessageLoop();
 
     // Check that the app had been informed that it is running in a kiosk
     // session.
