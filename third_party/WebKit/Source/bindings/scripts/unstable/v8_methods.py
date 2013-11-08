@@ -99,7 +99,7 @@ def generate_method(interface, method):
         'do_not_check_signature': not(this_custom_signature or is_static or
             v8_utilities.has_extended_attribute(method,
                 ['DoNotCheckSignature', 'NotEnumerable', 'ReadOnly',
-                 'Unforgeable'])),
+                 'RuntimeEnabled', 'Unforgeable'])),
         'function_template': function_template(),
         'idl_type': idl_type,
         'is_call_with_execution_context': has_extended_attribute_value(method, 'CallWith', 'ExecutionContext'),
@@ -122,6 +122,7 @@ def generate_method(interface, method):
             if not argument.is_optional]),
         'per_context_enabled_function_name': v8_utilities.per_context_enabled_function_name(method),  # [PerContextEnabled]
         'property_attributes': property_attributes(method),
+        'runtime_enabled_function_name': v8_utilities.runtime_enabled_function_name(method),  # [RuntimeEnabled]
         'signature': signature(),
         'v8_set_return_value': v8_set_return_value(method, this_cpp_value),
         'world_suffixes': ['', 'ForMainWorld'] if 'PerWorldBindings' in extended_attributes else [''],  # [PerWorldBindings]

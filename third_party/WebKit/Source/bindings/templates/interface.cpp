@@ -137,12 +137,18 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::H
                                 ' | '.join(method.property_attributes) %}
     {% if method.is_per_world_bindings %}
     if (currentWorldType == MainWorld) {
-        {{method.function_template}}->Set(v8::String::NewSymbol("{{method.name}}"), v8::FunctionTemplate::New({{cpp_class_name}}V8Internal::{{method.name}}MethodCallbackForMainWorld, v8Undefined(), {{method.signature}}, {{method.number_of_required_or_variadic_arguments}}){% if method.property_attributes %}, {{property_attribute}}{% endif %});
+        {% filter runtime_enabled(method.runtime_enabled_function_name) %}
+        {{install_custom_signature(method, 'ForMainWorld')}}
+        {% endfilter %}
     } else {
-        {{method.function_template}}->Set(v8::String::NewSymbol("{{method.name}}"), v8::FunctionTemplate::New({{cpp_class_name}}V8Internal::{{method.name}}MethodCallback, v8Undefined(), {{method.signature}}, {{method.number_of_required_or_variadic_arguments}}){% if method.property_attributes %}, {{property_attribute}}{% endif %});
+        {% filter runtime_enabled(method.runtime_enabled_function_name) %}
+        {{install_custom_signature(method)}}
+        {% endfilter %}
     }
     {% else %}
-    {{method.function_template}}->Set(v8::String::NewSymbol("{{method.name}}"), v8::FunctionTemplate::New({{interface_name}}V8Internal::{{method.name}}MethodCallback, v8Undefined(), {{method.signature}}, {{method.number_of_required_or_variadic_arguments}}){% if method.property_attributes %}, {{property_attribute}}{% endif %});
+    {% filter runtime_enabled(method.runtime_enabled_function_name) %}
+    {{install_custom_signature(method)}}
+    {% endfilter %}
     {% endif %}
     {% endfilter %}
     {% endfor %}
@@ -159,6 +165,17 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::H
 }
 
 {% endblock %}
+
+
+{######################################}
+{% macro install_custom_signature(method, world_suffix) %}
+{# FIXME: move to V8DOMConfiguration::installDOMCallbacksWithCustomSignature #}
+{% set callback_name = '%sV8Internal::%sMethodCallback%s' %
+                       (interface_name, method.name, world_suffix) %}
+{% set property_attribute = 'static_cast<v8::PropertyAttribute>(%s)' %
+                            ' | '.join(method.property_attributes) %}
+{{method.function_template}}->Set(v8::String::NewSymbol("{{method.name}}"), v8::FunctionTemplate::New({{callback_name}}, v8Undefined(), {{method.signature}}, {{method.number_of_required_or_variadic_arguments}}){% if method.property_attributes %}, {{property_attribute}}{% endif %});
+{%- endmacro %}
 
 
 {######################################}

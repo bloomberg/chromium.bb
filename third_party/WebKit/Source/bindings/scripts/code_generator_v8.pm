@@ -3280,17 +3280,19 @@ sub GenerateNonStandardFunction
         $template = "desc";
     }
 
-    my $conditional = "";
+    my $conditional4 = "";  # 4 space indent context
+    my $conditional8 = "";  # 8 space indent context
     if ($attrExt->{"RuntimeEnabled"}) {
         # Only call Set()/SetAccessor() if this method should be enabled
         my $runtimeEnabledFunction = GetRuntimeEnabledFunctionName($function);
-        $conditional = "if (${runtimeEnabledFunction}())\n        ";
+        $conditional4 = "if (${runtimeEnabledFunction}())\n        ";
     }
     if ($attrExt->{"PerContextEnabled"}) {
         # Only call Set()/SetAccessor() if this method should be enabled
         my $contextEnabledFunction = GetContextEnabledFunctionName($function);
-        $conditional = "if (${contextEnabledFunction}(impl->document()))\n        ";
+        $conditional4 = "if (${contextEnabledFunction}(impl->document()))\n        ";
     }
+    $conditional8 = $conditional4 . "    " if $conditional4 ne "";
 
     if ($interface->extendedAttributes->{"CheckSecurity"} && $attrExt->{"DoNotCheckSecurity"}) {
         my $setter = $attrExt->{"ReadOnly"} ? "0" : "${implClassName}V8Internal::${implClassName}DomainSafeFunctionSetter";
@@ -3305,13 +3307,13 @@ END
         if ($function->extendedAttributes->{"PerWorldBindings"}) {
             $code .= <<END;
     if (currentWorldType == MainWorld) {
-        ${conditional}$template->SetAccessor(v8::String::NewSymbol("$name"), ${implClassName}V8Internal::${name}AttributeGetterCallbackForMainWorld, ${setter}, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>($property_attributes));
+        ${conditional8}$template->SetAccessor(v8::String::NewSymbol("$name"), ${implClassName}V8Internal::${name}AttributeGetterCallbackForMainWorld, ${setter}, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>($property_attributes));
     } else {
-        ${conditional}$template->SetAccessor(v8::String::NewSymbol("$name"), ${implClassName}V8Internal::${name}AttributeGetterCallback, ${setter}, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>($property_attributes));
+        ${conditional8}$template->SetAccessor(v8::String::NewSymbol("$name"), ${implClassName}V8Internal::${name}AttributeGetterCallback, ${setter}, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>($property_attributes));
     }
 END
         } else {
-            $code .= "    ${conditional}$template->SetAccessor(v8::String::NewSymbol(\"$name\"), ${implClassName}V8Internal::${name}AttributeGetterCallback, ${setter}, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>($property_attributes));\n";
+            $code .= "    ${conditional4}$template->SetAccessor(v8::String::NewSymbol(\"$name\"), ${implClassName}V8Internal::${name}AttributeGetterCallback, ${setter}, v8Undefined(), v8::ALL_CAN_READ, static_cast<v8::PropertyAttribute>($property_attributes));\n";
         }
 
         return $code;
@@ -3335,7 +3337,7 @@ END
         $property_attributes = ", static_cast<v8::PropertyAttribute>($property_attributes)";
     }
 
-    if ($template eq "proto" && $conditional eq "" && $signature eq "defaultSignature" && $property_attributes eq "") {
+    if ($template eq "proto" && $conditional4 eq "" && $signature eq "defaultSignature" && $property_attributes eq "") {
         die "This shouldn't happen: Class '$implClassName' $commentInfo\n";
     }
 
@@ -3343,12 +3345,12 @@ END
 
     if ($function->extendedAttributes->{"PerWorldBindings"}) {
         $code .= "    if (currentWorldType == MainWorld) {\n";
-        $code .= "        ${conditional}$template->Set(v8::String::NewSymbol(\"$name\"), v8::FunctionTemplate::New(${implClassName}V8Internal::${name}MethodCallbackForMainWorld, v8Undefined(), ${signature}, $functionLength)$property_attributes);\n";
+        $code .= "        ${conditional8}$template->Set(v8::String::NewSymbol(\"$name\"), v8::FunctionTemplate::New(${implClassName}V8Internal::${name}MethodCallbackForMainWorld, v8Undefined(), ${signature}, $functionLength)$property_attributes);\n";
         $code .= "    } else {\n";
-        $code .= "        ${conditional}$template->Set(v8::String::NewSymbol(\"$name\"), v8::FunctionTemplate::New(${implClassName}V8Internal::${name}MethodCallback, v8Undefined(), ${signature}, $functionLength)$property_attributes);\n";
+        $code .= "        ${conditional8}$template->Set(v8::String::NewSymbol(\"$name\"), v8::FunctionTemplate::New(${implClassName}V8Internal::${name}MethodCallback, v8Undefined(), ${signature}, $functionLength)$property_attributes);\n";
         $code .= "    }\n";
     } else {
-        $code .= "    ${conditional}$template->Set(v8::String::NewSymbol(\"$name\"), v8::FunctionTemplate::New(${implClassName}V8Internal::${name}MethodCallback, v8Undefined(), ${signature}, $functionLength)$property_attributes);\n";
+        $code .= "    ${conditional4}$template->Set(v8::String::NewSymbol(\"$name\"), v8::FunctionTemplate::New(${implClassName}V8Internal::${name}MethodCallback, v8Undefined(), ${signature}, $functionLength)$property_attributes);\n";
     }
     $code .= "#endif // ${conditionalString}\n" if $conditionalString;
     return $code;

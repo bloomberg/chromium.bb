@@ -2858,36 +2858,36 @@ static void runtimeEnabledLongAttributeAttributeSetterCallback(v8::Local<v8::Str
 }
 
 #if ENABLE(Condition)
-static void conditionalEnabledAtRuntimeLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
+static void conditionalRuntimeEnabledLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    v8SetReturnValueInt(info, imp->conditionalEnabledAtRuntimeLongAttribute());
+    v8SetReturnValueInt(info, imp->conditionalRuntimeEnabledLongAttribute());
 }
 #endif // ENABLE(Condition)
 
 #if ENABLE(Condition)
-static void conditionalEnabledAtRuntimeLongAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void conditionalRuntimeEnabledLongAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    TestObjectPythonV8Internal::conditionalEnabledAtRuntimeLongAttributeAttributeGetter(info);
+    TestObjectPythonV8Internal::conditionalRuntimeEnabledLongAttributeAttributeGetter(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 #endif // ENABLE(Condition)
 
 #if ENABLE(Condition)
-static void conditionalEnabledAtRuntimeLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+static void conditionalRuntimeEnabledLongAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
-    imp->setConditionalEnabledAtRuntimeLongAttribute(cppValue);
+    imp->setConditionalRuntimeEnabledLongAttribute(cppValue);
 }
 #endif // ENABLE(Condition)
 
 #if ENABLE(Condition)
-static void conditionalEnabledAtRuntimeLongAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+static void conditionalRuntimeEnabledLongAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    TestObjectPythonV8Internal::conditionalEnabledAtRuntimeLongAttributeAttributeSetter(jsValue, info);
+    TestObjectPythonV8Internal::conditionalRuntimeEnabledLongAttributeAttributeSetter(jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 #endif // ENABLE(Condition)
@@ -5469,6 +5469,45 @@ static void notEnumerableReadOnlyVoidMethodMethodCallback(const v8::FunctionCall
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void runtimeEnabledVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    imp->runtimeEnabledVoidMethod();
+}
+
+static void runtimeEnabledVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::runtimeEnabledVoidMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void perWorldBindingsRuntimeEnabledVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    imp->perWorldBindingsRuntimeEnabledVoidMethod();
+}
+
+static void perWorldBindingsRuntimeEnabledVoidMethodMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    imp->perWorldBindingsRuntimeEnabledVoidMethod();
+}
+
+static void perWorldBindingsRuntimeEnabledVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::perWorldBindingsRuntimeEnabledVoidMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void perWorldBindingsRuntimeEnabledVoidMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::perWorldBindingsRuntimeEnabledVoidMethodMethodForMainWorld(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 static void strictTypeCheckingVoidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
@@ -5790,7 +5829,7 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectPythonTemplate(v8::
 #if ENABLE(Condition)
     if (RuntimeEnabledFeatures::featureNameEnabled()) {
         static const V8DOMConfiguration::AttributeConfiguration attributeConfiguration =\
-        {"conditionalEnabledAtRuntimeLongAttribute", TestObjectPythonV8Internal::conditionalEnabledAtRuntimeLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::conditionalEnabledAtRuntimeLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
+        {"conditionalRuntimeEnabledLongAttribute", TestObjectPythonV8Internal::conditionalRuntimeEnabledLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::conditionalRuntimeEnabledLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */};
         V8DOMConfiguration::installAttribute(instance, proto, attributeConfiguration, isolate, currentWorldType);
     }
 #endif // ENABLE(Condition)
@@ -5914,6 +5953,15 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectPythonTemplate(v8::
     }
     proto->Set(v8::String::NewSymbol("readOnlyVoidMethod"), v8::FunctionTemplate::New(TestObjectPythonV8Internal::readOnlyVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0), static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::ReadOnly));
     proto->Set(v8::String::NewSymbol("notEnumerableReadOnlyVoidMethod"), v8::FunctionTemplate::New(TestObjectPythonV8Internal::notEnumerableReadOnlyVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0), static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::DontEnum | v8::ReadOnly));
+    if (RuntimeEnabledFeatures::featureNameEnabled())
+        proto->Set(v8::String::NewSymbol("runtimeEnabledVoidMethod"), v8::FunctionTemplate::New(TestObjectPythonV8Internal::runtimeEnabledVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0));
+    if (currentWorldType == MainWorld) {
+        if (RuntimeEnabledFeatures::featureNameEnabled())
+            proto->Set(v8::String::NewSymbol("perWorldBindingsRuntimeEnabledVoidMethod"), v8::FunctionTemplate::New(TestObjectPythonV8Internal::perWorldBindingsRuntimeEnabledVoidMethodMethodCallbackForMainWorld, v8Undefined(), defaultSignature, 0));
+    } else {
+        if (RuntimeEnabledFeatures::featureNameEnabled())
+            proto->Set(v8::String::NewSymbol("perWorldBindingsRuntimeEnabledVoidMethod"), v8::FunctionTemplate::New(TestObjectPythonV8Internal::perWorldBindingsRuntimeEnabledVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0));
+    }
     instance->Set(v8::String::NewSymbol("unforgeableVoidMethod"), v8::FunctionTemplate::New(TestObjectPythonV8Internal::unforgeableVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0));
     desc->SetNativeDataProperty(v8::String::NewSymbol("staticStringAttribute"), TestObjectPythonV8Internal::staticStringAttributeAttributeGetterCallback, TestObjectPythonV8Internal::staticStringAttributeAttributeSetterCallback, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
     desc->SetNativeDataProperty(v8::String::NewSymbol("staticLongAttribute"), TestObjectPythonV8Internal::staticLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::staticLongAttributeAttributeSetterCallback, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));

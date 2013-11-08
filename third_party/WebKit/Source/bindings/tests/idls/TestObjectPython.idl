@@ -155,7 +155,7 @@ interface TestObjectPython {
     [Reflect=class] attribute DOMString reflectedClass;
     [Replaceable] readonly attribute long replaceableReadonlyLongAttribute;
     [RuntimeEnabled=FeatureName] attribute long runtimeEnabledLongAttribute;
-    [Conditional=Condition, RuntimeEnabled=FeatureName] attribute long conditionalEnabledAtRuntimeLongAttribute;
+    [Conditional=Condition, RuntimeEnabled=FeatureName] attribute long conditionalRuntimeEnabledLongAttribute;
     [SetterCallWith=ActiveWindow&FirstWindow] attribute DOMString setterCallWithActiveWindowAndFirstWindowStringAttribute;
     [SetterRaisesException] attribute long setterRaisesExceptionLongAttribute;
     [StrictTypeChecking] attribute float strictTypeCheckingFloatAttribute;  // nop for non-interface types
@@ -330,6 +330,8 @@ interface TestObjectPython {
     [RaisesException] void raisesExceptionVoidMethodOptionalLongArg(optional long optionalLongArg);
     [ReadOnly] void readOnlyVoidMethod();
     [NotEnumerable, ReadOnly] void notEnumerableReadOnlyVoidMethod();
+    [RuntimeEnabled=FeatureName] void runtimeEnabledVoidMethod();
+    [PerWorldBindings, RuntimeEnabled=FeatureName] void perWorldBindingsRuntimeEnabledVoidMethod();
     [StrictTypeChecking] void strictTypeCheckingVoidMethodTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg);
     [TreatReturnedNullStringAs=Null] DOMString treatReturnedNullStringAsNullStringMethod();
     [TreatReturnedNullStringAs=Undefined] DOMString treatReturnedNullStringAsUndefinedStringMethod();
