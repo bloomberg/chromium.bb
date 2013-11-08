@@ -20,8 +20,8 @@ function test()
 
     function step2()
     {
-        WebInspector.searchController.showSearchField();
-        InspectorTest.addResult("Search controller: '" + WebInspector.searchController._searchInputElement.value + "'");
+        panel.searchableView().showSearchField();
+        InspectorTest.addResult("Search controller: '" + panel.searchableView()._searchInputElement.value + "'");
         WebInspector.advancedSearchController.show();
         InspectorTest.addResult("Advanced search controller: '" + WebInspector.advancedSearchController._searchView._search.value + "'");
         InspectorTest.completeTest();

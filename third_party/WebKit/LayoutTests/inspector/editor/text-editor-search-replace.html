@@ -9,20 +9,20 @@
 function test()
 {
     var textEditor;
-    WebInspector.showPanel("sources");
+    var panel = WebInspector.showPanel("sources");
     InspectorTest.showScriptSource("edit-me.js", didShowScriptSource);
 
     function showReplaceField()
     {
-        WebInspector.searchController.showSearchField();
+        WebInspector.panels.sources.searchableView().showSearchField();
         document.getElementById("search-replace-trigger").click();
     }
 
     function runReplaceAll(searchValue, replaceValue)
     {
-        WebInspector.searchController._searchInputElement.value = searchValue;
-        WebInspector.searchController._replaceInputElement.value = replaceValue;
-        WebInspector.searchController._replaceAll();
+        panel.searchableView()._searchInputElement.value = searchValue;
+        panel.searchableView()._replaceInputElement.value = replaceValue;
+        panel.searchableView()._replaceAll();
     }
 
     function dumpTextEditor(message)
