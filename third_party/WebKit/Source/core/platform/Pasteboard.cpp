@@ -35,8 +35,6 @@
 #include "SVGNames.h"
 #include "XLinkNames.h"
 #include "core/dom/Element.h"
-#include "core/dom/Range.h"
-#include "core/editing/markup.h"
 #include "core/fetch/ImageResource.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/platform/chromium/ChromiumDataObject.h"
@@ -74,19 +72,6 @@ bool Pasteboard::isSelectionMode() const
 void Pasteboard::setSelectionMode(bool selectionMode)
 {
     m_buffer = selectionMode ? blink::WebClipboard::BufferSelection : blink::WebClipboard::BufferStandard;
-}
-
-void Pasteboard::writeSelection(Range* selectedRange, bool canSmartCopyOrDelete, const String& text)
-{
-    String html = createMarkup(selectedRange, 0, AnnotateForInterchange, false, ResolveNonLocalURLs);
-    KURL url = selectedRange->startContainer()->document().url();
-    String plainText = text;
-#if OS(WIN)
-    replaceNewlinesWithWindowsStyleNewlines(plainText);
-#endif
-    replaceNBSPWithSpace(plainText);
-
-    blink::Platform::current()->clipboard()->writeHTML(html, url, plainText, canSmartCopyOrDelete);
 }
 
 void Pasteboard::writePlainText(const String& text, SmartReplaceOption)
@@ -166,6 +151,17 @@ String Pasteboard::readHTML(KURL& url, unsigned& fragmentStart, unsigned& fragme
         fragmentEnd = 0;
     }
     return markup;
+}
+
+void Pasteboard::writeHTML(const String& markup, const KURL& documentURL, const String& plainText, bool canSmartCopyOrDelete)
+{
+    String text = plainText;
+#if OS(WIN)
+    replaceNewlinesWithWindowsStyleNewlines(text);
+#endif
+    replaceNBSPWithSpace(text);
+
+    blink::Platform::current()->clipboard()->writeHTML(markup, documentURL, text, canSmartCopyOrDelete);
 }
 
 } // namespace WebCore

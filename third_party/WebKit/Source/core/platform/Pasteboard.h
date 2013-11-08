@@ -41,7 +41,6 @@ namespace WebCore {
 class ChromiumDataObject;
 class KURL;
 class Node;
-class Range;
 
 class Pasteboard {
     WTF_MAKE_NONCOPYABLE(Pasteboard); WTF_MAKE_FAST_ALLOCATED;
@@ -52,7 +51,6 @@ public:
     };
 
     static Pasteboard* generalPasteboard();
-    void writeSelection(Range*, bool canSmartCopyOrDelete, const String& text);
     void writePlainText(const String&, SmartReplaceOption);
     void writeImage(Node*, const KURL&, const String& title);
     void writeDataObject(PassRefPtr<ChromiumDataObject>);
@@ -66,6 +64,8 @@ public:
     // the start and end of the returned markup. If there is no additional context,
     // fragmentStart will be zero and fragmentEnd will be the same as the length of the markup.
     String readHTML(KURL&, unsigned& fragmentStart, unsigned& fragmentEnd);
+
+    void writeHTML(const String& markup, const KURL& documentURL, const String& plainText, bool canSmartCopyOrDelete);
 
     bool isSelectionMode() const;
     void setSelectionMode(bool);

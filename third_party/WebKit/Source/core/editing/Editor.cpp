@@ -405,6 +405,13 @@ void Editor::pasteWithPasteboard(Pasteboard* pasteboard)
         pasteAsFragment(fragment, canSmartReplaceWithPasteboard(pasteboard), chosePlainText);
 }
 
+void Editor::writeSelectionToPasteboard(Pasteboard* pasteboard, Range* selectedRange, const String& plainText)
+{
+    String html = createMarkup(selectedRange, 0, AnnotateForInterchange, false, ResolveNonLocalURLs);
+    KURL url = selectedRange->startContainer()->document().url();
+    pasteboard->writeHTML(html, url, plainText, canSmartCopyOrDelete());
+}
+
 // Returns whether caller should continue with "the default processing", which is the same as
 // the event handler NOT setting the return value to false
 bool Editor::dispatchCPPEvent(const AtomicString &eventType, ClipboardAccessPolicy policy, PasteMode pasteMode)
@@ -899,7 +906,7 @@ void Editor::cut()
             Pasteboard::generalPasteboard()->writePlainText(plainText,
                 canSmartCopyOrDelete() ? Pasteboard::CanSmartReplace : Pasteboard::CannotSmartReplace);
         } else {
-            Pasteboard::generalPasteboard()->writeSelection(selection.get(), canSmartCopyOrDelete(), plainText);
+            writeSelectionToPasteboard(Pasteboard::generalPasteboard(), selection.get(), plainText);
         }
         deleteSelectionWithSmartDelete(canSmartCopyOrDelete());
     }
@@ -919,7 +926,7 @@ void Editor::copy()
         if (HTMLImageElement* imageElement = imageElementFromImageDocument(document))
             Pasteboard::generalPasteboard()->writeImage(imageElement, document->url(), document->title());
         else
-            Pasteboard::generalPasteboard()->writeSelection(selectedRange().get(), canSmartCopyOrDelete(), m_frame.selectedTextForClipboard());
+            writeSelectionToPasteboard(Pasteboard::generalPasteboard(), selectedRange().get(), m_frame.selectedTextForClipboard());
     }
 }
 
