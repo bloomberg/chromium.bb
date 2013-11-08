@@ -21,7 +21,7 @@
     }
 </style>
 </head>
-<body onload="runRepaintTest()">
+<body>
 
 <div id="div1" style="width:100px;height:50px;background-color:gray;"></div>
 <div id="div2" style="width:100px;height:50px;background-color:green;"></div>
@@ -185,19 +185,19 @@ function executeTest() {
 }
 </script>
 
-<script>
-if (window.testRunner) {
-    testRunner.waitUntilDone();
-    window.postZoomCallback = executeTest;
-} else {
-    debug("This test only works in DRT.");
-}
-</script>
-
 <script src="../../../resources/js-test.js"></script>
 <script>var zoomCount = 2;</script>
 <script src="../../../fast/repaint/resources/repaint.js"></script>
 <script src="../resources/testPageZoom.js"></script>
+<script>
+if (window.testRunner) {
+    window.jsTestIsAsync = true;
+    window.postZoomCallback = executeTest;
+    document.fonts.ready().then(runRepaintTest);
+} else {
+    debug("This test only works in DRT.");
+}
+</script>
 
 </body>
 </html>
