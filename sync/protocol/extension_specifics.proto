@@ -29,11 +29,6 @@ message ExtensionSpecifics {
   // Extensions Gallery) is used.
   optional string update_url = 3;
   // Whether or not this extension is enabled.
-  // TODO(yoz): New sync clients will ignore this state, but we must
-  // keep populating it because old clients behave incorrectly if it's
-  // not present. Temporarily, enabled changes will propagate from new
-  // clients to old, but not vice versa. Once all clients are updated to
-  // ignore this field, we can remove it. See crbug.com/303311.
   optional bool enabled = 4;
   // Whether or not this extension is enabled in incognito mode.
   optional bool incognito_enabled = 5;

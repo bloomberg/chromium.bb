@@ -97,6 +97,18 @@ std::vector<std::string> SyncExtensionHelper::GetInstalledExtensionNames(
   return names;
 }
 
+void SyncExtensionHelper::EnableExtension(Profile* profile,
+                                          const std::string& name) {
+  profile->GetExtensionService()->EnableExtension(
+      extensions::id_util::GenerateId(name));
+}
+
+void SyncExtensionHelper::DisableExtension(Profile* profile,
+                                           const std::string& name) {
+  profile->GetExtensionService()->DisableExtension(
+      extensions::id_util::GenerateId(name), Extension::DISABLE_USER_ACTION);
+}
+
 bool SyncExtensionHelper::IsExtensionEnabled(
     Profile* profile, const std::string& name) const {
   return profile->GetExtensionService()->IsExtensionEnabled(

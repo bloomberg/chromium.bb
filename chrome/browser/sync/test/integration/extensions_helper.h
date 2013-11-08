@@ -46,6 +46,12 @@ std::vector<int> GetInstalledExtensions(Profile* profile);
 // Installs all pending synced extensions for |profile|.
 void InstallExtensionsPendingForSync(Profile* profile);
 
+// Enables the extension for the given index on |profile|.
+void EnableExtension(Profile* profile, int index);
+
+// Disables the extension for the given index on |profile|.
+void DisableExtension(Profile* profile, int index);
+
 // Returns true if the extension with index |index| is enabled on |profile|.
 bool IsExtensionEnabled(Profile* profile, int index);
 

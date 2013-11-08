@@ -65,6 +65,16 @@ void UninstallApp(Profile* profile, int index) {
       profile, CreateFakeAppName(index));
 }
 
+void EnableApp(Profile* profile, int index) {
+  return SyncExtensionHelper::GetInstance()->EnableExtension(
+      profile, CreateFakeAppName(index));
+}
+
+void DisableApp(Profile* profile, int index) {
+  return SyncExtensionHelper::GetInstance()->DisableExtension(
+      profile, CreateFakeAppName(index));
+}
+
 void IncognitoEnableApp(Profile* profile, int index) {
   return SyncExtensionHelper::GetInstance()->IncognitoEnableExtension(
       profile, CreateFakeAppName(index));

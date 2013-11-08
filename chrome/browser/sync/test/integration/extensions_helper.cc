@@ -81,6 +81,16 @@ std::vector<int> GetInstalledExtensions(Profile* profile) {
   return indices;
 }
 
+void EnableExtension(Profile* profile, int index) {
+  return SyncExtensionHelper::GetInstance()->EnableExtension(
+      profile, CreateFakeExtensionName(index));
+}
+
+void DisableExtension(Profile* profile, int index) {
+  return SyncExtensionHelper::GetInstance()->DisableExtension(
+      profile, CreateFakeExtensionName(index));
+}
+
 bool IsExtensionEnabled(Profile* profile, int index) {
   return SyncExtensionHelper::GetInstance()->IsExtensionEnabled(
       profile, CreateFakeExtensionName(index));

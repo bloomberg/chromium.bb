@@ -1884,7 +1884,6 @@ void ExtensionService::CheckPermissionsIncrease(const Extension* extension,
     }
     // Extensions that came to us disabled from sync need a similar inference,
     // except based on the new version's permissions.
-    // TODO(yoz): Since we no longer sync disabled state, simplify this.
     if (previously_disabled &&
         disable_reasons == Extension::DISABLE_UNKNOWN_FROM_SYNC) {
       // Remove the DISABLE_UNKNOWN_FROM_SYNC reason.

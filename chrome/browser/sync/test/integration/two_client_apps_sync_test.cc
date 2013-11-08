@@ -15,6 +15,8 @@
 
 using apps_helper::AllProfilesHaveSameAppsAsVerifier;
 using apps_helper::CopyNTPOrdinals;
+using apps_helper::DisableApp;
+using apps_helper::EnableApp;
 using apps_helper::FixNTPOrdinalCollisions;
 using apps_helper::GetAppLaunchOrdinalForApp;
 using apps_helper::HasSameAppsAsVerifier;
@@ -236,6 +238,34 @@ IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, Merge) {
   ASSERT_TRUE(AwaitQuiescence());
   InstallAppsPendingForSync(GetProfile(0));
   InstallAppsPendingForSync(GetProfile(1));
+  ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+}
+
+// TCM ID - 7723126.
+IN_PROC_BROWSER_TEST_F(TwoClientAppsSyncTest, UpdateEnableDisableApp) {
+  ASSERT_TRUE(SetupSync());
+  ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+
+  InstallApp(GetProfile(0), 0);
+  InstallApp(GetProfile(1), 0);
+  InstallApp(verifier(), 0);
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+
+  DisableApp(GetProfile(0), 0);
+  DisableApp(verifier(), 0);
+  ASSERT_TRUE(HasSameAppsAsVerifier(0));
+  ASSERT_FALSE(HasSameAppsAsVerifier(1));
+
+  ASSERT_TRUE(AwaitQuiescence());
+  ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
+
+  EnableApp(GetProfile(1), 0);
+  EnableApp(verifier(), 0);
+  ASSERT_TRUE(HasSameAppsAsVerifier(1));
+  ASSERT_FALSE(HasSameAppsAsVerifier(0));
+
+  ASSERT_TRUE(AwaitQuiescence());
   ASSERT_TRUE(AllProfilesHaveSameAppsAsVerifier());
 }
 
