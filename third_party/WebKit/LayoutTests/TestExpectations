@@ -611,6 +611,8 @@ crbug.com/316349 inspector-protocol/page/enable-disable.html [ Failure Pass ]
 crbug.com/316372 fast/forms/calendar-picker/calendar-picker-f4-key.html [ Failure Pass ]
 crbug.com/316372 fast/forms/calendar-picker/date-open-picker-with-f4-key.html [ Failure Pass ]
 crbug.com/316372 fast/forms/calendar-picker/week-open-picker-with-f4-key.html [ Failure Pass ]
+crbug.com/316372 fast/forms/calendar-picker/datetimelocal-open-picker-with-f4-key.html [ Failure Pass ]
+crbug.com/316372 fast/forms/calendar-picker/month-open-picker-with-f4-key.html [ Failure Pass ]
 
 crbug.com/316380 fast/frames/seamless/seamless-form-post.html [ Failure Pass ]
 
