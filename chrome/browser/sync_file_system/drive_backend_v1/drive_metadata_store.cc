@@ -463,9 +463,7 @@ void DriveMetadataStore::DeleteEntry(
   DCHECK(CalledOnValidThread());
   MetadataMap::iterator found = metadata_map_.find(url.origin());
   if (found == metadata_map_.end()) {
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, SYNC_DATABASE_ERROR_NOT_FOUND));
+    RunSoon(FROM_HERE, base::Bind(callback, SYNC_DATABASE_ERROR_NOT_FOUND));
     return;
   }
 
@@ -476,9 +474,7 @@ void DriveMetadataStore::DeleteEntry(
     return;
   }
 
-  base::MessageLoopProxy::current()->PostTask(
-      FROM_HERE,
-      base::Bind(callback, SYNC_DATABASE_ERROR_NOT_FOUND));
+  RunSoon(FROM_HERE, base::Bind(callback, SYNC_DATABASE_ERROR_NOT_FOUND));
 }
 
 SyncStatusCode DriveMetadataStore::ReadEntry(const FileSystemURL& url,
@@ -579,6 +575,7 @@ void DriveMetadataStore::EnableOrigin(
 
   std::map<GURL, std::string>::iterator found = disabled_origins_.find(origin);
   if (found == disabled_origins_.end()) {
+    RunSoon(FROM_HERE, base::Bind(callback, SYNC_DATABASE_ERROR_NOT_FOUND));
     // |origin| has not been registered yet.
     return;
   }
@@ -602,8 +599,10 @@ void DriveMetadataStore::DisableOrigin(
   DCHECK(CalledOnValidThread());
 
   std::string resource_id;
-  if (!EraseIfExists(&incremental_sync_origins_, origin, &resource_id))
+  if (!EraseIfExists(&incremental_sync_origins_, origin, &resource_id)) {
+    RunSoon(FROM_HERE, base::Bind(callback, SYNC_DATABASE_ERROR_NOT_FOUND));
     return;
+  }
   disabled_origins_[origin] = resource_id;
 
   scoped_ptr<leveldb::WriteBatch> batch(new leveldb::WriteBatch);
@@ -624,8 +623,7 @@ void DriveMetadataStore::RemoveOrigin(
   std::string resource_id;
   if (!EraseIfExists(&incremental_sync_origins_, origin, &resource_id) &&
       !EraseIfExists(&disabled_origins_, origin, &resource_id)) {
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE, base::Bind(callback, SYNC_DATABASE_ERROR_NOT_FOUND));
+    RunSoon(FROM_HERE, base::Bind(callback, SYNC_DATABASE_ERROR_NOT_FOUND));
     return;
   }
   origin_by_resource_id_.erase(resource_id);
@@ -651,8 +649,7 @@ void DriveMetadataStore::WriteToDB(scoped_ptr<leveldb::WriteBatch> batch,
   DCHECK(CalledOnValidThread());
   if (db_status_ != SYNC_STATUS_OK &&
       db_status_ != SYNC_DATABASE_ERROR_NOT_FOUND) {
-    base::MessageLoopProxy::current()->PostTask(
-        FROM_HERE, base::Bind(callback, SYNC_DATABASE_ERROR_FAILED));
+    RunSoon(FROM_HERE, base::Bind(callback, SYNC_DATABASE_ERROR_FAILED));
     return;
   }
 
