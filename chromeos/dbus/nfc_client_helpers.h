@@ -21,7 +21,7 @@
 namespace chromeos {
 namespace nfc_client_helpers {
 
-  // Constants used to indicate exceptional error conditions.
+// Constants used to indicate exceptional error conditions.
 CHROMEOS_EXPORT extern const char kNoResponseError[];
 CHROMEOS_EXPORT extern const char kUnknownObjectError[];
 
@@ -31,6 +31,9 @@ CHROMEOS_EXPORT extern const char kUnknownObjectError[];
 typedef base::Callback<void(const std::string& error_name,
                             const std::string& error_message)> ErrorCallback;
 
+// A vector of object paths is used frequently among the NFC client classes.
+// This typedef makes the type specifier a little less verbose.
+typedef std::vector<dbus::ObjectPath> ObjectPathVector;
 
 // Called when a response for a successful method call is received.
 CHROMEOS_EXPORT void OnSuccess(const base::Closure& callback,
@@ -68,7 +71,10 @@ class CHROMEOS_EXPORT DBusObjectMap {
     virtual void ObjectAdded(const dbus::ObjectPath& object_path) {}
 
     // Notifies the delegate that an object was removed with object path
-    // |object_path|.
+    // |object_path|. The object proxy will still be valid before this method
+    // returns, so that delegates can perform any clean up that use the object
+    // properties. Note that the remote object will no longer be available,
+    // but the delegates can still access the cached properties of the object.
     virtual void ObjectRemoved(const dbus::ObjectPath& object_path) {}
   };
 
@@ -79,6 +85,9 @@ class CHROMEOS_EXPORT DBusObjectMap {
   DBusObjectMap(const std::string& service_name,
                 Delegate* delegate,
                 dbus::Bus* bus);
+
+  // Destructor destroys all managed object proxies and notifies the delegate
+  // for each removed object.
   virtual ~DBusObjectMap();
 
   // Returns the object proxy for object path |object_path|. If no object proxy
@@ -93,7 +102,7 @@ class CHROMEOS_EXPORT DBusObjectMap {
   // Updates the object proxies from the given list of object paths
   // |object_paths|. It notifies the delegate of each added and removed object
   // via |Delegate::ObjectAdded| and |Delegate::ObjectRemoved|.
-  void UpdateObjects(const std::vector<dbus::ObjectPath>& object_paths);
+  void UpdateObjects(const ObjectPathVector& object_paths);
 
   // Creates and stores an object proxy and properties structure for a remote
   // object with object path |object_path|. If an object proxy was already
@@ -101,8 +110,17 @@ class CHROMEOS_EXPORT DBusObjectMap {
   bool AddObject(const dbus::ObjectPath& object_path);
 
   // Removes the D-Bus object proxy and the properties structure for the
-  // remote object with object path |object_path|.
+  // remote object with object path |object_path|. If no known proxy for
+  // |object_path| exists, then this operation is a no-op.
   void RemoveObject(const dbus::ObjectPath& object_path);
+
+  // Invokes GetAll on the property structure belonging to object path
+  // |object_path|. If |object_path| is unknown, this method is a no-op.
+  void RefreshProperties(const dbus::ObjectPath& object_path);
+
+  // Invokes GetAll on the property structures belonging to all object paths
+  // that are managed by this instance.
+  void RefreshAllProperties();
 
  private:
   typedef std::pair<dbus::ObjectProxy*, NfcPropertySet*> ObjectPropertyPair;
@@ -128,6 +146,53 @@ class CHROMEOS_EXPORT DBusObjectMap {
   Delegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(DBusObjectMap);
+};
+
+// Most NFC D-Bus client classes need to be able to look up object proxies by
+// the path of the object that owns them. For example, NfcTagClient updates tag
+// proxies based on the adapter that owns them. ObjectProxyTree is a two-level
+// mapping that makes this management easy.
+class ObjectProxyTree {
+ public:
+  ObjectProxyTree();
+
+  // The destructor destroys all contained DBusObjectMap instances. This will
+  // cause the delegate to get notified for each removed object proxy according
+  // to the DBusObjectMap destructor.
+  virtual ~ObjectProxyTree();
+
+  // Creates a DBusObjectMap instance at object path |object_path|.
+  // |service_name|, |delegate|, and |bus| are passed to the constructor of the
+  // DBusObjectMap that is created. If a DBusObjectMap for |object_path| was
+  // already assigned, returns false and does nothing. Otherwise, if a new
+  // DBusObjectMap was created, returns true.
+  bool CreateObjectMap(const dbus::ObjectPath& object_path,
+                       const std::string& service_name,
+                       DBusObjectMap::Delegate* delegate,
+                       dbus::Bus* bus);
+
+  // Destroys the DBusObjectMap instance at object path |object_path|.
+  void RemoveObjectMap(const dbus::ObjectPath& object_path);
+
+  // Returns the DBusObjectMap instance at object path |object_path|, or NULL
+  // if no such instance exists.
+  DBusObjectMap* GetObjectMap(const dbus::ObjectPath& object_path);
+
+  // Returns the object proxy by searching all stored DBusObjectMap instances
+  // for |object_proxy_path|. Returns NULL, if nothing is found.
+  dbus::ObjectProxy* FindObjectProxy(
+      const dbus::ObjectPath& object_proxy_path);
+
+  // Returns the object property structure by searching all stored DBusObjectMap
+  // instances for |object_proxy_path|. Returns NULL, if nothing is found.
+  NfcPropertySet* FindObjectProperties(
+      const dbus::ObjectPath& object_proxy_path);
+
+ private:
+  typedef std::map<dbus::ObjectPath, DBusObjectMap*> PathsToObjectMapsType;
+  PathsToObjectMapsType paths_to_object_maps_;
+
+  DISALLOW_COPY_AND_ASSIGN(ObjectProxyTree);
 };
 
 }  // namespace nfc_client_helpers

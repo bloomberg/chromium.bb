@@ -30,6 +30,7 @@ class FakeGsmSMSClient;
 class FakeNfcAdapterClient;
 class FakeNfcDeviceClient;
 class FakeNfcManagerClient;
+class FakeNfcRecordClient;
 class FakeNfcTagClient;
 class FakePowerManagerClient;
 class FakeImageBurnerClient;
@@ -76,6 +77,7 @@ class FakeDBusThreadManager : public DBusThreadManager {
   virtual NfcAdapterClient* GetNfcAdapterClient() OVERRIDE;
   virtual NfcDeviceClient* GetNfcDeviceClient() OVERRIDE;
   virtual NfcManagerClient* GetNfcManagerClient() OVERRIDE;
+  virtual NfcRecordClient* GetNfcRecordClient() OVERRIDE;
   virtual NfcTagClient* GetNfcTagClient() OVERRIDE;
   virtual PermissionBrokerClient* GetPermissionBrokerClient() OVERRIDE;
   virtual PowerManagerClient* GetPowerManagerClient() OVERRIDE;
@@ -134,6 +136,10 @@ class FakeDBusThreadManager : public DBusThreadManager {
     return fake_nfc_manager_client_.get();
   }
 
+  FakeNfcRecordClient* fake_nfc_record_client() {
+    return fake_nfc_record_client_.get();
+  }
+
   FakeNfcTagClient* fake_nfc_tag_client() {
     return fake_nfc_tag_client_.get();
   }
@@ -190,6 +196,7 @@ class FakeDBusThreadManager : public DBusThreadManager {
   scoped_ptr<FakeNfcAdapterClient> fake_nfc_adapter_client_;
   scoped_ptr<FakeNfcDeviceClient> fake_nfc_device_client_;
   scoped_ptr<FakeNfcManagerClient> fake_nfc_manager_client_;
+  scoped_ptr<FakeNfcRecordClient> fake_nfc_record_client_;
   scoped_ptr<FakeNfcTagClient> fake_nfc_tag_client_;
   scoped_ptr<FakeSessionManagerClient> fake_session_manager_client_;
   scoped_ptr<FakeShillDeviceClient> fake_shill_device_client_;

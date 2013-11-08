@@ -14,6 +14,7 @@
 #include "chromeos/dbus/dbus_client_implementation_type.h"
 #include "chromeos/dbus/nfc_client_helpers.h"
 #include "chromeos/dbus/nfc_property_set.h"
+#include "chromeos/dbus/nfc_record_client.h"
 #include "dbus/object_path.h"
 #include "dbus/object_proxy.h"
 #include "dbus/property.h"
@@ -29,17 +30,18 @@ class CHROMEOS_EXPORT NfcTagClient : public DBusClient {
   // Structure of properties associated with an NFC tag.
   struct Properties : public NfcPropertySet {
     // The NFC tag type. Possible values are "Type 1", "Type 2", "Type 3",
-    // and "Type 4".
+    // and "Type 4". Read-only.
     dbus::Property<std::string> type;
 
     // The NFC tag radio protocol. Possible values are "Felica", "MIFARE",
-    // "Jewel", "ISO-DEP", and "NFC-DEP".
+    // "Jewel", "ISO-DEP", and "NFC-DEP". Read-only.
     dbus::Property<std::string> protocol;
 
     // List of object paths for NDEF Records associated with the NFC tag.
+    // Read-only.
     dbus::Property<std::vector<dbus::ObjectPath> > records;
 
-    // The current status of the tag's read mode.
+    // The current status of the tag's read mode. Read-only.
     dbus::Property<bool> read_only;
 
     Properties(dbus::ObjectProxy* object_proxy,
@@ -54,21 +56,17 @@ class CHROMEOS_EXPORT NfcTagClient : public DBusClient {
 
     // Called when a remote NFC tag with the object path |object_path| is added
     // to the set of known tags.
-    virtual void TagFound(const dbus::ObjectPath& object_path) {}
+    virtual void TagAdded(const dbus::ObjectPath& object_path) {}
 
     // Called when a remote NFC tag with the object path |object_path| is
     // removed from the set of known tags.
-    virtual void TagLost(const dbus::ObjectPath& object_path) {}
+    virtual void TagRemoved(const dbus::ObjectPath& object_path) {}
 
     // Called when the tag property with the name |property_name| on tag with
     // object path |object_path| has acquired a new value.
     virtual void TagPropertyChanged(const dbus::ObjectPath& object_path,
                                     const std::string& property_name) {}
   };
-
-  // TODO(armansito): Move this typedef to the NFC Record client, once
-  // implemented.
-  typedef std::map<std::string, std::string> RecordAttributes;
 
   virtual ~NfcTagClient();
 
@@ -104,7 +102,7 @@ class CHROMEOS_EXPORT NfcTagClient : public DBusClient {
   //    etc.
   virtual void Write(
       const dbus::ObjectPath& object_path,
-      const RecordAttributes& attributes,
+      const NfcRecordClient::Attributes& attributes,
       const base::Closure& callback,
       const nfc_client_helpers::ErrorCallback& error_callback) = 0;
 

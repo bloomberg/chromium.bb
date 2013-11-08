@@ -30,6 +30,7 @@
 #include "chromeos/dbus/nfc_adapter_client.h"
 #include "chromeos/dbus/nfc_device_client.h"
 #include "chromeos/dbus/nfc_manager_client.h"
+#include "chromeos/dbus/nfc_record_client.h"
 #include "chromeos/dbus/nfc_tag_client.h"
 #include "chromeos/dbus/permission_broker_client.h"
 #include "chromeos/dbus/power_manager_client.h"
@@ -108,6 +109,7 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     InitClient(nfc_adapter_client_.get());
     InitClient(nfc_device_client_.get());
     InitClient(nfc_tag_client_.get());
+    InitClient(nfc_record_client_.get());
     InitClient(permission_broker_client_.get());
     InitClient(power_manager_client_.get());
     InitClient(session_manager_client_.get());
@@ -249,6 +251,10 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     return nfc_manager_client_.get();
   }
 
+  virtual NfcRecordClient* GetNfcRecordClient() OVERRIDE {
+    return nfc_record_client_.get();
+  }
+
   virtual NfcTagClient* GetNfcTagClient() OVERRIDE {
     return nfc_tag_client_.get();
   }
@@ -330,6 +336,9 @@ class DBusThreadManagerImpl : public DBusThreadManager {
         NfcDeviceClient::Create(client_type, nfc_adapter_client_.get()));
     nfc_tag_client_.reset(
         NfcTagClient::Create(client_type, nfc_adapter_client_.get()));
+    nfc_record_client_.reset(
+        NfcRecordClient::Create(
+            client_type, nfc_device_client_.get(), nfc_tag_client_.get()));
     permission_broker_client_.reset(
         PermissionBrokerClient::Create(client_type));
     power_manager_client_.reset(
@@ -370,6 +379,7 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   scoped_ptr<NfcAdapterClient> nfc_adapter_client_;
   scoped_ptr<NfcDeviceClient> nfc_device_client_;
   scoped_ptr<NfcTagClient> nfc_tag_client_;
+  scoped_ptr<NfcRecordClient> nfc_record_client_;
   scoped_ptr<PermissionBrokerClient> permission_broker_client_;
   scoped_ptr<SystemClockClient> system_clock_client_;
   scoped_ptr<PowerManagerClient> power_manager_client_;

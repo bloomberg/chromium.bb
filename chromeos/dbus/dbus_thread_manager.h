@@ -45,6 +45,7 @@ class ModemMessagingClient;
 class NfcAdapterClient;
 class NfcDeviceClient;
 class NfcManagerClient;
+class NfcRecordClient;
 class NfcTagClient;
 class PermissionBrokerClient;
 class PowerManagerClient;
@@ -137,6 +138,7 @@ class CHROMEOS_EXPORT DBusThreadManager {
   virtual NfcAdapterClient* GetNfcAdapterClient() = 0;
   virtual NfcDeviceClient* GetNfcDeviceClient() = 0;
   virtual NfcManagerClient* GetNfcManagerClient() = 0;
+  virtual NfcRecordClient* GetNfcRecordClient() = 0;
   virtual NfcTagClient* GetNfcTagClient() = 0;
   virtual PermissionBrokerClient* GetPermissionBrokerClient() = 0;
   virtual PowerManagerClient* GetPowerManagerClient() = 0;

@@ -48,7 +48,9 @@ DBusObjectMap::~DBusObjectMap() {
   // proxies, as they are owned by dbus::Bus.
   for (ObjectMap::iterator iter = object_map_.begin();
        iter != object_map_.end(); ++iter) {
+    const dbus::ObjectPath& object_path = iter->first;
     ObjectPropertyPair pair = iter->second;
+    delegate_->ObjectRemoved(object_path);
     CleanUpObjectPropertyPair(pair);
   }
 }
@@ -63,8 +65,7 @@ NfcPropertySet* DBusObjectMap::GetObjectProperties(
   return GetObjectPropertyPair(object_path).second;
 }
 
-void DBusObjectMap::UpdateObjects(
-    const std::vector<dbus::ObjectPath>& object_paths) {
+void DBusObjectMap::UpdateObjects(const ObjectPathVector& object_paths) {
   // This set is used to query if an object path was removed, while updating
   // the removed paths below. The iterator is used as a hint to accelerate
   // insertion.
@@ -73,8 +74,7 @@ void DBusObjectMap::UpdateObjects(
       object_path_set.begin();
 
   // Add all objects.
-  for (std::vector<dbus::ObjectPath>::const_iterator iter =
-          object_paths.begin();
+  for (ObjectPathVector::const_iterator iter = object_paths.begin();
        iter != object_paths.end(); ++iter) {
     const dbus::ObjectPath &object_path = *iter;
     AddObject(object_path);
@@ -87,13 +87,9 @@ void DBusObjectMap::UpdateObjects(
   // Remove all objects that are not in |object_paths|.
   ObjectMap::const_iterator iter = object_map_.begin();
   while (iter != object_map_.end()) {
-    // Make a copy here, as the iterator will be invalidated by
-    // DBusObjectMap::RemoveObject below, but |object_path| is needed to
-    // notify observers right after. We want to make sure that we notify
-    // the observers AFTER we remove the object, so that method calls
-    // to the removed object paths in observer implementations fail
-    // gracefully.
-    dbus::ObjectPath object_path = iter->first;
+    // It is safe to use a const reference here, as DBusObjectMap::RemoveObject
+    // won't access it after the iterator becomes invalidated.
+    const dbus::ObjectPath &object_path = iter->first;
     ++iter;
     if (!ContainsKey(object_path_set, object_path))
       RemoveObject(object_path);
@@ -128,13 +124,31 @@ void DBusObjectMap::RemoveObject(const dbus::ObjectPath& object_path) {
   ObjectMap::iterator iter = object_map_.find(object_path);
   if (iter == object_map_.end())
     return;
+
+  // Notify the delegate, so that it can perform any clean up that is
+  // necessary.
+  delegate_->ObjectRemoved(object_path);
+
   // Clean up the object proxy and the properties structure.
   ObjectPropertyPair pair = iter->second;
   CleanUpObjectPropertyPair(pair);
   object_map_.erase(iter);
   VLOG(1) << "Object proxy removed for object path: "
           << object_path.value();
-  delegate_->ObjectRemoved(object_path);
+}
+
+void DBusObjectMap::RefreshProperties(const dbus::ObjectPath& object_path) {
+  NfcPropertySet* properties = GetObjectProperties(object_path);
+  if (properties)
+    properties->GetAll();
+}
+
+void DBusObjectMap::RefreshAllProperties() {
+  for (ObjectMap::const_iterator iter = object_map_.begin();
+       iter != object_map_.end(); ++iter) {
+    const dbus::ObjectPath& object_path = iter->first;
+    RefreshProperties(object_path);
+  }
 }
 
 DBusObjectMap::ObjectPropertyPair DBusObjectMap::GetObjectPropertyPair(
@@ -153,6 +167,76 @@ void DBusObjectMap::CleanUpObjectPropertyPair(const ObjectPropertyPair& pair) {
                           object_proxy->object_path(),
                           base::Bind(&base::DoNothing));
   delete properties;
+}
+
+ObjectProxyTree::ObjectProxyTree() {
+}
+
+ObjectProxyTree::~ObjectProxyTree() {
+  for (PathsToObjectMapsType::iterator iter = paths_to_object_maps_.begin();
+       iter != paths_to_object_maps_.end(); ++iter) {
+    DBusObjectMap* object_map = iter->second;
+    delete object_map;
+  }
+}
+
+bool ObjectProxyTree::CreateObjectMap(const dbus::ObjectPath& object_path,
+                                      const std::string& service_name,
+                                      DBusObjectMap::Delegate* delegate,
+                                      dbus::Bus* bus) {
+  if (ContainsKey(paths_to_object_maps_, object_path)) {
+    LOG(ERROR) << "Mapping already exists for object path: "
+               << object_path.value();
+    return false;
+  }
+  paths_to_object_maps_[object_path] =
+      new DBusObjectMap(service_name, delegate, bus);
+  return true;
+}
+
+void ObjectProxyTree::RemoveObjectMap(const dbus::ObjectPath& object_path) {
+  PathsToObjectMapsType::iterator iter =
+      paths_to_object_maps_.find(object_path);
+  if (iter == paths_to_object_maps_.end())
+    return;
+  DBusObjectMap* object_map = iter->second;
+  delete object_map;
+  paths_to_object_maps_.erase(iter);
+}
+
+DBusObjectMap* ObjectProxyTree::GetObjectMap(
+    const dbus::ObjectPath& object_path) {
+  PathsToObjectMapsType::iterator iter =
+      paths_to_object_maps_.find(object_path);
+  if (iter == paths_to_object_maps_.end())
+    return NULL;
+  return iter->second;
+}
+
+dbus::ObjectProxy* ObjectProxyTree::FindObjectProxy(
+    const dbus::ObjectPath& object_proxy_path) {
+  for (PathsToObjectMapsType::iterator iter = paths_to_object_maps_.begin();
+       iter != paths_to_object_maps_.end(); ++iter) {
+    DBusObjectMap* object_map = iter->second;
+    dbus::ObjectProxy* object_proxy =
+        object_map->GetObjectProxy(object_proxy_path);
+    if (object_proxy)
+      return object_proxy;
+  }
+  return NULL;
+}
+
+NfcPropertySet* ObjectProxyTree::FindObjectProperties(
+    const dbus::ObjectPath& object_proxy_path) {
+  for (PathsToObjectMapsType::iterator iter = paths_to_object_maps_.begin();
+       iter != paths_to_object_maps_.end(); ++iter) {
+    DBusObjectMap* object_map = iter->second;
+    NfcPropertySet* properties =
+        object_map->GetObjectProperties(object_proxy_path);
+    if (properties)
+      return properties;
+  }
+  return NULL;
 }
 
 }  // namespace nfc_client_helpers

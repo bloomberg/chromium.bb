@@ -31,27 +31,27 @@ class CHROMEOS_EXPORT NfcAdapterClient : public DBusClient {
     // The adapter NFC radio mode. One of "Initiator", "Target", and "Idle".
     // The NFC adapter will usually be in the "Idle" mode. The mode will change
     // to "Initiator" or "Target" based on how a pairing is established with a
-    // remote tag or device.
+    // remote tag or device. Read-only.
     dbus::Property<std::string> mode;
 
-    // The adapter's current power state.
+    // The adapter's current power state. Read-write.
     dbus::Property<bool> powered;
 
     // Indicates whether or not the adapter is currently polling for targets.
-    // This property is only valid when |mode| is "Initiator".
+    // This property is only valid when |mode| is "Initiator". Read-only.
     dbus::Property<bool> polling;
 
     // The NFC protocols that are supported by the adapter. Possible values
-    // are: "Felica", "MIFARE", "Jewel", "ISO-DEP", and "NFC-DEP".
+    // are: "Felica", "MIFARE", "Jewel", "ISO-DEP", and "NFC-DEP". Read-only.
     dbus::Property<std::vector<std::string> > protocols;
 
     // The object paths of the NFC tags that are known to the local adapter.
-    // These are tags that have been "tapped" on the local adapter.
+    // These are tags that have been "tapped" on the local adapter. Read-only.
     dbus::Property<std::vector<dbus::ObjectPath> > tags;
 
     // The object paths of the remote NFC devices that have been found by the
     // local adapter. These are NFC adapters that were "tapped" on the local
-    // adapter.
+    // adapter. Read-only.
     dbus::Property<std::vector<dbus::ObjectPath> > devices;
 
     Properties(dbus::ObjectProxy* object_proxy,

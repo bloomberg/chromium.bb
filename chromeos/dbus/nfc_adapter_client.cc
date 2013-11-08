@@ -148,9 +148,8 @@ class NfcAdapterClientImpl
     if (property_name != manager_properties->adapters.name())
       return;
 
-    VLOG(1) << "NFC adapters changed.";
-
     // Update the known adapters.
+    VLOG(1) << "NFC adapters changed.";
     const std::vector<dbus::ObjectPath>& received_adapters =
         manager_properties->adapters.value();
     object_map_->UpdateObjects(received_adapters);
@@ -191,15 +190,15 @@ class NfcAdapterClientImpl
   // new NFC adapters that appear.
   dbus::Bus* bus_;
 
+  // List of observers interested in event notifications.
+  ObserverList<NfcAdapterClient::Observer> observers_;
+
   // Mapping from object paths to object proxies and properties structures that
   // were already created by us.
   scoped_ptr<nfc_client_helpers::DBusObjectMap> object_map_;
 
   // The manager client that we listen to events notifications from.
   NfcManagerClient* manager_client_;
-
-  // List of observers interested in event notifications.
-  ObserverList<NfcAdapterClient::Observer> observers_;
 
   // Weak pointer factory for generating 'this' pointers that might live longer
   // than we do.

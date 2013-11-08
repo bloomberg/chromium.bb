@@ -17,6 +17,7 @@
 #include "chromeos/dbus/fake_nfc_adapter_client.h"
 #include "chromeos/dbus/fake_nfc_device_client.h"
 #include "chromeos/dbus/fake_nfc_manager_client.h"
+#include "chromeos/dbus/fake_nfc_record_client.h"
 #include "chromeos/dbus/fake_nfc_tag_client.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
@@ -43,6 +44,7 @@ FakeDBusThreadManager::FakeDBusThreadManager()
     fake_nfc_adapter_client_(new FakeNfcAdapterClient()),
     fake_nfc_device_client_(new FakeNfcDeviceClient()),
     fake_nfc_manager_client_(new FakeNfcManagerClient()),
+    fake_nfc_record_client_(new FakeNfcRecordClient()),
     fake_nfc_tag_client_(new FakeNfcTagClient()),
     fake_session_manager_client_(new FakeSessionManagerClient),
     fake_shill_device_client_(new FakeShillDeviceClient),
@@ -184,6 +186,10 @@ NfcDeviceClient* FakeDBusThreadManager::GetNfcDeviceClient() {
 
 NfcManagerClient* FakeDBusThreadManager::GetNfcManagerClient() {
   return fake_nfc_manager_client_.get();
+}
+
+NfcRecordClient* FakeDBusThreadManager::GetNfcRecordClient() {
+  return fake_nfc_record_client_.get();
 }
 
 NfcTagClient* FakeDBusThreadManager::GetNfcTagClient() {

@@ -4,8 +4,6 @@
 
 #include "chromeos/dbus/nfc_device_client.h"
 
-#include <set>
-
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
@@ -17,6 +15,7 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using chromeos::nfc_client_helpers::DBusObjectMap;
+using chromeos::nfc_client_helpers::ObjectProxyTree;
 
 namespace chromeos {
 
@@ -45,6 +44,7 @@ class NfcDeviceClientImpl : public NfcDeviceClient,
   }
 
   virtual ~NfcDeviceClientImpl() {
+    DCHECK(adapter_client_);
     adapter_client_->RemoveObserver(this);
   }
 
@@ -61,19 +61,20 @@ class NfcDeviceClientImpl : public NfcDeviceClient,
   }
 
   // NfcDeviceClient override.
-  virtual Properties* GetProperties(const dbus::ObjectPath& object_path)
-      OVERRIDE {
+  virtual Properties* GetProperties(
+      const dbus::ObjectPath& object_path) OVERRIDE {
     return static_cast<Properties*>(
-        object_map_->GetObjectProperties(object_path));
+        adapters_to_object_maps_.FindObjectProperties(object_path));
   }
 
   // NfcDeviceClient override.
   virtual void Push(
       const dbus::ObjectPath& object_path,
-      const RecordAttributes& attributes,
+      const NfcRecordClient::Attributes& attributes,
       const base::Closure& callback,
       const nfc_client_helpers::ErrorCallback& error_callback) OVERRIDE {
-    dbus::ObjectProxy* object_proxy = object_map_->GetObjectProxy(object_path);
+    dbus::ObjectProxy* object_proxy =
+        adapters_to_object_maps_.FindObjectProxy(object_path);
     if (!object_proxy) {
       std::string error_message =
           base::StringPrintf(
@@ -101,7 +102,7 @@ class NfcDeviceClientImpl : public NfcDeviceClient,
     dbus::MessageWriter array_writer(NULL);
     dbus::MessageWriter dict_entry_writer(NULL);
     writer.OpenArray("{sv}", &array_writer);
-    for (RecordAttributes::const_iterator iter = attributes.begin();
+    for (NfcRecordClient::Attributes::const_iterator iter = attributes.begin();
          iter != attributes.end(); ++iter) {
       array_writer.OpenDictEntry(&dict_entry_writer);
       dict_entry_writer.AppendString(iter->first);
@@ -123,10 +124,29 @@ class NfcDeviceClientImpl : public NfcDeviceClient,
     VLOG(1) << "Creating NfcDeviceClientImpl";
     DCHECK(bus);
     bus_ = bus;
-    object_map_.reset(new DBusObjectMap(
-        nfc_device::kNfcDeviceServiceName, this, bus));
     DCHECK(adapter_client_);
     adapter_client_->AddObserver(this);
+  }
+
+ private:
+  // NfcAdapterClient::Observer override.
+  virtual void AdapterAdded(const dbus::ObjectPath& object_path) OVERRIDE {
+    VLOG(1) << "Adapter added. Creating map for device proxies belonging to "
+            << "adapter: " << object_path.value();
+    adapters_to_object_maps_.CreateObjectMap(
+        object_path, nfc_device::kNfcDeviceServiceName, this, bus_);
+  }
+
+  // NfcAdapterClient::Observer override.
+  virtual void AdapterRemoved(const dbus::ObjectPath& object_path) OVERRIDE {
+    // Neard doesn't send out property changed signals for the devices that
+    // are removed when the adapter they belong to is removed. Clean up the
+    // object proxies for devices that are managed by the removed adapter.
+    // Note: DBusObjectMap guarantees that the Properties structure for the
+    // removed adapter will be valid before this method returns.
+    VLOG(1) << "Adapter removed. Cleaning up device proxies belonging to "
+            << "adapter: " << object_path.value();
+    adapters_to_object_maps_.RemoveObjectMap(object_path);
   }
 
   // NfcAdapterClient::Observer override.
@@ -136,17 +156,20 @@ class NfcDeviceClientImpl : public NfcDeviceClient,
     DCHECK(adapter_client_);
     NfcAdapterClient::Properties *adapter_properties =
         adapter_client_->GetProperties(object_path);
+    DCHECK(adapter_properties);
 
     // Ignore changes to properties other than "Devices".
     if (property_name != adapter_properties->devices.name())
       return;
 
-    VLOG(1) << "NFC devices changed.";
-
     // Update the known devices.
+    VLOG(1) << "NFC devices changed.";
     const std::vector<dbus::ObjectPath>& received_devices =
         adapter_properties->devices.value();
-    object_map_->UpdateObjects(received_devices);
+    DBusObjectMap* object_map =
+        adapters_to_object_maps_.GetObjectMap(object_path);
+    DCHECK(object_map);
+    object_map->UpdateObjects(received_devices);
   }
 
   // nfc_client_helpers::DBusObjectMap::Delegate override.
@@ -162,12 +185,12 @@ class NfcDeviceClientImpl : public NfcDeviceClient,
   // nfc_client_helpers::DBusObjectMap::Delegate override.
   virtual void ObjectAdded(const dbus::ObjectPath& object_path) OVERRIDE {
     FOR_EACH_OBSERVER(NfcDeviceClient::Observer, observers_,
-                      DeviceFound(object_path));
+                      DeviceAdded(object_path));
   }
 
   virtual void ObjectRemoved(const dbus::ObjectPath& object_path) OVERRIDE {
     FOR_EACH_OBSERVER(NfcDeviceClient::Observer, observers_,
-                      DeviceLost(object_path));
+                      DeviceRemoved(object_path));
   }
 
   // Called by NfcPropertySet when a property value is changed, either by
@@ -180,20 +203,20 @@ class NfcDeviceClientImpl : public NfcDeviceClient,
                       DevicePropertyChanged(object_path, property_name));
   }
 
- private:
   // We maintain a pointer to the bus to be able to request proxies for
   // new NFC devices that appear.
   dbus::Bus* bus_;
 
-  // Mapping from object paths to object proxies and properties structures that
-  // were already created by us.
-  scoped_ptr<DBusObjectMap> object_map_;
-
-  // The manager client that we listen to events notifications from.
-  NfcAdapterClient* adapter_client_;
-
   // List of observers interested in event notifications.
   ObserverList<NfcDeviceClient::Observer> observers_;
+
+  // Mapping from object paths to object proxies and properties structures that
+  // were already created by us. This stucture stores a different DBusObjectMap
+  // for each known NFC adapter object path.
+  ObjectProxyTree adapters_to_object_maps_;
+
+  // The adapter client that we listen to events notifications from.
+  NfcAdapterClient* adapter_client_;
 
   // Weak pointer factory for generating 'this' pointers that might live longer
   // than we do.

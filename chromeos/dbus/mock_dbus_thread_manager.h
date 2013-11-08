@@ -29,6 +29,7 @@ class FakeGsmSMSClient;
 class FakeNfcAdapterClient;
 class FakeNfcDeviceClient;
 class FakeNfcManagerClient;
+class FakeNfcRecordClient;
 class FakeNfcTagClient;
 class FakeShillDeviceClient;
 class FakeShillIPConfigClient;
@@ -77,6 +78,7 @@ class MockDBusThreadManager : public DBusThreadManager {
   MOCK_METHOD0(GetNfcAdapterClient, NfcAdapterClient*(void));
   MOCK_METHOD0(GetNfcDeviceClient, NfcDeviceClient*(void));
   MOCK_METHOD0(GetNfcManagerClient, NfcManagerClient*(void));
+  MOCK_METHOD0(GetNfcRecordClient, NfcRecordClient*(void));
   MOCK_METHOD0(GetNfcTagClient, NfcTagClient*(void));
   MOCK_METHOD0(GetPermissionBrokerClient, PermissionBrokerClient*(void));
   MOCK_METHOD0(GetPowerManagerClient, PowerManagerClient*(void));
@@ -113,6 +115,9 @@ class MockDBusThreadManager : public DBusThreadManager {
   }
   FakeNfcManagerClient* fake_nfc_manager_client() {
     return fake_nfc_manager_client_.get();
+  }
+  FakeNfcRecordClient* fake_nfc_record_client() {
+    return fake_nfc_record_client_.get();
   }
   FakeNfcTagClient* fake_nfc_tag_client() {
     return fake_nfc_tag_client_.get();
@@ -155,6 +160,7 @@ class MockDBusThreadManager : public DBusThreadManager {
   scoped_ptr<FakeNfcAdapterClient> fake_nfc_adapter_client_;
   scoped_ptr<FakeNfcDeviceClient> fake_nfc_device_client_;
   scoped_ptr<FakeNfcManagerClient> fake_nfc_manager_client_;
+  scoped_ptr<FakeNfcRecordClient> fake_nfc_record_client_;
   scoped_ptr<FakeNfcTagClient> fake_nfc_tag_client_;
   scoped_ptr<FakeShillDeviceClient> fake_shill_device_client_;
   scoped_ptr<FakeShillIPConfigClient> fake_shill_ipconfig_client_;
