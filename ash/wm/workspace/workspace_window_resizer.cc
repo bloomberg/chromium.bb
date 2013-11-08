@@ -998,6 +998,18 @@ SnapType WorkspaceWindowResizer::GetSnapType(
   // TODO: this likely only wants total display area, not the area of a single
   // display.
   gfx::Rect area(ScreenAsh::GetDisplayWorkAreaBoundsInParent(window()));
+  if (details_.source == aura::client::WINDOW_MOVE_SOURCE_TOUCH) {
+    // Increase tolerance for touch-snapping near the screen edges. This is only
+    // necessary when the work area left or right edge is same as screen edge.
+    gfx::Rect display_bounds(ScreenAsh::GetDisplayBoundsInParent(window()));
+    int inset_left = 0;
+    if (area.x() == display_bounds.x())
+      inset_left = kScreenEdgeInsetForTouchResize;
+    int inset_right = 0;
+    if (area.right() == display_bounds.right())
+      inset_right = kScreenEdgeInsetForTouchResize;
+    area.Inset(inset_left, 0, inset_right, 0);
+  }
   if (location.x() <= area.x())
     return SNAP_LEFT;
   if (location.x() >= area.right() - 1)
