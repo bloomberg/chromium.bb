@@ -51,27 +51,7 @@ using namespace blink;
 
 namespace WebCore {
 
-bool DatabaseObserver::canEstablishDatabase(ExecutionContext* executionContext, const String& name, const String& displayName, unsigned long estimatedSize)
-{
-    ASSERT(executionContext->isContextThread());
-    ASSERT(executionContext->isDocument() || executionContext->isWorkerGlobalScope());
-    if (executionContext->isDocument()) {
-        Document* document = toDocument(executionContext);
-        WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
-        if (!webFrame)
-            return false;
-        WebViewImpl* webView = webFrame->viewImpl();
-        if (!webView)
-            return false;
-        if (webView->permissionClient())
-            return webView->permissionClient()->allowDatabase(webFrame, name, displayName, estimatedSize);
-    } else {
-        WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(executionContext);
-        return WorkerPermissionClient::from(workerGlobalScope)->allowDatabase(name, displayName, estimatedSize);
-    }
-    return true;
-}
-
+// FIXME: Deprecate remaining implementation.
 void DatabaseObserver::databaseOpened(DatabaseBackendBase* database)
 {
     ASSERT(database->databaseContext()->executionContext()->isContextThread());

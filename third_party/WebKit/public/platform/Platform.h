@@ -75,6 +75,7 @@ class WebMediaStreamCenter;
 class WebMediaStreamCenterClient;
 class WebMessagePortChannel;
 class WebMimeRegistry;
+class WebPlatformDatabaseObserver;
 class WebPluginListBuilder;
 class WebPrescientNetworking;
 class WebRTCPeerConnectionHandler;
@@ -595,6 +596,12 @@ public:
         const WebURL& storagePartition,
         WebStorageQuotaType,
         WebStorageQuotaCallbacks*) { }
+
+
+    // WebDatabase --------------------------------------------------------
+
+    virtual WebPlatformDatabaseObserver* databaseObserver() { return 0; }
+
 
 protected:
     virtual ~Platform() { }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -29,63 +29,51 @@
  */
 
 #include "config.h"
-#include "WebWorkerClientImpl.h"
-
 #include "DatabaseClientImpl.h"
-#include "LocalFileSystemClient.h"
+
 #include "WebFrameImpl.h"
 #include "WebPermissionClient.h"
 #include "WebViewImpl.h"
 #include "WorkerPermissionClient.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/inspector/ScriptCallStack.h"
-#include "core/workers/Worker.h"
-#include "core/workers/WorkerClients.h"
-#include "core/workers/WorkerMessagingProxy.h"
-#include "public/platform/WebString.h"
-#include "public/web/WebFrameClient.h"
-#include "public/web/WebSecurityOrigin.h"
-#include "public/web/WebWorkerPermissionClientProxy.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/Threading.h"
+#include "core/workers/WorkerGlobalScope.h"
 
 using namespace WebCore;
 
 namespace blink {
 
-// Chromium-specific decorator of WorkerMessagingProxy.
-
-// static
-WorkerGlobalScopeProxy* WebWorkerClientImpl::createWorkerGlobalScopeProxy(Worker* worker)
+PassOwnPtr<DatabaseClientImpl> DatabaseClientImpl::create()
 {
-    if (worker->executionContext()->isDocument()) {
-        Document* document = toDocument(worker->executionContext());
+    return adoptPtr(new DatabaseClientImpl());
+}
+
+DatabaseClientImpl::~DatabaseClientImpl()
+{
+}
+
+bool DatabaseClientImpl::allowDatabase(ExecutionContext* executionContext, const String& name, const String& displayName, unsigned long estimatedSize)
+{
+    ASSERT(executionContext->isContextThread());
+    ASSERT(executionContext->isDocument() || executionContext->isWorkerGlobalScope());
+    if (executionContext->isDocument()) {
+        Document* document = toDocument(executionContext);
         WebFrameImpl* webFrame = WebFrameImpl::fromFrame(document->frame());
-        OwnPtr<WorkerClients> workerClients = WorkerClients::create();
-        provideLocalFileSystemToWorker(workerClients.get(), LocalFileSystemClient::create());
-        provideDatabaseClientToWorker(workerClients.get(), DatabaseClientImpl::create());
-        providePermissionClientToWorker(workerClients.get(), adoptPtr(webFrame->client()->createWorkerPermissionClientProxy(webFrame)));
-        WebWorkerClientImpl* proxy = new WebWorkerClientImpl(worker, webFrame, workerClients.release());
-        return proxy;
+        if (!webFrame)
+            return false;
+        WebViewImpl* webView = webFrame->viewImpl();
+        if (!webView)
+            return false;
+        if (webView->permissionClient())
+            return webView->permissionClient()->allowDatabase(webFrame, name, displayName, estimatedSize);
+    } else {
+        WorkerGlobalScope* workerGlobalScope = toWorkerGlobalScope(executionContext);
+        return WorkerPermissionClient::from(workerGlobalScope)->allowDatabase(name, displayName, estimatedSize);
     }
-    ASSERT_NOT_REACHED();
-    return 0;
+    return true;
 }
 
-void WebWorkerClientImpl::terminateWorkerGlobalScope()
-{
-    m_webFrame = 0;
-    WebCore::WorkerMessagingProxy::terminateWorkerGlobalScope();
-}
-
-WebWorkerClientImpl::WebWorkerClientImpl(Worker* worker, WebFrameImpl* webFrame, PassOwnPtr<WorkerClients> workerClients)
-    : WebCore::WorkerMessagingProxy(worker, workerClients)
-    , m_webFrame(webFrame)
-{
-}
-
-WebWorkerClientImpl::~WebWorkerClientImpl()
+DatabaseClientImpl::DatabaseClientImpl()
 {
 }
 

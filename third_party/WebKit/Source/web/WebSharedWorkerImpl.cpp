@@ -31,6 +31,7 @@
 #include "config.h"
 #include "WebSharedWorkerImpl.h"
 
+#include "DatabaseClientImpl.h"
 #include "LocalFileSystemClient.h"
 #include "WebDataSourceImpl.h"
 #include "WebFrame.h"
@@ -266,6 +267,7 @@ void WebSharedWorkerImpl::startWorkerContext(const WebURL& url, const WebString&
     WorkerThreadStartMode startMode = m_pauseWorkerContextOnStart ? PauseWorkerGlobalScopeOnStart : DontPauseWorkerGlobalScopeOnStart;
     OwnPtr<WorkerClients> workerClients = WorkerClients::create();
     provideLocalFileSystemToWorker(workerClients.get(), LocalFileSystemClient::create());
+    provideDatabaseClientToWorker(workerClients.get(), DatabaseClientImpl::create());
     WebSecurityOrigin webSecurityOrigin(m_loadingDocument->securityOrigin());
     providePermissionClientToWorker(workerClients.get(), adoptPtr(client()->createWorkerPermissionClientProxy(webSecurityOrigin)));
     OwnPtr<WorkerThreadStartupData> startupData = WorkerThreadStartupData::create(url, userAgent, sourceCode, startMode, contentSecurityPolicy, static_cast<WebCore::ContentSecurityPolicy::HeaderType>(policyType), workerClients.release());

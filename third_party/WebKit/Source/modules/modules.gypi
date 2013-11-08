@@ -661,6 +661,8 @@
       'webdatabase/DatabaseBase.h',
       'webdatabase/DatabaseBasicTypes.h',
       'webdatabase/DatabaseCallback.h',
+      'webdatabase/DatabaseClient.cpp',
+      'webdatabase/DatabaseClient.h',
       'webdatabase/DatabaseContext.cpp',
       'webdatabase/DatabaseContext.h',
       'webdatabase/DatabaseError.h',

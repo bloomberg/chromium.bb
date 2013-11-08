@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,33 +28,33 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DatabaseObserver_h
-#define DatabaseObserver_h
+#ifndef DatabaseClient_h
+#define DatabaseClient_h
 
+#include "core/page/Page.h"
+#include "core/workers/WorkerClients.h"
 #include "wtf/Forward.h"
 
 namespace WebCore {
 
-class DatabaseBackendBase;
 class ExecutionContext;
+class WorkerClients;
 
-// FIXME: Deprecate this entire class.
-// The implementation of this class is in the WebKit API (Chromium source tree)
-// in WebKit/chromium/src/DatabaseObserver.cpp.
-class DatabaseObserver {
+class DatabaseClient : public Supplement<Page>, public Supplement<WorkerClients> {
+    WTF_MAKE_NONCOPYABLE(DatabaseClient);
 public:
-    static void databaseOpened(DatabaseBackendBase*);
-    static void databaseModified(DatabaseBackendBase*);
-    static void databaseClosed(DatabaseBackendBase*);
+    DatabaseClient() { }
+    virtual ~DatabaseClient() { }
 
-    static void reportOpenDatabaseResult(DatabaseBackendBase*, int callsite, int webSqlErrorCode, int sqliteErrorCode);
-    static void reportChangeVersionResult(DatabaseBackendBase*, int callsite, int webSqlErrorCode, int sqliteErrorCode);
-    static void reportStartTransactionResult(DatabaseBackendBase*, int callsite, int webSqlErrorCode, int sqliteErrorCode);
-    static void reportCommitTransactionResult(DatabaseBackendBase*, int callsite, int webSqlErrorCode, int sqliteErrorCode);
-    static void reportExecuteStatementResult(DatabaseBackendBase*, int callsite, int webSqlErrorCode, int sqliteErrorCode);
-    static void reportVacuumDatabaseResult(DatabaseBackendBase*, int sqliteErrorCode);
+    virtual bool allowDatabase(ExecutionContext*, const String& name, const String& displayName, unsigned long estimatedSize) = 0;
+
+    static DatabaseClient* from(ExecutionContext*);
+    static const char* supplementName();
 };
 
-}
+void provideDatabaseClientTo(Page*, PassOwnPtr<DatabaseClient>);
+void provideDatabaseClientToWorker(WorkerClients*, PassOwnPtr<DatabaseClient>);
 
-#endif // DatabaseObserver_h
+} // namespace WebCore
+
+#endif // DatabaseClient_h

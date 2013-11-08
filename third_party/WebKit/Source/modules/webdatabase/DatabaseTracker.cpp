@@ -35,6 +35,7 @@
 #include "core/dom/ExecutionContextTask.h"
 #include "modules/webdatabase/sqlite/SQLiteFileSystem.h"
 #include "modules/webdatabase/DatabaseBackendBase.h"
+#include "modules/webdatabase/DatabaseClient.h"
 #include "modules/webdatabase/DatabaseContext.h"
 #include "modules/webdatabase/DatabaseObserver.h"
 #include "modules/webdatabase/QuotaTracker.h"
@@ -61,7 +62,7 @@ DatabaseTracker::DatabaseTracker()
 bool DatabaseTracker::canEstablishDatabase(DatabaseContext* databaseContext, const String& name, const String& displayName, unsigned long estimatedSize, DatabaseError& error)
 {
     ExecutionContext* executionContext = databaseContext->executionContext();
-    bool success = DatabaseObserver::canEstablishDatabase(executionContext, name, displayName, estimatedSize);
+    bool success = DatabaseClient::from(executionContext)->allowDatabase(executionContext, name, displayName, estimatedSize);
     if (!success)
         error = DatabaseError::GenericSecurityError;
     return success;

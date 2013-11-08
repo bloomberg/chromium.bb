@@ -35,6 +35,7 @@
 #include "CSSValueKeywords.h"
 #include "CompositionUnderlineVectorBuilder.h"
 #include "ContextFeaturesClientImpl.h"
+#include "DatabaseClientImpl.h"
 #include "FullscreenController.h"
 #include "GeolocationClientProxy.h"
 #include "GraphicsLayerFactoryChromium.h"
@@ -470,6 +471,7 @@ WebViewImpl::WebViewImpl(WebViewClient* client)
     m_geolocationClientProxy->setController(GeolocationController::from(m_page.get()));
 
     provideLocalFileSystemTo(m_page.get(), LocalFileSystemClient::create());
+    provideDatabaseClientTo(m_page.get(), DatabaseClientImpl::create());
     m_validationMessage = ValidationMessageClientImpl::create(*this, 0);
     m_page->setValidationMessageClient(m_validationMessage.get());
 

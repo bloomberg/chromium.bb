@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2010 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,33 +28,37 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef DatabaseObserver_h
-#define DatabaseObserver_h
+#include "config.h"
+#include "DatabaseClient.h"
 
-#include "wtf/Forward.h"
+#include "core/dom/Document.h"
+#include "core/workers/WorkerClients.h"
+#include "core/workers/WorkerGlobalScope.h"
 
 namespace WebCore {
 
-class DatabaseBackendBase;
-class ExecutionContext;
-
-// FIXME: Deprecate this entire class.
-// The implementation of this class is in the WebKit API (Chromium source tree)
-// in WebKit/chromium/src/DatabaseObserver.cpp.
-class DatabaseObserver {
-public:
-    static void databaseOpened(DatabaseBackendBase*);
-    static void databaseModified(DatabaseBackendBase*);
-    static void databaseClosed(DatabaseBackendBase*);
-
-    static void reportOpenDatabaseResult(DatabaseBackendBase*, int callsite, int webSqlErrorCode, int sqliteErrorCode);
-    static void reportChangeVersionResult(DatabaseBackendBase*, int callsite, int webSqlErrorCode, int sqliteErrorCode);
-    static void reportStartTransactionResult(DatabaseBackendBase*, int callsite, int webSqlErrorCode, int sqliteErrorCode);
-    static void reportCommitTransactionResult(DatabaseBackendBase*, int callsite, int webSqlErrorCode, int sqliteErrorCode);
-    static void reportExecuteStatementResult(DatabaseBackendBase*, int callsite, int webSqlErrorCode, int sqliteErrorCode);
-    static void reportVacuumDatabaseResult(DatabaseBackendBase*, int sqliteErrorCode);
-};
-
+DatabaseClient* DatabaseClient::from(ExecutionContext* context)
+{
+    if (context->isDocument()) {
+        return static_cast<DatabaseClient*>(Supplement<Page>::from(toDocument(context)->page(), supplementName()));
+    }
+    ASSERT(context->isWorkerGlobalScope());
+    return static_cast<DatabaseClient*>(Supplement<WorkerClients>::from(toWorkerGlobalScope(context)->clients(), supplementName()));
 }
 
-#endif // DatabaseObserver_h
+const char* DatabaseClient::supplementName()
+{
+    return "DatabaseClient";
+}
+
+void provideDatabaseClientTo(Page* page, PassOwnPtr<DatabaseClient> client)
+{
+    page->provideSupplement(DatabaseClient::supplementName(), client);
+}
+
+void provideDatabaseClientToWorker(WorkerClients* workerClients, PassOwnPtr<DatabaseClient> client)
+{
+    workerClients->provideSupplement(DatabaseClient::supplementName(), client);
+}
+
+} // namespace WebCore

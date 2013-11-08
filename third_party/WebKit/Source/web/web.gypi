@@ -25,6 +25,8 @@
       'ContextMenuClientImpl.h',
       'DOMUtilitiesPrivate.cpp',
       'DOMUtilitiesPrivate.h',
+      'DatabaseClientImpl.cpp',
+      'DatabaseClientImpl.h',
       'DatabaseObserver.cpp',
       'DateTimeChooserImpl.cpp',
       'DateTimeChooserImpl.h',
