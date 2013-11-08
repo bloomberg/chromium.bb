@@ -284,6 +284,12 @@ void BrowserNonClientFrameViewAsh::Layout() {
   if (browser_view()->IsTabStripVisible()) {
     header_height = GetTabStripInsets(false).top +
         browser_view()->GetTabStripHeight();
+  } else if (browser_view()->IsToolbarVisible()) {
+    // Set the header's height so that it overlaps with the toolbar because the
+    // top few pixels of the toolbar are not opaque.
+    gfx::Point toolbar_origin(browser_view()->GetToolbarBounds().origin());
+    View::ConvertPointToTarget(browser_view(), this, &toolbar_origin);
+    header_height = toolbar_origin.y() + kFrameShadowThickness * 2;
   } else {
     header_height = NonClientTopBorderHeight();
   }
@@ -477,6 +483,8 @@ void BrowserNonClientFrameViewAsh::PaintToolbarBackground(gfx::Canvas* canvas) {
   // (popup mode) the toolbar isn't tall enough to show the whole image.  The
   // split happens between the top shadow section and the bottom gradient
   // section so that we never break the gradient.
+  // NOTE(pkotwicz): If the computation for |bottom_y| is changed, Layout() must
+  // be changed as well.
   int split_point = kFrameShadowThickness * 2;
   int bottom_y = y + split_point;
   ui::ThemeProvider* tp = GetThemeProvider();
