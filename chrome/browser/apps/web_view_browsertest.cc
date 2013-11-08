@@ -271,6 +271,8 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
     const testing::TestInfo* const test_info =
         testing::UnitTest::GetInstance()->current_test_info();
 
+    command_line->AppendSwitchASCII(switches::kJavaScriptFlags, "--expose-gc");
+
     // Force SW rendering to check autosize bug.
     if (!strncmp(test_info->name(), "AutoSizeSW", strlen("AutosizeSW")))
       command_line->AppendSwitch(switches::kDisableForceCompositingMode);
@@ -1754,11 +1756,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestConfirmDialogDefaultCancel) {
              NO_TEST_SERVER);
 }
 
-// TODO(fsamuel): This test consistently times out when run in parallel with
-// other tests, but consistently passes when retried. Disable for now.
-// See http://crbug.com/314809
-IN_PROC_BROWSER_TEST_F(WebViewTest,
-                       DISABLED_Dialog_TestConfirmDialogDefaultGCCancel) {
+IN_PROC_BROWSER_TEST_F(WebViewTest, Dialog_TestConfirmDialogDefaultGCCancel) {
   TestHelper("testConfirmDialogDefaultGCCancel",
              "web_view/dialog",
              NO_TEST_SERVER);
