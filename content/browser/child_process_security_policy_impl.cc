@@ -793,7 +793,7 @@ bool ChildProcessSecurityPolicyImpl::CanAccessCookiesForOrigin(
 bool ChildProcessSecurityPolicyImpl::CanSendCookiesForOrigin(int child_id,
                                                              const GURL& gurl) {
   for (PluginProcessHostIterator iter; !iter.Done(); ++iter) {
-    if (iter.GetData().process_type == child_id) {
+    if (iter.GetData().id == child_id) {
       if (iter.GetData().process_type == PROCESS_TYPE_PLUGIN) {
         // NPAPI plugin processes are unsandboxed and so are trusted. Plugins
         // can make request to any origin.

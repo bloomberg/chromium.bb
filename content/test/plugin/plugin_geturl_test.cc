@@ -48,7 +48,8 @@ PluginGetURLTest::PluginGetURLTest(NPP id, NPNetscapeFuncs *host_functions)
     expect_404_response_(false),
     npn_evaluate_context_(false),
     handle_url_redirects_(false),
-    received_url_redirect_notification_(false) {
+    received_url_redirect_notification_(false),
+    check_cookies_(false) {
 }
 
 PluginGetURLTest::~PluginGetURLTest() {}
@@ -78,7 +79,14 @@ NPError PluginGetURLTest::New(uint16 mode, int16 argc, const char* argn[],
                         "geturlredirectnotify")) {
     handle_url_redirects_ = true;
   }
-  return PluginTest::New(mode, argc, argn, argv, saved);
+
+  NPError error = PluginTest::New(mode, argc, argn, argv, saved);
+
+  // The above sets test_name().
+  if (test_name() == "cookies")
+    check_cookies_ = true;
+
+  return error;
 }
 
 NPError PluginGetURLTest::SetWindow(NPWindow* pNPWindow) {
@@ -107,6 +115,13 @@ NPError PluginGetURLTest::SetWindow(NPWindow* pNPWindow) {
       HostFunctions()->geturlnotify(
           id(), REDIRECT_SRC_URL, NULL,
           reinterpret_cast<void*>(REDIRECT_SRC_URL_NOTIFICATION_ID));
+      return NPERR_NO_ERROR;
+    } else if (check_cookies_) {
+      HostFunctions()->geturlnotify(
+          id(),
+          "plugin_ref_target_page.html",
+          NULL,
+          reinterpret_cast<void*>(SELF_URL_STREAM_ID));
       return NPERR_NO_ERROR;
     }
 
@@ -161,7 +176,7 @@ NPError PluginGetURLTest::NewStream(NPMIMEType type, NPStream* stream,
     return NPERR_NO_ERROR;
   }
 
-  if (!fail_write_url_.empty()) {
+  if (!fail_write_url_.empty() || check_cookies_) {
     return NPERR_NO_ERROR;
   }
 
@@ -217,7 +232,7 @@ int32 PluginGetURLTest::WriteReady(NPStream *stream) {
     return PluginTest::WriteReady(stream);
   }
 
-  if (!referrer_target_url_.empty()) {
+  if (!referrer_target_url_.empty() || check_cookies_) {
     return STREAM_CHUNK;
   }
 
@@ -242,7 +257,7 @@ int32 PluginGetURLTest::Write(NPStream *stream, int32 offset, int32 len,
     return -1;
   }
 
-  if (!referrer_target_url_.empty()) {
+  if (!referrer_target_url_.empty() || check_cookies_) {
     return len;
   }
 
@@ -314,6 +329,11 @@ NPError PluginGetURLTest::DestroyStream(NPStream *stream, NPError reason) {
     return NPERR_NO_ERROR;
   }
 
+  if (check_cookies_) {
+    SignalTestCompleted();
+    return NPERR_NO_ERROR;
+  }
+
   unsigned long stream_id =
       reinterpret_cast<unsigned long>(stream->notifyData);
   switch (stream_id) {
@@ -366,6 +386,9 @@ void PluginGetURLTest::URLNotify(const char* url, NPReason reason, void* data) {
     SetError("URLNotify received NULL url");
     return;
   }
+
+  if (check_cookies_)
+    return;
 
   COMPILE_ASSERT(sizeof(unsigned long) <= sizeof(data), cast_validity_check);
   unsigned long stream_id = reinterpret_cast<unsigned long>(data);

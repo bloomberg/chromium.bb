@@ -57,6 +57,7 @@ class PluginGetURLTest : public PluginTest {
   std::string page_not_found_url_;
   std::string fail_write_url_;
   std::string referrer_target_url_;
+  bool check_cookies_;
 };
 
 }  // namespace NPAPIClient

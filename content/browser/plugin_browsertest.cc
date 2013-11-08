@@ -5,15 +5,21 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/test/content_browser_test.h"
 #include "content/test/content_browser_test_utils.h"
 #include "content/test/net/url_request_mock_http_job.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/url_request/url_request.h"
 #include "ui/gfx/rect.h"
 
 #if defined(OS_WIN)
@@ -467,5 +473,78 @@ IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(Silverlight)) {
   TestPlugin("silverlight.html");
 }
 #endif  // defined(OS_WIN)
+
+class TestResourceDispatcherHostDelegate
+    : public ResourceDispatcherHostDelegate {
+ public:
+  TestResourceDispatcherHostDelegate() : found_cookie_(false) {}
+
+  bool found_cookie() { return found_cookie_; }
+
+  void WaitForPluginRequest() {
+    if (found_cookie_)
+      return;
+
+    runner_ = new MessageLoopRunner;
+    runner_->Run();
+  }
+
+ private:
+  // ResourceDispatcherHostDelegate implementation:
+  virtual void OnResponseStarted(
+      net::URLRequest* request,
+      ResourceContext* resource_context,
+      ResourceResponse* response,
+      IPC::Sender* sender) OVERRIDE {
+    // The URL below comes from plugin_geturl_test.cc.
+    if (!EndsWith(request->url().spec(),
+                 "npapi/plugin_ref_target_page.html",
+                 true)) {
+      return;
+    }
+    net::HttpRequestHeaders headers;
+    bool found_cookie = false;
+    if (request->GetFullRequestHeaders(&headers) &&
+        headers.ToString().find("Cookie: blah") != std::string::npos) {
+      found_cookie = true;
+    }
+    BrowserThread::PostTask(
+        BrowserThread::UI,
+        FROM_HERE,
+        base::Bind(&TestResourceDispatcherHostDelegate::GotCookie,
+                   base::Unretained(this), found_cookie));
+  }
+
+  void GotCookie(bool found_cookie) {
+    found_cookie_ = found_cookie;
+    if (runner_)
+      runner_->QuitClosure().Run();
+  }
+
+  scoped_refptr<MessageLoopRunner> runner_;
+  bool found_cookie_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestResourceDispatcherHostDelegate);
+};
+
+// Ensure that cookies get sent with plugin requests.
+IN_PROC_BROWSER_TEST_F(PluginTest, MAYBE(Cookies)) {
+  // Create a new browser just to ensure that the plugin process' child_id is
+  // not equal to its type (PROCESS_TYPE_PLUGIN), as that was the error which
+  // caused this bug.
+  NavigateToURL(CreateBrowser(), GURL("about:blank"));
+
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
+  GURL url(embedded_test_server()->GetURL("/npapi/cookies.html"));
+
+  TestResourceDispatcherHostDelegate test_delegate;
+  ResourceDispatcherHostDelegate* old_delegate =
+      ResourceDispatcherHostImpl::Get()->delegate();
+  ResourceDispatcherHostImpl::Get()->SetDelegate(&test_delegate);
+  LoadAndWait(url);
+  test_delegate.WaitForPluginRequest();
+  ASSERT_TRUE(test_delegate.found_cookie());
+  ResourceDispatcherHostImpl::Get()->SetDelegate(old_delegate);
+}
 
 }  // namespace content
