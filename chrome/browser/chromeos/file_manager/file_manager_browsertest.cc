@@ -634,6 +634,7 @@ INSTANTIATE_TEST_CASE_P(
                                     "galleryOpenDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "galleryOpenDrive")));
 
+/* http://crbug.com/316918 Tests are flaky.
 INSTANTIATE_TEST_CASE_P(
     KeyboardOperations,
     FileManagerBrowserTest,
@@ -644,6 +645,7 @@ INSTANTIATE_TEST_CASE_P(
                       TestParameter(IN_GUEST_MODE, "keyboardCopyDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "keyboardCopyDownloads"),
                       TestParameter(NOT_IN_GUEST_MODE, "keyboardCopyDrive")));
+*/
 
 INSTANTIATE_TEST_CASE_P(
     DriveSpecific,
