@@ -330,4 +330,5 @@ interface TestObjectPython {
     [RaisesException] void raisesExceptionVoidMethodOptionalLongArg(optional long optionalLongArg);
     [ReadOnly] void readOnlyVoidMethod();
     [NotEnumerable, ReadOnly] void notEnumerableReadOnlyVoidMethod();
+    [StrictTypeChecking] void strictTypeCheckingVoidMethodTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg);
 };

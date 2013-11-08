@@ -49,7 +49,7 @@ def generate_method(interface, method):
     name = method.name
 
     this_cpp_value = cpp_value(interface, method, len(arguments))
-    this_custom_signature = custom_signature(arguments)
+    this_custom_signature = custom_signature(method, arguments)
     if this_custom_signature:
         signature = name + 'Signature'
     elif is_static or 'DoNotCheckSignature' in extended_attributes:
@@ -129,6 +129,7 @@ def generate_argument(interface, method, argument, index):
         'index': index,
         'is_clamp': 'Clamp' in extended_attributes,
         'is_optional': argument.is_optional,
+        'is_strict_type_checking': 'StrictTypeChecking' in method.extended_attributes and v8_types.is_wrapper_type(idl_type),
         'is_variadic_wrapper_type': argument.is_variadic and v8_types.is_wrapper_type(idl_type),
         'name': argument.name,
         'v8_set_return_value': v8_set_return_value(method, this_cpp_value),
@@ -164,7 +165,7 @@ def v8_set_return_value(method, cpp_value):
     return v8_types.v8_set_return_value(idl_type, cpp_value)
 
 
-def custom_signature(arguments):
+def custom_signature(method, arguments):
     def argument_template(argument):
         idl_type = argument.idl_type
         if (v8_types.is_wrapper_type(idl_type) and
@@ -179,7 +180,9 @@ def custom_signature(arguments):
             'Default' not in argument.extended_attributes
             for argument in arguments) or
         all(not v8_types.is_wrapper_type(argument.idl_type)
-            for argument in arguments)):
+            for argument in arguments) or
+        # For [StrictTypeChecking], type checking is done in the generated code
+        'StrictTypeChecking' in method.extended_attributes):
         return None
     return ', '.join([argument_template(argument) for argument in arguments])
 

@@ -5469,6 +5469,28 @@ static void notEnumerableReadOnlyVoidMethodMethodCallback(const v8::FunctionCall
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void strictTypeCheckingVoidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("strictTypeCheckingVoidMethodTestInterfaceEmptyArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        return;
+    }
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    if (info.Length() > 0 && !isUndefinedOrNull(info[0]) && !V8TestInterfaceEmpty::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))) {
+        throwTypeError(ExceptionMessages::failedToExecute("strictTypeCheckingVoidMethodTestInterfaceEmptyArg", "TestObjectPython", "parameter 1 is not of type 'TestInterfaceEmpty'."), info.GetIsolate());
+        return;
+    }
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    imp->strictTypeCheckingVoidMethodTestInterfaceEmptyArg(testInterfaceEmptyArg);
+}
+
+static void strictTypeCheckingVoidMethodTestInterfaceEmptyArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::strictTypeCheckingVoidMethodTestInterfaceEmptyArgMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 } // namespace TestObjectPythonV8Internal
 
 static const V8DOMConfiguration::AttributeConfiguration V8TestObjectPythonAttributes[] = {
@@ -5702,6 +5724,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectPythonMethods[]
     {"activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethod", TestObjectPythonV8Internal::activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethodMethodCallback, TestObjectPythonV8Internal::activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethodMethodCallbackForMainWorld, 0},
     {"raisesExceptionVoidMethod", TestObjectPythonV8Internal::raisesExceptionVoidMethodMethodCallback, 0, 0},
     {"raisesExceptionVoidMethodOptionalLongArg", TestObjectPythonV8Internal::raisesExceptionVoidMethodOptionalLongArgMethodCallback, 0, 0},
+    {"strictTypeCheckingVoidMethodTestInterfaceEmptyArg", TestObjectPythonV8Internal::strictTypeCheckingVoidMethodTestInterfaceEmptyArgMethodCallback, 0, 1},
 };
 
 static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectPythonTemplate(v8::Handle<v8::FunctionTemplate> desc, v8::Isolate* isolate, WrapperWorldType currentWorldType)
