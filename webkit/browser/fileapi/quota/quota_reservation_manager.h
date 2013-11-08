@@ -6,7 +6,6 @@
 #define WEBKIT_BROWSER_FILEAPI_QUOTA_QUOTA_RESERVATION_MANAGER_H_
 
 #include <map>
-#include <utility>
 
 #include "base/basictypes.h"
 #include "base/callback_forward.h"
@@ -26,17 +25,13 @@ class OpenFileHandleContext;
 
 class WEBKIT_STORAGE_BROWSER_EXPORT QuotaReservationManager {
  public:
-  // Callback for ReserveQuota. When this callback returns false, ReserveQuota
-  // operation should be reverted.
+  typedef base::Callback<void(base::PlatformFileError error)> StatusCallback;
   typedef base::Callback<bool(base::PlatformFileError error)>
       ReserveQuotaCallback;
 
   // An abstraction of backing quota system.
-  class WEBKIT_STORAGE_BROWSER_EXPORT QuotaBackend {
+  class QuotaBackend {
    public:
-    QuotaBackend() {}
-    virtual ~QuotaBackend() {}
-
     // Reserves or reclaims |delta| of quota for |origin| and |type| pair.
     // Reserved quota should be counted as usage, but it should be on-memory
     // and be cleared by a browser restart.
@@ -57,18 +52,23 @@ class WEBKIT_STORAGE_BROWSER_EXPORT QuotaReservationManager {
     // Invokes |callback| upon completion with an error code.
     virtual void CommitQuotaUsage(const GURL& origin,
                                   FileSystemType type,
-                                  int64 delta) = 0;
+                                  int64 delta,
+                                  const StatusCallback& callback) = 0;
 
-    virtual void IncrementDirtyCount(const GURL& origin,
+    virtual void IncreaseDirtyCount(const GURL& origin,
                                     FileSystemType type) = 0;
-    virtual void DecrementDirtyCount(const GURL& origin,
+    virtual void DecreaseDirtyCount(const GURL& origin,
                                     FileSystemType type) = 0;
+
+   protected:
+    QuotaBackend() {}
+    virtual ~QuotaBackend() {}
 
    private:
     DISALLOW_COPY_AND_ASSIGN(QuotaBackend);
   };
 
-  explicit QuotaReservationManager(scoped_ptr<QuotaBackend> backend);
+  explicit QuotaReservationManager(QuotaBackend* backend);
   ~QuotaReservationManager();
 
   // The entry point of the quota reservation.  Creates new reservation object
@@ -83,7 +83,6 @@ class WEBKIT_STORAGE_BROWSER_EXPORT QuotaReservationManager {
 
   friend class QuotaReservation;
   friend class QuotaReservationBuffer;
-  friend class QuotaReservationManagerTest;
 
   void ReserveQuota(const GURL& origin,
                     FileSystemType type,
@@ -96,17 +95,20 @@ class WEBKIT_STORAGE_BROWSER_EXPORT QuotaReservationManager {
 
   void CommitQuotaUsage(const GURL& origin,
                         FileSystemType type,
-                        int64 delta);
+                        int64 delta,
+                        const StatusCallback& callback);
 
-  void IncrementDirtyCount(const GURL& origin, FileSystemType type);
-  void DecrementDirtyCount(const GURL& origin, FileSystemType type);
+  void IncreaseDirtyCount(const GURL& origin, FileSystemType type);
+  void DecreaseDirtyCount(const GURL& origin, FileSystemType type);
 
   scoped_refptr<QuotaReservationBuffer> GetReservationBuffer(
       const GURL& origin,
       FileSystemType type);
   void ReleaseReservationBuffer(QuotaReservationBuffer* reservation_pool);
 
-  scoped_ptr<QuotaBackend> backend_;
+
+  // Not owned.  |backend_| should outlive QuotaReservationManager
+  QuotaBackend* backend_;
 
   // Not owned.  The destructor of ReservationBuffer should erase itself from
   // |reservation_buffers_| by calling ReleaseReservationBuffer.

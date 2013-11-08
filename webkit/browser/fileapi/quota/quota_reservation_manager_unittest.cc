@@ -23,6 +23,7 @@ const FileSystemType kType = kFileSystemTypeTemporary;
 const int64 kInitialFileSize = 30;
 
 typedef QuotaReservationManager::ReserveQuotaCallback ReserveQuotaCallback;
+typedef QuotaReservationManager::StatusCallback StatusCallback;
 
 class FakeBackend : public QuotaReservationManager::QuotaBackend {
  public:
@@ -54,16 +55,19 @@ class FakeBackend : public QuotaReservationManager::QuotaBackend {
 
   virtual void CommitQuotaUsage(const GURL& origin,
                                 FileSystemType type,
-                                int64 delta) OVERRIDE {
+                                int64 delta,
+                                const StatusCallback& callback) OVERRIDE {
     EXPECT_EQ(GURL(kOrigin), origin);
     EXPECT_EQ(kType, type);
     on_disk_usage_ += delta;
+    base::MessageLoopProxy::current()->PostTask(
+        FROM_HERE, base::Bind(callback, base::PLATFORM_FILE_OK));
   }
 
-  virtual void IncrementDirtyCount(const GURL& origin,
-                                   FileSystemType type) OVERRIDE {}
-  virtual void DecrementDirtyCount(const GURL& origin,
-                                   FileSystemType type) OVERRIDE {}
+  virtual void IncreaseDirtyCount(const GURL& origin,
+                                  FileSystemType type) OVERRIDE {}
+  virtual void DecreaseDirtyCount(const GURL& origin,
+                                  FileSystemType type) OVERRIDE {}
 
   int64 on_memory_usage() { return on_memory_usage_; }
   int64 on_disk_usage() { return on_disk_usage_; }
@@ -102,12 +106,14 @@ class QuotaReservationManagerTest : public testing::Test {
     file_path_ = work_dir_.path().Append(FILE_PATH_LITERAL("hoge"));
     SetFileSize(kInitialFileSize);
 
-    scoped_ptr<QuotaReservationManager::QuotaBackend> backend(new FakeBackend);
-    reservation_manager_.reset(new QuotaReservationManager(backend.Pass()));
+    fake_backend_.reset(new FakeBackend);
+    reservation_manager_.reset(new QuotaReservationManager(
+        fake_backend_.get()));
   }
 
   virtual void TearDown() OVERRIDE {
     reservation_manager_.reset();
+    fake_backend_.reset();
   }
 
   int64 GetFileSize() {
@@ -134,7 +140,7 @@ class QuotaReservationManagerTest : public testing::Test {
   }
 
   FakeBackend* fake_backend() {
-    return static_cast<FakeBackend*>(reservation_manager_->backend_.get());
+    return fake_backend_.get();
   }
 
   QuotaReservationManager* reservation_manager() {
@@ -149,6 +155,7 @@ class QuotaReservationManagerTest : public testing::Test {
   base::MessageLoop message_loop_;
   base::ScopedTempDir work_dir_;
   base::FilePath file_path_;
+  scoped_ptr<FakeBackend> fake_backend_;
   scoped_ptr<QuotaReservationManager> reservation_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(QuotaReservationManagerTest);
