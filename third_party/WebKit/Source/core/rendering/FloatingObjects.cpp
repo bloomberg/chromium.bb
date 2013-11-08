@@ -104,7 +104,7 @@ class ComputeFloatOffsetAdapter {
 public:
     typedef FloatingObjectInterval IntervalType;
 
-    ComputeFloatOffsetAdapter(const RenderBlockFlow* renderer, int lineTop, int lineBottom, LayoutUnit& offset)
+    ComputeFloatOffsetAdapter(const RenderBlockFlow* renderer, int lineTop, int lineBottom, LayoutUnit offset)
         : m_renderer(renderer)
         , m_lineTop(lineTop)
         , m_lineBottom(lineBottom)
@@ -117,13 +117,9 @@ public:
     int highValue() const { return m_lineBottom; }
     void collectIfNeeded(const IntervalType&);
 
-    // When computing the offset caused by the floats on a given line, if
-    // the outermost float on that line has a shape-outside, the inline
-    // content that butts up against that float must be positioned using
-    // the contours of the shape, not the margin box of the float.
-    const FloatingObject* outermostFloat() const { return m_outermostFloat; }
-
-    LayoutUnit getHeightRemaining() const;
+    LayoutUnit offset() const { return m_offset; }
+    LayoutUnit shapeOffset() const;
+    LayoutUnit heightRemaining() const;
 
 private:
     bool updateOffsetIfNeeded(const FloatingObject*);
@@ -131,7 +127,7 @@ private:
     const RenderBlockFlow* m_renderer;
     int m_lineTop;
     int m_lineBottom;
-    LayoutUnit& m_offset;
+    LayoutUnit m_offset;
     const FloatingObject* m_outermostFloat;
 };
 
@@ -362,44 +358,74 @@ void FloatingObjects::computePlacedFloatsTree()
     }
 }
 
-LayoutUnit FloatingObjects::logicalLeftOffset(LayoutUnit fixedOffset, LayoutUnit logicalTop, LayoutUnit logicalHeight, ShapeOutsideFloatOffsetMode offsetMode, LayoutUnit *heightRemaining)
+static inline ShapeOutsideInfo* shapeInfoForFloat(const FloatingObject* floatingObject, const RenderBlockFlow* containingBlock, LayoutUnit lineTop, LayoutUnit lineBottom)
 {
-    LayoutUnit offset = fixedOffset;
-    ComputeFloatOffsetAdapter<FloatingObject::FloatLeft> adapter(m_renderer, roundToInt(logicalTop), roundToInt(logicalTop + logicalHeight), offset);
-    placedFloatsTree().allOverlapsWithAdapter(adapter);
-
-    if (heightRemaining)
-        *heightRemaining = adapter.getHeightRemaining();
-
-    const FloatingObject* outermostFloat = adapter.outermostFloat();
-    if (offsetMode == ShapeOutsideFloatShapeOffset && outermostFloat) {
-        if (ShapeOutsideInfo* shapeOutside = outermostFloat->renderer()->shapeOutsideInfo()) {
-            shapeOutside->updateDeltasForContainingBlockLine(m_renderer, outermostFloat, logicalTop, logicalHeight);
-            offset += shapeOutside->rightMarginBoxDelta();
+    if (floatingObject) {
+        if (ShapeOutsideInfo* shapeOutside = floatingObject->renderer()->shapeOutsideInfo()) {
+            shapeOutside->updateDeltasForContainingBlockLine(containingBlock, floatingObject, lineTop, lineBottom - lineTop);
+            return shapeOutside;
         }
     }
 
-    return offset;
+    return 0;
 }
 
-LayoutUnit FloatingObjects::logicalRightOffset(LayoutUnit fixedOffset, LayoutUnit logicalTop, LayoutUnit logicalHeight, ShapeOutsideFloatOffsetMode offsetMode, LayoutUnit *heightRemaining)
+template<>
+inline LayoutUnit ComputeFloatOffsetAdapter<FloatingObject::FloatLeft>::shapeOffset() const
 {
-    LayoutUnit offset = fixedOffset;
-    ComputeFloatOffsetAdapter<FloatingObject::FloatRight> adapter(m_renderer, roundToInt(logicalTop), roundToInt(logicalTop + logicalHeight), offset);
+    if (ShapeOutsideInfo* shapeOutside = shapeInfoForFloat(m_outermostFloat, m_renderer, m_lineTop, m_lineBottom))
+        return m_offset + shapeOutside->rightMarginBoxDelta();
+
+    return m_offset;
+}
+
+template<>
+inline LayoutUnit ComputeFloatOffsetAdapter<FloatingObject::FloatRight>::shapeOffset() const
+{
+    if (ShapeOutsideInfo* shapeOutside = shapeInfoForFloat(m_outermostFloat, m_renderer, m_lineTop, m_lineBottom))
+        return m_offset + shapeOutside->leftMarginBoxDelta();
+
+    return m_offset;
+}
+
+LayoutUnit FloatingObjects::logicalLeftOffsetForPositioningFloat(LayoutUnit fixedOffset, LayoutUnit logicalTop, LayoutUnit *heightRemaining)
+{
+    int logicalTopAsInt = roundToInt(logicalTop);
+    ComputeFloatOffsetAdapter<FloatingObject::FloatLeft> adapter(m_renderer, logicalTopAsInt, logicalTopAsInt, fixedOffset);
     placedFloatsTree().allOverlapsWithAdapter(adapter);
 
     if (heightRemaining)
-        *heightRemaining = adapter.getHeightRemaining();
+        *heightRemaining = adapter.heightRemaining();
 
-    const FloatingObject* outermostFloat = adapter.outermostFloat();
-    if (offsetMode == ShapeOutsideFloatShapeOffset && outermostFloat) {
-        if (ShapeOutsideInfo* shapeOutside = outermostFloat->renderer()->shapeOutsideInfo()) {
-            shapeOutside->updateDeltasForContainingBlockLine(m_renderer, outermostFloat, logicalTop, logicalHeight);
-            offset += shapeOutside->leftMarginBoxDelta();
-        }
-    }
+    return adapter.offset();
+}
 
-    return min(fixedOffset, offset);
+LayoutUnit FloatingObjects::logicalRightOffsetForPositioningFloat(LayoutUnit fixedOffset, LayoutUnit logicalTop, LayoutUnit *heightRemaining)
+{
+    int logicalTopAsInt = roundToInt(logicalTop);
+    ComputeFloatOffsetAdapter<FloatingObject::FloatRight> adapter(m_renderer, logicalTopAsInt, logicalTopAsInt, fixedOffset);
+    placedFloatsTree().allOverlapsWithAdapter(adapter);
+
+    if (heightRemaining)
+        *heightRemaining = adapter.heightRemaining();
+
+    return min(fixedOffset, adapter.offset());
+}
+
+LayoutUnit FloatingObjects::logicalLeftOffset(LayoutUnit fixedOffset, LayoutUnit logicalTop, LayoutUnit logicalHeight)
+{
+    ComputeFloatOffsetAdapter<FloatingObject::FloatLeft> adapter(m_renderer, roundToInt(logicalTop), roundToInt(logicalTop + logicalHeight), fixedOffset);
+    placedFloatsTree().allOverlapsWithAdapter(adapter);
+
+    return adapter.shapeOffset();
+}
+
+LayoutUnit FloatingObjects::logicalRightOffset(LayoutUnit fixedOffset, LayoutUnit logicalTop, LayoutUnit logicalHeight)
+{
+    ComputeFloatOffsetAdapter<FloatingObject::FloatRight> adapter(m_renderer, roundToInt(logicalTop), roundToInt(logicalTop + logicalHeight), fixedOffset);
+    placedFloatsTree().allOverlapsWithAdapter(adapter);
+
+    return min(fixedOffset, adapter.shapeOffset());
 }
 
 FloatingObjects::FloatBottomCachedValue::FloatBottomCachedValue()
@@ -457,7 +483,7 @@ inline void ComputeFloatOffsetAdapter<FloatTypeValue>::collectIfNeeded(const Int
 }
 
 template <FloatingObject::Type FloatTypeValue>
-LayoutUnit ComputeFloatOffsetAdapter<FloatTypeValue>::getHeightRemaining() const
+LayoutUnit ComputeFloatOffsetAdapter<FloatTypeValue>::heightRemaining() const
 {
     return m_outermostFloat ? m_renderer->logicalBottomForFloat(m_outermostFloat) - m_lineTop : LayoutUnit(1);
 }
