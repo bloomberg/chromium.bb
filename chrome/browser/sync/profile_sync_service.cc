@@ -218,9 +218,6 @@ bool ProfileSyncService::IsOAuthRefreshTokenAvailable() {
 }
 
 void ProfileSyncService::Initialize() {
-  if (profile_)
-    SigninGlobalError::GetForProfile(profile_)->AddProvider(this);
-
   InitSettings();
 
   // We clear this here (vs Shutdown) because we want to remember that an error
@@ -758,9 +755,6 @@ void ProfileSyncService::OnRefreshTokensLoaded() {
 
 void ProfileSyncService::Shutdown() {
   UnregisterAuthNotifications();
-
-  if (profile_)
-    SigninGlobalError::GetForProfile(profile_)->RemoveProvider(this);
 
   ShutdownImpl(browser_sync::SyncBackendHost::STOP);
 
@@ -1457,23 +1451,6 @@ const AuthError& ProfileSyncService::GetAuthError() const {
   return last_auth_error_;
 }
 
-std::string ProfileSyncService::GetAccountId() const {
-  return ProfileOAuth2TokenServiceFactory::GetForProfile(profile_)->
-      GetPrimaryAccountId();
-}
-
-GoogleServiceAuthError ProfileSyncService::GetAuthStatus() const {
-  // If waiting_for_auth() returns true, it means that ProfileSyncService has
-  // detected that the user has just successfully completed gaia signin, but the
-  // backend is yet to update its connection state. In such a case, we do not
-  // want to continue surfacing an auth error to the UI via SigninGlobalError.
-  // Otherwise, it will make for a confusing UX, since the user just re-entered
-  // their credentials. See http://crbug.com/261317.
-  if (waiting_for_auth())
-    return AuthError::AuthErrorNone();
-  return GetAuthError();
-}
-
 bool ProfileSyncService::FirstSetupInProgress() const {
   return !HasSyncSetupCompleted() && setup_in_progress_;
 }
@@ -2029,14 +2006,6 @@ void ProfileSyncService::Observe(int type,
           GetAuthError().state() != AuthError::NONE) {
         // Track the fact that we're still waiting for auth to complete.
         is_auth_in_progress_ = true;
-
-        // The user has just successfully completed re-auth, so immediately
-        // clear any auth error that was showing in the UI. If the backend is
-        // yet to update its connection state, GetAuthStatus() will return
-        // AuthError::NONE while |is_auth_in_progress_| is set to true.
-        // See http://crbug.com/261317.
-        if (profile_)
-          SigninGlobalError::GetForProfile(profile_)->AuthStatusChanged();
       }
       break;
     }

@@ -20,7 +20,6 @@
 #include "base/strings/string16.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "chrome/browser/signin/signin_global_error.h"
 #include "chrome/browser/sync/backend_unrecoverable_error_handler.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/data_type_encryption_handler.h"
@@ -164,7 +163,6 @@ class ProfileSyncService : public ProfileSyncServiceBase,
                            public browser_sync::SyncFrontend,
                            public browser_sync::SyncPrefObserver,
                            public browser_sync::DataTypeManagerObserver,
-                           public SigninGlobalError::AuthStatusProvider,
                            public syncer::UnrecoverableErrorHandler,
                            public content::NotificationObserver,
                            public BrowserContextKeyedService,
@@ -473,10 +471,6 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // Returns whether sync is managed, i.e. controlled by configuration
   // management. If so, the user is not allowed to configure sync.
   virtual bool IsManaged() const;
-
-  // SigninGlobalError::AuthStatusProvider implementation.
-  virtual std::string GetAccountId() const OVERRIDE;
-  virtual GoogleServiceAuthError GetAuthStatus() const OVERRIDE;
 
   // syncer::UnrecoverableErrorHandler implementation.
   virtual void OnUnrecoverableError(
