@@ -17,27 +17,26 @@ STATUS_INTERNAL_ERROR = -3
 STATUS_SUCCESS = 0
 
 
-class Server(SocketServer.ThreadingTCPServer):
-  """Simple threaded Websocket test server.
+class Server(SocketServer.TCPServer):
+  """Simple Websocket test server.
 
   Extends the server with additional fields and callbacks to communicate with
   the test runner.
   """
 
-  def __init__(self, server_address, RequestHandlerClass, callback,
+  def __init__(self, server_address, RequestHandlerClass,
                command_callback, test_case):
     self.allow_reuse_address = True
-    SocketServer.ThreadingTCPServer.__init__(self, server_address,
-                                             RequestHandlerClass)
-    self.callback = callback
+
+    SocketServer.TCPServer.__init__(self, server_address, RequestHandlerClass)
     self.command_callback = command_callback
     self.test_case = test_case
+    self.status = STATUS_INTERNAL_ERROR
 
-  # Terminates the thread.
   def Terminate(self):
-    # TODO(mtomasz): This is far from a good design. This is called from the
-    # UI thread, but the Server lives on a separate thread.
-    self.shutdown()
+    """Terminates the socket forcibly."""
+    self.socket.shutdown(socket.SHUT_RDWR)
+    self.socket.close()
 
 
 class Handler(SocketServer.StreamRequestHandler):
@@ -50,14 +49,12 @@ class Handler(SocketServer.StreamRequestHandler):
 
   def handle(self):
     """Handles an incoming connection."""
-    status = STATUS_INTERNAL_ERROR
-
     # Accept incoming messages.
     if self.HandleHeaders():
       status = self.HandleFrames()
 
-    # Return the result
-    self.server.callback(status)
+    # Pass the result to the server.
+    self.server.status = status
 
   def HandleHeaders(self):
     """Handles request headers.

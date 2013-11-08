@@ -57,30 +57,11 @@ class TestCaseRunner(object):
 
   def __init__(self, test_case, test_timeout, chrome_binary, chrome_args):
     self.__server = None
-    self.__server_thread = None
-    self.__closing = False
-    self.__status = websocket_handler.STATUS_INTERNAL_ERROR
     self.__test_case = test_case
     self.__test_timeout = test_timeout
     self.__chrome_binary = chrome_binary
     self.__chrome_args = chrome_args
-
-  def Close(self, returncode):
-    """Closes the test runner process.
-
-    Closes the run_task.py process by stopping the WebSocket server,
-    terminating all of the Chrome windows, and returning the passed error code.
-
-    Args:
-      returncode: int; the return code.
-    """
-
-    if self.__closing:
-      return
-    self.__closing = True
-
-    self.__status = returncode
-    self.__server.Terminate()
+    self.__chrome_process = None
 
   def Run(self):
     """Runs the test case with the specified timeout passed as arguments.
@@ -100,7 +81,10 @@ class TestCaseRunner(object):
       print 'Timeout.'
       if self.__server:
         self.__server.Terminate()
-      # Forcibly terminate the script.
+      if self.__chrome_process:
+        self.__chrome_process.kill()
+
+      # Terminate forcibly.
       os._exit(websocket_handler.STATUS_INTERNAL_ERROR)
 
     signal.signal(signal.SIGALRM, Timeout)
@@ -152,7 +136,7 @@ class TestCaseRunner(object):
             return websocket_handler.STATUS_INTERNAL_ERROR
 
     self.__server = websocket_handler.Server(
-        ('localhost', WEBSOCKET_PORT), websocket_handler.Handler, self.Close,
+        ('localhost', WEBSOCKET_PORT), websocket_handler.Handler,
         HandleWebsocketCommand, self.__test_case)
 
     print 'Step 7. Install the Camera app.'
@@ -162,16 +146,16 @@ class TestCaseRunner(object):
     run_command = [
         self.__chrome_binary, '--verbose', '--enable-logging',
         '--load-and-launch-app=%s' % CAMERA_PATH] + self.__chrome_args
-    chrome_process = subprocess.Popen(run_command, shell=False)
+    self.__chrome_process = subprocess.Popen(run_command, shell=False)
 
-    print 'Step 8. Wait for incoming connections.'
-    self.__server.serve_forever()
+    print 'Step 8. Wait for the incoming connection.'
+    self.__server.handle_request()
 
     print 'Step 9. Terminate the process (if not detached earlier).'
-    chrome_process.kill()
+    self.__chrome_process.kill()
 
     print 'Finished gracefully.'
-    return self.__status
+    return self.__server.status
 
 
 def main():
