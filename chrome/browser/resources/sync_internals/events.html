@@ -13,9 +13,6 @@
   vertical-align: top;
 }
 
-.hidden {
-  display: none;
-}
 </style>
 
 <table id="sync-events-table">
@@ -26,6 +23,15 @@
     <th>Details</th>
   </thead>
   <tbody id="sync-events">
+    <tr jsselect="eventList">
+      <td jscontent="date" ></td>
+      <td jscontent="submodule" ></td>
+      <td jscontent="event" ></td>
+      <td>
+        <button class="toggleButton">Toggle Display</button>
+        <pre class="details" jscontent="textDetails" hidden></pre>
+      </td>
+    </tr>
   </tbody>
 </table>
 
