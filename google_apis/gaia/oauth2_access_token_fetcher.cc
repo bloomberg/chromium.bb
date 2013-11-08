@@ -167,42 +167,43 @@ void OAuth2AccessTokenFetcher::EndGetAccessToken(
     return;
   }
 
-  // HTTP_FORBIDDEN (403) is treated as temporary error, because it may be
-  // '403 Rate Limit Exeeded.'
-  if (source->GetResponseCode() == net::HTTP_FORBIDDEN) {
-    OnGetTokenFailure(GoogleServiceAuthError(
-        GoogleServiceAuthError::SERVICE_UNAVAILABLE));
-    return;
-  }
-
-  if (source->GetResponseCode() == net::HTTP_BAD_REQUEST) {
-    // HTTP_BAD_REQUEST (400) usually contains error as per
-    // http://tools.ietf.org/html/rfc6749#section-5.2.
-    std::string gaia_error;
-    OAuth2ErrorCodesForHistogram access_error(OAUTH2_ACCESS_ERROR_UNKNOWN);
-    if (!ParseGetAccessTokenFailureResponse(source, &gaia_error)) {
+  switch (source->GetResponseCode()) {
+    case net::HTTP_OK:
+      break;
+    case net::HTTP_FORBIDDEN:
+    case net::HTTP_INTERNAL_SERVER_ERROR:
+      // HTTP_FORBIDDEN (403) is treated as temporary error, because it may be
+      // '403 Rate Limit Exeeded.' 500 is always treated as transient.
       OnGetTokenFailure(GoogleServiceAuthError(
           GoogleServiceAuthError::SERVICE_UNAVAILABLE));
       return;
-    }
-
-    access_error = OAuth2ErrorToHistogramValue(gaia_error);
-    UMA_HISTOGRAM_ENUMERATION("Gaia.BadRequestTypeForOAuth2AccessToken",
-                              access_error, OAUTH2_ACCESS_ERROR_COUNT);
-
-    OnGetTokenFailure(access_error == OAUTH2_ACCESS_ERROR_INVALID_GRANT ?
-        GoogleServiceAuthError(
-            GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS) :
-        GoogleServiceAuthError(
+    case net::HTTP_BAD_REQUEST: {
+      // HTTP_BAD_REQUEST (400) usually contains error as per
+      // http://tools.ietf.org/html/rfc6749#section-5.2.
+      std::string gaia_error;
+      if (!ParseGetAccessTokenFailureResponse(source, &gaia_error)) {
+        OnGetTokenFailure(GoogleServiceAuthError(
             GoogleServiceAuthError::SERVICE_ERROR));
-    return;
-  }
+        return;
+      }
 
-  // The other errors are treated as permanent error.
-  if (source->GetResponseCode() != net::HTTP_OK) {
-    OnGetTokenFailure(GoogleServiceAuthError(
-        GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
-    return;
+      OAuth2ErrorCodesForHistogram access_error(OAuth2ErrorToHistogramValue(
+          gaia_error));
+      UMA_HISTOGRAM_ENUMERATION("Gaia.BadRequestTypeForOAuth2AccessToken",
+                                access_error, OAUTH2_ACCESS_ERROR_COUNT);
+
+      OnGetTokenFailure(access_error == OAUTH2_ACCESS_ERROR_INVALID_GRANT ?
+          GoogleServiceAuthError(
+              GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS) :
+          GoogleServiceAuthError(
+              GoogleServiceAuthError::SERVICE_ERROR));
+      return;
+    }
+    default:
+      // The other errors are treated as permanent error.
+      OnGetTokenFailure(GoogleServiceAuthError(
+          GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
+      return;
   }
 
   // The request was successfully fetched and it returned OK.

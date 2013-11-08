@@ -683,6 +683,7 @@ void ProfileSyncService::OnGetTokenFailure(
             request_access_token_backoff_.GetTimeUntilRelease(),
             base::Bind(&ProfileSyncService::RequestAccessToken,
                         weak_factory_.GetWeakPtr()));
+      NotifyObservers();
       break;
     }
     case GoogleServiceAuthError::SERVICE_ERROR:

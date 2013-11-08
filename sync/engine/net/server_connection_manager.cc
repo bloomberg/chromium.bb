@@ -285,6 +285,8 @@ bool ServerConnectionManager::PostBufferToPath(PostBufferParams* params,
   // to clean it.
   if (auth_token.empty() || auth_token == "credentials_lost") {
     params->response.server_status = HttpResponse::SYNC_AUTH_ERROR;
+    // Print a log to distinguish this "known failure" from others.
+    LOG(WARNING) << "ServerConnectionManager forcing SYNC_AUTH_ERROR";
     return false;
   }
 
