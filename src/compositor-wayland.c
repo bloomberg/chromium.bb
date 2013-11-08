@@ -72,7 +72,7 @@ struct wayland_compositor {
 	struct wl_cursor_theme *cursor_theme;
 	struct wl_cursor *cursor;
 
-	struct wl_list inputs;
+	struct wl_list input_list;
 };
 
 struct wayland_output {
@@ -1189,7 +1189,7 @@ display_add_seat(struct wayland_compositor *c, uint32_t id)
 	input->compositor = c;
 	input->parent.seat = wl_registry_bind(c->parent.registry, id,
 					      &wl_seat_interface, 1);
-	wl_list_insert(c->inputs.prev, &input->link);
+	wl_list_insert(c->input_list.prev, &input->link);
 
 	wl_seat_add_listener(input->parent.seat, &seat_listener, input);
 	wl_seat_set_user_data(input->parent.seat, input);
@@ -1329,7 +1329,7 @@ wayland_compositor_create(struct wl_display *display,
 		goto err_compositor;
 	}
 
-	wl_list_init(&c->inputs);
+	wl_list_init(&c->input_list);
 	c->parent.registry = wl_display_get_registry(c->parent.wl_display);
 	wl_registry_add_listener(c->parent.registry, &registry_listener, c);
 	wl_display_roundtrip(c->parent.wl_display);
