@@ -133,7 +133,17 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::H
     {% endif %}
     {% filter conditional(method.conditional_string) %}
     {# FIXME: move to V8DOMConfiguration::installDOMCallbacksWithCustomSignature #}
-    {{method.function_template}}->Set(v8::String::NewSymbol("{{method.name}}"), v8::FunctionTemplate::New({{interface_name}}V8Internal::{{method.name}}MethodCallback, v8Undefined(), {{method.signature}}, {{method.number_of_required_or_variadic_arguments}}){% if method.property_attributes %}, static_cast<v8::PropertyAttribute>({{method.property_attributes | join(' | ')}}){% endif %});
+    {% set property_attribute = 'static_cast<v8::PropertyAttribute>(%s)' %
+                                ' | '.join(method.property_attributes) %}
+    {% if method.is_per_world_bindings %}
+    if (currentWorldType == MainWorld) {
+        {{method.function_template}}->Set(v8::String::NewSymbol("{{method.name}}"), v8::FunctionTemplate::New({{cpp_class_name}}V8Internal::{{method.name}}MethodCallbackForMainWorld, v8Undefined(), {{method.signature}}, {{method.number_of_required_or_variadic_arguments}}){% if method.property_attributes %}, {{property_attribute}}{% endif %});
+    } else {
+        {{method.function_template}}->Set(v8::String::NewSymbol("{{method.name}}"), v8::FunctionTemplate::New({{cpp_class_name}}V8Internal::{{method.name}}MethodCallback, v8Undefined(), {{method.signature}}, {{method.number_of_required_or_variadic_arguments}}){% if method.property_attributes %}, {{property_attribute}}{% endif %});
+    }
+    {% else %}
+    {{method.function_template}}->Set(v8::String::NewSymbol("{{method.name}}"), v8::FunctionTemplate::New({{interface_name}}V8Internal::{{method.name}}MethodCallback, v8Undefined(), {{method.signature}}, {{method.number_of_required_or_variadic_arguments}}){% if method.property_attributes %}, {{property_attribute}}{% endif %});
+    {% endif %}
     {% endfilter %}
     {% endfor %}
     {% for attribute in attributes if attribute.is_static %}

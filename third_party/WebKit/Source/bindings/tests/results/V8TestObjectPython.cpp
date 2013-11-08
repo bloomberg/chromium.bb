@@ -5301,6 +5301,109 @@ static void perWorldBindingsVoidMethodMethodCallbackForMainWorld(const v8::Funct
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    imp->activityLoggingForAllWorldsPerWorldBindingsVoidMethod();
+}
+
+static void activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    imp->activityLoggingForAllWorldsPerWorldBindingsVoidMethod();
+}
+
+static void activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());
+    if (contextData && contextData->activityLogger()) {
+        Vector<v8::Handle<v8::Value> > loggerArgs = toVectorOfArguments(info);
+        contextData->activityLogger()->log("TestObjectPython.activityLoggingForAllWorldsPerWorldBindingsVoidMethod", info.Length(), loggerArgs.data(), "Method");
+    }
+    TestObjectPythonV8Internal::activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());
+    if (contextData && contextData->activityLogger()) {
+        Vector<v8::Handle<v8::Value> > loggerArgs = toVectorOfArguments(info);
+        contextData->activityLogger()->log("TestObjectPython.activityLoggingForAllWorldsPerWorldBindingsVoidMethod", info.Length(), loggerArgs.data(), "Method");
+    }
+    TestObjectPythonV8Internal::activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethodForMainWorld(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    imp->activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethod();
+}
+
+static void activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethodMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    imp->activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethod();
+}
+
+static void activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    V8PerContextData* contextData = V8PerContextData::from(info.GetIsolate()->GetCurrentContext());
+    if (contextData && contextData->activityLogger()) {
+        Vector<v8::Handle<v8::Value> > loggerArgs = toVectorOfArguments(info);
+        contextData->activityLogger()->log("TestObjectPython.activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethod", info.Length(), loggerArgs.data(), "Method");
+    }
+    TestObjectPythonV8Internal::activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethodMethodForMainWorld(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void perWorldBindingsVoidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("perWorldBindingsVoidMethodTestInterfaceEmptyArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        return;
+    }
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    imp->perWorldBindingsVoidMethodTestInterfaceEmptyArg(testInterfaceEmptyArg);
+}
+
+static void perWorldBindingsVoidMethodTestInterfaceEmptyArgMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("perWorldBindingsVoidMethodTestInterfaceEmptyArg", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        return;
+    }
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    imp->perWorldBindingsVoidMethodTestInterfaceEmptyArg(testInterfaceEmptyArg);
+}
+
+static void perWorldBindingsVoidMethodTestInterfaceEmptyArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::perWorldBindingsVoidMethodTestInterfaceEmptyArgMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void perWorldBindingsVoidMethodTestInterfaceEmptyArgMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::perWorldBindingsVoidMethodTestInterfaceEmptyArgMethodForMainWorld(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 static void raisesExceptionVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
@@ -5595,6 +5698,8 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectPythonMethods[]
     {"implementedAsVoidMethod", TestObjectPythonV8Internal::implementedAsVoidMethodMethodCallback, 0, 0},
     {"measureAsVoidMethod", TestObjectPythonV8Internal::measureAsVoidMethodMethodCallback, 0, 0},
     {"perWorldBindingsVoidMethod", TestObjectPythonV8Internal::perWorldBindingsVoidMethodMethodCallback, TestObjectPythonV8Internal::perWorldBindingsVoidMethodMethodCallbackForMainWorld, 0},
+    {"activityLoggingForAllWorldsPerWorldBindingsVoidMethod", TestObjectPythonV8Internal::activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethodCallback, TestObjectPythonV8Internal::activityLoggingForAllWorldsPerWorldBindingsVoidMethodMethodCallbackForMainWorld, 0},
+    {"activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethod", TestObjectPythonV8Internal::activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethodMethodCallback, TestObjectPythonV8Internal::activityLoggingForIsolatedWorldsPerWorldBindingsVoidMethodMethodCallbackForMainWorld, 0},
     {"raisesExceptionVoidMethod", TestObjectPythonV8Internal::raisesExceptionVoidMethodMethodCallback, 0, 0},
     {"raisesExceptionVoidMethodOptionalLongArg", TestObjectPythonV8Internal::raisesExceptionVoidMethodOptionalLongArgMethodCallback, 0, 0},
 };
@@ -5733,6 +5838,16 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectPythonTemplate(v8::
 #endif // ENABLE(Condition)
     proto->Set(v8::String::NewSymbol("doNotCheckSignatureVoidMethod"), v8::FunctionTemplate::New(TestObjectPythonV8Internal::doNotCheckSignatureVoidMethodMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
     proto->Set(v8::String::NewSymbol("notEnumerableVoidMethod"), v8::FunctionTemplate::New(TestObjectPythonV8Internal::notEnumerableVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0), static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::DontEnum));
+
+    // Custom Signature 'perWorldBindingsVoidMethodTestInterfaceEmptyArg'
+    const int perWorldBindingsVoidMethodTestInterfaceEmptyArgArgc = 1;
+    v8::Handle<v8::FunctionTemplate> perWorldBindingsVoidMethodTestInterfaceEmptyArgArgv[perWorldBindingsVoidMethodTestInterfaceEmptyArgArgc] = { V8PerIsolateData::from(isolate)->rawTemplate(&V8TestInterfaceEmpty::wrapperTypeInfo, currentWorldType) };
+    v8::Handle<v8::Signature> perWorldBindingsVoidMethodTestInterfaceEmptyArgSignature = v8::Signature::New(desc, perWorldBindingsVoidMethodTestInterfaceEmptyArgArgc, perWorldBindingsVoidMethodTestInterfaceEmptyArgArgv);
+    if (currentWorldType == MainWorld) {
+        proto->Set(v8::String::NewSymbol("perWorldBindingsVoidMethodTestInterfaceEmptyArg"), v8::FunctionTemplate::New(TestObjectPythonV8Internal::perWorldBindingsVoidMethodTestInterfaceEmptyArgMethodCallbackForMainWorld, v8Undefined(), perWorldBindingsVoidMethodTestInterfaceEmptyArgSignature, 1));
+    } else {
+        proto->Set(v8::String::NewSymbol("perWorldBindingsVoidMethodTestInterfaceEmptyArg"), v8::FunctionTemplate::New(TestObjectPythonV8Internal::perWorldBindingsVoidMethodTestInterfaceEmptyArgMethodCallback, v8Undefined(), perWorldBindingsVoidMethodTestInterfaceEmptyArgSignature, 1));
+    }
     proto->Set(v8::String::NewSymbol("readOnlyVoidMethod"), v8::FunctionTemplate::New(TestObjectPythonV8Internal::readOnlyVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0), static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::ReadOnly));
     proto->Set(v8::String::NewSymbol("notEnumerableReadOnlyVoidMethod"), v8::FunctionTemplate::New(TestObjectPythonV8Internal::notEnumerableReadOnlyVoidMethodMethodCallback, v8Undefined(), defaultSignature, 0), static_cast<v8::PropertyAttribute>(v8::DontDelete | v8::DontEnum | v8::ReadOnly));
     desc->SetNativeDataProperty(v8::String::NewSymbol("staticStringAttribute"), TestObjectPythonV8Internal::staticStringAttributeAttributeGetterCallback, TestObjectPythonV8Internal::staticStringAttributeAttributeSetterCallback, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));
