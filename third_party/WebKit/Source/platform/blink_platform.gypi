@@ -362,6 +362,7 @@
       'mediastream/MediaConstraints.cpp',
       'mediastream/MediaConstraints.h',
       'mediastream/RTCConfiguration.h',
+      'mediastream/RTCSessionDescriptionRequest.h',
       'mediastream/RTCStatsResponseBase.h',
       'mediastream/RTCVoidRequest.h',
       'network/DNS.cpp',

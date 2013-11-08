@@ -32,7 +32,7 @@
 #define RTCSessionDescriptionRequestImpl_h
 
 #include "core/dom/ActiveDOMObject.h"
-#include "core/platform/mediastream/RTCSessionDescriptionRequest.h"
+#include "platform/mediastream/RTCSessionDescriptionRequest.h"
 
 namespace blink {
 class WebRTCSessionDescription;

@@ -2978,7 +2978,6 @@
             'platform/mediastream/RTCPeerConnectionHandler.cpp',
             'platform/mediastream/RTCPeerConnectionHandler.h',
             'platform/mediastream/RTCPeerConnectionHandlerClient.h',
-            'platform/mediastream/RTCSessionDescriptionRequest.h',
             'platform/mediastream/RTCStatsRequest.h',
             'platform/mock/GeolocationClientMock.cpp',
             'platform/mock/PlatformSpeechSynthesizerMock.cpp',
