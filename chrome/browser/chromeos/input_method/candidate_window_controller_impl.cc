@@ -151,6 +151,10 @@ void CandidateWindowControllerImpl::UpdateAuxiliaryText(
   candidate_window_view_->ShowAuxiliaryText();
 }
 
+void CandidateWindowControllerImpl::FocusStateChanged(bool is_focused) {
+  mode_indicator_controller_->FocusStateChanged(is_focused);
+}
+
 // static
 void CandidateWindowControllerImpl::ConvertLookupTableToInfolistEntry(
     const CandidateWindow& candidate_window,

@@ -393,6 +393,14 @@ void InputMethodIBus::UpdateContextFocusState() {
       context_focused_ = true;
       break;
   }
+
+  // Propagate the focus event to the candidate window handler which also
+  // manages the input method mode indicator.
+  chromeos::IBusPanelCandidateWindowHandlerInterface* candidate_window =
+      chromeos::IBusBridge::Get()->GetCandidateWindowHandler();
+  if (candidate_window)
+    candidate_window->FocusStateChanged(context_focused_);
+
   if (!GetEngine())
     return;
 

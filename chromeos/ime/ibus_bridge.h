@@ -147,6 +147,10 @@ class CHROMEOS_EXPORT IBusPanelCandidateWindowHandlerInterface {
   virtual void SetCursorLocation(const ibus::Rect& cursor_location,
                                  const ibus::Rect& composition_head) = 0;
 
+  // Called when the text field's focus state is changed.
+  // |is_focused| is true when the text field gains the focus.
+  virtual void FocusStateChanged(bool is_focused) {}
+
  protected:
   IBusPanelCandidateWindowHandlerInterface() {}
 };

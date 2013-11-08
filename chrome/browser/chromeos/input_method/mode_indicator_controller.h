@@ -23,12 +23,15 @@ class ModeIndicatorController
     : public InputMethodManager::Observer {
  public:
   // This class takes the ownership of |mi_widget|.
-  explicit ModeIndicatorController(ModeIndicatorWidget *mi_widget);
+  explicit ModeIndicatorController(ModeIndicatorWidget* mi_widget);
   virtual ~ModeIndicatorController();
 
   // Set cursor location, which is the base point to display this indicator.
   // Bacisally this indicator is displayed underneath the cursor.
   void SetCursorLocation(const gfx::Rect& cursor_location);
+
+  // Notify the focus state to the mode indicator.
+  void FocusStateChanged(bool is_focused);
 
  private:
   // InputMethodManager::Observer implementation.
@@ -36,7 +39,14 @@ class ModeIndicatorController
                                   bool show_message) OVERRIDE;
   virtual void InputMethodPropertyChanged(InputMethodManager* manager) OVERRIDE;
 
+  // Show the mode inidicator with the current ime's short name if all
+  // the conditions are cleared.
+  void ShowModeIndicator(InputMethodManager* manager);
+
   scoped_ptr<ModeIndicatorWidget> mi_widget_;
+
+  // True on a text field is focused.
+  bool is_focused_;
 
   DISALLOW_COPY_AND_ASSIGN(ModeIndicatorController);
 };

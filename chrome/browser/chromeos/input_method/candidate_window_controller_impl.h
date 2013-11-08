@@ -92,6 +92,7 @@ class CandidateWindowControllerImpl
                                  bool visible) OVERRIDE;
   virtual void UpdatePreeditText(const std::string& utf8_text,
                                  unsigned int cursor, bool visible) OVERRIDE;
+  virtual void FocusStateChanged(bool is_focused) OVERRIDE;
 
   // Updates infolist bounds, if current bounds is up-to-date, this function
   // does nothing.
