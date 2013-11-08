@@ -78,12 +78,11 @@ class ShellUtil {
       PROPERTIES_APP_ID = 1 << 4,
       PROPERTIES_SHORTCUT_NAME = 1 << 5,
       PROPERTIES_DUAL_MODE = 1 << 6,
-      PROPERTIES_HOTKEY = 1 << 7,
     };
 
     explicit ShortcutProperties(ShellChange level_in)
         : level(level_in), icon_index(0), dual_mode(false),
-          pin_to_taskbar(false), hotkey(0), options(0U) {}
+          pin_to_taskbar(false), options(0U) {}
 
     // Sets the target executable to launch from this shortcut.
     // This is mandatory when creating a shortcut.
@@ -151,11 +150,6 @@ class ShellUtil {
       pin_to_taskbar = pin_to_taskbar_in;
     }
 
-    void set_hotkey(int hotkey_in) {
-      hotkey = hotkey_in;
-      options |= PROPERTIES_HOTKEY;
-    }
-
     bool has_target() const {
       return (options & PROPERTIES_TARGET) != 0;
     }
@@ -184,9 +178,6 @@ class ShellUtil {
       return (options & PROPERTIES_DUAL_MODE) != 0;
     }
 
-    bool has_hotkey() const {
-      return (options & PROPERTIES_HOTKEY) != 0;
-    }
     // The level to install this shortcut at (CURRENT_USER for a per-user
     // shortcut and SYSTEM_LEVEL for an all-users shortcut).
     ShellChange level;
@@ -200,7 +191,6 @@ class ShellUtil {
     string16 shortcut_name;
     bool dual_mode;
     bool pin_to_taskbar;
-    int hotkey;
     // Bitfield made of IndividualProperties. Properties set in |options| will
     // be used to create/update the shortcut, others will be ignored on update
     // and possibly replaced by default values on create (see individual

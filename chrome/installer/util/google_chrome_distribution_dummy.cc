@@ -142,10 +142,6 @@ bool GoogleChromeDistribution::AppHostIsSupported() {
   return false;
 }
 
-uint32 GoogleChromeDistribution::GetSafeModeHotkey() {
-  return 0;
-}
-
 void GoogleChromeDistribution::UpdateInstallStatus(bool system_install,
     installer::ArchiveType archive_type,
     installer::InstallStatus install_status) {
