@@ -359,6 +359,11 @@
             '../ui/compositor/compositor.gyp:compositor_unittests',
           ],
         }],
+        ['use_aura==1 or toolkit_views==1', {
+          'dependencies': [
+            '../ui/events/events.gyp:events_unittests',
+          ],
+        }],
         ['use_ash==1', {
           'dependencies': [
             '../ash/ash.gyp:ash_unittests',
@@ -794,6 +799,7 @@
             '../third_party/cacheinvalidation/cacheinvalidation.gyp:cacheinvalidation_unittests',
             '../third_party/libphonenumber/libphonenumber.gyp:libphonenumber_unittests',
             '../tools/perf/clear_system_cache/clear_system_cache.gyp:*',
+            '../ui/events/events.gyp:events_unittests',
             '../ui/ui_unittests.gyp:ui_unittests',
             '../ui/views/views.gyp:views_unittests',
             '../url/url.gyp:url_unittests',
@@ -958,6 +964,7 @@
             '../ui/app_list/app_list.gyp:*',
             '../ui/aura/aura.gyp:*',
             '../ui/compositor/compositor.gyp:*',
+            '../ui/events/events.gyp:*',
             '../ui/message_center/message_center.gyp:*',
             '../ui/ui_unittests.gyp:ui_unittests',
             '../ui/snapshot/snapshot.gyp:snapshot_unittests',
@@ -1010,15 +1017,6 @@
                 '../ipc/ipc.gyp:ipc_tests',
                 '../sql/sql.gyp:sql_unittests',
                 '../sync/sync.gyp:sync_unit_tests',
-              ],
-            }],
-            ['OS=="mac"', {
-              # Exclude dependencies that are not currently implemented.
-              'dependencies!': [
-                '../chrome/chrome.gyp:chrome',
-                '../chrome/chrome.gyp:unit_tests',
-                '../device/device_tests.gyp:device_unittests',
-                '../ui/views/views.gyp:views_unittests',
               ],
             }],
             ['chromeos==1', {

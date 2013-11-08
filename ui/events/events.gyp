@@ -130,6 +130,28 @@
           'defines': ['USE_OZONE_EVDEV=1'],
         }],
       ],
-    }
+    },
+    {
+      'target_name': 'events_unittests',
+      'type': '<(gtest_target_type)',
+      'dependencies': [
+        '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/base/base.gyp:test_support_base',
+        '<(DEPTH)/testing/gtest.gyp:gtest',
+        '../gfx/gfx.gyp:gfx',
+        'events_base',
+        'events',
+      ],
+      'sources': [
+        'event_dispatcher_unittest.cc',
+        'event_unittest.cc',
+        'latency_info_unittest.cc',
+        'test/events_unittests.cc',
+        'test/test_suite.cc',
+        'test/test_suite.h',
+        'ozone/evdev/key_event_converter_unittest.cc',
+        'ozone/evdev/touch_event_converter_unittest.cc',
+      ],
+    },
   ],
 }
