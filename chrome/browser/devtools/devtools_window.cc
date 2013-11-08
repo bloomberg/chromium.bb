@@ -668,6 +668,7 @@ GURL DevToolsWindow::GetDevToolsURL(Profile* profile,
   if (CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableDevToolsExperiments))
     url_string += "&experiments=true";
+  url_string += "&updateAppcache";
   return GURL(url_string);
 }
 
