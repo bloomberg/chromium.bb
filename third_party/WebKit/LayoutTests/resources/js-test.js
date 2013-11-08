@@ -73,26 +73,21 @@ var description, debug, successfullyParsed, errorMessage;
         (document.head || document.documentElement).appendChild(styleElement);
     }
 
-    function setupFinishHandler()
+    function handleTestFinished()
     {
-        wasFinishHandlerSetup = true;
+        // FIXME: Get rid of this boolean.
+        wasPostTestScriptParsed = true;
         if (window.jsTestIsAsync) {
             if (window.testRunner)
                 testRunner.waitUntilDone();
             if (window.wasFinishJSTestCalled)
                 finishJSTest();
-        } else {
-            // Some tests override the window prototype.
-            if (window.addEventListener)
-                window.addEventListener('load', finishJSTest, false);
-            else
-                finishJSTest();
-        }
+        } else
+            finishJSTest();
     }
 
     if (!isWorker()) {
-        // FIXME: Move this to be on the load event so that tests can set jsTestIsAsync after DOMContentLoaded.
-        window.addEventListener('DOMContentLoaded', setupFinishHandler, false);
+        window.addEventListener('DOMContentLoaded', handleTestFinished, false);
         insertStyleSheet();
     }
 
@@ -599,7 +594,8 @@ function minorGC() {
 function isSuccessfullyParsed()
 {
     // FIXME: Remove this and only report unexpected syntax errors.
-    successfullyParsed = !errorMessage;
+    if (!errorMessage)
+        successfullyParsed = true;
     shouldBeTrue("successfullyParsed");
     debug('<br /><span class="pass">TEST COMPLETE</span>');
 }
@@ -609,7 +605,7 @@ function isSuccessfullyParsed()
 function finishJSTest()
 {
     wasFinishJSTestCalled = true;
-    if (!self.wasFinishHandlerSetup)
+    if (!self.wasPostTestScriptParsed)
         return;
     isSuccessfullyParsed();
     if (self.jsTestIsAsync && self.testRunner)

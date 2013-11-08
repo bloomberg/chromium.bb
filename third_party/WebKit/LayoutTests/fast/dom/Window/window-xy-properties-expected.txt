@@ -1,3 +1,6 @@
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS event.clientX is 50
 PASS event.clientY is 50
 PASS event.pageX is 50
@@ -30,7 +33,4 @@ PASS ev.layerX is 550
 PASS ev.layerY is 550
 PASS ev.offsetX is 542
 PASS ev.offsetY is 542
-PASS successfullyParsed is true
-
-TEST COMPLETE
 

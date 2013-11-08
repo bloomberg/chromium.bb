@@ -2,6 +2,9 @@ CONSOLE ERROR: Refused to apply inline style because it violates the following C
 
 CONSOLE ERROR: line 77: Refused to apply inline style because it violates the following Content Security Policy directive: "style-src 'self'".
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 This test ensures that styles can be set by object.cloneNode()
 PASS node1.style.background is "yellow"
 PASS node2.style.background is "yellow"
@@ -27,9 +30,6 @@ PASS window.getComputedStyle(ops).getPropertyCSSValue('background').cssText is n
 PASS window.getComputedStyle(clonedOps).getPropertyCSSValue('background').cssText is not window.getComputedStyle(violetOps).getPropertyCSSValue('background').cssText
 PASS ops.id is "ops"
 PASS ops.id is clonedOps.id
-PASS successfullyParsed is true
-
-TEST COMPLETE
 This is a div (nodes)
 This is a div. (node 1 or 2)
 This is a div. (node 1 or 2)

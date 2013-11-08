@@ -4,8 +4,8 @@ inline
 slowDefer
 defer
 DOMContentLoaded
-load
 PASS successfullyParsed is true
 
 TEST COMPLETE
+load
 

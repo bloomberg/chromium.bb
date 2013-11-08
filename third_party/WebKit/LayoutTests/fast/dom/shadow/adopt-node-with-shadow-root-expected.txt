@@ -1,2 +1,5 @@
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS document.adoptNode(shadow) threw exception HierarchyRequestError: A Node was inserted somewhere it doesn't belong..
 

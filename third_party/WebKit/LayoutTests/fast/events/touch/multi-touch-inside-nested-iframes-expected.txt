@@ -4,6 +4,9 @@ Test multi-touch is sent to the same iframe.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 First touch is on inner iframe.
 PASS ev.type is "touchstart"
 PASS touchreceiver is "iframe1"
@@ -72,9 +75,6 @@ PASS ev.touches.length is 0
 PASS ev.targetTouches.length is 0
 PASS ev.changedTouches[0].target.ownerDocument.title is "iframe2"
 PASS ev.changedTouches[1].target.ownerDocument.title is "iframe2"
-PASS successfullyParsed is true
-
-TEST COMPLETE
 PASS successfullyParsed is true
 
 TEST COMPLETE

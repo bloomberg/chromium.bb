@@ -2,14 +2,16 @@
 <script>
 
 if (window.testRunner) {
-	window.jsTestIsAsync = true;
+	testRunner.waitUntilDone();
 	testRunner.dumpAsText();
 }
 
 function loaded() {
 	// If the garbage collection causes the image load to stop and therefore causes the load event to fire on the main frame, we failed.
 	alert("FAIL: The load event fired");
-	finishJSTest();
+	
+	if (window.testRunner)
+		testRunner.notifyDone();
 }
 
 </script>
@@ -25,7 +27,8 @@ This has an object element representing an image.  That object element is wrappe
 
 function finished() {
 	window.stop()
-	finishJSTest();
+	if (window.testRunner)
+		testRunner.notifyDone();
 }
 
 function forceGC() {

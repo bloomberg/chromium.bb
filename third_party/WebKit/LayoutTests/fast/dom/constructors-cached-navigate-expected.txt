@@ -1,3 +1,6 @@
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS testFrame.contentWindow.Image is testFrame.contentWindow.Image
 PASS testFrame.contentWindow.Image !== window.Image is true
 PASS testFrame.contentWindow.Image.testProperty is "property set successfully"
@@ -13,9 +16,6 @@ PASS testFrame.contentWindow.XMLHttpRequest.testProperty is "property set succes
 PASS testFrame.contentWindow.Audio is testFrame.contentWindow.Audio
 PASS testFrame.contentWindow.Audio !== window.Audio is true
 PASS testFrame.contentWindow.Audio.testProperty is "property set successfully"
-PASS successfullyParsed is true
-
-TEST COMPLETE
 PASS testFrame.contentWindow.Image is testFrame.contentWindow.Image
 PASS testFrame.contentWindow.Image !== window.Image is true
 PASS testFrame.contentWindow.Image !== storedConstructors.Image is true

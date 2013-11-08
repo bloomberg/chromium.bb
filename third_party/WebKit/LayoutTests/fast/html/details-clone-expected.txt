@@ -1,7 +1,7 @@
 Test to clone details and summary elements
 
-PASS targetMarkerPseudoId is clonedMarkerPseudoId
 PASS successfullyParsed is true
 
 TEST COMPLETE
+PASS targetMarkerPseudoId is clonedMarkerPseudoId
 

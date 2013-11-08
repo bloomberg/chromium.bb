@@ -34,6 +34,9 @@ This test checks whether the selection is restored, cleared, or set to the full 
 9) Hit Ctrl-Option-I (or Alt-I on Windows), only the word "SUCCESS" should be selected:
 
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS first.selectionStart is 11
 PASS first.selectionEnd is 18
 FAIL first.selectionStart should be 11. Was 0.
@@ -70,7 +73,4 @@ PASS ninth.selectionStart is 11
 PASS ninth.selectionEnd is 18
 PASS ninth.selectionStart is 11
 PASS ninth.selectionEnd is 18
-PASS successfullyParsed is true
-
-TEST COMPLETE
 

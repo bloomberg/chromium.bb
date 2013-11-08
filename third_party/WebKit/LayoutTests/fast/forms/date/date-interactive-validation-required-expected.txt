@@ -8,4 +8,7 @@ PASS queryValues["test"] is "2012-08-25"
 PASS successfullyParsed is true
 
 TEST COMPLETE
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

@@ -1,6 +1,6 @@
-PASS window.getComputedStyle(document.getElementById('shape-inside'))['shape-inside'] is 'circle(30%, 50%, 50%)'
 PASS successfullyParsed is true
 
 TEST COMPLETE
+PASS window.getComputedStyle(document.getElementById('shape-inside'))['shape-inside'] is 'circle(30%, 50%, 50%)'
 This test should not crash
 Hello

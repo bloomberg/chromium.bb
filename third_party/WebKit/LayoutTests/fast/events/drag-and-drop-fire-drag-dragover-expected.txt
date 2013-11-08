@@ -3,10 +3,10 @@ This test checks that the event handlers ondrag and ondragover fire in that orde
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS drag fired before dragover.
+PASS successfullyParsed is true
 
 TEST COMPLETE
-PASS successfullyParsed is true
+PASS drag fired before dragover.
 
 TEST COMPLETE
 

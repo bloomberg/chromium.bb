@@ -3,6 +3,9 @@ This test checks that effectAllowed and dropEffect cannot be set to values that 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS event.dataTransfer.effectAllowed is "all"
 PASS event.dataTransfer.effectAllowed is "copy"
 PASS event.dataTransfer.effectAllowed is "copy"
@@ -51,9 +54,6 @@ PASS event.dataTransfer.dropEffect is "none"
 PASS event.dataTransfer.dropEffect is "none"
 PASS event.dataTransfer.dropEffect is "none"
 PASS event.dataTransfer.dropEffect is "none"
-
-TEST COMPLETE
-PASS successfullyParsed is true
 
 TEST COMPLETE
 

@@ -1,10 +1,10 @@
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS document.getElementById("foo").clientWidth==200 is true
 PASS document.getElementById("foo2").clientWidth==400 is true
 PASS document.getElementById("foo3").clientWidth==100 is true
 PASS document.getElementById("foo4").clientWidth==200 is true
-PASS successfullyParsed is true
-
-TEST COMPLETE
 This test passes if the images are all displayed with appropriate dimensions.
  
  

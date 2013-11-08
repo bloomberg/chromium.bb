@@ -8,4 +8,7 @@ PASS text is "<!DOCTYPE aDocTypeName PUBLIC \"aPublicID\" \"aSystemID\">"
 PASS successfullyParsed is true
 
 TEST COMPLETE
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

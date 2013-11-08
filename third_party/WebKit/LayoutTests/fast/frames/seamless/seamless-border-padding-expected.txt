@@ -1,4 +1,7 @@
 Test that seamless IFrames correctly size themselves when a border is present.
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS nothing.getBoundingClientRect().width is 100
 PASS nothing.getBoundingClientRect().height is 100
 PASS hasborder.getBoundingClientRect().width is 102
@@ -7,7 +10,4 @@ PASS haspadding.getBoundingClientRect().width is 104
 PASS haspadding.getBoundingClientRect().height is 104
 PASS hasboth.getBoundingClientRect().width is 106
 PASS hasboth.getBoundingClientRect().height is 106
-PASS successfullyParsed is true
-
-TEST COMPLETE
       

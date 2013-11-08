@@ -3,6 +3,9 @@ Test texImage2D conversions.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 PASS getError was expected value: NO_ERROR : Should be no errors from setup.
+PASS successfullyParsed is true
+
+TEST COMPLETE
 
 check pixels are NOT pre-multiplied
 PASS getError was expected value: NO_ERROR : Should be no errors from setup
@@ -121,9 +124,6 @@ check uploading of indexed PNG images
 PASS getError was expected value: NO_ERROR : Should be no errors from setup
 PASS pixel 128, 8 should be within 10 units of 255, 0, 0, 255
 
-PASS successfullyParsed is true
-
-TEST COMPLETE
 PASS successfullyParsed is true
 
 TEST COMPLETE

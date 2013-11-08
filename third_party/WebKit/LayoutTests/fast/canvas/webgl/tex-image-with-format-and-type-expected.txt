@@ -2,6 +2,9 @@ Verify texImage2D and texSubImage2D code paths taking both HTML and user-specifi
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 Testing texImage2D with Image at 256x1
 PASS RGBA/UNSIGNED_BYTE should maintain full precision of data
 Testing texImage2D with Image at 256x1

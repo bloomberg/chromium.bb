@@ -1,3 +1,6 @@
+PASS successfullyParsed is true
+
+TEST COMPLETE
 Test that the event passed to a listener of webglcontextlost is a WebGLContextEvent.
 PASS evt.toString() is '[object WebGLContextEvent]'
 PASS evt.statusMessage is ''

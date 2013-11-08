@@ -3,10 +3,13 @@ Tests to ensure that attributes are not set when an exceptions is raised while c
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
-PASS select.name is "select"
-PASS select.selectedIndex is 1
 PASS successfullyParsed is true
 
 TEST COMPLETE
+PASS successfullyParsed is true
+
+TEST COMPLETE
+PASS select.name is "select"
+PASS select.selectedIndex is 1
 
 

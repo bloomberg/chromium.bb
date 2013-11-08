@@ -11,5 +11,8 @@ PASS fieldset2.removeChild(control2); control2.willValidate is true
 PASS successfullyParsed is true
 
 TEST COMPLETE
+PASS successfullyParsed is true
+
+TEST COMPLETE
 
 

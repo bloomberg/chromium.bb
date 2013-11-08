@@ -16,4 +16,7 @@ PASS isDynamicallyInsertedScriptAsync(true) is true
 PASS isDynamicallyInsertedScriptAsync(false) is false
 PASS isDynamicallyInsertedScriptAsync("async") is true
 PASS isDynamicallyInsertedScriptAsync(null) is true
+PASS successfullyParsed is true
+
+TEST COMPLETE
 

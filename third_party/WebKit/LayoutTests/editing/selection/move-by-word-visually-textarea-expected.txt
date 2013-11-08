@@ -1,5 +1,5 @@
-PASS Pass
 PASS successfullyParsed is true
 
 TEST COMPLETE
+PASS Pass
 

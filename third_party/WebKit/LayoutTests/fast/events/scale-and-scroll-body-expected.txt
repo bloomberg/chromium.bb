@@ -1,10 +1,10 @@
+PASS successfullyParsed is true
+
+TEST COMPLETE
 FAIL window.document.body.scrollTop should be 30. Was 0.
 FAIL window.document.body.scrollLeft should be 30. Was 0.
 PASS window.document.body.scrollTop is 100
 PASS window.document.body.scrollLeft is 100
 PASS window.scrollX is 100
 PASS window.scrollY is 100
-PASS successfullyParsed is true
-
-TEST COMPLETE
 

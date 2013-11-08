@@ -4,6 +4,9 @@ For each effectAllowed, iterates through the possible dropEffects: none, copy, m
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 
 When effectAllowed == "uninitialized"
 
@@ -72,9 +75,6 @@ Received drop event for allowedEffect dummy and chosenDropEffect copy
 Received drop event for allowedEffect dummy and chosenDropEffect move
 Received drop event for allowedEffect dummy and chosenDropEffect link
 Received drop event for allowedEffect dummy and chosenDropEffect dummy
-
-TEST COMPLETE
-PASS successfullyParsed is true
 
 TEST COMPLETE
 

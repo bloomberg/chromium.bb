@@ -3,6 +3,9 @@ This tests gesture callbacks for a double tap sequence of gestures.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS event.type is "mousemove"
 PASS event.clientX is 10
 PASS event.clientY is 12
@@ -39,9 +42,6 @@ PASS event.type is "dblclick"
 PASS event.clientX is 11
 PASS event.clientY is 12
 PASS event.detail is 2
-PASS successfullyParsed is true
-
-TEST COMPLETE
 PASS successfullyParsed is true
 
 TEST COMPLETE

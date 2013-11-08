@@ -2,6 +2,9 @@ Tests behavior under a lost context
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 Test valid context
 PASS gl.isContextLost() is false
 PASS gl.getError() is gl.NO_ERROR

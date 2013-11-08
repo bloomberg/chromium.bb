@@ -29,11 +29,11 @@ PASS document.cookie threw exception "SecurityError: Access to 'cookie' is denie
 --------
 Frame: '<!--framePath //<!--frame1-->-->'
 --------
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS window.openDatabase('SandboxedIframeStorageAllowed', '1.0', '', 1) != null is true
 PASS window.localStorage != null is true
 PASS window.sessionStorage != null is true
 PASS document.cookie != null is true
-PASS successfullyParsed is true
-
-TEST COMPLETE
 

@@ -7,6 +7,9 @@ X
 
 X
 XXXX
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS imageShapeRect('a').top is 0
 PASS imageShapeRect('b').top is 50
 PASS imageShapeRect('b').left is 300
@@ -15,7 +18,4 @@ PASS imageShapeRect('c').left is 300
 PASS imageShapeRect('d').top is 125
 PASS imageShapeRect('e').top is 150
 PASS imageShapeRect('e').left is 0
-PASS successfullyParsed is true
-
-TEST COMPLETE
 
