@@ -49,12 +49,7 @@ void InputMethodEventFilter::OnKeyEvent(ui::KeyEvent* event) {
     aura::Window* target = static_cast<aura::Window*>(event->target());
     target_dispatcher_ = target->GetRootWindow()->GetDispatcher();
     DCHECK(target_dispatcher_);
-    bool handled = false;
-    if (event->HasNativeEvent())
-      handled = input_method_->DispatchKeyEvent(event->native_event());
-    else
-      handled = input_method_->DispatchFabricatedKeyEvent(*event);
-    if (handled)
+    if (input_method_->DispatchKeyEvent(*event))
       event->StopPropagation();
   }
 }

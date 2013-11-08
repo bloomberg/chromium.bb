@@ -67,7 +67,11 @@ TextInputClient* FakeInputMethod::GetTextInputClient() const {
   return text_input_client_;
 }
 
-bool FakeInputMethod::DispatchKeyEvent(const base::NativeEvent& native_event) {
+bool FakeInputMethod::DispatchKeyEvent(const ui::KeyEvent& event) {
+  if (!event.HasNativeEvent())
+    return DispatchFabricatedKeyEvent(event);
+
+  const base::NativeEvent& native_event = event.native_event();
   bool handled = false;
 #if defined(OS_WIN)
   if (native_event.message == WM_CHAR) {

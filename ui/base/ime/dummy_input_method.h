@@ -27,8 +27,7 @@ class DummyInputMethod : public InputMethod {
   virtual void SetFocusedTextInputClient(TextInputClient* client) OVERRIDE;
   virtual void DetachTextInputClient(TextInputClient* client) OVERRIDE;
   virtual TextInputClient* GetTextInputClient() const OVERRIDE;
-  virtual bool DispatchKeyEvent(const base::NativeEvent& event) OVERRIDE;
-  virtual bool DispatchFabricatedKeyEvent(const ui::KeyEvent& event) OVERRIDE;
+  virtual bool DispatchKeyEvent(const ui::KeyEvent& event) OVERRIDE;
   virtual void OnTextInputTypeChanged(const TextInputClient* client) OVERRIDE;
   virtual void OnCaretBoundsChanged(const TextInputClient* client) OVERRIDE;
   virtual void CancelComposition(const TextInputClient* client) OVERRIDE;
@@ -50,4 +49,3 @@ class DummyInputMethod : public InputMethod {
 }  // namespace ui
 
 #endif  // UI_BASE_IME_DUMMY_INPUT_METHOD_H_
-

@@ -36,8 +36,7 @@ class UI_EXPORT FakeInputMethod : NON_EXPORTED_BASE(public InputMethod) {
   virtual void SetFocusedTextInputClient(TextInputClient* client) OVERRIDE;
   virtual void DetachTextInputClient(TextInputClient* client) OVERRIDE;
   virtual TextInputClient* GetTextInputClient() const OVERRIDE;
-  virtual bool DispatchKeyEvent(const base::NativeEvent& native_event) OVERRIDE;
-  virtual bool DispatchFabricatedKeyEvent(const ui::KeyEvent& event) OVERRIDE;
+  virtual bool DispatchKeyEvent(const ui::KeyEvent& event) OVERRIDE;
   virtual void OnTextInputTypeChanged(const TextInputClient* client) OVERRIDE;
   virtual void OnCaretBoundsChanged(const TextInputClient* client) OVERRIDE;
   virtual void CancelComposition(const TextInputClient* client) OVERRIDE;
@@ -53,6 +52,8 @@ class UI_EXPORT FakeInputMethod : NON_EXPORTED_BASE(public InputMethod) {
   virtual void RemoveObserver(InputMethodObserver* observer) OVERRIDE;
 
  private:
+  bool DispatchFabricatedKeyEvent(const ui::KeyEvent& event);
+
   internal::InputMethodDelegate* delegate_;
   TextInputClient* text_input_client_;
   ObserverList<InputMethodObserver> observers_;

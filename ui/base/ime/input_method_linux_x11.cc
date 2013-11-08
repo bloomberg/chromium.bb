@@ -45,8 +45,11 @@ bool InputMethodLinuxX11::OnUntranslatedIMEMessage(
   return false;
 }
 
-bool InputMethodLinuxX11::DispatchKeyEvent(
-    const base::NativeEvent& native_key_event) {
+bool InputMethodLinuxX11::DispatchKeyEvent(const ui::KeyEvent& event) {
+  if (!event.HasNativeEvent())
+    return DispatchFabricatedKeyEvent(event);
+
+  const base::NativeEvent& native_key_event = event.native_event();
   EventType event_type = EventTypeFromNative(native_key_event);
   DCHECK(event_type == ET_KEY_PRESSED || event_type == ET_KEY_RELEASED);
   DCHECK(system_toplevel_window_focused());
@@ -79,25 +82,6 @@ bool InputMethodLinuxX11::DispatchKeyEvent(
     }
   }
   return handled;
-}
-
-bool InputMethodLinuxX11::DispatchFabricatedKeyEvent(
-    const ui::KeyEvent& event) {
-  // Let a post IME handler handle the key event.
-  if (DispatchFabricatedKeyEventPostIME(event.type(), event.key_code(),
-                                        event.flags()))
-    return true;
-
-  // Otherwise, insert the character.
-  if (event.type() == ET_KEY_PRESSED && GetTextInputClient()) {
-    const uint16 ch = event.GetCharacter();
-    if (ch) {
-      GetTextInputClient()->InsertChar(ch, event.flags());
-      return true;
-    }
-  }
-
-  return false;
 }
 
 void InputMethodLinuxX11::OnTextInputTypeChanged(
@@ -181,6 +165,25 @@ void InputMethodLinuxX11::OnDidChangeFocusedClient(
       focused ? focused->GetTextInputType() : TEXT_INPUT_TYPE_NONE);
 
   InputMethodBase::OnDidChangeFocusedClient(focused_before, focused);
+}
+
+bool InputMethodLinuxX11::DispatchFabricatedKeyEvent(
+    const ui::KeyEvent& event) {
+  // Let a post IME handler handle the key event.
+  if (DispatchFabricatedKeyEventPostIME(event.type(), event.key_code(),
+                                        event.flags()))
+    return true;
+
+  // Otherwise, insert the character.
+  if (event.type() == ET_KEY_PRESSED && GetTextInputClient()) {
+    const uint16 ch = event.GetCharacter();
+    if (ch) {
+      GetTextInputClient()->InsertChar(ch, event.flags());
+      return true;
+    }
+  }
+
+  return false;
 }
 
 }  // namespace ui

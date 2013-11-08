@@ -78,6 +78,7 @@ class UI_EXPORT InputMethodBase : NON_EXPORTED_BASE(public InputMethod) {
 
   // Convenience method to call delegate_->DispatchFabricatedKeyEventPostIME().
   // Returns true if the event was processed
+  // TODO(komatsu): Unify this function to DispatchKeyEventPostIME.
   bool DispatchFabricatedKeyEventPostIME(EventType type,
                                          KeyboardCode key_code,
                                          int flags) const;

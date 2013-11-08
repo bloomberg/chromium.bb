@@ -37,8 +37,11 @@ void InputMethodWin::Init(bool focused) {
   InputMethodBase::Init(focused);
 }
 
-bool InputMethodWin::DispatchKeyEvent(
-    const base::NativeEvent& native_key_event) {
+bool InputMethodWin::DispatchKeyEvent(const ui::KeyEvent& event) {
+  if (!event.HasNativeEvent())
+    return DispatchFabricatedKeyEvent(event);
+
+  const base::NativeEvent& native_key_event = event.native_event();
   if (native_key_event.message == WM_CHAR) {
     BOOL handled;
     OnChar(native_key_event.hwnd, native_key_event.message,
@@ -70,23 +73,6 @@ bool InputMethodWin::DispatchKeyEvent(
   }
 
   return DispatchKeyEventPostIME(native_key_event);
-}
-
-bool InputMethodWin::DispatchFabricatedKeyEvent(const ui::KeyEvent& event) {
-  // TODO(ananta)
-  // Support IMEs and RTL layout in Windows 8 metro Ash. The code below won't
-  // work with IMEs.
-  // Bug: https://code.google.com/p/chromium/issues/detail?id=164964
-  if (event.is_char()) {
-    if (GetTextInputClient()) {
-      GetTextInputClient()->InsertChar(event.key_code(),
-                                       ui::GetModifiersFromKeyState());
-      return true;
-    }
-  }
-  return DispatchFabricatedKeyEventPostIME(event.type(),
-                                           event.key_code(),
-                                           event.flags());
 }
 
 void InputMethodWin::OnInputLocaleChanged() {
@@ -347,6 +333,23 @@ bool InputMethodWin::IsWindowFocused(const TextInputClient* client) const {
 #else
   return attached_window_handle && GetFocus() == attached_window_handle;
 #endif
+}
+
+bool InputMethodWin::DispatchFabricatedKeyEvent(const ui::KeyEvent& event) {
+  // TODO(ananta)
+  // Support IMEs and RTL layout in Windows 8 metro Ash. The code below won't
+  // work with IMEs.
+  // Bug: https://code.google.com/p/chromium/issues/detail?id=164964
+  if (event.is_char()) {
+    if (GetTextInputClient()) {
+      GetTextInputClient()->InsertChar(event.key_code(),
+                                       ui::GetModifiersFromKeyState());
+      return true;
+    }
+  }
+  return DispatchFabricatedKeyEventPostIME(event.type(),
+                                           event.key_code(),
+                                           event.flags());
 }
 
 }  // namespace ui

@@ -124,10 +124,7 @@ class SimpleMockInputMethodBase : public InputMethodBase {
       InputMethod::NativeEventResult* result) OVERRIDE {
     return false;
   }
-  virtual bool DispatchKeyEvent(const base::NativeEvent&) OVERRIDE {
-    return false;
-  }
-  virtual bool DispatchFabricatedKeyEvent(const ui::KeyEvent&) OVERRIDE {
+  virtual bool DispatchKeyEvent(const ui::KeyEvent&) OVERRIDE {
     return false;
   }
   virtual void CancelComposition(const TextInputClient* client) OVERRIDE {

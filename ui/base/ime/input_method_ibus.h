@@ -41,9 +41,7 @@ class UI_EXPORT InputMethodIBus
   virtual void OnBlur() OVERRIDE;
   virtual bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
                                         NativeEventResult* result) OVERRIDE;
-  virtual bool DispatchKeyEvent(
-      const base::NativeEvent& native_key_event) OVERRIDE;
-  virtual bool DispatchFabricatedKeyEvent(const ui::KeyEvent& event) OVERRIDE;
+  virtual bool DispatchKeyEvent(const ui::KeyEvent& event) OVERRIDE;
   virtual void OnTextInputTypeChanged(const TextInputClient* client) OVERRIDE;
   virtual void OnCaretBoundsChanged(const TextInputClient* client) OVERRIDE;
   virtual void CancelComposition(const TextInputClient* client) OVERRIDE;
@@ -84,6 +82,9 @@ class UI_EXPORT InputMethodIBus
 
   // Asks the client to confirm current composition text.
   void ConfirmCompositionText();
+
+  // Dispatchs a key event which does not contain a native event.
+  bool DispatchFabricatedKeyEvent(const ui::KeyEvent& event);
 
   // Checks the availability of focused text input client and update focus
   // state.

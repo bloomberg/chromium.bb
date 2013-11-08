@@ -23,6 +23,8 @@
 #include "ui/base/ime/input_method_delegate.h"
 #include "ui/base/ime/input_method_ibus.h"
 #include "ui/base/ime/text_input_client.h"
+#include "ui/events/event.h"
+#include "ui/events/x/events_x_utils.h"
 #include "ui/gfx/rect.h"
 
 namespace ui {
@@ -990,8 +992,9 @@ class InputMethodIBusKeyEventTest : public InputMethodIBusTest {
 };
 
 TEST_F(InputMethodIBusKeyEventTest, KeyEventDelayResponseTest) {
-  XEvent event = {};
-  event.xkey.type = KeyPress;
+  XEvent xevent = {};
+  ui::InitXKeyEventForTesting(ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, 0, &xevent);
+  const ui::KeyEvent event(&xevent, true);
 
   // Set up IBusKeyEventFromNativeKeyEvent result.
   ime_->mutable_ibus_key_event_from_native_key_event_result()->keyval
@@ -1004,7 +1007,7 @@ TEST_F(InputMethodIBusKeyEventTest, KeyEventDelayResponseTest) {
   // Do key event.
   input_type_ = TEXT_INPUT_TYPE_TEXT;
   ime_->OnTextInputTypeChanged(this);
-  ime_->DispatchKeyEvent(&event);
+  ime_->DispatchKeyEvent(event);
 
   // Check before state.
   EXPECT_EQ(1,
@@ -1022,7 +1025,7 @@ TEST_F(InputMethodIBusKeyEventTest, KeyEventDelayResponseTest) {
 
   // Check the results
   EXPECT_EQ(1, ime_->process_key_event_post_ime_call_count());
-  EXPECT_TRUE(IsEqualXKeyEvent(event,
+  EXPECT_TRUE(IsEqualXKeyEvent(xevent,
                                ime_->process_key_event_post_ime_args().event));
   EXPECT_TRUE(ime_->process_key_event_post_ime_args().handled);
 }
@@ -1032,8 +1035,9 @@ TEST_F(InputMethodIBusKeyEventTest, MultiKeyEventDelayResponseTest) {
   input_type_ = TEXT_INPUT_TYPE_TEXT;
   ime_->OnTextInputTypeChanged(this);
 
-  XEvent event = {};
-  event.xkey.type = KeyPress;
+  XEvent xevent = {};
+  ui::InitXKeyEventForTesting(ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, 0, &xevent);
+  const ui::KeyEvent event(&xevent, true);
 
   // Set up IBusKeyEventFromNativeKeyEvent result for first key event.
   ime_->mutable_ibus_key_event_from_native_key_event_result()->keyval
@@ -1044,7 +1048,7 @@ TEST_F(InputMethodIBusKeyEventTest, MultiKeyEventDelayResponseTest) {
       = kTestIBusState1;
 
   // Do key event.
-  ime_->DispatchKeyEvent(&event);
+  ime_->DispatchKeyEvent(event);
   EXPECT_EQ(kTestIBusKeyVal1,
             mock_ime_engine_handler_->last_processed_keysym());
   EXPECT_EQ(kTestIBusKeyCode1,
@@ -1064,7 +1068,7 @@ TEST_F(InputMethodIBusKeyEventTest, MultiKeyEventDelayResponseTest) {
       = kTestIBusState2;
 
   // Do key event again.
-  ime_->DispatchKeyEvent(&event);
+  ime_->DispatchKeyEvent(event);
   EXPECT_EQ(kTestIBusKeyVal2,
             mock_ime_engine_handler_->last_processed_keysym());
   EXPECT_EQ(kTestIBusKeyCode2,
@@ -1082,7 +1086,7 @@ TEST_F(InputMethodIBusKeyEventTest, MultiKeyEventDelayResponseTest) {
 
   // Check the results for first key event.
   EXPECT_EQ(1, ime_->process_key_event_post_ime_call_count());
-  EXPECT_TRUE(IsEqualXKeyEvent(event,
+  EXPECT_TRUE(IsEqualXKeyEvent(xevent,
                                ime_->process_key_event_post_ime_args().event));
   EXPECT_TRUE(ime_->process_key_event_post_ime_args().handled);
 
@@ -1091,14 +1095,15 @@ TEST_F(InputMethodIBusKeyEventTest, MultiKeyEventDelayResponseTest) {
 
   // Check the results for second key event.
   EXPECT_EQ(2, ime_->process_key_event_post_ime_call_count());
-  EXPECT_TRUE(IsEqualXKeyEvent(event,
+  EXPECT_TRUE(IsEqualXKeyEvent(xevent,
                                ime_->process_key_event_post_ime_args().event));
   EXPECT_FALSE(ime_->process_key_event_post_ime_args().handled);
 }
 
 TEST_F(InputMethodIBusKeyEventTest, KeyEventDelayResponseResetTest) {
-  XEvent event = {};
-  event.xkey.type = KeyPress;
+  XEvent xevent = {};
+  ui::InitXKeyEventForTesting(ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, 0, &xevent);
+  const ui::KeyEvent event(&xevent, true);
 
   // Set up IBusKeyEventFromNativeKeyEvent result.
   ime_->mutable_ibus_key_event_from_native_key_event_result()->keyval
@@ -1111,7 +1116,7 @@ TEST_F(InputMethodIBusKeyEventTest, KeyEventDelayResponseResetTest) {
   // Do key event.
   input_type_ = TEXT_INPUT_TYPE_TEXT;
   ime_->OnTextInputTypeChanged(this);
-  ime_->DispatchKeyEvent(&event);
+  ime_->DispatchKeyEvent(event);
 
   // Check before state.
   EXPECT_EQ(1,

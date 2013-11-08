@@ -39,11 +39,7 @@ TextInputClient* DummyInputMethod::GetTextInputClient() const {
   return NULL;
 }
 
-bool DummyInputMethod::DispatchKeyEvent(const base::NativeEvent& event) {
-  return false;
-}
-
-bool DummyInputMethod::DispatchFabricatedKeyEvent(const ui::KeyEvent& event) {
+bool DummyInputMethod::DispatchKeyEvent(const ui::KeyEvent& event) {
   return false;
 }
 
@@ -94,4 +90,3 @@ void DummyInputMethod::RemoveObserver(InputMethodObserver* observer) {
 }
 
 }  // namespace ui
-

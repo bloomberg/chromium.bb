@@ -26,9 +26,7 @@ class InputMethodLinuxX11 : public InputMethodBase,
   virtual void Init(bool focused) OVERRIDE;
   virtual bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
                                         NativeEventResult* result) OVERRIDE;
-  virtual bool DispatchKeyEvent(const base::NativeEvent& native_key_event)
-      OVERRIDE;
-  virtual bool DispatchFabricatedKeyEvent(const ui::KeyEvent& event) OVERRIDE;
+  virtual bool DispatchKeyEvent(const ui::KeyEvent& event) OVERRIDE;
   virtual void OnTextInputTypeChanged(const TextInputClient* client) OVERRIDE;
   virtual void OnCaretBoundsChanged(const TextInputClient* client) OVERRIDE;
   virtual void CancelComposition(const TextInputClient* client) OVERRIDE;
@@ -51,6 +49,8 @@ class InputMethodLinuxX11 : public InputMethodBase,
                                         TextInputClient* focused) OVERRIDE;
 
  private:
+  bool DispatchFabricatedKeyEvent(const ui::KeyEvent& event);
+
   scoped_ptr<LinuxInputMethodContext> input_method_context_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodLinuxX11);

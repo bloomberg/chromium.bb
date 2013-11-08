@@ -24,9 +24,7 @@ class UI_EXPORT InputMethodWin : public InputMethodBase {
 
   // Overridden from InputMethod:
   virtual void Init(bool focused) OVERRIDE;
-  virtual bool DispatchKeyEvent(
-      const base::NativeEvent& native_key_event) OVERRIDE;
-  virtual bool DispatchFabricatedKeyEvent(const ui::KeyEvent& event) OVERRIDE;
+  virtual bool DispatchKeyEvent(const ui::KeyEvent& event) OVERRIDE;
   virtual void OnInputLocaleChanged() OVERRIDE;
   virtual std::string GetInputLocale() OVERRIDE;
   virtual base::i18n::TextDirection GetInputTextDirection() OVERRIDE;
@@ -71,6 +69,8 @@ class UI_EXPORT InputMethodWin : public InputMethodBase {
   ui::IMM32Manager imm32_manager_;
 
  private:
+  bool DispatchFabricatedKeyEvent(const ui::KeyEvent& event);
+
   // The toplevel window handle.
   // On non-Aura environment, this value is not used and always NULL.
   const HWND toplevel_window_handle_;
