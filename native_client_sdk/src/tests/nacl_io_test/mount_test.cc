@@ -148,7 +148,6 @@ TEST(MountTest, Sanity) {
   EXPECT_EQ(1, file->RefCount());
   EXPECT_EQ(3, mnt.num_nodes());
 
-
   // Deref the file, to make it go away
   file.reset();
   EXPECT_EQ(2, mnt.num_nodes());
@@ -161,6 +160,27 @@ TEST(MountTest, Sanity) {
   EXPECT_EQ(ENOENT, mnt.Access(Path("/foo"), F_OK));
   EXPECT_EQ(ENOENT, mnt.Open(Path("/foo"), O_RDWR, &file));
   EXPECT_EQ(NULL_NODE, file.get());
+}
+
+TEST(MountTest, OpenMode_TRUNC) {
+  MountMemMock mnt;
+  ScopedMountNode file;
+  ScopedMountNode root;
+  ScopedMountNode result_node;
+  HandleAttr attrs;
+  int result_bytes;
+
+  // Open a file and write something to it.
+  const char* buf = "hello";
+  ASSERT_EQ(0, mnt.Open(Path("/foo"), O_RDWR|O_CREAT, &file));
+  ASSERT_EQ(0, file->Write(attrs, buf, strlen(buf), &result_bytes));
+  ASSERT_EQ(strlen(buf), result_bytes);
+
+  // Open it again with TRUNC and make sure it is empty
+  char read_buf[10];
+  ASSERT_EQ(0, mnt.Open(Path("/foo"), O_RDWR|O_TRUNC, &file));
+  ASSERT_EQ(0, file->Read(attrs, read_buf, sizeof(read_buf), &result_bytes));
+  ASSERT_EQ(0, result_bytes);
 }
 
 TEST(MountTest, MemMountRemove) {

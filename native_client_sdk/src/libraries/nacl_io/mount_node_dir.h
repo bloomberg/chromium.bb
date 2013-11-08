@@ -46,10 +46,9 @@ class MountNodeDir : public MountNode {
   virtual Error FindChild(const std::string& name, ScopedMountNode* out_node);
   virtual int ChildCount();
 
-
 protected:
-   void BuildCache_Locked();
-   void ClearCache_Locked();
+  void BuildCache_Locked();
+  void ClearCache_Locked();
 
 private:
   GetDentsHelper cache_;

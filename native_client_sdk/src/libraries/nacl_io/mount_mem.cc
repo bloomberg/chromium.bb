@@ -119,17 +119,21 @@ Error MountMem::Open(const Path& path, int open_flags,
     if (error)
       return error;
 
-    *out_node = node;
-    return 0;
+  } else {
+    // Opening an existing file.
+
+    // Directories can only be opened read-only.
+    if (node->IsaDir() && (open_flags & 3) != O_RDONLY)
+      return EISDIR;
+
+    // If we were expected to create it exclusively, fail
+    if (open_flags & O_EXCL)
+      return EEXIST;
+
+    if (open_flags & O_TRUNC)
+      static_cast<MountNodeMem*>(node.get())->Resize(0);
   }
 
-  // Directories can only be opened read-only.
-  if (node->IsaDir() && (open_flags & 3) != O_RDONLY)
-    return EISDIR;
-
-  // If we were expected to create it exclusively, fail
-  if (open_flags & O_EXCL)
-    return EEXIST;
 
   *out_node = node;
   return 0;
