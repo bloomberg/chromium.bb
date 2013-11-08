@@ -334,7 +334,11 @@ void PPB_Graphics3D_Impl::SendContextLost() {
       static_cast<const PPP_Graphics3D*>(
           instance->module()->GetPluginInterface(
               PPP_GRAPHICS_3D_INTERFACE));
-  if (ppp_graphics_3d)
+  // We have to check *again* that the instance exists, because it could have
+  // been deleted during GetPluginInterface(). Even the PluginModule could be
+  // deleted, but in that case, the instance should also be gone, so the
+  // GetInstance check covers both cases.
+  if (ppp_graphics_3d && HostGlobals::Get()->GetInstance(this_pp_instance))
     ppp_graphics_3d->Graphics3DContextLost(this_pp_instance);
 }
 
