@@ -5,6 +5,7 @@
 #include "ash/keyboard_controller_proxy_stub.h"
 
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ui/views/corewm/input_method_event_filter.h"
 
 using namespace content;
@@ -18,7 +19,7 @@ KeyboardControllerProxyStub::~KeyboardControllerProxyStub() {
 }
 
 BrowserContext* KeyboardControllerProxyStub::GetBrowserContext() {
-  return Shell::GetInstance()->browser_context();
+  return Shell::GetInstance()->delegate()->GetCurrentBrowserContext();
 }
 
 ui::InputMethod* KeyboardControllerProxyStub::GetInputMethod() {

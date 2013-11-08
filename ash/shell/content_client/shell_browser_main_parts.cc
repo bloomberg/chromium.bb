@@ -119,7 +119,7 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
 #endif
 
   ash::Shell::CreateInstance(delegate_);
-  ash::Shell::GetInstance()->set_browser_context(browser_context_.get());
+  delegate_->set_browser_context(browser_context_.get());
   ash::Shell::GetInstance()->CreateLauncher();
   ash::Shell::GetInstance()->UpdateAfterLoginStatusChange(
       user::LOGGED_IN_USER);

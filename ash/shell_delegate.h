@@ -24,6 +24,10 @@ class UserActionClient;
 }
 }
 
+namespace content {
+class BrowserContext;
+}
+
 namespace ui {
 class MenuModel;
 }

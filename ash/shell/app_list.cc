@@ -8,6 +8,7 @@
 #include "ash/shell.h"
 #include "ash/shell/example_factory.h"
 #include "ash/shell/toplevel_window.h"
+#include "ash/shell_delegate.h"
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
@@ -126,7 +127,7 @@ class WindowTypeLauncherItem : public app_list::AppListItemModel {
       case EXAMPLES_WINDOW: {
         views::examples::ShowExamplesWindowWithContent(
             views::examples::DO_NOTHING_ON_CLOSE,
-            ash::Shell::GetInstance()->browser_context(),
+            Shell::GetInstance()->delegate()->GetCurrentBrowserContext(),
             NULL);
         break;
       }

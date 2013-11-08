@@ -12,6 +12,7 @@
 #include "ash/shell/example_factory.h"
 #include "ash/shell/panel_window.h"
 #include "ash/shell/toplevel_window.h"
+#include "ash/shell_delegate.h"
 #include "ash/shell_window_ids.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/web_notification/web_notification_tray.h"
@@ -353,7 +354,7 @@ void WindowTypeLauncher::ButtonPressed(views::Button* sender,
   } else if (sender == examples_button_) {
     views::examples::ShowExamplesWindowWithContent(
         views::examples::DO_NOTHING_ON_CLOSE,
-        ash::Shell::GetInstance()->browser_context(),
+        Shell::GetInstance()->delegate()->GetCurrentBrowserContext(),
         NULL);
   }
 }

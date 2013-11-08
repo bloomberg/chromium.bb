@@ -9,6 +9,7 @@
 #include "ash/accelerators/accelerator_table.h"
 #include "ash/keyboard_overlay/keyboard_overlay_delegate.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/test/ash_test_base.h"
 #include "ui/web_dialogs/test/test_web_contents_handler.h"
 #include "ui/web_dialogs/test/test_web_dialog_delegate.h"
@@ -26,7 +27,7 @@ bool operator==(const KeyboardOverlayView::KeyEventData& lhs,
 TEST_F(KeyboardOverlayViewTest, OpenAcceleratorsClose) {
   ui::test::TestWebDialogDelegate delegate(GURL("chrome://keyboardoverlay"));
   KeyboardOverlayView view(
-      Shell::GetInstance()->browser_context(),
+      Shell::GetInstance()->delegate()->GetCurrentBrowserContext(),
       &delegate,
       new ui::test::TestWebContentsHandler);
   for (size_t i = 0; i < kAcceleratorDataLength; ++i) {

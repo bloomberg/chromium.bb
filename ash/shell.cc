@@ -547,7 +547,6 @@ Shell::Shell(ShellDelegate* delegate)
       native_cursor_manager_(new AshNativeCursorManager),
       cursor_manager_(scoped_ptr<views::corewm::NativeCursorManager>(
           native_cursor_manager_)),
-      browser_context_(NULL),
       simulate_modal_window_open_for_testing_(false),
       is_touch_hud_projection_enabled_(false) {
   DCHECK(delegate_.get());

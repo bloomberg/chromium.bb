@@ -69,7 +69,8 @@ class MediaDelegateImpl : public MediaDelegate {
 
 ShellDelegateImpl::ShellDelegateImpl()
     : watcher_(NULL),
-      launcher_delegate_(NULL) {
+      launcher_delegate_(NULL),
+      browser_context_(NULL) {
 }
 
 ShellDelegateImpl::~ShellDelegateImpl() {
@@ -113,7 +114,7 @@ keyboard::KeyboardControllerProxy*
 }
 
 content::BrowserContext* ShellDelegateImpl::GetCurrentBrowserContext() {
-  return Shell::GetInstance()->browser_context();
+  return browser_context_;
 }
 
 app_list::AppListViewDelegate* ShellDelegateImpl::CreateAppListViewDelegate() {

@@ -45,9 +45,6 @@ class UserActionClient;
 namespace chromeos {
 class OutputConfigurator;
 }
-namespace content {
-class BrowserContext;
-}
 
 namespace gfx {
 class ImageSkia;
@@ -473,11 +470,6 @@ class ASH_EXPORT Shell
     return shadow_controller_.get();
   }
 
-  content::BrowserContext* browser_context() { return browser_context_; }
-  void set_browser_context(content::BrowserContext* browser_context) {
-    browser_context_ = browser_context;
-  }
-
   // Starts the animation that occurs on first login.
   void DoInitialWorkspaceAnimation();
 
@@ -689,9 +681,6 @@ class ASH_EXPORT Shell
   views::corewm::CursorManager cursor_manager_;
 
   ObserverList<ShellObserver> observers_;
-
-  // Used by ash/shell.
-  content::BrowserContext* browser_context_;
 
   // For testing only: simulate that a modal window is open
   bool simulate_modal_window_open_for_testing_;
