@@ -163,8 +163,8 @@ function runReadGalleriesTest(expectedGalleryCount, expectSucceed,
   }
 }
 
-// Create a dummy window to prevent the ExtensionProcessManager from suspending
-// the chrome-test app. Needed because the writer.onerror and writer.onwriteend
+// Create a dummy window to prevent the ProcessManager from suspending the
+// chrome-test app. Needed because the writer.onerror and writer.onwriteend
 // events do not qualify as pending callbacks, so the app looks dormant.
 function CreateDummyWindowToPreventSleep() {
   chrome.app.runtime.onLaunched.addListener(function() {

@@ -5,7 +5,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/notifications/balloon.h"
@@ -24,6 +23,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/result_codes.h"
+#include "extensions/browser/process_manager.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_switches.h"
 #include "ui/message_center/message_center_util.h"
@@ -51,7 +51,7 @@ class ExtensionCrashRecoveryTestBase : public ExtensionBrowserTest {
     return browser()->profile()->GetExtensionService();
   }
 
-  ExtensionProcessManager* GetExtensionProcessManager() {
+  extensions::ProcessManager* GetProcessManager() {
     return extensions::ExtensionSystem::Get(browser()->profile())->
         process_manager();
   }
@@ -60,14 +60,14 @@ class ExtensionCrashRecoveryTestBase : public ExtensionBrowserTest {
     const Extension* extension =
         GetExtensionService()->GetExtensionById(extension_id, false);
     ASSERT_TRUE(extension);
-    extensions::ExtensionHost* extension_host = GetExtensionProcessManager()->
+    extensions::ExtensionHost* extension_host = GetProcessManager()->
         GetBackgroundHostForExtension(extension_id);
     ASSERT_TRUE(extension_host);
 
     base::KillProcess(extension_host->render_process_host()->GetHandle(),
                       content::RESULT_CODE_KILLED, false);
     ASSERT_TRUE(WaitForExtensionCrash(extension_id));
-    ASSERT_FALSE(GetExtensionProcessManager()->
+    ASSERT_FALSE(GetProcessManager()->
                  GetBackgroundHostForExtension(extension_id));
 
     // Wait for extension crash balloon to appear.
@@ -78,12 +78,12 @@ class ExtensionCrashRecoveryTestBase : public ExtensionBrowserTest {
     const Extension* extension =
         GetExtensionService()->extensions()->GetByID(extension_id);
     ASSERT_TRUE(extension);
-    extensions::ExtensionHost* extension_host = GetExtensionProcessManager()->
+    extensions::ExtensionHost* extension_host = GetProcessManager()->
         GetBackgroundHostForExtension(extension_id);
     ASSERT_TRUE(extension_host);
-    ExtensionProcessManager::ViewSet all_views =
-        GetExtensionProcessManager()->GetAllViews();
-    ExtensionProcessManager::ViewSet::const_iterator it =
+    extensions::ProcessManager::ViewSet all_views =
+        GetProcessManager()->GetAllViews();
+    extensions::ProcessManager::ViewSet::const_iterator it =
         all_views.find(extension_host->host_contents()->GetRenderViewHost());
     ASSERT_FALSE(it == all_views.end());
     ASSERT_TRUE(extension_host->IsRenderViewLive());

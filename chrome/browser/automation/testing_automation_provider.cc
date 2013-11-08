@@ -54,7 +54,6 @@
 #include "chrome/browser/extensions/extension_action.h"
 #include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -138,6 +137,7 @@
 #include "content/public/common/geoposition.h"
 #include "content/public/common/ssl_status.h"
 #include "content/public/common/webplugininfo.h"
+#include "extensions/browser/process_manager.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/url_pattern.h"
@@ -2259,13 +2259,13 @@ void TestingAutomationProvider::GetBrowserInfo(
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   std::vector<Profile*> profiles(profile_manager->GetLoadedProfiles());
   for (size_t i = 0; i < profiles.size(); ++i) {
-    ExtensionProcessManager* process_manager =
+    extensions::ProcessManager* process_manager =
         extensions::ExtensionSystem::Get(profiles[i])->process_manager();
     if (!process_manager)
       continue;
-    const ExtensionProcessManager::ViewSet view_set =
+    const extensions::ProcessManager::ViewSet view_set =
         process_manager->GetAllViews();
-    for (ExtensionProcessManager::ViewSet::const_iterator jt =
+    for (extensions::ProcessManager::ViewSet::const_iterator jt =
              view_set.begin();
          jt != view_set.end(); ++jt) {
       content::RenderViewHost* render_view_host = *jt;
@@ -3443,7 +3443,7 @@ void TestingAutomationProvider::InstallExtension(
 
   ExtensionService* service = extensions::ExtensionSystem::Get(
       browser->profile())->extension_service();
-  ExtensionProcessManager* manager =
+  extensions::ProcessManager* manager =
       extensions::ExtensionSystem::Get(browser->profile())->process_manager();
   if (service && manager) {
     // The observer will delete itself when done.
@@ -3656,7 +3656,7 @@ void TestingAutomationProvider::SetExtensionStateById(
 
   ExtensionService* service = extensions::ExtensionSystem::Get(
       browser->profile())->extension_service();
-  ExtensionProcessManager* manager =
+  extensions::ProcessManager* manager =
       extensions::ExtensionSystem::Get(browser->profile())->process_manager();
   if (!service) {
     AutomationJSONReply(this, reply_message)
@@ -3887,7 +3887,7 @@ void TestingAutomationProvider::UpdateExtensionsNow(
     return;
   }
 
-  ExtensionProcessManager* manager =
+  extensions::ProcessManager* manager =
       extensions::ExtensionSystem::Get(browser->profile())->process_manager();
   if (!manager) {
     AutomationJSONReply(this, reply_message).SendError(

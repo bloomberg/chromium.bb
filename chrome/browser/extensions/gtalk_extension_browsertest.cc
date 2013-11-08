@@ -7,7 +7,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile.h"
@@ -18,6 +17,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/browser/process_manager.h"
 
 using content::RenderViewHost;
 using content::WebContents;
@@ -25,7 +25,7 @@ using extensions::Extension;
 
 class GtalkExtensionTest : public ExtensionBrowserTest {
  protected:
-  ExtensionProcessManager* GetExtensionProcessManager() {
+  extensions::ProcessManager* GetProcessManager() {
     return extensions::ExtensionSystem::Get(browser()->profile())->
         process_manager();
   }
@@ -54,10 +54,10 @@ class GtalkExtensionTest : public ExtensionBrowserTest {
   }
 
   std::vector<RenderViewHost*> GetMatchingViews(std::string url_query) {
-    ExtensionProcessManager* manager = GetExtensionProcessManager();
-    ExtensionProcessManager::ViewSet all_views = manager->GetAllViews();
+    extensions::ProcessManager* manager = GetProcessManager();
+    extensions::ProcessManager::ViewSet all_views = manager->GetAllViews();
     std::vector<RenderViewHost*> matching_views;
-    for (ExtensionProcessManager::ViewSet::const_iterator iter =
+    for (extensions::ProcessManager::ViewSet::const_iterator iter =
          all_views.begin(); iter != all_views.end(); ++iter) {
       WebContents* web_contents = WebContents::FromRenderViewHost(*iter);
       std::string url = web_contents->GetURL().spec();

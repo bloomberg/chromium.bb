@@ -14,7 +14,6 @@
 #include "extensions/common/one_shot_event.h"
 
 class ExtensionInfoMap;
-class ExtensionProcessManager;
 class ExtensionService;
 class Profile;
 
@@ -39,6 +38,7 @@ class ExtensionWarningService;
 class LazyBackgroundTaskQueue;
 class ManagementPolicy;
 class NavigationObserver;
+class ProcessManager;
 class StandardManagementPolicyProvider;
 class StateStore;
 class UserScriptMaster;
@@ -68,8 +68,8 @@ class ExtensionSystem : public BrowserContextKeyedService {
   // Component extensions are always enabled, external and user extensions
   // are controlled by |extensions_enabled|.  If |defer_background_creation| is
   // true, then creation of background extension RenderViews will be deferred
-  // until ExtensionProcessManager::DeferBackgroundHostCreation is called with
-  // |defer| set to false.
+  // until extensions::ProcessManager::DeferBackgroundHostCreation is called
+  // with |defer| set to false.
   virtual void InitForRegularProfile(bool extensions_enabled,
                                      bool defer_background_creation) = 0;
 
@@ -84,8 +84,8 @@ class ExtensionSystem : public BrowserContextKeyedService {
   // The UserScriptMaster is created at startup.
   virtual UserScriptMaster* user_script_master() = 0;
 
-  // The ExtensionProcessManager is created at startup.
-  virtual ExtensionProcessManager* process_manager() = 0;
+  // The ProcessManager is created at startup.
+  virtual ProcessManager* process_manager() = 0;
 
   // The StateStore is created at startup.
   virtual StateStore* state_store() = 0;
@@ -149,7 +149,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
   virtual ExtensionService* extension_service() OVERRIDE;  // shared
   virtual ManagementPolicy* management_policy() OVERRIDE;  // shared
   virtual UserScriptMaster* user_script_master() OVERRIDE;  // shared
-  virtual ExtensionProcessManager* process_manager() OVERRIDE;
+  virtual ProcessManager* process_manager() OVERRIDE;
   virtual StateStore* state_store() OVERRIDE;  // shared
   virtual StateStore* rules_store() OVERRIDE;  // shared
   virtual LazyBackgroundTaskQueue* lazy_background_task_queue()
@@ -221,7 +221,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
     // ExtensionService depends on StateStore and Blacklist.
     scoped_ptr<ExtensionService> extension_service_;
     scoped_ptr<ManagementPolicy> management_policy_;
-    // extension_info_map_ needs to outlive extension_process_manager_.
+    // extension_info_map_ needs to outlive process_manager_.
     scoped_refptr<ExtensionInfoMap> extension_info_map_;
     scoped_ptr<ExtensionWarningService> extension_warning_service_;
     scoped_ptr<ExtensionWarningBadgeService> extension_warning_badge_service_;
@@ -239,11 +239,11 @@ class ExtensionSystemImpl : public ExtensionSystem {
 
   Shared* shared_;
 
-  // |extension_process_manager_| must be destroyed before the Profile's
-  // |io_data_|. While |extension_process_manager_| still lives, we handle
-  // incoming resource requests from extension processes and those require
-  // access to the ResourceContext owned by |io_data_|.
-  scoped_ptr<ExtensionProcessManager> extension_process_manager_;
+  // |process_manager_| must be destroyed before the Profile's |io_data_|. While
+  // |process_manager_| still lives, we handle incoming resource requests from
+  // extension processes and those require access to the ResourceContext owned
+  // by |io_data_|.
+  scoped_ptr<ProcessManager> process_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionSystemImpl);
 };

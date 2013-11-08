@@ -19,7 +19,6 @@
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -35,6 +34,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/browser/lazy_background_task_queue.h"
+#include "extensions/browser/process_manager.h"
 #include "extensions/common/extension_api.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
@@ -699,7 +699,7 @@ void EventRouter::IncrementInFlightEvents(Profile* profile,
   // Only increment in-flight events if the lazy background page is active,
   // because that's the only time we'll get an ACK.
   if (BackgroundInfo::HasLazyBackgroundPage(extension)) {
-    ExtensionProcessManager* pm =
+    extensions::ProcessManager* pm =
         ExtensionSystem::Get(profile)->process_manager();
     ExtensionHost* host = pm->GetBackgroundHostForExtension(extension->id());
     if (host)
@@ -709,7 +709,7 @@ void EventRouter::IncrementInFlightEvents(Profile* profile,
 
 void EventRouter::OnEventAck(Profile* profile,
                              const std::string& extension_id) {
-  ExtensionProcessManager* pm =
+  extensions::ProcessManager* pm =
       ExtensionSystem::Get(profile)->process_manager();
   ExtensionHost* host = pm->GetBackgroundHostForExtension(extension_id);
   // The event ACK is routed to the background host, so this should never be

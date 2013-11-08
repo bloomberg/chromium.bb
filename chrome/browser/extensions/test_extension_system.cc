@@ -14,7 +14,6 @@
 #include "chrome/browser/extensions/extension_pref_value_map_factory.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_prefs_factory.h"
-#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/management_policy.h"
@@ -25,6 +24,7 @@
 #include "chrome/browser/value_store/testing_value_store.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/process_manager.h"
 
 using content::BrowserThread;
 
@@ -41,16 +41,15 @@ TestExtensionSystem::~TestExtensionSystem() {
 }
 
 void TestExtensionSystem::Shutdown() {
-  extension_process_manager_.reset();
+  process_manager_.reset();
 }
 
-void TestExtensionSystem::CreateExtensionProcessManager() {
-  extension_process_manager_.reset(ExtensionProcessManager::Create(profile_));
+void TestExtensionSystem::CreateProcessManager() {
+  process_manager_.reset(ProcessManager::Create(profile_));
 }
 
-void TestExtensionSystem::SetExtensionProcessManager(
-    ExtensionProcessManager* manager) {
-  extension_process_manager_.reset(manager);
+void TestExtensionSystem::SetProcessManager(ProcessManager* manager) {
+  process_manager_.reset(manager);
 }
 
 ExtensionPrefs* TestExtensionSystem::CreateExtensionPrefs(
@@ -121,8 +120,8 @@ UserScriptMaster* TestExtensionSystem::user_script_master() {
   return NULL;
 }
 
-ExtensionProcessManager* TestExtensionSystem::process_manager() {
-  return extension_process_manager_.get();
+ProcessManager* TestExtensionSystem::process_manager() {
+  return process_manager_.get();
 }
 
 StateStore* TestExtensionSystem::state_store() {

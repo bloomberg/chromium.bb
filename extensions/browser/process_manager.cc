@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_process_manager.h"
+#include "extensions/browser/process_manager.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -48,15 +48,14 @@ using content::BrowserContext;
 using content::RenderViewHost;
 using content::SiteInstance;
 using content::WebContents;
-using extensions::BackgroundInfo;
-using extensions::BackgroundManifestHandler;
-using extensions::Extension;
-using extensions::ExtensionHost;
-using extensions::ExtensionsBrowserClient;
-using extensions::ExtensionSystem;
 
+namespace extensions {
 class RenderViewHostDestructionObserver;
-DEFINE_WEB_CONTENTS_USER_DATA_KEY(RenderViewHostDestructionObserver);
+}
+DEFINE_WEB_CONTENTS_USER_DATA_KEY(
+    extensions::RenderViewHostDestructionObserver);
+
+namespace extensions {
 
 namespace {
 
@@ -78,13 +77,13 @@ void OnRenderViewHostUnregistered(BrowserContext* context,
 }
 
 // Incognito profiles use this process manager. It is mostly a shim that decides
-// whether to fall back on the original profile's ExtensionProcessManager based
+// whether to fall back on the original profile's ProcessManager based
 // on whether a given extension uses "split" or "spanning" incognito behavior.
-class IncognitoExtensionProcessManager : public ExtensionProcessManager {
+class IncognitoProcessManager : public ProcessManager {
  public:
-  IncognitoExtensionProcessManager(BrowserContext* incognito_context,
-                                   BrowserContext* original_context);
-  virtual ~IncognitoExtensionProcessManager();
+  IncognitoProcessManager(BrowserContext* incognito_context,
+                          BrowserContext* original_context);
+  virtual ~IncognitoProcessManager();
   virtual ExtensionHost* CreateBackgroundHost(const Extension* extension,
                                               const GURL& url) OVERRIDE;
   virtual SiteInstance* GetSiteInstanceForURL(const GURL& url) OVERRIDE;
@@ -93,13 +92,13 @@ class IncognitoExtensionProcessManager : public ExtensionProcessManager {
   // Returns true if the extension is allowed to run in incognito mode.
   bool IsIncognitoEnabled(const Extension* extension);
 
-  ExtensionProcessManager* original_manager_;
+  ProcessManager* original_manager_;
 
-  DISALLOW_COPY_AND_ASSIGN(IncognitoExtensionProcessManager);
+  DISALLOW_COPY_AND_ASSIGN(IncognitoProcessManager);
 };
 
 static void CreateBackgroundHostForExtensionLoad(
-    ExtensionProcessManager* manager, const Extension* extension) {
+    ProcessManager* manager, const Extension* extension) {
   DVLOG(1) << "CreateBackgroundHostForExtensionLoad";
   if (BackgroundInfo::HasPersistentBackgroundPage(extension))
     manager->CreateBackgroundHost(extension,
@@ -129,12 +128,12 @@ class RenderViewHostDestructionObserver
     process_manager_->UnregisterRenderViewHost(render_view_host);
   }
 
-  ExtensionProcessManager* process_manager_;
+  ProcessManager* process_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderViewHostDestructionObserver);
 };
 
-struct ExtensionProcessManager::BackgroundPageData {
+struct ProcessManager::BackgroundPageData {
   // The count of things keeping the lazy background page alive.
   int lazy_keepalive_count;
 
@@ -156,28 +155,26 @@ struct ExtensionProcessManager::BackgroundPageData {
 };
 
 //
-// ExtensionProcessManager
+// ProcessManager
 //
 
 // static
-ExtensionProcessManager* ExtensionProcessManager::Create(
-    BrowserContext* context) {
+ProcessManager* ProcessManager::Create(BrowserContext* context) {
   if (context->IsOffTheRecord()) {
     BrowserContext* original_context =
         ExtensionsBrowserClient::Get()->GetOriginalContext(context);
-    return new IncognitoExtensionProcessManager(context, original_context);
+    return new IncognitoProcessManager(context, original_context);
   }
-  return new ExtensionProcessManager(context, context);
+  return new ProcessManager(context, context);
 }
 
-ExtensionProcessManager::ExtensionProcessManager(
-    BrowserContext* context,
-    BrowserContext* original_context)
+ProcessManager::ProcessManager(BrowserContext* context,
+                               BrowserContext* original_context)
   : site_instance_(SiteInstance::Create(context)),
     defer_background_host_creation_(false),
     startup_background_hosts_created_(false),
     devtools_callback_(base::Bind(
-        &ExtensionProcessManager::OnDevToolsStateChanged,
+        &ProcessManager::OnDevToolsStateChanged,
         base::Unretained(this))),
     weak_ptr_factory_(this) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSIONS_READY,
@@ -222,15 +219,14 @@ ExtensionProcessManager::ExtensionProcessManager(
       devtools_callback_);
 }
 
-ExtensionProcessManager::~ExtensionProcessManager() {
+ProcessManager::~ProcessManager() {
   CloseBackgroundHosts();
   DCHECK(background_hosts_.empty());
   content::DevToolsManager::GetInstance()->RemoveAgentStateCallback(
       devtools_callback_);
 }
 
-const ExtensionProcessManager::ViewSet
-ExtensionProcessManager::GetAllViews() const {
+const ProcessManager::ViewSet ProcessManager::GetAllViews() const {
   ViewSet result;
   for (ExtensionRenderViews::const_iterator iter =
            all_extension_views_.begin();
@@ -240,8 +236,8 @@ ExtensionProcessManager::GetAllViews() const {
   return result;
 }
 
-ExtensionHost* ExtensionProcessManager::CreateBackgroundHost(
-    const Extension* extension, const GURL& url) {
+ExtensionHost* ProcessManager::CreateBackgroundHost(const Extension* extension,
+                                                    const GURL& url) {
   DVLOG(1) << "CreateBackgroundHost " << url.spec();
   // Hosted apps are taken care of from BackgroundContentsService. Ignore them
   // here.
@@ -254,12 +250,12 @@ ExtensionHost* ExtensionProcessManager::CreateBackgroundHost(
 
   ExtensionHost* host =
 #if defined(OS_MACOSX)
-      new extensions::ExtensionHostMac(
+      new ExtensionHostMac(
           extension, GetSiteInstanceForURL(url), url,
-          extensions::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
+          VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
 #else
       new ExtensionHost(extension, GetSiteInstanceForURL(url), url,
-                        extensions::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
+                        VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
 #endif
 
   host->CreateRenderViewSoon();
@@ -267,7 +263,7 @@ ExtensionHost* ExtensionProcessManager::CreateBackgroundHost(
   return host;
 }
 
-ExtensionHost* ExtensionProcessManager::GetBackgroundHostForExtension(
+ExtensionHost* ProcessManager::GetBackgroundHostForExtension(
     const std::string& extension_id) {
   for (ExtensionHostSet::iterator iter = background_hosts_.begin();
        iter != background_hosts_.end(); ++iter) {
@@ -278,9 +274,8 @@ ExtensionHost* ExtensionProcessManager::GetBackgroundHostForExtension(
   return NULL;
 }
 
-std::set<RenderViewHost*>
-    ExtensionProcessManager::GetRenderViewHostsForExtension(
-        const std::string& extension_id) {
+std::set<RenderViewHost*> ProcessManager::GetRenderViewHostsForExtension(
+    const std::string& extension_id) {
   std::set<RenderViewHost*> result;
 
   SiteInstance* site_instance = GetSiteInstanceForURL(
@@ -298,7 +293,7 @@ std::set<RenderViewHost*>
   return result;
 }
 
-const Extension* ExtensionProcessManager::GetExtensionForRenderViewHost(
+const Extension* ProcessManager::GetExtensionForRenderViewHost(
     RenderViewHost* render_view_host) {
   if (!render_view_host->GetSiteInstance())
     return NULL;
@@ -311,7 +306,7 @@ const Extension* ExtensionProcessManager::GetExtensionForRenderViewHost(
   return service->extensions()->GetByID(GetExtensionID(render_view_host));
 }
 
-void ExtensionProcessManager::UnregisterRenderViewHost(
+void ProcessManager::UnregisterRenderViewHost(
     RenderViewHost* render_view_host) {
   ExtensionRenderViews::iterator view =
       all_extension_views_.find(render_view_host);
@@ -319,12 +314,12 @@ void ExtensionProcessManager::UnregisterRenderViewHost(
     return;
 
   OnRenderViewHostUnregistered(GetBrowserContext(), render_view_host);
-  extensions::ViewType view_type = view->second;
+  ViewType view_type = view->second;
   all_extension_views_.erase(view);
 
   // Keepalive count, balanced in RegisterRenderViewHost.
-  if (view_type != extensions::VIEW_TYPE_INVALID &&
-      view_type != extensions::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
+  if (view_type != VIEW_TYPE_INVALID &&
+      view_type != VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
     const Extension* extension = GetExtensionForRenderViewHost(
         render_view_host);
     if (extension)
@@ -332,16 +327,14 @@ void ExtensionProcessManager::UnregisterRenderViewHost(
   }
 }
 
-void ExtensionProcessManager::RegisterRenderViewHost(
-    RenderViewHost* render_view_host) {
+void ProcessManager::RegisterRenderViewHost(RenderViewHost* render_view_host) {
   const Extension* extension = GetExtensionForRenderViewHost(
       render_view_host);
   if (!extension)
     return;
 
   WebContents* web_contents = WebContents::FromRenderViewHost(render_view_host);
-  all_extension_views_[render_view_host] =
-      extensions::GetViewType(web_contents);
+  all_extension_views_[render_view_host] = GetViewType(web_contents);
 
   // Keep the lazy background page alive as long as any non-background-page
   // extension views are visible. Keepalive count balanced in
@@ -349,25 +342,23 @@ void ExtensionProcessManager::RegisterRenderViewHost(
   IncrementLazyKeepaliveCountForView(render_view_host);
 }
 
-SiteInstance* ExtensionProcessManager::GetSiteInstanceForURL(const GURL& url) {
+SiteInstance* ProcessManager::GetSiteInstanceForURL(const GURL& url) {
   return site_instance_->GetRelatedSiteInstance(url);
 }
 
-bool ExtensionProcessManager::IsBackgroundHostClosing(
-    const std::string& extension_id) {
+bool ProcessManager::IsBackgroundHostClosing(const std::string& extension_id) {
   ExtensionHost* host = GetBackgroundHostForExtension(extension_id);
   return (host && background_page_data_[extension_id].is_closing);
 }
 
-int ExtensionProcessManager::GetLazyKeepaliveCount(const Extension* extension) {
+int ProcessManager::GetLazyKeepaliveCount(const Extension* extension) {
   if (!BackgroundInfo::HasLazyBackgroundPage(extension))
     return 0;
 
   return background_page_data_[extension->id()].lazy_keepalive_count;
 }
 
-int ExtensionProcessManager::IncrementLazyKeepaliveCount(
-     const Extension* extension) {
+int ProcessManager::IncrementLazyKeepaliveCount(const Extension* extension) {
   if (!BackgroundInfo::HasLazyBackgroundPage(extension))
     return 0;
 
@@ -378,8 +369,7 @@ int ExtensionProcessManager::IncrementLazyKeepaliveCount(
   return count;
 }
 
-int ExtensionProcessManager::DecrementLazyKeepaliveCount(
-     const Extension* extension) {
+int ProcessManager::DecrementLazyKeepaliveCount(const Extension* extension) {
   if (!BackgroundInfo::HasLazyBackgroundPage(extension))
     return 0;
 
@@ -393,7 +383,7 @@ int ExtensionProcessManager::DecrementLazyKeepaliveCount(
   if (--count == 0 && !background_page_data_[extension->id()].is_closing) {
     base::MessageLoop::current()->PostDelayedTask(
         FROM_HERE,
-        base::Bind(&ExtensionProcessManager::OnLazyBackgroundPageIdle,
+        base::Bind(&ProcessManager::OnLazyBackgroundPageIdle,
                    weak_ptr_factory_.GetWeakPtr(), extension->id(),
                    ++background_page_data_[extension->id()].close_sequence_id),
         event_page_idle_time_);
@@ -402,13 +392,13 @@ int ExtensionProcessManager::DecrementLazyKeepaliveCount(
   return count;
 }
 
-void ExtensionProcessManager::IncrementLazyKeepaliveCountForView(
+void ProcessManager::IncrementLazyKeepaliveCountForView(
     RenderViewHost* render_view_host) {
   WebContents* web_contents =
       WebContents::FromRenderViewHost(render_view_host);
-  extensions::ViewType view_type = extensions::GetViewType(web_contents);
-  if (view_type != extensions::VIEW_TYPE_INVALID &&
-      view_type != extensions::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
+  ViewType view_type = GetViewType(web_contents);
+  if (view_type != VIEW_TYPE_INVALID &&
+      view_type != VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
     const Extension* extension = GetExtensionForRenderViewHost(
         render_view_host);
     if (extension)
@@ -416,8 +406,8 @@ void ExtensionProcessManager::IncrementLazyKeepaliveCountForView(
   }
 }
 
-void ExtensionProcessManager::OnLazyBackgroundPageIdle(
-    const std::string& extension_id, int sequence_id) {
+void ProcessManager::OnLazyBackgroundPageIdle(const std::string& extension_id,
+                                              int sequence_id) {
   ExtensionHost* host = GetBackgroundHostForExtension(extension_id);
   if (host && !background_page_data_[extension_id].is_closing &&
       sequence_id == background_page_data_[extension_id].close_sequence_id) {
@@ -432,7 +422,7 @@ void ExtensionProcessManager::OnLazyBackgroundPageIdle(
   }
 }
 
-void ExtensionProcessManager::OnLazyBackgroundPageActive(
+void ProcessManager::OnLazyBackgroundPageActive(
     const std::string& extension_id) {
   ExtensionHost* host = GetBackgroundHostForExtension(extension_id);
   if (host && !background_page_data_[extension_id].is_closing) {
@@ -442,8 +432,8 @@ void ExtensionProcessManager::OnLazyBackgroundPageActive(
   }
 }
 
-void ExtensionProcessManager::OnShouldSuspendAck(
-     const std::string& extension_id, int sequence_id) {
+void ProcessManager::OnShouldSuspendAck(const std::string& extension_id,
+                                        int sequence_id) {
   ExtensionHost* host = GetBackgroundHostForExtension(extension_id);
   if (host &&
       sequence_id == background_page_data_[extension_id].close_sequence_id) {
@@ -451,18 +441,18 @@ void ExtensionProcessManager::OnShouldSuspendAck(
   }
 }
 
-void ExtensionProcessManager::OnSuspendAck(const std::string& extension_id) {
+void ProcessManager::OnSuspendAck(const std::string& extension_id) {
   background_page_data_[extension_id].is_closing = true;
   int sequence_id = background_page_data_[extension_id].close_sequence_id;
   base::MessageLoop::current()->PostDelayedTask(
       FROM_HERE,
-      base::Bind(&ExtensionProcessManager::CloseLazyBackgroundPageNow,
+      base::Bind(&ProcessManager::CloseLazyBackgroundPageNow,
                  weak_ptr_factory_.GetWeakPtr(), extension_id, sequence_id),
       event_page_suspending_time_);
 }
 
-void ExtensionProcessManager::CloseLazyBackgroundPageNow(
-    const std::string& extension_id, int sequence_id) {
+void ProcessManager::CloseLazyBackgroundPageNow(const std::string& extension_id,
+                                                int sequence_id) {
   ExtensionHost* host = GetBackgroundHostForExtension(extension_id);
   if (host &&
       sequence_id == background_page_data_[extension_id].close_sequence_id) {
@@ -472,23 +462,21 @@ void ExtensionProcessManager::CloseLazyBackgroundPageNow(
   }
 }
 
-void ExtensionProcessManager::OnNetworkRequestStarted(
-    RenderViewHost* render_view_host) {
+void ProcessManager::OnNetworkRequestStarted(RenderViewHost* render_view_host) {
   ExtensionHost* host = GetBackgroundHostForExtension(
       GetExtensionID(render_view_host));
   if (host && host->render_view_host() == render_view_host)
     IncrementLazyKeepaliveCount(host->extension());
 }
 
-void ExtensionProcessManager::OnNetworkRequestDone(
-    RenderViewHost* render_view_host) {
+void ProcessManager::OnNetworkRequestDone(RenderViewHost* render_view_host) {
   ExtensionHost* host = GetBackgroundHostForExtension(
       GetExtensionID(render_view_host));
   if (host && host->render_view_host() == render_view_host)
     DecrementLazyKeepaliveCount(host->extension());
 }
 
-void ExtensionProcessManager::CancelSuspend(const Extension* extension) {
+void ProcessManager::CancelSuspend(const Extension* extension) {
   bool& is_closing = background_page_data_[extension->id()].is_closing;
   ExtensionHost* host = GetBackgroundHostForExtension(extension->id());
   if (host && is_closing) {
@@ -504,7 +492,7 @@ void ExtensionProcessManager::CancelSuspend(const Extension* extension) {
   }
 }
 
-void ExtensionProcessManager::DeferBackgroundHostCreation(bool defer) {
+void ProcessManager::DeferBackgroundHostCreation(bool defer) {
   bool previous = defer_background_host_creation_;
   defer_background_host_creation_ = defer;
 
@@ -514,7 +502,7 @@ void ExtensionProcessManager::DeferBackgroundHostCreation(bool defer) {
     CreateBackgroundHostsForProfileStartup();
 }
 
-void ExtensionProcessManager::OnBrowserWindowReady() {
+void ProcessManager::OnBrowserWindowReady() {
   ExtensionService* service = ExtensionSystem::GetForBrowserContext(
       GetBrowserContext())->extension_service();
   // On Chrome OS, a login screen is implemented as a browser.
@@ -526,14 +514,13 @@ void ExtensionProcessManager::OnBrowserWindowReady() {
   CreateBackgroundHostsForProfileStartup();
 }
 
-content::BrowserContext* ExtensionProcessManager::GetBrowserContext() const {
+content::BrowserContext* ProcessManager::GetBrowserContext() const {
   return site_instance_->GetBrowserContext();
 }
 
-void ExtensionProcessManager::Observe(
-    int type,
-    const content::NotificationSource& source,
-    const content::NotificationDetails& details) {
+void ProcessManager::Observe(int type,
+                             const content::NotificationSource& source,
+                             const content::NotificationDetails& details) {
   switch (type) {
     case chrome::NOTIFICATION_EXTENSIONS_READY:
     case chrome::NOTIFICATION_PROFILE_CREATED: {
@@ -555,8 +542,7 @@ void ExtensionProcessManager::Observe(
 
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
       const Extension* extension =
-          content::Details<extensions::UnloadedExtensionInfo>(
-              details)->extension;
+          content::Details<UnloadedExtensionInfo>(details)->extension;
       for (ExtensionHostSet::iterator iter = background_hosts_.begin();
            iter != background_hosts_.end(); ++iter) {
         ExtensionHost* host = *iter;
@@ -581,8 +567,7 @@ void ExtensionProcessManager::Observe(
 
     case chrome::NOTIFICATION_EXTENSION_HOST_VIEW_SHOULD_CLOSE: {
       ExtensionHost* host = content::Details<ExtensionHost>(details).ptr();
-      if (host->extension_host_type() ==
-          extensions::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
+      if (host->extension_host_type() == VIEW_TYPE_EXTENSION_BACKGROUND_PAGE) {
         CloseBackgroundHost(host);
       }
       break;
@@ -642,16 +627,17 @@ void ExtensionProcessManager::Observe(
   }
 }
 
-void ExtensionProcessManager::OnDevToolsStateChanged(
-    content::DevToolsAgentHost* agent_host, bool attached) {
+void ProcessManager::OnDevToolsStateChanged(
+    content::DevToolsAgentHost* agent_host,
+    bool attached) {
   RenderViewHost* rvh = agent_host->GetRenderViewHost();
   // Ignore unrelated notifications.
   if (!rvh ||
       rvh->GetSiteInstance()->GetProcess()->GetBrowserContext() !=
           GetBrowserContext())
     return;
-  if (extensions::GetViewType(WebContents::FromRenderViewHost(rvh)) !=
-      extensions::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE)
+  if (GetViewType(WebContents::FromRenderViewHost(rvh)) !=
+      VIEW_TYPE_EXTENSION_BACKGROUND_PAGE)
     return;
   const Extension* extension = GetExtensionForRenderViewHost(rvh);
   if (!extension)
@@ -665,7 +651,7 @@ void ExtensionProcessManager::OnDevToolsStateChanged(
   }
 }
 
-void ExtensionProcessManager::CreateBackgroundHostsForProfileStartup() {
+void ProcessManager::CreateBackgroundHostsForProfileStartup() {
   if (startup_background_hosts_created_)
     return;
 
@@ -683,8 +669,8 @@ void ExtensionProcessManager::CreateBackgroundHostsForProfileStartup() {
        extension != service->extensions()->end(); ++extension) {
     CreateBackgroundHostForExtensionLoad(this, extension->get());
 
-    extensions::RuntimeEventRouter::DispatchOnStartupEvent(
-        GetBrowserContext(), (*extension)->id());
+    RuntimeEventRouter::DispatchOnStartupEvent(GetBrowserContext(),
+                                               (*extension)->id());
   }
   startup_background_hosts_created_ = true;
 
@@ -710,7 +696,7 @@ void ExtensionProcessManager::CreateBackgroundHostsForProfileStartup() {
   }
 }
 
-void ExtensionProcessManager::OnBackgroundHostCreated(ExtensionHost* host) {
+void ProcessManager::OnBackgroundHostCreated(ExtensionHost* host) {
   DCHECK_EQ(GetBrowserContext(), host->browser_context());
   background_hosts_.insert(host);
 
@@ -725,15 +711,15 @@ void ExtensionProcessManager::OnBackgroundHostCreated(ExtensionHost* host) {
   }
 }
 
-void ExtensionProcessManager::CloseBackgroundHost(ExtensionHost* host) {
+void ProcessManager::CloseBackgroundHost(ExtensionHost* host) {
   CHECK(host->extension_host_type() ==
-        extensions::VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
+        VIEW_TYPE_EXTENSION_BACKGROUND_PAGE);
   delete host;
   // |host| should deregister itself from our structures.
   CHECK(background_hosts_.find(host) == background_hosts_.end());
 }
 
-void ExtensionProcessManager::CloseBackgroundHosts() {
+void ProcessManager::CloseBackgroundHosts() {
   for (ExtensionHostSet::iterator iter = background_hosts_.begin();
        iter != background_hosts_.end(); ) {
     ExtensionHostSet::iterator current = iter++;
@@ -741,8 +727,7 @@ void ExtensionProcessManager::CloseBackgroundHosts() {
   }
 }
 
-void ExtensionProcessManager::UnregisterExtension(
-    const std::string& extension_id) {
+void ProcessManager::UnregisterExtension(const std::string& extension_id) {
   // The lazy_keepalive_count may be greater than zero at this point because
   // RenderViewHosts are still alive. During extension reloading, they will
   // decrement the lazy_keepalive_count to negative for the new extension
@@ -762,8 +747,7 @@ void ExtensionProcessManager::UnregisterExtension(
   background_page_data_.erase(extension_id);
 }
 
-void ExtensionProcessManager::ClearBackgroundPageData(
-    const std::string& extension_id) {
+void ProcessManager::ClearBackgroundPageData(const std::string& extension_id) {
   background_page_data_.erase(extension_id);
 
   // Re-register all RenderViews for this extension. We do this to restore
@@ -776,7 +760,7 @@ void ExtensionProcessManager::ClearBackgroundPageData(
   }
 }
 
-bool ExtensionProcessManager::DeferLoadingBackgroundHosts() const {
+bool ProcessManager::DeferLoadingBackgroundHosts() const {
   // Don't load background hosts now if the loading should be deferred.
   if (defer_background_host_creation_)
     return true;
@@ -787,18 +771,18 @@ bool ExtensionProcessManager::DeferLoadingBackgroundHosts() const {
 }
 
 //
-// IncognitoExtensionProcessManager
+// IncognitoProcessManager
 //
 
-IncognitoExtensionProcessManager::IncognitoExtensionProcessManager(
+IncognitoProcessManager::IncognitoProcessManager(
     BrowserContext* incognito_context,
     BrowserContext* original_context)
-    : ExtensionProcessManager(incognito_context, original_context),
-      original_manager_(extensions::ExtensionSystem::GetForBrowserContext(
+    : ProcessManager(incognito_context, original_context),
+      original_manager_(ExtensionSystem::GetForBrowserContext(
           original_context)->process_manager()) {
   DCHECK(incognito_context->IsOffTheRecord());
 
-  // The original profile will have its own ExtensionProcessManager to
+  // The original profile will have its own ProcessManager to
   // load the background pages of the spanning extensions. This process
   // manager need only worry about the split mode extensions, which is handled
   // in the NOTIFICATION_BROWSER_WINDOW_READY notification handler.
@@ -808,7 +792,7 @@ IncognitoExtensionProcessManager::IncognitoExtensionProcessManager(
                     content::Source<BrowserContext>(original_context));
 }
 
-IncognitoExtensionProcessManager::~IncognitoExtensionProcessManager() {
+IncognitoProcessManager::~IncognitoProcessManager() {
   // TODO(yoz): This cleanup code belongs in the MenuManager.
   // Remove "incognito" "split" mode context menu items.
   ExtensionService* service = ExtensionSystem::GetForBrowserContext(
@@ -817,11 +801,11 @@ IncognitoExtensionProcessManager::~IncognitoExtensionProcessManager() {
     service->menu_manager()->RemoveAllIncognitoContextItems();
 }
 
-ExtensionHost* IncognitoExtensionProcessManager::CreateBackgroundHost(
+ExtensionHost* IncognitoProcessManager::CreateBackgroundHost(
     const Extension* extension, const GURL& url) {
-  if (extensions::IncognitoInfo::IsSplitMode(extension)) {
+  if (IncognitoInfo::IsSplitMode(extension)) {
     if (IsIncognitoEnabled(extension))
-      return ExtensionProcessManager::CreateBackgroundHost(extension, url);
+      return ProcessManager::CreateBackgroundHost(extension, url);
   } else {
     // Do nothing. If an extension is spanning, then its original-profile
     // background page is shared with incognito, so we don't create another.
@@ -829,25 +813,24 @@ ExtensionHost* IncognitoExtensionProcessManager::CreateBackgroundHost(
   return NULL;
 }
 
-SiteInstance* IncognitoExtensionProcessManager::GetSiteInstanceForURL(
-    const GURL& url) {
+SiteInstance* IncognitoProcessManager::GetSiteInstanceForURL(const GURL& url) {
   ExtensionService* service = ExtensionSystem::GetForBrowserContext(
       GetBrowserContext())->extension_service();
   if (service) {
     const Extension* extension =
         service->extensions()->GetExtensionOrAppByURL(url);
-    if (extension &&
-        !extensions::IncognitoInfo::IsSplitMode(extension)) {
+    if (extension && !IncognitoInfo::IsSplitMode(extension)) {
       return original_manager_->GetSiteInstanceForURL(url);
     }
   }
-  return ExtensionProcessManager::GetSiteInstanceForURL(url);
+  return ProcessManager::GetSiteInstanceForURL(url);
 }
 
-bool IncognitoExtensionProcessManager::IsIncognitoEnabled(
-    const Extension* extension) {
+bool IncognitoProcessManager::IsIncognitoEnabled(const Extension* extension) {
   // Keep in sync with duplicate in extension_info_map.cc.
   ExtensionService* service = ExtensionSystem::GetForBrowserContext(
       GetBrowserContext())->extension_service();
   return extension_util::IsIncognitoEnabled(extension->id(), service);
 }
+
+}  // namespace extensions
