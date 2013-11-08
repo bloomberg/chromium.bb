@@ -22810,7 +22810,7 @@ other types of suffix sets.
   <int value="71" label="USB_CLOSEDEVICE"/>
   <int value="72" label="TTS_STOP"/>
   <int value="73" label="SERIAL_GETPORTS"/>
-  <int value="74" label="FILEBROWSERPRIVATE_CLEARDRIVECACHE"/>
+  <int value="74" label="DELETED_FILEBROWSERPRIVATE_CLEARDRIVECACHE"/>
   <int value="75" label="SERIAL_GETCONTROLSIGNALS"/>
   <int value="76" label="DEVELOPERPRIVATE_ENABLE"/>
   <int value="77" label="FILEBROWSERPRIVATE_GETDRIVEFILEPROPERTIES"/>

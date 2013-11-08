@@ -877,11 +877,6 @@
         ]
       },
       {
-        "name": "clearDriveCache",
-        "description": "Clear all Drive local caches including locally cached user files and filesystem metadata. The file system metadata will be reloaded from the server immediately.",
-        "parameters": []
-      },
-      {
         "name": "zipSelection",
         "description": "Create a zip file for the selected files.",
         "parameters": [

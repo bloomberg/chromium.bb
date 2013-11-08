@@ -162,18 +162,6 @@ class FileBrowserPrivateSearchDriveMetadataFunction
                         scoped_ptr<drive::MetadataSearchResultVector> results);
 };
 
-class FileBrowserPrivateClearDriveCacheFunction
-    : public LoggedAsyncExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.clearDriveCache",
-                             FILEBROWSERPRIVATE_CLEARDRIVECACHE)
-
- protected:
-  virtual ~FileBrowserPrivateClearDriveCacheFunction() {}
-
-  virtual bool RunImpl() OVERRIDE;
-};
-
 // Implements the chrome.fileBrowserPrivate.getDriveConnectionState method.
 class FileBrowserPrivateGetDriveConnectionStateFunction
     : public ChromeSyncExtensionFunction {

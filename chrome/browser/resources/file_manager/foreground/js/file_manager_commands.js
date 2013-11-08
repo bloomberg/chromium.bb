@@ -562,20 +562,6 @@ CommandHandler.COMMANDS_['drive-buy-more-space'] = {
 };
 
 /**
- * Clears drive cache.
- * @type {Command}
- */
-CommandHandler.COMMANDS_['drive-clear-local-cache'] = {
-  execute: function(event, fileManager) {
-    chrome.fileBrowserPrivate.clearDriveCache();
-  },
-  canExecute: function(event, fileManager) {
-    event.canExecute = fileManager.isOnDrive() && this.ctrlKeyPressed_;
-    event.command.setHidden(!event.canExecute);
-  }
-};
-
-/**
  * Opens drive.google.com.
  * @type {Command}
  */
