@@ -616,6 +616,12 @@ bool TestLauncher::Init() {
     return false;
   }
 
+  // Make sure we don't pass any sharding-related environment to the child
+  // processes. This test launcher implements the sharding completely.
+  scoped_ptr<Environment> env(Environment::Create());
+  CHECK(env->UnSetVar("GTEST_TOTAL_SHARDS"));
+  CHECK(env->UnSetVar("GTEST_SHARD_INDEX"));
+
   if (command_line->HasSwitch(kGTestRepeatFlag) &&
       !StringToInt(command_line->GetSwitchValueASCII(kGTestRepeatFlag),
                    &cycles_)) {
