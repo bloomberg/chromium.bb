@@ -42,6 +42,7 @@
 #include "chrome/browser/sync/glue/session_model_associator.h"
 #include "chrome/browser/sync/glue/shared_change_processor.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
+#include "chrome/browser/sync/glue/sync_backend_host_impl.h"
 #include "chrome/browser/sync/glue/theme_data_type_controller.h"
 #include "chrome/browser/sync/glue/typed_url_change_processor.h"
 #include "chrome/browser/sync/glue/typed_url_data_type_controller.h"
@@ -308,6 +309,14 @@ DataTypeManager* ProfileSyncComponentsFactoryImpl::CreateDataTypeManager(
                                  backend,
                                  observer,
                                  failed_data_types_handler);
+}
+
+browser_sync::SyncBackendHost*
+    ProfileSyncComponentsFactoryImpl::CreateSyncBackendHost(
+      const std::string& name,
+      Profile* profile,
+      const base::WeakPtr<browser_sync::SyncPrefs>& sync_prefs) {
+  return new browser_sync::SyncBackendHostImpl(name, profile, sync_prefs);
 }
 
 browser_sync::GenericChangeProcessor*

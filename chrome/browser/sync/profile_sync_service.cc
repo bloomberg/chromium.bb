@@ -514,9 +514,10 @@ void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
 
 void ProfileSyncService::CreateBackend() {
   backend_.reset(
-      new browser_sync::SyncBackendHostImpl(profile_->GetDebugName(),
-                                            profile_,
-                                            sync_prefs_.AsWeakPtr()));
+      factory_->CreateSyncBackendHost(
+          profile_->GetDebugName(),
+          profile_,
+          sync_prefs_.AsWeakPtr()));
 }
 
 bool ProfileSyncService::IsEncryptedDatatypeEnabled() const {

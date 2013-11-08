@@ -15,6 +15,7 @@
 #include "sync/internal_api/public/util/weak_handle.h"
 
 class PasswordStore;
+class Profile;
 class ProfileSyncService;
 class WebDataService;
 
@@ -28,8 +29,9 @@ class FailedDataTypesHandler;
 class GenericChangeProcessor;
 class SharedChangeProcessor;
 class SyncBackendHost;
+class SyncPrefs;
 class DataTypeErrorHandler;
-}
+}  // namespace browser_sync
 
 namespace syncer {
 class DataTypeDebugInfoListener;
@@ -81,6 +83,12 @@ class ProfileSyncComponentsFactory {
       browser_sync::SyncBackendHost* backend,
       browser_sync::DataTypeManagerObserver* observer,
       browser_sync::FailedDataTypesHandler* failed_data_types_handler) = 0;
+
+  // Creating this in the factory helps us mock it out in testing.
+  virtual browser_sync::SyncBackendHost* CreateSyncBackendHost(
+      const std::string& name,
+      Profile* profile,
+      const base::WeakPtr<browser_sync::SyncPrefs>& sync_prefs) = 0;
 
   // Creating this in the factory helps us mock it out in testing.
   virtual browser_sync::GenericChangeProcessor* CreateGenericChangeProcessor(

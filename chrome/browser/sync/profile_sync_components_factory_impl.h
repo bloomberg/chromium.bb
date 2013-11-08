@@ -38,6 +38,11 @@ class ProfileSyncComponentsFactoryImpl : public ProfileSyncComponentsFactory {
       browser_sync::FailedDataTypesHandler* failed_data_types_handler)
           OVERRIDE;
 
+  virtual browser_sync::SyncBackendHost* CreateSyncBackendHost(
+      const std::string& name,
+      Profile* profile,
+      const base::WeakPtr<browser_sync::SyncPrefs>& sync_prefs) OVERRIDE;
+
   virtual browser_sync::GenericChangeProcessor* CreateGenericChangeProcessor(
       ProfileSyncService* profile_sync_service,
       browser_sync::DataTypeErrorHandler* error_handler,

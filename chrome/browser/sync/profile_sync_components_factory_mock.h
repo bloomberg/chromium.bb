@@ -37,6 +37,11 @@ class ProfileSyncComponentsFactoryMock : public ProfileSyncComponentsFactory {
                    browser_sync::DataTypeManagerObserver* observer,
                    browser_sync::FailedDataTypesHandler*
                        failed_datatypes_handler));
+  MOCK_METHOD3(CreateSyncBackendHost,
+      browser_sync::SyncBackendHost*(
+          const std::string& name,
+          Profile* profile,
+          const base::WeakPtr<browser_sync::SyncPrefs>& sync_prefs));
   MOCK_METHOD4(CreateGenericChangeProcessor,
       browser_sync::GenericChangeProcessor*(
           ProfileSyncService* profile_sync_service,
