@@ -6395,23 +6395,6 @@
    fun:_ZN3WTF20initializeMainThreadEPFvPFvPvES0_E
 }
 {
-   bug_311229
-   Memcheck:Leak
-   fun:malloc
-   fun:_ZN3WTF10fastMallocEm
-   fun:_ZN3WTF24ThreadSafeRefCountedBasenwEm
-   fun:_ZN7WebCore18MessagePortChannel6createEPN5blink21WebMessagePortChannelE
-   fun:_ZN7WebCore18MessagePortChannel13createChannelEPNS_11MessagePortES2_
-   fun:_ZN7WebCore14MessageChannelC1EPNS_16ExecutionContextE
-   fun:_ZN7WebCore14MessageChannel6createEPNS_16ExecutionContextE
-   fun:_ZN7WebCore16V8MessageChannel17constructorCustomERKN2v820FunctionCallbackInfoINS1_5ValueEEE
-   fun:_ZN7WebCore16V8MessageChannel19constructorCallbackERKN2v820FunctionCallbackInfoINS1_5ValueEEE
-   fun:_ZN2v88internal25FunctionCallbackArguments4CallEPFvRKNS_20FunctionCallbackInfoINS_5ValueEEEE
-   fun:_ZN2v88internalL19HandleApiCallHelperILb1EEEPNS0_11MaybeObjectENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
-   fun:_ZN2v88internalL34Builtin_implHandleApiCallConstructENS0_12_GLOBAL__N_116BuiltinArgumentsILNS0_21BuiltinExtraArgumentsE1EEEPNS0_7IsolateE
-   fun:_ZN2v88internalL30Builtin_HandleApiCallConstructEiPPNS0_6ObjectEPNS0_7IsolateE
-}
-{
    bug_312332
    Memcheck:Uninitialized
    ...
