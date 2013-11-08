@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/at_exit.h"
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/download/download_extensions.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_target_determiner.h"
+#include "chrome/browser/download/download_target_info.h"
 #include "chrome/browser/history/history_service.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/history_types.h"
@@ -24,14 +26,22 @@
 #include "chrome/test/base/testing_pref_service_syncable.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/download_interrupt_reasons.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/test/mock_download_item.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
+#include "net/base/mime_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if defined(ENABLE_PLUGINS)
+#include "chrome/browser/plugins/plugin_prefs.h"
+#include "content/public/browser/plugin_service.h"
+#include "content/public/common/webplugininfo.h"
+#endif
 
 using ::testing::AnyNumber;
 using ::testing::Invoke;
@@ -143,6 +153,9 @@ class MockDownloadTargetDeterminerDelegate
                void(DownloadItem*, const base::FilePath&, bool,
                     DownloadPathReservationTracker::FilenameConflictAction,
                     const ReservedPathCallback&));
+  MOCK_METHOD2(GetFileMimeType,
+               void(const base::FilePath&,
+                    const GetFileMimeTypeCallback&));
 
   void SetupDefaults() {
     ON_CALL(*this, CheckDownloadUrl(_, _, _))
@@ -161,6 +174,9 @@ class MockDownloadTargetDeterminerDelegate
     ON_CALL(*this, DetermineLocalPath(_, _, _))
         .WillByDefault(Invoke(
             &MockDownloadTargetDeterminerDelegate::NullDetermineLocalPath));
+    ON_CALL(*this, GetFileMimeType(_, _))
+        .WillByDefault(WithArg<1>(
+            ScheduleCallback("")));
   }
  private:
   static void NullReserveVirtualPath(
@@ -206,6 +222,12 @@ class DownloadTargetDeterminerTest : public ChromeRenderViewHostTestHarness {
                    const base::FilePath& initial_virtual_path,
                    content::MockDownloadItem* item);
 
+  // Runs |test_case| with |item|. When the DownloadTargetDeterminer is done,
+  // returns the resulting DownloadTargetInfo.
+  scoped_ptr<DownloadTargetInfo> RunDownloadTargetDeterminer(
+      const base::FilePath& initial_virtual_path,
+      content::MockDownloadItem* item);
+
   // Run through |test_case_count| tests in |test_cases|. A new MockDownloadItem
   // will be created for each test case and destroyed when the test case is
   // complete.
@@ -215,12 +237,8 @@ class DownloadTargetDeterminerTest : public ChromeRenderViewHostTestHarness {
   // Verifies that |target_path|, |disposition|, |expected_danger_type| and
   // |intermediate_path| matches the expectations of |test_case|. Posts
   // |closure| to the current message loop when done.
-  void DownloadTargetVerifier(const base::Closure& closure,
-                              const DownloadTestCase& test_case,
-                              const base::FilePath& local_path,
-                              DownloadItem::TargetDisposition disposition,
-                              content::DownloadDangerType danger_type,
-                              const base::FilePath& intermediate_path);
+  void VerifyDownloadTarget(const DownloadTestCase& test_case,
+                            const DownloadTargetInfo* target_info);
 
   const base::FilePath& test_download_dir() const {
     return test_download_dir_.path();
@@ -350,15 +368,33 @@ void DownloadTargetDeterminerTest::RunTestCase(
     const DownloadTestCase& test_case,
     const base::FilePath& initial_virtual_path,
     content::MockDownloadItem* item) {
-  // Kick off the test.
-  base::WeakPtrFactory<DownloadTargetDeterminerTest> factory(this);
+  scoped_ptr<DownloadTargetInfo> target_info =
+      RunDownloadTargetDeterminer(initial_virtual_path, item);
+  VerifyDownloadTarget(test_case, target_info.get());
+}
+
+void CompletionCallbackWrapper(
+    const base::Closure& closure,
+    scoped_ptr<DownloadTargetInfo>* target_info_receiver,
+    scoped_ptr<DownloadTargetInfo> target_info) {
+  target_info_receiver->swap(target_info);
+  base::MessageLoop::current()->PostTask(FROM_HERE, closure);
+}
+
+scoped_ptr<DownloadTargetInfo>
+DownloadTargetDeterminerTest::RunDownloadTargetDeterminer(
+    const base::FilePath& initial_virtual_path,
+    content::MockDownloadItem* item) {
+  scoped_ptr<DownloadTargetInfo> target_info;
   base::RunLoop run_loop;
   DownloadTargetDeterminer::Start(
       item, initial_virtual_path, download_prefs_.get(), delegate(),
-      base::Bind(&DownloadTargetDeterminerTest::DownloadTargetVerifier,
-                 factory.GetWeakPtr(), run_loop.QuitClosure(), test_case));
+      base::Bind(&CompletionCallbackWrapper,
+                 run_loop.QuitClosure(),
+                 &target_info));
   run_loop.Run();
   ::testing::Mock::VerifyAndClearExpectations(delegate());
+  return target_info.Pass();
 }
 
 void DownloadTargetDeterminerTest::RunTestCasesWithActiveItem(
@@ -372,23 +408,20 @@ void DownloadTargetDeterminerTest::RunTestCasesWithActiveItem(
   }
 }
 
-void DownloadTargetDeterminerTest::DownloadTargetVerifier(
-    const base::Closure& closure,
+void DownloadTargetDeterminerTest::VerifyDownloadTarget(
     const DownloadTestCase& test_case,
-    const base::FilePath& local_path,
-    DownloadItem::TargetDisposition disposition,
-    content::DownloadDangerType danger_type,
-    const base::FilePath& intermediate_path) {
+    const DownloadTargetInfo* target_info) {
   base::FilePath expected_local_path(
       GetPathInDownloadDir(test_case.expected_local_path));
-  EXPECT_EQ(expected_local_path.value(), local_path.value());
-  EXPECT_EQ(test_case.expected_disposition, disposition);
-  EXPECT_EQ(test_case.expected_danger_type, danger_type);
+  EXPECT_EQ(expected_local_path.value(), target_info->target_path.value());
+  EXPECT_EQ(test_case.expected_disposition, target_info->target_disposition);
+  EXPECT_EQ(test_case.expected_danger_type, target_info->danger_type);
 
   switch (test_case.expected_intermediate) {
     case EXPECT_CRDOWNLOAD:
-      EXPECT_EQ(DownloadTargetDeterminer::GetCrDownloadPath(local_path).value(),
-                intermediate_path.value());
+      EXPECT_EQ(DownloadTargetDeterminer::GetCrDownloadPath(
+                    target_info->target_path).value(),
+                target_info->intermediate_path.value());
       break;
 
     case EXPECT_UNCONFIRMED:
@@ -400,20 +433,21 @@ void DownloadTargetDeterminerTest::DownloadTargetVerifier(
       // 4. Basename starts with "Unconfirmed ".
       EXPECT_NE(DownloadTargetDeterminer::GetCrDownloadPath(expected_local_path)
                     .value(),
-                intermediate_path.value());
+                target_info->intermediate_path.value());
       EXPECT_EQ(expected_local_path.DirName().value(),
-                intermediate_path.DirName().value());
-      EXPECT_TRUE(intermediate_path.MatchesExtension(
+                target_info->intermediate_path.DirName().value());
+      EXPECT_TRUE(target_info->intermediate_path.MatchesExtension(
           FILE_PATH_LITERAL(".crdownload")));
-      EXPECT_EQ(0u, intermediate_path.BaseName().value().find(
-          FILE_PATH_LITERAL("Unconfirmed ")));
+      EXPECT_EQ(0u,
+                target_info->intermediate_path.BaseName().value().find(
+                    FILE_PATH_LITERAL("Unconfirmed ")));
       break;
 
     case EXPECT_LOCAL_PATH:
-      EXPECT_EQ(expected_local_path.value(), intermediate_path.value());
+      EXPECT_EQ(expected_local_path.value(),
+                target_info->intermediate_path.value());
       break;
   }
-  base::MessageLoop::current()->PostTask(FROM_HERE, closure);
 }
 
 // static
@@ -1704,21 +1738,6 @@ TEST_F(DownloadTargetDeterminerTest, TargetDeterminer_ResumedWithPrompt) {
   }
 }
 
-// Used with TargetDeterminer_IntermediateNameForResumed test. Verifies that
-// |intermediate_path| == |expected_intermediate_path| if the latter is
-// non-empty.
-void IntermediatePathVerifier(
-    const base::FilePath& expected_intermediate_path,
-    const content::DownloadTargetCallback& callback,
-    const base::FilePath& target_path,
-    content::DownloadItem::TargetDisposition disposition,
-    content::DownloadDangerType danger_type,
-    const base::FilePath& intermediate_path) {
-  if (!expected_intermediate_path.empty())
-    EXPECT_EQ(expected_intermediate_path, intermediate_path);
-  callback.Run(target_path, disposition, danger_type, intermediate_path);
-}
-
 // Test intermediate filename generation for resumed downloads.
 TEST_F(DownloadTargetDeterminerTest,
        TargetDeterminer_IntermediateNameForResumed) {
@@ -1855,25 +1874,374 @@ TEST_F(DownloadTargetDeterminerTest,
     ON_CALL(*item.get(), GetDangerType())
         .WillByDefault(Return(test_case.general.expected_danger_type));
 
-    base::WeakPtrFactory<DownloadTargetDeterminerTest> factory(this);
-    base::RunLoop run_loop;
-    content::DownloadTargetCallback verifier_callback =
-        base::Bind(&DownloadTargetDeterminerTest::DownloadTargetVerifier,
-                   factory.GetWeakPtr(),
-                   run_loop.QuitClosure(),
-                   test_case.general);
-    content::DownloadTargetCallback test_callback =
-        base::Bind(&IntermediatePathVerifier,
-                   GetPathInDownloadDir(test_case.expected_intermediate_path),
-                   verifier_callback);
-    DownloadTargetDeterminer::Start(item.get(),
-                                    GetPathInDownloadDir(kInitialPath),
-                                    download_prefs(),
-                                    delegate(),
-                                    test_callback);
-    run_loop.Run();
-    ::testing::Mock::VerifyAndClearExpectations(delegate());
+    scoped_ptr<DownloadTargetInfo> target_info =
+        RunDownloadTargetDeterminer(GetPathInDownloadDir(kInitialPath),
+                                    item.get());
+    VerifyDownloadTarget(test_case.general, target_info.get());
+    base::FilePath expected_intermediate_path =
+        GetPathInDownloadDir(test_case.expected_intermediate_path);
+    if (!expected_intermediate_path.empty())
+      EXPECT_EQ(expected_intermediate_path, target_info->intermediate_path);
   }
 }
+
+// Test MIME type determination based on the target filename.
+TEST_F(DownloadTargetDeterminerTest,
+       TargetDeterminer_MIMETypeDetermination) {
+  // All test cases run with GetPathInDownloadDir(kInitialPath) as the inital
+  // path.
+  const base::FilePath::CharType kInitialPath[] =
+      FILE_PATH_LITERAL("some_path/bar.txt");
+
+  struct MIMETypeTestCase {
+    // General test case settings.
+    DownloadTestCase general;
+
+    // Expected MIME type for test case.
+    const char* expected_mime_type;
+  } kMIMETypeTestCases[] = {
+    {
+      {
+        // 0:
+        AUTOMATIC,
+        content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+        "http://example.com/foo.png", "image/png",
+        FILE_PATH_LITERAL(""),
+
+        FILE_PATH_LITERAL(""),
+        FILE_PATH_LITERAL("foo.png"),
+        DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+
+        EXPECT_CRDOWNLOAD
+      },
+      "image/png"
+    },
+    {
+      {
+        // 1: Empty MIME type in response.
+        AUTOMATIC,
+        content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+        "http://example.com/foo.png", "",
+        FILE_PATH_LITERAL(""),
+
+        FILE_PATH_LITERAL(""),
+        FILE_PATH_LITERAL("foo.png"),
+        DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+
+        EXPECT_CRDOWNLOAD
+      },
+      "image/png"
+    },
+    {
+      {
+        // 2: Forced path.
+        FORCED,
+        content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+        "http://example.com/foo.abc", "",
+        FILE_PATH_LITERAL("foo.png"),
+
+        FILE_PATH_LITERAL(""),
+        FILE_PATH_LITERAL("foo.png"),
+        DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+
+        EXPECT_CRDOWNLOAD
+      },
+      "image/png"
+    },
+    {
+      {
+        // 3: Unknown file type.
+        AUTOMATIC,
+        content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+        "http://example.com/foo.notarealext", "",
+        FILE_PATH_LITERAL(""),
+
+        FILE_PATH_LITERAL(""),
+        FILE_PATH_LITERAL("foo.notarealext"),
+        DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+
+        EXPECT_CRDOWNLOAD
+      },
+      ""
+    },
+    {
+      {
+        // 4: Unknown file type.
+        AUTOMATIC,
+        content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+        "http://example.com/foo.notarealext", "image/png",
+        FILE_PATH_LITERAL(""),
+
+        FILE_PATH_LITERAL(""),
+        FILE_PATH_LITERAL("foo.notarealext"),
+        DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+
+        EXPECT_CRDOWNLOAD
+      },
+      ""
+    },
+  };
+
+  ON_CALL(*delegate(), GetFileMimeType(
+      GetPathInDownloadDir(FILE_PATH_LITERAL("foo.png")), _))
+      .WillByDefault(WithArg<1>(
+          ScheduleCallback("image/png")));
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kMIMETypeTestCases); ++i) {
+    SCOPED_TRACE(testing::Message() << "Running test case " << i);
+    const MIMETypeTestCase& test_case = kMIMETypeTestCases[i];
+    scoped_ptr<content::MockDownloadItem> item(
+        CreateActiveDownloadItem(i, test_case.general));
+    scoped_ptr<DownloadTargetInfo> target_info =
+        RunDownloadTargetDeterminer(GetPathInDownloadDir(kInitialPath),
+                                    item.get());
+    EXPECT_EQ(test_case.expected_mime_type, target_info->mime_type);
+  }
+}
+
+#if defined(ENABLE_PLUGINS)
+
+void DummyGetPluginsCallback(
+    const base::Closure& closure,
+    const std::vector<content::WebPluginInfo>& plugins) {
+  closure.Run();
+}
+
+void ForceRefreshOfPlugins() {
+#if !defined(OS_WIN)
+  // Prevent creation of a utility process for loading plugins. Doing so breaks
+  // unit_tests since /proc/self/exe can't be run as a utility process.
+  content::RenderProcessHost::SetRunRendererInProcess(true);
+#endif
+  base::RunLoop run_loop;
+  content::PluginService::GetInstance()->GetPlugins(
+      base::Bind(&DummyGetPluginsCallback, run_loop.QuitClosure()));
+  run_loop.Run();
+#if !defined(OS_WIN)
+  content::RenderProcessHost::SetRunRendererInProcess(false);
+#endif
+}
+
+void PluginEnabledCallback(const base::Closure& closure,
+                           bool result) {
+  EXPECT_TRUE(result);
+  closure.Run();
+}
+
+void EnablePlugin(bool enable, PluginPrefs* prefs, const base::FilePath& path) {
+  base::RunLoop run_loop;
+  prefs->EnablePlugin(enable, path,
+                      base::Bind(&PluginEnabledCallback,
+                                 run_loop.QuitClosure()));
+  run_loop.Run();
+}
+
+class ScopedRegisterInternalPlugin {
+ public:
+  ScopedRegisterInternalPlugin(content::PluginService* plugin_service,
+                               content::WebPluginInfo::PluginType type,
+                               const base::FilePath& path,
+                               const char* mime_type,
+                               const char* extension)
+      : plugin_service_(plugin_service),
+        plugin_path_(path) {
+    content::WebPluginMimeType plugin_mime_type(mime_type,
+                                                extension,
+                                                "Test file");
+    content::WebPluginInfo plugin_info(base::string16(),
+                                       path,
+                                       base::string16(),
+                                       base::string16());
+    plugin_info.mime_types.push_back(plugin_mime_type);
+    plugin_info.type = type;
+
+    plugin_service->RegisterInternalPlugin(plugin_info, true);
+    plugin_service->RefreshPlugins();
+    ForceRefreshOfPlugins();
+  }
+
+  ~ScopedRegisterInternalPlugin() {
+    plugin_service_->UnregisterInternalPlugin(plugin_path_);
+    plugin_service_->RefreshPlugins();
+    ForceRefreshOfPlugins();
+  }
+
+  const base::FilePath& path() { return plugin_path_; }
+
+ private:
+  content::PluginService* plugin_service_;
+  base::FilePath plugin_path_;
+};
+
+// We use a slightly different test fixture for tests that touch plugins. SetUp
+// needs to disable plugin discovery and we need to use a
+// ShadowingAtExitManager to discard the tainted PluginService. Unfortunately,
+// PluginService carries global state.
+class DownloadTargetDeterminerTestWithPlugin :
+  public DownloadTargetDeterminerTest {
+ public:
+  virtual void SetUp() OVERRIDE {
+    content::PluginService::GetInstance()->Init();
+    content::PluginService::GetInstance()->DisablePluginsDiscoveryForTesting();
+    DownloadTargetDeterminerTest::SetUp();
+  }
+
+ protected:
+  // The ShadowingAtExitManager destroys the tainted PluginService instance.
+  base::ShadowingAtExitManager at_exit_manager_;
+};
+
+// Check if secure handling of filetypes is determined correctly for PPAPI
+// plugins.
+TEST_F(DownloadTargetDeterminerTestWithPlugin,
+       TargetDeterminer_CheckForSecureHandling_PPAPI) {
+  // All test cases run with GetPathInDownloadDir(kInitialPath) as the inital
+  // path.
+  const base::FilePath::CharType kInitialPath[] =
+      FILE_PATH_LITERAL("some_path/bar.txt");
+  const char kTestMIMEType[] = "application/x-example-should-not-exist";
+
+  DownloadTestCase kSecureHandlingTestCase = {
+    AUTOMATIC,
+    content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+    "http://example.com/foo.fakeext", "",
+    FILE_PATH_LITERAL(""),
+
+    FILE_PATH_LITERAL(""),
+    FILE_PATH_LITERAL("foo.fakeext"),
+    DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+
+    EXPECT_CRDOWNLOAD
+  };
+
+  content::PluginService* plugin_service =
+      content::PluginService::GetInstance();
+  // This creates a PluginPrefs for our TestingProfile.
+  scoped_refptr<PluginPrefs> plugin_prefs =
+      PluginPrefs::GetForTestingProfile(profile());
+
+  // Verify our test assumptions.
+  {
+    ForceRefreshOfPlugins();
+    std::vector<content::WebPluginInfo> info;
+    ASSERT_FALSE(plugin_service->GetPluginInfoArray(
+        GURL(), kTestMIMEType, false, &info, NULL));
+    ASSERT_EQ(0u, info.size())
+        << "Name: " << info[0].name << ", Path: " << info[0].path.value();
+  }
+
+  ON_CALL(*delegate(), GetFileMimeType(
+      GetPathInDownloadDir(FILE_PATH_LITERAL("foo.fakeext")), _))
+      .WillByDefault(WithArg<1>(
+          ScheduleCallback(kTestMIMEType)));
+  scoped_ptr<content::MockDownloadItem> item(
+      CreateActiveDownloadItem(1, kSecureHandlingTestCase));
+  scoped_ptr<DownloadTargetInfo> target_info =
+      RunDownloadTargetDeterminer(GetPathInDownloadDir(kInitialPath),
+                                  item.get());
+  EXPECT_FALSE(target_info->is_filetype_handled_securely);
+
+  // Register a PPAPI plugin. This should count as handling the filetype
+  // securely.
+  ScopedRegisterInternalPlugin ppapi_plugin(
+      plugin_service,
+      content::WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS,
+      test_download_dir().AppendASCII("ppapi"),
+      kTestMIMEType,
+      "fakeext");
+
+  target_info = RunDownloadTargetDeterminer(
+      GetPathInDownloadDir(kInitialPath), item.get());
+  EXPECT_TRUE(target_info->is_filetype_handled_securely);
+
+  // Try disabling the plugin. Handling should no longer be considered secure.
+  EnablePlugin(false, plugin_prefs, ppapi_plugin.path());
+  target_info = RunDownloadTargetDeterminer(
+      GetPathInDownloadDir(kInitialPath), item.get());
+  EXPECT_FALSE(target_info->is_filetype_handled_securely);
+
+  // Now register an unsandboxed PPAPI plug-in. This plugin should not be
+  // considered secure.
+  ScopedRegisterInternalPlugin ppapi_unsandboxed_plugin(
+      plugin_service,
+      content::WebPluginInfo::PLUGIN_TYPE_PEPPER_UNSANDBOXED,
+      test_download_dir().AppendASCII("ppapi-nosandbox"),
+      kTestMIMEType,
+      "fakeext");
+
+  target_info = RunDownloadTargetDeterminer(
+      GetPathInDownloadDir(kInitialPath), item.get());
+  EXPECT_FALSE(target_info->is_filetype_handled_securely);
+}
+
+// Check if secure handling of filetypes is determined correctly for NPAPI
+// plugins.
+TEST_F(DownloadTargetDeterminerTestWithPlugin,
+       TargetDeterminer_CheckForSecureHandling_NPAPI) {
+  // All test cases run with GetPathInDownloadDir(kInitialPath) as the inital
+  // path.
+  const base::FilePath::CharType kInitialPath[] =
+      FILE_PATH_LITERAL("some_path/bar.txt");
+  const char kTestMIMEType[] = "application/x-example-should-not-exist";
+
+  DownloadTestCase kSecureHandlingTestCase = {
+    AUTOMATIC,
+    content::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+    "http://example.com/foo.fakeext", "",
+    FILE_PATH_LITERAL(""),
+
+    FILE_PATH_LITERAL(""),
+    FILE_PATH_LITERAL("foo.fakeext"),
+    DownloadItem::TARGET_DISPOSITION_OVERWRITE,
+
+    EXPECT_CRDOWNLOAD
+  };
+
+  content::PluginService* plugin_service =
+      content::PluginService::GetInstance();
+
+  // Can't run this test if NPAPI isn't supported.
+  if (!plugin_service->NPAPIPluginsSupported())
+    return;
+
+  // This creates a PluginPrefs for our TestingProfile.
+  scoped_refptr<PluginPrefs> plugin_prefs =
+      PluginPrefs::GetForTestingProfile(profile());
+
+  // Verify our test assumptions.
+  {
+    ForceRefreshOfPlugins();
+    std::vector<content::WebPluginInfo> info;
+    ASSERT_FALSE(plugin_service->GetPluginInfoArray(
+        GURL(), kTestMIMEType, false, &info, NULL));
+    ASSERT_EQ(0u, info.size())
+        << "Name: " << info[0].name << ", Path: " << info[0].path.value();
+  }
+
+  ON_CALL(*delegate(), GetFileMimeType(
+      GetPathInDownloadDir(FILE_PATH_LITERAL("foo.fakeext")), _))
+      .WillByDefault(WithArg<1>(
+          ScheduleCallback(kTestMIMEType)));
+  scoped_ptr<content::MockDownloadItem> item(
+      CreateActiveDownloadItem(1, kSecureHandlingTestCase));
+  scoped_ptr<DownloadTargetInfo> target_info =
+      RunDownloadTargetDeterminer(GetPathInDownloadDir(kInitialPath),
+                                  item.get());
+  EXPECT_FALSE(target_info->is_filetype_handled_securely);
+
+  // Register a NPAPI plugin. This should not count as handling the filetype
+  // securely.
+  ScopedRegisterInternalPlugin npapi_plugin(
+      plugin_service,
+      content::WebPluginInfo::PLUGIN_TYPE_NPAPI,
+      test_download_dir().AppendASCII("npapi"),
+      kTestMIMEType,
+      "fakeext");
+
+  target_info = RunDownloadTargetDeterminer(
+      GetPathInDownloadDir(kInitialPath), item.get());
+  EXPECT_FALSE(target_info->is_filetype_handled_securely);
+}
+#endif // ENABLE_PLUGINS
 
 }  // namespace

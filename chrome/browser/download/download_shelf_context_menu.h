@@ -28,6 +28,7 @@ class DownloadShelfContextMenu : public ui::SimpleMenuModel::Delegate,
     SHOW_IN_FOLDER = 1,    // Open a folder view window with the item selected.
     OPEN_WHEN_COMPLETE,    // Open the download when it's finished.
     ALWAYS_OPEN_TYPE,      // Default this file extension to always open.
+    PLATFORM_OPEN,         // Open using platform handler.
     CANCEL,                // Cancel the download.
     TOGGLE_PAUSE,          // Pause or resume a download.
     DISCARD,               // Discard the malicious download.

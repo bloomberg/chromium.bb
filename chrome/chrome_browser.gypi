@@ -560,6 +560,7 @@
         'browser/download/download_target_determiner.cc',
         'browser/download/download_target_determiner.h',
         'browser/download/download_target_determiner_delegate.h',
+        'browser/download/download_target_info.h',
         'browser/download/download_ui_controller.cc',
         'browser/download/download_ui_controller.h',
         'browser/download/drag_download_item.h',

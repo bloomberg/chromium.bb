@@ -56,6 +56,23 @@ enum ChromeDownloadSource {
   CHROME_DOWNLOAD_SOURCE_LAST_ENTRY,
 };
 
+// How a download was opened. Note that a download could be opened multiple
+// times.
+enum ChromeDownloadOpenMethod {
+  // The download was opened using the platform handler. There was no special
+  // handling for this download.
+  DOWNLOAD_OPEN_METHOD_DEFAULT_PLATFORM = 0,
+
+  // The download was opened using the browser bypassing the system handler.
+  DOWNLOAD_OPEN_METHOD_DEFAULT_BROWSER,
+
+  // The user chose to open the download using the system handler even though
+  // the preferred method was to open the download using the browser.
+  DOWNLOAD_OPEN_METHOD_USER_PLATFORM,
+
+  DOWNLOAD_OPEN_METHOD_LAST_ENTRY
+};
+
 // Increment one of the above counts.
 void RecordDownloadCount(ChromeDownloadCountTypes type);
 
@@ -65,5 +82,8 @@ void RecordDownloadSource(ChromeDownloadSource source);
 // Record that the user opened the confirmation dialog for a dangerous download.
 void RecordOpenedDangerousConfirmDialog(
     content::DownloadDangerType danger_type);
+
+// Record how a download was opened.
+void RecordDownloadOpenMethod(ChromeDownloadOpenMethod open_method);
 
 #endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_STATS_H_
