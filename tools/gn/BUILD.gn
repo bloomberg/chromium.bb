@@ -4,6 +4,10 @@
 
 gyp_file = "gn.gyp"
 
+# Not defined when doing a pure GYP build, this lets the code key off of
+# GN-specific features (the last change target).
+defines = [ "GN_BUILD" ]
+
 static_library("gn_lib") {
   sources = [
     "args.cc",
@@ -151,9 +155,11 @@ static_library("gn_lib") {
     "variables.cc",
     "variables.h",
   ]
+
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
+    "//build/util:last_change",
   ]
 }
 
@@ -161,6 +167,7 @@ executable("gn") {
   sources = [
     "gn_main.cc",
   ]
+
   deps = [
     ":gn_lib",
   ]

@@ -51,6 +51,8 @@ void PrintToplevelHelp() {
       "--tracelog: Writes a Chrome-compatible trace log to the given file.");
   PrintShortHelp(
       "-v: Verbose mode, print lots of logging.");
+  PrintShortHelp(
+      "--version: Print the GN binary's version and exit.");
 
   // Functions.
   OutputString("\nBuildfile functions (type \"gn help <function>\" for more "
