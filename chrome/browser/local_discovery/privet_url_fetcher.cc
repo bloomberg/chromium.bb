@@ -19,7 +19,6 @@ namespace {
 const char kXPrivetTokenHeaderPrefix[] = "X-Privet-Token: ";
 const char kXPrivetEmptyToken[] = "\"\"";
 const int kPrivetMaxRetries = 20;
-const int kPrivetTimeoutOnError = 5;
 }
 
 void PrivetURLFetcher::Delegate::OnNeedPrivetToken(
@@ -91,9 +90,8 @@ void PrivetURLFetcher::SetUploadData(const std::string& upload_content_type,
 }
 
 void PrivetURLFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
-  if (source->GetStatus().status() != net::URLRequestStatus::SUCCESS ||
-      source->GetResponseCode() == net::HTTP_SERVICE_UNAVAILABLE) {
-    ScheduleRetry(kPrivetTimeoutOnError);
+  if (source->GetStatus().status() != net::URLRequestStatus::SUCCESS) {
+    delegate_->OnError(this, URL_FETCH_ERROR);
     return;
   }
 
@@ -180,7 +178,7 @@ void PrivetURLFetcher::RefreshToken(const std::string& token) {
 
 bool PrivetURLFetcher::PrivetErrorTransient(const std::string& error) {
   return (error == kPrivetErrorDeviceBusy) ||
-      (error == kPrivetErrorPendingUserAction);
+         (error == kPrivetErrorPendingUserAction);
 }
 
 PrivetURLFetcherFactory::PrivetURLFetcherFactory(
