@@ -339,8 +339,10 @@ int BrowserAccessibilityAndroid::GetEditableTextLength() const {
 }
 
 bool BrowserAccessibilityAndroid::HasFocusableChild() const {
-  for (uint32 i = 0; i < PlatformChildCount(); i++) {
-    BrowserAccessibility* child = PlatformGetChild(i);
+  // This is called from PlatformIsLeaf, so don't call PlatformChildCount
+  // from within this!
+  for (uint32 i = 0; i < child_count(); i++) {
+    BrowserAccessibility* child = children()[i];
     if (child->HasState(blink::WebAXStateFocusable))
       return true;
     if (static_cast<BrowserAccessibilityAndroid*>(child)->HasFocusableChild())
