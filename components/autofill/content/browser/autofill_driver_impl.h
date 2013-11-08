@@ -52,6 +52,8 @@ class AutofillDriverImpl : public AutofillDriver,
                                       const FormData& data) OVERRIDE;
   virtual void SendAutofillTypePredictionsToRenderer(
       const std::vector<FormStructure*>& forms) OVERRIDE;
+  virtual void RendererShouldAcceptDataListSuggestion(
+      const base::string16& value) OVERRIDE;
   virtual void RendererShouldClearFilledForm() OVERRIDE;
   virtual void RendererShouldClearPreviewedForm() OVERRIDE;
 

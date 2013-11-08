@@ -44,6 +44,10 @@ void TestAutofillDriver::SendAutofillTypePredictionsToRenderer(
     const std::vector<FormStructure*>& forms) {
 }
 
+void TestAutofillDriver::RendererShouldAcceptDataListSuggestion(
+      const base::string16& value) {
+}
+
 void TestAutofillDriver::RendererShouldClearFilledForm() {
 }
 

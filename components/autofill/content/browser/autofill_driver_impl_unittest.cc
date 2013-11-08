@@ -7,6 +7,7 @@
 
 #include "base/command_line.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/autofill/content/browser/autofill_driver_impl.h"
 #include "components/autofill/core/browser/autofill_common_test.h"
@@ -81,6 +82,26 @@ class AutofillDriverImplTest : public ChromeRenderViewHostTestHarness {
   }
 
  protected:
+  // Searches for an |AutofillMsg_AcceptDataListSuggestion| message in the queue
+  // of sent IPC messages. If none is present, returns false. Otherwise,
+  // extracts the first |AutofillMsg_AcceptDataListSuggestion| message, fills
+  // the output parameter with the value of the message's parameter, and clears
+  // the queue of sent messages.
+  bool GetAcceptDataListSuggestion(
+      base::string16* value) {
+    const uint32 kMsgID = AutofillMsg_AcceptDataListSuggestion::ID;
+    const IPC::Message* message =
+        process()->sink().GetFirstMessageMatching(kMsgID);
+    if (!message)
+      return false;
+    Tuple1<base::string16> autofill_param;
+    AutofillMsg_AcceptDataListSuggestion::Read(message, &autofill_param);
+    if (value)
+      *value = autofill_param.a;
+    process()->sink().ClearMessages();
+    return true;
+  }
+
   // Searches for an |AutofillMsg_FormDataFilled| message in the queue of sent
   // IPC messages. If none is present, returns false. Otherwise, extracts the
   // first |AutofillMsg_FormDataFilled| message, fills the output parameters
@@ -98,7 +119,6 @@ class AutofillDriverImplTest : public ChromeRenderViewHostTestHarness {
       *page_id = autofill_param.a;
     if (results)
       *results = autofill_param.b;
-
     process()->sink().ClearMessages();
     return true;
   }
@@ -209,6 +229,14 @@ TEST_F(AutofillDriverImplTest, FillActionSentToRenderer) {
   driver_->SetRendererActionOnFormDataReception(
       AutofillDriver::FORM_DATA_ACTION_FILL);
   EXPECT_TRUE(HasMessageMatchingID(AutofillMsg_SetAutofillActionFill::ID));
+}
+
+TEST_F(AutofillDriverImplTest, AcceptDataListSuggestion) {
+  base::string16 inputValue(UTF8ToUTF16("barfoo"));
+  base::string16 outputValue;
+  driver_->RendererShouldAcceptDataListSuggestion(inputValue);
+  EXPECT_TRUE(GetAcceptDataListSuggestion(&outputValue));
+  EXPECT_EQ(inputValue, outputValue);
 }
 
 TEST_F(AutofillDriverImplTest, ClearFilledFormSentToRenderer) {

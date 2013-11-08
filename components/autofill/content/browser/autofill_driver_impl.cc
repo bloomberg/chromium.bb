@@ -126,6 +126,15 @@ void AutofillDriverImpl::SendAutofillTypePredictionsToRenderer(
                                                     type_predictions));
 }
 
+void AutofillDriverImpl::RendererShouldAcceptDataListSuggestion(
+    const base::string16& value) {
+  if (!RendererIsAvailable())
+    return;
+  content::RenderViewHost* host = web_contents()->GetRenderViewHost();
+  host->Send(new AutofillMsg_AcceptDataListSuggestion(host->GetRoutingID(),
+                                                      value));
+}
+
 void AutofillDriverImpl::RendererShouldClearFilledForm() {
   if (!RendererIsAvailable())
     return;

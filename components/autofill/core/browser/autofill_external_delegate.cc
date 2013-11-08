@@ -193,8 +193,7 @@ void AutofillExternalDelegate::DidAcceptSuggestion(const base::string16& value,
         autofill_query_field_, value);
     DCHECK(success);
   } else if (identifier == WebAutofillClient::MenuItemIDDataListEntry) {
-    host->Send(new AutofillMsg_AcceptDataListSuggestion(host->GetRoutingID(),
-                                                        value));
+    autofill_driver_->RendererShouldAcceptDataListSuggestion(value);
   } else if (identifier == WebAutofillClient::MenuItemIDAutocompleteEntry) {
     // User selected an Autocomplete, so we fill directly.
     host->Send(new AutofillMsg_SetNodeText(host->GetRoutingID(), value));

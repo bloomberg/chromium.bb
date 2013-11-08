@@ -42,6 +42,8 @@ class MockAutofillDriver : public TestAutofillDriver {
   // Mock methods to enable testability.
   MOCK_METHOD1(SetRendererActionOnFormDataReception,
                void(RendererFormDataAction action));
+  MOCK_METHOD1(RendererShouldAcceptDataListSuggestion,
+               void(const base::string16&));
   MOCK_METHOD0(RendererShouldClearFilledForm, void());
   MOCK_METHOD0(RendererShouldClearPreviewedForm, void());
 
@@ -431,6 +433,18 @@ TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegatePasswordSuggestions) {
   external_delegate_->DidAcceptSuggestion(
       suggestions[0],
       WebAutofillClient::MenuItemIDPasswordEntry);
+}
+
+// Test that the driver is directed to accept the data list after being notified
+// that the user accepted the data list suggestion.
+TEST_F(AutofillExternalDelegateUnitTest, ExternalDelegateAcceptSuggestion) {
+  EXPECT_CALL(manager_delegate_, HideAutofillPopup());
+  base::string16 dummyString(ASCIIToUTF16("baz qux"));
+  EXPECT_CALL(*autofill_driver_,
+              RendererShouldAcceptDataListSuggestion(dummyString));
+  external_delegate_->DidAcceptSuggestion(
+      dummyString,
+      WebAutofillClient::MenuItemIDDataListEntry);
 }
 
 // Test that the driver is directed to clear the form after being notified that

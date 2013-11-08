@@ -67,6 +67,10 @@ class AutofillDriver {
   virtual void SendAutofillTypePredictionsToRenderer(
       const std::vector<FormStructure*>& forms) = 0;
 
+  // Tells the renderer to accept data list suggestions for |value|.
+  virtual void RendererShouldAcceptDataListSuggestion(
+      const base::string16& value) = 0;
+
   // Tells the renderer to clear the currently filled Autofill results.
   virtual void RendererShouldClearFilledForm() = 0;
 
