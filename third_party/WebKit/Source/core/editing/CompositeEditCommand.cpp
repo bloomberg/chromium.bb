@@ -998,6 +998,11 @@ void CompositeEditCommand::cloneParagraphUnderNewElement(Position& start, Positi
         }
     }
 
+    // Scripts specified in javascript protocol may remove |outerNode|
+    // during insertion, e.g. <iframe src="javascript:...">
+    if (!outerNode->inDocument())
+        return;
+
     // Handle the case of paragraphs with more than one node,
     // cloning all the siblings until end.deprecatedNode() is reached.
 
