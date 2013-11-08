@@ -28,44 +28,4 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef WebInbandTextTrack_h
-#define WebInbandTextTrack_h
-
-namespace blink {
-
-class WebString;
-class WebInbandTextTrackClient;
-
-class WebInbandTextTrack {
-public:
-    enum Kind {
-        KindSubtitles,
-        KindCaptions,
-        KindDescriptions,
-        KindChapters,
-        KindMetadata,
-        KindNone
-    };
-
-    // FIXME: Remove after Chromium's use in WebInbandTextTrackImpl has been removed.
-    enum Mode {
-        ModeDisabled,
-        ModeHidden,
-        ModeShowing
-    };
-
-    virtual ~WebInbandTextTrack() {}
-
-    virtual void setClient(WebInbandTextTrackClient*) = 0;
-    virtual WebInbandTextTrackClient* client() = 0;
-
-    virtual Kind kind() const = 0;
-    virtual WebString label() const = 0;
-    virtual WebString language() const = 0;
-
-    virtual int textTrackIndex() const = 0;
-};
-
-} // namespace blink
-
-#endif
+#include "public/platform/WebInbandTextTrack.h"
