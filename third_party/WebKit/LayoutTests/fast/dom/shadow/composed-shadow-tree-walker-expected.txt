@@ -351,6 +351,21 @@ Traverse in backward.
 #b
 #a
 
+Test for a shadow insertion point where nothing is distributed.
+Composed Shadow Tree:
+#a
+	#b
+	#c
+
+Traverse in forward.
+#a
+#b
+#c
+Traverse in backward.
+#c
+#b
+#a
+
 PASS successfullyParsed is true
 
 TEST COMPLETE

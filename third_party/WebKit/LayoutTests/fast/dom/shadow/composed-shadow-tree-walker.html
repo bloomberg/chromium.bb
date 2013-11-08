@@ -216,6 +216,16 @@ testComposedShadowTree(
               createDOM('div', {'id': 'child-1', 'class': 'foo'}),
               createDOM('div', {'id': 'not-selected', 'class': 'foo'}),
               createDOM('div', {'id': 'child-2', 'class': 'foo'})));
+
+debug('Test for a shadow insertion point where nothing is distributed.');
+testComposedShadowTree(
+    createDOM('div', {'id': 'a'},
+              createShadowRoot(),
+              createShadowRoot(
+                  createDOM('div', {'id': 'b'}),
+                  createDOM('shadow', {'id': 'shadow'},
+                            createDOM('div', {'id': 'should-not-be-used'})),
+                  createDOM('div', {'id': 'c'}))));
 </script>
 </body>
 </html>
