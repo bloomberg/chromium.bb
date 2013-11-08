@@ -56,6 +56,9 @@ var StatsTable = (function(ssrcInfoManager) {
         container = document.createElement('div');
         container.id = containerId;
         container.className = 'stats-table-container';
+        var head = document.createElement('div');
+        head.textContent = 'Stats Tables';
+        container.appendChild(head);
         peerConnectionElement.appendChild(container);
       }
       return container;
@@ -78,8 +81,14 @@ var StatsTable = (function(ssrcInfoManager) {
       var table = $(tableId);
       if (!table) {
         var container = this.ensureStatsTableContainer_(peerConnectionElement);
+        var details = document.createElement('details');
+        container.appendChild(details);
+        var summary = document.createElement('summary');
+        summary.textContent = report.id;
+        details.appendChild(summary);
+
         table = document.createElement('table');
-        container.appendChild(table);
+        details.appendChild(table);
         table.id = tableId;
         table.border = 1;
 

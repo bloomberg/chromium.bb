@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
-var peerConnectionsListElem = null;
+var tabView = null;
 var ssrcInfoManager = null;
 var peerConnectionUpdateTable = null;
 var statsTable = null;
@@ -79,6 +78,7 @@ var PeerConnectionRecord = (function() {
 // will be shifted out when the buffer is full.
 var MAX_STATS_DATA_POINT_BUFFER_SIZE = 1000;
 
+<include src="tab_view.js"/>
 <include src="data_series.js"/>
 <include src="ssrc_info_manager.js"/>
 <include src="stats_graph_helper.js"/>
@@ -88,8 +88,8 @@ var MAX_STATS_DATA_POINT_BUFFER_SIZE = 1000;
 
 
 function initialize() {
-  peerConnectionsListElem = $('peer-connections-list');
-  dumpCreator = new DumpCreator(peerConnectionsListElem);
+  dumpCreator = new DumpCreator($('content-root'));
+  tabView = new TabView($('content-root'));
   ssrcInfoManager = new SsrcInfoManager();
   peerConnectionUpdateTable = new PeerConnectionUpdateTable();
   statsTable = new StatsTable(ssrcInfoManager);
@@ -98,7 +98,7 @@ function initialize() {
 
   // Requests stats from all peer connections every second.
   window.setInterval(function() {
-    if (peerConnectionsListElem.getElementsByTagName('li').length > 0)
+    if (Object.keys(peerConnectionDataStore).length > 0)
       chrome.send('getAllStats');
   }, 1000);
 }
@@ -158,7 +158,7 @@ function removePeerConnection(data) {
   var element = $(getPeerConnectionId(data));
   if (element) {
     delete peerConnectionDataStore[element.id];
-    peerConnectionsListElem.removeChild(element);
+    tabView.removeTab(element.id);
   }
 }
 
@@ -180,23 +180,11 @@ function addPeerConnection(data) {
 
   var peerConnectionElement = $(id);
   if (!peerConnectionElement) {
-    peerConnectionElement = document.createElement('li');
-    peerConnectionsListElem.appendChild(peerConnectionElement);
-    peerConnectionElement.id = id;
+    peerConnectionElement = tabView.addTab(id, data.url);
   }
   peerConnectionElement.innerHTML =
-      '<h3>PeerConnection ' + peerConnectionElement.id + '</h3>' +
-      '<div>' + data.url + ' ' + data.servers + ' ' + data.constraints +
-      '</div>';
-
-  // Clicking the heading can expand or collapse the peer connection item.
-  peerConnectionElement.firstChild.title = 'Click to collapse or expand';
-  peerConnectionElement.firstChild.addEventListener('click', function(e) {
-    if (e.target.parentElement.className == '')
-      e.target.parentElement.className = 'peer-connection-hidden';
-    else
-      e.target.parentElement.className = '';
-  });
+      '<p>' + data.url + ' ' + data.servers + ' ' + data.constraints +
+      '</p>';
 
   return peerConnectionElement;
 }

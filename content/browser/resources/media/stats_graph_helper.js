@@ -87,6 +87,7 @@ var statsNameBlackList = {
   'googComponent': true,
   'googLocalAddress': true,
   'googRemoteAddress': true,
+  'googFingerprint': true,
 };
 
 var graphViews = {};

@@ -8,12 +8,10 @@
   padding-bottom: 3px;
 }
 
-.peer-connection-hidden > *:not(h3) {
-  display:none;
-}
-
 .update-log-container {
   float: left;
+  width: 50em;
+  overflow: auto;
 }
 
 .ssrc-info-block {
@@ -47,43 +45,19 @@
 .stats-table-container {
   float: left;
   padding: 0 0 0 0;
+  width: 50em;
+  overflow: auto;
+}
+
+.stats-table-container >div:first-child {
+  font-size: 0.8em;
+  font-weight: bold;
+  text-align: center;
+  padding: 0 0 1em 0;
 }
 
 body {
   font-family: 'Lucida Grande', sans-serif;
-  padding: 20px;
-}
-
-details {
-  min-width: 30em;
-}
-
-h3 + div {
-  font-size: 0.8em;
-  margin: 0 0 1.2em 0;
-}
-
-h2 {
-  border-bottom: 1px solid #eee;
-  color: #666;
-  font-size: 1.1em;
-  margin: 0 0 1.6em 0;
-  padding: 0 0 0.7em 0;
-}
-
-h3 {
-  color: #555;
-  cursor: pointer;
-  font-size: 0.9em;
-  margin: 2em 0 0.5em 0;
-  text-decoration: underline;
-}
-
-li {
-  clear: both;
-  list-style-type: none;
-  margin: none;
-  padding: none;
 }
 
 table {
@@ -95,10 +69,8 @@ td {
   border: none;
   font-size: 0.8em;
   padding: 0 1em 0.5em 0;
-}
-
-td:first-child {
-  padding-top: 0.3em;
+  min-width: 10em;
+  word-break: break-all;
 }
 
 table > tr {
@@ -111,8 +83,24 @@ th {
   padding: 0 0 0.5em 0;
 }
 
-ul {
-  margin: none;
-  padding: none;
-  -webkit-padding-start: 0px;
+.tab-head {
+  background-color: rgb(220, 220, 220);
+  margin: 10px 5px 0 5px;
+  text-decoration: underline;
+  cursor: pointer;
+  display: inline-block;
+  width: 32%;
+}
+.active-tab-head {
+  background-color: turquoise;
+  font-weight: bold;
+}
+.tab-body {
+  border: 1px solid turquoise;
+  border-top-width: 3px;
+  padding: 0 10px 500px 10px;
+  display: none;
+}
+.active-tab-body {
+  display: block;
 }
