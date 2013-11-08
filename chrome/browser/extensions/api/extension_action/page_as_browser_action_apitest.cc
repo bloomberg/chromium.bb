@@ -19,10 +19,10 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/feature_switch.h"
 
 // These are a mash-up of the tests from from page_actions_apitest.cc and
 // browser_actions_apitest.cc.
@@ -35,9 +35,10 @@ class PageAsBrowserActionApiTest : public ExtensionApiTest {
   PageAsBrowserActionApiTest() {}
   virtual ~PageAsBrowserActionApiTest() {}
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kScriptBadges, "1");
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+    ExtensionApiTest::SetUpInProcessBrowserTestFixture();
+    FeatureSwitch::script_badges()->SetOverrideValue(
+        FeatureSwitch::OVERRIDE_ENABLED);
   }
 
  protected:

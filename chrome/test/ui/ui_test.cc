@@ -50,6 +50,7 @@
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/test_switches.h"
 #include "chrome/test/base/testing_profile.h"
+#include "extensions/common/switches.h"
 #include "net/base/net_util.h"
 #include "ui/gl/gl_implementation.h"
 #include "url/gurl.h"
@@ -189,7 +190,7 @@ void UITestBase::SetLaunchSwitches() {
     launch_arguments_.AppendSwitch(switches::kStatsCollectionController);
   // Allow off-store extension installs.
   launch_arguments_.AppendSwitchASCII(
-      switches::kEasyOffStoreExtensionInstall, "1");
+      extensions::switches::kEasyOffStoreExtensionInstall, "1");
   if (!homepage_.empty()) {
     // Pass |homepage_| both as an arg (so that it opens on startup) and to the
     // homepage switch (so that the homepage is set).

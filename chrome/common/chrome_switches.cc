@@ -603,12 +603,6 @@ const char kEnableDnsProbes[]               = "enable-dns-probes";
 // Enables the DOM distiller.
 const char kEnableDomDistiller[]               = "enable-dom-distiller";
 
-// Enables extensions to be easily installed from sites other than the web
-// store. Without this flag, they can still be installed, but must be manually
-// dragged onto chrome://extensions/.
-const char kEasyOffStoreExtensionInstall[]  =
-    "easy-off-store-extension-install";
-
 // Enables experimentation with ephemeral apps, which are launched without
 // installing in Chrome.
 const char kEnableEphemeralApps[]           = "enable-ephemeral-apps";
@@ -871,9 +865,6 @@ const char kForceVariationIds[]             = "force-variation-ids";
 // they are a dasher user or not. Used to allow any GAIA account to be used for
 // testing the cloud policy framework.
 const char kForceLoadCloudPolicy[]          = "force-load-cloud-policy";
-
-// Enables setting global commands through the Extensions Commands API.
-const char kGlobalCommands[]                = "global-commands";
 
 // Specifies an alternate URL to use for speaking to Google. Useful for testing.
 const char kGoogleBaseURL[]                 = "google-base-url";
@@ -1201,10 +1192,6 @@ const char kProfilingFlush[]                = "profiling-flush";
 // Specifies a custom URL for fetching NTP promo data.
 const char kPromoServerURL[]                = "promo-server-url";
 
-// Should we prompt the user before allowing external extensions to install?
-// Default is yes.
-const char kPromptForExternalExtensions[]   = "prompt-for-external-extensions";
-
 // Forces proxy auto-detection.
 const char kProxyAutoDetect[]               = "proxy-auto-detect";
 
@@ -1288,13 +1275,6 @@ const char kSbDisableSideEffectFreeWhitelist[] =
 
 // URL to send safebrowsing download feedback reports to.
 const char kSbDownloadFeedbackURL[] = "safebrowsing-download-feedback-url";
-
-// Enables or disables extension scripts badges in the location bar.
-const char kScriptBadges[]                  = "script-badges";
-
-// Enable or diable the "script bubble" icon in the URL bar that tells you how
-// many extensions are running scripts on a page.
-const char kScriptBubble[]                  = "script-bubble";
 
 // Causes the process to run as a service process.
 const char kServiceProcess[]                = "service";

@@ -1,14 +1,13 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/feature_switch.h"
+#include "extensions/common/feature_switch.h"
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
-#include "chrome/common/chrome_switches.h"
 #include "extensions/common/switches.h"
 
 namespace extensions {
@@ -19,19 +18,19 @@ class CommonSwitches {
  public:
   CommonSwitches()
       : easy_off_store_install(
-            ::switches::kEasyOffStoreExtensionInstall,
+            switches::kEasyOffStoreExtensionInstall,
             FeatureSwitch::DEFAULT_DISABLED),
         global_commands(
-            ::switches::kGlobalCommands,
+            switches::kGlobalCommands,
             FeatureSwitch::DEFAULT_DISABLED),
         script_badges(
-            ::switches::kScriptBadges,
+            switches::kScriptBadges,
             FeatureSwitch::DEFAULT_DISABLED),
         script_bubble(
-            ::switches::kScriptBubble,
+            switches::kScriptBubble,
             FeatureSwitch::DEFAULT_DISABLED),
         prompt_for_external_extensions(
-            ::switches::kPromptForExternalExtensions,
+            switches::kPromptForExternalExtensions,
 #if defined(OS_WIN)
             FeatureSwitch::DEFAULT_ENABLED),
 #else

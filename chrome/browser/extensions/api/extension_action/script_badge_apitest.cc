@@ -13,11 +13,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/feature_switch.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -30,9 +30,10 @@ class ScriptBadgeApiTest : public ExtensionApiTest {
   ScriptBadgeApiTest() : trunk_(chrome::VersionInfo::CHANNEL_UNKNOWN) {}
 
  protected:
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    ExtensionApiTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kScriptBadges, "1");
+  virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
+    ExtensionApiTest::SetUpInProcessBrowserTestFixture();
+    FeatureSwitch::script_badges()->SetOverrideValue(
+        FeatureSwitch::OVERRIDE_ENABLED);
   }
 
  private:

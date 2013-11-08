@@ -47,6 +47,8 @@
         'common/extension_urls.h',
         'common/extensions_client.cc',
         'common/extensions_client.h',
+        'common/feature_switch.cc',
+        'common/feature_switch.h',
         'common/features/feature.cc',
         'common/features/feature.h',
         'common/features/feature_provider.cc',

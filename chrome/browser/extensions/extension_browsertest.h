@@ -16,10 +16,10 @@
 #include "chrome/browser/extensions/extension_test_notification_observer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/feature_switch.h"
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/common/feature_switch.h"
 #include "extensions/common/manifest.h"
 
 class ExtensionProcessManager;

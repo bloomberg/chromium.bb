@@ -12,8 +12,8 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/common/extensions/feature_switch.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "extensions/common/feature_switch.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)

@@ -16,7 +16,12 @@ const char kAllowLegacyExtensionManifests[] =
 // Allows injecting extensions and user scripts on the extensions gallery
 // site. Normally prevented for security reasons, but can be useful for
 // automation testing of the gallery.
-const char kAllowScriptingGallery[]         = "allow-scripting-gallery";
+const char kAllowScriptingGallery[] = "allow-scripting-gallery";
+
+// Enables extensions to be easily installed from sites other than the web
+// store. Without this flag, they can still be installed, but must be manually
+// dragged onto chrome://extensions/.
+const char kEasyOffStoreExtensionInstall[] = "easy-off-store-extension-install";
 
 // Enables extension APIs that are in development.
 const char kEnableExperimentalExtensionApis[] =
@@ -37,7 +42,21 @@ const char kEventPageSuspendingTime[]       = "event-page-unloading-time";
 // Enables extensions running scripts on chrome:// URLs.
 // Extensions still need to explicitly request access to chrome:// URLs in the
 // manifest.
-const char kExtensionsOnChromeURLs[]        = "extensions-on-chrome-urls";
+const char kExtensionsOnChromeURLs[] = "extensions-on-chrome-urls";
+
+// Enables setting global commands through the Extensions Commands API.
+const char kGlobalCommands[] = "global-commands";
+
+// Should we prompt the user before allowing external extensions to install?
+// Default is yes.
+const char kPromptForExternalExtensions[] = "prompt-for-external-extensions";
+
+// Enables or disables extension scripts badges in the location bar.
+const char kScriptBadges[] = "script-badges";
+
+// Enable or diable the "script bubble" icon in the URL bar that tells you how
+// many extensions are running scripts on a page.
+const char kScriptBubble[] = "script-bubble";
 
 // Makes component extensions appear in chrome://settings/extensions.
 const char kShowComponentExtensionOptions[] =
