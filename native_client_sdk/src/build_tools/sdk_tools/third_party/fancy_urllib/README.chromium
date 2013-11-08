@@ -1,6 +1,6 @@
 Name: fancy_urllib
 URL: http://googleappengine.googlecode.com/svn/trunk/python/lib/fancy_urllib
-License: Apache
+License: Apache 2.0
 License File: README.chromium
 Security Critical: no
 
