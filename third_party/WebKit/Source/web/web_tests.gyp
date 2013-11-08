@@ -159,13 +159,5 @@
                 'includes': [ '../../../../build/apk_test.gypi' ],
             }],
         }],
-        ['clang==1', {
-            'target_defaults': {
-                'cflags': ['-Wunused-parameter'],
-                'xcode_settings': {
-                    'WARNING_CFLAGS': ['-Wunused-parameter'],
-                },
-            },
-        }],
     ],
 }
