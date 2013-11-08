@@ -31,7 +31,7 @@ def FindChrome(src_dir, configs, verbose=False):
         'out/%s/chrome' % config,
         # Mac Chromium ninja builder
         'out/%s/Chromium.app/Contents/MacOS/Chromium' % config,
-        # Mac release make builder
+        # Mac release ninja builder
         'out/%s/Google Chrome.app/Contents/MacOS/Google Chrome' % config,
         # Mac Chromium xcode builder
         'xcodebuild/%s/Chromium.app/Contents/MacOS/Chromium' % config,

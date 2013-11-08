@@ -103,6 +103,14 @@ def BuildAndTest(options):
   nacl_dir = os.path.join(src_dir, 'native_client')
 
   # Decide platform specifics.
+  if options.browser_path:
+    chrome_filename = options.browser_path
+  else:
+    chrome_filename = find_chrome.FindChrome(src_dir, [options.mode])
+    if chrome_filename is None:
+      raise Exception('Cannot find a chome binary - specify one with '
+                      '--browser_path?')
+
   env = dict(os.environ)
   if sys.platform in ['win32', 'cygwin']:
     if options.bits == 64:
@@ -127,7 +135,18 @@ def BuildAndTest(options):
     env['PATH'] += ';' + msvs_path
     scons = [python, 'scons.py']
   elif sys.platform == 'darwin':
-    bits = 32
+    if options.bits == 64:
+      bits = 64
+    elif options.bits == 32:
+      bits = 32
+    else:
+      p = subprocess.Popen(['file', chrome_filename], stdout=subprocess.PIPE)
+      (p_stdout, _) = p.communicate()
+      assert p.returncode == 0
+      if p_stdout.find('executable x86_64') >= 0:
+        bits = 64
+      else:
+        bits = 32
     scons = [python, 'scons.py']
   else:
     p = subprocess.Popen(
@@ -147,14 +166,6 @@ def BuildAndTest(options):
     # xvfb-run has a 2-second overhead per invocation, so it is cheaper to wrap
     # the entire build step rather than each test (browser_headless=1).
     scons = ['xvfb-run', '--auto-servernum', python, 'scons.py']
-
-  if options.browser_path:
-    chrome_filename = options.browser_path
-  else:
-    chrome_filename = find_chrome.FindChrome(src_dir, [options.mode])
-    if chrome_filename is None:
-      raise Exception('Cannot find a chome binary - specify one with '
-                      '--browser_path?')
 
   if options.jobs > 1:
     scons.append('-j%d' % options.jobs)
