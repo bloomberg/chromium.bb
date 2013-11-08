@@ -351,7 +351,7 @@ bool Scrollbar::gestureEvent(const PlatformGestureEvent& evt)
     switch (evt.type()) {
     case PlatformEvent::GestureShowPress:
         setPressedPart(theme()->hitTest(this, evt.position()));
-        m_pressedPos = (orientation() == HorizontalScrollbar ? convertFromContainingWindow(evt.position()).x() : convertFromContainingWindow(evt.position()).y());
+        m_pressedPos = orientation() == HorizontalScrollbar ? convertFromContainingWindow(evt.position()).x() : convertFromContainingWindow(evt.position()).y();
         return true;
     case PlatformEvent::GestureTapDownCancel:
     case PlatformEvent::GestureScrollBegin:
@@ -363,7 +363,7 @@ bool Scrollbar::gestureEvent(const PlatformGestureEvent& evt)
     case PlatformEvent::GestureScrollUpdate:
     case PlatformEvent::GestureScrollUpdateWithoutPropagation:
         if (m_pressedPart == ThumbPart) {
-            m_scrollPos += HorizontalScrollbar ? evt.deltaX() : evt.deltaY();
+            m_scrollPos += orientation() == HorizontalScrollbar ? evt.deltaX() : evt.deltaY();
             moveThumb(m_scrollPos, false);
             return true;
         }
@@ -398,7 +398,7 @@ void Scrollbar::mouseMoved(const PlatformMouseEvent& evt)
     }
 
     if (m_pressedPart != NoPart)
-        m_pressedPos = (orientation() == HorizontalScrollbar ? convertFromContainingWindow(evt.position()).x() : convertFromContainingWindow(evt.position()).y());
+        m_pressedPos = orientation() == HorizontalScrollbar ? convertFromContainingWindow(evt.position()).x() : convertFromContainingWindow(evt.position()).y();
 
     ScrollbarPart part = theme()->hitTest(this, evt.position());
     if (part != m_hoveredPart) {
@@ -458,7 +458,7 @@ void Scrollbar::mouseDown(const PlatformMouseEvent& evt)
         return;
 
     setPressedPart(theme()->hitTest(this, evt.position()));
-    int pressedPos = (orientation() == HorizontalScrollbar ? convertFromContainingWindow(evt.position()).x() : convertFromContainingWindow(evt.position()).y());
+    int pressedPos = orientation() == HorizontalScrollbar ? convertFromContainingWindow(evt.position()).x() : convertFromContainingWindow(evt.position()).y();
 
     if ((m_pressedPart == BackTrackPart || m_pressedPart == ForwardTrackPart) && theme()->shouldCenterOnThumb(this, evt)) {
         setHoveredPart(ThumbPart);
