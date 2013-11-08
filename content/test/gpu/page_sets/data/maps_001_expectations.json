@@ -1,0 +1,26 @@
+[
+  {
+    "comment": "green forest",
+    "location": [ 550, 475 ],
+    "color": [ 203, 222, 170 ],
+    "tolerance": 3
+  },
+  {
+    "comment": "blue lake",
+    "location": [ 250, 550 ],
+    "color": [ 187, 222, 255 ],
+    "tolerance": 3
+  },
+  {
+    "comment": "dark background",
+    "location": [ 600, 500 ],
+    "color": [ 233, 229, 220 ],
+    "tolerance": 3
+  },
+  {
+    "comment": "light background",
+    "location": [ 1000, 450 ],
+    "color": [ 242, 237, 231 ],
+    "tolerance": 3
+  }
+]
