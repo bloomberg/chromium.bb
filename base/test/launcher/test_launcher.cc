@@ -166,18 +166,6 @@ bool TakeInt32FromEnvironment(const char* const var, int32* result) {
   return true;
 }
 
-// Unsets the environment variable |name| and returns true on success.
-// Also returns true if the variable just doesn't exist.
-bool UnsetEnvironmentVariableIfExists(const std::string& name) {
-  scoped_ptr<Environment> env(Environment::Create());
-  std::string str_val;
-
-  if (!env->GetVar(name.c_str(), &str_val))
-    return true;
-
-  return env->UnSetVar(name.c_str());
-}
-
 // For a basic pattern matching for gtest_filter options.  (Copied from
 // gtest.cc, see the comment below and http://crbug.com/44497)
 bool PatternMatchesString(const char* pattern, const char* str) {
@@ -627,11 +615,6 @@ bool TestLauncher::Init() {
                << ", " << kTestTotalShards << "=" << total_shards_ << ".\n";
     return false;
   }
-
-  // Make sure we don't pass any sharding-related environment to the child
-  // processes. This test launcher implements the sharding completely.
-  CHECK(UnsetEnvironmentVariableIfExists("GTEST_TOTAL_SHARDS"));
-  CHECK(UnsetEnvironmentVariableIfExists("GTEST_SHARD_INDEX"));
 
   if (command_line->HasSwitch(kGTestRepeatFlag) &&
       !StringToInt(command_line->GetSwitchValueASCII(kGTestRepeatFlag),
