@@ -33,18 +33,6 @@
       'test/chromedriver/session_unittest.cc',
       'test/chromedriver/util_unittest.cc',
     ],
-    'chromedriver_test_sources': [
-      'test/chromedriver/key_converter_unittest.cc',
-      'test/chromedriver/keycode_text_conversion_unittest.cc',
-      'test/chromedriver/net/net_util_unittest.cc',
-      'test/chromedriver/net/port_server_unittest.cc',
-      'test/chromedriver/net/sync_websocket_impl_unittest.cc',
-      'test/chromedriver/net/test_http_server.cc',
-      'test/chromedriver/net/test_http_server.h',
-      'test/chromedriver/net/websocket_unittest.cc',
-      'test/chromedriver/test_util.cc',
-      'test/chromedriver/test_util.h',
-    ],
     'pyautolib_sources': [
       'app/chrome_command_ids.h',
       'app/chrome_dll_resource.h',
@@ -901,30 +889,16 @@
         '..,'
       ],
       'sources': [
-        '<@(chromedriver_test_sources)',
-      ],
-      # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
-      'msvs_disabled_warnings': [ 4267, ],
-    },
-    # TODO(kkania): Remove when infra no longer references this.
-    {
-      'target_name': 'chromedriver2_tests',
-      'type': 'executable',
-      'dependencies': [
-        'chromedriver_lib',
-        '../base/base.gyp:base',
-        '../base/base.gyp:run_all_unittests',
-        '../net/net.gyp:http_server',
-        '../net/net.gyp:net',
-        '../net/net.gyp:net_test_support',
-        '../testing/gtest.gyp:gtest',
-        '../url/url.gyp:url_lib',
-      ],
-      'include_dirs': [
-        '..,'
-      ],
-      'sources': [
-        '<@(chromedriver_test_sources)',
+        'test/chromedriver/key_converter_unittest.cc',
+        'test/chromedriver/keycode_text_conversion_unittest.cc',
+        'test/chromedriver/net/net_util_unittest.cc',
+        'test/chromedriver/net/port_server_unittest.cc',
+        'test/chromedriver/net/sync_websocket_impl_unittest.cc',
+        'test/chromedriver/net/test_http_server.cc',
+        'test/chromedriver/net/test_http_server.h',
+        'test/chromedriver/net/websocket_unittest.cc',
+        'test/chromedriver/test_util.cc',
+        'test/chromedriver/test_util.h',
       ],
       # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
       'msvs_disabled_warnings': [ 4267, ],
