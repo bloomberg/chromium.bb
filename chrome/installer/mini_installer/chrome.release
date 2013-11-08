@@ -3,34 +3,43 @@
 # found in the LICENSE file.
 
 [GENERAL]
+#
+# Chrome Application dir entries, sorted alphabetically.
+#
 chrome.exe: %(ChromeDir)s\
 wow_helper.exe: %(ChromeDir)s\
-syzyasan_rtl.dll: %(VersionDir)s\
+#
+# Chrome version dir entries, sorted alphabetically.
+#
 chrome.dll: %(VersionDir)s\
-chrome_child.dll: %(VersionDir)s\
-nacl64.exe: %(VersionDir)s\
-ppGoogleNaClPluginChrome.dll: %(VersionDir)s\
-nacl_irt_x86_32.nexe: %(VersionDir)s\
-nacl_irt_x86_64.nexe: %(VersionDir)s\
-icudt.dll: %(VersionDir)s\
-resources.pak: %(VersionDir)s\
 chrome_100_percent.pak: %(VersionDir)s\
-locales\*.pak: %(VersionDir)s\Locales
-locales\*.dll: %(VersionDir)s\Locales
-npchrome_frame.dll: %(VersionDir)s\
-chrome_launcher.exe: %(VersionDir)s\
-chrome_frame_helper.exe: %(VersionDir)s\
+chrome_child.dll: %(VersionDir)s\
 chrome_frame_helper.dll: %(VersionDir)s\
-Extensions\*.*: %(VersionDir)s\Extensions\
-ffmpegsumo.dll: %(VersionDir)s\
-pdf.dll: %(VersionDir)s\
+chrome_frame_helper.exe: %(VersionDir)s\
+chrome_launcher.exe: %(VersionDir)s\
 D3DCompiler_43.dll: %(VersionDir)s\
 d3dcompiler_46.dll: %(VersionDir)s\
+ffmpegsumo.dll: %(VersionDir)s\
+icudt.dll: %(VersionDir)s\
 libEGL.dll: %(VersionDir)s\
 libGLESv2.dll: %(VersionDir)s\
+nacl64.exe: %(VersionDir)s\
+nacl_irt_x86_32.nexe: %(VersionDir)s\
+nacl_irt_x86_64.nexe: %(VersionDir)s\
+npchrome_frame.dll: %(VersionDir)s\
+pdf.dll: %(VersionDir)s\
+ppGoogleNaClPluginChrome.dll: %(VersionDir)s\
+resources.pak: %(VersionDir)s\
+syzyasan_rtl.dll: %(VersionDir)s\
 xinput1_3.dll: %(VersionDir)s\
+#
+# Sub directories living in the version dir
+#
 default_apps\*.crx: %(VersionDir)s\default_apps\
 default_apps\external_extensions.json: %(VersionDir)s\default_apps\
+Extensions\*.*: %(VersionDir)s\Extensions\
+locales\*.dll: %(VersionDir)s\Locales
+locales\*.pak: %(VersionDir)s\Locales
 
 [HIDPI]
 chrome_200_percent.pak: %(VersionDir)s\
@@ -39,13 +48,19 @@ chrome_200_percent.pak: %(VersionDir)s\
 chrome_touch_100_percent.pak: %(VersionDir)s\
 
 [GOOGLE_CHROME]
-SecondaryTile.png: %(VersionDir)s\
 delegate_execute.exe: %(VersionDir)s\
-metro_driver.dll: %(VersionDir)s\
 libpeerconnection.dll: %(VersionDir)s\
-PepperFlash\pepflashplayer.dll: %(VersionDir)s\PepperFlash\
-PepperFlash\manifest.json: %(VersionDir)s\PepperFlash\
+metro_driver.dll: %(VersionDir)s\
+SecondaryTile.png: %(VersionDir)s\
 widevinecdmadapter.dll: %(VersionDir)s\
+#
+# Pepper Flash sub-dir.
+#
+PepperFlash\manifest.json: %(VersionDir)s\PepperFlash\
+PepperFlash\pepflashplayer.dll: %(VersionDir)s\PepperFlash\
+#
+# Win8 sub-dir.
+#
 # All or none of the following 3 files need to be present as the creation of
 # VisualElementsManifest.xml is based on the existence of
 # %(VersionDir)\VisualElements. On a similar note, no other files should be
