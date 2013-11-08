@@ -92,12 +92,6 @@ class PrefMetricsService : public BrowserContextKeyedService {
                             const std::string& histogram_name,
                             const Value* value);
 
-  // Callback for a list pref change. Each item in the list
-  // is logged using the given histogram callback.
-  void LogListPrefChange(const LogHistogramValueCallback& item_callback,
-                         const std::string& histogram_name,
-                         const Value* value);
-
   // Callback to receive a unique device_id.
   void GetDeviceIdCallback(const std::string& device_id);
 

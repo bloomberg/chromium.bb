@@ -259,20 +259,6 @@ void PrefMetricsService::LogIntegerPrefChange(int boundary_value,
   histogram->Add(integer_value);
 }
 
-void PrefMetricsService::LogListPrefChange(
-    const LogHistogramValueCallback& item_callback,
-    const std::string& histogram_name,
-    const Value* value) {
-  const ListValue* items = NULL;
-  if (!value->GetAsList(&items))
-    return;
-  for (size_t i = 0; i < items->GetSize(); ++i) {
-    const Value *item_value = NULL;
-    if (items->Get(i, &item_value))
-      item_callback.Run(histogram_name, item_value);
-  }
-}
-
 void PrefMetricsService::GetDeviceIdCallback(const std::string& device_id) {
   device_id_ = device_id;
   // On Aura, this seems to be called twice.
