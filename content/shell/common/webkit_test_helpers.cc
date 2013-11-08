@@ -47,7 +47,6 @@ void ExportLayoutTestSpecificPreferences(
   to->allow_file_access_from_file_urls = from.allowFileAccessFromFileURLs;
   to->javascript_can_open_windows_automatically =
       from.javaScriptCanOpenWindowsAutomatically;
-  to->user_style_sheet_location = from.userStyleSheetLocation;
 }
 
 // Applies settings that differ between layout tests and regular mode. Some
@@ -96,7 +95,6 @@ void ApplyLayoutTestDefaultPreferences(WebPreferences* prefs) {
       webkit_glue::kCommonScript] = ASCIIToUTF16("Helvetica");
   prefs->minimum_logical_font_size = 9;
   prefs->asynchronous_spell_checking_enabled = false;
-  prefs->user_style_sheet_enabled = true;
   prefs->threaded_html_parser = true;
   prefs->accelerated_2d_canvas_enabled =
       command_line.HasSwitch(switches::kEnableAccelerated2DCanvas);

@@ -1755,7 +1755,6 @@
         'browser/undo/bookmark_undo_service_test.cc',
         'browser/undo/undo_manager_test.cc',
         'browser/usb/usb_context_unittest.cc',
-        'browser/user_style_sheet_watcher_unittest.cc',
         'browser/value_store/leveldb_value_store_unittest.cc',
         'browser/value_store/testing_value_store_unittest.cc',
         'browser/value_store/value_store_change_unittest.cc',
@@ -2648,8 +2647,6 @@
             'browser/google_apis/gdata_wapi_requests_unittest.cc',
             'browser/sync_file_system/drive_backend/api_util_unittest.cc',
             'browser/sync_file_system/drive_backend/drive_file_sync_service_sync_unittest.cc',
-
-            'browser/user_style_sheet_watcher_unittest.cc',
 
             # The autofill popup is implemented in mostly native code on
             # Android.

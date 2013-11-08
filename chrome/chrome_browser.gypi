@@ -2595,10 +2595,6 @@
         'browser/user_data_dir_extractor.h',
         'browser/user_data_dir_extractor_win.cc',
         'browser/user_data_dir_extractor_win.h',
-        'browser/user_style_sheet_watcher.cc',
-        'browser/user_style_sheet_watcher.h',
-        'browser/user_style_sheet_watcher_factory.cc',
-        'browser/user_style_sheet_watcher_factory.h',
         'browser/validation_message_message_filter.cc',
         'browser/validation_message_message_filter.h',
         'browser/value_store/leveldb_value_store.cc',
@@ -3309,12 +3305,6 @@
             'browser/tab_contents/spelling_menu_observer.h',
             'browser/upgrade_detector_impl.cc',
             'browser/upgrade_detector_impl.h',
-
-            # User Stylesheet unsupported on Android (crbug.com/236696)
-            'browser/user_style_sheet_watcher.cc',
-            'browser/user_style_sheet_watcher.h',
-            'browser/user_style_sheet_watcher_factory.cc',
-            'browser/user_style_sheet_watcher_factory.h',
 
             # Not used by Android
             'browser/accessibility/accessibility_events.cc',

@@ -15,8 +15,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_preferences_util.h"
-#include "chrome/browser/user_style_sheet_watcher.h"
-#include "chrome/browser/user_style_sheet_watcher_factory.h"
 #include "chrome/common/pref_font_webkit_names.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_names_util.h"
@@ -342,15 +340,6 @@ PrefsTabHelper::PrefsTabHelper(WebContents* contents)
   renderer_preferences_util::UpdateFromSystemSettings(
       web_contents_->GetMutableRendererPrefs(), GetProfile());
 
-#if !defined(OS_ANDROID)
-  UserStyleSheetWatcher* uss =
-      UserStyleSheetWatcherFactory::GetForProfile(GetProfile());
-  if (uss) {
-    style_sheet_subscription_ = uss->RegisterOnStyleSheetUpdatedCallback(
-        base::Bind(&PrefsTabHelper::UpdateWebPreferences,
-                   weak_ptr_factory_.GetWeakPtr()));
-  }
-#endif
 #if defined(OS_POSIX) && !defined(OS_MACOSX) && defined(ENABLE_THEMES)
   registrar_.Add(this, chrome::NOTIFICATION_BROWSER_THEME_CHANGED,
                  content::Source<ThemeService>(

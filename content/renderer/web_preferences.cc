@@ -146,10 +146,6 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
   settings->setUsesEncodingDetector(prefs.uses_universal_detector);
   settings->setTextAreasAreResizable(prefs.text_areas_are_resizable);
   settings->setAllowScriptsToCloseWindows(prefs.allow_scripts_to_close_windows);
-  if (prefs.user_style_sheet_enabled)
-    settings->setUserStyleSheetLocation(prefs.user_style_sheet_location);
-  else
-    settings->setUserStyleSheetLocation(WebURL());
   settings->setDownloadableBinaryFontsEnabled(prefs.remote_fonts_enabled);
   settings->setJavaScriptCanAccessClipboard(
       prefs.javascript_can_access_clipboard);

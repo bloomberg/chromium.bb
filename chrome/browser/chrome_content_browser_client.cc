@@ -86,8 +86,6 @@
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
 #include "chrome/browser/ui/tab_contents/chrome_web_contents_view_delegate.h"
 #include "chrome/browser/ui/webui/chrome_web_ui_controller_factory.h"
-#include "chrome/browser/user_style_sheet_watcher.h"
-#include "chrome/browser/user_style_sheet_watcher_factory.h"
 #include "chrome/browser/validation_message_message_filter.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -2248,21 +2246,6 @@ void ChromeContentBrowserClient::OverrideWebkitPrefs(
       prefs->GetBoolean(prefs::kWebKitPasswordEchoEnabled);
 #else
   web_prefs->password_echo_enabled = browser_defaults::kPasswordEchoEnabled;
-#endif
-
-#if defined(OS_ANDROID)
-  web_prefs->user_style_sheet_enabled = false;
-#else
-  // The user stylesheet watcher may not exist in a testing profile.
-  UserStyleSheetWatcher* user_style_sheet_watcher =
-      UserStyleSheetWatcherFactory::GetForProfile(profile).get();
-  if (user_style_sheet_watcher) {
-    web_prefs->user_style_sheet_enabled = true;
-    web_prefs->user_style_sheet_location =
-        user_style_sheet_watcher->user_style_sheet();
-  } else {
-    web_prefs->user_style_sheet_enabled = false;
-  }
 #endif
 
   web_prefs->asynchronous_spell_checking_enabled = true;
