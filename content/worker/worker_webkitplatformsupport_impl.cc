@@ -83,8 +83,10 @@ WorkerWebKitPlatformSupportImpl::WorkerWebKitPlatformSupportImpl(
       child_thread_loop_(base::MessageLoopProxy::current()),
       sync_message_filter_(sync_message_filter),
       quota_message_filter_(quota_message_filter) {
-  if (sender)
+  if (sender) {
     blob_registry_.reset(new WebBlobRegistryImpl(sender));
+    web_idb_factory_.reset(new RendererWebIDBFactoryImpl(sender));
+  }
 }
 
 WorkerWebKitPlatformSupportImpl::~WorkerWebKitPlatformSupportImpl() {

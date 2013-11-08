@@ -105,7 +105,6 @@ class WorkerWebKitPlatformSupportImpl : public WebKitPlatformSupportImpl,
   class FileUtilities;
   scoped_ptr<FileUtilities> file_utilities_;
   scoped_ptr<blink::WebBlobRegistry> blob_registry_;
-  scoped_ptr<WebFileSystemImpl> web_file_system_;
   scoped_ptr<blink::WebIDBFactory> web_idb_factory_;
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   scoped_refptr<base::MessageLoopProxy> child_thread_loop_;

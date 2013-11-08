@@ -218,6 +218,7 @@ RendererWebKitPlatformSupportImpl::RendererWebKitPlatformSupportImpl()
     thread_safe_sender_ = ChildThread::current()->thread_safe_sender();
     quota_message_filter_ = ChildThread::current()->quota_message_filter();
     blob_registry_.reset(new WebBlobRegistryImpl(thread_safe_sender_));
+    web_idb_factory_.reset(new RendererWebIDBFactoryImpl(thread_safe_sender_));
   }
 }
 
@@ -363,9 +364,6 @@ RendererWebKitPlatformSupportImpl::createLocalStorageNamespace() {
 //------------------------------------------------------------------------------
 
 WebIDBFactory* RendererWebKitPlatformSupportImpl::idbFactory() {
-  if (!web_idb_factory_)
-    web_idb_factory_.reset(
-        new RendererWebIDBFactoryImpl(thread_safe_sender_.get()));
   return web_idb_factory_.get();
 }
 

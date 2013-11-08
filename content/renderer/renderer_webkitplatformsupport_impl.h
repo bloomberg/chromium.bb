@@ -195,8 +195,6 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
 
   scoped_ptr<blink::WebIDBFactory> web_idb_factory_;
 
-  scoped_ptr<WebFileSystemImpl> web_file_system_;
-
   scoped_ptr<blink::WebBlobRegistry> blob_registry_;
 
   scoped_ptr<DeviceMotionEventPump> device_motion_event_pump_;
