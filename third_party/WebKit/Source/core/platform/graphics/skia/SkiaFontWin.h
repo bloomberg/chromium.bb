@@ -53,6 +53,7 @@ void paintSkiaText(GraphicsContext*,
     const SkPoint& origin,
     const SkRect& textRect);
 
+#if !USE(HARFBUZZ)
 // Note that the offsets parameter is optional. If not null it represents a
 // per glyph offset (such as returned by ScriptPlace Windows API function).
 // Note: this is less efficient than calling the version with FontPlatformData,
@@ -66,6 +67,7 @@ void paintSkiaText(GraphicsContext*,
     const GOFFSET* offsets,
     const SkPoint& origin,
     const SkRect& textRect);
+#endif
 
 }  // namespace WebCore
 
