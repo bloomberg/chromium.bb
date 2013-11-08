@@ -31,8 +31,8 @@
 #ifndef UserMediaClientImpl_h
 #define UserMediaClientImpl_h
 
-#include "core/platform/mediastream/MediaStreamSource.h"
 #include "modules/mediastream/UserMediaClient.h"
+#include "platform/mediastream/MediaStreamSource.h"
 #include "wtf/PassRefPtr.h"
 
 namespace WebCore {

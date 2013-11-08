@@ -34,8 +34,8 @@
 #include "core/platform/mediastream/MediaStreamComponent.h"
 
 #include "platform/audio/AudioBus.h"
-#include "core/platform/mediastream/MediaStreamSource.h"
 #include "platform/UUID.h"
+#include "platform/mediastream/MediaStreamSource.h"
 #include "public/platform/WebAudioSourceProvider.h"
 
 namespace WebCore {

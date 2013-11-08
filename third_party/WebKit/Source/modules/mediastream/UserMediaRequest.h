@@ -32,9 +32,9 @@
 #define UserMediaRequest_h
 
 #include "core/dom/ActiveDOMObject.h"
-#include "core/platform/mediastream/MediaStreamSource.h"
 #include "modules/mediastream/NavigatorUserMediaErrorCallback.h"
 #include "modules/mediastream/NavigatorUserMediaSuccessCallback.h"
+#include "platform/mediastream/MediaStreamSource.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"

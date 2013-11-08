@@ -33,8 +33,8 @@
 #include "public/platform/WebMediaStreamSource.h"
 
 #include "platform/audio/AudioBus.h"
-#include "core/platform/mediastream/MediaStreamSource.h"
 #include "platform/mediastream/MediaConstraints.h"
+#include "platform/mediastream/MediaStreamSource.h"
 #include "public/platform/WebAudioDestinationConsumer.h"
 #include "public/platform/WebMediaConstraints.h"
 #include "public/platform/WebString.h"

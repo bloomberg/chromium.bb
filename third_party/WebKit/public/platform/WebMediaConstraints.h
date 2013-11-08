@@ -55,8 +55,8 @@ struct WebMediaConstraint {
     {
     }
 
-#if BLINK_IMPLEMENTATION
-    WebMediaConstraint(const WebCore::MediaConstraint&);
+#if INSIDE_BLINK
+    BLINK_PLATFORM_EXPORT WebMediaConstraint(const WebCore::MediaConstraint&);
 #endif
 
     WebString m_name;
@@ -75,20 +75,20 @@ public:
         return *this;
     }
 
-    BLINK_EXPORT void assign(const WebMediaConstraints&);
+    BLINK_PLATFORM_EXPORT void assign(const WebMediaConstraints&);
 
-    BLINK_EXPORT void reset();
+    BLINK_PLATFORM_EXPORT void reset();
     bool isNull() const { return m_private.isNull(); }
 
-    BLINK_EXPORT void getMandatoryConstraints(WebVector<WebMediaConstraint>&) const;
-    BLINK_EXPORT void getOptionalConstraints(WebVector<WebMediaConstraint>&) const;
+    BLINK_PLATFORM_EXPORT void getMandatoryConstraints(WebVector<WebMediaConstraint>&) const;
+    BLINK_PLATFORM_EXPORT void getOptionalConstraints(WebVector<WebMediaConstraint>&) const;
 
-    BLINK_EXPORT bool getMandatoryConstraintValue(const WebString& name, WebString& value) const;
-    BLINK_EXPORT bool getOptionalConstraintValue(const WebString& name, WebString& value) const;
+    BLINK_PLATFORM_EXPORT bool getMandatoryConstraintValue(const WebString& name, WebString& value) const;
+    BLINK_PLATFORM_EXPORT bool getOptionalConstraintValue(const WebString& name, WebString& value) const;
 
-#if BLINK_IMPLEMENTATION
-    WebMediaConstraints(const WTF::PassRefPtr<WebCore::MediaConstraints>&);
-    WebMediaConstraints(WebCore::MediaConstraints*);
+#if INSIDE_BLINK
+    BLINK_PLATFORM_EXPORT WebMediaConstraints(const WTF::PassRefPtr<WebCore::MediaConstraints>&);
+    BLINK_PLATFORM_EXPORT WebMediaConstraints(WebCore::MediaConstraints*);
 #endif
 
 private:

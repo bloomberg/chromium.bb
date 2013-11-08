@@ -32,6 +32,7 @@
 #ifndef MediaStreamSource_h
 #define MediaStreamSource_h
 
+#include "platform/PlatformExport.h"
 #include "platform/audio/AudioDestinationConsumer.h"
 #include "platform/mediastream/MediaConstraints.h"
 #include "wtf/OwnPtr.h"
@@ -43,7 +44,7 @@
 
 namespace WebCore {
 
-class MediaStreamSource : public RefCounted<MediaStreamSource> {
+class PLATFORM_EXPORT MediaStreamSource : public RefCounted<MediaStreamSource> {
 public:
     class Observer {
     public:
