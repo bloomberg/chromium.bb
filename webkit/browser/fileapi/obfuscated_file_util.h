@@ -230,6 +230,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT_PRIVATE ObfuscatedFileUtil
 
   friend class ObfuscatedFileEnumerator;
   friend class ObfuscatedFileUtilTest;
+  friend class QuotaBackendImplTest;
   FRIEND_TEST_ALL_PREFIXES(ObfuscatedFileUtilTest, MaybeDropDatabasesAliveCase);
   FRIEND_TEST_ALL_PREFIXES(ObfuscatedFileUtilTest,
                            MaybeDropDatabasesAlreadyDeletedCase);

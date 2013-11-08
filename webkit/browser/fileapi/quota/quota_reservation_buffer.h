@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_BROWSER_FILEAPI_QUOTA_RESERVATION_BUFFER_H_
-#define WEBKIT_BROWSER_FILEAPI_QUOTA_RESERVATION_BUFFER_H_
+#ifndef WEBKIT_BROWSER_FILEAPI_QUOTA_QUOTA_RESERVATION_BUFFER_H_
+#define WEBKIT_BROWSER_FILEAPI_QUOTA_QUOTA_RESERVATION_BUFFER_H_
 
 #include <map>
 
@@ -56,7 +56,7 @@ class QuotaReservationBuffer : public base::RefCounted<QuotaReservationBuffer> {
   friend class base::RefCounted<QuotaReservationBuffer>;
   virtual ~QuotaReservationBuffer();
 
-  static bool DecreaseDirtyCount(
+  static bool DecrementDirtyCount(
       base::WeakPtr<QuotaReservationManager> reservation_manager,
       const GURL& origin,
       FileSystemType type,
@@ -83,4 +83,4 @@ class QuotaReservationBuffer : public base::RefCounted<QuotaReservationBuffer> {
 
 }  // namespace fileapi
 
-#endif  // WEBKIT_BROWSER_FILEAPI_QUOTA_RESERVATION_BUFFER_H_
+#endif  // WEBKIT_BROWSER_FILEAPI_QUOTA_QUOTA_RESERVATION_BUFFER_H_
