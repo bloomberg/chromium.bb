@@ -188,6 +188,13 @@ void Scheduler::BeginImplFrame(const BeginFrameArgs& args) {
   last_begin_impl_frame_args_ = args;
   last_begin_impl_frame_args_.deadline -= client_->DrawDurationEstimate();
   state_machine_.OnBeginImplFrame(last_begin_impl_frame_args_);
+
+  if (settings_.switch_to_low_latency_if_possible) {
+    state_machine_.SetSkipBeginMainFrameToReduceLatency(
+        state_machine_.MainThreadIsInHighLatencyMode() &&
+            CanCommitAndActivateBeforeDeadline());
+  }
+
   ProcessScheduledActions();
 
   if (!state_machine_.HasInitializedOutputSurface())
@@ -346,6 +353,17 @@ void Scheduler::ProcessScheduledActions() {
 
 bool Scheduler::WillDrawIfNeeded() const {
   return !state_machine_.PendingDrawsShouldBeAborted();
+}
+
+bool Scheduler::CanCommitAndActivateBeforeDeadline() const {
+  // Check if the main thread computation and commit can be finished before the
+  // impl thread's deadline.
+  base::TimeTicks estimated_draw_time =
+      last_begin_impl_frame_args_.frame_time +
+      client_->BeginMainFrameToCommitDurationEstimate() +
+      client_->CommitToActivateDurationEstimate();
+
+  return estimated_draw_time < last_begin_impl_frame_args_.deadline;
 }
 
 }  // namespace cc

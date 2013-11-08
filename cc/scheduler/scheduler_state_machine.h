@@ -146,6 +146,10 @@ class CC_EXPORT SchedulerStateMachine {
     return begin_impl_frame_state_;
   }
 
+  // If the main thread didn't manage to produce a new frame in time for the
+  // impl thread to draw, it is in a high latency mode.
+  bool MainThreadIsInHighLatencyMode() const;
+
   // PollForAnticipatedDrawTriggers is used by the synchronous compositor to
   // avoid requesting BeginImplFrames when we won't actually draw but still
   // need to advance our state at vsync intervals.
@@ -208,6 +212,8 @@ class CC_EXPORT SchedulerStateMachine {
 
   // Set that we can create the first OutputSurface and start the scheduler.
   void SetCanStart() { can_start_ = true; }
+
+  void SetSkipBeginMainFrameToReduceLatency(bool skip);
 
   // Indicates whether drawing would, at this time, make sense.
   // CanDraw can be used to suppress flashes or checkerboarding
@@ -290,6 +296,7 @@ class CC_EXPORT SchedulerStateMachine {
   bool draw_if_possible_failed_;
   bool did_create_and_initialize_first_output_surface_;
   bool smoothness_takes_priority_;
+  bool skip_begin_main_frame_to_reduce_latency_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SchedulerStateMachine);

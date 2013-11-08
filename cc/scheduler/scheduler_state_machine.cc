@@ -42,7 +42,8 @@ SchedulerStateMachine::SchedulerStateMachine(const SchedulerSettings& settings)
       active_tree_needs_first_draw_(false),
       draw_if_possible_failed_(false),
       did_create_and_initialize_first_output_surface_(false),
-      smoothness_takes_priority_(false) {}
+      smoothness_takes_priority_(false),
+      skip_begin_main_frame_to_reduce_latency_(false) {}
 
 const char* SchedulerStateMachine::OutputSurfaceStateToString(
     OutputSurfaceState state) {
@@ -260,6 +261,10 @@ scoped_ptr<base::Value> SchedulerStateMachine::AsValue() const  {
                           did_create_and_initialize_first_output_surface_);
   minor_state->SetBoolean("smoothness_takes_priority",
                           smoothness_takes_priority_);
+  minor_state->SetBoolean("main_thread_is_in_high_latency_mode",
+                          MainThreadIsInHighLatencyMode());
+  minor_state->SetBoolean("skip_begin_main_frame_to_reduce_latency",
+                          skip_begin_main_frame_to_reduce_latency_);
   state->Set("minor_state", minor_state.release());
 
   return state.PassAs<base::Value>();
@@ -484,6 +489,9 @@ bool SchedulerStateMachine::ShouldSendBeginMainFrame() const {
 
   // We shouldn't normally accept commits if there isn't an OutputSurface.
   if (!HasInitializedOutputSurface())
+    return false;
+
+  if (skip_begin_main_frame_to_reduce_latency_)
     return false;
 
   return true;
@@ -763,6 +771,10 @@ void SchedulerStateMachine::SetMainThreadNeedsLayerTextures() {
   main_thread_needs_layer_textures_ = true;
 }
 
+void SchedulerStateMachine::SetSkipBeginMainFrameToReduceLatency(bool skip) {
+  skip_begin_main_frame_to_reduce_latency_ = skip;
+}
+
 bool SchedulerStateMachine::BeginImplFrameNeeded() const {
   // Proactive BeginImplFrames are bad for the synchronous compositor because we
   // have to draw when we get the BeginImplFrame and could end up drawing many
@@ -924,6 +936,44 @@ bool SchedulerStateMachine::ShouldTriggerBeginImplFrameDeadlineEarly() const {
     return true;
 
   return false;
+}
+
+bool SchedulerStateMachine::MainThreadIsInHighLatencyMode() const {
+  // If we just sent a BeginMainFrame and haven't hit the deadline yet, the main
+  // thread is in a low latency mode.
+  if (last_frame_number_begin_main_frame_sent_ == current_frame_number_ &&
+      (begin_impl_frame_state_ == BEGIN_IMPL_FRAME_STATE_BEGIN_FRAME_STARTING ||
+       begin_impl_frame_state_ == BEGIN_IMPL_FRAME_STATE_INSIDE_BEGIN_FRAME))
+    return false;
+
+  // If there's a commit in progress it must either be from the previous frame
+  // or it started after the impl thread's deadline. In either case the main
+  // thread is in high latency mode.
+  if (commit_state_ == COMMIT_STATE_FRAME_IN_PROGRESS ||
+      commit_state_ == COMMIT_STATE_READY_TO_COMMIT)
+    return true;
+
+  // Similarly, if there's a pending tree the main thread is in high latency
+  // mode, because either
+  //   it's from the previous frame
+  // or
+  //   we're currently drawing the active tree and the pending tree will thus
+  //   only be drawn in the next frame.
+  if (has_pending_tree_)
+    return true;
+
+  if (begin_impl_frame_state_ == BEGIN_IMPL_FRAME_STATE_INSIDE_DEADLINE) {
+    // Even if there's a new active tree to draw at the deadline or we've just
+    // drawn it, it may have been triggered by a previous BeginImplFrame, in
+    // which case the main thread is in a high latency mode.
+    return (active_tree_needs_first_draw_ ||
+            last_frame_number_swap_performed_ == current_frame_number_) &&
+           last_frame_number_begin_main_frame_sent_ != current_frame_number_;
+  }
+
+  // If the active tree needs its first draw in any other state, we know the
+  // main thread is in a high latency mode.
+  return active_tree_needs_first_draw_;
 }
 
 void SchedulerStateMachine::DidEnterPollForAnticipatedDrawTriggers() {

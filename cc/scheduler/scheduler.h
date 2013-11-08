@@ -103,6 +103,9 @@ class CC_EXPORT Scheduler {
   bool ManageTilesPending() const {
     return state_machine_.ManageTilesPending();
   }
+  bool MainThreadIsInHighLatencyMode() const {
+    return state_machine_.MainThreadIsInHighLatencyMode();
+  }
 
   bool WillDrawIfNeeded() const;
 
@@ -133,6 +136,8 @@ class CC_EXPORT Scheduler {
   void DrawAndSwapForced();
   void DrawAndReadback();
   void ProcessScheduledActions();
+
+  bool CanCommitAndActivateBeforeDeadline() const;
 
   const SchedulerSettings settings_;
   SchedulerClient* client_;
