@@ -89,10 +89,6 @@ class LocationBarViewGtk : public OmniboxEditController,
   // corresponding to |page_action|.
   GtkWidget* GetPageActionWidget(ExtensionAction* page_action);
 
-  // Performs any updates which depend on the image having already been laid out
-  // by the owning LocationBarViewGtk.
-  void UpdatePostLayout();
-
   // Show the bookmark bubble.
   void ShowStarBubble(const GURL& url, bool newly_boomkarked);
 
@@ -102,6 +98,12 @@ class LocationBarViewGtk : public OmniboxEditController,
 
   // Returns the zoom widget. Used by the zoom bubble for an anchor.
   GtkWidget* zoom_widget() { return zoom_.get(); }
+
+  // Returns the manage passwords widget. Used by the manage passwords bubble
+  // for an anchor.
+  GtkWidget* manage_passwords_icon_widget() {
+    return manage_passwords_icon_.get();
+  }
 
   // Set the starred state of the bookmark star.
   void SetStarred(bool starred);
@@ -124,6 +126,7 @@ class LocationBarViewGtk : public OmniboxEditController,
   virtual void FocusLocation(bool select_all) OVERRIDE;
   virtual void FocusSearch() OVERRIDE;
   virtual void UpdateContentSettingsIcons() OVERRIDE;
+  virtual void UpdateManagePasswordsIconAndBubble() OVERRIDE;
   virtual void UpdatePageActions() OVERRIDE;
   virtual void InvalidatePageActions() OVERRIDE;
   virtual void UpdateOpenPDFInReaderPrompt() OVERRIDE;
@@ -161,12 +164,7 @@ class LocationBarViewGtk : public OmniboxEditController,
 
     bool IsVisible();
 
-    // Updates the decoration from the shown WebContents.
-    virtual void UpdatePreLayout(content::WebContents* web_contents) = 0;
-
-    // Performs any updates which depend on the image having already been laid
-    // out by the owning LocationBarView.
-    virtual void UpdatePostLayout(content::WebContents* web_contents) = 0;
+    virtual void Update(content::WebContents* web_contents) = 0;
 
     // Overridden from gfx::AnimationDelegate:
     virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE;
@@ -354,6 +352,8 @@ class LocationBarViewGtk : public OmniboxEditController,
                        GtkAllocation*);
   CHROMEGTK_CALLBACK_1(LocationBarViewGtk, gboolean, OnZoomButtonPress,
                        GdkEventButton*);
+  CHROMEGTK_CALLBACK_1(LocationBarViewGtk, gboolean,
+                       OnManagePasswordsIconButtonPress, GdkEventButton*);
   CHROMEGTK_CALLBACK_1(LocationBarViewGtk, gboolean, OnScriptBubbleButtonPress,
                        GdkEventButton*);
   CHROMEGTK_CALLBACK_1(LocationBarViewGtk, void, OnStarButtonSizeAllocate,
@@ -381,6 +381,9 @@ class LocationBarViewGtk : public OmniboxEditController,
   // Shows the zoom bubble.
   void ShowZoomBubble();
 
+  // Shows the manage password bubble.
+  void ShowManagePasswordsBubble();
+
   // Show or hide |tab_to_search_box_| and |tab_to_search_hint_| according to
   // the value of |show_selected_keyword_|, |show_keyword_hint_|, and the
   // available horizontal space in the location bar.
@@ -395,14 +398,19 @@ class LocationBarViewGtk : public OmniboxEditController,
       int tooltip_id,
       gboolean (click_callback)(GtkWidget*, GdkEventButton*, gpointer));
   void CreateZoomButton();
+  void CreateManagePasswordsIconButton();
   void CreateScriptBubbleButton();
   void CreateStarButton();
 
   // Helpers to update state of the various buttons that show up in the
   // location bar.
   void UpdateZoomIcon();
+  void UpdateManagePasswordsIcon();
   void UpdateScriptBubbleIcon();
   void UpdateStarIcon();
+
+  // Shows the managepassword bubble in case there is a password to be saved.
+  void ShowManagePasswordsBubbleIfNeeded();
 
   // Returns true if we should only show the URL and none of the extras like
   // the star button or page actions.
@@ -414,6 +422,10 @@ class LocationBarViewGtk : public OmniboxEditController,
   // Zoom button.
   ui::OwnedWidgetGtk zoom_;
   GtkWidget* zoom_image_;
+
+  // Manage passwords button.
+  ui::OwnedWidgetGtk manage_passwords_icon_;
+  GtkWidget* manage_passwords_icon_image_;
 
   ui::OwnedWidgetGtk script_bubble_button_;
   GtkWidget* script_bubble_button_image_;

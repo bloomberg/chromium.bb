@@ -44,7 +44,6 @@ const char* kPrefToManageType[] = {
   NULL,  // No policy for default value of PPAPI broker
   NULL,  // No policy for default value of multiple automatic downloads
   NULL,  // No policy for default value of MIDI system exclusive requests
-  NULL,  // No policy for default value of save password
 #if defined(OS_WIN)
   NULL,  // No policy for default value of "switch to desktop"
 #elif defined(OS_ANDROID) || defined(OS_CHROMEOS)

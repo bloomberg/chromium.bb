@@ -24,7 +24,6 @@
       'app/nibs/ContentBlockedPlugins.xib',
       'app/nibs/ContentBlockedPopups.xib',
       'app/nibs/ContentBlockedGeolocation.xib',
-      'app/nibs/ContentBlockedSavePassword.xib',
       'app/nibs/ContentBlockedSimple.xib',
       'app/nibs/ContentProtocolHandlers.xib',
       'app/nibs/CookieDetailsView.xib',

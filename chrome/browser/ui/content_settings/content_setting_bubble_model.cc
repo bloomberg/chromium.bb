@@ -164,8 +164,6 @@ void ContentSettingTitleAndLinkModel::SetManageLink() {
     {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDS_PPAPI_BROKER_BUBBLE_MANAGE_LINK},
     {CONTENT_SETTINGS_TYPE_AUTOMATIC_DOWNLOADS, IDS_BLOCKED_DOWNLOADS_LINK},
     {CONTENT_SETTINGS_TYPE_MIDI_SYSEX, IDS_MIDI_SYSEX_BUBBLE_MANAGE_LINK},
-    {CONTENT_SETTINGS_TYPE_SAVE_PASSWORD,
-     IDS_OPTIONS_PASSWORDS_MANAGE_PASSWORDS},
   };
   set_manage_link(l10n_util::GetStringUTF8(
       GetIdForContentType(kLinkIDs, arraysize(kLinkIDs), content_type())));
@@ -601,51 +599,6 @@ void ContentSettingPopupBubbleModel::OnPopupClicked(int index) {
     PopupBlockerTabHelper::FromWebContents(web_contents())->
         ShowBlockedPopup(bubble_content().popup_items[index].popup_id);
   }
-}
-
-// The model for the save password bubble.
-SavePasswordBubbleModel::SavePasswordBubbleModel(Delegate* delegate,
-                                                 WebContents* web_contents,
-                                                 Profile* profile)
-    : ContentSettingTitleAndLinkModel(delegate, web_contents, profile,
-                                      CONTENT_SETTINGS_TYPE_SAVE_PASSWORD),
-      state_(TabSpecificContentSettings::NO_PASSWORD_TO_BE_SAVED) {
-  DCHECK(profile);
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents);
-  state_ = content_settings->GetPasswordSavingState();
-
-  SetTitle();
-}
-
-SavePasswordBubbleModel::~SavePasswordBubbleModel() {}
-
-void SavePasswordBubbleModel::SetTitle() {
-  int title_id = 0;
-  // If the save password icon was accessed, the icon is displayed and the
-  // bubble is instantiated
-  if (state_ == TabSpecificContentSettings::PASSWORD_TO_BE_SAVED)
-    title_id = IDS_SAVE_PASSWORD;
-
-  set_title(l10n_util::GetStringUTF8(title_id));
-}
-
-void SavePasswordBubbleModel::OnCancelClicked() {
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
-  content_settings->set_password_action(PasswordFormManager::BLACKLIST);
-}
-
-void SavePasswordBubbleModel::OnDoneClicked() {
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
-  content_settings->set_password_action(PasswordFormManager::DO_NOTHING);
-}
-
-void SavePasswordBubbleModel::OnSaveClicked() {
-  TabSpecificContentSettings* content_settings =
-      TabSpecificContentSettings::FromWebContents(web_contents());
-  content_settings->set_password_action(PasswordFormManager::SAVE);
 }
 
 // The model of the content settings bubble for media settings.
@@ -1339,9 +1292,6 @@ ContentSettingBubbleModel*
         WebContents* web_contents,
         Profile* profile,
         ContentSettingsType content_type) {
-  if (content_type == CONTENT_SETTINGS_TYPE_SAVE_PASSWORD) {
-    return new SavePasswordBubbleModel(delegate, web_contents, profile);
-  }
   if (content_type == CONTENT_SETTINGS_TYPE_COOKIES) {
     return new ContentSettingCookiesBubbleModel(delegate, web_contents, profile,
                                                 content_type);

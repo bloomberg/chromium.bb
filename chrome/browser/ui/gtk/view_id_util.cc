@@ -110,6 +110,9 @@ const char* GetNameFromID(ViewID id) {
     case VIEW_ID_ZOOM_BUTTON:
       return "chrome-zoom-button";
 
+    case VIEW_ID_MANAGE_PASSWORDS_ICON_BUTTON:
+      return "chrome-manage-passwords-icon-button";
+
     case VIEW_ID_SCRIPT_BUBBLE:
       return "chrome-script-bubble-button";
 

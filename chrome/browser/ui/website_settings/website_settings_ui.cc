@@ -230,8 +230,6 @@ int WebsiteSettingsUI::GetPermissionIconID(ContentSettingsType type,
       resource_id = use_blocked ? IDR_BLOCKED_MIDI_SYSEX
                                 : IDR_ALLOWED_MIDI_SYSEX;
       break;
-    case CONTENT_SETTINGS_TYPE_SAVE_PASSWORD:
-      resource_id = IDR_SAVE_PASSWORD;
     default:
       NOTREACHED();
       break;

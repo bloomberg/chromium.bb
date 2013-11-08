@@ -170,7 +170,6 @@ void LocationBarViewMac::FocusSearch() {
 void LocationBarViewMac::UpdateContentSettingsIcons() {
   if (RefreshContentSettingsDecorations())
     OnDecorationsChanged();
-  PopUpContentSettingIfNeeded();
 }
 
 void LocationBarViewMac::UpdatePageActions() {
@@ -588,16 +587,6 @@ PageActionDecoration* LocationBarViewMac::GetPageActionDecoration(
   return NULL;
 }
 
-void LocationBarViewMac::PopUpContentSettingIfNeeded() {
-  AutocompleteTextFieldCell* cell = [field_ cell];
-  const NSRect bounds = [field_ bounds];
-  for (size_t i = 0; i < content_setting_decorations_.size(); ++i) {
-    const NSRect frame =
-        [cell frameForDecoration:content_setting_decorations_[i]
-                         inFrame:bounds];
-    content_setting_decorations_[i]->PopUpIfNeeded(frame);
-  }
-}
 
 void LocationBarViewMac::DeletePageActionDecorations() {
   // TODO(shess): Deleting these decorations could result in the cell

@@ -239,8 +239,6 @@ MediaMenuParts::~MediaMenuParts() {}
       nibPath = @"ContentBlockedDownloads"; break;
     case CONTENT_SETTINGS_TYPE_MIDI_SYSEX:
       nibPath = @"ContentBlockedMIDISysEx"; break;
-    case CONTENT_SETTINGS_TYPE_SAVE_PASSWORD:
-      nibPath = @"ContentBlockedSavePassword"; break;
     // These content types have no bubble:
     case CONTENT_SETTINGS_TYPE_DEFAULT:
     case CONTENT_SETTINGS_TYPE_NOTIFICATIONS:
@@ -782,16 +780,6 @@ MediaMenuParts::~MediaMenuParts() {}
 
 - (IBAction)manageBlocking:(id)sender {
   contentSettingBubbleModel_->OnManageLinkClicked();
-}
-
-- (IBAction)saveBubble:(id)sender {
-  contentSettingBubbleModel_->OnSaveClicked();
-  [self close];
-}
-
-- (IBAction)blacklistBubble:(id)sender {
-  contentSettingBubbleModel_->OnCancelClicked();
-  [self close];
 }
 
 - (IBAction)closeBubble:(id)sender {

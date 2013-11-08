@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_media_menu_model.h"
 #include "chrome/browser/ui/views/browser_dialogs.h"
-#include "chrome/browser/ui/views/password_menu_model.h"
 #include "content/public/browser/plugin_service.h"
 #include "content/public/browser/web_contents.h"
 #include "grit/generated_resources.h"
@@ -142,8 +141,6 @@ ContentSettingBubbleContents::ContentSettingBubbleContents(
     views::BubbleBorder::Arrow arrow)
     : BubbleDelegateView(anchor_view, arrow),
       content_setting_bubble_model_(content_setting_bubble_model),
-      cancel_button_(NULL),
-      save_button_(NULL),
       custom_link_(NULL),
       manage_link_(NULL),
       close_button_(NULL) {
@@ -384,63 +381,7 @@ void ContentSettingBubbleContents::Init() {
   const int kDoubleColumnSetId = 1;
   views::ColumnSet* double_column_set =
       layout->AddColumnSet(kDoubleColumnSetId);
-
-  if (content_setting_bubble_model_->content_type() ==
-      CONTENT_SETTINGS_TYPE_SAVE_PASSWORD) {
-    double_column_set->AddColumn(GridLayout::TRAILING, GridLayout::CENTER, 1,
-                                 GridLayout::USE_PREF, 0, 0);
-    double_column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
-                                 GridLayout::USE_PREF, 0, 0);
-    double_column_set->AddPaddingColumn(
-        0, views::kRelatedControlSmallVerticalSpacing);
-    double_column_set->AddColumn(GridLayout::TRAILING, GridLayout::CENTER, 0,
-                                 GridLayout::USE_PREF, 0, 0);
-
-    const int kSingleColumnRightSetId = 2;
-    views::ColumnSet* right_column_set =
-        layout->AddColumnSet(kSingleColumnRightSetId);
-    right_column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 1,
-                                GridLayout::USE_PREF, 0, 0);
-
-    cancel_button_ = new views::LabelButton(
-        this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_CANCEL_DROP_DOWN));
-    cancel_button_->set_border(
-        new views::TextButtonNativeThemeBorder(cancel_button_));
-    save_button_ = new views::LabelButton(
-        this, l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SAVE_BUTTON));
-    save_button_->set_border(
-        new views::TextButtonNativeThemeBorder(save_button_));
-    manage_link_ = new views::Link(UTF8ToUTF16(bubble_content.manage_link));
-    manage_link_->set_listener(this);
-
-    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-
-    layout->StartRow(0, kDoubleColumnSetId);
-    layout->AddView(cancel_button_);
-
-    views::MenuButton* menu_button =
-        new views::MenuButton(NULL, UTF8ToUTF16(" "), this, true);
-    menu_button->set_alignment(views::TextButton::ALIGN_LEFT);
-    menu_button->set_border(
-        new views::TextButtonNativeThemeBorder(menu_button));
-
-    password_menu_model_.reset(
-        new PasswordMenuModel(content_setting_bubble_model_.get(), this));
-    layout->AddView(menu_button);
-    menu_button->set_max_width(15);
-
-    layout->AddView(save_button_);
-
-    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-    layout->StartRow(0, kSingleColumnSetId);
-    layout->AddView(new views::Separator(views::Separator::HORIZONTAL), 1, 1,
-                    GridLayout::FILL, GridLayout::FILL);
-    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
-
-    layout->StartRow(0, kSingleColumnRightSetId);
-    layout->AddView(manage_link_);
-  } else {
-    if (!bubble_content_empty) {
+  if (!bubble_content_empty) {
       layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
       layout->StartRow(0, kSingleColumnSetId);
       layout->AddView(new views::Separator(views::Separator::HORIZONTAL), 1, 1,
@@ -464,7 +405,6 @@ void ContentSettingBubbleContents::Init() {
         new views::LabelButton(this, l10n_util::GetStringUTF16(IDS_DONE));
     close_button_->SetStyle(views::Button::STYLE_NATIVE_TEXTBUTTON);
     layout->AddView(close_button_);
-  }
 }
 
 void ContentSettingBubbleContents::ButtonPressed(views::Button* sender,
@@ -475,13 +415,8 @@ void ContentSettingBubbleContents::ButtonPressed(views::Button* sender,
     content_setting_bubble_model_->OnRadioClicked(i - radio_group_.begin());
     return;
   }
-
-  if (sender == save_button_)
-    content_setting_bubble_model_->OnSaveClicked();
-  else if (sender == cancel_button_ || sender == close_button_)
-    content_setting_bubble_model_->OnDoneClicked();
-  else
-    NOTREACHED();
+  DCHECK_EQ(sender, close_button_);
+  content_setting_bubble_model_->OnDoneClicked();
   StartFade(false);
 }
 
@@ -508,21 +443,6 @@ void ContentSettingBubbleContents::LinkClicked(views::Link* source,
 void ContentSettingBubbleContents::OnMenuButtonClicked(
     views::View* source,
     const gfx::Point& point) {
-  if (password_menu_model_) {
-    menu_runner_.reset(new views::MenuRunner(password_menu_model_.get()));
-
-    gfx::Point screen_location;
-    views::View::ConvertPointToScreen(static_cast<views::MenuButton*>(source),
-                                      &screen_location);
-    ignore_result(menu_runner_->RunMenuAt(
-        source->GetWidget(),
-        static_cast<views::MenuButton*>(source),
-        gfx::Rect(screen_location,
-                  static_cast<views::MenuButton*>(source)->size()),
-        views::MenuItemView::TOPRIGHT,
-        ui::MENU_SOURCE_NONE,
-        views::MenuRunner::HAS_MNEMONICS));
-  } else {
     MediaMenuPartsMap::iterator j(media_menus_.find(
         static_cast<views::MenuButton*>(source)));
     DCHECK(j != media_menus_.end());
@@ -537,7 +457,6 @@ void ContentSettingBubbleContents::OnMenuButtonClicked(
         views::MenuItemView::TOPLEFT,
         ui::MENU_SOURCE_NONE,
         views::MenuRunner::HAS_MNEMONICS));
-  }
 }
 
 int ContentSettingBubbleContents::GetPreferredMediaMenuWidth(

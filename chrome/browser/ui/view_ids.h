@@ -89,6 +89,12 @@ enum ViewID {
   VIEW_ID_ZOOM_BUTTON,
 #endif
 
+// TODO(npentrel): change the passwords decoration to an NSImageView.
+#if !defined(OS_MACOSX)
+  // The manage passwords icon in the location bar.
+  VIEW_ID_MANAGE_PASSWORDS_ICON_BUTTON,
+#endif
+
   // The omnibox icon to do voice-based search.
   VIEW_ID_MIC_SEARCH_BUTTON,
 

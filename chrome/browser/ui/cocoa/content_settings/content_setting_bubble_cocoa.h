@@ -41,8 +41,6 @@ typedef std::map<NSPopUpButton*, MediaMenuParts*> MediaMenuPartsMap;
   IBOutlet NSTextField* titleLabel_;
   IBOutlet NSMatrix* allowBlockRadioGroup_;
 
-  IBOutlet NSButton* blacklistPasswordButton_;
-  IBOutlet NSButton* savePasswordButton_;
   IBOutlet NSButton* manageButton_;
   IBOutlet NSButton* doneButton_;
   IBOutlet NSButton* loadButton_;
@@ -66,12 +64,6 @@ typedef std::map<NSPopUpButton*, MediaMenuParts*> MediaMenuPartsMap;
 
 // Callback for the "don't block / continue blocking" radio group.
 - (IBAction)allowBlockToggled:(id)sender;
-
-// Callback for "never for this site" button.
-- (IBAction)blacklistBubble:(id)sender;
-
-// Callback for "save password" button.
-- (IBAction)saveBubble:(id)sender;
 
 // Callback for "close" button.
 - (IBAction)closeBubble:(id)sender;

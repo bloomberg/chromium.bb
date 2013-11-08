@@ -117,15 +117,9 @@ class ContentSettingBubbleModel : public content::NotificationObserver {
   virtual void OnMediaMenuClicked(content::MediaStreamType type,
                                   const std::string& selected_device_id) {}
 
-  // Called by the view code when the cancel button in clicked by the user.
-  virtual void OnCancelClicked() {}
-
   // Called by the view code when the bubble is closed by the user using the
   // Done button.
   virtual void OnDoneClicked() {}
-
-  // Called by the view code when the save button in clicked by the user.
-  virtual void OnSaveClicked() {}
 
  protected:
   ContentSettingBubbleModel(
@@ -193,24 +187,6 @@ class ContentSettingTitleAndLinkModel : public ContentSettingBubbleModel {
   virtual void OnManageLinkClicked() OVERRIDE;
 
   Delegate* delegate_;
-};
-
-class SavePasswordBubbleModel : public ContentSettingTitleAndLinkModel {
- public:
-  SavePasswordBubbleModel(Delegate* delegate,
-                          content::WebContents* web_contents,
-                          Profile* profile);
-  virtual ~SavePasswordBubbleModel();
-  virtual void OnCancelClicked() OVERRIDE;
-  virtual void OnDoneClicked() OVERRIDE;
-  virtual void OnSaveClicked() OVERRIDE;
-
- private:
-  void SetTitle();
-
-  TabSpecificContentSettings::PasswordSavingState state_;
-
-  DISALLOW_COPY_AND_ASSIGN(SavePasswordBubbleModel);
 };
 
 class ContentSettingRPHBubbleModel : public ContentSettingTitleAndLinkModel {

@@ -43,9 +43,6 @@ void BrowserContentSettingBubbleModelDelegate::ShowContentSettingsPage(
     case CONTENT_SETTINGS_TYPE_PROTOCOL_HANDLERS:
       chrome::ShowSettingsSubPage(browser_, chrome::kHandlerSettingsSubPage);
       return;
-    case CONTENT_SETTINGS_TYPE_SAVE_PASSWORD:
-      chrome::ShowSettingsSubPage(browser_, chrome::kPasswordManagerSubPage);
-      return;
     default:
       chrome::ShowContentSettings(browser_, type);
       return;

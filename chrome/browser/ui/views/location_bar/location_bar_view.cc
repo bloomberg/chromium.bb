@@ -33,6 +33,7 @@
 #include "chrome/browser/ui/omnibox/location_bar_util.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/omnibox/omnibox_popup_view.h"
+#include "chrome/browser/ui/passwords/manage_passwords_icon_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_prompt_view.h"
@@ -44,6 +45,8 @@
 #include "chrome/browser/ui/views/location_bar/keyword_hint_view.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_layout.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
+#include "chrome/browser/ui/views/location_bar/manage_passwords_bubble_view.h"
+#include "chrome/browser/ui/views/location_bar/manage_passwords_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/open_pdf_in_reader_view.h"
 #include "chrome/browser/ui/views/location_bar/page_action_image_view.h"
 #include "chrome/browser/ui/views/location_bar/page_action_with_badge_view.h"
@@ -194,6 +197,7 @@ LocationBarView::LocationBarView(Browser* browser,
       zoom_view_(NULL),
       generated_credit_card_view_(NULL),
       open_pdf_in_reader_view_(NULL),
+      manage_passwords_icon_view_(NULL),
       script_bubble_icon_view_(NULL),
       star_view_(NULL),
       translate_icon_view_(NULL),
@@ -357,6 +361,10 @@ void LocationBarView::Init() {
   open_pdf_in_reader_view_ = new OpenPDFInReaderView(this);
   AddChildView(open_pdf_in_reader_view_);
 
+  manage_passwords_icon_view_ = new ManagePasswordsIconView(delegate_);
+  manage_passwords_icon_view_->set_id(VIEW_ID_MANAGE_PASSWORDS_ICON_BUTTON);
+  AddChildView(manage_passwords_icon_view_);
+
   script_bubble_icon_view_ = new ScriptBubbleIconView(delegate());
   script_bubble_icon_view_->SetVisible(false);
   AddChildView(script_bubble_icon_view_);
@@ -487,10 +495,16 @@ void LocationBarView::SetAnimationOffset(int offset) {
 }
 
 void LocationBarView::UpdateContentSettingsIcons() {
-  UpdateContentSettingViewsPreLayout();
+  RefreshContentSettingViews();
   Layout();
-  UpdateContentSettingViewsPostLayout();
   SchedulePaint();
+}
+
+void LocationBarView::UpdateManagePasswordsIconAndBubble() {
+  RefreshManagePasswordsIconView();
+  Layout();
+  SchedulePaint();
+  ShowManagePasswordsBubbleIfNeeded();
 }
 
 void LocationBarView::UpdatePageActions() {
@@ -707,7 +721,7 @@ void LocationBarView::Layout() {
         location_icon_view_);
   }
 
-  if (star_view_ && star_view_->visible()) {
+  if (star_view_->visible()) {
     trailing_decorations.AddDecoration(
         vertical_edge_thickness(), location_height,
         GetBuiltInHorizontalPaddingForChildViews(), star_view_);
@@ -718,17 +732,22 @@ void LocationBarView::Layout() {
         GetBuiltInHorizontalPaddingForChildViews(),
         translate_icon_view_);
   }
-  if (script_bubble_icon_view_ && script_bubble_icon_view_->visible()) {
+  if (script_bubble_icon_view_->visible()) {
     trailing_decorations.AddDecoration(
         vertical_edge_thickness(), location_height,
         GetBuiltInHorizontalPaddingForChildViews(),
         script_bubble_icon_view_);
   }
-  if (open_pdf_in_reader_view_ && open_pdf_in_reader_view_->visible()) {
+  if (open_pdf_in_reader_view_->visible()) {
     trailing_decorations.AddDecoration(
         vertical_edge_thickness(), location_height,
         GetBuiltInHorizontalPaddingForChildViews(),
         open_pdf_in_reader_view_);
+  }
+  if (manage_passwords_icon_view_->visible()) {
+    trailing_decorations.AddDecoration(vertical_edge_thickness(),
+                                       location_height, 0,
+                                       manage_passwords_icon_view_);
   }
   for (PageActionViews::const_iterator i(page_action_views_.begin());
        i != page_action_views_.end(); ++i) {
@@ -991,10 +1010,13 @@ views::View* LocationBarView::generated_credit_card_view() {
 }
 
 void LocationBarView::Update(const WebContents* contents) {
+  // UpdateManagePasswordsIconAndBubble does not need to be called here. This is
+  // handled by the PasswordObserver in ManagePasswordsIconController once we
+  // know that a password form was submitted.
   mic_search_view_->SetVisible(
       !GetToolbarModel()->input_in_progress() && browser_ &&
       browser_->search_model()->voice_search_supported());
-  UpdateContentSettingViewsPreLayout();
+  RefreshContentSettingViews();
   generated_credit_card_view_->Update();
   ZoomBubbleView::CloseBubble();
   RefreshZoomView();
@@ -1020,7 +1042,6 @@ void LocationBarView::Update(const WebContents* contents) {
     location_entry_->Update();
 
   OnChanged();  // NOTE: Calls Layout().
-  UpdateContentSettingViewsPostLayout();
 }
 
 void LocationBarView::OnChanged() {
@@ -1334,18 +1355,10 @@ int LocationBarView::GetHorizontalEdgeThickness() const {
       browser_->window()->IsMaximized()) ? 0 : vertical_edge_thickness();
 }
 
-void LocationBarView::UpdateContentSettingViewsPreLayout() {
+void LocationBarView::RefreshContentSettingViews() {
   for (ContentSettingViews::const_iterator i(content_setting_views_.begin());
        i != content_setting_views_.end(); ++i) {
-    (*i)->UpdatePreLayout(GetToolbarModel()->input_in_progress() ?
-        NULL : GetWebContents());
-  }
-}
-
-void LocationBarView::UpdateContentSettingViewsPostLayout() {
-  for (ContentSettingViews::const_iterator i(content_setting_views_.begin());
-       i != content_setting_views_.end(); ++i) {
-    (*i)->UpdatePostLayout(GetToolbarModel()->input_in_progress() ?
+    (*i)->Update(GetToolbarModel()->input_in_progress() ?
         NULL : GetWebContents());
   }
 }
@@ -1457,10 +1470,16 @@ void LocationBarView::RefreshZoomView() {
   WebContents* web_contents = GetWebContents();
   if (!web_contents)
     return;
+  zoom_view_->Update(ZoomController::FromWebContents(web_contents));
+}
 
-  ZoomController* zoom_controller =
-      ZoomController::FromWebContents(web_contents);
-  zoom_view_->Update(zoom_controller);
+void LocationBarView::RefreshManagePasswordsIconView() {
+  DCHECK(manage_passwords_icon_view_);
+  WebContents* web_contents = GetWebContents();
+  if (!web_contents)
+    return;
+  manage_passwords_icon_view_->Update(
+      ManagePasswordsIconController::FromWebContents(web_contents));
 }
 
 void LocationBarView::RefreshTranslateIcon() {
@@ -1478,6 +1497,15 @@ void LocationBarView::RefreshTranslateIcon() {
 
   command_updater()->UpdateCommandEnabled(IDC_TRANSLATE_PAGE, enabled);
   translate_icon_view_->SetVisible(enabled);
+}
+
+void LocationBarView::ShowManagePasswordsBubbleIfNeeded() {
+  DCHECK(manage_passwords_icon_view_);
+  WebContents* web_contents = GetWebContents();
+  if (!web_contents)
+    return;
+  manage_passwords_icon_view_->ShowBubbleIfNeeded(
+      ManagePasswordsIconController::FromWebContents(web_contents));
 }
 
 #if defined(OS_WIN) && !defined(USE_AURA)

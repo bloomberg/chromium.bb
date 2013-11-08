@@ -44,6 +44,7 @@ class InstantController;
 class KeywordHintView;
 class LocationIconView;
 class OpenPDFInReaderView;
+class ManagePasswordsIconView;
 class PageActionWithBadgeView;
 class PageActionImageView;
 class Profile;
@@ -169,6 +170,11 @@ class LocationBarView : public LocationBar,
   // The zoom icon view. It may not be visible.
   ZoomView* zoom_view() { return zoom_view_; }
 
+  // The passwords icon. It may not be visible.
+  ManagePasswordsIconView* manage_passwords_icon_view() {
+    return manage_passwords_icon_view_;
+  }
+
   // Sets |preview_enabled| for the PageAction View associated with this
   // |page_action|. If |preview_enabled| is true, the view will display the
   // PageActions icon even though it has not been activated by the extension.
@@ -291,6 +297,7 @@ class LocationBarView : public LocationBar,
   virtual void FocusLocation(bool select_all) OVERRIDE;
   virtual void FocusSearch() OVERRIDE;
   virtual void UpdateContentSettingsIcons() OVERRIDE;
+  virtual void UpdateManagePasswordsIconAndBubble() OVERRIDE;
   virtual void UpdatePageActions() OVERRIDE;
   virtual void InvalidatePageActions() OVERRIDE;
   virtual void UpdateOpenPDFInReaderPrompt() OVERRIDE;
@@ -372,17 +379,8 @@ class LocationBarView : public LocationBar,
   }
 
   // Updates the visibility state of the Content Blocked icons to reflect what
-  // is actually blocked on the current page. Calling this function should
-  // always eventually be followed by calling Layout() and then
-  // UpdateContentSettingViewsPostLayout(), to ensure the icons can completely
-  // update their states.
-  void UpdateContentSettingViewsPreLayout();
-
-  // Updates after the correct screen coordinates have been set for icons.
-  // Allows content setting icons to perform any updating which can't complete
-  // until after the icons have been correctly laid out.  This should be called
-  // after UpdateContentSettingViewsPreLayout() and a subsequent Layout().
-  void UpdateContentSettingViewsPostLayout();
+  // is actually blocked on the current page.
+  void RefreshContentSettingViews();
 
   // Deletes all page action views that we have created.
   void DeletePageActionViews();
@@ -406,6 +404,11 @@ class LocationBarView : public LocationBar,
 
   // Sets the visibility of view to new_vis.
   void ToggleVisibility(bool new_vis, views::View* view);
+
+  void RefreshManagePasswordsIconView();
+
+  // Shows the manage passwords bubble if there is a savable password.
+  void ShowManagePasswordsBubbleIfNeeded();
 
 #if !defined(USE_AURA)
   // Helper for the Mouse event handlers that does all the real work.
@@ -490,6 +493,9 @@ class LocationBarView : public LocationBar,
 
   // The icon to open a PDF in Reader.
   OpenPDFInReaderView* open_pdf_in_reader_view_;
+
+  // The manage passwords icon.
+  ManagePasswordsIconView* manage_passwords_icon_view_;
 
   // The current page actions.
   std::vector<ExtensionAction*> page_actions_;

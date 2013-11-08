@@ -56,9 +56,29 @@ class TabSpecificContentSettings
     MICROPHONE_CAMERA_BLOCKED,
   };
 
-  enum PasswordSavingState {
-    NO_PASSWORD_TO_BE_SAVED = 0,
-    PASSWORD_TO_BE_SAVED,
+  // A PasswordObserver is implemented in ManagePasswordsIconController which
+  // will be notified when a password form is submitted.
+  class PasswordObserver {
+   public:
+    explicit PasswordObserver(
+        TabSpecificContentSettings* tab_specific_content_settings);
+    virtual ~PasswordObserver();
+
+    // Called whenever a password form is submitted.
+    virtual void OnPasswordAction() = 0;
+
+    TabSpecificContentSettings* tab_specific_content_settings() {
+      return tab_specific_content_settings_;
+    }
+
+    // Called when the TabSpecificContentSettings is destroyed; nulls out
+    // the local reference.
+    void ContentSettingsDestroyed();
+
+   private:
+    TabSpecificContentSettings* tab_specific_content_settings_;
+
+    DISALLOW_COPY_AND_ASSIGN(PasswordObserver);
   };
 
   // Classes that want to be notified about site data events must implement
@@ -211,9 +231,23 @@ class TabSpecificContentSettings
   // Returns the state of the camera and microphone usage.
   MicrophoneCameraState GetMicrophoneCameraState() const;
 
-  // TODO(npentrel): Change to bool if not needed once feature is implemented.
-  // Returns the state of whether there is a password to be saved or not.
-  PasswordSavingState GetPasswordSavingState() const;
+  void set_manage_passwords_bubble_shown() {
+    manage_passwords_bubble_shown_ = true;
+  }
+
+  bool password_to_be_saved() const {
+    return password_to_be_saved_;
+  }
+
+  bool manage_passwords_bubble_shown() const {
+    return manage_passwords_bubble_shown_;
+  }
+
+  // Returns whether there is a password to be saved.
+  bool GetPasswordSavingState() const;
+
+  // Returns whether the password bubble has been shown to the user.
+  bool GetManagePasswordsBubbleShownState() const;
 
   const std::set<std::string>& BlockedResourcesForType(
       ContentSettingsType content_type) const;
@@ -368,6 +402,9 @@ class TabSpecificContentSettings
   void OnMIDISysExAccessed(const GURL& reqesting_origin);
   void OnMIDISysExAccessBlocked(const GURL& requesting_origin);
 
+  // Is called to set ManagePasswordsIconController as an observer.
+  void SetPasswordObserver(PasswordObserver* observer);
+
   // Adds the given |SiteDataObserver|. The |observer| is notified when a
   // locale shared object, like for example a cookie, is accessed.
   void AddSiteDataObserver(SiteDataObserver* observer);
@@ -386,6 +423,12 @@ class TabSpecificContentSettings
   virtual void Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
+
+  // Notifies the registered PasswordObserver of a sumitted password form.
+  void NotifyPasswordObserver();
+
+  // Currently the registered PasswordObserver.
+  PasswordObserver* password_observer_;
 
   // Notifies all registered |SiteDataObserver|s.
   void NotifySiteDataObservers();
@@ -455,6 +498,9 @@ class TabSpecificContentSettings
   // this password?" prompt, we ask this object to save or blacklist the
   // associated login information in Chrome's password store.
   scoped_ptr<PasswordFormManager> form_manager_;
+
+  bool password_to_be_saved_;
+  bool manage_passwords_bubble_shown_;
 
   DISALLOW_COPY_AND_ASSIGN(TabSpecificContentSettings);
 };

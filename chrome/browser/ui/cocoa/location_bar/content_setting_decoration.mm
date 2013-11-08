@@ -292,27 +292,6 @@ bool ContentSettingDecoration::OnMousePressed(NSRect frame) {
   return true;
 }
 
-void ContentSettingDecoration::PopUpIfNeeded(NSRect frame) {
-  if (!IsVisible())
-    return;
-
-  WebContents* web_contents = owner_->GetWebContents();
-  TabSpecificContentSettings* content_settings = web_contents ?
-      TabSpecificContentSettings::FromWebContents(web_contents) : NULL;
-  if (!content_settings)
-    return;
-
-  ContentSettingsType content_type =
-      content_setting_image_model_->get_content_settings_type();
-  if (!content_settings->IsBlockageIndicated(content_type)) {
-    if (content_setting_image_model_->ShouldShowBubbleOnBlockage()) {
-      // Pop up the bubble.
-      OnMousePressed(frame);
-    }
-    content_settings->SetBlockageHasBeenIndicated(content_type);
-  }
-}
-
 NSString* ContentSettingDecoration::GetToolTip() {
   return tooltip_.get();
 }

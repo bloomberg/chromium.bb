@@ -61,6 +61,7 @@ class LocationBarViewMac : public LocationBar,
   virtual void FocusLocation(bool select_all) OVERRIDE;
   virtual void FocusSearch() OVERRIDE;
   virtual void UpdateContentSettingsIcons() OVERRIDE;
+  virtual void UpdateManagePasswordsIconAndBubble() OVERRIDE {};
   virtual void UpdatePageActions() OVERRIDE;
   virtual void InvalidatePageActions() OVERRIDE;
   virtual void UpdateOpenPDFInReaderPrompt() OVERRIDE;
@@ -92,10 +93,6 @@ class LocationBarViewMac : public LocationBar,
   // Additionally, |can_show_bubble| will only be true when the bubble wouldn't
   // be obscured by other UI (wrench menu) or redundant (+/- from wrench).
   void ZoomChangedForActiveTab(bool can_show_bubble);
-
-  // Pops up a bubble for a content setting. This depends on the image having
-  // already been laid out, therefore it must be called after Layout().
-  void PopUpContentSettingIfNeeded();
 
   // Get the point in window coordinates on the star for the bookmark bubble to
   // aim at.

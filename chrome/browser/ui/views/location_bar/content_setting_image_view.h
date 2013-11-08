@@ -44,11 +44,7 @@ class ContentSettingImageView : public gfx::AnimationDelegate,
   virtual ~ContentSettingImageView();
 
   // Updates the decoration from the shown WebContents.
-  void UpdatePreLayout(content::WebContents* web_contents);
-
-  // Performs any updates which depend on the image having already been laid out
-  // by the owning LocationBarView.
-  void UpdatePostLayout(content::WebContents* web_contents);
+  void Update(content::WebContents* web_contents);
 
  private:
   // Number of milliseconds spent animating open; also the time spent animating
@@ -88,7 +84,6 @@ class ContentSettingImageView : public gfx::AnimationDelegate,
 
   int GetTotalSpacingWhileAnimating() const;
   void OnClick();
-  void CreateBubble(content::WebContents* web_contents);
 
   LocationBarView* parent_;  // Weak, owns us.
   scoped_ptr<ContentSettingImageModel> content_setting_image_model_;

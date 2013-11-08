@@ -167,6 +167,7 @@ class TestBrowserWindow : public BrowserWindow {
     virtual void FocusLocation(bool select_all) OVERRIDE {}
     virtual void FocusSearch() OVERRIDE {}
     virtual void UpdateContentSettingsIcons() OVERRIDE {}
+    virtual void UpdateManagePasswordsIconAndBubble() OVERRIDE {}
     virtual void UpdatePageActions() OVERRIDE {}
     virtual void InvalidatePageActions() OVERRIDE {}
     virtual void UpdateOpenPDFInReaderPrompt() OVERRIDE {}
