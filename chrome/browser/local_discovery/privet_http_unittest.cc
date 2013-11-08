@@ -431,20 +431,6 @@ TEST_F(PrivetInfoTest, InfoFailureHTTP) {
   EXPECT_EQ(NULL, privet_client_->GetCachedInfo());
 };
 
-TEST_F(PrivetInfoTest, InfoFailureInternal) {
-  info_operation_->Start();
-
-  net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher != NULL);
-  fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::FAILED,
-                                            net::OK));
-  fetcher->set_response_code(200);
-
-  EXPECT_CALL(info_delegate_, OnPrivetInfoDoneInternal(-1));
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
-  EXPECT_EQ(NULL, privet_client_->GetCachedInfo());
-};
-
 class PrivetRegisterTest : public PrivetHTTPTest {
  public:
   PrivetRegisterTest() {

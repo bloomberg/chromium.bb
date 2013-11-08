@@ -67,6 +67,20 @@ class PrivetURLFetcherTest : public ::testing::Test {
   virtual ~PrivetURLFetcherTest() {
   }
 
+  void RunFor(base::TimeDelta time_period) {
+    base::CancelableCallback<void()> callback(base::Bind(
+        &PrivetURLFetcherTest::Stop, base::Unretained(this)));
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE, callback.callback(), time_period);
+
+    base::MessageLoop::current()->Run();
+    callback.Cancel();
+  }
+
+  void Stop() {
+    base::MessageLoop::current()->Quit();
+  }
+
  protected:
   base::MessageLoop loop_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_;
@@ -94,7 +108,7 @@ TEST_F(PrivetURLFetcherTest, FetchSuccess) {
   EXPECT_EQ(2, hello_value);
 }
 
-TEST_F(PrivetURLFetcherTest, URLFetcherError) {
+TEST_F(PrivetURLFetcherTest, URLFetcherErrorRetry) {
   privet_urlfetcher_->Start();
   net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
   ASSERT_TRUE(fetcher != NULL);
@@ -103,7 +117,42 @@ TEST_F(PrivetURLFetcherTest, URLFetcherError) {
                                             net::ERR_TIMED_OUT));
   fetcher->set_response_code(-1);
 
-  EXPECT_CALL(delegate_, OnErrorInternal(PrivetURLFetcher::URL_FETCH_ERROR));
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+
+  RunFor(base::TimeDelta::FromSeconds(7));
+  fetcher = fetcher_factory_.GetFetcherByID(0);
+
+  ASSERT_TRUE(fetcher != NULL);
+  fetcher->SetResponseString(kSampleParsableJSON);
+  fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::SUCCESS,
+                                            net::OK));
+  fetcher->set_response_code(200);
+
+  EXPECT_CALL(delegate_, OnParsedJsonInternal(false));
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+}
+
+TEST_F(PrivetURLFetcherTest, HTTP503Retry) {
+  privet_urlfetcher_->Start();
+  net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
+  ASSERT_TRUE(fetcher != NULL);
+  fetcher->SetResponseString(kSampleParsableJSON);
+  fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::SUCCESS,
+                                            net::OK));
+  fetcher->set_response_code(503);
+
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+
+  RunFor(base::TimeDelta::FromSeconds(7));
+  fetcher = fetcher_factory_.GetFetcherByID(0);
+
+  ASSERT_TRUE(fetcher != NULL);
+  fetcher->SetResponseString(kSampleParsableJSON);
+  fetcher->set_status(net::URLRequestStatus(net::URLRequestStatus::SUCCESS,
+                                            net::OK));
+  fetcher->set_response_code(200);
+
+  EXPECT_CALL(delegate_, OnParsedJsonInternal(false));
   fetcher->delegate()->OnURLFetchComplete(fetcher);
 }
 
