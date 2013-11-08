@@ -1150,6 +1150,13 @@ internal_nowithdebug_paladin.add_config('amd64-generic-nowithdebug-paladin',
   important=False,
 )
 
+internal_nowithdebug_paladin.add_config('x86-mario-nowithdebug-paladin',
+  boards=['x86-mario'],
+  paladin_builder_name='x86-mario nowithdebug-paladin',
+  prebuilts=False,
+  important=False,
+)
+
 internal_pre_cq = internal_paladin.derive(
   build_type=constants.INCREMENTAL_TYPE,
   compilecheck=True,
