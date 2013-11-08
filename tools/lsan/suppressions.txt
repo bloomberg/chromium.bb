@@ -18,7 +18,8 @@ leak:net::ProxyResolverScriptData::FromUTF8
 # A small string is leaked here (57 bytes per process). http://crbug.com/46571#c9
 leak:WebCore::V8GCController::collectGarbage
 
-# Intentional leak in Blink. TODO: annotate it. http://crbug.com/http://crbug.com/121729
+# Intentional leak in Blink. http://crbug.com/121729
+# TODO(earthdok): annotate it.
 leak:WebCore::parseUASheet
 
 # http://crbug.com/270180
@@ -46,6 +47,9 @@ leak:FontConfigTypeface::LegacyCreateTypeface
 
 # Skia leaks GrGpuGL::ProgramCache::Entry. http://crbug.com/262934
 leak:GrGpuGL::flushGraphicsState
+
+# xrandr leak. http://crbug.com/119677
+leak:XRRFindDisplay
 
 #### Actual bugs in Chromium code ####
 # PLEASE DO NOT ADD NEW SUPPRESSIONS TO THIS SECTION. Instead, commits that
