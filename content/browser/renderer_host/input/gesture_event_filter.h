@@ -93,6 +93,8 @@ class CONTENT_EXPORT GestureEventFilter {
   friend class MockRenderWidgetHost;
   friend class GestureEventFilterTest;
 
+  static bool ShouldIgnoreAckForGestureType(blink::WebInputEvent::Type type);
+
   // TODO(mohsen): There are a bunch of ShouldForward.../ShouldDiscard...
   // methods that are getting confusing. This should be somehow fixed. Maybe
   // while refactoring GEF: http://crbug.com/148443.
@@ -149,6 +151,11 @@ class CONTENT_EXPORT GestureEventFilter {
   // GesturePinchUpdate. Returns the identity matrix otherwise.
   gfx::Transform GetTransformForEvent(
       const GestureEventWithLatencyInfo& gesture_event) const;
+
+  // Pops and sends events ignoring ack from the head of
+  // |coalesced_gesture_events_| until the queue is empty or the event at the
+  // head requires an ack.
+  void SendEventsIgnoringAck();
 
   // Adds |gesture_event| to the |coalesced_gesture_events_|, resetting the
   // accumulation of |combined_scroll_pinch_|.

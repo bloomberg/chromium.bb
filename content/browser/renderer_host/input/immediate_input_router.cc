@@ -339,14 +339,6 @@ void ImmediateInputRouter::OfferToHandlers(const WebInputEvent& input_event,
     return;
 
   OfferToRenderer(input_event, latency_info, is_keyboard_shortcut);
-
-  // If we don't care about the ack disposition, send the ack immediately.
-  if (WebInputEventTraits::IgnoresAckDisposition(input_event.type)) {
-    ProcessInputEventAck(input_event.type,
-                         INPUT_EVENT_ACK_STATE_IGNORED,
-                         latency_info,
-                         IGNORING_DISPOSITION);
-  }
 }
 
 bool ImmediateInputRouter::OfferToOverscrollController(
@@ -431,10 +423,6 @@ void ImmediateInputRouter::OnInputEventAck(
   UMA_HISTOGRAM_TIMES("MPArch.IIR_InputEventDelta", delta);
 
   client_->DecrementInFlightEventCount();
-
-  // A synthetic ack will already have been sent for this event.
-  if (WebInputEventTraits::IgnoresAckDisposition(event_type))
-    return;
 
   ProcessInputEventAck(event_type, ack_result, latency_info, RENDERER);
   // WARNING: |this| may be deleted at this point.

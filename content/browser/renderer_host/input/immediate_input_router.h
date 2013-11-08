@@ -130,7 +130,6 @@ private:
     RENDERER,
     CLIENT,
     OVERSCROLL_CONTROLLER,
-    IGNORING_DISPOSITION,
     ACK_SOURCE_NONE
   };
   // Note: This function may result in |this| being deleted, and as such

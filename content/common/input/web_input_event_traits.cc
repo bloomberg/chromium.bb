@@ -283,11 +283,4 @@ void WebInputEventTraits::Coalesce(const WebInputEvent& event_to_coalesce,
   Apply(WebInputEventCoalesce(), event->type, event_to_coalesce, event);
 }
 
-bool WebInputEventTraits::IgnoresAckDisposition(
-    blink::WebInputEvent::Type type) {
-  return type == WebInputEvent::GestureTapDown ||
-      type == WebInputEvent::GestureShowPress ||
-      type == WebInputEvent::GestureTapCancel;
-}
-
 }  // namespace content
