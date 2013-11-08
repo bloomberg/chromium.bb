@@ -865,6 +865,7 @@ def BuildStepBuildAppEngine(pepperdir, chrome_revision):
   cmd = ['make', 'upload', 'REVISION=%s' % chrome_revision]
   env = dict(os.environ)
   env['NACL_SDK_ROOT'] = pepperdir
+  env['NACLPORTS_NO_ANNOTATE'] = "1"
   buildbot_common.Run(cmd, env=env, cwd=GONACL_APPENGINE_SRC_DIR)
 
 

@@ -71,7 +71,7 @@ Banner Updating submodules
 LogExecute git submodule update --init
 
 Banner Building FFTW
-LogExecute make ports
+LogExecute make ports TOOLCHAIN=pnacl CONFIG=Release
 
 Banner Building smoothlife
 LogExecute make TOOLCHAIN=pnacl CONFIG=Release -j${OS_JOBS}
