@@ -51,64 +51,6 @@ using fileapi::FileSystemURL;
 namespace extensions {
 namespace {
 
-// Error messages.
-const char kFileError[] = "File error %d";
-
-const DiskMountManager::Disk* GetVolumeAsDisk(const std::string& mount_path) {
-  DiskMountManager* disk_mount_manager = DiskMountManager::GetInstance();
-
-  DiskMountManager::MountPointMap::const_iterator mount_point_it =
-      disk_mount_manager->mount_points().find(mount_path);
-  if (mount_point_it == disk_mount_manager->mount_points().end())
-    return NULL;
-
-  const DiskMountManager::Disk* disk = disk_mount_manager->FindDiskBySourcePath(
-      mount_point_it->second.source_path);
-
-  return (disk && disk->is_hidden()) ? NULL : disk;
-}
-
-base::DictionaryValue* CreateValueFromDisk(
-    Profile* profile,
-    const std::string& extension_id,
-    const DiskMountManager::Disk* volume) {
-  base::DictionaryValue* volume_info = new base::DictionaryValue();
-
-  std::string mount_path;
-  if (!volume->mount_path().empty()) {
-    base::FilePath relative_mount_path;
-    file_manager::util::ConvertAbsoluteFilePathToRelativeFileSystemPath(
-        profile, extension_id, base::FilePath(volume->mount_path()),
-        &relative_mount_path);
-    mount_path = relative_mount_path.value();
-  }
-
-  volume_info->SetString("devicePath", volume->device_path());
-  volume_info->SetString("mountPath", mount_path);
-  volume_info->SetString("systemPath", volume->system_path());
-  volume_info->SetString("filePath", volume->file_path());
-  volume_info->SetString("deviceLabel", volume->device_label());
-  volume_info->SetString("driveLabel", volume->drive_label());
-  volume_info->SetString(
-      "deviceType",
-      DiskMountManager::DeviceTypeToString(volume->device_type()));
-  volume_info->SetDouble("totalSize",
-                         static_cast<double>(volume->total_size_in_bytes()));
-  volume_info->SetBoolean("isParent", volume->is_parent());
-  volume_info->SetBoolean("isReadOnly", volume->is_read_only());
-  volume_info->SetBoolean("hasMedia", volume->has_media());
-  volume_info->SetBoolean("isOnBootDevice", volume->on_boot_device());
-
-  return volume_info;
-}
-
-base::DictionaryValue* CreateDownloadsVolumeMetadata() {
-  base::DictionaryValue* volume_info = new base::DictionaryValue;
-  volume_info->SetString("mountPath", "Downloads");
-  volume_info->SetBoolean("isReadOnly", false);
-  return volume_info;
-}
-
 // Sets permissions for the Drive mount point so Files.app can access files
 // in the mount point directory. It's safe to call this function even if
 // Drive is disabled by the setting (i.e. prefs::kDisableDrive is true).
@@ -296,7 +238,7 @@ void FileBrowserPrivateRequestFileSystemFunction::DidFail(
     base::PlatformFileError error_code) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
-  error_ = base::StringPrintf(kFileError, static_cast<int>(error_code));
+  error_ = base::StringPrintf("File error %d", static_cast<int>(error_code));
   SendResponse(false);
 }
 
