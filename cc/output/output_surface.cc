@@ -334,6 +334,16 @@ void OutputSurface::SetUpContext3d() {
 
 void OutputSurface::ResetContext3d() {
   if (context_provider_.get()) {
+    while (!pending_gpu_latency_query_ids_.empty()) {
+      unsigned query_id = pending_gpu_latency_query_ids_.front();
+      pending_gpu_latency_query_ids_.pop_front();
+      context_provider_->Context3d()->deleteQueryEXT(query_id);
+    }
+    while (!available_gpu_latency_query_ids_.empty()) {
+      unsigned query_id = available_gpu_latency_query_ids_.front();
+      available_gpu_latency_query_ids_.pop_front();
+      context_provider_->Context3d()->deleteQueryEXT(query_id);
+    }
     context_provider_->SetLostContextCallback(
         ContextProvider::LostContextCallback());
     context_provider_->SetSwapBuffersCompleteCallback(
