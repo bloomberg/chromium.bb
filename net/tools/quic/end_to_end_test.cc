@@ -54,11 +54,6 @@ namespace {
 
 const char* kFooResponseBody = "Artichoke hearts make me happy.";
 const char* kBarResponseBody = "Palm hearts are pretty delicious, also.";
-const size_t kCongestionFeedbackFrameSize = 25;
-// If kCongestionFeedbackFrameSize increase we need to expand this string
-// accordingly.
-const char* kLargeRequest =
-    "https://www.google.com/foo/test/a/request/string/longer/than/25/bytes";
 
 void GenerateBody(string* body, int length) {
   body->clear();
@@ -150,7 +145,6 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
                                                   0);
 
     QuicInMemoryCachePeer::ResetForTests();
-    AddToCache("GET", kLargeRequest, "HTTP/1.1", "200", "OK", kFooResponseBody);
     AddToCache("GET", "https://www.google.com/foo",
                "HTTP/1.1", "200", "OK", kFooResponseBody);
     AddToCache("GET", "https://www.google.com/bar",
@@ -215,7 +209,7 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
                                           server_supported_versions_,
                                           strike_register_no_startup_period_));
     server_thread_->Start();
-    server_thread_->listening()->Wait();
+    server_thread_->WaitForServerStartup();
     server_address_ = IPEndPoint(server_address_.address(),
                                  server_thread_->GetPort());
     QuicDispatcher* dispatcher =
@@ -230,7 +224,7 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     if (!server_started_)
       return;
     if (server_thread_.get()) {
-      server_thread_->quit()->Signal();
+      server_thread_->Quit();
       server_thread_->Join();
     }
   }
@@ -362,62 +356,28 @@ TEST_P(EndToEndTest, MultipleClients) {
 }
 
 TEST_P(EndToEndTest, RequestOverMultiplePackets) {
+  // Send a large enough request to guarantee fragmentation.
+  string huge_request =
+      "https://www.google.com/some/path?query=" + string(kMaxPacketSize, '.');
+  AddToCache("GET", huge_request, "HTTP/1.1", "200", "OK", kBarResponseBody);
+
   ASSERT_TRUE(Initialize());
-  // Set things up so we have a small payload, to guarantee fragmentation.
-  // A congestion feedback frame can't be split into multiple packets, make sure
-  // that our packet have room for at least this amount after the normal headers
-  // are added.
 
-  // TODO(rch) handle this better when we have different encryption options.
-  const size_t kStreamDataLength = 3;
-  const QuicStreamId kStreamId = 1u;
-  const QuicStreamOffset kStreamOffset = 0u;
-  size_t stream_payload_size = QuicFramer::GetMinStreamFrameSize(
-      negotiated_version_, kStreamId, kStreamOffset, true) + kStreamDataLength;
-  size_t min_payload_size =
-      std::max(kCongestionFeedbackFrameSize, stream_payload_size);
-  size_t ciphertext_size =
-      NullEncrypter(false).GetCiphertextSize(min_payload_size);
-  // TODO(satyashekhar): Fix this when versioning is implemented.
-  client_->options()->max_packet_length =
-      GetPacketHeaderSize(PACKET_8BYTE_GUID, !kIncludeVersion,
-                          PACKET_6BYTE_SEQUENCE_NUMBER, NOT_IN_FEC_GROUP) +
-      ciphertext_size;
-
-  // Make sure our request is too large to fit in one packet.
-  EXPECT_GT(strlen(kLargeRequest), min_payload_size);
-  EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest(kLargeRequest));
+  EXPECT_EQ(kBarResponseBody, client_->SendSynchronousRequest(huge_request));
   EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
 }
 
 TEST_P(EndToEndTest, MultipleFramesRandomOrder) {
+  // Send a large enough request to guarantee fragmentation.
+  string huge_request =
+      "https://www.google.com/some/path?query=" + string(kMaxPacketSize, '.');
+  AddToCache("GET", huge_request, "HTTP/1.1", "200", "OK", kBarResponseBody);
+
   ASSERT_TRUE(Initialize());
   SetPacketSendDelay(QuicTime::Delta::FromMilliseconds(2));
   SetReorderPercentage(50);
-  // Set things up so we have a small payload, to guarantee fragmentation.
-  // A congestion feedback frame can't be split into multiple packets, make sure
-  // that our packet have room for at least this amount after the normal headers
-  // are added.
 
-  // TODO(rch) handle this better when we have different encryption options.
-  const size_t kStreamDataLength = 3;
-  const QuicStreamId kStreamId = 1u;
-  const QuicStreamOffset kStreamOffset = 0u;
-  size_t stream_payload_size = QuicFramer::GetMinStreamFrameSize(
-      negotiated_version_, kStreamId, kStreamOffset, true) + kStreamDataLength;
-  size_t min_payload_size =
-      std::max(kCongestionFeedbackFrameSize, stream_payload_size);
-  size_t ciphertext_size =
-      NullEncrypter(false).GetCiphertextSize(min_payload_size);
-  // TODO(satyashekhar): Fix this when versioning is implemented.
-  client_->options()->max_packet_length =
-      GetPacketHeaderSize(PACKET_8BYTE_GUID, !kIncludeVersion,
-                          PACKET_6BYTE_SEQUENCE_NUMBER, NOT_IN_FEC_GROUP) +
-      ciphertext_size;
-
-  // Make sure our request is too large to fit in one packet.
-  EXPECT_GT(strlen(kLargeRequest), min_payload_size);
-  EXPECT_EQ(kFooResponseBody, client_->SendSynchronousRequest(kLargeRequest));
+  EXPECT_EQ(kBarResponseBody, client_->SendSynchronousRequest(huge_request));
   EXPECT_EQ(200u, client_->response_headers()->parsed_response_code());
 }
 
@@ -573,9 +533,14 @@ TEST_P(EndToEndTest, DISABLED_LargePostFEC) {
   EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));
 }
 
-/*TEST_P(EndToEndTest, PacketTooLarge) {
-  FLAGS_quic_allow_oversized_packets_for_test = true;
+// Enable once FLAGS_quic_allow_oversized_packets_for_test is added.
+TEST_P(EndToEndTest, DISABLED_PacketTooLarge) {
+  //FLAGS_quic_allow_oversized_packets_for_test = true;
   ASSERT_TRUE(Initialize());
+
+  // Wait for the handshake to be confirmed so that the negotiated
+  // max packet size does not overwrite our increased packet size.
+  client_->client()->WaitForCryptoHandshakeConfirmed();
 
   // If we use packet padding, then the CHLO is padded to such a large
   // size that it is rejected by the server before the handshake can complete
@@ -595,7 +560,7 @@ TEST_P(EndToEndTest, DISABLED_LargePostFEC) {
   EXPECT_EQ("", client_->SendCustomSynchronousRequest(request));
   EXPECT_EQ(QUIC_STREAM_CONNECTION_ERROR, client_->stream_error());
   EXPECT_EQ(QUIC_PACKET_TOO_LARGE, client_->connection_error());
-}*/
+}
 
 TEST_P(EndToEndTest, InvalidStream) {
   ASSERT_TRUE(Initialize());
@@ -692,14 +657,14 @@ TEST_P(EndToEndTest, LimitMaxPacketSizeAndCongestionWindowAndRTT) {
 
   ASSERT_TRUE(Initialize());
   client_->client()->WaitForCryptoHandshakeConfirmed();
+  server_thread_->WaitForCryptoHandshakeConfirmed();
+
+  // Pause the server so we can access the server's internals without races.
+  server_thread_->Pause();
   QuicDispatcher* dispatcher =
       QuicServerPeer::GetDispatcher(server_thread_->server());
   ASSERT_EQ(1u, dispatcher->session_map().size());
   QuicSession* session = dispatcher->session_map().begin()->second;
-  while (!session->IsCryptoHandshakeConfirmed()) {
-    server_thread_->server()->WaitForEvents();
-  }
-
   QuicConfig* client_negotiated_config = client_->client()->session()->config();
   QuicConfig* server_negotiated_config = session->config();
   QuicCongestionManager* client_congestion_manager =
@@ -743,6 +708,8 @@ TEST_P(EndToEndTest, LimitMaxPacketSizeAndCongestionWindowAndRTT) {
                       HttpConstants::POST, "/foo");
   request.AddBody(body, true);
 
+  server_thread_->Resume();
+
   EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));
 }
 
@@ -754,14 +721,14 @@ TEST_P(EndToEndTest, InitialRTT) {
 
   ASSERT_TRUE(Initialize());
   client_->client()->WaitForCryptoHandshakeConfirmed();
+  server_thread_->WaitForCryptoHandshakeConfirmed();
+
+  // Pause the server so we can access the server's internals without races.
+  server_thread_->Pause();
   QuicDispatcher* dispatcher =
       QuicServerPeer::GetDispatcher(server_thread_->server());
   ASSERT_EQ(1u, dispatcher->session_map().size());
   QuicSession* session = dispatcher->session_map().begin()->second;
-  while (!session->IsCryptoHandshakeConfirmed()) {
-    server_thread_->server()->WaitForEvents();
-  }
-
   QuicConfig* client_negotiated_config = client_->client()->session()->config();
   QuicConfig* server_negotiated_config = session->config();
   QuicCongestionManager* client_congestion_manager =
@@ -847,9 +814,8 @@ TEST_P(EndToEndTest, ConnectionMigration) {
 
   writer->set_writer(new QuicDefaultPacketWriter(
       QuicClientPeer::GetFd(client_->client())));
-  QuicConnectionPeer::SetWriter(
-      client_->client()->session()->connection(),
-      reinterpret_cast<QuicTestWriter*>(writer.get()));
+  QuicConnectionPeer::SetWriter(client_->client()->session()->connection(),
+                                writer.get());
 
   client_->SendSynchronousRequest("/bar");
 

@@ -141,7 +141,7 @@ class QuicEndToEndTest : public PlatformTest {
                                           QuicSupportedVersions(),
                                           strike_register_no_startup_period_));
     server_thread_->Start();
-    server_thread_->listening()->Wait();
+    server_thread_->WaitForServerStartup();
     server_address_ = IPEndPoint(server_address_.address(),
                                  server_thread_->GetPort());
     server_started_ = true;
@@ -153,7 +153,7 @@ class QuicEndToEndTest : public PlatformTest {
       return;
     }
     if (server_thread_.get()) {
-      server_thread_->quit()->Signal();
+      server_thread_->Quit();
       server_thread_->Join();
     }
   }
