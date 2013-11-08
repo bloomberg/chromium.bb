@@ -48,6 +48,7 @@ def generate_method(interface, method):
     is_static = method.is_static
     name = method.name
 
+    this_cpp_value = cpp_value(interface, method, len(arguments))
     this_custom_signature = custom_signature(arguments)
     if this_custom_signature:
         signature = name + 'Signature'
@@ -69,8 +70,11 @@ def generate_method(interface, method):
     is_custom_element_callbacks = 'CustomElementCallbacks' in extended_attributes
     if is_custom_element_callbacks:
         includes.add('core/dom/custom/CustomElementCallbackDispatcher.h')
+    is_raises_exception = 'RaisesException' in extended_attributes
+    if is_raises_exception:
+        includes.update(['bindings/v8/ExceptionMessages.h',
+                         'bindings/v8/ExceptionState.h'])
 
-    this_cpp_value = cpp_value(interface, method, len(arguments))
     contents = {
         'activity_logging_world_list': v8_utilities.activity_logging_world_list(method),  # [ActivityLogging]
         'arguments': [generate_argument(interface, method, argument, index)
@@ -92,6 +96,7 @@ def generate_method(interface, method):
         'is_custom': 'Custom' in extended_attributes,
         'is_custom_element_callbacks': is_custom_element_callbacks,
         'is_per_world_bindings': 'PerWorldBindings' in extended_attributes,
+        'is_raises_exception': is_raises_exception,
         'is_static': is_static,
         'measure_as': v8_utilities.measure_as(method),  # [MeasureAs]
         'name': name,
@@ -142,6 +147,8 @@ def cpp_value(interface, method, number_of_arguments):
     arguments = method.arguments[:number_of_arguments]
     cpp_arguments = v8_utilities.call_with_arguments(method)
     cpp_arguments.extend(cpp_argument(argument) for argument in arguments)
+    if 'RaisesException' in method.extended_attributes:
+        cpp_arguments.append('es')
 
     cpp_method_name = v8_utilities.scoped_name(interface, method, v8_utilities.cpp_name(method))
     return '%s(%s)' % (cpp_method_name, ', '.join(cpp_arguments))

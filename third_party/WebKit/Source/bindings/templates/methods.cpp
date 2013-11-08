@@ -15,6 +15,9 @@ static void {{method.name}}Method{{world_suffix}}(const v8::FunctionCallbackInfo
     {% if method.is_custom_element_callbacks %}
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     {% endif %}
+    {% if method.is_raises_exception %}
+    ExceptionState es(info.GetIsolate());
+    {% endif %}
     {% if method.is_check_security_for_node %}
     if (!BindingSecurity::shouldAllowAccessToNode(imp->{{method.name}}(es), es)) {
         v8SetReturnValueNull(info);
@@ -98,6 +101,10 @@ RefPtr<ScriptArguments> scriptArguments(createScriptArguments(info, {{method.num
 {% elif method.is_call_with_script_state %}
 {# FIXME: consider always using a local variable #}
 {{method.cpp_type}} result = {{cpp_value}};
+{% endif %}
+{% if method.is_raises_exception %}
+if (es.throwIfNeeded())
+    return;
 {% endif %}
 {% if method.is_call_with_script_state %}
 if (state.hadException()) {
