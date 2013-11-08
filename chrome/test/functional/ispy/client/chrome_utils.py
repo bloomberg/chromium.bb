@@ -154,14 +154,7 @@ class ChromeUtils(object):
             device_type, expectation, chrome_version),
         screenshot)
 
-  def WaitForUnchangingDOM(self, driver):
-    """Waits for the DOM to stop changing.
-
-    Args:
-      driver: a chromedriver driver instance.
-    """
-    try:
-      driver.execute_async_script(self._wait_for_unchanging_dom_script)
-    except exceptions.TimeoutException:
-      logging.warning('Timed out waiting for DOM to stop changing')
+  def GetScriptToWaitForUnchangingDOM(self):
+    """Returns a JavaScript script that waits for the DOM to stop changing."""
+    return self._wait_for_unchanging_dom_script
 
