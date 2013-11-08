@@ -51,6 +51,24 @@ const char library_name[] = "ppapi_tests.plugin";
 const char library_name[] = "libppapi_tests.so";
 #endif
 
+class PluginCrashObserver : public content::WebContentsObserver {
+ public:
+  explicit PluginCrashObserver(content::WebContents* web_contents)
+      : content::WebContentsObserver(web_contents),
+        plugin_crashed_(false) {
+  }
+
+  virtual void PluginCrashed(const base::FilePath& /* plugin_path */,
+                             base::ProcessId /* plugin_pid */) {
+    plugin_crashed_ = true;
+  }
+
+  bool plugin_crashed() { return plugin_crashed_; }
+
+ private:
+  bool plugin_crashed_;
+};
+
 }  // namespace
 
 PPAPITestMessageHandler::PPAPITestMessageHandler() {
@@ -234,6 +252,20 @@ void PPAPITestBase::RunTestViaHTTPIfAudioOutputAvailable(
   RunTestViaHTTP(test_case);
 }
 
+void PPAPITestBase::RunTestAndExpectCrash(const std::string& test_case) {
+  GURL url = GetTestFileUrl(test_case);
+  PluginCrashObserver process_observer(
+      browser()->tab_strip_model()->GetActiveWebContents());;
+
+  ui_test_utils::NavigateToURL(browser(), url);
+  content::WindowedNotificationObserver observer(
+      chrome::NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
+      content::NotificationService::AllSources());
+  observer.Wait();
+
+  EXPECT_TRUE(process_observer.plugin_crashed());
+}
+
 std::string PPAPITestBase::StripPrefixes(const std::string& test_name) {
   const char* const prefixes[] = {
       "FAILS_", "FLAKY_", "DISABLED_", "SLOW_" };
@@ -261,11 +293,14 @@ void PPAPITestBase::RunTestURL(const GURL& test_url) {
   JavascriptTestObserver observer(
       browser()->tab_strip_model()->GetActiveWebContents()->GetRenderViewHost(),
       &handler);
+  PluginCrashObserver process_observer(
+      browser()->tab_strip_model()->GetActiveWebContents());;
 
   ui_test_utils::NavigateToURL(browser(), test_url);
 
   ASSERT_TRUE(observer.Run()) << handler.error_message();
   EXPECT_STREQ("PASS", handler.message().c_str());
+  EXPECT_FALSE(process_observer.plugin_crashed());
 }
 
 GURL PPAPITestBase::GetTestURL(

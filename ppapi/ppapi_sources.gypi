@@ -409,6 +409,8 @@
       'tests/test_console.h',
       'tests/test_core.cc',
       'tests/test_core.h',
+      'tests/test_crash.cc',
+      'tests/test_crash.h',
       'tests/test_cursor_control.cc',
       'tests/test_cursor_control.h',
       'tests/test_empty.cc',

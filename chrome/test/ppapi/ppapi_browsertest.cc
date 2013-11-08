@@ -138,6 +138,20 @@ TEST_PPAPI_IN_PROCESS(Broker)
 // Flaky, http://crbug.com/111355
 TEST_PPAPI_OUT_OF_PROCESS(DISABLED_Broker)
 
+// Note, it doesn't make sense to test crashes in-process; those are just
+// renderer crashes. Also, NaCl crashes are treated differently than plugin
+// crashes, and don't result in an infobar.
+#if defined(OS_LINUX) && defined(USE_AURA)
+// Hangs on Linux Aura. See crbug.com/247128
+#define MAYBE_Crash_CrashInCallOnMainThread DISABLED_Crash_CrashInCallOnMainThread
+#else
+#define MAYBE_Crash_CrashInCallOnMainThread Crash_CrashInCallOnMainThread
+#endif
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest,
+                       MAYBE_Crash_CrashInCallOnMainThread) {
+  RunTestAndExpectCrash("Crash_CrashInCallOnMainThread");
+}
+
 IN_PROC_BROWSER_TEST_F(PPAPIBrokerInfoBarTest, Accept) {
   // Accepting the infobar should grant permission to access the PPAPI broker.
   InfoBarObserver observer;
