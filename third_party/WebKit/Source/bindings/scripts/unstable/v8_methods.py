@@ -50,12 +50,24 @@ def generate_method(interface, method):
 
     this_cpp_value = cpp_value(interface, method, len(arguments))
     this_custom_signature = custom_signature(method, arguments)
-    if this_custom_signature:
-        signature = name + 'Signature'
-    elif is_static or 'DoNotCheckSignature' in extended_attributes:
-        signature = 'v8::Local<v8::Signature>()'
-    else:
-        signature = 'defaultSignature'
+
+    def function_template():
+        # FIXME: Rename as follows (also in v8/V8DOMConfiguration):
+        # desc => functionTemplate
+        # instance => instanceTemplate
+        # proto => prototypeTemplate
+        if is_static:
+            return 'desc'
+        if 'Unforgeable' in extended_attributes:
+            return 'instance'
+        return 'proto'
+
+    def signature():
+        if this_custom_signature:
+            return name + 'Signature'
+        if is_static or 'DoNotCheckSignature' in extended_attributes:
+            return 'v8::Local<v8::Signature>()'
+        return 'defaultSignature'
 
     is_call_with_script_arguments = has_extended_attribute_value(method, 'CallWith', 'ScriptArguments')
     if is_call_with_script_arguments:
@@ -86,8 +98,9 @@ def generate_method(interface, method):
         'deprecate_as': v8_utilities.deprecate_as(method),  # [DeprecateAs]
         'do_not_check_signature': not(this_custom_signature or is_static or
             v8_utilities.has_extended_attribute(method,
-                ['DoNotCheckSignature', 'NotEnumerable', 'ReadOnly'])),
-        'function_template': 'desc' if method.is_static else 'proto',
+                ['DoNotCheckSignature', 'NotEnumerable', 'ReadOnly',
+                 'Unforgeable'])),
+        'function_template': function_template(),
         'idl_type': idl_type,
         'is_call_with_execution_context': has_extended_attribute_value(method, 'CallWith', 'ExecutionContext'),
         'is_call_with_script_arguments': is_call_with_script_arguments,
@@ -109,7 +122,7 @@ def generate_method(interface, method):
             if not argument.is_optional]),
         'per_context_enabled_function_name': v8_utilities.per_context_enabled_function_name(method),  # [PerContextEnabled]
         'property_attributes': property_attributes(method),
-        'signature': signature,
+        'signature': signature(),
         'v8_set_return_value': v8_set_return_value(method, this_cpp_value),
         'world_suffixes': ['', 'ForMainWorld'] if 'PerWorldBindings' in extended_attributes else [''],  # [PerWorldBindings]
     }
