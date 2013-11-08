@@ -1515,7 +1515,12 @@ IN_PROC_BROWSER_TEST_F(PPAPITest, FlashMessageLoop) {
   RunTest(LIST_TEST(FlashMessageLoop_Basics)
           LIST_TEST(FlashMessageLoop_RunWithoutQuit));
 }
-IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, FlashMessageLoop) {
+#if defined(OS_LINUX)  // Disabled due to flakiness http://crbug.com/316925
+#define MAYBE_FlashMessageLoop DISABLED_FlashMessageLoop
+#else
+#define MAYBE_FlashMessageLoop FlashMessageLoop
+#endif
+IN_PROC_BROWSER_TEST_F(OutOfProcessPPAPITest, MAYBE_FlashMessageLoop) {
   RunTest(LIST_TEST(FlashMessageLoop_Basics)
           LIST_TEST(FlashMessageLoop_RunWithoutQuit));
 }
