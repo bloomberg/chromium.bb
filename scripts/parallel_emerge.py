@@ -884,8 +884,10 @@ def EmergeProcess(output, *args, **kwargs):
   if pid == 0:
     try:
       # Sanity checks.
-      if sys.stdout.fileno() != 1: raise Exception("sys.stdout.fileno() != 1")
-      if sys.stderr.fileno() != 2: raise Exception("sys.stderr.fileno() != 2")
+      if sys.stdout.fileno() != 1:
+        raise Exception("sys.stdout.fileno() != 1")
+      if sys.stderr.fileno() != 2:
+        raise Exception("sys.stderr.fileno() != 2")
 
       # - Redirect 1 (stdout) and 2 (stderr) at our temporary file.
       # - Redirect 0 to point at sys.stdin. In this case, sys.stdin

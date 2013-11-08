@@ -1381,7 +1381,8 @@ class Upgrader(object):
     pinfolist = []
     for pinfo in orig_pinfolist:
       # No need to report or try to upgrade chromeos-base packages.
-      if pinfo.category == 'chromeos-base': continue
+      if pinfo.category == 'chromeos-base':
+        continue
 
       dbapi = self._GetPortageDBAPI()
       ebuild_path = dbapi.findname2(pinfo.cpv)[0]

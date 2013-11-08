@@ -182,7 +182,8 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase):
 
     # Create fake buildspecs.
     osutils.SafeMakedirs(os.path.join(mpath))
-    for m in [m1, m2, m3, m4]: osutils.Touch(m)
+    for m in [m1, m2, m3, m4]:
+      osutils.Touch(m)
 
     # Fail 1, pass 2, leave 3,4 unprocessed.
     manifest_version.CreateSymlink(m1, os.path.join(
@@ -210,7 +211,8 @@ class BuildSpecsManagerTest(cros_test_lib.MoxTempDirTestCase):
 
     # Create fake buildspecs.
     osutils.SafeMakedirs(specs_dir)
-    for m in [m1, m2, m3, m4]: osutils.Touch(m)
+    for m in [m1, m2, m3, m4]:
+      osutils.Touch(m)
 
     self.mox.ReplayAll()
     spec = self.manager._LatestSpecFromDir(info, specs_dir)

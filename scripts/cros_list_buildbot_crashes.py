@@ -97,7 +97,8 @@ class CrashTriager(object):
     """
     for line in self._ListCrashesForBot(bot_id, build_config):
       m = self.CRASH_PATTERN.search(line)
-      if m is None: continue
+      if m is None:
+        continue
       program, crash_date = m.groups()
       if self.all_programs or program == 'chrome':
         crash_date_obj = datetime.datetime.strptime(crash_date, '%Y%m%d')

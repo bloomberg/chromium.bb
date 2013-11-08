@@ -715,7 +715,8 @@ class BuildSpecsManager(object):
       retries: Number of retries for updating the status
     """
     last_error = None
-    if message: logging.info('Updating status with message %s', message)
+    if message:
+      logging.info('Updating status with message %s', message)
     for index in range(0, retries + 1):
       try:
         self.RefreshManifestCheckout()

@@ -443,7 +443,8 @@ def main(_argv):
     cros_build_lib.Info('Using local source, versioning is untrustworthy.')
   elif chrome_rev == constants.CHROME_REV_SPEC:
     commit_to_use = options.force_revision
-    if '@' in commit_to_use: commit_to_use = ParseMaxRevision(commit_to_use)
+    if '@' in commit_to_use:
+      commit_to_use = ParseMaxRevision(commit_to_use)
     version_to_uprev = _GetSpecificVersionUrl(options.chrome_url,
                                               commit_to_use)
   elif chrome_rev == constants.CHROME_REV_TOT:

@@ -234,7 +234,8 @@ class _Results(object):
   def SaveCompletedStages(self, out):
     """Save the successfully completed stages to the provided file |out|."""
     for entry in self._results_log:
-      if entry.result != self.SUCCESS: break
+      if entry.result != self.SUCCESS:
+        break
       out.write(self.SPLIT_TOKEN.join(map(str, entry)) + '\n')
 
   def RestoreCompletedStages(self, out):

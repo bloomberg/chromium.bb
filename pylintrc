@@ -37,10 +37,9 @@
 # can either give multiple identifier separated by comma (,) or put this option
 # multiple times (only on the command line, not in the configuration file where
 # it should appear only once).
-# C0103: Invalid name ""
+# C0103: Invalid name "LOADERS" (should match [a-z_][a-z0-9_]{2,30}$)
 # C0111: Missing docstring
 # C0302: Too many lines in module (N)
-# C0321: More than one statement on a single line
 # E1103: Instance has no '*' member (but some types could not be inferred)
 # I0011: Locally disabling warning.
 # R0201: Method could be a function
@@ -60,7 +59,7 @@
 # R0904: Too many public methods
 # R0921: Abstract class not referenced.
 # R0922: Abstract class is only referenced N times.
-disable=C0103,C0111,C0302,C0321,E1103,I0011,R0201,R0902,R0903,R0911,R0912,R0913,R0914,R0915,W0122,W0141,W0142,W0403,W0511,W0703,R0904,R0921,R0922
+disable=C0103,C0111,C0302,E1103,I0011,R0201,R0902,R0903,R0911,R0912,R0913,R0914,R0915,W0122,W0141,W0142,W0403,W0511,W0703,R0904,R0921,R0922
 
 
 [REPORTS]

@@ -506,8 +506,10 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
         self.assertTrue(int(index) % 2 != 0)
 
     finally:
-      if fake_manifest: os.remove(fake_manifest)
-      if fake_new_manifest: os.remove(fake_new_manifest)
+      if fake_manifest:
+        os.remove(fake_manifest)
+      if fake_new_manifest:
+        os.remove(fake_new_manifest)
 
   def testFilterProjectsFromExternalManifest(self):
     """Tests filtering on a project where no filtering is needed."""
@@ -527,8 +529,10 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
       self.assertEqual(len(commits), 20)
 
     finally:
-      if fake_manifest: os.remove(fake_manifest)
-      if fake_new_manifest: os.remove(fake_new_manifest)
+      if fake_manifest:
+        os.remove(fake_manifest)
+      if fake_new_manifest:
+        os.remove(fake_new_manifest)
 
 
 if __name__ == '__main__':
