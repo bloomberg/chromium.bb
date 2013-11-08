@@ -27,7 +27,6 @@
 
 namespace {
 
-const int kUniqueID = 50;
 const content::Referrer kReferrer =
     content::Referrer(GURL("http://www.referrer.com"),
                       blink::WebReferrerPolicyAlways);
@@ -35,56 +34,10 @@ const GURL kVirtualURL("http://www.virtual-url.com");
 const string16 kTitle = ASCIIToUTF16("title");
 const content::PageState kPageState =
     content::PageState::CreateFromEncodedData("page state");
-const content::PageTransition kTransitionType =
-    static_cast<content::PageTransition>(
-        content::PAGE_TRANSITION_AUTO_SUBFRAME |
-        content::PAGE_TRANSITION_HOME_PAGE |
-        content::PAGE_TRANSITION_CLIENT_REDIRECT);
-const bool kHasPostData = true;
-const int64 kPostID = 100;
 const GURL kOriginalRequestURL("http://www.original-request.com");
-const bool kIsOverridingUserAgent = true;
 const base::Time kTimestamp = syncer::ProtoTimeToTime(100);
 const string16 kSearchTerms = ASCIIToUTF16("my search terms");
 const GURL kFaviconURL("http://virtual-url.com/favicon.ico");
-
-// Create a NavigationEntry from the constants above.
-scoped_ptr<content::NavigationEntry> MakeNavigationEntryForTest() {
-  scoped_ptr<content::NavigationEntry> navigation_entry(
-      content::NavigationEntry::Create());
-  navigation_entry->SetReferrer(kReferrer);
-  navigation_entry->SetVirtualURL(kVirtualURL);
-  navigation_entry->SetTitle(kTitle);
-  navigation_entry->SetPageState(kPageState);
-  navigation_entry->SetTransitionType(kTransitionType);
-  navigation_entry->SetHasPostData(kHasPostData);
-  navigation_entry->SetPostID(kPostID);
-  navigation_entry->SetOriginalRequestURL(kOriginalRequestURL);
-  navigation_entry->SetIsOverridingUserAgent(kIsOverridingUserAgent);
-  navigation_entry->SetTimestamp(kTimestamp);
-  navigation_entry->SetExtraData(sessions::kSearchTermsKey, kSearchTerms);
-  navigation_entry->GetFavicon().valid = true;
-  navigation_entry->GetFavicon().url = kFaviconURL;
-  return navigation_entry.Pass();
-}
-
-// Create a sync_pb::TabNavigation from the constants above.
-sync_pb::TabNavigation MakeSyncDataForTest() {
-  sync_pb::TabNavigation sync_data;
-  sync_data.set_virtual_url(kVirtualURL.spec());
-  sync_data.set_referrer(kReferrer.url.spec());
-  sync_data.set_title(UTF16ToUTF8(kTitle));
-  sync_data.set_state(kPageState.ToEncodedData());
-  sync_data.set_page_transition(
-      sync_pb::SyncEnums_PageTransition_AUTO_SUBFRAME);
-  sync_data.set_unique_id(kUniqueID);
-  sync_data.set_timestamp_msec(syncer::TimeToProtoTime(kTimestamp));
-  sync_data.set_redirect_type(sync_pb::SyncEnums::CLIENT_REDIRECT);
-  sync_data.set_navigation_home_page(true);
-  sync_data.set_search_terms(UTF16ToUTF8(kSearchTerms));
-  sync_data.set_favicon_url(kFaviconURL.spec());
-  return sync_data;
-}
 
 // Create a typical SessionTab protocol buffer and set an existing
 // SessionTab from it.  The data from the protocol buffer should

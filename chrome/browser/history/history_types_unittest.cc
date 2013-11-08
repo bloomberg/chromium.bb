@@ -31,9 +31,8 @@ void CheckHistoryResultConsistency(const QueryResults& result) {
   }
 }
 
-static const char kURL1[] = "http://www.google.com/";
-static const char kURL2[] = "http://news.google.com/";
-static const char kURL3[] = "http://images.google.com/";
+const char kURL1[] = "http://www.google.com/";
+const char kURL2[] = "http://news.google.com/";
 
 // Adds kURL1 twice and kURL2 once.
 void AddSimpleData(QueryResults* results) {
@@ -47,19 +46,6 @@ void AddSimpleData(QueryResults* results) {
   results->AppendURLBySwapping(&result1);
   results->AppendURLBySwapping(&result2);
   results->AppendURLBySwapping(&result3);
-  CheckHistoryResultConsistency(*results);
-}
-
-// Adds kURL2 once and kURL3 once.
-void AddAlternateData(QueryResults* results) {
-  GURL url2(kURL2);
-  GURL url3(kURL3);
-  URLResult result1(url2, base::Time::Now());
-  URLResult result2(url3, base::Time::Now());
-
-  // The URLResults are invalid after being inserted.
-  results->AppendURLBySwapping(&result1);
-  results->AppendURLBySwapping(&result2);
   CheckHistoryResultConsistency(*results);
 }
 
@@ -157,4 +143,4 @@ TEST(HistoryQueryResult, RowSignificance) {
   EXPECT_FALSE(RowQualifiesAsSignificant(url_row, base::Time()));
 }
 
-}  // namespace
+}  // namespace history

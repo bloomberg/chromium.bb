@@ -24,10 +24,6 @@ void CallCounter(int* counter) {
   (*counter)++;
 }
 
-void NotCalled() {
-  ADD_FAILURE() << "Unexpected callback execution.";
-}
-
 void GetCertCallbackNotCalled(int err,
                               const std::string& server_identifier,
                               base::Time expiration_time,

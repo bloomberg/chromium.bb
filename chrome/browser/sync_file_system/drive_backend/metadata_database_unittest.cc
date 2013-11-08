@@ -53,15 +53,6 @@ void ExpectEquivalent(const ServiceMetadata* left,
   test_util::ExpectEquivalentServiceMetadata(*left, *right);
 }
 
-void ExpectEquivalent(const FileDetails* left, const FileDetails* right) {
-  if (!left) {
-    ASSERT_FALSE(right);
-    return;
-  }
-  ASSERT_TRUE(right);
-  test_util::ExpectEquivalentDetails(*left, *right);
-}
-
 void ExpectEquivalent(const FileMetadata* left, const FileMetadata* right) {
   if (!left) {
     ASSERT_FALSE(right);

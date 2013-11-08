@@ -47,13 +47,6 @@ bool ParseFromValue(base::Value* value, WebSize* size) {
   return true;
 }
 
-base::Value* CreateValueFrom(const WebSize& size) {
-  base::DictionaryValue* dict = new base::DictionaryValue();
-  dict->SetInteger("width", size.width);
-  dict->SetInteger("height", size.height);
-  return dict;
-}
-
 bool ParseFromValue(base::Value* value, WebRect* rect) {
   base::DictionaryValue* dict_value;
   if (!value->GetAsDictionary(&dict_value))

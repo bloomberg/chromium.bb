@@ -209,10 +209,6 @@ GURL JobListURI(const char* reason) {
   return GURL(StringPrintf(kExamplePrinterJobListURI, reason));
 }
 
-std::string JobID(int job_num) {
-  return StringPrintf(kExampleJobID, job_num);
-}
-
 GURL DoneURI(int job_num) {
   return GURL(StringPrintf(kExampleUpdateDoneURI, job_num));
 }

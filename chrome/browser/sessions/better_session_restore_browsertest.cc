@@ -52,15 +52,6 @@
 
 namespace {
 
-Browser* FindOneOtherBrowserForProfile(Profile* profile,
-                                       Browser* not_this_browser) {
-  for (chrome::BrowserIterator it; !it.done(); it.Next()) {
-    if (*it != not_this_browser && it->profile() == profile)
-      return *it;
-  }
-  return NULL;
-}
-
 // We need to serve the test files so that PRE_Test and Test can access the same
 // page using the same URL. In addition, perceived security origin of the page
 // needs to stay the same, so e.g., redirecting the URL requests doesn't

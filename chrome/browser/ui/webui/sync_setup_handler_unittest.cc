@@ -97,16 +97,6 @@ std::string GetConfiguration(const DictionaryValue* extra_values,
   return args;
 }
 
-void CheckInt(const DictionaryValue* dictionary,
-              const std::string& key,
-              int expected_value) {
-  int actual_value;
-  EXPECT_TRUE(dictionary->GetInteger(key, &actual_value)) <<
-      "Did not expect to find value for " << key;
-  EXPECT_EQ(actual_value, expected_value) <<
-      "Mismatch found for " << key;
-}
-
 // Checks whether the passed |dictionary| contains a |key| with the given
 // |expected_value|. If |omit_if_false| is true, then the value should only
 // be present if |expected_value| is true.
@@ -130,22 +120,6 @@ void CheckBool(const DictionaryValue* dictionary,
                const std::string& key,
                bool expected_value) {
   return CheckBool(dictionary, key, expected_value, false);
-}
-
-void CheckString(const DictionaryValue* dictionary,
-                 const std::string& key,
-                 const std::string& expected_value,
-                 bool omit_if_empty) {
-  if (omit_if_empty && expected_value.empty()) {
-    EXPECT_FALSE(dictionary->HasKey(key)) <<
-        "Did not expect to find value for " << key;
-  } else {
-    std::string actual_value;
-    EXPECT_TRUE(dictionary->GetString(key, &actual_value)) <<
-        "No value found for " << key;
-    EXPECT_EQ(actual_value, expected_value) <<
-        "Mismatch found for " << key;
-  }
 }
 
 // Checks to make sure that the values stored in |dictionary| match the values

@@ -32,13 +32,6 @@ using protocol::ClipboardEvent;
 using protocol::KeyEvent;
 using protocol::MouseEvent;
 
-// skia/ext/skia_utils_mac.h only defines CGRectToSkRect().
-SkIRect CGRectToSkIRect(const CGRect& rect) {
-  SkIRect result;
-  gfx::CGRectToSkRect(rect).round(&result);
-  return result;
-}
-
 // A class to generate events on Mac.
 class InputInjectorMac : public InputInjector {
  public:

@@ -88,15 +88,6 @@ using testing::HasSubstr;
 
 namespace {
 
-// Creates a bitmap of the specified color. Caller takes ownership.
-gfx::Image CreateBitmap(SkColor color) {
-  SkBitmap thumbnail;
-  thumbnail.setConfig(SkBitmap::kARGB_8888_Config, 4, 4);
-  thumbnail.allocPixels();
-  thumbnail.eraseColor(color);
-  return gfx::Image::CreateFrom1xBitmap(thumbnail);  // adds ref.
-}
-
 // Task used to make sure history has finished processing a request. Intended
 // for use with BlockUntilHistoryProcessesPendingRequests.
 class QuittingHistoryDBTask : public history::HistoryDBTask {

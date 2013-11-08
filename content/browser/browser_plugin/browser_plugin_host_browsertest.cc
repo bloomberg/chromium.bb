@@ -45,10 +45,9 @@ using content::BrowserPluginGuest;
 using content::BrowserPluginHostFactory;
 using content::WebContentsImpl;
 
-namespace {
-
 const char kHTMLForGuest[] =
     "data:text/html,<html><body>hello world</body></html>";
+
 const char kHTMLForGuestTouchHandler[] =
     "data:text/html,<html><body><div id=\"touch\">With touch</div></body>"
     "<script type=\"text/javascript\">"
@@ -62,11 +61,7 @@ const char kHTMLForGuestTouchHandler[] =
     "     handler);"
     "}"
     "</script></html>";
-const char kHTMLForGuestWithTitle[] =
-    "data:text/html,"
-    "<html><head><title>%s</title></head>"
-    "<body>hello world</body>"
-    "</html>";
+
 const char kHTMLForGuestAcceptDrag[] =
     "data:text/html,<html><body>"
     "<script>"
@@ -78,6 +73,7 @@ const char kHTMLForGuestAcceptDrag[] =
     "    ondrop=\"dropped();\">"
     "</textarea>"
     "</body></html>";
+
 const char kHTMLForGuestWithSize[] =
     "data:text/html,"
     "<html>"
@@ -85,12 +81,6 @@ const char kHTMLForGuestWithSize[] =
     "<img style=\"width: 100%; height: 400px;\"/>"
     "</body>"
     "</html>";
-
-std::string GetHTMLForGuestWithTitle(const std::string& title) {
-  return base::StringPrintf(kHTMLForGuestWithTitle, title.c_str());
-}
-
-}  // namespace
 
 namespace content {
 

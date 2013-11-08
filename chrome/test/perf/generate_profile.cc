@@ -114,11 +114,6 @@ string16 ConstructRandomTitle() {
   return RandomWords(RandomInt(3, 15));
 }
 
-// Return a random string that could function as page contents.
-string16 ConstructRandomPage() {
-  return RandomWords(RandomInt(10, 4000));
-}
-
 // Insert a batch of |batch_size| URLs, starting at pageid |page_id|.
 void InsertURLBatch(Profile* profile,
                     int page_id,

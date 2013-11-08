@@ -97,6 +97,7 @@ namespace ui_test_utils {
 
 namespace {
 
+#if defined(OS_WIN)
 const char kSnapshotBaseName[] = "ChromiumSnapshot";
 const char kSnapshotExtension[] = ".png";
 
@@ -121,6 +122,7 @@ base::FilePath GetSnapshotFileName(const base::FilePath& snapshot_directory) {
   }
   return snapshot_file;
 }
+#endif  // defined(OS_WIN)
 
 Browser* WaitForBrowserNotInSet(std::set<Browser*> excluded_browsers) {
   Browser* new_browser = GetBrowserNotInSet(excluded_browsers);

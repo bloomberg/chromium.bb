@@ -65,6 +65,7 @@ void SetRTL(bool rtl) {
   EXPECT_EQ(rtl, base::i18n::IsRTL());
 }
 
+#if !defined(OS_MACOSX)
 // Ensure cursor movement in the specified |direction| yields |expected| values.
 void RunMoveCursorLeftRightTest(RenderText* render_text,
                                 const std::vector<SelectionModel>& expected,
@@ -81,6 +82,7 @@ void RunMoveCursorLeftRightTest(RenderText* render_text,
   render_text->MoveCursor(LINE_BREAK, direction, false);
   EXPECT_EQ(expected.back(), render_text->selection_model());
 }
+#endif  // !defined(OS_MACOSX)
 
 }  // namespace
 

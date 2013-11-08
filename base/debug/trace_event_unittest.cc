@@ -841,13 +841,6 @@ void ValidateInstantEventPresentOnEveryThread(const ListValue& trace_parsed,
   }
 }
 
-void TraceCallsWithCachedCategoryPointersPointers(const char* name_str) {
-  TRACE_EVENT0("category name1", name_str);
-  TRACE_EVENT_INSTANT0("category name2", name_str, TRACE_EVENT_SCOPE_THREAD);
-  TRACE_EVENT_BEGIN0("category name3", name_str);
-  TRACE_EVENT_END0("category name4", name_str);
-}
-
 }  // namespace
 
 void HighResSleepForTraceTest(base::TimeDelta elapsed) {

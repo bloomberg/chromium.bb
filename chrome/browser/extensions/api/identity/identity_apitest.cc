@@ -188,11 +188,6 @@ class TestOAuth2MintTokenFlow : public OAuth2MintTokenFlow {
   OAuth2MintTokenFlow::Delegate* delegate_;
 };
 
-BrowserContextKeyedService* IdentityAPITestFactory(
-    content::BrowserContext* profile) {
-  return new IdentityAPI(static_cast<Profile*>(profile));
-}
-
 // Waits for a specific GURL to generate a NOTIFICATION_LOAD_STOP event and
 // saves a pointer to the window embedding the WebContents, which can be later
 // closed.

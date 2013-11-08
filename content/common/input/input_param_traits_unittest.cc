@@ -15,10 +15,6 @@ namespace {
 
 typedef ScopedVector<InputEvent> InputEvents;
 
-void AddTo(InputEvents& events, const blink::WebInputEvent& event) {
-  events.push_back(new InputEvent(event, ui::LatencyInfo(), false));
-}
-
 class InputParamTraitsTest : public testing::Test {
  protected:
   static void Compare(const InputEvent* a, const InputEvent* b) {

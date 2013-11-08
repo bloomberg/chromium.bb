@@ -206,41 +206,6 @@ class TestPersonalDataManager : public PersonalDataManager {
   DISALLOW_COPY_AND_ASSIGN(TestPersonalDataManager);
 };
 
-// Populates |form| with 3 fields and a field with autocomplete attribute.
-void CreateTestFormWithAutocompleteAttribute(FormData* form) {
-  form->name = ASCIIToUTF16("UserSpecified");
-  form->method = ASCIIToUTF16("POST");
-  form->origin = GURL("http://myform.com/userspecified.html");
-  form->action = GURL("http://myform.com/submit.html");
-  form->user_submitted = true;
-
-  FormFieldData field;
-  test::CreateTestFormField("First Name", "firstname", "", "text", &field);
-  form->fields.push_back(field);
-  test::CreateTestFormField("Middle Name", "middlename", "", "text", &field);
-  form->fields.push_back(field);
-  test::CreateTestFormField("Last Name", "lastname", "", "text", &field);
-  form->fields.push_back(field);
-  field.autocomplete_attribute="cc-type";
-  test::CreateTestFormField("cc-type", "cc-type", "", "text", &field);
-  form->fields.push_back(field);
-}
-
-// Populates |form| with data corresponding to a simple shipping options form.
-void CreateTestShippingOptionsFormData(FormData* form) {
-  form->name = ASCIIToUTF16("Shipping Options");
-  form->method = ASCIIToUTF16("POST");
-  form->origin = GURL("http://myform.com/shipping.html");
-  form->action = GURL("http://myform.com/submit.html");
-  form->user_submitted = true;
-
-  FormFieldData field;
-  test::CreateTestFormField("Shipping1", "option", "option1", "radio", &field);
-  form->fields.push_back(field);
-  test::CreateTestFormField("Shipping2", "option", "option2", "radio", &field);
-  form->fields.push_back(field);
-}
-
 // Populates |form| with data corresponding to a simple credit card form.
 // Note that this actually appends fields to the form data, which can be useful
 // for building up more complex test forms.
@@ -272,31 +237,6 @@ void CreateTestCreditCardFormData(FormData* form,
     form->fields.push_back(field);
     test::CreateTestFormField("", "ccyear", "", "text", &field);
     form->fields.push_back(field);
-  }
-}
-
-void ExpectSuggestions(int page_id,
-                       const std::vector<base::string16>& values,
-                       const std::vector<base::string16>& labels,
-                       const std::vector<base::string16>& icons,
-                       const std::vector<int>& unique_ids,
-                       int expected_page_id,
-                       size_t expected_num_suggestions,
-                       const base::string16 expected_values[],
-                       const base::string16 expected_labels[],
-                       const base::string16 expected_icons[],
-                       const int expected_unique_ids[]) {
-  EXPECT_EQ(expected_page_id, page_id);
-  ASSERT_EQ(expected_num_suggestions, values.size());
-  ASSERT_EQ(expected_num_suggestions, labels.size());
-  ASSERT_EQ(expected_num_suggestions, icons.size());
-  ASSERT_EQ(expected_num_suggestions, unique_ids.size());
-  for (size_t i = 0; i < expected_num_suggestions; ++i) {
-    SCOPED_TRACE(base::StringPrintf("i: %" PRIuS, i));
-    EXPECT_EQ(expected_values[i], values[i]);
-    EXPECT_EQ(expected_labels[i], labels[i]);
-    EXPECT_EQ(expected_icons[i], icons[i]);
-    EXPECT_EQ(expected_unique_ids[i], unique_ids[i]);
   }
 }
 

@@ -98,8 +98,6 @@
 #include "ui/gfx/gtk_util.h"
 #endif  // defined(TOOLKIT_GTK)
 
-namespace {
-
 // This is used for tagging system event logs.
 const char kApplicationName[] = "chromoting";
 
@@ -116,12 +114,6 @@ const char kSignalParentSwitchName[] = "signal-parent";
 // Value used for --host-config option to indicate that the path must be read
 // from stdin.
 const char kStdinConfigPath[] = "-";
-
-void QuitMessageLoop(base::MessageLoop* message_loop) {
-  message_loop->PostTask(FROM_HERE, base::MessageLoop::QuitClosure());
-}
-
-}  // namespace
 
 namespace remoting {
 

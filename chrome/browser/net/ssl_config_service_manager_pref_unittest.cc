@@ -27,17 +27,6 @@ using content::BrowserThread;
 using net::SSLConfig;
 using net::SSLConfigService;
 
-namespace {
-
-void SetCookiePref(TestingProfile* profile, ContentSetting setting) {
-  HostContentSettingsMap* host_content_settings_map =
-      profile->GetHostContentSettingsMap();
-  host_content_settings_map->SetDefaultContentSetting(
-      CONTENT_SETTINGS_TYPE_COOKIES, setting);
-}
-
-}  // namespace
-
 class SSLConfigServiceManagerPrefTest : public testing::Test {
  public:
   SSLConfigServiceManagerPrefTest()

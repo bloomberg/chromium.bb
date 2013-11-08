@@ -138,19 +138,6 @@ void SetupWatchCallback(const FilePath& target,
   completion->Signal();
 }
 
-void QuitLoopWatchCallback(MessageLoop* loop,
-                           const FilePath& expected_path,
-                           bool expected_error,
-                           bool* flag,
-                           const FilePath& path,
-                           bool error) {
-  ASSERT_TRUE(flag);
-  *flag = true;
-  EXPECT_EQ(expected_path, path);
-  EXPECT_EQ(expected_error, error);
-  loop->PostTask(FROM_HERE, loop->QuitWhenIdleClosure());
-}
-
 class FilePathWatcherTest : public testing::Test {
  public:
   FilePathWatcherTest()

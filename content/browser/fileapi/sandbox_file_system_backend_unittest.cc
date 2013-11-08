@@ -66,12 +66,6 @@ const struct RootPathFileURITest {
     "000" PS "p", NULL },
 };
 
-FileSystemURL CreateFileSystemURL(const char* path) {
-  const GURL kOrigin("http://foo/");
-  return FileSystemURL::CreateForTest(
-      kOrigin, kFileSystemTypeTemporary, base::FilePath::FromUTF8Unsafe(path));
-}
-
 void DidOpenFileSystem(base::PlatformFileError* error_out,
                        const GURL& origin_url,
                        const std::string& name,

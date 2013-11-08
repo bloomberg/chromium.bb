@@ -226,10 +226,6 @@ TEST_F(SyncBackendRegistrarTest, ActivateDeactivateUIDataType) {
   TriggerChanges(registrar_.get(), BOOKMARKS);
 }
 
-void ActiviateDoneOnDb(base::WaitableEvent* done) {
-  done->Signal();
-}
-
 TEST_F(SyncBackendRegistrarTest, ActivateDeactivateNonUIDataType) {
   InSequence in_sequence;
   registrar_->SetInitialTypes(ModelTypeSet());

@@ -28,14 +28,6 @@ REGISTER_TEST_CASE(Graphics2D);
 
 namespace {
 
-// A NOP flush callback for use in various tests.
-void FlushCallbackNOP(void* data, int32_t result) {
-}
-
-void FlushCallbackQuitMessageLoop(void* data, int32_t result) {
-  static_cast<TestGraphics2D*>(data)->QuitMessageLoop();
-}
-
 bool CanFlushContext(pp::Instance* instance, pp::Graphics2D* context) {
   TestCompletionCallback callback(instance->pp_instance());
   callback.WaitForResult(context->Flush(callback.GetCallback()));

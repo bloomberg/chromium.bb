@@ -105,13 +105,6 @@ bool EntryMatchWithQuery(const ResourceEntry& entry,
   return true;
 }
 
-// Returns |url| without query parameter.
-GURL RemoveQueryParameter(const GURL& url) {
-  GURL::Replacements replacements;
-  replacements.ClearQuery();
-  return url.ReplaceComponents(replacements);
-}
-
 void ScheduleUploadRangeCallback(const UploadRangeCallback& callback,
                                  int64 start_position,
                                  int64 end_position,
