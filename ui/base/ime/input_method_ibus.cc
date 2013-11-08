@@ -168,16 +168,22 @@ bool InputMethodIBus::OnUntranslatedIMEMessage(const base::NativeEvent& event,
 }
 
 void InputMethodIBus::ProcessKeyEventDone(uint32 id,
-                                          XEvent* event,
+                                          ui::KeyEvent* key_event,
                                           uint32 ibus_keyval,
                                           uint32 ibus_keycode,
                                           uint32 ibus_state,
                                           bool is_handled) {
-  DCHECK(event);
+  DCHECK(key_event);
+
+  // TODO(komatsu): Support fabricated key events.
+  if (!key_event->HasNativeEvent())
+    return;
+
+  const base::NativeEvent event = key_event->native_event();
   std::set<uint32>::iterator it = pending_key_events_.find(id);
 
   if (it == pending_key_events_.end())
-    return;  // Abandoned key event.
+   return;  // Abandoned key event.
 
   if (event->type == KeyPress) {
     if (is_handled) {
@@ -193,7 +199,7 @@ void InputMethodIBus::ProcessKeyEventDone(uint32 id,
   }
 
   if (event->type == KeyPress || event->type == KeyRelease)
-    ProcessKeyEventPostIME(event, ibus_state, is_handled);
+    ProcessKeyEventPostIME(*key_event, ibus_state, is_handled);
 
   // Do not use |it| for erasing, ProcessKeyEventPostIME may change the
   // |pending_key_events_|.
@@ -227,7 +233,7 @@ bool InputMethodIBus::DispatchKeyEvent(const ui::KeyEvent& event) {
       if (ExecuteCharacterComposer(ibus_keyval, ibus_keycode, ibus_state)) {
         // Treating as PostIME event if character composer handles key event and
         // generates some IME event,
-        ProcessKeyEventPostIME(native_event, ibus_state, true);
+        ProcessKeyEventPostIME(event, ibus_state, true);
         return true;
       }
       ProcessUnfilteredKeyPressEvent(native_event, ibus_state);
@@ -239,11 +245,7 @@ bool InputMethodIBus::DispatchKeyEvent(const ui::KeyEvent& event) {
 
   pending_key_events_.insert(current_keyevent_id_);
 
-  // Since |native_event| might be treated as XEvent whose size is bigger than
-  // XKeyEvent e.g. in CopyNativeEvent() in ui/events/event.cc, allocating
-  // |event| as XKeyEvent and casting it to XEvent is unsafe. crbug.com/151884
-  XEvent* xevent = new XEvent;
-  *xevent = *native_event;
+  ui::KeyEvent* copied_event = event.Copy();
   GetEngine()->ProcessKeyEvent(
       ibus_keyval,
       ibus_keycode,
@@ -251,7 +253,8 @@ bool InputMethodIBus::DispatchKeyEvent(const ui::KeyEvent& event) {
       base::Bind(&InputMethodIBus::ProcessKeyEventDone,
                  weak_ptr_factory_.GetWeakPtr(),
                  current_keyevent_id_,
-                 base::Owned(xevent),  // Pass the ownership of |event|.
+                 // Pass the ownership of |copied_event|.
+                 base::Owned(copied_event),
                  ibus_keyval,
                  ibus_keycode,
                  ibus_state));
@@ -420,9 +423,14 @@ void InputMethodIBus::UpdateContextFocusState() {
 }
 
 void InputMethodIBus::ProcessKeyEventPostIME(
-    const base::NativeEvent& native_event,
+    const ui::KeyEvent& event,
     uint32 ibus_state,
     bool handled) {
+  // TODO(komatsu): Support fabricated key events.
+  if (!event.HasNativeEvent())
+    return;
+  const base::NativeEvent& native_event = event.native_event();
+
   TextInputClient* client = GetTextInputClient();
 
   if (!client) {

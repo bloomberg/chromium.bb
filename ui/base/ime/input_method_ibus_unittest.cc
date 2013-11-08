@@ -17,6 +17,7 @@
 #include "chromeos/dbus/ibus/ibus_text.h"
 #include "chromeos/dbus/ibus/mock_ibus_client.h"
 #include "chromeos/ime/ibus_bridge.h"
+#include "chromeos/ime/ibus_keymap.h"
 #include "chromeos/ime/mock_ime_candidate_window_handler.h"
 #include "chromeos/ime/mock_ime_engine_handler.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -29,13 +30,6 @@
 
 namespace ui {
 namespace {
-const uint32 kTestIBusKeyVal1 = 97;
-const uint32 kTestIBusKeyVal2 = 30;
-const uint32 kTestIBusKeyCode1 = 98;
-const uint32 kTestIBusKeyCode2 = 48;
-const uint32 kTestIBusState1 = 99;
-const uint32 kTestIBusState2 = 46;
-
 typedef chromeos::IBusEngineHandlerInterface::KeyEventDoneCallback
     KeyEventCallback;
 
@@ -72,10 +66,8 @@ class TestableInputMethodIBus : public InputMethodIBus {
   }
 
   struct ProcessKeyEventPostIMEArgs {
-    ProcessKeyEventPostIMEArgs() : handled(false) {
-      std::memset(&event, 0, sizeof(XEvent));
-    }
-    XEvent event;
+    ProcessKeyEventPostIMEArgs() : event(NULL), handled(false) {}
+    const ui::KeyEvent* event;
     bool handled;
   };
 
@@ -87,28 +79,12 @@ class TestableInputMethodIBus : public InputMethodIBus {
   };
 
   // InputMethodIBus override.
-  virtual void ProcessKeyEventPostIME(const base::NativeEvent& native_key_event,
+  virtual void ProcessKeyEventPostIME(const ui::KeyEvent& key_event,
                                       uint32 ibus_state,
                                       bool handled) OVERRIDE {
-    process_key_event_post_ime_args_.event = *native_key_event;
+    process_key_event_post_ime_args_.event = &key_event;
     process_key_event_post_ime_args_.handled = handled;
     ++process_key_event_post_ime_call_count_;
-  }
-
-  // We can't call X11 related function without display in unit test, so
-  // override with mock function.
-  virtual void IBusKeyEventFromNativeKeyEvent(
-      const base::NativeEvent& native_event,
-      uint32* ibus_keyval,
-      uint32* ibus_keycode,
-      uint32* ibus_state) OVERRIDE {
-    EXPECT_TRUE(native_event);
-    EXPECT_TRUE(ibus_keyval);
-    EXPECT_TRUE(ibus_keycode);
-    EXPECT_TRUE(ibus_state);
-    *ibus_keyval = ibus_key_event_from_native_key_event_result_.keyval;
-    *ibus_keycode = ibus_key_event_from_native_key_event_result_.keycode;
-    *ibus_state = ibus_key_event_from_native_key_event_result_.state;
   }
 
   void ResetCallCount() {
@@ -123,11 +99,6 @@ class TestableInputMethodIBus : public InputMethodIBus {
     return process_key_event_post_ime_call_count_;
   }
 
-  IBusKeyEventFromNativeKeyEventResult*
-      mutable_ibus_key_event_from_native_key_event_result() {
-    return &ibus_key_event_from_native_key_event_result_;
-  }
-
   // Change access rights for testing.
   using InputMethodIBus::ExtractCompositionText;
   using InputMethodIBus::ResetContext;
@@ -135,9 +106,6 @@ class TestableInputMethodIBus : public InputMethodIBus {
  private:
   ProcessKeyEventPostIMEArgs process_key_event_post_ime_args_;
   int process_key_event_post_ime_call_count_;
-
-  IBusKeyEventFromNativeKeyEventResult
-      ibus_key_event_from_native_key_event_result_;
 };
 
 class CreateInputContextSuccessHandler {
@@ -992,17 +960,11 @@ class InputMethodIBusKeyEventTest : public InputMethodIBusTest {
 };
 
 TEST_F(InputMethodIBusKeyEventTest, KeyEventDelayResponseTest) {
+  const int kXFlags = ShiftMask;
+  const unsigned int kIbusFlags = ui::EF_SHIFT_DOWN;
   XEvent xevent = {};
-  ui::InitXKeyEventForTesting(ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, 0, &xevent);
+  ui::InitXKeyEventForTesting(ui::ET_KEY_PRESSED, ui::VKEY_A, kXFlags, &xevent);
   const ui::KeyEvent event(&xevent, true);
-
-  // Set up IBusKeyEventFromNativeKeyEvent result.
-  ime_->mutable_ibus_key_event_from_native_key_event_result()->keyval
-      = kTestIBusKeyVal1;
-  ime_->mutable_ibus_key_event_from_native_key_event_result()->keycode
-      = kTestIBusKeyCode1;
-  ime_->mutable_ibus_key_event_from_native_key_event_result()->state
-      = kTestIBusState1;
 
   // Do key event.
   input_type_ = TEXT_INPUT_TYPE_TEXT;
@@ -1010,14 +972,14 @@ TEST_F(InputMethodIBusKeyEventTest, KeyEventDelayResponseTest) {
   ime_->DispatchKeyEvent(event);
 
   // Check before state.
-  EXPECT_EQ(1,
-            mock_ime_engine_handler_->process_key_event_call_count());
-  EXPECT_EQ(kTestIBusKeyVal1,
-            mock_ime_engine_handler_->last_processed_keysym());
-  EXPECT_EQ(kTestIBusKeyCode1,
-            mock_ime_engine_handler_->last_processed_keycode());
-  EXPECT_EQ(kTestIBusState1,
-            mock_ime_engine_handler_->last_processed_state());
+  EXPECT_EQ(1, mock_ime_engine_handler_->process_key_event_call_count());
+  EXPECT_EQ("A",
+            chromeos::input_method::GetIBusKey(
+                mock_ime_engine_handler_->last_processed_keysym()));
+  EXPECT_EQ("KeyA",
+            chromeos::input_method::GetIBusKeyCode(
+                mock_ime_engine_handler_->last_processed_keycode()));
+  EXPECT_EQ(kIbusFlags, mock_ime_engine_handler_->last_processed_state());
   EXPECT_EQ(0, ime_->process_key_event_post_ime_call_count());
 
   // Do callback.
@@ -1025,8 +987,10 @@ TEST_F(InputMethodIBusKeyEventTest, KeyEventDelayResponseTest) {
 
   // Check the results
   EXPECT_EQ(1, ime_->process_key_event_post_ime_call_count());
-  EXPECT_TRUE(IsEqualXKeyEvent(xevent,
-                               ime_->process_key_event_post_ime_args().event));
+  const ui::KeyEvent* stored_event =
+      ime_->process_key_event_post_ime_args().event;
+  EXPECT_TRUE(stored_event->HasNativeEvent());
+  EXPECT_TRUE(IsEqualXKeyEvent(xevent, *(stored_event->native_event())));
   EXPECT_TRUE(ime_->process_key_event_post_ime_args().handled);
 }
 
@@ -1035,46 +999,39 @@ TEST_F(InputMethodIBusKeyEventTest, MultiKeyEventDelayResponseTest) {
   input_type_ = TEXT_INPUT_TYPE_TEXT;
   ime_->OnTextInputTypeChanged(this);
 
+  const int kXFlags = ShiftMask;
+  const unsigned int kIbusFlags = ui::EF_SHIFT_DOWN;
   XEvent xevent = {};
-  ui::InitXKeyEventForTesting(ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, 0, &xevent);
+  ui::InitXKeyEventForTesting(ui::ET_KEY_PRESSED, ui::VKEY_B, kXFlags, &xevent);
   const ui::KeyEvent event(&xevent, true);
-
-  // Set up IBusKeyEventFromNativeKeyEvent result for first key event.
-  ime_->mutable_ibus_key_event_from_native_key_event_result()->keyval
-      = kTestIBusKeyVal1;
-  ime_->mutable_ibus_key_event_from_native_key_event_result()->keycode
-      = kTestIBusKeyCode1;
-  ime_->mutable_ibus_key_event_from_native_key_event_result()->state
-      = kTestIBusState1;
 
   // Do key event.
   ime_->DispatchKeyEvent(event);
-  EXPECT_EQ(kTestIBusKeyVal1,
-            mock_ime_engine_handler_->last_processed_keysym());
-  EXPECT_EQ(kTestIBusKeyCode1,
-            mock_ime_engine_handler_->last_processed_keycode());
-  EXPECT_EQ(kTestIBusState1,
-            mock_ime_engine_handler_->last_processed_state());
+  EXPECT_EQ("B",
+            chromeos::input_method::GetIBusKey(
+                mock_ime_engine_handler_->last_processed_keysym()));
+  EXPECT_EQ("KeyB",
+            chromeos::input_method::GetIBusKeyCode(
+                mock_ime_engine_handler_->last_processed_keycode()));
+  EXPECT_EQ(kIbusFlags, mock_ime_engine_handler_->last_processed_state());
 
   KeyEventCallback first_callback =
       mock_ime_engine_handler_->last_passed_callback();
 
-  // Set up IBusKeyEventFromNativeKeyEvent result for second key event.
-  ime_->mutable_ibus_key_event_from_native_key_event_result()->keyval
-      = kTestIBusKeyVal2;
-  ime_->mutable_ibus_key_event_from_native_key_event_result()->keycode
-      = kTestIBusKeyCode2;
-  ime_->mutable_ibus_key_event_from_native_key_event_result()->state
-      = kTestIBusState2;
-
   // Do key event again.
-  ime_->DispatchKeyEvent(event);
-  EXPECT_EQ(kTestIBusKeyVal2,
-            mock_ime_engine_handler_->last_processed_keysym());
-  EXPECT_EQ(kTestIBusKeyCode2,
-            mock_ime_engine_handler_->last_processed_keycode());
-  EXPECT_EQ(kTestIBusState2,
-            mock_ime_engine_handler_->last_processed_state());
+  XEvent xevent2 = {};
+  ui::InitXKeyEventForTesting(ui::ET_KEY_PRESSED, ui::VKEY_C, kXFlags,
+                              &xevent2);
+  const ui::KeyEvent event2(&xevent2, true);
+
+  ime_->DispatchKeyEvent(event2);
+  EXPECT_EQ("C",
+            chromeos::input_method::GetIBusKey(
+                mock_ime_engine_handler_->last_processed_keysym()));
+  EXPECT_EQ("KeyC",
+            chromeos::input_method::GetIBusKeyCode(
+                mock_ime_engine_handler_->last_processed_keycode()));
+  EXPECT_EQ(kIbusFlags, mock_ime_engine_handler_->last_processed_state());
 
   // Check before state.
   EXPECT_EQ(2,
@@ -1086,8 +1043,10 @@ TEST_F(InputMethodIBusKeyEventTest, MultiKeyEventDelayResponseTest) {
 
   // Check the results for first key event.
   EXPECT_EQ(1, ime_->process_key_event_post_ime_call_count());
-  EXPECT_TRUE(IsEqualXKeyEvent(xevent,
-                               ime_->process_key_event_post_ime_args().event));
+  const ui::KeyEvent* stored_event =
+      ime_->process_key_event_post_ime_args().event;
+  EXPECT_TRUE(stored_event->HasNativeEvent());
+  EXPECT_TRUE(IsEqualXKeyEvent(xevent, *(stored_event->native_event())));
   EXPECT_TRUE(ime_->process_key_event_post_ime_args().handled);
 
   // Do callback for second key event.
@@ -1095,23 +1054,17 @@ TEST_F(InputMethodIBusKeyEventTest, MultiKeyEventDelayResponseTest) {
 
   // Check the results for second key event.
   EXPECT_EQ(2, ime_->process_key_event_post_ime_call_count());
-  EXPECT_TRUE(IsEqualXKeyEvent(xevent,
-                               ime_->process_key_event_post_ime_args().event));
+  stored_event = ime_->process_key_event_post_ime_args().event;
+  EXPECT_TRUE(stored_event->HasNativeEvent());
+  EXPECT_TRUE(IsEqualXKeyEvent(xevent2, *(stored_event->native_event())));
   EXPECT_FALSE(ime_->process_key_event_post_ime_args().handled);
 }
 
 TEST_F(InputMethodIBusKeyEventTest, KeyEventDelayResponseResetTest) {
+  const int kXFlags = ShiftMask;
   XEvent xevent = {};
-  ui::InitXKeyEventForTesting(ui::ET_KEY_PRESSED, ui::VKEY_UNKNOWN, 0, &xevent);
+  ui::InitXKeyEventForTesting(ui::ET_KEY_PRESSED, ui::VKEY_A, kXFlags, &xevent);
   const ui::KeyEvent event(&xevent, true);
-
-  // Set up IBusKeyEventFromNativeKeyEvent result.
-  ime_->mutable_ibus_key_event_from_native_key_event_result()->keyval
-      = kTestIBusKeyVal1;
-  ime_->mutable_ibus_key_event_from_native_key_event_result()->keycode
-      = kTestIBusKeyCode1;
-  ime_->mutable_ibus_key_event_from_native_key_event_result()->state
-      = kTestIBusState1;
 
   // Do key event.
   input_type_ = TEXT_INPUT_TYPE_TEXT;
@@ -1119,8 +1072,7 @@ TEST_F(InputMethodIBusKeyEventTest, KeyEventDelayResponseResetTest) {
   ime_->DispatchKeyEvent(event);
 
   // Check before state.
-  EXPECT_EQ(1,
-            mock_ime_engine_handler_->process_key_event_call_count());
+  EXPECT_EQ(1, mock_ime_engine_handler_->process_key_event_call_count());
   EXPECT_EQ(0, ime_->process_key_event_post_ime_call_count());
 
   ime_->ResetContext();
@@ -1130,7 +1082,6 @@ TEST_F(InputMethodIBusKeyEventTest, KeyEventDelayResponseResetTest) {
 
   EXPECT_EQ(0, ime_->process_key_event_post_ime_call_count());
 }
-
 // TODO(nona): Introduce ProcessKeyEventPostIME tests(crbug.com/156593).
 
 }  // namespace ui

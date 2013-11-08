@@ -57,7 +57,7 @@ class UI_EXPORT InputMethodIBus
                               CompositionText* out_composition) const;
 
   // Process a key returned from the input method.
-  virtual void ProcessKeyEventPostIME(const base::NativeEvent& native_key_event,
+  virtual void ProcessKeyEventPostIME(const ui::KeyEvent& event,
                                       uint32 ibus_state,
                                       bool handled);
 
@@ -135,7 +135,8 @@ class UI_EXPORT InputMethodIBus
                                  bool visible) OVERRIDE;
   virtual void DeleteSurroundingText(int32 offset, uint32 length) OVERRIDE;
 
-  void ProcessKeyEventDone(uint32 id, XEvent* xevent,
+  // Callback function for IBusEngineHandlerInterface::ProcessKeyEvent.
+  void ProcessKeyEventDone(uint32 id, ui::KeyEvent* key_event,
                            uint32 ibus_keyval, uint32 ibus_keycode,
                            uint32 ibus_state, bool is_handled);
 
