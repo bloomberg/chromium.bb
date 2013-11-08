@@ -748,7 +748,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestTerminateAfterExit) {
   TestHelper("testTerminateAfterExit", "web_view/shim", NO_TEST_SERVER);
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestAssignSrcAfterCrash) {
+// Disabled due to flakiness. http://crbug.com/316939
+IN_PROC_BROWSER_TEST_F(WebViewTest, DISABLED_Shim_TestAssignSrcAfterCrash) {
   TestHelper("testAssignSrcAfterCrash", "web_view/shim", NO_TEST_SERVER);
 }
 
