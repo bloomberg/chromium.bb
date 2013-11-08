@@ -30,6 +30,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/mman.h>
+#include <linux/input.h>
 
 #include <wayland-client.h>
 #include <wayland-egl.h>
@@ -75,10 +76,12 @@ struct wayland_output {
 		int draw_initial_frame;
 		struct wl_surface *surface;
 		struct wl_shell_surface *shell_surface;
+		int configure_width, configure_height;
 	} parent;
 
 	int keyboard_count;
 
+	char *name;
 	struct frame *frame;
 
 	struct {
@@ -552,13 +555,13 @@ wayland_output_destroy(struct weston_output *output_base)
 	wl_surface_destroy(output->parent.surface);
 	wl_shell_surface_destroy(output->parent.shell_surface);
 
-	if (output->frame) {
+	if (output->frame)
 		frame_destroy(output->frame);
-		cairo_surface_destroy(output->gl.border.top);
-		cairo_surface_destroy(output->gl.border.left);
-		cairo_surface_destroy(output->gl.border.right);
-		cairo_surface_destroy(output->gl.border.bottom);
-	}
+
+	cairo_surface_destroy(output->gl.border.top);
+	cairo_surface_destroy(output->gl.border.left);
+	cairo_surface_destroy(output->gl.border.right);
+	cairo_surface_destroy(output->gl.border.bottom);
 
 	weston_output_destroy(&output->base);
 	free(output);
@@ -606,22 +609,190 @@ wayland_output_init_pixman_renderer(struct wayland_output *output)
 	return pixman_renderer_output_create(&output->base);
 }
 
+static void
+wayland_output_resize_surface(struct wayland_output *output)
+{
+	struct wayland_compositor *c =
+		(struct wayland_compositor *)output->base.compositor;
+	struct wayland_shm_buffer *buffer, *next;
+	int32_t ix, iy, iwidth, iheight;
+	int32_t width, height;
+	struct wl_region *region;
+
+	width = output->base.current_mode->width;
+	height = output->base.current_mode->height;
+
+	if (output->frame) {
+		frame_resize_inside(output->frame, width, height);
+
+		frame_input_rect(output->frame, &ix, &iy, &iwidth, &iheight);
+		region = wl_compositor_create_region(c->parent.compositor);
+		wl_region_add(region, ix, iy, iwidth, iheight);
+		wl_surface_set_input_region(output->parent.surface, region);
+		wl_region_destroy(region);
+
+		frame_opaque_rect(output->frame, &ix, &iy, &iwidth, &iheight);
+		region = wl_compositor_create_region(c->parent.compositor);
+		wl_region_add(region, ix, iy, iwidth, iheight);
+		wl_surface_set_opaque_region(output->parent.surface, region);
+		wl_region_destroy(region);
+
+		width = frame_width(output->frame);
+		height = frame_height(output->frame);
+	} else {
+		region = wl_compositor_create_region(c->parent.compositor);
+		wl_region_add(region, 0, 0, width, height);
+		wl_surface_set_input_region(output->parent.surface, region);
+		wl_region_destroy(region);
+
+		region = wl_compositor_create_region(c->parent.compositor);
+		wl_region_add(region, 0, 0, width, height);
+		wl_surface_set_opaque_region(output->parent.surface, region);
+		wl_region_destroy(region);
+	}
+
+	if (output->gl.egl_window) {
+		wl_egl_window_resize(output->gl.egl_window,
+				     width, height, 0, 0);
+
+		/* These will need to be re-created due to the resize */
+		gl_renderer->output_set_border(&output->base,
+					       GL_RENDERER_BORDER_TOP,
+					       0, 0, 0, NULL);
+		cairo_surface_destroy(output->gl.border.top);
+		output->gl.border.top = NULL;
+		gl_renderer->output_set_border(&output->base,
+					       GL_RENDERER_BORDER_LEFT,
+					       0, 0, 0, NULL);
+		cairo_surface_destroy(output->gl.border.left);
+		output->gl.border.left = NULL;
+		gl_renderer->output_set_border(&output->base,
+					       GL_RENDERER_BORDER_RIGHT,
+					       0, 0, 0, NULL);
+		cairo_surface_destroy(output->gl.border.right);
+		output->gl.border.right = NULL;
+		gl_renderer->output_set_border(&output->base,
+					       GL_RENDERER_BORDER_BOTTOM,
+					       0, 0, 0, NULL);
+		cairo_surface_destroy(output->gl.border.bottom);
+		output->gl.border.bottom = NULL;
+	}
+
+	/* Throw away any remaining SHM buffers */
+	wl_list_for_each_safe(buffer, next, &output->shm.free_buffers, link)
+		wayland_shm_buffer_destroy(buffer);
+	/* These will get thrown away when they get released */
+	wl_list_for_each(buffer, &output->shm.buffers, link)
+		buffer->output = NULL;
+}
+
+static int
+wayland_output_set_windowed(struct wayland_output *output)
+{
+	struct wayland_compositor *c =
+		(struct wayland_compositor *)output->base.compositor;
+	int tlen;
+	char *title;
+
+	if (output->frame)
+		return 0;
+
+	if (output->name) {
+		tlen = strlen(output->name) + strlen(WINDOW_TITLE " - ");
+		title = malloc(tlen + 1);
+		if (!title)
+			return -1;
+
+		snprintf(title, tlen + 1, WINDOW_TITLE " - %s", output->name);
+	} else {
+		title = strdup(WINDOW_TITLE);
+	}
+
+	if (!c->theme) {
+		c->theme = theme_create();
+		if (!c->theme) {
+			free(title);
+			return -1;
+		}
+	}
+	output->frame = frame_create(c->theme, 100, 100,
+				     FRAME_BUTTON_CLOSE, title);
+	free(title);
+	if (!output->frame)
+		return -1;
+
+	if (output->keyboard_count)
+		frame_set_flag(output->frame, FRAME_FLAG_ACTIVE);
+
+	wayland_output_resize_surface(output);
+
+	wl_shell_surface_set_toplevel(output->parent.shell_surface);
+
+	return 0;
+}
+
+static void
+wayland_output_set_fullscreen(struct wayland_output *output,
+			      enum wl_shell_surface_fullscreen_method method,
+			      uint32_t framerate, struct wl_output *target)
+{
+	if (output->frame) {
+		frame_destroy(output->frame);
+		output->frame = NULL;
+	}
+
+	wayland_output_resize_surface(output);
+
+	wl_shell_surface_set_fullscreen(output->parent.shell_surface,
+					method, framerate, target);
+}
+
 static struct wayland_output *
 wayland_output_create(struct wayland_compositor *c, int x, int y,
-		      int width, int height, const char *name,
+		      int width, int height, const char *name, int fullscreen,
 		      uint32_t transform, int32_t scale)
 {
 	struct wayland_output *output;
-	int32_t fx, fy, fwidth, fheight;
 	int output_width, output_height;
-	struct wl_region *region;
+
+	weston_log("Creating %dx%d wayland output at (%d, %d)\n",
+		   width, height, x, y);
 
 	output = zalloc(sizeof *output);
 	if (output == NULL)
 		return NULL;
 
+	output->name = name ? strdup(name) : NULL;
+	output->base.make = "waywayland";
+	output->base.model = "none";
+
 	output_width = width * scale;
 	output_height = height * scale;
+
+	output->parent.surface =
+		wl_compositor_create_surface(c->parent.compositor);
+	if (!output->parent.surface)
+		goto err_name;
+	wl_surface_set_user_data(output->parent.surface, output);
+
+	output->parent.draw_initial_frame = 1;
+	output->parent.shell_surface =
+		wl_shell_get_shell_surface(c->parent.shell,
+					   output->parent.surface);
+	if (!output->parent.shell_surface)
+		goto err_surface;
+	wl_shell_surface_add_listener(output->parent.shell_surface,
+				      &shell_surface_listener, output);
+
+	if (fullscreen) {
+		wl_shell_surface_set_fullscreen(output->parent.shell_surface,
+						0, 0, NULL);
+		wl_display_roundtrip(c->parent.wl_display);
+		if (!width)
+			output_width = output->parent.configure_width;
+		if (!height)
+			output_height = output->parent.configure_height;
+	}
 
 	output->mode.flags =
 		WL_OUTPUT_MODE_CURRENT | WL_OUTPUT_MODE_PREFERRED;
@@ -631,59 +802,23 @@ wayland_output_create(struct wayland_compositor *c, int x, int y,
 	output->scale = scale;
 	wl_list_init(&output->base.mode_list);
 	wl_list_insert(&output->base.mode_list, &output->mode.link);
-
-	weston_log("Creating %dx%d wayland output at (%d, %d)\n",
-		   width, height, x, y);
-
 	output->base.current_mode = &output->mode;
-	weston_output_init(&output->base, &c->base, x, y, width, height,
-			   transform, scale);
-
-	output->base.make = "waywayland";
-	output->base.model = "none";
 
 	wl_list_init(&output->shm.buffers);
 	wl_list_init(&output->shm.free_buffers);
 
-	if (!c->theme)
-		c->theme = theme_create();
-	output->frame = frame_create(c->theme, width, height,
-				     FRAME_BUTTON_CLOSE, name);
-	frame_resize_inside(output->frame, output_width, output_height);
-
-	output->parent.surface =
-		wl_compositor_create_surface(c->parent.compositor);
-	wl_surface_set_user_data(output->parent.surface, output);
+	weston_output_init(&output->base, &c->base, x, y, width, height,
+			   transform, scale);
 
 	if (c->use_pixman) {
 		if (wayland_output_init_pixman_renderer(output) < 0)
-			goto cleanup_output;
+			goto err_output;
 		output->base.repaint = wayland_output_repaint_pixman;
 	} else {
 		if (wayland_output_init_gl_renderer(output) < 0)
-			goto cleanup_output;
+			goto err_output;
 		output->base.repaint = wayland_output_repaint_gl;
 	}
-
-	frame_input_rect(output->frame, &fx, &fy, &fwidth, &fheight);
-	region = wl_compositor_create_region(c->parent.compositor);
-	wl_region_add(region, fx, fy, fwidth, fheight);
-	wl_surface_set_input_region(output->parent.surface, region);
-	wl_region_destroy(region);
-
-	frame_opaque_rect(output->frame, &fx, &fy, &fwidth, &fheight);
-	region = wl_compositor_create_region(c->parent.compositor);
-	wl_region_add(region, fx, fy, fwidth, fheight);
-	wl_surface_set_opaque_region(output->parent.surface, region);
-	wl_region_destroy(region);
-
-	output->parent.draw_initial_frame = 1;
-	output->parent.shell_surface =
-		wl_shell_get_shell_surface(c->parent.shell,
-					   output->parent.surface);
-	wl_shell_surface_add_listener(output->parent.shell_surface,
-				      &shell_surface_listener, output);
-	wl_shell_surface_set_toplevel(output->parent.shell_surface);
 
 	output->base.start_repaint_loop = wayland_output_start_repaint_loop;
 	output->base.destroy = wayland_output_destroy;
@@ -696,7 +831,14 @@ wayland_output_create(struct wayland_compositor *c, int x, int y,
 
 	return output;
 
-cleanup_output:
+err_output:
+	weston_output_destroy(&output->base);
+	wl_shell_surface_destroy(output->parent.shell_surface);
+err_surface:
+	wl_surface_destroy(output->parent.surface);
+err_name:
+	free(output->name);
+
 	/* FIXME: cleanup weston_output */
 	free(output);
 
@@ -772,7 +914,8 @@ wayland_output_create_for_config(struct wayland_compositor *c,
 		weston_log("Invalid transform \"%s\" for output %s\n", t, name);
 	free(t);
 
-	output = wayland_output_create(c, x, y, width, height, name, transform, scale);
+	output = wayland_output_create(c, x, y, width, height, name, 0,
+				       transform, scale);
 	free(name);
 
 	return output;
@@ -789,6 +932,11 @@ static void
 shell_surface_configure(void *data, struct wl_shell_surface *shell_surface,
 			uint32_t edges, int32_t width, int32_t height)
 {
+	struct wayland_output *output = data;
+
+	output->parent.configure_width = width;
+	output->parent.configure_height = height;
+
 	/* FIXME: implement resizing */
 }
 
@@ -1291,6 +1439,28 @@ create_cursor(struct wayland_compositor *c, struct weston_config *config)
 	}
 }
 
+static void
+fullscreen_binding(struct weston_seat *seat_base, uint32_t time, uint32_t key,
+		   void *data)
+{
+	struct wayland_compositor *c = data;
+	struct wayland_input *input = NULL;
+
+	wl_list_for_each(input, &c->input_list, link)
+		if (&input->base == seat_base)
+			break;
+
+	if (!input || !input->output)
+		return;
+
+	if (input->output->frame)
+		wayland_output_set_fullscreen(input->output, 0, 0, NULL);
+	else
+		wayland_output_set_windowed(input->output);
+
+	weston_output_schedule_repaint(&input->output->base);
+}
+
 static struct wayland_compositor *
 wayland_compositor_create(struct wl_display *display, int use_pixman,
 			  const char *display_name, int *argc, char *argv[],
@@ -1364,6 +1534,10 @@ wayland_compositor_create(struct wl_display *display, int use_pixman,
 
 	wl_event_source_check(c->parent.wl_source);
 
+	weston_compositor_add_key_binding(&c->base, KEY_F,
+				          MODIFIER_CTRL | MODIFIER_ALT,
+				          fullscreen_binding, c);
+
 	return c;
 err_renderer:
 	c->base.renderer->destroy(&c->base);
@@ -1404,7 +1578,7 @@ backend_init(struct wl_display *display, int *argc, char *argv[],
 	struct wayland_compositor *c;
 	struct wayland_output *output;
 	struct weston_config_section *section;
-	int x, count, width, height, scale, use_pixman;
+	int x, count, width, height, scale, use_pixman, fullscreen;
 	const char *section_name, *display_name;
 	char *name;
 
@@ -1415,6 +1589,7 @@ backend_init(struct wl_display *display, int *argc, char *argv[],
 		{ WESTON_OPTION_STRING, "display", 0, &display_name },
 		{ WESTON_OPTION_BOOLEAN, "use-pixman", 0, &use_pixman },
 		{ WESTON_OPTION_INTEGER, "output-count", 0, &count },
+		{ WESTON_OPTION_BOOLEAN, "fullscreen", 0, &fullscreen },
 	};
 
 	width = 0;
@@ -1423,7 +1598,7 @@ backend_init(struct wl_display *display, int *argc, char *argv[],
 	display_name = NULL;
 	use_pixman = 0;
 	count = 1;
-
+	fullscreen = 0;
 	parse_options(wayland_options,
 		      ARRAY_LENGTH(wayland_options), argc, argv);
 
@@ -1431,6 +1606,15 @@ backend_init(struct wl_display *display, int *argc, char *argv[],
 				      argc, argv, config);
 	if (!c)
 		return NULL;
+
+	if (fullscreen) {
+		output = wayland_output_create(c, 0, 0, width, height,
+					       NULL, 1, 0, 1);
+		if (!output)
+			goto err_outputs;
+
+		return &c->base;
+	}
 
 	section = NULL;
 	x = 0;
@@ -1451,6 +1635,8 @@ backend_init(struct wl_display *display, int *argc, char *argv[],
 							  height, scale, x, 0);
 		if (!output)
 			goto err_outputs;
+		if (wayland_output_set_windowed(output))
+			goto err_outputs;
 
 		x += output->base.width;
 		--count;
@@ -1464,8 +1650,10 @@ backend_init(struct wl_display *display, int *argc, char *argv[],
 		scale = 1;
 	while (count > 0) {
 		output = wayland_output_create(c, x, 0, width, height,
-					       NULL, 0, scale);
+					       NULL, 0, 0, scale);
 		if (!output)
+			goto err_outputs;
+		if (wayland_output_set_windowed(output))
 			goto err_outputs;
 
 		x += width;
