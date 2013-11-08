@@ -13,7 +13,7 @@
 // This means that it's possible for pages opened very quickly not to get the
 // correct transport security information.
 //
-// To load the state, we schedule a Task on the file thread which loads,
+// To load the state, we schedule a Task on file_task_runner, which
 // deserializes and configures the TransportSecurityState.
 //
 // The TransportSecurityState object supports running a callback function
@@ -22,7 +22,7 @@
 // TransportSecurityState calls...
 // TransportSecurityPersister::StateIsDirty
 //   since the callback isn't allowed to block or reenter, we schedule a Task
-//   on the file thread after some small amount of time
+//   on the file task runner after some small amount of time
 //
 // ...
 //
@@ -37,17 +37,26 @@
 
 #include "base/files/file_path.h"
 #include "base/files/important_file_writer.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "net/http/transport_security_state.h"
 
-// Reads and updates on-disk TransportSecurity state.
-// Must be created, used and destroyed only on the IO thread.
+namespace base {
+class SequencedTaskRunner;
+}
+
+// Reads and updates on-disk TransportSecurity state. Clients of this class
+// should create, destroy, and call into it from one thread.
+//
+// file_task_runner is the task runner this class should use internally to
+// perform file IO, and can optionally be associated with a different thread.
 class TransportSecurityPersister
     : public net::TransportSecurityState::Delegate,
       public base::ImportantFileWriter::DataSerializer {
  public:
   TransportSecurityPersister(net::TransportSecurityState* state,
                              const base::FilePath& profile_path,
+                             base::SequencedTaskRunner* file_task_runner,
                              bool readonly);
   virtual ~TransportSecurityPersister();
 
@@ -94,8 +103,6 @@ class TransportSecurityPersister
   bool LoadEntries(const std::string& serialized, bool* dirty);
 
  private:
-  class Loader;
-
   // Populates |state| from the JSON string |serialized|. Returns true if
   // all entries were parsed and deserialized correctly.
   //
@@ -111,6 +118,9 @@ class TransportSecurityPersister
 
   // Helper for safely writing the data.
   base::ImportantFileWriter writer_;
+
+  scoped_refptr<base::SequencedTaskRunner> foreground_runner_;
+  scoped_refptr<base::SequencedTaskRunner> background_runner_;
 
   // Whether or not we're in read-only mode.
   const bool readonly_;

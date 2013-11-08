@@ -11,15 +11,14 @@
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/message_loop/message_loop.h"
-#include "base/path_service.h"
+#include "base/message_loop/message_loop_proxy.h"
+#include "base/sequenced_task_runner.h"
+#include "base/task_runner_util.h"
 #include "base/values.h"
-#include "chrome/common/chrome_paths.h"
-#include "content/public/browser/browser_thread.h"
 #include "crypto/sha2.h"
 #include "net/cert/x509_certificate.h"
 #include "net/http/transport_security_state.h"
 
-using content::BrowserThread;
 using net::HashValue;
 using net::HashValueTag;
 using net::HashValueVector;
@@ -81,67 +80,39 @@ const char kDefault[] = "default";
 const char kPinningOnly[] = "pinning-only";
 const char kCreated[] = "created";
 
+std::string LoadState(const base::FilePath& path) {
+  std::string result;
+  if (!base::ReadFileToString(path, &result)) {
+    return "";
+  }
+  return result;
+}
+
 }  // namespace
-
-class TransportSecurityPersister::Loader {
- public:
-  Loader(const base::WeakPtr<TransportSecurityPersister>& persister,
-         const base::FilePath& path)
-      : persister_(persister),
-        path_(path),
-        state_valid_(false) {
-  }
-
-  void Load() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-    state_valid_ = base::ReadFileToString(path_, &state_);
-  }
-
-  void CompleteLoad() {
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
-    // Make sure we're deleted.
-    scoped_ptr<Loader> deleter(this);
-
-    if (!persister_.get() || !state_valid_)
-      return;
-    persister_->CompleteLoad(state_);
-  }
-
- private:
-  base::WeakPtr<TransportSecurityPersister> persister_;
-
-  base::FilePath path_;
-
-  std::string state_;
-  bool state_valid_;
-
-  DISALLOW_COPY_AND_ASSIGN(Loader);
-};
 
 TransportSecurityPersister::TransportSecurityPersister(
     TransportSecurityState* state,
     const base::FilePath& profile_path,
+    base::SequencedTaskRunner* background_runner,
     bool readonly)
     : transport_security_state_(state),
-      writer_(profile_path.AppendASCII("TransportSecurity"),
-              BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)
-                  .get()),
+      writer_(profile_path.AppendASCII("TransportSecurity"), background_runner),
+      foreground_runner_(base::MessageLoop::current()->message_loop_proxy()),
+      background_runner_(background_runner),
       readonly_(readonly),
       weak_ptr_factory_(this) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-
   transport_security_state_->SetDelegate(this);
 
-  Loader* loader = new Loader(weak_ptr_factory_.GetWeakPtr(), writer_.path());
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::FILE, FROM_HERE,
-      base::Bind(&Loader::Load, base::Unretained(loader)),
-      base::Bind(&Loader::CompleteLoad, base::Unretained(loader)));
+  base::PostTaskAndReplyWithResult(
+      background_runner_,
+      FROM_HERE,
+      base::Bind(&::LoadState, writer_.path()),
+      base::Bind(&TransportSecurityPersister::CompleteLoad,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 TransportSecurityPersister::~TransportSecurityPersister() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(foreground_runner_->RunsTasksOnCurrentThread());
 
   if (writer_.HasPendingWrite())
     writer_.DoScheduledWrite();
@@ -151,7 +122,7 @@ TransportSecurityPersister::~TransportSecurityPersister() {
 
 void TransportSecurityPersister::StateIsDirty(
     TransportSecurityState* state) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(foreground_runner_->RunsTasksOnCurrentThread());
   DCHECK_EQ(transport_security_state_, state);
 
   if (!readonly_)
@@ -159,7 +130,7 @@ void TransportSecurityPersister::StateIsDirty(
 }
 
 bool TransportSecurityPersister::SerializeData(std::string* output) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(foreground_runner_->RunsTasksOnCurrentThread());
 
   DictionaryValue toplevel;
   base::Time now = base::Time::Now();
@@ -211,7 +182,7 @@ bool TransportSecurityPersister::SerializeData(std::string* output) {
 
 bool TransportSecurityPersister::LoadEntries(const std::string& serialized,
                                              bool* dirty) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(foreground_runner_->RunsTasksOnCurrentThread());
 
   transport_security_state_->ClearDynamicData();
   return Deserialize(serialized, dirty, transport_security_state_);
@@ -327,7 +298,7 @@ bool TransportSecurityPersister::Deserialize(const std::string& serialized,
 }
 
 void TransportSecurityPersister::CompleteLoad(const std::string& state) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  DCHECK(foreground_runner_->RunsTasksOnCurrentThread());
 
   bool dirty = false;
   if (!LoadEntries(state, &dirty)) {

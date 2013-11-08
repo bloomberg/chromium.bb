@@ -820,9 +820,11 @@ void ProfileIOData::Init(content::ProtocolHandlerMap* protocol_handlers) const {
 
   transport_security_state_.reset(new net::TransportSecurityState());
   transport_security_persister_.reset(
-      new TransportSecurityPersister(transport_security_state_.get(),
-                                     profile_params_->path,
-                                     is_incognito()));
+      new TransportSecurityPersister(
+          transport_security_state_.get(),
+          profile_params_->path,
+          BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
+          is_incognito()));
 
   // Take ownership over these parameters.
   cookie_settings_ = profile_params_->cookie_settings;

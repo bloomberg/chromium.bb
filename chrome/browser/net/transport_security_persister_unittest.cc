@@ -12,7 +12,6 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
-#include "content/public/test/test_browser_thread.h"
 #include "net/http/transport_security_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,9 +20,7 @@ using net::TransportSecurityState;
 class TransportSecurityPersisterTest : public testing::Test {
  public:
   TransportSecurityPersisterTest()
-      : message_loop_(base::MessageLoop::TYPE_IO),
-        test_file_thread_(content::BrowserThread::FILE, &message_loop_),
-        test_io_thread_(content::BrowserThread::IO, &message_loop_) {
+      : message_loop_(base::MessageLoop::TYPE_IO) {
   }
 
   virtual ~TransportSecurityPersisterTest() {
@@ -32,20 +29,14 @@ class TransportSecurityPersisterTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    persister_.reset(
-        new TransportSecurityPersister(&state_, temp_dir_.path(), false));
+    persister_.reset(new TransportSecurityPersister(
+        &state_, temp_dir_.path(), message_loop_.message_loop_proxy(), false));
   }
 
  protected:
   // Ordering is important here. If member variables are not destroyed in the
   // right order, then DCHECKs will fail all over the place.
   base::MessageLoop message_loop_;
-
-  // Needed for ImportantFileWriter, which TransportSecurityPersister uses.
-  content::TestBrowserThread test_file_thread_;
-
-  // TransportSecurityPersister runs on the IO thread.
-  content::TestBrowserThread test_io_thread_;
 
   base::ScopedTempDir temp_dir_;
   TransportSecurityState state_;
