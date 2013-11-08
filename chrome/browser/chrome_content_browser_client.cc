@@ -1537,7 +1537,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
       switches::kProfilingFlush,
       switches::kRecordMode,
       switches::kSilentDumpOnDCHECK,
-      switches::kSpdyProxyAuthOrigin,
       switches::kWhitelistedExtensionID,
       translate::switches::kTranslateSecurityOrigin,
     };

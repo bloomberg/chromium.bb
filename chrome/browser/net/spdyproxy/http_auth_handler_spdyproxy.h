@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_NET_SPDYPROXY_HTTP_AUTH_HANDLER_SPDYPROXY_H_
 
 #include <string>
+#include <vector>
 
 #include "base/gtest_prod_util.h"
 #include "net/http/http_auth_handler.h"
@@ -19,8 +20,8 @@ class HttpAuthHandlerSpdyProxy : public net::HttpAuthHandler {
   class Factory : public net::HttpAuthHandlerFactory {
    public:
     // Constructs a new spdyproxy handler factory which mints handlers that
-    // respond to challenges only from the given |authorized_spdyproxy_origin|.
-    explicit Factory(const GURL& authorized_spdyproxy_origin);
+    // respond to challenges only from the given |authorized_spdyproxy_origins|.
+    explicit Factory(const std::vector<GURL>& authorized_spdyproxy_origins);
     virtual ~Factory();
 
     virtual int CreateAuthHandler(
@@ -33,14 +34,12 @@ class HttpAuthHandlerSpdyProxy : public net::HttpAuthHandler {
         scoped_ptr<HttpAuthHandler>* handler) OVERRIDE;
 
    private:
-    // The origin for which we will respond to SpdyProxy auth challenges.
-    GURL authorized_spdyproxy_origin_;
+    // The origins for which Chrome will respond to SpdyProxy auth challenges.
+    std::vector<GURL> authorized_spdyproxy_origins_;
   };
 
-  // Constructs a new spdyproxy handler which responds to challenges
-  // from the given |authorized_spdyproxy_origin|.
-  explicit HttpAuthHandlerSpdyProxy(
-      const GURL& authorized_spdyproxy_origin);
+  // Constructs a new spdyproxy handler.
+  HttpAuthHandlerSpdyProxy() {}
 
   // Overrides from net::HttpAuthHandler.
   virtual net::HttpAuth::AuthorizationResult HandleAnotherChallenge(
@@ -52,7 +51,7 @@ class HttpAuthHandlerSpdyProxy : public net::HttpAuthHandler {
  private:
   FRIEND_TEST_ALL_PREFIXES(HttpAuthHandlerSpdyProxyTest, ParseChallenge);
 
-  virtual ~HttpAuthHandlerSpdyProxy() {}
+  virtual ~HttpAuthHandlerSpdyProxy();
 
   virtual bool Init(net::HttpAuth::ChallengeTokenizer* challenge) OVERRIDE;
 
@@ -66,10 +65,7 @@ class HttpAuthHandlerSpdyProxy : public net::HttpAuthHandler {
   bool ParseChallengeProperty(const std::string& name,
                               const std::string& value);
 
-  // The origin for which we will respond to SpdyProxy auth challenges.
-  GURL authorized_spdyproxy_origin_;
-
-  // The ps token, encoded as UTF-8.
+  // Proxy server token, encoded as UTF-8.
   std::string ps_token_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpAuthHandlerSpdyProxy);

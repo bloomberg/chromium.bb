@@ -57,7 +57,7 @@ enum {
 
 // Generates a PAC proxy string component, including trailing semicolon and
 // space, for |origin|. Eg:
-//     "http://foo.com/"        -> "HTTP foo.com:80; "
+//     "http://foo.com/"        -> "PROXY foo.com:80; "
 //     "https://bar.com:10443"  -> "HTTPS bar.coom:10443; "
 // The returned strings are suitable for concatenating into a PAC string.
 // If |origin| is empty, returns an empty string.
@@ -66,7 +66,7 @@ std::string ProtocolAndHostForPACString(const std::string& origin) {
     return std::string();
   }
   GURL url = GURL(origin);
-  std::string protocol = url.SchemeIsSecure() ? "HTTPS "  : "HTTP ";
+  std::string protocol = url.SchemeIsSecure() ? "HTTPS "  : "PROXY ";
   return protocol + net::HostPortPair::FromURL(url).ToString() + "; ";
 }
 

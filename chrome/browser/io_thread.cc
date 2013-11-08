@@ -90,6 +90,10 @@
 #include "net/proxy/proxy_resolver_v8.h"
 #endif
 
+#if defined(OS_ANDROID) || defined(OS_IOS)
+#include "chrome/browser/net/spdyproxy/data_reduction_proxy_settings.h"
+#endif
+
 using content::BrowserThread;
 
 class SafeBrowsingURLRequestContext;
@@ -524,14 +528,12 @@ void IOThread::InitAsync() {
   globals_->cert_verifier.reset(net::CertVerifier::CreateDefault());
   globals_->transport_security_state.reset(new net::TransportSecurityState());
   globals_->ssl_config_service = GetSSLConfigService();
-  if (command_line.HasSwitch(switches::kSpdyProxyAuthOrigin)) {
-    spdyproxy_auth_origin_ =
-        command_line.GetSwitchValueASCII(switches::kSpdyProxyAuthOrigin);
-  } else {
-#if defined(SPDY_PROXY_AUTH_ORIGIN)
-    spdyproxy_auth_origin_ = SPDY_PROXY_AUTH_ORIGIN;
-#endif
+#if defined(OS_ANDROID) || defined(OS_IOS)
+  if (DataReductionProxySettings::IsDataReductionProxyAllowed()) {
+    spdyproxy_auth_origins_ =
+        DataReductionProxySettings::GetDataReductionProxies();
   }
+#endif  // defined(OS_ANDROID) || defined(OS_IOS)
   globals_->http_auth_handler_factory.reset(CreateDefaultAuthHandlerFactory(
       globals_->host_resolver.get()));
   globals_->http_server_properties.reset(new net::HttpServerPropertiesImpl());
@@ -873,17 +875,11 @@ net::HttpAuthHandlerFactory* IOThread::CreateDefaultAuthHandlerFactory(
           resolver, gssapi_library_name_, negotiate_disable_cname_lookup_,
           negotiate_enable_port_));
 
-  if (!spdyproxy_auth_origin_.empty()) {
-    GURL origin_url(spdyproxy_auth_origin_);
-    if (origin_url.is_valid()) {
-      registry_factory->RegisterSchemeFactory(
-          "spdyproxy",
-          new spdyproxy::HttpAuthHandlerSpdyProxy::Factory(origin_url));
-    } else {
-      LOG(WARNING) << "Skipping creation of SpdyProxy auth handler since "
-                   << "authorized origin is invalid: "
-                   << spdyproxy_auth_origin_;
-    }
+  if (!spdyproxy_auth_origins_.empty()) {
+    registry_factory->RegisterSchemeFactory(
+        "spdyproxy",
+        new spdyproxy::HttpAuthHandlerSpdyProxy::Factory(
+            spdyproxy_auth_origins_));
   }
 
   return registry_factory.release();

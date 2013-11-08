@@ -5,6 +5,7 @@
 #include "chrome/browser/net/spdyproxy/http_auth_handler_spdyproxy.h"
 
 #include <string>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
@@ -17,6 +18,7 @@
 namespace {
 
 const char kValidOrigin[] = "https://www.proxy.com/";
+const char kValidOrigin2[] = "http://www.proxy2.com/";
 const char kValidChallenge[] = "SpdyProxy realm=\"SpdyProxy\", "
     "ps=\"1-2-3-4\"";
 
@@ -71,7 +73,9 @@ TEST(HttpAuthHandlerSpdyProxyTest, GenerateAuthToken) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
     GURL origin(tests[i].origin);
     GURL authorized_origin(kValidOrigin);
-    HttpAuthHandlerSpdyProxy::Factory factory(authorized_origin);
+    std::vector<GURL> authorized_origins;
+    authorized_origins.push_back(authorized_origin);
+    HttpAuthHandlerSpdyProxy::Factory factory(authorized_origins);
     scoped_ptr<HttpAuthHandler> spdyproxy;
     EXPECT_EQ(tests[i].err1, factory.CreateAuthHandlerFromString(
         tests[i].challenge, HttpAuth::AUTH_PROXY, origin, BoundNetLog(),
@@ -98,7 +102,11 @@ TEST(HttpAuthHandlerSpdyProxyTest, NonProxyAuthTypeFails) {
   // site. (i.e., HttpAuth::AUTH_SERVER)
   GURL origin(kValidOrigin);
   GURL accepted_origin(kValidOrigin);
-  HttpAuthHandlerSpdyProxy::Factory factory(accepted_origin);
+  GURL accepted_origin2(kValidOrigin2);
+  std::vector<GURL> accepted_origins;
+  accepted_origins.push_back(accepted_origin);
+  accepted_origins.push_back(accepted_origin2);
+  HttpAuthHandlerSpdyProxy::Factory factory(accepted_origins);
   scoped_ptr<HttpAuthHandler> spdyproxy;
   EXPECT_EQ(ERR_UNSUPPORTED_AUTH_SCHEME, factory.CreateAuthHandlerFromString(
       kValidChallenge, HttpAuth::AUTH_SERVER, origin,
@@ -109,7 +117,9 @@ TEST(HttpAuthHandlerSpdyProxyTest, HandleAnotherChallenge) {
   // Verifies that any repeat challenge is treated as a failure.
   GURL origin(kValidOrigin);
   GURL accepted_origin(kValidOrigin);
-  HttpAuthHandlerSpdyProxy::Factory factory(accepted_origin);
+  std::vector<GURL> accepted_origins;
+  accepted_origins.push_back(accepted_origin);
+  HttpAuthHandlerSpdyProxy::Factory factory(accepted_origins);
   scoped_ptr<HttpAuthHandler> spdyproxy;
   EXPECT_EQ(OK, factory.CreateAuthHandlerFromString(
       kValidChallenge, HttpAuth::AUTH_PROXY, origin,
@@ -141,7 +151,11 @@ TEST(HttpAuthHandlerSpdyProxyTest, ParseChallenge) {
   };
   GURL origin(kValidOrigin);
   GURL accepted_origin(kValidOrigin);
-  HttpAuthHandlerSpdyProxy::Factory factory(accepted_origin);
+  GURL accepted_origin2(kValidOrigin2);
+  std::vector<GURL> accepted_origins;
+  accepted_origins.push_back(accepted_origin2);
+  accepted_origins.push_back(accepted_origin);
+  HttpAuthHandlerSpdyProxy::Factory factory(accepted_origins);
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(tests); ++i) {
     std::string challenge = tests[i].challenge;
     scoped_ptr<HttpAuthHandler> spdyproxy;

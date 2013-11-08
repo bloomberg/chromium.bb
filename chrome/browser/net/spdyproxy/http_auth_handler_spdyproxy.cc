@@ -4,7 +4,9 @@
 
 #include "chrome/browser/net/spdyproxy/http_auth_handler_spdyproxy.h"
 
+#include <algorithm>
 #include <string>
+#include <vector>
 
 #include "base/i18n/icu_string_conversions.h"
 #include "base/metrics/histogram.h"
@@ -26,8 +28,14 @@ using net::HttpRequestInfo;
 using net::HttpUtil;
 
 HttpAuthHandlerSpdyProxy::Factory::Factory(
-    const GURL& authorized_spdyproxy_origin)
-    : authorized_spdyproxy_origin_(authorized_spdyproxy_origin) {
+    const std::vector<GURL>& authorized_spdyproxy_origins) {
+  for (unsigned int i = 0; i < authorized_spdyproxy_origins.size(); ++i) {
+    if (authorized_spdyproxy_origins[i].possibly_invalid_spec().empty()) {
+      VLOG(1) << "SpdyProxy auth without configuring authorized origin.";
+      return;
+    }
+  }
+  authorized_spdyproxy_origins_ = authorized_spdyproxy_origins;
 }
 
 HttpAuthHandlerSpdyProxy::Factory::~Factory() {
@@ -43,37 +51,28 @@ int HttpAuthHandlerSpdyProxy::Factory::CreateAuthHandler(
     scoped_ptr<HttpAuthHandler>* handler) {
   // If a spdyproxy auth proxy has not been set, refuse all requests to use this
   // auth handler.
-  if (authorized_spdyproxy_origin_.possibly_invalid_spec().empty()) {
-    VLOG(1) << "SpdyProxy auth without configuring authorized origin.";
+  if (authorized_spdyproxy_origins_.empty())
     return net::ERR_UNSUPPORTED_AUTH_SCHEME;
-  }
 
   // We ensure that this authentication handler is used only with an authorized
   // SPDY proxy, since otherwise a user's authentication token can be
   // sniffed by a malicious proxy that presents an appropriate challenge.
   const GURL origin_origin = origin.GetOrigin();
   if (!(target == HttpAuth::AUTH_PROXY &&
-        origin_origin == authorized_spdyproxy_origin_)) {
+      std::find(authorized_spdyproxy_origins_.begin(),
+                authorized_spdyproxy_origins_.end(),
+                origin_origin) != authorized_spdyproxy_origins_.end())) {
     UMA_HISTOGRAM_COUNTS("Net.UnexpectedSpdyProxyAuth", 1);
     VLOG(1) << "SpdyProxy auth request with an unexpected config."
-            << " origin: " << origin_origin.possibly_invalid_spec()
-            << " authorized_origin: "
-            << authorized_spdyproxy_origin_.possibly_invalid_spec();
+            << " origin: " << origin_origin.possibly_invalid_spec();
     return net::ERR_UNSUPPORTED_AUTH_SCHEME;
   }
 
-  scoped_ptr<HttpAuthHandler> tmp_handler(
-      new HttpAuthHandlerSpdyProxy(authorized_spdyproxy_origin_));
+  scoped_ptr<HttpAuthHandler> tmp_handler(new HttpAuthHandlerSpdyProxy());
   if (!tmp_handler->InitFromChallenge(challenge, target, origin, net_log))
     return net::ERR_INVALID_RESPONSE;
   handler->swap(tmp_handler);
   return net::OK;
-}
-
-HttpAuthHandlerSpdyProxy::HttpAuthHandlerSpdyProxy(
-    const GURL& authorized_spdyproxy_origin)
-    : HttpAuthHandler(),
-      authorized_spdyproxy_origin_(authorized_spdyproxy_origin) {
 }
 
 HttpAuth::AuthorizationResult
@@ -95,6 +94,8 @@ bool HttpAuthHandlerSpdyProxy::AllowsDefaultCredentials() {
 bool HttpAuthHandlerSpdyProxy::AllowsExplicitCredentials() {
   return true;
 }
+
+HttpAuthHandlerSpdyProxy::~HttpAuthHandlerSpdyProxy() {}
 
 bool HttpAuthHandlerSpdyProxy::Init(
     HttpAuth::ChallengeTokenizer* challenge) {
