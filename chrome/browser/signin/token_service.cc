@@ -395,13 +395,3 @@ void TokenService::LoadSingleTokenIntoMemory(
     }
   }
 }
-
-void TokenService::AddSigninDiagnosticsObserver(
-    SigninDiagnosticsObserver* observer) {
-  signin_diagnostics_observers_.AddObserver(observer);
-}
-
-void TokenService::RemoveSigninDiagnosticsObserver(
-    SigninDiagnosticsObserver* observer) {
-  signin_diagnostics_observers_.RemoveObserver(observer);
-}

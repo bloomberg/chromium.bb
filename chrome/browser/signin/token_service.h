@@ -51,7 +51,6 @@
 #include "base/gtest_prod_util.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
-#include "chrome/browser/signin/signin_internals_util.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "components/webdata/common/web_data_service_base.h"
 #include "components/webdata/common/web_data_service_consumer.h"
@@ -106,12 +105,6 @@ class TokenService : public GaiaAuthConsumer,
 
   // BrowserContextKeyedService implementation.
   virtual void Shutdown() OVERRIDE;
-
-  // Methods to register or remove SigninDiagnosticObservers
-  void AddSigninDiagnosticsObserver(
-      signin_internals_util::SigninDiagnosticsObserver* observer);
-  void RemoveSigninDiagnosticsObserver(
-      signin_internals_util::SigninDiagnosticsObserver* observer);
 
   // Initialize this token service with a request source
   // (usually from a GaiaAuthConsumer constant), and the profile.
@@ -251,10 +244,6 @@ class TokenService : public GaiaAuthConsumer,
 
   // Map from service to token.
   std::map<std::string, std::string> token_map_;
-
-  // The list of SigninDiagnosticObservers
-  ObserverList<signin_internals_util::SigninDiagnosticsObserver>
-      signin_diagnostics_observers_;
 
   friend class TokenServiceTest;
   FRIEND_TEST_ALL_PREFIXES(TokenServiceTest, LoadTokensIntoMemoryBasic);
