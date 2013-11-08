@@ -137,7 +137,6 @@ weston_output_switch_mode(struct weston_output *output, struct weston_mode *mode
 		if (ret < 0)
 			return ret;
 
-		output->current_mode = mode;
 		output->current_scale = scale;
 		break;
 	case WESTON_MODE_SWITCH_RESTORE_NATIVE:
