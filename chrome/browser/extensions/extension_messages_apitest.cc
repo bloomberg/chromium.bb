@@ -532,8 +532,8 @@ IN_PROC_BROWSER_TEST_F(ExternallyConnectableMessagingTest,
   EXPECT_EQ(std::string(), tls_channel_id);
 }
 
-// Flaky on official Linux bot. http://crbug.com/315264
-#if defined(GOOGLE_CHROME_BUILD) && defined(OS_LINUX)
+// Flaky on Linux. http://crbug.com/315264
+#if defined(OS_LINUX)
 #define MAYBE_WebConnectableWithEmptyTlsChannelIdAndClosedBackgroundPage \
     DISABLED_WebConnectableWithEmptyTlsChannelIdAndClosedBackgroundPage
 #else
