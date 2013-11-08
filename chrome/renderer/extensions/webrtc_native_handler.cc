@@ -15,6 +15,8 @@
 #include "chrome/renderer/media/cast_udp_transport.h"
 #include "content/public/renderer/v8_value_converter.h"
 #include "net/base/host_port_pair.h"
+#include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
+#include "third_party/WebKit/public/web/WebDOMMediaStreamTrack.h"
 
 using content::V8ValueConverter;
 
@@ -32,6 +34,7 @@ namespace {
 const char kSendTransportNotFound[] = "The send transport cannot be found";
 const char kUdpTransportNotFound[] = "The UDP transport cannot be found";
 const char kInvalidUdpParams[] = "Invalid UDP params";
+const char kInvalidMediaStreamTrack[] = "Invalid value for track";
 const char kInvalidRtpCaps[] = "Invalid value for RTP caps";
 const char kInvalidRtpParams[] = "Invalid value for RTP params";
 const char kUnableToConvertArgs[] = "Unable to convert arguments";
@@ -203,11 +206,17 @@ void WebRtcNativeHandler::CreateCastSendTransport(
   if (!inner_transport)
     return;
 
-  // TODO(hclam): Convert second argument from v8::Value to
-  // WebMediaStreamTrack.
+  blink::WebDOMMediaStreamTrack track =
+      blink::WebDOMMediaStreamTrack::fromV8Value(args[1]);
+  if (track.isNull()) {
+    v8::ThrowException(v8::Exception::TypeError(v8::String::New(
+        kInvalidMediaStreamTrack)));
+    return;
+  }
   int transport_id = last_transport_id_++;
   send_transport_map_[transport_id] =
-      linked_ptr<CastSendTransport>(new CastSendTransport(inner_transport));
+      linked_ptr<CastSendTransport>(
+          new CastSendTransport(inner_transport, track.component()));
 
   v8::Handle<v8::Value> transport_id_v8 = v8::Integer::New(transport_id);
   context()->CallFunction(v8::Handle<v8::Function>::Cast(args[2]), 1,

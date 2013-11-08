@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
+#include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 
 namespace blink {
 class WebMediaStreamTrack;
@@ -84,7 +85,8 @@ typedef CastRtpCaps CastRtpParams;
 // stream.
 class CastSendTransport {
  public:
-  explicit CastSendTransport(CastUdpTransport* udp_transport);
+  CastSendTransport(CastUdpTransport* udp_transport,
+                    const blink::WebMediaStreamTrack& track);
   ~CastSendTransport();
 
   // Return capabilities currently supported by this transport.
@@ -105,6 +107,7 @@ class CastSendTransport {
 
  private:
   const scoped_refptr<CastSession> cast_session_;
+  blink::WebMediaStreamTrack track_;
 
   DISALLOW_COPY_AND_ASSIGN(CastSendTransport);
 };

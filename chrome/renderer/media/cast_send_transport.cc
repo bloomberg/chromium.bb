@@ -34,8 +34,10 @@ CastRtpCaps::CastRtpCaps() {
 CastRtpCaps::~CastRtpCaps() {
 }
 
-CastSendTransport::CastSendTransport(CastUdpTransport* udp_transport)
-    : cast_session_(udp_transport->cast_session()) {
+CastSendTransport::CastSendTransport(
+    CastUdpTransport* udp_transport,
+    const blink::WebMediaStreamTrack& track)
+    : cast_session_(udp_transport->cast_session()), track_(track) {
 }
 
 CastSendTransport::~CastSendTransport() {
