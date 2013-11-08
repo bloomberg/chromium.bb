@@ -377,6 +377,15 @@ def AddExtensionActions(actions):
   actions.add('GoogleNow.ButtonClicked1')
   actions.add('GoogleNow.Dismissed')
 
+  # Actions sent by Chrome Connectivity Diagnostics.
+  actions.add('ConnectivityDiagnostics.LaunchSource.OfflineChromeOS')
+  actions.add('ConnectivityDiagnostics.LaunchSource.WebStore')
+  actions.add('ConnectivityDiagnostics.UA.LogsShown')
+  actions.add('ConnectivityDiagnostics.UA.PassingTestsShown')
+  actions.add('ConnectivityDiagnostics.UA.SettingsShown')
+  actions.add('ConnectivityDiagnostics.UA.TestResultExpanded')
+  actions.add('ConnectivityDiagnostics.UA.TestSuiteRun')
+
 def GrepForActions(path, actions):
   """Grep a source file for calls to UserMetrics functions.
 

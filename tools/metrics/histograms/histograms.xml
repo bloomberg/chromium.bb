@@ -1520,6 +1520,56 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="ConnectivityDiagnostics.ChromeOsSignalStrength"
+    units="percent">
+  <summary>
+    Connectivity Diagnostics App: WiFi signal strength recorded during
+    NIC_SIGNAL_STRENGTH test.
+  </summary>
+  <details>
+    The &quot;Strength&quot; property of a WiFi signal is a partially-reversible
+    function that linearly maps the RSSI range -120dBm to -20dBm to Strength
+    values from 0 to 100.
+  </details>
+</histogram>
+
+<histogram name="ConnectivityDiagnostics.HTTP_LATENCY" units="milliseconds">
+  <summary>HTTP latency seen by the Connectivity Diagnostics.</summary>
+  <details>
+    HTTP latency is computed using the chrome.socket API to make an HTTP GET
+    request to the /generate_204 page of three randomly generated Google
+    hostnames (*-ccd-testing-v4.metric.gstatic.com). The time taken from issuing
+    the HTTP request to receiving a response is clocked in JavaScript and the
+    arithmetic mean of the three times is used as the HTTP latency.
+  </details>
+</histogram>
+
+<histogram name="ConnectivityDiagnostics.RESOLVER_LATENCY" units="milliseconds">
+  <summary>Resolution latency seen by the Connectivity Diagnostics.</summary>
+  <details>
+    Resolver latency is computed by using the chrome.dns API to query three
+    randomly generated Google hostnames (*-ccd-testing-v4.metric.gstatic.com).
+    The random hostnames guarantees that there will be no caching of DNS
+    hostnames. The time taken from issuing the DNS request to receiving a
+    response is clocked in JavaScript and the arithmetic mean of the three times
+    is used as the resolver latency.
+  </details>
+</histogram>
+
+<histogram name="ConnectivityDiagnostics.TestVerdict"
+    enum="ConnectivityDiagnosticsTestVerdict">
+  <summary>
+    Connectivity Diagnostics App: Outcome of the connectivity tests.
+  </summary>
+</histogram>
+
+<histogram name="ConnectivityDiagnostics.TimeTaken" units="milliseconds">
+  <summary>
+    Connectivity Diagnostics App: Amount of time taken to run each of the
+    connectivity tests.
+  </summary>
+</histogram>
+
 <histogram name="Cookie.ParsedCookieStatus" enum="ParsedCookieStatus">
   <obsolete>
     Deprecated as of 9/2013. Experiment to measure control characters in cookies
@@ -21440,6 +21490,14 @@ other types of suffix sets.
   <int value="13" label="TLS-1.2">An SSL connection that uses TLS 1.2</int>
 </enum>
 
+<enum name="ConnectivityDiagnosticsTestVerdict" type="int">
+  <int value="0" label="NO_PROBLEM"/>
+  <int value="1" label="POTENTIAL_PROBLEM"/>
+  <int value="2" label="PROBLEM"/>
+  <int value="3" label="TEST_FAILURE_OCCURRED"/>
+  <int value="4" label="TEST_NOT_RUN"/>
+</enum>
+
 <enum name="CookieDeletionCause" type="int">
   <summary>Reason why a cookie was removed from the cookie store</summary>
   <int value="0" label="explicit">
@@ -29768,6 +29826,23 @@ other types of suffix sets.
   <affected-histogram name="Renderer4.BeginToFinish_LinkLoadReload"/>
   <affected-histogram name="Renderer4.BeginToFinish_LinkLoadStaleOk"/>
   <affected-histogram name="Renderer4.BeginToFinish_NormalLoad"/>
+</fieldtrial>
+
+<fieldtrial name="ConnectivityDiagnostics" separator=".">
+  <group name="0" label="INTERNET_DISCONNECTED"/>
+  <group name="1" label="CHROME_VERSION"/>
+  <group name="2" label="CHROMEOS_VERSION"/>
+  <group name="3" label="DNS_RESOLVER_PRESENT"/>
+  <group name="4" label="CAPTIVE_PORTAL_DNS"/>
+  <group name="5" label="CAPTIVE_PORTAL_HTTP"/>
+  <group name="6" label="FIREWALL_80"/>
+  <group name="7" label="FIREWALL_443"/>
+  <group name="8" label="RESOLVER_LATENCY"/>
+  <group name="9" label="HTTP_LATENCY"/>
+  <group name="10" label="NIC_SIGNAL_STRENGTH"/>
+  <group name="11" label="PING_GATEWAY"/>
+  <affected-histogram name="ConnectivityDiagnostics.TestVerdict"/>
+  <affected-histogram name="ConnectivityDiagnostics.TimeTaken"/>
 </fieldtrial>
 
 <fieldtrial name="ConnnectBackupJobs">
