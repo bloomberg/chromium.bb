@@ -288,6 +288,12 @@ class VIEWS_EXPORT NativeTextfieldViews : public View,
   // is -1, existing revealed index will be cleared.
   void RevealObscuredChar(int index, const base::TimeDelta& duration);
 
+  // Platform-specific updating of the system caret location to match ours.
+  void PlatformUpdateSystemCaret();
+
+  // Platform-specific hiding of the system caret whe we lose focus.
+  void PlatformHideSystemCaret();
+
   // The parent textfield, the owner of this object.
   Textfield* textfield_;
 
@@ -333,6 +339,9 @@ class VIEWS_EXPORT NativeTextfieldViews : public View,
   // obscured text. When the timer is running, the last typed char is shown
   // and when the time expires, the last typed char is obscured.
   base::OneShotTimer<NativeTextfieldViews> obscured_reveal_timer_;
+
+  // The last caret rect, in screen coordinates.
+  gfx::Rect last_caret_rect_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeTextfieldViews);
 };

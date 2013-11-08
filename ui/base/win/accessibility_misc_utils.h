@@ -10,11 +10,20 @@
 
 #include "base/compiler_specific.h"
 #include "ui/base/ui_export.h"
+#include "ui/gfx/rect.h"
 
 namespace base {
 namespace win {
 
-  // UIA Text provider implementation for edit controls.
+// This is used when we draw our own caret. Updates the system caret rect
+// to the given bounding rectangle but makes it invisible. This allows
+// utilities that help the user find the system caret to continue to work.
+// |hwnd| should be the owning window, and |caret_rect| is in global
+// screen coordinates.
+UI_EXPORT void SetInvisibleSystemCaretRect(HWND hwnd,
+                                           const gfx::Rect& caret_rect);
+
+// UIA Text provider implementation for edit controls.
 class UI_EXPORT UIATextProvider
     : public NON_EXPORTED_BASE(CComObjectRootEx<CComMultiThreadModel>),
       public IValueProvider,

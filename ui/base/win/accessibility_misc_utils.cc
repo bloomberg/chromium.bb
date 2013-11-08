@@ -4,10 +4,28 @@
 #include "ui/base/win/accessibility_misc_utils.h"
 
 #include "base/logging.h"
+#include "base/win/scoped_gdi_object.h"
 #include "ui/base/win/atl_module.h"
 
 namespace base {
 namespace win {
+
+void SetInvisibleSystemCaretRect(HWND hwnd, const gfx::Rect& caret_rect) {
+  // Create an invisible bitmap.
+  base::win::ScopedGDIObject<HBITMAP> caret_bitmap(
+      CreateBitmap(1, caret_rect.height(), 1, 1, NULL));
+
+  // This destroys the previous caret (no matter what window it belonged to)
+  // and creates a new one owned by this window.
+  if (!CreateCaret(hwnd, caret_bitmap, 1, caret_rect.height()))
+    return;
+
+  ShowCaret(hwnd);
+  RECT window_rect;
+  GetWindowRect(hwnd, &window_rect);
+  SetCaretPos(caret_rect.x() - window_rect.left + 2,
+              caret_rect.y() - window_rect.top + 2);
+}
 
 // UIA TextProvider implementation.
 UIATextProvider::UIATextProvider()

@@ -51,6 +51,11 @@
 #include "base/win/win_util.h"
 #endif
 
+#if defined(OS_WIN)
+#include "ui/base/win/accessibility_misc_utils.h"
+#include "ui/views/win/hwnd_util.h"
+#endif
+
 namespace {
 
 void ConvertRectToScreen(const views::View* src, gfx::Rect* r) {
@@ -697,6 +702,8 @@ void NativeTextfieldViews::HandleBlur() {
     RepaintCursor();
   }
 
+  PlatformHideSystemCaret();
+
   touch_selection_controller_.reset();
 }
 
@@ -1163,6 +1170,7 @@ void NativeTextfieldViews::RepaintCursor() {
   gfx::Rect r(GetRenderText()->GetUpdatedCursorBounds());
   r.Inset(-1, -1, -1, -1);
   SchedulePaintInRect(r);
+  PlatformUpdateSystemCaret();
 }
 
 void NativeTextfieldViews::PaintTextAndCursor(gfx::Canvas* canvas) {
@@ -1533,6 +1541,35 @@ void NativeTextfieldViews::RevealObscuredChar(int index,
         base::Bind(&NativeTextfieldViews::RevealObscuredChar,
                    base::Unretained(this), -1, base::TimeDelta()));
   }
+}
+
+
+void NativeTextfieldViews::PlatformUpdateSystemCaret() {
+#if defined(OS_WIN)
+  if (!GetRenderText()->focused())
+    return;
+
+  // Move an invisible system caret to this location for accessibility.
+  if (!is_drop_cursor_visible_) {
+    gfx::Rect caret_rect(GetRenderText()->GetUpdatedCursorBounds());
+    caret_rect = ConvertRectToWidget(caret_rect);
+    caret_rect += GetWidget()->GetClientAreaBoundsInScreen().OffsetFromOrigin();
+    if (caret_rect != last_caret_rect_) {
+      base::win::SetInvisibleSystemCaretRect(HWNDForView(this), caret_rect);
+      last_caret_rect_ = caret_rect;
+    }
+  } else {
+    DestroyCaret();
+    last_caret_rect_ = gfx::Rect();
+  }
+#endif
+}
+
+void NativeTextfieldViews::PlatformHideSystemCaret() {
+#if defined(OS_WIN)
+  DestroyCaret();
+  last_caret_rect_ = gfx::Rect();
+#endif
 }
 
 }  // namespace views
