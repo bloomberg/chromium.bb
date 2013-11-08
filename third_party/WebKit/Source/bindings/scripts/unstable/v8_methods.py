@@ -162,7 +162,7 @@ def v8_set_return_value(method, cpp_value):
     # [CallWith=ScriptState]
     if has_extended_attribute_value(method, 'CallWith', 'ScriptState'):
         cpp_value = 'result'  # use local variable for value
-    return v8_types.v8_set_return_value(idl_type, cpp_value)
+    return v8_types.v8_set_return_value(idl_type, cpp_value, method.extended_attributes)
 
 
 def custom_signature(method, arguments):

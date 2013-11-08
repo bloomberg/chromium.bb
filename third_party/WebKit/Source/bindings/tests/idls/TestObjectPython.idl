@@ -331,4 +331,6 @@ interface TestObjectPython {
     [ReadOnly] void readOnlyVoidMethod();
     [NotEnumerable, ReadOnly] void notEnumerableReadOnlyVoidMethod();
     [StrictTypeChecking] void strictTypeCheckingVoidMethodTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg);
+    [TreatReturnedNullStringAs=Null] DOMString treatReturnedNullStringAsNullStringMethod();
+    [TreatReturnedNullStringAs=Undefined] DOMString treatReturnedNullStringAsUndefinedStringMethod();
 };
