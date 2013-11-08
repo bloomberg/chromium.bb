@@ -226,7 +226,7 @@
             ['exclude', 'cocoa/'],
           ],
         }],
-        ['use_glib == 1 or OS == "ios"', {
+        ['desktop_linux == 1 or chromeos == 1 or OS == "ios"', {
           'dependencies': [
             '../base/strings/ui_strings.gyp:ui_unittest_strings',
           ],

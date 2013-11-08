@@ -402,6 +402,8 @@
             '../build/linux/system.gyp:fontconfig',
             '../build/linux/system.gyp:glib',
           ],
+        }],
+        ['desktop_linux == 1 or chromeos == 1', {
           'conditions': [
             ['toolkit_views==0 and use_aura==0', {
               # Note: because of gyp predence rules this has to be defined as
@@ -419,11 +421,11 @@
                 ['include', '^base/dragdrop/os_exchange_data.cc'],
               ],
             }],
-            ['use_pango==1', {
-              'dependencies': [
-                '../build/linux/system.gyp:pangocairo',
-              ],
-            }],
+          ],
+        }],
+        ['use_pango==1', {
+          'dependencies': [
+            '../build/linux/system.gyp:pangocairo',
           ],
         }],
         ['chromeos==1 or (use_aura==1 and OS=="linux" and use_x11==0)', {

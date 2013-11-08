@@ -35,7 +35,7 @@
         ],
       },
       'conditions': [
-        ['use_glib==1', {
+        ['desktop_linux == 1 or chromeos == 1', {
           'conditions': [
             ['chromeos==1', {
               'sources/': [ ['include', '_chromeos\\.cc$'] ]
@@ -51,7 +51,6 @@
           ],
           'dependencies': [
             'symbolize',
-            '../build/linux/system.gyp:glib',
             'xdg_mime',
           ],
           'defines': [
@@ -60,14 +59,19 @@
           'cflags': [
             '-Wno-write-strings',
           ],
-          'export_dependent_settings': [
-            '../build/linux/system.gyp:glib',
-          ],
-        }, {  # use_glib!=1
+        }, {  # desktop_linux == 0 and chromeos == 0
             'sources/': [
               ['exclude', '/xdg_user_dirs/'],
               ['exclude', '_nss\\.cc$'],
             ],
+        }],
+        ['use_glib==1', {
+          'dependencies': [
+            '../build/linux/system.gyp:glib',
+          ],
+          'export_dependent_settings': [
+            '../build/linux/system.gyp:glib',
+          ],
         }],
         ['use_x11==1', {
           'dependencies': [
@@ -688,7 +692,7 @@
         'module_dir': 'base'
       },
       'conditions': [
-        ['use_glib==1', {
+        ['desktop_linux == 1 or chromeos == 1', {
           'defines': [
             'USE_SYMBOLIZE',
           ],
@@ -749,7 +753,7 @@
             },
           ],
         }],
-        ['use_glib==1', {
+        ['desktop_linux == 1 or chromeos == 1', {
           'sources!': [
             'file_version_info_unittest.cc',
           ],
@@ -764,11 +768,19 @@
             }],
           ],
           'dependencies': [
-            '../build/linux/system.gyp:glib',
             '../build/linux/system.gyp:ssl',
+          ],
+        }],
+        ['use_x11 == 1', {
+          'dependencies': [
             '../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
-        }, {  # use_glib!=1
+        }],
+        ['use_glib == 1', {
+          'dependencies': [
+            '../build/linux/system.gyp:glib',
+          ],
+        }, {  # use_glib == 0
           'sources!': [
             'message_loop/message_pump_glib_unittest.cc',
           ]

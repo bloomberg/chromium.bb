@@ -1317,6 +1317,8 @@
               '../build/linux/system.gyp:gconf',
               '../build/linux/system.gyp:gio',
             ],
+        }],
+        [ 'desktop_linux == 1 or chromeos == 1', {
             'conditions': [
               ['use_openssl==1', {
                 'dependencies': [
@@ -1998,11 +2000,11 @@
             'net_test_jni_headers',
           ],
         }],
-        [ 'use_glib == 1', {
+        [ 'desktop_linux == 1 or chromeos == 1', {
             'dependencies': [
               '../build/linux/system.gyp:ssl',
             ],
-          }, {  # else use_glib == 0: !posix || mac
+          }, {  # desktop_linux == 0 and chromeos == 0
             'sources!': [
               'cert/nss_cert_database_unittest.cc',
             ],
@@ -2035,7 +2037,7 @@
             'http/mock_gssapi_library_posix.h',
           ],
         }],
-        [ 'use_openssl == 1 or (use_glib == 0 and OS != "ios")', {
+        [ 'use_openssl == 1 or (desktop_linux == 0 and chromeos == 0 and OS != "ios")', {
           # Only include this test when on Posix and using NSS for
           # cert verification or on iOS (which also uses NSS for certs).
           'sources!': [

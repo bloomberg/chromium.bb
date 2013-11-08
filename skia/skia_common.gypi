@@ -29,7 +29,7 @@
     [ 'OS != "win"', {
       'sources/': [ ['exclude', '_win\\.(cc|cpp)$'] ],
     }],
-    [ 'use_glib == 0', {
+    [ 'desktop_linux == 0 and chromeos == 0', {
       'sources/': [ ['exclude', '_linux\\.(cc|cpp)$'] ],
     }],
   ],

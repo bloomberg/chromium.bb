@@ -268,7 +268,7 @@
         '../third_party/skia/src/opts/opts_check_SSE2.cpp'
       ],
     }],
-    [ 'use_glib == 1', {
+    [ 'desktop_linux == 1 or chromeos == 1', {
       'dependencies': [
         '../build/linux/system.gyp:fontconfig',
         '../build/linux/system.gyp:freetype2',
@@ -280,13 +280,13 @@
         '-Wno-unused-function',
       ],
     }],
-    [ 'use_glib == 0', {
+    [ 'OS=="win" or OS=="mac" or OS=="ios" or OS=="android"', {
       'sources!': [
         '../third_party/skia/src/ports/SkFontConfigInterface_direct.cpp',
         '../third_party/skia/src/fonts/SkFontMgr_fontconfig.cpp',
       ],
     }],
-    [ 'use_glib == 0 and OS != "android"', {
+    [ 'OS=="win" or OS=="mac" or OS=="ios"', {
       'sources!': [
         '../third_party/skia/src/ports/SkFontHost_FreeType.cpp',
         '../third_party/skia/src/ports/SkFontHost_FreeType_common.cpp',
