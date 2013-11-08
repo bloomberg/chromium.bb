@@ -208,7 +208,8 @@ class RunTestCasesSlow(unittest.TestCase):
           break
         actual.setdefault(pipe, '')
         actual[pipe] += d
-      self.assertEqual(data['expected'], actual, (i, data['expected'], actual))
+      self.assertEqual(
+          data['expected'], actual, (i, data['cmd'], data['expected'], actual))
       self.assertEqual((None, None), p.recv_any())
       self.assertEqual(0, p.returncode)
 

@@ -123,19 +123,21 @@ if subprocess.mswindows:
     maxsize = max(maxsize or 16384, 1)
     if timeout:
       start = time.time()
-    handles = [msvcrt.get_osfhandle(conn.fileno()) for conn in conns]
+    handles = [
+      (i, msvcrt.get_osfhandle(c.fileno())) for i, c in enumerate(conns)
+    ]
     while handles:
-      for i, handle in enumerate(handles):
+      for index, handle in handles:
         try:
           avail = min(PeekNamedPipe(handle), maxsize)
           if avail:
-            return i, ReadFile(handle, avail)[1]
+            return index, ReadFile(handle, avail)[1]
           if (timeout and (time.time() - start) >= timeout) or timeout == 0:
             return None, None
           # Polling rocks.
           time.sleep(0.001)
         except OSError:
-          handles.pop(i)
+          handles.remove((index, handle))
           break
     # Nothing to wait for.
     return None, None

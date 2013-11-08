@@ -640,7 +640,7 @@ class IsolateServerDownloadTest(TestCase):
     server = 'http://example.com'
 
     files = {
-      'a/foo': 'Content',
+      os.path.join('a', 'foo'): 'Content',
       'b': 'More content',
       }
     isolated = {

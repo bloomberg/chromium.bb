@@ -406,7 +406,7 @@ class Isolate(unittest.TestCase):
     self.assertEqual(0, p.returncode)
     out = out[out.index('Commands are:') + 1:]
     out = out[:out.index('')]
-    regexp = '^  (?:\x1b\\[\\d\\dm)(\\w+)\s*(:?\x1b\\[\\d\\dm) .+'
+    regexp = '^  (?:\x1b\\[\\d\\dm|)(\\w+)\s*(:?\x1b\\[\\d\\dm|) .+'
     modes = [re.match(regexp, l) for l in out]
     modes = [m.group(1) for m in modes if m]
     self.assertEqual(sorted(EXPECTED_MODES), sorted(modes))
