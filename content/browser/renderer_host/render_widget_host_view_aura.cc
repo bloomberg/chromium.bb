@@ -3277,6 +3277,8 @@ void RenderWidgetHostViewAura::RemovingFromRootWindow() {
   if (cursor_client)
     cursor_client->RemoveObserver(this);
 
+  DetachFromInputMethod();
+
   event_filter_for_popup_exit_.reset();
   window_->GetDispatcher()->RemoveRootWindowObserver(this);
   host_->ParentChanged(0);
