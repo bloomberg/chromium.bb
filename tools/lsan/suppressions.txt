@@ -18,6 +18,9 @@ leak:net::ProxyResolverScriptData::FromUTF8
 # A small string is leaked here (57 bytes per process). http://crbug.com/46571#c9
 leak:WebCore::V8GCController::collectGarbage
 
+# Intentional leak in Blink. TODO: annotate it. http://crbug.com/http://crbug.com/121729
+leak:WebCore::parseUASheet
+
 # http://crbug.com/270180
 leak:net::ProxyResolverV8::Context::ResolveProxy
 
