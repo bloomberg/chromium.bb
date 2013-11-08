@@ -33,7 +33,7 @@ class GPU_EXPORT MemoryChunk {
 
   // Gets the size of the chunk.
   unsigned int GetSize() const {
-    return shm_.size;
+    return static_cast<unsigned int>(shm_.size);
   }
 
   // The shared memory id for this chunk.
