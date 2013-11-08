@@ -130,8 +130,11 @@
       'include_dirs': [
         '..',
         '<(INTERMEDIATE_DIR)',
+        '<(SHARED_INTERMEDIATE_DIR)/chrome',
       ],
       'sources': [
+        'browser/admin_policy.cc',
+        'browser/admin_policy.h',
         'browser/extension_prefs_scope.h',
         'browser/extension_error.cc',
         'browser/extension_error.h',

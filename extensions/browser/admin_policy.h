@@ -1,20 +1,18 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_ADMIN_POLICY_H_
-#define CHROME_BROWSER_EXTENSIONS_ADMIN_POLICY_H_
+#ifndef EXTENSIONS_BROWSER_ADMIN_POLICY_H_
+#define EXTENSIONS_BROWSER_ADMIN_POLICY_H_
 
 #include "base/values.h"
-#include "chrome/common/extensions/extension.h"
 
 namespace extensions {
+
 class Extension;
-}
 
 // Functions for providing information about the extension whitelist,
 // blacklist, and forcelist imposed by admin policy.
-namespace extensions {
 namespace admin_policy {
 
 // Checks if extensions are blacklisted by default, by policy. When true, this
@@ -41,4 +39,4 @@ bool MustRemainEnabled(const Extension* extension, string16* error);
 }  // namespace
 }  // namespace
 
-#endif  // CHROME_BROWSER_EXTENSIONS_ADMIN_POLICY_H_
+#endif  // EXTENSIONS_BROWSER_ADMIN_POLICY_H_

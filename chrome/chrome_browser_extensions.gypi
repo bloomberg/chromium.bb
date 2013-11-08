@@ -93,8 +93,6 @@
         'browser/extensions/activity_log/uma_policy.h',
         'browser/extensions/activity_log/web_request_constants.cc',
         'browser/extensions/activity_log/web_request_constants.h',
-        'browser/extensions/admin_policy.cc',
-        'browser/extensions/admin_policy.h',
         'browser/extensions/api/activity_log_private/activity_log_private_api.cc',
         'browser/extensions/api/activity_log_private/activity_log_private_api.h',
         'browser/extensions/api/api_function.cc',

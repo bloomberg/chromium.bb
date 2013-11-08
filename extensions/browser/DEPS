@@ -16,6 +16,7 @@ include_rules = [
   "+chrome/common/extensions/background_info.h",
   "+chrome/common/extensions/extension.h",
   "+chrome/common/extensions/extension_messages.h",
+  "+grit/generated_resources.h",
 ]
 
 specific_include_rules = {
