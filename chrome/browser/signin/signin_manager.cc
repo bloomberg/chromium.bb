@@ -603,12 +603,15 @@ void SigninManager::OnSignedIn(const std::string& username) {
       content::Source<Profile>(profile_),
       content::Details<const GoogleServiceSigninSuccessDetails>(&details));
 
+#if !defined(OS_ANDROID)
   // Don't store password hash except for users of new profile features.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kNewProfileManagement)) {
     std::string auth_username = GetAuthenticatedUsername();
     chrome::SetLocalAuthCredentials(profile_, auth_username, password_);
   }
+#endif
+
   password_.clear();  // Don't need it anymore.
   DisableOneClickSignIn(profile_);  // Don't ever offer again.
 }
