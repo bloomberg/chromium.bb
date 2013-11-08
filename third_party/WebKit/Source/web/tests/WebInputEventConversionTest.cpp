@@ -290,4 +290,152 @@ TEST(WebInputEventConversionTest, InputEventsScaling)
     }
 }
 
+TEST(WebInputEventConversionTest, InputEventsTransform)
+{
+    const std::string baseURL("http://www.test2.com/");
+    const std::string fileName("fixed_layout.html");
+
+    URLTestHelpers::registerMockedURLFromBaseURL(WebString::fromUTF8(baseURL.c_str()), WebString::fromUTF8("fixed_layout.html"));
+    FrameTestHelpers::WebViewHelper webViewHelper;
+    WebViewImpl* webViewImpl = toWebViewImpl(webViewHelper.initializeAndLoad(baseURL + fileName, true));
+    webViewImpl->settings()->setViewportEnabled(true);
+    int pageWidth = 640;
+    int pageHeight = 480;
+    webViewImpl->resize(WebSize(pageWidth, pageHeight));
+    webViewImpl->layout();
+
+    webViewImpl->setPageScaleFactor(2, WebPoint());
+    webViewImpl->setRootLayerTransform(WebSize(10, 20), 1.5);
+
+    FrameView* view = webViewImpl->page()->mainFrame()->view();
+    RefPtr<Document> document = webViewImpl->page()->mainFrame()->document();
+
+    {
+        WebMouseEvent webMouseEvent;
+        webMouseEvent.type = WebInputEvent::MouseMove;
+        webMouseEvent.x = 100;
+        webMouseEvent.y = 110;
+        webMouseEvent.windowX = 100;
+        webMouseEvent.windowY = 110;
+        webMouseEvent.globalX = 100;
+        webMouseEvent.globalY = 110;
+        webMouseEvent.movementX = 60;
+        webMouseEvent.movementY = 60;
+
+        PlatformMouseEventBuilder platformMouseBuilder(view, webMouseEvent);
+        EXPECT_EQ(30, platformMouseBuilder.position().x());
+        EXPECT_EQ(30, platformMouseBuilder.position().y());
+        EXPECT_EQ(100, platformMouseBuilder.globalPosition().x());
+        EXPECT_EQ(110, platformMouseBuilder.globalPosition().y());
+        EXPECT_EQ(20, platformMouseBuilder.movementDelta().x());
+        EXPECT_EQ(20, platformMouseBuilder.movementDelta().y());
+    }
+
+    {
+        WebGestureEvent webGestureEvent;
+        webGestureEvent.type = WebInputEvent::GestureScrollUpdate;
+        webGestureEvent.x = 100;
+        webGestureEvent.y = 110;
+        webGestureEvent.globalX = 100;
+        webGestureEvent.globalY = 110;
+        webGestureEvent.data.scrollUpdate.deltaX = 60;
+        webGestureEvent.data.scrollUpdate.deltaY = 60;
+
+        PlatformGestureEventBuilder platformGestureBuilder(view, webGestureEvent);
+        EXPECT_EQ(30, platformGestureBuilder.position().x());
+        EXPECT_EQ(30, platformGestureBuilder.position().y());
+        EXPECT_EQ(100, platformGestureBuilder.globalPosition().x());
+        EXPECT_EQ(110, platformGestureBuilder.globalPosition().y());
+        EXPECT_EQ(20, platformGestureBuilder.deltaX());
+        EXPECT_EQ(20, platformGestureBuilder.deltaY());
+    }
+
+    {
+        WebGestureEvent webGestureEvent;
+        webGestureEvent.type = WebInputEvent::GestureTap;
+        webGestureEvent.data.tap.width = 30;
+        webGestureEvent.data.tap.height = 30;
+
+        PlatformGestureEventBuilder platformGestureBuilder(view, webGestureEvent);
+        EXPECT_EQ(10, platformGestureBuilder.area().width());
+        EXPECT_EQ(10, platformGestureBuilder.area().height());
+    }
+
+    {
+        WebGestureEvent webGestureEvent;
+        webGestureEvent.type = WebInputEvent::GestureTapUnconfirmed;
+        webGestureEvent.data.tap.width = 30;
+        webGestureEvent.data.tap.height = 30;
+
+        PlatformGestureEventBuilder platformGestureBuilder(view, webGestureEvent);
+        EXPECT_EQ(10, platformGestureBuilder.area().width());
+        EXPECT_EQ(10, platformGestureBuilder.area().height());
+    }
+
+    {
+        WebGestureEvent webGestureEvent;
+        webGestureEvent.type = WebInputEvent::GestureTapDown;
+        webGestureEvent.data.tapDown.width = 30;
+        webGestureEvent.data.tapDown.height = 30;
+
+        PlatformGestureEventBuilder platformGestureBuilder(view, webGestureEvent);
+        EXPECT_EQ(10, platformGestureBuilder.area().width());
+        EXPECT_EQ(10, platformGestureBuilder.area().height());
+    }
+
+    {
+        WebGestureEvent webGestureEvent;
+        webGestureEvent.type = WebInputEvent::GestureShowPress;
+        webGestureEvent.data.showPress.width = 30;
+        webGestureEvent.data.showPress.height = 30;
+
+        PlatformGestureEventBuilder platformGestureBuilder(view, webGestureEvent);
+        EXPECT_EQ(10, platformGestureBuilder.area().width());
+        EXPECT_EQ(10, platformGestureBuilder.area().height());
+    }
+
+    {
+        WebGestureEvent webGestureEvent;
+        webGestureEvent.type = WebInputEvent::GestureLongPress;
+        webGestureEvent.data.longPress.width = 30;
+        webGestureEvent.data.longPress.height = 30;
+
+        PlatformGestureEventBuilder platformGestureBuilder(view, webGestureEvent);
+        EXPECT_EQ(10, platformGestureBuilder.area().width());
+        EXPECT_EQ(10, platformGestureBuilder.area().height());
+    }
+
+    {
+        WebGestureEvent webGestureEvent;
+        webGestureEvent.type = WebInputEvent::GestureTwoFingerTap;
+        webGestureEvent.data.twoFingerTap.firstFingerWidth = 30;
+        webGestureEvent.data.twoFingerTap.firstFingerHeight = 30;
+
+        PlatformGestureEventBuilder platformGestureBuilder(view, webGestureEvent);
+        EXPECT_EQ(10, platformGestureBuilder.area().width());
+        EXPECT_EQ(10, platformGestureBuilder.area().height());
+    }
+
+    {
+        WebTouchEvent webTouchEvent;
+        webTouchEvent.type = WebInputEvent::TouchMove;
+        webTouchEvent.touchesLength = 1;
+        webTouchEvent.touches[0].state = WebTouchPoint::StateMoved;
+        webTouchEvent.touches[0].screenPosition.x = 100;
+        webTouchEvent.touches[0].screenPosition.y = 110;
+        webTouchEvent.touches[0].position.x = 100;
+        webTouchEvent.touches[0].position.y = 110;
+        webTouchEvent.touches[0].radiusX = 30;
+        webTouchEvent.touches[0].radiusY = 30;
+
+        PlatformTouchEventBuilder platformTouchBuilder(view, webTouchEvent);
+        EXPECT_EQ(100, platformTouchBuilder.touchPoints()[0].screenPos().x());
+        EXPECT_EQ(110, platformTouchBuilder.touchPoints()[0].screenPos().y());
+        EXPECT_EQ(30, platformTouchBuilder.touchPoints()[0].pos().x());
+        EXPECT_EQ(30, platformTouchBuilder.touchPoints()[0].pos().y());
+        EXPECT_EQ(10, platformTouchBuilder.touchPoints()[0].radiusX());
+        EXPECT_EQ(10, platformTouchBuilder.touchPoints()[0].radiusY());
+    }
+}
+
 } // anonymous namespace
