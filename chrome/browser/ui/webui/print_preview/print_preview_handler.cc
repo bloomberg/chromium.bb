@@ -531,7 +531,7 @@ void PrintPreviewHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback("forceOpenNewTab",
       base::Bind(&PrintPreviewHandler::HandleForceOpenNewTab,
-                   base::Unretained(this)));
+                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback("getPrivetPrinters",
       base::Bind(&PrintPreviewHandler::HandleGetPrivetPrinters,
                  base::Unretained(this)));
@@ -969,12 +969,13 @@ void PrintPreviewHandler::GetNumberFormatAndMeasurementSystem(
 }
 
 void PrintPreviewHandler::HandleGetInitialSettings(const ListValue* /*args*/) {
+  // Send before SendInitialSettings to allow cloud printer auto select.
+  SendCloudPrintEnabled();
   BrowserThread::PostTaskAndReplyWithResult(
       BrowserThread::FILE, FROM_HERE,
       base::Bind(&GetDefaultPrinterOnFileThread, print_backend_),
       base::Bind(&PrintPreviewHandler::SendInitialSettings,
                  weak_factory_.GetWeakPtr()));
-  SendCloudPrintEnabled();
 }
 
 void PrintPreviewHandler::HandleReportUiEvent(const ListValue* args) {

@@ -226,8 +226,6 @@ cr.define('print_preview', function() {
         this.setIsEnabled_(false);
       }
       this.nativeLayer_.startGetInitialSettings();
-      this.destinationStore_.startLoadLocalDestinations();
-      this.destinationStore_.startLoadPrivetDestinations();
       cr.ui.FocusOutlineManager.forDocument(document);
     },
 
@@ -535,9 +533,8 @@ cr.define('print_preview', function() {
 
       this.userInfo_.setCloudPrintInterface(this.cloudPrintInterface_);
       this.destinationStore_.setCloudPrintInterface(this.cloudPrintInterface_);
-      this.destinationStore_.startLoadCloudDestinations(true);
       if (this.destinationSearch_.getIsVisible()) {
-        this.destinationStore_.startLoadCloudDestinations(false);
+        this.destinationStore_.startLoadCloudDestinations();
       }
     },
 
@@ -761,7 +758,9 @@ cr.define('print_preview', function() {
      */
     onDestinationChangeButtonActivate_: function() {
       this.destinationSearch_.setIsVisible(true);
-      this.destinationStore_.startLoadCloudDestinations(false);
+      this.destinationStore_.startLoadCloudDestinations();
+      this.destinationStore_.startLoadLocalDestinations();
+      this.destinationStore_.startLoadPrivetDestinations();
       this.metrics_.incrementDestinationSearchBucket(
           print_preview.Metrics.DestinationSearchBucket.SHOWN);
     },
