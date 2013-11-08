@@ -1283,7 +1283,7 @@ SECStatus SSLClientSocketNSS::Core::OwnAuthCertHandler(
   } else {
     // Disallow the server certificate to change in a renegotiation.
     CERTCertificate* old_cert = core->nss_handshake_state_.server_cert_chain[0];
-    CERTCertificate* new_cert = SSL_PeerCertificate(socket);
+    ScopedCERTCertificate new_cert(SSL_PeerCertificate(socket));
     if (new_cert->derCert.len != old_cert->derCert.len ||
         memcmp(new_cert->derCert.data, old_cert->derCert.data,
                new_cert->derCert.len) != 0) {
