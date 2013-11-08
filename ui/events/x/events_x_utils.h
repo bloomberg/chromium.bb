@@ -18,4 +18,16 @@ EVENTS_EXPORT void InitXKeyEventForTesting(EventType type,
                                            int flags,
                                            XEvent* event);
 
+// Initializes a XEvent that holds XButtonEvent for testing. Note that ui::EF_
+// flags should be passed as |flags|, not the native ones in <X11/X.h>.
+EVENTS_EXPORT void InitXButtonEventForTesting(EventType type,
+                                              int flags,
+                                              XEvent* event);
+
+// Initializes an XEvent for an Aura MouseWheelEvent. The underlying native
+// event is an XButtonEvent.
+EVENTS_EXPORT void InitXMouseWheelEventForTesting(int wheel_delta,
+                                                  int flags,
+                                                  XEvent* event);
+
 }  // namespace ui
