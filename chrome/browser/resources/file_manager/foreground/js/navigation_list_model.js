@@ -6,7 +6,7 @@
 
 /**
  * Entry of NavigationListModel. This constructor should be called only from
- * the helper methods (NavigationModelItem.createFromPath/createFromEntry).
+ * the helper methods (NavigationModelItem.create).
  *
  * @param {string} path Path.
  * @param {DirectoryEntry} entry Entry. Can be null.
@@ -38,39 +38,34 @@ NavigationModelItem.prototype.getCachedEntry = function() {
 /**
  * @param {VolumeManagerWrapper} volumeManager VolumeManagerWrapper instance.
  * @param {string} path Path.
+ * @param {DirectoryEntry} entry Entry. Can be null.
  * @param {function(FileError)} errorCallback Called when the resolving is
  *     failed with the error.
  * @return {NavigationModelItem} Created NavigationModelItem.
  */
-NavigationModelItem.createFromPath = function(
-    volumeManager, path, errorCallback) {
-  var item = new NavigationModelItem(path, null);
-  item.resolvingQueue_.run(function(continueCallback) {
-    volumeManager.resolvePath(
-        path,
-        function(entry) {
-          if (entry.isDirectory)
-            item.entry_ = entry;
-          else
-            errorCallback(util.createFileError(FileError.TYPE_MISMATCH_ERR));
-          continueCallback();
-        },
-        function(error) {
-          errorCallback(error);
-          continueCallback();
-        });
-  });
-  return item;
-};
+NavigationModelItem.create = function(
+    volumeManager, path, entry, errorCallback) {
+  var item = new NavigationModelItem(path, entry);
 
-/**
- * @param {DirectoryEntry} entry Entry. Can be null.
- * @return {NavigationModelItem} Created NavigationModelItem.
- */
-NavigationModelItem.createFromEntry = function(entry) {
-  if (!entry)
-    return null;
-  return new NavigationModelItem(entry.fullPath, entry);
+  // If the given entry is null, try to resolve path to get an entry.
+  if (!entry) {
+    item.resolvingQueue_.run(function(continueCallback) {
+      volumeManager.resolvePath(
+          path,
+          function(entry) {
+            if (entry.isDirectory)
+              item.entry_ = entry;
+            else
+              errorCallback(util.createFileError(FileError.TYPE_MISMATCH_ERR));
+            continueCallback();
+          },
+          function(error) {
+            errorCallback(error);
+            continueCallback();
+          });
+    });
+  }
+  return item;
 };
 
 /**
@@ -111,19 +106,25 @@ function NavigationListModel(volumeManager, shortcutListModel) {
   var volumeInfoToModelItem = function(volumeInfo) {
     if (volumeInfo.volumeType == util.VolumeType.DRIVE) {
       // For drive volume, we assign the path to "My Drive".
-      return NavigationModelItem.createFromPath(
+      return NavigationModelItem.create(
           this.volumeManager_,
           volumeInfo.mountPath + '/root',
+          null,
           function() {});
     } else {
-      return NavigationModelItem.createFromEntry(volumeInfo.root);
+      return NavigationModelItem.create(
+          this.volumeManager_,
+          volumeInfo.mountPath,
+          volumeInfo.root,
+          function() {});
     }
   }.bind(this);
 
   var pathToModelItem = function(path) {
-    var item = NavigationModelItem.createFromPath(
+    var item = NavigationModelItem.create(
         this.volumeManager_,
         path,
+        null,  // Entry will be resolved.
         function(error) {
           if (error.code == FileError.NOT_FOUND_ERR)
             this.onItemNotFoundError(item);
