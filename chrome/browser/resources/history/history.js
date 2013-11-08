@@ -1313,6 +1313,10 @@ HistoryView.prototype.displayResults_ = function(doneLoading) {
 
     // Add all the days and their visits to the page.
     this.resultDiv_.appendChild(resultsFragment);
+
+    // After the results have been added to the DOM, determine the size of the
+    // time column.
+    this.setTimeColumnWidth_(this.resultDiv_);
   }
 };
 
@@ -1345,6 +1349,30 @@ HistoryView.prototype.updateClearBrowsingDataButton_ = function() {
   // button whenever the search field has focus.
   $('clear-browsing-data').hidden =
       (document.activeElement === $('search-field'));
+};
+
+/**
+ * Dynamically sets the min-width of the time column for history entries.
+ * This ensures that all entry times will have the same width, without
+ * imposing a fixed width that may not be appropriate for some locales.
+ * @private
+ */
+HistoryView.prototype.setTimeColumnWidth_ = function() {
+  // Find the maximum width of all the time elements on the page.
+  var times = this.resultDiv_.querySelectorAll('.entry .time');
+  var widths = Array.prototype.map.call(times, function(el) {
+    return el.clientWidth;
+  });
+  var maxWidth = widths.length ? Math.max.apply(null, widths) : 0;
+
+  // Add a dynamic stylesheet to the page (or replace the existing one), to
+  // ensure that all entry times have the same width.
+  var styleEl = $('timeColumnStyle');
+  if (!styleEl) {
+    styleEl = document.head.appendChild(document.createElement('style'));
+    styleEl.id = 'timeColumnStyle';
+  }
+  styleEl.textContent = '.entry .time { min-width: ' + maxWidth + 'px; }';
 };
 
 ///////////////////////////////////////////////////////////////////////////////

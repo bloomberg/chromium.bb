@@ -347,6 +347,18 @@ HistoryWebUITest.prototype = {
   }
 };
 
+/**
+ * Examines the time column of every entry on the page, and ensure that they
+ * are all the same width.
+ */
+function ensureTimeWidthsEqual() {
+  var times = document.querySelectorAll('.entry .time');
+  var timeWidth = times[0].clientWidth;
+  for (var i = 1; i < times.length; ++i) {
+    assertEquals(timeWidth, times[i].clientWidth);
+  }
+}
+
 TEST_F('HistoryWebUIFakeBackendTest', 'emptyHistory', function() {
   expectTrue($('newest-button').hidden);
   expectTrue($('newer-button').hidden);
@@ -403,6 +415,8 @@ TEST_F('HistoryWebUITest', 'basicTest', function() {
   expectTrue($('newer-button').hidden);
   expectFalse($('older-button').hidden);
 
+  ensureTimeWidthsEqual();
+
   // Go to the next page.
   $('older-button').click();
   waitForCallback('historyResult', function() {
@@ -425,6 +439,8 @@ TEST_F('HistoryWebUITest', 'basicTest', function() {
     expectFalse($('newest-button').hidden);
     expectFalse($('newer-button').hidden);
     expectTrue($('older-button').hidden);
+
+    ensureTimeWidthsEqual();
 
     // Go back to the first page, and check that the same day headers are there.
     $('newest-button').click();
@@ -686,6 +702,8 @@ TEST_F('RangeHistoryWebUITest', 'weekViewGrouped', function() {
     for (var i = 0; i < dayResults.length; i++)
       checkGroupedVisits(dayResults[i]);
 
+    ensureTimeWidthsEqual();
+
     testDone();
   });
 });
@@ -699,6 +717,7 @@ TEST_F('RangeHistoryWebUITest', 'monthViewGrouped', function() {
     assertEquals(1, monthResults.length);
 
     checkGroupedVisits(monthResults[0]);
+    ensureTimeWidthsEqual();
 
     testDone();
   });

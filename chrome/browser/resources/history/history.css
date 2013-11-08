@@ -328,32 +328,13 @@ html[dir='rtl'] .site-domain {
   background-position-x: right;
 }
 
-.no-checkboxes .entry .time {
-  min-width: 73px;
-}
-
 .entry .time {
   color: rgb(151, 156, 160);
-  min-width: 60px;
+  max-width: 90px;
+  min-width: -webkit-min-content;
   overflow: hidden;
-  text-align: right;
   text-overflow: ellipsis;
   white-space: nowrap;
-  width: 60px;
-}
-
-html[dir='rtl'] .entry .time {
-  text-align: left;
-}
-
-.search-results .time,
-.month-results .time {
-  min-width: 85px;
-}
-
-.no-checkboxes.search-results .time,
-.no-checkboxes.month-results .time {
-  min-width: 90px;
 }
 
 .entry input[type='checkbox'] {
