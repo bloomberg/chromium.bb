@@ -176,8 +176,15 @@ IN_PROC_BROWSER_TEST_F(NotificationBitmapFetcherBrowserTest,
   EXPECT_FALSE(delegate.success());
 }
 
+// Flaky on Win XP Debug: crbug.com/316488
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_HandleImageFailedTest DISABLED_HandleImageFailedTest
+#else
+#define MAYBE_HandleImageFailedTest HandleImageFailedTest
+#endif
+
 IN_PROC_BROWSER_TEST_F(NotificationBitmapFetcherBrowserTest,
-                       HandleImageFailedTest) {
+                       MAYBE_HandleImageFailedTest) {
   GURL url("http://example.com/this-should-be-a-decode-failure");
   NotificationBitmapFetcherTestDelegate delegate(kAsyncCall);
   NotificationBitmapFetcher fetcher(url, &delegate);
