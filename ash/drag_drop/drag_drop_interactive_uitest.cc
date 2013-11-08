@@ -133,7 +133,7 @@ TEST_F(DragDropTest, MAYBE_DragDropAcrossMultiDisplay) {
     return;
 
   UpdateDisplay("400x400,400x400");
-  aura::Window::Windows root_windows =
+  Shell::RootWindowList root_windows =
       Shell::GetInstance()->GetAllRootWindows();
   views::View* draggable_view = new DraggableView();
   draggable_view->set_drag_controller(NULL);

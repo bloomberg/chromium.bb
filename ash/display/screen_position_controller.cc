@@ -92,16 +92,16 @@ std::pair<aura::RootWindow*, gfx::Point> GetRootWindowRelativeToWindow(
     root_window->GetDispatcher()->ConvertPointToNativeScreen(
         &location_in_native);
 
-    aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+    Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
     for (size_t i = 0; i < root_windows.size(); ++i) {
-      aura::WindowEventDispatcher* dispatcher =
-          root_windows[i]->GetDispatcher();
       const gfx::Rect native_bounds(
-          dispatcher->GetHostOrigin(),
-          dispatcher->GetHostSize());  // in px.
+          root_windows[i]->GetHostOrigin(),
+          root_windows[i]->GetHostSize());  // in px.
       if (native_bounds.Contains(location_in_native)) {
+        root_window = root_windows[i];
         location_in_root = location_in_native;
-        dispatcher->ConvertPointFromNativeScreen(&location_in_root);
+        root_window->GetDispatcher()->ConvertPointFromNativeScreen(
+            &location_in_root);
         break;
       }
     }

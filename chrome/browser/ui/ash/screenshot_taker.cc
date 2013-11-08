@@ -341,7 +341,7 @@ void ScreenshotTaker::HandleTakeScreenshotForAllRootWindows() {
   std::string screenshot_basename = !screenshot_basename_for_test_.empty() ?
       screenshot_basename_for_test_ : GetScreenshotBaseFilename();
 
-  aura::Window::Windows root_windows = ash::Shell::GetAllRootWindows();
+  ash::Shell::RootWindowList root_windows = ash::Shell::GetAllRootWindows();
   // Reorder root_windows to take the primary root window's snapshot at first.
   aura::Window* primary_root = ash::Shell::GetPrimaryRootWindow();
   if (*(root_windows.begin()) != primary_root) {
@@ -350,7 +350,7 @@ void ScreenshotTaker::HandleTakeScreenshotForAllRootWindows() {
     root_windows.insert(root_windows.begin(), primary_root->GetDispatcher());
   }
   for (size_t i = 0; i < root_windows.size(); ++i) {
-    aura::Window* root_window = root_windows[i];
+    aura::RootWindow* root_window = root_windows[i];
     scoped_refptr<base::RefCountedBytes> png_data(new base::RefCountedBytes);
     std::string basename = screenshot_basename;
     gfx::Rect rect = root_window->bounds();

@@ -174,7 +174,7 @@ void DesktopBackgroundView::ShowContextMenuForView(
   Shell::GetInstance()->ShowContextMenu(point, source_type);
 }
 
-views::Widget* CreateDesktopBackground(aura::Window* root_window,
+views::Widget* CreateDesktopBackground(aura::RootWindow* root_window,
                                        int container_id) {
   DesktopBackgroundController* controller =
       Shell::GetInstance()->desktop_background_controller();

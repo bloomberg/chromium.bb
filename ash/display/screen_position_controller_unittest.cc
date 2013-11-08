@@ -87,16 +87,12 @@ class ScreenPositionControllerTest : public test::AshTestBase {
 TEST_F(ScreenPositionControllerTest, MAYBE_ConvertHostPointToScreen) {
   UpdateDisplay("100+100-200x200,100+500-200x200");
 
-  aura::Window::Windows root_windows =
+  Shell::RootWindowList root_windows =
       Shell::GetInstance()->GetAllRootWindows();
-  EXPECT_EQ("100,100",
-            root_windows[0]->GetDispatcher()->GetHostOrigin().ToString());
-  EXPECT_EQ("200x200",
-            root_windows[0]->GetDispatcher()->GetHostSize().ToString());
-  EXPECT_EQ("100,500",
-            root_windows[1]->GetDispatcher()->GetHostOrigin().ToString());
-  EXPECT_EQ("200x200",
-            root_windows[1]->GetDispatcher()->GetHostSize().ToString());
+  EXPECT_EQ("100,100", root_windows[0]->GetHostOrigin().ToString());
+  EXPECT_EQ("200x200", root_windows[0]->GetHostSize().ToString());
+  EXPECT_EQ("100,500", root_windows[1]->GetHostOrigin().ToString());
+  EXPECT_EQ("200x200", root_windows[1]->GetHostSize().ToString());
 
   const gfx::Point window_pos(100, 100);
   window_->SetBoundsInScreen(
@@ -175,16 +171,12 @@ TEST_F(ScreenPositionControllerTest, MAYBE_ConvertHostPointToScreen) {
 TEST_F(ScreenPositionControllerTest, MAYBE_ConvertHostPointToScreenHiDPI) {
   UpdateDisplay("100+100-200x200*2,100+500-200x200");
 
-  aura::Window::Windows root_windows =
+  Shell::RootWindowList root_windows =
       Shell::GetInstance()->GetAllRootWindows();
-  EXPECT_EQ("100,100",
-            root_windows[0]->GetDispatcher()->GetHostOrigin().ToString());
-  EXPECT_EQ("200x200",
-            root_windows[0]->GetDispatcher()->GetHostSize().ToString());
-  EXPECT_EQ("100,500",
-            root_windows[1]->GetDispatcher()->GetHostOrigin().ToString());
-  EXPECT_EQ("200x200",
-            root_windows[1]->GetDispatcher()->GetHostSize().ToString());
+  EXPECT_EQ("100,100", root_windows[0]->GetHostOrigin().ToString());
+  EXPECT_EQ("200x200", root_windows[0]->GetHostSize().ToString());
+  EXPECT_EQ("100,500", root_windows[1]->GetHostOrigin().ToString());
+  EXPECT_EQ("200x200", root_windows[1]->GetHostSize().ToString());
 
   // Put |window_| to the primary 2x display.
   window_->SetBoundsInScreen(gfx::Rect(20, 20, 50, 50),
@@ -227,7 +219,7 @@ TEST_F(ScreenPositionControllerTest, MAYBE_ConvertHostPointToScreenRotate) {
   // Move |window_| to the 2nd.
   window_->SetBoundsInScreen(gfx::Rect(300, 20, 50, 50),
                              ScreenAsh::GetSecondaryDisplay());
-  aura::Window::Windows root_windows =
+  Shell::RootWindowList root_windows =
       Shell::GetInstance()->GetAllRootWindows();
   EXPECT_EQ(root_windows[1], window_->GetRootWindow());
 
@@ -259,7 +251,7 @@ TEST_F(ScreenPositionControllerTest, MAYBE_ConvertHostPointToScreenUIScale) {
   // Move |window_| to the 2nd.
   window_->SetBoundsInScreen(gfx::Rect(300, 20, 50, 50),
                              ScreenAsh::GetSecondaryDisplay());
-  aura::Window::Windows root_windows =
+  Shell::RootWindowList root_windows =
       Shell::GetInstance()->GetAllRootWindows();
   EXPECT_EQ(root_windows[1], window_->GetRootWindow());
 

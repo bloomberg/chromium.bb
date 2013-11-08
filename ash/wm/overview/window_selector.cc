@@ -281,8 +281,8 @@ WindowSelector::WindowSelector(const WindowList& windows,
   // Observe window activations and switchable containers on all root windows
   // for newly created windows during overview.
   Shell::GetInstance()->activation_client()->AddObserver(this);
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  for (aura::Window::Windows::const_iterator iter = root_windows.begin();
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  for (Shell::RootWindowList::const_iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter) {
     for (size_t i = 0; i < kSwitchableWindowContainerIdsLength; ++i) {
       Shell::GetContainer(*iter,
@@ -306,8 +306,8 @@ WindowSelector::~WindowSelector() {
     (*iter)->RemoveObserver(this);
   }
   Shell::GetInstance()->activation_client()->RemoveObserver(this);
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  for (aura::Window::Windows::const_iterator iter = root_windows.begin();
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  for (Shell::RootWindowList::const_iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter) {
     for (size_t i = 0; i < kSwitchableWindowContainerIdsLength; ++i) {
       Shell::GetContainer(*iter,

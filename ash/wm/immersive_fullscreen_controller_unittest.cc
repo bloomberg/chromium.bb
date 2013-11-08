@@ -437,7 +437,7 @@ TEST_F(ImmersiveFullscreenControllerTest, MouseEventsVerticalDisplayLayout) {
   ASSERT_TRUE(controller()->IsEnabled());
   ASSERT_FALSE(controller()->IsRevealed());
 
-  aura::Window::Windows root_windows = ash::Shell::GetAllRootWindows();
+  ash::Shell::RootWindowList root_windows = ash::Shell::GetAllRootWindows();
   ASSERT_EQ(root_windows[0],
             top_container()->GetWidget()->GetNativeWindow()->GetRootWindow());
 

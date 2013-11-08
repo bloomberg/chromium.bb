@@ -605,7 +605,7 @@ TEST_F(DisplayManagerTest, MAYBE_TestNativeDisplaysChangedNoInternal) {
 
 TEST_F(DisplayManagerTest, MAYBE_EnsurePointerInDisplays) {
   UpdateDisplay("200x200,300x300");
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
 
   aura::Env* env = aura::Env::GetInstance();
 
@@ -652,7 +652,7 @@ TEST_F(DisplayManagerTest, MAYBE_EnsurePointerInDisplays_2ndOnLeft) {
   layout_store->SetDefaultDisplayLayout(layout);
 
   UpdateDisplay("200x200,300x300");
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
 
   EXPECT_EQ("-300,0 300x300",
             ScreenAsh::GetSecondaryDisplay().bounds().ToString());
@@ -881,7 +881,7 @@ TEST_F(DisplayManagerTest, UIScale) {
 TEST_F(DisplayManagerTest, MAYBE_UpdateMouseCursorAfterRotateZoom) {
   // Make sure just rotating will not change native location.
   UpdateDisplay("300x200,200x150");
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   aura::Env* env = aura::Env::GetInstance();
 
   aura::test::EventGenerator generator1(root_windows[0]);
@@ -1080,38 +1080,35 @@ TEST_F(DisplayManagerTest, InvertLayout) {
 TEST_F(DisplayManagerTest, MAYBE_UpdateDisplayWithHostOrigin) {
   UpdateDisplay("100x200,300x400");
   ASSERT_EQ(2, Shell::GetScreen()->GetNumDisplays());
-  aura::Window::Windows root_windows =
+  Shell::RootWindowList root_windows =
       Shell::GetInstance()->GetAllRootWindows();
   ASSERT_EQ(2U, root_windows.size());
-  aura::WindowEventDispatcher* dispatcher0 = root_windows[0]->GetDispatcher();
-  aura::WindowEventDispatcher* dispatcher1 = root_windows[1]->GetDispatcher();
-
-  EXPECT_EQ("1,1", dispatcher0->GetHostOrigin().ToString());
-  EXPECT_EQ("100x200", dispatcher0->GetHostSize().ToString());
+  EXPECT_EQ("1,1", root_windows[0]->GetHostOrigin().ToString());
+  EXPECT_EQ("100x200", root_windows[0]->GetHostSize().ToString());
   // UpdateDisplay set the origin if it's not set.
-  EXPECT_NE("1,1", dispatcher1->GetHostOrigin().ToString());
-  EXPECT_EQ("300x400", dispatcher1->GetHostSize().ToString());
+  EXPECT_NE("1,1", root_windows[1]->GetHostOrigin().ToString());
+  EXPECT_EQ("300x400", root_windows[1]->GetHostSize().ToString());
 
   UpdateDisplay("100x200,200+300-300x400");
   ASSERT_EQ(2, Shell::GetScreen()->GetNumDisplays());
-  EXPECT_EQ("0,0", dispatcher0->GetHostOrigin().ToString());
-  EXPECT_EQ("100x200", dispatcher0->GetHostSize().ToString());
-  EXPECT_EQ("200,300", dispatcher1->GetHostOrigin().ToString());
-  EXPECT_EQ("300x400", dispatcher1->GetHostSize().ToString());
+  EXPECT_EQ("0,0", root_windows[0]->GetHostOrigin().ToString());
+  EXPECT_EQ("100x200", root_windows[0]->GetHostSize().ToString());
+  EXPECT_EQ("200,300", root_windows[1]->GetHostOrigin().ToString());
+  EXPECT_EQ("300x400", root_windows[1]->GetHostSize().ToString());
 
   UpdateDisplay("400+500-200x300,300x400");
   ASSERT_EQ(2, Shell::GetScreen()->GetNumDisplays());
-  EXPECT_EQ("400,500", dispatcher0->GetHostOrigin().ToString());
-  EXPECT_EQ("200x300", dispatcher0->GetHostSize().ToString());
-  EXPECT_EQ("0,0", dispatcher1->GetHostOrigin().ToString());
-  EXPECT_EQ("300x400", dispatcher1->GetHostSize().ToString());
+  EXPECT_EQ("400,500", root_windows[0]->GetHostOrigin().ToString());
+  EXPECT_EQ("200x300", root_windows[0]->GetHostSize().ToString());
+  EXPECT_EQ("0,0", root_windows[1]->GetHostOrigin().ToString());
+  EXPECT_EQ("300x400", root_windows[1]->GetHostSize().ToString());
 
   UpdateDisplay("100+200-100x200,300+500-200x300");
   ASSERT_EQ(2, Shell::GetScreen()->GetNumDisplays());
-  EXPECT_EQ("100,200", dispatcher0->GetHostOrigin().ToString());
-  EXPECT_EQ("100x200", dispatcher0->GetHostSize().ToString());
-  EXPECT_EQ("300,500", dispatcher1->GetHostOrigin().ToString());
-  EXPECT_EQ("200x300", dispatcher1->GetHostSize().ToString());
+  EXPECT_EQ("100,200", root_windows[0]->GetHostOrigin().ToString());
+  EXPECT_EQ("100x200", root_windows[0]->GetHostSize().ToString());
+  EXPECT_EQ("300,500", root_windows[1]->GetHostOrigin().ToString());
+  EXPECT_EQ("200x300", root_windows[1]->GetHostSize().ToString());
 }
 
 }  // namespace internal

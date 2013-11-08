@@ -371,8 +371,8 @@ TouchHudDebug::~TouchHudDebug() {
 // static
 scoped_ptr<DictionaryValue> TouchHudDebug::GetAllAsDictionary() {
   scoped_ptr<DictionaryValue> value(new DictionaryValue());
-  aura::Window::Windows roots = Shell::GetInstance()->GetAllRootWindows();
-  for (aura::Window::Windows::iterator iter = roots.begin();
+  Shell::RootWindowList roots = Shell::GetInstance()->GetAllRootWindows();
+  for (Shell::RootWindowList::iterator iter = roots.begin();
       iter != roots.end(); ++iter) {
     internal::RootWindowController* controller = GetRootWindowController(*iter);
     internal::TouchHudDebug* hud = controller->touch_hud_debug();

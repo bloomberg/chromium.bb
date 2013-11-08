@@ -691,7 +691,7 @@ TEST_F(WindowSelectorTest, MultipleDisplays) {
     return;
 
   UpdateDisplay("600x400,600x400");
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   gfx::Rect bounds1(0, 0, 400, 400);
   gfx::Rect bounds2(650, 0, 400, 400);
 
@@ -753,7 +753,7 @@ TEST_F(WindowSelectorTest, CycleOverviewUsesInitialDisplay) {
     return;
 
   UpdateDisplay("400x400,400x400");
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
 
   scoped_ptr<aura::Window> window1(CreateWindow(gfx::Rect(0, 0, 100, 100)));
   scoped_ptr<aura::Window> window2(CreateWindow(gfx::Rect(450, 0, 100, 100)));
@@ -779,7 +779,7 @@ TEST_F(WindowSelectorTest, CycleMultipleDisplaysCopiesWindows) {
     return;
 
   UpdateDisplay("400x400,400x400");
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
 
   gfx::Rect root1_rect(0, 0, 100, 100);
   gfx::Rect root2_rect(450, 0, 100, 100);
@@ -848,7 +848,7 @@ TEST_F(WindowSelectorTest, MultipleDisplaysOverviewTransitionToCycle) {
     return;
 
   UpdateDisplay("400x400,400x400");
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
 
   scoped_ptr<aura::Window> window1(CreateWindow(gfx::Rect(0, 0, 100, 100)));
   scoped_ptr<aura::Window> window2(CreateWindow(gfx::Rect(450, 0, 100, 100)));
@@ -877,7 +877,7 @@ TEST_F(WindowSelectorTest, BoundsChangeDuringCycleOnOtherDisplay) {
     return;
 
   UpdateDisplay("400x400,400x400");
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
 
   scoped_ptr<aura::Window> window1(CreateWindow(gfx::Rect(0, 0, 100, 100)));
   scoped_ptr<aura::Window> window2(CreateWindow(gfx::Rect(450, 0, 100, 100)));

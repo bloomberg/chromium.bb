@@ -1020,9 +1020,9 @@ TEST_F(DragDropControllerTest, DragCancelAcrossDisplays) {
     return;
 
   UpdateDisplay("400x400,400x400");
-  aura::Window::Windows root_windows =
+  Shell::RootWindowList root_windows =
       Shell::GetInstance()->GetAllRootWindows();
-  for (aura::Window::Windows::iterator iter = root_windows.begin();
+  for (Shell::RootWindowList::iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter) {
     aura::client::SetDragDropClient(*iter, drag_drop_controller_.get());
   }
@@ -1099,7 +1099,7 @@ TEST_F(DragDropControllerTest, DragCancelAcrossDisplays) {
 
     EXPECT_EQ("405,405", observer.window_location_on_destroying().ToString());
   }
-  for (aura::Window::Windows::iterator iter = root_windows.begin();
+  for (Shell::RootWindowList::iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter) {
     aura::client::SetDragDropClient(*iter, NULL);
   }

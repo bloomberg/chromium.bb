@@ -13,6 +13,10 @@
 #include "ui/gfx/point.h"
 #include "ui/views/widget/widget_delegate.h"
 
+namespace aura {
+class RootWindow;
+}
+
 namespace ash {
 class ScreenshotDelegate;
 
@@ -38,7 +42,7 @@ class ASH_EXPORT PartialScreenshotView : public views::WidgetDelegateView {
   virtual ~PartialScreenshotView();
 
   // Initializes partial screenshot UI widget for |root_window|.
-  void Init(aura::Window* root_window);
+  void Init(aura::RootWindow* root_window);
 
   // Returns the currently selected region.
   gfx::Rect GetScreenshotRect() const;

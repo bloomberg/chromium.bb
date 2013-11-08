@@ -75,7 +75,7 @@ class MoveWindowByClickEventHandler : public ui::EventHandler {
   // ui::EventHandler overrides:
   virtual void OnMouseEvent(ui::MouseEvent* event) OVERRIDE {
     if (event->type() == ui::ET_MOUSE_RELEASED) {
-      aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+      Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
       DCHECK_LT(1u, root_windows.size());
       root_windows[1]->AddChild(target_);
     }
@@ -161,11 +161,11 @@ TEST_F(ExtendedDesktopTest, Basic) {
     return;
 
   UpdateDisplay("1000x600,600x400");
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
 
   // All root windows must have the root window controller.
   ASSERT_EQ(2U, root_windows.size());
-  for (aura::Window::Windows::const_iterator iter = root_windows.begin();
+  for (Shell::RootWindowList::const_iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter) {
     EXPECT_TRUE(internal::GetRootWindowController(*iter) != NULL);
   }
@@ -183,7 +183,7 @@ TEST_F(ExtendedDesktopTest, Activation) {
     return;
 
   UpdateDisplay("1000x600,600x400");
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
 
   views::Widget* widget_on_1st = CreateTestWidget(gfx::Rect(10, 10, 100, 100));
   views::Widget* widget_on_2nd =
@@ -217,7 +217,7 @@ TEST_F(ExtendedDesktopTest, SystemModal) {
     return;
 
   UpdateDisplay("1000x600,600x400");
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
 
   views::Widget* widget_on_1st = CreateTestWidget(gfx::Rect(10, 10, 100, 100));
   EXPECT_TRUE(wm::IsActiveWindow(widget_on_1st->GetNativeView()));
@@ -255,14 +255,12 @@ TEST_F(ExtendedDesktopTest, TestCursor) {
     return;
 
   UpdateDisplay("1000x600,600x400");
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  aura::WindowEventDispatcher* dispatcher0 = root_windows[0]->GetDispatcher();
-  aura::WindowEventDispatcher* dispatcher1 = root_windows[1]->GetDispatcher();
-  EXPECT_EQ(ui::kCursorPointer, dispatcher0->last_cursor().native_type());
-  EXPECT_EQ(ui::kCursorPointer, dispatcher1->last_cursor().native_type());
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  EXPECT_EQ(ui::kCursorPointer, root_windows[0]->last_cursor().native_type());
+  EXPECT_EQ(ui::kCursorPointer, root_windows[1]->last_cursor().native_type());
   Shell::GetInstance()->cursor_manager()->SetCursor(ui::kCursorCopy);
-  EXPECT_EQ(ui::kCursorCopy, dispatcher0->last_cursor().native_type());
-  EXPECT_EQ(ui::kCursorCopy, dispatcher1->last_cursor().native_type());
+  EXPECT_EQ(ui::kCursorCopy, root_windows[0]->last_cursor().native_type());
+  EXPECT_EQ(ui::kCursorCopy, root_windows[1]->last_cursor().native_type());
 }
 
 TEST_F(ExtendedDesktopTest, TestCursorLocation) {
@@ -270,7 +268,7 @@ TEST_F(ExtendedDesktopTest, TestCursorLocation) {
     return;
 
   UpdateDisplay("1000x600,600x400");
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   aura::test::WindowTestApi root_window0_test_api(root_windows[0]);
   aura::test::WindowTestApi root_window1_test_api(root_windows[1]);
 
@@ -293,7 +291,7 @@ TEST_F(ExtendedDesktopTest, CycleWindows) {
     return;
 
   UpdateDisplay("700x500,500x500");
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
 
   WindowCycleController* controller =
       Shell::GetInstance()->window_cycle_controller();
@@ -345,7 +343,7 @@ TEST_F(ExtendedDesktopTest, GetRootWindowAt) {
 
   UpdateDisplay("700x500,500x500");
   SetSecondaryDisplayLayout(DisplayLayout::LEFT);
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
 
   EXPECT_EQ(root_windows[1], wm::GetRootWindowAt(gfx::Point(-400, 100)));
   EXPECT_EQ(root_windows[1], wm::GetRootWindowAt(gfx::Point(-1, 100)));
@@ -367,7 +365,7 @@ TEST_F(ExtendedDesktopTest, GetRootWindowMatching) {
   UpdateDisplay("700x500,500x500");
   SetSecondaryDisplayLayout(DisplayLayout::LEFT);
 
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
 
   // Containing rect.
   EXPECT_EQ(root_windows[1],
@@ -405,7 +403,7 @@ TEST_F(ExtendedDesktopTest, Capture) {
     return;
 
   UpdateDisplay("1000x600,600x400");
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
 
   aura::test::EventCountDelegate r1_d1;
   aura::test::EventCountDelegate r1_d2;
@@ -464,7 +462,7 @@ TEST_F(ExtendedDesktopTest, MoveWindow) {
     return;
 
   UpdateDisplay("1000x600,600x400");
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   views::Widget* d1 = CreateTestWidget(gfx::Rect(10, 10, 100, 100));
 
   EXPECT_EQ(root_windows[0], d1->GetNativeView()->GetRootWindow());
@@ -502,7 +500,7 @@ TEST_F(ExtendedDesktopTest, MoveWindowByMouseClick) {
 
   UpdateDisplay("1000x600,600x400");
 
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   aura::test::EventCountDelegate delegate;
   scoped_ptr<aura::Window> window(aura::test::CreateTestWindowWithDelegate(
       &delegate, 0, gfx::Rect(10, 10, 100, 100), root_windows[0]));
@@ -524,7 +522,7 @@ TEST_F(ExtendedDesktopTest, MoveWindowToDisplay) {
     return;
 
   UpdateDisplay("1000x1000,1000x1000");
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
 
   gfx::Display display0 = Shell::GetScreen()->GetDisplayMatching(
       root_windows[0]->GetBoundsInScreen());
@@ -556,7 +554,7 @@ TEST_F(ExtendedDesktopTest, MoveWindowWithTransient) {
     return;
 
   UpdateDisplay("1000x600,600x400");
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   views::Widget* w1 = CreateTestWidget(gfx::Rect(10, 10, 100, 100));
   views::Widget* w1_t1 = CreateTestWidgetWithParent(
       w1, gfx::Rect(50, 50, 50, 50), false /* transient */);
@@ -616,7 +614,7 @@ TEST_F(ExtendedDesktopTest, ConvertPoint) {
     return;
   gfx::Screen* screen = Shell::GetInstance()->screen();
   UpdateDisplay("1000x600,600x400");
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   gfx::Display display_1 = screen->GetDisplayNearestWindow(root_windows[0]);
   EXPECT_EQ("0,0", display_1.bounds().origin().ToString());
   gfx::Display display_2 = screen->GetDisplayNearestWindow(root_windows[1]);
@@ -707,7 +705,7 @@ TEST_F(ExtendedDesktopTest, StayInSameRootWindow) {
     return;
 
   UpdateDisplay("100x100,200x200");
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   views::Widget* w1 = CreateTestWidget(gfx::Rect(10, 10, 50, 50));
   EXPECT_EQ(root_windows[0], w1->GetNativeView()->GetRootWindow());
   w1->SetBounds(gfx::Rect(150, 10, 50, 50));
@@ -749,7 +747,7 @@ TEST_F(ExtendedDesktopTest, KeyEventsOnLockScreen) {
     return;
 
   UpdateDisplay("100x100,200x200");
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
 
   // Create normal windows on both displays.
   views::Widget* widget1 = CreateTestWidget(
@@ -781,13 +779,13 @@ TEST_F(ExtendedDesktopTest, KeyEventsOnLockScreen) {
   // The lock window should get events on both root windows.
   aura::test::EventGenerator& event_generator(GetEventGenerator());
 
-  event_generator.set_current_root_window(root_windows[0]->GetDispatcher());
+  event_generator.set_current_root_window(root_windows[0]);
   event_generator.PressKey(ui::VKEY_A, 0);
   event_generator.ReleaseKey(ui::VKEY_A, 0);
   EXPECT_EQ(lock_widget->GetNativeView(), focus_client->GetFocusedWindow());
   EXPECT_EQ("a", UTF16ToASCII(textfield->text()));
 
-  event_generator.set_current_root_window(root_windows[1]->GetDispatcher());
+  event_generator.set_current_root_window(root_windows[1]);
   event_generator.PressKey(ui::VKEY_B, 0);
   event_generator.ReleaseKey(ui::VKEY_B, 0);
   EXPECT_EQ(lock_widget->GetNativeView(), focus_client->GetFocusedWindow());
@@ -804,13 +802,13 @@ TEST_F(ExtendedDesktopTest, KeyEventsOnLockScreen) {
   // on both root windows.
   UpdateDisplay("100x100,200x200");
   root_windows = Shell::GetAllRootWindows();
-  event_generator.set_current_root_window(root_windows[0]->GetDispatcher());
+  event_generator.set_current_root_window(root_windows[0]);
   event_generator.PressKey(ui::VKEY_D, 0);
   event_generator.ReleaseKey(ui::VKEY_D, 0);
   EXPECT_EQ(lock_widget->GetNativeView(), focus_client->GetFocusedWindow());
   EXPECT_EQ("abcd", UTF16ToASCII(textfield->text()));
 
-  event_generator.set_current_root_window(root_windows[1]->GetDispatcher());
+  event_generator.set_current_root_window(root_windows[1]);
   event_generator.PressKey(ui::VKEY_E, 0);
   event_generator.ReleaseKey(ui::VKEY_E, 0);
   EXPECT_EQ(lock_widget->GetNativeView(), focus_client->GetFocusedWindow());

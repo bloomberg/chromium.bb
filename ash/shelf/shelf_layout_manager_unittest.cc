@@ -879,7 +879,7 @@ TEST_F(ShelfLayoutManagerTest, AutoHideShelfOnScreenBoundary) {
   // visible.
   CreateTestWidget();
 
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   ASSERT_EQ(root_windows[0],
             GetShelfWidget()->GetNativeWindow()->GetRootWindow());
 

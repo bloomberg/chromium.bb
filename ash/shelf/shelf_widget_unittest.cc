@@ -89,7 +89,7 @@ TEST_F(ShelfWidgetTest, TestAlignment) {
     return;
 
   UpdateDisplay("300x300,500x500");
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   {
     SCOPED_TRACE("Primary Bottom");
     TestLauncherAlignment(root_windows[0],

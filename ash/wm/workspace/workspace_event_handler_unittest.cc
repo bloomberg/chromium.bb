@@ -158,7 +158,7 @@ TEST_F(WorkspaceEventHandlerTest, DoubleClickSingleAxisResizeEdge) {
   gfx::Rect work_area2 = ScreenAsh::GetSecondaryDisplay().work_area();
   restored_bounds.SetRect(220,20, 50, 50);
   window->SetBoundsInScreen(restored_bounds, ScreenAsh::GetSecondaryDisplay());
-  aura::Window* second_root = Shell::GetAllRootWindows()[1];
+  aura::RootWindow* second_root = Shell::GetAllRootWindows()[1];
   EXPECT_EQ(second_root, window->GetRootWindow());
   aura::test::EventGenerator generator2(second_root, window.get());
 

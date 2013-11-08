@@ -124,7 +124,7 @@ void PhantomWindowController::Show(const gfx::Rect& bounds_in_screen) {
   // in one root window and progress into another root.
   aura::Window* start_root = wm::GetRootWindowMatching(start_bounds_);
   if (start_root == target_root) {
-    aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+    Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
     for (size_t i = 0; i < root_windows.size(); ++i) {
       if (root_windows[i] != target_root &&
           root_windows[i]->GetBoundsInScreen().Intersects(start_bounds_)) {

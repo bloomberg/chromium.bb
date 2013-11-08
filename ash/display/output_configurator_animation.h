@@ -14,7 +14,6 @@
 
 namespace aura {
 class RootWindow;
-class Window;
 }  // namespace aura
 
 namespace ui {
@@ -55,7 +54,7 @@ class ASH_EXPORT OutputConfiguratorAnimation
   // and *not* call the registered callback.
   void ClearHidingLayers();
 
-  std::map<aura::Window*, ui::Layer*> hiding_layers_;
+  std::map<aura::RootWindow*, ui::Layer*> hiding_layers_;
   scoped_ptr<base::OneShotTimer<OutputConfiguratorAnimation> > timer_;
 
   DISALLOW_COPY_AND_ASSIGN(OutputConfiguratorAnimation);

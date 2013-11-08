@@ -84,8 +84,8 @@ PartialScreenshotView::StartPartialScreenshot(
     ScreenshotDelegate* screenshot_delegate) {
   std::vector<PartialScreenshotView*> views;
   OverlayDelegate* overlay_delegate = new OverlayDelegate();
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  for (aura::Window::Windows::iterator it = root_windows.begin();
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  for (Shell::RootWindowList::iterator it = root_windows.begin();
        it != root_windows.end(); ++it) {
     PartialScreenshotView* new_view = new PartialScreenshotView(
         overlay_delegate, screenshot_delegate);
@@ -108,7 +108,7 @@ PartialScreenshotView::~PartialScreenshotView() {
   screenshot_delegate_ = NULL;
 }
 
-void PartialScreenshotView::Init(aura::Window* root_window) {
+void PartialScreenshotView::Init(aura::RootWindow* root_window) {
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);

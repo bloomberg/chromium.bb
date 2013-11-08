@@ -70,18 +70,18 @@ class WindowWatcher::WorkspaceWindowWatcher : public aura::WindowObserver {
 
 WindowWatcher::WindowWatcher() {
   workspace_window_watcher_.reset(new WorkspaceWindowWatcher(this));
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  for (aura::Window::Windows::iterator iter = root_windows.begin();
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  for (Shell::RootWindowList::iterator iter = root_windows.begin();
        iter != root_windows.end(); ++ iter) {
     workspace_window_watcher_->RootWindowAdded(*iter);
   }
 }
 
 WindowWatcher::~WindowWatcher() {
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  for (aura::Window::Windows::iterator iter = root_windows.begin();
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  for (Shell::RootWindowList::iterator iter = root_windows.begin();
        iter != root_windows.end(); ++ iter) {
-    workspace_window_watcher_->RootWindowRemoved((*iter)->GetDispatcher());
+    workspace_window_watcher_->RootWindowRemoved(*iter);
   }
 }
 

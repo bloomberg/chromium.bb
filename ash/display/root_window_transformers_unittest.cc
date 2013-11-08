@@ -144,7 +144,7 @@ TEST_F(RootWindowTransformersTest, MAYBE_RotateAndMagnify) {
   gfx::Display display1 = Shell::GetScreen()->GetPrimaryDisplay();
   int64 display2_id = ScreenAsh::GetSecondaryDisplay().id();
 
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   aura::test::EventGenerator generator1(root_windows[0]);
   aura::test::EventGenerator generator2(root_windows[1]);
 
@@ -236,7 +236,7 @@ TEST_F(RootWindowTransformersTest, ScaleAndMagnify) {
   gfx::Display display1 = Shell::GetScreen()->GetPrimaryDisplay();
   gfx::Display::SetInternalDisplayId(display1.id());
   gfx::Display display2 = ScreenAsh::GetSecondaryDisplay();
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   MagnificationController* magnifier =
       Shell::GetInstance()->magnification_controller();
 
@@ -275,8 +275,8 @@ TEST_F(RootWindowTransformersTest, MAYBE_TouchScaleAndMagnify) {
 
   UpdateDisplay("200x200*2");
   gfx::Display display = Shell::GetScreen()->GetPrimaryDisplay();
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  aura::Window* root_window = root_windows[0];
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  aura::RootWindow* root_window = root_windows[0];
   aura::test::EventGenerator generator(root_window);
   MagnificationController* magnifier =
       Shell::GetInstance()->magnification_controller();
@@ -315,7 +315,7 @@ TEST_F(RootWindowTransformersTest, MAYBE_ConvertHostToRootCoords) {
   UpdateDisplay("600x400*2/r@1.5");
 
   gfx::Display display1 = Shell::GetScreen()->GetPrimaryDisplay();
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
   EXPECT_EQ("0,0 300x450", display1.bounds().ToString());
   EXPECT_EQ("0,0 300x450", root_windows[0]->bounds().ToString());
   EXPECT_EQ(1.5f, GetStoredUIScale(display1.id()));

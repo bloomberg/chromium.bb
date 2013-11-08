@@ -60,8 +60,8 @@ BrowserStatusMonitor::BrowserStatusMonitor(
   if (ash::Shell::HasInstance()) {
     // We can't assume all RootWindows have the same ActivationClient.
     // Add a RootWindow and its ActivationClient to the observed list.
-    aura::Window::Windows root_windows = ash::Shell::GetAllRootWindows();
-    aura::Window::Windows::const_iterator iter = root_windows.begin();
+    ash::Shell::RootWindowList root_windows = ash::Shell::GetAllRootWindows();
+    ash::Shell::RootWindowList::const_iterator iter = root_windows.begin();
     for (; iter != root_windows.end(); ++iter) {
       // |observed_activation_clients_| can have the same activation client
       // multiple times - which would be handled by the used

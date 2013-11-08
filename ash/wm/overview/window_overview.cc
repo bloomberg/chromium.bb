@@ -314,8 +314,8 @@ aura::Window* WindowOverview::GetTargetedWindow(aura::Window* window) {
 }
 
 void WindowOverview::HideAndTrackNonOverviewWindows() {
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  for (aura::Window::Windows::const_iterator root_iter = root_windows.begin();
+  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  for (Shell::RootWindowList::const_iterator root_iter = root_windows.begin();
        root_iter != root_windows.end(); ++root_iter) {
     for (size_t i = 0; i < kSwitchableWindowContainerIdsLength; ++i) {
       aura::Window* container = Shell::GetContainer(*root_iter,
@@ -349,7 +349,7 @@ void WindowOverview::PositionWindows() {
     }
     PositionWindowsOnRoot(single_root_window_, windows);
   } else {
-    aura::Window::Windows root_window_list = Shell::GetAllRootWindows();
+    Shell::RootWindowList root_window_list = Shell::GetAllRootWindows();
     for (size_t i = 0; i < root_window_list.size(); ++i)
       PositionWindowsFromRoot(root_window_list[i]);
   }
