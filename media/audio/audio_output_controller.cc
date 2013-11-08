@@ -198,6 +198,10 @@ void AudioOutputController::DoPlay() {
   power_poll_callback_.callback().Run();
 #endif
 
+  on_more_io_data_called_ = 0;
+  AllowEntryToOnMoreIOData();
+  stream_->Start(this);
+
   // For UMA tracking purposes, start the wedge detection timer.  This allows us
   // to record statistics about the number of wedged playbacks in the field.
   //
@@ -211,12 +215,8 @@ void AudioOutputController::DoPlay() {
   // invalidate the previous timer.
   wedge_timer_.reset(new base::OneShotTimer<AudioOutputController>());
   wedge_timer_->Start(
-      FROM_HERE, TimeDelta::FromSeconds(3), this,
+      FROM_HERE, TimeDelta::FromSeconds(5), this,
       &AudioOutputController::WedgeCheck);
-  on_more_io_data_called_ = 0;
-
-  AllowEntryToOnMoreIOData();
-  stream_->Start(this);
 
   handler_->OnPlaying();
 }
