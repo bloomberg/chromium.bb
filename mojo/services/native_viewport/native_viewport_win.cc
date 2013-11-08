@@ -15,9 +15,6 @@ class NativeViewportWin : public gfx::WindowImpl,
  public:
   explicit NativeViewportWin(NativeViewportDelegate* delegate)
       : delegate_(delegate) {
-    Init(NULL, gfx::Rect(10, 10, 500, 500));
-    ShowWindow(hwnd(), SW_SHOWNORMAL);
-    SetWindowText(hwnd(), L"native_viewport::NativeViewportWin!");
   }
   virtual ~NativeViewportWin() {
     if (IsWindow(hwnd()))
@@ -31,6 +28,13 @@ class NativeViewportWin : public gfx::WindowImpl,
     GetClientRect(hwnd(), &cr);
     return gfx::Size(cr.right - cr.left, cr.bottom - cr.top);
   }
+
+  virtual void Init() OVERRIDE {
+    gfx::WindowImpl::Init(NULL, gfx::Rect(10, 10, 500, 500));
+    ShowWindow(hwnd(), SW_SHOWNORMAL);
+    SetWindowText(hwnd(), L"native_viewport::NativeViewportWin!");
+  }
+
   virtual void Close() OVERRIDE {
     DestroyWindow(hwnd());
   }

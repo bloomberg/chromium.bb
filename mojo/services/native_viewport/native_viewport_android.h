@@ -22,7 +22,8 @@ namespace services {
 
 class NativeViewportAndroid : public NativeViewport {
  public:
-  explicit NativeViewportAndroid(NativeViewportDelegate* delegate);
+  explicit NativeViewportAndroid(shell::Context* context,
+                                 NativeViewportDelegate* delegate);
   virtual ~NativeViewportAndroid();
 
   base::WeakPtr<NativeViewportAndroid> GetWeakPtr() {
@@ -38,11 +39,13 @@ class NativeViewportAndroid : public NativeViewport {
  private:
   // Overridden from NativeViewport:
   virtual gfx::Size GetSize() OVERRIDE;
+  virtual void Init() OVERRIDE;
   virtual void Close() OVERRIDE;
 
   void ReleaseWindow();
 
   NativeViewportDelegate* delegate_;
+  shell::Context* context_;
   ANativeWindow* window_;
   gfx::Size size_;
   ui::SequentialIDGenerator id_generator_;

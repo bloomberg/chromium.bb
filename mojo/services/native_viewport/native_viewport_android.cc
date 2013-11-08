@@ -13,8 +13,10 @@
 namespace mojo {
 namespace services {
 
-NativeViewportAndroid::NativeViewportAndroid(NativeViewportDelegate* delegate)
+NativeViewportAndroid::NativeViewportAndroid(shell::Context* context,
+                                             NativeViewportDelegate* delegate)
     : delegate_(delegate),
+      context_(context),
       window_(NULL),
       id_generator_(0),
       weak_factory_(this) {
@@ -64,6 +66,17 @@ gfx::Size NativeViewportAndroid::GetSize() {
   return size_;
 }
 
+void NativeViewportAndroid::Init() {
+  MojoViewportInit* init = new MojoViewportInit();
+  init->ui_runner = context_->task_runners()->ui_runner();
+  init->native_viewport = GetWeakPtr();
+
+  context_->task_runners()->java_runner()->PostTask(FROM_HERE,
+      base::Bind(MojoViewport::CreateForActivity,
+                 context_->activity(),
+                 init));
+}
+
 void NativeViewportAndroid::Close() {
   // TODO(beng): close activity containing MojoView?
 
@@ -75,19 +88,8 @@ void NativeViewportAndroid::Close() {
 scoped_ptr<NativeViewport> NativeViewport::Create(
     shell::Context* context,
     NativeViewportDelegate* delegate) {
-  scoped_ptr<NativeViewportAndroid> native_viewport(
-      new NativeViewportAndroid(delegate));
-
-  MojoViewportInit* init = new MojoViewportInit();
-  init->ui_runner = context->task_runners()->ui_runner();
-  init->native_viewport = native_viewport->GetWeakPtr();
-
-  context->task_runners()->java_runner()->PostTask(FROM_HERE,
-      base::Bind(MojoViewport::CreateForActivity,
-                 context->activity(),
-                 init));
-
-   return scoped_ptr<NativeViewport>(native_viewport.Pass());
+  return scoped_ptr<NativeViewport>(
+      new NativeViewportAndroid(context, delegate)).Pass();
 }
 
 }  // namespace services

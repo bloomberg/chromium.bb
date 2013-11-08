@@ -36,6 +36,7 @@ class NativeViewport {
   virtual ~NativeViewport() {}
 
   virtual gfx::Size GetSize() = 0;
+  virtual void Init() = 0;
   virtual void Close() = 0;
 
   static scoped_ptr<NativeViewport> Create(shell::Context* context,

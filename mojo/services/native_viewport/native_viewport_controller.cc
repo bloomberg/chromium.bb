@@ -19,7 +19,9 @@ NativeViewportController::NativeViewportController(
     shell::Context* context, Handle pipe)
     : pipe_(pipe) {
   native_viewport_ = NativeViewport::Create(context, this);
+  native_viewport_->Init();
 }
+
 NativeViewportController::~NativeViewportController() {
 }
 

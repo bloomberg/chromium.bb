@@ -20,15 +20,6 @@ class NativeViewportMac : public NativeViewport {
       : delegate_(delegate),
         window_(nil),
         rect_(10, 10, 500, 500) {
-    [NSApplication sharedApplication];
-
-    window_ = [[NSWindow alloc]
-                  initWithContentRect:NSRectFromCGRect(rect_.ToCGRect())
-                            styleMask:NSTitledWindowMask
-                              backing:NSBackingStoreBuffered
-                                defer:NO];
-    [window_ orderFront:nil];
-    delegate_->OnAcceleratedWidgetAvailable([window_ contentView]);
   }
 
   virtual ~NativeViewportMac() {
@@ -40,6 +31,18 @@ class NativeViewportMac : public NativeViewport {
   // Overridden from NativeViewport:
   virtual gfx::Size GetSize() OVERRIDE {
     return rect_.size();
+  }
+
+  virtual void Init() OVERRIDE {
+    [NSApplication sharedApplication];
+
+    window_ = [[NSWindow alloc]
+                  initWithContentRect:NSRectFromCGRect(rect_.ToCGRect())
+                            styleMask:NSTitledWindowMask
+                              backing:NSBackingStoreBuffered
+                                defer:NO];
+    [window_ orderFront:nil];
+    delegate_->OnAcceleratedWidgetAvailable([window_ contentView]);
   }
 
   virtual void Close() OVERRIDE {
