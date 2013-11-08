@@ -59,7 +59,7 @@ void FakeVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
       &FakeVideoDecoder::OnFrameDecoded, weak_this_, buffer_size, decode_cb)));
 
   if (buffer->end_of_stream() && decoded_frames_.empty()) {
-    decode_cb_.RunOrHold(kOk, VideoFrame::CreateEmptyFrame());
+    decode_cb_.RunOrHold(kOk, VideoFrame::CreateEOSFrame());
     return;
   }
 

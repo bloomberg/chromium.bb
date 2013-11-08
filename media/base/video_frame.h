@@ -41,7 +41,6 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
     UNKNOWN = 0,  // Unknown format value.
     YV12 = 6,  // 12bpp YVU planar 1x1 Y, 2x2 VU samples
     YV16 = 7,  // 16bpp YVU planar 1x1 Y, 2x1 VU samples
-    EMPTY = 9,  // An empty frame.
     I420 = 11,  // 12bpp YVU planar 1x1 Y, 2x2 UV samples.
     NATIVE_TEXTURE = 12,  // Native texture.  Pixel-format agnostic.
 #if defined(GOOGLE_TV)
@@ -169,9 +168,8 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
       base::TimeDelta timestamp,
       const base::Closure& no_longer_needed_cb);
 
-  // Creates a frame with format equals to VideoFrame::EMPTY, width, height,
-  // and timestamp are all 0.
-  static scoped_refptr<VideoFrame> CreateEmptyFrame();
+  // Creates a frame which indicates end-of-stream.
+  static scoped_refptr<VideoFrame> CreateEOSFrame();
 
   // Allocates YV12 frame based on |size|, and sets its data to the YUV(y,u,v).
   static scoped_refptr<VideoFrame> CreateColorFrame(
@@ -225,7 +223,7 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   base::SharedMemoryHandle shared_memory_handle() const;
 
   // Returns true if this VideoFrame represents the end of the stream.
-  bool IsEndOfStream() const;
+  bool end_of_stream() const { return end_of_stream_; }
 
   base::TimeDelta GetTimestamp() const {
     return timestamp_;
@@ -245,7 +243,8 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
              const gfx::Size& coded_size,
              const gfx::Rect& visible_rect,
              const gfx::Size& natural_size,
-             base::TimeDelta timestamp);
+             base::TimeDelta timestamp,
+             bool end_of_stream);
   virtual ~VideoFrame();
 
   void AllocateYUV();
@@ -285,6 +284,8 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   base::Closure no_longer_needed_cb_;
 
   base::TimeDelta timestamp_;
+
+  const bool end_of_stream_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(VideoFrame);
 };

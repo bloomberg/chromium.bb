@@ -26,7 +26,7 @@ scoped_refptr<VideoFrame> VideoFrame::CreateFrame(
     base::TimeDelta timestamp) {
   DCHECK(IsValidConfig(format, coded_size, visible_rect, natural_size));
   scoped_refptr<VideoFrame> frame(new VideoFrame(
-      format, coded_size, visible_rect, natural_size, timestamp));
+      format, coded_size, visible_rect, natural_size, timestamp, false));
   switch (format) {
     case VideoFrame::YV12:
     case VideoFrame::YV12A:
@@ -49,8 +49,6 @@ std::string VideoFrame::FormatToString(VideoFrame::Format format) {
       return "YV12";
     case VideoFrame::YV16:
       return "YV16";
-    case VideoFrame::EMPTY:
-      return "EMPTY";
     case VideoFrame::I420:
       return "I420";
     case VideoFrame::NATIVE_TEXTURE:
@@ -96,8 +94,12 @@ scoped_refptr<VideoFrame> VideoFrame::WrapNativeTexture(
     base::TimeDelta timestamp,
     const ReadPixelsCB& read_pixels_cb,
     const base::Closure& no_longer_needed_cb) {
-  scoped_refptr<VideoFrame> frame(new VideoFrame(
-      NATIVE_TEXTURE, coded_size, visible_rect, natural_size, timestamp));
+  scoped_refptr<VideoFrame> frame(new VideoFrame(NATIVE_TEXTURE,
+                                                 coded_size,
+                                                 visible_rect,
+                                                 natural_size,
+                                                 timestamp,
+                                                 false));
   frame->texture_mailbox_holder_ = mailbox_holder;
   frame->texture_target_ = texture_target;
   frame->read_pixels_cb_ = read_pixels_cb;
@@ -129,7 +131,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalSharedMemory(
   switch (format) {
     case I420: {
       scoped_refptr<VideoFrame> frame(new VideoFrame(
-          format, coded_size, visible_rect, natural_size, timestamp));
+          format, coded_size, visible_rect, natural_size, timestamp, false));
       frame->shared_memory_handle_ = handle;
       frame->strides_[kYPlane] = coded_size.width();
       frame->strides_[kUPlane] = coded_size.width() / 2;
@@ -162,7 +164,7 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalYuvData(
     const base::Closure& no_longer_needed_cb) {
   DCHECK(format == YV12 || format == YV16 || format == I420) << format;
   scoped_refptr<VideoFrame> frame(new VideoFrame(
-      format, coded_size, visible_rect, natural_size, timestamp));
+      format, coded_size, visible_rect, natural_size, timestamp, false));
   frame->strides_[kYPlane] = y_stride;
   frame->strides_[kUPlane] = u_stride;
   frame->strides_[kVPlane] = v_stride;
@@ -174,10 +176,13 @@ scoped_refptr<VideoFrame> VideoFrame::WrapExternalYuvData(
 }
 
 // static
-scoped_refptr<VideoFrame> VideoFrame::CreateEmptyFrame() {
-  return new VideoFrame(
-      VideoFrame::EMPTY, gfx::Size(), gfx::Rect(), gfx::Size(),
-      base::TimeDelta());
+scoped_refptr<VideoFrame> VideoFrame::CreateEOSFrame() {
+  return new VideoFrame(VideoFrame::UNKNOWN,
+                        gfx::Size(),
+                        gfx::Rect(),
+                        gfx::Size(),
+                        kNoTimestamp(),
+                        true);
 }
 
 // static
@@ -213,7 +218,7 @@ scoped_refptr<VideoFrame> VideoFrame::CreateHoleFrame(
     const gfx::Size& size) {
   DCHECK(IsValidConfig(VideoFrame::HOLE, size, gfx::Rect(size), size));
   scoped_refptr<VideoFrame> frame(new VideoFrame(
-      VideoFrame::HOLE, size, gfx::Rect(size), size, base::TimeDelta()));
+      VideoFrame::HOLE, size, gfx::Rect(size), size, base::TimeDelta(), false));
   return frame;
 }
 #endif
@@ -232,7 +237,6 @@ size_t VideoFrame::NumPlanes(Format format) {
       return 3;
     case VideoFrame::YV12A:
       return 4;
-    case VideoFrame::EMPTY:
     case VideoFrame::UNKNOWN:
       break;
   }
@@ -266,7 +270,6 @@ size_t VideoFrame::AllocationSize(Format format, const gfx::Size& coded_size) {
       return rounded_size * 2;
     }
     case VideoFrame::UNKNOWN:
-    case VideoFrame::EMPTY:
     case VideoFrame::NATIVE_TEXTURE:
 #if defined(GOOGLE_TV)
     case VideoFrame::HOLE:
@@ -340,14 +343,16 @@ VideoFrame::VideoFrame(VideoFrame::Format format,
                        const gfx::Size& coded_size,
                        const gfx::Rect& visible_rect,
                        const gfx::Size& natural_size,
-                       base::TimeDelta timestamp)
+                       base::TimeDelta timestamp,
+                       bool end_of_stream)
     : format_(format),
       coded_size_(coded_size),
       visible_rect_(visible_rect),
       natural_size_(natural_size),
       texture_target_(0),
       shared_memory_handle_(base::SharedMemory::NULLHandle()),
-      timestamp_(timestamp) {
+      timestamp_(timestamp),
+      end_of_stream_(end_of_stream) {
   memset(&strides_, 0, sizeof(strides_));
   memset(&data_, 0, sizeof(data_));
 }
@@ -435,10 +440,6 @@ uint32 VideoFrame::texture_target() const {
 
 base::SharedMemoryHandle VideoFrame::shared_memory_handle() const {
   return shared_memory_handle_;
-}
-
-bool VideoFrame::IsEndOfStream() const {
-  return format_ == VideoFrame::EMPTY;
 }
 
 void VideoFrame::HashFrameForTesting(base::MD5Context* context) {

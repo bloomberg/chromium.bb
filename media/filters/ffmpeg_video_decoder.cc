@@ -165,7 +165,7 @@ void FFmpegVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
 
   // Return empty frames if decoding has finished.
   if (state_ == kDecodeFinished) {
-    base::ResetAndReturn(&decode_cb_).Run(kOk, VideoFrame::CreateEmptyFrame());
+    base::ResetAndReturn(&decode_cb_).Run(kOk, VideoFrame::CreateEOSFrame());
     return;
   }
 
@@ -271,7 +271,7 @@ void FFmpegVideoDecoder::DecodeBuffer(
       DCHECK(buffer->end_of_stream());
       state_ = kDecodeFinished;
       base::ResetAndReturn(&decode_cb_)
-          .Run(kOk, VideoFrame::CreateEmptyFrame());
+          .Run(kOk, VideoFrame::CreateEOSFrame());
       return;
     }
 

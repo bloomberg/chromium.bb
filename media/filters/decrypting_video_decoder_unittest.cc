@@ -56,7 +56,7 @@ ACTION_P2(ResetAndRunCallback, callback, param) {
 }
 
 MATCHER(IsEndOfStream, "end of stream") {
-  return (arg->IsEndOfStream());
+  return (arg->end_of_stream());
 }
 
 }  // namespace
@@ -74,7 +74,7 @@ class DecryptingVideoDecoderTest : public testing::Test {
         decoded_video_frame_(VideoFrame::CreateBlackFrame(
             TestVideoConfig::NormalCodedSize())),
         null_video_frame_(scoped_refptr<VideoFrame>()),
-        end_of_stream_video_frame_(VideoFrame::CreateEmptyFrame()) {
+        end_of_stream_video_frame_(VideoFrame::CreateEOSFrame()) {
     EXPECT_CALL(*this, RequestDecryptorNotification(_))
         .WillRepeatedly(RunCallbackIfNotNull(decryptor_.get()));
   }
@@ -109,7 +109,7 @@ class DecryptingVideoDecoderTest : public testing::Test {
       const scoped_refptr<VideoFrame>& video_frame) {
     if (status != VideoDecoder::kOk)
       EXPECT_CALL(*this, FrameReady(status, IsNull()));
-    else if (video_frame.get() && video_frame->IsEndOfStream())
+    else if (video_frame.get() && video_frame->end_of_stream())
       EXPECT_CALL(*this, FrameReady(status, IsEndOfStream()));
     else
       EXPECT_CALL(*this, FrameReady(status, video_frame));

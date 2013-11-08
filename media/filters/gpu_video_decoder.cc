@@ -91,7 +91,7 @@ void GpuVideoDecoder::Reset(const base::Closure& closure)  {
   }
 
   if (!pending_decode_cb_.is_null())
-    EnqueueFrameAndTriggerFrameDelivery(VideoFrame::CreateEmptyFrame());
+    EnqueueFrameAndTriggerFrameDelivery(VideoFrame::CreateEOSFrame());
 
   DCHECK(pending_reset_cb_.is_null());
   pending_reset_cb_ = BindToCurrentLoop(closure);
@@ -104,7 +104,7 @@ void GpuVideoDecoder::Stop(const base::Closure& closure) {
   if (vda_)
     DestroyVDA();
   if (!pending_decode_cb_.is_null())
-    EnqueueFrameAndTriggerFrameDelivery(VideoFrame::CreateEmptyFrame());
+    EnqueueFrameAndTriggerFrameDelivery(VideoFrame::CreateEOSFrame());
   if (!pending_reset_cb_.is_null())
     base::ResetAndReturn(&pending_reset_cb_).Run();
   BindToCurrentLoop(closure).Run();
@@ -574,7 +574,7 @@ void GpuVideoDecoder::NotifyFlushDone() {
   DCHECK(gvd_loop_proxy_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kDrainingDecoder);
   state_ = kDecoderDrained;
-  EnqueueFrameAndTriggerFrameDelivery(VideoFrame::CreateEmptyFrame());
+  EnqueueFrameAndTriggerFrameDelivery(VideoFrame::CreateEOSFrame());
 }
 
 void GpuVideoDecoder::NotifyResetDone() {
@@ -590,7 +590,7 @@ void GpuVideoDecoder::NotifyResetDone() {
     base::ResetAndReturn(&pending_reset_cb_).Run();
 
   if (!pending_decode_cb_.is_null())
-    EnqueueFrameAndTriggerFrameDelivery(VideoFrame::CreateEmptyFrame());
+    EnqueueFrameAndTriggerFrameDelivery(VideoFrame::CreateEOSFrame());
 }
 
 void GpuVideoDecoder::NotifyError(media::VideoDecodeAccelerator::Error error) {

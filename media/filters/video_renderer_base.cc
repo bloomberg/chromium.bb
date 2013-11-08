@@ -372,7 +372,7 @@ void VideoRendererBase::FrameReady(VideoFrameStream::Status status,
     return;
   }
 
-  if (frame->IsEndOfStream()) {
+  if (frame->end_of_stream()) {
     DCHECK(!received_end_of_stream_);
     received_end_of_stream_ = true;
     max_time_cb_.Run(get_duration_cb_.Run());
@@ -408,7 +408,7 @@ void VideoRendererBase::FrameReady(VideoFrameStream::Status status,
 void VideoRendererBase::AddReadyFrame_Locked(
     const scoped_refptr<VideoFrame>& frame) {
   lock_.AssertAcquired();
-  DCHECK(!frame->IsEndOfStream());
+  DCHECK(!frame->end_of_stream());
 
   // Adjust the incoming frame if its rendering stop time is past the duration
   // of the video itself. This is typically the last frame of the video and

@@ -273,7 +273,7 @@ void VideoFrameStream::OnFrameReady(int buffer_size,
 
   // Decoder flushed. Reinitialize the video decoder.
   if (state_ == STATE_FLUSHING_DECODER &&
-      status == VideoDecoder::kOk && frame->IsEndOfStream()) {
+      status == VideoDecoder::kOk && frame->end_of_stream()) {
     ReinitializeDecoder();
     return;
   }

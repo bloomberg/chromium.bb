@@ -197,7 +197,7 @@ class VideoRendererBaseTest : public ::testing::Test {
   void QueueEndOfStream() {
     DCHECK_EQ(&message_loop_, base::MessageLoop::current());
     decode_results_.push_back(std::make_pair(
-        VideoDecoder::kOk, VideoFrame::CreateEmptyFrame()));
+        VideoDecoder::kOk, VideoFrame::CreateEOSFrame()));
   }
 
   void QueueDecodeError() {

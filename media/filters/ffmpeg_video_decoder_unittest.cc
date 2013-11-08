@@ -99,7 +99,7 @@ class FFmpegVideoDecoderTest : public testing::Test {
 
     EXPECT_EQ(VideoDecoder::kOk, status);
     ASSERT_TRUE(video_frame.get());
-    EXPECT_FALSE(video_frame->IsEndOfStream());
+    EXPECT_FALSE(video_frame->end_of_stream());
   }
 
   // Sets up expectations and actions to put FFmpegVideoDecoder in an end
@@ -110,7 +110,7 @@ class FFmpegVideoDecoderTest : public testing::Test {
     DecodeSingleFrame(end_of_stream_buffer_, &status, &video_frame);
     EXPECT_EQ(VideoDecoder::kOk, status);
     ASSERT_TRUE(video_frame.get());
-    EXPECT_TRUE(video_frame->IsEndOfStream());
+    EXPECT_TRUE(video_frame->end_of_stream());
   }
 
   typedef std::vector<scoped_refptr<DecoderBuffer> > InputBuffers;
@@ -140,7 +140,7 @@ class FFmpegVideoDecoderTest : public testing::Test {
       switch (status) {
         case VideoDecoder::kOk:
           DCHECK(frame);
-          if (!frame->IsEndOfStream()) {
+          if (!frame->end_of_stream()) {
             output_frames->push_back(frame);
             continue;
           } else {  // EOS
@@ -177,7 +177,7 @@ class FFmpegVideoDecoderTest : public testing::Test {
     if (output_frames.size() == 1U)
       *video_frame = output_frames[0];
     else
-      *video_frame = VideoFrame::CreateEmptyFrame();
+      *video_frame = VideoFrame::CreateEOSFrame();
   }
 
   // Decodes |i_frame_buffer_| and then decodes the data contained in
@@ -359,7 +359,7 @@ TEST_F(FFmpegVideoDecoderTest, DecodeFrame_Normal) {
 
   EXPECT_EQ(VideoDecoder::kOk, status);
   ASSERT_TRUE(video_frame.get());
-  EXPECT_FALSE(video_frame->IsEndOfStream());
+  EXPECT_FALSE(video_frame->end_of_stream());
 }
 
 // Verify current behavior for 0 byte frames. FFmpeg simply ignores
@@ -381,8 +381,8 @@ TEST_F(FFmpegVideoDecoderTest, DecodeFrame_0ByteFrame) {
   EXPECT_EQ(VideoDecoder::kOk, status);
   ASSERT_EQ(2U, output_frames.size());
 
-  EXPECT_FALSE(output_frames[0]->IsEndOfStream());
-  EXPECT_FALSE(output_frames[1]->IsEndOfStream());
+  EXPECT_FALSE(output_frames[0]->end_of_stream());
+  EXPECT_FALSE(output_frames[1]->end_of_stream());
 }
 
 TEST_F(FFmpegVideoDecoderTest, DecodeFrame_DecodeError) {
@@ -422,7 +422,7 @@ TEST_F(FFmpegVideoDecoderTest, DecodeFrame_DecodeErrorAtEndOfStream) {
 
   EXPECT_EQ(VideoDecoder::kOk, status);
   ASSERT_TRUE(video_frame.get());
-  EXPECT_TRUE(video_frame->IsEndOfStream());
+  EXPECT_TRUE(video_frame->end_of_stream());
 }
 
 // Decode |i_frame_buffer_| and then a frame with a larger width and verify

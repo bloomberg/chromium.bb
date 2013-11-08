@@ -159,8 +159,8 @@ TEST(VideoFrame, CreateFrame) {
   EXPECT_EQ(MD5DigestToBase16(digest), "911991d51438ad2e1a40ed5f6fc7c796");
 
   // Test an empty frame.
-  frame = VideoFrame::CreateEmptyFrame();
-  EXPECT_TRUE(frame->IsEndOfStream());
+  frame = VideoFrame::CreateEOSFrame();
+  EXPECT_TRUE(frame->end_of_stream());
 }
 
 TEST(VideoFrame, CreateBlackFrame) {
@@ -175,7 +175,7 @@ TEST(VideoFrame, CreateBlackFrame) {
 
   // Test basic properties.
   EXPECT_EQ(0, frame->GetTimestamp().InMicroseconds());
-  EXPECT_FALSE(frame->IsEndOfStream());
+  EXPECT_FALSE(frame->end_of_stream());
 
   // Test |frame| properties.
   EXPECT_EQ(VideoFrame::YV12, frame->format());

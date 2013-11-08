@@ -80,7 +80,7 @@ void DecryptingVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
 
   // Return empty frames if decoding has finished.
   if (state_ == kDecodeFinished) {
-    base::ResetAndReturn(&decode_cb_).Run(kOk, VideoFrame::CreateEmptyFrame());
+    base::ResetAndReturn(&decode_cb_).Run(kOk, VideoFrame::CreateEOSFrame());
     return;
   }
 
@@ -282,7 +282,7 @@ void DecryptingVideoDecoder::DeliverFrame(
     if (scoped_pending_buffer_to_decode->end_of_stream()) {
       state_ = kDecodeFinished;
       base::ResetAndReturn(&decode_cb_).Run(
-          kOk, media::VideoFrame::CreateEmptyFrame());
+          kOk, media::VideoFrame::CreateEOSFrame());
       return;
     }
 
@@ -293,7 +293,7 @@ void DecryptingVideoDecoder::DeliverFrame(
 
   DCHECK_EQ(status, Decryptor::kSuccess);
   // No frame returned with kSuccess should be end-of-stream frame.
-  DCHECK(!frame->IsEndOfStream());
+  DCHECK(!frame->end_of_stream());
   state_ = kIdle;
   base::ResetAndReturn(&decode_cb_).Run(kOk, frame);
 }
