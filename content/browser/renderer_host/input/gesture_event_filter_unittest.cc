@@ -58,6 +58,8 @@ class GestureEventFilterTest : public testing::Test,
       InputEventAckState ack_result) OVERRIDE {
     ++acked_gesture_event_count_;
     last_acked_event_ = event.event;
+    if (sync_followup_event_)
+      SimulateGestureEvent(*sync_followup_event_.Pass());
   }
 
   // TouchpadTapSuppressionControllerClient
@@ -72,7 +74,7 @@ class GestureEventFilterTest : public testing::Test,
     GestureEventWithLatencyInfo gesture_with_latency(gesture,
                                                      ui::LatencyInfo());
     if (filter()->ShouldForward(gesture_with_latency)) {
-      ++sent_gesture_event_count_;
+      SendGestureEventImmediately(gesture_with_latency);
       return true;
     }
     return false;
@@ -143,6 +145,12 @@ class GestureEventFilterTest : public testing::Test,
     sync_ack_result_.reset(new InputEventAckState(ack_result));
   }
 
+  void set_sync_followup_event(WebInputEvent::Type type,
+                               WebGestureEvent::SourceDevice sourceDevice) {
+    sync_followup_event_.reset(new WebGestureEvent(
+        SyntheticWebGestureEventBuilder::Build(type, sourceDevice)));
+  }
+
   unsigned GestureEventQueueSize() {
     return filter()->coalesced_gesture_events_.size();
   }
@@ -186,6 +194,7 @@ class GestureEventFilterTest : public testing::Test,
   size_t sent_gesture_event_count_;
   WebGestureEvent last_acked_event_;
   scoped_ptr<InputEventAckState> sync_ack_result_;
+  scoped_ptr<WebGestureEvent> sync_followup_event_;
   base::MessageLoopForUI message_loop_;
 };
 
@@ -581,6 +590,61 @@ TEST_F(GestureEventFilterTest, CoalescesMultiplePinchEventSequences) {
   EXPECT_EQ(1, merged_event.modifiers);
 }
 
+// Tests a single event with an synchronous ack.
+TEST_F(GestureEventFilterTest, SimpleSyncAck) {
+  set_synchronous_ack(INPUT_EVENT_ACK_STATE_CONSUMED);
+  SimulateGestureEvent(WebInputEvent::GestureTapDown,
+                       WebGestureEvent::Touchscreen);
+  EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(0U, GestureEventQueueSize());
+  EXPECT_EQ(1U, GetAndResetAckedGestureEventCount());
+}
+
+// Tests an event with an synchronous ack which enqueues an additional event.
+TEST_F(GestureEventFilterTest, SyncAckQueuesEvent) {
+  scoped_ptr<WebGestureEvent> queued_event;
+  set_synchronous_ack(INPUT_EVENT_ACK_STATE_CONSUMED);
+  set_sync_followup_event(WebInputEvent::GestureShowPress,
+                          WebGestureEvent::Touchscreen);
+  // This event enqueues the show press event.
+  SimulateGestureEvent(WebInputEvent::GestureTapDown,
+                       WebGestureEvent::Touchscreen);
+  EXPECT_EQ(2U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(1U, GestureEventQueueSize());
+  EXPECT_EQ(1U, GetAndResetAckedGestureEventCount());
+
+  SendInputEventACK(WebInputEvent::GestureShowPress,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(0U, GestureEventQueueSize());
+  EXPECT_EQ(1U, GetAndResetAckedGestureEventCount());
+}
+
+// Tests an event with an async ack followed by an event with a sync ack.
+TEST_F(GestureEventFilterTest, AsyncThenSyncAck) {
+  // Turn off debounce handling for test isolation.
+  set_debounce_interval_time_ms(0);
+
+  SimulateGestureEvent(WebInputEvent::GestureTapDown,
+                       WebGestureEvent::Touchscreen);
+
+  EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(1U, GestureEventQueueSize());
+  EXPECT_EQ(0U, GetAndResetAckedGestureEventCount());
+
+  SimulateGestureEvent(WebInputEvent::GestureScrollBegin,
+                       WebGestureEvent::Touchscreen);
+  set_synchronous_ack(INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(2U, GestureEventQueueSize());
+  EXPECT_EQ(0U, GetAndResetAckedGestureEventCount());
+
+  SendInputEventACK(WebInputEvent::GestureTapDown,
+                    INPUT_EVENT_ACK_STATE_CONSUMED);
+  EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
+  EXPECT_EQ(0U, GestureEventQueueSize());
+  EXPECT_EQ(2U, GetAndResetAckedGestureEventCount());
+}
 
 TEST_F(GestureEventFilterTest, CoalescesScrollAndPinchEventWithSyncAck) {
   // Turn off debounce handling for test isolation.
@@ -724,127 +788,6 @@ INSTANTIATE_TEST_CASE_P(AllSources,
                         testing::Values(WebGestureEvent::Touchscreen,
                                         WebGestureEvent::Touchpad));
 #endif  // GTEST_HAS_PARAM_TEST
-
-// Test that GestureShowPress, GestureTapDown and GestureTapCancel events don't
-// wait for ACKs.
-TEST_F(GestureEventFilterTest, GestureTypesIgnoringAck) {
-  set_debounce_interval_time_ms(0);
-
-  // The show press, tap down and tap cancel events will escape the queue
-  // immediately when they reach the queue head, since they ignore acks.
-  SimulateGestureEvent(WebInputEvent::GestureShowPress,
-                       WebGestureEvent::Touchscreen);
-  EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(0U, GestureEventQueueSize());
-
-  SimulateGestureEvent(WebInputEvent::GestureShowPress,
-                       WebGestureEvent::Touchscreen);
-  EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(0U, GestureEventQueueSize());
-
-  SimulateGestureEvent(WebInputEvent::GestureTapCancel,
-                       WebGestureEvent::Touchscreen);
-  EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(0U, GestureEventQueueSize());
-
-  // Interleave a few events that do and do not ignore acks, ensuring that
-  // ack-ignoring events remain queued until they reach the queue head.
-  SimulateGestureEvent(WebInputEvent::GesturePinchBegin,
-                       WebGestureEvent::Touchpad);
-  ASSERT_EQ(1U, GetAndResetSentGestureEventCount());
-  ASSERT_EQ(1U, GestureEventQueueSize());
-
-  SimulateGestureEvent(WebInputEvent::GestureTapDown,
-                       WebGestureEvent::Touchscreen);
-  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(2U, GestureEventQueueSize());
-
-  SimulateGestureEvent(WebInputEvent::GesturePinchUpdate,
-                       WebGestureEvent::Touchpad);
-  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(3U, GestureEventQueueSize());
-
-  SimulateGestureEvent(WebInputEvent::GestureShowPress,
-                       WebGestureEvent::Touchscreen);
-  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(4U, GestureEventQueueSize());
-
-  SimulateGestureEvent(WebInputEvent::GesturePinchEnd,
-                       WebGestureEvent::Touchpad);
-  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(5U, GestureEventQueueSize());
-
-  SimulateGestureEvent(WebInputEvent::GestureTapCancel,
-                       WebGestureEvent::Touchscreen);
-  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(6U, GestureEventQueueSize());
-
-  // Now ack each event. Ack-ignoring events should remain queued until they
-  // reach the head of the queue, at which point they should be sent immediately
-  // and removed from the queue, unblocking subsequent events.
-  SendInputEventACK(WebInputEvent::GesturePinchBegin,
-                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(2U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(4U, GestureEventQueueSize());
-
-  SendInputEventACK(WebInputEvent::GestureTapDown,
-                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(4U, GestureEventQueueSize());
-
-  SendInputEventACK(WebInputEvent::GesturePinchUpdate,
-                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(2U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(2U, GestureEventQueueSize());
-
-  SendInputEventACK(WebInputEvent::GestureShowPress,
-                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(2U, GestureEventQueueSize());
-
-  SendInputEventACK(WebInputEvent::GesturePinchEnd,
-                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(0U, GestureEventQueueSize());
-
-  SendInputEventACK(WebInputEvent::GestureTapCancel,
-                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(0U, GestureEventQueueSize());
-}
-
-// Test that GestureShowPress events don't get out of order due to
-// ignoring their acks.
-TEST_F(GestureEventFilterTest, GestureShowPressIsInOrder) {
-  SimulateGestureEvent(WebInputEvent::GestureTap,
-                       WebGestureEvent::Touchscreen);
-
-  EXPECT_EQ(1U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(1U, GestureEventQueueSize());
-
-  SimulateGestureEvent(WebInputEvent::GestureShowPress,
-                       WebGestureEvent::Touchscreen);
-
-  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
-  // The ShowPress, though it ignores ack, is still stuck in the queue
-  // behind the Tap which requires an ack.
-  EXPECT_EQ(2U, GestureEventQueueSize());
-
-  SimulateGestureEvent(WebInputEvent::GestureShowPress,
-                       WebGestureEvent::Touchscreen);
-
-  EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
-  // ShowPress has entered the queue.
-  EXPECT_EQ(3U, GestureEventQueueSize());
-
-  SendInputEventACK(WebInputEvent::GestureTap,
-                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
-
-  // Now that the Tap has been ACKed, the ShowPress events should fire
-  // immediately.
-  EXPECT_EQ(2U, GetAndResetSentGestureEventCount());
-  EXPECT_EQ(0U, GestureEventQueueSize());
-}
 
 // Test that a GestureScrollEnd | GestureFlingStart are deferred during the
 // debounce interval, that Scrolls are not and that the deferred events are

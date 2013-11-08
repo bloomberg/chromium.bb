@@ -22,6 +22,7 @@ class WebInputEventTraits {
                           const blink::WebInputEvent& event);
   static void Coalesce(const blink::WebInputEvent& event_to_coalesce,
                        blink::WebInputEvent* event);
+  static bool IgnoresAckDisposition(blink::WebInputEvent::Type type);
 };
 
 }  // namespace content
