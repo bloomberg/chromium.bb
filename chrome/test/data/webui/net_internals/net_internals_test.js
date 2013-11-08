@@ -74,6 +74,11 @@ var NetInternalsTest = (function() {
           'focusableElementNotVisibleAndNotAriaHidden',
           '#hsts-view-tab-content *');
 
+      // TODO(aboxhall): enable when this bug is fixed:
+      // https://github.com/GoogleChrome/accessibility-developer-tools/issues/69
+      this.accessibilityAuditConfig.auditRulesToIgnore.push(
+          'focusableElementNotVisibleAndNotAriaHidden');
+
       // Wrap g_browser.receive around a test function so that assert and expect
       // functions can be called from observers.
       g_browser.receive =
