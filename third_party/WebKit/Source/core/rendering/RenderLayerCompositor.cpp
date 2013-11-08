@@ -509,7 +509,7 @@ void RenderLayerCompositor::removeOutOfFlowPositionedLayer(RenderLayer* layer)
     m_outOfFlowPositionedLayers.remove(layer);
 }
 
-bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* layer, CompositingChangeRepaint shouldRepaint)
+bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* layer)
 {
     bool compositedLayerMappingChanged = false;
     RenderLayer::ViewportConstrainedNotCompositedReason viewportConstrainedNotCompositedReason = RenderLayer::NoNotCompositedReason;
@@ -523,8 +523,7 @@ bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* l
 
         if (!layer->compositedLayerMapping()) {
             // If we need to repaint, do so before allocating the compositedLayerMapping
-            if (shouldRepaint == CompositingChangeRepaintNow)
-                repaintOnCompositingChange(layer);
+            repaintOnCompositingChange(layer);
 
             layer->ensureCompositedLayerMapping();
             compositedLayerMappingChanged = true;
@@ -566,8 +565,7 @@ bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* l
             layer->repainter().computeRepaintRectsIncludingDescendants();
 
             // If we need to repaint, do so now that we've removed the compositedLayerMapping
-            if (shouldRepaint == CompositingChangeRepaintNow)
-                repaintOnCompositingChange(layer);
+            repaintOnCompositingChange(layer);
         }
     }
 
@@ -597,10 +595,10 @@ bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* l
     return compositedLayerMappingChanged || nonCompositedReasonChanged;
 }
 
-bool RenderLayerCompositor::updateLayerCompositingState(RenderLayer* layer, CompositingChangeRepaint shouldRepaint)
+bool RenderLayerCompositor::updateLayerCompositingState(RenderLayer* layer)
 {
     updateDirectCompositingReasons(layer);
-    bool layerChanged = allocateOrClearCompositedLayerMapping(layer, shouldRepaint);
+    bool layerChanged = allocateOrClearCompositedLayerMapping(layer);
 
     // See if we need content or clipping layers. Methods called here should assume
     // that the compositing state of descendant layers has not been updated yet.
@@ -965,10 +963,10 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
         layer->parent()->setHasNonCompositedChild(true);
 
     // Allocate or deallocate the compositedLayerMapping now, so that we can know the layer's compositing state reliably during tree traversal in rebuildCompositingLayerTree().
-    if (allocateOrClearCompositedLayerMapping(layer, CompositingChangeRepaintNow))
+    if (allocateOrClearCompositedLayerMapping(layer))
         layersChanged = true;
 
-    if (layer->reflectionInfo() && updateLayerCompositingState(layer->reflectionInfo()->reflectionLayer(), CompositingChangeRepaintNow))
+    if (layer->reflectionInfo() && updateLayerCompositingState(layer->reflectionInfo()->reflectionLayer()))
         layersChanged = true;
 
     descendantHas3DTransform |= anyDescendantHas3DTransform || layer->has3DTransform();

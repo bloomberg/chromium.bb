@@ -99,8 +99,7 @@ public:
     void updateCompositingLayers(CompositingUpdateType);
 
     // Update the compositing state of the given layer. Returns true if that state changed.
-    enum CompositingChangeRepaint { CompositingChangeRepaintNow, CompositingChangeWillRepaintLater };
-    bool updateLayerCompositingState(RenderLayer*, CompositingChangeRepaint = CompositingChangeRepaintNow);
+    bool updateLayerCompositingState(RenderLayer*);
 
     // Update the geometry for compositing children of compositingAncestor.
     void updateCompositingDescendantGeometry(RenderLayerStackingNode* compositingAncestor, RenderLayer*, bool compositedChildrenOnly);
@@ -222,7 +221,7 @@ private:
     CompositingReasons subtreeReasonsForCompositing(RenderObject*, bool hasCompositedDescendants, bool has3DTransformedDescendants) const;
 
     // Make or destroy the CompositedLayerMapping for this layer; returns true if the compositedLayerMapping changed.
-    bool allocateOrClearCompositedLayerMapping(RenderLayer*, CompositingChangeRepaint shouldRepaint);
+    bool allocateOrClearCompositedLayerMapping(RenderLayer*);
 
     void clearMappingForRenderLayerIncludingDescendants(RenderLayer*);
 
