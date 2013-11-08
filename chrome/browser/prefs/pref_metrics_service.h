@@ -109,11 +109,9 @@ class PrefMetricsService : public BrowserContextKeyedService {
   // called after |device_id| has been set.
   void UpdateTrackedPreference(const char* path);
 
-  // Removes the tracked preference from local state. Returns 'true' iff. the
-  // value was present.
-  bool RemoveTrackedPreference(const char* path);
-
-  // Computes an MD5 hash for the given preference value.
+  // Computes an MD5 hash for the given preference value. |value| can be
+  // NULL which will result in the unique hash representing NULL for the pref
+  // at |path|.
   std::string GetHashedPrefValue(
       const char* path,
       const base::Value* value,

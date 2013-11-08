@@ -195,9 +195,8 @@ int PrefMetricsServiceTest::pref1_unchanged_total;
 int PrefMetricsServiceTest::pref2_unchanged_total;
 
 TEST_F(PrefMetricsServiceTest, StartupNoUserPref) {
-  // Local state is empty and no user prefs are set. We should record that we
-  // checked preferences once but since there are no user preference values, no
-  // other histogram data should be collected.
+  // Local state is empty and no user prefs are set. We should still have
+  // initialized all preferences once.
   scoped_ptr<PrefMetricsService> service =
       CreatePrefMetricsService(kTestDeviceId);
   UpdateHistogramSamples();
@@ -205,12 +204,34 @@ TEST_F(PrefMetricsServiceTest, StartupNoUserPref) {
   EXPECT_EQ(0, pref2_changed_);
   EXPECT_EQ(0, pref1_cleared_);
   EXPECT_EQ(0, pref2_cleared_);
-  EXPECT_EQ(0, pref1_initialized_);
-  EXPECT_EQ(0, pref2_initialized_);
+  EXPECT_EQ(1, pref1_initialized_);
+  EXPECT_EQ(1, pref2_initialized_);
   EXPECT_EQ(0, pref1_migrated_);
   EXPECT_EQ(0, pref2_migrated_);
-  EXPECT_EQ(1, pref1_unchanged_);
-  EXPECT_EQ(1, pref2_unchanged_);
+  EXPECT_EQ(0, pref1_unchanged_);
+  EXPECT_EQ(0, pref2_unchanged_);
+
+  // Ensure that each pref got a hash even though their value is NULL (i.e.,
+  // empty).
+  const DictionaryValue* root_dictionary =
+      local_state_.GetDictionary(prefs::kProfilePreferenceHashes);
+  ASSERT_TRUE(root_dictionary != NULL);
+
+  const DictionaryValue* child_dictionary = NULL;
+  ASSERT_TRUE(root_dictionary->GetDictionaryWithoutPathExpansion(
+      profile_name_, &child_dictionary));
+
+  std::string pref1_hash;
+  std::string pref2_hash;
+  ASSERT_TRUE(child_dictionary->GetString(kTrackedPrefs[0], &pref1_hash));
+  ASSERT_TRUE(child_dictionary->GetString(kTrackedPrefs[1], &pref2_hash));
+
+  // These two hashes are expected to be different as the paths on which they're
+  // based differ.
+  EXPECT_EQ("2A38C5000E1EDC2D5FA3B6A8E1D3B54068E32D329324D0D8C1AADA65BBDB20B3",
+            pref1_hash);
+  EXPECT_EQ("C4FEB38BDADD16CC642815B9798FEA70BF92C6CA9250BACD6993701196D72067",
+            pref2_hash);
 }
 
 TEST_F(PrefMetricsServiceTest, StartupUserPref) {
@@ -226,11 +247,11 @@ TEST_F(PrefMetricsServiceTest, StartupUserPref) {
     EXPECT_EQ(0, pref1_cleared_);
     EXPECT_EQ(0, pref2_cleared_);
     EXPECT_EQ(1, pref1_initialized_);
-    EXPECT_EQ(0, pref2_initialized_);
+    EXPECT_EQ(1, pref2_initialized_);
     EXPECT_EQ(0, pref1_migrated_);
     EXPECT_EQ(0, pref2_migrated_);
     EXPECT_EQ(0, pref1_unchanged_);
-    EXPECT_EQ(1, pref2_unchanged_);
+    EXPECT_EQ(0, pref2_unchanged_);
 
     // Change the pref. This should be observed by the PrefMetricsService, which
     // will update the hash in local_state_ to stay in sync.
@@ -267,11 +288,11 @@ TEST_F(PrefMetricsServiceTest, ChangedUserPref) {
     EXPECT_EQ(0, pref1_cleared_);
     EXPECT_EQ(0, pref2_cleared_);
     EXPECT_EQ(1, pref1_initialized_);
-    EXPECT_EQ(0, pref2_initialized_);
+    EXPECT_EQ(1, pref2_initialized_);
     EXPECT_EQ(0, pref1_migrated_);
     EXPECT_EQ(0, pref2_migrated_);
     EXPECT_EQ(0, pref1_unchanged_);
-    EXPECT_EQ(1, pref2_unchanged_);
+    EXPECT_EQ(0, pref2_unchanged_);
     // Hashed prefs should now be stored in local state.
   }
   // Change the value of the tracked pref while there is no PrefMetricsService
