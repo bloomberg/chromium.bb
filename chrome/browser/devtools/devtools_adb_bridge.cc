@@ -73,6 +73,9 @@ const char kChromeDefaultSocket[] = "chrome_devtools_remote";
 const int kMinVersionNewWithURL = 32;
 const int kNewPageNavigateDelayMs = 500;
 
+const char kWebViewSocketPrefix[] = "webview_devtools_remote";
+const char kWebViewNameTemplate[] = "WebView in %s";
+
 #if defined(DEBUG_DEVTOOLS)
 const char kLocalChrome[] = "Local Chrome";
 #endif  // defined(DEBUG_DEVTOOLS)
@@ -568,10 +571,14 @@ void AdbPagesCommand::CreateBrowsers(
       std::string package = pit->second;
       package_to_running_browser[package] = browser;
       const BrowserDescriptor* descriptor = FindBrowserDescriptor(package);
-      if (descriptor)
+      if (descriptor) {
         browser->set_display_name(descriptor->display_name);
-      else
+      } else if (socket.find(kWebViewSocketPrefix) == 0) {
+        browser->set_display_name(
+            base::StringPrintf(kWebViewNameTemplate, package.c_str()));
+      } else {
         browser->set_display_name(package);
+      }
     } else {
       // Set fallback display name.
       std::string name = socket.substr(0, socket.find(channel_pattern));

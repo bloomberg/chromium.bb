@@ -305,7 +305,8 @@ public:
     ASSERT_FALSE(chromium);
 
     scoped_refptr<DevToolsAdbBridge::RemoteBrowser> webview =
-        FindBrowserByDisplayName(browsers, "com.sample.feed");
+        FindBrowserByDisplayName(browsers, "WebView in com.sample.feed");
+    ASSERT_TRUE(webview);
 
     scoped_refptr<DevToolsAdbBridge::RemoteBrowser> noprocess =
         FindBrowserByDisplayName(browsers, "Noprocess");
