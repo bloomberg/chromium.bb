@@ -234,14 +234,17 @@ ProfileChooserView::ProfileChooserView(views::View* anchor_view,
       browser_));
   avatar_menu_->RebuildMenu();
 
-  Profile* profile = browser_->profile();
-  ProfileOAuth2TokenServiceFactory::GetForProfile(profile)->AddObserver(this);
+  ProfileOAuth2TokenService* oauth2_token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(browser_->profile());
+  if (oauth2_token_service)
+    oauth2_token_service->AddObserver(this);
 }
 
 ProfileChooserView::~ProfileChooserView() {
-  Profile* profile = browser_->profile();
-  ProfileOAuth2TokenServiceFactory::GetForProfile(profile)->
-      RemoveObserver(this);
+  ProfileOAuth2TokenService* oauth2_token_service =
+      ProfileOAuth2TokenServiceFactory::GetForProfile(browser_->profile());
+  if (oauth2_token_service)
+    oauth2_token_service->RemoveObserver(this);
 }
 
 void ProfileChooserView::ResetLinksAndButtons() {
