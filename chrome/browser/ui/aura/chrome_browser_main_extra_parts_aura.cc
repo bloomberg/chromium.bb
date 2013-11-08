@@ -68,7 +68,7 @@ void ChromeBrowserMainExtraPartsAura::ToolkitInitialized() {
 #endif
 }
 
-void ChromeBrowserMainExtraPartsAura::PostMainMessageLoopStart() {
+void ChromeBrowserMainExtraPartsAura::PreCreateThreads() {
 #if !defined(OS_CHROMEOS)
 #if defined(USE_ASH)
   if (!chrome::ShouldOpenAshOnStartup())
