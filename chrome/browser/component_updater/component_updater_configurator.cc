@@ -168,7 +168,7 @@ int ChromeConfigurator::StepDelayMedium() {
 }
 
 int ChromeConfigurator::StepDelay() {
-  return fast_update_ ? 1 : 4;
+  return fast_update_ ? 1 : 1;
 }
 
 int ChromeConfigurator::MinimumReCheckWait() {
