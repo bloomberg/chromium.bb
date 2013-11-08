@@ -340,7 +340,7 @@ class ContentViewCoreImpl : public ContentViewCore,
   float GetTouchPaddingDip();
 
   blink::WebGestureEvent MakeGestureEvent(
-      blink::WebInputEvent::Type type, long time_ms, float x, float y) const;
+      blink::WebInputEvent::Type type, int64 time_ms, float x, float y) const;
 
   void SendBeginFrame(base::TimeTicks frame_time);
 

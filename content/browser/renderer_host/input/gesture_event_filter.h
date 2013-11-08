@@ -213,6 +213,9 @@ class CONTENT_EXPORT GestureEventFilter {
   // TODO(rjkroege): Make this dynamically configurable.
   int debounce_interval_time_ms_;
 
+  // Whether GestureFlingStart should be debounced when a scroll is in progress.
+  bool debounce_fling_start_;
+
   DISALLOW_COPY_AND_ASSIGN(GestureEventFilter);
 };
 

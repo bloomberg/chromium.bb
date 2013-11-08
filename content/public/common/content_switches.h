@@ -63,6 +63,7 @@ CONTENT_EXPORT extern const char kDisableFiltersOverIPC[];
 CONTENT_EXPORT extern const char kDisableFixedPositionCreatesStackingContext[];
 CONTENT_EXPORT extern const char kDisableFlash3d[];
 CONTENT_EXPORT extern const char kDisableFlashStage3d[];
+extern const char kDisableFlingDebounce[];
 CONTENT_EXPORT extern const char kDisableForceCompositingMode[];
 CONTENT_EXPORT extern const char kDisableFullScreen[];
 extern const char kDisableGeolocation[];
