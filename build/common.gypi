@@ -4221,8 +4221,6 @@
             '-Wno-char-subscripts',
             # Clang spots more unused functions.
             '-Wno-unused-function',
-            # See comments on this flag higher up in this file.
-            '-Wno-unnamed-type-template-args',
             # Match OS X clang C++11 warning settings.
             '-Wno-c++11-narrowing',
           ],
