@@ -14,6 +14,7 @@
 #include "cc/layers/layer.h"
 #include "cc/layers/render_surface_impl.h"
 #include "cc/layers/scrollbar_layer_impl_base.h"
+#include "cc/resources/ui_resource_request.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_host_impl.h"
 #include "ui/gfx/size_conversions.h"

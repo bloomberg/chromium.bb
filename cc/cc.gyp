@@ -370,6 +370,8 @@
         'resources/ui_resource_bitmap.cc',
         'resources/ui_resource_bitmap.h',
         'resources/ui_resource_client.h',
+        'resources/ui_resource_request.cc',
+        'resources/ui_resource_request.h',
         'resources/video_resource_updater.cc',
         'resources/video_resource_updater.h',
         'resources/worker_pool.cc',

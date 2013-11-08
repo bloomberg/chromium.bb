@@ -31,7 +31,7 @@
 #include "cc/layers/painted_scrollbar_layer.h"
 #include "cc/layers/render_surface.h"
 #include "cc/resources/prioritized_resource_manager.h"
-#include "cc/resources/ui_resource_client.h"
+#include "cc/resources/ui_resource_request.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_host_impl.h"
@@ -69,34 +69,6 @@ RendererCapabilities::RendererCapabilities()
       using_discard_framebuffer(false) {}
 
 RendererCapabilities::~RendererCapabilities() {}
-
-UIResourceRequest::UIResourceRequest(UIResourceRequestType type,
-                                     UIResourceId id)
-    : type_(type), id_(id) {}
-
-UIResourceRequest::UIResourceRequest(UIResourceRequestType type,
-                                     UIResourceId id,
-                                     const UIResourceBitmap& bitmap)
-    : type_(type), id_(id), bitmap_(new UIResourceBitmap(bitmap)) {}
-
-UIResourceRequest::UIResourceRequest(const UIResourceRequest& request) {
-  (*this) = request;
-}
-
-UIResourceRequest& UIResourceRequest::operator=(
-    const UIResourceRequest& request) {
-  type_ = request.type_;
-  id_ = request.id_;
-  if (request.bitmap_) {
-    bitmap_ = make_scoped_ptr(new UIResourceBitmap(*request.bitmap_.get()));
-  } else {
-    bitmap_.reset();
-  }
-
-  return *this;
-}
-
-UIResourceRequest::~UIResourceRequest() {}
 
 scoped_ptr<LayerTreeHost> LayerTreeHost::CreateThreaded(
     LayerTreeHostClient* client,

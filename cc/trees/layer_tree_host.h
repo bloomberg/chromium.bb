@@ -30,8 +30,6 @@
 #include "cc/output/output_surface.h"
 #include "cc/resources/resource_format.h"
 #include "cc/resources/scoped_ui_resource.h"
-#include "cc/resources/ui_resource_bitmap.h"
-#include "cc/resources/ui_resource_client.h"
 #include "cc/trees/layer_tree_host_client.h"
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_settings.h"
@@ -57,6 +55,7 @@ class ResourceProvider;
 class ResourceUpdateQueue;
 class SharedBitmapManager;
 class TopControlsManager;
+class UIResourceRequest;
 struct RenderingStats;
 struct ScrollAndScaleSet;
 
@@ -77,37 +76,6 @@ struct CC_EXPORT RendererCapabilities {
   bool using_map_image;
   bool using_shared_memory_resources;
   bool using_discard_framebuffer;
-};
-
-class CC_EXPORT UIResourceRequest {
- public:
-  enum UIResourceRequestType {
-    UIResourceCreate,
-    UIResourceDelete,
-    UIResourceInvalidRequest
-  };
-
-  UIResourceRequest(UIResourceRequestType type, UIResourceId id);
-  UIResourceRequest(UIResourceRequestType type,
-                    UIResourceId id,
-                    const UIResourceBitmap& bitmap);
-  UIResourceRequest(const UIResourceRequest& request);
-
-  ~UIResourceRequest();
-
-  UIResourceRequestType GetType() const { return type_; }
-  UIResourceId GetId() const { return id_; }
-  UIResourceBitmap GetBitmap() const {
-    DCHECK(bitmap_);
-    return *bitmap_.get();
-  }
-
-  UIResourceRequest& operator=(const UIResourceRequest& request);
-
- private:
-  UIResourceRequestType type_;
-  UIResourceId id_;
-  scoped_ptr<UIResourceBitmap> bitmap_;
 };
 
 class CC_EXPORT LayerTreeHost {
