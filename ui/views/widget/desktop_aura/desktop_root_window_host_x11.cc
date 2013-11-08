@@ -435,7 +435,9 @@ gfx::Rect DesktopRootWindowHostX11::GetWorkAreaBoundsInScreen() const {
 
 void DesktopRootWindowHostX11::SetShape(gfx::NativeRegion native_region) {
   if (native_region) {
-    Region region = gfx::CreateRegionFromSkRegion(*native_region);
+    SkPath path;
+    native_region->getBoundaryPath(&path);
+    Region region = gfx::CreateRegionFromSkPath(path);
     XShapeCombineRegion(
         xdisplay_, xwindow_, ShapeBounding, 0, 0, region, false);
     XDestroyRegion(region);
