@@ -388,7 +388,13 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   EXPECT_FALSE(StartupBrowserCreator::WasRestarted());
 }
 
-IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, AddFirstRunTab) {
+// Fails on official builds. See http://crbug.com/313856
+#if defined(GOOGLE_CHROME_BUILD)
+#define MAYBE_AddFirstRunTab DISABLED_AddFirstRunTab
+#else
+#define MAYBE_AddFirstRunTab AddFirstRunTab
+#endif
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, MAYBE_AddFirstRunTab) {
   StartupBrowserCreator browser_creator;
   browser_creator.AddFirstRunTab(test_server()->GetURL("files/title1.html"));
   browser_creator.AddFirstRunTab(test_server()->GetURL("files/title2.html"));
@@ -415,7 +421,13 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, AddFirstRunTab) {
 
 // Test hard-coded special first run tabs (defined in
 // StartupBrowserCreatorImpl::AddStartupURLs()).
-IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, AddCustomFirstRunTab) {
+// Fails on official builds. See http://crbug.com/313856
+#if defined(GOOGLE_CHROME_BUILD)
+#define MAYBE_AddCustomFirstRunTab DISABLED_AddCustomFirstRunTab
+#else
+#define MAYBE_AddCustomFirstRunTab AddCustomFirstRunTab
+#endif
+IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, MAYBE_AddCustomFirstRunTab) {
   StartupBrowserCreator browser_creator;
   browser_creator.AddFirstRunTab(test_server()->GetURL("files/title1.html"));
   browser_creator.AddFirstRunTab(GURL("http://new_tab_page"));
