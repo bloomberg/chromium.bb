@@ -521,7 +521,7 @@ PassRefPtr<SimpleFontData> FontCache::getFontDataForCharacter(const Font& font, 
 
 }
 
-PassRefPtr<SimpleFontData> FontCache::getSimilarFontPlatformData(const Font& font)
+PassRefPtr<SimpleFontData> FontCache::getSimilarFontPlatformData(const FontDescription&)
 {
     return 0;
 }

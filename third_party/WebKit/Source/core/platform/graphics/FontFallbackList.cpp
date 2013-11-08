@@ -29,8 +29,11 @@
 #include "config.h"
 #include "core/platform/graphics/FontFallbackList.h"
 
+#include "FontFamilyNames.h"
 #include "core/platform/graphics/FontCache.h"
 #include "core/platform/graphics/SegmentedFontData.h"
+#include "platform/fonts/FontDescription.h"
+#include "platform/fonts/FontFamily.h"
 
 namespace WebCore {
 
@@ -73,9 +76,9 @@ void FontFallbackList::releaseFontData()
     }
 }
 
-void FontFallbackList::determinePitch(const Font* font) const
+void FontFallbackList::determinePitch(const FontDescription& fontDescription) const
 {
-    const FontData* fontData = primaryFontData(font);
+    const FontData* fontData = primaryFontData(fontDescription);
     if (!fontData->isSegmented())
         m_pitch = static_cast<const SimpleFontData*>(fontData)->pitch();
     else {
@@ -103,14 +106,14 @@ bool FontFallbackList::loadingCustomFonts() const
     return false;
 }
 
-const FontData* FontFallbackList::primaryFontData(const Font* f) const
+const FontData* FontFallbackList::primaryFontData(const FontDescription& fontDescription) const
 {
     for (unsigned fontIndex = 0; ; ++fontIndex) {
-        const FontData* fontData = fontDataAt(f, fontIndex);
+        const FontData* fontData = fontDataAt(fontDescription, fontIndex);
         if (!fontData) {
             // All fonts are custom fonts and are loading. Return the first FontData.
             // FIXME: Correct fallback to the default font.
-            return fontDataAt(f, 0);
+            return fontDataAt(fontDescription, 0);
         }
 
         // When a custom font is loading, we should use the correct fallback font to layout the text.
@@ -127,7 +130,55 @@ const FontData* FontFallbackList::primaryFontData(const Font* f) const
     }
 }
 
-const FontData* FontFallbackList::fontDataAt(const Font* font, unsigned realizedFontIndex) const
+PassRefPtr<FontData> FontFallbackList::getFontData(const FontDescription& fontDescription, int& familyIndex) const
+{
+    RefPtr<FontData> result;
+
+    int startIndex = familyIndex;
+    const FontFamily* startFamily = &fontDescription.family();
+    for (int i = 0; startFamily && i < startIndex; i++)
+        startFamily = startFamily->next();
+    const FontFamily* currFamily = startFamily;
+    while (currFamily && !result) {
+        familyIndex++;
+        if (currFamily->family().length()) {
+            if (m_fontSelector)
+                result = m_fontSelector->getFontData(fontDescription, currFamily->family());
+
+            if (!result)
+                result = fontCache()->getFontResourceData(fontDescription, currFamily->family());
+        }
+        currFamily = currFamily->next();
+    }
+
+    if (!currFamily)
+        familyIndex = cAllFamiliesScanned;
+
+    if (!result) {
+        // We didn't find a font. Try to find a similar font using our own specific knowledge about our platform.
+        // For example on OS X, we know to map any families containing the words Arabic, Pashto, or Urdu to the
+        // Geeza Pro font.
+        result = fontCache()->getSimilarFontPlatformData(fontDescription);
+    }
+
+    if (!result && !startIndex) {
+        // If it's the primary font that we couldn't find, we try the following. In all other cases, we will
+        // just use per-character system fallback.
+
+        if (m_fontSelector) {
+            // Try the user's preferred standard font.
+            if (RefPtr<FontData> data = m_fontSelector->getFontData(fontDescription, FontFamilyNames::webkit_standard))
+                return data.release();
+        }
+
+        // Still no result. Hand back our last resort fallback font.
+        result = fontCache()->getLastResortFallbackFont(fontDescription);
+    }
+    return result.release();
+}
+
+
+const FontData* FontFallbackList::fontDataAt(const FontDescription& fontDescription, unsigned realizedFontIndex) const
 {
     if (realizedFontIndex < m_fontList.size())
         return m_fontList[realizedFontIndex].get(); // This fallback font is already in our list.
@@ -143,7 +194,7 @@ const FontData* FontFallbackList::fontDataAt(const Font* font, unsigned realized
     // in |m_familyIndex|, so that we never scan the same spot in the list twice.  getFontData will adjust our
     // |m_familyIndex| as it scans for the right font to make.
     ASSERT(fontCache()->generation() == m_generation);
-    RefPtr<FontData> result = fontCache()->getFontData(*font, m_familyIndex, m_fontSelector.get());
+    RefPtr<FontData> result = getFontData(fontDescription, m_familyIndex);
     if (result) {
         m_fontList.append(result);
         if (result->isLoading())

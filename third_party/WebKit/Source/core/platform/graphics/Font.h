@@ -301,19 +301,19 @@ inline Font::~Font()
 inline const SimpleFontData* Font::primaryFont() const
 {
     ASSERT(m_fontFallbackList);
-    return m_fontFallbackList->primarySimpleFontData(this);
+    return m_fontFallbackList->primarySimpleFontData(m_fontDescription);
 }
 
 inline const FontData* Font::fontDataAt(unsigned index) const
 {
     ASSERT(m_fontFallbackList);
-    return m_fontFallbackList->fontDataAt(this, index);
+    return m_fontFallbackList->fontDataAt(m_fontDescription, index);
 }
 
 inline bool Font::isFixedPitch() const
 {
     ASSERT(m_fontFallbackList);
-    return m_fontFallbackList->isFixedPitch(this);
+    return m_fontFallbackList->isFixedPitch(m_fontDescription);
 }
 
 inline FontSelector* Font::fontSelector() const

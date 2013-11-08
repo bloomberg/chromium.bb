@@ -29,7 +29,6 @@
 
 namespace WebCore {
 
-class Font;
 class GlyphPageTreeNode;
 class GraphicsContext;
 class IntRect;
@@ -70,8 +69,13 @@ public:
     ~FontFallbackList() { releaseFontData(); }
     void invalidate(PassRefPtr<FontSelector>);
 
-    bool isFixedPitch(const Font* f) const { if (m_pitch == UnknownPitch) determinePitch(f); return m_pitch == FixedPitch; };
-    void determinePitch(const Font*) const;
+    bool isFixedPitch(const FontDescription& fontDescription) const
+    {
+        if (m_pitch == UnknownPitch)
+            determinePitch(fontDescription);
+        return m_pitch == FixedPitch;
+    }
+    void determinePitch(const FontDescription&) const;
 
     bool loadingCustomFonts() const;
 
@@ -85,16 +89,18 @@ public:
 private:
     FontFallbackList();
 
-    const SimpleFontData* primarySimpleFontData(const Font* f)
+    const SimpleFontData* primarySimpleFontData(const FontDescription& fontDescription)
     {
         ASSERT(isMainThread());
         if (!m_cachedPrimarySimpleFontData)
-            m_cachedPrimarySimpleFontData = primaryFontData(f)->fontDataForCharacter(' ');
+            m_cachedPrimarySimpleFontData = primaryFontData(fontDescription)->fontDataForCharacter(' ');
         return m_cachedPrimarySimpleFontData;
     }
 
-    const FontData* primaryFontData(const Font*) const;
-    const FontData* fontDataAt(const Font*, unsigned index) const;
+    PassRefPtr<FontData> getFontData(const FontDescription&, int& familyIndex) const;
+
+    const FontData* primaryFontData(const FontDescription&) const;
+    const FontData* fontDataAt(const FontDescription&, unsigned index) const;
 
     void setPlatformFont(const FontPlatformData&);
 

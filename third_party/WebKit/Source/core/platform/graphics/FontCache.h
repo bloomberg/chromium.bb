@@ -70,7 +70,6 @@ public:
 
     enum ShouldRetain { Retain, DoNotRetain };
 
-    PassRefPtr<FontData> getFontData(const Font&, int& familyIndex, FontSelector*);
     void releaseFontData(const SimpleFontData*);
 
     // This method is implemented by the plaform and used by
@@ -135,7 +134,7 @@ private:
     FontPlatformData* getFontResourcePlatformData(const FontDescription&, const AtomicString& family, bool checkingAlternateName = false);
 
     // These methods are implemented by each platform.
-    PassRefPtr<SimpleFontData> getSimilarFontPlatformData(const Font&);
+    PassRefPtr<SimpleFontData> getSimilarFontPlatformData(const FontDescription&);
     FontPlatformData* createFontPlatformData(const FontDescription&, const AtomicString& family, float fontSize);
 
     // Implemented on skia platforms.

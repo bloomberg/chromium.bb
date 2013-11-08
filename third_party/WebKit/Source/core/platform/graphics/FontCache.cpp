@@ -358,53 +358,6 @@ size_t FontCache::inactiveFontDataCount()
     return 0;
 }
 
-PassRefPtr<FontData> FontCache::getFontData(const Font& font, int& familyIndex, FontSelector* fontSelector)
-{
-    RefPtr<FontData> result;
-
-    int startIndex = familyIndex;
-    const FontFamily* startFamily = &font.fontDescription().family();
-    for (int i = 0; startFamily && i < startIndex; i++)
-        startFamily = startFamily->next();
-    const FontFamily* currFamily = startFamily;
-    while (currFamily && !result) {
-        familyIndex++;
-        if (currFamily->family().length()) {
-            if (fontSelector)
-                result = fontSelector->getFontData(font.fontDescription(), currFamily->family());
-
-            if (!result)
-                result = getFontResourceData(font.fontDescription(), currFamily->family());
-        }
-        currFamily = currFamily->next();
-    }
-
-    if (!currFamily)
-        familyIndex = cAllFamiliesScanned;
-
-    if (!result) {
-        // We didn't find a font. Try to find a similar font using our own specific knowledge about our platform.
-        // For example on OS X, we know to map any families containing the words Arabic, Pashto, or Urdu to the
-        // Geeza Pro font.
-        result = getSimilarFontPlatformData(font);
-    }
-
-    if (!result && !startIndex) {
-        // If it's the primary font that we couldn't find, we try the following. In all other cases, we will
-        // just use per-character system fallback.
-
-        if (fontSelector) {
-            // Try the user's preferred standard font.
-            if (RefPtr<FontData> data = fontSelector->getFontData(font.fontDescription(), FontFamilyNames::webkit_standard))
-                return data.release();
-        }
-
-        // Still no result. Hand back our last resort fallback font.
-        result = getLastResortFallbackFont(font.fontDescription());
-    }
-    return result.release();
-}
-
 static HashSet<FontSelector*>* gClients;
 
 void FontCache::addClient(FontSelector* client)
