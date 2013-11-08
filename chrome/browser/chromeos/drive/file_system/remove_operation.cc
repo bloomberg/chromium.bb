@@ -90,7 +90,7 @@ FileError UpdateLocalStateAfterUnparent(
   FileError error = metadata->GetResourceEntryById(local_id, &entry);
   if (error != FILE_ERROR_OK)
     return error;
-  entry.set_parent_local_id(util::kDriveOtherDirSpecialResourceId);
+  entry.set_parent_local_id(util::kDriveOtherDirLocalId);
   return metadata->RefreshEntry(entry);
 }
 

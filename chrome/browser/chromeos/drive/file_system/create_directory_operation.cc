@@ -114,7 +114,7 @@ base::FilePath CreateDirectoryOperation::GetExistingDeepestDirectory(
   if (components.empty() || components[0] != util::kDriveGrandRootDirName)
     return base::FilePath();
 
-  std::string local_id = util::kDriveGrandRootSpecialResourceId;
+  std::string local_id = util::kDriveGrandRootLocalId;
   for (size_t i = 1; i < components.size(); ++i) {
     std::string child_local_id = metadata->GetChildId(local_id, components[i]);
     if (child_local_id.empty())

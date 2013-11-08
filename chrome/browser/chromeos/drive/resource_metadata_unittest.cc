@@ -420,8 +420,8 @@ TEST_F(ResourceMetadataTest, RefreshEntry) {
 
   // Cannot refresh root.
   dir_entry.Clear();
-  dir_entry.set_resource_id(util::kDriveGrandRootSpecialResourceId);
-  dir_entry.set_local_id(util::kDriveGrandRootSpecialResourceId);
+  dir_entry.set_resource_id(util::kDriveGrandRootLocalId);
+  dir_entry.set_local_id(util::kDriveGrandRootLocalId);
   dir_entry.set_title("new-root-name");
   dir_entry.set_parent_local_id(dir3_id);
   EXPECT_EQ(FILE_ERROR_INVALID_OPERATION,
@@ -559,14 +559,14 @@ TEST_F(ResourceMetadataTest, RemoveEntry) {
 
   // Try removing root. This should fail.
   EXPECT_EQ(FILE_ERROR_ACCESS_DENIED, resource_metadata_->RemoveEntry(
-      util::kDriveGrandRootSpecialResourceId));
+      util::kDriveGrandRootLocalId));
 }
 
 TEST_F(ResourceMetadataTest, GetResourceEntryById_RootDirectory) {
   // Look up the root directory by its ID.
   ResourceEntry entry;
   EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->GetResourceEntryById(
-      util::kDriveGrandRootSpecialResourceId, &entry));
+      util::kDriveGrandRootLocalId, &entry));
   EXPECT_EQ("drive", entry.base_name());
 }
 
@@ -726,7 +726,7 @@ TEST_F(ResourceMetadataTest, Reset) {
                 base::FilePath::FromUTF8Unsafe("drive"), &entry));
   EXPECT_EQ("drive", entry.base_name());
   ASSERT_TRUE(entry.file_info().is_directory());
-  EXPECT_EQ(util::kDriveGrandRootSpecialResourceId, entry.resource_id());
+  EXPECT_EQ(util::kDriveGrandRootLocalId, entry.resource_id());
 
   // There is "other" under "drive".
   ASSERT_EQ(FILE_ERROR_OK,

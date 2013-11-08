@@ -319,7 +319,7 @@ TEST_F(FileSystemTest, GetGrandRootEntry) {
   const base::FilePath kFilePath(FILE_PATH_LITERAL("drive"));
   scoped_ptr<ResourceEntry> entry = GetResourceEntrySync(kFilePath);
   ASSERT_TRUE(entry);
-  EXPECT_EQ(util::kDriveGrandRootSpecialResourceId, entry->resource_id());
+  EXPECT_EQ(util::kDriveGrandRootLocalId, entry->resource_id());
 
   // Getting the grand root entry should not cause the resource load to happen.
   EXPECT_EQ(0, fake_drive_service_->about_resource_load_count());
@@ -330,7 +330,7 @@ TEST_F(FileSystemTest, GetOtherDirEntry) {
   const base::FilePath kFilePath(FILE_PATH_LITERAL("drive/other"));
   scoped_ptr<ResourceEntry> entry = GetResourceEntrySync(kFilePath);
   ASSERT_TRUE(entry);
-  EXPECT_EQ(util::kDriveOtherDirSpecialResourceId, entry->resource_id());
+  EXPECT_EQ(util::kDriveOtherDirLocalId, entry->resource_id());
 
   // Getting the "other" directory entry should not cause the resource load to
   // happen.

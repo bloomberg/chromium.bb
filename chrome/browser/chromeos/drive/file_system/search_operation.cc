@@ -61,7 +61,7 @@ FileError ResolveSearchResultOnBlockingPool(
       //
       // It will be moved to the right place when the metadata gets synced
       // in normal loading process in ChangeListProcessor.
-      entry.set_parent_local_id(util::kDriveOtherDirSpecialResourceId);
+      entry.set_parent_local_id(util::kDriveOtherDirLocalId);
       error = resource_metadata->AddEntry(entry, &local_id);
     }
     if (error != FILE_ERROR_OK)

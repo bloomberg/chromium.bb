@@ -139,8 +139,7 @@ TEST_F(ChangeListProcessorTest, ApplyFullResourceList) {
 
   const EntryExpectation kExpected[] = {
       // Root files
-      {"drive/root",
-          kRootId, util::kDriveGrandRootSpecialResourceId, DIRECTORY},
+      {"drive/root", kRootId, util::kDriveGrandRootLocalId, DIRECTORY},
       {"drive/root/File 1.txt",
           "file:2_file_resource_id", kRootId, FILE},
       {"drive/root/Slash \xE2\x88\x95 in file 1.txt",
@@ -170,9 +169,8 @@ TEST_F(ChangeListProcessorTest, ApplyFullResourceList) {
           "folder:sub_sub_directory_folder_id",
           "folder:sub_dir_folder_resource_id", DIRECTORY},
       // Orphan
-      {"drive/other/Orphan File 1.txt",
-          "file:1_orphanfile_resource_id",
-          util::kDriveOtherDirSpecialResourceId, FILE},
+      {"drive/other/Orphan File 1.txt", "file:1_orphanfile_resource_id",
+           util::kDriveOtherDirLocalId, FILE},
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kExpected); ++i) {

@@ -238,7 +238,7 @@ TEST_F(ChangeListLoaderTest, LoadIfNeeded_MyDrive) {
   // Load grand root.
   FileError error = FILE_ERROR_FAILED;
   change_list_loader_->LoadIfNeeded(
-      DirectoryFetchInfo(util::kDriveGrandRootSpecialResourceId, 0),
+      DirectoryFetchInfo(util::kDriveGrandRootLocalId, 0),
       google_apis::test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(FILE_ERROR_OK, error);
@@ -325,13 +325,13 @@ TEST_F(ChangeListLoaderTest, LoadIfNeeded_MultipleCalls) {
   // Load grand root.
   FileError error = FILE_ERROR_FAILED;
   change_list_loader_->LoadIfNeeded(
-      DirectoryFetchInfo(util::kDriveGrandRootSpecialResourceId, 0),
+      DirectoryFetchInfo(util::kDriveGrandRootLocalId, 0),
       google_apis::test_util::CreateCopyResultCallback(&error));
 
   // Load grand root again without waiting for the result.
   FileError error2 = FILE_ERROR_FAILED;
   change_list_loader_->LoadIfNeeded(
-      DirectoryFetchInfo(util::kDriveGrandRootSpecialResourceId, 0),
+      DirectoryFetchInfo(util::kDriveGrandRootLocalId, 0),
       google_apis::test_util::CreateCopyResultCallback(&error2));
   base::RunLoop().RunUntilIdle();
 

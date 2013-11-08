@@ -61,7 +61,7 @@ bool ConvertToResourceEntry(const google_apis::ResourceEntry& input,
 
   // Apply mapping from an empty parent to the special dummy directory.
   if (parent_resource_id.empty())
-    parent_resource_id = util::kDriveOtherDirSpecialResourceId;
+    parent_resource_id = util::kDriveOtherDirLocalId;
 
   converted.set_deleted(input.deleted());
   converted.set_shared_with_me(HasSharedWithMeLabel(input));

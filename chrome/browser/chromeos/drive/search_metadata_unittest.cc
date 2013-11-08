@@ -73,7 +73,7 @@ class SearchMetadataTest : public testing::Test {
     // drive/root
     EXPECT_EQ(FILE_ERROR_OK, resource_metadata_->AddEntry(GetDirectoryEntry(
         util::kDriveMyDriveRootDirName, "root", 100,
-        util::kDriveGrandRootSpecialResourceId), &local_id));
+        util::kDriveGrandRootLocalId), &local_id));
     const std::string root_local_id = local_id;
 
     // drive/root/Directory 1

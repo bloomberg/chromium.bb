@@ -104,7 +104,7 @@ TEST_F(RemoveStaleCacheFilesTest, DirtyCacheFiles) {
   std::string local_id_2;
   entry.set_resource_id("resource_id");
   entry.mutable_file_specific_info()->set_md5(md5_2_metadata);
-  entry.set_parent_local_id(util::kDriveGrandRootSpecialResourceId);
+  entry.set_parent_local_id(util::kDriveGrandRootLocalId);
   entry.set_title("file.txt");
   resource_metadata_->AddEntry(entry, &local_id_2);
 

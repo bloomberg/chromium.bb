@@ -709,16 +709,14 @@ void ChangeListLoader::DoLoadDirectoryFromServer(
   DCHECK(!directory_fetch_info.empty());
   DVLOG(1) << "Start loading directory: " << directory_fetch_info.ToString();
 
-  if (directory_fetch_info.resource_id() ==
-          util::kDriveOtherDirSpecialResourceId) {
+  if (directory_fetch_info.resource_id() == util::kDriveOtherDirLocalId) {
     // Load for a <other> directory is meaningless in the server.
     // Let it succeed and use what we have locally.
     callback.Run(FILE_ERROR_OK);
     return;
   }
 
-  if (directory_fetch_info.resource_id() ==
-          util::kDriveGrandRootSpecialResourceId) {
+  if (directory_fetch_info.resource_id() == util::kDriveGrandRootLocalId) {
     // Load for a grand root directory means slightly different from other
     // directories. It should have two directories; <other> and mydrive root.
     // <other> directory should always exist, but mydrive root should be
@@ -757,8 +755,7 @@ ChangeListLoader::DoLoadGrandRootDirectoryFromServerAfterGetResourceEntryByPath(
     scoped_ptr<ResourceEntry> entry) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
-  DCHECK_EQ(directory_fetch_info.resource_id(),
-            util::kDriveGrandRootSpecialResourceId);
+  DCHECK_EQ(directory_fetch_info.resource_id(), util::kDriveGrandRootLocalId);
 
   if (error == FILE_ERROR_OK) {
     // MyDrive root already exists. Just return success.
@@ -784,8 +781,7 @@ void ChangeListLoader::DoLoadGrandRootDirectoryFromServerAfterGetAboutResource(
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
   DCHECK(about_resource);
-  DCHECK_EQ(directory_fetch_info.resource_id(),
-            util::kDriveGrandRootSpecialResourceId);
+  DCHECK_EQ(directory_fetch_info.resource_id(), util::kDriveGrandRootLocalId);
 
   FileError error = GDataToFileError(status);
   if (error != FILE_ERROR_OK) {
@@ -817,8 +813,7 @@ void ChangeListLoader::DoLoadDirectoryFromServerAfterAddMyDrive(
     FileError error) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
-  DCHECK_EQ(directory_fetch_info.resource_id(),
-            util::kDriveGrandRootSpecialResourceId);
+  DCHECK_EQ(directory_fetch_info.resource_id(), util::kDriveGrandRootLocalId);
 
   const base::FilePath changed_directory_path(util::GetDriveGrandRootPath());
   DoLoadDirectoryFromServerAfterRefresh(directory_fetch_info,
