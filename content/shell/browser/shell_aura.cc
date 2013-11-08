@@ -92,12 +92,7 @@ class MinimalInputEventFilter : public ui::internal::InputMethodDelegate,
       // event to ui::ET_KEY_* and pass it to the next filter.
       static_cast<ui::TranslatedKeyEvent*>(event)->ConvertToKeyEvent();
     } else {
-      bool handled = false;
-      if (event->HasNativeEvent())
-        handled = input_method_->DispatchKeyEvent(event->native_event());
-      else
-        handled = input_method_->DispatchFabricatedKeyEvent(*event);
-      if (handled)
+      if (input_method_->DispatchKeyEvent(*event))
         event->StopPropagation();
     }
   }
