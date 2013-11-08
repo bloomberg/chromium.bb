@@ -8,13 +8,17 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "ui/compositor/layer_delegate.h"
+#include "ui/gfx/rect.h"
+
+namespace aura {
+class Window;
+}
 
 namespace ui {
 class Layer;
 }
 
 namespace views {
-class Painter;
 class View;
 }
 
@@ -26,6 +30,9 @@ class FocusRingLayer : public ui::LayerDelegate {
   FocusRingLayer();
   virtual ~FocusRingLayer();
 
+  // Create the layer and update its bounds and position in the hierarchy.
+  void Update();
+
   // Updates the focus ring layer for the view or clears it if |view| is NULL.
   void SetForView(views::View* view);
 
@@ -35,8 +42,17 @@ class FocusRingLayer : public ui::LayerDelegate {
   virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
   virtual base::Closure PrepareForLayerBoundsChange() OVERRIDE;
 
+  // The window containing focus.
+  aura::Window* window_;
+
+  // The current root window containing the focused object.
+  aura::Window* root_window_;
+
+  // The bounding rectangle of the focused object, in |window_| coordinates.
+  gfx::Rect focus_ring_;
+
+  // The current layer.
   scoped_ptr<ui::Layer> layer_;
-  scoped_ptr<views::Painter> ring_painter_;
 
   DISALLOW_COPY_AND_ASSIGN(FocusRingLayer);
 };

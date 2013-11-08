@@ -11,11 +11,7 @@
 #include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/canvas.h"
-#include "ui/gfx/image/canvas_image_source.h"
-#include "ui/gfx/shadow_value.h"
-#include "ui/gfx/skia_util.h"
 #include "ui/views/controls/button/label_button.h"
-#include "ui/views/painter.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -23,88 +19,72 @@ namespace chromeos {
 
 namespace {
 
-const int kShadowRadius = 23;
-const int kCenterBlockSize = 2 * kShadowRadius;
-const int kFocusRingImageSize = kShadowRadius * 2 + kCenterBlockSize;
+const int kShadowRadius = 10;
+const int kShadowAlpha = 90;
 const SkColor kShadowColor = SkColorSetRGB(77, 144, 254);
-
-// FocusRingImageSource generates a base image that could be used by
-// ImagePainter to paint a focus ring around a rect. The base image is a
-// transparent square block of kCenterBlockSize pixels with blue halo around.
-class FocusRingImageSource : public gfx::CanvasImageSource {
- public:
-  FocusRingImageSource()
-      : CanvasImageSource(gfx::Size(kFocusRingImageSize, kFocusRingImageSize),
-                          false) {
-    shadows_.push_back(
-        gfx::ShadowValue(gfx::Point(), kShadowRadius, kShadowColor));
-  }
-
-  virtual void Draw(gfx::Canvas* canvas) OVERRIDE {
-    SkPaint paint;
-    paint.setColor(kShadowColor);
-
-    skia::RefPtr<SkDrawLooper> looper = CreateShadowDrawLooper(shadows_);
-    paint.setLooper(looper.get());
-
-    const gfx::Rect rect(kShadowRadius, kShadowRadius,
-                         kCenterBlockSize, kCenterBlockSize);
-    canvas->DrawRect(rect, paint);
-    canvas->FillRect(rect, SK_ColorTRANSPARENT, SkXfermode::kSrc_Mode);
-  }
-
- private:
-  gfx::ShadowValues shadows_;
-
-  DISALLOW_COPY_AND_ASSIGN(FocusRingImageSource);
-};
 
 }  // namespace
 
-FocusRingLayer::FocusRingLayer() {
-  gfx::ImageSkia ring_image(
-      new FocusRingImageSource,
-      gfx::Size(kFocusRingImageSize, kFocusRingImageSize));
-  ring_painter_.reset(views::Painter::CreateImagePainter(
-      ring_image,
-      gfx::Insets(kShadowRadius, kShadowRadius, kShadowRadius, kShadowRadius)));
+FocusRingLayer::FocusRingLayer()
+    : window_(NULL),
+      root_window_(NULL) {
 }
 
 FocusRingLayer::~FocusRingLayer() {}
 
-void FocusRingLayer::SetForView(views::View* view) {
-  if (!view ||
-      !view->GetWidget() ||
-      !view->GetWidget()->GetNativeWindow() ||
-      !view->GetWidget()->GetNativeWindow()->layer()) {
-    layer_.reset();
+void FocusRingLayer::Update() {
+  if (!window_)
     return;
-  }
 
-  if (!layer_) {
+  aura::Window* root_window = window_->GetRootWindow();
+  if (!layer_ || root_window != root_window_) {
+    root_window_ = root_window;
+    ui::Layer* root_layer = root_window->layer();
     layer_.reset(new ui::Layer(ui::LAYER_TEXTURED));
     layer_->set_name("FocusRing");
     layer_->set_delegate(this);
     layer_->SetFillsBoundsOpaquely(false);
+    root_layer->Add(layer_.get());
   }
 
-  // Puts the focus ring layer as a sibling layer of the widget layer so that
-  // it does not clip at the widget's boundary.
-  ui::Layer* widget_layer = view->GetWidget()->GetNativeWindow()->layer();
-  widget_layer->parent()->Add(layer_.get());
+  // Keep moving it to the top in case new layers have been added
+  // since we created this layer.
+  layer_->parent()->StackAtTop(layer_.get());
+
+  // Translate native window coordinates to root window coordinates.
+  gfx::Point origin = focus_ring_.origin();
+  aura::Window::ConvertPointToTarget(window_, root_window_, &origin);
+  gfx::Rect layer_bounds = focus_ring_;
+  layer_bounds.set_origin(origin);
+  int inset = -(kShadowRadius + 2);
+  layer_bounds.Inset(inset, inset, inset, inset);
+  layer_->SetBounds(layer_bounds);
+}
+
+void FocusRingLayer::SetForView(views::View* view) {
+  if (!view) {
+    if (layer_ && !focus_ring_.IsEmpty())
+      layer_->SchedulePaint(focus_ring_);
+    focus_ring_ = gfx::Rect();
+    return;
+  }
+
+  DCHECK(view->GetWidget());
+  window_ = view->GetWidget()->GetNativeWindow();
+
+  gfx::Rect view_bounds = view->GetContentsBounds();
 
   // Workarounds that attempts to pick a better bounds.
-  gfx::Rect view_bounds = view->GetContentsBounds();
   if (view->GetClassName() == views::LabelButton::kViewClassName) {
     view_bounds = view->GetLocalBounds();
     view_bounds.Inset(2, 2, 2, 2);
   }
 
-  // Workarounds for system tray items that has a customized OnPaintFocusBorder.
-  // The insets here must be consistent with the ones used in OnPaintFocusBorder
-  // and DrawBorder.
+  // Workarounds for system tray items that has a customized
+  // OnPaintFocusBorder.    The insets here must be consistent with
+  // the ones used in OnPaintFocusBorder and DrawBorder.
   if (view->GetClassName() ==
-             ash::internal::ActionableView::kViewClassName) {
+      ash::internal::ActionableView::kViewClassName) {
     view_bounds = view->GetLocalBounds();
     view_bounds.Inset(1, 1, 3, 3);
   } else if (view->GetClassName() ==
@@ -116,20 +96,39 @@ void FocusRingLayer::SetForView(views::View* view) {
     view_bounds.Inset(2, 1, 2, 2);
   }
 
-  // Note the bounds calculation below assumes no transformation and ignores
-  // animations.
-  const gfx::Rect widget_bounds = widget_layer->GetTargetBounds();
-  gfx::Rect bounds = view->ConvertRectToWidget(view_bounds);
-  bounds.Offset(widget_bounds.OffsetFromOrigin());
-  bounds.Inset(-kShadowRadius, -kShadowRadius, -kShadowRadius, -kShadowRadius);
-  layer_->SetBounds(bounds);
+  focus_ring_ = view->ConvertRectToWidget(view_bounds);
+  Update();
 }
 
 void FocusRingLayer::OnPaintLayer(gfx::Canvas* canvas) {
-  ring_painter_->Paint(canvas, layer_->bounds().size());
+  if (focus_ring_.IsEmpty())
+    return;
+
+  // Convert the focus ring from native-window-relative coordinates to
+  // layer-relative coordinates.
+  gfx::Point origin = focus_ring_.origin();
+  aura::Window::ConvertPointToTarget(window_, root_window_, &origin);
+  origin -= layer_->bounds().OffsetFromOrigin();
+  gfx::Rect bounds = focus_ring_;
+  bounds.set_origin(origin);
+
+  SkPaint paint;
+  paint.setColor(kShadowColor);
+  paint.setFlags(SkPaint::kAntiAlias_Flag);
+  paint.setStyle(SkPaint::kStroke_Style);
+  paint.setStrokeWidth(2);
+  int r = kShadowRadius;
+  for (int i = 0; i < r; i++) {
+    // Fade out alpha quadratically.
+    paint.setAlpha((kShadowAlpha * (r - i) * (r - i)) / (r * r));
+    gfx::Rect outsetRect = bounds;
+    outsetRect.Inset(-i, -i, -i, -i);
+    canvas->DrawRect(outsetRect, paint);
+  }
 }
 
 void FocusRingLayer::OnDeviceScaleFactorChanged(float device_scale_factor) {
+  Update();
 }
 
 base::Closure FocusRingLayer::PrepareForLayerBoundsChange() {
