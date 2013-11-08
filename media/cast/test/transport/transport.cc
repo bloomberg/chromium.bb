@@ -49,16 +49,16 @@ class LocalUdpTransportData {
     // Got a packet with length result.
     uint8* data = reinterpret_cast<uint8*>(buffer_->data());
     packet_receiver_->ReceivedPacket(data, result,
-        base::Bind(&LocalUdpTransportData::DeletePacket,
-        weak_factory_.GetWeakPtr(), data));
+        base::Bind(&LocalUdpTransportData::RecvFromSocketLoop,
+        weak_factory_.GetWeakPtr()));
   }
 
   void RecvFromSocketLoop() {
     // Callback should always trigger with a packet.
     int res = udp_socket_->RecvFrom(buffer_.get(), kMaxPacketSize,
-        &bind_address_, base::Bind(&LocalUdpTransportData::RecvFromSocketLoop,
+        &bind_address_, base::Bind(&LocalUdpTransportData::PacketReceived,
         weak_factory_.GetWeakPtr()));
-    DCHECK(res >= net::IO_PENDING);
+    DCHECK(res >= net::ERR_IO_PENDING);
     if (res > 0) {
       PacketReceived(res);
     }
@@ -88,7 +88,7 @@ class LocalPacketSender : public PacketSender {
         send_address_(),
         loss_limit_(0) {}
 
-  virtual bool SendPacket(const Packet& packet) {
+  virtual bool SendPacket(const Packet& packet) OVERRIDE {
     const uint8* data = packet.data();
     if (loss_limit_ > 0) {
       int r = base::RandInt(0, 100);
@@ -107,7 +107,7 @@ class LocalPacketSender : public PacketSender {
     return (rv == packet.size());
   }
 
-  virtual bool SendPackets(const PacketList& packets) {
+  virtual bool SendPackets(const PacketList& packets) OVERRIDE {
     bool out_val = true;
     for (size_t i = 0; i < packets.size(); ++i) {
       const Packet& packet = packets[i];

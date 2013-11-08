@@ -10,9 +10,15 @@
       'include_dirs': [
          '<(DEPTH)/',
       ],
+      'dependencies': [
+        '<(DEPTH)/testing/gtest.gyp:gtest',
+      ],
       'sources': [
         'input_helper.cc',
-        'input_helper.',
+        'input_helper.h',
+        '<(DEPTH)/media/cast/test/audio_utility.cc',
+        '<(DEPTH)/media/cast/test/fake_task_runner.cc',
+        '<(DEPTH)/media/cast/test/video_utility.cc',
       ], # source
     },
   ],

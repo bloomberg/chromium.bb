@@ -117,7 +117,6 @@ void VideoSender::InsertRawVideoFrame(
   if (!video_encoder_->EncodeVideoFrame(video_frame, capture_time,
       base::Bind(&VideoSender::SendEncodedVideoFrameMainThread,
           weak_factory_.GetWeakPtr()), callback)) {
-    VLOG(0) << "Failed to InsertRawVideoFrame";
     cast_environment_->PostTask(CastEnvironment::MAIN, FROM_HERE, callback);
   }
 }

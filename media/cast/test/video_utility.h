@@ -17,5 +17,9 @@ double I420PSNR(const I420VideoFrame& frame1, const I420VideoFrame& frame2);
 // Memory is allocated within the function.
 void PopulateVideoFrame(I420VideoFrame* frame, int start_value);
 
+// Populate a video frame from a file.
+// Returns true if frame was populated, false if not (EOF).
+bool PopulateVideoFrameFromFile(I420VideoFrame* frame, FILE* video_file);
+
 }  // namespace cast
 }  // namespace media

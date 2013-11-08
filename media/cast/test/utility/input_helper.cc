@@ -25,7 +25,7 @@ InputBuilder::InputBuilder(const std::string& title,
 
 InputBuilder::~InputBuilder() {}
 
-std::string InputBuilder::GetInput() const {
+std::string InputBuilder::GetStringInput() const {
   printf("\n%s\n", title_.c_str());
   if (!default_value_.empty())
     printf("Hit enter for default (%s):\n", default_value_.c_str());
@@ -45,9 +45,16 @@ std::string InputBuilder::GetInput() const {
 
   if (!ValidateInput(input)) {
     printf("Invalid input. Please try again.\n");
-    return GetInput();
+    return GetStringInput();
   }
   return input;
+}
+
+int InputBuilder::GetIntInput() const {
+  std::string string_input = GetStringInput();
+  int int_value;
+  CHECK(base::StringToInt(string_input, &int_value));
+  return int_value;
 }
 
 bool InputBuilder::ValidateInput(const std::string input) const {

@@ -27,7 +27,10 @@ class InputBuilder {
   // the answer. This method will keep asking the user until a correct answer
   // is returned and is thereby guaranteed to return a response that is
   // acceptable within the predefined range.
-  std::string GetInput() const;
+  // Input will be returned in either string or int format, base on the function
+  // called.
+  std::string GetStringInput() const;
+  int GetIntInput() const;
 
  private:
   bool ValidateInput(const std::string input) const;

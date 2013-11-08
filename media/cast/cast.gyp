@@ -33,6 +33,7 @@
             'cast_receiver.gyp:cast_receiver',
             'cast_sender.gyp:cast_sender',
             'logging/logging.gyp:cast_logging',
+            'test/utility/utility.gyp:cast_test_utility',
             '<(DEPTH)/base/base.gyp:run_all_unittests',
             '<(DEPTH)/net/net.gyp:net',
             '<(DEPTH)/testing/gmock.gyp:gmock',
@@ -71,11 +72,8 @@
             'rtp_sender/rtp_packetizer/rtp_packetizer_unittest.cc',
             'rtp_sender/rtp_packetizer/test/rtp_header_parser.cc',
             'rtp_sender/rtp_packetizer/test/rtp_header_parser.h',
-            'test/audio_utility.cc',
             'test/encode_decode_test.cc',
             'test/end2end_unittest.cc',
-            'test/fake_task_runner.cc',
-            'test/video_utility.cc',
             'video_receiver/video_decoder_unittest.cc',
             'video_receiver/video_receiver_unittest.cc',
             'video_sender/mock_video_encoder_controller.cc',
@@ -87,6 +85,56 @@
             'video_sender/video_encoder_unittest.cc',
             'video_sender/video_sender_unittest.cc',
           ], # source
+        },
+        {
+          'target_name': 'cast_sender_app',
+          'type': 'executable',
+          'include_dirs': [
+            '<(DEPTH)/',
+          ],
+          'dependencies': [
+            '<(DEPTH)/net/net.gyp:net_test_support',
+            'cast_config',
+            '<(DEPTH)/media/cast/cast_sender.gyp:*',
+            '<(DEPTH)/testing/gtest.gyp:gtest',
+            '<(DEPTH)/third_party/opus/opus.gyp:opus',
+            '<(DEPTH)/media/cast/test/transport/transport.gyp:cast_transport',
+            '<(DEPTH)/media/cast/test/utility/utility.gyp:cast_test_utility',
+          ],
+          'sources': [
+            '<(DEPTH)/media/cast/test/sender.cc',
+          ],
+        },
+        {
+          'target_name': 'cast_receiver_app',
+          'type': 'executable',
+          'include_dirs': [
+            '<(DEPTH)/',
+          ],
+          'dependencies': [
+            '<(DEPTH)/net/net.gyp:net_test_support',
+            'cast_config',
+            '<(DEPTH)/media/cast/cast_receiver.gyp:*',
+            '<(DEPTH)/testing/gtest.gyp:gtest',
+            '<(DEPTH)/media/cast/test/transport/transport.gyp:cast_transport',
+            '<(DEPTH)/media/cast/test/utility/utility.gyp:cast_test_utility',
+            '<(DEPTH)/third_party/libyuv/libyuv.gyp:libyuv',
+          ],
+          'sources': [
+            '<(DEPTH)/media/cast/test/receiver.cc',
+          ],
+          'conditions': [
+            ['OS == "linux"', {
+              'sources': [
+                '<(DEPTH)/media/cast/test/linux_output_window.cc',
+                '<(DEPTH)/media/cast/test/linux_output_window.h',
+              ],
+              'libraries': [
+                '-lXext',
+                '-lX11',
+             ],
+          }],
+          ],
         },
       ],  # targets
     }], # include_tests
