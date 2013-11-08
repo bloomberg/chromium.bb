@@ -30,12 +30,15 @@ import os
 import signal
 import subprocess
 import sys
-import threading
 import websocket_handler
 
 # Location of the Camera app.
 SELF_PATH = os.path.dirname(os.path.abspath(__file__))
 CAMERA_PATH = os.path.join(SELF_PATH, '../build/tests')
+
+# App ID of the testing version of the Camera app.
+# Keep in sync with manifest_tests.json.
+CAMERA_APP_ID = 'mbflcebpggnecokmikipoihdbecnjfoj'
 
 # Port to be used to communicate with the Camera app. Keep in sync with
 # src/js/test.js.
@@ -57,7 +60,6 @@ class TestCaseRunner(object):
     self.__server_thread = None
     self.__closing = False
     self.__status = websocket_handler.STATUS_INTERNAL_ERROR
-    self.__chrome_process = None
     self.__test_case = test_case
     self.__test_timeout = test_timeout
     self.__chrome_binary = chrome_binary
@@ -79,7 +81,6 @@ class TestCaseRunner(object):
 
     self.__status = returncode
     self.__server.Terminate()
-    self.__chrome_process.kill()
 
   def Run(self):
     """Runs the test case with the specified timeout passed as arguments.
@@ -94,12 +95,29 @@ class TestCaseRunner(object):
     if self.__server:
       raise Exception('Unable to call Run() more than once.')
 
-    # Step 1. Restart the camera module.
+    print 'Step 1. Set the timeout.'
+    def Timeout(signum, frame):
+      print 'Timeout.'
+      if self.__server:
+        self.__server.Terminate()
+      # Forcibly terminate the script.
+      os._exit(websocket_handler.STATUS_INTERNAL_ERROR)
+
+    signal.signal(signal.SIGALRM, Timeout)
+    signal.alarm(self.__test_timeout)
+
+    print 'Step 2. Uninstall the testing version of Camera app.'
+    run_command = [
+        self.__chrome_binary, '--verbose', '--enable-logging',
+        '--uninstall-extension=%s' % CAMERA_APP_ID] + self.__chrome_args
+    subprocess.Popen(run_command, shell=False).wait()
+
+    print 'Step 3. Restart the camera module.'
     if RunCommand(['sudo', os.path.join(SELF_PATH, 'camera_reset.py')]) != 0:
       print 'Failed to reload the camera kernel module.'
       return websocket_handler.STATUS_INTERNAL_ERROR
 
-    # Step 2. Fetch camera devices.
+    print 'Step 4. Fetch camera devices.'
     camera_devices = [os.path.basename(usb_id)
                       for usb_id in
                       glob.glob('/sys/bus/usb/drivers/uvcvideo/?-*')]
@@ -107,20 +125,13 @@ class TestCaseRunner(object):
       print 'No cameras detected.'
       return websocket_handler.STATUS_INTERNAL_ERROR
 
-    # Step 3. Set the timeout.
-    def Timeout():
-      print 'Timeout.'
-      return websocket_handler.STATUS_INTERNAL_ERROR
-
-    signal.signal(signal.SIGALRM, Timeout)
-    signal.alarm(self.__test_timeout)
-
-    # Step 4. Check if there is a camera attached.
+    print 'Step 5. Check if there is a camera attached.'
     if not glob.glob('/dev/video*'):
       print 'Camera device is missing.'
       return websocket_handler.STATUS_INTERNAL_ERROR
 
-    # Step 5. Start the websocket server for communication with the Camera app.
+    print('Step 6. Start the websocket server for communication with the'
+          'Camera app.')
     def HandleWebsocketCommand(name):
       if name == 'detach':
         for camera_device in camera_devices:
@@ -143,18 +154,23 @@ class TestCaseRunner(object):
     self.__server = websocket_handler.Server(
         ('localhost', WEBSOCKET_PORT), websocket_handler.Handler, self.Close,
         HandleWebsocketCommand, self.__test_case)
-    server_thread = threading.Thread(target=self.__server.serve_forever)
-    server_thread.daemon = True
-    server_thread.start()
 
-    # Step 6. Install the Camera app.
+    print 'Step 7. Install the Camera app.'
+    # If already installed, then it will be reinstalled automatically. Do not
+    # wait, since the process may be detached in case of reusing an existing
+    # process.
     run_command = [
         self.__chrome_binary, '--verbose', '--enable-logging',
         '--load-and-launch-app=%s' % CAMERA_PATH] + self.__chrome_args
-    self.__chrome_process = subprocess.Popen(run_command, shell=False)
-    self.__chrome_process.wait()
+    chrome_process = subprocess.Popen(run_command, shell=False)
 
-    # Wait until the browser is closed.
+    print 'Step 8. Wait for incoming connections.'
+    self.__server.serve_forever()
+
+    print 'Step 9. Terminate the process (if not detached earlier).'
+    chrome_process.kill()
+
+    print 'Finished gracefully.'
     return self.__status
 
 
