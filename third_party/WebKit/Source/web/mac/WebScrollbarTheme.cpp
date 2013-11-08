@@ -41,6 +41,10 @@ void WebScrollbarTheme::updateScrollbars(
     float initialButtonDelay, float autoscrollButtonDelay,
     bool jumpOnTrackClick, bool redraw)
 {
+    ScrollbarTheme* theme = ScrollbarTheme::theme();
+    if (theme->isMockTheme())
+        return;
+
     static_cast<ScrollbarThemeMacCommon*>(ScrollbarTheme::theme())->preferencesChanged(
         initialButtonDelay, autoscrollButtonDelay, jumpOnTrackClick, redraw);
 }

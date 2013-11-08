@@ -70,56 +70,6 @@ static ScrollbarSet& scrollbarSet()
 
 }
 
-@interface WebScrollbarPrefsObserver : NSObject
-{
-}
-
-+ (void)registerAsObserver;
-+ (void)appearancePrefsChanged:(NSNotification*)theNotification;
-+ (void)behaviorPrefsChanged:(NSNotification*)theNotification;
-
-@end
-
-@implementation WebScrollbarPrefsObserver
-
-+ (void)appearancePrefsChanged:(NSNotification*)unusedNotification
-{
-    UNUSED_PARAM(unusedNotification);
-
-    ScrollbarTheme* theme = ScrollbarTheme::theme();
-    if (theme->isMockTheme())
-        return;
-
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    [defaults synchronize];
-    static_cast<ScrollbarThemeMacCommon*>(ScrollbarTheme::theme())->preferencesChanged(
-        [defaults floatForKey:@"NSScrollerButtonDelay"], [defaults floatForKey:@"NSScrollerButtonPeriod"],
-        [defaults boolForKey:@"AppleScrollerPagingBehavior"], true);
-}
-
-+ (void)behaviorPrefsChanged:(NSNotification*)unusedNotification
-{
-    UNUSED_PARAM(unusedNotification);
-
-    ScrollbarTheme* theme = ScrollbarTheme::theme();
-    if (theme->isMockTheme())
-        return;
-
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    [defaults synchronize];
-    static_cast<ScrollbarThemeMacCommon*>(ScrollbarTheme::theme())->preferencesChanged(
-        [defaults floatForKey:@"NSScrollerButtonDelay"], [defaults floatForKey:@"NSScrollerButtonPeriod"],
-        [defaults boolForKey:@"AppleScrollerPagingBehavior"], false);
-}
-
-+ (void)registerAsObserver
-{
-    [[NSDistributedNotificationCenter defaultCenter] addObserver:self selector:@selector(appearancePrefsChanged:) name:@"AppleAquaScrollBarVariantChanged" object:nil suspensionBehavior:NSNotificationSuspensionBehaviorDeliverImmediately];
-    [[NSDistributedNotificationCenter defaultCenter] addObserver:self selector:@selector(behaviorPrefsChanged:) name:@"AppleNoRedisplayAppearancePreferenceChanged" object:nil suspensionBehavior:NSNotificationSuspensionBehaviorCoalesce];
-}
-
-@end
-
 namespace WebCore {
 
 static float gInitialButtonDelay = 0.5f;
@@ -138,7 +88,6 @@ ScrollbarTheme* ScrollbarTheme::nativeTheme()
         DEFINE_STATIC_LOCAL(ScrollbarThemeMacNonOverlayAPI, nonOverlayTheme, ());
         theme = &nonOverlayTheme;
     }
-    theme->Initialize();
     return theme;
 }
 
@@ -337,16 +286,6 @@ void ScrollbarThemeMacCommon::paintTickmarks(GraphicsContext* context, Scrollbar
     tickmarkTrackRect.setX(tickmarkTrackRect.x() + 1);
     tickmarkTrackRect.setWidth(tickmarkTrackRect.width() - 2);
     paintGivenTickmarks(context, scrollbar, tickmarkTrackRect, tickmarks);
-}
-
-void ScrollbarThemeMacCommon::Initialize()
-{
-    [WebScrollbarPrefsObserver registerAsObserver];
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    [defaults synchronize];
-    preferencesChanged(
-        [defaults floatForKey:@"NSScrollerButtonDelay"], [defaults floatForKey:@"NSScrollerButtonPeriod"],
-        [defaults boolForKey:@"AppleScrollerPagingBehavior"], false);
 }
 
 ScrollbarThemeMacCommon::~ScrollbarThemeMacCommon()

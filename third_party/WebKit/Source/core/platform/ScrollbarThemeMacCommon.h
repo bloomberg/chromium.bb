@@ -32,7 +32,6 @@ namespace WebCore {
 
 class ScrollbarThemeMacCommon : public ScrollbarTheme {
 public:
-    void Initialize();
     virtual ~ScrollbarThemeMacCommon();
 
     virtual void registerScrollbar(ScrollbarThemeClient*) OVERRIDE;
