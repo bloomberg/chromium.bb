@@ -30,7 +30,6 @@ class ModeIndicatorView : public views::View {
  private:
   // Overridden from views::View:
   virtual void Layout() OVERRIDE;
-  virtual gfx::Size GetPreferredSize() OVERRIDE;
 
   void Init();
 

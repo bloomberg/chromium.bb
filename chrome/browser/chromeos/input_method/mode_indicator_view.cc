@@ -22,26 +22,36 @@ ModeIndicatorView::~ModeIndicatorView() {}
 void ModeIndicatorView::SetLabelTextUtf8(const std::string& text_utf8) {
   DCHECK(label_);
 
-  // TODO(komatsu): Call Layout() when we support resize the parent widget.
   label_->SetText(UTF8ToUTF16(text_utf8));
+  Layout();
 }
 
 
 void ModeIndicatorView::Layout() {
   DCHECK(label_);
 
-  // Set the label in the center of the contents bounds.
+  // The inside bounds of the contents.
   const gfx::Rect cb = GetContentsBounds();
+
+  // The whole bounds including the border.
+  const gfx::Rect b = GetBoundsInScreen();
+
+  const int w_offset = b.width() - cb.width();
+  const int h_offset = b.height() - cb.height();
+
+  const int kBaseSize = 43;
   const gfx::Size ps = label_->GetPreferredSize();
+  const int width =
+      ((ps.width() > kBaseSize) ? ps.width() : kBaseSize) + w_offset;
+  const int height =
+      ((ps.height() > kBaseSize) ? ps.height() : kBaseSize) + h_offset;
+
+  // Set the label in the center of the contents bounds.
   label_->SetBounds(cb.x() + (cb.width() - ps.width()) / 2,
                     cb.y() + (cb.height() - ps.height()) / 2,
                     ps.width(),
                     ps.height());
-}
-
-gfx::Size ModeIndicatorView::GetPreferredSize() {
-  DCHECK(label_);
-  return label_->GetPreferredSize();
+  SetBounds(b.x(), b.y(), width, height);
 }
 
 void ModeIndicatorView::Init() {

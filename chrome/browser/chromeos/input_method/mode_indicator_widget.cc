@@ -51,10 +51,21 @@ void ModeIndicatorWidget::SetCursorLocation(const gfx::Rect& cursor_location) {
 }
 
 void ModeIndicatorWidget::SetLabelTextUtf8(const std::string& text_utf8) {
-  if (mode_view_) {
-    // TODO(komatsu): Nice to resize the widget size based on the text length.
-    mode_view_->SetLabelTextUtf8(text_utf8);
-  }
+  if (!mode_view_)
+    return;
+
+  const gfx::Rect prev(GetClientAreaBoundsInScreen());
+
+  mode_view_->SetLabelTextUtf8(text_utf8);
+
+  const gfx::Rect vb = mode_view_->GetBoundsInScreen();
+
+  // gfx::Rect(x, y, w, h)
+  const gfx::Rect bound(prev.x() - (vb.width()  - prev.width())  / 2,
+                        prev.y() - (vb.height() - prev.height()) / 2,
+                        vb.width(),
+                        vb.height());
+  SetBounds(bound);
 }
 
 }  // namespace input_method
