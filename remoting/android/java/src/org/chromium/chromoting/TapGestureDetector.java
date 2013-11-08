@@ -6,15 +6,16 @@ package org.chromium.chromoting;
 
 import android.content.Context;
 import android.graphics.PointF;
-import android.util.Log;
+import android.os.Handler;
+import android.os.Message;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
 
 import java.util.HashMap;
 
 /**
- * This class detects multi-finger tap events. This is provided since the stock Android
- * gesture-detectors only detect taps made with one finger.
+ * This class detects multi-finger tap and long-press events. This is provided since the stock
+ * Android gesture-detectors only detect taps/long-presses made with one finger.
  */
 public class TapGestureDetector {
     /** The listener for receiving notifications of tap gestures. */
@@ -26,10 +27,20 @@ public class TapGestureDetector {
          * @return True if the event is consumed.
          */
         boolean onTap(int pointerCount);
+
+        /**
+         * Notified when a long-touch event occurs.
+         *
+         * @param pointerCount The number of fingers held down.
+         */
+        void onLongPress(int pointerCount);
     }
 
     /** The listener to which notifications are sent. */
     private OnTapListener mListener;
+
+    /** Handler used for posting tasks to be executed in the future. */
+    private Handler mHandler;
 
     /** The maximum number of fingers seen in the gesture. */
     private int mPointerCount = 0;
@@ -46,11 +57,20 @@ public class TapGestureDetector {
      */
     private int mTouchSlopSquare;
 
-    /** Set to true whenever motion is detected in the gesture. */
-    private boolean mMotionOccurred = false;
+    /** Set to true whenever motion is detected in the gesture, or a long-touch is triggered. */
+    private boolean mTapCancelled = false;
+
+    private class EventHandler extends Handler {
+        @Override
+        public void handleMessage(Message message) {
+            mListener.onLongPress(mPointerCount);
+            mTapCancelled = true;
+        }
+    }
 
     public TapGestureDetector(Context context, OnTapListener listener) {
         mListener = listener;
+        mHandler = new EventHandler();
         ViewConfiguration config = ViewConfiguration.get(context);
         int touchSlop = config.getScaledTouchSlop();
         mTouchSlopSquare = touchSlop * touchSlop;
@@ -61,30 +81,41 @@ public class TapGestureDetector {
         boolean handled = false;
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
+                reset();
+                // Cause a long-press notification to be triggered after the timeout.
+                mHandler.sendEmptyMessageDelayed(0, ViewConfiguration.getLongPressTimeout());
+                trackDownEvent(event);
+                mPointerCount = 1;
+                break;
+
             case MotionEvent.ACTION_POINTER_DOWN:
                 trackDownEvent(event);
                 mPointerCount = Math.max(mPointerCount, event.getPointerCount());
                 break;
 
             case MotionEvent.ACTION_MOVE:
-                if (!mMotionOccurred) {
-                    mMotionOccurred = trackMoveEvent(event);
+                if (!mTapCancelled) {
+                    if (trackMoveEvent(event)) {
+                        cancelLongTouchNotification();
+                        mTapCancelled = true;
+                    }
                 }
                 break;
 
             case MotionEvent.ACTION_UP:
-                if (!mMotionOccurred) {
+                cancelLongTouchNotification();
+                if (!mTapCancelled) {
                     handled = mListener.onTap(mPointerCount);
                 }
-                reset();
                 break;
 
             case MotionEvent.ACTION_POINTER_UP:
+                cancelLongTouchNotification();
                 trackUpEvent(event);
                 break;
 
             case MotionEvent.ACTION_CANCEL:
-                reset();
+                cancelLongTouchNotification();
                 break;
 
             default:
@@ -144,8 +175,14 @@ public class TapGestureDetector {
 
     /** Cleans up any stored data for the gesture. */
     private void reset() {
+        cancelLongTouchNotification();
         mPointerCount = 0;
         mInitialPositions.clear();
-        mMotionOccurred = false;
+        mTapCancelled = false;
+    }
+
+    /** Cancels any pending long-touch notifications from the message-queue. */
+    private void cancelLongTouchNotification() {
+        mHandler.removeMessages(0);
     }
 }

@@ -58,6 +58,9 @@ public class TrackingInputHandler implements TouchInputHandler {
      */
     private float mSwipeThreshold;
 
+    /** Mouse-button currently held down, or BUTTON_UNDEFINED otherwise. */
+    private int mHeldButton = BUTTON_UNDEFINED;
+
     public TrackingInputHandler(DesktopViewInterface viewer, Context context,
                                 RenderData renderData) {
         mViewer = viewer;
@@ -211,19 +214,36 @@ public class TrackingInputHandler implements TouchInputHandler {
         return false;
     }
 
+
+    /** Injects a button-up event if the button is currently held down (during a drag event). */
+    private void releaseAnyHeldButton() {
+        if (mHeldButton != BUTTON_UNDEFINED) {
+            injectButtonEvent(mHeldButton, false);
+            mHeldButton = BUTTON_UNDEFINED;
+        }
+    }
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        // Avoid short-circuit logic evaluation - ensure both gesture detectors see all events so
+        // Avoid short-circuit logic evaluation - ensure all gesture detectors see all events so
         // that they generate correct notifications.
         boolean handled = mScroller.onTouchEvent(event);
         handled |= mZoomer.onTouchEvent(event);
         handled |= mTapDetector.onTouchEvent(event);
 
-        if (event.getActionMasked() == MotionEvent.ACTION_POINTER_DOWN) {
-            mTotalMotionY = 0;
-            mSwipeCompleted = false;
-        }
+        switch (event.getActionMasked()) {
+            case MotionEvent.ACTION_POINTER_DOWN:
+                mTotalMotionY = 0;
+                mSwipeCompleted = false;
+                break;
 
+            case MotionEvent.ACTION_UP:
+                releaseAnyHeldButton();
+                break;
+
+            default:
+                break;
+        }
         return handled;
     }
 
@@ -314,27 +334,40 @@ public class TrackingInputHandler implements TouchInputHandler {
             onScale(detector);
         }
 
+        /** Maps the number of fingers in a tap or long-press gesture to a mouse-button. */
+        private int mouseButtonFromPointerCount(int pointerCount) {
+            switch (pointerCount) {
+                case 1:
+                    return BUTTON_LEFT;
+                case 2:
+                    return BUTTON_RIGHT;
+                case 3:
+                    return BUTTON_MIDDLE;
+                default:
+                    return BUTTON_UNDEFINED;
+            }
+        }
+
         /** Called when the user taps the screen with one or more fingers. */
         @Override
         public boolean onTap(int pointerCount) {
-            int button;
-            switch (pointerCount) {
-                case 1:
-                    button = BUTTON_LEFT;
-                    break;
-                case 2:
-                    button = BUTTON_RIGHT;
-                    break;
-                case 3:
-                    button = BUTTON_MIDDLE;
-                    break;
-                default:
-                    return false;
+            int button = mouseButtonFromPointerCount(pointerCount);
+            if (button == BUTTON_UNDEFINED) {
+                return false;
+            } else {
+                injectButtonEvent(button, true);
+                injectButtonEvent(button, false);
+                return true;
             }
+        }
 
-            injectButtonEvent(button, true);
-            injectButtonEvent(button, false);
-            return true;
+        /** Called when a long-press is triggered for one or more fingers. */
+        @Override
+        public void onLongPress(int pointerCount) {
+            mHeldButton = mouseButtonFromPointerCount(pointerCount);
+            if (mHeldButton != BUTTON_UNDEFINED) {
+                injectButtonEvent(mHeldButton, true);
+            }
         }
     }
 }
