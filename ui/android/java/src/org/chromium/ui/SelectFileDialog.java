@@ -144,43 +144,50 @@ class SelectFileDialog implements WindowAndroid.IntentCallback{
             onFileNotSelected();
             return;
         }
-        boolean success = false;
+
         if (results == null) {
             // If we have a successful return but no data, then assume this is the camera returning
             // the photo that we requested.
             nativeOnFileSelected(mNativeSelectFileDialog, mCameraOutputUri.getPath());
-            success = true;
 
             // Broadcast to the media scanner that there's a new photo on the device so it will
             // show up right away in the gallery (rather than waiting until the next time the media
             // scanner runs).
             window.sendBroadcast(new Intent(
                     Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, mCameraOutputUri));
-        } else {
+            return;
+        }
+
+        if ("file".equals(results.getData().getScheme())) {
+            nativeOnFileSelected(mNativeSelectFileDialog,
+                    results.getData().getSchemeSpecificPart());
+            return;
+        }
+
+        Cursor cursor = null;
+        try {
             // We get back a content:// URI from the system if the user picked a file from the
             // gallery. The ContentView has functionality that will convert that content:// URI to
             // a file path on disk that Chromium understands.
-            Cursor c = contentResolver.query(results.getData(),
+            cursor = contentResolver.query(results.getData(),
                     new String[] { MediaStore.MediaColumns.DATA }, null, null, null);
-            if (c != null) {
-                if (c.getCount() == 1) {
-                    c.moveToFirst();
-                    String path = c.getString(0);
+            if (cursor != null) {
+                if (cursor.getCount() == 1) {
+                    cursor.moveToFirst();
+                    String path = cursor.getString(0);
                     if (path != null) {
                         // Not all providers support the MediaStore.DATA column. For example,
                         // Gallery3D (com.android.gallery3d.provider) does not support it for
                         // Picasa Web Album images.
                         nativeOnFileSelected(mNativeSelectFileDialog, path);
-                        success = true;
+                        return;
                     }
                 }
-                c.close();
             }
-        }
-        if (!success) {
-            onFileNotSelected();
-            window.showError(R.string.opening_file_error);
-        }
+        } finally { if (cursor != null) { cursor.close(); } }
+
+        onFileNotSelected();
+        window.showError(R.string.opening_file_error);
     }
 
     private void onFileNotSelected() {
