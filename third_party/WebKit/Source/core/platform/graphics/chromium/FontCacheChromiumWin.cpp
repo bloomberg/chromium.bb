@@ -521,11 +521,6 @@ PassRefPtr<SimpleFontData> FontCache::getFontDataForCharacter(const Font& font, 
 
 }
 
-PassRefPtr<SimpleFontData> FontCache::getSimilarFontPlatformData(const FontDescription&)
-{
-    return 0;
-}
-
 PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(const FontDescription& description, ShouldRetain shouldRetain)
 {
     FontDescription::GenericFamilyType generic = description.genericFamily();

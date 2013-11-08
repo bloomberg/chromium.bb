@@ -154,27 +154,20 @@ PassRefPtr<FontData> FontFallbackList::getFontData(const FontDescription& fontDe
     if (!currFamily)
         familyIndex = cAllFamiliesScanned;
 
-    if (!result) {
-        // We didn't find a font. Try to find a similar font using our own specific knowledge about our platform.
-        // For example on OS X, we know to map any families containing the words Arabic, Pashto, or Urdu to the
-        // Geeza Pro font.
-        result = fontCache()->getSimilarFontPlatformData(fontDescription);
+    if (result || startIndex)
+        return result.release();
+
+    // If it's the primary font that we couldn't find, we try the following. In all other cases, we will
+    // just use per-character system fallback.
+
+    if (m_fontSelector) {
+        // Try the user's preferred standard font.
+        if (RefPtr<FontData> data = m_fontSelector->getFontData(fontDescription, FontFamilyNames::webkit_standard))
+            return data.release();
     }
 
-    if (!result && !startIndex) {
-        // If it's the primary font that we couldn't find, we try the following. In all other cases, we will
-        // just use per-character system fallback.
-
-        if (m_fontSelector) {
-            // Try the user's preferred standard font.
-            if (RefPtr<FontData> data = m_fontSelector->getFontData(fontDescription, FontFamilyNames::webkit_standard))
-                return data.release();
-        }
-
-        // Still no result. Hand back our last resort fallback font.
-        result = fontCache()->getLastResortFallbackFont(fontDescription);
-    }
-    return result.release();
+    // Still no result. Hand back our last resort fallback font.
+    return fontCache()->getLastResortFallbackFont(fontDescription);
 }
 
 

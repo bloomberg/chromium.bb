@@ -173,27 +173,6 @@ PassRefPtr<SimpleFontData> FontCache::getFontDataForCharacter(const Font& font, 
     return getFontResourceData(&alternateFont, DoNotRetain);
 }
 
-PassRefPtr<SimpleFontData> FontCache::getSimilarFontPlatformData(const FontDescription& fontDescription)
-{
-    // Attempt to find an appropriate font using a match based on
-    // the presence of keywords in the the requested names.  For example, we'll
-    // match any name that contains "Arabic" to Geeza Pro.
-    RefPtr<SimpleFontData> simpleFontData;
-    const FontFamily* currFamily = &fontDescription.family();
-    while (currFamily && !simpleFontData) {
-        if (currFamily->family().length()) {
-            static String* matchWords[3] = { new String("Arabic"), new String("Pashto"), new String("Urdu") };
-            DEFINE_STATIC_LOCAL(AtomicString, geezaStr, ("Geeza Pro", AtomicString::ConstructFromLiteral));
-            for (int j = 0; j < 3 && !simpleFontData; ++j)
-                if (currFamily->family().contains(*matchWords[j], false))
-                    simpleFontData = getFontResourceData(fontDescription, geezaStr);
-        }
-        currFamily = currFamily->next();
-    }
-
-    return simpleFontData.release();
-}
-
 PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(const FontDescription& fontDescription, ShouldRetain shouldRetain)
 {
     DEFINE_STATIC_LOCAL(AtomicString, timesStr, ("Times", AtomicString::ConstructFromLiteral));

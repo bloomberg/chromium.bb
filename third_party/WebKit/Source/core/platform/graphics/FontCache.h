@@ -134,7 +134,6 @@ private:
     FontPlatformData* getFontResourcePlatformData(const FontDescription&, const AtomicString& family, bool checkingAlternateName = false);
 
     // These methods are implemented by each platform.
-    PassRefPtr<SimpleFontData> getSimilarFontPlatformData(const FontDescription&);
     FontPlatformData* createFontPlatformData(const FontDescription&, const AtomicString& family, float fontSize);
 
     // Implemented on skia platforms.

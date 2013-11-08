@@ -89,11 +89,6 @@ PassRefPtr<SimpleFontData> FontCache::getFontDataForCharacter(const Font& font, 
 
 #endif // !OS(WINDOWNS) && !OS(ANDROID)
 
-PassRefPtr<SimpleFontData> FontCache::getSimilarFontPlatformData(const FontDescription&)
-{
-    return 0;
-}
-
 PassRefPtr<SimpleFontData> FontCache::getLastResortFallbackFont(const FontDescription& description, ShouldRetain shouldRetain)
 {
     const AtomicString fallbackFontFamily = getFallbackFontFamily(description);
