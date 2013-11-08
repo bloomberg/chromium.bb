@@ -724,6 +724,8 @@ cr.define('options', function() {
       document.documentElement.removeAttribute(
           'flashPluginSupportsClearSiteData');
     }
+    if (navigator.plugins['Shockwave Flash'])
+      document.documentElement.setAttribute('hasFlashPlugin', '');
   };
 
   OptionsPage.setPepperFlashSettingsEnabled = function(enabled) {

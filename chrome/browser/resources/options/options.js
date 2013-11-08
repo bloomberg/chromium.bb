@@ -234,9 +234,6 @@ function load() {
     };
   }
 
-  if (navigator.plugins['Shockwave Flash'])
-    document.documentElement.setAttribute('hasFlashPlugin', '');
-
   window.setTimeout(function() {
     document.documentElement.classList.remove('loading');
   });
