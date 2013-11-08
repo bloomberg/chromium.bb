@@ -319,6 +319,9 @@ crbug.com/282095 storage/websql/read-transactions-running-concurrently.html [ Fa
 crbug.com/284734 svg/custom/getsvgdocument.html [ Pass Failure ]
 
 crbug.com/283723 [ Win ] http/tests/local/fileapi/file-last-modified-after-delete.html [ Failure Pass Timeout ]
+crbug.com/282634 [ SnowLeopard Debug ] svg/as-object/embedded-svg-size-changes-no-layout-triggers.html [ Pass ImageOnlyFailure ]  
+crbug.com/282634 [ SnowLeopard Debug ] svg/as-object/nested-embedded-svg-size-changes-no-layout-triggers-1.html [ Pass ImageOnlyFailure ]  
+crbug.com/282634 [ SnowLeopard Debug ] svg/as-object/nested-embedded-svg-size-changes-no-layout-triggers-2.html [ Pass ImageOnlyFailure ]
 crbug.com/284779 crbug.com/284782 http/tests/media/media-source/mediasource-duration.html [ Failure Pass Crash ]
 crbug.com/284793 http/tests/media/media-source/mediasource-play-then-seek-back.html [ Failure Pass ]
 
