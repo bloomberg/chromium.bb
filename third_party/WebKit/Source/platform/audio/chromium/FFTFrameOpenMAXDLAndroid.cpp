@@ -38,7 +38,9 @@
 
 namespace WebCore {
 
+#if !ASSERT_DISABLED
 const unsigned kMaxFFTPow2Size = 15;
+#endif
 
 // Normal constructor: allocates for a given fftSize.
 FFTFrame::FFTFrame(unsigned fftSize)
