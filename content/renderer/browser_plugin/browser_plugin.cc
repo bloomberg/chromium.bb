@@ -876,19 +876,21 @@ void BrowserPlugin::EnableCompositing(bool enable) {
                                              render_view_routing_id_);
     }
   } else {
-    // We're switching back to the software path. We create a new damage
-    // buffer that can accommodate the current size of the container.
-    BrowserPluginHostMsg_ResizeGuest_Params params;
-    // Request a full repaint from the guest even if its size is not actually
-    // changing.
-    PopulateResizeGuestParameters(&params,
-                                  plugin_rect(),
-                                  true /* needs_repaint */);
-    paint_ack_received_ = false;
-    browser_plugin_manager()->Send(new BrowserPluginHostMsg_ResizeGuest(
-        render_view_routing_id_,
-        guest_instance_id_,
-        params));
+    if (paint_ack_received_) {
+      // We're switching back to the software path. We create a new damage
+      // buffer that can accommodate the current size of the container.
+      BrowserPluginHostMsg_ResizeGuest_Params params;
+      // Request a full repaint from the guest even if its size is not actually
+      // changing.
+      PopulateResizeGuestParameters(&params,
+                                    plugin_rect(),
+                                    true /* needs_repaint */);
+      paint_ack_received_ = false;
+      browser_plugin_manager()->Send(new BrowserPluginHostMsg_ResizeGuest(
+          render_view_routing_id_,
+          guest_instance_id_,
+          params));
+    }
   }
   compositing_helper_->EnableCompositing(enable);
 }
