@@ -35,6 +35,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/ssl_status.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/animation/animation_delegate.h"
@@ -373,6 +374,12 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   // invalid suggestions, so if no sections are based on existing data,
   // |view_->UpdateForErrors()| is not called.
   void UpdateForErrors();
+
+  // Renders and returns one frame of the generated card animation.
+  gfx::Image GetGeneratedCardImage(const base::string16& card_number,
+                                   const base::string16& name,
+                                   const SkColor& gradient_top,
+                                   const SkColor& gradient_bottom);
 
   // Kicks off |card_scrambling_refresher_|.
   void StartCardScramblingRefresher();

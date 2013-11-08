@@ -463,46 +463,6 @@ scoped_ptr<DialogNotification> GetWalletError(
   return notification.Pass();
 }
 
-gfx::Image GetGeneratedCardImage(const base::string16& card_number,
-                                 const base::string16& name,
-                                 const SkColor& gradient_top,
-                                 const SkColor& gradient_bottom) {
-  const int kCardWidthPx = 300;
-  const int kCardHeightPx = 190;
-  const gfx::Size size(kCardWidthPx, kCardHeightPx);
-  gfx::Canvas canvas(size, 1.0f, false);
-
-  gfx::Rect display_rect(size);
-
-  skia::RefPtr<SkShader> shader = gfx::CreateGradientShader(
-      0, size.height(), gradient_top, gradient_bottom);
-  SkPaint paint;
-  paint.setShader(shader.get());
-  canvas.DrawRoundRect(display_rect, 8, paint);
-
-  display_rect.Inset(20, 0, 0, 0);
-  gfx::Font font(l10n_util::GetStringUTF8(IDS_FIXED_FONT_FAMILY), 18);
-  gfx::FontList font_list(font);
-  gfx::ShadowValues shadows;
-  shadows.push_back(gfx::ShadowValue(gfx::Point(0, 1), 1.0, SK_ColorBLACK));
-  canvas.DrawStringRectWithShadows(
-      card_number,
-      font_list,
-      SK_ColorWHITE,
-      display_rect, 0, 0, shadows);
-
-  base::string16 capitalized_name = base::i18n::ToUpper(name);
-  display_rect.Inset(0, size.height() / 2, 0, 0);
-  canvas.DrawStringRectWithShadows(
-      capitalized_name,
-      font_list,
-      SK_ColorWHITE,
-      display_rect, 0, 0, shadows);
-
-  gfx::ImageSkia skia(canvas.ExtractImageRep());
-  return gfx::Image(skia);
-}
-
 // Returns the ID of the address or instrument that should be selected in the
 // UI, given that the |default_id| is currently the default ID on the Wallet
 // server, |previous_default_id| was the default ID prior to re-fetching the
@@ -868,7 +828,7 @@ DialogOverlayState AutofillDialogControllerImpl::GetDialogOverlay() {
 
     string16 cc_number =
         full_wallet_->GetInfo(AutofillType(CREDIT_CARD_NUMBER));
-    DCHECK_EQ(16U, cc_number.size());
+    DCHECK_GE(cc_number.size(), 4U);
     state.image = GetGeneratedCardImage(
         ASCIIToUTF16("XXXX XXXX XXXX ") +
             cc_number.substr(cc_number.size() - 4),
@@ -1285,6 +1245,49 @@ void AutofillDialogControllerImpl::UpdateForErrors() {
 
   if (should_update)
     view_->UpdateForErrors();
+}
+
+gfx::Image AutofillDialogControllerImpl::GetGeneratedCardImage(
+    const base::string16& card_number,
+    const base::string16& name,
+    const SkColor& gradient_top,
+    const SkColor& gradient_bottom) {
+  const int kCardWidthPx = 300;
+  const int kCardHeightPx = 190;
+  const gfx::Size size(kCardWidthPx, kCardHeightPx);
+  ui::ScaleFactor scale_factor = ui::GetScaleFactorForNativeView(
+      web_contents()->GetView()->GetNativeView());
+  gfx::Canvas canvas(size, ui::GetImageScale(scale_factor), false);
+
+  gfx::Rect display_rect(size);
+
+  skia::RefPtr<SkShader> shader = gfx::CreateGradientShader(
+      0, size.height(), gradient_top, gradient_bottom);
+  SkPaint paint;
+  paint.setShader(shader.get());
+  canvas.DrawRoundRect(display_rect, 8, paint);
+
+  display_rect.Inset(20, 0, 0, 0);
+  gfx::Font font(l10n_util::GetStringUTF8(IDS_FIXED_FONT_FAMILY), 18);
+  gfx::FontList font_list(font);
+  gfx::ShadowValues shadows;
+  shadows.push_back(gfx::ShadowValue(gfx::Point(0, 1), 1.0, SK_ColorBLACK));
+  canvas.DrawStringRectWithShadows(
+      card_number,
+      font_list,
+      SK_ColorWHITE,
+      display_rect, 0, 0, shadows);
+
+  base::string16 capitalized_name = base::i18n::ToUpper(name);
+  display_rect.Inset(0, size.height() / 2, 0, 0);
+  canvas.DrawStringRectWithShadows(
+      capitalized_name,
+      font_list,
+      SK_ColorWHITE,
+      display_rect, 0, 0, shadows);
+
+  gfx::ImageSkia skia(canvas.ExtractImageRep());
+  return gfx::Image(skia);
 }
 
 void AutofillDialogControllerImpl::StartCardScramblingRefresher() {
