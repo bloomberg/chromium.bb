@@ -32,6 +32,7 @@
 #include "chrome/browser/renderer_host/chrome_url_request_user_data.h"
 #include "chrome/browser/renderer_host/safe_browsing_resource_throttle_factory.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/browser/signin/signin_header_helper.h"
 #include "chrome/browser/ui/auto_login_prompter.h"
 #include "chrome/browser/ui/login/login_prompt.h"
 #include "chrome/browser/ui/sync/one_click_signin_helper.h"
@@ -357,6 +358,11 @@ void ChromeResourceDispatcherHostDelegate::RequestBeginning(
   AppendChromeSyncGaiaHeader(request, resource_context);
 #endif
 
+  const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
+  signin::AppendMirrorRequestHeaderIfPossible(
+      request, GURL() /* redirect_url */,
+      io_data, info->GetChildID(), info->GetRouteID());
+
   AppendStandardResourceThrottles(request,
                                   resource_context,
                                   resource_type,
@@ -666,6 +672,13 @@ void ChromeResourceDispatcherHostDelegate::OnResponseStarted(
                                               info->GetRouteID());
 #endif
 
+  // See if the response contains the X-Chrome-Manage-Accounts header. If so
+  // show the profile avatar bubble so that user can complete signin/out action
+  // the native UI.
+  signin::ProcessMirrorResponseHeaderIfExists(request, io_data,
+                                              info->GetChildID(),
+                                              info->GetRouteID());
+
   // Build in additional protection for the chrome web store origin.
   GURL webstore_url(extension_urls::GetWebstoreLaunchURL());
   if (request->url().DomainIs(webstore_url.host().c_str())) {
@@ -689,10 +702,9 @@ void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
     content::ResourceContext* resource_context,
     content::ResourceResponse* response) {
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
-
-#if defined(ENABLE_ONE_CLICK_SIGNIN)
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
 
+#if defined(ENABLE_ONE_CLICK_SIGNIN)
   // See if the response contains the Google-Accounts-SignIn header.  If so,
   // then the user has just finished signing in, and the server is allowing the
   // browser to suggest connecting the user's profile to the account.
@@ -701,6 +713,14 @@ void ChromeResourceDispatcherHostDelegate::OnRequestRedirected(
                                               info->GetRouteID());
   AppendChromeSyncGaiaHeader(request, resource_context);
 #endif
+
+  // In the Mirror world, Chrome should append a X-Chrome-Connected header to
+  // all Gaia requests from a connected profile so Gaia could return a 204
+  // response and let Chrome handle the action with native UI. The only
+  // exception is requests from gaia webview, since the native profile
+  // management UI is built on top of it.
+  signin::AppendMirrorRequestHeaderIfPossible(request, redirect_url, io_data,
+      info->GetChildID(), info->GetRouteID());
 
   if (io_data->resource_prefetch_predictor_observer()) {
     io_data->resource_prefetch_predictor_observer()->OnRequestRedirected(
