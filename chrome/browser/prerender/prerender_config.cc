@@ -6,7 +6,7 @@
 
 namespace prerender {
 
-Config::Config() : max_bytes(100 * 1024 * 1024),
+Config::Config() : max_bytes(150 * 1024 * 1024),
                    max_link_concurrency(1),
                    max_link_concurrency_per_launcher(1),
                    rate_limit_enabled(true),

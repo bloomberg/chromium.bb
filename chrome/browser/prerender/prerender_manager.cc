@@ -39,6 +39,7 @@
 #include "chrome/browser/prerender/prerender_tracker.h"
 #include "chrome/browser/prerender/prerender_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/search/search.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
@@ -406,6 +407,15 @@ PrerenderHandle* PrerenderManager::AddPrerenderFromExternalRequest(
     SessionStorageNamespace* session_storage_namespace,
     const gfx::Size& size) {
   return AddPrerender(ORIGIN_EXTERNAL_REQUEST, -1, url, referrer, size,
+                      session_storage_namespace);
+}
+
+PrerenderHandle* PrerenderManager::AddPrerenderForInstant(
+    const GURL& url,
+    content::SessionStorageNamespace* session_storage_namespace,
+    const gfx::Size& size) {
+  DCHECK(chrome::ShouldPrefetchSearchResults());
+  return AddPrerender(ORIGIN_INSTANT, -1, url, content::Referrer(), size,
                       session_storage_namespace);
 }
 

@@ -60,6 +60,8 @@ std::string GetHistogramName(Origin origin, uint8 experiment_id,
       return ComposeHistogramName("localpredictor", name);
     case ORIGIN_EXTERNAL_REQUEST:
         return ComposeHistogramName("externalrequest", name);
+    case ORIGIN_INSTANT:
+      return ComposeHistogramName("Instant", name);
     case ORIGIN_GWS_PRERENDER:  // Handled above.
     default:
       NOTREACHED();
@@ -120,6 +122,8 @@ bool OriginIsOmnibox(Origin origin) {
   } else if (origin == ORIGIN_LOCAL_PREDICTOR) { \
     HISTOGRAM; \
   } else if (origin == ORIGIN_EXTERNAL_REQUEST) { \
+    HISTOGRAM; \
+  } else if (origin == ORIGIN_INSTANT) { \
     HISTOGRAM; \
   } else if (experiment != kNoExperiment) { \
     HISTOGRAM; \

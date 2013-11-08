@@ -157,6 +157,15 @@ class PrerenderManager : public base::SupportsWeakPtr<PrerenderManager>,
       content::SessionStorageNamespace* session_storage_namespace,
       const gfx::Size& size);
 
+  // Adds a prerender for Instant Search |url| if valid. The
+  // |session_storage_namespace| matches the namespace of the active tab at the
+  // time the prerender is generated. Returns a caller-owned PrerenderHandle* or
+  // NULL.
+  PrerenderHandle* AddPrerenderForInstant(
+      const GURL& url,
+      content::SessionStorageNamespace* session_storage_namespace,
+      const gfx::Size& size);
+
   // If |process_id| and |view_id| refer to a running prerender, destroy
   // it with |final_status|.
   virtual void DestroyPrerenderForRenderView(int process_id,
