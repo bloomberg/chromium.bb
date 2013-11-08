@@ -30,6 +30,18 @@ class ExtensionCreatorFilterTest : public PlatformTest {
     return test_file;
   }
 
+  base::FilePath CreateEmptyTestFileInDir(
+      const base::FilePath::StringType& file_name,
+      const base::FilePath::StringType& dir) {
+    base::FilePath temp_sub_dir(test_dir_.Append(dir));
+    base::FilePath test_file(temp_sub_dir.Append(file_name));
+    EXPECT_TRUE(file_util::CreateDirectory(temp_sub_dir));
+    base::FilePath temp_file;
+    EXPECT_TRUE(file_util::CreateTemporaryFileInDir(temp_sub_dir, &temp_file));
+    EXPECT_TRUE(base::Move(temp_file, test_file));
+    return test_file;
+  }
+
   scoped_refptr<extensions::ExtensionCreatorFilter> filter_;
 
   base::ScopedTempDir temp_dir_;
@@ -53,6 +65,9 @@ TEST_F(ExtensionCreatorFilterTest, NormalCases) {
     { FILE_PATH_LITERAL("#foo#"), false },
     { FILE_PATH_LITERAL(".svn"), false },
     { FILE_PATH_LITERAL("__MACOSX"), false },
+    { FILE_PATH_LITERAL(".DS_Store"), false },
+    { FILE_PATH_LITERAL("desktop.ini"), false },
+    { FILE_PATH_LITERAL("Thumbs.db"), false },
   };
 
   for (size_t i = 0; i < arraysize(cases); ++i) {
@@ -60,6 +75,32 @@ TEST_F(ExtensionCreatorFilterTest, NormalCases) {
     base::FilePath test_file(CreateEmptyTestFile(input));
     bool observed = filter_->ShouldPackageFile(test_file);
 
+    EXPECT_EQ(cases[i].expected, observed) <<
+      "i: " << i << ", input: " << test_file.value();
+  }
+}
+
+struct StringStringWithBooleanTestData {
+  const base::FilePath::StringType file_name;
+  const base::FilePath::StringType dir;
+  bool expected;
+};
+
+// Ignore the files in special directories, including ".git", ".svn",
+// "__MACOSX".
+TEST_F(ExtensionCreatorFilterTest, IgnoreFilesInSpecialDir) {
+  const struct StringStringWithBooleanTestData cases[] = {
+    { FILE_PATH_LITERAL("foo"), FILE_PATH_LITERAL(".git"), false },
+    { FILE_PATH_LITERAL("goo"), FILE_PATH_LITERAL(".svn"), false },
+    { FILE_PATH_LITERAL("foo"), FILE_PATH_LITERAL("__MACOSX"), false },
+    { FILE_PATH_LITERAL("foo"), FILE_PATH_LITERAL("foo"), true },
+    { FILE_PATH_LITERAL("index.js"), FILE_PATH_LITERAL("scripts"), true },
+  };
+
+  for (size_t i = 0; i < arraysize(cases); ++i) {
+    base::FilePath test_file(CreateEmptyTestFileInDir(cases[i].file_name,
+                                                      cases[i].dir));
+    bool observed = filter_->ShouldPackageFile(test_file);
     EXPECT_EQ(cases[i].expected, observed) <<
       "i: " << i << ", input: " << test_file.value();
   }
