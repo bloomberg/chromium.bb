@@ -1085,8 +1085,10 @@ void PrerenderLocalPredictor::ContinuePrerenderCheck(
     return;
   }
   scoped_ptr<LocalPredictorURLInfo> url_info;
+#if defined(FULL_SAFE_BROWSING)
   scoped_refptr<SafeBrowsingDatabaseManager> sb_db_manager =
       g_browser_process->safe_browsing_service()->database_manager();
+#endif
   PrerenderProperties* prerender_properties = NULL;
 
   for (int i = 0; i < static_cast<int>(info->candidate_urls_.size()); i++) {
@@ -1157,6 +1159,7 @@ void PrerenderLocalPredictor::ContinuePrerenderCheck(
       url_info.reset(NULL);
       continue;
     }
+#if defined(FULL_SAFE_BROWSING)
     if (!SkipLocalPredictorWhitelist() &&
         sb_db_manager->CheckSideEffectFreeWhitelistUrl(url_info->url)) {
       // If a page is on the side-effect free whitelist, we will just prerender
@@ -1164,6 +1167,7 @@ void PrerenderLocalPredictor::ContinuePrerenderCheck(
       RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_ON_SIDE_EFFECT_FREE_WHITELIST);
       break;
     }
+#endif
     if (!SkipLocalPredictorServiceWhitelist() &&
         url_info->service_whitelist && url_info->service_whitelist_lookup_ok) {
       RecordEvent(EVENT_CONTINUE_PRERENDER_CHECK_ON_SERVICE_WHITELIST);

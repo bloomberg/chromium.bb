@@ -481,10 +481,14 @@ bool DownloadItemModel::IsMalicious() const {
 }
 
 bool DownloadItemModel::ShouldAllowDownloadFeedback() const {
+#if defined(FULL_SAFE_BROWSING)
   if (!IsDangerous())
     return false;
   return safe_browsing::DownloadFeedbackService::IsEnabledForDownload(
       *download_);
+#else
+  return false;
+#endif
 }
 
 bool DownloadItemModel::ShouldRemoveFromShelfWhenComplete() const {
