@@ -333,6 +333,7 @@ NotificationButton::NotificationButton(views::ButtonListener* listener)
       title_(NULL) {
   set_focusable(true);
   set_request_focus_on_press(false);
+  set_notify_enter_exit_on_child(true);
   SetLayoutManager(
       new views::BoxLayout(views::BoxLayout::kHorizontal,
                            message_center::kButtonHorizontalPadding,
