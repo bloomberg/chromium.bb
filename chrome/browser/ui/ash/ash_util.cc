@@ -20,10 +20,10 @@ bool IsNativeViewInAsh(gfx::NativeView native_view) {
   if (!ash::Shell::HasInstance())
     return false;
 
-  ash::Shell::RootWindowList root_windows =
+  aura::Window::Windows root_windows =
       ash::Shell::GetInstance()->GetAllRootWindows();
 
-  for (ash::Shell::RootWindowList::const_iterator it = root_windows.begin();
+  for (aura::Window::Windows::const_iterator it = root_windows.begin();
        it != root_windows.end(); ++it) {
     if ((*it)->Contains(native_view))
       return true;

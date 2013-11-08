@@ -336,7 +336,7 @@ TEST_F(PanelLayoutManagerTest, PanelAlignsToHiddenLauncherIconSecondDisplay) {
   // Keep the displays wide so that launchers have enough
   // space for launcher buttons.
   UpdateDisplay("400x400,600x400");
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
 
   scoped_ptr<aura::Window> normal_window(
       CreateNormalWindow(gfx::Rect(450, 0, 100, 100)));
@@ -603,7 +603,7 @@ TEST_F(PanelLayoutManagerTest, PanelMoveBetweenMultipleDisplays) {
   // Keep the displays wide so that launchers have enough
   // space for launcher buttons.
   UpdateDisplay("600x400,600x400");
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
 
   scoped_ptr<aura::Window> p1_d1(CreatePanelWindow(gfx::Rect(0, 0, 50, 50)));
   scoped_ptr<aura::Window> p2_d1(CreatePanelWindow(gfx::Rect(0, 0, 50, 50)));
@@ -683,7 +683,7 @@ TEST_F(PanelLayoutManagerTest, PanelAttachPositionMultipleDisplays) {
   // buttons. Use differently sized displays so the launcher is in a different
   // position on second display.
   UpdateDisplay("600x400,600x600");
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
 
   scoped_ptr<aura::Window> p1_d1(CreatePanelWindow(gfx::Rect(0, 0, 50, 50)));
   scoped_ptr<aura::Window> p1_d2(CreatePanelWindow(gfx::Rect(600, 0, 50, 50)));
@@ -702,7 +702,7 @@ TEST_F(PanelLayoutManagerTest, PanelAlignmentSecondDisplay) {
     return;
 
   UpdateDisplay("600x400,600x400");
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
 
   scoped_ptr<aura::Window> p1_d2(CreatePanelWindow(gfx::Rect(600, 0, 50, 50)));
   EXPECT_EQ(root_windows[1], p1_d2->GetRootWindow());

@@ -1658,9 +1658,9 @@ void ChromeLauncherController::SetShelfAutoHideBehaviorPrefs(
 }
 
 void ChromeLauncherController::SetShelfAutoHideBehaviorFromPrefs() {
-  ash::Shell::RootWindowList root_windows = ash::Shell::GetAllRootWindows();
+  aura::Window::Windows root_windows = ash::Shell::GetAllRootWindows();
 
-  for (ash::Shell::RootWindowList::const_iterator iter = root_windows.begin();
+  for (aura::Window::Windows::const_iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter) {
     ash::Shell::GetInstance()->SetShelfAutoHideBehavior(
         GetShelfAutoHideBehavior(*iter), *iter);
@@ -1671,9 +1671,9 @@ void ChromeLauncherController::SetShelfAlignmentFromPrefs() {
   if (!ash::ShelfWidget::ShelfAlignmentAllowed())
     return;
 
-  ash::Shell::RootWindowList root_windows = ash::Shell::GetAllRootWindows();
+  aura::Window::Windows root_windows = ash::Shell::GetAllRootWindows();
 
-  for (ash::Shell::RootWindowList::const_iterator iter = root_windows.begin();
+  for (aura::Window::Windows::const_iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter) {
     // See comment in |kShelfAlignment| as to why we consider two prefs.
     const std::string alignment_value(

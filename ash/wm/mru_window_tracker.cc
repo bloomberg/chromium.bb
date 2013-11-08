@@ -57,10 +57,10 @@ MruWindowTracker::WindowList BuildWindowListInternal(
     const std::list<aura::Window*>* mru_windows,
     bool top_most_at_end) {
   MruWindowTracker::WindowList windows;
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
 
   aura::Window* active_root = Shell::GetTargetRootWindow();
-  for (Shell::RootWindowList::const_iterator iter = root_windows.begin();
+  for (aura::Window::Windows::const_iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter) {
     if (*iter == active_root)
       continue;

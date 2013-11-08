@@ -58,7 +58,7 @@ bool ShouldProcessAcceleratorsNow(const ui::Accelerator& accelerator,
   if (!target)
     return true;
 
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   if (std::find(root_windows.begin(), root_windows.end(), target) !=
       root_windows.end())
     return true;

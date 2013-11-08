@@ -17,6 +17,7 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "ui/aura/root_window_observer.h"
+#include "ui/aura/window.h"
 #include "ui/gfx/display_observer.h"
 #include "ui/gfx/point.h"
 
@@ -118,7 +119,7 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
 
   // Returns all root windows. In non extended desktop mode, this
   // returns the primary root window only.
-  std::vector<aura::RootWindow*> GetAllRootWindows();
+  aura::Window::Windows GetAllRootWindows();
 
   // Returns all oot window controllers. In non extended desktop
   // mode, this return a RootWindowController for the primary root window only.

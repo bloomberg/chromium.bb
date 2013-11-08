@@ -10,10 +10,6 @@
 #include "ui/gfx/point.h"
 #include "ui/views/widget/widget_observer.h"
 
-namespace aura {
-class RootWindow;
-}
-
 namespace ash {
 
 const float kDefaultPartialMagnifiedScale = 1.5f;
@@ -52,7 +48,7 @@ class PartialMagnificationController
   void SwitchTargetRootWindow(aura::Window* new_root_window);
 
   // Returns the root window that contains the mouse cursor.
-  aura::RootWindow* GetCurrentRootWindow();
+  aura::Window* GetCurrentRootWindow();
 
   // Return true if the magnification scale > kMinPartialMagnifiedScaleThreshold
   bool IsPartialMagnified() const;

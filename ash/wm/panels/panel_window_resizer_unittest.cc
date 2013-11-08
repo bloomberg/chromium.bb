@@ -286,7 +286,7 @@ TEST_F(PanelWindowResizerTest, PanelDetachReattachMultipleDisplays) {
     return;
 
   UpdateDisplay("600x400,600x400");
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   scoped_ptr<aura::Window> window(
       CreatePanelWindow(gfx::Point(600, 0)));
   EXPECT_EQ(root_windows[1], window->GetRootWindow());
@@ -298,7 +298,7 @@ TEST_F(PanelWindowResizerTest, DetachThenDragAcrossDisplays) {
     return;
 
   UpdateDisplay("600x400,600x400");
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   scoped_ptr<aura::Window> window(
       CreatePanelWindow(gfx::Point(0, 0)));
   gfx::Rect initial_bounds = window->GetBoundsInScreen();
@@ -327,7 +327,7 @@ TEST_F(PanelWindowResizerTest, DetachAcrossDisplays) {
     return;
 
   UpdateDisplay("600x400,600x400");
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   scoped_ptr<aura::Window> window(
       CreatePanelWindow(gfx::Point(0, 0)));
   gfx::Rect initial_bounds = window->GetBoundsInScreen();
@@ -347,7 +347,7 @@ TEST_F(PanelWindowResizerTest, DetachThenAttachToSecondDisplay) {
     return;
 
   UpdateDisplay("600x400,600x600");
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   scoped_ptr<aura::Window> window(
       CreatePanelWindow(gfx::Point(0, 0)));
   gfx::Rect initial_bounds = window->GetBoundsInScreen();
@@ -380,7 +380,7 @@ TEST_F(PanelWindowResizerTest, AttachToSecondDisplay) {
     return;
 
   UpdateDisplay("600x400,600x600");
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   scoped_ptr<aura::Window> window(
       CreatePanelWindow(gfx::Point(0, 0)));
   gfx::Rect initial_bounds = window->GetBoundsInScreen();

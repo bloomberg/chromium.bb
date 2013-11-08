@@ -145,7 +145,7 @@ class RootWindowControllerTest : public test::AshTestBase {
     return widget;
   }
 
-  aura::Window* GetModalContainer(aura::RootWindow* root_window) {
+  aura::Window* GetModalContainer(aura::Window* root_window) {
     return Shell::GetContainer(
         root_window,
         ash::internal::kShellWindowId_SystemModalContainer);
@@ -157,7 +157,7 @@ TEST_F(RootWindowControllerTest, MoveWindows_Basic) {
     return;
 
   UpdateDisplay("600x600,500x500");
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   internal::RootWindowController* controller =
       Shell::GetPrimaryRootWindowController();
   internal::ShelfLayoutManager* shelf_layout_manager =
@@ -290,7 +290,7 @@ TEST_F(RootWindowControllerTest, MoveWindows_Modal) {
 
   UpdateDisplay("500x500,500x500");
 
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   // Emulate virtual screen coordinate system.
   root_windows[0]->SetBounds(gfx::Rect(0, 0, 500, 500));
   root_windows[1]->SetBounds(gfx::Rect(500, 0, 500, 500));
@@ -638,7 +638,7 @@ TEST_F(VirtualKeyboardRootWindowControllerTest,
 
   UpdateDisplay("500x500,500x500");
 
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   aura::Window* primary_root_window = Shell::GetPrimaryRootWindow();
   aura::Window* secondary_root_window =
       root_windows[0] == primary_root_window ?

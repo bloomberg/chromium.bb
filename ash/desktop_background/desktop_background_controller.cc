@@ -362,7 +362,7 @@ void DesktopBackgroundController::OnDefaultWallpaperLoadCompleted(
 }
 
 void DesktopBackgroundController::InstallDesktopController(
-    aura::RootWindow* root_window) {
+    aura::Window* root_window) {
   internal::DesktopBackgroundWidgetController* component = NULL;
   int container_id = GetBackgroundContainerId(locked_);
 
@@ -385,8 +385,8 @@ void DesktopBackgroundController::InstallDesktopController(
 }
 
 void DesktopBackgroundController::InstallDesktopControllerForAllWindows() {
-  Shell::RootWindowList root_windows = Shell::GetAllRootWindows();
-  for (Shell::RootWindowList::iterator iter = root_windows.begin();
+  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
+  for (aura::Window::Windows::iterator iter = root_windows.begin();
        iter != root_windows.end(); ++iter) {
     InstallDesktopController(*iter);
   }

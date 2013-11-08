@@ -43,7 +43,7 @@ void CloseBrowser(Browser* browser) {
   base::MessageLoop::current()->RunUntilIdle();
 }
 
-gfx::Rect GetChromeIconBoundsForRootWindow(aura::RootWindow* root_window) {
+gfx::Rect GetChromeIconBoundsForRootWindow(aura::Window* root_window) {
   ash::Launcher* launcher = ash::Launcher::ForWindow(root_window);
   const ash::internal::ShelfView* shelf_view =
       ash::test::LauncherTestAPI(launcher).shelf_view();
@@ -53,7 +53,7 @@ gfx::Rect GetChromeIconBoundsForRootWindow(aura::RootWindow* root_window) {
   return view_model->view_at(1)->GetBoundsInScreen();
 }
 
-void OpenBrowserUsingShelfOnRootWindow(aura::RootWindow* root_window) {
+void OpenBrowserUsingShelfOnRootWindow(aura::Window* root_window) {
   aura::test::EventGenerator generator(root_window);
   gfx::Point center =
       GetChromeIconBoundsForRootWindow(root_window).CenterPoint();
@@ -80,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(WindowSizerTest,
   // Don't shutdown when closing the last browser window.
   chrome::StartKeepAlive();
 
-  ash::Shell::RootWindowList root_windows = ash::Shell::GetAllRootWindows();
+  aura::Window::Windows root_windows = ash::Shell::GetAllRootWindows();
 
   BrowserList* browser_list =
       BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
@@ -150,7 +150,7 @@ class WindowSizerContextMenuTest : public WindowSizerTest {
   DISALLOW_COPY_AND_ASSIGN(WindowSizerContextMenuTest);
 };
 
-void OpenBrowserUsingContextMenuOnRootWindow(aura::RootWindow* root_window) {
+void OpenBrowserUsingContextMenuOnRootWindow(aura::Window* root_window) {
   gfx::Point chrome_icon =
       GetChromeIconBoundsForRootWindow(root_window).CenterPoint();
   gfx::Point release_point = chrome_icon;
@@ -170,7 +170,7 @@ IN_PROC_BROWSER_TEST_F(WindowSizerContextMenuTest,
 
   views::MenuController::TurnOffMenuSelectionHoldForTest();
 
-  ash::Shell::RootWindowList root_windows = ash::Shell::GetAllRootWindows();
+  aura::Window::Windows root_windows = ash::Shell::GetAllRootWindows();
 
   BrowserList* browser_list =
       BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
