@@ -8,11 +8,9 @@ This test is a multi tab test, but we're interested in measurements for
 the entire test rather than each single page.
 """
 
-import os
 
 from metrics import memory
 from telemetry.page import page_measurement
-from telemetry.page import page_set
 
 class MemoryMultiTab(page_measurement.PageMeasurement):
   def __init__(self, *args, **kwargs):
@@ -20,18 +18,6 @@ class MemoryMultiTab(page_measurement.PageMeasurement):
     self._memory_metric = None
     # _first_tab is used to make memory measurements
     self._first_tab = None
-
-  def CreatePageSet(self, _, options):
-    return page_set.PageSet.FromDict({
-      "description": "Key mobile sites",
-      "archive_data_file": "../data/key_mobile_sites.json",
-      "credentials_path": "../data/credentials.json",
-      "user_agent_type": "mobile",
-      "pages": [
-        { "url": "https://www.google.com/#hl=en&q=barack+obama" },
-        { "url": "http://theverge.com" },
-        { "url": "http://techcrunch.com" }
-      ]}, os.path.abspath(__file__))
 
   def DidStartBrowser(self, browser):
     self._memory_metric = memory.MemoryMetric(browser)
