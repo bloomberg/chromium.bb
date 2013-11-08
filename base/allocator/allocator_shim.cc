@@ -10,11 +10,9 @@
 #include "base/sysinfo.h"
 #include "jemalloc.h"
 
-// When defined, different heap allocators can be used via an environment
-// variable set before running the program.  This may reduce the amount
-// of inlining that we get with malloc/free/etc.  Disabling makes it
-// so that only tcmalloc can be used.
-#define ENABLE_DYNAMIC_ALLOCATOR_SWITCHING
+// This shim make it possible to use different allocators via an environment
+// variable set before running the program. This may reduce the
+// amount of inlining that we get with malloc/free/etc.
 
 // TODO(mbelshe): Ensure that all calls to tcmalloc have the proper call depth
 // from the "user code" so that debugging tools (HeapChecker) can work.
@@ -119,7 +117,6 @@ extern "C" {
 void* malloc(size_t size) __THROW {
   void* ptr;
   for (;;) {
-#ifdef ENABLE_DYNAMIC_ALLOCATOR_SWITCHING
     switch (allocator) {
       case JEMALLOC:
         ptr = je_malloc(size);
@@ -133,10 +130,6 @@ void* malloc(size_t size) __THROW {
         ptr = do_malloc(size);
         break;
     }
-#else
-    // TCMalloc case.
-    ptr = do_malloc(size);
-#endif
     if (ptr)
       return ptr;
 
@@ -147,7 +140,6 @@ void* malloc(size_t size) __THROW {
 }
 
 void free(void* p) __THROW {
-#ifdef ENABLE_DYNAMIC_ALLOCATOR_SWITCHING
   switch (allocator) {
     case JEMALLOC:
       je_free(p);
@@ -156,10 +148,10 @@ void free(void* p) __THROW {
     case WINLFH:
       win_heap_free(p);
       return;
+    case TCMALLOC:
+      do_free(p);
+      return;
   }
-#endif
-  // TCMalloc case.
-  do_free(p);
 }
 
 void* realloc(void* ptr, size_t size) __THROW {
@@ -171,7 +163,6 @@ void* realloc(void* ptr, size_t size) __THROW {
 
   void* new_ptr;
   for (;;) {
-#ifdef ENABLE_DYNAMIC_ALLOCATOR_SWITCHING
     switch (allocator) {
       case JEMALLOC:
         new_ptr = je_realloc(ptr, size);
@@ -185,10 +176,6 @@ void* realloc(void* ptr, size_t size) __THROW {
         new_ptr = do_realloc(ptr, size);
         break;
     }
-#else
-    // TCMalloc case.
-    new_ptr = do_realloc(ptr, size);
-#endif
 
     // Subtle warning:  NULL return does not alwas indicate out-of-memory.  If
     // the requested new size is zero, realloc should free the ptr and return
@@ -203,7 +190,6 @@ void* realloc(void* ptr, size_t size) __THROW {
 
 // TODO(mbelshe): Implement this for other allocators.
 void malloc_stats(void) __THROW {
-#ifdef ENABLE_DYNAMIC_ALLOCATOR_SWITCHING
   switch (allocator) {
     case JEMALLOC:
       // No stats.
@@ -212,15 +198,15 @@ void malloc_stats(void) __THROW {
     case WINLFH:
       // No stats.
       return;
+    case TCMALLOC:
+      tc_malloc_stats();
+      return;
   }
-#endif
-  tc_malloc_stats();
 }
 
 #ifdef WIN32
 
 extern "C" size_t _msize(void* p) {
-#ifdef ENABLE_DYNAMIC_ALLOCATOR_SWITCHING
   switch (allocator) {
     case JEMALLOC:
       return je_msize(p);
@@ -228,7 +214,8 @@ extern "C" size_t _msize(void* p) {
     case WINLFH:
       return win_heap_msize(p);
   }
-#endif
+
+  // TCMALLOC
   return MallocExtension::instance()->GetAllocatedSize(p);
 }
 
@@ -238,7 +225,6 @@ extern "C" intptr_t _get_heap_handle() {
 }
 
 static bool get_allocator_waste_size_thunk(size_t* size) {
-#ifdef ENABLE_DYNAMIC_ALLOCATOR_SWITCHING
   switch (allocator) {
     case JEMALLOC:
     case WINHEAP:
@@ -246,7 +232,6 @@ static bool get_allocator_waste_size_thunk(size_t* size) {
       // TODO(alexeif): Implement for allocators other than tcmalloc.
       return false;
   }
-#endif
   size_t heap_size, allocated_bytes, unmapped_bytes;
   MallocExtension* ext = MallocExtension::instance();
   if (ext->GetNumericProperty("generic.heap_size", &heap_size) &&
@@ -270,7 +255,6 @@ static void release_free_memory_thunk() {
 
 // The CRT heap initialization stub.
 extern "C" int _heap_init() {
-#ifdef ENABLE_DYNAMIC_ALLOCATOR_SWITCHING
 // Don't use the environment variable if ADDRESS_SANITIZER is defined on
 // Windows, as the implementation requires Winheap to be the allocator.
 #if !(defined(ADDRESS_SANITIZER) && defined(OS_WIN))
@@ -299,7 +283,7 @@ extern "C" int _heap_init() {
       // fall through
       break;
   }
-#endif
+
   // Initializing tcmalloc.
   // We intentionally leak this object.  It lasts for the process
   // lifetime.  Trying to teardown at _heap_term() is so late that
@@ -346,7 +330,6 @@ void* _aligned_malloc(size_t size, size_t alignment) {
 
   void* ptr;
   for (;;) {
-#ifdef ENABLE_DYNAMIC_ALLOCATOR_SWITCHING
     switch (allocator) {
       case JEMALLOC:
         ptr = je_memalign(alignment, size);
@@ -360,10 +343,7 @@ void* _aligned_malloc(size_t size, size_t alignment) {
         ptr = tc_memalign(alignment, size);
         break;
     }
-#else
-    // TCMalloc case.
-    ptr = tc_memalign(alignment, size);
-#endif
+
     if (ptr) {
       // Sanity check alignment.
       DCHECK_EQ(reinterpret_cast<uintptr_t>(ptr) & (alignment - 1), 0U);
@@ -380,7 +360,6 @@ void _aligned_free(void* p) {
   // Both JEMalloc and TCMalloc return pointers from memalign() that are safe to
   // use with free().  Pointers allocated with win_heap_memalign() MUST be freed
   // via win_heap_memalign_free() since the aligned pointer is not the real one.
-#ifdef ENABLE_DYNAMIC_ALLOCATOR_SWITCHING
   switch (allocator) {
     case JEMALLOC:
       je_free(p);
@@ -389,10 +368,9 @@ void _aligned_free(void* p) {
     case WINLFH:
       win_heap_memalign_free(p);
       return;
+    case TCMALLOC:
+      do_free(p);
   }
-#endif
-  // TCMalloc case.
-  do_free(p);
 }
 
 #endif  // WIN32
@@ -405,7 +383,6 @@ namespace base {
 namespace allocator {
 
 void SetupSubprocessAllocator() {
-#ifdef ENABLE_DYNAMIC_ALLOCATOR_SWITCHING
   size_t primary_length = 0;
   getenv_s(&primary_length, NULL, 0, primary_name);
 
@@ -427,7 +404,6 @@ void SetupSubprocessAllocator() {
     int ret_val = _putenv_s(primary_name, secondary_value);
     DCHECK_EQ(0, ret_val);
   }
-#endif  // ENABLE_DYNAMIC_ALLOCATOR_SWITCHING
 }
 
 void* TCMallocDoMallocForTest(size_t size) {
