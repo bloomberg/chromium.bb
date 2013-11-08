@@ -66,6 +66,10 @@ class DevToolsAgent : public RenderViewObserver,
       const blink::WebSize& device_size,
       const blink::WebRect& view_rect, float device_scale_factor,
       bool fit_to_view);
+  virtual void enableDeviceEmulation(
+      const blink::WebRect& device_rect,
+      const blink::WebRect& view_rect, float device_scale_factor,
+      bool fit_to_view);
   virtual void disableDeviceEmulation();
 
   void OnAttach();

@@ -159,7 +159,7 @@ class RenderWidget::ScreenMetricsEmulator {
  public:
   ScreenMetricsEmulator(
       RenderWidget* widget,
-      const gfx::Size& device_size,
+      const gfx::Rect& device_rect,
       const gfx::Rect& widget_rect,
       float device_scale_factor,
       bool fit_to_view);
@@ -170,7 +170,7 @@ class RenderWidget::ScreenMetricsEmulator {
   gfx::Rect original_screen_rect() const { return original_view_screen_rect_; }
 
   void ChangeEmulationParams(
-      const gfx::Size& device_size,
+      const gfx::Rect& device_rect,
       const gfx::Rect& widget_rect,
       float device_scale_factor,
       bool fit_to_view);
@@ -188,8 +188,8 @@ class RenderWidget::ScreenMetricsEmulator {
 
   RenderWidget* widget_;
 
-  // Parameters as passed by RenderWidget::EmulateScreenMetrics.
-  gfx::Size device_size_;
+  // Parameters as passed by RenderWidget::EnableScreenMetricsEmulation.
+  gfx::Rect device_rect_;
   gfx::Rect widget_rect_;
   float device_scale_factor_;
   bool fit_to_view_;
@@ -207,12 +207,12 @@ class RenderWidget::ScreenMetricsEmulator {
 
 RenderWidget::ScreenMetricsEmulator::ScreenMetricsEmulator(
     RenderWidget* widget,
-    const gfx::Size& device_size,
+    const gfx::Rect& device_rect,
     const gfx::Rect& widget_rect,
     float device_scale_factor,
     bool fit_to_view)
     : widget_(widget),
-      device_size_(device_size),
+      device_rect_(device_rect),
       widget_rect_(widget_rect),
       device_scale_factor_(device_scale_factor),
       fit_to_view_(fit_to_view),
@@ -230,7 +230,7 @@ RenderWidget::ScreenMetricsEmulator::~ScreenMetricsEmulator() {
   widget_->screen_info_ = original_screen_info_;
 
   widget_->SetDeviceScaleFactor(original_screen_info_.deviceScaleFactor);
-  widget_->SetScreenMetricsEmulationParameters(0.f, 1.f);
+  widget_->SetScreenMetricsEmulationParameters(0.f, gfx::Point(), 1.f);
   widget_->view_screen_rect_ = original_view_screen_rect_;
   widget_->window_screen_rect_ = original_window_screen_rect_;
   widget_->Resize(original_size_, original_physical_backing_size_,
@@ -239,11 +239,11 @@ RenderWidget::ScreenMetricsEmulator::~ScreenMetricsEmulator() {
 }
 
 void RenderWidget::ScreenMetricsEmulator::ChangeEmulationParams(
-    const gfx::Size& device_size,
+    const gfx::Rect& device_rect,
     const gfx::Rect& widget_rect,
     float device_scale_factor,
     bool fit_to_view) {
-  device_size_ = device_size;
+  device_rect_ = device_rect;
   widget_rect_ = widget_rect;
   device_scale_factor_ = device_scale_factor;
   fit_to_view_ = fit_to_view;
@@ -256,12 +256,10 @@ void RenderWidget::ScreenMetricsEmulator::Apply(
   if (fit_to_view_) {
     DCHECK(!original_size_.IsEmpty());
 
-    // TODO(pfeldman): pass gutter_width along with the fit_to_view flag.
-    int gutter_width = 10;
     int width_with_gutter =
-        std::max(original_size_.width() - 2 * gutter_width, 1);
+        std::max(original_size_.width() - 2 * device_rect_.x(), 1);
     int height_with_gutter =
-        std::max(original_size_.height() - 2 * gutter_width, 1);
+        std::max(original_size_.height() - 2 * device_rect_.y(), 1);
     float width_ratio =
         static_cast<float>(widget_rect_.width()) / width_with_gutter;
     float height_ratio =
@@ -272,17 +270,17 @@ void RenderWidget::ScreenMetricsEmulator::Apply(
     scale_ = 1.f;
   }
 
-  widget_->screen_info_.rect = gfx::Rect(device_size_);
-  widget_->screen_info_.availableRect = gfx::Rect(device_size_);
+  widget_->screen_info_.rect = gfx::Rect(device_rect_.size());
+  widget_->screen_info_.availableRect = gfx::Rect(device_rect_.size());
   widget_->screen_info_.deviceScaleFactor = device_scale_factor_;
 
-  // Pass two emulation parameters to the blink side:
+  // Pass three emulation parameters to the blink side:
   // - we keep the real device scale factor in compositor to produce sharp image
   //   even when emulating different scale factor;
-  // - in order to fit into view, WebView applies scaling transform to the
+  // - in order to fit into view, WebView applies offset and scale to the
   //   root layer.
   widget_->SetScreenMetricsEmulationParameters(
-      original_screen_info_.deviceScaleFactor, scale_);
+      original_screen_info_.deviceScaleFactor, device_rect_.origin(), scale_);
 
   widget_->SetDeviceScaleFactor(device_scale_factor_);
   widget_->view_screen_rect_ = widget_rect_;
@@ -320,12 +318,10 @@ void RenderWidget::ScreenMetricsEmulator::OnUpdateScreenRectsMessage(
 
 void RenderWidget::ScreenMetricsEmulator::OnShowContextMenu(
     ContextMenuParams* params) {
-  // TODO(pfeldman): pass gutter_width along with the fit_to_view flag.
-  int gutter_width = 10;
   params->x *= scale_;
-  params->x += gutter_width;
+  params->x += device_rect_.x();
   params->y *= scale_;
-  params->y += gutter_width;
+  params->y += device_rect_.y();
 }
 
 // RenderWidget ---------------------------------------------------------------
@@ -515,15 +511,15 @@ bool RenderWidget::UsingSynchronousRendererCompositor() const {
 }
 
 void RenderWidget::EnableScreenMetricsEmulation(
-    const gfx::Size& device_size,
+    const gfx::Rect& device_rect,
     const gfx::Rect& widget_rect,
     float device_scale_factor,
     bool fit_to_view) {
   if (!screen_metrics_emulator_) {
     screen_metrics_emulator_.reset(new ScreenMetricsEmulator(this,
-        device_size, widget_rect, device_scale_factor, fit_to_view));
+        device_rect, widget_rect, device_scale_factor, fit_to_view));
   } else {
-    screen_metrics_emulator_->ChangeEmulationParams(device_size,
+    screen_metrics_emulator_->ChangeEmulationParams(device_rect,
         widget_rect, device_scale_factor, fit_to_view);
   }
 }
@@ -541,7 +537,9 @@ void RenderWidget::SetPopupOriginAdjustmentsForEmulation(
 }
 
 void RenderWidget::SetScreenMetricsEmulationParameters(
-    float device_scale_factor, float root_layer_scale) {
+    float device_scale_factor,
+    const gfx::Point& root_layer_offset,
+    float root_layer_scale) {
   // This is only supported in RenderView.
   NOTREACHED();
 }

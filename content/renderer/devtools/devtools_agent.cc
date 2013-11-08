@@ -171,14 +171,26 @@ void DevToolsAgent::TraceEventCallbackWrapper(
 }
 
 void DevToolsAgent::enableDeviceEmulation(
-    const blink::WebSize& device_size,
+    const blink::WebRect& device_rect,
     const blink::WebRect& view_rect,
     float device_scale_factor,
     bool fit_to_view) {
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(render_view());
   impl->webview()->settings()->setForceCompositingMode(true);
-  impl->EnableScreenMetricsEmulation(gfx::Size(device_size),
+  impl->EnableScreenMetricsEmulation(gfx::Rect(device_rect),
       gfx::Rect(view_rect), device_scale_factor, fit_to_view);
+}
+
+void DevToolsAgent::enableDeviceEmulation(
+    const blink::WebSize& device_size,
+    const blink::WebRect& view_rect,
+    float device_scale_factor,
+    bool fit_to_view) {
+  enableDeviceEmulation(
+      blink::WebRect(10, 10, device_size.width, device_size.height),
+      view_rect,
+      device_scale_factor,
+      fit_to_view);
 }
 
 void DevToolsAgent::disableDeviceEmulation() {

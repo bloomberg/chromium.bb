@@ -6138,10 +6138,14 @@ bool RenderViewImpl::AllowPartialSwap() const {
 }
 
 void RenderViewImpl::SetScreenMetricsEmulationParameters(
-    float device_scale_factor, float root_layer_scale) {
+    float device_scale_factor,
+    const gfx::Point& root_layer_offset,
+    float root_layer_scale) {
   if (webview()) {
     webview()->setCompositorDeviceScaleFactorOverride(device_scale_factor);
-    webview()->setRootLayerScaleTransform(root_layer_scale);
+    webview()->setRootLayerTransform(
+        blink::WebSize(root_layer_offset.x(), root_layer_offset.y()),
+        root_layer_scale);
   }
 }
 

@@ -231,7 +231,7 @@ class CONTENT_EXPORT RenderWidget
   // Emulates screen and widget metrics. Supplied values override everything
   // coming from host.
   void EnableScreenMetricsEmulation(
-      const gfx::Size& device_size,
+      const gfx::Rect& device_rect,
       const gfx::Rect& widget_rect,
       float device_scale_factor,
       bool fit_to_view);
@@ -318,7 +318,9 @@ class CONTENT_EXPORT RenderWidget
   // Used to force the size of a window when running layout tests.
   void ResizeSynchronously(const gfx::Rect& new_position);
   virtual void SetScreenMetricsEmulationParameters(
-      float device_scale_factor, float root_layer_scale);
+      float device_scale_factor,
+      const gfx::Point& root_layer_offset,
+      float root_layer_scale);
   void SetExternalPopupOriginAdjustmentsForEmulation(
       ExternalPopupMenu* popup, ScreenMetricsEmulator* emulator);
   virtual void OnShowHostContextMenu(ContextMenuParams* params);
