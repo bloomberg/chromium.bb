@@ -7,21 +7,20 @@
 
 #include "sandbox/linux/seccomp-bpf/port.h"
 
-
 namespace playground2 {
 
 class Die {
  public:
-  // This is the main API for using this file. Prints a error message and
-  // exits with a fatal error. This is not async-signal safe.
-  #define SANDBOX_DIE(m) playground2::Die::SandboxDie(m, __FILE__, __LINE__)
+// This is the main API for using this file. Prints a error message and
+// exits with a fatal error. This is not async-signal safe.
+#define SANDBOX_DIE(m) playground2::Die::SandboxDie(m, __FILE__, __LINE__)
 
-  // An async signal safe version of the same API. Won't print the filename
-  // and line numbers.
-  #define RAW_SANDBOX_DIE(m) playground2::Die::RawSandboxDie(m)
+// An async signal safe version of the same API. Won't print the filename
+// and line numbers.
+#define RAW_SANDBOX_DIE(m) playground2::Die::RawSandboxDie(m)
 
-  // Adds an informational message to the log file or stderr as appropriate.
-  #define SANDBOX_INFO(m) playground2::Die::SandboxInfo(m, __FILE__, __LINE__)
+// Adds an informational message to the log file or stderr as appropriate.
+#define SANDBOX_INFO(m) playground2::Die::SandboxInfo(m, __FILE__, __LINE__)
 
   // Terminate the program, even if the current sandbox policy prevents some
   // of the more commonly used functions used for exiting.
@@ -32,18 +31,18 @@ class Die {
 
   // This method gets called by SANDBOX_DIE(). There is normally no reason
   // to call it directly unless you are defining your own exiting macro.
-  static void SandboxDie(const char *msg, const char *file, int line)
-    __attribute__((noreturn));
+  static void SandboxDie(const char* msg, const char* file, int line)
+      __attribute__((noreturn));
 
-  static void RawSandboxDie(const char *msg) __attribute__((noreturn));
+  static void RawSandboxDie(const char* msg) __attribute__((noreturn));
 
   // This method gets called by SANDBOX_INFO(). There is normally no reason
   // to call it directly unless you are defining your own logging macro.
-  static void SandboxInfo(const char *msg, const char *file, int line);
+  static void SandboxInfo(const char* msg, const char* file, int line);
 
   // Writes a message to stderr. Used as a fall-back choice, if we don't have
   // any other way to report an error.
-  static void LogToStderr(const char *msg, const char *file, int line);
+  static void LogToStderr(const char* msg, const char* file, int line);
 
   // We generally want to run all exit handlers. This means, on SANDBOX_DIE()
   // we should be calling LOG(FATAL). But there are some situations where

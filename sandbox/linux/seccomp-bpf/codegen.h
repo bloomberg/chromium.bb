@@ -13,14 +13,13 @@
 #include "sandbox/linux/seccomp-bpf/instruction.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 
-
 namespace playground2 {
 
-typedef std::vector<Instruction *> Instructions;
-typedef std::vector<BasicBlock *> BasicBlocks;
-typedef std::map<const Instruction *, int> BranchTargets;
-typedef std::map<const Instruction *, BasicBlock *> TargetsToBlocks;
-typedef std::map<const BasicBlock *, int> IncomingBranches;
+typedef std::vector<Instruction*> Instructions;
+typedef std::vector<BasicBlock*> BasicBlocks;
+typedef std::map<const Instruction*, int> BranchTargets;
+typedef std::map<const Instruction*, BasicBlock*> TargetsToBlocks;
+typedef std::map<const BasicBlock*, int> IncomingBranches;
 
 // The code generator instantiates a basic compiler that can convert a
 // graph of BPF instructions into a well-formed stream of BPF instructions.
@@ -66,16 +65,19 @@ class CodeGen {
   // are owned by the CodeGen object. They do not need to be explicitly
   // deleted.
   // For details on the possible parameters refer to <linux/filter.h>
-  Instruction *MakeInstruction(uint16_t code, uint32_t k,
-                               Instruction *next = NULL);
-  Instruction *MakeInstruction(uint16_t code, const ErrorCode& err);
-  Instruction *MakeInstruction(uint16_t code, uint32_t k,
-                               Instruction *jt, Instruction *jf);
+  Instruction* MakeInstruction(uint16_t code,
+                               uint32_t k,
+                               Instruction* next = NULL);
+  Instruction* MakeInstruction(uint16_t code, const ErrorCode& err);
+  Instruction* MakeInstruction(uint16_t code,
+                               uint32_t k,
+                               Instruction* jt,
+                               Instruction* jf);
 
   // Join two (sequences of) instructions. This is useful, if the "next"
   // parameter had not originally been given in the call to MakeInstruction(),
   // or if a (conditional) jump still has an unsatisfied target.
-  void JoinInstructions(Instruction *head, Instruction *tail);
+  void JoinInstructions(Instruction* head, Instruction* tail);
 
   // Traverse the graph of instructions and visit each instruction once.
   // Traversal order is implementation-defined. It is acceptable to make
@@ -83,68 +85,69 @@ class CodeGen {
   // do not affect traversal.
   // The "fnc" function gets called with both the instruction and the opaque
   // "aux" pointer.
-  void Traverse(Instruction *, void (*fnc)(Instruction *, void *aux),
-                void *aux);
+  void Traverse(Instruction*, void (*fnc)(Instruction*, void* aux), void* aux);
 
   // Compiles the graph of instructions into a BPF program that can be passed
   // to the kernel. Please note that this function modifies the graph in place
   // and must therefore only be called once per graph.
-  void Compile(Instruction *instructions, Sandbox::Program *program);
+  void Compile(Instruction* instructions, Sandbox::Program* program);
 
  private:
   friend class CodeGenUnittestHelper;
 
   // Find all the instructions that are the target of BPF_JMPs.
   void FindBranchTargets(const Instruction& instructions,
-                         BranchTargets *branch_targets);
+                         BranchTargets* branch_targets);
 
   // Combine instructions between "head" and "tail" into a new basic block.
   // Basic blocks are defined as sequences of instructions whose only branch
   // target is the very first instruction; furthermore, any BPF_JMP or BPF_RET
   // instruction must be at the very end of the basic block.
-  BasicBlock *MakeBasicBlock(Instruction *head, Instruction *tail);
+  BasicBlock* MakeBasicBlock(Instruction* head, Instruction* tail);
 
   // Creates a basic block and adds it to "basic_blocks"; sets "first_block"
   // if it is still NULL.
-  void AddBasicBlock(Instruction *head, Instruction *tail,
+  void AddBasicBlock(Instruction* head,
+                     Instruction* tail,
                      const BranchTargets& branch_targets,
-                     TargetsToBlocks *basic_blocks, BasicBlock **first_block);
+                     TargetsToBlocks* basic_blocks,
+                     BasicBlock** first_block);
 
   // Cuts the DAG of instructions into basic blocks.
-  BasicBlock *CutGraphIntoBasicBlocks(Instruction *instructions,
+  BasicBlock* CutGraphIntoBasicBlocks(Instruction* instructions,
                                       const BranchTargets& branch_targets,
-                                      TargetsToBlocks *blocks);
+                                      TargetsToBlocks* blocks);
 
   // Find common tail sequences of basic blocks and coalesce them.
-  void MergeTails(TargetsToBlocks *blocks);
+  void MergeTails(TargetsToBlocks* blocks);
 
   // For each basic block, compute the number of incoming branches.
-  void ComputeIncomingBranches(BasicBlock *block,
+  void ComputeIncomingBranches(BasicBlock* block,
                                const TargetsToBlocks& targets_to_blocks,
-                               IncomingBranches *incoming_branches);
+                               IncomingBranches* incoming_branches);
 
   // Topologically sort the basic blocks so that all jumps are forward jumps.
   // This is a requirement for any well-formed BPF program.
-  void TopoSortBasicBlocks(BasicBlock *first_block,
+  void TopoSortBasicBlocks(BasicBlock* first_block,
                            const TargetsToBlocks& blocks,
-                           BasicBlocks *basic_blocks);
+                           BasicBlocks* basic_blocks);
 
   // Convert jt_ptr_ and jf_ptr_ fields in BPF_JMP instructions to valid
   // jt_ and jf_ jump offsets. This can result in BPF_JA instructions being
   // inserted, if we need to jump over more than 256 instructions.
-  void ComputeRelativeJumps(BasicBlocks *basic_blocks,
+  void ComputeRelativeJumps(BasicBlocks* basic_blocks,
                             const TargetsToBlocks& targets_to_blocks);
 
   // Concatenate instructions from all basic blocks into a BPF program that
   // can be passed to the kernel.
-  void ConcatenateBasicBlocks(const BasicBlocks&, Sandbox::Program *program);
+  void ConcatenateBasicBlocks(const BasicBlocks&, Sandbox::Program* program);
 
   // We stick all instructions and basic blocks into pools that get destroyed
   // when the CodeGen object is destroyed. This way, we neither need to worry
   // about explicitly managing ownership, nor do we need to worry about using
   // smart pointers in the presence of circular references.
   Instructions instructions_;
-  BasicBlocks  basic_blocks_;
+  BasicBlocks basic_blocks_;
 
   // Compile() must only ever be called once as it makes destructive changes
   // to the DAG.

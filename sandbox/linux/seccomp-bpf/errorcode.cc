@@ -5,35 +5,36 @@
 #include "sandbox/linux/seccomp-bpf/die.h"
 #include "sandbox/linux/seccomp-bpf/errorcode.h"
 
-
 namespace playground2 {
 
 ErrorCode::ErrorCode(int err) {
   switch (err) {
-  case ERR_ALLOWED:
-    err_ = SECCOMP_RET_ALLOW;
-    error_type_ = ET_SIMPLE;
-    break;
-  case ERR_MIN_ERRNO ... ERR_MAX_ERRNO:
-    err_ = SECCOMP_RET_ERRNO + err;
-    error_type_ = ET_SIMPLE;
-    break;
-  default:
-    SANDBOX_DIE("Invalid use of ErrorCode object");
+    case ERR_ALLOWED:
+      err_ = SECCOMP_RET_ALLOW;
+      error_type_ = ET_SIMPLE;
+      break;
+    case ERR_MIN_ERRNO... ERR_MAX_ERRNO:
+      err_ = SECCOMP_RET_ERRNO + err;
+      error_type_ = ET_SIMPLE;
+      break;
+    default:
+      SANDBOX_DIE("Invalid use of ErrorCode object");
   }
 }
 
-ErrorCode::ErrorCode(Trap::TrapFnc fnc, const void *aux, bool safe,
-                     uint16_t id)
+ErrorCode::ErrorCode(Trap::TrapFnc fnc, const void* aux, bool safe, uint16_t id)
     : error_type_(ET_TRAP),
       fnc_(fnc),
-      aux_(const_cast<void *>(aux)),
+      aux_(const_cast<void*>(aux)),
       safe_(safe),
-      err_(SECCOMP_RET_TRAP + id) {
-}
+      err_(SECCOMP_RET_TRAP + id) {}
 
-ErrorCode::ErrorCode(int argno, ArgType width, Operation op, uint64_t value,
-                     const ErrorCode *passed, const ErrorCode *failed)
+ErrorCode::ErrorCode(int argno,
+                     ArgType width,
+                     Operation op,
+                     uint64_t value,
+                     const ErrorCode* passed,
+                     const ErrorCode* failed)
     : error_type_(ET_COND),
       value_(value),
       argno_(argno),
@@ -57,12 +58,9 @@ bool ErrorCode::Equals(const ErrorCode& err) const {
   if (error_type_ == ET_SIMPLE || error_type_ == ET_TRAP) {
     return err_ == err.err_;
   } else if (error_type_ == ET_COND) {
-    return value_   == err.value_   &&
-           argno_   == err.argno_   &&
-           width_   == err.width_   &&
-           op_      == err.op_      &&
-           passed_->Equals(*err.passed_) &&
-           failed_->Equals(*err.failed_);
+    return value_ == err.value_ && argno_ == err.argno_ &&
+           width_ == err.width_ && op_ == err.op_ &&
+           passed_->Equals(*err.passed_) && failed_->Equals(*err.failed_);
   } else {
     SANDBOX_DIE("Corrupted ErrorCode");
   }

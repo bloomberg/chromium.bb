@@ -7,7 +7,6 @@
 
 #include <stdint.h>
 
-
 namespace playground2 {
 
 // The fields in this structure have the same meaning as the corresponding
@@ -27,12 +26,12 @@ namespace playground2 {
 struct Instruction {
   // Constructor for an non-jumping instruction or for an unconditional
   // "always" jump.
-  Instruction(uint16_t c, uint32_t parm, Instruction *n) :
-    code(c), next(n), k(parm) { }
+  Instruction(uint16_t c, uint32_t parm, Instruction* n)
+      : code(c), next(n), k(parm) {}
 
   // Constructor for a conditional jump instruction.
-  Instruction(uint16_t c, uint32_t parm, Instruction *jt, Instruction *jf) :
-    code(c), jt_ptr(jt), jf_ptr(jf), k(parm) { }
+  Instruction(uint16_t c, uint32_t parm, Instruction* jt, Instruction* jf)
+      : code(c), jt_ptr(jt), jf_ptr(jf), k(parm) {}
 
   uint16_t code;
   union {
@@ -47,13 +46,13 @@ struct Instruction {
     // keys in a TargetsToBlocks map and should no longer be dereferenced
     // directly.
     struct {
-      Instruction *jt_ptr, *jf_ptr;
+      Instruction* jt_ptr, *jf_ptr;
     };
 
     // While assembling the BPF program, non-jumping instructions are linked
     // by the "next_" pointer. This field is no longer needed when we have
     // computed basic blocks.
-    Instruction *next;
+    Instruction* next;
   };
   uint32_t k;
 };

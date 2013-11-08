@@ -6,26 +6,25 @@
 
 #include "sandbox/linux/seccomp-bpf/codegen.h"
 
-
 namespace {
 
 // Helper function for Traverse().
-void TraverseRecursively(std::set<playground2::Instruction *> *visited,
-                         playground2::Instruction *instruction) {
+void TraverseRecursively(std::set<playground2::Instruction*>* visited,
+                         playground2::Instruction* instruction) {
   if (visited->find(instruction) == visited->end()) {
     visited->insert(instruction);
     switch (BPF_CLASS(instruction->code)) {
-    case BPF_JMP:
-      if (BPF_OP(instruction->code) != BPF_JA) {
-        TraverseRecursively(visited, instruction->jf_ptr);
-      }
-      TraverseRecursively(visited, instruction->jt_ptr);
-      break;
-    case BPF_RET:
-      break;
-    default:
-      TraverseRecursively(visited, instruction->next);
-      break;
+      case BPF_JMP:
+        if (BPF_OP(instruction->code) != BPF_JA) {
+          TraverseRecursively(visited, instruction->jf_ptr);
+        }
+        TraverseRecursively(visited, instruction->jt_ptr);
+        break;
+      case BPF_RET:
+        break;
+      default:
+        TraverseRecursively(visited, instruction->next);
+        break;
     }
   }
 }
@@ -34,9 +33,7 @@ void TraverseRecursively(std::set<playground2::Instruction *> *visited,
 
 namespace playground2 {
 
-CodeGen::CodeGen()
-    : compiled_(false) {
-}
+CodeGen::CodeGen() : compiled_(false) {}
 
 CodeGen::~CodeGen() {
   for (Instructions::iterator iter = instructions_.begin();
@@ -58,108 +55,114 @@ void CodeGen::PrintProgram(const Sandbox::Program& program) {
     int ip = (int)(iter - program.begin());
     fprintf(stderr, "%3d) ", ip);
     switch (BPF_CLASS(iter->code)) {
-    case BPF_LD:
-      if (iter->code == BPF_LD+BPF_W+BPF_ABS) {
-        fprintf(stderr, "LOAD %d  // ", (int)iter->k);
-        if (iter->k == offsetof(struct arch_seccomp_data, nr)) {
-          fprintf(stderr, "System call number\n");
-        } else if (iter->k == offsetof(struct arch_seccomp_data, arch)) {
-          fprintf(stderr, "Architecture\n");
-        } else if (iter->k == offsetof(struct arch_seccomp_data,
-                                       instruction_pointer)) {
-          fprintf(stderr, "Instruction pointer (LSB)\n");
-        } else if (iter->k == offsetof(struct arch_seccomp_data,
-                                       instruction_pointer) + 4) {
-          fprintf(stderr, "Instruction pointer (MSB)\n");
-        } else if (iter->k >= offsetof(struct arch_seccomp_data, args) &&
-                   iter->k <  offsetof(struct arch_seccomp_data, args)+48 &&
-                   (iter->k-offsetof(struct arch_seccomp_data, args))%4 == 0) {
-          fprintf(stderr, "Argument %d (%cSB)\n",
-                  (int)(iter->k-offsetof(struct arch_seccomp_data, args))/8,
-                  (iter->k-offsetof(struct arch_seccomp_data,
-                                    args))%8 ? 'M' : 'L');
+      case BPF_LD:
+        if (iter->code == BPF_LD + BPF_W + BPF_ABS) {
+          fprintf(stderr, "LOAD %d  // ", (int)iter->k);
+          if (iter->k == offsetof(struct arch_seccomp_data, nr)) {
+            fprintf(stderr, "System call number\n");
+          } else if (iter->k == offsetof(struct arch_seccomp_data, arch)) {
+            fprintf(stderr, "Architecture\n");
+          } else if (iter->k ==
+                     offsetof(struct arch_seccomp_data, instruction_pointer)) {
+            fprintf(stderr, "Instruction pointer (LSB)\n");
+          } else if (iter->k ==
+                     offsetof(struct arch_seccomp_data, instruction_pointer) +
+                         4) {
+            fprintf(stderr, "Instruction pointer (MSB)\n");
+          } else if (iter->k >= offsetof(struct arch_seccomp_data, args) &&
+                     iter->k < offsetof(struct arch_seccomp_data, args) + 48 &&
+                     (iter->k - offsetof(struct arch_seccomp_data, args)) % 4 ==
+                         0) {
+            fprintf(
+                stderr,
+                "Argument %d (%cSB)\n",
+                (int)(iter->k - offsetof(struct arch_seccomp_data, args)) / 8,
+                (iter->k - offsetof(struct arch_seccomp_data, args)) % 8 ? 'M'
+                                                                         : 'L');
+          } else {
+            fprintf(stderr, "???\n");
+          }
+        } else {
+          fprintf(stderr, "LOAD ???\n");
+        }
+        break;
+      case BPF_JMP:
+        if (BPF_OP(iter->code) == BPF_JA) {
+          fprintf(stderr, "JMP %d\n", ip + iter->k + 1);
+        } else {
+          fprintf(stderr, "if A %s 0x%x; then JMP %d else JMP %d\n",
+              BPF_OP(iter->code) == BPF_JSET ? "&" :
+              BPF_OP(iter->code) == BPF_JEQ ? "==" :
+              BPF_OP(iter->code) == BPF_JGE ? ">=" :
+              BPF_OP(iter->code) == BPF_JGT ? ">"  : "???",
+              (int)iter->k,
+              ip + iter->jt + 1, ip + iter->jf + 1);
+        }
+        break;
+      case BPF_RET:
+        fprintf(stderr, "RET 0x%x  // ", iter->k);
+        if ((iter->k & SECCOMP_RET_ACTION) == SECCOMP_RET_TRAP) {
+          fprintf(stderr, "Trap #%d\n", iter->k & SECCOMP_RET_DATA);
+        } else if ((iter->k & SECCOMP_RET_ACTION) == SECCOMP_RET_ERRNO) {
+          fprintf(stderr, "errno = %d\n", iter->k & SECCOMP_RET_DATA);
+        } else if (iter->k == SECCOMP_RET_ALLOW) {
+          fprintf(stderr, "Allowed\n");
         } else {
           fprintf(stderr, "???\n");
         }
-      } else {
-        fprintf(stderr, "LOAD ???\n");
-      }
-      break;
-    case BPF_JMP:
-      if (BPF_OP(iter->code) == BPF_JA) {
-        fprintf(stderr, "JMP %d\n", ip + iter->k + 1);
-      } else {
-        fprintf(stderr, "if A %s 0x%x; then JMP %d else JMP %d\n",
-                BPF_OP(iter->code) == BPF_JSET ? "&" :
-                BPF_OP(iter->code) == BPF_JEQ ? "==" :
-                BPF_OP(iter->code) == BPF_JGE ? ">=" :
-                BPF_OP(iter->code) == BPF_JGT ? ">"  : "???",
-                (int)iter->k,
-                ip + iter->jt + 1, ip + iter->jf + 1);
-      }
-      break;
-    case BPF_RET:
-      fprintf(stderr, "RET 0x%x  // ", iter->k);
-      if ((iter->k & SECCOMP_RET_ACTION) == SECCOMP_RET_TRAP) {
-        fprintf(stderr, "Trap #%d\n", iter->k & SECCOMP_RET_DATA);
-      } else if ((iter->k & SECCOMP_RET_ACTION) == SECCOMP_RET_ERRNO) {
-        fprintf(stderr, "errno = %d\n", iter->k & SECCOMP_RET_DATA);
-      } else if (iter->k == SECCOMP_RET_ALLOW) {
-        fprintf(stderr, "Allowed\n");
-      } else {
+        break;
+      case BPF_ALU:
+        fprintf(stderr, BPF_OP(iter->code) == BPF_NEG
+            ? "A := -A\n" : "A := A %s 0x%x\n",
+            BPF_OP(iter->code) == BPF_ADD ? "+"  :
+            BPF_OP(iter->code) == BPF_SUB ? "-"  :
+            BPF_OP(iter->code) == BPF_MUL ? "*"  :
+            BPF_OP(iter->code) == BPF_DIV ? "/"  :
+            BPF_OP(iter->code) == BPF_MOD ? "%"  :
+            BPF_OP(iter->code) == BPF_OR  ? "|"  :
+            BPF_OP(iter->code) == BPF_XOR ? "^"  :
+            BPF_OP(iter->code) == BPF_AND ? "&"  :
+            BPF_OP(iter->code) == BPF_LSH ? "<<" :
+            BPF_OP(iter->code) == BPF_RSH ? ">>" : "???",
+            (int)iter->k);
+        break;
+      default:
         fprintf(stderr, "???\n");
-      }
-      break;
-    case BPF_ALU:
-      fprintf(stderr, BPF_OP(iter->code) == BPF_NEG
-              ? "A := -A\n" : "A := A %s 0x%x\n",
-              BPF_OP(iter->code) == BPF_ADD ? "+"  :
-              BPF_OP(iter->code) == BPF_SUB ? "-"  :
-              BPF_OP(iter->code) == BPF_MUL ? "*"  :
-              BPF_OP(iter->code) == BPF_DIV ? "/"  :
-              BPF_OP(iter->code) == BPF_MOD ? "%"  :
-              BPF_OP(iter->code) == BPF_OR  ? "|"  :
-              BPF_OP(iter->code) == BPF_XOR ? "^"  :
-              BPF_OP(iter->code) == BPF_AND ? "&"  :
-              BPF_OP(iter->code) == BPF_LSH ? "<<" :
-              BPF_OP(iter->code) == BPF_RSH ? ">>" : "???",
-              (int)iter->k);
-      break;
-    default:
-      fprintf(stderr, "???\n");
-      break;
+        break;
     }
   }
   return;
 }
 
-Instruction *CodeGen::MakeInstruction(uint16_t code, uint32_t k,
-                                      Instruction *next) {
+Instruction* CodeGen::MakeInstruction(uint16_t code,
+                                      uint32_t k,
+                                      Instruction* next) {
   // We can handle non-jumping instructions and "always" jumps. Both of
   // them are followed by exactly one "next" instruction.
   // We allow callers to defer specifying "next", but then they must call
   // "joinInstructions" later.
   if (BPF_CLASS(code) == BPF_JMP && BPF_OP(code) != BPF_JA) {
-    SANDBOX_DIE("Must provide both \"true\" and \"false\" branch "
-                "for a BPF_JMP");
+    SANDBOX_DIE(
+        "Must provide both \"true\" and \"false\" branch "
+        "for a BPF_JMP");
   }
   if (next && BPF_CLASS(code) == BPF_RET) {
     SANDBOX_DIE("Cannot append instructions after a return statement");
   }
   if (BPF_CLASS(code) == BPF_JMP) {
     // "Always" jumps use the "true" branch target, only.
-    Instruction *insn = new Instruction(code, 0, next, NULL);
+    Instruction* insn = new Instruction(code, 0, next, NULL);
     instructions_.push_back(insn);
     return insn;
   } else {
     // Non-jumping instructions do not use any of the branch targets.
-    Instruction *insn = new Instruction(code, k, next);
+    Instruction* insn = new Instruction(code, k, next);
     instructions_.push_back(insn);
     return insn;
   }
 }
 
-Instruction *CodeGen::MakeInstruction(uint16_t code, const ErrorCode& err) {
+Instruction* CodeGen::MakeInstruction(uint16_t code, const ErrorCode& err) {
   if (BPF_CLASS(code) != BPF_RET) {
     SANDBOX_DIE("ErrorCodes can only be used in return expressions");
   }
@@ -170,8 +173,10 @@ Instruction *CodeGen::MakeInstruction(uint16_t code, const ErrorCode& err) {
   return MakeInstruction(code, err.err_);
 }
 
-Instruction *CodeGen::MakeInstruction(uint16_t code, uint32_t k,
-                                      Instruction *jt, Instruction *jf) {
+Instruction* CodeGen::MakeInstruction(uint16_t code,
+                                      uint32_t k,
+                                      Instruction* jt,
+                                      Instruction* jf) {
   // We can handle all conditional jumps. They are followed by both a
   // "true" and a "false" branch.
   if (BPF_CLASS(code) != BPF_JMP || BPF_OP(code) == BPF_JA) {
@@ -182,12 +187,12 @@ Instruction *CodeGen::MakeInstruction(uint16_t code, uint32_t k,
     // targets. It must then be set later by calling "JoinInstructions".
     SANDBOX_DIE("Branches must jump to a valid instruction");
   }
-  Instruction *insn = new Instruction(code, k, jt, jf);
+  Instruction* insn = new Instruction(code, k, jt, jf);
   instructions_.push_back(insn);
   return insn;
 }
 
-void CodeGen::JoinInstructions(Instruction *head, Instruction *tail) {
+void CodeGen::JoinInstructions(Instruction* head, Instruction* tail) {
   // Merge two instructions, or set the branch target for an "always" jump.
   // This function should be called, if the caller didn't initially provide
   // a value for "next" when creating the instruction.
@@ -216,11 +221,12 @@ void CodeGen::JoinInstructions(Instruction *head, Instruction *tail) {
   return;
 }
 
-void CodeGen::Traverse(Instruction *instruction,
-                       void (*fnc)(Instruction *, void *), void *aux) {
-  std::set<Instruction *> visited;
+void CodeGen::Traverse(Instruction* instruction,
+                       void (*fnc)(Instruction*, void*),
+                       void* aux) {
+  std::set<Instruction*> visited;
   TraverseRecursively(&visited, instruction);
-  for (std::set<Instruction *>::const_iterator iter = visited.begin();
+  for (std::set<Instruction*>::const_iterator iter = visited.begin();
        iter != visited.end();
        ++iter) {
     fnc(*iter, aux);
@@ -228,15 +234,15 @@ void CodeGen::Traverse(Instruction *instruction,
 }
 
 void CodeGen::FindBranchTargets(const Instruction& instructions,
-                                BranchTargets *branch_targets) {
+                                BranchTargets* branch_targets) {
   // Follow all possible paths through the "instructions" graph and compute
   // a list of branch targets. This will later be needed to compute the
   // boundaries of basic blocks.
   // We maintain a set of all instructions that we have previously seen. This
   // set ultimately converges on all instructions in the program.
-  std::set<const Instruction *> seen_instructions;
+  std::set<const Instruction*> seen_instructions;
   Instructions stack;
-  for (const Instruction *insn = &instructions; insn; ) {
+  for (const Instruction* insn = &instructions; insn;) {
     seen_instructions.insert(insn);
     if (BPF_CLASS(insn->code) == BPF_JMP) {
       // Found a jump. Increase count of incoming edges for each of the jump
@@ -244,7 +250,7 @@ void CodeGen::FindBranchTargets(const Instruction& instructions,
       ++(*branch_targets)[insn->jt_ptr];
       if (BPF_OP(insn->code) != BPF_JA) {
         ++(*branch_targets)[insn->jf_ptr];
-        stack.push_back(const_cast<Instruction *>(insn));
+        stack.push_back(const_cast<Instruction*>(insn));
       }
       // Start a recursive decent for depth-first traversal.
       if (seen_instructions.find(insn->jt_ptr) == seen_instructions.end()) {
@@ -262,8 +268,9 @@ void CodeGen::FindBranchTargets(const Instruction& instructions,
       // (if any). It's OK if "insn" becomes NULL when reaching a return
       // instruction.
       if (!insn->next != (BPF_CLASS(insn->code) == BPF_RET)) {
-        SANDBOX_DIE("Internal compiler error; return instruction must be at "
-                    "the end of the BPF program");
+        SANDBOX_DIE(
+            "Internal compiler error; return instruction must be at "
+            "the end of the BPF program");
       }
       if (seen_instructions.find(insn->next) == seen_instructions.end()) {
         insn = insn->next;
@@ -288,8 +295,9 @@ void CodeGen::FindBranchTargets(const Instruction& instructions,
         // We have seen both the "true" and the "false" branch, continue
         // up the stack.
         if (seen_instructions.find(insn->jt_ptr) == seen_instructions.end()) {
-          SANDBOX_DIE("Internal compiler error; cannot find all "
-                      "branch targets");
+          SANDBOX_DIE(
+              "Internal compiler error; cannot find all "
+              "branch targets");
         }
         insn = NULL;
       }
@@ -298,11 +306,10 @@ void CodeGen::FindBranchTargets(const Instruction& instructions,
   return;
 }
 
-BasicBlock *CodeGen::MakeBasicBlock(Instruction *head,
-                                    Instruction *tail) {
+BasicBlock* CodeGen::MakeBasicBlock(Instruction* head, Instruction* tail) {
   // Iterate over all the instructions between "head" and "tail" and
   // insert them into a new basic block.
-  BasicBlock *bb = new BasicBlock;
+  BasicBlock* bb = new BasicBlock;
   for (;; head = head->next) {
     bb->instructions.push_back(head);
     if (head == tail) {
@@ -316,20 +323,21 @@ BasicBlock *CodeGen::MakeBasicBlock(Instruction *head,
   return bb;
 }
 
-void CodeGen::AddBasicBlock(Instruction *head,
-                            Instruction *tail,
+void CodeGen::AddBasicBlock(Instruction* head,
+                            Instruction* tail,
                             const BranchTargets& branch_targets,
-                            TargetsToBlocks *basic_blocks,
-                            BasicBlock **firstBlock) {
+                            TargetsToBlocks* basic_blocks,
+                            BasicBlock** firstBlock) {
   // Add a new basic block to "basic_blocks". Also set "firstBlock", if it
   // has not been set before.
   BranchTargets::const_iterator iter = branch_targets.find(head);
   if ((iter == branch_targets.end()) != !*firstBlock ||
       !*firstBlock != basic_blocks->empty()) {
-    SANDBOX_DIE("Only the very first basic block should have no "
-                "incoming jumps");
+    SANDBOX_DIE(
+        "Only the very first basic block should have no "
+        "incoming jumps");
   }
-  BasicBlock *bb = MakeBasicBlock(head, tail);
+  BasicBlock* bb = MakeBasicBlock(head, tail);
   if (!*firstBlock) {
     *firstBlock = bb;
   }
@@ -337,19 +345,20 @@ void CodeGen::AddBasicBlock(Instruction *head,
   return;
 }
 
-BasicBlock *CodeGen::CutGraphIntoBasicBlocks(
-    Instruction *instructions, const BranchTargets& branch_targets,
-    TargetsToBlocks *basic_blocks) {
+BasicBlock* CodeGen::CutGraphIntoBasicBlocks(
+    Instruction* instructions,
+    const BranchTargets& branch_targets,
+    TargetsToBlocks* basic_blocks) {
   // Textbook implementation of a basic block generator. All basic blocks
   // start with a branch target and end with either a return statement or
   // a jump (or are followed by an instruction that forms the beginning of a
   // new block). Both conditional and "always" jumps are supported.
-  BasicBlock *first_block = NULL;
-  std::set<const Instruction *> seen_instructions;
+  BasicBlock* first_block = NULL;
+  std::set<const Instruction*> seen_instructions;
   Instructions stack;
-  Instruction *tail = NULL;
-  Instruction *head = instructions;
-  for (Instruction *insn = head; insn; ) {
+  Instruction* tail = NULL;
+  Instruction* head = instructions;
+  for (Instruction* insn = head; insn;) {
     if (seen_instructions.find(insn) != seen_instructions.end()) {
       // We somehow went in a circle. This should never be possible. Not even
       // cyclic graphs are supposed to confuse us this much.
@@ -410,7 +419,8 @@ BasicBlock *CodeGen::CutGraphIntoBasicBlocks(
 // used in a "less" comparator for the purpose of storing pointers to basic
 // blocks in STL containers; this gives an easy option to use STL to find
 // shared tail  sequences of basic blocks.
-static int PointerCompare(const BasicBlock *block1, const BasicBlock *block2,
+static int PointerCompare(const BasicBlock* block1,
+                          const BasicBlock* block2,
                           const TargetsToBlocks& blocks) {
   // Return <0, 0, or >0 depending on the ordering of "block1" and "block2".
   // If we are looking at the exact same block, this is trivial and we don't
@@ -486,7 +496,7 @@ static int PointerCompare(const BasicBlock *block1, const BasicBlock *block2,
   }
 }
 
-void CodeGen::MergeTails(TargetsToBlocks *blocks) {
+void CodeGen::MergeTails(TargetsToBlocks* blocks) {
   // We enter all of our basic blocks into a set using the BasicBlock::Less()
   // comparator. This naturally results in blocks with identical tails of
   // instructions to map to the same entry in the set. Whenever we discover
@@ -500,12 +510,11 @@ void CodeGen::MergeTails(TargetsToBlocks *blocks) {
   //      the future, we might decide to revisit this decision and attempt to
   //      merge arbitrary sub-sequences of instructions.
   BasicBlock::Less<TargetsToBlocks> less(*blocks, PointerCompare);
-  typedef std::set<BasicBlock *, BasicBlock::Less<TargetsToBlocks> > Set;
+  typedef std::set<BasicBlock*, BasicBlock::Less<TargetsToBlocks> > Set;
   Set seen_basic_blocks(less);
-  for (TargetsToBlocks::iterator iter = blocks->begin();
-       iter != blocks->end();
+  for (TargetsToBlocks::iterator iter = blocks->begin(); iter != blocks->end();
        ++iter) {
-    BasicBlock *bb = iter->second;
+    BasicBlock* bb = iter->second;
     Set::const_iterator entry = seen_basic_blocks.find(bb);
     if (entry == seen_basic_blocks.end()) {
       // This is the first time we see this particular sequence of
@@ -521,34 +530,36 @@ void CodeGen::MergeTails(TargetsToBlocks *blocks) {
   }
 }
 
-void CodeGen::ComputeIncomingBranches(BasicBlock *block,
+void CodeGen::ComputeIncomingBranches(BasicBlock* block,
                                       const TargetsToBlocks& targets_to_blocks,
-                                      IncomingBranches *incoming_branches) {
+                                      IncomingBranches* incoming_branches) {
   // We increment the number of incoming branches each time we encounter a
   // basic block. But we only traverse recursively the very first time we
   // encounter a new block. This is necessary to make topological sorting
   // work correctly.
   if (++(*incoming_branches)[block] == 1) {
-    Instruction *last_insn = block->instructions.back();
+    Instruction* last_insn = block->instructions.back();
     if (BPF_CLASS(last_insn->code) == BPF_JMP) {
-      ComputeIncomingBranches(
-                             targets_to_blocks.find(last_insn->jt_ptr)->second,
-                             targets_to_blocks, incoming_branches);
+      ComputeIncomingBranches(targets_to_blocks.find(last_insn->jt_ptr)->second,
+                              targets_to_blocks,
+                              incoming_branches);
       if (BPF_OP(last_insn->code) != BPF_JA) {
         ComputeIncomingBranches(
-                             targets_to_blocks.find(last_insn->jf_ptr)->second,
-                             targets_to_blocks, incoming_branches);
+            targets_to_blocks.find(last_insn->jf_ptr)->second,
+            targets_to_blocks,
+            incoming_branches);
       }
     } else if (BPF_CLASS(last_insn->code) != BPF_RET) {
       ComputeIncomingBranches(targets_to_blocks.find(last_insn->next)->second,
-                              targets_to_blocks, incoming_branches);
+                              targets_to_blocks,
+                              incoming_branches);
     }
   }
 }
 
-void CodeGen::TopoSortBasicBlocks(BasicBlock *first_block,
+void CodeGen::TopoSortBasicBlocks(BasicBlock* first_block,
                                   const TargetsToBlocks& blocks,
-                                  BasicBlocks *basic_blocks) {
+                                  BasicBlocks* basic_blocks) {
   // Textbook implementation of a toposort. We keep looking for basic blocks
   // that don't have any incoming branches (initially, this is just the
   // "first_block") and add them to the topologically sorted list of
@@ -562,7 +573,7 @@ void CodeGen::TopoSortBasicBlocks(BasicBlock *first_block,
   IncomingBranches unordered_blocks;
   ComputeIncomingBranches(first_block, blocks, &unordered_blocks);
 
-  std::set<BasicBlock *> heads;
+  std::set<BasicBlock*> heads;
   for (;;) {
     // Move block from "unordered_blocks" to "basic_blocks".
     basic_blocks->push_back(first_block);
@@ -570,7 +581,7 @@ void CodeGen::TopoSortBasicBlocks(BasicBlock *first_block,
     // Inspect last instruction in the basic block. This is typically either a
     // jump or a return statement. But it could also be a "normal" instruction
     // that is followed by a jump target.
-    Instruction *last_insn = first_block->instructions.back();
+    Instruction* last_insn = first_block->instructions.back();
     if (BPF_CLASS(last_insn->code) == BPF_JMP) {
       // Remove outgoing branches. This might end up moving our descendants
       // into set of "head" nodes that no longer have any incoming branches.
@@ -598,7 +609,7 @@ void CodeGen::TopoSortBasicBlocks(BasicBlock *first_block,
         // Our basic block is supposed to be followed by "last_insn->next",
         // but dependencies prevent this from happening. Insert a BPF_JA
         // instruction to correct the code flow.
-        Instruction *ja = MakeInstruction(BPF_JMP+BPF_JA, 0, last_insn->next);
+        Instruction* ja = MakeInstruction(BPF_JMP + BPF_JA, 0, last_insn->next);
         first_block->instructions.push_back(ja);
         last_insn->next = ja;
       }
@@ -616,7 +627,7 @@ void CodeGen::TopoSortBasicBlocks(BasicBlock *first_block,
   }
 }
 
-void CodeGen::ComputeRelativeJumps(BasicBlocks *basic_blocks,
+void CodeGen::ComputeRelativeJumps(BasicBlocks* basic_blocks,
                                    const TargetsToBlocks& targets_to_blocks) {
   // While we previously used pointers in jt_ptr and jf_ptr to link jump
   // instructions to their targets, we now convert these jumps to relative
@@ -626,38 +637,37 @@ void CodeGen::ComputeRelativeJumps(BasicBlocks *basic_blocks,
   // Since we just completed a toposort, all jump targets are guaranteed to
   // go forward. This means, iterating over the basic blocks in reverse makes
   // it trivial to compute the correct offsets.
-  BasicBlock *bb = NULL;
-  BasicBlock *last_bb = NULL;
+  BasicBlock* bb = NULL;
+  BasicBlock* last_bb = NULL;
   for (BasicBlocks::reverse_iterator iter = basic_blocks->rbegin();
        iter != basic_blocks->rend();
        ++iter) {
     last_bb = bb;
     bb = *iter;
-    Instruction *insn = bb->instructions.back();
+    Instruction* insn = bb->instructions.back();
     if (BPF_CLASS(insn->code) == BPF_JMP) {
       // Basic block ended in a jump instruction. We can now compute the
       // appropriate offsets.
       if (BPF_OP(insn->code) == BPF_JA) {
         // "Always" jumps use the 32bit "k" field for the offset, instead
         // of the 8bit "jt" and "jf" fields.
-        int jmp =
-          offset - targets_to_blocks.find(insn->jt_ptr)->second->offset;
-        insn->k  = jmp;
+        int jmp = offset - targets_to_blocks.find(insn->jt_ptr)->second->offset;
+        insn->k = jmp;
         insn->jt = insn->jf = 0;
       } else {
         // The offset computations for conditional jumps are just the same
         // as for "always" jumps.
-        int jt = offset-targets_to_blocks.find(insn->jt_ptr)->second->offset;
-        int jf = offset-targets_to_blocks.find(insn->jf_ptr)->second->offset;
+        int jt = offset - targets_to_blocks.find(insn->jt_ptr)->second->offset;
+        int jf = offset - targets_to_blocks.find(insn->jf_ptr)->second->offset;
 
         // There is an added complication, because conditional relative jumps
         // can only jump at most 255 instructions forward. If we have to jump
         // further, insert an extra "always" jump.
         Instructions::size_type jmp = bb->instructions.size();
         if (jt > 255 || (jt == 255 && jf > 255)) {
-          Instruction *ja = MakeInstruction(BPF_JMP+BPF_JA, 0, insn->jt_ptr);
+          Instruction* ja = MakeInstruction(BPF_JMP + BPF_JA, 0, insn->jt_ptr);
           bb->instructions.push_back(ja);
-          ja->k  = jt;
+          ja->k = jt;
           ja->jt = ja->jf = 0;
 
           // The newly inserted "always" jump, of course, requires us to adjust
@@ -666,9 +676,9 @@ void CodeGen::ComputeRelativeJumps(BasicBlocks *basic_blocks,
           ++jf;
         }
         if (jf > 255) {
-          Instruction *ja = MakeInstruction(BPF_JMP+BPF_JA, 0, insn->jf_ptr);
+          Instruction* ja = MakeInstruction(BPF_JMP + BPF_JA, 0, insn->jf_ptr);
           bb->instructions.insert(bb->instructions.begin() + jmp, ja);
-          ja->k  = jf;
+          ja->k = jf;
           ja->jt = ja->jf = 0;
 
           // Again, we have to adjust the jump targets in the original
@@ -696,7 +706,7 @@ void CodeGen::ComputeRelativeJumps(BasicBlocks *basic_blocks,
 }
 
 void CodeGen::ConcatenateBasicBlocks(const BasicBlocks& basic_blocks,
-                                     Sandbox::Program *program) {
+                                     Sandbox::Program* program) {
   // Our basic blocks have been sorted and relative jump offsets have been
   // computed. The last remaining step is for all the instructions in our
   // basic blocks to be concatenated into a BPF program.
@@ -710,24 +720,25 @@ void CodeGen::ConcatenateBasicBlocks(const BasicBlocks& basic_blocks,
          ++insn_iter) {
       const Instruction& insn = **insn_iter;
       program->push_back(
-        (struct sock_filter) { insn.code, insn.jt, insn.jf, insn.k });
+          (struct sock_filter) {insn.code, insn.jt, insn.jf, insn.k});
     }
   }
   return;
 }
 
-void CodeGen::Compile(Instruction *instructions, Sandbox::Program *program) {
+void CodeGen::Compile(Instruction* instructions, Sandbox::Program* program) {
   if (compiled_) {
-    SANDBOX_DIE("Cannot call Compile() multiple times. Create a new code "
-                "generator instead");
+    SANDBOX_DIE(
+        "Cannot call Compile() multiple times. Create a new code "
+        "generator instead");
   }
   compiled_ = true;
 
   BranchTargets branch_targets;
   FindBranchTargets(*instructions, &branch_targets);
   TargetsToBlocks all_blocks;
-  BasicBlock *first_block =
-    CutGraphIntoBasicBlocks(instructions, branch_targets, &all_blocks);
+  BasicBlock* first_block =
+      CutGraphIntoBasicBlocks(instructions, branch_targets, &all_blocks);
   MergeTails(&all_blocks);
   BasicBlocks basic_blocks;
   TopoSortBasicBlocks(first_block, all_blocks, &basic_blocks);

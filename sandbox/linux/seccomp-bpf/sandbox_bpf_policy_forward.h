@@ -11,10 +11,9 @@ namespace playground2 {
 
 class Sandbox;
 class ErrorCode;
-typedef ErrorCode BpfSandboxPolicy(
-    Sandbox* sandbox_compiler,
-    int system_call_number,
-    void* aux);
+typedef ErrorCode BpfSandboxPolicy(Sandbox* sandbox_compiler,
+                                   int system_call_number,
+                                   void* aux);
 
 typedef base::Callback<BpfSandboxPolicy> BpfSandboxPolicyCallback;
 

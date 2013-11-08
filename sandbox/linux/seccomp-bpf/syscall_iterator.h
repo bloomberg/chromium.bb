@@ -32,9 +32,7 @@ namespace playground2 {
 class SyscallIterator {
  public:
   explicit SyscallIterator(bool invalid_only)
-      : invalid_only_(invalid_only),
-        done_(false),
-        num_(0) {}
+      : invalid_only_(invalid_only), done_(false), num_(0) {}
 
   bool Done() const { return done_; }
   uint32_t Next();
@@ -43,8 +41,8 @@ class SyscallIterator {
  private:
   static bool IsArmPrivate(uint32_t num);
 
-  bool     invalid_only_;
-  bool     done_;
+  bool invalid_only_;
+  bool done_;
   uint32_t num_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(SyscallIterator);
@@ -53,4 +51,3 @@ class SyscallIterator {
 }  // namespace playground2
 
 #endif  // SANDBOX_LINUX_SECCOMP_BPF_SYSCALL_ITERATOR_H__
-

@@ -12,7 +12,6 @@
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/seccomp-bpf/syscall.h"
 
-
 namespace playground2 {
 
 void Die::ExitGroup() {
@@ -29,8 +28,9 @@ void Die::ExitGroup() {
   // succeeded in doing so. Nonetheless, triggering a fatal signal could help
   // us terminate.
   signal(SIGSEGV, SIG_DFL);
-  SandboxSyscall(__NR_prctl, PR_SET_DUMPABLE, (void *)0, (void *)0, (void *)0);
-  if (*(volatile char *)0) { }
+  SandboxSyscall(__NR_prctl, PR_SET_DUMPABLE, (void*)0, (void*)0, (void*)0);
+  if (*(volatile char*)0) {
+  }
 
   // If there is no way for us to ask for the program to exit, the next
   // best thing we can do is to loop indefinitely. Maybe, somebody will notice
@@ -42,37 +42,37 @@ void Die::ExitGroup() {
   }
 }
 
-void Die::SandboxDie(const char *msg, const char *file, int line) {
+void Die::SandboxDie(const char* msg, const char* file, int line) {
   if (simple_exit_) {
     LogToStderr(msg, file, line);
   } else {
-    #if defined(SECCOMP_BPF_STANDALONE)
-      Die::LogToStderr(msg, file, line);
-    #else
-      logging::LogMessage(file, line, logging::LOG_FATAL).stream() << msg;
-    #endif
+#if defined(SECCOMP_BPF_STANDALONE)
+    Die::LogToStderr(msg, file, line);
+#else
+    logging::LogMessage(file, line, logging::LOG_FATAL).stream() << msg;
+#endif
   }
   ExitGroup();
 }
 
-void Die::RawSandboxDie(const char *msg) {
+void Die::RawSandboxDie(const char* msg) {
   if (!msg)
     msg = "";
   RAW_LOG(FATAL, msg);
   ExitGroup();
 }
 
-void Die::SandboxInfo(const char *msg, const char *file, int line) {
+void Die::SandboxInfo(const char* msg, const char* file, int line) {
   if (!suppress_info_) {
-  #if defined(SECCOMP_BPF_STANDALONE)
+#if defined(SECCOMP_BPF_STANDALONE)
     Die::LogToStderr(msg, file, line);
-  #else
+#else
     logging::LogMessage(file, line, logging::LOG_INFO).stream() << msg;
-  #endif
+#endif
   }
 }
 
-void Die::LogToStderr(const char *msg, const char *file, int line) {
+void Die::LogToStderr(const char* msg, const char* file, int line) {
   if (msg) {
     char buf[40];
     snprintf(buf, sizeof(buf), "%d", line);
@@ -80,11 +80,12 @@ void Die::LogToStderr(const char *msg, const char *file, int line) {
 
     // No need to loop. Short write()s are unlikely and if they happen we
     // probably prefer them over a loop that blocks.
-    if (HANDLE_EINTR(SandboxSyscall(__NR_write, 2, s.c_str(), s.length()))) { }
+    if (HANDLE_EINTR(SandboxSyscall(__NR_write, 2, s.c_str(), s.length()))) {
+    }
   }
 }
 
-bool Die::simple_exit_   = false;
+bool Die::simple_exit_ = false;
 bool Die::suppress_info_ = false;
 
 }  // namespace

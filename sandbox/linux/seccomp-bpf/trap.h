@@ -13,7 +13,6 @@
 
 #include "sandbox/linux/seccomp-bpf/port.h"
 
-
 namespace playground2 {
 
 class ErrorCode;
@@ -41,13 +40,13 @@ class Trap {
   // range -1..-4096. It should not set errno when reporting errors; on the
   // other hand, accidentally modifying errno is harmless and the changes will
   // be undone afterwards.
-  typedef intptr_t (*TrapFnc)(const struct arch_seccomp_data& args, void *aux);
+  typedef intptr_t (*TrapFnc)(const struct arch_seccomp_data& args, void* aux);
 
   // Registers a new trap handler and sets up the appropriate SIGSYS handler
   // as needed.
   // N.B.: This makes a permanent state change. Traps cannot be unregistered,
   //   as that would break existing BPF filters that are still active.
-  static ErrorCode MakeTrap(TrapFnc fnc, const void *aux, bool safe);
+  static ErrorCode MakeTrap(TrapFnc fnc, const void* aux, bool safe);
 
   // Enables support for unsafe traps in the SIGSYS signal handler. This is a
   // one-way fuse. It works in conjunction with the BPF compiler emitting code
@@ -68,14 +67,10 @@ class Trap {
   ~Trap();
 
   struct TrapKey {
-    TrapKey(TrapFnc f, const void *a, bool s)
-        : fnc(f),
-          aux(a),
-          safe(s) {
-    }
-    TrapFnc    fnc;
-    const void *aux;
-    bool       safe;
+    TrapKey(TrapFnc f, const void* a, bool s) : fnc(f), aux(a), safe(s) {}
+    TrapFnc fnc;
+    const void* aux;
+    bool safe;
     bool operator<(const TrapKey&) const;
   };
   typedef std::map<TrapKey, uint16_t> TrapIds;
@@ -87,29 +82,27 @@ class Trap {
   // It also gracefully deals with methods that should check for the singleton,
   // but avoid instantiating it, if it doesn't exist yet
   // (e.g. ErrorCodeFromTrapId()).
-  static Trap *GetInstance();
-  static void SigSysAction(int nr, siginfo_t *info, void *void_context);
+  static Trap* GetInstance();
+  static void SigSysAction(int nr, siginfo_t* info, void* void_context);
 
   // Make sure that SigSys is not inlined in order to get slightly better crash
   // dumps.
-  void SigSys(int nr, siginfo_t *info, void *void_context)
-      __attribute__ ((noinline));
-  ErrorCode MakeTrapImpl(TrapFnc fnc, const void *aux, bool safe);
+  void SigSys(int nr, siginfo_t* info, void* void_context)
+      __attribute__((noinline));
+  ErrorCode MakeTrapImpl(TrapFnc fnc, const void* aux, bool safe);
   bool SandboxDebuggingAllowedByUser() const;
-
-
 
   // We have a global singleton that handles all of our SIGSYS traps. This
   // variable must never be deallocated after it has been set up initially, as
   // there is no way to reset in-kernel BPF filters that generate SIGSYS
   // events.
-  static Trap *global_trap_;
+  static Trap* global_trap_;
 
-  TrapIds   trap_ids_;             // Maps from TrapKeys to numeric ids
-  ErrorCode *trap_array_;          // Array of ErrorCodes indexed by ids
-  size_t    trap_array_size_;      // Currently used size of array
-  size_t    trap_array_capacity_;  // Currently allocated capacity of array
-  bool      has_unsafe_traps_;     // Whether unsafe traps have been enabled
+  TrapIds trap_ids_;            // Maps from TrapKeys to numeric ids
+  ErrorCode* trap_array_;       // Array of ErrorCodes indexed by ids
+  size_t trap_array_size_;      // Currently used size of array
+  size_t trap_array_capacity_;  // Currently allocated capacity of array
+  bool has_unsafe_traps_;       // Whether unsafe traps have been enabled
 
   // Our constructor is private. A shared global instance is created
   // automatically as needed.

@@ -31,27 +31,27 @@ const int kMMapNr = __NR_mmap;
 #endif
 
 TEST(Syscall, WellKnownEntryPoint) {
-  // Test that SandboxSyscall(-1) is handled specially. Don't do this on ARM,
-  // where syscall(-1) crashes with SIGILL. Not running the test is fine, as we
-  // are still testing ARM code in the next set of tests.
+// Test that SandboxSyscall(-1) is handled specially. Don't do this on ARM,
+// where syscall(-1) crashes with SIGILL. Not running the test is fine, as we
+// are still testing ARM code in the next set of tests.
 #if !defined(__arm__)
   EXPECT_NE(SandboxSyscall(-1), syscall(-1));
 #endif
 
-  // If possible, test that SandboxSyscall(-1) returns the address right after
-  // a kernel entry point.
+// If possible, test that SandboxSyscall(-1) returns the address right after
+// a kernel entry point.
 #if defined(__i386__)
-  EXPECT_EQ(0x80CDu, ((uint16_t *)SandboxSyscall(-1))[-1]);      // INT 0x80
+  EXPECT_EQ(0x80CDu, ((uint16_t*)SandboxSyscall(-1))[-1]);  // INT 0x80
 #elif defined(__x86_64__)
-  EXPECT_EQ(0x050Fu, ((uint16_t *)SandboxSyscall(-1))[-1]);      // SYSCALL
+  EXPECT_EQ(0x050Fu, ((uint16_t*)SandboxSyscall(-1))[-1]);  // SYSCALL
 #elif defined(__arm__)
 #if defined(__thumb__)
-  EXPECT_EQ(0xDF00u, ((uint16_t *)SandboxSyscall(-1))[-1]);      // SWI 0
+  EXPECT_EQ(0xDF00u, ((uint16_t*)SandboxSyscall(-1))[-1]);  // SWI 0
 #else
-  EXPECT_EQ(0xEF000000u, ((uint32_t *)SandboxSyscall(-1))[-1]);  // SVC 0
+  EXPECT_EQ(0xEF000000u, ((uint32_t*)SandboxSyscall(-1))[-1]);  // SVC 0
 #endif
 #else
-  #warning Incomplete test case; need port for target platform
+#warning Incomplete test case; need port for target platform
 #endif
 }
 
@@ -69,7 +69,7 @@ TEST(Syscall, TrivialSyscallOneArg) {
 }
 
 // SIGSYS trap handler that will be called on __NR_uname.
-intptr_t CopySyscallArgsToAux(const struct arch_seccomp_data& args, void *aux) {
+intptr_t CopySyscallArgsToAux(const struct arch_seccomp_data& args, void* aux) {
   // |aux| is a pointer to our BPF_AUX.
   std::vector<uint64_t>* const seen_syscall_args =
       static_cast<std::vector<uint64_t>*>(aux);
@@ -78,7 +78,7 @@ intptr_t CopySyscallArgsToAux(const struct arch_seccomp_data& args, void *aux) {
   return -ENOMEM;
 }
 
-ErrorCode CopyAllArgsOnUnamePolicy(Sandbox *sandbox, int sysno, void *aux) {
+ErrorCode CopyAllArgsOnUnamePolicy(Sandbox* sandbox, int sysno, void* aux) {
   if (!Sandbox::IsValidSyscallNumber(sysno)) {
     return ErrorCode(ENOSYS);
   }
@@ -91,7 +91,9 @@ ErrorCode CopyAllArgsOnUnamePolicy(Sandbox *sandbox, int sysno, void *aux) {
 
 // We are testing SandboxSyscall() by making use of a BPF filter that allows us
 // to inspect the system call arguments that the kernel saw.
-BPF_TEST(Syscall, SyntheticSixArgs, CopyAllArgsOnUnamePolicy,
+BPF_TEST(Syscall,
+         SyntheticSixArgs,
+         CopyAllArgsOnUnamePolicy,
          std::vector<uint64_t> /* BPF_AUX */) {
   const int kExpectedValue = 42;
   // In this test we only pass integers to the kernel. We might want to make
@@ -105,12 +107,13 @@ BPF_TEST(Syscall, SyntheticSixArgs, CopyAllArgsOnUnamePolicy,
 
   // We could use pretty much any system call we don't need here. uname() is
   // nice because it doesn't have any dangerous side effects.
-  BPF_ASSERT(SandboxSyscall(__NR_uname, syscall_args[0],
-                                        syscall_args[1],
-                                        syscall_args[2],
-                                        syscall_args[3],
-                                        syscall_args[4],
-                                        syscall_args[5]) == -ENOMEM);
+  BPF_ASSERT(SandboxSyscall(__NR_uname,
+                            syscall_args[0],
+                            syscall_args[1],
+                            syscall_args[2],
+                            syscall_args[3],
+                            syscall_args[4],
+                            syscall_args[5]) == -ENOMEM);
 
   // We expect the trap handler to have copied the 6 arguments.
   BPF_ASSERT(BPF_AUX.size() == 6);
@@ -131,20 +134,29 @@ TEST(Syscall, ComplexSyscallSixArgs) {
   ASSERT_LE(0, fd = SandboxSyscall(__NR_open, "/dev/null", O_RDWR, 0L));
 
   // Use mmap() to allocate some read-only memory
-  char *addr0;
-  ASSERT_NE((char *)NULL,
-            addr0 = reinterpret_cast<char *>(
-              SandboxSyscall(kMMapNr, (void *)NULL, 4096, PROT_READ,
-                             MAP_PRIVATE|MAP_ANONYMOUS, fd, 0L)));
+  char* addr0;
+  ASSERT_NE((char*)NULL,
+            addr0 = reinterpret_cast<char*>(
+                SandboxSyscall(kMMapNr,
+                               (void*)NULL,
+                               4096,
+                               PROT_READ,
+                               MAP_PRIVATE | MAP_ANONYMOUS,
+                               fd,
+                               0L)));
 
   // Try to replace the existing mapping with a read-write mapping
-  char *addr1;
+  char* addr1;
   ASSERT_EQ(addr0,
-            addr1 = reinterpret_cast<char *>(
-              SandboxSyscall(kMMapNr, addr0, 4096L, PROT_READ|PROT_WRITE,
-                             MAP_PRIVATE|MAP_ANONYMOUS|MAP_FIXED,
-                             fd, 0L)));
-  ++*addr1; // This should not seg fault
+            addr1 = reinterpret_cast<char*>(
+                SandboxSyscall(kMMapNr,
+                               addr0,
+                               4096L,
+                               PROT_READ | PROT_WRITE,
+                               MAP_PRIVATE | MAP_ANONYMOUS | MAP_FIXED,
+                               fd,
+                               0L)));
+  ++*addr1;  // This should not seg fault
 
   // Clean up
   EXPECT_EQ(0, SandboxSyscall(__NR_munmap, addr1, 4096L));
@@ -153,21 +165,23 @@ TEST(Syscall, ComplexSyscallSixArgs) {
   // Check that the offset argument (i.e. the sixth argument) is processed
   // correctly.
   ASSERT_GE(fd = SandboxSyscall(__NR_open, "/proc/self/exe", O_RDONLY, 0L), 0);
-  char *addr2, *addr3;
-  ASSERT_NE((char *)NULL,
-            addr2 = reinterpret_cast<char *>(
-              SandboxSyscall(kMMapNr, (void *)NULL, 8192L, PROT_READ,
-                             MAP_PRIVATE, fd, 0L)));
-  ASSERT_NE((char *)NULL,
-            addr3 = reinterpret_cast<char *>(
-              SandboxSyscall(kMMapNr, (void *)NULL, 4096L, PROT_READ,
-                             MAP_PRIVATE, fd,
+  char* addr2, *addr3;
+  ASSERT_NE((char*)NULL,
+            addr2 = reinterpret_cast<char*>(SandboxSyscall(
+                kMMapNr, (void*)NULL, 8192L, PROT_READ, MAP_PRIVATE, fd, 0L)));
+  ASSERT_NE((char*)NULL,
+            addr3 = reinterpret_cast<char*>(SandboxSyscall(kMMapNr,
+                                                           (void*)NULL,
+                                                           4096L,
+                                                           PROT_READ,
+                                                           MAP_PRIVATE,
+                                                           fd,
 #if defined(__NR_mmap2)
-                      1L
+                                                           1L
 #else
-                      4096L
+                                                           4096L
 #endif
-                      )));
+                                                           )));
   EXPECT_EQ(0, memcmp(addr2 + 4096, addr3, 4096));
 
   // Just to be absolutely on the safe side, also verify that the file
@@ -182,4 +196,4 @@ TEST(Syscall, ComplexSyscallSixArgs) {
   EXPECT_EQ(0, HANDLE_EINTR(SandboxSyscall(__NR_close, fd)));
 }
 
-} // namespace
+}  // namespace

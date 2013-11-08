@@ -5,7 +5,7 @@
 #include "base/at_exit.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-int main(int argc, char *argv[]) {
+int main(int argc, char* argv[]) {
   // The use of Callbacks requires an AtExitManager.
   base::AtExitManager exit_manager;
   testing::InitGoogleTest(&argc, argv);

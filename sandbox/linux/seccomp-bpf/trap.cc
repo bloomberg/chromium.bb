@@ -25,7 +25,6 @@
 
 #include <limits>
 
-
 namespace {
 
 const int kCapacityIncrement = 20;
@@ -47,23 +46,21 @@ const char kSandboxDebuggingEnv[] = "CHROME_SANDBOX_DEBUGGING";
 // realtime signals. There are plenty of them. Unfortunately, there is no
 // way to mark a signal as allocated. So, the potential for collision is
 // possibly even worse.
-bool GetIsInSigHandler(const ucontext_t *ctx) {
+bool GetIsInSigHandler(const ucontext_t* ctx) {
   // Note: on Android, sigismember does not take a pointer to const.
   return sigismember(const_cast<sigset_t*>(&ctx->uc_sigmask), SIGBUS);
 }
 
 void SetIsInSigHandler() {
   sigset_t mask;
-  if (sigemptyset(&mask) ||
-      sigaddset(&mask, SIGBUS) ||
+  if (sigemptyset(&mask) || sigaddset(&mask, SIGBUS) ||
       sigprocmask(SIG_BLOCK, &mask, NULL)) {
     SANDBOX_DIE("Failed to block SIGBUS");
   }
 }
 
 bool IsDefaultSignalAction(const struct sigaction& sa) {
-  if (sa.sa_flags & SA_SIGINFO ||
-      sa.sa_handler != SIG_DFL) {
+  if (sa.sa_flags & SA_SIGINFO || sa.sa_handler != SIG_DFL) {
     return false;
   }
   return true;
@@ -79,7 +76,7 @@ Trap::Trap()
       trap_array_capacity_(0),
       has_unsafe_traps_(false) {
   // Set new SIGSYS handler
-  struct sigaction sa = { };
+  struct sigaction sa = {};
   sa.sa_sigaction = SigSysAction;
   sa.sa_flags = SA_SIGINFO | SA_NODEFER;
   struct sigaction old_sa;
@@ -94,14 +91,13 @@ Trap::Trap()
 
   // Unmask SIGSYS
   sigset_t mask;
-  if (sigemptyset(&mask) ||
-      sigaddset(&mask, SIGSYS) ||
+  if (sigemptyset(&mask) || sigaddset(&mask, SIGSYS) ||
       sigprocmask(SIG_UNBLOCK, &mask, NULL)) {
     SANDBOX_DIE("Failed to configure SIGSYS handler");
   }
 }
 
-Trap *Trap::GetInstance() {
+Trap* Trap::GetInstance() {
   // Note: This class is not thread safe. It is the caller's responsibility
   // to avoid race conditions. Normally, this is a non-issue as the sandbox
   // can only be initialized if there are no other threads present.
@@ -116,15 +112,16 @@ Trap *Trap::GetInstance() {
   return global_trap_;
 }
 
-void Trap::SigSysAction(int nr, siginfo_t *info, void *void_context) {
+void Trap::SigSysAction(int nr, siginfo_t* info, void* void_context) {
   if (!global_trap_) {
-    RAW_SANDBOX_DIE("This can't happen. Found no global singleton instance "
-                    "for Trap() handling.");
+    RAW_SANDBOX_DIE(
+        "This can't happen. Found no global singleton instance "
+        "for Trap() handling.");
   }
   global_trap_->SigSys(nr, info, void_context);
 }
 
-void Trap::SigSys(int nr, siginfo_t *info, void *void_context) {
+void Trap::SigSys(int nr, siginfo_t* info, void* void_context) {
   // Signal handlers should always preserve "errno". Otherwise, we could
   // trigger really subtle bugs.
   const int old_errno = errno;
@@ -145,7 +142,7 @@ void Trap::SigSys(int nr, siginfo_t *info, void *void_context) {
 
   // Obtain the signal context. This, most notably, gives us access to
   // all CPU registers at the time of the signal.
-  ucontext_t *ctx = reinterpret_cast<ucontext_t *>(void_context);
+  ucontext_t* ctx = reinterpret_cast<ucontext_t*>(void_context);
 
   // Obtain the siginfo information that is specific to SIGSYS. Unfortunately,
   // most versions of glibc don't include this information in siginfo_t. So,
@@ -154,7 +151,7 @@ void Trap::SigSys(int nr, siginfo_t *info, void *void_context) {
   memcpy(&sigsys, &info->_sifields, sizeof(sigsys));
 
   // Some more sanity checks.
-  if (sigsys.ip != reinterpret_cast<void *>(SECCOMP_IP(ctx)) ||
+  if (sigsys.ip != reinterpret_cast<void*>(SECCOMP_IP(ctx)) ||
       sigsys.nr != static_cast<int>(SECCOMP_SYSCALL(ctx)) ||
       sigsys.arch != SECCOMP_ARCH) {
     // TODO(markus):
@@ -172,9 +169,12 @@ void Trap::SigSys(int nr, siginfo_t *info, void *void_context) {
       RAW_SANDBOX_DIE("Cannot call clone() from an UnsafeTrap() handler.");
     }
     rc = SandboxSyscall(sigsys.nr,
-                        SECCOMP_PARM1(ctx), SECCOMP_PARM2(ctx),
-                        SECCOMP_PARM3(ctx), SECCOMP_PARM4(ctx),
-                        SECCOMP_PARM5(ctx), SECCOMP_PARM6(ctx));
+                        SECCOMP_PARM1(ctx),
+                        SECCOMP_PARM2(ctx),
+                        SECCOMP_PARM3(ctx),
+                        SECCOMP_PARM4(ctx),
+                        SECCOMP_PARM5(ctx),
+                        SECCOMP_PARM6(ctx));
   } else {
     const ErrorCode& err = trap_array_[info->si_errno - 1];
     if (!err.safe_) {
@@ -185,18 +185,13 @@ void Trap::SigSys(int nr, siginfo_t *info, void *void_context) {
     // is what we are showing to TrapFnc callbacks that the system call
     // evaluator registered with the sandbox.
     struct arch_seccomp_data data = {
-      sigsys.nr,
-      SECCOMP_ARCH,
-      reinterpret_cast<uint64_t>(sigsys.ip),
-      {
-        static_cast<uint64_t>(SECCOMP_PARM1(ctx)),
-        static_cast<uint64_t>(SECCOMP_PARM2(ctx)),
-        static_cast<uint64_t>(SECCOMP_PARM3(ctx)),
-        static_cast<uint64_t>(SECCOMP_PARM4(ctx)),
-        static_cast<uint64_t>(SECCOMP_PARM5(ctx)),
-        static_cast<uint64_t>(SECCOMP_PARM6(ctx))
-      }
-    };
+        sigsys.nr, SECCOMP_ARCH, reinterpret_cast<uint64_t>(sigsys.ip),
+        {static_cast<uint64_t>(SECCOMP_PARM1(ctx)),
+         static_cast<uint64_t>(SECCOMP_PARM2(ctx)),
+         static_cast<uint64_t>(SECCOMP_PARM3(ctx)),
+         static_cast<uint64_t>(SECCOMP_PARM4(ctx)),
+         static_cast<uint64_t>(SECCOMP_PARM5(ctx)),
+         static_cast<uint64_t>(SECCOMP_PARM6(ctx))}};
 
     // Now call the TrapFnc callback associated with this particular instance
     // of SECCOMP_RET_TRAP.
@@ -207,7 +202,7 @@ void Trap::SigSys(int nr, siginfo_t *info, void *void_context) {
   // that we just handled, and restore "errno" to the value that it had
   // before entering the signal handler.
   SECCOMP_RESULT(ctx) = static_cast<greg_t>(rc);
-  errno               = old_errno;
+  errno = old_errno;
 
   return;
 }
@@ -222,11 +217,11 @@ bool Trap::TrapKey::operator<(const TrapKey& o) const {
   }
 }
 
-ErrorCode Trap::MakeTrap(TrapFnc fnc, const void *aux, bool safe) {
+ErrorCode Trap::MakeTrap(TrapFnc fnc, const void* aux, bool safe) {
   return GetInstance()->MakeTrapImpl(fnc, aux, safe);
 }
 
-ErrorCode Trap::MakeTrapImpl(TrapFnc fnc, const void *aux, bool safe) {
+ErrorCode Trap::MakeTrapImpl(TrapFnc fnc, const void* aux, bool safe) {
   if (!safe && !SandboxDebuggingAllowedByUser()) {
     // Unless the user set the CHROME_SANDBOX_DEBUGGING environment variable,
     // we never return an ErrorCode that is marked as "unsafe". This also
@@ -239,8 +234,9 @@ ErrorCode Trap::MakeTrapImpl(TrapFnc fnc, const void *aux, bool safe) {
     // to understand. Removing the SANDBOX_DIE() allows callers to easyly check
     // whether unsafe traps are supported (by checking whether the returned
     // ErrorCode is ET_INVALID).
-    SANDBOX_DIE("Cannot use unsafe traps unless CHROME_SANDBOX_DEBUGGING "
-                "is enabled");
+    SANDBOX_DIE(
+        "Cannot use unsafe traps unless CHROME_SANDBOX_DEBUGGING "
+        "is enabled");
 
     return ErrorCode();
   }
@@ -290,9 +286,9 @@ ErrorCode Trap::MakeTrapImpl(TrapFnc fnc, const void *aux, bool safe) {
     // against issues with the memory model or with completely asynchronous
     // events.
     if (trap_array_size_ >= trap_array_capacity_) {
-      trap_array_capacity_     += kCapacityIncrement;
-      ErrorCode *old_trap_array = trap_array_;
-      ErrorCode *new_trap_array = new ErrorCode[trap_array_capacity_];
+      trap_array_capacity_ += kCapacityIncrement;
+      ErrorCode* old_trap_array = trap_array_;
+      ErrorCode* new_trap_array = new ErrorCode[trap_array_capacity_];
 
       // Language specs are unclear on whether the compiler is allowed to move
       // the "delete[]" above our preceding assignments and/or memory moves,
@@ -305,7 +301,7 @@ ErrorCode Trap::MakeTrapImpl(TrapFnc fnc, const void *aux, bool safe) {
       // legitimate worry; but they at least thought that the barrier is
       // sufficient to prevent the (so far hypothetical) problem of re-ordering
       // of instructions by the compiler.
-      memcpy(new_trap_array, trap_array_, trap_array_size_*sizeof(ErrorCode));
+      memcpy(new_trap_array, trap_array_, trap_array_size_ * sizeof(ErrorCode));
       asm volatile("" : "=r"(new_trap_array) : "0"(new_trap_array) : "memory");
       trap_array_ = new_trap_array;
       asm volatile("" : "=r"(trap_array_) : "0"(trap_array_) : "memory");
@@ -321,13 +317,12 @@ ErrorCode Trap::MakeTrapImpl(TrapFnc fnc, const void *aux, bool safe) {
 }
 
 bool Trap::SandboxDebuggingAllowedByUser() const {
-  const char *debug_flag = getenv(kSandboxDebuggingEnv);
+  const char* debug_flag = getenv(kSandboxDebuggingEnv);
   return debug_flag && *debug_flag;
 }
 
-
 bool Trap::EnableUnsafeTrapsInSigSysHandler() {
-  Trap *trap = GetInstance();
+  Trap* trap = GetInstance();
   if (!trap->has_unsafe_traps_) {
     // Unsafe traps are a one-way fuse. Once enabled, they can never be turned
     // off again.
@@ -340,8 +335,9 @@ bool Trap::EnableUnsafeTrapsInSigSysHandler() {
       SANDBOX_INFO("WARNING! Disabling sandbox for debugging purposes");
       trap->has_unsafe_traps_ = true;
     } else {
-      SANDBOX_INFO("Cannot disable sandbox and use unsafe traps unless "
-                   "CHROME_SANDBOX_DEBUGGING is turned on first");
+      SANDBOX_INFO(
+          "Cannot disable sandbox and use unsafe traps unless "
+          "CHROME_SANDBOX_DEBUGGING is turned on first");
     }
   }
   // Returns the, possibly updated, value of has_unsafe_traps_.
@@ -356,6 +352,6 @@ ErrorCode Trap::ErrorCodeFromTrapId(uint16_t id) {
   }
 }
 
-Trap *Trap::global_trap_;
+Trap* Trap::global_trap_;
 
 }  // namespace playground2

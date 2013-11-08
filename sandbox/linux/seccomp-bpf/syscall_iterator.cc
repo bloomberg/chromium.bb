@@ -17,8 +17,7 @@ uint32_t SyscallIterator::Next() {
   do {
     // |num_| has been initialized to 0, which we assume is also MIN_SYSCALL.
     // This true for supported architectures (Intel and ARM EABI).
-    COMPILE_ASSERT(MIN_SYSCALL == 0u,
-                   min_syscall_should_always_be_zero);
+    COMPILE_ASSERT(MIN_SYSCALL == 0u, min_syscall_should_always_be_zero);
     val = num_;
 
     // First we iterate up to MAX_PUBLIC_SYSCALL, which is equal to MAX_SYSCALL
@@ -30,9 +29,9 @@ uint32_t SyscallIterator::Next() {
         ++num_;
       }
 #if defined(__arm__)
-    // ARM EABI includes "ARM private" system calls starting at
-    // MIN_PRIVATE_SYSCALL, and a "ghost syscall private to the kernel" at
-    // MIN_GHOST_SYSCALL.
+      // ARM EABI includes "ARM private" system calls starting at
+      // MIN_PRIVATE_SYSCALL, and a "ghost syscall private to the kernel" at
+      // MIN_GHOST_SYSCALL.
     } else if (num_ < MIN_PRIVATE_SYSCALL - 1) {
       num_ = MIN_PRIVATE_SYSCALL - 1;
     } else if (num_ <= MAX_PRIVATE_SYSCALL) {
@@ -50,12 +49,12 @@ uint32_t SyscallIterator::Next() {
         ++num_;
       }
 #endif
-    // BPF programs only ever operate on unsigned quantities. So, that's how
-    // we iterate; we return values from 0..0xFFFFFFFFu. But there are places,
-    // where the kernel might interpret system call numbers as signed
-    // quantities, so the boundaries between signed and unsigned values are
-    // potential problem cases. We want to explicitly return these values from
-    // our iterator.
+      // BPF programs only ever operate on unsigned quantities. So, that's how
+      // we iterate; we return values from 0..0xFFFFFFFFu. But there are places,
+      // where the kernel might interpret system call numbers as signed
+      // quantities, so the boundaries between signed and unsigned values are
+      // potential problem cases. We want to explicitly return these values from
+      // our iterator.
     } else if (num_ < 0x7FFFFFFFu) {
       num_ = 0x7FFFFFFFu;
     } else if (num_ < 0x80000000u) {
@@ -86,10 +85,7 @@ bool SyscallIterator::IsArmPrivate(uint32_t num) {
          (num >= MIN_GHOST_SYSCALL && num <= MAX_SYSCALL);
 }
 #else
-bool SyscallIterator::IsArmPrivate(uint32_t) {
-  return false;
-}
+bool SyscallIterator::IsArmPrivate(uint32_t) { return false; }
 #endif
 
 }  // namespace
-
