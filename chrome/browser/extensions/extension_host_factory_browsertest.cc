@@ -49,9 +49,16 @@ IN_PROC_BROWSER_TEST_F(ExtensionHostFactoryTest, CreateExtensionHosts) {
   }
 }
 
+// Crashing intermittently on Mac. http://crbug.com/316334
+#if defined(OS_MACOSX)
+#define MAYBE_IncognitoExtensionHosts DISABLED_IncognitoExtensionHosts
+#else
+#define MAYBE_IncognitoExtensionHosts IncognitoExtensionHosts
+#endif
 // Tests that extensions loaded in incognito mode have the correct profiles
 // for split-mode and non-split-mode.
-IN_PROC_BROWSER_TEST_F(ExtensionHostFactoryTest, IncognitoExtensionHosts) {
+IN_PROC_BROWSER_TEST_F(ExtensionHostFactoryTest,
+                       MAYBE_IncognitoExtensionHosts) {
   // Open an incognito browser.
   Browser* incognito_browser = ui_test_utils::OpenURLOffTheRecord(
       browser()->profile(), GURL("about:blank"));
