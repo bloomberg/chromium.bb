@@ -4,7 +4,9 @@
 
 package org.chromium.android_webview;
 
+import android.app.Activity;
 import android.content.ComponentCallbacks2;
+import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
@@ -46,6 +48,8 @@ import org.chromium.content.browser.LoadUrlParams;
 import org.chromium.content.browser.NavigationHistory;
 import org.chromium.content.browser.PageTransitionTypes;
 import org.chromium.content.common.CleanupReference;
+import org.chromium.ui.ActivityWindowAndroid;
+import org.chromium.ui.WindowAndroid;
 import org.chromium.ui.gfx.DeviceDisplayInfo;
 
 import java.io.File;
@@ -492,10 +496,13 @@ public class AwContents {
             ContentViewCore.GestureStateListener pinchGestureStateListener,
             ContentViewClient contentViewClient,
             ContentViewCore.ZoomControlsDelegate zoomControlsDelegate) {
-      ContentViewCore contentViewCore = new ContentViewCore(containerView.getContext());
+      Context context = containerView.getContext();
+      ContentViewCore contentViewCore = new ContentViewCore(context);
       // Note INPUT_EVENTS_DELIVERED_IMMEDIATELY is passed to avoid triggering vsync in the
       // compositor, not because input events are delivered immediately.
-      contentViewCore.initialize(containerView, internalDispatcher, nativeWebContents, null,
+      contentViewCore.initialize(containerView, internalDispatcher, nativeWebContents,
+              context instanceof Activity ?
+                      new ActivityWindowAndroid((Activity) context) : new WindowAndroid(context),
                 ContentViewCore.INPUT_EVENTS_DELIVERED_IMMEDIATELY);
       contentViewCore.setGestureStateListener(pinchGestureStateListener);
       contentViewCore.setContentViewClient(contentViewClient);
