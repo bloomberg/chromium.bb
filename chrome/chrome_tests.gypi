@@ -2003,7 +2003,7 @@
             'browser/extensions/api/braille_display_private/braille_display_private_apitest.cc'
             ]
         }],
-        ['buildtype=="Official"', {
+        ['branding=="Chrome"', {
           'sources!': [
             # crbug.com/230471
             'test/data/webui/accessibility_audit_browsertest.js'
