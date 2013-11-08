@@ -74,9 +74,7 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
                          const std::vector<aura::Window*>& attached_windows);
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(WorkspaceWindowResizerTest, CancelSnapPhantom);
-  FRIEND_TEST_ALL_PREFIXES(WorkspaceWindowResizerTest, PhantomSnapMaxSize);
-  FRIEND_TEST_ALL_PREFIXES(WorkspaceWindowResizerTest, PhantomWindowShow);
+  friend class WorkspaceWindowResizerTest;
 
   // Returns the final bounds to place the window at. This differs from
   // the current when snapping.
@@ -220,6 +218,9 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
   // Used to determine if this has been deleted during a drag such as when a tab
   // gets dragged into another browser window.
   base::WeakPtrFactory<WorkspaceWindowResizer> weak_ptr_factory_;
+
+  // Current instance for use by the WorkspaceWindowResizerTest.
+  static WorkspaceWindowResizer* instance_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkspaceWindowResizer);
 };

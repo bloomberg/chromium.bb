@@ -95,8 +95,7 @@ scoped_ptr<WindowResizer> CreateWindowResizer(
     window_resizer = PanelWindowResizer::Create(
         window_resizer, window, point_in_parent, window_component, source);
   }
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshEnableDockedWindows) &&
+  if (switches::UseDockedWindows() &&
       window_resizer && window->parent() &&
       !window->transient_parent() &&
       (window->parent()->id() == internal::kShellWindowId_DefaultContainer ||
@@ -120,9 +119,8 @@ const int kScreenEdgeInsetForTouchResize = 32;
 // Returns true if the window should stick to the edge.
 bool ShouldStickToEdge(int distance_from_edge, int sticky_size) {
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshEnableStickyEdges) ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshEnableDockedWindows)) {
+          switches::kAshEnableStickyEdges)) {
+    // TODO(varkha): Consider keeping snapping behavior for touch drag.
     return distance_from_edge < 0 &&
            distance_from_edge > -sticky_size;
   }
@@ -273,6 +271,9 @@ const int WorkspaceWindowResizer::kScreenEdgeInset = 8;
 // static
 const int WorkspaceWindowResizer::kStickyDistancePixels = 64;
 
+// static
+WorkspaceWindowResizer* WorkspaceWindowResizer::instance_ = NULL;
+
 // Represents the width or height of a window with constraints on its minimum
 // and maximum size. 0 represents a lack of a constraint.
 class WindowSize {
@@ -345,6 +346,8 @@ class WindowSize {
 WorkspaceWindowResizer::~WorkspaceWindowResizer() {
   Shell* shell = Shell::GetInstance();
   shell->cursor_manager()->UnlockCursor();
+  if (instance_ == this)
+    instance_ = NULL;
 }
 
 // static
@@ -367,9 +370,7 @@ void WorkspaceWindowResizer::Drag(const gfx::Point& location_in_parent,
   if (event_flags & ui::EF_CONTROL_DOWN) {
     sticky_size = 0;
   } else if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kAshEnableStickyEdges) ||
-      CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshEnableDockedWindows)) {
+      switches::kAshEnableStickyEdges)) {
     sticky_size = kStickyDistancePixels;
   } else if ((details_.bounds_change & kBoundsChange_Resizes) &&
       details_.source == aura::client::WINDOW_MOVE_SOURCE_TOUCH) {
@@ -542,6 +543,7 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
     total_initial_size_ += initial_size;
     total_available += std::max(min_size, initial_size) - min_size;
   }
+  instance_ = this;
 }
 
 gfx::Rect WorkspaceWindowResizer::GetFinalBounds(

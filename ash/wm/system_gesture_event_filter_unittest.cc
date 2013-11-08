@@ -202,9 +202,9 @@ class SystemGestureEventFilterTest
   virtual void SetUp() OVERRIDE {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         ash::switches::kAshEnableAdvancedGestures);
-    if (docked_enabled_) {
+    if (!docked_enabled_) {
       CommandLine::ForCurrentProcess()->AppendSwitch(
-          ash::switches::kAshEnableDockedWindows);
+          ash::switches::kAshDisableDockedWindows);
     }
     test::AshTestBase::SetUp();
     // Enable brightness key.

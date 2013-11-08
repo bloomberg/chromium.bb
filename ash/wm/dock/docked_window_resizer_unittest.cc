@@ -43,10 +43,6 @@ class DockedWindowResizerTest
   virtual ~DockedWindowResizerTest() {}
 
   virtual void SetUp() OVERRIDE {
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        ash::switches::kAshEnableStickyEdges);
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        ash::switches::kAshEnableDockedWindows);
     AshTestBase::SetUp();
     UpdateDisplay("600x400");
     test::ShellTestApi test_api(Shell::GetInstance());
@@ -218,6 +214,10 @@ class DockedWindowResizerTest
     return window_type_ == aura::client::WINDOW_TYPE_PANEL;
   }
 
+  const gfx::Point& initial_location_in_parent() const {
+    return initial_location_in_parent_;
+  }
+
  private:
   scoped_ptr<WindowResizer> resizer_;
   LauncherModel* model_;
@@ -322,11 +322,12 @@ TEST_P(DockedWindowResizerTest, AttachLeftUndershoot) {
     return;
 
   scoped_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
+  gfx::Rect initial_bounds(window->bounds());
   DragRelativeToEdge(DOCKED_EDGE_LEFT, window.get(), 1);
 
-  // The window should be touching the screen edge but not docked.
-  EXPECT_EQ(window->GetRootWindow()->bounds().x(),
-            window->GetBoundsInScreen().x());
+  // The window should be crossing the screen edge but not docked.
+  int expected_x = initial_bounds.x() - initial_location_in_parent().x() + 1;
+  EXPECT_EQ(expected_x, window->GetBoundsInScreen().x());
   EXPECT_EQ(internal::kShellWindowId_DefaultContainer,
             window->parent()->id());
 }
@@ -550,6 +551,7 @@ TEST_P(DockedWindowResizerTest, AttachOnTwoSides) {
   scoped_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   scoped_ptr<aura::Window> w2(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w1.get(), 20);
+  gfx::Rect initial_bounds(w2->bounds());
   DragToVerticalPositionAndToEdge(DOCKED_EDGE_LEFT, w2.get(), 50);
 
   // The first window should be attached and snapped to the right edge.
@@ -559,7 +561,9 @@ TEST_P(DockedWindowResizerTest, AttachOnTwoSides) {
 
   // The second window should be near the left edge but not snapped.
   // Normal window will get side-maximized while panels will not.
-  EXPECT_EQ(w2->GetRootWindow()->bounds().x(), w2->GetBoundsInScreen().x());
+  int expected_x = test_panels() ?
+      (initial_bounds.x() - initial_location_in_parent().x()) : 0;
+  EXPECT_EQ(expected_x, w2->GetBoundsInScreen().x());
   EXPECT_EQ(internal::kShellWindowId_DefaultContainer, w2->parent()->id());
 }
 

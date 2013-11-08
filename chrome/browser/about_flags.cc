@@ -1003,11 +1003,11 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(chromeos::switches::kEnableBackgroundLoader)
   },
   {
-    "ash-enable-docked-windows",
+    "ash-disable-docked-windows",
     IDS_FLAGS_DOCKED_WINDOWS_NAME,
     IDS_FLAGS_DOCKED_WINDOWS_DESCRIPTION,
     kOsCrOS,
-    SINGLE_VALUE_TYPE(ash::switches::kAshEnableDockedWindows)
+    SINGLE_VALUE_TYPE(ash::switches::kAshDisableDockedWindows)
   },
 #endif
   {

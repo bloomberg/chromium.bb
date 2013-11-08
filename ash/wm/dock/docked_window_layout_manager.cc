@@ -383,10 +383,8 @@ DockedAlignment DockedWindowLayoutManager::CalculateAlignment() const {
 
 bool DockedWindowLayoutManager::CanDockWindow(aura::Window* window,
                                               SnapType edge) {
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kAshEnableDockedWindows)) {
+  if (!switches::UseDockedWindows())
     return false;
-  }
   // Don't allow interactive docking of windows with transient parents such as
   // modal browser dialogs.
   if (IsPopupOrTransient(window))

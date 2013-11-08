@@ -1232,11 +1232,13 @@ TEST_F(WorkspaceControllerTest, VerifyLayerOrdering) {
 namespace {
 
 // Used by DragMaximizedNonTrackedWindow to track how many times the window
-// hierarchy changes.
+// hierarchy changes affecting the specified window.
 class DragMaximizedNonTrackedWindowObserver
     : public aura::WindowObserver {
  public:
-  DragMaximizedNonTrackedWindowObserver() : change_count_(0) {
+  DragMaximizedNonTrackedWindowObserver(aura::Window* window)
+  : change_count_(0),
+    window_(window) {
   }
 
   // Number of times OnWindowHierarchyChanged() has been received.
@@ -1250,7 +1252,8 @@ class DragMaximizedNonTrackedWindowObserver
   // from a docked container which is expected when a tab is dragged.
   virtual void OnWindowHierarchyChanged(
       const HierarchyChangeParams& params) OVERRIDE {
-    if ((params.old_parent->id() == kShellWindowId_DefaultContainer &&
+    if (params.target != window_ ||
+        (params.old_parent->id() == kShellWindowId_DefaultContainer &&
          params.new_parent->id() == kShellWindowId_DockedContainer) ||
         (params.old_parent->id() == kShellWindowId_DockedContainer &&
          params.new_parent->id() == kShellWindowId_DefaultContainer)) {
@@ -1261,6 +1264,7 @@ class DragMaximizedNonTrackedWindowObserver
 
  private:
   int change_count_;
+  aura::Window* window_;
 
   DISALLOW_COPY_AND_ASSIGN(DragMaximizedNonTrackedWindowObserver);
 };
@@ -1286,7 +1290,7 @@ TEST_F(WorkspaceControllerTest, DragFullscreenNonTrackedWindow) {
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
   w1->Show();
   wm::ActivateWindow(w1.get());
-  DragMaximizedNonTrackedWindowObserver observer;
+  DragMaximizedNonTrackedWindowObserver observer(w1.get());
   w1->parent()->parent()->AddObserver(&observer);
   const gfx::Rect max_bounds(w1->bounds());
 
@@ -1335,7 +1339,7 @@ TEST_F(WorkspaceControllerTest, DragMaximizedNonTrackedWindow) {
   w1->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_MAXIMIZED);
   w1->Show();
   wm::ActivateWindow(w1.get());
-  DragMaximizedNonTrackedWindowObserver observer;
+  DragMaximizedNonTrackedWindowObserver observer(w1.get());
   w1->parent()->parent()->AddObserver(&observer);
   const gfx::Rect max_bounds(w1->bounds());
 

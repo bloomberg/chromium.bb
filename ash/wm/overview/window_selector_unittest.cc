@@ -790,8 +790,7 @@ TEST_F(WindowSelectorTest, CycleMultipleDisplaysCopiesWindows) {
   unmoved1->SetName("unmoved1");
   unmoved2->SetName("unmoved2");
   moved1->SetName("moved1");
-  moved1->SetProperty(aura::client::kModalKey,
-                      ui::MODAL_TYPE_WINDOW);
+  moved1->SetProperty(aura::client::kModalKey, ui::MODAL_TYPE_WINDOW);
   moved1_trans_parent->AddTransientChild(moved1.get());
   moved1_trans_parent->SetName("moved1_trans_parent");
 
@@ -830,9 +829,10 @@ TEST_F(WindowSelectorTest, CycleMultipleDisplaysCopiesWindows) {
   // Verify that the bounds and transform of the copy match the original window
   // but that it is on the other root window.
   EXPECT_EQ(root_windows[1], copy1->GetRootWindow());
-  EXPECT_EQ(moved1->GetBoundsInScreen(), copy1->GetBoundsInScreen());
-  EXPECT_EQ(moved1->layer()->GetTargetTransform(),
-            copy1->layer()->GetTargetTransform());
+  EXPECT_EQ(moved1->GetBoundsInScreen().ToString(),
+            copy1->GetBoundsInScreen().ToString());
+  EXPECT_EQ(moved1->layer()->GetTargetTransform().ToString(),
+            copy1->layer()->GetTargetTransform().ToString());
   StopCycling();
 
   // After cycling the copy windows should have been destroyed.
