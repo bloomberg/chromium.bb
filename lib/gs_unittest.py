@@ -257,10 +257,11 @@ class GSRemoveTrackerFilesTest(cros_test_lib.TestCase):
   """Test that the _RetryFilter removes the tracker files between retries."""
 
   LOCAL_PATH = '/tmp/file'
-  REMOTE_PATH = 'gs://test/path/file'
+  REMOTE_PATH = ('gs://chromeos-prebuilt/board/beltino/paladin-R33-4926.0.0'
+                 '-rc2/packages/chromeos-base/autotest-tests-0.0.1-r4679.tbz2')
   GSUTIL_TRACKER_DIR = '/foo'
   UPLOAD_TRACKER_FILE = (
-      'TRACKER_bab42ee553729f2ea4e8a947ae84318232292297.t_path__file.url')
+      'TRACKER_e0cae4d515c757f78a6d1f44a37d2f2ee236f3b8.1-r4679.tbz2.url')
   DOWNLOAD_TRACKER_FILE = (
       'TRACKER_1e6cb2935097b207b634d86f91584d0b66de354e.___tmp_file.etag')
   RETURN_CODE = 3

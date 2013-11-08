@@ -299,8 +299,8 @@ class GSContext(object):
     dest = urlparse.urlsplit(dest_path)
     filenames = []
     if dest.scheme == 'gs':
-      bucket_name = os.path.dirname('%s%s' % (dest.netloc, dest.path))
-      object_name = os.path.basename(dest.path)
+      bucket_name = dest.netloc
+      object_name = dest.path.lstrip('/')
       filenames.append(
           re.sub(r'[/\\]', '_', 'resumable_upload__%s__%s.url' %
                  (bucket_name, object_name)))
