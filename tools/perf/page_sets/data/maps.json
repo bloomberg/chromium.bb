@@ -1,0 +1,9 @@
+{
+    "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.",
+    "page_set": "../maps_tests.json",
+    "archives": {
+        "maps_001.wpr": [
+            "http://localhost:10020/tracker.html"
+        ]
+    }
+}
