@@ -21,6 +21,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/invalidation/p2p_invalidation_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -141,6 +142,7 @@ ProfileSyncServiceHarness::ProfileSyncServiceHarness(
       progress_marker_partner_(NULL),
       username_(username),
       password_(password),
+      oauth2_refesh_token_number_(0),
       profile_debug_name_(profile->GetDebugName()),
       waiting_for_status_change_(false) {
   if (IsSyncAlreadySetup()) {
@@ -208,7 +210,8 @@ bool ProfileSyncServiceHarness::SetupSync(
       content::Source<Profile>(profile_),
       content::Details<const GoogleServiceSigninSuccessDetails>(&details));
   TokenServiceFactory::GetForProfile(profile_)->IssueAuthTokenForTest(
-      GaiaConstants::kGaiaOAuth2LoginRefreshToken, "oauth2_login_token");
+      GaiaConstants::kGaiaOAuth2LoginRefreshToken,
+      GenerateFakeOAuth2RefreshTokenString());
 
   // Wait for the OnBackendInitialized() callback.
   if (!AwaitBackendInitialized()) {
@@ -807,6 +810,11 @@ bool ProfileSyncServiceHarness::AwaitStatusChangeWithTimeout(
     DVLOG(0) << GetClientInfoString("AwaitStatusChangeWithTimeout timed out");
     return false;
   }
+}
+
+std::string ProfileSyncServiceHarness::GenerateFakeOAuth2RefreshTokenString() {
+  return base::StringPrintf("oauth2_refresh_token_%d",
+                            ++oauth2_refesh_token_number_);
 }
 
 ProfileSyncService::Status ProfileSyncServiceHarness::GetStatus() {

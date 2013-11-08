@@ -29,6 +29,12 @@ bool FakeProfileOAuth2TokenService::RefreshTokenIsAvailable(
   return !GetRefreshToken(account_id).empty();
 }
 
+void FakeProfileOAuth2TokenService::UpdateCredentials(
+    const std::string& account_id,
+    const std::string& refresh_token) {
+  IssueRefreshTokenForUser(account_id, refresh_token);
+}
+
 void FakeProfileOAuth2TokenService::IssueRefreshToken(
     const std::string& token) {
   IssueRefreshTokenForUser("account_id", token);
@@ -102,6 +108,11 @@ std::string FakeProfileOAuth2TokenService::GetRefreshToken(
 net::URLRequestContextGetter*
 FakeProfileOAuth2TokenService::GetRequestContext() {
   return NULL;
+}
+
+void FakeProfileOAuth2TokenService::RevokeCredentialsOnServer(
+    const std::string& refresh_token) {
+  // Don't try to contact server in tests.
 }
 
 std::vector<FakeProfileOAuth2TokenService::PendingRequest>

@@ -461,6 +461,11 @@ void SyncTest::SetupMockGaiaResponses() {
       "SID=sid\nLSID=lsid\nAuth=auth_token",
       net::HTTP_OK,
       net::URLRequestStatus::SUCCESS);
+  fake_factory_->SetFakeResponse(
+      GaiaUrls::GetInstance()->oauth2_revoke_url(),
+      "",
+      net::HTTP_OK,
+      net::URLRequestStatus::SUCCESS);
 }
 
 void SyncTest::SetOAuth2TokenResponse(const std::string& response_data,

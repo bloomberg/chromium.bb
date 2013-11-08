@@ -150,7 +150,6 @@ class SigninManager : public SigninManagerBase,
   virtual void OnClientOAuthSuccess(const ClientOAuthResult& result) OVERRIDE;
   virtual void OnClientOAuthFailure(
       const GoogleServiceAuthError& error) OVERRIDE;
-  virtual void OnOAuth2RevokeTokenCompleted() OVERRIDE;
   virtual void OnGetUserInfoSuccess(const UserInfoMap& data) OVERRIDE;
   virtual void OnGetUserInfoFailure(
       const GoogleServiceAuthError& error) OVERRIDE;
@@ -236,10 +235,6 @@ class SigninManager : public SigninManagerBase,
   // transient signin data if |clear_transient_data| is true.
   void HandleAuthError(const GoogleServiceAuthError& error,
                        bool clear_transient_data);
-
-  // Called to tell GAIA that we will no longer be using the current refresh
-  // token.
-  void RevokeOAuthLoginToken();
 
   void OnSigninAllowedPrefChanged();
   void OnGoogleServicesUsernamePatternChanged();

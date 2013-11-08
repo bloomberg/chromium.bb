@@ -10,6 +10,7 @@
 #include "chrome/browser/signin/token_service_unittest.h"
 #include "content/public/browser/browser_thread.h"
 #include "google_apis/gaia/gaia_constants.h"
+#include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "google_apis/gaia/oauth2_token_service_test_util.h"
 #include "net/http/http_status_code.h"
@@ -27,7 +28,8 @@ class ProfileOAuth2TokenServiceTest : public TokenServiceTestHarness,
                                       public OAuth2TokenService::Observer {
  public:
   ProfileOAuth2TokenServiceTest()
-      : oauth2_service_(NULL),
+      : factory_(NULL),
+        oauth2_service_(NULL),
         token_available_count_(0),
         token_revoked_count_(0),
         tokens_loaded_count_(0) {
@@ -36,9 +38,17 @@ class ProfileOAuth2TokenServiceTest : public TokenServiceTestHarness,
   virtual void SetUp() OVERRIDE {
     TokenServiceTestHarness::SetUp();
     UpdateCredentialsOnService();
+    factory_.SetFakeResponse(GaiaUrls::GetInstance()->oauth2_revoke_url(),
+                             "", net::HTTP_OK, net::URLRequestStatus::SUCCESS);
     oauth2_service_ = ProfileOAuth2TokenServiceFactory::GetForProfile(
         profile());
+    // Make sure PO2TS has a chance to load itself before continuing.
+    base::RunLoop().RunUntilIdle();
     oauth2_service_->AddObserver(this);
+  }
+
+  virtual scoped_ptr<TestingProfile> CreateProfile() OVERRIDE {
+    return make_scoped_ptr(new TestingProfile());
   }
 
   virtual void TearDown() OVERRIDE {
@@ -92,24 +102,13 @@ class ProfileOAuth2TokenServiceTest : public TokenServiceTestHarness,
   }
 
  protected:
-  net::TestURLFetcherFactory factory_;
+  net::FakeURLFetcherFactory factory_;
   ProfileOAuth2TokenService* oauth2_service_;
   TestingOAuth2TokenServiceConsumer consumer_;
   int token_available_count_;
   int token_revoked_count_;
   int tokens_loaded_count_;
 };
-
-TEST_F(ProfileOAuth2TokenServiceTest, Notifications) {
-  EXPECT_EQ(0, oauth2_service_->cache_size_for_testing());
-  CreateSigninManager(kEmail);
-  service()->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
-                                   "refreshToken");
-  ExpectOneTokenAvailableNotification();
-
-  service()->EraseTokensFromDB();
-  service()->ResetCredentialsInMemory();
-}
 
 TEST_F(ProfileOAuth2TokenServiceTest, PersistenceDBUpgrade) {
   CreateSigninManager(kEmail);
@@ -118,10 +117,10 @@ TEST_F(ProfileOAuth2TokenServiceTest, PersistenceDBUpgrade) {
   std::string main_refresh_token("old_refresh_token");
 
   // Populate DB with legacy tokens.
-  service()->OnIssueAuthTokenSuccess(GaiaConstants::kSyncService,
-                                     "syncServiceToken");
-  service()->OnIssueAuthTokenSuccess(kLSOService, "lsoToken");
-  service()->OnIssueAuthTokenSuccess(
+  service()->AddAuthTokenManually(GaiaConstants::kSyncService,
+                                  "syncServiceToken");
+  service()->AddAuthTokenManually(kLSOService, "lsoToken");
+  service()->AddAuthTokenManually(
       GaiaConstants::kGaiaOAuth2LoginRefreshToken,
       main_refresh_token);
   // Add a token using the new API.
@@ -141,11 +140,11 @@ TEST_F(ProfileOAuth2TokenServiceTest, PersistenceDBUpgrade) {
 
   // Add an old legacy token to the DB, to ensure it will not overwrite existing
   // credentials for main account.
-  service()->OnIssueAuthTokenSuccess(
+  service()->AddAuthTokenManually(
       GaiaConstants::kGaiaOAuth2LoginRefreshToken,
       "secondOldRefreshToken");
   // Add some other legacy token. (Expected to get discarded).
-  service()->OnIssueAuthTokenSuccess(kLSOService, "lsoToken");
+  service()->AddAuthTokenManually(kLSOService, "lsoToken");
   // Also add a token using PO2TS.UpdateCredentials and make sure upgrade does
   // not wipe it.
   std::string other_account_id("other_account_id");
@@ -274,30 +273,6 @@ TEST_F(ProfileOAuth2TokenServiceTest, GetAccounts) {
   EXPECT_EQ(1, count(accounts.begin(), accounts.end(), "account_id1"));
 }
 
-// Until the TokenService class is removed, finish token loading in TokenService
-// should translate to finish token loading in ProfileOAuth2TokenService.
-TEST_F(ProfileOAuth2TokenServiceTest, TokensLoaded) {
-  EXPECT_EQ(0, oauth2_service_->cache_size_for_testing());
-  service()->LoadTokensFromDB();
-  base::RunLoop().RunUntilIdle();
-  ExpectOneTokensLoadedNotification();
-}
-
-TEST_F(ProfileOAuth2TokenServiceTest, UnknownNotificationsAreNoops) {
-  EXPECT_EQ(0, oauth2_service_->cache_size_for_testing());
-  CreateSigninManager(kEmail);
-  service()->IssueAuthTokenForTest("foo", "toto");
-  ExpectNoNotifications();
-
-  // Get a valid token.
-  service()->IssueAuthTokenForTest(GaiaConstants::kGaiaOAuth2LoginRefreshToken,
-                                   "refreshToken");
-  ExpectOneTokenAvailableNotification();
-
-  service()->IssueAuthTokenForTest("bar", "baz");
-  ExpectNoNotifications();
-}
-
 TEST_F(ProfileOAuth2TokenServiceTest, TokenServiceUpdateClearsCache) {
   EXPECT_EQ(0, oauth2_service_->cache_size_for_testing());
   CreateSigninManager(kEmail);
@@ -306,14 +281,13 @@ TEST_F(ProfileOAuth2TokenServiceTest, TokenServiceUpdateClearsCache) {
   oauth2_service_->UpdateCredentials(oauth2_service_->GetPrimaryAccountId(),
                                     "refreshToken");
   ExpectOneTokenAvailableNotification();
+  factory_.SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_url(),
+                           GetValidTokenResponse("token", 3600),
+                           net::HTTP_OK, net::URLRequestStatus::SUCCESS);
 
   scoped_ptr<OAuth2TokenService::Request> request(oauth2_service_->StartRequest(
       oauth2_service_->GetPrimaryAccountId(), scope_list, &consumer_));
   base::RunLoop().RunUntilIdle();
-  net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
-  fetcher->set_response_code(net::HTTP_OK);
-  fetcher->SetResponseString(GetValidTokenResponse("token", 3600));
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
   EXPECT_EQ(1, consumer_.number_of_successful_tokens_);
   EXPECT_EQ(0, consumer_.number_of_errors_);
   EXPECT_EQ("token", consumer_.last_token_);
@@ -327,14 +301,13 @@ TEST_F(ProfileOAuth2TokenServiceTest, TokenServiceUpdateClearsCache) {
   oauth2_service_->UpdateCredentials(oauth2_service_->GetPrimaryAccountId(),
                                      "refreshToken");
   ExpectOneTokenAvailableNotification();
+  factory_.SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_url(),
+                           GetValidTokenResponse("another token", 3600),
+                           net::HTTP_OK, net::URLRequestStatus::SUCCESS);
 
   request = oauth2_service_->StartRequest(
       oauth2_service_->GetPrimaryAccountId(), scope_list, &consumer_);
   base::RunLoop().RunUntilIdle();
-  fetcher = factory_.GetFetcherByID(0);
-  fetcher->set_response_code(net::HTTP_OK);
-  fetcher->SetResponseString(GetValidTokenResponse("another token", 3600));
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
   EXPECT_EQ(2, consumer_.number_of_successful_tokens_);
   EXPECT_EQ(0, consumer_.number_of_errors_);
   EXPECT_EQ("another token", consumer_.last_token_);
@@ -342,6 +315,10 @@ TEST_F(ProfileOAuth2TokenServiceTest, TokenServiceUpdateClearsCache) {
 }
 
 TEST_F(ProfileOAuth2TokenServiceTest, FetchTransientError) {
+  factory_.SetFakeResponse(GaiaUrls::GetInstance()->oauth2_token_url(),
+                           "", net::HTTP_FORBIDDEN,
+                           net::URLRequestStatus::FAILED);
+
   EXPECT_EQ(0, oauth2_service_->cache_size_for_testing());
   CreateSigninManager(kEmail);
   std::set<std::string> scope_list;
@@ -354,10 +331,6 @@ TEST_F(ProfileOAuth2TokenServiceTest, FetchTransientError) {
   scoped_ptr<OAuth2TokenService::Request> request(oauth2_service_->StartRequest(
       oauth2_service_->GetPrimaryAccountId(), scope_list, &consumer_));
   base::RunLoop().RunUntilIdle();
-  net::TestURLFetcher* fetcher = factory_.GetFetcherByID(0);
-  fetcher->set_response_code(net::HTTP_FORBIDDEN);
-  fetcher->SetResponseString("");
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
   EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
       oauth2_service_->signin_global_error()->GetLastAuthError());
 }

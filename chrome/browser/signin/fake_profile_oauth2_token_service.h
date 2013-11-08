@@ -66,6 +66,11 @@ class FakeProfileOAuth2TokenService
   virtual bool RefreshTokenIsAvailable(
       const std::string& account_id) OVERRIDE;
 
+  // Overriden to make sure it works on Android.  Simply calls
+  // IssueRefreshToken().
+  virtual void UpdateCredentials(const std::string& account_id,
+                                 const std::string& refresh_token) OVERRIDE;
+
   // Sets the current refresh token. If |token| is non-empty, this will invoke
   // OnRefreshTokenAvailable() on all Observers, otherwise this will invoke
   // OnRefreshTokenRevoked().
@@ -110,6 +115,9 @@ class FakeProfileOAuth2TokenService
   virtual std::string GetRefreshToken(const std::string& account_id) OVERRIDE;
 
   virtual net::URLRequestContextGetter* GetRequestContext() OVERRIDE;
+
+  virtual void RevokeCredentialsOnServer(
+      const std::string& refresh_token) OVERRIDE;
 
  private:
   // Helper function to complete pending requests - if |all_scopes| is true,

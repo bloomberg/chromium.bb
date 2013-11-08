@@ -201,6 +201,11 @@ class ProfileSyncServiceHarness
   bool AwaitStatusChangeWithTimeout(int timeout_milliseconds,
                                     const std::string& reason);
 
+  // Returns a string that can be used as the value of an oauth2 refresh token.
+  // This function guarantees that a different string is returned each time
+  // it is called.
+  std::string GenerateFakeOAuth2RefreshTokenString();
+
  private:
   friend class StateChangeTimeoutEvent;
 
@@ -357,6 +362,10 @@ class ProfileSyncServiceHarness
   // Credentials used for GAIA authentication.
   std::string username_;
   std::string password_;
+
+  // Number used by GenerateFakeOAuth2RefreshTokenString() to make sure that
+  // all refresh tokens used in the tests are different.
+  int oauth2_refesh_token_number_;
 
   // The current set of data types pending migration.  Used by
   // AwaitMigration().

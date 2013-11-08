@@ -160,7 +160,6 @@ bool SigninManager::PrepareForSignin(SigninType type,
   // need to try again, but take care to leave state around tracking that the
   // user has successfully signed in once before with this username, so that on
   // restart we don't think sync setup has never completed.
-  RevokeOAuthLoginToken();
   ClearTransientSigninData();
   type_ = type;
   possibly_invalid_username_.assign(username);
@@ -323,7 +322,6 @@ void SigninManager::SignOut() {
   }
 
   ClearTransientSigninData();
-  RevokeOAuthLoginToken();
 
   GoogleServiceSignoutDetails details(GetAuthenticatedUsername());
   clear_authenticated_username();
@@ -435,22 +433,6 @@ bool SigninManager::IsAllowedUsername(const std::string& username) const {
   std::string pattern = local_state->GetString(
       prefs::kGoogleServicesUsernamePattern);
   return IsUsernameAllowedByPolicy(username, pattern);
-}
-
-void SigninManager::RevokeOAuthLoginToken() {
-  TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
-  if (token_service->HasOAuthLoginToken()) {
-    revoke_token_fetcher_.reset(
-        new GaiaAuthFetcher(this,
-                            GaiaConstants::kChromeSource,
-                            profile_->GetRequestContext()));
-    revoke_token_fetcher_->StartRevokeOAuth2Token(
-        token_service->GetOAuth2LoginRefreshToken());
-  }
-}
-
-void SigninManager::OnOAuth2RevokeTokenCompleted() {
-  revoke_token_fetcher_.reset(NULL);
 }
 
 bool SigninManager::AuthInProgress() const {
@@ -569,17 +551,13 @@ void SigninManager::CompletePendingSignin() {
   DCHECK(!possibly_invalid_username_.empty());
   OnSignedIn(possibly_invalid_username_);
 
-  TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
-  token_service->UpdateCredentials(last_result_);
-  DCHECK(token_service->AreCredentialsValid());
-  token_service->StartFetchingTokens();
-
   // If we have oauth2 tokens, tell token service about them so it does not
   // need to fetch them again.  Its important that the authenticated name has
   // already been set before sending the oauth2 token to the token service.
   // Some token service listeners will query the authenticated name when they
   // receive the token available notification.
   if (!temp_oauth_login_tokens_.refresh_token.empty()) {
+    TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
     DCHECK(!GetAuthenticatedUsername().empty());
     token_service->UpdateCredentialsWithOAuth2(temp_oauth_login_tokens_);
     temp_oauth_login_tokens_ = ClientOAuthResult();

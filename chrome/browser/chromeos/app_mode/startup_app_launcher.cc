@@ -20,8 +20,6 @@
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/token_service.h"
-#include "chrome/browser/signin/token_service_factory.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -134,7 +132,7 @@ void StartupAppLauncher::OnOAuthFileLoaded(KioskOAuthParams* auth_params) {
   }
 
   // If we are restarting chrome (i.e. on crash), we need to initialize
-  // TokenService as well.
+  // OAuth2TokenService as well.
   InitializeTokenService();
 }
 
@@ -154,37 +152,27 @@ void StartupAppLauncher::InitializeTokenService() {
   ProfileOAuth2TokenService* profile_token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile_);
   if (profile_token_service->RefreshTokenIsAvailable(
-          profile_token_service->GetPrimaryAccountId())) {
+          profile_token_service->GetPrimaryAccountId()) ||
+      auth_params_.refresh_token.empty()) {
     InitializeNetwork();
-    return;
-  }
-
-  // At the end of this method, the execution will be put on hold until
-  // ProfileOAuth2TokenService triggers either OnRefreshTokenAvailable or
-  // OnRefreshTokensLoaded. Given that we want to handle exactly one event,
-  // whichever comes first, both handlers call RemoveObserver on PO2TS. Handling
-  // any of the two events is the only way to resume the execution and enable
-  // Cleanup method to be called, self-invoking a destructor. In destructor
-  // StartupAppLauncher is no longer an observer of PO2TS and there is no need
-  // to call RemoveObserver again.
-  profile_token_service->AddObserver(this);
-
-  TokenService* token_service = TokenServiceFactory::GetForProfile(profile_);
-  token_service->Initialize(GaiaConstants::kChromeSource, profile_);
-
-  // Pass oauth2 refresh token from the auth file.
-  // TODO(zelidrag): We should probably remove this option after M27.
-  // TODO(fgorski): This can go when we have persistence implemented on PO2TS.
-  // Unless the code is no longer needed.
-  if (!auth_params_.refresh_token.empty()) {
-    token_service->UpdateCredentialsWithOAuth2(
-        GaiaAuthConsumer::ClientOAuthResult(
-            auth_params_.refresh_token,
-            std::string(),  // access_token
-            0));            // new_expires_in_secs
   } else {
-    // Load whatever tokens we have stored there last time around.
-    token_service->LoadTokensFromDB();
+    // Pass oauth2 refresh token from the auth file.
+    // TODO(zelidrag): We should probably remove this option after M27.
+    // TODO(fgorski): This can go when we have persistence implemented on PO2TS.
+    // Unless the code is no longer needed.
+    // TODO(rogerta): Now that this CL implements token persistence in PO2TS, is
+    // this code still needed?  See above two TODOs.
+    //
+    // ProfileOAuth2TokenService triggers either OnRefreshTokenAvailable or
+    // OnRefreshTokensLoaded. Given that we want to handle exactly one event,
+    // whichever comes first, both handlers call RemoveObserver on PO2TS.
+    // Handling any of the two events is the only way to resume the execution
+    // and enable Cleanup method to be called, self-invoking a destructor.
+    profile_token_service->AddObserver(this);
+
+    profile_token_service->UpdateCredentials(
+        "kiosk_mode@localhost",
+        auth_params_.refresh_token);
   }
 }
 

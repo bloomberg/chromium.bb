@@ -52,8 +52,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
-#include "components/webdata/common/web_data_service_base.h"
-#include "components/webdata/common/web_data_service_consumer.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 #include "google_apis/gaia/gaia_auth_fetcher.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -68,9 +66,7 @@ class URLRequestContextGetter;
 
 // The TokenService is a Profile member, so all calls are expected
 // from the UI thread.
-class TokenService : public GaiaAuthConsumer,
-                     public BrowserContextKeyedService,
-                     public WebDataServiceConsumer {
+class TokenService : public BrowserContextKeyedService {
  public:
    TokenService();
    virtual ~TokenService();
@@ -112,7 +108,7 @@ class TokenService : public GaiaAuthConsumer,
   void Initialize(const char* const source, Profile* profile);
 
   // Used to determine whether Initialize() has been called.
-  bool Initialized() const { return !source_.empty(); }
+  bool Initialized() const { return profile_ != NULL; }
 
   // Add a token not supported by a fetcher.
   void AddAuthTokenManually(const std::string& service,
@@ -165,85 +161,19 @@ class TokenService : public GaiaAuthConsumer,
   // Typical use is to create an OAuth2 token for appropriate scope and then
   // use that token to call a Google API.
   virtual bool HasOAuthLoginToken() const;
-  virtual const std::string& GetOAuth2LoginRefreshToken() const;
 
   // For tests only. Doesn't save to the WebDB.
   void IssueAuthTokenForTest(const std::string& service,
                              const std::string& auth_token);
 
-  // GaiaAuthConsumer implementation.
-  virtual void OnIssueAuthTokenSuccess(const std::string& service,
-                                       const std::string& auth_token) OVERRIDE;
-  virtual void OnIssueAuthTokenFailure(
-      const std::string& service,
-      const GoogleServiceAuthError& error) OVERRIDE;
-  virtual void OnClientOAuthSuccess(const ClientOAuthResult& result) OVERRIDE;
-  virtual void OnClientOAuthFailure(
-      const GoogleServiceAuthError& error) OVERRIDE;
-
-  // WebDataServiceConsumer implementation.
-  virtual void OnWebDataServiceRequestDone(
-      WebDataServiceBase::Handle h,
-      const WDTypedResult* result) OVERRIDE;
-
-  // Gets the list of all service names for which tokens will be retrieved.
-  static void GetServiceNames(std::vector<std::string>* names);
-
  protected:
-  // Saves OAuth2 credentials.
-  void SaveOAuth2Credentials(const ClientOAuthResult& result);
-
   void set_tokens_loaded(bool loaded) {
-    tokens_loaded_ = loaded;
+    // Tokens are always loaded now.
   }
 
  private:
-  void FireTokenAvailableNotification(const std::string& service,
-                                      const std::string& auth_token);
-
-  void FireTokenRequestFailedNotification(const std::string& service,
-                                          const GoogleServiceAuthError& error);
-
-  void LoadTokensIntoMemory(
-      const std::map<std::string, std::string>& db_tokens,
-      std::map<std::string, std::string>* in_memory_tokens);
-  void LoadSingleTokenIntoMemory(
-      const std::map<std::string, std::string>& db_tokens,
-      std::map<std::string, std::string>* in_memory_tokens,
-      const std::string& service);
-
-  void SaveAuthTokenToDB(const std::string& service,
-                         const std::string& auth_token);
-
-  // Returns the index of the given service.
-  static int GetServiceIndex(const std::string& service);
-
   // The profile with which this instance was initialized, or NULL.
   Profile* profile_;
-
-  // Web data service to access tokens from.
-  scoped_refptr<TokenWebData> token_web_data_;
-  // Getter to use for fetchers.
-  scoped_refptr<net::URLRequestContextGetter> getter_;
-  // Request handle to load Gaia tokens from DB.
-  WebDataServiceBase::Handle token_loading_query_;
-  // True if token loading has completed (regardless of success).
-  bool tokens_loaded_;
-
-  // Gaia request source for Gaia accounting.
-  std::string source_;
-  // Credentials from ClientLogin for Issuing auth tokens.
-  GaiaAuthConsumer::ClientLoginResult credentials_;
-
-  // A bunch of fetchers suitable for ClientLogin token issuing. We don't care
-  // about the ordering, nor do we care which is for which service.  The
-  // number of entries in this array must match the number of entries in the
-  // kServices array declared in the cc file.  If not, a compile time error
-  // will occur.
-  scoped_ptr<GaiaAuthFetcher> fetchers_[1];
-
-  // Map from service to token.
-  std::map<std::string, std::string> token_map_;
 
   friend class TokenServiceTest;
   FRIEND_TEST_ALL_PREFIXES(TokenServiceTest, LoadTokensIntoMemoryBasic);
