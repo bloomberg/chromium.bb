@@ -1,4 +1,9 @@
 {
+  // ID: mbflcebpggnecokmikipoihdbecnjfoj.
+  // Key generation guide: http://developer.chrome.com/apps/manifest/key.html.
+  // If the key is changed, then the corresponding id has to be updated in
+  // run_test.py.
+  "key": "MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDfTRDv8HqyXCuGIPZg+qYtieHSZ550JXqBzU2hC3E4ZZlqclG0XyQM+xRdyXbK40qeVHV+XwivakMxbwvPH28YseHu2JMhu9a3eKQuLoYMYeuKjqTb62O+zk6uUNkSjwhq4LDPzN3ZD72nWWzifrYUPCW0QEvQ6jtYQpxlYdk+dQIDAQAB",
   "manifest_version": 2,
   "name": "__MSG_name__",
   "description": "__MSG_description__",
