@@ -116,9 +116,8 @@ function handleCrash(event) {
  * This event listener is registered in attachDefaultListeners above.
  */
 function moduleDidLoad() {
-  var bar = $('progress');
-  bar.value = 100;
-  bar.max = 100;
+  var bar = $('progress-bar');
+  bar.style.width = 100;
   naclModule = $('nacl_module');
   hideStatus();
   setThreadCount();
@@ -128,8 +127,7 @@ function moduleDidLoad() {
  * Hide the status field and progress bar.
  */
 function hideStatus() {
-  $('statusField').style.display = 'none';
-  $('progress').style.display = 'none';
+  $('loading-cover').style.display = 'none';
 }
 
 /**
@@ -150,16 +148,17 @@ function moduleLoadProgress(event) {
   $('progress').style.display = 'block';
 
   var loadPercent = 0.0;
-  var bar = $('progress');
-  bar.max = 100;
+  var bar = $('progress-bar');
+
   if (event.lengthComputable && event.total > 0) {
     loadPercent = event.loaded / event.total * 100.0;
   } else {
     // The total length is not yet known.
-    loadPercent = -1.0;
+    loadPercent = 10;
   }
-  bar.value = loadPercent;
+  bar.style.width = loadPercent + "%";
 }
+
 
 /**
  * If the element with id 'statusField' exists, then set its HTML to the status
@@ -264,7 +263,7 @@ document.addEventListener('DOMContentLoaded', function() {
   if (!browserSupportsPNaCl()) {
     updateStatus('Browser does not support PNaCl or PNaCl is disabled');
   } else if (naclModule == null) {
-    createNaClModule('earth', 480, 480);
+    createNaClModule('earth', '100%', '100%');
     attachDefaultListeners();
   } else {
     // It's possible that the Native Client module onload event fired

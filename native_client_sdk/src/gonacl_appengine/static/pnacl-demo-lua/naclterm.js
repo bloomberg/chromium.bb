@@ -9,6 +9,11 @@
 lib.rtdep('lib.f',
           'hterm');
 
+function updateStatus(message) {
+  document.getElementById('statusField').textContent = message;
+  term_.io.print(message + '\n');
+}
+
 // CSP means that we can't kick off the initialization from the html file,
 // so we do it like this instead.
 window.onload = function() {
@@ -77,7 +82,7 @@ NaClTerm.prototype.handleMessage_ = function(e) {
  * Handle load error event from NaCl.
  */
 NaClTerm.prototype.handleLoadAbort_ = function(e) {
-  term_.io.print('Load aborted.\n');
+  updateStatus('Load aborted.');
 }
 
 /**
@@ -102,10 +107,12 @@ NaClTerm.prototype.doneLoadingUrl = function() {
  * Handle load end event from NaCl.
  */
 NaClTerm.prototype.handleLoad_ = function(e) {
-  if (this.lastUrl)
+  if (this.lastUrl) {
     this.doneLoadingUrl();
-  else
+  } else {
     term_.io.print('Loaded.\n');
+  }
+  document.getElementById('loading-cover').style.display = 'none';
 
   term_.io.print(ansiReset);
 
@@ -122,20 +129,23 @@ NaClTerm.prototype.handleLoad_ = function(e) {
  */
 NaClTerm.prototype.handleProgress_ = function(e) {
   var url = e.url.substring(e.url.lastIndexOf('/') + 1);
-
   if (this.lastUrl && this.lastUrl != url)
     this.doneLoadingUrl()
 
   if (!url)
     return;
 
+  var percent = 10;
   var message = 'Loading ' + url;
-  if (e.lengthComputable && e.total) {
-    var percent = Math.round(e.loaded * 100 / e.total);
+
+  if (event.lengthComputable && event.total > 0) {
+    percent = Math.round(e.loaded * 100 / e.total);
     var kbloaded = Math.round(e.loaded / 1024);
     var kbtotal = Math.round(e.total / 1024);
     message += ' [' + kbloaded + ' KiB/' + kbtotal + ' KiB ' + percent + '%]';
   }
+
+  document.getElementById('progress-bar').style.width = percent + "%";
 
   var width = term_.io.terminal_.screenSize.width;
   term_.io.print('\r' + message.slice(-width));
@@ -149,9 +159,9 @@ NaClTerm.prototype.handleProgress_ = function(e) {
 NaClTerm.prototype.handleCrash_ = function(e) {
  term_.io.print(ansiCyan)
  if (embed.exitStatus == -1) {
-   term_.io.print('Program crashed (exit status -1)\n')
+   updateStatus('Program crashed (exit status -1)')
  } else {
-   term_.io.print('Program exited (status=' + embed.exitStatus + ')\n');
+   updateStatus('Program exited (status=' + embed.exitStatus + ')');
  }
 }
 
@@ -180,9 +190,9 @@ NaClTerm.prototype.run = function() {
   var mimetype = 'application/x-pnacl';
   if (navigator.mimeTypes[mimetype] === undefined) {
     if (mimetype.indexOf('pnacl') != -1)
-      this.io.print('Browser does not support PNaCl or PNaCl is disabled\n');
+      updateStatus('Browser does not support PNaCl or PNaCl is disabled');
     else
-      this.io.print('Browser does not support NaCl or NaCl is disabled\n');
+      updateStatus('Browser does not support NaCl or NaCl is disabled');
     return;
   }
 
@@ -224,8 +234,9 @@ NaClTerm.prototype.run = function() {
     argn = argn + 1;
   }
 
+  updateStatus('Loading...');
   this.io.print('Loading NaCl module.\n')
-  document.body.appendChild(embed);
+  document.getElementById("listener").appendChild(embed);
 
   this.io.onVTKeystroke = this.onVTKeystroke_.bind(this);
   this.io.onTerminalResize = this.onTerminalResize_.bind(this);

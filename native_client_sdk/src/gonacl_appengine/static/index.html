@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+  <meta name="description" content="">
+  <meta name="viewport" content="width=device-width">
+
+  <title>PNaCl Demos</title>
+
+  <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Open+Sans:300">
+  <link href="styles/style.css" rel="stylesheet">
+</head>
+<body>
+  <nav>
+    <h1>PNaCl Demos</h1>
+    <ul>
+      <li id="lua">
+        <a href="pnacl-demo-lua/" target="content">Lua Editor</a>
+      </li>
+      <li id="bullet">
+        <a href="pnacl-demo-bullet/" target="content">Bullet Physics</a>
+      </li>
+      <li id="earth">
+        <a href="pnacl-demo-earth/" target="content">Raycasted Earth</a>
+      </li>
+      <li id="life">
+        <a href="pnacl-demo-life/" target="content">Game of Life</a>
+      </li>
+      <li id="voronoi">
+        <a href="pnacl-demo-voronoi/" target="content">Voronoi Simulation</a>
+      </li>
+      <li id="smoothlife">
+        <a href="pnacl-demo-smoothlife/" target="content">SmoothLife</a>
+      </li>
+      <li id="cube">
+        <a href="pnacl-demo-cube/" target="content">Rotating Cube</a>
+      </li>
+    </ul>
+  </nav>
+
+  <section>
+    <iframe src="home/index.html" frameborder="0" id="content" width="100%" height="100%"></iframe>
+  </section>
+
+  <script>
+    var links = document.querySelectorAll('li a');
+    for (var l = 0; l < links.length; l++) {
+      links[l].addEventListener('click', onLinkClick, false);
+    }
+
+    function onLinkClick(evt) {
+      for (var l = 0; l < links.length; l++) {
+        links[l].classList.remove('active');
+      }
+      evt.target.classList.add('active');
+    }
+  </script>
+</body>
+</html>

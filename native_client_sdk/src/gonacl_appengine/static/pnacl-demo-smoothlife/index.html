@@ -8,26 +8,38 @@ found in the LICENSE file.
 <head>
   <meta charset="UTF-8">
   <title>SmoothLife</title>
+  <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Open+Sans:300,700">
+  <link href="../styles/style.css" rel="stylesheet">
   <script type="text/javascript" src="example.js"></script>
-  <link href="/static/common.css" rel="stylesheet" type="text/css">
 </head>
-<body>
-  <div class="absolute-fill">
-    <div class="flex-container">
-      <div class="main absolute-fill-parent">
-        <div class="absolute-fill">
-          <div class="flex-container flex-column flex-justify-center">
-            <div id="message">
-              <div id="statusField"></div>
-              <progress id="progress"></progress>
-            </div>
-          </div>
-        </div>
-        <div id="listener" class="absolute-fill"></div>
-      </div>
-      <div class="sidebar">
-        <h1>SmoothLife</h1>
-        <div>
+<body class="demo">
+  <header>
+    <h1>SmoothLife</h1>
+  </header>
+
+  <section>
+    <div class="intro">
+      <p>
+        An example of the <a
+          href="https://www.google.com/search?q=smoothlife">SmoothLife</a>
+        algorithm ported to Native Client.
+      </p>
+      <p class="note">
+        Example courtesy <a href="https://github.com/binji">Ben Smith</a>,
+        based on <a href="http://sourceforge.net/projects/smoothlife/">this
+          source</a> by ionreq.
+      </p>
+      <p class="note">
+        Read <a href="http://arxiv.org/abs/1111.1567">Stephan Rafler's paper</a>
+        for more information about the algorithm, or browse the <a
+        href="https://github.com/binji/smoothnacl">source</a>.
+      </p>
+      <p class="note">
+        FPS: <span id="fps">0</span>
+      </p>
+
+      <div class="panel panel-info">
+        <div class="panel-body">
           <select id="preset">
             <option value="0">Subdividers</option>
             <option value="1">Green Hex</option>
@@ -41,34 +53,34 @@ found in the LICENSE file.
           </select>
           <button id="reset">Reset</button>
         </div>
-        <div>
+        <div class="panel-body">
           <button id="splat">Splat</button>
           <button id="clear">Clear</button>
         </div>
-        <div>
+        <div class="panel-body">
           Brush Size:
           <input type="range" id="brushSizeRange" min="10.0" max="50.0"
               step="0.5" value="10.0">
           <span id="brushSize">10.0</span>
         </div>
-        <p class="small">
-          This demo was implemented by Ben Smith. The source code is available
-          on GitHub at <a
-            href="https://github.com/binji/smoothnacl">https://github.com/binji/smoothnacl</a>.
-        </p>
-        <p class="small">
-        The implementation was based on <a
-          href="http://sourceforge.net/projects/smoothlife/">this source</a> by
-        ionreq. Also see Stephan Rafler's paper <a
-          href="http://arxiv.org/abs/1111.1567">Generalization of Conway's
-          "Game of Life" to a continuous domain - SmoothLife</a> for more
-        information about the algorithm.
-        </p>
-        <p class="small">
-          FPS: <span id="fps">0</span>
-        </p>
+      </div>
+
+    </div>
+
+    <div class="Demo-body">
+      <div id="listener" class="Demo-content"></div>
+    </div>
+
+    <div id="loading-cover">
+      <div id="message">
+        <div id="statusField"></div>
+        <div id="progress" class="progress progress-striped active">
+          <div id="progress-bar" class="progress-bar"  role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%">
+          </div>
+        </div>
       </div>
     </div>
-  </div>
+
+  </section>
 </body>
 </html>

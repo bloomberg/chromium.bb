@@ -10,8 +10,6 @@ function moduleLoad() {
   animate();
   NaClAMBulletInit();
   loadJenga20();
-
-  document.querySelector('#curtain').classList.add('lift');
 }
 
 function moduleLoadError() {
@@ -22,15 +20,15 @@ function moduleLoadProgress(event) {
   $('progress').style.display = 'block';
 
   var loadPercent = 0.0;
-  var bar = document.getElementById('progress');
+  var bar = $('progress-bar');
+
   if (event.lengthComputable && event.total > 0) {
     loadPercent = event.loaded / event.total * 100.0;
-    bar.value = loadPercent;
-    bar.max = 100;
   } else {
     // The total length is not yet known.
-    loadPercent = -1.0;
+    loadPercent = 10;
   }
+  bar.style.width = loadPercent + "%";
 }
 
 function moduleCrash(event) {
@@ -42,8 +40,6 @@ function moduleCrash(event) {
 }
 
 function updateStatus(opt_message) {
-  document.querySelector('#curtain').classList.remove('lift');
-
   var statusField = $('statusField');
   if (statusField) {
     statusField.style.display = 'block';
@@ -52,8 +48,7 @@ function updateStatus(opt_message) {
 }
 
 function hideStatus() {
-  $('statusField').style.display = 'none';
-  $('progress').style.display = 'none';
+  $('loading-cover').style.display = 'none';
 }
 
 function pageDidLoad() {
@@ -63,20 +58,25 @@ function pageDidLoad() {
   aM = new NaClAM('NaClAM');
   aM.enable();
 
-  var embedWrap = document.createElement('div');
+  var embedWrap = $('listener');
   embedWrap.addEventListener('load', moduleLoad, true);
   embedWrap.addEventListener('error', moduleLoadError, true);
   embedWrap.addEventListener('progress', moduleLoadProgress, true);
   embedWrap.addEventListener('crash', moduleCrash, true);
-  document.body.appendChild(embedWrap);
+
+  var revision = 233080;
+  var url = 'http://commondatastorage.googleapis.com/gonacl/demos/publish/' +
+      revision + '/bullet/NaClAMBullet.nmf';
 
   var embed = document.createElement('embed');
+  embed.setAttribute('name', 'NaClAM');
   embed.setAttribute('id', 'NaClAM');
   embed.setAttribute('width', '0');
   embed.setAttribute('height', '0');
   embed.setAttribute('type', 'application/x-pnacl');
-  embed.setAttribute('src', 'http://commondatastorage.googleapis.com/gonacl/demos/publish/233080/bullet/NaClAMBullet.nmf');
+  embed.setAttribute('src', url);
   embedWrap.appendChild(embed);
+
 }
 
 window.addEventListener("load", pageDidLoad, false);
