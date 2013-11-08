@@ -18,18 +18,6 @@ class MockRtcpSenderFeedback : public RtcpSenderFeedback {
   MockRtcpSenderFeedback();
   virtual ~MockRtcpSenderFeedback();
 
-  MOCK_METHOD1(OnReceivedReportBlock,
-               void(const RtcpReportBlock& report_block));
-
-  MOCK_METHOD0(OnReceivedIntraFrameRequest, void());
-
-  MOCK_METHOD2(OnReceivedRpsi, void(uint8 payload_type, uint64 picture_id));
-
-  MOCK_METHOD1(OnReceivedRemb, void(uint32 bitrate));
-
-  MOCK_METHOD1(OnReceivedNackRequest,
-               void(const std::list<uint16>& nack_sequence_numbers));
-
   MOCK_METHOD1(OnReceivedCastFeedback,
                void(const RtcpCastMessage& cast_feedback));
 };

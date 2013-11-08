@@ -22,28 +22,6 @@ class LocalRtcpAudioSenderFeedback : public RtcpSenderFeedback {
       : audio_sender_(audio_sender) {
   }
 
-  virtual void OnReceivedReportBlock(
-      const RtcpReportBlock& report_block) OVERRIDE {
-  }
-
-  virtual void OnReceivedIntraFrameRequest() OVERRIDE {
-    DCHECK(false) << "Invalid callback";
-  }
-
-  virtual void OnReceivedRpsi(uint8 payload_type,
-                              uint64 picture_id) OVERRIDE {
-    DCHECK(false) << "Invalid callback";
-  }
-
-  virtual void OnReceivedRemb(uint32 bitrate) OVERRIDE {
-    DCHECK(false) << "Invalid callback";
-  }
-
-  virtual void OnReceivedNackRequest(
-      const std::list<uint16>& nack_sequence_numbers) OVERRIDE {
-    DCHECK(false) << "Invalid callback";
-  }
-
   virtual void OnReceivedCastFeedback(
       const RtcpCastMessage& cast_feedback) OVERRIDE {
     if (!cast_feedback.missing_frames_and_packets_.empty()) {

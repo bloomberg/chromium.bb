@@ -24,27 +24,6 @@ class LocalRtcpVideoSenderFeedback : public RtcpSenderFeedback {
       : video_sender_(video_sender) {
   }
 
-  virtual void OnReceivedReportBlock(
-      const RtcpReportBlock& report_block) OVERRIDE {}
-
-  virtual void OnReceivedRpsi(uint8 payload_type,
-                              uint64 picture_id) OVERRIDE {
-    NOTIMPLEMENTED();
-  }
-
-  virtual void OnReceivedRemb(uint32 bitrate) OVERRIDE {
-    NOTIMPLEMENTED();
-  }
-
-  virtual void OnReceivedNackRequest(
-      const std::list<uint16>& nack_sequence_numbers) OVERRIDE {
-    NOTIMPLEMENTED();
-  }
-
-  virtual void OnReceivedIntraFrameRequest() OVERRIDE {
-    video_sender_->OnReceivedIntraFrameRequest();
-  }
-
   virtual void OnReceivedCastFeedback(
       const RtcpCastMessage& cast_feedback) OVERRIDE {
     video_sender_->OnReceivedCastFeedback(cast_feedback);
@@ -170,20 +149,6 @@ void VideoSender::SendEncodedVideoFrame(const EncodedVideoFrame* encoded_frame,
   }
   last_sent_frame_id_ = encoded_frame->frame_id;
   UpdateFramesInFlight();
-}
-
-void VideoSender::OnReceivedIntraFrameRequest() {
-  if (last_sent_key_frame_id_ != -1) {
-    DCHECK_GE(255, last_sent_key_frame_id_);
-    DCHECK_LE(0, last_sent_key_frame_id_);
-
-    uint8 frames_in_flight = static_cast<uint8>(last_sent_frame_id_) -
-                             static_cast<uint8>(last_sent_key_frame_id_);
-    if (frames_in_flight < (max_unacked_frames_ - 1)) return;
-  }
-  video_encoder_controller_->GenerateKeyFrame();
-  last_acked_frame_id_ = -1;
-  last_sent_frame_id_ = -1;
 }
 
 void VideoSender::IncomingRtcpPacket(const uint8* packet, size_t length,

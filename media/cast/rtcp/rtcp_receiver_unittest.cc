@@ -24,14 +24,6 @@ namespace {
 class SenderFeedbackCastVerification : public RtcpSenderFeedback {
  public:
   SenderFeedbackCastVerification() : called_(false) {}
-  virtual void OnReceivedReportBlock(
-      const RtcpReportBlock& report_block) OVERRIDE {};
-  virtual void OnReceivedIntraFrameRequest() OVERRIDE {};
-  virtual void OnReceivedRpsi(uint8 payload_type,
-                              uint64 picture_id) OVERRIDE {};
-  virtual void OnReceivedRemb(uint32 bitrate) OVERRIDE {};
-  virtual void OnReceivedNackRequest(
-      const std::list<uint16>& nack_sequence_numbers) OVERRIDE {};
 
   virtual void OnReceivedCastFeedback(
       const RtcpCastMessage& cast_feedback) OVERRIDE {
@@ -64,7 +56,7 @@ class SenderFeedbackCastVerification : public RtcpSenderFeedback {
  private:
   bool called_;
 };
-} // namespace
+}  // namespace
 
 class RtcpReceiverTest : public ::testing::Test {
  protected:
@@ -83,14 +75,7 @@ class RtcpReceiverTest : public ::testing::Test {
                 OnReceiverReferenceTimeReport(_)).Times(0);
     EXPECT_CALL(mock_receiver_feedback_,
                 OnReceivedSendReportRequest()).Times(0);
-
-    EXPECT_CALL(mock_sender_feedback_, OnReceivedReportBlock(_)).Times(0);
-    EXPECT_CALL(mock_sender_feedback_, OnReceivedIntraFrameRequest()).Times(0);
-    EXPECT_CALL(mock_sender_feedback_, OnReceivedRpsi(_, _)).Times(0);
-    EXPECT_CALL(mock_sender_feedback_, OnReceivedRemb(_)).Times(0);
-    EXPECT_CALL(mock_sender_feedback_, OnReceivedNackRequest(_)).Times(0);
     EXPECT_CALL(mock_sender_feedback_, OnReceivedCastFeedback(_)).Times(0);
-
     EXPECT_CALL(mock_rtt_feedback_,
                 OnReceivedDelaySinceLastReport(_, _, _)).Times(0);
 
@@ -158,9 +143,6 @@ TEST_F(RtcpReceiverTest, InjectReceiveReportPacket) {
   // local ssrc.
   InjectRtcpPacket(p1.Packet(), p1.Length());
 
-  EXPECT_CALL(mock_sender_feedback_,
-              OnReceivedReportBlock(expected_report_block_)).Times(1);
-
   EXPECT_CALL(mock_rtt_feedback_,
       OnReceivedDelaySinceLastReport(kSourceSsrc,
           kLastSr,
@@ -196,8 +178,6 @@ TEST_F(RtcpReceiverTest, InjectSenderReportWithReportBlockPacket) {
   InjectRtcpPacket(p1.Packet(), p1.Length());
 
   EXPECT_CALL(mock_receiver_feedback_, OnReceivedSenderReport(_)).Times(0);
-  EXPECT_CALL(mock_sender_feedback_,
-              OnReceivedReportBlock(expected_report_block_)).Times(1);
   EXPECT_CALL(mock_rtt_feedback_,
       OnReceivedDelaySinceLastReport(kSourceSsrc,
         kLastSr,
@@ -217,8 +197,6 @@ TEST_F(RtcpReceiverTest, InjectSenderReportWithReportBlockPacket) {
 
   EXPECT_CALL(mock_receiver_feedback_,
               OnReceivedSenderReport(expected_sender_info_)).Times(1);
-  EXPECT_CALL(mock_sender_feedback_,
-              OnReceivedReportBlock(expected_report_block_)).Times(1);
   EXPECT_CALL(mock_rtt_feedback_,
       OnReceivedDelaySinceLastReport(kSourceSsrc,
           kLastSr,
@@ -271,8 +249,6 @@ TEST_F(RtcpReceiverTest, InjectReceiverReportPacketWithRrtr) {
   // local ssrc.
   InjectRtcpPacket(p1.Packet(), p1.Length());
 
-  EXPECT_CALL(mock_sender_feedback_,
-              OnReceivedReportBlock(expected_report_block_)).Times(1);
   EXPECT_CALL(mock_rtt_feedback_,
       OnReceivedDelaySinceLastReport(kSourceSsrc,
           kLastSr,
@@ -303,13 +279,10 @@ TEST_F(RtcpReceiverTest, InjectReceiverReportPacketWithIntraFrameRequest) {
   // local ssrc.
   InjectRtcpPacket(p1.Packet(), p1.Length());
 
-  EXPECT_CALL(mock_sender_feedback_,
-              OnReceivedReportBlock(expected_report_block_)).Times(1);
   EXPECT_CALL(mock_rtt_feedback_,
       OnReceivedDelaySinceLastReport(kSourceSsrc,
           kLastSr,
           kDelayLastSr)).Times(1);
-  EXPECT_CALL(mock_sender_feedback_, OnReceivedIntraFrameRequest()).Times(1);
 
   TestRtcpPacketBuilder p2;
   p2.AddRr(kSenderSsrc, 1);
@@ -330,8 +303,6 @@ TEST_F(RtcpReceiverTest, InjectReceiverReportPacketWithCastFeedback) {
   // local ssrc.
   InjectRtcpPacket(p1.Packet(), p1.Length());
 
-  EXPECT_CALL(mock_sender_feedback_,
-              OnReceivedReportBlock(expected_report_block_)).Times(1);
   EXPECT_CALL(mock_rtt_feedback_,
       OnReceivedDelaySinceLastReport(kSourceSsrc,
           kLastSr,

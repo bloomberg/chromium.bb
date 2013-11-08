@@ -99,11 +99,6 @@ class RtcpTest : public ::testing::Test {
   virtual ~RtcpTest() {}
 
   virtual void SetUp() {
-    EXPECT_CALL(mock_sender_feedback_, OnReceivedReportBlock(_)).Times(0);
-    EXPECT_CALL(mock_sender_feedback_, OnReceivedIntraFrameRequest()).Times(0);
-    EXPECT_CALL(mock_sender_feedback_, OnReceivedRpsi(_, _)).Times(0);
-    EXPECT_CALL(mock_sender_feedback_, OnReceivedRemb(_)).Times(0);
-    EXPECT_CALL(mock_sender_feedback_, OnReceivedNackRequest(_)).Times(0);
     EXPECT_CALL(mock_sender_feedback_, OnReceivedCastFeedback(_)).Times(0);
   }
 
@@ -151,7 +146,6 @@ TEST_F(RtcpTest, BasicSenderReport) {
 }
 
 TEST_F(RtcpTest, BasicReceiverReport) {
-  EXPECT_CALL(mock_sender_feedback_, OnReceivedReportBlock(_)).Times(1);
   Rtcp rtcp(&testing_clock_,
             &mock_sender_feedback_,
             &transport_,
@@ -165,26 +159,6 @@ TEST_F(RtcpTest, BasicReceiverReport) {
   transport_.SetRtcpReceiver(&rtcp);
   rtcp.SetRemoteSSRC(kSenderSsrc);
   rtcp.SendRtcpReport(kSenderSsrc);
-}
-
-TEST_F(RtcpTest, BasicPli) {
-  EXPECT_CALL(mock_sender_feedback_, OnReceivedReportBlock(_)).Times(1);
-  EXPECT_CALL(mock_sender_feedback_, OnReceivedIntraFrameRequest()).Times(1);
-
-  // Media receiver.
-  Rtcp rtcp(&testing_clock_,
-            &mock_sender_feedback_,
-            &transport_,
-            NULL,
-            NULL,
-            kRtcpReducedSize,
-            base::TimeDelta::FromMilliseconds(kRtcpIntervalMs),
-            false,
-            kSenderSsrc,
-            kCName);
-  transport_.SetRtcpReceiver(&rtcp);
-  rtcp.SetRemoteSSRC(kSenderSsrc);
-  rtcp.SendRtcpPli(kSenderSsrc);
 }
 
 TEST_F(RtcpTest, BasicCast) {
@@ -249,8 +223,6 @@ TEST_F(RtcpTest, Rtt) {
 
   rtcp_sender.SetRemoteSSRC(kReceiverSsrc);
   rtcp_receiver.SetRemoteSSRC(kSenderSsrc);
-
-  EXPECT_CALL(mock_sender_feedback_, OnReceivedReportBlock(_)).Times(2);
 
   base::TimeDelta rtt;
   base::TimeDelta avg_rtt;

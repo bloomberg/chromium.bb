@@ -29,17 +29,6 @@ class RtcpSender;
 
 class RtcpSenderFeedback {
  public:
-  virtual void OnReceivedReportBlock(const RtcpReportBlock& report_block) = 0;
-
-  virtual void OnReceivedIntraFrameRequest() = 0;
-
-  virtual void OnReceivedRpsi(uint8 payload_type, uint64 picture_id) = 0;
-
-  virtual void OnReceivedRemb(uint32 bitrate) = 0;
-
-  virtual void OnReceivedNackRequest(
-      const std::list<uint16>& nack_sequence_numbers) = 0;
-
   virtual void OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) = 0;
 
   virtual ~RtcpSenderFeedback() {}

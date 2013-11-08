@@ -68,7 +68,6 @@ class VideoReceiver : public base::NonThreadSafe,
   friend class LocalRtpVideoFeedback;
 
   void CastFeedback(const RtcpCastMessage& cast_message);
-  void RequestKeyFrame();
 
   void DecodeVideoFrame(const VideoFrameDecodedCallback& callback,
                         scoped_ptr<EncodedVideoFrame> encoded_frame,

@@ -370,11 +370,6 @@ void VideoReceiver::CastFeedback(const RtcpCastMessage& cast_message) {
   time_last_sent_cast_message_= cast_environment_->Clock()->NowTicks();
 }
 
-// Send a key frame request to the sender.
-void VideoReceiver::RequestKeyFrame() {
-  rtcp_->SendRtcpPli(incoming_ssrc_);
-}
-
 // Cast messages should be sent within a maximum interval. Schedule a call
 // if not triggered elsewhere, e.g. by the cast message_builder.
 void VideoReceiver::ScheduleNextCastMessage() {

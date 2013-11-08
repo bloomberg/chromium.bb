@@ -92,7 +92,6 @@ class VideoSender : public base::NonThreadSafe,
 
   void SendEncodedVideoFrame(const EncodedVideoFrame* video_frame,
                              const base::TimeTicks& capture_time);
-  void OnReceivedIntraFrameRequest();
   void ResendFrame(uint8 resend_frame_id);
   void ReceivedAck(uint8 acked_frame_id);
   void UpdateFramesInFlight();
