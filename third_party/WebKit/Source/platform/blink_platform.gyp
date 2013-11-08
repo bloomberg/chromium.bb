@@ -111,6 +111,10 @@
         'sources/': [
           # We use LocaleMac.mm instead of LocaleICU.cpp
           ['exclude', 'LocaleICU\\.(cpp|h)$'],
+
+          # The Mac uses mac/KillRingMac.mm instead of the dummy
+          # implementation.
+          ['exclude', 'KillRingNone\\.cpp$'],
         ],
       }, { # OS!="mac"
         'sources/': [

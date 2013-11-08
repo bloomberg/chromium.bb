@@ -668,7 +668,6 @@
             ['include', 'platform/graphics/mac/IntPointMac\\.mm$'],
             ['include', 'platform/graphics/mac/IntRectMac\\.mm$'],
             ['include', 'platform/mac/BlockExceptions\\.mm$'],
-            ['include', 'platform/mac/KillRingMac\\.mm$'],
             ['include', 'platform/mac/LocalCurrentGraphicsContext\\.mm$'],
             ['include', 'platform/mac/NSScrollerImpDetails\\.mm$'],
             ['include', 'platform/mac/ScrollAnimatorMac\\.mm$'],
@@ -681,10 +680,6 @@
             ['include', 'platform/text/mac/String(Impl)?Mac\\.mm$'],
             # Use USE_NEW_THEME on Mac.
             ['include', 'platform/Theme\\.cpp$'],
-
-            # The Mac uses platform/mac/KillRingMac.mm instead of the dummy
-            # implementation.
-            ['exclude', 'platform/KillRingNone\\.cpp$'],
 
             # The Mac currently uses FontCustomPlatformDataMac.cpp,
             # included by regex above, instead.

@@ -10,10 +10,10 @@
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
  *
- * THIS SOFTWARE IS PROVIDED BY APPLE INC. ``AS IS'' AND ANY
+ * THIS SOFTWARE IS PROVIDED BY GOOGLE INC. ``AS IS'' AND ANY
  * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
- * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL APPLE INC. OR
+ * PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL GOOGLE INC. OR
  * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
  * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
  * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
@@ -23,30 +23,61 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "core/platform/KillRing.h"
+#import "config.h"
+#import "platform/KillRing.h"
 
 namespace WebCore {
 
-void KillRing::append(const String&)
-{
+extern "C" {
+
+// Kill ring calls. Would be better to use NSKillRing.h, but that's not available as API or SPI.
+
+void _NSInitializeKillRing();
+void _NSAppendToKillRing(NSString *);
+void _NSPrependToKillRing(NSString *);
+NSString *_NSYankFromKillRing();
+void _NSNewKillRingSequence();
+void _NSSetKillRingToYankedState();
+
 }
 
-void KillRing::prepend(const String&)
+static void initializeKillRingIfNeeded()
 {
+    static bool initializedKillRing = false;
+    if (!initializedKillRing) {
+        initializedKillRing = true;
+        _NSInitializeKillRing();
+    }
+}
+
+void KillRing::append(const String& string)
+{
+    initializeKillRingIfNeeded();
+    _NSAppendToKillRing(string);
+}
+
+void KillRing::prepend(const String& string)
+{
+    initializeKillRingIfNeeded();
+    _NSPrependToKillRing(string);
 }
 
 String KillRing::yank()
 {
-    return String();
+    initializeKillRingIfNeeded();
+    return _NSYankFromKillRing();
 }
 
 void KillRing::startNewSequence()
 {
+    initializeKillRingIfNeeded();
+    _NSNewKillRingSequence();
 }
 
 void KillRing::setToYankedState()
 {
+    initializeKillRingIfNeeded();
+    _NSSetKillRingToYankedState();
 }
 
 } // namespace WebCore
