@@ -128,14 +128,18 @@ static bool gJumpOnTrackClick = false;
 
 ScrollbarTheme* ScrollbarTheme::nativeTheme()
 {
+    static ScrollbarThemeMacCommon* theme = NULL;
+    if (theme)
+        return theme;
     if (isScrollbarOverlayAPIAvailable()) {
-        DEFINE_STATIC_LOCAL(ScrollbarThemeMacOverlayAPI, theme, ());
-        return &theme;
+        DEFINE_STATIC_LOCAL(ScrollbarThemeMacOverlayAPI, overlayTheme, ());
+        theme = &overlayTheme;
     } else {
-        DEFINE_STATIC_LOCAL(ScrollbarThemeMacNonOverlayAPI, theme, ());
-        return &theme;
+        DEFINE_STATIC_LOCAL(ScrollbarThemeMacNonOverlayAPI, nonOverlayTheme, ());
+        theme = &nonOverlayTheme;
     }
-    return NULL;
+    theme->Initialize();
+    return theme;
 }
 
 void ScrollbarThemeMacCommon::registerScrollbar(ScrollbarThemeClient* scrollbar)
@@ -335,18 +339,14 @@ void ScrollbarThemeMacCommon::paintTickmarks(GraphicsContext* context, Scrollbar
     paintGivenTickmarks(context, scrollbar, tickmarkTrackRect, tickmarks);
 }
 
-ScrollbarThemeMacCommon::ScrollbarThemeMacCommon()
+void ScrollbarThemeMacCommon::Initialize()
 {
-    static bool initialized;
-    if (!initialized) {
-        initialized = true;
-        [WebScrollbarPrefsObserver registerAsObserver];
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-        [defaults synchronize];
-        preferencesChanged(
-            [defaults floatForKey:@"NSScrollerButtonDelay"], [defaults floatForKey:@"NSScrollerButtonPeriod"],
-            [defaults boolForKey:@"AppleScrollerPagingBehavior"], false);
-    }
+    [WebScrollbarPrefsObserver registerAsObserver];
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    [defaults synchronize];
+    preferencesChanged(
+        [defaults floatForKey:@"NSScrollerButtonDelay"], [defaults floatForKey:@"NSScrollerButtonPeriod"],
+        [defaults boolForKey:@"AppleScrollerPagingBehavior"], false);
 }
 
 ScrollbarThemeMacCommon::~ScrollbarThemeMacCommon()
