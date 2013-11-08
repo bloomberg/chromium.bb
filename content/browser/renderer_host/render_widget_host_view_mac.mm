@@ -1694,6 +1694,10 @@ void RenderWidgetHostViewMac::OnSwapCompositorFrame(
 void RenderWidgetHostViewMac::OnAcceleratedCompositingStateChange() {
 }
 
+void RenderWidgetHostViewMac::AcceleratedSurfaceInitialized(int host_id,
+                                                            int route_id) {
+}
+
 void RenderWidgetHostViewMac::GetScreenInfo(blink::WebScreenInfo* results) {
   *results = GetWebScreenInfo(GetNativeView());
 }

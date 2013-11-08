@@ -1063,6 +1063,10 @@ bool RenderWidgetHostViewGtk::CanCopyToVideoFrame() const {
   return false;
 }
 
+void RenderWidgetHostViewGtk::AcceleratedSurfaceInitialized(int host_id,
+                                                            int route_id) {
+}
+
 void RenderWidgetHostViewGtk::AcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
     int gpu_host_id) {

@@ -64,6 +64,7 @@ class ImageTransportSurface {
   virtual void OnResize(gfx::Size size, float scale_factor) = 0;
   virtual void SetLatencyInfo(
       const ui::LatencyInfo& latency_info) = 0;
+  virtual void WakeUpGpu() = 0;
 
   // Creates a surface with the given attributes.
   static scoped_refptr<gfx::GLSurface> CreateSurface(
@@ -153,6 +154,7 @@ class ImageTransportHelper
   void OnBufferPresented(
       const AcceleratedSurfaceMsg_BufferPresented_Params& params);
   void OnResizeViewACK();
+  void OnWakeUpGpu();
 
   // Backbuffer resize callback.
   void Resize(gfx::Size size, float scale_factor);
@@ -197,6 +199,7 @@ class PassThroughImageTransportSurface
   virtual gfx::Size GetSize() OVERRIDE;
   virtual void SetLatencyInfo(
       const ui::LatencyInfo& latency_info) OVERRIDE;
+  virtual void WakeUpGpu() OVERRIDE;
 
  protected:
   virtual ~PassThroughImageTransportSurface();

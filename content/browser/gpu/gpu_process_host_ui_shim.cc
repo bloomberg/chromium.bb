@@ -183,6 +183,8 @@ bool GpuProcessHostUIShim::OnControlMessageReceived(
     IPC_MESSAGE_HANDLER(GpuHostMsg_OnLogMessage,
                         OnLogMessage)
 
+    IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceInitialized,
+                        OnAcceleratedSurfaceInitialized)
     IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfaceBuffersSwapped,
                         OnAcceleratedSurfaceBuffersSwapped)
     IPC_MESSAGE_HANDLER(GpuHostMsg_AcceleratedSurfacePostSubBuffer,
@@ -267,6 +269,15 @@ static base::TimeDelta GetSwapDelay() {
         switches::kGpuSwapDelay).c_str(), &delay);
   }
   return base::TimeDelta::FromMilliseconds(delay);
+}
+
+void GpuProcessHostUIShim::OnAcceleratedSurfaceInitialized(int32 surface_id,
+                                                           int32 route_id) {
+  RenderWidgetHostViewPort* view =
+      GetRenderWidgetHostViewFromSurfaceID(surface_id);
+  if (!view)
+    return;
+  view->AcceleratedSurfaceInitialized(host_id_, route_id);
 }
 
 void GpuProcessHostUIShim::OnAcceleratedSurfaceBuffersSwapped(

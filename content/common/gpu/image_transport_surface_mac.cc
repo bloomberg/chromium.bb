@@ -64,6 +64,7 @@ class IOSurfaceImageTransportSurface
   virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size, float scale_factor) OVERRIDE;
   virtual void SetLatencyInfo(const ui::LatencyInfo&) OVERRIDE;
+  virtual void WakeUpGpu() OVERRIDE;
 
   // GpuCommandBufferStub::DestructionObserver implementation.
   virtual void OnWillDestroyStub() OVERRIDE;
@@ -323,6 +324,10 @@ void IOSurfaceImageTransportSurface::OnResize(gfx::Size size,
 void IOSurfaceImageTransportSurface::SetLatencyInfo(
     const ui::LatencyInfo& latency_info) {
   latency_info_ = latency_info;
+}
+
+void IOSurfaceImageTransportSurface::WakeUpGpu() {
+  NOTIMPLEMENTED();
 }
 
 void IOSurfaceImageTransportSurface::OnWillDestroyStub() {

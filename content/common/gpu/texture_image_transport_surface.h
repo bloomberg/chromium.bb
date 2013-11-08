@@ -54,6 +54,7 @@ class TextureImageTransportSurface
   virtual void OnResize(gfx::Size size, float scale_factor) OVERRIDE;
   virtual void SetLatencyInfo(
       const ui::LatencyInfo& latency_info) OVERRIDE;
+  virtual void WakeUpGpu() OVERRIDE;
 
   // GpuCommandBufferStub::DestructionObserver implementation.
   virtual void OnWillDestroyStub() OVERRIDE;

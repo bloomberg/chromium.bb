@@ -28,6 +28,8 @@
 #include "content/browser/android/content_view_core_impl.h"
 #include "content/browser/android/in_process/synchronous_compositor_impl.h"
 #include "content/browser/android/overscroll_glow.h"
+#include "content/browser/gpu/gpu_data_manager_impl.h"
+#include "content/browser/gpu/gpu_process_host_ui_shim.h"
 #include "content/browser/gpu/gpu_surface_tracker.h"
 #include "content/browser/renderer_host/compositor_impl_android.h"
 #include "content/browser/renderer_host/dip_util.h"
@@ -39,6 +41,7 @@
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
 #include "content/public/common/content_switches.h"
+#include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "third_party/khronos/GLES2/gl2ext.h"
@@ -109,7 +112,8 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
       last_output_surface_id_(kUndefinedOutputSurfaceId),
       weak_ptr_factory_(this),
       overscroll_effect_enabled_(true),
-      flush_input_requested_(false) {
+      flush_input_requested_(false),
+      accelerated_surface_route_id_(0) {
   if (!UsingDelegatedRenderer()) {
     texture_layer_ = cc::TextureLayer::Create(this);
     layer_ = texture_layer_;
@@ -814,6 +818,11 @@ void RenderWidgetHostViewAndroid::UpdateContentViewCoreFrameMetadata(
   }
 }
 
+void RenderWidgetHostViewAndroid::AcceleratedSurfaceInitialized(int host_id,
+                                                                int route_id) {
+  accelerated_surface_route_id_ = route_id;
+}
+
 void RenderWidgetHostViewAndroid::AcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
     int gpu_host_id) {
@@ -999,13 +1008,24 @@ void RenderWidgetHostViewAndroid::GestureEventAck(
 
 InputEventAckState RenderWidgetHostViewAndroid::FilterInputEvent(
     const blink::WebInputEvent& input_event) {
-  if (host_) {
-    SynchronousCompositorImpl* compositor =
-        SynchronousCompositorImpl::FromID(host_->GetProcess()->GetID(),
-                                          host_->GetRoutingID());
-    if (compositor)
-      return compositor->HandleInputEvent(input_event);
+  if (!host_)
+    return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
+
+  if (input_event.type == blink::WebInputEvent::GestureTapDown &&
+      accelerated_surface_route_id_) {
+    GpuDataManagerImpl* gpu_data = GpuDataManagerImpl::GetInstance();
+    GpuProcessHostUIShim* shim = GpuProcessHostUIShim::GetOneInstance();
+    if (shim && gpu_data &&
+        gpu_data->IsDriverBugWorkaroundActive(gpu::WAKE_UP_GPU_BEFORE_DRAWING))
+      shim->Send(
+          new AcceleratedSurfaceMsg_WakeUpGpu(accelerated_surface_route_id_));
   }
+
+  SynchronousCompositorImpl* compositor =
+      SynchronousCompositorImpl::FromID(host_->GetProcess()->GetID(),
+                                          host_->GetRoutingID());
+  if (compositor)
+    return compositor->HandleInputEvent(input_event);
   return INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
 }
 

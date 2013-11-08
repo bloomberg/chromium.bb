@@ -49,6 +49,7 @@ class PbufferImageTransportSurface
   virtual void OnResizeViewACK() OVERRIDE;
   virtual void OnResize(gfx::Size size, float scale_factor) OVERRIDE;
   virtual void SetLatencyInfo(const ui::LatencyInfo&) OVERRIDE;
+  virtual void WakeUpGpu() OVERRIDE;
   virtual gfx::Size GetSize() OVERRIDE;
 
  private:
@@ -237,6 +238,10 @@ void PbufferImageTransportSurface::OnResize(gfx::Size size,
 void PbufferImageTransportSurface::SetLatencyInfo(
     const ui::LatencyInfo& latency_info) {
   latency_info_ = latency_info;
+}
+
+void PbufferImageTransportSurface::WakeUpGpu() {
+  NOTIMPLEMENTED();
 }
 
 gfx::Size PbufferImageTransportSurface::GetSize() {

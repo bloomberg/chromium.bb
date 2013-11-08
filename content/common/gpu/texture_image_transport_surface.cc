@@ -196,6 +196,10 @@ void TextureImageTransportSurface::SetLatencyInfo(
   latency_info_ = latency_info;
 }
 
+void TextureImageTransportSurface::WakeUpGpu() {
+  NOTIMPLEMENTED();
+}
+
 bool TextureImageTransportSurface::SwapBuffers() {
   DCHECK(IsContextValid(helper_.get()));
   DCHECK(backbuffer_suggested_allocation_);

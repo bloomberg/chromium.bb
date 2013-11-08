@@ -132,6 +132,10 @@ bool TestRenderWidgetHostView::CanCopyToVideoFrame() const {
 void TestRenderWidgetHostView::OnAcceleratedCompositingStateChange() {
 }
 
+void TestRenderWidgetHostView::AcceleratedSurfaceInitialized(int host_id,
+                                                             int route_id) {
+}
+
 void TestRenderWidgetHostView::AcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
     int gpu_host_id) {

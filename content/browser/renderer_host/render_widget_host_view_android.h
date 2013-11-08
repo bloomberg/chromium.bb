@@ -121,6 +121,8 @@ class RenderWidgetHostViewAndroid
   virtual void ScrollOffsetChanged() OVERRIDE;
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) OVERRIDE;
   virtual void OnAcceleratedCompositingStateChange() OVERRIDE;
+  virtual void AcceleratedSurfaceInitialized(int host_id,
+                                             int route_id) OVERRIDE;
   virtual void AcceleratedSurfaceBuffersSwapped(
       const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
       int gpu_host_id) OVERRIDE;
@@ -335,6 +337,8 @@ class RenderWidgetHostViewAndroid
   scoped_ptr<OverscrollGlow> overscroll_effect_;
 
   bool flush_input_requested_;
+
+  int accelerated_surface_route_id_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAndroid);
 };

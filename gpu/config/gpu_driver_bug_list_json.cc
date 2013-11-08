@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "3.0",
+  "version": "3.1",
   "entries": [
     {
       "id": 1,
@@ -662,6 +662,21 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       },
       "features": [
         "force_discrete_gpu"
+      ]
+    },
+    {
+      "id": 49,
+      "cr_bugs": [309734],
+      "description": "The first draw operation from an idle state is slow.",
+      "os": {
+        "type": "android"
+      },
+      "gl_vendor": {
+        "op": "beginwith",
+        "value": "Qualcomm"
+      },
+      "features": [
+        "wake_up_gpu_before_drawing"
       ]
     }
   ]

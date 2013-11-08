@@ -212,6 +212,8 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView,
 
   // Called when accelerated compositing state changes.
   virtual void OnAcceleratedCompositingStateChange() = 0;
+  // Called when an accelerated compositing surface is initialized.
+  virtual void AcceleratedSurfaceInitialized(int host_id, int route_id) = 0;
   // |params.window| and |params.surface_id| indicate which accelerated
   // surface's buffers swapped. |params.renderer_id| and |params.route_id|
   // are used to formulate a reply to the GPU process to prevent it from getting

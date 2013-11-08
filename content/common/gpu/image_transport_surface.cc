@@ -73,6 +73,9 @@ bool ImageTransportHelper::Initialize() {
       base::Bind(&ImageTransportHelper::SetLatencyInfo,
                  base::Unretained(this)));
 
+  manager_->Send(new GpuHostMsg_AcceleratedSurfaceInitialized(
+      stub_->surface_id(), route_id_));
+
   return true;
 }
 
@@ -84,6 +87,7 @@ bool ImageTransportHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AcceleratedSurfaceMsg_BufferPresented,
                         OnBufferPresented)
     IPC_MESSAGE_HANDLER(AcceleratedSurfaceMsg_ResizeViewACK, OnResizeViewACK);
+    IPC_MESSAGE_HANDLER(AcceleratedSurfaceMsg_WakeUpGpu, OnWakeUpGpu);
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -189,6 +193,10 @@ void ImageTransportHelper::OnBufferPresented(
 
 void ImageTransportHelper::OnResizeViewACK() {
   surface_->OnResizeViewACK();
+}
+
+void ImageTransportHelper::OnWakeUpGpu() {
+  surface_->WakeUpGpu();
 }
 
 void ImageTransportHelper::Resize(gfx::Size size, float scale_factor) {
@@ -344,6 +352,10 @@ void PassThroughImageTransportSurface::OnResize(gfx::Size size,
 
 gfx::Size PassThroughImageTransportSurface::GetSize() {
   return GLSurfaceAdapter::GetSize();
+}
+
+void PassThroughImageTransportSurface::WakeUpGpu() {
+  NOTIMPLEMENTED();
 }
 
 PassThroughImageTransportSurface::~PassThroughImageTransportSurface() {}

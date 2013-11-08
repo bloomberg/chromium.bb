@@ -2621,6 +2621,10 @@ void RenderWidgetHostViewWin::OnAcceleratedCompositingStateChange() {
   }
 }
 
+void RenderWidgetHostViewWin::AcceleratedSurfaceInitialized(int host_id,
+                                                            int route_id) {
+}
+
 void RenderWidgetHostViewWin::AcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
     int gpu_host_id) {

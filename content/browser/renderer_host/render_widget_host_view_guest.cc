@@ -173,6 +173,10 @@ void RenderWidgetHostViewGuest::SetTooltipText(const string16& tooltip_text) {
   platform_view_->SetTooltipText(tooltip_text);
 }
 
+void RenderWidgetHostViewGuest::AcceleratedSurfaceInitialized(int host_id,
+                                                              int route_id) {
+}
+
 void RenderWidgetHostViewGuest::AcceleratedSurfaceBuffersSwapped(
     const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params,
     int gpu_host_id) {

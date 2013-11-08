@@ -78,6 +78,8 @@
          use_virtualized_gl_contexts)                        \
   GPU_OP(VALIDATE_MULTISAMPLE_BUFFER_ALLOCATION,             \
          validate_multisample_buffer_allocation)             \
+  GPU_OP(WAKE_UP_GPU_BEFORE_DRAWING,                         \
+         wake_up_gpu_before_drawing)                         \
 
 namespace gpu {
 

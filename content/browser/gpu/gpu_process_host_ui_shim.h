@@ -93,6 +93,7 @@ class GpuProcessHostUIShim : public IPC::Listener,
 
   void OnGraphicsInfoCollected(const gpu::GPUInfo& gpu_info);
 
+  void OnAcceleratedSurfaceInitialized(int32 surface_id, int32 route_id);
   void OnAcceleratedSurfaceBuffersSwapped(
       const GpuHostMsg_AcceleratedSurfaceBuffersSwapped_Params& params);
   void OnAcceleratedSurfacePostSubBuffer(
