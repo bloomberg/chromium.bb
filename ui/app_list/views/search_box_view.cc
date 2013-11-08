@@ -162,7 +162,7 @@ bool SearchBoxView::HandleKeyEvent(views::Textfield* sender,
 
 void SearchBoxView::OnMenuButtonClicked(View* source, const gfx::Point& point) {
   if (!menu_)
-    menu_.reset(new AppListMenuViews(view_delegate_, model_));
+    menu_.reset(new AppListMenuViews(view_delegate_));
 
   const gfx::Point menu_location =
       menu_button_->GetBoundsInScreen().bottom_right() +

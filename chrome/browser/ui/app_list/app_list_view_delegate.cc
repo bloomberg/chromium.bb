@@ -59,14 +59,14 @@ void CreateShortcutInWebAppDir(
 
 void PopulateUsers(const ProfileInfoCache& profile_info,
                    const base::FilePath& active_profile_path,
-                   app_list::AppListModel::Users* users) {
+                   app_list::AppListViewDelegate::Users* users) {
   const size_t count = profile_info.GetNumberOfProfiles();
   for (size_t i = 0; i < count; ++i) {
     // Don't display managed users.
     if (profile_info.ProfileIsManagedAtIndex(i))
       continue;
 
-    app_list::AppListModel::User user;
+    app_list::AppListViewDelegate::User user;
     user.name = profile_info.GetNameOfProfileAtIndex(i);
     user.email = profile_info.GetUserNameOfProfileAtIndex(i);
     user.profile_path = profile_info.GetPathOfProfileAtIndex(i);
@@ -125,10 +125,8 @@ void AppListViewDelegate::OnProfileChanged() {
     return;
 
   // Populate the app list users.
-  app_list::AppListModel::Users users;
   PopulateUsers(g_browser_process->profile_manager()->GetProfileInfoCache(),
-                profile_->GetPath(), &users);
-  model_->SetUsers(users);
+                profile_->GetPath(), &users_);
 }
 
 bool AppListViewDelegate::ForceNativeDesktop() const {
@@ -299,4 +297,9 @@ content::WebContents* AppListViewDelegate::GetStartPageContents() {
     return NULL;
 
   return service->contents();
+}
+
+const app_list::AppListViewDelegate::Users&
+AppListViewDelegate::GetUsers() const {
+  return users_;
 }

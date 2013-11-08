@@ -5,7 +5,6 @@
 #include "ui/app_list/views/app_list_menu_views.h"
 
 #include "grit/ui_resources.h"
-#include "ui/app_list/app_list_model.h"
 #include "ui/app_list/app_list_view_delegate.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/controls/button/menu_button.h"
@@ -20,9 +19,8 @@ using views::MenuItemView;
 
 namespace app_list {
 
-AppListMenuViews::AppListMenuViews(AppListViewDelegate* delegate,
-                                   AppListModel* app_list_model)
-    : AppListMenu(delegate, app_list_model->users()) {
+AppListMenuViews::AppListMenuViews(AppListViewDelegate* delegate)
+    : AppListMenu(delegate) {
   menu_delegate_.reset(new views::MenuModelAdapter(menu_model()));
   menu_ = new MenuItemView(menu_delegate_.get());
   menu_runner_.reset(new views::MenuRunner(menu_));

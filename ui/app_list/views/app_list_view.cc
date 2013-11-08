@@ -340,8 +340,4 @@ void AppListView::OnAppListModelSigninStatusChanged() {
   OnSigninStatusChanged();
 }
 
-void AppListView::OnAppListModelUsersChanged() {
-  OnSigninStatusChanged();
-}
-
 }  // namespace app_list

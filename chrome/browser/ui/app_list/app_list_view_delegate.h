@@ -81,6 +81,7 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   virtual void ShowForProfileByPath(
       const base::FilePath& profile_path) OVERRIDE;
   virtual content::WebContents* GetStartPageContents() OVERRIDE;
+  virtual const Users& GetUsers() const OVERRIDE;
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
@@ -99,6 +100,7 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   scoped_ptr<app_list::SearchController> search_controller_;
   scoped_ptr<AppListControllerDelegate> controller_;
   Profile* profile_;
+  Users users_;
   app_list::AppListModel* model_;  // Weak. Owned by AppListView.
 
   content::NotificationRegistrar registrar_;

@@ -161,8 +161,7 @@ void SearchBoxModelObserverBridge::TextChanged() {
 
   menuController_.reset();
   appListMenu_.reset(
-      new app_list::AppListMenu([delegate_ appListDelegate],
-                                [delegate_ appListModel]->users()));
+      new app_list::AppListMenu([delegate_ appListDelegate]));
   menuController_.reset([[AppListMenuController alloc]
       initWithSearchBoxController:self]);
   [menuButton_ setMenu:[menuController_ menu]];  // Menu will populate here.

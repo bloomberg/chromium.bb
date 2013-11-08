@@ -5,7 +5,11 @@
 #ifndef UI_APP_LIST_APP_LIST_VIEW_DELEGATE_H_
 #define UI_APP_LIST_APP_LIST_VIEW_DELEGATE_H_
 
+#include <vector>
+
 #include "base/callback_forward.h"
+#include "base/files/file_path.h"
+#include "base/strings/string16.h"
 #include "base/strings/string16.h"
 #include "ui/app_list/app_list_export.h"
 
@@ -30,6 +34,25 @@ class SigninDelegate;
 
 class APP_LIST_EXPORT AppListViewDelegate {
  public:
+  // A user of the app list.
+  struct APP_LIST_EXPORT User {
+    User();
+    ~User();
+
+    // Whether or not this user is the current user of the app list.
+    bool active;
+
+    // The name of this user.
+    base::string16 name;
+
+    // The email address of this user.
+    base::string16 email;
+
+    // The path to this user's profile directory.
+    base::FilePath profile_path;
+  };
+  typedef std::vector<User> Users;
+
   // AppListView owns the delegate.
   virtual ~AppListViewDelegate() {}
 
@@ -97,6 +120,9 @@ class APP_LIST_EXPORT AppListViewDelegate {
 
   // Get the start page web contents. Owned by the AppListViewDelegate.
   virtual content::WebContents* GetStartPageContents() = 0;
+
+  // Returns the list of users (for AppListMenu).
+  virtual const Users& GetUsers() const = 0;
 };
 
 }  // namespace app_list

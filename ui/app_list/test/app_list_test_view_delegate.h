@@ -23,6 +23,10 @@ class AppListTestViewDelegate  : public AppListViewDelegate {
     test_signin_delegate_ = signin_delegate;
   }
 
+  void SetUsers(const Users& users) {
+    users_ = users;
+  }
+
   // AppListViewDelegate overrides:
   virtual bool ForceNativeDesktop() const OVERRIDE;
   virtual void SetProfileByPath(const base::FilePath& profile_path) OVERRIDE {}
@@ -47,10 +51,13 @@ class AppListTestViewDelegate  : public AppListViewDelegate {
   virtual void ShowForProfileByPath(
       const base::FilePath& profile_path) OVERRIDE {};
   virtual content::WebContents* GetStartPageContents() OVERRIDE;
+  virtual const Users& GetUsers() const OVERRIDE;
 
  private:
   int dismiss_count_;
+  Users users_;
   SigninDelegate* test_signin_delegate_;  // Weak. Owned by test.
+
 };
 
 }  // namespace test

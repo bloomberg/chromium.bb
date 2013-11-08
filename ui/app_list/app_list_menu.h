@@ -5,12 +5,10 @@
 #ifndef UI_APP_LIST_APP_LIST_MENU_H_
 #define UI_APP_LIST_APP_LIST_MENU_H_
 
-#include "ui/app_list/app_list_model.h"
+#include "ui/app_list/app_list_view_delegate.h"
 #include "ui/base/models/simple_menu_model.h"
 
 namespace app_list {
-
-class AppListViewDelegate;
 
 // Menu for the app list. This is shown in the top right hand corner of the
 // app list.
@@ -26,9 +24,7 @@ class AppListMenu : public ui::SimpleMenuModel::Delegate {
     SELECT_PROFILE,
   };
 
-  AppListMenu(
-      AppListViewDelegate* delegate,
-      const AppListModel::Users& users);
+  explicit AppListMenu(AppListViewDelegate* delegate);
   virtual ~AppListMenu();
 
   ui::SimpleMenuModel* menu_model() { return &menu_model_; }
@@ -45,7 +41,7 @@ class AppListMenu : public ui::SimpleMenuModel::Delegate {
 
   ui::SimpleMenuModel menu_model_;
   AppListViewDelegate* delegate_;
-  AppListModel::Users users_;
+  AppListViewDelegate::Users users_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListMenu);
 };

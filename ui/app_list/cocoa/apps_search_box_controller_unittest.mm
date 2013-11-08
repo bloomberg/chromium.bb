@@ -34,12 +34,12 @@
 
 - (id)init {
   if ((self = [super init])) {
-    app_list::AppListModel::Users users(2);
+    app_list::AppListViewDelegate::Users users(2);
     users[0].name = ASCIIToUTF16("user1");
     users[1].name = ASCIIToUTF16("user2");
     users[1].email = ASCIIToUTF16("user2@chromium.org");
     users[1].active = true;
-    appListModel_.SetUsers(users);
+    appListDelegate_.SetUsers(users);
   }
   return self;
 }
@@ -51,6 +51,11 @@
 - (app_list::AppListViewDelegate*)appListDelegate {
   return &appListDelegate_;
 }
+
+- (app_list::test::AppListTestViewDelegate*)appListTestViewDelegate {
+  return &appListDelegate_;
+}
+
 
 - (BOOL)control:(NSControl*)control
                textView:(NSTextView*)textView
@@ -75,8 +80,7 @@
 namespace app_list {
 namespace test {
 
-class AppsSearchBoxControllerTest : public ui::CocoaTest,
-                                    public AppListModelObserver {
+class AppsSearchBoxControllerTest : public ui::CocoaTest {
  public:
   AppsSearchBoxControllerTest() {
     Init();
@@ -88,14 +92,12 @@ class AppsSearchBoxControllerTest : public ui::CocoaTest,
             NSMakeRect(0, 0, 400, 100)]);
     delegate_.reset([[TestAppsSearchBoxDelegate alloc] init]);
     [apps_search_box_controller_ setDelegate:delegate_];
-    [delegate_ appListModel]->AddObserver(this);
 
     ui::CocoaTest::SetUp();
     [[test_window() contentView] addSubview:[apps_search_box_controller_ view]];
   }
 
   virtual void TearDown() OVERRIDE {
-    [delegate_ appListModel]->RemoveObserver(this);
     [apps_search_box_controller_ setDelegate:nil];
     ui::CocoaTest::TearDown();
   }
@@ -108,13 +110,6 @@ class AppsSearchBoxControllerTest : public ui::CocoaTest,
   }
 
  protected:
-  // Overridden from app_list::AppListModelObserver:
-  virtual void OnAppListModelUsersChanged() OVERRIDE {
-    [apps_search_box_controller_ rebuildMenu];
-  }
-
-  virtual void OnAppListModelSigninStatusChanged() OVERRIDE {}
-
   base::scoped_nsobject<TestAppsSearchBoxDelegate> delegate_;
   base::scoped_nsobject<AppsSearchBoxController> apps_search_box_controller_;
 
@@ -163,7 +158,8 @@ TEST_F(AppsSearchBoxControllerTest, SearchBoxModel) {
 TEST_F(AppsSearchBoxControllerTest, SearchBoxMenuSingleUser) {
   // Set a single user. We need to set the delegate again because the
   // AppListModel observer isn't hooked up in these tests.
-  [delegate_ appListModel]->SetUsers(app_list::AppListModel::Users(1));
+  [delegate_ appListTestViewDelegate]->SetUsers(
+      app_list::AppListViewDelegate::Users(1));
   [apps_search_box_controller_ setDelegate:delegate_];
 
   NSPopUpButton* menu_control = [apps_search_box_controller_ menuControl];
@@ -186,8 +182,8 @@ TEST_F(AppsSearchBoxControllerTest, SearchBoxMenuSingleUser) {
 
 // Test the popup menu items for the multi-profile case.
 TEST_F(AppsSearchBoxControllerTest, SearchBoxMenu) {
-  const app_list::AppListModel::Users& users =
-      [delegate_ appListModel]->users();
+  const app_list::AppListViewDelegate::Users& users =
+      [delegate_ appListDelegate]->GetUsers();
   NSPopUpButton* menu_control = [apps_search_box_controller_ menuControl];
   EXPECT_TRUE([apps_search_box_controller_ appListMenu]);
   ui::MenuModel* menu_model
@@ -235,7 +231,8 @@ TEST_F(AppsSearchBoxControllerTest, SearchBoxMenu) {
 
 // Test adding another user, and changing an existing one.
 TEST_F(AppsSearchBoxControllerTest, SearchBoxMenuChangingUsers) {
-  app_list::AppListModel::Users users = [delegate_ appListModel]->users();
+  app_list::AppListViewDelegate::Users users =
+      [delegate_ appListDelegate]->GetUsers();
   EXPECT_EQ(2u, users.size());
   ui::MenuModel* menu_model
       = [apps_search_box_controller_ appListMenu]->menu_model();
@@ -248,10 +245,13 @@ TEST_F(AppsSearchBoxControllerTest, SearchBoxMenuChangingUsers) {
               [[[menu_control menu] itemAtIndex:1] title]);
 
   users[0].name = ASCIIToUTF16("renamed user");
-  app_list::AppListModel::User new_user;
+  app_list::AppListViewDelegate::User new_user;
   new_user.name = ASCIIToUTF16("user3");
   users.push_back(new_user);
-  [delegate_ appListModel]->SetUsers(users);
+  [delegate_ appListTestViewDelegate]->SetUsers(users);
+  // Note: menu does not automatically get rebuilt. Force a rebuild (which
+  // would normally occur when the UI is closed / re-opend).
+  [apps_search_box_controller_ rebuildMenu];
 
   // Should now be an extra item, and it should have correct titles.
   EXPECT_EQ(3, [[menu_control menu] numberOfItems] - non_user_items);

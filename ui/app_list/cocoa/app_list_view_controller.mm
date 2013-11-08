@@ -88,7 +88,6 @@ class AppListModelObserverBridge : public AppListModelObserver {
 
  private:
   // Overridden from app_list::AppListModelObserver:
-  virtual void OnAppListModelUsersChanged() OVERRIDE;
   virtual void OnAppListModelSigninStatusChanged() OVERRIDE;
 
   AppListViewController* parent_;  // Weak. Owns us.
@@ -104,10 +103,6 @@ AppListModelObserverBridge::AppListModelObserverBridge(
 
 AppListModelObserverBridge::~AppListModelObserverBridge() {
   [[parent_ appsGridController] model]->RemoveObserver(this);
-}
-
-void AppListModelObserverBridge::OnAppListModelUsersChanged() {
-  [parent_ onSigninStatusChanged];
 }
 
 void AppListModelObserverBridge::OnAppListModelSigninStatusChanged() {

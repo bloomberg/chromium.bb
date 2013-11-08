@@ -13,11 +13,10 @@
 
 namespace app_list {
 
-AppListMenu::AppListMenu(AppListViewDelegate* delegate,
-                         const AppListModel::Users& users)
+AppListMenu::AppListMenu(AppListViewDelegate* delegate)
     : menu_model_(this),
       delegate_(delegate),
-      users_(users) {
+      users_(delegate->GetUsers()) {
   InitMenu();
 }
 

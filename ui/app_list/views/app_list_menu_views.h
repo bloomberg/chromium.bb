@@ -20,14 +20,11 @@ class MenuButton;
 
 namespace app_list {
 
-class AppListModel;
-
 // Views implementation of the app list menu.
 // TODO(benwells): We should consider moving this into Chrome.
 class AppListMenuViews : public AppListMenu {
  public:
-  AppListMenuViews(AppListViewDelegate* delegate,
-                   AppListModel* model);
+  explicit AppListMenuViews(AppListViewDelegate* delegate);
   virtual ~AppListMenuViews();
 
   void RunMenuAt(views::MenuButton* button, const gfx::Point& point);

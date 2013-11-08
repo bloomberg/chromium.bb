@@ -236,6 +236,10 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     // Nothing needs to be done.
   }
 
+  virtual const Users& GetUsers() const OVERRIDE {
+    return users_;
+  }
+
   virtual void InitModel(app_list::AppListModel* model) OVERRIDE {
     model_ = model;
     PopulateApps(model_->item_list());
@@ -328,6 +332,7 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
   }
 
   app_list::AppListModel* model_;
+  Users users_;
 
   DISALLOW_COPY_AND_ASSIGN(ExampleAppListViewDelegate);
 };

@@ -11,10 +11,6 @@
 
 namespace app_list {
 
-AppListModel::User::User() : active(false) {}
-
-AppListModel::User::~User() {}
-
 AppListModel::AppListModel()
     : item_list_(new AppListItemList),
       search_box_(new SearchBoxModel),
@@ -42,13 +38,6 @@ void AppListModel::SetStatus(Status status) {
   FOR_EACH_OBSERVER(AppListModelObserver,
                     observers_,
                     OnAppListModelStatusChanged());
-}
-
-void AppListModel::SetUsers(const Users& users) {
-  users_ = users;
-  FOR_EACH_OBSERVER(AppListModelObserver,
-                    observers_,
-                    OnAppListModelUsersChanged());
 }
 
 void AppListModel::SetSignedIn(bool signed_in) {

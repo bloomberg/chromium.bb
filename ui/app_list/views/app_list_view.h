@@ -137,7 +137,6 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDelegateView,
 
   // Overridden from AppListModelObserver:
   virtual void OnAppListModelSigninStatusChanged() OVERRIDE;
-  virtual void OnAppListModelUsersChanged() OVERRIDE;
 
   SigninDelegate* GetSigninDelegate();
 

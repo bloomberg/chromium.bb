@@ -44,5 +44,9 @@ content::WebContents* AppListTestViewDelegate::GetStartPageContents() {
   return NULL;
 }
 
+const AppListViewDelegate::Users& AppListTestViewDelegate::GetUsers() const {
+  return users_;
+}
+
 }  // namespace test
 }  // namespace app_list
