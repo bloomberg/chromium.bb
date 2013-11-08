@@ -232,9 +232,6 @@ public:
         return newPoint;
     }
 
-    // A means to access the AX cache when this object can get a pointer to it.
-    virtual AXObjectCache* axObjectCache() const { return 0; }
-
     // Widget override. Handles painting of the contents of the view as well as the scrollbars.
     virtual void paint(GraphicsContext*, const IntRect&);
     void paintScrollbars(GraphicsContext*, const IntRect&);

@@ -33,7 +33,6 @@
 #include "core/platform/graphics/GraphicsContext.h"
 
 // FIXME: The following #includes are a layering violation and should be removed.
-#include "core/accessibility/AXObjectCache.h"
 #include "core/page/EventHandler.h"
 #include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
@@ -93,9 +92,6 @@ Scrollbar::Scrollbar(ScrollableArea* scrollableArea, ScrollbarOrientation orient
 
 Scrollbar::~Scrollbar()
 {
-    if (AXObjectCache* cache = existingAXObjectCache())
-        cache->remove(this);
-
     stopTimerIfNeeded();
 
     m_theme->unregisterScrollbar(this);
@@ -556,14 +552,6 @@ bool Scrollbar::shouldParticipateInHitTesting()
 bool Scrollbar::isWindowActive() const
 {
     return m_scrollableArea && m_scrollableArea->isActive();
-}
-
-AXObjectCache* Scrollbar::existingAXObjectCache() const
-{
-    if (!parentScrollView())
-        return 0;
-
-    return parentScrollView()->axObjectCache();
 }
 
 void Scrollbar::invalidateRect(const IntRect& rect)

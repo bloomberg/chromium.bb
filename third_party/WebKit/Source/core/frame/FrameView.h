@@ -38,6 +38,7 @@
 
 namespace WebCore {
 
+class AXObjectCache;
 class Element;
 class FloatSize;
 class Frame;
@@ -342,6 +343,10 @@ public:
     IntSize scrollOffsetForFixedPosition() const;
 
     PartialLayoutState& partialLayout() { return m_partialLayout; }
+
+    // Override scrollbar notifications to update the AXObject cache.
+    virtual void didAddScrollbar(Scrollbar*, ScrollbarOrientation) OVERRIDE;
+    virtual void willRemoveScrollbar(Scrollbar*, ScrollbarOrientation) OVERRIDE;
 
     class DeferredRepaintScope {
     public:

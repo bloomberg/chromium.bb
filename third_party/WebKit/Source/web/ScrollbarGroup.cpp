@@ -56,11 +56,11 @@ void ScrollbarGroup::scrollbarCreated(WebPluginScrollbarImpl* scrollbar)
     if (scrollbar->scrollbar()->orientation() == HorizontalScrollbar) {
         ASSERT(!m_horizontalScrollbar);
         m_horizontalScrollbar = scrollbar;
-        didAddHorizontalScrollbar(scrollbar->scrollbar());
+        didAddScrollbar(scrollbar->scrollbar(), HorizontalScrollbar);
     } else {
         ASSERT(!m_verticalScrollbar);
         m_verticalScrollbar = scrollbar;
-        didAddVerticalScrollbar(scrollbar->scrollbar());
+        didAddScrollbar(scrollbar->scrollbar(), VerticalScrollbar);
     }
 
     if (!hadScrollbars) {
@@ -72,11 +72,11 @@ void ScrollbarGroup::scrollbarCreated(WebPluginScrollbarImpl* scrollbar)
 void ScrollbarGroup::scrollbarDestroyed(WebPluginScrollbarImpl* scrollbar)
 {
     if (scrollbar == m_horizontalScrollbar) {
-        willRemoveHorizontalScrollbar(scrollbar->scrollbar());
+        willRemoveScrollbar(scrollbar->scrollbar(), HorizontalScrollbar);
         m_horizontalScrollbar = 0;
     } else {
         ASSERT(scrollbar == m_verticalScrollbar);
-        willRemoveVerticalScrollbar(scrollbar->scrollbar());
+        willRemoveScrollbar(scrollbar->scrollbar(), VerticalScrollbar);
         m_verticalScrollbar = 0;
     }
 

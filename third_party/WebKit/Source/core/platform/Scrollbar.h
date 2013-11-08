@@ -35,7 +35,6 @@
 
 namespace WebCore {
 
-class AXObjectCache;
 class GraphicsContext;
 class IntRect;
 class PlatformGestureEvent;
@@ -193,7 +192,6 @@ protected:
 
 private:
     virtual bool isScrollbar() const { return true; }
-    virtual AXObjectCache* existingAXObjectCache() const;
 
     float scrollableAreaCurrentPos() const;
 };
