@@ -64,7 +64,7 @@ class StreamReader {
   // Returns true when all streams have reached end of stream.
   bool IsDone();
 
-  int number_of_streams() { return streams_.size(); }
+  int number_of_streams() { return static_cast<int>(streams_.size()); }
   const Streams& streams() { return streams_; }
   const std::vector<int>& counts() { return counts_; }
 
