@@ -298,12 +298,16 @@ class DeviceLocalAccountTest : public DevicePolicyCrosBrowserTest {
     DevicePolicyCrosBrowserTest::SetUp();
   }
 
-  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+  void SetUpCommandLineExceptDeviceManagementURL(CommandLine* command_line) {
     command_line->AppendSwitch(chromeos::switches::kLoginManager);
     command_line->AppendSwitch(chromeos::switches::kForceLoginManagerInTests);
+    command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
+  }
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    SetUpCommandLineExceptDeviceManagementURL(command_line);
     command_line->AppendSwitchASCII(
         switches::kDeviceManagementUrl, test_server_.GetServiceURL().spec());
-    command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
   }
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
@@ -810,7 +814,32 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsCached) {
   EXPECT_FALSE(PathExists(cached_extension));
 }
 
-IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExternalData) {
+class DeviceLocalAccountExternalDataTest : public DeviceLocalAccountTest {
+ protected:
+  DeviceLocalAccountExternalDataTest();
+  virtual ~DeviceLocalAccountExternalDataTest();
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE;
+};
+
+DeviceLocalAccountExternalDataTest::DeviceLocalAccountExternalDataTest() {
+}
+
+DeviceLocalAccountExternalDataTest::~DeviceLocalAccountExternalDataTest() {
+}
+
+void DeviceLocalAccountExternalDataTest::SetUpCommandLine(
+    CommandLine* command_line) {
+  // This test modifies policy in memory by injecting an ExternalDataFetcher. Do
+  // not point the browser at the test_server_ so that no policy can be received
+  // from it and the modification does not get undone while the test is running.
+  // TODO(bartfab): Remove this and the whole DeviceLocalAccountExternalDataTest
+  // class once the first policy referencing external data is added and it is no
+  // longer necessary to inject an ExternalDataFetcher.
+  SetUpCommandLineExceptDeviceManagementURL(command_line);
+}
+
+IN_PROC_BROWSER_TEST_F(DeviceLocalAccountExternalDataTest, ExternalData) {
   CloudExternalDataManagerBase::SetMaxExternalDataSizeForTesting(1000);
 
   UploadAndInstallDeviceLocalAccountPolicy();
