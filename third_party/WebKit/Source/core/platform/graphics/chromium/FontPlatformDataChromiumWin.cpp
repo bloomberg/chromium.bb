@@ -65,29 +65,27 @@ void FontPlatformData::setupPaint(SkPaint* paint, GraphicsContext* context) cons
     if (RuntimeEnabledFeatures::subpixelFontScalingEnabled())
         paint->setSubpixelText(true);
 
+    int textFlags = paintTextFlags();
     // Only set painting flags when we're actually painting.
-    if (context) {
-        int textFlags = paintTextFlags();
-        if (!context->couldUseLCDRenderedText()) {
-            textFlags &= ~SkPaint::kLCDRenderText_Flag;
-            // If we *just* clear our request for LCD, then GDI seems to
-            // sometimes give us AA text, and sometimes give us BW text. Since the
-            // original intent was LCD, we want to force AA (rather than BW), so we
-            // add a special bit to tell Skia to do its best to avoid the BW: by
-            // drawing LCD offscreen and downsampling that to AA.
-            textFlags |= SkPaint::kGenA8FromLCD_Flag;
-        }
-
-        static const uint32_t textFlagsMask = SkPaint::kAntiAlias_Flag |
-            SkPaint::kLCDRenderText_Flag |
-            SkPaint::kGenA8FromLCD_Flag;
-
-        SkASSERT(!(textFlags & ~textFlagsMask));
-        uint32_t flags = paint->getFlags();
-        flags &= ~textFlagsMask;
-        flags |= textFlags;
-        paint->setFlags(flags);
+    if (context && !context->couldUseLCDRenderedText()) {
+        textFlags &= ~SkPaint::kLCDRenderText_Flag;
+        // If we *just* clear our request for LCD, then GDI seems to
+        // sometimes give us AA text, and sometimes give us BW text. Since the
+        // original intent was LCD, we want to force AA (rather than BW), so we
+        // add a special bit to tell Skia to do its best to avoid the BW: by
+        // drawing LCD offscreen and downsampling that to AA.
+        textFlags |= SkPaint::kGenA8FromLCD_Flag;
     }
+
+    static const uint32_t textFlagsMask = SkPaint::kAntiAlias_Flag |
+        SkPaint::kLCDRenderText_Flag |
+        SkPaint::kGenA8FromLCD_Flag;
+
+    SkASSERT(!(textFlags & ~textFlagsMask));
+    uint32_t flags = paint->getFlags();
+    flags &= ~textFlagsMask;
+    flags |= textFlags;
+    paint->setFlags(flags);
 }
 
 // Lookup the current system settings for font smoothing.
