@@ -316,7 +316,22 @@ class SSLSessionCache {
   DISALLOW_COPY_AND_ASSIGN(SSLSessionCache);
 };
 
-class SSLContext {
+// Utility to construct the appropriate set & clear masks for use the OpenSSL
+// options and mode configuration functions. (SSL_set_options etc)
+struct SslSetClearMask {
+  SslSetClearMask() : set_mask(0), clear_mask(0) {}
+  void ConfigureFlag(long flag, bool state) {
+    (state ? set_mask : clear_mask) |= flag;
+    // Make sure we haven't got any intersection in the set & clear options.
+    DCHECK_EQ(0, set_mask & clear_mask) << flag << ":" << state;
+  }
+  long set_mask;
+  long clear_mask;
+};
+
+}  // namespace
+
+class SSLClientSocketOpenSSL::SSLContext {
  public:
   static SSLContext* GetInstance() { return Singleton<SSLContext>::get(); }
   SSL_CTX* ssl_ctx() { return ssl_ctx_.get(); }
@@ -411,24 +426,10 @@ class SSLContext {
   crypto::ScopedOpenSSL<SSL_CTX, SSL_CTX_free> ssl_ctx_;
 };
 
-// Utility to construct the appropriate set & clear masks for use the OpenSSL
-// options and mode configuration functions. (SSL_set_options etc)
-struct SslSetClearMask {
-  SslSetClearMask() : set_mask(0), clear_mask(0) {}
-  void ConfigureFlag(long flag, bool state) {
-    (state ? set_mask : clear_mask) |= flag;
-    // Make sure we haven't got any intersection in the set & clear options.
-    DCHECK_EQ(0, set_mask & clear_mask) << flag << ":" << state;
-  }
-  long set_mask;
-  long clear_mask;
-};
-
-}  // namespace
-
 // static
 void SSLClientSocket::ClearSessionCache() {
-  SSLContext* context = SSLContext::GetInstance();
+  SSLClientSocketOpenSSL::SSLContext* context =
+      SSLClientSocketOpenSSL::SSLContext::GetInstance();
   context->session_cache()->Flush();
 }
 

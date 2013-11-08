@@ -53,18 +53,6 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
     return ssl_session_cache_shard_;
   }
 
-  // Callback from the SSL layer that indicates the remote server is requesting
-  // a certificate for this client.
-  int ClientCertRequestCallback(SSL* ssl, X509** x509, EVP_PKEY** pkey);
-
-  // Callback from the SSL layer that indicates the remote server supports TLS
-  // Channel IDs.
-  void ChannelIDRequestCallback(SSL* ssl, EVP_PKEY** pkey);
-
-  // Callback from the SSL layer to check which NPN protocol we are supporting
-  int SelectNextProtoCallback(unsigned char** out, unsigned char* outlen,
-                              const unsigned char* in, unsigned int inlen);
-
   // SSLClientSocket implementation.
   virtual void GetSSLCertRequestInfo(
       SSLCertRequestInfo* cert_request_info) OVERRIDE;
@@ -103,6 +91,10 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   virtual bool SetSendBufferSize(int32 size) OVERRIDE;
 
  private:
+  class SSLContext;
+  friend class SSLClientSocket;
+  friend class SSLContext;
+
   bool Init();
   void DoReadCallback(int result);
   void DoWriteCallback(int result);
@@ -130,6 +122,18 @@ class SSLClientSocketOpenSSL : public SSLClientSocket {
   void BufferRecvComplete(int result);
   void TransportWriteComplete(int result);
   void TransportReadComplete(int result);
+
+  // Callback from the SSL layer that indicates the remote server is requesting
+  // a certificate for this client.
+  int ClientCertRequestCallback(SSL* ssl, X509** x509, EVP_PKEY** pkey);
+
+  // Callback from the SSL layer that indicates the remote server supports TLS
+  // Channel IDs.
+  void ChannelIDRequestCallback(SSL* ssl, EVP_PKEY** pkey);
+
+  // Callback from the SSL layer to check which NPN protocol we are supporting
+  int SelectNextProtoCallback(unsigned char** out, unsigned char* outlen,
+                              const unsigned char* in, unsigned int inlen);
 
   bool transport_send_busy_;
   bool transport_recv_busy_;
