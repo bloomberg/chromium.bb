@@ -200,21 +200,8 @@ class GpuSandboxedProcessLauncherDelegate
         SetJobLevel(*cmd_line_, sandbox::JOB_UNPROTECTED, 0, policy);
         policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
       } else {
-        if (cmd_line_->GetSwitchValueASCII(switches::kUseGL) ==
-                gfx::kGLImplementationSwiftShaderName ||
-            cmd_line_->HasSwitch(switches::kReduceGpuSandbox)) {
-          // Swiftshader path.
-          policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
-                                sandbox::USER_LIMITED);
-        } else {
-          // Angle + DirectX path.
-          policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
-                                sandbox::USER_RESTRICTED);
-          // This is a trick to keep the GPU out of low-integrity processes. It
-          // starts at low-integrity for UIPI to work, then drops below
-          // low-integrity after warm-up.
-          policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_UNTRUSTED);
-        }
+        policy->SetTokenLevel(sandbox::USER_RESTRICTED_SAME_ACCESS,
+                              sandbox::USER_LIMITED);
 
         // UI restrictions break when we access Windows from outside our job.
         // However, we don't want a proxy window in this process because it can
@@ -249,13 +236,6 @@ class GpuSandboxedProcessLauncherDelegate
       return;
     }
 
-    result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_SYNC,
-                             sandbox::TargetPolicy::EVENTS_ALLOW_ANY,
-                             L"Dwm*");
-    if (result != sandbox::SBOX_ALL_OK) {
-      *success = false;
-      return;
-    }
     // Block this DLL even if it is not loaded by the browser process.
     policy->AddDllToUnload(L"cmsetac.dll");
 
