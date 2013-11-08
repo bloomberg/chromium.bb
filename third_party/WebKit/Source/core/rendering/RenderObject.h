@@ -715,7 +715,7 @@ public:
     void setAnimatableStyle(PassRefPtr<RenderStyle>);
 
     // Set the style of the object and update the state of the object accordingly.
-    virtual void setStyle(PassRefPtr<RenderStyle>);
+    void setStyle(PassRefPtr<RenderStyle>);
 
     // Set the style of the object if it's generated content.
     void setPseudoStyle(PassRefPtr<RenderStyle>);

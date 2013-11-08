@@ -36,7 +36,6 @@ protected:
     virtual void willBeDestroyed() OVERRIDE;
 
 private:
-    virtual void setStyle(PassRefPtr<RenderStyle>) OVERRIDE FINAL;
     virtual void updateFromStyle() OVERRIDE FINAL;
 
     virtual bool isRenderSVGBlock() const OVERRIDE FINAL { return true; };
