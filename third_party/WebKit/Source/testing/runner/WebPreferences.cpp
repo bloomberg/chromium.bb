@@ -43,7 +43,6 @@ void WebPreferences::reset()
     allowDisplayOfInsecureContent = true;
     allowFileAccessFromFileURLs = true;
     allowRunningOfInsecureContent = true;
-    authorAndUserStylesEnabled = true;
     defaultTextEncodingName = WebString::fromUTF8("ISO-8859-1");
     experimentalWebGLEnabled = false;
     experimentalCSSRegionsEnabled = true;

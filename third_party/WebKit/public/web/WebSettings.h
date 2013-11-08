@@ -82,7 +82,6 @@ public:
     virtual void setAntialiased2dCanvasEnabled(bool) = 0;
     virtual void setAsynchronousSpellCheckingEnabled(bool) = 0;
     virtual void setAutoZoomFocusedNodeToLegibleScale(bool) = 0;
-    virtual void setAuthorAndUserStylesEnabled(bool) = 0;
     virtual void setCaretBrowsingEnabled(bool) = 0;
     virtual void setClobberUserAgentInitialScaleQuirk(bool) = 0;
     virtual void setCompositedScrollingForFramesEnabled(bool) = 0;

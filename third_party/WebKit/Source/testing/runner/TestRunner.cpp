@@ -215,7 +215,6 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
     // The following modify WebPreferences.
     bindMethod("setUserStyleSheetEnabled", &TestRunner::setUserStyleSheetEnabled);
     bindMethod("setUserStyleSheetLocation", &TestRunner::setUserStyleSheetLocation);
-    bindMethod("setAuthorAndUserStylesEnabled", &TestRunner::setAuthorAndUserStylesEnabled);
     bindMethod("setPopupBlockingEnabled", &TestRunner::setPopupBlockingEnabled);
     bindMethod("setJavaScriptCanAccessClipboard", &TestRunner::setJavaScriptCanAccessClipboard);
     bindMethod("setXSSAuditorEnabled", &TestRunner::setXSSAuditorEnabled);
@@ -1594,15 +1593,6 @@ void TestRunner::setUserStyleSheetLocation(const CppArgumentList& arguments, Cpp
     if (arguments.size() > 0 && arguments[0].isString()) {
         m_userStyleSheetLocation = m_delegate->localFileToDataURL(m_delegate->rewriteLayoutTestsURL(arguments[0].toString()));
         m_delegate->preferences()->userStyleSheetLocation = m_userStyleSheetLocation;
-        m_delegate->applyPreferences();
-    }
-    result->setNull();
-}
-
-void TestRunner::setAuthorAndUserStylesEnabled(const CppArgumentList& arguments, CppVariant* result)
-{
-    if (arguments.size() > 0 && arguments[0].isBool()) {
-        m_delegate->preferences()->authorAndUserStylesEnabled = arguments[0].value.boolValue;
         m_delegate->applyPreferences();
     }
     result->setNull();

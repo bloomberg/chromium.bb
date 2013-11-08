@@ -176,7 +176,7 @@ struct CSSPropertyValue {
 class StyleResolver : public FontSelectorClient {
     WTF_MAKE_NONCOPYABLE(StyleResolver); WTF_MAKE_FAST_ALLOCATED;
 public:
-    StyleResolver(Document&, bool matchAuthorAndUserStyles);
+    explicit StyleResolver(Document&);
     ~StyleResolver();
 
     // FIXME: StyleResolver should not be keeping tree-walk state.
@@ -292,7 +292,7 @@ private:
     void matchAuthorRules(Element*, ElementRuleCollector&, bool includeEmptyRules);
     void matchAuthorRulesForShadowHost(Element*, ElementRuleCollector&, bool includeEmptyRules, Vector<ScopedStyleResolver*, 8>& resolvers, Vector<ScopedStyleResolver*, 8>& resolversInShadowTree);
     void matchHostRules(Element*, ScopedStyleResolver*, ElementRuleCollector&, bool includeEmptyRules);
-    void matchAllRules(StyleResolverState&, ElementRuleCollector&, bool matchAuthorAndUserStyles, bool includeSMILProperties);
+    void matchAllRules(StyleResolverState&, ElementRuleCollector&, bool includeSMILProperties);
     void matchUARules(ElementRuleCollector&);
     void matchUserRules(ElementRuleCollector&, bool includeEmptyRules);
     void collectFeatures();
@@ -345,8 +345,6 @@ private:
 
     Document& m_document;
     SelectorFilter m_selectorFilter;
-
-    bool m_matchAuthorAndUserStyles;
 
     RefPtr<CSSFontSelector> m_fontSelector;
 

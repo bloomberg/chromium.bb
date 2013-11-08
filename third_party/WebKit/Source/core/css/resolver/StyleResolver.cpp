@@ -141,9 +141,8 @@ static StylePropertySet* rightToLeftDeclaration()
     return rightToLeftDecl.get();
 }
 
-StyleResolver::StyleResolver(Document& document, bool matchAuthorAndUserStyles)
+StyleResolver::StyleResolver(Document& document)
     : m_document(document)
-    , m_matchAuthorAndUserStyles(matchAuthorAndUserStyles)
     , m_fontSelector(CSSFontSelector::create(&document))
     , m_viewportStyleResolver(ViewportStyleResolver::create(&document))
     , m_styleResourceLoader(document.fetcher())
@@ -528,13 +527,10 @@ void StyleResolver::matchUARules(ElementRuleCollector& collector, RuleSet* rules
     collector.sortAndTransferMatchedRules();
 }
 
-void StyleResolver::matchAllRules(StyleResolverState& state, ElementRuleCollector& collector, bool matchAuthorAndUserStyles, bool includeSMILProperties)
+void StyleResolver::matchAllRules(StyleResolverState& state, ElementRuleCollector& collector, bool includeSMILProperties)
 {
     matchUARules(collector);
-
-    // Now we check user sheet rules.
-    if (matchAuthorAndUserStyles)
-        matchUserRules(collector, false);
+    matchUserRules(collector, false);
 
     // Now check author rules, beginning first with presentational attributes mapped from HTML.
     if (state.element()->isStyledElement()) {
@@ -553,13 +549,10 @@ void StyleResolver::matchAllRules(StyleResolverState& state, ElementRuleCollecto
         }
     }
 
-    // Check the rules in author sheets next.
-    if (matchAuthorAndUserStyles)
-        matchAuthorRules(state.element(), collector, false);
+    matchAuthorRules(state.element(), collector, false);
 
     if (state.element()->isStyledElement()) {
-        // Now check our inline style attribute.
-        if (matchAuthorAndUserStyles && state.element()->inlineStyle()) {
+        if (state.element()->inlineStyle()) {
             // Inline style is immutable as long as there is no CSSOM wrapper.
             // FIXME: Media control shadow trees seem to have problems with caching.
             bool isInlineStyleCacheable = !state.element()->inlineStyle()->isMutable() && !state.element()->isInShadowTree();
@@ -568,7 +561,7 @@ void StyleResolver::matchAllRules(StyleResolverState& state, ElementRuleCollecto
         }
 
         // Now check SMIL animation override style.
-        if (includeSMILProperties && matchAuthorAndUserStyles && state.element()->isSVGElement())
+        if (includeSMILProperties && state.element()->isSVGElement())
             collector.addElementStyleProperties(toSVGElement(state.element())->animatedSMILStyleProperties(), false /* isCacheable */);
 
         if (state.element()->hasActiveAnimations())
@@ -699,7 +692,7 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
         if (matchingBehavior == MatchOnlyUserAgentRules)
             matchUARules(collector);
         else
-            matchAllRules(state, collector, m_matchAuthorAndUserStyles, matchingBehavior != MatchAllRulesExcludingSMIL);
+            matchAllRules(state, collector, matchingBehavior != MatchAllRulesExcludingSMIL);
 
         applyMatchedProperties(state, collector.matchedResult(), element);
 
@@ -1041,10 +1034,8 @@ PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* e, const P
         collector.setPseudoStyleRequest(pseudoStyleRequest);
 
         matchUARules(collector);
-        if (m_matchAuthorAndUserStyles) {
-            matchUserRules(collector, false);
-            matchAuthorRules(state.element(), collector, false);
-        }
+        matchUserRules(collector, false);
+        matchAuthorRules(state.element(), collector, false);
 
         if (collector.matchedResult().matchedProperties.isEmpty())
             return 0;
@@ -1215,13 +1206,10 @@ void StyleResolver::collectPseudoRulesForElement(Element* element, ElementRuleCo
     if (rulesToInclude & UAAndUserCSSRules) {
         // First we match rules from the user agent sheet.
         matchUARules(collector);
-
-        // Now we check user sheet rules.
-        if (m_matchAuthorAndUserStyles)
-            matchUserRules(collector, rulesToInclude & EmptyCSSRules);
+        matchUserRules(collector, rulesToInclude & EmptyCSSRules);
     }
 
-    if (m_matchAuthorAndUserStyles && (rulesToInclude & AuthorCSSRules)) {
+    if (rulesToInclude & AuthorCSSRules) {
         collector.setSameOriginOnly(!(rulesToInclude & CrossOriginCSSRules));
 
         // Check the rules in author sheets.

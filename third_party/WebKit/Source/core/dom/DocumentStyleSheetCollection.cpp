@@ -54,9 +54,6 @@ DocumentStyleSheetCollection::DocumentStyleSheetCollection(TreeScope& treeScope)
 
 void DocumentStyleSheetCollection::collectStyleSheets(StyleEngine* collections, Vector<RefPtr<StyleSheet> >& styleSheets, Vector<RefPtr<CSSStyleSheet> >& activeSheets)
 {
-    if (document()->settings() && !document()->settings()->authorAndUserStylesEnabled())
-        return;
-
     DocumentOrderedList::iterator begin = m_styleSheetCandidateNodes.begin();
     DocumentOrderedList::iterator end = m_styleSheetCandidateNodes.end();
     for (DocumentOrderedList::iterator it = begin; it != end; ++it) {

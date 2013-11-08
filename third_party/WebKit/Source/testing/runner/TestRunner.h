@@ -302,9 +302,6 @@ private:
     void setUserStyleSheetEnabled(const CppArgumentList&, CppVariant*);
     void setUserStyleSheetLocation(const CppArgumentList&, CppVariant*);
 
-    // Passes this preference through to WebSettings.
-    void setAuthorAndUserStylesEnabled(const CppArgumentList&, CppVariant*);
-
     // Set the WebPreference that controls webkit's popup blocking.
     void setPopupBlockingEnabled(const CppArgumentList&, CppVariant*);
 

@@ -295,11 +295,6 @@ void WebSettingsImpl::setUserStyleSheetLocation(const WebURL& location)
     m_settings->setUserStyleSheetLocation(location);
 }
 
-void WebSettingsImpl::setAuthorAndUserStylesEnabled(bool enabled)
-{
-    m_settings->setAuthorAndUserStylesEnabled(enabled);
-}
-
 void WebSettingsImpl::setUseLegacyBackgroundSizeShorthandBehavior(bool useLegacyBackgroundSizeShorthandBehavior)
 {
     m_settings->setUseLegacyBackgroundSizeShorthandBehavior(useLegacyBackgroundSizeShorthandBehavior);

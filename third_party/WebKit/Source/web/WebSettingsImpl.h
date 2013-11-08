@@ -74,7 +74,6 @@ public:
     virtual void setAllowUniversalAccessFromFileURLs(bool);
     virtual void setAntialiased2dCanvasEnabled(bool);
     virtual void setAsynchronousSpellCheckingEnabled(bool);
-    virtual void setAuthorAndUserStylesEnabled(bool);
     virtual void setAutoZoomFocusedNodeToLegibleScale(bool);
     virtual void setCaretBrowsingEnabled(bool);
     virtual void setClobberUserAgentInitialScaleQuirk(bool);

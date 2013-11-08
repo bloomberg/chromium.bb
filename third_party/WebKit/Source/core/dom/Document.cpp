@@ -1940,10 +1940,7 @@ void Document::createStyleResolver()
     // Document::isActive() before calling into code which could get here.
     ASSERT(frame());
 
-    bool matchAuthorAndUserStyles = true;
-    if (Settings* docSettings = settings())
-        matchAuthorAndUserStyles = docSettings->authorAndUserStylesEnabled();
-    m_styleResolver = adoptPtr(new StyleResolver(*this, matchAuthorAndUserStyles));
+    m_styleResolver = adoptPtr(new StyleResolver(*this));
     m_styleEngine->combineCSSFeatureFlags(m_styleResolver->ruleFeatureSet());
 }
 
