@@ -311,7 +311,33 @@ uint32 GetKeyboardEventFlags() {
   return flags;
 }
 
-bool LaunchChromeBrowserProcess (const wchar_t* additional_parameters) {
+bool LaunchChromeBrowserProcess(const wchar_t* additional_parameters,
+                                winapp::Activation::IActivatedEventArgs* args) {
+  if (args) {
+    DVLOG(1) << __FUNCTION__ << ":" << ::GetCommandLineW();
+    winapp::Activation::ActivationKind activation_kind;
+    CheckHR(args->get_Kind(&activation_kind));
+
+    DVLOG(1) << __FUNCTION__ << ", activation_kind=" << activation_kind;
+
+    if (activation_kind == winapp::Activation::ActivationKind_Launch) {
+      mswr::ComPtr<winapp::Activation::ILaunchActivatedEventArgs> launch_args;
+      if (args->QueryInterface(
+              winapp::Activation::IID_ILaunchActivatedEventArgs,
+              &launch_args) == S_OK) {
+        DVLOG(1) << "Activate: ActivationKind_Launch";
+        mswrw::HString launch_args_str;
+        launch_args->get_Arguments(launch_args_str.GetAddressOf());
+        string16 actual_launch_args(MakeStdWString(launch_args_str.Get()));
+        if (actual_launch_args == L"test_open") {
+          DVLOG(1) << __FUNCTION__
+                  << "Not launching chrome server";
+          return true;
+        }
+      }
+    }
+  }
+
   DVLOG(1) << "Launching chrome server";
   base::FilePath chrome_exe_path;
 
@@ -683,7 +709,7 @@ HRESULT ChromeAppViewAsh::OnActivate(
   else if (activation_kind == winapp::Activation::ActivationKind_Protocol)
     HandleProtocolRequest(args);
   else
-    LaunchChromeBrowserProcess(NULL);
+    LaunchChromeBrowserProcess(NULL, args);
   // We call ICoreWindow::Activate after the handling for the search/protocol
   // requests because Chrome can be launched to handle a search request which
   // in turn launches the chrome browser process in desktop mode via
@@ -923,7 +949,7 @@ HRESULT ChromeAppViewAsh::HandleSearchRequest(
 
   if (!ui_channel_) {
     DVLOG(1) << "Launched to handle search request";
-    LaunchChromeBrowserProcess(L"--windows8-search");
+    LaunchChromeBrowserProcess(L"--windows8-search", args);
   }
 
   mswrw::HString search_string;

@@ -300,7 +300,7 @@ STDMETHODIMP CommandExecuteImpl::GetValue(enum AHE_TYPE* pahe) {
   }
 
 #if defined(USE_AURA)
-  if (*pahe == AHE_IMMERSIVE)
+  if (*pahe == AHE_IMMERSIVE && verb_ != L"test_open")
     LaunchChromeBrowserProcess();
 #endif
 
