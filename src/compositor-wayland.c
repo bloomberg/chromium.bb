@@ -707,7 +707,7 @@ static struct wayland_output *
 wayland_output_create_for_config(struct wayland_compositor *c,
 				 struct weston_config_section *config_section,
 				 int option_width, int option_height,
-				 int32_t x, int32_t y)
+				 int option_scale, int32_t x, int32_t y)
 {
 	struct wayland_output *output;
 	char *mode, *t, *name, *str;
@@ -755,6 +755,9 @@ wayland_output_create_for_config(struct wayland_compositor *c,
 		height = option_height;
 
 	weston_config_section_get_int(config_section, "scale", &scale, 1);
+
+	if (option_scale)
+		scale = option_scale;
 
 	weston_config_section_get_string(config_section,
 					 "transform", &t, "normal");
@@ -1401,13 +1404,14 @@ backend_init(struct wl_display *display, int *argc, char *argv[],
 	struct wayland_compositor *c;
 	struct wayland_output *output;
 	struct weston_config_section *section;
-	int x, count, width, height, use_pixman;
+	int x, count, width, height, scale, use_pixman;
 	const char *section_name, *display_name;
 	char *name;
 
 	const struct weston_option wayland_options[] = {
 		{ WESTON_OPTION_INTEGER, "width", 0, &width },
 		{ WESTON_OPTION_INTEGER, "height", 0, &height },
+		{ WESTON_OPTION_INTEGER, "scale", 0, &scale },
 		{ WESTON_OPTION_STRING, "display", 0, &display_name },
 		{ WESTON_OPTION_BOOLEAN, "use-pixman", 0, &use_pixman },
 		{ WESTON_OPTION_INTEGER, "output-count", 0, &count },
@@ -1415,6 +1419,7 @@ backend_init(struct wl_display *display, int *argc, char *argv[],
 
 	width = 0;
 	height = 0;
+	scale = 0;
 	display_name = NULL;
 	use_pixman = 0;
 	count = 1;
@@ -1443,7 +1448,7 @@ backend_init(struct wl_display *display, int *argc, char *argv[],
 		free(name);
 
 		output = wayland_output_create_for_config(c, section, width,
-							  height, x, 0);
+							  height, scale, x, 0);
 		if (!output)
 			goto err_outputs;
 
@@ -1455,8 +1460,11 @@ backend_init(struct wl_display *display, int *argc, char *argv[],
 		width = 1024;
 	if (!height)
 		height = 640;
+	if (!scale)
+		scale = 1;
 	while (count > 0) {
-		output = wayland_output_create(c, x, 0, width, height, NULL, 0, 1);
+		output = wayland_output_create(c, x, 0, width, height,
+					       NULL, 0, scale);
 		if (!output)
 			goto err_outputs;
 
