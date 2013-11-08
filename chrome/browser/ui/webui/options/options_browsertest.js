@@ -277,9 +277,31 @@ TEST_F('OptionsWebUITest', 'emptySelectedIndexesDoesntCrash', function() {
   setTimeout(testDone);
 });
 
+// An overlay's position should remain the same as it shows.
+TEST_F('OptionsWebUITest', 'OverlayShowDoesntShift', function() {
+  var overlayName = 'startup';
+  var overlay = $('startup-overlay');
+  var frozenPages = document.getElementsByClassName('frozen');  // Gets updated.
+  expectEquals(0, frozenPages.length);
+
+  document.addEventListener('webkitTransitionEnd', function(e) {
+    if (e.target != overlay)
+      return;
+
+    assertFalse(overlay.classList.contains('transparent'));
+    expectEquals(numFrozenPages, frozenPages.length);
+    testDone();
+  });
+
+  OptionsPage.navigateToPage(overlayName);
+  var numFrozenPages = frozenPages.length;
+  expectGT(numFrozenPages, 0);
+});
+
 /**
  * TestFixture for OptionsPage WebUI testing including tab history and support
- * for preference manipulation.
+ * for preference manipulation. If you don't need the features in the C++
+ * fixture, use the simpler OptionsWebUITest (above) instead.
  * @extends {testing.Test}
  * @constructor
  */
@@ -689,33 +711,6 @@ TEST_F('OptionsWebUIExtendedTest', 'OverlayBackToUnrelated', function() {
       testDone();
     });
   });
-});
-
-// Flaky on win. See http://crbug.com/315250
-GEN('#if defined(OS_WIN)');
-GEN('#define MAYBE_OverlayShowDoesntShift DISABLED_OverlayShowDoesntShift');
-GEN('#else');
-GEN('#define MAYBE_OverlayShowDoesntShift OverlayShowDoesntShift');
-GEN('#endif  // defined(OS_WIN)');
-
-// An overlay's position should remain the same as it shows.
-TEST_F('OptionsWebUIExtendedTest', 'MAYBE_OverlayShowDoesntShift', function() {
-  var searchEngineOverlay = $('search-engine-manager-page');
-  var frozenPages = document.getElementsByClassName('frozen');  // Gets updated.
-  expectEquals(0, frozenPages.length);
-
-  document.addEventListener('webkitTransitionEnd', function(e) {
-    if (e.target != searchEngineOverlay)
-      return;
-
-    assertFalse(searchEngineOverlay.classList.contains('transparent'));
-    expectEquals(numFrozenPages, frozenPages.length);
-    testDone();
-  });
-
-  OptionsPage.navigateToPage('searchEngines');
-  var numFrozenPages = frozenPages.length;
-  expectGT(numFrozenPages, 0);
 });
 
 // Verify history changes properly while the page is loading.
