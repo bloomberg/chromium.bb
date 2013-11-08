@@ -43,6 +43,7 @@
 #include "ui/gfx/text_elider.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/mouse_constants.h"
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 
@@ -967,6 +968,14 @@ void DownloadItemView::HandlePressEvent(const ui::LocatedEvent& event,
 
   if (active_event) {
     if (InDropDownButtonXCoordinateRange(event.x())) {
+      if (context_menu_.get()) {
+        // Ignore two close clicks. This typically happens when the user clicks
+        // the button to close the menu.
+        base::TimeDelta delta =
+            base::TimeTicks::Now() - context_menu_->close_time();
+        if (delta.InMilliseconds() < views::kMinimumMsBetweenButtonClicks)
+          return;
+      }
       drop_down_pressed_ = true;
       SetState(NORMAL, PUSHED);
       // We are setting is_mouse_gesture to false when calling ShowContextMenu

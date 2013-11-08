@@ -41,11 +41,15 @@ void DownloadShelfContextMenuView::Run(views::Widget* parent_widget,
   // while running the menu, which indicates that the containing view may have
   // been deleted. We ignore the return value because our caller already assumes
   // that the view could be deleted by the time we return from here.
-  ignore_result(menu_runner_->RunMenuAt(
-      parent_widget,
-      NULL,
-      rect,
-      position,
-      source_type,
-      views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU));
+  if (menu_runner_->RunMenuAt(
+          parent_widget,
+          NULL,
+          rect,
+          position,
+          source_type,
+          views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU) ==
+      views::MenuRunner::MENU_DELETED) {
+    return;
+  }
+  close_time_ = base::TimeTicks::Now();
 }

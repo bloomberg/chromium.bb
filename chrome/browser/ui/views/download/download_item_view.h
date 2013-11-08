@@ -55,8 +55,7 @@ class DownloadItemView : public views::ButtonListener,
                          public content::DownloadItem::Observer,
                          public gfx::AnimationDelegate {
  public:
-  DownloadItemView(content::DownloadItem* download,
-                   DownloadShelfView* parent);
+  DownloadItemView(content::DownloadItem* download, DownloadShelfView* parent);
   virtual ~DownloadItemView();
 
   // Timer callback for handling animations

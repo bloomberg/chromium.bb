@@ -22,7 +22,7 @@
 #include "ui/views/widget/root_view.h"
 #include "ui/views/widget/widget.h"
 
-using base::Time;
+using base::TimeTicks;
 using base::TimeDelta;
 
 namespace views {
@@ -114,7 +114,7 @@ bool MenuButton::Activate() {
     destroyed_flag_ = NULL;
 
     menu_visible_ = false;
-    menu_closed_time_ = Time::Now();
+    menu_closed_time_ = TimeTicks::Now();
 
     // Now that the menu has closed, we need to manually reset state to
     // "normal" since the menu modal loop will have prevented normal
@@ -168,7 +168,7 @@ bool MenuButton::OnMousePressed(const ui::MouseEvent& event) {
     if (event.IsOnlyLeftMouseButton() &&
         HitTestPoint(event.location()) &&
         GetDragOperations(event.location()) == ui::DragDropTypes::DRAG_NONE) {
-      TimeDelta delta = Time::Now() - menu_closed_time_;
+      TimeDelta delta = TimeTicks::Now() - menu_closed_time_;
       if (delta.InMilliseconds() > kMinimumMsBetweenButtonClicks)
         return Activate();
     }

@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/time/time.h"
 #include "chrome/browser/download/download_shelf_context_menu.h"
 #include "ui/base/ui_base_types.h"
 
@@ -31,6 +32,8 @@ class DownloadShelfContextMenuView : public DownloadShelfContextMenu {
                                content::PageNavigator* navigator);
   virtual ~DownloadShelfContextMenuView();
 
+  base::TimeTicks close_time() const { return close_time_; }
+
   // |rect| is the bounding area for positioning the menu in screen coordinates.
   // The menu will be positioned above or below but not overlapping |rect|.
   void Run(views::Widget* parent_widget,
@@ -39,6 +42,9 @@ class DownloadShelfContextMenuView : public DownloadShelfContextMenu {
 
  private:
   scoped_ptr<views::MenuRunner> menu_runner_;
+
+  // Time the menu was closed.
+  base::TimeTicks close_time_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadShelfContextMenuView);
 };
