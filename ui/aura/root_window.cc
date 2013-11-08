@@ -155,7 +155,13 @@ RootWindow::RootWindow(const CreateParams& params)
   set_dispatcher(this);
   SetName("RootWindow");
 
-  compositor_.reset(new ui::Compositor(host_->GetAcceleratedWidget()));
+  // Some GPUs have trouble drawing windows that are less than 64 pixels wide
+  // or tall, so force those windows to use the software renderer.
+  // http://crbug.com/286609
+  bool use_software_renderer =
+      params.initial_bounds.width() < 64 || params.initial_bounds.height() < 64;
+  compositor_.reset(
+      new ui::Compositor(use_software_renderer, host_->GetAcceleratedWidget()));
   DCHECK(compositor_.get());
 
   prop_.reset(new ui::ViewProp(host_->GetAcceleratedWidget(),

@@ -223,7 +223,7 @@ class COMPOSITOR_EXPORT Compositor
       NON_EXPORTED_BASE(public cc::LayerTreeHostSingleThreadClient),
       public base::SupportsWeakPtr<Compositor> {
  public:
-  explicit Compositor(gfx::AcceleratedWidget widget);
+  Compositor(bool use_software_renderer, gfx::AcceleratedWidget widget);
   virtual ~Compositor();
 
   static void Initialize();
@@ -339,6 +339,10 @@ class COMPOSITOR_EXPORT Compositor
   const cc::LayerTreeDebugState& GetLayerTreeDebugState() const;
   void SetLayerTreeDebugState(const cc::LayerTreeDebugState& debug_state);
 
+  // Should the compositor use a software output device. If false, it may still
+  // use a software output device if no GPU is available.
+  bool use_software_renderer() const { return use_software_renderer_; }
+
  private:
   friend class base::RefCounted<Compositor>;
   friend class CompositorLock;
@@ -376,6 +380,8 @@ class COMPOSITOR_EXPORT Compositor
   bool next_draw_is_resize_;
 
   bool disable_schedule_composite_;
+
+  bool use_software_renderer_;
 
   CompositorLock* compositor_lock_;
 
