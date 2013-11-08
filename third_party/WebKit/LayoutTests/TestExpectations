@@ -537,5 +537,3 @@ crbug.com/316425 fast/dom/Window/Location/window-shadow-location-using-js-object
 
 crbug.com/316429 [ Linux ] media/W3C/video/currentSrc/currentSrc_nonempty_after_adding_source_child.html [ Failure Pass ]
 crbug.com/316429 [ Linux ] media/W3C/video/currentSrc/currentSrc_nonempty_after_setting_src.html [ Failure Pass ]
-
-crbug.com/316460 svg/as-object/nested-embedded-svg-size-changes.html [ NeedsRebaseline ]
