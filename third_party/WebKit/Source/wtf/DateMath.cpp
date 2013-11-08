@@ -100,13 +100,11 @@ namespace WTF {
 
 /* Constants */
 
+static const double hoursPerDay = 24.0;
 static const double secondsPerDay = 24.0 * 60.0 * 60.0;
+static const double secondsPerHour = 60.0 * 60.0;
 
 static const double maxUnixTime = 2145859200.0; // 12/31/2037
-// ECMAScript asks not to support for a date of which total
-// millisecond value is larger than the following value.
-// See 15.9.1.14 of ECMA-262 5th edition.
-static const double maxECMAScriptTime = 8.64E15;
 
 // Day of year for the first day of each month, where index 0 is January, and day 0 is January 1.
 // First for non-leap years, then for leap years.
@@ -159,7 +157,7 @@ static inline double daysFrom1970ToYear(int year)
     return 365.0 * (year - 1970) + yearsToAddBy4Rule - yearsToExcludeBy100Rule + yearsToAddBy400Rule;
 }
 
-double msToDays(double ms)
+static double msToDays(double ms)
 {
     return floor(ms / msPerDay);
 }
@@ -196,7 +194,7 @@ static inline double msToMilliseconds(double ms)
     return result;
 }
 
-int msToMinutes(double ms)
+static int msToMinutes(double ms)
 {
     double result = fmod(floor(ms / msPerMinute), minutesPerHour);
     if (result < 0)
@@ -204,7 +202,7 @@ int msToMinutes(double ms)
     return static_cast<int>(result);
 }
 
-int msToHours(double ms)
+static int msToHours(double ms)
 {
     double result = fmod(floor(ms/msPerHour), hoursPerDay);
     if (result < 0)
@@ -310,6 +308,12 @@ static inline int maximumYearForDST()
     return 2037;
 }
 
+static inline double jsCurrentTime()
+{
+    // JavaScript doesn't recognize fractions of a millisecond.
+    return floor(WTF::currentTimeMS());
+}
+
 static inline int minimumYearForDST()
 {
     // Because of the 2038 issue (see maximumYearForDST) if the current year is
@@ -329,7 +333,7 @@ static inline int minimumYearForDST()
  * 2010, (rdar://problem/5052975), if the year passed in is before 1900 or after
  * 2100, (rdar://problem/5055038).
  */
-int equivalentYearForDST(int year)
+static int equivalentYearForDST(int year)
 {
     // It is ok if the cached year is not the current year as long as the rules
     // for DST did not change between the two years; if they did the app would need
@@ -546,203 +550,8 @@ static bool parseLong(const char* string, char** stopPosition, int base, long* r
     return true;
 }
 
-// Parses a date with the format YYYY[-MM[-DD]].
-// Year parsing is lenient, allows any number of digits, and +/-.
-// Returns 0 if a parse error occurs, else returns the end of the parsed portion of the string.
-static char* parseES5DatePortion(const char* currentPosition, int& year, long& month, long& day)
-{
-    char* postParsePosition;
-
-    // This is a bit more lenient on the year string than ES5 specifies:
-    // instead of restricting to 4 digits (or 6 digits with mandatory +/-),
-    // it accepts any integer value. Consider this an implementation fallback.
-    if (!parseInt(currentPosition, &postParsePosition, 10, &year))
-        return 0;
-
-    // Check for presence of -MM portion.
-    if (*postParsePosition != '-')
-        return postParsePosition;
-    currentPosition = postParsePosition + 1;
-
-    if (!isASCIIDigit(*currentPosition))
-        return 0;
-    if (!parseLong(currentPosition, &postParsePosition, 10, &month))
-        return 0;
-    if ((postParsePosition - currentPosition) != 2)
-        return 0;
-
-    // Check for presence of -DD portion.
-    if (*postParsePosition != '-')
-        return postParsePosition;
-    currentPosition = postParsePosition + 1;
-
-    if (!isASCIIDigit(*currentPosition))
-        return 0;
-    if (!parseLong(currentPosition, &postParsePosition, 10, &day))
-        return 0;
-    if ((postParsePosition - currentPosition) != 2)
-        return 0;
-    return postParsePosition;
-}
-
-// Parses a time with the format HH:mm[:ss[.sss]][Z|(+|-)00:00].
-// Fractional seconds parsing is lenient, allows any number of digits.
-// Returns 0 if a parse error occurs, else returns the end of the parsed portion of the string.
-static char* parseES5TimePortion(char* currentPosition, long& hours, long& minutes, double& seconds, long& timeZoneSeconds)
-{
-    char* postParsePosition;
-    if (!isASCIIDigit(*currentPosition))
-        return 0;
-    if (!parseLong(currentPosition, &postParsePosition, 10, &hours))
-        return 0;
-    if (*postParsePosition != ':' || (postParsePosition - currentPosition) != 2)
-        return 0;
-    currentPosition = postParsePosition + 1;
-
-    if (!isASCIIDigit(*currentPosition))
-        return 0;
-    if (!parseLong(currentPosition, &postParsePosition, 10, &minutes))
-        return 0;
-    if ((postParsePosition - currentPosition) != 2)
-        return 0;
-    currentPosition = postParsePosition;
-
-    // Seconds are optional.
-    if (*currentPosition == ':') {
-        ++currentPosition;
-
-        long intSeconds;
-        if (!isASCIIDigit(*currentPosition))
-            return 0;
-        if (!parseLong(currentPosition, &postParsePosition, 10, &intSeconds))
-            return 0;
-        if ((postParsePosition - currentPosition) != 2)
-            return 0;
-        seconds = intSeconds;
-        if (*postParsePosition == '.') {
-            currentPosition = postParsePosition + 1;
-
-            // In ECMA-262-5 it's a bit unclear if '.' can be present without milliseconds, but
-            // a reasonable interpretation guided by the given examples and RFC 3339 says "no".
-            // We check the next character to avoid reading +/- timezone hours after an invalid decimal.
-            if (!isASCIIDigit(*currentPosition))
-                return 0;
-
-            // We are more lenient than ES5 by accepting more or less than 3 fraction digits.
-            long fracSeconds;
-            if (!parseLong(currentPosition, &postParsePosition, 10, &fracSeconds))
-                return 0;
-
-            long numFracDigits = postParsePosition - currentPosition;
-            seconds += fracSeconds * pow(10.0, static_cast<double>(-numFracDigits));
-        }
-        currentPosition = postParsePosition;
-    }
-
-    if (*currentPosition == 'Z')
-        return currentPosition + 1;
-
-    bool tzNegative;
-    if (*currentPosition == '-')
-        tzNegative = true;
-    else if (*currentPosition == '+')
-        tzNegative = false;
-    else
-        return currentPosition; // no timezone
-    ++currentPosition;
-
-    long tzHours;
-    long tzHoursAbs;
-    long tzMinutes;
-
-    if (!isASCIIDigit(*currentPosition))
-        return 0;
-    if (!parseLong(currentPosition, &postParsePosition, 10, &tzHours))
-        return 0;
-    if (*postParsePosition != ':' || (postParsePosition - currentPosition) != 2)
-        return 0;
-    tzHoursAbs = labs(tzHours);
-    currentPosition = postParsePosition + 1;
-
-    if (!isASCIIDigit(*currentPosition))
-        return 0;
-    if (!parseLong(currentPosition, &postParsePosition, 10, &tzMinutes))
-        return 0;
-    if ((postParsePosition - currentPosition) != 2)
-        return 0;
-    currentPosition = postParsePosition;
-
-    if (tzHoursAbs > 24)
-        return 0;
-    if (tzMinutes < 0 || tzMinutes > 59)
-        return 0;
-
-    timeZoneSeconds = 60 * (tzMinutes + (60 * tzHoursAbs));
-    if (tzNegative)
-        timeZoneSeconds = -timeZoneSeconds;
-
-    return currentPosition;
-}
-
-double parseES5DateFromNullTerminatedCharacters(const char* dateString)
-{
-    // This parses a date of the form defined in ECMA-262-5, section 15.9.1.15
-    // (similar to RFC 3339 / ISO 8601: YYYY-MM-DDTHH:mm:ss[.sss]Z).
-    // In most cases it is intentionally strict (e.g. correct field widths, no stray whitespace).
-
-    static const long daysPerMonth[12] = { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
-
-    // The year must be present, but the other fields may be omitted - see ES5.1 15.9.1.15.
-    int year = 0;
-    long month = 1;
-    long day = 1;
-    long hours = 0;
-    long minutes = 0;
-    double seconds = 0;
-    long timeZoneSeconds = 0;
-
-    // Parse the date YYYY[-MM[-DD]]
-    char* currentPosition = parseES5DatePortion(dateString, year, month, day);
-    if (!currentPosition)
-        return std::numeric_limits<double>::quiet_NaN();
-    // Look for a time portion.
-    if (*currentPosition == 'T') {
-        // Parse the time HH:mm[:ss[.sss]][Z|(+|-)00:00]
-        currentPosition = parseES5TimePortion(currentPosition + 1, hours, minutes, seconds, timeZoneSeconds);
-        if (!currentPosition)
-            return std::numeric_limits<double>::quiet_NaN();
-    }
-    // Check that we have parsed all characters in the string.
-    if (*currentPosition)
-        return std::numeric_limits<double>::quiet_NaN();
-
-    // A few of these checks could be done inline above, but since many of them are interrelated
-    // we would be sacrificing readability to "optimize" the (presumably less common) failure path.
-    if (month < 1 || month > 12)
-        return std::numeric_limits<double>::quiet_NaN();
-    if (day < 1 || day > daysPerMonth[month - 1])
-        return std::numeric_limits<double>::quiet_NaN();
-    if (month == 2 && day > 28 && !isLeapYear(year))
-        return std::numeric_limits<double>::quiet_NaN();
-    if (hours < 0 || hours > 24)
-        return std::numeric_limits<double>::quiet_NaN();
-    if (hours == 24 && (minutes || seconds))
-        return std::numeric_limits<double>::quiet_NaN();
-    if (minutes < 0 || minutes > 59)
-        return std::numeric_limits<double>::quiet_NaN();
-    if (seconds < 0 || seconds >= 61)
-        return std::numeric_limits<double>::quiet_NaN();
-    if (seconds > 60) {
-        // Discard leap seconds by clamping to the end of a minute.
-        seconds = 60;
-    }
-
-    double dateSeconds = ymdhmsToSeconds(year, month, day, hours, minutes, seconds) - timeZoneSeconds;
-    return dateSeconds * msPerSecond;
-}
-
 // Odd case where 'exec' is allowed to be 0, to accomodate a caller in WebCore.
-double parseDateFromNullTerminatedCharacters(const char* dateString, bool& haveTZ, int& offset)
+static double parseDateFromNullTerminatedCharacters(const char* dateString, bool& haveTZ, int& offset)
 {
     haveTZ = false;
     offset = 0;
@@ -1041,15 +850,6 @@ double parseDateFromNullTerminatedCharacters(const char* dateString)
         offset = (utcOffset + dstOffset) / msPerMinute;
     }
     return ms - (offset * msPerMinute);
-}
-
-double timeClip(double t)
-{
-    if (!std::isfinite(t))
-        return std::numeric_limits<double>::quiet_NaN();
-    if (fabs(t) > maxECMAScriptTime)
-        return std::numeric_limits<double>::quiet_NaN();
-    return trunc(t);
 }
 
 // See http://tools.ietf.org/html/rfc2822#section-3.3 for more information.

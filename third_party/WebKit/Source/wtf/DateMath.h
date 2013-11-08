@@ -58,44 +58,28 @@
 namespace WTF {
 
 WTF_EXPORT void initializeDates();
-WTF_EXPORT int equivalentYearForDST(int year);
 
 // Not really math related, but this is currently the only shared place to put these.
-WTF_EXPORT double parseES5DateFromNullTerminatedCharacters(const char* dateString);
 WTF_EXPORT double parseDateFromNullTerminatedCharacters(const char* dateString);
-WTF_EXPORT double parseDateFromNullTerminatedCharacters(const char* dateString, bool& haveTZ, int& offset);
-WTF_EXPORT double timeClip(double);
 // dayOfWeek: [0, 6] 0 being Monday, day: [1, 31], month: [0, 11], year: ex: 2011, hours: [0, 23], minutes: [0, 59], seconds: [0, 59], utcOffset: [-720,720].
 WTF_EXPORT String makeRFC2822DateString(unsigned dayOfWeek, unsigned day, unsigned month, unsigned year, unsigned hours, unsigned minutes, unsigned seconds, int utcOffset);
-
-inline double jsCurrentTime()
-{
-    // JavaScript doesn't recognize fractions of a millisecond.
-    return floor(WTF::currentTimeMS());
-}
 
 const char weekdayName[7][4] = { "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun" };
 const char monthName[12][4] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
 const char* const monthFullName[12] = { "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" };
 
-const double hoursPerDay = 24.0;
 const double minutesPerHour = 60.0;
-const double secondsPerHour = 60.0 * 60.0;
 const double secondsPerMinute = 60.0;
 const double msPerSecond = 1000.0;
 const double msPerMinute = 60.0 * 1000.0;
 const double msPerHour = 60.0 * 60.0 * 1000.0;
 const double msPerDay = 24.0 * 60.0 * 60.0 * 1000.0;
-const double msPerMonth = 2592000000.0;
 
 WTF_EXPORT bool isLeapYear(int year);
 
 // Returns the number of days from 1970-01-01 to the specified date.
 WTF_EXPORT double dateToDaysFrom1970(int year, int month, int day);
 WTF_EXPORT int msToYear(double ms);
-WTF_EXPORT double msToDays(double ms);
-WTF_EXPORT int msToMinutes(double ms);
-WTF_EXPORT int msToHours(double ms);
 WTF_EXPORT int dayInYear(int year, int month, int day);
 WTF_EXPORT int dayInYear(double ms, int year);
 WTF_EXPORT int monthFromDayInYear(int dayInYear, bool leapYear);
@@ -118,9 +102,6 @@ using WTF::msPerHour;
 using WTF::msPerMinute;
 using WTF::msPerSecond;
 using WTF::msToYear;
-using WTF::msToDays;
-using WTF::msToMinutes;
-using WTF::msToHours;
 using WTF::secondsPerMinute;
 using WTF::parseDateFromNullTerminatedCharacters;
 using WTF::makeRFC2822DateString;
