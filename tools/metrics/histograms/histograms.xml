@@ -6534,6 +6534,10 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Media.VideoPixelFormat" enum="VideoPixelFormat">
+  <summary>Pixel format used in HTML5 video. Emitted on video load.</summary>
+</histogram>
+
 <histogram name="Media.VideoVisibleAspectRatio">
   <summary>Visible aspect ratio of HTML5 video.</summary>
 </histogram>
@@ -29400,6 +29404,16 @@ other types of suffix sets.
   <int value="10" label="H.264 MultiviewHigh"/>
   <int value="11" label="VP8"/>
   <int value="12" label="VP9"/>
+</enum>
+
+<enum name="VideoPixelFormat" type="int">
+  <int value="0" label="UNKNOWN"/>
+  <int value="1" label="YV12"/>
+  <int value="2" label="YV16"/>
+  <int value="3" label="I420"/>
+  <int value="4" label="YV12A"/>
+  <int value="5" label="HOLE"/>
+  <int value="6" label="NATIVE_TEXTURE"/>
 </enum>
 
 <enum name="ViewFileType" type="int">

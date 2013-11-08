@@ -37,16 +37,18 @@ class MEDIA_EXPORT VideoFrame : public base::RefCountedThreadSafe<VideoFrame> {
   // Surface formats roughly based on FOURCC labels, see:
   // http://www.fourcc.org/rgb.php
   // http://www.fourcc.org/yuv.php
+  // Logged to UMA, so never reuse values.
   enum Format {
     UNKNOWN = 0,  // Unknown format value.
-    YV12 = 6,  // 12bpp YVU planar 1x1 Y, 2x2 VU samples
-    YV16 = 7,  // 16bpp YVU planar 1x1 Y, 2x1 VU samples
-    I420 = 11,  // 12bpp YVU planar 1x1 Y, 2x2 UV samples.
-    NATIVE_TEXTURE = 12,  // Native texture.  Pixel-format agnostic.
+    YV12 = 1,  // 12bpp YVU planar 1x1 Y, 2x2 VU samples
+    YV16 = 2,  // 16bpp YVU planar 1x1 Y, 2x1 VU samples
+    I420 = 3,  // 12bpp YVU planar 1x1 Y, 2x2 UV samples.
+    YV12A = 4,  // 20bpp YUVA planar 1x1 Y, 2x2 VU, 1x1 A samples.
 #if defined(GOOGLE_TV)
-    HOLE = 13,  // Hole frame.
+    HOLE = 5,  // Hole frame.
 #endif
-    YV12A = 14,  // 20bpp YUVA planar 1x1 Y, 2x2 VU, 1x1 A samples.
+    NATIVE_TEXTURE = 6,  // Native texture.  Pixel-format agnostic.
+    HISTOGRAM_MAX,  // Must always be greatest.
   };
 
   // Returns the name of a Format as a string.

@@ -76,6 +76,8 @@ void VideoDecoderConfig::Initialize(VideoCodec codec,
     UmaHistogramAspectRatio("Media.VideoCodedAspectRatio", coded_size);
     UMA_HISTOGRAM_COUNTS_10000("Media.VideoVisibleWidth", visible_rect.width());
     UmaHistogramAspectRatio("Media.VideoVisibleAspectRatio", visible_rect);
+    UMA_HISTOGRAM_ENUMERATION(
+        "Media.VideoPixelFormat", format, VideoFrame::HISTOGRAM_MAX);
   }
 
   codec_ = codec;

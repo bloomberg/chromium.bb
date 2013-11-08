@@ -77,6 +77,7 @@ bool VideoResourceUpdater::VerifyFrame(
 
     // Unacceptable inputs. ¯\(°_o)/¯
     case media::VideoFrame::UNKNOWN:
+    case media::VideoFrame::HISTOGRAM_MAX:
     case media::VideoFrame::I420:
       break;
   }
@@ -105,6 +106,7 @@ static gfx::Size SoftwarePlaneDimension(
       case media::VideoFrame::UNKNOWN:
       case media::VideoFrame::I420:
       case media::VideoFrame::NATIVE_TEXTURE:
+      case media::VideoFrame::HISTOGRAM_MAX:
 #if defined(GOOGLE_TV)
       case media::VideoFrame::HOLE:
 #endif
