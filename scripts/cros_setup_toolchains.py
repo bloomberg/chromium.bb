@@ -332,6 +332,37 @@ def RemovePackageMask(target):
 
 
 # Main functions performing the actual update steps.
+def RebuildLibtool():
+  """Rebuild libtool as needed
+
+  Libtool hardcodes full paths to internal gcc files, so whenever we upgrade
+  gcc, libtool will break.  We can't use binary packages either as those will
+  most likely be compiled against the previous version of gcc.
+  """
+  needs_update = False
+  with open('/usr/bin/libtool') as f:
+    for line in f:
+      # Look for a line like:
+      #   sys_lib_search_path_spec="..."
+      # It'll be a list of paths and gcc will be one of them.
+      if line.startswith('sys_lib_search_path_spec='):
+        line = line.rstrip()
+        for path in line.split('=', 1)[1].strip('"').split():
+          if not os.path.exists(path):
+            print 'Rebuilding libtool after gcc upgrade'
+            print ' %s' % line
+            print ' missing path: %s' % path
+            needs_update = True
+            break
+
+      if needs_update:
+        break
+
+  if needs_update:
+    cmd = [EMERGE_CMD, '--oneshot', 'sys-devel/libtool']
+    cros_build_lib.RunCommand(cmd)
+
+
 def UpdateTargets(targets, usepkg):
   """Determines which packages need update/unmerge and defers to portage.
 
@@ -517,6 +548,10 @@ def UpdateToolchains(usepkg, deleteold, hostonly, reconfig,
 
   if deleteold:
     CleanTargets(targets)
+
+  # Now that we've cleared out old versions, see if we need to rebuild
+  # anything.  Can't do this earlier as it might not be broken.
+  RebuildLibtool()
 
 
 def ShowBoardConfig(board):
