@@ -434,7 +434,7 @@ static Node* firstInSpecialElement(const Position& pos)
         if (isSpecialElement(n)) {
             VisiblePosition vPos = VisiblePosition(pos, DOWNSTREAM);
             VisiblePosition firstInElement = VisiblePosition(firstPositionInOrBeforeNode(n), DOWNSTREAM);
-            if (isTableElement(n) && vPos == firstInElement.next())
+            if (isRenderedTable(n) && vPos == firstInElement.next())
                 return n;
             if (vPos == firstInElement)
                 return n;
@@ -449,7 +449,7 @@ static Node* lastInSpecialElement(const Position& pos)
         if (isSpecialElement(n)) {
             VisiblePosition vPos = VisiblePosition(pos, DOWNSTREAM);
             VisiblePosition lastInElement = VisiblePosition(lastPositionInOrAfterNode(n), DOWNSTREAM);
-            if (isTableElement(n) && vPos == lastInElement.previous())
+            if (isRenderedTable(n) && vPos == lastInElement.previous())
                 return n;
             if (vPos == lastInElement)
                 return n;
@@ -752,14 +752,13 @@ bool canMergeLists(Element* firstList, Element* secondList)
     // Make sure there is no visible content between this li and the previous list
 }
 
-// FIXME: do not require renderer, so that this can be used within fragments, or rename to isRenderedTable()
-bool isTableElement(Node* n)
+bool isRenderedTable(const Node* n)
 {
     if (!n || !n->isElementNode())
         return false;
 
     RenderObject* renderer = n->renderer();
-    return (renderer && (renderer->style()->display() == TABLE || renderer->style()->display() == INLINE_TABLE));
+    return (renderer && renderer->isTable());
 }
 
 bool isTableCell(const Node* node)
