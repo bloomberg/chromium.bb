@@ -58,8 +58,6 @@ public:
     const Vector<RefPtr<StyleSheet> >& styleSheetsForStyleSheetList(TreeScope&);
     const Vector<RefPtr<CSSStyleSheet> >& activeAuthorStyleSheets() const;
 
-    CSSStyleSheet* pageUserSheet();
-    const Vector<RefPtr<CSSStyleSheet> >& documentUserStyleSheets() const { return m_userStyleSheets; }
     const Vector<RefPtr<CSSStyleSheet> >& documentAuthorStyleSheets() const { return m_authorStyleSheets; }
     const Vector<RefPtr<CSSStyleSheet> >& injectedAuthorStyleSheets() const;
 
@@ -68,13 +66,10 @@ public:
     void removeStyleSheetCandidateNode(Node*, ContainerNode* scopingNode = 0);
     void modifiedStyleSheetCandidateNode(Node*);
 
-    void clearPageUserSheet();
-    void updatePageUserSheet();
     void invalidateInjectedStyleSheetCache();
     void updateInjectedStyleSheetCache() const;
 
     void addAuthorSheet(PassRefPtr<StyleSheetContents> authorSheet);
-    void addUserSheet(PassRefPtr<StyleSheetContents> userSheet);
 
     bool needsUpdateActiveStylesheetsOnStyleRecalc() const { return m_needsUpdateActiveStylesheetsOnStyleRecalc; }
 
@@ -131,12 +126,9 @@ private:
     // elements and when it is safe to execute scripts.
     int m_pendingStylesheets;
 
-    RefPtr<CSSStyleSheet> m_pageUserSheet;
-
     mutable Vector<RefPtr<CSSStyleSheet> > m_injectedAuthorStyleSheets;
     mutable bool m_injectedStyleSheetCacheValid;
 
-    Vector<RefPtr<CSSStyleSheet> > m_userStyleSheets;
     Vector<RefPtr<CSSStyleSheet> > m_authorStyleSheets;
 
     bool m_needsUpdateActiveStylesheetsOnStyleRecalc;

@@ -167,7 +167,6 @@ public:
     virtual void setThreadedHTMLParser(bool);
     virtual void setUnifiedTextCheckerEnabled(bool);
     virtual void setUnsafePluginPastingEnabled(bool);
-    virtual void setUserStyleSheetLocation(const WebURL&);
     virtual void setUsesEncodingDetector(bool);
     virtual void setUseLegacyBackgroundSizeShorthandBehavior(bool);
     virtual void setUseSolidColorScrollbars(bool);

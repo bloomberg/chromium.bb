@@ -47,30 +47,13 @@ DocumentRuleSets::~DocumentRuleSets()
 {
 }
 
-void DocumentRuleSets::initUserStyle(StyleEngine* styleSheetCollection, const Vector<RefPtr<StyleRule> >& watchedSelectors, const MediaQueryEvaluator& medium, StyleResolver& resolver)
+void DocumentRuleSets::initWatchedSelectorRules(const Vector<RefPtr<StyleRule> >& watchedSelectors)
 {
-    OwnPtr<RuleSet> tempUserStyle = RuleSet::create();
-    if (CSSStyleSheet* pageUserSheet = styleSheetCollection->pageUserSheet())
-        tempUserStyle->addRulesFromSheet(pageUserSheet->contents(), medium, &resolver);
-    collectRulesFromUserStyleSheets(styleSheetCollection->documentUserStyleSheets(), *tempUserStyle, medium, resolver);
-    collectRulesFromWatchedSelectors(watchedSelectors, *tempUserStyle);
-    if (tempUserStyle->ruleCount() > 0 || tempUserStyle->pageRules().size() > 0)
-        m_userStyle = tempUserStyle.release();
-}
-
-void DocumentRuleSets::collectRulesFromUserStyleSheets(const Vector<RefPtr<CSSStyleSheet> >& userSheets, RuleSet& userStyle, const MediaQueryEvaluator& medium, StyleResolver& resolver)
-{
-    for (unsigned i = 0; i < userSheets.size(); ++i) {
-        ASSERT(userSheets[i]->contents()->isUserStyleSheet());
-        userStyle.addRulesFromSheet(userSheets[i]->contents(), medium, &resolver);
-        resolver.addFontFaceRules(userStyle.fontFaceRules());
-    }
-}
-
-void DocumentRuleSets::collectRulesFromWatchedSelectors(const Vector<RefPtr<StyleRule> >& watchedSelectors, RuleSet& userStyle)
-{
+    if (!watchedSelectors.size())
+        return;
+    m_watchedSelectorsRules = RuleSet::create();
     for (unsigned i = 0; i < watchedSelectors.size(); ++i)
-        userStyle.addStyleRule(watchedSelectors[i].get(), RuleHasNoSpecialState);
+        m_watchedSelectorsRules->addStyleRule(watchedSelectors[i].get(), RuleHasNoSpecialState);
 }
 
 void DocumentRuleSets::resetAuthorStyle()
@@ -89,8 +72,8 @@ void DocumentRuleSets::collectFeaturesTo(RuleFeatureSet& features, bool isViewSo
     if (isViewSource)
         features.add(CSSDefaultStyleSheets::viewSourceStyle()->features());
 
-    if (m_userStyle)
-        features.add(m_userStyle->features());
+    if (m_watchedSelectorsRules)
+        features.add(m_watchedSelectorsRules->features());
 
     m_treeBoundaryCrossingRules.collectFeaturesTo(features);
 }

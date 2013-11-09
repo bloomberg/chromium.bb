@@ -192,7 +192,7 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
     bindMethod("removeOriginAccessWhitelistEntry", &TestRunner::removeOriginAccessWhitelistEntry);
     bindMethod("hasCustomPageSizeStyle", &TestRunner::hasCustomPageSizeStyle);
     bindMethod("forceRedSelectionColors", &TestRunner::forceRedSelectionColors);
-    bindMethod("addUserStyleSheet", &TestRunner::addUserStyleSheet);
+    bindMethod("injectStyleSheet", &TestRunner::injectStyleSheet);
     bindMethod("startSpeechInput", &TestRunner::startSpeechInput);
     bindMethod("findString", &TestRunner::findString);
     bindMethod("setValueForUser", &TestRunner::setValueForUser);
@@ -213,8 +213,6 @@ TestRunner::TestRunner(TestInterfaces* interfaces)
     bindMethod("setPointerLockWillFailSynchronously", &TestRunner::setPointerLockWillFailSynchronously);
 
     // The following modify WebPreferences.
-    bindMethod("setUserStyleSheetEnabled", &TestRunner::setUserStyleSheetEnabled);
-    bindMethod("setUserStyleSheetLocation", &TestRunner::setUserStyleSheetLocation);
     bindMethod("setPopupBlockingEnabled", &TestRunner::setPopupBlockingEnabled);
     bindMethod("setJavaScriptCanAccessClipboard", &TestRunner::setJavaScriptCanAccessClipboard);
     bindMethod("setXSSAuditorEnabled", &TestRunner::setXSSAuditorEnabled);
@@ -430,8 +428,6 @@ void TestRunner::reset()
     m_platformName.set("chromium");
     m_tooltipText.set("");
     m_disableNotifyDone.set(false);
-
-    m_userStyleSheetLocation = WebURL();
 
     m_webPermissions->reset();
 
@@ -1298,7 +1294,7 @@ void TestRunner::forceRedSelectionColors(const CppArgumentList& arguments, CppVa
     m_webView->setSelectionColors(0xffee0000, 0xff00ee00, 0xff000000, 0xffc0c0c0);
 }
 
-void TestRunner::addUserStyleSheet(const CppArgumentList& arguments, CppVariant* result)
+void TestRunner::injectStyleSheet(const CppArgumentList& arguments, CppVariant* result)
 {
     result->setNull();
     if (arguments.size() < 2 || !arguments[0].isString() || !arguments[1].isBool())
@@ -1577,25 +1573,6 @@ void TestRunner::setMockDeviceOrientation(const CppArgumentList& arguments, CppV
     orientation.absolute = arguments[7].toBoolean();
 
     m_delegate->setDeviceOrientationData(orientation);
-}
-
-void TestRunner::setUserStyleSheetEnabled(const CppArgumentList& arguments, CppVariant* result)
-{
-    if (arguments.size() > 0 && arguments[0].isBool()) {
-        m_delegate->preferences()->userStyleSheetLocation = arguments[0].value.boolValue ? m_userStyleSheetLocation : WebURL();
-        m_delegate->applyPreferences();
-    }
-    result->setNull();
-}
-
-void TestRunner::setUserStyleSheetLocation(const CppArgumentList& arguments, CppVariant* result)
-{
-    if (arguments.size() > 0 && arguments[0].isString()) {
-        m_userStyleSheetLocation = m_delegate->localFileToDataURL(m_delegate->rewriteLayoutTestsURL(arguments[0].toString()));
-        m_delegate->preferences()->userStyleSheetLocation = m_userStyleSheetLocation;
-        m_delegate->applyPreferences();
-    }
-    result->setNull();
 }
 
 void TestRunner::setPopupBlockingEnabled(const CppArgumentList& arguments, CppVariant* result)

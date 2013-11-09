@@ -8,7 +8,7 @@
         if (window.testRunner) {
             // FIXME: Emulate the android viewport UA stylesheet. We should test this
             // based on the platform we're building for
-            testRunner.addUserStyleSheet("@viewport {min-width: 980px}", true);
+            testRunner.injectStyleSheet("@viewport {min-width: 980px}", true);
             internals.settings.setViewportEnabled(true);
         }
     </script>

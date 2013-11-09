@@ -356,16 +356,6 @@ void Settings::setPluginsEnabled(bool arePluginsEnabled)
     m_arePluginsEnabled = arePluginsEnabled;
 }
 
-void Settings::setUserStyleSheetLocation(const KURL& userStyleSheetLocation)
-{
-    if (m_userStyleSheetLocation == userStyleSheetLocation)
-        return;
-
-    m_userStyleSheetLocation = userStyleSheetLocation;
-
-    m_page->userStyleSheetLocationChanged();
-}
-
 void Settings::setDNSPrefetchingEnabled(bool dnsPrefetchingEnabled)
 {
     if (m_dnsPrefetchingEnabled == dnsPrefetchingEnabled)

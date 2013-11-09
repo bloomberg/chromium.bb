@@ -9,7 +9,7 @@ function injectStyleSheet()
 {
     var styleSheet = "#container { margin: 8px }";
     if (window.testRunner)
-        window.testRunner.addUserStyleSheet(styleSheet, true);
+        window.testRunner.injectStyleSheet(styleSheet, true);
 }
 
 function test()

@@ -1878,28 +1878,6 @@ void Internals::allowRoundingHacks() const
     TextRun::setAllowsRoundingHacks(true);
 }
 
-void Internals::insertAuthorCSS(Document* document, const String& css) const
-{
-    if (!document)
-        return;
-
-    RefPtr<StyleSheetContents> parsedSheet = StyleSheetContents::create(*document);
-    parsedSheet->setIsUserStyleSheet(false);
-    parsedSheet->parseString(css);
-    document->styleEngine()->addAuthorSheet(parsedSheet);
-}
-
-void Internals::insertUserCSS(Document* document, const String& css) const
-{
-    if (!document)
-        return;
-
-    RefPtr<StyleSheetContents> parsedSheet = StyleSheetContents::create(*document);
-    parsedSheet->setIsUserStyleSheet(true);
-    parsedSheet->parseString(css);
-    document->styleEngine()->addUserSheet(parsedSheet);
-}
-
 String Internals::counterValue(Element* element)
 {
     if (!element)

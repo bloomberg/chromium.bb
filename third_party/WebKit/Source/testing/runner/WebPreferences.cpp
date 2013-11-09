@@ -55,7 +55,6 @@ void WebPreferences::reset()
     loadsImagesAutomatically = true;
     offlineWebApplicationCacheEnabled = true;
     pluginsEnabled = true;
-    userStyleSheetLocation = WebURL();
     caretBrowsingEnabled = false;
 
     // Allow those layout tests running as local files, i.e. under

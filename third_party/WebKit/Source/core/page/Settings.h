@@ -139,9 +139,6 @@ public:
     void setDNSPrefetchingEnabled(bool);
     bool dnsPrefetchingEnabled() const { return m_dnsPrefetchingEnabled; }
 
-    void setUserStyleSheetLocation(const KURL&);
-    const KURL& userStyleSheetLocation() const { return m_userStyleSheetLocation; }
-
     static void setMockScrollbarsEnabled(bool flag);
     static bool mockScrollbarsEnabled();
 
@@ -173,7 +170,6 @@ private:
     Page* m_page;
 
     String m_mediaTypeOverride;
-    KURL m_userStyleSheetLocation;
     ScriptFontFamilyMap m_standardFontFamilyMap;
     ScriptFontFamilyMap m_serifFontFamilyMap;
     ScriptFontFamilyMap m_fixedFontFamilyMap;

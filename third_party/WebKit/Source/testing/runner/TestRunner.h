@@ -241,8 +241,8 @@ private:
     // Forces the selection colors for testing under Linux.
     void forceRedSelectionColors(const CppArgumentList&, CppVariant*);
 
-    // Adds a user style sheet to be injected into new documents.
-    void addUserStyleSheet(const CppArgumentList&, CppVariant*);
+    // Adds a style sheet to be injected into new documents.
+    void injectStyleSheet(const CppArgumentList&, CppVariant*);
 
     void startSpeechInput(const CppArgumentList&, CppVariant*);
 
@@ -296,11 +296,6 @@ private:
 
     ///////////////////////////////////////////////////////////////////////////
     // Methods modifying WebPreferences.
-
-    // Passes through to WebPreferences which allows the user to have a custom
-    // style sheet.
-    void setUserStyleSheetEnabled(const CppArgumentList&, CppVariant*);
-    void setUserStyleSheetLocation(const CppArgumentList&, CppVariant*);
 
     // Set the WebPreference that controls webkit's popup blocking.
     void setPopupBlockingEnabled(const CppArgumentList&, CppVariant*);
@@ -575,8 +570,6 @@ private:
     bool m_policyDelegateShouldNotifyDone;
 
     WorkQueue m_workQueue;
-
-    blink::WebURL m_userStyleSheetLocation;
 
     // globalFlag is used by a number of layout tests in http/tests/security/dataURL.
     CppVariant m_globalFlag;

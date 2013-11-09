@@ -109,8 +109,6 @@ void InspectorCSSOMWrappers::collectFromStyleEngine(StyleEngine* styleSheetColle
     styleSheetCollection->getActiveAuthorStyleSheets(activeAuthorStyleSheets);
     for (size_t i = 0; i < activeAuthorStyleSheets.size(); ++i)
         collectFromStyleSheets(*activeAuthorStyleSheets[i]);
-    collect(styleSheetCollection->pageUserSheet());
-    collectFromStyleSheets(styleSheetCollection->documentUserStyleSheets());
 }
 
 CSSStyleRule* InspectorCSSOMWrappers::getWrapperForRuleInSheets(StyleRule* rule, StyleEngine* styleSheetCollection)

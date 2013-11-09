@@ -235,9 +235,6 @@ public:
 
     void allowRoundingHacks() const;
 
-    void insertAuthorCSS(Document*, const String&) const;
-    void insertUserCSS(Document*, const String&) const;
-
     unsigned numberOfLiveNodes() const;
     unsigned numberOfLiveDocuments() const;
     Vector<String> consoleMessageArgumentCounts(Document*) const;

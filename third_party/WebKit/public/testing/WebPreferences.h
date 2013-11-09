@@ -63,7 +63,6 @@ struct WEBTESTRUNNER_EXPORT WebPreferences {
     bool loadsImagesAutomatically;
     bool offlineWebApplicationCacheEnabled;
     bool pluginsEnabled;
-    blink::WebURL userStyleSheetLocation;
     bool allowUniversalAccessFromFileURLs;
     blink::WebSettings::EditingBehavior editingBehavior;
     bool tabsToLinks;

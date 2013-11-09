@@ -65,8 +65,8 @@ class WebURL;
 // Provides readonly access to some properties of a DOM document.
 class WebDocument : public WebNode {
 public:
+    // FIXME: Stop using this from Chromium code and get rid of this enum.
     enum UserStyleLevel {
-        UserStyleUserLevel,
         UserStyleAuthorLevel
     };
 
@@ -129,11 +129,10 @@ public:
 
     // Gets the accessibility object for an object on this page by ID.
     BLINK_EXPORT WebAXObject accessibilityObjectFromID(int axID) const;
-    // Inserts the given CSS source code as a user stylesheet in the document.
-    // Meant for programatic/one-off injection, as opposed to
-    // WebView::addUserStyleSheet which inserts styles for the lifetime of the
-    // WebView.
+    // Inserts the given CSS source code as a stylesheet in the document.
+    // FIXME: Delete insertUserStyleSheet once Chromium code stops calling it.
     BLINK_EXPORT void insertUserStyleSheet(const WebString& sourceCode, UserStyleLevel);
+    BLINK_EXPORT void insertStyleSheet(const WebString& sourceCode);
 
     // Arranges to call WebFrameClient::didMatchCSS(frame(), ...) when one of
     // the selectors matches or stops matching an element in this document.

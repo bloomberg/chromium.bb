@@ -37,22 +37,22 @@ class MediaQueryEvaluator;
 class RuleFeatureSet;
 class StyleEngine;
 
+// FIXME: This class doesn't really serve a purpose anymore. Merge it into StyleResolver.
 class DocumentRuleSets {
 public:
     DocumentRuleSets();
     ~DocumentRuleSets();
-    RuleSet* userStyle() const { return m_userStyle.get(); }
 
-    void initUserStyle(StyleEngine*, const Vector<RefPtr<StyleRule> >& watchedSelectors, const MediaQueryEvaluator&, StyleResolver&);
+    // FIXME: watched selectors should be implemented using injected author stylesheets: http://crbug.com/316960
+    RuleSet* watchedSelectorRules() const { return m_watchedSelectorsRules.get(); }
+    void initWatchedSelectorRules(const Vector<RefPtr<StyleRule> >& watchedSelectors);
+
     void resetAuthorStyle();
     void collectFeaturesTo(RuleFeatureSet&, bool isViewSource);
-
     TreeBoundaryCrossingRules& treeBoundaryCrossingRules() { return m_treeBoundaryCrossingRules; }
 
 private:
-    void collectRulesFromUserStyleSheets(const Vector<RefPtr<CSSStyleSheet> >&, RuleSet& userStyle, const MediaQueryEvaluator&, StyleResolver&);
-    void collectRulesFromWatchedSelectors(const Vector<RefPtr<StyleRule> >&, RuleSet& userStyle);
-    OwnPtr<RuleSet> m_userStyle;
+    OwnPtr<RuleSet> m_watchedSelectorsRules;
     TreeBoundaryCrossingRules m_treeBoundaryCrossingRules;
 };
 

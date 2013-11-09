@@ -116,7 +116,6 @@ Page::Page(PageClients& pageClients)
     , m_defersLoading(false)
     , m_pageScaleFactor(1)
     , m_deviceScaleFactor(1)
-    , m_didLoadUserStyleSheet(false)
     , m_group(0)
     , m_timerAlignmentInterval(DOMTimer::visiblePageAlignmentInterval())
     , m_visibilityState(PageVisibilityStateVisible)
@@ -385,36 +384,6 @@ void Page::setPagination(const Pagination& pagination)
     m_pagination = pagination;
 
     setNeedsRecalcStyleInAllFrames();
-}
-
-void Page::userStyleSheetLocationChanged()
-{
-    // FIXME: Eventually we will move to a model of just being handed the sheet
-    // text instead of loading the URL ourselves.
-    KURL url = m_settings->userStyleSheetLocation();
-
-    m_didLoadUserStyleSheet = false;
-    m_userStyleSheet = String();
-
-    // Data URLs with base64-encoded UTF-8 style sheets are common. We can process them
-    // synchronously and avoid using a loader.
-    if (url.protocolIsData() && url.string().startsWith("data:text/css;charset=utf-8;base64,")) {
-        m_didLoadUserStyleSheet = true;
-
-        Vector<char> styleSheetAsUTF8;
-        if (base64Decode(decodeURLEscapeSequences(url.string().substring(35)), styleSheetAsUTF8, isSpaceOrNewline))
-            m_userStyleSheet = String::fromUTF8(styleSheetAsUTF8.data(), styleSheetAsUTF8.size());
-    }
-
-    for (Frame* frame = mainFrame(); frame; frame = frame->tree().traverseNext()) {
-        if (frame->document())
-            frame->document()->styleEngine()->updatePageUserSheet();
-    }
-}
-
-const String& Page::userStyleSheet() const
-{
-    return m_userStyleSheet;
 }
 
 void Page::allVisitedStateChanged(PageGroup* group)

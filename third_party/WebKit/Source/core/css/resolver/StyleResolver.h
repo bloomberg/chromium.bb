@@ -294,7 +294,8 @@ private:
     void matchHostRules(Element*, ScopedStyleResolver*, ElementRuleCollector&, bool includeEmptyRules);
     void matchAllRules(StyleResolverState&, ElementRuleCollector&, bool includeSMILProperties);
     void matchUARules(ElementRuleCollector&);
-    void matchUserRules(ElementRuleCollector&, bool includeEmptyRules);
+    // FIXME: watched selectors should be implemented using injected author stylesheets: http://crbug.com/316960
+    void matchWatchSelectorRules(ElementRuleCollector&);
     void collectFeatures();
     void collectTreeBoundaryCrossingRules(ElementRuleCollector&, bool includeEmptyRules);
 

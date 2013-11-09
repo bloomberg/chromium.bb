@@ -17,7 +17,7 @@
         }, "Check that window.testRunner is present. Required to add a user stylesheet.");
 
         if (window.testRunner) {
-            testRunner.addUserStyleSheet("@viewport { width: 450px; height: auto; zoom: auto; min-zoom: auto; max-zoom: auto }", true);
+            testRunner.injectStyleSheet("@viewport { width: 450px; height: auto; zoom: auto; min-zoom: auto; max-zoom: auto }", true);
         }
     </script>
 </head>

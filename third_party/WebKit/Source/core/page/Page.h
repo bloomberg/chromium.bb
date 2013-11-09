@@ -182,9 +182,6 @@ public:
     const Pagination& pagination() const { return m_pagination; }
     void setPagination(const Pagination&);
 
-    void userStyleSheetLocationChanged();
-    const String& userStyleSheet() const;
-
     void dnsPrefetchingStateChanged();
 
     static void allVisitedStateChanged(PageGroup*);
@@ -275,9 +272,6 @@ private:
     float m_deviceScaleFactor;
 
     Pagination m_pagination;
-
-    String m_userStyleSheet;
-    bool m_didLoadUserStyleSheet;
 
     RefPtr<PageGroup> m_group;
 

@@ -18,7 +18,7 @@
     </style>
     <script>
         if (window.testRunner) {
-            testRunner.addUserStyleSheet("@viewport { width: extend-to-zoom 980px; min-zoom: 0.25; max-zoom: 5; height: auto; zoom: auto; user-zoom: zoom; orientation: auto }", true);
+            testRunner.injectStyleSheet("@viewport { width: extend-to-zoom 980px; min-zoom: 0.25; max-zoom: 5; height: auto; zoom: auto; user-zoom: zoom; orientation: auto }", true);
             testRunner.dumpAsText();
             document.body.offsetWidth; // Trigger style resolving
             alert(internals.viewportAsText(document, 1, 320, 352));

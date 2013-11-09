@@ -290,11 +290,6 @@ void WebSettingsImpl::setAllowScriptsToCloseWindows(bool allow)
     m_settings->setAllowScriptsToCloseWindows(allow);
 }
 
-void WebSettingsImpl::setUserStyleSheetLocation(const WebURL& location)
-{
-    m_settings->setUserStyleSheetLocation(location);
-}
-
 void WebSettingsImpl::setUseLegacyBackgroundSizeShorthandBehavior(bool useLegacyBackgroundSizeShorthandBehavior)
 {
     m_settings->setUseLegacyBackgroundSizeShorthandBehavior(useLegacyBackgroundSizeShorthandBehavior);

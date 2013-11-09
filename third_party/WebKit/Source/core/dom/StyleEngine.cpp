@@ -70,12 +70,8 @@ StyleEngine::StyleEngine(Document& document)
 
 StyleEngine::~StyleEngine()
 {
-    if (m_pageUserSheet)
-        m_pageUserSheet->clearOwnerNode();
     for (unsigned i = 0; i < m_injectedAuthorStyleSheets.size(); ++i)
         m_injectedAuthorStyleSheets[i]->clearOwnerNode();
-    for (unsigned i = 0; i < m_userStyleSheets.size(); ++i)
-        m_userStyleSheets[i]->clearOwnerNode();
     for (unsigned i = 0; i < m_authorStyleSheets.size(); ++i)
         m_authorStyleSheets[i]->clearOwnerNode();
 }
@@ -170,43 +166,6 @@ void StyleEngine::resetCSSFeatureFlags(const RuleFeatureSet& features)
     m_maxDirectAdjacentSelectors = features.maxDirectAdjacentSelectors();
 }
 
-CSSStyleSheet* StyleEngine::pageUserSheet()
-{
-    if (m_pageUserSheet)
-        return m_pageUserSheet.get();
-
-    Page* owningPage = m_document.page();
-    if (!owningPage)
-        return 0;
-
-    String userSheetText = owningPage->userStyleSheet();
-    if (userSheetText.isEmpty())
-        return 0;
-
-    // Parse the sheet and cache it.
-    m_pageUserSheet = CSSStyleSheet::createInline(&m_document, m_document.settings()->userStyleSheetLocation());
-    m_pageUserSheet->contents()->setIsUserStyleSheet(true);
-    m_pageUserSheet->contents()->parseString(userSheetText);
-    return m_pageUserSheet.get();
-}
-
-void StyleEngine::clearPageUserSheet()
-{
-    if (m_pageUserSheet) {
-        RefPtr<StyleSheet> removedSheet = m_pageUserSheet;
-        m_pageUserSheet = 0;
-        m_document.removedStyleSheet(removedSheet.get());
-    }
-}
-
-void StyleEngine::updatePageUserSheet()
-{
-    clearPageUserSheet();
-    // FIXME: Why is this immediately and not defer?
-    if (StyleSheet* addedSheet = pageUserSheet())
-        m_document.addedStyleSheet(addedSheet, RecalcStyleImmediately);
-}
-
 const Vector<RefPtr<CSSStyleSheet> >& StyleEngine::injectedAuthorStyleSheets() const
 {
     updateInjectedStyleSheetCache();
@@ -234,7 +193,6 @@ void StyleEngine::updateInjectedStyleSheetCache() const
             continue;
         RefPtr<CSSStyleSheet> groupSheet = CSSStyleSheet::createInline(const_cast<Document*>(&m_document), KURL());
         m_injectedAuthorStyleSheets.append(groupSheet);
-        groupSheet->contents()->setIsUserStyleSheet(false);
         groupSheet->contents()->parseString(sheet->source());
     }
 }
@@ -250,17 +208,8 @@ void StyleEngine::invalidateInjectedStyleSheetCache()
 
 void StyleEngine::addAuthorSheet(PassRefPtr<StyleSheetContents> authorSheet)
 {
-    ASSERT(!authorSheet->isUserStyleSheet());
     m_authorStyleSheets.append(CSSStyleSheet::create(authorSheet, &m_document));
     m_document.addedStyleSheet(m_authorStyleSheets.last().get(), RecalcStyleImmediately);
-    m_needsDocumentStyleSheetsUpdate = true;
-}
-
-void StyleEngine::addUserSheet(PassRefPtr<StyleSheetContents> userSheet)
-{
-    ASSERT(userSheet->isUserStyleSheet());
-    m_userStyleSheets.append(CSSStyleSheet::create(userSheet, &m_document));
-    m_document.addedStyleSheet(m_userStyleSheets.last().get(), RecalcStyleImmediately);
     m_needsDocumentStyleSheetsUpdate = true;
 }
 

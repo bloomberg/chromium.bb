@@ -196,9 +196,6 @@
 
     void allowRoundingHacks();
 
-    void insertAuthorCSS(Document document, DOMString css);
-    void insertUserCSS(Document document, DOMString css);
-
     unsigned long numberOfLiveNodes();
     unsigned long numberOfLiveDocuments();
     sequence<DOMString> consoleMessageArgumentCounts(Document document);

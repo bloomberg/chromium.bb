@@ -86,8 +86,6 @@ public:
     KURL completeURL(const String& url) const;
     void addSubresourceStyleURLs(ListHashSet<KURL>&);
 
-    void setIsUserStyleSheet(bool b) { m_isUserStyleSheet = b; }
-    bool isUserStyleSheet() const { return m_isUserStyleSheet; }
     void setHasSyntacticallyValidCSSHeader(bool b) { m_hasSyntacticallyValidCSSHeader = b; }
     bool hasSyntacticallyValidCSSHeader() const { return m_hasSyntacticallyValidCSSHeader; }
 
@@ -158,7 +156,6 @@ private:
     PrefixNamespaceURIMap m_namespaces;
 
     bool m_loadCompleted : 1;
-    bool m_isUserStyleSheet : 1;
     bool m_hasSyntacticallyValidCSSHeader : 1;
     bool m_didLoadErrorOccur : 1;
     bool m_usesRemUnits : 1;

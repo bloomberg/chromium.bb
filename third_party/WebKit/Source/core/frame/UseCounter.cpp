@@ -724,7 +724,7 @@ UseCounter* UseCounter::getFrom(const StyleSheetContents* sheetContents)
 {
     // FIXME: We may want to handle stylesheets that have multiple owners
     //        http://crbug.com/242125
-    if (sheetContents && !sheetContents->isUserStyleSheet() && sheetContents->hasSingleOwnerNode())
+    if (sheetContents && sheetContents->hasSingleOwnerNode())
         return getFrom(sheetContents->singleOwnerDocument());
     return 0;
 }

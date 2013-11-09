@@ -206,17 +206,18 @@ WebDocumentType WebDocument::doctype() const
     return WebDocumentType(constUnwrap<Document>()->doctype());
 }
 
-void WebDocument::insertUserStyleSheet(const WebString& sourceCode, UserStyleLevel styleLevel)
+void WebDocument::insertUserStyleSheet(const WebString& sourceCode, UserStyleLevel)
+{
+    insertStyleSheet(sourceCode);
+}
+
+void WebDocument::insertStyleSheet(const WebString& sourceCode)
 {
     RefPtr<Document> document = unwrap<Document>();
     ASSERT(document);
     RefPtr<StyleSheetContents> parsedSheet = StyleSheetContents::create(*document.get());
-    parsedSheet->setIsUserStyleSheet(styleLevel == UserStyleUserLevel);
     parsedSheet->parseString(sourceCode);
-    if (parsedSheet->isUserStyleSheet())
-        document->styleEngine()->addUserSheet(parsedSheet);
-    else
-        document->styleEngine()->addAuthorSheet(parsedSheet);
+    document->styleEngine()->addAuthorSheet(parsedSheet);
 }
 
 void WebDocument::watchCSSSelectors(const WebVector<WebString>& webSelectors)

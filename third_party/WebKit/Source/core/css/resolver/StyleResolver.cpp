@@ -173,8 +173,7 @@ StyleResolver::StyleResolver(Document& document)
 
     m_styleTree.clear();
 
-    StyleEngine* styleSheetCollection = document.styleEngine();
-    m_ruleSets.initUserStyle(styleSheetCollection, CSSSelectorWatch::from(document).watchedCallbackSelectors(), *m_medium, *this);
+    m_ruleSets.initWatchedSelectorRules(CSSSelectorWatch::from(document).watchedCallbackSelectors());
 
 #if ENABLE(SVG_FONTS)
     if (document.svgExtensions()) {
@@ -185,7 +184,7 @@ StyleResolver::StyleResolver(Document& document)
     }
 #endif
 
-    styleSheetCollection->appendActiveAuthorStyleSheets(this);
+    document.styleEngine()->appendActiveAuthorStyleSheets(this);
 }
 
 void StyleResolver::appendAuthorStyleSheets(unsigned firstNew, const Vector<RefPtr<CSSStyleSheet> >& styleSheets)
@@ -477,15 +476,15 @@ void StyleResolver::matchAuthorRules(Element* element, ElementRuleCollector& col
     matchHostRules(element, resolvers.first(), collector, includeEmptyRules);
 }
 
-void StyleResolver::matchUserRules(ElementRuleCollector& collector, bool includeEmptyRules)
+void StyleResolver::matchWatchSelectorRules(ElementRuleCollector& collector)
 {
-    if (!m_ruleSets.userStyle())
+    if (!m_ruleSets.watchedSelectorRules())
         return;
 
     collector.clearMatchedRules();
     collector.matchedResult().ranges.lastUserRule = collector.matchedResult().matchedProperties.size() - 1;
 
-    MatchRequest matchRequest(m_ruleSets.userStyle(), includeEmptyRules);
+    MatchRequest matchRequest(m_ruleSets.watchedSelectorRules());
     RuleRange ruleRange = collector.matchedResult().ranges.userRuleRange();
     collector.collectMatchingRules(matchRequest, ruleRange);
     collector.collectMatchingRulesForRegion(matchRequest, ruleRange);
@@ -514,6 +513,8 @@ void StyleResolver::matchUARules(ElementRuleCollector& collector)
         matchUARules(collector, CSSDefaultStyleSheets::viewSourceStyle());
 
     collector.setMatchingUARules(false);
+
+    matchWatchSelectorRules(collector);
 }
 
 void StyleResolver::matchUARules(ElementRuleCollector& collector, RuleSet* rules)
@@ -530,7 +531,6 @@ void StyleResolver::matchUARules(ElementRuleCollector& collector, RuleSet* rules
 void StyleResolver::matchAllRules(StyleResolverState& state, ElementRuleCollector& collector, bool includeSMILProperties)
 {
     matchUARules(collector);
-    matchUserRules(collector, false);
 
     // Now check author rules, beginning first with presentational attributes mapped from HTML.
     if (state.element()->isStyledElement()) {
@@ -1034,7 +1034,6 @@ PassRefPtr<RenderStyle> StyleResolver::pseudoStyleForElement(Element* e, const P
         collector.setPseudoStyleRequest(pseudoStyleRequest);
 
         matchUARules(collector);
-        matchUserRules(collector, false);
         matchAuthorRules(state.element(), collector, false);
 
         if (collector.matchedResult().matchedProperties.isEmpty())
@@ -1077,7 +1076,6 @@ PassRefPtr<RenderStyle> StyleResolver::styleForPage(int pageIndex)
     PageRuleCollector collector(rootElementStyle, pageIndex);
 
     collector.matchPageRules(CSSDefaultStyleSheets::defaultPrintStyle);
-    collector.matchPageRules(m_ruleSets.userStyle());
 
     if (ScopedStyleResolver* scopedResolver = m_styleTree.scopedStyleResolverForDocument())
         scopedResolver->matchPageRules(collector);
@@ -1116,9 +1114,6 @@ void StyleResolver::collectViewportRules()
     if (document().isMobileDocument())
         viewportStyleResolver()->collectViewportRules(CSSDefaultStyleSheets::xhtmlMobileProfileStyle(), ViewportStyleResolver::UserAgentOrigin);
 
-    if (m_ruleSets.userStyle())
-        viewportStyleResolver()->collectViewportRules(m_ruleSets.userStyle(), ViewportStyleResolver::UserAgentOrigin);
-
     if (ScopedStyleResolver* scopedResolver = m_styleTree.scopedStyleResolverForDocument())
         scopedResolver->collectViewportRulesTo(this);
 
@@ -1152,20 +1147,10 @@ bool StyleResolver::checkRegionStyle(Element* regionElement)
 {
     // FIXME (BUG 72472): We don't add @-webkit-region rules of scoped style sheets for the moment,
     // so all region rules are global by default. Verify whether that can stand or needs changing.
-
-    if (ScopedStyleResolver* scopedResolver = m_styleTree.scopedStyleResolverForDocument())
+    if (ScopedStyleResolver* scopedResolver = m_styleTree.scopedStyleResolverForDocument()) {
         if (scopedResolver->checkRegionStyle(regionElement))
             return true;
-
-    if (m_ruleSets.userStyle()) {
-        unsigned rulesSize = m_ruleSets.userStyle()->m_regionSelectorsAndRuleSets.size();
-        for (unsigned i = 0; i < rulesSize; ++i) {
-            ASSERT(m_ruleSets.userStyle()->m_regionSelectorsAndRuleSets.at(i).ruleSet.get());
-            if (checkRegionSelector(m_ruleSets.userStyle()->m_regionSelectorsAndRuleSets.at(i).selector, regionElement))
-                return true;
-        }
     }
-
     return false;
 }
 
@@ -1203,16 +1188,11 @@ void StyleResolver::collectPseudoRulesForElement(Element* element, ElementRuleCo
 {
     collector.setPseudoStyleRequest(PseudoStyleRequest(pseudoId));
 
-    if (rulesToInclude & UAAndUserCSSRules) {
-        // First we match rules from the user agent sheet.
+    if (rulesToInclude & UAAndUserCSSRules)
         matchUARules(collector);
-        matchUserRules(collector, rulesToInclude & EmptyCSSRules);
-    }
 
     if (rulesToInclude & AuthorCSSRules) {
         collector.setSameOriginOnly(!(rulesToInclude & CrossOriginCSSRules));
-
-        // Check the rules in author sheets.
         matchAuthorRules(element, collector, rulesToInclude & EmptyCSSRules);
     }
 }
