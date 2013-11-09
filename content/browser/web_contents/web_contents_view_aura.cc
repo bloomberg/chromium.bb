@@ -724,8 +724,16 @@ class WebContentsViewAura::WindowObserver
 #endif
 
     parent_ = parent;
-    if (parent)
+    if (parent) {
       parent->AddObserver(this);
+#if defined(OS_WIN)
+      const aura::Window::Windows& children = parent_->children();
+      for (size_t i = 0; i < children.size(); ++i) {
+        if (children[i] != view_->window_)
+          children[i]->AddObserver(this);
+      }
+#endif
+    }
   }
 
   virtual void OnWindowBoundsChanged(aura::Window* window,

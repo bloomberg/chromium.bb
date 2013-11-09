@@ -126,6 +126,11 @@ IN_PROC_BROWSER_TEST_F(PrintPreviewTest, WindowedNPAPIPluginHidden) {
     return;
   }
 
+  if (result == COMPLEXREGION) {
+    // Complex region, by definition not equal to the initial region.
+    return;
+  }
+
   ASSERT_EQ(result, SIMPLEREGION);
   bool rects_equal =
       region_before.left == region_after.left &&

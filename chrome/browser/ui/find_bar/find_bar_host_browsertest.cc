@@ -4,6 +4,7 @@
 
 #include "base/file_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/prefs/pref_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -25,6 +26,7 @@
 #include "chrome/browser/ui/find_bar/find_notification_details.h"
 #include "chrome/browser/ui/find_bar/find_tab_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/find_in_page_observer.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -39,6 +41,11 @@
 #include "net/base/net_util.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+
+#if defined(OS_WIN) && defined(USE_AURA)
+#include "content/public/browser/web_contents_view.h"
+#include "ui/aura/root_window.h"
+#endif
 
 using content::NavigationController;
 using content::WebContents;
@@ -1606,3 +1613,74 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, IncognitoFindNextShared) {
   EXPECT_EQ(ASCIIToUTF16("bar"),
             GetFindBarTextForBrowser(browser_incognito));
 }
+
+#if defined(OS_WIN) && defined(USE_AURA)
+
+BOOL CALLBACK EnumerateChildren(HWND hwnd, LPARAM l_param) {
+  HWND* child = reinterpret_cast<HWND*>(l_param);
+  *child = hwnd;
+  // The first child window is the plugin, then its children. So stop
+  // enumerating after the first callback.
+  return FALSE;
+}
+
+// Ensure that the find bar is always over a windowed NPAPI plugin.
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, WindowedNPAPIPluginHidden) {
+  browser()->profile()->GetPrefs()->SetBoolean(prefs::kPluginsAlwaysAuthorize,
+                                               true);
+
+  // First load the page and wait for the NPAPI plugin's window to display.
+  string16 expected_title(ASCIIToUTF16("ready"));
+  content::WebContents* tab =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  content::TitleWatcher title_watcher(tab, expected_title);
+
+  GURL url = ui_test_utils::GetTestUrl(
+      base::FilePath().AppendASCII("printing"),
+      base::FilePath().AppendASCII("npapi_plugin.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+
+  // Now get the region of the plugin before the find bar is shown.
+  HWND hwnd =
+      tab->GetView()->GetNativeView()->GetDispatcher()->GetAcceleratedWidget();
+  HWND child = NULL;
+  EnumChildWindows(hwnd, EnumerateChildren,reinterpret_cast<LPARAM>(&child));
+
+  RECT region_before, region_after;
+  int result = GetWindowRgnBox(child, &region_before);
+  ASSERT_EQ(result, SIMPLEREGION);
+
+  // Create a new tab and open the find bar there.
+  chrome::NewTab(browser());
+  browser()->tab_strip_model()->ActivateTabAt(1, true);
+  ui_test_utils::NavigateToURL(browser(), GURL(content::kAboutBlankURL));
+
+  EnsureFindBoxOpen();
+
+  // Now switch back to the original tab with the plugin and show the find bar.
+  browser()->tab_strip_model()->ActivateTabAt(0, true);
+  EnsureFindBoxOpen();
+
+  result = GetWindowRgnBox(child, &region_after);
+  if (result == NULLREGION) {
+    // Depending on the browser window size, the plugin could be full covered.
+    return;
+  }
+
+  if (result == COMPLEXREGION) {
+    // Complex region, by definition not equal to the initial region.
+    return;
+  }
+
+  ASSERT_EQ(result, SIMPLEREGION);
+  bool rects_equal =
+      region_before.left == region_after.left &&
+      region_before.top == region_after.top &&
+      region_before.right == region_after.right &&
+      region_before.bottom == region_after.bottom;
+  ASSERT_FALSE(rects_equal);
+}
+
+#endif
