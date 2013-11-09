@@ -38,7 +38,7 @@ void VirtualKeyboardWindowController::UpdateWindow(
         CreateRootWindowHost(bounds_in_native);
     aura::RootWindow* root_window = new aura::RootWindow(params);
 
-    root_window->SetName(
+    root_window->window()->SetName(
         base::StringPrintf("VirtualKeyboardRootWindow-%d",
                            virtual_keyboard_root_window_count++));
 
@@ -46,21 +46,24 @@ void VirtualKeyboardWindowController::UpdateWindow(
     // the DisplayController object outlives RootWindow objects.
     root_window->AddRootWindowObserver(
         Shell::GetInstance()->display_controller());
-    InitRootWindowSettings(root_window)->display_id = display_info.id();
+    InitRootWindowSettings(root_window->window())->display_id =
+        display_info.id();
     root_window->Init();
     RootWindowController::CreateForVirtualKeyboardDisplay(root_window);
-    root_window_controller_.reset(GetRootWindowController(root_window));
-    root_window_controller_->root_window()->ShowRootWindow();
+    root_window_controller_.reset(GetRootWindowController(
+        root_window->window()));
+    root_window_controller_->dispatcher()->ShowRootWindow();
   } else {
-    aura::RootWindow* root_window = root_window_controller_->root_window();
-    GetRootWindowSettings(root_window)->display_id = display_info.id();
+    aura::RootWindow* root_window = root_window_controller_->dispatcher();
+    GetRootWindowSettings(root_window->window())->display_id =
+        display_info.id();
     root_window->SetHostBounds(display_info.bounds_in_native());
   }
 }
 
 void VirtualKeyboardWindowController::Close() {
   if (root_window_controller_.get()) {
-    root_window_controller_->root_window()->RemoveRootWindowObserver(
+    root_window_controller_->dispatcher()->RemoveRootWindowObserver(
         Shell::GetInstance()->display_controller());
     root_window_controller_->Shutdown();
     root_window_controller_.reset();

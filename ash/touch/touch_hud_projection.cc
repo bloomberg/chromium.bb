@@ -137,7 +137,7 @@ class TouchPointView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(TouchPointView);
 };
 
-TouchHudProjection::TouchHudProjection(aura::RootWindow* initial_root)
+TouchHudProjection::TouchHudProjection(aura::Window* initial_root)
     : TouchObserverHUD(initial_root) {
 }
 

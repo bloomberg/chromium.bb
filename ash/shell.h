@@ -543,7 +543,7 @@ class ASH_EXPORT Shell
   void InitKeyboard(internal::RootWindowController* root);
 
   // Initializes the root window so that it can host browser windows.
-  void InitRootWindow(aura::RootWindow* root_window);
+  void InitRootWindow(aura::Window* root_window);
 
   // ash::internal::SystemModalContainerEventFilterDelegate overrides:
   virtual bool CanWindowReceiveEvents(aura::Window* window) OVERRIDE;

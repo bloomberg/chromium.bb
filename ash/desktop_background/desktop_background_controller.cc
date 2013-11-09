@@ -43,12 +43,6 @@ namespace {
 // changed?
 const int kWallpaperReloadDelayMs = 2000;
 
-internal::RootWindowLayoutManager* GetRootWindowLayoutManager(
-    aura::RootWindow* root_window) {
-  return static_cast<internal::RootWindowLayoutManager*>(
-      root_window->layout_manager());
-}
-
 }  // namespace
 
 const int kSmallWallpaperMaxWidth = 1366;
@@ -196,7 +190,7 @@ WallpaperLayout DesktopBackgroundController::GetWallpaperLayout() const {
 }
 
 void DesktopBackgroundController::OnRootWindowAdded(
-    aura::RootWindow* root_window) {
+    aura::Window* root_window) {
   // The background hasn't been set yet.
   if (desktop_background_mode_ == BACKGROUND_NONE)
     return;

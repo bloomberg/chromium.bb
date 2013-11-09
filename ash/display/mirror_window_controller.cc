@@ -163,7 +163,7 @@ void MirrorWindowController::UpdateWindow(const DisplayInfo& display_info) {
     params.host = Shell::GetInstance()->root_window_host_factory()->
         CreateRootWindowHost(bounds_in_native);
     root_window_.reset(new aura::RootWindow(params));
-    root_window_->SetName(
+    root_window_->window()->SetName(
         base::StringPrintf("MirrorRootWindow-%d", mirror_root_window_count++));
     root_window_->compositor()->SetBackgroundColor(SK_ColorBLACK);
     // No need to remove RootWindowObserver because
@@ -172,20 +172,22 @@ void MirrorWindowController::UpdateWindow(const DisplayInfo& display_info) {
         Shell::GetInstance()->display_controller());
     root_window_->AddRootWindowObserver(this);
     // TODO(oshima): TouchHUD is using idkey.
-    InitRootWindowSettings(root_window_.get())->display_id = display_info.id();
+    InitRootWindowSettings(root_window_->window())->display_id =
+        display_info.id();
     root_window_->Init();
 #if defined(USE_X11)
     DisableInput(root_window_->GetAcceleratedWidget());
 #endif
 
-    aura::client::SetCaptureClient(root_window_.get(), new NoneCaptureClient());
+    aura::client::SetCaptureClient(root_window_->window(),
+                                   new NoneCaptureClient());
     root_window_->ShowRootWindow();
 
     // TODO(oshima): Start mirroring.
     aura::Window* mirror_window = new aura::Window(NULL);
     mirror_window->Init(ui::LAYER_TEXTURED);
-    root_window_->AddChild(mirror_window);
-    mirror_window->SetBounds(root_window_->bounds());
+    root_window_->window()->AddChild(mirror_window);
+    mirror_window->SetBounds(root_window_->window()->bounds());
     mirror_window->Show();
     reflector_ = ui::ContextFactory::GetInstance()->CreateReflector(
         Shell::GetPrimaryRootWindow()->GetDispatcher()->compositor(),
@@ -194,10 +196,11 @@ void MirrorWindowController::UpdateWindow(const DisplayInfo& display_info) {
     cursor_window_ = new aura::Window(cursor_window_delegate_.get());
     cursor_window_->SetTransparent(true);
     cursor_window_->Init(ui::LAYER_TEXTURED);
-    root_window_->AddChild(cursor_window_);
+    root_window_->window()->AddChild(cursor_window_);
     cursor_window_->Show();
   } else {
-    GetRootWindowSettings(root_window_.get())->display_id = display_info.id();
+    GetRootWindowSettings(root_window_->window())->display_id =
+        display_info.id();
     root_window_->SetHostBounds(display_info.bounds_in_native());
   }
 
@@ -228,8 +231,8 @@ void MirrorWindowController::Close() {
     ui::ContextFactory::GetInstance()->RemoveReflector(reflector_);
     reflector_ = NULL;
     NoneCaptureClient* capture_client = static_cast<NoneCaptureClient*>(
-        aura::client::GetCaptureClient(root_window_.get()));
-    aura::client::SetCaptureClient(root_window_.get(), NULL);
+        aura::client::GetCaptureClient(root_window_->window()));
+    aura::client::SetCaptureClient(root_window_->window(), NULL);
     delete capture_client;
 
     root_window_->RemoveRootWindowObserver(

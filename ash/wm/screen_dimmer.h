@@ -11,10 +11,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "ui/aura/window_observer.h"
 
-namespace aura {
-class RootWindow;
-}
-
 namespace ui {
 class Layer;
 }
@@ -43,7 +39,7 @@ class ASH_EXPORT ScreenDimmer : public aura::WindowObserver {
     DISALLOW_COPY_AND_ASSIGN(TestApi);
   };
 
-  explicit ScreenDimmer(aura::RootWindow* root_window);
+  explicit ScreenDimmer(aura::Window* root_window);
   virtual ~ScreenDimmer();
 
   // Dim or undim the root window.
@@ -57,7 +53,7 @@ class ASH_EXPORT ScreenDimmer : public aura::WindowObserver {
  private:
   friend class TestApi;
 
-  aura::RootWindow* root_window_;
+  aura::Window* root_window_;
 
   // Partially-opaque layer that's stacked above all of the root window's
   // children and used to dim the screen.  NULL until the first time we dim.

@@ -92,7 +92,7 @@ void DesktopBackgroundWidgetController::SetBounds(gfx::Rect bounds) {
     widget_->SetBounds(bounds);
 }
 
-bool DesktopBackgroundWidgetController::Reparent(aura::RootWindow* root_window,
+bool DesktopBackgroundWidgetController::Reparent(aura::Window* root_window,
                                                  int src_container,
                                                  int dest_container) {
   if (widget_) {

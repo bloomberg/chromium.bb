@@ -37,7 +37,7 @@ class ASH_EXPORT DesktopBackgroundWidgetController
   // Move component from |src_container| in |root_window| to |dest_container|.
   // It is required for lock screen, when we need to move background so that
   // it hides user's windows. Returns true if there was something to reparent.
-  bool Reparent(aura::RootWindow* root_window,
+  bool Reparent(aura::Window* root_window,
                 int src_container,
                 int dest_container);
 

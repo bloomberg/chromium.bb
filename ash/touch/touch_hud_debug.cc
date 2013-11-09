@@ -329,7 +329,7 @@ class TouchHudCanvas : public views::View {
   DISALLOW_COPY_AND_ASSIGN(TouchHudCanvas);
 };
 
-TouchHudDebug::TouchHudDebug(aura::RootWindow* initial_root)
+TouchHudDebug::TouchHudDebug(aura::Window* initial_root)
     : TouchObserverHUD(initial_root),
       mode_(FULLSCREEN),
       touch_log_(new TouchLog()),

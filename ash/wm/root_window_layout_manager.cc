@@ -40,8 +40,8 @@ void RootWindowLayoutManager::OnWindowResized() {
     for (j = (*i)->children().begin(); j != (*i)->children().end(); ++j)
       (*j)->SetBounds(fullscreen_bounds);
   }
-  RootWindowController* root_window_controller = GetRootWindowController(
-      static_cast<aura::RootWindow*>(owner_));
+  RootWindowController* root_window_controller =
+      GetRootWindowController(owner_);
   DesktopBackgroundWidgetController* background =
       root_window_controller->wallpaper_controller();
 

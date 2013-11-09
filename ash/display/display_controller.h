@@ -201,13 +201,13 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
   scoped_ptr<DisplayChangeLimiter> limiter_;
 
   // The mapping from display ID to its root window.
-  std::map<int64, aura::RootWindow*> root_windows_;
+  std::map<int64, aura::Window*> root_windows_;
 
   ObserverList<Observer> observers_;
 
   // Store the primary root window temporarily while replacing
   // display.
-  aura::RootWindow* primary_root_window_for_replace_;
+  aura::Window* primary_root_window_for_replace_;
 
   scoped_ptr<internal::FocusActivationStore> focus_activation_store_;
 

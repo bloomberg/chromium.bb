@@ -18,7 +18,7 @@
 namespace ash {
 namespace internal {
 
-TouchObserverHUD::TouchObserverHUD(aura::RootWindow* initial_root)
+TouchObserverHUD::TouchObserverHUD(aura::Window* initial_root)
     : display_id_(GetRootWindowSettings(initial_root)->display_id),
       root_window_(initial_root),
       widget_(NULL) {

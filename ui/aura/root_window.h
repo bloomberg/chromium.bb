@@ -78,6 +78,10 @@ class AURA_EXPORT RootWindow : public Window,
   // if there is none associated.
   static RootWindow* GetForAcceleratedWidget(gfx::AcceleratedWidget widget);
 
+  Window* window() {
+    return const_cast<Window*>(const_cast<const RootWindow*>(this)->window());
+  }
+  const Window* window() const { return this; }
   ui::Compositor* compositor() { return compositor_.get(); }
   gfx::NativeCursor last_cursor() const { return last_cursor_; }
   Window* mouse_pressed_handler() { return mouse_pressed_handler_; }

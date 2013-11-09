@@ -63,7 +63,7 @@ void MoveAllTransientChildrenToNewRoot(const gfx::Display& display,
 // function usually returns |window->GetRootWindow()|, but if the mouse pointer
 // is moved outside the |window|'s root while the mouse is captured, it returns
 // the other root window.
-std::pair<aura::RootWindow*, gfx::Point> GetRootWindowRelativeToWindow(
+std::pair<aura::Window*, gfx::Point> GetRootWindowRelativeToWindow(
     aura::Window* window,
     const gfx::Point& location) {
   aura::Window* root_window = window->GetRootWindow();
@@ -111,7 +111,7 @@ std::pair<aura::RootWindow*, gfx::Point> GetRootWindowRelativeToWindow(
   // TODO(yusukes): Support non-X11 platforms if necessary.
 #endif
 
-  return std::make_pair(root_window->GetDispatcher(), location_in_root);
+  return std::make_pair(root_window, location_in_root);
 }
 
 }  // namespace
@@ -143,7 +143,7 @@ void ScreenPositionController::ConvertHostPointToScreen(
     gfx::Point* point) {
   aura::Window* root = root_window->GetRootWindow();
   root->GetDispatcher()->ConvertPointFromHost(point);
-  std::pair<aura::RootWindow*, gfx::Point> pair =
+  std::pair<aura::Window*, gfx::Point> pair =
       GetRootWindowRelativeToWindow(root, *point);
   *point = pair.second;
   ConvertPointToScreen(pair.first, point);
@@ -202,7 +202,7 @@ void ScreenPositionController::SetBounds(aura::Window* window,
         aura::client::GetFocusClient(window)->FocusWindow(focused);
         // TODO(beng): replace with GetRootWindow().
         ash::Shell::GetInstance()->set_target_root_window(
-            focused->GetDispatcher());
+            focused->GetRootWindow());
       } else if (tracker.Contains(active)) {
         activation_client->ActivateWindow(active);
       }

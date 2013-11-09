@@ -13,13 +13,13 @@
 #include "ash/system/user/login_status.h"
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/aura/root_window.h"
 #include "ui/base/ui_base_types.h"
 
 class SkBitmap;
 
 namespace aura {
 class EventFilter;
-class RootWindow;
 class Window;
 }
 
@@ -102,7 +102,8 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
 
   virtual ~RootWindowController();
 
-  aura::RootWindow* root_window() { return root_window_.get(); }
+  aura::Window* root_window() { return dispatcher()->window(); }
+  aura::WindowEventDispatcher* dispatcher() { return root_window_.get(); }
 
   RootWindowLayoutManager* root_window_layout() { return root_window_layout_; }
 
@@ -245,7 +246,7 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
 
   // Creates each of the special window containers that holds windows of various
   // types in the shell UI.
-  void CreateContainersInRootWindow(aura::RootWindow* root_window);
+  void CreateContainersInRootWindow(aura::Window* root_window);
 
   // Enables projection touch HUD.
   void EnableTouchHudProjection();

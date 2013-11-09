@@ -283,19 +283,19 @@ void RootWindowController::Shutdown() {
   // being removed triggers a relayout of the shelf it will try to build a
   // window list adding windows from the target root window's containers which
   // may have already gone away.
-  if (Shell::GetTargetRootWindow() == root_window_.get()) {
+  if (Shell::GetTargetRootWindow() == root_window()) {
     Shell::GetInstance()->set_target_root_window(
-        Shell::GetPrimaryRootWindow() == root_window_.get() ?
+        Shell::GetPrimaryRootWindow() == root_window() ?
         NULL : Shell::GetPrimaryRootWindow());
   }
 
   CloseChildWindows();
-  GetRootWindowSettings(root_window_.get())->controller = NULL;
+  GetRootWindowSettings(root_window())->controller = NULL;
   screen_dimmer_.reset();
   workspace_controller_.reset();
   // Forget with the display ID so that display lookup
   // ends up with invalid display.
-  internal::GetRootWindowSettings(root_window_.get())->display_id =
+  internal::GetRootWindowSettings(root_window())->display_id =
       gfx::Display::kInvalidDisplayID;
   // And this root window should no longer process events.
   root_window_->PrepareForShutdown();
@@ -324,11 +324,11 @@ RootWindowController::GetSystemModalLayoutManager(aura::Window* window) {
 }
 
 aura::Window* RootWindowController::GetContainer(int container_id) {
-  return root_window_->GetChildById(container_id);
+  return root_window()->GetChildById(container_id);
 }
 
 const aura::Window* RootWindowController::GetContainer(int container_id) const {
-  return root_window_->GetChildById(container_id);
+  return root_window_->window()->GetChildById(container_id);
 }
 
 void RootWindowController::ShowLauncher() {
@@ -413,7 +413,7 @@ void RootWindowController::CloseChildWindows() {
     docked_layout_manager_ = NULL;
   }
 
-  aura::client::SetDragDropClient(root_window_.get(), NULL);
+  aura::client::SetDragDropClient(root_window(), NULL);
 
   // TODO(harrym): Remove when Status Area Widget is a child view.
   if (shelf_) {
@@ -428,12 +428,12 @@ void RootWindowController::CloseChildWindows() {
   animating_wallpaper_controller_.reset();
 
   workspace_controller_.reset();
-  aura::client::SetTooltipClient(root_window_.get(), NULL);
+  aura::client::SetTooltipClient(root_window(), NULL);
 
   // Explicitly destroy top level windows. We do this as during part of
   // destruction such windows may query the RootWindow for state.
   std::queue<aura::Window*> non_toplevel_windows;
-  non_toplevel_windows.push(root_window_.get());
+  non_toplevel_windows.push(root_window());
   while (!non_toplevel_windows.empty()) {
     aura::Window* non_toplevel_window = non_toplevel_windows.front();
     non_toplevel_windows.pop();
@@ -451,12 +451,12 @@ void RootWindowController::CloseChildWindows() {
       delete *toplevel_windows.windows().begin();
   }
   // And then remove the containers.
-  while (!root_window_->children().empty()) {
-    aura::Window* window = root_window_->children()[0];
+  while (!root_window()->children().empty()) {
+    aura::Window* window = root_window()->children()[0];
     if (window->owned_by_parent()) {
       delete window;
     } else {
-      root_window_->RemoveChild(window);
+      root_window()->RemoveChild(window);
     }
   }
 
@@ -467,7 +467,7 @@ void RootWindowController::MoveWindowsTo(aura::Window* dst) {
   // Forget the shelf early so that shelf don't update itself using wrong
   // display info.
   workspace_controller_->SetShelf(NULL);
-  ReparentAllWindows(root_window_.get(), dst);
+  ReparentAllWindows(root_window(), dst);
 }
 
 ShelfLayoutManager* RootWindowController::GetShelfLayoutManager() {
@@ -568,17 +568,19 @@ RootWindowController::RootWindowController(aura::RootWindow* root_window)
       panel_layout_manager_(NULL),
       touch_hud_debug_(NULL),
       touch_hud_projection_(NULL) {
-  GetRootWindowSettings(root_window)->controller = this;
-  screen_dimmer_.reset(new ScreenDimmer(root_window));
+  GetRootWindowSettings(root_window_->window())->controller = this;
+  screen_dimmer_.reset(new ScreenDimmer(root_window_->window()));
 
   stacking_controller_.reset(new StackingController);
-  aura::client::SetWindowTreeClient(root_window, stacking_controller_.get());
-  capture_client_.reset(new views::corewm::ScopedCaptureClient(root_window));
+  aura::client::SetWindowTreeClient(root_window_->window(),
+                                    stacking_controller_.get());
+  capture_client_.reset(
+      new views::corewm::ScopedCaptureClient(root_window_->window()));
 }
 
 void RootWindowController::Init(RootWindowType root_window_type,
                                 bool first_run_after_boot) {
-  Shell::GetInstance()->InitRootWindow(root_window_.get());
+  Shell::GetInstance()->InitRootWindow(root_window());
 
   root_window_->SetCursor(ui::kCursorPointer);
   CreateContainersInRootWindow(root_window_.get());
@@ -604,8 +606,7 @@ void RootWindowController::Init(RootWindowType root_window_type,
     shell->InitKeyboard(this);
   } else {
     root_window_layout()->OnWindowResized();
-    shell->desktop_background_controller()->OnRootWindowAdded(
-        root_window_.get());
+    shell->desktop_background_controller()->OnRootWindowAdded(root_window());
     shell->high_contrast_controller()->OnRootWindowAdded(root_window_.get());
     root_window_->ShowRootWindow();
 
@@ -616,9 +617,8 @@ void RootWindowController::Init(RootWindowType root_window_type,
 }
 
 void RootWindowController::InitLayoutManagers() {
-  root_window_layout_ =
-      new RootWindowLayoutManager(root_window_.get());
-  root_window_->SetLayoutManager(root_window_layout_);
+  root_window_layout_ = new RootWindowLayoutManager(root_window());
+  root_window()->SetLayoutManager(root_window_layout_);
 
   aura::Window* default_container =
       GetContainer(kShellWindowId_DefaultContainer);
@@ -679,7 +679,7 @@ void RootWindowController::InitLayoutManagers() {
 void RootWindowController::InitTouchHuds() {
   CommandLine* command_line = CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kAshTouchHud))
-    set_touch_hud_debug(new TouchHudDebug(root_window_.get()));
+    set_touch_hud_debug(new TouchHudDebug(root_window()));
   if (Shell::GetInstance()->is_touch_hud_projection_enabled())
     EnableTouchHudProjection();
 }
@@ -692,7 +692,7 @@ void RootWindowController::CreateSystemBackground(
     color = kChromeOsBootColor;
 #endif
   system_background_.reset(
-      new SystemBackgroundController(root_window_.get(), color));
+    new SystemBackgroundController(root_window(), color));
 
 #if defined(OS_CHROMEOS)
   // Make a copy of the system's boot splash screen so we can composite it
@@ -707,7 +707,7 @@ void RootWindowController::CreateSystemBackground(
 }
 
 void RootWindowController::CreateContainersInRootWindow(
-    aura::RootWindow* root_window) {
+    aura::Window* root_window) {
   // These containers are just used by PowerButtonController to animate groups
   // of containers simultaneously without messing up the current transformations
   // on those containers. These are direct children of the root window; all of
@@ -884,7 +884,7 @@ void RootWindowController::CreateContainersInRootWindow(
 void RootWindowController::EnableTouchHudProjection() {
   if (touch_hud_projection_)
     return;
-  set_touch_hud_projection(new TouchHudProjection(root_window_.get()));
+  set_touch_hud_projection(new TouchHudProjection(root_window()));
 }
 
 void RootWindowController::DisableTouchHudProjection() {

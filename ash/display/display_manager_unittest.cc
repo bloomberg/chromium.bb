@@ -980,7 +980,8 @@ TEST_F(DisplayManagerTest, SoftwareMirroring) {
   EXPECT_EQ("0,0 300x400",
             Shell::GetScreen()->GetPrimaryDisplay().bounds().ToString());
   EXPECT_EQ("400x500", test_api.GetRootWindow()->GetHostSize().ToString());
-  EXPECT_EQ("300x400", test_api.GetRootWindow()->bounds().size().ToString());
+  EXPECT_EQ("300x400",
+            test_api.GetRootWindow()->window()->bounds().size().ToString());
   EXPECT_TRUE(display_manager->IsMirrored());
 
   display_manager->SetMirrorMode(false);
@@ -996,24 +997,29 @@ TEST_F(DisplayManagerTest, SoftwareMirroring) {
 
   UpdateDisplay("300x400@0.5,400x500");
   EXPECT_FALSE(display_observer.changed_and_reset());
-  EXPECT_EQ("300x400", test_api.GetRootWindow()->bounds().size().ToString());
+  EXPECT_EQ("300x400",
+            test_api.GetRootWindow()->window()->bounds().size().ToString());
 
   UpdateDisplay("310x410*2,400x500");
   EXPECT_FALSE(display_observer.changed_and_reset());
-  EXPECT_EQ("310x410", test_api.GetRootWindow()->bounds().size().ToString());
+  EXPECT_EQ("310x410",
+            test_api.GetRootWindow()->window()->bounds().size().ToString());
 
   UpdateDisplay("320x420/r,400x500");
   EXPECT_FALSE(display_observer.changed_and_reset());
-  EXPECT_EQ("320x420", test_api.GetRootWindow()->bounds().size().ToString());
+  EXPECT_EQ("320x420",
+            test_api.GetRootWindow()->window()->bounds().size().ToString());
 
   UpdateDisplay("330x440/r,400x500");
   EXPECT_FALSE(display_observer.changed_and_reset());
-  EXPECT_EQ("330x440", test_api.GetRootWindow()->bounds().size().ToString());
+  EXPECT_EQ("330x440",
+            test_api.GetRootWindow()->window()->bounds().size().ToString());
 
   // Overscan insets are ignored.
   UpdateDisplay("400x600/o,600x800/o");
   EXPECT_FALSE(display_observer.changed_and_reset());
-  EXPECT_EQ("400x600", test_api.GetRootWindow()->bounds().size().ToString());
+  EXPECT_EQ("400x600",
+            test_api.GetRootWindow()->window()->bounds().size().ToString());
 
   Shell::GetScreen()->RemoveObserver(&display_observer);
 }

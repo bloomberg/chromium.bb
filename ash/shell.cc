@@ -939,7 +939,7 @@ void Shell::InitKeyboard(internal::RootWindowController* root) {
   }
 }
 
-void Shell::InitRootWindow(aura::RootWindow* root_window) {
+void Shell::InitRootWindow(aura::Window* root_window) {
   DCHECK(activation_client_);
   DCHECK(visibility_controller_.get());
   DCHECK(drag_drop_controller_.get());

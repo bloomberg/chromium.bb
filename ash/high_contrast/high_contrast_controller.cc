@@ -25,7 +25,7 @@ void HighContrastController::SetEnabled(bool enabled) {
   }
 }
 
-void HighContrastController::OnRootWindowAdded(aura::RootWindow* root_window) {
+void HighContrastController::OnRootWindowAdded(aura::Window* root_window) {
   UpdateDisplay(root_window);
 }
 

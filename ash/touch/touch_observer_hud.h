@@ -43,7 +43,7 @@ class ASH_EXPORT TouchObserverHUD
   int64 display_id() const { return display_id_; }
 
  protected:
-  explicit TouchObserverHUD(aura::RootWindow* initial_root);
+  explicit TouchObserverHUD(aura::Window* initial_root);
 
   virtual ~TouchObserverHUD();
 

@@ -4,7 +4,7 @@
 
 #include "ash/wm/system_background_controller.h"
 
-#include "ui/aura/root_window.h"
+#include "ui/aura/window.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_type.h"
 
@@ -12,7 +12,7 @@ namespace ash {
 namespace internal {
 
 SystemBackgroundController::SystemBackgroundController(
-    aura::RootWindow* root_window,
+    aura::Window* root_window,
     SkColor color)
     : root_window_(root_window),
       layer_(new ui::Layer(ui::LAYER_SOLID_COLOR)) {

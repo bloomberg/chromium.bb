@@ -34,7 +34,7 @@ class ASH_EXPORT TouchHudDebug : public TouchObserverHUD {
     INVISIBLE,
   };
 
-  explicit TouchHudDebug(aura::RootWindow* initial_root);
+  explicit TouchHudDebug(aura::Window* initial_root);
 
   // Returns the log of touch events for all displays as a dictionary mapping id
   // of each display to its touch log.

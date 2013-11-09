@@ -49,7 +49,7 @@ class WindowWatcher::WorkspaceWindowWatcher : public aura::WindowObserver {
       container->children()[i]->AddObserver(watcher_);
   }
 
-  void RootWindowRemoved(aura::RootWindow* root) {
+  void RootWindowRemoved(aura::Window* root) {
     aura::Window* panel_container = ash::Shell::GetContainer(
         root,
         internal::kShellWindowId_PanelContainer);
@@ -81,7 +81,7 @@ WindowWatcher::~WindowWatcher() {
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   for (aura::Window::Windows::iterator iter = root_windows.begin();
        iter != root_windows.end(); ++ iter) {
-    workspace_window_watcher_->RootWindowRemoved((*iter)->GetDispatcher());
+    workspace_window_watcher_->RootWindowRemoved(*iter);
   }
 }
 
