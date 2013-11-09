@@ -50,7 +50,7 @@ namespace nacl_io {
 
 
 KernelProxy::KernelProxy() : dev_(0), ppapi_(NULL),
-                             sigwinch_handler_(SIG_IGN),
+                             sigwinch_handler_(SIG_DFL),
                              signal_emitter_(new EventEmitter) {
 
 }
@@ -890,7 +890,7 @@ int KernelProxy::kill(pid_t pid, int sig) {
   signal_emitter_->RaiseEvents_Locked(POLLERR);
   switch (sig) {
     case SIGWINCH:
-      if (sigwinch_handler_ != SIG_IGN)
+      if (sigwinch_handler_ != SIG_IGN && sigwinch_handler_ != SIG_DFL)
         sigwinch_handler_(SIGWINCH);
       break;
 
@@ -910,8 +910,6 @@ sighandler_t KernelProxy::sigset(int signum, sighandler_t handler) {
     // Handled signals.
     case SIGWINCH: {
       sighandler_t old_value = sigwinch_handler_;
-      if (handler == SIG_DFL)
-        handler = SIG_IGN;
       sigwinch_handler_ = handler;
       return old_value;
     }
