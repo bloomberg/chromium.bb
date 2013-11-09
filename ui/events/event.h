@@ -75,9 +75,6 @@ class EVENTS_EXPORT Event {
   EventTarget* target() const { return target_; }
   EventPhase phase() const { return phase_; }
   EventResult result() const { return result_; }
-  bool dispatch_to_hidden_targets() const {
-    return dispatch_to_hidden_targets_;
-  }
 
   LatencyInfo* latency() { return &latency_; }
   const LatencyInfo* latency() const { return &latency_; }
@@ -206,9 +203,6 @@ class EVENTS_EXPORT Event {
     delete_native_event_ = delete_native_event;
   }
   void set_cancelable(bool cancelable) { cancelable_ = cancelable; }
-  void set_dispatch_to_hidden_targets(bool dispatch_to_hidden_targets) {
-    dispatch_to_hidden_targets_ = dispatch_to_hidden_targets;
-  }
 
   void set_time_stamp(const base::TimeDelta& time_stamp) {
     time_stamp_ = time_stamp;
@@ -228,7 +222,6 @@ class EVENTS_EXPORT Event {
   base::TimeDelta time_stamp_;
   LatencyInfo latency_;
   int flags_;
-  bool dispatch_to_hidden_targets_;
   base::NativeEvent native_event_;
   bool delete_native_event_;
   bool cancelable_;

@@ -145,7 +145,6 @@ Event::Event(EventType type, base::TimeDelta time_stamp, int flags)
     : type_(type),
       time_stamp_(time_stamp),
       flags_(flags),
-      dispatch_to_hidden_targets_(false),
 #if defined(USE_X11)
       native_event_(NULL),
 #endif
@@ -165,7 +164,6 @@ Event::Event(const base::NativeEvent& native_event,
     : type_(type),
       time_stamp_(EventTimeFromNative(native_event)),
       flags_(flags),
-      dispatch_to_hidden_targets_(false),
       delete_native_event_(false),
       cancelable_(true),
       target_(NULL),
@@ -194,7 +192,6 @@ Event::Event(const Event& copy)
       time_stamp_(copy.time_stamp_),
       latency_(copy.latency_),
       flags_(copy.flags_),
-      dispatch_to_hidden_targets_(false),
       native_event_(::CopyNativeEvent(copy.native_event_)),
       delete_native_event_(false),
       cancelable_(true),

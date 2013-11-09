@@ -1112,7 +1112,7 @@ const InputMethod* View::GetInputMethod() const {
 }
 
 bool View::CanAcceptEvent(const ui::Event& event) {
-  return event.dispatch_to_hidden_targets() || IsDrawn();
+  return IsDrawn();
 }
 
 ui::EventTarget* View::GetParentTarget() {

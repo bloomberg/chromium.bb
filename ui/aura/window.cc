@@ -1118,8 +1118,7 @@ bool Window::CanAcceptEvent(const ui::Event& event) {
   if (client && !client->CanProcessEventsWithinSubtree(this))
     return false;
 
-  bool visible = event.dispatch_to_hidden_targets() || IsVisible();
-  return visible && (!parent_ || parent_->CanAcceptEvent(event));
+  return IsVisible() && (!parent_ || parent_->CanAcceptEvent(event));
 }
 
 ui::EventTarget* Window::GetParentTarget() {
