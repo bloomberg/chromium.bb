@@ -49,6 +49,7 @@ enum NumberRange {
 class AnimatableLength : public AnimatableValue {
 public:
     enum NumberUnitType {
+        UnitTypeCalc,
         UnitTypePixels,
         UnitTypePercentage,
         UnitTypeFontSize,
@@ -81,15 +82,15 @@ protected:
 
 private:
     AnimatableLength(double number, NumberUnitType unitType, CSSPrimitiveValue* cssPrimitiveValue)
-        : m_isCalc(false)
-        , m_number(number)
+        : m_number(number)
         , m_unitType(unitType)
         , m_cachedCSSPrimitiveValue(cssPrimitiveValue)
     {
+        ASSERT(m_unitType != UnitTypeCalc);
         ASSERT(m_unitType != UnitTypeInvalid);
     }
     AnimatableLength(PassRefPtr<CSSCalcExpressionNode> calcExpression, CSSPrimitiveValue* cssPrimitiveValue)
-        : m_isCalc(true)
+        : m_unitType(UnitTypeCalc)
         , m_calcExpression(calcExpression)
         , m_cachedCSSPrimitiveValue(cssPrimitiveValue)
     {
@@ -97,6 +98,11 @@ private:
     }
     virtual AnimatableType type() const OVERRIDE { return TypeLength; }
     virtual bool equalTo(const AnimatableValue*) const OVERRIDE;
+
+    bool isCalc() const
+    {
+        return m_unitType == UnitTypeCalc;
+    }
 
     static PassRefPtr<AnimatableLength> create(const AnimatableLength* leftAddend, const AnimatableLength* rightAddend)
     {
@@ -110,7 +116,7 @@ private:
     PassRefPtr<AnimatableLength> scale(double) const;
     double clampedNumber(NumberRange range) const
     {
-        ASSERT(!m_isCalc);
+        ASSERT(!isCalc());
         return (range == NonNegativeValues && m_number <= 0) ? 0 : m_number;
     }
     static NumberUnitType primitiveUnitToNumberType(unsigned short primitiveUnit);
@@ -121,14 +127,11 @@ private:
     // e.g. calc(100% - 100% + 1em) resolves to calc(0% + 1em), not to calc(1em)
     bool isUnitlessZero() const
     {
-        return !m_isCalc && !m_number && m_unitType != UnitTypePercentage;
+        return !isCalc() && !m_number && m_unitType != UnitTypePercentage;
     }
 
     NumberUnitType commonUnitType(const AnimatableLength* length) const
     {
-        if (m_isCalc || length->m_isCalc)
-            return UnitTypeInvalid;
-
         if (m_unitType == length->m_unitType)
             return m_unitType;
 
@@ -137,13 +140,11 @@ private:
         if (length->isUnitlessZero())
             return m_unitType;
 
-        return UnitTypeInvalid;
+        return UnitTypeCalc;
     }
 
-    bool m_isCalc;
-
     double m_number;
-    NumberUnitType m_unitType;
+    const NumberUnitType m_unitType;
 
     RefPtr<CSSCalcExpressionNode> m_calcExpression;
 
