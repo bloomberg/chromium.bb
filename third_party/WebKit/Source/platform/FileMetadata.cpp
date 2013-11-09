@@ -71,4 +71,9 @@ String directoryName(const String& path)
     return blink::Platform::current()->fileUtilities()->directoryName(path);
 }
 
+KURL filePathToURL(const String& path)
+{
+    return blink::Platform::current()->fileUtilities()->filePathToURL(path);
+}
+
 } // namespace WebCore

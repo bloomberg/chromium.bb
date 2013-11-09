@@ -32,6 +32,7 @@
 #define FileMetadata_h
 
 #include "platform/PlatformExport.h"
+#include "weborigin/KURL.h"
 #include "wtf/MathExtras.h"
 #include "wtf/text/WTFString.h"
 #include <time.h>
@@ -66,6 +67,7 @@ PLATFORM_EXPORT bool getFileSize(const String&, long long& result);
 PLATFORM_EXPORT bool getFileModificationTime(const String&, time_t& result);
 PLATFORM_EXPORT bool getFileMetadata(const String&, FileMetadata&);
 PLATFORM_EXPORT String directoryName(const String&);
+PLATFORM_EXPORT KURL filePathToURL(const String&);
 
 } // namespace WebCore
 

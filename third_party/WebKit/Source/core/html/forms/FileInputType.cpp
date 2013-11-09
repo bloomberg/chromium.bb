@@ -34,7 +34,7 @@
 #include "core/html/forms/FormController.h"
 #include "core/html/forms/InputTypeNames.h"
 #include "core/page/Chrome.h"
-#include "core/platform/DragData.h"
+#include "core/page/DragData.h"
 #include "core/rendering/RenderFileUploadControl.h"
 #include "platform/FileMetadata.h"
 #include "platform/UserGestureIndicator.h"

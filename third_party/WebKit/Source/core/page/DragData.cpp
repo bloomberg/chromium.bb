@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "core/platform/DragData.h"
+#include "core/page/DragData.h"
 
 #include "core/dom/Document.h"
 #include "core/dom/DocumentFragment.h"
@@ -38,9 +38,6 @@
 #include "platform/clipboard/ClipboardMimeTypes.h"
 #include "weborigin/KURL.h"
 #include "wtf/text/WTFString.h"
-
-#include "public/platform/Platform.h"
-#include "public/platform/WebFileUtilities.h"
 
 namespace WebCore {
 
@@ -81,7 +78,7 @@ String DragData::asURL(FilenameConversionPolicy filenamePolicy, String* title) c
     if (m_platformDragData->types().contains(mimeTypeTextURIList))
         m_platformDragData->urlAndTitle(url, title);
     else if (filenamePolicy == ConvertFilenames && containsFiles())
-        url = KURL(blink::Platform::current()->fileUtilities()->filePathToURL(m_platformDragData->filenames()[0]));
+        url = filePathToURL(m_platformDragData->filenames()[0]);
     return url;
 }
 
