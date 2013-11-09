@@ -431,6 +431,7 @@ class Tab::TabCloseButton : public views::ImageButton {
     tab_->GetHitTestMask(source, &tab_mask);
 
     gfx::Rect button_bounds(GetContentsBounds());
+    button_bounds.set_x(GetMirroredXForRect(button_bounds));
     gfx::RectF tab_bounds_f(gfx::SkRectToRectF(tab_mask.getBounds()));
     views::View::ConvertRectToTarget(tab_, this, &tab_bounds_f);
     gfx::Rect tab_bounds = gfx::ToEnclosingRect(tab_bounds_f);
