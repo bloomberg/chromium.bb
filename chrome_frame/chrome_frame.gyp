@@ -454,6 +454,7 @@
       ],
       'conditions': [
         ['OS=="win"', {
+          'msvs_large_pdb': 1,
           'link_settings': {
             'libraries': [
               '-loleacc.lib',

@@ -2421,6 +2421,7 @@
           ],
         }],
         ['OS=="win"', {
+          'msvs_large_pdb': 1,
           'sources': [
             '<(SHARED_INTERMEDIATE_DIR)/chrome/browser_resources.rc',
             '<(SHARED_INTERMEDIATE_DIR)/chrome/chrome_unscaled_resources.rc',
