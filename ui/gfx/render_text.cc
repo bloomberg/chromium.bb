@@ -62,8 +62,13 @@ int DetermineBaselineCenteringText(const Rect& display_rect,
   const int baseline = font_list.GetBaseline();
   const int cap_height = font_list.GetCapHeight();
   const int internal_leading = baseline - cap_height;
-  const int baseline_shift =
-      (display_height - cap_height) / 2 - internal_leading;
+  // Some platforms don't support getting the cap height, and simply return
+  // the entire font ascent from GetCapHeight().  Centering the ascent makes
+  // the font look too low, so if GetCapHeight() returns the ascent, center
+  // the entire font height instead.
+  const int space =
+      display_height - ((internal_leading != 0) ? cap_height : font_height);
+  const int baseline_shift = space / 2 - internal_leading;
   return baseline + std::max(min_shift, std::min(max_shift, baseline_shift));
 }
 
