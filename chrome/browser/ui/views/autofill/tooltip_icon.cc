@@ -10,10 +10,22 @@
 #include "grit/theme_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/bubble/bubble_frame_view.h"
+#include "ui/views/focus_border.h"
 
 namespace autofill {
 
 namespace {
+
+gfx::Insets GetPreferredInsets(views::View* view) {
+  gfx::Size pref_size = view->GetPreferredSize();
+  gfx::Rect local_bounds = view->GetLocalBounds();
+  gfx::Point origin = local_bounds.CenterPoint();
+  origin.Offset(-pref_size.width() / 2, -pref_size.height() / 2);
+  return gfx::Insets(origin.y(),
+                     origin.x(),
+                     local_bounds.bottom() - (origin.y() + pref_size.height()),
+                     local_bounds.right() - (origin.x() + pref_size.width()));
+}
 
 // An info bubble with some extra positioning magic for tooltip icons.
 class TooltipBubble : public InfoBubble {
@@ -25,10 +37,9 @@ class TooltipBubble : public InfoBubble {
  protected:
   // InfoBubble:
   virtual gfx::Rect GetAnchorRect() OVERRIDE {
-    gfx::Size pref_size = anchor()->GetPreferredSize();
-    gfx::Point origin = anchor()->GetBoundsInScreen().CenterPoint();
-    origin.Offset(-pref_size.width() / 2, -pref_size.height() / 2);
-    return gfx::Rect(origin, pref_size);
+    gfx::Rect bounds = views::BubbleDelegateView::GetAnchorRect();
+    bounds.Inset(GetPreferredInsets(anchor()));
+    return bounds;
   }
 
  private:
@@ -39,8 +50,10 @@ class TooltipBubble : public InfoBubble {
 
 TooltipIcon::TooltipIcon(const base::string16& tooltip)
     : tooltip_(tooltip),
+      mouse_inside_(false),
       bubble_(NULL) {
   ChangeImageTo(IDR_AUTOFILL_TOOLTIP_ICON);
+  set_focusable(true);
 }
 
 TooltipIcon::~TooltipIcon() {
@@ -55,14 +68,28 @@ const char* TooltipIcon::GetClassName() const {
 }
 
 void TooltipIcon::OnMouseEntered(const ui::MouseEvent& event) {
-  ChangeImageTo(IDR_AUTOFILL_TOOLTIP_ICON_H);
+  mouse_inside_ = true;
   ShowBubble();
 }
 
 void TooltipIcon::OnMouseExited(const ui::MouseEvent& event) {
-  ChangeImageTo(IDR_AUTOFILL_TOOLTIP_ICON);
+  mouse_inside_ = false;
   hide_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(250), this,
                     &TooltipIcon::HideBubble);
+}
+
+void TooltipIcon::OnBoundsChanged(const gfx::Rect& prev_bounds) {
+  gfx::Insets insets = GetPreferredInsets(this);
+  set_focus_border(views::FocusBorder::CreateDashedFocusBorder(
+      insets.left(), insets.top(), insets.right(), insets.bottom()));
+}
+
+void TooltipIcon::OnFocus() {
+  ShowBubble();
+}
+
+void TooltipIcon::OnBlur() {
+  HideBubble();
 }
 
 void TooltipIcon::ChangeImageTo(int idr) {
@@ -71,19 +98,27 @@ void TooltipIcon::ChangeImageTo(int idr) {
 }
 
 void TooltipIcon::ShowBubble() {
-  if (bubble_) {
-    hide_timer_.Stop();
-  } else {
-    bubble_ = new TooltipBubble(this, tooltip_);
-    bubble_->Show();
-  }
+  hide_timer_.Stop();
+
+  if (bubble_)
+    return;
+
+  ChangeImageTo(IDR_AUTOFILL_TOOLTIP_ICON_H);
+
+  bubble_ = new TooltipBubble(this, tooltip_);
+  bubble_->Show();
 }
 
 void TooltipIcon::HideBubble() {
-  if (bubble_) {
-    bubble_->Hide();
-    bubble_ = NULL;
-  }
+  hide_timer_.Stop();
+
+  if (HasFocus() || mouse_inside_ || !bubble_)
+    return;
+
+  ChangeImageTo(IDR_AUTOFILL_TOOLTIP_ICON);
+
+  bubble_->Hide();
+  bubble_ = NULL;
 }
 
 }  // namespace autofill

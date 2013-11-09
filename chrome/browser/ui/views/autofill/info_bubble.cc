@@ -51,9 +51,7 @@ InfoBubble::InfoBubble(views::View* anchor, const base::string16& message)
   AddChildView(label);
 }
 
-InfoBubble::~InfoBubble() {
-  DCHECK(!widget_);
-}
+InfoBubble::~InfoBubble() {}
 
 void InfoBubble::Show() {
   // TODO(dbeam): currently we assume that combobox menus always show downward

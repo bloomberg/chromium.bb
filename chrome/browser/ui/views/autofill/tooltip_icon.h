@@ -27,20 +27,26 @@ class TooltipIcon : public views::ImageView {
   virtual const char* GetClassName() const OVERRIDE;
   virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
+  virtual void OnBoundsChanged(const gfx::Rect& prev_bounds) OVERRIDE;
+  virtual void OnFocus() OVERRIDE;
+  virtual void OnBlur() OVERRIDE;
 
  private:
   // Changes this view's image to the resource indicated by |idr|.
   void ChangeImageTo(int idr);
 
-  // Starts a timer to hide |bubble_|.
-  void StartHideTimer();
-
-  // Helpers to hide and show |bubble_|.
-  void HideBubble();
+  // Creates and shows |bubble_|. If |bubble_| already exists, just cancels a
+  // potential close timer.
   void ShowBubble();
+
+  // Hides |bubble_| if necessary.
+  void HideBubble();
 
   // The text to show in a bubble when hovered.
   base::string16 tooltip_;
+
+  // Whether the mouse is inside this tooltip.
+  bool mouse_inside_;
 
   // A bubble shown on hover. Weak; owns itself. NULL while hiding.
   InfoBubble* bubble_;
