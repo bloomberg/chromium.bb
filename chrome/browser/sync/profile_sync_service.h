@@ -511,6 +511,9 @@ class ProfileSyncService : public ProfileSyncServiceBase,
   // Used by tests to inspect interaction with OAuth2TokenService.
   bool IsRetryingAccessTokenFetchForTest() const;
 
+  // Used by tests to inspect the OAuth2 access tokens used by PSS.
+  std::string GetAccessTokenForTest() const;
+
   // TODO(sync): This is only used in tests.  Can we remove it?
   void GetModelSafeRoutingInfo(syncer::ModelSafeRoutingInfo* out) const;
 

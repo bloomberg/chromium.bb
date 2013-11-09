@@ -2172,6 +2172,10 @@ bool ProfileSyncService::IsRetryingAccessTokenFetchForTest() const {
   return request_access_token_retry_timer_.IsRunning();
 }
 
+std::string ProfileSyncService::GetAccessTokenForTest() const {
+  return access_token_;
+}
+
 std::string ProfileSyncService::GetEffectiveUsername() {
   if (profile_->IsManaged()) {
 #if defined(ENABLE_MANAGED_USERS)
