@@ -5,11 +5,10 @@
 #ifndef CC_RESOURCES_ETC1_PIXEL_REF_H_
 #define CC_RESOURCES_ETC1_PIXEL_REF_H_
 
-#include "base/logging.h"
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkFlattenable.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
 
 namespace cc {
@@ -21,15 +20,17 @@ class CC_EXPORT ETC1PixelRef : public SkPixelRef {
   virtual ~ETC1PixelRef();
 
   // SK_DECLARE_UNFLATTENABLE_OBJECT
-  virtual Factory getFactory() const SK_OVERRIDE;
+  virtual Factory getFactory() const OVERRIDE;
 
  protected:
   // Implementation of SkPixelRef.
-  virtual void* onLockPixels(SkColorTable** color_table) SK_OVERRIDE;
-  virtual void onUnlockPixels() SK_OVERRIDE;
+  virtual void* onLockPixels(SkColorTable** color_table) OVERRIDE;
+  virtual void onUnlockPixels() OVERRIDE;
 
  private:
   scoped_ptr<uint8_t[]> pixels_;
+
+  DISALLOW_COPY_AND_ASSIGN(ETC1PixelRef);
 };
 
 }  // namespace cc
