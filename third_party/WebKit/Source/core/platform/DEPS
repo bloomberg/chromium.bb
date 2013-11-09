@@ -10,15 +10,9 @@ include_rules = [
     "+webp",
     # platform/ shouldn't depends on core/ but unfortunately does (crbug.com/258901).
     # Please don't add anything to this list of exceptions.
-    "!core/accessibility",
     "!core/dom",
-    "!core/editing",
     "!core/fileapi",
     "!core/html",
-    "!core/inspector",
     "!core/fetch",
-    "!core/frame",
-    "!core/page",
-    "!core/plugins",
     "!core/rendering",
 ]
