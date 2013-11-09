@@ -197,7 +197,14 @@ class PhishingClassifierTest : public InProcessBrowserTest {
   const std::string page_term_login_;
 };
 
-IN_PROC_BROWSER_TEST_F(PhishingClassifierTest, TestClassification) {
+// Flaky on Mac Blink bots: crbug.com/316709
+#if defined(OS_MACOSX)
+#define MAYBE_TestClassification DISABLED_TestClassification
+#else
+#define MAYBE_TestClassification TestClassification
+#endif
+
+IN_PROC_BROWSER_TEST_F(PhishingClassifierTest, MAYBE_TestClassification) {
   host_resolver()->AddRule("*", "127.0.0.1");
 
   // No scorer yet, so the classifier is not ready.
