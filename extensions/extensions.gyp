@@ -130,6 +130,7 @@
       'type': 'static_library',
       'dependencies': [
         'extensions_common',
+        '../chrome/chrome_resources.gyp:chrome_strings',
         '../content/content.gyp:content_browser',
         '../skia/skia.gyp:skia',
       ],
