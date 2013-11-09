@@ -9,7 +9,6 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "media/audio/audio_output_dispatcher_impl.h"
 #include "media/audio/audio_output_proxy.h"
@@ -87,9 +86,9 @@ AudioManagerBase::AudioManagerBase()
       // block the UI thread when swapping devices.
       output_listeners_(
           ObserverList<AudioDeviceListener>::NOTIFY_EXISTING_ONLY),
-      audio_thread_(new base::Thread("AudioThread")) {
+      audio_thread_("AudioThread") {
 #if defined(OS_WIN)
-  audio_thread_->init_com_with_mta(true);
+  audio_thread_.init_com_with_mta(true);
 #elif defined(OS_MACOSX)
   // CoreAudio calls must occur on the main thread of the process, which in our
   // case is sadly the browser UI thread.  Failure to execute calls on the right
@@ -104,8 +103,8 @@ AudioManagerBase::AudioManagerBase()
   }
 #endif
 
-  CHECK(audio_thread_->Start());
-  message_loop_ = audio_thread_->message_loop_proxy();
+  CHECK(audio_thread_.Start());
+  message_loop_ = audio_thread_.message_loop_proxy();
 }
 
 AudioManagerBase::~AudioManagerBase() {
@@ -114,7 +113,7 @@ AudioManagerBase::~AudioManagerBase() {
   // stopping the thread, resulting an unexpected behavior.
   // This way we make sure activities of the audio streams are all stopped
   // before we destroy them.
-  CHECK(!audio_thread_.get());
+  CHECK(!audio_thread_.IsRunning());
   // All the output streams should have been deleted.
   DCHECK_EQ(0, num_output_streams_);
   // All the input streams should have been deleted.
@@ -131,10 +130,10 @@ scoped_refptr<base::MessageLoopProxy> AudioManagerBase::GetMessageLoop() {
 
 scoped_refptr<base::MessageLoopProxy> AudioManagerBase::GetWorkerLoop() {
   // Lazily start the worker thread.
-  if (!audio_thread_->IsRunning())
-    CHECK(audio_thread_->Start());
+  if (!audio_thread_.IsRunning())
+    CHECK(audio_thread_.Start());
 
-  return audio_thread_->message_loop_proxy();
+  return audio_thread_.message_loop_proxy();
 }
 
 AudioOutputStream* AudioManagerBase::MakeAudioOutputStream(
@@ -330,17 +329,6 @@ void AudioManagerBase::ReleaseInputStream(AudioInputStream* stream) {
 }
 
 void AudioManagerBase::Shutdown() {
-  // To avoid running into deadlocks while we stop the thread, shut it down
-  // via a local variable while not holding the audio thread lock.
-  scoped_ptr<base::Thread> audio_thread;
-  {
-    base::AutoLock lock(audio_thread_lock_);
-    audio_thread_.swap(audio_thread);
-  }
-
-  if (!audio_thread)
-    return;
-
   // Only true when we're sharing the UI message loop with the browser.  The UI
   // loop is no longer running at this time and browser destruction is imminent.
   if (message_loop_->BelongsToCurrentThread()) {
@@ -351,27 +339,24 @@ void AudioManagerBase::Shutdown() {
   }
 
   // Stop() will wait for any posted messages to be processed first.
-  audio_thread->Stop();
+  audio_thread_.Stop();
 }
 
 void AudioManagerBase::ShutdownOnAudioThread() {
-  // This should always be running on the audio thread, but since we've cleared
-  // the audio_thread_ member pointer when we get here, we can't verify exactly
-  // what thread we're running on.  The method is not public though and only
-  // called from one place, so we'll leave it at that.
+  DCHECK(message_loop_->BelongsToCurrentThread());
+
   AudioOutputDispatchers::iterator it = output_dispatchers_.begin();
   for (; it != output_dispatchers_.end(); ++it) {
     scoped_refptr<AudioOutputDispatcher>& dispatcher = (*it)->dispatcher;
-    if (dispatcher.get()) {
-      dispatcher->Shutdown();
-      // All AudioOutputProxies must have been freed before Shutdown is called.
-      // If they still exist, things will go bad.  They have direct pointers to
-      // both physical audio stream objects that belong to the dispatcher as
-      // well as the message loop of the audio thread that will soon go away.
-      // So, better crash now than later.
-      DCHECK(dispatcher->HasOneRef()) << "AudioOutputProxies are still alive";
-      dispatcher = NULL;
-    }
+    dispatcher->Shutdown();
+
+    // All AudioOutputProxies must have been freed before Shutdown is called.
+    // If they still exist, things will go bad.  They have direct pointers to
+    // both physical audio stream objects that belong to the dispatcher as
+    // well as the message loop of the audio thread that will soon go away.
+    // So, better crash now than later.
+    DCHECK(dispatcher->HasOneRef()) << "AudioOutputProxies are still alive";
+    dispatcher = NULL;
   }
 
   output_dispatchers_.clear();
