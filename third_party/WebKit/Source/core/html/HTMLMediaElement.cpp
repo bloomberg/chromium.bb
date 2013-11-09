@@ -2535,8 +2535,7 @@ void HTMLMediaElement::removeAllInbandTracks()
 
 PassRefPtr<TextTrack> HTMLMediaElement::addTextTrack(const String& kind, const String& label, const String& language, ExceptionState& es)
 {
-    if (!RuntimeEnabledFeatures::videoTrackEnabled())
-        return 0;
+    ASSERT(RuntimeEnabledFeatures::videoTrackEnabled());
 
     // 4.8.10.12.4 Text track API
     // The addTextTrack(kind, label, language) method of media elements, when invoked, must run the following steps:
@@ -2572,8 +2571,7 @@ PassRefPtr<TextTrack> HTMLMediaElement::addTextTrack(const String& kind, const S
 
 TextTrackList* HTMLMediaElement::textTracks()
 {
-    if (!RuntimeEnabledFeatures::videoTrackEnabled())
-        return 0;
+    ASSERT(RuntimeEnabledFeatures::videoTrackEnabled());
 
     if (!m_textTracks)
         m_textTracks = TextTrackList::create(this);
