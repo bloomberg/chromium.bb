@@ -7,34 +7,18 @@
 
 #include <vector>
 
-#include "base/location.h"
-#include "base/single_thread_task_runner.h"
-#include "base/sys_byteorder.h"
-#include "base/thread_task_runner_handle.h"
 #include "content/common/p2p_messages.h"
-#include "ipc/ipc_message_utils.h"
 #include "ipc/ipc_sender.h"
-#include "net/base/address_list.h"
-#include "net/base/completion_callback.h"
-#include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/socket/stream_socket.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-namespace {
 
 const char kTestLocalIpAddress[] = "123.44.22.4";
 const char kTestIpAddress1[] = "123.44.22.31";
 const int kTestPort1 = 234;
 const char kTestIpAddress2[] = "133.11.22.33";
 const int kTestPort2 = 543;
-
-const int kStunHeaderSize = 20;
-const uint16 kStunBindingRequest = 0x0001;
-const uint16 kStunBindingResponse = 0x0102;
-const uint16 kStunBindingError = 0x0111;
-const uint32 kStunMagicCookie = 0x2112A442;
 
 class MockIPCSender : public IPC::Sender {
  public:
@@ -43,9 +27,6 @@ class MockIPCSender : public IPC::Sender {
 
   MOCK_METHOD1(Send, bool(IPC::Message* msg));
 };
-
-MockIPCSender::MockIPCSender() { }
-MockIPCSender::~MockIPCSender() { }
 
 class FakeSocket : public net::StreamSocket {
  public:
@@ -103,196 +84,12 @@ class FakeSocket : public net::StreamSocket {
   net::BoundNetLog net_log_;
 };
 
-FakeSocket::FakeSocket(std::string* written_data)
-    : read_pending_(false),
-      input_pos_(0),
-      written_data_(written_data),
-      async_write_(false),
-      write_pending_(false) {
-}
+void CreateRandomPacket(std::vector<char>* packet);
+void CreateStunRequest(std::vector<char>* packet);
+void CreateStunResponse(std::vector<char>* packet);
+void CreateStunError(std::vector<char>* packet);
 
-FakeSocket::~FakeSocket() { }
-
-void FakeSocket::AppendInputData(const char* data, int data_size) {
-  input_data_.insert(input_data_.end(), data, data + data_size);
-  // Complete pending read if any.
-  if (read_pending_) {
-    read_pending_ = false;
-    int result = std::min(read_buffer_size_,
-                          static_cast<int>(input_data_.size() - input_pos_));
-    CHECK(result > 0);
-    memcpy(read_buffer_->data(), &input_data_[0] + input_pos_, result);
-    input_pos_ += result;
-    read_buffer_ = NULL;
-    net::CompletionCallback cb = read_callback_;
-    read_callback_.Reset();
-    cb.Run(result);
-  }
-}
-
-void FakeSocket::SetPeerAddress(const net::IPEndPoint& peer_address) {
-  peer_address_ = peer_address;
-}
-
-void FakeSocket::SetLocalAddress(const net::IPEndPoint& local_address) {
-  local_address_ = local_address;
-}
-
-int FakeSocket::Read(net::IOBuffer* buf, int buf_len,
-                     const net::CompletionCallback& callback) {
-  DCHECK(buf);
-  if (input_pos_ < static_cast<int>(input_data_.size())){
-    int result = std::min(buf_len,
-                          static_cast<int>(input_data_.size()) - input_pos_);
-    memcpy(buf->data(), &(*input_data_.begin()) + input_pos_, result);
-    input_pos_ += result;
-    return result;
-  } else {
-    read_pending_ = true;
-    read_buffer_ = buf;
-    read_buffer_size_ = buf_len;
-    read_callback_ = callback;
-    return net::ERR_IO_PENDING;
-  }
-}
-
-int FakeSocket::Write(net::IOBuffer* buf, int buf_len,
-                      const net::CompletionCallback& callback) {
-  DCHECK(buf);
-  DCHECK(!write_pending_);
-
-  if (async_write_) {
-
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, base::Bind(
-        &FakeSocket::DoAsyncWrite, base::Unretained(this),
-        scoped_refptr<net::IOBuffer>(buf), buf_len, callback));
-    write_pending_ = true;
-    return net::ERR_IO_PENDING;
-  }
-
-  if (written_data_) {
-    written_data_->insert(written_data_->end(),
-                          buf->data(), buf->data() + buf_len);
-  }
-  return buf_len;
-}
-
-void FakeSocket::DoAsyncWrite(scoped_refptr<net::IOBuffer> buf, int buf_len,
-                              const net::CompletionCallback& callback) {
-  write_pending_ = false;
-
-  if (written_data_) {
-    written_data_->insert(written_data_->end(),
-                          buf->data(), buf->data() + buf_len);
-  }
-  callback.Run(buf_len);
-}
-
-bool FakeSocket::SetReceiveBufferSize(int32 size) {
-  NOTIMPLEMENTED();
-  return false;
-}
-bool FakeSocket::SetSendBufferSize(int32 size) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
-int FakeSocket::Connect(const net::CompletionCallback& callback) {
-  return 0;
-}
-
-void FakeSocket::Disconnect() {
-  NOTREACHED();
-}
-
-bool FakeSocket::IsConnected() const {
-  return true;
-}
-
-bool FakeSocket::IsConnectedAndIdle() const {
-  return false;
-}
-
-int FakeSocket::GetPeerAddress(net::IPEndPoint* address) const {
-  *address = peer_address_;
-  return net::OK;
-}
-
-int FakeSocket::GetLocalAddress(net::IPEndPoint* address) const {
-  *address = local_address_;
-  return net::OK;
-}
-
-const net::BoundNetLog& FakeSocket::NetLog() const {
-  NOTREACHED();
-  return net_log_;
-}
-
-void FakeSocket::SetSubresourceSpeculation() {
-  NOTREACHED();
-}
-
-void FakeSocket::SetOmniboxSpeculation() {
-  NOTREACHED();
-}
-
-bool FakeSocket::WasEverUsed() const {
-  return true;
-}
-
-bool FakeSocket::UsingTCPFastOpen() const {
-  return false;
-}
-
-bool FakeSocket::WasNpnNegotiated() const {
-  return false;
-}
-
-net::NextProto FakeSocket::GetNegotiatedProtocol() const {
-  return net::kProtoUnknown;
-}
-
-bool FakeSocket::GetSSLInfo(net::SSLInfo* ssl_info) {
-  return false;
-}
-
-void CreateRandomPacket(std::vector<char>* packet) {
-  size_t size = kStunHeaderSize + rand() % 1000;
-  packet->resize(size);
-  for (size_t i = 0; i < size; i++) {
-    (*packet)[i] = rand() % 256;
-  }
-  // Always set the first bit to ensure that generated packet is not
-  // valid STUN packet.
-  (*packet)[0] = (*packet)[0] | 0x80;
-}
-
-void CreateStunPacket(std::vector<char>* packet, uint16 type) {
-  CreateRandomPacket(packet);
-  *reinterpret_cast<uint16*>(&*packet->begin()) = base::HostToNet16(type);
-  *reinterpret_cast<uint16*>(&*packet->begin() + 2) =
-      base::HostToNet16(packet->size() - kStunHeaderSize);
-  *reinterpret_cast<uint32*>(&*packet->begin() + 4) =
-      base::HostToNet32(kStunMagicCookie);
-}
-
-void CreateStunRequest(std::vector<char>* packet) {
-  CreateStunPacket(packet, kStunBindingRequest);
-}
-
-void CreateStunResponse(std::vector<char>* packet) {
-  CreateStunPacket(packet, kStunBindingResponse);
-}
-
-void CreateStunError(std::vector<char>* packet) {
-  CreateStunPacket(packet, kStunBindingError);
-}
-
-net::IPEndPoint ParseAddress(const std::string ip_str, int port) {
-  net::IPAddressNumber ip;
-  EXPECT_TRUE(net::ParseIPLiteralToNumber(ip_str, &ip));
-  return net::IPEndPoint(ip, port);
-}
+net::IPEndPoint ParseAddress(const std::string ip_str, int port);
 
 MATCHER_P(MatchMessage, type, "") {
   return arg->type() == type;
@@ -314,7 +111,5 @@ MATCHER_P(MatchIncomingSocketMessage, address, "") {
       arg, &params);
   return params.b == address;
 }
-
-}  // namespace
 
 #endif  // CONTENT_BROWSER_RENDERER_HOST_P2P_SOCKET_HOST_TEST_UTILS_H_
