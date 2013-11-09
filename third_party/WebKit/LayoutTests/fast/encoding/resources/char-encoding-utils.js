@@ -18,8 +18,6 @@ function testsDone()
         shouldBe("encode('" + charsets[i] + "', '" + unicodes[i] + "')", "'" + expectedResults[i] + "'");
     }
 
-    isSuccessfullyParsed();
-
     if (window.testRunner)
         testRunner.notifyDone();
 }

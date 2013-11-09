@@ -21,7 +21,4 @@ PASS encode('GBK', 'U+01F9') is '%A8%BF'
 PASS encode('GBK', 'U+1E3F') is '%A8%BC'
 PASS encode('GBK', 'U+22EF') is '%A1%AD'
 PASS encode('GBK', 'U+301C') is '%A1%AB'
-PASS successfullyParsed is true
-
-TEST COMPLETE
 
