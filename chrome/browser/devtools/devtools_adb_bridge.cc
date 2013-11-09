@@ -35,6 +35,7 @@
 #include "content/public/browser/devtools_external_agent_proxy.h"
 #include "content/public/browser/devtools_external_agent_proxy_delegate.h"
 #include "content/public/browser/devtools_manager.h"
+#include "content/public/browser/user_metrics.h"
 #include "crypto/rsa_private_key.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
@@ -807,6 +808,14 @@ class AgentHostDelegate : public content::DevToolsExternalAgentProxyDelegate,
     web_socket_ = new AdbWebSocket(
         device, socket_name, debug_url, adb_message_loop, this);
     g_host_delegates.Get()[id] = this;
+
+    if (socket_name.find(kWebViewSocketPrefix) == 0) {
+      content::RecordAction(
+          content::UserMetricsAction("DevTools_InspectAndroidWebView"));
+    } else {
+      content::RecordAction(
+          content::UserMetricsAction("DevTools_InspectAndroidPage"));
+    }
   }
 
   void OpenFrontend() {

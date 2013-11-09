@@ -55,6 +55,7 @@
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/user_metrics.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_view.h"
@@ -368,6 +369,7 @@ DevToolsWindow* DevToolsWindow::OpenDevToolsWindowForWorker(
 // static
 DevToolsWindow* DevToolsWindow::CreateDevToolsWindowForWorker(
     Profile* profile) {
+  content::RecordAction(content::UserMetricsAction("DevTools_InspectWorker"));
   return Create(profile, GURL(), NULL, DEVTOOLS_DOCK_SIDE_UNDOCKED, true,
                 false);
 }
@@ -423,6 +425,8 @@ DevToolsWindow* DevToolsWindow::ToggleDevToolsWindow(
     Profile* profile = Profile::FromBrowserContext(
         inspected_rvh->GetProcess()->GetBrowserContext());
     DevToolsDockSide dock_side = GetDockSideFromPrefs(profile);
+    content::RecordAction(
+        content::UserMetricsAction("DevTools_InspectRenderer"));
     window = Create(profile, GURL(), inspected_rvh, dock_side, false, false);
     manager->RegisterDevToolsClientHostFor(agent.get(),
                                            window->frontend_host_.get());
