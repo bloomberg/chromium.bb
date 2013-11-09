@@ -387,9 +387,7 @@ def RunLLC(infile, outfile, outfiletype):
   env.push()
   env.setmany(input=infile, output=outfile, outfiletype=outfiletype)
   if env.getbool('SANDBOXED'):
-    is_shared, soname, needed = RunLLCSandboxed()
-    # Ignore is_shared, soname, and needed for now, since we aren't
-    # dealing with bitcode shared libraries.
+    RunLLCSandboxed()
     env.pop()
   else:
     args = ["${RUN_LLC}"]
@@ -412,20 +410,12 @@ def RunLLCSandboxed():
   script = MakeSelUniversalScriptForLLC(infile, outfile)
   command = ('${SEL_UNIVERSAL_PREFIX} ${SEL_UNIVERSAL} ${SEL_UNIVERSAL_FLAGS} '
     '-- ${LLC_SB}')
-  _, stdout, _  = driver_tools.Run(command,
-                                stdin_contents=script,
-                                # stdout/stderr will be automatically dumped
-                                # upon failure
-                                redirect_stderr=subprocess.PIPE,
-                                redirect_stdout=subprocess.PIPE)
-  # Get the values returned from the llc RPC to use in input to ld
-  is_shared = re.search(r'output\s+0:\s+i\(([0|1])\)', stdout).group(1)
-  is_shared = (is_shared == '1')
-  soname = re.search(r'output\s+1:\s+s\("(.*)"\)', stdout).group(1)
-  needed_str = re.search(r'output\s+2:\s+s\("(.*)"\)', stdout).group(1)
-  # If the delimiter changes, this line needs to change
-  needed_libs = [ lib for lib in needed_str.split(r'\n') if lib]
-  return is_shared, soname, needed_libs
+  driver_tools.Run(command,
+                   stdin_contents=script,
+                   # stdout/stderr will be automatically dumped
+                   # upon failure
+                   redirect_stderr=subprocess.PIPE,
+                   redirect_stdout=subprocess.PIPE)
 
 def BuildOverrideLLCCommandLine():
   extra_flags = env.get('LLC_FLAGS_EXTRA')
