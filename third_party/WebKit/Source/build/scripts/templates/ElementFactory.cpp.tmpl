@@ -34,7 +34,7 @@ typedef HashMap<StringImpl*, ConstructorFunction> FunctionMap;
 
 static FunctionMap* g_constructors = 0;
 
-{%- for tag in tags|sort if not tag.mapToTagName and not tag.noConstructor %}
+{%- for tag in tags|sort if not tag.noConstructor %}
 static PassRefPtr<{{namespace}}Element> {{tag|symbol}}Constructor(
     const QualifiedName& tagName,
     Document& document,
@@ -55,13 +55,6 @@ static PassRefPtr<{{namespace}}Element> {{tag|symbol}}Constructor(
 {%- if namespace == 'HTML' and tag.constructorNeedsFormElement %}, formElement{% endif -%}
 {%- if tag.constructorNeedsCreatedByParser %}, createdByParser{% endif -%}
     );
-}
-{%- endfor %}
-
-{%- for tag in tags|sort if tag.mapToTagName %}
-static PassRefPtr<HTMLElement> {{tag|symbol}}Constructor(const QualifiedName& tagName, Document& document, HTMLFormElement* formElement, bool createdByParser)
-{
-    return {{tag.mapToTagName}}Constructor(QualifiedName(tagName.prefix(), {{tag.mapToTagName}}Tag.localName(), tagName.namespaceURI()), document, formElement, createdByParser);
 }
 {%- endfor %}
 

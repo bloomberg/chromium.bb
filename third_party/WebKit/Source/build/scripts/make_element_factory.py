@@ -43,7 +43,6 @@ class MakeElementFactoryWriter(MakeQualifiedNamesWriter):
         'constructorNeedsFormElement': None,
         'contextConditional': None,
         'interfaceName': None,
-        'mapToTagName': None,
         'noConstructor': None,
         'runtimeEnabled': None,
     })
@@ -114,7 +113,7 @@ class MakeElementFactoryWriter(MakeQualifiedNamesWriter):
         return self._interface(tag)
 
     def _has_js_interface(self, tag):
-        return not tag['mapToTagName'] and not tag['noConstructor'] and self._js_interface(tag) != ('%sElement' % self.namespace)
+        return not tag['noConstructor'] and self._js_interface(tag) != ('%sElement' % self.namespace)
 
 
 if __name__ == "__main__":
