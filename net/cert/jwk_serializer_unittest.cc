@@ -75,7 +75,7 @@ TEST(JwkSerializerNSSTest, ConvertSpkiFromDerToJwkEc) {
   EXPECT_TRUE(JwkSerializer::ConvertSpkiFromDerToJwk(spki, &public_key_jwk));
 
   std::string string_value;
-  EXPECT_TRUE(public_key_jwk.GetString("alg", &string_value));
+  EXPECT_TRUE(public_key_jwk.GetString("kty", &string_value));
   EXPECT_STREQ("EC", string_value.c_str());
   EXPECT_TRUE(public_key_jwk.GetString("crv", &string_value));
   EXPECT_STREQ("P-256", string_value.c_str());
@@ -103,7 +103,7 @@ TEST(JwkSerializerNSSTest, ConvertSpkiFromDerToJwkEc) {
            sizeof(kSpkiEcWithZeroXY));
   EXPECT_TRUE(JwkSerializer::ConvertSpkiFromDerToJwk(spki, &public_key_jwk));
 
-  EXPECT_TRUE(public_key_jwk.GetString("alg", &string_value));
+  EXPECT_TRUE(public_key_jwk.GetString("kty", &string_value));
   EXPECT_STREQ("EC", string_value.c_str());
   EXPECT_TRUE(public_key_jwk.GetString("crv", &string_value));
   EXPECT_STREQ("P-256", string_value.c_str());

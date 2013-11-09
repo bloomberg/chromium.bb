@@ -17,7 +17,7 @@ namespace net {
 namespace JwkSerializer {
 
 // Converts a subject public key info from DER to JWK.
-// See http://tools.ietf.org/html/draft-ietf-jose-json-web-algorithms-13 for
+// See http://tools.ietf.org/html/draft-ietf-jose-json-web-algorithms-17 for
 // the output format.
 NET_EXPORT_PRIVATE bool ConvertSpkiFromDerToJwk(
     const base::StringPiece& spki_der,
