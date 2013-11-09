@@ -147,7 +147,10 @@ void EnrollmentScreen::OnRetry() {
 
 void EnrollmentScreen::OnCancel() {
   if (!can_exit_enrollment_) {
-    NOTREACHED() << "Cancellation should not be permitted";
+    actor_->ResetAuth(
+        base::Bind(&ScreenObserver::OnExit,
+                   base::Unretained(get_screen_observer()),
+                   ScreenObserver::ENTERPRISE_ENROLLMENT_BACK));
     return;
   }
 

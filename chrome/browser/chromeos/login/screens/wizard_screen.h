@@ -27,6 +27,7 @@ class WizardScreen : public BaseScreen {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(EnrollmentScreenTest, TestCancel);
+  FRIEND_TEST_ALL_PREFIXES(ProvisionedEnrollmentScreenTest, TestBackButton);
   friend class NetworkScreenTest;
   friend class UpdateScreenTest;
 

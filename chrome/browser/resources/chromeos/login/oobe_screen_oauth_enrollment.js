@@ -78,12 +78,9 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
 
       var cancelButton = this.ownerDocument.createElement('button');
       cancelButton.id = 'oauth-enroll-cancel-button';
-      cancelButton.textContent =
-          loadTimeData.getString('oauthEnrollCancel');
-      cancelButton.addEventListener('click', function(e) {
-        if (this.preventCancellation_)
-          return;
+      cancelButton.textContent = loadTimeData.getString('oauthEnrollCancel');
 
+      cancelButton.addEventListener('click', function(e) {
         chrome.send('oauthEnrollClose', ['cancel']);
       }.bind(this));
       buttons.push(cancelButton);
@@ -173,6 +170,10 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       this.preventCancellation_ = data.prevent_cancellation;
       $('oauth-enroll-signin-frame').contentWindow.location.href =
           this.signInUrl_;
+      if (this.preventCancellation_) {
+        $('oauth-enroll-cancel-button').textContent =
+            loadTimeData.getString('oauthEnrollCancelAutoEnrollmentGoBack');
+      }
 
       this.showStep(STEP_SIGNIN);
     },
@@ -181,12 +182,10 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
      * Cancels enrollment and drops the user back to the login screen.
      */
     cancel: function() {
-      if (!this.isAutoEnrollment_) {
-        if (this.preventCancellation_)
-          return;
+      if (this.isAutoEnrollment_)
+        return;
 
-        chrome.send('oauthEnrollClose', ['cancel']);
-      }
+      chrome.send('oauthEnrollClose', ['cancel']);
     },
 
     /**
@@ -204,8 +203,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
         var theStep = this.steps_[i];
         var active = (theStep.name == step);
         $('oauth-enroll-step-' + theStep.name).hidden = !active;
-        if (active && theStep.button &&
-            !(theStep.button == 'cancel' && this.preventCancellation_)) {
+        if (active && theStep.button) {
           var button = $('oauth-enroll-' + theStep.button + '-button');
           button.hidden = false;
           if (theStep.focusButton)

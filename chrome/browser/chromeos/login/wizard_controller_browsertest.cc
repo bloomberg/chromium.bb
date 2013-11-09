@@ -616,11 +616,59 @@ IN_PROC_BROWSER_TEST_F(WizardControllerKioskFlowTest,
   EXPECT_TRUE(StartupUtils::IsOobeCompleted());
 }
 
+
+IN_PROC_BROWSER_TEST_F(WizardControllerKioskFlowTest,
+                       ControlFlowEnrollmentBack) {
+
+  EXPECT_CALL(*mock_enrollment_screen_->actor(),
+              SetParameters(mock_enrollment_screen_,
+                            false,  // is_auto_enrollment
+                            false,  // can_exit_enrollment
+                            ""))
+      .Times(1);
+
+  EXPECT_TRUE(ExistingUserController::current_controller() == NULL);
+  EXPECT_EQ(WizardController::default_controller()->GetNetworkScreen(),
+            WizardController::default_controller()->current_screen());
+  EXPECT_CALL(*mock_network_screen_, Show()).Times(1);
+  EXPECT_CALL(*mock_network_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_eula_screen_, Show()).Times(1);
+  OnExit(ScreenObserver::NETWORK_CONNECTED);
+
+  EXPECT_EQ(WizardController::default_controller()->GetEulaScreen(),
+            WizardController::default_controller()->current_screen());
+  EXPECT_CALL(*mock_eula_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_update_screen_, StartNetworkCheck()).Times(1);
+  EXPECT_CALL(*mock_update_screen_, Show()).Times(1);
+  OnExit(ScreenObserver::EULA_ACCEPTED);
+  // Let update screen smooth time process (time = 0ms).
+  content::RunAllPendingInMessageLoop();
+
+  EXPECT_EQ(WizardController::default_controller()->GetUpdateScreen(),
+            WizardController::default_controller()->current_screen());
+  EXPECT_CALL(*mock_update_screen_, Hide()).Times(1);
+  EXPECT_CALL(*mock_enrollment_screen_, Show()).Times(1);
+  EXPECT_CALL(*mock_enrollment_screen_, Hide()).Times(1);
+  OnExit(ScreenObserver::UPDATE_INSTALLED);
+
+  EXPECT_FALSE(StartupUtils::IsOobeCompleted());
+
+  // Make sure enterprise enrollment page shows up right after update screen.
+  EnrollmentScreen* screen =
+      WizardController::default_controller()->GetEnrollmentScreen();
+  EXPECT_EQ(screen, WizardController::default_controller()->current_screen());
+  OnExit(ScreenObserver::ENTERPRISE_ENROLLMENT_BACK);
+
+  EXPECT_EQ(WizardController::default_controller()->GetNetworkScreen(),
+            WizardController::default_controller()->current_screen());
+  EXPECT_FALSE(StartupUtils::IsOobeCompleted());
+}
+
 // TODO(dzhioev): Add test emaulating device with wrong HWID.
 
 // TODO(nkostylev): Add test for WebUI accelerators http://crosbug.com/22571
 
-COMPILE_ASSERT(ScreenObserver::EXIT_CODES_COUNT == 18,
+COMPILE_ASSERT(ScreenObserver::EXIT_CODES_COUNT == 19,
                add_tests_for_new_control_flow_you_just_introduced);
 
 }  // namespace chromeos

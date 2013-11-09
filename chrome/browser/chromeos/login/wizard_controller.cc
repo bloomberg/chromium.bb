@@ -751,6 +751,9 @@ void WizardController::OnExit(ExitCodes exit_code) {
     case ENTERPRISE_ENROLLMENT_COMPLETED:
       OnEnrollmentDone();
       break;
+    case ENTERPRISE_ENROLLMENT_BACK:
+      ShowNetworkScreen();
+      break;
     case RESET_CANCELED:
       OnResetCanceled();
       break;
