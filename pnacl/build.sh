@@ -2469,7 +2469,7 @@ libs-support-bitcode() {
   local arch=$1
   setup-biased-bitcode-env ${arch}
   local build_dir="${TC_BUILD}/libs-support-bitcode-${arch}"
-  local cc_cmd="${PNACL_CC} -Wall -Werror ${BIASED_BC_CFLAGS}"
+  local cc_cmd="${PNACL_CC} -Wall -Werror -O2 ${BIASED_BC_CFLAGS}"
 
   mkdir -p "${build_dir}"
   spushd "${PNACL_SUPPORT}/bitcode"
@@ -2489,11 +2489,16 @@ libs-support-bitcode() {
   StepBanner "LIBS-SUPPORT" "Install ${arch} sjlj_eh_redirect.bc"
   ${cc_cmd} -c sjlj_eh_redirect.c -o "${build_dir}"/sjlj_eh_redirect.bc
 
+  # Install libpnaclmm.a (__atomic_*).
+  StepBanner "LIBS-SUPPORT" "Install ${arch} pnaclmm.bc"
+  ${cc_cmd} -c pnaclmm.c -o "${build_dir}"/pnaclmm.bc
+  ${PNACL_AR} rc "${build_dir}"/libpnaclmm.a "${build_dir}"/pnaclmm.bc
+
   spopd
 
   # Install to actual lib directories.
   spushd "${build_dir}"
-  local files="crti.bc crtbegin.bc unwind_stubs.bc sjlj_eh_redirect.bc"
+  local files="crti.bc crtbegin.bc libpnaclmm.a unwind_stubs.bc sjlj_eh_redirect.bc"
   mkdir -p "${INSTALL_LIB}"
   cp -f ${files} "${INSTALL_LIB}"
   spopd
