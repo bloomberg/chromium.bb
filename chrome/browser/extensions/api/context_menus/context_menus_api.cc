@@ -13,8 +13,8 @@
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/context_menus.h"
-#include "chrome/common/extensions/background_info.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/url_pattern_set.h"
 
 using extensions::ErrorUtils;

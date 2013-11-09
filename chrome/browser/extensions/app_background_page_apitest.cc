@@ -20,6 +20,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_notification_tracker.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/common/switches.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
@@ -34,7 +35,7 @@ class AppBackgroundPageApiTest : public ExtensionApiTest {
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kDisablePopupBlocking);
-    command_line->AppendSwitch(switches::kAllowHTTPBackgroundPage);
+    command_line->AppendSwitch(extensions::switches::kAllowHTTPBackgroundPage);
   }
 
   bool CreateApp(const std::string& app_manifest,

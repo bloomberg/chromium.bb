@@ -34,9 +34,6 @@ const char kAllowCrossOriginAuthPrompt[]    = "allow-cross-origin-auth-prompt";
 // directories. This switch re-enables file:// for testing.
 const char kAllowFileAccess[]               = "allow-file-access";
 
-// Allows non-https URL for background_page for hosted apps.
-const char kAllowHTTPBackgroundPage[]       = "allow-http-background-page";
-
 // Allow non-secure origins to use the screen capture API.
 const char kAllowHttpScreenCapture[] = "allow-http-screen-capture";
 

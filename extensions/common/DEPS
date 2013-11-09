@@ -1,4 +1,5 @@
 include_rules = [
+  "+net",
   "+third_party/re2",
 
   # Temporarily allowed includes as part of the app shell/extensions refactor.
@@ -11,5 +12,7 @@ include_rules = [
   "+chrome/common/extensions/extension.h",
   "+chrome/common/extensions/permissions/permissions_data.h",
   "+grit/common_resources.h",
-  "+grit/extensions_api_resources.h"
+  "+grit/extensions_api_resources.h",
+  # TODO(jamescook): Extract extensions-related strings from this file.
+  "+grit/generated_resources.h",
 ]

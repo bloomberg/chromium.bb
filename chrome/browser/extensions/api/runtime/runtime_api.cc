@@ -23,7 +23,6 @@
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/common/extensions/api/runtime.h"
-#include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/omaha_query_params/omaha_query_params.h"
 #include "content/public/browser/child_process_security_policy.h"
@@ -32,6 +31,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/manifest_handlers/background_info.h"
 #include "url/gurl.h"
 #include "webkit/browser/fileapi/isolated_context.h"
 

@@ -1,9 +1,9 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_EXTENSIONS_BACKGROUND_INFO_H_
-#define CHROME_COMMON_EXTENSIONS_BACKGROUND_INFO_H_
+#ifndef EXTENSIONS_COMMON_MANIFEST_HANDLERS_BACKGROUND_INFO_H_
+#define EXTENSIONS_COMMON_MANIFEST_HANDLERS_BACKGROUND_INFO_H_
 
 #include <string>
 #include <vector>
@@ -72,6 +72,8 @@ class BackgroundInfo : public Extension::ManifestData {
   // allowing them to run in different processes.
   // Defaults to true.
   bool allow_js_access_;
+
+  DISALLOW_COPY_AND_ASSIGN(BackgroundInfo);
 };
 
 // Parses all background/event page-related keys in the manifest.
@@ -88,8 +90,10 @@ class BackgroundManifestHandler : public ManifestHandler {
 
  private:
   virtual const std::vector<std::string> Keys() const OVERRIDE;
+
+  DISALLOW_COPY_AND_ASSIGN(BackgroundManifestHandler);
 };
 
 }  // namespace extensions
 
-#endif  // CHROME_COMMON_EXTENSIONS_BACKGROUND_INFO_H_
+#endif  // EXTENSIONS_COMMON_MANIFEST_HANDLERS_BACKGROUND_INFO_H_

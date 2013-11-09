@@ -27,7 +27,6 @@ namespace switches {
 extern const char kAllowCreateExistingManagedUsers[];
 extern const char kAllowCrossOriginAuthPrompt[];
 extern const char kAllowFileAccess[];
-extern const char kAllowHTTPBackgroundPage[];
 extern const char kAllowHttpScreenCapture[];
 extern const char kAllowNaClCrxFsAPI[];
 extern const char kAllowNaClFileHandleAPI[];

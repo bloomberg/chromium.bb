@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/extensions/background_info.h"
+#include "extensions/common/manifest_handlers/background_info.h"
 
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -10,13 +10,13 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/permissions/permissions_data.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/file_util.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/api_permission_set.h"
+#include "extensions/common/switches.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -268,7 +268,7 @@ bool BackgroundManifestHandler::Validate(
     std::vector<InstallWarning>* warnings) const {
   // Validate that background scripts exist.
   const std::vector<std::string>& background_scripts =
-      extensions::BackgroundInfo::GetBackgroundScripts(extension);
+      BackgroundInfo::GetBackgroundScripts(extension);
   for (size_t i = 0; i < background_scripts.size(); ++i) {
     if (!base::PathExists(
             extension->GetResource(background_scripts[i]).GetFilePath())) {
@@ -282,11 +282,10 @@ bool BackgroundManifestHandler::Validate(
   // Validate background page location, except for hosted apps, which should use
   // an external URL. Background page for hosted apps are verified when the
   // extension is created (in Extension::InitFromValue)
-  if (extensions::BackgroundInfo::HasBackgroundPage(extension) &&
+  if (BackgroundInfo::HasBackgroundPage(extension) &&
       !extension->is_hosted_app() && background_scripts.empty()) {
-    base::FilePath page_path =
-        extension_file_util::ExtensionURLToRelativeFilePath(
-            extensions::BackgroundInfo::GetBackgroundURL(extension));
+    base::FilePath page_path = file_util::ExtensionURLToRelativeFilePath(
+        BackgroundInfo::GetBackgroundURL(extension));
     const base::FilePath path = extension->GetResource(page_path).GetFilePath();
     if (path.empty() || !base::PathExists(path)) {
       *error =

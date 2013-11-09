@@ -27,10 +27,8 @@
 #include "chrome/browser/extensions/extension_renderer_state.h"
 #include "chrome/browser/extensions/image_loader.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/extensions/background_info.h"
 #include "chrome/common/extensions/csp_handler.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "chrome/common/extensions/manifest_handlers/shared_module_info.h"
 #include "chrome/common/extensions/manifest_url_handler.h"
@@ -41,6 +39,8 @@
 #include "content/public/browser/resource_request_info.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_resource.h"
+#include "extensions/common/file_util.h"
+#include "extensions/common/manifest_handlers/background_info.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
 #include "grit/component_extension_resources_map.h"
 #include "net/base/mime_util.h"
@@ -531,7 +531,7 @@ ExtensionProtocolHandler::MaybeCreateJob(
       // extension relative path against resources_path.
       resources_path.AppendRelativePath(directory_path, &relative_path)) {
     base::FilePath request_path =
-        extension_file_util::ExtensionURLToRelativeFilePath(request->url());
+        extensions::file_util::ExtensionURLToRelativeFilePath(request->url());
     int resource_id;
     if (extensions::ImageLoader::IsComponentExtensionResource(
         directory_path, request_path, &resource_id)) {
@@ -548,7 +548,7 @@ ExtensionProtocolHandler::MaybeCreateJob(
   }
 
   relative_path =
-      extension_file_util::ExtensionURLToRelativeFilePath(request->url());
+      extensions::file_util::ExtensionURLToRelativeFilePath(request->url());
 
   if (SharedModuleInfo::IsImportedPath(path)) {
     std::string new_extension_id;

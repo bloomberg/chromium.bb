@@ -5,7 +5,6 @@
 #include "base/bind_helpers.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
-#include "chrome/common/extensions/background_info.h"
 #include "chromeos/dbus/ibus/ibus_text.h"
 #include "chromeos/ime/component_extension_ime_manager.h"
 #include "chromeos/ime/ibus_bridge.h"
@@ -16,6 +15,7 @@
 #include "chromeos/ime/mock_ime_property_handler.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
+#include "extensions/common/manifest_handlers/background_info.h"
 
 namespace chromeos {
 namespace input_method {

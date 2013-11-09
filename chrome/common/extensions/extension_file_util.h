@@ -13,7 +13,6 @@
 #include "extensions/common/manifest.h"
 
 class ExtensionIconSet;
-class GURL;
 
 namespace base {
 class DictionaryValue;
@@ -125,14 +124,6 @@ extensions::MessageBundle::SubstitutionMap* LoadMessageBundleSubstitutionMap(
 // reserved list we return false, and set error message.
 bool CheckForIllegalFilenames(const base::FilePath& extension_path,
                               std::string* error);
-
-// Get a relative file path from a chrome-extension:// URL.
-base::FilePath ExtensionURLToRelativeFilePath(const GURL& url);
-
-// Get a full file path from a chrome-extension-resource:// URL, If the URL
-// points a file outside of root, this function will return empty FilePath.
-base::FilePath ExtensionResourceURLToFilePath(const GURL& url,
-                                              const base::FilePath& root);
 
 // Returns a path to a temporary directory for unpacking an extension that will
 // be installed into |extensions_dir|. Creates the directory if necessary.

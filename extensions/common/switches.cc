@@ -8,6 +8,9 @@ namespace extensions {
 
 namespace switches {
 
+// Allows non-https URL for background_page for hosted apps.
+const char kAllowHTTPBackgroundPage[]       = "allow-http-background-page";
+
 // Allows the browser to load extensions that lack a modern manifest when that
 // would otherwise be forbidden.
 const char kAllowLegacyExtensionManifests[] =

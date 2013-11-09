@@ -29,6 +29,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "extensions/common/switches.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "sync/api/string_ordinal.h"
@@ -58,7 +59,7 @@ class AppApiTest : public ExtensionApiTest {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kDisablePopupBlocking);
     CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kAllowHTTPBackgroundPage);
+        extensions::switches::kAllowHTTPBackgroundPage);
   }
 
   // Helper function to test that independent tabs of the named app are loaded
@@ -133,7 +134,7 @@ class BlockedAppApiTest : public AppApiTest {
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     ExtensionApiTest::SetUpCommandLine(command_line);
     CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kAllowHTTPBackgroundPage);
+        extensions::switches::kAllowHTTPBackgroundPage);
   }
 };
 

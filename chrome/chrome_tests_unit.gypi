@@ -527,6 +527,7 @@
         '../extensions/browser/lazy_background_task_queue_unittest.cc',
         '../extensions/common/event_filter_unittest.cc',
         '../extensions/common/extension_resource_unittest.cc',
+        '../extensions/common/file_util_unittest.cc',
         '../extensions/common/id_util_unittest.cc',
         '../extensions/common/manifest_handler_unittest.cc',
         '../extensions/common/matcher/regex_set_matcher_unittest.cc',

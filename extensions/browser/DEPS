@@ -13,7 +13,6 @@ include_rules = [
   "+chrome/browser/extensions/extension_service.h",
   "+chrome/browser/extensions/extension_system.h",
   "+chrome/browser/extensions/process_map.h",
-  "+chrome/common/extensions/background_info.h",
   "+chrome/common/extensions/extension.h",
   "+chrome/common/extensions/extension_messages.h",
   "+grit/generated_resources.h",

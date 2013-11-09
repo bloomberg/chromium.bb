@@ -13,10 +13,10 @@
 #include "base/values.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/permissions/permissions_data.h"
 #include "chrome/common/url_constants.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/file_util.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/api_permission.h"
@@ -236,7 +236,7 @@ bool OptionsPageHandler::Validate(const Extension* extension,
   if (!extensions::ManifestURL::GetOptionsPage(extension).is_empty() &&
       !extension->is_hosted_app()) {
     const base::FilePath options_path =
-        extension_file_util::ExtensionURLToRelativeFilePath(
+        extensions::file_util::ExtensionURLToRelativeFilePath(
             extensions::ManifestURL::GetOptionsPage(extension));
     const base::FilePath path =
         extension->GetResource(options_path).GetFilePath();

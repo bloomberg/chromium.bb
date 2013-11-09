@@ -19,10 +19,10 @@
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/experimental_accessibility.h"
-#include "chrome/common/extensions/background_info.h"
 #include "content/public/browser/browser_accessibility_state.h"
 #include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/common/error_utils.h"
+#include "extensions/common/manifest_handlers/background_info.h"
 
 namespace keys = extension_accessibility_api_constants;
 namespace experimental_accessibility =
