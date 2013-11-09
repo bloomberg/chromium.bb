@@ -15,24 +15,26 @@ import distutils.version
 import glob
 import json
 import logging
+import multiprocessing
 import optparse
 import os
-import multiprocessing
 import pickle
 import sys
 import tempfile
 import traceback
 
+from chromite.cbuildbot import afdo
 from chromite.cbuildbot import cbuildbot_config
-from chromite.cbuildbot import failures_lib
-from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import constants
+from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import remote_try
 from chromite.cbuildbot import repository
+from chromite.cbuildbot import results_lib
 from chromite.cbuildbot import tee
 from chromite.cbuildbot import trybot_patch_pool
+from chromite.cbuildbot.stages import afdo_stages
 from chromite.cbuildbot.stages import artifact_stages
 from chromite.cbuildbot.stages import branch_stages
 from chromite.cbuildbot.stages import build_stages
@@ -486,7 +488,7 @@ class SimpleBuilder(Builder):
     # kill it once we migrate its uses to BuilderRun so that none of the
     # stages below need it as an argument.
     archive_stage = self.archive_stages[BoardConfig(board, config.name)]
-    if config.pgo_generate:
+    if config.afdo_generate_min:
       self._RunParallelStages([archive_stage])
       return
 
@@ -506,7 +508,7 @@ class SimpleBuilder(Builder):
     # TODO(davidjames): Remove this lock once http://crbug.com/352994 is fixed.
     with self._build_image_lock:
       self._RunStage(build_stages.BuildImageStage, board,
-                     builder_run=builder_run, pgo_use=config.pgo_use)
+                     builder_run=builder_run, afdo_use=config.afdo_use)
 
     # While this stage list is run in parallel, the order here dictates the
     # order that things will be shown in the log.  So group things together
@@ -526,6 +528,9 @@ class SimpleBuilder(Builder):
       # Give the VMTests one retry attempt in case failures are flaky.
       stage_list += [[generic_stages.RetryStage, 1, test_stages.VMTestStage,
                       board]]
+
+    if config.afdo_generate:
+      stage_list += [[afdo_stages.AFDODataGenerateStage, board]]
 
     stage_list += [
         [release_stages.SignerTestStage, board, archive_stage],
@@ -621,23 +626,32 @@ class SimpleBuilder(Builder):
     with parallel.BackgroundTaskRunner(task_runner) as queue:
       for builder_run, board in tasks:
         if not builder_run.config.build_packages_in_background:
-          # Run BuildPackages in the foreground, generating or using PGO data
+          # Run BuildPackages in the foreground, generating or using AFDO data
           # if requested.
           kwargs = {'builder_run': builder_run}
-          if builder_run.config.pgo_generate:
-            kwargs['pgo_generate'] = True
-          elif builder_run.config.pgo_use:
-            kwargs['pgo_use'] = True
+          if builder_run.config.afdo_generate_min:
+            kwargs['afdo_generate_min'] = True
+          elif builder_run.config.afdo_use:
+            kwargs['afdo_use'] = True
 
           self._RunStage(build_stages.BuildPackagesStage, board, **kwargs)
 
-          if builder_run.config.pgo_generate:
-            # Generate the PGO data before allowing any other tasks to run.
+          if (builder_run.config.afdo_generate_min and
+              afdo.CanGenerateAFDOData(board)):
+            # Generate the AFDO data before allowing any other tasks to run.
             self._RunStage(build_stages.BuildImageStage, board, **kwargs)
             self._RunStage(artifact_stages.UploadTestArtifactsStage, board,
-                           builder_run=builder_run, suffix='[pgo_generate]')
-            suite = cbuildbot_config.PGORecordTest()
+                           builder_run=builder_run,
+                           suffix='[afdo_generate_min]')
+            suite = cbuildbot_config.AFDORecordTest()
             self._RunStage(test_stages.HWTestStage, board, suite,
+                           builder_run=builder_run)
+            self._RunStage(afdo_stages.AFDODataGenerateStage, board,
+                           builder_run=builder_run)
+
+          if (builder_run.config.afdo_generate_min and
+              builder_run.config.afdo_update_ebuild):
+            self._RunStage(afdo_stages.AFDOUpdateEbuildStage,
                            builder_run=builder_run)
 
         # Kick off our background stages.
@@ -733,6 +747,9 @@ class DistributedBuilder(SimpleBuilder):
     try:
       completion_stage.Run()
       completion_successful = True
+      if (self._run.config.afdo_update_ebuild and
+          not self._run.config.afdo_generate_min):
+        self._RunStage(afdo_stages.AFDOUpdateEbuildStage)
     finally:
       if not completion_successful:
         was_build_successful = False

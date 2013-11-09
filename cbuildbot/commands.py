@@ -12,7 +12,6 @@ import os
 import re
 import shutil
 import tempfile
-import time
 
 from chromite.cbuildbot import cbuildbot_config
 from chromite.cbuildbot import failures_lib
@@ -1789,47 +1788,6 @@ def SyncChrome(build_root, chrome_root, useflags, tag=None, revision=None):
   cmd += ['--revision', revision] if revision is not None else []
   cmd += [chrome_root]
   retry_util.RunCommandWithRetries(constants.SYNC_RETRIES, cmd, cwd=build_root)
-
-
-def CheckPGOData(architectures, cpv):
-  """Check whether PGO data exists for the given architectures.
-
-  Args:
-    architectures: Set of architectures we're going to build Chrome for.
-    cpv: The portage_utilities.CPV object for chromeos-chrome.
-
-  Returns:
-    True if PGO data is available; false otherwise.
-  """
-  gs_context = gs.GSContext()
-  for arch in architectures:
-    url = constants.CHROME_PGO_URL % {'package': cpv.package, 'arch': arch,
-                                      'version_no_rev': cpv.version_no_rev}
-    if not gs_context.Exists(url):
-      return False
-  return True
-
-
-class MissingPGOData(failures_lib.StepFailure):
-  """Exception thrown when necessary PGO data is missing."""
-
-
-def WaitForPGOData(architectures, cpv, timeout=constants.PGO_USE_TIMEOUT):
-  """Wait for PGO data to show up (with an appropriate timeout).
-
-  Args:
-    architectures: Set of architectures we're going to build Chrome for.
-    cpv: CPV object for Chrome.
-    timeout: How long to wait total, in seconds.
-  """
-  end_time = time.time() + timeout
-  while time.time() < end_time:
-    if CheckPGOData(architectures, cpv):
-      cros_build_lib.Info('Found PGO data')
-      return
-    cros_build_lib.Info('Waiting for PGO data')
-    time.sleep(constants.SLEEP_TIMEOUT)
-  raise MissingPGOData('Could not find necessary PGO data.')
 
 
 def PatchChrome(chrome_root, patch, subdir):

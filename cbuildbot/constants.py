@@ -161,18 +161,11 @@ CREATED_BRANCHES = [
 CHROME_PN = 'chromeos-chrome'
 CHROME_CP = 'chromeos-base/%s' % CHROME_PN
 
-# Chrome URL where PGO data is stored.
-CHROME_PGO_URL = ('gs://chromeos-prebuilt/pgo-job/canonicals/'
-                  '%(package)s-%(arch)s-%(version_no_rev)s.pgo.tar.bz2')
 
 # Chrome use flags
 USE_CHROME_INTERNAL = 'chrome_internal'
-USE_PGO_GENERATE = 'pgo_generate'
-USE_PGO_USE = 'pgo_use'
+USE_AFDO_USE = 'afdo_use'
 
-# PGO-specific constants.
-PGO_GENERATE_DISK_LAYOUT = '2gb-rootfs-updatable'
-PGO_USE_TIMEOUT = 180 * 60
 
 # Builds and validates _alpha ebuilds.  These builds sync to the latest
 # revsion of the Chromium src tree and build with that checkout.
@@ -273,8 +266,11 @@ HWTEST_PFQ_POOL = 'pfq'
 HWTEST_SUITES_POOL = 'suites'
 HWTEST_CHROME_PERF_POOL = 'chromeperf'
 HWTEST_TRYBOT_POOL = 'try-bot'
+
+# Defines for special purpose Hardware tests suites.
 HWTEST_AU_SUITE = 'au'
 HWTEST_QAV_SUITE = 'qav'
+HWTEST_AFDO_SUITE = 'AFDO_record'
 
 # Additional timeout to wait for autotest to abort a suite if the test takes
 # too long to run. This is meant to be overly conservative as a timeout may
@@ -489,3 +485,7 @@ EXTRA_BUCKETS_FILES_BLACKLIST = [
     'manifest.xml',
     'vm_test_results_*'
 ]
+
+# AFDO common constants.
+# How long does the AFDO_record autotest have to generate the AFDO perf data.
+AFDO_GENERATE_TIMEOUT = 90 * 60

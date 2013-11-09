@@ -373,7 +373,7 @@ class ArchiveStage(generic_stages.BoardSpecificBuilderStage,
       with self.ArtifactUploader(self._upload_queue, archive=False):
         parallel.RunParallelSteps(steps)
 
-    if not self._run.config.pgo_generate:
+    if not self._run.config.afdo_generate_min:
       BuildAndArchiveArtifacts()
 
   def _HandleStageException(self, exc_info):

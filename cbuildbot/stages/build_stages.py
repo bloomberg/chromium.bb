@@ -9,9 +9,8 @@ import glob
 import os
 
 from chromite.cbuildbot import commands
-from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import constants
-from chromite.cbuildbot import portage_utilities
+from chromite.cbuildbot import failures_lib
 from chromite.cbuildbot import repository
 from chromite.cbuildbot.stages import generic_stages
 from chromite.cbuildbot.stages import test_stages
@@ -199,37 +198,22 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
   """Build Chromium OS packages."""
 
   option_name = 'build'
-  def __init__(self, builder_run, board, pgo_generate=False, pgo_use=False,
-               **kwargs):
+  def __init__(self, builder_run, board, afdo_generate_min=False,
+               afdo_use=False, **kwargs):
     super(BuildPackagesStage, self).__init__(builder_run, board, **kwargs)
-    self._pgo_generate, self._pgo_use = pgo_generate, pgo_use
-    assert not pgo_generate or not pgo_use
+    self._afdo_generate_min = afdo_generate_min
+    assert not afdo_generate_min or not afdo_use
 
     useflags = self._run.config.useflags[:]
-    if pgo_generate:
-      self.name += ' [%s]' % constants.USE_PGO_GENERATE
-      useflags.append(constants.USE_PGO_GENERATE)
-    elif pgo_use:
-      self.name += ' [%s]' % constants.USE_PGO_USE
-      useflags.append(constants.USE_PGO_USE)
+    if afdo_use:
+      self.name += ' [%s]' % constants.USE_AFDO_USE
+      useflags.append(constants.USE_AFDO_USE)
 
     if useflags:
-      if 'USE' in self._portage_extra_env:
-        self._portage_extra_env['USE'] += ' ' + ' '.join(useflags)
-      else:
-        self._portage_extra_env['USE'] = ' '.join(useflags)
-
-  def _GetArchitectures(self):
-    """Get the list of architectures built by this builder."""
-    return set(self._GetPortageEnvVar('ARCH', b) for b in self._boards)
+      self._portage_extra_env.setdefault('USE', '')
+      self._portage_extra_env['USE'] += ' ' + ' '.join(useflags)
 
   def PerformStage(self):
-    # Wait for PGO data to be ready if needed.
-    if self._pgo_use:
-      cpv = portage_utilities.BestVisible(constants.CHROME_CP,
-                                          buildroot=self._build_root)
-      commands.WaitForPGOData(self._GetArchitectures(), cpv)
-
     # If we have rietveld patches, always compile Chrome from source.
     noworkon = not self._run.options.rietveld_patches
 
@@ -253,7 +237,7 @@ class BuildImageStage(BuildPackagesStage):
 
   def _BuildImages(self):
     # We only build base, dev, and test images from this stage.
-    if self._pgo_generate:
+    if self._afdo_generate_min:
       images_can_build = set(['test'])
     else:
       images_can_build = set(['base', 'dev', 'test'])
@@ -262,10 +246,8 @@ class BuildImageStage(BuildPackagesStage):
 
     version = self._run.attrs.release_tag
     disk_layout = self._run.config.disk_layout
-    if self._pgo_generate:
-      disk_layout = constants.PGO_GENERATE_DISK_LAYOUT
-      if version:
-        version = '%s-pgo-generate' % version
+    if self._afdo_generate_min and version:
+      version = '%s-afdo-generate' % version
 
     rootfs_verification = self._run.config.rootfs_verification
     commands.BuildImage(self._build_root,
@@ -290,7 +272,7 @@ class BuildImageStage(BuildPackagesStage):
         [self._BuildVMImage, lambda: self._GenerateAuZip(cbuildbot_image_link)])
 
   def _BuildVMImage(self):
-    if self._run.config.vm_tests and not self._pgo_generate:
+    if self._run.config.vm_tests and not self._afdo_generate_min:
       commands.BuildVMImageForTesting(
           self._build_root,
           self._current_board,
@@ -299,7 +281,7 @@ class BuildImageStage(BuildPackagesStage):
 
   def _GenerateAuZip(self, image_dir):
     """Create au-generator.zip."""
-    if not self._pgo_generate:
+    if not self._afdo_generate_min:
       commands.GenerateAuZip(self._build_root,
                              image_dir,
                              extra_env=self._portage_extra_env)

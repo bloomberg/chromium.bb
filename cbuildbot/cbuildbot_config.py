@@ -32,13 +32,12 @@ CONFIG_TYPE_DUMP_ORDER = (
     CONFIG_TYPE_RELEASE,
     'release-group',
     'release-pgo',
-    'release-pgo-generate',
-    'release-pgo-use',
+    'release-afdo-generate',
+    'release-afdo-use',
     'sdk',
     'chromium-pfq',
     'chromium-pfq-informational',
     'chrome-perf',
-    'chrome-pgo',
     'chrome-pfq',
     'chrome-pfq-informational',
     'pre-flight-branch',
@@ -421,11 +420,19 @@ _settings = dict(
 # build_tests -- Builds autotest tests.  Must be True if vm_tests is set.
   build_tests=True,
 
-# pgo_generate -- Generates PGO data.
-  pgo_generate=False,
+# afdo_generate -- Generates AFDO data.
+  afdo_generate=False,
 
-# pgo_use -- Uses PGO data.
-  pgo_use=False,
+# afdo_generate_min -- Generates AFDO data, builds the minimum amount
+#                      of artifacts and assumes a non-distributed builder
+#                      (i.e.: the whole process in a single builder).
+  afdo_generate_min=False,
+
+# afdo_update_ebuild -- Update the Chrome ebuild with the AFDO profile info.
+  afdo_update_ebuild=False,
+
+# afdo_use -- Uses AFDO data.
+  afdo_use=False,
 
 # vm_tests -- A list of vm tests to run.
   vm_tests=[constants.SIMPLE_AU_TEST_TYPE],
@@ -694,15 +701,15 @@ class HWTestConfig(object):
     return cls.DefaultList(**kwargs)
 
   @classmethod
-  def PGOList(cls, **kwargs):
-    """Returns a default list of HWTestConfig's for a PGO build, with overrides
+  def AFDOList(cls, **kwargs):
+    """Returns a default list of HWTestConfig's for a AFDO build, with overrides
     for optional args.
     """
-    pgo_dict = dict(pool=constants.HWTEST_CHROME_PERF_POOL,
-                    timeout=90 * 60, num=1, async=True, retry=False)
-    pgo_dict.update(kwargs)
-    return [cls('pyauto_perf', **pgo_dict),
-            cls('perf_v2', **pgo_dict)]
+    afdo_dict = dict(pool=constants.HWTEST_CHROME_PERF_POOL,
+                     timeout=120 * 60, num=1, async=True, retry=False)
+    afdo_dict.update(kwargs)
+    return [cls('pyauto_perf', **afdo_dict),
+            cls('perf_v2', **afdo_dict)]
 
   @classmethod
   def DefaultListCQ(cls, **kwargs):
@@ -767,12 +774,13 @@ class HWTestConfig(object):
     return int(self.timeout / 60)
 
 
-def PGORecordTest(**kwargs):
+def AFDORecordTest(**kwargs):
   default_dict = dict(pool=constants.HWTEST_SUITES_POOL,
-                      critical=True, num=1, file_bugs=False)
+                      warn_only=True, num=1, file_bugs=True,
+                      timeout=constants.AFDO_GENERATE_TIMEOUT)
   # Allows kwargs overrides to default_dict for cq.
   default_dict.update(kwargs)
-  return HWTestConfig('PGO_record', **default_dict)
+  return HWTestConfig(constants.HWTEST_AFDO_SUITE, **default_dict)
 
 
 # TODO(mtennant): Rename this BuildConfig?
@@ -1145,6 +1153,7 @@ internal_chromium_pfq.add_config('x86-generic-chromium-pfq',
   boards=['x86-generic'],
   master=True,
   push_overlays=constants.BOTH_OVERLAYS,
+  afdo_update_ebuild=True,
 )
 
 internal_chromium_pfq.add_config('daisy-chromium-pfq',
@@ -1171,6 +1180,8 @@ chrome_pfq.add_config('alex-chrome-pfq',
 
 chrome_pfq.add_config('lumpy-chrome-pfq',
   boards=['lumpy'],
+  afdo_generate=True,
+  hw_tests=[AFDORecordTest()],
 )
 
 chrome_pfq.add_config('daisy_spring-chrome-pfq',
@@ -2002,59 +2013,65 @@ _config.add_group('parrot-release-group',
   )
 )
 
-### Release PGO configs.
+### Release AFDO configs.
 
-release_pgo = _release.derive(
+release_afdo = _release.derive(
   trybot_list=False,
   hw_tests=HWTestConfig.DefaultList(pool=constants.HWTEST_CHROME_PERF_POOL,
                                     num=4) +
-           HWTestConfig.PGOList(),
+           HWTestConfig.AFDOList(),
   push_image=False,
   paygen=False,
   dev_installer_prebuilts=False,
 )
 
 _config.add_group('x86-alex-release-pgo',
-  release_pgo.add_config('x86-alex-release-pgo-generate',
+  release_afdo.add_config('x86-alex-release-afdo-generate',
     boards=['x86-alex'],
-    pgo_generate=True,
+    afdo_generate_min=True,
+    afdo_update_ebuild=True,
   ),
-  release_pgo.add_config('x86-alex-release-pgo-use',
+  release_afdo.add_config('x86-alex-release-afdo-use',
     boards=['x86-alex'],
-    pgo_use=True,
+    afdo_use=True,
   ),
 )
 
 _config.add_group('lumpy-release-pgo',
-  release_pgo.add_config('lumpy-release-pgo-generate',
+  release_afdo.add_config('lumpy-release-afdo-generate',
     boards=['lumpy'],
-    pgo_generate=True,
+    afdo_generate_min=True,
+    afdo_update_ebuild=True,
   ),
-  release_pgo.add_config('lumpy-release-pgo-use',
+  release_afdo.add_config('lumpy-release-afdo-use',
     boards=['lumpy'],
-    pgo_use=True,
+    afdo_use=True,
   ),
 )
 
 _config.add_group('parrot-release-pgo',
-  release_pgo.add_config('parrot-release-pgo-generate',
+  release_afdo.add_config('parrot-release-afdo-generate',
     boards=['parrot'],
-    pgo_generate=True,
+    afdo_generate_min=True,
+    afdo_update_ebuild=True,
   ),
-  release_pgo.add_config('parrot-release-pgo-use',
+  release_afdo.add_config('parrot-release-afdo-use',
     boards=['parrot'],
-    pgo_use=True,
+    afdo_use=True,
   ),
 )
 
 _config.add_group('daisy-release-pgo',
-  release_pgo.add_config('daisy-release-pgo-generate',
+  release_afdo.add_config('daisy-release-afdo-generate',
+    non_testable_builder,
     boards=['daisy'],
-    pgo_generate=True,
+    afdo_generate_min=True,
+    afdo_update_ebuild=True,
   ),
-  release_pgo.add_config('daisy-release-pgo-use',
+  release_afdo.add_config('daisy-release-afdo-use',
+    non_testable_builder,
     boards=['daisy'],
-    pgo_use=True,
+    afdo_use=True,
   ),
 )
 

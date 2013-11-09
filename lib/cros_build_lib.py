@@ -826,6 +826,38 @@ def CompressionStrToType(s):
     return COMP_NONE
 
 
+def CompressFile(infile, outfile):
+  """Compress a file using compressor specified by |outfile| suffix.
+
+  Args:
+    infile: File to compress.
+    outfile: Name of output file. Compression used is based on the
+             type of suffix of the name specified (e.g.: .bz2).
+  """
+  comp_str = outfile.rsplit('.', 1)[-1]
+  comp_type = CompressionStrToType(comp_str)
+  assert comp_type and comp_type != COMP_NONE
+  comp = FindCompressor(comp_type)
+  cmd = [comp, '-c', infile]
+  RunCommand(cmd, log_stdout_to_file=outfile)
+
+
+def UncompressFile(infile, outfile):
+  """Uncompress a file using compressor specified by |infile| suffix.
+
+  Args:
+    infile: File to uncompress. Compression used is based on the
+            type of suffix of the name specified (e.g.: .bz2).
+    outfile: Name of output file.
+  """
+  comp_str = infile.rsplit('.', 1)[-1]
+  comp_type = CompressionStrToType(comp_str)
+  assert comp_type and comp_type != COMP_NONE
+  comp = FindCompressor(comp_type)
+  cmd = [comp, '-dc', infile]
+  RunCommand(cmd, log_stdout_to_file=outfile)
+
+
 def CreateTarball(target, cwd, sudo=False, compression=COMP_XZ, chroot=None,
                   inputs=None, extra_args=None, **kwargs):
   """Create a tarball.  Executes 'tar' on the commandline.

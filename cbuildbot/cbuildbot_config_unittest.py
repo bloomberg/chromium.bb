@@ -288,15 +288,17 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
           self.assertFalse(config[flag],
               'Config %s set %s without build_tests.' % (build_name, flag))
 
-  def testPGOInBackground(self):
-    """Verify that we don't try to build or use PGO data in the background."""
+  def testAFDOInBackground(self):
+    """Verify that we don't try to build or use AFDO data in the background."""
     for build_name, config in cbuildbot_config.config.iteritems():
       if config.build_packages_in_background:
         # It is unsupported to use the build_packages_in_background flags with
-        # the pgo_generate or pgo_use config options.
-        msg = 'Config %s uses build_packages_in_background with pgo_%s'
-        self.assertFalse(config.pgo_generate, msg % (build_name, 'generate'))
-        self.assertFalse(config.pgo_use, msg % (build_name, 'use'))
+        # the afdo_generate or afdo_use config options.
+        msg = 'Config %s uses build_packages_in_background with afdo_%s'
+        self.assertFalse(config.afdo_generate, msg % (build_name, 'generate'))
+        self.assertFalse(config.afdo_generate_min, msg % (build_name,
+                                                          'generate'))
+        self.assertFalse(config.afdo_use, msg % (build_name, 'use'))
 
   def testReleaseGroupInBackground(self):
     """Verify build_packages_in_background settings for release groups.
@@ -400,10 +402,12 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
                                             board))
             prebuilt_slave_boards[board] = slave['name']
 
-  def testCantBeBothTypesOfPGO(self):
-    """Using pgo_generate and pgo_use together doesn't work."""
+  def testCantBeBothTypesOfAFDO(self):
+    """Using afdo_generate and afdo_use together doesn't work."""
     for config in cbuildbot_config.config.values():
-      self.assertFalse(config['pgo_use'] and config['pgo_generate'])
+      self.assertFalse(config['afdo_use'] and config['afdo_generate'])
+      self.assertFalse(config['afdo_use'] and config['afdo_generate_min'])
+      self.assertFalse(config['afdo_generate'] and config['afdo_generate_min'])
 
   def testValidPrebuilts(self):
     """Verify all builders have valid prebuilt values."""
@@ -508,8 +512,8 @@ class FindFullTest(cros_test_lib.TestCase):
     """Test prefer internal over external when both exist."""
     self._CheckCanonicalConfig('daisy', 'release')
 
-  def testPGOCanonicalResolution(self):
-    """Test prefer non-PGO over PGO builder."""
+  def testAFDOCanonicalResolution(self):
+    """Test prefer non-AFDO over AFDO builder."""
     self._CheckCanonicalConfig('lumpy', 'release')
 
   def testOneFullConfigPerBoard(self):
