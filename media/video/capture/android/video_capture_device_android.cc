@@ -158,8 +158,6 @@ void VideoCaptureDeviceAndroid::AllocateAndStart(
            << current_settings_.height
            << ", frame_rate="
            << current_settings_.frame_rate;
-  // Report the frame size to the client.
-  client_->OnFrameInfo(current_settings_);
 
   jint result = Java_VideoCapture_startCapture(env, j_capture_.obj());
   if (result < 0) {
@@ -232,7 +230,7 @@ void VideoCaptureDeviceAndroid::OnFrameAvailable(
 
     client_->OnIncomingCapturedFrame(
         reinterpret_cast<uint8*>(buffer), length, base::Time::Now(),
-        rotation, flip_vert, flip_horiz);
+        rotation, flip_vert, flip_horiz, current_settings_);
   }
 
   env->ReleaseByteArrayElements(data, buffer, JNI_ABORT);

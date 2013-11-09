@@ -64,6 +64,7 @@ class VideoCaptureDeviceLinux : public VideoCaptureDevice {
   Buffer* buffer_pool_;
   int buffer_pool_size_;  // Number of allocated buffers.
   int timeout_count_;
+  VideoCaptureCapability frame_info_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(VideoCaptureDeviceLinux);
 };

@@ -145,12 +145,14 @@ class MEDIA_EXPORT VideoCaptureDevice {
     // This method will try to reserve an output buffer and copy from |data|
     // into the output buffer. If no output buffer is available, the frame will
     // be silently dropped.
-    virtual void OnIncomingCapturedFrame(const uint8* data,
-                                         int length,
-                                         base::Time timestamp,
-                                         int rotation,  // Clockwise.
-                                         bool flip_vert,
-                                         bool flip_horiz) = 0;
+    virtual void OnIncomingCapturedFrame(
+        const uint8* data,
+        int length,
+        base::Time timestamp,
+        int rotation,  // Clockwise.
+        bool flip_vert,
+        bool flip_horiz,
+        const VideoCaptureCapability& frame_info) = 0;
 
     // Captured a new video frame, held in a VideoFrame container.
     //
@@ -169,20 +171,14 @@ class MEDIA_EXPORT VideoCaptureDevice {
     // the size must match that specified by an earlier call to OnFrameInfo().
     virtual void OnIncomingCapturedVideoFrame(
         const scoped_refptr<media::VideoFrame>& frame,
-        base::Time timestamp) = 0;
+        base::Time timestamp,
+        int frame_rate) = 0;
 
     // An error has occurred that cannot be handled and VideoCaptureDevice must
     // be StopAndDeAllocate()-ed.
     virtual void OnError() = 0;
-
-    // Called when VideoCaptureDevice::AllocateAndStart() has been called to
-    // inform of the resulting frame size.
-    virtual void OnFrameInfo(const VideoCaptureCapability& info) = 0;
-
-    // Called when the native resolution of VideoCaptureDevice has been changed
-    // and it needs to inform its client of the new frame size.
-    virtual void OnFrameInfoChanged(const VideoCaptureCapability& info) {};
   };
+
   // Creates a VideoCaptureDevice object.
   // Return NULL if the hardware is not available.
   static VideoCaptureDevice* Create(const Name& device_name);

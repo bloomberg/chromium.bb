@@ -140,7 +140,8 @@ class ThreadSafeCaptureOracle
  public:
   ThreadSafeCaptureOracle(scoped_ptr<media::VideoCaptureDevice::Client> client,
                           scoped_ptr<VideoCaptureOracle> oracle,
-                          const gfx::Size& capture_size);
+                          const gfx::Size& capture_size,
+                          int frame_rate);
 
   bool ObserveEventAndDecideCapture(
       VideoCaptureOracle::Event event,
@@ -176,8 +177,9 @@ class ThreadSafeCaptureOracle
   // Makes the decision to capture a frame.
   const scoped_ptr<VideoCaptureOracle> oracle_;
 
-  // The resolution at which we're capturing.
+  // The current capturing resolution and frame rate.
   const gfx::Size capture_size_;
+  const int frame_rate_;
 };
 
 // FrameSubscriber is a proxy to the ThreadSafeCaptureOracle that's compatible
@@ -401,11 +403,13 @@ class VideoFrameDeliveryLog {
 ThreadSafeCaptureOracle::ThreadSafeCaptureOracle(
     scoped_ptr<media::VideoCaptureDevice::Client> client,
     scoped_ptr<VideoCaptureOracle> oracle,
-    const gfx::Size& capture_size)
+    const gfx::Size& capture_size,
+    int frame_rate)
     : client_(client.Pass()),
       oracle_(oracle.Pass()),
-      capture_size_(capture_size) {
-}
+      capture_size_(capture_size),
+      frame_rate_(frame_rate) {}
+
 
 bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
     VideoCaptureOracle::Event event,
@@ -491,7 +495,8 @@ void ThreadSafeCaptureOracle::DidCaptureFrame(
 
   if (success) {
     if (oracle_->CompleteCapture(frame_number, timestamp))
-      client_->OnIncomingCapturedVideoFrame(frame, timestamp);
+      client_->OnIncomingCapturedVideoFrame(
+          frame, timestamp, frame_rate_);
   }
 }
 
@@ -1037,13 +1042,6 @@ void WebContentsVideoCaptureDevice::Impl::AllocateAndStart(
     return;
   }
 
-  // Need to call OnFrameInfo just to set the frame rate.
-  // TODO(nick): http://crbug.com/309907 The other parameters of this struct are
-  // ignored. Come up with a better way to communicate the frame rate.
-  media::VideoCaptureCapability settings;
-  settings.frame_rate = frame_rate;
-  client->OnFrameInfo(settings);
-
   base::TimeDelta capture_period = base::TimeDelta::FromMicroseconds(
       1000000.0 / frame_rate + 0.5);
 
@@ -1051,7 +1049,7 @@ void WebContentsVideoCaptureDevice::Impl::AllocateAndStart(
       new VideoCaptureOracle(capture_period,
                              kAcceleratedSubscriberIsSupported));
   oracle_proxy_ = new ThreadSafeCaptureOracle(
-      client.Pass(), oracle.Pass(), gfx::Size(width, height));
+      client.Pass(), oracle.Pass(), gfx::Size(width, height), frame_rate);
 
   // Allocates the CaptureMachine. The CaptureMachine will be tracking render
   // view swapping over its lifetime, and we don't want to lose our reference to

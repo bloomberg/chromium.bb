@@ -327,13 +327,16 @@ class StubClient : public media::VideoCaptureDevice::Client {
       base::Time timestamp,
       int rotation,
       bool flip_vert,
-      bool flip_horiz) OVERRIDE {
+      bool flip_horiz,
+      const media::VideoCaptureCapability& frame_info) OVERRIDE {
     FAIL();
   }
 
   virtual void OnIncomingCapturedVideoFrame(
       const scoped_refptr<media::VideoFrame>& frame,
-      base::Time timestamp) OVERRIDE {
+      base::Time timestamp,
+      int frame_rate) OVERRIDE {
+    EXPECT_EQ(kTestFramesPerSecond, frame_rate);
     EXPECT_EQ(gfx::Size(kTestWidth, kTestHeight), frame->coded_size());
     EXPECT_EQ(media::VideoFrame::I420, frame->format());
     EXPECT_LE(
@@ -351,10 +354,6 @@ class StubClient : public media::VideoCaptureDevice::Client {
 
   virtual void OnError() OVERRIDE {
     error_callback_.Run();
-  }
-
-  virtual void OnFrameInfo(const media::VideoCaptureCapability& info) OVERRIDE {
-    EXPECT_EQ(kTestFramesPerSecond, info.frame_rate);
   }
 
  private:

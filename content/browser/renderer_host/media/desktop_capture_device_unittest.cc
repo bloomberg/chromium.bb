@@ -43,18 +43,18 @@ class MockDeviceClient : public media::VideoCaptureDevice::Client {
   MOCK_METHOD1(ReserveOutputBuffer,
                scoped_refptr<media::VideoFrame>(const gfx::Size& size));
   MOCK_METHOD0(OnError, void());
-  MOCK_METHOD1(OnFrameInfo, void(const media::VideoCaptureCapability& info));
-  MOCK_METHOD1(OnFrameInfoChanged,
-      void(const media::VideoCaptureCapability& info));
-  MOCK_METHOD6(OnIncomingCapturedFrame, void(const uint8* data,
-                                             int length,
-                                             base::Time timestamp,
-                                             int rotation,
-                                             bool flip_vert,
-                                             bool flip_horiz));
-  MOCK_METHOD2(OnIncomingCapturedVideoFrame,
+  MOCK_METHOD7(OnIncomingCapturedFrame,
+               void(const uint8* data,
+                    int length,
+                    base::Time timestamp,
+                    int rotation,
+                    bool flip_vert,
+                    bool flip_horiz,
+                    const media::VideoCaptureCapability& frame_info));
+  MOCK_METHOD3(OnIncomingCapturedVideoFrame,
       void(const scoped_refptr<media::VideoFrame>& frame,
-           base::Time timestamp));
+           base::Time timestamp,
+           int frame_rate));
 };
 
 // TODO(sergeyu): Move this to a separate file where it can be reused.
@@ -122,11 +122,11 @@ TEST_F(DesktopCaptureDeviceTest, MAYBE_Capture) {
   int frame_size;
 
   scoped_ptr<MockDeviceClient> client(new MockDeviceClient());
-  EXPECT_CALL(*client, OnFrameInfo(_)).WillOnce(SaveArg<0>(&caps));
   EXPECT_CALL(*client, OnError()).Times(0);
-  EXPECT_CALL(*client, OnIncomingCapturedFrame(_, _, _, _, _, _))
+  EXPECT_CALL(*client, OnIncomingCapturedFrame(_, _, _, _, _, _, _))
       .WillRepeatedly(
            DoAll(SaveArg<1>(&frame_size),
+                 SaveArg<6>(&caps),
                  InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal)));
 
   media::VideoCaptureCapability capture_format(
@@ -160,14 +160,11 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeConstantResolution) {
   int frame_size;
 
   scoped_ptr<MockDeviceClient> client(new MockDeviceClient());
-  Expectation frame_info_called =
-      EXPECT_CALL(*client, OnFrameInfo(_)).WillOnce(SaveArg<0>(&caps));
-  EXPECT_CALL(*client, OnFrameInfoChanged(_)).Times(0);
   EXPECT_CALL(*client, OnError()).Times(0);
-  EXPECT_CALL(*client, OnIncomingCapturedFrame(_, _, _, _, _, _))
-      .After(frame_info_called)
+  EXPECT_CALL(*client, OnIncomingCapturedFrame(_, _, _, _, _, _, _))
       .WillRepeatedly(
            DoAll(SaveArg<1>(&frame_size),
+                 SaveArg<6>(&caps),
                  InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal)));
 
   media::VideoCaptureCapability capture_format(
@@ -210,23 +207,11 @@ TEST_F(DesktopCaptureDeviceTest, ScreenResolutionChangeVariableResolution) {
   base::WaitableEvent done_event(false, false);
 
   scoped_ptr<MockDeviceClient> client(new MockDeviceClient());
-  Expectation frame_info_called =
-      EXPECT_CALL(*client, OnFrameInfo(_)).WillOnce(SaveArg<0>(&caps));
-  Expectation first_info_changed = EXPECT_CALL(
-      *client,
-      OnFrameInfoChanged(EqualsCaptureCapability(
-          kTestFrameWidth2, kTestFrameHeight2))).After(frame_info_called);
-  Expectation second_info_changed = EXPECT_CALL(
-      *client,
-      OnFrameInfoChanged(EqualsCaptureCapability(
-          kTestFrameWidth1, kTestFrameHeight1))).After(first_info_changed);
-  EXPECT_CALL(*client, OnFrameInfoChanged(_)).Times(AnyNumber()).After(
-      second_info_changed);
   EXPECT_CALL(*client, OnError()).Times(0);
-  EXPECT_CALL(*client, OnIncomingCapturedFrame(_, _, _, _, _, _))
-      .After(frame_info_called)
-      .WillRepeatedly(
-           InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal));
+  EXPECT_CALL(*client, OnIncomingCapturedFrame(_, _, _, _, _, _, _))
+      .WillRepeatedly(DoAll(
+           SaveArg<6>(&caps),
+           InvokeWithoutArgs(&done_event, &base::WaitableEvent::Signal)));
 
   media::VideoCaptureCapability capture_format(
       kTestFrameWidth2,

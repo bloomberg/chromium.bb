@@ -435,9 +435,7 @@ void VideoCaptureDeviceWin::AllocateAndStart(
 
   // Get the capability back from the sink filter after the filter have been
   // connected.
-  const VideoCaptureCapability& used_capability
-      = sink_filter_->ResultingCapability();
-  client_->OnFrameInfo(used_capability);
+  current_setting_ = sink_filter_->ResultingCapability();
 
   // Start capturing.
   hr = media_control_->Run();
@@ -481,7 +479,7 @@ void VideoCaptureDeviceWin::StopAndDeAllocate() {
 void VideoCaptureDeviceWin::FrameReceived(const uint8* buffer,
                                           int length) {
   client_->OnIncomingCapturedFrame(buffer, length, base::Time::Now(),
-                                   0, false, false);
+                                   0, false, false, current_setting_);
 }
 
 bool VideoCaptureDeviceWin::CreateCapabilityMap() {

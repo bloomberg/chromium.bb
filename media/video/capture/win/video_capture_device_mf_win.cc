@@ -353,7 +353,7 @@ void VideoCaptureDeviceMFWin::AllocateAndStart(
     return;
   }
 
-  const VideoCaptureCapabilityWin& found_capability =
+  VideoCaptureCapabilityWin found_capability =
       capabilities.GetBestMatchedCapability(capture_format.width,
                                             capture_format.height,
                                             capture_format.frame_rate);
@@ -372,13 +372,12 @@ void VideoCaptureDeviceMFWin::AllocateAndStart(
     return;
   }
 
-  client_->OnFrameInfo(found_capability);
-
   if (FAILED(hr = reader_->ReadSample(MF_SOURCE_READER_FIRST_VIDEO_STREAM, 0,
                                       NULL, NULL, NULL, NULL))) {
     OnError(hr);
     return;
   }
+  current_setting_ = found_capability;
   capture_ = true;
 }
 
@@ -420,7 +419,8 @@ void VideoCaptureDeviceMFWin::OnIncomingCapturedFrame(
   base::AutoLock lock(lock_);
   if (data && client_.get())
     client_->OnIncomingCapturedFrame(data, length, time_stamp,
-                                     rotation, flip_vert, flip_horiz);
+                                     rotation, flip_vert, flip_horiz,
+                                     current_setting_);
 
   if (capture_) {
     HRESULT hr = reader_->ReadSample(MF_SOURCE_READER_FIRST_VIDEO_STREAM, 0,

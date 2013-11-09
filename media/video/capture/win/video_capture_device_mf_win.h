@@ -71,6 +71,7 @@ class MEDIA_EXPORT VideoCaptureDeviceMFWin
   base::Lock lock_;  // Used to guard the below variables.
   scoped_ptr<VideoCaptureDevice::Client> client_;
   base::win::ScopedComPtr<IMFSourceReader> reader_;
+  VideoCaptureCapability current_setting_;
   bool capture_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(VideoCaptureDeviceMFWin);

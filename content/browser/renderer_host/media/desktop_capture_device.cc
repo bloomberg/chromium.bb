@@ -211,8 +211,13 @@ void DesktopCaptureDevice::Core::OnCaptureCompleted(
   }
 
   if (client_) {
-    client_->OnIncomingCapturedFrame(output_data, output_bytes,
-                                     base::Time::Now(), 0, false, false);
+    client_->OnIncomingCapturedFrame(output_data,
+                                     output_bytes,
+                                     base::Time::Now(),
+                                     0,
+                                     false,
+                                     false,
+                                     capture_format_);
   }
 }
 
@@ -281,12 +286,6 @@ void DesktopCaptureDevice::Core::RefreshCaptureFormat(
     }
     capture_format_.width = output_rect_.width();
     capture_format_.height = output_rect_.height();
-
-    if (previous_frame_size_.is_empty()) {
-      client_->OnFrameInfo(capture_format_);
-    } else {
-      client_->OnFrameInfoChanged(capture_format_);
-    }
   } else {
     // Otherwise the output frame size cannot change, so just scale and
     // letterbox.

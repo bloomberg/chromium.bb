@@ -286,7 +286,6 @@ void VideoCaptureDeviceMac::ReceiveFrame(
     if (current_settings_.width == frame_info.width &&
         current_settings_.height == frame_info.height) {
       sent_frame_info_ = true;
-      client_->OnFrameInfo(current_settings_);
     } else {
       UpdateCaptureResolution();
       // OnFrameInfo has not yet been called.  OnIncomingCapturedFrame must
@@ -298,8 +297,13 @@ void VideoCaptureDeviceMac::ReceiveFrame(
   DCHECK(current_settings_.width == frame_info.width &&
          current_settings_.height == frame_info.height);
 
-  client_->OnIncomingCapturedFrame(
-      video_frame, video_frame_length, base::Time::Now(), 0, false, false);
+  client_->OnIncomingCapturedFrame(video_frame,
+                                   video_frame_length,
+                                   base::Time::Now(),
+                                   0,
+                                   false,
+                                   false,
+                                   current_settings_);
 }
 
 void VideoCaptureDeviceMac::ReceiveError(const std::string& reason) {

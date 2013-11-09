@@ -79,6 +79,7 @@ class VideoCaptureDeviceWin
 
   // Map of all capabilities this device support.
   CapabilityList capabilities_;
+  VideoCaptureCapability current_setting_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(VideoCaptureDeviceWin);
 };

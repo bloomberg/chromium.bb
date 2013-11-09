@@ -223,7 +223,7 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   gfx::Size capture_resolution(444, 200);
 
   // The device format needn't match the VideoCaptureParams (the camera can do
-  // what it wants). Pick something random to use for OnFrameInfo.
+  // what it wants). Pick something random.
   media::VideoCaptureCapability device_format(
       10, 10, 25, media::PIXEL_FORMAT_RGB24,
       media::ConstantResolutionVideoCaptureDevice);
@@ -264,7 +264,8 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
     EXPECT_CALL(*client_a_, DoBufferCreated(client_a_route_2)).Times(1);
     EXPECT_CALL(*client_a_, DoBufferReady(client_a_route_2)).Times(1);
   }
-  device_->OnIncomingCapturedVideoFrame(frame, base::Time());
+  device_->OnIncomingCapturedVideoFrame(
+      frame, base::Time(), device_format.frame_rate);
   frame = NULL;
 
   base::RunLoop().RunUntilIdle();
@@ -277,7 +278,8 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   frame = device_->ReserveOutputBuffer(capture_resolution);
   ASSERT_TRUE(frame);
   media::FillYUV(frame, frame_no++, 0x22, 0x44);
-  device_->OnIncomingCapturedVideoFrame(frame, base::Time());
+  device_->OnIncomingCapturedVideoFrame(
+      frame, base::Time(), device_format.frame_rate);
 
   // The buffer should be delivered to the clients in any order.
   EXPECT_CALL(*client_a_, DoBufferReady(client_a_route_1)).Times(1);
@@ -299,8 +301,8 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
     ASSERT_TRUE(frame);
     ASSERT_EQ(media::VideoFrame::I420, frame->format());
     media::FillYUV(frame, frame_no++, 0x22, 0x44);
-    device_->OnIncomingCapturedVideoFrame(frame, base::Time());
-
+    device_->OnIncomingCapturedVideoFrame(
+        frame, base::Time(), device_format.frame_rate);
   }
   // ReserveOutputBuffer ought to fail now, because the pool is depleted.
   ASSERT_FALSE(device_->ReserveOutputBuffer(capture_resolution));
@@ -331,7 +333,8 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   frame = device_->ReserveOutputBuffer(capture_resolution);
   ASSERT_TRUE(frame);
   media::FillYUV(frame, frame_no++, 0x22, 0x44);
-  device_->OnIncomingCapturedVideoFrame(frame, base::Time());
+  device_->OnIncomingCapturedVideoFrame(
+      frame, base::Time(), device_format.frame_rate);
   frame = device_->ReserveOutputBuffer(capture_resolution);
   {
     // Kill A2 via session close (posts a task to disconnect, but A2 must not
@@ -341,7 +344,8 @@ TEST_F(VideoCaptureControllerTest, NormalCaptureMultipleClients) {
   }
   ASSERT_TRUE(frame);
   media::FillYUV(frame, frame_no++, 0x22, 0x44);
-  device_->OnIncomingCapturedVideoFrame(frame, base::Time());
+  device_->OnIncomingCapturedVideoFrame(
+      frame, base::Time(), device_format.frame_rate);
   // B2 is the only client left, and is the only one that should
   // get the frame.
   EXPECT_CALL(*client_b_, DoBufferReady(client_b_route_2)).Times(2);
@@ -379,12 +383,12 @@ TEST_F(VideoCaptureControllerTest, ErrorBeforeDeviceCreation) {
   base::RunLoop().RunUntilIdle();
   Mock::VerifyAndClearExpectations(client_b_.get());
 
-  // OnFrameInfo from the VCD should become a no-op after the error occurs.
-  media::VideoCaptureCapability device_format(
-      10, 10, 25, media::PIXEL_FORMAT_ARGB,
-      media::ConstantResolutionVideoCaptureDevice);
+  scoped_refptr<media::VideoFrame> frame =
+      device_->ReserveOutputBuffer(gfx::Size(320, 240));
+  ASSERT_TRUE(frame);
 
-  device_->OnFrameInfo(device_format);
+  device_->OnIncomingCapturedVideoFrame(frame, base::Time(), 30);
+
   base::RunLoop().RunUntilIdle();
 }
 
@@ -420,7 +424,8 @@ TEST_F(VideoCaptureControllerTest, ErrorAfterDeviceCreation) {
   ASSERT_TRUE(frame);
 
   device_->OnError();
-  device_->OnIncomingCapturedVideoFrame(frame, base::Time());
+  device_->OnIncomingCapturedVideoFrame(
+      frame, base::Time(), device_format.frame_rate);
   frame = NULL;
 
   EXPECT_CALL(*client_a_, DoError(route_id)).Times(1);

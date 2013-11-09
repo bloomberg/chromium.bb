@@ -104,8 +104,6 @@ void FakeVideoCaptureDevice::AllocateAndStart(
       gfx::Size(capture_format_.width, capture_format_.height));
   fake_frame_.reset(new uint8[fake_frame_size]);
 
-  client_->OnFrameInfo(capture_format_);
-
   state_ = kCapturing;
   capture_thread_.Start();
   capture_thread_.message_loop()->PostTask(
@@ -126,8 +124,6 @@ void FakeVideoCaptureDevice::Reallocate() {
       VideoFrame::I420,
       gfx::Size(capture_format_.width, capture_format_.height));
   fake_frame_.reset(new uint8[fake_frame_size]);
-
-  client_->OnFrameInfoChanged(capture_format_);
 }
 
 void FakeVideoCaptureDevice::StopAndDeAllocate() {
@@ -199,8 +195,13 @@ void FakeVideoCaptureDevice::OnCaptureTask() {
   frame_count_++;
 
   // Give the captured frame to the client.
-  client_->OnIncomingCapturedFrame(
-      fake_frame_.get(), frame_size, base::Time::Now(), 0, false, false);
+  client_->OnIncomingCapturedFrame(fake_frame_.get(),
+                                   frame_size,
+                                   base::Time::Now(),
+                                   0,
+                                   false,
+                                   false,
+                                   capture_format_);
   if (!(frame_count_ % kFakeCaptureCapabilityChangePeriod) &&
       (capture_format_.frame_size_type ==
        VariableResolutionVideoCaptureDevice)) {

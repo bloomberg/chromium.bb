@@ -21,6 +21,8 @@
 #include "third_party/libyuv/include/libyuv.h"
 #endif
 
+using media::VideoCaptureCapability;
+
 namespace content {
 
 // The number of buffers that VideoCaptureBufferPool should allocate.
@@ -87,20 +89,19 @@ class VideoCaptureController::VideoCaptureDeviceClient
   // VideoCaptureDevice::Client implementation.
   virtual scoped_refptr<media::VideoFrame> ReserveOutputBuffer(
       const gfx::Size& size) OVERRIDE;
-  virtual void OnIncomingCapturedFrame(const uint8* data,
-                                       int length,
-                                       base::Time timestamp,
-                                       int rotation,
-                                       bool flip_vert,
-                                       bool flip_horiz) OVERRIDE;
+  virtual void OnIncomingCapturedFrame(
+      const uint8* data,
+      int length,
+      base::Time timestamp,
+      int rotation,
+      bool flip_vert,
+      bool flip_horiz,
+      const VideoCaptureCapability& frame_info) OVERRIDE;
   virtual void OnIncomingCapturedVideoFrame(
       const scoped_refptr<media::VideoFrame>& frame,
-      base::Time timestamp) OVERRIDE;
+      base::Time timestamp,
+      int frame_rate) OVERRIDE;
   virtual void OnError() OVERRIDE;
-  virtual void OnFrameInfo(
-      const media::VideoCaptureCapability& info) OVERRIDE;
-  virtual void OnFrameInfoChanged(
-      const media::VideoCaptureCapability& info) OVERRIDE;
 
  private:
   scoped_refptr<media::VideoFrame> DoReserveI420VideoFrame(
@@ -112,14 +113,6 @@ class VideoCaptureController::VideoCaptureDeviceClient
 
   // The pool of shared-memory buffers used for capturing.
   const scoped_refptr<VideoCaptureBufferPool> buffer_pool_;
-
-  // Chopped pixels in width/height in case video capture device has odd
-  // numbers for width/height.
-  int chopped_width_;
-  int chopped_height_;
-
-  // Tracks the current frame format.
-  media::VideoCaptureCapability frame_info_;
 };
 
 VideoCaptureController::VideoCaptureController()
@@ -132,9 +125,7 @@ VideoCaptureController::VideoCaptureDeviceClient::VideoCaptureDeviceClient(
     const base::WeakPtr<VideoCaptureController>& controller,
     const scoped_refptr<VideoCaptureBufferPool>& buffer_pool)
     : controller_(controller),
-      buffer_pool_(buffer_pool),
-      chopped_width_(0),
-      chopped_height_(0) {}
+      buffer_pool_(buffer_pool) {}
 
 VideoCaptureController::VideoCaptureDeviceClient::~VideoCaptureDeviceClient() {}
 
@@ -250,14 +241,31 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedFrame(
     base::Time timestamp,
     int rotation,
     bool flip_vert,
-    bool flip_horiz) {
+    bool flip_horiz,
+    const VideoCaptureCapability& frame_info) {
   TRACE_EVENT0("video", "VideoCaptureController::OnIncomingCapturedFrame");
 
-  if (!frame_info_.IsValid())
+  if (!frame_info.IsValid())
     return;
 
+  // Chopped pixels in width/height in case video capture device has odd
+  // numbers for width/height.
+  int chopped_width = 0;
+  int chopped_height = 0;
+  int new_width = frame_info.width;
+  int new_height = frame_info.height;
+
+  if (frame_info.width & 1) {
+    --new_width;
+    chopped_width = 1;
+  }
+  if (frame_info.height & 1) {
+    --new_height;
+    chopped_height = 1;
+  }
+
   scoped_refptr<media::VideoFrame> dst = DoReserveI420VideoFrame(
-      gfx::Size(frame_info_.width, frame_info_.height), rotation);
+      gfx::Size(new_width, new_height), rotation);
 
   if (!dst.get())
     return;
@@ -266,12 +274,12 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedFrame(
   uint8* yplane = dst->data(media::VideoFrame::kYPlane);
   uint8* uplane = dst->data(media::VideoFrame::kUPlane);
   uint8* vplane = dst->data(media::VideoFrame::kVPlane);
-  int yplane_stride = frame_info_.width;
-  int uv_plane_stride = (frame_info_.width + 1) / 2;
+  int yplane_stride = new_width;
+  int uv_plane_stride = (new_width + 1) / 2;
   int crop_x = 0;
   int crop_y = 0;
-  int destination_width = frame_info_.width;
-  int destination_height = frame_info_.height;
+  int destination_width = new_width;
+  int destination_height = new_height;
   libyuv::FourCC origin_colorspace = libyuv::FOURCC_ANY;
   // Assuming rotation happens first and flips next, we can consolidate both
   // vertical and horizontal flips together with rotation into two variables:
@@ -286,27 +294,27 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedFrame(
   else if (new_rotation_angle == 270)
     rotation_mode = libyuv::kRotate270;
 
-  switch (frame_info_.color) {
+  switch (frame_info.color) {
     case media::PIXEL_FORMAT_UNKNOWN:  // Color format not set.
       break;
     case media::PIXEL_FORMAT_I420:
-      DCHECK(!chopped_width_ && !chopped_height_);
+      DCHECK(!chopped_width && !chopped_height);
       origin_colorspace = libyuv::FOURCC_I420;
       break;
     case media::PIXEL_FORMAT_YV12:
-      DCHECK(!chopped_width_ && !chopped_height_);
+      DCHECK(!chopped_width && !chopped_height);
       origin_colorspace = libyuv::FOURCC_YV12;
       break;
     case media::PIXEL_FORMAT_NV21:
-      DCHECK(!chopped_width_ && !chopped_height_);
+      DCHECK(!chopped_width && !chopped_height);
       origin_colorspace = libyuv::FOURCC_NV12;
       break;
     case media::PIXEL_FORMAT_YUY2:
-      DCHECK(!chopped_width_ && !chopped_height_);
+      DCHECK(!chopped_width && !chopped_height);
       origin_colorspace = libyuv::FOURCC_YUY2;
       break;
     case media::PIXEL_FORMAT_UYVY:
-      DCHECK(!chopped_width_ && !chopped_height_);
+      DCHECK(!chopped_width && !chopped_height);
       origin_colorspace = libyuv::FOURCC_UYVY;
       break;
     case media::PIXEL_FORMAT_RGB24:
@@ -326,23 +334,23 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedFrame(
 #if defined(OS_WIN)
   // kRGB24 on Windows start at the bottom line and has a negative stride. This
   // is not supported by libyuv, so the media API is used instead.
-  if (frame_info_.color == media::PIXEL_FORMAT_RGB24) {
+  if (frame_info.color == media::PIXEL_FORMAT_RGB24) {
     // Rotation and flipping is not supported in kRGB24 and OS_WIN case.
     DCHECK(!rotation && !flip_vert && !flip_horiz);
     need_convert_rgb24_on_win = true;
   }
 #endif
   if (need_convert_rgb24_on_win) {
-    int rgb_stride = -3 * (frame_info_.width + chopped_width_);
+    int rgb_stride = -3 * (new_width + chopped_width);
     const uint8* rgb_src =
-        data + 3 * (frame_info_.width + chopped_width_) *
-                   (frame_info_.height - 1 + chopped_height_);
+        data + 3 * (new_width + chopped_width) *
+                   (new_height - 1 + chopped_height);
     media::ConvertRGB24ToYUV(rgb_src,
                              yplane,
                              uplane,
                              vplane,
-                             frame_info_.width,
-                             frame_info_.height,
+                             new_width,
+                             new_height,
                              rgb_stride,
                              yplane_stride,
                              uv_plane_stride);
@@ -353,7 +361,7 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedFrame(
       // center of the image is rotated. F.i. 640x480 pixels, only the central
       // 480 pixels would be rotated and the leftmost and rightmost 80 columns
       // would be ignored. This process is called letterboxing.
-      int letterbox_thickness = abs(frame_info_.width - frame_info_.height) / 2;
+      int letterbox_thickness = abs(new_width - new_height) / 2;
       if (destination_width > destination_height) {
         yplane += letterbox_thickness;
         uplane += letterbox_thickness / 2;
@@ -372,8 +380,8 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedFrame(
         uplane, uv_plane_stride,
         vplane, uv_plane_stride,
         crop_x, crop_y,
-        frame_info_.width + chopped_width_,
-        frame_info_.height * (flip_vert ^ flip_horiz ? -1 : 1),
+        new_width + chopped_width,
+        new_height * (flip_vert ^ flip_horiz ? -1 : 1),
         destination_width,
         destination_height,
         rotation_mode,
@@ -391,15 +399,15 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedFrame(
       base::Bind(&VideoCaptureController::DoIncomingCapturedFrameOnIOThread,
                  controller_,
                  dst,
-                 frame_info_.frame_rate,
+                 frame_info.frame_rate,
                  timestamp));
 }
 
 void
 VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedVideoFrame(
     const scoped_refptr<media::VideoFrame>& frame,
-    base::Time timestamp) {
-
+    base::Time timestamp,
+    int frame_rate) {
   // If this is a frame that belongs to the buffer pool, we can forward it
   // directly to the IO thread and be done.
   if (buffer_pool_->RecognizeReservedBuffer(
@@ -407,7 +415,7 @@ VideoCaptureController::VideoCaptureDeviceClient::OnIncomingCapturedVideoFrame(
     BrowserThread::PostTask(BrowserThread::IO,
         FROM_HERE,
         base::Bind(&VideoCaptureController::DoIncomingCapturedFrameOnIOThread,
-                   controller_, frame, frame_info_.frame_rate, timestamp));
+                   controller_, frame, frame_rate, timestamp));
     return;
   }
 
@@ -418,29 +426,6 @@ void VideoCaptureController::VideoCaptureDeviceClient::OnError() {
   BrowserThread::PostTask(BrowserThread::IO,
       FROM_HERE,
       base::Bind(&VideoCaptureController::DoErrorOnIOThread, controller_));
-}
-
-void VideoCaptureController::VideoCaptureDeviceClient::OnFrameInfo(
-    const media::VideoCaptureCapability& info) {
-  frame_info_ = info;
-  // Handle cases when |info| has odd numbers for width/height.
-  if (info.width & 1) {
-    --frame_info_.width;
-    chopped_width_ = 1;
-  } else {
-    chopped_width_ = 0;
-  }
-  if (info.height & 1) {
-    --frame_info_.height;
-    chopped_height_ = 1;
-  } else {
-    chopped_height_ = 0;
-  }
-}
-
-void VideoCaptureController::VideoCaptureDeviceClient::OnFrameInfoChanged(
-    const media::VideoCaptureCapability& info) {
-  OnFrameInfo(info);
 }
 
 scoped_refptr<media::VideoFrame>
