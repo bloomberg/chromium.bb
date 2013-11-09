@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
-#include "base/strings/string16.h"
 #include "printing/print_job_constants.h"
 #include "printing/printing_export.h"
 
@@ -97,9 +96,6 @@ class PRINTING_EXPORT PrintBackend
 
   // Returns true if printer_name points to a valid printer.
   virtual bool IsValidPrinter(const std::string& printer_name) = 0;
-
-  // Simplify title to resolve issue with some drivers.
-  static base::string16 SimplifyDocumentTitle(const base::string16& title);
 
   // Allocate a print backend. If |print_backend_settings| is NULL, default
   // settings will be used.

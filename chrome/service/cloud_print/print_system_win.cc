@@ -28,6 +28,7 @@
 #include "printing/emf_win.h"
 #include "printing/page_range.h"
 #include "printing/pdf_render_settings.h"
+#include "printing/printing_utils.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/rect.h"
 
@@ -431,8 +432,7 @@ class PrintSystemWin : public PrintSystem {
           DOCINFO di = {0};
           di.cbSize = sizeof(DOCINFO);
           string16 doc_name = UTF8ToUTF16(job_title);
-          DCHECK(printing::PrintBackend::SimplifyDocumentTitle(doc_name) ==
-                 doc_name);
+          DCHECK(printing::SimplifyDocumentTitle(doc_name) == doc_name);
           di.lpszDocName = doc_name.c_str();
           job_id_ = StartDoc(dc, &di);
           if (job_id_ <= 0)
