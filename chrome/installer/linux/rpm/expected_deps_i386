@@ -33,7 +33,7 @@ libgconf-2.so.4
 libgcrypt.so.11
 libgdk_pixbuf-2.0.so.0
 libgdk-x11-2.0.so.0
-libgio-2.0.so.1
+libgio-2.0.so.0
 libglib-2.0.so.0
 libgobject-2.0.so.0
 libgtk-x11-2.0.so.0
