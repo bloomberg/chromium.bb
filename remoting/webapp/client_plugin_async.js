@@ -524,11 +524,11 @@ remoting.ClientPluginAsync.prototype.sendClipboardItem =
 remoting.ClientPluginAsync.prototype.notifyClientResolution =
     function(width, height, device_scale) {
   if (this.hasFeature(remoting.ClientPlugin.Feature.NOTIFY_CLIENT_RESOLUTION)) {
-    var dpi = device_scale * 96;
+    var dpi = Math.floor(device_scale * 96);
     this.plugin.postMessage(JSON.stringify(
         { method: 'notifyClientResolution',
-          data: { width: width * device_scale,
-                  height: height * device_scale,
+          data: { width: Math.floor(width * device_scale),
+                  height: Math.floor(height * device_scale),
                   x_dpi: dpi, y_dpi: dpi }}));
   }
 };
