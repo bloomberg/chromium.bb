@@ -18,9 +18,11 @@ GOOGLETEST_DIR = os.path.dirname(BASE_DIR)
 ROOT_DIR = os.path.dirname(GOOGLETEST_DIR)
 sys.path.insert(0, ROOT_DIR)
 sys.path.insert(0, os.path.join(BASE_DIR, 'gtest_fake'))
+sys.path.insert(0, os.path.join(ROOT_DIR, 'tests'))
 
 import gtest_fake_base
 from utils import file_path
+import trace_test_util
 
 FILE_PATH = os.path.realpath(unicode(os.path.abspath(__file__)))
 TARGET_UTIL_PATH = os.path.join(BASE_DIR, 'gtest_fake', 'gtest_fake_base.py')
@@ -66,6 +68,7 @@ class TraceTestCases(unittest.TestCase):
       standardMsg = '%r not greater than %r' % (a, b)
       self.fail(msg or standardMsg)
 
+  @trace_test_util.check_can_trace
   def test_simple(self):
     temp_file = os.path.join(self.temp_dir, 'foo_bar')
     cmd = [

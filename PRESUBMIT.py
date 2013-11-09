@@ -20,6 +20,7 @@ def CommonChecks(input_api, output_api):
       input_api.PresubmitLocalPath(),
       join('googletest'),
       join('tests', 'gtest_fake'),
+      join('tests'),
     ] + sys.path
     output.extend(input_api.canned_checks.RunPylint(input_api, output_api))
   finally:

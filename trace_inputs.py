@@ -100,6 +100,15 @@ if sys.platform == 'win32':
       windll.kernel32.LocalFree(ptr)
 
 
+def can_trace():
+  """Returns True if the user is an administrator on Windows.
+
+  It is required for tracing to work.
+  """
+  if sys.platform != 'win32':
+    return True
+  return bool(windll.shell32.IsUserAnAdmin())
+
 
 def gen_blacklist(regexes):
   """Returns a lambda to be used as a blacklist."""
@@ -3267,6 +3276,9 @@ def CMDtrace(parser, args):
 
   if not args:
     parser.error('Please provide a command to run')
+
+  if not can_trace():
+    parser.error('Please rerun this program with admin privileges')
 
   if not os.path.isabs(args[0]) and os.access(args[0], os.X_OK):
     args[0] = os.path.abspath(args[0])

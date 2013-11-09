@@ -19,9 +19,11 @@ ROOT_DIR = os.path.dirname(GOOGLETEST_DIR)
 
 sys.path.insert(0, GOOGLETEST_DIR)
 sys.path.insert(0, ROOT_DIR)
+sys.path.insert(0, os.path.join(GOOGLETEST_DIR, '..', 'tests'))
 
 import isolate
 import trace_test_cases
+import trace_test_util
 from utils import file_path
 
 
@@ -66,6 +68,7 @@ class IsolateTestCases(unittest.TestCase):
         os.path.join(root, relpath),
         os.path.join(self.tempdir, relpath))
 
+  @trace_test_util.check_can_trace
   def test_simple(self):
     # Create a directory and re-use tests/gtest_fake/gtest_fake_pass.isolate.
     # Warning: we need to copy the files around, since the original .isolate

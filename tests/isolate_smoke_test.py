@@ -22,6 +22,7 @@ sys.path.insert(0, ROOT_DIR)
 import isolate
 import isolateserver
 from utils import file_path
+import trace_test_util
 
 
 VERBOSE = False
@@ -801,6 +802,7 @@ class Isolate_trace_read_merge(IsolateModeBase):
       new_content = f.read()
     self.assertEqual(old_content, new_content)
 
+  @trace_test_util.check_can_trace
   def test_fail(self):
     # Even if the process returns non-zero, the trace will still be good.
     try:
@@ -826,6 +828,7 @@ class Isolate_trace_read_merge(IsolateModeBase):
   def test_non_existent(self):
     self._test_non_existent('trace')
 
+  @trace_test_util.check_can_trace
   def test_all_items_invalid(self):
     out = self._test_all_items_invalid('trace')
     self.assertEqual('', out)
@@ -870,6 +873,7 @@ class Isolate_trace_read_merge(IsolateModeBase):
     self.assertEqual(self._wrap_in_condition(expected), out)
     self._check_merge('touch_only.isolate')
 
+  @trace_test_util.check_can_trace
   def test_touch_root(self):
     out = self._execute('trace', 'touch_root.isolate', [], True)
     self.assertEqual('', out)
@@ -886,6 +890,7 @@ class Isolate_trace_read_merge(IsolateModeBase):
     self.assertEqual(expected, out)
     self._check_merge('touch_root.isolate')
 
+  @trace_test_util.check_can_trace
   def test_with_flag(self):
     out = self._execute(
         'trace', 'with_flag.isolate', ['-V', 'FLAG', 'trace'], True)
@@ -1085,6 +1090,7 @@ class IsolateNoOutdir(IsolateBase):
     ])
     self.assertEqual(files, list_files_tree(self.tempdir))
 
+  @trace_test_util.check_can_trace
   def test_trace_read_merge(self):
     self._execute('trace', ['--isolate', self.filename()], False)
     # Read the trace before cleaning up. No need to specify self.filename()

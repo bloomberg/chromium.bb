@@ -18,9 +18,11 @@ GOOGLETEST_DIR = os.path.dirname(BASE_DIR)
 ROOT_DIR = os.path.dirname(GOOGLETEST_DIR)
 
 sys.path.insert(0, ROOT_DIR)
+sys.path.insert(0, os.path.join(ROOT_DIR, 'tests'))
 
 import isolateserver
 import run_isolated
+import trace_test_util
 
 
 class FixTestCases(unittest.TestCase):
@@ -55,6 +57,7 @@ class FixTestCases(unittest.TestCase):
     self.assertEqual(0, proc.returncode)
     return out
 
+  @trace_test_util.check_can_trace
   def test_simple(self):
     # Create a directory with nothing in it and progressively add more stuff.
     isolate = os.path.join(self.srcdir, 'gtest_fake_pass.isolate')
