@@ -165,7 +165,14 @@ def BuildAndTest(options):
       bits = 32
     # xvfb-run has a 2-second overhead per invocation, so it is cheaper to wrap
     # the entire build step rather than each test (browser_headless=1).
-    scons = ['xvfb-run', '--auto-servernum', python, 'scons.py']
+    # We also need to make sure that there are at least 24 bits per pixel.
+    # https://code.google.com/p/chromium/issues/detail?id=316687
+    scons = [
+        'xvfb-run',
+        '--auto-servernum',
+        '--server-args', '-screen 0 1024x768x24',
+        python, 'scons.py',
+    ]
 
   if options.jobs > 1:
     scons.append('-j%d' % options.jobs)
