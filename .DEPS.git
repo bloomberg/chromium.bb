@@ -61,6 +61,8 @@ deps = {
         Var('git_url') + '/external/jsoncpp/jsoncpp/src/lib_json.git@a8caa51ba2f80971a45880425bf2ae864a786784',
     'src/third_party/leveldatabase/src':
         Var('git_url') + '/external/leveldb.git@2d749ea62f0e47281e82794c8e00eb588cd66616',
+    'src/third_party/libaddressinput/src':
+        Var('git_url') + '/external/libaddressinput.git@807fc756351f6008710eed6af7c69ee2ef8f416f',
     'src/third_party/libexif/sources':
         Var('git_url') + '/chromium/deps/libexif/sources.git@d815c325bab0d1871d4c7e70600ecdfdab07db9e',
     'src/third_party/libjingle/source/talk':
@@ -126,7 +128,7 @@ deps = {
     'src/third_party/yasm/source/patched-yasm':
         Var('git_url') + '/chromium/deps/yasm/patched-yasm.git@c960eb11ccda80b10ed50be39df4f0663b371d1d',
     'src/tools/deps2git':
-        Var('git_url') + '/chromium/tools/deps2git.git@89559a9d3ade3e71993db9cc5959fcc58ed14b9e',
+        Var('git_url') + '/chromium/tools/deps2git.git@da03c2a27b0d5053beb92b9da0c5685c89f12a54',
     'src/tools/grit':
         Var('git_url') + '/external/grit-i18n.git@11e589a0b4a958ad1b5411692ee576cbee9f6ca5',
     'src/tools/gyp':
@@ -164,6 +166,10 @@ deps_os = {
             Var('git_url') + '/chromium/deps/jarjar.git@2e1ead4c68c450e0b77fe49e3f9137842b8b6920',
         'src/third_party/jsr-305/src':
             Var('git_url') + '/external/jsr-305.git@642c508235471f7220af6d5df2d3210e3bfc0919',
+        'src/third_party/libaddressinput/src/cpp':
+            None,
+        'src/third_party/libaddressinput/src/testdata':
+            None,
         'src/third_party/lss':
             Var('git_url') + '/external/linux-syscall-support/lss.git@e6c7682c40c27527894fbb8bcba38f77edbbb6b7',
         'src/third_party/openssl':
@@ -202,6 +208,10 @@ deps_os = {
         'src/third_party/hunspell':
             None,
         'src/third_party/hunspell_dictionaries':
+            None,
+        'src/third_party/libaddressinput/src/cpp':
+            None,
+        'src/third_party/libaddressinput/src/testdata':
             None,
         'src/third_party/libexif/sources':
             None,
