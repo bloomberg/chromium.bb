@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/observer_list.h"
 #include "ui/base/models/list_model_observer.h"
@@ -22,7 +23,7 @@ class ListModel {
   ListModel() {}
   ~ListModel() {}
 
-  // Adds |item| to the model at given |index|.
+  // Adds |item| at the |index| into |items_|. Takes ownership of |item|.
   void AddAt(size_t index, ItemType* item) {
     DCHECK_LE(index, item_count());
     items_.insert(items_.begin() + index, item);
@@ -34,14 +35,14 @@ class ListModel {
     AddAt(item_count(), item);
   }
 
-  // Removes an item at given |index| from the model. Note the removed item
-  // is NOT deleted and it's up to the caller to delete it.
-  ItemType* RemoveAt(size_t index) {
+  // Removes the item at |index| from |items_| without deleting it.
+  // Returns a scoped pointer containing the removed item.
+  scoped_ptr<ItemType> RemoveAt(size_t index) {
     DCHECK_LT(index, item_count());
     ItemType* item = items_[index];
     items_.weak_erase(items_.begin() + index);
     NotifyItemsRemoved(index, 1);
-    return item;
+    return make_scoped_ptr<ItemType>(item);
   }
 
   // Removes all items from the model. This does NOT delete the items.
@@ -51,9 +52,10 @@ class ListModel {
     NotifyItemsRemoved(0, count);
   }
 
-  // Removes an item at given |index| from the model and deletes it.
+  // Removes the item at |index| from |items_| and deletes it.
   void DeleteAt(size_t index) {
-    delete RemoveAt(index);
+    scoped_ptr<ItemType> item = RemoveAt(index);
+    // |item| will be deleted on destruction.
   }
 
   // Removes and deletes all items from the model.
