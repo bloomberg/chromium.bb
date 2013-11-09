@@ -230,8 +230,8 @@
           'sources': [
             'autofill/core/browser/android/test_auxiliary_profile_loader_android.cc',
             'autofill/core/browser/android/test_auxiliary_profile_loader_android.h',
-            'autofill/core/browser/autofill_common_test.cc',
-            'autofill/core/browser/autofill_common_test.h',
+            'autofill/core/browser/autofill_test_utils.cc',
+            'autofill/core/browser/autofill_test_utils.h',
             'autofill/core/browser/data_driven_test.cc',
             'autofill/core/browser/data_driven_test.h',
             'autofill/core/browser/test_autofill_driver.cc',

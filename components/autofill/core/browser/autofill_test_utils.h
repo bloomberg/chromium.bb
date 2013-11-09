@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_COMMON_TEST_H_
-#define COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_COMMON_TEST_H_
+#ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_TEST_UTILS_H_
+#define COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_TEST_UTILS_H_
 
 #include "base/memory/scoped_ptr.h"
 
@@ -98,4 +98,4 @@ void DisableSystemServices(content::BrowserContext* browser_context);
 }  // namespace test
 }  // namespace autofill
 
-#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_COMMON_TEST_H_
+#endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_TEST_UTILS_H_

@@ -24,6 +24,13 @@ specific_include_rules = {
     # WebContentsObserver.
     "!content/public/browser/web_contents_observer.h",
   ],
+  'autofill_test_utils\.cc': [
+    # TODO(blundell): Bring this list to zero.
+    #
+    # Do not add to the list of temporarily-allowed dependencies below,
+    # and please do not introduce more #includes of these files.
+    "!components/user_prefs/user_prefs.h",
+  ],
   '.*_[a-z]*test\.cc': [
     # TODO(blundell): Bring this list to zero.
     #
