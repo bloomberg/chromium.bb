@@ -3215,7 +3215,7 @@
               # Don't die on dtoa code that uses a char as an array index.
               '-Wno-char-subscripts',
 
-              # Clang spots more unused functions.
+              # Clang spots more unused functions. TODO remove, crbug.com/315884
               '-Wno-unused-function',
 
               # Warns on switches on enums that cover all enum values but
@@ -3930,8 +3930,10 @@
                 # This is required solely for base/third_party/dmg_fp/dtoa.cc.
                 '-Wno-char-subscripts',
 
-                # Clang spots more unused functions.
-                '-Wno-unused-function',
+                # TODO(thakis): This used to be implied by -Wno-unused-function,
+                # which we no longer use. Check if it makes sense to remove
+                # this as well. http://crbug.com/316352
+                '-Wno-unneeded-internal-declaration',
 
                 # Warns on switches on enums that cover all enum values but
                 # also contain a default: branch. Chrome is full of that.
@@ -4219,7 +4221,7 @@
             # Don't die on dtoa code that uses a char as an array index.
             # This is required solely for base/third_party/dmg_fp/dtoa.cc.
             '-Wno-char-subscripts',
-            # Clang spots more unused functions.
+            # Clang spots more unused functions. TODO: remove, crbug.com/315884
             '-Wno-unused-function',
             # Match OS X clang C++11 warning settings.
             '-Wno-c++11-narrowing',
