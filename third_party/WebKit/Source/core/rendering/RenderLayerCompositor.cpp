@@ -529,7 +529,7 @@ bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* l
             compositedLayerMappingChanged = true;
 
             // At this time, the ScrollingCooridnator only supports the top-level frame.
-            if (layer->isRootLayer() && !isMainFrame()) {
+            if (layer->isRootLayer() && isMainFrame()) {
                 if (ScrollingCoordinator* scrollingCoordinator = this->scrollingCoordinator())
                     scrollingCoordinator->frameViewRootLayerDidChange(m_renderView->frameView());
             }
