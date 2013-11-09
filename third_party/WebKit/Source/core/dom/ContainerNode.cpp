@@ -65,7 +65,7 @@ static const char replaceChildMethodName[] = "replaceChild";
 
 static void collectChildrenAndRemoveFromOldParent(Node& node, NodeVector& nodes, ExceptionState& es)
 {
-    if (node.nodeType() != Node::DOCUMENT_FRAGMENT_NODE) {
+    if (!node.isDocumentFragment()) {
         nodes.append(&node);
         if (ContainerNode* oldParent = node.parentNode())
             oldParent->removeChild(&node, es);
