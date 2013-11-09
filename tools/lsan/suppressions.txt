@@ -79,11 +79,15 @@ leak:GtkNativeViewManager
 leak:_gdk_x11_window_get_toplevel
 leak:gtk_util::*AppModal
 
-# Infobar-related leaks in browser tests. Retriage them once
-# http://crbug.com/62154 is fixed.
+# Infobar-related leaks in browser tests.
+# TODO(earthdok): Retriage them once http://crbug.com/62154 is fixed.
 leak:chrome::ShowBadFlagsPrompt
 leak:TranslateInfoBarDelegate::Create
 leak:TranslateLanguageList::TranslateLanguageList
 leak:SimpleAlertInfoBarDelegate::Create
+
+# Small shutdown-only leak in browser tests (24 bytes). http://crbug.com/317116
+# TODO(earthdok): Either annotate or narrow down the suppression.
+leak:content::RenderViewTest::TearDown
 
 # PLEASE DO NOT ADD NEW SUPPRESSIONS HERE. See the comment above.
