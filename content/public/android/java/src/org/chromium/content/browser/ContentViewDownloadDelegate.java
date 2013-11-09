@@ -9,19 +9,11 @@ package org.chromium.content.browser;
  */
 public interface ContentViewDownloadDelegate {
     /**
-     * Notify the host application that a file should be downloaded. Replaces
-     * onDownloadStart from DownloadListener.
-     * @param url The full url to the content that should be downloaded
-     * @param userAgent the user agent to be used for the download.
-     * @param contentDisposition Content-disposition http header, if
-     *                           present.
-     * @param mimetype The mimetype of the content reported by the server.
-     * @param cookie The cookie
-     * @param referer Referer http header.
-     * @param contentLength The file size reported by the server.
-     */
-    void requestHttpGetDownload(String url, String userAgent, String contentDisposition,
-            String mimetype, String cookie, String referer, long contentLength);
+    * Notify the host application that a file should be downloaded. Replaces
+    * onDownloadStart from DownloadListener.
+    * @param downloadInfo Information about the requested download.
+    */
+    void requestHttpGetDownload(DownloadInfo downloadInfo);
 
     /**
      * Notify the host application that a download is started.

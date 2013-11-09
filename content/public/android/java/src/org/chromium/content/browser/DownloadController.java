@@ -26,15 +26,9 @@ public class DownloadController {
         /**
          * Notify the host application that a download is finished.
          * @param context Application context.
-         * @param url The full url to the content that was downloaded.
-         * @param mimetype The mimetype of downloaded file.
-         * @param path Path of the downloaded file.
-         * @param description Description of the downloaded file.
-         * @param contentLength The file size of the downloaded file (in bytes).
-         * @param successful Whether the download succeeded.
+         * @param downloadInfo Information about the completed download.
          */
-        void onDownloadCompleted(Context context, String url, String mimetype, String path,
-                String description, long contentLength, boolean successful);
+        void onDownloadCompleted(Context context, DownloadInfo downloadInfo);
     }
 
     private static DownloadNotificationService sDownloadNotificationService;
@@ -67,13 +61,22 @@ public class DownloadController {
      */
     @CalledByNative
     public void newHttpGetDownload(ContentViewCore view, String url,
-            String userAgent, String contentDisposition, String mimetype,
+            String userAgent, String contentDisposition, String mimeType,
             String cookie, String referer, long contentLength) {
-        ContentViewDownloadDelegate downloadDelagate = downloadDelegateFromView(view);
+        ContentViewDownloadDelegate downloadDelegate = downloadDelegateFromView(view);
 
-        if (downloadDelagate != null) {
-            downloadDelagate.requestHttpGetDownload(url, userAgent, contentDisposition,
-                    mimetype, cookie, referer, contentLength);
+        if (downloadDelegate != null) {
+            DownloadInfo downloadInfo = new DownloadInfo.Builder()
+                    .setUrl(url)
+                    .setUserAgent(userAgent)
+                    .setContentDisposition(contentDisposition)
+                    .setMimeType(mimeType)
+                    .setCookie(cookie)
+                    .setReferer(referer)
+                    .setContentLength(contentLength)
+                    .setIsGETRequest(true)
+                    .build();
+            downloadDelegate.requestHttpGetDownload(downloadInfo);
         }
     }
 
@@ -98,11 +101,19 @@ public class DownloadController {
      * download. This can be either a POST download or a GET download with authentication.
      */
     @CalledByNative
-    public void onDownloadCompleted(Context context, String url, String mimetype,
+    public void onDownloadCompleted(Context context, String url, String mimeType,
             String filename, String path, long contentLength, boolean successful) {
         if (sDownloadNotificationService != null) {
-            sDownloadNotificationService.onDownloadCompleted(context, url, mimetype, path,
-                    filename, contentLength, successful);
+            DownloadInfo downloadInfo = new DownloadInfo.Builder()
+                    .setUrl(url)
+                    .setMimeType(mimeType)
+                    .setFileName(filename)
+                    .setFilePath(path)
+                    .setContentLength(contentLength)
+                    .setIsSuccessful(successful)
+                    .setDescription(filename)
+                    .build();
+            sDownloadNotificationService.onDownloadCompleted(context, downloadInfo);
         }
     }
 
@@ -112,9 +123,9 @@ public class DownloadController {
     @CalledByNative
     public void onDangerousDownload(ContentViewCore view, String filename,
             int downloadId) {
-        ContentViewDownloadDelegate downloadDelagate = downloadDelegateFromView(view);
-        if (downloadDelagate != null) {
-            downloadDelagate.onDangerousDownload(filename, downloadId);
+        ContentViewDownloadDelegate downloadDelegate = downloadDelegateFromView(view);
+        if (downloadDelegate != null) {
+            downloadDelegate.onDangerousDownload(filename, downloadId);
         }
     }
 
