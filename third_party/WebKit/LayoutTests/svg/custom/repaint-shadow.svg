@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" onload="runRepaintTest()">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
     <style type="text/css">
         @font-face {
             font-family: "Ahem";
@@ -13,6 +13,11 @@
     <script>
         function repaintTest() {
             document.getElementsByTagName('text')[1].setAttribute("x", 171);
+            if (window.testRunner)
+                testRunner.notifyDone();
         }
+        if (window.testRunner)
+            testRunner.waitUntilDone();
+        document.fonts.ready().then(runRepaintTest);
     </script>
 </svg>
