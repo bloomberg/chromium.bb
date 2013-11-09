@@ -17,7 +17,6 @@ crbug.com/305303 http/tests/security/mixedContent/insecure-sync-post-xhr-blocked
 crbug.com/305303 http/tests/security/mixedContent/insecure-xhr-in-main-frame.html [ Failure Pass ]
 
 crbug.com/289002 http/tests/security/frame-loading-via-document-write.html [ Pass Failure ]
-crbug.com/316707 fast/text/complex-text-rtl-selection-repaint.html [ NeedsRebaseline ]
 
 crbug.com/305853 [ SnowLeopard ] svg/as-object/embedded-svg-immediate-offsetWidth-query.html [ Pass ImageOnlyFailure ]
 
