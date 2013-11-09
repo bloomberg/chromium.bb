@@ -9,52 +9,92 @@
   <title>PNaCl Demos</title>
 
   <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Open+Sans:300">
-  <link href="styles/style.css" rel="stylesheet">
+  <link href="/static/styles/style.css" rel="stylesheet">
 </head>
 <body>
   <nav>
     <h1>PNaCl Demos</h1>
-    <ul>
-      <li id="lua">
-        <a href="pnacl-demo-lua/" target="content">Lua Editor</a>
-      </li>
-      <li id="bullet">
-        <a href="pnacl-demo-bullet/" target="content">Bullet Physics</a>
-      </li>
-      <li id="earth">
-        <a href="pnacl-demo-earth/" target="content">Raycasted Earth</a>
-      </li>
-      <li id="life">
-        <a href="pnacl-demo-life/" target="content">Game of Life</a>
-      </li>
-      <li id="voronoi">
-        <a href="pnacl-demo-voronoi/" target="content">Voronoi Simulation</a>
-      </li>
-      <li id="smoothlife">
-        <a href="pnacl-demo-smoothlife/" target="content">SmoothLife</a>
-      </li>
-      <li id="cube">
-        <a href="pnacl-demo-cube/" target="content">Rotating Cube</a>
-      </li>
-    </ul>
+    <ul></ul>
   </nav>
 
   <section>
-    <iframe src="home/index.html" frameborder="0" name="content" width="100%" height="100%"></iframe>
+    <iframe src="/static/home/index.html" frameborder="0" name="content" width="100%" height="100%"></iframe>
   </section>
 
   <script>
-    var links = document.querySelectorAll('li a');
-    for (var l = 0; l < links.length; l++) {
-      links[l].addEventListener('click', onLinkClick, false);
+    var examples = [
+      {name: 'bullet', text: 'Bullet Physics'},
+      {name: 'earth', text: 'Raycasted Earth'},
+      {name: 'lua', text: 'Lua Interpreter'},
+      {name: 'life', text: 'Game of Life'},
+      {name: 'voronoi', text: 'Voronoi Simulation'},
+      {name: 'smoothlife', text: 'SmoothLife'},
+      {name: 'cube', text: 'Rotating Cube'},
+    ];
+
+    var exampleUrls = {};  // Created below.
+
+    var listEl = document.querySelector('nav ul');
+    for (var i = 0; i < examples.length; ++i) {
+      var example = examples[i];
+
+      // Populate exampleUrls
+      var url = '/static/' + example.name + '/index.html';
+      exampleUrls[example.name] = url;
+
+      // Create li
+      var listItemEl = document.createElement('li');
+      var anchorEl = document.createElement('a');
+      listItemEl.setAttribute('id', example.name);
+      anchorEl.setAttribute('href', url);
+      anchorEl.setAttribute('target', 'content');
+      anchorEl.textContent = example.text;
+
+      // Listen for clicks and update the nav
+      anchorEl.addEventListener('click', onLinkClick.bind(example), false);
+
+      listItemEl.appendChild(anchorEl);
+      listEl.appendChild(listItemEl);
+    }
+
+    function updateUrl(exampleName) {
+      window.history.replaceState(null, '', '/demo/' + exampleName);
     }
 
     function onLinkClick(evt) {
+      var links = document.querySelectorAll('li a');
       for (var l = 0; l < links.length; l++) {
         links[l].classList.remove('active');
       }
       evt.target.classList.add('active');
+
+      // The id is the same as the name.
+      updateUrl(this.name);
     }
+
+    var anchorEl = document.createElement('a');
+    anchorEl.href = location.href;
+    var pathname = anchorEl.pathname;
+
+    // Load the correct page, based on the location.
+    var matches = pathname.match(/demo(?:\/(.*))?$/);
+    var iframeUrl = null;
+    if (matches) {
+      var matchedExample = matches[1];
+      // Strip trailing slash, if any.
+      if (matchedExample && matchedExample.slice(-1) === '/') {
+        matchedExample = matchedExample.slice(0, -1);
+      }
+
+      iframeUrl = exampleUrls[matchedExample];
+      if (iframeUrl) {
+        document.querySelector('iframe').src = iframeUrl;
+        updateUrl(matchedExample);
+      } else {
+        updateUrl('');
+      }
+    }
+
   </script>
 </body>
 </html>

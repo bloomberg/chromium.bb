@@ -118,7 +118,6 @@ function moduleDidLoad() {
   bar.style.width = 100;
   naclModule = $('nacl_module');
   hideStatus();
-  setThreadCount();
 }
 
 /**

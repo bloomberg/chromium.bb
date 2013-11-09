@@ -6,7 +6,7 @@ This is a new App Engine Python 2.7 application for http://gonacl.com
 At this time it presents the existing functionality of redirecting
 to http://developers.google.com/native-client/
 
-Also, there are PNaCl demos added at ``/static/pnacl-demo-<name>/index.html``
+Also, there are PNaCl demos added at ``/demo/<name>``
 
 
 To Run Locally
@@ -16,7 +16,7 @@ To Run Locally
 
 2. Run ``<path/to/app/engine>/dev_appserver.py app.yaml``
 
-3. Navigate in your browser to http://localhost:8080/static/
+3. Navigate in your browser to http://localhost:8080/demo/
 
 
 To Update App Engine (HTML/JS)
@@ -60,16 +60,16 @@ To publish a new version:
    Please see the following table for the location of the revision number to
    modify.
 
-   ==========  ========================================  ===========
-   Demo        File                                      Function
-   ==========  ========================================  ===========
-   bullet      /static/pnacl-demo-bullet/main.js         pageDidLoad
-   cube        /static/pnacl-demo-cube/example.js        getDataURL
-   earth       /static/pnacl-demo-earth/example.js       getDataURL
-   life        /static/pnacl-demo-life/example.js        getDataURL
-   lua         /static/pnacl-demo-lua/lua.js
-   smoothlife  /static/pnacl-demo-smoothlife/example.js  getDataURL
-   voronoi     /static/pnacl-demo-voronoi/example.js     getDataURL
+   ==========  =============================  ===========
+   Demo        File                           Function
+   ==========  =============================  ===========
+   bullet      /static/bullet/main.js         pageDidLoad
+   cube        /static/cube/example.js        getDataURL
+   earth       /static/earth/example.js       getDataURL
+   life        /static/life/example.js        getDataURL
+   lua         /static/lua/lua.js
+   smoothlife  /static/smoothlife/example.js  getDataURL
+   voronoi     /static/voronoi/example.js     getDataURL
 
 5. Land a CL with these changes.
 

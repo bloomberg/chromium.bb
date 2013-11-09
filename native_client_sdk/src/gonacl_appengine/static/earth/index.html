@@ -8,10 +8,10 @@
   <head>
     <meta charset="UTF-8">
 
-    <title>Voronoi</title>
+    <title>Multi-Threaded Raycasted Earth</title>
 
     <link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Open+Sans:300,700">
-    <link href="../styles/style.css" rel="stylesheet">
+    <link href="/static/styles/style.css" rel="stylesheet">
 
     <script type="text/javascript" src="example.js"></script>
 
@@ -20,19 +20,17 @@
   <body class="demo">
 
     <header>
-      <h1>Voronoi</h1>
+      <h1>Multi-Threaded Raycasted Earth</h1>
 
     </header>
 
     <section>
       <div class="intro">
         <p>
-          This demo renders the <a href="http://en.wikipedia.org/wiki/Voronoi"
-            target="_blank">Voronoi diagram</a> for a moving set of points
-          using a brute force technique.
+          An example of using multiple threads to render the globe through ray-tracing.
         </p>
         <p class="note">
-          Note: the C++ source code of this demo is available in the Native Client SDK (<tt>examples/demo/voronoi</tt>).
+          Note: the C++ source code of this demo is available in the Native Client SDK (<tt>examples/demo/earth</tt>).
         </p>
 
         <div class="panel panel-info">
@@ -43,15 +41,9 @@
             <table id="config" cellspacing="0" cellpadding="0">
               <tbody>
                 <tr>
-                  <td class="name">Points:</td>
-                  <td class="value">
-                    <input type="range" id="pointRange" min="1" max="1024" step="1" value="48">
-                    <label id="pointCount">48 points</label>
-                  </td>
-                </tr>
-                <tr>
                   <td class="name">Thread Count:</td>
                   <td class="value">
+
                     <select id="threadCount">
                       <option value="0">Main Thread only</option>
                       <option value="1">1 Thread</option>
@@ -66,23 +58,36 @@
                   </td>
                 </tr>
                 <tr>
-                  <td class="name"><label for="drawPoints">Draw Points:</label></td>
+                  <td class="name">Zoom:</td>
                   <td class="value">
-                    <input type="checkbox" id="drawPoints" checked="checked">
+                    <input type="range" id="zoomRange"
+                        min="1.0" max="50.0" step="0.5" value="14.0">
                   </td>
                 </tr>
                 <tr>
-                  <td class="name">
-                    <label for="drawInteriors">Draw Interiors:</label>
-                  </td>
+                  <td class="name">Light:</td>
                   <td class="value">
-                    <input type="checkbox" id="drawInteriors" checked="checked">
+                    <input type="range" id="lightRange"
+                        min="0.2" max="2.0" step=".01" value="1.0">
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
+
+        <p class="credit">
+          <b>Image Credit:</b>
+          NASA Goddard Space Flight Center Image by Reto Stöckli (land
+          surface, shallow water, clouds). Enhancements by Robert Simmon
+          (ocean color, compositing, 3D globes, animation).
+          <br/>
+          <b>Data and technical support:</b> MODIS Land Group; MODIS Science Data,
+          Support Team; MODIS Atmosphere Group; MODIS Ocean Group Additional
+          data: USGS EROS Data Center (topography); USGS Terrestrial Remote
+          Sensing Flagstaff Field Center (Antarctica); Defense Meteorological
+          Satellite Program (city lights).
+        </p>
       </div>
 
       <div class="Demo-body">
