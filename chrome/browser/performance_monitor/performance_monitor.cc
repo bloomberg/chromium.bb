@@ -239,7 +239,7 @@ void PerformanceMonitor::RegisterForNotifications() {
       content::NotificationService::AllSources());
 
   // Crashes
-  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_HANG,
+  registrar_.Add(this, content::NOTIFICATION_RENDER_WIDGET_HOST_HANG,
       content::NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
       content::NotificationService::AllSources());
@@ -594,7 +594,7 @@ void PerformanceMonitor::Observe(int type,
                         content::Details<Extension>(details).ptr());
       break;
     }
-    case content::NOTIFICATION_RENDERER_PROCESS_HANG: {
+    case content::NOTIFICATION_RENDER_WIDGET_HOST_HANG: {
       std::string url;
       content::RenderWidgetHost* widget =
           content::Source<content::RenderWidgetHost>(source).ptr();

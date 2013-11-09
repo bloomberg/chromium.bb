@@ -1392,7 +1392,7 @@ void RenderWidgetHostImpl::CheckRendererIsUnresponsive() {
 
   // OK, looks like we have a hung renderer!
   NotificationService::current()->Notify(
-      NOTIFICATION_RENDERER_PROCESS_HANG,
+      NOTIFICATION_RENDER_WIDGET_HOST_HANG,
       Source<RenderWidgetHost>(this),
       NotificationService::NoDetails());
   is_unresponsive_ = true;

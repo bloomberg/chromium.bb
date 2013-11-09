@@ -220,7 +220,7 @@ ProcessesEventRouter::ProcessesEventRouter(Profile* profile)
   model_ = TaskManager::GetInstance()->model();
   model_->AddObserver(this);
 
-  registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_HANG,
+  registrar_.Add(this, content::NOTIFICATION_RENDER_WIDGET_HOST_HANG,
       content::NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
       content::NotificationService::AllSources());
@@ -229,7 +229,7 @@ ProcessesEventRouter::ProcessesEventRouter(Profile* profile)
 
 ProcessesEventRouter::~ProcessesEventRouter() {
 #if defined(ENABLE_TASK_MANAGER)
-  registrar_.Remove(this, content::NOTIFICATION_RENDERER_PROCESS_HANG,
+  registrar_.Remove(this, content::NOTIFICATION_RENDER_WIDGET_HOST_HANG,
       content::NotificationService::AllSources());
   registrar_.Remove(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
       content::NotificationService::AllSources());
@@ -275,7 +275,7 @@ void ProcessesEventRouter::Observe(
     const content::NotificationDetails& details) {
 
   switch (type) {
-    case content::NOTIFICATION_RENDERER_PROCESS_HANG:
+    case content::NOTIFICATION_RENDER_WIDGET_HOST_HANG:
       ProcessHangEvent(
           content::Source<content::RenderWidgetHost>(source).ptr());
       break;
