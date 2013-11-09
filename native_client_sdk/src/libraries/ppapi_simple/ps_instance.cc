@@ -238,6 +238,26 @@ bool PSInstance::ProcessProperties() {
       if (tty_resize)
         RegisterMessageHandler(tty_resize, MessageHandlerResizeStatic, this);
 
+      char* tty_rows = getenv("PS_TTY_ROWS");
+      char* tty_cols = getenv("PS_TTY_COLS");
+      if (tty_rows && tty_cols) {
+        char* end = tty_rows;
+        int rows = strtol(tty_rows, &end, 10);
+        if (*end != '\0' || rows < 0) {
+          Error("Invalid value for PS_TTY_ROWS: %s", tty_rows);
+        } else {
+          end = tty_cols;
+          int cols = strtol(tty_cols, &end, 10);
+          if (*end != '\0' || cols < 0)
+            Error("Invalid value for PS_TTY_COLS: %s", tty_cols);
+          else
+            HandleResize(cols, rows);
+        }
+      }
+      else if (tty_rows || tty_cols) {
+        Error("PS_TTY_ROWS and PS_TTY_COLS must be set together");
+      }
+
       tioc_nacl_output handler;
       handler.handler = TtyOutputHandlerStatic;
       handler.user_data = this;
@@ -372,16 +392,22 @@ void PSInstance::MessageHandlerInput(const pp::Var& message) {
   }
 }
 
+void PSInstance::HandleResize(int width, int height){
+  struct winsize size;
+  memset(&size, 0, sizeof(size));
+  size.ws_col = width;
+  size.ws_row = height;
+  ioctl(tty_fd_, TIOCSWINSZ, reinterpret_cast<char*>(&size));
+}
+
 void PSInstance::MessageHandlerResize(const pp::Var& message) {
   assert(message.is_array());
   pp::VarArray array(message);
   assert(array.GetLength() == 2);
 
-  struct winsize size;
-  memset(&size, 0, sizeof(size));
-  size.ws_col = array.Get(0).AsInt();
-  size.ws_row = array.Get(1).AsInt();
-  ioctl(tty_fd_, TIOCSWINSZ, reinterpret_cast<char*>(&size));
+  int width = array.Get(0).AsInt();
+  int height = array.Get(1).AsInt();
+  HandleResize(width, height);
 }
 
 ssize_t PSInstance::TtyOutputHandlerStatic(const char* buf,

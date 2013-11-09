@@ -257,6 +257,8 @@ Error MountNodeTty::VIoctl(int request, va_list args) {
       struct winsize* size = va_arg(args, struct winsize*);
       {
         AUTO_LOCK(node_lock_);
+        if (rows_ == size->ws_row && cols_ == size->ws_col)
+          return 0;
         rows_ = size->ws_row;
         cols_ = size->ws_col;
       }

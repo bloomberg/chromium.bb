@@ -154,6 +154,7 @@ class PSInstance : public pp::Instance, pp::MouseLock, pp::Graphics3DClient {
   ssize_t TtyOutputHandler(const char* buf, size_t count);
   void MessageHandlerInput(const pp::Var& message);
   void MessageHandlerResize(const pp::Var& message);
+  void HandleResize(int width, int height);
 
   static ssize_t TtyOutputHandlerStatic(const char* buf, size_t count,
                                         void* user_data);
