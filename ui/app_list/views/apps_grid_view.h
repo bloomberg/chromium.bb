@@ -146,8 +146,16 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
     return forward_events_to_drag_and_drop_host_;
   }
 
+  void set_is_root_level(bool value) { is_root_level_ = value; }
+
  private:
   friend class test::AppsGridViewTestApi;
+
+  enum DropAttempt {
+    DROP_FOR_NONE,
+    DROP_FOR_REORDER,
+    DROP_FOR_FOLDER,
+  };
 
   // Represents the index to an item view in the grid.
   struct Index {
@@ -220,6 +228,13 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   void CalculateDropTarget(const gfx::Point& drag_point,
                            bool use_page_button_hovering);
 
+  // Same as CalculateDropTarget, but with folder UI enabled. The |drop_target_|
+  // can be either a target for re-ordering, or a target folder to move the
+  // dragged item into if |drag_view_| enters its re-ordering or folder
+  // dropping circle.
+  void CalculateDropTargetWithFolderEnabled(const gfx::Point& drag_point,
+                                            bool use_page_button_hovering);
+
   // Prepares |drag_and_drop_host_| for dragging. |grid_location| contains
   // the drag point in this grid view's coordinates.
   void StartDragAndDropHostDrag(const gfx::Point& grid_location);
@@ -236,6 +251,11 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   // Updates |model_| to move item represented by |item_view| to |target| slot.
   void MoveItemInModel(views::View* item_view, const Index& target);
+
+  // Updates |model_| to move item represented by |item_view| into a folder
+  // containing item located at |target| slot, also update |view_model_| for
+  // the related view changes.
+  void MoveItemToFolder(views::View* item_view, const Index& target);
 
   // Cancels any context menus showing for app items on the current page.
   void CancelContextMenusOnCurrentPage();
@@ -272,6 +292,47 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   // immediately applied - otherwise it will change gradually.
   // If |hide| is set the view will get hidden, otherwise it gets shown.
   void SetViewHidden(views::View* view, bool hide, bool immediate);
+
+  // Whether the folder drag-and-drop UI should be enabled.
+  bool EnableFolderDragDropUI();
+
+  // Whether target specified by |drap_target| can accept more items to be
+  // dropped into it.
+  bool CanDropIntoTarget(const Index& drop_target);
+
+  // Returns the visual index of the nearest tile in which |drag_view_| enters
+  // either its re-ordering or folder dropping circle.
+  Index GetNearestTileForDragView();
+
+  // Calculates |nearest_tile| in which |vertex| of the |drag_view| is
+  // enclosed.
+  // *|nearest_tile| and *|d_min| will be updated based on the calculation.
+  // *|d_min| is the distance between |nearest_tile| and |drag_view_|.
+  void CalculateNearestTileForVertex(
+      const gfx::Point& vertex, Index* nearest_tile, int* d_min);
+
+  // Returns the bounds of the tile in which |point| is enclosed if there
+  // is a valid item sits on the tile.
+  gfx::Rect GetTileBoundsForPoint(const gfx::Point& point, Index* tile_index);
+
+  // Gets the bounds of the tile located at |row| and |col| on current page.
+  gfx::Rect GetTileBounds(int row, int col) const;
+
+  // Gets the item view located at |slot| on the current page. If there is
+  // no item located at |slot|, returns NULL.
+  views::View* GetViewAtSlotOnCurrentPage(int slot);
+
+  // Sets state of the view with |target_index| to |is_target_folder| for
+  // dropping |drag_view_|.
+  void SetAsFolderDroppingTarget(const Index& target_index,
+                                 bool is_target_folder);
+
+  // Invoked when |reorder_timer_| fires to show re-order preview UI.
+  void OnReorderTimer();
+
+  // Invoked when |folder_dropping_timer_| fires to show folder dropping
+  // preview UI.
+  void OnFolderDroppingTimer();
 
   AppListModel* model_;  // Owned by AppListView.
   AppListItemList* item_list_;  // Not owned.
@@ -314,6 +375,14 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   Pointer drag_pointer_;
   Index drop_target_;
+  DropAttempt drop_attempt_;
+
+  // Timer for re-ordering the |drop_target_| and |drag_view_|.
+  base::OneShotTimer<AppsGridView> reorder_timer_;
+
+  // Timer for dropping |drag_view_| into the folder containing
+  // the |drop_target_|.
+  base::OneShotTimer<AppsGridView> folder_dropping_timer_;
 
   // An application target drag and drop host which accepts dnd operations.
   ApplicationDragAndDropHost* drag_and_drop_host_;
@@ -336,6 +405,9 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
   int page_flip_delay_in_ms_;
 
   views::BoundsAnimator bounds_animator_;
+
+  // If true, AppsGridView is rending items at the root level of the app list.
+  bool is_root_level_;
 
   DISALLOW_COPY_AND_ASSIGN(AppsGridView);
 };

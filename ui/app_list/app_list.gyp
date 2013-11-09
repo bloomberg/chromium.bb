@@ -41,6 +41,8 @@
         'app_list_model.cc',
         'app_list_model.h',
         'app_list_model_observer.h',
+        'app_list_switches.cc',
+        'app_list_switches.h',
         'app_list_view_delegate.cc',
         'app_list_view_delegate.h',
         'cocoa/app_list_pager_view.h',

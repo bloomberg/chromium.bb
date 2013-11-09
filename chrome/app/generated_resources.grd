@@ -6878,6 +6878,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_FLAGS_ENABLE_APP_LIST_START_PAGE_DESCRIPTION" desc="Description of the flag to enable the start page of app launcher.">
           Enable the app launcher start page. If enabled, app launcher will show a start page in addition to the apps grid.
         </message>
+        <message name="IDS_FLAGS_ENABLE_APP_LIST_FOLDER" desc="Name of the flag to enable app list folder.">
+          Enable the app list folder.
+        </message>
+        <message name="IDS_FLAGS_ENABLE_APP_LIST_FOLDER_DESCRIPTION" desc="Description of the flag to enable the app list folder.">
+          Enable the app list folder. If enabled, user will be able to create app list folder by drag-and-drop.
+        </message>
       </if>
       <message name="IDS_FLAGS_DISABLE_USER_IMAGE_SYNC_NAME" desc="Name of the flag to disable sync of user account image.">
         Disable avatar sync.

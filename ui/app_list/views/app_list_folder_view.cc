@@ -40,6 +40,7 @@ AppListFolderView::AppListFolderView(AppsContainerView* container_view,
 
   items_grid_view_ = new AppsGridView(
       app_list_main_view, pagination_model_.get(), NULL);
+  items_grid_view_->set_is_root_level(false);
   items_grid_view_->SetLayout(kPreferredIconDimension,
                               kPreferredCols,
                               kPreferredRows);

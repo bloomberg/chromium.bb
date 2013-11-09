@@ -9,6 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_item_model.h"
+#include "ui/app_list/app_list_switches.h"
 #include "ui/app_list/views/apps_grid_view.h"
 #include "ui/app_list/views/cached_label.h"
 #include "ui/app_list/views/progress_bar_view.h"
@@ -36,6 +37,9 @@ const int kTopPadding = 20;
 const int kIconTitleSpacing = 7;
 const int kProgressBarHorizontalPadding = 12;
 
+// Radius of the folder dropping preview circle.
+const int kFolderPreviewRadius = 40;
+
 const int kLeftRightPaddingChars = 1;
 
 // Scale to transform the icon when a drag starts.
@@ -43,6 +47,9 @@ const float kDraggingIconScale = 1.5f;
 
 // Delay in milliseconds of when the dragging UI should be shown for mouse drag.
 const int kMouseDragUIDelayInMs = 100;
+
+// Color of the folder dropping preview circle.
+const SkColor kFolderPreviewColor = SkColorSetRGB(0xE1, 0xE1, 0xE1);
 
 }  // namespace
 
@@ -146,7 +153,7 @@ void AppListItemView::SetUIState(UIState state) {
       progress_bar_->SetVisible(model_->is_installing());
       layer()->SetTransform(gfx::Transform());
       break;
-    case UI_STATE_DRAGGING:
+    case UI_STATE_DRAGGING: {
       title_->SetVisible(false);
       progress_bar_->SetVisible(false);
       const gfx::Rect bounds(layer()->bounds().size());
@@ -154,7 +161,12 @@ void AppListItemView::SetUIState(UIState state) {
           bounds.CenterPoint(),
           kDraggingIconScale));
       break;
+    }
+    case UI_STATE_DROPPING_IN_FOLDER:
+      break;
   }
+
+  SchedulePaint();
 #endif
 }
 
@@ -182,6 +194,13 @@ void AppListItemView::CancelContextMenu() {
 
 gfx::ImageSkia AppListItemView::GetDragImage() {
   return icon_->GetImage();
+}
+
+void AppListItemView::SetAsAttemptedFolderTarget(bool is_target_folder) {
+  if (is_target_folder)
+    SetUIState(UI_STATE_DROPPING_IN_FOLDER);
+  else
+    SetUIState(UI_STATE_NORMAL);
 }
 
 void AppListItemView::ItemIconChanged() {
@@ -253,13 +272,26 @@ void AppListItemView::OnPaint(gfx::Canvas* canvas) {
     return;
 
   gfx::Rect rect(GetContentsBounds());
+  if (model_->highlighted() && !model_->is_installing()) {
+    canvas->FillRect(rect, kHighlightedColor);
+    return;
+  }
 
-  if (apps_grid_view_->IsSelectedView(this)) {
-    canvas->FillRect(rect, kSelectedColor);
-  } else if (model_->highlighted() && !model_->is_installing()) {
-    canvas->FillRect(rect, kHighlightedColor);
-  } else if (state() == STATE_HOVERED || state() == STATE_PRESSED) {
-    canvas->FillRect(rect, kHighlightedColor);
+  if (!switches::IsFolderUIEnabled()) {
+    if (apps_grid_view_->IsSelectedView(this)) {
+      canvas->FillRect(rect, kSelectedColor);
+    } else if (state() == STATE_HOVERED || state() == STATE_PRESSED) {
+      canvas->FillRect(rect, kHighlightedColor);
+    }
+  } else if (ui_state_ == UI_STATE_DROPPING_IN_FOLDER) {
+    // Draw folder dropping preview circle.
+    gfx::Point center = gfx::Point(icon_->x() + icon_->size().width() / 2,
+                                   icon_->y() + icon_->size().height() / 2);
+    SkPaint paint;
+    paint.setStyle(SkPaint::kFill_Style);
+    paint.setAntiAlias(true);
+    paint.setColor(kFolderPreviewColor);
+    canvas->DrawCircle(center, kFolderPreviewRadius, paint);
   }
 }
 

@@ -47,6 +47,10 @@
 #include "third_party/cros_system_api/switches/chrome_switches.h"
 #endif
 
+#if defined(ENABLE_APP_LIST)
+#include "ui/app_list/app_list_switches.h"
+#endif
+
 using content::UserMetricsAction;
 
 namespace about_flags {
@@ -1687,6 +1691,13 @@ const Experiment kExperiments[] = {
     IDS_FLAGS_ENABLE_APP_LIST_START_PAGE_DESCRIPTION,
     kOsWin | kOsCrOS,
     SINGLE_VALUE_TYPE(switches::kShowAppListStartPage)
+  },
+  {
+    "enable-app-list-folder",
+    IDS_FLAGS_ENABLE_APP_LIST_FOLDER,
+    IDS_FLAGS_ENABLE_APP_LIST_FOLDER_DESCRIPTION,
+    kOsWin | kOsCrOS,
+    SINGLE_VALUE_TYPE(app_list::switches::kEnableFolderUI)
   },
 #endif
 #if defined(OS_CHROMEOS)
