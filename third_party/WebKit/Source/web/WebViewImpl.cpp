@@ -3458,15 +3458,6 @@ void WebViewImpl::setCompositorDeviceScaleFactorOverride(float deviceScaleFactor
         updateLayerTreeDeviceScaleFactor();
 }
 
-void WebViewImpl::setRootLayerScaleTransform(float rootLayerScale)
-{
-    m_rootLayerScale = rootLayerScale;
-    m_rootLayerOffset = m_devToolsAgent ? m_devToolsAgent->deviceMetricsOffset() : WebSize();
-    if (mainFrameImpl())
-        mainFrameImpl()->setInputEventsTransformForEmulation(m_rootLayerOffset, m_rootLayerScale);
-    updateRootLayerTransform();
-}
-
 void WebViewImpl::setRootLayerTransform(const WebSize& rootLayerOffset, float rootLayerScale)
 {
     m_rootLayerScale = rootLayerScale;

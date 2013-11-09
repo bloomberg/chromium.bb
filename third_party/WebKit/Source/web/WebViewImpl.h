@@ -284,7 +284,6 @@ public:
     virtual void setInspectorSetting(const WebString& key,
                                      const WebString& value);
     virtual void setCompositorDeviceScaleFactorOverride(float);
-    virtual void setRootLayerScaleTransform(float);
     virtual void setRootLayerTransform(const WebSize& offset, float scale);
     virtual WebDevToolsAgent* devToolsAgent();
     virtual WebAXObject accessibilityObject();

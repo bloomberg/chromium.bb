@@ -340,7 +340,7 @@ void WebDevToolsAgentImpl::overrideDeviceMetrics(int width, int height, float de
             enableViewportEmulation();
         else
             disableViewportEmulation();
-        m_client->enableDeviceEmulation(IntSize(width, height), IntRect(0, 0, width, height), deviceScaleFactor, fitWindow);
+        m_client->enableDeviceEmulation(IntRect(10, 10, width, height), IntRect(0, 0, width, height), deviceScaleFactor, fitWindow);
     }
 }
 
@@ -583,11 +583,6 @@ void WebDevToolsAgentImpl::didProcessTask()
 {
     if (InspectorController* ic = inspectorController())
         ic->didProcessTask();
-}
-
-WebSize WebDevToolsAgentImpl::deviceMetricsOffset()
-{
-    return m_deviceMetricsEnabled ? WebSize(10, 10) : WebSize();
 }
 
 WebString WebDevToolsAgent::inspectorProtocolVersion()

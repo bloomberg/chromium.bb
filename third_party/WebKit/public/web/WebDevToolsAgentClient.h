@@ -94,10 +94,6 @@ public:
     virtual void enableDeviceEmulation(
         const WebRect& screenRect, const WebRect& viewRect,
         float deviceScaleFactor, bool fitToView) { }
-    // FIXME: remove this method after migrating to the new one.
-    virtual void enableDeviceEmulation(
-        const WebSize& screenSize, const WebRect& viewRect,
-        float deviceScaleFactor, bool fitToView) { }
 
     // Cancel emulation started via |enableDeviceEmulation| call.
     virtual void disableDeviceEmulation() { }
