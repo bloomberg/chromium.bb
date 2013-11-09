@@ -24,9 +24,7 @@
 #include <algorithm>
 
 #include "core/dom/Document.h"
-#include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLElement.h"
-#include "core/html/HTMLMetaElement.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/page/Settings.h"
 #include "core/rendering/RenderListItem.h"
@@ -83,33 +81,6 @@ static const Vector<QualifiedName>& formInputTags()
     return formInputTags;
 }
 
-static const String& vBulletinForumCommentId()
-{
-    // Websites using vBulletin forum software typically contain <div id="post_message_*"..> blocks.
-    DEFINE_STATIC_LOCAL(const String, vBulletinForumCommentId, ("post_message_"));
-    return vBulletinForumCommentId;
-}
-
-static bool isVBulletinComment(const RenderBlock* block)
-{
-    Node* blockNode = block->node();
-    if (blockNode && blockNode->hasTagName(divTag)) {
-        const HTMLDivElement* element = toHTMLDivElement(blockNode);
-        if (element && element->hasID() && element->idForStyleResolution().startsWith(vBulletinForumCommentId()))
-            return true;
-    }
-    return false;
-}
-
-static bool hasForumCommentAncestor(const RenderBlock* container)
-{
-    for (const RenderBlock* block = container; block; block = block->containingBlock()) {
-        if (isVBulletinComment(block))
-            return true;
-    }
-    return false;
-}
-
 static RenderListItem* getAncestorListItem(const RenderObject* renderer)
 {
     RenderObject* ancestor = renderer->parent();
@@ -133,7 +104,6 @@ static RenderObject* getAncestorList(const RenderObject* renderer)
 
 TextAutosizer::TextAutosizer(Document* document)
     : m_document(document)
-    , m_contentType(Unknown)
 {
 }
 
@@ -147,27 +117,12 @@ void TextAutosizer::recalculateMultipliers()
     }
 }
 
-TextAutosizer::ContentType TextAutosizer::detectContentType()
-{
-    RefPtr<NodeList> metaElements = m_document->getElementsByTagNameNS(xhtmlNamespaceURI, metaTag.localName());
-    for (unsigned i = 0; i < metaElements->length(); ++i) {
-        HTMLMetaElement* metaElement = toHTMLMetaElement(metaElements->item(i));
-        if (equalIgnoringCase(metaElement->name(), "generator") && metaElement->content().startsWith("vBulletin", false))
-            return VBulletin;
-    }
-    return Default;
-}
-
 bool TextAutosizer::processSubtree(RenderObject* layoutRoot)
 {
     TRACE_EVENT0("webkit", "TextAutosizer::processSubtree");
 
     if (!m_document->settings() || !m_document->settings()->textAutosizingEnabled() || layoutRoot->view()->document().printing() || !m_document->page())
         return false;
-
-    InspectorInstrumentation::willAutosizeText(layoutRoot);
-    if (m_contentType == Unknown && m_document->body())
-        m_contentType = detectContentType();
 
     Frame* mainFrame = m_document->page()->mainFrame();
 
@@ -576,44 +531,18 @@ bool TextAutosizer::compositeClusterShouldBeAutosized(Vector<TextAutosizingClust
     // few lines of text you'll only need to pan across once or twice.
     //
     // An exception to the 4 lines of text are the textarea and contenteditable
-    // clusters, which are always autosized by default (i.e. treated as if they
+    // clusters, which are always autosized by default (i.e. threated as if they
     // contain more than 4 lines of text). This is to ensure that the text does
     // not suddenly get autosized when the user enters more than 4 lines of text.
-    // Another exception are the forum comments which are autosized by default
-    // to guarantee consistency.
     float totalTextWidth = 0;
     const float minLinesOfText = 4;
     float minTextWidth = blockWidth * minLinesOfText;
     for (size_t i = 0; i < clusterInfos.size(); ++i) {
         if (clusterInfos[i].root->isTextArea() || (clusterInfos[i].root->style() && clusterInfos[i].root->style()->userModify() != READ_ONLY))
             return true;
-        if (m_contentType == VBulletin) {
-            if (hasForumCommentAncestor(clusterInfos[i].blockContainingAllText)
-                || clusterContainsForumComment(clusterInfos[i].blockContainingAllText, clusterInfos[i]))
-                return true;
-        }
         measureDescendantTextWidth(clusterInfos[i].blockContainingAllText, clusterInfos[i], minTextWidth, totalTextWidth);
         if (totalTextWidth >= minTextWidth)
             return true;
-    }
-    return false;
-}
-
-bool TextAutosizer::clusterContainsForumComment(const RenderBlock* container, TextAutosizingClusterInfo& clusterInfo)
-{
-    ASSERT(m_contentType == VBulletin);
-
-    RenderObject* descendant = nextInPreOrderSkippingDescendantsOfContainers(container, container);
-    while (descendant) {
-        if (isAutosizingContainer(descendant)) {
-            RenderBlock* descendantBlock = toRenderBlock(descendant);
-            if (isVBulletinComment(descendantBlock))
-                return true;
-            if (!isAutosizingCluster(descendantBlock, clusterInfo)
-                && clusterContainsForumComment(descendantBlock, clusterInfo))
-                return true;
-        }
-        descendant = nextInPreOrderSkippingDescendantsOfContainers(descendant, container);
     }
     return false;
 }
