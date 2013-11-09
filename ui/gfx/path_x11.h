@@ -11,8 +11,13 @@
 #include "ui/gfx/gfx_export.h"
 
 class SkPath;
+class SkRegion;
 
 namespace gfx {
+
+// Creates a new REGION given |region|. The caller is responsible for destroying
+// the returned region.
+GFX_EXPORT REGION* CreateRegionFromSkRegion(const SkRegion& region);
 
 // Creates a new REGION given |path|. The caller is responsible for destroying
 // the returned region.

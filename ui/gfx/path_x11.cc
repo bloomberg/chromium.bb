@@ -7,9 +7,25 @@
 #include <X11/Xutil.h>
 
 #include "base/memory/scoped_ptr.h"
+#include "third_party/skia/include/core/SkRegion.h"
 #include "ui/gfx/path.h"
 
 namespace gfx {
+
+Region CreateRegionFromSkRegion(const SkRegion& region) {
+  Region result = XCreateRegion();
+
+  for (SkRegion::Iterator i(region); !i.done(); i.next()) {
+    XRectangle rect;
+    rect.x = i.rect().x();
+    rect.y = i.rect().y();
+    rect.width = i.rect().width();
+    rect.height = i.rect().height();
+    XUnionRectWithRegion(&rect, result, result);
+  }
+
+  return result;
+}
 
 Region CreateRegionFromSkPath(const SkPath& path) {
   int point_count = path.getPoints(NULL, 0);
