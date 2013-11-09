@@ -42,11 +42,21 @@
 
 namespace WebCore {
 
+// PrintTo functions
 void PrintTo(const LinearTimingFunction&, ::std::ostream*);
 void PrintTo(const CubicBezierTimingFunction&, ::std::ostream*);
 void PrintTo(const StepsTimingFunction&, ::std::ostream*);
 void PrintTo(const ChainedTimingFunction&, ::std::ostream*);
 void PrintTo(const TimingFunction&, ::std::ostream*);
+
+// operator== functions
+bool operator==(const LinearTimingFunction&, const TimingFunction&);
+bool operator==(const CubicBezierTimingFunction&, const TimingFunction&);
+bool operator==(const StepsTimingFunction&, const TimingFunction&);
+bool operator==(const ChainedTimingFunction&, const TimingFunction&);
+
+bool operator==(const TimingFunction&, const TimingFunction&);
+bool operator!=(const TimingFunction&, const TimingFunction&);
 
 } // namespace WebCore
 

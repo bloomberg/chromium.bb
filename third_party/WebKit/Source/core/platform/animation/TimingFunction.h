@@ -88,7 +88,7 @@ private:
 
 
 // Forward declare so we can friend it below. Don't use in production code!
-class ChainedTimingFunctionPrinter;
+class ChainedTimingFunctionTestHelper;
 
 class CubicBezierTimingFunction : public TimingFunction {
 public:
@@ -265,7 +265,7 @@ private:
             : m_min(min)
             , m_max(max)
             , m_timingFunction(timingFunction)
-        { }
+        { ASSERT(timingFunction); }
 
         double max() const { return m_max; }
         double evaluate(double fraction, double accuracy) const
@@ -281,9 +281,9 @@ private:
         double m_max;
         RefPtr<TimingFunction> m_timingFunction;
 
-        // Allow printing of our segments. Can be removed once
+        // Allow PrintTo/operator== of the segments. Can be removed once
         // ChainedTimingFunction has a public API for segments.
-        friend class ChainedTimingFunctionPrinter;
+        friend class ChainedTimingFunctionTestHelper;
     };
 
     ChainedTimingFunction()
@@ -294,9 +294,9 @@ private:
 
     Vector<Segment> m_segments;
 
-    // Allow printing of our segments. Can be removed once
+    // Allow PrintTo/operator== of the segments. Can be removed once
     // ChainedTimingFunction has a public API for segments.
-    friend class ChainedTimingFunctionPrinter;
+    friend class ChainedTimingFunctionTestHelper;
 };
 
 } // namespace WebCore

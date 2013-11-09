@@ -35,6 +35,65 @@
 
 namespace WebCore {
 
+// This class exists so that ChainedTimingFunction only needs to friend one thing.
+class ChainedTimingFunctionTestHelper {
+    static void PrintTo(const ChainedTimingFunction& timingFunction, ::std::ostream* os)
+    {
+        // Forward declare the generic PrintTo function as ChainedTimingFunction needs to call it.
+        void PrintTo(const TimingFunction&, ::std::ostream*);
+
+        *os << "ChainedTimingFunction@" << &timingFunction << "(";
+        for (size_t i = 0; i < timingFunction.m_segments.size(); i++) {
+            ChainedTimingFunction::Segment segment = timingFunction.m_segments[i];
+            PrintTo(*(segment.m_timingFunction.get()), os);
+            *os << "[" << segment.m_min << " -> " << segment.m_max << "]";
+            if (i+1 != timingFunction.m_segments.size()) {
+                *os << ", ";
+            }
+        }
+        *os << ")";
+    }
+
+    static bool equals(const ChainedTimingFunction& lhs, const TimingFunction& rhs)
+    {
+        if (rhs.type() != TimingFunction::ChainedFunction)
+            return false;
+
+        if (&lhs == &rhs)
+            return true;
+
+        const ChainedTimingFunction* ctf = static_cast<const ChainedTimingFunction*>(&rhs);
+        if (lhs.m_segments.size() != ctf->m_segments.size())
+            return false;
+
+        for (size_t i = 0; i < lhs.m_segments.size(); i++) {
+            if (!equals(lhs.m_segments[i], ctf->m_segments[i]))
+                return false;
+        }
+        return true;
+    }
+
+    static bool equals(const ChainedTimingFunction::Segment& lhs, const ChainedTimingFunction::Segment& rhs)
+    {
+        if (&lhs == &rhs)
+            return true;
+
+        if ((lhs.m_min != rhs.m_min) || (lhs.m_max != rhs.m_max))
+            return false;
+
+        if (lhs.m_timingFunction == rhs.m_timingFunction)
+            return true;
+
+        ASSERT(lhs.m_timingFunction);
+        ASSERT(rhs.m_timingFunction);
+
+        return (*(lhs.m_timingFunction.get())) == (*(rhs.m_timingFunction.get()));
+    }
+
+    friend void PrintTo(const ChainedTimingFunction&, ::std::ostream*);
+    friend bool operator==(const ChainedTimingFunction& lhs, const TimingFunction& rhs);
+};
+
 void PrintTo(const LinearTimingFunction& timingFunction, ::std::ostream* os)
 {
     *os << "LinearTimingFunction@" << &timingFunction;
@@ -90,31 +149,9 @@ void PrintTo(const StepsTimingFunction& timingFunction, ::std::ostream* os)
     *os << ")";
 }
 
-class ChainedTimingFunctionPrinter {
-private:
-    static void PrintTo(const ChainedTimingFunction& timingFunction, ::std::ostream* os)
-    {
-        // Forward declare the generic PrintTo function as ChainedTimingFunction needs to call it.
-        void PrintTo(const TimingFunction&, ::std::ostream*);
-
-        *os << "ChainedTimingFunction@" << &timingFunction << "(";
-        for (size_t i = 0; i < timingFunction.m_segments.size(); i++) {
-            ChainedTimingFunction::Segment segment = timingFunction.m_segments[i];
-            PrintTo(*(segment.m_timingFunction.get()), os);
-            *os << "[" << segment.m_min << " -> " << segment.m_max << "]";
-            if (i+1 != timingFunction.m_segments.size()) {
-                *os << ", ";
-            }
-        }
-        *os << ")";
-    }
-
-    friend void PrintTo(const ChainedTimingFunction&, ::std::ostream*);
-};
-
 void PrintTo(const ChainedTimingFunction& timingFunction, ::std::ostream* os)
 {
-    ChainedTimingFunctionPrinter::PrintTo(timingFunction, os);
+    ChainedTimingFunctionTestHelper::PrintTo(timingFunction, os);
 }
 
 // The generic PrintTo *must* come after the non-generic PrintTo otherwise it
@@ -145,6 +182,73 @@ void PrintTo(const TimingFunction& timingFunction, ::std::ostream* os)
     default:
         ASSERT_NOT_REACHED();
     }
+}
+
+bool operator==(const LinearTimingFunction& lhs, const TimingFunction& rhs)
+{
+    return rhs.type() == TimingFunction::LinearFunction;
+}
+
+bool operator==(const CubicBezierTimingFunction& lhs, const TimingFunction& rhs)
+{
+    if (rhs.type() != TimingFunction::CubicBezierFunction)
+        return false;
+
+    const CubicBezierTimingFunction* ctf = static_cast<const CubicBezierTimingFunction*>(&rhs);
+    if ((lhs.subType() == CubicBezierTimingFunction::Custom) && (ctf->subType() == CubicBezierTimingFunction::Custom))
+        return (lhs.x1() == ctf->x1()) && (lhs.y1() == ctf->y1()) && (lhs.x2() == ctf->x2()) && (lhs.y2() == ctf->y2());
+
+    return lhs.subType() == ctf->subType();
+}
+
+bool operator==(const StepsTimingFunction& lhs, const TimingFunction& rhs)
+{
+    if (rhs.type() != TimingFunction::StepsFunction)
+        return false;
+
+    const StepsTimingFunction* stf = static_cast<const StepsTimingFunction*>(&rhs);
+    if ((lhs.subType() == StepsTimingFunction::Custom) && (stf->subType() == StepsTimingFunction::Custom))
+        return (lhs.numberOfSteps() == stf->numberOfSteps()) && (lhs.stepAtStart() == stf->stepAtStart());
+
+    return lhs.subType() == stf->subType();
+}
+
+bool operator==(const ChainedTimingFunction& lhs, const TimingFunction& rhs)
+{
+    return ChainedTimingFunctionTestHelper::equals(lhs, rhs);
+}
+
+// Like in the PrintTo case, the generic operator== *must* come after the
+// non-generic operator== otherwise it will end up calling itself.
+bool operator==(const TimingFunction& lhs, const TimingFunction& rhs)
+{
+    switch (lhs.type()) {
+    case TimingFunction::LinearFunction: {
+        const LinearTimingFunction* linear = static_cast<const LinearTimingFunction*>(&lhs);
+        return (*linear == rhs);
+    }
+    case TimingFunction::CubicBezierFunction: {
+        const CubicBezierTimingFunction* cubic = static_cast<const CubicBezierTimingFunction*>(&lhs);
+        return (*cubic == rhs);
+    }
+    case TimingFunction::StepsFunction: {
+        const StepsTimingFunction* step = static_cast<const StepsTimingFunction*>(&lhs);
+        return (*step == rhs);
+    }
+    case TimingFunction::ChainedFunction: {
+        const ChainedTimingFunction* chained = static_cast<const ChainedTimingFunction*>(&lhs);
+        return (*chained == rhs);
+    }
+    default:
+        ASSERT_NOT_REACHED();
+    }
+    return false;
+}
+
+// No need to define specific operator!= as they can all come via this function.
+bool operator!=(const TimingFunction& lhs, const TimingFunction& rhs)
+{
+    return !(lhs == rhs);
 }
 
 } // namespace WebCore
