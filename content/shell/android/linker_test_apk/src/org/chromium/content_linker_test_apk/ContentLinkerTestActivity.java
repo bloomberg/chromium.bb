@@ -21,6 +21,7 @@ import org.chromium.content.common.CommandLine;
 import org.chromium.content.common.ProcessInitException;
 import org.chromium.content_shell.Shell;
 import org.chromium.content_shell.ShellManager;
+import org.chromium.ui.ActivityWindowAndroid;
 import org.chromium.ui.WindowAndroid;
 
 public class ContentLinkerTestActivity extends Activity {
@@ -94,7 +95,7 @@ public class ContentLinkerTestActivity extends Activity {
                 (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View view = inflater.inflate(R.layout.test_activity, null);
         mShellManager = (ShellManager) view.findViewById(R.id.shell_container);
-        mWindowAndroid = new WindowAndroid(this);
+        mWindowAndroid = new ActivityWindowAndroid(this);
         mShellManager.setWindow(mWindowAndroid);
 
         mShellManager.setStartupUrl("about:blank");
