@@ -12,11 +12,6 @@ namespace {
 
 typedef std::set<const Config*> ConfigSet;
 
-void TargetResolvedThunk(const base::Callback<void(const Target*)>& cb,
-                         const Target* t) {
-  cb.Run(t);
-}
-
 // Merges the dependent configs from the given target to the given config list.
 // The unique_configs list is used for de-duping so values already added will
 // not be added again.
