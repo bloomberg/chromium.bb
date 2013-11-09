@@ -71,6 +71,7 @@ typedef union {
 #endif
 #define dval(x) (x)->d
 
+#ifndef USE_LONG_LONG
 /* The following definition of Storeinc is appropriate for MIPS processors.
  * An alternative that might be better on some machines is
  *  *p++ = high << 16 | low & 0xffff;
@@ -87,6 +88,7 @@ static ALWAYS_INLINE uint32_t* storeInc(uint32_t* p, uint16_t high, uint16_t low
 #endif
     return p + 1;
 }
+#endif
 
 #define Exp_shift  20
 #define Exp_shift1 20
