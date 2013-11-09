@@ -23,7 +23,7 @@ bool MessageQueue::IsEmpty() const {
   return queue_.empty();
 }
 
-const Message* MessageQueue::Peek() const {
+Message* MessageQueue::Peek() {
   assert(!queue_.empty());
   return queue_.front();
 }

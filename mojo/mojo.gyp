@@ -330,6 +330,7 @@
       ],
       'dependencies': [
         'mojo_bindings',
+        'mojo_system',
       ],
       'sources': [
         'public/bindings/sample/generated/sample_service.cc',

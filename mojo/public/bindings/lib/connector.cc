@@ -37,8 +37,15 @@ bool Connector::Accept(Message* message) {
   if (error_)
     return false;
 
-  write_queue_.Push(message);
-  WriteMore();
+  bool wait_to_write;
+  WriteOne(message, &wait_to_write);
+
+  if (wait_to_write) {
+    WaitToWriteMore();
+    if (!error_)
+      write_queue_.Push(message);
+  }
+
   return !error_;
 }
 
@@ -111,24 +118,37 @@ void Connector::ReadMore() {
 }
 
 void Connector::WriteMore() {
-  while (!write_queue_.IsEmpty()) {
-    const Message* message = write_queue_.Peek();
+  while (!error_ && !write_queue_.IsEmpty()) {
+    Message* message = write_queue_.Peek();
 
-    MojoResult rv = WriteMessage(message_pipe_,
-                                 message->data,
-                                 message->data->header.num_bytes,
-                                 message->handles.data(),
-                                 message->handles.size(),
-                                 MOJO_WRITE_MESSAGE_FLAG_NONE);
-    if (rv == MOJO_RESULT_OK) {
-      // TODO(darin): Handles were successfully transferred, and so we need
-      // to take care not to Close them here.
-      write_queue_.Pop();
-      continue;  // Write another message.
-    }
+    bool wait_to_write;
+    WriteOne(message, &wait_to_write);
+    if (wait_to_write)
+      break;
 
+    write_queue_.Pop();
+  }
+}
+
+void Connector::WriteOne(Message* message, bool* wait_to_write) {
+  // TODO(darin): WriteMessage will eventually start generating an error that
+  // it cannot accept more data. In that case, we'll need to wait on the pipe
+  // to determine when we can try writing again. This flag will be set to true
+  // in that case.
+  *wait_to_write = false;
+
+  MojoResult rv = WriteMessage(message_pipe_,
+                               message->data,
+                               message->data->header.num_bytes,
+                               message->handles.data(),
+                               static_cast<uint32_t>(message->handles.size()),
+                               MOJO_WRITE_MESSAGE_FLAG_NONE);
+  if (rv == MOJO_RESULT_OK) {
+    // The handles were successfully transferred, so we don't need the message
+    // to track their lifetime any longer.
+    message->handles.clear();
+  } else {
     error_ = true;
-    break;
   }
 }
 

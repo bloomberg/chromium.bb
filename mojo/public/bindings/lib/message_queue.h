@@ -20,7 +20,7 @@ class MessageQueue {
   ~MessageQueue();
 
   bool IsEmpty() const;
-  const Message* Peek() const;
+  Message* Peek();
 
   // This method transfers ownership of |message->data| and |message->handles|
   // to the message queue, resetting |message| in the process.

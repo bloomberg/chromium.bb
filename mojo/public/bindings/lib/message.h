@@ -28,9 +28,8 @@ MOJO_COMPILE_ASSERT(sizeof(MessageData) == 9, bad_sizeof_MessageData);
 #pragma pack(pop)
 
 // Message is a holder for the data and handles to be sent over a MessagePipe.
-// Message owns its data, but a consumer of Message is free to manipulate the
-// data member or replace it. If replacing, then be sure to use |malloc| to
-// allocate the memory.
+// Message owns its data and handles, but a consumer of Message is free to
+// manipulate the data and handles members.
 class Message {
  public:
   Message();
@@ -38,7 +37,7 @@ class Message {
 
   void Swap(Message* other);
 
-  MessageData* data;  // Heap-allocated.
+  MessageData* data;  // Heap-allocated using malloc.
   std::vector<Handle> handles;
 
  private:

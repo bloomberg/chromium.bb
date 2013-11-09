@@ -16,7 +16,7 @@ Message::Message()
 
 Message::~Message() {
   free(data);
-  // TODO(darin): Need to Close any handles so they don't leak.
+  std::for_each(handles.begin(), handles.end(), Close);
 }
 
 void Message::Swap(Message* other) {

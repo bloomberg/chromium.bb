@@ -171,5 +171,46 @@ TEST_F(BindingsConnectorTest, WriteToClosedPipe) {
   EXPECT_TRUE(connector0.EncounteredError());
 }
 
+#if 0
+// Enable this test once MojoWriteMessage supports passing handles.
+TEST_F(BindingsConnectorTest, MessageWithHandles) {
+  Connector connector0(handle0_);
+  Connector connector1(handle1_);
+
+  const char kText[] = "hello world";
+
+  Message message;
+  AllocMessage(kText, &message);
+
+  Handle handles[2];
+  CreateMessagePipe(&handles[0], &handles[1]);
+  message.handles.push_back(handles[0]);
+  message.handles.push_back(handles[1]);
+
+  connector0.Accept(&message);
+
+  // The message should have been transferred.
+  EXPECT_TRUE(message.data == NULL);
+  EXPECT_TRUE(message.handles.empty());
+
+  MessageAccumulator accumulator;
+  connector1.SetIncomingReceiver(&accumulator);
+
+  PumpMessages();
+
+  ASSERT_FALSE(accumulator.IsEmpty());
+
+  Message message_received;
+  accumulator.Pop(&message_received);
+
+  EXPECT_EQ(std::string(kText),
+            std::string(
+                reinterpret_cast<char*>(message_received.data->payload)));
+  ASSERT_EQ(2U, message_received.handles.size());
+  EXPECT_EQ(handles[0].value, message_received.handles[0].value);
+  EXPECT_EQ(handles[1].value, message_received.handles[1].value);
+}
+#endif
+
 }  // namespace test
 }  // namespace mojo

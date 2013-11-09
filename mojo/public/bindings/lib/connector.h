@@ -59,6 +59,7 @@ class Connector : public MessageReceiver {
   void WaitToWriteMore();
   void ReadMore();
   void WriteMore();
+  void WriteOne(Message* message, bool* wait_to_write);
 
   Handle message_pipe_;
   MessageReceiver* incoming_receiver_;
