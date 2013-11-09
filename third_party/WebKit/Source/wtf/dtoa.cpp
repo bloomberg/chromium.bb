@@ -71,25 +71,6 @@ typedef union {
 #endif
 #define dval(x) (x)->d
 
-#ifndef USE_LONG_LONG
-/* The following definition of Storeinc is appropriate for MIPS processors.
- * An alternative that might be better on some machines is
- *  *p++ = high << 16 | low & 0xffff;
- */
-static ALWAYS_INLINE uint32_t* storeInc(uint32_t* p, uint16_t high, uint16_t low)
-{
-    uint16_t* p16 = reinterpret_cast<uint16_t*>(p);
-#if CPU(BIG_ENDIAN)
-    p16[0] = high;
-    p16[1] = low;
-#else
-    p16[1] = high;
-    p16[0] = low;
-#endif
-    return p + 1;
-}
-#endif
-
 #define Exp_shift  20
 #define Exp_shift1 20
 #define Exp_msk1    0x100000
@@ -125,6 +106,25 @@ static ALWAYS_INLINE uint32_t* storeInc(uint32_t* p, uint16_t high, uint16_t low
 // FIXME: should we enable this on all 64-bit CPUs?
 // 64-bit emulation provided by the compiler is likely to be slower than dtoa own code on 32-bit hardware.
 #define USE_LONG_LONG
+#endif
+
+#ifndef USE_LONG_LONG
+/* The following definition of Storeinc is appropriate for MIPS processors.
+ * An alternative that might be better on some machines is
+ *  *p++ = high << 16 | low & 0xffff;
+ */
+static ALWAYS_INLINE uint32_t* storeInc(uint32_t* p, uint16_t high, uint16_t low)
+{
+    uint16_t* p16 = reinterpret_cast<uint16_t*>(p);
+#if CPU(BIG_ENDIAN)
+    p16[0] = high;
+    p16[1] = low;
+#else
+    p16[1] = high;
+    p16[0] = low;
+#endif
+    return p + 1;
+}
 #endif
 
 struct BigInt {
