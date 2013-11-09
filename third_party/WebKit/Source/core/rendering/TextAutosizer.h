@@ -44,13 +44,6 @@ class TextAutosizer FINAL {
     WTF_MAKE_NONCOPYABLE(TextAutosizer);
 
 public:
-    enum ContentType {
-        Unknown,
-        Default,
-        VBulletin,
-        PhpBB
-    };
-
     static PassOwnPtr<TextAutosizer> create(Document* document) { return adoptPtr(new TextAutosizer(document)); }
 
     bool processSubtree(RenderObject* layoutRoot);
@@ -62,6 +55,12 @@ private:
     enum TraversalDirection {
         FirstToLast,
         LastToFirst
+    };
+
+    enum ContentType {
+        Unknown,
+        Default,
+        VBulletin
     };
 
     explicit TextAutosizer(Document*);
@@ -79,6 +78,8 @@ private:
 
     void setMultiplier(RenderObject*, float);
     void setMultiplierForList(RenderObject* renderer, float multiplier);
+
+    ContentType detectContentType();
 
     static bool isAutosizingContainer(const RenderObject*);
     static bool isNarrowDescendant(const RenderBlock*, TextAutosizingClusterInfo& parentClusterInfo);

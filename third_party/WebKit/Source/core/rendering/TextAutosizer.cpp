@@ -83,78 +83,31 @@ static const Vector<QualifiedName>& formInputTags()
     return formInputTags;
 }
 
-static bool isVBulletinComment(const RenderBlock* block)
+static const String& vBulletinForumCommentId()
 {
     // Websites using vBulletin forum software typically contain <div id="post_message_*"..> blocks.
     DEFINE_STATIC_LOCAL(const String, vBulletinForumCommentId, ("post_message_"));
+    return vBulletinForumCommentId;
+}
 
+static bool isVBulletinComment(const RenderBlock* block)
+{
     Node* blockNode = block->node();
     if (blockNode && blockNode->hasTagName(divTag)) {
         const HTMLDivElement* element = toHTMLDivElement(blockNode);
-        if (element && element->hasID() && element->idForStyleResolution().startsWith(vBulletinForumCommentId))
+        if (element && element->hasID() && element->idForStyleResolution().startsWith(vBulletinForumCommentId()))
             return true;
     }
     return false;
 }
 
-static bool isPhpBBComment(const RenderBlock* block)
+static bool hasForumCommentAncestor(const RenderBlock* container)
 {
-    // Websites using phpBB forum software typically contain <div id="p*" class="post bg*"> blocks.
-    DEFINE_STATIC_LOCAL(const String, phpBBForumCommentId, ("post bg"));
-
-    Node* blockNode = block->node();
-    if (blockNode && blockNode->hasTagName(divTag)) {
-        const HTMLDivElement* element = toHTMLDivElement(blockNode);
-        if (element && element->hasID() && element->idForStyleResolution().startsWith("p")
-            && element->hasClass() && element->getClassAttribute().startsWith(phpBBForumCommentId))
-            return true;
-    }
-    return false;
-}
-
-static bool isForumComment(const TextAutosizer::ContentType contentType, const RenderBlock* block)
-{
-    switch (contentType) {
-    case TextAutosizer::VBulletin:
-        return isVBulletinComment(block);
-    case TextAutosizer::PhpBB:
-        return isPhpBBComment(block);
-    default:
-        return false;
-    }
-}
-
-static bool isContentTypeForum(const TextAutosizer::ContentType contentType)
-{
-    return contentType == TextAutosizer::VBulletin || contentType == TextAutosizer::PhpBB;
-}
-
-static bool hasForumCommentAncestor(const TextAutosizer::ContentType contentType, const RenderBlock* container)
-{
-    ASSERT(isContentTypeForum(contentType));
     for (const RenderBlock* block = container; block; block = block->containingBlock()) {
-        if (isForumComment(contentType, block))
+        if (isVBulletinComment(block))
             return true;
     }
     return false;
-}
-
-static TextAutosizer::ContentType detectContentType(Document* document)
-{
-    ASSERT(document->body());
-
-    RefPtr<NodeList> metaElements = document->getElementsByTagNameNS(xhtmlNamespaceURI, metaTag.localName());
-    for (unsigned i = 0; i < metaElements->length(); ++i) {
-        HTMLMetaElement* metaElement = toHTMLMetaElement(metaElements->item(i));
-        if (equalIgnoringCase(metaElement->name(), "generator") && metaElement->content().startsWith("vBulletin", false))
-            return TextAutosizer::VBulletin;
-    }
-
-    HTMLElement* bodyElement = document->body();
-    if (bodyElement && bodyElement->hasTagName(bodyTag) && bodyElement->hasID() && bodyElement->idForStyleResolution() == "phpbb")
-        return TextAutosizer::PhpBB;
-
-    return TextAutosizer::Default;
 }
 
 static RenderListItem* getAncestorListItem(const RenderObject* renderer)
@@ -194,6 +147,17 @@ void TextAutosizer::recalculateMultipliers()
     }
 }
 
+TextAutosizer::ContentType TextAutosizer::detectContentType()
+{
+    RefPtr<NodeList> metaElements = m_document->getElementsByTagNameNS(xhtmlNamespaceURI, metaTag.localName());
+    for (unsigned i = 0; i < metaElements->length(); ++i) {
+        HTMLMetaElement* metaElement = toHTMLMetaElement(metaElements->item(i));
+        if (equalIgnoringCase(metaElement->name(), "generator") && metaElement->content().startsWith("vBulletin", false))
+            return VBulletin;
+    }
+    return Default;
+}
+
 bool TextAutosizer::processSubtree(RenderObject* layoutRoot)
 {
     TRACE_EVENT0("webkit", "TextAutosizer::processSubtree");
@@ -203,7 +167,7 @@ bool TextAutosizer::processSubtree(RenderObject* layoutRoot)
 
     InspectorInstrumentation::willAutosizeText(layoutRoot);
     if (m_contentType == Unknown && m_document->body())
-        m_contentType = detectContentType(m_document);
+        m_contentType = detectContentType();
 
     Frame* mainFrame = m_document->page()->mainFrame();
 
@@ -623,8 +587,8 @@ bool TextAutosizer::compositeClusterShouldBeAutosized(Vector<TextAutosizingClust
     for (size_t i = 0; i < clusterInfos.size(); ++i) {
         if (clusterInfos[i].root->isTextArea() || (clusterInfos[i].root->style() && clusterInfos[i].root->style()->userModify() != READ_ONLY))
             return true;
-        if (isContentTypeForum(m_contentType)) {
-            if (hasForumCommentAncestor(m_contentType, clusterInfos[i].blockContainingAllText)
+        if (m_contentType == VBulletin) {
+            if (hasForumCommentAncestor(clusterInfos[i].blockContainingAllText)
                 || clusterContainsForumComment(clusterInfos[i].blockContainingAllText, clusterInfos[i]))
                 return true;
         }
@@ -637,13 +601,13 @@ bool TextAutosizer::compositeClusterShouldBeAutosized(Vector<TextAutosizingClust
 
 bool TextAutosizer::clusterContainsForumComment(const RenderBlock* container, TextAutosizingClusterInfo& clusterInfo)
 {
-    ASSERT(isContentTypeForum(m_contentType));
+    ASSERT(m_contentType == VBulletin);
 
     RenderObject* descendant = nextInPreOrderSkippingDescendantsOfContainers(container, container);
     while (descendant) {
         if (isAutosizingContainer(descendant)) {
             RenderBlock* descendantBlock = toRenderBlock(descendant);
-            if (isForumComment(m_contentType, descendantBlock))
+            if (isVBulletinComment(descendantBlock))
                 return true;
             if (!isAutosizingCluster(descendantBlock, clusterInfo)
                 && clusterContainsForumComment(descendantBlock, clusterInfo))
