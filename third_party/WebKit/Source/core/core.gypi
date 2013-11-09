@@ -3496,6 +3496,7 @@
             'animation/AnimatableValueTestHelper.h',
             'animation/AnimatableValueTestHelperTest.cpp',
             'animation/AnimationClockTest.cpp',
+            'animation/CompositorAnimationsTimingFunctionReverserTest.cpp',
             'animation/DocumentTimelineTest.cpp',
             'animation/KeyframeAnimationEffectTest.cpp',
             'animation/PlayerTest.cpp',

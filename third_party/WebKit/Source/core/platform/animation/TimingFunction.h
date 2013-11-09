@@ -281,6 +281,9 @@ private:
         double m_max;
         RefPtr<TimingFunction> m_timingFunction;
 
+        // Allow the compositor to reverse the timing function.
+        friend class CompositorAnimationsTimingFunctionReverser;
+
         // Allow PrintTo/operator== of the segments. Can be removed once
         // ChainedTimingFunction has a public API for segments.
         friend class ChainedTimingFunctionTestHelper;
@@ -293,6 +296,9 @@ private:
     }
 
     Vector<Segment> m_segments;
+
+    // Allow the compositor to reverse the timing function.
+    friend class CompositorAnimationsTimingFunctionReverser;
 
     // Allow PrintTo/operator== of the segments. Can be removed once
     // ChainedTimingFunction has a public API for segments.

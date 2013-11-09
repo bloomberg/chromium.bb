@@ -43,6 +43,70 @@
 
 namespace WebCore {
 
+// -----------------------------------------------------------------------
+
+PassRefPtr<TimingFunction> CompositorAnimationsTimingFunctionReverser::reverse(const LinearTimingFunction* timefunc)
+{
+    return const_cast<LinearTimingFunction*>(timefunc);
+}
+
+PassRefPtr<TimingFunction> CompositorAnimationsTimingFunctionReverser::reverse(const CubicBezierTimingFunction* timefunc)
+{
+    switch (timefunc->subType()) {
+    case CubicBezierTimingFunction::EaseIn:
+        return CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseOut);
+    case CubicBezierTimingFunction::EaseOut:
+        return CubicBezierTimingFunction::preset(CubicBezierTimingFunction::EaseIn);
+    case CubicBezierTimingFunction::EaseInOut:
+        return const_cast<CubicBezierTimingFunction*>(timefunc);
+    case CubicBezierTimingFunction::Ease: // Ease is not symmetrical
+    case CubicBezierTimingFunction::Custom:
+        return CubicBezierTimingFunction::create(1 - timefunc->x2(), 1 - timefunc->y2(), 1 - timefunc->x1(), 1 - timefunc->y1());
+    default:
+        ASSERT_NOT_REACHED();
+        return PassRefPtr<TimingFunction>();
+    }
+}
+
+PassRefPtr<TimingFunction> CompositorAnimationsTimingFunctionReverser::reverse(const ChainedTimingFunction* timefunc)
+{
+    RefPtr<ChainedTimingFunction> reversed = ChainedTimingFunction::create();
+    for (size_t i = 0; i < timefunc->m_segments.size(); i++) {
+        size_t index = timefunc->m_segments.size() - i - 1;
+
+        RefPtr<TimingFunction> rtf = reverse(timefunc->m_segments[index].m_timingFunction.get());
+        reversed->appendSegment(1 - timefunc->m_segments[index].m_min, rtf.get());
+    }
+    return reversed;
+}
+
+PassRefPtr<TimingFunction> CompositorAnimationsTimingFunctionReverser::reverse(const TimingFunction* timefunc)
+{
+    switch (timefunc->type()) {
+    case TimingFunction::LinearFunction: {
+        const LinearTimingFunction* linear = static_cast<const LinearTimingFunction*>(timefunc);
+        return reverse(linear);
+    }
+    case TimingFunction::CubicBezierFunction: {
+        const CubicBezierTimingFunction* cubic = static_cast<const CubicBezierTimingFunction*>(timefunc);
+        return reverse(cubic);
+    }
+    case TimingFunction::ChainedFunction: {
+        const ChainedTimingFunction* chained = static_cast<const ChainedTimingFunction*>(timefunc);
+        return reverse(chained);
+    }
+
+    // Steps function can not be reversed.
+    case TimingFunction::StepsFunction:
+    default:
+        ASSERT_NOT_REACHED();
+        return PassRefPtr<TimingFunction>();
+    }
+}
+
+// -----------------------------------------------------------------------
+
+
 bool CompositorAnimations::isCandidateForCompositorAnimation(const Timing& timing, const AnimationEffect* effect)
 {
     // FIXME: Implement.
