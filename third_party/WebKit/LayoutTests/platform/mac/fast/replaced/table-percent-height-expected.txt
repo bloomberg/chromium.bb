@@ -30,6 +30,9 @@ Note, some of the button height tests fail on the Windows ports. See bug #34071.
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
 
 
+PASS successfullyParsed is true
+
+TEST COMPLETE
 PASS getWidth('canvas-75') is '225px'
 PASS getHeight('canvas-75') is '112.5px'
 PASS getWidth('canvas-100') is '300px'
@@ -78,9 +81,6 @@ PASS getHeight('input-submit-75') is getHeight('input-submit-100')
 PASS getWidth('select-75') is getWidth('select-100')
 PASS getHeight('select-75') != '0px' is true
 PASS getHeight('select-75') is getHeight('select-100')
-PASS successfullyParsed is true
-
-TEST COMPLETE
 PASS successfullyParsed is true
 
 TEST COMPLETE
