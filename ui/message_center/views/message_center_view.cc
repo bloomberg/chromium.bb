@@ -34,6 +34,7 @@
 #include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/scrollbar/overlay_scroll_bar.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
 
 namespace message_center {
@@ -590,6 +591,9 @@ MessageCenterView::MessageCenterView(MessageCenter* message_center,
                                      bool top_down)
     : message_center_(message_center),
       tray_(tray),
+      scroller_(NULL),
+      settings_view_(NULL),
+      button_bar_(NULL),
       top_down_(top_down),
       settings_visible_(initially_settings_visible),
       source_view_(NULL),
@@ -620,13 +624,21 @@ MessageCenterView::MessageCenterView(MessageCenter* message_center,
     scroller_->layer()->SetMasksToBounds(true);
   }
 
-  message_list_view_ = new MessageListView(this, top_down);
-  no_notifications_message_view_ = new NoNotificationMessageView();
-  // Set the default visibility to false, otherwise the notification has slide
-  // in animation when the center is shown.
-  no_notifications_message_view_->SetVisible(false);
-  message_list_view_->AddChildView(no_notifications_message_view_);
-  scroller_->SetContents(message_list_view_);
+  empty_list_view_.reset(new NoNotificationMessageView);
+  empty_list_view_->set_owned_by_client();
+  message_list_view_.reset(new MessageListView(this, top_down));
+  message_list_view_->set_owned_by_client();
+
+  // We want to swap the contents of the scroll view between the empty list
+  // view and the message list view, without constructing them afresh each
+  // time.  So, since the scroll view deletes old contents each time you
+  // set the contents (regardless of the |owned_by_client_| setting) we need
+  // an intermediate view for the contents whose children we can swap in and
+  // out.
+  views::View* scroller_contents = new views::View();
+  scroller_contents->SetLayoutManager(new views::FillLayout());
+  scroller_contents->AddChildView(empty_list_view_.get());
+  scroller_->SetContents(scroller_contents);
 
   settings_view_ = new NotifierSettingsView(notifier_settings_provider);
 
@@ -988,8 +1000,11 @@ void MessageCenterView::AddNotificationAt(const Notification& notification,
 
 void MessageCenterView::NotificationsChanged() {
   bool no_message_views = message_views_.empty();
+  // All the children of this view are owned by |this|.
+  scroller_->contents()->RemoveAllChildViews(/*delete_children=*/false);
+  scroller_->contents()->AddChildView(
+      no_message_views ? empty_list_view_.get() : message_list_view_.get());
 
-  no_notifications_message_view_->SetVisible(no_message_views);
   button_bar_->SetCloseAllButtonEnabled(!no_message_views);
   scroller_->set_focusable(!no_message_views);
 

@@ -91,10 +91,10 @@ class MESSAGE_CENTER_EXPORT MessageCenterView : public views::View,
 
   // Child views.
   views::ScrollView* scroller_;
-  MessageListView* message_list_view_;
+  scoped_ptr<MessageListView> message_list_view_;
+  scoped_ptr<views::View> empty_list_view_;
   NotifierSettingsView* settings_view_;
   MessageCenterButtonBar* button_bar_;
-  views::View* no_notifications_message_view_;
   bool top_down_;
 
   // Data for transition animation between settings view and message list.
