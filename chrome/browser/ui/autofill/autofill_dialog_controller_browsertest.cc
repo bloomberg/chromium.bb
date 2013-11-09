@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/autofill/test_generated_credit_card_bubble_controller.h"
 #include "chrome/browser/ui/autofill/testable_autofill_dialog_view.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
@@ -1073,6 +1074,51 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AddNewClearsComboboxes) {
 
   // Ensure that the credit card expiration month has changed.
   EXPECT_NE(cc_exp_month_text, view->GetTextContentsOfInput(cc_exp_month));
+}
+
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, TabOpensToJustRight) {
+  ASSERT_TRUE(browser()->is_type_tabbed());
+
+  // Tabs should currently be: / rAc() \.
+  content::WebContents* dialog_invoker = controller()->GetWebContents();
+  EXPECT_EQ(dialog_invoker, GetActiveWebContents());
+
+  TabStripModel* tab_strip = browser()->tab_strip_model();
+  ASSERT_EQ(1, tab_strip->count());
+  EXPECT_EQ(0, tab_strip->GetIndexOfWebContents(dialog_invoker));
+
+  // Open a tab to about:blank in the background at the end of the tab strip.
+  chrome::AddBlankTabAt(browser(), -1, false);
+  // Tabs should now be: / rAc() \/ blank \.
+  EXPECT_EQ(2, tab_strip->count());
+  EXPECT_EQ(0, tab_strip->active_index());
+  EXPECT_EQ(dialog_invoker, GetActiveWebContents());
+
+  content::WebContents* blank_tab = tab_strip->GetWebContentsAt(1);
+
+  // Simulate clicking "Manage X...".
+  controller()->MenuModelForSection(SECTION_SHIPPING)->ActivatedAt(2);
+  // Tab should now be: / rAc() \/ manage 1 \/ blank \.
+  EXPECT_EQ(3, tab_strip->count());
+  int dialog_index = tab_strip->GetIndexOfWebContents(dialog_invoker);
+  EXPECT_EQ(0, dialog_index);
+  EXPECT_EQ(1, tab_strip->active_index());
+  EXPECT_EQ(2, tab_strip->GetIndexOfWebContents(blank_tab));
+
+  content::WebContents* first_manage_tab = tab_strip->GetWebContentsAt(1);
+
+  // Re-activate the dialog's tab (like a user would have to).
+  tab_strip->ActivateTabAt(dialog_index, true);
+  EXPECT_EQ(dialog_invoker, GetActiveWebContents());
+
+  // Simulate clicking "Manage X...".
+  controller()->MenuModelForSection(SECTION_SHIPPING)->ActivatedAt(2);
+  // Tabs should now be: / rAc() \/ manage 2 \/ manage 1 \/ blank \.
+  EXPECT_EQ(4, tab_strip->count());
+  EXPECT_EQ(0, tab_strip->GetIndexOfWebContents(dialog_invoker));
+  EXPECT_EQ(1, tab_strip->active_index());
+  EXPECT_EQ(2, tab_strip->GetIndexOfWebContents(first_manage_tab));
+  EXPECT_EQ(3, tab_strip->GetIndexOfWebContents(blank_tab));
 }
 
 }  // namespace autofill
