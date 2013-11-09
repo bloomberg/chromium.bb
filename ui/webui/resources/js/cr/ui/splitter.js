@@ -145,8 +145,10 @@ cr.define('cr.ui', function() {
      * @private
      */
     handleTouchStart_: function(e) {
-      if (e.touches.length == 1)
+      if (e.touches.length == 1) {
         this.startDrag(e.touches[0].clientX, true);
+        e.preventDefault();
+      }
     },
 
     /**
