@@ -29,10 +29,10 @@
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/platform/mediastream/RTCDTMFSenderHandler.h"
 #include "core/platform/mediastream/RTCPeerConnectionHandler.h"
 #include "modules/mediastream/MediaStreamTrack.h"
 #include "modules/mediastream/RTCDTMFToneChangeEvent.h"
+#include "platform/mediastream/RTCDTMFSenderHandler.h"
 
 namespace WebCore {
 

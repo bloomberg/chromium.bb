@@ -23,58 +23,43 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
+#ifndef RTCDTMFSenderHandler_h
+#define RTCDTMFSenderHandler_h
 
-#include "core/platform/mediastream/RTCDTMFSenderHandler.h"
-
-#include "core/platform/mediastream/RTCDTMFSenderHandlerClient.h"
+#include "platform/PlatformExport.h"
+#include "platform/mediastream/RTCDTMFSenderHandlerClient.h"
 #include "public/platform/WebRTCDTMFSenderHandler.h"
+#include "public/platform/WebRTCDTMFSenderHandlerClient.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
-
-using namespace blink;
 
 namespace WebCore {
 
-PassOwnPtr<RTCDTMFSenderHandler> RTCDTMFSenderHandler::create(WebRTCDTMFSenderHandler* webHandler)
-{
-    return adoptPtr(new RTCDTMFSenderHandler(webHandler));
-}
+class RTCDTMFSenderHandlerClient;
 
-RTCDTMFSenderHandler::RTCDTMFSenderHandler(WebRTCDTMFSenderHandler* webHandler)
-    : m_webHandler(adoptPtr(webHandler))
-    , m_client(0)
-{
-}
+class PLATFORM_EXPORT RTCDTMFSenderHandler : public blink::WebRTCDTMFSenderHandlerClient {
+    WTF_MAKE_NONCOPYABLE(RTCDTMFSenderHandler);
+public:
+    static PassOwnPtr<RTCDTMFSenderHandler> create(blink::WebRTCDTMFSenderHandler*);
+    virtual ~RTCDTMFSenderHandler();
 
-RTCDTMFSenderHandler::~RTCDTMFSenderHandler()
-{
-}
+    void setClient(RTCDTMFSenderHandlerClient*);
 
-void RTCDTMFSenderHandler::setClient(RTCDTMFSenderHandlerClient* client)
-{
-    m_client = client;
-    m_webHandler->setClient(m_client ? this : 0);
-}
+    String currentToneBuffer();
 
-String RTCDTMFSenderHandler::currentToneBuffer()
-{
-    return m_webHandler->currentToneBuffer();
-}
+    bool canInsertDTMF();
+    bool insertDTMF(const String& tones, long duration, long interToneGap);
 
-bool RTCDTMFSenderHandler::canInsertDTMF()
-{
-    return m_webHandler->canInsertDTMF();
-}
+    // blink::WebRTCDTMFSenderHandlerClient implementation.
+    virtual void didPlayTone(const blink::WebString& tone) const OVERRIDE;
 
-bool RTCDTMFSenderHandler::insertDTMF(const String& tones, long duration, long interToneGap)
-{
-    return m_webHandler->insertDTMF(tones, duration, interToneGap);
-}
+private:
+    explicit RTCDTMFSenderHandler(blink::WebRTCDTMFSenderHandler*);
 
-void RTCDTMFSenderHandler::didPlayTone(const WebString& tone) const
-{
-    if (m_client)
-        m_client->didPlayTone(tone);
-}
+    OwnPtr<blink::WebRTCDTMFSenderHandler> m_webHandler;
+    RTCDTMFSenderHandlerClient* m_client;
+};
 
 } // namespace WebCore
+
+#endif // RTCDTMFSenderHandler_h

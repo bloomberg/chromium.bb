@@ -33,12 +33,12 @@
 #include "core/platform/mediastream/RTCPeerConnectionHandler.h"
 
 #include "core/platform/mediastream/MediaStreamComponent.h"
-#include "core/platform/mediastream/RTCDTMFSenderHandler.h"
 #include "core/platform/mediastream/RTCDataChannelHandler.h"
 #include "core/platform/mediastream/RTCPeerConnectionHandlerClient.h"
 #include "core/platform/mediastream/RTCStatsRequest.h"
 #include "platform/mediastream/MediaConstraints.h"
 #include "platform/mediastream/RTCConfiguration.h"
+#include "platform/mediastream/RTCDTMFSenderHandler.h"
 #include "platform/mediastream/RTCSessionDescriptionRequest.h"
 #include "platform/mediastream/RTCVoidRequest.h"
 #include "public/platform/Platform.h"

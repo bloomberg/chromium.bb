@@ -32,7 +32,7 @@
 namespace blink {
 class WebRTCDTMFSenderHandlerClient;
 
-class WebRTCDTMFSenderHandler {
+class BLINK_PLATFORM_EXPORT WebRTCDTMFSenderHandler {
 public:
     virtual ~WebRTCDTMFSenderHandler() { }
 
