@@ -1,19 +1,18 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_info_map.h"
+#include "extensions/browser/info_map.h"
 
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
-#include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/manifest_handlers/incognito_info.h"
 
 using content::BrowserThread;
-using extensions::Extension;
-using extensions::UnloadedExtensionInfo;
+
+namespace extensions {
 
 namespace {
 
@@ -23,7 +22,7 @@ void CheckOnValidThread() {
 
 }  // namespace
 
-struct ExtensionInfoMap::ExtraData {
+struct InfoMap::ExtraData {
   // When the extension was installed.
   base::Time install_time;
 
@@ -34,19 +33,17 @@ struct ExtensionInfoMap::ExtraData {
   ~ExtraData();
 };
 
-ExtensionInfoMap::ExtraData::ExtraData() : incognito_enabled(false) {}
+InfoMap::ExtraData::ExtraData() : incognito_enabled(false) {}
 
-ExtensionInfoMap::ExtraData::~ExtraData() {}
+InfoMap::ExtraData::~ExtraData() {}
 
-ExtensionInfoMap::ExtensionInfoMap() : signin_process_id_(-1) {}
+InfoMap::InfoMap() : signin_process_id_(-1) {}
 
-const extensions::ProcessMap& ExtensionInfoMap::process_map() const {
-  return process_map_;
-}
+const ProcessMap& InfoMap::process_map() const { return process_map_; }
 
-void ExtensionInfoMap::AddExtension(const Extension* extension,
-                                    base::Time install_time,
-                                    bool incognito_enabled) {
+void InfoMap::AddExtension(const Extension* extension,
+                           base::Time install_time,
+                           bool incognito_enabled) {
   CheckOnValidThread();
   extensions_.Insert(extension);
   disabled_extensions_.Remove(extension->id());
@@ -55,9 +52,8 @@ void ExtensionInfoMap::AddExtension(const Extension* extension,
   extra_data_[extension->id()].incognito_enabled = incognito_enabled;
 }
 
-void ExtensionInfoMap::RemoveExtension(
-    const std::string& extension_id,
-    const UnloadedExtensionInfo::Reason reason) {
+void InfoMap::RemoveExtension(const std::string& extension_id,
+                              const UnloadedExtensionInfo::Reason reason) {
   CheckOnValidThread();
   const Extension* extension = extensions_.GetByID(extension_id);
   extra_data_.erase(extension_id);  // we don't care about disabled extra data
@@ -80,16 +76,14 @@ void ExtensionInfoMap::RemoveExtension(
   }
 }
 
-base::Time ExtensionInfoMap::GetInstallTime(
-    const std::string& extension_id) const {
+base::Time InfoMap::GetInstallTime(const std::string& extension_id) const {
   ExtraDataMap::const_iterator iter = extra_data_.find(extension_id);
   if (iter != extra_data_.end())
     return iter->second.install_time;
   return base::Time();
 }
 
-bool ExtensionInfoMap::IsIncognitoEnabled(
-    const std::string& extension_id) const {
+bool InfoMap::IsIncognitoEnabled(const std::string& extension_id) const {
   // Keep in sync with duplicate in extension_process_manager.cc.
   ExtraDataMap::const_iterator iter = extra_data_.find(extension_id);
   if (iter != extra_data_.end())
@@ -97,43 +91,42 @@ bool ExtensionInfoMap::IsIncognitoEnabled(
   return false;
 }
 
-bool ExtensionInfoMap::CanCrossIncognito(const Extension* extension) const {
+bool InfoMap::CanCrossIncognito(const Extension* extension) const {
   // This is duplicated from ExtensionService :(.
   return IsIncognitoEnabled(extension->id()) &&
-      !extensions::IncognitoInfo::IsSplitMode(extension);
+         !IncognitoInfo::IsSplitMode(extension);
 }
 
-void ExtensionInfoMap::RegisterExtensionProcess(const std::string& extension_id,
-                                                int process_id,
-                                                int site_instance_id) {
+void InfoMap::RegisterExtensionProcess(const std::string& extension_id,
+                                       int process_id,
+                                       int site_instance_id) {
   if (!process_map_.Insert(extension_id, process_id, site_instance_id)) {
     NOTREACHED() << "Duplicate extension process registration for: "
                  << extension_id << "," << process_id << ".";
   }
 }
 
-void ExtensionInfoMap::UnregisterExtensionProcess(
-    const std::string& extension_id,
-    int process_id,
-    int site_instance_id) {
+void InfoMap::UnregisterExtensionProcess(const std::string& extension_id,
+                                         int process_id,
+                                         int site_instance_id) {
   if (!process_map_.Remove(extension_id, process_id, site_instance_id)) {
     NOTREACHED() << "Unknown extension process registration for: "
                  << extension_id << "," << process_id << ".";
   }
 }
 
-void ExtensionInfoMap::UnregisterAllExtensionsInProcess(int process_id) {
+void InfoMap::UnregisterAllExtensionsInProcess(int process_id) {
   process_map_.RemoveAllFromProcess(process_id);
 }
 
-void ExtensionInfoMap::GetExtensionsWithAPIPermissionForSecurityOrigin(
+void InfoMap::GetExtensionsWithAPIPermissionForSecurityOrigin(
     const GURL& origin,
     int process_id,
-    extensions::APIPermission::ID permission,
+    APIPermission::ID permission,
     ExtensionSet* extensions) const {
   DCHECK(extensions);
 
-  if (origin.SchemeIs(extensions::kExtensionScheme)) {
+  if (origin.SchemeIs(kExtensionScheme)) {
     const std::string& id = origin.host();
     const Extension* extension = extensions_.GetByID(id);
     if (extension && extension->HasAPIPermission(permission) &&
@@ -153,33 +146,36 @@ void ExtensionInfoMap::GetExtensionsWithAPIPermissionForSecurityOrigin(
   }
 }
 
-bool ExtensionInfoMap::SecurityOriginHasAPIPermission(
-    const GURL& origin, int process_id,
-    extensions::APIPermission::ID permission) const {
+bool InfoMap::SecurityOriginHasAPIPermission(const GURL& origin,
+                                             int process_id,
+                                             APIPermission::ID permission)
+    const {
   ExtensionSet extensions;
   GetExtensionsWithAPIPermissionForSecurityOrigin(
       origin, process_id, permission, &extensions);
   return !extensions.is_empty();
 }
 
-ExtensionsQuotaService* ExtensionInfoMap::GetQuotaService() {
+QuotaService* InfoMap::GetQuotaService() {
   CheckOnValidThread();
   if (!quota_service_)
-    quota_service_.reset(new ExtensionsQuotaService());
+    quota_service_.reset(new QuotaService());
   return quota_service_.get();
 }
 
-void ExtensionInfoMap::SetSigninProcess(int process_id) {
+void InfoMap::SetSigninProcess(int process_id) {
   signin_process_id_ = process_id;
 }
 
-bool ExtensionInfoMap::IsSigninProcess(int process_id) const {
+bool InfoMap::IsSigninProcess(int process_id) const {
   return process_id == signin_process_id_;
 }
 
-ExtensionInfoMap::~ExtensionInfoMap() {
+InfoMap::~InfoMap() {
   if (quota_service_) {
-    BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE,
-                              quota_service_.release());
+    BrowserThread::DeleteSoon(
+        BrowserThread::IO, FROM_HERE, quota_service_.release());
   }
 }
+
+}  // namespace extensions

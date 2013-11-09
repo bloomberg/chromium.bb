@@ -9,7 +9,6 @@
 #include "chrome/browser/extensions/blacklist.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/event_router.h"
-#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_pref_value_map.h"
 #include "chrome/browser/extensions/extension_pref_value_map_factory.h"
 #include "chrome/browser/extensions/extension_prefs.h"
@@ -25,6 +24,7 @@
 #include "chrome/browser/value_store/testing_value_store.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/info_map.h"
 
 using content::BrowserThread;
 
@@ -33,9 +33,8 @@ namespace extensions {
 TestExtensionSystem::TestExtensionSystem(Profile* profile)
     : profile_(profile),
       value_store_(NULL),
-      info_map_(new ExtensionInfoMap()),
-      error_console_(new ErrorConsole(profile, NULL)) {
-}
+      info_map_(new InfoMap()),
+      error_console_(new ErrorConsole(profile, NULL)) {}
 
 TestExtensionSystem::~TestExtensionSystem() {
 }
@@ -133,9 +132,7 @@ StateStore* TestExtensionSystem::rules_store() {
   return state_store_.get();
 }
 
-ExtensionInfoMap* TestExtensionSystem::info_map() {
-  return info_map_.get();
-}
+InfoMap* TestExtensionSystem::info_map() { return info_map_.get(); }
 
 LazyBackgroundTaskQueue*
 TestExtensionSystem::lazy_background_task_queue() {

@@ -9,7 +9,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_protocols.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
@@ -17,6 +16,7 @@
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "extensions/browser/info_map.h"
 #include "extensions/common/constants.h"
 #include "net/base/request_priority.h"
 #include "net/url_request/url_request.h"
@@ -94,7 +94,7 @@ class ExtensionProtocolTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     testing::Test::SetUp();
-    extension_info_map_ = new ExtensionInfoMap();
+    extension_info_map_ = new InfoMap();
     net::URLRequestContext* request_context =
         resource_context_.GetRequestContext();
     old_factory_ = request_context->job_factory();
@@ -129,7 +129,7 @@ class ExtensionProtocolTest : public testing::Test {
 
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
-  scoped_refptr<ExtensionInfoMap> extension_info_map_;
+  scoped_refptr<InfoMap> extension_info_map_;
   net::URLRequestJobFactoryImpl job_factory_;
   const net::URLRequestJobFactory* old_factory_;
   net::TestDelegate test_delegate_;

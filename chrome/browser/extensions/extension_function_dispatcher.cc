@@ -20,7 +20,6 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
-#include "chrome/browser/extensions/extensions_quota_service.h"
 #include "chrome/browser/extensions/process_map.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/profiles/profile.h"
@@ -35,6 +34,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/result_codes.h"
+#include "extensions/browser/quota_service.h"
 #include "extensions/common/extension_api.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
@@ -234,7 +234,7 @@ void ExtensionFunctionDispatcher::ResetFunctions() {
 
 // static
 void ExtensionFunctionDispatcher::DispatchOnIOThread(
-    ExtensionInfoMap* extension_info_map,
+    extensions::InfoMap* extension_info_map,
     void* profile,
     int render_process_id,
     base::WeakPtr<ChromeRenderMessageFilter> ipc_sender,
@@ -272,7 +272,7 @@ void ExtensionFunctionDispatcher::DispatchOnIOThread(
   if (!CheckPermissions(function.get(), extension, params, callback))
     return;
 
-  ExtensionsQuotaService* quota = extension_info_map->GetQuotaService();
+  extensions::QuotaService* quota = extension_info_map->GetQuotaService();
   std::string violation_error = quota->Assess(extension->id(),
                                               function.get(),
                                               &params.arguments,
@@ -359,7 +359,7 @@ void ExtensionFunctionDispatcher::DispatchWithCallback(
   if (!CheckPermissions(function.get(), extension, params, callback))
     return;
 
-  ExtensionsQuotaService* quota = service->quota_service();
+  extensions::QuotaService* quota = service->quota_service();
   std::string violation_error = quota->Assess(extension->id(),
                                               function.get(),
                                               &params.arguments,

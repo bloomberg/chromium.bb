@@ -18,9 +18,9 @@
 #include "chrome/browser/extensions/api/declarative/rules_registry.h"
 #include "chrome/browser/extensions/api/declarative_content/content_action.h"
 #include "chrome/browser/extensions/api/declarative_content/content_condition.h"
-#include "chrome/browser/extensions/extension_info_map.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/info_map.h"
 #include "extensions/common/matcher/url_matcher.h"
 
 class Profile;
@@ -139,7 +139,7 @@ class ContentRulesRegistry : public RulesRegistry,
   // Manages our notification registrations.
   content::NotificationRegistrar registrar_;
 
-  scoped_refptr<ExtensionInfoMap> extension_info_map_;
+  scoped_refptr<InfoMap> extension_info_map_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentRulesRegistry);
 };

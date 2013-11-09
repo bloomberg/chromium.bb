@@ -16,7 +16,6 @@
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
-#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_pref_store.h"
 #include "chrome/browser/extensions/extension_pref_value_map.h"
 #include "chrome/browser/extensions/extension_pref_value_map_factory.h"
@@ -42,6 +41,7 @@
 #include "chrome/common/extensions/features/feature_channel.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/url_data_source.h"
+#include "extensions/browser/info_map.h"
 #include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/manifest.h"
@@ -271,9 +271,9 @@ UserScriptMaster* ExtensionSystemImpl::Shared::user_script_master() {
   return user_script_master_.get();
 }
 
-ExtensionInfoMap* ExtensionSystemImpl::Shared::info_map() {
+InfoMap* ExtensionSystemImpl::Shared::info_map() {
   if (!extension_info_map_.get())
-    extension_info_map_ = new ExtensionInfoMap();
+    extension_info_map_ = new InfoMap();
   return extension_info_map_.get();
 }
 
@@ -327,7 +327,7 @@ void ExtensionSystemImpl::InitForRegularProfile(
   if (user_script_master() || extension_service())
     return;  // Already initialized.
 
-  // The ExtensionInfoMap needs to be created before the
+  // The InfoMap needs to be created before the
   // ExtensionProcessManager.
   shared_->info_map();
 
@@ -363,9 +363,7 @@ StateStore* ExtensionSystemImpl::rules_store() {
   return shared_->rules_store();
 }
 
-ExtensionInfoMap* ExtensionSystemImpl::info_map() {
-  return shared_->info_map();
-}
+InfoMap* ExtensionSystemImpl::info_map() { return shared_->info_map(); }
 
 LazyBackgroundTaskQueue* ExtensionSystemImpl::lazy_background_task_queue() {
   return shared_->lazy_background_task_queue();
@@ -400,20 +398,22 @@ void ExtensionSystemImpl::RegisterExtensionWithRequestContexts(
   }
   bool incognito_enabled =
       extension_util::IsIncognitoEnabled(extension->id(), extension_service());
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&ExtensionInfoMap::AddExtension, info_map(),
-                 make_scoped_refptr(extension), install_time,
-                 incognito_enabled));
+  BrowserThread::PostTask(BrowserThread::IO,
+                          FROM_HERE,
+                          base::Bind(&InfoMap::AddExtension,
+                                     info_map(),
+                                     make_scoped_refptr(extension),
+                                     install_time,
+                                     incognito_enabled));
 }
 
 void ExtensionSystemImpl::UnregisterExtensionWithRequestContexts(
     const std::string& extension_id,
     const UnloadedExtensionInfo::Reason reason) {
   BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&ExtensionInfoMap::RemoveExtension, info_map(),
-                 extension_id, reason));
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&InfoMap::RemoveExtension, info_map(), extension_id, reason));
 }
 
 }  // namespace extensions

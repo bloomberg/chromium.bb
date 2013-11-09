@@ -16,7 +16,6 @@
 #include "chrome/browser/download/download_request_limiter.h"
 #include "chrome/browser/download/download_resource_throttle.h"
 #include "chrome/browser/extensions/api/streams_private/streams_private_api.h"
-#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_renderer_state.h"
 #include "chrome/browser/extensions/user_script_listener.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
@@ -48,6 +47,7 @@
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/stream_handle.h"
 #include "content/public/common/resource_response.h"
+#include "extensions/browser/info_map.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/user_script.h"
 #include "net/base/load_flags.h"
@@ -589,7 +589,7 @@ bool ChromeResourceDispatcherHostDelegate::ShouldInterceptResourceAsStream(
   ProfileIOData* io_data =
       ProfileIOData::FromResourceContext(resource_context);
   bool profile_is_incognito = io_data->is_incognito();
-  const scoped_refptr<const ExtensionInfoMap> extension_info_map(
+  const scoped_refptr<const extensions::InfoMap> extension_info_map(
       io_data->GetExtensionInfoMap());
   std::vector<std::string> whitelist = MimeTypesHandler::GetMIMETypeWhitelist();
   // Go through the white-listed extensions and try to use them to intercept

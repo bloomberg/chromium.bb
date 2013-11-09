@@ -21,8 +21,11 @@ struct ExtensionHostMsg_APIActionOrEvent_Params;
 struct ExtensionHostMsg_DOMAction_Params;
 struct ExtensionHostMsg_Request_Params;
 struct ExtensionMsg_ExternalConnectionInfo;
-class ExtensionInfoMap;
 class GURL;
+
+namespace extensions {
+class InfoMap;
+}
 
 namespace net {
 class HostResolver;
@@ -199,7 +202,7 @@ class ChromeRenderMessageFilter : public content::BrowserMessageFilter {
   // used on the IO thread.
   chrome_browser_net::Predictor* predictor_;
   scoped_refptr<net::URLRequestContextGetter> request_context_;
-  scoped_refptr<ExtensionInfoMap> extension_info_map_;
+  scoped_refptr<extensions::InfoMap> extension_info_map_;
   // Used to look up permissions at database creation time.
   scoped_refptr<CookieSettings> cookie_settings_;
 

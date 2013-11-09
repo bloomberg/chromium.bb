@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_INFO_MAP_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_INFO_MAP_H_
+#ifndef EXTENSIONS_BROWSER_INFO_MAP_H_
+#define EXTENSIONS_BROWSER_INFO_MAP_H_
 
 #include <string>
 
@@ -11,20 +11,19 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "chrome/browser/extensions/extensions_quota_service.h"
 #include "chrome/browser/extensions/process_map.h"
 #include "chrome/common/extensions/extension_set.h"
+#include "extensions/browser/quota_service.h"
 
 namespace extensions {
 class Extension;
-}
 
 // Contains extension data that needs to be accessed on the IO thread. It can
 // be created/destroyed on any thread, but all other methods must be called on
 // the IO thread.
-class ExtensionInfoMap : public base::RefCountedThreadSafe<ExtensionInfoMap> {
+class InfoMap : public base::RefCountedThreadSafe<InfoMap> {
  public:
-  ExtensionInfoMap();
+  InfoMap();
 
   const ExtensionSet& extensions() const { return extensions_; }
   const ExtensionSet& disabled_extensions() const {
@@ -74,11 +73,12 @@ class ExtensionInfoMap : public base::RefCountedThreadSafe<ExtensionInfoMap> {
 
   // Returns true if there is exists an extension with the same origin as
   // |origin| in |process_id| with |permission|.
-  bool SecurityOriginHasAPIPermission(
-      const GURL& origin, int process_id,
-      extensions::APIPermission::ID permission) const;
+  bool SecurityOriginHasAPIPermission(const GURL& origin,
+                                      int process_id,
+                                      extensions::APIPermission::ID permission)
+      const;
 
-  ExtensionsQuotaService* GetQuotaService();
+  QuotaService* GetQuotaService();
 
   // Keep track of the signin process, so we can restrict extension access to
   // it.
@@ -86,14 +86,14 @@ class ExtensionInfoMap : public base::RefCountedThreadSafe<ExtensionInfoMap> {
   bool IsSigninProcess(int process_id) const;
 
  private:
-  friend class base::RefCountedThreadSafe<ExtensionInfoMap>;
+  friend class base::RefCountedThreadSafe<InfoMap>;
 
   // Extra dynamic data related to an extension.
   struct ExtraData;
   // Map of extension_id to ExtraData.
   typedef std::map<std::string, ExtraData> ExtraDataMap;
 
-  ~ExtensionInfoMap();
+  ~InfoMap();
 
   ExtensionSet extensions_;
   ExtensionSet disabled_extensions_;
@@ -102,9 +102,9 @@ class ExtensionInfoMap : public base::RefCountedThreadSafe<ExtensionInfoMap> {
   ExtraDataMap extra_data_;
 
   // Used by dispatchers to limit API quota for individual extensions.
-  // The ExtensionQutoaService is not thread safe. We need to create and destroy
-  // it on the IO thread.
-  scoped_ptr<ExtensionsQuotaService> quota_service_;
+  // The QuotaService is not thread safe. We need to create and destroy it on
+  // the IO thread.
+  scoped_ptr<QuotaService> quota_service_;
 
   // Assignment of extensions to processes.
   extensions::ProcessMap process_map_;
@@ -112,4 +112,6 @@ class ExtensionInfoMap : public base::RefCountedThreadSafe<ExtensionInfoMap> {
   int signin_process_id_;
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_INFO_MAP_H_
+}  // namespace extensions
+
+#endif  // EXTENSIONS_BROWSER_INFO_MAP_H_

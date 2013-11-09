@@ -15,7 +15,6 @@
 #include "url/gurl.h"
 
 class ChromeRenderMessageFilter;
-class ExtensionInfoMap;
 class Profile;
 struct ExtensionHostMsg_Request_Params;
 
@@ -27,6 +26,7 @@ class WebContents;
 namespace extensions {
 class Extension;
 class ExtensionAPI;
+class InfoMap;
 class ProcessMap;
 class WindowController;
 }
@@ -85,7 +85,7 @@ class ExtensionFunctionDispatcher
   // Dispatches an IO-thread extension function. Only used for specific
   // functions that must be handled on the IO-thread.
   static void DispatchOnIOThread(
-      ExtensionInfoMap* extension_info_map,
+      extensions::InfoMap* extension_info_map,
       void* profile,
       int render_process_id,
       base::WeakPtr<ChromeRenderMessageFilter> ipc_sender,

@@ -1,32 +1,28 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "base/json/json_file_value_serializer.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
-#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/test/test_browser_thread.h"
+#include "extensions/browser/info_map.h"
 #include "extensions/common/manifest_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using content::BrowserThread;
-using extensions::APIPermission;
-using extensions::Extension;
-using extensions::Manifest;
 
 namespace keys = extensions::manifest_keys;
 
-namespace {
+namespace extensions {
 
-class ExtensionInfoMapTest : public testing::Test {
+class InfoMapTest : public testing::Test {
  public:
-  ExtensionInfoMapTest()
+  InfoMapTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
-        io_thread_(BrowserThread::IO, &message_loop_) {
-  }
+        io_thread_(BrowserThread::IO, &message_loop_) {}
 
  private:
   base::MessageLoop message_loop_;
@@ -47,9 +43,12 @@ static scoped_refptr<Extension> CreateExtension(const std::string& name) {
   manifest.SetString(keys::kName, name);
 
   std::string error;
-  scoped_refptr<Extension> extension = Extension::Create(
-      path.AppendASCII(name), Manifest::INVALID_LOCATION, manifest,
-      Extension::NO_FLAGS, &error);
+  scoped_refptr<Extension> extension =
+      Extension::Create(path.AppendASCII(name),
+                        Manifest::INVALID_LOCATION,
+                        manifest,
+                        Extension::NO_FLAGS,
+                        &error);
   EXPECT_TRUE(extension.get()) << error;
 
   return extension;
@@ -59,9 +58,7 @@ static scoped_refptr<Extension> LoadManifest(const std::string& dir,
                                              const std::string& test_file) {
   base::FilePath path;
   PathService::Get(chrome::DIR_TEST_DATA, &path);
-  path = path.AppendASCII("extensions")
-             .AppendASCII(dir)
-             .AppendASCII(test_file);
+  path = path.AppendASCII("extensions").AppendASCII(dir).AppendASCII(test_file);
 
   JSONFileValueSerializer serializer(path);
   scoped_ptr<Value> result(serializer.Deserialize(NULL, NULL));
@@ -69,18 +66,20 @@ static scoped_refptr<Extension> LoadManifest(const std::string& dir,
     return NULL;
 
   std::string error;
-  scoped_refptr<Extension> extension = Extension::Create(
-      path, Manifest::INVALID_LOCATION,
-      *static_cast<DictionaryValue*>(result.get()),
-      Extension::NO_FLAGS, &error);
+  scoped_refptr<Extension> extension =
+      Extension::Create(path,
+                        Manifest::INVALID_LOCATION,
+                        *static_cast<DictionaryValue*>(result.get()),
+                        Extension::NO_FLAGS,
+                        &error);
   EXPECT_TRUE(extension.get()) << error;
 
   return extension;
 }
 
-// Test that the ExtensionInfoMap handles refcounting properly.
-TEST_F(ExtensionInfoMapTest, RefCounting) {
-  scoped_refptr<ExtensionInfoMap> info_map(new ExtensionInfoMap());
+// Test that the InfoMap handles refcounting properly.
+TEST_F(InfoMapTest, RefCounting) {
+  scoped_refptr<InfoMap> info_map(new InfoMap());
 
   // New extensions should have a single reference holding onto them.
   scoped_refptr<Extension> extension1(CreateExtension("extension1"));
@@ -110,9 +109,9 @@ TEST_F(ExtensionInfoMapTest, RefCounting) {
   EXPECT_TRUE(extension3->HasOneRef());
 }
 
-// Tests that we can query a few extension properties from the ExtensionInfoMap.
-TEST_F(ExtensionInfoMapTest, Properties) {
-  scoped_refptr<ExtensionInfoMap> info_map(new ExtensionInfoMap());
+// Tests that we can query a few extension properties from the InfoMap.
+TEST_F(InfoMapTest, Properties) {
+  scoped_refptr<InfoMap> info_map(new InfoMap());
 
   scoped_refptr<Extension> extension1(CreateExtension("extension1"));
   scoped_refptr<Extension> extension2(CreateExtension("extension2"));
@@ -126,13 +125,13 @@ TEST_F(ExtensionInfoMapTest, Properties) {
 }
 
 // Tests CheckURLAccessToExtensionPermission given both extension and app URLs.
-TEST_F(ExtensionInfoMapTest, CheckPermissions) {
-  scoped_refptr<ExtensionInfoMap> info_map(new ExtensionInfoMap());
+TEST_F(InfoMapTest, CheckPermissions) {
+  scoped_refptr<InfoMap> info_map(new InfoMap());
 
-  scoped_refptr<Extension> app(LoadManifest("manifest_tests",
-                                            "valid_app.json"));
-  scoped_refptr<Extension> extension(LoadManifest("manifest_tests",
-                                                  "tabs_extension.json"));
+  scoped_refptr<Extension> app(
+      LoadManifest("manifest_tests", "valid_app.json"));
+  scoped_refptr<Extension> extension(
+      LoadManifest("manifest_tests", "tabs_extension.json"));
 
   GURL app_url("http://www.google.com/mail/foo.html");
   ASSERT_TRUE(app->is_app());
@@ -145,21 +144,16 @@ TEST_F(ExtensionInfoMapTest, CheckPermissions) {
   // chrome-extension URL or from its web extent.
   const Extension* match = info_map->extensions().GetExtensionOrAppByURL(
       app->GetResourceURL("a.html"));
-  EXPECT_TRUE(match &&
-      match->HasAPIPermission(APIPermission::kNotification));
+  EXPECT_TRUE(match && match->HasAPIPermission(APIPermission::kNotification));
   match = info_map->extensions().GetExtensionOrAppByURL(app_url);
-  EXPECT_TRUE(match &&
-      match->HasAPIPermission(APIPermission::kNotification));
-  EXPECT_FALSE(match &&
-      match->HasAPIPermission(APIPermission::kTab));
+  EXPECT_TRUE(match && match->HasAPIPermission(APIPermission::kNotification));
+  EXPECT_FALSE(match && match->HasAPIPermission(APIPermission::kTab));
 
   // The extension should have the tabs permission.
   match = info_map->extensions().GetExtensionOrAppByURL(
       extension->GetResourceURL("a.html"));
-  EXPECT_TRUE(match &&
-      match->HasAPIPermission(APIPermission::kTab));
-  EXPECT_FALSE(match &&
-      match->HasAPIPermission(APIPermission::kNotification));
+  EXPECT_TRUE(match && match->HasAPIPermission(APIPermission::kTab));
+  EXPECT_FALSE(match && match->HasAPIPermission(APIPermission::kNotification));
 
   // Random URL should not have any permissions.
   GURL evil_url("http://evil.com/a.html");
@@ -167,4 +161,4 @@ TEST_F(ExtensionInfoMapTest, CheckPermissions) {
   EXPECT_FALSE(match);
 }
 
-}  // namespace
+}  // namespace extensions

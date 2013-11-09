@@ -73,7 +73,7 @@ std::set<const WebRequestRule*> WebRequestRulesRegistry::GetMatches(
 }
 
 std::list<LinkedPtrEventResponseDelta> WebRequestRulesRegistry::CreateDeltas(
-    const ExtensionInfoMap* extension_info_map,
+    const InfoMap* extension_info_map,
     const WebRequestData& request_data,
     bool crosses_incognito) {
   if (webrequest_rules_.empty())

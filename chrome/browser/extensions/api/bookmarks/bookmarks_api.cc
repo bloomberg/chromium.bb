@@ -30,7 +30,6 @@
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/extensions/extensions_quota_service.h"
 #include "chrome/browser/importer/external_process_importer_host.h"
 #include "chrome/browser/importer/importer_uma.h"
 #include "chrome/browser/platform_util.h"
@@ -45,6 +44,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
+#include "extensions/browser/quota_service.h"
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -65,8 +65,8 @@ using content::WebContents;
 typedef QuotaLimitHeuristic::Bucket Bucket;
 typedef QuotaLimitHeuristic::Config Config;
 typedef QuotaLimitHeuristic::BucketList BucketList;
-typedef ExtensionsQuotaService::TimedLimit TimedLimit;
-typedef ExtensionsQuotaService::SustainedLimit SustainedLimit;
+typedef QuotaService::TimedLimit TimedLimit;
+typedef QuotaService::SustainedLimit SustainedLimit;
 typedef QuotaLimitHeuristic::BucketMapper BucketMapper;
 
 namespace {

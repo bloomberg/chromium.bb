@@ -30,7 +30,6 @@
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
 #include "chrome/browser/extensions/api/web_request/web_request_time_tracker.h"
 #include "chrome/browser/extensions/event_router.h"
-#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_renderer_state.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -51,6 +50,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/user_metrics.h"
+#include "extensions/browser/info_map.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/event_filtering_info.h"
 #include "extensions/common/features/feature.h"
@@ -76,6 +76,7 @@ using extensions::Extension;
 using extensions::ExtensionWarning;
 using extensions::ExtensionWarningService;
 using extensions::ExtensionWarningSet;
+using extensions::InfoMap;
 using extensions::Feature;
 using extensions::web_navigation_api_helpers::GetFrameId;
 
@@ -144,7 +145,7 @@ bool IsWebRequestEvent(const std::string& event_name) {
 // Returns whether |request| has been triggered by an extension in
 // |extension_info_map|.
 bool IsRequestFromExtension(const net::URLRequest* request,
-                            const ExtensionInfoMap* extension_info_map) {
+                            const InfoMap* extension_info_map) {
   // |extension_info_map| is NULL for system-level requests.
   if (!extension_info_map)
     return false;
@@ -469,7 +470,7 @@ struct ExtensionWebRequestEventRouter::BlockedRequest {
 
   // Provider of meta data about extensions, only used and non-NULL for events
   // that are delayed until the rules registry is ready.
-  ExtensionInfoMap* extension_info_map;
+  InfoMap* extension_info_map;
 
   BlockedRequest()
       : request(NULL),
@@ -608,7 +609,7 @@ void ExtensionWebRequestEventRouter::RegisterRulesRegistry(
 
 int ExtensionWebRequestEventRouter::OnBeforeRequest(
     void* profile,
-    ExtensionInfoMap* extension_info_map,
+    InfoMap* extension_info_map,
     net::URLRequest* request,
     const net::CompletionCallback& callback,
     GURL* new_url) {
@@ -674,7 +675,7 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
 
 int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
     void* profile,
-    ExtensionInfoMap* extension_info_map,
+    InfoMap* extension_info_map,
     net::URLRequest* request,
     const net::CompletionCallback& callback,
     net::HttpRequestHeaders* headers) {
@@ -731,7 +732,7 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
 
 void ExtensionWebRequestEventRouter::OnSendHeaders(
     void* profile,
-    ExtensionInfoMap* extension_info_map,
+    InfoMap* extension_info_map,
     net::URLRequest* request,
     const net::HttpRequestHeaders& headers) {
   // We hide events from the system context as well as sensitive requests.
@@ -764,7 +765,7 @@ void ExtensionWebRequestEventRouter::OnSendHeaders(
 
 int ExtensionWebRequestEventRouter::OnHeadersReceived(
     void* profile,
-    ExtensionInfoMap* extension_info_map,
+    InfoMap* extension_info_map,
     net::URLRequest* request,
     const net::CompletionCallback& callback,
     const net::HttpResponseHeaders* original_response_headers,
@@ -832,7 +833,7 @@ int ExtensionWebRequestEventRouter::OnHeadersReceived(
 net::NetworkDelegate::AuthRequiredResponse
 ExtensionWebRequestEventRouter::OnAuthRequired(
     void* profile,
-    ExtensionInfoMap* extension_info_map,
+    InfoMap* extension_info_map,
     net::URLRequest* request,
     const net::AuthChallengeInfo& auth_info,
     const net::NetworkDelegate::AuthCallback& callback,
@@ -885,7 +886,7 @@ ExtensionWebRequestEventRouter::OnAuthRequired(
 
 void ExtensionWebRequestEventRouter::OnBeforeRedirect(
     void* profile,
-    ExtensionInfoMap* extension_info_map,
+    InfoMap* extension_info_map,
     net::URLRequest* request,
     const GURL& new_location) {
   // We hide events from the system context as well as sensitive requests.
@@ -933,7 +934,7 @@ void ExtensionWebRequestEventRouter::OnBeforeRedirect(
 
 void ExtensionWebRequestEventRouter::OnResponseStarted(
     void* profile,
-    ExtensionInfoMap* extension_info_map,
+    InfoMap* extension_info_map,
     net::URLRequest* request) {
   // We hide events from the system context as well as sensitive requests.
   if (!profile ||
@@ -976,10 +977,9 @@ void ExtensionWebRequestEventRouter::OnResponseStarted(
   DispatchEvent(profile, request, listeners, args);
 }
 
-void ExtensionWebRequestEventRouter::OnCompleted(
-    void* profile,
-    ExtensionInfoMap* extension_info_map,
-    net::URLRequest* request) {
+void ExtensionWebRequestEventRouter::OnCompleted(void* profile,
+                                                 InfoMap* extension_info_map,
+                                                 net::URLRequest* request) {
   // We hide events from the system context as well as sensitive requests.
   // However, if the request first became sensitive after redirecting we have
   // already signaled it and thus we have to signal the end of it. This is
@@ -1031,7 +1031,7 @@ void ExtensionWebRequestEventRouter::OnCompleted(
 
 void ExtensionWebRequestEventRouter::OnErrorOccurred(
     void* profile,
-    ExtensionInfoMap* extension_info_map,
+    InfoMap* extension_info_map,
     net::URLRequest* request,
     bool started) {
   // We hide events from the system context as well as sensitive requests.
@@ -1344,7 +1344,7 @@ bool ExtensionWebRequestEventRouter::WasSignaled(
 
 void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
     void* profile,
-    ExtensionInfoMap* extension_info_map,
+    InfoMap* extension_info_map,
     bool crosses_incognito,
     const std::string& event_name,
     const GURL& url,
@@ -1421,7 +1421,7 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
 std::vector<const ExtensionWebRequestEventRouter::EventListener*>
 ExtensionWebRequestEventRouter::GetMatchingListeners(
     void* profile,
-    ExtensionInfoMap* extension_info_map,
+    InfoMap* extension_info_map,
     const std::string& event_name,
     net::URLRequest* request,
     int* extra_info_spec) {
@@ -1849,7 +1849,7 @@ int ExtensionWebRequestEventRouter::ExecuteDeltas(
 
 bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
     void* profile,
-    ExtensionInfoMap* extension_info_map,
+    InfoMap* extension_info_map,
     const std::string& event_name,
     net::URLRequest* request,
     extensions::RequestStage request_stage,
@@ -1999,7 +1999,7 @@ void ExtensionWebRequestEventRouter::ClearSignaled(uint64 request_id,
 // webRequest.handlerBehaviorChanged() should trigger a quota violation at the
 // time it is called. Instead we only decrement the bucket counter at the time
 // when the cache is cleared (when page loads happen).
-class ClearCacheQuotaHeuristic : public QuotaLimitHeuristic {
+class ClearCacheQuotaHeuristic : public extensions::QuotaLimitHeuristic {
  public:
   ClearCacheQuotaHeuristic(const Config& config, BucketMapper* map)
       : QuotaLimitHeuristic(
@@ -2245,14 +2245,13 @@ bool WebRequestEventHandled::RunImpl() {
 }
 
 void WebRequestHandlerBehaviorChangedFunction::GetQuotaLimitHeuristics(
-    QuotaLimitHeuristics* heuristics) const {
-  QuotaLimitHeuristic::Config config = {
-    // See web_request.json for current value.
-    web_request::MAX_HANDLER_BEHAVIOR_CHANGED_CALLS_PER_10_MINUTES,
-    base::TimeDelta::FromMinutes(10)
-  };
-  QuotaLimitHeuristic::BucketMapper* bucket_mapper =
-      new QuotaLimitHeuristic::SingletonBucketMapper();
+    extensions::QuotaLimitHeuristics* heuristics) const {
+  extensions::QuotaLimitHeuristic::Config config = {
+      // See web_request.json for current value.
+      web_request::MAX_HANDLER_BEHAVIOR_CHANGED_CALLS_PER_10_MINUTES,
+      base::TimeDelta::FromMinutes(10)};
+  extensions::QuotaLimitHeuristic::BucketMapper* bucket_mapper =
+      new extensions::QuotaLimitHeuristic::SingletonBucketMapper();
   ClearCacheQuotaHeuristic* heuristic =
       new ClearCacheQuotaHeuristic(config, bucket_mapper);
   heuristics->push_back(heuristic);

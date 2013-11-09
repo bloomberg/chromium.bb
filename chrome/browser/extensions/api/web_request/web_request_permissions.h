@@ -10,8 +10,11 @@
 
 #include "base/basictypes.h"
 
-class ExtensionInfoMap;
 class GURL;
+
+namespace extensions {
+class InfoMap;
+}
 
 namespace net {
 class URLRequest;
@@ -28,13 +31,13 @@ class WebRequestPermissions {
   };
 
   // Returns true if the request shall not be reported to extensions.
-  static bool HideRequest(const ExtensionInfoMap* extension_info_map,
+  static bool HideRequest(const extensions::InfoMap* extension_info_map,
                           const net::URLRequest* request);
 
   // |host_permission_check| controls how permissions are checked with regard to
   // |url|.
   static bool CanExtensionAccessURL(
-      const ExtensionInfoMap* extension_info_map,
+      const extensions::InfoMap* extension_info_map,
       const std::string& extension_id,
       const GURL& url,
       bool crosses_incognito,

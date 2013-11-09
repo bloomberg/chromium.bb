@@ -22,7 +22,6 @@
 #include "url/gurl.h"
 
 class CommandLine;
-class ExtensionInfoMap;
 class NaClHostMessageFilter;
 
 namespace content {

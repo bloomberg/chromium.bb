@@ -24,7 +24,6 @@
 #include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
-#include "chrome/browser/extensions/extensions_quota_service.h"
 #include "chrome/browser/extensions/external_provider_interface.h"
 #include "chrome/browser/extensions/management_policy.h"
 #include "chrome/browser/extensions/menu_manager.h"
@@ -39,6 +38,7 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "extensions/browser/quota_service.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/one_shot_event.h"
 
@@ -454,7 +454,7 @@ class ExtensionService
   // Note that this may return NULL if autoupdate is not turned on.
   extensions::ExtensionUpdater* updater();
 
-  ExtensionsQuotaService* quota_service() { return &quota_service_; }
+  extensions::QuotaService* quota_service() { return &quota_service_; }
 
   extensions::MenuManager* menu_manager() { return &menu_manager_; }
 
@@ -767,7 +767,7 @@ class ExtensionService
   bool install_updates_when_idle_;
 
   // Used by dispatchers to limit API quota for individual extensions.
-  ExtensionsQuotaService quota_service_;
+  extensions::QuotaService quota_service_;
 
   // Signaled when all extensions are loaded.
   extensions::OneShotEvent* const ready_;

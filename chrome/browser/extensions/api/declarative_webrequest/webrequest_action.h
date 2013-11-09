@@ -18,7 +18,6 @@
 #include "chrome/common/extensions/api/events.h"
 #include "url/gurl.h"
 
-class ExtensionInfoMap;
 class WebRequestPermission;
 
 namespace base {
@@ -33,6 +32,7 @@ struct EventResponseDelta;
 
 namespace extensions {
 class Extension;
+class InfoMap;
 struct WebRequestData;
 }
 
@@ -83,7 +83,7 @@ class WebRequestAction : public base::RefCounted<WebRequestAction> {
   // Information necessary to decide how to apply a WebRequestAction
   // inside a matching rule.
   struct ApplyInfo {
-    const ExtensionInfoMap* extension_info_map;
+    const InfoMap* extension_info_map;
     const WebRequestData& request_data;
     bool crosses_incognito;
     // Modified by each applied action:
@@ -122,7 +122,7 @@ class WebRequestAction : public base::RefCounted<WebRequestAction> {
   // host permissions are ignored. |crosses_incognito| specifies
   // whether the request comes from a different profile than |extension_id|
   // but was processed because the extension is in spanning mode.
-  virtual bool HasPermission(const ExtensionInfoMap* extension_info_map,
+  virtual bool HasPermission(const InfoMap* extension_info_map,
                              const std::string& extension_id,
                              const net::URLRequest* request,
                              bool crosses_incognito) const;

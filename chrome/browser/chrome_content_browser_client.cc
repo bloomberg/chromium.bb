@@ -35,7 +35,6 @@
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/browser_permissions_policy_delegate.h"
 #include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -127,6 +126,7 @@
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/url_utils.h"
+#include "extensions/browser/info_map.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/manifest_handlers/background_info.h"
@@ -251,6 +251,7 @@ using content::SiteInstance;
 using content::WebContents;
 using extensions::APIPermission;
 using extensions::Extension;
+using extensions::InfoMap;
 using extensions::Manifest;
 using message_center::NotifierId;
 
@@ -1267,8 +1268,9 @@ void ChromeContentBrowserClient::SiteInstanceGotProcess(
     if (signin_manager)
       signin_manager->SetSigninProcess(site_instance->GetProcess()->GetID());
     BrowserThread::PostTask(
-        BrowserThread::IO, FROM_HERE,
-        base::Bind(&ExtensionInfoMap::SetSigninProcess,
+        BrowserThread::IO,
+        FROM_HERE,
+        base::Bind(&InfoMap::SetSigninProcess,
                    extensions::ExtensionSystem::Get(profile)->info_map(),
                    site_instance->GetProcess()->GetID()));
   }
@@ -1288,8 +1290,9 @@ void ChromeContentBrowserClient::SiteInstanceGotProcess(
                                  site_instance->GetProcess()->GetID(),
                                  site_instance->GetId());
   BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&ExtensionInfoMap::RegisterExtensionProcess,
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&InfoMap::RegisterExtensionProcess,
                  extensions::ExtensionSystem::Get(profile)->info_map(),
                  extension->id(),
                  site_instance->GetProcess()->GetID(),
@@ -1317,8 +1320,9 @@ void ChromeContentBrowserClient::SiteInstanceDeleting(
                                  site_instance->GetProcess()->GetID(),
                                  site_instance->GetId());
   BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&ExtensionInfoMap::UnregisterExtensionProcess,
+      BrowserThread::IO,
+      FROM_HERE,
+      base::Bind(&InfoMap::UnregisterExtensionProcess,
                  extensions::ExtensionSystem::Get(profile)->info_map(),
                  extension->id(),
                  site_instance->GetProcess()->GetID(),
@@ -1893,7 +1897,7 @@ void ChromeContentBrowserClient::RequestDesktopNotificationPermission(
   // extension has the 'notify' permission. (If the extension does not have the
   // permission, the user will still be prompted.)
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
-  ExtensionInfoMap* extension_info_map =
+  InfoMap* extension_info_map =
       extensions::ExtensionSystem::Get(profile)->info_map();
   DesktopNotificationService* notification_service =
       DesktopNotificationServiceFactory::GetForProfile(profile);
@@ -1945,7 +1949,7 @@ blink::WebNotificationPresenter::Permission
   DesktopNotificationService* notification_service =
       io_data->GetNotificationService();
   if (notification_service) {
-    ExtensionInfoMap* extension_info_map = io_data->GetExtensionInfoMap();
+    InfoMap* extension_info_map = io_data->GetExtensionInfoMap();
     ExtensionSet extensions;
     extension_info_map->GetExtensionsWithAPIPermissionForSecurityOrigin(
         source_origin, render_process_id,
@@ -2036,7 +2040,7 @@ bool ChromeContentBrowserClient::CanCreateWindow(
   *no_javascript_access = false;
 
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
-  ExtensionInfoMap* map = io_data->GetExtensionInfoMap();
+  InfoMap* map = io_data->GetExtensionInfoMap();
 
   // If the opener is trying to create a background window but doesn't have
   // the appropriate permission, fail the attempt.

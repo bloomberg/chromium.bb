@@ -16,10 +16,10 @@
 #include "base/process/process.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "chrome/browser/extensions/extension_function_histogram_value.h"
-#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/console_message_level.h"
+#include "extensions/browser/info_map.h"
 #include "ipc/ipc_message.h"
 
 class ChromeRenderMessageFilter;
@@ -27,7 +27,6 @@ class ExtensionFunction;
 class ExtensionFunctionDispatcher;
 class UIThreadExtensionFunction;
 class IOThreadExtensionFunction;
-class QuotaLimitHeuristic;
 
 namespace base {
 class ListValue;
@@ -38,6 +37,10 @@ namespace content {
 class BrowserContext;
 class RenderViewHost;
 class WebContents;
+}
+
+namespace extensions {
+class QuotaLimitHeuristic;
 }
 
 #ifdef NDEBUG
@@ -127,9 +130,9 @@ class ExtensionFunction
   // instances is passed to the owner of |heuristics|.
   // No quota limiting by default.
   //
-  // Only called once per lifetime of the ExtensionsQuotaService.
+  // Only called once per lifetime of the QuotaService.
   virtual void GetQuotaLimitHeuristics(
-      QuotaLimitHeuristics* heuristics) const {}
+      extensions::QuotaLimitHeuristics* heuristics) const {}
 
   // Called when the quota limit has been exceeded. The default implementation
   // returns an error.
@@ -367,10 +370,10 @@ class IOThreadExtensionFunction : public ExtensionFunction {
 
   int routing_id() const { return routing_id_; }
 
-  void set_extension_info_map(const ExtensionInfoMap* extension_info_map) {
+  void set_extension_info_map(const extensions::InfoMap* extension_info_map) {
     extension_info_map_ = extension_info_map;
   }
-  const ExtensionInfoMap* extension_info_map() const {
+  const extensions::InfoMap* extension_info_map() const {
     return extension_info_map_.get();
   }
 
@@ -389,7 +392,7 @@ class IOThreadExtensionFunction : public ExtensionFunction {
   base::WeakPtr<ChromeRenderMessageFilter> ipc_sender_;
   int routing_id_;
 
-  scoped_refptr<const ExtensionInfoMap> extension_info_map_;
+  scoped_refptr<const extensions::InfoMap> extension_info_map_;
 };
 
 // Base class for an extension function that runs asynchronously *relative to

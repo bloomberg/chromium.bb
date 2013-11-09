@@ -6,7 +6,6 @@
 
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry.h"
-#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -14,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
+#include "extensions/browser/info_map.h"
 
 namespace {
 
@@ -127,8 +127,7 @@ void RulesCacheDelegate::Observe(
   // declarative rules, not just webRequest.
   if (extension->HasAPIPermission(APIPermission::kDeclarativeContent) ||
       extension->HasAPIPermission(APIPermission::kDeclarativeWebRequest)) {
-    ExtensionInfoMap* extension_info_map =
-        ExtensionSystem::Get(profile_)->info_map();
+    InfoMap* extension_info_map = ExtensionSystem::Get(profile_)->info_map();
     if (profile_->IsOffTheRecord() &&
         !extension_info_map->IsIncognitoEnabled(extension->id())) {
       // Ignore this extension.

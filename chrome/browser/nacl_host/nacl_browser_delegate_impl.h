@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_NACL_HOST_NACL_BROWSER_DELEGATE_IMPL_H_
 
 #include "base/compiler_specific.h"
-#include "chrome/browser/extensions/extension_info_map.h"
 #include "components/nacl/common/nacl_browser_delegate.h"
+#include "extensions/browser/info_map.h"
 
 class NaClBrowserDelegateImpl : public NaClBrowserDelegate {
  public:
-  explicit NaClBrowserDelegateImpl(ExtensionInfoMap* extension_info_map);
+  explicit NaClBrowserDelegateImpl(extensions::InfoMap* extension_info_map);
   virtual ~NaClBrowserDelegateImpl();
 
   virtual void ShowNaClInfobar(int render_process_id, int render_view_id,
@@ -31,7 +31,7 @@ class NaClBrowserDelegateImpl : public NaClBrowserDelegate {
   virtual bool URLMatchesDebugPatterns(const GURL& manifest_url) OVERRIDE;
 
  private:
-  scoped_refptr<ExtensionInfoMap> extension_info_map_;
+  scoped_refptr<extensions::InfoMap> extension_info_map_;
   std::vector<URLPattern> debug_patterns_;
   bool inverse_debug_patterns_;
   DISALLOW_COPY_AND_ASSIGN(NaClBrowserDelegateImpl);

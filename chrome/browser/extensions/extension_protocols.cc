@@ -23,7 +23,6 @@
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
-#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_renderer_state.h"
 #include "chrome/browser/extensions/image_loader.h"
 #include "chrome/common/chrome_paths.h"
@@ -37,6 +36,7 @@
 #include "chrome/common/url_constants.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_request_info.h"
+#include "extensions/browser/info_map.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_resource.h"
 #include "extensions/common/file_util.h"
@@ -314,7 +314,7 @@ class URLRequestExtensionJob : public net::URLRequestFileJob {
 
 bool ExtensionCanLoadInIncognito(const ResourceRequestInfo* info,
                                  const std::string& extension_id,
-                                 ExtensionInfoMap* extension_info_map) {
+                                 extensions::InfoMap* extension_info_map) {
   if (!extension_info_map->IsIncognitoEnabled(extension_id))
     return false;
 
@@ -336,7 +336,7 @@ bool ExtensionCanLoadInIncognito(const ResourceRequestInfo* info,
 bool AllowExtensionResourceLoad(net::URLRequest* request,
                                 bool is_incognito,
                                 const Extension* extension,
-                                ExtensionInfoMap* extension_info_map) {
+                                extensions::InfoMap* extension_info_map) {
   const ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
 
   // We have seen crashes where info is NULL: crbug.com/52374.
@@ -452,9 +452,8 @@ class ExtensionProtocolHandler
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
   ExtensionProtocolHandler(bool is_incognito,
-                           ExtensionInfoMap* extension_info_map)
-      : is_incognito_(is_incognito),
-        extension_info_map_(extension_info_map) {}
+                           extensions::InfoMap* extension_info_map)
+      : is_incognito_(is_incognito), extension_info_map_(extension_info_map) {}
 
   virtual ~ExtensionProtocolHandler() {}
 
@@ -464,7 +463,7 @@ class ExtensionProtocolHandler
 
  private:
   const bool is_incognito_;
-  ExtensionInfoMap* const extension_info_map_;
+  extensions::InfoMap* const extension_info_map_;
   DISALLOW_COPY_AND_ASSIGN(ExtensionProtocolHandler);
 };
 
@@ -599,6 +598,6 @@ ExtensionProtocolHandler::MaybeCreateJob(
 
 net::URLRequestJobFactory::ProtocolHandler* CreateExtensionProtocolHandler(
     bool is_incognito,
-    ExtensionInfoMap* extension_info_map) {
+    extensions::InfoMap* extension_info_map) {
   return new ExtensionProtocolHandler(is_incognito, extension_info_map);
 }

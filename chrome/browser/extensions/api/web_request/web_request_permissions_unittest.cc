@@ -5,12 +5,12 @@
 #include "chrome/browser/extensions/api/web_request/web_request_permissions.h"
 
 #include "base/message_loop/message_loop.h"
-#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_test_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "extensions/browser/info_map.h"
 #include "net/base/request_priority.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -35,7 +35,7 @@ class ExtensionWebRequestHelpersTestWithThreadsTest : public testing::Test {
   scoped_refptr<Extension> permissionless_extension_;
   // This extension has Web Request permissions, and *.com a host permission.
   scoped_refptr<Extension> com_extension_;
-  scoped_refptr<ExtensionInfoMap> extension_info_map_;
+  scoped_refptr<extensions::InfoMap> extension_info_map_;
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
@@ -60,7 +60,7 @@ void ExtensionWebRequestHelpersTestWithThreadsTest::SetUp() {
                             "ext_id_2",
                             &error);
   ASSERT_TRUE(com_extension_.get()) << error;
-  extension_info_map_ = new ExtensionInfoMap;
+  extension_info_map_ = new extensions::InfoMap;
   extension_info_map_->AddExtension(permissionless_extension_.get(),
                                     base::Time::Now(),
                                     false /*incognito_enabled*/);

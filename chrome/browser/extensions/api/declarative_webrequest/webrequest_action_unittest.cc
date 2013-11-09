@@ -17,12 +17,12 @@
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_condition.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
-#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_test_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "extensions/browser/info_map.h"
 #include "net/base/request_priority.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_test_util.h"
@@ -97,7 +97,7 @@ class WebRequestActionWithThreadsTest : public testing::Test {
   scoped_refptr<Extension> extension_;
   // An extension with host permissions for all URLs and the DWR permission.
   scoped_refptr<Extension> extension_all_urls_;
-  scoped_refptr<ExtensionInfoMap> extension_info_map_;
+  scoped_refptr<InfoMap> extension_info_map_;
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
@@ -122,7 +122,7 @@ void WebRequestActionWithThreadsTest::SetUp() {
                             "ext_id_2",
                             &error);
   ASSERT_TRUE(extension_all_urls_.get()) << error;
-  extension_info_map_ = new ExtensionInfoMap;
+  extension_info_map_ = new InfoMap;
   ASSERT_TRUE(extension_info_map_.get());
   extension_info_map_->AddExtension(
       extension_.get(), base::Time::Now(), false /*incognito_enabled*/);

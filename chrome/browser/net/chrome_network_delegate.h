@@ -17,7 +17,6 @@
 
 class ClientHints;
 class CookieSettings;
-class ExtensionInfoMap;
 class PrefService;
 template<class T> class PrefMember;
 
@@ -35,6 +34,7 @@ class Predictor;
 
 namespace extensions {
 class EventRouterForwarder;
+class InfoMap;
 }
 
 namespace net {
@@ -58,7 +58,7 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
 
   // Not inlined because we assign a scoped_refptr, which requires us to include
   // the header file.
-  void set_extension_info_map(ExtensionInfoMap* extension_info_map);
+  void set_extension_info_map(extensions::InfoMap* extension_info_map);
 
   void set_url_blacklist_manager(
       const policy::URLBlacklistManager* url_blacklist_manager) {
@@ -188,7 +188,7 @@ class ChromeNetworkDelegate : public net::NetworkDelegate {
   base::FilePath profile_path_;
   scoped_refptr<CookieSettings> cookie_settings_;
 
-  scoped_refptr<ExtensionInfoMap> extension_info_map_;
+  scoped_refptr<extensions::InfoMap> extension_info_map_;
 
   scoped_ptr<chrome_browser_net::ConnectInterceptor> connect_interceptor_;
 

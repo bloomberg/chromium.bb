@@ -30,7 +30,6 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/download/download_service.h"
 #include "chrome/browser/download/download_service_factory.h"
-#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_protocols.h"
 #include "chrome/browser/extensions/extension_resource_protocols.h"
 #include "chrome/browser/extensions/extension_system.h"
@@ -62,6 +61,7 @@
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_context.h"
+#include "extensions/browser/info_map.h"
 #include "extensions/common/constants.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cookies/canonical_cookie.h"
@@ -627,7 +627,7 @@ ChromeURLRequestContext* ProfileIOData::GetIsolatedMediaRequestContext(
   return context;
 }
 
-ExtensionInfoMap* ProfileIOData::GetExtensionInfoMap() const {
+extensions::InfoMap* ProfileIOData::GetExtensionInfoMap() const {
   DCHECK(initialized_) << "ExtensionSystem not initialized";
   return extension_info_map_.get();
 }

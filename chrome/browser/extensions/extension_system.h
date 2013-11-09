@@ -13,7 +13,6 @@
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "extensions/common/one_shot_event.h"
 
-class ExtensionInfoMap;
 class ExtensionProcessManager;
 class ExtensionService;
 class Profile;
@@ -36,6 +35,7 @@ class Extension;
 class ExtensionSystemSharedFactory;
 class ExtensionWarningBadgeService;
 class ExtensionWarningService;
+class InfoMap;
 class LazyBackgroundTaskQueue;
 class ManagementPolicy;
 class NavigationObserver;
@@ -94,7 +94,7 @@ class ExtensionSystem : public BrowserContextKeyedService {
   virtual StateStore* rules_store() = 0;
 
   // Returns the IO-thread-accessible extension data.
-  virtual ExtensionInfoMap* info_map() = 0;
+  virtual InfoMap* info_map() = 0;
 
   // The LazyBackgroundTaskQueue is created at startup.
   virtual LazyBackgroundTaskQueue* lazy_background_task_queue() = 0;
@@ -154,7 +154,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
   virtual StateStore* rules_store() OVERRIDE;  // shared
   virtual LazyBackgroundTaskQueue* lazy_background_task_queue()
       OVERRIDE;  // shared
-  virtual ExtensionInfoMap* info_map() OVERRIDE;  // shared
+  virtual InfoMap* info_map() OVERRIDE; // shared
   virtual EventRouter* event_router() OVERRIDE;  // shared
   virtual ExtensionWarningService* warning_service() OVERRIDE;
   virtual Blacklist* blacklist() OVERRIDE;  // shared
@@ -194,7 +194,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
     ManagementPolicy* management_policy();
     UserScriptMaster* user_script_master();
     Blacklist* blacklist();
-    ExtensionInfoMap* info_map();
+    InfoMap* info_map();
     LazyBackgroundTaskQueue* lazy_background_task_queue();
     EventRouter* event_router();
     ExtensionWarningService* warning_service();
@@ -222,7 +222,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
     scoped_ptr<ExtensionService> extension_service_;
     scoped_ptr<ManagementPolicy> management_policy_;
     // extension_info_map_ needs to outlive extension_process_manager_.
-    scoped_refptr<ExtensionInfoMap> extension_info_map_;
+    scoped_refptr<InfoMap> extension_info_map_;
     scoped_ptr<ExtensionWarningService> extension_warning_service_;
     scoped_ptr<ExtensionWarningBadgeService> extension_warning_badge_service_;
     scoped_ptr<ErrorConsole> error_console_;

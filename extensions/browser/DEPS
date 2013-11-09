@@ -8,6 +8,7 @@ include_rules = [
   #
   # TODO(jamescook): Remove these. http://crbug.com/162530
   "+chrome/browser/chrome_notification_types.h",
+  "+chrome/browser/extensions/extension_function.h",
   "+chrome/browser/extensions/extension_host.h",
   "+chrome/browser/extensions/extension_process_manager.h",
   "+chrome/browser/extensions/extension_service.h",
@@ -15,6 +16,7 @@ include_rules = [
   "+chrome/browser/extensions/process_map.h",
   "+chrome/common/extensions/extension.h",
   "+chrome/common/extensions/extension_messages.h",
+  "+chrome/common/extensions/extension_set.h",
   "+grit/generated_resources.h",
 ]
 
@@ -24,6 +26,7 @@ specific_include_rules = {
     # TODO(jamescook): Remove these. http://crbug.com/159366
     "+chrome/browser/extensions/extension_service_unittest.h",
     "+chrome/browser/extensions/test_extension_system.h",
+    "+chrome/common/chrome_paths.h",
     "+chrome/test/base/testing_profile.h",
   ]
 }

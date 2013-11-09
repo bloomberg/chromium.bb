@@ -49,7 +49,7 @@ namespace keys2 = url_matcher_constants;
 class TestWebRequestRulesRegistry : public WebRequestRulesRegistry {
  public:
   explicit TestWebRequestRulesRegistry(
-      scoped_refptr<ExtensionInfoMap> extension_info_map)
+      scoped_refptr<InfoMap> extension_info_map)
       : WebRequestRulesRegistry(NULL /*profile*/, NULL /* cache_delegate */),
         num_clear_cache_calls_(0) {
     SetExtensionInfoMapForTesting(extension_info_map);
@@ -229,7 +229,7 @@ class WebRequestRulesRegistryTest : public testing::Test {
   // |extension2_|.
   scoped_refptr<Extension> extension_;
   scoped_refptr<Extension> extension2_;
-  scoped_refptr<ExtensionInfoMap> extension_info_map_;
+  scoped_refptr<InfoMap> extension_info_map_;
 };
 
 void WebRequestRulesRegistryTest::SetUp() {
@@ -250,7 +250,7 @@ void WebRequestRulesRegistryTest::SetUp() {
                                       kExtensionId2,
                                       &error);
   ASSERT_TRUE(extension2_.get()) << error;
-  extension_info_map_ = new ExtensionInfoMap;
+  extension_info_map_ = new InfoMap;
   ASSERT_TRUE(extension_info_map_.get());
   extension_info_map_->AddExtension(extension_.get(),
                                     base::Time() + base::TimeDelta::FromDays(1),

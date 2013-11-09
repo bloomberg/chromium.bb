@@ -15,7 +15,6 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/extensions/api/notifications/notifications_api.h"
 #include "chrome/browser/extensions/event_router.h"
-#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/infobars/confirm_infobar_delegate.h"
@@ -38,6 +37,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/show_desktop_notification_params.h"
+#include "extensions/browser/info_map.h"
 #include "extensions/common/constants.h"
 #include "grit/browser_resources.h"
 #include "grit/chromium_strings.h"
@@ -516,7 +516,7 @@ string16 DesktopNotificationService::DisplayNameForOriginInProcessId(
   // is allowed by an extension.
   if (NotificationUIManager::DelegatesToMessageCenter() ||
       origin.SchemeIs(extensions::kExtensionScheme)) {
-    ExtensionInfoMap* extension_info_map =
+    extensions::InfoMap* extension_info_map =
         extensions::ExtensionSystem::Get(profile_)->info_map();
     if (extension_info_map) {
       ExtensionSet extensions;

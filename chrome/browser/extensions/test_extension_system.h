@@ -64,7 +64,7 @@ class TestExtensionSystem : public ExtensionSystem {
   virtual StateStore* state_store() OVERRIDE;
   virtual StateStore* rules_store() OVERRIDE;
   TestingValueStore* value_store() { return value_store_; }
-  virtual ExtensionInfoMap* info_map() OVERRIDE;
+  virtual InfoMap* info_map() OVERRIDE;
   virtual LazyBackgroundTaskQueue* lazy_background_task_queue() OVERRIDE;
   virtual EventRouter* event_router() OVERRIDE;
   virtual ExtensionWarningService* warning_service() OVERRIDE;
@@ -93,7 +93,7 @@ class TestExtensionSystem : public ExtensionSystem {
   scoped_ptr<ManagementPolicy> management_policy_;
   scoped_ptr<ExtensionService> extension_service_;
   scoped_ptr<ExtensionProcessManager> extension_process_manager_;
-  scoped_refptr<ExtensionInfoMap> info_map_;
+  scoped_refptr<InfoMap> info_map_;
   scoped_ptr<ErrorConsole> error_console_;
   OneShotEvent ready_;
 };

@@ -17,9 +17,9 @@
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_constants.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
 #include "chrome/browser/extensions/api/web_request/web_request_permissions.h"
-#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/common/url_constants.h"
+#include "extensions/browser/info_map.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/url_request/url_request.h"
 #include "third_party/re2/re2/re2.h"
@@ -436,7 +436,7 @@ bool WebRequestAction::Equals(const WebRequestAction* other) const {
   return type() == other->type();
 }
 
-bool WebRequestAction::HasPermission(const ExtensionInfoMap* extension_info_map,
+bool WebRequestAction::HasPermission(const InfoMap* extension_info_map,
                                      const std::string& extension_id,
                                      const net::URLRequest* request,
                                      bool crosses_incognito) const {

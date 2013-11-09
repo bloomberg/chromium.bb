@@ -7,7 +7,6 @@
 #include "apps/launcher.h"
 #include "base/bind.h"
 #include "base/logging.h"
-#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
@@ -20,6 +19,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_throttle.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/info_map.h"
 #include "net/url_request/url_request.h"
 
 using content::BrowserThread;

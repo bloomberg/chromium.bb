@@ -2547,8 +2547,9 @@ void ExtensionService::Observe(int type,
 
       process_map_.RemoveAllFromProcess(process->GetID());
       BrowserThread::PostTask(
-          BrowserThread::IO, FROM_HERE,
-          base::Bind(&ExtensionInfoMap::UnregisterAllExtensionsInProcess,
+          BrowserThread::IO,
+          FROM_HERE,
+          base::Bind(&extensions::InfoMap::UnregisterAllExtensionsInProcess,
                      system_->info_map(),
                      process->GetID()));
       break;

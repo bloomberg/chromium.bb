@@ -21,7 +21,7 @@
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stage.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_action.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/webrequest_condition.h"
-#include "chrome/browser/extensions/extension_info_map.h"
+#include "extensions/browser/info_map.h"
 #include "extensions/common/matcher/url_matcher.h"
 
 class Profile;
@@ -86,7 +86,7 @@ class WebRequestRulesRegistry : public RulesRegistry {
   // Returns which modifications should be executed on the network request
   // according to the rules registered in this registry.
   std::list<LinkedPtrEventResponseDelta> CreateDeltas(
-      const ExtensionInfoMap* extension_info_map,
+      const InfoMap* extension_info_map,
       const WebRequestData& request_data,
       bool crosses_incognito);
 
@@ -112,7 +112,7 @@ class WebRequestRulesRegistry : public RulesRegistry {
   virtual void ClearCacheOnNavigation();
 
   void SetExtensionInfoMapForTesting(
-      scoped_refptr<ExtensionInfoMap> extension_info_map) {
+      scoped_refptr<InfoMap> extension_info_map) {
     extension_info_map_ = extension_info_map;
   }
 
@@ -182,7 +182,7 @@ class WebRequestRulesRegistry : public RulesRegistry {
   URLMatcher url_matcher_;
 
   void* profile_id_;
-  scoped_refptr<ExtensionInfoMap> extension_info_map_;
+  scoped_refptr<InfoMap> extension_info_map_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRequestRulesRegistry);
 };

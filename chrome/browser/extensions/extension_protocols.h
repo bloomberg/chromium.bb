@@ -7,11 +7,13 @@
 
 #include "net/url_request/url_request_job_factory.h"
 
-class ExtensionInfoMap;
+namespace extensions {
+class InfoMap;
+}
 
 // Creates the handlers for the chrome-extension:// scheme.
 net::URLRequestJobFactory::ProtocolHandler* CreateExtensionProtocolHandler(
     bool is_incognito,
-    ExtensionInfoMap* extension_info_map);
+    extensions::InfoMap* extension_info_map);
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_PROTOCOLS_H_

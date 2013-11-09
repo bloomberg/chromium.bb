@@ -12,10 +12,10 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/storage/settings_frontend.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extensions_quota_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/storage.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/quota_service.h"
 
 namespace extensions {
 
@@ -135,11 +135,10 @@ void GetModificationQuotaLimitHeuristics(QuotaLimitHeuristics* heuristics) {
     api::storage::sync::MAX_WRITE_OPERATIONS_PER_HOUR,
     base::TimeDelta::FromHours(1)
   };
-  heuristics->push_back(
-      new ExtensionsQuotaService::TimedLimit(
-          longLimitConfig,
-          new QuotaLimitHeuristic::SingletonBucketMapper(),
-          "MAX_WRITE_OPERATIONS_PER_HOUR"));
+  heuristics->push_back(new QuotaService::TimedLimit(
+      longLimitConfig,
+      new QuotaLimitHeuristic::SingletonBucketMapper(),
+      "MAX_WRITE_OPERATIONS_PER_HOUR"));
 
   // A max of 10 operations per minute, sustained over 10 minutes.
   QuotaLimitHeuristic::Config shortLimitConfig = {
@@ -147,12 +146,11 @@ void GetModificationQuotaLimitHeuristics(QuotaLimitHeuristics* heuristics) {
     api::storage::sync::MAX_SUSTAINED_WRITE_OPERATIONS_PER_MINUTE,
     base::TimeDelta::FromMinutes(1)
   };
-  heuristics->push_back(
-      new ExtensionsQuotaService::SustainedLimit(
-          base::TimeDelta::FromMinutes(10),
-          shortLimitConfig,
-          new QuotaLimitHeuristic::SingletonBucketMapper(),
-          "MAX_SUSTAINED_WRITE_OPERATIONS_PER_MINUTE"));
+  heuristics->push_back(new QuotaService::SustainedLimit(
+      base::TimeDelta::FromMinutes(10),
+      shortLimitConfig,
+      new QuotaLimitHeuristic::SingletonBucketMapper(),
+      "MAX_SUSTAINED_WRITE_OPERATIONS_PER_MINUTE"));
 };
 
 }  // namespace

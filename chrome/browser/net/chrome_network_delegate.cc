@@ -25,7 +25,6 @@
 #include "chrome/browser/extensions/api/proxy/proxy_api.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
-#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/google/google_util.h"
@@ -41,6 +40,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_request_info.h"
+#include "extensions/browser/info_map.h"
 #include "extensions/common/constants.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
@@ -320,7 +320,7 @@ ChromeNetworkDelegate::ChromeNetworkDelegate(
 ChromeNetworkDelegate::~ChromeNetworkDelegate() {}
 
 void ChromeNetworkDelegate::set_extension_info_map(
-    ExtensionInfoMap* extension_info_map) {
+    extensions::InfoMap* extension_info_map) {
   extension_info_map_ = extension_info_map;
 }
 

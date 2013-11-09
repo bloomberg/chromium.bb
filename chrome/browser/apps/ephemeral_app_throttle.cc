@@ -5,7 +5,6 @@
 #include "chrome/browser/apps/ephemeral_app_throttle.h"
 
 #include "base/command_line.h"
-#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/webstore_ephemeral_installer.h"

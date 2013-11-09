@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// The ExtensionsQuotaService uses heuristics to limit abusive requests
+// The QuotaService uses heuristics to limit abusive requests
 // made by extensions.  In this model 'items' (e.g individual bookmarks) are
 // represented by a 'Bucket' that holds state for that item for one single
 // interval of time.  The interval of time is defined as 'how long we need to
@@ -11,8 +11,8 @@
 // arguments to a unique Bucket (the BucketMapper), and another to determine
 // if a new request involving such an item at a given time is a violation.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSIONS_QUOTA_SERVICE_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSIONS_QUOTA_SERVICE_H_
+#ifndef EXTENSIONS_BROWSER_QUOTA_SERVICE_H_
+#define EXTENSIONS_BROWSER_QUOTA_SERVICE_H_
 
 #include <list>
 #include <map>
@@ -27,28 +27,28 @@
 #include "base/values.h"
 
 class ExtensionFunction;
-class QuotaLimitHeuristic;
-typedef std::list<QuotaLimitHeuristic*> QuotaLimitHeuristics;
 
 namespace extensions {
+class QuotaLimitHeuristic;
 class TestResetQuotaFunction;
-}
 
-// The ExtensionsQuotaService takes care that calls to certain extension
+typedef std::list<QuotaLimitHeuristic*> QuotaLimitHeuristics;
+
+// The QuotaService takes care that calls to certain extension
 // functions do not exceed predefined quotas.
 //
-// The ExtensionsQuotaService needs to live entirely on one thread, i.e.
+// The QuotaService needs to live entirely on one thread, i.e.
 // be created, called and destroyed on the same thread, due to its use
 // of a RepeatingTimer.
-class ExtensionsQuotaService : public base::NonThreadSafe {
+class QuotaService : public base::NonThreadSafe {
  public:
   // Some concrete heuristics (declared below) that ExtensionFunctions can
   // use to help the service make decisions about quota violations.
   class TimedLimit;
   class SustainedLimit;
 
-  ExtensionsQuotaService();
-  virtual ~ExtensionsQuotaService();
+  QuotaService();
+  virtual ~QuotaService();
 
   // Decide whether the invocation of |function| with argument |args| by the
   // extension specified by |extension_id| results in a quota limit violation.
@@ -74,7 +74,7 @@ class ExtensionsQuotaService : public base::NonThreadSafe {
   // converge to the correct set.
   void Purge();
   void PurgeFunctionHeuristicsMap(FunctionHeuristicsMap* map);
-  base::RepeatingTimer<ExtensionsQuotaService> purge_timer_;
+  base::RepeatingTimer<QuotaService> purge_timer_;
 
   // Our quota tracking state for extensions that have invoked quota limited
   // functions.  Each extension is treated separately, so extension ids are the
@@ -89,7 +89,7 @@ class ExtensionsQuotaService : public base::NonThreadSafe {
   typedef std::map<std::string, std::string> ViolationErrorMap;
   ViolationErrorMap violation_errors_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionsQuotaService);
+  DISALLOW_COPY_AND_ASSIGN(QuotaService);
 };
 
 // A QuotaLimitHeuristic is two things: 1, A heuristic to map extension
@@ -134,6 +134,7 @@ class QuotaLimitHeuristic {
     // The time at which the token count and next expiration should be reset,
     // via a call to Reset.
     const base::TimeTicks& expiration() { return expiration_; }
+
    private:
     base::TimeTicks expiration_;
     int64 num_tokens_;
@@ -209,7 +210,7 @@ class QuotaLimitHeuristic {
 
 // A simple per-item heuristic to limit the number of events that can occur in
 // a given period of time; e.g "no more than 100 events in an hour".
-class ExtensionsQuotaService::TimedLimit : public QuotaLimitHeuristic {
+class QuotaService::TimedLimit : public QuotaLimitHeuristic {
  public:
   TimedLimit(const Config& config, BucketMapper* map, const std::string& name)
       : QuotaLimitHeuristic(config, map, name) {}
@@ -220,7 +221,7 @@ class ExtensionsQuotaService::TimedLimit : public QuotaLimitHeuristic {
 // A per-item heuristic to limit the number of events that can occur in a
 // period of time over a sustained longer interval. E.g "no more than two
 // events per minute, sustained over 10 minutes".
-class ExtensionsQuotaService::SustainedLimit : public QuotaLimitHeuristic {
+class QuotaService::SustainedLimit : public QuotaLimitHeuristic {
  public:
   SustainedLimit(const base::TimeDelta& sustain,
                  const Config& config,
@@ -228,6 +229,7 @@ class ExtensionsQuotaService::SustainedLimit : public QuotaLimitHeuristic {
                  const std::string& name);
   virtual bool Apply(Bucket* bucket,
                      const base::TimeTicks& event_time) OVERRIDE;
+
  private:
   // Specifies how long exhaustion of buckets is allowed to continue before
   // denying requests.
@@ -235,4 +237,6 @@ class ExtensionsQuotaService::SustainedLimit : public QuotaLimitHeuristic {
   int64 num_available_repeat_exhaustions_;
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSIONS_QUOTA_SERVICE_H_
+}  // namespace extensions
+
+#endif  // EXTENSIONS_BROWSER_QUOTA_SERVICE_H_

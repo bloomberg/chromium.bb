@@ -30,7 +30,6 @@ class ChromeHttpUserAgentSettings;
 class ChromeNetworkDelegate;
 class CookieSettings;
 class DesktopNotificationService;
-class ExtensionInfoMap;
 class HostContentSettingsMap;
 class ManagedModeURLFilter;
 class Profile;
@@ -41,6 +40,10 @@ class TransportSecurityPersister;
 namespace chrome_browser_net {
 class LoadTimeStats;
 class ResourcePrefetchPredictorObserver;
+}
+
+namespace extensions {
+class InfoMap;
 }
 
 namespace net {
@@ -113,7 +116,7 @@ class ProfileIOData {
   // These are useful when the Chrome layer is called from the content layer
   // with a content::ResourceContext, and they want access to Chrome data for
   // that profile.
-  ExtensionInfoMap* GetExtensionInfoMap() const;
+  extensions::InfoMap* GetExtensionInfoMap() const;
   CookieSettings* GetCookieSettings() const;
   HostContentSettingsMap* GetHostContentSettingsMap() const;
 
@@ -250,7 +253,7 @@ class ProfileIOData {
     scoped_refptr<HostContentSettingsMap> host_content_settings_map;
     scoped_refptr<net::SSLConfigService> ssl_config_service;
     scoped_refptr<net::CookieMonster::Delegate> cookie_monster_delegate;
-    scoped_refptr<ExtensionInfoMap> extension_info_map;
+    scoped_refptr<extensions::InfoMap> extension_info_map;
     scoped_ptr<chrome_browser_net::ResourcePrefetchPredictorObserver>
         resource_prefetch_predictor_observer_;
 
@@ -488,7 +491,7 @@ class ProfileIOData {
   mutable scoped_ptr<policy::URLBlacklistManager> url_blacklist_manager_;
 
   // Pointed to by URLRequestContext.
-  mutable scoped_refptr<ExtensionInfoMap> extension_info_map_;
+  mutable scoped_refptr<extensions::InfoMap> extension_info_map_;
   mutable scoped_ptr<net::ServerBoundCertService> server_bound_cert_service_;
   mutable scoped_ptr<ChromeNetworkDelegate> network_delegate_;
   mutable scoped_ptr<net::FraudulentCertificateReporter>

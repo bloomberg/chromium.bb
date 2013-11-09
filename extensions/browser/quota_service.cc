@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extensions_quota_service.h"
+#include "extensions/browser/quota_service.h"
 
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
@@ -20,25 +20,27 @@ const char kOverQuotaError[] = "This request exceeds the * quota.";
 
 }  // namespace
 
-ExtensionsQuotaService::ExtensionsQuotaService() {
+namespace extensions {
+
+QuotaService::QuotaService() {
   if (base::MessageLoop::current() != NULL) {  // Null in unit tests.
     purge_timer_.Start(FROM_HERE,
                        base::TimeDelta::FromDays(kPurgeIntervalInDays),
-                       this, &ExtensionsQuotaService::Purge);
+                       this,
+                       &QuotaService::Purge);
   }
 }
 
-ExtensionsQuotaService::~ExtensionsQuotaService() {
+QuotaService::~QuotaService() {
   DCHECK(CalledOnValidThread());
   purge_timer_.Stop();
   Purge();
 }
 
-std::string ExtensionsQuotaService::Assess(
-    const std::string& extension_id,
-    ExtensionFunction* function,
-    const base::ListValue* args,
-    const base::TimeTicks& event_time) {
+std::string QuotaService::Assess(const std::string& extension_id,
+                                 ExtensionFunction* function,
+                                 const base::ListValue* args,
+                                 const base::TimeTicks& event_time) {
   DCHECK(CalledOnValidThread());
 
   if (function->ShouldSkipQuotaLimiting())
@@ -62,7 +64,8 @@ std::string ExtensionsQuotaService::Assess(
 
   QuotaLimitHeuristic* failed_heuristic = NULL;
   for (QuotaLimitHeuristics::iterator heuristic = heuristics.begin();
-       heuristic != heuristics.end(); ++heuristic) {
+       heuristic != heuristics.end();
+       ++heuristic) {
     // Apply heuristic to each item (bucket).
     if (!(*heuristic)->ApplyToArgs(args, event_time)) {
       failed_heuristic = *heuristic;
@@ -82,8 +85,7 @@ std::string ExtensionsQuotaService::Assess(
   return error;
 }
 
-void ExtensionsQuotaService::PurgeFunctionHeuristicsMap(
-    FunctionHeuristicsMap* map) {
+void QuotaService::PurgeFunctionHeuristicsMap(FunctionHeuristicsMap* map) {
   FunctionHeuristicsMap::iterator heuristics = map->begin();
   while (heuristics != map->end()) {
     STLDeleteElements(&heuristics->second);
@@ -91,7 +93,7 @@ void ExtensionsQuotaService::PurgeFunctionHeuristicsMap(
   }
 }
 
-void ExtensionsQuotaService::Purge() {
+void QuotaService::Purge() {
   DCHECK(CalledOnValidThread());
   std::map<std::string, FunctionHeuristicsMap>::iterator it =
       function_heuristics_.begin();
@@ -100,7 +102,7 @@ void ExtensionsQuotaService::Purge() {
 }
 
 void QuotaLimitHeuristic::Bucket::Reset(const Config& config,
-    const base::TimeTicks& start) {
+                                        const base::TimeTicks& start) {
   num_tokens_ = config.refill_token_count;
   expiration_ = start + config.refill_interval;
 }
@@ -114,13 +116,12 @@ void QuotaLimitHeuristic::SingletonBucketMapper::GetBucketsForArgs(
 QuotaLimitHeuristic::QuotaLimitHeuristic(const Config& config,
                                          BucketMapper* map,
                                          const std::string& name)
-    : config_(config), bucket_mapper_(map), name_(name) {
-}
+    : config_(config), bucket_mapper_(map), name_(name) {}
 
 QuotaLimitHeuristic::~QuotaLimitHeuristic() {}
 
 bool QuotaLimitHeuristic::ApplyToArgs(const base::ListValue* args,
-    const base::TimeTicks& event_time) {
+                                      const base::TimeTicks& event_time) {
   BucketList buckets;
   bucket_mapper_->GetBucketsForArgs(args, &buckets);
   for (BucketList::iterator i = buckets.begin(); i != buckets.end(); ++i) {
@@ -136,27 +137,25 @@ std::string QuotaLimitHeuristic::GetError() const {
   return extensions::ErrorUtils::FormatErrorMessage(kOverQuotaError, name_);
 }
 
-ExtensionsQuotaService::SustainedLimit::SustainedLimit(
-    const base::TimeDelta& sustain,
-    const Config& config,
-    BucketMapper* map,
-    const std::string& name)
+QuotaService::SustainedLimit::SustainedLimit(const base::TimeDelta& sustain,
+                                             const Config& config,
+                                             BucketMapper* map,
+                                             const std::string& name)
     : QuotaLimitHeuristic(config, map, name),
       repeat_exhaustion_allowance_(sustain.InSeconds() /
                                    config.refill_interval.InSeconds()),
-      num_available_repeat_exhaustions_(repeat_exhaustion_allowance_) {
-}
+      num_available_repeat_exhaustions_(repeat_exhaustion_allowance_) {}
 
-bool ExtensionsQuotaService::TimedLimit::Apply(Bucket* bucket,
-    const base::TimeTicks& event_time) {
+bool QuotaService::TimedLimit::Apply(Bucket* bucket,
+                                     const base::TimeTicks& event_time) {
   if (event_time > bucket->expiration())
     bucket->Reset(config(), event_time);
 
   return bucket->DeductToken();
 }
 
-bool ExtensionsQuotaService::SustainedLimit::Apply(Bucket* bucket,
-    const base::TimeTicks& event_time) {
+bool QuotaService::SustainedLimit::Apply(Bucket* bucket,
+                                         const base::TimeTicks& event_time) {
   if (event_time > bucket->expiration()) {
     // We reset state for this item and start over again if this request breaks
     // the bad cycle that was previously being tracked.  This occurs if the
@@ -166,8 +165,8 @@ bool ExtensionsQuotaService::SustainedLimit::Apply(Bucket* bucket,
     // than 1 full refill interval away from the last event (so even if we used
     // up all the tokens in the last bucket, nothing happened in the entire
     // next refill interval, so it doesn't matter).
-    if (bucket->has_tokens() || event_time > bucket->expiration() +
-        config().refill_interval) {
+    if (bucket->has_tokens() ||
+        event_time > bucket->expiration() + config().refill_interval) {
       bucket->Reset(config(), event_time);
       num_available_repeat_exhaustions_ = repeat_exhaustion_allowance_;
     } else if (--num_available_repeat_exhaustions_ > 0) {
@@ -189,3 +188,5 @@ bool ExtensionsQuotaService::SustainedLimit::Apply(Bucket* bucket,
   bucket->DeductToken();
   return true;
 }
+
+}  // namespace extensions

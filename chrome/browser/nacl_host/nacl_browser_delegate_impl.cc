@@ -9,7 +9,6 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/pnacl/pnacl_component_installer.h"
-#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/nacl_host/nacl_infobar_delegate.h"
 #include "chrome/browser/renderer_host/pepper/chrome_browser_pepper_host_factory.h"
@@ -20,6 +19,7 @@
 #include "chrome/common/extensions/manifest_handlers/shared_module_info.h"
 #include "chrome/common/logging_chrome.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/info_map.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/url_pattern.h"
 #include "ppapi/c/private/ppb_nacl_private.h"
@@ -27,10 +27,8 @@
 using extensions::SharedModuleInfo;
 
 NaClBrowserDelegateImpl::NaClBrowserDelegateImpl(
-    ExtensionInfoMap* extension_info_map)
-    : extension_info_map_(extension_info_map),
-      inverse_debug_patterns_(false) {
-}
+    extensions::InfoMap* extension_info_map)
+    : extension_info_map_(extension_info_map), inverse_debug_patterns_(false) {}
 
 NaClBrowserDelegateImpl::~NaClBrowserDelegateImpl() {
 }

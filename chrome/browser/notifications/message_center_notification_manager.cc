@@ -8,7 +8,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_service.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/extension_info_map.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
@@ -25,6 +24,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "extensions/browser/info_map.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/message_center/message_center_style.h"
 #include "ui/message_center/message_center_tray.h"
@@ -420,7 +420,7 @@ MessageCenterNotificationManager::ProfileNotification::OnDownloadsCompleted() {
 
 std::string
     MessageCenterNotificationManager::ProfileNotification::GetExtensionId() {
-  ExtensionInfoMap* extension_info_map =
+  extensions::InfoMap* extension_info_map =
       extensions::ExtensionSystem::Get(profile())->info_map();
   ExtensionSet extensions;
   extension_info_map->GetExtensionsWithAPIPermissionForSecurityOrigin(

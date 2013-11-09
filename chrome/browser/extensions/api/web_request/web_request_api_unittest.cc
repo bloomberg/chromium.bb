@@ -64,7 +64,6 @@ using base::Time;
 using base::TimeDelta;
 using base::Value;
 using chrome::VersionInfo;
-using extensions::Feature;
 using helpers::CalculateOnAuthRequiredDelta;
 using helpers::CalculateOnBeforeRequestDelta;
 using helpers::CalculateOnBeforeSendHeadersDelta;
@@ -209,7 +208,7 @@ class ExtensionWebRequestTest : public testing::Test {
   BooleanPrefMember enable_referrers_;
   TestIPCSender ipc_sender_;
   scoped_refptr<EventRouterForwarder> event_router_;
-  scoped_refptr<ExtensionInfoMap> extension_info_map_;
+  scoped_refptr<InfoMap> extension_info_map_;
   scoped_ptr<ChromeNetworkDelegate> network_delegate_;
   scoped_ptr<net::TestURLRequestContext> context_;
 };
@@ -803,7 +802,7 @@ class ExtensionWebRequestHeaderModificationTest
   BooleanPrefMember enable_referrers_;
   TestIPCSender ipc_sender_;
   scoped_refptr<EventRouterForwarder> event_router_;
-  scoped_refptr<ExtensionInfoMap> extension_info_map_;
+  scoped_refptr<InfoMap> extension_info_map_;
   scoped_ptr<ChromeNetworkDelegate> network_delegate_;
   scoped_ptr<net::MockHostResolver> host_resolver_;
   scoped_ptr<net::TestURLRequestContext> context_;
