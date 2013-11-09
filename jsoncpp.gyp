@@ -3,40 +3,13 @@
 # found in the LICENSE file.
 
 {
+  'includes': [
+    'jsoncpp.gypi',
+  ],
   'targets': [
     {
       'target_name': 'jsoncpp',
       'type': 'static_library',
-      'defines': [
-        'JSON_USE_EXCEPTION=0',
-      ],
-      'sources': [
-        'source/include/json/assertions.h',
-        'source/include/json/autolink.h',
-        'source/include/json/config.h',
-        'source/include/json/features.h',
-        'source/include/json/forwards.h',
-        'source/include/json/json.h',
-        'source/include/json/reader.h',
-        'overrides/include/json/value.h',
-        'source/include/json/writer.h',
-        'source/src/lib_json/json_batchallocator.h',
-        'source/src/lib_json/json_reader.cpp',
-        'source/src/lib_json/json_tool.h',
-        'overrides/src/lib_json/json_value.cpp',
-        'source/src/lib_json/json_writer.cpp',
-      ],
-      'include_dirs': [
-        'overrides/include/',
-        'source/include/',
-        'source/src/lib_json/',
-      ],
-      'direct_dependent_settings': {
-        'include_dirs': [
-          'overrides/include/',
-          'source/include/',
-        ],
-      },
     },
   ],
 }

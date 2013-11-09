@@ -6,5 +6,5 @@ License File: LICENSE
 Security Critical: yes
 
 Description:
-The libjingle/webrtc uses jsoncpp for signaling message serialization and deserialization.
+The libjingle/webrtc/liblouis_nacl uses jsoncpp for signaling message serialization and deserialization.
 
