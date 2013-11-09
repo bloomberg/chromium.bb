@@ -1156,7 +1156,8 @@ TEST_F(RenderTextTest, StringSizeEmptyString) {
 }
 #endif  // !defined(OS_MACOSX)
 
-TEST_F(RenderTextTest, StringSizeRespectsFontListMetrics) {
+// Disabled. http://crbug.com/316955
+TEST_F(RenderTextTest, DISABLED_StringSizeRespectsFontListMetrics) {
   // Check that Arial and Symbol have different font metrics.
   Font arial_font("Arial", 16);
   Font symbol_font("Symbol", 16);
@@ -1212,7 +1213,8 @@ TEST_F(RenderTextTest, SetFont) {
   EXPECT_EQ(12, render_text->GetPrimaryFont().GetFontSize());
 }
 
-TEST_F(RenderTextTest, SetFontList) {
+// Disabled. http://crbug.com/316955
+TEST_F(RenderTextTest, DISABLED_SetFontList) {
   scoped_ptr<RenderText> render_text(RenderText::CreateInstance());
   render_text->SetFontList(FontList("Arial,Symbol, 13px"));
   const std::vector<Font>& fonts = render_text->font_list().GetFonts();

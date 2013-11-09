@@ -16,7 +16,8 @@ namespace views {
 // All text sizing measurements (width and height) should be greater than this.
 const int kMinTextDimension = 4;
 
-TEST(LabelTest, FontPropertySymbol) {
+// Disabled. http://crbug.com/316955
+TEST(LabelTest, DISABLED_FontPropertySymbol) {
   Label label;
   std::string font_name("symbol");
   gfx::Font font(font_name, 26);

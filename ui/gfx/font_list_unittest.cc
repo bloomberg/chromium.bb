@@ -289,7 +289,8 @@ TEST(FontListTest, Fonts_DeriveFontListWithSizeDeltaAndStyle) {
   EXPECT_EQ("Sans serif|13|bold", FontToString(derived_fonts[1]));
 }
 
-TEST(FontListTest, Fonts_GetHeight_GetBaseline) {
+// Disabled. http://crbug.com/316955
+TEST(FontListTest, DISABLED_Fonts_GetHeight_GetBaseline) {
   // If a font list has only one font, the height and baseline must be the same.
   Font font1("Arial", 16);
   FontList font_list1("Arial, 16px");
