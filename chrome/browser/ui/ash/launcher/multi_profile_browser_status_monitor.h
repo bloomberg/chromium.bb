@@ -22,11 +22,11 @@ class MultiProfileBrowserStatusMonitor : public BrowserStatusMonitor {
   virtual void RemoveV1AppFromShelf(Browser* browser) OVERRIDE;
 
  private:
-  // Returns true if app is owned by current user.
-  bool IsV1AppOwnedByCurrentUser(Browser* browser);
-
   typedef std::vector<Browser*> AppList;
   AppList app_list_;
+
+  // The launcher controller which is associated with this object.
+  ChromeLauncherController* launcher_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiProfileBrowserStatusMonitor);
 };

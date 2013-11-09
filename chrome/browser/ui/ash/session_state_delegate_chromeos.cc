@@ -15,7 +15,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/ash/multi_user_window_manager.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -171,9 +171,12 @@ void SessionStateDelegateChromeos::RemoveSessionStateObserver(
 bool SessionStateDelegateChromeos::TransferWindowToDesktopOfUser(
     aura::Window* window,
     ash::MultiProfileIndex index) {
+  if (chrome::MultiUserWindowManager::GetMultiProfileMode() !=
+          chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_SEPARATED)
+    return false;
   chrome::MultiUserWindowManager* window_manager =
       chrome::MultiUserWindowManager::GetInstance();
-  if (!window_manager || window_manager->GetWindowOwner(window).empty())
+  if (window_manager->GetWindowOwner(window).empty())
     return false;
 
   ash::MultiProfileUMA::RecordTeleportAction(

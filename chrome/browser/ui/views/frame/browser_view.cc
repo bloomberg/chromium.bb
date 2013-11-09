@@ -158,7 +158,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/ui/ash/multi_user_window_manager.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #endif
 
 using base::TimeDelta;
@@ -582,9 +582,8 @@ bool BrowserView::ShouldShowAvatar() const {
     return true;
 
   // Note: In case of the M-31 mode the window manager won't exist.
-  chrome::MultiUserWindowManager* window_manager =
-      chrome::MultiUserWindowManager::GetInstance();
-  if (window_manager) {
+  if (chrome::MultiUserWindowManager::GetMultiProfileMode() ==
+          chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_SEPARATED) {
     // This function is called via BrowserNonClientFrameView::UpdateAvatarInfo
     // during the creation of the BrowserWindow, so browser->window() will not
     // yet be set. In this case we can safely return false.
@@ -598,6 +597,8 @@ bool BrowserView::ShouldShowAvatar() const {
     // Note: When the window manager the window is either on it's owners desktop
     // (and shows no icon) or it is now (in which it will show an icon). So we
     // can return here.
+    chrome::MultiUserWindowManager* window_manager =
+        chrome::MultiUserWindowManager::GetInstance();
     return !window_manager->IsWindowOnDesktopOfUser(
         window,
         window_manager->GetWindowOwner(window));

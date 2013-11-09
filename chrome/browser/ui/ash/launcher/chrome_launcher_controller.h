@@ -528,9 +528,6 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   // Forget the current profile to allow attaching to a new one.
   void ReleaseProfile();
 
-  // Update the state of all V1 shortcut launcher items after a user switch.
-  void UpdateV1AppStatesAfterUserSwitch();
-
   static ChromeLauncherController* instance_;
 
   ash::LauncherModel* model_;

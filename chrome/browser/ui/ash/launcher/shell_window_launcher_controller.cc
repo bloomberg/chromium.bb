@@ -11,13 +11,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/shell_window_launcher_item_controller.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "ui/aura/client/activation_client.h"
 #include "ui/aura/root_window.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/ui/ash/multi_user_window_manager.h"
-#endif
 
 using apps::ShellWindow;
 
@@ -70,7 +67,6 @@ ShellWindowLauncherController::~ShellWindowLauncherController() {
 
 void ShellWindowLauncherController::AdditionalUserAddedToSession(
     Profile* profile) {
-#if defined(OS_CHROMEOS)
   // TODO(skuhne): This was added for the legacy side by side mode in M32. If
   // this mode gets no longer pursued this special case can be removed.
   if (chrome::MultiUserWindowManager::GetMultiProfileMode() !=
@@ -83,7 +79,6 @@ void ShellWindowLauncherController::AdditionalUserAddedToSession(
 
   registry->AddObserver(this);
   registry_.insert(registry);
-#endif
 }
 
 void ShellWindowLauncherController::OnShellWindowAdded(

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ASH_MULTI_USER_WINDOW_MANAGER_H_
-#define CHROME_BROWSER_UI_ASH_MULTI_USER_WINDOW_MANAGER_H_
+#ifndef CHROME_BROWSER_UI_ASH_MULTI_USER_MULTI_USER_WINDOW_MANAGER_CHROMEOS_H_
+#define CHROME_BROWSER_UI_ASH_MULTI_USER_MULTI_USER_WINDOW_MANAGER_CHROMEOS_H_
 
 #include <map>
 #include <string>
@@ -11,6 +11,7 @@
 #include "ash/session_state_observer.h"
 #include "ash/wm/window_state_observer.h"
 #include "base/compiler_specific.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/aura/window_observer.h"
@@ -23,31 +24,16 @@ class Window;
 class WindowObserver;
 }
 
-namespace ash {
-namespace test {
-class MultiUserWindowManagerTest;
-}
-}
-
 namespace chrome {
 
 class AppObserver;
 
-// The MultiUserWindowManager allows to show only windows of a particular user
-// when the user is active. To achieve this all windows need to be registered
-// to a user and upon user switch windows which belong to that (or no) user
-// get shown while the others get hidden. In addition, each window visibility
-// change gets inspected and - if incorrectly called - stays hidden.
-// Browser as well as shell (app) window creations get automatically tracked
-// and associated with the user in question.
-// Other windows can explicitly made into a user specific window by calling
-// |SetWindowOwner|. If a window should get shown on another user's desktop,
-// the function |ShowWindowForUser| can be invoked.
+// This ChromeOS implementation of the MultiUserWindowManager interface is
+// detecting app and browser creations, tagging their windows automatically and
+// using (currently) show and hide to make the owned windows visible - or not.
+// If it becomes necessary, the function |SetWindowVisibility| can be
+// overwritten to match new ways of doing this.
 // Note:
-// - There is no need to "unregister" a window from an owner. The class will
-//   clean automatically all references of that window upon destruction.
-// - User changes will be tracked via observer. No need to call.
-// - All child windows will be owned by the same owner as its parent.
 // - aura::Window::Hide() is currently hiding the window and all owned transient
 //   children. However aura::Window::Show() is only showing the window itself.
 //   To address that, all transient children (and their children) are remembered
@@ -55,89 +41,28 @@ class AppObserver;
 //   visibility changes from the owning user. This way the visibility can be
 //   changed back to its requested state upon showing by us - or when the window
 //   gets detached from its current owning parent.
-// TODO(skuhne): Split this class into a generic (non Chrome OS) utility
-// function list and a pure virtual class. Then create two implementations of
-// it: One for Chrome OS and for all other OS'ses. Then remove the
-// defined(OS_CHROMEOS) in the various locations of the code.
-class MultiUserWindowManager : public ash::SessionStateObserver,
-                               public aura::WindowObserver,
-                               public content::NotificationObserver,
-                               public ash::wm::WindowStateObserver {
+class MultiUserWindowManagerChromeOS : public MultiUserWindowManager,
+                                       public ash::SessionStateObserver,
+                                       public aura::WindowObserver,
+                                       public content::NotificationObserver,
+                                       public ash::wm::WindowStateObserver {
  public:
-  // The multi profile mode in use.
-  enum MultiProfileMode {
-    MULTI_PROFILE_MODE_UNINITIALIZED,  // Not initialized yet.
-    MULTI_PROFILE_MODE_OFF,            // Single user mode.
-    MULTI_PROFILE_MODE_SEPARATED,      // Each user has his own desktop.
-    MULTI_PROFILE_MODE_MIXED           // All users mix windows freely.
-  };
+  // Create the manager and use |active_user_id| as the active user.
+  explicit MultiUserWindowManagerChromeOS(const std::string& active_user_id);
+  virtual ~MultiUserWindowManagerChromeOS();
 
-  // Creates an instance of the MultiUserWindowManager.
-  // Note: This function might fail if due to the desired mode the
-  // MultiUserWindowManager is not required.
-  static MultiUserWindowManager* CreateInstance();
-
-  // Gets the instance of the object. If the multi profile mode is not enabled
-  // this will return NULL.
-  static MultiUserWindowManager* GetInstance();
-
-  // Return the current multi profile mode operation. If CreateInstance was not
-  // yet called (or was already destroyed), MULTI_PROFILE_MODE_UNINITIALIZED
-  // will get returned.
-  static MultiProfileMode GetMultiProfileMode();
-
-  // Removes the instance.
-  static void DeleteInstance();
-
-  // Get the user id from a given profile.
-  static std::string GetUserIDFromProfile(Profile* profile);
-
-  // Get the user id from an email address.
-  static std::string GetUserIDFromEmail(const std::string& email);
-
-  // Get a profile for a given user id.
-  static Profile* GetProfileFromUserID(const std::string& user_id);
-
-  // Check if the given profile is from the currently active user.
-  static bool ProfileIsFromActiveUser(Profile* profile);
-
-  // Assigns an owner to a passed window. Note that this window's parent should
-  // be a direct child of the root window.
-  // A user switch will automatically change the visibility - and - if the
-  // current user is not the owner it will immediately hidden. If the window
-  // had already be registered this function will run into a DCHECK violation.
-  void SetWindowOwner(aura::Window* window, const std::string& user_id);
-
-  // See who owns this window. The return value is the user id or an empty
-  // string if not assigned yet.
-  const std::string& GetWindowOwner(aura::Window* window);
-
-  // Allows to show an owned window for another users. If the window is not
-  // owned, this call will return immediately. (The FileManager for example
-  // might be available for every user and not belong explicitly to one).
-  // Note that a window can only be shown on one desktop at a time. Note that
-  // when the window gets minimized, it will automatically fall back to the
-  // owner's desktop.
-  void ShowWindowForUser(aura::Window* window, const std::string& user_id);
-
-  // Returns true when windows are shared among users.
-  bool AreWindowsSharedAmongUsers();
-
-  // A query call for a given window to see if it is on the given user's
-  // desktop.
-  bool IsWindowOnDesktopOfUser(aura::Window* window,
-                               const std::string& user_id);
-
-  // Get the user on which the window is currently shown. If an empty string is
-  // passed back the window will be presented for every user.
-  const std::string& GetUserPresentingWindow(aura::Window* window);
-
-  // Adds user to monitor now and future running V1/V2 application windows.
-  // Returns immediately if the user (identified by a |profile|) is already
-  // known to the manager. Note: This function is not implemented as a
-  // SessionStateObserver to coordinate the timing of the addition with other
-  // modules.
-  void AddUser(Profile* profile);
+  // MultiUserWindowManager overrides:
+  virtual void SetWindowOwner(
+      aura::Window* window, const std::string& user_id) OVERRIDE;
+  virtual const std::string& GetWindowOwner(aura::Window* window) OVERRIDE;
+  virtual void ShowWindowForUser(
+      aura::Window* window, const std::string& user_id) OVERRIDE;
+  virtual bool AreWindowsSharedAmongUsers() OVERRIDE;
+  virtual bool IsWindowOnDesktopOfUser(aura::Window* window,
+                                       const std::string& user_id) OVERRIDE;
+  virtual const std::string& GetUserPresentingWindow(
+      aura::Window* window) OVERRIDE;
+  virtual void AddUser(Profile* profile) OVERRIDE;
 
   // SessionStateObserver overrides:
   virtual void ActiveUserChanged(const std::string& user_id) OVERRIDE;
@@ -162,13 +87,6 @@ class MultiUserWindowManager : public ash::SessionStateObserver,
   virtual void Observe(int type,
                const content::NotificationSource& source,
                const content::NotificationDetails& details) OVERRIDE;
-
- protected:
-  friend class ash::test::MultiUserWindowManagerTest;
-
-  // Create an instance for and pass the |active_user_id| to it.
-  static MultiUserWindowManager* CreateInstanceInternal(
-      std::string active_user_id);
 
  private:
   class WindowEntry {
@@ -213,10 +131,6 @@ class MultiUserWindowManager : public ash::SessionStateObserver,
   typedef std::map<aura::Window*, WindowEntry*> WindowToEntryMap;
   typedef std::map<std::string, AppObserver*> UserIDToShellWindowObserver;
   typedef std::map<aura::Window*, bool> TransientWindowToVisibility;
-
-  // Create the manager and use |active_user_id| as the active user.
-  explicit MultiUserWindowManager(const std::string& active_user_id);
-  virtual ~MultiUserWindowManager();
 
   // Add a browser window to the system so that the owner can be remembered.
   void AddBrowserWindow(Browser* browser);
@@ -270,9 +184,9 @@ class MultiUserWindowManager : public ash::SessionStateObserver,
   // used is quite expensive.
   static MultiProfileMode multi_user_mode_;
 
-  DISALLOW_COPY_AND_ASSIGN(MultiUserWindowManager);
+  DISALLOW_COPY_AND_ASSIGN(MultiUserWindowManagerChromeOS);
 };
 
 }  // namespace chrome
 
-#endif  // CHROME_BROWSER_UI_ASH_MULTI_USER_WINDOW_MANAGER_H_
+#endif  // CHROME_BROWSER_UI_ASH_MULTI_USER_MULTI_USER_WINDOW_MANAGER_CHROMEOS_H_

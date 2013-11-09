@@ -17,6 +17,8 @@
 #include "chrome/browser/ui/ash/launcher/launcher_application_menu_item_model.h"
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -31,8 +33,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/default_pinned_apps_field_trial.h"
-#include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/ui/ash/multi_user_window_manager.h"
 #endif
 
 using extensions::Extension;
@@ -51,18 +51,10 @@ const int kClickSuppressionInMS = 1000;
 // goes away.
 bool CanBrowserBeUsedForDirectActivation(Browser* browser,
                                          ChromeLauncherController* launcher) {
-#if defined(OS_CHROMEOS)
-  // If running in any multi user mode, check that the browser belongs to the
-  // active user.
   if (chrome::MultiUserWindowManager::GetMultiProfileMode() ==
           chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_OFF)
     return true;
-  chromeos::UserManager* manager = chromeos::UserManager::Get();
-  return manager->GetActiveUser() ==
-         manager->GetUserByProfile(browser->profile()->GetOriginalProfile());
-#else
-  return launcher->IsBrowserFromActiveUser(browser);
-#endif
+  return multi_user_util::IsProfileFromActiveUser(browser->profile());
 }
 
 }  // namespace

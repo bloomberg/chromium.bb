@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/multi_user_window_manager.h"
-
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/test_shell_delegate.h"
@@ -11,6 +9,8 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
 #include "ui/aura/client/activation_client.h"
@@ -23,9 +23,9 @@ namespace test {
 
 // A test class for preparing the chrome::MultiUserWindowManager. It creates
 // various windows and instantiates the chrome::MultiUserWindowManager.
-class MultiUserWindowManagerTest : public AshTestBase {
+class MultiUserWindowManagerChromeOSTest : public AshTestBase {
  public:
-  MultiUserWindowManagerTest() : multi_user_window_manager_(NULL) {}
+  MultiUserWindowManagerChromeOSTest() : multi_user_window_manager_(NULL) {}
 
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
@@ -41,7 +41,7 @@ class MultiUserWindowManagerTest : public AshTestBase {
   }
 
   // The accessor to the MultiWindowManager.
-  chrome::MultiUserWindowManager* multi_user_window_manager() {
+  chrome::MultiUserWindowManagerChromeOS* multi_user_window_manager() {
     return multi_user_window_manager_;
   }
 
@@ -57,28 +57,29 @@ class MultiUserWindowManagerTest : public AshTestBase {
   std::vector<aura::Window*> window_;
 
   // The instance of the MultiUserWindowManager.
-  chrome::MultiUserWindowManager* multi_user_window_manager_;
+  chrome::MultiUserWindowManagerChromeOS* multi_user_window_manager_;
 
-  DISALLOW_COPY_AND_ASSIGN(MultiUserWindowManagerTest);
+  DISALLOW_COPY_AND_ASSIGN(MultiUserWindowManagerChromeOSTest);
 };
 
-void MultiUserWindowManagerTest::SetUp() {
+void MultiUserWindowManagerChromeOSTest::SetUp() {
   CommandLine::ForCurrentProcess()->AppendSwitch(switches::kMultiProfiles);
   AshTestBase::SetUp();
 }
 
-void MultiUserWindowManagerTest::SetUpForThisManyWindows(int windows) {
+void MultiUserWindowManagerChromeOSTest::SetUpForThisManyWindows(int windows) {
   DCHECK(!window_.size());
   for (int i = 0; i < windows; i++) {
     window_.push_back(CreateTestWindowInShellWithId(i));
     window_[i]->Show();
   }
-  multi_user_window_manager_ =
-      chrome::MultiUserWindowManager::CreateInstanceInternal("A");
+  multi_user_window_manager_ = new chrome::MultiUserWindowManagerChromeOS("A");
+  chrome::MultiUserWindowManager::SetInstanceForTest(multi_user_window_manager_,
+        chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_SEPARATED);
   EXPECT_TRUE(multi_user_window_manager_);
 }
 
-void MultiUserWindowManagerTest::TearDown() {
+void MultiUserWindowManagerChromeOSTest::TearDown() {
   // Since the AuraTestBase is needed to create our assets, we have to
   // also delete them before we tear it down.
   while (!window_.empty()) {
@@ -90,7 +91,7 @@ void MultiUserWindowManagerTest::TearDown() {
   chrome::MultiUserWindowManager::DeleteInstance();
 }
 
-std::string MultiUserWindowManagerTest::GetStatus() {
+std::string MultiUserWindowManagerChromeOSTest::GetStatus() {
   std::string s;
   for (size_t i = 0; i < window_.size(); i++) {
     if (i)
@@ -111,7 +112,7 @@ std::string MultiUserWindowManagerTest::GetStatus() {
 }
 
 // Testing basic assumptions like default state and existence of manager.
-TEST_F(MultiUserWindowManagerTest, BasicTests) {
+TEST_F(MultiUserWindowManagerChromeOSTest, BasicTests) {
   SetUpForThisManyWindows(3);
   // Check the basic assumptions: All windows are visible and there is no owner.
   EXPECT_EQ("S[], S[], S[]", GetStatus());
@@ -154,7 +155,7 @@ TEST_F(MultiUserWindowManagerTest, BasicTests) {
 }
 
 // Testing simple owner changes.
-TEST_F(MultiUserWindowManagerTest, OwnerTests) {
+TEST_F(MultiUserWindowManagerChromeOSTest, OwnerTests) {
   SetUpForThisManyWindows(5);
   // Set some windows to the active owner.
   multi_user_window_manager()->SetWindowOwner(window(0), "A");
@@ -185,7 +186,7 @@ TEST_F(MultiUserWindowManagerTest, OwnerTests) {
   EXPECT_EQ("S[A], H[B], S[A], H[B], S[]", GetStatus());
 }
 
-TEST_F(MultiUserWindowManagerTest, CloseWindowTests) {
+TEST_F(MultiUserWindowManagerChromeOSTest, CloseWindowTests) {
   SetUpForThisManyWindows(2);
   multi_user_window_manager()->SetWindowOwner(window(0), "B");
   EXPECT_EQ("H[B], S[]", GetStatus());
@@ -202,7 +203,7 @@ TEST_F(MultiUserWindowManagerTest, CloseWindowTests) {
   EXPECT_FALSE(multi_user_window_manager()->AreWindowsSharedAmongUsers());
 }
 
-TEST_F(MultiUserWindowManagerTest, SharedWindowTests) {
+TEST_F(MultiUserWindowManagerChromeOSTest, SharedWindowTests) {
   SetUpForThisManyWindows(5);
   // Set some owners and make sure we got what we asked for.
   multi_user_window_manager()->SetWindowOwner(window(0), "A");
@@ -254,7 +255,7 @@ TEST_F(MultiUserWindowManagerTest, SharedWindowTests) {
 }
 
 // Make sure that adding a window to another desktop does not cause harm.
-TEST_F(MultiUserWindowManagerTest, DoubleSharedWindowTests) {
+TEST_F(MultiUserWindowManagerChromeOSTest, DoubleSharedWindowTests) {
   SetUpForThisManyWindows(2);
   multi_user_window_manager()->SetWindowOwner(window(0), "B");
 
@@ -273,7 +274,7 @@ TEST_F(MultiUserWindowManagerTest, DoubleSharedWindowTests) {
 // Tests that the user's desktop visibility changes get respected. These tests
 // are required to make sure that our usage of the same feature for showing and
 // hiding does not interfere with the "normal operation".
-TEST_F(MultiUserWindowManagerTest, PreserveWindowVisibilityTests) {
+TEST_F(MultiUserWindowManagerChromeOSTest, PreserveWindowVisibilityTests) {
   SetUpForThisManyWindows(5);
   // Set some owners and make sure we got what we asked for.
   // Note that we try to cover all combinations in one go.
@@ -326,7 +327,7 @@ TEST_F(MultiUserWindowManagerTest, PreserveWindowVisibilityTests) {
 
 // Check that minimizing a window which is owned by another user will move it
 // back.
-TEST_F(MultiUserWindowManagerTest, MinimizeChangesOwnershipBack) {
+TEST_F(MultiUserWindowManagerChromeOSTest, MinimizeChangesOwnershipBack) {
   SetUpForThisManyWindows(4);
   multi_user_window_manager()->SetWindowOwner(window(0), "A");
   multi_user_window_manager()->SetWindowOwner(window(1), "B");
@@ -348,7 +349,7 @@ TEST_F(MultiUserWindowManagerTest, MinimizeChangesOwnershipBack) {
 }
 
 // Check that we cannot transfer the ownership of a minimized window.
-TEST_F(MultiUserWindowManagerTest, MinimizeSuppressesViewTransfer) {
+TEST_F(MultiUserWindowManagerChromeOSTest, MinimizeSuppressesViewTransfer) {
   SetUpForThisManyWindows(1);
   multi_user_window_manager()->SetWindowOwner(window(0), "A");
   wm::GetWindowState(window(0))->Minimize();
@@ -360,7 +361,7 @@ TEST_F(MultiUserWindowManagerTest, MinimizeSuppressesViewTransfer) {
 }
 
 // Testing that the activation state changes to the active window.
-TEST_F(MultiUserWindowManagerTest, ActiveWindowTests) {
+TEST_F(MultiUserWindowManagerChromeOSTest, ActiveWindowTests) {
   SetUpForThisManyWindows(4);
 
   aura::client::ActivationClient* activation_client =
@@ -404,7 +405,7 @@ TEST_F(MultiUserWindowManagerTest, ActiveWindowTests) {
 }
 
 // Test that Transient windows are handled properly.
-TEST_F(MultiUserWindowManagerTest, TransientWindows) {
+TEST_F(MultiUserWindowManagerChromeOSTest, TransientWindows) {
   SetUpForThisManyWindows(10);
 
   // We create a hierarchy like this:
@@ -474,7 +475,7 @@ TEST_F(MultiUserWindowManagerTest, TransientWindows) {
 }
 
 // Test that the initial visibility state gets remembered.
-TEST_F(MultiUserWindowManagerTest, PreserveInitialVisibility) {
+TEST_F(MultiUserWindowManagerChromeOSTest, PreserveInitialVisibility) {
   SetUpForThisManyWindows(4);
 
   // Set our initial show state before we assign an owner.

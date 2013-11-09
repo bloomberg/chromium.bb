@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/multi_user_window_manager.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_chromeos.h"
 
 #include "apps/shell_window.h"
 #include "apps/shell_window_registry.h"
@@ -22,6 +22,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -35,8 +36,6 @@
 #include "ui/events/event.h"
 
 namespace {
-chrome::MultiUserWindowManager* g_instance = NULL;
-
 
 // Checks if a given event is a user event.
 bool IsUserEvent(ui::Event* e) {
@@ -83,13 +82,6 @@ bool IsProcessingUserEvent() {
 
 namespace chrome {
 
-// Caching the current multi profile mode since the detection which mode is
-// used is quite expensive.
-chrome::MultiUserWindowManager::MultiProfileMode
-    chrome::MultiUserWindowManager::multi_user_mode_ =
-        chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_UNINITIALIZED;
-
-// A class to disable updates to the MRU window list and the auto positioning
 // logic while the user gets switched.
 class UserChangeActionDisabler {
  public:
@@ -121,7 +113,7 @@ class AppObserver : public apps::ShellWindowRegistry::Observer {
   virtual void OnShellWindowAdded(apps::ShellWindow* shell_window) OVERRIDE {
     aura::Window* window = shell_window->GetNativeWindow();
     DCHECK(window);
-    chrome::MultiUserWindowManager::GetInstance()->SetWindowOwner(window,
+    MultiUserWindowManagerChromeOS::GetInstance()->SetWindowOwner(window,
                                                                   user_id_);
   }
   virtual void OnShellWindowIconChanged(apps::ShellWindow* shell_window)
@@ -135,82 +127,56 @@ class AppObserver : public apps::ShellWindowRegistry::Observer {
   DISALLOW_COPY_AND_ASSIGN(AppObserver);
 };
 
-// static
-MultiUserWindowManager* MultiUserWindowManager::GetInstance() {
-  return g_instance;
+MultiUserWindowManagerChromeOS::MultiUserWindowManagerChromeOS(
+    const std::string& current_user_id)
+    : current_user_id_(current_user_id),
+      suppress_visibility_changes_(false) {
+  // Add a session state observer to be able to monitor session changes.
+  if (ash::Shell::HasInstance())
+    ash::Shell::GetInstance()->session_state_delegate()->
+        AddSessionStateObserver(this);
+
+  // The BrowserListObserver would have been better to use then the old
+  // notification system, but that observer fires before the window got created.
+  registrar_.Add(this, NOTIFICATION_BROWSER_WINDOW_READY,
+                 content::NotificationService::AllSources());
+
+  // Add an app window observer & all already running apps.
+  Profile* profile = multi_user_util::GetProfileFromUserID(current_user_id);
+  if (profile)
+    AddUser(profile);
 }
 
-MultiUserWindowManager* MultiUserWindowManager::CreateInstance() {
-  ash::MultiProfileUMA::SessionMode mode =
-      ash::MultiProfileUMA::SESSION_SINGLE_USER_MODE;
-  if (!g_instance &&
-      ash::Shell::GetInstance()->delegate()->IsMultiProfilesEnabled() &&
-      !ash::switches::UseFullMultiProfileMode()) {
-    g_instance = CreateInstanceInternal(
-        ash::Shell::GetInstance()->session_state_delegate()->GetUserID(0));
-    multi_user_mode_ = MULTI_PROFILE_MODE_SEPARATED;
-    mode = ash::MultiProfileUMA::SESSION_SEPARATE_DESKTOP_MODE;
-  } else if (ash::Shell::GetInstance()->delegate()->IsMultiProfilesEnabled()) {
-    multi_user_mode_ = MULTI_PROFILE_MODE_MIXED;
-    mode = ash::MultiProfileUMA::SESSION_SIDE_BY_SIDE_MODE;
-  } else {
-    multi_user_mode_ = MULTI_PROFILE_MODE_OFF;
+MultiUserWindowManagerChromeOS::~MultiUserWindowManagerChromeOS() {
+  // Remove all window observers.
+  WindowToEntryMap::iterator window_observer = window_to_entry_.begin();
+  while (window_observer != window_to_entry_.end()) {
+    OnWindowDestroyed(window_observer->first);
+    window_observer = window_to_entry_.begin();
   }
-  ash::MultiProfileUMA::RecordSessionMode(mode);
-  return g_instance;
+
+  // Remove all app observers.
+  UserIDToShellWindowObserver::iterator app_observer_iterator =
+      user_id_to_app_observer_.begin();
+  while (app_observer_iterator != user_id_to_app_observer_.end()) {
+    Profile* profile = multi_user_util::GetProfileFromUserID(
+        app_observer_iterator->first);
+    DCHECK(profile);
+    apps::ShellWindowRegistry::Get(profile)->RemoveObserver(
+        app_observer_iterator->second);
+    delete app_observer_iterator->second;
+    user_id_to_app_observer_.erase(app_observer_iterator);
+    app_observer_iterator = user_id_to_app_observer_.begin();
+  }
+
+  if (ash::Shell::HasInstance())
+    ash::Shell::GetInstance()->session_state_delegate()->
+        RemoveSessionStateObserver(this);
 }
 
-// static
-MultiUserWindowManager::MultiProfileMode
-MultiUserWindowManager::GetMultiProfileMode() {
-  return multi_user_mode_;
-}
-
-// static
-void MultiUserWindowManager::DeleteInstance() {
-  if (g_instance)
-    delete g_instance;
-  g_instance = NULL;
-  multi_user_mode_ = MULTI_PROFILE_MODE_UNINITIALIZED;
-}
-
-// static
-std::string MultiUserWindowManager::GetUserIDFromProfile(Profile* profile) {
-  return GetUserIDFromEmail(profile->GetOriginalProfile()->GetProfileName());
-}
-
-// static
-std::string MultiUserWindowManager::GetUserIDFromEmail(
-    const std::string& email) {
-  return gaia::CanonicalizeEmail(gaia::SanitizeEmail(email));
-}
-
-// static
-Profile* MultiUserWindowManager::GetProfileFromUserID(
+void MultiUserWindowManagerChromeOS::SetWindowOwner(
+    aura::Window* window,
     const std::string& user_id) {
-  // This can only happen for unit tests. If it happens we return NULL.
-  if (!g_browser_process || !g_browser_process->profile_manager())
-    return NULL;
-
-  std::vector<Profile*> profiles =
-      g_browser_process->profile_manager()->GetLoadedProfiles();
-
-  std::vector<Profile*>::const_iterator profile_iterator = profiles.begin();
-  for (; profile_iterator != profiles.end(); ++profile_iterator) {
-    if (GetUserIDFromProfile(*profile_iterator) == user_id)
-      return *profile_iterator;
-  }
-  return NULL;
-}
-
-// static
-bool MultiUserWindowManager::ProfileIsFromActiveUser(Profile* profile) {
-  return MultiUserWindowManager::GetUserIDFromProfile(profile) ==
-         chromeos::UserManager::Get()->GetActiveUser()->email();
-}
-
-void MultiUserWindowManager::SetWindowOwner(aura::Window* window,
-                                            const std::string& user_id) {
   // Make sure the window is valid and there was no owner yet.
   DCHECK(window);
   DCHECK(!user_id.empty());
@@ -239,14 +205,15 @@ void MultiUserWindowManager::SetWindowOwner(aura::Window* window,
     SetWindowVisibility(window, false);
 }
 
-const std::string& MultiUserWindowManager::GetWindowOwner(
+const std::string& MultiUserWindowManagerChromeOS::GetWindowOwner(
     aura::Window* window) {
   WindowToEntryMap::iterator it = window_to_entry_.find(window);
   return it != window_to_entry_.end() ? it->second->owner() : EmptyString();
 }
 
-void MultiUserWindowManager::ShowWindowForUser(aura::Window* window,
-                                               const std::string& user_id) {
+void MultiUserWindowManagerChromeOS::ShowWindowForUser(
+    aura::Window* window,
+    const std::string& user_id) {
   // If there is either no owner, or the owner is the current user, no action
   // is required.
   const std::string& owner = GetWindowOwner(window);
@@ -274,7 +241,7 @@ void MultiUserWindowManager::ShowWindowForUser(aura::Window* window,
   }
 }
 
-bool MultiUserWindowManager::AreWindowsSharedAmongUsers() {
+bool MultiUserWindowManagerChromeOS::AreWindowsSharedAmongUsers() {
   WindowToEntryMap::iterator it = window_to_entry_.begin();
   for (; it != window_to_entry_.end(); ++it) {
     if (it->second->owner() != it->second->show_for_user())
@@ -283,14 +250,14 @@ bool MultiUserWindowManager::AreWindowsSharedAmongUsers() {
   return false;
 }
 
-bool MultiUserWindowManager::IsWindowOnDesktopOfUser(
+bool MultiUserWindowManagerChromeOS::IsWindowOnDesktopOfUser(
     aura::Window* window,
     const std::string& user_id) {
   const std::string& presenting_user = GetUserPresentingWindow(window);
   return presenting_user.empty() || presenting_user == user_id;
 }
 
-const std::string& MultiUserWindowManager::GetUserPresentingWindow(
+const std::string& MultiUserWindowManagerChromeOS::GetUserPresentingWindow(
     aura::Window* window) {
   WindowToEntryMap::iterator it = window_to_entry_.find(window);
   // If the window is not owned by anyone it is shown on all desktops and we
@@ -301,7 +268,34 @@ const std::string& MultiUserWindowManager::GetUserPresentingWindow(
   return it->second->show_for_user();
 }
 
-void MultiUserWindowManager::ActiveUserChanged(const std::string& user_id) {
+void MultiUserWindowManagerChromeOS::AddUser(Profile* profile) {
+  const std::string& user_id = multi_user_util::GetUserIDFromProfile(profile);
+  if (user_id_to_app_observer_.find(user_id) != user_id_to_app_observer_.end())
+    return;
+
+  user_id_to_app_observer_[user_id] = new AppObserver(user_id);
+  apps::ShellWindowRegistry::Get(profile)->AddObserver(
+      user_id_to_app_observer_[user_id]);
+
+  // Account all existing application windows of this user accordingly.
+  const apps::ShellWindowRegistry::ShellWindowList& shell_windows =
+      apps::ShellWindowRegistry::Get(profile)->shell_windows();
+  apps::ShellWindowRegistry::ShellWindowList::const_iterator it =
+      shell_windows.begin();
+  for (; it != shell_windows.end(); ++it)
+    user_id_to_app_observer_[user_id]->OnShellWindowAdded(*it);
+
+  // Account all existing browser windows of this user accordingly.
+  BrowserList* browser_list = BrowserList::GetInstance(HOST_DESKTOP_TYPE_ASH);
+  BrowserList::const_iterator browser_it = browser_list->begin();
+  for (; browser_it != browser_list->end(); ++browser_it) {
+    if ((*browser_it)->profile()->GetOriginalProfile() == profile)
+      AddBrowserWindow(*browser_it);
+  }
+}
+
+void MultiUserWindowManagerChromeOS::ActiveUserChanged(
+    const std::string& user_id) {
   DCHECK(user_id != current_user_id_);
   std::string old_user = current_user_id_;
   current_user_id_ = user_id;
@@ -358,7 +352,7 @@ void MultiUserWindowManager::ActiveUserChanged(const std::string& user_id) {
   }
 }
 
-void MultiUserWindowManager::OnWindowDestroyed(aura::Window* window) {
+void MultiUserWindowManagerChromeOS::OnWindowDestroyed(aura::Window* window) {
   if (GetWindowOwner(window).empty()) {
     // This must be a window in the transient chain - remove it and its
     // children from the owner.
@@ -373,7 +367,7 @@ void MultiUserWindowManager::OnWindowDestroyed(aura::Window* window) {
   window_to_entry_.erase(window);
 }
 
-void MultiUserWindowManager::OnWindowVisibilityChanging(
+void MultiUserWindowManagerChromeOS::OnWindowVisibilityChanging(
     aura::Window* window, bool visible) {
   // This command gets called first and immediately when show or hide gets
   // called. We remember here the desired state for restoration IF we were
@@ -397,7 +391,7 @@ void MultiUserWindowManager::OnWindowVisibilityChanging(
   }
 }
 
-void MultiUserWindowManager::OnWindowVisibilityChanged(
+void MultiUserWindowManagerChromeOS::OnWindowVisibilityChanged(
     aura::Window* window, bool visible) {
   if (suppress_visibility_changes_)
     return;
@@ -413,7 +407,7 @@ void MultiUserWindowManager::OnWindowVisibilityChanged(
     SetWindowVisibility(window, false);
 }
 
-void MultiUserWindowManager::OnAddTransientChild(
+void MultiUserWindowManagerChromeOS::OnAddTransientChild(
     aura::Window* window,
     aura::Window* transient_window) {
   if (!GetWindowOwner(window).empty()) {
@@ -428,7 +422,7 @@ void MultiUserWindowManager::OnAddTransientChild(
   AddTransientOwnerRecursive(transient_window, owned_parent);
 }
 
-void MultiUserWindowManager::OnRemoveTransientChild(
+void MultiUserWindowManagerChromeOS::OnRemoveTransientChild(
     aura::Window* window,
     aura::Window* transient_window) {
   // Remove the transient child if the window itself is owned, or one of the
@@ -438,7 +432,7 @@ void MultiUserWindowManager::OnRemoveTransientChild(
     RemoveTransientOwnerRecursive(transient_window);
 }
 
-void MultiUserWindowManager::OnWindowShowTypeChanged(
+void MultiUserWindowManagerChromeOS::OnWindowShowTypeChanged(
     ash::wm::WindowState* window_state,
     ash::wm::WindowShowType old_type) {
   if (!window_state->IsMinimized())
@@ -451,104 +445,24 @@ void MultiUserWindowManager::OnWindowShowTypeChanged(
     ShowWindowForUser(window, owner);
 }
 
-void MultiUserWindowManager::Observe(
+void MultiUserWindowManagerChromeOS::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_BROWSER_WINDOW_READY)
+  if (type == NOTIFICATION_BROWSER_WINDOW_READY)
     AddBrowserWindow(content::Source<Browser>(source).ptr());
 }
 
-// static
-MultiUserWindowManager* MultiUserWindowManager::CreateInstanceInternal(
-    std::string active_user_id) {
-  DCHECK(!g_instance);
-  g_instance = new MultiUserWindowManager(active_user_id);
-  return g_instance;
-}
-
-MultiUserWindowManager::MultiUserWindowManager(
-    const std::string& current_user_id)
-    : current_user_id_(current_user_id),
-      suppress_visibility_changes_(false) {
-  // Add a session state observer to be able to monitor session changes.
-  if (ash::Shell::HasInstance())
-    ash::Shell::GetInstance()->session_state_delegate()->
-        AddSessionStateObserver(this);
-
-  // The BrowserListObserver would have been better to use then the old
-  // notification system, but that observer fires before the window got created.
-  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_WINDOW_READY,
-                 content::NotificationService::AllSources());
-
-  // Add an app window observer & all already running apps.
-  Profile* profile = GetProfileFromUserID(current_user_id);
-  if (profile)
-    AddUser(profile);
-}
-
-MultiUserWindowManager::~MultiUserWindowManager() {
-  // Remove all window observers.
-  WindowToEntryMap::iterator window_observer = window_to_entry_.begin();
-  while (window_observer != window_to_entry_.end()) {
-    OnWindowDestroyed(window_observer->first);
-    window_observer = window_to_entry_.begin();
-  }
-
-  // Remove all app observers.
-  UserIDToShellWindowObserver::iterator app_observer_iterator =
-      user_id_to_app_observer_.begin();
-  while (app_observer_iterator != user_id_to_app_observer_.end()) {
-    Profile* profile = GetProfileFromUserID(app_observer_iterator->first);
-    DCHECK(profile);
-    apps::ShellWindowRegistry::Get(profile)->RemoveObserver(
-        app_observer_iterator->second);
-    delete app_observer_iterator->second;
-    user_id_to_app_observer_.erase(app_observer_iterator);
-    app_observer_iterator = user_id_to_app_observer_.begin();
-  }
-
-  if (ash::Shell::HasInstance())
-    ash::Shell::GetInstance()->session_state_delegate()->
-        RemoveSessionStateObserver(this);
-}
-
-void MultiUserWindowManager::AddUser(Profile* profile) {
-  const std::string& user_id = GetUserIDFromProfile(profile);
-  if (user_id_to_app_observer_.find(user_id) != user_id_to_app_observer_.end())
-    return;
-
-  user_id_to_app_observer_[user_id] = new AppObserver(user_id);
-  apps::ShellWindowRegistry::Get(profile)->AddObserver(
-      user_id_to_app_observer_[user_id]);
-
-  // Account all existing application windows of this user accordingly.
-  const apps::ShellWindowRegistry::ShellWindowList& shell_windows =
-      apps::ShellWindowRegistry::Get(profile)->shell_windows();
-  apps::ShellWindowRegistry::ShellWindowList::const_iterator it =
-      shell_windows.begin();
-  for (; it != shell_windows.end(); ++it)
-    user_id_to_app_observer_[user_id]->OnShellWindowAdded(*it);
-
-  // Account all existing browser windows of this user accordingly.
-  BrowserList* browser_list = BrowserList::GetInstance(HOST_DESKTOP_TYPE_ASH);
-  BrowserList::const_iterator browser_it = browser_list->begin();
-  for (; browser_it != browser_list->end(); ++browser_it) {
-    if ((*browser_it)->profile()->GetOriginalProfile() == profile)
-      AddBrowserWindow(*browser_it);
-  }
-}
-
-void MultiUserWindowManager::AddBrowserWindow(Browser* browser) {
+void MultiUserWindowManagerChromeOS::AddBrowserWindow(Browser* browser) {
   // A unit test (e.g. CrashRestoreComplexTest.RestoreSessionForThreeUsers) can
   // come here with no valid window.
   if (!browser->window() || !browser->window()->GetNativeWindow())
     return;
   SetWindowOwner(browser->window()->GetNativeWindow(),
-                 GetUserIDFromProfile(browser->profile()));
+                 multi_user_util::GetUserIDFromProfile(browser->profile()));
 }
 
-void MultiUserWindowManager::SetWindowVisibility(
+void MultiUserWindowManagerChromeOS::SetWindowVisibility(
     aura::Window* window, bool visible) {
   if (window->IsVisible() == visible)
     return;
@@ -566,7 +480,7 @@ void MultiUserWindowManager::SetWindowVisibility(
   }
 }
 
-void MultiUserWindowManager::ShowWithTransientChildrenRecursive(
+void MultiUserWindowManagerChromeOS::ShowWithTransientChildrenRecursive(
     aura::Window* window) {
   aura::Window::Windows::const_iterator it =
       window->transient_children().begin();
@@ -580,7 +494,7 @@ void MultiUserWindowManager::ShowWithTransientChildrenRecursive(
     window->Show();
 }
 
-aura::Window* MultiUserWindowManager::GetOwningWindowInTransientChain(
+aura::Window* MultiUserWindowManagerChromeOS::GetOwningWindowInTransientChain(
     aura::Window* window) {
   if (!GetWindowOwner(window).empty())
     return NULL;
@@ -593,7 +507,7 @@ aura::Window* MultiUserWindowManager::GetOwningWindowInTransientChain(
   return NULL;
 }
 
-void MultiUserWindowManager::AddTransientOwnerRecursive(
+void MultiUserWindowManagerChromeOS::AddTransientOwnerRecursive(
     aura::Window* window,
     aura::Window* owned_parent) {
   // First add all child windows.
@@ -621,7 +535,7 @@ void MultiUserWindowManager::AddTransientOwnerRecursive(
     SetWindowVisibility(window, false);
 }
 
-void MultiUserWindowManager::RemoveTransientOwnerRecursive(
+void MultiUserWindowManagerChromeOS::RemoveTransientOwnerRecursive(
     aura::Window* window) {
   // First remove all child windows.
   aura::Window::Windows::const_iterator it =

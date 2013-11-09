@@ -11,6 +11,7 @@
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_item_delegate_manager.h"
 #include "ash/launcher/launcher_model.h"
+#include "ash/multi_profile_uma.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_model_util.h"
@@ -46,6 +47,8 @@
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/shell_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/shell_window_launcher_item_controller.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -81,14 +84,12 @@
 #include "ui/views/corewm/window_animations.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/multi_profile_uma.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wallpaper_manager.h"
 #include "chrome/browser/ui/ash/chrome_shell_delegate.h"
 #include "chrome/browser/ui/ash/launcher/multi_profile_browser_status_monitor.h"
 #include "chrome/browser/ui/ash/launcher/multi_profile_shell_window_launcher_controller.h"
-#include "chrome/browser/ui/ash/multi_user_window_manager.h"
 #endif
 
 using extensions::Extension;
@@ -280,7 +281,7 @@ void ChromeLauncherControllerUserSwitchObserverChromeOS::ActiveUserChanged(
 
 void ChromeLauncherControllerUserSwitchObserverChromeOS::UserAddedToSession(
     const chromeos::User* active_user) {
-  Profile* profile = chrome::MultiUserWindowManager::GetProfileFromUserID(
+  Profile* profile = multi_user_util::GetProfileFromUserID(
       active_user->email());
   // If we do not have a profile yet, we postpone forwarding the notification
   // until it is loaded.
@@ -298,8 +299,7 @@ void ChromeLauncherControllerUserSwitchObserverChromeOS::Observe(
       !added_user_ids_waiting_for_profiles_.empty()) {
     // Check if the profile is from a user which was on the waiting list.
     Profile* profile = content::Source<Profile>(source).ptr();
-    std::string user_id = chrome::MultiUserWindowManager::GetUserIDFromProfile(
-        profile);
+    std::string user_id = multi_user_util::GetUserIDFromProfile(profile);
     std::set<std::string>::iterator it = std::find(
         added_user_ids_waiting_for_profiles_.begin(),
         added_user_ids_waiting_for_profiles_.end(),
@@ -342,11 +342,11 @@ ChromeLauncherController::ChromeLauncherController(
   AttachProfile(profile_);
   model_->AddObserver(this);
 
-#if defined(OS_CHROMEOS)
   // In multi profile mode we might have a window manager. We try to create it
   // here. If the instantiation fails, the manager is not needed.
   chrome::MultiUserWindowManager::CreateInstance();
 
+#if defined(OS_CHROMEOS)
   // On Chrome OS using multi profile we want to switch the content of the shelf
   // with a user change. Note that for unit tests the instance can be NULL.
   if (chrome::MultiUserWindowManager::GetMultiProfileMode() !=
@@ -425,10 +425,9 @@ ChromeLauncherController::~ChromeLauncherController() {
   ReleaseProfile();
   if (instance_ == this)
     instance_ = NULL;
-#if defined(OS_CHROMEOS)
+
   // Get rid of the multi user window manager instance.
   chrome::MultiUserWindowManager::DeleteInstance();
-#endif
 }
 
 // static
@@ -1033,14 +1032,15 @@ const Extension* ChromeLauncherController::GetExtensionForAppID(
 void ChromeLauncherController::ActivateWindowOrMinimizeIfActive(
     ui::BaseWindow* window,
     bool allow_minimize) {
-#if defined(OS_CHROMEOS)
+  // In separated desktop mode we might have to teleport a window back to the
+  // current user.
   if (chrome::MultiUserWindowManager::GetMultiProfileMode() ==
           chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_SEPARATED) {
-    chrome::MultiUserWindowManager* manager =
-        chrome::MultiUserWindowManager::GetInstance();
     aura::Window* native_window = window->GetNativeWindow();
     const std::string& current_user =
-        manager->GetUserIDFromProfile(profile());
+        multi_user_util::GetUserIDFromProfile(profile());
+    chrome::MultiUserWindowManager* manager =
+        chrome::MultiUserWindowManager::GetInstance();
     if (!manager->IsWindowOnDesktopOfUser(native_window, current_user)) {
       ash::MultiProfileUMA::RecordTeleportAction(
           ash::MultiProfileUMA::TELEPORT_WINDOW_RETURN_BY_LAUNCHER);
@@ -1049,7 +1049,7 @@ void ChromeLauncherController::ActivateWindowOrMinimizeIfActive(
       return;
     }
   }
-#endif
+
   if (window->IsActive() && allow_minimize) {
     if (CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kDisableMinimizeOnSecondLauncherItemClick)) {
@@ -1144,7 +1144,6 @@ void ChromeLauncherController::ActiveUserChanged(
   SetShelfAlignmentFromPrefs();
   SetShelfAutoHideBehaviorFromPrefs();
   SetShelfBehaviorsFromPrefs();
-  UpdateV1AppStatesAfterUserSwitch();
 }
 
 void ChromeLauncherController::AdditionalUserAddedToSession(Profile* profile) {
@@ -1398,18 +1397,12 @@ LauncherItemController* ChromeLauncherController::GetLauncherItemController(
 }
 
 bool ChromeLauncherController::IsBrowserFromActiveUser(Browser* browser) {
-#if defined(OS_CHROMEOS)
   // If running multi user mode with separate desktops, we have to check if the
   // browser is from the active user.
   if (chrome::MultiUserWindowManager::GetMultiProfileMode() !=
           chrome::MultiUserWindowManager::MULTI_PROFILE_MODE_SEPARATED)
     return true;
-  chromeos::UserManager* manager = chromeos::UserManager::Get();
-  return manager->GetActiveUser() ==
-         manager->GetUserByProfile(browser->profile()->GetOriginalProfile());
-#else
-  return true;
-#endif
+  return multi_user_util::IsProfileFromActiveUser(browser->profile());
 }
 
 Profile* ChromeLauncherController::GetProfileForNewWindows() {
@@ -2015,53 +2008,3 @@ void ChromeLauncherController::ReleaseProfile() {
 
   pref_change_registrar_.RemoveAll();
 }
-
-void ChromeLauncherController::UpdateV1AppStatesAfterUserSwitch() {
-#if defined(OS_CHROMEOS)
-  if (!ash::switches::UseFullMultiProfileMode() &&
-      ChromeShellDelegate::instance() &&
-      ChromeShellDelegate::instance()->IsMultiProfilesEnabled()) {
-    // First we add the new applications.
-    BrowserList* browser_list =
-        BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
-    chromeos::UserManager* user_manager = chromeos::UserManager::Get();
-    chromeos::User* active_user = user_manager->GetActiveUser();
-
-    // Remove old (tabbed V1) applications.
-    for (BrowserList::const_iterator it = browser_list->begin();
-         it != browser_list->end(); ++it) {
-      Browser* browser = *it;
-      if (!browser->is_app() &&
-          browser->is_type_tabbed() &&
-          active_user != user_manager->GetUserByProfile(
-              browser->profile()->GetOriginalProfile())) {
-        for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
-          UpdateAppState(browser->tab_strip_model()->GetWebContentsAt(i),
-                         APP_STATE_REMOVED);
-        }
-      }
-    }
-
-    // Add new (tabbed V1) applications.
-    for (BrowserList::const_iterator it = browser_list->begin();
-         it != browser_list->end(); ++it) {
-      Browser* browser = *it;
-      if (!browser->is_app() &&
-          browser->is_type_tabbed() &&
-          active_user == user_manager->GetUserByProfile(
-              browser->profile()->GetOriginalProfile())) {
-        int active_index = browser->tab_strip_model()->active_index();
-        for (int i = 0; i < browser->tab_strip_model()->count(); ++i) {
-          UpdateAppState(browser->tab_strip_model()->GetWebContentsAt(i),
-                         browser->window()->IsActive() && i == active_index ?
-                             APP_STATE_WINDOW_ACTIVE : APP_STATE_INACTIVE);
-        }
-      }
-    }
-  }
-
-  // Finally we update the browser state itself.
-  browser_status_monitor_->UpdateBrowserItemState();
-#endif
-}
-

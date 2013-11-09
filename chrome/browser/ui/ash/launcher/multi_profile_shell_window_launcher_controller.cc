@@ -7,12 +7,8 @@
 #include "apps/shell_window.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/host_desktop.h"
-
-#if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/login/user_manager.h"
-#include "chrome/browser/ui/ash/multi_user_window_manager.h"
-#endif
 
 namespace {
 
@@ -46,14 +42,16 @@ void MultiProfileShellWindowLauncherController::ActiveUserChanged(
   // nothing remains and then re-create them again.
   for (ShellWindowList::iterator it = shell_window_list_.begin();
        it != shell_window_list_.end(); ++it) {
-    aura::Window* window = (*it)->GetNativeWindow();
-    if (!IsShellWindowFromActiveUser(*it) && IsRegisteredApp(window))
-      UnregisterApp(window);
+    apps::ShellWindow* shell_window = *it;
+    if (!multi_user_util::IsProfileFromActiveUser(shell_window->profile()) &&
+        IsRegisteredApp(shell_window->GetNativeWindow()))
+      UnregisterApp(shell_window->GetNativeWindow());
   }
   for (ShellWindowList::iterator it = shell_window_list_.begin();
        it != shell_window_list_.end(); ++it) {
-    aura::Window* window = (*it)->GetNativeWindow();
-    if (IsShellWindowFromActiveUser(*it) && !IsRegisteredApp(window))
+    apps::ShellWindow* shell_window = *it;
+    if (multi_user_util::IsProfileFromActiveUser(shell_window->profile()) &&
+        !IsRegisteredApp(shell_window->GetNativeWindow()))
       RegisterApp(*it);
   }
 }
@@ -71,7 +69,7 @@ void MultiProfileShellWindowLauncherController::OnShellWindowAdded(
   if (!ControlsWindow(shell_window->GetNativeWindow()))
     return;
   shell_window_list_.push_back(shell_window);
-  if (IsShellWindowFromActiveUser(shell_window))
+  if (multi_user_util::IsProfileFromActiveUser(shell_window->profile()))
     RegisterApp(shell_window);
 }
 
@@ -90,14 +88,4 @@ void MultiProfileShellWindowLauncherController::OnShellWindowRemoved(
                                            shell_window);
   DCHECK(it != shell_window_list_.end());
   shell_window_list_.erase(it);
-}
-
-bool MultiProfileShellWindowLauncherController::IsShellWindowFromActiveUser(
-    apps::ShellWindow* shell_window) {
-  Profile* profile = shell_window->profile();
-#if defined(OS_CHROMEOS)
-  return chrome::MultiUserWindowManager::ProfileIsFromActiveUser(profile);
-#else
-  return profile->GetOriginalProfile() == ProfileManager::GetDefaultProfile();
-#endif
 }

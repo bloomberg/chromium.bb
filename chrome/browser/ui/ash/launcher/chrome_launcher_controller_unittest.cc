@@ -56,7 +56,8 @@
 #include "chrome/browser/ui/apps/chrome_shell_window_delegate.h"
 #include "chrome/browser/ui/ash/launcher/browser_status_monitor.h"
 #include "chrome/browser/ui/ash/launcher/shell_window_launcher_controller.h"
-#include "chrome/browser/ui/ash/multi_user_window_manager.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -1497,9 +1498,11 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
 
   // Add two users to the window manager.
   std::string user2 = "user2";
-  manager->UserAddedToSession(manager->GetUserIDFromProfile(profile()));
-  manager->UserAddedToSession(user2);
-  const std::string& current_user = manager->GetUserIDFromProfile(profile());
+  TestingProfile* profile2 = CreateMultiUserProfile(user2);
+  manager->AddUser(profile());
+  manager->AddUser(profile2);
+  const std::string& current_user =
+      multi_user_util::GetUserIDFromProfile(profile());
 
   // Create a browser window with a native window for the current user.
   scoped_ptr<BrowserWindow> browser_window(CreateTestBrowserWindow(

@@ -2324,7 +2324,7 @@
         }],
         ['chromeos==1', {
           'sources': [
-            'browser/ui/ash/multi_user_window_manager_unittest.cc',
+            'browser/ui/ash/multi_user/multi_user_window_manager_chromeos_unittest.cc',
           ],
           'sources!': [
             'browser/password_manager/native_backend_gnome_x_unittest.cc',

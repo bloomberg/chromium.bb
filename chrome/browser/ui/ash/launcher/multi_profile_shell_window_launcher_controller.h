@@ -28,9 +28,6 @@ class MultiProfileShellWindowLauncherController
   typedef std::vector<apps::ShellWindow*> ShellWindowList;
   typedef std::vector<apps::ShellWindowRegistry*> ShellWindowRegistryList;
 
-  // Returns true when the given window is from the active user.
-  bool IsShellWindowFromActiveUser(apps::ShellWindow* shell_window);
-
   // A list of all shell windows for all users.
   ShellWindowList shell_window_list_;
 
