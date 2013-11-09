@@ -271,6 +271,19 @@ PassRefPtr<GCObservation> Internals::observeGC(ScriptValue scriptValue)
     return GCObservation::create(observedValue);
 }
 
+unsigned Internals::updateStyleAndReturnAffectedElementCount(ExceptionState& es) const
+{
+    Document* document = contextDocument();
+    if (!document) {
+        es.throwUninformativeAndGenericDOMException(InvalidAccessError);
+        return 0;
+    }
+
+    unsigned beforeCount = document->styleResolverAccessCount();
+    document->updateStyleIfNeeded();
+    return document->styleResolverAccessCount() - beforeCount;
+}
+
 bool Internals::isPreloaded(const String& url)
 {
     Document* document = contextDocument();

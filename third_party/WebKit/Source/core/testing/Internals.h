@@ -115,14 +115,14 @@ public:
     bool hasSelectorForPseudoClassInShadow(Element* host, const String& pseudoClass, ExceptionState&);
     unsigned short compareTreeScopePosition(const Node*, const Node*, ExceptionState&) const;
 
-    bool attached(Node*, ExceptionState&);
-
     // FIXME: Rename these functions if walker is prefered.
     Node* nextSiblingByWalker(Node*, ExceptionState&);
     Node* firstChildByWalker(Node*, ExceptionState&);
     Node* lastChildByWalker(Node*, ExceptionState&);
     Node* nextNodeByWalker(Node*, ExceptionState&);
     Node* previousNodeByWalker(Node*, ExceptionState&);
+
+    unsigned updateStyleAndReturnAffectedElementCount(ExceptionState&) const;
 
     String visiblePlaceholder(Element*);
     void selectColorInColorChooser(Element*, const String& colorValue);

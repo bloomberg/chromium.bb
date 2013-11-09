@@ -1059,30 +1059,37 @@ static bool checkSelectorForClassChange(const SpaceSplitString& changedClasses, 
 template<typename Checker>
 static bool checkSelectorForClassChange(const SpaceSplitString& oldClasses, const SpaceSplitString& newClasses, const Checker& checker)
 {
-    unsigned oldSize = oldClasses.size();
-    if (!oldSize)
+    if (!oldClasses.size())
         return checkSelectorForClassChange(newClasses, checker);
-    BitVector remainingClassBits;
-    remainingClassBits.ensureSize(oldSize);
+
     // Class vectors tend to be very short. This is faster than using a hash table.
-    unsigned newSize = newClasses.size();
-    for (unsigned i = 0; i < newSize; ++i) {
-        for (unsigned j = 0; j < oldSize; ++j) {
+    BitVector remainingClassBits;
+    remainingClassBits.ensureSize(oldClasses.size());
+
+    for (unsigned i = 0; i < newClasses.size(); ++i) {
+        bool found = false;
+        for (unsigned j = 0; j < oldClasses.size(); ++j) {
             if (newClasses[i] == oldClasses[j]) {
+                // Mark each class that is still in the newClasses so we can skip doing
+                // an n^2 search below when looking for removals. We can't break from
+                // this loop early since a class can appear more than once.
                 remainingClassBits.quickSet(j);
-                continue;
+                found = true;
             }
         }
-        if (checker.hasSelectorForClass(newClasses[i]))
+        // Class was added.
+        if (!found && checker.hasSelectorForClass(newClasses[i]))
             return true;
     }
-    for (unsigned i = 0; i < oldSize; ++i) {
-        // If the bit is not set the the corresponding class has been removed.
+
+    for (unsigned i = 0; i < oldClasses.size(); ++i) {
         if (remainingClassBits.quickGet(i))
             continue;
+        // Class was removed.
         if (checker.hasSelectorForClass(oldClasses[i]))
             return true;
     }
+
     return false;
 }
 

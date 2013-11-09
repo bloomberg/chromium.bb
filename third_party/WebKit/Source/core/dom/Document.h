@@ -426,6 +426,9 @@ public:
 
     void didAccessStyleResolver() { ++m_styleResolverAccessCount; }
 
+    // This is only for internals, don't use it.
+    unsigned styleResolverAccessCount() const { return m_styleResolverAccessCount; }
+
     void evaluateMediaQueryList();
 
     // Never returns 0.

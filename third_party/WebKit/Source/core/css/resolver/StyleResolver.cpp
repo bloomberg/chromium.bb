@@ -639,6 +639,8 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
         return s_styleNotYetAvailable;
     }
 
+    document().didAccessStyleResolver();
+
     if (element == document().documentElement())
         resetDirectionAndWritingModeOnDocument(document());
     StyleResolverState state(document(), element, defaultParent, regionForStyling);
@@ -702,8 +704,6 @@ PassRefPtr<RenderStyle> StyleResolver::styleForElement(Element* element, RenderS
         StyleAdjuster adjuster(state.cachedUAStyle(), m_document.inQuirksMode());
         adjuster.adjustRenderStyle(state.style(), state.parentStyle(), element);
     }
-
-    document().didAccessStyleResolver();
 
     // FIXME: Shouldn't this be on RenderBody::styleDidChange?
     if (element->hasTagName(bodyTag))
