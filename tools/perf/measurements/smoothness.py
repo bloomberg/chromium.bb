@@ -17,7 +17,6 @@ class MissingDisplayFrameRateError(page_measurement.MeasurementFailure):
 class Smoothness(page_measurement.PageMeasurement):
   def __init__(self):
     super(Smoothness, self).__init__('smoothness')
-    self._trace_result = None
     self._metric = None
 
   def AddCommandLineOptions(self, parser):

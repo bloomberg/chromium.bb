@@ -4,11 +4,9 @@
 
 from operator import attrgetter
 
-RENDER_PROCESS_MARKER = 'RenderProcessMarker'
-
 
 class RenderingStats(object):
-  def __init__(self, render_process_marker, timeline_markers):
+  def __init__(self, renderer_process, timeline_markers):
     """
     Utility class for extracting rendering statistics from the timeline (or
     other loggin facilities), and providing them in a common format to classes
@@ -20,9 +18,8 @@ class RenderingStats(object):
 
     All *_time values are measured in milliseconds.
     """
-    assert(len(render_process_marker) == 1)
     assert(len(timeline_markers) > 0)
-    self.renderer_process = render_process_marker[0].start_thread.parent
+    self.renderer_process = renderer_process
 
     self.frame_timestamps = []
     self.frame_times = []

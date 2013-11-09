@@ -9,7 +9,7 @@ from telemetry.core.timeline.model import MarkerMismatchError
 from telemetry.core.timeline.model import MarkerOverlapError
 from telemetry.page import page_measurement
 
-TIMELINE_MARKER = 'SmoothnessMetric'
+TIMELINE_MARKER = 'Smoothness'
 
 
 class NotEnoughFramesError(page_measurement.MeasurementFailure):
@@ -24,16 +24,16 @@ class NoSupportedActionError(page_measurement.MeasurementFailure):
         'None of the actions is supported by smoothness measurement')
 
 
-def GetTimelineMarkerLabelsFromAction(compound_action):
-  timeline_marker_labels = []
+def GetTimelineMarkerNamesFromAction(compound_action):
+  timeline_marker_names = []
   if not isinstance(compound_action, list):
     compound_action = [compound_action]
   for action in compound_action:
-    if action.GetTimelineMarkerLabel():
-      timeline_marker_labels.append(action.GetTimelineMarkerLabel())
-  if not timeline_marker_labels:
+    if action.GetTimelineMarkerName():
+      timeline_marker_names.append(action.GetTimelineMarkerName())
+  if not timeline_marker_names:
     raise NoSupportedActionError()
-  return timeline_marker_labels
+  return timeline_marker_names
 
 
 class SmoothnessMetric(Metric):
@@ -51,25 +51,31 @@ class SmoothnessMetric(Metric):
   def Stop(self, page, tab):
     tab.ExecuteJavaScript('console.timeEnd("' + TIMELINE_MARKER + '")')
     timeline_model = tab.browser.StopTracing().AsTimelineModel()
-    render_process_marker = timeline_model.FindTimelineMarkers(TIMELINE_MARKER)
-    timeline_marker_labels = GetTimelineMarkerLabelsFromAction(
+    smoothness_marker = timeline_model.FindTimelineMarkers(TIMELINE_MARKER)
+    timeline_marker_names = GetTimelineMarkerNamesFromAction(
         self._compound_action)
     try:
       timeline_markers = timeline_model.FindTimelineMarkers(
-          timeline_marker_labels)
+          timeline_marker_names)
     except MarkerMismatchError:
       # TODO(ernstm): re-raise exception as MeasurementFailure when the
       # reference build was updated.
-      timeline_markers = render_process_marker
+      timeline_markers = smoothness_marker
     except MarkerOverlapError as e:
       raise page_measurement.MeasurementFailure(str(e))
 
+    renderer_process = timeline_model.GetRendererProcessFromTab(tab)
     self._stats = rendering_stats.RenderingStats(
-        render_process_marker, timeline_markers)
+        renderer_process, timeline_markers)
 
     if not self._stats.frame_times:
       raise NotEnoughFramesError()
 
+  def SetStats(self, stats):
+    """ Pass in a RenderingStats object directly. For unittests that don't call
+        Start/Stop.
+    """
+    self._stats = stats
 
   def AddResults(self, tab, results):
     # List of raw frame times.
