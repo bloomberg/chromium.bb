@@ -6,7 +6,7 @@
 # file can be 'source'ed in a shell script).
 
 binutils=c926f7f27f42ae8bfda0fe3aefc51d6401f979e7
-clang=5b8e932d70fcf281e193aebfd0d3ac55d057f2da
+clang=a963b803407c9d1cac644cc425004e0ccd28fa45
 llvm=2796c5b8a31ea88cc24bf3449a95319928c93519
 gcc=e986927b16bb536bc85c907ec6eff4add42437e8
 libcxx=95d245f185b2facd0297f0249ca90f0bd51d6f7f
