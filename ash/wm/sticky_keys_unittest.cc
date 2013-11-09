@@ -99,6 +99,7 @@ class StickyKeysTest : public test::AshTestBase {
         is_button_press ? ui::ET_MOUSE_PRESSED : ui::ET_MOUSE_RELEASED,
         0,
         xev);
+    xevs_.push_back(xev);
     ui::MouseEvent* event = new ui::MouseEvent(xev);
     ui::Event::DispatcherApi dispatcher(event);
     dispatcher.set_target(target_.get());
@@ -109,6 +110,7 @@ class StickyKeysTest : public test::AshTestBase {
     EXPECT_FALSE(wheel_delta == 0);
     XEvent* xev = new XEvent();
     ui::InitXMouseWheelEventForTesting(wheel_delta, 0, xev);
+    xevs_.push_back(xev);
     ui::MouseWheelEvent* event = new ui::MouseWheelEvent(xev);
     ui::Event::DispatcherApi dispatcher(event);
     dispatcher.set_target(target_.get());
