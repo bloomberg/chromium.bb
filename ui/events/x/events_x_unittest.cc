@@ -15,8 +15,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/event_utils.h"
-#include "ui/events/x/device_data_manager.h"
-#include "ui/events/x/touch_factory_x11.h"
+#include "ui/events/x/events_x_utils.h"
 #include "ui/gfx/point.h"
 
 namespace ui {
@@ -41,90 +40,6 @@ void InitButtonEvent(XEvent* event,
   button_event->state = state;
 }
 
-#if defined(USE_XI2_MT)
-const int kValuatorNum = 3;
-const int kTouchValuatorMap[kValuatorNum][4] = {
-  // { valuator_index, valuator_type, min_val, max_val }
-  { 0, DeviceDataManager::DT_TOUCH_MAJOR, 0, 1000},
-  { 1, DeviceDataManager::DT_TOUCH_ORIENTATION, 0, 1},
-  { 2, DeviceDataManager::DT_TOUCH_PRESSURE, 0, 1000},
-};
-
-struct Valuator {
-  Valuator(DeviceDataManager::DataType type, double v)
-      : data_type(type), value(v) {}
-
-  DeviceDataManager::DataType data_type;
-  double value;
-};
-
-XEvent* CreateTouchEvent(int deviceid,
-                         int evtype,
-                         int tracking_id,
-                         const gfx::Point& location,
-                         const std::vector<Valuator>& valuators) {
-  XEvent* event = new XEvent;
-  memset(event, 0, sizeof(*event));
-  event->type = GenericEvent;
-  event->xcookie.data = new XIDeviceEvent;
-  XIDeviceEvent* xiev =
-      static_cast<XIDeviceEvent*>(event->xcookie.data);
-  xiev->deviceid = deviceid;
-  xiev->sourceid = deviceid;
-  xiev->evtype = evtype;
-  xiev->detail = tracking_id;
-  xiev->event_x = location.x();
-  xiev->event_y = location.y();
-
-  xiev->valuators.mask_len = (valuators.size() / 8) + 1;
-  xiev->valuators.mask = new unsigned char[xiev->valuators.mask_len];
-  memset(xiev->valuators.mask, 0, xiev->valuators.mask_len);
-  xiev->valuators.values = new double[valuators.size()];
-
-  int val_count = 0;
-  for (int i = 0; i < kValuatorNum; i++) {
-    for(size_t j = 0; j < valuators.size(); j++) {
-      if (valuators[j].data_type == kTouchValuatorMap[i][1]) {
-        XISetMask(xiev->valuators.mask, kTouchValuatorMap[i][0]);
-        xiev->valuators.values[val_count++] = valuators[j].value;
-      }
-    }
-  }
-
-  return event;
-}
-
-void DestroyTouchEvent(XEvent* event) {
-  XIDeviceEvent* xiev =
-      static_cast<XIDeviceEvent*>(event->xcookie.data);
-  if (xiev) {
-    delete[] xiev->valuators.mask;
-    delete[] xiev->valuators.values;
-    delete xiev;
-  }
-  delete event;
-}
-
-void SetupTouchFactory(const std::vector<unsigned int>& devices) {
-  TouchFactory* factory = TouchFactory::GetInstance();
-  factory->SetTouchDeviceForTest(devices);
-}
-
-void SetupDeviceDataManager(const std::vector<unsigned int>& devices) {
-  ui::DeviceDataManager* manager = ui::DeviceDataManager::GetInstance();
-  manager->SetDeviceListForTest(devices);
-  for (size_t i = 0; i < devices.size(); i++) {
-    for (int j = 0; j < kValuatorNum; j++) {
-      manager->SetDeviceValuatorForTest(
-          devices[i],
-          kTouchValuatorMap[j][0],
-          static_cast<DeviceDataManager::DataType>(kTouchValuatorMap[j][1]),
-          kTouchValuatorMap[j][2],
-          kTouchValuatorMap[j][3]);
-    }
-  }
-}
-#endif
 }  // namespace
 
 TEST(EventsXTest, ButtonEvents) {
@@ -260,76 +175,73 @@ TEST(EventsXTest, ClickCount) {
 TEST(EventsXTest, TouchEventBasic) {
   std::vector<unsigned int> devices;
   devices.push_back(0);
-  SetupTouchFactory(devices);
-  SetupDeviceDataManager(devices);
-  XEvent* event = NULL;
+  ui::SetupTouchDevicesForTest(devices);
   std::vector<Valuator> valuators;
 
   // Init touch begin with tracking id 5, touch id 0.
   valuators.push_back(Valuator(DeviceDataManager::DT_TOUCH_MAJOR, 20));
   valuators.push_back(Valuator(DeviceDataManager::DT_TOUCH_ORIENTATION, 0.3f));
   valuators.push_back(Valuator(DeviceDataManager::DT_TOUCH_PRESSURE, 100));
-  event = CreateTouchEvent(0, XI_TouchBegin, 5, gfx::Point(10, 10), valuators);
-  EXPECT_EQ(ui::ET_TOUCH_PRESSED, ui::EventTypeFromNative(event));
-  EXPECT_EQ("10,10", ui::EventLocationFromNative(event).ToString());
-  EXPECT_EQ(GetTouchId(event), 0);
-  EXPECT_EQ(GetTouchRadiusX(event), 10);
-  EXPECT_FLOAT_EQ(GetTouchAngle(event), 0.15f);
-  EXPECT_FLOAT_EQ(GetTouchForce(event), 0.1f);
-  DestroyTouchEvent(event);
+  ui::XScopedTouchEvent event1(CreateTouchEvent(
+      0, XI_TouchBegin, 5, gfx::Point(10, 10), valuators));
+  EXPECT_EQ(ui::ET_TOUCH_PRESSED, ui::EventTypeFromNative(event1));
+  EXPECT_EQ("10,10", ui::EventLocationFromNative(event1).ToString());
+  EXPECT_EQ(GetTouchId(event1), 0);
+  EXPECT_EQ(GetTouchRadiusX(event1), 10);
+  EXPECT_FLOAT_EQ(GetTouchAngle(event1), 0.15f);
+  EXPECT_FLOAT_EQ(GetTouchForce(event1), 0.1f);
 
   // Touch update, with new orientation info.
   valuators.clear();
   valuators.push_back(Valuator(DeviceDataManager::DT_TOUCH_ORIENTATION, 0.5f));
-  event = CreateTouchEvent(0, XI_TouchUpdate, 5, gfx::Point(20, 20), valuators);
-  EXPECT_EQ(ui::ET_TOUCH_MOVED, ui::EventTypeFromNative(event));
-  EXPECT_EQ("20,20", ui::EventLocationFromNative(event).ToString());
-  EXPECT_EQ(GetTouchId(event), 0);
-  EXPECT_EQ(GetTouchRadiusX(event), 10);
-  EXPECT_FLOAT_EQ(GetTouchAngle(event), 0.25f);
-  EXPECT_FLOAT_EQ(GetTouchForce(event), 0.1f);
-  DestroyTouchEvent(event);
+  ui::XScopedTouchEvent event2(CreateTouchEvent(
+      0, XI_TouchUpdate, 5, gfx::Point(20, 20), valuators));
+  EXPECT_EQ(ui::ET_TOUCH_MOVED, ui::EventTypeFromNative(event2));
+  EXPECT_EQ("20,20", ui::EventLocationFromNative(event2).ToString());
+  EXPECT_EQ(GetTouchId(event2), 0);
+  EXPECT_EQ(GetTouchRadiusX(event2), 10);
+  EXPECT_FLOAT_EQ(GetTouchAngle(event2), 0.25f);
+  EXPECT_FLOAT_EQ(GetTouchForce(event2), 0.1f);
 
   // Another touch with tracking id 6, touch id 1.
   valuators.clear();
   valuators.push_back(Valuator(DeviceDataManager::DT_TOUCH_MAJOR, 100));
   valuators.push_back(Valuator(DeviceDataManager::DT_TOUCH_ORIENTATION, 0.9f));
   valuators.push_back(Valuator(DeviceDataManager::DT_TOUCH_PRESSURE, 500));
-  event = CreateTouchEvent(
-      0, XI_TouchBegin, 6, gfx::Point(200, 200), valuators);
-  EXPECT_EQ(ui::ET_TOUCH_PRESSED, ui::EventTypeFromNative(event));
-  EXPECT_EQ("200,200", ui::EventLocationFromNative(event).ToString());
-  EXPECT_EQ(GetTouchId(event), 1);
-  EXPECT_EQ(GetTouchRadiusX(event), 50);
-  EXPECT_FLOAT_EQ(GetTouchAngle(event), 0.45f);
-  EXPECT_FLOAT_EQ(GetTouchForce(event), 0.5f);
-  DestroyTouchEvent(event);
+  ui::XScopedTouchEvent event3(CreateTouchEvent(
+      0, XI_TouchBegin, 6, gfx::Point(200, 200), valuators));
+  EXPECT_EQ(ui::ET_TOUCH_PRESSED, ui::EventTypeFromNative(event3));
+  EXPECT_EQ("200,200", ui::EventLocationFromNative(event3).ToString());
+  EXPECT_EQ(GetTouchId(event3), 1);
+  EXPECT_EQ(GetTouchRadiusX(event3), 50);
+  EXPECT_FLOAT_EQ(GetTouchAngle(event3), 0.45f);
+  EXPECT_FLOAT_EQ(GetTouchForce(event3), 0.5f);
 
   // Touch with tracking id 5 should have old radius/angle value and new pressue
   // value.
   valuators.clear();
   valuators.push_back(Valuator(DeviceDataManager::DT_TOUCH_PRESSURE, 50));
-  event = CreateTouchEvent(0, XI_TouchEnd, 5, gfx::Point(30, 30), valuators);
-  EXPECT_EQ(ui::ET_TOUCH_RELEASED, ui::EventTypeFromNative(event));
-  EXPECT_EQ("30,30", ui::EventLocationFromNative(event).ToString());
-  EXPECT_EQ(GetTouchId(event), 0);
-  EXPECT_EQ(GetTouchRadiusX(event), 10);
-  EXPECT_FLOAT_EQ(GetTouchAngle(event), 0.25f);
-  EXPECT_FLOAT_EQ(GetTouchForce(event), 0.05f);
-  DestroyTouchEvent(event);
+  ui::XScopedTouchEvent event4(CreateTouchEvent(
+      0, XI_TouchEnd, 5, gfx::Point(30, 30), valuators));
+  EXPECT_EQ(ui::ET_TOUCH_RELEASED, ui::EventTypeFromNative(event4));
+  EXPECT_EQ("30,30", ui::EventLocationFromNative(event4).ToString());
+  EXPECT_EQ(GetTouchId(event4), 0);
+  EXPECT_EQ(GetTouchRadiusX(event4), 10);
+  EXPECT_FLOAT_EQ(GetTouchAngle(event4), 0.25f);
+  EXPECT_FLOAT_EQ(GetTouchForce(event4), 0.05f);
 
   // Touch with tracking id 6 should have old angle/pressure value and new
   // radius value.
   valuators.clear();
   valuators.push_back(Valuator(DeviceDataManager::DT_TOUCH_MAJOR, 50));
-  event = CreateTouchEvent(0, XI_TouchEnd, 6, gfx::Point(200, 200), valuators);
-  EXPECT_EQ(ui::ET_TOUCH_RELEASED, ui::EventTypeFromNative(event));
-  EXPECT_EQ("200,200", ui::EventLocationFromNative(event).ToString());
-  EXPECT_EQ(GetTouchId(event), 1);
-  EXPECT_EQ(GetTouchRadiusX(event), 25);
-  EXPECT_FLOAT_EQ(GetTouchAngle(event), 0.45f);
-  EXPECT_FLOAT_EQ(GetTouchForce(event), 0.5f);
-  DestroyTouchEvent(event);
+  ui::XScopedTouchEvent event5(CreateTouchEvent(
+      0, XI_TouchEnd, 6, gfx::Point(200, 200), valuators));
+  EXPECT_EQ(ui::ET_TOUCH_RELEASED, ui::EventTypeFromNative(event5));
+  EXPECT_EQ("200,200", ui::EventLocationFromNative(event5).ToString());
+  EXPECT_EQ(GetTouchId(event5), 1);
+  EXPECT_EQ(GetTouchRadiusX(event5), 25);
+  EXPECT_FLOAT_EQ(GetTouchAngle(event5), 0.45f);
+  EXPECT_FLOAT_EQ(GetTouchForce(event5), 0.5f);
 }
 #endif
 }  // namespace ui

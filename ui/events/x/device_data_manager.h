@@ -5,6 +5,13 @@
 #ifndef UI_EVENTS_X_DEVICE_DATA_MANAGER_H_
 #define UI_EVENTS_X_DEVICE_DATA_MANAGER_H_
 
+// Generically-named #defines from Xlib is conflicting with symbols in GTest.
+// So many tests .cc file #undef Bool before including device_data_manager.h,
+// which makes Bool unrecognized in XInput2.h.
+#ifndef Bool
+#define Bool int
+#endif
+
 #include <X11/extensions/XInput2.h>
 
 #include <bitset>

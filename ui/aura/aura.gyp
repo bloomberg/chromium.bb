@@ -292,10 +292,11 @@
       ],
       'sources': [
         'gestures/gesture_recognizer_unittest.cc',
+        'root_window_host_x11_unittest.cc',
+        'root_window_unittest.cc',
         'test/run_all_unittests.cc',
         'test/test_suite.cc',
         'test/test_suite.h',
-        'root_window_unittest.cc',
         'window_unittest.cc',
       ],
       'conditions': [

@@ -32,9 +32,9 @@ namespace internal {
 class TouchEventCalibrate;
 }
 
-class RootWindowHostX11 : public RootWindowHost,
-                          public base::MessageLoop::Dispatcher,
-                          public EnvObserver {
+class AURA_EXPORT RootWindowHostX11 : public RootWindowHost,
+                                      public base::MessageLoop::Dispatcher,
+                                      public EnvObserver {
  public:
   explicit RootWindowHostX11(const gfx::Rect& bounds);
   virtual ~RootWindowHostX11();
