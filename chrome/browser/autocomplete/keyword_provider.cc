@@ -452,7 +452,7 @@ AutocompleteMatch KeywordProvider::CreateAutocompleteMatch(
                              AutocompleteMatchType::HISTORY_KEYWORD);
   match.allowed_to_be_default_match = allowed_to_be_default_match;
   match.fill_into_edit = keyword;
-  if (!remaining_input.empty() || !keyword_complete || supports_replacement)
+  if (!remaining_input.empty() || supports_replacement)
     match.fill_into_edit.push_back(L' ');
   match.fill_into_edit.append(remaining_input);
   // If we wanted to set |result.inline_autocompletion| correctly, we'd need

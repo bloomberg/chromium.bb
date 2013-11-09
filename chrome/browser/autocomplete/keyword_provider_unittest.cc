@@ -55,6 +55,7 @@ const TemplateURLService::Initializer KeywordProviderTest::kTestData[] = {
   { "ab", "bogus URL {searchTerms}", "ab" },
   { "weasel", "weasel{searchTerms}weasel", "weasel" },
   { "www", " +%2B?={searchTerms}foo ", "www" },
+  { "nonsub", "http://nonsubstituting-keyword.com/", "nonsub" },
   { "z", "{searchTerms}=z", "z" },
 };
 
@@ -158,6 +159,13 @@ TEST_F(KeywordProviderTest, Edit) {
       { kEmptyMatch, kEmptyMatch, kEmptyMatch } },
     { ASCIIToUTF16("https://z"), 1,
       { { ASCIIToUTF16("z "), true }, kEmptyMatch, kEmptyMatch } },
+
+    // Non-substituting keywords, whether typed fully or not
+    // should not add a space.
+    { ASCIIToUTF16("nonsu"), 1,
+      { { ASCIIToUTF16("nonsub"), false }, kEmptyMatch, kEmptyMatch } },
+    { ASCIIToUTF16("nonsub"), 1,
+      { { ASCIIToUTF16("nonsub"), true }, kEmptyMatch, kEmptyMatch } },
   };
 
   RunTest<string16>(edit_cases, arraysize(edit_cases),
