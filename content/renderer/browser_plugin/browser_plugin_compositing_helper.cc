@@ -348,6 +348,27 @@ void BrowserPluginCompositingHelper::OnCompositorFrameSwapped(
   cc::RenderPass* root_pass = frame_data->render_pass_list.back();
   gfx::Size frame_size = root_pass->output_rect.size();
 
+  if (last_route_id_ != route_id ||
+      last_output_surface_id_ != output_surface_id ||
+      last_host_id_ != host_id) {
+    // Resource ids are scoped by the output surface.
+    // If the originating output surface doesn't match the last one, it
+    // indicates the guest's output surface may have been recreated, in which
+    // case we should recreate the DelegatedRendererLayer, to avoid matching
+    // resources from the old one with resources from the new one which would
+    // have the same id.
+    frame_provider_ = NULL;
+
+    // Drop the cc::DelegatedFrameResourceCollection so that we will not return
+    // any resources from the old output surface with the new output surface id.
+    if (resource_collection_) {
+      resource_collection_->LoseAllResources();
+      resource_collection_ = NULL;
+    }
+    last_output_surface_id_ = output_surface_id;
+    last_route_id_ = route_id;
+    last_host_id_ = host_id;
+  }
   if (!resource_collection_) {
     resource_collection_ = new cc::DelegatedFrameResourceCollection;
     // TODO(danakj): Could return resources sooner if we set a client here and
@@ -372,9 +393,6 @@ void BrowserPluginCompositingHelper::OnCompositorFrameSwapped(
       frame->metadata.device_scale_factor,
       delegated_layer_.get());
 
-  last_route_id_ = route_id;
-  last_output_surface_id_ = output_surface_id;
-  last_host_id_ = host_id;
   ack_pending_ = true;
 }
 
