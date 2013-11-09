@@ -30,6 +30,9 @@ vars = {
   "nacl_tools_revision": "12289",  # native_client/DEPS: tools_rev
   "gtm_revision": "616",
 
+  # TODO(rouslan): Get security approval when including more of the code.
+  "libaddressinput_revision": "146",
+
   "libphonenumber_revision": "621",
   "libvpx_revision": "232686",
   "lss_revision": "24",
@@ -230,18 +233,25 @@ deps = {
   "src/third_party/smhasher/src":
     (Var("googlecode_url") % "smhasher") + "/trunk@149",
 
+  "src/third_party/libaddressinput/src/cpp":
+    (Var("googlecode_url") % "libaddressinput") + "/trunk/cpp@" +
+        Var("libaddressinput_revision"),
+  "src/third_party/libaddressinput/src/testdata":
+    (Var("googlecode_url") % "libaddressinput") + "/trunk/testdata@" +
+        Var("libaddressinput_revision"),
+
   "src/third_party/libphonenumber/src/phonenumbers":
-     (Var("googlecode_url") % "libphonenumber") +
-         "/trunk/cpp/src/phonenumbers@" + Var("libphonenumber_revision"),
+    (Var("googlecode_url") % "libphonenumber") +
+        "/trunk/cpp/src/phonenumbers@" + Var("libphonenumber_revision"),
   "src/third_party/libphonenumber/src/test":
-     (Var("googlecode_url") % "libphonenumber") + "/trunk/cpp/test@" +
-         Var("libphonenumber_revision"),
+    (Var("googlecode_url") % "libphonenumber") + "/trunk/cpp/test@" +
+        Var("libphonenumber_revision"),
   "src/third_party/libphonenumber/src/resources":
-     (Var("googlecode_url") % "libphonenumber") + "/trunk/resources@" +
-         Var("libphonenumber_revision"),
+    (Var("googlecode_url") % "libphonenumber") + "/trunk/resources@" +
+        Var("libphonenumber_revision"),
 
   "src/tools/deps2git":
-    "/trunk/tools/deps2git@230538",
+    "/trunk/tools/deps2git@234015",
 
   "src/third_party/webpagereplay":
     (Var("googlecode_url") % "web-page-replay") + "/trunk@524",
@@ -350,16 +360,16 @@ deps_os = {
     "src/native_client": None,
     "src/native_client/src/third_party/ppapi": None,
     "src/third_party/angle_dx11": None,
-    "src/third_party/cld_2/src": None,
     "src/third_party/bidichecker": None,
-    "src/third_party/webgl_conformance": None,
+    "src/third_party/cld_2/src": None,
     "src/third_party/ffmpeg": None,
     "src/third_party/hunspell_dictionaries": None,
     "src/third_party/hunspell": None,
+    "src/third_party/libaddressinput/src/cpp": None,
+    "src/third_party/libaddressinput/src/testdata": None,
     "src/third_party/libexif/sources": None,
     "src/third_party/libjpeg_turbo": None,
     "src/third_party/libsrtp": None,
-    "src/third_party/usrsctp/usrsctplib": None,
     "src/third_party/libvpx": None,
     "src/third_party/libyuv": None,
     "src/third_party/mesa/src": None,
@@ -373,8 +383,10 @@ deps_os = {
     "src/third_party/smhasher/src": None,
     "src/third_party/swig/Lib": None,
     "src/third_party/undoview": None,
+    "src/third_party/usrsctp/usrsctplib": None,
     "src/third_party/v8-i18n": None,
     "src/third_party/webdriver/pylib": None,
+    "src/third_party/webgl_conformance": None,
     "src/third_party/webpagereplay": None,
     "src/third_party/webrtc": None,
     "src/third_party/yasm/source/patched-yasm": None,
@@ -508,6 +520,10 @@ deps_os = {
 
     "src/third_party/eyesfree/src/android/java/src/com/googlecode/eyesfree/braille":
       (Var("googlecode_url") % "eyes-free") + "/trunk/braille/client/src/com/googlecode/eyesfree/braille@797",
+
+    # Android shouldn't use this address validation library.
+    "src/third_party/libaddressinput/src/cpp": None,
+    "src/third_party/libaddressinput/src/testdata": None,
   },
 }
 

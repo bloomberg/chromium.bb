@@ -1,0 +1,18 @@
+Name: The library to input and validate addresses.
+Short Name: libaddressinput
+URL: https://code.google.com/p/libaddressinput/
+Version: 0
+Date: 16 October 2013
+Revision: 146
+License: Apache 2.0
+License File: LICENSE
+Security Critical: no
+
+Description:
+This library allows users to input their address, and perform validation on this
+by talking to an address data server at http://i18napis.appspot.com/address. The
+library is used in requestAutocomplete() dialog to enable internationalized
+address input and validation for payment forms.
+
+Local Modifications:
+The package has no local modifications.

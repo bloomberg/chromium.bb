@@ -224,6 +224,7 @@ v8.log
 /third_party/jsr-305/src
 /third_party/leveldatabase/src
 /third_party/leveldb
+/third_party/libaddressinput/src
 /third_party/libexif/sources
 /third_party/libjingle/source
 /third_party/libjingle/source_internal
