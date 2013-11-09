@@ -34,7 +34,14 @@ class SystemCpuApiTest: public ExtensionApiTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(SystemCpuApiTest, Cpu) {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
+// TODO(erg): linux_aura bringup: http://crbug.com/163931
+#define MAYBE_Cpu DISABLED_Cpu
+#else
+#define MAYBE_Cpu Cpu
+#endif
+
+IN_PROC_BROWSER_TEST_F(SystemCpuApiTest, MAYBE_Cpu) {
   CpuInfoProvider* provider = new MockCpuInfoProviderImpl();
   // The provider is owned by the single CpuInfoProvider instance.
   CpuInfoProvider::InitializeForTesting(provider);

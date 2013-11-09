@@ -76,6 +76,14 @@
               'use_aura%': 1,
             }],
 
+            # ToT Linux should be aura.
+            #
+            # TODO(erg): Merge this into the previous block once compiling with
+            # aura safely implies including ash capabilities.
+            ['OS=="linux"', {
+              'use_aura%': 1,
+            }],
+
             # Whether we're a traditional desktop unix.
             ['(OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris") and chromeos==0', {
               'desktop_linux%': 1,

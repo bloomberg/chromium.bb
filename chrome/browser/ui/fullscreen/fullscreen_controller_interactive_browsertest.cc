@@ -804,9 +804,16 @@ IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
   ASSERT_FALSE(IsMouseLocked());
 }
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
+// TODO(erg): linux_aura bringup: http://crbug.com/163931
+#define MAYBE_TestTabDoesntExitMouseLockOnSubFrameNavigation DISABLED_TestTabDoesntExitMouseLockOnSubFrameNavigation
+#else
+#define MAYBE_TestTabDoesntExitMouseLockOnSubFrameNavigation TestTabDoesntExitMouseLockOnSubFrameNavigation
+#endif
+
 // Tests mouse lock is not exited on sub frame navigation.
 IN_PROC_BROWSER_TEST_F(FullscreenControllerInteractiveTest,
-                       TestTabDoesntExitMouseLockOnSubFrameNavigation) {
+                       MAYBE_TestTabDoesntExitMouseLockOnSubFrameNavigation) {
   ASSERT_TRUE(test_server()->Start());
 
   // Create URLs for test page and test page with #fragment.

@@ -35,7 +35,7 @@
 #endif  // defined(OS_LINUX) && !defined(USE_AURA)
 
 // http://crbug.com/145639
-#if defined(OS_CHROMEOS) || defined(OS_WIN)
+#if defined(OS_LINUX) || defined(OS_WIN)
 #define MAYBE_TabEvents DISABLED_TabEvents
 #else
 #define MAYBE_TabEvents TabEvents

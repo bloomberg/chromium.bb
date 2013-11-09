@@ -372,7 +372,14 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, AppWithContextMenuClicked) {
   ASSERT_TRUE(onclicked_listener.WaitUntilSatisfied());
 }
 
-IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, DisallowNavigation) {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
+// TODO(erg): linux_aura bringup: http://crbug.com/163931
+#define MAYBE_DisallowNavigation DISABLED_DisallowNavigation
+#else
+#define MAYBE_DisallowNavigation DisallowNavigation
+#endif
+
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MAYBE_DisallowNavigation) {
   TabsAddedNotificationObserver observer(2);
 
   ASSERT_TRUE(StartEmbeddedTestServer());
@@ -532,10 +539,17 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, LaunchWithFileExtension) {
       << message_;
 }
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
+// TODO(erg): linux_aura bringup: http://crbug.com/163931
+#define MAYBE_LaunchWithFileExtensionAndMimeType DISABLED_LaunchWithFileExtensionAndMimeType
+#else
+#define MAYBE_LaunchWithFileExtensionAndMimeType LaunchWithFileExtensionAndMimeType
+#endif
+
 // Tests that launch data is sent through if the file extension and MIME type
 // both match.
 IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest,
-                       LaunchWithFileExtensionAndMimeType) {
+                       MAYBE_LaunchWithFileExtensionAndMimeType) {
   SetCommandLineArg(kTestFilePath);
   ASSERT_TRUE(RunPlatformAppTest(
       "platform_apps/launch_file_by_extension_and_type")) << message_;
@@ -699,7 +713,9 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, MutationEventsDisabled) {
 // geometry when opening new windows.
 // Originally disabled due to flakiness (see http://crbug.com/155459)
 // but now because a regression breaks the test (http://crbug.com/160343).
-#if defined(TOOLKIT_GTK)
+//
+// TODO(erg): Now a linux_aura asan regression too: http://crbug.com/304555
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 #define MAYBE_ShellWindowRestorePosition DISABLED_ShellWindowRestorePosition
 #else
 #define MAYBE_ShellWindowRestorePosition ShellWindowRestorePosition

@@ -262,7 +262,9 @@ IN_PROC_BROWSER_TEST_F(ErrorPageTest, MAYBE_IFrameDNSError_GoBack) {
 }
 
 // This test fails regularly on win_rel trybots. See crbug.com/121540
-#if defined(OS_WIN)
+//
+// This fails on linux_aura bringup: http://crbug.com/163931
+#if defined(OS_WIN) || (defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA))
 #define MAYBE_IFrameDNSError_GoBackAndForward DISABLED_IFrameDNSError_GoBackAndForward
 #else
 #define MAYBE_IFrameDNSError_GoBackAndForward IFrameDNSError_GoBackAndForward

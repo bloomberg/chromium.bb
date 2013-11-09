@@ -3058,7 +3058,14 @@ IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadTest_PercentComplete) {
                                     false));
 }
 
-IN_PROC_BROWSER_TEST_F(DownloadTest, DownloadTest_DenyDanger) {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
+// TODO(erg): linux_aura bringup: http://crbug.com/163931
+#define MAYBE_DownloadTest_DenyDanger DISABLED_DownloadTest_DenyDanger
+#else
+#define MAYBE_DownloadTest_DenyDanger DownloadTest_DenyDanger
+#endif
+
+IN_PROC_BROWSER_TEST_F(DownloadTest, MAYBE_DownloadTest_DenyDanger) {
   ASSERT_TRUE(test_server()->Start());
   GURL url(test_server()->GetURL("files/downloads/dangerous/dangerous.crx"));
   scoped_ptr<content::DownloadTestObserver> observer(

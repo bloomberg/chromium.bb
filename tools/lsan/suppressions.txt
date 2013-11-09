@@ -33,6 +33,9 @@ leak:crypto::ScopedTestNSSDB::ScopedTestNSSDB
 # Another leak due to not shutting down NSS properly. http://crbug.com/124445
 leak:error_get_my_stack
 
+# XRandR has several one time leaks.
+leak:libxrandr
+
 # The NSS suppressions above will not fire when the fast stack unwinder is used,
 # because it can't unwind through NSS libraries. Apply blanket suppressions for
 # now.

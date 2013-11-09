@@ -99,15 +99,25 @@ class LocaleTestTraditionalChinese : public LocaleTestBase {
 
 }  // namespace
 
+// TODO(erg): http://crbug.com/316716, as part of the bringup.
+//
+// This is likely a bot configuration issue; the resolution is probably to get
+// packages installed everywhere.
+#if defined(OS_LINUX) && defined(USE_AURA) && !defined(OS_CHROMEOS)
+#define MAYBE_TestStart DISABLED_TestStart
+#else
+#define MAYBE_TestStart TestStart
+#endif
+
 // Start Chrome and shut it down on the Danish locale, the Hebrew locale, and
 // the Traditional-Chinese locale, respectively. These tests do not need any
 // code here because they just verify we can start Chrome and shut it down
 // cleanly on these locales.
-IN_PROC_BROWSER_TEST_F(LocaleTestDanish, TestStart) {
+IN_PROC_BROWSER_TEST_F(LocaleTestDanish, MAYBE_TestStart) {
 }
 
-IN_PROC_BROWSER_TEST_F(LocaleTestHebrew, TestStart) {
+IN_PROC_BROWSER_TEST_F(LocaleTestHebrew, MAYBE_TestStart) {
 }
 
-IN_PROC_BROWSER_TEST_F(LocaleTestTraditionalChinese, TestStart) {
+IN_PROC_BROWSER_TEST_F(LocaleTestTraditionalChinese, MAYBE_TestStart) {
 }

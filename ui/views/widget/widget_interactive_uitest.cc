@@ -657,7 +657,7 @@ TEST_F(WidgetCaptureTest, Capture) {
   TestCapture(false);
 }
 
-#if defined(USE_AURA) && !defined(OS_CHROMEOS)
+#if defined(USE_AURA) && !defined(OS_LINUX)
 // See description in TestCapture(). Creates DesktopNativeWidget.
 TEST_F(WidgetCaptureTest, CaptureDesktopNativeWidget) {
   TestCapture(true);

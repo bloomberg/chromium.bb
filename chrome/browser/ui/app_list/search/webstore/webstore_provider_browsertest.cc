@@ -166,7 +166,8 @@ class WebstoreProviderTest : public InProcessBrowserTest {
 };
 
 // Flaky on CrOS and Windows: http://crbug.com/246136.
-#if defined(OS_WIN) || defined(OS_CHROMEOS)
+// TODO(erg): linux_aura bringup: http://crbug.com/163931
+#if defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_Basic DISABLED_Basic
 #else
 #define MAYBE_Basic Basic

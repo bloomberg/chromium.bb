@@ -2454,9 +2454,17 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   OpenDestURLViaClickTarget();
 }
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
+// TODO(erg): linux_aura bringup: http://crbug.com/163931
+#define MAYBE_PrerenderSSLClientCertTopLevel DISABLED_PrerenderSSLClientCertTopLevel
+#else
+#define MAYBE_PrerenderSSLClientCertTopLevel PrerenderSSLClientCertTopLevel
+#endif
+
 // Checks that a top-level page which would normally request an SSL client
 // certificate will never be seen since it's an https top-level resource.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderSSLClientCertTopLevel) {
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       MAYBE_PrerenderSSLClientCertTopLevel) {
   net::SpawnedTestServer::SSLOptions ssl_options;
   ssl_options.request_client_certificate = true;
   net::SpawnedTestServer https_server(

@@ -411,12 +411,19 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, AppProcessRedirectBack) {
                 GetRenderProcessHost());
 }
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
+// TODO(erg): linux_aura bringup: http://crbug.com/163931
+#define MAYBE_NavigateIntoAppProcess DISABLED_NavigateIntoAppProcess
+#else
+#define MAYBE_NavigateIntoAppProcess NavigateIntoAppProcess
+#endif
+
 // Ensure that re-navigating to a URL after installing or uninstalling it as an
 // app correctly swaps the tab to the app process.  (http://crbug.com/80621)
 //
 // Fails on Windows. http://crbug.com/238670
 // Added logging to help diagnose the location of the problem.
-IN_PROC_BROWSER_TEST_F(AppApiTest, NavigateIntoAppProcess) {
+IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_NavigateIntoAppProcess) {
   extensions::ProcessMap* process_map = extensions::ExtensionSystem::Get(
       browser()->profile())->extension_service()->process_map();
 

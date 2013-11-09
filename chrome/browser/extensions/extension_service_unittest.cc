@@ -164,10 +164,11 @@ namespace keys = extensions::manifest_keys;
 namespace {
 
 // Extension ids used during testing.
-const char all_zero[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 const char good0[] = "behllobkkfkfnphdnhnkndlbkcpglgmj";
 const char good1[] = "hpiknbiabeeppbpihjehijgoemciehgk";
 const char good2[] = "bjafgdebaacbbbecmhlhpofkepfkgcpa";
+#if !(defined(OS_LINUX) && defined(USE_AURA) && !defined(OS_CHROMEOS))
+const char all_zero[] = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
 const char good2048[] = "nmgjhmhbleinmjpbdhgajfjkbijcmgbh";
 const char good_crx[] = "ldnnhddmnhbkjipkidpdiheffobcpfmf";
 const char hosted_app[] = "kbmnembihfiondgfjekmnmcbddelicoi";
@@ -177,6 +178,7 @@ const char theme2_crx[] = "pjpgmfcmabopnnfonnhmdjglfpjjfkbf";
 const char permissions_crx[] = "eagpmdpfmaekmmcejjbmjoecnejeiiin";
 const char unpacked[] = "cbcdidchbppangcjoddlpdjlenngjldk";
 const char updates_from_webstore[] = "akjooamlhcgeopfifcmlggaebeocgokj";
+#endif
 
 struct ExtensionsOrder {
   bool operator()(const scoped_refptr<const Extension>& a,
@@ -205,10 +207,12 @@ static std::vector<string16> GetErrors() {
   return ret_val;
 }
 
+#if !(defined(OS_LINUX) && defined(USE_AURA) && !defined(OS_CHROMEOS))
 static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
   int schemes = URLPattern::SCHEME_ALL;
   extent->AddPattern(URLPattern(schemes, pattern));
 }
+#endif
 
 base::FilePath GetTemporaryFile() {
   base::FilePath temp_file;
@@ -1284,6 +1288,15 @@ void PackExtensionTestClient::OnPackFailure(const std::string& error_message,
   else
      FAIL() << "Existing CRX should have been overwritten.";
 }
+
+// TODO(aura): http://crbug.com/316919
+//
+// The ExetnsionServiceTest reliably has some tests fail on each run, except
+// that they're different tests each time. The problem appears to be that
+// another thread is holding a lock while ShadowingAtExitManager destroys all
+// LazyInstances<>. Something very bad is going on with threading here.
+//
+#if !(defined(OS_LINUX) && defined(USE_AURA) && !defined(OS_CHROMEOS))
 
 // Test loading good extensions from the profile directory.
 TEST_F(ExtensionServiceTest, LoadAllExtensionsFromDirectorySuccess) {
@@ -6673,3 +6686,5 @@ TEST_F(ExtensionServiceTest, ReconcileKnownDisabledWithSideEnable) {
   EXPECT_EQ(expected_disabled_extensions,
             service_->disabled_extensions()->GetIDs());
 }
+
+#endif // #if !(defined(OS_LINUX) && defined(USE_AURA) && !defined(OS_CHROMEOS))

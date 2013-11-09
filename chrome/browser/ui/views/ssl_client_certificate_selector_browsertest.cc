@@ -274,7 +274,15 @@ class SSLClientCertificateSelectorMultiProfileTest
   SSLClientCertificateSelector* selector_1_;
 };
 
-IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorTest, SelectNone) {
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
+// TODO(erg): linux_aura bringup: http://crbug.com/163931
+#define MAYBE_SelectNone DISABLED_SelectNone
+#else
+#define MAYBE_SelectNone SelectNone
+#endif
+
+
+IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorTest, MAYBE_SelectNone) {
   EXPECT_CALL(*auth_requestor_, CertificateSelected(NULL));
 
   // Let the mock get checked on destruction.

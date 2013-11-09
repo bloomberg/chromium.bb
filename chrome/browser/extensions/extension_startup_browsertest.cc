@@ -169,7 +169,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionsStartupTest, Test) {
 }
 
 // Sometimes times out on Mac.  http://crbug.com/48151
-#if defined(OS_MACOSX)
+//
+// TODO(erg): linux_aura bringup: http://crbug.com/163931
+#if defined(OS_MACOSX) || (defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA))
 #define MAYBE_NoFileAccess DISABLED_NoFileAccess
 #else
 #define MAYBE_NoFileAccess NoFileAccess
