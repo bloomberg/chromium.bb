@@ -1,0 +1,11 @@
+{
+    "page_set": "../scirra.json", 
+    "description": "Describes the Web Page Replay archives for a page set. Don't edit by hand! Use record_wpr for updating.", 
+    "archives": {
+        "scirra_000.wpr": [
+            "http://www.scirra.com/demos/c2/renderperfgl/", 
+            "http://www.scirra.com/demos/c2/renderperf2d/", 
+            "http://www.scirra.com/labs/renderperf3/"
+        ]
+    }
+}

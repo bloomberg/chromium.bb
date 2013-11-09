@@ -164,6 +164,12 @@
       "chrome/src/tools/perf/benchmark/peacekeeper.py"
     ]
   },
+  "scirra":{
+    "description":"The Scirra WebGL performance test measures the number of 2D triangles represented onscreen when the animation reaches the 30 FPS threshold. [Scirra demos](https://www.scirra.com/)",
+    "code":[
+      "chrome/src/tools/perf/benchmark/scirra.py"
+    ]
+  },
   "sizes":{
     "description":"Tracks binary sizes and number of static initializers.",
     "code":[
