@@ -91,6 +91,14 @@ namespace identity {
     // |callback| : Called with the URL redirected back to your application.
     static void launchWebAuthFlow(WebAuthFlowDetails details,
                                   LaunchWebAuthFlowCallback callback);
+
+    // Generates a redirect URL to be used in |launchWebAuthFlow|.
+    //
+    // The generated URLs match the pattern
+    // <code>https://&lt;app-id&gt;.chromiumapp.org/*</code>.
+    //
+    // |path| : The path appended to the end of the generated URL.
+    [nocompile] static DOMString getRedirectURL(optional DOMString path);
   };
 
   interface Events {

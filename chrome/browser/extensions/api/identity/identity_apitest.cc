@@ -1235,3 +1235,8 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 }  // namespace extensions
+
+// Tests the chrome.identity API implemented by custom JS bindings .
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ChromeIdentityJsBindings) {
+  ASSERT_TRUE(RunExtensionTest("identity/js_bindings")) << message_;
+}
