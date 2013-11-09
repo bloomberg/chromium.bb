@@ -15,6 +15,7 @@
 namespace content {
 
 class FrameTreeNode;
+class Navigator;
 class RenderProcessHost;
 class RenderViewHostImpl;
 
@@ -35,7 +36,9 @@ class RenderViewHostImpl;
 // This object is only used on the UI thread.
 class CONTENT_EXPORT FrameTree {
  public:
-  FrameTree();
+  // Each FrameTreeNode will default to using the given |navigator| for
+  // navigation tasks in the frame.
+  FrameTree(Navigator* navigator);
   ~FrameTree();
 
   // Returns the FrameTreeNode with the given |frame_tree_node_id|.
@@ -100,6 +103,7 @@ class CONTENT_EXPORT FrameTree {
   scoped_ptr<FrameTreeNode> CreateNode(int64 frame_id,
                                        const std::string& frame_name,
                                        int render_frame_host_id,
+                                       Navigator* navigator,
                                        RenderProcessHost* render_process_host);
 
   scoped_ptr<FrameTreeNode> root_;

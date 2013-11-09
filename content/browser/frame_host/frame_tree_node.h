@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "content/common/content_export.h"
@@ -15,6 +16,7 @@
 
 namespace content {
 
+class Navigator;
 class RenderFrameHostImpl;
 
 // When a page contains iframes, its renderer process maintains a tree structure
@@ -25,9 +27,12 @@ class CONTENT_EXPORT FrameTreeNode {
  public:
   static const int64 kInvalidFrameId;
 
-  FrameTreeNode(int64 frame_id,
-                const std::string& name,
-                scoped_ptr<RenderFrameHostImpl> render_frame_host);
+  FrameTreeNode(
+    int64 frame_id,
+    const std::string& name,
+    Navigator* navigator,
+    scoped_ptr<RenderFrameHostImpl> render_frame_host);
+
   ~FrameTreeNode();
 
   void AddChild(scoped_ptr<FrameTreeNode> child);
@@ -81,6 +86,10 @@ class CONTENT_EXPORT FrameTreeNode {
     return render_frame_host_;
   }
 
+  Navigator* navigator() {
+    return navigator_.get();
+  }
+
  private:
   // The next available browser-global FrameTreeNode ID.
   static int64 next_frame_tree_node_id_;
@@ -101,6 +110,10 @@ class CONTENT_EXPORT FrameTreeNode {
 
   // The immediate children of this specific frame.
   ScopedVector<FrameTreeNode> children_;
+
+  // The Navigator object responsible for managing navigations at this node
+  // of the frame tree.
+  scoped_refptr<Navigator> navigator_;
 
   // When ResetForMainFrame() is called, this is set to false and the
   // |render_frame_host_| below is not deleted on destruction.

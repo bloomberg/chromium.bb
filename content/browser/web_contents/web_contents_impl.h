@@ -18,6 +18,7 @@
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/navigation_controller_delegate.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
+#include "content/browser/frame_host/navigator_delegate.h"
 #include "content/browser/frame_host/render_view_host_manager.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
@@ -48,6 +49,7 @@ class DownloadItem;
 class InterstitialPageImpl;
 class JavaBridgeDispatcherHostManager;
 class JavaScriptDialogManager;
+class Navigator;
 class PowerSaveBlocker;
 class RenderViewHost;
 class RenderViewHostDelegateView;
@@ -79,7 +81,8 @@ class CONTENT_EXPORT WebContentsImpl
       public RenderWidgetHostDelegate,
       public RenderViewHostManager::Delegate,
       public NotificationObserver,
-      public NON_EXPORTED_BASE(NavigationControllerDelegate) {
+      public NON_EXPORTED_BASE(NavigationControllerDelegate),
+      public NON_EXPORTED_BASE(NavigatorDelegate) {
  public:
   virtual ~WebContentsImpl();
 

@@ -29,6 +29,7 @@
 #include "content/browser/download/save_package.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
+#include "content/browser/frame_host/navigator.h"
 #include "content/browser/host_zoom_map_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/message_port_message_filter.h"
@@ -342,6 +343,7 @@ WebContentsImpl::WebContentsImpl(
       accessible_parent_(NULL),
 #endif
       render_manager_(this, this, this),
+      frame_tree_(new Navigator(&controller_, this)),
       is_loading_(false),
       crashed_status_(base::TERMINATION_STATUS_STILL_RUNNING),
       crashed_error_code_(0),

@@ -7,6 +7,7 @@
 #include <queue>
 
 #include "base/stl_util.h"
+#include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 
 namespace content {
@@ -14,12 +15,15 @@ namespace content {
 const int64 FrameTreeNode::kInvalidFrameId = -1;
 int64 FrameTreeNode::next_frame_tree_node_id_ = 1;
 
-FrameTreeNode::FrameTreeNode(int64 frame_id,
-                             const std::string& name,
-                             scoped_ptr<RenderFrameHostImpl> render_frame_host)
+FrameTreeNode::FrameTreeNode(
+  int64 frame_id,
+  const std::string& name,
+  Navigator* navigator,
+  scoped_ptr<RenderFrameHostImpl> render_frame_host)
   : frame_tree_node_id_(next_frame_tree_node_id_++),
     frame_id_(frame_id),
     frame_name_(name),
+    navigator_(navigator),
     owns_render_frame_host_(true),
     render_frame_host_(render_frame_host.release()) {
 }

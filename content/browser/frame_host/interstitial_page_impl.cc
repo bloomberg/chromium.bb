@@ -16,6 +16,7 @@
 #include "content/browser/dom_storage/session_storage_namespace_impl.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
+#include "content/browser/frame_host/navigator.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_factory.h"
@@ -154,6 +155,11 @@ InterstitialPageImpl::InterstitialPageImpl(
       enabled_(true),
       action_taken_(NO_ACTION),
       render_view_host_(NULL),
+      // TODO(nasko): The InterstitialPageImpl will need to provide its own
+      // NavigationControllerImpl to the Navigator, which is separate from
+      // the WebContents one, so we can enforce no navigation policy here.
+      // While we get the code to a point to do this, pass NULL for it.
+      frame_tree_(new Navigator(NULL, this)),
       original_child_id_(web_contents->GetRenderProcessHost()->GetID()),
       original_rvh_id_(web_contents->GetRenderViewHost()->GetRoutingID()),
       should_revert_web_contents_title_(false),

@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/frame_host/frame_tree.h"
+#include "content/browser/frame_host/navigator_delegate.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/public/browser/interstitial_page.h"
@@ -21,6 +22,7 @@
 namespace content {
 class NavigationEntry;
 class NavigationControllerImpl;
+class Navigator;
 class RenderViewHostImpl;
 class RenderWidgetHostView;
 class WebContentsView;
@@ -37,7 +39,8 @@ class CONTENT_EXPORT InterstitialPageImpl
       public NotificationObserver,
       public WebContentsObserver,
       public RenderViewHostDelegate,
-      public RenderWidgetHostDelegate {
+      public RenderWidgetHostDelegate,
+      public NON_EXPORTED_BASE(NavigatorDelegate) {
  public:
   // The different state of actions the user can take in an interstitial.
   enum ActionState {

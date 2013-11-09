@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "content/browser/frame_host/frame_tree_node.h"
+#include "content/browser/frame_host/navigator.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
 
 namespace content {
@@ -41,9 +42,9 @@ bool FrameTreeNodeForFrameId(int64 frame_id,
 
 }  // namespace
 
-FrameTree::FrameTree()
+FrameTree::FrameTree(Navigator* navigator)
     : root_(new FrameTreeNode(FrameTreeNode::kInvalidFrameId, std::string(),
-                              scoped_ptr<RenderFrameHostImpl>())) {
+                              navigator, scoped_ptr<RenderFrameHostImpl>())) {
 }
 
 FrameTree::~FrameTree() {
@@ -90,6 +91,7 @@ void FrameTree::AddFrame(int render_frame_host_id,
     return;
 
   parent->AddChild(CreateNode(frame_id, frame_name, render_frame_host_id,
+                              parent->navigator(),
                               parent->render_frame_host()->GetProcess()));
 }
 
@@ -150,13 +152,14 @@ scoped_ptr<FrameTreeNode> FrameTree::CreateNode(
     int64 frame_id,
     const std::string& frame_name,
     int render_frame_host_id,
+    Navigator* navigator,
     RenderProcessHost* render_process_host) {
   scoped_ptr<RenderFrameHostImpl> render_frame_host(
       new RenderFrameHostImpl(root_->render_frame_host()->render_view_host(),
                               this, render_frame_host_id, false));
 
-  return make_scoped_ptr(new FrameTreeNode(frame_id, frame_name,
-                                           render_frame_host.Pass()));
+  return make_scoped_ptr(new FrameTreeNode(
+      frame_id, frame_name, navigator, render_frame_host.Pass()));
 }
 
 }  // namespace content
