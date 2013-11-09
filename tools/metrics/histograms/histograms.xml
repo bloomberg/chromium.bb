@@ -6589,7 +6589,7 @@ other types of suffix sets.
   </summary>
 </histogram>
 
-<histogram name="MediaGalleries.Counts" enum="MediaGalleriesUsageType">
+<histogram name="MediaGalleries.Usage" enum="MediaGalleriesUsageType">
   <summary>Various usage counts for media galleries.</summary>
 </histogram>
 
