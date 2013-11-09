@@ -247,6 +247,18 @@ base::PlatformFileError ITunesFileUtil::ReadDirectorySync(
   return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 }
 
+base::PlatformFileError ITunesFileUtil::DeleteDirectorySync(
+    fileapi::FileSystemOperationContext* context,
+    const fileapi::FileSystemURL& url) {
+  return base::PLATFORM_FILE_ERROR_SECURITY;
+}
+
+base::PlatformFileError ITunesFileUtil::DeleteFileSync(
+    fileapi::FileSystemOperationContext* context,
+    const fileapi::FileSystemURL& url) {
+  return base::PLATFORM_FILE_ERROR_SECURITY;
+}
+
 base::PlatformFileError ITunesFileUtil::CreateSnapshotFileSync(
     fileapi::FileSystemOperationContext* context,
     const fileapi::FileSystemURL& url,

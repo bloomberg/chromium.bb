@@ -1,0 +1,11 @@
+{
+  "name": "chrome.mediaGalleries.delete_access",
+  "version": "0.1",
+  "description": "test delete access for chrome.mediaGalleries.getMediaFileSystems",
+  "app": {
+    "background": {
+      "scripts": ["test.js"]
+    }
+  },
+  "permissions": [{"mediaGalleries": ["read", "delete", "allAutoDetected"]}]
+}

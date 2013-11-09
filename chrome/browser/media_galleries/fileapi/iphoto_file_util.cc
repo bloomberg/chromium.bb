@@ -164,6 +164,18 @@ base::PlatformFileError IPhotoFileUtil::ReadDirectorySync(
   return base::PLATFORM_FILE_ERROR_NOT_FOUND;
 }
 
+base::PlatformFileError IPhotoFileUtil::DeleteDirectorySync(
+    fileapi::FileSystemOperationContext* context,
+    const fileapi::FileSystemURL& url) {
+  return base::PLATFORM_FILE_ERROR_SECURITY;
+}
+
+base::PlatformFileError IPhotoFileUtil::DeleteFileSync(
+    fileapi::FileSystemOperationContext* context,
+    const fileapi::FileSystemURL& url) {
+  return base::PLATFORM_FILE_ERROR_SECURITY;
+}
+
 base::PlatformFileError IPhotoFileUtil::CreateSnapshotFileSync(
     fileapi::FileSystemOperationContext* context,
     const fileapi::FileSystemURL& url,

@@ -1,11 +1,11 @@
 {
   "name": "chrome.mediaGalleries.no_galleries_copy_to",
   "version": "0.1",
-  "description": "Test that without the allGalleries permission, no galleries are present with only read + copyTo permission.",
+  "description": "Test that without the allGalleries permission, no galleries are present with only other permissions.",
   "app": {
     "background": {
       "scripts": ["test.js"]
     }
   },
-  "permissions": [{"mediaGalleries": ["copyTo", "read"]}]
+  "permissions": [{"mediaGalleries": ["read", "delete", "copyTo"]}]
 }

@@ -49,6 +49,12 @@ class PicasaFileUtil : public NativeMediaFileUtil {
       fileapi::FileSystemOperationContext* context,
       const fileapi::FileSystemURL& url,
       EntryList* file_list) OVERRIDE;
+  virtual base::PlatformFileError DeleteDirectorySync(
+      fileapi::FileSystemOperationContext* context,
+      const fileapi::FileSystemURL& url) OVERRIDE;
+  virtual base::PlatformFileError DeleteFileSync(
+      fileapi::FileSystemOperationContext* context,
+      const fileapi::FileSystemURL& url) OVERRIDE;
   virtual base::PlatformFileError GetLocalFilePath(
       fileapi::FileSystemOperationContext* context,
       const fileapi::FileSystemURL& url,

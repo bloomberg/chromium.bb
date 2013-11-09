@@ -266,6 +266,18 @@ base::PlatformFileError PicasaFileUtil::ReadDirectorySync(
   return base::PLATFORM_FILE_OK;
 }
 
+base::PlatformFileError PicasaFileUtil::DeleteDirectorySync(
+    fileapi::FileSystemOperationContext* context,
+    const fileapi::FileSystemURL& url) {
+  return base::PLATFORM_FILE_ERROR_SECURITY;
+}
+
+base::PlatformFileError PicasaFileUtil::DeleteFileSync(
+    fileapi::FileSystemOperationContext* context,
+    const fileapi::FileSystemURL& url) {
+  return base::PLATFORM_FILE_ERROR_SECURITY;
+}
+
 base::PlatformFileError PicasaFileUtil::GetLocalFilePath(
     FileSystemOperationContext* context, const FileSystemURL& url,
     base::FilePath* local_file_path) {

@@ -35,6 +35,7 @@ TEST(MediaGalleriesPermissionTest, GoodValues) {
   value->AppendString(MediaGalleriesPermission::kAllAutoDetectedPermission);
   value->AppendString(MediaGalleriesPermission::kCopyToPermission);
   value->AppendString(MediaGalleriesPermission::kReadPermission);
+  value->AppendString(MediaGalleriesPermission::kDeletePermission);
   EXPECT_TRUE(permission->FromValue(value.get()));
 
   // all_detected
@@ -48,7 +49,13 @@ TEST(MediaGalleriesPermissionTest, GoodValues) {
   EXPECT_TRUE(permission->FromValue(value.get()));
 
   value.reset(new base::ListValue());
+  value->AppendString(MediaGalleriesPermission::kDeletePermission);
+  value->AppendString(MediaGalleriesPermission::kReadPermission);
+  EXPECT_TRUE(permission->FromValue(value.get()));
+
+  value.reset(new base::ListValue());
   value->AppendString(MediaGalleriesPermission::kCopyToPermission);
+  value->AppendString(MediaGalleriesPermission::kDeletePermission);
   value->AppendString(MediaGalleriesPermission::kReadPermission);
   EXPECT_TRUE(permission->FromValue(value.get()));
 
@@ -62,9 +69,9 @@ TEST(MediaGalleriesPermissionTest, GoodValues) {
   value->AppendString(MediaGalleriesPermission::kAllAutoDetectedPermission);
   value->AppendString(MediaGalleriesPermission::kReadPermission);
   value->AppendString(MediaGalleriesPermission::kReadPermission);
-  value->AppendString(MediaGalleriesPermission::kCopyToPermission);
-  value->AppendString(MediaGalleriesPermission::kCopyToPermission);
-  value->AppendString(MediaGalleriesPermission::kCopyToPermission);
+  value->AppendString(MediaGalleriesPermission::kDeletePermission);
+  value->AppendString(MediaGalleriesPermission::kDeletePermission);
+  value->AppendString(MediaGalleriesPermission::kDeletePermission);
   EXPECT_TRUE(permission->FromValue(value.get()));
 }
 
@@ -78,14 +85,26 @@ TEST(MediaGalleriesPermissionTest, BadValues) {
   scoped_ptr<base::ListValue> value(new base::ListValue());
   EXPECT_FALSE(permission->FromValue(value.get()));
 
-  // copyTo without read
+  // copyTo and delete without read
   value.reset(new base::ListValue());
   value->AppendString(MediaGalleriesPermission::kCopyToPermission);
   EXPECT_FALSE(permission->FromValue(value.get()));
 
   value.reset(new base::ListValue());
+  value->AppendString(MediaGalleriesPermission::kDeletePermission);
+  EXPECT_FALSE(permission->FromValue(value.get()));
+
+  value.reset(new base::ListValue());
   value->AppendString(MediaGalleriesPermission::kAllAutoDetectedPermission);
   value->AppendString(MediaGalleriesPermission::kCopyToPermission);
+  value->AppendString(MediaGalleriesPermission::kDeletePermission);
+  EXPECT_FALSE(permission->FromValue(value.get()));
+
+  // copyTo without delete
+  value.reset(new base::ListValue());
+  value->AppendString(MediaGalleriesPermission::kAllAutoDetectedPermission);
+  value->AppendString(MediaGalleriesPermission::kCopyToPermission);
+  value->AppendString(MediaGalleriesPermission::kReadPermission);
   EXPECT_FALSE(permission->FromValue(value.get()));
 
   // Repeats do not make a difference.
@@ -98,6 +117,8 @@ TEST(MediaGalleriesPermissionTest, BadValues) {
   value->AppendString(MediaGalleriesPermission::kAllAutoDetectedPermission);
   value->AppendString(MediaGalleriesPermission::kAllAutoDetectedPermission);
   value->AppendString(MediaGalleriesPermission::kCopyToPermission);
+  value->AppendString(MediaGalleriesPermission::kDeletePermission);
+  value->AppendString(MediaGalleriesPermission::kDeletePermission);
   EXPECT_FALSE(permission->FromValue(value.get()));
 }
 
@@ -130,10 +151,23 @@ TEST(MediaGalleriesPermissionTest, Equal) {
 
   value.reset(new base::ListValue());
   value->AppendString(MediaGalleriesPermission::kReadPermission);
-  value->AppendString(MediaGalleriesPermission::kCopyToPermission);
+  value->AppendString(MediaGalleriesPermission::kDeletePermission);
   ASSERT_TRUE(permission1->FromValue(value.get()));
 
   value.reset(new base::ListValue());
+  value->AppendString(MediaGalleriesPermission::kDeletePermission);
+  value->AppendString(MediaGalleriesPermission::kReadPermission);
+  ASSERT_TRUE(permission2->FromValue(value.get()));
+  EXPECT_TRUE(permission1->Equal(permission2.get()));
+
+  value.reset(new base::ListValue());
+  value->AppendString(MediaGalleriesPermission::kReadPermission);
+  value->AppendString(MediaGalleriesPermission::kCopyToPermission);
+  value->AppendString(MediaGalleriesPermission::kDeletePermission);
+  ASSERT_TRUE(permission1->FromValue(value.get()));
+
+  value.reset(new base::ListValue());
+  value->AppendString(MediaGalleriesPermission::kDeletePermission);
   value->AppendString(MediaGalleriesPermission::kCopyToPermission);
   value->AppendString(MediaGalleriesPermission::kReadPermission);
   ASSERT_TRUE(permission2->FromValue(value.get()));
@@ -157,6 +191,7 @@ TEST(MediaGalleriesPermissionTest, NotEqual) {
   value.reset(new base::ListValue());
   value->AppendString(MediaGalleriesPermission::kAllAutoDetectedPermission);
   value->AppendString(MediaGalleriesPermission::kReadPermission);
+  value->AppendString(MediaGalleriesPermission::kDeletePermission);
   value->AppendString(MediaGalleriesPermission::kCopyToPermission);
   ASSERT_TRUE(permission2->FromValue(value.get()));
   EXPECT_FALSE(permission1->Equal(permission2.get()));
@@ -183,7 +218,18 @@ TEST(MediaGalleriesPermissionTest, ToFromValue) {
 
   value.reset(new base::ListValue());
   value->AppendString(MediaGalleriesPermission::kReadPermission);
+  value->AppendString(MediaGalleriesPermission::kDeletePermission);
   value->AppendString(MediaGalleriesPermission::kCopyToPermission);
+  ASSERT_TRUE(permission1->FromValue(value.get()));
+
+  vtmp = permission1->ToValue();
+  ASSERT_TRUE(vtmp);
+  ASSERT_TRUE(permission2->FromValue(vtmp.get()));
+  EXPECT_TRUE(permission1->Equal(permission2.get()));
+
+  value.reset(new base::ListValue());
+  value->AppendString(MediaGalleriesPermission::kReadPermission);
+  value->AppendString(MediaGalleriesPermission::kDeletePermission);
   ASSERT_TRUE(permission1->FromValue(value.get()));
 
   vtmp = permission1->ToValue();

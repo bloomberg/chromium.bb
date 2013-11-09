@@ -121,6 +121,10 @@ class NativeMediaFileUtil : public fileapi::AsyncFileUtil {
       const base::FilePath& src_file_path,
       const fileapi::FileSystemURL& dest_url,
       const StatusCallback& callback);
+  virtual void DeleteFileOnTaskRunnerThread(
+      scoped_ptr<fileapi::FileSystemOperationContext> context,
+      const fileapi::FileSystemURL& url,
+      const StatusCallback& callback);
   virtual void DeleteDirectoryOnTaskRunnerThread(
       scoped_ptr<fileapi::FileSystemOperationContext> context,
       const fileapi::FileSystemURL& url,
@@ -163,6 +167,9 @@ class NativeMediaFileUtil : public fileapi::AsyncFileUtil {
       fileapi::FileSystemOperationContext* context,
       const fileapi::FileSystemURL& url,
       EntryList* file_list);
+  virtual base::PlatformFileError DeleteFileSync(
+      fileapi::FileSystemOperationContext* context,
+      const fileapi::FileSystemURL& url);
   // Necessary for move to succeed.
   virtual base::PlatformFileError DeleteDirectorySync(
       fileapi::FileSystemOperationContext* context,

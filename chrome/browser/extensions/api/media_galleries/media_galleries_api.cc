@@ -165,6 +165,10 @@ void MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries(
       MediaGalleriesPermission::kCopyToPermission);
   bool has_copy_to_permission = PermissionsData::CheckAPIPermissionWithParam(
       GetExtension(), APIPermission::kMediaGalleries, &copy_to_param);
+  MediaGalleriesPermission::CheckParam delete_param(
+      MediaGalleriesPermission::kDeletePermission);
+  bool has_delete_permission = PermissionsData::CheckAPIPermissionWithParam(
+      GetExtension(), APIPermission::kMediaGalleries, &delete_param);
 
   const int child_id = rvh->GetProcess()->GetID();
   base::ListValue* list = new base::ListValue();
@@ -200,8 +204,12 @@ void MediaGalleriesGetMediaFileSystemsFunction::ReturnGalleries(
       content::ChildProcessSecurityPolicy* policy =
           ChildProcessSecurityPolicy::GetInstance();
       policy->GrantReadFileSystem(child_id, filesystems[i].fsid);
-      if (has_copy_to_permission)
-        policy->GrantCopyIntoFileSystem(child_id, filesystems[i].fsid);
+      if (has_delete_permission) {
+        policy->GrantDeleteFromFileSystem(child_id, filesystems[i].fsid);
+        if (has_copy_to_permission) {
+          policy->GrantCopyIntoFileSystem(child_id, filesystems[i].fsid);
+        }
+      }
     }
   }
 
@@ -241,11 +249,9 @@ void MediaGalleriesGetMediaFileSystemsFunction::GetMediaFileSystemsForExtension(
     cb.Run(std::vector<MediaFileSystemInfo>());
     return;
   }
-  DCHECK(g_browser_process->media_file_system_registry()
-             ->GetPreferences(GetProfile())
-             ->IsInitialized());
   MediaFileSystemRegistry* registry =
       g_browser_process->media_file_system_registry();
+  DCHECK(registry->GetPreferences(GetProfile())->IsInitialized());
   registry->GetMediaFileSystemsForExtension(
       render_view_host(), GetExtension(), cb);
 }

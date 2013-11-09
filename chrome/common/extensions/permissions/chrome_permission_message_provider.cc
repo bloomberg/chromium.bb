@@ -55,6 +55,7 @@ std::vector<string16> ChromePermissionMessageProvider::GetWarningMessages(
   bool video_capture = false;
   bool media_galleries_read = false;
   bool media_galleries_copy_to = false;
+  bool media_galleries_delete = false;
   for (PermissionMessages::const_iterator i = messages.begin();
        i != messages.end(); ++i) {
     switch (i->id()) {
@@ -69,6 +70,9 @@ std::vector<string16> ChromePermissionMessageProvider::GetWarningMessages(
         break;
       case PermissionMessage::kMediaGalleriesAllGalleriesCopyTo:
         media_galleries_copy_to = true;
+        break;
+      case PermissionMessage::kMediaGalleriesAllGalleriesDelete:
+        media_galleries_delete = true;
         break;
       default:
         break;
@@ -88,12 +92,16 @@ std::vector<string16> ChromePermissionMessageProvider::GetWarningMessages(
         continue;
       }
     }
-    if (media_galleries_read && media_galleries_copy_to) {
+    if (media_galleries_read &&
+        (media_galleries_copy_to || media_galleries_delete)) {
       if (id == PermissionMessage::kMediaGalleriesAllGalleriesRead) {
-        message_strings.push_back(l10n_util::GetStringUTF16(
-            IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ_WRITE));
+        int m_id = media_galleries_copy_to ?
+            IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ_WRITE :
+            IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ_DELETE;
+        message_strings.push_back(l10n_util::GetStringUTF16(m_id));
         continue;
-      } else if (id == PermissionMessage::kMediaGalleriesAllGalleriesCopyTo) {
+      } else if (id == PermissionMessage::kMediaGalleriesAllGalleriesCopyTo ||
+                 id == PermissionMessage::kMediaGalleriesAllGalleriesDelete) {
         // The combined message will be pushed above.
         continue;
       }

@@ -77,6 +77,7 @@ class PermissionMessage {
     kHomepage,
     kSearchProvider,
     kStartupPages,
+    kMediaGalleriesAllGalleriesDelete,
     kEnumBoundary,
   };
   COMPILE_ASSERT(PermissionMessage::kNone > PermissionMessage::kUnknown,

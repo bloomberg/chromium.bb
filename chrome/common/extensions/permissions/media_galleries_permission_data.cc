@@ -40,7 +40,8 @@ bool MediaGalleriesPermissionData::FromValue(const base::Value* value) {
 
   if (permission == MediaGalleriesPermission::kAllAutoDetectedPermission ||
       permission == MediaGalleriesPermission::kReadPermission ||
-      permission == MediaGalleriesPermission::kCopyToPermission) {
+      permission == MediaGalleriesPermission::kCopyToPermission ||
+      permission == MediaGalleriesPermission::kDeletePermission) {
     permission_ = permission;
     return true;
   }

@@ -49,14 +49,22 @@ in the table below:</p>
       <td>Grants your app the right to read files in media galleries.</td>
     </tr>
     <tr>
+      <td>"delete"</td>
+      <td>
+        Grants your app the right to delete files from media galleries.
+        "read" permission is a prerequisite for "delete". Specify both "read"
+        and "delete" to obtain both types of permissions to media galleries.
+      </td>
+    </tr>
+    <tr>
       <td>"copyTo"</td>
       <td>
         Grants your app the right to copy files into media galleries.
         Only valid media files that Chrome is capable of playing or displaying
         are permitted; files that Chrome is not able to validate will result
-        in a security error. "read" permission is a prerequisite for "copyTo".
-        Specify both "read" and "copyTo" to obtain both types of permissions to
-        media galleries.
+        in a security error. "read" and "delete" permissions are prerequisites
+        for "copyTo". Specify "read", "delete" and "copyTo" to obtain all three
+        types of permissions to media galleries.
       </td>
     </tr>
 </table>

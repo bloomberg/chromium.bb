@@ -261,6 +261,14 @@ IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
+                       MediaGalleriesDelete) {
+  base::ListValue custom_args;
+  custom_args.AppendInteger(num_galleries());
+  ASSERT_TRUE(RunMediaGalleriesTestWithArg("delete_access", custom_args))
+      << message_;
+}
+
+IN_PROC_BROWSER_TEST_F(MediaGalleriesPlatformAppBrowserTest,
                        MediaGalleriesAccessAttached) {
   AttachFakeDevice();
 

@@ -4339,6 +4339,9 @@ Make sure you do not expose any sensitive information.
       <message name="IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ_WRITE" desc="Permission string for access to read and write to all of the user's media galleries.">
         Access and change photos, music, and other media from your computer.
       </message>
+      <message name="IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ_DELETE" desc="Permission string for access to read and delete all of the user's media galleries.">
+        Access and delete photos, music, and other media from your computer.
+      </message>
       <message name="IDS_EXTENSION_PROMPT_WARNING_MEDIA_GALLERIES_READ" desc="Permission string for access to read all of the user's media galleries.">
         Access photos, music, and other media from your computer.
       </message>
@@ -15292,6 +15295,9 @@ Do you accept?
     </message>
     <message name="IDS_MEDIA_GALLERIES_DIALOG_SUBTEXT_READ_WRITE" desc="Explanatory text for the media gallery access permission. Indicates than the specified (by name) extension has read and write access to the listed folders.">
       "<ph name="EXTENSION">$1<ex>PhotoEditor</ex></ph>" can read and write images, video, and sound files in the checked locations.
+    </message>
+    <message name="IDS_MEDIA_GALLERIES_DIALOG_SUBTEXT_READ_DELETE" desc="Explanatory text for the media gallery access permission. Indicates than the specified (by name) extension has read and delete access to the listed folders.">
+      "<ph name="EXTENSION">$1<ex>PhotoEditor</ex></ph>" can read and delete images, video, and sound files in the checked locations.
     </message>
     <message name="IDS_MEDIA_GALLERIES_DIALOG_SUBTEXT_READ_ONLY" desc="Explanatory text for the media gallery access permission. Indicates than the specified (by name) extension has read-only access to the listed folders.">
       "<ph name="EXTENSION">$1<ex>PhotoEditor</ex></ph>" can read images, video, and sound files in the checked locations.

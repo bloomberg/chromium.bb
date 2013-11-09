@@ -598,11 +598,12 @@ TEST(PermissionsTest, IsPrivilegeIncrease) {
     { "platformapp1", false },  // host permissions for platform apps
     { "platformapp2", true },  // API permissions for platform apps
     { "media_galleries1", true },  // all -> read|all
-    { "media_galleries2", true },  // read|all -> read|copyTo|all
-    { "media_galleries3", true },  // all -> read|copyTo|all
+    { "media_galleries2", true },  // read|all -> read|delete|copyTo|all
+    { "media_galleries3", true },  // all -> read|delete|all
     { "media_galleries4", false },  // read|all -> all
-    { "media_galleries5", false },  // read|copyTo|all -> read|all
+    { "media_galleries5", false },  // read|copyTo|delete|all -> read|all
     { "media_galleries6", false },  // read|all -> read|all
+    { "media_galleries7", true },  // read|delete|all -> read|copyTo|delete|all
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTests); ++i) {
@@ -623,10 +624,9 @@ TEST(PermissionsTest, IsPrivilegeIncrease) {
         new_extension->GetActivePermissions());
     Manifest::Type extension_type = old_extension->GetType();
 
-    EXPECT_EQ(kTests[i].expect_increase,
-              PermissionMessageProvider::Get()->IsPrivilegeIncrease(
-                  old_p.get(), new_p.get(), extension_type))
-        << kTests[i].base_name;
+    bool increased = PermissionMessageProvider::Get()->IsPrivilegeIncrease(
+        old_p.get(), new_p.get(), extension_type);
+    EXPECT_EQ(kTests[i].expect_increase, increased) << kTests[i].base_name;
   }
 }
 

@@ -510,6 +510,34 @@ TEST_F(NativeMediaFileUtilTest, GetMetadataFiltering) {
   }
 }
 
+TEST_F(NativeMediaFileUtilTest, RemoveFileFiltering) {
+  // Run the loop twice. The first run has no files. The second run does.
+  for (int loop_count = 0; loop_count < 2; ++loop_count) {
+    if (loop_count == 1) {
+      PopulateDirectoryWithTestCases(root_path(),
+                                     kFilteringTestCases,
+                                     arraysize(kFilteringTestCases));
+    }
+    for (size_t i = 0; i < arraysize(kFilteringTestCases); ++i) {
+      FileSystemURL root_url = CreateURL(FPL(""));
+      FileSystemURL url = CreateURL(kFilteringTestCases[i].path);
+
+      std::string test_name = base::StringPrintf(
+          "RemoveFiltering run %d test %" PRIuS, loop_count, i);
+      base::PlatformFileError expectation = base::PLATFORM_FILE_OK;
+      if (loop_count == 0 || !kFilteringTestCases[i].visible) {
+        // Cannot remove files that do not exist or are not visible.
+        expectation = base::PLATFORM_FILE_ERROR_NOT_FOUND;
+      } else if (kFilteringTestCases[i].is_directory) {
+        expectation = base::PLATFORM_FILE_ERROR_NOT_A_FILE;
+      }
+      operation_runner()->RemoveFile(
+          url, base::Bind(&ExpectEqHelper, test_name, expectation));
+      base::MessageLoop::current()->RunUntilIdle();
+    }
+  }
+}
+
 void CreateSnapshotCallback(base::PlatformFileError* error,
     base::PlatformFileError result, const base::PlatformFileInfo&,
     const base::FilePath&,

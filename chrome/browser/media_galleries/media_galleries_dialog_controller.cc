@@ -136,20 +136,22 @@ string16 MediaGalleriesDialogController::GetHeader() const {
 }
 
 string16 MediaGalleriesDialogController::GetSubtext() const {
-  extensions::MediaGalleriesPermission::CheckParam read_param(
-      extensions::MediaGalleriesPermission::kReadPermission);
   extensions::MediaGalleriesPermission::CheckParam copy_to_param(
       extensions::MediaGalleriesPermission::kCopyToPermission);
-  bool has_read_permission =
-      extensions::PermissionsData::CheckAPIPermissionWithParam(
-          extension_, APIPermission::kMediaGalleries, &read_param);
+  extensions::MediaGalleriesPermission::CheckParam delete_param(
+      extensions::MediaGalleriesPermission::kDeletePermission);
   bool has_copy_to_permission =
       extensions::PermissionsData::CheckAPIPermissionWithParam(
           extension_, APIPermission::kMediaGalleries, &copy_to_param);
+  bool has_delete_permission =
+      extensions::PermissionsData::CheckAPIPermissionWithParam(
+          extension_, APIPermission::kMediaGalleries, &delete_param);
 
   int id;
-  if (has_read_permission && has_copy_to_permission)
+  if (has_copy_to_permission)
     id = IDS_MEDIA_GALLERIES_DIALOG_SUBTEXT_READ_WRITE;
+  else if (has_delete_permission)
+    id = IDS_MEDIA_GALLERIES_DIALOG_SUBTEXT_READ_DELETE;
   else
     id = IDS_MEDIA_GALLERIES_DIALOG_SUBTEXT_READ_ONLY;
 
