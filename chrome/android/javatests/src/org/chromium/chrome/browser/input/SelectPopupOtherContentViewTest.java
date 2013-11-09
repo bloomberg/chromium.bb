@@ -4,10 +4,7 @@
 
 package org.chromium.chrome.browser.input;
 
-import android.test.suitebuilder.annotation.LargeTest;
-
 import org.chromium.base.test.util.DisabledTest;
-import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.input.SelectPopupDialog;
@@ -18,9 +15,8 @@ import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content.browser.test.util.UiUtils;
 import org.chromium.chrome.browser.ContentViewUtil;
 import org.chromium.chrome.testshell.ChromiumTestShellTestBase;
+import org.chromium.ui.ActivityWindowAndroid;
 import org.chromium.ui.WindowAndroid;
-
-import java.util.concurrent.TimeUnit;
 
 public class SelectPopupOtherContentViewTest extends ChromiumTestShellTestBase {
     private static final int WAIT_TIMEOUT_SECONDS = 2;
@@ -77,7 +73,7 @@ public class SelectPopupOtherContentViewTest extends ChromiumTestShellTestBase {
             @Override
             public void run() {
                 int nativeWebContents = ContentViewUtil.createNativeWebContents(false);
-                WindowAndroid windowAndroid = new WindowAndroid(getActivity());
+                WindowAndroid windowAndroid = new ActivityWindowAndroid(getActivity());
                 ContentView contentView = ContentView.newInstance(
                         getActivity(), nativeWebContents, windowAndroid);
                 contentView.destroy();
