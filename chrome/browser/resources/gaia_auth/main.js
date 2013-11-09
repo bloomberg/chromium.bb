@@ -48,6 +48,7 @@ Authenticator.prototype = {
     var params = getUrlSearchParams(location.search);
     this.parentPage_ = params.parentPage || this.PARENT_PAGE;
     this.gaiaUrl_ = params.gaiaUrl || this.GAIA_URL;
+    this.gaiaPath_ = params.gaiaPath || this.GAIA_PAGE_PATH;
     this.inputLang_ = params.hl;
     this.inputEmail_ = params.email;
     this.service_ = params.service || this.SERVICE_ID;
@@ -77,16 +78,15 @@ Authenticator.prototype = {
   },
 
   getFrameUrl_: function() {
-    var url = this.gaiaUrl_;
+    var url = this.gaiaUrl_ + this.gaiaPath_;
 
-    url += this.GAIA_PAGE_PATH +
-        '&service=' + encodeURIComponent(this.service_) +
-        '&continue=' + encodeURIComponent(this.continueUrl_);
-
+    url = appendParam(url, 'service', this.service_);
+    url = appendParam(url, 'continue', this.continueUrl_);
     if (this.inputLang_)
-      url += '&hl=' + encodeURIComponent(this.inputLang_);
+      url = appendParam(url, 'hl', this.inputLang_);
     if (this.inputEmail_)
-      url += '&Email=' + encodeURIComponent(this.inputEmail_);
+      url = appendParam(url, 'Email', this.inputEmail_);
+
     return url;
   },
 
@@ -101,7 +101,7 @@ Authenticator.prototype = {
     window.parent.postMessage(msg, this.parentPage_);
 
     if (gaiaFrame.src.lastIndexOf(
-        this.gaiaUrl_ + this.GAIA_PAGE_PATH, 0) == 0) {
+        this.gaiaUrl_ + this.gaiaPath_, 0) == 0) {
       gaiaFrame.executeScript({file: 'inline_injected.js'}, function() {
         // Send an initial message to gaia so that it has an JavaScript
         // reference to the embedder.

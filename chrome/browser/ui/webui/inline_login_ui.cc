@@ -151,16 +151,18 @@ class InlineLoginUIHandler : public content::WebUIMessageHandler {
 
       const GURL& current_url = web_ui()->GetWebContents()->GetURL();
       signin::Source source = signin::GetSourceForPromoURL(current_url);
-      // TODO(guohui): switch to the embedded gaia endpoint for avatar flows
-      // when available.
       DCHECK(source != signin::SOURCE_UNKNOWN);
-      if (source != signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT &&
-          source != signin::SOURCE_AVATAR_BUBBLE_SIGN_IN) {
-        params.SetString("service", "chromiumsync");
-        base::StringAppendF(
-            &encoded_continue_params, "&%s=%d", "source",
-            static_cast<int>(source));
+      if (source == signin::SOURCE_AVATAR_BUBBLE_ADD_ACCOUNT ||
+          source == signin::SOURCE_AVATAR_BUBBLE_SIGN_IN) {
+        // Drop the leading slash in the path.
+        params.SetString("gaiaPath",
+            gaiaUrls->embedded_signin_url().path().substr(1));
       }
+
+      params.SetString("service", "chromiumsync");
+      base::StringAppendF(
+          &encoded_continue_params, "&%s=%d", "source",
+          static_cast<int>(source));
 
       params.SetString("continueUrl",
           gaiaUrls->client_login_to_oauth2_url().Resolve(

@@ -311,7 +311,7 @@ void ProfileChooserView::ShowView(BubbleViewMode view_to_display,
       view_to_display == GAIA_ADD_ACCOUNT_VIEW) {
     // Minimum size for embedded sign in pages as defined in Gaia.
     const int kMinGaiaViewWidth = 320;
-    const int kMinGaiaViewHeight = 500;
+    const int kMinGaiaViewHeight = 440;
     Profile* profile = browser_->profile();
     views::WebView* web_view = new views::WebView(profile);
     signin::Source source = (view_to_display == GAIA_SIGNIN_VIEW) ?
