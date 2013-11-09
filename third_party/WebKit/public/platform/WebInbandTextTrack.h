@@ -47,13 +47,6 @@ public:
         KindNone
     };
 
-    // FIXME: Remove after Chromium's use in WebInbandTextTrackImpl has been removed.
-    enum Mode {
-        ModeDisabled,
-        ModeHidden,
-        ModeShowing
-    };
-
     virtual ~WebInbandTextTrack() { }
 
     virtual void setClient(WebInbandTextTrackClient*) = 0;
