@@ -1,0 +1,18 @@
+Name: Braille Translation Library
+Short Name: liblouis
+URL: http://liblouis.googlecode.com/svn/tags/liblouis_2_5_1
+Version: 2.5.1
+License: LGPL3
+License File: LICENSE
+Security Critical: yes
+
+Description:
+Liblouis is an open-source braille translator and back-translator. It
+features support for computer and literary braille, and supports
+contracted and uncontracted translation for many languages.
+
+libloius is used in a native client binary in ChromeVox and not linked into
+Chrome itself.
+
+Local Modifications:
+...

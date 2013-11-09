@@ -228,6 +228,7 @@ v8.log
 /third_party/libjingle/source
 /third_party/libjingle/source_internal
 /third_party/libjpeg_turbo
+/third_party/liblouis/src
 /third_party/libmtp/
 /third_party/libphonenumber/libphonenumber.xml
 /third_party/libphonenumber/libphonenumber_without_metadata.xml

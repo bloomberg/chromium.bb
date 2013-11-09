@@ -444,7 +444,7 @@ sub parselicense($) {
     }
 
     if ($licensetext =~ /version ([^, ]+?)[.,]? (?:or later|or any later version) (?:of the GNU (?:Lesser |Library )General Public License )(as )?published by the Free Software Foundation/i or
-	$licensetext =~ /GNU (?:Lesser |Library )General Public License (?:(?:as )?published by the Free Software Foundation;)?,? (?:either )?[Vv]ersion ([^, ]+?)(?: of the license)?[.,]? (?:or later|or (?:\(at your option\) )?any later version)/i or
+	$licensetext =~ /(?:GNU (?:Lesser |Library )|(?:Lesser|Library) GNU )General Public License (?:(?:as )?published by the Free Software Foundation;)?,? (?:either )?[Vv]ersion ([^, ]+?)(?: of the license)?[.,]? (?:or later|or (?:\(at your option\) )?any later version)/i or
 	$licensetext =~ /GNU (?:Lesser |Library )General Public License(?: \(LGPL\))?,? [Vv]ersion (\d+(?:\.\d+)?)[ \.]/) {
 	$lgplver = " (v$1 or later)";
     }
@@ -458,7 +458,7 @@ sub parselicense($) {
     }
 
     if ($licensetext =~ /is (free software.? you can redistribute it and\/or modify it|licensed) under the terms of (version [^ ]+ of )?the (GNU (Library |Lesser )General Public License|LGPL)/i or
-        $licensetext =~ /(is distributed|may be used).*terms.*LGPL/) {
+        $licensetext =~ /(is distributed|may be used|can redistribute).*terms.*(LGPL|(Lesser|Library) GNU General Public License)/) {
         if ($lgplver) {
 	    $license = "LGPL$lgplver$extrainfo $license";
         } else {

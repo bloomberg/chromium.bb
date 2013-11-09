@@ -459,6 +459,11 @@ deps_os = {
 
     "src/third_party/undoview":
       "/trunk/deps/third_party/undoview@119694",
+
+    "src/third_party/liblouis/src":
+      Var("chromium_git") +
+      "/external/liblouis.git@3c2daee56250162e5a75830871601d74328d39f5",
+
   },
   "android": {
     "src/third_party/android_tools":
