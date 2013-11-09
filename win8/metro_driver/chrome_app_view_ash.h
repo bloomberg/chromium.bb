@@ -82,6 +82,8 @@ class ChromeAppViewAsh
   void OnFolderPickerCompleted(FolderPickerSession* folder_picker,
                                bool success);
 
+  HWND core_window_hwnd() const { return  core_window_hwnd_; }
+
  private:
   HRESULT OnActivate(winapp::Core::ICoreApplicationView* view,
                      winapp::Activation::IActivatedEventArgs* args);

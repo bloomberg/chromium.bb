@@ -68,9 +68,76 @@ struct Globals {
 
 namespace {
 
-// TODO(robertshield): Share this with chrome_app_view.cc
-void MetroExit() {
-  globals.app_exit->Exit();
+enum KeyModifier {
+  NONE,
+  SHIFT = 1,
+  CONTROL = 2,
+  ALT = 4
+};
+
+// Helper function to send keystrokes via the SendInput function.
+// mnemonic_char: The keystroke to be sent.
+// modifiers: Combination with Alt, Ctrl, Shift, etc.
+void SendMnemonic(
+    WORD mnemonic_char, KeyModifier modifiers) {
+  INPUT keys[4] = {0};  // Keyboard events
+  int key_count = 0;  // Number of generated events
+
+  if (modifiers & SHIFT) {
+    keys[key_count].type = INPUT_KEYBOARD;
+    keys[key_count].ki.wVk = VK_SHIFT;
+    keys[key_count].ki.wScan = MapVirtualKey(VK_SHIFT, 0);
+    key_count++;
+  }
+
+  if (modifiers & CONTROL) {
+    keys[key_count].type = INPUT_KEYBOARD;
+    keys[key_count].ki.wVk = VK_CONTROL;
+    keys[key_count].ki.wScan = MapVirtualKey(VK_CONTROL, 0);
+    key_count++;
+  }
+
+  if (modifiers & ALT) {
+    keys[key_count].type = INPUT_KEYBOARD;
+    keys[key_count].ki.wVk = VK_MENU;
+    keys[key_count].ki.wScan = MapVirtualKey(VK_MENU, 0);
+    key_count++;
+  }
+
+  keys[key_count].type = INPUT_KEYBOARD;
+  keys[key_count].ki.wVk = mnemonic_char;
+  keys[key_count].ki.wScan = MapVirtualKey(mnemonic_char, 0);
+  key_count++;
+
+  bool should_sleep = key_count > 1;
+
+  // Send key downs.
+  for (int i = 0; i < key_count; i++) {
+    SendInput(1, &keys[ i ], sizeof(keys[0]));
+    keys[i].ki.dwFlags |= KEYEVENTF_KEYUP;
+    if (should_sleep)
+      Sleep(10);
+  }
+
+  // Now send key ups in reverse order.
+  for (int i = key_count; i; i--) {
+    SendInput(1, &keys[ i - 1 ], sizeof(keys[0]));
+    if (should_sleep)
+      Sleep(10);
+  }
+}
+
+// Helper function to Exit metro chrome cleanly. If we are in the foreground
+// then we try and exit by sending an Alt+F4 key combination to the core
+// window which ensures that the chrome application tile does not show up in
+// the running metro apps list on the top left corner.
+void MetroExit(HWND core_window) {
+  if ((core_window != NULL) && (core_window == ::GetForegroundWindow())) {
+    DVLOG(1) << "We are in the foreground. Exiting via Alt F4";
+    SendMnemonic(VK_F4, ALT);
+  } else {
+    globals.app_exit->Exit();
+  }
 }
 
 class ChromeChannelListener : public IPC::Listener {
@@ -99,8 +166,13 @@ class ChromeChannelListener : public IPC::Listener {
   }
 
   virtual void OnChannelError() OVERRIDE {
-    DVLOG(1) << "Channel error";
-    MetroExit();
+    DVLOG(1) << "Channel error. Exiting.";
+    MetroExit(app_view_->core_window_hwnd());
+    // In early Windows 8 versions the code above sometimes fails so we call
+    // it a second time with a NULL window which just calls Exit().
+    ui_proxy_->PostDelayedTask(FROM_HERE,
+        base::Bind(&MetroExit, HWND(NULL)),
+        base::TimeDelta::FromMilliseconds(100));
   }
 
  private:
@@ -561,6 +633,11 @@ HRESULT ChromeAppViewAsh::Unsnap() {
 
 void ChromeAppViewAsh::OnActivateDesktop(const base::FilePath& file_path) {
   DLOG(INFO) << "ChannelAppViewAsh::OnActivateDesktop\n";
+
+  // As we are the top level window, the exiting is done async so we manage
+  // to execute  the entire function including the final Send().
+  MetroExit(core_window_hwnd());
+
   // We are just executing delegate_execute here without parameters. Assumption
   // here is that this process will be reused by shell when asking for
   // IExecuteCommand interface.
