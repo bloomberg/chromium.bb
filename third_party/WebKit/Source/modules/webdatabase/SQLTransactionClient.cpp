@@ -36,8 +36,24 @@
 #include "modules/webdatabase/DatabaseBackendBase.h"
 #include "modules/webdatabase/DatabaseContext.h"
 #include "modules/webdatabase/DatabaseObserver.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebPlatformDatabaseObserver.h"
+#include "weborigin/DatabaseIdentifier.h"
+#include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {
+
+static void databaseModified(DatabaseBackendBase* database)
+{
+    if (blink::Platform::current()->databaseObserver()) {
+        blink::Platform::current()->databaseObserver()->databaseModified(
+            createDatabaseIdentifierFromSecurityOrigin(database->securityOrigin()),
+            database->stringIdentifier());
+    } else {
+        // FIXME: Deprecate this.
+        DatabaseObserver::databaseModified(database);
+    }
+}
 
 class NotifyDatabaseChangedTask : public ExecutionContextTask {
 public:
@@ -48,7 +64,7 @@ public:
 
     virtual void performTask(ExecutionContext*)
     {
-        WebCore::DatabaseObserver::databaseModified(m_database.get());
+        databaseModified(m_database.get());
     }
 
 private:
@@ -68,7 +84,7 @@ void SQLTransactionClient::didCommitWriteTransaction(DatabaseBackendBase* databa
         return;
     }
 
-    WebCore::DatabaseObserver::databaseModified(database);
+    databaseModified(database);
 }
 
 bool SQLTransactionClient::didExceedQuota(DatabaseBackendBase* database)

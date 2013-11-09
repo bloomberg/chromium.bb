@@ -33,12 +33,14 @@
 
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
-#include "modules/webdatabase/sqlite/SQLiteFileSystem.h"
 #include "modules/webdatabase/DatabaseBackendBase.h"
 #include "modules/webdatabase/DatabaseClient.h"
 #include "modules/webdatabase/DatabaseContext.h"
 #include "modules/webdatabase/DatabaseObserver.h"
 #include "modules/webdatabase/QuotaTracker.h"
+#include "modules/webdatabase/sqlite/SQLiteFileSystem.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebPlatformDatabaseObserver.h"
 #include "weborigin/DatabaseIdentifier.h"
 #include "weborigin/SecurityOrigin.h"
 #include "weborigin/SecurityOriginHash.h"
@@ -47,6 +49,18 @@
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
+
+static void databaseClosed(DatabaseBackendBase* database)
+{
+    if (blink::Platform::current()->databaseObserver()) {
+        blink::Platform::current()->databaseObserver()->databaseClosed(
+            createDatabaseIdentifierFromSecurityOrigin(database->securityOrigin()),
+            database->stringIdentifier());
+    } else {
+        // FIXME: Deprecate this.
+        DatabaseObserver::databaseClosed(database);
+    }
+}
 
 DatabaseTracker& DatabaseTracker::tracker()
 {
@@ -105,7 +119,7 @@ public:
 
     virtual void performTask(ExecutionContext* context)
     {
-        DatabaseObserver::databaseClosed(m_database.get());
+        databaseClosed(m_database.get());
     }
 
     virtual bool isCleanupTask() const
@@ -154,13 +168,22 @@ void DatabaseTracker::removeOpenDatabase(DatabaseBackendBase* database)
     if (!executionContext->isContextThread())
         executionContext->postTask(NotifyDatabaseObserverOnCloseTask::create(database));
     else
-        DatabaseObserver::databaseClosed(database);
+        databaseClosed(database);
 }
 
 void DatabaseTracker::prepareToOpenDatabase(DatabaseBackendBase* database)
 {
     ASSERT(database->databaseContext()->executionContext()->isContextThread());
-    DatabaseObserver::databaseOpened(database);
+    if (blink::Platform::current()->databaseObserver()) {
+        blink::Platform::current()->databaseObserver()->databaseOpened(
+            createDatabaseIdentifierFromSecurityOrigin(database->securityOrigin()),
+            database->stringIdentifier(),
+            database->displayName(),
+            database->estimatedSize());
+    } else {
+        // FIXME: Deprecate this.
+        DatabaseObserver::databaseOpened(database);
+    }
 }
 
 void DatabaseTracker::failedToOpenDatabase(DatabaseBackendBase* database)
@@ -169,7 +192,7 @@ void DatabaseTracker::failedToOpenDatabase(DatabaseBackendBase* database)
     if (!executionContext->isContextThread())
         executionContext->postTask(NotifyDatabaseObserverOnCloseTask::create(database));
     else
-        DatabaseObserver::databaseClosed(database);
+        databaseClosed(database);
 }
 
 unsigned long long DatabaseTracker::getMaxSizeForDatabase(const DatabaseBackendBase* database)
