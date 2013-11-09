@@ -6409,3 +6409,29 @@
    ...
    fun:_ZN7WebCore11RenderBlock6layoutEv
 }
+{
+   bug_317166
+   Memcheck:Leak
+   fun:malloc
+   fun:_dl_close_worker
+   fun:_dl_close
+   fun:_dl_catch_error
+   fun:_dlerror_run
+   fun:dlclose
+   obj:/usr/lib/x86_64-linux-gnu/libasound.so.2.0.0
+   fun:snd_config_searcha_hooks
+   fun:snd_config_searchva_hooks
+   obj:/usr/lib/x86_64-linux-gnu/libasound.so.2.0.0
+   fun:snd_config_search_definition
+   obj:/usr/lib/x86_64-linux-gnu/libasound.so.2.0.0
+   fun:_ZN5media11AlsaWrapper7PcmOpenEPP8_snd_pcmPKc15_snd_pcm_streami
+   fun:_ZN9alsa_utilL10OpenDeviceEPN5media11AlsaWrapperEPKc15_snd_pcm_streamii15_snd_pcm_formati
+   fun:_ZN9alsa_util18OpenPlaybackDeviceEPN5media11AlsaWrapperEPKcii15_snd_pcm_formati
+   fun:_ZN5media19AlsaPcmOutputStream16AutoSelectDeviceEj
+   fun:_ZN5media19AlsaPcmOutputStream4OpenEv
+   fun:_ZN5media25AudioOutputDispatcherImpl19CreateAndOpenStreamEv
+   fun:_ZN5media25AudioOutputDispatcherImpl10OpenStreamEv
+   fun:_ZN5media20AudioOutputResampler10OpenStreamEv
+   fun:_ZN5media16AudioOutputProxy4OpenEv
+   fun:_ZN5media18AudioStreamHandler20AudioStreamContainer4PlayEv
+}
