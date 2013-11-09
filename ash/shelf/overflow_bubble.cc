@@ -131,6 +131,7 @@ void OverflowBubbleView::ScrollByXOffset(int x_offset) {
   const gfx::Rect visible_bounds(GetContentsBounds());
   const gfx::Size contents_size(GetContentsSize());
 
+  DCHECK_GE(contents_size.width(), visible_bounds.width());
   int x = std::min(contents_size.width() - visible_bounds.width(),
                    std::max(0, scroll_offset_.x() + x_offset));
   scroll_offset_.set_x(x);
@@ -140,6 +141,7 @@ void OverflowBubbleView::ScrollByYOffset(int y_offset) {
   const gfx::Rect visible_bounds(GetContentsBounds());
   const gfx::Size contents_size(GetContentsSize());
 
+  DCHECK_GE(contents_size.width(), visible_bounds.width());
   int y = std::min(contents_size.height() - visible_bounds.height(),
                    std::max(0, scroll_offset_.y() + y_offset));
   scroll_offset_.set_y(y);
@@ -173,12 +175,16 @@ void OverflowBubbleView::Layout() {
 }
 
 void OverflowBubbleView::ChildPreferredSizeChanged(views::View* child) {
-  // Ensures |launch_view_| is still visible.
-  ScrollByXOffset(0);
-  ScrollByYOffset(0);
-  Layout();
-
+  // When contents size is changed, ContentsBounds should be updated before
+  // calculating scroll offset.
   SizeToContents();
+
+  // Ensures |shelf_view_| is still visible.
+  if (IsHorizontalAlignment())
+    ScrollByXOffset(0);
+  else
+    ScrollByYOffset(0);
+  Layout();
 }
 
 bool OverflowBubbleView::OnMouseWheel(const ui::MouseWheelEvent& event) {

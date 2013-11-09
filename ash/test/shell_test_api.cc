@@ -4,6 +4,7 @@
 
 #include "ash/test/shell_test_api.h"
 
+#include "ash/launcher/launcher_delegate.h"
 #include "ash/root_window_controller.h"
 #include "ash/shell.h"
 
@@ -64,6 +65,10 @@ void ShellTestApi::DisableOutputConfiguratorAnimation() {
     shell_->output_configurator_animation_.reset();
   }
 #endif  // defined(OS_CHROMEOS)
+}
+
+void ShellTestApi::SetLauncherDelegate(LauncherDelegate* delegate) {
+  shell_->launcher_delegate_.reset(delegate);
 }
 
 }  // namespace test

@@ -710,10 +710,8 @@ void ShelfView::CalculateIdealBounds(IdealBounds* bounds) {
   int x = layout_manager_->SelectValueForShelfAlignment(inset, 0, 0, inset);
   int y = layout_manager_->SelectValueForShelfAlignment(0, inset, inset, 0);
 
-  int button_size = ash::switches::UseAlternateShelfLayout() ?
-      kButtonSize : kLauncherPreferredSize;
-  int button_spacing = ash::switches::UseAlternateShelfLayout() ?
-      kAlternateButtonSpacing : kButtonSpacing;
+  int button_size = GetButtonSize();
+  int button_spacing = GetButtonSpacing();
 
   int w = layout_manager_->PrimaryAxisValue(button_size, width());
   int h = layout_manager_->PrimaryAxisValue(height(), button_size);
@@ -1086,6 +1084,10 @@ bool ShelfView::HandleRipOffDrag(const ui::LocatedEvent& event) {
       // the move as in any normal case.
       dragged_off_shelf_ = false;
       drag_view_->layer()->SetOpacity(1.0f);
+      // Overflow bubble should be enlarged immediately when an item is
+      // re-inserted.
+      if (is_overflow_mode())
+        PreferredSizeChanged();
       return false;
     }
     // Move our proxy view item.
@@ -1107,8 +1109,13 @@ bool ShelfView::HandleRipOffDrag(const ui::LocatedEvent& event) {
       // Move the item to the front of the first panel item and hide it.
       // LauncherItemMoved() callback will handle the |view_model_| update and
       // call AnimateToIdealBounds().
-      model_->Move(current_index, model_->FirstPanelIndex() - 1);
-      StartFadeInLastVisibleItem();
+      if (current_index != model_->FirstPanelIndex() - 1) {
+        model_->Move(current_index, model_->FirstPanelIndex() - 1);
+        StartFadeInLastVisibleItem();
+      } else if (is_overflow_mode()) {
+        // Overflow bubble should be shrunk when an item is ripped off.
+        PreferredSizeChanged();
+      }
       // Make the item partially disappear to show that it will get removed if
       // dropped.
       drag_image_->SetOpacity(0.5f);
@@ -1291,6 +1298,16 @@ void ShelfView::UpdateOverflowRange(ShelfView* overflow_view) {
   overflow_view->last_visible_index_ = last_overflow_index;
 }
 
+int ShelfView::GetButtonSize() const {
+  return ash::switches::UseAlternateShelfLayout() ?
+      kButtonSize : kLauncherPreferredSize;
+}
+
+int ShelfView::GetButtonSpacing() const {
+  return ash::switches::UseAlternateShelfLayout() ?
+      kAlternateButtonSpacing : kButtonSpacing;
+}
+
 bool ShelfView::ShouldHideTooltip(const gfx::Point& cursor_location) {
   gfx::Rect active_bounds;
 
@@ -1350,9 +1367,16 @@ gfx::Size ShelfView::GetPreferredSize() {
 
   const int preferred_size = layout_manager_->GetPreferredShelfSize();
 
-  const int app_list_index = view_model_->view_size() - 1;
-  const int last_button_index = is_overflow_mode() ?
-      last_visible_index_ : app_list_index;
+  int last_button_index = is_overflow_mode() ?
+      last_visible_index_ : view_model_->view_size() - 1;
+
+  // When an item is dragged off from the overflow bubble, it is moved to last
+  // position and and changed to invisible. Overflow bubble size should be
+  // shrunk to fit only for visible items.
+  if (is_overflow_mode() && dragged_off_shelf_ &&
+      RemovableByRipOff(view_model_->GetIndexOfView(drag_view_)) == REMOVABLE)
+    last_button_index--;
+
   const gfx::Rect last_button_bounds =
       last_button_index  >= first_visible_index_ ?
           view_model_->view_at(last_button_index)->bounds() :

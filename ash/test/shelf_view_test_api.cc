@@ -95,9 +95,29 @@ void ShelfViewTestAPI::RunMessageLoopUntilAnimationsDone() {
   shelf_view_->bounds_animator_->RemoveObserver(observer.get());
 }
 
+internal::OverflowBubble* ShelfViewTestAPI::overflow_bubble() {
+  return shelf_view_->overflow_bubble_.get();
+}
+
+gfx::Size ShelfViewTestAPI::GetPreferredSize() {
+  return shelf_view_->GetPreferredSize();
+}
+
+int ShelfViewTestAPI::GetButtonSize() {
+  return shelf_view_->GetButtonSize();
+}
+
+int ShelfViewTestAPI::GetButtonSpacing() {
+  return shelf_view_->GetButtonSpacing();
+}
+
 bool ShelfViewTestAPI::SameDragType(LauncherItemType typea,
                                     LauncherItemType typeb) const {
   return shelf_view_->SameDragType(typea, typeb);
+}
+
+void ShelfViewTestAPI::SetLauncherDelegate(LauncherDelegate* delegate) {
+  shelf_view_->delegate_ = delegate;
 }
 
 }  // namespace test

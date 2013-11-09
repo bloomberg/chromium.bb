@@ -1652,7 +1652,7 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, DragAndDrop) {
   EXPECT_FALSE(grid_view->dragging());
   EXPECT_FALSE(grid_view->has_dragged_view());
   generator.ReleaseLeftButton();
-  }
+}
 
 // Do tests for removal of items from the shelf by dragging.
 IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, DragOffShelf) {

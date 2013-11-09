@@ -228,6 +228,12 @@ class ASH_EXPORT ShelfView : public views::View,
   // Updates the visible range of overflow items in |overflow_view|.
   void UpdateOverflowRange(ShelfView* overflow_view);
 
+  // Returns the launcher button size.
+  int GetButtonSize() const;
+
+  // Returns the button spacing.
+  int GetButtonSpacing() const;
+
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;

@@ -14,6 +14,7 @@
 #include "ash/launcher/launcher_model.h"
 #include "ash/launcher/launcher_types.h"
 #include "ash/root_window_controller.h"
+#include "ash/shelf/overflow_bubble.h"
 #include "ash/shelf/shelf_icon_observer.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_tooltip_manager.h"
@@ -195,6 +196,26 @@ TEST_F(ShelfViewIconObserverTest, BoundsChanged) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // ShelfView tests.
+
+// LauncherItemDelegate for ShelfViewTest.OverflowBubbleSize only.
+// To test ripping off an item in OverflowBubbleSize, all item should be
+// pinned.
+class TestLauncherDelegateForShelfView : public TestLauncherDelegate {
+ public:
+  explicit TestLauncherDelegateForShelfView(LauncherModel* model)
+      : TestLauncherDelegate(model) {}
+  virtual ~TestLauncherDelegateForShelfView() {}
+
+  // TestLauncherDelegate overrides:
+  virtual bool IsAppPinned(const std::string& app_id) OVERRIDE {
+    // Returns true for ShelfViewTest.OverflowBubbleSize. To test ripping off in
+    // that test, an item is already pinned state.
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestLauncherDelegateForShelfView);
+};
 
 class ShelfViewTest : public AshTestBase {
  public:
@@ -1312,6 +1333,71 @@ TEST_F(ShelfViewTest, ResizeDuringOverflowAddAnimation) {
   const gfx::Rect& app_list_bounds =
       test_api_->GetBoundsByIndex(app_list_button_index);
   EXPECT_EQ(app_list_bounds, app_list_ideal_bounds);
+}
+
+// Checks the overflow bubble size when an item is ripped off and re-inserted.
+TEST_F(ShelfViewTest, OverflowBubbleSize) {
+  // Replace LauncherDelegate.
+  test::ShellTestApi test_api(Shell::GetInstance());
+  test_api.SetLauncherDelegate(NULL);
+  LauncherDelegate *delegate = new TestLauncherDelegateForShelfView(model_);
+  test_api.SetLauncherDelegate(delegate);
+  test::LauncherTestAPI(
+      Launcher::ForPrimaryDisplay()).SetLauncherDelegate(delegate);
+  test_api_->SetLauncherDelegate(delegate);
+
+  // Add buttons until overflow.
+  int items_added = 0;
+  while (!test_api_->IsOverflowButtonVisible()) {
+    AddAppShortcut();
+    ++items_added;
+    ASSERT_LT(items_added, 10000);
+  }
+
+  // Show overflow bubble.
+  test_api_->ShowOverflowBubble();
+  ASSERT_TRUE(test_api_->overflow_bubble() &&
+              test_api_->overflow_bubble()->IsShowing());
+
+  ash::test::ShelfViewTestAPI test_for_overflow_view(
+      test_api_->overflow_bubble()->shelf_view());
+
+  int ripped_index = test_for_overflow_view.GetLastVisibleIndex();
+  gfx::Size bubble_size = test_for_overflow_view.GetPreferredSize();
+  int total_item_count = model_->item_count();
+  int item_width = test_for_overflow_view.GetButtonSize() +
+      test_for_overflow_view.GetButtonSpacing();
+
+  aura::test::EventGenerator generator(ash::Shell::GetPrimaryRootWindow(),
+                                       gfx::Point());
+  ash::internal::LauncherButton* button =
+      test_for_overflow_view.GetButton(ripped_index);
+  // Rip off the last visible item.
+  gfx::Point start_point = button->GetBoundsInScreen().CenterPoint();
+  gfx::Point rip_off_point(start_point.x(), 0);
+  generator.MoveMouseTo(start_point.x(), start_point.y());
+  base::MessageLoop::current()->RunUntilIdle();
+  generator.PressLeftButton();
+  base::MessageLoop::current()->RunUntilIdle();
+  generator.MoveMouseTo(rip_off_point.x(), rip_off_point.y());
+  base::MessageLoop::current()->RunUntilIdle();
+  test_for_overflow_view.RunMessageLoopUntilAnimationsDone();
+
+  // Check the overflow bubble size when an item is ripped off.
+  EXPECT_EQ(bubble_size.width() - item_width,
+            test_for_overflow_view.GetPreferredSize().width());
+  ASSERT_TRUE(test_api_->overflow_bubble() &&
+              test_api_->overflow_bubble()->IsShowing());
+
+  // Re-insert an item into the overflow bubble.
+  generator.MoveMouseTo(start_point);
+  test_for_overflow_view.RunMessageLoopUntilAnimationsDone();
+  generator.ReleaseLeftButton();
+  test_for_overflow_view.RunMessageLoopUntilAnimationsDone();
+  // Check the bubble size after an item is re-inserted.
+  EXPECT_EQ(bubble_size.width(),
+            test_for_overflow_view.GetPreferredSize().width());
+  EXPECT_EQ(total_item_count, model_->item_count());
 }
 
 // Check that the first item in the list follows Fitt's law by including the

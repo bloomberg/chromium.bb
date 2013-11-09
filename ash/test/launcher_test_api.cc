@@ -20,5 +20,9 @@ internal::ShelfView* LauncherTestAPI::shelf_view() {
   return launcher_->shelf_view_;
 }
 
+void LauncherTestAPI::SetLauncherDelegate(LauncherDelegate* delegate) {
+  launcher_->delegate_ = delegate;
+}
+
 }  // namespace test
 }  // namespace ash

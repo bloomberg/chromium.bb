@@ -10,12 +10,16 @@
 
 namespace gfx {
 class Rect;
+class Size;
 }
 
 namespace ash {
 
+class LauncherDelegate;
+
 namespace internal {
 class LauncherButton;
+class OverflowBubble;
 class ShelfView;
 }
 
@@ -55,8 +59,23 @@ class ShelfViewTestAPI {
   // An accessor for |shelf_view|.
   internal::ShelfView* shelf_view() { return shelf_view_; }
 
+  // An accessor for overflow bubble.
+  internal::OverflowBubble* overflow_bubble();
+
+  // Returns the preferred size of |shelf_view_|.
+  gfx::Size GetPreferredSize();
+
+  // Returns the button size.
+  int GetButtonSize();
+
+  // Returns the button space size.
+  int GetButtonSpacing();
+
   // Wrapper for ShelfView::SameDragType.
   bool SameDragType(LauncherItemType typea, LauncherItemType typeb) const;
+
+  // Sets LauncherDelegate.
+  void SetLauncherDelegate(LauncherDelegate* delegate);
 
  private:
   internal::ShelfView* shelf_view_;

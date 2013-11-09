@@ -15,8 +15,9 @@ class InputMethodEventFilter;
 
 namespace ash {
 class AshNativeCursorManager;
-class Shell;
+class LauncherDelegate;
 class LauncherModel;
+class Shell;
 
 namespace internal {
 class AppListController;
@@ -45,6 +46,9 @@ public:
   internal::AppListController* app_list_controller();
 
   void DisableOutputConfiguratorAnimation();
+
+  // Set LauncherDelegate.
+  void SetLauncherDelegate(LauncherDelegate* delegate);
 
  private:
   Shell* shell_;  // not owned
