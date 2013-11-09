@@ -913,6 +913,18 @@ void RootWindowHostX11::DispatchXI2Event(const base::NativeEvent& event) {
     case ui::ET_TOUCH_PRESSED:
     case ui::ET_TOUCH_CANCELLED:
     case ui::ET_TOUCH_RELEASED: {
+#if defined(OS_CHROMEOS)
+      // Bail out early before generating a ui::TouchEvent if this event
+      // is not within the range of this RootWindow. Converting an xevent
+      // to ui::TouchEvent might change the state of the global touch tracking
+      // state, e.g. touch release event can remove the touch id from the
+      // record, and doing this multiple time when there are multiple
+      // RootWindow will cause problem. So only generate the ui::TouchEvent
+      // when we are sure it belongs to this RootWindow.
+      if (base::SysInfo::IsRunningOnChromeOS() &&
+          !bounds_.Contains(ui::EventLocationFromNative(xev)))
+        break;
+#endif  // defined(OS_CHROMEOS)
       ui::TouchEvent touchev(xev);
 #if defined(USE_XI2_MT)
       // Ignore touch events with touch press happening on the side bezel.
@@ -931,8 +943,6 @@ void RootWindowHostX11::DispatchXI2Event(const base::NativeEvent& event) {
 #endif  // defined(USE_XI2_MT)
 #if defined(OS_CHROMEOS)
       if (base::SysInfo::IsRunningOnChromeOS()) {
-        if (!bounds_.Contains(touchev.location()))
-          break;
         // X maps the touch-surface to the size of the X root-window.
         // In multi-monitor setup, Coordinate Transformation Matrix
         // repositions the touch-surface onto part of X root-window

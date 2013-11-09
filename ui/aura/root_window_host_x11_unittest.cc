@@ -154,4 +154,117 @@ TEST_F(RootWindowHostX11Test, DispatchTouchEventToOneRootWindow) {
 #endif  // defined(OS_CHROMEOS)
 }
 
+// Send X touch events to two RootWindowHost. The RootWindowHost which is
+// the event target of the X touch events should generate the corresponding
+// ui::TouchEvent for its delegate.
+#if defined(OS_CHROMEOS)
+TEST_F(RootWindowHostX11Test, DispatchTouchEventToTwoRootWindow) {
+  // Fake a ChromeOS running env.
+  const char* kLsbRelease = "CHROMEOS_RELEASE_NAME=Chromium OS\n";
+  base::SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease, base::Time());
+
+  scoped_ptr<RootWindowHostX11> root_window_host1(
+      new RootWindowHostX11(gfx::Rect(0, 0, 2560, 1700)));
+  scoped_ptr<TestRootWindowHostDelegate> delegate1(
+      new TestRootWindowHostDelegate());
+  root_window_host1->SetDelegate(delegate1.get());
+
+  int host2_y_offset = 1700;
+  scoped_ptr<RootWindowHostX11> root_window_host2(
+      new RootWindowHostX11(gfx::Rect(0, host2_y_offset, 1920, 1080)));
+  scoped_ptr<TestRootWindowHostDelegate> delegate2(
+      new TestRootWindowHostDelegate());
+  root_window_host2->SetDelegate(delegate2.get());
+
+  std::vector<unsigned int> devices;
+  devices.push_back(0);
+  ui::SetupTouchDevicesForTest(devices);
+  std::vector<ui::Valuator> valuators;
+
+  EXPECT_EQ(ui::ET_UNKNOWN, delegate1->last_touch_type());
+  EXPECT_EQ(-1, delegate1->last_touch_id());
+  EXPECT_EQ(ui::ET_UNKNOWN, delegate2->last_touch_type());
+  EXPECT_EQ(-1, delegate2->last_touch_id());
+
+  // 2 Touch events are targeted at the second RootWindowHost.
+  ui::XScopedTouchEvent touch1_begin(ui::CreateTouchEvent(
+      0, XI_TouchBegin, 5, gfx::Point(1500, 2500), valuators));
+  root_window_host1->Dispatch(touch1_begin);
+  root_window_host2->Dispatch(touch1_begin);
+  EXPECT_EQ(ui::ET_UNKNOWN, delegate1->last_touch_type());
+  EXPECT_EQ(-1, delegate1->last_touch_id());
+  EXPECT_EQ(gfx::Point(0, 0), delegate1->last_touch_location());
+  EXPECT_EQ(ui::ET_TOUCH_PRESSED, delegate2->last_touch_type());
+  EXPECT_EQ(0, delegate2->last_touch_id());
+  EXPECT_EQ(gfx::Point(1500, 2500 - host2_y_offset),
+            delegate2->last_touch_location());
+
+  ui::XScopedTouchEvent touch2_begin(ui::CreateTouchEvent(
+      0, XI_TouchBegin, 6, gfx::Point(1600, 2600), valuators));
+  root_window_host1->Dispatch(touch2_begin);
+  root_window_host2->Dispatch(touch2_begin);
+  EXPECT_EQ(ui::ET_UNKNOWN, delegate1->last_touch_type());
+  EXPECT_EQ(-1, delegate1->last_touch_id());
+  EXPECT_EQ(gfx::Point(0, 0), delegate1->last_touch_location());
+  EXPECT_EQ(ui::ET_TOUCH_PRESSED, delegate2->last_touch_type());
+  EXPECT_EQ(1, delegate2->last_touch_id());
+  EXPECT_EQ(gfx::Point(1600, 2600 - host2_y_offset),
+            delegate2->last_touch_location());
+
+  ui::XScopedTouchEvent touch1_move(ui::CreateTouchEvent(
+      0, XI_TouchUpdate, 5, gfx::Point(1500, 2550), valuators));
+  root_window_host1->Dispatch(touch1_move);
+  root_window_host2->Dispatch(touch1_move);
+  EXPECT_EQ(ui::ET_UNKNOWN, delegate1->last_touch_type());
+  EXPECT_EQ(-1, delegate1->last_touch_id());
+  EXPECT_EQ(gfx::Point(0, 0), delegate1->last_touch_location());
+  EXPECT_EQ(ui::ET_TOUCH_MOVED, delegate2->last_touch_type());
+  EXPECT_EQ(0, delegate2->last_touch_id());
+  EXPECT_EQ(gfx::Point(1500, 2550 - host2_y_offset),
+            delegate2->last_touch_location());
+
+  ui::XScopedTouchEvent touch2_move(ui::CreateTouchEvent(
+      0, XI_TouchUpdate, 6, gfx::Point(1600, 2650), valuators));
+  root_window_host1->Dispatch(touch2_move);
+  root_window_host2->Dispatch(touch2_move);
+  EXPECT_EQ(ui::ET_UNKNOWN, delegate1->last_touch_type());
+  EXPECT_EQ(-1, delegate1->last_touch_id());
+  EXPECT_EQ(gfx::Point(0, 0), delegate1->last_touch_location());
+  EXPECT_EQ(ui::ET_TOUCH_MOVED, delegate2->last_touch_type());
+  EXPECT_EQ(1, delegate2->last_touch_id());
+  EXPECT_EQ(gfx::Point(1600, 2650 - host2_y_offset),
+            delegate2->last_touch_location());
+
+  ui::XScopedTouchEvent touch1_end(ui::CreateTouchEvent(
+      0, XI_TouchEnd, 5, gfx::Point(1500, 2550), valuators));
+  root_window_host1->Dispatch(touch1_end);
+  root_window_host2->Dispatch(touch1_end);
+  EXPECT_EQ(ui::ET_UNKNOWN, delegate1->last_touch_type());
+  EXPECT_EQ(-1, delegate1->last_touch_id());
+  EXPECT_EQ(gfx::Point(0, 0), delegate1->last_touch_location());
+  EXPECT_EQ(ui::ET_TOUCH_RELEASED, delegate2->last_touch_type());
+  EXPECT_EQ(0, delegate2->last_touch_id());
+  EXPECT_EQ(gfx::Point(1500, 2550 - host2_y_offset),
+            delegate2->last_touch_location());
+
+  ui::XScopedTouchEvent touch2_end(ui::CreateTouchEvent(
+      0, XI_TouchEnd, 6, gfx::Point(1600, 2650), valuators));
+  root_window_host1->Dispatch(touch2_end);
+  root_window_host2->Dispatch(touch2_end);
+  EXPECT_EQ(ui::ET_UNKNOWN, delegate1->last_touch_type());
+  EXPECT_EQ(-1, delegate1->last_touch_id());
+  EXPECT_EQ(gfx::Point(0, 0), delegate1->last_touch_location());
+  EXPECT_EQ(ui::ET_TOUCH_RELEASED, delegate2->last_touch_type());
+  EXPECT_EQ(1, delegate2->last_touch_id());
+  EXPECT_EQ(gfx::Point(1600, 2650 - host2_y_offset),
+            delegate2->last_touch_location());
+
+  // Revert the CrOS testing env otherwise the following non-CrOS aura
+  // tests will fail.
+  // Fake a ChromeOS running env.
+  kLsbRelease = "";
+  base::SysInfo::SetChromeOSVersionInfoForTest(kLsbRelease, base::Time());
+}
+#endif  // defined(OS_CHROMEOS)
+
 }  // namespace aura
