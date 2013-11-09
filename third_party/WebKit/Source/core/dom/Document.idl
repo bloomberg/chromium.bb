@@ -209,8 +209,14 @@ callback CustomElementConstructor = Element ();
                             [TreatNullAs=NullString] DOMString typeExtension);
 
     // Page visibility API.
-    readonly attribute DOMString webkitVisibilityState;
-    readonly attribute boolean webkitHidden;
+    readonly attribute DOMString visibilityState;
+    readonly attribute boolean hidden;
+
+    // Deprecated prefixed page visibility API.
+    // TODO(davidben): This is a property so attaching a deprecation warning results in false positives when outputting
+    // document in the console. It's possible http://crbug.com/43394 will resolve this.
+    [MeasureAs=PrefixedPageVisibility, ImplementedAs=visibilityState] readonly attribute DOMString webkitVisibilityState;
+    [MeasureAs=PrefixedPageVisibility, ImplementedAs=hidden] readonly attribute boolean webkitHidden;
 
     // Security Policy API: http://dvcs.w3.org/hg/content-security-policy/raw-file/tip/csp-specification.dev.html#script-interfaces
     [RuntimeEnabled=ExperimentalContentSecurityPolicyFeatures] readonly attribute SecurityPolicy securityPolicy;

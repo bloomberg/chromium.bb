@@ -4124,10 +4124,7 @@ void WebViewImpl::setVisibilityState(WebPageVisibilityState visibilityState,
     if (!page())
         return;
 
-    ASSERT(visibilityState == WebPageVisibilityStateVisible
-           || visibilityState == WebPageVisibilityStateHidden
-           || visibilityState == WebPageVisibilityStatePrerender
-           || visibilityState == WebPageVisibilityStatePreview);
+    ASSERT(visibilityState == WebPageVisibilityStateVisible || visibilityState == WebPageVisibilityStateHidden || visibilityState == WebPageVisibilityStatePrerender);
     m_page->setVisibilityState(static_cast<PageVisibilityState>(static_cast<int>(visibilityState)), isInitialState);
 
     if (m_layerTreeView) {

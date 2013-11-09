@@ -31,7 +31,7 @@ scriptElement.innerText = "function handleVisibilityChange() \
                            { \
                                parent.crash(); \
                            } \
-                           document.addEventListener('webkitvisibilitychange', handleVisibilityChange, false);";
+                           document.addEventListener('visibilitychange', handleVisibilityChange, false);";
 
 if (window.testRunner)
     testRunner.setPageVisibility("hidden");

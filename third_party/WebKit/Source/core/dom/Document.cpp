@@ -1349,7 +1349,7 @@ void Document::removeTitle(Element* titleElement)
         updateTitle(String());
 }
 
-PageVisibilityState Document::visibilityState() const
+PageVisibilityState Document::pageVisibilityState() const
 {
     // The visibility of the document is inherited from the visibility of the
     // page. If there is no page associated with the document, we will assume
@@ -1360,18 +1360,20 @@ PageVisibilityState Document::visibilityState() const
     return m_frame->page()->visibilityState();
 }
 
-String Document::webkitVisibilityState() const
+String Document::visibilityState() const
 {
-    return pageVisibilityStateString(visibilityState());
+    return pageVisibilityStateString(pageVisibilityState());
 }
 
-bool Document::webkitHidden() const
+bool Document::hidden() const
 {
-    return visibilityState() != PageVisibilityStateVisible;
+    return pageVisibilityState() != PageVisibilityStateVisible;
 }
 
 void Document::dispatchVisibilityStateChangeEvent()
 {
+    dispatchEvent(Event::create(EventTypeNames::visibilitychange));
+    // Also send out the deprecated version until it can be removed.
     dispatchEvent(Event::create(EventTypeNames::webkitvisibilitychange));
 }
 

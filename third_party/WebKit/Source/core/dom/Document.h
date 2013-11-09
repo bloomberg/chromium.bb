@@ -351,8 +351,8 @@ public:
 
     virtual KURL baseURI() const;
 
-    String webkitVisibilityState() const;
-    bool webkitHidden() const;
+    String visibilityState() const;
+    bool hidden() const;
     void dispatchVisibilityStateChangeEvent();
 
     DOMSecurityPolicy* securityPolicy();
@@ -1078,7 +1078,7 @@ private:
 
     static void didReceiveTask(void*);
 
-    PageVisibilityState visibilityState() const;
+    PageVisibilityState pageVisibilityState() const;
 
     PassRefPtr<HTMLCollection> ensureCachedCollection(CollectionType);
 

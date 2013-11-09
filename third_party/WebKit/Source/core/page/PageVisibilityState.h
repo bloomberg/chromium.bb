@@ -41,7 +41,6 @@ enum PageVisibilityState {
     PageVisibilityStateVisible,
     PageVisibilityStateHidden,
     PageVisibilityStatePrerender,
-    PageVisibilityStatePreview
 };
 
 String pageVisibilityStateString(PageVisibilityState);

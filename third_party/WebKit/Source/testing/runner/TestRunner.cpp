@@ -1402,8 +1402,6 @@ void TestRunner::setPageVisibility(const CppArgumentList& arguments, CppVariant*
             m_webView->setVisibilityState(WebPageVisibilityStateHidden, false);
         else if (newVisibility == "prerender")
             m_webView->setVisibilityState(WebPageVisibilityStatePrerender, false);
-        else if (newVisibility == "preview")
-            m_webView->setVisibilityState(WebPageVisibilityStatePreview, false);
     }
 }
 

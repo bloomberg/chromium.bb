@@ -25,18 +25,18 @@ function makePagePrerender() {
 }
 
 function checkIsPageVisible() {
-    shouldBeEqualToString("document.visibilityState", "visible");
-    shouldBeFalse("document.hidden");
+    shouldBeEqualToString("document.webkitVisibilityState", "visible");
+    shouldBeFalse("document.webkitHidden");
 }
 
 function checkIsPageHidden() {
-    shouldBeEqualToString("document.visibilityState", "hidden");
-    shouldBeTrue("document.hidden");
+    shouldBeEqualToString("document.webkitVisibilityState", "hidden");
+    shouldBeTrue("document.webkitHidden");
 }
 
 function checkIsPagePrerendering() {
-    shouldBeEqualToString("document.visibilityState", "prerender");
-    shouldBeTrue("document.hidden");
+    shouldBeEqualToString("document.webkitVisibilityState", "prerender");
+    shouldBeTrue("document.webkitHidden");
 }
 
 // We will try to change the visibility states as:
@@ -49,7 +49,7 @@ var numVisibilityChanges = 0;
 
 function startTest() {
     document.addEventListener(
-        "visibilitychange", onVisibilityChange, false);
+        "webkitvisibilitychange", onVisibilityChange, false);
     checkIsPageVisible();
     numVisibilityChanges++;
     makePageHidden();
