@@ -17,9 +17,11 @@ using ::testing::Return;
 // Needs to be global since log assert handlers can't maintain state.
 int log_sink_call_count = 0;
 
+#if !defined(LOGGING_IS_OFFICIAL_BUILD)
 void LogSink(const std::string& str) {
   ++log_sink_call_count;
 }
+#endif  // !defined(LOGGING_IS_OFFICIAL_BUILD)
 
 // Class to make sure any manipulations we do to the min log level are
 // contained (i.e., do not affect other unit tests).
