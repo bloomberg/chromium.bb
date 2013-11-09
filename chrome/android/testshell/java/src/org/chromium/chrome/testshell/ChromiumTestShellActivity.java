@@ -24,9 +24,9 @@ import org.chromium.content.browser.ContentVideoViewClient;
 import org.chromium.content.browser.ContentView;
 import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.DeviceUtils;
+import org.chromium.content.browser.TracingControllerAndroid;
 import org.chromium.content.common.CommandLine;
 import org.chromium.sync.signin.ChromeSigninController;
-import org.chromium.ui.ActivityWindowAndroid;
 import org.chromium.ui.WindowAndroid;
 
 /**
@@ -78,7 +78,7 @@ public class ChromiumTestShellActivity extends Activity implements MenuHandler {
         TestShellToolbar mToolbar = (TestShellToolbar) findViewById(R.id.toolbar);
         mToolbar.setMenuHandler(this);
 
-        mWindow = new ActivityWindowAndroid(this);
+        mWindow = new WindowAndroid(this);
         mWindow.restoreInstanceState(savedInstanceState);
         mTabManager.setWindow(mWindow);
 
