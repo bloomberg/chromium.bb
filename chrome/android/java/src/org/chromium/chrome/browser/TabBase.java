@@ -503,10 +503,11 @@ public abstract class TabBase implements NavigationClient {
      */
     protected void showNativePage(NativePage nativePage) {
         if (mNativePage == nativePage) return;
-        destroyNativePageInternal();
+        NativePage previousNativePage = mNativePage;
         mNativePage = nativePage;
         pushNativePageStateToNavigationEntry();
         for (TabObserver observer : mObservers) observer.onContentChanged(this);
+        destroyNativePageInternal(previousNativePage);
     }
 
     /**
@@ -514,8 +515,10 @@ public abstract class TabBase implements NavigationClient {
      */
     protected void showRenderedPage() {
         if (mNativePage == null) return;
-        destroyNativePageInternal();
+        NativePage previousNativePage = mNativePage;
+        mNativePage = null;
         for (TabObserver observer : mObservers) observer.onContentChanged(this);
+        destroyNativePageInternal(previousNativePage);
     }
 
     /**
@@ -541,7 +544,9 @@ public abstract class TabBase implements NavigationClient {
      * @param nativeWebContents The native web contents pointer.
      */
     protected void initContentView(int nativeWebContents) {
-        destroyNativePageInternal();
+        NativePage previousNativePage = mNativePage;
+        mNativePage = null;
+        destroyNativePageInternal(previousNativePage);
 
         mContentView = ContentView.newInstance(mContext, nativeWebContents, getWindowAndroid());
 
@@ -576,7 +581,9 @@ public abstract class TabBase implements NavigationClient {
     public void destroy() {
         for (TabObserver observer : mObservers) observer.onDestroyed(this);
 
-        destroyNativePageInternal();
+        NativePage currentNativePage = mNativePage;
+        mNativePage = null;
+        destroyNativePageInternal(currentNativePage);
         destroyContentView(true);
         if (mInfoBarContainer != null) {
             mInfoBarContainer.destroy();
@@ -609,11 +616,11 @@ public abstract class TabBase implements NavigationClient {
         return false;
     }
 
-    private void destroyNativePageInternal() {
-        if (mNativePage == null) return;
+    private void destroyNativePageInternal(NativePage nativePage) {
+        if (nativePage == null) return;
+        assert getPageInfo() != nativePage : "Attempting to destroy active page.";
 
-        mNativePage.destroy();
-        mNativePage = null;
+        nativePage.destroy();
     }
 
     /**
