@@ -42,7 +42,7 @@
 // cells, so inherits from AutofillInputCell.
 @protocol AutofillInputField
 
-@property(nonatomic, assign) id<AutofillInputDelegate> delegate;
+@property(nonatomic, assign) id<AutofillInputDelegate> inputDelegate;
 
 @property(nonatomic, copy) NSString* fieldValue;
 @property(nonatomic, copy) NSString* defaultValue;

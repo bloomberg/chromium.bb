@@ -199,7 +199,7 @@ bool CompareInputRows(const autofill::DetailInput* input1,
     DCHECK([self detailInputForType:autofill::CREDIT_CARD_VERIFICATION_CODE]);
     [[suggestContainer_ inputField] setTag:
         autofill::CREDIT_CARD_VERIFICATION_CODE];
-    [[suggestContainer_ inputField] setDelegate:self];
+    [[suggestContainer_ inputField] setInputDelegate:self];
   }
 
   [self modelChanged];
@@ -584,7 +584,7 @@ bool CompareInputRows(const autofill::DetailInput* input1,
     [control setFieldValue:base::SysUTF16ToNSString(input.initial_value)];
     [control sizeToFit];
     [control setTag:input.type];
-    [control setDelegate:self];
+    [control setInputDelegate:self];
     // Hide away fields that cannot be edited.
     if (kColumnSetId == -1) {
       [control setFrame:NSZeroRect];

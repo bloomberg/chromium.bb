@@ -15,7 +15,7 @@
 
 @implementation AutofillPopUpButton
 
-@synthesize delegate = delegate_;
+@synthesize inputDelegate = inputDelegate_;
 
 + (Class)cellClass {
   return [AutofillPopUpCell class];
@@ -31,8 +31,8 @@
 
 - (BOOL)becomeFirstResponder {
   BOOL result = [super becomeFirstResponder];
-  if (result && delegate_)
-    [delegate_ fieldBecameFirstResponder:self];
+  if (result && inputDelegate_)
+    [inputDelegate_ fieldBecameFirstResponder:self];
   return result;
 }
 
@@ -71,8 +71,8 @@
 }
 
 - (void)didSelectItem:(id)sender {
-  if (delegate_)
-    [delegate_ didEndEditing:self];
+  if (inputDelegate_)
+    [inputDelegate_ didEndEditing:self];
 }
 
 @end

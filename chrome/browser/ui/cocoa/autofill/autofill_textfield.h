@@ -15,7 +15,7 @@
 @interface AutofillTextField : NSTextField<AutofillInputField,
                                            NSTextFieldDelegate> {
  @private
-  id<AutofillInputDelegate> delegate_;
+  id<AutofillInputDelegate> inputDelegate_;
   base::scoped_nsobject<NSString> validityMessage_;
 
   // |shouldFilterFirstClick_| ensures only the very first click after

@@ -26,7 +26,7 @@ const CGFloat kMinimumHeight = 27.0;  // Enforced minimum height for text cells.
 
 @implementation AutofillTextField
 
-@synthesize delegate = delegate_;
+@synthesize inputDelegate = inputDelegate_;
 
 + (Class)cellClass {
   return [AutofillTextFieldCell class];
@@ -40,8 +40,8 @@ const CGFloat kMinimumHeight = 27.0;  // Enforced minimum height for text cells.
 
 - (BOOL)becomeFirstResponder {
   BOOL result = [super becomeFirstResponder];
-  if (result && delegate_) {
-    [delegate_ fieldBecameFirstResponder:self];
+  if (result && inputDelegate_) {
+    [inputDelegate_ fieldBecameFirstResponder:self];
     shouldFilterClick_ = YES;
   }
   return result;
@@ -51,7 +51,7 @@ const CGFloat kMinimumHeight = 27.0;  // Enforced minimum height for text cells.
   // Since the dialog does not care about clicks that gave firstResponder
   // status, swallow those.
   if (!handlingFirstClick_)
-    [delegate_ onMouseDown: self];
+    [inputDelegate_ onMouseDown: self];
 }
 
 - (void)mouseDown:(NSEvent*)theEvent {
@@ -65,13 +65,13 @@ const CGFloat kMinimumHeight = 27.0;  // Enforced minimum height for text cells.
 }
 
 - (void)controlTextDidEndEditing:(NSNotification*)notification {
-  if (delegate_)
-    [delegate_ didEndEditing:self];
+  if (inputDelegate_)
+    [inputDelegate_ didEndEditing:self];
 }
 
 - (void)controlTextDidChange:(NSNotification*)aNotification {
-  if (delegate_)
-    [delegate_ didChange:self];
+  if (inputDelegate_)
+    [inputDelegate_ didChange:self];
 }
 
 - (NSString*)fieldValue {
