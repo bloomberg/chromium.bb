@@ -42,6 +42,7 @@ class PrintPreviewHandler
 #if defined(ENABLE_MDNS)
       public local_discovery::PrivetLocalPrinterLister::Delegate,
       public local_discovery::PrivetCapabilitiesOperation::Delegate,
+      public local_discovery::PrivetLocalPrintOperation::Delegate,
 #endif
       public ui::SelectFileDialog::Listener,
       public printing::PrintViewManagerObserver
@@ -91,6 +92,20 @@ class PrintPreviewHandler
       local_discovery::PrivetCapabilitiesOperation* capabilities_operation,
       int http_error,
       const base::DictionaryValue* capabilities) OVERRIDE;
+
+  // PrivetLocalPrintOperation::Delegate implementation.
+  virtual void OnPrivetPrintingRequestPDF(
+      const local_discovery::PrivetLocalPrintOperation*
+      print_operation) OVERRIDE;
+  virtual void OnPrivetPrintingRequestPWGRaster(
+      const local_discovery::PrivetLocalPrintOperation*
+      print_operation) OVERRIDE;
+  virtual void OnPrivetPrintingDone(
+      const local_discovery::PrivetLocalPrintOperation*
+      print_operation) OVERRIDE;
+  virtual void OnPrivetPrintingError(
+      const local_discovery::PrivetLocalPrintOperation* print_operation,
+        int http_code) OVERRIDE;
 #endif  // ENABLE_MDNS
 
  private:
@@ -237,9 +252,21 @@ class PrintPreviewHandler
 
 #if defined(ENABLE_MDNS)
   void StopPrivetPrinterSearch();
-  void StartPrivetCapabilities(
+  void PrivetCapabilitiesUpdateClient(
       scoped_ptr<local_discovery::PrivetHTTPClient> http_client);
+  void PrivetLocalPrintUpdateClient(
+      std::string printTicket,
+      scoped_ptr<local_discovery::PrivetHTTPClient> http_client);
+  bool PrivetUpdateClient(
+      scoped_ptr<local_discovery::PrivetHTTPClient> http_client);
+  void StartPrivetLocalPrint(const std::string& print_ticket);
   void SendPrivetCapabilitiesError(const std::string& id);
+  void PrintToPrivetPrinter(const std::string& printer_name,
+                            const std::string& print_ticket);
+  bool CreatePrivetHTTP(
+      const std::string& name,
+      const local_discovery::PrivetHTTPAsynchronousFactory::ResultCallback&
+      callback);
   void FillPrinterDescription(
       const std::string& name,
       const local_discovery::DeviceDescription& description,
@@ -289,6 +316,8 @@ class PrintPreviewHandler
   scoped_ptr<local_discovery::PrivetHTTPClient> privet_http_client_;
   scoped_ptr<local_discovery::PrivetCapabilitiesOperation>
       privet_capabilities_operation_;
+  scoped_ptr<local_discovery::PrivetLocalPrintOperation>
+      privet_local_print_operation_;
 #endif
 
   base::WeakPtrFactory<PrintPreviewHandler> weak_factory_;

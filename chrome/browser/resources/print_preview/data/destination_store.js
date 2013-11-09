@@ -680,7 +680,8 @@ cr.define('print_preview', function() {
       dest.capabilities = event.capabilities;
 
       this.updateDestination(dest);
-      if (this.selectedDestination_ == dest) {
+      if (this.selectedDestination_.isPrivet &&
+          this.selectedDestination_.id == dest.id) {
         cr.dispatchSimpleEvent(
             this,
             DestinationStore.EventType.SELECTED_DESTINATION_CAPABILITIES_READY);

@@ -260,6 +260,11 @@ cr.define('print_preview', function() {
           this.nativeLayer_,
           print_preview.NativeLayer.EventType.DISABLE_SCALING,
           this.onDisableScaling_.bind(this));
+      this.tracker.add(
+          this.nativeLayer_,
+          print_preview.NativeLayer.EventType.PRIVET_PRINT_FAILED,
+          this.onPrivetPrintFailed_.bind(this));
+
 
       this.tracker.add(
           $('system-dialog-link'),
@@ -406,6 +411,7 @@ cr.define('print_preview', function() {
       this.setIsEnabled_(false);
       if (this.printIfReady_() &&
           ((this.destinationStore_.selectedDestination.isLocal &&
+            !this.destinationStore_.selectedDestination.isPrivet &&
             this.destinationStore_.selectedDestination.id !=
                 print_preview.Destination.GooglePromotedId.SAVE_AS_PDF) ||
            this.uiState_ == PrintPreview.UiState_.OPENING_PDF_PREVIEW)) {
@@ -800,6 +806,18 @@ cr.define('print_preview', function() {
     onDisableScaling_: function() {
       this.printTicketStore_.fitToPage.updateValue(null);
       this.documentInfo_.updateIsScalingDisabled(true);
+    },
+
+    /**
+     * Called when privet printing fails.
+     * @param {Event} event Event object representing the failure.
+     * @private
+     */
+    onPrivetPrintFailed_: function(event) {
+      console.error('Privet printing failed with error code ' +
+                    event.httpError);
+      this.printHeader_.setErrorMessage(
+        localStrings.getString('couldNotPrint'));
     },
 
     /**

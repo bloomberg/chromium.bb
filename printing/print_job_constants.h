@@ -48,6 +48,8 @@ PRINTING_EXPORT extern const char kSettingPrintableAreaWidth[];
 PRINTING_EXPORT extern const char kSettingPrintableAreaHeight[];
 PRINTING_EXPORT extern const char kSettingPrinterName[];
 PRINTING_EXPORT extern const char kSettingPrintToPDF[];
+PRINTING_EXPORT extern const char kSettingPrintWithPrivet[];
+PRINTING_EXPORT extern const char kSettingTicket[];
 PRINTING_EXPORT extern const char kSettingShouldPrintBackgrounds[];
 PRINTING_EXPORT extern const char kSettingShouldPrintSelectionOnly[];
 

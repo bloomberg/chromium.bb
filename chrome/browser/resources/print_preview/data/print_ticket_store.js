@@ -337,9 +337,10 @@ cr.define('print_preview', function() {
      * @return {!Object} Google Cloud Print print ticket.
      */
     createPrintTicket: function(destination) {
-      assert(!destination.isLocal,
+      assert(!destination.isLocal || destination.isPrivet,
              'Trying to create a Google Cloud Print print ticket for a local ' +
-                 'destination');
+                 ' non-privet destination');
+
       assert(destination.capabilities,
              'Trying to create a Google Cloud Print print ticket for a ' +
                  'destination with no print capabilities');

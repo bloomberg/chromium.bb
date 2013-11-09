@@ -48,6 +48,7 @@ cr.define('print_preview', function() {
       this.onPrivetPrinterSearchDone_.bind(this);
     global['onPrivetCapabilitiesSet'] =
       this.onPrivetCapabilitiesSet_.bind(this);
+    global['onPrivetPrintFailed'] = this.onPrivetPrintFailed_.bind(this);
   };
 
   /**
@@ -81,7 +82,8 @@ cr.define('print_preview', function() {
     PRIVET_PRINTER_SEARCH_DONE:
         'print_preview.NativeLayer.PRIVET_PRINTER_SEARCH_DONE',
     PRIVET_CAPABILITIES_SET:
-        'print_preview.NativeLayer.PRIVET_CAPABILITIES_SET'
+        'print_preview.NativeLayer.PRIVET_CAPABILITIES_SET',
+    PRIVET_PRINT_FAILED: 'print_preview.NativeLayer.PRIVET_PRINT_FAILED'
   };
 
   /**
@@ -273,6 +275,7 @@ cr.define('print_preview', function() {
         'printToPDF': destination.id ==
             print_preview.Destination.GooglePromotedId.SAVE_AS_PDF,
         'printWithCloudPrint': !destination.isLocal,
+        'printWithPrivet': destination.isPrivet,
         'deviceName': destination.id,
         'isFirstRequest': false,
         'requestID': -1,
@@ -298,6 +301,10 @@ cr.define('print_preview', function() {
           'marginBottom': customMargins.get(orientationEnum.BOTTOM),
           'marginLeft': customMargins.get(orientationEnum.LEFT)
         };
+      }
+
+      if (destination.isPrivet) {
+        ticket['ticket'] = printTicketStore.createPrintTicket(destination);
       }
 
       if (opt_isOpenPdfInPreview) {
@@ -654,8 +661,8 @@ cr.define('print_preview', function() {
      * @private
      */
     onPrivetPrinterSearchDone_: function() {
-      var privetPrinterSearchDoneEvent = new Event(
-          NativeLayer.EventType.PRIVET_PRINTER_SEARCH_DONE);
+      var privetPrinterSearchDoneEvent =
+            new Event(NativeLayer.EventType.PRIVET_PRINTER_SEARCH_DONE);
       this.dispatchEvent(privetPrinterSearchDoneEvent);
     },
 
@@ -665,11 +672,23 @@ cr.define('print_preview', function() {
      * @private
      */
     onPrivetCapabilitiesSet_: function(printer, capabilities) {
-      var privetCapabilitiesSetEvent = new Event(
-        NativeLayer.EventType.PRIVET_CAPABILITIES_SET);
+      var privetCapabilitiesSetEvent =
+            new Event(NativeLayer.EventType.PRIVET_CAPABILITIES_SET);
       privetCapabilitiesSetEvent.printer = printer;
       privetCapabilitiesSetEvent.capabilities = capabilities;
       this.dispatchEvent(privetCapabilitiesSetEvent);
+    },
+
+    /**
+     * @param {string} http_error The HTTP response code or -1 if not an HTTP
+     *    error.
+     * @private
+     */
+    onPrivetPrintFailed_: function(http_error) {
+      var privetPrintFailedEvent =
+            new Event(NativeLayer.EventType.PRIVET_PRINT_FAILED);
+      privetPrintFailedEvent.httpError = http_error;
+      this.dispatchEvent(privetPrintFailedEvent);
     }
   };
 

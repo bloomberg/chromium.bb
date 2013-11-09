@@ -23,7 +23,7 @@ const int kLocalPrintJobExpirationSec = 20;
 const int kErrorTimeoutSec = 30;
 
 // Errors simulation constants:
-const double kPaperJamProbability = 0.2;
+const double kPaperJamProbability = 1.0;
 const int kTooManyDraftsTimeout = 10;
 const size_t kMaxDrafts = 5;
 
@@ -321,4 +321,3 @@ void PrintJobHandler::ForgetDraft(const std::string& id) {
 void PrintJobHandler::ForgetLocalJob(const std::string& id) {
   jobs.erase(id);
 }
-
