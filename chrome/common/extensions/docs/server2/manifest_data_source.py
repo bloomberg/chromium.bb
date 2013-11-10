@@ -48,6 +48,8 @@ def _ListifyAndSortDocs(features, app_name):
           value['example'] = '{...}'
         elif example == '[]':
           value['example'] = '[...]'
+        elif example == '[{}]':
+          value['example'] = '[{...}]'
         else:
           coerce_example_to_feature(value)
       if 'children' in value:

@@ -202,6 +202,42 @@ class ManifestDataSourceTest(unittest.TestCase):
     self.assertEqual(
         expected_docs, manifest_data_source._ListifyAndSortDocs(docs, 'apps'))
 
+  def testNonExpandedExamples(self):
+    docs = {
+      'doc1': {
+        'name': 'doc1',
+        'example': {}
+      },
+      'doc2': {
+        'name': 'doc2',
+        'example': []
+      },
+      'doc3': {
+        'name': 'doc3',
+        'example': [{}]
+      }
+    }
+
+    expected_docs = [
+      {
+        'name': 'doc1',
+        'has_example': True,
+        'example': '{...}'
+      },
+      {
+        'name': 'doc2',
+        'has_example': True,
+        'example': '[...]'
+      },
+      {
+        'name': 'doc3',
+        'has_example': True,
+        'example': '[{...}]'
+      }
+    ]
+    self.assertEqual(
+        expected_docs, manifest_data_source._ListifyAndSortDocs(docs, 'apps'))
+
   def testManifestDataSource(self):
     manifest_features = {
       'doc1': {

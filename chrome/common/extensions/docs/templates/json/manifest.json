@@ -27,7 +27,7 @@
   },
   "content_scripts": {
     "documentation": "content_scripts.html",
-    "example": {}
+    "example": [{}]
   },
   "content_security_policy": {
     "documentation": "contentSecurityPolicy.html",
