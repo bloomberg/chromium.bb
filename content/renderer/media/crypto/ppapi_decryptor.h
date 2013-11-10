@@ -91,6 +91,8 @@ class PpapiDecryptor : public media::MediaKeys, public media::Decryptor {
                   const std::vector<uint8>& message,
                   const std::string& default_url);
 
+  base::WeakPtr<PpapiDecryptor> weak_this_;
+
   // Hold a reference of the plugin instance to make sure the plugin outlives
   // the |plugin_cdm_delegate_|. This is needed because |plugin_cdm_delegate_|
   // is owned by the |plugin_instance_|.
@@ -114,7 +116,6 @@ class PpapiDecryptor : public media::MediaKeys, public media::Decryptor {
   NewKeyCB new_video_key_cb_;
 
   base::WeakPtrFactory<PpapiDecryptor> weak_ptr_factory_;
-  base::WeakPtr<PpapiDecryptor> weak_this_;
 
   DISALLOW_COPY_AND_ASSIGN(PpapiDecryptor);
 };

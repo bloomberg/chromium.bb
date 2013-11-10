@@ -82,9 +82,7 @@ BufferedDataSource::BufferedDataSource(
     WebFrame* frame,
     media::MediaLog* media_log,
     const DownloadingCB& downloading_cb)
-    : weak_factory_(this),
-      weak_this_(weak_factory_.GetWeakPtr()),
-      cors_mode_(BufferedResourceLoader::kUnspecified),
+    : cors_mode_(BufferedResourceLoader::kUnspecified),
       total_bytes_(kPositionNotSpecified),
       assume_fully_buffered_(false),
       streaming_(false),
@@ -98,8 +96,10 @@ BufferedDataSource::BufferedDataSource(
       bitrate_(0),
       playback_rate_(0.0),
       media_log_(media_log),
-      downloading_cb_(downloading_cb) {
+      downloading_cb_(downloading_cb),
+      weak_factory_(this) {
   DCHECK(!downloading_cb_.is_null());
+  weak_this_ = weak_factory_.GetWeakPtr();
 }
 
 BufferedDataSource::~BufferedDataSource() {}

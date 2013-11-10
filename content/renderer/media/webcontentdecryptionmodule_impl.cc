@@ -55,9 +55,9 @@ class SessionIdAdapter {
   WebContentDecryptionModuleSessionImpl* GetSession(
       const std::string& session_id);
 
-  base::WeakPtrFactory<SessionIdAdapter> weak_ptr_factory_;
-
   SessionMap sessions_;
+
+  base::WeakPtrFactory<SessionIdAdapter> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SessionIdAdapter);
 };

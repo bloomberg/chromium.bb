@@ -139,7 +139,6 @@ class CONTENT_EXPORT BufferedDataSource : public media::DataSource {
   // change in playback rate.
   void UpdateDeferStrategy(bool paused);
 
-  base::WeakPtrFactory<BufferedDataSource> weak_factory_;
   base::WeakPtr<BufferedDataSource> weak_this_;
 
   // URL of the resource requested.
@@ -216,6 +215,8 @@ class CONTENT_EXPORT BufferedDataSource : public media::DataSource {
   scoped_refptr<media::MediaLog> media_log_;
 
   DownloadingCB downloading_cb_;
+
+  base::WeakPtrFactory<BufferedDataSource> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BufferedDataSource);
 };

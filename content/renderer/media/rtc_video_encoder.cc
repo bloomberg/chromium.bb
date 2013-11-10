@@ -475,9 +475,9 @@ RTCVideoEncoder::RTCVideoEncoder(
     : video_codec_type_(type),
       video_codec_profile_(profile),
       gpu_factories_(gpu_factories),
-      weak_this_factory_(this),
       encoded_image_callback_(NULL),
-      impl_status_(WEBRTC_VIDEO_CODEC_UNINITIALIZED) {
+      impl_status_(WEBRTC_VIDEO_CODEC_UNINITIALIZED),
+      weak_this_factory_(this) {
   DVLOG(1) << "RTCVideoEncoder(): profile=" << profile;
 }
 

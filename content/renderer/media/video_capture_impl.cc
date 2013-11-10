@@ -49,9 +49,9 @@ VideoCaptureImpl::VideoCaptureImpl(
       io_message_loop_proxy_(ChildProcess::current()->io_message_loop_proxy()),
       device_id_(0),
       session_id_(session_id),
-      client_buffer_weak_this_factory_(this),
       suspended_(false),
-      state_(VIDEO_CAPTURE_STATE_STOPPED) {
+      state_(VIDEO_CAPTURE_STATE_STOPPED),
+      weak_this_factory_(this) {
   DCHECK(filter);
 }
 
@@ -198,7 +198,7 @@ void VideoCaptureImpl::DoStopCaptureOnCaptureThread(
     DVLOG(1) << "StopCapture: No more client, stopping ...";
     StopDevice();
     client_buffers_.clear();
-    client_buffer_weak_this_factory_.InvalidateWeakPtrs();
+    weak_this_factory_.InvalidateWeakPtrs();
   }
 }
 
@@ -271,7 +271,7 @@ void VideoCaptureImpl::DoBufferReceivedOnCaptureThread(
               capture_message_loop_proxy_,
               base::Bind(
                   &VideoCaptureImpl::DoClientBufferFinishedOnCaptureThread,
-                  client_buffer_weak_this_factory_.GetWeakPtr(),
+                  weak_this_factory_.GetWeakPtr(),
                   buffer_id,
                   buffer)));
 
@@ -296,7 +296,7 @@ void VideoCaptureImpl::DoStateChangedOnCaptureThread(VideoCaptureState state) {
       state_ = VIDEO_CAPTURE_STATE_STOPPED;
       DVLOG(1) << "OnStateChanged: stopped!, device_id = " << device_id_;
       client_buffers_.clear();
-      client_buffer_weak_this_factory_.InvalidateWeakPtrs();
+      weak_this_factory_.InvalidateWeakPtrs();
       if (!clients_.empty() || !clients_pending_on_restart_.empty())
         RestartCapture();
       break;

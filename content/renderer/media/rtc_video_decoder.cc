@@ -73,9 +73,7 @@ RTCVideoDecoder::BufferData::~BufferData() {}
 
 RTCVideoDecoder::RTCVideoDecoder(
     const scoped_refptr<media::GpuVideoAcceleratorFactories>& factories)
-    : weak_factory_(this),
-      weak_this_(weak_factory_.GetWeakPtr()),
-      factories_(factories),
+    : factories_(factories),
       vda_loop_proxy_(factories->GetMessageLoop()),
       decoder_texture_target_(0),
       next_picture_buffer_id_(0),
@@ -83,8 +81,12 @@ RTCVideoDecoder::RTCVideoDecoder(
       decode_complete_callback_(NULL),
       num_shm_buffers_(0),
       next_bitstream_buffer_id_(0),
-      reset_bitstream_buffer_id_(ID_INVALID) {
+      reset_bitstream_buffer_id_(ID_INVALID),
+      weak_factory_(this) {
   DCHECK(!vda_loop_proxy_->BelongsToCurrentThread());
+
+  weak_this_ = weak_factory_.GetWeakPtr();
+
   base::WaitableEvent message_loop_async_waiter(false, false);
   // Waiting here is safe. The media thread is stopped in the child thread and
   // the child thread is blocked when VideoDecoderFactory::CreateVideoDecoder

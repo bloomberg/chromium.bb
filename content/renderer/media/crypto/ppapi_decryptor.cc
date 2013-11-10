@@ -63,9 +63,10 @@ PpapiDecryptor::PpapiDecryptor(
       key_message_cb_(key_message_cb),
       destroy_plugin_cb_(destroy_plugin_cb),
       render_loop_proxy_(base::MessageLoopProxy::current()),
-      weak_ptr_factory_(this),
-      weak_this_(weak_ptr_factory_.GetWeakPtr()) {
+      weak_ptr_factory_(this) {
   DCHECK(plugin_instance_.get());
+
+  weak_this_ = weak_ptr_factory_.GetWeakPtr();
 
   plugin_cdm_delegate_->SetKeyEventCallbacks(
       base::Bind(&PpapiDecryptor::KeyAdded, weak_this_),

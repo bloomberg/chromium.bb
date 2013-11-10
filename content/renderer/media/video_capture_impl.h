@@ -129,13 +129,8 @@ class CONTENT_EXPORT VideoCaptureImpl
   // Buffers available for sending to the client.
   typedef std::map<int32, scoped_refptr<ClientBuffer> > ClientBufferMap;
   ClientBufferMap client_buffers_;
-  // WeakPtrFactory pointing back to |this| object, for use with
-  // media::VideoFrames constructed in OnBufferReceived() from buffers cached
-  // in |client_buffers_|.
-  base::WeakPtrFactory<VideoCaptureImpl> client_buffer_weak_this_factory_;
 
   ClientInfo clients_;
-
   ClientInfo clients_pending_on_filter_;
   ClientInfo clients_pending_on_restart_;
 
@@ -148,6 +143,11 @@ class CONTENT_EXPORT VideoCaptureImpl
 
   bool suspended_;
   VideoCaptureState state_;
+
+  // WeakPtrFactory pointing back to |this| object, for use with
+  // media::VideoFrames constructed in OnBufferReceived() from buffers cached
+  // in |client_buffers_|.
+  base::WeakPtrFactory<VideoCaptureImpl> weak_this_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VideoCaptureImpl);
 };

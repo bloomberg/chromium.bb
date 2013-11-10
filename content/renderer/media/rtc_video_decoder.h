@@ -201,8 +201,7 @@ class CONTENT_EXPORT RTCVideoDecoder
   // The size of the incoming video frames.
   gfx::Size frame_size_;
 
-  // The weak pointer should live and die on the |vda_loop_proxy_|;
-  base::WeakPtrFactory<RTCVideoDecoder> weak_factory_;
+  // Weak pointer to this, which can be dereferenced only on |vda_loop_proxy_|.
   base::WeakPtr<RTCVideoDecoder> weak_this_;
 
   scoped_refptr<media::GpuVideoAcceleratorFactories> factories_;
@@ -268,6 +267,10 @@ class CONTENT_EXPORT RTCVideoDecoder
   // A buffer that has an id less than this should be dropped because Reset or
   // Release has been called. Guarded by |lock_|.
   int32 reset_bitstream_buffer_id_;
+
+  // Factory used to populate |weak_this_|. Must be destroyed, or invalidated,
+  // on |vda_loop_proxy_|.
+  base::WeakPtrFactory<RTCVideoDecoder> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(RTCVideoDecoder);
 };
