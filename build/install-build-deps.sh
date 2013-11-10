@@ -122,7 +122,8 @@ dbg_list="libatk1.0-dbg libc6-dbg libcairo2-dbg libfontconfig1-dbg
           libpixman-1-0-dbg libsqlite3-0-dbg libx11-6-dbg libxau6-dbg
           libxcb1-dbg libxcomposite1-dbg libxcursor1-dbg libxdamage1-dbg
           libxdmcp6-dbg libxext6-dbg libxfixes3-dbg libxi6-dbg libxinerama1-dbg
-          libxrandr2-dbg libxrender1-dbg libxtst6-dbg zlib1g-dbg"
+          libxrandr2-dbg libxrender1-dbg libxtst6-dbg zlib1g-dbg
+          libstdc++6-4.6-dbg"
 
 # arm cross toolchain packages needed to build chrome on armhf
 arm_list="libc6-armhf-cross libc6-dev-armhf-cross libgcc1-armhf-cross
