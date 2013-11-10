@@ -544,7 +544,7 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableGoogleNowIntegration);
 
-  if (enabled && !disabled_via_flag) {
+  if (!skip_session_components && enabled && !disabled_via_flag) {
     Add(IDR_GOOGLE_NOW_MANIFEST,
         base::FilePath(FILE_PATH_LITERAL("google_now")));
   }
