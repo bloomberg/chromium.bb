@@ -141,8 +141,11 @@ def link_file(outfile, infile, action):
       readable_copy(outfile, infile)
 
 
-def _set_read_only(path, read_only):
-  """Sets or resets the write bit on a file or directory."""
+def set_read_only(path, read_only):
+  """Sets or resets the write bit on a file or directory.
+
+  Zaps out access to 'group' and 'others'.
+  """
   mode = os.lstat(path).st_mode
   if read_only:
     mode = mode & 0500
@@ -169,7 +172,7 @@ def make_directories_read_only(root, read_only):
   assert os.path.isabs(root), root
   for dirpath, dirnames, _filenames in os.walk(root, topdown=True):
     for dirname in dirnames:
-      _set_read_only(os.path.join(dirpath, dirname), read_only)
+      set_read_only(os.path.join(dirpath, dirname), read_only)
 
 
 def rmtree(root):
@@ -363,7 +366,7 @@ class DiskCache(isolateserver.LocalCache):
     # This has a few side-effects since the file node is modified, so every
     # directory entries to this file becomes read-only. This will be changed in
     # a follow up CL.
-    # _set_read_only(path, True)
+    # set_read_only(path, True)
     with self._lock:
       self._add(digest, size)
 
