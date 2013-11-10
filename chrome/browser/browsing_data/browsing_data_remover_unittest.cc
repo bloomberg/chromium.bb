@@ -34,8 +34,8 @@
 #include "chrome/test/base/testing_profile.h"
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "chromeos/dbus/mock_cryptohome_client.h"
-#include "chromeos/dbus/mock_dbus_thread_manager.h"
 #endif
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -1573,10 +1573,14 @@ TEST_F(BrowsingDataRemoverTest, ContentProtectionPlatformKeysRemoval) {
       new testing::NiceMock<chromeos::MockUserManager>();
   mock_user_manager->SetActiveUser("test@example.com");
   chromeos::ScopedUserManagerEnabler user_manager_enabler(mock_user_manager);
-  chromeos::MockDBusThreadManager mock_dbus_manager;
-  chromeos::DBusThreadManager::InitializeForTesting(&mock_dbus_manager);
+
+  chromeos::FakeDBusThreadManager* fake_dbus_manager =
+      new chromeos::FakeDBusThreadManager;
   chromeos::MockCryptohomeClient* cryptohome_client =
-      mock_dbus_manager.mock_cryptohome_client();
+      new chromeos::MockCryptohomeClient;
+  fake_dbus_manager->SetCryptohomeClient(
+      scoped_ptr<chromeos::CryptohomeClient>(cryptohome_client));
+  chromeos::DBusThreadManager::InitializeForTesting(fake_dbus_manager);
 
   // Expect exactly one call.  No calls means no attempt to delete keys and more
   // than one call means a significant performance problem.

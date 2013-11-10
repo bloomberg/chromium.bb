@@ -69,7 +69,7 @@ class DevicePolicyCrosBrowserTest : public InProcessBrowserTest {
   }
 
   chromeos::FakeSessionManagerClient* session_manager_client() {
-    return fake_dbus_thread_manager_->fake_session_manager_client();
+    return fake_session_manager_client_;
   }
 
   DevicePolicyBuilder* device_policy() { return test_helper_.device_policy(); }
@@ -79,6 +79,7 @@ class DevicePolicyCrosBrowserTest : public InProcessBrowserTest {
 
   // FakeDBusThreadManager uses FakeSessionManagerClient.
   chromeos::FakeDBusThreadManager* fake_dbus_thread_manager_;
+  chromeos::FakeSessionManagerClient* fake_session_manager_client_;
 
   DISALLOW_COPY_AND_ASSIGN(DevicePolicyCrosBrowserTest);
 };

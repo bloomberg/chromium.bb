@@ -151,14 +151,15 @@ PowerPolicyBrowserTestBase::PowerPolicyBrowserTestBase()
 }
 
 void PowerPolicyBrowserTestBase::SetUpInProcessBrowserTestFixture() {
+  power_manager_client_ = new chromeos::FakePowerManagerClient;
+  fake_dbus_thread_manager()->SetPowerManagerClient(
+      scoped_ptr<chromeos::PowerManagerClient>(power_manager_client_));
+
   DevicePolicyCrosBrowserTest::SetUpInProcessBrowserTestFixture();
 
   // Initialize device policy.
   InstallOwnerKey();
   MarkAsEnterpriseOwned();
-
-  power_manager_client_ =
-      fake_dbus_thread_manager()->fake_power_manager_client();
 }
 
 void PowerPolicyBrowserTestBase::SetUpOnMainThread() {

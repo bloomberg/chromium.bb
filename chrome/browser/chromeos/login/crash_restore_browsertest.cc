@@ -47,10 +47,11 @@ class CrashRestoreSimpleTest : public InProcessBrowserTest {
 
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     // Redirect session_manager DBus calls to FakeSessionManagerClient.
-    FakeDBusThreadManager* dbus_thread_manager =
-        new FakeDBusThreadManager();
-    session_manager_client_ =
-        dbus_thread_manager->fake_session_manager_client();
+    FakeDBusThreadManager* dbus_thread_manager = new FakeDBusThreadManager;
+    dbus_thread_manager->SetFakeClients();
+    session_manager_client_ = new FakeSessionManagerClient;
+    dbus_thread_manager->SetSessionManagerClient(
+        scoped_ptr<SessionManagerClient>(session_manager_client_));
     DBusThreadManager::InitializeForTesting(dbus_thread_manager);
     session_manager_client_->StartSession(kUserId1);
   }

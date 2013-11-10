@@ -31,9 +31,11 @@ void CopyTokenServiceAndCount(
 class ScopedDeviceOAuth2TokenServiceFactorySetUp {
  public:
   ScopedDeviceOAuth2TokenServiceFactorySetUp()
-      : fake_dbus_manager_(new FakeDBusThreadManager) {
-    // Take ownership of fake_dbus_manager_.
-    DBusThreadManager::InitializeForTesting(fake_dbus_manager_);
+      : fake_cryptohome_client_(new FakeCryptohomeClient) {
+    FakeDBusThreadManager* fake_dbus_manager = new FakeDBusThreadManager;
+    fake_dbus_manager->SetCryptohomeClient(
+        scoped_ptr<CryptohomeClient>(fake_cryptohome_client_));
+    DBusThreadManager::InitializeForTesting(fake_dbus_manager);
     SystemSaltGetter::Initialize();
     DeviceOAuth2TokenServiceFactory::Initialize();
   }
@@ -44,12 +46,12 @@ class ScopedDeviceOAuth2TokenServiceFactorySetUp {
     DBusThreadManager::Shutdown();
   }
 
-  FakeDBusThreadManager* fake_dbus_manager() {
-    return fake_dbus_manager_;
+  FakeCryptohomeClient* fake_cryptohome_client() {
+    return fake_cryptohome_client_;
   }
 
  private:
-  FakeDBusThreadManager* fake_dbus_manager_;
+  FakeCryptohomeClient* fake_cryptohome_client_;
 };
 
 }  // namespace
@@ -137,7 +139,7 @@ TEST_F(DeviceOAuth2TokenServiceFactoryTest, Get_MultipleCallers) {
 // Test a case where it failed to obtain the system salt.
 TEST_F(DeviceOAuth2TokenServiceFactoryTest, Get_NoSystemSalt) {
   ScopedDeviceOAuth2TokenServiceFactorySetUp scoped_setup;
-  scoped_setup.fake_dbus_manager()->fake_cryptohome_client()->
+  scoped_setup.fake_cryptohome_client()->
       set_system_salt(std::vector<uint8>());
 
   DeviceOAuth2TokenService* token_service = NULL;

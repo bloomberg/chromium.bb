@@ -26,7 +26,9 @@ class SystemSaltGetterTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
     FakeDBusThreadManager* dbus_thread_manager = new FakeDBusThreadManager;
-    fake_cryptohome_client_ = dbus_thread_manager->fake_cryptohome_client();
+    fake_cryptohome_client_ = new FakeCryptohomeClient;
+    dbus_thread_manager->SetCryptohomeClient(
+        scoped_ptr<CryptohomeClient>(fake_cryptohome_client_));
     DBusThreadManager::InitializeForTesting(dbus_thread_manager);
 
     EXPECT_FALSE(SystemSaltGetter::IsInitialized());

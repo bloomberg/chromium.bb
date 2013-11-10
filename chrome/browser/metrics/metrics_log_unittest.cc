@@ -38,6 +38,9 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/fake_user_manager.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chromeos/dbus/fake_bluetooth_adapter_client.h"
+#include "chromeos/dbus/fake_bluetooth_device_client.h"
+#include "chromeos/dbus/fake_bluetooth_input_client.h"
 #include "chromeos/dbus/fake_dbus_thread_manager.h"
 #endif  // OS_CHROMEOS
 
@@ -176,9 +179,18 @@ class MetricsLogTest : public testing::Test {
 
   virtual void SetUp() OVERRIDE {
 #if defined(OS_CHROMEOS)
-    fake_dbus_thread_manager_ = new chromeos::FakeDBusThreadManager();
-    chromeos::DBusThreadManager::InitializeForTesting(
-        fake_dbus_thread_manager_);
+    chromeos::FakeDBusThreadManager* fake_dbus_thread_manager =
+        new chromeos::FakeDBusThreadManager;
+    fake_dbus_thread_manager->SetBluetoothAdapterClient(
+        scoped_ptr<chromeos::BluetoothAdapterClient>(
+            new chromeos::FakeBluetoothAdapterClient));
+    fake_dbus_thread_manager->SetBluetoothDeviceClient(
+        scoped_ptr<chromeos::BluetoothDeviceClient>(
+            new chromeos::FakeBluetoothDeviceClient));
+    fake_dbus_thread_manager->SetBluetoothInputClient(
+        scoped_ptr<chromeos::BluetoothInputClient>(
+            new chromeos::FakeBluetoothInputClient));
+    chromeos::DBusThreadManager::InitializeForTesting(fake_dbus_thread_manager);
 
     // Enable multi-profiles.
     CommandLine::ForCurrentProcess()->AppendSwitch(switches::kMultiProfiles);
@@ -207,7 +219,6 @@ class MetricsLogTest : public testing::Test {
   base::MessageLoop message_loop_;
 
 #if defined(OS_CHROMEOS)
-  chromeos::FakeDBusThreadManager* fake_dbus_thread_manager_;
   scoped_ptr<base::FieldTrialList> field_trial_list_;
 #endif  // OS_CHROMEOS
 };

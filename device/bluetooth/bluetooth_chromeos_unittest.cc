@@ -5,7 +5,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/dbus/fake_bluetooth_adapter_client.h"
+#include "chromeos/dbus/fake_bluetooth_agent_manager_client.h"
 #include "chromeos/dbus/fake_bluetooth_device_client.h"
+#include "chromeos/dbus/fake_bluetooth_input_client.h"
 #include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "dbus/object_path.h"
 #include "device/bluetooth/bluetooth_adapter.h"
@@ -208,13 +210,19 @@ class TestPairingDelegate : public BluetoothDevice::PairingDelegate {
 class BluetoothChromeOSTest : public testing::Test {
  public:
   virtual void SetUp() {
-    fake_dbus_thread_manager_ = new FakeDBusThreadManager();
-    DBusThreadManager::InitializeForTesting(fake_dbus_thread_manager_);
-
-    fake_bluetooth_adapter_client_ =
-      fake_dbus_thread_manager_->fake_bluetooth_adapter_client();
-    fake_bluetooth_device_client_ =
-      fake_dbus_thread_manager_->fake_bluetooth_device_client();
+    FakeDBusThreadManager* fake_dbus_thread_manager = new FakeDBusThreadManager;
+    fake_bluetooth_adapter_client_ = new FakeBluetoothAdapterClient;
+    fake_dbus_thread_manager->SetBluetoothAdapterClient(
+        scoped_ptr<BluetoothAdapterClient>(fake_bluetooth_adapter_client_));
+    fake_bluetooth_device_client_ = new FakeBluetoothDeviceClient;
+    fake_dbus_thread_manager->SetBluetoothDeviceClient(
+        scoped_ptr<BluetoothDeviceClient>(fake_bluetooth_device_client_));
+    fake_dbus_thread_manager->SetBluetoothInputClient(
+        scoped_ptr<BluetoothInputClient>(new FakeBluetoothInputClient));
+    fake_dbus_thread_manager->SetBluetoothAgentManagerClient(
+        scoped_ptr<BluetoothAgentManagerClient>(
+            new FakeBluetoothAgentManagerClient));
+    DBusThreadManager::InitializeForTesting(fake_dbus_thread_manager);
 
     callback_count_ = 0;
     error_callback_count_ = 0;
@@ -312,7 +320,6 @@ class BluetoothChromeOSTest : public testing::Test {
  protected:
   FakeBluetoothAdapterClient* fake_bluetooth_adapter_client_;
   FakeBluetoothDeviceClient* fake_bluetooth_device_client_;
-  FakeDBusThreadManager* fake_dbus_thread_manager_;
   scoped_refptr<BluetoothAdapter> adapter_;
 
   int callback_count_;

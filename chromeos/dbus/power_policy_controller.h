@@ -69,8 +69,10 @@ class CHROMEOS_EXPORT PowerPolicyController
   // this constant would imply.
   static const int kScreenLockAfterOffDelayMs;
 
-  PowerPolicyController(DBusThreadManager* manager, PowerManagerClient* client);
+  PowerPolicyController();
   virtual ~PowerPolicyController();
+
+  void Init(DBusThreadManager* manager);
 
   // Updates |prefs_policy_| with |values| and sends an updated policy.
   void ApplyPrefs(const PrefValues& values);

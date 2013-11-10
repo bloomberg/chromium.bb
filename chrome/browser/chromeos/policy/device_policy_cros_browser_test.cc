@@ -72,8 +72,11 @@ void DevicePolicyCrosTestHelper::InstallOwnerKey() {
 }
 
 DevicePolicyCrosBrowserTest::DevicePolicyCrosBrowserTest()
-    : fake_dbus_thread_manager_(
-        new chromeos::FakeDBusThreadManager) {
+    : fake_dbus_thread_manager_(new chromeos::FakeDBusThreadManager),
+      fake_session_manager_client_(new chromeos::FakeSessionManagerClient) {
+  fake_dbus_thread_manager_->SetFakeClients();
+  fake_dbus_thread_manager_->SetSessionManagerClient(
+      scoped_ptr<chromeos::SessionManagerClient>(fake_session_manager_client_));
 }
 
 DevicePolicyCrosBrowserTest::~DevicePolicyCrosBrowserTest() {

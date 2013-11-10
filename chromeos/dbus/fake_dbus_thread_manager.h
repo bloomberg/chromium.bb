@@ -9,6 +9,7 @@
 
 #include "base/logging.h"
 #include "base/observer_list.h"
+#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 
 namespace dbus {
@@ -19,34 +20,50 @@ class ObjectPath;
 namespace chromeos {
 
 class DBusThreadManagerObserver;
-class FakeBluetoothAdapterClient;
-class FakeBluetoothAgentManagerClient;
-class FakeBluetoothDeviceClient;
-class FakeBluetoothInputClient;
-class FakeBluetoothProfileManagerClient;
-class FakeCrosDisksClient;
-class FakeCryptohomeClient;
-class FakeGsmSMSClient;
-class FakeNfcAdapterClient;
-class FakeNfcDeviceClient;
-class FakeNfcManagerClient;
-class FakeNfcRecordClient;
-class FakeNfcTagClient;
-class FakePowerManagerClient;
-class FakeImageBurnerClient;
-class FakeSessionManagerClient;
-class FakeShillDeviceClient;
-class FakeShillManagerClient;
-class FakeSystemClockClient;
-class FakeUpdateEngineClient;
-class MockIBusClient;
 
 // This class provides a fake implementation of DBusThreadManager, which
 // hosts fake D-Bus clients.
-class FakeDBusThreadManager : public DBusThreadManager {
+class CHROMEOS_EXPORT FakeDBusThreadManager : public DBusThreadManager {
  public:
   FakeDBusThreadManager();
   virtual ~FakeDBusThreadManager();
+
+  // Creates and sets all fake DBusClients and the PowerPolicyController.
+  void SetFakeClients();
+
+  void SetBluetoothAdapterClient(scoped_ptr<BluetoothAdapterClient> client);
+  void SetBluetoothAgentManagerClient(
+      scoped_ptr<BluetoothAgentManagerClient> client);
+  void SetBluetoothDeviceClient(scoped_ptr<BluetoothDeviceClient> client);
+  void SetBluetoothInputClient(scoped_ptr<BluetoothInputClient> client);
+  void SetBluetoothProfileManagerClient(
+      scoped_ptr<BluetoothProfileManagerClient> client);
+  void SetCrasAudioClient(scoped_ptr<CrasAudioClient> client);
+  void SetCrosDisksClient(scoped_ptr<CrosDisksClient> client);
+  void SetCryptohomeClient(scoped_ptr<CryptohomeClient> client);
+  void SetDebugDaemonClient(scoped_ptr<DebugDaemonClient> client);
+  void SetShillDeviceClient(scoped_ptr<ShillDeviceClient> client);
+  void SetShillIPConfigClient(scoped_ptr<ShillIPConfigClient> client);
+  void SetShillManagerClient(scoped_ptr<ShillManagerClient> client);
+  void SetShillServiceClient(scoped_ptr<ShillServiceClient> client);
+  void SetShillProfileClient(scoped_ptr<ShillProfileClient> client);
+  void SetGsmSMSClient(scoped_ptr<GsmSMSClient> client);
+  void SetImageBurnerClient(scoped_ptr<ImageBurnerClient> client);
+  void SetIntrospectableClient(scoped_ptr<IntrospectableClient> client);
+  void SetModemMessagingClient(scoped_ptr<ModemMessagingClient> client);
+  void SetNfcAdapterClient(scoped_ptr<NfcAdapterClient> client);
+  void SetNfcDeviceClient(scoped_ptr<NfcDeviceClient> client);
+  void SetNfcManagerClient(scoped_ptr<NfcManagerClient> client);
+  void SetNfcRecordClient(scoped_ptr<NfcRecordClient> client);
+  void SetNfcTagClient(scoped_ptr<NfcTagClient> client);
+  void SetPermissionBrokerClient(scoped_ptr<PermissionBrokerClient> client);
+  void SetPowerManagerClient(scoped_ptr<PowerManagerClient> client);
+  void SetPowerPolicyController(scoped_ptr<PowerPolicyController> client);
+  void SetSessionManagerClient(scoped_ptr<SessionManagerClient> client);
+  void SetSMSClient(scoped_ptr<SMSClient> client);
+  void SetSystemClockClient(scoped_ptr<SystemClockClient> client);
+  void SetUpdateEngineClient(scoped_ptr<UpdateEngineClient> client);
+  void SetIBusClient(scoped_ptr<IBusClient> client);
 
   virtual void AddObserver(DBusThreadManagerObserver* observer) OVERRIDE;
   virtual void RemoveObserver(DBusThreadManagerObserver* observer) OVERRIDE;
@@ -88,127 +105,43 @@ class FakeDBusThreadManager : public DBusThreadManager {
   virtual UpdateEngineClient* GetUpdateEngineClient() OVERRIDE;
   virtual IBusClient* GetIBusClient() OVERRIDE;
 
-  FakeBluetoothAdapterClient* fake_bluetooth_adapter_client() {
-    return fake_bluetooth_adapter_client_.get();
-  }
-
-  FakeBluetoothAgentManagerClient* fake_bluetooth_agent_manager_client() {
-    return fake_bluetooth_agent_manager_client_.get();
-  }
-
-  FakeBluetoothDeviceClient* fake_bluetooth_device_client() {
-    return fake_bluetooth_device_client_.get();
-  }
-
-  FakeBluetoothInputClient* fake_bluetooth_input_client() {
-    return fake_bluetooth_input_client_.get();
-  }
-
-  FakeBluetoothProfileManagerClient* fake_bluetooth_profile_manager_client() {
-    return fake_bluetooth_profile_manager_client_.get();
-  }
-
-  FakeCrosDisksClient* fake_cros_disks_client() {
-    return fake_cros_disks_client_.get();
-  }
-
-  FakeCryptohomeClient* fake_cryptohome_client() {
-    return fake_cryptohome_client_.get();
-  }
-
-  FakeGsmSMSClient* fake_gsm_sms_client() {
-    return fake_gsm_sms_client_.get();
-  }
-
-  FakeImageBurnerClient* fake_image_burner_client() {
-    return fake_image_burner_client_.get();
-  }
-
-  FakeNfcAdapterClient* fake_nfc_adapter_client() {
-    return fake_nfc_adapter_client_.get();
-  }
-
-  FakeNfcDeviceClient* fake_nfc_device_client() {
-    return fake_nfc_device_client_.get();
-  }
-
-  FakeNfcManagerClient* fake_nfc_manager_client() {
-    return fake_nfc_manager_client_.get();
-  }
-
-  FakeNfcRecordClient* fake_nfc_record_client() {
-    return fake_nfc_record_client_.get();
-  }
-
-  FakeNfcTagClient* fake_nfc_tag_client() {
-    return fake_nfc_tag_client_.get();
-  }
-
-  FakeSessionManagerClient* fake_session_manager_client() {
-    return fake_session_manager_client_.get();
-  }
-
-  FakeShillDeviceClient* fake_shill_device_client() {
-    return fake_shill_device_client_.get();
-  }
-
-  FakeShillManagerClient* fake_shill_manager_client() {
-    return fake_shill_manager_client_.get();
-  }
-
-  FakeSystemClockClient* fake_system_clock_client() {
-    return fake_system_clock_client_.get();
-  }
-
-  FakePowerManagerClient* fake_power_manager_client() {
-    return fake_power_manager_client_.get();
-  }
-
-  FakeUpdateEngineClient* fake_update_engine_client() {
-    return fake_update_engine_client_.get();
-  }
-
-  // TODO(komatsu): Remove IBus related code. crbug.com/275262
-  MockIBusClient* mock_ibus_client() {
-    return mock_ibus_client_.get();
-  }
-
-  void set_ibus_bus(dbus::Bus* ibus_bus) {
-    ibus_bus_ = ibus_bus;
-  }
-
  private:
   // Note: Keep this before other members so they can call AddObserver() in
   // their c'tors.
   ObserverList<DBusThreadManagerObserver> observers_;
 
-  scoped_ptr<FakeBluetoothAdapterClient> fake_bluetooth_adapter_client_;
-  scoped_ptr<FakeBluetoothAgentManagerClient>
-      fake_bluetooth_agent_manager_client_;
-  scoped_ptr<FakeBluetoothDeviceClient> fake_bluetooth_device_client_;
-  scoped_ptr<FakeBluetoothInputClient> fake_bluetooth_input_client_;
-  scoped_ptr<FakeBluetoothProfileManagerClient>
-      fake_bluetooth_profile_manager_client_;
-  scoped_ptr<FakeCrosDisksClient> fake_cros_disks_client_;
-  scoped_ptr<FakeCryptohomeClient> fake_cryptohome_client_;
-  scoped_ptr<FakeGsmSMSClient> fake_gsm_sms_client_;
-  scoped_ptr<FakeImageBurnerClient> fake_image_burner_client_;
-  scoped_ptr<FakeNfcAdapterClient> fake_nfc_adapter_client_;
-  scoped_ptr<FakeNfcDeviceClient> fake_nfc_device_client_;
-  scoped_ptr<FakeNfcManagerClient> fake_nfc_manager_client_;
-  scoped_ptr<FakeNfcRecordClient> fake_nfc_record_client_;
-  scoped_ptr<FakeNfcTagClient> fake_nfc_tag_client_;
-  scoped_ptr<FakeSessionManagerClient> fake_session_manager_client_;
-  scoped_ptr<FakeShillDeviceClient> fake_shill_device_client_;
-  scoped_ptr<FakeShillManagerClient> fake_shill_manager_client_;
-  scoped_ptr<FakeSystemClockClient> fake_system_clock_client_;
-  scoped_ptr<FakePowerManagerClient> fake_power_manager_client_;
-  scoped_ptr<FakeUpdateEngineClient> fake_update_engine_client_;
-
-  scoped_ptr<MockIBusClient> mock_ibus_client_;
+  scoped_ptr<BluetoothAdapterClient> bluetooth_adapter_client_;
+  scoped_ptr<BluetoothAgentManagerClient> bluetooth_agent_manager_client_;
+  scoped_ptr<BluetoothDeviceClient> bluetooth_device_client_;
+  scoped_ptr<BluetoothInputClient> bluetooth_input_client_;
+  scoped_ptr<BluetoothProfileManagerClient> bluetooth_profile_manager_client_;
+  scoped_ptr<CrasAudioClient> cras_audio_client_;
+  scoped_ptr<CrosDisksClient> cros_disks_client_;
+  scoped_ptr<CryptohomeClient> cryptohome_client_;
+  scoped_ptr<DebugDaemonClient> debug_daemon_client_;
+  scoped_ptr<ShillDeviceClient> shill_device_client_;
+  scoped_ptr<ShillIPConfigClient> shill_ipconfig_client_;
+  scoped_ptr<ShillManagerClient> shill_manager_client_;
+  scoped_ptr<ShillServiceClient> shill_service_client_;
+  scoped_ptr<ShillProfileClient> shill_profile_client_;
+  scoped_ptr<GsmSMSClient> gsm_sms_client_;
+  scoped_ptr<ImageBurnerClient> image_burner_client_;
+  scoped_ptr<IntrospectableClient> introspectable_client_;
+  scoped_ptr<ModemMessagingClient> modem_messaging_client_;
+  scoped_ptr<NfcAdapterClient> nfc_adapter_client_;
+  scoped_ptr<NfcDeviceClient> nfc_device_client_;
+  scoped_ptr<NfcManagerClient> nfc_manager_client_;
+  scoped_ptr<NfcRecordClient> nfc_record_client_;
+  scoped_ptr<NfcTagClient> nfc_tag_client_;
+  scoped_ptr<PermissionBrokerClient> permission_broker_client_;
+  scoped_ptr<SystemClockClient> system_clock_client_;
+  scoped_ptr<PowerManagerClient> power_manager_client_;
+  scoped_ptr<SessionManagerClient> session_manager_client_;
+  scoped_ptr<SMSClient> sms_client_;
+  scoped_ptr<UpdateEngineClient> update_engine_client_;
+  scoped_ptr<IBusClient> ibus_client_;
 
   scoped_ptr<PowerPolicyController> power_policy_controller_;
-  dbus::Bus* ibus_bus_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDBusThreadManager);
 };

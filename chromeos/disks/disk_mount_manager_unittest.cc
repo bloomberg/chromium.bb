@@ -122,9 +122,11 @@ class DiskMountManagerTest : public testing::Test {
   // Adds a test observer to the disk mount manager.
   virtual void SetUp() {
     FakeDBusThreadManager* fake_thread_manager = new FakeDBusThreadManager();
-    DBusThreadManager::InitializeForTesting(fake_thread_manager);
+    fake_cros_disks_client_ = new FakeCrosDisksClient;
+    fake_thread_manager->SetCrosDisksClient(
+        scoped_ptr<CrosDisksClient>(fake_cros_disks_client_));
 
-    fake_cros_disks_client_ = fake_thread_manager->fake_cros_disks_client();
+    DBusThreadManager::InitializeForTesting(fake_thread_manager);
 
     DiskMountManager::Initialize();
 

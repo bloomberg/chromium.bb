@@ -53,11 +53,12 @@ class NetworkScreenTest : public WizardInProcessBrowserTest {
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     WizardInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
 
-    FakeDBusThreadManager* fake_dbus_thread_manager =
-        new FakeDBusThreadManager;
+    FakeDBusThreadManager* fake_dbus_thread_manager = new FakeDBusThreadManager;
+    fake_dbus_thread_manager->SetFakeClients();
+    fake_session_manager_client_ = new FakeSessionManagerClient;
+    fake_dbus_thread_manager->SetSessionManagerClient(
+        scoped_ptr<SessionManagerClient>(fake_session_manager_client_));
     DBusThreadManager::InitializeForTesting(fake_dbus_thread_manager);
-    fake_session_manager_client_ =
-        fake_dbus_thread_manager->fake_session_manager_client();
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {

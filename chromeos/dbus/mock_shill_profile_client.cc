@@ -4,9 +4,14 @@
 
 #include "chromeos/dbus/mock_shill_profile_client.h"
 
+using ::testing::_;
+using ::testing::AnyNumber;
+
 namespace chromeos {
 
-MockShillProfileClient::MockShillProfileClient() {}
+MockShillProfileClient::MockShillProfileClient() {
+  EXPECT_CALL(*this, Init(_)).Times(AnyNumber());
+}
 
 MockShillProfileClient::~MockShillProfileClient() {}
 

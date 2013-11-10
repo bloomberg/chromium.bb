@@ -94,7 +94,8 @@ EnterpriseInstallAttributes::EnterpriseInstallAttributes(
     : device_locked_(false),
       registration_mode_(DEVICE_MODE_PENDING),
       cryptohome_client_(cryptohome_client),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+}
 
 EnterpriseInstallAttributes::~EnterpriseInstallAttributes() {}
 

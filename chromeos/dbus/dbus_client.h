@@ -18,7 +18,7 @@ namespace chromeos {
 // incorrect calls. Stub clients may lift that restriction however.
 class DBusClient {
  protected:
-  friend class DBusThreadManagerImpl;
+  friend class DBusThreadManager;
 
   virtual ~DBusClient() {}
 

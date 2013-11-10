@@ -116,12 +116,14 @@ class ScreenLockerTest : public InProcessBrowserTest {
 
  private:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
-    FakeDBusThreadManager* fake_dbus_thread_manager =
-        new FakeDBusThreadManager;
+    FakeDBusThreadManager* fake_dbus_thread_manager = new FakeDBusThreadManager;
+    fake_dbus_thread_manager->SetFakeClients();
+    fake_session_manager_client_ = new FakeSessionManagerClient;
+    fake_dbus_thread_manager->SetSessionManagerClient(
+        scoped_ptr<SessionManagerClient>(fake_session_manager_client_));
     DBusThreadManager::InitializeForTesting(fake_dbus_thread_manager);
+
     InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
-    fake_session_manager_client_ =
-        fake_dbus_thread_manager->fake_session_manager_client();
     zero_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(
         ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
   }

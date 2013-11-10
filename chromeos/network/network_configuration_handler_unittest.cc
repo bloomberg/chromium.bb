@@ -8,7 +8,7 @@
 #include "base/strings/string_piece.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/mock_dbus_thread_manager.h"
+#include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "chromeos/dbus/mock_shill_manager_client.h"
 #include "chromeos/dbus/mock_shill_profile_client.h"
 #include "chromeos/dbus/mock_shill_service_client.h"
@@ -23,6 +23,7 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using ::testing::_;
+using ::testing::AnyNumber;
 using ::testing::Invoke;
 using ::testing::Pointee;
 using ::testing::Return;
@@ -98,16 +99,27 @@ class NetworkConfigurationHandlerTest : public testing::Test {
   virtual ~NetworkConfigurationHandlerTest() {}
 
   virtual void SetUp() OVERRIDE {
-    MockDBusThreadManager* mock_dbus_thread_manager = new MockDBusThreadManager;
-    EXPECT_CALL(*mock_dbus_thread_manager, GetSystemBus())
-    .WillRepeatedly(Return(reinterpret_cast<dbus::Bus*>(NULL)));
-    DBusThreadManager::InitializeForTesting(mock_dbus_thread_manager);
-    mock_manager_client_ =
-        mock_dbus_thread_manager->mock_shill_manager_client();
-    mock_profile_client_ =
-        mock_dbus_thread_manager->mock_shill_profile_client();
-    mock_service_client_ =
-        mock_dbus_thread_manager->mock_shill_service_client();
+    FakeDBusThreadManager* dbus_thread_manager = new FakeDBusThreadManager;
+    mock_manager_client_ = new MockShillManagerClient();
+    mock_profile_client_ = new MockShillProfileClient();
+    mock_service_client_ = new MockShillServiceClient();
+    dbus_thread_manager->SetShillManagerClient(
+        scoped_ptr<ShillManagerClient>(mock_manager_client_).Pass());
+    dbus_thread_manager->SetShillProfileClient(
+        scoped_ptr<ShillProfileClient>(mock_profile_client_).Pass());
+    dbus_thread_manager->SetShillServiceClient(
+        scoped_ptr<ShillServiceClient>(mock_service_client_).Pass());
+
+    EXPECT_CALL(*mock_service_client_, GetProperties(_, _))
+        .Times(AnyNumber());
+    EXPECT_CALL(*mock_manager_client_, GetProperties(_))
+        .Times(AnyNumber());
+    EXPECT_CALL(*mock_manager_client_, AddPropertyChangedObserver(_))
+        .Times(AnyNumber());
+    EXPECT_CALL(*mock_manager_client_, RemovePropertyChangedObserver(_))
+        .Times(AnyNumber());
+
+    DBusThreadManager::InitializeForTesting(dbus_thread_manager);
 
     network_state_handler_.reset(NetworkStateHandler::InitializeForTest());
     network_configuration_handler_.reset(new NetworkConfigurationHandler());
@@ -213,10 +225,11 @@ TEST_F(NetworkConfigurationHandlerTest, GetProperties) {
   EXPECT_CALL(*mock_service_client_,
               SetProperty(dbus::ObjectPath(service_path), key,
                           IsEqualTo(networkNameValue.get()), _, _)).Times(1);
-  DBusThreadManager::Get()->GetShillServiceClient()->SetProperty(
-      dbus::ObjectPath(service_path), key, *networkNameValue,
-      base::Bind(&base::DoNothing),
-      base::Bind(&DBusErrorCallback));
+  mock_service_client_->SetProperty(dbus::ObjectPath(service_path),
+                                    key,
+                                    *networkNameValue,
+                                    base::Bind(&base::DoNothing),
+                                    base::Bind(&DBusErrorCallback));
   message_loop_.RunUntilIdle();
 
   ShillServiceClient::DictionaryValueCallback get_properties_callback;

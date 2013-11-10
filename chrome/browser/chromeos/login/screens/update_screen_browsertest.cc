@@ -44,11 +44,13 @@ class UpdateScreenTest : public WizardInProcessBrowserTest {
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     FakeDBusThreadManager* fake_dbus_thread_manager =
         new FakeDBusThreadManager;
+    fake_dbus_thread_manager->SetFakeClients();
+    fake_update_engine_client_ = new FakeUpdateEngineClient;
+    fake_dbus_thread_manager->SetUpdateEngineClient(
+        scoped_ptr<UpdateEngineClient>(fake_update_engine_client_));
+
     DBusThreadManager::InitializeForTesting(fake_dbus_thread_manager);
     WizardInProcessBrowserTest::SetUpInProcessBrowserTestFixture();
-
-    fake_update_engine_client_
-        = fake_dbus_thread_manager->fake_update_engine_client();
 
     // Setup network portal detector to return online state for both
     // ethernet and wifi networks. Ethernet is an active network by

@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/message_loop/message_loop.h"
+#include "chromeos/dbus/fake_bluetooth_adapter_client.h"
 #include "chromeos/dbus/fake_bluetooth_device_client.h"
+#include "chromeos/dbus/fake_bluetooth_input_client.h"
 #include "chromeos/dbus/fake_bluetooth_profile_manager_client.h"
 #include "chromeos/dbus/fake_bluetooth_profile_service_provider.h"
 #include "chromeos/dbus/fake_dbus_thread_manager.h"
@@ -38,11 +40,19 @@ class BluetoothProfileChromeOSTest : public testing::Test {
         last_device_(NULL) {}
 
   virtual void SetUp() {
-    fake_dbus_thread_manager_ = new FakeDBusThreadManager();
-    DBusThreadManager::InitializeForTesting(fake_dbus_thread_manager_);
-
+    FakeDBusThreadManager* fake_dbus_thread_manager = new FakeDBusThreadManager;
     fake_bluetooth_profile_manager_client_ =
-      fake_dbus_thread_manager_->fake_bluetooth_profile_manager_client();
+        new FakeBluetoothProfileManagerClient;
+    fake_dbus_thread_manager->SetBluetoothProfileManagerClient(
+        scoped_ptr<BluetoothProfileManagerClient>(
+            fake_bluetooth_profile_manager_client_));
+    fake_dbus_thread_manager->SetBluetoothAdapterClient(
+        scoped_ptr<BluetoothAdapterClient>(new FakeBluetoothAdapterClient));
+    fake_dbus_thread_manager->SetBluetoothDeviceClient(
+        scoped_ptr<BluetoothDeviceClient>(new FakeBluetoothDeviceClient));
+    fake_dbus_thread_manager->SetBluetoothInputClient(
+        scoped_ptr<BluetoothInputClient>(new FakeBluetoothInputClient));
+    DBusThreadManager::InitializeForTesting(fake_dbus_thread_manager);
 
     device::BluetoothAdapterFactory::GetAdapter(
         base::Bind(&BluetoothProfileChromeOSTest::AdapterCallback,
@@ -95,7 +105,6 @@ class BluetoothProfileChromeOSTest : public testing::Test {
   base::MessageLoop message_loop_;
 
   FakeBluetoothProfileManagerClient* fake_bluetooth_profile_manager_client_;
-  FakeDBusThreadManager* fake_dbus_thread_manager_;
   scoped_refptr<BluetoothAdapter> adapter_;
 
   unsigned int callback_count_;

@@ -7,11 +7,12 @@
 
 #include <string>
 #include "base/callback.h"
+#include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/ibus/ibus_client.h"
 
 namespace chromeos {
 
-class MockIBusClient : public IBusClient {
+class CHROMEOS_EXPORT MockIBusClient : public IBusClient {
  public:
   MockIBusClient();
   virtual ~MockIBusClient();

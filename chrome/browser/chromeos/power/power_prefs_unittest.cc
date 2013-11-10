@@ -62,10 +62,13 @@ class PowerPrefsTest : public testing::Test {
 
 PowerPrefsTest::PowerPrefsTest()
     : profile_manager_(TestingBrowserProcess::GetGlobal()),
-      power_policy_controller_(
-          fake_dbus_thread_manager_.GetPowerPolicyController()),
-      fake_power_manager_client_(
-          fake_dbus_thread_manager_.fake_power_manager_client()) {
+      power_policy_controller_(new PowerPolicyController),
+      fake_power_manager_client_(new FakePowerManagerClient) {
+  fake_dbus_thread_manager_.SetPowerManagerClient(
+      scoped_ptr<PowerManagerClient>(fake_power_manager_client_));
+  fake_dbus_thread_manager_.SetPowerPolicyController(
+      scoped_ptr<PowerPolicyController>(power_policy_controller_));
+  power_policy_controller_->Init(&fake_dbus_thread_manager_);
 }
 
 void PowerPrefsTest::SetUp() {

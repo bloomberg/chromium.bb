@@ -39,6 +39,7 @@ class PeripheralBatteryObserverTest : public InProcessBrowserTest {
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     FakeDBusThreadManager* fake_dbus_thread_manager =
         new FakeDBusThreadManager;
+    fake_dbus_thread_manager->SetFakeClients();
     DBusThreadManager::InitializeForTesting(fake_dbus_thread_manager);
     InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
   }

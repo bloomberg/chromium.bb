@@ -123,19 +123,16 @@ std::string PowerPolicyController::GetPolicyDebugString(
   return str;
 }
 
-PowerPolicyController::PowerPolicyController(DBusThreadManager* manager,
-                                             PowerManagerClient* client)
-    : manager_(manager),
-      client_(client),
+PowerPolicyController::PowerPolicyController()
+    : manager_(NULL),
+      client_(NULL),
       prefs_were_set_(false),
       honor_screen_wake_locks_(true),
       next_wake_lock_id_(1) {
-  manager_->AddObserver(this);
-  client_->AddObserver(this);
-  SendCurrentPolicy();
 }
 
 PowerPolicyController::~PowerPolicyController() {
+  DCHECK(manager_);
   // The power manager's policy is reset before this point, in
   // OnDBusThreadManagerDestroying().  At the time that
   // PowerPolicyController is destroyed, PowerManagerClient's D-Bus proxy
@@ -144,6 +141,14 @@ PowerPolicyController::~PowerPolicyController() {
   client_ = NULL;
   manager_->RemoveObserver(this);
   manager_ = NULL;
+}
+
+void PowerPolicyController::Init(DBusThreadManager* manager) {
+  manager_ = manager;
+  manager_->AddObserver(this);
+  client_ = manager_->GetPowerManagerClient();
+  client_->AddObserver(this);
+  SendCurrentPolicy();
 }
 
 void PowerPolicyController::ApplyPrefs(const PrefValues& values) {

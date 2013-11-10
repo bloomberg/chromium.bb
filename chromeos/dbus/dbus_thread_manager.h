@@ -34,6 +34,7 @@ class BluetoothProfileManagerClient;
 class CrasAudioClient;
 class CrosDisksClient;
 class CryptohomeClient;
+class DBusClient;
 class DebugDaemonClient;
 class GsmSMSClient;
 class IBusClient;
@@ -50,13 +51,13 @@ class NfcTagClient;
 class PermissionBrokerClient;
 class PowerManagerClient;
 class PowerPolicyController;
-class SMSClient;
 class SessionManagerClient;
 class ShillDeviceClient;
 class ShillIPConfigClient;
 class ShillManagerClient;
 class ShillProfileClient;
 class ShillServiceClient;
+class SMSClient;
 class SystemClockClient;
 class UpdateEngineClient;
 
@@ -131,7 +132,6 @@ class CHROMEOS_EXPORT DBusThreadManager {
   virtual CryptohomeClient* GetCryptohomeClient() = 0;
   virtual DebugDaemonClient* GetDebugDaemonClient() = 0;
   virtual GsmSMSClient* GetGsmSMSClient() = 0;
-  virtual IBusClient* GetIBusClient() = 0;
   virtual ImageBurnerClient* GetImageBurnerClient() = 0;
   virtual IntrospectableClient* GetIntrospectableClient() = 0;
   virtual ModemMessagingClient* GetModemMessagingClient() = 0;
@@ -153,10 +153,21 @@ class CHROMEOS_EXPORT DBusThreadManager {
   virtual SystemClockClient* GetSystemClockClient() = 0;
   virtual UpdateEngineClient* GetUpdateEngineClient() = 0;
 
+  virtual IBusClient* GetIBusClient() = 0;
+
   virtual ~DBusThreadManager();
 
  protected:
   DBusThreadManager();
+
+ private:
+  // InitializeClients is called after g_dbus_thread_manager is set.
+  // NOTE: Clients that access other clients in their Init() must be
+  // initialized in the correct order.
+  static void InitializeClients();
+
+  // Initializes |client| with the |system_bus_|.
+  static void InitClient(DBusClient* client);
 
   DISALLOW_COPY_AND_ASSIGN(DBusThreadManager);
 };

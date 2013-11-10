@@ -9,10 +9,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/mock_dbus_thread_manager.h"
+#include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "chromeos/dbus/mock_shill_manager_client.h"
 #include "chromeos/dbus/mock_shill_profile_client.h"
-#include "chromeos/dbus/mock_shill_service_client.h"
 #include "chromeos/network/managed_network_configuration_handler_impl.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_profile_handler.h"
@@ -148,32 +147,32 @@ class TestNetworkProfileHandler : public NetworkProfileHandler {
 
 class ManagedNetworkConfigurationHandlerTest : public testing::Test {
  public:
-  ManagedNetworkConfigurationHandlerTest() {
+  ManagedNetworkConfigurationHandlerTest()
+      : mock_manager_client_(NULL),
+        mock_profile_client_(NULL) {
   }
 
   virtual ~ManagedNetworkConfigurationHandlerTest() {
   }
 
   virtual void SetUp() OVERRIDE {
-    MockDBusThreadManager* dbus_thread_manager = new MockDBusThreadManager;
-    EXPECT_CALL(*dbus_thread_manager, GetSystemBus())
-        .WillRepeatedly(Return(static_cast<dbus::Bus*>(NULL)));
+    FakeDBusThreadManager* dbus_thread_manager = new FakeDBusThreadManager;
+    mock_manager_client_ = new StrictMock<MockShillManagerClient>();
+    mock_profile_client_ = new StrictMock<MockShillProfileClient>();
+    dbus_thread_manager->SetShillManagerClient(
+        scoped_ptr<ShillManagerClient>(mock_manager_client_).Pass());
+    dbus_thread_manager->SetShillProfileClient(
+        scoped_ptr<ShillProfileClient>(mock_profile_client_).Pass());
+
     DBusThreadManager::InitializeForTesting(dbus_thread_manager);
 
     SetNetworkConfigurationHandlerExpectations();
 
-    EXPECT_CALL(*dbus_thread_manager, GetShillManagerClient())
-        .WillRepeatedly(Return(&mock_manager_client_));
-    EXPECT_CALL(*dbus_thread_manager, GetShillServiceClient())
-        .WillRepeatedly(Return(&mock_service_client_));
-    EXPECT_CALL(*dbus_thread_manager, GetShillProfileClient())
-        .WillRepeatedly(Return(&mock_profile_client_));
-
-    ON_CALL(mock_profile_client_, GetProperties(_,_,_))
+    ON_CALL(*mock_profile_client_, GetProperties(_,_,_))
         .WillByDefault(Invoke(&profiles_stub_,
                               &ShillProfileTestClient::GetProperties));
 
-    ON_CALL(mock_profile_client_, GetEntry(_,_,_,_))
+    ON_CALL(*mock_profile_client_, GetEntry(_,_,_,_))
         .WillByDefault(Invoke(&profiles_stub_,
                               &ShillProfileTestClient::GetEntry));
 
@@ -199,9 +198,8 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
   }
 
   void VerifyAndClearExpectations() {
-    Mock::VerifyAndClearExpectations(&mock_manager_client_);
-    Mock::VerifyAndClearExpectations(&mock_service_client_);
-    Mock::VerifyAndClearExpectations(&mock_profile_client_);
+    Mock::VerifyAndClearExpectations(mock_manager_client_);
+    Mock::VerifyAndClearExpectations(mock_profile_client_);
     SetNetworkConfigurationHandlerExpectations();
   }
 
@@ -247,10 +245,10 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
 
   void SetNetworkConfigurationHandlerExpectations() {
     // These calls occur in NetworkConfigurationHandler.
-    EXPECT_CALL(mock_manager_client_, GetProperties(_)).Times(AnyNumber());
-    EXPECT_CALL(mock_manager_client_,
+    EXPECT_CALL(*mock_manager_client_, GetProperties(_)).Times(AnyNumber());
+    EXPECT_CALL(*mock_manager_client_,
                 AddPropertyChangedObserver(_)).Times(AnyNumber());
-    EXPECT_CALL(mock_manager_client_,
+    EXPECT_CALL(*mock_manager_client_,
                 RemovePropertyChangedObserver(_)).Times(AnyNumber());
   }
 
@@ -259,9 +257,8 @@ class ManagedNetworkConfigurationHandlerTest : public testing::Test {
   }
 
  protected:
-  StrictMock<MockShillManagerClient> mock_manager_client_;
-  StrictMock<MockShillServiceClient> mock_service_client_;
-  StrictMock<MockShillProfileClient> mock_profile_client_;
+  MockShillManagerClient* mock_manager_client_;
+  MockShillProfileClient* mock_profile_client_;
   ShillProfileTestClient profiles_stub_;
   scoped_ptr<TestNetworkProfileHandler> network_profile_handler_;
   scoped_ptr<NetworkConfigurationHandler> network_configuration_handler_;
@@ -284,10 +281,10 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, RemoveIrrelevantFields) {
       test_utils::ReadTestDictionary(
           "policy/shill_policy_on_unconfigured_wifi1.json");
 
-  EXPECT_CALL(mock_profile_client_,
+  EXPECT_CALL(*mock_profile_client_,
               GetProperties(dbus::ObjectPath(kUser1ProfilePath), _, _));
 
-  EXPECT_CALL(mock_manager_client_,
+  EXPECT_CALL(*mock_manager_client_,
               ConfigureServiceForProfile(
                   dbus::ObjectPath(kUser1ProfilePath),
                   IsEqualTo(expected_shill_properties.get()),
@@ -305,10 +302,10 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyManageUnconfigured) {
       test_utils::ReadTestDictionary(
           "policy/shill_policy_on_unconfigured_wifi1.json");
 
-  EXPECT_CALL(mock_profile_client_,
+  EXPECT_CALL(*mock_profile_client_,
               GetProperties(dbus::ObjectPath(kUser1ProfilePath), _, _));
 
-  EXPECT_CALL(mock_manager_client_,
+  EXPECT_CALL(*mock_manager_client_,
               ConfigureServiceForProfile(
                   dbus::ObjectPath(kUser1ProfilePath),
                   IsEqualTo(expected_shill_properties.get()),
@@ -338,18 +335,18 @@ TEST_F(ManagedNetworkConfigurationHandlerTest,
              kUser1ProfilePath,
              "wifi_entry");
 
-  EXPECT_CALL(mock_profile_client_,
+  EXPECT_CALL(*mock_profile_client_,
               GetProperties(dbus::ObjectPath(kUser1ProfilePath), _, _));
 
-  EXPECT_CALL(mock_profile_client_,
+  EXPECT_CALL(*mock_profile_client_,
               GetEntry(dbus::ObjectPath(kUser1ProfilePath), _, _, _)).Times(2);
 
   EXPECT_CALL(
-      mock_profile_client_,
+      *mock_profile_client_,
       DeleteEntry(dbus::ObjectPath(kUser1ProfilePath), "eth_entry", _, _));
 
   EXPECT_CALL(
-      mock_manager_client_,
+      *mock_manager_client_,
       ConfigureServiceForProfile(dbus::ObjectPath(kUser1ProfilePath),
                                  IsEqualTo(expected_shill_properties.get()),
                                  _, _));
@@ -361,9 +358,9 @@ TEST_F(ManagedNetworkConfigurationHandlerTest,
 
 TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyIgnoreUnmodified) {
   InitializeStandardProfiles();
-  EXPECT_CALL(mock_profile_client_, GetProperties(_, _, _));
+  EXPECT_CALL(*mock_profile_client_, GetProperties(_, _, _));
 
-  EXPECT_CALL(mock_manager_client_, ConfigureServiceForProfile(_, _, _, _));
+  EXPECT_CALL(*mock_manager_client_, ConfigureServiceForProfile(_, _, _, _));
 
   SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
   message_loop_.RunUntilIdle();
@@ -373,10 +370,10 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyIgnoreUnmodified) {
              kUser1ProfilePath,
              "some_entry_path");
 
-  EXPECT_CALL(mock_profile_client_, GetProperties(_, _, _));
+  EXPECT_CALL(*mock_profile_client_, GetProperties(_, _, _));
 
   EXPECT_CALL(
-      mock_profile_client_,
+      *mock_profile_client_,
       GetEntry(dbus::ObjectPath(kUser1ProfilePath), "some_entry_path", _, _));
 
   SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
@@ -393,18 +390,18 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyManageUnmanaged) {
       test_utils::ReadTestDictionary(
           "policy/shill_policy_on_unmanaged_wifi1.json");
 
-  EXPECT_CALL(mock_profile_client_,
+  EXPECT_CALL(*mock_profile_client_,
               GetProperties(dbus::ObjectPath(kUser1ProfilePath), _, _));
 
   EXPECT_CALL(
-      mock_profile_client_,
+      *mock_profile_client_,
       GetEntry(dbus::ObjectPath(kUser1ProfilePath), "old_entry_path", _, _));
 
   EXPECT_CALL(
-      mock_profile_client_,
+      *mock_profile_client_,
       DeleteEntry(dbus::ObjectPath(kUser1ProfilePath), "old_entry_path", _, _));
 
-  EXPECT_CALL(mock_manager_client_,
+  EXPECT_CALL(*mock_manager_client_,
               ConfigureServiceForProfile(
                   dbus::ObjectPath(kUser1ProfilePath),
                   IsEqualTo(expected_shill_properties.get()),
@@ -426,18 +423,18 @@ TEST_F(ManagedNetworkConfigurationHandlerTest,
       test_utils::ReadTestDictionary(
           "policy/shill_policy_on_unmanaged_wifi1.json");
 
-  EXPECT_CALL(mock_profile_client_,
+  EXPECT_CALL(*mock_profile_client_,
               GetProperties(dbus::ObjectPath(kUser1ProfilePath), _, _));
 
   EXPECT_CALL(
-      mock_profile_client_,
+      *mock_profile_client_,
       GetEntry(dbus::ObjectPath(kUser1ProfilePath), "old_entry_path", _, _));
 
   EXPECT_CALL(
-      mock_profile_client_,
+      *mock_profile_client_,
       DeleteEntry(dbus::ObjectPath(kUser1ProfilePath), "old_entry_path", _, _));
 
-  EXPECT_CALL(mock_manager_client_,
+  EXPECT_CALL(*mock_manager_client_,
               ConfigureServiceForProfile(
                   dbus::ObjectPath(kUser1ProfilePath),
                   IsEqualTo(expected_shill_properties.get()),
@@ -462,18 +459,18 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyUpdateManagedNewGUID) {
   expected_shill_properties->RemoveWithoutPathExpansion(
       shill::kPassphraseProperty, NULL);
 
-  EXPECT_CALL(mock_profile_client_,
+  EXPECT_CALL(*mock_profile_client_,
               GetProperties(dbus::ObjectPath(kUser1ProfilePath), _, _));
 
   EXPECT_CALL(
-      mock_profile_client_,
+      *mock_profile_client_,
       GetEntry(dbus::ObjectPath(kUser1ProfilePath), "old_entry_path", _, _));
 
   EXPECT_CALL(
-      mock_profile_client_,
+      *mock_profile_client_,
       DeleteEntry(dbus::ObjectPath(kUser1ProfilePath), "old_entry_path", _, _));
 
-  EXPECT_CALL(mock_manager_client_,
+  EXPECT_CALL(*mock_manager_client_,
               ConfigureServiceForProfile(
                   dbus::ObjectPath(kUser1ProfilePath),
                   IsEqualTo(expected_shill_properties.get()),
@@ -498,14 +495,14 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyReapplyToManaged) {
   expected_shill_properties->RemoveWithoutPathExpansion(
       shill::kPassphraseProperty, NULL);
 
-  EXPECT_CALL(mock_profile_client_,
+  EXPECT_CALL(*mock_profile_client_,
               GetProperties(dbus::ObjectPath(kUser1ProfilePath), _, _));
 
   EXPECT_CALL(
-      mock_profile_client_,
+      *mock_profile_client_,
       GetEntry(dbus::ObjectPath(kUser1ProfilePath), "old_entry_path", _, _));
 
-  EXPECT_CALL(mock_manager_client_,
+  EXPECT_CALL(*mock_manager_client_,
               ConfigureServiceForProfile(
                   dbus::ObjectPath(kUser1ProfilePath),
                   IsEqualTo(expected_shill_properties.get()),
@@ -517,11 +514,11 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyReapplyToManaged) {
 
   // If we apply the policy again, without change, then the Shill profile will
   // not be modified.
-  EXPECT_CALL(mock_profile_client_,
+  EXPECT_CALL(*mock_profile_client_,
               GetProperties(dbus::ObjectPath(kUser1ProfilePath), _, _));
 
   EXPECT_CALL(
-      mock_profile_client_,
+      *mock_profile_client_,
       GetEntry(dbus::ObjectPath(kUser1ProfilePath), "old_entry_path", _, _));
 
   SetPolicy(::onc::ONC_SOURCE_USER_POLICY, kUser1, "policy/policy_wifi1.onc");
@@ -534,15 +531,15 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyUnmanageManaged) {
              kUser1ProfilePath,
              "old_entry_path");
 
-  EXPECT_CALL(mock_profile_client_,
+  EXPECT_CALL(*mock_profile_client_,
               GetProperties(dbus::ObjectPath(kUser1ProfilePath), _, _));
 
-  EXPECT_CALL(mock_profile_client_,
+  EXPECT_CALL(*mock_profile_client_,
               GetEntry(dbus::ObjectPath(kUser1ProfilePath),
                        "old_entry_path",
                        _, _));
 
-  EXPECT_CALL(mock_profile_client_,
+  EXPECT_CALL(*mock_profile_client_,
               DeleteEntry(dbus::ObjectPath(kUser1ProfilePath),
                           "old_entry_path",
                           _, _));
@@ -557,10 +554,10 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetEmptyPolicyIgnoreUnmanaged) {
              kUser1ProfilePath,
              "old_entry_path");
 
-  EXPECT_CALL(mock_profile_client_,
+  EXPECT_CALL(*mock_profile_client_,
               GetProperties(dbus::ObjectPath(kUser1ProfilePath), _, _));
 
-  EXPECT_CALL(mock_profile_client_,
+  EXPECT_CALL(*mock_profile_client_,
               GetEntry(dbus::ObjectPath(kUser1ProfilePath),
                        "old_entry_path",
                        _, _));
@@ -575,18 +572,18 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, SetPolicyIgnoreUnmanaged) {
              kUser1ProfilePath,
              "wifi2_entry_path");
 
-  EXPECT_CALL(mock_profile_client_,
+  EXPECT_CALL(*mock_profile_client_,
               GetProperties(dbus::ObjectPath(kUser1ProfilePath), _, _));
 
   EXPECT_CALL(
-      mock_profile_client_,
+      *mock_profile_client_,
       GetEntry(dbus::ObjectPath(kUser1ProfilePath), "wifi2_entry_path", _, _));
 
   scoped_ptr<base::DictionaryValue> expected_shill_properties =
       test_utils::ReadTestDictionary(
           "policy/shill_policy_on_unconfigured_wifi1.json");
 
-  EXPECT_CALL(mock_manager_client_,
+  EXPECT_CALL(*mock_manager_client_,
               ConfigureServiceForProfile(
                   dbus::ObjectPath(kUser1ProfilePath),
                   IsEqualTo(expected_shill_properties.get()),
@@ -602,18 +599,18 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, AutoConnectDisallowed) {
              kUser1ProfilePath,
              "wifi2_entry_path");
 
-  EXPECT_CALL(mock_profile_client_,
+  EXPECT_CALL(*mock_profile_client_,
               GetProperties(dbus::ObjectPath(kUser1ProfilePath), _, _));
 
   EXPECT_CALL(
-      mock_profile_client_,
+      *mock_profile_client_,
       GetEntry(dbus::ObjectPath(kUser1ProfilePath), "wifi2_entry_path", _, _));
 
   scoped_ptr<base::DictionaryValue> expected_shill_properties =
       test_utils::ReadTestDictionary(
           "policy/shill_disallow_autoconnect_on_unmanaged_wifi2.json");
 
-  EXPECT_CALL(mock_manager_client_,
+  EXPECT_CALL(*mock_manager_client_,
               ConfigureServiceForProfile(
                   dbus::ObjectPath(kUser1ProfilePath),
                   IsEqualTo(expected_shill_properties.get()),
@@ -635,10 +632,10 @@ TEST_F(ManagedNetworkConfigurationHandlerTest, LateProfileLoading) {
       test_utils::ReadTestDictionary(
           "policy/shill_policy_on_unconfigured_wifi1.json");
 
-  EXPECT_CALL(mock_profile_client_,
+  EXPECT_CALL(*mock_profile_client_,
               GetProperties(dbus::ObjectPath(kUser1ProfilePath), _, _));
 
-  EXPECT_CALL(mock_manager_client_,
+  EXPECT_CALL(*mock_manager_client_,
               ConfigureServiceForProfile(
                   dbus::ObjectPath(kUser1ProfilePath),
                   IsEqualTo(expected_shill_properties.get()),

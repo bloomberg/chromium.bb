@@ -1244,8 +1244,11 @@ class RestartDeviceTest : public PlatformAppBrowserTest {
 
     chromeos::FakeDBusThreadManager* dbus_manager =
         new chromeos::FakeDBusThreadManager;
+    dbus_manager->SetFakeClients();
+    power_manager_client_ = new chromeos::FakePowerManagerClient;
+    dbus_manager->SetPowerManagerClient(
+        scoped_ptr<chromeos::PowerManagerClient>(power_manager_client_));
     chromeos::DBusThreadManager::InitializeForTesting(dbus_manager);
-    power_manager_client_ = dbus_manager->fake_power_manager_client();
   }
 
   virtual void SetUpOnMainThread() OVERRIDE {

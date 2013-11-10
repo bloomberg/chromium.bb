@@ -151,9 +151,9 @@ class InputMethodManagerImplTest :  public testing::Test {
   // Helper function to initialize IBus bus connection for testing. Do not use
   // ibus related mocks before calling this function.
   void InitIBusBus() {
-    fake_dbus_thread_manager_->InitIBusBus("dummy address",
-                                           base::Bind(&base::DoNothing));
-    mock_ibus_client_ = fake_dbus_thread_manager_->mock_ibus_client();
+    mock_ibus_client_ = new MockIBusClient;
+    fake_dbus_thread_manager_->SetIBusClient(
+        scoped_ptr<IBusClient>(mock_ibus_client_));
     mock_ibus_daemon_controller_->EmulateConnect();
   }
 
