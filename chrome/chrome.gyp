@@ -1079,7 +1079,6 @@
             'service/cloud_print/connector_settings.h',
             'service/cloud_print/job_status_updater.cc',
             'service/cloud_print/job_status_updater.h',
-            'service/cloud_print/print_system_dummy.cc',
             'service/cloud_print/print_system.cc',
             'service/cloud_print/print_system.h',
             'service/cloud_print/printer_job_handler.cc',
@@ -1094,11 +1093,6 @@
           ],
           'conditions': [
             ['OS=="win"', {
-              'defines': [
-                # CP_PRINT_SYSTEM_AVAILABLE disables default dummy implementation
-                # of cloud print system, and allows to use custom implementaiton.
-                'CP_PRINT_SYSTEM_AVAILABLE',
-              ],
               'sources': [
                 'service/cloud_print/print_system_win.cc',
               ],
@@ -1112,13 +1106,13 @@
               'dependencies': [
                 '../printing/printing.gyp:cups',
               ],
-              'defines': [
-                # CP_PRINT_SYSTEM_AVAILABLE disables default dummy implementation
-                # of cloud print system, and allows to use custom implementaiton.
-                'CP_PRINT_SYSTEM_AVAILABLE',
-              ],
               'sources': [
                 'service/cloud_print/print_system_cups.cc',
+              ],
+            }],
+            ['OS!="win" and use_cups!=1', {
+              'sources': [
+                'service/cloud_print/print_system_dummy.cc',
               ],
             }],
           ],

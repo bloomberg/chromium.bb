@@ -4,7 +4,6 @@
 
 // This is dummy implementation for all configurations where print system
 // for cloud print is not available.
-#if !defined(CP_PRINT_SYSTEM_AVAILABLE)
 
 #include "chrome/service/cloud_print/print_system.h"
 
@@ -18,6 +17,4 @@ scoped_refptr<PrintSystem> PrintSystem::CreateInstance(
   return NULL;
 }
 }  // namespace cloud_print
-
-#endif  // CP_PRINT_SYSTEM_AVAILABLE
 
