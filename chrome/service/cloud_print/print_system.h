@@ -211,15 +211,6 @@ class PrintSystem : public base::RefCountedThreadSafe<PrintSystem> {
   virtual ~PrintSystem();
 };
 
-
-// This typedef is to workaround the issue with certain versions of
-// Visual Studio where it gets confused between multiple Delegate
-// classes and gives a C2500 error. (I saw this error on the try bots -
-// the workaround was not needed for my machine).
-typedef PrintSystem::PrintServerWatcher::Delegate PrintServerWatcherDelegate;
-typedef PrintSystem::PrinterWatcher::Delegate PrinterWatcherDelegate;
-typedef PrintSystem::JobSpooler::Delegate JobSpoolerDelegate;
-
 }  // namespace cloud_print
 
 #endif  // CHROME_SERVICE_CLOUD_PRINT_PRINT_SYSTEM_H_

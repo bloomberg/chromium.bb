@@ -26,7 +26,7 @@ namespace cloud_print {
 // CloudPrintConnector will notify client over Client interface.
 class CloudPrintConnector
     : public base::RefCountedThreadSafe<CloudPrintConnector>,
-      private PrintServerWatcherDelegate,
+      private PrintSystem::PrintServerWatcher::Delegate,
       private PrinterJobHandlerDelegate,
       private CloudPrintURLFetcherDelegate {
  public:

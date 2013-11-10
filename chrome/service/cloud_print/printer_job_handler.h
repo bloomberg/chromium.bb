@@ -67,8 +67,8 @@ namespace cloud_print {
 class PrinterJobHandler : public base::RefCountedThreadSafe<PrinterJobHandler>,
                           public CloudPrintURLFetcherDelegate,
                           public JobStatusUpdaterDelegate,
-                          public PrinterWatcherDelegate,
-                          public JobSpoolerDelegate {
+                          public PrintSystem::PrinterWatcher::Delegate,
+                          public PrintSystem::JobSpooler::Delegate {
  public:
   class Delegate {
    public:
