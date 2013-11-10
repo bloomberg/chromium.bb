@@ -790,7 +790,7 @@ void DesktopRootWindowHostX11::SetCursor(gfx::NativeCursor cursor) {
 bool DesktopRootWindowHostX11::QueryMouseLocation(
     gfx::Point* location_return) {
   aura::client::CursorClient* cursor_client =
-      aura::client::GetCursorClient(GetRootWindow());
+      aura::client::GetCursorClient(GetRootWindow()->window());
   if (cursor_client && !cursor_client->IsMouseEventsEnabled()) {
     *location_return = gfx::Point(0, 0);
     return false;

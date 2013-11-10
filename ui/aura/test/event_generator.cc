@@ -148,7 +148,7 @@ void EventGenerator::ReleaseRightButton() {
 
 void EventGenerator::SendMouseExit() {
   gfx::Point exit_location(current_location_);
-  ConvertPointToTarget(current_root_window_, &exit_location);
+  ConvertPointToTarget(current_root_window_->window(), &exit_location);
   ui::MouseEvent mouseev(ui::ET_MOUSE_EXITED, exit_location, exit_location,
                          flags_);
   Dispatch(&mouseev);
@@ -177,7 +177,7 @@ void EventGenerator::MoveMouseTo(const gfx::Point& point_in_screen,
     gfx::Point move_point = current_location_ + gfx::ToRoundedVector2d(step);
     if (!grab_)
       UpdateCurrentRootWindow(move_point);
-    ConvertPointToTarget(current_root_window_, &move_point);
+    ConvertPointToTarget(current_root_window_->window(), &move_point);
     ui::MouseEvent mouseev(event_type, move_point, move_point, flags_);
     Dispatch(&mouseev);
   }
@@ -551,7 +551,7 @@ void EventGenerator::ConvertPointToTarget(const aura::Window* target,
 
 gfx::Point EventGenerator::GetLocationInCurrentRoot() const {
   gfx::Point p(current_location_);
-  ConvertPointToTarget(current_root_window_, &p);
+  ConvertPointToTarget(current_root_window_->window(), &p);
   return p;
 }
 

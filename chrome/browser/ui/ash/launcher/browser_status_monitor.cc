@@ -145,8 +145,8 @@ void BrowserStatusMonitor::OnWindowActivated(aura::Window* gained_active,
 void BrowserStatusMonitor::OnWindowDestroyed(aura::Window* window) {
   // Remove RootWindow and its ActivationClient from observed list.
   observed_root_windows_.Remove(window);
-  observed_activation_clients_.Remove(aura::client::GetActivationClient(
-      static_cast<aura::RootWindow*>(window)));
+  observed_activation_clients_.Remove(
+      aura::client::GetActivationClient(window));
 }
 
 void BrowserStatusMonitor::OnBrowserAdded(Browser* browser) {

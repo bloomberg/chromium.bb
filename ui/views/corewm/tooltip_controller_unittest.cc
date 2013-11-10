@@ -41,7 +41,7 @@ namespace corewm {
 namespace test {
 namespace {
 
-views::Widget* CreateWidget(aura::RootWindow* root) {
+views::Widget* CreateWidget(aura::Window* root) {
   views::Widget* widget = new views::Widget;
   views::Widget::InitParams params;
   params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
@@ -93,7 +93,7 @@ class TooltipControllerTest : public aura::test::AuraTestBase {
   virtual void TearDown() OVERRIDE {
 #if defined(OS_CHROMEOS)
     root_window()->RemovePreTargetHandler(controller_.get());
-    SetTooltipClient(root_window(), NULL);
+    aura::client::SetTooltipClient(root_window(), NULL);
     controller_.reset();
 #endif
     generator_.reset();

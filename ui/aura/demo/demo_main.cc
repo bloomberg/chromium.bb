@@ -120,9 +120,9 @@ int DemoMain() {
   scoped_ptr<aura::RootWindow> root_window(
       test_screen->CreateRootWindowForPrimaryDisplay());
   scoped_ptr<DemoWindowTreeClient> window_tree_client(new DemoWindowTreeClient(
-      root_window.get()));
+      root_window->window()));
   aura::test::TestFocusClient focus_client;
-  aura::client::SetFocusClient(root_window.get(), &focus_client);
+  aura::client::SetFocusClient(root_window->window(), &focus_client);
 
   // Create a hierarchy of test windows.
   DemoWindowDelegate window_delegate1(SK_ColorBLUE);
@@ -132,7 +132,7 @@ int DemoMain() {
   window1.SetBounds(gfx::Rect(100, 100, 400, 400));
   window1.Show();
   aura::client::ParentWindowWithContext(
-      &window1, root_window.get(), gfx::Rect());
+      &window1, root_window->window(), gfx::Rect());
 
   DemoWindowDelegate window_delegate2(SK_ColorRED);
   aura::Window window2(&window_delegate2);
@@ -141,7 +141,7 @@ int DemoMain() {
   window2.SetBounds(gfx::Rect(200, 200, 350, 350));
   window2.Show();
   aura::client::ParentWindowWithContext(
-      &window2, root_window.get(), gfx::Rect());
+      &window2, root_window->window(), gfx::Rect());
 
   DemoWindowDelegate window_delegate3(SK_ColorGREEN);
   aura::Window window3(&window_delegate3);

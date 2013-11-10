@@ -80,12 +80,13 @@ class SnapshotAuraTest : public testing::Test {
 
  protected:
   aura::Window* test_window() { return test_window_.get(); }
-  aura::RootWindow* root_window() { return helper_->root_window(); }
+  aura::Window* root_window() { return helper_->root_window(); }
+  aura::WindowEventDispatcher* dispatcher() { return helper_->dispatcher(); }
   aura::TestScreen* test_screen() { return helper_->test_screen(); }
 
   void WaitForDraw() {
-    root_window()->compositor()->ScheduleDraw();
-    ui::DrawWaiterForTest::Wait(root_window()->compositor());
+    dispatcher()->compositor()->ScheduleDraw();
+    ui::DrawWaiterForTest::Wait(dispatcher()->compositor());
   }
 
   void SetupTestWindow(const gfx::Rect& window_bounds) {

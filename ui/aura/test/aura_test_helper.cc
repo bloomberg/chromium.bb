@@ -82,19 +82,19 @@ void AuraTestHelper::SetUp() {
   root_window_.reset(test_screen_->CreateRootWindowForPrimaryDisplay());
 
   focus_client_.reset(new TestFocusClient);
-  client::SetFocusClient(root_window_.get(), focus_client_.get());
-  stacking_client_.reset(new TestWindowTreeClient(root_window_.get()));
+  client::SetFocusClient(root_window(), focus_client_.get());
+  stacking_client_.reset(new TestWindowTreeClient(root_window()));
   activation_client_.reset(
-      new client::DefaultActivationClient(root_window_.get()));
-  capture_client_.reset(new client::DefaultCaptureClient(root_window_.get()));
+      new client::DefaultActivationClient(root_window()));
+  capture_client_.reset(new client::DefaultCaptureClient(root_window()));
   test_input_method_.reset(new ui::DummyInputMethod);
-  root_window_->SetProperty(
+  root_window()->SetProperty(
       client::kRootWindowInputMethodKey,
       test_input_method_.get());
 
-  root_window_->Show();
+  root_window()->Show();
   // Ensure width != height so tests won't confuse them.
-  root_window_->SetHostSize(gfx::Size(800, 600));
+  dispatcher()->SetHostSize(gfx::Size(800, 600));
 }
 
 void AuraTestHelper::TearDown() {
@@ -104,7 +104,7 @@ void AuraTestHelper::TearDown() {
   activation_client_.reset();
   capture_client_.reset();
   focus_client_.reset();
-  client::SetFocusClient(root_window_.get(), NULL);
+  client::SetFocusClient(root_window(), NULL);
   root_window_.reset();
   test_screen_.reset();
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, NULL);

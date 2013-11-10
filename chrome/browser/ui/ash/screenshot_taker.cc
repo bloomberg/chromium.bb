@@ -347,7 +347,7 @@ void ScreenshotTaker::HandleTakeScreenshotForAllRootWindows() {
   if (*(root_windows.begin()) != primary_root) {
     root_windows.erase(std::find(
         root_windows.begin(), root_windows.end(), primary_root));
-    root_windows.insert(root_windows.begin(), primary_root->GetDispatcher());
+    root_windows.insert(root_windows.begin(), primary_root);
   }
   for (size_t i = 0; i < root_windows.size(); ++i) {
     aura::Window* root_window = root_windows[i];

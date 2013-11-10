@@ -76,7 +76,7 @@ DesktopRootWindowHostWin::~DesktopRootWindowHostWin() {
 // static
 aura::Window* DesktopRootWindowHostWin::GetContentWindowForHWND(HWND hwnd) {
   aura::RootWindow* root = aura::RootWindow::GetForAcceleratedWidget(hwnd);
-  return root ? root->GetProperty(kContentWindowForRootWindow) : NULL;
+  return root ? root->window()->GetProperty(kContentWindowForRootWindow) : NULL;
 }
 
 // static
@@ -130,8 +130,9 @@ void DesktopRootWindowHostWin::OnRootWindowCreated(
     const Widget::InitParams& params) {
   root_window_ = root;
 
-  root_window_->SetProperty(kContentWindowForRootWindow, content_window_);
-  root_window_->SetProperty(kDesktopRootWindowHostKey, this);
+  root_window_->window()->SetProperty(kContentWindowForRootWindow,
+                                      content_window_);
+  root_window_->window()->SetProperty(kDesktopRootWindowHostKey, this);
 
   should_animate_window_close_ =
       content_window_->type() != aura::client::WINDOW_TYPE_NORMAL &&
@@ -150,7 +151,8 @@ scoped_ptr<corewm::Tooltip> DesktopRootWindowHostWin::CreateTooltip() {
 scoped_ptr<aura::client::DragDropClient>
 DesktopRootWindowHostWin::CreateDragDropClient(
     DesktopNativeCursorManager* cursor_manager) {
-  drag_drop_client_ = new DesktopDragDropClientWin(root_window_, GetHWND());
+  drag_drop_client_ = new DesktopDragDropClientWin(root_window_->window(),
+                                                   GetHWND());
   return scoped_ptr<aura::client::DragDropClient>(drag_drop_client_).Pass();
 }
 
@@ -464,7 +466,7 @@ void DesktopRootWindowHostWin::SetCursor(gfx::NativeCursor cursor) {
 
 bool DesktopRootWindowHostWin::QueryMouseLocation(gfx::Point* location_return) {
   aura::client::CursorClient* cursor_client =
-      aura::client::GetCursorClient(root_window_);
+      aura::client::GetCursorClient(root_window_->window());
   if (cursor_client && !cursor_client->IsMouseEventsEnabled()) {
     *location_return = gfx::Point(0, 0);
     return false;
@@ -477,7 +479,7 @@ bool DesktopRootWindowHostWin::QueryMouseLocation(gfx::Point* location_return) {
 }
 
 bool DesktopRootWindowHostWin::ConfineCursorToRootWindow() {
-  RECT window_rect = root_window_->GetBoundsInScreen().ToRECT();
+  RECT window_rect = root_window_->window()->GetBoundsInScreen().ToRECT();
   ::ClipCursor(&window_rect);
   return true;
 }
@@ -796,7 +798,7 @@ void DesktopRootWindowHostWin::HandleTouchEvent(
       aura::RootWindow::GetForAcceleratedWidget(GetCapture());
   if (root) {
     DesktopRootWindowHostWin* target =
-        root->GetProperty(kDesktopRootWindowHostKey);
+        root->window()->GetProperty(kDesktopRootWindowHostKey);
     if (target && target->HasCapture() && target != this) {
       POINT target_location(event.location().ToPOINT());
       ClientToScreen(GetHWND(), &target_location);
@@ -885,7 +887,7 @@ HWND DesktopRootWindowHostWin::GetHWND() const {
 void DesktopRootWindowHostWin::SetWindowTransparency() {
   bool transparent = ShouldUseNativeFrame() && !IsFullscreen();
   root_window_->compositor()->SetHostHasTransparentBackground(transparent);
-  root_window_->SetTransparent(transparent);
+  root_window_->window()->SetTransparent(transparent);
 }
 
 bool DesktopRootWindowHostWin::IsModalWindowActive() const {
@@ -895,8 +897,8 @@ bool DesktopRootWindowHostWin::IsModalWindowActive() const {
     return false;
 
   aura::Window::Windows::const_iterator index;
-  for (index = root_window_->children().begin();
-       index != root_window_->children().end();
+  for (index = root_window_->window()->children().begin();
+       index != root_window_->window()->children().end();
        ++index) {
     if ((*index)->GetProperty(aura::client::kModalKey) !=
         ui:: MODAL_TYPE_NONE && (*index)->TargetVisibility())

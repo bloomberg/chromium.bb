@@ -327,7 +327,7 @@ TEST_F(WindowTest, MoveCursorTo) {
   scoped_ptr<Window> w1111(
       CreateTestWindow(SK_ColorRED, 1111, gfx::Rect(5, 5, 50, 50), w111.get()));
 
-  RootWindow* root = root_window();
+  Window* root = root_window();
   root->MoveCursorTo(gfx::Point(10, 10));
   EXPECT_EQ("10,10",
       gfx::Screen::GetScreenFor(root)->GetCursorScreenPoint().ToString());
@@ -351,7 +351,7 @@ TEST_F(WindowTest, ContainsMouse) {
                        root_window()));
   w->Show();
   WindowTestApi w_test_api(w.get());
-  RootWindow* root = root_window();
+  Window* root = root_window();
   root->MoveCursorTo(gfx::Point(10, 10));
   EXPECT_TRUE(w_test_api.ContainsMouse());
   root->MoveCursorTo(gfx::Point(9, 10));
@@ -365,7 +365,7 @@ TEST_F(WindowTest, DISABLED_MoveCursorToWithTransformRootWindow) {
 #else
 TEST_F(WindowTest, MoveCursorToWithTransformRootWindow) {
 #endif
-  RootWindow* root = root_window();
+  Window* root = root_window();
   gfx::Transform transform;
   transform.Translate(100.0, 100.0);
   transform.Rotate(90.0);
@@ -374,7 +374,7 @@ TEST_F(WindowTest, MoveCursorToWithTransformRootWindow) {
   root->MoveCursorTo(gfx::Point(10, 10));
 #if !defined(OS_WIN)
   gfx::Point mouse_location;
-  EXPECT_TRUE(root->QueryMouseLocationForTest(&mouse_location));
+  EXPECT_TRUE(dispatcher()->QueryMouseLocationForTest(&mouse_location));
   // TODO(yoshiki): fix this to build on Windows. See crbug.com/133413.OD
   EXPECT_EQ("50,120", mouse_location.ToString());
 #endif
@@ -438,7 +438,7 @@ TEST_F(WindowTest, MoveCursorToWithComplexTransform) {
   scoped_ptr<Window> w1111(
       CreateTestWindow(SK_ColorRED, 1111, gfx::Rect(5, 5, 50, 50), w111.get()));
 
-  RootWindow* root = root_window();
+  Window* root = root_window();
 
   // The root window expects transforms that produce integer rects.
   gfx::Transform root_transform;
@@ -462,7 +462,7 @@ TEST_F(WindowTest, MoveCursorToWithComplexTransform) {
 #if !defined(OS_WIN)
   // TODO(yoshiki): fix this to build on Windows. See crbug.com/133413.
   gfx::Point mouse_location;
-  EXPECT_TRUE(root->QueryMouseLocationForTest(&mouse_location));
+  EXPECT_TRUE(dispatcher()->QueryMouseLocationForTest(&mouse_location));
   EXPECT_EQ("169,80", mouse_location.ToString());
 #endif
   EXPECT_EQ("20,53",
@@ -489,13 +489,13 @@ TEST_F(WindowTest, HitTest) {
 
   ui::TouchEvent pressed(
       ui::ET_TOUCH_PRESSED, gfx::Point(50, 50), 0, getTime());
-  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&pressed);
+  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&pressed);
   EXPECT_TRUE(w1.HitTest(gfx::Point(-2, -2)));
   EXPECT_TRUE(w1.HitTest(gfx::Point(-5, -5)));
   EXPECT_FALSE(w1.HitTest(gfx::Point(-5, -6)));
   ui::TouchEvent released(
       ui::ET_TOUCH_RELEASED, gfx::Point(50, 50), 0, getTime());
-  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&released);
+  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&released);
   EXPECT_FALSE(w1.HitTest(gfx::Point(-2, -2)));
 
   // TODO(beng): clip Window to parent.
@@ -846,7 +846,7 @@ TEST_F(WindowTest, CaptureTests) {
 
   ui::TouchEvent touchev(
       ui::ET_TOUCH_PRESSED, gfx::Point(50, 50), 0, getTime());
-  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&touchev);
+  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&touchev);
   EXPECT_EQ(1, delegate.touch_event_count());
   delegate.ResetCounts();
 
@@ -862,7 +862,7 @@ TEST_F(WindowTest, CaptureTests) {
 
   ui::TouchEvent touchev2(
       ui::ET_TOUCH_PRESSED, gfx::Point(250, 250), 1, getTime());
-  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&touchev2);
+  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&touchev2);
   EXPECT_EQ(0, delegate.touch_event_count());
 
   // Removing the capture window from parent should reset the capture window
@@ -885,7 +885,7 @@ TEST_F(WindowTest, TouchCaptureCancelsOtherTouches) {
   // Press on w1.
   ui::TouchEvent press(
       ui::ET_TOUCH_PRESSED, gfx::Point(10, 10), 0, getTime());
-  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
   // We will get both GESTURE_BEGIN and GESTURE_TAP_DOWN.
   EXPECT_EQ(2, delegate1.gesture_event_count());
   delegate1.ResetCounts();
@@ -899,7 +899,7 @@ TEST_F(WindowTest, TouchCaptureCancelsOtherTouches) {
 
   // Events now go to w2.
   ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(10, 20), 0, getTime());
-  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move);
+  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move);
   EXPECT_EQ(0, delegate1.gesture_event_count());
   EXPECT_EQ(0, delegate1.touch_event_count());
   EXPECT_EQ(0, delegate2.gesture_event_count());
@@ -907,14 +907,14 @@ TEST_F(WindowTest, TouchCaptureCancelsOtherTouches) {
 
   ui::TouchEvent release(
       ui::ET_TOUCH_RELEASED, gfx::Point(10, 20), 0, getTime());
-  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
+  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
   EXPECT_EQ(0, delegate1.gesture_event_count());
   EXPECT_EQ(0, delegate2.gesture_event_count());
 
   // A new press is captured by w2.
   ui::TouchEvent press2(
       ui::ET_TOUCH_PRESSED, gfx::Point(10, 10), 0, getTime());
-  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press2);
+  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press2);
   EXPECT_EQ(0, delegate1.gesture_event_count());
   // We will get both GESTURE_BEGIN and GESTURE_TAP_DOWN.
   EXPECT_EQ(2, delegate2.gesture_event_count());
@@ -936,7 +936,7 @@ TEST_F(WindowTest, TouchCaptureDoesntCancelCapturedTouches) {
 
   ui::TouchEvent press(
       ui::ET_TOUCH_PRESSED, gfx::Point(10, 10), 0, getTime());
-  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
 
   // We will get both GESTURE_BEGIN and GESTURE_TAP_DOWN.
   EXPECT_EQ(2, delegate.gesture_event_count());
@@ -951,7 +951,7 @@ TEST_F(WindowTest, TouchCaptureDoesntCancelCapturedTouches) {
   // On move We will get TOUCH_MOVED, GESTURE_TAP_CANCEL,
   // GESTURE_SCROLL_START and GESTURE_SCROLL_UPDATE.
   ui::TouchEvent move(ui::ET_TOUCH_MOVED, gfx::Point(10, 20), 0, getTime());
-  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move);
+  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move);
   EXPECT_EQ(1, delegate.touch_event_count());
   EXPECT_EQ(3, delegate.gesture_event_count());
   delegate.ResetCounts();
@@ -964,7 +964,7 @@ TEST_F(WindowTest, TouchCaptureDoesntCancelCapturedTouches) {
 
   // On move we still get TOUCH_MOVED and GESTURE_SCROLL_UPDATE.
   ui::TouchEvent move2(ui::ET_TOUCH_MOVED, gfx::Point(10, 30), 0, getTime());
-  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move2);
+  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&move2);
   EXPECT_EQ(1, delegate.touch_event_count());
   EXPECT_EQ(1, delegate.gesture_event_count());
   delegate.ResetCounts();
@@ -972,7 +972,7 @@ TEST_F(WindowTest, TouchCaptureDoesntCancelCapturedTouches) {
   // And on release we get TOUCH_RELEASED, GESTURE_SCROLL_END, GESTURE_END
   ui::TouchEvent release(
       ui::ET_TOUCH_RELEASED, gfx::Point(10, 20), 0, getTime());
-  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
+  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
   EXPECT_EQ(1, delegate.touch_event_count());
   EXPECT_EQ(2, delegate.gesture_event_count());
 }
@@ -985,7 +985,7 @@ TEST_F(WindowTest, TransferCaptureTouchEvents) {
   scoped_ptr<Window> w1(CreateTestWindowWithDelegate(
       &d1, 0, gfx::Rect(0, 0, 20, 20), root_window()));
   ui::TouchEvent p1(ui::ET_TOUCH_PRESSED, gfx::Point(10, 10), 0, getTime());
-  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&p1);
+  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&p1);
   // We will get both GESTURE_BEGIN and GESTURE_TAP_DOWN.
   EXPECT_EQ(1, d1.touch_event_count());
   EXPECT_EQ(2, d1.gesture_event_count());
@@ -996,7 +996,7 @@ TEST_F(WindowTest, TransferCaptureTouchEvents) {
   scoped_ptr<Window> w2(CreateTestWindowWithDelegate(
       &d2, 0, gfx::Rect(40, 0, 40, 20), root_window()));
   ui::TouchEvent p2(ui::ET_TOUCH_PRESSED, gfx::Point(41, 10), 1, getTime());
-  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&p2);
+  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&p2);
   EXPECT_EQ(0, d1.touch_event_count());
   EXPECT_EQ(0, d1.gesture_event_count());
   // We will get both GESTURE_BEGIN and GESTURE_TAP_DOWN for new target window.
@@ -1032,7 +1032,7 @@ TEST_F(WindowTest, TransferCaptureTouchEvents) {
   // Move touch id originally associated with |w2|. Since capture was transfered
   // from 2 to 3 only |w3| should get the event.
   ui::TouchEvent m3(ui::ET_TOUCH_MOVED, gfx::Point(110, 105), 1, getTime());
-  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&m3);
+  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&m3);
   EXPECT_EQ(0, d1.touch_event_count());
   EXPECT_EQ(0, d1.gesture_event_count());
   EXPECT_EQ(0, d2.touch_event_count());
@@ -1055,7 +1055,7 @@ TEST_F(WindowTest, TransferCaptureTouchEvents) {
 
   // And when we move the touch again, |w3| still gets the events.
   ui::TouchEvent m4(ui::ET_TOUCH_MOVED, gfx::Point(120, 105), 1, getTime());
-  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&m4);
+  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&m4);
   EXPECT_EQ(0, d1.touch_event_count());
   EXPECT_EQ(0, d1.gesture_event_count());
   EXPECT_EQ(0, d2.touch_event_count());
@@ -1121,7 +1121,7 @@ TEST_F(WindowTest, ReleaseCaptureOnDestroy) {
   window.reset();
 
   // Make sure the root window doesn't reference the window anymore.
-  EXPECT_EQ(NULL, root_window()->mouse_pressed_handler());
+  EXPECT_EQ(NULL, dispatcher()->mouse_pressed_handler());
   EXPECT_EQ(NULL, aura::client::GetCaptureWindow(root_window()));
 }
 
@@ -1220,7 +1220,7 @@ TEST_F(WindowTest, RootWindowHostExit) {
 
   ui::MouseEvent exit_event(
       ui::ET_MOUSE_EXITED, gfx::Point(), gfx::Point(), 0);
-  root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(&exit_event);
+  dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(&exit_event);
   EXPECT_FALSE(d1.entered());
   EXPECT_TRUE(d1.exited());
 }
@@ -1536,7 +1536,7 @@ TEST_F(WindowTest, IgnoreEventsTest) {
 
 // Tests transformation on the root window.
 TEST_F(WindowTest, Transform) {
-  gfx::Size size = root_window()->GetHostSize();
+  gfx::Size size = dispatcher()->GetHostSize();
   EXPECT_EQ(gfx::Rect(size),
             gfx::Screen::GetScreenFor(root_window())->GetDisplayNearestPoint(
                 gfx::Point()).bounds());
@@ -1545,7 +1545,7 @@ TEST_F(WindowTest, Transform) {
   gfx::Transform transform;
   transform.Translate(size.height(), 0);
   transform.Rotate(90.0);
-  root_window()->SetTransform(transform);
+  dispatcher()->SetTransform(transform);
 
   // The size should be the transformed size.
   gfx::Size transformed_size(size.height(), size.width());
@@ -1558,11 +1558,11 @@ TEST_F(WindowTest, Transform) {
 
   // Host size shouldn't change.
   EXPECT_EQ(size.ToString(),
-            root_window()->GetHostSize().ToString());
+            dispatcher()->GetHostSize().ToString());
 }
 
 TEST_F(WindowTest, TransformGesture) {
-  gfx::Size size = root_window()->GetHostSize();
+  gfx::Size size = dispatcher()->GetHostSize();
 
   scoped_ptr<GestureTrackPositionDelegate> delegate(
       new GestureTrackPositionDelegate);
@@ -1577,7 +1577,7 @@ TEST_F(WindowTest, TransformGesture) {
 
   ui::TouchEvent press(
       ui::ET_TOUCH_PRESSED, gfx::Point(size.height() - 10, 10), 0, getTime());
-  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
   EXPECT_EQ(gfx::Point(10, 10).ToString(), delegate->position().ToString());
 }
 
@@ -2229,8 +2229,6 @@ TEST_F(WindowTest, StackWindowsWhoseLayersHaveNoDelegate) {
 }
 
 TEST_F(WindowTest, StackTransientsWhoseLayersHaveNoDelegate) {
-  RootWindow* root = root_window();
-
   // Create a window with several transients, then a couple windows on top.
   scoped_ptr<Window> window1(CreateTestWindowWithId(1, root_window()));
   scoped_ptr<Window> window11(CreateTransientChild(11, window1.get()));
@@ -2239,7 +2237,7 @@ TEST_F(WindowTest, StackTransientsWhoseLayersHaveNoDelegate) {
   scoped_ptr<Window> window2(CreateTestWindowWithId(2, root_window()));
   scoped_ptr<Window> window3(CreateTestWindowWithId(3, root_window()));
 
-  EXPECT_EQ("1 11 12 13 2 3", ChildWindowIDsAsString(root));
+  EXPECT_EQ("1 11 12 13 2 3", ChildWindowIDsAsString(root_window()));
 
   // Remove the delegates of a couple of transients, as if they are closing
   // and animating out.
@@ -2248,14 +2246,14 @@ TEST_F(WindowTest, StackTransientsWhoseLayersHaveNoDelegate) {
 
   // Move window1 to the front.  All transients should move with it, and their
   // order should be preserved.
-  root->StackChildAtTop(window1.get());
+  root_window()->StackChildAtTop(window1.get());
 
-  EXPECT_EQ("2 3 1 11 12 13", ChildWindowIDsAsString(root));
+  EXPECT_EQ("2 3 1 11 12 13", ChildWindowIDsAsString(root_window()));
 }
 
 class TestVisibilityClient : public client::VisibilityClient {
  public:
-  explicit TestVisibilityClient(RootWindow* root_window)
+  explicit TestVisibilityClient(Window* root_window)
       : ignore_visibility_changes_(false) {
     client::SetVisibilityClient(root_window, this);
   }
@@ -2298,7 +2296,7 @@ TEST_F(WindowTest, VisibilityClientIsVisible) {
 
 // Tests mouse events on window change.
 TEST_F(WindowTest, MouseEventsOnWindowChange) {
-  gfx::Size size = root_window()->GetHostSize();
+  gfx::Size size = dispatcher()->GetHostSize();
 
   EventGenerator generator(root_window());
   generator.MoveMouseTo(50, 50);
@@ -2392,7 +2390,7 @@ TEST_F(WindowTest, MouseEventsOnWindowChange) {
 
 class StackingMadrigalLayoutManager : public LayoutManager {
  public:
-  explicit StackingMadrigalLayoutManager(RootWindow* root_window)
+  explicit StackingMadrigalLayoutManager(Window* root_window)
       : root_window_(root_window) {
     root_window_->SetLayoutManager(this);
   }
@@ -2425,14 +2423,14 @@ class StackingMadrigalLayoutManager : public LayoutManager {
     SetChildBoundsDirect(child, requested_bounds);
   }
 
-  RootWindow* root_window_;
+  Window* root_window_;
 
   DISALLOW_COPY_AND_ASSIGN(StackingMadrigalLayoutManager);
 };
 
 class StackingMadrigalVisibilityClient : public client::VisibilityClient {
  public:
-  explicit StackingMadrigalVisibilityClient(RootWindow* root_window)
+  explicit StackingMadrigalVisibilityClient(Window* root_window)
       : ignored_window_(NULL) {
     client::SetVisibilityClient(root_window, this);
   }
@@ -2525,7 +2523,7 @@ TEST_F(WindowTest, StackOverClosingTransient) {
   scoped_ptr<Window> transient2(CreateTransientChild(21, window2.get()));
 
   // Both windows and layers are stacked in creation order.
-  RootWindow* root = root_window();
+  Window* root = root_window();
   ASSERT_EQ(4u, root->children().size());
   EXPECT_EQ(root->children()[0], window1.get());
   EXPECT_EQ(root->children()[1], transient1.get());

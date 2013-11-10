@@ -20,26 +20,26 @@ MinimalShell::MinimalShell(const gfx::Size& default_window_size) {
       aura::RootWindow::CreateParams(
           gfx::Rect(default_window_size))));
   root_window_->Init();
-  aura::client::SetWindowTreeClient(root_window_.get(), this);
+  aura::client::SetWindowTreeClient(root_window_->window(), this);
 
   focus_client_.reset(new aura::test::TestFocusClient);
-  aura::client::SetFocusClient(root_window_.get(), focus_client_.get());
+  aura::client::SetFocusClient(root_window_->window(), focus_client_.get());
 
   root_window_event_filter_ = new views::corewm::CompoundEventFilter;
   // Pass ownership of the filter to the root_window.
-  root_window_->SetEventFilter(root_window_event_filter_);
+  root_window_->window()->SetEventFilter(root_window_event_filter_);
 
   input_method_filter_.reset(new views::corewm::InputMethodEventFilter(
       root_window_->GetAcceleratedWidget()));
   input_method_filter_->SetInputMethodPropertyInRootWindow(
-      root_window_.get());
+      root_window_->window());
   root_window_event_filter_->AddHandler(input_method_filter_.get());
 
   activation_client_.reset(
-      new aura::client::DefaultActivationClient(root_window_.get()));
+      new aura::client::DefaultActivationClient(root_window_->window()));
 
   capture_client_.reset(
-      new aura::client::DefaultCaptureClient(root_window_.get()));
+      new aura::client::DefaultCaptureClient(root_window_->window()));
 }
 
 MinimalShell::~MinimalShell() {
@@ -50,7 +50,7 @@ aura::Window* MinimalShell::GetDefaultParent(
     aura::Window* context,
     aura::Window* window,
     const gfx::Rect& bounds) {
-  return root_window_.get();
+  return root_window_->window();
 }
 
 }  // namespace shell

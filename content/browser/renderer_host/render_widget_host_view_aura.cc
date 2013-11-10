@@ -2050,8 +2050,8 @@ gfx::GLSurfaceHandle RenderWidgetHostViewAura::GetCompositingSurface() {
 }
 
 bool RenderWidgetHostViewAura::LockMouse() {
-  aura::WindowEventDispatcher* dispatcher = window_->GetDispatcher();
-  if (!dispatcher)
+  aura::Window* root_window = window_->GetRootWindow();
+  if (!root_window)
     return false;
 
   if (mouse_locked_)
@@ -2062,7 +2062,7 @@ bool RenderWidgetHostViewAura::LockMouse() {
   window_->SetCapture();
 #endif
   aura::client::CursorClient* cursor_client =
-      aura::client::GetCursorClient(dispatcher);
+      aura::client::GetCursorClient(root_window);
   if (cursor_client) {
     cursor_client->HideCursor();
     cursor_client->LockCursor();
@@ -2072,16 +2072,16 @@ bool RenderWidgetHostViewAura::LockMouse() {
     synthetic_move_sent_ = true;
     window_->MoveCursorTo(gfx::Rect(window_->bounds().size()).CenterPoint());
   }
-  if (aura::client::GetTooltipClient(dispatcher))
-    aura::client::GetTooltipClient(dispatcher)->SetTooltipsEnabled(false);
+  if (aura::client::GetTooltipClient(root_window))
+    aura::client::GetTooltipClient(root_window)->SetTooltipsEnabled(false);
 
-  dispatcher->ConfineCursorToWindow();
+  root_window->GetDispatcher()->ConfineCursorToWindow();
   return true;
 }
 
 void RenderWidgetHostViewAura::UnlockMouse() {
-  aura::WindowEventDispatcher* dispatcher = window_->GetDispatcher();
-  if (!mouse_locked_ || !dispatcher)
+  aura::Window* root_window = window_->GetRootWindow();
+  if (!mouse_locked_ || !root_window)
     return;
 
   mouse_locked_ = false;
@@ -2091,17 +2091,17 @@ void RenderWidgetHostViewAura::UnlockMouse() {
 #endif
   window_->MoveCursorTo(unlocked_mouse_position_);
   aura::client::CursorClient* cursor_client =
-      aura::client::GetCursorClient(dispatcher);
+      aura::client::GetCursorClient(root_window);
   if (cursor_client) {
     cursor_client->UnlockCursor();
     cursor_client->ShowCursor();
   }
 
-  if (aura::client::GetTooltipClient(dispatcher))
-    aura::client::GetTooltipClient(dispatcher)->SetTooltipsEnabled(true);
+  if (aura::client::GetTooltipClient(root_window))
+    aura::client::GetTooltipClient(root_window)->SetTooltipsEnabled(true);
 
   host_->LostMouseLock();
-  dispatcher->UnConfineCursor();
+  root_window->GetDispatcher()->UnConfineCursor();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

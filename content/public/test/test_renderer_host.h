@@ -172,7 +172,7 @@ class RenderViewHostTestHarness : public testing::Test {
   TestBrowserThreadBundle* thread_bundle() { return thread_bundle_.get(); }
 
 #if defined(USE_AURA)
-  aura::RootWindow* root_window() { return aura_test_helper_->root_window(); }
+  aura::Window* root_window() { return aura_test_helper_->root_window(); }
 #endif
 
   // Replaces the RPH being used.

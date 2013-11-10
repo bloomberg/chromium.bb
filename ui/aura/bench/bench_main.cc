@@ -316,17 +316,17 @@ int main(int argc, char** argv) {
   scoped_ptr<aura::RootWindow> root_window(
       test_screen->CreateRootWindowForPrimaryDisplay());
   aura::client::SetCaptureClient(
-      root_window.get(),
-      new aura::client::DefaultCaptureClient(root_window.get()));
+      root_window->window(),
+      new aura::client::DefaultCaptureClient(root_window->window()));
 
   scoped_ptr<aura::client::FocusClient> focus_client(
       new aura::test::TestFocusClient);
-  aura::client::SetFocusClient(root_window.get(), focus_client.get());
+  aura::client::SetFocusClient(root_window->window(), focus_client.get());
 
   // add layers
   ColoredLayer background(SK_ColorRED);
-  background.SetBounds(root_window->bounds());
-  root_window->layer()->Add(&background);
+  background.SetBounds(root_window->window()->bounds());
+  root_window->window()->layer()->Add(&background);
 
   ColoredLayer window(SK_ColorBLUE);
   window.SetBounds(gfx::Rect(background.bounds().size()));
@@ -360,7 +360,7 @@ int main(int argc, char** argv) {
   }
 
 #ifndef NDEBUG
-  ui::PrintLayerHierarchy(root_window->layer(), gfx::Point(100, 100));
+  ui::PrintLayerHierarchy(root_window->window()->layer(), gfx::Point(100, 100));
 #endif
 
   root_window->ShowRootWindow();

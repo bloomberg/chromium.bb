@@ -36,10 +36,10 @@ class CaptureControllerTest : public aura::test::AuraTestBase {
     second_root_.reset(new aura::RootWindow(
         aura::RootWindow::CreateParams(gfx::Rect(0, 0, 800, 600))));
     second_root_->Init();
-    second_root_->Show();
+    second_root_->window()->Show();
     second_root_->SetHostSize(gfx::Size(800, 600));
     second_capture_controller_.reset(
-        new corewm::ScopedCaptureClient(second_root_.get()));
+        new corewm::ScopedCaptureClient(second_root_->window()));
 
 #if !defined(OS_CHROMEOS)
     desktop_position_client_.reset(new DesktopScreenPositionClient());
@@ -48,7 +48,7 @@ class CaptureControllerTest : public aura::test::AuraTestBase {
 
     second_desktop_position_client_.reset(new DesktopScreenPositionClient());
     aura::client::SetScreenPositionClient(
-        second_root_.get(),
+        second_root_->window(),
         second_desktop_position_client_.get());
 #endif
   }
@@ -102,17 +102,18 @@ TEST_F(CaptureControllerTest, ResetMouseEventHandlerOnCapture) {
   // dispatch further mouse events to |w1|.
   ui::MouseEvent mouse_pressed_event(ui::ET_MOUSE_PRESSED, gfx::Point(5, 5),
                                      gfx::Point(5, 5), 0);
-  root_window()->AsRootWindowHostDelegate()->OnHostMouseEvent(
+  dispatcher()->AsRootWindowHostDelegate()->OnHostMouseEvent(
       &mouse_pressed_event);
-  EXPECT_EQ(w1.get(), root_window()->mouse_pressed_handler());
+  EXPECT_EQ(w1.get(), dispatcher()->mouse_pressed_handler());
 
   // Build a window in the second RootWindow.
-  scoped_ptr<aura::Window> w2(CreateNormalWindow(2, second_root_.get(), NULL));
+  scoped_ptr<aura::Window> w2(
+      CreateNormalWindow(2, second_root_->window(), NULL));
 
   // The act of having the second window take capture should clear out mouse
   // pressed handler in the first RootWindow.
   w2->SetCapture();
-  EXPECT_EQ(NULL, root_window()->mouse_pressed_handler());
+  EXPECT_EQ(NULL, dispatcher()->mouse_pressed_handler());
 }
 
 // Makes sure that when one window gets capture, it forces the release on the
@@ -128,7 +129,8 @@ TEST_F(CaptureControllerTest, ResetOtherWindowCaptureOnCapture) {
 
   // Build a window in the second RootWindow and give it capture. Both capture
   // clients should return the same capture window.
-  scoped_ptr<aura::Window> w2(CreateNormalWindow(2, second_root_.get(), NULL));
+  scoped_ptr<aura::Window> w2(
+      CreateNormalWindow(2, second_root_->window(), NULL));
   w2->SetCapture();
   EXPECT_EQ(w2.get(), GetCaptureWindow());
   EXPECT_EQ(w2.get(), GetSecondCaptureWindow());
@@ -147,7 +149,8 @@ TEST_F(CaptureControllerTest, TouchTargetResetOnCaptureChange) {
 
   // Build a window in the second RootWindow and give it capture. Both capture
   // clients should return the same capture window.
-  scoped_ptr<aura::Window> w2(CreateNormalWindow(2, second_root_.get(), NULL));
+  scoped_ptr<aura::Window> w2(
+      CreateNormalWindow(2, second_root_->window(), NULL));
   w2->SetCapture();
   EXPECT_EQ(w2.get(), GetCaptureWindow());
   EXPECT_EQ(w2.get(), GetSecondCaptureWindow());

@@ -42,7 +42,7 @@ class NativeWidgetAuraTest : public testing::Test {
     aura_test_helper_.reset(new aura::test::AuraTestHelper(&message_loop_));
     aura_test_helper_->SetUp();
     root_window()->SetBounds(gfx::Rect(0, 0, 640, 480));
-    root_window()->SetHostSize(gfx::Size(640, 480));
+    dispatcher()->SetHostSize(gfx::Size(640, 480));
   }
   virtual void TearDown() OVERRIDE {
     message_loop_.RunUntilIdle();
@@ -50,7 +50,8 @@ class NativeWidgetAuraTest : public testing::Test {
   }
 
  protected:
-  aura::RootWindow* root_window() { return aura_test_helper_->root_window(); }
+  aura::Window* root_window() { return aura_test_helper_->root_window(); }
+  aura::RootWindow* dispatcher() { return aura_test_helper_->dispatcher(); }
 
  private:
   base::MessageLoopForUI message_loop_;
@@ -257,7 +258,7 @@ TEST_F(NativeWidgetAuraTest, DontCaptureOnGesture) {
 
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(41, 51), 1,
                            base::TimeDelta());
-  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
   // Both views should get the press.
   EXPECT_TRUE(view->got_gesture_event());
   EXPECT_TRUE(child->got_gesture_event());
@@ -270,7 +271,7 @@ TEST_F(NativeWidgetAuraTest, DontCaptureOnGesture) {
   // the press.
   ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(250, 251), 1,
                              base::TimeDelta());
-  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
+  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
   EXPECT_TRUE(view->got_gesture_event());
   EXPECT_FALSE(child->got_gesture_event());
   view->clear_got_gesture_event();
@@ -293,7 +294,7 @@ TEST_F(NativeWidgetAuraTest, ReleaseCaptureOnTouchRelease) {
 
   ui::TouchEvent press(ui::ET_TOUCH_PRESSED, gfx::Point(41, 51), 1,
                            base::TimeDelta());
-  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
+  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&press);
   EXPECT_TRUE(view->got_gesture_event());
   view->clear_got_gesture_event();
   // Set the capture.
@@ -303,7 +304,7 @@ TEST_F(NativeWidgetAuraTest, ReleaseCaptureOnTouchRelease) {
   // Generate a release, this should trigger releasing capture.
   ui::TouchEvent release(ui::ET_TOUCH_RELEASED, gfx::Point(41, 51), 1,
                              base::TimeDelta());
-  root_window()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
+  dispatcher()->AsRootWindowHostDelegate()->OnHostTouchEvent(&release);
   EXPECT_TRUE(view->got_gesture_event());
   view->clear_got_gesture_event();
   EXPECT_FALSE(widget->HasCapture());

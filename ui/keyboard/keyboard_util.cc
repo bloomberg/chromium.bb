@@ -123,7 +123,7 @@ bool SendKeyEvent(const std::string type,
     // Handling of special printable characters (e.g. accented characters) for
     // which there is no key code.
     if (event_type == ui::ET_KEY_RELEASED) {
-      ui::InputMethod* input_method = dispatcher->GetProperty(
+      ui::InputMethod* input_method = dispatcher->window()->GetProperty(
           aura::client::kRootWindowInputMethodKey);
       if (!input_method)
         return false;

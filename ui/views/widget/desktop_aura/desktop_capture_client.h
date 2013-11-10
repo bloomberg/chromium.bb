@@ -22,7 +22,7 @@ namespace views {
 // DesktopNativeWidgetAura.
 class VIEWS_EXPORT DesktopCaptureClient : public aura::client::CaptureClient {
  public:
-  explicit DesktopCaptureClient(aura::RootWindow* root);
+  explicit DesktopCaptureClient(aura::Window* root);
   virtual ~DesktopCaptureClient();
 
   // Overridden from aura::client::CaptureClient:
@@ -33,7 +33,7 @@ class VIEWS_EXPORT DesktopCaptureClient : public aura::client::CaptureClient {
  private:
   typedef std::set<DesktopCaptureClient*> CaptureClients;
 
-  aura::RootWindow* root_;
+  aura::Window* root_;
   aura::Window* capture_window_;
 
   // Set of DesktopCaptureClients.

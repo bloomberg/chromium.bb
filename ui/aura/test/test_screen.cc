@@ -33,7 +33,7 @@ TestScreen::~TestScreen() {
 RootWindow* TestScreen::CreateRootWindowForPrimaryDisplay() {
   DCHECK(!root_window_);
   root_window_ = new RootWindow(RootWindow::CreateParams(display_.bounds()));
-  root_window_->AddObserver(this);
+  root_window_->window()->AddObserver(this);
   root_window_->Init();
   return root_window_;
 }
@@ -95,12 +95,12 @@ bool TestScreen::IsDIPEnabled() {
 
 void TestScreen::OnWindowBoundsChanged(
     Window* window, const gfx::Rect& old_bounds, const gfx::Rect& new_bounds) {
-  DCHECK_EQ(root_window_, window);
+  DCHECK_EQ(root_window_->window(), window);
   display_.SetSize(new_bounds.size());
 }
 
 void TestScreen::OnWindowDestroying(Window* window) {
-  if (root_window_ == window)
+  if (root_window_->window() == window)
     root_window_ = NULL;
 }
 
@@ -113,7 +113,7 @@ gfx::NativeWindow TestScreen::GetWindowUnderCursor() {
 }
 
 gfx::NativeWindow TestScreen::GetWindowAtScreenPoint(const gfx::Point& point) {
-  return root_window_->GetTopWindowContainingPoint(point);
+  return root_window_->window()->GetTopWindowContainingPoint(point);
 }
 
 int TestScreen::GetNumDisplays() const {

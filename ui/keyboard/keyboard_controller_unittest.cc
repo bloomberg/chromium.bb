@@ -29,7 +29,7 @@ namespace {
 // used to match the focus manger behaviour in ash and views.
 class TestFocusController : public ui::EventHandler {
  public:
-  explicit TestFocusController(aura::RootWindow* root)
+  explicit TestFocusController(aura::Window* root)
       : root_(root) {
     root_->AddPreTargetHandler(this);
   }
@@ -206,7 +206,7 @@ class KeyboardControllerTest : public testing::Test {
     aura_test_helper_->TearDown();
   }
 
-  aura::RootWindow* root_window() { return aura_test_helper_->root_window(); }
+  aura::Window* root_window() { return aura_test_helper_->root_window(); }
   KeyboardControllerProxy* proxy() { return proxy_; }
   KeyboardController* controller() { return controller_.get(); }
 

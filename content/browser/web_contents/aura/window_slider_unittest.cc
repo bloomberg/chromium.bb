@@ -15,14 +15,14 @@
 
 namespace content {
 
-void DispatchEventDuringScrollCallback(aura::RootWindow* root_window,
+void DispatchEventDuringScrollCallback(aura::WindowEventDispatcher* dispatcher,
                                        ui::Event* event,
                                        ui::EventType type,
                                        const gfx::Vector2dF& delta) {
   if (type != ui::ET_GESTURE_SCROLL_UPDATE)
     return;
   aura::RootWindowHostDelegate* delegate =
-      root_window->AsRootWindowHostDelegate();
+      dispatcher->AsRootWindowHostDelegate();
   if (event->IsMouseEvent())
     delegate->OnHostMouseEvent(static_cast<ui::MouseEvent*>(event));
   else if (event->IsKeyEvent())
@@ -269,7 +269,7 @@ TEST_F(WindowSliderTest, WindowSlideIsCancelledOnEvent) {
         base::TimeDelta::FromMilliseconds(10),
         1,
         base::Bind(&DispatchEventDuringScrollCallback,
-                   root_window(),
+                   root_window()->GetDispatcher(),
                    base::Owned(events[i])));
     EXPECT_TRUE(slider_delegate.created_back_layer());
     EXPECT_TRUE(slider_delegate.slide_aborted());

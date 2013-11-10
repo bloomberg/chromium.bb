@@ -725,7 +725,7 @@ void RootWindowHostX11::SetCursor(gfx::NativeCursor cursor) {
 
 bool RootWindowHostX11::QueryMouseLocation(gfx::Point* location_return) {
   client::CursorClient* cursor_client =
-      client::GetCursorClient(GetRootWindow());
+      client::GetCursorClient(GetRootWindow()->window());
   if (cursor_client && !cursor_client->IsMouseEventsEnabled()) {
     *location_return = gfx::Point(0, 0);
     return false;
@@ -867,7 +867,7 @@ void RootWindowHostX11::OnRootWindowInitialized(RootWindow* root_window) {
   //    RootWindow::Init is called.
   //    (set in DisplayManager::CreateRootWindowForDisplay)
   // Ready when NotifyRootWindowInitialized is called from RootWindow::Init.
-  if (!delegate_ || root_window != GetRootWindow())
+  if (!delegate_ || root_window != GetRootWindow()->window())
     return;
   UpdateIsInternalDisplay();
 
@@ -1038,9 +1038,9 @@ void RootWindowHostX11::SetCursorInternal(gfx::NativeCursor cursor) {
 
 void RootWindowHostX11::TranslateAndDispatchMouseEvent(
     ui::MouseEvent* event) {
-  RootWindow* root_window = GetRootWindow();
+  Window* root_window = GetRootWindow()->window();
   client::ScreenPositionClient* screen_position_client =
-      GetScreenPositionClient(root_window);
+      client::GetScreenPositionClient(root_window);
   gfx::Rect local(bounds_.size());
 
   if (screen_position_client && !local.Contains(event->location())) {
@@ -1051,7 +1051,7 @@ void RootWindowHostX11::TranslateAndDispatchMouseEvent(
     // host window, then convert it back to this host window's coordinate.
     screen_position_client->ConvertHostPointToScreen(root_window, &location);
     screen_position_client->ConvertPointFromScreen(root_window, &location);
-    root_window->ConvertPointToHost(&location);
+    root_window->GetDispatcher()->ConvertPointToHost(&location);
     event->set_location(location);
     event->set_root_location(location);
   }
@@ -1059,7 +1059,7 @@ void RootWindowHostX11::TranslateAndDispatchMouseEvent(
 }
 
 void RootWindowHostX11::UpdateIsInternalDisplay() {
-  RootWindow* root_window = GetRootWindow();
+  Window* root_window = GetRootWindow()->window();
   gfx::Screen* screen = gfx::Screen::GetScreenFor(root_window);
   gfx::Display display = screen->GetDisplayNearestWindow(root_window);
   is_internal_display_ = display.IsInternal();

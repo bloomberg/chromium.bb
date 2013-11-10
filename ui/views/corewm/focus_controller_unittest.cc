@@ -80,7 +80,7 @@ class FocusNotificationObserver : public aura::client::ActivationChangeObserver,
 
 class ScopedFocusNotificationObserver : public FocusNotificationObserver {
  public:
-  ScopedFocusNotificationObserver(aura::RootWindow* root_window)
+  ScopedFocusNotificationObserver(aura::Window* root_window)
       : root_window_(root_window) {
     aura::client::GetActivationClient(root_window_)->AddObserver(this);
     aura::client::GetFocusClient(root_window_)->AddObserver(this);
@@ -91,7 +91,7 @@ class ScopedFocusNotificationObserver : public FocusNotificationObserver {
   }
 
  private:
-  aura::RootWindow* root_window_;
+  aura::Window* root_window_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedFocusNotificationObserver);
 };

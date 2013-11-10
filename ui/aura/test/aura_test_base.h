@@ -40,7 +40,8 @@ class AuraTestBase : public testing::Test {
 
   void ParentWindow(Window* window);
 
-  RootWindow* root_window() { return helper_->root_window(); }
+  Window* root_window() { return helper_->root_window(); }
+  RootWindow* dispatcher() { return helper_->dispatcher(); }
   TestScreen* test_screen() { return helper_->test_screen(); }
 
  private:

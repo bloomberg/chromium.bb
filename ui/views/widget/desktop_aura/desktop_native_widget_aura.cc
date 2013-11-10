@@ -147,7 +147,7 @@ class DesktopNativeWidgetAuraWindowTreeClient :
     public aura::client::WindowTreeClient {
  public:
   explicit DesktopNativeWidgetAuraWindowTreeClient(
-      aura::RootWindow* root_window)
+      aura::Window* root_window)
       : root_window_(root_window) {
     aura::client::SetWindowTreeClient(root_window_, this);
   }
@@ -176,7 +176,7 @@ class DesktopNativeWidgetAuraWindowTreeClient :
   }
 
  private:
-  aura::RootWindow* root_window_;
+  aura::Window* root_window_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopNativeWidgetAuraWindowTreeClient);
 };
@@ -230,7 +230,7 @@ void DesktopNativeWidgetAura::OnHostClosed() {
   // are left referencing a deleted Window.
   {
     aura::Window* capture_window = capture_client_->GetCaptureWindow();
-    if (capture_window && root_window_->Contains(capture_window))
+    if (capture_window && root_window_->window()->Contains(capture_window))
       capture_window->ReleaseCapture();
   }
 
@@ -238,8 +238,8 @@ void DesktopNativeWidgetAura::OnHostClosed() {
   // references. Make sure we destroy ShadowController early on.
   shadow_controller_.reset();
   tooltip_manager_.reset();
-  root_window_->RemovePreTargetHandler(tooltip_controller_.get());
-  aura::client::SetTooltipClient(root_window_.get(), NULL);
+  root_window_->window()->RemovePreTargetHandler(tooltip_controller_.get());
+  aura::client::SetTooltipClient(root_window_->window(), NULL);
   tooltip_controller_.reset();
 
   root_window_event_filter_->RemoveHandler(input_method_event_filter_.get());
@@ -263,30 +263,30 @@ void DesktopNativeWidgetAura::OnDesktopRootWindowHostDestroyed(
     aura::RootWindow* root) {
   // |root_window_| is still valid, but DesktopRootWindowHost is nearly
   // destroyed. Do cleanup here of members DesktopRootWindowHost may also use.
-  aura::client::SetFocusClient(root, NULL);
-  aura::client::SetActivationClient(root, NULL);
+  aura::client::SetFocusClient(root->window(), NULL);
+  aura::client::SetActivationClient(root->window(), NULL);
   focus_client_.reset();
 
-  aura::client::SetDispatcherClient(root, NULL);
+  aura::client::SetDispatcherClient(root->window(), NULL);
   dispatcher_client_.reset();
 
-  aura::client::SetCursorClient(root, NULL);
+  aura::client::SetCursorClient(root->window(), NULL);
   cursor_client_.reset();
 
-  aura::client::SetScreenPositionClient(root, NULL);
+  aura::client::SetScreenPositionClient(root->window(), NULL);
   position_client_.reset();
 
-  aura::client::SetDragDropClient(root, NULL);
+  aura::client::SetDragDropClient(root->window(), NULL);
   drag_drop_client_.reset();
 
-  aura::client::SetEventClient(root, NULL);
+  aura::client::SetEventClient(root->window(), NULL);
   event_client_.reset();
 }
 
 void DesktopNativeWidgetAura::HandleActivationChanged(bool active) {
   native_widget_delegate_->OnNativeWidgetActivationChanged(active);
   aura::client::ActivationClient* activation_client =
-      aura::client::GetActivationClient(root_window_.get());
+      aura::client::GetActivationClient(root_window_->window());
   if (!activation_client)
     return;
   if (active) {
@@ -347,14 +347,14 @@ void DesktopNativeWidgetAura::InitNativeWidget(
 
   root_window_.reset(new aura::RootWindow(rw_params));
   root_window_->Init();
-  root_window_->AddChild(content_window_container_);
+  root_window_->window()->AddChild(content_window_container_);
 
   // The WindowsModalityController event filter should be at the head of the
   // pre target handlers list. This ensures that it handles input events first
   // when modal windows are at the top of the Zorder.
   if (widget_type_ == Widget::InitParams::TYPE_WINDOW)
     window_modality_controller_.reset(
-        new views::corewm::WindowModalityController(root_window_.get()));
+        new views::corewm::WindowModalityController(root_window_->window()));
 
   // |root_window_event_filter_| must be created before
   // OnRootWindowHostCreated() is invoked.
@@ -365,23 +365,23 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   // No event filter for aura::Env. Create CompoundEvnetFilter per RootWindow.
   root_window_event_filter_ = new corewm::CompoundEventFilter;
   // Pass ownership of the filter to the root_window.
-  root_window_->SetEventFilter(root_window_event_filter_);
+  root_window_->window()->SetEventFilter(root_window_event_filter_);
 
   desktop_root_window_host_->OnRootWindowCreated(root_window_.get(), params);
 
   UpdateWindowTransparency();
 
-  capture_client_.reset(new DesktopCaptureClient(root_window_.get()));
+  capture_client_.reset(new DesktopCaptureClient(root_window_->window()));
 
   corewm::FocusController* focus_controller =
       new corewm::FocusController(new DesktopFocusRules(content_window_));
   focus_client_.reset(focus_controller);
-  aura::client::SetFocusClient(root_window_.get(), focus_controller);
-  aura::client::SetActivationClient(root_window_.get(), focus_controller);
-  root_window_->AddPreTargetHandler(focus_controller);
+  aura::client::SetFocusClient(root_window_->window(), focus_controller);
+  aura::client::SetActivationClient(root_window_->window(), focus_controller);
+  root_window_->window()->AddPreTargetHandler(focus_controller);
 
   dispatcher_client_.reset(new DesktopDispatcherClient);
-  aura::client::SetDispatcherClient(root_window_.get(),
+  aura::client::SetDispatcherClient(root_window_->window(),
                                     dispatcher_client_.get());
 
   DesktopNativeCursorManager* desktop_native_cursor_manager =
@@ -392,17 +392,18 @@ void DesktopNativeWidgetAura::InitNativeWidget(
       new views::corewm::CursorManager(
           scoped_ptr<corewm::NativeCursorManager>(
               desktop_native_cursor_manager)));
-  aura::client::SetCursorClient(root_window_.get(), cursor_client_.get());
+  aura::client::SetCursorClient(root_window_->window(), cursor_client_.get());
 
   position_client_.reset(new DesktopScreenPositionClient());
-  aura::client::SetScreenPositionClient(root_window_.get(),
+  aura::client::SetScreenPositionClient(root_window_->window(),
                                         position_client_.get());
 
   InstallInputMethodEventFilter();
 
   drag_drop_client_ = desktop_root_window_host_->CreateDragDropClient(
       desktop_native_cursor_manager);
-  aura::client::SetDragDropClient(root_window_.get(), drag_drop_client_.get());
+  aura::client::SetDragDropClient(root_window_->window(),
+                                  drag_drop_client_.get());
 
   focus_client_->FocusWindow(content_window_);
 
@@ -411,7 +412,7 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   root_window_->AddRootWindowObserver(this);
 
   window_tree_client_.reset(
-      new DesktopNativeWidgetAuraWindowTreeClient(root_window_.get()));
+      new DesktopNativeWidgetAuraWindowTreeClient(root_window_->window()));
   drop_helper_.reset(new DropHelper(
       static_cast<internal::RootView*>(GetWidget()->GetRootView())));
   aura::client::SetDragDropDelegate(content_window_, this);
@@ -421,14 +422,16 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   tooltip_controller_.reset(
       new corewm::TooltipController(
           desktop_root_window_host_->CreateTooltip()));
-  aura::client::SetTooltipClient(root_window_.get(), tooltip_controller_.get());
+  aura::client::SetTooltipClient(root_window_->window(),
+                                 tooltip_controller_.get());
   root_window_->AddPreTargetHandler(tooltip_controller_.get());
 
   if (params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW) {
     visibility_controller_.reset(new views::corewm::VisibilityController);
     aura::client::SetVisibilityClient(root_window_.get(),
                                       visibility_controller_.get());
-    views::corewm::SetChildWindowVisibilityChangesAnimated(root_window_.get());
+    views::corewm::SetChildWindowVisibilityChangesAnimated(
+        root_window_->window());
     views::corewm::SetChildWindowVisibilityChangesAnimated(
         content_window_container_);
   }
@@ -440,7 +443,7 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   }
 
   event_client_.reset(new DesktopEventClient);
-  aura::client::SetEventClient(root_window_.get(), event_client_.get());
+  aura::client::SetEventClient(root_window_->window(), event_client_.get());
 
   aura::client::GetFocusClient(content_window_)->FocusWindow(content_window_);
 
@@ -448,7 +451,7 @@ void DesktopNativeWidgetAura::InitNativeWidget(
 
   shadow_controller_.reset(
       new corewm::ShadowController(
-          aura::client::GetActivationClient(root_window_.get())));
+          aura::client::GetActivationClient(root_window_->window())));
 
   window_reorderer_.reset(new WindowReorderer(content_window_,
       GetWidget()->GetRootView()));
@@ -604,7 +607,7 @@ void DesktopNativeWidgetAura::SetBounds(const gfx::Rect& bounds) {
   // We could probably get rid of this and similar logic from
   // the DesktopNativeWidgetAura::OnRootWindowHostResized function.
   float scale = 1;
-  aura::RootWindow* root = root_window_.get();
+  aura::Window* root = root_window_->window();
   if (root) {
     scale = gfx::Screen::GetScreenFor(root)->
         GetDisplayNearestWindow(root).device_scale_factor();
@@ -764,7 +767,7 @@ void DesktopNativeWidgetAura::SchedulePaintInRect(const gfx::Rect& rect) {
 void DesktopNativeWidgetAura::SetCursor(gfx::NativeCursor cursor) {
   cursor_ = cursor;
   aura::client::CursorClient* cursor_client =
-      aura::client::GetCursorClient(root_window_.get());
+      aura::client::GetCursorClient(root_window_->window());
   if (cursor_client)
     cursor_client->SetCursor(cursor);
 }
@@ -773,7 +776,7 @@ bool DesktopNativeWidgetAura::IsMouseEventsEnabled() const {
   if (!content_window_)
     return false;
   aura::client::CursorClient* cursor_client =
-      aura::client::GetCursorClient(root_window_.get());
+      aura::client::GetCursorClient(root_window_->window());
   return cursor_client ? cursor_client->IsMouseEventsEnabled() : true;
 }
 
@@ -1054,7 +1057,7 @@ void DesktopNativeWidgetAura::OnRootWindowHostResized(
   if (desktop_root_window_host_->IsAnimatingClosed())
     return;
 
-  gfx::Rect new_bounds = gfx::Rect(root->bounds().size());
+  gfx::Rect new_bounds = gfx::Rect(root->window()->bounds().size());
   content_window_->SetBounds(new_bounds);
   // Can be NULL at start.
   if (content_window_container_)
@@ -1084,7 +1087,7 @@ void DesktopNativeWidgetAura::InstallInputMethodEventFilter() {
   input_method_event_filter_.reset(
       new corewm::InputMethodEventFilter(root_window_->GetAcceleratedWidget()));
   input_method_event_filter_->SetInputMethodPropertyInRootWindow(
-      root_window_.get());
+      root_window_->window());
   root_window_event_filter_->AddHandler(input_method_event_filter_.get());
 }
 

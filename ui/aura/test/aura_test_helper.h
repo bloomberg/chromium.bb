@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
+#include "ui/aura/root_window.h"
 
 namespace base {
 class MessageLoopForUI;
@@ -22,7 +23,6 @@ class ScopedAnimationDurationScaleMode;
 }
 
 namespace aura {
-class RootWindow;
 class TestScreen;
 namespace client {
 class DefaultActivationClient;
@@ -50,7 +50,8 @@ class AuraTestHelper {
   // Flushes message loop.
   void RunAllPendingInMessageLoop();
 
-  RootWindow* root_window() { return root_window_.get(); }
+  Window* root_window() { return root_window_->window(); }
+  RootWindow* dispatcher() { return root_window_.get(); }
 
   TestScreen* test_screen() { return test_screen_.get(); }
 

@@ -140,8 +140,9 @@ void RootWindowHostWin::SetBounds(const gfx::Rect& bounds) {
   // Explicity call OnHostResized when the scale has changed because
   // the window size may not have changed.
   float current_scale = delegate_->GetDeviceScaleFactor();
-  float new_scale = gfx::Screen::GetScreenFor(delegate_->AsRootWindow())->
-      GetDisplayNearestWindow(delegate_->AsRootWindow()).device_scale_factor();
+  float new_scale = gfx::Screen::GetScreenFor(
+      delegate_->AsRootWindow()->window())->GetDisplayNearestWindow(
+          delegate_->AsRootWindow()->window()).device_scale_factor();
   if (current_scale != new_scale)
     delegate_->OnHostResized(bounds.size());
 }
@@ -186,7 +187,7 @@ void RootWindowHostWin::ReleaseCapture() {
 
 bool RootWindowHostWin::QueryMouseLocation(gfx::Point* location_return) {
   client::CursorClient* cursor_client =
-      client::GetCursorClient(GetRootWindow());
+      client::GetCursorClient(GetRootWindow()->window());
   if (cursor_client && !cursor_client->IsMouseEventsEnabled()) {
     *location_return = gfx::Point(0, 0);
     return false;
