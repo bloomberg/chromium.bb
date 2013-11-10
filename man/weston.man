@@ -148,9 +148,27 @@ Name of the Wayland display to connect to, see also
 .I WAYLAND_DISPLAY
 of the environment.
 .TP
+.B \-\-fullscreen
+Create a single fullscreen output
+.TP
+\fB\-\-output\-count\fR=\fIN\fR
+Create
+.I N
+Wayland windows to emulate the same number of outputs.
+.TP
 \fB\-\-width\fR=\fIW\fR, \fB\-\-height\fR=\fIH\fR
-Make the desktop size
+Make all outputs have a size of
 .IR W x H " pixels."
+.TP
+.B \-\-scale\fR=\fIN\fR
+Give all outputs a scale factor of
+.I N.
+.TP
+.B \-\-use\-pixman
+Use the pixman renderer.  By default, weston will try to use EGL and
+GLES2 for rendering and will fall back to the pixman-based renderer for
+software compositing if EGL cannot be used.  Passing this option will force
+weston to use the pixman renderer.
 .
 .SS X11 backend options:
 .TP
