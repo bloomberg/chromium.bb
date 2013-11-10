@@ -477,9 +477,6 @@ void AudioOutputController::WedgeCheck() {
   if (state_ == kPlaying) {
     UMA_HISTOGRAM_BOOLEAN("Media.AudioOutputControllerPlaybackStartupSuccess",
                           base::AtomicRefCountIsOne(&on_more_io_data_called_));
-
-    // TODO(dalecurtis): Temporary debugging measure, see crbug.com/316376
-    CHECK(base::AtomicRefCountIsOne(&on_more_io_data_called_));
   }
 }
 
