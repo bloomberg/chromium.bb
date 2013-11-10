@@ -25,7 +25,6 @@
 #include "chrome/browser/extensions/api/proxy/proxy_api.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/event_router_forwarder.h"
-#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/google/google_util.h"
 #include "chrome/browser/net/chrome_network_data_saving_metrics.h"
@@ -41,6 +40,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_request_info.h"
 #include "extensions/browser/info_map.h"
+#include "extensions/browser/process_manager.h"
 #include "extensions/common/constants.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
@@ -169,7 +169,7 @@ void ForceGoogleSafeSearchCallbackWrapper(
 
 enum RequestStatus { REQUEST_STARTED, REQUEST_DONE };
 
-// Notifies the ExtensionProcessManager that a request has started or stopped
+// Notifies the extensions::ProcessManager that a request has started or stopped
 // for a particular RenderView.
 void NotifyEPMRequestStatus(RequestStatus status,
                             void* profile_id,
@@ -180,10 +180,10 @@ void NotifyEPMRequestStatus(RequestStatus status,
   if (!g_browser_process->profile_manager()->IsValidProfile(profile))
     return;
 
-  ExtensionProcessManager* extension_process_manager =
+  extensions::ProcessManager* process_manager =
       extensions::ExtensionSystem::Get(profile)->process_manager();
   // This may be NULL in unit tests.
-  if (!extension_process_manager)
+  if (!process_manager)
     return;
 
   // Will be NULL if the request was not issued on behalf of a renderer (e.g. a
@@ -192,9 +192,9 @@ void NotifyEPMRequestStatus(RequestStatus status,
       RenderViewHost::FromID(process_id, render_view_id);
   if (render_view_host) {
     if (status == REQUEST_STARTED) {
-      extension_process_manager->OnNetworkRequestStarted(render_view_host);
+      process_manager->OnNetworkRequestStarted(render_view_host);
     } else if (status == REQUEST_DONE) {
-      extension_process_manager->OnNetworkRequestDone(render_view_host);
+      process_manager->OnNetworkRequestDone(render_view_host);
     } else {
       NOTREACHED();
     }

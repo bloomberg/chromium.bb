@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_PROCESS_MANAGER_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_PROCESS_MANAGER_H_
+#ifndef EXTENSIONS_BROWSER_PROCESS_MANAGER_H_
+#define EXTENSIONS_BROWSER_PROCESS_MANAGER_H_
 
 #include <map>
 #include <set>
@@ -28,20 +28,20 @@ class SiteInstance;
 };
 
 namespace extensions {
+
 class Extension;
 class ExtensionHost;
-}
 
 // Manages dynamic state of running Chromium extensions. There is one instance
 // of this class per Profile. OTR Profiles have a separate instance that keeps
 // track of split-mode extensions only.
-class ExtensionProcessManager : public content::NotificationObserver {
+class ProcessManager : public content::NotificationObserver {
  public:
   typedef std::set<extensions::ExtensionHost*> ExtensionHostSet;
   typedef ExtensionHostSet::const_iterator const_iterator;
 
-  static ExtensionProcessManager* Create(content::BrowserContext* context);
-  virtual ~ExtensionProcessManager();
+  static ProcessManager* Create(content::BrowserContext* context);
+  virtual ~ProcessManager();
 
   const ExtensionHostSet& background_hosts() const {
     return background_hosts_;
@@ -52,14 +52,12 @@ class ExtensionProcessManager : public content::NotificationObserver {
 
   // Creates a new UI-less extension instance.  Like CreateViewHost, but not
   // displayed anywhere.
-  virtual extensions::ExtensionHost* CreateBackgroundHost(
-      const extensions::Extension* extension,
-      const GURL& url);
+  virtual ExtensionHost* CreateBackgroundHost(const Extension* extension,
+                                              const GURL& url);
 
   // Gets the ExtensionHost for the background page for an extension, or NULL if
   // the extension isn't running or doesn't have a background page.
-  extensions::ExtensionHost* GetBackgroundHostForExtension(
-      const std::string& extension_id);
+  ExtensionHost* GetBackgroundHostForExtension(const std::string& extension_id);
 
   // Returns the SiteInstance that the given URL belongs to.
   // TODO(aa): This only returns correct results for extensions and packaged
@@ -76,7 +74,7 @@ class ExtensionProcessManager : public content::NotificationObserver {
 
   // Returns the extension associated with the specified RenderViewHost, or
   // NULL.
-  const extensions::Extension* GetExtensionForRenderViewHost(
+  const Extension* GetExtensionForRenderViewHost(
       content::RenderViewHost* render_view_host);
 
   // Returns true if the (lazy) background host for the given extension has
@@ -87,9 +85,9 @@ class ExtensionProcessManager : public content::NotificationObserver {
   // the count of how many outstanding "things" are keeping the page alive.
   // When this reaches 0, we will begin the process of shutting down the page.
   // "Things" include pending events, resource loads, and API calls.
-  int GetLazyKeepaliveCount(const extensions::Extension* extension);
-  int IncrementLazyKeepaliveCount(const extensions::Extension* extension);
-  int DecrementLazyKeepaliveCount(const extensions::Extension* extension);
+  int GetLazyKeepaliveCount(const Extension* extension);
+  int IncrementLazyKeepaliveCount(const Extension* extension);
+  int DecrementLazyKeepaliveCount(const Extension* extension);
 
   void IncrementLazyKeepaliveCountForView(
       content::RenderViewHost* render_view_host);
@@ -108,7 +106,7 @@ class ExtensionProcessManager : public content::NotificationObserver {
 
   // Prevents |extension|'s background page from being closed and sends the
   // onSuspendCanceled() event to it.
-  void CancelSuspend(const extensions::Extension* extension);
+  void CancelSuspend(const Extension* extension);
 
   // If |defer| is true background host creation is to be deferred until this is
   // called again with |defer| set to false, at which point all deferred
@@ -125,8 +123,8 @@ class ExtensionProcessManager : public content::NotificationObserver {
  protected:
   // If |context| is incognito pass the master context as |original_context|.
   // Otherwise pass the same context for both.
-  ExtensionProcessManager(content::BrowserContext* context,
-                          content::BrowserContext* original_context);
+  ProcessManager(content::BrowserContext* context,
+                 content::BrowserContext* original_context);
 
   // Called on browser shutdown to close our extension hosts.
   void CloseBackgroundHosts();
@@ -151,7 +149,7 @@ class ExtensionProcessManager : public content::NotificationObserver {
   scoped_refptr<content::SiteInstance> site_instance_;
 
  private:
-  friend class ExtensionProcessManagerTest;
+  friend class ProcessManagerTest;
 
   // Extra information we keep for each extension's background page.
   struct BackgroundPageData;
@@ -161,10 +159,10 @@ class ExtensionProcessManager : public content::NotificationObserver {
       extensions::ViewType> ExtensionRenderViews;
 
   // Called just after |host| is created so it can be registered in our lists.
-  void OnBackgroundHostCreated(extensions::ExtensionHost* host);
+  void OnBackgroundHostCreated(ExtensionHost* host);
 
   // Close the given |host| iff it's a background page.
-  void CloseBackgroundHost(extensions::ExtensionHost* host);
+  void CloseBackgroundHost(ExtensionHost* host);
 
   // These are called when the extension transitions between idle and active.
   // They control the process of closing the background page when idle.
@@ -213,9 +211,11 @@ class ExtensionProcessManager : public content::NotificationObserver {
 
   base::Callback<void(content::DevToolsAgentHost*, bool)> devtools_callback_;
 
-  base::WeakPtrFactory<ExtensionProcessManager> weak_ptr_factory_;
+  base::WeakPtrFactory<ProcessManager> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExtensionProcessManager);
+  DISALLOW_COPY_AND_ASSIGN(ProcessManager);
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_PROCESS_MANAGER_H_
+}  // namespace extensions
+
+#endif  // EXTENSIONS_BROWSER_PROCESS_MANAGER_H_

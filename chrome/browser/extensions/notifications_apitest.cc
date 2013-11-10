@@ -4,13 +4,13 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 
+#include "chrome/browser/extensions/lazy_background_page_test_util.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/extensions/extension_process_manager.h"
-#include "chrome/browser/extensions/lazy_background_page_test_util.h"
 #include "chrome/common/extensions/extension.h"
+#include "extensions/browser/process_manager.h"
 #include "extensions/common/switches.h"
 #include "ui/message_center/message_center_switches.h"
 #include "ui/message_center/message_center_util.h"
@@ -77,7 +77,7 @@ IN_PROC_BROWSER_TEST_F(NotificationIdleTest, MAYBE_NotificationsAllowUnload) {
   ASSERT_TRUE(extension) << message_;
 
   // Lazy Background Page has been shut down.
-  ExtensionProcessManager* pm =
+  extensions::ProcessManager* pm =
       extensions::ExtensionSystem::Get(profile())->process_manager();
   EXPECT_FALSE(pm->GetBackgroundHostForExtension(last_loaded_extension_id()));
 }

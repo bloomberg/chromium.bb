@@ -557,15 +557,17 @@ void ExtensionBrowserTest::NavigateInRenderer(content::WebContents* contents,
 }
 
 extensions::ExtensionHost* ExtensionBrowserTest::FindHostWithPath(
-    ExtensionProcessManager* manager,
+    extensions::ProcessManager* manager,
     const std::string& path,
     int expected_hosts) {
   extensions::ExtensionHost* host = NULL;
   int num_hosts = 0;
-  ExtensionProcessManager::ExtensionHostSet background_hosts =
+  extensions::ProcessManager::ExtensionHostSet background_hosts =
       manager->background_hosts();
-  for (ExtensionProcessManager::const_iterator iter = background_hosts.begin();
-       iter != background_hosts.end(); ++iter) {
+  for (extensions::ProcessManager::const_iterator iter =
+           background_hosts.begin();
+       iter != background_hosts.end();
+       ++iter) {
     if ((*iter)->GetURL().path() == path) {
       EXPECT_FALSE(host);
       host = *iter;

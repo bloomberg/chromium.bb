@@ -20,7 +20,6 @@
 #include "chrome/browser/extensions/extension_pref_value_map.h"
 #include "chrome/browser/extensions/extension_pref_value_map_factory.h"
 #include "chrome/browser/extensions/extension_prefs.h"
-#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/extension_util.h"
@@ -43,6 +42,7 @@
 #include "content/public/browser/url_data_source.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/browser/lazy_background_task_queue.h"
+#include "extensions/browser/process_manager.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/manifest.h"
 
@@ -307,7 +307,7 @@ ExtensionSystemImpl::ExtensionSystemImpl(Profile* profile)
   shared_ = ExtensionSystemSharedFactory::GetForProfile(profile);
 
   if (profile->IsOffTheRecord()) {
-    extension_process_manager_.reset(ExtensionProcessManager::Create(profile));
+    process_manager_.reset(ProcessManager::Create(profile));
   } else {
     shared_->InitPrefs();
   }
@@ -317,7 +317,7 @@ ExtensionSystemImpl::~ExtensionSystemImpl() {
 }
 
 void ExtensionSystemImpl::Shutdown() {
-  extension_process_manager_.reset();
+  process_manager_.reset();
 }
 
 void ExtensionSystemImpl::InitForRegularProfile(
@@ -327,13 +327,12 @@ void ExtensionSystemImpl::InitForRegularProfile(
   if (user_script_master() || extension_service())
     return;  // Already initialized.
 
-  // The InfoMap needs to be created before the
-  // ExtensionProcessManager.
+  // The InfoMap needs to be created before the ProcessManager.
   shared_->info_map();
 
-  extension_process_manager_.reset(ExtensionProcessManager::Create(profile_));
+  process_manager_.reset(ProcessManager::Create(profile_));
 
-  extension_process_manager_->DeferBackgroundHostCreation(
+  process_manager_->DeferBackgroundHostCreation(
       defer_background_creation);
 
   shared_->Init(extensions_enabled);
@@ -351,8 +350,8 @@ UserScriptMaster* ExtensionSystemImpl::user_script_master() {
   return shared_->user_script_master();
 }
 
-ExtensionProcessManager* ExtensionSystemImpl::process_manager() {
-  return extension_process_manager_.get();
+ProcessManager* ExtensionSystemImpl::process_manager() {
+  return process_manager_.get();
 }
 
 StateStore* ExtensionSystemImpl::state_store() {

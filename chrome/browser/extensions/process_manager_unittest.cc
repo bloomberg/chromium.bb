@@ -1,8 +1,8 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_process_manager.h"
+#include "extensions/browser/process_manager.h"
 
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
@@ -15,8 +15,15 @@
 
 using content::SiteInstance;
 
+namespace extensions {
+
+// TODO(jamescook): Convert this from TestingProfile to TestBrowserContext and
+// move to extensions/browser. This is dependent on ExtensionPrefs being
+// converted and ExtensionSystem being converted or eliminated.
+// http://crbug.com/315855
+
 // make the test a PlatformTest to setup autorelease pools properly on mac
-class ExtensionProcessManagerTest : public testing::Test {
+class ProcessManagerTest : public testing::Test {
  public:
   static void SetUpTestCase() {
     ExtensionErrorReporter::Init(false);  // no noisy errors
@@ -28,20 +35,20 @@ class ExtensionProcessManagerTest : public testing::Test {
 
   // Returns true if the notification |type| is registered for |manager| with
   // source |profile|. Pass NULL for |profile| for all sources.
-  static bool IsRegistered(ExtensionProcessManager* manager,
-                    int type,
-                    TestingProfile* profile) {
+  static bool IsRegistered(ProcessManager* manager,
+                           int type,
+                           TestingProfile* profile) {
     return manager->registrar_.IsRegistered(
         manager, type, content::Source<Profile>(profile));
   }
 };
 
 // Test that notification registration works properly.
-TEST_F(ExtensionProcessManagerTest, ExtensionNotificationRegistration) {
+TEST_F(ProcessManagerTest, ExtensionNotificationRegistration) {
   // Test for a normal profile.
   scoped_ptr<TestingProfile> original_profile(new TestingProfile);
-  scoped_ptr<ExtensionProcessManager> manager1(
-      ExtensionProcessManager::Create(original_profile.get()));
+  scoped_ptr<ProcessManager> manager1(
+      ProcessManager::Create(original_profile.get()));
 
   EXPECT_EQ(original_profile.get(), manager1->GetBrowserContext());
   EXPECT_EQ(0u, manager1->background_hosts().size());
@@ -65,8 +72,8 @@ TEST_F(ExtensionProcessManagerTest, ExtensionNotificationRegistration) {
   builder.SetIncognito();
   scoped_ptr<TestingProfile> incognito_profile = builder.Build();
   incognito_profile->SetOriginalProfile(original_profile.get());
-  scoped_ptr<ExtensionProcessManager> manager2(
-      ExtensionProcessManager::Create(incognito_profile.get()));
+  scoped_ptr<ProcessManager> manager2(
+      ProcessManager::Create(incognito_profile.get()));
 
   EXPECT_EQ(incognito_profile.get(), manager2->GetBrowserContext());
   EXPECT_EQ(0u, manager2->background_hosts().size());
@@ -102,17 +109,15 @@ TEST_F(ExtensionProcessManagerTest, ExtensionNotificationRegistration) {
 
 // Test that extensions get grouped in the right SiteInstance (and therefore
 // process) based on their URLs.
-TEST_F(ExtensionProcessManagerTest, ProcessGrouping) {
+TEST_F(ProcessManagerTest, ProcessGrouping) {
   // Extensions in different profiles should always be different SiteInstances.
   // Note: we don't initialize these, since we're not testing that
   // functionality.  This means we can get away with a NULL UserScriptMaster.
   TestingProfile profile1;
-  scoped_ptr<ExtensionProcessManager> manager1(
-      ExtensionProcessManager::Create(&profile1));
+  scoped_ptr<ProcessManager> manager1(ProcessManager::Create(&profile1));
 
   TestingProfile profile2;
-  scoped_ptr<ExtensionProcessManager> manager2(
-      ExtensionProcessManager::Create(&profile2));
+  scoped_ptr<ProcessManager> manager2(ProcessManager::Create(&profile2));
 
   // Extensions with common origins ("scheme://id/") should be grouped in the
   // same SiteInstance.
@@ -134,3 +139,5 @@ TEST_F(ExtensionProcessManagerTest, ProcessGrouping) {
       manager2->GetSiteInstanceForURL(ext1_url1);
   EXPECT_NE(site11, other_profile_site);
 }
+
+}  // namespace extensions

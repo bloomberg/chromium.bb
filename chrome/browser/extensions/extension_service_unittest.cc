@@ -577,10 +577,10 @@ void ExtensionServiceTestBase::InitializeEmptyExtensionService() {
   InitializeExtensionService(CreateDefaultInitParams());
 }
 
-void ExtensionServiceTestBase::InitializeExtensionProcessManager() {
+void ExtensionServiceTestBase::InitializeProcessManager() {
   static_cast<extensions::TestExtensionSystem*>(
       ExtensionSystem::Get(profile_.get()))->
-      CreateExtensionProcessManager();
+      CreateProcessManager();
 }
 
 void ExtensionServiceTestBase::InitializeExtensionServiceWithUpdater() {
@@ -3044,7 +3044,7 @@ TEST_F(ExtensionServiceTest, LoadExtensionsWithPlugins) {
 
   InitPluginService();
   InitializeEmptyExtensionService();
-  InitializeExtensionProcessManager();
+  InitializeProcessManager();
   service_->set_show_extensions_prompts(true);
 
   // Start by canceling any install prompts.
@@ -3999,7 +3999,7 @@ TEST_F(ExtensionServiceTest, ReloadExtensions) {
 // Tests reloading an extension.
 TEST_F(ExtensionServiceTest, ReloadExtension) {
   InitializeEmptyExtensionService();
-  InitializeExtensionProcessManager();
+  InitializeProcessManager();
 
   // Simple extension that should install without error.
   const char* extension_id = "behllobkkfkfnphdnhnkndlbkcpglgmj";
@@ -5453,7 +5453,7 @@ TEST_F(ExtensionServiceTest, GetSyncDataFilter) {
 
 TEST_F(ExtensionServiceTest, GetSyncExtensionDataUserSettings) {
   InitializeEmptyExtensionService();
-  InitializeExtensionProcessManager();
+  InitializeProcessManager();
   InitializeExtensionSyncService();
   InstallCRX(data_dir_.AppendASCII("good.crx"), INSTALL_NEW);
   const Extension* extension = service_->GetInstalledExtension(good_crx);
@@ -5753,7 +5753,7 @@ TEST_F(ExtensionServiceTest, ProcessSyncDataWrongType) {
 
 TEST_F(ExtensionServiceTest, ProcessSyncDataSettings) {
   InitializeEmptyExtensionService();
-  InitializeExtensionProcessManager();
+  InitializeProcessManager();
   InitializeExtensionSyncService();
   TestSyncProcessorStub processor;
   extension_sync_service_->MergeDataAndStartSyncing(

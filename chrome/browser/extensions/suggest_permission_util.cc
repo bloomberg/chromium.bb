@@ -4,12 +4,12 @@
 
 #include "chrome/browser/extensions/suggest_permission_util.h"
 
-#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_messages.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/console_message_level.h"
+#include "extensions/browser/process_manager.h"
 #include "extensions/common/permissions/permissions_info.h"
 
 using content::CONSOLE_MESSAGE_LEVEL_WARNING;
@@ -47,7 +47,7 @@ void SuggestAPIPermissionInDevToolsConsole(APIPermission::ID permission,
 void SuggestAPIPermissionInDevToolsConsole(APIPermission::ID permission,
                                            const Extension* extension,
                                            Profile* profile) {
-  ExtensionProcessManager* process_manager =
+  extensions::ProcessManager* process_manager =
       extensions::ExtensionSystem::Get(profile)->process_manager();
 
   std::set<content::RenderViewHost*> views =

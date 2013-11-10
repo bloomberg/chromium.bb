@@ -35,7 +35,6 @@
 #include "chrome/browser/extensions/api/web_request/web_request_api.h"
 #include "chrome/browser/extensions/browser_permissions_policy_delegate.h"
 #include "chrome/browser/extensions/extension_host.h"
-#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_web_ui.h"
@@ -127,6 +126,7 @@
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/url_utils.h"
 #include "extensions/browser/info_map.h"
+#include "extensions/browser/process_manager.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/manifest_handlers/background_info.h"
@@ -1221,9 +1221,9 @@ bool ChromeContentBrowserClient::ShouldTryToUseExistingProcessHost(
   std::vector<Profile*> profiles = g_browser_process->profile_manager()->
       GetLoadedProfiles();
   for (size_t i = 0; i < profiles.size(); ++i) {
-    ExtensionProcessManager* epm =
+    extensions::ProcessManager* epm =
         extensions::ExtensionSystem::Get(profiles[i])->process_manager();
-    for (ExtensionProcessManager::const_iterator iter =
+    for (extensions::ProcessManager::const_iterator iter =
              epm->background_hosts().begin();
          iter != epm->background_hosts().end(); ++iter) {
       const extensions::ExtensionHost* host = *iter;

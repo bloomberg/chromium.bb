@@ -84,7 +84,7 @@ base::Time InfoMap::GetInstallTime(const std::string& extension_id) const {
 }
 
 bool InfoMap::IsIncognitoEnabled(const std::string& extension_id) const {
-  // Keep in sync with duplicate in extension_process_manager.cc.
+  // Keep in sync with duplicate in extensions/browser/process_manager.cc.
   ExtraDataMap::const_iterator iter = extra_data_.find(extension_id);
   if (iter != extra_data_.end())
     return iter->second.incognito_enabled;

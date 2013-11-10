@@ -44,7 +44,6 @@
 #include "chrome/browser/extensions/extension_error_ui.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
-#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_sorting.h"
 #include "chrome/browser/extensions/extension_special_storage_policy.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
@@ -90,6 +89,7 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/url_data_source.h"
+#include "extensions/browser/process_manager.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/extensions_client.h"
@@ -691,7 +691,7 @@ void ExtensionService::ReloadExtension(const std::string extension_id) {
     // the inspector and hang onto a cookie for it, so that we can reattach
     // later.
     // TODO(yoz): this is not incognito-safe!
-    ExtensionProcessManager* manager = system_->process_manager();
+    extensions::ProcessManager* manager = system_->process_manager();
     extensions::ExtensionHost* host =
         manager->GetBackgroundHostForExtension(extension_id);
     if (host && DevToolsAgentHost::HasFor(host->render_view_host())) {
@@ -2669,7 +2669,7 @@ bool ExtensionService::ShouldEnableOnInstall(const Extension* extension) {
 }
 
 bool ExtensionService::IsExtensionIdle(const std::string& extension_id) const {
-  ExtensionProcessManager* process_manager = system_->process_manager();
+  extensions::ProcessManager* process_manager = system_->process_manager();
   DCHECK(process_manager);
   extensions::ExtensionHost* host =
       process_manager->GetBackgroundHostForExtension(extension_id);

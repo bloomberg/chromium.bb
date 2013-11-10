@@ -418,7 +418,7 @@ bool StartupBrowserCreatorImpl::Launch(Profile* profile,
 #if defined(ENABLE_EXTENSIONS)
   // If we deferred creation of background extension hosts, we want to create
   // them now that the session (if any) has been restored.
-  ExtensionProcessManager* process_manager =
+  extensions::ProcessManager* process_manager =
       extensions::ExtensionSystem::Get(profile)->process_manager();
   process_manager->DeferBackgroundHostCreation(false);
 #endif

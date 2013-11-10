@@ -130,13 +130,18 @@
       'type': 'static_library',
       'dependencies': [
         'extensions_common',
+        # TODO(jamescook|derat): Pull strings into extensions module.
         '../chrome/chrome_resources.gyp:chrome_strings',
+        '../chrome/common/extensions/api/api.gyp:api',
         '../content/content.gyp:content_browser',
         '../skia/skia.gyp:skia',
       ],
       'include_dirs': [
         '..',
         '<(INTERMEDIATE_DIR)',
+        # Needed to access generated API headers.
+        '<(SHARED_INTERMEDIATE_DIR)',
+        # Needed for grit.
         '<(SHARED_INTERMEDIATE_DIR)/chrome',
       ],
       'sources': [
@@ -157,6 +162,8 @@
         'browser/lazy_background_task_queue.h',
         'browser/pref_names.cc',
         'browser/pref_names.h',
+        'browser/process_manager.cc',
+        'browser/process_manager.h',
         'browser/quota_service.cc',
         'browser/quota_service.h',
         'browser/view_type_utils.cc',

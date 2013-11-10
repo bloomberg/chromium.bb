@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_process_manager.h"
+#include "extensions/browser/process_manager.h"
 
 #include "chrome/browser/extensions/browser_action_test_util.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
@@ -12,19 +12,17 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 
-using extensions::Extension;
-using extensions::ExtensionSystem;
+namespace extensions {
 
 // Exists as a browser test because ExtensionHosts are hard to create without
 // a real browser.
-typedef ExtensionBrowserTest ExtensionProcessManagerBrowserTest;
+typedef ExtensionBrowserTest ProcessManagerBrowserTest;
 
 // Test that basic extension loading creates the appropriate ExtensionHosts
 // and background pages.
-IN_PROC_BROWSER_TEST_F(ExtensionProcessManagerBrowserTest,
+IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
                        ExtensionHostCreation) {
-  ExtensionProcessManager* pm =
-      ExtensionSystem::Get(profile())->process_manager();
+  ProcessManager* pm = ExtensionSystem::Get(profile())->process_manager();
 
   // We start with no background hosts.
   ASSERT_EQ(0u, pm->background_hosts().size());
@@ -63,10 +61,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionProcessManagerBrowserTest,
 // background page and that clicking on the action creates the appropriate
 // ExtensionHost.
 // Disabled due to flake, see http://crbug.com/315242
-IN_PROC_BROWSER_TEST_F(ExtensionProcessManagerBrowserTest,
+IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
                        DISABLED_PopupHostCreation) {
-  ExtensionProcessManager* pm =
-      ExtensionSystem::Get(profile())->process_manager();
+  ProcessManager* pm = ExtensionSystem::Get(profile())->process_manager();
 
   // Load an extension with the ability to open a popup but no background
   // page.
@@ -104,3 +101,5 @@ IN_PROC_BROWSER_TEST_F(ExtensionProcessManagerBrowserTest,
   EXPECT_FALSE(pm->IsBackgroundHostClosing(popup->id()));
   EXPECT_EQ(0, pm->GetLazyKeepaliveCount(popup.get()));
 }
+
+}  // namespace extensions

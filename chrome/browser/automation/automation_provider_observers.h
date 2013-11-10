@@ -53,7 +53,6 @@
 class AutomationProvider;
 class BalloonCollection;
 class Browser;
-class ExtensionProcessManager;
 class ExtensionService;
 class Notification;
 class Profile;
@@ -78,6 +77,7 @@ class WebContents;
 
 namespace extensions {
 class Extension;
+class ProcessManager;
 }
 
 namespace history {
@@ -347,7 +347,7 @@ class ExtensionReadyNotificationObserver
     : public content::NotificationObserver {
  public:
   // Creates an observer that replies using the JSON automation interface.
-  ExtensionReadyNotificationObserver(ExtensionProcessManager* manager,
+  ExtensionReadyNotificationObserver(extensions::ProcessManager* manager,
                                      ExtensionService* service,
                                      AutomationProvider* automation,
                                      IPC::Message* reply_message);
@@ -362,7 +362,7 @@ class ExtensionReadyNotificationObserver
   void Init();
 
   content::NotificationRegistrar registrar_;
-  ExtensionProcessManager* manager_;
+  extensions::ProcessManager* manager_;
   ExtensionService* service_;
   base::WeakPtr<AutomationProvider> automation_;
   scoped_ptr<IPC::Message> reply_message_;
@@ -399,7 +399,7 @@ class ExtensionUnloadNotificationObserver
 // observer waits until all updated extensions have actually been loaded.
 class ExtensionsUpdatedObserver : public content::NotificationObserver {
  public:
-  ExtensionsUpdatedObserver(ExtensionProcessManager* manager,
+  ExtensionsUpdatedObserver(extensions::ProcessManager* manager,
                             AutomationProvider* automation,
                             IPC::Message* reply_message);
   virtual ~ExtensionsUpdatedObserver();
@@ -416,7 +416,7 @@ class ExtensionsUpdatedObserver : public content::NotificationObserver {
   void MaybeReply();
 
   content::NotificationRegistrar registrar_;
-  ExtensionProcessManager* manager_;
+  extensions::ProcessManager* manager_;
   base::WeakPtr<AutomationProvider> automation_;
   scoped_ptr<IPC::Message> reply_message_;
   bool updater_finished_;

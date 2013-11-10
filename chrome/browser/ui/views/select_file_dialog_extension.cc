@@ -163,7 +163,8 @@ void SelectFileDialogExtension::ExtensionTerminated(
   // reload the extension at all - when we try to open the extension the next
   // time, the extension subsystem would automatically reload it for us. At
   // this time though this is broken because of some faulty wiring in
-  // ExtensionProcessManager::CreateViewHost. Once that is fixed, remove this.
+  // extensions::ProcessManager::CreateViewHost. Once that is fixed, remove
+  // this.
   if (profile_) {
     base::MessageLoop::current()->PostTask(
         FROM_HERE,

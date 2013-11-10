@@ -18,7 +18,6 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/error_console/error_console.h"
 #include "chrome/browser/extensions/event_router.h"
-#include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
@@ -50,6 +49,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "extensions/browser/extension_error.h"
+#include "extensions/browser/process_manager.h"
 #include "extensions/browser/view_type_utils.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/feature_switch.h"
@@ -480,15 +480,13 @@ void ExtensionHost::CloseContents(WebContents* contents) {
 }
 
 void ExtensionHost::WillRunJavaScriptDialog() {
-  ExtensionProcessManager* pm =
-      ExtensionSystem::Get(profile_)->process_manager();
+  ProcessManager* pm = ExtensionSystem::Get(profile_)->process_manager();
   if (pm)
     pm->IncrementLazyKeepaliveCount(extension());
 }
 
 void ExtensionHost::DidCloseJavaScriptDialog() {
-  ExtensionProcessManager* pm =
-      ExtensionSystem::Get(profile_)->process_manager();
+  ProcessManager* pm = ExtensionSystem::Get(profile_)->process_manager();
   if (pm)
     pm->DecrementLazyKeepaliveCount(extension());
 }
@@ -573,15 +571,13 @@ void ExtensionHost::OnEventAck() {
 }
 
 void ExtensionHost::OnIncrementLazyKeepaliveCount() {
-  ExtensionProcessManager* pm =
-      ExtensionSystem::Get(profile_)->process_manager();
+  ProcessManager* pm = ExtensionSystem::Get(profile_)->process_manager();
   if (pm)
     pm->IncrementLazyKeepaliveCount(extension());
 }
 
 void ExtensionHost::OnDecrementLazyKeepaliveCount() {
-  ExtensionProcessManager* pm =
-      ExtensionSystem::Get(profile_)->process_manager();
+  ProcessManager* pm = ExtensionSystem::Get(profile_)->process_manager();
   if (pm)
     pm->DecrementLazyKeepaliveCount(extension());
 }
