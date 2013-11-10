@@ -522,11 +522,11 @@ static Element* contextElementForInsertion(const String& where, Element* element
 
 void HTMLElement::insertAdjacentHTML(const String& where, const String& markup, ExceptionState& es)
 {
-    Element* contextElement = contextElementForInsertion(where, this, es);
+    RefPtr<Element> contextElement = contextElementForInsertion(where, this, es);
     if (!contextElement)
         return;
 
-    RefPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(markup, contextElement, AllowScriptingContent, "insertAdjacentHTML", es);
+    RefPtr<DocumentFragment> fragment = createFragmentForInnerOuterHTML(markup, contextElement.get(), AllowScriptingContent, "insertAdjacentHTML", es);
     if (!fragment)
         return;
     insertAdjacent(where, fragment.get(), es);
