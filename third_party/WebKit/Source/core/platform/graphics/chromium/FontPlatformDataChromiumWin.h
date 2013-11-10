@@ -32,8 +32,6 @@
 #ifndef FontPlatformDataChromiumWin_h
 #define FontPlatformDataChromiumWin_h
 
-#include "config.h"
-
 #include "SkPaint.h"
 #include "SkTypeface.h"
 #include "SkTypeface_win.h"

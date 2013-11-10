@@ -28,13 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "config.h"
-#include "core/loader/appcache/ApplicationCacheHost.h"
-
 #include "WebApplicationCacheHostClient.h"
 #include "WebFrameClient.h"
 #include "WebFrameImpl.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/loader/appcache/ApplicationCacheHost.h"
 #include "public/platform/WebURL.h"
 
 namespace WebCore {

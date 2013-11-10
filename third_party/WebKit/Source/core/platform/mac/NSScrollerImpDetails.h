@@ -26,7 +26,6 @@
 #ifndef WebCore_NSScrollerImpDetails_h
 #define WebCore_NSScrollerImpDetails_h
 
-#include "config.h"
 #import <AvailabilityMacros.h>
 
 // Public APIs not available on versions of Mac on which we build
