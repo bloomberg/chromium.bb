@@ -1,0 +1,7 @@
+include_rules = [
+  "+v8",
+
+  # Use of base is allowed in tests. We can also use base in production code
+  # as long as we don't introduce a link-time dependency.
+  "+base",
+]
