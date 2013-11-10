@@ -9,11 +9,6 @@
 lib.rtdep('lib.f',
           'hterm');
 
-function updateStatus(message) {
-  document.getElementById('statusField').textContent = message;
-  term_.io.print(message + '\n');
-}
-
 // CSP means that we can't kick off the initialization from the html file,
 // so we do it like this instead.
 window.onload = function() {
@@ -30,8 +25,7 @@ window.onload = function() {
  * @param {Object} argv The argument object passed in from the Terminal.
  */
 function NaClTerm(argv) {
-  this.argv_ = argv;
-  this.io = null;
+  this.io = argv.io.push();
 };
 
 var embed;
@@ -59,9 +53,13 @@ NaClTerm.init = function() {
   terminal.setCursorPosition(0, 0);
   terminal.setCursorVisible(true);
   terminal.runCommandClass(NaClTerm, document.location.hash.substr(1));
-
   return true;
 };
+
+NaClTerm.prototype.updateStatus = function(message) {
+  document.getElementById('statusField').textContent = message;
+  this.io.print(message + '\n');
+}
 
 /**
  * Handle messages sent to us from NaCl.
@@ -69,12 +67,15 @@ NaClTerm.init = function() {
  * @private
  */
 NaClTerm.prototype.handleMessage_ = function(e) {
-  if (e.data.indexOf(NaClTerm.prefix) != 0) return;
+  if (e.data.indexOf(NaClTerm.prefix) != 0) {
+    console.log('Got unhandled message: ' + e.data)
+    return;
+  }
   var msg = e.data.substring(NaClTerm.prefix.length);
   if (!this.loaded) {
     this.bufferedOutput += msg;
   } else {
-    term_.io.print(msg);
+    this.io.print(msg);
   }
 }
 
@@ -82,45 +83,45 @@ NaClTerm.prototype.handleMessage_ = function(e) {
  * Handle load error event from NaCl.
  */
 NaClTerm.prototype.handleLoadAbort_ = function(e) {
-  updateStatus('Load aborted.');
+  this.updateStatus('Load aborted.');
 }
 
 /**
  * Handle load abort event from NaCl.
  */
 NaClTerm.prototype.handleLoadError_ = function(e) {
-  term_.io.print(embed.lastError + '\n');
+  this.updateStatus(embed.lastError);
 }
 
 NaClTerm.prototype.doneLoadingUrl = function() {
-  var width = term_.io.terminal_.screenSize.width;
-  term_.io.print('\r' + Array(width+1).join(' '));
+  var width = this.io.terminal_.screenSize.width;
+  this.io.print('\r' + Array(width+1).join(' '));
   var message = '\rLoaded ' + this.lastUrl;
   if (this.lastTotal) {
     var kbsize = Math.round(this.lastTotal/1024)
     message += ' ['+ kbsize + ' KiB]';
   }
-  term_.io.print(message.slice(0, width) + '\n')
+  this.io.print(message.slice(0, width) + '\n')
 }
 
 /**
  * Handle load end event from NaCl.
  */
 NaClTerm.prototype.handleLoad_ = function(e) {
-  if (this.lastUrl) {
+  if (this.lastUrl)
     this.doneLoadingUrl();
-  } else {
-    term_.io.print('Loaded.\n');
-  }
+  else
+    this.io.print('Loaded.\n');
+
   document.getElementById('loading-cover').style.display = 'none';
 
-  term_.io.print(ansiReset);
+  this.io.print(ansiReset);
 
   // Now that have completed loading and displaying
   // loading messages we output any messages from the
   // NaCl module that were buffered up unto this point
   this.loaded = true;
-  term_.io.print(this.bufferedOutput);
+  this.io.print(this.bufferedOutput);
   this.bufferedOutput = ''
 }
 
@@ -129,6 +130,7 @@ NaClTerm.prototype.handleLoad_ = function(e) {
  */
 NaClTerm.prototype.handleProgress_ = function(e) {
   var url = e.url.substring(e.url.lastIndexOf('/') + 1);
+
   if (this.lastUrl && this.lastUrl != url)
     this.doneLoadingUrl()
 
@@ -138,7 +140,7 @@ NaClTerm.prototype.handleProgress_ = function(e) {
   var percent = 10;
   var message = 'Loading ' + url;
 
-  if (event.lengthComputable && event.total > 0) {
+  if (e.lengthComputable && e.total > 0) {
     percent = Math.round(e.loaded * 100 / e.total);
     var kbloaded = Math.round(e.loaded / 1024);
     var kbtotal = Math.round(e.total / 1024);
@@ -147,8 +149,8 @@ NaClTerm.prototype.handleProgress_ = function(e) {
 
   document.getElementById('progress-bar').style.width = percent + "%";
 
-  var width = term_.io.terminal_.screenSize.width;
-  term_.io.print('\r' + message.slice(-width));
+  var width = this.io.terminal_.screenSize.width;
+  this.io.print('\r' + message.slice(-width));
   this.lastUrl = url;
   this.lastTotal = e.total;
 }
@@ -157,42 +159,26 @@ NaClTerm.prototype.handleProgress_ = function(e) {
  * Handle crash event from NaCl.
  */
 NaClTerm.prototype.handleCrash_ = function(e) {
- term_.io.print(ansiCyan)
+ this.io.print(ansiCyan)
  if (embed.exitStatus == -1) {
-   updateStatus('Program crashed (exit status -1)')
+   this.updateStatus('Program crashed (exit status -1)')
  } else {
-   updateStatus('Program exited (status=' + embed.exitStatus + ')');
+   this.updateStatus('Program exited (status=' + embed.exitStatus + ')');
  }
 }
 
-
-NaClTerm.prototype.onTerminalResize_ = function() {
-  var width = term_.io.terminal_.screenSize.width;
-  var height = term_.io.terminal_.screenSize.height;
-  embed.postMessage({'tty_resize': [ width, height ]});
-}
-
-NaClTerm.prototype.onVTKeystroke_ = function(str) {
-  var message = {};
-  message[NaClTerm.prefix] = str;
-  embed.postMessage(message);
-}
-
-/*
- * This is invoked by the terminal as a result of terminal.runCommandClass().
+/**
+ * Create the NaCl embed element.
+ * We delay this until the first terminal resize event so that we start
+ * with the correct size.
  */
-NaClTerm.prototype.run = function() {
-  this.io = this.argv_.io.push();
-  this.bufferedOutput = '';
-  this.loaded = false;
-  this.io.print(ansiCyan);
-
+NaClTerm.prototype.createEmbed = function(width, height) {
   var mimetype = 'application/x-pnacl';
   if (navigator.mimeTypes[mimetype] === undefined) {
     if (mimetype.indexOf('pnacl') != -1)
-      updateStatus('Browser does not support PNaCl or PNaCl is disabled');
+      this.updateStatus('Browser does not support PNaCl or PNaCl is disabled');
     else
-      updateStatus('Browser does not support NaCl or NaCl is disabled');
+      this.updateStatus('Browser does not support NaCl or NaCl is disabled');
     return;
   }
 
@@ -215,28 +201,63 @@ NaClTerm.prototype.run = function() {
     embed.appendChild(param);
   }
 
-  addParam('ps_tty_prefix', NaClTerm.prefix);
-  addParam('ps_tty_resize', 'tty_resize');
-  addParam('ps_stdin', '/dev/tty');
-  addParam('ps_stdout', '/dev/tty');
-  addParam('ps_stderr', '/dev/tty');
-  addParam('ps_verbosity', '2');
+  addParam('PS_TTY_PREFIX', NaClTerm.prefix);
+  addParam('PS_TTY_RESIZE', 'tty_resize');
+  addParam('PS_TTY_COLS', width);
+  addParam('PS_TTY_ROWS', height);
+  addParam('PS_STDIN', '/dev/tty');
+  addParam('PS_STDOUT', '/dev/tty');
+  addParam('PS_STDERR', '/dev/tty');
+  addParam('PS_VERBOSITY', '2');
+  addParam('PS_EXIT_MESSAGE', 'exited');
   addParam('TERM', 'xterm-256color');
+  addParam('ARG2', 'all.lua');
+  addParam('ARG1', '-e_U=true');
+  addParam('LUA_DATA_URL', 'http://commondatastorage.googleapis.com/gonacl/demos/publish/test/lua');
 
+  // Add ARGV arguments from query parameters.
   var args = lib.f.parseQuery(document.location.search);
-  var argn = 1;
-  while (true) {
-    var argname = 'arg' + argn;
-    var arg = args[argname];
-    if (typeof(arg) === 'undefined')
-      break;
-    addParam(argname, arg);
-    argn = argn + 1;
+  for (var argname in args) {
+    addParam(argname, args[argname]);
   }
 
-  updateStatus('Loading...');
+  // If the application has set NaClTerm.argv and there were
+  // no arguments set in the query parameters then add the default
+  // NaClTerm.argv arguments.
+  if (typeof(args['arg1']) === 'undefined' && NaClTerm.argv) {
+    var argn = 1
+    NaClTerm.argv.forEach(function(arg) {
+      var argname = 'arg' + argn;
+      addParam(argname, arg);
+      argn = argn + 1
+    })
+  }
+
+  this.updateStatus('Loading...');
   this.io.print('Loading NaCl module.\n')
   document.getElementById("listener").appendChild(embed);
+}
+
+NaClTerm.prototype.onTerminalResize_ = function(width, height) {
+  if (typeof(embed) === 'undefined')
+    this.createEmbed(width, height);
+  else
+    embed.postMessage({'tty_resize': [ width, height ]});
+}
+
+NaClTerm.prototype.onVTKeystroke_ = function(str) {
+  var message = {};
+  message[NaClTerm.prefix] = str;
+  embed.postMessage(message);
+}
+
+/*
+ * This is invoked by the terminal as a result of terminal.runCommandClass().
+ */
+NaClTerm.prototype.run = function() {
+  this.bufferedOutput = '';
+  this.loaded = false;
+  this.io.print(ansiCyan);
 
   this.io.onVTKeystroke = this.onVTKeystroke_.bind(this);
   this.io.onTerminalResize = this.onTerminalResize_.bind(this);
