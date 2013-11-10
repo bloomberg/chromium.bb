@@ -27,10 +27,10 @@ BufferedWriteStreamSocket::BufferedWriteStreamSocket(
     : wrapped_socket_(socket_to_wrap.Pass()),
       io_buffer_(new GrowableIOBuffer()),
       backup_buffer_(new GrowableIOBuffer()),
-      weak_factory_(this),
       callback_pending_(false),
       wrapped_write_in_progress_(false),
-      error_(0) {
+      error_(0),
+      weak_factory_(this) {
 }
 
 BufferedWriteStreamSocket::~BufferedWriteStreamSocket() {

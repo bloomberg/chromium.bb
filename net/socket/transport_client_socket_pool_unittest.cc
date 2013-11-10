@@ -152,6 +152,8 @@ class MockClientSocket : public StreamSocket {
   bool connected_;
   const AddressList addrlist_;
   BoundNetLog net_log_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockClientSocket);
 };
 
 class MockFailingClientSocket : public StreamSocket {
@@ -214,6 +216,8 @@ class MockFailingClientSocket : public StreamSocket {
  private:
   const AddressList addrlist_;
   BoundNetLog net_log_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockFailingClientSocket);
 };
 
 class MockPendingClientSocket : public StreamSocket {
@@ -228,13 +232,13 @@ class MockPendingClientSocket : public StreamSocket {
       bool should_stall,
       base::TimeDelta delay,
       net::NetLog* net_log)
-      : weak_factory_(this),
-        should_connect_(should_connect),
+      : should_connect_(should_connect),
         should_stall_(should_stall),
         delay_(delay),
         is_connected_(false),
         addrlist_(addrlist),
-        net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_SOCKET)) {
+        net_log_(BoundNetLog::Make(net_log, NetLog::SOURCE_SOCKET)),
+        weak_factory_(this) {
   }
 
   // StreamSocket implementation.
@@ -312,13 +316,16 @@ class MockPendingClientSocket : public StreamSocket {
     }
   }
 
-  base::WeakPtrFactory<MockPendingClientSocket> weak_factory_;
   bool should_connect_;
   bool should_stall_;
   base::TimeDelta delay_;
   bool is_connected_;
   const AddressList addrlist_;
   BoundNetLog net_log_;
+
+  base::WeakPtrFactory<MockPendingClientSocket> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockPendingClientSocket);
 };
 
 class MockClientSocketFactory : public ClientSocketFactory {
@@ -430,6 +437,8 @@ class MockClientSocketFactory : public ClientSocketFactory {
   int client_socket_index_;
   int client_socket_index_max_;
   base::TimeDelta delay_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockClientSocketFactory);
 };
 
 class TransportClientSocketPoolTest : public testing::Test {
@@ -488,6 +497,8 @@ class TransportClientSocketPoolTest : public testing::Test {
   MockClientSocketFactory client_socket_factory_;
   TransportClientSocketPool pool_;
   ClientSocketPoolTest test_base_;
+
+  DISALLOW_COPY_AND_ASSIGN(TransportClientSocketPoolTest);
 };
 
 TEST(TransportConnectJobTest, MakeAddrListStartWithIPv4) {

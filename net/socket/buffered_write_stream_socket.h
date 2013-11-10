@@ -69,10 +69,11 @@ class NET_EXPORT_PRIVATE BufferedWriteStreamSocket : public StreamSocket {
   scoped_ptr<StreamSocket> wrapped_socket_;
   scoped_refptr<GrowableIOBuffer> io_buffer_;
   scoped_refptr<GrowableIOBuffer> backup_buffer_;
-  base::WeakPtrFactory<BufferedWriteStreamSocket> weak_factory_;
   bool callback_pending_;
   bool wrapped_write_in_progress_;
   int error_;
+
+  base::WeakPtrFactory<BufferedWriteStreamSocket> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BufferedWriteStreamSocket);
 };

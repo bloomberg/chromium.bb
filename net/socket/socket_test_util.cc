@@ -698,9 +698,9 @@ void MockClientSocketFactory::ClearSSLSessionCache() {
 const char MockClientSocket::kTlsUnique[] = "MOCK_TLSUNIQ";
 
 MockClientSocket::MockClientSocket(const BoundNetLog& net_log)
-    : weak_factory_(this),
-      connected_(false),
-      net_log_(net_log) {
+    : connected_(false),
+      net_log_(net_log),
+      weak_factory_(this) {
   IPAddressNumber ip;
   CHECK(ParseIPLiteralToNumber("192.0.2.33", &ip));
   peer_addr_ = IPEndPoint(ip, 0);

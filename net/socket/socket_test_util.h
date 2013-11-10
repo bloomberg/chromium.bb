@@ -342,7 +342,10 @@ class DelayedSocketData : public StaticSocketDataProvider {
  private:
   int write_delay_;
   bool read_in_progress_;
+
   base::WeakPtrFactory<DelayedSocketData> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(DelayedSocketData);
 };
 
 // A DataProvider where the reads are ordered.
@@ -390,7 +393,10 @@ class OrderedSocketData : public StaticSocketDataProvider {
   int sequence_number_;
   int loop_stop_stage_;
   bool blocked_;
+
   base::WeakPtrFactory<OrderedSocketData> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(OrderedSocketData);
 };
 
 class DeterministicMockTCPClientSocket;
@@ -660,8 +666,6 @@ class MockClientSocket : public SSLClientSocket {
   void RunCallbackAsync(const CompletionCallback& callback, int result);
   void RunCallback(const CompletionCallback& callback, int result);
 
-  base::WeakPtrFactory<MockClientSocket> weak_factory_;
-
   // True if Connect completed successfully and Disconnect hasn't been called.
   bool connected_;
 
@@ -669,6 +673,10 @@ class MockClientSocket : public SSLClientSocket {
   IPEndPoint peer_addr_;
 
   BoundNetLog net_log_;
+
+  base::WeakPtrFactory<MockClientSocket> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockClientSocket);
 };
 
 class MockTCPClientSocket : public MockClientSocket, public AsyncSocket {
@@ -720,6 +728,8 @@ class MockTCPClientSocket : public MockClientSocket, public AsyncSocket {
   int pending_buf_len_;
   CompletionCallback pending_callback_;
   bool was_used_to_convey_data_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockTCPClientSocket);
 };
 
 // DeterministicSocketHelper is a helper class that can be used
@@ -812,6 +822,8 @@ class DeterministicMockUDPClientSocket
   bool connected_;
   IPEndPoint peer_address_;
   DeterministicSocketHelper helper_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeterministicMockUDPClientSocket);
 };
 
 // Mock TCP socket to be used in conjunction with DeterministicSocketData.
@@ -853,6 +865,8 @@ class DeterministicMockTCPClientSocket
 
  private:
   DeterministicSocketHelper helper_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeterministicMockTCPClientSocket);
 };
 
 class MockSSLClientSocket : public MockClientSocket, public AsyncSocket {
@@ -909,6 +923,8 @@ class MockSSLClientSocket : public MockClientSocket, public AsyncSocket {
   bool new_npn_value_;
   bool is_protocol_negotiated_set_;
   NextProto protocol_negotiated_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockSSLClientSocket);
 };
 
 class MockUDPClientSocket
@@ -1045,6 +1061,8 @@ class ClientSocketPoolTest {
   ScopedVector<TestSocketRequest> requests_;
   std::vector<TestSocketRequest*> request_order_;
   size_t completion_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(ClientSocketPoolTest);
 };
 
 class MockTransportSocketParams
@@ -1052,6 +1070,8 @@ class MockTransportSocketParams
  private:
   friend class base::RefCounted<MockTransportSocketParams>;
   ~MockTransportSocketParams() {}
+
+  DISALLOW_COPY_AND_ASSIGN(MockTransportSocketParams);
 };
 
 class MockTransportClientSocketPool : public TransportClientSocketPool {
@@ -1163,6 +1183,8 @@ class DeterministicMockClientSocketFactory : public ClientSocketFactory {
   std::vector<DeterministicMockTCPClientSocket*> tcp_client_sockets_;
   std::vector<DeterministicMockUDPClientSocket*> udp_client_sockets_;
   std::vector<MockSSLClientSocket*> ssl_client_sockets_;
+
+  DISALLOW_COPY_AND_ASSIGN(DeterministicMockClientSocketFactory);
 };
 
 class MockSOCKSClientSocketPool : public SOCKSClientSocketPool {

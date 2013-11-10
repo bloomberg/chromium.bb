@@ -265,9 +265,10 @@ class TestConnectJob : public ConnectJob {
                    BoundNetLog::Make(net_log, NetLog::SOURCE_CONNECT_JOB)),
         job_type_(job_type),
         client_socket_factory_(client_socket_factory),
-        weak_factory_(this),
         load_state_(LOAD_STATE_IDLE),
-        store_additional_error_state_(false) {}
+        store_additional_error_state_(false),
+        weak_factory_(this) {
+  }
 
   void Signal() {
     DoConnect(waiting_success_, true /* async */, false /* recoverable */);
@@ -400,9 +401,10 @@ class TestConnectJob : public ConnectJob {
   bool waiting_success_;
   const JobType job_type_;
   MockClientSocketFactory* const client_socket_factory_;
-  base::WeakPtrFactory<TestConnectJob> weak_factory_;
   LoadState load_state_;
   bool store_additional_error_state_;
+
+  base::WeakPtrFactory<TestConnectJob> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TestConnectJob);
 };
