@@ -27,7 +27,6 @@
 #include "core/html/HTMLDialogElement.h"
 
 #include "bindings/v8/ExceptionState.h"
-#include "core/accessibility/AXObjectCache.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/html/HTMLFormControlElement.h"
@@ -56,12 +55,6 @@ static void runAutofocus(HTMLDialogElement* dialog)
         else
             next = NodeTraversal::next(node, dialog);
     }
-}
-
-static void inertSubtreesChanged(Document& document)
-{
-    if (AXObjectCache* cache = document.existingAXObjectCache())
-        cache->handleInertSubtreesChanged();
 }
 
 HTMLDialogElement::HTMLDialogElement(const QualifiedName& tagName, Document& document)
@@ -93,11 +86,7 @@ void HTMLDialogElement::closeDialog(const String& returnValue)
     if (!fastHasAttribute(openAttr))
         return;
     setBooleanAttribute(openAttr, false);
-
-    HTMLDialogElement* activeModalDialog = document().activeModalDialog();
     document().removeFromTopLayer(this);
-    if (activeModalDialog == this)
-        inertSubtreesChanged(document());
 
     if (!returnValue.isNull())
         m_returnValue = returnValue;
@@ -128,7 +117,6 @@ void HTMLDialogElement::showModal(ExceptionState& es)
         return;
     }
     document().addToTopLayer(this);
-    inertSubtreesChanged(document());
     setBooleanAttribute(openAttr, true);
 
     runAutofocus(this);

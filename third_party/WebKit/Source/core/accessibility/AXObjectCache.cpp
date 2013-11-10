@@ -650,22 +650,6 @@ void AXObjectCache::updateCacheAfterNodeIsAttached(Node* node)
     get(node);
 }
 
-static void inertSubtreesChanged(AXObject* object)
-{
-    if (object->notifyIfIgnoredValueChanged())
-        return;
-    AXObject::AccessibilityChildrenVector children = object->children();
-    size_t count = children.size();
-    for (size_t i = 0; i < count; ++i)
-        inertSubtreesChanged(children[i].get());
-}
-
-void AXObjectCache::handleInertSubtreesChanged()
-{
-    m_computedObjectAttributeCache->clear();
-    inertSubtreesChanged(rootObject());
-}
-
 void AXObjectCache::childrenChanged(Node* node)
 {
     childrenChanged(get(node));
