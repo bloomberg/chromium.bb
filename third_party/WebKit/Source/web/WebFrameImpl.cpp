@@ -184,7 +184,6 @@
 #include "platform/scroll/ScrollTypes.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebFileSystem.h"
-#include "public/platform/WebFileSystemType.h"
 #include "public/platform/WebFloatPoint.h"
 #include "public/platform/WebFloatRect.h"
 #include "public/platform/WebPoint.h"

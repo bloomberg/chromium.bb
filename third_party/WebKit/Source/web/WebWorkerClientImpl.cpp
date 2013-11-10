@@ -38,16 +38,13 @@
 #include "WebViewImpl.h"
 #include "WorkerPermissionClient.h"
 #include "core/dom/Document.h"
-#include "core/dom/ExecutionContext.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/workers/Worker.h"
 #include "core/workers/WorkerClients.h"
-#include "core/workers/WorkerMessagingProxy.h"
 #include "public/platform/WebString.h"
 #include "public/web/WebFrameClient.h"
 #include "public/web/WebSecurityOrigin.h"
 #include "public/web/WebWorkerPermissionClientProxy.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/Threading.h"
 
 using namespace WebCore;

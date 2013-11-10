@@ -26,7 +26,6 @@
 #include "config.h"
 #include "SpeechRecognitionClientProxy.h"
 
-#include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "WebSecurityOrigin.h"
 #include "WebSpeechGrammar.h"

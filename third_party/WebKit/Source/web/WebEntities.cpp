@@ -33,9 +33,7 @@
 
 #include "public/platform/WebString.h"
 #include <string.h>
-#include "wtf/HashMap.h"
 #include "wtf/text/StringBuilder.h"
-#include "wtf/text/WTFString.h"
 
 namespace blink {
 

@@ -31,10 +31,8 @@
 #include "config.h"
 #include "WebPagePopupImpl.h"
 
-#include "PageWidgetDelegate.h"
 #include "WebCursorInfo.h"
 #include "WebInputEventConversion.h"
-#include "WebPagePopup.h"
 #include "WebSettingsImpl.h"
 #include "WebViewClient.h"
 #include "WebViewImpl.h"

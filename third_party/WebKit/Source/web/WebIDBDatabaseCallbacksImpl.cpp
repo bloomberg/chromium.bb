@@ -28,7 +28,6 @@
 
 #include "core/dom/DOMError.h"
 #include "modules/indexeddb/IDBDatabaseCallbacks.h"
-#include "public/platform/WebString.h"
 
 using namespace WebCore;
 

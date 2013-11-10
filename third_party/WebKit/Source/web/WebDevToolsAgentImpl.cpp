@@ -71,7 +71,6 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/MathExtras.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/text/WTFString.h"
 
 using namespace WebCore;

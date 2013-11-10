@@ -37,7 +37,6 @@
 #include "core/dom/ExecutionContext.h"
 #include "modules/notifications/Notification.h"
 #include "weborigin/SecurityOrigin.h"
-#include "wtf/PassRefPtr.h"
 
 using namespace WebCore;
 

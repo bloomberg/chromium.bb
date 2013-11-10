@@ -31,7 +31,6 @@
 #include "config.h"
 #include "WebInputEventConversion.h"
 
-#include "WebInputEvent.h"
 #include "core/dom/Touch.h"
 #include "core/dom/TouchList.h"
 #include "core/events/GestureEvent.h"
@@ -43,9 +42,6 @@
 #include "core/platform/ScrollView.h"
 #include "core/platform/chromium/KeyboardCodes.h"
 #include "core/rendering/RenderObject.h"
-#include "platform/PlatformKeyboardEvent.h"
-#include "platform/PlatformMouseEvent.h"
-#include "platform/PlatformWheelEvent.h"
 #include "platform/Widget.h"
 
 using namespace WebCore;

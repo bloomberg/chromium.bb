@@ -32,7 +32,6 @@
 #include "URLTestHelpers.h"
 
 #include "public/platform/Platform.h"
-#include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/WebUnitTestSupport.h"

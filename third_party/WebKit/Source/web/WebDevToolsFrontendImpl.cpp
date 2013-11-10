@@ -57,8 +57,6 @@
 #include "core/platform/Pasteboard.h"
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/OwnPtr.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
 
 using namespace WebCore;
 

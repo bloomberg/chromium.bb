@@ -42,7 +42,6 @@
 #include "core/rendering/style/RenderStyle.h"
 #include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/FloatQuad.h"
-#include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntPoint.h"
 
 using namespace WebCore;

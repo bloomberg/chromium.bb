@@ -27,7 +27,6 @@
 #include "GeolocationClientProxy.h"
 
 #include "WebGeolocationClient.h"
-#include "WebGeolocationController.h"
 #include "WebGeolocationPermissionRequest.h"
 #include "WebGeolocationPosition.h"
 #include "modules/geolocation/Geolocation.h"

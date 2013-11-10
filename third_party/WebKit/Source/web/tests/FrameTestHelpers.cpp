@@ -37,7 +37,6 @@
 #include "WebFrameImpl.h"
 #include "WebSettings.h"
 #include "WebViewClient.h"
-#include "WebViewImpl.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebThread.h"

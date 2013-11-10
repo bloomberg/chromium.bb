@@ -32,7 +32,6 @@
 #include "EventListenerWrapper.h"
 
 #include "core/events/Event.h"
-#include "core/events/EventListener.h"
 
 #include "WebDOMEvent.h"
 #include "WebDOMEventListener.h"

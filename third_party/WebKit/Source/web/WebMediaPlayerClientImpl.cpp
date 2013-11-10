@@ -18,7 +18,6 @@
 #include "core/html/TimeRanges.h"
 #include "core/frame/Frame.h"
 #include "platform/audio/AudioBus.h"
-#include "platform/audio/AudioSourceProvider.h"
 #include "platform/audio/AudioSourceProviderClient.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/GraphicsLayer.h"
@@ -33,7 +32,6 @@
 #include "public/platform/WebRect.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
-#include "weborigin/KURL.h"
 
 #if OS(ANDROID)
 #include "GrContext.h"

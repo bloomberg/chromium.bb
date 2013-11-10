@@ -31,7 +31,6 @@
 #include "config.h"
 #include "PopupContainer.h"
 
-#include "PopupListBox.h"
 #include "core/dom/Document.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
@@ -39,7 +38,6 @@
 #include "core/frame/FrameView.h"
 #include "core/page/Page.h"
 #include "core/platform/PopupMenuClient.h"
-#include "core/platform/chromium/FramelessScrollView.h"
 #include "core/platform/chromium/FramelessScrollViewClient.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "platform/PlatformGestureEvent.h"
