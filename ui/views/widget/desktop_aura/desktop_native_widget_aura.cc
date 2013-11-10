@@ -183,6 +183,26 @@ class DesktopNativeWidgetAuraWindowTreeClient :
 
 }  // namespace
 
+class FocusManagerEventHandler : public ui::EventHandler {
+ public:
+  FocusManagerEventHandler(DesktopNativeWidgetAura* desktop_native_widget_aura)
+      : desktop_native_widget_aura_(desktop_native_widget_aura) {}
+
+  // Implementation of ui::EventHandler:
+  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
+    Widget* widget = desktop_native_widget_aura_->GetWidget();
+    if (widget && widget->GetFocusManager()->GetFocusedView() &&
+        !widget->GetFocusManager()->OnKeyEvent(*event)) {
+      event->SetHandled();
+    }
+  }
+
+ private:
+  DesktopNativeWidgetAura* desktop_native_widget_aura_;
+
+  DISALLOW_COPY_AND_ASSIGN(FocusManagerEventHandler);
+};
+
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopNativeWidgetAura, public:
 
@@ -437,9 +457,8 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   }
 
   if (params.type == Widget::InitParams::TYPE_WINDOW) {
-    FocusManager* focus_manager =
-        native_widget_delegate_->AsWidget()->GetFocusManager();
-    root_window_->AddPreTargetHandler(focus_manager->GetEventHandler());
+    focus_manager_event_handler_.reset(new FocusManagerEventHandler(this));
+    root_window_->AddPreTargetHandler(focus_manager_event_handler_.get());
   }
 
   event_client_.reset(new DesktopEventClient);

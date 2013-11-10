@@ -43,6 +43,7 @@ class DesktopDispatcherClient;
 class DesktopEventClient;
 class DesktopRootWindowHost;
 class DropHelper;
+class FocusManagerEventHandler;
 class TooltipManagerAura;
 class WindowReorderer;
 
@@ -224,6 +225,8 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
                                      const gfx::Point& new_origin) OVERRIDE;
 
  private:
+  friend class FocusManagerEventHandler;
+
   // Installs the input method filter.
   void InstallInputMethodEventFilter();
 
@@ -267,6 +270,7 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   scoped_ptr<aura::client::DragDropClient> drag_drop_client_;
   scoped_ptr<aura::client::WindowTreeClient> window_tree_client_;
   scoped_ptr<DesktopEventClient> event_client_;
+  scoped_ptr<FocusManagerEventHandler> focus_manager_event_handler_;
 
   // Toplevel event filter which dispatches to other event filters.
   corewm::CompoundEventFilter* root_window_event_filter_;

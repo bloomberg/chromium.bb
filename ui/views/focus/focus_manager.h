@@ -308,9 +308,6 @@ class VIEWS_EXPORT FocusManager {
     return arrow_key_traversal_enabled_;
   }
 
-  // Gets an event handler suitable for registering as an observer.
-  ui::EventHandler* GetEventHandler();
-
   // Returns the next focusable view. Traversal starts at |starting_view|. If
   // |starting_view| is NULL |starting_widget| is consuled to determine which
   // Widget to start from. See
@@ -366,8 +363,6 @@ class VIEWS_EXPORT FocusManager {
 
   // See description above getter.
   bool is_changing_focus_;
-
-  scoped_ptr<ui::EventHandler> event_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(FocusManager);
 };

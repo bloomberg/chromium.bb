@@ -26,20 +26,6 @@ namespace views {
 
 namespace {
 
-class FocusManagerEventHandler : public ui::EventHandler {
- public:
-  FocusManagerEventHandler(FocusManager* parent) : focus_manager_(parent) {}
-
-  // Implementation of ui::EventHandler:
-  virtual void OnKeyEvent(ui::KeyEvent* event) OVERRIDE {
-    if (!focus_manager_->OnKeyEvent(*event))
-      event->SetHandled();
-  }
-
- private:
-  FocusManager* focus_manager_;
-};
-
 }  // namespace
 
 bool FocusManager::shortcut_handling_suspended_ = false;
@@ -525,12 +511,6 @@ bool FocusManager::HasPriorityHandler(
 // static
 bool FocusManager::IsTabTraversalKeyEvent(const ui::KeyEvent& key_event) {
   return key_event.key_code() == ui::VKEY_TAB && !key_event.IsControlDown();
-}
-
-ui::EventHandler* FocusManager::GetEventHandler() {
-  if (!event_handler_)
-    event_handler_.reset(new FocusManagerEventHandler(this));
-  return event_handler_.get();
 }
 
 void FocusManager::ViewRemoved(View* removed) {
