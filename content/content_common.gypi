@@ -120,6 +120,8 @@
     'common/android/surface_texture_peer.h',
     'common/android/trace_event_binding.cc',
     'common/android/trace_event_binding.h',
+    'common/android/view_configuration.cc',
+    'common/android/view_configuration.h',
     'common/appcache_messages.h',
     'common/browser_plugin/browser_plugin_constants.cc',
     'common/browser_plugin/browser_plugin_constants.h',

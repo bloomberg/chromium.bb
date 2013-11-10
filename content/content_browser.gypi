@@ -1445,7 +1445,6 @@
         'browser/geolocation/device_data_provider.cc',
         'browser/geolocation/empty_device_data_provider.cc',
         'browser/geolocation/wifi_data_provider_common.cc',
-        'browser/renderer_host/input/tap_suppression_controller.cc',
         'browser/renderer_host/native_web_keyboard_event.cc',
       ]
     }, {  # OS!="android"
@@ -1498,9 +1497,13 @@
     }],
     ['use_aura!=1 and OS!="win"', {
       'sources!': [
-        'browser/renderer_host/input/touchscreen_tap_suppression_controller.cc',
         'browser/renderer_host/ui_events_helper.cc',
         'browser/renderer_host/ui_events_helper.h',
+      ],
+    }],
+    ['use_aura!=1 and OS!="win" and OS!="android"', {
+      'sources!': [
+        'browser/renderer_host/input/touchscreen_tap_suppression_controller.cc',
         'browser/renderer_host/tap_suppression_controller.cc',
       ],
     }, {

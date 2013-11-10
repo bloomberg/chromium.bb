@@ -35,13 +35,9 @@ class CONTENT_EXPORT TapSuppressionController {
   // for keeping the event for later release, if needed.
   bool ShouldDeferTapDown();
 
-  // Should be called whenever a tap up (touchpad or touchscreen) is received.
-  // Returns true if the tap up should be suppressed.
-  bool ShouldSuppressTapUp();
-
-  // Should be called whenever a tap cancel is received. Returns true if the tap
-  // cancel should be suppressed.
-  bool ShouldSuppressTapCancel();
+  // Should be called whenever a tap ending event is received. Returns true if
+  // the tap event should be suppressed.
+  bool ShouldSuppressTapEnd();
 
  protected:
   virtual base::TimeTicks Now();

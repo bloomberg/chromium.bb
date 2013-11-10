@@ -35,7 +35,7 @@ bool TouchpadTapSuppressionController::ShouldDeferMouseDown(
 }
 
 bool TouchpadTapSuppressionController::ShouldSuppressMouseUp() {
-  return controller_->ShouldSuppressTapUp();
+  return controller_->ShouldSuppressTapEnd();
 }
 
 int TouchpadTapSuppressionController::MaxCancelToDownTimeInMs() {

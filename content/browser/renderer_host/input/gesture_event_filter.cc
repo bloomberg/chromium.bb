@@ -142,13 +142,15 @@ bool GestureEventFilter::ShouldForwardForTapSuppression(
     case WebInputEvent::GestureTapDown:
       return !touchscreen_tap_suppression_controller_->
           ShouldDeferGestureTapDown(gesture_event);
-    case WebInputEvent::GestureTapCancel:
+    case WebInputEvent::GestureShowPress:
       return !touchscreen_tap_suppression_controller_->
-          ShouldSuppressGestureTapCancel();
+          ShouldDeferGestureShowPress(gesture_event);
+    case WebInputEvent::GestureTapCancel:
     case WebInputEvent::GestureTap:
     case WebInputEvent::GestureTapUnconfirmed:
+    case WebInputEvent::GestureDoubleTap:
       return !touchscreen_tap_suppression_controller_->
-          ShouldSuppressGestureTap();
+          ShouldSuppressGestureTapEnd();
     default:
       return true;
   }

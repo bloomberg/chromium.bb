@@ -770,7 +770,6 @@
             'browser/geolocation/wifi_data_provider_chromeos_unittest.cc',
             'browser/geolocation/wifi_data_provider_common_unittest.cc',
             'browser/geolocation/wifi_data_provider_linux_unittest.cc',
-            'browser/renderer_host/input/tap_suppression_controller_unittest.cc',
           ],
         }],
         ['OS != "android" and OS != "ios"', {
@@ -783,7 +782,7 @@
             '../testing/android/native_test.gyp:native_test_native_code',
           ],
         }],
-        ['use_aura!=1 and OS!="win"', {
+        ['use_aura!=1 and OS!="win" and OS!="android"', {
           'sources!': [
             'browser/renderer_host/input/tap_suppression_controller_unittest.cc',
           ],

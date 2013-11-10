@@ -63,7 +63,7 @@ class MockTapSuppressionController : public TapSuppressionController,
 
   void SendTapUp() {
     last_actions_ = NONE;
-    if (ShouldSuppressTapUp())
+    if (ShouldSuppressTapEnd())
       last_actions_ |= TAP_UP_SUPPRESSED;
     else
       last_actions_ |= TAP_UP_FORWARDED;
@@ -71,7 +71,7 @@ class MockTapSuppressionController : public TapSuppressionController,
 
   void SendTapCancel() {
     last_actions_ = NONE;
-    if (ShouldSuppressTapCancel())
+    if (ShouldSuppressTapEnd())
       last_actions_ |= TAP_CANCEL_SUPPRESSED;
     else
       last_actions_ |= TAP_CANCEL_FORWARDED;
@@ -134,8 +134,7 @@ class MockTapSuppressionController : public TapSuppressionController,
   using TapSuppressionController::GestureFlingCancel;
   using TapSuppressionController::GestureFlingCancelAck;
   using TapSuppressionController::ShouldDeferTapDown;
-  using TapSuppressionController::ShouldSuppressTapUp;
-  using TapSuppressionController::ShouldSuppressTapCancel;
+  using TapSuppressionController::ShouldSuppressTapEnd;
 
   int max_cancel_to_down_time_in_ms_;
   int max_tap_gap_time_in_ms_;

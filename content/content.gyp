@@ -476,12 +476,22 @@
           },
           'includes': [ '../build/jar_file_jni_generator.gypi' ],
         },
+        {
+          'target_name': 'java_view_jni_headers',
+          'type': 'none',
+          'variables': {
+            'jni_gen_package': 'content',
+            'input_java_class': 'android/view/ViewConfiguration.class',
+          },
+          'includes': [ '../build/jar_file_jni_generator.gypi' ],
+        },
 
         {
           'target_name': 'content_jni_headers',
           'type': 'none',
           'dependencies': [
             'java_set_jni_headers',
+            'java_view_jni_headers'
           ],
           'direct_dependent_settings': {
             'include_dirs': [

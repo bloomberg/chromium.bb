@@ -8,6 +8,10 @@
 #include "content/browser/renderer_host/input/tap_suppression_controller.h"
 #include "ui/events/gestures/gesture_configuration.h"
 
+#if defined(OS_ANDROID)
+#include "content/common/android/view_configuration.h"
+#endif
+
 namespace content {
 
 TouchscreenTapSuppressionController::TouchscreenTapSuppressionController(
@@ -31,18 +35,34 @@ bool TouchscreenTapSuppressionController::ShouldDeferGestureTapDown(
     const GestureEventWithLatencyInfo& event) {
   bool should_defer = controller_->ShouldDeferTapDown();
   if (should_defer)
-    stashed_tap_down_ = event;
+    stashed_tap_down_.reset(new GestureEventWithLatencyInfo(event));
   return should_defer;
 }
 
-bool TouchscreenTapSuppressionController::ShouldSuppressGestureTap() {
-  return controller_->ShouldSuppressTapUp();
+bool TouchscreenTapSuppressionController::ShouldDeferGestureShowPress(
+    const GestureEventWithLatencyInfo& event) {
+  if (!stashed_tap_down_)
+    return false;
+
+  stashed_show_press_.reset(new GestureEventWithLatencyInfo(event));
+  return true;
 }
 
-bool TouchscreenTapSuppressionController::ShouldSuppressGestureTapCancel() {
-  return controller_->ShouldSuppressTapCancel();
+bool TouchscreenTapSuppressionController::ShouldSuppressGestureTapEnd() {
+  return controller_->ShouldSuppressTapEnd();
 }
 
+#if defined(OS_ANDROID)
+// TODO(jdduke): Enable ui::GestureConfiguration on Android and initialize
+//               with parameters from ViewConfiguration.
+int TouchscreenTapSuppressionController::MaxCancelToDownTimeInMs() {
+  return ViewConfiguration::GetTapTimeoutInMs();
+}
+
+int TouchscreenTapSuppressionController::MaxTapGapTimeInMs() {
+  return ViewConfiguration::GetLongPressTimeoutInMs();
+}
+#else
 int TouchscreenTapSuppressionController::MaxCancelToDownTimeInMs() {
   return ui::GestureConfiguration::fling_max_cancel_to_down_time_in_ms();
 }
@@ -51,12 +71,20 @@ int TouchscreenTapSuppressionController::MaxTapGapTimeInMs() {
   return static_cast<int>(
       ui::GestureConfiguration::semi_long_press_time_in_seconds() * 1000);
 }
+#endif
 
 void TouchscreenTapSuppressionController::DropStashedTapDown() {
+  stashed_tap_down_.reset();
+  stashed_show_press_.reset();
 }
 
 void TouchscreenTapSuppressionController::ForwardStashedTapDown() {
-  gesture_event_filter_->ForwardGestureEvent(stashed_tap_down_);
+  DCHECK(stashed_tap_down_);
+  ScopedGestureEvent tap_down = stashed_tap_down_.Pass();
+  ScopedGestureEvent show_press = stashed_show_press_.Pass();
+  gesture_event_filter_->ForwardGestureEvent(*tap_down);
+  if (show_press)
+    gesture_event_filter_->ForwardGestureEvent(*show_press);
 }
 
 }  // namespace content

@@ -84,7 +84,7 @@ bool TapSuppressionController::ShouldDeferTapDown() {
   return false;
 }
 
-bool TapSuppressionController::ShouldSuppressTapUp() {
+bool TapSuppressionController::ShouldSuppressTapEnd() {
   switch (state_) {
     case NOTHING:
     case GFC_IN_PROGRESS:
@@ -95,23 +95,7 @@ bool TapSuppressionController::ShouldSuppressTapUp() {
       client_->DropStashedTapDown();
       return true;
     case LAST_CANCEL_STOPPED_FLING:
-      NOTREACHED() << "Invalid TapUp on LAST_CANCEL_STOPPED_FLING state";
-  }
-  return false;
-}
-
-bool TapSuppressionController::ShouldSuppressTapCancel() {
-  switch (state_) {
-    case NOTHING:
-    case GFC_IN_PROGRESS:
-      return false;
-    case TAP_DOWN_STASHED:
-      state_ = NOTHING;
-      StopTapDownTimer();
-      client_->DropStashedTapDown();
-      return true;
-    case LAST_CANCEL_STOPPED_FLING:
-      NOTREACHED() << "Invalid TapCancel on LAST_CANCEL_STOPPED_FLING state";
+      NOTREACHED() << "Invalid tap end on LAST_CANCEL_STOPPED_FLING state";
   }
   return false;
 }
