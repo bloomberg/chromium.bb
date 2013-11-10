@@ -492,12 +492,8 @@ def GenerateBlameList(source_repo, lkgm_path, only_print_chumps=False):
   reviewed_on_re = re.compile(r'\s*Reviewed-on:\s*(\S+)')
   author_re = re.compile(r'\s*Author:.*<(\S+)@\S+>\s*')
   committer_re = re.compile(r'\s*Commit:.*<(\S+)@\S+>\s*')
-  for project in handler.projects.keys():
-    rel_src_path = handler.projects[project].get('path')
-
-    # If it's not part of our source tree, it doesn't affect our build.
-    if not rel_src_path:
-      continue
+  for rel_src_path, checkout in handler.checkouts_by_path.iteritems():
+    project = checkout['name']
 
     # Additional case in case the repo has been removed from the manifest.
     src_path = source_repo.GetRelativePath(rel_src_path)
@@ -505,7 +501,7 @@ def GenerateBlameList(source_repo, lkgm_path, only_print_chumps=False):
       cros_build_lib.Info('Detected repo removed from manifest %s' % project)
       continue
 
-    revision = handler.projects[project]['revision']
+    revision = checkout['revision']
     cmd = ['log', '--pretty=full', '%s..HEAD' % revision]
     try:
       result = git.RunGit(src_path, cmd)

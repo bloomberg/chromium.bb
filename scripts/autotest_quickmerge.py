@@ -361,8 +361,8 @@ def main(argv):
     return 1
 
   manifest = git.ManifestCheckout.Cached(constants.SOURCE_ROOT)
-  source_path = manifest.GetProjectPath(AUTOTEST_PROJECT_NAME, absolute=True)
-  source_path = os.path.join(source_path, '')
+  checkout = manifest.FindCheckout(AUTOTEST_PROJECT_NAME)
+  source_path = os.path.join(checkout.GetPath(absolute=True), '')
 
   script_path = os.path.dirname(__file__)
   include_pattern_file = os.path.join(script_path, INCLUDE_PATTERNS_FILENAME)

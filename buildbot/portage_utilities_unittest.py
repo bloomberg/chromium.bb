@@ -145,7 +145,7 @@ class ProjectAndPathTest(cros_test_lib.MoxTempDirTestCase):
     """Mock the necessary calls, start Replay mode, call GetSourcePath()."""
     # pylint: disable=E1120
     self.mox.StubOutWithMock(os.path, 'isdir')
-    self.mox.StubOutWithMock(portage_utilities.EBuild, 'GetGitProjectName')
+    self.mox.StubOutWithMock(MANIFEST, 'FindCheckoutFromPath')
 
     # We need 'chromeos-base' here because it controls default _SUBDIR values.
     ebuild_path = os.path.join(self.tempdir, 'chromeos-base', 'package',
@@ -153,8 +153,7 @@ class ProjectAndPathTest(cros_test_lib.MoxTempDirTestCase):
     osutils.WriteFile(ebuild_path, fake_ebuild_contents, makedirs=True)
     for p in fake_projects:
       os.path.isdir(mox.IgnoreArg()).AndReturn(True)
-      portage_utilities.EBuild.GetGitProjectName(
-          MANIFEST, mox.IgnoreArg()).AndReturn(p)
+      MANIFEST.FindCheckoutFromPath(mox.IgnoreArg()).AndReturn({ 'name': p })
     self.mox.ReplayAll()
 
     ebuild = portage_utilities.EBuild(ebuild_path)
@@ -370,8 +369,8 @@ class EBuildRevWorkonTest(cros_test_lib.MoxTempDirTestCase):
     ebuild1.package = 'test/project'
 
     self.mox.StubOutWithMock(portage_utilities, 'FindOverlays')
-    self.mox.StubOutWithMock(cls, '_GetEBuildProjects')
-    self.mox.StubOutWithMock(cls, '_GetSHA1ForProject')
+    self.mox.StubOutWithMock(cls, '_GetEBuildPaths')
+    self.mox.StubOutWithMock(cls, '_GetSHA1ForPath')
     self.mox.StubOutWithMock(cls, 'UpdateEBuild')
     self.mox.StubOutWithMock(cls, 'CommitChange')
     self.mox.StubOutWithMock(cls, 'GitRepoHasChanges')
@@ -379,14 +378,14 @@ class EBuildRevWorkonTest(cros_test_lib.MoxTempDirTestCase):
     build_root = 'fakebuildroot'
     overlays = ['public_overlay']
     changes = ['fake change']
-    projects = ['fake_project1', 'fake_project2']
-    project_ebuilds = {ebuild1: projects}
+    paths = ['fake_path1', 'fake_path2']
+    path_ebuilds = {ebuild1: paths}
     portage_utilities.FindOverlays(
         constants.BOTH_OVERLAYS, buildroot=build_root).AndReturn(overlays)
-    cls._GetEBuildProjects(build_root, mox.IgnoreArg(), overlays,
-                           changes).AndReturn(project_ebuilds)
-    for i, p in enumerate(projects):
-      cls._GetSHA1ForProject(mox.IgnoreArg(), p).InAnyOrder().AndReturn(str(i))
+    cls._GetEBuildPaths(build_root, mox.IgnoreArg(), overlays,
+                        changes).AndReturn(path_ebuilds)
+    for i, p in enumerate(paths):
+      cls._GetSHA1ForPath(mox.IgnoreArg(), p).InAnyOrder().AndReturn(str(i))
     cls.UpdateEBuild(ebuild1.ebuild_path, dict(CROS_WORKON_COMMIT='("0" "1")'))
     cls.GitRepoHasChanges('public_overlay').AndReturn(True)
     cls.CommitChange(mox.IgnoreArg(), overlay='public_overlay')

@@ -14,12 +14,10 @@ from chromite.lib import git
 from chromite import cros
 
 
-def _GetProjectPath(path, absolute):
-  """Get the project path for a given project."""
+def _GetProjectPath(path):
+  """Find the absolute path of the git checkout that contains |path|."""
   manifest = git.ManifestCheckout.Cached(path)
-  project = manifest.FindProjectFromPath(path)
-  if project is not None:
-    return manifest.GetProjectPath(project, absolute=absolute)
+  return manifest.FindCheckoutFromPath(path).GetPath(absolute=True)
 
 
 def _GetPylintGroups(paths):
@@ -28,7 +26,7 @@ def _GetPylintGroups(paths):
   for path in paths:
     if path.endswith('.py'):
       path = os.path.realpath(path)
-      project_path = _GetProjectPath(path, absolute=True)
+      project_path = _GetProjectPath(path)
       parent = os.path.dirname(path)
       while project_path and parent.startswith(project_path):
         pylintrc = os.path.join(parent, 'pylintrc')

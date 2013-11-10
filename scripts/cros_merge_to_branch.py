@@ -152,8 +152,8 @@ def _SetupWorkDirectoryForPatch(work_dir, patch, branch, manifest, email):
   # ManifestCheckout object.
   reference = None
   if manifest:
-    reference = os.path.join(constants.SOURCE_ROOT,
-                             manifest.GetProjectPath(patch.project))
+    path = patch.GetCheckout(manifest)['path']
+    reference = os.path.join(constants.SOURCE_ROOT, path)
     if not os.path.isdir(reference):
       logging.error('Unable to locate git checkout: %s', reference)
       logging.error('Did you mean to use --nomirror?')
@@ -191,11 +191,7 @@ def _ManifestContainsAllPatches(manifest, patches):
     patches - a collection GerritPatch objects.
   """
   for patch in patches:
-    project_path = None
-    if manifest.ProjectExists(patch.project):
-      project_path = manifest.GetProjectPath(patch.project)
-
-    if not project_path:
+    if not patch.GetCheckout(manifest, strict=False):
       logging.error('Your manifest does not have the repository %s for '
                     'change %s. Please re-run with --nomirror and '
                     '--email set', patch.project, patch.gerrit_number)

@@ -58,8 +58,10 @@ class WorkonProjectsMonitor(object):
       projects: A list of the project names we are interested in monitoring.
     """
     manifest = git.ManifestCheckout.Cached(constants.SOURCE_ROOT)
-    self._tasks = [(name, manifest.GetProjectPath(name, True))
-                   for name in set(projects).intersection(manifest.projects)]
+    self._tasks = []
+    for project in set(projects).intersection(manifest.projects):
+      for checkout in manifest.FindCheckouts(project):
+        self._tasks.append((project, checkout['path']))
     self._result_queue = multiprocessing.Queue(len(self._tasks))
 
   def _EnqueueProjectModificationTime(self, project, path):

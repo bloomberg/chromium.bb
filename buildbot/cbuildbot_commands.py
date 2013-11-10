@@ -191,7 +191,7 @@ def BuildRootGitCleanup(buildroot):
 
   # Cleanup all of the directories.
   dirs = [[attrs['name'], os.path.join(buildroot, attrs['path'])] for attrs in
-          git.ManifestCheckout.Cached(buildroot).projects.values()]
+          git.ManifestCheckout.Cached(buildroot).ListCheckouts()]
   parallel.RunTasksInProcessPool(RunCleanupCommands, dirs)
 
 

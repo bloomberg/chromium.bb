@@ -422,11 +422,11 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
 
     fake_revision = '1234567890'
     fake_project_handler = self.mox.CreateMock(git.Manifest)
-    fake_project_handler.projects = { 'fake/repo': { 'name': 'fake/repo',
-                                                     'path': 'fake/path',
-                                                     'revision': fake_revision,
-                                                   }
-                                    }
+    project = { 'name': 'fake/repo',
+                'path': 'fake/path',
+                'revision': fake_revision,
+              }
+    fake_project_handler.checkouts_by_path = { project['path']: project }
     fake_result = self.mox.CreateMock(cros_build_lib.CommandResult)
     fake_result.output = fake_git_log
 

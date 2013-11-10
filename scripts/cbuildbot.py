@@ -787,37 +787,51 @@ def _CheckLocalPatches(sourceroot, local_patches):
   If the branch of a project is not specified we append the current branch the
   project is on.
 
+  TODO(davidjames): The project:branch format isn't unique, so this means that
+  we can't differentiate what directory the user intended to apply patches to.
+  We should references by directory instead.
+
   Args:
     sourceroot: The checkout where patches are coming from.
+
+  Returns:
+    A list of patches that have been verified, in project:branch format.
   """
   verified_patches = []
   manifest = git.ManifestCheckout.Cached(sourceroot)
   for patch in local_patches:
-    components = patch.split(':')
-    if len(components) > 2:
+    project, _, branch = patch.partition(':')
+
+    checkouts = manifest.FindCheckouts(project)
+    if not checkouts:
+      cros_build_lib.Die('Project %s does not exist.' % (project,))
+    if len(checkouts) > 1:
       cros_build_lib.Die(
-          'Specify local patches in project[:branch] format.  Got %s' % patch)
+          'We do not yet support local patching for projects that are checked '
+          'out to multiple directories. Try uploading your patch to gerrit '
+          'and referencing it via the -g option instead.'
+      )
 
-    # validate project
-    project = components[0]
+    ok = False
+    for checkout in checkouts:
+      project_dir = checkout.GetPath(absolute=True)
 
-    try:
-      project_dir = manifest.GetProjectPath(project, True)
-    except KeyError:
-      cros_build_lib.Die('Project %s does not exist.' % project)
-
-    # If no branch was specified, we use the project's current branch.
-    if len(components) == 1:
-      branch = git.GetCurrentBranch(project_dir)
+      # If no branch was specified, we use the project's current branch.
       if not branch:
-        cros_build_lib.Die('Project %s is not on a branch!' % project)
-    else:
-      branch = components[1]
-      if not git.DoesLocalBranchExist(project_dir, branch):
-        cros_build_lib.Die('Project %s does not have branch %s'
-                           % (project, branch))
+        local_branch = git.GetCurrentBranch(project_dir)
+      else:
+        local_branch = branch
 
-    verified_patches.append('%s:%s' % (project, branch))
+      if local_branch and git.DoesLocalBranchExist(project_dir, local_branch):
+        verified_patches.append('%s:%s' % (project, local_branch))
+        ok = True
+
+    if not ok:
+      if branch:
+        cros_build_lib.Die('Project %s does not have branch %s'
+                            % (project, branch))
+      else:
+        cros_build_lib.Die('Project %s is not on a branch!' % (project,))
 
   return verified_patches
 

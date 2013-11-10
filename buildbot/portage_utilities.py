@@ -303,10 +303,6 @@ class EBuild(object):
         self.is_blacklisted = True
     fileinput.close()
 
-  def GetGitProjectName(self, manifest, path):
-    """Read the project variable from a git repository at given path."""
-    return manifest.FindProjectFromPath(path)
-
   def GetSourcePath(self, srcroot, manifest):
     """Get the project and path for this ebuild.
 
@@ -359,7 +355,7 @@ class EBuild(object):
                            'for project %s does not exist.' % (subdir_path,
                                                                self._pkgname))
       # Verify that we're grabbing the commit id from the right project name.
-      real_project = self.GetGitProjectName(manifest, subdir_path)
+      real_project = manifest.FindCheckoutFromPath(subdir_path)['name']
       if project != real_project:
         cros_build_lib.Die('Project name mismatch for %s '
                            '(found %s, expected %s)' % (subdir_path,
@@ -504,7 +500,7 @@ class EBuild(object):
     return output not in [None, '']
 
   @staticmethod
-  def _GetSHA1ForProject(manifest, project):
+  def _GetSHA1ForPath(manifest, path):
     """Get the latest SHA1 for a given project from Gerrit.
 
     This function looks up the remote and branch for a given project in the
@@ -518,15 +514,16 @@ class EBuild(object):
     Raises:
       Exception if the manifest is pinned.
     """
-    helper = gerrit.GetGerritHelper(
-        manifest.GetAttributeForProject(project, 'remote'))
-    manifest_branch = manifest.GetAttributeForProject(project, 'revision')
+    checkout = manifest.FindCheckoutFromPath(path)
+    project = checkout['name']
+    helper = gerrit.GetGerritHelper(checkout['remote'])
+    manifest_branch = checkout['revision']
     branch = git.StripRefsHeads(manifest_branch)
     return helper.GetLatestSHA1ForBranch(project, branch)
 
   @staticmethod
-  def _GetEBuildProjects(buildroot, manifest, overlay_list, changes):
-    """Calculate ebuild->project map for changed ebuilds.
+  def _GetEBuildPaths(buildroot, manifest, overlay_list, changes):
+    """Calculate ebuild->path map for changed ebuilds.
 
     Args:
       buildroot: Path to root of build directory.
@@ -535,18 +532,20 @@ class EBuild(object):
       changes: Changes from Gerrit that are being pushed.
 
     Returns:
-      A dictionary mapping changed ebuilds to lists of associated projects.
+      A dictionary mapping changed ebuilds to lists of associated paths.
     """
     directory_src = os.path.join(buildroot, 'src')
     overlay_dict = dict((o, []) for o in overlay_list)
     BuildEBuildDictionary(overlay_dict, True, None)
-    changed_projects = set(c.project for c in changes)
+    changed_paths = set(c.GetCheckout(manifest).GetPath(absolute=True)
+                        for c in changes)
     ebuild_projects = {}
     for ebuilds in overlay_dict.itervalues():
       for ebuild in ebuilds:
-        projects = ebuild.GetSourcePath(directory_src, manifest)[0]
-        if changed_projects.intersection(projects):
-          ebuild_projects[ebuild] = projects
+        _projects, paths = ebuild.GetSourcePath(directory_src, manifest)
+        if changed_paths.intersection(paths):
+          ebuild_projects[ebuild] = paths
+
     return ebuild_projects
 
   @classmethod
@@ -558,15 +557,17 @@ class EBuild(object):
       buildroot: Path to root of build directory.
       manifest: git.ManifestCheckout object.
     """
-    project_sha1s = {}
+    path_sha1s = {}
     overlay_list = FindOverlays(constants.BOTH_OVERLAYS, buildroot=buildroot)
-    ebuild_projects = cls._GetEBuildProjects(buildroot, manifest, overlay_list,
-                                             changes)
-    for ebuild, projects in ebuild_projects.iteritems():
-      for project in set(projects).difference(project_sha1s):
-        project_sha1s[project] = cls._GetSHA1ForProject(manifest, project)
-      sha1s = [project_sha1s[project] for project in projects]
-      logging.info('Updating ebuild for project %s with commit hashes %r',
+    ebuild_paths = cls._GetEBuildPaths(buildroot, manifest, overlay_list,
+                                       changes)
+    for ebuild, paths in ebuild_paths.iteritems():
+      # Calculate any SHA1s that are not already in path_sha1s.
+      for path in set(paths).difference(path_sha1s):
+        path_sha1s[path] = cls._GetSHA1ForPath(manifest, path)
+
+      sha1s = [path_sha1s[path] for path in paths]
+      logging.info('Updating ebuild for package %s with commit hashes %r',
                    ebuild.package, sha1s)
       updates = dict(CROS_WORKON_COMMIT=cls.FormatBashArray(sha1s))
       EBuild.UpdateEBuild(ebuild.ebuild_path, updates)

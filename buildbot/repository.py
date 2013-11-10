@@ -288,7 +288,7 @@ class RepoRepository(object):
       except cros_build_lib.RunCommandError:
         manifest = git.ManifestCheckout.Cached(self.directory)
         targets = set(project['path'].split('/', 1)[0]
-                      for project in manifest.projects.itervalues())
+                      for project in manifest.ListCheckouts())
         if not targets:
           # No directories to wipe, thus nothing we can fix.
           raise
@@ -326,8 +326,8 @@ class RepoRepository(object):
     # Increment it all...
     data.update((k, v + 1) for k, v in data.iteritems())
     # Zero out what is now used.
-    projects = git.ManifestCheckout.Cached(self.directory).projects
-    data.update(('%s.git' % x['path'], 0) for x in projects.itervalues())
+    checkouts = git.ManifestCheckout.Cached(self.directory).ListCheckouts()
+    data.update(('%s.git' % x['path'], 0) for x in checkouts)
 
     # Finally... wipe anything that's greater than our threshold.
     wipes = [k for k, v in data.iteritems() if v > self.LRU_THRESHOLD]

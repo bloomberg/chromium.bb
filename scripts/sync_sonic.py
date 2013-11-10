@@ -31,7 +31,7 @@ def main(argv):
   # checkouts of sonic chrome, once source access and codename issues
   # are sorted out.
   repo_url = (mc.remotes['sonic-partner']['fetch'] +
-              mc.projects['partner/manifest']['name'])
+              mc.FindProjectCheckout('partner/manifest')['name'])
 
   repo = repository.RepoRepository(repo_url=repo_url,
                                    directory=options.chrome_root)

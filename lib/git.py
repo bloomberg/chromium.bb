@@ -379,7 +379,7 @@ class Manifest(object):
     """Sets up useful properties for a project.
 
     Args:
-      attrs: The attribute dictionary of a project tag.
+      attrs: The attribute dictionary of a <project> tag.
     """
     for key in ('remote', 'revision'):
       attrs.setdefault(key, self.default.get(key))
@@ -437,7 +437,7 @@ class Manifest(object):
     refs/remotes/{cros,cros-internal} prefix.
 
     Args:
-      project: Which project we're looking at.
+      project: Which project name we're looking at.
     """
     return self.GetAttributeForProject(project, 'tracking_branch')
 
