@@ -156,10 +156,9 @@ NonBlockingPushClient::NonBlockingPushClient(
     const scoped_refptr<base::SingleThreadTaskRunner>& delegate_task_runner,
     const CreateBlockingPushClientCallback&
         create_blocking_push_client_callback)
-    : weak_ptr_factory_(this),
-      delegate_task_runner_(delegate_task_runner),
-      core_(new Core(delegate_task_runner_,
-                     weak_ptr_factory_.GetWeakPtr())) {
+    : delegate_task_runner_(delegate_task_runner),
+      weak_ptr_factory_(this) {
+  core_ = new Core(delegate_task_runner_, weak_ptr_factory_.GetWeakPtr());
   delegate_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&NonBlockingPushClient::Core::CreateOnDelegateThread,

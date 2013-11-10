@@ -9,9 +9,10 @@
 namespace jingle_glue {
 
 TaskPump::TaskPump()
-    : weak_factory_(this),
-      posted_wake_(false),
-      stopped_(false) {}
+    : posted_wake_(false),
+      stopped_(false),
+      weak_factory_(this) {
+}
 
 TaskPump::~TaskPump() {
   DCHECK(CalledOnValidThread());

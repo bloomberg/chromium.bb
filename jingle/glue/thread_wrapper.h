@@ -116,8 +116,8 @@ class JingleThreadWrapper : public base::MessageLoop::DestructionObserver,
   std::list<PendingSend*> pending_send_messages_;
   base::WaitableEvent pending_send_event_;
 
-  base::WeakPtrFactory<JingleThreadWrapper> weak_ptr_factory_;
   base::WeakPtr<JingleThreadWrapper> weak_ptr_;
+  base::WeakPtrFactory<JingleThreadWrapper> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(JingleThreadWrapper);
 };

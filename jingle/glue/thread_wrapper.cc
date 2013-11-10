@@ -52,10 +52,10 @@ JingleThreadWrapper::JingleThreadWrapper(
       send_allowed_(false),
       last_task_id_(0),
       pending_send_event_(true, false),
-      weak_ptr_factory_(this),
-      weak_ptr_(weak_ptr_factory_.GetWeakPtr()) {
+      weak_ptr_factory_(this) {
   DCHECK(task_runner->BelongsToCurrentThread());
   DCHECK(!talk_base::Thread::Current());
+  weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
   talk_base::MessageQueueManager::Add(this);
   WrapCurrent();
 }

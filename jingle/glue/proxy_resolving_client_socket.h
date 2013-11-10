@@ -95,10 +95,13 @@ class ProxyResolvingClientSocket : public net::StreamSocket {
   const GURL proxy_url_;
   bool tried_direct_connect_fallback_;
   net::BoundNetLog bound_net_log_;
-  base::WeakPtrFactory<ProxyResolvingClientSocket> weak_factory_;
 
   // The callback passed to Connect().
   net::CompletionCallback user_connect_callback_;
+
+  base::WeakPtrFactory<ProxyResolvingClientSocket> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProxyResolvingClientSocket);
 };
 
 }  // namespace jingle_glue

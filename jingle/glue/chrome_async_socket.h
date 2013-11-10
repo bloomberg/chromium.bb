@@ -180,7 +180,6 @@ class ChromeAsyncSocket : public buzz::AsyncSocket {
   // Close functions.
   void DoClose();
 
-  base::WeakPtrFactory<ChromeAsyncSocket> weak_ptr_factory_;
   scoped_ptr<ResolvingClientSocketFactory> resolving_client_socket_factory_;
 
   // buzz::AsyncSocket state.
@@ -204,6 +203,8 @@ class ChromeAsyncSocket : public buzz::AsyncSocket {
   AsyncIOState write_state_;
   scoped_refptr<net::IOBufferWithSize> write_buf_;
   size_t write_end_;
+
+  base::WeakPtrFactory<ChromeAsyncSocket> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeAsyncSocket);
 };

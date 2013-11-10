@@ -60,11 +60,12 @@ class NonBlockingPushClient : public PushClient {
   void OnPingResponse();
 
   base::ThreadChecker thread_checker_;
-  base::WeakPtrFactory<NonBlockingPushClient> weak_ptr_factory_;
   const scoped_refptr<base::SingleThreadTaskRunner> delegate_task_runner_;
-  const scoped_refptr<Core> core_;
+  scoped_refptr<Core> core_;
 
   ObserverList<PushClientObserver> observers_;
+
+  base::WeakPtrFactory<NonBlockingPushClient> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NonBlockingPushClient);
 };

@@ -30,9 +30,10 @@ class TaskPump : public talk_base::TaskRunner, public base::NonThreadSafe {
  private:
   void CheckAndRunTasks();
 
-  base::WeakPtrFactory<TaskPump> weak_factory_;
   bool posted_wake_;
   bool stopped_;
+
+  base::WeakPtrFactory<TaskPump> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskPump);
 };
