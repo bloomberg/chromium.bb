@@ -34,10 +34,10 @@
 #import "platform/SharedBuffer.h"
 #import "core/platform/graphics/Font.h"
 #import "core/platform/graphics/FontCache.h"
-#import "core/platform/mac/BlockExceptions.h"
 #import "platform/fonts/FontDescription.h"
 #import "platform/geometry/FloatRect.h"
 #import "platform/graphics/Color.h"
+#import "platform/mac/BlockExceptions.h"
 #import <wtf/Assertions.h>
 #import <wtf/RetainPtr.h>
 #import <wtf/StdLibExtras.h>

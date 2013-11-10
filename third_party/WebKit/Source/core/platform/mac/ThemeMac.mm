@@ -29,7 +29,7 @@
 #import <Carbon/Carbon.h>
 #import "core/platform/ScrollView.h"
 #include "core/platform/graphics/GraphicsContextStateSaver.h"
-#import "core/platform/mac/BlockExceptions.h"
+#import "platform/mac/BlockExceptions.h"
 #import "core/platform/mac/LocalCurrentGraphicsContext.h"
 #import "core/platform/mac/WebCoreNSCellExtras.h"
 #include "wtf/StdLibExtras.h"

@@ -24,7 +24,7 @@
  */
 
 #import "config.h"
-#import "core/platform/mac/BlockExceptions.h"
+#import "platform/mac/BlockExceptions.h"
 
 #import <wtf/Assertions.h>
 

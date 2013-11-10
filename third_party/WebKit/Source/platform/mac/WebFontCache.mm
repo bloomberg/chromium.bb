@@ -28,7 +28,7 @@
  */
 
 #import "config.h"
-#import "core/platform/mac/WebFontCache.h"
+#import "platform/mac/WebFontCache.h"
 
 #import <AppKit/AppKit.h>
 #import <Foundation/Foundation.h>

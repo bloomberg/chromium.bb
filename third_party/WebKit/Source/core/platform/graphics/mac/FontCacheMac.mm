@@ -34,7 +34,7 @@
 #import "core/platform/graphics/Font.h"
 #import "core/platform/graphics/FontPlatformData.h"
 #import "core/platform/graphics/SimpleFontData.h"
-#import "core/platform/mac/WebFontCache.h"
+#import "platform/mac/WebFontCache.h"
 #import <wtf/MainThread.h>
 #import <wtf/StdLibExtras.h>
 

@@ -116,6 +116,9 @@
           # implementation.
           ['exclude', 'KillRingNone\\.cpp$'],
         ],
+        'defines': [
+        'WebFontCache=ChromiumWebCoreObjCWebFontCache',
+        ],
       }, { # OS!="mac"
         'sources/': [
           ['exclude', 'mac/'],
