@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import logging
-import time
 import traceback
 
 from app_yaml_helper import AppYamlHelper
@@ -23,6 +22,7 @@ from render_servlet import RenderServlet
 from server_instance import ServerInstance
 from servlet import Servlet, Request, Response
 import svn_constants
+from timer import Timer, TimerClosure
 
 class _SingletonRenderServletDelegate(RenderServlet.Delegate):
   def __init__(self, server_instance):
@@ -56,7 +56,7 @@ def _RequestEachItem(title, items, request_callback):
   '''
   _cronlog.info('%s: starting', title)
   success_count, failure_count = 0, 0
-  start_time = time.time()
+  timer = Timer()
   try:
     for i, item in enumerate(items):
       def error_message(detail):
@@ -74,9 +74,9 @@ def _RequestEachItem(title, items, request_callback):
         failure_count += 1
         if IsDeadlineExceededError(e): raise
   finally:
-    elapsed_seconds = time.time() - start_time
-    _cronlog.info('%s: rendered %s of %s with %s failures in %s seconds',
-        title, success_count, len(items), failure_count, elapsed_seconds);
+    _cronlog.info('%s: rendered %s of %s with %s failures in %s',
+        title, success_count, len(items), failure_count,
+        timer.Stop().FormatElapsed())
   return success_count == len(items)
 
 class CronServlet(Servlet):
@@ -156,13 +156,11 @@ class CronServlet(Servlet):
       # parallel. They are resolved at the end.
       def run_cron_for_future(target):
         title = target.__class__.__name__
-        start_time = time.time()
-        future = target.Cron()
-        init_time = time.time() - start_time
+        future, init_timer = TimerClosure(target.Cron)
         assert isinstance(future, Future), (
             '%s.Cron() did not return a Future' % title)
         def resolve():
-          start_time = time.time()
+          resolve_timer = Timer()
           try:
             future.Get()
           except Exception as e:
@@ -170,22 +168,23 @@ class CronServlet(Servlet):
             results.append(False)
             if IsDeadlineExceededError(e): raise
           finally:
-            resolve_time = time.time() - start_time
-            _cronlog.info(
-                '%s: used %s seconds, %s to initialize and %s to resolve' %
-                (title, init_time + resolve_time, init_time, resolve_time))
+            resolve_timer.Stop()
+            _cronlog.info('%s took %s: %s to initialize and %s to resolve' %
+                (title,
+                 init_timer.With(resolve_timer).FormatElapsed(),
+                 init_timer.FormatElapsed(),
+                 resolve_timer.FormatElapsed()))
         return Future(delegate=Gettable(resolve))
 
       targets = (CreateDataSources(server_instance).values() +
                  [server_instance.content_providers])
       title = 'initializing %s parallel Cron targets' % len(targets)
-      start_time = time.time()
       _cronlog.info(title)
+      timer = Timer()
       try:
         cron_futures = [run_cron_for_future(target) for target in targets]
       finally:
-        _cronlog.info('%s took %s seconds' % (title, time.time() - start_time))
-
+        _cronlog.info('%s took %s' % (title, timer.Stop().FormatElapsed()))
 
       # Rendering the public templates will also pull in all of the private
       # templates.
@@ -218,12 +217,12 @@ class CronServlet(Servlet):
       # Resolve the hand-written Cron method futures.
       title = 'resolving %s parallel Cron targets' % len(targets)
       _cronlog.info(title)
-      start_time = time.time()
+      timer = Timer()
       try:
         for future in cron_futures:
           future.Get()
       finally:
-        _cronlog.info('%s took %s seconds' % (title, time.time() - start_time))
+        _cronlog.info('%s took %s' % (title, timer.Stop().FormatElapsed()))
 
     except:
       results.append(False)
