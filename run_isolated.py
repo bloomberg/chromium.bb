@@ -163,30 +163,60 @@ def set_read_only(path, read_only):
     os.chmod(path, mode)
 
 
-def make_directories_read_only(root, read_only):
-  """Toggle the writable bit on a directory tree.
+def make_tree_read_only(root):
+  """Makes all the files in the directories read only.
 
-  Do not touch the files themselves, only the directories. Only this is
-  necessary to be able to delete the files.
+  Also makes the directories read only, only if it makes sense on the platform.
   """
+  logging.info('make_tree_read_only(%s)', root)
   assert os.path.isabs(root), root
-  for dirpath, dirnames, _filenames in os.walk(root, topdown=True):
-    for dirname in dirnames:
-      set_read_only(os.path.join(dirpath, dirname), read_only)
+  for dirpath, dirnames, filenames in os.walk(root, topdown=True):
+    for filename in filenames:
+      set_read_only(os.path.join(dirpath, filename), True)
+    if sys.platform != 'win32':
+      # It must not be done on Windows.
+      for dirname in dirnames:
+        set_read_only(os.path.join(dirpath, dirname), True)
+
+
+def make_tree_deleteable(root):
+  """Changes the appropriate permissions so the files in the directories can be
+  deleted.
+
+  On Windows, the files are modified. On other platforms, modify the directory.
+
+  Warning on Windows: since file permission is modified, the file node is
+  modified. This means that for hard-linked files, every directory entry for the
+  file node has its file permission modified.
+  """
+  logging.info('make_tree_deleteable(%s)', root)
+  assert os.path.isabs(root), root
+  if sys.platform != 'win32':
+    set_read_only(root, False)
+  for dirpath, dirnames, filenames in os.walk(root, topdown=True):
+    if sys.platform == 'win32':
+      for filename in filenames:
+        set_read_only(os.path.join(dirpath, filename), False)
+    else:
+      for dirname in dirnames:
+        set_read_only(os.path.join(dirpath, dirname), False)
 
 
 def rmtree(root):
   """Wrapper around shutil.rmtree() to retry automatically on Windows."""
-  make_directories_read_only(root, False)
+  make_tree_deleteable(root)
   if sys.platform == 'win32':
     for i in range(3):
       try:
         shutil.rmtree(root)
         break
       except WindowsError:  # pylint: disable=E0602
+        if i == 2:
+          raise
         delay = (i+1)*2
         print >> sys.stderr, (
-            'The test has subprocess outliving it. Sleep %d seconds.' % delay)
+            'Failed to delete %s. Maybe the test has subprocess outliving it.'
+            ' Sleep %d seconds.' % (root, delay))
         time.sleep(delay)
   else:
     shutil.rmtree(root)
@@ -195,9 +225,14 @@ def rmtree(root):
 def try_remove(filepath):
   """Removes a file without crashing even if it doesn't exist."""
   try:
-    # Deleting a read-only file will fail if the directory is read-only. This
-    # means make_directories_read_only(os.path.dirname(filepath), False) should
-    # have been called before this call.
+    # TODO(maruel): Not do it unless necessary since it slows this function
+    # down.
+    if sys.platform == 'win32':
+      # Deleting a read-only file will fail if it is read-only.
+      set_read_only(filepath, False)
+    else:
+      # Deleting a read-only file will fail if the directory is read-only.
+      set_read_only(os.path.dirname(filepath), False)
     os.remove(filepath)
   except OSError:
     pass
@@ -530,8 +565,7 @@ def run_tha_test(isolated_hash, storage, cache, algo, outdir):
     if settings.read_only:
       # Note that the files themselves are read only anyway. This only inhibits
       # creating files or deleting files in the test directory.
-      logging.info('Making directories read only')
-      make_directories_read_only(outdir, True)
+      make_tree_read_only(outdir)
     cwd = os.path.normpath(os.path.join(outdir, settings.relative_cwd))
     logging.info('Running %s, cwd=%s' % (settings.command, cwd))
 
