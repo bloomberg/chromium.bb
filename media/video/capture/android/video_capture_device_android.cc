@@ -105,7 +105,7 @@ bool VideoCaptureDeviceAndroid::Init() {
 
   j_capture_.Reset(Java_VideoCapture_createVideoCapture(
       env, base::android::GetApplicationContext(), id,
-      reinterpret_cast<jint>(this)));
+      reinterpret_cast<intptr_t>(this)));
 
   return true;
 }

@@ -34,7 +34,7 @@ class WebAudioMediaCodecBridge {
 
     @CalledByNative
     private static boolean decodeAudioFile(Context ctx,
-                                           int nativeMediaCodecBridge,
+                                           long nativeMediaCodecBridge,
                                            int inputFD,
                                            long dataSize) {
 
@@ -183,11 +183,11 @@ class WebAudioMediaCodecBridge {
     }
 
     private static native void nativeOnChunkDecoded(
-        int nativeWebAudioMediaCodecBridge, ByteBuffer buf, int size,
+        long nativeWebAudioMediaCodecBridge, ByteBuffer buf, int size,
         int inputChannelCount, int outputChannelCount);
 
     private static native void nativeInitializeDestination(
-        int nativeWebAudioMediaCodecBridge,
+        long nativeWebAudioMediaCodecBridge,
         int inputChannelCount,
         int sampleRate,
         long durationMicroseconds);

@@ -68,7 +68,7 @@ public class VideoCapture implements PreviewCallback, OnFrameAvailableListener {
     private int mExpectedFrameSize = 0;
     private int mId = 0;
     // Native callback context variable.
-    private int mNativeVideoCaptureDeviceAndroid = 0;
+    private long mNativeVideoCaptureDeviceAndroid = 0;
     private int[] mGlTextures = null;
     private SurfaceTexture mSurfaceTexture = null;
     private static final int GL_TEXTURE_EXTERNAL_OES = 0x8D65;
@@ -82,12 +82,12 @@ public class VideoCapture implements PreviewCallback, OnFrameAvailableListener {
 
     @CalledByNative
     public static VideoCapture createVideoCapture(
-            Context context, int id, int nativeVideoCaptureDeviceAndroid) {
+            Context context, int id, long nativeVideoCaptureDeviceAndroid) {
         return new VideoCapture(context, id, nativeVideoCaptureDeviceAndroid);
     }
 
     public VideoCapture(
-            Context context, int id, int nativeVideoCaptureDeviceAndroid) {
+            Context context, int id, long nativeVideoCaptureDeviceAndroid) {
         mContext = context;
         mId = id;
         mNativeVideoCaptureDeviceAndroid = nativeVideoCaptureDeviceAndroid;
@@ -410,7 +410,7 @@ public class VideoCapture implements PreviewCallback, OnFrameAvailableListener {
     }
 
     private native void nativeOnFrameAvailable(
-            int nativeVideoCaptureDeviceAndroid,
+            long nativeVideoCaptureDeviceAndroid,
             byte[] data,
             int length,
             int rotation,

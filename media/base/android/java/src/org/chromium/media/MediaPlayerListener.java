@@ -35,10 +35,10 @@ class MediaPlayerListener implements MediaPlayer.OnPreparedListener,
     public static final int MEDIA_ERROR_TIMED_OUT = -110;
 
     // Used to determine the class instance to dispatch the native call to.
-    private int mNativeMediaPlayerListener = 0;
+    private long mNativeMediaPlayerListener = 0;
     private final Context mContext;
 
-    private MediaPlayerListener(int nativeMediaPlayerListener, Context context) {
+    private MediaPlayerListener(long nativeMediaPlayerListener, Context context) {
         mNativeMediaPlayerListener = nativeMediaPlayerListener;
         mContext = context;
     }
@@ -148,22 +148,22 @@ class MediaPlayerListener implements MediaPlayer.OnPreparedListener,
      * See media/base/android/media_player_listener.cc for all the following functions.
      */
     private native void nativeOnMediaError(
-            int nativeMediaPlayerListener,
+            long nativeMediaPlayerListener,
             int errorType);
 
     private native void nativeOnVideoSizeChanged(
-            int nativeMediaPlayerListener,
+            long nativeMediaPlayerListener,
             int width, int height);
 
     private native void nativeOnBufferingUpdate(
-            int nativeMediaPlayerListener,
+            long nativeMediaPlayerListener,
             int percent);
 
-    private native void nativeOnMediaPrepared(int nativeMediaPlayerListener);
+    private native void nativeOnMediaPrepared(long nativeMediaPlayerListener);
 
-    private native void nativeOnPlaybackComplete(int nativeMediaPlayerListener);
+    private native void nativeOnPlaybackComplete(long nativeMediaPlayerListener);
 
-    private native void nativeOnSeekComplete(int nativeMediaPlayerListener);
+    private native void nativeOnSeekComplete(long nativeMediaPlayerListener);
 
-    private native void nativeOnMediaInterrupted(int nativeMediaPlayerListener);
+    private native void nativeOnMediaInterrupted(long nativeMediaPlayerListener);
 }

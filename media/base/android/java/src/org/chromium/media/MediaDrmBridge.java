@@ -35,7 +35,7 @@ class MediaDrmBridge {
     private static final String PRIVACY_MODE = "privacyMode";
     private MediaDrm mMediaDrm;
     private UUID mSchemeUUID;
-    private int mNativeMediaDrmBridge;
+    private long mNativeMediaDrmBridge;
     // TODO(qinmin): we currently only support one session per DRM bridge.
     // Change this to a HashMap if we start to support multiple sessions.
     private String mSessionId;
@@ -60,7 +60,7 @@ class MediaDrmBridge {
         return new UUID(mostSigBits, leastSigBits);
     }
 
-    private MediaDrmBridge(UUID schemeUUID, String securityLevel, int nativeMediaDrmBridge)
+    private MediaDrmBridge(UUID schemeUUID, String securityLevel, long nativeMediaDrmBridge)
             throws android.media.UnsupportedSchemeException {
         mSchemeUUID = schemeUUID;
         mMediaDrm = new MediaDrm(schemeUUID);
@@ -495,15 +495,15 @@ class MediaDrmBridge {
         }
     }
 
-    private native void nativeOnMediaCryptoReady(int nativeMediaDrmBridge);
+    private native void nativeOnMediaCryptoReady(long nativeMediaDrmBridge);
 
-    private native void nativeOnKeyMessage(int nativeMediaDrmBridge, String sessionId,
+    private native void nativeOnKeyMessage(long nativeMediaDrmBridge, String sessionId,
                                            byte[] message, String destinationUrl);
 
-    private native void nativeOnKeyAdded(int nativeMediaDrmBridge, String sessionId);
+    private native void nativeOnKeyAdded(long nativeMediaDrmBridge, String sessionId);
 
-    private native void nativeOnKeyError(int nativeMediaDrmBridge, String sessionId);
+    private native void nativeOnKeyError(long nativeMediaDrmBridge, String sessionId);
 
     private native void nativeOnResetDeviceCredentialsCompleted(
-            int nativeMediaDrmBridge, boolean success);
+            long nativeMediaDrmBridge, boolean success);
 }
