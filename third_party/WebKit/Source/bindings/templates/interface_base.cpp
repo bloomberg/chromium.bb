@@ -91,7 +91,8 @@ template <typename T> void V8_USE(T) { }
 {% block constructor_getter %}{% endblock %}
 {% block replaceable_attribute_setter_and_callback %}{% endblock %}
 {# Methods #}
-{% from 'methods.cpp' import generate_method, method_callback with context %}
+{% from 'methods.cpp' import generate_method, overload_resolution_method,
+       method_callback with context %}
 {% for method in methods %}
 {% for world_suffix in method.world_suffixes %}
 {% if not method.is_custom %}
@@ -100,7 +101,13 @@ template <typename T> void V8_USE(T) { }
 {% endfor %}
 {# FIXME: merge these two |world_suffix| loops #}
 {% for world_suffix in method.world_suffixes %}
+{% if method.overloads %}
+{{overload_resolution_method(method.overloads, world_suffix)}}
+{% endif %}
+{% if not method.overload_index or method.overloads %}
+{# A single callback is generated for overloaded methods #}
 {{method_callback(method, world_suffix)}}
+{% endif %}
 {% endfor %}
 {% endfor %}
 } // namespace {{cpp_class_name}}V8Internal

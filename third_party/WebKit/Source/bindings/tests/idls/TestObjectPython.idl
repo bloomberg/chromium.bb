@@ -284,6 +284,13 @@ interface TestObjectPython {
     void voidMethodVariadicTestInterfaceEmptyArg(TestInterfaceEmpty... variadicTestInterfaceEmptyArgs);
     void voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg, TestInterfaceEmpty... variadicTestInterfaceEmptyArgs);
 
+    // Overloaded methods
+    void overloadedMethod(long longArg);
+    void overloadedMethod(long longArg1, long longArg2);
+
+    static void overloadedStaticMethod(long longArg);
+    static void overloadedStaticMethod(long longArg1, long longArg2);
+
     // Extended attributes for arguments
     // [Clamp]
     void voidMethodClampUnsignedShortArg([Clamp] unsigned short clampUnsignedShortArg);

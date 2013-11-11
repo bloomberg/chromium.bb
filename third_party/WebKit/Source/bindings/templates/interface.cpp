@@ -82,7 +82,9 @@ static const V8DOMConfiguration::AttributeConfiguration {{v8_class_name}}Attribu
 static const V8DOMConfiguration::MethodConfiguration {{v8_class_name}}Methods[] = {
     {% for method in methods
        if method.do_not_check_signature and
-          not method.per_context_enabled_function_name %}
+          not method.per_context_enabled_function_name and
+          (not method.overload_index or method.overload_index == 1) %}
+    {# For overloaded methods, only generate one accessor #}
     {% filter conditional(method.conditional_string) %}
     {{method_configuration(method)}},
     {% endfilter %}
@@ -131,10 +133,10 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::H
     v8::Handle<v8::FunctionTemplate> {{method.name}}Argv[{{method.name}}Argc] = { {{method.custom_signature}} };
     v8::Handle<v8::Signature> {{method.name}}Signature = v8::Signature::New(desc, {{method.name}}Argc, {{method.name}}Argv);
     {% endif %}
+    {# install_custom_signature #}
+    {% if not method.overload_index or method.overload_index == 1 %}
+    {# For overloaded methods, only generate one accessor #}
     {% filter conditional(method.conditional_string) %}
-    {# FIXME: move to V8DOMConfiguration::installDOMCallbacksWithCustomSignature #}
-    {% set property_attribute = 'static_cast<v8::PropertyAttribute>(%s)' %
-                                ' | '.join(method.property_attributes) %}
     {% if method.is_per_world_bindings %}
     if (currentWorldType == MainWorld) {
         {% filter runtime_enabled(method.runtime_enabled_function_name) %}
@@ -151,6 +153,7 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::H
     {% endfilter %}
     {% endif %}
     {% endfilter %}
+    {% endif %}{# install_custom_signature #}
     {% endfor %}
     {% for attribute in attributes if attribute.is_static %}
     desc->SetNativeDataProperty(v8::String::NewSymbol("{{attribute.name}}"), {{attribute.getter_callback_name}}, {{attribute.setter_callback_name}}, v8::External::New(0), static_cast<v8::PropertyAttribute>(v8::None), v8::Handle<v8::AccessorSignature>(), static_cast<v8::AccessControl>(v8::DEFAULT));

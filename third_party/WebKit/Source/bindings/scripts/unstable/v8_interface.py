@@ -89,6 +89,7 @@ def generate_interface(interface):
 
     methods = [v8_methods.generate_method(interface, method)
                for method in interface.operations]
+    generate_overloads(methods)
     template_contents.update({
         'has_non_per_context_enabled_methods': any(not method['per_context_enabled_function_name'] for method in methods),
         'has_per_context_enabled_methods': any(method['per_context_enabled_function_name'] for method in methods),
@@ -115,3 +116,55 @@ def generate_constant(constant):
         'value': value,
     }
     return constant_parameter
+
+
+def generate_overloads(methods):
+    generate_overloads_by_type(methods, is_static=False)  # Regular methods
+    generate_overloads_by_type(methods, is_static=True)
+
+
+def generate_overloads_by_type(methods, is_static):
+    # Generates |overloads| template values and modifies |methods| in place;
+    # |is_static| flag used (instead of partitioning list in 2) because need to
+    # iterate over original list of methods to modify in place
+    method_counts = {}
+    for method in methods:
+        if method['is_static'] != is_static:
+            continue
+        name = method['name']
+        method_counts.setdefault(name, 0)
+        method_counts[name] += 1
+
+    # Filter to only methods that are actually overloaded
+    overloaded_method_counts = dict((name, count)
+                                    for name, count in method_counts.iteritems()
+                                    if count > 1)
+
+    # Add overload index only to overloaded methods, so template code can
+    # easily verify if a function is overloaded
+    method_overloads = {}
+    for method in methods:
+        name = method['name']
+        if (method['is_static'] != is_static or
+            name not in overloaded_method_counts):
+            continue
+        method_overloads.setdefault(name, []).append(method)
+        method['overload_index'] = len(method_overloads[name])
+
+    # Resolution function is generated after last overloaded function;
+    # package necessary information into |method.overloads| for that method.
+    for method in methods:
+        if (method['is_static'] != is_static or
+            'overload_index' not in method):
+            continue
+        name = method['name']
+        if method['overload_index'] != overloaded_method_counts[name]:
+            continue
+        overloads = method_overloads[name]
+        method['overloads'] = {
+            'name': name,
+            'methods': overloads,
+            'minimum_number_of_required_arguments': min(
+                overload['number_of_required_arguments']
+                for overload in overloads),
+        }

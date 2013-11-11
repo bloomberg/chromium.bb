@@ -1,7 +1,7 @@
 {##############################################################################}
 {% macro generate_method(method, world_suffix) %}
 {% filter conditional(method.conditional_string) %}
-static void {{method.name}}Method{{world_suffix}}(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     {% if method.number_of_required_arguments %}
     if (UNLIKELY(info.Length() < {{method.number_of_required_arguments}})) {
@@ -123,6 +123,31 @@ if (state.hadException()) {
 }
 {% endif %}
 {% if v8_set_return_value %}{{v8_set_return_value}};{% endif %}{# None for void #}
+{% endmacro %}
+
+
+{##############################################################################}
+{% macro overload_resolution_method(overloads, world_suffix) %}
+static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    {# FIXME: Blink's overload resolution algorithm is incorrect, per:
+       https://code.google.com/p/chromium/issues/detail?id=293561 #}
+    {% for method in overloads.methods %}
+    {# FIXME: actual resolution algorithm much more complicated;
+       see GenerateFunctionParametersCheck #}
+    if (info.Length() == {{method.number_of_required_arguments}}) {
+        {{overloads.name}}{{method.overload_index}}Method{{world_suffix}}(info);
+        return;
+    }
+    {% endfor %}
+    {% if overloads.minimum_number_of_required_arguments %}
+    if (UNLIKELY(info.Length() < {{overloads.minimum_number_of_required_arguments}})) {
+        throwTypeError(ExceptionMessages::failedToExecute("{{overloads.name}}", "{{interface_name}}", ExceptionMessages::notEnoughArguments({{overloads.minimum_number_of_required_arguments}}, info.Length())), info.GetIsolate());
+        return;
+    }
+    {% endif %}
+    throwUninformativeAndGenericTypeError(info.GetIsolate());
+}
 {% endmacro %}
 
 
