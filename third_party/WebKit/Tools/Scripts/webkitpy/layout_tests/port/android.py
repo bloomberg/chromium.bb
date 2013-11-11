@@ -38,6 +38,7 @@ import time
 from multiprocessing.pool import ThreadPool
 
 from webkitpy.common.system.executive import ScriptError
+from webkitpy.layout_tests.breakpad.dump_reader_multipart import DumpReaderAndroid
 from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.port import base
 from webkitpy.layout_tests.port import linux
@@ -174,8 +175,11 @@ class ContentShellDriverDetails():
     def command_line_file(self):
         return '/data/local/tmp/content-shell-command-line'
 
+    def device_crash_dumps_directory(self):
+        return '/data/local/tmp/content-shell-crash-dumps'
+
     def additional_command_line_flags(self):
-        return ['--dump-render-tree', '--encode-binary']
+        return ['--dump-render-tree', '--encode-binary', '--enable-crash-reporter', '--crash-dumps-dir=%s' % self.device_crash_dumps_directory()]
 
     def device_directory(self):
         return DEVICE_SOURCE_ROOT_DIR + 'content_shell/'
@@ -195,7 +199,7 @@ class AndroidCommands(object):
 
     def file_exists(self, full_path):
         assert full_path.startswith('/')
-        return self.run(['shell', 'ls', full_path]).strip() == full_path
+        return self.run(['shell', 'ls', '-d', full_path]).strip() == full_path
 
     def push(self, host_path, device_path, ignore_error=False):
         return self.run(['push', host_path, device_path], ignore_error=ignore_error)
@@ -225,8 +229,7 @@ class AndroidCommands(object):
         else:
             error_handler = None
 
-        result = self._executive.run_command(self.adb_command() + command, error_handler=error_handler,
-                                             debug_logging=self._debug_logging)
+        result = self._executive.run_command(self.adb_command() + command, error_handler=error_handler, debug_logging=self._debug_logging)
 
         # We limit the length to avoid outputting too verbose commands, such as "adb logcat".
         self._log_debug('Run adb result: ' + result[:80])
@@ -392,6 +395,8 @@ class AndroidPort(base.Port):
 
         self._host_port = factory.PortFactory(host).get('chromium', **kwargs)
         self._server_process_constructor = self._android_server_process_constructor
+
+        self._dump_reader = DumpReaderAndroid(host, self._build_path())
 
         if self.driver_name() != self.CONTENT_SHELL_NAME:
             raise AssertionError('Layout tests on Android only support content_shell as the driver.')
@@ -584,6 +589,9 @@ class AndroidPort(base.Port):
     def driver_cmd_line(self):
         # Override to return the actual test driver's command line.
         return self.create_driver(0)._android_driver_cmd_line(self.get_option('pixel_tests'), [])
+
+    def clobber_old_port_specific_results(self):
+        self._dump_reader.clobber_old_results()
 
     # Overridden protected methods.
 
@@ -985,6 +993,11 @@ class ChromiumAndroidDriver(driver.Driver):
         if not stderr:
             stderr = ''
         stderr += '********* [%s] Tombstone file:\n%s' % (self._android_commands.get_serial(), self._get_last_stacktrace())
+
+        crashes = self._pull_crash_dumps_from_device()
+        for crash in crashes:
+            stderr += '********* [%s] breakpad minidump %s:\n%s' % (self._port.host.filesystem.basename(crash), self._android_commands.get_serial(), self._port._dump_reader._get_stack_from_dump(crash))
+
         return super(ChromiumAndroidDriver, self)._get_crash_log(stdout, stderr, newer_than)
 
     def cmd_line(self, pixel_tests, per_test_args):
@@ -1074,6 +1087,9 @@ class ChromiumAndroidDriver(driver.Driver):
 
         self._android_commands.run(['shell', 'echo'] + self._android_driver_cmd_line(pixel_tests, per_test_args) + ['>', self._driver_details.command_line_file()])
         self._created_cmd_line = True
+
+        self._android_commands.run(['shell', 'rm', '-rf', self._driver_details.device_crash_dumps_directory()])
+        self._android_commands.mkdir(self._driver_details.device_crash_dumps_directory(), chmod='777')
 
         start_result = self._android_commands.run(['shell', 'am', 'start', '-e', 'RunInSubThread', '-n', self._driver_details.activity_name()])
         if start_result.find('Exception') != -1:
@@ -1167,6 +1183,20 @@ class ChromiumAndroidDriver(driver.Driver):
                 raise AssertionError('Failed to remove fifo files. May be locked.')
 
         self._clean_up_cmd_line()
+
+    def _pull_crash_dumps_from_device(self):
+        result = []
+        if not self._android_commands.file_exists(self._driver_details.device_crash_dumps_directory()):
+            return result
+        dumps = self._android_commands.run(['shell', 'ls', self._driver_details.device_crash_dumps_directory()])
+        for dump in dumps.splitlines():
+            device_dump = '%s/%s' % (self._driver_details.device_crash_dumps_directory(), dump)
+            local_dump = self._port._filesystem.join(self._port._dump_reader.crash_dumps_directory(), dump)
+            self._android_commands.run(['shell', 'chmod', '777', device_dump])
+            self._android_commands.pull(device_dump, local_dump)
+            self._android_commands.run(['shell', 'rm', '-f', device_dump])
+            result.append(local_dump)
+        return result
 
     def _clean_up_cmd_line(self):
         if not self._created_cmd_line:

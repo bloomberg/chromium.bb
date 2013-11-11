@@ -134,7 +134,7 @@ class AndroidCommandsTest(unittest.TestCase):
         android_commands = self.make_android_commands(1, '123456789ABCDEF0')
 
         android_commands.file_exists('/tombstones')
-        self.assertEquals('adb -s 123456789ABCDEF0 shell ls /tombstones', self._mock_executive.last_command())
+        self.assertEquals('adb -s 123456789ABCDEF0 shell ls -d /tombstones', self._mock_executive.last_command())
 
         android_commands.push('foo', 'bar')
         self.assertEquals('adb -s 123456789ABCDEF0 push foo bar', self._mock_executive.last_command())
