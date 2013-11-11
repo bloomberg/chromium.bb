@@ -360,6 +360,22 @@ TEST_F(JobSchedulerTest, GetRemainingFileList) {
   ASSERT_TRUE(resource_list);
 }
 
+TEST_F(JobSchedulerTest, GetResourceEntry) {
+  ConnectToWifi();
+
+  google_apis::GDataErrorCode error = google_apis::GDATA_OTHER_ERROR;
+  scoped_ptr<google_apis::ResourceEntry> entry;
+
+  scheduler_->GetResourceEntry(
+      "file:2_file_resource_id",  // resource ID
+      ClientContext(USER_INITIATED),
+      google_apis::test_util::CreateCopyResultCallback(&error, &entry));
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_EQ(google_apis::HTTP_SUCCESS, error);
+  ASSERT_TRUE(entry);
+}
+
 TEST_F(JobSchedulerTest, GetShareUrl) {
   ConnectToWifi();
 
