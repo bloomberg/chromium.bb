@@ -1312,11 +1312,10 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     var options = this.fileTypeSelector_.querySelectorAll('option');
     if (options.length < 2) {
-      // There is in fact no choice, keep the selector hidden.
+      // There is in fact no choice, hide the selector.
+      this.fileTypeSelector_.hidden = true;
       return;
     }
-    // Otherwise, show it.
-    this.fileTypeSelector_.hidden = false;
 
     this.fileTypeSelector_.addEventListener('change',
         this.updateFileTypeFilter_.bind(this));
