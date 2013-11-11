@@ -127,16 +127,21 @@ void VolumeInfoToVolumeMetadata(
     const VolumeInfo& volume_info,
     file_browser_private::VolumeMetadata* volume_metadata) {
   DCHECK(volume_metadata);
+  DCHECK(!volume_info.mount_path.empty());
 
-  if (!volume_info.mount_path.empty()) {
-    // Convert mount point path to relative path with the external file system
-    // exposed within File API.
-    base::FilePath relative_mount_path;
-    if (ConvertAbsoluteFilePathToRelativeFileSystemPath(
-            profile, kFileManagerAppId, base::FilePath(volume_info.mount_path),
-            &relative_mount_path))
-      volume_metadata->mount_path = "/" + relative_mount_path.AsUTF8Unsafe();
+  // Convert mount point path to relative path with the external file system
+  // exposed within File API.
+  base::FilePath relative_mount_path;
+  if (ConvertAbsoluteFilePathToRelativeFileSystemPath(
+          profile, kFileManagerAppId, base::FilePath(volume_info.mount_path),
+          &relative_mount_path)) {
+    volume_metadata->mount_path = "/" + relative_mount_path.AsUTF8Unsafe();
   }
+
+  // TODO(satorux): Find a better way to generate unique IDs. IDs should
+  // probably be assigned when VolumeInfo list is created. For now, IDs are
+  // generated from the mount path here. crbug.com/316077
+  volume_metadata->volume_id = "id:" + volume_metadata->mount_path;
 
   if (!volume_info.source_path.empty()) {
     volume_metadata->source_path.reset(

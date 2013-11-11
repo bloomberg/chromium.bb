@@ -111,6 +111,11 @@
         "type": "object",
         "description": "Mounted disk volume metadata.",
         "properties": {
+          "volumeId": {
+            "type": "string",
+            "description": "ID of the disk volume."
+          },
+          // TODO(satorux): Remove "mountPath". crbug.com/316077
           "mountPath": {
             "type": "string",
             "description": "Disk volume mount point path."
