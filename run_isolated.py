@@ -397,11 +397,10 @@ class DiskCache(isolateserver.LocalCache):
       # caller, it will be logged there.
       try_remove(path)
       raise
-    # TODO(maruel): Then make the file read-only in the cache.
-    # This has a few side-effects since the file node is modified, so every
-    # directory entries to this file becomes read-only. This will be changed in
-    # a follow up CL.
-    # set_read_only(path, True)
+    # Make the file read-only in the cache.  This has a few side-effects since
+    # the file node is modified, so every directory entries to this file becomes
+    # read-only. It's fine here because it is a new file.
+    set_read_only(path, True)
     with self._lock:
       self._add(digest, size)
 
@@ -421,6 +420,11 @@ class DiskCache(isolateserver.LocalCache):
 
     if not os.path.isdir(self.cache_dir):
       os.makedirs(self.cache_dir)
+    else:
+      # Make sure the cache is read-only.
+      # TODO(maruel): Calculate the cost and optimize the performance
+      # accordingly.
+      make_tree_read_only(self.cache_dir)
 
     # Load state of the cache.
     if os.path.isfile(self.state_file):
@@ -429,7 +433,7 @@ class DiskCache(isolateserver.LocalCache):
       except ValueError as err:
         logging.error('Failed to load cache state: %s' % (err,))
         # Don't want to keep broken state file.
-        os.remove(self.state_file)
+        try_remove(self.state_file)
 
     # Ensure that all files listed in the state still exist and add new ones.
     previous = self._lru.keys_set()
@@ -465,6 +469,10 @@ class DiskCache(isolateserver.LocalCache):
   def _save(self):
     """Saves the LRU ordering."""
     self._lock.assert_locked()
+    try:
+      set_read_only(self.state_file, False)
+    except OSError:
+      pass
     self._lru.save(self.state_file)
 
   def _trim(self):
@@ -538,7 +546,7 @@ class DiskCache(isolateserver.LocalCache):
     try:
       if size == isolateserver.UNKNOWN_FILE_SIZE:
         size = os.stat(self._path(digest)).st_size
-      os.remove(self._path(digest))
+      try_remove(self._path(digest))
       self._removed.append(size)
     except OSError as e:
       logging.error('Error attempting to delete a file %s:\n%s' % (digest, e))

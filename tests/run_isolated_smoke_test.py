@@ -82,9 +82,9 @@ def tree_modes(root):
   return out
 
 
-class RunSwarmStep(unittest.TestCase):
+class RunIsolatedTest(unittest.TestCase):
   def setUp(self):
-    super(RunSwarmStep, self).setUp()
+    super(RunIsolatedTest, self).setUp()
     self.tempdir = run_isolated.make_temp_dir(
         'run_isolated_smoke_test', ROOT_DIR)
     logging.debug(self.tempdir)
@@ -102,7 +102,7 @@ class RunSwarmStep(unittest.TestCase):
 
   def tearDown(self):
     run_isolated.rmtree(self.tempdir)
-    super(RunSwarmStep, self).tearDown()
+    super(RunIsolatedTest, self).tearDown()
 
   def _result_tree(self):
     return list_files_tree(self.tempdir)
@@ -302,8 +302,11 @@ class RunSwarmStep(unittest.TestCase):
     expected = {
       '.': (040775, 040755, 040777),
       'state.json': (0100664, 0100644, 0100666),
+      # The reason for 0100666 on Windows is that the file node had to be
+      # modified to delete the hardlinked node. The read only bit is reset on
+      # load.
       file1_hash: (0100400, 0100400, 0100666),
-      isolated_hash: (0100664, 0100644, 0100666),
+      isolated_hash: (0100400, 0100400, 0100444),
     }
     self.assertTreeModes(self.cache, expected)
 
@@ -329,9 +332,9 @@ class RunSwarmStep(unittest.TestCase):
     self.assertEqual(0, returncode)
     expected = {
       '.': (040775, 040755, 040777),
-      'state.json': (0100664, 0100644, 0100666),
+      'state.json': (0100600, 0100600, 0100666),
       file1_hash: (0100400, 0100400, 0100666),
-      isolated_hash: (0100664, 0100644, 0100666),
+      isolated_hash: (0100400, 0100400, 0100444),
     }
     self.assertTreeModes(self.cache, expected)
 
@@ -358,7 +361,7 @@ class RunSwarmStep(unittest.TestCase):
       '.': (040775, 040755, 040777),
       'state.json': (0100664, 0100644, 0100666),
       file1_hash: (0100400, 0100400, 0100666),
-      isolated_hash: (0100664, 0100644, 0100666),
+      isolated_hash: (0100400, 0100400, 0100444),
     }
     self.assertTreeModes(self.cache, expected)
 
@@ -383,9 +386,9 @@ class RunSwarmStep(unittest.TestCase):
     self.assertEqual(0, returncode)
     expected = {
       '.': (040775, 040755, 040777),
-      'state.json': (0100664, 0100644, 0100666),
+      'state.json': (0100600, 0100600, 0100666),
       file1_hash: (0100400, 0100400, 0100666),
-      isolated_hash: (0100664, 0100644, 0100666),
+      isolated_hash: (0100400, 0100400, 0100444),
     }
     self.assertTreeModes(self.cache, expected)
 
