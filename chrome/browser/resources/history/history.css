@@ -277,6 +277,14 @@ html[dir='rtl'] #display-filter-controls label span.first-button-component,
   padding: 0;
 }
 
+.site-results.grouped {
+  -webkit-padding-start: 18px;
+}
+
+.no-checkboxes .site-results.grouped {
+  -webkit-padding-start: 21px;
+}
+
 .month-results {
   -webkit-padding-start: 0;
 }
@@ -318,7 +326,6 @@ html[dir='rtl'] .number-visits {
 }
 
 .drop-down {
-  -webkit-margin-end: 5px;
   margin-top: 1px;
 }
 
@@ -339,7 +346,6 @@ html[dir='rtl'] .site-domain {
 
 .entry input[type='checkbox'] {
   -webkit-margin-end: 6px;
-  -webkit-margin-start: 4px;
   line-height: 1em;
   margin-top: 2px;
   min-width: 13px;

@@ -1066,6 +1066,7 @@ HistoryView.prototype.getGroupedVisitsDOM_ = function(
   siteResults.appendChild(siteDomainWrapper);
   var resultsList = siteResults.appendChild(
       createElementWithClassName('ol', 'site-results'));
+  resultsList.classList.add('grouped');
 
   // Collapse until it gets toggled.
   resultsList.style.height = 0;
