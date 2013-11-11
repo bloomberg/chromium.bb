@@ -271,6 +271,7 @@ PassOwnPtr<blink::WebAnimation> createWebAnimation(const KeyframeValueList& valu
                 // FIXME: add support for steps timing function.
                 return nullptr;
             case TimingFunction::LinearFunction:
+                // This doesn't need to be flipped when the animation is reversed.
                 timingFunctionType = blink::WebAnimationCurve::TimingFunctionTypeLinear;
                 break;
             case TimingFunction::CubicBezierFunction:
@@ -281,6 +282,17 @@ PassOwnPtr<blink::WebAnimation> createWebAnimation(const KeyframeValueList& valu
                     y1 = originalBezierTimingFunction->y1();
                     x2 = originalBezierTimingFunction->x2();
                     y2 = originalBezierTimingFunction->y2();
+                    if (reverse) {
+                        // When the animation is reversed, we need to swap the
+                        // start and end keyframes, and flip the timing
+                        // function in both x and y.
+                        double x1Old = x1;
+                        double y1Old = y1;
+                        x1 = 1 - x2;
+                        y1 = 1 - y2;
+                        x2 = 1 - x1Old;
+                        y2 = 1 - y1Old;
+                    }
                     break;
                 }
             default:
