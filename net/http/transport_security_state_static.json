@@ -647,6 +647,7 @@
     { "name": "medium.com", "include_subdomains": true,  "mode": "force-https" },
     { "name": "liberty.lavabit.com", "include_subdomains": true, "mode": "force-https", "pins": "lavabit" },
     { "name": "getlantern.org", "include_subdomains": true, "mode": "force-https" },
+    { "name": "kinsights.com", "mode": "force-https" },
 
     // Entries that are only valid if the client supports SNI.
     { "name": "gmail.com", "mode": "force-https", "pins": "google", "snionly": true },
