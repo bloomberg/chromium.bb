@@ -809,8 +809,8 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
 
                 SelectorCheckingContext subContext(context);
                 subContext.isSubSelector = true;
-                subContext.behaviorAtBoundary = CrossesBoundary;
-                subContext.scope = 0;
+                subContext.behaviorAtBoundary = static_cast<BehaviorAtBoundary>(CrossesBoundary | ScopeIsShadowHost | TreatShadowHostAsNormalScope);
+                subContext.scope = context.scope;
                 // Use NodeRenderingTraversal to traverse a composed ancestor list of a given element.
                 for (Element* nextElement = &element; nextElement; nextElement = NodeRenderingTraversal::parentElement(nextElement)) {
                     // If one of simple selectors matches an element, returns SelectorMatches. Just "OR".
@@ -820,6 +820,8 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
                         if (match(subContext, ignoreDynamicPseudo, siblingTraversalStrategy) == SelectorMatches)
                             return true;
                     }
+                    subContext.behaviorAtBoundary = CrossesBoundary;
+                    subContext.scope = 0;
                 }
             }
             break;

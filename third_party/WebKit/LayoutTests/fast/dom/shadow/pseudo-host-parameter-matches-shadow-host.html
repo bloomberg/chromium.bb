@@ -89,6 +89,32 @@ sandbox.appendChild(
 borderColorShouldBe('host', 'rgb(0, 128, 0)');
 
 cleanUp();
+
+// attribute selector with :host
+sandbox.appendChild(
+    createDOM('div', {'id': 'host', 'foo': 'bar'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode(':host([foo=bar]:host) { border: 1px solid green; }')),
+            createDOM('div', {}))));
+
+borderColorShouldBe('host', 'rgb(0, 128, 0)');
+
+cleanUp();
+
+// tag, class, id selectors with :host.
+sandbox.appendChild(
+    createDOM('span', {'id': 'host', 'class': 'foo'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode(':host(span.foo#host:host) { border: 1px solid green; }')),
+            createDOM('div', {}))));
+
+borderColorShouldBe('host', 'rgb(0, 128, 0)');
+
+cleanUp();
+
+
 </script>
 <script src="../../js/resources/js-test-post.js"></script>
 </html>
