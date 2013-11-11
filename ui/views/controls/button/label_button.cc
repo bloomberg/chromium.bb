@@ -188,9 +188,6 @@ gfx::Size LabelButton::GetPreferredSize() {
   const gfx::Insets insets(GetInsets());
   size.Enlarge(image_size.width() + insets.width(), insets.height());
 
-  // Make the size at least as large as the minimum size needed by the border.
-  size.SetToMax(static_cast<LabelButtonBorder*>(border())->GetMinimumSize());
-
   // Increase the minimum size monotonically with the preferred size.
   size.SetToMax(min_size_);
   min_size_ = size;

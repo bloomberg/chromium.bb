@@ -34,9 +34,6 @@ class VIEWS_EXPORT LabelButtonBorder : public Border {
   Painter* GetPainter(bool focused, Button::ButtonState state);
   void SetPainter(bool focused, Button::ButtonState state, Painter* painter);
 
-  // Calls GetMinimumSize() on all painters and returns the largest such size.
-  gfx::Size GetMinimumSize() const;
-
  private:
   // The painters used for each unfocused or focused button state.
   scoped_ptr<Painter> painters_[2][Button::STATE_COUNT];
