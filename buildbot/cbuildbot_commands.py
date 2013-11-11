@@ -240,7 +240,7 @@ def WipeOldOutput(buildroot):
 
 def MakeChroot(buildroot, replace, use_sdk, chrome_root=None, extra_env=None):
   """Wrapper around make_chroot."""
-  cmd = ['cros_sdk']
+  cmd = ['cros_sdk', '--buildbot-log-version']
   cmd.append('--create' if use_sdk else '--bootstrap')
 
   if replace:

@@ -595,6 +595,9 @@ class RunCommandAbstractStageTest(AbstractStageTest,
 class InitSDKTest(RunCommandAbstractStageTest):
   """Test building the SDK"""
 
+  def setUp(self):
+    self.PatchObject(cros_build_lib, 'GetChrootVersion', return_value='12')
+
   def ConstructStage(self):
     return stages.InitSDKStage(self.run)
 

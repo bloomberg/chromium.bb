@@ -1158,8 +1158,8 @@ def _CreateParser():
 
   group = CustomGroup(
       parser,
-      'Internal ChromeOS Build Team Options',
-      'Caution: these are for meant for the ChromeOS build team only')
+      'Internal Chromium OS Build Team Options',
+      'Caution: these are for meant for the Chromium OS build team only')
 
   group.add_remote_option('--archive-base', type='gs_path',
                           help='Base GS URL (gs://<bucket_name>/<path>) to '

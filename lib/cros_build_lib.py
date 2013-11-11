@@ -1286,6 +1286,26 @@ def GetTargetChromiteApiVersion(buildroot, validate_version=True):
   return major, minor
 
 
+def GetChrootVersion(chroot=None, buildroot=None):
+  """Extract the version of the chroot.
+
+  Args:
+    chroot: Full path to the chroot to examine.
+    buildroot: If |chroot| is not set, find it relative to |buildroot|.
+
+  Returns:
+    The version of the chroot dir.
+  """
+  if chroot is None and buildroot is None:
+    raise ValueError('need either |chroot| or |buildroot| to search')
+
+  from chromite.lib import osutils
+  if chroot is None:
+    chroot = os.path.join(buildroot, constants.DEFAULT_CHROOT_DIR)
+  ver_path = os.path.join(chroot, 'etc', 'cros_chroot_version')
+  return osutils.ReadFile(ver_path).strip()
+
+
 def iflatten_instance(iterable, terminate_on_kls=(basestring,)):
   """Derivative of snakeoil.lists.iflatten_instance; flatten an object.
 

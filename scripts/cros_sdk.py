@@ -66,9 +66,10 @@ def GetStage3Urls(version):
 
 
 def FetchRemoteTarballs(storage_dir, urls):
-  """Fetches a tarball given by url, and place it in sdk/.
+  """Fetches a tarball given by url, and place it in |storage_dir|.
 
   Args:
+    storage_dir: Path where to save the tarball.
     urls: List of URLs to try to download. Download will stop on first success.
 
   Returns:
@@ -404,7 +405,8 @@ def _ReExecuteIfNeeded(argv):
     namespaces.Unshare(namespaces.CLONE_NEWNS)
 
 
-def main(argv):
+def _CreateParser(sdk_latest_version, bootstrap_latest_version):
+  """Generate and return the parser with all the options."""
   usage = """usage: %prog [options] [VAR1=val1 .. VARn=valn -- args]
 
 This script is used for manipulating local chroot environments; creating,
@@ -412,42 +414,10 @@ deleting, downloading, etc.  If given --enter (or no args), it defaults
 to an interactive bash shell within the chroot.
 
 If given args those are passed to the chroot environment, and executed."""
-  conf = cros_build_lib.LoadKeyValueFile(
-      os.path.join(constants.SOURCE_ROOT, constants.SDK_VERSION_FILE),
-      ignore_missing=True)
-  sdk_latest_version = conf.get('SDK_LATEST_VERSION', '<unknown>')
-  bootstrap_latest_version = conf.get('BOOTSTRAP_LATEST_VERSION', '<unknown>')
 
   parser = commandline.OptionParser(usage=usage, caching=True)
 
-  commands = parser.add_option_group("Commands")
-  commands.add_option(
-      '--enter', action='store_true', default=False,
-      help='Enter the SDK chroot.  Implies --create.')
-  commands.add_option(
-      '--create', action='store_true',default=False,
-      help='Create the chroot only if it does not already exist.  '
-      'Implies --download.')
-  commands.add_option(
-      '--bootstrap', action='store_true', default=False,
-      help='Build everything from scratch, including the sdk.  '
-      'Use this only if you need to validate a change '
-      'that affects SDK creation itself (toolchain and '
-      'build are typically the only folk who need this).  '
-      'Note this will quite heavily slow down the build.  '
-      'This option implies --create --nousepkg.')
-  commands.add_option(
-      '-r', '--replace', action='store_true', default=False,
-      help='Replace an existing SDK chroot.  Basically an alias '
-      'for --delete --create.')
-  commands.add_option(
-      '--delete', action='store_true', default=False,
-      help='Delete the current SDK chroot if it exists.')
-  commands.add_option(
-      '--download', action='store_true', default=False,
-      help='Download the sdk.')
-
-  # Global options:
+  # Global options.
   default_chroot = os.path.join(constants.SOURCE_ROOT,
                                 constants.DEFAULT_CHROOT_DIR)
   parser.add_option(
@@ -469,8 +439,55 @@ If given args those are passed to the chroot environment, and executed."""
                              Use file:// for local files.'''))
   parser.add_option('--sdk-version', default=None,
                     help='Use this sdk version.  For prebuilt, current is %r'
-                         ', for bootstrapping its %r.'
+                         ', for bootstrapping it is %r.'
                           % (sdk_latest_version, bootstrap_latest_version))
+
+  # Commands.
+  group = parser.add_option_group('Commands')
+  group.add_option(
+      '--enter', action='store_true', default=False,
+      help='Enter the SDK chroot.  Implies --create.')
+  group.add_option(
+      '--create', action='store_true',default=False,
+      help='Create the chroot only if it does not already exist.  '
+      'Implies --download.')
+  group.add_option(
+      '--bootstrap', action='store_true', default=False,
+      help='Build everything from scratch, including the sdk.  '
+      'Use this only if you need to validate a change '
+      'that affects SDK creation itself (toolchain and '
+      'build are typically the only folk who need this).  '
+      'Note this will quite heavily slow down the build.  '
+      'This option implies --create --nousepkg.')
+  group.add_option(
+      '-r', '--replace', action='store_true', default=False,
+      help='Replace an existing SDK chroot.  Basically an alias '
+      'for --delete --create.')
+  group.add_option(
+      '--delete', action='store_true', default=False,
+      help='Delete the current SDK chroot if it exists.')
+  group.add_option(
+      '--download', action='store_true', default=False,
+      help='Download the sdk.')
+  commands = group
+
+  # Internal options.
+  group = parser.add_option_group(
+      'Internal Chromium OS Build Team Options',
+      'Caution: these are for meant for the Chromium OS build team only')
+  group.add_option('--buildbot-log-version', default=False, action='store_true',
+                   help='Log SDK version for buildbot consumption')
+
+  return (parser, commands)
+
+
+def main(argv):
+  conf = cros_build_lib.LoadKeyValueFile(
+      os.path.join(constants.SOURCE_ROOT, constants.SDK_VERSION_FILE),
+      ignore_missing=True)
+  sdk_latest_version = conf.get('SDK_LATEST_VERSION', '<unknown>')
+  bootstrap_latest_version = conf.get('BOOTSTRAP_LATEST_VERSION', '<unknown>')
+  parser, commands = _CreateParser(sdk_latest_version, bootstrap_latest_version)
   options, chroot_command = parser.parse_args(argv)
 
   # Some sanity checks first, before we ask for sudo credentials.
@@ -522,6 +539,8 @@ If given args those are passed to the chroot environment, and executed."""
                    else sdk_latest_version)
   else:
     sdk_version = options.sdk_version
+  if options.buildbot_log_version:
+    cros_build_lib.PrintBuildbotStepText(sdk_version)
 
   # Based on selections, fetch the tarball.
   if options.sdk_url:

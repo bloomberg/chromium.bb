@@ -18,6 +18,7 @@ import errno
 import functools
 import itertools
 import logging
+import mock
 import mox
 import signal
 import StringIO
@@ -1189,6 +1190,25 @@ qlen 1000
 
     cros_build_lib.GetIPv4Address(global_ip=True)
     self.rc.assertCommandContains(['ip', 'addr', 'show', 'scope', 'global'])
+
+
+@mock.patch('chromite.lib.osutils.ReadFile')
+class TestGetChrootVersion(cros_test_lib.TestCase):
+  """Tests GetChrootVersion functionality."""
+
+  def testSimpleBuildroot(self, read_mock):
+    """Verify buildroot arg works"""
+    read_mock.return_value = '12\n'
+    ret = cros_build_lib.GetChrootVersion(buildroot='/build/root')
+    self.assertEqual(ret, '12')
+    read_mock.assert_called_with('/build/root/chroot/etc/cros_chroot_version')
+
+  def testSimpleChroot(self, read_mock):
+    """Verify chroot arg works"""
+    read_mock.return_value = '70'
+    ret = cros_build_lib.GetChrootVersion(chroot='/ch/root')
+    self.assertEqual(ret, '70')
+    read_mock.assert_called_with('/ch/root/etc/cros_chroot_version')
 
 
 if __name__ == '__main__':
