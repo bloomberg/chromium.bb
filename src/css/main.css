@@ -519,6 +519,7 @@ body.browser #picture-preview {
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
   margin: 10px;
   transition: -webkit-transform 50ms;
+  vertical-align: middle;
   width: 170px;
 }
 
@@ -551,10 +552,10 @@ body.album #album {
   border: 10px solid white;
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
   display: -webkit-box;
+  height: 72%;
   margin: 4%;
   pointer-events: auto;
   transition: -webkit-transform 200ms;
-  width: 72%;
 }
 
 #browser div.bounds-padder {
