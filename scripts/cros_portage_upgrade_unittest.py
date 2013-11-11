@@ -2408,7 +2408,7 @@ class CategoriesRoundtripTest(cros_test_lib.MoxOutputTestCase):
     cpu.Upgrader._RunGit(stable_repo, ['add', cat_file])
     self.mox.ReplayAll()
 
-    options = cros_test_lib.EasyAttr(srcroot='foobar') # Not important
+    options = cros_test_lib.EasyAttr(srcroot='foobar', upstream=None)
     upgrader = cpu.Upgrader(options=options)
     upgrader._stable_repo = stable_repo
     os.makedirs(profiles_dir)

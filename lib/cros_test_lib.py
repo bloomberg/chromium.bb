@@ -270,7 +270,7 @@ class EasyAttr(dict):
     try:
       return self[attr]
     except KeyError:
-      return AttributeError(attr)
+      raise AttributeError(attr)
 
   def __delattr__(self, attr):
     try:
