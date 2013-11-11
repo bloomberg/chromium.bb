@@ -46,7 +46,7 @@ webkit.org/b/82297 [ Lion MountainLion Retina ] fast/events/platform-wheelevent-
 webkit.org/b/82297 [ Lion MountainLion Retina ] fast/events/platform-wheelevent-paging-y-in-scrolling-page.html [ WontFix ]
 webkit.org/b/ [ Win7 ] http/tests/xmlhttprequest/redirect-cross-origin-post.html [ WontFix ]
 webkit.org/b/83647 [ Linux Win ] fast/multicol/cell-shrinkback.html [ WontFix ]
-webkit.org/b/86114 [ Debug ] animations/combo-transform-translate+scale.html [ WontFix ]
+webkit.org/b/86114 animations/combo-transform-translate+scale.html [ WontFix ]
 
 # Ref-tests can't have platform specific results.
 webkit.org/b/87175 [ Win Linux ] fast/regions/floats-basic-in-variable-width-regions.html [ WontFix ]
