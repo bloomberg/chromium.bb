@@ -210,9 +210,9 @@ void ProcessingInstruction::setXSLStyleSheet(const String& href, const KURL& bas
 void ProcessingInstruction::parseStyleSheet(const String& sheet)
 {
     if (m_isCSS)
-        static_cast<CSSStyleSheet*>(m_sheet.get())->contents()->parseString(sheet);
+        toCSSStyleSheet(m_sheet.get())->contents()->parseString(sheet);
     else if (m_isXSL)
-        static_cast<XSLStyleSheet*>(m_sheet.get())->parseString(sheet);
+        toXSLStyleSheet(m_sheet.get())->parseString(sheet);
 
     if (m_resource)
         m_resource->removeClient(this);
@@ -221,9 +221,9 @@ void ProcessingInstruction::parseStyleSheet(const String& sheet)
     m_loading = false;
 
     if (m_isCSS)
-        static_cast<CSSStyleSheet*>(m_sheet.get())->contents()->checkLoaded();
+        toCSSStyleSheet(m_sheet.get())->contents()->checkLoaded();
     else if (m_isXSL)
-        static_cast<XSLStyleSheet*>(m_sheet.get())->checkLoaded();
+        toXSLStyleSheet(m_sheet.get())->checkLoaded();
 }
 
 void ProcessingInstruction::setCSSStyleSheet(PassRefPtr<CSSStyleSheet> sheet)

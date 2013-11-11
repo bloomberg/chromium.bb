@@ -64,7 +64,7 @@ void ShadowTreeStyleSheetCollection::collectStyleSheets(StyleEngine* collections
 
         sheet = toHTMLStyleElement(node)->sheet();
         if (sheet && !sheet->disabled() && sheet->isCSSStyleSheet())
-            activeSheet = static_cast<CSSStyleSheet*>(sheet);
+            activeSheet = toCSSStyleSheet(sheet);
 
         // FIXME: clarify how PREFERRED or ALTERNATE works in shadow trees.
         // Should we set preferred/selected stylesheets name in shadow trees and

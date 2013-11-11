@@ -41,7 +41,7 @@ v8::Handle<v8::Object> wrap(StyleSheet* impl, v8::Handle<v8::Object> creationCon
 {
     ASSERT(impl);
     if (impl->isCSSStyleSheet())
-        return wrap(static_cast<CSSStyleSheet*>(impl), creationContext, isolate);
+        return wrap(toCSSStyleSheet(impl), creationContext, isolate);
     return V8StyleSheet::createWrapper(impl, creationContext, isolate);
 }
 

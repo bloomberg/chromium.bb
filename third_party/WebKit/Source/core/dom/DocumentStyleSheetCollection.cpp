@@ -73,7 +73,7 @@ void DocumentStyleSheetCollection::collectStyleSheets(StyleEngine* collections, 
             }
             sheet = pi->sheet();
             if (sheet && !sheet->disabled() && sheet->isCSSStyleSheet())
-                activeSheet = static_cast<CSSStyleSheet*>(sheet);
+                activeSheet = toCSSStyleSheet(sheet);
         } else if ((n->isHTMLElement() && (n->hasTagName(linkTag) || n->hasTagName(styleTag))) || (n->isSVGElement() && n->hasTagName(SVGNames::styleTag))) {
             Element* e = toElement(n);
             AtomicString title = e->getAttribute(titleAttr);
@@ -104,7 +104,7 @@ void DocumentStyleSheetCollection::collectStyleSheets(StyleEngine* collections, 
             }
 
             if (sheet && !sheet->disabled() && sheet->isCSSStyleSheet())
-                activeSheet = static_cast<CSSStyleSheet*>(sheet);
+                activeSheet = toCSSStyleSheet(sheet);
 
             // Check to see if this sheet belongs to a styleset
             // (thus making it PREFERRED or ALTERNATE rather than

@@ -120,6 +120,8 @@ private:
     XSLStyleSheet* m_parentStyleSheet;
 };
 
+DEFINE_TYPE_CASTS(XSLStyleSheet, StyleSheet, sheet, !sheet->isCSSStyleSheet(), !sheet.isCSSStyleSheet());
+
 } // namespace WebCore
 
 #endif // XSLStyleSheet_h

@@ -162,6 +162,8 @@ inline CSSStyleSheet::RuleMutationScope::~RuleMutationScope()
         m_styleSheet->didMutateRules();
 }
 
+DEFINE_TYPE_CASTS(CSSStyleSheet, StyleSheet, sheet, sheet->isCSSStyleSheet(), sheet.isCSSStyleSheet());
+
 } // namespace
 
 #endif

@@ -865,7 +865,7 @@ void InspectorCSSAgent::activeStyleSheetsUpdated(Document* document, const Style
         StyleSheet* newSheet = newSheets.at(i).get();
         if (newSheet->isCSSStyleSheet()) {
             StyleSheetAppender appender(newSheetsVector);
-            appender.run(static_cast<CSSStyleSheet*>(newSheet));
+            appender.run(toCSSStyleSheet(newSheet));
         }
     }
 
@@ -890,7 +890,7 @@ void InspectorCSSAgent::activeStyleSheetsUpdated(Document* document, const Style
 
     for (HashSet<CSSStyleSheet*>::iterator it = addedSheets.begin(); it != addedSheets.end(); ++it) {
         if (!m_cssStyleSheetToInspectorStyleSheet.contains(*it)) {
-            InspectorStyleSheet* newStyleSheet = bindStyleSheet(static_cast<CSSStyleSheet*>(*it));
+            InspectorStyleSheet* newStyleSheet = bindStyleSheet(*it);
             if (m_frontend)
                 m_frontend->styleSheetAdded(newStyleSheet->buildObjectForStyleSheetInfo());
         }
@@ -1446,14 +1446,14 @@ void InspectorCSSAgent::collectAllStyleSheets(Vector<InspectorStyleSheet*>& resu
         for (unsigned i = 0; i < list->length(); ++i) {
             StyleSheet* styleSheet = list->item(i);
             if (styleSheet->isCSSStyleSheet())
-                collectStyleSheets(static_cast<CSSStyleSheet*>(styleSheet), result);
+                collectStyleSheets(toCSSStyleSheet(styleSheet), result);
         }
     }
 }
 
 void InspectorCSSAgent::collectStyleSheets(CSSStyleSheet* styleSheet, Vector<InspectorStyleSheet*>& result)
 {
-    InspectorStyleSheet* inspectorStyleSheet = bindStyleSheet(static_cast<CSSStyleSheet*>(styleSheet));
+    InspectorStyleSheet* inspectorStyleSheet = bindStyleSheet(styleSheet);
     result.append(inspectorStyleSheet);
     for (unsigned i = 0, size = styleSheet->length(); i < size; ++i) {
         CSSRule* rule = styleSheet->item(i);

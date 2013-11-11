@@ -4090,7 +4090,7 @@ void Document::applyXSLTransform(ProcessingInstruction* pi)
     ASSERT(!pi->isLoading());
     UseCounter::count(*this, UseCounter::XSLProcessingInstruction);
     RefPtr<XSLTProcessor> processor = XSLTProcessor::create();
-    processor->setXSLStyleSheet(static_cast<XSLStyleSheet*>(pi->sheet()));
+    processor->setXSLStyleSheet(toXSLStyleSheet(pi->sheet()));
     String resultMIMEType;
     String newSource;
     String resultEncoding;
