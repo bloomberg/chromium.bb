@@ -3503,6 +3503,7 @@
             'css/CSSParserValuesTest.cpp',
             'css/CSSCalculationValueTest.cpp',
             'css/CSSValueTestHelper.h',
+            'editing/TextIteratorTest.cpp',
             'fetch/ImageResourceTest.cpp',
             'fetch/MemoryCacheTest.cpp',
             'fetch/ResourceFetcherTest.cpp',
