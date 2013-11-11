@@ -1252,19 +1252,27 @@ class GerritTestCase(TempDirTestCase):
   def createAccount(cls, name='Test User', email='test-user@test.org',
                     password=None, groups=None):
     """Create a new user account on gerrit."""
-    username = email.partition('@')[0]
-    gerrit_cmd = 'gerrit create-account %s --full-name "%s" --email %s' % (
-        username, name, email)
-    cmd = ['ssh', '-p', cls.gerrit_instance.ssh_port,
-           '-i', cls.gerrit_instance.ssh_ident,
-           '-o', 'NoHostAuthenticationForLocalhost=yes',
-           '-o', 'StrictHostKeyChecking=no',
-           '%s@localhost' % cls.TEST_USERNAME, gerrit_cmd]
+    username = urllib.quote(email.partition('@')[0])
+    path = 'accounts/%s' % username
+    body = {
+        'name': name,
+        'email': email,
+    }
+
     if password:
-      cmd.extend(['--http-password', password])
+      body['http_password'] = password
     if groups:
-      cmd.extend(['--group %s' % x for x in groups])
-    cros_build_lib.RunCommandQuietly(cmd)
+      if isinstance(groups, basestring):
+        groups = [groups]
+      body['groups'] = groups
+    conn = gob_util.CreateHttpConn(
+        cls.gerrit_instance.gerrit_host, path, reqtype='PUT', body=body)
+    response = conn.getresponse()
+    assert response.status == 201
+    s = cStringIO.StringIO(response.read())
+    assert s.readline().rstrip() == ")]}'"
+    jmsg = json.load(s)
+    assert jmsg['email'] == email
 
   @staticmethod
   def _stop_gerrit(gerrit_obj):
