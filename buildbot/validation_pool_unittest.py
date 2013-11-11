@@ -197,24 +197,8 @@ class MoxBase(Base, cros_test_lib.MoxTestCase):
     return Base.MockPatch(self, *args, **kwargs)
 
 
-class IgnoredStagesTest(cros_test_lib.TestCase):
+class IgnoredStagesTest(Base):
   """Tests for functions that calculate what stages to ignore."""
-
-  def testGetStagesToIgnoreForProject(self):
-    """Test GetStagesToIgnoreForProject.
-
-    This verifies that GetStagesToIgnoreForProject returns the right results
-    when we point it at the real buildroot. This uses some magic values but
-    serves as a good integration test.
-    """
-    expected_ignores = (
-      ('chromiumos/chromite', []),
-      ('chromiumos/third_party/coreboot', ['HWTest', 'VMTest']),
-    )
-    buildroot = constants.SOURCE_ROOT
-    for project, xignored in expected_ignores:
-      ignored = validation_pool.GetStagesToIgnoreForProject(buildroot, project)
-      self.assertEqual(xignored, list(sorted(ignored)))
 
   def testBadConfigFile(self):
     """Test if we can handle an incorrectly formatted config file."""
@@ -243,12 +227,6 @@ class IgnoredStagesTest(cros_test_lib.TestCase):
 class TestPatchSeries(MoxBase):
   """Tests resolution and applying logic of validation_pool.ValidationPool."""
 
-  @staticmethod
-  def SetContentMergingProjects(series, projects=(),
-                                remote=constants.EXTERNAL_REMOTE):
-    helper = series._helper_pool.GetHelper(remote)
-    series._content_merging_projects[helper] = frozenset(projects)
-
   @contextlib.contextmanager
   def _ValidateTransactionCall(self, _changes):
     yield
@@ -261,12 +239,14 @@ class TestPatchSeries(MoxBase):
 
     # Suppress transactions.
     series._Transaction = self._ValidateTransactionCall
+    series.GetGitRepoForChange = \
+        lambda change, **kwargs: os.path.join(self.build_root, change.project)
+    series._IsContentMerging = lambda change: False
 
     return series
 
   def assertPath(self, _patch, return_value, path):
-    self.assertEqual(path,
-                     os.path.join(self.build_root, _patch.project))
+    self.assertEqual(path, os.path.join(self.build_root, _patch.project))
     if isinstance(return_value, Exception):
       raise return_value
     return return_value
@@ -881,6 +861,10 @@ class TestCoreLogic(MoxBase):
       projects.setdefault(patch.project, {})['revision'] = revision
 
     manifest = MockManifest(self.build_root, projects=projects)
+    for patch in allowed_patches:
+      patch.GetCheckout = lambda _: True
+    for patch in filtered_patches:
+      patch.GetCheckout = lambda _: False
 
     self.mox.ReplayAll()
     results = validation_pool.ValidationPool._FilterNonCrosProjects(
@@ -1272,7 +1256,7 @@ class BaseSubmitPoolTestCase(Base, cros_build_lib_unittest.RunCommandTestCase):
     self.patches = self.GetPatches(2)
 
     # By default, don't ignore any errors.
-    self.ignores = dict((str(patch), []) for patch in self.patches)
+    self.ignores = dict((patch, []) for patch in self.patches)
 
   def SetUpPatchPool(self, failed_to_apply=False):
     pool = MakePool(changes=self.patches, dryrun=False)
@@ -1295,10 +1279,10 @@ class BaseSubmitPoolTestCase(Base, cros_build_lib_unittest.RunCommandTestCase):
       rejected: List of changes that we expect to be rejected.
       **kwargs: Keyword arguments for SetUpPatchPool.
     """
-    # self.ignores maps projects to a list of stages to ignore. Use it.
+    # self.ignores maps changes to a list of stages to ignore. Use it.
     self.PatchObject(
-        validation_pool, 'GetStagesToIgnoreForProject',
-        side_effect=lambda _, project: self.ignores[project])
+        validation_pool, 'GetStagesToIgnoreForChange',
+        side_effect=lambda _, change: self.ignores[change])
 
     # Set up our pool and submit the patches.
     pool = self.SetUpPatchPool(**kwargs)
@@ -1422,7 +1406,7 @@ class SubmitPartialPoolTest(BaseSubmitPoolTestCase):
 
   def IgnoreFailures(self, patch):
     """Set us up to ignore failures for the specified |patch|."""
-    self.ignores[str(patch)] = [self.stage_name]
+    self.ignores[patch] = [self.stage_name]
 
   def testSubmitNone(self):
     """Submit no changes."""

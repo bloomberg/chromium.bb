@@ -181,7 +181,7 @@ def GetStagesToIgnoreFromConfigFile(config_path):
   """Get a list of stage name prefixes to ignore from |config_path|.
 
   This function reads the specified config file and returns the list
-  of stage name prefixes to ignore in the CQ. See GetStagesToIgnoreForProject
+  of stage name prefixes to ignore in the CQ. See GetStagesToIgnoreForChange
   for more details.
 
   Args:
@@ -199,8 +199,8 @@ def GetStagesToIgnoreFromConfigFile(config_path):
   return ignored_stages
 
 
-def GetStagesToIgnoreForProject(build_root, project):
-  """Get a list of stages that the CQ should ignore for a given |project|.
+def GetStagesToIgnoreForChange(build_root, change):
+  """Get a list of stages that the CQ should ignore for a given |change|.
 
   The list of stage name prefixes to ignore for each project is specified in a
   config file inside the project, named COMMIT-QUEUE.ini. The file would look
@@ -216,12 +216,18 @@ def GetStagesToIgnoreForProject(build_root, project):
   Args:
     build_root: The root of the checkout.
     changes: Changes to examine.
+
+  Returns:
+    A list of stages to ignore for the given |change|.
   """
   manifest = git.ManifestCheckout.Cached(build_root)
-  dirname = os.path.join(build_root, manifest.GetProjectPath(project))
-  path = os.path.join(dirname, 'COMMIT-QUEUE.ini')
-  return GetStagesToIgnoreFromConfigFile(path)
+  checkout = change.GetCheckout(manifest)
+  if checkout:
+    dirname = checkout.GetPath(absolute=True)
+    path = os.path.join(dirname, 'COMMIT-QUEUE.ini')
+    return GetStagesToIgnoreFromConfigFile(path)
 
+  return []
 
 class GerritHelperNotAvailable(gerrit.GerritException):
   """Exception thrown when a specific helper is requested but unavailable."""
@@ -412,19 +418,18 @@ class PatchSeries(object):
 
     Args:
       change: The change to operate on.
-      strict: If True, throw a ChangeNotInManifestException rather than
-              returning None. Default: False.
+      strict: If True, throw ChangeNotInManifest rather than returning
+        None. Default: False.
 
     Returns:
       The project path if found in the manifest. Otherwise returns
       None (if strict=False).
     """
     project_dir = None
-    if self.manifest and self.manifest.ProjectExists(change.project):
-      project_dir = self.manifest.GetProjectPath(change.project, True)
-
-    if strict and project_dir is None:
-      raise ChangeNotInManifestException(change)
+    if self.manifest:
+      checkout = change.GetCheckout(self.manifest, strict=strict)
+      if checkout is not None:
+        project_dir = checkout.GetPath(absolute=True)
 
     return project_dir
 
@@ -444,7 +449,7 @@ class PatchSeries(object):
     """
     if self.force_content_merging:
       return True
-    return self.manifest.ProjectIsContentMerging(change.project)
+    return change.GetCheckout(self.manifest, strict=True).IsContentMerging()
 
   @_ManifestDecorator
   def ApplyChange(self, change, dryrun=False):
@@ -746,7 +751,7 @@ class PatchSeries(object):
         # Internal patches are irrelevant to external builders.
         logging.info("Skipping internal patch: %s", change)
         continue
-      change.Fetch(self.GetGitRepoForChange(change))
+      change.Fetch(self.GetGitRepoForChange(change, strict=True))
       yield change
 
   @_ManifestDecorator
@@ -1543,19 +1548,14 @@ class ValidationPool(object):
     # First we filter to only Chromium OS repositories.
     changes = [c for c in changes if IsCrosReview(c)]
 
-    projects = manifest.projects
-
     changes_in_manifest = []
     changes_not_in_manifest = []
     for change in changes:
-      patch_branch = 'refs/heads/%s' % change.tracking_branch
-      project_data = projects.get(change.project)
-      if project_data is not None and patch_branch == project_data['revision']:
+      if change.GetCheckout(manifest):
         changes_in_manifest.append(change)
-        continue
-
-      changes_not_in_manifest.append(change)
-      logging.info('Filtered change %s', change)
+      else:
+        changes_not_in_manifest.append(change)
+        logging.info('Filtered change %s', change)
 
     return changes_in_manifest, changes_not_in_manifest
 
@@ -1931,8 +1931,7 @@ class ValidationPool(object):
     # categorize the CL as accepted or rejected.
     accepted, rejected = [], []
     for change in self.changes:
-      ignored_stages = GetStagesToIgnoreForProject(
-          self.build_root, change.project)
+      ignored_stages = GetStagesToIgnoreForChange(self.build_root, change)
       if failing_stages.issubset(ignored_stages):
         accepted.append(change)
       else:
