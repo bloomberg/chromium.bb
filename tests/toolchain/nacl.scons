@@ -280,6 +280,8 @@ for tag, env_to_try in EH_ENVIRONMENTS_TO_TRY:
     non_abi_stable_tests = [
         'unwind_trace.cc', # Tests _Unwind_* functions
         'eh_floating_point.cc', # Uses vector types
+        'stack_frame.cc', # Uses llvm.eh.dwarf.cfa
+        'eh_return.c', # Uses llvm.eh.dwarf.cfa, and llvm.eh.return.i32
         ]
     if tag == 'sjlj' and src in non_abi_stable_tests:
       continue
