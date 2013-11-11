@@ -86,19 +86,41 @@ found in the LICENSE file.
                 </td>
               </tr>
               <tr>
-                <td class="name">
-                  <label for="lockPalette">Lock Palette:</label>
-                </td>
-                <td class="value">
-                  <input type="checkbox" id="lockPalette" value="0">
-                </td>
-              </tr>
-              <tr>
                 <td class="name">Brush Size:</td>
                 <td class="value">
                   <input type="range" id="brushSizeRange" min="10.0" max="50.0"
                       step="0.5" value="10.0">
                   <span id="brushSize">10.0</span>
+                </td>
+              </tr>
+              <tr>
+                <td class="name">Thread Count:</td>
+                <td class="value">
+                  <select id="threadCount">
+                    <option value="1" selected>1 Thread</option>
+                    <option value="2">2 Threads</option>
+                    <option value="4">4 Threads</option>
+                    <option value="6">6 Threads</option>
+                    <option value="8">8 Threads</option>
+                  </select>
+                </td>
+              </tr>
+              <tr>
+                <td class="name">Simulation Size:</td>
+                <td>
+                  <select id="simSize">
+                    <option value="256" selected>256x256</option>
+                    <option value="384">384x384</option>
+                    <option value="512">512x512</option>
+                  </select>
+                </td>
+              </tr>
+              <tr>
+                <td class="name">Zoom:</td>
+                <td class="value">
+                  <input type="range" id="scale" min="0.5" max="5.0"
+                      step="0.01" value="1.0">
+                  <span id="scaleValue">100%</span>
                 </td>
               </tr>
             </tbody>
@@ -107,9 +129,9 @@ found in the LICENSE file.
 
         <h2>Actions</h2>
         <div class="panel-body">
-          <button id="reset" class="block">Reset</button>
-          <button id="splat" class="block">Splat</button>
-          <button id="clear" class="block">Clear</button>
+          <button id="reset" class="one-third">Reset</button>
+          <button id="splat" class="one-third">Splat</button>
+          <button id="clear" class="one-third">Clear</button>
         </div>
       </div>
 

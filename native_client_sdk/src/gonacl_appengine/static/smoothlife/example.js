@@ -73,7 +73,7 @@ function browserSupportsPNaCl() {
  * @return {string}
  */
 function getDataURL(name) {
-  var revision = 233080;
+  var revision = '234120_dev';
   var baseUrl = 'http://commondatastorage.googleapis.com/gonacl/demos/publish/';
   return baseUrl + revision + '/smoothlife/' + name;
 }
@@ -222,6 +222,57 @@ function attachListeners() {
     setBrushSize(radius, 1.0);
     $('brushSize').textContent = radius.toFixed(1);
   });
+  $('threadCount').addEventListener('change', function() {
+    setThreadCount(parseInt(this.value, 10));
+  });
+  $('simSize').addEventListener('change', function() {
+    setSize(parseInt(this.value, 10));
+    // changing the simulation size clears everything, so reset.
+    loadSelectedPreset();
+  });
+  $('scale').addEventListener('change', function() {
+    var scale = parseFloat(this.value);
+    setMaxScale(scale);
+    updateScaleText();
+  });
+
+  setInterval(function() {
+    if (!naclModule)
+      return;
+
+    // Get the size of the embed and the size of the simulation, and
+    // determine the maximum scale.
+    var rect = naclModule.getBoundingClientRect();
+    var embedScale = Math.min(rect.width, rect.height);
+    var simSize = parseInt($('simSize').value, 10);
+    var maxScale = embedScale / simSize;
+    var scaleEl = $('scale');
+
+    if (scaleEl.max != maxScale) {
+      var minScale = scaleEl.min;
+      scaleEl.disabled = false;
+      var clampedScale = Math.min(maxScale, Math.max(minScale, scaleEl.value));
+
+      scaleEl.max = maxScale;
+
+      // Normally the minScale is 0.5, but sometimes maxScale can be less
+      // than that. In that case, set the minScale to maxScale.
+      scaleEl.min = Math.min(maxScale, 0.5);
+
+      // Reset the value so the input range updates.
+      scaleEl.value = 0;
+      scaleEl.value = clampedScale;
+      updateScaleText();
+
+      // If max scale is too small, disable zoom.
+      scaleEl.disabled = maxScale < minScale;
+    }
+  }, 100);
+
+  function updateScaleText() {
+    var percent = (parseFloat($('scale').value) * 100).toFixed(0) + '%'
+    $('scaleValue').textContent = percent;
+  }
 }
 
 function loadSelectedPreset() {
@@ -230,13 +281,14 @@ function loadSelectedPreset() {
 
 function loadPreset(index) {
   var preset = presets[index];
-  var lockPalette = $('lockPalette').checked;
   var selectedPalette = $('palette').value;
 
   clear(0);
   setKernel.apply(null, preset[0]);
   setSmoother.apply(null, preset[1]);
-  if (!lockPalette || selectedPalette == 0)
+  // Only change the palette if it is set to "Default", which means to use
+  // the preset default palette.
+  if (selectedPalette == 0)
     setPalette.apply(null, preset[2]);
   splat();
 

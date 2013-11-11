@@ -312,6 +312,10 @@ section iframe {
   display: block;
 }
 
+.demo button.one-third {
+  width: 32%;
+}
+
 .demo button:hover {
   background: #333;
 }
