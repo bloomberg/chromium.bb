@@ -912,7 +912,7 @@ void Element::setSynchronizedLazyAttribute(const QualifiedName& name, const Atom
     setAttributeInternal(index, name, value, InSynchronizationOfLazyAttribute);
 }
 
-inline void Element::setAttributeInternal(size_t index, const QualifiedName& name, const AtomicString& newValue, SynchronizationOfLazyAttribute inSynchronizationOfLazyAttribute)
+ALWAYS_INLINE void Element::setAttributeInternal(size_t index, const QualifiedName& name, const AtomicString& newValue, SynchronizationOfLazyAttribute inSynchronizationOfLazyAttribute)
 {
     if (newValue.isNull()) {
         if (index != kNotFound)
