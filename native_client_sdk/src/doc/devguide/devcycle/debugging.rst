@@ -270,7 +270,7 @@ Follow the instructions below to debug your module with nacl-gdb:
      Turns off the Chrome sandbox (not the Native Client sandbox). This enables
      the stdout and stderr streams, and lets the debugger connect.
 
-   **Optional flagsa:**
+   **Optional flags:**
 
    ``--disable-hang-monitor``
      Prevents Chrome from displaying a warning when a tab is unresponsive.
