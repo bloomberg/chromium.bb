@@ -24,7 +24,8 @@ def check_attribs(path, expected_exec_bit):
     test.fail_test()
 
 
-test = TestGyp.TestGyp()
+# Doesn't pass with the android generator, see gyp bug 379.
+test = TestGyp.TestGyp(formats=['!android'])
 
 test.run_gyp('copies-attribs.gyp', chdir='src')
 
