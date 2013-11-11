@@ -11,6 +11,8 @@
 	     of the seek bar icon.
     -->
     <dimen name="color_picker_gradient_margin">14.5dp</dimen>
+    <dimen name="autofill_text_height">44dp</dimen>
+    <dimen name="autofill_text_divider_height">1px</dimen>
 
     <!-- Infobar dimensions -->
     <!-- Text size of the InfoBar message. -->

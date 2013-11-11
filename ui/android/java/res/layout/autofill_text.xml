@@ -6,29 +6,27 @@
 -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:id="@+id/autofill_menu_text"
-              android:layout_width="match_parent"
-              android:layout_height="44dp"
-              android:minHeight="44dp"
-              android:orientation="vertical"
-              android:gravity="center_vertical">
-  <TextView android:id="@+id/autofill_label"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:ellipsize="end"
-            android:singleLine="true"
-            android:textSize="18sp"
-            android:includeFontPadding="false"
-            android:layout_marginStart="10dp"
-            android:layout_marginEnd="10dp"/>
-  <TextView android:id="@+id/autofill_sublabel"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textSize="14sp"
-            android:textColor="#8b8b8b"
-            android:ellipsize="end"
-            android:singleLine="true"
-            android:includeFontPadding="false"
-            android:layout_marginStart="10dp"
-            android:layout_marginEnd="10dp"/>
+    android:id="@+id/autofill_menu_text"
+    android:orientation="vertical"
+    android:gravity="center_vertical">
+
+    <TextView android:id="@+id/autofill_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:ellipsize="end"
+        android:singleLine="true"
+        android:textSize="18sp"
+        android:includeFontPadding="false"/>
+    <TextView android:id="@+id/autofill_sublabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:textSize="14sp"
+        android:textColor="#8b8b8b"
+        android:ellipsize="end"
+        android:singleLine="true"
+        android:includeFontPadding="false"/>
 </LinearLayout>
