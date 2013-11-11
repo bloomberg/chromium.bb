@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Use the <code>chrome.fileSystemProvider</code> API to create file systems,
+// that can be accessible from the file manager on Chrome OS.
 [platforms=("chromeos"),
  implemented_in="chrome/browser/chromeos/extensions/file_system_provider/file_system_provider_api.h"]
 namespace fileSystemProvider {
