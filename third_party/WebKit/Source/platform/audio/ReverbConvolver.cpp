@@ -32,8 +32,11 @@
 
 #include "platform/audio/ReverbConvolver.h"
 
+#include "platform/Task.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/VectorMath.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebThread.h"
 
 namespace WebCore {
 
@@ -53,22 +56,12 @@ const size_t RealtimeFrameLimit = 8192  + 4096; // ~278msec @ 44.1KHz
 const size_t MinFFTSize = 128;
 const size_t MaxRealtimeFFTSize = 2048;
 
-static void backgroundThreadEntry(void* threadData)
-{
-    ReverbConvolver* reverbConvolver = static_cast<ReverbConvolver*>(threadData);
-    reverbConvolver->backgroundThreadEntry();
-}
-
 ReverbConvolver::ReverbConvolver(AudioChannel* impulseResponse, size_t renderSliceSize, size_t maxFFTSize, size_t convolverRenderPhase, bool useBackgroundThreads)
     : m_impulseResponseLength(impulseResponse->length())
     , m_accumulationBuffer(impulseResponse->length() + renderSliceSize)
     , m_inputBuffer(InputBufferSize)
     , m_minFFTSize(MinFFTSize) // First stage will have this size - successive stages will double in size each time
     , m_maxFFTSize(maxFFTSize) // until we hit m_maxFFTSize
-    , m_useBackgroundThreads(useBackgroundThreads)
-    , m_backgroundThread(0)
-    , m_wantsToExit(false)
-    , m_moreInputBuffered(false)
 {
     // If we are using background threads then don't exceed this FFT size for the
     // stages which run in the real-time thread.  This avoids having only one or two
@@ -106,7 +99,7 @@ ReverbConvolver::ReverbConvolver(AudioChannel* impulseResponse, size_t renderSli
 
         bool isBackgroundStage = false;
 
-        if (this->useBackgroundThreads() && stageOffset > RealtimeFrameLimit) {
+        if (useBackgroundThreads && stageOffset > RealtimeFrameLimit) {
             m_backgroundStages.append(stage.release());
             isBackgroundStage = true;
         } else
@@ -128,53 +121,32 @@ ReverbConvolver::ReverbConvolver(AudioChannel* impulseResponse, size_t renderSli
 
     // Start up background thread
     // FIXME: would be better to up the thread priority here.  It doesn't need to be real-time, but higher than the default...
-    if (this->useBackgroundThreads() && m_backgroundStages.size() > 0)
-        m_backgroundThread = createThread(WebCore::backgroundThreadEntry, this, "convolution background thread");
+    if (useBackgroundThreads && m_backgroundStages.size() > 0)
+        m_backgroundThread = adoptPtr(blink::Platform::current()->createThread("Reverb convolution background thread"));
 }
 
 ReverbConvolver::~ReverbConvolver()
 {
     // Wait for background thread to stop
-    if (useBackgroundThreads() && m_backgroundThread) {
-        m_wantsToExit = true;
-
-        // Wake up thread so it can return
-        {
-            MutexLocker locker(m_backgroundThreadLock);
-            m_moreInputBuffered = true;
-            m_backgroundThreadCondition.signal();
-        }
-
-        waitForThreadCompletion(m_backgroundThread);
-    }
+    m_backgroundThread.clear();
 }
 
-void ReverbConvolver::backgroundThreadEntry()
+void ReverbConvolver::processInBackground()
 {
-    while (!m_wantsToExit) {
-        // Wait for realtime thread to give us more input
-        m_moreInputBuffered = false;
-        {
-            MutexLocker locker(m_backgroundThreadLock);
-            while (!m_moreInputBuffered && !m_wantsToExit)
-                m_backgroundThreadCondition.wait(m_backgroundThreadLock);
-        }
+    // Process all of the stages until their read indices reach the input buffer's write index
+    int writeIndex = m_inputBuffer.writeIndex();
 
-        // Process all of the stages until their read indices reach the input buffer's write index
-        int writeIndex = m_inputBuffer.writeIndex();
+    // Even though it doesn't seem like every stage needs to maintain its own version of readIndex
+    // we do this in case we want to run in more than one background thread.
+    int readIndex;
 
-        // Even though it doesn't seem like every stage needs to maintain its own version of readIndex
-        // we do this in case we want to run in more than one background thread.
-        int readIndex;
+    while ((readIndex = m_backgroundStages[0]->inputReadIndex()) != writeIndex) { // FIXME: do better to detect buffer overrun...
+        // The ReverbConvolverStages need to process in amounts which evenly divide half the FFT size
+        const int SliceSize = MinFFTSize / 2;
 
-        while ((readIndex = m_backgroundStages[0]->inputReadIndex()) != writeIndex) { // FIXME: do better to detect buffer overrun...
-            // The ReverbConvolverStages need to process in amounts which evenly divide half the FFT size
-            const int SliceSize = MinFFTSize / 2;
-
-            // Accumulate contributions from each stage
-            for (size_t i = 0; i < m_backgroundStages.size(); ++i)
-                m_backgroundStages[i]->processInBackground(this, SliceSize);
-        }
+        // Accumulate contributions from each stage
+        for (size_t i = 0; i < m_backgroundStages.size(); ++i)
+            m_backgroundStages[i]->processInBackground(this, SliceSize);
     }
 }
 
@@ -202,18 +174,9 @@ void ReverbConvolver::process(const AudioChannel* sourceChannel, AudioChannel* d
     // Finally read from accumulation buffer
     m_accumulationBuffer.readAndClear(destination, framesToProcess);
 
-    // Now that we've buffered more input, wake up our background thread.
-
-    // Not using a MutexLocker looks strange, but we use a tryLock() instead because this is run on the real-time
-    // thread where it is a disaster for the lock to be contended (causes audio glitching).  It's OK if we fail to
-    // signal from time to time, since we'll get to it the next time we're called.  We're called repeatedly
-    // and frequently (around every 3ms).  The background thread is processing well into the future and has a considerable amount of
-    // leeway here...
-    if (m_backgroundThreadLock.tryLock()) {
-        m_moreInputBuffered = true;
-        m_backgroundThreadCondition.signal();
-        m_backgroundThreadLock.unlock();
-    }
+    // Now that we've buffered more input, post another task to the background thread.
+    if (m_backgroundThread)
+        m_backgroundThread->postTask(new Task(WTF::bind(&ReverbConvolver::processInBackground, this)));
 }
 
 void ReverbConvolver::reset()

@@ -37,15 +37,18 @@
 #include "platform/audio/ReverbInputBuffer.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/RefCounted.h"
-#include "wtf/Threading.h"
-#include "wtf/ThreadingPrimitives.h"
 #include "wtf/Vector.h"
+
+namespace blink {
+class WebThread;
+}
 
 namespace WebCore {
 
 class AudioChannel;
 
 class PLATFORM_EXPORT ReverbConvolver {
+    WTF_MAKE_NONCOPYABLE(ReverbConvolver);
 public:
     // maxFFTSize can be adjusted (from say 2048 to 32768) depending on how much precision is necessary.
     // For certain tweaky de-convolving applications the phase errors add up quickly and lead to non-sensical results with
@@ -57,15 +60,12 @@ public:
     void process(const AudioChannel* sourceChannel, AudioChannel* destinationChannel, size_t framesToProcess);
     void reset();
 
-    size_t impulseResponseLength() const { return m_impulseResponseLength; }
-
     ReverbInputBuffer* inputBuffer() { return &m_inputBuffer; }
-
-    bool useBackgroundThreads() const { return m_useBackgroundThreads; }
-    void backgroundThreadEntry();
 
     size_t latencyFrames() const;
 private:
+    void processInBackground();
+
     Vector<OwnPtr<ReverbConvolverStage> > m_stages;
     Vector<OwnPtr<ReverbConvolverStage> > m_backgroundStages;
     size_t m_impulseResponseLength;
@@ -83,12 +83,7 @@ private:
     size_t m_maxRealtimeFFTSize;
 
     // Background thread and synchronization
-    bool m_useBackgroundThreads;
-    ThreadIdentifier m_backgroundThread;
-    bool m_wantsToExit;
-    bool m_moreInputBuffered;
-    mutable Mutex m_backgroundThreadLock;
-    mutable ThreadCondition m_backgroundThreadCondition;
+    OwnPtr<blink::WebThread> m_backgroundThread;
 };
 
 } // namespace WebCore
