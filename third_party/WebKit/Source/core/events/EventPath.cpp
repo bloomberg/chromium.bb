@@ -204,27 +204,27 @@ void EventPath::calculateAdjustedEventPathForEachNode()
 }
 
 #ifndef NDEBUG
-static inline bool movedFromChildToParent(const TreeScope& lastTreeScope, const TreeScope& currentTreeScope)
-{
-    return lastTreeScope.parentTreeScope() == &currentTreeScope;
-}
-
 static inline bool movedFromOlderToYounger(const TreeScope& lastTreeScope, const TreeScope& currentTreeScope)
 {
     Node* rootNode = lastTreeScope.rootNode();
     return rootNode->isShadowRoot() && toShadowRoot(rootNode)->youngerShadowRoot() == currentTreeScope.rootNode();
-}
-#endif
-
-static inline bool movedFromParentToChild(const TreeScope& lastTreeScope, const TreeScope& currentTreeScope)
-{
-    return currentTreeScope.parentTreeScope() == &lastTreeScope;
 }
 
 static inline bool movedFromYoungerToOlder(const TreeScope& lastTreeScope, const TreeScope& currentTreeScope)
 {
     Node* rootNode = lastTreeScope.rootNode();
     return rootNode->isShadowRoot() && toShadowRoot(rootNode)->olderShadowRoot() == currentTreeScope.rootNode();
+}
+#endif
+
+static inline bool movedFromChildToParent(const TreeScope& lastTreeScope, const TreeScope& currentTreeScope)
+{
+    return lastTreeScope.parentTreeScope() == &currentTreeScope;
+}
+
+static inline bool movedFromParentToChild(const TreeScope& lastTreeScope, const TreeScope& currentTreeScope)
+{
+    return currentTreeScope.parentTreeScope() == &lastTreeScope;
 }
 
 void EventPath::calculateAdjustedTargets()
@@ -239,14 +239,21 @@ void EventPath::calculateAdjustedTargets()
         if (targetStack.isEmpty()) {
             targetStack.append(current);
         } else if (*lastTreeScope != currentTreeScope && !isSVGElement) {
-            if (movedFromParentToChild(*lastTreeScope, currentTreeScope) || movedFromYoungerToOlder(*lastTreeScope, currentTreeScope)) {
+            if (movedFromParentToChild(*lastTreeScope, currentTreeScope)) {
                 targetStack.append(targetStack.last());
-            } else {
-                ASSERT(movedFromChildToParent(*lastTreeScope, currentTreeScope) || movedFromOlderToYounger(*lastTreeScope, currentTreeScope));
+            } else if (movedFromChildToParent(*lastTreeScope, currentTreeScope)) {
                 ASSERT(!targetStack.isEmpty());
                 targetStack.removeLast();
                 if (targetStack.isEmpty())
                     targetStack.append(current);
+            } else {
+                ASSERT(movedFromYoungerToOlder(*lastTreeScope, currentTreeScope) || movedFromOlderToYounger(*lastTreeScope, currentTreeScope));
+                ASSERT(!targetStack.isEmpty());
+                targetStack.removeLast();
+                if (targetStack.isEmpty())
+                    targetStack.append(current);
+                else
+                    targetStack.append(targetStack.last());
             }
         }
         at(i).setTarget(eventTargetRespectingTargetRules(targetStack.last()));

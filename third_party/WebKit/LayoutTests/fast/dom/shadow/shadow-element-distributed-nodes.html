@@ -24,7 +24,7 @@ function assertDistributedNodes(insertionPointId, expectedDistributedNodes) {
     window.distributedNodes = distributedNodes;
     window.expectedDistributedNodes = expectedDistributedNodes;
     shouldBe("distributedNodes.length", "expectedDistributedNodes.length");
-    for (var i = 0; i < distributedNodes.length; ++i) {
+    for (var i = 0; i < distributedNodes.length && i < expectedDistributedNodes.length; ++i) {
         shouldBe("distributedNodes.item(" + i + ")", "getNodeInTreeOfTrees(expectedDistributedNodes[" + i + "])");
     }
 }
@@ -51,7 +51,7 @@ prepareTree(
               createShadowRoot(
                   createDOM('shadow', {'id': 'shadow'})),
               createDOM('div', {'id': 'host-child'})));
-assertDistributedNodes('host/shadow', []);
+assertDistributedNodes('host/shadow', ['host-child']);
 
 prepareTree(
     createDOM('div', {'id': 'host'},
@@ -87,7 +87,7 @@ prepareTree(
               createShadowRoot(
                   createDOM('shadow', {'id': 'shadow'})),
               createDOM('div', {'id': 'host-child'})));
-assertDistributedNodes('host//shadow', ['host/older-child-1', 'host/older-child-2']);
+assertDistributedNodes('host//shadow', ['host/older-child-1', 'host-child', 'host/older-child-2']);
 
 prepareTree(
     createDOM('div', {'id': 'host'},

@@ -40,26 +40,34 @@ namespace WebCore {
 
 class DistributionPool {
 public:
-    explicit DistributionPool(const ContainerNode*);
+    explicit DistributionPool(const ContainerNode&);
+    void clear();
     ~DistributionPool();
     void distributeTo(InsertionPoint*, ElementShadow*);
+    void populateChildren(const ContainerNode&);
 
 private:
-    void populateChildren(const ContainerNode*);
     void detachNonDistributedNodes();
     Vector<Node*, 32> m_nodes;
     Vector<bool, 32> m_distributed;
 };
 
-inline DistributionPool::DistributionPool(const ContainerNode* parent)
+inline DistributionPool::DistributionPool(const ContainerNode& parent)
 {
-    if (parent)
-        populateChildren(parent);
+    populateChildren(parent);
 }
 
-inline void DistributionPool::populateChildren(const ContainerNode* parent)
+inline void DistributionPool::clear()
 {
-    for (Node* child = parent->firstChild(); child; child = child->nextSibling()) {
+    detachNonDistributedNodes();
+    m_nodes.clear();
+    m_distributed.clear();
+}
+
+inline void DistributionPool::populateChildren(const ContainerNode& parent)
+{
+    clear();
+    for (Node* child = parent.firstChild(); child; child = child->nextSibling()) {
         if (isActiveInsertionPoint(*child)) {
             InsertionPoint* insertionPoint = toInsertionPoint(child);
             for (size_t i = 0; i < insertionPoint->size(); ++i)
@@ -257,13 +265,10 @@ const DestinationInsertionPoints* ElementShadow::destinationInsertionPointsFor(c
 void ElementShadow::distribute()
 {
     host()->setNeedsStyleRecalc();
-
-    const ContainerNode* poolContainer = host();
-
     Vector<HTMLShadowElement*, 32> shadowInsertionPoints;
-    for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot()) {
-        DistributionPool pool(poolContainer);
+    DistributionPool pool(*host());
 
+    for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot()) {
         HTMLShadowElement* shadowInsertionPoint = 0;
         const Vector<RefPtr<InsertionPoint> >& insertionPoints = root->descendantInsertionPoints();
         for (size_t i = 0; i < insertionPoints.size(); ++i) {
@@ -279,9 +284,13 @@ void ElementShadow::distribute()
                     shadow->setNeedsDistributionRecalc();
             }
         }
-        if (shadowInsertionPoint)
+        if (shadowInsertionPoint) {
             shadowInsertionPoints.append(shadowInsertionPoint);
-        poolContainer = shadowInsertionPoint;
+            if (shadowInsertionPoint->hasChildNodes())
+                pool.populateChildren(*shadowInsertionPoint);
+        } else if (!root->isOldest()) {
+            pool.clear();
+        }
     }
 
     for (size_t i = shadowInsertionPoints.size(); i > 0; --i) {
@@ -294,7 +303,8 @@ void ElementShadow::distribute()
             distributeNodeChildrenTo(shadowInsertionPoint, root->olderShadowRoot());
             root->olderShadowRoot()->setShadowInsertionPointOfYoungerShadowRoot(shadowInsertionPoint);
         } else if (root->isOldest()) {
-            DistributionPool pool(shadowInsertionPoint);
+            if (shadowInsertionPoint->hasChildNodes())
+                pool.populateChildren(*shadowInsertionPoint);
             pool.distributeTo(shadowInsertionPoint, this);
         }
         if (ElementShadow* shadow = shadowWhereNodeCanBeDistributed(*shadowInsertionPoint))
@@ -310,7 +320,7 @@ void ElementShadow::didDistributeNode(const Node* node, InsertionPoint* insertio
 
 void ElementShadow::distributeNodeChildrenTo(InsertionPoint* insertionPoint, ContainerNode* containerNode)
 {
-    DistributionPool pool(containerNode);
+    DistributionPool pool(*containerNode);
     pool.distributeTo(insertionPoint, this);
 }
 
