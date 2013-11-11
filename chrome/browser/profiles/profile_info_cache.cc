@@ -22,6 +22,7 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -54,6 +55,7 @@ const char kManagedUserId[] = "managed_user_id";
 const char kProfileIsEphemeral[] = "is_ephemeral";
 
 const char kDefaultUrlPrefix[] = "chrome://theme/IDR_PROFILE_AVATAR_";
+const char kNewDefaultUrlPrefix[] = "chrome://theme/IDR_LOGIN_DEFAULT_USER_";
 const char kGAIAPictureFileName[] = "Google Profile Picture.png";
 
 const int kDefaultAvatarIconResources[] = {
@@ -85,7 +87,29 @@ const int kDefaultAvatarIconResources[] = {
   IDR_PROFILE_AVATAR_25,
 };
 
+// The first 19 avatars are from old versions of CrOS and are no longer in use.
+const int kNewDefaultAvatarFirstImageIndex = 19;
+const int kNewDefaultAvatarIconResources[] = {
+  IDR_LOGIN_DEFAULT_USER_19,
+  IDR_LOGIN_DEFAULT_USER_20,
+  IDR_LOGIN_DEFAULT_USER_21,
+  IDR_LOGIN_DEFAULT_USER_22,
+  IDR_LOGIN_DEFAULT_USER_23,
+  IDR_LOGIN_DEFAULT_USER_24,
+  IDR_LOGIN_DEFAULT_USER_25,
+  IDR_LOGIN_DEFAULT_USER_26,
+  IDR_LOGIN_DEFAULT_USER_27,
+  IDR_LOGIN_DEFAULT_USER_28,
+  IDR_LOGIN_DEFAULT_USER_29,
+  IDR_LOGIN_DEFAULT_USER_30,
+  IDR_LOGIN_DEFAULT_USER_31,
+  IDR_LOGIN_DEFAULT_USER_32,
+};
+
+
 const size_t kDefaultAvatarIconsCount = arraysize(kDefaultAvatarIconResources);
+const size_t kNewDefaultAvatarIconsCount =
+    arraysize(kNewDefaultAvatarIconResources);
 
 // The first 8 icons are generic.
 const size_t kGenericIconCount = 8;
@@ -180,12 +204,14 @@ ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
   // Populate the cache
   DictionaryPrefUpdate update(prefs_, prefs::kProfileInfoCache);
   DictionaryValue* cache = update.Get();
+
+  std::vector<std::string> profiles_to_migrate;
   for (DictionaryValue::Iterator it(*cache); !it.IsAtEnd(); it.Advance()) {
     DictionaryValue* info = NULL;
     cache->GetDictionaryWithoutPathExpansion(it.key(), &info);
     string16 name;
     info->GetString(kNameKey, &name);
-    sorted_keys_.insert(FindPositionForProfile(it.key(), name), it.key());
+
     // TODO(ibraaaa): delete this when 97% of our users are using M31.
     // http://crbug.com/276163
     bool is_managed = false;
@@ -193,6 +219,45 @@ ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
       info->Remove(kIsManagedKey, NULL);
       info->SetString(kManagedUserId, is_managed ? "DUMMY_ID" : std::string());
     }
+
+    // If the --new-profile-management flag is enabled, decide whether the
+    // profile needs to update its name and avatar icon. If it does, save
+    // the key but don't insert it in the list yet, as we don't know yet what
+    // the name will be (it is numbered) and will have to be reinserted in the
+    // correct position anyway.
+    if (profiles::IsNewProfileManagementEnabled()) {
+      std::string icon_url;
+      info->GetString(kAvatarIconKey, &icon_url);
+      if (icon_url.find(kDefaultUrlPrefix) == 0) {
+        profiles_to_migrate.push_back(it.key());
+        continue;
+      }
+    }
+    sorted_keys_.insert(FindPositionForProfile(it.key(), name), it.key());
+  }
+
+  // Migrate the names and icons of profiles that are using the old profiles UI.
+  for (std::vector<std::string>::iterator it = profiles_to_migrate.begin();
+       it != profiles_to_migrate.end(); ++it) {
+    DictionaryValue* info = NULL;
+    cache->GetDictionaryWithoutPathExpansion(*it, &info);
+    string16 name;
+    info->GetString(kNameKey, &name);
+
+    // Assign a new random avatar.
+    info->SetString(kAvatarIconKey, GetDefaultAvatarIconUrl(
+        ChooseAvatarIconIndexForNewProfile()));
+
+    // If it's using a default name, assign a new numbered name.
+    size_t num_default_names = arraysize(kDefaultNames);
+    for (size_t i = 0; i < num_default_names ; ++i) {
+      if (name == l10n_util::GetStringUTF16(kDefaultNames[i])) {
+        name = ChooseNameForNewProfile(0);
+        break;
+      }
+    }
+    info->SetString(kNameKey, name);
+    sorted_keys_.insert(FindPositionForProfile(*it, name), *it);
   }
 }
 
@@ -688,7 +753,10 @@ void ProfileInfoCache::SetProfileIsEphemeralAtIndex(size_t index, bool value) {
 string16 ProfileInfoCache::ChooseNameForNewProfile(size_t icon_index) const {
   string16 name;
   for (int name_index = 1; ; ++name_index) {
-    if (icon_index < kGenericIconCount) {
+    if (profiles::IsNewProfileManagementEnabled()) {
+      name = l10n_util::GetStringFUTF16Int(IDS_NEW_NUMBERED_PROFILE_NAME,
+                                           name_index);
+    } else if (icon_index < kGenericIconCount) {
       name = l10n_util::GetStringFUTF16Int(IDS_NUMBERED_PROFILE_NAME,
                                            name_index);
     } else {
@@ -739,6 +807,9 @@ bool ProfileInfoCache::ChooseAvatarIconIndexForNewProfile(
     bool allow_generic_icon,
     bool must_be_unique,
     size_t* out_icon_index) const {
+  if (profiles::IsNewProfileManagementEnabled())
+    allow_generic_icon = true;
+
   size_t start = allow_generic_icon ? 0 : kGenericIconCount;
   size_t end = GetDefaultAvatarIconCount();
   size_t count = end - start;
@@ -777,40 +848,60 @@ const base::FilePath& ProfileInfoCache::GetUserDataDir() const {
 
 // static
 size_t ProfileInfoCache::GetDefaultAvatarIconCount() {
-  return kDefaultAvatarIconsCount;
+  return profiles::IsNewProfileManagementEnabled() ?
+      kNewDefaultAvatarIconsCount : kDefaultAvatarIconsCount;
 }
 
 // static
 int ProfileInfoCache::GetDefaultAvatarIconResourceIDAtIndex(size_t index) {
   DCHECK(IsDefaultAvatarIconIndex(index));
-  return kDefaultAvatarIconResources[index];
+  return profiles::IsNewProfileManagementEnabled() ?
+      kNewDefaultAvatarIconResources[index] :
+      kDefaultAvatarIconResources[index];
 }
 
 // static
 std::string ProfileInfoCache::GetDefaultAvatarIconUrl(size_t index) {
   DCHECK(IsDefaultAvatarIconIndex(index));
-  return base::StringPrintf("%s%" PRIuS, kDefaultUrlPrefix, index);
+
+  if (profiles::IsNewProfileManagementEnabled())
+    return base::StringPrintf("%s%" PRIuS, kNewDefaultUrlPrefix,
+                              index + kNewDefaultAvatarFirstImageIndex);
+  else
+    return base::StringPrintf("%s%" PRIuS, kDefaultUrlPrefix, index);
 }
 
 // static
 bool ProfileInfoCache::IsDefaultAvatarIconIndex(size_t index) {
-  return index < kDefaultAvatarIconsCount;
+  return profiles::IsNewProfileManagementEnabled() ?
+      index < kNewDefaultAvatarIconsCount :
+      index < kDefaultAvatarIconsCount;
 }
 
 // static
 bool ProfileInfoCache::IsDefaultAvatarIconUrl(const std::string& url,
                                               size_t* icon_index) {
   DCHECK(icon_index);
-  if (url.find(kDefaultUrlPrefix) != 0)
+
+  const char* kUrlPrefix = profiles::IsNewProfileManagementEnabled() ?
+      kNewDefaultUrlPrefix : kDefaultUrlPrefix;
+  const size_t kAvatarIconsCount = profiles::IsNewProfileManagementEnabled() ?
+      kNewDefaultAvatarIconsCount : kDefaultAvatarIconsCount;
+
+  if (url.find(kUrlPrefix) != 0)
     return false;
 
   int int_value = -1;
   if (base::StringToInt(base::StringPiece(url.begin() +
-                                          strlen(kDefaultUrlPrefix),
+                                          strlen(kUrlPrefix),
                                           url.end()),
                         &int_value)) {
+    // The new avatar icons are indexed with an offset.
+    if (profiles::IsNewProfileManagementEnabled())
+      int_value -= kNewDefaultAvatarFirstImageIndex;
+
     if (int_value < 0 ||
-        int_value >= static_cast<int>(kDefaultAvatarIconsCount))
+        int_value >= static_cast<int>(kAvatarIconsCount))
       return false;
     *icon_index = int_value;
     return true;
