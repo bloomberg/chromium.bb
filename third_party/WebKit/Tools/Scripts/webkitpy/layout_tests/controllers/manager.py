@@ -356,9 +356,8 @@ class Manager(object):
             if self._filesystem.isdir(self._filesystem.join(layout_tests_dir, dirname)):
                 self._filesystem.rmtree(self._filesystem.join(self._results_directory, dirname))
 
-        # Clobber stale crash dumps
-        if self._filesystem.isdir(self._port.crash_dumps_directory()):
-            self._filesystem.rmtree(self._port.crash_dumps_directory())
+        # Port specific clean-up.
+        self._port.clobber_old_port_specific_results()
 
     def _tests_to_retry(self, run_results):
         return [result.test_name for result in run_results.unexpected_results_by_name.values() if result.type != test_expectations.PASS]

@@ -186,6 +186,7 @@ class Port(object):
         self._image_differ = None
         self._server_process_constructor = server_process.ServerProcess  # overridable for testing
         self._http_lock = None  # FIXME: Why does this live on the port object?
+        self._dump_reader = None
 
         # Python's Popen has a bug that causes any pipes opened to a
         # process that can't be executed to be leaked.  Since this
@@ -342,6 +343,9 @@ class Port(object):
         # It's okay if pretty patch and wdiff aren't available, but we will at least log messages.
         self._pretty_patch_available = self.check_pretty_patch()
         self._wdiff_available = self.check_wdiff()
+
+        if self._dump_reader:
+            result = self._dump_reader.check_is_functional() and result
 
         return test_run_results.OK_EXIT_STATUS if result else test_run_results.UNEXPECTED_ERROR_EXIT_STATUS
 
@@ -970,10 +974,6 @@ class Port(object):
         except AssertionError:
             return self._build_path('layout-test-results')
 
-    def crash_dumps_directory(self):
-        """Absolute path to the default place to store crash dumps."""
-        return self._build_path('crash-dumps')
-
     def setup_test_run(self):
         """Perform port-specific work at the beginning of a test run."""
         # Delete the disk cache if any to ensure a clean test run.
@@ -982,6 +982,9 @@ class Port(object):
         cachedir = self._filesystem.join(cachedir, "cache")
         if self._filesystem.exists(cachedir):
             self._filesystem.rmtree(cachedir)
+
+        if self._dump_reader:
+            self._filesystem.maybe_make_directory(self._dump_reader.crash_dumps_directory())
 
     def clean_up_test_run(self):
         """Perform port-specific work at the end of a test run."""
@@ -1349,6 +1352,9 @@ class Port(object):
 
     def default_configuration(self):
         return self._config.default_configuration()
+
+    def clobber_old_port_specific_results(self):
+        pass
 
     #
     # PROTECTED ROUTINES

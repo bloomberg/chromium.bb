@@ -30,8 +30,8 @@
 
 import os
 import logging
-import shlex
 
+from webkitpy.layout_tests.breakpad.dump_reader_win import DumpReaderWin
 from webkitpy.layout_tests.models import test_run_results
 from webkitpy.layout_tests.port import base
 from webkitpy.layout_tests.servers import crash_service
@@ -67,26 +67,24 @@ class WinPort(base.Port):
         super(WinPort, self).__init__(host, port_name, **kwargs)
         self._version = port_name[port_name.index('win-') + len('win-'):]
         assert self._version in self.SUPPORTED_VERSIONS, "%s is not in %s" % (self._version, self.SUPPORTED_VERSIONS)
+        self._dump_reader = DumpReaderWin(host, self._build_path())
         self._crash_service = None
-        self._cdb_available = None
         self._crash_service_available = None
 
     def additional_drt_flag(self):
         flags = super(WinPort, self).additional_drt_flag()
-        flags += ['--enable-crash-reporter', '--crash-dumps-dir=%s' % self.crash_dumps_directory()]
+        flags += ['--enable-crash-reporter', '--crash-dumps-dir=%s' % self._dump_reader.crash_dumps_directory()]
         return flags
 
     def setup_test_run(self):
         super(WinPort, self).setup_test_run()
-
-        self._filesystem.maybe_make_directory(self.crash_dumps_directory())
 
         assert not self._crash_service, 'Already running a crash service'
         if self._crash_service_available == None:
             self._crash_service_available = self._check_crash_service_available()
         if not self._crash_service_available:
             return
-        service = crash_service.CrashService(self, self.crash_dumps_directory())
+        service = crash_service.CrashService(self, self._dump_reader.crash_dumps_directory())
         service.start()
         self._crash_service = service
 
@@ -126,7 +124,6 @@ class WinPort(base.Port):
     def check_build(self, needs_http, printer):
         result = super(WinPort, self).check_build(needs_http, printer)
 
-        self._cdb_available = self._check_cdb_available()
         self._crash_service_available = self._check_crash_service_available()
         if not self._crash_service_available:
             result = test_run_results.UNEXPECTED_ERROR_EXIT_STATUS
@@ -197,83 +194,8 @@ class WinPort(base.Port):
             _log.error('')
         return result
 
-    def _check_cdb_available(self, logging=True):
-        """Checks whether we can use cdb to symbolize minidumps."""
-        CDB_LOCATION_TEMPLATES = [
-            '%s\\Debugging Tools For Windows',
-            '%s\\Debugging Tools For Windows (x86)',
-            '%s\\Debugging Tools For Windows (x64)',
-            '%s\\Windows Kits\\8.0\\Debuggers\\x86',
-            '%s\\Windows Kits\\8.0\\Debuggers\\x64',
-        ]
-
-        program_files_directories = ['C:\\Program Files']
-        program_files = os.environ.get('ProgramFiles')
-        if program_files:
-            program_files_directories.append(program_files)
-        program_files = os.environ.get('ProgramFiles(x86)')
-        if program_files:
-            program_files_directories.append(program_files)
-
-        possible_cdb_locations = []
-        for template in CDB_LOCATION_TEMPLATES:
-            for program_files in program_files_directories:
-                possible_cdb_locations.append(template % program_files)
-
-        gyp_defines = os.environ.get('GYP_DEFINES', [])
-        if gyp_defines:
-            gyp_defines = shlex.split(gyp_defines)
-        if 'windows_sdk_path' in gyp_defines:
-            possible_cdb_locations.append([
-                '%s\\Debuggers\\x86' % gyp_defines['windows_sdk_path'],
-                '%s\\Debuggers\\x64' % gyp_defines['windows_sdk_path'],
-            ])
-
-        for cdb_path in possible_cdb_locations:
-            cdb = self._filesystem.join(cdb_path, 'cdb.exe')
-            try:
-                _ = self._executive.run_command([cdb, '-version'])
-            except:
-                pass
-            else:
-                self._cdb_path = cdb
-                return True
-
-        if logging:
-            _log.warning("CDB is not installed; can't symbolize minidumps.")
-            _log.warning('')
-        return False
-
     def look_for_new_crash_logs(self, crashed_processes, start_time):
-        if not crashed_processes:
-            return None
+        return self._dump_reader.look_for_new_crash_logs(crashed_processes, start_time)
 
-        if self._cdb_available is None:
-            self._cdb_available = self._check_cdb_available(logging=False)
-
-        if not self._cdb_available:
-            return None
-
-        pid_to_minidump = dict()
-        for root, dirs, files in self._filesystem.walk(self.crash_dumps_directory()):
-            for dmp in [f for f in files if f.endswith('.txt')]:
-                dmp_file = self._filesystem.join(root, dmp)
-                if self._filesystem.mtime(dmp_file) < start_time:
-                    continue
-                with self._filesystem.open_text_file_for_reading(dmp_file) as f:
-                    crash_keys = dict([l.split(':', 1) for l in f.read().splitlines()])
-                    if 'pid' in crash_keys:
-                        pid_to_minidump[crash_keys['pid']] = dmp_file[:-3] + 'dmp'
-
-        result = dict()
-        for test, process_name, pid in crashed_processes:
-            if str(pid) in pid_to_minidump:
-                cmd = [self._cdb_path, '-y', self._build_path(), '-c', '.ecxr;k30;q', '-z', pid_to_minidump[str(pid)]]
-                try:
-                    stack = self._executive.run_command(cmd)
-                except:
-                    _log.warning('Failed to execute "%s"' % ' '.join(cmd))
-                else:
-                    result[test] = stack
-
-        return result
+    def clobber_old_port_specific_results(self):
+        self._dump_reader.clobber_old_results()

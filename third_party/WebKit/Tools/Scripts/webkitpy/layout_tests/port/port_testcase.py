@@ -104,6 +104,8 @@ class PortTestCase(unittest.TestCase):
     def test_check_build(self):
         port = self.make_port()
         port._check_file_exists = lambda path, desc: True
+        if port._dump_reader:
+            port._dump_reader.check_is_functional = lambda: True
         port._options.build = True
         port._check_driver_build_up_to_date = lambda config: True
         oc = OutputCapture()
