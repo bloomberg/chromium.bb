@@ -117,7 +117,7 @@
     [DoNotCheckSecurity, Unforgeable] readonly attribute Window window;
     [Replaceable, DoNotCheckSecurityOnGetter] readonly attribute  Window frames;
 
-    [DoNotCheckSecurityOnGetter, CustomSetter] attribute Window opener;
+    [DoNotCheckSecurityOnGetter, Custom=Setter] attribute Window opener;
     [Replaceable, DoNotCheckSecurityOnGetter] readonly attribute Window parent;
     [DoNotCheckSecurityOnGetter, Unforgeable] readonly attribute Window top;
 

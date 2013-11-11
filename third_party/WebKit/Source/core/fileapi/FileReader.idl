@@ -50,7 +50,7 @@
     void abort();
 
     // file data
-    [CustomGetter] readonly attribute any result;
+    [Custom=Getter] readonly attribute any result;
 
     readonly attribute FileError error;
 

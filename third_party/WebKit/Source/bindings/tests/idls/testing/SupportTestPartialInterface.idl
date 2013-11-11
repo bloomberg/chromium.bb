@@ -36,7 +36,7 @@
     static attribute DOMString supplementalStaticAttr;
     readonly attribute DOMString supplementalStr1;
     attribute DOMString supplementalStr2;
-    [CustomGetter, CustomSetter] attribute DOMString supplementalStr3;
+    [Custom] attribute DOMString supplementalStr3;
     attribute Node supplementalNode;
 
     void supplementalMethod1();

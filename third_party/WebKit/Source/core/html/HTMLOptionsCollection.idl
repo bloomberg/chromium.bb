@@ -24,7 +24,7 @@
     DependentLifetime
 ] interface HTMLOptionsCollection : HTMLCollection {
     attribute long selectedIndex;
-    [CustomSetter, SetterRaisesException] attribute unsigned long length;
+    [Custom=Setter, SetterRaisesException] attribute unsigned long length;
     [ImplementedAs=item] getter Node(unsigned long index);
     [ImplementedAs=anonymousIndexedSetter, RaisesException] setter HTMLOptionElement (unsigned long index, [TreatNullAs=anonymousIndexedSetterRemove, TreatUndefinedAs=anonymousIndexedSetterRemove] HTMLOptionElement value);
     [ImplementedAs=anonymousNamedGetter, NotEnumerable] getter (NodeList or Node)(DOMString name);

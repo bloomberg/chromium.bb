@@ -37,7 +37,7 @@ interface HTMLFrameElement : HTMLElement {
 
     [CheckSecurityForNode, RaisesException] SVGDocument getSVGDocument();
 
-    [TreatNullAs=NullString, CustomSetter] attribute DOMString location;
+    [TreatNullAs=NullString, Custom=Setter] attribute DOMString location;
 
     readonly attribute long width;
     readonly attribute long height;

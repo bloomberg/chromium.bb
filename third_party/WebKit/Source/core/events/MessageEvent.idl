@@ -32,7 +32,7 @@
     [InitializedByEventConstructor] readonly attribute DOMString origin;
     [InitializedByEventConstructor] readonly attribute DOMString lastEventId;
     [InitializedByEventConstructor] readonly attribute EventTarget source; // May be a Window or a MessagePort
-    [InitializedByEventConstructor, CustomGetter] readonly attribute any data;
+    [InitializedByEventConstructor, Custom=Getter] readonly attribute any data;
     [InitializedByEventConstructor] readonly attribute MessagePort[] ports;
 
     [Custom] void initMessageEvent([Default=Undefined] optional DOMString typeArg,

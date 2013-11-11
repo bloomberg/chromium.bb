@@ -71,7 +71,7 @@
 
     // media controller
     [Reflect] attribute DOMString mediaGroup;
-    [CustomSetter] attribute MediaController controller;
+    [Custom=Setter] attribute MediaController controller;
 
     // controls
     attribute boolean controls;

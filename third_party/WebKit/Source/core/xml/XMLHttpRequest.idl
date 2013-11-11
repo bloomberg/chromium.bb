@@ -71,11 +71,11 @@ enum XMLHttpRequestResponseType {
     // response
     [TreatReturnedNullStringAs=Undefined, RaisesException] DOMString getAllResponseHeaders();
     [TreatReturnedNullStringAs=Null, RaisesException] DOMString getResponseHeader(DOMString header);
-    [CustomGetter, GetterRaisesException] readonly attribute DOMString responseText; // The custom getter implements TreatReturnedNullStringAs=Null
+    [Custom=Getter, GetterRaisesException] readonly attribute DOMString responseText; // The custom getter implements TreatReturnedNullStringAs=Null
     [GetterRaisesException] readonly attribute Document responseXML;
 
     [SetterRaisesException] attribute XMLHttpRequestResponseType responseType;
-    [CustomGetter, GetterRaisesException] readonly attribute Object response;
+    [Custom=Getter, GetterRaisesException] readonly attribute Object response;
 
     [GetterRaisesException] readonly attribute unsigned short status;
     [GetterRaisesException] readonly attribute DOMString statusText;

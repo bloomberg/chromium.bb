@@ -45,12 +45,12 @@
     readonly attribute long sourceID;
     readonly attribute long line;
     readonly attribute long column;
-    [CustomGetter] readonly attribute Array scopeChain;
+    [Custom=Getter] readonly attribute Array scopeChain;
     [Custom] unsigned short scopeType(long scopeIndex);
-    [CustomGetter] readonly attribute Object thisObject;
+    [Custom=Getter] readonly attribute Object thisObject;
     readonly attribute DOMString stepInPositions;
     readonly attribute DOMString functionName;
-    [CustomGetter] readonly attribute DOMString type;
+    [Custom=Getter] readonly attribute DOMString type;
     readonly attribute boolean isAtReturn;
-    [CustomGetter] readonly attribute any returnValue;
+    [Custom=Getter] readonly attribute any returnValue;
 };

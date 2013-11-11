@@ -45,14 +45,12 @@ Constructor
 ConstructorCallWith=ExecutionContext|Document
 ConstructorRaisesException
 ConstructorTemplate=Event|TypedArray
-Custom
+Custom=|Getter|Setter
 CustomConstructor
 CustomElementCallbacks
 CustomEnumerateProperty
-CustomGetter
 CustomIsReachable
 CustomLegacyCall
-CustomSetter
 CustomToV8
 Default=NullString|Undefined
 DependentLifetime

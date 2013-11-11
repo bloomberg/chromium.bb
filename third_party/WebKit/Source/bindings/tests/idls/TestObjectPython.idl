@@ -111,8 +111,8 @@ interface TestObjectPython {
     [Conditional=Condition1&Condition2] attribute long conditionalAndLongAttribute;
     [Conditional=Condition1|Condition2] attribute long conditionalOrLongAttribute;
     [Custom] attribute long customLongAttribute;
-    [CustomGetter] attribute long customGetterLongAttribute;
-    [CustomSetter] attribute long customSetterLongAttribute;
+    [Custom=Getter] attribute long customGetterLongAttribute;
+    [Custom=Setter] attribute long customSetterLongAttribute;
     [Conditional=Condition, Custom] attribute long customLongAttribute;
     [CustomElementCallbacks] readonly attribute long customElementsCallbacksReadonlyLongAttribute;
     [DeprecateAs=LongAttribute] attribute long deprecatedLongAttribute;
@@ -126,8 +126,8 @@ interface TestObjectPython {
     [GetterRaisesException] attribute long getterRaisesExceptionLongAttribute;
     [ImplementedAs=implementedAsName] attribute long implementedAsLongAttribute;
     [Custom, ImplementedAs=implementedAsNameWithCustom] attribute long customImplementedAsLongAttribute;
-    [CustomGetter, ImplementedAs=implementedAsNameWithCustomGetter] attribute long customGetterImplementedAsLongAttribute;
-    [CustomSetter, ImplementedAs=implementedAsNameWithCustomGetter] attribute long customSetterImplementedAsLongAttribute;
+    [Custom=Getter, ImplementedAs=implementedAsNameWithCustomGetter] attribute long customGetterImplementedAsLongAttribute;
+    [Custom=Setter, ImplementedAs=implementedAsNameWithCustomGetter] attribute long customSetterImplementedAsLongAttribute;
     [MeasureAs=TestFeature] attribute long measureAsLongAttribute;
     [NotEnumerable] attribute long notEnumerableLongAttribute;
     [PerContextEnabled=FeatureName] attribute long perContextEnabledLongAttribute;

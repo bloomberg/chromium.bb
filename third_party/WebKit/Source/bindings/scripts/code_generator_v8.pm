@@ -1133,14 +1133,15 @@ sub HasCustomConstructor
 sub HasCustomGetter
 {
     my $attrExt = shift;
-    return $attrExt->{"Custom"} || $attrExt->{"CustomGetter"};
+    my $custom = $attrExt->{"Custom"};
+    return $custom && ($custom eq "VALUE_IS_MISSING" || $custom eq "Getter");
 }
 
 sub HasCustomSetter
 {
     my $attribute = shift;
-    my $attrExt = $attribute->extendedAttributes;
-    return ($attrExt->{"Custom"} || $attrExt->{"CustomSetter"}) && !IsReadonly($attribute);
+    my $custom = $attribute->extendedAttributes->{"Custom"};
+    return $custom && ($custom eq "VALUE_IS_MISSING" || $custom eq "Setter") && !IsReadonly($attribute);
 }
 
 sub HasCustomMethod

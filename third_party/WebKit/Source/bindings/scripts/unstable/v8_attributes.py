@@ -45,8 +45,11 @@ def generate_attribute(interface, attribute):
     idl_type = attribute.idl_type
     extended_attributes = attribute.extended_attributes
 
-    has_custom_getter = has_extended_attribute(attribute, ('Custom', 'CustomGetter'))
-    has_custom_setter = not attribute.is_read_only and has_extended_attribute(attribute, ('Custom', 'CustomSetter'))
+    has_custom_getter = ('Custom' in extended_attributes and
+                         extended_attributes['Custom'] in [None, 'Getter'])
+    has_custom_setter = (not attribute.is_read_only and
+                         'Custom' in extended_attributes and
+                         extended_attributes['Custom'] in [None, 'Setter'])
     contents = {
         'access_control_list': access_control_list(attribute),
         'activity_logging_world_list_for_getter': v8_utilities.activity_logging_world_list(attribute, 'Getter'),  # [ActivityLogging]
