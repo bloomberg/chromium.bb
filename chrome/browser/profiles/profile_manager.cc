@@ -1036,9 +1036,7 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
     } else if (profile->GetPath() ==
                profiles::GetDefaultProfileDir(cache.GetUserDataDir())) {
       avatar_index = 0;
-      profile_name = profiles::IsNewProfileManagementEnabled() ?
-          UTF16ToUTF8(cache.ChooseNameForNewProfile(avatar_index)):
-          l10n_util::GetStringUTF8(IDS_DEFAULT_PROFILE_NAME);
+      profile_name = l10n_util::GetStringUTF8(IDS_DEFAULT_PROFILE_NAME);
     } else {
       avatar_index = cache.ChooseAvatarIconIndexForNewProfile();
       profile_name = UTF16ToUTF8(cache.ChooseNameForNewProfile(avatar_index));

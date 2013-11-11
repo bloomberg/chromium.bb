@@ -109,10 +109,6 @@ html[dir='rtl'] #delete-profile-message {
   background-position: right;
 }
 
-#delete-profile-message {
-  background-size: contain;
-}
-
 #create-profile-managed-not-signed-in {
   color: #999;
 }

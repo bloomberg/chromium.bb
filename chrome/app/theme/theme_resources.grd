@@ -446,25 +446,25 @@
         <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_16" file="avatar_toolbox.png" />
         <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_17" file="avatar_user_color.png" />
         <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_18" file="avatar_user_enterprise.png" />
+        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_19" file="avatar_bicycle.png" />
+        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_20" file="avatar_bokeh.png" />
+        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_21" file="avatar_chess.png" />
+        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_22" file="avatar_coffee.png" />
+        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_23" file="avatar_dragonfly.png" />
+        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_24" file="avatar_frog.png" />
+        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_25" file="avatar_ganzania.png" />
+        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_26" file="avatar_jackrussellterrier.png" />
+        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_27" file="avatar_jellyfish.png" />
+        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_28" file="avatar_kiwi.png" />
+        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_29" file="avatar_penguin.png" />
+        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_30" file="avatar_rainbowfish.png" />
+        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_31" file="avatar_recordplayer.png" />
+        <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_32" file="avatar_upsidedown.png" />
+        <structure type="chrome_scaled_image" name="IDR_LOGIN_PASSWORD_CAPS_LOCK" file="login_password_capslock.png" />
       </if>
-      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_19" file="avatar_bicycle.png" />
-      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_20" file="avatar_bokeh.png" />
-      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_21" file="avatar_chess.png" />
-      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_22" file="avatar_coffee.png" />
-      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_23" file="avatar_dragonfly.png" />
-      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_24" file="avatar_frog.png" />
-      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_25" file="avatar_ganzania.png" />
-      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_26" file="avatar_jackrussellterrier.png" />
-      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_27" file="avatar_jellyfish.png" />
-      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_28" file="avatar_kiwi.png" />
-      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_29" file="avatar_penguin.png" />
-      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_30" file="avatar_rainbowfish.png" />
-      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_31" file="avatar_recordplayer.png" />
-      <structure type="chrome_scaled_image" name="IDR_LOGIN_DEFAULT_USER_32" file="avatar_upsidedown.png" />
       <structure type="chrome_scaled_image" name="IDR_LOGIN_GUEST" file="common/login_guest.png" />
       <structure type="chrome_scaled_image" name="IDR_MANAGED" file="managed_small.png" />
       <if expr="pp_ifdef('chromeos')">
-        <structure type="chrome_scaled_image" name="IDR_LOGIN_PASSWORD_CAPS_LOCK" file="login_password_capslock.png" />
         <structure type="chrome_scaled_image" name="IDR_MANAGED_MODE_ICON" file="cros/managed_mode_icon.png" />
       </if>
       <structure type="chrome_scaled_image" name="IDR_MANAGED_USER_ICON" file="common/limited_user.png" />

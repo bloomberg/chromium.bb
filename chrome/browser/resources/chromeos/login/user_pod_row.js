@@ -881,7 +881,11 @@ cr.define('login', function() {
 
     /** @override */
     update: function() {
-      this.imageElement.src = this.user.userImage;
+      // TODO(noms): Use the actual profile avatar for local profiles once the
+      // new, non-pixellated avatars are available.
+      this.imageElement.src = this.user.emailAddress == '' ?
+          'chrome://theme/IDR_USER_MANAGER_DEFAULT_AVATAR' :
+          this.user.userImage;
       this.nameElement.textContent = this.user.displayName;
 
       var isLockedUser = this.user.needsSignin;
