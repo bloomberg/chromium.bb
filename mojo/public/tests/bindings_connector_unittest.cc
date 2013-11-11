@@ -5,11 +5,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "base/basictypes.h"
-#include "base/compiler_specific.h"
 #include "mojo/public/bindings/lib/bindings_support.h"
 #include "mojo/public/bindings/lib/connector.h"
 #include "mojo/public/bindings/lib/message_queue.h"
+#include "mojo/public/system/macros.h"
 #include "mojo/public/tests/simple_bindings_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -45,11 +44,11 @@ class BindingsConnectorTest : public testing::Test {
         handle1_(kInvalidHandle) {
   }
 
-  virtual void SetUp() OVERRIDE {
+  virtual void SetUp() MOJO_OVERRIDE {
     CreateMessagePipe(&handle0_, &handle1_);
   }
 
-  virtual void TearDown() OVERRIDE {
+  virtual void TearDown() MOJO_OVERRIDE {
     Close(handle0_);
     Close(handle1_);
   }
@@ -133,7 +132,7 @@ TEST_F(BindingsConnectorTest, Basic_TwoMessages) {
 
   const char* kText[] = { "hello", "world" };
 
-  for (size_t i = 0; i < arraysize(kText); ++i) {
+  for (size_t i = 0; i < sizeof(kText) / sizeof(kText[0]); ++i) {
     Message message;
     AllocMessage(kText[i], &message);
 
@@ -145,7 +144,7 @@ TEST_F(BindingsConnectorTest, Basic_TwoMessages) {
 
   PumpMessages();
 
-  for (size_t i = 0; i < arraysize(kText); ++i) {
+  for (size_t i = 0; i < sizeof(kText) / sizeof(kText[0]); ++i) {
     ASSERT_FALSE(accumulator.IsEmpty());
 
     Message message_received;
