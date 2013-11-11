@@ -52,6 +52,58 @@ from chromite.scripts import cbuildbot
 # Until then, this has to be after the chromite imports.
 import mock
 
+
+MANIFEST_CONTENTS = """\
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+  <remote fetch="https://chromium.googlesource.com" name="cros" \
+review="chromium-review.googlesource.com"/>
+
+  <default remote="cros" revision="refs/heads/master" sync-j="8"/>
+
+  <project groups="minilayout,buildtools" name="chromiumos/chromite" \
+path="chromite" revision="refs/heads/special-branch"/>
+  <project name="chromiumos/special" path="src/special" \
+revision="special-branch2"/>
+</manifest>"""
+
+
+VERSIONED_MANIFEST_CONTENTS = """\
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest revision="fe72f0912776fa4596505e236e39286fb217961b">
+  <remote fetch="https://chrome-internal.googlesource.com" name="chrome"/>
+  <remote fetch="https://chromium.googlesource.com/" name="chromium"/>
+  <remote fetch="https://chromium.googlesource.com" name="cros" \
+review="chromium-review.googlesource.com"/>
+  <remote fetch="https://chrome-internal.googlesource.com" name="cros-internal" \
+review="https://chrome-internal-review.googlesource.com"/>
+  <remote fetch="https://special.googlesource.com/" name="special" \
+review="https://special.googlesource.com/"/>
+
+  <default remote="cros" revision="refs/heads/master" sync-j="8"/>
+
+  <project name="chromeos/manifest-internal" path="manifest-internal" \
+remote="cros-internal" revision="fe72f0912776fa4596505e236e39286fb217961b" \
+upstream="refs/heads/master"/>
+  <project name="chromium/deps/libmtp" path="chromium/src/third_party/libmtp" \
+revision="7bc42f093d644eeaf1c77fab60883881843c3c65" \
+upstream="refs/heads/master"/>
+  <project groups="minilayout,buildtools" name="chromiumos/chromite" \
+path="chromite" revision="fb46d34d7cd4b9c167b74f494f2a99b68df50b18" \
+upstream="refs/heads/master"/>
+  <project name="chromiumos/manifest" path="manifest" \
+revision="f24b69176b16bf9153f53883c0cc752df8e07d8b" \
+upstream="refs/heads/master"/>
+  <project groups="minilayout" name="chromiumos/overlays/chromiumos-overlay" \
+path="src/third_party/chromiumos-overlay" \
+revision="3ac713c65b5d18585e606a0ee740385c8ec83e44" \
+upstream="refs/heads/master"/>
+  <project name="chromiumos/special" path="src/special" remote="special" \
+revision="6270eb3b4f78d9bffec77df50f374f5aae72b370" \
+upstream="special-upstream"/>
+</manifest>"""
+
+
 # pylint: disable=E1111,E1120,W0212,R0901,R0904
 class StageTest(cros_test_lib.MoxTempDirTestCase,
                 cros_test_lib.MockTestCase):
@@ -1726,7 +1778,6 @@ class MockPatch(mock.MagicMock):
 
 class BaseCQTest(StageTest):
   """Helper class for testing the CommitQueueSync stage"""
-  MANIFEST_CONTENTS = '<manifest/>'
   PALADIN_BOT_ID = None
 
   def setUp(self):
@@ -1737,7 +1788,7 @@ class BaseCQTest(StageTest):
     # Mock out methods as needed.
     self.PatchObject(lkgm_manager, 'GenerateBlameList')
     self.PatchObject(repository.RepoRepository, 'ExportManifest',
-                     return_value=self.MANIFEST_CONTENTS, autospec=True)
+                     return_value=MANIFEST_CONTENTS, autospec=True)
     self.StartPatcher(git_unittest.ManifestMock())
     self.StartPatcher(git_unittest.ManifestCheckoutMock())
     version_file = os.path.join(self.build_root, constants.VERSION_FILE)
@@ -1758,7 +1809,7 @@ class BaseCQTest(StageTest):
     for subdir in ('repo', 'manifests'):
       osutils.SafeMakedirs(os.path.join(self.build_root, '.repo', subdir))
     self.manifest_path = os.path.join(self.build_root, '.repo', 'manifest.xml')
-    osutils.WriteFile(self.manifest_path, self.MANIFEST_CONTENTS)
+    osutils.WriteFile(self.manifest_path, MANIFEST_CONTENTS)
     self.PatchObject(validation_pool.ValidationPool, 'ReloadChanges',
                      side_effect=lambda x: x)
 
@@ -1813,6 +1864,8 @@ class MasterCQSyncTest(BaseCQTest):
     """Setup patchers for specified bot id."""
     self.AutoPatch([[validation_pool.ValidationPool, 'ApplyPoolIntoRepo']])
     self.PatchObject(lkgm_manager.LKGMManager, 'CreateNewCandidate',
+                     return_value=self.manifest_path, autospec=True)
+    self.PatchObject(lkgm_manager.LKGMManager, 'CreateFromManifest',
                      return_value=self.manifest_path, autospec=True)
 
   def testCommitNonManifestChange(self, **kwargs):
@@ -1973,61 +2026,6 @@ class ChromeSDKStageTest(AbstractStageTest, cros_test_lib.LoggingTestCase):
 class BranchUtilStageTest(AbstractStageTest, cros_test_lib.LoggingTestCase):
   """Tests for branch creation/deletion."""
 
-  VERSIONED_MANIFEST_CONTENTS = """\
-<?xml version="1.0" encoding="UTF-8"?>
-<manifest revision="fe72f0912776fa4596505e236e39286fb217961b">
-  <notice>
-    Your sources have been sync'd successfully.
-  </notice>
-  <remote fetch="https://chrome-internal.googlesource.com" name="chrome"/>
-  <remote fetch="https://chromium.googlesource.com/" name="chromium"/>
-  <remote fetch="https://chromium.googlesource.com" name="cros" \
-review="chromium-review.googlesource.com"/>
-  <remote fetch="https://chrome-internal.googlesource.com" name="cros-internal" \
-review="https://chrome-internal-review.googlesource.com"/>
-  <remote fetch="https://special.googlesource.com/" name="special" \
-review="https://special.googlesource.com/"/>
-
-  <default remote="cros" revision="refs/heads/master" sync-j="8"/>
-
-  <project name="chromeos/manifest-internal" path="manifest-internal" \
-remote="cros-internal" revision="fe72f0912776fa4596505e236e39286fb217961b" \
-upstream="refs/heads/master"/>
-  <project name="chromium/deps/libmtp" path="chromium/src/third_party/libmtp" \
-revision="7bc42f093d644eeaf1c77fab60883881843c3c65" \
-upstream="refs/heads/master"/>
-  <project groups="minilayout,buildtools" name="chromiumos/chromite" \
-path="chromite" revision="fb46d34d7cd4b9c167b74f494f2a99b68df50b18" \
-upstream="refs/heads/master"/>
-  <project name="chromiumos/manifest" path="manifest" \
-revision="f24b69176b16bf9153f53883c0cc752df8e07d8b" \
-upstream="refs/heads/master"/>
-  <project groups="minilayout" name="chromiumos/overlays/chromiumos-overlay" \
-path="src/third_party/chromiumos-overlay" \
-revision="3ac713c65b5d18585e606a0ee740385c8ec83e44" \
-upstream="refs/heads/master"/>
-  <project name="chromiumos/special" path="src/special" remote="special" \
-revision="6270eb3b4f78d9bffec77df50f374f5aae72b370" \
-upstream="special-upstream"/>
-</manifest>"""
-
-  MANIFEST_CONTENTS = """\
-<?xml version="1.0" encoding="UTF-8"?>
-<manifest>
-  <notice>
-    Your sources have been sync'd successfully.
-  </notice>
-  <remote fetch="https://chromium.googlesource.com" name="cros" \
-review="chromium-review.googlesource.com"/>
-
-  <default remote="cros" revision="refs/heads/master" sync-j="8"/>
-
-  <project groups="minilayout,buildtools" name="chromiumos/chromite" \
-path="chromite" revision="refs/heads/special-branch"/>
-  <project name="chromiumos/special" path="src/special" \
-revision="special-branch2"/>
-</manifest>"""
-
   DEFAULT_VERSION = '111.0.0'
   RELEASE_BRANCH_NAME = 'release-test-branch'
 
@@ -2052,9 +2050,9 @@ revision="special-branch2"/>
     # We have a versioned manifest (generated by ManifestVersionSyncStage) and
     # the regular, user-maintained manifests.
     manifests = {
-        '.repo/manifest.xml': self.VERSIONED_MANIFEST_CONTENTS,
-        'manifest/full.xml': self.MANIFEST_CONTENTS,
-        'manifest-internal/full.xml': self.MANIFEST_CONTENTS,
+        '.repo/manifest.xml': VERSIONED_MANIFEST_CONTENTS,
+        'manifest/full.xml': MANIFEST_CONTENTS,
+        'manifest-internal/full.xml': MANIFEST_CONTENTS,
     }
     for m_path, m_content in manifests.iteritems():
       full_path = os.path.join(self.build_root, m_path)
@@ -2079,10 +2077,9 @@ revision="special-branch2"/>
 
     # Verify that manifests were branched properly.
     for m in ['manifest/full.xml', 'manifest-internal/full.xml']:
-      manifest = git.Manifest(
-          os.path.join(self.build_root, m))
-      for p in manifest.projects.itervalues():
-        self.assertEquals(p['revision'], self.norm_name)
+      manifest = git.Manifest(os.path.join(self.build_root, m))
+      for project_data in manifest.checkouts_by_path.itervalues():
+        self.assertEquals(project_data['revision'], self.norm_name)
 
   def testNonRelease(self):
     """Non-release branch creation."""

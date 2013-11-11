@@ -1696,14 +1696,14 @@ class BranchUtilStage(bs.BuilderStage):
       manifest: A git.Manifest object.
     """
     for project in ('chromiumos/manifest', 'chromeos/manifest-internal'):
-      manifest_project = manifest.projects[project]
-      manifest_path = manifest_project['local_path']
-      push_remote = manifest_project['push_remote']
+      manifest_checkout = manifest.FindCheckout(project)
+      manifest_path = manifest_checkout['local_path']
+      push_remote = manifest_checkout['push_remote']
 
       git.CreateBranch(
           manifest_path, manifest_version.PUSH_BRANCH,
-          branch_point=manifest_project['revision'])
-      full_manifest = os.path.join(manifest_project['local_path'], 'full.xml')
+          branch_point=manifest_checkout['revision'])
+      full_manifest = os.path.join(manifest_checkout['local_path'], 'full.xml')
       result = re.sub(r'\brevision="[^"]*"', 'revision="%s"' % self.dest_ref,
                     osutils.ReadFile(full_manifest))
       osutils.WriteFile(full_manifest, result)
@@ -1837,10 +1837,8 @@ class BranchUtilStage(bs.BuilderStage):
     super(BranchUtilStage, self).PerformStage()
 
     manifest = git.ManifestCheckout.Cached(self._build_root)
-    # Project tuples are in the form (project_name, project_dict).
-    projects = [proj_tuple[1]
-                for proj_tuple in sorted(manifest.projects.iteritems())]
-    pushable, skipped = cros_build_lib.PredicateSplit(TestPushable, projects)
+    checkouts = manifest.ListCheckouts()
+    pushable, skipped = cros_build_lib.PredicateSplit(TestPushable, checkouts)
     for p in skipped:
       logging.warning('Skipping project %s.', p['name'])
 
@@ -1853,9 +1851,9 @@ class BranchUtilStage(bs.BuilderStage):
     self.FixUpManifests(manifest)
 
     overlay_name = 'chromiumos/overlays/chromiumos-overlay'
-    overlay_project = manifest.projects[overlay_name]
-    overlay_dir = overlay_project['local_path']
-    push_remote = overlay_project['push_remote']
+    overlay_checkout = manifest.FindCheckout(overlay_name)
+    overlay_dir = overlay_checkout['local_path']
+    push_remote = overlay_checkout['push_remote']
     self.IncrementVersionOnDiskForNewBranch(push_remote)
 
     source_branch = manifest.default['revision']
