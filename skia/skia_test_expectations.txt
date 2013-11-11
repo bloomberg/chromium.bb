@@ -51,4 +51,19 @@
 # the Skia roll to 12018 again altered the way roundrects are drawn
 crbug.com/314499 fast/canvas/image-object-in-canvas.html [ ImageOnlyFailure ]
 
+# The roll to Skia r12208 introduce minor image differences in the following
+# layout tests. These changes are due to: Skia r12198 Add ability to ninepatch 
+# blurred rounded rectangle https://codereview.chromium.org/48623006
+crbug.com/317658 fast/box-shadow/basic-shadows.html [ ImageOnlyFailure ]
+crbug.com/317658 fast/box-shadow/box-shadow-clipped-slices.html [ ImageOnlyFailure ]
+crbug.com/317658 fast/box-shadow/shadow-tiling-artifact.html [ ImageOnlyFailure ]
+crbug.com/317658 fast/css/shadow-multiple.html [ ImageOnlyFailure ]
+crbug.com/317658 fast/repaint/shadow-multiple-horizontal.html [ ImageOnlyFailure ]
+crbug.com/317658 fast/repaint/shadow-multiple-strict-horizontal.html [ ImageOnlyFailure ]
+crbug.com/317658 fast/repaint/shadow-multiple-strict-vertical.html [ ImageOnlyFailure ]
+crbug.com/317658 fast/repaint/shadow-multiple-vertical.html [ ImageOnlyFailure ]
+crbug.com/317658 fast/writing-mode/box-shadow-horizontal-bt.html [ ImageOnlyFailure ]
+crbug.com/317658 fast/writing-mode/box-shadow-vertical-lr.html [ ImageOnlyFailure ]
+crbug.com/317658 fast/writing-mode/box-shadow-vertical-rl.html [ ImageOnlyFailure ]
+
 # END OVERRIDES HERE (this line ensures that the file is newline-terminated)
