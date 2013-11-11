@@ -1486,16 +1486,6 @@ void PepperPluginInstanceImpl::SendDidChangeView() {
        last_sent_view_data_.Equals(view_data_)))
     return;  // Nothing to update.
 
-  const PP_Size& size = view_data_.rect.size;
-  // Avoid sending a notification with a huge rectangle.
-  if (size.width < 0  || size.width > kMaxPluginSideLength ||
-      size.height < 0 || size.height > kMaxPluginSideLength ||
-      // We know this won't overflow due to above checks.
-      static_cast<uint32>(size.width) * static_cast<uint32>(size.height) >
-          kMaxPluginSize) {
-    return;
-  }
-
   sent_initial_did_change_view_ = true;
   last_sent_view_data_ = view_data_;
   ScopedPPResource resource(
