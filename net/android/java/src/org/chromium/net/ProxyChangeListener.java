@@ -24,7 +24,7 @@ public class ProxyChangeListener {
     private static final String TAG = "ProxyChangeListener";
     private static boolean sEnabled = true;
 
-    private int mNativePtr;
+    private long mNativePtr;
     private Context mContext;
     private ProxyReceiver mProxyReceiver;
     private Delegate mDelegate;
@@ -65,7 +65,7 @@ public class ProxyChangeListener {
     }
 
     @CalledByNative
-    public void start(int nativePtr) {
+    public void start(long nativePtr) {
         assert mNativePtr == 0;
         mNativePtr = nativePtr;
         registerReceiver();
@@ -164,9 +164,9 @@ public class ProxyChangeListener {
      * See net/proxy/proxy_config_service_android.cc
      */
     @NativeClassQualifiedName("ProxyConfigServiceAndroid::JNIDelegate")
-    private native void nativeProxySettingsChangedTo(int nativePtr,
+    private native void nativeProxySettingsChangedTo(long nativePtr,
                                                      String host,
                                                      int port);
     @NativeClassQualifiedName("ProxyConfigServiceAndroid::JNIDelegate")
-    private native void nativeProxySettingsChanged(int nativePtr);
+    private native void nativeProxySettingsChanged(long nativePtr);
 }

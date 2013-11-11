@@ -40,7 +40,8 @@ NetworkChangeNotifierDelegateAndroid::NetworkChangeNotifierDelegateAndroid()
       Java_NetworkChangeNotifier_init(
           env, base::android::GetApplicationContext()));
   Java_NetworkChangeNotifier_addNativeObserver(
-      env, java_network_change_notifier_.obj(), reinterpret_cast<jint>(this));
+      env, java_network_change_notifier_.obj(),
+      reinterpret_cast<intptr_t>(this));
   SetCurrentConnectionType(
       ConvertConnectionType(
           Java_NetworkChangeNotifier_getCurrentConnectionType(
@@ -52,7 +53,8 @@ NetworkChangeNotifierDelegateAndroid::~NetworkChangeNotifierDelegateAndroid() {
   observers_->AssertEmpty();
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_NetworkChangeNotifier_removeNativeObserver(
-      env, java_network_change_notifier_.obj(), reinterpret_cast<jint>(this));
+      env, java_network_change_notifier_.obj(),
+      reinterpret_cast<intptr_t>(this));
 }
 
 NetworkChangeNotifier::ConnectionType

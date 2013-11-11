@@ -196,7 +196,7 @@ class ProxyConfigServiceAndroid::Delegate
     Java_ProxyChangeListener_start(
         env,
         java_proxy_change_listener_.obj(),
-        reinterpret_cast<jint>(&jni_delegate_));
+        reinterpret_cast<intptr_t>(&jni_delegate_));
   }
 
   void FetchInitialConfig() {
