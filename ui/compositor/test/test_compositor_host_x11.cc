@@ -69,7 +69,7 @@ void TestCompositorHostX11::Show() {
     if (event.type == MapNotify && event.xmap.window == window_)
       break;
   }
-  compositor_.reset(new ui::Compositor(false, window_));
+  compositor_.reset(new ui::Compositor(window_));
   compositor_->SetScaleAndSize(1.0f, bounds_.size());
 }
 

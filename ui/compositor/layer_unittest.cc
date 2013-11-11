@@ -355,7 +355,7 @@ class LayerWithDelegateTest : public testing::Test {
     bool allow_test_contexts = true;
     InitializeContextFactoryForTests(allow_test_contexts);
     Compositor::Initialize();
-    compositor_.reset(new Compositor(false, gfx::kNullAcceleratedWidget));
+    compositor_.reset(new Compositor(gfx::kNullAcceleratedWidget));
     compositor_->SetScaleAndSize(1.0f, gfx::Size(1000, 1000));
   }
 

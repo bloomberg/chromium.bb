@@ -187,9 +187,7 @@ scoped_ptr<cc::OutputSurface> GpuProcessTransportFactory::CreateOutputSurface(
   scoped_refptr<ContextProviderCommandBuffer> context_provider;
 
   CommandLine* command_line = CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kUIEnableSoftwareCompositing) &&
-      (!compositor->use_software_renderer() ||
-       ui::Compositor::WasInitializedWithThread())) {
+  if (!command_line->HasSwitch(switches::kUIEnableSoftwareCompositing)) {
     context_provider = ContextProviderCommandBuffer::Create(
         GpuProcessTransportFactory::CreateContextCommon(data->surface_id),
         "Compositor");

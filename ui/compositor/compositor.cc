@@ -231,8 +231,7 @@ PendingSwap::~PendingSwap() {
 
 namespace ui {
 
-Compositor::Compositor(bool use_software_renderer,
-                       gfx::AcceleratedWidget widget)
+Compositor::Compositor(gfx::AcceleratedWidget widget)
     : root_layer_(NULL),
       widget_(widget),
       posted_swaps_(new PostedSwapQueue()),
@@ -241,7 +240,6 @@ Compositor::Compositor(bool use_software_renderer,
       last_ended_frame_(0),
       next_draw_is_resize_(false),
       disable_schedule_composite_(false),
-      use_software_renderer_(use_software_renderer),
       compositor_lock_(NULL),
       defer_draw_scheduling_(false),
       waiting_on_compositing_end_(false),
