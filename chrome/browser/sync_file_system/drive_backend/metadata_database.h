@@ -122,9 +122,23 @@ class MetadataDatabase {
                      const CreateCallback& callback);
   ~MetadataDatabase();
 
-  int64 GetLargestChangeID() const;
+  int64 GetLargestFetchedChangeID() const;
   int64 GetSyncRootTrackerID() const;
   bool HasSyncRoot() const;
+
+  // Gets / updates the largest known change ID.
+  // The largest known change ID is on-memory and not persist over restart.
+  // This is supposed to use when a task fetches ChangeList in parallel to other
+  // operation.  When a task starts fetching paged ChangeList one by one, it
+  // should update the largest known change ID on the first round and background
+  // remaining fetch job.
+  // Then, when other tasks that update FileMetadata by UpdateByFileResource,
+  // it should use largest known change ID as the |change_id| that prevents
+  // FileMetadata from overwritten by ChangeList.
+  // Also if other tasks try to update a remote resource whose change is not yet
+  // retrieved the task should fail due to etag check, so we should be fine.
+  int64 GetLargestKnownChangeID() const;
+  void UpdateLargestKnownChangeID(int64 change_id);
 
   // Populates empty database with initial data.
   // Adds a file metadata and a file tracker for |sync_root_folder|, and adds

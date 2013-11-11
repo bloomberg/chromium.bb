@@ -200,7 +200,7 @@ void RemoteToLocalSyncer::GetRemoteResource(
       base::Bind(&RemoteToLocalSyncer::DidGetRemoteResource,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback,
-                 metadata_database()->GetLargestChangeID()));
+                 metadata_database()->GetLargestKnownChangeID()));
 }
 
 void RemoteToLocalSyncer::DidGetRemoteResource(

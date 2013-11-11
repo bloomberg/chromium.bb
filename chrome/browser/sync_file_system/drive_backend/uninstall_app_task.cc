@@ -64,7 +64,7 @@ void UninstallAppTask::Run(const SyncStatusCallback& callback) {
       base::Bind(&UninstallAppTask::DidDeleteAppRoot,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback,
-                 metadata_database()->GetLargestChangeID()));
+                 metadata_database()->GetLargestKnownChangeID()));
 }
 
 void UninstallAppTask::DidDeleteAppRoot(const SyncStatusCallback& callback,

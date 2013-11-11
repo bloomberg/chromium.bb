@@ -491,12 +491,26 @@ MetadataDatabase::~MetadataDatabase() {
       tracker_by_id_.begin(), tracker_by_id_.end());
 }
 
-int64 MetadataDatabase::GetLargestChangeID() const {
+int64 MetadataDatabase::GetLargestFetchedChangeID() const {
   return service_metadata_->largest_change_id();
 }
 
 int64 MetadataDatabase::GetSyncRootTrackerID() const {
   return service_metadata_->sync_root_tracker_id();
+}
+
+int64 MetadataDatabase::GetLargestKnownChangeID() const {
+  // TODO(tzik): Implement:
+  //  - Add |largest_known_file_id| member to hold the value, that should
+  //    initially have the same value to |largest_change_id|.
+  //  - Change UpdateByFileResource and UpdateByChangeList not to overwrite
+  //    FileMetadata if the newer one.
+  //  - Change ListChangesTask to set UpdateLargestKnownChangeID.
+  return GetLargestFetchedChangeID();
+}
+
+void MetadataDatabase::UpdateLargestKnownChangeID(int64 change_id) {
+  NOTIMPLEMENTED();
 }
 
 bool MetadataDatabase::HasSyncRoot() const {

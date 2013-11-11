@@ -88,7 +88,7 @@ void RegisterAppTask::CreateAppRootFolder(const SyncStatusCallback& callback) {
       base::Bind(&RegisterAppTask::DidCreateAppRootFolder,
                  weak_ptr_factory_.GetWeakPtr(),
                  callback,
-                 metadata_database()->GetLargestChangeID()));
+                 metadata_database()->GetLargestKnownChangeID()));
 }
 
 void RegisterAppTask::DidCreateAppRootFolder(
