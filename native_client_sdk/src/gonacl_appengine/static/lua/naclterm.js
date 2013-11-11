@@ -211,8 +211,6 @@ NaClTerm.prototype.createEmbed = function(width, height) {
   addParam('PS_VERBOSITY', '2');
   addParam('PS_EXIT_MESSAGE', 'exited');
   addParam('TERM', 'xterm-256color');
-  addParam('ARG2', 'all.lua');
-  addParam('ARG1', '-e_U=true');
   addParam('LUA_DATA_URL', 'http://commondatastorage.googleapis.com/gonacl/demos/publish/test/lua');
 
   // Add ARGV arguments from query parameters.
