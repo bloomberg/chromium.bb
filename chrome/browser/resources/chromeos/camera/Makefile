@@ -184,7 +184,7 @@ build/tests: $(SRC_RESOURCES) $(SRC_TESTS_MANIFEST) \
 	cp $(SRC_TESTS_MANIFEST) build/tests/manifest.json
 
 # Builds the tests.crx package.
-tests.crx: build/tests
+build/tests.crx: build/tests
 	$(CHROME) --pack-extension=build/tests \
 	  --pack-extension-key=dev-keys/camera.pem
 
