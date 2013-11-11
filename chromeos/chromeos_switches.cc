@@ -30,6 +30,10 @@ const char kDisableBootAnimation[]          = "disable-boot-animation";
 // Disables Google Drive integration.
 const char kDisableDrive[]                  = "disable-drive";
 
+// Disables reporting recently logged in users for enterprise-managed devices.
+const char kDisableEnterpriseUserReporting[] =
+    "disable-enterprise-user-reporting";
+
 // Disable Genius App and use the original Help App instead.
 const char kDisableGeniusApp[]              = "disable-genius-app";
 
@@ -74,10 +78,6 @@ const char kEnableCarrierSwitching[]        = "enable-carrier-switching";
 
 // Enables automatically initializing Google Drive offline mode on first run.
 const char kEnableDriveOfflineFirstRun[] = "enable-drive-offline-first-run";
-
-// Enables reporting recently logged in users for enterprise-managed devices.
-const char kEnableEnterpriseUserReporting[] =
-    "enable-enterprise-user-reporting";
 
 // Enable to show the indicator about the IME (input method editor) mode
 // on Chrome OS.

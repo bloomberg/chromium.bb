@@ -514,8 +514,8 @@ bool DeviceStatusCollector::GetDeviceStatus(
   if (report_network_interfaces_)
     GetNetworkInterfaces(status);
 
-  if (report_users_ && CommandLine::ForCurrentProcess()->HasSwitch(
-        chromeos::switches::kEnableEnterpriseUserReporting)) {
+  if (report_users_ && !CommandLine::ForCurrentProcess()->HasSwitch(
+        chromeos::switches::kDisableEnterpriseUserReporting)) {
     GetUsers(status);
   }
 
