@@ -4013,7 +4013,7 @@ FilterOperations RenderLayer::computeFilterOperations(const RenderStyle* style)
             FilterOperation* filterOperation = filters.operations().at(i).get();
             if (filterOperation->getOperationType() != FilterOperation::REFERENCE)
                 continue;
-            ReferenceFilterOperation* referenceOperation = static_cast<ReferenceFilterOperation*>(filterOperation);
+            ReferenceFilterOperation* referenceOperation = toReferenceFilterOperation(filterOperation);
             // FIXME: Cache the ReferenceFilter if it didn't change.
             RefPtr<ReferenceFilter> referenceFilter = ReferenceFilter::create();
             float zoom = style->effectiveZoom() * WebCore::deviceScaleFactor(renderer()->frame());
@@ -4040,7 +4040,7 @@ FilterOperations RenderLayer::computeFilterOperations(const RenderStyle* style)
         if (filterOperation->getOperationType() == FilterOperation::CUSTOM) {
             // We have to wait until the program of CSS Shaders is loaded before setting it on the layer.
             // Note that we will handle the loading of the shaders and repainting of the layer in updateOrRemoveFilterClients.
-            const CustomFilterOperation* customOperation = static_cast<const CustomFilterOperation*>(filterOperation.get());
+            const CustomFilterOperation* customOperation = toCustomFilterOperation(filterOperation.get());
             RefPtr<CustomFilterProgram> program = customOperation->program();
             if (!program->isLoaded())
                 continue;

@@ -112,6 +112,10 @@ private:
     virtual PassRefPtr<FilterOperation> blend(const FilterOperation* from, double progress) const = 0;
 };
 
+#define DEFINE_FILTER_OPERATION_TYPE_CASTS(thisType, type) \
+    DEFINE_TYPE_CASTS(thisType, FilterOperation, op, op->getOperationType() == FilterOperation::type, op.getOperationType() == FilterOperation::type);
+
+// FIXME: DefaultFilterOperation is not used.
 class DefaultFilterOperation : public FilterOperation {
 public:
     static PassRefPtr<DefaultFilterOperation> create(OperationType type)
@@ -186,6 +190,8 @@ private:
     RefPtr<ReferenceFilter> m_filter;
 };
 
+DEFINE_FILTER_OPERATION_TYPE_CASTS(ReferenceFilterOperation, REFERENCE);
+
 // GRAYSCALE, SEPIA, SATURATE and HUE_ROTATE are variations on a basic color matrix effect.
 // For HUE_ROTATE, the angle of rotation is stored in m_amount.
 class BasicColorMatrixFilterOperation : public FilterOperation {
@@ -216,6 +222,14 @@ private:
 
     double m_amount;
 };
+
+inline bool isBasicColorMatrixFilterOperation(const FilterOperation& operation)
+{
+    FilterOperation::OperationType type = operation.getOperationType();
+    return type == FilterOperation::GRAYSCALE || type == FilterOperation::SEPIA || type == FilterOperation::SATURATE || type == FilterOperation::HUE_ROTATE;
+}
+
+DEFINE_TYPE_CASTS(BasicColorMatrixFilterOperation, FilterOperation, op, isBasicColorMatrixFilterOperation(*op), isBasicColorMatrixFilterOperation(op));
 
 // INVERT, BRIGHTNESS, CONTRAST and OPACITY are variations on a basic component transfer effect.
 class BasicComponentTransferFilterOperation : public FilterOperation {
@@ -249,6 +263,15 @@ private:
     double m_amount;
 };
 
+inline bool isBasicComponentTransferFilterOperation(const FilterOperation& operation)
+{
+    FilterOperation::OperationType type = operation.getOperationType();
+    return type == FilterOperation::INVERT || type == FilterOperation::OPACITY || type == FilterOperation::BRIGHTNESS || type == FilterOperation::CONTRAST;
+}
+
+DEFINE_TYPE_CASTS(BasicComponentTransferFilterOperation, FilterOperation, op, isBasicComponentTransferFilterOperation(*op), isBasicComponentTransferFilterOperation(op));
+
+// FIXME: GammaFilterOperation is not used.
 class GammaFilterOperation : public FilterOperation {
 public:
     static PassRefPtr<GammaFilterOperation> create(double amplitude, double exponent, double offset, OperationType type)
@@ -316,6 +339,8 @@ private:
     Length m_stdDeviation;
 };
 
+DEFINE_FILTER_OPERATION_TYPE_CASTS(BlurFilterOperation, BLUR);
+
 class DropShadowFilterOperation : public FilterOperation {
 public:
     static PassRefPtr<DropShadowFilterOperation> create(const IntPoint& location, int stdDeviation, Color color, OperationType type)
@@ -355,6 +380,8 @@ private:
     int m_stdDeviation;
     Color m_color;
 };
+
+DEFINE_FILTER_OPERATION_TYPE_CASTS(DropShadowFilterOperation, DROP_SHADOW);
 
 } // namespace WebCore
 

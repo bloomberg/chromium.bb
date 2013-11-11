@@ -1064,7 +1064,7 @@ static bool copyWebCoreFilterOperationsToWebFilterOperations(const FilterOperati
         case FilterOperation::SEPIA:
         case FilterOperation::SATURATE:
         case FilterOperation::HUE_ROTATE: {
-            float amount = static_cast<const BasicColorMatrixFilterOperation*>(&op)->amount();
+            float amount = toBasicColorMatrixFilterOperation(op).amount();
             switch (op.getOperationType()) {
             case FilterOperation::GRAYSCALE:
                 webFilters.appendGrayscaleFilter(amount);
@@ -1087,7 +1087,7 @@ static bool copyWebCoreFilterOperationsToWebFilterOperations(const FilterOperati
         case FilterOperation::OPACITY:
         case FilterOperation::BRIGHTNESS:
         case FilterOperation::CONTRAST: {
-            float amount = static_cast<const BasicComponentTransferFilterOperation*>(&op)->amount();
+            float amount = toBasicComponentTransferFilterOperation(op).amount();
             switch (op.getOperationType()) {
             case FilterOperation::INVERT:
                 webFilters.appendInvertFilter(amount);
@@ -1107,12 +1107,12 @@ static bool copyWebCoreFilterOperationsToWebFilterOperations(const FilterOperati
             break;
         }
         case FilterOperation::BLUR: {
-            float pixelRadius = static_cast<const BlurFilterOperation*>(&op)->stdDeviation().getFloatValue();
+            float pixelRadius = toBlurFilterOperation(op).stdDeviation().getFloatValue();
             webFilters.appendBlurFilter(pixelRadius);
             break;
         }
         case FilterOperation::DROP_SHADOW: {
-            const DropShadowFilterOperation& dropShadowOp = *static_cast<const DropShadowFilterOperation*>(&op);
+            const DropShadowFilterOperation& dropShadowOp = toDropShadowFilterOperation(op);
             webFilters.appendDropShadowFilter(WebPoint(dropShadowOp.x(), dropShadowOp.y()), dropShadowOp.stdDeviation(), dropShadowOp.color().rgb());
             break;
         }

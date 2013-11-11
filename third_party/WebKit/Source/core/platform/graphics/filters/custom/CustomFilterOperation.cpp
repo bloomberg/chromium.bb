@@ -60,7 +60,7 @@ PassRefPtr<FilterOperation> CustomFilterOperation::blend(const FilterOperation* 
     }
 
     ASSERT_WITH_SECURITY_IMPLICATION(from->isSameType(*this));
-    const CustomFilterOperation* fromOp = static_cast<const CustomFilterOperation*>(from);
+    const CustomFilterOperation* fromOp = toCustomFilterOperation(from);
     if (m_program.get() != fromOp->m_program.get()
         || m_meshRows != fromOp->m_meshRows
         || m_meshColumns != fromOp->m_meshColumns

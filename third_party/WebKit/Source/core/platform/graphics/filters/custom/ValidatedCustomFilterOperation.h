@@ -85,6 +85,8 @@ private:
     CustomFilterMeshType m_meshType;
 };
 
+DEFINE_FILTER_OPERATION_TYPE_CASTS(ValidatedCustomFilterOperation, VALIDATED_CUSTOM);
+
 } // namespace WebCore
 
 

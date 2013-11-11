@@ -126,7 +126,7 @@ FilterOutsets FilterOperations::outsets() const
         FilterOperation* filterOperation = m_operations.at(i).get();
         switch (filterOperation->getOperationType()) {
         case FilterOperation::BLUR: {
-            BlurFilterOperation* blurOperation = static_cast<BlurFilterOperation*>(filterOperation);
+            BlurFilterOperation* blurOperation = toBlurFilterOperation(filterOperation);
             float stdDeviation = floatValueForLength(blurOperation->stdDeviation(), 0);
             IntSize outsetSize = outsetSizeForBlur(stdDeviation);
             FilterOutsets outsets(outsetSize.height(), outsetSize.width(), outsetSize.height(), outsetSize.width());
@@ -134,7 +134,7 @@ FilterOutsets FilterOperations::outsets() const
             break;
         }
         case FilterOperation::DROP_SHADOW: {
-            DropShadowFilterOperation* dropShadowOperation = static_cast<DropShadowFilterOperation*>(filterOperation);
+            DropShadowFilterOperation* dropShadowOperation = toDropShadowFilterOperation(filterOperation);
             IntSize outsetSize = outsetSizeForBlur(dropShadowOperation->stdDeviation());
             FilterOutsets outsets(
                 std::max(0, outsetSize.height() - dropShadowOperation->y()),
@@ -146,7 +146,7 @@ FilterOutsets FilterOperations::outsets() const
             break;
         }
         case FilterOperation::REFERENCE: {
-            ReferenceFilterOperation* referenceOperation = static_cast<ReferenceFilterOperation*>(filterOperation);
+            ReferenceFilterOperation* referenceOperation = toReferenceFilterOperation(filterOperation);
             if (referenceOperation->filter() && referenceOperation->filter()->lastEffect()) {
                 FloatRect outsetRect(0, 0, 1, 1);
                 outsetRect = referenceOperation->filter()->lastEffect()->mapRectRecursive(outsetRect);

@@ -103,8 +103,7 @@ bool SkiaImageFilterBuilder::buildFilterOperations(const FilterOperations& opera
         switch (op.getOperationType()) {
         case FilterOperation::REFERENCE: {
             RefPtr<SkImageFilter> filter;
-            const ReferenceFilterOperation* referenceFilterOperation = static_cast<const ReferenceFilterOperation*>(&op);
-            ReferenceFilter* referenceFilter = referenceFilterOperation->filter();
+            ReferenceFilter* referenceFilter = toReferenceFilterOperation(op).filter();
             if (referenceFilter && referenceFilter->lastEffect()) {
                 FilterEffect* filterEffect = referenceFilter->lastEffect();
                 // Link SourceGraphic to a noop filter that serves as a placholder for
@@ -130,7 +129,7 @@ bool SkiaImageFilterBuilder::buildFilterOperations(const FilterOperations& opera
         case FilterOperation::SEPIA:
         case FilterOperation::SATURATE:
         case FilterOperation::HUE_ROTATE: {
-            float amount = static_cast<const BasicColorMatrixFilterOperation*>(&op)->amount();
+            float amount = toBasicColorMatrixFilterOperation(op).amount();
             switch (op.getOperationType()) {
             case FilterOperation::GRAYSCALE:
                 filters->appendGrayscaleFilter(amount);
@@ -153,7 +152,7 @@ bool SkiaImageFilterBuilder::buildFilterOperations(const FilterOperations& opera
         case FilterOperation::OPACITY:
         case FilterOperation::BRIGHTNESS:
         case FilterOperation::CONTRAST: {
-            float amount = static_cast<const BasicComponentTransferFilterOperation*>(&op)->amount();
+            float amount = toBasicComponentTransferFilterOperation(op).amount();
             switch (op.getOperationType()) {
             case FilterOperation::INVERT:
                 filters->appendInvertFilter(amount);
@@ -173,13 +172,13 @@ bool SkiaImageFilterBuilder::buildFilterOperations(const FilterOperations& opera
             break;
         }
         case FilterOperation::BLUR: {
-            float pixelRadius = static_cast<const BlurFilterOperation*>(&op)->stdDeviation().getFloatValue();
+            float pixelRadius = toBlurFilterOperation(op).stdDeviation().getFloatValue();
             filters->appendBlurFilter(pixelRadius);
             break;
         }
         case FilterOperation::DROP_SHADOW: {
-            const DropShadowFilterOperation* drop = static_cast<const DropShadowFilterOperation*>(&op);
-            filters->appendDropShadowFilter(blink::WebPoint(drop->x(), drop->y()), drop->stdDeviation(), drop->color().rgb());
+            const DropShadowFilterOperation& drop = toDropShadowFilterOperation(op);
+            filters->appendDropShadowFilter(blink::WebPoint(drop.x(), drop.y()), drop.stdDeviation(), drop.color().rgb());
             break;
         }
         case FilterOperation::VALIDATED_CUSTOM:

@@ -118,7 +118,7 @@ void RenderLayerFilterInfo::updateReferenceFilterClients(const FilterOperations&
         RefPtr<FilterOperation> filterOperation = operations.operations().at(i);
         if (filterOperation->getOperationType() != FilterOperation::REFERENCE)
             continue;
-        ReferenceFilterOperation* referenceFilterOperation = static_cast<ReferenceFilterOperation*>(filterOperation.get());
+        ReferenceFilterOperation* referenceFilterOperation = toReferenceFilterOperation(filterOperation.get());
         DocumentResourceReference* documentReference = referenceFilterOperation->documentResourceReference();
         DocumentResource* cachedSVGDocument = documentReference ? documentReference->document() : 0;
 
@@ -174,8 +174,7 @@ void RenderLayerFilterInfo::updateCustomFilterClients(const FilterOperations& op
         const FilterOperation* filterOperation = operations.at(i);
         if (filterOperation->getOperationType() != FilterOperation::CUSTOM)
             continue;
-        const CustomFilterOperation* customFilterOperation = static_cast<const CustomFilterOperation*>(filterOperation);
-        RefPtr<CustomFilterProgram> program = customFilterOperation->program();
+        RefPtr<CustomFilterProgram> program = toCustomFilterOperation(filterOperation)->program();
         cachedCustomFilterPrograms.append(program);
         program->addClient(this);
     }

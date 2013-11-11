@@ -44,7 +44,7 @@ PassRefPtr<FilterOperation> BasicColorMatrixFilterOperation::blend(const FilterO
     double fromAmount;
     if (from) {
         ASSERT_WITH_SECURITY_IMPLICATION(from->isSameType(*this));
-        fromAmount = static_cast<const BasicColorMatrixFilterOperation*>(from)->amount();
+        fromAmount = toBasicColorMatrixFilterOperation(from)->amount();
     } else {
         switch (m_type) {
         case GRAYSCALE:
@@ -83,7 +83,7 @@ PassRefPtr<FilterOperation> BasicComponentTransferFilterOperation::blend(const F
     double fromAmount;
     if (from) {
         ASSERT_WITH_SECURITY_IMPLICATION(from->isSameType(*this));
-        fromAmount = static_cast<const BasicComponentTransferFilterOperation*>(from)->amount();
+        fromAmount = toBasicComponentTransferFilterOperation(from)->amount();
     } else {
         switch (m_type) {
         case OPACITY:
@@ -138,8 +138,7 @@ PassRefPtr<FilterOperation> BlurFilterOperation::blend(const FilterOperation* fr
     if (!from)
         return BlurFilterOperation::create(m_stdDeviation.blend(Length(lengthType), progress, ValueRangeNonNegative), m_type);
 
-    ASSERT_WITH_SECURITY_IMPLICATION(from->isSameType(*this));
-    const BlurFilterOperation* fromOp = static_cast<const BlurFilterOperation*>(from);
+    const BlurFilterOperation* fromOp = toBlurFilterOperation(from);
     return BlurFilterOperation::create(m_stdDeviation.blend(fromOp->m_stdDeviation, progress, ValueRangeNonNegative), m_type);
 }
 
@@ -152,8 +151,7 @@ PassRefPtr<FilterOperation> DropShadowFilterOperation::blend(const FilterOperati
             WebCore::blend(Color(Color::transparent), m_color, progress),
             m_type);
 
-    ASSERT_WITH_SECURITY_IMPLICATION(from->isSameType(*this));
-    const DropShadowFilterOperation* fromOp = static_cast<const DropShadowFilterOperation*>(from);
+    const DropShadowFilterOperation* fromOp = toDropShadowFilterOperation(from);
     return DropShadowFilterOperation::create(
         WebCore::blend(fromOp->location(), m_location, progress),
         WebCore::blend(fromOp->stdDeviation(), m_stdDeviation, progress),
