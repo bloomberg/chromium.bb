@@ -35,8 +35,8 @@ void JavaHandlerThread::Start() {
   base::WaitableEvent initialize_event(false, false);
   Java_JavaHandlerThread_start(env,
                                java_thread_.obj(),
-                               reinterpret_cast<jint>(this),
-                               reinterpret_cast<jint>(&initialize_event));
+                               reinterpret_cast<intptr_t>(this),
+                               reinterpret_cast<intptr_t>(&initialize_event));
   // Wait for thread to be initialized so it is ready to be used when Start
   // returns.
   base::ThreadRestrictions::ScopedAllowWait wait_allowed;

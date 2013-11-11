@@ -27,7 +27,7 @@ class JavaHandlerThread {
     }
 
     @CalledByNative
-    private void start(final int nativeThread, final int nativeEvent) {
+    private void start(final long nativeThread, final long nativeEvent) {
         mThread.start();
         new Handler(mThread.getLooper()).post(new Runnable() {
             @Override
@@ -37,5 +37,5 @@ class JavaHandlerThread {
         });
     }
 
-    private native void nativeInitializeThread(int nativeJavaHandlerThread, int nativeEvent);
+    private native void nativeInitializeThread(long nativeJavaHandlerThread, long nativeEvent);
 }
