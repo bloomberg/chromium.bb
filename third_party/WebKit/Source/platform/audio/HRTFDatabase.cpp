@@ -32,7 +32,6 @@
 
 #include "platform/audio/HRTFDatabase.h"
 
-#include "platform/audio/HRTFElevation.h"
 
 using namespace std;
 

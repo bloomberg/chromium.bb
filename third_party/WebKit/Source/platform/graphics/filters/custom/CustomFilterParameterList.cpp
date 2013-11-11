@@ -30,7 +30,6 @@
 #include "config.h"
 #include "platform/graphics/filters/custom/CustomFilterParameterList.h"
 
-#include "platform/graphics/filters/custom/CustomFilterParameter.h"
 #include "wtf/text/StringHash.h"
 
 namespace WebCore {

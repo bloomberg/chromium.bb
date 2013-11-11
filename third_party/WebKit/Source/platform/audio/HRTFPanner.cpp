@@ -30,7 +30,6 @@
 
 #include <algorithm>
 #include "platform/audio/AudioBus.h"
-#include "platform/audio/FFTConvolver.h"
 #include "platform/audio/HRTFDatabase.h"
 #include "wtf/MathExtras.h"
 #include "wtf/RefPtr.h"

@@ -33,7 +33,6 @@
 
 #include "platform/HostWindow.h"
 #include "platform/Widget.h"
-#include "platform/geometry/FloatRect.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebScreenInfo.h"
 

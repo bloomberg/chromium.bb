@@ -36,7 +36,6 @@
 #include "platform/network/ResourceRequest.h"
 #include "platform/network/ResourceResponse.h"
 #include "weborigin/KURL.h"
-#include "wtf/Assertions.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {

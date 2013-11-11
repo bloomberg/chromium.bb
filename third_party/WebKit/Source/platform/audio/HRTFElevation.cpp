@@ -36,7 +36,6 @@
 #include <algorithm>
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/HRTFPanner.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/text/StringHash.h"
 

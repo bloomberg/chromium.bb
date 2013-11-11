@@ -27,9 +27,6 @@
 
 #include "platform/mediastream/RTCDTMFSenderHandler.h"
 
-#include "platform/mediastream/RTCDTMFSenderHandlerClient.h"
-#include "public/platform/WebRTCDTMFSenderHandler.h"
-#include "wtf/PassOwnPtr.h"
 
 using namespace blink;
 

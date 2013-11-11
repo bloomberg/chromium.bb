@@ -33,7 +33,6 @@
 #include "platform/audio/HRTFKernel.h"
 
 #include "platform/audio/AudioChannel.h"
-#include "platform/audio/FFTFrame.h"
 #include "platform/FloatConversion.h"
 #include "wtf/MathExtras.h"
 

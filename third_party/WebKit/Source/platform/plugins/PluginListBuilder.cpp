@@ -32,7 +32,6 @@
 #include "platform/plugins/PluginListBuilder.h"
 
 #include "public/platform/WebString.h"
-#include "wtf/Vector.h"
 
 namespace WebCore {
 

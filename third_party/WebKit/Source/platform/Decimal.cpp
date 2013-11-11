@@ -31,7 +31,6 @@
 #include "config.h"
 #include "platform/Decimal.h"
 
-#include "wtf/Assertions.h"
 #include "wtf/MathExtras.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/text/StringBuilder.h"

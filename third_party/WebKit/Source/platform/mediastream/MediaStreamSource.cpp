@@ -31,7 +31,6 @@
 #include "config.h"
 #include "platform/mediastream/MediaStreamSource.h"
 
-#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 

@@ -29,7 +29,6 @@
 
 #include "SkPoint.h"
 #include "platform/FloatConversion.h"
-#include "platform/geometry/IntPoint.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/geometry/LayoutSize.h"
 #include "platform/transforms/AffineTransform.h"

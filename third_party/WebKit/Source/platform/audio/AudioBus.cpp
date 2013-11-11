@@ -40,7 +40,6 @@
 #include "platform/audio/SincResampler.h"
 #include "platform/audio/VectorMath.h"
 #include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 

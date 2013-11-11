@@ -33,7 +33,6 @@
 #include "platform/audio/HRTFDatabaseLoader.h"
 
 #include "platform/Task.h"
-#include "platform/audio/HRTFDatabase.h"
 #include "public/platform/Platform.h"
 #include "wtf/MainThread.h"
 

@@ -34,7 +34,6 @@
 
 #include <math.h>
 #include "platform/audio/AudioBus.h"
-#include "platform/audio/ReverbConvolver.h"
 #include "platform/audio/VectorMath.h"
 #include "wtf/MathExtras.h"
 #include "wtf/OwnPtr.h"

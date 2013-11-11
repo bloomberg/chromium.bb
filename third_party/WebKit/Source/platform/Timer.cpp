@@ -31,7 +31,6 @@
 #include "platform/ThreadTimers.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/HashSet.h"
-#include "wtf/Vector.h"
 #include <limits.h>
 #include <math.h>
 #include <limits>

@@ -29,7 +29,6 @@
 #include "platform/audio/AudioResampler.h"
 
 #include <algorithm>
-#include "platform/audio/AudioBus.h"
 #include "wtf/MathExtras.h"
 
 using namespace std;

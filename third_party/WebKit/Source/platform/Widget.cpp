@@ -27,7 +27,6 @@
 #include "config.h"
 #include "platform/Widget.h"
 
-#include "platform/geometry/IntRect.h"
 
 #include "wtf/Assertions.h"
 
