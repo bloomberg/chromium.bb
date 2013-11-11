@@ -38,6 +38,5 @@ public class AwShellApplication extends Application {
         ResourceExtractor.setMandatoryPaksToExtract(MANDATORY_PAKS);
         ResourceExtractor.setExtractImplicitLocaleForTesting(false);
         AwBrowserProcess.loadLibrary();
-        AwBrowserProcess.start(this);
     }
 }

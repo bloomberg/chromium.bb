@@ -42,13 +42,22 @@ public class AwTestBase
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        final Context context = getActivity();
-        getInstrumentation().runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                AwBrowserProcess.start(context);
-             }
-        });
+        if (needsBrowserProcessStarted()) {
+            final Context context = getActivity();
+            getInstrumentation().runOnMainSync(new Runnable() {
+                @Override
+                public void run() {
+                    AwBrowserProcess.start(context);
+                 }
+            });
+        }
+    }
+
+    /* Override this to return false if the test doesn't want the browser startup sequence to
+     * be run automatically.
+     */
+    protected boolean needsBrowserProcessStarted() {
+        return true;
     }
 
     /**
