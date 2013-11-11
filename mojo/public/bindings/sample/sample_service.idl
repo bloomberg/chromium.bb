@@ -1,0 +1,33 @@
+// Copyright 2013 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// HYPOTHETICAL IDL:
+
+module sample {
+
+struct Bar {
+  uint8 alpha @0;
+  uint8 beta @1;
+  uint8 gamma @2;
+};
+
+[RequiredFields=7]
+struct Foo {
+  string name @8;
+  int32 x @0;
+  int32 y @1;
+  bool a @2;
+  bool b @3;
+  bool c @4;
+  Bar bar @5;
+  Bar[] extra_bars @7;
+  uint8[] data @6;
+  handle[] files @9;
+};
+
+interface Service {
+  void Frobinate(Foo foo @0, bool baz @1, handle port @2) @0;
+};
+
+}

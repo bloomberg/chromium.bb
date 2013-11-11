@@ -8,7 +8,7 @@
 #include <string.h>
 
 #include "mojo/public/bindings/lib/bindings_serialization.h"
-#include "mojom/sample_service.h"
+#include "mojo/public/bindings/sample/generated/sample_service.h"
 
 namespace mojo {
 namespace internal {
