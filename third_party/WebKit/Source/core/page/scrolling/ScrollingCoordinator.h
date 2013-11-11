@@ -152,11 +152,14 @@ private:
     blink::WebScrollbarLayer* getWebScrollbarLayer(ScrollableArea*, ScrollbarOrientation);
     void removeWebScrollbarLayer(ScrollableArea*, ScrollbarOrientation);
 
-
     typedef HashMap<ScrollableArea*, OwnPtr<blink::WebScrollbarLayer> > ScrollbarMap;
     ScrollbarMap m_horizontalScrollbars;
     ScrollbarMap m_verticalScrollbars;
     HashSet<const RenderLayer*> m_layersWithTouchRects;
+    bool m_wasFrameScrollable;
+
+    // This is retained for testing.
+    MainThreadScrollingReasons m_lastMainThreadScrollingReasons;
 };
 
 } // namespace WebCore
