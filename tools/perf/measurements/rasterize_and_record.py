@@ -31,7 +31,7 @@ class RasterizeAndRecord(page_measurement.PageMeasurement):
                       help='Wait time before the benchmark is started ' +
                       '(must be long enought to load all content)')
     parser.add_option('--stop-wait-time', dest='stop_wait_time',
-                      default=10,
+                      default=15,
                       help='Wait time before measurement is taken ' +
                       '(must be long enough to render one frame)')
 
