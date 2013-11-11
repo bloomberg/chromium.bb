@@ -277,8 +277,15 @@ TEST_F('OptionsWebUITest', 'emptySelectedIndexesDoesntCrash', function() {
   setTimeout(testDone);
 });
 
+// Flaky on win. See http://crbug.com/315250
+GEN('#if defined(OS_WIN)');
+GEN('#define MAYBE_OverlayShowDoesntShift DISABLED_OverlayShowDoesntShift');
+GEN('#else');
+GEN('#define MAYBE_OverlayShowDoesntShift OverlayShowDoesntShift');
+GEN('#endif  // defined(OS_WIN)');
+
 // An overlay's position should remain the same as it shows.
-TEST_F('OptionsWebUITest', 'OverlayShowDoesntShift', function() {
+TEST_F('OptionsWebUITest', 'MAYBE_OverlayShowDoesntShift', function() {
   var overlayName = 'startup';
   var overlay = $('startup-overlay');
   var frozenPages = document.getElementsByClassName('frozen');  // Gets updated.
