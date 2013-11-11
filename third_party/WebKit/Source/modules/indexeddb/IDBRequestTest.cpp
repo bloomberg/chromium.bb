@@ -28,7 +28,9 @@
 
 #include "core/dom/DOMError.h"
 #include "core/dom/Document.h"
+#include "core/dom/ExecutionContextTask.h"
 #include "core/events/EventQueue.h"
+#include "core/inspector/ScriptCallStack.h"
 #include "modules/indexeddb/IDBCursorBackendInterface.h"
 #include "modules/indexeddb/IDBDatabaseBackendInterface.h"
 #include "modules/indexeddb/IDBDatabaseCallbacksImpl.h"
@@ -53,21 +55,44 @@ public:
 
 class NullExecutionContext : public ExecutionContext, public RefCounted<NullExecutionContext> {
 public:
+    class Client : public ExecutionContextClient, public SecurityContext, public RefCounted<Client> {
+    public:
+        virtual bool isJSExecutionForbidden() const { return false; }
+        virtual void postTask(PassOwnPtr<ExecutionContextTask>) { }
+        virtual String userAgent(const KURL&) const { return String(); }
+        virtual void disableEval(const String&) { }
+        virtual SecurityContext& securityContext() { return *this; }
+        virtual const KURL& virtualURL() const { return m_url; }
+        virtual void addMessage(MessageSource, MessageLevel, const String&, const String&, unsigned, ScriptState*)  { }
+        virtual KURL virtualCompleteURL(const String&) const { return KURL(); }
+        virtual void reportBlockedScriptExecutionToInspector(const String&) { }
+        virtual EventTarget* errorEventTarget() { return 0; }
+        virtual void logExceptionToConsole(const String&, const String&, int, int, PassRefPtr<ScriptCallStack>) { }
+        virtual double timerAlignmentInterval() const { return 0; }
+        virtual void didUpdateSecurityOrigin() { }
+        virtual void refExecutionContext() { ref(); }
+        virtual void derefExecutionContext() { ref(); }
+    private:
+        KURL m_url;
+    };
+
     using RefCounted<NullExecutionContext>::ref;
     using RefCounted<NullExecutionContext>::deref;
 
-    virtual void refExecutionContext() OVERRIDE { ref(); }
-    virtual void derefExecutionContext() OVERRIDE { deref(); }
     virtual EventQueue* eventQueue() const OVERRIDE { return m_queue.get(); }
 
     NullExecutionContext();
+
 private:
+    RefPtr<Client> m_client;
     OwnPtr<EventQueue> m_queue;
 };
 
 NullExecutionContext::NullExecutionContext()
-    : m_queue(adoptPtr(new NullEventQueue()))
+    : m_client(adoptRef(new Client()))
+    , m_queue(adoptPtr(new NullEventQueue()))
 {
+    setClient(m_client.get());
 }
 
 class IDBRequestTest : public testing::Test {
