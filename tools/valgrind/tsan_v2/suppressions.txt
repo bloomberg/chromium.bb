@@ -56,9 +56,6 @@ race:v8::Locker::Initialize
 race:uprv_malloc_46
 race:uprv_realloc_46
 
-# http://crbug.com/223955
-race:PassRefPtr
-
 # http://crbug.com/239359
 race:media::TestInputCallback::OnData
 
