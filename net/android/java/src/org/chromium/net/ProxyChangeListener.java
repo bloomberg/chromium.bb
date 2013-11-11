@@ -10,12 +10,12 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Proxy;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-
 import org.chromium.base.CalledByNative;
 import org.chromium.base.JNINamespace;
 import org.chromium.base.NativeClassQualifiedName;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 // This class partners with native ProxyConfigServiceAndroid to listen for
 // proxy change notifications from Android.
@@ -101,7 +101,7 @@ public class ProxyChangeListener {
                 if (props == null) {
                     return null;
                 }
-                Class cls = Class.forName(CLASS_NAME);
+                Class<?> cls = Class.forName(CLASS_NAME);
                 Method getHostMethod = cls.getDeclaredMethod(GET_HOST_NAME);
                 Method getPortMethod = cls.getDeclaredMethod(GET_PORT_NAME);
 
