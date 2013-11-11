@@ -15,22 +15,30 @@ class BindingsSupport {
  public:
   class AsyncWaitCallback {
    public:
+    virtual ~AsyncWaitCallback() {}
     virtual void OnHandleReady(MojoResult result) = 0;
   };
 
-  // Asynchronously call MojoWait on a background thread, and return the result
-  // to the current thread via the given AsyncWaitCallback.
-  virtual bool AsyncWait(Handle handle,
-                         MojoWaitFlags flags,
-                         MojoDeadline deadline,
-                         AsyncWaitCallback* callback) = 0;
-
-  // Cancel an existing call to AsyncWait with the given callback. The
-  // callback's OnHandleReady method should not be called in this case.
-  virtual void CancelWait(AsyncWaitCallback* callback) = 0;
+  typedef void* AsyncWaitID;
 
   static void Set(BindingsSupport* support);
   static BindingsSupport* Get();
+
+  // Asynchronously call MojoWait on a background thread, and pass the result
+  // of MojoWait to the given AsyncWaitCallback on the current thread.  Returns
+  // an AsyncWaitID that can be used with CancelWait to stop waiting. This
+  // identifier becomes invalid once the callback runs.
+  virtual AsyncWaitID AsyncWait(Handle handle,
+                                MojoWaitFlags flags,
+                                AsyncWaitCallback* callback) = 0;
+
+  // Cancel an existing call to AsyncWait with the given AsyncWaitID. The
+  // corresponding AsyncWaitCallback's OnHandleReady method will not be called
+  // in this case.
+  virtual void CancelWait(AsyncWaitID id) = 0;
+
+ protected:
+  virtual ~BindingsSupport() {}
 };
 
 }  // namespace mojo

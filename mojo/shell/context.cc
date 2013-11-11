@@ -18,9 +18,11 @@ Context::Context()
               scoped_ptr<net::NetworkDelegate>(new NetworkDelegate()),
               storage_.profile_path()) {
   system::CoreImpl::Init();
+  BindingsSupport::Set(&bindings_support_impl_);
 }
 
 Context::~Context() {
+  BindingsSupport::Set(NULL);
 }
 
 }  // namespace shell
