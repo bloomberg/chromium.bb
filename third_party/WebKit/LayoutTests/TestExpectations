@@ -199,6 +199,7 @@ crbug.com/316147 [ Win ] http/tests/history/back-to-post.html [ Failure Pass ]
 crbug.com/237270 http/tests/images/jpeg-partial-load.html [ Pass Timeout ]
 crbug.com/237270 http/tests/images/png-partial-load.html [ Pass Timeout ]
 crbug.com/237270 http/tests/images/png-partial-load-no-alpha.html [ Pass Timeout ]
+crbug.com/317772 [ Debug ] http/tests/history/back-to-javascript-url-iframe.html [ Pass Timeout ]
 
 crbug.com/248938 virtual/threaded/animations/change-keyframes.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/animations/dynamic-stylesheet-loading.html [ Pass Failure ]
