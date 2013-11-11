@@ -16,6 +16,7 @@
 #include "base/bind.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/format_macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -848,6 +849,40 @@ TEST_F(URLRequestTest, FileTestMultipleRanges) {
   }
 
   EXPECT_TRUE(base::DeleteFile(temp_path, false));
+}
+
+TEST_F(URLRequestTest, AllowFileURLs) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath test_file;
+  ASSERT_TRUE(file_util::CreateTemporaryFileInDir(temp_dir.path(), &test_file));
+  std::string test_data("monkey");
+  file_util::WriteFile(test_file, test_data.data(), test_data.size());
+  GURL test_file_url = net::FilePathToFileURL(test_file);
+
+  {
+    TestDelegate d;
+    TestNetworkDelegate network_delegate;
+    network_delegate.set_can_access_files(true);
+    default_context_.set_network_delegate(&network_delegate);
+    URLRequest r(test_file_url, DEFAULT_PRIORITY, &d, &default_context_);
+    r.Start();
+    base::RunLoop().Run();
+    EXPECT_FALSE(d.request_failed());
+    EXPECT_EQ(test_data, d.data_received());
+  }
+
+  {
+    TestDelegate d;
+    TestNetworkDelegate network_delegate;
+    network_delegate.set_can_access_files(false);
+    default_context_.set_network_delegate(&network_delegate);
+    URLRequest r(test_file_url, DEFAULT_PRIORITY, &d, &default_context_);
+    r.Start();
+    base::RunLoop().Run();
+    EXPECT_TRUE(d.request_failed());
+    EXPECT_EQ("", d.data_received());
+  }
 }
 
 TEST_F(URLRequestTest, InvalidUrlTest) {

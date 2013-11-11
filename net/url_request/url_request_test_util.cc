@@ -310,7 +310,9 @@ TestNetworkDelegate::TestNetworkDelegate()
       blocked_set_cookie_count_(0),
       set_cookie_count_(0),
       has_load_timing_info_before_redirect_(false),
-      has_load_timing_info_before_auth_(false) {
+      has_load_timing_info_before_auth_(false),
+      can_access_files_(true),
+      can_throttle_requests_(true) {
 }
 
 TestNetworkDelegate::~TestNetworkDelegate() {
@@ -549,12 +551,12 @@ bool TestNetworkDelegate::OnCanSetCookie(const URLRequest& request,
 
 bool TestNetworkDelegate::OnCanAccessFile(const URLRequest& request,
                                           const base::FilePath& path) const {
-  return true;
+  return can_access_files_;
 }
 
 bool TestNetworkDelegate::OnCanThrottleRequest(
     const URLRequest& request) const {
-  return true;
+  return can_throttle_requests_;
 }
 
 int TestNetworkDelegate::OnBeforeSocketStreamConnect(

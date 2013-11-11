@@ -252,6 +252,18 @@ std::ostream& operator<<(std::ostream& out, const base::TimeTicks& time) {
   return out << time.ToInternalValue();
 }
 
+TEST_F(URLRequestThrottlerEntryTest, CanThrottleRequest) {
+  TestNetworkDelegate d;
+  context_.set_network_delegate(&d);
+  entry_->set_exponential_backoff_release_time(
+      entry_->fake_time_now_ + TimeDelta::FromMilliseconds(1));
+
+  d.set_can_throttle_requests(false);
+  EXPECT_FALSE(entry_->ShouldRejectRequest(request_));
+  d.set_can_throttle_requests(true);
+  EXPECT_TRUE(entry_->ShouldRejectRequest(request_));
+}
+
 TEST_F(URLRequestThrottlerEntryTest, InterfaceDuringExponentialBackoff) {
   entry_->set_exponential_backoff_release_time(
       entry_->fake_time_now_ + TimeDelta::FromMilliseconds(1));

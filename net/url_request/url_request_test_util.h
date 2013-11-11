@@ -236,6 +236,12 @@ class TestNetworkDelegate : public NetworkDelegate {
   int blocked_set_cookie_count() const { return blocked_set_cookie_count_; }
   int set_cookie_count() const { return set_cookie_count_; }
 
+  void set_can_access_files(bool val) { can_access_files_ = val; }
+  bool can_access_files() const { return can_access_files_; }
+
+  void set_can_throttle_requests(bool val) { can_throttle_requests_ = val; }
+  bool can_throttle_requests() const { return can_throttle_requests_; }
+
  protected:
   // NetworkDelegate:
   virtual int OnBeforeURLRequest(URLRequest* request,
@@ -307,6 +313,9 @@ class TestNetworkDelegate : public NetworkDelegate {
 
   LoadTimingInfo load_timing_info_before_auth_;
   bool has_load_timing_info_before_auth_;
+
+  bool can_access_files_;  // true by default
+  bool can_throttle_requests_;  // true by default
 };
 
 // Overrides the host used by the LocalHttpTestServer in
