@@ -91,7 +91,7 @@ void SoftwareBrowserCompositorOutputSurfaceTest::SetUp() {
   ui::InitializeContextFactoryForTests(false);
   ui::Compositor::Initialize();
 
-  compositor_.reset(new ui::Compositor(true, gfx::kNullAcceleratedWidget));
+  compositor_.reset(new ui::Compositor(gfx::kNullAcceleratedWidget));
   surface_proxy_ =
       new content::BrowserCompositorOutputSurfaceProxy(&surface_map_);
 }
