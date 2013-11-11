@@ -247,6 +247,7 @@ camera.models.Gallery.prototype.loadStoredPictures_ = function(
     onSuccess, onFailure) {
   var dirReader = this.fileSystem_.root.createReader();
   var entries = [];
+  var queue = new camera.util.Queue();
 
   var onScanFinished = function() {
     var entriesByName = {};
@@ -259,14 +260,42 @@ camera.models.Gallery.prototype.loadStoredPictures_ = function(
         console.warn('TODO(mtomasz): Temporary fix for a strange issue.');
         continue;
       }
-      if (entry.name.indexOf('thumb-') !== 0) {
-        this.pictures_.push(
-            new camera.models.Gallery.Picture(
-              entriesByName['thumb-' + entry.name],
-              entry));
-      }
+      if (entry.name.indexOf('thumb-') === 0)
+        continue;
+      queue.run(function(entry, callback) {
+        var thumbnailEntry = entriesByName['thumb-' + entry.name];
+        // No thumbnail, most probably pictures taken by the old Camera App.
+        // So, create the thumbnail now.
+        if (!thumbnailEntry) {
+          this.createThumbnail_(entry.toURL(), function(thumbnailDataURL) {
+            this.savePictureToFile_(
+                'thumb-' + entry.name,
+                thumbnailDataURL,
+                function(recreatedThumbnailEntry) {
+                  this.pictures_.push(new camera.models.Gallery.Picture(
+                      recreatedThumbnailEntry, entry));
+                  callback();
+                }.bind(this), function() {
+                  // Ignore this error, since it is better to load something
+                  // than nothing.
+                  log.warn('Unabled to save the recreated thumbnail.');
+                  callback();
+                });
+          }.bind(this), function() {
+            // Ignore this error, since it is better to load something than
+            // nothing.
+            log.warn('Unable to recreate the thumbnail.');
+            callback();
+          });
+        } else {
+          // The thumbnail is available.
+          this.pictures_.push(new camera.models.Gallery.Picture(
+              thumbnailEntry, entry));
+          callback();
+        }
+      }.bind(this, entry));
     }
-    onSuccess();
+    queue.run(onSuccess);
   }.bind(this);
 
   var readEntries = function() {
@@ -391,49 +420,72 @@ camera.models.Gallery.prototype.savePictureToFile_ = function(
 };
 
 /**
+ * Creates a thumbnail from the original picture.
+ *
+ * @param {string} url Original picture as an URL.
+ * @param {function(string)} onSuccess Success callback with the thumbnail as a
+ *     data URL.
+ * @param {function()} onFailure Failure callback.
+ * @private
+ */
+camera.models.Gallery.prototype.createThumbnail_ = function(
+    url, onSuccess, onFailure) {
+  var fullImg = document.createElement('img');
+
+  fullImg.onload = function() {
+    var canvas = document.createElement('canvas');
+    var context = canvas.getContext('2d');
+    var thumbnailWidth = 480;  // Twice wider than in CSS for hi-dpi,
+                               // like Pixel.
+    var thumbnailHeight = Math.round((480 / fullImg.width) * fullImg.height);
+    canvas.width = thumbnailWidth;
+    canvas.height = thumbnailHeight;
+    context.drawImage(fullImg, 0, 0, thumbnailWidth, thumbnailHeight);
+    onSuccess(canvas.toDataURL());
+  };
+
+  fullImg.onerror = function() {
+    onFailure();
+  };
+
+  fullImg.src = url;
+};
+
+/**
  * Adds a picture to the gallery and saves it in the internal storage.
  *
  * @param {string} dataURL Data of the picture to be added.
  * @param {function()} onSuccess Success callback.
- * @param {functino()} onFailure Failure callback.
+ * @param {function()} onFailure Failure callback.
  */
 camera.models.Gallery.prototype.addPicture = function(
     dataURL, onSuccess, onFailure) {
-  // Create a thumbnail.
-  var fullImg = document.createElement('img');
-  fullImg.src = dataURL;
-  var canvas = document.createElement('canvas');
-  var context = canvas.getContext('2d');
-  var thumbnailWidth = 480;  // Twice wider than in CSS for hi-dpi, like Pixel.
-  var thumbnailHeight = Math.round((480 / fullImg.width) * fullImg.height);
-  canvas.width = thumbnailWidth;
-  canvas.height = thumbnailHeight;
-  context.drawImage(fullImg, 0, 0, thumbnailWidth, thumbnailHeight);
+  this.createThumbnail_(dataURL, function(thumbnailDataURL) {
+    // Save the thumbnail as well as the full screen resolution picture.
+    this.lastFileId_++;
+    var fileNameBase = new Date().getTime() + '.' + this.lastFileId_;
 
-  // Save the thumbnail as well as the full screen resolution picture.
-  this.lastFileId_++;
-  var fileNameBase = new Date().getTime() + '.' + this.lastFileId_;
-
-  this.savePictureToFile_(
-      'thumb-' + fileNameBase + '.jpg',
-      canvas.toDataURL(),
-      function(thumbnailEntry) {
-        this.savePictureToFile_(
-          fileNameBase + '.jpg',
-          dataURL,
-          function(imageEntry) {
-            var picture = new camera.models.Gallery.Picture(
-                thumbnailEntry, imageEntry);
-            this.pictures_.push(picture);
-            // Notify observers.
-            var pictureIndex = this.pictures_.length - 1;
-            for (var index = 0; index < this.observers_.length; index++) {
-              this.observers_[index].onPictureAdded(pictureIndex);
-            }
-          }.bind(this),
-          // TODO(mtomasz): Remove the thumbnail on error.
-          onFailure);
-      }.bind(this),
-      onFailure);
+    this.savePictureToFile_(
+        'thumb-' + fileNameBase + '.jpg',
+        thumbnailDataURL,
+        function(thumbnailEntry) {
+          this.savePictureToFile_(
+            fileNameBase + '.jpg',
+            dataURL,
+            function(imageEntry) {
+              var picture = new camera.models.Gallery.Picture(
+                  thumbnailEntry, imageEntry);
+              this.pictures_.push(picture);
+              // Notify observers.
+              var pictureIndex = this.pictures_.length - 1;
+              for (var index = 0; index < this.observers_.length; index++) {
+                this.observers_[index].onPictureAdded(pictureIndex);
+              }
+            }.bind(this),
+            // TODO(mtomasz): Remove the thumbnail on error.
+            onFailure);
+        }.bind(this),
+        onFailure);
+  }.bind(this), onFailure);
 };
 
