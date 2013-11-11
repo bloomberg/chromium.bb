@@ -124,7 +124,7 @@ class GSContext(object):
   DEFAULT_GSUTIL_BIN = None
   DEFAULT_GSUTIL_BUILDER_BIN = '/b/build/third_party/gsutil/gsutil'
   # How many times to retry uploads.
-  DEFAULT_RETRIES = 10
+  DEFAULT_RETRIES = 3
 
   # Multiplier for how long to sleep (in seconds) between retries; will delay
   # (1*sleep) the first time, then (2*sleep), continuing via attempt * sleep.
@@ -349,10 +349,17 @@ class GSContext(object):
       # If the file does not exist, one of the following errors occurs.
       if ('InvalidUriError:' in error or
           'CommandException: No URIs matched' in error or
-          'CommandException: One or more URIs matched no objects' in error):
+          'CommandException: One or more URIs matched no objects' in error or
+          'CommandException: No such object' in error or
+          'Some files could not be removed' in error or
+          'does not exist' in error):
         raise GSNoSuchKey(e)
 
       logging.warning('GS_ERROR: %s', error)
+
+      # TODO: Below is a list of known flaky errors that we should
+      # retry. The list needs to be extended.
+
       # Temporary fix: remove the gsutil tracker files so that our retry
       # can hit a different backend. This should be removed after the
       # bug is fixed by the Google Storage team (see crbug.com/308300).
@@ -376,8 +383,13 @@ class GSContext(object):
               logging.info('The content of the tracker file: %s',
                            osutils.ReadFile(tracker_file_path))
               osutils.SafeUnlink(tracker_file_path)
+        return True
 
-    return True
+      # We have seen flaky errors with 5xx return codes.
+      if 'GSResponseError: status=5' in error:
+        return True
+
+    return False
 
   def DoCommand(self, gsutil_cmd, headers=(), retries=None, **kwargs):
     """Run a gsutil command, suppressing output, and setting retry/sleep.

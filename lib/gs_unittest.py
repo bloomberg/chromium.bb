@@ -253,8 +253,8 @@ class GSDoCommandTest(cros_test_lib.TestCase):
     self._testDoCommand(ctx, retries=4, sleep=1)
 
 
-class GSRemoveTrackerFilesTest(cros_test_lib.TestCase):
-  """Test that the _RetryFilter removes the tracker files between retries."""
+class GSRetryFilterTest(cros_test_lib.TestCase):
+  """Verifies that we filter and process gsutil errors correctly."""
 
   LOCAL_PATH = '/tmp/file'
   REMOTE_PATH = ('gs://chromeos-prebuilt/board/beltino/paladin-R33-4926.0.0'
@@ -277,12 +277,40 @@ class GSRemoveTrackerFilesTest(cros_test_lib.TestCase):
         returncode=returncode)
     return cros_build_lib.RunCommandError('blah', result)
 
+  def assertNoSuchKey(self, error_msg):
+    cmd = ['gsutil', 'ls', self.REMOTE_PATH]
+    e = self._getException(cmd, error_msg)
+    self.assertRaises(gs.GSNoSuchKey, self.ctx._RetryFilter, e)
+
+  def assertPreconditionFailed(self, error_msg):
+    cmd = ['gsutil', 'ls', self.REMOTE_PATH]
+    e = self._getException(cmd, error_msg)
+    self.assertRaises(gs.GSContextPreconditionFailed,
+                        self.ctx._RetryFilter, e)
+
+  def testRetryOnlyFlakyErrors(self):
+    """Test that we retry only flaky errors."""
+    cmd = ['gsutil', 'ls', self.REMOTE_PATH]
+    e = self._getException(cmd, 'GSResponseError: status=502')
+    self.assertTrue(self.ctx._RetryFilter(e))
+
+    e = self._getException(cmd, 'GSResponseError: status=603')
+    self.assertFalse(self.ctx._RetryFilter(e))
+
+  def testRaiseGSErrors(self):
+    """Test that we raise appropriate exceptions."""
+    self.assertNoSuchKey('GSResponseError: status=404, code=NoSuchKey')
+    self.assertNoSuchKey('InvalidUriError: Unrecognized scheme "http".')
+    self.assertNoSuchKey('CommandException: No URIs matched.')
+    self.assertPreconditionFailed(
+        'GSResponseError: code=PreconditionFailed')
+
   @mock.patch('chromite.lib.osutils.SafeUnlink')
   @mock.patch('chromite.lib.osutils.ReadFile')
   @mock.patch('os.path.exists')
   def testRemoveUploadTrackerFile(self, exists_mock, readfile_mock,
                                   unlink_mock):
-    """Test that the tracker file is deleted after a upload failure."""
+    """Test removal of tracker files for resumable upload failures."""
     cmd = ['gsutil', 'cp', self.LOCAL_PATH, self.REMOTE_PATH]
     e = self._getException(cmd, self.ctx.RESUMABLE_UPLOAD_ERROR)
     exists_mock.return_value = True
@@ -297,7 +325,7 @@ class GSRemoveTrackerFilesTest(cros_test_lib.TestCase):
   @mock.patch('os.path.exists')
   def testRemoveDownloadTrackerFile(self, exists_mock, readfile_mock,
                                     unlink_mock):
-    """Test that the tracker file is deleted after a download failure."""
+    """Test removal of tracker files for resumable download failures."""
     cmd = ['gsutil', 'cp', self.REMOTE_PATH, self.LOCAL_PATH]
     e = self._getException(cmd, self.ctx.RESUMABLE_DOWNLOAD_ERROR)
     exists_mock.return_value = True
@@ -308,7 +336,7 @@ class GSRemoveTrackerFilesTest(cros_test_lib.TestCase):
     unlink_mock.assert_called_once_with(tracker_file_path)
 
   def testRemoveTrackerFileOnlyForCP(self):
-    """Test that we only support 'gsutil cp' which uses tracker files."""
+    """Test that we remove tracker files only for 'gsutil cp'."""
     cmd = ['gsutil', 'ls', self.REMOTE_PATH]
     e = self._getException(cmd, self.ctx.RESUMABLE_DOWNLOAD_ERROR)
 
