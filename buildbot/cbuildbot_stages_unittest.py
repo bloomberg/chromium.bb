@@ -1426,6 +1426,61 @@ class PublishUprevChangesStageTest(AbstractStageTest):
     self.mox.VerifyAll()
 
 
+class DebugSymbolsStageTest(AbstractStageTest):
+  """Test DebugSymbolsStage"""
+
+  def setUp(self):
+    self.StartPatcher(BuilderRunMock())
+    self.StartPatcher(ArchiveStageMock())
+    self.StartPatcher(parallel_unittest.ParallelMock())
+
+    self.upload_mock = self.PatchObject(commands, 'UploadSymbols')
+    self.tar_mock = self.PatchObject(commands, 'GenerateDebugTarball')
+    self.gen_mock = self.PatchObject(commands, 'GenerateBreakpadSymbols')
+
+    self.rc_mock = self.StartPatcher(cros_build_lib_unittest.RunCommandMock())
+    self.rc_mock.SetDefaultCmdResult(output='')
+
+  def ConstructStage(self):
+    """Create a DebugSymbolsStage instance for testing"""
+    archive_stage = stages.ArchiveStage(self.run, self._current_board)
+    return stages.DebugSymbolsStage(self.run, self._current_board,
+                                    archive_stage)
+
+  def testPerformStageEnabled(self):
+    """Smoke test for an PerformStage when debugging is enabled"""
+    extra_config = {
+        'archive_build_debug': True,
+        'vm_tests': True,
+        'upload_symbols': True,
+    }
+    self._Prepare(extra_config=extra_config)
+
+    self.tar_mock.side_effect = '/my/tar/ball'
+    stage = self.ConstructStage()
+    stage.PerformStage()
+
+    self.assertEqual(self.gen_mock.call_count, 1)
+    self.assertEqual(self.tar_mock.call_count, 1)
+    self.assertEqual(self.upload_mock.call_count, 1)
+
+  def testPerformStageDisabled(self):
+    """Smoke test for an PerformStage when debugging is disabled"""
+    extra_config = {
+        'archive_build_debug': False,
+        'vm_tests': False,
+        'upload_symbols': False,
+    }
+    self._Prepare(extra_config=extra_config)
+
+    stage = self.ConstructStage()
+    stage.PerformStage()
+
+    self.assertEqual(self.gen_mock.call_count, 0)
+    self.assertEqual(self.tar_mock.call_count, 0)
+    self.assertEqual(self.upload_mock.call_count, 0)
+
+
 class PassStage(bs.BuilderStage):
   """PassStage always works"""
 
