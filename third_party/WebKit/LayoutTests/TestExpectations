@@ -532,20 +532,12 @@ crbug.com/316113 fast/js/cross-frame-really-bad-time.html [ Failure Pass ]
 
 crbug.com/316349 inspector-protocol/page/enable-disable.html [ Failure Pass ]
 
-crbug.com/316372 fast/forms/calendar-picker/calendar-picker-f4-key.html [ Failure Pass ]
-crbug.com/316372 fast/forms/calendar-picker/date-open-picker-with-f4-key.html [ Failure Pass ]
-crbug.com/316372 fast/forms/calendar-picker/week-open-picker-with-f4-key.html [ Failure Pass ]
-crbug.com/316372 fast/forms/calendar-picker/datetimelocal-open-picker-with-f4-key.html [ Failure Pass ]
-crbug.com/316372 fast/forms/calendar-picker/month-open-picker-with-f4-key.html [ Failure Pass ]
-
 crbug.com/316380 fast/frames/seamless/seamless-form-post.html [ Failure Pass ]
 
 crbug.com/316429 [ Linux ] media/W3C/video/currentSrc/currentSrc_nonempty_after_adding_source_child.html [ Failure Pass ]
 crbug.com/316429 [ Linux ] media/W3C/video/currentSrc/currentSrc_nonempty_after_setting_src.html [ Failure Pass ]
 
-Bug(ojan) svg/as-object/nested-embedded-svg-size-changes.html [ NeedsManualRebaseline ]
-# FIXME: Uncomment once the above rebaseline is done.
-#crbug.com/316460 [ Mac ] svg/as-object/nested-embedded-svg-size-changes.html [ Failure Pass ]
+crbug.com/316460 [ Mac ] svg/as-object/nested-embedded-svg-size-changes.html [ Failure Pass ]
 
 crbug.com/316730 canvas/synchronous-create-pattern.html [ ImageOnlyFailure Pass ]
 
