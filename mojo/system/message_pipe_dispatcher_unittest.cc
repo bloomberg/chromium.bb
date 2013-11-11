@@ -63,7 +63,7 @@ TEST(MessagePipeDispatcherTest, Basic) {
     buffer[0] = 123456789;
     EXPECT_EQ(MOJO_RESULT_OK,
               d_1->WriteMessage(buffer, kBufferSize,
-                                NULL, 0,
+                                NULL,
                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
     stopwatch.Start();
     EXPECT_EQ(1, w.Wait(MOJO_DEADLINE_INDEFINITE));
@@ -82,7 +82,7 @@ TEST(MessagePipeDispatcherTest, Basic) {
     buffer_size = kBufferSize;
     EXPECT_EQ(MOJO_RESULT_OK,
               d_0->ReadMessage(buffer, &buffer_size,
-                               NULL, NULL,
+                               0, NULL,
                                MOJO_READ_MESSAGE_FLAG_NONE));
     EXPECT_EQ(kBufferSize, buffer_size);
     EXPECT_EQ(123456789, buffer[0]);
@@ -115,7 +115,6 @@ TEST(MessagePipeDispatcherTest, Basic) {
 
 TEST(MessagePipeDispatcherTest, InvalidParams) {
   char buffer[1];
-  MojoHandle handles[1];
 
   scoped_refptr<MessagePipeDispatcher> d_0(new MessagePipeDispatcher());
   scoped_refptr<MessagePipeDispatcher> d_1(new MessagePipeDispatcher());
@@ -129,33 +128,12 @@ TEST(MessagePipeDispatcherTest, InvalidParams) {
   // Null buffer with nonzero buffer size.
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             d_0->WriteMessage(NULL, 1,
-                              NULL, 0,
+                              NULL,
                               MOJO_WRITE_MESSAGE_FLAG_NONE));
   // Huge buffer size.
   EXPECT_EQ(MOJO_RESULT_RESOURCE_EXHAUSTED,
             d_0->WriteMessage(buffer, std::numeric_limits<uint32_t>::max(),
-                              NULL, 0,
-                              MOJO_WRITE_MESSAGE_FLAG_NONE));
-
-  // Null handles with nonzero handle count.
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d_0->WriteMessage(buffer, sizeof(buffer),
-                              NULL, 1,
-                              MOJO_WRITE_MESSAGE_FLAG_NONE));
-  // Huge handle count (implausibly big on some systems -- more than can be
-  // stored in a 32-bit address space).
-  // Note: This may return either |MOJO_RESULT_INVALID_ARGUMENT| or
-  // |MOJO_RESULT_RESOURCE_EXHAUSTED|, depending on whether it's plausible or
-  // not.
-  EXPECT_NE(MOJO_RESULT_OK,
-            d_0->WriteMessage(buffer, sizeof(buffer),
-                              handles, std::numeric_limits<uint32_t>::max(),
-                              MOJO_WRITE_MESSAGE_FLAG_NONE));
-  // Huge handle count (plausibly big).
-  EXPECT_EQ(MOJO_RESULT_RESOURCE_EXHAUSTED,
-            d_0->WriteMessage(buffer, sizeof(buffer),
-                              handles, std::numeric_limits<uint32_t>::max() /
-                                  sizeof(handles[0]),
+                              NULL,
                               MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   // |ReadMessage|:
@@ -163,14 +141,7 @@ TEST(MessagePipeDispatcherTest, InvalidParams) {
   uint32_t buffer_size = 1;
   EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
             d_0->ReadMessage(NULL, &buffer_size,
-                             NULL, NULL,
-                             MOJO_READ_MESSAGE_FLAG_NONE));
-  // Null handles with nonzero handle count.
-  buffer_size = static_cast<uint32_t>(sizeof(buffer));
-  uint32_t handle_count = 1;
-  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
-            d_0->ReadMessage(buffer, &buffer_size,
-                             NULL, &handle_count,
+                             0, NULL,
                              MOJO_READ_MESSAGE_FLAG_NONE));
 
   EXPECT_EQ(MOJO_RESULT_OK, d_0->Close());
@@ -198,12 +169,12 @@ TEST(MessagePipeDispatcherTest, BasicClosed) {
     buffer[0] = 123456789;
     EXPECT_EQ(MOJO_RESULT_OK,
               d_1->WriteMessage(buffer, kBufferSize,
-                                NULL, 0,
+                                NULL,
                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
     buffer[0] = 234567890;
     EXPECT_EQ(MOJO_RESULT_OK,
               d_1->WriteMessage(buffer, kBufferSize,
-                                NULL, 0,
+                                NULL,
                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
 
     // Try waiting for readable on |d_0|; should fail (already satisfied).
@@ -216,7 +187,7 @@ TEST(MessagePipeDispatcherTest, BasicClosed) {
     buffer_size = kBufferSize;
     EXPECT_EQ(MOJO_RESULT_NOT_FOUND,
               d_1->ReadMessage(buffer, &buffer_size,
-                               NULL, NULL,
+                               0, NULL,
                                MOJO_READ_MESSAGE_FLAG_NONE));
 
     // Close |d_1|.
@@ -232,7 +203,7 @@ TEST(MessagePipeDispatcherTest, BasicClosed) {
     buffer_size = kBufferSize;
     EXPECT_EQ(MOJO_RESULT_OK,
               d_0->ReadMessage(buffer, &buffer_size,
-                               NULL, NULL,
+                               0, NULL,
                                MOJO_READ_MESSAGE_FLAG_NONE));
     EXPECT_EQ(kBufferSize, buffer_size);
     EXPECT_EQ(123456789, buffer[0]);
@@ -247,7 +218,7 @@ TEST(MessagePipeDispatcherTest, BasicClosed) {
     buffer_size = kBufferSize;
     EXPECT_EQ(MOJO_RESULT_OK,
               d_0->ReadMessage(buffer, &buffer_size,
-                               NULL, NULL,
+                               0, NULL,
                                MOJO_READ_MESSAGE_FLAG_NONE));
     EXPECT_EQ(kBufferSize, buffer_size);
     EXPECT_EQ(234567890, buffer[0]);
@@ -268,14 +239,14 @@ TEST(MessagePipeDispatcherTest, BasicClosed) {
     buffer_size = kBufferSize;
     EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
               d_0->ReadMessage(buffer, &buffer_size,
-                               NULL, NULL,
+                               0, NULL,
                                MOJO_READ_MESSAGE_FLAG_NONE));
 
     // Try writing to |d_0|; should fail (other end closed).
     buffer[0] = 345678901;
     EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
               d_0->WriteMessage(buffer, kBufferSize,
-                                NULL, 0,
+                                NULL,
                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
 
     EXPECT_EQ(MOJO_RESULT_OK, d_0->Close());
@@ -316,7 +287,7 @@ TEST(MessagePipeDispatcherTest, BasicThreaded) {
       buffer[0] = 123456789;
       EXPECT_EQ(MOJO_RESULT_OK,
                 d_0->WriteMessage(buffer, kBufferSize,
-                                  NULL, 0,
+                                  NULL,
                                   MOJO_WRITE_MESSAGE_FLAG_NONE));
     }  // Joins the thread.
     elapsed_micros = stopwatch.Elapsed();
@@ -345,7 +316,7 @@ TEST(MessagePipeDispatcherTest, BasicThreaded) {
     buffer_size = kBufferSize;
     EXPECT_EQ(MOJO_RESULT_OK,
               d_1->ReadMessage(buffer, &buffer_size,
-                               NULL, NULL,
+                               0, NULL,
                                MOJO_READ_MESSAGE_FLAG_NONE));
     EXPECT_EQ(kBufferSize, buffer_size);
     EXPECT_EQ(123456789, buffer[0]);
@@ -444,14 +415,15 @@ class WriterThread : public base::SimpleThread {
           base::RandInt(1, static_cast<int>(kMaxMessageSize)));
       EXPECT_EQ(MOJO_RESULT_OK,
                 write_dispatcher_->WriteMessage(buffer, bytes_to_write,
-                                                NULL, 0,
+                                                NULL,
                                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
       *bytes_written_ += bytes_to_write;
     }
 
     // Write one last "quit" message.
     EXPECT_EQ(MOJO_RESULT_OK,
-              write_dispatcher_->WriteMessage("quit", 4, NULL, 0,
+              write_dispatcher_->WriteMessage("quit", 4,
+                                              NULL,
                                               MOJO_WRITE_MESSAGE_FLAG_NONE));
   }
 
@@ -502,7 +474,8 @@ class ReaderThread : public base::SimpleThread {
       // Clear the buffer so that we can check the result.
       memset(buffer, 0, sizeof(buffer));
       uint32_t buffer_size = static_cast<uint32_t>(sizeof(buffer));
-      result = read_dispatcher_->ReadMessage(buffer, &buffer_size, NULL, NULL,
+      result = read_dispatcher_->ReadMessage(buffer, &buffer_size,
+                                             0, NULL,
                                              MOJO_READ_MESSAGE_FLAG_NONE);
       EXPECT_TRUE(result == MOJO_RESULT_OK ||
                   result == MOJO_RESULT_NOT_FOUND) << "result: " << result;

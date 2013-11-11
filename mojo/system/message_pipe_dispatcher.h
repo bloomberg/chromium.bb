@@ -33,16 +33,13 @@ class MOJO_SYSTEM_EXPORT MessagePipeDispatcher : public Dispatcher {
   virtual void CancelAllWaitersNoLock() OVERRIDE;
   virtual MojoResult CloseImplNoLock() OVERRIDE;
   virtual MojoResult WriteMessageImplNoLock(
-      const void* bytes,
-      uint32_t num_bytes,
-      const MojoHandle* handles,
-      uint32_t num_handles,
+      const void* bytes, uint32_t num_bytes,
+      const std::vector<Dispatcher*>* dispatchers,
       MojoWriteMessageFlags flags) OVERRIDE;
   virtual MojoResult ReadMessageImplNoLock(
-      void* bytes,
-      uint32_t* num_bytes,
-      MojoHandle* handles,
-      uint32_t* num_handles,
+      void* bytes, uint32_t* num_bytes,
+      uint32_t max_num_dispatchers,
+      std::vector<scoped_refptr<Dispatcher> >* dispatchers,
       MojoReadMessageFlags flags) OVERRIDE;
   virtual MojoResult AddWaiterImplNoLock(Waiter* waiter,
                                          MojoWaitFlags flags,

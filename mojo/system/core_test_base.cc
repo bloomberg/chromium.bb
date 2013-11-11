@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "mojo/system/core_impl.h"
 #include "mojo/system/dispatcher.h"
+#include "mojo/system/limits.h"
 #include "mojo/system/memory.h"
 
 namespace mojo {
@@ -45,33 +46,31 @@ class MockDispatcher : public Dispatcher {
   virtual MojoResult WriteMessageImplNoLock(
       const void* bytes,
       uint32_t num_bytes,
-      const MojoHandle* handles,
-      uint32_t num_handles,
+      const std::vector<Dispatcher*>* dispatchers,
       MojoWriteMessageFlags /*flags*/) OVERRIDE {
     info_->IncrementWriteMessageCallCount();
     lock().AssertAcquired();
 
     if (!VerifyUserPointer<void>(bytes, num_bytes))
       return MOJO_RESULT_INVALID_ARGUMENT;
-    if (!VerifyUserPointer<MojoHandle>(handles, num_handles))
-      return MOJO_RESULT_INVALID_ARGUMENT;
+    if (num_bytes > kMaxMessageNumBytes)
+      return MOJO_RESULT_RESOURCE_EXHAUSTED;
+
+    if (dispatchers)
+      return MOJO_RESULT_UNIMPLEMENTED;
 
     return MOJO_RESULT_OK;
   }
 
   virtual MojoResult ReadMessageImplNoLock(
-      void* bytes,
-      uint32_t* num_bytes,
-      MojoHandle* handles,
-      uint32_t* num_handles,
+      void* bytes, uint32_t* num_bytes,
+      uint32_t /*max_num_dispatchers*/,
+      std::vector<scoped_refptr<Dispatcher> >* /*dispatchers*/,
       MojoReadMessageFlags /*flags*/) OVERRIDE {
     info_->IncrementReadMessageCallCount();
     lock().AssertAcquired();
 
     if (num_bytes && !VerifyUserPointer<void>(bytes, *num_bytes))
-      return MOJO_RESULT_INVALID_ARGUMENT;
-    if (num_handles &&
-        !VerifyUserPointer<MojoHandle>(handles, *num_handles))
       return MOJO_RESULT_INVALID_ARGUMENT;
 
     return MOJO_RESULT_OK;

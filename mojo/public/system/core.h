@@ -89,6 +89,10 @@ const MojoHandle MOJO_HANDLE_INVALID = 0;
 //        unavailable. The caller may simply retry the operation (possibly with
 //        a backoff).
 //    |MOJO_RESULT_DATA_LOSS| - Unrecoverable data loss or corruption.
+//    |MOJO_RESULT_BUSY| - One of the resources involved is currently being used
+//        (possibly on another thread) in a way that prevents the current
+//        operation from proceeding, e.g., if the other operation may result in
+//        the resource being invalidated.
 //
 // Note that positive values are also available as success codes.
 //
@@ -111,6 +115,7 @@ const MojoResult MOJO_RESULT_UNIMPLEMENTED = -12;
 const MojoResult MOJO_RESULT_INTERNAL = -13;
 const MojoResult MOJO_RESULT_UNAVAILABLE = -14;
 const MojoResult MOJO_RESULT_DATA_LOSS = -15;
+const MojoResult MOJO_RESULT_BUSY = -16;
 #else
 #define MOJO_RESULT_OK ((MojoResult) 0)
 #define MOJO_RESULT_CANCELLED ((MojoResult) -1)
@@ -128,6 +133,7 @@ const MojoResult MOJO_RESULT_DATA_LOSS = -15;
 #define MOJO_RESULT_INTERNAL ((MojoResult) -13)
 #define MOJO_RESULT_UNAVAILABLE ((MojoResult) -14)
 #define MOJO_RESULT_DATA_LOSS ((MojoResult) -15)
+#define MOJO_RESULT_BUSY ((MojoResult) -16)
 #endif
 
 // |MojoDeadline|:

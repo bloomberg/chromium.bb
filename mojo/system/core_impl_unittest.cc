@@ -4,6 +4,8 @@
 
 #include "mojo/system/core_impl.h"
 
+#include <limits>
+
 #include "mojo/system/core_test_base.h"
 
 namespace mojo {
@@ -42,6 +44,10 @@ TEST_F(CoreImplTest, Basic) {
             core()->ReadMessage(h, NULL, &num_bytes, NULL, NULL,
                                 MOJO_READ_MESSAGE_FLAG_NONE));
   EXPECT_EQ(2u, info.GetReadMessageCallCount());
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->ReadMessage(h, NULL, NULL, NULL, NULL,
+                                MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(3u, info.GetReadMessageCallCount());
 
   EXPECT_EQ(0u, info.GetAddWaiterCallCount());
   EXPECT_EQ(MOJO_RESULT_FAILED_PRECONDITION,
@@ -132,6 +138,140 @@ TEST_F(CoreImplTest, InvalidArguments) {
 
     EXPECT_EQ(MOJO_RESULT_OK, core()->Close(handles[0]));
     EXPECT_EQ(MOJO_RESULT_OK, core()->Close(handles[1]));
+  }
+
+  // |CreateMessagePipe()|:
+  {
+    MojoHandle h;
+    EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+              core()->CreateMessagePipe(NULL, NULL));
+    EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+              core()->CreateMessagePipe(&h, NULL));
+    EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+              core()->CreateMessagePipe(NULL, &h));
+  }
+
+  // |WriteMessage()|:
+  // Only check arguments checked by |CoreImpl|, namely |handle|, |handles|, and
+  // |num_handles|.
+  {
+    EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+              core()->WriteMessage(MOJO_HANDLE_INVALID, NULL, 0, NULL, 0,
+                                   MOJO_WRITE_MESSAGE_FLAG_NONE));
+
+    MockHandleInfo info;
+    MojoHandle h = CreateMockHandle(&info);
+    MojoHandle handles[2] = { MOJO_HANDLE_INVALID, MOJO_HANDLE_INVALID };
+
+    // Null |handles| with nonzero |num_handles|.
+    EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+              core()->WriteMessage(h, NULL, 0, NULL, 1,
+                                   MOJO_WRITE_MESSAGE_FLAG_NONE));
+    // Checked by |CoreImpl|, shouldn't go through to the dispatcher.
+    EXPECT_EQ(0u, info.GetWriteMessageCallCount());
+
+    // Huge handle count (implausibly big on some systems -- more than can be
+    // stored in a 32-bit address space).
+    // Note: This may return either |MOJO_RESULT_INVALID_ARGUMENT| or
+    // |MOJO_RESULT_RESOURCE_EXHAUSTED|, depending on whether it's plausible or
+    // not.
+    EXPECT_NE(MOJO_RESULT_OK,
+              core()->WriteMessage(h, NULL, 0, handles,
+                                   std::numeric_limits<uint32_t>::max(),
+                                   MOJO_WRITE_MESSAGE_FLAG_NONE));
+    EXPECT_EQ(0u, info.GetWriteMessageCallCount());
+
+    // Huge handle count (plausibly big).
+    EXPECT_EQ(MOJO_RESULT_RESOURCE_EXHAUSTED,
+              core()->WriteMessage(h, NULL, 0, handles,
+                                   std::numeric_limits<uint32_t>::max() /
+                                       sizeof(handles[0]),
+                                   MOJO_WRITE_MESSAGE_FLAG_NONE));
+    EXPECT_EQ(0u, info.GetWriteMessageCallCount());
+
+    // Invalid handle in |handles|.
+    EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+              core()->WriteMessage(h, NULL, 0, handles, 1,
+                                   MOJO_WRITE_MESSAGE_FLAG_NONE));
+    EXPECT_EQ(0u, info.GetWriteMessageCallCount());
+
+    // Two invalid handles in |handles|.
+    EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+              core()->WriteMessage(h, NULL, 0, handles, 2,
+                                   MOJO_WRITE_MESSAGE_FLAG_NONE));
+    EXPECT_EQ(0u, info.GetWriteMessageCallCount());
+
+    // Can't send a handle over itself.
+    handles[0] = h;
+    EXPECT_EQ(MOJO_RESULT_BUSY,
+              core()->WriteMessage(h, NULL, 0, handles, 1,
+                                   MOJO_WRITE_MESSAGE_FLAG_NONE));
+    EXPECT_EQ(0u, info.GetWriteMessageCallCount());
+
+    MockHandleInfo info_2;
+    MojoHandle h_2 = CreateMockHandle(&info_2);
+
+    // This is "okay", but |MockDispatcher| doesn't implement it.
+    handles[0] = h_2;
+    EXPECT_EQ(MOJO_RESULT_UNIMPLEMENTED,
+              core()->WriteMessage(h, NULL, 0, handles, 1,
+                                   MOJO_WRITE_MESSAGE_FLAG_NONE));
+    EXPECT_EQ(1u, info.GetWriteMessageCallCount());
+
+    // One of the |handles| is still invalid.
+    EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+              core()->WriteMessage(h, NULL, 0, handles, 2,
+                                   MOJO_WRITE_MESSAGE_FLAG_NONE));
+    EXPECT_EQ(1u, info.GetWriteMessageCallCount());
+
+    // One of the |handles| is the same as |handle|.
+    handles[1] = h;
+    EXPECT_EQ(MOJO_RESULT_BUSY,
+              core()->WriteMessage(h, NULL, 0, handles, 2,
+                                   MOJO_WRITE_MESSAGE_FLAG_NONE));
+    EXPECT_EQ(1u, info.GetWriteMessageCallCount());
+
+    // Can't send a handle twice in the same message.
+    handles[1] = h_2;
+    EXPECT_EQ(MOJO_RESULT_BUSY,
+              core()->WriteMessage(h, NULL, 0, handles, 2,
+                                   MOJO_WRITE_MESSAGE_FLAG_NONE));
+    EXPECT_EQ(1u, info.GetWriteMessageCallCount());
+
+    // Note: Since we never successfully sent anything with it, |h_2| should
+    // still be valid.
+    EXPECT_EQ(MOJO_RESULT_OK, core()->Close(h_2));
+
+    EXPECT_EQ(MOJO_RESULT_OK, core()->Close(h));
+  }
+
+  // |ReadMessage()|:
+  // Only check arguments checked by |CoreImpl|, namely |handle|, |handles|, and
+  // |num_handles|.
+  {
+    EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+              core()->ReadMessage(MOJO_HANDLE_INVALID, NULL, NULL, NULL, NULL,
+                                  MOJO_READ_MESSAGE_FLAG_NONE));
+
+    MockHandleInfo info;
+    MojoHandle h = CreateMockHandle(&info);
+
+    uint32_t handle_count = 1;
+    EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+              core()->ReadMessage(h, NULL, NULL, NULL, &handle_count,
+                                  MOJO_READ_MESSAGE_FLAG_NONE));
+    // Checked by |CoreImpl|, shouldn't go through to the dispatcher.
+    EXPECT_EQ(0u, info.GetReadMessageCallCount());
+
+    // Okay.
+    handle_count = 0;
+    EXPECT_EQ(MOJO_RESULT_OK,
+              core()->ReadMessage(h, NULL, NULL, NULL, &handle_count,
+                                  MOJO_READ_MESSAGE_FLAG_NONE));
+    // Checked by |CoreImpl|, shouldn't go through to the dispatcher.
+    EXPECT_EQ(1u, info.GetReadMessageCallCount());
+
+    EXPECT_EQ(MOJO_RESULT_OK, core()->Close(h));
   }
 }
 

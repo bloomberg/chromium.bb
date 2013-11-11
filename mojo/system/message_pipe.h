@@ -5,6 +5,8 @@
 #ifndef MOJO_SYSTEM_MESSAGE_PIPE_H_
 #define MOJO_SYSTEM_MESSAGE_PIPE_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
@@ -18,6 +20,7 @@ namespace mojo {
 namespace system {
 
 class Channel;
+class Dispatcher;
 class MessagePipeEndpoint;
 class Waiter;
 
@@ -43,16 +46,17 @@ class MOJO_SYSTEM_EXPORT MessagePipe :
   void CancelAllWaiters(unsigned port);
   void Close(unsigned port);
   // Unlike |MessagePipeDispatcher::WriteMessage()|, this does not validate its
-  // arguments. |bytes|/|num_bytes| and |handles|/|num_handles| must be valid.
+  // arguments.
   MojoResult WriteMessage(unsigned port,
                           const void* bytes, uint32_t num_bytes,
-                          const MojoHandle* handles, uint32_t num_handles,
+                          const std::vector<Dispatcher*>* dispatchers,
                           MojoWriteMessageFlags flags);
   // Unlike |MessagePipeDispatcher::ReadMessage()|, this does not validate its
-  // arguments. |bytes|/|num_bytes| and |handles|/|num_handles| must be valid.
+  // arguments.
   MojoResult ReadMessage(unsigned port,
                          void* bytes, uint32_t* num_bytes,
-                         MojoHandle* handles, uint32_t* num_handles,
+                         uint32_t max_num_dispatchers,
+                         std::vector<scoped_refptr<Dispatcher> >* dispatchers,
                          MojoReadMessageFlags flags);
   MojoResult AddWaiter(unsigned port,
                        Waiter* waiter,

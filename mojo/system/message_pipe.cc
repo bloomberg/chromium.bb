@@ -64,7 +64,7 @@ void MessagePipe::Close(unsigned port) {
 MojoResult MessagePipe::WriteMessage(
     unsigned port,
     const void* bytes, uint32_t num_bytes,
-    const MojoHandle* /*handles*/, uint32_t /*num_handles*/,
+    const std::vector<Dispatcher*>* /*dispatchers*/,
     MojoWriteMessageFlags flags) {
   DCHECK(port == 0 || port == 1);
   return EnqueueMessage(
@@ -75,17 +75,19 @@ MojoResult MessagePipe::WriteMessage(
           bytes, num_bytes));
 }
 
-MojoResult MessagePipe::ReadMessage(unsigned port,
-                                    void* bytes, uint32_t* num_bytes,
-                                    MojoHandle* handles, uint32_t* num_handles,
-                                    MojoReadMessageFlags flags) {
+MojoResult MessagePipe::ReadMessage(
+    unsigned port,
+    void* bytes, uint32_t* num_bytes,
+    uint32_t max_num_dispatchers,
+    std::vector<scoped_refptr<Dispatcher> >* dispatchers,
+    MojoReadMessageFlags flags) {
   DCHECK(port == 0 || port == 1);
 
   base::AutoLock locker(lock_);
   DCHECK(endpoints_[port].get());
 
   return endpoints_[port]->ReadMessage(bytes, num_bytes,
-                                       handles, num_handles,
+                                       NULL, NULL,
                                        flags);
 }
 

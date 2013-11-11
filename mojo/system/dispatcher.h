@@ -5,6 +5,8 @@
 #ifndef MOJO_SYSTEM_DISPATCHER_H_
 #define MOJO_SYSTEM_DISPATCHER_H_
 
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/synchronization/lock.h"
@@ -14,6 +16,7 @@
 namespace mojo {
 namespace system {
 
+class CoreImpl;
 class Waiter;
 
 // A |Dispatcher| implements Mojo primitives that are "attached" to a particular
@@ -32,16 +35,21 @@ class MOJO_SYSTEM_EXPORT Dispatcher :
   // prevents the various |...ImplNoLock()|s from releasing the lock as soon as
   // possible. If this becomes an issue, we can rethink this.
   MojoResult Close();
-  MojoResult WriteMessage(const void* bytes,
-                          uint32_t num_bytes,
-                          const MojoHandle* handles,
-                          uint32_t num_handles,
+  // |dispatchers| may be non-null if and only if there are handles to be
+  // written, in which case this will be called with all the dispatchers' locks
+  // held. On success, all the dispatchers must have been moved to a closed
+  // state; on failure, they should remain in their original state.
+  MojoResult WriteMessage(const void* bytes, uint32_t num_bytes,
+                          const std::vector<Dispatcher*>* dispatchers,
                           MojoWriteMessageFlags flags);
-  MojoResult ReadMessage(void* bytes,
-                         uint32_t* num_bytes,
-                         MojoHandle* handles,
-                         uint32_t* num_handles,
-                         MojoReadMessageFlags flags);
+  // |dispatchers| must be non-null if |max_num_dispatchers| is nonzero. On
+  // success, it will be set to the dispatchers to be received (and assigned
+  // handles) as part of the message.
+  MojoResult ReadMessage(
+      void* bytes, uint32_t* num_bytes,
+      uint32_t max_num_dispatchers,
+      std::vector<scoped_refptr<Dispatcher> >* dispatchers,
+      MojoReadMessageFlags flags);
 
   // Adds a waiter to this dispatcher. The waiter will be woken up when this
   // object changes state to satisfy |flags| with result |wake_result| (which
@@ -74,16 +82,17 @@ class MOJO_SYSTEM_EXPORT Dispatcher :
 
   // These are to be overridden by subclasses (if necessary). They are never
   // called after the dispatcher has been closed. They are called under |lock_|.
-  virtual MojoResult WriteMessageImplNoLock(const void* bytes,
-                                            uint32_t num_bytes,
-                                            const MojoHandle* handles,
-                                            uint32_t num_handles,
-                                            MojoWriteMessageFlags flags);
-  virtual MojoResult ReadMessageImplNoLock(void* bytes,
-                                           uint32_t* num_bytes,
-                                           MojoHandle* handles,
-                                           uint32_t* num_handles,
-                                           MojoReadMessageFlags flags);
+  // See the descriptions of the methods without the "ImplNoLock" for more
+  // information.
+  virtual MojoResult WriteMessageImplNoLock(
+      const void* bytes, uint32_t num_bytes,
+      const std::vector<Dispatcher*>* dispatchers,
+      MojoWriteMessageFlags flags);
+  virtual MojoResult ReadMessageImplNoLock(
+      void* bytes, uint32_t* num_bytes,
+      uint32_t max_num_dispatchers,
+      std::vector<scoped_refptr<Dispatcher> >* dispatchers,
+      MojoReadMessageFlags flags);
   virtual MojoResult AddWaiterImplNoLock(Waiter* waiter,
                                          MojoWaitFlags flags,
                                          MojoResult wake_result);
@@ -94,6 +103,9 @@ class MOJO_SYSTEM_EXPORT Dispatcher :
   base::Lock& lock() const { return lock_; }
 
  private:
+  // For |WriteMessage()|, |CoreImpl| needs access to |lock()|.
+  friend class CoreImpl;
+
   // This protects the following members as well as any state added by
   // subclasses.
   mutable base::Lock lock_;

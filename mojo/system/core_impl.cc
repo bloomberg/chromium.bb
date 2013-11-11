@@ -66,6 +66,20 @@ namespace system {
 //    - Locks at the "INF" level may not have any locks taken while they are
 //      held.
 
+CoreImpl::HandleTableEntry::HandleTableEntry()
+    : busy(false) {
+}
+
+CoreImpl::HandleTableEntry::HandleTableEntry(
+    const scoped_refptr<Dispatcher>& dispatcher)
+    : dispatcher(dispatcher),
+      busy(false) {
+}
+
+CoreImpl::HandleTableEntry::~HandleTableEntry() {
+  DCHECK(!busy);
+}
+
 // static
 CoreImpl* CoreImpl::singleton_ = NULL;
 
@@ -85,7 +99,9 @@ MojoResult CoreImpl::Close(MojoHandle handle) {
     HandleTableMap::iterator it = handle_table_.find(handle);
     if (it == handle_table_.end())
       return MOJO_RESULT_INVALID_ARGUMENT;
-    dispatcher = it->second;
+    if (it->second.busy)
+      return MOJO_RESULT_BUSY;
+    dispatcher = it->second.dispatcher;
     handle_table_.erase(it);
   }
 
@@ -119,6 +135,11 @@ MojoResult CoreImpl::WaitMany(const MojoHandle* handles,
 
 MojoResult CoreImpl::CreateMessagePipe(MojoHandle* handle_0,
                                        MojoHandle* handle_1) {
+  if (!VerifyUserPointer<MojoHandle>(handle_0, 1))
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  if (!VerifyUserPointer<MojoHandle>(handle_1, 1))
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
   scoped_refptr<MessagePipeDispatcher> dispatcher_0(
       new MessagePipeDispatcher());
   scoped_refptr<MessagePipeDispatcher> dispatcher_1(
@@ -157,9 +178,124 @@ MojoResult CoreImpl::WriteMessage(
   if (!dispatcher.get())
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  return dispatcher->WriteMessage(bytes, num_bytes,
-                                  handles, num_handles,
-                                  flags);
+  // Easy case: not sending any handles.
+  if (num_handles == 0)
+    return dispatcher->WriteMessage(bytes, num_bytes, NULL, flags);
+
+  // We have to handle |handles| here, since we have to mark them busy in the
+  // global handle table. We can't delegate this to the dispatcher, since the
+  // handle table lock must be acquired before the dispatcher lock.
+  //
+  // (This leads to an oddity: |handles|/|num_handles| are always verified for
+  // validity, even for dispatchers that don't support |WriteMessage()| and will
+  // simply return failure unconditionally. It also breaks the usual
+  // left-to-right verification order of arguments.)
+  if (!VerifyUserPointer<MojoHandle>(handles, num_handles))
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  if (num_handles > kMaxMessageNumHandles)
+    return MOJO_RESULT_RESOURCE_EXHAUSTED;
+
+  // We'll need to hold on to the dispatchers so that we can pass them on to
+  // |WriteMessage()| and also so that we can unlock their locks afterwards
+  // without accessing the handle table. These can be dumb pointers, since their
+  // entries in the handle table won't get removed (since they'll be marked as
+  // busy).
+  std::vector<Dispatcher*> dispatchers(num_handles);
+
+  // When we pass handles, we have to try to take all their dispatchers' locks
+  // and mark the handles as busy. If the call succeeds, we then remove the
+  // handles from the handle table.
+  {
+    base::AutoLock locker(handle_table_lock_);
+
+    std::vector<HandleTableEntry*> entries(num_handles);
+
+    // First verify all the handles and get their dispatchers.
+    uint32_t i;
+    MojoResult error_result = MOJO_RESULT_INTERNAL;
+    for (i = 0; i < num_handles; i++) {
+      // Sending your own handle is not allowed (and, for consistency, returns
+      // "busy").
+      if (handles[i] == handle) {
+        error_result = MOJO_RESULT_BUSY;
+        break;
+      }
+
+      HandleTableMap::iterator it = handle_table_.find(handles[i]);
+      if (it == handle_table_.end()) {
+        error_result = MOJO_RESULT_INVALID_ARGUMENT;
+        break;
+      }
+
+      entries[i] = &it->second;
+      if (entries[i]->busy) {
+        error_result = MOJO_RESULT_BUSY;
+        break;
+      }
+      // Note: By marking the handle as busy here, we're also preventing the
+      // same handle from being sent multiple times in the same message.
+      entries[i]->busy = true;
+
+      // Try to take the lock.
+      if (!entries[i]->dispatcher->lock().Try()) {
+        // Unset the busy flag (since it won't be unset below).
+        entries[i]->busy = false;
+        error_result = MOJO_RESULT_BUSY;
+        break;
+      }
+
+      // Hang on to the pointer to the dispatcher (which we'll need to release
+      // the lock without going through the handle table).
+      dispatchers[i] = entries[i]->dispatcher;
+    }
+    if (i < num_handles) {
+      DCHECK_NE(error_result, MOJO_RESULT_INTERNAL);
+
+      // Unset the busy flags and release the locks.
+      for (uint32_t j = 0; j < i; j++) {
+        DCHECK(entries[j]->busy);
+        entries[j]->busy = false;
+        entries[j]->dispatcher->lock().Release();
+      }
+      return error_result;
+    }
+  }
+
+  MojoResult rv = dispatcher->WriteMessage(bytes, num_bytes,
+                                           &dispatchers,
+                                           flags);
+
+  // We need to release the dispatcher locks before we take the handle table
+  // lock.
+  for (uint32_t i = 0; i < num_handles; i++) {
+    dispatchers[i]->lock().AssertAcquired();
+    dispatchers[i]->lock().Release();
+  }
+
+  if (rv == MOJO_RESULT_OK) {
+    base::AutoLock locker(handle_table_lock_);
+
+    // Succeeded, so the handles should be removed from the handle table. (The
+    // transferring to new dispatchers/closing must have already been done.)
+    for (uint32_t i = 0; i < num_handles; i++) {
+      HandleTableMap::iterator it = handle_table_.find(handles[i]);
+      DCHECK(it != handle_table_.end());
+      DCHECK(it->second.busy);
+      handle_table_.erase(it);
+    }
+  } else {
+    base::AutoLock locker(handle_table_lock_);
+
+    // Failed, so the handles should go back to their normal state.
+    for (uint32_t i = 0; i < num_handles; i++) {
+      HandleTableMap::iterator it = handle_table_.find(handles[i]);
+      DCHECK(it != handle_table_.end());
+      DCHECK(it->second.busy);
+      it->second.busy = false;
+    }
+  }
+
+  return rv;
 }
 
 MojoResult CoreImpl::ReadMessage(
@@ -171,9 +307,40 @@ MojoResult CoreImpl::ReadMessage(
   if (!dispatcher.get())
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  return dispatcher->ReadMessage(bytes, num_bytes,
-                                 handles, num_handles,
-                                 flags);
+  uint32_t max_num_dispatchers = 0;
+  if (num_handles) {
+    if (!VerifyUserPointer<uint32_t>(num_handles, 1))
+      return MOJO_RESULT_INVALID_ARGUMENT;
+    if (!VerifyUserPointer<MojoHandle>(handles, *num_handles))
+      return MOJO_RESULT_INVALID_ARGUMENT;
+    max_num_dispatchers = *num_handles;
+  }
+
+  // Easy case: won't receive any handles.
+  if (max_num_dispatchers == 0)
+    return dispatcher->ReadMessage(bytes, num_bytes, 0, NULL, flags);
+
+  std::vector<scoped_refptr<Dispatcher> > dispatchers;
+  MojoResult rv = dispatcher->ReadMessage(bytes, num_bytes,
+                                          max_num_dispatchers, &dispatchers,
+                                          flags);
+  if (!dispatchers.empty()) {
+    DCHECK_EQ(rv, MOJO_RESULT_OK);
+
+    *num_handles = static_cast<uint32_t>(dispatchers.size());
+    DCHECK_LE(*num_handles, max_num_dispatchers);
+
+    base::AutoLock locker(handle_table_lock_);
+
+    for (size_t i = 0; i < dispatchers.size(); i++) {
+      // TODO(vtl): What should we do if we hit the maximum handle table size
+      // here? Currently, we'll just fill in those handles with
+      // |MOJO_HANDLE_INVALID| (and return success anyway).
+      handles[i] = AddDispatcherNoLock(dispatchers[i]);
+    }
+  }
+
+  return rv;
 }
 
 CoreImpl::CoreImpl()
@@ -194,10 +361,11 @@ scoped_refptr<Dispatcher> CoreImpl::GetDispatcher(MojoHandle handle) {
   if (it == handle_table_.end())
     return NULL;
 
-  return it->second;
+  return it->second.dispatcher;
 }
 
-MojoHandle CoreImpl::AddDispatcherNoLock(scoped_refptr<Dispatcher> dispatcher) {
+MojoHandle CoreImpl::AddDispatcherNoLock(
+    const scoped_refptr<Dispatcher>& dispatcher) {
   DCHECK(dispatcher.get());
   handle_table_lock_.AssertAcquired();
   DCHECK_NE(next_handle_, MOJO_HANDLE_INVALID);
@@ -214,7 +382,7 @@ MojoHandle CoreImpl::AddDispatcherNoLock(scoped_refptr<Dispatcher> dispatcher) {
   }
 
   MojoHandle new_handle = next_handle_;
-  handle_table_[new_handle] = dispatcher;
+  handle_table_[new_handle] = HandleTableEntry(dispatcher);
 
   next_handle_++;
   if (next_handle_ == MOJO_HANDLE_INVALID)
@@ -236,10 +404,10 @@ MojoResult CoreImpl::WaitManyInternal(const MojoHandle* handles,
   std::vector<scoped_refptr<Dispatcher> > dispatchers;
   dispatchers.reserve(num_handles);
   for (uint32_t i = 0; i < num_handles; i++) {
-    scoped_refptr<Dispatcher> d = GetDispatcher(handles[i]);
-    if (!d.get())
+    scoped_refptr<Dispatcher> dispatcher = GetDispatcher(handles[i]);
+    if (!dispatcher.get())
       return MOJO_RESULT_INVALID_ARGUMENT;
-    dispatchers.push_back(d);
+    dispatchers.push_back(dispatcher);
   }
 
   // TODO(vtl): Should make the waiter live (permanently) in TLS.
