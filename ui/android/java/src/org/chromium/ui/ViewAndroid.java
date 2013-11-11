@@ -22,7 +22,7 @@ import org.chromium.ui.WindowAndroid;
 @JNINamespace("ui")
 public class ViewAndroid {
     // Native pointer to the c++ ViewAndroid object.
-    private int mNativeViewAndroid = 0;
+    private long mNativeViewAndroid = 0;
     private final ViewAndroidDelegate mViewAndroidDelegate;
     private final WindowAndroid mWindowAndroid;
     private int mKeepScreenOnCount;
@@ -55,7 +55,7 @@ public class ViewAndroid {
      * Returns a pointer to the c++ AndroidWindow object.
      * @return A pointer to the c++ AndroidWindow.
      */
-    public int getNativePointer() {
+    public long getNativePointer() {
         return mNativeViewAndroid;
     }
 
@@ -82,6 +82,6 @@ public class ViewAndroid {
         }
     }
 
-    private native int nativeInit(int windowPtr);
-    private native void nativeDestroy(int nativeViewAndroid);
+    private native long nativeInit(long windowPtr);
+    private native void nativeDestroy(long nativeViewAndroid);
 }

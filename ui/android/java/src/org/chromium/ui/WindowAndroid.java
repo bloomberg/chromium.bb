@@ -25,7 +25,7 @@ public class WindowAndroid {
     private static final String TAG = "WindowAndroid";
 
     // Native pointer to the c++ WindowAndroid object.
-    private int mNativeWindowAndroid = 0;
+    private long mNativeWindowAndroid = 0;
 
     // A string used as a key to store intent errors in a bundle
     static final String WINDOW_CALLBACK_ERRORS = "window_callback_errors";
@@ -174,7 +174,7 @@ public class WindowAndroid {
      * the object has not been previously initialized.
      * @return A pointer to the c++ AndroidWindow.
      */
-    public int getNativePointer() {
+    public long getNativePointer() {
         if (mNativeWindowAndroid == 0) {
             mNativeWindowAndroid = nativeInit();
         }
@@ -190,7 +190,7 @@ public class WindowAndroid {
         return null;
     }
 
-    private native int nativeInit();
-    private native void nativeDestroy(int nativeWindowAndroid);
+    private native long nativeInit();
+    private native void nativeDestroy(long nativeWindowAndroid);
 
 }

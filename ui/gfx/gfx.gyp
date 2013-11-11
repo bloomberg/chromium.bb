@@ -408,6 +408,7 @@
          ],
          'variables': {
            'jni_gen_package': 'ui/gfx',
+           'jni_generator_ptr_type': 'long',
          },
          'includes': [ '../../build/jni_generator.gypi' ],
        },

@@ -752,9 +752,9 @@ public class ContentViewCore
             }
         };
 
-        int windowNativePointer = windowAndroid != null ? windowAndroid.getNativePointer() : 0;
+        long windowNativePointer = windowAndroid != null ? windowAndroid.getNativePointer() : 0;
 
-        int viewAndroidNativePointer = 0;
+        long viewAndroidNativePointer = 0;
         if (windowNativePointer != 0) {
             mViewAndroid = new ViewAndroid(windowAndroid, getViewAndroidDelegate());
             viewAndroidNativePointer = mViewAndroid.getNativePointer();
@@ -3208,7 +3208,7 @@ public class ContentViewCore
     }
 
     private native int nativeInit(boolean hardwareAccelerated, int webContentsPtr,
-            int viewAndroidPtr, int windowAndroidPtr);
+            long viewAndroidPtr, long windowAndroidPtr);
 
     @CalledByNative
     private ContentVideoViewClient getContentVideoViewClient() {

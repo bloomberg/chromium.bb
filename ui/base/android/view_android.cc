@@ -42,10 +42,10 @@ bool ViewAndroid::RegisterViewAndroid(JNIEnv* env) {
 ViewAndroid::~ViewAndroid() {
 }
 
-jint Init(JNIEnv* env, jobject obj, jint window) {
+jlong Init(JNIEnv* env, jobject obj, jlong window) {
   ViewAndroid* view = new ViewAndroid(
       env, obj, reinterpret_cast<ui::WindowAndroid*>(window));
-  return reinterpret_cast<jint>(view);
+  return reinterpret_cast<intptr_t>(view);
 }
 
 }  // namespace ui

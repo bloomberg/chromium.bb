@@ -1632,8 +1632,8 @@ void ContentViewCoreImpl::SendOrientationChangeEventInternal() {
 jint Init(JNIEnv* env, jobject obj,
           jboolean hardware_accelerated,
           jint native_web_contents,
-          jint view_android,
-          jint window_android) {
+          jlong view_android,
+          jlong window_android) {
   ContentViewCoreImpl* view = new ContentViewCoreImpl(
       env, obj, hardware_accelerated,
       reinterpret_cast<WebContents*>(native_web_contents),

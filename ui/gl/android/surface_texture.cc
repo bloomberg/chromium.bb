@@ -43,7 +43,7 @@ void SurfaceTexture::SetFrameAvailableCallback(
   Java_SurfaceTexturePlatformWrapper_setFrameAvailableCallback(
       env,
       j_surface_texture_.obj(),
-      reinterpret_cast<int>(new SurfaceTextureListener(callback)));
+      reinterpret_cast<intptr_t>(new SurfaceTextureListener(callback)));
 }
 
 void SurfaceTexture::UpdateTexImage() {

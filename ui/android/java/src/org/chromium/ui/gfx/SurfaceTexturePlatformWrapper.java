@@ -29,7 +29,7 @@ class SurfaceTexturePlatformWrapper {
 
     @CalledByNative
     private static void setFrameAvailableCallback(SurfaceTexture surfaceTexture,
-            int nativeSurfaceTextureListener) {
+            long nativeSurfaceTextureListener) {
        surfaceTexture.setOnFrameAvailableListener(
                new SurfaceTextureListener(nativeSurfaceTextureListener));
     }

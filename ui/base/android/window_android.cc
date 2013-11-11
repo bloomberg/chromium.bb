@@ -54,9 +54,9 @@ bool WindowAndroid::GrabSnapshot(
 // Native JNI methods
 // ----------------------------------------------------------------------------
 
-jint Init(JNIEnv* env, jobject obj) {
+jlong Init(JNIEnv* env, jobject obj) {
   WindowAndroid* window = new WindowAndroid(env, obj);
-  return reinterpret_cast<jint>(window);
+  return reinterpret_cast<intptr_t>(window);
 }
 
 }  // namespace ui

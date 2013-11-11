@@ -37,12 +37,12 @@ class SelectFileDialog implements WindowAndroid.IntentCallback{
     private static final String ANY_TYPES = "*/*";
     private static final String CAPTURE_IMAGE_DIRECTORY = "browser-photos";
 
-    private final int mNativeSelectFileDialog;
+    private final long mNativeSelectFileDialog;
     private List<String> mFileTypes;
     private boolean mCapture;
     private Uri mCameraOutputUri;
 
-    private SelectFileDialog(int nativeSelectFileDialog) {
+    private SelectFileDialog(long nativeSelectFileDialog) {
         mNativeSelectFileDialog = nativeSelectFileDialog;
     }
 
@@ -245,11 +245,11 @@ class SelectFileDialog implements WindowAndroid.IntentCallback{
     }
 
     @CalledByNative
-    private static SelectFileDialog create(int nativeSelectFileDialog) {
+    private static SelectFileDialog create(long nativeSelectFileDialog) {
         return new SelectFileDialog(nativeSelectFileDialog);
     }
 
-    private native void nativeOnFileSelected(int nativeSelectFileDialogImpl,
+    private native void nativeOnFileSelected(long nativeSelectFileDialogImpl,
             String filePath);
-    private native void nativeOnFileNotSelected(int nativeSelectFileDialogImpl);
+    private native void nativeOnFileNotSelected(long nativeSelectFileDialogImpl);
 }

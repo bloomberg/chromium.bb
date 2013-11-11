@@ -94,7 +94,7 @@ SelectFileDialogImpl::SelectFileDialogImpl(Listener* listener,
     : SelectFileDialog(listener, policy), is_running_(false) {
   JNIEnv* env = base::android::AttachCurrentThread();
   java_object_.Reset(
-      Java_SelectFileDialog_create(env, reinterpret_cast<jint>(this)));
+      Java_SelectFileDialog_create(env, reinterpret_cast<intptr_t>(this)));
 }
 
 bool SelectFileDialogImpl::HasMultipleFileTypeChoicesImpl() {
