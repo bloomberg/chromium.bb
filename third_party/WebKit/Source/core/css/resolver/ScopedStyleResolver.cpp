@@ -251,7 +251,6 @@ void ScopedStyleResolver::addRulesFromSheet(StyleSheetContents* sheet, const Med
     if (!m_authorStyle)
         m_authorStyle = RuleSet::create();
     m_authorStyle->addRulesFromSheet(sheet, medium, resolver, &m_scopingNode);
-    resolver->addFontFaceRules(m_authorStyle->fontFaceRules(), &m_scopingNode);
 }
 
 inline RuleSet* ScopedStyleResolver::ensureAtHostRuleSetFor(const ShadowRoot* shadowRoot)

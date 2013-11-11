@@ -124,7 +124,6 @@ public:
     const Vector<RuleData>* universalRules() const { ASSERT(!m_pendingRules); return &m_universalRules; }
     const Vector<StyleRulePage*>& pageRules() const { ASSERT(!m_pendingRules); return m_pageRules; }
     const Vector<StyleRuleViewport*>& viewportRules() const { ASSERT(!m_pendingRules); return m_viewportRules; }
-    const Vector<StyleRuleFontFace*>& fontFaceRules() const { return m_fontFaceRules; }
 
     unsigned ruleCount() const { return m_ruleCount; }
 
@@ -157,7 +156,6 @@ private:
     void addToRuleSet(StringImpl* key, PendingRuleMap&, const RuleData&);
     void addPageRule(StyleRulePage*);
     void addViewportRule(StyleRuleViewport*);
-    void addFontFaceRule(StyleRuleFontFace*);
     void addRegionRule(StyleRuleRegion*, bool hasDocumentSecurityOrigin);
 
     void addChildRules(const Vector<RefPtr<StyleRuleBase> >&, const MediaQueryEvaluator& medium, StyleResolver*, const ContainerNode* scope, bool hasDocumentSecurityOrigin, AddRuleFlags);
@@ -191,7 +189,6 @@ private:
     RuleFeatureSet m_features;
     Vector<StyleRulePage*> m_pageRules;
     Vector<StyleRuleViewport*> m_viewportRules;
-    Vector<StyleRuleFontFace*> m_fontFaceRules;
 
     unsigned m_ruleCount;
     OwnPtr<PendingRuleMaps> m_pendingRules;

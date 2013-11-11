@@ -200,18 +200,6 @@ void StyleResolver::finishAppendAuthorStyleSheets()
     collectViewportRules();
 }
 
-void StyleResolver::addFontFaceRules(const Vector<StyleRuleFontFace*>& rules, const ContainerNode* scope)
-{
-    // Add this font face to our set.
-    // FIXME(BUG 72461): We don't add @font-face rules of scoped style sheets for the moment.
-    if (scope && !scope->isDocumentNode())
-        return;
-    for (unsigned i = 0; i < rules.size(); ++i)
-        fontSelector()->addFontFaceRule(rules[i]);
-    if (rules.size())
-        invalidateMatchedPropertiesCache();
-}
-
 void StyleResolver::resetAuthorStyle(const ContainerNode* scopingNode)
 {
     // FIXME: When chanking scoped attribute, scopingNode's hasScopedHTMLStyleChild has been already modified.

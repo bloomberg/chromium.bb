@@ -215,8 +215,6 @@ public:
     void resetAtHostRules(const ShadowRoot*);
     void finishAppendAuthorStyleSheets();
 
-    void addFontFaceRules(const Vector<StyleRuleFontFace*>&, const ContainerNode* scope = 0);
-
     DocumentRuleSets& ruleSets() { return m_ruleSets; }
     const DocumentRuleSets& ruleSets() const { return m_ruleSets; }
     SelectorFilter& selectorFilter() { return m_selectorFilter; }
