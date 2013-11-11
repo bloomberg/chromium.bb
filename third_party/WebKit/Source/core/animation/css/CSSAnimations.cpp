@@ -45,6 +45,7 @@
 #include "core/frame/animation/CSSPropertyAnimation.h"
 #include "core/platform/animation/CSSAnimationDataList.h"
 #include "core/platform/animation/TimingFunction.h"
+#include "core/rendering/style/KeyframeList.h"
 #include "wtf/HashSet.h"
 
 namespace WebCore {
@@ -77,6 +78,188 @@ bool isLaterPhase(TimedItem::Phase target, TimedItem::Phase reference)
     ASSERT(target != TimedItem::PhaseNone);
     ASSERT(reference != TimedItem::PhaseNone);
     return target > reference;
+}
+
+static PassRefPtr<TimingFunction> generateTimingFunction(const KeyframeAnimationEffect::KeyframeVector keyframes, const HashMap<double, RefPtr<TimingFunction> > perKeyframeTimingFunctions)
+{
+    // Generate the chained timing function. Note that timing functions apply
+    // from the keyframe in which they're specified to the next keyframe.
+    bool isTimingFunctionLinearThroughout = true;
+    RefPtr<ChainedTimingFunction> chainedTimingFunction = ChainedTimingFunction::create();
+    for (size_t i = 0; i < keyframes.size() - 1; ++i) {
+        double lowerBound = keyframes[i]->offset();
+        ASSERT(lowerBound >=0 && lowerBound < 1);
+        double upperBound = keyframes[i + 1]->offset();
+        ASSERT(upperBound > 0 && upperBound <= 1);
+        TimingFunction* timingFunction = perKeyframeTimingFunctions.get(lowerBound);
+        isTimingFunctionLinearThroughout &= timingFunction->type() == TimingFunction::LinearFunction;
+        chainedTimingFunction->appendSegment(upperBound, timingFunction);
+    }
+    if (isTimingFunctionLinearThroughout)
+        return LinearTimingFunction::create();
+    return chainedTimingFunction;
+}
+
+static void resolveKeyframes(StyleResolver* resolver, Element* element, const RenderStyle& style, const AtomicString& name, TimingFunction* defaultTimingFunction,
+    Vector<std::pair<KeyframeAnimationEffect::KeyframeVector, RefPtr<TimingFunction> > >& keyframesAndTimingFunctions)
+{
+    ASSERT(RuntimeEnabledFeatures::webAnimationsCSSEnabled());
+    const StyleRuleKeyframes* keyframesRule = CSSAnimations::matchScopedKeyframesRule(resolver, element, name.impl());
+    if (!keyframesRule)
+        return;
+
+    const Vector<RefPtr<StyleKeyframe> >& styleKeyframes = keyframesRule->keyframes();
+    if (styleKeyframes.isEmpty())
+        return;
+
+    // Construct and populate the style for each keyframe
+    KeyframeAnimationEffect::KeyframeVector keyframes;
+    HashMap<double, RefPtr<TimingFunction> > perKeyframeTimingFunctions;
+    for (size_t i = 0; i < styleKeyframes.size(); ++i) {
+        const StyleKeyframe* styleKeyframe = styleKeyframes[i].get();
+        RefPtr<RenderStyle> keyframeStyle = resolver->styleForKeyframe(element, style, styleKeyframe);
+        RefPtr<Keyframe> keyframe = Keyframe::create();
+        const Vector<double>& offsets = styleKeyframe->keys();
+        ASSERT(!offsets.isEmpty());
+        keyframe->setOffset(offsets[0]);
+        TimingFunction* timingFunction = defaultTimingFunction;
+        const StylePropertySet* properties = styleKeyframe->properties();
+        for (unsigned j = 0; j < properties->propertyCount(); j++) {
+            CSSPropertyID property = properties->propertyAt(j).id();
+            if (property == CSSPropertyWebkitAnimationTimingFunction || property == CSSPropertyAnimationTimingFunction) {
+                // FIXME: This sometimes gets the wrong timing function. See crbug.com/288540.
+                timingFunction = KeyframeValue::timingFunction(keyframeStyle.get(), name);
+            } else if (CSSAnimations::isAnimatableProperty(property)) {
+                keyframe->setPropertyValue(property, CSSAnimatableValueFactory::create(property, *keyframeStyle).get());
+            }
+        }
+        keyframes.append(keyframe);
+        // The last keyframe specified at a given offset is used.
+        perKeyframeTimingFunctions.set(offsets[0], timingFunction);
+        for (size_t j = 1; j < offsets.size(); ++j) {
+            keyframes.append(keyframe->cloneWithOffset(offsets[j]));
+            perKeyframeTimingFunctions.set(offsets[j], timingFunction);
+        }
+    }
+    ASSERT(!keyframes.isEmpty());
+
+    if (!perKeyframeTimingFunctions.contains(0))
+        perKeyframeTimingFunctions.set(0, defaultTimingFunction);
+
+    // Remove duplicate keyframes. In CSS the last keyframe at a given offset takes priority.
+    std::stable_sort(keyframes.begin(), keyframes.end(), Keyframe::compareOffsets);
+    size_t targetIndex = 0;
+    for (size_t i = 1; i < keyframes.size(); i++) {
+        if (keyframes[i]->offset() != keyframes[targetIndex]->offset())
+            targetIndex++;
+        if (targetIndex != i)
+            keyframes[targetIndex] = keyframes[i];
+    }
+    keyframes.shrink(targetIndex + 1);
+
+    // Add 0% and 100% keyframes if absent.
+    RefPtr<Keyframe> startKeyframe = keyframes[0];
+    if (startKeyframe->offset()) {
+        startKeyframe = Keyframe::create();
+        startKeyframe->setOffset(0);
+        keyframes.prepend(startKeyframe);
+    }
+    RefPtr<Keyframe> endKeyframe = keyframes[keyframes.size() - 1];
+    if (endKeyframe->offset() != 1) {
+        endKeyframe = Keyframe::create();
+        endKeyframe->setOffset(1);
+        keyframes.append(endKeyframe);
+    }
+    ASSERT(keyframes.size() >= 2);
+    ASSERT(!keyframes.first()->offset());
+    ASSERT(keyframes.last()->offset() == 1);
+
+    // Snapshot current property values for 0% and 100% if missing.
+    PropertySet allProperties;
+    size_t numKeyframes = keyframes.size();
+    for (size_t i = 0; i < numKeyframes; i++) {
+        const PropertySet& keyframeProperties = keyframes[i]->properties();
+        for (PropertySet::const_iterator iter = keyframeProperties.begin(); iter != keyframeProperties.end(); ++iter)
+            allProperties.add(*iter);
+    }
+    const PropertySet& startKeyframeProperties = startKeyframe->properties();
+    const PropertySet& endKeyframeProperties = endKeyframe->properties();
+    bool missingStartValues = startKeyframeProperties.size() < allProperties.size();
+    bool missingEndValues = endKeyframeProperties.size() < allProperties.size();
+    if (missingStartValues || missingEndValues) {
+        for (PropertySet::const_iterator iter = allProperties.begin(); iter != allProperties.end(); ++iter) {
+            const CSSPropertyID property = *iter;
+            bool startNeedsValue = missingStartValues && !startKeyframeProperties.contains(property);
+            bool endNeedsValue = missingEndValues && !endKeyframeProperties.contains(property);
+            if (!startNeedsValue && !endNeedsValue)
+                continue;
+            RefPtr<AnimatableValue> snapshotValue = CSSAnimatableValueFactory::create(property, style);
+            if (startNeedsValue)
+                startKeyframe->setPropertyValue(property, snapshotValue.get());
+            if (endNeedsValue)
+                endKeyframe->setPropertyValue(property, snapshotValue.get());
+        }
+    }
+    ASSERT(startKeyframe->properties().size() == allProperties.size());
+    ASSERT(endKeyframe->properties().size() == allProperties.size());
+
+    // Determine how many keyframes specify each property. Note that this must
+    // be done after we've filled in end keyframes.
+    typedef HashCountedSet<CSSPropertyID> PropertyCountedSet;
+    PropertyCountedSet propertyCounts;
+    for (size_t i = 0; i < numKeyframes; ++i) {
+        const PropertySet& properties = keyframes[i]->properties();
+        for (PropertySet::const_iterator iter = properties.begin(); iter != properties.end(); ++iter)
+            propertyCounts.add(*iter);
+    }
+
+    // Split keyframes into groups, where each group contains only keyframes
+    // which specify all properties used in that group. Each group is animated
+    // in a separate animation, to allow per-keyframe timing functions to be
+    // applied correctly.
+    for (PropertyCountedSet::const_iterator iter = propertyCounts.begin(); iter != propertyCounts.end(); ++iter) {
+        const CSSPropertyID property = iter->key;
+        const size_t count = iter->value;
+        ASSERT(count <= numKeyframes);
+        if (count == numKeyframes)
+            continue;
+        KeyframeAnimationEffect::KeyframeVector splitOutKeyframes;
+        for (size_t i = 0; i < numKeyframes; i++) {
+            Keyframe* keyframe = keyframes[i].get();
+            if (!keyframe->properties().contains(property)) {
+                ASSERT(i && i != numKeyframes - 1);
+                continue;
+            }
+            RefPtr<Keyframe> clonedKeyframe = Keyframe::create();
+            clonedKeyframe->setOffset(keyframe->offset());
+            clonedKeyframe->setComposite(keyframe->composite());
+            clonedKeyframe->setPropertyValue(property, keyframe->propertyValue(property));
+            splitOutKeyframes.append(clonedKeyframe);
+            // Note that it's OK if this keyframe ends up having no
+            // properties. This can only happen when none of the properties
+            // are specified in all keyframes, in which case we won't animate
+            // anything with these keyframes.
+            keyframe->clearPropertyValue(property);
+        }
+        ASSERT(!splitOutKeyframes.first()->offset());
+        ASSERT(splitOutKeyframes.last()->offset() == 1);
+#ifndef NDEBUG
+        for (size_t j = 0; j < splitOutKeyframes.size(); ++j)
+            ASSERT(splitOutKeyframes[j]->properties().size() == 1);
+#endif
+        keyframesAndTimingFunctions.append(std::make_pair(splitOutKeyframes, generateTimingFunction(splitOutKeyframes, perKeyframeTimingFunctions)));
+    }
+
+    int numPropertiesSpecifiedInAllKeyframes = keyframes.first()->properties().size();
+#ifndef NDEBUG
+    for (size_t i = 1; i < numKeyframes; ++i)
+        ASSERT(keyframes[i]->properties().size() == numPropertiesSpecifiedInAllKeyframes);
+#endif
+
+    // If the animation specifies any keyframes, we always provide at least one
+    // vector of resolved keyframes, even if no properties are animated.
+    if (numPropertiesSpecifiedInAllKeyframes || keyframesAndTimingFunctions.isEmpty())
+        keyframesAndTimingFunctions.append(std::make_pair(keyframes, generateTimingFunction(keyframes, perKeyframeTimingFunctions)));
 }
 
 // Returns the default timing function.
@@ -202,6 +385,23 @@ CSSAnimationUpdateScope::~CSSAnimationUpdateScope()
         activeAnimations->cssAnimations().maybeApplyPendingUpdate(m_target);
 }
 
+const StyleRuleKeyframes* CSSAnimations::matchScopedKeyframesRule(StyleResolver* resolver, const Element* e, const StringImpl* animationName)
+{
+    if (resolver->styleTreeHasOnlyScopedResolverForDocument())
+        return resolver->styleTreeScopedStyleResolverForDocument()->keyframeStylesForAnimation(animationName);
+
+    Vector<ScopedStyleResolver*, 8> stack;
+    resolver->styleTreeResolveScopedKeyframesRules(e, stack);
+    if (stack.isEmpty())
+        return 0;
+
+    for (size_t i = 0; i < stack.size(); ++i) {
+        if (const StyleRuleKeyframes* keyframesRule = stack.at(i)->keyframeStylesForAnimation(animationName))
+            return keyframesRule;
+    }
+    return 0;
+}
+
 PassOwnPtr<CSSAnimationUpdate> CSSAnimations::calculateUpdate(Element* element, const RenderStyle& style, StyleResolver* resolver)
 {
     ASSERT(RuntimeEnabledFeatures::webAnimationsCSSEnabled());
@@ -255,7 +455,7 @@ void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate* update, Element
             bool isPaused;
             RefPtr<TimingFunction> defaultTimingFunction = timingFromAnimationData(animationData, timing, isPaused);
             Vector<std::pair<KeyframeAnimationEffect::KeyframeVector, RefPtr<TimingFunction> > > keyframesAndTimingFunctions;
-            resolver->resolveKeyframes(element, style, animationName, defaultTimingFunction.get(), keyframesAndTimingFunctions);
+            resolveKeyframes(resolver, element, style, animationName, defaultTimingFunction.get(), keyframesAndTimingFunctions);
             if (!keyframesAndTimingFunctions.isEmpty()) {
                 HashSet<RefPtr<InertAnimation> > animations;
                 for (size_t j = 0; j < keyframesAndTimingFunctions.size(); ++j) {

@@ -112,7 +112,7 @@ public:
 
     // for fast-path.
     bool hasOnlyScopedResolverForDocument() const { return m_scopedResolverForDocument && m_authorStyles.size() == 1; }
-    ScopedStyleResolver* scopedStyleResolverForDocument() { return m_scopedResolverForDocument; }
+    ScopedStyleResolver* scopedStyleResolverForDocument() const { return m_scopedResolverForDocument; }
 
     void resolveScopedStyles(const Element*, Vector<ScopedStyleResolver*, 8>&);
     void collectScopedResolversForHostedShadowTrees(const Element*, Vector<ScopedStyleResolver*, 8>&);

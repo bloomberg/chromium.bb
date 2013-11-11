@@ -191,10 +191,9 @@ public:
     PassRefPtr<RenderStyle> styleForElement(Element*, RenderStyle* parentStyle = 0, StyleSharingBehavior = AllowStyleSharing,
         RuleMatchingBehavior = MatchAllRules, RenderRegion* regionForStyling = 0);
 
-    // FIXME: The following logic related to animations and keyframes should be factored out of StyleResolver
-    void resolveKeyframes(Element*, const RenderStyle&, const AtomicString& animationName, TimingFunction* defaultTimingFunction, Vector<std::pair<KeyframeAnimationEffect::KeyframeVector, RefPtr<TimingFunction> > >&);
+    // FIXME: keyframeStylesForAnimation is only used in the legacy animations implementation
+    // and should be removed when that is replaced by Web Animations.
     void keyframeStylesForAnimation(Element*, const RenderStyle&, KeyframeList&);
-    const StyleRuleKeyframes* matchScopedKeyframesRule(const Element*, const StringImpl* animationName);
     PassRefPtr<RenderStyle> styleForKeyframe(Element*, const RenderStyle&, const StyleKeyframe*);
 
     PassRefPtr<RenderStyle> pseudoStyleForElement(Element*, const PseudoStyleRequest&, RenderStyle* parentStyle);
@@ -224,10 +223,17 @@ public:
 
     void setBuildScopedStyleTreeInDocumentOrder(bool enabled) { m_styleTree.setBuildInDocumentOrder(enabled); }
     bool buildScopedStyleTreeInDocumentOrder() const { return m_styleTree.buildInDocumentOrder(); }
+    bool styleTreeHasOnlyScopedResolverForDocument() const { return m_styleTree.hasOnlyScopedResolverForDocument(); }
+    ScopedStyleResolver* styleTreeScopedStyleResolverForDocument() const { return m_styleTree.scopedStyleResolverForDocument(); }
 
     ScopedStyleResolver* ensureScopedStyleResolver(const ContainerNode* scope)
     {
         return m_styleTree.ensureScopedStyleResolver(scope ? *scope : document());
+    }
+
+    void styleTreeResolveScopedKeyframesRules(const Element* element, Vector<ScopedStyleResolver*, 8>& resolvers)
+    {
+        m_styleTree.resolveScopedKeyframesRules(element, resolvers);
     }
 
     // These methods will give back the set of rules that matched for a given element (or a pseudo-element).

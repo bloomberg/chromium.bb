@@ -48,6 +48,7 @@ struct CandidateTransition;
 class Element;
 class StylePropertyShorthand;
 class StyleResolver;
+class StyleRuleKeyframes;
 
 // Applied to scopes where an animation update will be added as pending and should then be applied (eg. Element style recalc).
 class CSSAnimationUpdateScope FINAL {
@@ -148,6 +149,11 @@ private:
 
 class CSSAnimations FINAL {
 public:
+    // FIXME: This method is only used here and in the legacy animations
+    // implementation. It should be made private or file-scope when the legacy
+    // engine is removed.
+    static const StyleRuleKeyframes* matchScopedKeyframesRule(StyleResolver*, const Element*, const StringImpl*);
+
     static bool isAnimatableProperty(CSSPropertyID);
     static const StylePropertyShorthand& animatableProperties();
     // FIXME: This should take a const ScopedStyleTree instead of a StyleResolver.
