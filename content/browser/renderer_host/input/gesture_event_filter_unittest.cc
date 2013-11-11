@@ -135,6 +135,10 @@ class GestureEventFilterTest : public testing::Test,
     return last_acked_event_;
   }
 
+  void DisableDebounce() {
+    filter()->debounce_enabled_ = false;
+  }
+
   void set_debounce_interval_time_ms(int ms) {
     filter()->debounce_interval_time_ms_ = ms;
   }
@@ -199,7 +203,7 @@ class GestureEventFilterWithSourceTest
 
 TEST_F(GestureEventFilterTest, CoalescesScrollGestureEvents) {
   // Turn off debounce handling for test isolation.
-  set_debounce_interval_time_ms(0);
+  DisableDebounce();
 
   // Test coalescing of only GestureScrollUpdate events.
   // Simulate gesture events.
@@ -273,7 +277,7 @@ TEST_F(GestureEventFilterTest, CoalescesScrollGestureEvents) {
 
 TEST_F(GestureEventFilterTest, CoalescesScrollAndPinchEvents) {
   // Turn off debounce handling for test isolation.
-  set_debounce_interval_time_ms(0);
+  DisableDebounce();
 
   // Test coalescing of only GestureScrollUpdate events.
   // Simulate gesture events.
@@ -490,7 +494,7 @@ TEST_F(GestureEventFilterTest, CoalescesScrollAndPinchEvents) {
 
 TEST_F(GestureEventFilterTest, CoalescesMultiplePinchEventSequences) {
   // Turn off debounce handling for test isolation.
-  set_debounce_interval_time_ms(0);
+  DisableDebounce();
 
   // Simulate a pinch sequence.
   SimulateGestureEvent(WebInputEvent::GestureScrollBegin,
@@ -584,7 +588,7 @@ TEST_F(GestureEventFilterTest, CoalescesMultiplePinchEventSequences) {
 
 TEST_F(GestureEventFilterTest, CoalescesScrollAndPinchEventWithSyncAck) {
   // Turn off debounce handling for test isolation.
-  set_debounce_interval_time_ms(0);
+  DisableDebounce();
 
   // Simulate a pinch sequence.
   SimulateGestureEvent(WebInputEvent::GestureScrollBegin,
@@ -633,7 +637,7 @@ TEST_P(GestureEventFilterWithSourceTest, GestureFlingCancelsFiltered) {
   WebGestureEvent::SourceDevice source_device = GetParam();
 
   // Turn off debounce handling for test isolation.
-  set_debounce_interval_time_ms(0);
+  DisableDebounce();
   // GFC without previous GFS is dropped.
   SimulateGestureEvent(WebInputEvent::GestureFlingCancel, source_device);
   EXPECT_EQ(0U, GetAndResetSentGestureEventCount());
@@ -728,7 +732,7 @@ INSTANTIATE_TEST_CASE_P(AllSources,
 // Test that GestureShowPress, GestureTapDown and GestureTapCancel events don't
 // wait for ACKs.
 TEST_F(GestureEventFilterTest, GestureTypesIgnoringAck) {
-  set_debounce_interval_time_ms(0);
+  DisableDebounce();
 
   // The show press, tap down and tap cancel events will escape the queue
   // immediately when they reach the queue head, since they ignore acks.

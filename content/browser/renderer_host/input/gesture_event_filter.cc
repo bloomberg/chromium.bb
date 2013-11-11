@@ -37,12 +37,12 @@ GestureEventFilter::GestureEventFilter(
        touchscreen_tap_suppression_controller_(
            new TouchscreenTapSuppressionController(this)),
        debounce_interval_time_ms_(kDebouncingIntervalTimeMs),
-       debounce_fling_start_(true) {
+       debounce_enabled_(true) {
   DCHECK(client);
   DCHECK(touchpad_tap_suppression_controller_);
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableFlingDebounce)) {
-    debounce_fling_start_ = false;
+          switches::kDisableGestureDebounce)) {
+    debounce_enabled_ = false;
   }
 }
 
@@ -66,7 +66,7 @@ bool GestureEventFilter::ShouldDiscardFlingCancelEvent(
 
 bool GestureEventFilter::ShouldForwardForBounceReduction(
     const GestureEventWithLatencyInfo& gesture_event) {
-  if (debounce_interval_time_ms_ ==  0)
+  if (!debounce_enabled_)
     return true;
   switch (gesture_event.event.type) {
     case WebInputEvent::GestureScrollUpdate:
@@ -87,12 +87,6 @@ bool GestureEventFilter::ShouldForwardForBounceReduction(
     case WebInputEvent::GesturePinchEnd:
     case WebInputEvent::GesturePinchUpdate:
       // TODO(rjkroege): Debounce pinch (http://crbug.com/147647)
-      return true;
-    case WebInputEvent::GestureFlingStart:
-      if (scrolling_in_progress_ && debounce_fling_start_) {
-        debouncing_deferral_queue_.push_back(gesture_event);
-        return false;
-      }
       return true;
     default:
       if (scrolling_in_progress_) {
