@@ -22,7 +22,8 @@ def GetReverseDependencyClosure(full_name, deps_map):
   """Gets the closure of the reverse dependencies of a node.
 
   Walks the tree along all the reverse dependency paths to find all the nodes
-  that transitively depend on the input node."""
+  that transitively depend on the input node.
+  """
   s = set()
   def GetClosure(name):
     s.add(name)
@@ -56,7 +57,8 @@ def AddNodeToSubgraph(subgraph, node, options, color):
 def GenerateDotGraph(package, deps_map, options):
   """Generates the dot source for the dependency graph leading to a node.
 
-  The output is a list of lines."""
+  The output is a list of lines.
+  """
   deps = GetReverseDependencyClosure(package, deps_map)
   node = deps_map[package]
 

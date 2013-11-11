@@ -162,7 +162,8 @@ def IsSHA1(value, full=True):
   """Returns True if the given value looks like a sha1.
 
   If full is True, then it must be full length- 40 chars.  If False, >=6, and
-  <40."""
+  <40.
+  """
   if not all(x in _HEX_CHARS for x in value):
     return False
   l = len(value)
@@ -174,7 +175,8 @@ def IsSHA1(value, full=True):
 def IsRefsTags(value):
   """Return True if the given value looks like a tag.
 
-  Currently this is identified via refs/tags/ prefixing."""
+  Currently this is identified via refs/tags/ prefixing.
+  """
   return value.startswith("refs/tags/")
 
 
@@ -320,7 +322,8 @@ class Manifest(object):
     """Returns the relative path for a project.
 
     Raises:
-      KeyError if the project isn't known."""
+      KeyError if the project isn't known.
+    """
     return self.projects[os.path.normpath(project)]['path']
 
   def _FinalizeProjectData(self, attrs):
@@ -503,7 +506,8 @@ class ManifestCheckout(Manifest):
     Raises:
       RunCommandError: If the branch can't be fetched due to network
         conditions or if this was invoked against a <gerrit-2.2 server,
-        or a mirror that has refs/meta/config stripped from it."""
+        or a mirror that has refs/meta/config stripped from it.
+    """
     result = self._content_merging.get(project)
     if result is None:
       self.AssertProjectIsPushable(project)
@@ -522,7 +526,8 @@ class ManifestCheckout(Manifest):
     the root of the checkout.
 
     Returns:
-      None if no project is found, else the project."""
+      None if no project is found, else the project.
+    """
     # Realpath everything sans the target to keep people happy about
     # how symlinks are handled; exempt the final node since following
     # through that is unlikely even remotely desired.
@@ -600,7 +605,8 @@ class ManifestCheckout(Manifest):
         relative pathway.
 
     Raises:
-      KeyError if the project isn't known."""
+      KeyError if the project isn't known.
+    """
     path = Manifest.GetProjectPath(self, project)
     if absolute:
       return os.path.join(self.root, path)
@@ -692,7 +698,8 @@ def RunGit(git_repo, cmd, retry=True, **kwds):
     retry: If set, retry on transient errors. Defaults to True.
     kwds: Any RunCommand or GenericRetry options/overrides to use.
   Returns:
-    A CommandResult object."""
+    A CommandResult object.
+  """
 
   def _ShouldRetry(exc):
     """Returns True if push operation failed with a transient error."""
@@ -714,7 +721,7 @@ def RunGit(git_repo, cmd, retry=True, **kwds):
 
 
 def GetProjectUserEmail(git_repo):
-  """Get the email configured for the project ."""
+  """Get the email configured for the project."""
   output = RunGit(git_repo, ['var', 'GIT_COMMITTER_IDENT']).output
   m = re.search(r'<([^>]*)>', output.strip())
   return m.group(1) if m else None
@@ -956,7 +963,7 @@ def CreateBranch(git_repo, branch, branch_point='HEAD', track=False):
 def GitPush(git_repo, refspec, push_to, dryrun=False, force=False, retry=True):
   """Wrapper for pushing to a branch.
 
-  Arguments:
+  Args:
     git_repo: Git repository to act on.
     refspec: The local ref to push to the remote.
     push_to: A RemoteRef object representing the remote ref to push to.

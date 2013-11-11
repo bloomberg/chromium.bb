@@ -31,7 +31,8 @@ class ToldToDie(Exception):
 def _TeeProcessSignalHandler(signum, frame):
   """TeeProcess custom signal handler.
 
-  This is used to decide whether or not to kill our parent."""
+  This is used to decide whether or not to kill our parent.
+  """
   raise ToldToDie(signum)
 
 def _output(line, output_files, complain):

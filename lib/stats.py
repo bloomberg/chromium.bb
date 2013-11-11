@@ -145,7 +145,7 @@ class StatsUploader(object):
 
       Does nothing if upload conditions aren't met.
 
-      Arguments:
+      Args:
         stats: A Stats object to upload.
         url: The url to send the request to.
         timeout: A timeout value to set, in seconds.

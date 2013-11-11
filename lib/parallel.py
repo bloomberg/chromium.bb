@@ -317,7 +317,7 @@ class _BackgroundTask(multiprocessing.Process):
     This is needed to prevent hangs in the case where child processes refuse
     to exit.
 
-    Arguments:
+    Args:
       bg_tasks: A list filled with _BackgroundTask objects.
       log_level: The log level of log messages.
     """

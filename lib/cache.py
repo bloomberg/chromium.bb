@@ -131,7 +131,7 @@ class CacheReference(object):
   def AssignText(self, text):
     """Create a file containing |text| and assign it to the key.
 
-    Arguments:
+    Args:
       text: Can be a string or an iterable.
     """
     self._AssignText(text)
@@ -145,7 +145,7 @@ class CacheReference(object):
   def Exists(self, lock=False):
     """Tests for existence of entry.
 
-    Arguments:
+    Args:
       lock: If the entry exists, acquire and maintain a read lock on it.
     """
     if self._Exists():
@@ -158,7 +158,7 @@ class CacheReference(object):
   def SetDefault(self, default_path, lock=False):
     """Assigns default_path if the entry doesn't exist.
 
-    Arguments:
+    Args:
       default_path: The path to assign if the entry doesn't exist.
       lock: Acquire and maintain a read lock on the entry.
     """

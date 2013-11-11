@@ -89,7 +89,7 @@ class StageTest(cros_test_lib.MoxTempDirTestCase,
   def AutoPatch(self, to_patch):
     """Patch a list of objects with autospec=True.
 
-    Arguments:
+    Args:
       to_patch: A list of tuples in the form (target, attr) to patch.  Will be
       directly passed to mock.patch.object.
     """
@@ -1131,7 +1131,7 @@ class UploadPrebuiltsStageTest(AbstractStageTest,
                      private_args=None):
     """Verify that the prebuilts are uploaded for the specified bot.
 
-    Arguments:
+    Args:
       bot_id: Bot to upload prebuilts for.
       count: Number of assert checks that should be performed.
       board_map: Map from slave boards to whether the bot is public.

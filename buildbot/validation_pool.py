@@ -308,7 +308,8 @@ def _PatchWrapException(functor):
   Specifically, for known/handled Exceptions, it intercepts and
   converts it into a DependencyError- via that, preserving the
   cause, while casting it into an easier to use form (one that can
-  be chained in addition)."""
+  be chained in addition).
+  """
   def f(self, parent, *args, **kwds):
     try:
       return functor(self, parent, *args, **kwds)
@@ -720,7 +721,8 @@ class PatchSeries(object):
 
     This is primarily useful for external code to notify this object
     that changes were applied to the tree outside its purview- specifically
-    useful for dependency resolution."""
+    useful for dependency resolution.
+    """
     self._committed_cache.Inject(*changes)
 
   def InjectLookupCache(self, changes):
@@ -967,7 +969,8 @@ class PatchSeries(object):
         not forced_manifest cannot be used here, and force_content_merging
         defaults to True in this usage.
     Returns:
-      A PatchSeries instance w/ a forced manifest."""
+      A PatchSeries instance w/ a forced manifest.
+    """
 
     if 'forced_manifest' in kwargs:
       raise ValueError("RawPatchSeries doesn't allow a forced_manifest "
@@ -983,7 +986,8 @@ class _ManifestShim(object):
   """Class used in conjunction with PatchSeries to support standalone git repos.
 
   This works via duck typing; we match the 4 necessary methods that PatchSeries
-  uses."""
+  uses.
+  """
 
   def __init__(self, path, tracking_branch, remote='origin',
                content_merging=True):

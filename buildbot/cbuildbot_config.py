@@ -1820,7 +1820,7 @@ _factory_release.add_config('daisy-factory',
 def _GetDisplayPosition(config_name, type_order=CONFIG_TYPE_DUMP_ORDER):
   """Given a config_name, return display position specified by suffix_order.
 
-  Arguments:
+  Args:
     config_name: Name of config to look up.
     type_order: A tuple/list of config types in the order they are to be
                 displayed.

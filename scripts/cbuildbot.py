@@ -58,7 +58,7 @@ _API_VERSION_ATTR = 'api_version'
 def _PrintValidConfigs(display_all=False):
   """Print a list of valid buildbot configs.
 
-  Arguments:
+  Args:
     display_all: Print all configs.  Otherwise, prints only configs with
                  trybot_list=True.
   """
@@ -190,7 +190,6 @@ class Builder(object):
       args: args to pass to stage constructor.
       kwargs: kwargs to pass to stage constructor.
     Returns:
-
       Whatever the stage's Run method returns.
     """
     stage_instance = self._GetStageInstance(stage, *args, **kwargs)
@@ -208,7 +207,8 @@ class Builder(object):
 
     Subclasses may override this method.
 
-    Returns: None
+    Returns:
+      None
     """
     return None
 
@@ -374,7 +374,8 @@ class SimpleBuilder(Builder):
   def GetSyncInstance(self):
     """Sync to lkgm or TOT as necessary.
 
-    Returns: the instance of the sync stage to run.
+    Returns:
+      The instance of the sync stage to run.
     """
     if self.options.force_version:
       sync_stage = self._GetStageInstance(stages.ManifestVersionedSyncStage)
@@ -564,7 +565,8 @@ class DistributedBuilder(SimpleBuilder):
   def GetSyncInstance(self):
     """Syncs the tree using one of the distributed sync logic paths.
 
-    Returns: the instance of the sync stage to run.
+    Returns:
+      The instance of the sync stage to run.
     """
     # Determine sync class to use.  CQ overrides PFQ bits so should check it
     # first.
@@ -652,7 +654,7 @@ def _ConfirmRemoteBuildbotRun():
 def _DetermineDefaultBuildRoot(sourceroot, internal_build):
   """Default buildroot to be under the directory that contains current checkout.
 
-  Arguments:
+  Args:
     internal_build: Whether the build is an internal build
     sourceroot: Use specified sourceroot.
   """

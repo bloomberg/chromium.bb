@@ -102,7 +102,7 @@ class GerritHelper(object):
   def SetReviewers(self, change, add=(), remove=(), project=None):
     """Adjust the reviewers list for a given change.
 
-    Arguments:
+    Args:
       change: Either the ChangeId, or preferably, the gerrit change number.
         If you use a ChangeId be aware that this command will fail if multiple
         changes match.  Can be either a string or an integer.
@@ -416,7 +416,7 @@ class GerritHelper(object):
      is_command: Does the SQL modify records (DML), or is it just
        a query?  If it's DML, then this must be set to True.
 
-    Return:
+    Returns:
      List of dictionaries returned from gerrit for the SQL ran.
     """
     if dryrun:

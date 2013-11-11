@@ -671,8 +671,9 @@ class DepGraphGenerator(object):
     def PrintCycleBreak(basedep, dep, mycycle):
       """Print details about a cycle that we are planning on breaking.
 
-         We are breaking a cycle where dep needs basedep. mycycle is an
-         example cycle which contains dep -> basedep."""
+      We are breaking a cycle where dep needs basedep. mycycle is an
+      example cycle which contains dep -> basedep.
+      """
 
       needs = deps_map[dep]["needs"]
       depinfo = needs.get(basedep, "deleted")
@@ -1078,7 +1079,8 @@ class JobPrinter(object):
   def __init__(self, job, unlink=False):
     """Print output of job.
 
-    If unlink is True, unlink the job output file when done."""
+    If unlink is True, unlink the job output file when done.
+    """
     self.current_time = time.time()
     self.job = job
     self.unlink = unlink

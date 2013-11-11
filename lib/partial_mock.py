@@ -40,7 +40,7 @@ class In(Comparator):
   def __init__(self, key):
     """Initialize.
 
-    Arguments:
+    Args:
       key:  Any thing that could be in a list or a key in a dict
     """
     Comparator.__init__(self)
@@ -62,7 +62,7 @@ class Regex(Comparator):
   def __init__(self, pattern, flags=0):
     """Initialize.
 
-    Arguments:
+    Args:
       pattern: is the regular expression to search for
       flags: passed to re.compile function as the second argument
     """
@@ -114,7 +114,7 @@ class Ignore(Comparator):
 def _RecursiveCompare(lhs, rhs):
   """Compare parameter specs recursively.
 
-  Arguments:
+  Args:
     lhs, rhs: Function parameter specs to compare.
     equality: In the case of comparing Comparator objects, True means we call
       the Equals() function.  We call Match() if set to False (default).
@@ -135,7 +135,7 @@ def _RecursiveCompare(lhs, rhs):
 def ListContains(small, big, strict=False):
   """Looks for a sublist within a bigger list.
 
-  Arguments:
+  Args:
     small: The sublist to search for.
     big: The list to search in.
     strict: If True, all items in list must be adjacent.
@@ -160,7 +160,7 @@ def ListContains(small, big, strict=False):
 def DictContains(small, big):
   """Looks for a subset within a dictionary.
 
-  Arguments:
+  Args:
     small: The sub-dict to search for.
     big: The dict to search in.
   """
@@ -190,7 +190,7 @@ class MockedCallResults(object):
   def __init__(self, name):
     """Initialize.
 
-    Arguments:
+    Args:
       name: The name given to the mock.  Will be used in debug output.
     """
     self.name = name
@@ -208,7 +208,7 @@ class MockedCallResults(object):
                          strict=True):
     """Record the internal results of a given partial mock call.
 
-    Arguments:
+    Args:
       args: A list containing the positional args an invocation must have for
         it to match the internal result.  The list can contain instances of
         meta-args (such as IgnoreArg, Regex, In, etc.).  Positional argument
@@ -249,7 +249,7 @@ class MockedCallResults(object):
   def SetDefaultResult(self, result, side_effect=None):
     """Set the default result for an unmatched partial mock call.
 
-    Arguments:
+    Args:
       result, side_effect: See AddResultsForParams.
     """
     self.default_result, self.default_side_effect = result, side_effect
@@ -318,7 +318,7 @@ class PartialMock(object):
   def __init__(self, create_tempdir=False):
     """Initialize.
 
-    Arguments:
+    Args:
       create_tempdir: If set to True, the partial mock will create its own
         temporary directory when start() is called, and will set self.tempdir to
         the path of the directory.  The directory is deleted when stop() is
@@ -476,7 +476,7 @@ class PartialCmdMock(PartialMock):
                           side_effect=None, mock_attr=None):
     """Specify the default command result if no command is matched.
 
-    Arguments:
+    Args:
       returncode, output, error: See AddCmdResult.
       side_effect: See MockedCallResults.AddResultForParams
     """
@@ -488,7 +488,7 @@ class PartialCmdMock(PartialMock):
                    kwargs=None, strict=False, side_effect=None, mock_attr=None):
     """Specify the result to simulate for a given command.
 
-    Arguments:
+    Args:
       cmd: The command string or list to record a result for.
       returncode: The returncode of the command (on the command line).
       output: The stdout output of the command.
@@ -505,7 +505,7 @@ class PartialCmdMock(PartialMock):
   def CommandContains(self, args, cmd_arg_index=-1, mock_attr=None, **kwargs):
     """Verify that at least one command contains the specified args.
 
-    Arguments:
+    Args:
       args: Set of expected command-line arguments.
       cmd_arg_index: The index of the command list in the positional call_args.
         Defaults to the last positional argument.
@@ -525,7 +525,7 @@ class PartialCmdMock(PartialMock):
     This verifies that at least one of the RunCommand calls contains the
     specified arguments on the command line.
 
-    Arguments:
+    Args:
       args: Set of expected command-line arguments.
       expected: If False, instead verify that none of the RunCommand calls
           contained the specified arguments.

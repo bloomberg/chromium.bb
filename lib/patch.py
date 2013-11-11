@@ -101,8 +101,7 @@ class PatchAlreadyApplied(ApplyPatchException):
 
 
 class DependencyError(PatchException):
-  """Exception thrown when a change cannot be applied due to a failure in a
-  dependency."""
+  """Thrown when a change cannot be applied due to a failure in a dependency."""
 
   def __init__(self, patch, error):
     """
@@ -169,7 +168,8 @@ class PatchCache(object):
   """Dict-like object used for tracking a group of patches.
 
   This is usable both for existence checks against given string
-  deps, and for change querying."""
+  deps, and for change querying.
+  """
 
   def __init__(self, initial=()):
     self._dict = {}
@@ -595,7 +595,8 @@ class GitRepoPatch(object):
       git_repo: Git repository to operate upon.
 
     returns: A dictionary of path -> modification_type tuples.  See
-      `git log --help`, specifically the --diff-filter section for details."""
+      `git log --help`, specifically the --diff-filter section for details.
+    """
 
     self.Fetch(git_repo)
 
@@ -616,7 +617,7 @@ class GitRepoPatch(object):
                  leave_dirty=False):
     """Attempts to cherry-pick the given rev into branch.
 
-    Arguments:
+    Args:
       git_repo: The git repository to operate upon.
       trivial: Only allow trivial merges when applying change.
       inflight: If true, changes are already applied in this branch.
@@ -693,7 +694,7 @@ class GitRepoPatch(object):
 
     The git repo does not need to be part of a repo checkout.
 
-    Arguments:
+    Args:
       git_repo: The git repository to operate upon.
       upstream: The branch to base the patch on.
       trivial: Only allow trivial merges when applying change.
@@ -780,7 +781,8 @@ class GitRepoPatch(object):
     usage for patch consumers.
 
     If CQ were to see and try operating on one of these, it would fail for
-    example."""
+    example.
+    """
     if self.id is not None:
       return self.id
     try:
@@ -974,7 +976,7 @@ class LocalPatch(GitRepoPatch):
              reviewers=(), cc=()):
     """Upload the patch to a remote git branch.
 
-    Arguments:
+    Args:
       push_url: Which url to push to.
       remote_ref: The ref on the remote host to push to.
       carbon_copy: Use a carbon_copy of the local commit.
@@ -1235,8 +1237,11 @@ class GerritPatch(GitRepoPatch):
     return type_approvals[-1] if type_approvals else '0'
 
   def _EnsureId(self, commit_message):
-    """Ensure we have a usable Change-Id, validating what we received
-    from gerrit against what the commit message states."""
+    """Ensure we have a usable Change-Id
+
+    Validate what we received from gerrit against what the commit message
+    states.
+    """
     # GerritPatch instances get their Change-Id from gerrit
     # directly; for this to fail, there is an internal bug.
     assert self.id is not None

@@ -49,7 +49,8 @@ class _GroupWasRemoved(Exception):
   Via design, this should only be possible when instantiating a new
   pool, but the parent pool has been removed- this means effectively that
   we're supposed to shutdown (either we've been sigterm'd and ignored it,
-  or it's imminent)."""
+  or it's imminent).
+  """
 
 
 def _FileContains(filename, strings):
@@ -178,7 +179,7 @@ class Cgroup(object):
                _is_root=False, _overwrite=True):
     """Initalize a cgroup instance.
 
-    Arguments:
+    Args:
       namespace: What cgroup namespace is this in?  cbuildbot/1823 for example.
       autoclean: Should this cgroup be removed once unused?
       lazy_init: Should we create the cgroup immediately, or when needed?
@@ -211,7 +212,8 @@ class Cgroup(object):
     """Translation function doing sanity checks on derivative namespaces
 
     If you're extending this class, you should be using this for any namespace
-    operations that pass through a nested group."""
+    operations that pass through a nested group.
+    """
     # We use a fake pathway here, and this code must do so.  To calculate the
     # real pathway requires knowing CGROUP_ROOT, which requires sudo
     # potentially.  Since this code may be invoked just by loading the module,
@@ -304,7 +306,8 @@ class Cgroup(object):
   def GetValue(self, key, default=None):
     """Query a cgroup configuration key from disk.
 
-    If the file doesn't exist, return the given default."""
+    If the file doesn't exist, return the given default.
+    """
     try:
       return osutils.ReadFile(os.path.join(self.path, key))
     except EnvironmentError as e:
@@ -316,7 +319,8 @@ class Cgroup(object):
     """Method for creating a node nested within this one.
 
     Derivative classes should override this method rather than AddGroup;
-    see __init__ for the supported keywords."""
+    see __init__ for the supported keywords.
+    """
     return self.__class__(os.path.join(self.namespace, name), **kwds)
 
   def AddGroup(self, name, **kwds):
@@ -529,9 +533,7 @@ class Cgroup(object):
       self._RemoveGroupOnDisk(self.path, False, sudo_strict=False)
 
   def TemporarilySwitchToNewGroup(self, namespace, **kwds):
-    """
-    Context manager to create a new cgroup, and temporarily switch into it.
-    """
+    """Context manager to create a new cgroup & temporarily switch into it."""
     node = self.AddGroup(namespace, **kwds)
     return self.TemporarilySwitchToGroup(node)
 
@@ -539,7 +541,8 @@ class Cgroup(object):
   def TemporarilySwitchToGroup(self, group):
     """Temporarily move this process into the given group, moving back after.
 
-    Used in a context manager fashion (aka, the with statement)."""
+    Used in a context manager fashion (aka, the with statement).
+    """
     group.TransferCurrentProcess()
     try:
       yield
@@ -641,7 +644,8 @@ class Cgroup(object):
   def _FindCurrentCrosGroup(cls, pid=None):
     """Find and return the cros namespace a pid is currently in.
 
-    If no pid is given, os.getpid() is substituted."""
+    If no pid is given, os.getpid() is substituted.
+    """
     if pid is None:
       pid = 'self'
     elif not isinstance(pid, (long, int)):
@@ -690,8 +694,8 @@ class Cgroup(object):
         cbuildbot, etc.
       nesting: If we're invoked by another cros cgroup aware process,
         should we nest ourselves in their hierarchy?  Generally speaking,
-        client code should never have a reason to disable nesting."""
-
+        client code should never have a reason to disable nesting.
+    """
     if not cls.IsUsable():
       return None
 

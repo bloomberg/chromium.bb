@@ -241,8 +241,7 @@ class IgnoredStagesTest(cros_test_lib.TestCase):
 
 
 class TestPatchSeries(MoxBase):
-  """Tests the core resolution and applying logic of
-  validation_pool.ValidationPool."""
+  """Tests resolution and applying logic of validation_pool.ValidationPool."""
 
   @staticmethod
   def SetContentMergingProjects(series, projects=(),
@@ -632,8 +631,7 @@ class MockPatchSeries(partial_mock.PartialMock):
 
 
 class TestCoreLogic(MoxBase):
-  """Tests the core resolution and applying logic of
-  validation_pool.ValidationPool."""
+  """Tests resolution and applying logic of validation_pool.ValidationPool."""
 
   def setUp(self):
     self.mox.StubOutWithMock(validation_pool.PatchSeries, 'Apply')
@@ -1049,20 +1047,22 @@ class TestFindSuspects(MoxBase):
     self._AssertSuspects(changes, suspects, [self.kernel_pkg])
 
   def testFailUnknownException(self):
-    """An unknown exception should cause all patches to fail."""
+    """An unknown exception should cause all [public] patches to fail."""
     suspects = [self.kernel_patch, self.power_manager_patch]
     changes = suspects + [self.secret_patch]
     self._AssertSuspects(changes, suspects, exceptions=[Exception('foo bar')])
 
   def testFailUnknownInternalException(self):
-    """An unknown exception should cause all patches to fail."""
+    """An unknown exception should cause all [internal] patches to fail."""
     suspects = [self.kernel_patch, self.power_manager_patch, self.secret_patch]
     self._AssertSuspects(suspects, suspects, exceptions=[Exception('foo bar')],
                          internal=True)
 
   def testFailUnknownCombo(self):
-    """An unknown exception should cause all patches to fail, even if there
-    are also build failures that we can explain."""
+    """Unknown exceptions should cause all patches to fail.
+
+    Even if there are also build failures that we can explain.
+    """
     suspects = [self.kernel_patch, self.power_manager_patch]
     changes = suspects + [self.secret_patch]
     self._AssertSuspects(changes, suspects, [self.kernel_pkg],
@@ -1319,7 +1319,7 @@ class SubmitPoolTest(BaseSubmitPoolTestCase):
   def GetNotifyArg(self, change, key):
     """Look up a call to notify about |change| and grab |key| from it.
 
-    Arguments:
+    Args:
       change: The change to look up.
       key: The key to look up. If this is an integer, look up a positional
         argument by index. Otherwise, look up a keyword argument.

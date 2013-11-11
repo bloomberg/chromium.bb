@@ -6,7 +6,8 @@
 
 This script need only be used to upload release builds symbols or to debug
 crashes on non-release builds (in which case try to only upload the symbols
-for those executables involved)."""
+for those executables involved).
+"""
 
 import ctypes
 import multiprocessing

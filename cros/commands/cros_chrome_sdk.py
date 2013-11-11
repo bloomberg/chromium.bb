@@ -30,7 +30,7 @@ CUSTOM_VERSION = 'custom'
 def Log(*args, **kwargs):
   """Conditional logging.
 
-  Arguments:
+  Args:
     silent: If set to True, then logs with level DEBUG.  logs with level INFO
       otherwise.  Defaults to False.
   """
@@ -71,7 +71,7 @@ class SDKFetcher(object):
                sdk_path=None, silent=False):
     """Initialize the class.
 
-    Arguments:
+    Args:
       cache_dir: The toplevel cache dir to use.
       board: The board to manage the SDK for.
       clear_cache: Clears the sdk cache during __init__.
@@ -244,7 +244,7 @@ class SDKFetcher(object):
   def GetFullVersion(self, version):
     """Add the release branch to a ChromeOS platform version.
 
-    Arguments:
+    Args:
       version: A ChromeOS platform number of the form XXXX.XX.XX, i.e.,
         3918.0.0.
 
@@ -321,7 +321,7 @@ class SDKFetcher(object):
     context where the components are read-locked, which prevents the cache from
     deleting them during its purge operations.
 
-    Arguments:
+    Args:
       gs_ctx: GSContext object.
       components: A list of specific components(tarballs) to prepare.
       version: The version to prepare.  If not set, uses the version returned by
@@ -521,7 +521,7 @@ class ChromeSDKCommand(cros.CrosCommand):
     If a chroot path is set, then indicate we are using the sysroot from there
     instead of the stock sysroot by prepending an asterisk to the version.
 
-    Arguments:
+    Args:
       board, version: The SDK board and version.
       chroot: The path to the chroot, if set.
     """
@@ -541,7 +541,7 @@ class ChromeSDKCommand(cros.CrosCommand):
     -B<gold_path>', and overrides the gold_path to the correct path in the
     extracted toolchain tarball.
 
-    Arguments:
+    Args:
       var_contents: The contents of the environment variable.
       toolchain_path: Path to the extracted toolchain tarball contents.
 
@@ -668,7 +668,7 @@ class ChromeSDKCommand(cros.CrosCommand):
     If the user does have a goma installation set up, verify that it's for
     ChromeOS.
 
-    Arguments:
+    Args:
       user_rc: User-supplied rc file.
     """
     user_env = osutils.SourceEnvironment(user_rc, ['PATH'])
@@ -688,7 +688,7 @@ class ChromeSDKCommand(cros.CrosCommand):
   def _VerifyChromiteBin(user_rc):
     """Verify that the user has not set a chromite bin/ dir in user_rc.
 
-    Arguments:
+    Args:
       user_rc: User-supplied rc file.
     """
     user_env = osutils.SourceEnvironment(user_rc, ['PATH'])
@@ -702,7 +702,7 @@ class ChromeSDKCommand(cros.CrosCommand):
   def _VerifyClang(user_rc):
     """Verify that the user has not set a clang bin/ dir in user_rc.
 
-    Arguments:
+    Args:
       user_rc: User-supplied rc file.
     """
     user_env = osutils.SourceEnvironment(user_rc, ['PATH'])
@@ -723,7 +723,7 @@ class ChromeSDKCommand(cros.CrosCommand):
     as sources the user-editable chrome_sdk.bashrc file in the user's home
     directory.  That rc file is created if it doesn't already exist.
 
-    Arguments:
+    Args:
       env: A dictionary of environment variables that will be set by the rc
         file.
       user_rc: User-supplied rc file.

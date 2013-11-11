@@ -31,7 +31,8 @@ from gerrit-int, you must prefix the gerrit change number with a * e.g.
 
 For more information on how to do this yourself you can go here:
 http://dev.chromium.org/chromium-os/how-tos-and-troubleshooting/working-on-a-br\
-anch"""
+anch
+"""
 
 import errno
 import logging

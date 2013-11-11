@@ -35,7 +35,7 @@ class VerifyTarballTest(cros_test_lib.MockTempDirTestCase):
   def _MockTarList(self, files):
     """Mock out tarball content list call.
 
-    Arguments:
+    Args:
       files: A list of contents to return.
     """
     self.rc_mock.AddCmdResult(

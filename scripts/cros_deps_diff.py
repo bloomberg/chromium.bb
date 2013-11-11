@@ -42,7 +42,8 @@ def GetReverseDependencyClosure(full_name, deps_map, divergent_set):
   """Gets the closure of the reverse dependencies of a node.
 
   Walks the tree along all the reverse dependency paths to find all the nodes
-  of the divergent set that transitively depend on the input node."""
+  of the divergent set that transitively depend on the input node.
+  """
   s = set()
   def GetClosure(name):
     node = deps_map[name]
@@ -83,7 +84,8 @@ def GetDivergentSet(version_map, count):
   """Gets the set of divergent packages.
 
   Divergent packages are those that have a different version among the input
-  dependency graphs (or missing version altogether)."""
+  dependency graphs (or missing version altogether).
+  """
   divergent_set = set()
   for pkg, value in version_map.iteritems():
     if len(value.keys()) != count or len(set(value.values())) > 1:

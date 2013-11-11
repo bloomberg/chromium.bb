@@ -34,7 +34,8 @@ def _GetCrosTargetRank(target):
 
   All valid rankings are greater than zero.
 
-  Return valid ranking for target or a false value if target is unrecognized."""
+  Returns valid ranking for target or a false value if target is unrecognized.
+  """
   for ix, targ in enumerate(CHROMEOS_TARGET_ORDER):
     if target == targ:
       return ix + 1 # Avoid a 0 (non-true) result

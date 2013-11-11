@@ -79,8 +79,9 @@ def GetCPEFromCPV(category, package, version):
     package: The Portage package's name, e.g. "curl"
     version: The Portage version, e.g. "7.30.0"
 
-  Returns: A list of CPE Name strings, e.g.
-           ["cpe:/a:curl:curl:7.30.0", "cpe:/a:curl:libcurl:7.30.0"]
+  Returns:
+    A list of CPE Name strings, e.g.
+    ["cpe:/a:curl:curl:7.30.0", "cpe:/a:curl:libcurl:7.30.0"]
   """
   equery_cmd = ["equery", "m", "-U", "%s/%s" % (category, package)]
   lines = cros_build_lib.RunCommand(equery_cmd, error_code_ok=True,

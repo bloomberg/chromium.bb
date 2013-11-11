@@ -234,7 +234,7 @@ class ArchivingStage(BoardSpecificBuilderStage):
     wait for input on the specified queue. These workers run
     self.UploadArtifact(*args, archive=archive) for each input in the queue.
 
-    Arguments:
+    Args:
       queue: Queue to use. Add artifacts to this queue, and they will be
         uploaded in the background.  If None, one will be created on the fly.
       archive: Whether to automatically copy files to the archive dir.
@@ -261,7 +261,7 @@ class ArchivingStage(BoardSpecificBuilderStage):
   def UploadArtifact(self, path, archive=True, strict=True):
     """Upload generated artifact to Google Storage.
 
-    Arguments:
+    Args:
       path: Path of local file to upload to Google Storage.
       archive: Whether to automatically copy files to the archive dir.
       strict: Whether to treat upload errors as fatal.
@@ -607,7 +607,7 @@ class BootstrapStage(PatchChangesStage):
   def _ApplyManifestPatches(self, patch_pool):
     """Apply a pool of manifest patches to a temp manifest checkout.
 
-    Arguments:
+    Args:
       filter_fn: Used to filter changes during dependency resolution.
 
     Returns:
@@ -914,7 +914,7 @@ class ManifestVersionedSyncStage(SyncStage):
   def LocalizeManifest(self, manifest, filter_cros=False):
     """Remove restricted projects from the manifest if needed.
 
-    Arguments:
+    Args:
       filter_cros: If set, then only projects with a remote of 'cros' or
         'cros-internal' are kept, and the rest are filtered out.
     """
@@ -1279,8 +1279,9 @@ class LKGMCandidateSyncCompletionStage(ManifestVersionedSyncCompletionStage):
     Cached results are populated during PerformStage, so this function
     should only be called after PerformStage has returned.
 
-    Returns: A dictionary from build names to manifest_version.BuilderStatus
-             builder status objects.
+    Returns:
+      A dictionary from build names to manifest_version.BuilderStatus
+      builder status objects.
     """
     return self._slave_statuses
 
@@ -2703,7 +2704,7 @@ class ArchiveStage(ArchivingStage):
   def _BreakpadSymbolsGenerated(self, success):
     """Signal that breakpad symbols have been generated.
 
-    Arguments:
+    Args:
       success: True to indicate the symbols were generated, else False.
     """
     self._breakpad_symbols_queue.put(success)

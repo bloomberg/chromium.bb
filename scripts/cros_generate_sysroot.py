@@ -51,7 +51,7 @@ class GenerateSysroot(object):
   def __init__(self, sysroot, options):
     """Initialize
 
-    Arguments:
+    Args:
       sysroot: Path to sysroot.
       options: Parsed options.
     """

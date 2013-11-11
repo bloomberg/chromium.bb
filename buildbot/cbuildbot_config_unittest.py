@@ -284,7 +284,8 @@ class CBuildBotTest(cros_test_lib.MoxTestCase):
 
     Note: This check isn't perfect (as we can't check to see if we have
     any ChromeOS PFQs actually running), but it at least makes sure people
-    realize we need to have the configs in sync."""
+    realize we need to have the configs in sync.
+    """
 
     # Figure out all the boards our Chrome and ChromeOS PFQs are using.
     cr_pfqs = set()

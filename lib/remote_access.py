@@ -46,7 +46,7 @@ class RemoteAccess(object):
                debug_level=logging.DEBUG, interactive=True):
     """Construct the object.
 
-    Arguments:
+    Args:
       remote_host: The ip or hostname of the remote test machine.  The test
                    machine should be running a ChromeOS test image.
       tempdir: A directory that RemoteAccess can use to store temporary files.
@@ -84,7 +84,7 @@ class RemoteAccess(object):
                ssh_error_ok=False, debug_level=None):
     """Run a sh command on the remote device through ssh.
 
-    Arguments:
+    Args:
       cmd: The command string or list to run.
       connect_settings: The SSH connect settings to use.
       error_code_ok: Does not throw an exception when the command exits with a
@@ -184,7 +184,7 @@ class RemoteAccess(object):
             sudo=False):
     """Rsync a directory to the remote device.
 
-    Arguments:
+    Args:
       src: The local src directory.
       dest: The remote dest directory.
       inplace: If set, cause rsync to overwrite the dest files in place.  This

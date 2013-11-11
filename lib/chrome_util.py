@@ -121,7 +121,7 @@ class Copier(object):
                dir_mode=0o755, exe_mode=0o755, blacklist=None):
     """Initialization.
 
-    Arguments:
+    Args:
       strip_bin: Path to the program used to strip binaries.  If set to None,
                  binaries will not be stripped.
       strip_flags: A list of flags to pass to the |strip_bin| executable.
@@ -153,7 +153,7 @@ class Copier(object):
   def _CopyFile(self, src, dest, path):
     """Perform the copy.
 
-    Arguments:
+    Args:
       src: The path of the file/directory to copy.
       dest: The exact path of the destination.  Should not already exist.
       path: The Path instance containing copy operation modifiers (such as
@@ -178,7 +178,7 @@ class Copier(object):
   def Copy(self, src_base, dest_base, path, strict=False, sloppy=False):
     """Copy artifact(s) from source directory to destination.
 
-    Arguments:
+    Args:
       src_base: The directory to apply the src glob pattern match in.
       dest_base: The directory to copy matched files to.  |Path.dest|.
       path: A Path instance that specifies what is to be copied.
@@ -248,7 +248,7 @@ class Path(object):
                optional=False, strip=True):
     """Initializes the object.
 
-    Arguments:
+    Args:
       src: The relative path of the artifact.  Can be a file or a directory.
            Can be a glob pattern.
       exe: Identifes the path as either being an executable or containing
@@ -384,7 +384,7 @@ def StageChromeFromBuildDir(staging_dir, build_dir, strip_bin, strict=False,
   and |staging_flags| passed in.  Otherwise, we stage everything that we know
   about, that we can find.
 
-  Arguments:
+  Args:
     staging_dir: Path to an empty staging directory.
     build_dir: Path to location of Chrome build artifacts.
     strip_bin: Path to executable used for stripping binaries.

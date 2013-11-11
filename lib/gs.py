@@ -29,7 +29,7 @@ BASE_GS_URL = 'gs://'
 def CanonicalizeURL(url, strict=False):
   """Convert provided URL to gs:// URL, if it follows a known format.
 
-  Arguments:
+  Args:
     url: URL to canonicalize.
     strict: Raises exception if URL cannot be canonicalized.
   """
@@ -79,7 +79,7 @@ class GSCounter(object):
   def __init__(self, ctx, path):
     """Create a counter object.
 
-    Arguments:
+    Args:
       ctx: A GSContext object.
       path: The path to the counter in Google Storage.
     """
@@ -325,8 +325,8 @@ class GSContext(object):
       e: Exception object to filter. Exception may be re-raised as
          as different type, if _RetryFilter determines a more appropriate
          exception type based on the contents of e.
-    Returns: True for exceptions thrown by a RunCommand gsutil
-             that should be retried.
+    Returns:
+      True for exceptions thrown by a RunCommand gsutil that should be retried.
     """
     if not cros_build_lib.ShouldRetryCommandCommon(e):
       return False
@@ -548,7 +548,7 @@ class GSContext(object):
   def Counter(self, path):
     """Return a GSCounter object pointing at a |path| in Google Storage.
 
-    Arguments:
+    Args:
       path: The path to the counter in Google Storage.
     """
     return GSCounter(self, path)

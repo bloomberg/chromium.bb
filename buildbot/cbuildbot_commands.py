@@ -519,7 +519,7 @@ def RunDevModeTest(buildroot, board, image_dir):
 def ArchiveTestResults(buildroot, test_results_dir, test_basename):
   """Archives the test results into a tarball.
 
-  Arguments:
+  Args:
     buildroot: Root directory where build occurs.
     test_results_dir: Path from buildroot/chroot to find test results.
       This must a subdir of /tmp.
@@ -638,7 +638,7 @@ def GenerateStackTraces(buildroot, board, gzipped_test_tarball,
                         archive_dir, got_symbols):
   """Generates stack traces for logs in |gzipped_test_tarball|
 
-  Arguments:
+  Args:
     buildroot: Root directory where build occurs.
     board: Name of the board being worked on.
     gzipped_test_tarball: Path to the gzipped test tarball.
@@ -734,7 +734,7 @@ def GenerateStackTraces(buildroot, board, gzipped_test_tarball,
 def ArchiveFile(file_to_archive, archive_dir):
   """Archives the specified file.
 
-  Arguments:
+  Args:
     file_to_archive: Full path to file to archive.
     archive_dir: Local directory for archiving.
 

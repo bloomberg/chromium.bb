@@ -340,7 +340,7 @@ class FilteringParser(OptionParser):
   def AddParsedArg(self, opt_inst, opt_str, value_str):
     """Add a parsed argument with attributes.
 
-    Arguments:
+    Args:
       opt_inst: An instance of a raw optparse.Option object that represents the
                 option.
       opt_str: The option string.
@@ -352,7 +352,7 @@ class FilteringParser(OptionParser):
   def FilterArgs(parsed_args, filter_fn):
     """Filter the argument by passing it through a function.
 
-    Arguments:
+    Args:
       parsed_args:  The list of parsed argument namedtuples to filter.  Tuples
         are of the form (opt_inst, opt_str, value_str).
       filter_fn: A function with signature f(PassedOption), and returns True if

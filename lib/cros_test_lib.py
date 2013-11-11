@@ -89,7 +89,7 @@ def _FlattenStructure(base_path, dir_struct):
 def CreateOnDiskHierarchy(base_path, dir_struct):
   """Creates on-disk representation of an in-memory directory structure.
 
-  Arguments:
+  Args:
     base_path: The absolute root of the directory structure.
     dir_struct: A recursively defined data structure that represents a
       directory tree.  The basic form is a list.  Elements can be file names or
@@ -113,7 +113,7 @@ def _VerifyDirectoryIterables(existing, expected):
 
   Paths in |existing| and |expected| will be compared for exact match.
 
-  Arguments:
+  Args:
     existing: An iterable containing paths that exist.
     expected: An iterable of paths that are expected.
 
@@ -140,7 +140,7 @@ def _VerifyDirectoryIterables(existing, expected):
 def VerifyOnDiskHierarchy(base_path, dir_struct):
   """Verify that an on-disk directory tree exactly matches a given structure.
 
-  Arguments:
+  Args:
     See arguments of CreateOnDiskHierarchy()
 
   Raises:
@@ -154,7 +154,7 @@ def VerifyOnDiskHierarchy(base_path, dir_struct):
 def VerifyTarball(tarball, dir_struct):
   """Compare the contents of a tarball against a directory structure.
 
-  Arguments:
+  Args:
     tarball: Path to the tarball.
     dir_struct: See CreateOnDiskHierarchy()
 

@@ -116,7 +116,7 @@ class SDKFetcherMock(partial_mock.PartialMock):
   def __init__(self, external_mocks=None):
     """Initializes the mock.
 
-    Arguments:
+    Args:
       external_mocks: A list of already started PartialMock/patcher instances.
         stop() will be called on each element every time execution enters one of
         our the mocked out methods, and start() called on it once execution

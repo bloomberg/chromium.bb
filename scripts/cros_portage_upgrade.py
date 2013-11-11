@@ -43,7 +43,8 @@ BLACKLISTED_FILES = set(['Manifest', 'ChangeLog*'])
 class PInfo(object):
   """Class to accumulate package info during upgrade process.
 
-  This class is basically a formalized dictionary."""
+  This class is basically a formalized dictionary.
+  """
 
   __slots__ = (
       'category',            # Package category only
@@ -845,7 +846,9 @@ class Upgrader(object):
     Does not do the copy if the eclass already exists locally and
     is identical to the upstream version.
 
-    Returns True if the copy was done."""
+    Returns:
+      True if the copy was done.
+    """
     eclass_subpath = os.path.join('eclass', eclass)
     upstream_path = os.path.join(self._upstream_repo, eclass_subpath)
     local_path = os.path.join(self._stable_repo, eclass_subpath)
@@ -1330,7 +1333,8 @@ class Upgrader(object):
     pinfo of |target_pinfolist| to (parallel_)emerge.
 
     The returned list is ordered such that the dependencies of any mentioned
-    package occur earlier in the list."""
+    package occur earlier in the list.
+    """
     emerge_args = []
     for pinfo in target_pinfolist:
       local_cpv = pinfo.cpv
@@ -1709,7 +1713,8 @@ class Upgrader(object):
     """Runs the upgrader based on the supplied options and arguments.
 
     Currently just lists all package dependencies in pre-order along with
-    potential upgrades."""
+    potential upgrades.
+    """
     # Preserve status report for entire stable repo (output of 'git status -s').
     self._SaveStatusOnStableRepo()
     # Read contents of profiles/categories for later checks

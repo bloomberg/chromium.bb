@@ -89,7 +89,8 @@ def ReadHttpResponse(conn, ignore_404=True):
     ignore_404: For many requests, gerrit-on-borg will return 404 if the request
                 doesn't match the database contents.  In most such cases, we
                 want the API to return None rather than raise an Exception.
-  Returns: A string buffer containing the connection's reply.
+  Returns:
+    A string buffer containing the connection's reply.
   """
 
   sleep_time = 0.5

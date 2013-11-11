@@ -42,7 +42,8 @@ class Table(object):
     'a,"""b, c"", d",e': ==> ['a', '"b, c", d', 'e'],
     'a,b\,c,d':          ==> ['a', 'b,c', 'd'],
 
-    Return a list of values.'''
+    Return a list of values.
+    '''
     # Split on commas, handling two special cases:
     # 1) Escaped commas are not separators.
     # 2) A quoted value can have non-separator commas in it.  Quotes
@@ -183,7 +184,8 @@ class Table(object):
   def GetRowByIndex(self, index):
     """Access one or more rows by index or slice.
 
-    If more than one row is returned they will be contained in a list."""
+    If more than one row is returned they will be contained in a list.
+    """
     return self._rows[index]
 
   def _GenRowFilter(self, id_values):
@@ -250,7 +252,8 @@ class Table(object):
   def AppendRow(self, values):
     """Add a single row of data to the table, according to |values|.
 
-    The |values| argument can be either a dict or list."""
+    The |values| argument can be either a dict or list.
+    """
     row = self._PrepareValuesForAdd(values)
     self._rows.append(row)
 
@@ -282,7 +285,8 @@ class Table(object):
     """Insert a new column |name| into table at index |index|.
 
     If |value| is specified, all rows will have |value| in the new column.
-    Otherwise, they will have the EMPTY_CELL value."""
+    Otherwise, they will have the EMPTY_CELL value.
+    """
     if self.HasColumn(name):
       raise LookupError("Column %s already exists in table." % name)
 

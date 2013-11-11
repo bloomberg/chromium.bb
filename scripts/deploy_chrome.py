@@ -78,7 +78,7 @@ class DeployChrome(object):
   def __init__(self, options, tempdir, staging_dir):
     """Initialize the class.
 
-    Arguments:
+    Args:
       options: Optparse result structure.
       tempdir: Scratch space for the class.  Caller has responsibility to clean
         it up.
@@ -185,7 +185,7 @@ class DeployChrome(object):
     If the command fails, and error_code_ok is True, then this function sets
     self._rootfs_is_still_readonly.
 
-    Arguments:
+    Args:
       error_code_ok: See remote.RemoteAccess.RemoteSh for details.
     """
     result = self.host.RemoteSh(MOUNT_RW_COMMAND, error_code_ok=error_code_ok)
@@ -203,7 +203,7 @@ class DeployChrome(object):
   def _CheckDeviceFreeSpace(self, device_info):
     """See if target device has enough space for Chrome.
 
-    Arguments:
+    Args:
       device_info: A DeviceInfo named tuple.
     """
     effective_free = device_info.target_dir_size + device_info.target_fs_free
@@ -443,7 +443,8 @@ def _PostParseCheck(options, _args):
 def _FetchChromePackage(cache_dir, tempdir, gs_path):
   """Get the chrome prebuilt tarball from GS.
 
-  Returns: Path to the fetched chrome tarball.
+  Returns:
+    Path to the fetched chrome tarball.
   """
   gs_ctx = gs.GSContext(cache_dir=cache_dir, init_boto=True)
   files = gs_ctx.LS(gs_path).output.splitlines()

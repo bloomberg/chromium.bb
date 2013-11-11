@@ -1579,7 +1579,8 @@ class PortageStableTest(CpuTestBase):
 class UtilityTest(CpuTestBase):
   """Test several Upgrader methods.
 
-  Test these Upgrader methods: _SplitEBuildPath, _GenPortageEnvvars"""
+  Test these Upgrader methods: _SplitEBuildPath, _GenPortageEnvvars
+  """
 
   #
   # _IsInUpgradeMode

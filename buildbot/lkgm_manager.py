@@ -483,7 +483,7 @@ class LKGMManager(manifest_version.BuildSpecsManager):
 def GenerateBlameList(source_repo, lkgm_path, only_print_chumps=False):
   """Generate the blamelist since the specified manifest.
 
-  Arguments:
+  Args:
     source_repo: Repository object for the source code.
     lkgm_path: Path to LKGM manifest.
     only_print_chumps: If True, only print changes that were chumped.

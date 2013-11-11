@@ -41,7 +41,7 @@ def CreateBatchFile(build_dir, out_dir, batch_file):
   This batch file can be applied to any directory identical to out_dir, to make
   it identical to build_dir.
 
-  Arguments:
+  Args:
     build_dir: Directory to rsync from.
     out_dir: Directory to rsync to.
     batch_file: Batch file to be created.
@@ -88,7 +88,7 @@ def FinishParsing(options):
 def GenerateSysroot(sysroot, board, build_tests, unpack_only=False):
   """Create a sysroot using only binary packages from local binhost.
 
-  Arguments:
+  Args:
     sysroot: Where we want to place the sysroot.
     board: Board we want to build for.
     build_tests: If we should include autotest packages.

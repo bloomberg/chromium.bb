@@ -66,7 +66,7 @@ def GetNewestFileTime(path, ignore_subdirs=[]):
   #pylint: disable-msg=W0102
   """Recursively determine the newest file modification time.
 
-  Arguments:
+  Args:
     path: The absolute path of the directory to recursively search.
     ignore_subdirs: list of names of subdirectores of given path, to be
                     ignored by recursive search. Useful as a speed
@@ -99,7 +99,7 @@ def GetStalePackageNames(change_list, autotest_sysroot):
   within the client/site_tests directory tree, that had any files added or
   modified and for whom any existing bzipped test packages may now be stale.
 
-  Arguments:
+  Args:
     change_list: A list of ItemizedChange objects corresponding to changed
                  or modified files.
     autotest_sysroot: Absolute path of autotest in the sysroot,
@@ -118,7 +118,7 @@ def GetStalePackageNames(change_list, autotest_sysroot):
 def ItemizeChangesFromRsyncOutput(rsync_output, destination_path):
   """Convert the output of an rsync with `-i` to a ItemizedChangeReport object.
 
-  Arguments:
+  Args:
     rsync_output: String stdout of rsync command that was run with `-i` option.
     destination_path: String absolute path of the destination directory for the
                       rsync operations. This argument is necessary because
@@ -152,7 +152,7 @@ def ItemizeChangesFromRsyncOutput(rsync_output, destination_path):
 def GetPackageAPI(portage_root, package_cp):
   """Gets portage API handles for the given package.
 
-  Arguments:
+  Args:
     portage_root: Root directory of portage tree. Eg '/' or '/build/lumpy'
     package_cp:   A string similar to 'chromeos-base/autotest-tests'.
 
@@ -198,7 +198,7 @@ def DowngradePackageVersion(portage_root, package_cp,
                             downgrade_to_version='0'):
   """Downgrade the specified portage package version.
 
-  Arguments:
+  Args:
     portage_root: Root directory of portage tree. Eg '/' or '/build/lumpy'
     package_cp:   A string similar to 'chromeos-base/autotest-tests'.
     downgrade_to_version: String version to downgrade to. Default: '0'
@@ -231,7 +231,7 @@ def UpdatePackageContents(change_report, package_cp, portage_root=None):
   to the CONTENTS of an installed portage package, such that these files are
   considered owned by that package.
 
-  Arguments:
+  Args:
     changereport: ItemizedChangeReport object for the changes to be
                   made to the package.
     package_cp: A string similar to 'chromeos-base/autotest-tests' giving
@@ -256,7 +256,7 @@ def UpdatePackageContents(change_report, package_cp, portage_root=None):
 def RemoveBzipPackages(autotest_sysroot):
   """Remove all bzipped test/dep/profiler packages from sysroot autotest.
 
-  Arguments:
+  Args:
     autotest_sysroot: Absolute path of autotest in the sysroot,
                       e.g. '/build/lumpy/usr/local/build/autotest'
   """
@@ -275,7 +275,7 @@ def RsyncQuickmerge(source_path, sysroot_autotest_path,
                          [optional --include-from argument]
                          --exclude=* [source_path] [sysroot_autotest_path]`
 
-  Arguments:
+  Args:
     pretend:   True to use the '-n' option to rsync, to perform dry run.
     overwrite: True to omit '-u' option, overwrite all files in sysroot,
                not just older files.
@@ -313,7 +313,8 @@ def RsyncQuickmerge(source_path, sysroot_autotest_path,
 def ParseArguments(argv):
   """Parse command line arguments
 
-  Returns: parsed arguments.
+  Returns:
+    parsed arguments.
   """
   parser = argparse.ArgumentParser(description='Perform a fast approximation '
                                    'to emerge-$board autotest-all, by '

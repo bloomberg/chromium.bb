@@ -22,7 +22,7 @@ CLONE_NEWNET = 0x40000000
 def Unshare(flags):
   """Binding to the Linux unshare system call. See unshare(2) for details.
 
-  Arguments:
+  Args:
     flags: Namespaces to unshare; bitwise OR of CLONE_* flags.
   Raises:
     OSError: if unshare failed.

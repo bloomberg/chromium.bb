@@ -682,7 +682,7 @@ def RetryException(exc_retry, max_retry, functor, *args, **kwds):
 def RetryCommand(functor, max_retry, *args, **kwds):
   """Wrapper for RunCommand that will retry a command
 
-  Arguments:
+  Args:
     functor: RunCommand function to run; retries will only occur on
       RunCommandError exceptions being thrown.
     max_retry: A positive integer representing how many times to retry
@@ -727,7 +727,7 @@ def ShouldRetryCommandCommon(exc):
 def RunCommandWithRetries(max_retry, *args, **kwds):
   """Wrapper for RunCommand that will retry a command
 
-  Arguments:
+  Args:
     See RetryCommand and RunCommand; This is just a wrapper around it.
   Returns:
     A CommandResult object.
@@ -743,7 +743,7 @@ def RunCommandCaptureOutput(cmd, **kwds):
   This wrapper calls RunCommand with redirect_stdout=True and
   redirect_stderr=True. This is for convenience.
 
-  Arguments:
+  Args:
     cmd: The command to run.
     kwds: Optional args passed to RunCommand; see RunCommand for specifics.
   """
@@ -770,7 +770,7 @@ def TimedCommand(functor, *args, **kwargs):
   you would do something like:
     TimedCommand(RunCommand, ['wget', 'http://foo'])
 
-  Arguments:
+  Args:
     functor: The function to run.
     args: The args to pass to the function.
     kwds: Optional args to pass to the function.
@@ -800,7 +800,7 @@ def FindCompressor(compression, chroot=None):
   the one in the chroot over /, and the parallel implementation
   over the single threaded one.
 
-  Arguments:
+  Args:
     compression: The type of compression desired.
     chroot: Optional path to a chroot to search.
   Returns:
@@ -841,7 +841,7 @@ def CreateTarball(target, cwd, sudo=False, compression=COMP_XZ, chroot=None,
                   inputs=None, extra_args=None, **kwds):
   """Create a tarball.  Executes 'tar' on the commandline.
 
-  Arguments:
+  Args:
     target: The path of the tar file to generate.
     cwd: The directory to run the tar command.
     sudo: Whether to run with "sudo".
@@ -927,10 +927,10 @@ def BooleanShellValue(sval, default, msg=None):
     default: If we can't figure out if the value is true or false, use this.
     msg: If |sval| is an unknown value, use |msg| to warn the user that we
          could not decode the input.  Otherwise, raise ValueError().
+  Returns:
+    The interpreted boolean value of |sval|.
   Raises:
     ValueError() if |sval| is an unknown value and |msg| is not set.
-  Return:
-    The interpreted boolean value of |sval|.
   """
   if sval is None:
     return default
@@ -1140,7 +1140,8 @@ class ContextManagerStack(object):
 
   For each context manager added to this instance, it will unwind them,
   invoking them as if it had been constructed as a set of manually nested
-  with statements."""
+  with statements.
+  """
 
   def __init__(self):
     self._stack = []
@@ -1208,7 +1209,7 @@ def WaitForCondition(func, period, timeout):
 
   Continues to run until the function returns a 'True' value.
 
-  Arguments:
+  Args:
     func: The function to run to test for condition.  Returns True to indicate
           condition was met.
     period: How long to wait in between testing of condition.
@@ -1275,7 +1276,7 @@ class NoChromiteError(Exception):
 def GetTargetChromiteApiVersion(buildroot, validate_version=True):
   """Get the re-exec API version of the target chromite.
 
-  Arguments:
+  Args:
     buildroot: The directory containing the chromite to check.
     validate_version:  If set to true, checks the target chromite for
       compatibility, and raises an ApiMismatchError when there is an
@@ -1351,7 +1352,7 @@ def iflatten_instance(iterable, terminate_on_kls=(basestring,)):
 def load_module(name):
   """load a module
 
-  Arguments:
+  Args:
     name: python dotted namespace path of the module to import
 
   Raises:
@@ -1370,7 +1371,7 @@ def load_module(name):
 def PredicateSplit(func, iterable):
   """Splits an iterable into two groups based on a predicate return value.
 
-  Arguments:
+  Args:
     func:  A functor that takes an item as its argument and returns a boolean
       value indicating which group the item belongs.
     iterable: The collection to split.
@@ -1537,7 +1538,7 @@ def MemoizedSingleCall(functor):
 def SafeRun(functors, combine_exceptions=False):
   """Executes a list of functors, continuing on exceptions.
 
-  Arguments:
+  Args:
     functors: An iterable of functors to call.
     combine_exceptions: If set, and multipole exceptions are encountered,
       SafeRun will raise a RuntimeError containing a list of all the exceptions.
@@ -1576,7 +1577,7 @@ def UserDateTimeFormat(timeval=None):
   but still easy (and unambiguous) for a machine to parse.  Hence, we
   use the RFC 2822 date format (with timezone name appended).
 
-  Arguments:
+  Args:
     timeval: Either a datetime object or a floating point time value as accepted
              by gmtime()/localtime().  If None, the current time is used.
   Returns:

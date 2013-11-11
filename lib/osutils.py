@@ -80,7 +80,7 @@ def WriteFile(path, content, mode='w', atomic=False, makedirs=False):
 def Touch(path, makedirs=False, mode=None):
   """Simulate unix touch. Create if doesn't exist and update its timestamp.
 
-  Arguments:
+  Args:
     path: a string, file name of the file to touch (creating if not present).
     makedirs: If True, create missing leading directories in the path.
     mode: The access permissions to set.  In the style of chmod.  Defaults to
@@ -130,7 +130,7 @@ def SafeUnlink(path, sudo=False):
 def SafeMakedirs(path, mode=0o775, sudo=False, user='root'):
   """Make parent directories if needed.  Ignore if existing.
 
-  Arguments:
+  Args:
     path: The path to create.  Intermediate directories will be created as
           needed.
     mode: The access permissions in the style of chmod.
@@ -192,7 +192,7 @@ def SafeMakedirsNonRoot(path, mode=0o775, user=None):
 def RmDir(path, ignore_missing=False, sudo=False):
   """Recursively remove a directory.
 
-  Arguments:
+  Args:
     ignore_missing: Do not error when path does not exist.
     sudo: Remove directories as root.
   """
@@ -248,7 +248,7 @@ def FindMissingBinaries(needed_tools):
   This is especially important for scripts that are intended to run
   outside the chroot.
 
-  Arguments:
+  Args:
     needed_tools: an array of string specified binaries to look for.
 
   Returns:
@@ -272,7 +272,7 @@ def IteratePathParents(start_path):
     The passed-in path, along with its parents.  i.e.,
     IteratePathParents('/usr/local') would yield '/usr/local', '/usr/', and '/'.
 
-  Arguments:
+  Args:
     start_path: The path to start from.
   """
   path = os.path.abspath(start_path)
@@ -301,7 +301,7 @@ def FindInPathParents(path_to_find, start_path, test_func=None):
   the call FindInPathParents('google', '/usr/local') would return
   '/usr/local/google'.
 
-  Arguments:
+  Args:
     rel_path: The relative path to look for.
     start_path: The path to start the search from.  If |start_path| is a
       directory, it will be included in the directories that are searched.
@@ -387,7 +387,7 @@ class TempDir(object):
   def __init__(self, **kwargs):
     """Constructor. Creates the temporary directory.
 
-    Arguments:
+    Args:
       prefix: See tempfile.mkdtemp documentation.
       base_dir: The directory to place the temporary directory.
       set_global: Set this directory as the global temporary directory.
@@ -537,7 +537,7 @@ def SourceEnvironment(script, whitelist, ifs=',', env=None):
   files that have side effects (such as modify the file system).  Stdout will
   be sent to /dev/null, so just echoing is OK.
 
-  Arguments:
+  Args:
     script: The shell script to 'source'.
     whitelist: An iterable of environment variables to retrieve values for.
     ifs: When showing arrays, what separator to use.

@@ -343,8 +343,9 @@ class BuilderStatus(object):
   def AsDict(self):
     """Returns a flat json-able representation of this builder status.
 
-    Returns: A dictionary of the form {'status' : status, 'message' : message}
-             where status and message are guaranteed to be strings.
+    Returns:
+      A dictionary of the form {'status' : status, 'message' : message}
+      where status and message are guaranteed to be strings.
     """
     return {'status' : str(self.status),
             'message' : str(self.message)}
@@ -357,6 +358,7 @@ class BuildSpecsManager(object):
                branch, manifest=constants.DEFAULT_MANIFEST, dry_run=True,
                master=False):
     """Initializes a build specs manager.
+
     Args:
       source_repo: Repository object for the source code.
       manifest_repo:  Manifest repository for manifest versions / buildspecs.

@@ -482,8 +482,7 @@ class LKGMManagerTest(cros_test_lib.MoxTempDirTestCase):
       os.remove(tmp_manifest)
 
   def testFilterProjectsFromManifest(self):
-    """Tests whether or not we can correctly remove internal projects from a
-    manifest."""
+    """Tests whether we can remove internal projects from a manifest."""
     fake_manifest = None
     fake_new_manifest = None
     try:

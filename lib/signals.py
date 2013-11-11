@@ -12,8 +12,11 @@ import contextlib
 
 def RelaySignal(handler, signum, frame):
   """Notify a listener returned from getsignal of receipt of a signal.
-  Return True if it was relayed to the target, False otherwise.
-  False in particular occurs if the target isn't relayable."""
+
+  Returns:
+    True if it was relayed to the target, False otherwise.
+    False in particular occurs if the target isn't relayable.
+  """
   if handler in (None, signal.SIG_IGN):
     return True
   elif handler == signal.SIG_DFL:
@@ -77,7 +80,8 @@ def DeferSignals(*signals):
 
   Args:
     signals: Which signals to ignore.  If none are given, defaults to
-      SIGINT and SIGTERM."""
+      SIGINT and SIGTERM.
+  """
 
   if not signals:
     signals = [signal.SIGINT, signal.SIGTERM, signal.SIGALRM]
