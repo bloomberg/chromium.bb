@@ -1480,10 +1480,6 @@ void RenderLayer::removeOnlyThisLayer()
     if (!m_parent)
         return;
 
-    // Mark that we are about to lose our layer. This makes render tree
-    // walks ignore this layer while we're removing it.
-    m_renderer->setHasLayer(false);
-
     compositor()->layerWillBeRemoved(m_parent, this);
 
     // Dirty the clip rects.
@@ -1503,8 +1499,6 @@ void RenderLayer::removeOnlyThisLayer()
         removeChild(current);
         m_parent->addChild(current, nextSib);
         current->repainter().setRepaintStatus(NeedsFullRepaint);
-        // updateLayerPositions depends on hasLayer() already being false for proper layout.
-        ASSERT(!renderer()->hasLayer());
         current->updateLayerPositions(0); // FIXME: use geometry map.
         current = next;
     }

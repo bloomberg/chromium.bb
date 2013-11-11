@@ -52,8 +52,7 @@ RenderLayerModelObject::~RenderLayerModelObject()
 
 void RenderLayerModelObject::destroyLayer()
 {
-    ASSERT(!hasLayer()); // Callers should have already called setHasLayer(false)
-    ASSERT(m_layer);
+    setHasLayer(false);
     m_layer = nullptr;
 }
 
@@ -89,10 +88,7 @@ void RenderLayerModelObject::willBeDestroyed()
 
     RenderObject::willBeDestroyed();
 
-    if (hasLayer()) {
-        setHasLayer(false);
-        destroyLayer();
-    }
+    destroyLayer();
 }
 
 void RenderLayerModelObject::styleWillChange(StyleDifference diff, const RenderStyle* newStyle)
