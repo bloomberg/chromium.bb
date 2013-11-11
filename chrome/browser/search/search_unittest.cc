@@ -321,26 +321,43 @@ TEST_F(ShouldSuppressInstantExtendedOnSRPTest, SuppressOnSRP) {
   EXPECT_EQ(2ul, EmbeddedSearchPageVersion());
 }
 
-typedef InstantExtendedAPIEnabledTest SearchButtonForSearchTermReplacementTest;
+typedef InstantExtendedAPIEnabledTest DisplaySearchButtonTest;
 
-TEST_F(SearchButtonForSearchTermReplacementTest, NotSet) {
+TEST_F(DisplaySearchButtonTest, NotSet) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
       "EmbeddedSearch", "Group1 espv:2"));
-  EXPECT_FALSE(ShouldDisplaySearchButtonForSearchTermReplacement());
+  EXPECT_EQ(DISPLAY_SEARCH_BUTTON_NEVER, GetDisplaySearchButtonConditions());
 }
 
-TEST_F(SearchButtonForSearchTermReplacementTest, NoSearchButtonOnSRP) {
+TEST_F(DisplaySearchButtonTest, Never) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch",
-      "Group1 espv:2 search_button_for_search_term_replacement:0"));
-  EXPECT_FALSE(ShouldDisplaySearchButtonForSearchTermReplacement());
+      "EmbeddedSearch", "Group1 espv:2 display_search_button:0"));
+  EXPECT_EQ(DISPLAY_SEARCH_BUTTON_NEVER, GetDisplaySearchButtonConditions());
 }
 
-TEST_F(SearchButtonForSearchTermReplacementTest, SearchButtonOnSRP) {
+TEST_F(DisplaySearchButtonTest, ForSearchTermReplacement) {
   ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-      "EmbeddedSearch",
-      "Group1 espv:2 search_button_for_search_term_replacement:1"));
-  EXPECT_TRUE(ShouldDisplaySearchButtonForSearchTermReplacement());
+      "EmbeddedSearch", "Group1 espv:2 display_search_button:1"));
+  EXPECT_EQ(DISPLAY_SEARCH_BUTTON_FOR_STR, GetDisplaySearchButtonConditions());
+}
+
+TEST_F(DisplaySearchButtonTest, ForSearchTermReplacementOrInputInProgress) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch", "Group1 espv:2 display_search_button:2"));
+  EXPECT_EQ(DISPLAY_SEARCH_BUTTON_FOR_STR_OR_IIP,
+            GetDisplaySearchButtonConditions());
+}
+
+TEST_F(DisplaySearchButtonTest, Always) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch", "Group1 espv:2 display_search_button:3"));
+  EXPECT_EQ(DISPLAY_SEARCH_BUTTON_ALWAYS, GetDisplaySearchButtonConditions());
+}
+
+TEST_F(DisplaySearchButtonTest, InvalidValue) {
+  ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
+      "EmbeddedSearch", "Group1 espv:2 display_search_button:4"));
+  EXPECT_EQ(DISPLAY_SEARCH_BUTTON_NEVER, GetDisplaySearchButtonConditions());
 }
 
 typedef InstantExtendedAPIEnabledTest OriginChipTest;

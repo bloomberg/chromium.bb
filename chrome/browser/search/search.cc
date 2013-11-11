@@ -72,8 +72,7 @@ const char kUseCacheableNTP[] = "use_cacheable_ntp";
 const char kPrefetchSearchResultsFlagName[] = "prefetch_results";
 const char kPrefetchSearchResultsOnSRP[] = "prefetch_results_srp";
 const char kSuppressInstantExtendedOnSRPFlagName[] = "suppress_on_srp";
-const char kEnableSearchButtonForSearchTermReplacementFlagName[] =
-    "search_button_for_search_term_replacement";
+const char kDisplaySearchButtonFlagName[] = "display_search_button";
 const char kEnableOriginChipFlagName[] = "origin_chip";
 
 // Constants for the field trial name and group prefix.
@@ -558,10 +557,8 @@ bool ShouldShowInstantNTP() {
     return false;
 
   FieldTrialFlags flags;
-  if (GetFieldTrialInfo(&flags, NULL)) {
-    return GetBoolValueForFlagWithDefault(kShowNtpFlagName, true, flags);
-  }
-  return true;
+  return !GetFieldTrialInfo(&flags, NULL) ||
+      GetBoolValueForFlagWithDefault(kShowNtpFlagName, true, flags);
 }
 
 bool ShouldShowRecentTabsOnNTP() {
@@ -576,10 +573,15 @@ bool ShouldSuppressInstantExtendedOnSRP() {
       kSuppressInstantExtendedOnSRPFlagName, false, flags);
 }
 
-bool ShouldDisplaySearchButtonForSearchTermReplacement() {
+DisplaySearchButtonConditions GetDisplaySearchButtonConditions() {
   FieldTrialFlags flags;
-  return GetFieldTrialInfo(&flags, NULL) && GetBoolValueForFlagWithDefault(
-      kEnableSearchButtonForSearchTermReplacementFlagName, false, flags);
+  if (!GetFieldTrialInfo(&flags, NULL))
+    return DISPLAY_SEARCH_BUTTON_NEVER;
+  uint64 value =
+      GetUInt64ValueForFlagWithDefault(kDisplaySearchButtonFlagName, 0, flags);
+  return (value < DISPLAY_SEARCH_BUTTON_NUM_VALUES) ?
+      static_cast<DisplaySearchButtonConditions>(value) :
+      DISPLAY_SEARCH_BUTTON_NEVER;
 }
 
 bool ShouldDisplayOriginChip() {
