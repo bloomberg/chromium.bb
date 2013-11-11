@@ -1031,29 +1031,6 @@
         }],
       ],
     },
-    {
-      'target_name': 'sanitizer_options',
-      'type': 'static_library',
-       'variables': {
-         # Every target is going to depend on sanitizer_options, so allow
-         # this one to depend on itself.
-         'prune_self_dependency': 1,
-       },
-      'sources': [
-        'debug/sanitizer_options.cc',
-      ],
-      'include_dirs': [
-        '..',
-      ],
-      'cflags!': [
-        '-fsanitize=address',
-      ],
-      'direct_dependent_settings': {
-        'ldflags': [
-          '-Wl,-u_sanitizer_options_link_helper',
-        ],
-      },
-    },
   ],
   'conditions': [
     ['OS!="ios"', {

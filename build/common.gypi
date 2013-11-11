@@ -3326,11 +3326,6 @@
                 ],
               }],
             ],
-            'dependencies': [
-              # This is only needed for executable targets, but checking _type
-              # in a target_condition here makes gyp throw an exception.
-              '<(DEPTH)/base/base.gyp:sanitizer_options',
-            ],
           }],
           ['asan==1', {
             'target_conditions': [
