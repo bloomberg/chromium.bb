@@ -69,6 +69,9 @@ public:
     virtual void refExecutionContext() = 0;
     virtual void derefExecutionContext() = 0;
 
+    virtual void tasksWereSuspended() { }
+    virtual void tasksWereResumed() { }
+
     void addConsoleMessage(MessageSource source, MessageLevel level, const String& message, const String& sourceURL, unsigned lineNumber) { addMessage(source, level, message, sourceURL, lineNumber, 0); }
     void addConsoleMessage(MessageSource source, MessageLevel level, const String& message, ScriptState* state = 0) { addMessage(source, level, message, String(), 0, state); }
     KURL contextURL() const { return virtualURL(); }

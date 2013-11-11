@@ -93,6 +93,7 @@ class Element;
 class Event;
 class EventListener;
 class ExceptionState;
+class MainThreadTaskRunner;
 class FloatQuad;
 class FloatRect;
 class FormController;
@@ -836,10 +837,14 @@ public:
     bool isDNSPrefetchEnabled() const { return m_isDNSPrefetchEnabled; }
     void parseDNSPrefetchControlHeader(const String&);
 
-    virtual void postTask(PassOwnPtr<ExecutionContextTask>); // Executes the task on context's thread asynchronously.
+    // FIXME(crbug.com/305497): This should be removed once DOMWindow is an ExecutionContext.
+    virtual void postTask(PassOwnPtr<ExecutionContextTask>) OVERRIDE; // Executes the task on context's thread asynchronously.
 
-    void suspendScriptedAnimationControllerCallbacks();
-    void resumeScriptedAnimationControllerCallbacks();
+    virtual void tasksWereSuspended() OVERRIDE;
+    virtual void tasksWereResumed() OVERRIDE;
+    virtual void suspendScheduledTasks() OVERRIDE;
+    virtual void resumeScheduledTasks() OVERRIDE;
+    virtual bool tasksNeedSuspension() OVERRIDE;
 
     void finishedParsing();
 
@@ -937,9 +942,6 @@ public:
     const TouchEventTargetSet* touchEventTargets() const { return m_touchEventTargets.get(); }
 
     bool isInDocumentWrite() { return m_writeRecursionDepth > 0; }
-
-    void suspendScheduledTasks();
-    void resumeScheduledTasks();
 
     IntSize initialViewportSize() const;
 
@@ -1073,10 +1075,6 @@ private:
     PassRefPtr<NodeList> handleZeroPadding(const HitTestRequest&, HitTestResult&) const;
 
     void loadEventDelayTimerFired(Timer<Document>*);
-
-    void pendingTasksTimerFired(Timer<Document>*);
-
-    static void didReceiveTask(void*);
 
     PageVisibilityState pageVisibilityState() const;
 
@@ -1295,15 +1293,10 @@ private:
     double m_lastHandledUserGestureTimestamp;
 
     RefPtr<ScriptedAnimationController> m_scriptedAnimationController;
-
-    Timer<Document> m_pendingTasksTimer;
-    Vector<OwnPtr<ExecutionContextTask> > m_pendingTasks;
-
+    OwnPtr<MainThreadTaskRunner> m_taskRunner;
     OwnPtr<TextAutosizer> m_textAutosizer;
 
     RefPtr<CustomElementRegistrationContext> m_registrationContext;
-
-    bool m_scheduledTasksAreSuspended;
 
     RefPtr<NamedFlowCollection> m_namedFlows;
 
