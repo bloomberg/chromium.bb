@@ -169,4 +169,15 @@ void LabelButtonBorder::SetPainter(bool focused,
   painters_[focused ? 1 : 0][state].reset(painter);
 }
 
+gfx::Size LabelButtonBorder::GetMinimumSize() const {
+  gfx::Size minimum_size;
+  for (int i = 0; i < 2; ++i) {
+    for (int j = 0; j < Button::STATE_COUNT; ++j) {
+      if (painters_[i][j])
+        minimum_size.SetToMax(painters_[i][j]->GetMinimumSize());
+    }
+  }
+  return minimum_size;
+}
+
 }  // namespace views
