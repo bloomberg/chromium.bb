@@ -157,28 +157,34 @@ build/tests/js/third_party/ccv: $(CCV_RESOURCES)
 	mkdir -p build/tests/js
 	cp --parents $(CCV_RESOURCES) build/tests/js
 
-# Builds the camera.crx package.
-build/camera.crx: $(SRC_RESOURCES) $(SRC_MANIFEST) \
+# Builds the release version.
+build/camera: $(SRC_RESOURCES) $(SRC_MANIFEST) \
 	  build/camera/js/third_party/glfx \
 	  build/camera/js/third_party/ccv
 	mkdir -p build/camera
 	cd $(SRC_PATH); cp --parents $(patsubst $(SRC_PATH)%, %, \
 	  $(SRC_RESOURCES)) ../build/camera
 	cp $(SRC_MANIFEST) build/camera/manifest.json
+
+# Builds the camera.crx package.
+build/camera.crx: build/camera
 	$(CHROME) --pack-extension=build/camera \
 	  --pack-extension-key=dev-keys/camera.pem
 
 # Alias for build/camera.crx.
 camera: build/camera.crx
 
-# Builds the tests.crx package.
-build/tests.crx: $(SRC_RESOURCES) $(SRC_TESTS_MANIFEST) \
+# Builds the tests version.
+build/tests: $(SRC_RESOURCES) $(SRC_TESTS_MANIFEST) \
 	  build/tests/js/third_party/glfx \
 	  build/tests/js/third_party/ccv
 	mkdir -p build/tests
 	cd $(SRC_PATH); cp --parents $(patsubst $(SRC_PATH)%, %, \
 	  $(SRC_RESOURCES)) ../build/tests
 	cp $(SRC_TESTS_MANIFEST) build/tests/manifest.json
+
+# Builds the tests.crx package.
+tests.crx: build/tests
 	$(CHROME) --pack-extension=build/tests \
 	  --pack-extension-key=dev-keys/camera.pem
 
