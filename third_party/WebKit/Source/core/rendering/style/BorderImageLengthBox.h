@@ -32,7 +32,6 @@
 #define BorderImageLengthBox_h
 
 #include "core/rendering/style/BorderImageLength.h"
-#include "platform/LengthBox.h"
 
 namespace WebCore {
 
@@ -62,12 +61,12 @@ public:
     {
     }
 
-    // FIXME: Remove when the conversion to BorderImageLengthBox is complete.
-    explicit BorderImageLengthBox(LengthBox lengthBox)
-        : m_left(lengthBox.m_left)
-        , m_right(lengthBox.m_right)
-        , m_top(lengthBox.m_top)
-        , m_bottom(lengthBox.m_bottom)
+    BorderImageLengthBox(const BorderImageLength& top, const BorderImageLength& right,
+        const BorderImageLength& bottom, const BorderImageLength& left)
+        : m_left(left)
+        , m_right(right)
+        , m_top(top)
+        , m_bottom(bottom)
     {
     }
 
@@ -95,13 +94,6 @@ public:
     bool nonZero() const
     {
         return !(m_left.isZero() && m_right.isZero() && m_top.isZero() && m_bottom.isZero());
-    }
-
-    // FIXME: Remove when the conversion to BorderImageLengthBox is complete.
-    LengthBox deprecatedLengthBox() const
-    {
-        return LengthBox(m_top.deprecatedUnifiedLength(), m_right.deprecatedUnifiedLength(),
-            m_bottom.deprecatedUnifiedLength(), m_left.deprecatedUnifiedLength());
     }
 
 private:

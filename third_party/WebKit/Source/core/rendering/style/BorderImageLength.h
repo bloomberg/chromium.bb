@@ -63,9 +63,6 @@ public:
 
     double number() const { ASSERT(isNumber()); return m_length.value(); }
 
-    // FIXME: Remove when the conversion to LengthOrMultipleOfBorderWidthBox is complete.
-    Length deprecatedUnifiedLength() const { return m_length; }
-
     bool operator==(const BorderImageLength& other) const
     {
         return m_length == other.m_length;

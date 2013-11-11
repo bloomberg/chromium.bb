@@ -71,10 +71,34 @@ static inline Length blendFunc(const AnimationBase*, const Length& from, const L
     return to.blend(from, progress, ValueRangeAll);
 }
 
+static inline BorderImageLength blendFunc(const AnimationBase* anim, const BorderImageLength& from, const BorderImageLength& to, double progress)
+{
+    if (from.isNumber() && to.isNumber())
+        return BorderImageLength(blendFunc(anim, from.number(), to.number(), progress));
+
+    if (from.isLength() && to.isLength())
+        return BorderImageLength(blendFunc(anim, from.length(), to.length(), progress));
+
+    // FIXME: Converting numbers to lengths using the computed border
+    // width would make it possible to interpolate between numbers and
+    // lengths.
+    // https://code.google.com/p/chromium/issues/detail?id=316164
+    return to;
+}
+
+static inline BorderImageLengthBox blendFunc(const AnimationBase* anim, const BorderImageLengthBox& from,
+    const BorderImageLengthBox& to, double progress)
+{
+    return BorderImageLengthBox(blendFunc(anim, from.top(), to.top(), progress),
+        blendFunc(anim, from.right(), to.right(), progress),
+        blendFunc(anim, from.bottom(), to.bottom(), progress),
+        blendFunc(anim, from.left(), to.left(), progress));
+}
+
 static inline LengthSize blendFunc(const AnimationBase* anim, const LengthSize& from, const LengthSize& to, double progress)
 {
     return LengthSize(blendFunc(anim, from.width(), to.width(), progress),
-                      blendFunc(anim, from.height(), to.height(), progress));
+        blendFunc(anim, from.height(), to.height(), progress));
 }
 
 static inline LengthPoint blendFunc(const AnimationBase* anim, const LengthPoint& from, const LengthPoint& to, double progress)
@@ -959,8 +983,8 @@ void CSSPropertyAnimation::ensurePropertyMap()
 
     gPropertyWrappers->append(new StyleImagePropertyWrapper(CSSPropertyBorderImageSource, &RenderStyle::borderImageSource, &RenderStyle::setBorderImageSource));
     gPropertyWrappers->append(new PropertyWrapper<LengthBox>(CSSPropertyBorderImageSlice, &RenderStyle::borderImageSlices, &RenderStyle::setBorderImageSlices));
-    gPropertyWrappers->append(new PropertyWrapper<LengthBox>(CSSPropertyBorderImageWidth, &RenderStyle::borderImageWidth, &RenderStyle::setBorderImageWidth));
-    gPropertyWrappers->append(new PropertyWrapper<LengthBox>(CSSPropertyBorderImageOutset, &RenderStyle::borderImageOutset, &RenderStyle::setBorderImageOutset));
+    gPropertyWrappers->append(new PropertyWrapper<const BorderImageLengthBox&>(CSSPropertyBorderImageWidth, &RenderStyle::borderImageWidth, &RenderStyle::setBorderImageWidth));
+    gPropertyWrappers->append(new PropertyWrapper<const BorderImageLengthBox&>(CSSPropertyBorderImageOutset, &RenderStyle::borderImageOutset, &RenderStyle::setBorderImageOutset));
 
     gPropertyWrappers->append(new StyleImagePropertyWrapper(CSSPropertyWebkitMaskBoxImageSource, &RenderStyle::maskBoxImageSource, &RenderStyle::setMaskBoxImageSource));
     gPropertyWrappers->append(new PropertyWrapper<const NinePieceImage&>(CSSPropertyWebkitMaskBoxImage, &RenderStyle::maskBoxImage, &RenderStyle::setMaskBoxImage));

@@ -57,8 +57,8 @@ NinePieceImageData::NinePieceImageData()
     , verticalRule(StretchImageRule)
     , image(0)
     , imageSlices(Length(100, Percent), Length(100, Percent), Length(100, Percent), Length(100, Percent))
-    , borderSlices(Length(1, Relative), Length(1, Relative), Length(1, Relative), Length(1, Relative))
-    , outset(0)
+    , borderSlices(1.0, 1.0, 1.0, 1.0)
+    , outset(Length(0, Fixed), Length(0, Fixed), Length(0, Fixed), Length(0, Fixed))
 {
 }
 

@@ -73,6 +73,18 @@ Length animatableValueToLength(const AnimatableValue* value, const StyleResolver
     return cssPrimitiveValue->convertToLength<AnyConversion>(style, state.rootElementStyle(), style->effectiveZoom());
 }
 
+BorderImageLength animatableValueToBorderImageLength(const AnimatableValue* value, const StyleResolverState& state, NumberRange range = AllValues)
+{
+    const RenderStyle* style = state.style();
+    if (value->isLength())
+        return BorderImageLength(toAnimatableLength(value)->toLength(style, state.rootElementStyle(), style->effectiveZoom(), range));
+    if (value->isDouble())
+        return BorderImageLength(toAnimatableDouble(value)->toDouble());
+    RefPtr<CSSValue> cssValue = toAnimatableUnknown(value)->toCSSValue();
+    CSSPrimitiveValue* cssPrimitiveValue = toCSSPrimitiveValue(cssValue.get());
+    return BorderImageLength(cssPrimitiveValue->convertToLength<AnyConversion>(style, state.rootElementStyle(), style->effectiveZoom()));
+}
+
 template<typename T> T animatableValueRoundClampTo(const AnimatableValue* value, T min = defaultMinimumForClamp<T>(), T max = defaultMaximumForClamp<T>())
 {
     COMPILE_ASSERT(WTF::IsInteger<T>::value, ShouldUseIntegralTypeTWhenRoundingValues);
@@ -87,6 +99,16 @@ LengthBox animatableValueToLengthBox(const AnimatableValue* value, const StyleRe
         animatableValueToLength(animatableLengthBox->right(), state, range),
         animatableValueToLength(animatableLengthBox->bottom(), state, range),
         animatableValueToLength(animatableLengthBox->left(), state, range));
+}
+
+BorderImageLengthBox animatableValueToBorderImageLengthBox(const AnimatableValue* value, const StyleResolverState& state, NumberRange range = AllValues)
+{
+    const AnimatableLengthBox* animatableLengthBox = toAnimatableLengthBox(value);
+    return BorderImageLengthBox(
+        animatableValueToBorderImageLength(animatableLengthBox->top(), state, range),
+        animatableValueToBorderImageLength(animatableLengthBox->right(), state, range),
+        animatableValueToBorderImageLength(animatableLengthBox->bottom(), state, range),
+        animatableValueToBorderImageLength(animatableLengthBox->left(), state, range));
 }
 
 LengthPoint animatableValueToLengthPoint(const AnimatableValue* value, const StyleResolverState& state, NumberRange range = AllValues)
@@ -249,7 +271,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setBorderBottomWidth(animatableValueRoundClampTo<unsigned>(value));
         return;
     case CSSPropertyBorderImageOutset:
-        style->setBorderImageOutset(animatableValueToLengthBox(value, state, NonNegativeValues));
+        style->setBorderImageOutset(animatableValueToBorderImageLengthBox(value, state, NonNegativeValues));
         return;
     case CSSPropertyBorderImageSlice:
         style->setBorderImageSlices(animatableValueToLengthBox(value, state, NonNegativeValues));
@@ -258,7 +280,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setBorderImageSource(toAnimatableImage(value)->toStyleImage());
         return;
     case CSSPropertyBorderImageWidth:
-        style->setBorderImageWidth(animatableValueToLengthBox(value, state, NonNegativeValues));
+        style->setBorderImageWidth(animatableValueToBorderImageLengthBox(value, state, NonNegativeValues));
         return;
     case CSSPropertyBorderLeftColor:
         style->setBorderLeftColor(toAnimatableColor(value)->color());
@@ -483,7 +505,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setFilter(toAnimatableFilterOperations(value)->operations());
         return;
     case CSSPropertyWebkitMaskBoxImageOutset:
-        style->setMaskBoxImageOutset(animatableValueToLengthBox(value, state, NonNegativeValues));
+        style->setMaskBoxImageOutset(animatableValueToBorderImageLengthBox(value, state, NonNegativeValues));
         return;
     case CSSPropertyWebkitMaskBoxImageSlice:
         style->setMaskBoxImageSlices(animatableValueToLengthBox(toAnimatableLengthBoxAndBool(value)->box(), state, NonNegativeValues));
@@ -493,7 +515,7 @@ void AnimatedStyleBuilder::applyProperty(CSSPropertyID property, StyleResolverSt
         style->setMaskBoxImageSource(toAnimatableImage(value)->toStyleImage());
         return;
     case CSSPropertyWebkitMaskBoxImageWidth:
-        style->setMaskBoxImageWidth(animatableValueToLengthBox(value, state, NonNegativeValues));
+        style->setMaskBoxImageWidth(animatableValueToBorderImageLengthBox(value, state, NonNegativeValues));
         return;
     case CSSPropertyWebkitMaskImage:
         setOnFillLayers<CSSPropertyWebkitMaskImage>(style->accessMaskLayers(), value, state);
