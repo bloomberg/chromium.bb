@@ -163,6 +163,7 @@ void RemoveOperation::RemoveAfterCheckLocalState(
     scheduler_->RemoveResourceFromDirectory(
         *parent_resource_id,
         entry->resource_id(),
+        ClientContext(USER_INITIATED),
         base::Bind(&RemoveOperation::RemoveAfterUpdateRemoteState,
                    weak_ptr_factory_.GetWeakPtr(),
                    callback,
@@ -173,6 +174,7 @@ void RemoveOperation::RemoveAfterCheckLocalState(
     // Otherwise try sending the entry to trash.
     scheduler_->DeleteResource(
         entry->resource_id(),
+        ClientContext(USER_INITIATED),
         base::Bind(&RemoveOperation::RemoveAfterUpdateRemoteState,
                    weak_ptr_factory_.GetWeakPtr(),
                    callback,

@@ -111,6 +111,7 @@ class JobScheduler
 
   // Adds a DeleteResource operation to the queue.
   void DeleteResource(const std::string& resource_id,
+                      const ClientContext& context,
                       const google_apis::EntryActionCallback& callback);
 
   // Adds a CopyResource operation to the queue.
@@ -155,6 +156,7 @@ class JobScheduler
   void RemoveResourceFromDirectory(
       const std::string& parent_resource_id,
       const std::string& resource_id,
+      const ClientContext& context,
       const google_apis::EntryActionCallback& callback);
 
   // Adds a AddNewDirectory operation to the queue.

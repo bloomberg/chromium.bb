@@ -382,6 +382,7 @@ void MoveOperation::RemoveFromDirectory(
   scheduler_->RemoveResourceFromDirectory(
       directory_resource_id,
       resource_id,
+      ClientContext(USER_INITIATED),
       base::Bind(
           &MoveOperation::RemoveFromDirectoryAfterRemoveResourceFromDirectory,
           weak_ptr_factory_.GetWeakPtr(), callback));

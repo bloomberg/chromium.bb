@@ -384,6 +384,7 @@ TEST_F(JobSchedulerTest, DeleteResource) {
 
   scheduler_->DeleteResource(
       "file:2_file_resource_id",
+      ClientContext(USER_INITIATED),
       google_apis::test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
 
@@ -478,6 +479,7 @@ TEST_F(JobSchedulerTest, RemoveResourceFromDirectory) {
   scheduler_->RemoveResourceFromDirectory(
       "folder:1_folder_resource_id",
       "file:subdirectory_file_1_id",  // resource ID
+      ClientContext(USER_INITIATED),
       google_apis::test_util::CreateCopyResultCallback(&error));
   base::RunLoop().RunUntilIdle();
 

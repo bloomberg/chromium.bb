@@ -362,11 +362,13 @@ void JobScheduler::GetShareUrl(
 
 void JobScheduler::DeleteResource(
     const std::string& resource_id,
+    const ClientContext& context,
     const google_apis::EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!callback.is_null());
 
   JobEntry* new_job = CreateNewJob(TYPE_DELETE_RESOURCE);
+  new_job->context = context;
   new_job->task = base::Bind(
       &DriveServiceInterface::DeleteResource,
       base::Unretained(drive_service_),
@@ -519,10 +521,12 @@ void JobScheduler::AddResourceToDirectory(
 void JobScheduler::RemoveResourceFromDirectory(
     const std::string& parent_resource_id,
     const std::string& resource_id,
+    const ClientContext& context,
     const google_apis::EntryActionCallback& callback) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   JobEntry* new_job = CreateNewJob(TYPE_REMOVE_RESOURCE_FROM_DIRECTORY);
+  new_job->context = context;
   new_job->task = base::Bind(
       &DriveServiceInterface::RemoveResourceFromDirectory,
       base::Unretained(drive_service_),
