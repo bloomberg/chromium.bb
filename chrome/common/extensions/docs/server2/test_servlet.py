@@ -2,7 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from instance_servlet import InstanceServlet, OfflineRenderServletDelegate
+from instance_servlet import (
+    InstanceServlet, InstanceServletRenderServletDelegate)
 from link_error_detector import LinkErrorDetector, StringifyBrokenLinks
 from servlet import Request, Response, Servlet
 import svn_constants
@@ -51,7 +52,8 @@ class TestServlet(Servlet):
       return constructor(Request(path, '', self._request.headers)).Get()
 
     link_tester = BrokenLinkTester(
-        OfflineRenderServletDelegate(self._delegate).CreateServerInstance(),
+        InstanceServletRenderServletDelegate(
+            self._delegate).CreateServerInstance(),
         renderer)
     if self._request.path == 'broken_links':
       errors, content = link_tester.TestBrokenLinks()

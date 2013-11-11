@@ -71,7 +71,7 @@ class RenderServlet(Servlet):
           return Response.NotFound(response.content.ToString(),
                                    headers=response.headers)
         except FileNotFoundError: continue
-      logging.error('No 404.html found in %s' % path)
+      logging.warning('No 404.html found in %s' % path)
       return Response.NotFound('Not Found', headers=_MakeHeaders('text/plain'))
 
   def _GetSuccessResponse(self, path, server_instance):
