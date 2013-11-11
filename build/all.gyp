@@ -358,6 +358,7 @@
           'dependencies': [
             '../ui/aura/aura.gyp:aura_unittests',
             '../ui/compositor/compositor.gyp:compositor_unittests',
+            '../ui/keyboard/keyboard.gyp:keyboard_unittests',
           ],
         }],
         ['use_aura==1 or toolkit_views==1', {
