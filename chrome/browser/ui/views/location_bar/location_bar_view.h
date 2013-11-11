@@ -167,7 +167,7 @@ class LocationBarView : public LocationBar,
   // See comment in browser_window.h for more info.
   void ZoomChangedForActiveTab(bool can_show_bubble);
 
-  // The zoom icon view. It may not be visible.
+  // The zoom icon. It may not be visible.
   ZoomView* zoom_view() { return zoom_view_; }
 
   // The passwords icon. It may not be visible.
@@ -189,12 +189,11 @@ class LocationBarView : public LocationBar,
   // Toggles the star on or off.
   void SetStarToggled(bool on);
 
-  // Returns the star view. It may not be visible.
+  // The star. It may not be visible.
   StarView* star_view() { return star_view_; }
 
-  TranslateIconView* translate_icon_view() {
-    return translate_icon_view_;
-  }
+  // The translate icon. It may not be visible.
+  TranslateIconView* translate_icon_view() { return translate_icon_view_; }
 
   // Shows the bookmark prompt.
   void ShowBookmarkPrompt();
@@ -444,7 +443,7 @@ class LocationBarView : public LocationBar,
   // Our delegate.
   Delegate* delegate_;
 
-  // An object used to paint the normal-mode background.
+  // Objects used to paint the normal-mode background.
   scoped_ptr<views::Painter> background_border_painter_;
   scoped_ptr<views::Painter> background_filling_painter_;
 
@@ -506,11 +505,11 @@ class LocationBarView : public LocationBar,
   // The script bubble.
   ScriptBubbleIconView* script_bubble_icon_view_;
 
-  // The star.
-  StarView* star_view_;
-
   // The icon for Translate.
   TranslateIconView* translate_icon_view_;
+
+  // The star.
+  StarView* star_view_;
 
   // Whether we're in popup mode. This value also controls whether the location
   // bar is read-only.

@@ -288,16 +288,13 @@ void ToolbarView::RemoveMenuListener(views::MenuListener* listener) {
 
 views::View* ToolbarView::GetBookmarkBubbleAnchor() {
   views::View* star_view = location_bar()->star_view();
-  if (star_view && star_view->visible())
-    return star_view;
-  return app_menu_;
+  return (star_view && star_view->visible()) ? star_view : app_menu_;
 }
 
 views::View* ToolbarView::GetTranslateBubbleAnchor() {
   views::View* translate_icon_view = location_bar()->translate_icon_view();
-  if (translate_icon_view)
-    return translate_icon_view;
-  return app_menu_;
+  return (translate_icon_view && translate_icon_view->visible()) ?
+      translate_icon_view : app_menu_;
 }
 
 views::MenuButton* ToolbarView::app_menu() const {

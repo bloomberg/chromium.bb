@@ -199,8 +199,8 @@ LocationBarView::LocationBarView(Browser* browser,
       open_pdf_in_reader_view_(NULL),
       manage_passwords_icon_view_(NULL),
       script_bubble_icon_view_(NULL),
-      star_view_(NULL),
       translate_icon_view_(NULL),
+      star_view_(NULL),
       is_popup_mode_(is_popup_mode),
       show_focus_rect_(false),
       template_url_service_(NULL),
@@ -369,16 +369,13 @@ void LocationBarView::Init() {
   script_bubble_icon_view_->SetVisible(false);
   AddChildView(script_bubble_icon_view_);
 
+  translate_icon_view_ = new TranslateIconView(command_updater());
+  translate_icon_view_->SetVisible(false);
+  AddChildView(translate_icon_view_);
+
   star_view_ = new StarView(command_updater());
   star_view_->SetVisible(false);
   AddChildView(star_view_);
-
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableTranslateNewUX)) {
-    translate_icon_view_ = new TranslateIconView(command_updater());
-    translate_icon_view_->SetVisible(false);
-    AddChildView(translate_icon_view_);
-  }
 
   registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_LOCATION_BAR_UPDATED,
@@ -726,7 +723,7 @@ void LocationBarView::Layout() {
         vertical_edge_thickness(), location_height,
         GetBuiltInHorizontalPaddingForChildViews(), star_view_);
   }
-  if (translate_icon_view_ && translate_icon_view_->visible()) {
+  if (translate_icon_view_->visible()) {
     trailing_decorations.AddDecoration(
         vertical_edge_thickness(), location_height,
         GetBuiltInHorizontalPaddingForChildViews(),
@@ -1483,18 +1480,12 @@ void LocationBarView::RefreshManagePasswordsIconView() {
 }
 
 void LocationBarView::RefreshTranslateIcon() {
-  if (!translate_icon_view_)
-    return;
-
   WebContents* web_contents = GetWebContents();
-  if (!web_contents)
+  if (!web_contents || !CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableTranslateNewUX))
     return;
-
-  TranslateTabHelper* translate_tab_helper =
-      TranslateTabHelper::FromWebContents(web_contents);
-  bool enabled =
-      translate_tab_helper->language_state().translate_enabled();
-
+  bool enabled = TranslateTabHelper::FromWebContents(
+      web_contents)->language_state().translate_enabled();
   command_updater()->UpdateCommandEnabled(IDC_TRANSLATE_PAGE, enabled);
   translate_icon_view_->SetVisible(enabled);
 }
