@@ -60,5 +60,26 @@
       "dir": "docs/static"
     },
     "serveFrom": "static"
+  },
+  "devtools-docs": {
+    "github": {
+      "owner": "GoogleChrome",
+      "repo": "devtools-docs-migration"
+    },
+    "serveFrom": "devtools"
+  },
+  "multidevice-docs": {
+    "github": {
+      "owner": "GoogleChrome",
+      "repo": "multi-device"
+    },
+    "serveFrom": "multidevice"
+  },
+  "webstore-docs": {
+    "github": {
+      "owner": "GoogleChrome",
+      "repo": "webstore-docs"
+    },
+    "serveFrom": "webstore"
   }
 }
