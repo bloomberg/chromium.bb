@@ -36,11 +36,11 @@ public:
     explicit RenderLayerModelObject(ContainerNode*);
     virtual ~RenderLayerModelObject();
 
-    // Called by RenderObject::willBeDestroyed() and is the only way layers should ever be destroyed
+    // This is the only way layers should ever be destroyed.
     void destroyLayer();
 
     bool hasSelfPaintingLayer() const;
-    RenderLayer* layer() const { return m_layer; }
+    RenderLayer* layer() const { return m_layer.get(); }
     ScrollableArea* scrollableArea() const;
 
     virtual void styleWillChange(StyleDifference, const RenderStyle* newStyle) OVERRIDE;
@@ -68,7 +68,7 @@ protected:
 private:
     virtual bool isLayerModelObject() const OVERRIDE FINAL { return true; }
 
-    RenderLayer* m_layer;
+    OwnPtr<RenderLayer> m_layer;
 
     // Used to store state between styleWillChange and styleDidChange
     static bool s_wasFloating;

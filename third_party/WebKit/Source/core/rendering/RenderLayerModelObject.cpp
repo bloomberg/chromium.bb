@@ -40,7 +40,6 @@ bool RenderLayerModelObject::s_layerWasSelfPainting = false;
 
 RenderLayerModelObject::RenderLayerModelObject(ContainerNode* node)
     : RenderObject(node)
-    , m_layer(0)
 {
 }
 
@@ -55,14 +54,13 @@ void RenderLayerModelObject::destroyLayer()
 {
     ASSERT(!hasLayer()); // Callers should have already called setHasLayer(false)
     ASSERT(m_layer);
-    delete m_layer;
-    m_layer = 0;
+    m_layer = nullptr;
 }
 
 void RenderLayerModelObject::createLayer()
 {
     ASSERT(!m_layer);
-    m_layer = new RenderLayer(this);
+    m_layer = adoptPtr(new RenderLayer(this));
     setHasLayer(true);
     m_layer->insertOnlyThisLayer();
 }
@@ -89,8 +87,12 @@ void RenderLayerModelObject::willBeDestroyed()
         }
     }
 
-    // RenderObject::willBeDestroyed calls back to destroyLayer() for layer destruction
     RenderObject::willBeDestroyed();
+
+    if (hasLayer()) {
+        setHasLayer(false);
+        destroyLayer();
+    }
 }
 
 void RenderLayerModelObject::styleWillChange(StyleDifference diff, const RenderStyle* newStyle)
