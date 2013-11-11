@@ -54,12 +54,6 @@ public final class R {
         public static int AutofillPopupWindow;
     }
     public static final class color {
-        public static int autofill_dark_divider_color;
-        public static int autofill_divider_color;
         public static int color_picker_border_color;
-    }
-    public static final class dimen {
-        public static int autofill_text_height;
-        public static int autofill_text_divider_height;
     }
 }
