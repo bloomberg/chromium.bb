@@ -52,8 +52,6 @@ public:
     using RefCounted<NullExecutionContext>::ref;
     using RefCounted<NullExecutionContext>::deref;
 
-    virtual void refExecutionContext() OVERRIDE { ref(); }
-    virtual void derefExecutionContext() OVERRIDE { deref(); }
     virtual EventQueue* eventQueue() const OVERRIDE { return m_queue.get(); }
     virtual bool tasksNeedSuspension() { return m_tasksNeedSuspension; }
 
