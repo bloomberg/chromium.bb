@@ -57,16 +57,20 @@ class GerritHelperTest(cros_test_lib.GerritTestCase):
     """Verify that we detect gerrit truncating our query, and handle it."""
     self.createProject('test002')
     clone_path = self.cloneProject('test002')
-    # Using a shell loop is markedly faster than running a python loop.
-    cmd = ('for ((i=0; i<84; i=i+1)); do '
-           'echo "Another day, another dollar." > test-file-$i.txt; '
-           'git add test-file-$i.txt; '
-           'git commit -m "Test commit $i."; done')
-    cros_build_lib.RunCommandQuietly(cmd, shell=True, cwd=clone_path)
-    self.uploadChange(clone_path)
+    # Using a shell loop is markedly faster than running a python loop,
+    # but gerrit can throw timeout errors when pushing too many changes.
+    num_changes = 84
+    for shard in range(0, num_changes, 10):
+      cmd = ('for ((i=%i; i<%i; i=i+1)); do '
+             'echo "Another day, another dollar." > test-file-$i.txt; '
+             'git add test-file-$i.txt; '
+             'git commit -m "Test commit $i."; '
+             'done' % (shard, min(shard+10, num_changes)))
+      cros_build_lib.RunCommandQuietly(cmd, shell=True, cwd=clone_path)
+      self.uploadChange(clone_path)
     helper = self._GetHelper()
     changes = helper.Query(project='test002')
-    self.assertEqual(len(changes), 84)
+    self.assertEqual(len(changes), num_changes)
 
   def test003IsChangeCommitted(self):
     """Tests that we can parse a json to check if a change is committed."""
