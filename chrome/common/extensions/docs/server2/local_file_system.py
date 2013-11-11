@@ -82,6 +82,9 @@ class LocalFileSystem(FileSystem):
         result[path] = _ReadFile(full_path, binary)
     return Future(value=result)
 
+  def Refresh(self):
+    return Future(value=())
+
   def Stat(self, path):
     full_path = os.path.join(self._base_path,
                              _ConvertToFilepath(path).lstrip(os.sep))

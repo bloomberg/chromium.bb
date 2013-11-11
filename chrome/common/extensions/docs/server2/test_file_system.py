@@ -44,6 +44,9 @@ class TestFileSystem(FileSystem):
         return dict((path, test_fs._ResolvePath(path)) for path in paths)
     return Future(delegate=Delegate())
 
+  def Refresh(self):
+    return Future(value=())
+
   def _ResolvePath(self, path):
     def Resolve(parts):
       '''Resolves |parts| of a path info |self._obj|.

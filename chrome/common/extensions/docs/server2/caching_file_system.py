@@ -126,5 +126,4 @@ class CachingFileSystem(FileSystem):
     return self._file_system.GetIdentity()
 
   def __repr__(self):
-    return '<%s of %s>' % (type(self).__name__,
-                           type(self._file_system).__name__)
+    return '%s of <%s>' % (type(self).__name__, repr(self._file_system))

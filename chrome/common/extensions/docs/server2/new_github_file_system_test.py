@@ -34,8 +34,7 @@ class TestGithubFileSystem(unittest.TestCase):
   def setUp(self):
     self._gfs = GithubFileSystem.ForTest('repo', FakeURLFSFetcher.CreateLocal())
     # Start and finish the repository load.
-    self._cgfs = CachingFileSystem(
-        self._gfs, ObjectStoreCreator.ForTest())
+    self._cgfs = CachingFileSystem(self._gfs, ObjectStoreCreator.ForTest())
 
   def testReadDirectory(self):
     self._gfs.Refresh().Get()
@@ -108,7 +107,10 @@ class TestGithubFileSystem(unittest.TestCase):
         self._cgfs.Read(['README.md', 'requirements.txt']).Get())
 
   def testWithoutRefresh(self):
-    self.assertRaises(FileNotFoundError, self._gfs.ReadSingle('src/').Get)
+    # Without refreshing it will still read the content from blobstore, and it
+    # does this via the magic of the FakeURLFSFetcher.
+    self.assertEqual(['__init__.notpy', 'hello.notpy'],
+                     sorted(self._gfs.ReadSingle('src/').Get()))
 
   def testRefresh(self):
     def make_sha_json(hash_value):

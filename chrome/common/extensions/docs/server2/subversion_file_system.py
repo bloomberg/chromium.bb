@@ -169,6 +169,9 @@ class SubversionFileSystem(FileSystem):
                                              binary,
                                              args=args))
 
+  def Refresh(self):
+    return Future(value=())
+
   def Stat(self, path):
     directory, filename = posixpath.split(path)
     directory += '/'

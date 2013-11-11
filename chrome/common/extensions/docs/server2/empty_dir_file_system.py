@@ -17,6 +17,9 @@ class EmptyDirFileSystem(FileSystem):
       result[path] = []
     return Future(value=result)
 
+  def Refresh(self):
+    return Future(value=())
+
   def Stat(self, path):
     if not path.endswith('/'):
       raise FileNotFoundError('EmptyDirFileSystem cannot stat %s' % path)

@@ -49,6 +49,9 @@ class MockFileSystem(FileSystem):
       return result
     return Future(delegate=Gettable(resolve))
 
+  def Refresh(self):
+    return self._file_system.Refresh()
+
   def _GetMostRecentUpdate(self, path):
     for revision, update in reversed(list(enumerate(self._updates))):
       try:

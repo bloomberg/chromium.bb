@@ -9,4 +9,3 @@ class FailOnAccessFileSystem(FileSystem):
   # automatically fail with NotImplementedErrors.
   def GetIdentity(self):
     return '42'
-

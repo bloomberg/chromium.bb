@@ -18,6 +18,7 @@ from future import Future, Gettable
 from object_store_creator import ObjectStoreCreator
 import url_constants
 
+
 _GITHUB_REPOS_NAMESPACE = 'GithubRepos'
 
 
@@ -30,7 +31,6 @@ def _LoadCredentials(object_store_creator):
       category='password',
       start_empty=False)
   password_data = password_store.GetMulti(('username', 'password')).Get()
-
   return password_data.get('username'), password_data.get('password')
 
 
@@ -74,15 +74,35 @@ class GithubFileSystem(FileSystem):
     self._stat_cache = object_store_creator.Create(
         GithubFileSystem, category='stat-cache')
 
-    self._repo_zip = Future(value=None)
+    # A tuple of the full zip of the repository and a bool indicating whether
+    # we've tried to fetch it from datastore yet. Access via self._GetRepoZip().
+    self._repo_zip = None, False
+
+  def _GetRepoZip(self):
+    data, have_tried_blobstore = self._repo_zip
+    if data is not None:
+      return data
+    if have_tried_blobstore:
+      logging.warning('Repo zip queried but it\'s not in datastore. ' +
+                      'Have you run Refresh or a cronjob?')
+      return None
+    # Use |self._repo_url| as the datastore key.
+    data = self._blobstore.Get(self._repo_url, _GITHUB_REPOS_NAMESPACE)
+    if data is not None:
+      data = ZipFile(StringIO(data))
+    self._repo_zip = data, True
+    return data
+
+  def _SetRepoZip(self, blob):
+    self._blobstore.Set(self._repo_url, blob, _GITHUB_REPOS_NAMESPACE)
+    self._repo_zip = ZipFile(StringIO(blob)), True
 
   def _GetNamelist(self):
     '''Returns a list of all file names in a repository zip file.
     '''
-    zipfile = self._repo_zip.Get()
+    zipfile = self._GetRepoZip()
     if zipfile is None:
       return []
-
     return zipfile.namelist()
 
   def _GetVersion(self):
@@ -130,17 +150,18 @@ class GithubFileSystem(FileSystem):
           logging.error(
               '%s: Bad zip file returned from url %s' % (error, repo_zip_url))
         else:
-          self._blobstore.Set(repo_zip_url, blob, _GITHUB_REPOS_NAMESPACE)
-          self._repo_zip = Future(value=zipfile)
+          self._SetRepoZip(blob)
           self._stat_cache.Set(self._repo_key, version)
+      return ()
 
     # If the cached and live stat versions are different fetch the new repo.
     if version != self._stat_cache.Get('stat').Get():
+      logging.info('%s has changed. Fetching.' % self._repo_url)
       fetch = self._fetcher.FetchAsync(
           'zipball', username=self._username, password=self._password)
       return Future(delegate=Gettable(lambda: persist_fetch(fetch)))
 
-    return Future(value=None)
+    return Future(value=())
 
   def Read(self, paths, binary=False):
     '''Returns a directory mapping |paths| to the contents of the file at each
@@ -169,7 +190,7 @@ class GithubFileSystem(FileSystem):
         reads[path] = trimmed_paths
       else:
         try:
-          reads[path] = self._repo_zip.Get().read(full_path)
+          reads[path] = self._GetRepoZip().read(full_path)
         except KeyError as error:
           return Future(exc_info=(FileNotFoundError,
                                   FileNotFoundError(error),
@@ -210,6 +231,6 @@ class GithubFileSystem(FileSystem):
     return '%s' % StringIdentity(self.__class__.__name__ + self._repo_key)
 
   def __repr__(self):
-    return '<%s: key=%s, url=%s>' % (type(self).__name__,
-                                     self._repo_key,
-                                     self._repo_url)
+    return '%s(key=%s, url=%s)' % (type(self).__name__,
+                                   self._repo_key,
+                                   self._repo_url)

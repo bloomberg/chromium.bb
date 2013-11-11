@@ -9,6 +9,12 @@ from appengine_wrappers import files
 
 BLOBSTORE_GITHUB = 'BlobstoreGithub'
 
+# TODO(kalman): Re-write this class.
+#   - It uses BlobReader which is a synchronous method. We should be creating
+#     multiple async fetches, one for each partition, then exposing a Future
+#     interface which stitches them together.
+#   - It's very hard to reuse.
+
 class AppEngineBlobstore(object):
   """A wrapper around the blobstore API, which stores the blob keys in
   datastore.

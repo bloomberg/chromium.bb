@@ -60,6 +60,9 @@ class PatchedFileSystem(FileSystem):
         self._TryReadDirectory(dir_paths, binary),
         self))
 
+  def Refresh(self):
+    return self._base_file_system.Refresh()
+
   ''' Given the list of patched files, it's not possible to determine whether
   a directory to read exists in self._base_file_system. So try reading each one
   and handle FileNotFoundError.

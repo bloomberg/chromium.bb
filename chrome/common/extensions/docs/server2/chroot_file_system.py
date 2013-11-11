@@ -39,9 +39,15 @@ class ChrootFileSystem(FileSystem):
                   for path, content in future_result.Get().iteritems())
     return Future(delegate=Gettable(resolve))
 
+  def Refresh(self):
+    return self._file_system.Refresh()
+
   def Stat(self, path):
     return self._file_system.Stat(posixpath.join(self._root, path))
 
   def GetIdentity(self):
     return StringIdentity(
         '%s/%s' % (self._file_system.GetIdentity(), self._root))
+
+  def __repr__(self):
+    return 'ChrootFileSystem of <%s>' % repr(self._file_system)

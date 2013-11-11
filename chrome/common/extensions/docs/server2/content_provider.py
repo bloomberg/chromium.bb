@@ -89,3 +89,6 @@ class ContentProvider(object):
     # is in effect.
     # TODO(kalman): Walk over the whole filesystem and compile the content.
     return self.file_system.Refresh()
+
+  def __repr__(self):
+    return 'ContentProvider of <%s>' % repr(self.file_system)

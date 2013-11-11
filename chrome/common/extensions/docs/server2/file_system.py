@@ -83,7 +83,7 @@ class FileSystem(object):
     '''Asynchronously refreshes the content of the FileSystem, returning a
     future to its completion.
     '''
-    return Future(value=())
+    raise NotImplementedError(self.__class__)
 
   # TODO(cduvall): Allow Stat to take a list of paths like Read.
   def Stat(self, path):
