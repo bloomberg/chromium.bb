@@ -539,42 +539,7 @@ class PatchChangesStage(bs.BuilderStage):
 
     cros_build_lib.Die("Duplicate patches were encountered: %s", duplicates)
 
-  @staticmethod
-  def _FixIncompleteRemotePatches(series, changes):
-    """Identify missing remote patches from older cbuildbot instances.
-
-    Cbuildbot, prior to I8ab6790de801900c115a437b5f4ebb9a24db542f, uploaded
-    a single patch per project- despite if there may have been a hundred
-    patches actually pulled in by that patch.  This method detects when
-    we're dealing w/ the old incomplete version, and fills in those gaps."""
-    broken = [x for x in changes
-              if isinstance(x, cros_patch.UploadedLocalPatch)]
-    if not broken:
-      return changes
-
-    changes = list(changes)
-    known = cros_patch.PatchCache(changes)
-
-    for change in broken:
-      git_repo = series.GetGitRepoForChange(change)
-      tracking = series.GetTrackingBranchForChange(change)
-      branch = getattr(change, 'original_branch', tracking)
-
-      for target in cros_patch.GeneratePatchesFromRepo(
-          git_repo, change.project, tracking, branch, change.internal,
-          allow_empty=True, starting_ref='%s^' % change.sha1):
-
-        if target in known:
-          continue
-
-        known.Inject(target)
-        changes.append(target)
-
-    return changes
-
   def _PatchSeriesFilter(self, series, changes):
-    if self._options.remote_version == 3:
-      changes = self._FixIncompleteRemotePatches(series, changes)
     return self._CheckForDuplicatePatches(series, changes)
 
   def _ApplyPatchSeries(self, series, patch_pool, **kwargs):
