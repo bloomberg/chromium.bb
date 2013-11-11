@@ -65,16 +65,22 @@ def IterateXmlElements(node):
       yield child_node_element
 
 
-def WarnIfDeprecatedAttribute(name, value, filename):
-  """print a warning message if the given attribute is deprecated."""
+def AssertNotDeprecatedAttribute(name, value, filename):
+  """Raises an exception if the given attribute is deprecated."""
+  msg = None
   if name in ATTRIBUTES_TO_MAP_REVERSED:
-    print >> sys.stderr, ('warning: ' + filename + ' should use ' +
-                          ATTRIBUTES_TO_MAP_REVERSED[name] +
-                          ' instead of ' + name)
+    msg = '{0} should use {1} instead of {2}'.format(filename,
+        ATTRIBUTES_TO_MAP_REVERSED[name], name)
   elif name in GRAVITY_ATTRIBUTES and ('left' in value or 'right' in value):
-    print >> sys.stderr, ('warning: ' + filename +
-                          ' should use start/end instead of left/right for ' +
-                          name)
+    msg = '{0} should use start/end instead of left/right for {1}'.format(
+        filename, name)
+
+  if msg:
+    msg += ('\nFor background, see: http://android-developers.blogspot.com/'
+            '2013/03/native-rtl-support-in-android-42.html\n'
+            'If you have a legitimate need for this attribute, discuss with '
+            'kkimlabs@chromium.org or newt@chromium.org')
+    raise Exception(msg)
 
 
 def WriteDomToFile(dom, filename):
@@ -92,7 +98,7 @@ def HasStyleResource(dom):
 
 
 def ErrorIfStyleResourceExistsInDir(input_dir):
-  """If a style resource is in input_dir, exist with an error message."""
+  """If a style resource is in input_dir, raises an exception."""
   for input_filename in build_utils.FindInDirectory(input_dir, '*.xml'):
     dom = minidom.parse(input_filename)
     if HasStyleResource(dom):
@@ -102,13 +108,15 @@ def ErrorIfStyleResourceExistsInDir(input_dir):
                       'http://crbug.com/243952 for the details.')
 
 
-def GenerateV14LayoutResourceDom(dom, filename_for_warning):
+def GenerateV14LayoutResourceDom(dom, filename, assert_not_deprecated=True):
   """Convert layout resource to API 14 compatible layout resource.
 
   Args:
-    dom: parsed minidom object to be modified.
-    filename_for_warning: file name to display in case we print warnings.
-                          If None, do not print warning.
+    dom: Parsed minidom object to be modified.
+    filename: Filename that the DOM was parsed from.
+    assert_not_deprecated: Whether deprecated attributes (e.g. paddingLeft) will
+                           cause an exception to be thrown.
+
   Returns:
     True if dom is modified, False otherwise.
   """
@@ -126,19 +134,21 @@ def GenerateV14LayoutResourceDom(dom, filename_for_warning):
         element.setAttribute(ATTRIBUTES_TO_MAP[name], value)
         del element.attributes[name]
         is_modified = True
-      elif filename_for_warning:
-        WarnIfDeprecatedAttribute(name, value, filename_for_warning)
+      elif assert_not_deprecated:
+        AssertNotDeprecatedAttribute(name, value, filename)
 
   return is_modified
 
 
-def GenerateV14StyleResourceDom(dom, filename_for_warning):
+def GenerateV14StyleResourceDom(dom, filename, assert_not_deprecated=True):
   """Convert style resource to API 14 compatible style resource.
 
   Args:
-    dom: parsed minidom object to be modified.
-    filename_for_warning: file name to display in case we print warnings.
-                          If None, do not print warning.
+    dom: Parsed minidom object to be modified.
+    filename: Filename that the DOM was parsed from.
+    assert_not_deprecated: Whether deprecated attributes (e.g. paddingLeft) will
+                           cause an exception to be thrown.
+
   Returns:
     True if dom is modified, False otherwise.
   """
@@ -151,8 +161,8 @@ def GenerateV14StyleResourceDom(dom, filename_for_warning):
       if name in ATTRIBUTES_TO_MAP:
         item_element.attributes['name'].value = ATTRIBUTES_TO_MAP[name]
         is_modified = True
-      elif filename_for_warning:
-        WarnIfDeprecatedAttribute(name, value, filename_for_warning)
+      elif assert_not_deprecated:
+        AssertNotDeprecatedAttribute(name, value, filename)
 
   return is_modified
 
@@ -223,16 +233,16 @@ def VerifyV14ResourcesInDir(input_dir, resource_type):
                         'http://crbug.com/243952 for the details.')
     dom = minidom.parse(input_filename)
     if resource_type in ('layout', 'xml'):
-      if GenerateV14LayoutResourceDom(dom, None):
+      if GenerateV14LayoutResourceDom(dom, input_filename, False):
         raise Exception(exception_message)
     elif resource_type == 'values':
-      if GenerateV14StyleResourceDom(dom, None):
+      if GenerateV14StyleResourceDom(dom, input_filename, False):
         raise Exception(exception_message)
 
 
-def WarnIfDeprecatedAttributeInDir(input_dir, resource_type):
-  """Print warning if resources in input_dir have deprecated attributes, e.g.,
-  paddingLeft, PaddingRight"""
+def AssertNoDeprecatedAttributesInDir(input_dir, resource_type):
+  """Raises an exception if resources in input_dir have deprecated attributes,
+  e.g., paddingLeft, paddingRight"""
   for input_filename in build_utils.FindInDirectory(input_dir, '*.xml'):
     dom = minidom.parse(input_filename)
     if resource_type in ('layout', 'xml'):
@@ -303,7 +313,7 @@ def main(argv):
       if not api_level_qualifier or int(api_level_qualifier[1:]) < 17:
         VerifyV14ResourcesInDir(input_dir, resource_type)
       else:
-        WarnIfDeprecatedAttributeInDir(input_dir, resource_type)
+        AssertNoDeprecatedAttributesInDir(input_dir, resource_type)
     else:
       # We also need to copy the original v17 resource to *-v17 directory
       # because the generated v14 resource will hide the original resource.
