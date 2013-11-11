@@ -11,6 +11,7 @@ Of the public module names, the following one is key:
 
 import logging
 import os
+import re
 import signal
 import subprocess
 import sys
@@ -28,6 +29,7 @@ LOG_PATH = os.path.join(
 
 # Chrome options to make it work with Web Page Replay.
 def GetChromeFlags(replay_host, http_port, https_port):
+  assert replay_host and http_port and https_port, 'All arguments required'
   return [
       '--host-resolver-rules=MAP * %s,EXCLUDE localhost' % replay_host,
       '--testing-fixed-http-port=%s' % http_port,
@@ -90,6 +92,11 @@ class ReplayServer(object):
 
     Args:
       archive_path: a path to a specific WPR archive (required).
+      replay_host: the hostname to serve traffic.
+      http_port: an integer port on which to serve HTTP traffic. May be zero
+          to let the OS choose an available port.
+      https_port: an integer port on which to serve HTTPS traffic. May be zero
+          to let the OS choose an available port.
       replay_options: an iterable of options strings to forward to replay.py.
       replay_dir: directory that has replay.py and related modules.
       log_path: a path to a log file.
@@ -98,8 +105,8 @@ class ReplayServer(object):
     self.replay_options = list(replay_options or ())
     self.replay_dir = os.environ.get('WPR_REPLAY_DIR', replay_dir or REPLAY_DIR)
     self.log_path = log_path or LOG_PATH
-    self._http_port = http_port
-    self._https_port = https_port
+    self.http_port = http_port
+    self.https_port = https_port
     self._replay_host = replay_host
 
     if 'WPR_RECORD' in os.environ and '--record' not in self.replay_options:
@@ -122,8 +129,8 @@ class ReplayServer(object):
     """Set WPR command-line options. Can be overridden if needed."""
     self.replay_options = [
         '--host', str(self._replay_host),
-        '--port', str(self._http_port),
-        '--ssl_port', str(self._https_port),
+        '--port', str(self.http_port),
+        '--ssl_port', str(self.https_port),
         '--use_closest_match',
         '--no-dns_forwarding',
         '--log_level', 'warning'
@@ -139,21 +146,43 @@ class ReplayServer(object):
       os.makedirs(log_dir)
     return open(self.log_path, 'w')
 
-  def IsStarted(self):
+  def WaitForStart(self, timeout):
     """Checks to see if the server is up and running."""
-    for _ in range(30):
+    port_re = re.compile(
+        '.*(?P<protocol>HTTPS?) server started on (?P<host>.*):(?P<port>\d+)')
+
+    start_time = time.time()
+    elapsed_time = 0
+    while elapsed_time < timeout:
       if self.replay_process.poll() is not None:
-        # The process has exited.
-        break
-      try:
-        up_url = '%s://%s:%s/web-page-replay-generate-200'
-        http_up_url = up_url % ('http', self._replay_host, self._http_port)
-        https_up_url = up_url % ('https', self._replay_host, self._https_port)
-        if (200 == urllib.urlopen(http_up_url, None, {}).getcode() and
-            200 == urllib.urlopen(https_up_url, None, {}).getcode()):
-          return True
-      except IOError:
-        time.sleep(1)
+        break  # The process has exited.
+
+      # Read the ports from the WPR log.
+      if not self.http_port or not self.https_port:
+        for line in open(self.log_path).readlines():
+          m = port_re.match(line.strip())
+          if m:
+            if not self.http_port and m.group('protocol') == 'HTTP':
+              self.http_port = int(m.group('port'))
+            elif not self.https_port and m.group('protocol') == 'HTTPS':
+              self.https_port = int(m.group('port'))
+
+      # Try to connect to the WPR ports.
+      if self.http_port and self.https_port:
+        try:
+          up_url = '%s://%s:%s/web-page-replay-generate-200'
+          http_up_url = up_url % ('http', self._replay_host, self.http_port)
+          https_up_url = up_url % ('https', self._replay_host, self.https_port)
+          if (200 == urllib.urlopen(http_up_url, None, {}).getcode() and
+              200 == urllib.urlopen(https_up_url, None, {}).getcode()):
+            return True
+        except IOError:
+          pass
+
+      poll_interval = min(max(elapsed_time / 10., .1), 5)
+      time.sleep(poll_interval)
+      elapsed_time = time.time() - start_time
+
     return False
 
   def StartServer(self):
@@ -171,7 +200,7 @@ class ReplayServer(object):
     if sys.platform.startswith('linux') or sys.platform == 'darwin':
       kwargs['preexec_fn'] = ResetInterruptHandler
     self.replay_process = subprocess.Popen(cmd_line, **kwargs)
-    if not self.IsStarted():
+    if not self.WaitForStart(30):
       log = open(self.log_path).read()
       raise ReplayNotStartedError(
           'Web Page Replay failed to start. Log output:\n%s' % log)
@@ -182,7 +211,7 @@ class ReplayServer(object):
       logging.debug('Trying to stop Web-Page-Replay gracefully')
       try:
         url = 'http://localhost:%s/web-page-replay-command-exit'
-        urllib.urlopen(url % self._http_port, None, {})
+        urllib.urlopen(url % self.http_port, None, {})
       except IOError:
         # IOError is possible because the server might exit without response.
         pass
