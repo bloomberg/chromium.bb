@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "mojo/public/bindings/sample/generated/sample_service.h"
+#include "mojom/sample_service.h"
 
 #include "mojo/public/bindings/lib/message_builder.h"
-#include "mojo/public/bindings/sample/generated/sample_service_internal.h"
+#include "mojom/sample_service_internal.h"
 
 namespace sample {
 namespace {

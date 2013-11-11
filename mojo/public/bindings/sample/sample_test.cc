@@ -6,7 +6,7 @@
 
 #include <string>
 
-#include "mojo/public/bindings/sample/generated/sample_service.h"
+#include "mojom/sample_service.h"
 
 namespace sample {
 

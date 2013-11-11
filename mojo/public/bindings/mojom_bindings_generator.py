@@ -27,6 +27,9 @@ def Main():
     parser.print_help()
     sys.exit(1)
 
+  if not os.path.exists(options.output_dir):
+    os.makedirs(options.output_dir)
+
   for filename in args:
     name = os.path.splitext(os.path.basename(filename))[0]
     # TODO(darin): There's clearly too many layers of translation here!  We can
