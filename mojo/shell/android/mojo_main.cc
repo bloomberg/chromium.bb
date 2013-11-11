@@ -66,7 +66,7 @@ void StartOnShellThread(ShellInit* init) {
 static void Init(JNIEnv* env, jclass clazz, jobject context) {
   base::android::ScopedJavaLocalRef<jobject> scoped_context(env, context);
 
-  base::android::InitApplicationContext(scoped_context);
+  base::android::InitApplicationContext(env, scoped_context);
 
   if (g_at_exit)
     return;

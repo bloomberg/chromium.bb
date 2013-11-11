@@ -40,7 +40,7 @@ bool RegisterJni(JNIEnv* env) {
 
 static void LoadNative(JNIEnv* env, jclass clazz, jobject context) {
   base::android::ScopedJavaLocalRef<jobject> context_activity(env, context);
-  base::android::InitApplicationContext(context_activity);
+  base::android::InitApplicationContext(env, context_activity);
 
   // The google_apis functions check the command-line arguments to make sure no
   // runtime API keys have been specified by the environment. Unfortunately, we

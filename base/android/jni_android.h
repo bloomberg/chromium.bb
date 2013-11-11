@@ -41,7 +41,8 @@ BASE_EXPORT bool IsVMInitialized();
 // Initializes the global application context object. The |context| can be any
 // valid reference to the application context. Internally holds a global ref to
 // the context. InitVM and InitApplicationContext maybe called in either order.
-BASE_EXPORT void InitApplicationContext(const JavaRef<jobject>& context);
+BASE_EXPORT void InitApplicationContext(JNIEnv* env,
+                                        const JavaRef<jobject>& context);
 
 // Gets a global ref to the application context set with
 // InitApplicationContext(). Ownership is retained by the function - the caller

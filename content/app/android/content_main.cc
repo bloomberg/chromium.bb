@@ -32,7 +32,7 @@ namespace content {
 
 static void InitApplicationContext(JNIEnv* env, jclass clazz, jobject context) {
   base::android::ScopedJavaLocalRef<jobject> scoped_context(env, context);
-  base::android::InitApplicationContext(scoped_context);
+  base::android::InitApplicationContext(env, scoped_context);
 }
 
 static jint Start(JNIEnv* env, jclass clazz) {

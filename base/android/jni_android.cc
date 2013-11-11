@@ -97,7 +97,11 @@ bool IsVMInitialized() {
   return g_jvm != NULL;
 }
 
-void InitApplicationContext(const JavaRef<jobject>& context) {
+void InitApplicationContext(JNIEnv* env, const JavaRef<jobject>& context) {
+  if (env->IsSameObject(g_application_context.Get().obj(), context.obj())) {
+    // It's safe to set the context more than once if it's the same context.
+    return;
+  }
   DCHECK(g_application_context.Get().is_null());
   g_application_context.Get().Reset(context);
 }
