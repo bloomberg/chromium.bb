@@ -61,6 +61,7 @@ class ChromeDriver(object):
   """Starts and controls a single Chrome instance on this machine."""
 
   def __init__(self, server_url, chrome_binary=None, android_package=None,
+               android_activity=None, android_process=None,
                chrome_switches=None, chrome_extensions=None,
                chrome_log_path=None, debugger_address=None,
                browser_log_level=None):
@@ -69,6 +70,10 @@ class ChromeDriver(object):
     options = {}
     if android_package:
       options['androidPackage'] = android_package
+      if android_activity:
+        options['androidActivity'] = android_activity
+      if android_process:
+        options['androidProcess'] = android_process
     elif chrome_binary:
       options['binary'] = chrome_binary
 

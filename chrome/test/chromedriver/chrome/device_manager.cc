@@ -58,7 +58,8 @@ Status Device::StartApp(const std::string& package,
     device_socket = "chromium_testshell_devtools_remote";
     command_line_file = "/data/local/tmp/chromium-testshell-command-line";
     exec_name = "chromium_testshell";
-  } else if (package.find("chrome") != std::string::npos) {
+  } else if (package.find("chrome") != std::string::npos &&
+             package.find("webview") == std::string::npos) {
     known_activity = "com.google.android.apps.chrome.Main";
     device_socket = "chrome_devtools_remote";
     command_line_file = "/data/local/chrome-command-line";

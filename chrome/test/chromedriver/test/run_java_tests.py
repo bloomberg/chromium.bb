@@ -24,6 +24,10 @@ import chrome_paths
 import test_environment
 import util
 
+if util.IsLinux():
+  sys.path.insert(0, os.path.join(chrome_paths.GetSrc(), 'build', 'android'))
+  from pylib import constants
+
 
 class TestResult(object):
   """A result for an attempted single test case."""
@@ -58,7 +62,7 @@ class TestResult(object):
 
 
 def _Run(java_tests_src_dir, test_filter,
-         chromedriver_path, chrome_path, log_path, android_package,
+         chromedriver_path, chrome_path, log_path, android_package_key,
          verbose, debug):
   """Run the WebDriver Java tests and return the test results.
 
@@ -69,7 +73,7 @@ def _Run(java_tests_src_dir, test_filter,
     chromedriver_path: path to ChromeDriver exe.
     chrome_path: path to Chrome exe.
     log_path: path to server log.
-    android_package: name of Chrome's Android package.
+    android_package_key: name of Chrome's Android package.
     verbose: whether the output should be verbose.
     debug: whether the tests should wait until attached by a debugger.
 
@@ -99,8 +103,14 @@ def _Run(java_tests_src_dir, test_filter,
     sys_props += ['webdriver.chrome.binary=' + os.path.abspath(chrome_path)]
   if log_path:
     sys_props += ['webdriver.chrome.logfile=' + log_path]
-  if android_package:
+  if android_package_key:
+    android_package = constants.PACKAGE_INFO[android_package_key].package
     sys_props += ['webdriver.chrome.android_package=' + android_package]
+    if android_package_key == 'chromedriver_webview_shell':
+      android_activity = constants.PACKAGE_INFO[android_package_key].activity
+      android_process = '%s:main' % android_package
+      sys_props += ['webdriver.chrome.android_activity=' + android_activity]
+      sys_props += ['webdriver.chrome.android_process=' + android_process]
   if test_filter:
     # Test jar actually takes a regex. Convert from glob.
     test_filter = test_filter.replace('*', '.*')
@@ -242,8 +252,7 @@ def main():
       '', '--chrome-version', default='HEAD',
       help='Version of chrome. Default is \'HEAD\'')
   parser.add_option(
-      '', '--android-package', type='string', default=None,
-      help='Name of Chrome\'s Android package')
+      '', '--android-package', help='Android package key')
   parser.add_option(
       '', '--filter', type='string', default=None,
       help='Filter for specifying what tests to run, "*" will run all. E.g., '
@@ -260,7 +269,9 @@ def main():
     parser.error('chromedriver is required or the given path is invalid.' +
                  'Please run "%s --help" for help' % __file__)
 
-  if options.android_package is not None:
+  if options.android_package:
+    if options.android_package not in constants.PACKAGE_INFO:
+      parser.error('Invalid --android-package')
     if options.chrome_version != 'HEAD':
       parser.error('Android does not support the --chrome-version argument.')
     environment = test_environment.AndroidTestEnvironment()
@@ -309,7 +320,7 @@ def main():
           chromedriver_path=options.chromedriver,
           chrome_path=options.chrome,
           log_path=options.log_path,
-          android_package=options.android_package,
+          android_package_key=options.android_package,
           verbose=options.verbose,
           debug=options.debug)
     return PrintTestResults(results)

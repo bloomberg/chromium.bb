@@ -83,6 +83,12 @@ PACKAGE_INFO = {
         '/data/local/tmp/content-browser-tests-command-line',
         None,
         None),
+    'chromedriver_webview_shell': PackageInfo(
+        'org.chromium.chromedriver_webview_shell',
+        'org.chromium.chromedriver_webview_shell.Main',
+        None,
+        None,
+        None),
 }
 
 

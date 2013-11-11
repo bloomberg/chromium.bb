@@ -3101,6 +3101,16 @@
           'includes': [ '../build/java_apk.gypi' ],
         },
         {
+          'target_name': 'chromedriver_webview_shell_apk',
+          'type': 'none',
+          'variables': {
+            'apk_name': 'ChromeDriverWebViewShell',
+            'java_in_dir': 'test/chromedriver/test/webview_shell/java',
+            'resource_dir': 'test/chromedriver/test/webview_shell/java/res',
+          },
+          'includes': [ '../build/java_apk.gypi' ],
+        },
+        {
           'target_name': 'chromium_testshell_uiautomator_tests_java',
           'type': 'none',
           'variables': {

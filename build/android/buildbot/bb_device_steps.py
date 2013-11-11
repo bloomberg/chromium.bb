@@ -154,9 +154,9 @@ def RunChromeDriverTests(options):
   bb_annotations.PrintNamedStep('chromedriver_annotation')
   RunCmd(['chrome/test/chromedriver/run_buildbot_steps.py',
           '--android-packages=%s,%s,%s' %
-          (constants.PACKAGE_INFO['chromium_test_shell'].package,
-           constants.PACKAGE_INFO['chrome_stable'].package,
-           constants.PACKAGE_INFO['chrome_beta'].package),
+          ('chromium_test_shell',
+           'chrome_stable',
+           'chrome_beta'),
           '--revision=%s' % _GetRevision(options),
           '--update-log'])
 
