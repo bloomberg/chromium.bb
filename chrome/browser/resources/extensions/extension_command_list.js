@@ -282,10 +282,10 @@ cr.define('options', function() {
               loadTimeData.getString('extensionCommandsGlobal');
           select.appendChild(option);
           select.selectedIndex = command.global ? 1 : 0;
-        }
 
-        select.addEventListener(
-            'click', this.handleSetCommandScope_.bind(this));
+          select.addEventListener(
+              'change', this.handleSetCommandScope_.bind(this));
+        }
       }
 
       this.appendChild(node);
