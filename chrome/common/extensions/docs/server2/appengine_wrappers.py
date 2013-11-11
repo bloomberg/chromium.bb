@@ -33,7 +33,7 @@ try:
   import google.appengine.ext.blobstore as blobstore
   from google.appengine.ext.blobstore.blobstore import BlobReferenceProperty
   import google.appengine.ext.db as db
-  import google.appengine.ext.webapp as webapp
+  import webapp2
 except ImportError:
   import re
   from StringIO import StringIO
@@ -189,9 +189,9 @@ except ImportError:
 
   memcache = InMemoryMemcache()
 
-  class webapp(object):
+  class webapp2(object):
     class RequestHandler(object):
-      """A fake webapp.RequestHandler class for Handler to extend.
+      """A fake webapp2.RequestHandler class for Handler to extend.
       """
       def __init__(self, request, response):
         self.request = request

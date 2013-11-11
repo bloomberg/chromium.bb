@@ -2,11 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from appengine_wrappers import webapp
+from appengine_wrappers import webapp2
 from handler import Handler
 from servlet import Request
 
-class AppEngineHandler(webapp.RequestHandler):
+class AppEngineHandler(webapp2.RequestHandler):
   '''Top-level handler for AppEngine requests. Just converts them into our
   internal Servlet architecture.
   '''

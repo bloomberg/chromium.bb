@@ -12,13 +12,12 @@ SERVER_PATH = 'chrome/common/extensions/docs/server2'
 if os.path.abspath(SERVER_PATH) not in sys.path:
   sys.path.append(os.path.abspath(SERVER_PATH))
 
-from google.appengine.ext import webapp
-from google.appengine.ext.webapp.util import run_wsgi_app
+import webapp2
 
 from app_engine_handler import AppEngineHandler
 
 def main():
-  run_wsgi_app(webapp.WSGIApplication([('/.*', AppEngineHandler)], debug=False))
+  webapp2.WSGIApplication([('/.*', AppEngineHandler)], debug=False).run()
 
 if __name__ == '__main__':
   main()
