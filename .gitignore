@@ -127,10 +127,12 @@ v8.log
 /chrome_frame/tools/test/reference_build
 /cloud_print/cloud_print_version_resources.xml
 /components/variations.xml
+/content/content_unittests_run.xml
 /content/test/data/layout_tests/
 /content/test/data/plugin/
 /data
 /delegate_execute
+/google_apis/gcm/gcm.xml
 /google_apis/internal
 /googleurl
 /gpu/gles2_conform_test
