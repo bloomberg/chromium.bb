@@ -547,4 +547,3 @@ Bug(ojan) svg/as-object/nested-embedded-svg-size-changes.html [ NeedsManualRebas
 
 crbug.com/316730 canvas/synchronous-create-pattern.html [ ImageOnlyFailure Pass ]
 
-crbug.com/317556 inspector-protocol/timeline/timeline-start-bufferEvents.html [ Failure Pass ]

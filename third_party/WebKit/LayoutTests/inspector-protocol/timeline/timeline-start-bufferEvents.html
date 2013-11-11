@@ -21,8 +21,11 @@ function test()
     function onStop(response)
     {
         var events = response.result.events;
-        for (var i = 0; i < events.length; ++i)
+        for (var i = 0; i < events.length; ++i) {
+            if (events[i].type === "GCEvent")
+                continue;
             InspectorTest.log("Recording stopped: " + events[i].type);
+        }
         InspectorTest.completeTest();
     }
 
