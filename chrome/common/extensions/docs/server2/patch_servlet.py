@@ -60,13 +60,21 @@ class _PatchServletDelegate(RenderServlet.Delegate):
 
     branch_utility = self._delegate.CreateBranchUtility(object_store_creator)
 
-    return ServerInstance(object_store_creator,
-                          combined_compiled_fs_factory,
-                          branch_utility,
-                          patched_host_file_system_provider,
-                          self._delegate.CreateGithubFileSystemProvider(
-                              object_store_creator),
-                          base_path='/_patch/%s/' % self._issue)
+    server_instance = ServerInstance(
+        object_store_creator,
+        combined_compiled_fs_factory,
+        branch_utility,
+        patched_host_file_system_provider,
+        self._delegate.CreateGithubFileSystemProvider(object_store_creator),
+        base_path='/_patch/%s/' % self._issue)
+
+    # HACK: if content_providers.json changes in this patch then the cron needs
+    # to be re-run to pull in the new configuration.
+    _, _, modified = rietveld_patcher.GetPatchedFiles()
+    if svn_constants.CONTENT_PROVIDERS_PATH in modified:
+      server_instance.content_providers.Cron().Get()
+
+    return server_instance
 
 class PatchServlet(Servlet):
   '''Servlet which renders patched docs.
