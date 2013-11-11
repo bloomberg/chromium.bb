@@ -5,11 +5,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "base/basictypes.h"
+#include "base/compiler_specific.h"
 #include "mojo/public/bindings/lib/bindings_support.h"
 #include "mojo/public/bindings/lib/connector.h"
 #include "mojo/public/bindings/lib/message_queue.h"
 #include "mojo/public/tests/simple_bindings_support.h"
-#include "mojo/public/tests/test_support.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
 namespace test {
@@ -36,7 +38,7 @@ class MessageAccumulator : public MessageReceiver {
   MessageQueue queue_;
 };
 
-class BindingsConnectorTest : public TestBase {
+class BindingsConnectorTest : public testing::Test {
  public:
   BindingsConnectorTest()
       : handle0_(kInvalidHandle),

@@ -176,6 +176,7 @@ void Exercise() {
 }  // namespace sample
 
 int main() {
-  sample::Exercise();
+  // TODO(vtl): Convert this to a gtest and use mojo_run_all_unittests.
+  // sample::Exercise();
   return 0;
 }

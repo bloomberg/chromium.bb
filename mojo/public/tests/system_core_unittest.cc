@@ -6,13 +6,12 @@
 
 #include <string.h>
 
-#include "mojo/public/tests/test_support.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
 namespace {
 
-class SystemTest : public test::TestBase {
+class SystemTest : public testing::Test {
 };
 
 TEST_F(SystemTest, Basic) {

@@ -44,6 +44,18 @@
       ],
     },
     {
+      'target_name': 'mojo_run_all_unittests',
+      'type': 'static_library',
+      'dependencies': [
+        '../base/base.gyp:base',
+        '../base/base.gyp:test_support_base',
+        'mojo_system',
+      ],
+      'sources': [
+        'common/test/run_all_unittests.cc',
+      ],
+    },
+    {
       'target_name': 'mojo_common_lib',
       'type': '<(component)',
       'defines': [
@@ -74,14 +86,13 @@
       'type': 'executable',
       'dependencies': [
         '../base/base.gyp:base',
-        '../base/base.gyp:run_all_unittests',
         '../testing/gtest.gyp:gtest',
         'mojo_common_lib',
+        'mojo_run_all_unittests',
         'mojo_system',
       ],
       'sources': [
         'common/handle_watcher_unittest.cc',
-        'common/test/run_all_unittests.cc',
       ],
       'conditions': [
         ['OS == "win"', {
@@ -96,10 +107,10 @@
       'target_name': 'mojo_public_unittests',
       'type': 'executable',
       'dependencies': [
-        '../base/base.gyp:run_all_unittests',
         '../testing/gtest.gyp:gtest',
         'mojo_bindings',
         'mojo_public_test_support',
+        'mojo_run_all_unittests',
         'mojo_system',
       ],
       'sources': [
@@ -115,6 +126,7 @@
         '../base/base.gyp:test_support_perf',
         '../testing/gtest.gyp:gtest',
         'mojo_public_test_support',
+        'mojo_run_all_unittests',
         'mojo_system',
       ],
       'sources': [

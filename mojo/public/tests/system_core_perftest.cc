@@ -8,11 +8,12 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "mojo/public/tests/test_support.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
 namespace {
 
-class SystemPerftest : public test::TestBase {
+class SystemPerftest : public testing::Test {
  public:
   SystemPerftest() {}
   virtual ~SystemPerftest() {}

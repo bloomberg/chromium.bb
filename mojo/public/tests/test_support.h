@@ -5,22 +5,10 @@
 #ifndef MOJO_PUBLIC_TESTS_TEST_SUPPORT_H_
 #define MOJO_PUBLIC_TESTS_TEST_SUPPORT_H_
 
-#include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/compiler_specific.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 namespace mojo {
 namespace test {
-
-class TestBase : public testing::Test {
- public:
-  TestBase();
-  virtual ~TestBase();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestBase);
-};
 
 // Run |single_iteration| an appropriate number of times and report its
 // performance appropriately. (This actually runs |single_iteration| for a fixed
