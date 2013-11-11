@@ -1553,6 +1553,9 @@
 0x0b8efe82e35086c2	ScreenLocker_Show
 0xe643aadfeec1d6fc	ScreenLocker_Signout
 0x61ce545b97b3f1cd	ScreenLocker_StartScreenSaver
+0xf95c10e149147c52	Screenshot_CopyClipboard
+0x5a3d18767d558d27	Screenshot_TakeFull
+0x65e0ccd33d9eeb03	Screenshot_TakePartial
 0x7a0c1d1c5392ec8e	SearchWithRLZ
 0x2e17e73bd11af537	SearchWithoutRLZ
 0x702bbdc91c8e399d	SelectAll
@@ -1699,6 +1702,7 @@
 0x8f88175ece0f933b	Win8MetroRestart
 0x831a2e98aa899122	WindowSelector_Overview
 0x5f6808f9852ea6b0	WindowSelector_Selection
+0x10aeb586cdc4c632	WorkerProcess_BadProcessToKill
 0x554103fbf5582ee0	ZoomMinus
 0x82d278b1f2e78bcd	ZoomMinus_AtMinimum
 0x4344cd22d03f6800	ZoomNormal

@@ -1588,6 +1588,9 @@ need to be translated for each locale.-->
       <message name="IDS_MESSAGE_CENTER_NOTIFIER_SCREENSHOT_NAME" desc="The name of screenshot notifier that is a system componet">
         Screenshot
       </message>
+      <message name="IDS_MESSAGE_CENTER_NOTIFICATION_BUTTON_COPY_SCREENSHOT_TO_CLIPBOARD" desc="The button label for the screenshot notification which copies the screenshot image to clipboard on click.">
+        Copy to clipboard
+      </message>
 
       <!-- App list -->
       <message name="IDS_APP_LIST_HELP" desc="The menu entry to show the app list help UI.">

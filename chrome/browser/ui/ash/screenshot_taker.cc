@@ -9,6 +9,7 @@
 
 #include "ash/shell.h"
 #include "ash/system/system_notifier.h"
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/file_util.h"
 #include "base/i18n/time_formatting.h"
@@ -27,11 +28,13 @@
 #include "chrome/browser/ui/window_snapshot/window_snapshot.h"
 #include "chrome/common/pref_names.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/user_metrics.h"
 #include "grit/ash_strings.h"
 #include "grit/theme_resources.h"
 #include "grit/ui_strings.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/base/clipboard/clipboard.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
@@ -59,6 +62,49 @@ const char kNotificationId[] = "screenshot";
 
 const char kNotificationOriginUrl[] = "chrome://screenshot";
 
+const char kImageClipboardFormatPrefix[] = "<img src='data:image/png;base64,";
+const char kImageClipboardFormatSuffix[] = "'>";
+
+void CopyScreenshotToClipboard(scoped_refptr<base::RefCountedString> png_data) {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+
+  std::string encoded;
+  if (!base::Base64Encode(png_data->data(), &encoded)) {
+    LOG(ERROR) << "Failed to encode base64";
+    return;
+  }
+
+  // Only cares about HTML because ChromeOS doesn't need other formats.
+  ui::Clipboard::ObjectMapParam param(
+      kImageClipboardFormatPrefix,
+      kImageClipboardFormatPrefix + ::strlen(kImageClipboardFormatPrefix));
+  param.insert(param.end(), encoded.data(), encoded.data() + encoded.size());
+  param.insert(
+      param.end(),
+      kImageClipboardFormatSuffix,
+      kImageClipboardFormatSuffix + ::strlen(kImageClipboardFormatSuffix));
+  ui::Clipboard::ObjectMap mapping;
+  mapping[ui::Clipboard::CBF_HTML].push_back(param);
+  ui::Clipboard::GetForCurrentThread()->WriteObjects(
+      ui::CLIPBOARD_TYPE_COPY_PASTE, mapping);
+  content::RecordAction(content::UserMetricsAction("Screenshot_CopyClipboard"));
+}
+
+void ReadFileAndCopyToClipboard(const base::FilePath& screenshot_path) {
+  DCHECK(content::BrowserThread::GetBlockingPool()->RunsTasksOnCurrentThread());
+
+  scoped_refptr<base::RefCountedString> png_data(new base::RefCountedString());
+  if (!base::ReadFileToString(screenshot_path, &(png_data->data()))) {
+    LOG(ERROR) << "Failed to read the screenshot file: "
+               << screenshot_path.value();
+    return;
+  }
+
+  content::BrowserThread::PostTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::Bind(CopyScreenshotToClipboard, png_data));
+}
+
 // Delegate for a notification. This class has two roles: to implement callback
 // methods for notification, and to provide an identity of the associated
 // notification.
@@ -82,6 +128,14 @@ class ScreenshotTakerNotificationDelegate : public NotificationDelegate {
 #else
     // TODO(sschmitz): perhaps add similar action for Windows.
 #endif
+  }
+  virtual void ButtonClick(int button_index) OVERRIDE {
+    DCHECK(success_ && button_index == 0);
+
+    // To avoid keeping the screenshot image on memory, it will re-read the
+    // screenshot file and copy it to the clipboard.
+    content::BrowserThread::GetBlockingPool()->PostTask(
+        FROM_HERE, base::Bind(&ReadFileAndCopyToClipboard, screenshot_path_));
   }
   virtual bool HasClickedListener() OVERRIDE { return success_; }
   virtual std::string id() const OVERRIDE {
@@ -371,6 +425,7 @@ void ScreenshotTaker::HandleTakeScreenshotForAllRootWindows() {
           screenshot_path);
     }
   }
+  content::RecordAction(content::UserMetricsAction("Screenshot_TakeFull"));
   last_screenshot_timestamp_ = base::Time::Now();
 }
 
@@ -412,6 +467,7 @@ void ScreenshotTaker::HandleTakePartialScreenshot(
         ScreenshotTakerObserver::SCREENSHOT_GRABWINDOW_PARTIAL_FAILED,
         screenshot_path);
   }
+  content::RecordAction(content::UserMetricsAction("Screenshot_TakePartial"));
 }
 
 bool ScreenshotTaker::CanTakeScreenshot() {
@@ -431,6 +487,12 @@ Notification* ScreenshotTaker::CreateNotification(
   const string16 replace_id(UTF8ToUTF16(notification_id));
   bool success =
       (screenshot_result == ScreenshotTakerObserver::SCREENSHOT_SUCCESS);
+  message_center::RichNotificationData optional_field;
+  if (success) {
+    const string16 label = l10n_util::GetStringUTF16(
+        IDS_MESSAGE_CENTER_NOTIFICATION_BUTTON_COPY_SCREENSHOT_TO_CLIPBOARD);
+    optional_field.buttons.push_back(message_center::ButtonInfo(label));
+  }
   return new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE,
       GURL(kNotificationOriginUrl),
@@ -444,7 +506,7 @@ Notification* ScreenshotTaker::CreateNotification(
       message_center::NotifierId(ash::system_notifier::NOTIFIER_SCREENSHOT),
       l10n_util::GetStringUTF16(IDS_MESSAGE_CENTER_NOTIFIER_SCREENSHOT_NAME),
       replace_id,
-      message_center::RichNotificationData(),
+      optional_field,
       new ScreenshotTakerNotificationDelegate(success, screenshot_path));
 }
 
