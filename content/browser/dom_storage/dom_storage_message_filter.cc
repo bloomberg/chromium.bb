@@ -193,6 +193,11 @@ void DOMStorageMessageFilter::OnDOMStorageAreaCleared(
                       base::NullableString16());
 }
 
+void DOMStorageMessageFilter::OnDOMSessionStorageReset(int64 namespace_id) {
+  if (host_->ResetOpenAreasForNamespace(namespace_id))
+    Send(new DOMStorageMsg_ResetCachedValues(namespace_id));
+}
+
 void DOMStorageMessageFilter::SendDOMStorageEvent(
     const DOMStorageArea* area,
     const GURL& page_url,
@@ -202,8 +207,10 @@ void DOMStorageMessageFilter::SendDOMStorageEvent(
   DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::IO));
   // Only send mutation events to processes which have the area open.
   bool originated_in_process = connection_dispatching_message_for_ != 0;
-  if (originated_in_process ||
-      host_->HasAreaOpen(area->namespace_id(), area->origin())) {
+  int64 alias_namespace_id = area->namespace_id();
+  if (host_->HasAreaOpen(area->namespace_id(), area->origin(),
+                         &alias_namespace_id) ||
+      originated_in_process) {
     DOMStorageMsg_Event_Params params;
     params.origin = area->origin();
     params.page_url = page_url;
@@ -211,7 +218,7 @@ void DOMStorageMessageFilter::SendDOMStorageEvent(
     params.key = key;
     params.new_value = new_value;
     params.old_value = old_value;
-    params.namespace_id = area->namespace_id();
+    params.namespace_id = alias_namespace_id;
     Send(new DOMStorageMsg_Event(params));
   }
 }

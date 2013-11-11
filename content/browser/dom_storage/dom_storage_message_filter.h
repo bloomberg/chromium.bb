@@ -78,6 +78,7 @@ class DOMStorageMessageFilter
   virtual void OnDOMStorageAreaCleared(
       const DOMStorageArea* area,
       const GURL& page_url) OVERRIDE;
+  virtual void OnDOMSessionStorageReset(int64 namespace_id) OVERRIDE;
 
   void SendDOMStorageEvent(
       const DOMStorageArea* area,

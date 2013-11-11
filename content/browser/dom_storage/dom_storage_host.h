@@ -51,7 +51,11 @@ class CONTENT_EXPORT DOMStorageHost {
                   const GURL& page_url,
                   base::string16* old_value);
   bool ClearArea(int connection_id, const GURL& page_url);
-  bool HasAreaOpen(int namespace_id, const GURL& origin) const;
+  bool HasAreaOpen(int64 namespace_id, const GURL& origin,
+                   int64* alias_namespace_id) const;
+  // Resets all open areas for the namespace provided. Returns true
+  // iff there were any areas to reset.
+  bool ResetOpenAreasForNamespace(int64 namespace_id);
 
  private:
   // Struct to hold references needed for areas that are open
@@ -70,6 +74,7 @@ class CONTENT_EXPORT DOMStorageHost {
       int connection_id,
       DOMStorageNamespace::LogType transaction_type,
       const GURL& origin,
+      const GURL& page_url,
       const base::string16& key,
       const base::NullableString16& value);
 

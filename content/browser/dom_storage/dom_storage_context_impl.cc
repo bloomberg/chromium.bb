@@ -238,6 +238,16 @@ void DOMStorageContextImpl::NotifyAreaCleared(
       OnDOMStorageAreaCleared(area, page_url));
 }
 
+void DOMStorageContextImpl::NotifyAliasSessionMerged(
+    int64 namespace_id,
+    DOMStorageNamespace* old_alias_master_namespace) {
+  FOR_EACH_OBSERVER(
+      EventObserver, event_observers_,
+      OnDOMSessionStorageReset(namespace_id));
+  if (old_alias_master_namespace)
+    MaybeShutdownSessionNamespace(old_alias_master_namespace);
+}
+
 std::string DOMStorageContextImpl::AllocatePersistentSessionId() {
   std::string guid = base::GenerateGUID();
   std::replace(guid.begin(), guid.end(), '-', '_');
@@ -262,11 +272,36 @@ void DOMStorageContextImpl::DeleteSessionNamespace(
     int64 namespace_id, bool should_persist_data) {
   DCHECK_NE(kLocalStorageNamespaceId, namespace_id);
   StorageNamespaceMap::const_iterator it = namespaces_.find(namespace_id);
-  if (it == namespaces_.end())
+  if (it == namespaces_.end() ||
+      it->second->ready_for_deletion_pending_aliases()) {
     return;
-  std::string persistent_namespace_id = it->second->persistent_namespace_id();
+  }
+  it->second->set_ready_for_deletion_pending_aliases(true);
+  DOMStorageNamespace* alias_master = it->second->alias_master_namespace();
+  if (alias_master) {
+    DCHECK(it->second->num_aliases() == 0);
+    DCHECK(alias_master->alias_master_namespace() == NULL);
+    if (should_persist_data)
+      alias_master->set_must_persist_at_shutdown(true);
+    if (it->second->DecrementMasterAliasCount())
+      MaybeShutdownSessionNamespace(alias_master);
+    namespaces_.erase(namespace_id);
+  } else {
+    if (should_persist_data)
+      it->second->set_must_persist_at_shutdown(true);
+    MaybeShutdownSessionNamespace(it->second);
+  }
+}
+
+void DOMStorageContextImpl::MaybeShutdownSessionNamespace(
+    DOMStorageNamespace* ns) {
+  if (ns->num_aliases() > 0 || !ns->ready_for_deletion_pending_aliases())
+    return;
+  DCHECK_EQ(ns->num_aliases(), 0);
+  DCHECK(ns->alias_master_namespace() == NULL);
+  std::string persistent_namespace_id =  ns->persistent_namespace_id();
   if (session_storage_database_.get()) {
-    if (!should_persist_data) {
+    if (!ns->must_persist_at_shutdown()) {
       task_runner_->PostShutdownBlockingTask(
           FROM_HERE,
           DOMStorageTaskRunner::COMMIT_SEQUENCE,
@@ -276,7 +311,7 @@ void DOMStorageContextImpl::DeleteSessionNamespace(
               persistent_namespace_id));
     } else {
       // Ensure that the data gets committed before we shut down.
-      it->second->Shutdown();
+      ns->Shutdown();
       if (!scavenging_started_) {
         // Protect the persistent namespace ID from scavenging.
         protected_persistent_session_ids_.insert(persistent_namespace_id);
@@ -284,7 +319,7 @@ void DOMStorageContextImpl::DeleteSessionNamespace(
     }
   }
   persistent_namespace_id_to_namespace_id_.erase(persistent_namespace_id);
-  namespaces_.erase(namespace_id);
+  namespaces_.erase(ns->namespace_id());
 }
 
 void DOMStorageContextImpl::CloneSessionNamespace(
@@ -299,6 +334,21 @@ void DOMStorageContextImpl::CloneSessionNamespace(
     namespaces_[new_id] = found->second->Clone(new_id, new_persistent_id);
   else
     CreateSessionNamespace(new_id, new_persistent_id);
+}
+
+void DOMStorageContextImpl::CreateAliasSessionNamespace(
+    int64 existing_id, int64 new_id,
+    const std::string& persistent_id) {
+  if (is_shutdown_)
+    return;
+  DCHECK_NE(kLocalStorageNamespaceId, existing_id);
+  DCHECK_NE(kLocalStorageNamespaceId, new_id);
+  StorageNamespaceMap::iterator found = namespaces_.find(existing_id);
+  if (found != namespaces_.end()) {
+    namespaces_[new_id] = found->second->CreateAlias(new_id);
+  } else {
+    CreateSessionNamespace(new_id, persistent_id);
+  }
 }
 
 void DOMStorageContextImpl::ClearSessionOnlyOrigins() {
@@ -438,8 +488,9 @@ void DOMStorageContextImpl::RemoveTransactionLogProcessId(int64 namespace_id,
 }
 
 SessionStorageNamespace::MergeResult
-DOMStorageContextImpl::CanMergeSessionStorage(
-    int64 namespace1_id, int process_id, int64 namespace2_id) {
+DOMStorageContextImpl::MergeSessionStorage(
+    int64 namespace1_id, bool actually_merge, int process_id,
+    int64 namespace2_id) {
   DCHECK_NE(kLocalStorageNamespaceId, namespace1_id);
   DCHECK_NE(kLocalStorageNamespaceId, namespace2_id);
   StorageNamespaceMap::const_iterator it = namespaces_.find(namespace1_id);
@@ -450,7 +501,7 @@ DOMStorageContextImpl::CanMergeSessionStorage(
   if (it == namespaces_.end())
     return SessionStorageNamespace::MERGE_RESULT_NAMESPACE_NOT_FOUND;
   DOMStorageNamespace* ns2 = it->second;
-  return ns1->CanMerge(process_id, ns2);
+  return ns1->Merge(actually_merge, process_id, ns2, this);
 }
 
 }  // namespace content

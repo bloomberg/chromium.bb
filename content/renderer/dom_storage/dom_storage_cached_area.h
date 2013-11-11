@@ -51,6 +51,9 @@ class CONTENT_EXPORT DOMStorageCachedArea
 
   size_t MemoryBytesUsedByCache() const;
 
+  // Resets the object back to its newly constructed state.
+  void Reset();
+
  private:
   friend class DOMStorageCachedAreaTest;
   friend class base::RefCounted<DOMStorageCachedArea>;
@@ -62,9 +65,6 @@ class CONTENT_EXPORT DOMStorageCachedArea
     if (!map_.get())
       Prime(connection_id);
   }
-
-  // Resets the object back to its newly constructed state.
-  void Reset();
 
   // Async completion callbacks for proxied operations.
   // These are used to maintain cache consistency by preventing

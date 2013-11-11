@@ -31,6 +31,10 @@ class CONTENT_EXPORT DOMStorageSession
   DOMStorageSession(DOMStorageContextImpl* context,
                     const std::string& persistent_namespace_id);
 
+  // Constructs a |DOMStorageSession| as an alias of
+  // |master_dom_storage_session|. Allocates a new non-persistent ID.
+  explicit DOMStorageSession(DOMStorageSession* master_dom_storage_session);
+
   int64 namespace_id() const { return namespace_id_; }
   const std::string& persistent_namespace_id() const {
     return persistent_namespace_id_;
@@ -47,9 +51,10 @@ class CONTENT_EXPORT DOMStorageSession
 
   void AddTransactionLogProcessId(int process_id);
   void RemoveTransactionLogProcessId(int process_id);
-  void CanMerge(int process_id,
-                DOMStorageSession* other,
-                const SessionStorageNamespace::MergeResultCallback& callback);
+  void Merge(bool actually_merge,
+             int process_id,
+             DOMStorageSession* other,
+             const SessionStorageNamespace::MergeResultCallback& callback);
 
  private:
   friend class base::RefCountedThreadSafe<DOMStorageSession>;
@@ -58,6 +63,12 @@ class CONTENT_EXPORT DOMStorageSession
                     int64 namespace_id,
                     const std::string& persistent_namespace_id);
   ~DOMStorageSession();
+
+  void ProcessMergeResult(
+      bool actually_merge,
+      const SessionStorageNamespace::MergeResultCallback& callback,
+      const std::string& new_persistent_namespace_id,
+      SessionStorageNamespace::MergeResult result);
 
   scoped_refptr<DOMStorageContextImpl> context_;
   int64 namespace_id_;

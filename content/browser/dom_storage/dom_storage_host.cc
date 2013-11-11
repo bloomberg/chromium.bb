@@ -107,7 +107,7 @@ bool DOMStorageHost::SetAreaItem(
     context_->NotifyItemSet(area, key, value, *old_value, page_url);
   MaybeLogTransaction(connection_id,
                       DOMStorageNamespace::TRANSACTION_WRITE,
-                      area->origin(), key,
+                      area->origin(), page_url, key,
                       base::NullableString16(value, false));
   return true;
 }
@@ -120,7 +120,7 @@ void DOMStorageHost::LogGetAreaItem(
     return;
   MaybeLogTransaction(connection_id,
                       DOMStorageNamespace::TRANSACTION_READ,
-                      area->origin(), key, value);
+                      area->origin(), GURL(), key, value);
 }
 
 bool DOMStorageHost::RemoveAreaItem(
@@ -134,7 +134,7 @@ bool DOMStorageHost::RemoveAreaItem(
   context_->NotifyItemRemoved(area, key, *old_value, page_url);
   MaybeLogTransaction(connection_id,
                       DOMStorageNamespace::TRANSACTION_REMOVE,
-                      area->origin(), key, base::NullableString16());
+                      area->origin(), page_url, key, base::NullableString16());
   return true;
 }
 
@@ -147,21 +147,36 @@ bool DOMStorageHost::ClearArea(int connection_id, const GURL& page_url) {
   context_->NotifyAreaCleared(area, page_url);
   MaybeLogTransaction(connection_id,
                       DOMStorageNamespace::TRANSACTION_CLEAR,
-                      area->origin(), base::string16(),
+                      area->origin(), page_url, base::string16(),
                       base::NullableString16());
   return true;
 }
 
 bool DOMStorageHost::HasAreaOpen(
-    int namespace_id, const GURL& origin) const {
+    int64 namespace_id, const GURL& origin, int64* alias_namespace_id) const {
   AreaMap::const_iterator it = connections_.begin();
   for (; it != connections_.end(); ++it) {
-    if (namespace_id == it->second.namespace_->namespace_id() &&
+    if (namespace_id == it->second.area_->namespace_id() &&
         origin == it->second.area_->origin()) {
+      *alias_namespace_id = it->second.namespace_->namespace_id();
       return true;
     }
   }
   return false;
+}
+
+bool DOMStorageHost::ResetOpenAreasForNamespace(int64 namespace_id) {
+  bool result = false;
+  AreaMap::iterator it = connections_.begin();
+  for (; it != connections_.end(); ++it) {
+    if (namespace_id == it->second.namespace_->namespace_id()) {
+      GURL origin = it->second.area_->origin();
+      it->second.namespace_->CloseStorageArea(it->second.area_.get());
+      it->second.area_ = it->second.namespace_->OpenStorageArea(origin);
+      result = true;
+    }
+  }
+  return result;
 }
 
 DOMStorageArea* DOMStorageHost::GetOpenArea(int connection_id) {
@@ -182,6 +197,7 @@ void DOMStorageHost::MaybeLogTransaction(
     int connection_id,
     DOMStorageNamespace::LogType transaction_type,
     const GURL& origin,
+    const GURL& page_url,
     const base::string16& key,
     const base::NullableString16& value) {
   DOMStorageNamespace* ns = GetNamespace(connection_id);
@@ -191,6 +207,7 @@ void DOMStorageHost::MaybeLogTransaction(
   DOMStorageNamespace::TransactionRecord transaction;
   transaction.transaction_type = transaction_type;
   transaction.origin = origin;
+  transaction.page_url = page_url;
   transaction.key = key;
   transaction.value = value;
   ns->AddTransaction(render_process_id_, transaction);

@@ -43,6 +43,7 @@ class SessionStorageNamespace
 
   enum MergeResult {
     MERGE_RESULT_NAMESPACE_NOT_FOUND,
+    MERGE_RESULT_NAMESPACE_NOT_ALIAS,
     MERGE_RESULT_NOT_LOGGING,
     MERGE_RESULT_NO_TRANSACTIONS,
     MERGE_RESULT_TOO_MANY_TRANSACTIONS,
@@ -55,9 +56,18 @@ class SessionStorageNamespace
 
   // Determines whether the transaction log for the process specified can
   // be merged into the other session storage namespace supplied.
-  virtual void CanMerge(int process_id,
-                        SessionStorageNamespace* other,
-                        const MergeResultCallback& callback) = 0;
+  // If actually_merge is set to true, the merge will actually be performed,
+  // if possible, and the result of the merge will be returned.
+  // If actually_merge is set to false, the result of whether a merge would be
+  // possible is returned.
+  virtual void Merge(bool actually_merge,
+                     int process_id,
+                     SessionStorageNamespace* other,
+                     const MergeResultCallback& callback) = 0;
+
+  // Indicates whether this SessionStorageNamespace is an alias of |other|,
+  // i.e. whether they point to the same underlying data.
+  virtual bool IsAliasOf(SessionStorageNamespace* other) = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<SessionStorageNamespace>;

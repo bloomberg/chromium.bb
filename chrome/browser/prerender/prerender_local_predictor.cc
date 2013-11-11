@@ -1309,7 +1309,8 @@ void PrerenderLocalPredictor::OnTabHelperURLSeen(
         RecordEvent(EVENT_TAB_HELPER_URL_SEEN_NAMESPACE_MISMATCH_NO_NAMESPACE);
       } else {
         RecordEvent(EVENT_TAB_HELPER_URL_SEEN_NAMESPACE_MISMATCH_MERGE_ISSUED);
-        prerender_session_storage_namespace->CanMerge(
+        prerender_session_storage_namespace->Merge(
+            false,
             best_matched_prerender->prerender_handle->GetChildId(),
             tab_session_storage_namespace,
             base::Bind(&PrerenderLocalPredictor::ProcessNamespaceMergeResult,
@@ -1325,6 +1326,9 @@ void PrerenderLocalPredictor::ProcessNamespaceMergeResult(
   switch (result) {
     case content::SessionStorageNamespace::MERGE_RESULT_NAMESPACE_NOT_FOUND:
       RecordEvent(EVENT_NAMESPACE_MISMATCH_MERGE_RESULT_NAMESPACE_NOT_FOUND);
+      break;
+    case content::SessionStorageNamespace::MERGE_RESULT_NAMESPACE_NOT_ALIAS:
+      RecordEvent(EVENT_NAMESPACE_MISMATCH_MERGE_RESULT_NAMESPACE_NOT_ALIAS);
       break;
     case content::SessionStorageNamespace::MERGE_RESULT_NOT_LOGGING:
       RecordEvent(EVENT_NAMESPACE_MISMATCH_MERGE_RESULT_NOT_LOGGING);

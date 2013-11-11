@@ -103,6 +103,7 @@ class DomStorageDispatcher::ProxyImpl : public DOMStorageProxy {
   void CloseCachedArea(DOMStorageCachedArea* area);
   DOMStorageCachedArea* LookupCachedArea(
       int64 namespace_id, const GURL& origin);
+  void ResetAllCachedAreas(int64 namespace_id);
   void CompleteOnePendingCallback(bool success);
   void Shutdown();
 
@@ -128,9 +129,11 @@ class DomStorageDispatcher::ProxyImpl : public DOMStorageProxy {
   struct CachedAreaHolder {
     scoped_refptr<DOMStorageCachedArea> area_;
     int open_count_;
+    int64 namespace_id_;
     CachedAreaHolder() : open_count_(0) {}
-    CachedAreaHolder(DOMStorageCachedArea* area, int count)
-        : area_(area), open_count_(count) {}
+    CachedAreaHolder(DOMStorageCachedArea* area, int count,
+                     int64 namespace_id)
+        : area_(area), open_count_(count), namespace_id_(namespace_id) {}
   };
   typedef std::map<std::string, CachedAreaHolder> CachedAreaMap;
   typedef std::list<CompletionCallback> CallbackList;
@@ -186,7 +189,7 @@ DOMStorageCachedArea* DomStorageDispatcher::ProxyImpl::OpenCachedArea(
   }
   scoped_refptr<DOMStorageCachedArea> area =
       new DOMStorageCachedArea(namespace_id, origin, this);
-  cached_areas_[key] = CachedAreaHolder(area.get(), 1);
+  cached_areas_[key] = CachedAreaHolder(area.get(), 1, namespace_id);
   return area.get();
 }
 
@@ -209,6 +212,15 @@ DOMStorageCachedArea* DomStorageDispatcher::ProxyImpl::LookupCachedArea(
   if (!holder)
     return NULL;
   return holder->area_.get();
+}
+
+void DomStorageDispatcher::ProxyImpl::ResetAllCachedAreas(int64 namespace_id) {
+  for (CachedAreaMap::iterator it = cached_areas_.begin();
+       it != cached_areas_.end();
+       ++it) {
+    if (it->second.namespace_id_ == namespace_id)
+      it->second.area_->Reset();
+  }
 }
 
 void DomStorageDispatcher::ProxyImpl::CompleteOnePendingCallback(bool success) {
@@ -294,6 +306,8 @@ bool DomStorageDispatcher::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(DOMStorageMsg_Event, OnStorageEvent)
     IPC_MESSAGE_HANDLER(DOMStorageMsg_AsyncOperationComplete,
                         OnAsyncOperationComplete)
+    IPC_MESSAGE_HANDLER(DOMStorageMsg_ResetCachedValues,
+                        OnResetCachedValues)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -341,6 +355,10 @@ void DomStorageDispatcher::OnStorageEvent(
 
 void DomStorageDispatcher::OnAsyncOperationComplete(bool success) {
   proxy_->CompleteOnePendingCallback(success);
+}
+
+void DomStorageDispatcher::OnResetCachedValues(int64 namespace_id) {
+  proxy_->ResetAllCachedAreas(namespace_id);
 }
 
 }  // namespace content

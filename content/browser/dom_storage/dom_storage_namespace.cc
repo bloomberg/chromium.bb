@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "content/browser/dom_storage/dom_storage_area.h"
+#include "content/browser/dom_storage/dom_storage_context_impl.h"
 #include "content/browser/dom_storage/dom_storage_task_runner.h"
 #include "content/browser/dom_storage/session_storage_database.h"
 #include "content/common/child_process_host_impl.h"
@@ -31,7 +32,11 @@ DOMStorageNamespace::DOMStorageNamespace(
     DOMStorageTaskRunner* task_runner)
     : namespace_id_(kLocalStorageNamespaceId),
       directory_(directory),
-      task_runner_(task_runner) {
+      task_runner_(task_runner),
+      num_aliases_(0),
+      master_alias_count_decremented_(false),
+      ready_for_deletion_pending_aliases_(false),
+      must_persist_at_shutdown_(false) {
 }
 
 DOMStorageNamespace::DOMStorageNamespace(
@@ -42,15 +47,22 @@ DOMStorageNamespace::DOMStorageNamespace(
     : namespace_id_(namespace_id),
       persistent_namespace_id_(persistent_namespace_id),
       task_runner_(task_runner),
-      session_storage_database_(session_storage_database) {
+      session_storage_database_(session_storage_database),
+      num_aliases_(0),
+      master_alias_count_decremented_(false),
+      ready_for_deletion_pending_aliases_(false),
+      must_persist_at_shutdown_(false) {
   DCHECK_NE(kLocalStorageNamespaceId, namespace_id);
 }
 
 DOMStorageNamespace::~DOMStorageNamespace() {
   STLDeleteValues(&transactions_);
+  DecrementMasterAliasCount();
 }
 
 DOMStorageArea* DOMStorageNamespace::OpenStorageArea(const GURL& origin) {
+  if (alias_master_namespace_)
+    return alias_master_namespace_->OpenStorageArea(origin);
   if (AreaHolder* holder = GetAreaHolder(origin)) {
     ++(holder->open_count_);
     return holder->area_.get();
@@ -69,6 +81,11 @@ DOMStorageArea* DOMStorageNamespace::OpenStorageArea(const GURL& origin) {
 
 void DOMStorageNamespace::CloseStorageArea(DOMStorageArea* area) {
   AreaHolder* holder = GetAreaHolder(area->origin());
+  if (alias_master_namespace_) {
+    DCHECK(!holder);
+    alias_master_namespace_->CloseStorageArea(area);
+    return;
+  }
   DCHECK(holder);
   DCHECK_EQ(holder->area_.get(), area);
   --(holder->open_count_);
@@ -77,6 +94,8 @@ void DOMStorageNamespace::CloseStorageArea(DOMStorageArea* area) {
 }
 
 DOMStorageArea* DOMStorageNamespace::GetOpenStorageArea(const GURL& origin) {
+  if (alias_master_namespace_)
+    return alias_master_namespace_->GetOpenStorageArea(origin);
   AreaHolder* holder = GetAreaHolder(origin);
   if (holder && holder->open_count_)
     return holder->area_.get();
@@ -86,6 +105,10 @@ DOMStorageArea* DOMStorageNamespace::GetOpenStorageArea(const GURL& origin) {
 DOMStorageNamespace* DOMStorageNamespace::Clone(
     int64 clone_namespace_id,
     const std::string& clone_persistent_namespace_id) {
+  if (alias_master_namespace_) {
+    return alias_master_namespace_->Clone(clone_namespace_id,
+                                          clone_persistent_namespace_id);
+  }
   DCHECK_NE(kLocalStorageNamespaceId, namespace_id_);
   DCHECK_NE(kLocalStorageNamespaceId, clone_namespace_id);
   DOMStorageNamespace* clone = new DOMStorageNamespace(
@@ -110,8 +133,34 @@ DOMStorageNamespace* DOMStorageNamespace::Clone(
   return clone;
 }
 
+DOMStorageNamespace* DOMStorageNamespace::CreateAlias(
+    int64 alias_namespace_id) {
+  // Creates an alias of the current DOMStorageNamespace.
+  // The alias will have a reference to this namespace (called the master),
+  // and all operations will be redirected to the master (in particular,
+  // the alias will never open any areas of its own, but always redirect
+  // to the master). Accordingly, an alias will also never undergo the shutdown
+  // procedure which initiates persisting to disk, since there is never any data
+  // of its own to persist to disk. DOMStorageContextImpl is the place where
+  // shutdowns are initiated, but only for non-alias DOMStorageNamespaces.
+  DCHECK_NE(kLocalStorageNamespaceId, namespace_id_);
+  DCHECK_NE(kLocalStorageNamespaceId, alias_namespace_id);
+  DOMStorageNamespace* alias = new DOMStorageNamespace(
+      alias_namespace_id, persistent_namespace_id_,
+      session_storage_database_.get(), task_runner_.get());
+  if (alias_master_namespace_ != NULL) {
+    DCHECK(alias_master_namespace_->alias_master_namespace_ == NULL);
+    alias->alias_master_namespace_ = alias_master_namespace_;
+  } else {
+    alias->alias_master_namespace_ = this;
+  }
+  alias->alias_master_namespace_->num_aliases_++;
+  return alias;
+}
+
 void DOMStorageNamespace::DeleteLocalStorageOrigin(const GURL& origin) {
   DCHECK(!session_storage_database_.get());
+  DCHECK(!alias_master_namespace_.get());
   AreaHolder* holder = GetAreaHolder(origin);
   if (holder) {
     holder->area_->DeleteOrigin();
@@ -125,12 +174,20 @@ void DOMStorageNamespace::DeleteLocalStorageOrigin(const GURL& origin) {
 }
 
 void DOMStorageNamespace::DeleteSessionStorageOrigin(const GURL& origin) {
+  if (alias_master_namespace_) {
+    alias_master_namespace_->DeleteSessionStorageOrigin(origin);
+    return;
+  }
   DOMStorageArea* area = OpenStorageArea(origin);
   area->FastClear();
   CloseStorageArea(area);
 }
 
 void DOMStorageNamespace::PurgeMemory(PurgeOption option) {
+  if (alias_master_namespace_) {
+    alias_master_namespace_->PurgeMemory(option);
+    return;
+  }
   if (directory_.empty())
     return;  // We can't purge w/o backing on disk.
   AreaMap::iterator it = areas_.begin();
@@ -166,6 +223,8 @@ void DOMStorageNamespace::Shutdown() {
 }
 
 unsigned int DOMStorageNamespace::CountInMemoryAreas() const {
+  if (alias_master_namespace_)
+    return alias_master_namespace_->CountInMemoryAreas();
   unsigned int area_count = 0;
   for (AreaMap::const_iterator it = areas_.begin(); it != areas_.end(); ++it) {
     if (it->second.area_->IsLoadedInMemory())
@@ -196,16 +255,23 @@ void DOMStorageNamespace::RemoveTransactionLogProcessId(int process_id) {
   transactions_.erase(process_id);
 }
 
-SessionStorageNamespace::MergeResult DOMStorageNamespace::CanMerge(
+SessionStorageNamespace::MergeResult DOMStorageNamespace::Merge(
+    bool actually_merge,
     int process_id,
-    DOMStorageNamespace* other) {
+    DOMStorageNamespace* other,
+    DOMStorageContextImpl* context) {
+  if (!alias_master_namespace())
+    return SessionStorageNamespace::MERGE_RESULT_NAMESPACE_NOT_ALIAS;
   if (transactions_.count(process_id) < 1)
     return SessionStorageNamespace::MERGE_RESULT_NOT_LOGGING;
   TransactionData* data = transactions_[process_id];
   if (data->max_log_size_exceeded)
     return SessionStorageNamespace::MERGE_RESULT_TOO_MANY_TRANSACTIONS;
-  if (data->log.size() < 1)
+  if (data->log.size() < 1) {
+    if (actually_merge)
+      SwitchToNewAliasMaster(other, context);
     return SessionStorageNamespace::MERGE_RESULT_NO_TRANSACTIONS;
+  }
 
   // skip_areas and skip_keys store areas and (area, key) pairs, respectively,
   // that have already been handled previously. Any further modifications to
@@ -242,6 +308,42 @@ SessionStorageNamespace::MergeResult DOMStorageNamespace::CanMerge(
     }
     NOTREACHED();
   }
+  if (!actually_merge)
+    return SessionStorageNamespace::MERGE_RESULT_MERGEABLE;
+
+  // Actually perform the merge.
+
+  for (unsigned int i = 0; i < data->log.size(); i++) {
+    TransactionRecord& transaction = data->log[i];
+    if (transaction.transaction_type == TRANSACTION_READ)
+      continue;
+    DOMStorageArea* area = other->OpenStorageArea(transaction.origin);
+    if (transaction.transaction_type == TRANSACTION_CLEAR) {
+      area->Clear();
+      if (context)
+        context->NotifyAreaCleared(area, transaction.page_url);
+    }
+    if (transaction.transaction_type == TRANSACTION_REMOVE) {
+      base::string16 old_value;
+      area->RemoveItem(transaction.key, &old_value);
+      if (context) {
+        context->NotifyItemRemoved(area, transaction.key, old_value,
+                                   transaction.page_url);
+      }
+    }
+    if (transaction.transaction_type == TRANSACTION_WRITE) {
+      base::NullableString16 old_value;
+      area->SetItem(transaction.key, base::string16(transaction.value.string()),
+                    &old_value);
+      if (context) {
+        context->NotifyItemSet(area, transaction.key,transaction.value.string(),
+                               old_value, transaction.page_url);
+      }
+    }
+    other->CloseStorageArea(area);
+  }
+
+  SwitchToNewAliasMaster(other, context);
   return SessionStorageNamespace::MERGE_RESULT_MERGEABLE;
 }
 
@@ -265,6 +367,41 @@ void DOMStorageNamespace::AddTransaction(
     transaction_data->max_log_size_exceeded = true;
     transaction_data->log.clear();
   }
+}
+
+bool DOMStorageNamespace::DecrementMasterAliasCount() {
+  if (!alias_master_namespace_ || master_alias_count_decremented_)
+    return false;
+  DCHECK_GT(alias_master_namespace_->num_aliases_, 0);
+  alias_master_namespace_->num_aliases_--;
+  master_alias_count_decremented_ = true;
+  return (alias_master_namespace_->num_aliases_ == 0);
+}
+
+void DOMStorageNamespace::SwitchToNewAliasMaster(
+    DOMStorageNamespace* new_master,
+    DOMStorageContextImpl* context) {
+  DCHECK(alias_master_namespace());
+  scoped_refptr<DOMStorageNamespace> old_master = alias_master_namespace();
+  if (new_master->alias_master_namespace())
+    new_master = new_master->alias_master_namespace();
+  DCHECK(!new_master->alias_master_namespace());
+  DCHECK(old_master != this);
+  DCHECK(old_master != new_master);
+  DecrementMasterAliasCount();
+  alias_master_namespace_ = new_master;
+  alias_master_namespace_->num_aliases_++;
+  master_alias_count_decremented_ = false;
+  // There are three things that we need to clean up:
+  // -- the old master may ready for shutdown, if its last alias has disappeared
+  // -- The dom_storage hosts need to close and reopen their areas, so that
+  // they point to the correct new areas.
+  // -- The renderers will need to reset their local caches.
+  // All three of these things are accomplished with the following call below.
+  // |context| will be NULL in unit tests, which is when this will
+  // not apply, of course.
+  if (context)
+    context->NotifyAliasSessionMerged(namespace_id(), old_master.get());
 }
 
 DOMStorageNamespace::TransactionData::TransactionData()
