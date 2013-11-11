@@ -429,6 +429,11 @@ class SimpleBuilder(Builder):
       self._RunStage(stages.UnitTestStage, board, config=config)
       return
 
+    # While this stage list is run in parallel, the order here dictates the
+    # order that things will be shown in the log.  So group things together
+    # that make sense when read in order.  Also keep in mind that, since we
+    # gather output manually, early slow stages will prevent any output from
+    # later stages showing up until it finishes.
     stage_list = []
     if self.options.chrome_sdk and self.build_config['chrome_sdk']:
       stage_list.append([stages.ChromeSDKStage, board, archive_stage])
@@ -437,7 +442,8 @@ class SimpleBuilder(Builder):
         [stages.SignerTestStage, board, archive_stage],
         [stages.UnitTestStage, board],
         [stages.UploadPrebuiltsStage, board, archive_stage],
-        [stages.DevInstallerPrebuiltsStage, board, archive_stage]
+        [stages.DevInstallerPrebuiltsStage, board, archive_stage],
+        [stages.DebugSymbolsStage, board, archive_stage],
     ]
 
     # We can not run hw tests without archiving the payloads.

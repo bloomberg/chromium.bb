@@ -2662,7 +2662,6 @@ class ArchiveStage(ArchivingStage):
     self._recovery_image_status_queue = multiprocessing.Queue()
     self._release_upload_queue = multiprocessing.Queue()
     self._upload_queue = multiprocessing.Queue()
-    self._upload_symbols_queue = multiprocessing.Queue()
 
     # Setup the archive path. This is used by other stages.
     self._SetupArchivePath()
@@ -2701,7 +2700,7 @@ class ArchiveStage(ArchivingStage):
     self._recovery_image_status_queue.put(status)
     return status
 
-  def _BreakpadSymbolsGenerated(self, success):
+  def BreakpadSymbolsGenerated(self, success):
     """Signal that breakpad symbols have been generated.
 
     Args:
@@ -2807,7 +2806,6 @@ class ArchiveStage(ArchivingStage):
     # otherwise)
     # \- BuildAndArchiveArtifacts
     #    \- ArchiveReleaseArtifacts
-    #       \- ArchiveDebugSymbols
     #       \- ArchiveFirmwareImages
     #       \- BuildAndArchiveAllImages
     #          (builds recovery image first, then launches functions below)
@@ -2819,39 +2817,6 @@ class ArchiveStage(ArchivingStage):
     #       \- PushImage (blocks on BuildAndArchiveAllImages)
     #    \- ArchiveStrippedChrome
     #    \- ArchiveImageScripts
-
-    def ArchiveDebugSymbols():
-      """Generate debug symbols and upload debug.tgz."""
-      if config['archive_build_debug'] or config['vm_tests']:
-        success = False
-        try:
-          commands.GenerateBreakpadSymbols(buildroot, board, debug)
-          success = True
-        finally:
-          self._BreakpadSymbolsGenerated(success)
-
-        # Kick off the symbol upload process in the background.
-        if config['upload_symbols']:
-          self._upload_symbols_queue.put([])
-
-        # Generate and upload tarball.
-        filename = commands.GenerateDebugTarball(
-            buildroot, board, archive_path, config['archive_build_debug'])
-        self._release_upload_queue.put([filename])
-      else:
-        self._BreakpadSymbolsGenerated(False)
-
-    def UploadSymbols():
-      """Upload generated debug symbols."""
-      if self._options.remote_trybot or self.debug:
-        # For debug builds, limit ourselves to just uploading 1 symbol.
-        # This way trybots and such still exercise this code.
-        cnt = 1
-        official = False
-      else:
-        cnt = None
-        official = config['chromeos_official']
-      commands.UploadSymbols(buildroot, board, official, cnt)
 
     def BuildAndArchiveFactoryImages():
       """Build and archive the factory zip file.
@@ -2985,8 +2950,7 @@ class ArchiveStage(ArchivingStage):
 
     def ArchiveReleaseArtifacts():
       with self.ArtifactUploader(self._release_upload_queue, archive=False):
-        steps = [ArchiveDebugSymbols, BuildAndArchiveAllImages,
-                 ArchiveFirmwareImages]
+        steps = [BuildAndArchiveAllImages, ArchiveFirmwareImages]
         parallel.RunParallelSteps(steps)
       PushImage()
 
@@ -2998,10 +2962,8 @@ class ArchiveStage(ArchivingStage):
       if config['create_delta_sysroot']:
         steps.append(self.BuildAndArchiveDeltaSysroot)
 
-      with parallel.BackgroundTaskRunner(
-          UploadSymbols, queue=self._upload_symbols_queue, processes=1):
-        with self.ArtifactUploader(self._upload_queue, archive=False):
-          parallel.RunParallelSteps(steps)
+      with self.ArtifactUploader(self._upload_queue, archive=False):
+        parallel.RunParallelSteps(steps)
 
     def MarkAsLatest():
       # Update and upload LATEST file.
@@ -3029,6 +2991,55 @@ class ArchiveStage(ArchivingStage):
     # in case ArchiveStage throws an exception.
     self._recovery_image_status_queue.put(False)
     return super(ArchiveStage, self)._HandleStageException(exception)
+
+
+class DebugSymbolsStage(ArchivingStage):
+  """Handles generation & upload of debug symbols."""
+
+  def PerformStage(self):
+    """Generate debug symbols and upload debug.tgz."""
+    buildroot = self._build_root
+    config = self._build_config
+    board = self._current_board
+    debug = self.debug
+    archive_path = self.archive_path
+
+    if config['archive_build_debug'] or config['vm_tests']:
+      self._GenerateBreakpadSymbols(buildroot, board, debug)
+
+      # Kick off the symbol upload process in the background.
+      if config['upload_symbols']:
+        self.UploadSymbols(buildroot, board)
+
+      # Generate and upload tarball.
+      with self.ArtifactUploader(archive=False) as queue:
+        filename = commands.GenerateDebugTarball(
+            buildroot, board, archive_path,
+            config['archive_build_debug'])
+        queue.put([filename])
+    else:
+      self.archive_stage.BreakpadSymbolsGenerated(False)
+
+  def UploadSymbols(self, buildroot, board):
+    """Upload generated debug symbols."""
+    if self._options.remote_trybot or self.debug:
+      # For debug builds, limit ourselves to just uploading 1 symbol.
+      # This way trybots and such still exercise this code.
+      cnt = 1
+      official = False
+    else:
+      cnt = None
+      official = self._build_config['chromeos_official']
+    commands.UploadSymbols(buildroot, board, official, cnt)
+
+  def _GenerateBreakpadSymbols(self, buildroot, board, debug):
+    """Generate the breakpad symbols"""
+    success = False
+    try:
+      commands.GenerateBreakpadSymbols(buildroot, board, debug)
+      success = True
+    finally:
+      self.archive_stage.BreakpadSymbolsGenerated(success)
 
 
 class UploadPrebuiltsStage(BoardSpecificBuilderStage):
