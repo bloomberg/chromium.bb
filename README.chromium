@@ -276,6 +276,8 @@ Short Directions:
      On Windows run
        ./chromium/scripts/build_ffmpeg.sh win ia32 <absolute path to .>
        ./chromium/scripts/build_ffmpeg.sh win x64 <absolute path to .>
+       ./chromium/scripts/build_ffmpeg.sh win-vs2013 ia32 <absolute path to .>
+       ./chromium/scripts/build_ffmpeg.sh win-vs2013 x64 <absolute path to .>
 
   2) Finally, collect all these directories and copy all config files
      into the source tree using
