@@ -596,8 +596,15 @@ TEST_F(AcceleratorControllerTest, MAYBE_SuppressToggleMaximized) {
   EXPECT_FALSE(window_state->IsMaximized());
 }
 
+#if defined(OS_WIN) && defined(USE_AURA)
+// crbug.com/317592
+#define MAYBE_ProcessOnce DISABLED_ProcessOnce
+#else
+#define MAYBE_ProcessOnce ProcessOnce
+#endif
+
 #if defined(OS_WIN) || defined(USE_X11)
-TEST_F(AcceleratorControllerTest, ProcessOnce) {
+TEST_F(AcceleratorControllerTest, MAYBE_ProcessOnce) {
   ui::Accelerator accelerator_a(ui::VKEY_A, ui::EF_NONE);
   TestTarget target;
   GetController()->Register(accelerator_a, &target);
