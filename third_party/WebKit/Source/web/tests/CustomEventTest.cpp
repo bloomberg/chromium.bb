@@ -94,7 +94,9 @@ private:
 // SerializedScriptValue, and that this value can be retrieved and read in an
 // event listener. Initialization of a CustomEvent with a SerializedScriptValue
 // is an internal API, so it cannot be tested with a LayoutTest.
-TEST(CustomEventTest, InitWithSerializedScriptValue)
+//
+// Triggers crash in GC. http://crbug.com/317669
+TEST(CustomEventTest, DISABLED_InitWithSerializedScriptValue)
 {
     const std::string baseURL = "http://www.test.com";
     const std::string path = "visible_iframe.html";
