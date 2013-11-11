@@ -20,6 +20,10 @@ Connector::Connector(Handle message_pipe)
 }
 
 Connector::~Connector() {
+  if (read_callback_.IsPending())
+    read_callback_.Cancel();
+  if (write_callback_.IsPending())
+    write_callback_.Cancel();
 }
 
 void Connector::SetIncomingReceiver(MessageReceiver* receiver) {
@@ -54,18 +58,24 @@ void Connector::OnHandleReady(Callback* callback, MojoResult result) {
 
 void Connector::WaitToReadMore() {
   read_callback_.SetOwnerToNotify(this);
-  read_callback_.SetAsyncWaitID(
-      BindingsSupport::Get()->AsyncWait(message_pipe_,
-                                        MOJO_WAIT_FLAG_READABLE,
-                                        &read_callback_));
+
+  bool ok = BindingsSupport::Get()->AsyncWait(message_pipe_,
+                                              MOJO_WAIT_FLAG_READABLE,
+                                              MOJO_DEADLINE_INDEFINITE,
+                                              &read_callback_);
+  if (!ok)
+    error_ = true;
 }
 
 void Connector::WaitToWriteMore() {
   write_callback_.SetOwnerToNotify(this);
-  write_callback_.SetAsyncWaitID(
-      BindingsSupport::Get()->AsyncWait(message_pipe_,
-                                        MOJO_WAIT_FLAG_WRITABLE,
-                                        &write_callback_));
+
+  bool ok = BindingsSupport::Get()->AsyncWait(message_pipe_,
+                                              MOJO_WAIT_FLAG_WRITABLE,
+                                              MOJO_DEADLINE_INDEFINITE,
+                                              &write_callback_);
+  if (!ok)
+    error_ = true;
 }
 
 void Connector::ReadMore() {
@@ -130,7 +140,7 @@ void Connector::WriteOne(Message* message, bool* wait_to_write) {
   MojoResult rv = WriteMessage(message_pipe_,
                                message->data,
                                message->data->header.num_bytes,
-                               &message->handles[0],
+                               message->handles.data(),
                                static_cast<uint32_t>(message->handles.size()),
                                MOJO_WRITE_MESSAGE_FLAG_NONE);
   if (rv == MOJO_RESULT_OK) {
@@ -145,13 +155,12 @@ void Connector::WriteOne(Message* message, bool* wait_to_write) {
 // ----------------------------------------------------------------------------
 
 Connector::Callback::Callback()
-    : owner_(NULL),
-      async_wait_id_(0) {
+    : owner_(NULL) {
 }
 
-Connector::Callback::~Callback() {
-  if (owner_)
-    BindingsSupport::Get()->CancelWait(async_wait_id_);
+void Connector::Callback::Cancel() {
+  owner_ = NULL;
+  BindingsSupport::Get()->CancelWait(this);
 }
 
 void Connector::Callback::SetOwnerToNotify(Connector* owner) {
@@ -159,8 +168,8 @@ void Connector::Callback::SetOwnerToNotify(Connector* owner) {
   owner_ = owner;
 }
 
-void Connector::Callback::SetAsyncWaitID(BindingsSupport::AsyncWaitID id) {
-  async_wait_id_ = id;
+bool Connector::Callback::IsPending() const {
+  return owner_ != NULL;
 }
 
 void Connector::Callback::OnHandleReady(MojoResult result) {

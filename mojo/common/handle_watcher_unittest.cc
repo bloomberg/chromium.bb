@@ -32,14 +32,6 @@ void RunUntilIdle() {
   run_loop.RunUntilIdle();
 }
 
-void DeleteWatcherAndForwardResult(
-    HandleWatcher* watcher,
-    base::Callback<void(MojoResult)> next_callback,
-    MojoResult result) {
-  delete watcher;
-  next_callback.Run(result);
-}
-
 // Helper class to manage the callback and running the message loop waiting for
 // message to be received. Typical usage is something like:
 //   Schedule callback returned from GetCallback().
@@ -67,22 +59,17 @@ class CallbackHelper {
     run_loop.Run();
   }
 
-  base::Callback<void(MojoResult)> GetCallback() {
+  base::Closure GetCallback() {
     return base::Bind(&CallbackHelper::OnCallback, weak_factory_.GetWeakPtr());
   }
 
   void Start(HandleWatcher* watcher, MojoHandle handle) {
-    StartWithCallback(watcher, handle, GetCallback());
-  }
-
-  void StartWithCallback(HandleWatcher* watcher, MojoHandle handle,
-                         const base::Callback<void(MojoResult)>& callback) {
     watcher->Start(handle, MOJO_WAIT_FLAG_READABLE, MOJO_DEADLINE_INDEFINITE,
-                   callback);
+                   GetCallback());
   }
 
  private:
-  void OnCallback(MojoResult result) {
+  void OnCallback() {
     got_callback_ = true;
     if (run_loop_)
       run_loop_->Quit();
@@ -286,20 +273,6 @@ TEST_F(HandleWatcherTest, Deadline) {
   EXPECT_FALSE(callback_helper1.got_callback());
   EXPECT_TRUE(callback_helper2.got_callback());
   EXPECT_FALSE(callback_helper3.got_callback());
-}
-
-TEST_F(HandleWatcherTest, DeleteInCallback) {
-  ScopedMessagePipe test_pipe;
-  CallbackHelper callback_helper;
-
-  HandleWatcher* watcher = new HandleWatcher();
-  callback_helper.StartWithCallback(watcher, test_pipe.handle_1(),
-                                    base::Bind(&DeleteWatcherAndForwardResult,
-                                               watcher,
-                                               callback_helper.GetCallback()));
-  WriteToHandle(test_pipe.handle_0());
-  callback_helper.RunUntilGotCallback();
-  EXPECT_TRUE(callback_helper.got_callback());
 }
 
 }  // namespace test

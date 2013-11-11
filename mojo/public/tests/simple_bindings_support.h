@@ -17,10 +17,11 @@ class SimpleBindingsSupport : public BindingsSupport {
   SimpleBindingsSupport();
   virtual ~SimpleBindingsSupport();
 
-  virtual AsyncWaitID AsyncWait(Handle handle,
-                                MojoWaitFlags flags,
-                                AsyncWaitCallback* callback) MOJO_OVERRIDE;
-  virtual void CancelWait(AsyncWaitID async_wait_id) MOJO_OVERRIDE;
+  virtual bool AsyncWait(Handle handle,
+                         MojoWaitFlags flags,
+                         MojoDeadline deadline,
+                         AsyncWaitCallback* callback) MOJO_OVERRIDE;
+  virtual void CancelWait(AsyncWaitCallback* callback) MOJO_OVERRIDE;
 
   // This method is called by unit tests to check the status of any handles
   // that we are asynchronously waiting on and to dispatch callbacks for any
@@ -33,11 +34,11 @@ class SimpleBindingsSupport : public BindingsSupport {
   struct Waiter {
     Handle handle;
     MojoWaitFlags flags;
+    MojoDeadline deadline;
     AsyncWaitCallback* callback;
   };
 
-  typedef std::list<Waiter*> WaiterList;
-  WaiterList waiters_;
+  std::list<Waiter> waiters_;
 };
 
 }  // namespace test

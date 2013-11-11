@@ -5,7 +5,6 @@
 #ifndef MOJO_SHELL_CONTEXT_H_
 #define MOJO_SHELL_CONTEXT_H_
 
-#include "mojo/common/bindings_support_impl.h"
 #include "mojo/shell/loader.h"
 #include "mojo/shell/storage.h"
 #include "mojo/shell/task_runners.h"
@@ -35,7 +34,6 @@ class Context {
   TaskRunners task_runners_;
   Storage storage_;
   Loader loader_;
-  common::BindingsSupportImpl bindings_support_impl_;
 
 #if defined(OS_ANDROID)
   base::android::ScopedJavaGlobalRef<jobject> activity_;
