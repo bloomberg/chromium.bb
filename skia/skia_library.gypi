@@ -56,6 +56,9 @@
         'skia_export_defines': [
           'SK_BUILD_FOR_ANDROID',
         ],
+        'defines': [
+          'SK_FONTHOST_DOES_NOT_USE_FONTMGR',
+        ],
       }],
     ],
   },
@@ -373,9 +376,6 @@
         '../third_party/skia/include/utils/win',
         '../third_party/skia/src/utils/win',
       ],
-      'defines': [
-        'SK_FONTHOST_USES_FONTMGR',
-      ],
     },{ # not 'OS == "win"'
       'sources!': [
         '../third_party/skia/src/ports/SkFontHost_win_dw.cpp',
@@ -431,6 +431,8 @@
     'SK_DISABLE_PIXELREF_LOCKCOUNT_BALANCE_CHECK',
 
     'IGNORE_ROT_AA_RECT_OPT',
+
+    'SK_IGNORE_BLURRED_RRECT_OPT',
 
     'SK_IGNORE_QUAD_RR_CORNERS_OPT',
 
