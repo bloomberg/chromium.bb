@@ -21,6 +21,10 @@ class URLRequestContextGetter;
 class URLRequest;
 }
 
+namespace component_updater {
+class OnDemandTester;
+}
+
 namespace content {
 class ResourceThrottle;
 }
@@ -202,7 +206,7 @@ class ComponentUpdateService {
   virtual ~ComponentUpdateService() {}
 
   friend class ComponentsUI;
-  friend class OnDemandTester;
+  friend class component_updater::OnDemandTester;
 
  private:
   // Ask the component updater to do an update check for a previously

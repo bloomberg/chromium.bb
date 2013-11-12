@@ -25,6 +25,20 @@
 
 class TestInstaller;
 
+namespace component_updater {
+
+// Intercepts HTTP POST requests sent to |localhost2|.
+class InterceptorFactory : public URLRequestPostInterceptorFactory {
+ public:
+  InterceptorFactory();
+  ~InterceptorFactory();
+
+  URLRequestPostInterceptor* CreateInterceptor();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(InterceptorFactory);
+};
+
 // component 1 has extension id "jebgalgnebhfojomionfpkfelancnnkf", and
 // the RSA public key the following hash:
 const uint8 jebg_hash[] = {0x94, 0x16, 0x0b, 0x6d, 0x41, 0x75, 0xe9, 0xec,
@@ -113,6 +127,8 @@ class ComponentUpdaterTest : public testing::Test {
 
   virtual ~ComponentUpdaterTest();
 
+  virtual void SetUp();
+
   virtual void TearDown();
 
   ComponentUpdateService* component_updater();
@@ -130,6 +146,8 @@ class ComponentUpdaterTest : public testing::Test {
  protected:
   void RunThreads();
   void RunThreadsUntilIdle();
+
+  scoped_ptr<component_updater::InterceptorFactory> interceptor_factory_;
 
  private:
   TestConfigurator* test_config_;
@@ -153,5 +171,7 @@ class OnDemandTester {
   static ComponentUpdateService::Status OnDemand(
       ComponentUpdateService* cus, const std::string& component_id);
 };
+
+}  // namespace component_updater
 
 #endif  // CHROME_BROWSER_COMPONENT_UPDATER_TEST_COMPONENT_UPDATER_SERVICE_UNITTEST_H_

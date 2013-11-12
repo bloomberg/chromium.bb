@@ -24,6 +24,8 @@ using ::testing::_;
 using ::testing::InSequence;
 using ::testing::Mock;
 
+namespace component_updater {
+
 MockComponentObserver::MockComponentObserver() {
 }
 
@@ -77,7 +79,7 @@ GURL TestConfigurator::UpdateUrl() {
 }
 
 GURL TestConfigurator::PingUrl() {
-  return GURL("http://localhost2/ping");
+  return GURL("http://localhost2/update2");
 }
 
 const char* TestConfigurator::ExtraRequestParams() { return "extra=foo"; }
@@ -118,13 +120,27 @@ void TestConfigurator::SetQuitClosure(const base::Closure& quit_closure) {
   quit_closure_ = quit_closure;
 }
 
-// Intercepts ping requests sent over http POST to localhost2.
-class PingInterceptor : public URLRequestPostInterceptor {
+
+InterceptorFactory::InterceptorFactory()
+    : URLRequestPostInterceptorFactory("http", "localhost2") {}
+
+InterceptorFactory::~InterceptorFactory() {}
+
+URLRequestPostInterceptor* InterceptorFactory::CreateInterceptor() {
+  return URLRequestPostInterceptorFactory::CreateInterceptor("/update2");
+}
+
+class PartialMatch : public URLRequestPostInterceptor::RequestMatcher {
  public:
-  PingInterceptor() : URLRequestPostInterceptor("http", "localhost2") {}
+  explicit PartialMatch(const std::string& expected) : expected_(expected) {}
+  virtual bool Match(const std::string& actual) const OVERRIDE {
+    return actual.find(expected_) != std::string::npos;
+  }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(PingInterceptor);
+  const std::string expected_;
+
+  DISALLOW_COPY_AND_ASSIGN(PartialMatch);
 };
 
 ComponentUpdaterTest::ComponentUpdaterTest()
@@ -146,7 +162,12 @@ ComponentUpdaterTest::~ComponentUpdaterTest() {
   net::URLFetcher::SetEnableInterceptionForTests(false);
 }
 
+void ComponentUpdaterTest::SetUp() {
+  interceptor_factory_.reset(new InterceptorFactory);
+}
+
 void ComponentUpdaterTest::TearDown() {
+  interceptor_factory_.reset();
   xmlCleanupGlobals();
 }
 
@@ -216,7 +237,12 @@ TEST_F(ComponentUpdaterTest, StartStop) {
 // the COMPONENT_UPDATER_STARTED and COMPONENT_UPDATER_SLEEPING notifications
 // are generated. No pings are sent.
 TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
-  PingInterceptor ping_interceptor;
+  URLRequestPostInterceptor* post_interceptor(
+      interceptor_factory_->CreateInterceptor());
+  EXPECT_TRUE(post_interceptor != NULL);
+  EXPECT_TRUE(post_interceptor->ExpectRequest(new PartialMatch(
+    "event eventtype")));
+
   content::URLLocalHostRequestPrepackagedInterceptor interceptor;
 
   MockComponentObserver observer;
@@ -282,8 +308,12 @@ TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
               .Times(2);
   RunThreads();
 
+  EXPECT_EQ(0, post_interceptor->GetHitCount())
+      << post_interceptor->GetRequestsAsString();
+  EXPECT_EQ(0, post_interceptor->GetMissCount())
+      << post_interceptor->GetRequestsAsString();
+
   EXPECT_EQ(4, interceptor.GetHitCount());
-  EXPECT_EQ(0, ping_interceptor.GetHitCount());
 
   EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->error());
   EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->install_count());
@@ -299,8 +329,16 @@ TEST_F(ComponentUpdaterTest, CheckCrxSleep) {
 // 1- manifest check
 // 2- download crx
 // 3- second manifest check.
+// Only one ping is sent.
 TEST_F(ComponentUpdaterTest, InstallCrx) {
-  PingInterceptor ping_interceptor;
+  URLRequestPostInterceptor* post_interceptor(
+      interceptor_factory_->CreateInterceptor());
+  EXPECT_TRUE(post_interceptor != NULL);
+  EXPECT_TRUE(post_interceptor->ExpectRequest(new PartialMatch(
+      "<o:app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" version=\"1.0\">"
+      "<o:event eventtype=\"3\" eventresult=\"1\" "
+      "previousversion=\"0.9\" nextversion=\"1.0\"/></o:app>")));
+
   content::URLLocalHostRequestPrepackagedInterceptor interceptor;
 
   MockComponentObserver observer1;
@@ -387,14 +425,10 @@ TEST_F(ComponentUpdaterTest, InstallCrx) {
 
   EXPECT_EQ(3, interceptor.GetHitCount());
 
-  EXPECT_EQ(1, ping_interceptor.GetHitCount())
-      << ping_interceptor.GetRequestsAsString();
-  EXPECT_NE(string::npos, ping_interceptor.GetRequests()[0].find(
-      "<o:app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" version=\"1.0\">"
-      "<o:event eventtype=\"3\" eventresult=\"1\" "
-      "previousversion=\"0.9\" nextversion=\"1.0\"/></o:app>"))
-      << ping_interceptor.GetRequestsAsString();
-
+  EXPECT_EQ(1, post_interceptor->GetHitCount())
+      << post_interceptor->GetRequestsAsString();
+  EXPECT_EQ(0, post_interceptor->GetMissCount())
+      << post_interceptor->GetRequestsAsString();
 
   component_updater()->Stop();
 }
@@ -403,7 +437,12 @@ TEST_F(ComponentUpdaterTest, InstallCrx) {
 // particular there should not be an install because the minimum product
 // version is much higher than of chrome.
 TEST_F(ComponentUpdaterTest, ProdVersionCheck) {
-  PingInterceptor ping_interceptor;
+  URLRequestPostInterceptor* post_interceptor(
+      interceptor_factory_->CreateInterceptor());
+  EXPECT_TRUE(post_interceptor != NULL);
+  EXPECT_TRUE(post_interceptor->ExpectRequest(new PartialMatch(
+      "event eventtype")));
+
   content::URLLocalHostRequestPrepackagedInterceptor interceptor;
 
   TestInstaller installer;
@@ -423,8 +462,8 @@ TEST_F(ComponentUpdaterTest, ProdVersionCheck) {
   component_updater()->Start();
   RunThreads();
 
-  EXPECT_EQ(0, ping_interceptor.GetHitCount())
-      << ping_interceptor.GetRequestsAsString();
+  EXPECT_EQ(0, post_interceptor->GetHitCount())
+      << post_interceptor->GetRequestsAsString();
   EXPECT_EQ(1, interceptor.GetHitCount());
 
   EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->error());
@@ -433,14 +472,21 @@ TEST_F(ComponentUpdaterTest, ProdVersionCheck) {
   component_updater()->Stop();
 }
 
-// Test that a ping for an update check can cause installs.
+// Test that a update check due to an on demand call can cause installs.
 // Here is the timeline:
 //  - First loop: we return a reply that indicates no update, so
 //    nothing happens.
-//  - We ping.
+//  - We make an on demand call.
 //  - This triggers a second loop, which has a reply that triggers an install.
 TEST_F(ComponentUpdaterTest, OnDemandUpdate) {
-  PingInterceptor ping_interceptor;
+  URLRequestPostInterceptor* post_interceptor(
+      interceptor_factory_->CreateInterceptor());
+  EXPECT_TRUE(post_interceptor != NULL);
+  EXPECT_TRUE(post_interceptor->ExpectRequest(new PartialMatch(
+      "<o:app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" version=\"1.0\">"
+      "<o:event eventtype=\"3\" eventresult=\"1\" "
+      "previousversion=\"0.9\" nextversion=\"1.0\"/></o:app>")));
+
   content::URLLocalHostRequestPrepackagedInterceptor interceptor;
 
   MockComponentObserver observer1;
@@ -636,13 +682,10 @@ TEST_F(ComponentUpdaterTest, OnDemandUpdate) {
 
   RunThreads();
 
-  EXPECT_EQ(1, ping_interceptor.GetHitCount())
-      << ping_interceptor.GetRequestsAsString();
-  EXPECT_NE(string::npos, ping_interceptor.GetRequests()[0].find(
-      "<o:app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" version=\"1.0\">"
-      "<o:event eventtype=\"3\" eventresult=\"1\" "
-      "previousversion=\"0.9\" nextversion=\"1.0\"/></o:app>"))
-      << ping_interceptor.GetRequestsAsString();
+  EXPECT_EQ(1, post_interceptor->GetHitCount())
+      << post_interceptor->GetRequestsAsString();
+  EXPECT_EQ(0, post_interceptor->GetMissCount())
+      << post_interceptor->GetRequestsAsString();
 
   component_updater()->Stop();
 }
@@ -650,7 +693,14 @@ TEST_F(ComponentUpdaterTest, OnDemandUpdate) {
 // Verify that a previously registered component can get re-registered
 // with a different version.
 TEST_F(ComponentUpdaterTest, CheckReRegistration) {
-  PingInterceptor ping_interceptor;
+  URLRequestPostInterceptor* post_interceptor(
+      interceptor_factory_->CreateInterceptor());
+  EXPECT_TRUE(post_interceptor != NULL);
+  EXPECT_TRUE(post_interceptor->ExpectRequest(new PartialMatch(
+      "<o:app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" version=\"1.0\">"
+      "<o:event eventtype=\"3\" eventresult=\"1\" "
+      "previousversion=\"0.9\" nextversion=\"1.0\"/></o:app>")));
+
   content::URLLocalHostRequestPrepackagedInterceptor interceptor;
 
   MockComponentObserver observer1;
@@ -738,13 +788,10 @@ TEST_F(ComponentUpdaterTest, CheckReRegistration) {
   EXPECT_EQ(0, static_cast<TestInstaller*>(com2.installer)->error());
   EXPECT_EQ(0, static_cast<TestInstaller*>(com2.installer)->install_count());
 
-  EXPECT_EQ(1, ping_interceptor.GetHitCount())
-        << ping_interceptor.GetRequestsAsString();
-  EXPECT_NE(string::npos, ping_interceptor.GetRequests()[0].find(
-      "<o:app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" version=\"1.0\">"
-      "<o:event eventtype=\"3\" eventresult=\"1\" "
-      "previousversion=\"0.9\" nextversion=\"1.0\"/></o:app>"))
-      << ping_interceptor.GetRequestsAsString();
+  EXPECT_EQ(1, post_interceptor->GetHitCount())
+        << post_interceptor->GetRequestsAsString();
+  EXPECT_EQ(0, post_interceptor->GetMissCount())
+        << post_interceptor->GetRequestsAsString();
 
   EXPECT_EQ(3, interceptor.GetHitCount());
 
@@ -803,6 +850,12 @@ TEST_F(ComponentUpdaterTest, CheckReRegistration) {
 
   EXPECT_EQ(4, interceptor.GetHitCount());
 
+  // No additional pings are expected.
+  EXPECT_EQ(1, post_interceptor->GetHitCount())
+        << post_interceptor->GetRequestsAsString();
+  EXPECT_EQ(0, post_interceptor->GetMissCount())
+        << post_interceptor->GetRequestsAsString();
+
   // We created a new installer, so the counts go back to 0.
   EXPECT_EQ(0, static_cast<TestInstaller*>(com1.installer)->error());
   EXPECT_EQ(0, static_cast<TestInstaller*>(com1.installer)->install_count());
@@ -824,7 +877,19 @@ TEST_F(ComponentUpdaterTest, CheckReRegistration) {
 // There should be two pings, one for each update. The second will bear a
 // diffresult=1, while the first will not.
 TEST_F(ComponentUpdaterTest, DifferentialUpdate) {
-  PingInterceptor ping_interceptor;
+  URLRequestPostInterceptor* post_interceptor(
+      interceptor_factory_->CreateInterceptor());
+  EXPECT_TRUE(post_interceptor != NULL);
+  EXPECT_TRUE(post_interceptor->ExpectRequest(new PartialMatch(
+      "<o:app appid=\"ihfokbkgjpifnbbojhneepfflplebdkc\" version=\"1.0\">"
+      "<o:event eventtype=\"3\" eventresult=\"1\" "
+      "previousversion=\"0.0\" nextversion=\"1.0\" nextfp=\"1\"/></o:app>")));
+  EXPECT_TRUE(post_interceptor->ExpectRequest(new PartialMatch(
+      "<o:app appid=\"ihfokbkgjpifnbbojhneepfflplebdkc\" version=\"2.0\">"
+      "<o:event eventtype=\"3\" eventresult=\"1\" "
+      "previousversion=\"1.0\" nextversion=\"2.0\" "
+      "diffresult=\"1\" previousfp=\"1\" nextfp=\"f22\"/></o:app>")));
+
   content::URLLocalHostRequestPrepackagedInterceptor interceptor;
 
   VersionedTestInstaller installer;
@@ -866,19 +931,10 @@ TEST_F(ComponentUpdaterTest, DifferentialUpdate) {
   EXPECT_EQ(2, static_cast<TestInstaller*>(com.installer)->install_count());
 
   // One ping has the diffresult=1, the other does not.
-  EXPECT_EQ(2, ping_interceptor.GetHitCount())
-      << ping_interceptor.GetRequestsAsString();
-  EXPECT_NE(string::npos, ping_interceptor.GetRequests()[0].find(
-      "<o:app appid=\"ihfokbkgjpifnbbojhneepfflplebdkc\" version=\"1.0\">"
-      "<o:event eventtype=\"3\" eventresult=\"1\" "
-      "previousversion=\"0.0\" nextversion=\"1.0\" nextfp=\"1\"/></o:app>"))
-      << ping_interceptor.GetRequestsAsString();
-  EXPECT_NE(string::npos, ping_interceptor.GetRequests()[1].find(
-      "<o:app appid=\"ihfokbkgjpifnbbojhneepfflplebdkc\" version=\"2.0\">"
-      "<o:event eventtype=\"3\" eventresult=\"1\" "
-      "previousversion=\"1.0\" nextversion=\"2.0\" "
-      "diffresult=\"1\" previousfp=\"1\" nextfp=\"f22\"/></o:app>"))
-      << ping_interceptor.GetRequestsAsString();
+  EXPECT_EQ(2, post_interceptor->GetHitCount())
+      << post_interceptor->GetRequestsAsString();
+  EXPECT_EQ(0, post_interceptor->GetMissCount())
+      << post_interceptor->GetRequestsAsString();
 
   EXPECT_EQ(5, interceptor.GetHitCount());
 
@@ -896,7 +952,16 @@ TEST_F(ComponentUpdaterTest, DifferentialUpdate) {
 // 4- update check (loop 2 - no update available)
 // There should be one ping for the first attempted update.
 TEST_F(ComponentUpdaterTest, DifferentialUpdateFails) {
-  PingInterceptor ping_interceptor;
+  URLRequestPostInterceptor* post_interceptor(
+      interceptor_factory_->CreateInterceptor());
+  EXPECT_TRUE(post_interceptor != NULL);
+  EXPECT_TRUE(post_interceptor->ExpectRequest(new PartialMatch(
+      "<o:app appid=\"ihfokbkgjpifnbbojhneepfflplebdkc\" version=\"2.0\">"
+      "<o:event eventtype=\"3\" eventresult=\"1\" "
+      "previousversion=\"1.0\" nextversion=\"2.0\" "
+      "diffresult=\"0\" differrorcat=\"2\" differrorcode=\"16\" "
+      "nextfp=\"f22\"/></o:app>")));
+
   content::URLLocalHostRequestPrepackagedInterceptor interceptor;
 
   TestInstaller installer;
@@ -937,15 +1002,10 @@ TEST_F(ComponentUpdaterTest, DifferentialUpdateFails) {
   EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->error());
   EXPECT_EQ(1, static_cast<TestInstaller*>(com.installer)->install_count());
 
-  EXPECT_EQ(1, ping_interceptor.GetHitCount())
-      << ping_interceptor.GetRequestsAsString();
-  EXPECT_NE(string::npos, ping_interceptor.GetRequests()[0].find(
-      "<o:app appid=\"ihfokbkgjpifnbbojhneepfflplebdkc\" version=\"2.0\">"
-      "<o:event eventtype=\"3\" eventresult=\"1\" "
-      "previousversion=\"1.0\" nextversion=\"2.0\" "
-      "diffresult=\"0\" differrorcat=\"2\" differrorcode=\"16\" "
-      "nextfp=\"f22\"/></o:app>"))
-      << ping_interceptor.GetRequestsAsString();
+  EXPECT_EQ(1, post_interceptor->GetHitCount())
+      << post_interceptor->GetRequestsAsString();
+  EXPECT_EQ(0, post_interceptor->GetMissCount())
+      << post_interceptor->GetRequestsAsString();
 
   EXPECT_EQ(4, interceptor.GetHitCount());
 
@@ -954,7 +1014,20 @@ TEST_F(ComponentUpdaterTest, DifferentialUpdateFails) {
 
 // Verify that a failed installation causes an install failure ping.
 TEST_F(ComponentUpdaterTest, CheckFailedInstallPing) {
-  PingInterceptor ping_interceptor;
+  URLRequestPostInterceptor* post_interceptor(
+      interceptor_factory_->CreateInterceptor());
+  EXPECT_TRUE(post_interceptor != NULL);
+  EXPECT_TRUE(post_interceptor->ExpectRequest(new PartialMatch(
+      "<o:app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" version=\"0.9\">"
+      "<o:event eventtype=\"3\" eventresult=\"0\" "
+      "previousversion=\"0.9\" nextversion=\"1.0\" "
+      "errorcat=\"3\" errorcode=\"9\"/></o:app>")));
+  EXPECT_TRUE(post_interceptor->ExpectRequest(new PartialMatch(
+    "<o:app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" version=\"0.9\">"
+    "<o:event eventtype=\"3\" eventresult=\"0\" "
+    "previousversion=\"0.9\" nextversion=\"1.0\" "
+    "errorcat=\"3\" errorcode=\"9\"/></o:app>")));
+
   content::URLLocalHostRequestPrepackagedInterceptor interceptor;
 
   // This test installer reports installation failure.
@@ -998,20 +1071,10 @@ TEST_F(ComponentUpdaterTest, CheckFailedInstallPing) {
   EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->error());
   EXPECT_EQ(2, static_cast<TestInstaller*>(com.installer)->install_count());
 
-  EXPECT_EQ(2, ping_interceptor.GetHitCount())
-      << ping_interceptor.GetRequestsAsString();
-  EXPECT_NE(string::npos, ping_interceptor.GetRequests()[0].find(
-      "<o:app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" version=\"0.9\">"
-      "<o:event eventtype=\"3\" eventresult=\"0\" "
-      "previousversion=\"0.9\" nextversion=\"1.0\" "
-      "errorcat=\"3\" errorcode=\"9\"/></o:app>"))
-      << ping_interceptor.GetRequestsAsString();
-  EXPECT_NE(string::npos, ping_interceptor.GetRequests()[1].find(
-      "<o:app appid=\"jebgalgnebhfojomionfpkfelancnnkf\" version=\"0.9\">"
-      "<o:event eventtype=\"3\" eventresult=\"0\" "
-      "previousversion=\"0.9\" nextversion=\"1.0\" "
-      "errorcat=\"3\" errorcode=\"9\"/></o:app>"))
-      << ping_interceptor.GetRequestsAsString();
+  EXPECT_EQ(2, post_interceptor->GetHitCount())
+      << post_interceptor->GetRequestsAsString();
+  EXPECT_EQ(0, post_interceptor->GetMissCount())
+      << post_interceptor->GetRequestsAsString();
 
   EXPECT_EQ(5, interceptor.GetHitCount());
 
@@ -1022,7 +1085,21 @@ TEST_F(ComponentUpdaterTest, CheckFailedInstallPing) {
 // ihfokbkgjpifnbbojhneepfflplebdkc_1to2_bad.crx contains an incorrect
 // patching instruction that should fail.
 TEST_F(ComponentUpdaterTest, DifferentialUpdateFailErrorcode) {
-  PingInterceptor ping_interceptor;
+  URLRequestPostInterceptor* post_interceptor(
+      interceptor_factory_->CreateInterceptor());
+  EXPECT_TRUE(post_interceptor != NULL);
+  EXPECT_TRUE(post_interceptor->ExpectRequest(new PartialMatch(
+      "<o:app appid=\"ihfokbkgjpifnbbojhneepfflplebdkc\" version=\"1.0\">"
+      "<o:event eventtype=\"3\" eventresult=\"1\" "
+      "previousversion=\"0.0\" nextversion=\"1.0\" nextfp=\"1\"/></o:app>")));
+  EXPECT_TRUE(post_interceptor->ExpectRequest(new PartialMatch(
+      "<o:app appid=\"ihfokbkgjpifnbbojhneepfflplebdkc\" version=\"2.0\">"
+      "<o:event eventtype=\"3\" eventresult=\"1\" "
+      "previousversion=\"1.0\" nextversion=\"2.0\" "
+      "diffresult=\"0\" differrorcat=\"2\" "
+      "differrorcode=\"14\" diffextracode1=\"305\" "
+      "previousfp=\"1\" nextfp=\"f22\"/></o:app>")));
+
   content::URLLocalHostRequestPrepackagedInterceptor interceptor;
 
   VersionedTestInstaller installer;
@@ -1070,21 +1147,13 @@ TEST_F(ComponentUpdaterTest, DifferentialUpdateFailErrorcode) {
   EXPECT_EQ(0, static_cast<TestInstaller*>(com.installer)->error());
   EXPECT_EQ(2, static_cast<TestInstaller*>(com.installer)->install_count());
 
-  EXPECT_EQ(2, ping_interceptor.GetHitCount())
-      << ping_interceptor.GetRequestsAsString();
-  EXPECT_NE(string::npos, ping_interceptor.GetRequests()[0].find(
-      "<o:app appid=\"ihfokbkgjpifnbbojhneepfflplebdkc\" version=\"1.0\">"
-      "<o:event eventtype=\"3\" eventresult=\"1\" "
-      "previousversion=\"0.0\" nextversion=\"1.0\" nextfp=\"1\"/></o:app>"))
-      << ping_interceptor.GetRequestsAsString();
-  EXPECT_NE(string::npos, ping_interceptor.GetRequests()[1].find(
-      "<o:app appid=\"ihfokbkgjpifnbbojhneepfflplebdkc\" version=\"2.0\">"
-      "<o:event eventtype=\"3\" eventresult=\"1\" "
-      "previousversion=\"1.0\" nextversion=\"2.0\" "
-      "diffresult=\"0\" differrorcat=\"2\" "
-      "differrorcode=\"14\" diffextracode1=\"305\" "
-      "previousfp=\"1\" nextfp=\"f22\"/></o:app>"))
-      << ping_interceptor.GetRequestsAsString();
+  EXPECT_EQ(2, post_interceptor->GetHitCount())
+      << post_interceptor->GetRequestsAsString();
+  EXPECT_EQ(0, post_interceptor->GetMissCount())
+      << post_interceptor->GetRequestsAsString();
 
   EXPECT_EQ(5, interceptor.GetHitCount());
 }
+
+}  // namespace component_updater
+
