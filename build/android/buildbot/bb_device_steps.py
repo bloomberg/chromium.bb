@@ -141,6 +141,8 @@ def RunTestSuites(options, suites):
     args.append('--release')
   if options.asan:
     args.append('--tool=asan')
+  if options.gtest_filter:
+    args.append('--gtest-filter=%s' % options.gtest_filter)
   for suite in suites:
     bb_annotations.PrintNamedStep(suite)
     cmd = ['build/android/test_runner.py', 'gtest', '-s', suite] + args
@@ -566,6 +568,8 @@ def GetDeviceStepsOptParser():
                     action='append',
                     help=('Run a test suite. Test suites: "%s"' %
                           '", "'.join(VALID_TESTS)))
+  parser.add_option('--gtest-filter',
+                    help='Filter for running a subset of tests of a gtest test')
   parser.add_option('--asan', action='store_true', help='Run tests with asan.')
   parser.add_option('--install', metavar='<apk name>',
                     help='Install an apk by name')
