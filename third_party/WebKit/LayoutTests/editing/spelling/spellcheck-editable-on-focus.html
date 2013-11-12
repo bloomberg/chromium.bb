@@ -6,16 +6,15 @@
 <script src="../../resources/js-test.js"></script>
 </head>
 <body onload="test();">
-<pre id="console"></pre>
 <div id="container">
-  <div id="test_editable" contentEditable>zz zz zz. </div>
+  <div id="test_editable" contentEditable>zz zz zz.</div>
   <textarea id="test_textarea">zz zz zz.</textarea>
   <input type="text" id="test_textfield" value="zz zz zz."></input>
 </div>
 <script>
-description("Spell checking should be triggered on focus of an editable. " +
-"To test manually type focus above editable and textarea. Misspellings in them " +
-"should be marked on focus.");
+description("Spell checking should be triggered on focus of an editable. "
+    + "To test manually, set focus on above elements. The test succeed if "
+    + "misspellings are marked.");
 
 jsTestIsAsync = true;
 
@@ -23,40 +22,41 @@ var testEditable = document.getElementById('test_editable');
 var testTextArea = document.getElementById('test_textarea');
 var testTextField = document.getElementById('test_textfield');
 
-function test()
-{
-    if (!window.internals)
-    {
-        log("Automatic testing impossible. Test manually.");
+function setFocusOnEditableElements() {
+    testEditable.focus();
+    testTextArea.focus();
+    testTextField.focus();
+}
+
+var expectedNumberOfMarkers;
+var textNode;
+
+function verifySpellingMarkers(expectation, doneCallback) {
+    expectedNumberOfMarkers = expectation;
+    textNode = findFirstTextNode(testEditable);
+    shouldBecomeEqual('internals.markerCountForNode(textNode, "spelling")', 'expectedNumberOfMarkers', function() {
+        shouldBecomeEqual('internals.markerCountForNode(textNode, "spelling")', 'expectedNumberOfMarkers', function() {
+            shouldBecomeEqual('internals.markerCountForNode(textNode, "spelling")', 'expectedNumberOfMarkers', function() {
+                doneCallback();
+                // After focusing the editable elements, check whether they have spelling markers.
+                verifySpellingMarkers(3, finishJSTest);
+             });
+        });
+    });
+}
+
+function test() {
+    if (!window.internals) {
+        debug("Automatic testing impossible. Test manually.");
         return;
     }
 
     internals.settings.setUnifiedTextCheckerEnabled(true);
     internals.settings.setAsynchronousSpellCheckingEnabled(true);
-    internals.setContinuousSpellCheckingEnabled(true);
 
-    function waitForMarkersToAppear(nretry)
-    {
-        if (nretry > 0
-            && (!internals.markerCountForNode(findFirstTextNode(testEditable), "spelling")
-            || !internals.markerCountForNode(findFirstTextNode(testTextArea), "spelling")
-            || !internals.markerCountForNode(findFirstTextNode(testTextField), "spelling"))) {
-            window.setTimeout(function() { waitForMarkersToAppear(nretry - 1); }, 5);
-        } else {
-            shouldBe('internals.markerCountForNode(findFirstTextNode(testTextArea), "spelling")', '3');
-            shouldBe('internals.markerCountForNode(findFirstTextNode(testEditable), "spelling")', '3');
-            shouldBe('internals.markerCountForNode(findFirstTextNode(testTextField), "spelling")', '3');
-            finishJSTest();
-        }
-    }
-
-    shouldBe('internals.markerCountForNode(findFirstTextNode(testEditable), "spelling")', '0');
-    testEditable.focus();
-    shouldBe('internals.markerCountForNode(findFirstTextNode(testTextArea), "spelling")', '0');
-    testTextArea.focus();
-    shouldBe('internals.markerCountForNode(findFirstTextNode(testTextField), "spelling")', '0');
-    testTextField.focus();
-    waitForMarkersToAppear(10);
+    // Check whether non-focused elements do not have spelling markers, then
+    // verify them when they get focused.
+    verifySpellingMarkers(0, setFocusOnEditableElements);
 }
 
 </script>
