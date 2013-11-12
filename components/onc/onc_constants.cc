@@ -265,7 +265,20 @@ const char kStaticChallenge[] = "StaticChallenge";
 const char kTLSAuthContents[] = "TLSAuthContents";
 const char kTLSRemote[] = "TLSRemote";
 const char kVerb[] = "Verb";
+const char kVerifyHash[] = "VerifyHash";
+const char kVerifyX509[] = "VerifyX509";
 }  // namespace openvpn
+
+namespace verify_x509 {
+const char kName[] = "Name";
+const char kType[] = "Type";
+
+namespace types {
+const char kName[] = "name";
+const char kNamePrefix[] = "name-prefix";
+const char kSubject[] = "subject";
+}  // namespace types
+}  // namespace verify_x509
 
 namespace proxy {
 const char kDirect[] = "Direct";

@@ -165,6 +165,9 @@ INSTANTIATE_TEST_CASE_P(
                                 true),
                       OncParams("translation_of_shill_wifi_with_state.onc",
                                 &kNetworkWithStateSignature,
+                                false),
+                      OncParams("valid_openvpn_with_cert_pems.onc",
+                                &kNetworkConfigurationSignature,
                                 false)));
 
 namespace {
@@ -292,6 +295,9 @@ INSTANTIATE_TEST_CASE_P(
                                   false),
                         RepairParams("",
                                      "network-nested-state-field-repaired")),
+         std::make_pair(OncParams("openvpn-missing-verify-x509-name",
+                                  &kNetworkConfigurationSignature, false),
+                        RepairParams("", "openvpn-missing-verify-x509-name")),
          std::make_pair(OncParams("toplevel-with-repairable-networks",
                                   &kToplevelConfigurationSignature,
                                   false,
@@ -366,7 +372,11 @@ INSTANTIATE_TEST_CASE_P(
          std::make_pair(OncParams("network-with-client-cert-pattern",
                                   &kNetworkConfigurationSignature, true,
                                   ::onc::ONC_SOURCE_DEVICE_POLICY),
-                        RepairParams("", ""))));
+                        RepairParams("", "")),
+         std::make_pair(OncParams("openvpn-invalid-verify-x509-type",
+                                  &kNetworkConfigurationSignature, false),
+                        RepairParams("", ""))
+         ));
 
 }  // namespace onc
 }  // namespace chromeos

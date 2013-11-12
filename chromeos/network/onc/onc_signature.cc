@@ -126,6 +126,13 @@ const OncFieldSignature openvpn_fields[] = {
     { ::onc::vpn::kUsername, &kStringSignature},
     // Not supported, yet.
     { ::onc::openvpn::kVerb, &kStringSignature},
+    { ::onc::openvpn::kVerifyHash, &kStringSignature},
+    { ::onc::openvpn::kVerifyX509, &kVerifyX509Signature},
+    {NULL}};
+
+const OncFieldSignature verify_x509_fields[] = {
+    { ::onc::verify_x509::kName, &kStringSignature},
+    { ::onc::verify_x509::kType, &kStringSignature},
     {NULL}};
 
 const OncFieldSignature vpn_fields[] = {
@@ -315,6 +322,9 @@ const OncValueSignature kL2TPSignature = {
 };
 const OncValueSignature kOpenVPNSignature = {
   Value::TYPE_DICTIONARY, openvpn_fields, NULL
+};
+const OncValueSignature kVerifyX509Signature = {
+  Value::TYPE_DICTIONARY, verify_x509_fields, NULL
 };
 const OncValueSignature kVPNSignature = {
   Value::TYPE_DICTIONARY, vpn_fields, NULL

@@ -181,6 +181,10 @@ class CHROMEOS_EXPORT Validator : public Mapper {
       const base::DictionaryValue& onc_object,
       base::DictionaryValue* result);
 
+  bool ValidateVerifyX509(
+      const base::DictionaryValue& onc_object,
+      base::DictionaryValue* result);
+
   bool ValidateCertificatePattern(
       const base::DictionaryValue& onc_object,
       base::DictionaryValue* result);

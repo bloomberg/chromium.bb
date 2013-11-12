@@ -146,6 +146,9 @@ void ShillToONCTranslator::TranslateEthernet() {
 }
 
 void ShillToONCTranslator::TranslateOpenVPN() {
+  if (shill_dictionary_->HasKey(shill::kOpenVPNVerifyX509NameProperty))
+    TranslateAndAddNestedObject(::onc::openvpn::kVerifyX509);
+
   // Shill supports only one RemoteCertKU but ONC requires a list. If existing,
   // wraps the value into a list.
   std::string certKU;

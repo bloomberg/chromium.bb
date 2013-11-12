@@ -288,7 +288,20 @@ ONC_EXPORT extern const char kStaticChallenge[];
 ONC_EXPORT extern const char kTLSAuthContents[];
 ONC_EXPORT extern const char kTLSRemote[];
 ONC_EXPORT extern const char kVerb[];
+ONC_EXPORT extern const char kVerifyHash[];
+ONC_EXPORT extern const char kVerifyX509[];
 }  // namespace openvpn
+
+namespace verify_x509 {
+ONC_EXPORT extern const char kName[];
+ONC_EXPORT extern const char kType[];
+
+namespace types {
+ONC_EXPORT extern const char kName[];
+ONC_EXPORT extern const char kNamePrefix[];
+ONC_EXPORT extern const char kSubject[];
+}  // namespace types
+}  // namespace verify_x509
 
 namespace substitutes {
 ONC_EXPORT extern const char kEmailField[];

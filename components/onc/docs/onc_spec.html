@@ -1192,9 +1192,52 @@
         (optional)
         <span class="type">string</span>
       </span>
-      Verbosity level, defaults to openvpn default if not specified.
+      Verbosity level, defaults to OpenVpn's default if not specified.
+    </dd>
+
+    <dt class="field">VerifyHash</dt>
+    <dd>
+      <span class="field_meta">
+        (optional)
+        <span class="type">string</span>
+      </span>
+      If set, this value is passed as the "--verify-hash" argument to OpenVPN,
+      which specifies the SHA1 fingerprint for the level-1 certificate.
+    </dd>
+
+    <dt class="field">VerifyX509</dt>
+    <dd>
+      <span class="field_meta">
+        (optional)
+        <span class="type">VerifyX509</span>
+      </span>
+       If set, the "--verify-x509-name" argument is passed to OpenVPN with the values of this object and only connections will be accepted if a host's X.509 name is equal to the given name.
     </dd>
   </dl>
+
+  <p>
+    <span class="type">VerifyX509</span> type contains the following:
+  </p>
+  <dl class="field_list">
+    <dt class="field">Name</dt>
+    <dd>
+      <span class="field_meta">
+        (required)
+        <span class="type">string</span>
+      </span>
+      The name that the host's X.509 name is compared to. Which host name is compared depends on the value of <span class="field">Type</span>.
+    </dd>
+
+    <dt class="field">Type</dt>
+    <dd>
+      <span class="field_meta">
+        (optional)
+        <span class="type">string</span>
+      </span>
+      Determines which of the host's X.509 names will be verified. Allowed values are <span class="value">name</span>, <span class="value">name-prefix</span> and <span class="value">subject</span>. See OpenVPN's documentation for "--verify-x509-name" for the meaning of each value. Defaults to OpenVPN's default if not specified. 
+    </dd>
+  </dl>
+
 </section>
 
 </section>

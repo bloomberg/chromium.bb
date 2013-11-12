@@ -187,6 +187,36 @@
             }
         }
     },
+    "openvpn-missing-verify-x509-name": {
+      "GUID": "guid",
+      "Type": "VPN",
+      "Name": "name",
+      "VPN": {
+        "Host": "host",
+        "Type": "OpenVPN",
+        "OpenVPN": {
+          "ClientCertType": "None",
+          "VerifyX509": {
+            "Type": "name"
+          }
+        }
+      }
+    },
+    "openvpn-invalid-verify-x509-type": {
+      "GUID": "guid",
+      "Type": "VPN",
+      "Name": "name",
+      "VPN": {
+        "Host": "host",
+        "Type": "OpenVPN",
+        "OpenVPN": {
+          "ClientCertType": "None",
+          "VerifyX509": {
+            "Type": "unknown type"
+          }
+        }
+      }
+    },
     "toplevel-empty": {
         "Type": "UnencryptedConfiguration",
         "NetworkConfigurations": [ ]

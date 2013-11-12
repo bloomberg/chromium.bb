@@ -126,6 +126,8 @@ scoped_ptr<base::DictionaryValue> Validator::MapObject(
       valid = ValidateIPsec(onc_object, repaired.get());
     else if (&signature == &kOpenVPNSignature)
       valid = ValidateOpenVPN(onc_object, repaired.get());
+    else if (&signature == &kVerifyX509Signature)
+      valid = ValidateVerifyX509(onc_object, repaired.get());
     else if (&signature == &kCertificatePatternSignature)
       valid = ValidateCertificatePattern(onc_object, repaired.get());
     else if (&signature == &kProxySettingsSignature)
@@ -662,6 +664,21 @@ bool Validator::ValidateOpenVPN(
     allRequiredExist &= RequireField(*result, ::onc::vpn::kClientCertPattern);
   else if (cert_type == kRef)
     allRequiredExist &= RequireField(*result, ::onc::vpn::kClientCertRef);
+
+  return !error_on_missing_field_ || allRequiredExist;
+}
+
+bool Validator::ValidateVerifyX509(const base::DictionaryValue& onc_object,
+                                   base::DictionaryValue* result) {
+  using namespace ::onc::verify_x509;
+
+  static const char* kValidTypeValues[] =
+    {types::kName, types::kNamePrefix, types::kSubject, NULL};
+
+  if (FieldExistsAndHasNoValidValue(*result, kType, kValidTypeValues))
+    return false;
+
+  bool allRequiredExist = RequireField(*result, kName);
 
   return !error_on_missing_field_ || allRequiredExist;
 }
