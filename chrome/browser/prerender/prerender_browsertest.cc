@@ -1687,6 +1687,26 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   NavigateToURL("files/prerender/prerender_page.html");
 }
 
+// Checks that redirects with location.replace do not cancel a prerender and
+// and swap when navigating to the first page.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderLocationReplaceNavigateToFirst) {
+  PrerenderTestURL("files/prerender/prerender_location_replace.html",
+                   FINAL_STATUS_USED,
+                   2);
+  NavigateToDestURL();
+}
+
+// Checks that redirects with location.replace do not cancel a prerender and
+// and swap when navigating to the second.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
+                       PrerenderLocationReplaceNavigateToSecond) {
+  PrerenderTestURL("files/prerender/prerender_location_replace.html",
+                   FINAL_STATUS_USED,
+                   2);
+  NavigateToURL("files/prerender/prerender_page.html");
+}
+
 // Checks that client-issued redirects work with prerendering.
 // This version navigates to the final destination page, rather than the
 // page which does the redirection via a mouse click.
@@ -3283,6 +3303,14 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
   params.browser_initiated_post_data =
       base::RefCountedString::TakeString(&post_data);
   NavigateToURLWithParams(params, false);
+}
+
+// Checks that the prerendering of a page is canceled correctly when the
+// prerendered page tries to make a second navigation entry.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderNewNavigationEntry) {
+  PrerenderTestURL("files/prerender/prerender_new_entry.html",
+                   FINAL_STATUS_NEW_NAVIGATION_ENTRY,
+                   1);
 }
 
 }  // namespace prerender

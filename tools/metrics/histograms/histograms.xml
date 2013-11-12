@@ -27331,6 +27331,7 @@ other types of suffix sets.
   <int value="44" label="PAGE_BEING_CAPTURED"/>
   <int value="45" label="BAD_DEFERRED_REDIRECT"/>
   <int value="46" label="NAVIGATION_UNCOMMITTED"/>
+  <int value="47" label="NEW_NAVIGATION_ENTRY"/>
 </enum>
 
 <enum name="PrerenderHoverEvent" type="int">

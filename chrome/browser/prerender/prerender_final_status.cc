@@ -58,6 +58,7 @@ const char* kFinalStatusNames[] = {
   "Page Being Captured",
   "Bad Deferred Redirect",
   "Navigation Uncommitted",
+  "New Navigation Entry",
   "Max",
 };
 COMPILE_ASSERT(arraysize(kFinalStatusNames) == FINAL_STATUS_MAX + 1,
