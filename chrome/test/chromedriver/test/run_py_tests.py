@@ -6,6 +6,7 @@
 """End to end tests for ChromeDriver."""
 
 import base64
+import json
 import optparse
 import subprocess
 import os
@@ -15,6 +16,7 @@ import tempfile
 import threading
 import time
 import unittest
+import urllib2
 
 _THIS_DIR = os.path.abspath(os.path.dirname(__file__))
 sys.path.insert(1, os.path.join(_THIS_DIR, os.pardir))
@@ -79,12 +81,13 @@ _DESKTOP_NEGATIVE_FILTER = [
     'ChromeDriverTest.testSingleTapElement',
     'ChromeDriverTest.testTouchDownUpElement',
     'ChromeDriverTest.testTouchMovedElement',
+    'ChromeDriverTest.testLatestAndroidAppInstalled',
 ]
 
 
 def _GetDesktopNegativeFilter(version_name):
   filter = _NEGATIVE_FILTER + _DESKTOP_NEGATIVE_FILTER
-  os = util.GetPlatformName();
+  os = util.GetPlatformName()
   if os in _OS_SPECIFIC_FILTER:
     filter += _OS_SPECIFIC_FILTER[os]
   if version_name in _VERSION_SPECIFIC_FILTER:
@@ -655,6 +658,28 @@ class ChromeDriverTest(ChromeDriverBaseTest):
 
   def testDoesntHangOnDebugger(self):
     self._driver.ExecuteScript('debugger;')
+
+  def testLatestAndroidAppInstalled(self):
+    assert _ANDROID_PACKAGE_KEY
+    if ('stable' not in _ANDROID_PACKAGE_KEY and
+        'beta' not in _ANDROID_PACKAGE_KEY):
+      return
+
+    try:
+      omaha_list = json.loads(
+          urllib2.urlopen('http://omahaproxy.appspot.com/all.json').read())
+      for l in omaha_list:
+        if l['os'] != 'android':
+          continue
+        for v in l['versions']:
+          if (('stable' in v['channel'] and 'stable' in _ANDROID_PACKAGE_KEY) or
+              ('beta' in v['channel'] and 'beta' in _ANDROID_PACKAGE_KEY)):
+            self.assertEquals(v['version'],
+                              self._driver.capabilities['version'])
+            return
+      raise RuntimeError('Malformed omaha JSON')
+    except urllib2.URLError as e:
+      print 'Unable to fetch current version info from omahaproxy (%s)' % e
 
 
 class ChromeSwitchesCapabilityTest(ChromeDriverBaseTest):

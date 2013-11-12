@@ -106,8 +106,9 @@ class ChromeDriver(object):
       }
     }
 
-    self._session_id = self._ExecuteCommand(
-        Command.NEW_SESSION, params)['sessionId']
+    response = self._ExecuteCommand(Command.NEW_SESSION, params)
+    self._session_id = response['sessionId']
+    self.capabilities = self._UnwrapValue(response['value'])
 
   def _WrapValue(self, value):
     """Wrap value from client side for chromedriver side."""
