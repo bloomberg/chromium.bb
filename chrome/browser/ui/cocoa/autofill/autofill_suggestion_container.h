@@ -23,7 +23,7 @@ namespace autofill {
   base::scoped_nsobject<NSBox> spacer_;
 
   // The label that holds the suggestion description text.
-  base::scoped_nsobject<NSTextField> label_;
+  base::scoped_nsobject<NSTextView> label_;
 
   // The second (and longer) line of text that describes the suggestion.
   base::scoped_nsobject<NSTextField> label2_;

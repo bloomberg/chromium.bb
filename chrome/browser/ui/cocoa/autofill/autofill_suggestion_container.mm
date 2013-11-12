@@ -27,6 +27,17 @@ const int kVerticalPadding = 8;
 // Padding at the top of suggestions.
 const CGFloat kTopPadding = 10;
 
+// Indicates infinite size in either vertical or horizontal direction.
+// Technically, CGFLOAT_MAX should do. Practically, it runs into several issues.
+// #1) Many computations on Retina devices overflow with that value.
+// #2) In this particular use case, it results in the message
+//     "CGAffineTransformInvert: singular matrix."
+const CGFloat kInfiniteSize = 1.0e6;
+
+// A line fragment padding that creates the same visual look as text layout in
+// an NSTextField does. (Which UX feedback was based on)
+const CGFloat kLineFragmentPadding = 2.0;
+
 // Centers |rect2| vertically in |rect1|, on an integral y coordinate.
 // Assumes |rect1| has integral origin coordinates.
 NSRect CenterVertically(NSRect rect1, NSRect rect2) {
@@ -57,7 +68,12 @@ NSRect CenterVertically(NSRect rect1, NSRect rect2) {
 }
 
 - (void)loadView {
-  label_.reset([[self createLabelWithFrame:NSZeroRect] retain]);
+  label_.reset([[NSTextView alloc] initWithFrame:NSZeroRect]);
+  [[label_ textContainer] setLineFragmentPadding:kLineFragmentPadding];
+  [label_ setEditable:NO];
+  [label_ setSelectable:NO];
+  [label_ setDrawsBackground:NO];
+
   label2_.reset([[self createLabelWithFrame:NSZeroRect] retain]);
 
   iconImageView_.reset([[NSImageView alloc] initWithFrame:NSZeroRect]);
@@ -96,10 +112,21 @@ NSRect CenterVertically(NSRect rect1, NSRect rect2) {
 
 - (void)setSuggestionText:(NSString*)line1
                     line2:(NSString*)line2 {
-  [label_ setStringValue:line1];
+  NSDictionary* attributes = @{
+    NSCursorAttributeName : [NSCursor arrowCursor],
+      NSFontAttributeName : [NSFont controlContentFontOfSize:0]
+  };
+  base::scoped_nsobject<NSAttributedString> str1(
+      [[NSAttributedString alloc] initWithString:line1
+                                      attributes:attributes]);
+  [[label_ textStorage] setAttributedString:str1];
+
   [label2_ setStringValue:line2];
   [label2_ setHidden:![line2 length]];
 
+  [label_ setVerticallyResizable:YES];
+  [label_ setHorizontallyResizable:NO];
+  [label_ setFrameSize:NSMakeSize(2 * autofill::kFieldWidth, kInfiniteSize)];
   [label_ sizeToFit];
   [label2_ sizeToFit];
 }
@@ -167,7 +194,12 @@ NSRect CenterVertically(NSRect rect1, NSRect rect2) {
   // textfield is on the first line, right-aligned. The icon is also on the
   // first row, in front of the label.
   NSRect labelFrame = lineFrame;
-  labelFrame.size.height = [[label_ cell] cellSize].height;
+  NSLayoutManager* layoutManager = [label_ layoutManager];
+  NSTextContainer* textContainer = [label_ textContainer];
+  [layoutManager ensureLayoutForTextContainer:textContainer];
+  NSRect textFrame = [layoutManager usedRectForTextContainer:textContainer];
+
+  labelFrame.size.height = textFrame.size.height;
   labelFrame = CenterVertically(lineFrame, labelFrame);
 
   if (![iconImageView_ isHidden]) {
