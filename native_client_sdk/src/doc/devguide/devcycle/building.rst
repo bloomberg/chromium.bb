@@ -35,7 +35,7 @@ any processor, e.g., x86-32, x86-64, and ARM.
 
 Native Client also supports architecture-specific **nexe** files.
 These **nexe** files are **also** operating-system-independent,
-but they are **not** processor-independent. To support a wide-variety of
+but they are **not** processor-independent. To support a wide variety of
 devices you must compile separate versions of your Native Client module
 for different processors on end-user machines. A
 :ref:`manifest file <application_files>` will then specify which version
@@ -142,9 +142,9 @@ The PNaCl toolchain
 ===================
 
 The PNaCl toolchain contains modified versions of the tools in the
-LLVM toolchain, as wells as linkers and other tools from binutils.
+LLVM toolchain, as well as linkers and other tools from binutils.
 To determine which version of LLVM or binutils the tools are based upon,
-run the tool with the ``--version`` commandline flag. These tools
+run the tool with the ``--version`` command line flag. These tools
 are used to compile and link applications into .pexe files. The toolchain
 also contains a tool to translate a .pexe file into a
 architecture-specific .nexe (e.g., for debugging purposes).
@@ -155,11 +155,11 @@ tools include:
 pnacl-abicheck
   Check that the **pexe** follows the PNaCl ABI rules.
 pnacl-ar
-  Creates archives (e.g., static libraries)
+  Creates archives (i.e., static libraries)
 pnacl-clang
-  C-compiler and compiler driver
+  C compiler and compiler driver
 pnacl-clang++
-  C++-compiler and compiler driver
+  C++ compiler and compiler driver
 pnacl-dis
   Disassembler for both **pexe** files and **nexe** files
 pnacl-finalize
@@ -169,7 +169,7 @@ pnacl-ld
 pnacl-nm
   Lists symbols in bitcode files, native code, and libraries
 pnacl-ranlib
-  Generates a symbol table for archives (e.g., static libraries)
+  Generates a symbol table for archives (i.e., static libraries)
 pnacl-translate
   Translates a **pexe** to a native architecture, outside of the browser
 
@@ -216,7 +216,7 @@ separate bitcode files. For example:
   <NACL_SDK_ROOT>/toolchain/win_pnacl/bin/pnacl-clang++ hello_world.cc ^
     -I<NACL_SDK_ROOT>/include -c -o hello_world.o -g -O0
 
-For a description of each commandline flag, run ``pnacl-clang --help``.
+For a description of each command line flag, run ``pnacl-clang --help``.
 For convenience, here is a description of some of the flags used in
 the example.
 
@@ -227,7 +227,7 @@ the example.
   rather than continue the build process and link together the
   full application.
 
-``-o<output_file>``
+``-o <output_file>``
   indicates the **output** filename.
 
 ``-g``
@@ -330,7 +330,7 @@ Besides the PNaCl toolchain, the Native Client SDK also includes modified
 versions of the tools in the standard GNU toolchain, including the GCC
 compilers and the linkers and other tools from binutils. These tools only
 support building **nexe** files. Run the tool with the ``--version``
-commandline flag to determine the current version of the tools.
+command line flag to determine the current version of the tools.
 
 Each tool in the toolchain is prefixed with the name of the target
 architecture. In the toolchain for the ARM target architecture, each

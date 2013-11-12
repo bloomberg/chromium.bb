@@ -189,7 +189,7 @@ the calls to stderr.
 Debugging with Visual Studio
 ----------------------------
 
-If you develop on a Windows platform you can use the Native :doc:`Client Visual
+If you develop on a Windows platform you can use the :doc:`Native Client Visual
 Studio add-in <vs-addin>` to write and debug your code. The add-in defines new
 project platforms that let you run your module in two different modes: As a
 Pepper plugin and as a Native Client module. When running as a Pepper plugin
@@ -419,7 +419,7 @@ Debugging with other tools
 
 If you cannot use the :ref:`Visual Studio add-in <visual_studio>`, or you want
 to use a debugger other than nacl-gdb, you must manually build your module as a
-Pepper plugin (sometimes referred to as a `"trusted
+Pepper plugin (sometimes referred to as a "`trusted
 <http://www.chromium.org/nativeclient/getting-started/getting-started-background-and-basics#TOC-Trusted-vs-Untrusted>`_"
 or "in-process" plugin).  Pepper plugins (.DLL files on Windows; .so files on
 Linux; .bundle files on Mac) are loaded directly in either the Chrome renderer
