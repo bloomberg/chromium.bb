@@ -485,9 +485,9 @@ crbug.com/313783 [ Debug ] fast/css/getComputedStyle/getComputedStyle-resolved-v
 crbug.com/313846 [ Mac Win ] http/tests/images/webp-partial-load.html [ ImageOnlyFailure Timeout Pass ]
 crbug.com/316150 inspector/timeline/timeline-network-received-data.html [ Failure Pass ]
 
-crbug.com/309760 compositing/transitions/transform-on-large-layer.html [ NeedsManualRebaseline ]
-crbug.com/309760 fast/events/attempt-scroll-with-no-scrollbars.html [ NeedsManualRebaseline ]
-crbug.com/309760 virtual/softwarecompositing/transitions/transform-on-large-layer.html [ NeedsManualRebaseline ]
+crbug.com/309760 compositing/transitions/transform-on-large-layer.html [ NeedsRebaseline ]
+crbug.com/309760 fast/events/attempt-scroll-with-no-scrollbars.html [ NeedsRebaseline ]
+crbug.com/309760 virtual/softwarecompositing/transitions/transform-on-large-layer.html [ NeedsRebaseline ]
 
 crbug.com/315514 [ Linux ] fast/workers/storage/test-authorizer-sync.html [ Failure ]
 crbug.com/315514 [ Linux ] fast/workers/storage/test-authorizer.html [ Failure ]
