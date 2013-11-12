@@ -5,6 +5,7 @@ include_rules = [
   "+media/base",
   "+skia",
   "+webkit/common/webpreferences.h",
+  "+webkit/common/fileapi/file_system_types.h",
 
   # The untrusted build references the NaCl integrated runtime (IRT).
   "+native_client/src/untrusted/irt",

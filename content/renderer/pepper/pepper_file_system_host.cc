@@ -15,6 +15,7 @@
 #include "ppapi/host/dispatch_host_message.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/shared_impl/file_system_util.h"
 #include "ppapi/shared_impl/file_type_conversion.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
@@ -114,20 +115,10 @@ int32_t PepperFileSystemHost::OnHostMsgOpen(
     return PP_ERROR_INPROGRESS;
   called_open_ = true;
 
-  fileapi::FileSystemType file_system_type;
-  switch (type_) {
-    case PP_FILESYSTEMTYPE_LOCALTEMPORARY:
-      file_system_type = fileapi::kFileSystemTypeTemporary;
-      break;
-    case PP_FILESYSTEMTYPE_LOCALPERSISTENT:
-      file_system_type = fileapi::kFileSystemTypePersistent;
-      break;
-    case PP_FILESYSTEMTYPE_EXTERNAL:
-      file_system_type = fileapi::kFileSystemTypeExternal;
-      break;
-    default:
-      return PP_ERROR_FAILED;
-  }
+  fileapi::FileSystemType file_system_type =
+      ppapi::PepperFileSystemTypeToFileSystemType(type_);
+  if (file_system_type == fileapi::kFileSystemTypeUnknown)
+    return PP_ERROR_FAILED;
 
   GURL document_url = renderer_ppapi_host_->GetDocumentURL(pp_instance());
   if (!document_url.is_valid())

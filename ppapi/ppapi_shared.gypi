@@ -27,6 +27,8 @@
           'shared_impl/file_ref_create_info.h',
           'shared_impl/file_ref_util.cc',
           'shared_impl/file_ref_util.h',
+          'shared_impl/file_system_util.cc',
+          'shared_impl/file_system_util.h',
           'shared_impl/file_type_conversion.cc',
           'shared_impl/file_type_conversion.h',
           'shared_impl/flash_clipboard_format_registry.cc',

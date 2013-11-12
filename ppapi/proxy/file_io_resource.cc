@@ -10,6 +10,7 @@
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/shared_impl/array_writer.h"
+#include "ppapi/shared_impl/file_system_util.h"
 #include "ppapi/shared_impl/file_type_conversion.h"
 #include "ppapi/shared_impl/ppapi_globals.h"
 #include "ppapi/shared_impl/proxy_lock.h"
@@ -97,10 +98,7 @@ int32_t FileIOResource::Open(PP_Resource file_ref,
 
   PPB_FileRef_API* file_ref_api = enter.object();
   PP_FileSystemType type = file_ref_api->GetFileSystemType();
-  if (type != PP_FILESYSTEMTYPE_LOCALPERSISTENT &&
-      type != PP_FILESYSTEMTYPE_LOCALTEMPORARY &&
-      type != PP_FILESYSTEMTYPE_EXTERNAL &&
-      type != PP_FILESYSTEMTYPE_ISOLATED) {
+  if (!FileSystemTypeIsValid(type)) {
     NOTREACHED();
     return PP_ERROR_FAILED;
   }

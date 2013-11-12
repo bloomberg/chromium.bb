@@ -25,6 +25,7 @@
 #include "ppapi/host/dispatch_host_message.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/proxy/ppapi_messages.h"
+#include "ppapi/shared_impl/file_system_util.h"
 #include "ppapi/shared_impl/file_type_conversion.h"
 #include "ppapi/shared_impl/time_conversion.h"
 #include "ppapi/thunk/enter.h"
@@ -436,8 +437,7 @@ void PepperFileIOHost::ExecutePlatformOpenFileCallback(
 
   DCHECK(!quota_file_io_.get());
   if (file_ != base::kInvalidPlatformFileValue) {
-    if (file_system_type_ == PP_FILESYSTEMTYPE_LOCALTEMPORARY ||
-        file_system_type_ == PP_FILESYSTEMTYPE_LOCALPERSISTENT) {
+    if (ppapi::FileSystemTypeHasQuota(file_system_type_)) {
       quota_file_io_.reset(new QuotaFileIO(
           new QuotaFileIODelegate, file_, file_system_url_, file_system_type_));
     }
