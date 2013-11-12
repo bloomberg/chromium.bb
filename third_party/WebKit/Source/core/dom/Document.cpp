@@ -1602,45 +1602,40 @@ void Document::setStyleDependentState(RenderStyle* documentStyle)
 
 void Document::inheritHtmlAndBodyElementStyles(StyleRecalcChange change)
 {
-    RenderView* renderView = this->renderView();
-
-    if (!documentElement() || !frame() || !view())
-        return;
+    ASSERT(inStyleRecalc());
+    ASSERT(documentElement());
 
     RefPtr<RenderStyle> documentElementStyle = documentElement()->renderStyle();
     if (!documentElementStyle || documentElement()->needsStyleRecalc() || change == Force)
         documentElementStyle = styleResolver()->styleForElement(documentElement());
 
-    RefPtr<RenderStyle> bodyStyle = 0;
-    if (body()) {
-        bodyStyle = body()->renderStyle();
-        if (!bodyStyle || body()->needsStyleRecalc() || documentElement()->needsStyleRecalc() || change == Force)
-            bodyStyle = styleResolver()->styleForElement(body(), documentElementStyle.get());
-    }
-
     WritingMode rootWritingMode = documentElementStyle->writingMode();
     TextDirection rootDirection = documentElementStyle->direction();
+    HTMLElement* body = this->body();
 
-    if (!writingModeSetOnDocumentElement() && body()) {
-        rootWritingMode = bodyStyle->writingMode();
+    if (body) {
+        RefPtr<RenderStyle> bodyStyle = body->renderStyle();
+        if (!bodyStyle || body->needsStyleRecalc() || documentElement()->needsStyleRecalc() || change == Force)
+            bodyStyle = styleResolver()->styleForElement(body, documentElementStyle.get());
+        if (!writingModeSetOnDocumentElement())
+            rootWritingMode = bodyStyle->writingMode();
+        if (!directionSetOnDocumentElement())
+            rootDirection = bodyStyle->direction();
     }
 
-    if (!directionSetOnDocumentElement() && body())
-        rootDirection = bodyStyle->direction();
-
-    RefPtr<RenderStyle> documentStyle = renderView->style();
+    RefPtr<RenderStyle> documentStyle = renderView()->style();
     if (documentStyle->writingMode() != rootWritingMode || documentStyle->direction() != rootDirection) {
         RefPtr<RenderStyle> newStyle = RenderStyle::clone(documentStyle.get());
         newStyle->setWritingMode(rootWritingMode);
         newStyle->setDirection(rootDirection);
-        renderView->setStyle(newStyle);
+        renderView()->setStyle(newStyle);
         setStyleDependentState(newStyle.get());
     }
 
-    if (body()) {
-        if (RenderStyle* style = body()->renderStyle()) {
+    if (body) {
+        if (RenderStyle* style = body->renderStyle()) {
             if (style->direction() != rootDirection || style->writingMode() != rootWritingMode)
-                body()->setNeedsStyleRecalc();
+                body->setNeedsStyleRecalc();
         }
     }
 
@@ -1704,11 +1699,10 @@ void Document::recalcStyle(StyleRecalcChange change)
                 renderView()->setStyle(documentStyle.release());
         }
 
-        inheritHtmlAndBodyElementStyles(change);
-
         clearNeedsStyleRecalc();
 
         if (Element* documentElement = this->documentElement()) {
+            inheritHtmlAndBodyElementStyles(change);
             if (shouldRecalcStyle(change, documentElement))
                 documentElement->recalcStyle(change);
         }
