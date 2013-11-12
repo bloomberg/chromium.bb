@@ -47,7 +47,7 @@ class WatcherThreadManager {
   WatcherID StartWatching(MojoHandle handle,
                           MojoWaitFlags wait_flags,
                           base::TimeTicks deadline,
-                          const base::Closure& callback);
+                          const base::Callback<void(MojoResult)>& callback);
 
   // Stops watching a handle.
   void StopWatching(WatcherID watcher_id);
@@ -65,7 +65,7 @@ class WatcherThreadManager {
     MojoHandle handle;
     MojoWaitFlags wait_flags;
     base::TimeTicks deadline;
-    base::Closure callback;
+    base::Callback<void(MojoResult)> callback;
     scoped_refptr<base::MessageLoopProxy> message_loop;
   };
 
@@ -138,10 +138,11 @@ WatcherThreadManager* WatcherThreadManager::GetInstance() {
   return &instance.Get();
 }
 
-WatcherID WatcherThreadManager::StartWatching(MojoHandle handle,
-                                              MojoWaitFlags wait_flags,
-                                              base::TimeTicks deadline,
-                                              const base::Closure& callback) {
+WatcherID WatcherThreadManager::StartWatching(
+    MojoHandle handle,
+    MojoWaitFlags wait_flags,
+    base::TimeTicks deadline,
+    const base::Callback<void(MojoResult)>& callback) {
   WatcherID id = 0;
   {
     static int next_id = 0;
@@ -264,7 +265,8 @@ void WatcherThreadManager::RemoveAndNotify(WatcherID id, MojoResult result) {
     to_notify = i->second;
     id_to_callback_.erase(i);
   }
-  to_notify.message_loop->PostTask(FROM_HERE, to_notify.callback);
+  to_notify.message_loop->PostTask(FROM_HERE,
+                                   base::Bind(to_notify.callback, result));
 }
 
 void WatcherThreadManager::RemoveHandle(MojoHandle handle) {
@@ -328,7 +330,7 @@ struct HandleWatcher::StartState {
   WatcherID watcher_id;
 
   // Callback to notify when done.
-  base::Closure callback;
+  base::Callback<void(MojoResult)> callback;
 
   // When Start() is invoked a callback is passed to WatcherThreadManager
   // using a WeakRef from |weak_refactory_|. The callback invokes
@@ -354,7 +356,7 @@ HandleWatcher::~HandleWatcher() {
 void HandleWatcher::Start(MojoHandle handle,
                           MojoWaitFlags wait_flags,
                           MojoDeadline deadline,
-                          const base::Closure& callback) {
+                          const base::Callback<void(MojoResult)>& callback) {
   DCHECK_NE(MOJO_HANDLE_INVALID, handle);
   DCHECK_NE(MOJO_WAIT_FLAG_NONE, wait_flags);
 
@@ -379,10 +381,12 @@ void HandleWatcher::Stop() {
   WatcherThreadManager::GetInstance()->StopWatching(old_state->watcher_id);
 }
 
-void HandleWatcher::OnHandleReady() {
+void HandleWatcher::OnHandleReady(MojoResult result) {
   DCHECK(start_state_.get());
   scoped_ptr<StartState> old_state(start_state_.Pass());
-  old_state->callback.Run();
+  old_state->callback.Run(result);
+
+  // NOTE: We may have been deleted during callback execution.
 }
 
 // static

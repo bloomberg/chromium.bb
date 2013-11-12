@@ -42,15 +42,16 @@ class Connector : public MessageReceiver {
   class Callback : public BindingsSupport::AsyncWaitCallback {
    public:
     Callback();
+    virtual ~Callback();
 
-    void Cancel();
     void SetOwnerToNotify(Connector* owner);
-    bool IsPending() const;
+    void SetAsyncWaitID(BindingsSupport::AsyncWaitID async_wait_id);
 
     virtual void OnHandleReady(MojoResult result) MOJO_OVERRIDE;
 
    private:
     Connector* owner_;
+    BindingsSupport::AsyncWaitID async_wait_id_;
   };
   friend class Callback;
 
@@ -69,6 +70,8 @@ class Connector : public MessageReceiver {
   Callback write_callback_;
 
   bool error_;
+
+  MOJO_DISALLOW_COPY_AND_ASSIGN(Connector);
 };
 
 }  // namespace mojo

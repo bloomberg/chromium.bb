@@ -38,7 +38,7 @@ class MOJO_COMMON_EXPORT HandleWatcher {
   void Start(MojoHandle handle,
              MojoWaitFlags wait_flags,
              MojoDeadline deadline,
-             const base::Closure& callback);
+             const base::Callback<void(MojoResult)>& callback);
 
   // Stops listening. Does nothing if not in the process of listening.
   void Stop();
@@ -54,7 +54,7 @@ class MOJO_COMMON_EXPORT HandleWatcher {
   struct StartState;
 
   // See description of |StartState::weak_factory| for details.
-  void OnHandleReady();
+  void OnHandleReady(MojoResult result);
 
   // If non-NULL Start() has been invoked.
   scoped_ptr<StartState> start_state_;

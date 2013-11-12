@@ -15,47 +15,52 @@ SimpleBindingsSupport::SimpleBindingsSupport() {
 
 SimpleBindingsSupport::~SimpleBindingsSupport() {
   BindingsSupport::Set(NULL);
+
+  for (WaiterList::iterator it = waiters_.begin(); it != waiters_.end(); ++it)
+    delete *it;
 }
 
-bool SimpleBindingsSupport::AsyncWait(Handle handle,
-                                      MojoWaitFlags flags,
-                                      MojoDeadline deadline,
-                                      AsyncWaitCallback* callback) {
-  Waiter waiter;
-  waiter.handle = handle;
-  waiter.flags = flags;
-  waiter.deadline = deadline;
-  waiter.callback = callback;
+BindingsSupport::AsyncWaitID SimpleBindingsSupport::AsyncWait(
+    Handle handle,
+    MojoWaitFlags flags,
+    AsyncWaitCallback* callback) {
+  Waiter* waiter = new Waiter();
+  waiter->handle = handle;
+  waiter->flags = flags;
+  waiter->callback = callback;
   waiters_.push_back(waiter);
-  return true;
+  return waiter;
 }
 
-void SimpleBindingsSupport::CancelWait(AsyncWaitCallback* callback) {
-  std::list<Waiter>::iterator it = waiters_.begin();
+void SimpleBindingsSupport::CancelWait(AsyncWaitID async_wait_id) {
+  Waiter* waiter = static_cast<Waiter*>(async_wait_id);
+
+  WaiterList::iterator it = waiters_.begin();
   while (it != waiters_.end()) {
-    if (it->callback == callback) {
-      std::list<Waiter>::iterator doomed = it++;
+    if (*it == waiter) {
+      WaiterList::iterator doomed = it++;
       waiters_.erase(doomed);
     } else {
       ++it;
     }
   }
+
+  delete waiter;
 }
 
 void SimpleBindingsSupport::Process() {
   typedef std::pair<AsyncWaitCallback*, MojoResult> Result;
   std::list<Result> results;
 
-  // TODO(darin): Honor given deadline.
-
-  std::list<Waiter>::iterator it = waiters_.begin();
+  WaiterList::iterator it = waiters_.begin();
   while (it != waiters_.end()) {
-    const Waiter& waiter = *it;
+    Waiter* waiter = *it;
     MojoResult result;
-    if (IsReady(waiter.handle, waiter.flags, &result)) {
-      results.push_back(std::make_pair(waiter.callback, result));
-      std::list<Waiter>::iterator doomed = it++;
+    if (IsReady(waiter->handle, waiter->flags, &result)) {
+      results.push_back(std::make_pair(waiter->callback, result));
+      WaiterList::iterator doomed = it++;
       waiters_.erase(doomed);
+      delete waiter;
     } else {
       ++it;
     }
