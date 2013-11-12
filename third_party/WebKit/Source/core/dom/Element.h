@@ -338,10 +338,10 @@ public:
     bool childrenSupportStyleSharing() const;
 
     void setStyleAffectedByEmpty();
-    void setChildrenAffectedByFocus(bool);
-    void setChildrenAffectedByHover(bool);
-    void setChildrenAffectedByActive(bool);
-    void setChildrenAffectedByDrag(bool);
+    void setChildrenAffectedByFocus();
+    void setChildrenAffectedByHover();
+    void setChildrenAffectedByActive();
+    void setChildrenAffectedByDrag();
     void setChildrenAffectedByFirstChildRules();
     void setChildrenAffectedByLastChildRules();
     void setChildrenAffectedByDirectAdjacentRules();

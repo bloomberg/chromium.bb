@@ -644,7 +644,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
                 if (context.elementStyle)
                     context.elementStyle->setAffectedByDrag();
                 else
-                    element.setChildrenAffectedByDrag(true);
+                    element.setChildrenAffectedByDrag();
             }
             if (element.renderer() && element.renderer()->isDragging())
                 return true;
@@ -654,7 +654,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
                 if (context.elementStyle)
                     context.elementStyle->setAffectedByFocus();
                 else
-                    element.setChildrenAffectedByFocus(true);
+                    element.setChildrenAffectedByFocus();
             }
             return matchesFocusPseudoClass(element);
         case CSSSelector::PseudoHover:
@@ -665,7 +665,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
                     if (context.elementStyle)
                         context.elementStyle->setAffectedByHover();
                     else
-                        element.setChildrenAffectedByHover(true);
+                        element.setChildrenAffectedByHover();
                 }
                 if (element.hovered() || InspectorInstrumentation::forcePseudoState(&element, CSSSelector::PseudoHover))
                     return true;
@@ -679,7 +679,7 @@ bool SelectorChecker::checkOne(const SelectorCheckingContext& context, const Sib
                     if (context.elementStyle)
                         context.elementStyle->setAffectedByActive();
                     else
-                        element.setChildrenAffectedByActive(true);
+                        element.setChildrenAffectedByActive();
                 }
                 if (element.active() || InspectorInstrumentation::forcePseudoState(&element, CSSSelector::PseudoActive))
                     return true;
