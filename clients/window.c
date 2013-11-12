@@ -137,8 +137,6 @@ struct display {
 enum {
 	TYPE_NONE,
 	TYPE_TOPLEVEL,
-	TYPE_FULLSCREEN,
-	TYPE_MAXIMIZED,
 	TYPE_MENU,
 	TYPE_CUSTOM
 };
@@ -231,12 +229,14 @@ struct window {
 	int redraw_task_scheduled;
 	struct task redraw_task;
 	int resize_needed;
-	int saved_type;
 	int type;
 	int focus_count;
 
 	int resizing;
 	int configure_requests;
+
+	int fullscreen;
+	int maximized;
 
 	enum preferred_format preferred_format;
 
@@ -2151,13 +2151,13 @@ frame_resize_handler(struct widget *widget,
 	struct rectangle input;
 	struct rectangle opaque;
 
-	if (widget->window->type == TYPE_FULLSCREEN) {
+	if (widget->window->fullscreen) {
 		interior.x = 0;
 		interior.y = 0;
 		interior.width = width;
 		interior.height = height;
 	} else {
-		if (widget->window->type == TYPE_MAXIMIZED) {
+		if (widget->window->maximized) {
 			frame_set_flag(frame->frame, FRAME_FLAG_MAXIMIZED);
 		} else {
 			frame_unset_flag(frame->frame, FRAME_FLAG_MAXIMIZED);
@@ -2175,7 +2175,7 @@ frame_resize_handler(struct widget *widget,
 		child->resize_handler(child, interior.width, interior.height,
 				      child->user_data);
 
-		if (widget->window->type == TYPE_FULLSCREEN) {
+		if (widget->window->fullscreen) {
 			width = child->allocation.width;
 			height = child->allocation.height;
 		} else {
@@ -2191,7 +2191,7 @@ frame_resize_handler(struct widget *widget,
 
 	widget->surface->input_region =
 		wl_compositor_create_region(widget->window->display->compositor);
-	if (widget->window->type != TYPE_FULLSCREEN) {
+	if (!widget->window->fullscreen) {
 		frame_input_rect(frame->frame, &input.x, &input.y,
 				 &input.width, &input.height);
 		wl_region_add(widget->surface->input_region,
@@ -2203,7 +2203,7 @@ frame_resize_handler(struct widget *widget,
 	widget_set_allocation(widget, 0, 0, width, height);
 
 	if (child->opaque) {
-		if (widget->window->type != TYPE_FULLSCREEN) {
+		if (!widget->window->fullscreen) {
 			frame_opaque_rect(frame->frame, &opaque.x, &opaque.y,
 					  &opaque.width, &opaque.height);
 
@@ -2227,7 +2227,7 @@ frame_redraw_handler(struct widget *widget, void *data)
 	struct window_frame *frame = data;
 	struct window *window = widget->window;
 
-	if (window->type == TYPE_FULLSCREEN)
+	if (window->fullscreen)
 		return;
 
 	if (window->focus_count) {
@@ -2396,7 +2396,7 @@ frame_handle_status(struct window_frame *frame, struct input *input,
 	}
 
 	if (status & FRAME_STATUS_MAXIMIZE) {
-		window_set_maximized(window, window->type != TYPE_MAXIMIZED);
+		window_set_maximized(window, !window->maximized);
 		frame_status_clear(frame->frame, FRAME_STATUS_MAXIMIZE);
 	}
 
@@ -2507,9 +2507,9 @@ window_frame_set_child_size(struct widget *widget, int child_width,
 	struct theme *t = display->theme;
 	int decoration_width, decoration_height;
 	int width, height;
-	int margin = widget->window->type == TYPE_MAXIMIZED ? 0 : t->margin;
+	int margin = widget->window->maximized ? 0 : t->margin;
 
-	if (widget->window->type != TYPE_FULLSCREEN) {
+	if (!widget->window->fullscreen) {
 		decoration_width = (t->width + margin) * 2;
 		decoration_height = t->width +
 			t->titlebar_height + margin * 2;
@@ -2926,8 +2926,7 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 
 	if (sym == XKB_KEY_F5 && input->modifiers == MOD_ALT_MASK) {
 		if (state == WL_KEYBOARD_KEY_STATE_PRESSED)
-			window_set_maximized(window,
-					     window->type != TYPE_MAXIMIZED);
+			window_set_maximized(window, !window->maximized);
 	} else if (sym == XKB_KEY_F11 &&
 		   window->fullscreen_handler &&
 		   state == WL_KEYBOARD_KEY_STATE_PRESSED) {
@@ -4071,7 +4070,7 @@ window_schedule_redraw(struct window *window)
 int
 window_is_fullscreen(struct window *window)
 {
-	return window->type == TYPE_FULLSCREEN;
+	return window->fullscreen;
 }
 
 static void
@@ -4105,43 +4104,44 @@ window_defer_redraw_until_configure(struct window* window)
 	window->configure_requests++;
 }
 
+static void
+window_sync_type(struct window *window)
+{
+	if (window->fullscreen) {
+		window->saved_allocation = window->main_surface->allocation;
+		wl_shell_surface_set_fullscreen(window->shell_surface,
+						WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,
+						0, NULL);
+	} else if (window->maximized) {
+		window->saved_allocation = window->main_surface->allocation;
+		wl_shell_surface_set_maximized(window->shell_surface, NULL);
+	} else {
+		wl_shell_surface_set_toplevel(window->shell_surface);
+		window_schedule_resize(window,
+				       window->saved_allocation.width,
+				       window->saved_allocation.height);
+	}
+
+	window_defer_redraw_until_configure(window);
+}
+
 void
 window_set_fullscreen(struct window *window, int fullscreen)
 {
 	if (!window->display->shell)
 		return;
 
-	if ((window->type == TYPE_FULLSCREEN) == fullscreen)
+	if (window->fullscreen == fullscreen)
 		return;
 
-	if (fullscreen) {
-		window->saved_type = window->type;
-		if (window->type == TYPE_TOPLEVEL) {
-			window->saved_allocation = window->main_surface->allocation;
-		}
-		window->type = TYPE_FULLSCREEN;
-		wl_shell_surface_set_fullscreen(window->shell_surface,
-						WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,
-						0, NULL);
-		window_defer_redraw_until_configure (window);
-	} else {
-		if (window->saved_type == TYPE_MAXIMIZED) {
-			window_set_maximized(window, 1);
-		} else {
-			window->type = TYPE_TOPLEVEL;
-			wl_shell_surface_set_toplevel(window->shell_surface);
-			window_schedule_resize(window,
-						   window->saved_allocation.width,
-						   window->saved_allocation.height);
-		}
-
-	}
+	window->fullscreen = fullscreen;
+	window_sync_type(window);
 }
 
 int
 window_is_maximized(struct window *window)
 {
-	return window->type == TYPE_MAXIMIZED;
+	return window->maximized;
 }
 
 void
@@ -4150,25 +4150,12 @@ window_set_maximized(struct window *window, int maximized)
 	if (!window->display->shell)
 		return;
 
-	if ((window->type == TYPE_MAXIMIZED) == maximized)
+	if (window->maximized == maximized)
 		return;
 
-	if (window->type == TYPE_TOPLEVEL) {
-		window->saved_allocation = window->main_surface->allocation;
-		wl_shell_surface_set_maximized(window->shell_surface, NULL);
-		window->type = TYPE_MAXIMIZED;
-		window_defer_redraw_until_configure(window);
-	} else if (window->type == TYPE_FULLSCREEN) {
-		wl_shell_surface_set_maximized(window->shell_surface, NULL);
-		window->type = TYPE_MAXIMIZED;
-		window_defer_redraw_until_configure(window);
-	} else {
-		wl_shell_surface_set_toplevel(window->shell_surface);
-		window->type = TYPE_TOPLEVEL;
-		window_schedule_resize(window,
-				       window->saved_allocation.width,
-				       window->saved_allocation.height);
-	}
+	window->maximized = maximized;
+	if (!window->fullscreen)
+		window_sync_type(window);
 }
 
 void
