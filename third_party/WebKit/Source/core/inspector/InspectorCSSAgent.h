@@ -32,6 +32,7 @@
 #include "core/inspector/InspectorStyleSheet.h"
 #include "core/frame/ContentSecurityPolicy.h"
 #include "platform/JSONValues.h"
+#include "wtf/HashCountedSet.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/PassRefPtr.h"
@@ -174,7 +175,7 @@ private:
     void collectAllStyleSheets(Vector<InspectorStyleSheet*>&);
     void collectStyleSheets(CSSStyleSheet*, Vector<InspectorStyleSheet*>&);
 
-    void collectPlatformFontsForRenderer(RenderText*, HashMap<String, int>*);
+    void collectPlatformFontsForRenderer(RenderText*, HashCountedSet<String>*);
 
     InspectorStyleSheet* bindStyleSheet(CSSStyleSheet*);
     String unbindStyleSheet(InspectorStyleSheet*);

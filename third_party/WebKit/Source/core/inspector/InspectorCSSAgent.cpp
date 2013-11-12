@@ -1025,7 +1025,7 @@ void InspectorCSSAgent::getComputedStyleForNode(ErrorString* errorString, int no
     style = inspectorStyle->buildArrayForComputedStyle();
 }
 
-void InspectorCSSAgent::collectPlatformFontsForRenderer(RenderText* renderer, HashMap<String, int>* fontStats)
+void InspectorCSSAgent::collectPlatformFontsForRenderer(RenderText* renderer, HashCountedSet<String>* fontStats)
 {
     for (InlineTextBox* box = renderer->firstTextBox(); box; box = box->nextTextBox()) {
         RenderStyle* style = renderer->style(box->isFirstLineStyle());
@@ -1038,8 +1038,7 @@ void InspectorCSSAgent::collectPlatformFontsForRenderer(RenderText* renderer, Ha
             String familyName = glyphBuffer.fontDataAt(i)->platformData().fontFamilyName();
             if (familyName.isNull())
                 familyName = "";
-            int value = fontStats->contains(familyName) ? fontStats->get(familyName) : 0;
-            fontStats->set(familyName, value + 1);
+            fontStats->add(familyName);
         }
     }
 }
@@ -1065,7 +1064,7 @@ void InspectorCSSAgent::getPlatformFontsForNode(ErrorString* errorString, int no
         }
     }
 
-    HashMap<String, int> fontStats;
+    HashCountedSet<String> fontStats;
     for (size_t i = 0; i < textNodes.size(); ++i) {
         RenderText* renderer = toRenderText(textNodes[i]->renderer());
         collectPlatformFontsForRenderer(renderer, &fontStats);
@@ -1082,7 +1081,7 @@ void InspectorCSSAgent::getPlatformFontsForNode(ErrorString* errorString, int no
     }
 
     platformFonts = TypeBuilder::Array<TypeBuilder::CSS::PlatformFontUsage>::create();
-    for (HashMap<String, int>::iterator it = fontStats.begin(), end = fontStats.end(); it != end; ++it) {
+    for (HashCountedSet<String>::iterator it = fontStats.begin(), end = fontStats.end(); it != end; ++it) {
         RefPtr<TypeBuilder::CSS::PlatformFontUsage> platformFont = TypeBuilder::CSS::PlatformFontUsage::create()
             .setFamilyName(it->key)
             .setGlyphCount(it->value);
