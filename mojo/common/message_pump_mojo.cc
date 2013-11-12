@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/logging.h"
+#include "base/time/time.h"
 #include "mojo/common/message_pump_mojo_handler.h"
 #include "mojo/common/scoped_message_pipe.h"
 
