@@ -95,9 +95,13 @@ class RenderServlet(Servlet):
     if not content_and_type.content:
       logging.error('%s had empty content' % path)
 
-    if isinstance(content_and_type.content, Handlebar):
-      content_and_type.content = server_instance.template_renderer.Render(
-          content_and_type.content, self._request)
+    content = content_and_type.content
+    if isinstance(content, Handlebar):
+      content = server_instance.template_renderer.Render(content, self._request)
 
-    return Response.Ok(content_and_type.content,
-                       headers=_MakeHeaders(content_and_type.content_type))
+    content_type = content_and_type.content_type
+    if isinstance(content, unicode):
+      content = content.encode('utf-8')
+      content_type += '; encoding=utf-8'
+
+    return Response.Ok(content, headers=_MakeHeaders(content_type))

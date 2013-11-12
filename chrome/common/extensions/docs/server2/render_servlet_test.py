@@ -66,8 +66,9 @@ class RenderServletTest(unittest.TestCase):
     response = self._Render('extensions/examples/%s' % sample_file)
     self.assertEqual(200, response.status)
     content_type = response.headers.get('content-type')
-    self.assertTrue(content_type == 'application/javascript' or
-                    content_type == 'application/x-javascript')
+    self.assertTrue(content_type in (
+        'application/javascript; encoding=utf-8',
+        'application/x-javascript; encoding=utf-8'))
     self.assertEqual(ReadFile('docs/examples/%s' % sample_file),
                      response.content.ToString())
 
@@ -81,7 +82,8 @@ class RenderServletTest(unittest.TestCase):
     static_file = 'css/site.css'
     response = self._Render('static/%s' % static_file)
     self.assertEqual(200, response.status)
-    self.assertEqual('text/css', response.headers.get('content-type'))
+    self.assertEqual('text/css; encoding=utf-8',
+                     response.headers.get('content-type'))
     self.assertEqual(ReadFile('docs/static/%s' % static_file),
                      response.content.ToString())
 
@@ -89,7 +91,8 @@ class RenderServletTest(unittest.TestCase):
     html_file = 'extensions/storage.html'
     response = self._Render(html_file)
     self.assertEqual(200, response.status)
-    self.assertEqual('text/html', response.headers.get('content-type'))
+    self.assertEqual('text/html; encoding=utf-8',
+                     response.headers.get('content-type'))
     # Can't really test rendering all that well.
     self.assertTrue(len(response.content) >
                     len(ReadFile('docs/templates/public/%s' % html_file)))
