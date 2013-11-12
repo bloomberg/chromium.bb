@@ -27,10 +27,7 @@ SelectionRequestor::SelectionRequestor(Display* x_display,
                                        Atom selection_name)
     : x_display_(x_display),
       x_window_(x_window),
-      in_nested_loop_(false),
       selection_name_(selection_name),
-      current_target_(None),
-      returned_property_(None),
       atom_cache_(x_display_, kAtomsToCache) {
 }
 
@@ -58,17 +55,17 @@ bool SelectionRequestor::PerformBlockingConvertSelection(
   base::MessageLoop::ScopedNestableTaskAllower allow_nested(loop);
   base::RunLoop run_loop(base::MessagePumpX11::Current());
 
-  current_target_ = target;
-  in_nested_loop_ = true;
-  quit_closure_ = run_loop.QuitClosure();
+  PendingRequest pending_request(target, run_loop.QuitClosure());
+  pending_requests_.push_back(&pending_request);
   run_loop.Run();
-  in_nested_loop_ = false;
-  current_target_ = None;
+  DCHECK(!pending_requests_.empty());
+  DCHECK_EQ(&pending_request, pending_requests_.back());
+  pending_requests_.pop_back();
 
-  if (returned_property_ != property_to_set)
+  if (pending_request.returned_property != property_to_set)
     return false;
 
-  return ui::GetRawBytesOfProperty(x_window_, returned_property_,
+  return ui::GetRawBytesOfProperty(x_window_, pending_request.returned_property,
                                    out_data, out_data_bytes, out_data_items,
                                    out_type);
 }
@@ -94,23 +91,43 @@ SelectionData SelectionRequestor::RequestAndWaitForTypes(
 }
 
 void SelectionRequestor::OnSelectionNotify(const XSelectionEvent& event) {
-  if (!in_nested_loop_) {
-    // This shouldn't happen; we're not waiting on the X server for data, but
-    // any client can send any message...
+  // Find the PendingRequest for the corresponding XConvertSelection call. If
+  // there are multiple pending requests on the same target, satisfy them in
+  // FIFO order.
+  PendingRequest* request_notified = NULL;
+  if (selection_name_ == event.selection) {
+    for (std::list<PendingRequest*>::iterator iter = pending_requests_.begin();
+         iter != pending_requests_.end(); ++iter) {
+      PendingRequest* request = *iter;
+      if (request->returned)
+        continue;
+      if (request->target != event.target)
+        continue;
+      request_notified = request;
+      break;
+    }
+  }
+
+  // This event doesn't correspond to any XConvertSelection calls that we
+  // issued in PerformBlockingConvertSelection. This shouldn't happen, but any
+  // client can send any message, so it can happen.
+  if (!request_notified)
     return;
-  }
 
-  if (selection_name_ == event.selection &&
-      current_target_ == event.target) {
-    returned_property_ = event.property;
-  } else {
-    // I am assuming that if some other client sent us a message after we've
-    // asked for data, but it's malformed, we should just treat as if they sent
-    // us an error message.
-    returned_property_ = None;
-  }
+  request_notified->returned_property = event.property;
+  request_notified->returned = true;
+  request_notified->quit_closure.Run();
+}
 
-  quit_closure_.Run();
+SelectionRequestor::PendingRequest::PendingRequest(Atom target,
+                                                   base::Closure quit_closure)
+    : target(target),
+      quit_closure(quit_closure),
+      returned_property(None),
+      returned(false) {
+}
+
+SelectionRequestor::PendingRequest::~PendingRequest() {
 }
 
 }  // namespace ui

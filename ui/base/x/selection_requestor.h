@@ -10,6 +10,7 @@
 // Get rid of a macro from Xlib.h that conflicts with Aura's RootWindow class.
 #undef RootWindow
 
+#include <list>
 #include <vector>
 
 #include "base/basictypes.h"
@@ -60,25 +61,33 @@ class UI_EXPORT SelectionRequestor {
   Display* x_display_;
   ::Window x_window_;
 
-  // True if we're currently running a nested message loop, waiting for data to
-  // come back from the X server.
-  bool in_nested_loop_;
-
   // The X11 selection that this instance communicates on.
   ::Atom selection_name_;
 
-  // Data to the current XConvertSelection request. Used for error detection;
-  // we verify it on the return message.
-  ::Atom current_target_;
+  // A request that has been issued and we are waiting for a response to.
+  struct PendingRequest {
+    PendingRequest(Atom target, base::Closure quit_closure);
+    ~PendingRequest();
 
-  // The property in the returning SelectNotify message is used to signal
-  // success. If None, our request failed somehow. If equal to the property
-  // atom that we sent in the XConvertSelection call, we can read that property
-  // on |x_window_| for the requested data.
-  ::Atom returned_property_;
+    // Data to the current XConvertSelection request. Used for error detection;
+    // we verify it on the return message.
+    ::Atom target;
 
-  // Called to terminate the nested message loop.
-  base::Closure quit_closure_;
+    // Called to terminate the nested message loop.
+    base::Closure quit_closure;
+
+    // The property in the returning SelectNotify message is used to signal
+    // success. If None, our request failed somehow. If equal to the property
+    // atom that we sent in the XConvertSelection call, we can read that
+    // property on |x_window_| for the requested data.
+    ::Atom returned_property;
+
+    // Set to true when return_property is populated.
+    bool returned;
+  };
+
+  // A list of requests for which we are waiting for responses.
+  std::list<PendingRequest*> pending_requests_;
 
   X11AtomCache atom_cache_;
 
