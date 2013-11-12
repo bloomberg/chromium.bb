@@ -1566,7 +1566,8 @@ TEST_F(BrowsingDataRemoverTest, AutofillOriginsRemovedWithHistory) {
 }
 
 #if defined(OS_CHROMEOS)
-TEST_F(BrowsingDataRemoverTest, ContentProtectionPlatformKeysRemoval) {
+// Disabled.  See http://crbug.com/317952
+TEST_F(BrowsingDataRemoverTest, DISABLED_ContentProtectionPlatformKeysRemoval) {
   chromeos::ScopedTestDeviceSettingsService test_device_settings_service;
   chromeos::ScopedTestCrosSettings test_cros_settings;
   chromeos::MockUserManager* mock_user_manager =
