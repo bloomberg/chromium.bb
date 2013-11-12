@@ -12,6 +12,7 @@
 #include "chrome/browser/chromeos/drive/logging.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/chromeos/file_manager/app_installer.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -32,6 +33,14 @@ const char kCWSScope[] = "https://www.googleapis.com/auth/chromewebstore";
 }
 
 bool FileBrowserPrivateLogoutUserForReauthenticationFunction::RunImpl() {
+  chromeos::User* user =
+      chromeos::UserManager::Get()->GetUserByProfile(GetProfile());
+  if (user) {
+    chromeos::UserManager::Get()->SaveUserOAuthStatus(
+        user->email(),
+        chromeos::User::OAUTH2_TOKEN_STATUS_INVALID);
+  }
+
   chrome::AttemptUserExit();
   return true;
 }
