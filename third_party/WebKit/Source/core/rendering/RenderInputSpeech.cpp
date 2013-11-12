@@ -82,16 +82,16 @@ bool RenderInputSpeech::paintInputFieldSpeechButton(RenderObject* object, const 
     // Account for the local drawing offset.
     buttonRect.moveBy(rect.location());
 
-    DEFINE_STATIC_LOCAL(RefPtr<Image>, imageStateNormal, (Image::loadPlatformResource("inputSpeech")));
-    DEFINE_STATIC_LOCAL(RefPtr<Image>, imageStateRecording, (Image::loadPlatformResource("inputSpeechRecording")));
-    DEFINE_STATIC_LOCAL(RefPtr<Image>, imageStateWaiting, (Image::loadPlatformResource("inputSpeechWaiting")));
+    DEFINE_STATIC_REF(Image, imageStateNormal, (Image::loadPlatformResource("inputSpeech")));
+    DEFINE_STATIC_REF(Image, imageStateRecording, (Image::loadPlatformResource("inputSpeechRecording")));
+    DEFINE_STATIC_REF(Image, imageStateWaiting, (Image::loadPlatformResource("inputSpeechWaiting")));
 
     InputFieldSpeechButtonElement* speechButton = toInputFieldSpeechButtonElement(element);
-    Image* image = imageStateNormal.get();
+    Image* image = imageStateNormal;
     if (speechButton->state() == InputFieldSpeechButtonElement::Recording)
-        image = imageStateRecording.get();
+        image = imageStateRecording;
     else if (speechButton->state() == InputFieldSpeechButtonElement::Recognizing)
-        image = imageStateWaiting.get();
+        image = imageStateWaiting;
     paintInfo.context->drawImage(image, pixelSnappedIntRect(buttonRect));
 
     return false;

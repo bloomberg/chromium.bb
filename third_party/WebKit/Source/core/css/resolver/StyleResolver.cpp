@@ -107,18 +107,18 @@ RenderStyle* StyleResolver::s_styleNotYetAvailable;
 
 static StylePropertySet* leftToRightDeclaration()
 {
-    DEFINE_STATIC_LOCAL(RefPtr<MutableStylePropertySet>, leftToRightDecl, (MutableStylePropertySet::create()));
+    DEFINE_STATIC_REF(MutableStylePropertySet, leftToRightDecl, (MutableStylePropertySet::create()));
     if (leftToRightDecl->isEmpty())
         leftToRightDecl->setProperty(CSSPropertyDirection, CSSValueLtr);
-    return leftToRightDecl.get();
+    return leftToRightDecl;
 }
 
 static StylePropertySet* rightToLeftDeclaration()
 {
-    DEFINE_STATIC_LOCAL(RefPtr<MutableStylePropertySet>, rightToLeftDecl, (MutableStylePropertySet::create()));
+    DEFINE_STATIC_REF(MutableStylePropertySet, rightToLeftDecl, (MutableStylePropertySet::create()));
     if (rightToLeftDecl->isEmpty())
         rightToLeftDecl->setProperty(CSSPropertyDirection, CSSValueRtl);
-    return rightToLeftDecl.get();
+    return rightToLeftDecl;
 }
 
 StyleResolver::StyleResolver(Document& document)

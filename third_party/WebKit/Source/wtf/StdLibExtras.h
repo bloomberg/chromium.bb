@@ -37,6 +37,15 @@
     static type& name = *new type arguments
 #endif
 
+// Use this to declare and define a static local pointer to a ref-counted object so that
+// it is leaked so that the object's destructors are not called at exit.
+// This macro should be used with ref-counted objects rather than DEFINE_STATIC_LOCAL macro,
+// as this macro does not lead to an extra memory allocation.
+#ifndef DEFINE_STATIC_REF
+#define DEFINE_STATIC_REF(type, name, arguments) \
+    static type* name = PassRefPtr<type>(arguments).leakRef();
+#endif
+
 // Use this macro to declare and define a debug-only global variable that may have a
 // non-trivial constructor and destructor. When building with clang, this will suppress
 // warnings about global constructors and exit-time destructors.

@@ -1603,8 +1603,8 @@ void RenderStyle::setBorderImageOutset(const BorderImageLengthBox& outset)
 
 ShapeValue* RenderStyle::initialShapeInside()
 {
-    DEFINE_STATIC_LOCAL(RefPtr<ShapeValue>, sOutsideValue, (ShapeValue::createOutsideValue()));
-    return sOutsideValue.get();
+    DEFINE_STATIC_REF(ShapeValue, sOutsideValue, (ShapeValue::createOutsideValue()));
+    return sOutsideValue;
 }
 
 } // namespace WebCore

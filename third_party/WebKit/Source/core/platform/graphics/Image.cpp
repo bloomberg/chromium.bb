@@ -60,8 +60,8 @@ Image::~Image()
 Image* Image::nullImage()
 {
     ASSERT(isMainThread());
-    DEFINE_STATIC_LOCAL(RefPtr<Image>, nullImage, (BitmapImage::create()));;
-    return nullImage.get();
+    DEFINE_STATIC_REF(Image, nullImage, (BitmapImage::create()));
+    return nullImage;
 }
 
 PassRefPtr<Image> Image::loadPlatformResource(const char *name)

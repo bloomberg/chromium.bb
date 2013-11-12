@@ -66,11 +66,11 @@ PassRefPtr<AnimatableValue> AnimatableStrokeDasharrayList::interpolateTo(const A
     if (from.isEmpty() && to.isEmpty())
         return takeConstRef(this);
     if (from.isEmpty() || to.isEmpty()) {
-        DEFINE_STATIC_LOCAL(RefPtr<AnimatableSVGLength>, zeroPixels, ());
+        DEFINE_STATIC_REF(AnimatableSVGLength, zeroPixels, 0);
         if (!zeroPixels) {
             SVGLength length;
             length.newValueSpecifiedUnits(LengthTypePX, 0, IGNORE_EXCEPTION);
-            zeroPixels = AnimatableSVGLength::create(length);
+            zeroPixels = AnimatableSVGLength::create(length).leakRef();
         }
         if (from.isEmpty()) {
             from.append(zeroPixels);
