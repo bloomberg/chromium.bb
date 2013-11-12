@@ -115,7 +115,7 @@ deps = {
     (Var("googlecode_url") % "snappy") + "/trunk@80",
 
   "src/tools/grit":
-    (Var("googlecode_url") % "grit-i18n") + "/trunk@136",
+    (Var("googlecode_url") % "grit-i18n") + "/trunk@138",
 
   "src/tools/gyp":
     (Var("googlecode_url") % "gyp") + "/trunk@1785",
