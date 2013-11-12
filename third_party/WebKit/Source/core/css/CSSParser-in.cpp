@@ -7105,12 +7105,12 @@ bool CSSParser::parseBorderImageQuad(Units validUnits, RefPtr<CSSPrimitiveValue>
 
 bool CSSParser::parseBorderImageWidth(RefPtr<CSSPrimitiveValue>& result)
 {
-    return parseBorderImageQuad(FLength | FInteger | FNonNeg | FPercent, result);
+    return parseBorderImageQuad(FLength | FNumber | FNonNeg | FPercent, result);
 }
 
 bool CSSParser::parseBorderImageOutset(RefPtr<CSSPrimitiveValue>& result)
 {
-    return parseBorderImageQuad(FLength | FInteger | FNonNeg, result);
+    return parseBorderImageQuad(FLength | FNumber | FNonNeg, result);
 }
 
 static void completeBorderRadii(RefPtr<CSSPrimitiveValue> radii[4])

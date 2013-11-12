@@ -625,28 +625,28 @@ BorderImageLengthBox CSSToStyleMap::mapNinePieceImageQuad(CSSValue* value) const
     BorderImageLengthBox box; // Defaults to 'auto' so we don't have to handle that explicitly below.
     Quad* slices = borderWidths->getQuadValue();
     if (slices->top()->isNumber())
-        box.setTop(slices->top()->getIntValue());
+        box.setTop(slices->top()->getDoubleValue());
     else if (slices->top()->isPercentage())
         box.setTop(Length(slices->top()->getDoubleValue(CSSPrimitiveValue::CSS_PERCENTAGE), Percent));
     else if (slices->top()->getValueID() != CSSValueAuto)
         box.setTop(slices->top()->computeLength<Length>(style(), rootElementStyle(), zoom));
 
     if (slices->right()->isNumber())
-        box.setRight(slices->right()->getIntValue());
+        box.setRight(slices->right()->getDoubleValue());
     else if (slices->right()->isPercentage())
         box.setRight(Length(slices->right()->getDoubleValue(CSSPrimitiveValue::CSS_PERCENTAGE), Percent));
     else if (slices->right()->getValueID() != CSSValueAuto)
         box.setRight(slices->right()->computeLength<Length>(style(), rootElementStyle(), zoom));
 
     if (slices->bottom()->isNumber())
-        box.setBottom(slices->bottom()->getIntValue());
+        box.setBottom(slices->bottom()->getDoubleValue());
     else if (slices->bottom()->isPercentage())
         box.setBottom(Length(slices->bottom()->getDoubleValue(CSSPrimitiveValue::CSS_PERCENTAGE), Percent));
     else if (slices->bottom()->getValueID() != CSSValueAuto)
         box.setBottom(slices->bottom()->computeLength<Length>(style(), rootElementStyle(), zoom));
 
     if (slices->left()->isNumber())
-        box.setLeft(slices->left()->getIntValue());
+        box.setLeft(slices->left()->getDoubleValue());
     else if (slices->left()->isPercentage())
         box.setLeft(Length(slices->left()->getDoubleValue(CSSPrimitiveValue::CSS_PERCENTAGE), Percent));
     else if (slices->left()->getValueID() != CSSValueAuto)
