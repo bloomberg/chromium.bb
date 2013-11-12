@@ -1,8 +1,11 @@
 <div>
   {{?parentName}}<a name="{{id}}"></a>{{/}}
-  {{+partials.property}}
+  <dl>
+    {{+partials.property}}
+  </dl>
   {{?properties}}
   <dd>
+    <h5>Properties of <span class="variable">{{name}}</span></h5>
     <dl>
     {{#properties}}
       {{+partials.parameter_full}}

@@ -1,16 +1,12 @@
 {{?values}}
-<dl>
   {{#values}}
   {{?@.description}}
-    <dd>
-      <dl>
-        <dt>{{name}}</dt>
-        <dd>
-          {{{description}}}
-        </dd>
-      </dl>
-    </dd>
+    <dl>
+      <dt>{{name}}</dt>
+      <dd>
+        {{{description}}}
+      </dd>
+    </dl>
   {{/@.description}}
   {{/values}}
-</dl>
 {{/values}}

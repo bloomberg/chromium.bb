@@ -7,11 +7,15 @@
     )
   </span>
 </dt>
-{{?description}}<dd>
+<dd>
+{{?description}}
   {{{description}}}
-</dd>{{/description}}
+{{/description}}
 {{+partials.enum_descriptions values:enum_values}}
 {{?array.is_object}}
-  <h4>Properties of each item</h4>
-  {{+partials.type @:array}}
+  <h5>Properties of each object in <span class="variable">{{name}}</span></h5>
+  <dl>
+    {{+partials.type @:array}}
+  </dl>
 {{/array.is_object}}
+</dd>
