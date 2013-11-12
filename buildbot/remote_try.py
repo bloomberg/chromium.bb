@@ -44,7 +44,7 @@ class ValidationError(Exception):
 
 class RemoteTryJob(object):
   """Remote Tryjob that is submitted through a Git repo."""
-  PUBLIC_URL = os.path.join(constants.PUBLIC_GOB_URL,
+  EXTERNAL_URL = os.path.join(constants.EXTERNAL_GOB_URL,
                             'chromiumos/tryjobs')
   INTERNAL_URL = os.path.join(constants.INTERNAL_GOB_URL,
                               'chromeos/tryjobs')
@@ -111,7 +111,7 @@ class RemoteTryJob(object):
     self.extra_args.append('--remote-version=%s'
                            % (self.TRYJOB_FORMAT_VERSION,))
     self.local_patches = local_patches
-    self.repo_url = self.PUBLIC_URL
+    self.repo_url = self.EXTERNAL_URL
     self.cache_key = ('trybot',)
     self.manifest = None
     if repository.IsARepoRoot(options.sourceroot):

@@ -478,13 +478,10 @@ class PatchSeries(object):
     """
     helper = self._LookupHelper(query)
     query = query_text = cros_patch.FormatPatchDep(query, force_external=True)
-    if constants.USE_GOB:
-      change = helper.QuerySingleRecord(
-          query_text, must_match=not git.IsSHA1(query))
-      if not change:
-        return
-    else:
-      change = helper.QuerySingleRecord(query_text, must_match=True)
+    change = helper.QuerySingleRecord(
+        query_text, must_match=not git.IsSHA1(query))
+    if not change:
+      return
     # If the query was a gerrit number based query, check the projects/change-id
     # to see if we already have it locally, but couldn't map it since we didn't
     # know the gerrit number at the time of the initial injection.
@@ -2296,18 +2293,8 @@ class PaladinMessage():
     return self.message + ('\n\nCommit queue documentation: %s' %
                            self._PALADIN_DOCUMENTATION_URL)
 
-  def _SendViaSSH(self, dryrun):
-    # Gerrit requires that commit messages are enclosed in quotes, and that
-    # any backslashes or quotes within these quotes are escaped.
-    # See com.google.gerrit.sshd.CommandFactoryProvider#split.
-    message = '"%s"' % (self._ConstructPaladinMessage().
-                        replace('\\', '\\\\').replace('"', '\\"'))
-    cmd = self.helper.GetGerritReviewCommand(
-        ['-m', message,
-         '%s,%s' % (self.patch.gerrit_number, self.patch.patch_number)])
-    _RunCommand(cmd, dryrun)
-
-  def _SendViaHTTP(self, dryrun):
+  def Send(self, dryrun):
+    """Posts a comment to a gerrit review."""
     body = {
         'message': self._ConstructPaladinMessage(),
         'notify': 'OWNER',
@@ -2320,10 +2307,3 @@ class PaladinMessage():
     conn = gob_util.CreateHttpConn(
         self.helper.host, path, reqtype='POST', body=body)
     gob_util.ReadHttpResponse(conn)
-
-  def Send(self, dryrun):
-    """Sends the message to the developer."""
-    if constants.USE_GOB:
-      self._SendViaHTTP(dryrun)
-    else:
-      self._SendViaSSH(dryrun)

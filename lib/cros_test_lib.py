@@ -1083,20 +1083,14 @@ class GerritTestCase(TempDirTestCase):
 
     # Make all chromite code point to the test server.
     cls.constants_patcher = mock.patch.dict(constants.__dict__, {
-        'PUBLIC_GOB_HOST': gi.git_host,
-        'PUBLIC_GERRIT_HOST': gi.gerrit_host,
-        'PUBLIC_GOB_URL': gi.git_url,
-        'PUBLIC_GERRIT_URL': gi.gerrit_url,
+        'EXTERNAL_GOB_HOST': gi.git_host,
+        'EXTERNAL_GERRIT_HOST': gi.gerrit_host,
+        'EXTERNAL_GOB_URL': gi.git_url,
+        'EXTERNAL_GERRIT_URL': gi.gerrit_url,
         'INTERNAL_GOB_HOST': gi.git_host,
         'INTERNAL_GERRIT_HOST': gi.gerrit_host,
         'INTERNAL_GOB_URL': gi.git_url,
         'INTERNAL_GERRIT_URL': gi.gerrit_url,
-        'GERRIT_HOST': gi.gerrit_host,
-        'GERRIT_INT_HOST': gi.gerrit_host,
-        'GIT_HOST': gi.git_host,
-        'GERRIT_SSH_URL': gi.gerrit_url,
-        'GERRIT_INT_SSH_URL': gi.gerrit_url,
-        'GIT_HTTP_URL': gi.git_url,
         'MANIFEST_URL': '%s/%s' % (gi.git_url, constants.MANIFEST_PROJECT),
         'MANIFEST_INT_URL': '%s/%s' % (
             gi.git_url, constants.MANIFEST_INT_PROJECT),
@@ -1332,7 +1326,6 @@ class GerritInternalTestCase(GerritTestCase):
         'INTERNAL_GERRIT_HOST': igi.gerrit_host,
         'INTERNAL_GOB_URL': igi.git_url,
         'INTERNAL_GERRIT_URL': igi.gerrit_url,
-        'GERRIT_INT_SSH_URL': igi.gerrit_url,
         'MANIFEST_INT_URL': '%s/%s' % (
             igi.git_url, constants.MANIFEST_INT_PROJECT),
         'GIT_REMOTES': {

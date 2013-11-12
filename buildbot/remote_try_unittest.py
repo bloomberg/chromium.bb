@@ -69,7 +69,7 @@ class RemoteTryTests(cros_test_lib.MoxTempDirTestCase):
   def _SetupMirrors(self):
     mirror = os.path.join(self.tempdir, 'tryjobs_mirror')
     os.mkdir(mirror)
-    url = '%s/%s' % (constants.GIT_HTTP_URL, 'chromiumos/tryjobs')
+    url = '%s/%s' % (constants.EXTERNAL_GOB_URL, 'chromiumos/tryjobs')
     repository.CloneGitRepo(mirror, url,
                             bare=True)
     self.ext_mirror = mirror
@@ -79,7 +79,7 @@ class RemoteTryTests(cros_test_lib.MoxTempDirTestCase):
                             bare=True)
 
     self.int_mirror = mirror
-    RemoteTryJobMock.PUBLIC_URL = self.ext_mirror
+    RemoteTryJobMock.EXTERNAL_URL = self.ext_mirror
     RemoteTryJobMock.INTERNAL_URL = self.int_mirror
     self._SetMirrorVersion(remote_try.RemoteTryJob.TRYJOB_FORMAT_VERSION, True)
 
@@ -189,7 +189,7 @@ class RemoteTryTests(cros_test_lib.MoxTempDirTestCase):
 
     self.mox.ReplayAll()
     job = self._CreateJob(mirror=False)
-    self.assertEqual(job.repo_url, remote_try.RemoteTryJob.PUBLIC_URL)
+    self.assertEqual(job.repo_url, remote_try.RemoteTryJob.EXTERNAL_URL)
 
 
 if __name__ == '__main__':

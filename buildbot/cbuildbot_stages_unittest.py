@@ -1848,8 +1848,8 @@ class BaseCQTest(StageTest):
     rc_mock.SetDefaultCmdResult()
 
     # Block the CQ from contacting GoB.
-    self.PatchObject(gerrit.GerritOnBorgHelper, 'RemoveCommitReady')
-    self.PatchObject(gerrit.GerritOnBorgHelper, 'SubmitChange')
+    self.PatchObject(gerrit.GerritHelper, 'RemoveCommitReady')
+    self.PatchObject(gerrit.GerritHelper, 'SubmitChange')
     self.PatchObject(validation_pool.PaladinMessage, 'Send')
 
     # If a test is still contacting GoB, something is busted.
@@ -1877,9 +1877,9 @@ class BaseCQTest(StageTest):
     """Helper to perform a basic sync for master commit queue."""
     p = MockPatch(remote=remote, tracking_branch=tracking_branch)
     my_patches = [p] * num_patches
-    self.PatchObject(gerrit.GerritOnBorgHelper, 'IsChangeCommitted',
+    self.PatchObject(gerrit.GerritHelper, 'IsChangeCommitted',
                      return_value=committed, autospec=True)
-    self.PatchObject(gerrit.GerritOnBorgHelper, 'Query',
+    self.PatchObject(gerrit.GerritHelper, 'Query',
                      return_value=my_patches, autospec=True)
     self.PatchObject(timeout_util, 'IsTreeOpen', return_value=tree_open,
                      autospec=True)

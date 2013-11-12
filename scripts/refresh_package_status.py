@@ -23,7 +23,7 @@ SCRIPT_DIR = os.path.dirname(os.path.realpath(__file__))
 GDATA_CRED_FILE = '.gdata_cred.txt'
 GDATA_TOKEN_FILE = '.gdata_token'
 GENTOO_DIR = 'gentoo-portage'
-PRTG_GIT_URL = '%s/chromiumos/overlays/portage.git' % constants.GIT_HTTP_URL
+PRTG_GIT_URL = '%s/chromiumos/overlays/portage.git' % constants.EXTERNAL_GOB_URL
 FUNTOO_GIT_URL = 'git://github.com/funtoo/portage.git'
 
 

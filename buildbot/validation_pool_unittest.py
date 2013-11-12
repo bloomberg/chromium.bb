@@ -155,7 +155,7 @@ class MoxBase(Base, cros_test_lib.MoxTestCase):
     self.mox.StubOutWithMock(time, 'sleep')
     # Suppress all gerrit access; having this occur is generally a sign
     # the code is either misbehaving, or that the tests are bad.
-    self.mox.StubOutWithMock(gerrit.GerritOnBorgHelper, 'Query')
+    self.mox.StubOutWithMock(gerrit.GerritHelper, 'Query')
     self.PatchObject(gs.GSContext, 'Cat', side_effect=gs.GSNoSuchKey())
     self.PatchObject(gs.GSContext, 'Copy')
     self.PatchObject(gs.GSContext, 'Exists', return_value=False)
@@ -164,11 +164,11 @@ class MoxBase(Base, cros_test_lib.MoxTestCase):
   def MakeHelper(self, cros_internal=None, cros=None):
     # pylint: disable=W0201
     if cros_internal:
-      cros_internal = self.mox.CreateMock(gerrit.GerritOnBorgHelper)
+      cros_internal = self.mox.CreateMock(gerrit.GerritHelper)
       cros_internal.version = '2.2'
       cros_internal.remote = constants.INTERNAL_REMOTE
     if cros:
-      cros = self.mox.CreateMock(gerrit.GerritOnBorgHelper)
+      cros = self.mox.CreateMock(gerrit.GerritHelper)
       cros.remote = constants.EXTERNAL_REMOTE
       cros.version = '2.2'
     return validation_pool.HelperPool(cros_internal=cros_internal,
@@ -703,7 +703,7 @@ class TestCoreLogic(MoxBase):
     master_pool = self.MakePool(dryrun=False)
     slave_pool = self.MakePool(is_master=False)
 
-    self.mox.StubOutWithMock(gerrit.GerritOnBorgHelper, 'RemoveCommitReady')
+    self.mox.StubOutWithMock(gerrit.GerritHelper, 'RemoveCommitReady')
 
     for failure in notified_patches:
       master_pool.SendNotification(
@@ -714,7 +714,7 @@ class TestCoreLogic(MoxBase):
       # thinking that the first arg isn't passed in; we suppress it to suppress
       # the pylnt bug.
       # pylint: disable=E1120
-      gerrit.GerritOnBorgHelper.RemoveCommitReady(failure.patch, dryrun=False)
+      gerrit.GerritHelper.RemoveCommitReady(failure.patch, dryrun=False)
 
     self.mox.ReplayAll()
     master_pool._HandleApplyFailure(notified_patches)
@@ -884,7 +884,7 @@ class TestPickling(cros_test_lib.TempDirTestCase):
     reference = os.path.normpath(os.path.join(reference, '../../'))
 
     repository.CloneGitRepo(repo,
-                            '%s/chromiumos/chromite' % constants.GIT_HTTP_URL,
+                            '%s/chromiumos/chromite' % constants.EXTERNAL_GOB_URL,
                             reference=reference)
 
     code = """
@@ -913,14 +913,14 @@ sys.stdout.write(validation_pool_unittest.TestPickling.%s)
     return cros_patch.GerritPatch(
         patch_info,
         constants.INTERNAL_REMOTE,
-        constants.GERRIT_INT_SSH_URL)
+        constants.INTERNAL_GERRIT_URL)
 
   @staticmethod
   def _GetCrosPatch(patch_info):
     return cros_patch.GerritPatch(
         patch_info,
         constants.EXTERNAL_REMOTE,
-        constants.GERRIT_SSH_URL)
+        constants.EXTERNAL_GERRIT_URL)
 
   @classmethod
   def _GetTestData(cls):
@@ -1130,7 +1130,7 @@ class TestCreateDisjointTransactions(Base):
         to the CreateDisjointTransactions function.
       circular: Whether the transactions contain circular dependencies.
     """
-    remove = self.PatchObject(gerrit.GerritOnBorgHelper, 'RemoveCommitReady')
+    remove = self.PatchObject(gerrit.GerritHelper, 'RemoveCommitReady')
     patches = list(itertools.chain.from_iterable(txns))
     expected_plans = txns
     if max_txn_length is not None:
@@ -1161,7 +1161,7 @@ class TestCreateDisjointTransactions(Base):
     """Helper for testing unresolved plans."""
     notify = self.PatchObject(validation_pool.ValidationPool,
                               'SendNotification')
-    remove = self.PatchObject(gerrit.GerritOnBorgHelper, 'RemoveCommitReady')
+    remove = self.PatchObject(gerrit.GerritHelper, 'RemoveCommitReady')
     pool = MakePool(changes=changes)
     plans = pool.CreateDisjointTransactions(None, max_txn_length=max_txn_length)
     self.assertEqual(plans, [])
@@ -1245,7 +1245,7 @@ class BaseSubmitPoolTestCase(Base, cros_build_lib_unittest.RunCommandTestCase):
   def setUp(self):
     self.pool_mock = self.StartPatcher(MockValidationPool())
     self.patch_mock = self.StartPatcher(MockPatchSeries())
-    self.PatchObject(gerrit.GerritOnBorgHelper, 'QuerySingleRecord')
+    self.PatchObject(gerrit.GerritHelper, 'QuerySingleRecord')
     self.patches = self.GetPatches(2)
 
     # By default, don't ignore any errors.

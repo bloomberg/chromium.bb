@@ -127,7 +127,7 @@ def GetManifestVersionsRepoUrl(internal_build, read_only=False, test=False):
   if internal_build:
     url = constants.INTERNAL_GOB_URL + constants.MANIFEST_VERSIONS_INT_SUFFIX
   else:
-    url = constants.PUBLIC_GOB_URL + constants.MANIFEST_VERSIONS_SUFFIX
+    url = constants.EXTERNAL_GOB_URL + constants.MANIFEST_VERSIONS_SUFFIX
 
   if test:
     url += '-test'

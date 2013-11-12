@@ -486,7 +486,7 @@ class TestGerritPatch(TestGitRepoPatch):
   def _MkPatch(self, source, sha1, ref='refs/heads/master', **kwds):
     json = self.test_json
     remote = kwds.pop('remote', constants.EXTERNAL_REMOTE)
-    url_prefix = kwds.pop('url_prefix', constants.GERRIT_SSH_URL)
+    url_prefix = kwds.pop('url_prefix', constants.EXTERNAL_GERRIT_URL)
     suppress_branch = kwds.pop('suppress_branch', False)
     change_id = kwds.pop('ChangeId', None)
     if change_id is None:
@@ -519,22 +519,6 @@ class TestGerritPatch(TestGitRepoPatch):
       # refs/changes/
       self._run(['git', 'push', source, '%s:%s' % (sha1, refspec)], source)
     return obj
-
-  @unittest.skipIf(constants.USE_GOB, "Magic constants broken for GoB.")
-  def testIsAlreadyMerged(self):
-    # Note that these are magic constants- they're known to be
-    # merged (and the other abandoned) in public gerrit.
-    # If old changes are ever flushed, or something 'special' occurs,
-    # then this will break.  That it's an acceptable risk.
-    # Note we should be checking a known open one; seems rather likely
-    # that'll get closed inadvertantly thus breaking the tests (not
-    # an acceptable risk in the authors opinion).
-    merged, abandoned, still_open = gerrit.GetGerritPatchInfo(
-        [GERRIT_MERGED_CHANGEID, GERRIT_ABANDONED_CHANGEID,
-         GERRIT_OPEN_CHANGEID])
-    self.assertTrue(merged.IsAlreadyMerged())
-    self.assertFalse(abandoned.IsAlreadyMerged())
-    self.assertFalse(still_open.IsAlreadyMerged())
 
   def testApprovalTimestamp(self):
     """Test that the approval timestamp is correctly extracted from JSON."""

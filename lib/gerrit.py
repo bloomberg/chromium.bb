@@ -35,477 +35,83 @@ class FailedToReachGerrit(GerritException):
 
 
 class GerritHelper(object):
-  """Helper class to manage interaction with Gerrit server."""
+  """Helper class to manage interaction with the gerrit-on-borg service."""
 
+  # Maximum number of results to return per query.
   _GERRIT_MAX_QUERY_RETURN = 500
 
-  def __init__(self, host, remote, ssh_port=29418, ssh_user=None, suexec=None,
-               print_cmd=True):
-    """Initializes variables for interaction with a gerrit server.
+  # Fields that appear in gerrit change query results.
+  MORE_CHANGES = '_more_changes'
+  SORTKEY = '_sortkey'
 
+  def __init__(self, host, remote, print_cmd=True):
+    """
     Args:
-      host: Mandatory; this should be the address (ip or dns) of where
-        the gerrit instance lives.
-      port: Integer if given; the ssh port gerrit responds on.
-      user: If given, the user to force for all ssh activities.
-      suexec: If given, the email address to suexec to during ssh
-        commands.  Used only by maintenance accounts.
-      print_cmd: This is passed to all RunCommand invocations; set it
-        to False if you want things quiet.
+      host: Hostname (without protocol prefix) of the gerrit server.
+      remote: The symbolic name of a known remote git host,
+          taken from buildbot.contants.
+      print_cmd: Determines whether all RunCommand invocations will be echoed.
+          Set to False for quiet operation.
     """
     self.host = host
     self.remote = remote
-    self.ssh_port = int(ssh_port)
-    self.ssh_user = ssh_user
-    self.suexec = suexec
     self.print_cmd = bool(print_cmd)
     self._version = None
 
   @classmethod
   def FromRemote(cls, remote, **kwds):
     if remote == constants.INTERNAL_REMOTE:
-      port = constants.GERRIT_INT_PORT
-      host = constants.GERRIT_INT_HOST
+      host = constants.INTERNAL_GERRIT_HOST
     elif remote == constants.EXTERNAL_REMOTE:
-      port = constants.GERRIT_PORT
-      host = constants.GERRIT_HOST
+      host = constants.EXTERNAL_GERRIT_HOST
     else:
       raise ValueError('Remote %s not supported.' % remote)
-
-    return cls(host, remote, ssh_port=port, **kwds)
-
-  @property
-  def ssh_url(self):
-    s = '%s@%s' % (self.ssh_user, self.host) if self.ssh_user else self.host
-    return "ssh://%s:%i" % (s, self.ssh_port)
-
-  @property
-  def base_ssh_prefix(self):
-    l = ['ssh', '-p', str(self.ssh_port), self.host]
-    if self.ssh_user:
-      l.extend(['-l', self.ssh_user])
-    return l
-
-  # Certain code needs access to this to override suexec...
-  def GetSshPrefix(self, suexec=None):
-    l = self.base_ssh_prefix
-    suexec = suexec if suexec is not None else self.suexec
-    if suexec is not None:
-      l += ['suexec', '--as', suexec, '--']
-    return l
-
-  # ... but most code prefers just the property route.
-  @property
-  def ssh_prefix(self):
-    return self.GetSshPrefix()
+    return cls(host, remote, **kwds)
 
   def SetReviewers(self, change, add=(), remove=(), project=None):
-    """Adjust the reviewers list for a given change.
+    """Modify the list of reviewers on a gerrit change.
 
     Args:
-      change: Either the ChangeId, or preferably, the gerrit change number.
-        If you use a ChangeId be aware that this command will fail if multiple
-        changes match.  Can be either a string or an integer.
-      add: Either this or removes must be given.  If given, it must be a
-        either a single email address/group name, or a sequence of email
-        addresses or group names to add as reviewers.  Note it's not
-        considered an error if you attempt to add a reviewer that
-        already is marked as a reviewer for the change.
-      remove: Same rules as 'add', just is the list of reviewers to remove.
-      project: If given, the project to find the given change w/in.  Unnecessary
-        if passing a gerrit number for change; if passing a ChangeId, strongly
-        advised that a project be specified.
-    Raises:
-      RunCommandError if the attempt to modify the reviewers list fails.  If
-      the command fails, no changes to the reviewer list occurs.
+      change: ChangeId or change number for a gerrit review.
+      add: Sequence of email addresses of reviewers to add.
+      remove: Sequence of email addresses of reviewers to remove.
+      project: Deprecated.
     """
-    if not add and not remove:
-      raise ValueError('Either add or remove must be non empty')
-
-    command = self.ssh_prefix + ['gerrit', 'set-reviewers']
-    command.extend(cros_build_lib.iflatten_instance(
-        [('--add', x) for x in cros_build_lib.iflatten_instance(add)] +
-        [('--remove', x) for x in cros_build_lib.iflatten_instance(remove)]))
-    if project is not None:
-      command += ['--project', project]
-    # Always set the change last; else --project may not take hold by that
-    # point, with gerrit complaining of duplicates when there aren't.
-    # Yes kiddies, gerrit can be retarded; this being one of those cases.
-    command.append(str(change))
-    cros_build_lib.RunCommandCaptureOutput(command, print_cmd=self.print_cmd)
-
-  def GetGerritReviewCommand(self, command_list):
-    """Returns array corresponding to Gerrit Review command.
-
-    Review can be used to modify a changelist.  Specifically it can change
-    scores, abandon, restore or submit it.  Pass in |command|.
-    """
-    assert isinstance(command_list, list), 'Review command must be list.'
-    return self.ssh_prefix + ['gerrit', 'review'] + command_list
-
-  def GrabPatchFromGerrit(self, project, change, commit, must_match=True):
-    """Returns the GerritChange described by the arguments.
-
-    Args:
-      project: Name of the Gerrit project for the change.
-      change:  The change ID for the change.
-      commit:  The specific commit hash for the patch from the review.
-      must_match: Defaults to True; if True, the given changeid *must*
-        be found on the target gerrit server.  If False, a change not found
-        is considered uncommited.
-    """
-    query = ('project:%(project)s AND change:%(change)s AND commit:%(commit)s'
-             % {'project': project, 'change': change, 'commit': commit})
-    return self.QuerySingleRecord(query, must_match=must_match)
-
-  def IsChangeCommitted(self, query, dryrun=False, must_match=True):
-    """Checks to see whether a change is already committed.
-
-    Args:
-      query: Either a Change-Id or a Change number to query for.
-      dryrun: Whether to perform the operations or not.  If set, returns True.
-      must_match: Defaults to True; if True, the given changeid *must*
-        be found on the target gerrit server.  If False, a change not found
-        is considered uncommited.
-    Raises:
-      GerritException: If must_match=True, and no match was found.
-      QueryNotSpecific: If multiple CLs match the given query.  This can occur
-        when a Change-ID was uploaded to multiple branches of a project
-        unchanged.
-    """
-    result = self.QuerySingleRecord('change:%s' % (query,),
-                                    must_match=must_match, dryrun=dryrun)
-    if dryrun:
-      return True
-
-    if result is None:
-      # This can only occur if must_match=False
-      return False
-
-    return result.status == 'MERGED'
-
-  def GetLatestSHA1ForBranch(self, project, branch):
-    """Finds the latest commit hash for a repository/branch.
-
-    Returns:
-      The latest commit hash for this patch's repo/branch.
-
-    Raises:
-      FailedToReachGerrit if we fail to contact gerrit.
-    """
-    ssh_url_project = '%s/%s' % (self.ssh_url, project)
-    try:
-      cmd = ['ls-remote', ssh_url_project, 'refs/heads/%s' % (branch,)]
-      result = git.RunGit('.', cmd, print_cmd=self.print_cmd)
-      if result:
-        return result.output.split()[0]
-    except cros_build_lib.RunCommandError as e:
-      # Fall out to Gerrit error.
-      logging.error('Failed to contact git server with %s', e)
-
-    raise FailedToReachGerrit('Could not contact gerrit to get latest sha1')
-
-  def QuerySingleRecord(self, query, **kwds):
-    """Freeform querying of a gerrit server, expecting exactly one row returned
-
-    Args:
-      query: See Query for details.  This is just a wrapping function.
-      kwds: See Query for details.  This is just a wrapping function.  This
-        method accepts one additional keyword that Query doesn't: must_match,
-        which defaults to True.  If this is True and the query didn't match
-        anything, it'll raise a GerritException.  If False, it returns None
-    Returns:
-      If raw=True, a single dictionary or a cros_patch.GerritPatch instance
-        if a single record was found.  If must_match=False and no record was
-        found in gerrit, None.
-    Raises:
-      GerritException derivatives.
-    """
-    dryrun = kwds.get('dryrun')
-    must_match = kwds.pop('must_match', True)
-    results = self.Query(query, **kwds)
-
-    if dryrun:
-      return None
-    elif not results:
-      if must_match:
-        raise QueryHasNoResults('Query %s had no results' % (query,))
-      return None
-    elif len(results) != 1:
-      raise QueryNotSpecific('Query %s returned too many results: %s'
-                             % (query, results))
-    return results[0]
-
-  def Query(self, query, sort=None, current_patch=True, options=(),
-            dryrun=False, raw=False, _resume_sortkey=None):
-    """Freeform querying of a gerrit server.
-
-    Args:
-      query: gerrit query to run: see the official docs for valid parameters:
-        http://gerrit.googlecode.com/svn/documentation/2.1.7/cmd-query.html
-      sort: if given, the key in the resultant json to sort on
-      current_patch: If True, append --current-patch-set to options.  If this
-        is set to False, return the raw dictionary.  If False, raw is forced
-        to True.
-      options: Any additional commandline options to pass to the gerrit query.
-
-    Returns:
-      A sequence of JSON dictionaries from the gerrit server. This includes
-      patch dependencies in the 'dependsOn' and 'neededBy' fields.
-    Raises:
-      RunCommandException if the invocation fails, or GerritException if
-      there is something wrong with the query parameters given
-    """
-
-    cmd = self.ssh_prefix + ['gerrit', 'query', '--format=JSON',
-                             '--dependencies', '--commit-message']
-    cmd.extend(options)
-    if current_patch:
-      cmd.append('--current-patch-set')
-    else:
-      raw = True
-
-    # Note we intentionally cap the query to 500; gerrit does so
-    # already, but we force it so that if gerrit were to change
-    # its return limit, this wouldn't break.
-    overrides = ['limit:%i' % self._GERRIT_MAX_QUERY_RETURN]
-    if _resume_sortkey:
-      overrides += ['resume_sortkey:%s' % _resume_sortkey]
-
-    cmd.extend(['--', query] + overrides)
-
-    if dryrun:
-      logging.info('Would have run %s', ' '.join(cmd))
-      return []
-    result = cros_build_lib.RunCommand(cmd, redirect_stdout=True,
-                                       print_cmd=self.print_cmd)
-    result = self.InterpretJSONResults(query, result.output)
-
-    if len(result) == self._GERRIT_MAX_QUERY_RETURN:
-      # Gerrit cuts us off at 500; thus go recursive via the sortKey to
-      # get the rest of the results.
-      result += self.Query(query, _resume_sortkey=result[-1]['sortKey'],
-                           current_patch=current_patch,
-                           options=options, dryrun=dryrun, raw=True)
-
-    if sort:
-      result = sorted(result, key=operator.itemgetter(sort))
-    if not raw:
-      return [cros_patch.GerritPatch(x, self.remote, self.ssh_url)
-              for x in result]
-
-    return result
-
-  def InterpretJSONResults(self, query, result_string, query_type='stats',
-                           mode='query'):
-    result = map(json.loads, result_string.splitlines())
-
-    status = result[-1]
-    if 'type' not in status:
-      raise GerritException('Weird results from gerrit: asked %s %s, got %s' %
-        (mode, query, result))
-
-    if status['type'] != query_type:
-      raise GerritException('Bad gerrit %s: query %s, error %s' %
-        (mode, query, status.get('message', status)))
-
-    return result[:-1]
-
-  def QueryMultipleCurrentPatchset(self, queries):
-    """Query chromeos gerrit servers for the current patch for given changes
-
-    Args:
-     queries: sequence of Change-IDs (Ic04g2ab, 6 characters to 40),
-       or change numbers (12345 for example).
-       A change number can refer to the same change as a Change ID,
-       but Change IDs given should be unique, and the same goes for Change
-       Numbers.
-
-    Returns:
-     an unordered sequence of GerritPatches for each requested query.
-
-    Raises:
-     GerritException: if a query fails to match, or isn't specific enough,
-      or a query is malformed.
-     RunCommandException: if for whatever reason, the ssh invocation to
-      gerrit fails.
-    """
-
-    if not queries:
-      return
-
-    # process the queries in two seperate streams; this is done so that
-    # we can identify exactly which patchset returned no results; it's
-    # basically impossible to do it if you query with mixed numeric/ID
-
-    numeric_queries = [x for x in queries if x.isdigit()]
-
-    if numeric_queries:
-      query = ' OR '.join('change:%s' % x for x in numeric_queries)
-      results = self.Query(query, sort='number')
-
-      # Sort via alpha comparison, rather than integer; Query sorts via the
-      # raw textual field, thus we need to match that.
-      numeric_queries = sorted(numeric_queries, key=str)
-
-      for query, result in itertools.izip_longest(numeric_queries, results):
-        if result is None or result.gerrit_number != query:
-          raise GerritException('Change number %s not found on server %s.'
-                                 % (query, self.host))
-
-        yield query, result
-
-    id_queries = sorted(cros_patch.FormatPatchDep(x, sha1=False)
-                        for x in queries if not x.isdigit())
-
-    if not id_queries:
-      return
-
-    results = self.Query(' OR '.join('change:%s' % x for x in id_queries),
-                         sort='id')
-
-    last_patch_id = None
-    for query, result in itertools.izip_longest(id_queries, results):
-      # case insensitivity to ensure that if someone queries for IABC
-      # and gerrit returns Iabc, we still properly match.
-      result_id = ''
-      if result:
-        result_id = cros_patch.FormatChangeId(result.change_id)
-
-      if result is None or (query and not result_id.startswith(query)):
-        if last_patch_id and result_id.startswith(last_patch_id):
-          raise GerritException(
-              'While querying for change %s, we received '
-              'back multiple results.  Please be more specific.  Server=%s'
-              % (last_patch_id, self.host))
-
-        raise GerritException('Change-ID %s not found on server %s.'
-                              % (query, self.host))
-
-      if query is None:
-        raise GerritException(
-            'While querying for change %s, we received '
-            'back multiple results.  Please be more specific.  Server=%s'
-            % (last_patch_id, self.host))
-
-      yield query, result
-      last_patch_id = query
-
-  @property
-  def version(self):
-    obj = self._version
-    if obj is None:
-      # We suppress the gerrit version call's logging; it's basically
-      # never useful log wise.
-      obj = cros_build_lib.RunCommandCaptureOutput(
-          self.ssh_prefix + ['gerrit', 'version'],
-          print_cmd=False).output.strip()
-      obj = obj.replace('gerrit version ', '')
-      self._version = obj
-    return obj
-
-  def _SqlQuery(self, query, dryrun=False, is_command=False):
-    """Run a gsql query against gerrit.
-
-    Doing so requires an admin account, and a fair amount of care-
-    bad code can trash the underlying DB pretty easily.
-
-    Args:
-     query: SQL query to run.
-     dryrun: Should we run the SQL, or just pretend we did?
-     is_command: Does the SQL modify records (DML), or is it just
-       a query?  If it's DML, then this must be set to True.
-
-    Returns:
-     List of dictionaries returned from gerrit for the SQL ran.
-    """
-    if dryrun:
-      logging.info("Would have ran sql query %r", (query,))
-      return []
-
-    command = self.ssh_prefix + ['gerrit', 'gsql', '--format=JSON']
-    result = cros_build_lib.RunCommand(command, redirect_stdout=True,
-                                       input=query, print_cmd=self.print_cmd)
-
-    query_type = 'update-stats' if is_command else 'query-stats'
-
-    result = self.InterpretJSONResults(query, result.output,
-                                       query_type=query_type,
-                                       mode='gsql')
-    return result
-
-  def RemoveCommitReady(self, change, dryrun=False):
-    """Remove any commit ready bits associated with CL.
-
-    Args:
-     change: GerritChange instance to strip the CR bit from.
-     dryrun: Whether to perform the operation or not.
-    """
-    query = ("DELETE FROM patch_set_approvals WHERE change_id=%s"
-             " AND patch_set_id=%s "
-             " AND category_id='COMR';"
-             % (change.gerrit_number, change.patch_number))
-    self._SqlQuery(query, dryrun=dryrun, is_command=True)
-
-  def SubmitChange(self, change, dryrun=False):
-    """Submits patch using Gerrit Review."""
-    cmd = self.GetGerritReviewCommand(
-        ['--submit', '%s,%s' % (change.gerrit_number, change.patch_number)])
-    if dryrun:
-      logging.info('Would have run: %s', ' '.join(map(repr, cmd)))
-      return
-    try:
-      cros_build_lib.RunCommand(cmd)
-    except cros_build_lib.RunCommandError:
-      cros_build_lib.Error('Command failed', exc_info=True)
-
-
-class GerritOnBorgHelper(GerritHelper):
-  """Helper class to manage interaction with the gerrit-on-borg service."""
-
-  # Fields that appear in gerrit change query results
-  MORE_CHANGES = '_more_changes'
-  SORTKEY = '_sortkey'
-
-  def __init__(self, host, remote, **kwds):
-    kwds['ssh_port'] = 0
-    kwds['ssh_user'] = None
-    super(GerritOnBorgHelper, self).__init__(host, remote, **kwds)
-
-  @property
-  def base_ssh_prefix(self):
-    raise NotImplementedError(
-        'The base_ssh_prefix is undefined for GerritOnBorg.')
-
-  @property
-  def ssh_prefix(self):
-    raise NotImplementedError(
-        'The ssh_prefix property is undefined for GerritOnBorg.')
-
-  @property
-  def ssh_url(self):
-    raise NotImplementedError(
-        'The ssh_url property is undefined for GerritOnBorg.')
-
-  @property
-  def version(self):
-    raise NotImplementedError('Cannot get gerrit version from gerrit-on-borg.')
-
-  def SetReviewers(self, change, add=(), remove=(), project=None):
     if add:
       gob_util.AddReviewers(self.host, change, add)
     if remove:
       gob_util.RemoveReviewers(self.host, change, remove)
 
   def GetChangeDetail(self, change_num):
+    """Return detailed information about a gerrit change.
+
+    Args:
+      change_num: A gerrit change number.
+    """
     return gob_util.GetChangeDetail(
         self.host, change_num, o_params=('CURRENT_REVISION', 'CURRENT_COMMIT'))
 
   def GrabPatchFromGerrit(self, project, change, commit, must_match=True):
+    """Return a cros_patch.GerritPatch representing a gerrit change.
+
+    Args:
+      project: The name of the gerrit project for the change.
+      change: A ChangeId or gerrit number for the change.
+      commit: The git commit hash for a patch associated with the change.
+      must_match: Raise an exception if the change is not found.
+    """
     query = { 'project': project, 'commit': commit, 'must_match': must_match }
     return self.QuerySingleRecord(change, **query)
 
   def IsChangeCommitted(self, change, dryrun=False, must_match=False):
+    """Check whether a gerrit change has been merged.
+
+    Args:
+      change: A gerrit change number.
+      dryrun: Deprecated.
+      must_match: Raise an exception if the change is not found.  If this is
+          False, then a missing change will return None.
+    """
     change = gob_util.GetChange(self.host, change)
     if not change:
       if must_match:
@@ -514,6 +120,7 @@ class GerritOnBorgHelper(GerritHelper):
     return change.get('status') == 'MERGED'
 
   def GetLatestSHA1ForBranch(self, project, branch):
+    """Return the git hash at the tip of a branch."""
     url = '%s://%s/%s' % (gob_util.GERRIT_PROTOCOL, self.host, project)
     cmd = ['ls-remote', url, 'refs/heads/%s' % branch]
     try:
@@ -525,6 +132,18 @@ class GerritOnBorgHelper(GerritHelper):
                     exc_info=True)
 
   def QuerySingleRecord(self, change=None, **query_kwds):
+    """Free-form query of a gerrit change that expects a single result.
+
+    Args:
+      dryrun: Don't query the gerrit server; just return None.
+      must_match: Raise an exception if the query comes back empty.  If this
+          is False, an unsatisfied query will return None.
+      Refer to Query() docstring for remaining arguments.
+
+    Returns:
+      If query_kwds['raw'] == True, return a python dict representing the
+      change; otherwise, return a cros_patch.GerritPatch object.
+    """
     dryrun = query_kwds.get('dryrun')
     must_match = query_kwds.pop('must_match', True)
     results = self.Query(change, **query_kwds)
@@ -541,6 +160,26 @@ class GerritOnBorgHelper(GerritHelper):
 
   def Query(self, change=None, sort=None, current_patch=True, options=(),
             dryrun=False, raw=False, sortkey=None, **query_kwds):
+    """Free-form query for gerrit changes.
+
+    Args:
+      change: ChangeId, git commit hash, or gerrit number for a change.
+      sort: A functor to extract a sort key from a cros_patch.GerritChange
+          object, for sorting results..  If this is None, results will not be
+          sorted.
+      current_patch: If True, ask the gerrit server for extra information about
+          the latest uploaded patch.
+      options: Deprecated.
+      dryrun: If True, don't query the gerrit server; return an empty list.
+      raw: If True, return a list of python dict's representing the query
+          results.  Otherwise, return a list of cros_patch.GerritPatch.
+      sortkey: For continuation queries, this should be the '_sortkey' field
+          extracted from the previous batch of results.
+      query_kwds: A dict of query parameters, as described here:
+        https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#list-changes
+
+    Returns: A list of python dicts or cros_patch.GerritChange.
+    """
     if options:
       raise GerritException('"options" argument unsupported on gerrit-on-borg.')
     url_prefix = gob_util.GetGerritFetchUrl(self.host)
@@ -603,6 +242,13 @@ class GerritOnBorgHelper(GerritHelper):
     return [cros_patch.GerritPatch(x, self.remote, url_prefix) for x in result]
 
   def QueryMultipleCurrentPatchset(self, changes):
+    """Query the gerrit server for multiple changes.
+
+    Args:
+      changes: A sequence of gerrit change numbers.
+    Returns:
+      A list of cros_patch.GerritPatch.
+    """
     if not changes:
       return
     url_prefix = gob_util.GetGerritFetchUrl(self.host)
@@ -629,6 +275,14 @@ class GerritOnBorgHelper(GerritHelper):
     return change
 
   def SetReview(self, change, msg=None, labels=None, dryrun=False):
+    """Update the review labels on a gerrit change.
+
+    Args:
+      change: A gerrit change number.
+      msg: A text comment to post to the review.
+      labels: A dict of label/value to set on the review.
+      dryrun: If True, don't actually update the review.
+    """
     if not msg and not labels:
       return
     if dryrun:
@@ -644,6 +298,7 @@ class GerritOnBorgHelper(GerritHelper):
                        msg=msg, labels=labels, notify='ALL')
 
   def RemoveCommitReady(self, change, dryrun=False):
+    """Set the 'Commit-Queue' label on a gerrit change to '0'."""
     if dryrun:
       logging.info('Would have reset Commit-Queue label for %s', change)
       return
@@ -651,18 +306,21 @@ class GerritOnBorgHelper(GerritHelper):
                                label='Commit-Queue', notify='OWNER')
 
   def SubmitChange(self, change, dryrun=False):
+    """Land (merge) a gerrit change."""
     if dryrun:
       logging.info('Would have submitted change %s', change)
       return
     gob_util.SubmitChange(self.host, self._to_changenum(change))
 
   def AbandonChange(self, change, dryrun=False):
+    """Mark a gerrit change as 'Abandoned'."""
     if dryrun:
       logging.info('Would have abandoned change %s', change)
       return
     gob_util.AbandonChange(self.host, self._to_changenum(change))
 
   def RestoreChange(self, change, dryrun=False):
+    """Re-activate a previously abandoned gerrit change."""
     if dryrun:
       logging.info('Would have restored change %s', change)
       return
@@ -724,8 +382,7 @@ def GetGerritPatchInfo(patches):
 
 def GetGerritHelper(remote, **kwargs):
   """Return a GerritHelper instance for interacting with the given remote."""
-  helper_cls = GerritOnBorgHelper if constants.USE_GOB else GerritHelper
-  return helper_cls.FromRemote(remote, **kwargs)
+  return GerritHelper.FromRemote(remote, **kwargs)
 
 
 def GetGerritHelperForChange(change):
