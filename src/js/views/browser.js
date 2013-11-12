@@ -183,10 +183,18 @@ camera.views.Browser.prototype.onScrollEnded_ = function() {
   }
 
   // Select the closest picture to the center of the window.
+  // This may invoke scrolling, to center the currently selected picture.
   if (minIndex != -1)
     this.model.currentIndex = minIndex;
 
-  this.updatePicturesResolutions_();
+  // Update resolutions only if updating the currentIndex didn't cause any
+  // scrolling.
+  setTimeout(function() {
+    // If animating, then onScrollEnded() will be called again after it is
+    // finished. Therefore, we can ignore this call.
+    if (!this.scroller_.animating)
+      this.updatePicturesResolutions_();
+  }.bind(this), 0);
 };
 
 /**
