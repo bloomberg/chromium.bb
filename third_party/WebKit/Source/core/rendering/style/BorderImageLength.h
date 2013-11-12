@@ -42,39 +42,53 @@ namespace WebCore {
 class BorderImageLength {
 public:
     BorderImageLength()
+        : m_length(Auto)
+        , m_number(0)
+        , m_type(LengthType)
     {
     }
 
     BorderImageLength(double number)
-        : m_length(number, Relative)
+        : m_length(Undefined)
+        , m_number(number)
+        , m_type(NumberType)
     {
     }
 
     BorderImageLength(const Length& length)
         : m_length(length)
+        , m_number(0)
+        , m_type(LengthType)
     {
     }
 
-    bool isNumber() const { return m_length.isRelative(); }
-    bool isLength() const { return !isNumber(); }
+    bool isNumber() const { return m_type == NumberType; }
+    bool isLength() const { return m_type == LengthType; }
 
     const Length& length() const { ASSERT(isLength()); return m_length; }
     Length& length() { ASSERT(isLength()); return m_length; }
 
-    double number() const { ASSERT(isNumber()); return m_length.value(); }
+    double number() const { ASSERT(isNumber()); return m_number; }
 
     bool operator==(const BorderImageLength& other) const
     {
-        return m_length == other.m_length;
+        return m_type == other.m_type && m_length == other.m_length && m_number == other.m_number;
     }
 
     bool isZero() const
     {
-        return m_length.isZero();
+        return (isLength() && m_length.isZero()) || (isNumber() && m_number);
     }
 
 private:
+    // Ideally we would put the 2 following fields in a union, but Length has a constructor,
+    // a destructor and a copy assignment which isn't allowed.
     Length m_length;
+    double m_number;
+    enum {
+        LengthType,
+        NumberType
+    } m_type;
 };
 
 } // namespace WebCore
