@@ -118,7 +118,7 @@ public:
     virtual bool dispatchEvent(PassRefPtr<Event>) OVERRIDE;
 
     // ActiveDOMObject interface
-    virtual void contextDestroyed();
+    virtual void stop() OVERRIDE;
 
     static const String& permission(ExecutionContext*);
     static const String& permissionString(NotificationClient::Permission);
