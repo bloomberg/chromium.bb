@@ -38,6 +38,10 @@ class TestTabModel : public TabModel {
   virtual content::WebContents* CreateTabForTesting(const GURL& url) OVERRIDE {
     return NULL;
   }
+  virtual content::WebContents* CreateNewTabForDevTools(const GURL& url)
+      OVERRIDE {
+    return NULL;
+  }
   virtual bool IsSessionRestoreInProgress() const OVERRIDE { return false; }
   virtual void OpenClearBrowsingData() const OVERRIDE {}
   virtual TabAndroid* GetTabAt(int index) const OVERRIDE {
