@@ -163,6 +163,12 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate {
   // was successfully registered.
   static bool InitMessagePumpForUIFactory(MessagePumpFactory* factory);
 
+  // Creates the default MessagePump based on |type|. Caller owns return
+  // value.
+  // TODO(sky): convert this and InitMessagePumpForUIFactory() to return a
+  // scoped_ptr.
+  static MessagePump* CreateMessagePumpForType(Type type);
+
   // A DestructionObserver is notified when the current MessageLoop is being
   // destroyed.  These observers are notified prior to MessageLoop::current()
   // being changed to return NULL.  This gives interested parties the chance to

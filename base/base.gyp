@@ -350,6 +350,18 @@
       ],
     },
     {
+      'target_name': 'base_message_loop_tests',
+      'type': 'static_library',
+      'dependencies': [
+        'base',
+        '../testing/gtest.gyp:gtest',
+      ],
+      'sources': [
+        'message_loop/message_loop_test.cc',
+        'message_loop/message_loop_test.h',
+      ],
+    },
+    {
       'target_name': 'base_prefs',
       'type': '<(component)',
       'variables': {
@@ -676,6 +688,7 @@
       'dependencies': [
         'base',
         'base_i18n',
+        'base_message_loop_tests',
         'base_prefs',
         'base_prefs_test_support',
         'base_static',

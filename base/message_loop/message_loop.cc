@@ -146,49 +146,7 @@ MessageLoop::MessageLoop(Type type)
       run_loop_(NULL) {
   Init();
 
-// TODO(rvargas): Get rid of the OS guards.
-#if defined(OS_WIN)
-#define MESSAGE_PUMP_UI new MessagePumpForUI()
-#define MESSAGE_PUMP_IO new MessagePumpForIO()
-#elif defined(OS_IOS)
-#define MESSAGE_PUMP_UI MessagePumpMac::Create()
-#define MESSAGE_PUMP_IO new MessagePumpIOSForIO()
-#elif defined(OS_MACOSX)
-#define MESSAGE_PUMP_UI MessagePumpMac::Create()
-#define MESSAGE_PUMP_IO new MessagePumpLibevent()
-#elif defined(OS_NACL)
-// Currently NaCl doesn't have a UI MessageLoop.
-// TODO(abarth): Figure out if we need this.
-#define MESSAGE_PUMP_UI NULL
-// ipc_channel_nacl.cc uses a worker thread to do socket reads currently, and
-// doesn't require extra support for watching file descriptors.
-#define MESSAGE_PUMP_IO new MessagePumpDefault()
-#elif defined(OS_POSIX)  // POSIX but not MACOSX.
-#define MESSAGE_PUMP_UI new MessagePumpForUI()
-#define MESSAGE_PUMP_IO new MessagePumpLibevent()
-#else
-#error Not implemented
-#endif
-
-  if (type_ == TYPE_UI) {
-    if (message_pump_for_ui_factory_)
-      pump_.reset(message_pump_for_ui_factory_());
-    else
-      pump_.reset(MESSAGE_PUMP_UI);
-  } else if (type_ == TYPE_IO) {
-    pump_.reset(MESSAGE_PUMP_IO);
-#if defined(TOOLKIT_GTK)
-  } else if (type_ == TYPE_GPU) {
-    pump_.reset(new MessagePumpX11());
-#endif
-#if defined(OS_ANDROID)
-  } else if (type_ == TYPE_JAVA) {
-    pump_.reset(MESSAGE_PUMP_UI);
-#endif
-  } else {
-    DCHECK_EQ(TYPE_DEFAULT, type_);
-    pump_.reset(new MessagePumpDefault());
-  }
+  pump_.reset(CreateMessagePumpForType(type));
 }
 
 MessageLoop::MessageLoop(scoped_ptr<MessagePump> pump)
@@ -262,6 +220,51 @@ bool MessageLoop::InitMessagePumpForUIFactory(MessagePumpFactory* factory) {
 
   message_pump_for_ui_factory_ = factory;
   return true;
+}
+
+// static
+MessagePump* MessageLoop::CreateMessagePumpForType(Type type) {
+// TODO(rvargas): Get rid of the OS guards.
+#if defined(OS_WIN)
+#define MESSAGE_PUMP_UI new MessagePumpForUI()
+#define MESSAGE_PUMP_IO new MessagePumpForIO()
+#elif defined(OS_IOS)
+#define MESSAGE_PUMP_UI MessagePumpMac::Create()
+#define MESSAGE_PUMP_IO new MessagePumpIOSForIO()
+#elif defined(OS_MACOSX)
+#define MESSAGE_PUMP_UI MessagePumpMac::Create()
+#define MESSAGE_PUMP_IO new MessagePumpLibevent()
+#elif defined(OS_NACL)
+// Currently NaCl doesn't have a UI MessageLoop.
+// TODO(abarth): Figure out if we need this.
+#define MESSAGE_PUMP_UI NULL
+// ipc_channel_nacl.cc uses a worker thread to do socket reads currently, and
+// doesn't require extra support for watching file descriptors.
+#define MESSAGE_PUMP_IO new MessagePumpDefault()
+#elif defined(OS_POSIX)  // POSIX but not MACOSX.
+#define MESSAGE_PUMP_UI new MessagePumpForUI()
+#define MESSAGE_PUMP_IO new MessagePumpLibevent()
+#else
+#error Not implemented
+#endif
+
+  if (type == MessageLoop::TYPE_UI) {
+    if (message_pump_for_ui_factory_)
+      return message_pump_for_ui_factory_();
+    return MESSAGE_PUMP_UI;
+  }
+  if (type == MessageLoop::TYPE_IO)
+    return MESSAGE_PUMP_IO;
+#if defined(TOOLKIT_GTK)
+  if (type == MessageLoop::TYPE_GPU)
+    return new MessagePumpX11();
+#endif
+#if defined(OS_ANDROID)
+  if (type == MessageLoop::TYPE_JAVA)
+    return MESSAGE_PUMP_UI;
+#endif
+  DCHECK_EQ(MessageLoop::TYPE_DEFAULT, type);
+  return new MessagePumpDefault();
 }
 
 void MessageLoop::AddDestructionObserver(

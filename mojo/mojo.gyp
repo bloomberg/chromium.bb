@@ -73,6 +73,9 @@
         'common/bindings_support_impl.h',
         'common/handle_watcher.cc',
         'common/handle_watcher.h',
+        'common/message_pump_mojo.cc',
+        'common/message_pump_mojo.h',
+        'common/message_pump_mojo_handler.h',
         'common/scoped_message_pipe.cc',
         'common/scoped_message_pipe.h',
       ],
@@ -90,6 +93,7 @@
       'type': 'executable',
       'dependencies': [
         '../base/base.gyp:base',
+        '../base/base.gyp:base_message_loop_tests',
         '../testing/gtest.gyp:gtest',
         'mojo_common_lib',
         'mojo_run_all_unittests',
@@ -97,6 +101,7 @@
       ],
       'sources': [
         'common/handle_watcher_unittest.cc',
+        'common/message_pump_mojo_unittest.cc',
       ],
       'conditions': [
         ['OS == "win"', {
