@@ -338,10 +338,6 @@ class ScopedVirtualizeHklmAndHkcu {
   ScopedVirtualizeHklmAndHkcu();
   ~ScopedVirtualizeHklmAndHkcu();
 
-  // Removes all overrides and deletes all temporary test keys used by the
-  // overrides.
-  void RemoveAllOverrides();
-
  protected:
   registry_util::RegistryOverrideManager override_manager_;
 };

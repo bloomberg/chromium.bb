@@ -34,10 +34,6 @@ class UtilTests : public testing::Test {
     DeleteAllSingletons();
   }
 
-  void TearDown() {
-    registry_virtualization_.RemoveAllOverrides();
-  }
-
   // This is used to manage life cycle of PolicySettings singleton.
   // base::ShadowingAtExitManager at_exit_manager_;
   chrome_frame_test::ScopedVirtualizeHklmAndHkcu registry_virtualization_;

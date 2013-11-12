@@ -410,10 +410,6 @@ class MigrateMultiToSingleTest : public testing::Test {
                                                 L"MigrateMultiToSingleTest");
   }
 
-  virtual void TearDown() OVERRIDE {
-    registry_override_manager_.RemoveAllOverrides();
-  }
-
   static const bool kSystemLevel = false;
   static const HKEY kRootKey;
   static const wchar_t kVersionString[];

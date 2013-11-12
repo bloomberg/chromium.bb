@@ -679,10 +679,6 @@ ScopedVirtualizeHklmAndHkcu::ScopedVirtualizeHklmAndHkcu() {
 ScopedVirtualizeHklmAndHkcu::~ScopedVirtualizeHklmAndHkcu() {
 }
 
-void ScopedVirtualizeHklmAndHkcu::RemoveAllOverrides() {
-  override_manager_.RemoveAllOverrides();
-}
-
 bool KillProcesses(const std::wstring& executable_name, int exit_code,
                    bool wait) {
   bool result = true;

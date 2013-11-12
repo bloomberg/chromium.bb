@@ -31,15 +31,14 @@ class ProductStateTest : public testing::Test {
   void MinimallyInstallProduct(const wchar_t* version);
 
   static BrowserDistribution* dist_;
-  static std::wstring temp_key_path_;
   bool system_install_;
   HKEY overridden_;
+  registry_util::RegistryOverrideManager registry_override_manager_;
   RegKey clients_;
   RegKey client_state_;
 };
 
 BrowserDistribution* ProductStateTest::dist_;
-std::wstring ProductStateTest::temp_key_path_;
 
 // static
 void ProductStateTest::SetUpTestCase() {
@@ -48,16 +47,10 @@ void ProductStateTest::SetUpTestCase() {
   // We'll use Chrome as our test subject.
   dist_ = BrowserDistribution::GetSpecificDistribution(
       BrowserDistribution::CHROME_BROWSER);
-
-  // And we'll play in HKCU here:
-  temp_key_path_.assign(RegistryOverrideManager::kTempTestKeyPath)
-      .append(1, L'\\')
-      .append(L"ProductStateTest");
 }
 
 // static
 void ProductStateTest::TearDownTestCase() {
-  temp_key_path_.clear();
   dist_ = NULL;
 
   testing::Test::TearDownTestCase();
@@ -73,11 +66,8 @@ void ProductStateTest::SetUp() {
   // Override for test purposes.  We don't use ScopedRegistryKeyOverride
   // directly because it doesn't suit itself to our use here.
   RegKey temp_key;
-  EXPECT_EQ(ERROR_SUCCESS,
-            temp_key.Create(HKEY_CURRENT_USER, temp_key_path_.c_str(),
-                            KEY_ALL_ACCESS));
-  EXPECT_EQ(ERROR_SUCCESS,
-            ::RegOverridePredefKey(overridden_, temp_key.Handle()));
+
+  registry_override_manager_.OverrideRegistry(overridden_, L"ProductStateTest");
 
   EXPECT_EQ(ERROR_SUCCESS,
             clients_.Create(overridden_, dist_->GetVersionKey().c_str(),
@@ -91,12 +81,8 @@ void ProductStateTest::TearDown() {
   // Done with the keys.
   client_state_.Close();
   clients_.Close();
-  EXPECT_EQ(ERROR_SUCCESS, ::RegOverridePredefKey(overridden_, NULL));
   overridden_ = NULL;
   system_install_ = false;
-
-  // Shotgun approach to clearing out data we may have written.
-  RegistryOverrideManager::DeleteAllTempKeys();
 
   testing::Test::TearDown();
 }
