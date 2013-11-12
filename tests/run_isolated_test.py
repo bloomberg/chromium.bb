@@ -123,7 +123,7 @@ class RunIsolatedTest(unittest.TestCase):
     file_link = os.path.join(dir_foo, 'link')
     os.mkdir(dir_foo, 0777)
     write_content(file_bar, 'bar')
-    run_isolated.os_link(file_bar, file_link)
+    run_isolated.hardlink(file_bar, file_link)
     self.assertFileMode(file_bar, 0100664, 0100644, 0100666)
     self.assertFileMode(file_link, 0100664, 0100644, 0100666)
     run_isolated.set_read_only(file_bar, True)

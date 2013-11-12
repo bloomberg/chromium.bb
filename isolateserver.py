@@ -1066,8 +1066,12 @@ class LocalCache(object):
     """Reads data from |content| generator and stores it in cache."""
     raise NotImplementedError()
 
-  def link(self, digest, dest):
-    """Ensures file at |dest| has same content as cached |digest|."""
+  def hardlink(self, digest, dest, file_mode):
+    """Ensures file at |dest| has same content as cached |digest|.
+
+    If file_mode is provided, it is used to set the executable bit if
+    applicable.
+    """
     raise NotImplementedError()
 
 
@@ -1102,8 +1106,12 @@ class MemoryCache(LocalCache):
     with self._lock:
       self._contents[digest] = data
 
-  def link(self, digest, dest):
+  def hardlink(self, digest, dest, file_mode):
+    """Since data is kept in memory, there is no filenode to hardlink."""
     file_write(dest, [self.read(digest)])
+    if file_mode is not None:
+      # Ignores all other bits.
+      os.chmod(dest, file_mode & 0500)
 
 
 def get_hash_algo(_namespace):
@@ -1507,7 +1515,8 @@ def fetch_isolated(
 
           # Link corresponding files to a fetched item in cache.
           for filepath, props in remaining.pop(digest):
-            cache.link(digest, os.path.join(outdir, filepath))
+            cache.hardlink(
+                digest, os.path.join(outdir, filepath), props.get('m'))
 
           # Report progress.
           duration = time.time() - last_update

@@ -92,8 +92,11 @@ def get_flavor():
   return FLAVOR_MAPPING.get(sys.platform, 'linux')
 
 
-def os_link(source, link_name):
-  """Add support for os.link() on Windows."""
+def hardlink(source, link_name):
+  """Hardlinks a file.
+
+  Add support for os.link() on Windows.
+  """
   if sys.platform == 'win32':
     if not ctypes.windll.kernel32.CreateHardLinkW(
         unicode(link_name), unicode(source), 0):
@@ -129,7 +132,7 @@ def link_file(outfile, infile, action):
     os.symlink(infile, outfile)  # pylint: disable=E1101
   else:
     try:
-      os_link(infile, outfile)
+      hardlink(infile, outfile)
     except OSError as e:
       if action == HARDLINK:
         raise isolateserver.MappingError(
@@ -168,7 +171,7 @@ def make_tree_read_only(root):
 
   Also makes the directories read only, only if it makes sense on the platform.
   """
-  logging.info('make_tree_read_only(%s)', root)
+  logging.debug('make_tree_read_only(%s)', root)
   assert os.path.isabs(root), root
   for dirpath, dirnames, filenames in os.walk(root, topdown=True):
     for filename in filenames:
@@ -189,7 +192,7 @@ def make_tree_deleteable(root):
   modified. This means that for hard-linked files, every directory entry for the
   file node has its file permission modified.
   """
-  logging.info('make_tree_deleteable(%s)', root)
+  logging.debug('make_tree_deleteable(%s)', root)
   assert os.path.isabs(root), root
   if sys.platform != 'win32':
     set_read_only(root, False)
@@ -205,6 +208,7 @@ def make_tree_deleteable(root):
 def rmtree(root):
   """Wrapper around shutil.rmtree() to retry automatically on Windows."""
   make_tree_deleteable(root)
+  logging.info('rmtree(%s)', root)
   if sys.platform == 'win32':
     for i in range(3):
       try:
@@ -404,7 +408,7 @@ class DiskCache(isolateserver.LocalCache):
     with self._lock:
       self._add(digest, size)
 
-  def link(self, digest, dest):
+  def hardlink(self, digest, dest, file_mode):
     """Hardlinks the file to |dest|.
 
     Note that the file permission bits are on the file node, not the directory
@@ -413,6 +417,9 @@ class DiskCache(isolateserver.LocalCache):
     """
     path = self._path(digest)
     link_file(dest, path, HARDLINK)
+    if file_mode is not None:
+      # Ignores all other bits.
+      os.chmod(dest, file_mode & 0500)
 
   def _load(self):
     """Loads state of the cache from json file."""
