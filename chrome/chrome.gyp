@@ -123,7 +123,6 @@
         'chrome_installer.gypi',
         'chrome_renderer.gypi',
         'chrome_tests.gypi',
-        'nacl.gypi',
         '../apps/apps.gypi',
       ],
       'targets': [

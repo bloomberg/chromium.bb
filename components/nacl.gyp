@@ -116,6 +116,62 @@
         },
       ],
       'conditions': [
+        ['OS=="linux"', {
+          'targets': [
+            {
+              'target_name': 'nacl_helper',
+              'type': 'executable',
+              'include_dirs': [
+                '..',
+              ],
+              'dependencies': [
+                'nacl',
+                'nacl_common.gyp:nacl_common',
+                '../crypto/crypto.gyp:crypto',
+                '../sandbox/sandbox.gyp:libc_urandom_override',
+                '../sandbox/sandbox.gyp:sandbox',
+              ],
+              'defines': [
+                '<@(nacl_defines)',
+              ],
+              'sources': [
+                'nacl/loader/nacl_sandbox_linux.cc',
+                'nacl/loader/nacl_helper_linux.cc',
+                'nacl/loader/nacl_helper_linux.h',
+                '../base/posix/unix_domain_socket_linux.cc',
+                '../content/common/child_process_sandbox_support_impl_shm_linux.cc',
+                '../content/common/sandbox_init_linux.cc',
+                '../content/common/sandbox_seccomp_bpf_linux.cc',
+                '../content/public/common/content_switches.cc',
+              ],
+              'conditions': [
+                ['toolkit_uses_gtk == 1', {
+                  'dependencies': [
+                    '../build/linux/system.gyp:gtk',
+                  ],
+                }],
+                ['use_glib == 1', {
+                  'dependencies': [
+                    '../build/linux/system.gyp:glib',
+                  ],
+                }],
+                ['os_posix == 1 and OS != "mac"', {
+                  'conditions': [
+                    ['linux_use_tcmalloc==1', {
+                      'dependencies': [
+                        '../base/allocator/allocator.gyp:allocator',
+                      ],
+                    }],
+                  ],
+                }],
+              ],
+              'cflags': ['-fPIE'],
+              'link_settings': {
+                'ldflags': ['-pie'],
+              },
+            },
+          ],
+        }],
         ['OS=="win" and target_arch=="ia32"', {
           'targets': [
             {

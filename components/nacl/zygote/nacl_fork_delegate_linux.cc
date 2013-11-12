@@ -24,9 +24,9 @@
 #include "base/process/kill.h"
 #include "base/process/launch.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
-#include "components/nacl/common/nacl_helper_linux.h"
 #include "components/nacl/common/nacl_paths.h"
 #include "components/nacl/common/nacl_switches.h"
+#include "components/nacl/loader/nacl_helper_linux.h"
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_switches.h"
 
@@ -272,7 +272,7 @@ pid_t NaClForkDelegate::Fork(const std::vector<int>& fds) {
 
   // First, send a remote fork request.
   Pickle write_pickle;
-  write_pickle.WriteInt(kNaClForkRequest);
+  write_pickle.WriteInt(nacl::kNaClForkRequest);
 
   char reply_buf[kNaClMaxIPCMessageLength];
   ssize_t reply_size = 0;
@@ -314,7 +314,7 @@ bool NaClForkDelegate::GetTerminationStatus(pid_t pid, bool known_dead,
   DCHECK(exit_code);
 
   Pickle write_pickle;
-  write_pickle.WriteInt(kNaClGetTerminationStatusRequest);
+  write_pickle.WriteInt(nacl::kNaClGetTerminationStatusRequest);
   write_pickle.WriteInt(pid);
   write_pickle.WriteBool(known_dead);
 

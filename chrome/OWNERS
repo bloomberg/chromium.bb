@@ -18,12 +18,6 @@ jam@chromium.org
 per-file *.gypi=*
 per-file *.isolate=csharp@chromium.org
 per-file *.isolate=maruel@chromium.org
-per-file nacl.gypi=bradchen@chromium.org
-per-file nacl.gypi=bradnelson@chromium.org
-per-file nacl.gypi=jvoung@chromium.org
-per-file nacl.gypi=mseaborn@chromium.org
-per-file nacl.gypi=noelallen@chromium.org
-per-file nacl.gypi=sehr@chromium.org
 
 # Android OWNERS from chrome/android/OWNERS
 per-file *android*=aruslan@chromium.org

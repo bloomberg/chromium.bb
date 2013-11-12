@@ -1706,7 +1706,7 @@
             ['OS=="linux"', {
               'dependencies': [
                 '../native_client/src/trusted/service_runtime/linux/nacl_bootstrap.gyp:nacl_helper_bootstrap',
-                'nacl_helper',
+                '../components/nacl.gyp:nacl_helper',
               ],
             }],
             ['chromeos==0', {

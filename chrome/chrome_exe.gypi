@@ -451,7 +451,7 @@
             ['disable_nacl==0 and coverage==0', {
               'dependencies': [
                 '../native_client/src/trusted/service_runtime/linux/nacl_bootstrap.gyp:nacl_helper_bootstrap',
-                'nacl_helper',
+                '../components/nacl.gyp:nacl_helper',
                 ],
             }],
           ],

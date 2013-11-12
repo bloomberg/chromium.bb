@@ -1,10 +1,10 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // A mini-zygote specifically for Native Client.
 
-#include "components/nacl/common/nacl_helper_linux.h"
+#include "components/nacl/loader/nacl_helper_linux.h"
 
 #include <errno.h>
 #include <fcntl.h>
@@ -199,11 +199,11 @@ bool HonorRequestAndReply(int reply_fd,
   bool have_to_reply = false;
   // Commands must write anything to send back to |write_pickle|.
   switch (command_type) {
-    case kNaClForkRequest:
+    case nacl::kNaClForkRequest:
       have_to_reply = HandleForkRequest(attached_fds, system_info,
                                         &write_pickle);
       break;
-    case kNaClGetTerminationStatusRequest:
+    case nacl::kNaClGetTerminationStatusRequest:
       have_to_reply =
           HandleGetTerminationStatusRequest(input_iter, &write_pickle);
       break;

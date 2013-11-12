@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_NACL_COMMON_NACL_HELPER_LINUX_H_
-#define COMPONENTS_NACL_COMMON_NACL_HELPER_LINUX_H_
+#ifndef COMPONENTS_NACL_LOADER_NACL_HELPER_LINUX_H_
+#define COMPONENTS_NACL_LOADER_NACL_HELPER_LINUX_H_
+
+namespace nacl {
 
 // A mini-zygote specifically for Native Client. This file defines
 // constants used to implement communication between the nacl_helper
@@ -27,4 +29,6 @@ enum NaClZygoteIPCCommand {
 // For communications between NaCl loader and zygote.
 #define kNaClZygoteDescriptor 3
 
-#endif  // COMPONENTS_NACL_COMMON_NACL_HELPER_LINUX_H_
+} // namespace nacl
+
+#endif  // COMPONENTS_NACL_LOADER_NACL_HELPER_LINUX_H_
