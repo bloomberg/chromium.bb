@@ -23,6 +23,7 @@
   },
   "permissions": [
     "chromeosInfoPrivate",
+    "management",
     "webview",
     "unlimitedStorage",
     "https://www.google.com/*",
