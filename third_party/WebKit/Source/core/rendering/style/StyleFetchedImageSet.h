@@ -80,6 +80,8 @@ private:
     CSSImageSetValue* m_imageSetValue; // Not retained; it owns us.
 };
 
+DEFINE_STYLE_IMAGE_TYPE_CASTS(StyleFetchedImageSet, isImageResourceSet());
+
 } // namespace WebCore
 
 #endif // StyleFetchedImageSet_h

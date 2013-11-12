@@ -63,5 +63,7 @@ private:
     ResourcePtr<ImageResource> m_image;
 };
 
+DEFINE_STYLE_IMAGE_TYPE_CASTS(StyleFetchedImage, isImageResource());
+
 }
 #endif

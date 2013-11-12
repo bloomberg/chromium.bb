@@ -49,7 +49,7 @@ CSSImageSetValue::CSSImageSetValue()
 CSSImageSetValue::~CSSImageSetValue()
 {
     if (m_imageSet && m_imageSet->isImageResourceSet())
-        static_cast<StyleFetchedImageSet*>(m_imageSet.get())->clearImageSetValue();
+        toStyleFetchedImageSet(m_imageSet)->clearImageSetValue();
 }
 
 void CSSImageSetValue::fillImageSet()
@@ -111,7 +111,7 @@ StyleFetchedImageSet* CSSImageSetValue::cachedImageSet(ResourceFetcher* loader, 
         }
     }
 
-    return (m_imageSet && m_imageSet->isImageResourceSet()) ? static_cast<StyleFetchedImageSet*>(m_imageSet.get()) : 0;
+    return (m_imageSet && m_imageSet->isImageResourceSet()) ? toStyleFetchedImageSet(m_imageSet) : 0;
 }
 
 StyleImage* CSSImageSetValue::cachedOrPendingImageSet(float deviceScaleFactor)
@@ -163,10 +163,9 @@ bool CSSImageSetValue::hasFailedOrCanceledSubresources() const
 {
     if (!m_imageSet || !m_imageSet->isImageResourceSet())
         return false;
-    Resource* cachedResource = static_cast<StyleFetchedImageSet*>(m_imageSet.get())->cachedImage();
-    if (!cachedResource)
-        return true;
-    return cachedResource->loadFailedOrCanceled();
+    if (Resource* cachedResource = toStyleFetchedImageSet(m_imageSet)->cachedImage())
+        return cachedResource->loadFailedOrCanceled();
+    return true;
 }
 
 CSSImageSetValue::CSSImageSetValue(const CSSImageSetValue& cloneFrom)

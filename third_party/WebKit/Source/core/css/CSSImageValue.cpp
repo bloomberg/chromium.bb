@@ -76,17 +76,16 @@ StyleFetchedImage* CSSImageValue::cachedImage(ResourceFetcher* loader, const Res
             m_image = StyleFetchedImage::create(cachedImage.get());
     }
 
-    return (m_image && m_image->isImageResource()) ? static_cast<StyleFetchedImage*>(m_image.get()) : 0;
+    return (m_image && m_image->isImageResource()) ? toStyleFetchedImage(m_image) : 0;
 }
 
 bool CSSImageValue::hasFailedOrCanceledSubresources() const
 {
     if (!m_image || !m_image->isImageResource())
         return false;
-    Resource* cachedResource = static_cast<StyleFetchedImage*>(m_image.get())->cachedImage();
-    if (!cachedResource)
-        return true;
-    return cachedResource->loadFailedOrCanceled();
+    if (Resource* cachedResource = toStyleFetchedImage(m_image)->cachedImage())
+        return cachedResource->loadFailedOrCanceled();
+    return true;
 }
 
 bool CSSImageValue::equals(const CSSImageValue& other) const

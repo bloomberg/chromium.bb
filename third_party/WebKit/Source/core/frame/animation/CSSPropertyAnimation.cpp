@@ -254,7 +254,7 @@ static inline PassRefPtr<StyleImage> blendFunc(const AnimationBase* anim, StyleI
         return to;
 
     if (from->isImageResource() && to->isImageResource())
-        return crossfadeBlend(anim, static_cast<StyleFetchedImage*>(from), static_cast<StyleFetchedImage*>(to), progress);
+        return crossfadeBlend(anim, toStyleFetchedImage(from), toStyleFetchedImage(to), progress);
 
     // FIXME: Support transitioning generated images as well. (gradients, etc.)
 

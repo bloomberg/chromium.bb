@@ -49,7 +49,7 @@ void RenderImageResourceStyleImage::initialize(RenderObject* renderer)
     RenderImageResource::initialize(renderer);
 
     if (m_styleImage->isImageResource())
-        m_cachedImage = static_cast<StyleFetchedImage*>(m_styleImage.get())->cachedImage();
+        m_cachedImage = toStyleFetchedImage(m_styleImage)->cachedImage();
 
     m_styleImage->addClient(m_renderer);
 }

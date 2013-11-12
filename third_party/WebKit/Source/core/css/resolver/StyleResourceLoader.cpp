@@ -111,7 +111,7 @@ void StyleResourceLoader::loadPendingShapeImage(RenderStyle* renderStyle, ShapeV
     if (!image || !image->isPendingImage())
         return;
 
-    StylePendingImage* pendingImage = static_cast<StylePendingImage*>(image);
+    StylePendingImage* pendingImage = toStylePendingImage(image);
     CSSImageValue* cssImageValue =  pendingImage->cssImageValue();
 
     ResourceLoaderOptions options = ResourceFetcher::defaultResourceOptions();
@@ -134,7 +134,7 @@ void StyleResourceLoader::loadPendingImages(RenderStyle* style, const ElementSty
         case CSSPropertyBackgroundImage: {
             for (FillLayer* backgroundLayer = style->accessBackgroundLayers(); backgroundLayer; backgroundLayer = backgroundLayer->next()) {
                 if (backgroundLayer->image() && backgroundLayer->image()->isPendingImage())
-                    backgroundLayer->setImage(loadPendingImage(static_cast<StylePendingImage*>(backgroundLayer->image()), elementStyleResources.deviceScaleFactor()));
+                    backgroundLayer->setImage(loadPendingImage(toStylePendingImage(backgroundLayer->image()), elementStyleResources.deviceScaleFactor()));
             }
             break;
         }
@@ -143,7 +143,7 @@ void StyleResourceLoader::loadPendingImages(RenderStyle* style, const ElementSty
                 if (contentData->isImage()) {
                     StyleImage* image = static_cast<ImageContentData*>(contentData)->image();
                     if (image->isPendingImage()) {
-                        RefPtr<StyleImage> loadedImage = loadPendingImage(static_cast<StylePendingImage*>(image), elementStyleResources.deviceScaleFactor());
+                        RefPtr<StyleImage> loadedImage = loadPendingImage(toStylePendingImage(image), elementStyleResources.deviceScaleFactor());
                         if (loadedImage)
                             static_cast<ImageContentData*>(contentData)->setImage(loadedImage.release());
                     }
@@ -157,7 +157,7 @@ void StyleResourceLoader::loadPendingImages(RenderStyle* style, const ElementSty
                     CursorData& currentCursor = cursorList->at(i);
                     if (StyleImage* image = currentCursor.image()) {
                         if (image->isPendingImage())
-                            currentCursor.setImage(loadPendingImage(static_cast<StylePendingImage*>(image), elementStyleResources.deviceScaleFactor()));
+                            currentCursor.setImage(loadPendingImage(toStylePendingImage(image), elementStyleResources.deviceScaleFactor()));
                     }
                 }
             }
@@ -165,19 +165,19 @@ void StyleResourceLoader::loadPendingImages(RenderStyle* style, const ElementSty
         }
         case CSSPropertyListStyleImage: {
             if (style->listStyleImage() && style->listStyleImage()->isPendingImage())
-                style->setListStyleImage(loadPendingImage(static_cast<StylePendingImage*>(style->listStyleImage()), elementStyleResources.deviceScaleFactor()));
+                style->setListStyleImage(loadPendingImage(toStylePendingImage(style->listStyleImage()), elementStyleResources.deviceScaleFactor()));
             break;
         }
         case CSSPropertyBorderImageSource: {
             if (style->borderImageSource() && style->borderImageSource()->isPendingImage())
-                style->setBorderImageSource(loadPendingImage(static_cast<StylePendingImage*>(style->borderImageSource()), elementStyleResources.deviceScaleFactor()));
+                style->setBorderImageSource(loadPendingImage(toStylePendingImage(style->borderImageSource()), elementStyleResources.deviceScaleFactor()));
             break;
         }
         case CSSPropertyWebkitBoxReflect: {
             if (StyleReflection* reflection = style->boxReflect()) {
                 const NinePieceImage& maskImage = reflection->mask();
                 if (maskImage.image() && maskImage.image()->isPendingImage()) {
-                    RefPtr<StyleImage> loadedImage = loadPendingImage(static_cast<StylePendingImage*>(maskImage.image()), elementStyleResources.deviceScaleFactor());
+                    RefPtr<StyleImage> loadedImage = loadPendingImage(toStylePendingImage(maskImage.image()), elementStyleResources.deviceScaleFactor());
                     reflection->setMask(NinePieceImage(loadedImage.release(), maskImage.imageSlices(), maskImage.fill(), maskImage.borderSlices(), maskImage.outset(), maskImage.horizontalRule(), maskImage.verticalRule()));
                 }
             }
@@ -185,13 +185,13 @@ void StyleResourceLoader::loadPendingImages(RenderStyle* style, const ElementSty
         }
         case CSSPropertyWebkitMaskBoxImageSource: {
             if (style->maskBoxImageSource() && style->maskBoxImageSource()->isPendingImage())
-                style->setMaskBoxImageSource(loadPendingImage(static_cast<StylePendingImage*>(style->maskBoxImageSource()), elementStyleResources.deviceScaleFactor()));
+                style->setMaskBoxImageSource(loadPendingImage(toStylePendingImage(style->maskBoxImageSource()), elementStyleResources.deviceScaleFactor()));
             break;
         }
         case CSSPropertyWebkitMaskImage: {
             for (FillLayer* maskLayer = style->accessMaskLayers(); maskLayer; maskLayer = maskLayer->next()) {
                 if (maskLayer->image() && maskLayer->image()->isPendingImage())
-                    maskLayer->setImage(loadPendingImage(static_cast<StylePendingImage*>(maskLayer->image()), elementStyleResources.deviceScaleFactor()));
+                    maskLayer->setImage(loadPendingImage(toStylePendingImage(maskLayer->image()), elementStyleResources.deviceScaleFactor()));
             }
             break;
         }

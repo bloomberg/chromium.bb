@@ -76,5 +76,7 @@ private:
     CSSValue* m_value; // Not retained; it owns us.
 };
 
+DEFINE_STYLE_IMAGE_TYPE_CASTS(StylePendingImage, isPendingImage());
+
 }
 #endif
