@@ -13,10 +13,13 @@
 #include "chrome/browser/drive/drive_service_interface.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"
+#include "chrome/browser/sync_file_system/drive_backend/drive_backend_util.h"
 #include "chrome/browser/sync_file_system/drive_backend/metadata_database.h"
 #include "chrome/browser/sync_file_system/drive_backend/sync_engine_context.h"
+#include "chrome/browser/sync_file_system/drive_backend_v1/drive_file_sync_util.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
 #include "chrome/common/extensions/extension.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace sync_file_system {
 namespace drive_backend {
@@ -309,8 +312,50 @@ void RemoteToLocalSyncer::HandleNewFile(
 void RemoteToLocalSyncer::DidPrepareForNewFile(
     const SyncStatusCallback& callback,
     SyncStatusCode status) {
+  if (status != SYNC_STATUS_OK) {
+    callback.Run(status);
+    return;
+  }
+
+  DCHECK(url_.is_valid());
+  DCHECK(local_metadata_);
+  DCHECK(local_changes_);
+
+  if (local_metadata_->file_type == SYNC_FILE_TYPE_UNKNOWN ||
+      (!local_changes_->empty() && local_changes_->back().IsDelete())) {
+    // Download the file and add it to local as a new file.
+    DownloadFile(callback);
+    return;
+  }
+
+  DCHECK(local_changes_->empty() || local_changes_->back().IsAddOrUpdate());
+  if (local_changes_->empty()) {
+    LOG(ERROR) << "Detected local-only file without pending local change: "
+               << url_.DebugString();
+
+    if (local_metadata_->file_type == SYNC_FILE_TYPE_FILE) {
+      // Download the file and overwrite the existing local file.
+      DownloadFile(callback);
+      return;
+    }
+
+    DCHECK_EQ(SYNC_FILE_TYPE_DIRECTORY, local_metadata_->file_type);
+    // Got a remote regular file modification for existing local folder.
+    // Our policy prioritize folders in this case.
+    // TODO(tzik): Inactivate the file and activate one of the folder at the
+    // path.
+    NOTIMPLEMENTED();
+    SyncCompleted(callback);
+  }
+
+  DCHECK(local_changes_->back().IsAddOrUpdate());
+  // Conflict case.
+  // Do nothing for the change now, and handle this in LocalToRemoteSync phase.
+
+  // TODO(tzik): Lower the priority of the tracker to prevent repeated remote
+  // sync to the same tracker.
   NOTIMPLEMENTED();
-  callback.Run(SYNC_STATUS_FAILED);
+  SyncCompleted(callback);
 }
 
 void RemoteToLocalSyncer::HandleNewFolder(const SyncStatusCallback& callback) {
@@ -323,8 +368,44 @@ void RemoteToLocalSyncer::HandleNewFolder(const SyncStatusCallback& callback) {
   DCHECK(!remote_metadata_->details().deleted());
   DCHECK_EQ(FILE_KIND_FOLDER, remote_metadata_->details().file_kind());
 
-  NOTIMPLEMENTED();
-  callback.Run(SYNC_STATUS_FAILED);
+  Prepare(base::Bind(&RemoteToLocalSyncer::DidPrepareForNewFolder,
+                     weak_ptr_factory_.GetWeakPtr(), callback));
+}
+
+void RemoteToLocalSyncer::DidPrepareForNewFolder(
+    const SyncStatusCallback& callback,
+    SyncStatusCode status) {
+  if (status != SYNC_STATUS_OK) {
+    callback.Run(status);
+    return;
+  }
+
+  DCHECK(url_.is_valid());
+  DCHECK(local_metadata_);
+  DCHECK(local_changes_);
+
+  if (local_metadata_->file_type == SYNC_FILE_TYPE_UNKNOWN ||
+      (!local_changes_->empty() && local_changes_->back().IsDelete())) {
+    // No local file exists at the path.
+    CreateFolder(callback);
+    return;
+  }
+
+  DCHECK(local_changes_->empty() || local_changes_->back().IsAddOrUpdate());
+  if (local_changes_->empty()) {
+    LOG(ERROR) << "Detected local-only file without pending local change: "
+               << url_.DebugString();
+  }
+
+  if (local_metadata_->file_type == SYNC_FILE_TYPE_DIRECTORY) {
+    SyncCompleted(callback);
+    return;
+  }
+
+  DCHECK_EQ(SYNC_FILE_TYPE_FILE, local_metadata_->file_type);
+  // Got a remote folder for existing local file.
+  // Our policy prioritize folders in this case.
+  CreateFolder(callback);
 }
 
 void RemoteToLocalSyncer::HandleDeletion(
@@ -351,7 +432,7 @@ void RemoteToLocalSyncer::DidPrepareForDeletion(
     return;
   }
 
-  if (local_changes_.empty()) {
+  if (local_changes_->empty()) {
     DeleteLocalFile(callback);
     return;
   }
@@ -473,6 +554,7 @@ void RemoteToLocalSyncer::HandleOfflineSolvable(
 
 void RemoteToLocalSyncer::SyncCompleted(
     const SyncStatusCallback& callback) {
+  // TODO(tzik): Automate the function by wrapping callback.
   NOTIMPLEMENTED();
   callback.Run(SYNC_STATUS_FAILED);
 
@@ -484,6 +566,7 @@ void RemoteToLocalSyncer::Prepare(const SyncStatusCallback& callback) {
   bool should_success = BuildFileSystemURL(
       metadata_database(), *dirty_tracker_, &url_);
   DCHECK(should_success);
+  DCHECK(url_.is_valid());
   remote_change_processor()->PrepareForProcessRemoteChange(
       url_,
       base::Bind(&RemoteToLocalSyncer::DidPrepare,
@@ -500,8 +583,8 @@ void RemoteToLocalSyncer::DidPrepare(const SyncStatusCallback& callback,
     return;
   }
 
-  local_metadata_ = local_metadata;
-  local_changes_ = local_changes;
+  local_metadata_.reset(new SyncFileMetadata(local_metadata));
+  local_changes_.reset(new FileChangeList(local_changes));
 
   callback.Run(status);
 }
@@ -531,6 +614,104 @@ void RemoteToLocalSyncer::DeleteLocalFile(const SyncStatusCallback& callback) {
 }
 
 void RemoteToLocalSyncer::DidDeleteLocalFile(
+    const SyncStatusCallback& callback,
+    SyncStatusCode status) {
+  if (status != SYNC_STATUS_OK) {
+    callback.Run(status);
+    return;
+  }
+
+  SyncCompleted(callback);
+}
+
+void RemoteToLocalSyncer::DownloadFile(const SyncStatusCallback& callback) {
+  content::BrowserThread::PostTaskAndReplyWithResult(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(&sync_file_system::drive_backend::CreateTemporaryFile),
+      base::Bind(&RemoteToLocalSyncer::DidCreateTemporaryFileForDownload,
+                 weak_ptr_factory_.GetWeakPtr(), callback));
+}
+
+void RemoteToLocalSyncer::DidCreateTemporaryFileForDownload(
+    const SyncStatusCallback& callback,
+    webkit_blob::ScopedFile file) {
+  base::FilePath path = file.path();
+  drive_service()->DownloadFile(
+      path, remote_metadata_->file_id(),
+      base::Bind(&RemoteToLocalSyncer::DidDownloadFile,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback, base::Passed(&file)),
+      google_apis::GetContentCallback(),
+      google_apis::ProgressCallback());
+}
+
+void RemoteToLocalSyncer::DidDownloadFile(const SyncStatusCallback& callback,
+                                          webkit_blob::ScopedFile file,
+                                          google_apis::GDataErrorCode error,
+                                          const base::FilePath&) {
+  if (error != google_apis::HTTP_SUCCESS) {
+    callback.Run(GDataErrorCodeToSyncStatusCode(error));
+    return;
+  }
+
+  base::FilePath path = file.path();
+  content::BrowserThread::PostTaskAndReplyWithResult(
+      content::BrowserThread::FILE, FROM_HERE,
+      base::Bind(&drive::util::GetMd5Digest, path),
+      base::Bind(&RemoteToLocalSyncer::DidCalculateMD5ForDownload,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback, base::Passed(&file)));
+}
+
+void RemoteToLocalSyncer::DidCalculateMD5ForDownload(
+    const SyncStatusCallback& callback,
+    webkit_blob::ScopedFile file,
+    const std::string& md5) {
+  if (md5.empty()) {
+    callback.Run(SYNC_FILE_ERROR_NOT_FOUND);
+    return;
+  }
+
+  if (md5 != remote_metadata_->details().md5()) {
+    // File has been modified since last metadata retrieval.
+
+    // TODO(tzik): Lower the priority of the tracker to prevent repeated remote
+    // sync to the same tracker.
+    NOTIMPLEMENTED();
+    callback.Run(SYNC_STATUS_FAILED);
+    return;
+  }
+
+  base::FilePath path = file.path();
+  remote_change_processor()->ApplyRemoteChange(
+      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE, SYNC_FILE_TYPE_FILE),
+      path, url_,
+      base::Bind(&RemoteToLocalSyncer::DidApplyDownload,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 callback, base::Passed(&file)));
+}
+
+void RemoteToLocalSyncer::DidApplyDownload(const SyncStatusCallback& callback,
+                                           webkit_blob::ScopedFile,
+                                           SyncStatusCode status) {
+  if (status != SYNC_STATUS_OK) {
+    callback.Run(status);
+    return;
+  }
+
+  SyncCompleted(callback);
+}
+
+void RemoteToLocalSyncer::CreateFolder(const SyncStatusCallback& callback) {
+  remote_change_processor()->ApplyRemoteChange(
+      FileChange(FileChange::FILE_CHANGE_ADD_OR_UPDATE,
+                 SYNC_FILE_TYPE_DIRECTORY),
+      base::FilePath(), url_,
+      base::Bind(&RemoteToLocalSyncer::DidApplyCreateFolder,
+                 weak_ptr_factory_.GetWeakPtr(), callback));
+}
+
+void RemoteToLocalSyncer::DidApplyCreateFolder(
     const SyncStatusCallback& callback,
     SyncStatusCode status) {
   if (status != SYNC_STATUS_OK) {

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_DRIVE_BACKEND_UTIL_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "webkit/common/blob/scoped_file.h"
 
 namespace google_apis {
 class ChangeResource;
@@ -37,6 +38,10 @@ scoped_ptr<FileMetadata> CreateFileMetadataFromFileResource(
     const google_apis::FileResource& resource);
 scoped_ptr<FileMetadata> CreateFileMetadataFromChangeResource(
     const google_apis::ChangeResource& change);
+
+// Creates a temporary file in |dir_path|.  This must be called on an
+// IO-allowed thread.
+webkit_blob::ScopedFile CreateTemporaryFile();
 
 }  // namespace drive_backend
 }  // namespace sync_file_system

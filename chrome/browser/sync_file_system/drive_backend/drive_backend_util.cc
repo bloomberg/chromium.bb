@@ -6,8 +6,10 @@
 
 #include <string>
 
+#include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
+#include "base/message_loop/message_loop_proxy.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"
@@ -103,6 +105,17 @@ scoped_ptr<FileMetadata> CreateFileMetadataFromChangeResource(
 
   PopulateFileDetailsByFileResource(*change.file(), details);
   return file.Pass();
+}
+
+webkit_blob::ScopedFile CreateTemporaryFile() {
+  base::FilePath temp_file_path;
+  if (!file_util::CreateTemporaryFile(&temp_file_path))
+    return webkit_blob::ScopedFile();
+
+  return webkit_blob::ScopedFile(
+      temp_file_path,
+      webkit_blob::ScopedFile::DELETE_ON_SCOPE_OUT,
+      base::MessageLoopProxy::current().get());
 }
 
 }  // namespace drive_backend

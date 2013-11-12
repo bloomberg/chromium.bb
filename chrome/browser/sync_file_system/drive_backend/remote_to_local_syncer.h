@@ -22,6 +22,10 @@ namespace google_apis {
 class ResourceEntry;
 }
 
+namespace webkit_blob {
+class ScopedFile;
+}
+
 namespace sync_file_system {
 namespace drive_backend {
 
@@ -113,6 +117,8 @@ class RemoteToLocalSyncer : public SyncTask {
   // Handles remotely added folder.  Needs Prepare() call.
   // TODO(tzik): Write details and implement this.
   void HandleNewFolder(const SyncStatusCallback& callback);
+  void DidPrepareForNewFolder(const SyncStatusCallback& callback,
+                              SyncStatusCode status);
 
   // Handles deleted remote file.  Needs Prepare() call.
   // If the deleted tracker is the sync-root:
@@ -158,6 +164,23 @@ class RemoteToLocalSyncer : public SyncTask {
   void DeleteLocalFile(const SyncStatusCallback& callback);
   void DidDeleteLocalFile(const SyncStatusCallback& callback,
                           SyncStatusCode status);
+  void DownloadFile(const SyncStatusCallback& callback);
+  void DidCreateTemporaryFileForDownload(const SyncStatusCallback& callback,
+                                         webkit_blob::ScopedFile file);
+  void DidDownloadFile(const SyncStatusCallback& callback,
+                       webkit_blob::ScopedFile file,
+                       google_apis::GDataErrorCode error,
+                       const base::FilePath&);
+  void DidCalculateMD5ForDownload(const SyncStatusCallback& callback,
+                                  webkit_blob::ScopedFile file,
+                                  const std::string& md5);
+  void DidApplyDownload(const SyncStatusCallback& callback,
+                        webkit_blob::ScopedFile,
+                        SyncStatusCode status);
+
+  void CreateFolder(const SyncStatusCallback& callback);
+  void DidApplyCreateFolder(const SyncStatusCallback& callback,
+                            SyncStatusCode status);
 
   drive::DriveServiceInterface* drive_service();
   MetadataDatabase* metadata_database();
@@ -171,8 +194,8 @@ class RemoteToLocalSyncer : public SyncTask {
 
   fileapi::FileSystemURL url_;
 
-  SyncFileMetadata local_metadata_;
-  FileChangeList local_changes_;
+  scoped_ptr<SyncFileMetadata> local_metadata_;
+  scoped_ptr<FileChangeList> local_changes_;
 
   base::WeakPtrFactory<RemoteToLocalSyncer> weak_ptr_factory_;
 
