@@ -30,13 +30,8 @@ UserPolicySigninServiceBase::UserPolicySigninServiceBase(
       request_context_(request_context),
       device_management_service_(device_management_service),
       weak_factory_(this) {
-  // Initialize/shutdown the UserCloudPolicyManager when the user signs out.
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
-                 content::Source<Profile>(profile));
-
   // Register a listener to be called back once the current profile has finished
-  // initializing, so we can startup the UserCloudPolicyManager.
+  // initializing, so we can startup/shutdown the UserCloudPolicyManager.
   registrar_.Add(this,
                  chrome::NOTIFICATION_PROFILE_ADDED,
                  content::Source<Profile>(profile));
@@ -68,13 +63,6 @@ void UserPolicySigninServiceBase::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  // If using a TestingProfile with no SigninManager or UserCloudPolicyManager,
-  // skip initialization.
-  if (!GetManager() || !GetSigninManager()) {
-    DVLOG(1) << "Skipping initialization for tests due to missing components.";
-    return;
-  }
-
   switch (type) {
     case chrome::NOTIFICATION_GOOGLE_SIGNED_OUT:
       ShutdownUserCloudPolicyManager();
@@ -182,6 +170,20 @@ bool UserPolicySigninServiceBase::ShouldLoadPolicyForUser(
 }
 
 void UserPolicySigninServiceBase::InitializeOnProfileReady() {
+  // If using a TestingProfile with no SigninManager or UserCloudPolicyManager,
+  // skip initialization.
+  if (!GetManager() || !GetSigninManager()) {
+    DVLOG(1) << "Skipping initialization for tests due to missing components.";
+    return;
+  }
+
+  // Shutdown the UserCloudPolicyManager when the user signs out. We do
+  // this here because we don't want to get SIGNED_OUT notifications until
+  // after the profile has started initializing (http://crbug.com/316229).
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_GOOGLE_SIGNED_OUT,
+                 content::Source<Profile>(profile_));
+
   std::string username = GetSigninManager()->GetAuthenticatedUsername();
   if (username.empty())
     ShutdownUserCloudPolicyManager();

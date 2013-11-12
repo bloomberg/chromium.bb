@@ -737,6 +737,13 @@ TEST_F(UserPolicySigninServiceTest, FetchPolicySuccess) {
 }
 
 TEST_F(UserPolicySigninServiceTest, SignOutThenSignInAgain) {
+  EXPECT_CALL(*mock_store_, Clear());
+  // Let the SigninService know that the profile has been created.
+  content::NotificationService::current()->Notify(
+      chrome::NOTIFICATION_PROFILE_ADDED,
+      content::Source<Profile>(profile_.get()),
+      content::NotificationService::NoDetails());
+
   ASSERT_NO_FATAL_FAILURE(TestSuccessfulSignin());
 
   EXPECT_CALL(*mock_store_, Clear());

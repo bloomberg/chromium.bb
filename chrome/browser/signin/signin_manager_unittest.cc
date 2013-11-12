@@ -55,6 +55,7 @@ BrowserContextKeyedService* SigninManagerBuild(
   service = new SigninManager(
       scoped_ptr<SigninManagerDelegate>(
           new ChromeSigninManagerDelegate(profile)));
+  service->Initialize(profile, NULL);
   return service;
 }
 
@@ -237,7 +238,6 @@ class SigninManagerTest : public TokenServiceTestHarness {
 
 TEST_F(SigninManagerTest, SignInWithCredentials) {
   CreateSigninManagerAsService();
-  manager_->Initialize(profile(), NULL);
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
 
   manager_->StartSignInWithCredentials(
@@ -258,7 +258,6 @@ TEST_F(SigninManagerTest, SignInWithCredentials) {
 
 TEST_F(SigninManagerTest, SignInWithCredentialsNonCanonicalEmail) {
   CreateSigninManagerAsService();
-  manager_->Initialize(profile(), NULL);
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
 
   manager_->StartSignInWithCredentials(
@@ -272,7 +271,6 @@ TEST_F(SigninManagerTest, SignInWithCredentialsNonCanonicalEmail) {
 
 TEST_F(SigninManagerTest, SignInWithCredentialsWrongEmail) {
   CreateSigninManagerAsService();
-  manager_->Initialize(profile(), NULL);
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
 
   // If the email address used to start the sign in does not match the
@@ -288,7 +286,6 @@ TEST_F(SigninManagerTest, SignInWithCredentialsWrongEmail) {
 
 TEST_F(SigninManagerTest, SignInWithCredentialsEmptyPasswordValidCookie) {
   CreateSigninManagerAsService();
-  manager_->Initialize(profile(), NULL);
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
 
   // Set a valid LSID cookie in the test cookie store.
@@ -316,7 +313,6 @@ TEST_F(SigninManagerTest, SignInWithCredentialsEmptyPasswordValidCookie) {
 
 TEST_F(SigninManagerTest, SignInWithCredentialsEmptyPasswordNoValidCookie) {
   CreateSigninManagerAsService();
-  manager_->Initialize(profile(), NULL);
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
 
   // Since the password is empty, will verify the gaia cookies first.
@@ -335,7 +331,6 @@ TEST_F(SigninManagerTest, SignInWithCredentialsEmptyPasswordNoValidCookie) {
 
 TEST_F(SigninManagerTest, SignInWithCredentialsEmptyPasswordInValidCookie) {
   CreateSigninManagerAsService();
-  manager_->Initialize(profile(), NULL);
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
 
   // Set an invalid LSID cookie in the test cookie store.
@@ -364,7 +359,6 @@ TEST_F(SigninManagerTest, SignInWithCredentialsEmptyPasswordInValidCookie) {
 
 TEST_F(SigninManagerTest, SignInWithCredentialsCallbackComplete) {
   CreateSigninManagerAsService();
-  manager_->Initialize(profile(), NULL);
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
 
   // Since the password is empty, must verify the gaia cookies first.
@@ -384,7 +378,6 @@ TEST_F(SigninManagerTest, SignInWithCredentialsCallbackComplete) {
 
 TEST_F(SigninManagerTest, SignInWithCredentialsCallbackCancel) {
   CreateSigninManagerAsService();
-  manager_->Initialize(profile(), NULL);
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
 
   // Since the password is empty, must verify the gaia cookies first.
@@ -405,7 +398,6 @@ TEST_F(SigninManagerTest, SignInWithCredentialsCallbackCancel) {
 
 TEST_F(SigninManagerTest, SignOut) {
   CreateSigninManagerAsService();
-  manager_->Initialize(profile(), NULL);
   SigninManager::OAuthTokenFetchedCallback dummy;
   manager_->StartSignInWithCredentials("0", "user@gmail.com", "password",
                                        dummy);
@@ -423,7 +415,6 @@ TEST_F(SigninManagerTest, SignOut) {
 
 TEST_F(SigninManagerTest, SignOutMidConnect) {
   CreateSigninManagerAsService();
-  manager_->Initialize(profile(), NULL);
   SigninManager::OAuthTokenFetchedCallback dummy;
   manager_->StartSignInWithCredentials("0", "user@gmail.com", "password",
                                        dummy);
@@ -438,7 +429,6 @@ TEST_F(SigninManagerTest, SignOutMidConnect) {
 
 TEST_F(SigninManagerTest, SignOutWhileProhibited) {
   CreateSigninManagerAsService();
-  manager_->Initialize(profile(), NULL);
   EXPECT_TRUE(manager_->GetAuthenticatedUsername().empty());
 
   manager_->SetAuthenticatedUsername("user@gmail.com");
@@ -530,4 +520,11 @@ TEST_F(SigninManagerTest, ExternalSignIn) {
   EXPECT_EQ("external@example.com",
             profile()->GetPrefs()->GetString(prefs::kGoogleServicesUsername));
   EXPECT_EQ("external@example.com", manager_->GetAuthenticatedUsername());
+}
+
+TEST_F(SigninManagerTest, SigninNotAllowed) {
+  std::string user("user@google.com");
+  profile()->GetPrefs()->SetString(prefs::kGoogleServicesUsername, user);
+  profile()->GetPrefs()->SetBoolean(prefs::kSigninAllowed, false);
+  CreateSigninManagerAsService();
 }
