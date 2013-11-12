@@ -1062,11 +1062,6 @@ unsigned WebFrameImpl::unloadListenerCount() const
     return frame()->domWindow()->pendingUnloadEventListeners();
 }
 
-bool WebFrameImpl::willSuppressOpenerInNewFrame() const
-{
-    return frame()->loader().suppressOpenerInNewFrame();
-}
-
 void WebFrameImpl::replaceSelection(const WebString& text)
 {
     bool selectReplacement = false;

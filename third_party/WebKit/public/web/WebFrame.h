@@ -412,10 +412,6 @@ public:
     // Returns the number of registered unload listeners.
     virtual unsigned unloadListenerCount() const = 0;
 
-    // Returns true if this frame is in the process of opening a new frame
-    // with a suppressed opener.
-    virtual bool willSuppressOpenerInNewFrame() const = 0;
-
 
     // Editing -------------------------------------------------------------
 

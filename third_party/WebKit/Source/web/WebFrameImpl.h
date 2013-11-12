@@ -162,7 +162,6 @@ public:
     virtual void dispatchWillSendRequest(WebURLRequest&);
     virtual WebURLLoader* createAssociatedURLLoader(const WebURLLoaderOptions&);
     virtual unsigned unloadListenerCount() const;
-    virtual bool willSuppressOpenerInNewFrame() const;
     virtual void replaceSelection(const WebString&);
     virtual void insertText(const WebString&);
     virtual void setMarkedText(const WebString&, unsigned location, unsigned length);

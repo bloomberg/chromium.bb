@@ -156,7 +156,6 @@ FrameLoader::FrameLoader(Frame* frame, FrameLoaderClient* client)
     , m_opener(0)
     , m_didAccessInitialDocument(false)
     , m_didAccessInitialDocumentTimer(this, &FrameLoader::didAccessInitialDocumentTimerFired)
-    , m_suppressOpenerInNewFrame(false)
     , m_forcedSandboxFlags(SandboxNone)
 {
 }
@@ -691,7 +690,6 @@ bool FrameLoader::prepareRequestForThisFrame(FrameLoadRequest& request)
 
 void FrameLoader::load(const FrameLoadRequest& passedRequest)
 {
-    ASSERT(!m_suppressOpenerInNewFrame);
     ASSERT(m_frame->document());
 
     // Protect frame from getting blown away inside dispatchBeforeLoadEvent in loadWithDocumentLoader.
@@ -716,7 +714,6 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
     FrameLoadType newLoadType = determineFrameLoadType(request);
     NavigationAction action(request.resourceRequest(), newLoadType, request.formState(), request.triggeringEvent());
     if ((!targetFrame && !request.frameName().isEmpty()) || action.shouldOpenInNewWindow()) {
-        TemporaryChange<bool> changeOpener(m_suppressOpenerInNewFrame, request.shouldSendReferrer() == NeverSendReferrer);
         if (action.policy() == NavigationPolicyDownload)
             m_client->loadURLExternally(action.resourceRequest(), NavigationPolicyDownload);
         else

@@ -197,8 +197,6 @@ public:
 
     bool allAncestorsAreComplete() const; // including this
 
-    bool suppressOpenerInNewFrame() const { return m_suppressOpenerInNewFrame; }
-
     bool shouldClose();
 
     void started();
@@ -292,7 +290,6 @@ private:
 
     bool m_didAccessInitialDocument;
     Timer<FrameLoader> m_didAccessInitialDocumentTimer;
-    bool m_suppressOpenerInNewFrame;
 
     SandboxFlags m_forcedSandboxFlags;
 };
