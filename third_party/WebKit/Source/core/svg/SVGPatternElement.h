@@ -49,7 +49,7 @@ public:
 
     void collectPatternAttributes(PatternAttributes&) const;
 
-    virtual AffineTransform localCoordinateSpaceTransform(SVGLocatable::CTMScope) const;
+    virtual AffineTransform localCoordinateSpaceTransform(SVGElement::CTMScope) const;
 
 private:
     SVGPatternElement(const QualifiedName&, Document&);

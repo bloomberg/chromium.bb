@@ -21,9 +21,9 @@
 #include "config.h"
 #include "core/svg/SVGTransformList.h"
 
+#include "core/svg/SVGParserUtilities.h"
 #include "core/svg/SVGSVGElement.h"
 #include "core/svg/SVGTransform.h"
-#include "core/svg/SVGTransformable.h"
 #include "platform/transforms/AffineTransform.h"
 #include "wtf/text/StringBuilder.h"
 
@@ -83,12 +83,12 @@ void SVGTransformList::parse(const String& transform)
     } else if (transform.is8Bit()) {
         const LChar* ptr = transform.characters8();
         const LChar* end = ptr + transform.length();
-        if (!SVGTransformable::parseTransformAttribute(*this, ptr, end))
+        if (!parseTransformAttribute(*this, ptr, end))
             clear();
     } else {
         const UChar* ptr = transform.characters16();
         const UChar* end = ptr + transform.length();
-        if (!SVGTransformable::parseTransformAttribute(*this, ptr, end))
+        if (!parseTransformAttribute(*this, ptr, end))
             clear();
     }
 }

@@ -310,7 +310,7 @@ void SVGElement::setInstanceUpdatesBlocked(bool value)
         svgRareData()->setInstanceUpdatesBlocked(value);
 }
 
-AffineTransform SVGElement::localCoordinateSpaceTransform(SVGLocatable::CTMScope) const
+AffineTransform SVGElement::localCoordinateSpaceTransform(CTMScope) const
 {
     // To be overriden by SVGGraphicsElement (or as special case SVGTextElement and SVGPatternElement)
     return AffineTransform();

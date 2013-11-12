@@ -169,7 +169,7 @@ private:
         DECLARE_ANIMATED_PRESERVEASPECTRATIO(PreserveAspectRatio, preserveAspectRatio)
     END_DECLARE_ANIMATED_PROPERTIES
 
-    virtual AffineTransform localCoordinateSpaceTransform(SVGLocatable::CTMScope) const;
+    virtual AffineTransform localCoordinateSpaceTransform(SVGElement::CTMScope) const;
 
     bool m_useCurrentView;
     SVGZoomAndPanType m_zoomAndPan;

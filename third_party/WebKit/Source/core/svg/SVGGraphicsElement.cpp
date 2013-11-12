@@ -50,14 +50,53 @@ SVGGraphicsElement::~SVGGraphicsElement()
 {
 }
 
+AffineTransform SVGGraphicsElement::getTransformToElement(SVGElement* target, ExceptionState& es)
+{
+    AffineTransform ctm = getCTM(AllowStyleUpdate);
+
+    if (target && target->isSVGGraphicsElement()) {
+        AffineTransform targetCTM = toSVGGraphicsElement(target)->getCTM(AllowStyleUpdate);
+        if (!targetCTM.isInvertible()) {
+            es.throwUninformativeAndGenericDOMException(InvalidStateError);
+            return ctm;
+        }
+        ctm = targetCTM.inverse() * ctm;
+    }
+
+    return ctm;
+}
+
+static AffineTransform computeCTM(SVGGraphicsElement* element, SVGElement::CTMScope mode, SVGGraphicsElement::StyleUpdateStrategy styleUpdateStrategy)
+{
+    ASSERT(element);
+    if (styleUpdateStrategy == SVGGraphicsElement::AllowStyleUpdate)
+        element->document().updateLayoutIgnorePendingStylesheets();
+
+    AffineTransform ctm;
+
+    SVGElement* stopAtElement = mode == SVGGraphicsElement::NearestViewportScope ? element->nearestViewportElement() : 0;
+    for (Element* currentElement = element; currentElement; currentElement = currentElement->parentOrShadowHostElement()) {
+        if (!currentElement->isSVGElement())
+            break;
+
+        ctm = toSVGElement(currentElement)->localCoordinateSpaceTransform(mode).multiply(ctm);
+
+        // For getCTM() computation, stop at the nearest viewport element
+        if (currentElement == stopAtElement)
+            break;
+    }
+
+    return ctm;
+}
+
 AffineTransform SVGGraphicsElement::getCTM(StyleUpdateStrategy styleUpdateStrategy)
 {
-    return SVGLocatable::computeCTM(this, SVGLocatable::NearestViewportScope, styleUpdateStrategy);
+    return computeCTM(this, NearestViewportScope, styleUpdateStrategy);
 }
 
 AffineTransform SVGGraphicsElement::getScreenCTM(StyleUpdateStrategy styleUpdateStrategy)
 {
-    return SVGLocatable::computeCTM(this, SVGLocatable::ScreenScope, styleUpdateStrategy);
+    return computeCTM(this, ScreenScope, styleUpdateStrategy);
 }
 
 AffineTransform SVGGraphicsElement::animatedLocalTransform() const
@@ -156,14 +195,32 @@ void SVGGraphicsElement::svgAttributeChanged(const QualifiedName& attrName)
     ASSERT_NOT_REACHED();
 }
 
+static bool isViewportElement(Node* node)
+{
+    return (node->hasTagName(SVGNames::svgTag)
+        || node->hasTagName(SVGNames::symbolTag)
+        || node->hasTagName(SVGNames::foreignObjectTag)
+        || node->hasTagName(SVGNames::imageTag));
+}
+
 SVGElement* SVGGraphicsElement::nearestViewportElement() const
 {
-    return SVGTransformable::nearestViewportElement(this);
+    for (Element* current = parentOrShadowHostElement(); current; current = current->parentOrShadowHostElement()) {
+        if (isViewportElement(current))
+            return toSVGElement(current);
+    }
+
+    return 0;
 }
 
 SVGElement* SVGGraphicsElement::farthestViewportElement() const
 {
-    return SVGTransformable::farthestViewportElement(this);
+    SVGElement* farthest = 0;
+    for (Element* current = parentOrShadowHostElement(); current; current = current->parentOrShadowHostElement()) {
+        if (isViewportElement(current))
+            farthest = toSVGElement(current);
+    }
+    return farthest;
 }
 
 SVGRect SVGGraphicsElement::getBBox()

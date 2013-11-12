@@ -232,7 +232,7 @@ void SVGPatternElement::collectPatternAttributes(PatternAttributes& attributes) 
     }
 }
 
-AffineTransform SVGPatternElement::localCoordinateSpaceTransform(SVGLocatable::CTMScope) const
+AffineTransform SVGPatternElement::localCoordinateSpaceTransform(SVGElement::CTMScope) const
 {
     AffineTransform matrix;
     patternTransformCurrentValue().concatenate(matrix);

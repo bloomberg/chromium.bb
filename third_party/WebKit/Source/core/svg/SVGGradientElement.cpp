@@ -33,7 +33,6 @@
 #include "core/svg/SVGElementInstance.h"
 #include "core/svg/SVGStopElement.h"
 #include "core/svg/SVGTransformList.h"
-#include "core/svg/SVGTransformable.h"
 
 namespace WebCore {
 

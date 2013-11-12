@@ -25,7 +25,6 @@
 #include "core/dom/Element.h"
 #include "core/svg/SVGAnimatedString.h"
 #include "core/svg/SVGLangSpace.h"
-#include "core/svg/SVGLocatable.h"
 #include "core/svg/SVGParsingError.h"
 #include "core/svg/properties/SVGAnimatedPropertyMacros.h"
 #include "core/svg/properties/SVGPropertyInfo.h"
@@ -59,7 +58,11 @@ public:
     PassRefPtr<CSSValue> getPresentationAttribute(const String& name);
     bool isKnownAttribute(const QualifiedName&);
     static bool isAnimatableCSSProperty(const QualifiedName&);
-    virtual AffineTransform localCoordinateSpaceTransform(SVGLocatable::CTMScope) const;
+    enum CTMScope {
+        NearestViewportScope, // Used by SVGGraphicsElement::getCTM()
+        ScreenScope // Used by SVGGraphicsElement::getScreenCTM()
+    };
+    virtual AffineTransform localCoordinateSpaceTransform(CTMScope) const;
     virtual bool needsPendingResourceHandling() const { return true; }
 
     bool instanceUpdatesBlocked() const;

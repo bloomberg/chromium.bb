@@ -22,6 +22,7 @@
 #ifndef SVGParserUtilities_h
 #define SVGParserUtilities_h
 
+#include "core/svg/SVGTransform.h"
 #include "platform/text/ParserUtilities.h"
 #include "wtf/HashSet.h"
 
@@ -33,6 +34,7 @@ namespace WebCore {
 class FloatPoint;
 class FloatRect;
 class SVGPointList;
+class SVGTransformList;
 
 template <typename CharType>
 bool parseSVGNumber(CharType* ptr, size_t length, double& number);
@@ -85,6 +87,19 @@ bool pointsListFromSVGData(SVGPointList& pointsList, const String& points);
 Vector<String> parseDelimitedString(const String& input, const char seperator);
 bool parseKerningUnicodeString(const String& input, UnicodeRanges&, HashSet<String>& stringList);
 bool parseGlyphName(const String& input, HashSet<String>& values);
+
+enum TransformParsingMode {
+    ClearList,
+    DoNotClearList
+};
+
+bool parseTransformAttribute(SVGTransformList&, const LChar*& ptr, const LChar* end, TransformParsingMode = ClearList);
+bool parseTransformAttribute(SVGTransformList&, const UChar*& ptr, const UChar* end, TransformParsingMode = ClearList);
+
+bool parseTransformValue(unsigned type, const LChar*& ptr, const LChar* end, SVGTransform&);
+bool parseTransformValue(unsigned type, const UChar*& ptr, const UChar* end, SVGTransform&);
+
+SVGTransform::SVGTransformType parseTransformType(const String&);
 
 } // namespace WebCore
 

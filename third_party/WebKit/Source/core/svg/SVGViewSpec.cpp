@@ -27,7 +27,6 @@
 #include "core/svg/SVGFitToViewBox.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "core/svg/SVGSVGElement.h"
-#include "core/svg/SVGTransformable.h"
 
 namespace WebCore {
 
@@ -272,7 +271,7 @@ bool SVGViewSpec::parseViewSpecInternal(const CharType* ptr, const CharType* end
             if (ptr >= end || *ptr != '(')
                 return false;
             ptr++;
-            SVGTransformable::parseTransformAttribute(m_transform, ptr, end, SVGTransformable::DoNotClearList);
+            parseTransformAttribute(m_transform, ptr, end, DoNotClearList);
             if (ptr >= end || *ptr != ')')
                 return false;
             ptr++;

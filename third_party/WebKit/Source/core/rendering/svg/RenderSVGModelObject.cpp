@@ -35,7 +35,7 @@
 #include "SVGNames.h"
 #include "core/rendering/svg/RenderSVGRoot.h"
 #include "core/rendering/svg/SVGResourcesCache.h"
-#include "core/svg/SVGElement.h"
+#include "core/svg/SVGGraphicsElement.h"
 
 namespace WebCore {
 
@@ -123,12 +123,12 @@ bool RenderSVGModelObject::nodeAtPoint(const HitTestRequest&, HitTestResult&, co
     return false;
 }
 
-static void getElementCTM(SVGElement* element, AffineTransform& transform)
+static void getElementCTM(SVGGraphicsElement* element, AffineTransform& transform)
 {
     ASSERT(element);
     element->document().updateLayoutIgnorePendingStylesheets();
 
-    SVGElement* stopAtElement = SVGLocatable::nearestViewportElement(element);
+    SVGElement* stopAtElement = element->nearestViewportElement();
     ASSERT(stopAtElement);
 
     AffineTransform localTransform;
@@ -182,7 +182,7 @@ bool RenderSVGModelObject::checkIntersection(RenderObject* renderer, const SVGRe
     if (!isGraphicsElement(renderer))
         return false;
     AffineTransform ctm;
-    SVGElement* svgElement = toSVGElement(renderer->node());
+    SVGGraphicsElement* svgElement = toSVGGraphicsElement(renderer->node());
     getElementCTM(svgElement, ctm);
     ASSERT(svgElement->renderer());
     return intersectsAllowingEmpty(rect, ctm.mapRect(svgElement->renderer()->repaintRectInLocalCoordinates()));
@@ -195,7 +195,7 @@ bool RenderSVGModelObject::checkEnclosure(RenderObject* renderer, const SVGRect&
     if (!isGraphicsElement(renderer))
         return false;
     AffineTransform ctm;
-    SVGElement* svgElement = toSVGElement(renderer->node());
+    SVGGraphicsElement* svgElement = toSVGGraphicsElement(renderer->node());
     getElementCTM(svgElement, ctm);
     ASSERT(svgElement->renderer());
     return rect.contains(ctm.mapRect(svgElement->renderer()->repaintRectInLocalCoordinates()));

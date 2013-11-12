@@ -25,7 +25,8 @@
 #include "core/svg/SVGAnimateTransformElement.h"
 
 #include "SVGNames.h"
-#include "core/svg/SVGTransformable.h"
+#include "core/svg/SVGParserUtilities.h"
+#include "core/svg/SVGTransform.h"
 
 namespace WebCore {
 
@@ -70,7 +71,7 @@ void SVGAnimateTransformElement::parseAttribute(const QualifiedName& name, const
     }
 
     if (name == SVGNames::typeAttr) {
-        m_type = SVGTransformable::parseTransformType(value);
+        m_type = parseTransformType(value);
         if (m_type == SVGTransform::SVG_TRANSFORM_MATRIX)
             m_type = SVGTransform::SVG_TRANSFORM_UNKNOWN;
         return;

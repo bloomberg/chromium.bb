@@ -193,7 +193,7 @@ bool RenderSVGShape::setupNonScalingStrokeContext(AffineTransform& strokeTransfo
 
 AffineTransform RenderSVGShape::nonScalingStrokeTransform() const
 {
-    return toSVGGraphicsElement(element())->getScreenCTM(SVGLocatable::DisallowStyleUpdate);
+    return toSVGGraphicsElement(element())->getScreenCTM(SVGGraphicsElement::DisallowStyleUpdate);
 }
 
 bool RenderSVGShape::shouldGenerateMarkerPositions() const

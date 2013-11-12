@@ -424,7 +424,7 @@ SVGTransform SVGSVGElement::createSVGTransformFromMatrix(const SVGMatrix& matrix
     return SVGTransform(static_cast<const AffineTransform&>(matrix));
 }
 
-AffineTransform SVGSVGElement::localCoordinateSpaceTransform(SVGLocatable::CTMScope mode) const
+AffineTransform SVGSVGElement::localCoordinateSpaceTransform(SVGElement::CTMScope mode) const
 {
     AffineTransform viewBoxTransform;
     if (!hasEmptyViewBox()) {
@@ -436,7 +436,7 @@ AffineTransform SVGSVGElement::localCoordinateSpaceTransform(SVGLocatable::CTMSc
     if (!isOutermostSVGSVGElement()) {
         SVGLengthContext lengthContext(this);
         transform.translate(xCurrentValue().value(lengthContext), yCurrentValue().value(lengthContext));
-    } else if (mode == SVGLocatable::ScreenScope) {
+    } else if (mode == SVGElement::ScreenScope) {
         if (RenderObject* renderer = this->renderer()) {
             FloatPoint location;
             float zoomFactor = 1;
@@ -729,9 +729,7 @@ void SVGSVGElement::setupInitialView(const String& fragmentIdentifier, Element* 
         if (!viewElement)
             return;
 
-        SVGElement* element = SVGLocatable::nearestViewportElement(viewElement);
-        if (element->hasTagName(SVGNames::svgTag)) {
-            SVGSVGElement* svg = toSVGSVGElement(element);
+        if (SVGSVGElement* svg = viewElement->ownerSVGElement()) {
             svg->inheritViewAttributes(viewElement);
 
             if (RenderObject* renderer = svg->renderer())
