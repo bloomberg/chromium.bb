@@ -281,6 +281,9 @@ private:
         double m_max;
         RefPtr<TimingFunction> m_timingFunction;
 
+        // FIXME: Come up with a public API for the segments and remove this.
+        friend class CompositorAnimationsImpl;
+
         // Allow the compositor to reverse the timing function.
         friend class CompositorAnimationsTimingFunctionReverser;
 
@@ -296,6 +299,9 @@ private:
     }
 
     Vector<Segment> m_segments;
+
+    // FIXME: Come up with a public API for the segments and remove this.
+    friend class CompositorAnimationsImpl;
 
     // Allow the compositor to reverse the timing function.
     friend class CompositorAnimationsTimingFunctionReverser;

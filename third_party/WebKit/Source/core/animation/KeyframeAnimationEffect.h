@@ -101,6 +101,9 @@ private:
         PropertySpecificKeyframe(double offset, PassRefPtr<CompositableValue>);
         double m_offset;
         RefPtr<CompositableValue> m_value;
+
+        // FIXME: Come up with public API for the PropertySpecificKeyframe stuff and remove this.
+        friend class CompositorAnimations;
     };
 
     class PropertySpecificKeyframeGroup {
@@ -112,6 +115,9 @@ private:
     private:
         typedef Vector<OwnPtr<PropertySpecificKeyframe> > PropertySpecificKeyframeVector;
         PropertySpecificKeyframeVector m_keyframes;
+
+        // FIXME: Come up with public API for the PropertySpecificKeyframe stuff and remove this.
+        friend class CompositorAnimationsKeyframeEffectHelper;
     };
 
     KeyframeAnimationEffect(const KeyframeVector& keyframes);
@@ -126,6 +132,9 @@ private:
     // property-specific lists.
     typedef HashMap<CSSPropertyID, OwnPtr<PropertySpecificKeyframeGroup> > KeyframeGroupMap;
     OwnPtr<KeyframeGroupMap> m_keyframeGroups;
+
+    // FIXME: Come up with public API for the PropertySpecificKeyframe stuff and remove this.
+    friend class CompositorAnimationsKeyframeEffectHelper;
 };
 
 DEFINE_TYPE_CASTS(KeyframeAnimationEffect, AnimationEffect, value, value->isKeyframeAnimationEffect(), value.isKeyframeAnimationEffect());

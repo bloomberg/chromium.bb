@@ -31,7 +31,21 @@
 #ifndef CompositorAnimations_h
 #define CompositorAnimations_h
 
+#include "core/animation/AnimationEffect.h"
+#include "core/animation/KeyframeAnimationEffect.h"
 #include "core/animation/Timing.h"
+#include "core/platform/animation/TimingFunction.h"
+#include "public/platform/WebAnimation.h"
+#include "public/platform/WebAnimationCurve.h"
+#include "public/platform/WebCompositorSupport.h"
+#include "public/platform/WebFilterAnimationCurve.h"
+#include "public/platform/WebFilterKeyframe.h"
+#include "public/platform/WebFilterOperations.h"
+#include "public/platform/WebFloatAnimationCurve.h"
+#include "public/platform/WebFloatKeyframe.h"
+#include "public/platform/WebTransformAnimationCurve.h"
+#include "public/platform/WebTransformKeyframe.h"
+#include "public/platform/WebTransformOperations.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
@@ -53,21 +67,18 @@ public:
 };
 
 class CompositorAnimations {
-
 public:
     static CompositorAnimations* instance() { return instance(0); }
     static void setInstanceForTesting(CompositorAnimations* newInstance) { instance(newInstance); }
 
-    virtual bool isCandidateForCompositorAnimation(const Timing&, const AnimationEffect*);
-    virtual bool canStartCompositorAnimation(const Element*);
-    virtual void startCompositorAnimation(const Element*, const Timing&, const AnimationEffect*, Vector<int>& startedAnimationIds);
-    virtual void cancelCompositorAnimation(const Element*, int id);
+    virtual bool isCandidateForCompositorAnimation(const Timing&, const AnimationEffect&);
+    virtual bool canStartCompositorAnimation(const Element&);
+    virtual void startCompositorAnimation(const Element&, const Timing&, const AnimationEffect&, Vector<int>& startedAnimationIds);
+    virtual void cancelCompositorAnimation(const Element&, int id);
 
 protected:
     CompositorAnimations() { }
-
-private:
-    static CompositorAnimations* instance(CompositorAnimations* newInstance = 0)
+    static CompositorAnimations* instance(CompositorAnimations* newInstance)
     {
         static CompositorAnimations* instance = new CompositorAnimations();
         if (newInstance) {
