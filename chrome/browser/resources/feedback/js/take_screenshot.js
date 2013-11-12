@@ -4,8 +4,8 @@
 
 /**
  * Function to take the screenshot of the current screen.
- * @param {function(string)} callback Callback for returning the data URL to the
- *                           screenshot.
+ * @param {function(HTMLCanvasElement)} callback Callback for returning the
+ *                                      canvas with the screenshot on it.
  */
 function takeScreenshot(callback) {
   var screenshotStream = null;
@@ -25,7 +25,7 @@ function takeScreenshot(callback) {
       screenshotStream.stop();
       screenshotStream = null;
 
-      callback(canvas.toDataURL('image/png'));
+      callback(canvas);
     }
   }, false);
 

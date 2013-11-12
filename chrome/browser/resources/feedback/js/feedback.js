@@ -235,13 +235,18 @@ function initialize() {
       if (feedbackInfo.pageUrl)
         $('page-url-text').value = feedbackInfo.pageUrl;
 
-      takeScreenshot(function(screenshotDataUrl) {
-        $('screenshot-image').src = screenshotDataUrl;
-        feedbackInfo.screenshot = dataUrlToBlob(screenshotDataUrl);
+      takeScreenshot(function(screenshotCanvas) {
         // TODO(rkc):  Remove logging once crbug.com/284662 is closed.
         console.log('FEEDBACK_DEBUG: Taken screenshot. Showing window.');
+
+        // We've taken our screenshot, show the feedback page without any
+        // further delay.
         resizeAppWindow();
         chrome.app.window.current().show();
+
+        var screenshotDataUrl = screenshotCanvas.toDataURL('image/png');
+        $('screenshot-image').src = screenshotDataUrl;
+        feedbackInfo.screenshot = dataUrlToBlob(screenshotDataUrl);
       });
 
       chrome.feedbackPrivate.getUserEmail(function(email) {
