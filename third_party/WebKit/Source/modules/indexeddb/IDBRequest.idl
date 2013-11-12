@@ -30,8 +30,8 @@
 [
     ActiveDOMObject
 ] interface IDBRequest : EventTarget {
-    [GetterRaisesException] readonly attribute IDBAny result;
-    [GetterRaisesException] readonly attribute DOMError error;
+    [RaisesException=Getter] readonly attribute IDBAny result;
+    [RaisesException=Getter] readonly attribute DOMError error;
 
     readonly attribute IDBAny source;
     readonly attribute IDBTransaction transaction;

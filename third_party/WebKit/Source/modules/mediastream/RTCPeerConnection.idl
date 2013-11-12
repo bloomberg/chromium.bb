@@ -32,7 +32,7 @@
     NoInterfaceObject,
     ActiveDOMObject,
     Constructor(Dictionary rtcIceServers, optional Dictionary mediaConstraints),
-    ConstructorRaisesException,
+    RaisesException=Constructor,
     ConstructorCallWith=ExecutionContext
 ] interface RTCPeerConnection : EventTarget {
     [RaisesException] void createOffer(RTCSessionDescriptionCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback, optional Dictionary mediaConstraints);
@@ -40,10 +40,10 @@
     [RaisesException] void createAnswer(RTCSessionDescriptionCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback, optional Dictionary mediaConstraints);
 
     [RaisesException] void setLocalDescription(RTCSessionDescription description, [Default=Undefined] optional VoidCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback);
-    [GetterRaisesException] readonly attribute RTCSessionDescription localDescription;
+    [RaisesException=Getter] readonly attribute RTCSessionDescription localDescription;
 
     [RaisesException] void setRemoteDescription(RTCSessionDescription description, [Default=Undefined] optional VoidCallback successCallback, [Default=Undefined] optional RTCErrorCallback failureCallback);
-    [GetterRaisesException] readonly attribute RTCSessionDescription remoteDescription;
+    [RaisesException=Getter] readonly attribute RTCSessionDescription remoteDescription;
 
     readonly attribute DOMString signalingState;
 

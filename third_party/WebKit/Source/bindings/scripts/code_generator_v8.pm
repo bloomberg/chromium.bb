@@ -1504,7 +1504,8 @@ END
         }
     }
 
-    my $useExceptions = 1 if $attribute->extendedAttributes->{"GetterRaisesException"} ||  $attribute->extendedAttributes->{"RaisesException"};
+    my $raisesException = $attribute->extendedAttributes->{"RaisesException"};
+    my $useExceptions = 1 if $raisesException && ($raisesException eq "VALUE_IS_MISSING" or $raisesException eq "Getter");
     if ($useExceptions || $attribute->extendedAttributes->{"CheckSecurity"}) {
         AddToImplIncludes("bindings/v8/ExceptionMessages.h");
         AddToImplIncludes("bindings/v8/ExceptionState.h");
@@ -2005,7 +2006,8 @@ END
         $expression = $expression . "->propertyReference()";
     }
 
-    my $useExceptions = 1 if $attribute->extendedAttributes->{"SetterRaisesException"} ||  $attribute->extendedAttributes->{"RaisesException"};
+    my $raisesException = $attribute->extendedAttributes->{"RaisesException"};
+    my $useExceptions = 1 if $raisesException && ($raisesException eq "VALUE_IS_MISSING" or $raisesException eq "Setter");
 
     if ($useExceptions) {
         AddToImplIncludes("bindings/v8/ExceptionMessages.h");
@@ -2691,10 +2693,8 @@ sub GenerateSingleConstructorCallback
         $overloadedIndexString .= $function->overloadedIndex;
     }
 
-    my $raisesExceptions = $function->extendedAttributes->{"RaisesException"};
-    if ($interface->extendedAttributes->{"ConstructorRaisesException"}) {
-        $raisesExceptions = 1;
-    }
+    my $constructorRaisesException = $interface->extendedAttributes->{"RaisesException"} && $interface->extendedAttributes->{"RaisesException"} eq "Constructor";
+    my $raisesExceptions = $function->extendedAttributes->{"RaisesException"} || $constructorRaisesException;
 
     my @beforeArgumentList;
     my @afterArgumentList;
@@ -2730,7 +2730,7 @@ END
         }
     }
 
-    if ($interface->extendedAttributes->{"ConstructorRaisesException"}) {
+    if ($constructorRaisesException) {
         push(@afterArgumentList, "es");
     }
 
@@ -2751,7 +2751,7 @@ END
     $code .= "    RefPtr<${implClassName}> impl = ${implClassName}::create(${argumentString});\n";
     $code .= "    v8::Handle<v8::Object> wrapper = info.Holder();\n";
 
-    if ($interface->extendedAttributes->{"ConstructorRaisesException"}) {
+    if ($constructorRaisesException) {
         $code .= "    if (es.throwIfNeeded())\n";
         $code .= "        return;\n";
     }
@@ -2953,10 +2953,8 @@ sub GenerateNamedConstructor
 
     my $implClassName = GetImplName($interface);
     my $v8ClassName = GetV8ClassName($interface);
-    my $raisesExceptions = $function->extendedAttributes->{"RaisesException"};
-    if ($interface->extendedAttributes->{"ConstructorRaisesException"}) {
-        $raisesExceptions = 1;
-    }
+    my $constructorRaisesException = $interface->extendedAttributes->{"RaisesException"} && $interface->extendedAttributes->{"RaisesException"} eq "Constructor";
+    my $raisesExceptions = $function->extendedAttributes->{"RaisesException"} || $constructorRaisesException;
 
     my $maybeObserveFeature = GenerateFeatureObservation($function->extendedAttributes->{"MeasureAs"});
     my $maybeDeprecateFeature = GenerateDeprecationNotification($function->extendedAttributes->{"DeprecateAs"});
@@ -3011,7 +3009,7 @@ END
 
     push(@beforeArgumentList, "*document");
 
-    if ($interface->extendedAttributes->{"ConstructorRaisesException"}) {
+    if ($constructorRaisesException) {
         push(@afterArgumentList, "es");
     }
 
@@ -3032,7 +3030,7 @@ END
     $code .= "    RefPtr<${implClassName}> impl = ${implClassName}::createForJSConstructor(${argumentString});\n";
     $code .= "    v8::Handle<v8::Object> wrapper = info.Holder();\n";
 
-    if ($interface->extendedAttributes->{"ConstructorRaisesException"}) {
+    if ($constructorRaisesException) {
         $code .= "    if (es.throwIfNeeded())\n";
         $code .= "        return;\n";
     }

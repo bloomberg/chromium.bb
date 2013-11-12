@@ -42,7 +42,6 @@ Clamp
 Conditional=*
 Constructor
 ConstructorCallWith=ExecutionContext|Document
-ConstructorRaisesException
 ConstructorTemplate=Event|TypedArray
 Custom=|Getter|Setter
 CustomConstructor
@@ -61,7 +60,6 @@ DoNotGenerateToV8
 DoNotGenerateWrap
 EnforceRange
 GenerateIsReachable=*
-GetterRaisesException
 GlobalContext=Window|WorkerGlobalScope|SharedWorkerGlobalScope|DedicatedWorkerGlobalScope
 Immutable
 ImplementedAs=*
@@ -79,7 +77,7 @@ OverrideBuiltins
 PerContextEnabled=*
 PerWorldBindings
 PutForwards=*
-RaisesException
+RaisesException=|Getter|Setter|Constructor
 ReadOnly
 Reflect=|*
 Replaceable
@@ -88,7 +86,6 @@ Replaceable
 RuntimeEnabled=*
 SetReference=*
 SetterCallWith=ExecutionContext|ScriptState|ScriptArguments|ActiveWindow|FirstWindow
-SetterRaisesException
 SpecialWrapFor=*
 StrictTypeChecking
 TreatNullAs=NullString|*

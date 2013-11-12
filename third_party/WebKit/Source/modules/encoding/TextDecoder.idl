@@ -32,7 +32,7 @@
     RuntimeEnabled=EncodingAPI,
     GlobalContext=Window&WorkerGlobalScope,
     Constructor([Default=NullString] optional DOMString label, optional Dictionary options),
-    ConstructorRaisesException
+    RaisesException=Constructor
 ] interface TextDecoder {
     readonly attribute DOMString encoding;
     [RaisesException] DOMString decode(optional ArrayBufferView input, optional Dictionary options);

@@ -64,12 +64,16 @@ def generate_attribute(interface, attribute):
         'idl_type': idl_type,
         'is_call_with_execution_context': v8_utilities.has_extended_attribute_value(attribute, 'CallWith', 'ExecutionContext'),
         'is_constructor': is_constructor_attribute(attribute),
-        'is_getter_raises_exception': has_extended_attribute(attribute, ('GetterRaisesException', 'RaisesException')),
+        'is_getter_raises_exception': (
+            'RaisesException' in extended_attributes and
+            extended_attributes['RaisesException'] in [None, 'Getter']),
         'is_keep_alive_for_gc': is_keep_alive_for_gc(attribute),
         'is_nullable': attribute.is_nullable,
         'is_read_only': attribute.is_read_only,
         'is_replaceable': 'Replaceable' in attribute.extended_attributes,
-        'is_setter_raises_exception': has_extended_attribute(attribute, ('RaisesException', 'SetterRaisesException')),
+        'is_setter_raises_exception': (
+            'RaisesException' in extended_attributes and
+            extended_attributes['RaisesException'] in [None, 'Setter']),
         'is_static': attribute.is_static,
         'name': attribute.name,
         'per_context_enabled_function_name': v8_utilities.per_context_enabled_function_name(attribute),  # [PerContextEnabled]

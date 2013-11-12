@@ -24,7 +24,7 @@
  */
 
 interface SVGAnimatedString {
-    [SetterRaisesException] attribute DOMString baseVal;
+    [RaisesException=Setter] attribute DOMString baseVal;
     readonly attribute DOMString animVal;
 };
 

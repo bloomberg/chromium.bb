@@ -26,5 +26,5 @@
     Conditional=WEB_AUDIO
 ] interface WaveShaperNode : AudioNode {
     attribute Float32Array curve;
-    [SetterRaisesException] attribute DOMString oversample;
+    [RaisesException=Setter] attribute DOMString oversample;
 };

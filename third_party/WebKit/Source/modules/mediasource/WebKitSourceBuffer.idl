@@ -34,10 +34,10 @@
 ] interface WebKitSourceBuffer {
 
     // Returns the time ranges buffered.
-    [GetterRaisesException] readonly attribute TimeRanges buffered;
+    [RaisesException=Getter] readonly attribute TimeRanges buffered;
 
     // Applies an offset to media segment timestamps.
-    [SetterRaisesException] attribute double timestampOffset;
+    [RaisesException=Setter] attribute double timestampOffset;
 
     // Append segment data.
     [RaisesException] void append(Uint8Array data);

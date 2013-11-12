@@ -22,7 +22,7 @@
 [
     DependentLifetime
 ] interface CSSStyleDeclaration {
-             [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, SetterRaisesException] attribute DOMString        cssText;
+             [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, RaisesException=Setter] attribute DOMString        cssText;
 
     [TreatReturnedNullStringAs=Null] DOMString          getPropertyValue([Default=Undefined] optional DOMString propertyName);
     CSSValue           getPropertyCSSValue([Default=Undefined] optional DOMString propertyName);

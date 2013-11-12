@@ -56,7 +56,7 @@
     readonly attribute boolean seeking;
 
     // playback state
-    [SetterRaisesException] attribute double currentTime;
+    [RaisesException=Setter] attribute double currentTime;
     readonly attribute double duration;
     readonly attribute boolean paused;
     attribute double defaultPlaybackRate;
@@ -75,7 +75,7 @@
 
     // controls
     attribute boolean controls;
-    [SetterRaisesException] attribute double volume;
+    [RaisesException=Setter] attribute double volume;
     attribute boolean muted;
     [Reflect=muted] attribute boolean defaultMuted;
 

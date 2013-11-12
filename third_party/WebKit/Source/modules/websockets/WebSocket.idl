@@ -35,7 +35,7 @@
     Constructor(DOMString url),
     Constructor(DOMString url, sequence<DOMString> protocols),
     Constructor(DOMString url, DOMString protocol),
-    ConstructorRaisesException,
+    RaisesException=Constructor,
     ConstructorCallWith=ExecutionContext
 ] interface WebSocket : EventTarget {
     readonly attribute DOMString URL; // Lowercased .url is the one in the spec, but leaving .URL for compatibility reasons.

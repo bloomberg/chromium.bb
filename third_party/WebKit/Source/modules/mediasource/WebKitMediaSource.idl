@@ -41,7 +41,7 @@
     // Subset of sourceBuffers that provide data for the selected/enabled tracks.
     readonly attribute WebKitSourceBufferList activeSourceBuffers;
 
-    [SetterRaisesException] attribute double duration;
+    [RaisesException=Setter] attribute double duration;
 
     [RaisesException] WebKitSourceBuffer addSourceBuffer(DOMString type);
     [RaisesException] void removeSourceBuffer(WebKitSourceBuffer buffer);

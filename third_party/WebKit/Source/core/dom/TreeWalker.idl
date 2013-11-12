@@ -26,7 +26,7 @@
     readonly attribute unsigned long whatToShow;
     readonly attribute NodeFilter filter;
     readonly attribute boolean expandEntityReferences;
-             [SetterRaisesException] attribute Node currentNode;
+             [RaisesException=Setter] attribute Node currentNode;
 
     [CallWith=ScriptState] Node parentNode();
     [CallWith=ScriptState] Node firstChild();

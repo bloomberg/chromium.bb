@@ -25,15 +25,15 @@
 [
     Conditional=WEB_AUDIO
 ] interface AnalyserNode : AudioNode {
-    [SetterRaisesException] attribute unsigned long fftSize;
+    [RaisesException=Setter] attribute unsigned long fftSize;
     readonly attribute unsigned long frequencyBinCount;
 
     // minDecibels / maxDecibels represent the range to scale the FFT analysis data for conversion to unsigned byte values.
-    [SetterRaisesException] attribute float minDecibels;
-    [SetterRaisesException] attribute float maxDecibels;
+    [RaisesException=Setter] attribute float minDecibels;
+    [RaisesException=Setter] attribute float maxDecibels;
 
     // A value from 0.0 -> 1.0 where 0.0 represents no time averaging with the last analysis frame.
-    [SetterRaisesException] attribute float smoothingTimeConstant;
+    [RaisesException=Setter] attribute float smoothingTimeConstant;
 
     // Copies the current frequency data into the passed array.
     // If the array has fewer elements than the frequencyBinCount, the excess elements will be dropped.

@@ -32,7 +32,7 @@ interface SVGAngle {
     [StrictTypeChecking] attribute float value;
     [StrictTypeChecking] attribute float valueInSpecifiedUnits;
 
-    [TreatNullAs=NullString, SetterRaisesException] attribute DOMString valueAsString;
+    [TreatNullAs=NullString, RaisesException=Setter] attribute DOMString valueAsString;
 
     [StrictTypeChecking, RaisesException] void newValueSpecifiedUnits(unsigned short unitType, float valueInSpecifiedUnits);
 

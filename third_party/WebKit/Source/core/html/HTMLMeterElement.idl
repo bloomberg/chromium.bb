@@ -18,11 +18,11 @@
  */
 
 interface HTMLMeterElement : HTMLElement {
-             [SetterRaisesException] attribute double value;
-             [SetterRaisesException] attribute double min;
-             [SetterRaisesException] attribute double max;
-             [SetterRaisesException] attribute double low;
-             [SetterRaisesException] attribute double high;
-             [SetterRaisesException] attribute double optimum;
+             [RaisesException=Setter] attribute double value;
+             [RaisesException=Setter] attribute double min;
+             [RaisesException=Setter] attribute double max;
+             [RaisesException=Setter] attribute double low;
+             [RaisesException=Setter] attribute double high;
+             [RaisesException=Setter] attribute double optimum;
     readonly attribute NodeList labels;
 };

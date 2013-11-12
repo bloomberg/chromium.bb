@@ -99,10 +99,10 @@ callback TestCallbackFunction = void (TestEnumType formal1, TestObject formal2);
 
     // Exceptions
     [RaisesException] void methodWithException();
-    [GetterRaisesException] attribute long attrWithGetterException;
-    [SetterRaisesException] attribute long attrWithSetterException;
-    [GetterRaisesException] attribute DOMString stringAttrWithGetterException;
-    [SetterRaisesException] attribute DOMString stringAttrWithSetterException;
+    [RaisesException=Getter] attribute long attrWithGetterException;
+    [RaisesException=Setter] attribute long attrWithSetterException;
+    [RaisesException=Getter] attribute DOMString stringAttrWithGetterException;
+    [RaisesException=Setter] attribute DOMString stringAttrWithSetterException;
 
     // 'Custom' extended attribute
     [Custom] attribute long            customAttr;
@@ -130,10 +130,10 @@ callback TestCallbackFunction = void (TestEnumType formal1, TestObject formal2);
     [CallWith=ScriptState] attribute long withScriptStateAttribute;
     [CallWith=ExecutionContext] attribute TestObject withExecutionContextAttribute;
     [SetterCallWith=ActiveWindow&FirstWindow] attribute TestObject withActiveWindowAndFirstWindowAttribute;
-    [CallWith=ScriptState, GetterRaisesException] attribute TestObject withScriptStateAttributeRaises;
-    [CallWith=ExecutionContext, GetterRaisesException] attribute TestObject withExecutionContextAttributeRaises;
+    [CallWith=ScriptState, RaisesException=Getter] attribute TestObject withScriptStateAttributeRaises;
+    [CallWith=ExecutionContext, RaisesException=Getter] attribute TestObject withExecutionContextAttributeRaises;
     [CallWith=ExecutionContext&ScriptState] attribute TestObject withExecutionContextAndScriptStateAttribute;
-    [CallWith=ExecutionContext&ScriptState, GetterRaisesException] attribute TestObject withExecutionContextAndScriptStateAttributeRaises;
+    [CallWith=ExecutionContext&ScriptState, RaisesException=Getter] attribute TestObject withExecutionContextAndScriptStateAttributeRaises;
     [CallWith=  ExecutionContext  &  ScriptState  ] attribute TestObject withExecutionContextAndScriptStateWithSpacesAttribute;
 
     // optional parameters
@@ -262,7 +262,7 @@ callback TestCallbackFunction = void (TestEnumType formal1, TestObject formal2);
     readonly attribute boolean? nullableBooleanAttribute;
     readonly attribute DOMString? nullableStringAttribute;
     attribute long? nullableLongSettableAttribute;
-    [GetterRaisesException] attribute long? nullableStringValue;
+    [RaisesException=Getter] attribute long? nullableStringValue;
 
     // Nullable arguments.
     void methodWithNullableArguments(DOMString? str, long? l, TestObject? obj, optional double? d);

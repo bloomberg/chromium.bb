@@ -30,7 +30,7 @@
 
 [
     Constructor(Dictionary dictionary),
-    ConstructorRaisesException
+    RaisesException=Constructor
 ] interface RTCIceCandidate {
     readonly attribute DOMString candidate;
     readonly attribute DOMString sdpMid;

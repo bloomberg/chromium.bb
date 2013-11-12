@@ -33,7 +33,7 @@
     RuntimeEnabled=SharedWorker,
     Constructor(DOMString scriptURL, [Default=NullString] optional DOMString name),
     ConstructorCallWith=ExecutionContext,
-    ConstructorRaisesException,
+    RaisesException=Constructor,
     ActiveDOMObject
 ] interface SharedWorker : EventTarget {
     readonly attribute MessagePort port;

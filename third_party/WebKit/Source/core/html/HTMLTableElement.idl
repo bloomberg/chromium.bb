@@ -19,9 +19,9 @@
  */
 
 interface HTMLTableElement : HTMLElement {
-    [SetterRaisesException] attribute HTMLTableCaptionElement caption;
-    [SetterRaisesException] attribute HTMLTableSectionElement tHead;
-    [SetterRaisesException] attribute HTMLTableSectionElement tFoot;
+    [RaisesException=Setter] attribute HTMLTableCaptionElement caption;
+    [RaisesException=Setter] attribute HTMLTableSectionElement tHead;
+    [RaisesException=Setter] attribute HTMLTableSectionElement tFoot;
 
     readonly attribute HTMLCollection rows;
     readonly attribute HTMLCollection tBodies;

@@ -42,7 +42,7 @@
     attribute boolean indeterminate;
     [RuntimeEnabled=DataListElement] readonly attribute HTMLElement list;
     [Reflect, TreatNullAs=NullString] attribute DOMString max;
-    [SetterRaisesException, CustomElementCallbacks] attribute long maxLength;
+    [RaisesException=Setter, CustomElementCallbacks] attribute long maxLength;
     [Reflect, TreatNullAs=NullString] attribute DOMString min;
     [Reflect] attribute boolean multiple;
     [Reflect, TreatNullAs=NullString] attribute DOMString name;
@@ -50,15 +50,15 @@
     [Reflect, TreatNullAs=NullString] attribute DOMString placeholder;
     [Reflect] attribute boolean readOnly;
     [Reflect] attribute boolean required;
-    [SetterRaisesException, CustomElementCallbacks] attribute unsigned long size; // Changed string -> long -> unsigned long
+    [RaisesException=Setter, CustomElementCallbacks] attribute unsigned long size; // Changed string -> long -> unsigned long
     [Reflect, TreatNullAs=NullString, URL, PerWorldBindings, ActivityLogging=SetterForIsolatedWorlds] attribute DOMString src;
     [Reflect, TreatNullAs=NullString] attribute DOMString step;
     [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString type; // readonly dropped as part of DOM level 2
     [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString defaultValue;
     // See the discussion in https://bugs.webkit.org/show_bug.cgi?id=100085
-    [TreatNullAs=NullString, SetterRaisesException, CustomElementCallbacks] attribute DOMString value;
-    [SetterRaisesException, CustomElementCallbacks] attribute Date valueAsDate;
-    [SetterRaisesException, CustomElementCallbacks] attribute double valueAsNumber;
+    [TreatNullAs=NullString, RaisesException=Setter, CustomElementCallbacks] attribute DOMString value;
+    [RaisesException=Setter, CustomElementCallbacks] attribute Date valueAsDate;
+    [RaisesException=Setter, CustomElementCallbacks] attribute double valueAsNumber;
     [RuntimeEnabled=InputModeAttribute, Reflect, TreatNullAs=NullString] attribute DOMString inputMode;
 
     [RaisesException, CustomElementCallbacks] void stepUp(optional long n);

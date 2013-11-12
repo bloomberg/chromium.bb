@@ -36,7 +36,7 @@
     [CallWith=ActiveWindow, Unforgeable, ReadOnly] void reload();
 
     // URI decomposition attributes
-    [SetterCallWith=ActiveWindow&FirstWindow, SetterRaisesException] attribute DOMString protocol;
+    [SetterCallWith=ActiveWindow&FirstWindow, RaisesException=Setter] attribute DOMString protocol;
     [SetterCallWith=ActiveWindow&FirstWindow] attribute DOMString host;
     [SetterCallWith=ActiveWindow&FirstWindow] attribute DOMString hostname;
     [SetterCallWith=ActiveWindow&FirstWindow] attribute DOMString port;

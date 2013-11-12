@@ -24,7 +24,7 @@
  */
 
 interface SVGAnimatedInteger {
-    [StrictTypeChecking, SetterRaisesException] attribute long baseVal;
+    [StrictTypeChecking, RaisesException=Setter] attribute long baseVal;
     readonly attribute long animVal;
 };
 

@@ -24,12 +24,12 @@
     ConstructorCallWith=Document
 ] interface Range {
 
-    [GetterRaisesException] readonly attribute Node startContainer;
-    [GetterRaisesException] readonly attribute long startOffset;
-    [GetterRaisesException] readonly attribute Node endContainer;
-    [GetterRaisesException] readonly attribute long endOffset;
-    [GetterRaisesException] readonly attribute boolean collapsed;
-    [GetterRaisesException] readonly attribute Node commonAncestorContainer;
+    [RaisesException=Getter] readonly attribute Node startContainer;
+    [RaisesException=Getter] readonly attribute long startOffset;
+    [RaisesException=Getter] readonly attribute Node endContainer;
+    [RaisesException=Getter] readonly attribute long endOffset;
+    [RaisesException=Getter] readonly attribute boolean collapsed;
+    [RaisesException=Getter] readonly attribute Node commonAncestorContainer;
 
      [RaisesException] void setStart([Default=Undefined] optional Node refNode,
                                  [Default=Undefined] optional long offset);

@@ -30,7 +30,7 @@ interface Storage {
     [RaisesException, ImplementedAs=anonymousNamedGetter] getter DOMString(DOMString name);
     [RaisesException, ImplementedAs=anonymousNamedSetter] setter DOMString(DOMString name, DOMString value);
     [ImplementedAs=anonymousNamedDeleter, RaisesException] deleter boolean (DOMString name);
-    [NotEnumerable, GetterRaisesException] readonly attribute unsigned long length;
+    [NotEnumerable, RaisesException=Getter] readonly attribute unsigned long length;
     [NotEnumerable, TreatReturnedNullStringAs=Null, RaisesException] DOMString key(unsigned long index);
     [NotEnumerable, TreatReturnedNullStringAs=Null, PerWorldBindings, ActivityLogging=ForIsolatedWorlds, RaisesException] DOMString getItem(DOMString key);
     [NotEnumerable, RaisesException, PerWorldBindings, ActivityLogging=ForIsolatedWorlds] void setItem(DOMString key, DOMString data);

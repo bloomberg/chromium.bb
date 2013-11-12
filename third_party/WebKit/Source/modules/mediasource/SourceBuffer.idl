@@ -37,16 +37,16 @@
     readonly attribute boolean updating;
 
     // Returns the time ranges buffered.
-    [GetterRaisesException] readonly attribute TimeRanges buffered;
+    [RaisesException=Getter] readonly attribute TimeRanges buffered;
 
     // Applies an offset to media segment timestamps.
-    [SetterRaisesException] attribute double timestampOffset;
+    [RaisesException=Setter] attribute double timestampOffset;
 
     // Presentation timestamp for the start of append window.
-    [SetterRaisesException] attribute double appendWindowStart;
+    [RaisesException=Setter] attribute double appendWindowStart;
 
     // Presentation timestamp for the end of append window.
-    [SetterRaisesException] attribute double appendWindowEnd;
+    [RaisesException=Setter] attribute double appendWindowEnd;
 
     // Append segment data.
     [RaisesException] void appendBuffer(ArrayBuffer data);

@@ -18,8 +18,8 @@
  */
 
 interface HTMLProgressElement : HTMLElement {
-             [SetterRaisesException] attribute  double                value;
-             [SetterRaisesException] attribute  double                max;
+             [RaisesException=Setter] attribute  double                value;
+             [RaisesException=Setter] attribute  double                max;
     readonly attribute  double                position;
     readonly attribute  NodeList              labels;
 };

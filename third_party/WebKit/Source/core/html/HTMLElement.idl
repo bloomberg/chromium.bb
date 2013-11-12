@@ -33,8 +33,8 @@
     [Reflect, TreatNullAs=NullString] attribute DOMString accessKey;
 
     // Extensions
-    [TreatNullAs=NullString, CustomElementCallbacks, SetterRaisesException] attribute DOMString innerText;
-    [TreatNullAs=NullString, CustomElementCallbacks, SetterRaisesException] attribute DOMString outerText;
+    [TreatNullAs=NullString, CustomElementCallbacks, RaisesException=Setter] attribute DOMString innerText;
+    [TreatNullAs=NullString, CustomElementCallbacks, RaisesException=Setter] attribute DOMString outerText;
 
     [RaisesException, CustomElementCallbacks, MeasureAs=InsertAdjacentElement] Element insertAdjacentElement([Default=Undefined] optional DOMString where,
                                   [Default=Undefined] optional Element element);
@@ -45,7 +45,7 @@
 
     [RuntimeEnabled=IMEAPI] readonly attribute InputMethodContext inputMethodContext;
 
-    [TreatNullAs=NullString, CustomElementCallbacks, SetterRaisesException] attribute DOMString contentEditable;
+    [TreatNullAs=NullString, CustomElementCallbacks, RaisesException=Setter] attribute DOMString contentEditable;
     readonly attribute boolean isContentEditable;
 
              attribute boolean spellcheck;

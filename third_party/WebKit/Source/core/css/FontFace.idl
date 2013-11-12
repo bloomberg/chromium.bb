@@ -38,16 +38,16 @@ enum FontFaceLoadStatus {
 [
     RuntimeEnabled=FontLoadEvents,
     Constructor(DOMString family, DOMString source, Dictionary descriptors),
-    ConstructorRaisesException
+    RaisesException=Constructor
 ] interface FontFace {
 
-    [SetterRaisesException] attribute DOMString family;
-    [SetterRaisesException] attribute DOMString style;
-    [SetterRaisesException] attribute DOMString weight;
-    [SetterRaisesException] attribute DOMString stretch;
-    [SetterRaisesException] attribute DOMString unicodeRange;
-    [SetterRaisesException] attribute DOMString variant;
-    [SetterRaisesException] attribute DOMString featureSettings;
+    [RaisesException=Setter] attribute DOMString family;
+    [RaisesException=Setter] attribute DOMString style;
+    [RaisesException=Setter] attribute DOMString weight;
+    [RaisesException=Setter] attribute DOMString stretch;
+    [RaisesException=Setter] attribute DOMString unicodeRange;
+    [RaisesException=Setter] attribute DOMString variant;
+    [RaisesException=Setter] attribute DOMString featureSettings;
 
     readonly attribute FontFaceLoadStatus status;
 

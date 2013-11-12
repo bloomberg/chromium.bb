@@ -24,7 +24,7 @@
  */
 
 interface SVGAnimatedBoolean {
-    [StrictTypeChecking, SetterRaisesException] attribute boolean baseVal;
+    [StrictTypeChecking, RaisesException=Setter] attribute boolean baseVal;
     readonly attribute boolean animVal;
 };
 

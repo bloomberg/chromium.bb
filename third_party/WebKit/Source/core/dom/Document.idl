@@ -56,8 +56,8 @@ callback CustomElementConstructor = Element ();
     [TreatReturnedNullStringAs=Null, MeasureAs=DocumentInputEncoding] readonly attribute DOMString inputEncoding; // Removed from DOM4.
 
     [TreatReturnedNullStringAs=Null, MeasureAs=DocumentXMLEncoding] readonly attribute DOMString xmlEncoding; // Removed from DOM4.
-    [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, SetterRaisesException, MeasureAs=DocumentXMLVersion] attribute DOMString xmlVersion; // Removed from DOM4.
-    [SetterRaisesException, MeasureAs=DocumentXMLStandalone] attribute boolean xmlStandalone; // Removed from DOM4.
+    [TreatReturnedNullStringAs=Null, TreatNullAs=NullString, RaisesException=Setter, MeasureAs=DocumentXMLVersion] attribute DOMString xmlVersion; // Removed from DOM4.
+    [RaisesException=Setter, MeasureAs=DocumentXMLStandalone] attribute boolean xmlStandalone; // Removed from DOM4.
 
     [RaisesException, CustomElementCallbacks] Node               adoptNode([Default=Undefined] optional Node source);
 
@@ -113,12 +113,12 @@ callback CustomElementConstructor = Element ();
 
              [TreatNullAs=NullString, CustomElementCallbacks] attribute DOMString title;
     readonly attribute DOMString referrer;
-             [TreatNullAs=NullString, SetterRaisesException] attribute DOMString domain;
+             [TreatNullAs=NullString, RaisesException=Setter] attribute DOMString domain;
     readonly attribute DOMString URL;
 
-             [TreatNullAs=NullString, GetterRaisesException, SetterRaisesException] attribute DOMString cookie;
+             [TreatNullAs=NullString, RaisesException] attribute DOMString cookie;
 
-             [SetterRaisesException, CustomElementCallbacks] attribute HTMLElement body;
+             [RaisesException=Setter, CustomElementCallbacks] attribute HTMLElement body;
 
     readonly attribute HTMLHeadElement head;
     readonly attribute HTMLCollection images;

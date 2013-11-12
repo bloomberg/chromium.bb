@@ -32,7 +32,7 @@
     readonly attribute TimeRanges seekable;
 
     readonly attribute double duration;
-    [SetterRaisesException] attribute double currentTime;
+    [RaisesException=Setter] attribute double currentTime;
 
     readonly attribute boolean paused;
     readonly attribute TimeRanges played;
@@ -44,6 +44,6 @@
     attribute double defaultPlaybackRate;
     attribute double playbackRate;
 
-    [SetterRaisesException] attribute double volume;
+    [RaisesException=Setter] attribute double volume;
     attribute boolean muted;
 };
