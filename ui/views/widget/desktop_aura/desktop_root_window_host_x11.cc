@@ -20,6 +20,7 @@
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/user_action_client.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
 #include "ui/base/dragdrop/os_exchange_data_provider_aurax11.h"
 #include "ui/base/x/x11_util.h"
@@ -132,21 +133,21 @@ DesktopRootWindowHostX11::DesktopRootWindowHostX11(
 }
 
 DesktopRootWindowHostX11::~DesktopRootWindowHostX11() {
-  root_window_->ClearProperty(kHostForRootWindow);
-  aura::client::SetWindowMoveClient(root_window_, NULL);
+  root_window_->window()->ClearProperty(kHostForRootWindow);
+  aura::client::SetWindowMoveClient(root_window_->window(), NULL);
   desktop_native_widget_aura_->OnDesktopRootWindowHostDestroyed(root_window_);
 }
 
 // static
 aura::Window* DesktopRootWindowHostX11::GetContentWindowForXID(XID xid) {
   aura::RootWindow* root = aura::RootWindow::GetForAcceleratedWidget(xid);
-  return root ? root->GetProperty(kViewsWindowForRootWindow) : NULL;
+  return root ? root->window()->GetProperty(kViewsWindowForRootWindow) : NULL;
 }
 
 // static
 DesktopRootWindowHostX11* DesktopRootWindowHostX11::GetHostForXID(XID xid) {
   aura::RootWindow* root = aura::RootWindow::GetForAcceleratedWidget(xid);
-  return root ? root->GetProperty(kHostForRootWindow) : NULL;
+  return root ? root->window()->GetProperty(kHostForRootWindow) : NULL;
 }
 
 // static
@@ -219,8 +220,9 @@ void DesktopRootWindowHostX11::OnRootWindowCreated(
     const Widget::InitParams& params) {
   root_window_ = root;
 
-  root_window_->SetProperty(kViewsWindowForRootWindow, content_window_);
-  root_window_->SetProperty(kHostForRootWindow, this);
+  root_window_->window()->SetProperty(kViewsWindowForRootWindow,
+                                      content_window_);
+  root_window_->window()->SetProperty(kHostForRootWindow, this);
   root_window_host_delegate_ = root_window_;
 
   // If we're given a parent, we need to mark ourselves as transient to another
@@ -240,7 +242,7 @@ void DesktopRootWindowHostX11::OnRootWindowCreated(
       x11_window_event_filter_.get());
 
   x11_window_move_client_.reset(new X11DesktopWindowMoveClient);
-  aura::client::SetWindowMoveClient(root_window_,
+  aura::client::SetWindowMoveClient(root_window_->window(),
                                     x11_window_move_client_.get());
 
   native_widget_delegate_->OnNativeWidgetCreated(true);
@@ -255,7 +257,7 @@ scoped_ptr<aura::client::DragDropClient>
 DesktopRootWindowHostX11::CreateDragDropClient(
     DesktopNativeCursorManager* cursor_manager) {
   drag_drop_client_ = new DesktopDragDropClientAuraX11(
-      root_window_, cursor_manager, xdisplay_, xwindow_);
+      root_window_->window(), cursor_manager, xdisplay_, xwindow_);
   return scoped_ptr<aura::client::DragDropClient>(drag_drop_client_).Pass();
 }
 
@@ -1056,7 +1058,7 @@ void DesktopRootWindowHostX11::DispatchMouseEvent(ui::MouseEvent* event) {
   } else {
     // Another DesktopRootWindowHostX11 has installed itself as
     // capture. Translate the event's location and dispatch to the other.
-    event->ConvertLocationToTarget(root_window_,
+    event->ConvertLocationToTarget(root_window_->window(),
                                    g_current_capture->root_window_);
     g_current_capture->root_window_host_delegate_->OnHostMouseEvent(event);
   }
@@ -1132,7 +1134,7 @@ bool DesktopRootWindowHostX11::Dispatch(const base::NativeEvent& event) {
       if (static_cast<int>(xev->xbutton.button) == kBackMouseButton ||
           static_cast<int>(xev->xbutton.button) == kForwardMouseButton) {
         aura::client::UserActionClient* gesture_client =
-            aura::client::GetUserActionClient(root_window_);
+            aura::client::GetUserActionClient(root_window_->window());
         if (gesture_client) {
           gesture_client->OnUserAction(
               static_cast<int>(xev->xbutton.button) == kBackMouseButton ?
@@ -1221,7 +1223,7 @@ bool DesktopRootWindowHostX11::Dispatch(const base::NativeEvent& event) {
             if (button == kBackMouseButton || button == kForwardMouseButton) {
               aura::client::UserActionClient* gesture_client =
                   aura::client::GetUserActionClient(
-                      root_window_host_delegate_->AsRootWindow());
+                      root_window_host_delegate_->AsRootWindow()->window());
               if (gesture_client) {
                 bool reverse_direction =
                     ui::IsTouchpadEvent(xev) && ui::IsNaturalScrollEnabled();
