@@ -387,6 +387,11 @@ CommandHandler.COMMANDS_['format'] = {
    */
   execute: function(event, fileManager) {
     var root = CommandUtil.getCommandEntry(event.target);
+    // If an entry is not found from the event target, use the current
+    // directory. This can happen for the format button for unsupported and
+    // unrecognized volumes.
+    if (!root)
+      root = fileManager.directoryModel.getCurrentDirEntry();
 
     if (root) {
       var url = util.makeFilesystemUrl(PathUtil.getRootPath(root.fullPath));
@@ -402,10 +407,15 @@ CommandHandler.COMMANDS_['format'] = {
   canExecute: function(event, fileManager) {
     var directoryModel = fileManager.directoryModel;
     var root = CommandUtil.getCommandEntry(event.target);
+    // See the comment in execute() for why doing this.
+    if (!root)
+      root = directoryModel.getCurrentDirEntry();
     var removable = root &&
                     PathUtil.getRootType(root.fullPath) == RootType.REMOVABLE;
-    var isReadOnly = root && directoryModel.isPathReadOnly(root.fullPath);
-    event.canExecute = removable && !isReadOnly;
+    // Don't check if the volume is read-only. Unformatted volume is
+    // considered read-only per directoryModel.isPathReadOnly(), but can be
+    // formatted. An error will be raised if formatting failed anyway.
+    event.canExecute = removable;
     event.command.setHidden(!removable);
   }
 };
