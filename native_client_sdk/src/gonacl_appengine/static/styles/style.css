@@ -168,6 +168,10 @@ section iframe {
   margin-left: 20px;
 }
 
+.error[hidden] {
+  display: none;
+}
+
 /** Demo **/
 
 .demo {
