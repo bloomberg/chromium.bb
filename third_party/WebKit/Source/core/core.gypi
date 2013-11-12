@@ -737,8 +737,6 @@
             'css/DOMWindowCSS.h',
             'css/DocumentFontFaceSet.h',
             'css/DocumentFontFaceSet.cpp',
-            'css/DocumentRuleSets.cpp',
-            'css/DocumentRuleSets.h',
             'css/ElementRuleCollector.cpp',
             'css/ElementRuleCollector.h',
             'css/FontFaceSet.h',

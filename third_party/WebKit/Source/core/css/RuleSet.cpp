@@ -370,11 +370,11 @@ void RuleSet::addChildRules(const Vector<RefPtr<StyleRuleBase> >& rules, const M
             const CSSSelectorList& selectorList = styleRule->selectorList();
             for (size_t selectorIndex = 0; selectorIndex != kNotFound; selectorIndex = selectorList.indexOfNextSelectorAfter(selectorIndex)) {
                 if (selectorList.hasCombinatorCrossingTreeBoundaryAt(selectorIndex)) {
-                    resolver->ruleSets().treeBoundaryCrossingRules().addRule(styleRule, selectorIndex, const_cast<ContainerNode*>(scope), addRuleFlags);
+                    resolver->treeBoundaryCrossingRules().addRule(styleRule, selectorIndex, const_cast<ContainerNode*>(scope), addRuleFlags);
                 } else if (selectorList.hasShadowDistributedAt(selectorIndex)) {
                     if (isDocumentScope(scope))
                         continue;
-                    resolver->ruleSets().treeBoundaryCrossingRules().addRule(styleRule, selectorIndex, const_cast<ContainerNode*>(scope), addRuleFlags);
+                    resolver->treeBoundaryCrossingRules().addRule(styleRule, selectorIndex, const_cast<ContainerNode*>(scope), addRuleFlags);
                 } else
                     addRule(styleRule, selectorIndex, addRuleFlags);
             }

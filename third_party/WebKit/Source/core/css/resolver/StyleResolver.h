@@ -23,7 +23,6 @@
 #define StyleResolver_h
 
 #include "core/animation/KeyframeAnimationEffect.h"
-#include "core/css/DocumentRuleSets.h"
 #include "core/css/InspectorCSSOMWrappers.h"
 #include "core/css/PseudoStyleRequest.h"
 #include "core/css/RuleFeature.h"
@@ -31,6 +30,7 @@
 #include "core/css/SelectorChecker.h"
 #include "core/css/SelectorFilter.h"
 #include "core/css/SiblingTraversalStrategies.h"
+#include "core/css/TreeBoundaryCrossingRules.h"
 #include "core/css/resolver/MatchedPropertiesCache.h"
 #include "core/css/resolver/ScopedStyleResolver.h"
 #include "core/css/resolver/StyleBuilder.h"
@@ -208,15 +208,15 @@ public:
     // their dependency on Document* instead of grabbing one through StyleResolver.
     Document& document() { return m_document; }
 
-    // FIXME: It could be better to call m_ruleSets.appendAuthorStyleSheets() directly after we factor StyleRsolver further.
+    // FIXME: It could be better to call appendAuthorStyleSheets() directly after we factor StyleResolver further.
     // https://bugs.webkit.org/show_bug.cgi?id=108890
     void appendAuthorStyleSheets(unsigned firstNew, const Vector<RefPtr<CSSStyleSheet> >&);
     void resetAuthorStyle(const ContainerNode*);
     void resetAtHostRules(const ShadowRoot*);
     void finishAppendAuthorStyleSheets();
 
-    DocumentRuleSets& ruleSets() { return m_ruleSets; }
-    const DocumentRuleSets& ruleSets() const { return m_ruleSets; }
+    TreeBoundaryCrossingRules& treeBoundaryCrossingRules() { return m_treeBoundaryCrossingRules; }
+
     SelectorFilter& selectorFilter() { return m_selectorFilter; }
 
     void setBuildScopedStyleTreeInDocumentOrder(bool enabled) { m_styleTree.setBuildInDocumentOrder(enabled); }
@@ -288,6 +288,8 @@ private:
     virtual void fontsNeedUpdate(FontSelector*);
 
 private:
+    void initWatchedSelectorRules(const Vector<RefPtr<StyleRule> >& watchedSelectors);
+
     // FIXME: This should probably go away, folded into FontBuilder.
     void updateFont(StyleResolverState&);
 
@@ -331,8 +333,6 @@ private:
     bool isFirstPage(int pageIndex) const;
     String pageName(int pageIndex) const;
 
-    DocumentRuleSets m_ruleSets;
-
     // FIXME: This likely belongs on RuleSet.
     typedef HashMap<StringImpl*, RefPtr<StyleRuleKeyframes> > KeyframesRuleMap;
     KeyframesRuleMap m_keyframesRuleMap;
@@ -362,6 +362,9 @@ private:
     RuleFeatureSet m_features;
     OwnPtr<RuleSet> m_siblingRuleSet;
     OwnPtr<RuleSet> m_uncommonAttributeRuleSet;
+    // FIXME: watched selectors should be implemented using injected author stylesheets: http://crbug.com/316960
+    OwnPtr<RuleSet> m_watchedSelectorsRules;
+    TreeBoundaryCrossingRules m_treeBoundaryCrossingRules;
 
     InspectorCSSOMWrappers m_inspectorCSSOMWrappers;
 

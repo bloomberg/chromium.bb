@@ -153,7 +153,7 @@ StyleResolver::StyleResolver(Document& document)
 
     m_styleTree.clear();
 
-    m_ruleSets.initWatchedSelectorRules(CSSSelectorWatch::from(document).watchedCallbackSelectors());
+    initWatchedSelectorRules(CSSSelectorWatch::from(document).watchedCallbackSelectors());
 
 #if ENABLE(SVG_FONTS)
     if (document.svgExtensions()) {
@@ -165,6 +165,15 @@ StyleResolver::StyleResolver(Document& document)
 #endif
 
     document.styleEngine()->appendActiveAuthorStyleSheets(this);
+}
+
+void StyleResolver::initWatchedSelectorRules(const Vector<RefPtr<StyleRule> >& watchedSelectors)
+{
+    if (!watchedSelectors.size())
+        return;
+    m_watchedSelectorsRules = RuleSet::create();
+    for (unsigned i = 0; i < watchedSelectors.size(); ++i)
+        m_watchedSelectorsRules->addStyleRule(watchedSelectors[i].get(), RuleHasNoSpecialState);
 }
 
 void StyleResolver::appendAuthorStyleSheets(unsigned firstNew, const Vector<RefPtr<CSSStyleSheet> >& styleSheets)
@@ -208,7 +217,7 @@ void StyleResolver::resetAuthorStyle(const ContainerNode* scopingNode)
     if (!resolver)
         return;
 
-    m_ruleSets.treeBoundaryCrossingRules().reset(scopingNode);
+    treeBoundaryCrossingRules().reset(scopingNode);
 
     resolver->resetAuthorStyle();
     if (!scopingNode)
@@ -255,7 +264,20 @@ static PassOwnPtr<RuleSet> makeRuleSet(const Vector<RuleFeature>& rules)
 void StyleResolver::collectFeatures()
 {
     m_features.clear();
-    m_ruleSets.collectFeaturesTo(m_features, document().isViewSource());
+    // Collect all ids and rules using sibling selectors (:first-child and similar)
+    // in the current set of stylesheets. Style sharing code uses this information to reject
+    // sharing candidates.
+    if (CSSDefaultStyleSheets::defaultStyle)
+        m_features.add(CSSDefaultStyleSheets::defaultStyle->features());
+
+    if (document().isViewSource())
+        m_features.add(CSSDefaultStyleSheets::viewSourceStyle()->features());
+
+    if (m_watchedSelectorsRules)
+        m_features.add(m_watchedSelectorsRules->features());
+
+    m_treeBoundaryCrossingRules.collectFeaturesTo(m_features);
+
     m_styleTree.collectFeaturesTo(m_features);
 
     m_siblingRuleSet = makeRuleSet(m_features.siblingRules);
@@ -337,7 +359,7 @@ StyleResolver::~StyleResolver()
 
 inline void StyleResolver::collectTreeBoundaryCrossingRules(Element* element, ElementRuleCollector& collector, bool includeEmptyRules)
 {
-    if (m_ruleSets.treeBoundaryCrossingRules().isEmpty())
+    if (m_treeBoundaryCrossingRules.isEmpty())
         return;
 
     bool previousCanUseFastReject = collector.canUseFastReject();
@@ -345,14 +367,13 @@ inline void StyleResolver::collectTreeBoundaryCrossingRules(Element* element, El
 
     RuleRange ruleRange = collector.matchedResult().ranges.authorRuleRange();
 
-    TreeBoundaryCrossingRules& rules = m_ruleSets.treeBoundaryCrossingRules();
     CascadeOrder cascadeOrder = 0;
 
-    DocumentOrderedList::iterator it = rules.end();
-    while (it != rules.begin()) {
+    DocumentOrderedList::iterator it = m_treeBoundaryCrossingRules.end();
+    while (it != m_treeBoundaryCrossingRules.begin()) {
         --it;
         const ContainerNode* scopingNode = toContainerNode(*it);
-        RuleSet* ruleSet = rules.ruleSetScopedBy(scopingNode);
+        RuleSet* ruleSet = m_treeBoundaryCrossingRules.ruleSetScopedBy(scopingNode);
         unsigned boundaryBehavior = SelectorChecker::CrossesBoundary | SelectorChecker::ScopeContainsLastMatchedElement;
 
         // If a given scoping node is a shadow root and a given element is in a descendant tree of tree hosted by
@@ -449,13 +470,13 @@ void StyleResolver::matchAuthorRules(Element* element, ElementRuleCollector& col
 
 void StyleResolver::matchWatchSelectorRules(ElementRuleCollector& collector)
 {
-    if (!m_ruleSets.watchedSelectorRules())
+    if (!m_watchedSelectorsRules)
         return;
 
     collector.clearMatchedRules();
     collector.matchedResult().ranges.lastUserRule = collector.matchedResult().matchedProperties.size() - 1;
 
-    MatchRequest matchRequest(m_ruleSets.watchedSelectorRules());
+    MatchRequest matchRequest(m_watchedSelectorsRules.get());
     RuleRange ruleRange = collector.matchedResult().ranges.userRuleRange();
     collector.collectMatchingRules(matchRequest, ruleRange);
     collector.collectMatchingRulesForRegion(matchRequest, ruleRange);

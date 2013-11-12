@@ -34,7 +34,6 @@
 namespace WebCore {
 
 class CSSRuleList;
-class DocumentRuleSets;
 class RenderRegion;
 class RuleData;
 class RuleSet;
