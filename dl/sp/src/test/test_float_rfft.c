@@ -51,11 +51,21 @@ void main(int argc, char* argv[]) {
   /* No known failures */
   info.known_failures_ = 0;
 #ifdef BIG_FFT_TABLE
+#if defined(__arm__)
   info.forward_threshold_ = 136.07;
   info.inverse_threshold_ = 140.76;
 #else
+  info.forward_threshold_ = 135.97;
+  info.inverse_threshold_ = 140.76;
+#endif
+#else
+#if defined(__arm__)
   info.forward_threshold_ = 136.07;
   info.inverse_threshold_ = 142.41;
+#else
+  info.forward_threshold_ = 135.97;
+  info.inverse_threshold_ = 142.69;
+#endif
 #endif
 
   if (options.test_mode_) {

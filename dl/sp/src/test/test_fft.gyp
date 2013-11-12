@@ -27,7 +27,71 @@
       }],
     ],
   },
+  'conditions': [
+    ['target_arch == "arm"', {
+      # Test programs supported on ARM
+      'targets': [
+        {
+          # Test complex fixed-point 16-bit FFT
+          'target_name': 'test_fft16',
+          'type': 'executable',
+          'sources': [
+            'test_fft16.c',
+          ],
+        },
+        {
+          # Test complex fixed-point 32-bit FFT
+          'target_name': 'test_fft32',
+          'type': 'executable',
+          'sources': [
+            'test_fft32.c',
+          ],
+        },
+        {
+          # Test real 32-bit fixed-point FFT
+          'target_name': 'test_rfft32',
+          'type': 'executable',
+          'sources': [
+            'test_rfft32.c',
+          ],
+        },
+        {
+          # Test real 16-bit fixed-point FFT implemented with S32 routines.
+          'target_name': 'test_rfft16_s32',
+          'type': 'executable',
+          'sources': [
+            'test_rfft16_s32.c',
+          ],
+        },
+        {
+          # Test real 16-bit fixed-point FFT implemented with S16 routines.
+          'target_name': 'test_rfft16_s16',
+          'type': 'executable',
+          'sources': [
+            'test_rfft16_s16.c',
+          ],
+        },
+        {
+          # Test complex floating-point FFT
+          'target_name': 'test_float_fft',
+          'type': 'executable',
+          'sources': [
+            'test_float_fft.c',
+          ],
+        },
+        {
+          # Simple timing test of FFTs
+          'target_name': 'test_fft_time',
+          'type': 'executable',
+          'sources': [
+            'test_fft_time.c',
+          ],
+        },
+      ],
+    }],
+  ],
   'targets': [
+    # Targets that should be supported by all architectures
     {
       # Test utilities
       'target_name': 'test_utilities',
@@ -43,54 +107,6 @@
       ],
     },
     {
-      # Test complex fixed-point 16-bit FFT
-      'target_name': 'test_fft16',
-      'type': 'executable',
-      'sources': [
-        'test_fft16.c',
-      ],
-    },
-    {
-      # Test complex fixed-point 32-bit FFT
-      'target_name': 'test_fft32',
-      'type': 'executable',
-      'sources': [
-        'test_fft32.c',
-      ],
-    },
-    {
-      # Test real 32-bit fixed-point FFT
-      'target_name': 'test_rfft32',
-      'type': 'executable',
-      'sources': [
-        'test_rfft32.c',
-      ],
-    },
-    {
-      # Test real 16-bit fixed-point FFT implemented with S32 routines.
-      'target_name': 'test_rfft16_s32',
-      'type': 'executable',
-      'sources': [
-        'test_rfft16_s32.c',
-      ],
-    },
-    {
-      # Test real 16-bit fixed-point FFT implemented with S16 routines.
-      'target_name': 'test_rfft16_s16',
-      'type': 'executable',
-      'sources': [
-        'test_rfft16_s16.c',
-      ],
-    },
-    {
-      # Test complex floating-point FFT
-      'target_name': 'test_float_fft',
-      'type': 'executable',
-      'sources': [
-        'test_float_fft.c',
-      ],
-    },
-    {
       # Test real floating-point FFT
       'target_name': 'test_float_rfft',
       'type': 'executable',
@@ -99,26 +115,27 @@
       ],
     },
     {
-      # Simple timing test of FFTs
-      'target_name': 'test_fft_time',
-      'type': 'executable',
-      'sources': [
-        'test_fft_time.c',
-      ],
-    },
-    {
       # Build all test programs.
       'target_name': 'All',
       'type': 'none',
-      'dependencies': [
-        'test_fft16',
-        'test_fft32',
-        'test_float_fft',
+      'conditions' : [
+        ['target_arch == "arm"', {
+          # Supported test programs for ARM
+          'dependencies': [
+            'test_fft16',
+            'test_fft32',
+            'test_float_fft',
+            'test_float_rfft',
+            'test_rfft16_s32',
+            'test_rfft16_s16',
+            'test_rfft32',
+            'test_fft_time',
+          ],
+        }],
+      ],
+      'dependencies' : [
+        # All architectures must support at least the float rfft test
         'test_float_rfft',
-        'test_rfft16_s32',
-        'test_rfft16_s16',
-        'test_rfft32',
-        'test_fft_time',
       ],
     },
   ],
