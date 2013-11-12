@@ -55,8 +55,8 @@ class BASE_EXPORT_PRIVATE DiscardableMemoryProvider {
   static void SetInstanceForTest(DiscardableMemoryProvider* provider);
 
   // The maximum number of bytes of discardable memory that may be allocated
-  // before we assume moderate memory pressure. If this amount is zero, it is
-  // interpreted as having no limit at all.
+  // before we force a purge. If this amount is zero, it is interpreted as
+  // having no limit at all.
   void SetDiscardableMemoryLimit(size_t bytes);
 
   // Sets the amount of memory to reclaim when we're under moderate pressure.
@@ -110,8 +110,8 @@ class BASE_EXPORT_PRIVATE DiscardableMemoryProvider {
   static void NotifyMemoryPressure(
       MemoryPressureListener::MemoryPressureLevel pressure_level);
 
-  // Purges least recently used memory based on the value of
-  // |bytes_to_reclaim_under_moderate_pressure_|.
+  // Purges |bytes_to_reclaim_under_moderate_pressure_| bytes of
+  // discardable memory.
   void Purge();
 
   // Purges least recently used memory until usage is less or equal to |limit|.

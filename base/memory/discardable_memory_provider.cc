@@ -86,7 +86,6 @@ void DiscardableMemoryProvider::SetBytesToReclaimUnderModeratePressure(
     size_t bytes) {
   AutoLock lock(lock_);
   bytes_to_reclaim_under_moderate_pressure_ = bytes;
-  EnforcePolicyWithLockAcquired();
 }
 
 void DiscardableMemoryProvider::Register(
@@ -191,7 +190,7 @@ void DiscardableMemoryProvider::Purge() {
     return;
 
   size_t limit = 0;
-  if (bytes_to_reclaim_under_moderate_pressure_ < discardable_memory_limit_)
+  if (bytes_to_reclaim_under_moderate_pressure_ < bytes_allocated_)
     limit = bytes_allocated_ - bytes_to_reclaim_under_moderate_pressure_;
 
   PurgeLRUWithLockAcquiredUntilUsageIsWithin(limit);
@@ -223,17 +222,7 @@ void DiscardableMemoryProvider::PurgeLRUWithLockAcquiredUntilUsageIsWithin(
 }
 
 void DiscardableMemoryProvider::EnforcePolicyWithLockAcquired() {
-  lock_.AssertAcquired();
-
-  bool exceeded_bound = bytes_allocated_ > discardable_memory_limit_;
-  if (!exceeded_bound || !bytes_to_reclaim_under_moderate_pressure_)
-    return;
-
-  size_t limit = 0;
-  if (bytes_to_reclaim_under_moderate_pressure_ < discardable_memory_limit_)
-    limit = bytes_allocated_ - bytes_to_reclaim_under_moderate_pressure_;
-
-  PurgeLRUWithLockAcquiredUntilUsageIsWithin(limit);
+  PurgeLRUWithLockAcquiredUntilUsageIsWithin(discardable_memory_limit_);
 }
 
 }  // namespace internal
