@@ -53,7 +53,8 @@ class PluginGetURLTest : public PluginTest {
   // The following two flags handle URL redirect notifications received by
   // plugins.
   bool handle_url_redirects_;
-  bool received_url_redirect_notification_;
+  bool received_url_redirect_cancel_notification_;
+  bool received_url_redirect_allow_notification_;
   std::string page_not_found_url_;
   std::string fail_write_url_;
   std::string referrer_target_url_;
