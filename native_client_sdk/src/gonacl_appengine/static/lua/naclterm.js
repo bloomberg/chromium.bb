@@ -263,6 +263,11 @@ NaClTerm.prototype.onTerminalResize_ = function(width, height) {
     this.createEmbed(width, height);
   else
     this.embed.postMessage({'tty_resize': [ width, height ]});
+
+  // Require at least 80 columns, otherwise some of the demos look
+  // very wrong.
+  var width = this.io.terminal_.scrollPort_.characterSize.width * 80;
+  document.getElementById("terminal").style.minWidth = width + 'px';
 }
 
 NaClTerm.prototype.sendMessage = function(msg) {
