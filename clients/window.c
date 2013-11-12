@@ -4671,6 +4671,9 @@ window_add_subsurface(struct window *window, void *data,
 		assert(!"bad enum subsurface_mode");
 	}
 
+	window->resize_needed = 1;
+	window_schedule_redraw(window);
+
 	return widget;
 }
 
