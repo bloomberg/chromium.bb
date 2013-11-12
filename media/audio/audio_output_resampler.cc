@@ -50,10 +50,9 @@ class OnMoreDataConverter
 
   // Ratio of input bytes to output bytes used to correct playback delay with
   // regard to buffering and resampling.
-  double io_ratio_;
+  const double io_ratio_;
 
-  // Source callback and associated lock.
-  base::Lock source_lock_;
+  // Source callback.
   AudioOutputStream::AudioSourceCallback* source_callback_;
 
   // |source| passed to OnMoreIOData() which should be passed downstream.
@@ -297,14 +296,12 @@ void AudioOutputResampler::Shutdown() {
 
 OnMoreDataConverter::OnMoreDataConverter(const AudioParameters& input_params,
                                          const AudioParameters& output_params)
-    : source_callback_(NULL),
+    : io_ratio_(static_cast<double>(input_params.GetBytesPerSecond()) /
+                output_params.GetBytesPerSecond()),
+      source_callback_(NULL),
       source_bus_(NULL),
       input_bytes_per_second_(input_params.GetBytesPerSecond()),
-      audio_converter_(input_params, output_params, false) {
-  io_ratio_ =
-      static_cast<double>(input_params.GetBytesPerSecond()) /
-      output_params.GetBytesPerSecond();
-}
+      audio_converter_(input_params, output_params, false) {}
 
 OnMoreDataConverter::~OnMoreDataConverter() {
   // Ensure Stop() has been called so we don't end up with an AudioOutputStream
@@ -314,7 +311,6 @@ OnMoreDataConverter::~OnMoreDataConverter() {
 
 void OnMoreDataConverter::Start(
     AudioOutputStream::AudioSourceCallback* callback) {
-  base::AutoLock auto_lock(source_lock_);
   CHECK(!source_callback_);
   source_callback_ = callback;
 
@@ -325,7 +321,6 @@ void OnMoreDataConverter::Start(
 }
 
 void OnMoreDataConverter::Stop() {
-  base::AutoLock auto_lock(source_lock_);
   CHECK(source_callback_);
   source_callback_ = NULL;
   audio_converter_.RemoveInput(this);
@@ -339,26 +334,17 @@ int OnMoreDataConverter::OnMoreData(AudioBus* dest,
 int OnMoreDataConverter::OnMoreIOData(AudioBus* source,
                                       AudioBus* dest,
                                       AudioBuffersState buffers_state) {
-  base::AutoLock auto_lock(source_lock_);
-  // While we waited for |source_lock_| the callback might have been cleared.
-  if (!source_callback_) {
-    dest->Zero();
-    return dest->frames();
-  }
-
   source_bus_ = source;
   current_buffers_state_ = buffers_state;
   audio_converter_.Convert(dest);
 
-  // Always return the full number of frames requested, ProvideInput_Locked()
+  // Always return the full number of frames requested, ProvideInput()
   // will pad with silence if it wasn't able to acquire enough data.
   return dest->frames();
 }
 
 double OnMoreDataConverter::ProvideInput(AudioBus* dest,
                                          base::TimeDelta buffer_delay) {
-  source_lock_.AssertAcquired();
-
   // Adjust playback delay to include |buffer_delay|.
   // TODO(dalecurtis): Stop passing bytes around, it doesn't make sense since
   // AudioBus is just float data.  Use TimeDelta instead.
@@ -368,7 +354,7 @@ double OnMoreDataConverter::ProvideInput(AudioBus* dest,
                    buffer_delay.InSecondsF() * input_bytes_per_second_);
 
   // Retrieve data from the original callback.
-  int frames = source_callback_->OnMoreIOData(
+  const int frames = source_callback_->OnMoreIOData(
       source_bus_, dest, new_buffers_state);
 
   // |source_bus_| should only be provided once.
@@ -380,15 +366,11 @@ double OnMoreDataConverter::ProvideInput(AudioBus* dest,
   // return a volume of zero and let AudioConverter drop the output.
   if (frames > 0 && frames < dest->frames())
     dest->ZeroFramesPartial(frames, dest->frames() - frames);
-
-  // TODO(dalecurtis): Return the correct volume here.
   return frames > 0 ? 1 : 0;
 }
 
 void OnMoreDataConverter::OnError(AudioOutputStream* stream) {
-  base::AutoLock auto_lock(source_lock_);
-  if (source_callback_)
-    source_callback_->OnError(stream);
+  source_callback_->OnError(stream);
 }
 
 }  // namespace media
