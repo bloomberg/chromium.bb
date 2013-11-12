@@ -1766,6 +1766,7 @@ void ExtensionService::AddComponentExtension(const Extension* extension) {
       extension_prefs_->GetVersionString(extension->id()));
   const Version old_version(old_version_string);
 
+  VLOG(1) << "AddComponentExtension " << extension->name();
   if (!old_version.IsValid() || !old_version.Equals(*extension->version())) {
     VLOG(1) << "Component extension " << extension->name() << " ("
         << extension->id() << ") installing/upgrading from '"
