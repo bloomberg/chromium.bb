@@ -638,7 +638,6 @@
         'template_util_unittest.cc',
         'test/expectations/expectation_unittest.cc',
         'test/expectations/parser_unittest.cc',
-        'test/test_reg_util_win_unittest.cc',
         'test/trace_event_analyzer_unittest.cc',
         'threading/non_thread_safe_unittest.cc',
         'threading/platform_thread_unittest.cc',
@@ -846,6 +845,8 @@
             ['exclude', '^win/'],
           ],
           'sources!': [
+            'debug/trace_event_win_unittest.cc',
+            'time/time_win_unittest.cc',
             'win/win_util_unittest.cc',
           ],
         }],
