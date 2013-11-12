@@ -528,6 +528,11 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   // Forget the current profile to allow attaching to a new one.
   void ReleaseProfile();
 
+  // Returns true if |app_id| is a Packaged App that has already launched on the
+  // native desktop and, if so, executes it as a desktop shortcut to activate
+  // desktop mode and send another OnLaunched event to the Extension.
+  bool LaunchedInNativeDesktop(const std::string& app_id);
+
   static ChromeLauncherController* instance_;
 
   ash::LauncherModel* model_;

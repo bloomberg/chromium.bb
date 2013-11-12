@@ -8,6 +8,7 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 
+struct AppLaunchParams;
 class AppListService;
 class Profile;
 
@@ -49,6 +50,10 @@ class AppListControllerDelegateImpl : public AppListControllerDelegate {
   virtual void ShowForProfileByPath(
       const base::FilePath& profile_path) OVERRIDE;
   virtual bool ShouldShowUserIcon() OVERRIDE;
+
+ protected:
+  // Perform platform-specific adjustments of |params| before OpenApplication().
+  virtual void FillLaunchParams(AppLaunchParams* params);
 
  private:
   AppListService* service_;

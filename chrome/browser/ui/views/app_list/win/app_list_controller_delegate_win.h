@@ -32,6 +32,9 @@ class AppListControllerDelegateWin : public AppListControllerDelegateImpl {
   virtual bool CanDoCreateShortcutsFlow() OVERRIDE;
 
  private:
+  // AppListcontrollerDelegateImpl:
+  virtual void FillLaunchParams(AppLaunchParams* params) OVERRIDE;
+
   AppListServiceWin* service_;
 
   DISALLOW_COPY_AND_ASSIGN(AppListControllerDelegateWin);

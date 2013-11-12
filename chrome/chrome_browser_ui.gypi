@@ -287,6 +287,8 @@
         'browser/ui/ash/launcher/chrome_launcher_app_menu_item_v2app.h',
         'browser/ui/ash/launcher/chrome_launcher_controller.cc',
         'browser/ui/ash/launcher/chrome_launcher_controller.h',
+        'browser/ui/ash/launcher/chrome_launcher_controller_chromeos.cc',
+        'browser/ui/ash/launcher/chrome_launcher_controller_win.cc',
         'browser/ui/ash/launcher/launcher_app_tab_helper.cc',
         'browser/ui/ash/launcher/launcher_app_tab_helper.h',
         'browser/ui/ash/launcher/launcher_context_menu.cc',
@@ -1648,8 +1650,11 @@
         'browser/ui/views/app_list/win/app_list_win.cc',
         'browser/ui/views/app_list/win/app_list_win.h',
         'browser/ui/views/apps/chrome_shell_window_delegate_views.cc',
+        'browser/ui/views/apps/chrome_shell_window_delegate_views_win.cc',
         'browser/ui/views/apps/native_app_window_views.cc',
         'browser/ui/views/apps/native_app_window_views.h',
+        'browser/ui/views/apps/native_app_window_views_win.cc',
+        'browser/ui/views/apps/native_app_window_views_win.h',
         'browser/ui/views/ash/chrome_browser_main_extra_parts_ash.cc',
         'browser/ui/views/ash/chrome_browser_main_extra_parts_ash.h',
         'browser/ui/views/ash/tab_scrubber.h',
@@ -2867,6 +2872,7 @@
           'conditions': [
             ['OS=="win"', {
               'sources/': [
+                ['exclude', '^browser/ui/views/apps/chrome_shell_window_delegate_views.cc'],
                 ['exclude', '^browser/ui/views/hwnd_util_win.cc'],
                 ['exclude', '^browser/ui/views/native_focus_tracker_views_win.cc'],
                 ['exclude', '^browser/ui/views/theme_image_mapper.cc'],

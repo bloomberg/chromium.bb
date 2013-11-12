@@ -4,7 +4,12 @@
 
 #include "chrome/browser/ui/views/app_list/win/app_list_controller_delegate_win.h"
 
+#include "apps/shell_window.h"
+#include "apps/shell_window_registry.h"
+#include "chrome/browser/metro_utils/metro_chrome_win.h"
 #include "chrome/browser/ui/app_list/app_list_icon_win.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/views/app_list/win/app_list_service_win.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -39,4 +44,18 @@ void AppListControllerDelegateWin::OnCloseExtensionPrompt() {
 
 bool AppListControllerDelegateWin::CanDoCreateShortcutsFlow() {
   return true;
+}
+
+void AppListControllerDelegateWin::FillLaunchParams(AppLaunchParams* params) {
+  params->desktop_type = chrome::HOST_DESKTOP_TYPE_NATIVE;
+  apps::ShellWindow* any_existing_window =
+      apps::ShellWindowRegistry::Get(params->profile)->
+          GetCurrentShellWindowForApp(params->extension->id());
+  if (any_existing_window &&
+      chrome::GetHostDesktopTypeForNativeWindow(
+          any_existing_window->GetNativeWindow())
+      != chrome::HOST_DESKTOP_TYPE_NATIVE) {
+    params->desktop_type = chrome::HOST_DESKTOP_TYPE_ASH;
+    chrome::ActivateMetroChrome();
+  }
 }

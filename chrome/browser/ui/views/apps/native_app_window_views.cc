@@ -200,6 +200,10 @@ NativeAppWindowViews::~NativeAppWindowViews() {
   web_view_->SetWebContents(NULL);
 }
 
+void NativeAppWindowViews::OnBeforeWidgetInit(
+    views::Widget::InitParams* init_params,
+    views::Widget* widget) {}
+
 void NativeAppWindowViews::InitializeDefaultWindow(
     const ShellWindow::CreateParams& create_params) {
   std::string app_name =
@@ -228,6 +232,7 @@ void NativeAppWindowViews::InitializeDefaultWindow(
   init_params.wm_class_class = ShellIntegrationLinux::GetProgramClassName();
 #endif
 
+  OnBeforeWidgetInit(&init_params, window_);
   window_->Init(init_params);
 
   gfx::Rect adjusted_bounds = window_bounds;

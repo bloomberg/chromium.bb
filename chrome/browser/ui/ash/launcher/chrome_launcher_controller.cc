@@ -659,6 +659,9 @@ void ChromeLauncherController::LaunchApp(const std::string& app_id,
     return;
   }
 
+  if (LaunchedInNativeDesktop(app_id))
+    return;
+
   AppLaunchParams params(
       GetProfileForNewWindows(),
       extension,
