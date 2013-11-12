@@ -139,7 +139,6 @@ enum {
 	TYPE_TOPLEVEL,
 	TYPE_FULLSCREEN,
 	TYPE_MAXIMIZED,
-	TYPE_TRANSIENT,
 	TYPE_MENU,
 	TYPE_CUSTOM
 };
@@ -382,7 +381,6 @@ struct menu {
 
 struct tooltip {
 	struct widget *parent;
-	struct window *window;
 	struct widget *widget;
 	char *entry;
 	struct task tooltip_task;
@@ -1977,6 +1975,7 @@ tooltip_redraw_handler(struct widget *widget, void *data)
 	int32_t width, height;
 
 	cr = widget_cairo_create(widget);
+	cairo_translate(cr, widget->allocation.x, widget->allocation.y);
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 	cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.0);
 	cairo_paint(cr);
@@ -1996,7 +1995,7 @@ tooltip_redraw_handler(struct widget *widget, void *data)
 }
 
 static cairo_text_extents_t
-get_text_extents(struct tooltip *tooltip)
+get_text_extents(struct display *display, struct tooltip *tooltip)
 {
 	cairo_t *cr;
 	cairo_text_extents_t extents;
@@ -2005,7 +2004,7 @@ get_text_extents(struct tooltip *tooltip)
 	 * created yet, and parent does not have a valid surface
 	 * outside repaint, either.
 	 */
-	cr = cairo_create(tooltip->window->display->dummy_surface);
+	cr = cairo_create(display->dummy_surface);
 	cairo_text_extents(cr, tooltip->entry, &extents);
 	cairo_destroy(cr);
 
@@ -2017,7 +2016,6 @@ window_create_tooltip(struct tooltip *tooltip)
 {
 	struct widget *parent = tooltip->parent;
 	struct display *display = parent->window->display;
-	struct window *window;
 	const int offset_y = 27;
 	const int margin = 3;
 	cairo_text_extents_t extents;
@@ -2025,18 +2023,13 @@ window_create_tooltip(struct tooltip *tooltip)
 	if (tooltip->widget)
 		return 0;
 
-	window = window_create_transient(display, parent->window, tooltip->x,
-					 tooltip->y + offset_y,
-					 WL_SHELL_SURFACE_TRANSIENT_INACTIVE);
-	if (!window)
-		return -1;
+	tooltip->widget = window_add_subsurface(parent->window, tooltip, SUBSURFACE_DESYNCHRONIZED);
 
-	tooltip->window = window;
-	tooltip->widget = window_add_widget(tooltip->window, tooltip);
-
-	extents = get_text_extents(tooltip);
+	extents = get_text_extents(display, tooltip);
 	widget_set_redraw_handler(tooltip->widget, tooltip_redraw_handler);
-	window_schedule_resize(window, extents.width + 20, 20 + margin * 2);
+	widget_set_allocation(tooltip->widget,
+			      tooltip->x, tooltip->y + offset_y,
+			      extents.width + 20, 20 + margin * 2);
 
 	return 0;
 }
@@ -2052,9 +2045,7 @@ widget_destroy_tooltip(struct widget *parent)
 
 	if (tooltip->widget) {
 		widget_destroy(tooltip->widget);
-		window_destroy(tooltip->window);
 		tooltip->widget = NULL;
-		tooltip->window = NULL;
 	}
 
 	close(tooltip->tooltip_fd);
@@ -2118,7 +2109,6 @@ widget_set_tooltip(struct widget *parent, char *entry, float x, float y)
 	parent->tooltip = tooltip;
 	tooltip->parent = parent;
 	tooltip->widget = NULL;
-	tooltip->window = NULL;
 	tooltip->x = x;
 	tooltip->y = y;
 	tooltip->entry = strdup(entry);
@@ -4085,12 +4075,6 @@ window_is_fullscreen(struct window *window)
 	return window->type == TYPE_FULLSCREEN;
 }
 
-int
-window_is_transient(struct window *window)
-{
-	return window->type == TYPE_TRANSIENT;
-}
-
 static void
 configure_request_completed(void *data, struct wl_callback *callback, uint32_t  time)
 {
@@ -4435,26 +4419,6 @@ struct window *
 window_create_custom(struct display *display)
 {
 	return window_create_internal(display, TYPE_CUSTOM);
-}
-
-struct window *
-window_create_transient(struct display *display, struct window *parent,
-			int32_t x, int32_t y, uint32_t flags)
-{
-	struct window *window;
-
-	window = window_create_internal(parent->display, TYPE_TRANSIENT);
-
-	window->x = x;
-	window->y = y;
-
-	if (display->shell)
-		wl_shell_surface_set_transient(
-			window->shell_surface,
-			parent->main_surface->surface,
-			window->x, window->y, flags);
-
-	return window;
 }
 
 static void
