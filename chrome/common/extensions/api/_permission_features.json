@@ -99,7 +99,10 @@
   "bookmarkManagerPrivate": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"],
-    "location": "component"
+    "whitelist": [
+      "eemcgdkfndhakfknompkggombfjjjeno",         // Bookmark Manager
+      "D5736E4B5CF695CB93A2FB57E4FDC6E5AFAB6FE2"  // http://crbug.com/312900
+    ]
   },
   "bookmarks": {
     "channel": "stable",
