@@ -3716,22 +3716,18 @@ AudioSourceProvider* HTMLMediaElement::audioSourceProvider()
 }
 #endif
 
-const String& HTMLMediaElement::mediaGroup() const
+const AtomicString& HTMLMediaElement::mediaGroup() const
 {
-    return m_mediaGroup;
+    return fastGetAttribute(mediagroupAttr);
 }
 
-void HTMLMediaElement::setMediaGroup(const String& group)
+void HTMLMediaElement::setMediaGroup(const AtomicString& group)
 {
-    if (m_mediaGroup == group)
-        return;
-    m_mediaGroup = group;
-
     // When a media element is created with a mediagroup attribute, and when a media element's mediagroup
     // attribute is set, changed, or removed, the user agent must run the following steps:
     // 1. Let m [this] be the media element in question.
     // 2. Let m have no current media controller, if it currently has one.
-    setController(0);
+    setControllerInternal(0);
 
     // 3. If m's mediagroup attribute is being removed, then abort these steps.
     if (group.isNull() || group.isEmpty())
@@ -3748,13 +3744,13 @@ void HTMLMediaElement::setMediaGroup(const String& group)
         // the new value of m's mediagroup attribute,
         if ((*i)->mediaGroup() == group) {
             //  then let controller be that media element's current media controller.
-            setController((*i)->controller());
+            setControllerInternal((*i)->controller());
             return;
         }
     }
 
     // Otherwise, let controller be a newly created MediaController.
-    setController(MediaController::create(Node::executionContext()));
+    setControllerInternal(MediaController::create(Node::executionContext()));
 }
 
 MediaController* HTMLMediaElement::controller() const
@@ -3763,6 +3759,15 @@ MediaController* HTMLMediaElement::controller() const
 }
 
 void HTMLMediaElement::setController(PassRefPtr<MediaController> controller)
+{
+    // 4.8.10.11.2 Media controllers: controller attribute.
+    // On setting, it must first remove the element's mediagroup attribute, if any,
+    removeAttribute(mediagroupAttr);
+    // and then set the current media controller to the given value.
+    setControllerInternal(controller);
+}
+
+void HTMLMediaElement::setControllerInternal(PassRefPtr<MediaController> controller)
 {
     if (m_mediaController)
         m_mediaController->removeMediaElement(this);

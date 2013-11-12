@@ -276,11 +276,8 @@ public:
     enum InvalidURLAction { DoNothing, Complain };
     bool isSafeToLoadURL(const KURL&, InvalidURLAction);
 
-    const String& mediaGroup() const;
-    void setMediaGroup(const String&);
-
     MediaController* controller() const;
-    void setController(PassRefPtr<MediaController>);
+    void setController(PassRefPtr<MediaController>); // Resets the MediaGroup and sets the MediaController.
 
 protected:
     HTMLMediaElement(const QualifiedName&, Document&, bool);
@@ -298,6 +295,8 @@ protected:
     virtual void setDisplayMode(DisplayMode mode) { m_displayMode = mode; }
 
     virtual bool isMediaElement() const OVERRIDE { return true; }
+
+    void setControllerInternal(PassRefPtr<MediaController>);
 
     // Restrictions to change default behaviors.
     enum BehaviorRestrictionFlags {
@@ -449,6 +448,8 @@ private:
 
     void removeBehaviorsRestrictionsAfterFirstUserGesture();
 
+    const AtomicString& mediaGroup() const;
+    void setMediaGroup(const AtomicString&);
     void updateMediaController();
     bool isBlocked() const;
     bool isBlockedOnMediaController() const;
@@ -556,7 +557,6 @@ private:
     MediaElementAudioSourceNode* m_audioSourceNode;
 #endif
 
-    String m_mediaGroup;
     friend class MediaController;
     RefPtr<MediaController> m_mediaController;
 

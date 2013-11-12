@@ -31,7 +31,7 @@
             testExpected("video.controller", controller);
             consoleWrite("");
             consoleWrite("Test assigning the wrong type to the controller attribute of a media element:")
-            testException("video.controller = 42", '"TypeError: Value is not of type MediaController"');
+            testException("video.controller = 42", '"TypeError: Failed to set the \'controller\' property on \'HTMLMediaElement\': The provided value is not of type \'MediaController\'."');
             testExpected("video.controller", controller);
             consoleWrite("");
             consoleWrite("Test assigning a null controller to a media element:")
@@ -42,6 +42,24 @@
             run("video.mediaGroup = 'group'");
             run("video2.mediaGroup = 'group'");
             testExpected("video.controller === video2.controller", true);
+            consoleWrite("");
+            consoleWrite("Test that setting the controller clears the mediaGroup:")
+            testExpected("video.mediaGroup", "group");
+            run("video.controller = null");
+            testExpected("video.controller", null);
+            testExpected("video.hasAttribute('mediaGroup')", false);
+            testExpected("video.mediaGroup", "");
+            run("video.mediaGroup = 'group'");
+            testExpected("video.mediaGroup", "group");
+            run("video.controller = controller");
+            testExpected("video.controller", controller);
+            testExpected("video.hasAttribute('mediaGroup')", false);
+            testExpected("video.mediaGroup", "");
+            consoleWrite("");
+            consoleWrite("Test that setting the controller to undefined is treated as null:")
+            testExpected("video.controller", null, "!=");
+            run("video.controller = undefined");
+            testExpected("video.controller", null);
             endTest();
         }
         </script>
