@@ -96,10 +96,6 @@ public:
     void resumeActiveDOMObjects();
     void stopActiveDOMObjects();
 
-    virtual void suspendScheduledTasks();
-    virtual void resumeScheduledTasks();
-    virtual bool tasksNeedSuspension() { return false; }
-
     bool activeDOMObjectsAreSuspended() const { return m_activeDOMObjectsAreSuspended; }
     bool activeDOMObjectsAreStopped() const { return m_activeDOMObjectsAreStopped; }
     bool isIteratingOverObservers() const;

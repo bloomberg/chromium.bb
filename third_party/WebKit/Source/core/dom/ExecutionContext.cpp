@@ -169,20 +169,6 @@ void ExecutionContext::stopActiveDOMObjects()
     closeMessagePorts();
 }
 
-void ExecutionContext::suspendScheduledTasks()
-{
-    suspendActiveDOMObjects();
-    if (m_client)
-        m_client->tasksWereSuspended();
-}
-
-void ExecutionContext::resumeScheduledTasks()
-{
-    resumeActiveDOMObjects();
-    if (m_client)
-        m_client->tasksWereResumed();
-}
-
 void ExecutionContext::suspendActiveDOMObjectIfNeeded(ActiveDOMObject* object)
 {
     ASSERT(lifecycleNotifier().contains(object));

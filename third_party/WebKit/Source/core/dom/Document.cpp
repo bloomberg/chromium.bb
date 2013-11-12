@@ -72,7 +72,6 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContextTask.h"
-#include "core/dom/MainThreadTaskRunner.h"
 #include "core/dom/NamedFlowCollection.h"
 #include "core/dom/NodeChildRemovalTracker.h"
 #include "core/dom/NodeFilter.h"
@@ -444,9 +443,10 @@ Document::Document(const DocumentInit& initializer, DocumentClassFlags documentC
     , m_writeRecursionIsTooDeep(false)
     , m_writeRecursionDepth(0)
     , m_lastHandledUserGestureTimestamp(0)
-    , m_taskRunner(MainThreadTaskRunner::create(this))
+    , m_pendingTasksTimer(this, &Document::pendingTasksTimerFired)
     , m_textAutosizer(TextAutosizer::create(this))
     , m_registrationContext(initializer.registrationContext(this))
+    , m_scheduledTasksAreSuspended(false)
     , m_sharedObjectPoolClearTimer(this, &Document::sharedObjectPoolClearTimerFired)
 #ifndef NDEBUG
     , m_didDispatchViewportPropertiesChanged(false)
@@ -1798,7 +1798,7 @@ void Document::setNeedsFocusedElementCheck()
     // FIXME: Using a Task doesn't look a good idea.
     if (!m_focusedElement || m_didPostCheckFocusedElementTask)
         return;
-    m_taskRunner->postTask(CheckFocusedElementTask::create());
+    postTask(CheckFocusedElementTask::create());
     m_didPostCheckFocusedElementTask = true;
 }
 
@@ -4601,7 +4601,7 @@ void Document::addMessage(MessageSource source, MessageLevel level, const String
 void Document::internalAddMessage(MessageSource source, MessageLevel level, const String& message, const String& sourceURL, unsigned lineNumber, PassRefPtr<ScriptCallStack> callStack, ScriptState* state)
 {
     if (!isContextThread()) {
-        m_taskRunner->postTask(AddConsoleMessageTask::create(source, level, message));
+        postTask(AddConsoleMessageTask::create(source, level, message));
         return;
     }
     Page* page = this->page();
@@ -4623,7 +4623,7 @@ void Document::internalAddMessage(MessageSource source, MessageLevel level, cons
 void Document::addConsoleMessageWithRequestIdentifier(MessageSource source, MessageLevel level, const String& message, unsigned long requestIdentifier)
 {
     if (!isContextThread()) {
-        m_taskRunner->postTask(AddConsoleMessageTask::create(source, level, message));
+        postTask(AddConsoleMessageTask::create(source, level, message));
         return;
     }
 
@@ -4631,50 +4631,92 @@ void Document::addConsoleMessageWithRequestIdentifier(MessageSource source, Mess
         page->console().addMessage(source, level, message, String(), 0, 0, 0, 0, requestIdentifier);
 }
 
-// FIXME(crbug.com/305497): This should be removed after ExecutionContext-DOMWindow migration.
+struct PerformTaskContext {
+    WTF_MAKE_NONCOPYABLE(PerformTaskContext); WTF_MAKE_FAST_ALLOCATED;
+public:
+    PerformTaskContext(WeakPtr<Document> document, PassOwnPtr<ExecutionContextTask> task)
+        : documentReference(document)
+        , task(task)
+    {
+    }
+
+    WeakPtr<Document> documentReference;
+    OwnPtr<ExecutionContextTask> task;
+};
+
+void Document::didReceiveTask(void* untypedContext)
+{
+    ASSERT(isMainThread());
+
+    OwnPtr<PerformTaskContext> context = adoptPtr(static_cast<PerformTaskContext*>(untypedContext));
+    ASSERT(context);
+
+    Document* document = context->documentReference.get();
+    if (!document)
+        return;
+
+    Page* page = document->page();
+    if ((page && page->defersLoading()) || !document->m_pendingTasks.isEmpty()) {
+        document->m_pendingTasks.append(context->task.release());
+        return;
+    }
+
+    context->task->performTask(document);
+}
+
 void Document::postTask(PassOwnPtr<ExecutionContextTask> task)
 {
-    m_taskRunner->postTask(task);
+    callOnMainThread(didReceiveTask, new PerformTaskContext(m_weakFactory.createWeakPtr(), task));
 }
 
-void Document::tasksWereSuspended()
+void Document::pendingTasksTimerFired(Timer<Document>*)
 {
-    scriptRunner()->suspend();
-
-    if (m_parser)
-        m_parser->suspendScheduledTasks();
-    if (m_scriptedAnimationController)
-        m_scriptedAnimationController->suspend();
+    while (!m_pendingTasks.isEmpty()) {
+        OwnPtr<ExecutionContextTask> task = m_pendingTasks[0].release();
+        m_pendingTasks.remove(0);
+        task->performTask(this);
+    }
 }
 
-void Document::tasksWereResumed()
-{
-    scriptRunner()->resume();
-
-    if (m_parser)
-        m_parser->resumeScheduledTasks();
-    if (m_scriptedAnimationController)
-        m_scriptedAnimationController->resume();
-}
-
-// FIXME: suspendScheduledTasks(), resumeScheduledTasks(), tasksNeedSuspension()
-// should be moved to DOMWindow once it inherits ExecutionContext
 void Document::suspendScheduledTasks()
 {
-    ExecutionContext::suspendScheduledTasks();
-    m_taskRunner->suspend();
+    ASSERT(!m_scheduledTasksAreSuspended);
+
+    suspendScriptedAnimationControllerCallbacks();
+    suspendActiveDOMObjects();
+    scriptRunner()->suspend();
+    m_pendingTasksTimer.stop();
+    if (m_parser)
+        m_parser->suspendScheduledTasks();
+
+    m_scheduledTasksAreSuspended = true;
 }
 
 void Document::resumeScheduledTasks()
 {
-    ExecutionContext::resumeScheduledTasks();
-    m_taskRunner->resume();
+    ASSERT(m_scheduledTasksAreSuspended);
+
+    if (m_parser)
+        m_parser->resumeScheduledTasks();
+    if (!m_pendingTasks.isEmpty())
+        m_pendingTasksTimer.startOneShot(0);
+    scriptRunner()->resume();
+    resumeActiveDOMObjects();
+    resumeScriptedAnimationControllerCallbacks();
+
+    m_scheduledTasksAreSuspended = false;
 }
 
-bool Document::tasksNeedSuspension()
+void Document::suspendScriptedAnimationControllerCallbacks()
 {
-    Page* page = this->page();
-    return page && page->defersLoading();
+    if (m_scriptedAnimationController)
+        m_scriptedAnimationController->suspend();
+}
+
+void Document::resumeScriptedAnimationControllerCallbacks()
+{
+    if (m_scriptedAnimationController)
+        m_scriptedAnimationController->resume();
 }
 
 void Document::addToTopLayer(Element* element, const Element* before)
