@@ -450,7 +450,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, MAYBE_TestBeforeUnloadEvents) {
 }
 
 // Tests scripts panel showing.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestShowScriptsTab) {
+// TODO(pfeldman): figure out flake.
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLED_TestShowScriptsTab) {
   RunTest("testShowScriptsTab", kDebuggerTestPage);
 }
 
@@ -501,7 +502,10 @@ IN_PROC_BROWSER_TEST_F(DevToolsExperimentalExtensionTest,
   RunTest("waitForTestResultsInConsole", std::string());
 }
 
-IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest, TestContentScriptIsPresent) {
+// Tests that a content script is in the scripts list.
+// History of flakiness: http://crbug.com/114104, http://crbug.com/315288.
+IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
+                       DISABLED_TestContentScriptIsPresent) {
   LoadExtension("simple_content_script");
   RunTest("testContentScriptIsPresent", kPageWithContentScript);
 }
