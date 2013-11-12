@@ -18,7 +18,6 @@
   </nav>
 
   <section>
-    <iframe src="/static/home/index.html" frameborder="0" name="content" width="100%" height="100%"></iframe>
   </section>
 
   <div id="not-chrome" class="error" hidden>
@@ -47,111 +46,6 @@
       </p>
     </div>
   </div>
-
-  <script>
-    var examples = [
-      {name: 'bullet', text: 'Bullet Physics'},
-      {name: 'earth', text: 'Raycasted Earth'},
-      {name: 'lua', text: 'Lua Interpreter'},
-      {name: 'life', text: 'Game of Life'},
-      {name: 'voronoi', text: 'Voronoi Simulation'},
-      {name: 'smoothlife', text: 'SmoothLife'},
-      {name: 'cube', text: 'Rotating Cube'},
-    ];
-    var exampleUrls = {};  // Created below.
-
-    var isChrome = /Chrome\/([^\s]+)/.test(navigator.userAgent);
-    var isMobile = /Mobi/.test(navigator.userAgent);
-    var hasPnacl = navigator.mimeTypes['application/x-pnacl'] !== undefined;
-
-    if (isChrome && !isMobile) {
-      if (!hasPnacl) {
-        // Older version of Chrome?
-        showOldChromeErrorMessage();
-      } else {
-        init();
-      }
-    } else {
-      // Not Chrome, or is mobile Chrome.
-      showNotChromeErrorMessage();
-    }
-
-    function showOldChromeErrorMessage() {
-      document.getElementById('old-chrome').removeAttribute('hidden');
-    }
-
-    function showNotChromeErrorMessage() {
-      document.getElementById('not-chrome').removeAttribute('hidden');
-    }
-
-    function init() {
-      makeExampleList();
-      setIframeFromLocation();
-    }
-
-    function makeExampleList() {
-      var listEl = document.querySelector('nav ul');
-      for (var i = 0; i < examples.length; ++i) {
-        var example = examples[i];
-
-        // Populate exampleUrls
-        var url = '/static/' + example.name + '/index.html';
-        exampleUrls[example.name] = url;
-
-        // Create li
-        var listItemEl = document.createElement('li');
-        var anchorEl = document.createElement('a');
-        listItemEl.setAttribute('id', example.name);
-        anchorEl.setAttribute('href', url);
-        anchorEl.setAttribute('target', 'content');
-        anchorEl.textContent = example.text;
-
-        // Listen for clicks and update the nav
-        anchorEl.addEventListener('click', onLinkClick.bind(example), false);
-
-        listItemEl.appendChild(anchorEl);
-        listEl.appendChild(listItemEl);
-      }
-    }
-
-    function onLinkClick(evt) {
-      var links = document.querySelectorAll('li a');
-      for (var l = 0; l < links.length; l++) {
-        links[l].classList.remove('active');
-      }
-      evt.target.classList.add('active');
-      updateUrl(this.name);
-    }
-
-    function updateUrl(exampleName) {
-      window.history.replaceState(null, '', '/demo/' + exampleName);
-    }
-
-    function setIframeFromLocation() {
-      // Get the location's path.
-      var anchorEl = document.createElement('a');
-      anchorEl.href = location.href;
-      var pathname = anchorEl.pathname;
-
-      // Load the correct page, based on the demo name.
-      var matches = pathname.match(/demo(?:\/(.*))?$/);
-      var iframeUrl = null;
-      if (matches) {
-        var matchedExample = matches[1];
-        // Strip trailing slash, if any.
-        if (matchedExample && matchedExample.slice(-1) === '/') {
-          matchedExample = matchedExample.slice(0, -1);
-        }
-
-        iframeUrl = exampleUrls[matchedExample];
-        if (iframeUrl) {
-          document.querySelector('iframe').src = iframeUrl;
-          updateUrl(matchedExample);
-        } else {
-          updateUrl('');
-        }
-      }
-    }
-  </script>
 </body>
+<script src="/static/frame.js"></script>
 </html>
