@@ -14,7 +14,7 @@
 #import "chrome/browser/ui/cocoa/autofill/autofill_layout.h"
 
 namespace autofill {
-  class AutofillDialogViewDelegate;
+class AutofillDialogViewDelegate;
 }
 
 @class AutofillSectionView;

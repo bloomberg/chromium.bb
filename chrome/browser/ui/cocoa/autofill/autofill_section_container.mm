@@ -136,7 +136,7 @@ bool CompareInputRows(const autofill::DetailInput* input1,
 @synthesize validationDelegate = validationDelegate_;
 
 - (id)initWithDelegate:(autofill::AutofillDialogViewDelegate*)delegate
-              forSection:(autofill::DialogSection)section {
+            forSection:(autofill::DialogSection)section {
   if (self = [super init]) {
     section_ = section;
     delegate_ = delegate;
@@ -162,7 +162,7 @@ bool CompareInputRows(const autofill::DetailInput* input1,
 
   [self updateSuggestionState];
 
-  // TODO(groby): "Save in Chrome" handling.
+  // TODO(groby): "Save in Chrome" handling. http://crbug.com/306203.
 
   if (![[self view] isHidden])
     [self validateFor:autofill::VALIDATE_EDIT];
@@ -183,8 +183,9 @@ bool CompareInputRows(const autofill::DetailInput* input1,
 
   inputs_.reset([[self makeInputControls] retain]);
   string16 labelText = delegate_->LabelForSection(section_);
-  label_.reset([[self makeDetailSectionLabel:
-                   base::SysUTF16ToNSString(labelText)] retain]);
+  label_.reset(
+      [[self makeDetailSectionLabel:base::SysUTF16ToNSString(labelText)]
+          retain]);
 
   suggestButton_.reset([[self makeSuggestionButton] retain]);
   suggestContainer_.reset([[AutofillSuggestionContainer alloc] init]);
@@ -415,8 +416,8 @@ bool CompareInputRows(const autofill::DetailInput* input1,
   // result in validation - positive user feedback.
   if ([textfield invalid] && edited) {
     string16 message = delegate_->InputValidityMessage(section_,
-                                                         type,
-                                                         fieldValue);
+                                                       type,
+                                                       fieldValue);
     [textfield setValidityMessage:base::SysUTF16ToNSString(message)];
     [validationDelegate_ updateMessageForField:textfield];
 
