@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/debug/trace_event.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
@@ -227,6 +228,8 @@ void VideoFrameStream::Decode(const scoped_refptr<DecoderBuffer>& buffer) {
   DCHECK(buffer);
 
   int buffer_size = buffer->end_of_stream() ? 0 : buffer->data_size();
+
+  TRACE_EVENT_ASYNC_BEGIN0("media", "VideoFrameStream::Decode", this);
   decoder_->Decode(buffer, base::Bind(&VideoFrameStream::OnFrameReady,
                                       weak_factory_.GetWeakPtr(), buffer_size));
 }
@@ -242,6 +245,8 @@ void VideoFrameStream::OnFrameReady(int buffer_size,
   DCHECK(state_ == STATE_NORMAL || state_ == STATE_FLUSHING_DECODER) << state_;
   DCHECK(!read_cb_.is_null());
   DCHECK(stop_cb_.is_null());
+
+  TRACE_EVENT_ASYNC_END0("media", "VideoFrameStream::Decode", this);
 
   if (status == VideoDecoder::kDecodeError) {
     DCHECK(!frame.get());

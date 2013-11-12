@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
+#include "base/debug/trace_event.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/platform_thread.h"
 #include "media/base/buffers.h"
@@ -321,6 +322,8 @@ void VideoRendererBase::PaintNextReadyFrame_Locked() {
 }
 
 void VideoRendererBase::DropNextReadyFrame_Locked() {
+  TRACE_EVENT0("media", "VideoRendererBase:frameDropped");
+
   lock_.AssertAcquired();
 
   last_timestamp_ = ready_frames_.front()->GetTimestamp();
