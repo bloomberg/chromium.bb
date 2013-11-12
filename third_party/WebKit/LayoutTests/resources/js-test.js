@@ -6,7 +6,11 @@ if (self.testRunner) {
         testRunner.dumpAsText();
 }
 
-var description, debug, successfullyParsed, errorMessage;
+var description, debug, successfullyParsed;
+
+var expectingError; // set by shouldHaveError()
+var expectedErrorMessage; // set by onerror when expectingError is true
+var unexpectedErrorMessage; // set by onerror when expectingError is not true
 
 (function() {
 
@@ -94,7 +98,16 @@ var description, debug, successfullyParsed, errorMessage;
     if (!self.isOnErrorTest) {
         self.onerror = function(message)
         {
-            errorMessage = message;
+            if (self.expectingError) {
+                self.expectedErrorMessage = message;
+                self.expectingError = false;
+                return;
+            }
+            self.unexpectedErrorMessage = message;
+            if (self.jsTestIsAsync) {
+                self.testFailed("Unexpected error: " + message);
+                finishJSTest();
+            }
         };
     }
 })();
@@ -554,18 +567,33 @@ function shouldThrow(_a, _e)
     testFailed(_a + " should throw " + (typeof _e == "undefined" ? "an exception" : _ev) + ". Was " + _av + ".");
 }
 
+function expectError()
+{
+    if (expectingError) {
+        testFailed("shouldHaveError() called twice before an error occurred!");
+    }
+    expectingError = true;
+}
+
 function shouldHaveHadError(message)
 {
-    if (errorMessage) {
+    if (expectingError) {
+        testFailed("No error thrown between expectError() and shouldHaveHadError()");
+        return;
+    }
+
+    if (expectedErrorMessage) {
         if (!message)
             testPassed("Got expected error");
-        else if (errorMessage.indexOf(message) !== -1)
+        else if (expectedErrorMessage.indexOf(message) !== -1)
             testPassed("Got expected error: '" + message + "'");
         else
-            testFailed("Unexpexted error '" + message + "'");
-    } else
-        testFailed("Missing expexted error");
-    errorMessage = undefined;
+            testFailed("Unexpected error '" + message + "'");
+        expectedErrorMessage = undefined;
+        return;
+    }
+
+    testFailed("expectError() not called before shouldHaveHadError()");
 }
 
 function gc() {
@@ -594,8 +622,7 @@ function minorGC() {
 function isSuccessfullyParsed()
 {
     // FIXME: Remove this and only report unexpected syntax errors.
-    if (!errorMessage)
-        successfullyParsed = true;
+    successfullyParsed = !unexpectedErrorMessage;
     shouldBeTrue("successfullyParsed");
     debug('<br /><span class="pass">TEST COMPLETE</span>');
 }

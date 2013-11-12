@@ -32,6 +32,7 @@ function causeException()
     debug("");
     evalAndLog("event.preventDefault()");
     debug("Throwing");
+    expectError();
     throw "this exception is expected";
 }
 
