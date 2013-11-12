@@ -228,17 +228,23 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
                      bool was_timeout,
                      const std::string& output) {
     DCHECK(thread_checker_.CalledOnValidThread());
-    std::vector<std::string> tests_to_relaunch_after_interruption;
+    std::vector<std::string> tests_to_relaunch;
     ProcessTestResults(callback_state.test_launcher,
                        callback_state.test_names,
                        callback_state.output_file,
                        output,
                        exit_code,
                        was_timeout,
-                       &tests_to_relaunch_after_interruption);
+                       &tests_to_relaunch);
 
-    RunBatch(callback_state.test_launcher,
-             tests_to_relaunch_after_interruption);
+    // Relaunch requested tests in parallel, but only use single
+    // test per batch for more precise results (crashes, test passes
+    // but non-zero exit codes etc).
+    for (size_t i = 0; i < tests_to_relaunch.size(); i++) {
+      std::vector<std::string> batch;
+      batch.push_back(tests_to_relaunch[i]);
+      RunBatch(callback_state.test_launcher, batch);
+    }
 
     // The temporary file's directory is also temporary.
     DeleteFile(callback_state.output_file.DirName(), true);
@@ -251,7 +257,7 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
                            bool was_timeout,
                            const std::string& output) {
     DCHECK(thread_checker_.CalledOnValidThread());
-    std::vector<std::string> tests_to_relaunch_after_interruption;
+    std::vector<std::string> tests_to_relaunch;
     bool called_any_callbacks =
         ProcessTestResults(callback_state.test_launcher,
                            callback_state.test_names,
@@ -259,11 +265,11 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
                            output,
                            exit_code,
                            was_timeout,
-                           &tests_to_relaunch_after_interruption);
+                           &tests_to_relaunch);
 
     // There is only one test, there cannot be other tests to relaunch
     // due to a crash.
-    DCHECK(tests_to_relaunch_after_interruption.empty());
+    DCHECK(tests_to_relaunch.empty());
 
     // There is only one test, we should have called back with its result.
     DCHECK(called_any_callbacks);
@@ -286,7 +292,7 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
       const std::string& output,
       int exit_code,
       bool was_timeout,
-      std::vector<std::string>* tests_to_relaunch_after_interruption) {
+      std::vector<std::string>* tests_to_relaunch) {
     std::vector<TestResult> test_results;
     bool crashed = false;
     bool have_test_results =
@@ -302,6 +308,9 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
         results_map[test_results[i].full_name] = test_results[i];
 
       bool had_interrupted_test = false;
+
+      // Results to be reported back to the test launcher.
+      std::vector<TestResult> final_results;
 
       for (size_t i = 0; i < test_names.size(); i++) {
         if (ContainsKey(results_map, test_names[i])) {
@@ -329,10 +338,9 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
           }
           test_result.output_snippet =
               GetTestOutputSnippet(test_result, output);
-          test_launcher->OnTestFinished(test_result);
-          called_any_callback = true;
+          final_results.push_back(test_result);
         } else if (had_interrupted_test) {
-          tests_to_relaunch_after_interruption->push_back(test_names[i]);
+          tests_to_relaunch->push_back(test_names[i]);
         } else {
           // TODO(phajdan.jr): Explicitly pass the info that the test didn't
           // run for a mysterious reason.
@@ -342,17 +350,54 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
           test_result.status = TestResult::TEST_UNKNOWN;
           test_result.output_snippet =
               GetTestOutputSnippet(test_result, output);
-          test_launcher->OnTestFinished(test_result);
-          called_any_callback = true;
+          final_results.push_back(test_result);
         }
       }
 
       // TODO(phajdan.jr): Handle the case where processing XML output
       // indicates a crash but none of the test results is marked as crashing.
 
-      // TODO(phajdan.jr): Handle the case where the exit code is non-zero
-      // but results file indicates that all tests passed (e.g. crash during
-      // shutdown).
+      if (final_results.empty())
+        return false;
+
+      bool has_non_success_test = false;
+      for (size_t i = 0; i < final_results.size(); i++) {
+        if (final_results[i].status != TestResult::TEST_SUCCESS) {
+          has_non_success_test = true;
+          break;
+        }
+      }
+
+      if (!has_non_success_test && exit_code != 0) {
+        // This is a bit surprising case: all tests are marked as successful,
+        // but the exit code was not zero. This can happen e.g. under memory
+        // tools that report leaks this way.
+
+        if (final_results.size() == 1) {
+          // Easy case. One test only so we know the non-zero exit code
+          // was caused by that one test.
+          final_results[0].status = TestResult::TEST_FAILURE_ON_EXIT;
+        } else {
+          // Harder case. Discard the results and request relaunching all
+          // tests without batching. This will trigger above branch on
+          // relaunch leading to more precise results.
+          LOG(WARNING) << "Not sure which test caused non-zero exit code, "
+                       << "relaunching all of them without batching.";
+
+          for (size_t i = 0; i < final_results.size(); i++)
+            tests_to_relaunch->push_back(final_results[i].full_name);
+
+          return false;
+        }
+      }
+
+      for (size_t i = 0; i < final_results.size(); i++) {
+        // Fix the output snippet after possible changes to the test result.
+        final_results[i].output_snippet =
+            GetTestOutputSnippet(final_results[i], output);
+        test_launcher->OnTestFinished(final_results[i]);
+        called_any_callback = true;
+      }
     } else {
       fprintf(stdout,
               "Failed to get out-of-band test success data, "

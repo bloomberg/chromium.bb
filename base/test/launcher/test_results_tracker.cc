@@ -175,6 +175,9 @@ void TestResultsTracker::PrintSummaryOfCurrentIteration() const {
   PrintTests(tests_by_status[TestResult::TEST_FAILURE].begin(),
              tests_by_status[TestResult::TEST_FAILURE].end(),
              "failed");
+  PrintTests(tests_by_status[TestResult::TEST_FAILURE_ON_EXIT].begin(),
+             tests_by_status[TestResult::TEST_FAILURE_ON_EXIT].end(),
+             "failed on exit");
   PrintTests(tests_by_status[TestResult::TEST_TIMEOUT].begin(),
              tests_by_status[TestResult::TEST_TIMEOUT].end(),
              "timed out");
@@ -211,6 +214,9 @@ void TestResultsTracker::PrintSummaryOfAllIterations() const {
   PrintTests(tests_by_status[TestResult::TEST_FAILURE].begin(),
              tests_by_status[TestResult::TEST_FAILURE].end(),
              "failed");
+  PrintTests(tests_by_status[TestResult::TEST_FAILURE_ON_EXIT].begin(),
+             tests_by_status[TestResult::TEST_FAILURE_ON_EXIT].end(),
+             "failed on exit");
   PrintTests(tests_by_status[TestResult::TEST_TIMEOUT].begin(),
              tests_by_status[TestResult::TEST_TIMEOUT].end(),
              "timed out");

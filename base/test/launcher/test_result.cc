@@ -22,6 +22,8 @@ std::string TestResult::StatusAsString() const {
       return "SUCCESS";
     case TEST_FAILURE:
       return "FAILURE";
+    case TEST_FAILURE_ON_EXIT:
+      return "FAILURE_ON_EXIT";
     case TEST_CRASH:
       return "CRASH";
     case TEST_TIMEOUT:
