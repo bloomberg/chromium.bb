@@ -28,6 +28,7 @@
 
 namespace {
 
+#if !defined(OS_CHROMEOS) && defined(USE_ASH)
 // Returns the desktop this process was initially launched in.
 chrome::HostDesktopType GetInitialDesktop() {
 #if defined(OS_WIN) && defined(USE_ASH)
@@ -39,6 +40,7 @@ chrome::HostDesktopType GetInitialDesktop() {
 #endif
   return chrome::HOST_DESKTOP_TYPE_NATIVE;
 }
+#endif  // !defined(OS_CHROMEOS) && defined(USE_ASH)
 
 }  // namespace
 

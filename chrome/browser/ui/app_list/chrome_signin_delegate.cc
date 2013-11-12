@@ -22,9 +22,11 @@
 
 namespace {
 
+#if !defined(OS_CHROMEOS)
 SigninManagerBase* GetSigninManager(Profile* profile) {
   return SigninManagerFactory::GetForProfile(profile);
 }
+#endif  // !defined(OS_CHROMEOS)
 
 }  // namespace
 

@@ -19,16 +19,6 @@ void CheckApproximatelyEqual(const gfx::Transform& lhs,
   }
 }
 
-float NormalizeAngle(float angle) {
-  while (angle < 0.0f) {
-    angle += 360.0f;
-  }
-  while (angle > 360.0f) {
-    angle -= 360.0f;
-  }
-  return angle;
-}
-
 } // namespace
 
 TEST(InterpolatedTransformTest, InterpolatedRotation) {

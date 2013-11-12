@@ -35,15 +35,6 @@
 
 using views::FocusManager;
 
-namespace {
-
-// Returns the bounds of |view| in widget coordinates.
-gfx::Rect GetRectInWidget(views::View* view) {
-  return view->ConvertRectToWidget(view->GetLocalBounds());
-}
-
-}
-
 typedef InProcessBrowserTest BrowserViewTest;
 
 // Active window and focus testing is not reliable on Windows crbug.com/79493

@@ -34,35 +34,6 @@
 #include "chrome/browser/browser_process.h"
 #endif
 
-namespace {
-
-// Set the (x, y) coordinates of the welcome message (which floats on top of
-// the omnibox image at the top of the first run dialog).
-void SetWelcomePosition(GtkFloatingContainer* container,
-                        GtkAllocation* allocation,
-                        GtkWidget* label) {
-  GValue value = { 0, };
-  g_value_init(&value, G_TYPE_INT);
-
-  GtkRequisition req;
-  gtk_widget_size_request(label, &req);
-
-  int x = base::i18n::IsRTL() ?
-      allocation->width - req.width - ui::kContentAreaSpacing :
-      ui::kContentAreaSpacing;
-  g_value_set_int(&value, x);
-  gtk_container_child_set_property(GTK_CONTAINER(container),
-                                   label, "x", &value);
-
-  int y = allocation->height / 2 - req.height / 2;
-  g_value_set_int(&value, y);
-  gtk_container_child_set_property(GTK_CONTAINER(container),
-                                   label, "y", &value);
-  g_value_unset(&value);
-}
-
-}  // namespace
-
 namespace first_run {
 
 bool ShowFirstRunDialog(Profile* profile) {

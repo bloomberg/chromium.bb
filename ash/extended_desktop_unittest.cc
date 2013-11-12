@@ -42,10 +42,6 @@ void SetSecondaryDisplayLayout(DisplayLayout::Position position) {
       SetLayoutForCurrentDisplays(layout);
 }
 
-internal::DisplayManager* GetDisplayManager() {
-  return Shell::GetInstance()->display_manager();
-}
-
 class ModalWidgetDelegate : public views::WidgetDelegateView {
  public:
   ModalWidgetDelegate() {}

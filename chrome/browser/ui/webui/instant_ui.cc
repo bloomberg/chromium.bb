@@ -33,6 +33,7 @@ content::WebUIDataSource* CreateInstantHTMLSource() {
   return source;
 }
 
+#if !defined(OS_ANDROID)
 std::string FormatTime(int64 time) {
   base::Time::Exploded exploded;
   base::Time::FromInternalValue(time).UTCExplode(&exploded);
@@ -40,6 +41,7 @@ std::string FormatTime(int64 time) {
       exploded.year, exploded.month, exploded.day_of_month,
       exploded.hour, exploded.minute, exploded.second, exploded.millisecond);
 }
+#endif  // !defined(OS_ANDROID)
 
 // This class receives JavaScript messages from the renderer.
 // Note that the WebUI infrastructure runs on the UI thread, therefore all of

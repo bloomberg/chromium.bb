@@ -106,6 +106,7 @@ void NotifyDownloadInitiatedOnUI(int render_process_id, int render_view_id) {
       content::NotificationService::NoDetails());
 }
 
+#if !defined(OS_ANDROID)
 // Goes through the extension's file browser handlers and checks if there is one
 // that can handle the |mime_type|.
 // |extension| must not be NULL.
@@ -149,6 +150,7 @@ void SendExecuteMimeTypeHandlerEvent(scoped_ptr<content::StreamHandle> stream,
   streams_private->ExecuteMimeTypeHandler(
       extension_id, web_contents, stream.Pass(), expected_content_size);
 }
+#endif  // !defined(OS_ANDROID)
 
 enum PrerenderSchemeCancelReason {
   PRERENDER_SCHEME_CANCEL_REASON_EXTERNAL_PROTOCOL,

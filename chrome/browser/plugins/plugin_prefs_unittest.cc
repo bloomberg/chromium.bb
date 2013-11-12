@@ -31,6 +31,7 @@ void CanEnablePluginCallback(const base::Closure& quit_closure,
   quit_closure.Run();
 }
 
+#if !(defined(OS_LINUX) && defined(USE_AURA))
 base::FilePath GetComponentUpdatedPepperFlashPath(
     const base::FilePath::StringType& version) {
   base::FilePath path;
@@ -46,6 +47,7 @@ base::FilePath GetBundledPepperFlashPath() {
   EXPECT_TRUE(PathService::Get(chrome::FILE_PEPPER_FLASH_PLUGIN, &path));
   return path;
 }
+#endif  // !(defined(OS_LINUX) && defined(USE_AURA))
 
 void GotPlugins(const base::Closure& quit_closure,
                 const std::vector<content::WebPluginInfo>& plugins) {

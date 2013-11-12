@@ -745,44 +745,11 @@ void ProcessChunkExtensionsManual(base::StringPiece all_extensions,
   }
 }
 
-// TODO(phython): Fix this function to properly deal with quoted values.
-// E.g. ";;foo", "\";;\"", or \"aa;
-// The last example, the semi-colon is a separator between extensions.
-void ProcessChunkExtensionsGoogle3(const char* input, size_t size,
-                                   BalsaHeaders* extensions) {
-  std::vector<base::StringPiece> key_values;
-  SplitStringPieceToVector(base::StringPiece(input, size), ";",
-                           &key_values, true);
-  for (unsigned int i = 0; i < key_values.size(); ++i) {
-    base::StringPiece key = key_values[i].substr(0, key_values[i].find('='));
-    base::StringPiece value;
-    if (key.length() < key_values[i].length()) {
-      value = key_values[i].substr(key.length() + 1);
-      // Remove any leading and trailing whitespace.
-      StringPieceUtils::RemoveWhitespaceContext(&value);
-
-      // Strip quotation marks if they exist.
-      if (!value.empty() && value[0] == '"')
-        value.remove_prefix(1);
-      if (!value.empty() && value[value.length() - 1] == '"')
-        value.remove_suffix(1);
-    }
-
-    // Strip the key whitespace after checking that there is a value.
-    StringPieceUtils::RemoveWhitespaceContext(&key);
-    extensions->AppendHeader(key, value);
-  }
-}
-
 }  // anonymous namespace
 
 void BalsaFrame::ProcessChunkExtensions(const char* input, size_t size,
                                         BalsaHeaders* extensions) {
-#if 0
-  ProcessChunkExtensionsGoogle3(input, size, extensions);
-#else
   ProcessChunkExtensionsManual(base::StringPiece(input, size), extensions);
-#endif
 }
 
 void BalsaFrame::ProcessHeaderLines() {

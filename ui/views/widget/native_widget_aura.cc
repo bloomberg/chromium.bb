@@ -973,6 +973,7 @@ void Widget::NotifyLocaleChanged() {
 }
 
 namespace {
+#if defined(OS_WIN) || (defined(USE_X11) && !defined(OS_CHROMEOS))
 void CloseWindow(aura::Window* window) {
   if (window) {
     Widget* widget = Widget::GetWidgetForNativeView(window);
@@ -984,6 +985,8 @@ void CloseWindow(aura::Window* window) {
       widget->CloseNow();
   }
 }
+#endif
+
 #if defined(OS_WIN)
 BOOL CALLBACK WindowCallbackProc(HWND hwnd, LPARAM lParam) {
   aura::Window* root_window =

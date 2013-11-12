@@ -154,23 +154,6 @@ class ValidatePublicResetPacketPredicate
   QuicPacketSequenceNumber sequence_number_;
 };
 
-void ValidPublicResetPacketPredicate(
-    QuicGuid expected_guid,
-    QuicPacketSequenceNumber expected_sequence_number,
-    const std::tr1::tuple<const char*, int>& packet_buffer) {
-  FramerVisitorCapturingPublicReset visitor;
-  QuicFramer framer(QuicSupportedVersions(), QuicTime::Zero(), false);
-  framer.set_visitor(&visitor);
-  QuicEncryptedPacket encrypted(std::tr1::get<0>(packet_buffer),
-                                std::tr1::get<1>(packet_buffer));
-  framer.ProcessPacket(encrypted);
-  QuicPublicResetPacket packet = visitor.public_reset_packet();
-  EXPECT_EQ(expected_guid, packet.public_header.guid);
-  EXPECT_TRUE(packet.public_header.reset_flag);
-  EXPECT_FALSE(packet.public_header.version_flag);
-  EXPECT_EQ(expected_sequence_number, packet.rejected_sequence_number);
-}
-
 
 Matcher<const std::tr1::tuple<const char*, int> > PublicResetPacketEq(
     QuicGuid guid,

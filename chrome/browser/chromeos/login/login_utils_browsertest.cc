@@ -114,12 +114,6 @@ const char kDMPolicyRequest[] =
 
 const char kDMToken[] = "1234";
 
-// Used to mark |flag|, indicating that RefreshPolicies() has executed its
-// callback.
-void SetFlag(bool* flag) {
-  *flag = true;
-}
-
 // Single task of the fake IO loop used in the test, that just waits until
 // it is signaled to quit or perform some work.
 // |completion| is the event to wait for, and |work| is the task to invoke

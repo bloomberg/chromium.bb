@@ -31,11 +31,6 @@ using content::BrowserThread;
 
 namespace {
 
-bool NotificationCallback(const CommandLine& command_line,
-                          const base::FilePath& current_directory) {
-  return true;
-}
-
 class ProcessSingletonLinuxTest : public testing::Test {
  public:
   // A ProcessSingleton exposing some protected methods for testing.

@@ -288,7 +288,7 @@ void HandleHelpSwitches(const CommandLine& command_line) {
 }
 #endif
 
-#if !defined(OS_MACOSX)
+#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
 void SIGTERMProfilingShutdown(int signal) {
   Profiling::Stop();
   struct sigaction sigact;
@@ -814,14 +814,12 @@ void ChromeMainDelegate::ZygoteForked() {
     SetUpProfilingShutdownHandler();
   }
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX)
   // Needs to be called after we have chrome::DIR_USER_DATA.  BrowserMain sets
   // this up for the browser process in a different manner.
   breakpad::InitCrashReporter();
 
   // Reset the command line for the newly spawned process.
   crash_keys::SetSwitchesFromCommandLine(CommandLine::ForCurrentProcess());
-#endif
 }
 
 #endif  // OS_MACOSX

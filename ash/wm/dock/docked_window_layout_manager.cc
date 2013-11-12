@@ -82,16 +82,6 @@ class DockedBackgroundWidget : public views::Widget {
   DISALLOW_COPY_AND_ASSIGN(DockedBackgroundWidget);
 };
 
-DockedWindowLayoutManager* GetDockLayoutManager(aura::Window* window,
-                                                const gfx::Point& location) {
-  gfx::Rect near_location(location, gfx::Size());
-  aura::Window* dock = Shell::GetContainer(
-      wm::GetRootWindowMatching(near_location),
-      kShellWindowId_DockedContainer);
-  return static_cast<internal::DockedWindowLayoutManager*>(
-      dock->layout_manager());
-}
-
 // Returns true if a window is a popup or a transient child.
 bool IsPopupOrTransient(const aura::Window* window) {
   return (window->type() == aura::client::WINDOW_TYPE_POPUP ||

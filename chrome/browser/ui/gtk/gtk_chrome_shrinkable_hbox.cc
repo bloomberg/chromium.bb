@@ -39,13 +39,6 @@ void SumChildrenWidthRequisition(GtkWidget* child, gpointer userdata) {
   }
 }
 
-void ShowInvisibleChildren(GtkWidget* child, gpointer userdata) {
-  if (!gtk_widget_get_visible(child)) {
-    gtk_widget_show(child);
-    ++(*reinterpret_cast<int*>(userdata));
-  }
-}
-
 void ChildSizeAllocate(GtkWidget* child, gpointer userdata) {
   if (!gtk_widget_get_visible(child))
     return;

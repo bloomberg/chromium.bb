@@ -203,10 +203,6 @@ void BluetoothPowerFailure() {
   // TODO(sad): Show an error bubble?
 }
 
-void BluetoothDiscoveryFailure() {
-  // TODO(sad): Show an error bubble?
-}
-
 void BluetoothSetDiscoveringError() {
   LOG(ERROR) << "BluetoothSetDiscovering failed.";
 }

@@ -51,10 +51,12 @@ namespace performance_monitor {
 
 namespace {
 
+#if !defined(OS_ANDROID)
 std::string TimeToString(base::Time time) {
   int64 time_int64 = time.ToInternalValue();
   return base::Int64ToString(time_int64);
 }
+#endif
 
 bool StringToTime(std::string time, base::Time* output) {
   int64 time_int64 = 0;

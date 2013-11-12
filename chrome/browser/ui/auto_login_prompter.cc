@@ -29,6 +29,7 @@ using content::WebContents;
 
 namespace {
 
+#if !defined(OS_ANDROID)
 bool FetchUsernameThroughSigninManager(Profile* profile, std::string* output) {
   // In an incognito window these services are not available.
   SigninManagerBase* signin_manager =
@@ -46,6 +47,7 @@ bool FetchUsernameThroughSigninManager(Profile* profile, std::string* output) {
   *output = signin_manager->GetAuthenticatedUsername();
   return true;
 }
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace
 

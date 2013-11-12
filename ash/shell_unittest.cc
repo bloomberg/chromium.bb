@@ -459,21 +459,6 @@ TEST_F(ShellTest, FullscreenWindowHidesShelf) {
   widget->Close();
 }
 
-namespace {
-
-// Builds the list of parents from |window| to the root. The returned vector is
-// in reverse order (|window| is first).
-std::vector<aura::Window*> BuildPathToRoot(aura::Window* window) {
-  std::vector<aura::Window*> results;
-  while (window) {
-    results.push_back(window);
-    window = window->parent();
-  }
-  return results;
-}
-
-}  // namespace
-
 // Various assertions around SetShelfAutoHideBehavior() and
 // GetShelfAutoHideBehavior().
 TEST_F(ShellTest, ToggleAutoHide) {

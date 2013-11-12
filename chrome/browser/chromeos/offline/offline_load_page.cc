@@ -48,15 +48,6 @@ using content::BrowserThread;
 using content::InterstitialPage;
 using content::WebContents;
 
-namespace {
-
-// A utility function to set the dictionary's value given by |resource_id|.
-void SetString(DictionaryValue* strings, const char* name, int resource_id) {
-  strings->SetString(name, l10n_util::GetStringUTF16(resource_id));
-}
-
-}  // namespace
-
 namespace chromeos {
 
 OfflineLoadPage::OfflineLoadPage(WebContents* web_contents,

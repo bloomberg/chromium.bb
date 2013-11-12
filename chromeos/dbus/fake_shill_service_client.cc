@@ -26,11 +26,6 @@ namespace chromeos {
 
 namespace {
 
-void ErrorFunction(const std::string& error_name,
-                   const std::string& error_message) {
-  LOG(ERROR) << "Shill Error: " << error_name << " : " << error_message;
-}
-
 void PassStubListValue(const ShillServiceClient::ListValueCallback& callback,
                        base::ListValue* value) {
   callback.Run(*value);

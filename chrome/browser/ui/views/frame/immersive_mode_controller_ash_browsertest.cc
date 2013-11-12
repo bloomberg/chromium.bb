@@ -12,15 +12,6 @@
 #include "content/public/browser/web_contents_view.h"
 #include "ui/aura/window.h"
 
-namespace {
-
-// Returns the bounds of |view| in widget coordinates.
-gfx::Rect GetRectInWidget(views::View* view) {
-  return view->ConvertRectToWidget(view->GetLocalBounds());
-}
-
-}  // namespace
-
 // TODO(jamescook): If immersive mode becomes popular on CrOS, consider porting
 // it to other Aura platforms (win_aura, linux_aura).  http://crbug.com/163931
 #if defined(OS_CHROMEOS)

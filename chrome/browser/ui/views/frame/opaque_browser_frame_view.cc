@@ -76,18 +76,6 @@ const int kIconMinimumSize = 16;
 // the top of the screen so the tabs appear flush against the screen edge.
 const int kTabstripTopShadowThickness = 3;
 
-// Converts |bounds| from |src|'s coordinate system to |dst|, and checks if
-// |pt| is contained within.
-bool ConvertedContainsCheck(gfx::Rect bounds, const views::View* src,
-                            const views::View* dst, const gfx::Point& pt) {
-  DCHECK(src);
-  DCHECK(dst);
-  gfx::Point origin(bounds.origin());
-  views::View::ConvertPointToTarget(src, dst, &origin);
-  bounds.set_origin(origin);
-  return bounds.Contains(pt);
-}
-
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////

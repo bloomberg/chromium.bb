@@ -54,10 +54,6 @@ namespace {
 const char kPathChanged[] = "changed";
 const char kPathWatchError[] = "error";
 
-// Used as a callback for FileSystem::MarkCacheFileAsUnmounted().
-void OnMarkAsUnmounted(drive::FileError error) {
-  // Do nothing.
-}
 void DirectoryExistsOnBlockingPool(const base::FilePath& directory_path,
                                    const base::Closure& success_callback,
                                    const base::Closure& failure_callback) {
@@ -82,23 +78,6 @@ void DirectoryExistsOnUIThread(const base::FilePath& directory_path,
                  failure_callback));
 };
 
-// Creates a base::FilePathWatcher and starts watching at |watch_path| with
-// |callback|. Returns NULL on failure.
-base::FilePathWatcher* CreateAndStartFilePathWatcher(
-    const base::FilePath& watch_path,
-    const base::FilePathWatcher::Callback& callback) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
-  DCHECK(!callback.is_null());
-
-  base::FilePathWatcher* watcher(new base::FilePathWatcher);
-  if (!watcher->Watch(watch_path, false /* recursive */, callback)) {
-    delete watcher;
-    return NULL;
-  }
-
-  return watcher;
-}
-
 // Constants for the "transferState" field of onFileTransferUpdated event.
 const char kFileTransferStateStarted[] = "started";
 const char kFileTransferStateInProgress[] = "in_progress";
@@ -112,11 +91,6 @@ const int64 kFileTransferEventFrequencyInMilliseconds = 1000;
 bool IsUploadJob(drive::JobType type) {
   return (type == drive::TYPE_UPLOAD_NEW_FILE ||
           type == drive::TYPE_UPLOAD_EXISTING_FILE);
-}
-
-// Utility function to check if |job_info| is a file downloading job.
-bool IsDownloadJob(drive::JobType type) {
-  return type == drive::TYPE_DOWNLOAD_FILE;
 }
 
 // Converts the job info to its JSON (Value) form.

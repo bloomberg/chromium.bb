@@ -68,6 +68,7 @@ gfx::ImageSkia* CreateImageForColor(SkColor color) {
   return new gfx::ImageSkia(canvas.ExtractImageRep());
 }
 
+#if defined(OS_WIN)
 const gfx::ImageSkia& GetTopLeftCornerImage(panel::CornerStyle corner_style) {
   static gfx::ImageSkia* rounded_image = NULL;
   static gfx::ImageSkia* non_rounded_image = NULL;
@@ -153,6 +154,7 @@ const gfx::ImageSkia& GetRightEdgeImage() {
   }
   return *image;
 }
+#endif  // defined(OS_WIN)
 
 const gfx::Font& GetTitleFont() {
   static gfx::Font* font = NULL;

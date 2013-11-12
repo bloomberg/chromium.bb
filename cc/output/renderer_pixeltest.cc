@@ -21,6 +21,7 @@
 namespace cc {
 namespace {
 
+#if !defined(OS_ANDROID)
 scoped_ptr<RenderPass> CreateTestRootRenderPass(RenderPass::Id id,
                                                 gfx::Rect rect) {
   scoped_ptr<RenderPass> pass = RenderPass::Create();
@@ -195,7 +196,6 @@ bool FuzzyForSoftwareOnlyPixelComparator<RendererType>::Compare(
   return exact_.Compare(actual_bmp, expected_bmp);
 }
 
-#if !defined(OS_ANDROID)
 TYPED_TEST(RendererPixelTest, SimpleGreenRect) {
   gfx::Rect rect(this->device_viewport_size_);
 

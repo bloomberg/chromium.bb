@@ -282,21 +282,6 @@ void DrawIconCenter(gfx::Canvas* canvas,
                      icon_height, filter, paint);
 }
 
-// Draws the icon image at the bottom right corner of |bounds|.
-void DrawIconBottomRight(gfx::Canvas* canvas,
-                         const gfx::ImageSkia& image,
-                         int image_offset,
-                         int icon_width,
-                         int icon_height,
-                         const gfx::Rect& bounds,
-                         bool filter,
-                         const SkPaint& paint) {
-  int dst_x = bounds.x() + bounds.width() - icon_width;
-  int dst_y = bounds.y() + bounds.height() - icon_height;
-  DrawIconAtLocation(canvas, image, image_offset, dst_x, dst_y, icon_width,
-                     icon_height, filter, paint);
-}
-
 chrome::HostDesktopType GetHostDesktopType(views::View* view) {
   // Widget is NULL when tabs are detached.
   views::Widget* widget = view->GetWidget();

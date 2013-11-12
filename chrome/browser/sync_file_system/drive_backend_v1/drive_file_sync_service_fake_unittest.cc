@@ -88,6 +88,7 @@ void DidProcessRemoteChange(SyncStatusCode* status_out,
   *url_out = url;
 }
 
+#if !defined(OS_ANDROID)
 void DidGetRemoteVersions(
     SyncStatusCode* status_out,
     std::vector<RemoteFileSyncService::Version>* versions_out,
@@ -105,6 +106,7 @@ void DidDownloadRemoteVersion(
   *status_out = status;
   *downloaded_out = downloaded.Pass();
 }
+#endif  // !defined(OS_ANDROID)
 
 void ExpectEqStatus(bool* done,
                     SyncStatusCode expected,
@@ -144,6 +146,7 @@ GURL ExtensionNameToGURL(const std::string& extension_name) {
       ExtensionNameToId(extension_name));
 }
 
+#if !defined(OS_ANDROID)
 ACTION(InvokeCompletionCallback) {
   base::MessageLoopProxy::current()->PostTask(FROM_HERE, arg2);
 }
@@ -179,6 +182,7 @@ ACTION(InvokeDidApplyRemoteChange) {
   base::MessageLoopProxy::current()->PostTask(
       FROM_HERE, base::Bind(arg3, SYNC_STATUS_OK));
 }
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace
 

@@ -18,6 +18,7 @@ size_t g_oom_size = 0U;
 
 namespace {
 
+#if !defined(OS_ANDROID)
 void OnNoMemorySize(size_t size) {
   g_oom_size = size;
 
@@ -29,6 +30,7 @@ void OnNoMemorySize(size_t size) {
 void OnNoMemory() {
   OnNoMemorySize(0);
 }
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace
 

@@ -230,19 +230,6 @@ TEST(SecurityTest, CallocOverflow) {
 }
 
 #if (defined(OS_LINUX) || defined(OS_CHROMEOS)) && defined(__x86_64__)
-// Useful for debugging.
-void PrintProcSelfMaps() {
-  int fd = open("/proc/self/maps", O_RDONLY);
-  file_util::ScopedFD fd_closer(&fd);
-  ASSERT_GE(fd, 0);
-  char buffer[1<<13];
-  int ret;
-  ret = read(fd, buffer, sizeof(buffer) - 1);
-  ASSERT_GT(ret, 0);
-  buffer[ret - 1] = 0;
-  fprintf(stdout, "%s\n", buffer);
-}
-
 // Check if ptr1 and ptr2 are separated by less than size chars.
 bool ArePointersToSameArea(void* ptr1, void* ptr2, size_t size) {
   ptrdiff_t ptr_diff = reinterpret_cast<char*>(std::max(ptr1, ptr2)) -

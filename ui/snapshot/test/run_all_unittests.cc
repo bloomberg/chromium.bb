@@ -9,6 +9,7 @@
 
 namespace {
 
+#if !defined(USE_AURA)
 class NoAtExitBaseTestSuite : public base::TestSuite {
  public:
   NoAtExitBaseTestSuite(int argc, char** argv)
@@ -19,6 +20,7 @@ class NoAtExitBaseTestSuite : public base::TestSuite {
 int RunTestSuite(int argc, char** argv) {
   return NoAtExitBaseTestSuite(argc, argv).Run();
 }
+#endif  // !defined(USE_AURA)
 
 }  // namespace
 
@@ -30,6 +32,7 @@ int main(int argc, char** argv) {
       argc, argv, base::Bind(&ui::test::CompositorTestSuite::Run,
                              base::Unretained(&test_suite)));
 #else
+
 #if !defined(OS_ANDROID)
   base::AtExitManager at_exit;
 #endif

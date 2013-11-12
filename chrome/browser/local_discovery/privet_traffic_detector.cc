@@ -44,12 +44,6 @@ void GetNetworkListOnFileThread(
                                    base::Bind(callback, ip4_networks));
 }
 
-bool IsIpPrefixEqual(const net::IPAddressNumber& ip1,
-                     const net::IPAddressNumber& ip2) {
-  return !ip1.empty() && ip1.size() == ip2.size() &&
-         std::equal(ip1.begin(), ip1.end() - 1, ip2.begin());
-}
-
 }  // namespace
 
 namespace local_discovery {

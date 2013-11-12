@@ -158,6 +158,7 @@ WebUIController* NewWebUI(WebUI* web_ui, const GURL& url) {
   return new T(web_ui);
 }
 
+#if defined(ENABLE_EXTENSIONS)
 // Special cases for extensions.
 template<>
 WebUIController* NewWebUI<ExtensionWebUI>(WebUI* web_ui,
@@ -170,6 +171,7 @@ WebUIController* NewWebUI<extensions::ExtensionInfoUI>(WebUI* web_ui,
                                                        const GURL& url) {
   return new extensions::ExtensionInfoUI(web_ui, url);
 }
+#endif  // defined(ENABLE_EXTENSIONS)
 
 // Special case for older about: handlers.
 template<>

@@ -41,6 +41,7 @@ namespace {
 // exists only for testing.
 bool g_should_prompt_for_filename = true;
 
+#if !defined(OS_CHROMEOS)
 // Used for mapping between SavePageType constants and the indexes above.
 const SavePageType kIndexToSaveType[] = {
   content::SAVE_PAGE_TYPE_UNKNOWN,
@@ -56,6 +57,7 @@ int SavePackageTypeToIndex(SavePageType type) {
   NOTREACHED();
   return -1;
 }
+#endif
 
 // Indexes used for specifying which element in the extensions dropdown
 // the user chooses when picking a save type.

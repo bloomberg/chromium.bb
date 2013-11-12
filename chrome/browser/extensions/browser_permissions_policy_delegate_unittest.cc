@@ -37,6 +37,7 @@ class BrowserPermissionsPolicyDelegateTest : public testing::Test {
   TestingProfile* profile_;
 };
 
+#if !defined(OS_CHROMEOS)
 scoped_refptr<const Extension> CreateTestExtension(const std::string& id) {
   return ExtensionBuilder()
       .SetManifest(DictionaryBuilder()
@@ -47,6 +48,7 @@ scoped_refptr<const Extension> CreateTestExtension(const std::string& id) {
       .SetID(id)
       .Build();
 }
+#endif
 
 }  // namespace
 

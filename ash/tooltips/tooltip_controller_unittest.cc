@@ -71,11 +71,6 @@ TooltipController* GetController() {
       aura::client::GetTooltipClient(Shell::GetPrimaryRootWindow()));
 }
 
-gfx::Font GetDefaultFont() {
-  return ui::ResourceBundle::GetSharedInstance().GetFont(
-      ui::ResourceBundle::BaseFont);
-}
-
 }  // namespace
 
 class TooltipControllerTest : public AshTestBase {

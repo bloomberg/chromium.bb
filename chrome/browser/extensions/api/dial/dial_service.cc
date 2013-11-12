@@ -105,6 +105,7 @@ std::string BuildRequest() {
   return request;
 }
 
+#if !defined(OS_CHROMEOS)
 void GetNetworkListOnFileThread(
     const scoped_refptr<base::MessageLoopProxy>& loop,
     const base::Callback<void(const NetworkInterfaceList& networks)>& cb) {
@@ -116,7 +117,8 @@ void GetNetworkListOnFileThread(
   loop->PostTask(FROM_HERE, base::Bind(cb, list));
 }
 
-#if defined(OS_CHROMEOS)
+#else
+
 IPAddressNumber GetBestBindAddressByType(
     const chromeos::NetworkTypePattern& type) {
   const chromeos::NetworkState* state = chromeos::NetworkHandler::Get()
@@ -147,7 +149,7 @@ IPAddressNumber GetBestBindAddressChromeOS() {
   }
   return bind_ip_address;
 }
-#endif
+#endif  // !defined(OS_CHROMEOS)
 
 }  // namespace
 

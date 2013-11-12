@@ -203,6 +203,7 @@ ProfilerEventProto::TrackedObject::ProcessType AsProtobufProcessType(
   }
 }
 
+#if defined(ENABLE_PLUGINS)
 // Returns the plugin preferences corresponding for this user, if available.
 // If multiple user profiles are loaded, returns the preferences corresponding
 // to an arbitrary one of the profiles.
@@ -232,6 +233,7 @@ void SetPluginInfo(const content::WebPluginInfo& plugin_info,
   if (plugin_prefs)
     plugin->set_is_disabled(!plugin_prefs->IsPluginEnabled(plugin_info));
 }
+#endif  // defined(ENABLE_PLUGINS)
 
 void WriteFieldTrials(const std::vector<ActiveGroupId>& field_trial_ids,
                       SystemProfileProto* system_profile) {

@@ -41,6 +41,7 @@ void AppendToPythonPath(const base::FilePath& dir) {
 
 namespace {
 
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
 // Search for |to_try|, rolling up the directory tree from
 // |start_dir|.  If found, return true and put the path to |to_try| in
 // |out_dir|.  If not, return false and leave |out_dir| untouched.
@@ -59,6 +60,7 @@ bool TryRelativeToDir(const base::FilePath& start_dir,
   *out_dir = dir;
   return true;
 }
+#endif  // defined(OS_MACOSX) || defined(OS_CHROMEOS)
 
 }  // namespace
 

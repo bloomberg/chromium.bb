@@ -151,14 +151,12 @@ class TestExtensionURLRequestContextGetter
   scoped_ptr<net::URLRequestContext> context_;
 };
 
+#if defined(ENABLE_NOTIFICATIONS)
 BrowserContextKeyedService* CreateTestDesktopNotificationService(
     content::BrowserContext* profile) {
-#if defined(ENABLE_NOTIFICATIONS)
   return new DesktopNotificationService(static_cast<Profile*>(profile), NULL);
-#else
-  return NULL;
-#endif
 }
+#endif
 
 }  // namespace
 

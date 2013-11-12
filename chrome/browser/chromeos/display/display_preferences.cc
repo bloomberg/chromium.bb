@@ -77,10 +77,6 @@ bool UserCanSaveDisplayPreference() {
        user_manager->IsLoggedInAsKioskApp());
 }
 
-ash::DisplayController* GetDisplayController() {
-  return ash::Shell::GetInstance()->display_controller();
-}
-
 void LoadDisplayLayouts() {
   PrefService* local_state = g_browser_process->local_state();
   ash::internal::DisplayLayoutStore* layout_store =

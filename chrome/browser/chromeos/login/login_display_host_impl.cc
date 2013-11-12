@@ -150,10 +150,6 @@ void DetermineAndSaveHardwareKeyboard(const std::string& locale,
   }
 }
 
-ui::Layer* GetLayer(views::Widget* widget) {
-  return widget->GetNativeView()->layer();
-}
-
 // A class to observe an implicit animation and invokes the callback after the
 // animation is completed.
 class AnimationObserver : public ui::ImplicitAnimationObserver {

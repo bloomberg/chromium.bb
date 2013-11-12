@@ -111,23 +111,6 @@ uint64 GetDeviceStorageSize(const base::FilePath& device_path,
       total_size_in_bytes * 512 : 0;
 }
 
-// Constructs the device name from the device properties. If the device details
-// are unavailable, returns an empty string.
-void GetDeviceName(struct udev_device* device,
-                   string16* out_volume_label,
-                   string16* out_vendor_name,
-                   string16* out_model_name) {
-  std::string device_label = GetUdevDevicePropertyValue(device, kLabel);
-  std::string vendor_name = GetUdevDevicePropertyValue(device, kVendor);
-  std::string model_name = GetUdevDevicePropertyValue(device, kModel);
-  if (out_volume_label)
-    *out_volume_label = UTF8ToUTF16(device_label);
-  if (out_vendor_name)
-    *out_vendor_name = UTF8ToUTF16(vendor_name);
-  if (out_model_name)
-    *out_model_name = UTF8ToUTF16(model_name);
-}
-
 // Gets the device information using udev library.
 scoped_ptr<StorageInfo> GetDeviceInfo(const base::FilePath& device_path,
                                       const base::FilePath& mount_point) {

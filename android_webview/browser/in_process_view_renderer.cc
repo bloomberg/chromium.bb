@@ -107,11 +107,6 @@ bool RasterizeIntoBitmap(JNIEnv* env,
   return succeeded;
 }
 
-bool RenderPictureToCanvas(SkPicture* picture, SkCanvas* canvas) {
-  canvas->drawPicture(*picture);
-  return true;
-}
-
 class ScopedPixelAccess {
  public:
   ScopedPixelAccess(JNIEnv* env, jobject java_canvas) {

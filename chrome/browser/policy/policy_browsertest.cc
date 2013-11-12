@@ -303,6 +303,7 @@ void CheckURLIsBlocked(Browser* browser, const char* spec) {
   EXPECT_TRUE(result);
 }
 
+#if !defined(OS_CHROMEOS)
 // Downloads a file named |file| and expects it to be saved to |dir|, which
 // must be empty.
 void DownloadAndVerifyFile(
@@ -327,7 +328,8 @@ void DownloadAndVerifyFile(
   EXPECT_EQ(base::FilePath(), enumerator.Next());
 }
 
-#if defined(OS_CHROMEOS)
+#else
+
 int CountScreenshots() {
   DownloadPrefs* download_prefs = DownloadPrefs::FromBrowserContext(
       ash::Shell::GetInstance()->delegate()->GetCurrentBrowserContext());
@@ -342,6 +344,7 @@ int CountScreenshots() {
 #endif
 
 // Checks if WebGL is enabled in the given WebContents.
+#if defined(OS_MACOSX)
 bool IsWebGLEnabled(content::WebContents* contents) {
   bool result = false;
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
@@ -352,6 +355,7 @@ bool IsWebGLEnabled(content::WebContents* contents) {
       &result));
   return result;
 }
+#endif  // defined(OS_MACOSX)
 
 bool IsJavascriptEnabled(content::WebContents* contents) {
   scoped_ptr<base::Value> value = content::ExecuteScriptAndGetValue(

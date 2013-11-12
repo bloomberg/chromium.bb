@@ -68,16 +68,6 @@ size_t GetUTF8Offset(const string16& text, size_t text_offset) {
   return UTF16ToUTF8(text.substr(0, text_offset)).size();
 }
 
-// A helper method for determining a valid drag operation given the allowed
-// operation.  We prefer copy over link.
-int CopyOrLinkDragOperation(int drag_operation) {
-  if (drag_operation & ui::DragDropTypes::DRAG_COPY)
-    return ui::DragDropTypes::DRAG_COPY;
-  if (drag_operation & ui::DragDropTypes::DRAG_LINK)
-    return ui::DragDropTypes::DRAG_LINK;
-  return ui::DragDropTypes::DRAG_NONE;
-}
-
 // Stores GTK+-specific state so it can be restored after switching tabs.
 struct ViewState {
   explicit ViewState(const OmniboxViewGtk::CharRange& selection_range)

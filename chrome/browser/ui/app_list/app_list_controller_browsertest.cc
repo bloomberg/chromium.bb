@@ -65,6 +65,7 @@ class AppListControllerBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(AppListControllerBrowserTest);
 };
 
+#if !defined(OS_LINUX)
 AppListService* GetAppListService() {
   // TODO(tapted): Consider testing ash explicitly on the win-ash trybot.
   return AppListService::Get(chrome::GetActiveDesktop());
@@ -72,7 +73,6 @@ AppListService* GetAppListService() {
 
 // Test the CreateNewWindow function of the controller delegate.
 // TODO(mgiuca): Enable on Linux when supported.
-#if !defined(OS_LINUX)
 IN_PROC_BROWSER_TEST_F(AppListControllerBrowserTest, CreateNewWindow) {
   const chrome::HostDesktopType desktop = chrome::GetActiveDesktop();
   AppListService* service = GetAppListService();

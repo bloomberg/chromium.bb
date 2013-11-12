@@ -17,41 +17,6 @@ namespace chromeos {
 namespace {
 
 IBusDaemonController* g_ibus_daemon_controller = NULL;
-base::FilePathWatcher* g_file_path_watcher = NULL;
-
-// Called when the ibus-daemon address file is modified.
-static void OnFilePathChanged(
-    const scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
-    const base::Closure& closure,
-    const base::FilePath& file_path,
-    bool failed) {
-  if (failed)
-    return;  // Can't recover, do nothing.
-  if (!g_file_path_watcher)
-    return;  // Already discarded watch task.
-
-  ui_task_runner->PostTask(FROM_HERE, closure);
-  ui_task_runner->DeleteSoon(FROM_HERE, g_file_path_watcher);
-  g_file_path_watcher = NULL;
-}
-
-// Start watching |address_file_path|. If the target file is changed, |callback|
-// is called on UI thread. This function should be called on FILE thread.
-void StartWatch(
-    const std::string& address_file_path,
-    const base::Closure& closure,
-    const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner) {
-  // Before start watching, discard on-going watching task.
-  delete g_file_path_watcher;
-  g_file_path_watcher = new base::FilePathWatcher;
-  bool result = g_file_path_watcher->Watch(
-      base::FilePath::FromUTF8Unsafe(address_file_path),
-      false,  // do not watch child directory.
-      base::Bind(&OnFilePathChanged,
-                 ui_task_runner,
-                 closure));
-  DCHECK(result);
-}
 
 // An implementation of IBusDaemonController without ibus-daemon interaction.
 // Currently this class is used only on linux desktop.

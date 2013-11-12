@@ -48,6 +48,7 @@ class GLVirtualContextsTest : public testing::Test {
 
 namespace {
 
+#if !defined(OS_ANDROID)
 void SetupSimpleShader(const uint8* color) {
   static const char* v_shader_str = SHADER(
       attribute vec4 a_Position;
@@ -89,6 +90,8 @@ void TestDraw(int size) {
   EXPECT_TRUE(GLTestHelper::CheckPixels(0, 0, size, size, 1, expected_clear));
   glDrawArrays(GL_TRIANGLES, 0, 6);
 }
+
+#endif  // !defined(OS_ANDROID)
 
 }  // anonymous namespace
 

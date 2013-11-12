@@ -38,21 +38,11 @@ namespace {
 
 const int kExpectedExitCode = 100;
 
-template <class T>
-int popcount(T x);
-template <>
-int popcount<unsigned int>(unsigned int x) {
+int popcount(uint32_t x) {
   return __builtin_popcount(x);
 }
-template <>
-int popcount<unsigned long>(unsigned long x) {
-  return __builtin_popcountl(x);
-}
-template <>
-int popcount<unsigned long long>(unsigned long long x) {
-  return __builtin_popcountll(x);
-}
 
+#if !defined(NDEBUG)
 void WriteFailedStderrSetupMessage(int out_fd) {
   const char* error_string = strerror(errno);
   static const char msg[] =
@@ -64,6 +54,7 @@ void WriteFailedStderrSetupMessage(int out_fd) {
       HANDLE_EINTR(write(out_fd, "\n", 1))) {
   }
 }
+#endif  // !defined(NDEBUG)
 
 // We define a really simple sandbox policy. It is just good enough for us
 // to tell that the sandbox has actually been activated.

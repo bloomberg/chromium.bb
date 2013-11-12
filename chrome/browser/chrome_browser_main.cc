@@ -216,6 +216,7 @@ void HandleTestParameters(const CommandLine& command_line) {
   }
 }
 
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 void AddFirstRunNewTabs(StartupBrowserCreator* browser_creator,
                         const std::vector<GURL>& new_tabs) {
   for (std::vector<GURL>::const_iterator it = new_tabs.begin();
@@ -224,6 +225,7 @@ void AddFirstRunNewTabs(StartupBrowserCreator* browser_creator,
       browser_creator->AddFirstRunTab(*it);
   }
 }
+#endif  // !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 
 // Returns the new local state object, guaranteed non-NULL.
 // |local_state_task_runner| must be a shutdown-blocking task runner.
@@ -389,6 +391,7 @@ OSStatus KeychainCallback(SecKeychainEvent keychain_event,
 }
 #endif
 
+#if !defined(OS_ANDROID)
 void RegisterComponentsForUpdate(const CommandLine& command_line) {
   ComponentUpdateService* cus = g_browser_process->component_updater();
 
@@ -473,6 +476,7 @@ bool ProcessSingletonNotificationCallback(
       command_line, current_directory, startup_profile_dir);
   return true;
 }
+#endif  // !defined(OS_ANDROID)
 
 void LaunchDevToolsHandlerIfNeeded(const CommandLine& command_line) {
   if (command_line.HasSwitch(::switches::kRemoteDebuggingPort)) {

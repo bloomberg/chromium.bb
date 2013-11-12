@@ -55,14 +55,6 @@ bool IsBackgroundHidden() {
               IsVisible();
 }
 
-void ShowBackground() {
-  ui::ScopedLayerAnimationSettings settings(
-      GetContainer(internal::kShellWindowId_DesktopBackgroundContainer)->
-          layer()->GetAnimator());
-  settings.SetTransitionDuration(base::TimeDelta());
-  GetContainer(internal::kShellWindowId_DesktopBackgroundContainer)->Show();
-}
-
 void HideBackground() {
   ui::ScopedLayerAnimationSettings settings(
       GetContainer(internal::kShellWindowId_DesktopBackgroundContainer)->

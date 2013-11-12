@@ -121,12 +121,14 @@ void SetUninstallUrl(ExtensionPrefs* prefs,
                              new base::StringValue(url_string));
 }
 
+#if defined(ENABLE_EXTENSIONS)
 std::string GetUninstallUrl(ExtensionPrefs* prefs,
                             const std::string& extension_id) {
   std::string url_string;
   prefs->ReadPrefAsString(extension_id, kUninstallUrl, &url_string);
   return url_string;
 }
+#endif  // defined(ENABLE_EXTENSIONS)
 
 }  // namespace
 

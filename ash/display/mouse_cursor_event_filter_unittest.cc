@@ -16,19 +16,6 @@
 
 namespace ash {
 namespace internal {
-namespace {
-
-gfx::Display GetPrimaryDisplay() {
-  return Shell::GetScreen()->GetDisplayNearestWindow(
-      Shell::GetAllRootWindows()[0]);
-}
-
-gfx::Display GetSecondaryDisplay() {
-  return Shell::GetScreen()->GetDisplayNearestWindow(
-      Shell::GetAllRootWindows()[1]);
-}
-
-}  // namespace
 
 class MouseCursorEventFilterTest : public test::AshTestBase {
  public:

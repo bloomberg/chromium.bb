@@ -24,6 +24,7 @@ namespace net {
 
 namespace {
 
+#if !defined(USE_OPENSSL)
 void FailTest(int /* result */) {
   FAIL();
 }
@@ -48,18 +49,6 @@ class FailingTaskRunner : public base::TaskRunner {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FailingTaskRunner);
-};
-
-class ServerBoundCertServiceTest : public testing::Test {
- public:
-  ServerBoundCertServiceTest()
-      : service_(new ServerBoundCertService(
-            new DefaultServerBoundCertStore(NULL),
-            base::MessageLoopProxy::current())) {
-  }
-
- protected:
-  scoped_ptr<ServerBoundCertService> service_;
 };
 
 class MockServerBoundCertStoreWithAsyncGet
@@ -127,6 +116,20 @@ MockServerBoundCertStoreWithAsyncGet::CallGetServerBoundCertCallbackWithResult(
                                                     private_key,
                                                     cert));
 }
+
+#endif  // !defined(USE_OPENSSL)
+
+class ServerBoundCertServiceTest : public testing::Test {
+ public:
+  ServerBoundCertServiceTest()
+      : service_(new ServerBoundCertService(
+            new DefaultServerBoundCertStore(NULL),
+            base::MessageLoopProxy::current())) {
+  }
+
+ protected:
+  scoped_ptr<ServerBoundCertService> service_;
+};
 
 TEST_F(ServerBoundCertServiceTest, GetDomainForHost) {
   EXPECT_EQ("google.com",

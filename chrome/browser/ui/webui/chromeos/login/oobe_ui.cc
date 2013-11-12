@@ -81,22 +81,6 @@ const char kEnrollmentHTMLPath[] = "enrollment.html";
 const char kEnrollmentCSSPath[] = "enrollment.css";
 const char kEnrollmentJSPath[] = "enrollment.js";
 
-// Filter handler of chrome://oobe data source.
-bool HandleRequestCallback(
-    const std::string& path,
-    const content::WebUIDataSource::GotDataCallback& callback) {
-  if (UserManager::Get()->IsUserLoggedIn() &&
-      !UserManager::Get()->IsLoggedInAsStub() &&
-      !ScreenLocker::default_screen_locker()) {
-    scoped_refptr<base::RefCountedBytes> empty_bytes =
-        new base::RefCountedBytes();
-    callback.Run(empty_bytes.get());
-    return true;
-  }
-
-  return false;
-}
-
 // Creates a WebUIDataSource for chrome://oobe
 content::WebUIDataSource* CreateOobeUIDataSource(
     const base::DictionaryValue& localized_strings,

@@ -98,11 +98,6 @@ class RadioButtonImageSource : public gfx::CanvasImageSource {
   DISALLOW_COPY_AND_ASSIGN(RadioButtonImageSource);
 };
 
-gfx::ImageSkia* CreateRadioButtonImage(bool selected) {
-  RadioButtonImageSource* source = new RadioButtonImageSource(selected);
-  return new gfx::ImageSkia(source, source->size());
-}
-
 class SubmenuArrowImageSource : public gfx::CanvasImageSource {
  public:
   SubmenuArrowImageSource(int image_id)

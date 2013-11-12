@@ -114,10 +114,12 @@ using views::View;
 
 namespace {
 
+#if !defined(OS_CHROMEOS)
 Browser* GetBrowserFromDelegate(LocationBarView::Delegate* delegate) {
   WebContents* contents = delegate->GetWebContents();
   return contents ? chrome::FindBrowserWithWebContents(contents) : NULL;
 }
+#endif
 
 // Given a containing |height| and a |base_font_list|, shrinks the font size
 // until the font list will fit within |height| while having its cap height

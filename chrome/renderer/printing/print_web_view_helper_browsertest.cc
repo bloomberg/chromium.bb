@@ -80,7 +80,6 @@ const char kLongPageHTML[] =
 // A web page to simulate the print preview page.
 const char kPrintPreviewHTML[] =
     "<body><p id=\"pdf-viewer\">Hello World!</p></body>";
-#endif  // !defined(OS_CHROMEOS)
 
 void CreatePrintSettingsDictionary(base::DictionaryValue* dict) {
   dict->SetBoolean(kSettingLandscape, false);
@@ -100,6 +99,7 @@ void CreatePrintSettingsDictionary(base::DictionaryValue* dict) {
   dict->SetBoolean(kSettingShouldPrintBackgrounds, false);
   dict->SetBoolean(kSettingShouldPrintSelectionOnly, false);
 }
+#endif  // !defined(OS_CHROMEOS)
 
 }  // namespace
 

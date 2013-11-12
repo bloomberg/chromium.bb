@@ -100,12 +100,6 @@ std::string GetPemFromDictionary(
   return pem;
 }
 
-void ShillError(const std::string& function,
-                const std::string& error_name,
-                scoped_ptr<base::DictionaryValue> error_data) {
-  NET_LOG_ERROR("Shill Error from VpnConfigView: " + error_name, function);
-}
-
 }  // namespace
 
 namespace chromeos {

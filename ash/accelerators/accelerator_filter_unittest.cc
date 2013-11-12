@@ -23,14 +23,6 @@
 namespace ash {
 namespace test {
 
-namespace {
-
-AcceleratorController* GetController() {
-  return Shell::GetInstance()->accelerator_controller();
-}
-
-}  // namespace
-
 typedef AshTestBase AcceleratorFilterTest;
 
 // Tests if AcceleratorFilter works without a focused window.

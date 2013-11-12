@@ -20,12 +20,6 @@ namespace onc {
 
 namespace {
 
-std::string ValueToString(const base::Value& value) {
-  std::string json;
-  base::JSONWriter::Write(&value, &json);
-  return json;
-}
-
 // Copied from policy/configuration_policy_handler.cc.
 // TODO(pneubeck): move to a common place like base/.
 std::string ValueTypeToString(base::Value::Type type) {

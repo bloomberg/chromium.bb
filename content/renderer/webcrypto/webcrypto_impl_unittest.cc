@@ -80,6 +80,7 @@ blink::WebCryptoAlgorithm CreateAesCbcAlgorithm(
       new blink::WebCryptoAesKeyGenParams(key_length_bits));
 }
 
+#if !defined(USE_OPENSSL)
 blink::WebCryptoAlgorithm CreateRsaAlgorithm(
     blink::WebCryptoAlgorithmId algorithm_id,
     unsigned modulus_length,
@@ -92,6 +93,7 @@ blink::WebCryptoAlgorithm CreateRsaAlgorithm(
       new blink::WebCryptoRsaKeyGenParams(
           modulus_length, Start(public_exponent), public_exponent.size()));
 }
+#endif  // !defined(USE_OPENSSL)
 
 }  // namespace
 
