@@ -11567,7 +11567,6 @@ void CSSParser::startRuleHeader(CSSRuleSourceData::Type ruleType)
 
 void CSSParser::endRuleHeader()
 {
-    m_ruleHeaderType = CSSRuleSourceData::UNKNOWN_RULE;
     if (m_sourceDataHandler)
         m_sourceDataHandler->endRuleHeader(safeUserStringTokenOffset());
 }
@@ -11592,8 +11591,15 @@ void CSSParser::startRuleBody()
 
 void CSSParser::endRuleBody(bool discard)
 {
+    m_ruleHeaderType = CSSRuleSourceData::UNKNOWN_RULE;
     if (m_sourceDataHandler)
         m_sourceDataHandler->endRuleBody(safeUserStringTokenOffset(), discard);
+}
+
+void CSSParser::endInvalidRule()
+{
+    if (m_ruleHeaderType != CSSRuleSourceData::UNKNOWN_RULE)
+        endRuleBody(true);
 }
 
 void CSSParser::startProperty()

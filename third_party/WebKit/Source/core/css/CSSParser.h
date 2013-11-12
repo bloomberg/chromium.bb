@@ -411,6 +411,7 @@ public:
     void startProperty();
     void endProperty(bool isImportantFound, bool isPropertyParsed, ErrorType = NoError);
     void startEndUnknownRule();
+    void endInvalidRule();
 
     void endInvalidRuleHeader();
     void reportError(const CSSParserLocation&, ErrorType = GeneralError);

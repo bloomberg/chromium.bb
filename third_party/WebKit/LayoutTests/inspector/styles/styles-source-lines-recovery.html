@@ -1,0 +1,40 @@
+<html>
+<head>
+<style>
+
+@media all {
+::-moz-focus-inner {}
+}
+#main {
+margin-top: 0;
+}
+
+</style>
+
+<script src="../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../http/tests/inspector/elements-test.js"></script>
+<script>
+
+function test()
+{
+    InspectorTest.selectNodeAndWaitForStyles("main", step1);
+
+    function step1()
+    {
+        InspectorTest.dumpSelectedElementStyles(true, false, true);
+        InspectorTest.completeTest();
+    }
+}
+
+</script>
+</head>
+
+<body onload="runTest()">
+<p>
+Tests that invalid rule inside @-rule doesn't break source code matching (http://crbug.com/317499).
+</p>
+
+<div id="main"></div>
+
+</body>
+</html>
