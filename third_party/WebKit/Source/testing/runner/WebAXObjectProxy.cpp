@@ -35,7 +35,6 @@
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebRect.h"
 #include "public/platform/WebString.h"
-#include "public/web/WebAXObject.h"
 
 using namespace blink;
 using namespace std;

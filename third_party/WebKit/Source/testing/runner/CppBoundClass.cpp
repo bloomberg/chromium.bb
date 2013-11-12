@@ -45,7 +45,6 @@
 #include "public/platform/WebString.h"
 #include "public/web/WebBindings.h"
 #include "public/web/WebFrame.h"
-#include <memory>
 
 using namespace blink;
 using namespace std;

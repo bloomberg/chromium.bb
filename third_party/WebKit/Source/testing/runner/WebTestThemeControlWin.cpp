@@ -41,7 +41,6 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
-#include "third_party/skia/include/core/SkRect.h"
 
 #include <algorithm>
 

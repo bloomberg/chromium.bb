@@ -26,7 +26,6 @@
 #include "PluginTest.h"
 
 #include "PluginObject.h"
-#include <assert.h>
 #include <string.h>
 
 #if defined(XP_UNIX) || defined(ANDROID)

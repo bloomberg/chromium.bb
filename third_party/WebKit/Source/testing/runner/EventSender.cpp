@@ -47,13 +47,11 @@
 #include "TestCommon.h"
 #include "TestInterfaces.h"
 #include "public/platform/WebDragData.h"
-#include "public/platform/WebPoint.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebVector.h"
 #include "public/testing/WebTestDelegate.h"
 #include "public/testing/WebTestProxy.h"
 #include "public/web/WebContextMenuData.h"
-#include "public/web/WebDragOperation.h"
 #include "public/web/WebTouchPoint.h"
 #include "public/web/WebView.h"
 #include <deque>

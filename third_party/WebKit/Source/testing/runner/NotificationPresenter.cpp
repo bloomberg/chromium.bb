@@ -35,7 +35,6 @@
 #include "public/platform/WebURL.h"
 #include "public/testing/WebTestDelegate.h"
 #include "public/web/WebKit.h"
-#include "public/web/WebNotification.h"
 #include "public/web/WebNotificationPermissionCallback.h"
 #include "public/web/WebSecurityOrigin.h"
 #include <url/gurl.h>

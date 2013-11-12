@@ -43,7 +43,6 @@
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebURLResponse.h"
 #include "public/testing/WebPreferences.h"
-#include "public/testing/WebTask.h"
 #include "public/testing/WebTestDelegate.h"
 #include "public/testing/WebTestProxy.h"
 #include "public/web/WebBindings.h"
@@ -63,7 +62,6 @@
 #include "public/web/WebView.h"
 #include "v8/include/v8.h"
 #include <limits>
-#include <memory>
 
 #if defined(__linux__) || defined(ANDROID)
 #include "public/web/linux/WebFontRendering.h"
