@@ -44,6 +44,7 @@ class FileSystemOperationContext;
 class FileSystemURL;
 class FileSystemUsageCache;
 class ObfuscatedFileUtil;
+class QuotaReservationManager;
 class SandboxFileSystemBackend;
 class SandboxFileSystemTestHelper;
 class SandboxQuotaObserver;
@@ -137,6 +138,10 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackendDelegate
       FileSystemContext* context,
       const GURL& origin_url,
       FileSystemType type) OVERRIDE;
+  virtual scoped_refptr<QuotaReservation>
+      CreateQuotaReservationOnFileTaskRunner(
+          const GURL& origin_url,
+          FileSystemType type) OVERRIDE;
   virtual void AddFileUpdateObserver(
       FileSystemType type,
       FileUpdateObserver* observer,
@@ -221,6 +226,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackendDelegate
   scoped_ptr<AsyncFileUtil> sandbox_file_util_;
   scoped_ptr<FileSystemUsageCache> file_system_usage_cache_;
   scoped_ptr<SandboxQuotaObserver> quota_observer_;
+  scoped_ptr<QuotaReservationManager> quota_reservation_manager_;
 
   scoped_refptr<quota::SpecialStoragePolicy> special_storage_policy_;
 

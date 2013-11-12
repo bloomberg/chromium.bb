@@ -4,6 +4,8 @@
 
 #include "webkit/browser/fileapi/sandbox_file_system_backend_delegate.h"
 
+#include <vector>
+
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/metrics/histogram.h"
@@ -17,6 +19,9 @@
 #include "webkit/browser/fileapi/file_system_url.h"
 #include "webkit/browser/fileapi/file_system_usage_cache.h"
 #include "webkit/browser/fileapi/obfuscated_file_util.h"
+#include "webkit/browser/fileapi/quota/quota_backend_impl.h"
+#include "webkit/browser/fileapi/quota/quota_reservation.h"
+#include "webkit/browser/fileapi/quota/quota_reservation_manager.h"
 #include "webkit/browser/fileapi/sandbox_file_stream_writer.h"
 #include "webkit/browser/fileapi/sandbox_file_system_backend.h"
 #include "webkit/browser/fileapi/sandbox_quota_observer.h"
@@ -185,6 +190,12 @@ SandboxFileSystemBackendDelegate::SandboxFileSystemBackendDelegate(
           file_task_runner,
           obfuscated_file_util(),
           usage_cache())),
+      quota_reservation_manager_(new QuotaReservationManager(
+          scoped_ptr<QuotaReservationManager::QuotaBackend>(
+              new QuotaBackendImpl(file_task_runner_,
+                                   obfuscated_file_util(),
+                                   usage_cache(),
+                                   quota_manager_proxy)))),
       special_storage_policy_(special_storage_policy),
       file_system_options_(file_system_options),
       is_filesystem_opened_(false),
@@ -208,6 +219,7 @@ SandboxFileSystemBackendDelegate::~SandboxFileSystemBackendDelegate() {
   io_thread_checker_.DetachFromThread();
 
   if (!file_task_runner_->RunsTasksOnCurrentThread()) {
+    DeleteSoon(file_task_runner_.get(), quota_reservation_manager_.release());
     DeleteSoon(file_task_runner_.get(), sandbox_file_util_.release());
     DeleteSoon(file_task_runner_.get(), quota_observer_.release());
     DeleteSoon(file_task_runner_.get(), file_system_usage_cache_.release());
@@ -404,6 +416,15 @@ int64 SandboxFileSystemBackendDelegate::GetOriginUsageOnFileThread(
   // This clears the dirty flag too.
   usage_cache()->UpdateUsage(usage_file_path, usage);
   return usage;
+}
+
+scoped_refptr<QuotaReservation>
+SandboxFileSystemBackendDelegate::CreateQuotaReservationOnFileTaskRunner(
+    const GURL& origin,
+    FileSystemType type) {
+  DCHECK(file_task_runner_->RunsTasksOnCurrentThread());
+  DCHECK(quota_reservation_manager_);
+  return quota_reservation_manager_->CreateReservation(origin, type);
 }
 
 void SandboxFileSystemBackendDelegate::AddFileUpdateObserver(

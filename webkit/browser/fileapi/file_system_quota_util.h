@@ -26,6 +26,7 @@ class QuotaManagerProxy;
 namespace fileapi {
 
 class FileSystemContext;
+class QuotaReservation;
 
 // An abstract interface that provides common quota-related utility functions
 // for file_system_quota_client.
@@ -55,6 +56,12 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemQuotaUtil {
       fileapi::FileSystemContext* file_system_context,
       const GURL& origin_url,
       fileapi::FileSystemType type) = 0;
+
+  // Creates new reservation object for the origin and the type.
+  virtual scoped_refptr<QuotaReservation>
+      CreateQuotaReservationOnFileTaskRunner(
+          const GURL& origin_url,
+          FileSystemType type) = 0;
 
   virtual void AddFileUpdateObserver(
       FileSystemType type,

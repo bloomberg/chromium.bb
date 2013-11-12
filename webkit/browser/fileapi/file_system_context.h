@@ -59,6 +59,7 @@ class FileSystemQuotaUtil;
 class FileSystemURL;
 class IsolatedFileSystemBackend;
 class MountPoints;
+class QuotaReservation;
 class SandboxFileSystemBackend;
 
 struct DefaultContextDeleter;
@@ -104,7 +105,17 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
       const base::FilePath& partition_path,
       const FileSystemOptions& options);
 
+  // TODO(nhiroki): Rename *OnFileThread methods since these are no longer on
+  // FILE thread.
   bool DeleteDataForOriginOnFileThread(const GURL& origin_url);
+
+  // Creates a new QuotaReservation for the given |origin_url| and |type|.
+  // Returns NULL if |type| does not support quota or reservation fails.
+  // This should be run on |default_file_task_runner_| and the returned value
+  // should be destroyed on the runner.
+  scoped_refptr<QuotaReservation> CreateQuotaReservationOnFileTaskRunner(
+      const GURL& origin_url,
+      FileSystemType type);
 
   quota::QuotaManagerProxy* quota_manager_proxy() const {
     return quota_manager_proxy_.get();

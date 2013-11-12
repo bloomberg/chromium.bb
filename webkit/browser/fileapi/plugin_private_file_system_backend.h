@@ -100,6 +100,10 @@ class WEBKIT_STORAGE_BROWSER_EXPORT PluginPrivateFileSystemBackend
       FileSystemContext* context,
       const GURL& origin_url,
       FileSystemType type) OVERRIDE;
+  virtual scoped_refptr<QuotaReservation>
+      CreateQuotaReservationOnFileTaskRunner(
+          const GURL& origin_url,
+          FileSystemType type) OVERRIDE;
   virtual void AddFileUpdateObserver(
       FileSystemType type,
       FileUpdateObserver* observer,

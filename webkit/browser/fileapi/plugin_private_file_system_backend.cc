@@ -19,13 +19,14 @@
 #include "webkit/browser/fileapi/file_system_options.h"
 #include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/browser/fileapi/obfuscated_file_util.h"
+#include "webkit/browser/fileapi/quota/quota_reservation.h"
 #include "webkit/common/fileapi/file_system_util.h"
 
 namespace fileapi {
 
 class PluginPrivateFileSystemBackend::FileSystemIDToPluginMap {
  public:
-  FileSystemIDToPluginMap(base::SequencedTaskRunner* task_runner)
+  explicit FileSystemIDToPluginMap(base::SequencedTaskRunner* task_runner)
       : task_runner_(task_runner) {}
   ~FileSystemIDToPluginMap() {}
 
@@ -258,6 +259,15 @@ int64 PluginPrivateFileSystemBackend::GetOriginUsageOnFileThread(
     FileSystemType type) {
   // We don't track usage on this filesystem.
   return 0;
+}
+
+scoped_refptr<QuotaReservation>
+PluginPrivateFileSystemBackend::CreateQuotaReservationOnFileTaskRunner(
+    const GURL& origin_url,
+    FileSystemType type) {
+  // We don't track usage on this filesystem.
+  NOTREACHED();
+  return scoped_refptr<QuotaReservation>();
 }
 
 void PluginPrivateFileSystemBackend::AddFileUpdateObserver(

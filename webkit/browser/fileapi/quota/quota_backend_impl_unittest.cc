@@ -4,6 +4,8 @@
 
 #include "webkit/browser/fileapi/quota/quota_backend_impl.h"
 
+#include <string>
+
 #include "base/files/scoped_temp_dir.h"
 #include "base/message_loop/message_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"

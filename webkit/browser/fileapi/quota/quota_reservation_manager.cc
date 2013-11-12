@@ -13,7 +13,7 @@ QuotaReservationManager::QuotaReservationManager(
     scoped_ptr<QuotaBackend> backend)
     : backend_(backend.Pass()),
       weak_ptr_factory_(this) {
-  DCHECK(sequence_checker_.CalledOnValidSequencedThread());
+  sequence_checker_.DetachFromSequence();
 }
 
 QuotaReservationManager::~QuotaReservationManager() {

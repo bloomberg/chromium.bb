@@ -23,6 +23,7 @@
 #include "webkit/browser/fileapi/isolated_context.h"
 #include "webkit/browser/fileapi/isolated_file_system_backend.h"
 #include "webkit/browser/fileapi/mount_points.h"
+#include "webkit/browser/fileapi/quota/quota_reservation.h"
 #include "webkit/browser/fileapi/sandbox_file_system_backend.h"
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/browser/quota/special_storage_policy.h"
@@ -189,6 +190,18 @@ bool FileSystemContext::DeleteDataForOriginOnFileThread(
   }
 
   return success;
+}
+
+scoped_refptr<QuotaReservation>
+FileSystemContext::CreateQuotaReservationOnFileTaskRunner(
+    const GURL& origin_url,
+    FileSystemType type) {
+  DCHECK(default_file_task_runner()->RunsTasksOnCurrentThread());
+  FileSystemBackend* backend = GetFileSystemBackend(type);
+  if (!backend || !backend->GetQuotaUtil())
+    return scoped_refptr<QuotaReservation>();
+  return backend->GetQuotaUtil()->CreateQuotaReservationOnFileTaskRunner(
+      origin_url, type);
 }
 
 void FileSystemContext::Shutdown() {

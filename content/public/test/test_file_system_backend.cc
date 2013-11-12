@@ -18,6 +18,7 @@
 #include "webkit/browser/fileapi/file_system_quota_util.h"
 #include "webkit/browser/fileapi/local_file_util.h"
 #include "webkit/browser/fileapi/native_file_util.h"
+#include "webkit/browser/fileapi/quota/quota_reservation.h"
 #include "webkit/browser/fileapi/sandbox_file_stream_writer.h"
 #include "webkit/browser/quota/quota_manager.h"
 #include "webkit/common/fileapi/file_system_util.h"
@@ -52,7 +53,7 @@ class TestFileSystemBackend::QuotaUtil
     : public FileSystemQuotaUtil,
       public FileUpdateObserver {
  public:
-  QuotaUtil(base::SequencedTaskRunner* task_runner)
+  explicit QuotaUtil(base::SequencedTaskRunner* task_runner)
       : usage_(0),
         task_runner_(task_runner) {
     update_observers_ = update_observers_.AddObserver(this, task_runner_.get());
@@ -67,6 +68,14 @@ class TestFileSystemBackend::QuotaUtil
       FileSystemType type) OVERRIDE {
     NOTREACHED();
     return base::PLATFORM_FILE_OK;
+  }
+
+  virtual scoped_refptr<QuotaReservation>
+      CreateQuotaReservationOnFileTaskRunner(
+          const GURL& origin_url,
+          FileSystemType type) OVERRIDE {
+    NOTREACHED();
+    return scoped_refptr<QuotaReservation>();
   }
 
   virtual void GetOriginsForTypeOnFileThread(
