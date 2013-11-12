@@ -11,19 +11,19 @@ namespace image_writer_utils
 
 const int kFsyncRatio = 1024;
 
-ImageWriter::ImageWriter() : file_(0),
+ImageWriter::ImageWriter() : file_(base::kInvalidPlatformFileValue),
                              writes_count_(0) {
 }
 
 ImageWriter::~ImageWriter() {
-  if (file_)
+  if (file_ != base::kInvalidPlatformFileValue)
     base::ClosePlatformFile(file_);
 }
 
 bool ImageWriter::Open(const base::FilePath& path) {
-  if (file_)
+  if (file_ != base::kInvalidPlatformFileValue)
     Close();
-  DCHECK(!file_);
+  DCHECK_EQ(base::kInvalidPlatformFileValue, file_);
   base::PlatformFileError error;
   file_ = base::CreatePlatformFile(
     path,
@@ -39,8 +39,9 @@ bool ImageWriter::Open(const base::FilePath& path) {
 }
 
 bool ImageWriter::Close() {
-  if (file_ && base::ClosePlatformFile(file_)) {
-    file_ = 0;
+  if (file_ != base::kInvalidPlatformFileValue &&
+      base::ClosePlatformFile(file_)) {
+    file_ = base::kInvalidPlatformFileValue;
     return true;
   } else {
     LOG(ERROR) << "Could not close target file";
@@ -68,18 +69,18 @@ int ImageWriter::Write(const char* data_block, int data_size) {
   return written;
 }
 
-ImageReader::ImageReader() : file_(0) {
+ImageReader::ImageReader() : file_(base::kInvalidPlatformFileValue) {
 }
 
 ImageReader::~ImageReader() {
-  if (file_)
+  if (file_ != base::kInvalidPlatformFileValue)
     base::ClosePlatformFile(file_);
 }
 
 bool ImageReader::Open(const base::FilePath& path) {
-  if (file_)
+  if (file_ != base::kInvalidPlatformFileValue)
     Close();
-  DCHECK(!file_);
+  DCHECK_EQ(base::kInvalidPlatformFileValue, file_);
   base::PlatformFileError error;
   file_ = base::CreatePlatformFile(
     path,
@@ -95,8 +96,9 @@ bool ImageReader::Open(const base::FilePath& path) {
 }
 
 bool ImageReader::Close() {
-  if (file_ && base::ClosePlatformFile(file_)) {
-    file_ = 0;
+  if (file_ != base::kInvalidPlatformFileValue &&
+      base::ClosePlatformFile(file_)) {
+    file_ = base::kInvalidPlatformFileValue;
     return true;
   } else {
     LOG(ERROR) << "Could not close target file";
