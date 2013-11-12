@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+<include src="wallpaper_loader.js"></include>
+
 /**
  * @fileoverview User pod row implementation.
  */
@@ -20,20 +22,6 @@ cr.define('login', function() {
    * @const
    */
   var PRESELECT_FIRST_POD = true;
-
-  /**
-   * Wallpaper load delay in milliseconds.
-   * @type {number}
-   * @const
-   */
-  var WALLPAPER_LOAD_DELAY_MS = 500;
-
-  /**
-   * Wallpaper load delay in milliseconds. TODO(nkostylev): Tune this constant.
-   * @type {number}
-   * @const
-   */
-  var WALLPAPER_BOOT_LOAD_DELAY_MS = 100;
 
   /**
    * Maximum time for which the pod row remains hidden until all user images
@@ -959,16 +947,8 @@ cr.define('login', function() {
     // Whether this user pod row is shown for the first time.
     firstShown_: true,
 
-    // Whether the initial wallpaper load after boot has been requested. Used
-    // only if |Oobe.getInstance().shouldLoadWallpaperOnBoot()| is true.
-    bootWallpaperLoaded_: false,
-
     // True if inside focusPod().
     insideFocusPod_: false,
-
-    // True if user pod has been activated with keyboard.
-    // In case of activation with keyboard we delay wallpaper change.
-    keyboardActivated_: false,
 
     // Focused pod.
     focusedPod_: undefined,
@@ -979,9 +959,8 @@ cr.define('login', function() {
     // Pod that was most recently focused, if any.
     lastFocusedPod_: undefined,
 
-    // When moving through users quickly at login screen, set a timeout to
-    // prevent loading intermediate wallpapers.
-    loadWallpaperTimeout_: null,
+    // Note: created only in decorate() !
+    wallpaperLoader_: undefined,
 
     // Pods whose initial images haven't been loaded yet.
     podsWithPendingImages_: [],
@@ -998,6 +977,7 @@ cr.define('login', function() {
         mousemove: [this.handleMouseMove_.bind(this), false],
         keydown: [this.handleKeyDown.bind(this), false]
       };
+      this.wallpaperLoader_ = new login.WallpaperLoader();
     },
 
     /**
@@ -1242,7 +1222,7 @@ cr.define('login', function() {
       }
       this.insideFocusPod_ = true;
 
-      clearTimeout(this.loadWallpaperTimeout_);
+      this.wallpaperLoader_.reset();
       for (var i = 0, pod; pod = this.pods[i]; ++i) {
         if (!this.isSinglePod) {
           pod.isActionBoxMenuActive = false;
@@ -1265,30 +1245,14 @@ cr.define('login', function() {
         podToFocus.classList.remove('faded');
         podToFocus.classList.add('focused');
         podToFocus.reset(true);  // Reset and give focus.
-        chrome.send('focusPod', [podToFocus.user.emailAddress]);
-        if (hadFocus && this.keyboardActivated_) {
-          // Delay wallpaper loading to let user tab through pods without lag.
-          this.loadWallpaperTimeout_ = window.setTimeout(
-              this.loadWallpaper_.bind(this), WALLPAPER_LOAD_DELAY_MS);
-        } else if (!this.firstShown_) {
-          // Load wallpaper immediately if there no pod was focused
-          // previously, and it is not a boot into user pod list case.
-          this.loadWallpaper_();
-        }
+        chrome.send('focusPod', [podToFocus.user.username]);
+
+        this.wallpaperLoader_.scheduleLoad(podToFocus.user.username);
         this.firstShown_ = false;
         this.lastFocusedPod_ = podToFocus;
       }
       this.insideFocusPod_ = false;
       this.keyboardActivated_ = false;
-    },
-
-    /**
-     * Loads wallpaper for the active user pod, if any.
-     * @private
-     */
-    loadWallpaper_: function() {
-      if (this.focusedPod_)
-        chrome.send('loadWallpaper', [this.focusedPod_.user.username]);
     },
 
     /**
@@ -1307,7 +1271,15 @@ cr.define('login', function() {
      */
     loadLastWallpaper: function() {
       if (this.lastFocusedPod_)
-        chrome.send('loadWallpaper', [this.lastFocusedPod_.user.username]);
+        this.wallpaperLoader_.scheduleLoad(this.lastFocusedPod_.user.username);
+    },
+
+    /**
+     * Handles 'onWallpaperLoaded' event. Recalculates statistics and
+     * [re]schedules next wallpaper load.
+     */
+    onWallpaperLoaded: function(username) {
+      this.wallpaperLoader_.onWallpaperLoaded(username);
     },
 
     /**
@@ -1571,13 +1543,7 @@ cr.define('login', function() {
             focusedPod.reset(true);
             // Notify screen that it is ready.
             screen.onShow();
-            // Boot transition: load wallpaper.
-            if (!self.bootWallpaperLoaded_ &&
-                Oobe.getInstance().shouldLoadWallpaperOnBoot()) {
-              self.loadWallpaperTimeout_ = window.setTimeout(
-                  self.loadWallpaper_.bind(self), WALLPAPER_BOOT_LOAD_DELAY_MS);
-              self.bootWallpaperLoaded_ = true;
-            }
+            self.wallpaperLoader_.scheduleLoad(focusedPod.user.username);
           }
         });
         // Guard timer for 1 second -- it would conver all possible animations.

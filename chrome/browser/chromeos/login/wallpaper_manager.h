@@ -12,6 +12,7 @@
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/user.h"
@@ -78,6 +79,12 @@ class WallpaperManager: public content::NotificationObserver {
     WallpaperManager* wallpaper_manager_;  // not owned
 
     DISALLOW_COPY_AND_ASSIGN(TestApi);
+  };
+
+  class Observer {
+   public:
+    virtual ~Observer() {}
+    virtual void OnWallpaperAnimationFinished(const std::string& email) = 0;
   };
 
   static WallpaperManager* Get();
@@ -187,6 +194,12 @@ class WallpaperManager: public content::NotificationObserver {
   // Updates current wallpaper. It may switch the size of wallpaper based on the
   // current display's resolution.
   void UpdateWallpaper();
+
+  // Adds given observer to the list.
+  void AddObserver(Observer* observer);
+
+  // Removes given observer from the list.
+  void RemoveObserver(Observer* observer);
 
  private:
   friend class TestApi;
@@ -306,6 +319,9 @@ class WallpaperManager: public content::NotificationObserver {
                  bool update_wallpaper,
                  const base::FilePath& wallpaper_path);
 
+  // Notify all registed observers.
+  void NotifyAnimationFinished();
+
   // The number of loaded wallpapers.
   int loaded_wallpapers_;
 
@@ -341,6 +357,8 @@ class WallpaperManager: public content::NotificationObserver {
   base::WeakPtrFactory<WallpaperManager> weak_factory_;
 
   content::NotificationRegistrar registrar_;
+
+  ObserverList<Observer> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(WallpaperManager);
 };
