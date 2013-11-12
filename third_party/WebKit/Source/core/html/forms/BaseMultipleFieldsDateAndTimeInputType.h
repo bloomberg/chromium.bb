@@ -105,7 +105,7 @@ private:
     virtual void setValue(const String&, bool valueChanged, TextFieldEventBehavior) OVERRIDE FINAL;
     virtual bool shouldUseInputMethod() const OVERRIDE FINAL;
     virtual void stepAttributeChanged() OVERRIDE FINAL;
-    virtual void updateInnerTextValue() OVERRIDE FINAL;
+    virtual void updateView() OVERRIDE FINAL;
     virtual void valueAttributeChanged() OVERRIDE;
     virtual void listAttributeTargetChanged() OVERRIDE FINAL;
     virtual void updateClearButtonVisibility() OVERRIDE FINAL;

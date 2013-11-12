@@ -446,7 +446,7 @@ void HTMLInputElement::updateType()
         updateValueIfNeeded();
 
     setFormControlValueMatchesRenderer(false);
-    m_inputType->updateInnerTextValue();
+    m_inputTypeView->updateView();
 
     m_wasModifiedByUser = false;
 
@@ -925,7 +925,7 @@ void HTMLInputElement::copyNonAttributePropertiesFromElement(const Element& sour
     HTMLTextFormControlElement::copyNonAttributePropertiesFromElement(source);
 
     setFormControlValueMatchesRenderer(false);
-    m_inputTypeView->updateInnerTextValue();
+    m_inputTypeView->updateView();
 }
 
 String HTMLInputElement::value() const
@@ -973,7 +973,7 @@ void HTMLInputElement::setSuggestedValue(const String& value)
     setFormControlValueMatchesRenderer(false);
     m_suggestedValue = sanitizeValue(value);
     setNeedsStyleRecalc();
-    m_inputType->updateInnerTextValue();
+    m_inputTypeView->updateView();
 }
 
 void HTMLInputElement::setEditingValue(const String& value)

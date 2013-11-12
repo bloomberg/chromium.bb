@@ -114,7 +114,7 @@ void TextFieldInputType::setValue(const String& sanitizedValue, bool valueChange
     InputType::setValue(sanitizedValue, valueChanged, DispatchNoEvent);
 
     if (valueChanged)
-        updateInnerTextValue();
+        updateView();
 
     unsigned max = visibleValue().length();
     if (input->focused())
@@ -285,9 +285,9 @@ void TextFieldInputType::destroyShadowSubtree()
 
 void TextFieldInputType::attributeChanged()
 {
-    // FIXME: Updating the inner text on any attribute update should
-    // be unnecessary. We should figure out what attributes affect.
-    updateInnerTextValue();
+    // FIXME: Updating on any attribute update should be unnecessary. We should
+    // figure out what attributes affect.
+    updateView();
 }
 
 void TextFieldInputType::disabledAttributeChanged()
@@ -456,7 +456,7 @@ void TextFieldInputType::spinButtonStepUp()
     stepUpFromRenderer(1);
 }
 
-void TextFieldInputType::updateInnerTextValue()
+void TextFieldInputType::updateView()
 {
     if (!element().suggestedValue().isNull()) {
         element().setInnerTextValue(element().suggestedValue());

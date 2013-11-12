@@ -57,7 +57,7 @@ private:
     virtual void handleKeydownEvent(KeyboardEvent*) OVERRIDE;
     virtual void didSetValueByUserEdit(ValueChangeState) OVERRIDE;
     virtual bool supportsInputModeAttribute() const OVERRIDE;
-    virtual void updateInnerTextValue() OVERRIDE;
+    virtual void updateView() OVERRIDE;
 
     void searchEventTimerFired(Timer<SearchInputType>*);
     bool searchEventsShouldBeDispatched() const;

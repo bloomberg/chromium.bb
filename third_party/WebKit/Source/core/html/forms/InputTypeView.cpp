@@ -148,7 +148,7 @@ void InputTypeView::didDispatchClick(Event*, const ClickHandlingState&)
 {
 }
 
-void InputTypeView::updateInnerTextValue()
+void InputTypeView::updateView()
 {
 }
 

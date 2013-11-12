@@ -159,9 +159,9 @@ void SearchInputType::didSetValueByUserEdit(ValueChangeState state)
     TextFieldInputType::didSetValueByUserEdit(state);
 }
 
-void SearchInputType::updateInnerTextValue()
+void SearchInputType::updateView()
 {
-    BaseTextInputType::updateInnerTextValue();
+    BaseTextInputType::updateView();
     updateCancelButtonVisibility();
 }
 

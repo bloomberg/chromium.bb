@@ -331,7 +331,7 @@ void BaseMultipleFieldsDateAndTimeInputType::createShadowSubtree()
     ContainerNode* container = element().userAgentShadowRoot();
 
     container->appendChild(DateTimeEditElement::create(document, *this));
-    updateInnerTextValue();
+    updateView();
     container->appendChild(ClearButtonElement::create(document, *this));
     container->appendChild(SpinButtonElement::create(document, *this));
 
@@ -437,7 +437,7 @@ AtomicString BaseMultipleFieldsDateAndTimeInputType::localeIdentifier() const
 
 void BaseMultipleFieldsDateAndTimeInputType::minOrMaxAttributeChanged()
 {
-    updateInnerTextValue();
+    updateView();
 }
 
 void BaseMultipleFieldsDateAndTimeInputType::readonlyAttributeChanged()
@@ -471,7 +471,7 @@ void BaseMultipleFieldsDateAndTimeInputType::setValue(const String& sanitizedVal
     InputType::setValue(sanitizedValue, valueChanged, eventBehavior);
     DateTimeEditElement* edit = dateTimeEditElement();
     if (valueChanged || (sanitizedValue.isEmpty() && edit && edit->anyEditableFieldsHaveValues())) {
-        updateInnerTextValue();
+        updateView();
         element().setNeedsValidityCheck();
     }
 }
@@ -483,10 +483,10 @@ bool BaseMultipleFieldsDateAndTimeInputType::shouldUseInputMethod() const
 
 void BaseMultipleFieldsDateAndTimeInputType::stepAttributeChanged()
 {
-    updateInnerTextValue();
+    updateView();
 }
 
-void BaseMultipleFieldsDateAndTimeInputType::updateInnerTextValue()
+void BaseMultipleFieldsDateAndTimeInputType::updateView()
 {
     DateTimeEditElement* edit = dateTimeEditElement();
     if (!edit)
@@ -518,7 +518,7 @@ void BaseMultipleFieldsDateAndTimeInputType::updateInnerTextValue()
 void BaseMultipleFieldsDateAndTimeInputType::valueAttributeChanged()
 {
     if (!element().hasDirtyValue())
-        updateInnerTextValue();
+        updateView();
 }
 
 void BaseMultipleFieldsDateAndTimeInputType::listAttributeTargetChanged()

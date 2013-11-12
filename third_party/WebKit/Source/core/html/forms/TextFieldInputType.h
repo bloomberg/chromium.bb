@@ -60,7 +60,7 @@ protected:
     virtual void handleFocusEvent(Element* oldFocusedNode, FocusDirection) OVERRIDE;
     virtual void handleBlurEvent() OVERRIDE;
     virtual void setValue(const String&, bool valueChanged, TextFieldEventBehavior) OVERRIDE;
-    virtual void updateInnerTextValue() OVERRIDE;
+    virtual void updateView() OVERRIDE;
 
     virtual String convertFromVisibleValue(const String&) const;
     enum ValueChangeState {
