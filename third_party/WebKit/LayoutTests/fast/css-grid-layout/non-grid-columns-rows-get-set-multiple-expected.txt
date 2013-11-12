@@ -28,6 +28,14 @@ PASS window.getComputedStyle(gridWithFractionFraction, '').getPropertyValue('gri
 PASS window.getComputedStyle(gridWithFractionFraction, '').getPropertyValue('grid-definition-rows') is "3fr 4fr"
 PASS window.getComputedStyle(gridWithFractionMinMax, '').getPropertyValue('grid-definition-columns') is "minmax(min-content, 45px) 2fr"
 PASS window.getComputedStyle(gridWithFractionMinMax, '').getPropertyValue('grid-definition-rows') is "3fr minmax(14px, max-content)"
+PASS window.getComputedStyle(gridWithCalcCalc, '').getPropertyValue('grid-definition-columns') is "200px 100px"
+PASS window.getComputedStyle(gridWithCalcCalc, '').getPropertyValue('grid-definition-rows') is "150px 75px"
+PASS window.getComputedStyle(gridWithCalcAndFixed, '').getPropertyValue('grid-definition-columns') is "50% 80px"
+PASS window.getComputedStyle(gridWithCalcAndFixed, '').getPropertyValue('grid-definition-rows') is "88px 25%"
+PASS window.getComputedStyle(gridWithCalcAndMinMax, '').getPropertyValue('grid-definition-columns') is "calc(30px + 20%) minmax(min-content, 80px)"
+PASS window.getComputedStyle(gridWithCalcAndMinMax, '').getPropertyValue('grid-definition-rows') is "minmax(25%, max-content) calc(10% - 7px)"
+PASS window.getComputedStyle(gridWithCalcInsideMinMax, '').getPropertyValue('grid-definition-columns') is "minmax(calc(23px + 10%), 400px) 120px"
+PASS window.getComputedStyle(gridWithCalcInsideMinMax, '').getPropertyValue('grid-definition-rows') is "150px minmax(5%, calc(50% - 125px))"
 
 Test the initial value
 PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is 'none'

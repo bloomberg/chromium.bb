@@ -965,7 +965,7 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::valueForFilter(const RenderObj
     return list.release();
 }
 
-static PassRefPtr<CSSValue> valueForGridTrackBreadth(const GridLength& trackBreadth, const RenderStyle& style, RenderView* renderView)
+static PassRefPtr<CSSValue> specifiedValueForGridTrackBreadth(const GridLength& trackBreadth, const RenderStyle& style, RenderView* renderView)
 {
     if (!trackBreadth.isLength())
         return cssValuePool().createValue(trackBreadth.flex(), CSSPrimitiveValue::CSS_FR);
@@ -982,11 +982,11 @@ static PassRefPtr<CSSValue> specifiedValueForGridTrackSize(const GridTrackSize& 
 {
     switch (trackSize.type()) {
     case LengthTrackSizing:
-        return valueForGridTrackBreadth(trackSize.length(), style, renderView);
+        return specifiedValueForGridTrackBreadth(trackSize.length(), style, renderView);
     case MinMaxTrackSizing:
         RefPtr<CSSValueList> minMaxTrackBreadths = CSSValueList::createCommaSeparated();
-        minMaxTrackBreadths->append(valueForGridTrackBreadth(trackSize.minTrackBreadth(), style, renderView));
-        minMaxTrackBreadths->append(valueForGridTrackBreadth(trackSize.maxTrackBreadth(), style, renderView));
+        minMaxTrackBreadths->append(specifiedValueForGridTrackBreadth(trackSize.minTrackBreadth(), style, renderView));
+        minMaxTrackBreadths->append(specifiedValueForGridTrackBreadth(trackSize.maxTrackBreadth(), style, renderView));
         return CSSFunctionValue::create("minmax(", minMaxTrackBreadths);
     }
     ASSERT_NOT_REACHED();

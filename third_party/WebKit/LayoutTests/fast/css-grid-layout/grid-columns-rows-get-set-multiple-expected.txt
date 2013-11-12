@@ -30,6 +30,14 @@ PASS window.getComputedStyle(gridWithFractionFraction, '').getPropertyValue('gri
 PASS window.getComputedStyle(gridWithFractionFraction, '').getPropertyValue('grid-definition-rows') is "225px 375px"
 PASS window.getComputedStyle(gridWithFractionMinMax, '').getPropertyValue('grid-definition-columns') is "45px 755px"
 PASS window.getComputedStyle(gridWithFractionMinMax, '').getPropertyValue('grid-definition-rows') is "586px 14px"
+PASS window.getComputedStyle(gridWithCalcCalc, '').getPropertyValue('grid-definition-columns') is "200px 100px"
+PASS window.getComputedStyle(gridWithCalcCalc, '').getPropertyValue('grid-definition-rows') is "150px 75px"
+PASS window.getComputedStyle(gridWithCalcAndFixed, '').getPropertyValue('grid-definition-columns') is "400px 80px"
+PASS window.getComputedStyle(gridWithCalcAndFixed, '').getPropertyValue('grid-definition-rows') is "88px 150px"
+PASS window.getComputedStyle(gridWithCalcAndMinMax, '').getPropertyValue('grid-definition-columns') is "190px 80px"
+PASS window.getComputedStyle(gridWithCalcAndMinMax, '').getPropertyValue('grid-definition-rows') is "150px 53px"
+PASS window.getComputedStyle(gridWithCalcInsideMinMax, '').getPropertyValue('grid-definition-columns') is "400px 120px"
+PASS window.getComputedStyle(gridWithCalcInsideMinMax, '').getPropertyValue('grid-definition-rows') is "150px 175px"
 
 Test the initial value
 PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is 'none'
@@ -64,6 +72,14 @@ PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') i
 PASS element.style.gridDefinitionColumns is "50% 12vw"
 PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "30px 510px"
 PASS element.style.gridDefinitionRows is "5% 85vh"
+PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "25px 20px"
+PASS element.style.gridDefinitionColumns is "calc(25px) calc(2em)"
+PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "0px 60px"
+PASS element.style.gridDefinitionRows is "auto calc(10%)"
+PASS getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "345px 92px"
+PASS element.style.gridDefinitionColumns is "calc(25px + 40%) minmax(min-content, calc(10% + 12px))"
+PASS getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "100px 0px"
+PASS element.style.gridDefinitionRows is "minmax(calc(75% - 350px), max-content) auto"
 
 Test getting wrong values set from CSS
 PASS getComputedStyle(gridWithNoneAndAuto, '').getPropertyValue('grid-definition-columns') is 'none'
@@ -72,6 +88,10 @@ PASS getComputedStyle(gridWithNoneAndFixed, '').getPropertyValue('grid-definitio
 PASS getComputedStyle(gridWithNoneAndFixed, '').getPropertyValue('grid-definition-rows') is 'none'
 
 Test setting and getting wrong values from JS
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "none"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "none"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "none"
+PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "none"
 PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "none"
 PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-rows') is "none"
 PASS window.getComputedStyle(element, '').getPropertyValue('grid-definition-columns') is "none"

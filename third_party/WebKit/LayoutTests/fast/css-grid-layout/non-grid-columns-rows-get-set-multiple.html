@@ -64,6 +64,25 @@
     grid-definition-columns: minmax(min-content, 45px) 2fr;
     grid-definition-rows: 3fr minmax(14px, max-content);
 }
+.gridWithCalcCalc {
+    grid-definition-columns: calc(200px) calc(10em);
+    grid-definition-rows: calc(15em) calc(75px);
+    font: 10px Ahem;
+}
+.gridWithCalcAndFixed {
+    grid-definition-columns: calc(50%) 8em;
+    grid-definition-rows: 88px calc(25%);
+    font: 10px Ahem;
+}
+.gridWithCalcAndMinMax {
+    grid-definition-columns: calc(30px + 20%) minmax(min-content, 80px);
+    grid-definition-rows: minmax(25%, max-content) calc(10% - 7px);
+}
+.gridWithCalcInsideMinMax {
+    grid-definition-columns: minmax(calc(23px + 10%), 400px) 12em;
+    grid-definition-rows: calc(150px) minmax(5%, calc(50% - 125px));
+    font: 10px Ahem;
+}
 </style>
 <script src="../../resources/js-test.js"></script>
 </head>
@@ -82,6 +101,10 @@
 <div class="gridWithMinMaxAndMinMaxContent" id="gridWithMinMaxAndMinMaxContent"></div>
 <div class="gridWithFractionFraction" id="gridWithFractionFraction"></div>
 <div class="gridWithFractionMinMax" id="gridWithFractionMinMax"></div>
+<div class="gridWithCalcCalc" id="gridWithCalcCalc"></div>
+<div class="gridWithCalcAndFixed" id="gridWithCalcAndFixed"></div>
+<div class="gridWithCalcAndMinMax" id="gridWithCalcAndMinMax"></div>
+<div class="gridWithCalcInsideMinMax" id="gridWithCalcInsideMinMax"></div>
 <script src="resources/grid-definitions-parsing-utils.js"></script>
 <script src="resources/non-grid-columns-rows-get-set-multiple.js"></script>
 </body>

@@ -69,6 +69,22 @@
     grid-definition-columns: 1fr;
     grid-definition-rows: 2fr;
 }
+.gridWithCalc {
+    grid-definition-columns: calc(150px);
+    grid-definition-rows: calc(75px);
+}
+.gridWithCalcComplex {
+    grid-definition-columns: calc(50% + 150px);
+    grid-definition-rows: calc(65% + 75px);
+}
+.gridWithCalcInsideMinMax {
+    grid-definition-columns: minmax(10%, calc(15px));
+    grid-definition-rows: minmax(calc(20px), 50%);
+}
+.gridWithCalcComplexInsideMinMax {
+    grid-definition-columns: minmax(10%, calc(50% + 15px));
+    grid-definition-rows: minmax(calc(20px + 10%), 50%);
+}
 </style>
 <script src="../../resources/js-test.js"></script>
 </head>
@@ -97,6 +113,10 @@
     <div class="gridItem2"></div>
 </div>
 <div class="grid gridWithFraction" id="gridWithFractionElement"></div>
+<div class="grid gridWithCalc" id="gridWithCalcElement"></div>
+<div class="grid gridWithCalcComplex" id="gridWithCalcComplexElement"></div>
+<div class="grid gridWithCalcInsideMinMax" id="gridWithCalcInsideMinMaxElement"></div>
+<div class="grid gridWithCalcComplexInsideMinMax" id="gridWithCalcComplexInsideMinMaxElement"></div>
 <script src="resources/grid-definitions-parsing-utils.js"></script>
 <script src="resources/grid-columns-rows-get-set.js"></script>
 </body>

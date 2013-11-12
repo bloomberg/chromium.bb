@@ -15,6 +15,10 @@ testGridDefinitionsValues(document.getElementById("gridWithMinContentWithChildre
 testGridDefinitionsValues(document.getElementById("gridWithMaxContentElement"), "0px", "0px");
 testGridDefinitionsValues(document.getElementById("gridWithMaxContentWithChildrenElement"), "17px", "11px");
 testGridDefinitionsValues(document.getElementById("gridWithFractionElement"), "800px", "600px");
+testGridDefinitionsValues(document.getElementById("gridWithCalcElement"), "150px", "75px");
+testGridDefinitionsValues(document.getElementById("gridWithCalcComplexElement"), "550px", "465px");
+testGridDefinitionsValues(document.getElementById("gridWithCalcInsideMinMaxElement"), "minmax(10%, 15px)", "minmax(20px, 50%)", "80px", "300px");
+testGridDefinitionsValues(document.getElementById("gridWithCalcComplexInsideMinMaxElement"), "minmax(10%, 415px)", "minmax(80px, 50%)", "415px", "300px");
 
 debug("");
 debug("Test getting wrong values for grid-definition-columns and grid-definition-rows through CSS (they should resolve to the default: 'none')");
@@ -56,6 +60,13 @@ testGridDefinitionsSetJSValues("3.1459fr", "2.718fr", "800px", "600px");
 testGridDefinitionsSetJSValues("+3fr", "+4fr", "800px", "600px", "3fr", "4fr");
 
 debug("");
+debug("Test getting and setting grid-definition-columns and grid-definition-rows to calc() values through JS");
+testGridDefinitionsSetJSValues("calc(150px)", "calc(75px)", "150px", "75px");
+testGridDefinitionsSetJSValues("calc(50% - 30px)", "calc(75px + 10%)", "370px", "135px");
+testGridDefinitionsSetJSValues("minmax(25%, calc(30px))", "minmax(calc(75%), 40px)", "200px", "450px", "minmax(25%, calc(30px))", "minmax(calc(75%), 40px)");
+testGridDefinitionsSetJSValues("minmax(10%, calc(30px + 10%))", "minmax(calc(25% - 50px), 200px)", "110px", "200px", "minmax(10%, calc(30px + 10%))", "minmax(calc(25% - 50px), 200px)");
+
+debug("");
 debug("Test setting grid-definition-columns and grid-definition-rows to bad values through JS");
 // No comma and only 1 argument provided.
 testGridDefinitionsSetBadJSValues("minmax(10px 20px)", "minmax(10px)")
@@ -74,6 +85,9 @@ testGridDefinitionsSetBadJSValues("7.-fr", "-8,0fr");
 // Negative values are not allowed.
 testGridDefinitionsSetBadJSValues("-1px", "-6em");
 testGridDefinitionsSetBadJSValues("minmax(-1%, 32%)", "minmax(2vw, -6em)");
+// Invalid expressions with calc
+testGridDefinitionsSetBadJSValues("calc(16px 30px)", "calc(25px + auto)");
+testGridDefinitionsSetBadJSValues("minmax(min-content, calc())", "calc(10%(");
 
 debug("");
 debug("Test setting grid-definition-columns and grid-definition-rows back to 'none' through JS");

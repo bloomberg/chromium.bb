@@ -400,7 +400,7 @@ LayoutUnit RenderGrid::computeUsedBreadthOfMinLength(GridTrackSizingDirection di
 
     const Length& trackLength = gridLength.length();
     ASSERT(!trackLength.isAuto());
-    if (trackLength.isFixed() || trackLength.isPercent() || trackLength.isViewportPercentage())
+    if (trackLength.isSpecified())
         return computeUsedBreadthOfSpecifiedLength(direction, trackLength);
 
     ASSERT(trackLength.isMinContent() || trackLength.isMaxContent());
@@ -414,7 +414,7 @@ LayoutUnit RenderGrid::computeUsedBreadthOfMaxLength(GridTrackSizingDirection di
 
     const Length& trackLength = gridLength.length();
     ASSERT(!trackLength.isAuto());
-    if (trackLength.isFixed() || trackLength.isPercent() || trackLength.isViewportPercentage()) {
+    if (trackLength.isSpecified()) {
         LayoutUnit computedBreadth = computeUsedBreadthOfSpecifiedLength(direction, trackLength);
         ASSERT(computedBreadth != infinity);
         return computedBreadth;
@@ -426,8 +426,7 @@ LayoutUnit RenderGrid::computeUsedBreadthOfMaxLength(GridTrackSizingDirection di
 
 LayoutUnit RenderGrid::computeUsedBreadthOfSpecifiedLength(GridTrackSizingDirection direction, const Length& trackLength) const
 {
-    // FIXME: We still need to support calc() here (https://webkit.org/b/103761).
-    ASSERT(trackLength.isFixed() || trackLength.isPercent() || trackLength.isViewportPercentage());
+    ASSERT(trackLength.isSpecified());
     // FIXME: The -1 here should be replaced by whatever the intrinsic height of the grid is.
     return valueForLength(trackLength, direction == ForColumns ? logicalWidth() : computeContentLogicalHeight(style()->logicalHeight(), -1), view());
 }

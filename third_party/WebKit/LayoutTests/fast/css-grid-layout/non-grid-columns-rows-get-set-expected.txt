@@ -24,6 +24,14 @@ PASS window.getComputedStyle(gridWithMaxContent, '').getPropertyValue('grid-defi
 PASS window.getComputedStyle(gridWithMaxContent, '').getPropertyValue('grid-definition-rows') is "max-content"
 PASS window.getComputedStyle(gridWithFraction, '').getPropertyValue('grid-definition-columns') is "1fr"
 PASS window.getComputedStyle(gridWithFraction, '').getPropertyValue('grid-definition-rows') is "2fr"
+PASS window.getComputedStyle(gridWithCalc, '').getPropertyValue('grid-definition-columns') is "150px"
+PASS window.getComputedStyle(gridWithCalc, '').getPropertyValue('grid-definition-rows') is "75px"
+PASS window.getComputedStyle(gridWithCalcComplex, '').getPropertyValue('grid-definition-columns') is "calc(50% + 150px)"
+PASS window.getComputedStyle(gridWithCalcComplex, '').getPropertyValue('grid-definition-rows') is "calc(65% + 75px)"
+PASS window.getComputedStyle(gridWithCalcInsideMinMax, '').getPropertyValue('grid-definition-columns') is "minmax(10%, 15px)"
+PASS window.getComputedStyle(gridWithCalcInsideMinMax, '').getPropertyValue('grid-definition-rows') is "minmax(20px, 50%)"
+PASS window.getComputedStyle(gridWithCalcComplexInsideMinMax, '').getPropertyValue('grid-definition-columns') is "minmax(10%, calc(50% + 15px))"
+PASS window.getComputedStyle(gridWithCalcComplexInsideMinMax, '').getPropertyValue('grid-definition-rows') is "minmax(calc(20px + 10%), 50%)"
 
 Test getting wrong values for grid-definition-columns and grid-definition-rows through CSS (they should resolve to the default: 'none')
 PASS window.getComputedStyle(gridWithFitContentElement, '').getPropertyValue('grid-definition-columns') is "none"
