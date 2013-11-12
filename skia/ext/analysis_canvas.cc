@@ -10,7 +10,6 @@
 #include "third_party/skia/include/core/SkRRect.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/skia/src/core/SkRasterClip.h"
-#include "ui/gfx/rect_conversions.h"
 
 namespace {
 
@@ -70,8 +69,18 @@ bool IsFullQuad(const SkDraw& draw,
 
 namespace skia {
 
+AnalysisDevice::AnalysisDevice(const SkBitmap& bitmap, SkRect analysis_rect)
+    : INHERITED(bitmap),
+      analysis_rect_(analysis_rect),
+      is_forced_not_solid_(false),
+      is_forced_not_transparent_(false),
+      is_solid_color_(true),
+      is_transparent_(true),
+      has_text_(false) {}
+
 AnalysisDevice::AnalysisDevice(const SkBitmap& bitmap)
     : INHERITED(bitmap),
+      analysis_rect_(SkRect::MakeWH(bitmap.width(), bitmap.height())),
       is_forced_not_solid_(false),
       is_forced_not_transparent_(false),
       is_solid_color_(true),
@@ -137,8 +146,13 @@ void AnalysisDevice::drawPoints(const SkDraw& draw,
 void AnalysisDevice::drawRect(const SkDraw& draw,
                               const SkRect& rect,
                               const SkPaint& paint) {
+  // Early out of work where possible.  It could be the case that a picture
+  // draws text and then clears, but this is unlikely.
+  if (has_text_ && !is_solid_color_)
+    return;
+
   bool does_cover_canvas =
-      IsFullQuad(draw, SkRect::MakeWH(width(), height()), rect);
+      IsFullQuad(draw, analysis_rect_, rect);
 
   SkXfermode::Mode xfermode;
   SkXfermode::AsMode(paint.getXfermode(), &xfermode);
@@ -269,7 +283,7 @@ void AnalysisDevice::drawPosTextOnPath(const SkDraw& draw,
 #endif
 
 void AnalysisDevice::drawVertices(const SkDraw& draw,
-                                  SkCanvas::VertexMode,
+                                  SkCanvas::VertexMode mode,
                                   int vertex_count,
                                   const SkPoint verts[],
                                   const SkPoint texs[],
@@ -305,11 +319,6 @@ bool AnalysisCanvas::GetColorIfSolid(SkColor* color) const {
 
 bool AnalysisCanvas::HasText() const {
   return (static_cast<AnalysisDevice*>(getDevice()))->HasText();
-}
-
-bool AnalysisCanvas::abortDrawing() {
-  // Early out as soon as we have detected that the tile has text.
-  return HasText();
 }
 
 bool AnalysisCanvas::clipRect(const SkRect& rect, SkRegion::Op op, bool do_aa) {
@@ -363,9 +372,10 @@ int AnalysisCanvas::saveLayer(const SkRect* bounds,
   // If after we draw to the saved layer, we have to blend with the current
   // layer, then we can conservatively say that the canvas will not be of
   // solid color.
+  SkRect analysis_rect =
+      static_cast<AnalysisDevice*>(getDevice())->AnalysisRect();
   if ((paint && !IsSolidColorPaint(*paint)) ||
-      (bounds && !bounds->contains(SkRect::MakeWH(getDevice()->width(),
-                                                  getDevice()->height())))) {
+      (bounds && !bounds->contains(analysis_rect))) {
     if (force_not_solid_stack_level_ == kNoLayer) {
       force_not_solid_stack_level_ = saved_stack_size_;
       (static_cast<AnalysisDevice*>(getDevice()))->SetForceNotSolid(true);

@@ -68,7 +68,7 @@ void DrawPicture(unsigned char* buffer,
   SkBitmapDevice device(bitmap);
   SkCanvas canvas(&device);
   canvas.clipRect(gfx::RectToSkRect(layer_rect));
-  picture->Raster(&canvas, NULL, layer_rect, 1.0f);
+  picture->Raster(&canvas, layer_rect, 1.0f);
 }
 
 void CreateBitmap(gfx::Size size, const char* uri, SkBitmap* bitmap) {

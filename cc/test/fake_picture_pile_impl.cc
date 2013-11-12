@@ -9,6 +9,7 @@
 
 #include "cc/test/impl_side_painting_settings.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/skia_util.h"
 
 namespace cc {
 
@@ -92,6 +93,28 @@ void FakePicturePileImpl::RerecordPile() {
       AddRecordingAt(x, y);
     }
   }
+}
+
+void FakePicturePileImpl::AnalyzeInRect(gfx::Rect content_rect,
+                                        float contents_scale,
+                                        Analysis* analysis) {
+  // Create and raster to a bitmap of content_rect size, even though the
+  // analysis_rect may be smaller to simulate edge tiles where recorded content
+  // doesn't cover the entire content_rect.
+  SkBitmap empty_bitmap;
+  empty_bitmap.setConfig(SkBitmap::kNo_Config,
+                         content_rect.width(),
+                         content_rect.height());
+
+  gfx::Rect analysis_rect(
+      AnalysisRectForRaster(content_rect, contents_scale));
+  skia::AnalysisDevice device(empty_bitmap, gfx::RectToSkRect(analysis_rect));
+  skia::AnalysisCanvas canvas(&device);
+
+  RasterDirect(&canvas, content_rect, contents_scale, NULL);
+
+  analysis->is_solid_color = canvas.GetColorIfSolid(&analysis->solid_color);
+  analysis->has_text = canvas.HasText();
 }
 
 }  // namespace cc
