@@ -32,6 +32,7 @@
 #include "modules/crypto/NormalizeAlgorithm.h"
 
 #include "bindings/v8/Dictionary.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "platform/NotImplemented.h"
@@ -189,6 +190,11 @@ AlgorithmRegistry::AlgorithmRegistry()
 // tell what went wrong from the exception type alone (TypeError).
 class ExceptionContext {
 public:
+    explicit ExceptionContext(AlgorithmOperation op)
+        : m_op(op)
+    {
+    }
+
     void add(const char* message)
     {
         m_messages.append(message);
@@ -214,7 +220,7 @@ public:
             result.append(m_messages[i], strlen(m_messages[i]));
         }
 
-        return result.toString();
+        return ExceptionMessages::failedToExecute(algorithmOperationToName(m_op), "SubtleCrypto", result.toString());
     }
 
     String toString(const char* message) const
@@ -233,6 +239,8 @@ public:
     }
 
 private:
+    AlgorithmOperation m_op;
+
     // This inline size is large enough to avoid having to grow the Vector in
     // the majority of cases (up to 1 nested algorithm identifier).
     Vector<const char*, 10> m_messages;
@@ -496,12 +504,43 @@ bool normalizeAlgorithm(const Dictionary& raw, AlgorithmOperation op, blink::Web
 
 bool normalizeAlgorithm(const Dictionary& raw, AlgorithmOperation op, blink::WebCryptoAlgorithm& algorithm, ExceptionState& es)
 {
-    return normalizeAlgorithm(raw, op, algorithm, ExceptionContext(), es);
+    return normalizeAlgorithm(raw, op, algorithm, ExceptionContext(op), es);
 }
 
 const char* algorithmIdToName(blink::WebCryptoAlgorithmId id)
 {
     return AlgorithmRegistry::instance().lookupAlgorithmById(id)->algorithmName;
+}
+
+const char* algorithmOperationToName(AlgorithmOperation op)
+{
+    switch (op) {
+    case Encrypt:
+        return "encrypt";
+    case Decrypt:
+        return "decrypt";
+    case Sign:
+        return "sign";
+    case Verify:
+        return "verify";
+    case Digest:
+        return "digest";
+    case GenerateKey:
+        return "generateKey";
+    case ImportKey:
+        return "generateKey";
+    case DeriveKey:
+        return "deriveKey";
+    case WrapKey:
+        return "wrapKey";
+    case UnwrapKey:
+        return "unwrapKey";
+    case NumberOfAlgorithmOperations:
+        ASSERT_NOT_REACHED();
+        return "unknown";
+    };
+    ASSERT_NOT_REACHED();
+    return "unknown";
 }
 
 } // namespace WebCore

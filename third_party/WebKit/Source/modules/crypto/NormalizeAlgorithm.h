@@ -64,6 +64,10 @@ bool normalizeAlgorithm(const Dictionary&, AlgorithmOperation, blink::WebCryptoA
 // will be valid for the program's entire runtime.
 const char* algorithmIdToName(blink::WebCryptoAlgorithmId);
 
+// Returns a null-terminated C-string literal. Caller can assume the pointer
+// will be valid for the program's entire runtime.
+const char* algorithmOperationToName(AlgorithmOperation);
+
 } // namespace WebCore
 
 #endif
