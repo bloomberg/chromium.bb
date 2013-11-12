@@ -25,28 +25,25 @@ class SeqencedTaskRunner;
 
 namespace drive {
 
-// The JobScheduler is responsible for queuing and scheduling drive
-// jobs.
+// The JobScheduler is responsible for queuing and scheduling drive jobs.
+// Because jobs are executed concurrently by priority and retried for network
+// failures, there is no guarantee of orderings.
 //
-// All jobs are processed in order of priority.
-//   - Jobs that occur as a result of a direct user action are handled
-//     immediately (i.e. the client context is USER_INITIATED).
-//   - Jobs that are done in response to state changes or server actions are run
-//     in the background (i.e. the client context is BACKGROUND).
+// Jobs are grouped into two priority levels:
+//   - USER_INITIATED jobs are those occur as a result of direct user actions.
+//   - BACKGROUND jobs runs in response to state changes, server actions, etc.
+// USER_INITIATED jobs must be handled immediately, thus have higher priority.
+// BACKGROUND jobs run only after all USER_INITIATED jobs have run.
 //
-// All jobs are retried a maximum of kMaxRetryCount when they fail due to
-// throttling or server error.  The delay before retrying a job is shared
-// between jobs.  It doubles in length on each failure, up to 16 seconds.
-//
-// Jobs are grouped into two types:
-//   - File jobs are any job that transfer the contents of files.
-//     By default, they are only run when connected to WiFi.
-//   - Metadata jobs are any jobs that operate on File metadata or
-//     the directory structure.  Up to kMaxJobCount[METADATA_QUEUE] jobs are run
-//     concurrently.
-//
-// Because jobs are executed by priority and the potential for network failures,
-// there is no guarantee of ordering of operations.
+// Orthogonally, jobs are grouped into two types:
+//   - "File jobs" transfer the contents of files.
+//   - "Metadata jobs" operates on file metadata or the directory structure.
+// On WiFi or Ethernet connections, all types of jobs just run.
+// On mobile connections (2G/3G/4G), we don't want large background traffic.
+// USER_INITIATED jobs or metadata jobs will run. BACKGROUND file jobs wait
+// in the queue until the network type changes.
+// On offline case, no jobs run. USER_INITIATED jobs fail immediately.
+// BACKGROUND jobs stay in the queue and wait for network connection.
 class JobScheduler
     : public net::NetworkChangeNotifier::ConnectionTypeObserver,
       public JobListInterface {

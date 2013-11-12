@@ -22,13 +22,16 @@ namespace drive {
 
 namespace {
 
-const int kMaxThrottleCount = 4;
-
-// According to the API documentation, this should be the same as
+// All jobs are retried at maximum of kMaxRetryCount when they fail due to
+// throttling or server error.  The delay before retrying a job is shared among
+// jobs. It doubles in length on each failure, upto 2^kMaxThrottleCount seconds.
+//
+// According to the API documentation, kMaxRetryCount should be the same as
 // kMaxThrottleCount (https://developers.google.com/drive/handle-errors).
 // But currently multiplied by 2 to ensure upload related jobs retried for a
 // sufficient number of times. crbug.com/269918
-const int kMaxRetryCount = 2*kMaxThrottleCount;
+const int kMaxThrottleCount = 4;
+const int kMaxRetryCount = 2 * kMaxThrottleCount;
 
 // Parameter struct for RunUploadNewFile.
 struct UploadNewFileParams {
@@ -96,6 +99,7 @@ google_apis::CancelCallback RunResumeUploadFile(
 
 }  // namespace
 
+// Metadata jobs are cheap, so we run them concurrently. File jobs run serially.
 const int JobScheduler::kMaxJobCount[] = {
   5,  // METADATA_QUEUE
   1,  // FILE_QUEUE
