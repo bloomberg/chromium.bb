@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_INVALIDATION_INVALIDATION_CONTROLLER_ANDROID_H_
 #define CHROME_BROWSER_INVALIDATION_INVALIDATION_CONTROLLER_ANDROID_H_
 
+#include <string>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_helper.h"
 #include "sync/notifier/invalidation_util.h"
@@ -21,6 +23,9 @@ class InvalidationControllerAndroid {
   // Sets object ids for which the invalidation client should register for
   // notification.
   virtual void SetRegisteredObjectIds(const syncer::ObjectIdSet& ids);
+
+  // Asks the Java code to return the client ID it chose to use.
+  std::string GetInvalidatorClientId();
 
  private:
   // The Java invalidation controller.

@@ -35,6 +35,11 @@ public class InvalidationIntentProtocol {
     public static final String EXTRA_ACCOUNT = "account";
 
     /**
+     * byte[]-valued intent extra containing the unique client ID.
+     */
+    public static final String EXTRA_CLIENT_NAME = "client_name";
+
+    /**
      * String-list-valued intent extra of the syncable types to sync.
      */
     public static final String EXTRA_REGISTERED_TYPES = "registered_types";

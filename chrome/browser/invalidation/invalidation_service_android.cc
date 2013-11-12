@@ -59,8 +59,7 @@ InvalidationServiceAndroid::GetInvalidatorState() const {
 
 std::string InvalidationServiceAndroid::GetInvalidatorClientId() const {
   DCHECK(CalledOnValidThread());
-  // TODO: Return a valid ID here.  See crbug.com/172391.
-  return "Bogus";
+  return invalidation_controller_->GetInvalidatorClientId();
 }
 
 void InvalidationServiceAndroid::Observe(

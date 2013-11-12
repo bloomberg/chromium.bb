@@ -41,6 +41,9 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
     /** Id used when creating clients. */
     private static final byte[] CLIENT_ID = new byte[]{0, 4, 7};
 
+    /** Id used to uniquely name this client instance. */
+    private static final byte[] TEST_CLIENT_NAME = "UNIQUE_CLIENT_NAME".getBytes();
+
     /** Intents provided to {@link #startService}. */
     private List<Intent> mStartServiceIntents;
 
@@ -65,7 +68,7 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
     @Override
     public void tearDown() throws Exception {
         if (InvalidationService.getIsClientStartedForTest()) {
-            Intent stopIntent = new Intent().putExtra(InvalidationIntentProtocol.EXTRA_STOP, true);
+            Intent stopIntent = createStopIntent();
             getService().onHandleIntent(stopIntent);
         }
         assertFalse(InvalidationService.getIsClientStartedForTest());
@@ -314,7 +317,7 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
         // Client needs to be started for the permament error to trigger and stop.
         getService().setShouldRunStates(true, true);
         getService().onCreate();
-        getService().onHandleIntent(new Intent());
+        getService().onHandleIntent(createStartIntent());
         getService().mStartedServices.clear();  // Discard start intent.
 
         // Transient error.
@@ -465,11 +468,11 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
         getService().setShouldRunStates(true, true);
         getService().onCreate();
 
-        Intent startIntent = new Intent();
+        Intent startIntent = createStartIntent();
         getService().onHandleIntent(startIntent);
         assertTrue(InvalidationService.getIsClientStartedForTest());
 
-        Intent stopIntent = new Intent().putExtra(InvalidationIntentProtocol.EXTRA_STOP, true);
+        Intent stopIntent = createStopIntent();
         getService().onHandleIntent(stopIntent);
         assertFalse(InvalidationService.getIsClientStartedForTest());
 
@@ -491,7 +494,7 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
         getService().onCreate();
 
         // Start the service.
-        Intent startIntent = new Intent();
+        Intent startIntent = createStartIntent();
         getService().onHandleIntent(startIntent);
         assertTrue(InvalidationService.getIsClientStartedForTest());
 
@@ -523,8 +526,7 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
         Set<ModelType> desiredRegistrations = CollectionUtil.newHashSet(
                 ModelType.BOOKMARK, ModelType.SESSION);
         Account account = AccountManagerHelper.createAccountFromName("test@example.com");
-        Intent registrationIntent = InvalidationIntentProtocol.createRegisterIntent(account, false,
-                desiredRegistrations);
+        Intent registrationIntent = createRegisterIntent(account, false, desiredRegistrations);
         getService().onHandleIntent(registrationIntent);
 
         // Verify client started and state written.
@@ -539,8 +541,7 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
 
         // Send another registration-change intent, this type with all-types set to true, and
         // verify that the on-disk state is updated and that no addition Intents are issued.
-        getService().onHandleIntent(
-                InvalidationIntentProtocol.createRegisterIntent(account, true, null));
+        getService().onHandleIntent(createRegisterIntent(account, true, null));
         assertEquals(account, invPrefs.getSavedSyncedAccount());
         assertEquals(CollectionUtil.newHashSet(ModelType.ALL_TYPES_TYPE),
                 invPrefs.getSavedSyncedTypes());
@@ -550,8 +551,7 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
         // and verify that it both updates the account, stops thye existing client, and
         // starts a new client.
         Account account2 = AccountManagerHelper.createAccountFromName("test2@example.com");
-        getService().onHandleIntent(
-                InvalidationIntentProtocol.createRegisterIntent(account2, true, null));
+        getService().onHandleIntent(createRegisterIntent(account2, true, null));
         assertEquals(account2, invPrefs.getSavedSyncedAccount());
         assertEquals(3, mStartServiceIntents.size());
         assertTrue(isAndroidListenerStartIntent(mStartServiceIntents.get(0)));
@@ -614,15 +614,14 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
         objectIds.add(ObjectId.newInstance(1, "obj1".getBytes()));
         objectIds.add(ObjectId.newInstance(2, "obj2".getBytes()));
         Intent registrationIntent =
-                InvalidationIntentProtocol.createRegisterIntent(account, new int[] {1, 2},
-                        new String[] {"obj1", "obj2"});
+            createRegisterIntent(account, new int[] {1, 2}, new String[] {"obj1", "obj2"});
         getService().onHandleIntent(registrationIntent);
         assertTrue(expectedObjectIdsRegistered(types, objectIds, false /* isReady */));
 
         // Register for some types.
         types.add(ModelType.BOOKMARK);
         types.add(ModelType.SESSION);
-        registrationIntent = InvalidationIntentProtocol.createRegisterIntent(account, false, types);
+        registrationIntent = createRegisterIntent(account, false, types);
         getService().onHandleIntent(registrationIntent);
         assertTrue(expectedObjectIdsRegistered(types, objectIds, false /* isReady */));
 
@@ -632,43 +631,40 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
 
         // Change object id registration with types registered.
         objectIds.add(ObjectId.newInstance(3, "obj3".getBytes()));
-        registrationIntent =
-                InvalidationIntentProtocol.createRegisterIntent(account, new int[] {1, 2, 3},
-                        new String[] {"obj1", "obj2", "obj3"});
+        registrationIntent = createRegisterIntent(
+            account, new int[] {1, 2, 3}, new String[] {"obj1", "obj2", "obj3"});
         getService().onHandleIntent(registrationIntent);
         assertTrue(expectedObjectIdsRegistered(types, objectIds, true /* isReady */));
 
         // Change type registration with object ids registered.
         types.remove(ModelType.BOOKMARK);
-        registrationIntent = InvalidationIntentProtocol.createRegisterIntent(account, false, types);
+        registrationIntent = createRegisterIntent(account, false, types);
         getService().onHandleIntent(registrationIntent);
         assertTrue(expectedObjectIdsRegistered(types, objectIds, true /* isReady */));
 
         // Unregister all types.
         types.clear();
-        registrationIntent = InvalidationIntentProtocol.createRegisterIntent(account, false, types);
+        registrationIntent = createRegisterIntent(account, false, types);
         getService().onHandleIntent(registrationIntent);
         assertTrue(expectedObjectIdsRegistered(types, objectIds, true /* isReady */));
 
         // Change object id registration with no types registered.
         objectIds.remove(ObjectId.newInstance(2, "obj2".getBytes()));
-        registrationIntent =
-                InvalidationIntentProtocol.createRegisterIntent(account, new int[] {1, 3},
-                        new String[] {"obj1", "obj3"});
+        registrationIntent = createRegisterIntent(
+            account, new int[] {1, 3}, new String[] {"obj1", "obj3"});
         getService().onHandleIntent(registrationIntent);
         assertTrue(expectedObjectIdsRegistered(types, objectIds, true /* isReady */));
 
         // Unregister all object ids.
         objectIds.clear();
-        registrationIntent = InvalidationIntentProtocol.createRegisterIntent(account, new int[0],
-                new String[0]);
+        registrationIntent = createRegisterIntent(account, new int[0], new String[0]);
         getService().onHandleIntent(registrationIntent);
         assertTrue(expectedObjectIdsRegistered(types, objectIds, true /* isReady */));
 
         // Change type registration with no object ids registered.
         types.add(ModelType.BOOKMARK);
         types.add(ModelType.PASSWORD);
-        registrationIntent = InvalidationIntentProtocol.createRegisterIntent(account, false, types);
+        registrationIntent = createRegisterIntent(account, false, types);
         getService().onHandleIntent(registrationIntent);
         assertTrue(expectedObjectIdsRegistered(types, objectIds, true /* isReady */));
     }
@@ -681,8 +677,7 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
 
         // Send register Intent.
         Account account = AccountManagerHelper.createAccountFromName("test@example.com");
-        Intent registrationIntent =
-                InvalidationIntentProtocol.createRegisterIntent(account, true, null);
+        Intent registrationIntent = createRegisterIntent(account, true, null);
         getService().onHandleIntent(registrationIntent);
 
         // Verify client started and state written.
@@ -712,8 +707,7 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
 
         // Send register Intent with no desired types.
         Account account = AccountManagerHelper.createAccountFromName("test@example.com");
-        Intent registrationIntent = InvalidationIntentProtocol.createRegisterIntent(
-                account, false, new HashSet<ModelType>());
+        Intent registrationIntent = createRegisterIntent(account, false, new HashSet<ModelType>());
         getService().onHandleIntent(registrationIntent);
 
         // Verify client started and state written.
@@ -729,7 +723,7 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
         assertTrue(Arrays.equals(CLIENT_ID, InvalidationService.getClientIdForTest()));
 
         // Choose to register for all types in an already ready client.
-        registrationIntent = InvalidationIntentProtocol.createRegisterIntent(account, true, null);
+        registrationIntent = createRegisterIntent(account, true, null);
         getService().onHandleIntent(registrationIntent);
 
         // Ensure registrations are correct.
@@ -752,8 +746,7 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
         Account account = AccountManagerHelper.createAccountFromName("test@example.com");
         Set<ModelType> desiredRegistrations = CollectionUtil.newHashSet(
                 ModelType.BOOKMARK, ModelType.SESSION);
-        Intent registrationIntent = InvalidationIntentProtocol.createRegisterIntent(account, false,
-                desiredRegistrations);
+        Intent registrationIntent = createRegisterIntent(account, false, desiredRegistrations);
         getService().onHandleIntent(registrationIntent);
 
         // Verify state written but client not started.
@@ -782,8 +775,7 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
                 ModelType.BOOKMARK, ModelType.SESSION);
         Set<ObjectId> desiredObjectIds = ModelType.modelTypesToObjectIds(desiredRegistrations);
 
-        Intent registrationIntent = InvalidationIntentProtocol.createRegisterIntent(account, false,
-                desiredRegistrations);
+        Intent registrationIntent = createRegisterIntent(account, false, desiredRegistrations);
         getService().onHandleIntent(registrationIntent);
         assertTrue(InvalidationService.getIsClientStartedForTest());
         assertEquals(1, mStartServiceIntents.size());
@@ -820,6 +812,37 @@ public class InvalidationServiceTest extends ServiceTestCase<TestableInvalidatio
          */
         // TODO(dsmyers): implement.
         // Bug: https://code.google.com/p/chromium/issues/detail?id=172398
+    }
+
+    /** Creates an intent to start the InvalidationService. */
+    private Intent createStartIntent() {
+      Intent intent = new Intent();
+      intent.putExtra(InvalidationIntentProtocol.EXTRA_CLIENT_NAME, TEST_CLIENT_NAME);
+      return intent;
+    }
+
+    /** Creates an intent to stop the InvalidationService. */
+    private Intent createStopIntent() {
+      Intent intent = new Intent();
+      intent.putExtra(InvalidationIntentProtocol.EXTRA_STOP, true);
+      intent.putExtra(InvalidationIntentProtocol.EXTRA_CLIENT_NAME, TEST_CLIENT_NAME);
+      return intent;
+    }
+
+    /** Creates an intent to register some types with the InvalidationService. */
+    private Intent createRegisterIntent(Account account, boolean allTypes, Set<ModelType> types) {
+      Intent intent = InvalidationIntentProtocol.createRegisterIntent(account, allTypes, types);
+      intent.putExtra(InvalidationIntentProtocol.EXTRA_CLIENT_NAME, TEST_CLIENT_NAME);
+      return intent;
+    }
+
+    /** Creates an intent to register some types with the InvalidationService. */
+    private Intent createRegisterIntent(
+        Account account, int[] objectSources, String[] objectNames) {
+      Intent intent = InvalidationIntentProtocol.createRegisterIntent(
+          account, objectSources, objectNames);
+      intent.putExtra(InvalidationIntentProtocol.EXTRA_CLIENT_NAME, TEST_CLIENT_NAME);
+      return intent;
     }
 
     /** Returns whether {@code intent} is an {@link AndroidListener} start intent. */

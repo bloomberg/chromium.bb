@@ -7,18 +7,22 @@ package org.chromium.chrome.browser.invalidation;
 import android.accounts.Account;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Base64;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 
 import org.chromium.base.ActivityStatus;
 import org.chromium.base.CalledByNative;
+import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
+import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
 import org.chromium.sync.internal_api.pub.base.ModelType;
 import org.chromium.sync.notifier.InvalidationIntentProtocol;
 import org.chromium.sync.notifier.InvalidationPreferences;
 import org.chromium.sync.notifier.InvalidationService;
 import org.chromium.sync.notifier.SyncStatusHelper;
 
+import java.util.Random;
 import java.util.Set;
 
 /**
@@ -28,9 +32,21 @@ import java.util.Set;
 public class InvalidationController implements ActivityStatus.StateListener {
     private static final Object LOCK = new Object();
 
+    // Key to use when initializing the UniqueIdentificationGeneratorFactory's entry for this class.
+    public static final String ID_GENERATOR = "INVALIDATION_CONTROLLER_ID_GENERATOR";
+
+    // Pref key to use for UUID-based generator.
+    public static final String INVALIDATIONS_UUID_PREF_KEY = "chromium.invalidations.uuid";
+
+    private static final Random RANDOM = new Random();
+
     private static InvalidationController sInstance;
 
+    private final Object mLock = new Object();
+
     private final Context mContext;
+
+    private byte[] mUniqueId;
 
     /**
      * Sets the types for which the client should register for notifications.
@@ -43,6 +59,8 @@ public class InvalidationController implements ActivityStatus.StateListener {
         Intent registerIntent =
                 InvalidationIntentProtocol.createRegisterIntent(account, allTypes, types);
         registerIntent.setClass(mContext, InvalidationService.class);
+        registerIntent.putExtra(
+                InvalidationIntentProtocol.EXTRA_CLIENT_NAME, getInvalidatorClientId());
         mContext.startService(registerIntent);
     }
 
@@ -77,6 +95,8 @@ public class InvalidationController implements ActivityStatus.StateListener {
                 InvalidationIntentProtocol.createRegisterIntent(
                         account, objectSources, objectNames);
         registerIntent.setClass(mContext, InvalidationService.class);
+        registerIntent.putExtra(
+            InvalidationIntentProtocol.EXTRA_CLIENT_NAME, getInvalidatorClientId());
         mContext.startService(registerIntent);
     }
 
@@ -85,6 +105,8 @@ public class InvalidationController implements ActivityStatus.StateListener {
      */
     public void start() {
         Intent intent = new Intent(mContext, InvalidationService.class);
+        intent.putExtra(
+            InvalidationIntentProtocol.EXTRA_CLIENT_NAME, getInvalidatorClientId());
         mContext.startService(intent);
     }
 
@@ -94,6 +116,8 @@ public class InvalidationController implements ActivityStatus.StateListener {
     public void stop() {
         Intent intent = new Intent(mContext, InvalidationService.class);
         intent.putExtra(InvalidationIntentProtocol.EXTRA_STOP, true);
+        intent.putExtra(
+            InvalidationIntentProtocol.EXTRA_CLIENT_NAME, getInvalidatorClientId());
         mContext.startService(intent);
     }
 
@@ -129,6 +153,35 @@ public class InvalidationController implements ActivityStatus.StateListener {
             } else if (newState == ActivityStatus.RESUMED) {
                 start();
             }
+        }
+    }
+
+    @CalledByNative
+    public byte[] getInvalidatorClientId() {
+        synchronized(mLock) {
+            if (mUniqueId != null) {
+                return mUniqueId;
+            }
+
+            try {
+                UniqueIdentificationGenerator generator =
+                    UniqueIdentificationGeneratorFactory.getInstance(ID_GENERATOR);
+                mUniqueId = generator.getUniqueId(null).getBytes();
+            } catch (RuntimeException e) {
+                // Tests won't have a generator available.  We need to handle them differently.  But
+                // it would be dangerous to return a hard-coded string, since that could break
+                // invalidations if it was ever called in a real browser instance.
+                //
+                // A randomly generated ID is less harmful.  We'll add a "BadID" prefix to it so
+                // hopefully someone will notice and file a bug if we ever used it in practice.
+                byte[] randomBytes = new byte[8];
+                RANDOM.nextBytes(randomBytes);
+                String encoded =
+                    Base64.encodeToString(randomBytes, 0, randomBytes.length, Base64.NO_WRAP);
+                String idString = "BadID" + encoded;
+                mUniqueId = idString.getBytes();
+            }
+            return mUniqueId;
         }
     }
 }

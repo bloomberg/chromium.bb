@@ -19,6 +19,8 @@ import org.chromium.base.ActivityStatus;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.test.util.AdvancedMockContext;
 import org.chromium.base.test.util.Feature;
+import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
+import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
 import org.chromium.sync.internal_api.pub.base.ModelType;
 import org.chromium.sync.notifier.InvalidationIntentProtocol;
 import org.chromium.sync.notifier.InvalidationPreferences;
@@ -28,12 +30,15 @@ import org.chromium.sync.signin.AccountManagerHelper;
 import org.chromium.sync.signin.ChromeSigninController;
 import org.chromium.sync.test.util.MockSyncContentResolverDelegate;
 
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+
+import javax.annotation.Nullable;
 
 /**
  * Tests for the {@link InvalidationController}.
@@ -60,7 +65,7 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
         assertEquals(1, mContext.getNumStartedIntents());
         Intent intent = mContext.getStartedIntent(0);
         validateIntentComponent(intent);
-        assertNull(intent.getExtras());
+        assertTrue(intent.hasExtra(InvalidationIntentProtocol.EXTRA_CLIENT_NAME));
     }
 
     @SmallTest
@@ -70,7 +75,8 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
         assertEquals(1, mContext.getNumStartedIntents());
         Intent intent = mContext.getStartedIntent(0);
         validateIntentComponent(intent);
-        assertEquals(1, intent.getExtras().size());
+        assertEquals(2, intent.getExtras().size());
+        assertTrue(intent.hasExtra(InvalidationIntentProtocol.EXTRA_CLIENT_NAME));
         assertTrue(intent.hasExtra(InvalidationIntentProtocol.EXTRA_STOP));
         assertTrue(intent.getBooleanExtra(InvalidationIntentProtocol.EXTRA_STOP, false));
     }
@@ -84,7 +90,6 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
         assertEquals(1, mContext.getNumStartedIntents());
         Intent intent = mContext.getStartedIntent(0);
         validateIntentComponent(intent);
-        assertNull(intent.getExtras());
     }
 
     @SmallTest
@@ -105,7 +110,8 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
         assertEquals(1, mContext.getNumStartedIntents());
         Intent intent = mContext.getStartedIntent(0);
         validateIntentComponent(intent);
-        assertEquals(1, intent.getExtras().size());
+        assertEquals(2, intent.getExtras().size());
+        assertTrue(intent.hasExtra(InvalidationIntentProtocol.EXTRA_CLIENT_NAME));
         assertTrue(intent.hasExtra(InvalidationIntentProtocol.EXTRA_STOP));
         assertTrue(intent.getBooleanExtra(InvalidationIntentProtocol.EXTRA_STOP, false));
     }
@@ -312,6 +318,41 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
         assertTrue(objectIds.contains(ObjectId.newInstance(2, "b".getBytes())));
     }
 
+    @SmallTest
+    @Feature({"Sync"})
+    public void testFallbackClientId() {
+      // Test that the InvalidationController consistently returns the same ID even when it has to
+      // resort to its "fallback" ID generation code.
+      InvalidationController controller = new InvalidationController(mContext);
+      byte[] id1 = controller.getInvalidatorClientId();
+      byte[] id2 = controller.getInvalidatorClientId();
+
+      assertTrue(Arrays.equals(id1, id2));
+
+      // Even if initialize the generator late, the ID will remain consistent.
+      registerHardCodedIdGenerator();
+
+      byte[] id3 = controller.getInvalidatorClientId();
+      assertTrue(Arrays.equals(id2, id3));
+    }
+
+    @SmallTest
+    @Feature({"Sync"})
+    public void testPreRegisteredClientId() {
+      registerHardCodedIdGenerator();
+
+      UniqueIdentificationGenerator generator =
+           UniqueIdentificationGeneratorFactory.getInstance(InvalidationController.ID_GENERATOR);
+      String generatorId = generator.getUniqueId(null);
+
+      InvalidationController controller = new InvalidationController(mContext);
+      byte[] id = controller.getInvalidatorClientId();
+      byte[] id2 = controller.getInvalidatorClientId();
+
+      assertTrue(Arrays.equals(generatorId.getBytes(), id));
+      assertTrue(Arrays.equals(id, id2));
+    }
+
     /**
      * Asserts that {@code intent} is destined for the correct component.
      */
@@ -349,5 +390,16 @@ public class InvalidationControllerTest extends InstrumentationTestCase {
         public PackageManager getPackageManager() {
             return getBaseContext().getPackageManager();
         }
+    }
+
+    private static void registerHardCodedIdGenerator() {
+      UniqueIdentificationGeneratorFactory.registerGenerator(
+          InvalidationController.ID_GENERATOR,
+          new UniqueIdentificationGenerator() {
+            public String getUniqueId(@Nullable String salt) {
+              return "Testable ID";
+            }
+          },
+          true);
     }
 }

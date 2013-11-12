@@ -45,6 +45,29 @@ void InvalidationControllerAndroid::SetRegisteredObjectIds(
       base::android::ToJavaArrayOfStrings(env, names).obj());
 }
 
+std::string InvalidationControllerAndroid::GetInvalidatorClientId() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  DCHECK(env);
+  if (invalidation_controller_.is_null()) {
+    invalidation_controller_.Reset(Java_InvalidationController_get(
+        env,
+        base::android::GetApplicationContext()));
+  }
+
+  // Ask the Java code to for the invalidator ID it's currently using.
+  base::android::ScopedJavaLocalRef<_jbyteArray*> id_bytes_java =
+      Java_InvalidationController_getInvalidatorClientId(
+          env,
+          invalidation_controller_.obj());
+
+  // Convert it into a more convenient format for C++.
+  std::vector<uint8_t> id_bytes;
+  base::android::JavaByteArrayToByteVector(env, id_bytes_java.obj(), &id_bytes);
+  std::string id(id_bytes.begin(), id_bytes.end());
+
+  return id;
+}
+
 bool RegisterInvalidationController(JNIEnv* env) {
   return RegisterNativesImpl(env);
 }

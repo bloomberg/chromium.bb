@@ -75,6 +75,11 @@ public class InvalidationService extends AndroidListener {
      */
     @Nullable private static byte[] sClientId;
 
+    /**
+     * A ID that uniquely identifies this client.  Used for reflection blocking.
+     */
+    @Nullable private byte[] mClientName;
+
     @Override
     public void onHandleIntent(Intent intent) {
         // Ensure that a client is or is not running, as appropriate, and that it is for the
@@ -85,6 +90,17 @@ public class InvalidationService extends AndroidListener {
         Account account = intent.hasExtra(InvalidationIntentProtocol.EXTRA_ACCOUNT) ?
                 (Account) intent.getParcelableExtra(InvalidationIntentProtocol.EXTRA_ACCOUNT)
                 : null;
+
+        // Any intents sent to the InvalidationService should include the EXTRA_CLIENT_NAME.  The
+        // call to ensureClientStartState() might need a client name, and would break if we don't
+        // have one.
+        //
+        // Intents that are addressed to the AndroidListener portion of this class do not need to
+        // include the EXTRA_CLIENT_NAME.
+        if (intent.hasExtra(InvalidationIntentProtocol.EXTRA_CLIENT_NAME)) {
+            mClientName = intent.getByteArrayExtra(InvalidationIntentProtocol.EXTRA_CLIENT_NAME);
+        }
+
         ensureAccount(account);
         ensureClientStartState();
 
@@ -265,7 +281,8 @@ public class InvalidationService extends AndroidListener {
      * {@link InvalidationPreferences#setAccount}.
      */
     private void startClient() {
-        Intent startIntent = AndroidListener.createStartIntent(this, CLIENT_TYPE, getClientName());
+        assert (mClientName != null);
+        Intent startIntent = AndroidListener.createStartIntent(this, CLIENT_TYPE, mClientName);
         startService(startIntent);
         setIsClientStarted(true);
     }
@@ -494,13 +511,6 @@ public class InvalidationService extends AndroidListener {
 
     private static String getOAuth2ScopeWithType() {
         return "oauth2:" + SyncStatusHelper.CHROME_SYNC_OAUTH2_SCOPE;
-    }
-
-    /** Returns the client name used for the notification client. */
-    private static byte[] getClientName() {
-        // TODO(dsmyers): we should use the same client name as the native sync code.
-        // Bug: https://code.google.com/p/chromium/issues/detail?id=172391
-        return Long.toString(RANDOM.nextLong()).getBytes();
     }
 
     private static void setClientId(byte[] clientId) {

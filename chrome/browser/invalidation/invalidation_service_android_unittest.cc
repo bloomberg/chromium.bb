@@ -145,4 +145,32 @@ TEST_F(InvalidationServiceAndroidRegistrationTest, UpdateObjectRegistration) {
   invalidation_service().UnregisterInvalidationHandler(&handler);
 }
 
+#if defined(OS_ANDROID)
+
+class InvalidationServiceAndroidTest : public testing::Test {
+ public:
+  InvalidationServiceAndroidTest()
+      : invalidation_service_(&profile_, new InvalidationControllerAndroid()) {}
+  virtual ~InvalidationServiceAndroidTest() {}
+
+  InvalidationService& invalidation_service() {
+    return invalidation_service_;
+  }
+
+ private:
+  TestingProfile profile_;
+  InvalidationServiceAndroid invalidation_service_;
+};
+
+TEST_F(InvalidationServiceAndroidTest, FetchClientId) {
+  const std::string id1 = invalidation_service().GetInvalidatorClientId();
+  ASSERT_FALSE(id1.empty());
+
+  // If nothing else, the ID should be consistent.
+  const std::string id2 = invalidation_service().GetInvalidatorClientId();
+  ASSERT_EQ(id1, id2);
+}
+
+#endif
+
 }  // namespace invalidation
