@@ -295,13 +295,13 @@ TEST_F(FocusCyclerTest, CycleFocusThroughWindowWithPanes) {
 
   InstallFocusCycleOnShelf();
 
+  scoped_ptr<PanedWidgetDelegate> test_widget_delegate;
   scoped_ptr<views::Widget> browser_widget(new views::Widget);
-  PanedWidgetDelegate* test_widget_delegate =
-      new PanedWidgetDelegate(browser_widget.get());
+  test_widget_delegate.reset(new PanedWidgetDelegate(browser_widget.get()));
   views::Widget::InitParams widget_params(
       views::Widget::InitParams::TYPE_WINDOW);
   widget_params.context = CurrentContext();
-  widget_params.delegate = test_widget_delegate;
+  widget_params.delegate = test_widget_delegate.get();
   widget_params.ownership =
       views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   browser_widget->Init(widget_params);
