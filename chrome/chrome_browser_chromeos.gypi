@@ -286,6 +286,8 @@
         'browser/chromeos/drive/resource_metadata_storage.h',
         'browser/chromeos/drive/search_metadata.cc',
         'browser/chromeos/drive/search_metadata.h',
+        'browser/chromeos/drive/sync/remove_performer.cc',
+        'browser/chromeos/drive/sync/remove_performer.h',
         'browser/chromeos/drive/sync_client.cc',
         'browser/chromeos/drive/sync_client.h',
         'browser/chromeos/drive/webkit_file_stream_reader_impl.cc',

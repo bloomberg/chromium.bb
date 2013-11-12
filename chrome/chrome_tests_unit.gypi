@@ -659,6 +659,7 @@
         'browser/chromeos/drive/resource_metadata_storage_unittest.cc',
         'browser/chromeos/drive/resource_metadata_unittest.cc',
         'browser/chromeos/drive/search_metadata_unittest.cc',
+        'browser/chromeos/drive/sync/remove_performer_unittest.cc',
         'browser/chromeos/drive/sync_client_unittest.cc',
         'browser/chromeos/drive/test_util.cc',
         'browser/chromeos/drive/test_util.h',
