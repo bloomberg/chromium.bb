@@ -38,10 +38,20 @@ class MOJO_SYSTEM_EXPORT MessagePipeEndpoint {
   virtual void Close() = 0;
   // Returns false if the endpoint should be closed and destroyed, else true.
   virtual bool OnPeerClose() = 0;
-  // Takes ownership of |message|.
-  virtual MojoResult EnqueueMessage(
-      MessageInTransit* message,
+  // Checks if |EnqueueMessage()| will be able to enqueue the given message
+  // (with the given set of dispatchers). |dispatchers| should be non-null only
+  // if it's nonempty. Returns |MOJO_RESULT_OK| if it will and an appropriate
+  // error code if it won't.
+  virtual MojoResult CanEnqueueMessage(
+      const MessageInTransit* message,
       const std::vector<Dispatcher*>* dispatchers) = 0;
+  // Takes ownership of |message| and the contents of |dispatchers| (leaving
+  // it empty). This should only be called after |CanEnqueueMessage()| has
+  // indicated success. (Unlike |CanEnqueueMessage()|, |dispatchers| may be
+  // non-null but empty.)
+  virtual void EnqueueMessage(
+      MessageInTransit* message,
+      std::vector<scoped_refptr<Dispatcher> >* dispatchers) = 0;
 
   // Implementations must override these if they represent a local endpoint,
   // i.e., one for which there's a |MessagePipeDispatcher| (and thus a handle).

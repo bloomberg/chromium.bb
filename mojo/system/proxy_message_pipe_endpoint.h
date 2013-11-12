@@ -45,9 +45,12 @@ class MOJO_SYSTEM_EXPORT ProxyMessagePipeEndpoint : public MessagePipeEndpoint {
   // |MessagePipeEndpoint| implementation:
   virtual void Close() OVERRIDE;
   virtual bool OnPeerClose() OVERRIDE;
-  virtual MojoResult EnqueueMessage(
-      MessageInTransit* message,
+  virtual MojoResult CanEnqueueMessage(
+      const MessageInTransit* message,
       const std::vector<Dispatcher*>* dispatchers) OVERRIDE;
+  virtual void EnqueueMessage(
+      MessageInTransit* message,
+      std::vector<scoped_refptr<Dispatcher> >* dispatchers) OVERRIDE;
   virtual void Attach(scoped_refptr<Channel> channel,
                       MessageInTransit::EndpointId local_id) OVERRIDE;
   virtual bool Run(MessageInTransit::EndpointId remote_id) OVERRIDE;

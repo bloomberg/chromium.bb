@@ -136,7 +136,19 @@ MojoResult MessagePipe::EnqueueMessage(
     return MOJO_RESULT_FAILED_PRECONDITION;
   }
 
-  return endpoints_[port]->EnqueueMessage(message, dispatchers);
+  MojoResult result = endpoints_[port]->CanEnqueueMessage(message, dispatchers);
+  if (result != MOJO_RESULT_OK) {
+    message->Destroy();
+    return result;
+  }
+
+  // TODO(vtl): No endpoints currently support transferring dispatchers, so we
+  // can get away with this. What we really need to do is create equivalent
+  // dispatchers here (and close the original dispatchers).
+  DCHECK(!dispatchers);
+
+  endpoints_[port]->EnqueueMessage(message, NULL);
+  return MOJO_RESULT_OK;
 }
 
 void MessagePipe::Attach(unsigned port,

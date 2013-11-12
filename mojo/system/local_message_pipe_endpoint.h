@@ -6,6 +6,7 @@
 #define MOJO_SYSTEM_LOCAL_MESSAGE_PIPE_ENDPOINT_H_
 
 #include <deque>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -25,9 +26,12 @@ class MOJO_SYSTEM_EXPORT LocalMessagePipeEndpoint : public MessagePipeEndpoint {
   // |MessagePipeEndpoint| implementation:
   virtual void Close() OVERRIDE;
   virtual bool OnPeerClose() OVERRIDE;
-  virtual MojoResult EnqueueMessage(
-      MessageInTransit* message,
+  virtual MojoResult CanEnqueueMessage(
+      const MessageInTransit* message,
       const std::vector<Dispatcher*>* dispatchers) OVERRIDE;
+  virtual void EnqueueMessage(
+      MessageInTransit* message,
+      std::vector<scoped_refptr<Dispatcher> >* dispatchers) OVERRIDE;
 
   // There's a dispatcher for |LocalMessagePipeEndpoint|s, so we have to
   // implement/override these:
@@ -43,13 +47,30 @@ class MOJO_SYSTEM_EXPORT LocalMessagePipeEndpoint : public MessagePipeEndpoint {
   virtual void RemoveWaiter(Waiter* waiter) OVERRIDE;
 
  private:
+  struct MessageQueueEntry {
+    MessageQueueEntry();
+    // Provide an explicit copy constructor, so that we can use this directly in
+    // a (C++03) STL container. However, we only allow the case where |other| is
+    // empty. (We don't provide a nontrivial constructor, because it wouldn't be
+    // useful with these constraints. This will change with C++11.)
+    MessageQueueEntry(const MessageQueueEntry& other);
+    ~MessageQueueEntry();
+
+    MessageInTransit* message;
+    std::vector<scoped_refptr<Dispatcher> > dispatchers;
+
+   private:
+    // We don't need assignment, however.
+    DISALLOW_ASSIGN(MessageQueueEntry);
+  };
+
   MojoWaitFlags SatisfiedFlags();
   MojoWaitFlags SatisfiableFlags();
 
   bool is_open_;
   bool is_peer_open_;
 
-  std::deque<MessageInTransit*> message_queue_;
+  std::deque<MessageQueueEntry> message_queue_;
   WaiterList waiter_list_;
 
   DISALLOW_COPY_AND_ASSIGN(LocalMessagePipeEndpoint);
