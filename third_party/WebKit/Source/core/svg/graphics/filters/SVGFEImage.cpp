@@ -121,13 +121,12 @@ void FEImage::applySoftware()
         SVGElement* contextNode = toSVGElement(renderer->node());
         if (contextNode->hasRelativeLengths()) {
             SVGLengthContext lengthContext(contextNode);
-            float width = 0;
-            float height = 0;
+            FloatSize viewportSize;
 
             // If we're referencing an element with percentage units, eg. <rect with="30%"> those values were resolved against the viewport.
             // Build up a transformation that maps from the viewport space to the filter primitive subregion.
-            if (lengthContext.determineViewport(width, height))
-                resultImage->context()->concatCTM(makeMapBetweenRects(FloatRect(0, 0, width, height), destRect));
+            if (lengthContext.determineViewport(viewportSize))
+                resultImage->context()->concatCTM(makeMapBetweenRects(FloatRect(FloatPoint(), viewportSize), destRect));
         } else {
             const AffineTransform& absoluteTransform = filter()->absoluteTransform();
             resultImage->context()->concatCTM(absoluteTransform);

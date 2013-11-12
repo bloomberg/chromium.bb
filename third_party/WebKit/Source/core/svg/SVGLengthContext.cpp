@@ -160,20 +160,19 @@ float SVGLengthContext::convertValueFromUserUnits(float value, SVGLengthMode mod
 
 float SVGLengthContext::convertValueFromUserUnitsToPercentage(float value, SVGLengthMode mode, ExceptionState& es) const
 {
-    float width = 0;
-    float height = 0;
-    if (!determineViewport(width, height)) {
+    FloatSize viewportSize;
+    if (!determineViewport(viewportSize)) {
         es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return 0;
     }
 
     switch (mode) {
     case LengthModeWidth:
-        return value / width * 100;
+        return value / viewportSize.width() * 100;
     case LengthModeHeight:
-        return value / height * 100;
+        return value / viewportSize.height() * 100;
     case LengthModeOther:
-        return value / (sqrtf((width * width + height * height) / 2)) * 100;
+        return value / sqrtf(viewportSize.diagonalLengthSquared() / 2) * 100;
     };
 
     ASSERT_NOT_REACHED();
@@ -182,20 +181,19 @@ float SVGLengthContext::convertValueFromUserUnitsToPercentage(float value, SVGLe
 
 float SVGLengthContext::convertValueFromPercentageToUserUnits(float value, SVGLengthMode mode, ExceptionState& es) const
 {
-    float width = 0;
-    float height = 0;
-    if (!determineViewport(width, height)) {
+    FloatSize viewportSize;
+    if (!determineViewport(viewportSize)) {
         es.throwUninformativeAndGenericDOMException(NotSupportedError);
         return 0;
     }
 
     switch (mode) {
     case LengthModeWidth:
-        return value * width;
+        return value * viewportSize.width();
     case LengthModeHeight:
-        return value * height;
+        return value * viewportSize.height();
     case LengthModeOther:
-        return value * sqrtf((width * width + height * height) / 2);
+        return value * sqrtf(viewportSize.diagonalLengthSquared() / 2);
     };
 
     ASSERT_NOT_REACHED();
@@ -279,21 +277,22 @@ float SVGLengthContext::convertValueFromEXSToUserUnits(float value, ExceptionSta
     return value * ceilf(style->fontMetrics().xHeight());
 }
 
-bool SVGLengthContext::determineViewport(float& width, float& height) const
+bool SVGLengthContext::determineViewport(FloatSize& viewportSize) const
 {
     if (!m_context)
         return false;
 
     // If an overriden viewport is given, it has precedence.
     if (!m_overridenViewport.isEmpty()) {
-        width = m_overridenViewport.width();
-        height = m_overridenViewport.height();
+        viewportSize = m_overridenViewport.size();
         return true;
     }
 
-    // SVGLengthContext should NEVER be used to resolve width/height values for <svg> elements,
-    // as they require special treatment, due the relationship with the CSS width/height properties.
-    ASSERT(m_context->document().documentElement() != m_context);
+    // Root <svg> element lengths are resolved against the top level viewport.
+    if (m_context->isOutermostSVGSVGElement()) {
+        viewportSize = toSVGSVGElement(m_context)->currentViewportSize();
+        return true;
+    }
 
     // Take size from nearest viewport element.
     SVGElement* viewportElement = m_context->viewportElement();
@@ -301,12 +300,10 @@ bool SVGLengthContext::determineViewport(float& width, float& height) const
         return false;
 
     const SVGSVGElement* svg = static_cast<const SVGSVGElement*>(viewportElement);
-    FloatSize viewportSize = svg->currentViewBoxRect().size();
+    viewportSize = svg->currentViewBoxRect().size();
     if (viewportSize.isEmpty())
         viewportSize = svg->currentViewportSize();
 
-    width = viewportSize.width();
-    height = viewportSize.height();
     return true;
 }
 

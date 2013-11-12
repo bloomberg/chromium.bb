@@ -66,7 +66,7 @@ public:
     float convertValueToUserUnits(float, SVGLengthMode, SVGLengthType fromUnit, ExceptionState&) const;
     float convertValueFromUserUnits(float, SVGLengthMode, SVGLengthType toUnit, ExceptionState&) const;
 
-    bool determineViewport(float& width, float& height) const;
+    bool determineViewport(FloatSize&) const;
 
 private:
     SVGLengthContext(const SVGElement*, const FloatRect& viewport);
