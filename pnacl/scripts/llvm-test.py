@@ -225,12 +225,14 @@ def SetupEnvironment():
     '{NACL_ROOT}/toolchain/{PNACL_TOOLCHAIN_LABEL}/sdk/lib'
     .format(**env))
   env['PNACL_SCRIPTS'] = '{NACL_ROOT}/pnacl/scripts'.format(**env)
-  env['LIT_KNOWN_FAILURES'] = ('{pwd}/pnacl/scripts/lit_known_failures.txt'
-                               .format(pwd=pwd))
+  env['LLVM_REGRESSION_KNOWN_FAILURES'] = (
+      '{pwd}/pnacl/scripts/llvm_regression_known_failures.txt'.format(pwd=pwd))
+  env['LIBCXX_KNOWN_FAILURES'] = (
+      '{pwd}/pnacl/scripts/libcxx_known_failures.txt'.format(pwd=pwd))
   return env
 
 
-def RunLitTest(testdir, testarg, env, options):
+def RunLitTest(testdir, testarg, lit_failures, env, options):
   """Run LLVM lit tests, and check failures against known failures.
 
   Args:
@@ -277,7 +279,7 @@ def RunLitTest(testdir, testarg, env, options):
 
     parse_options = vars(options)
     parse_options['lit'] = True
-    parse_options['excludes'].append(env['LIT_KNOWN_FAILURES'])
+    parse_options['excludes'].append(env[lit_failures])
     parse_options['attributes'].append(env['BUILD_PLATFORM'])
     print (str(datetime.datetime.now()) + ' ' +
            'Parsing LIT test report output.')
@@ -447,9 +449,11 @@ def main(argv):
   # Run each specified test in sequence, and return on the first failure.
   if options.run_llvm_regression:
     result = result or RunLitTest(env['TC_BUILD_LLVM'], 'check-all',
+                                  'LLVM_REGRESSION_KNOWN_FAILURES',
                                   env, options)
   if options.run_libcxx_tests:
     result = result or RunLitTest(env['TC_BUILD_LIBCXX'], 'check-libcxx',
+                                  'LIBCXX_KNOWN_FAILURES',
                                   env, options)
   if options.testsuite_all or options.testsuite_prereq:
     result = result or TestsuitePrereq(env, options)

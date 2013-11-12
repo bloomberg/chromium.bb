@@ -1336,7 +1336,7 @@ lib-cpp-configure() {
     # The target architecture is set through the PNACL_RUN_ARCH
     # environment variable (``-arch env``).
     local litargs="--verbose"
-    litargs+=" --param shell_prefix='${NACL_ROOT}/run.py -arch env'"
+    litargs+=" --param shell_prefix='${NACL_ROOT}/run.py -arch env --retries=1'"
     litargs+=" --param exe_suffix='.pexe'"
     litargs+=" --param use_system_lib=true"
     litargs+=" --param link_flags='-std=gnu++11 -stdlib=libc++ -lpthread'"

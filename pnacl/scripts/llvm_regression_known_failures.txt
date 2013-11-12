@@ -15,4 +15,3 @@ Clang::PCH/objc_stmts.m win
 LLVM::Analysis/Profiling/load-branch-weights-switches.ll win
 LLVM::Analysis/Profiling/load-branch-weights-loops.ll win
 LLVM::Analysis/Profiling/load-branch-weights-ifs.ll win
-

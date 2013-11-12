@@ -34,7 +34,7 @@ readonly PNACL_BUILD="pnacl/build.sh"
 readonly TOOLCHAIN_BUILD="toolchain_build/toolchain_build_pnacl.py"
 readonly UP_DOWN_LOAD="buildbot/file_up_down_load.sh"
 readonly TORTURE_TEST="tools/toolchain_tester/torture_test.py"
-readonly LLVM_TESTSUITE="pnacl/scripts/llvm-test.py"
+readonly LLVM_TEST="pnacl/scripts/llvm-test.py"
 
 # build.sh, llvm test suite and torture tests all use this value
 export PNACL_CONCURRENCY=${PNACL_CONCURRENCY:-4}
@@ -428,12 +428,15 @@ tc-test-bot() {
     fi
     for opt in "${optset[@]}"; do
       echo "@@@BUILD_STEP llvm-test-suite ${arch} ${opt} @@@"
-      python ${LLVM_TESTSUITE} --testsuite-prereq --arch ${arch}
-      python ${LLVM_TESTSUITE} --testsuite-clean
-      python ${LLVM_TESTSUITE} \
+      python ${LLVM_TEST} --testsuite-prereq --arch ${arch}
+      python ${LLVM_TEST} --testsuite-clean
+      python ${LLVM_TEST} \
         --testsuite-configure --testsuite-run --testsuite-report \
         --arch ${arch} ${opt} -v -c || handle-error
     done
+
+    echo "@@@BUILD_STEP libcxx-test ${arch} @@@"
+    python ${LLVM_TEST} --libcxx-test --arch ${arch} -v -c || handle-error
 
     archived-frontend-test ${arch}
 
