@@ -123,19 +123,19 @@ static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if ((info.Length() == 1 && (V8ArrayBuffer::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))))) {
+    if (((info.Length() == 1) && (V8ArrayBuffer::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))))) {
         TestOverloadedConstructorsV8Internal::constructor1(info);
         return;
     }
-    if ((info.Length() == 1 && (V8ArrayBufferView::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))))) {
+    if (((info.Length() == 1) && (V8ArrayBufferView::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))))) {
         TestOverloadedConstructorsV8Internal::constructor2(info);
         return;
     }
-    if ((info.Length() == 1 && (V8Blob::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))))) {
+    if (((info.Length() == 1) && (V8Blob::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))))) {
         TestOverloadedConstructorsV8Internal::constructor3(info);
         return;
     }
-    if (info.Length() == 1) {
+    if (((info.Length() == 1))) {
         TestOverloadedConstructorsV8Internal::constructor4(info);
         return;
     }

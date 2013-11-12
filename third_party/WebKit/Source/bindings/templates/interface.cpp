@@ -126,7 +126,9 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::H
     {% endfilter %}
     {% endfor %}
     {% for method in methods if not method.do_not_check_signature %}
-    {% if method.custom_signature %}
+    {% if method.custom_signature and not method.overload_index %}
+    {# No custom signature needed for overloaded methods;
+       separate check because depends on global check for overloads #}
 
     // Custom Signature '{{method.name}}'
     const int {{method.name}}Argc = {{method.arguments | length}};

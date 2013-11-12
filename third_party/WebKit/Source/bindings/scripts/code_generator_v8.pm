@@ -2119,29 +2119,29 @@ sub GenerateParametersCheckExpression
         # FIXME: Implement WebIDL overload resolution algorithm.
         if ($type eq "DOMString") {
             if ($parameter->extendedAttributes->{"StrictTypeChecking"}) {
-                push(@andExpression, "(${value}->IsNull() || ${value}->IsUndefined() || ${value}->IsString() || ${value}->IsObject())");
+                push(@andExpression, "${value}->IsNull() || ${value}->IsUndefined() || ${value}->IsString() || ${value}->IsObject()");
             }
         } elsif (IsCallbackInterface($parameter->type)) {
             # For Callbacks only checks if the value is null or object.
-            push(@andExpression, "(${value}->IsNull() || ${value}->IsFunction())");
+            push(@andExpression, "${value}->IsNull() || ${value}->IsFunction()");
         } elsif (GetArrayOrSequenceType($type)) {
             if ($parameter->isNullable) {
-                push(@andExpression, "(${value}->IsNull() || ${value}->IsArray())");
+                push(@andExpression, "${value}->IsNull() || ${value}->IsArray()");
             } else {
-                push(@andExpression, "(${value}->IsArray())");
+                push(@andExpression, "${value}->IsArray()");
             }
         } elsif (IsWrapperType($type)) {
             if ($parameter->isNullable) {
-                push(@andExpression, "(${value}->IsNull() || V8${type}::HasInstance($value, info.GetIsolate(), worldType(info.GetIsolate())))");
+                push(@andExpression, "${value}->IsNull() || V8${type}::HasInstance($value, info.GetIsolate(), worldType(info.GetIsolate()))");
             } else {
-                push(@andExpression, "(V8${type}::HasInstance($value, info.GetIsolate(), worldType(info.GetIsolate())))");
+                push(@andExpression, "V8${type}::HasInstance($value, info.GetIsolate(), worldType(info.GetIsolate()))");
             }
         }
 
         $parameterIndex++;
     }
-    my $res = join(" && ", @andExpression);
-    $res = "($res)" if @andExpression > 1;
+    @andExpression = map { "($_)" } @andExpression;
+    my $res = "(" . join(" && ", @andExpression) . ")";
     return $res;
 }
 

@@ -38,6 +38,7 @@ For details, see bug http://crbug.com/239771
 import v8_attributes
 from v8_globals import includes
 import v8_methods
+import v8_types
 import v8_utilities
 from v8_utilities import cpp_name, runtime_enabled_function_name
 
@@ -179,21 +180,42 @@ def overload_resolution_expression(method):
     # possible argument count for a given method, with type checks.
     # FIXME: Blink's overload resolution algorithm is incorrect, per:
     # https://code.google.com/p/chromium/issues/detail?id=293561
+    # Properly:
+    # 1. Compute effective overload set.
+    # 2. First check type list length.
+    # 3. If multiple entries for given length, compute distinguishing argument
+    #    index and have check for that type.
     arguments = method['arguments']
-    checks = [overload_check_expression(method, index)
-              # check *omitting* optional arguments at |index| and up, e.g.:
-              # index 0 => argument_count 0 (no arguments)
-              # index 1 => argument_count 1 (index 0 argument only)
-              for index, argument in enumerate(arguments)
-              if argument['is_optional']]
+    overload_checks = [overload_check_expression(method, index)
+                       # check *omitting* optional arguments at |index| and up:
+                       # index 0 => argument_count 0 (no arguments)
+                       # index 1 => argument_count 1 (index 0 argument only)
+                       for index, argument in enumerate(arguments)
+                       if argument['is_optional']]
     # FIXME: this is wrong if a method has optional arguments and a variadic
     # one, though there are not yet any examples of this
     if not method['is_variadic']:
         # Includes all optional arguments (len = last index + 1)
-        checks.append(overload_check_expression(method, len(arguments)))
-    return ' || '.join(checks)
+        overload_checks.append(overload_check_expression(method, len(arguments)))
+    return ' || '.join('(%s)' % check for check in overload_checks)
 
 
 def overload_check_expression(method, argument_count):
-    # FIXME: add type checks per GenerateParametersCheckExpression
-    return 'info.Length() == %s' % argument_count
+    def check_argument(index, argument):
+        cpp_value = 'info[%s]' % index
+        idl_type = argument['idl_type']
+        # FIXME: proper type checking, sharing code with attributes and methods
+        # FIXME: [StrictTypeChecking] DOMString
+        # FIXME: nullable types
+        if v8_types.array_or_sequence_type(idl_type):
+            return '%s->IsArray()' % cpp_value
+        if v8_types.is_wrapper_type(idl_type):
+            return 'V8{idl_type}::HasInstance({cpp_value}, info.GetIsolate(), worldType(info.GetIsolate()))'.format(idl_type=idl_type, cpp_value=cpp_value)
+        return None
+
+    overload_checks = ['info.Length() == %s' % argument_count]
+    arguments = method['arguments'][:argument_count]
+    overload_checks.extend(check_argument(index, argument)
+                                          for index, argument in
+                                          enumerate(arguments))
+    return ' && '.join('(%s)' % check for check in overload_checks if check)

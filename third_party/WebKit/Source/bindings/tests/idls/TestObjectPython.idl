@@ -291,6 +291,10 @@ interface TestObjectPython {
     void overloadedMethodB(long longArg1, optional long longArg2);
     void overloadedMethodC(long longArg);
     void overloadedMethodC(long longArg, long... longArgs);
+    void overloadedMethodD(long longArg);
+    void overloadedMethodD(TestInterfaceEmpty testInterfaceEmptyArg);
+    void overloadedMethodE(long longArg);
+    void overloadedMethodE(long[] longArrayArg);
 
     static void overloadedStaticMethod(long longArg);
     static void overloadedStaticMethod(long longArg1, long longArg2);

@@ -3964,47 +3964,47 @@ static void overloadedMethod11Method(const v8::FunctionCallbackInfo<v8::Value>& 
 
 static void overloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if ((info.Length() == 2 && (info[0]->IsNull() || V8TestObject::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))) && (info[1]->IsNull() || info[1]->IsUndefined() || info[1]->IsString() || info[1]->IsObject()))) {
+    if (((info.Length() == 2) && (info[0]->IsNull() || V8TestObject::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))) && (info[1]->IsNull() || info[1]->IsUndefined() || info[1]->IsString() || info[1]->IsObject()))) {
         overloadedMethod1Method(info);
         return;
     }
-    if ((info.Length() == 1 && (info[0]->IsNull() || V8TestObject::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())))) || (info.Length() == 2 && (info[0]->IsNull() || V8TestObject::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))))) {
+    if (((info.Length() == 1) && (info[0]->IsNull() || V8TestObject::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())))) || ((info.Length() == 2) && (info[0]->IsNull() || V8TestObject::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))))) {
         overloadedMethod2Method(info);
         return;
     }
-    if ((info.Length() == 1 && (info[0]->IsNull() || info[0]->IsUndefined() || info[0]->IsString() || info[0]->IsObject()))) {
+    if (((info.Length() == 1) && (info[0]->IsNull() || info[0]->IsUndefined() || info[0]->IsString() || info[0]->IsObject()))) {
         overloadedMethod3Method(info);
         return;
     }
-    if (info.Length() == 1) {
+    if (((info.Length() == 1))) {
         overloadedMethod4Method(info);
         return;
     }
-    if ((info.Length() == 1 && (info[0]->IsNull() || info[0]->IsFunction()))) {
+    if (((info.Length() == 1) && (info[0]->IsNull() || info[0]->IsFunction()))) {
         overloadedMethod5Method(info);
         return;
     }
-    if ((info.Length() == 1 && (info[0]->IsNull() || V8DOMStringList::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))))) {
+    if (((info.Length() == 1) && (info[0]->IsNull() || V8DOMStringList::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))))) {
         overloadedMethod6Method(info);
         return;
     }
-    if ((info.Length() == 1 && (info[0]->IsNull() || info[0]->IsArray()))) {
+    if (((info.Length() == 1) && (info[0]->IsNull() || info[0]->IsArray()))) {
         overloadedMethod7Method(info);
         return;
     }
-    if ((info.Length() == 1 && (V8TestObject::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))))) {
+    if (((info.Length() == 1) && (V8TestObject::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))))) {
         overloadedMethod8Method(info);
         return;
     }
-    if ((info.Length() == 1 && (info[0]->IsArray()))) {
+    if (((info.Length() == 1) && (info[0]->IsArray()))) {
         overloadedMethod9Method(info);
         return;
     }
-    if ((info.Length() == 1 && (info[0]->IsArray()))) {
+    if (((info.Length() == 1) && (info[0]->IsArray()))) {
         overloadedMethod10Method(info);
         return;
     }
-    if (info.Length() == 1) {
+    if (((info.Length() == 1))) {
         overloadedMethod11Method(info);
         return;
     }
@@ -4523,11 +4523,11 @@ static void overloadedPerWorldMethod2MethodForMainWorld(const v8::FunctionCallba
 
 static void overloadedPerWorldMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (info.Length() == 1) {
+    if (((info.Length() == 1))) {
         overloadedPerWorldMethod1Method(info);
         return;
     }
-    if (info.Length() == 2) {
+    if (((info.Length() == 2))) {
         overloadedPerWorldMethod2Method(info);
         return;
     }
@@ -4540,11 +4540,11 @@ static void overloadedPerWorldMethodMethod(const v8::FunctionCallbackInfo<v8::Va
 
 static void overloadedPerWorldMethodMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (info.Length() == 1) {
+    if (((info.Length() == 1))) {
         overloadedPerWorldMethod1MethodForMainWorld(info);
         return;
     }
-    if (info.Length() == 2) {
+    if (((info.Length() == 2))) {
         overloadedPerWorldMethod2MethodForMainWorld(info);
         return;
     }
@@ -4727,11 +4727,11 @@ static void overloadedActivityLoggedMethod2MethodForMainWorld(const v8::Function
 
 static void overloadedActivityLoggedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (info.Length() == 1) {
+    if (((info.Length() == 1))) {
         overloadedActivityLoggedMethod1Method(info);
         return;
     }
-    if (info.Length() == 2) {
+    if (((info.Length() == 2))) {
         overloadedActivityLoggedMethod2Method(info);
         return;
     }
@@ -4744,11 +4744,11 @@ static void overloadedActivityLoggedMethodMethod(const v8::FunctionCallbackInfo<
 
 static void overloadedActivityLoggedMethodMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (info.Length() == 1) {
+    if (((info.Length() == 1))) {
         overloadedActivityLoggedMethod1MethodForMainWorld(info);
         return;
     }
-    if (info.Length() == 2) {
+    if (((info.Length() == 2))) {
         overloadedActivityLoggedMethod2MethodForMainWorld(info);
         return;
     }
