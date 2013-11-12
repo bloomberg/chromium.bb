@@ -23,6 +23,7 @@
 #include "third_party/WebKit/public/web/WebDatabase.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
+#include "webkit/glue/webkit_glue.h"
 
 using blink::WebRuntimeFeatures;
 
@@ -37,6 +38,14 @@ WorkerThread::WorkerThread() {
       thread_safe_sender(),
       sync_message_filter(),
       quota_message_filter()));
+
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kJavaScriptFlags)) {
+    webkit_glue::SetJavaScriptFlags(
+        command_line.GetSwitchValueASCII(switches::kJavaScriptFlags));
+  }
+  SetRuntimeFeaturesDefaultsAndUpdateFromArgs(command_line);
+
   blink::initialize(webkit_platform_support_.get());
 
   appcache_dispatcher_.reset(
@@ -52,8 +61,6 @@ WorkerThread::WorkerThread() {
       thread_safe_sender());
   channel()->AddFilter(indexed_db_message_filter_.get());
 
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  SetRuntimeFeaturesDefaultsAndUpdateFromArgs(command_line);
 }
 
 void WorkerThread::OnShutdown() {
