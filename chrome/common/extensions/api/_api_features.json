@@ -351,11 +351,6 @@
     "dependencies": ["permission:identity"],
     "contexts": ["blessed_extension"]
   },
-  "identity.onSignInChanged": {
-    "channel": "dev",
-    "dependencies": ["permission:identity"],
-    "contexts": ["blessed_extension"]
-  },
   "identityPrivate": {
     "dependencies": ["permission:identityPrivate"],
     "contexts": ["blessed_extension"]
