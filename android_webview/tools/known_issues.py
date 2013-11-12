@@ -41,6 +41,7 @@ KNOWN_INCOMPATIBLE = {
         'third_party/apple_sample_code',
         'third_party/bsdiff',
         'third_party/bspatch',
+        'third_party/instrumented_libraries',
         'third_party/liblouis',
         'third_party/readability',
         'third_party/speech-dispatcher',
