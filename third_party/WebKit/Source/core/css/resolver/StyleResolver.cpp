@@ -335,7 +335,7 @@ StyleResolver::~StyleResolver()
     m_viewportStyleResolver->clearDocument();
 }
 
-inline void StyleResolver::collectTreeBoundaryCrossingRules(ElementRuleCollector& collector, bool includeEmptyRules)
+inline void StyleResolver::collectTreeBoundaryCrossingRules(Element* element, ElementRuleCollector& collector, bool includeEmptyRules)
 {
     if (m_ruleSets.treeBoundaryCrossingRules().isEmpty())
         return;
@@ -355,8 +355,11 @@ inline void StyleResolver::collectTreeBoundaryCrossingRules(ElementRuleCollector
         RuleSet* ruleSet = rules.ruleSetScopedBy(scopingNode);
         unsigned boundaryBehavior = SelectorChecker::CrossesBoundary | SelectorChecker::ScopeContainsLastMatchedElement;
 
+        // If a given scoping node is a shadow root and a given element is in a descendant tree of tree hosted by
+        // the scoping node's shadow host, we should use ScopeIsShadowHost.
         if (scopingNode && scopingNode->isShadowRoot()) {
-            boundaryBehavior |= SelectorChecker::ScopeIsShadowHost;
+            if (element->isInDescendantTreeOf(toShadowRoot(scopingNode)->host()))
+                boundaryBehavior |= SelectorChecker::ScopeIsShadowHost;
             scopingNode = toShadowRoot(scopingNode)->host();
         }
         collector.collectMatchingRules(MatchRequest(ruleSet, includeEmptyRules, scopingNode), ruleRange, static_cast<SelectorChecker::BehaviorAtBoundary>(boundaryBehavior), ignoreCascadeScope, cascadeOrder++);
@@ -394,7 +397,7 @@ void StyleResolver::matchAuthorRulesForShadowHost(Element* element, ElementRuleC
     for (unsigned i = 0; i < resolvers.size(); ++i)
         resolvers.at(i)->collectMatchingAuthorRules(collector, includeEmptyRules, applyAuthorStyles, cascadeScope++, --cascadeOrder);
 
-    collectTreeBoundaryCrossingRules(collector, includeEmptyRules);
+    collectTreeBoundaryCrossingRules(element, collector, includeEmptyRules);
     collector.sortAndTransferMatchedRules();
 
     if (!resolvers.isEmpty())
@@ -408,7 +411,7 @@ void StyleResolver::matchAuthorRules(Element* element, ElementRuleCollector& col
 
         collector.clearMatchedRules();
         collector.matchedResult().ranges.lastAuthorRule = collector.matchedResult().matchedProperties.size() - 1;
-        collectTreeBoundaryCrossingRules(collector, includeEmptyRules);
+        collectTreeBoundaryCrossingRules(element, collector, includeEmptyRules);
         collector.sortAndTransferMatchedRules();
         return;
     }
@@ -438,7 +441,7 @@ void StyleResolver::matchAuthorRules(Element* element, ElementRuleCollector& col
         resolver->collectMatchingAuthorRules(collector, includeEmptyRules, applyAuthorStyles, cascadeScope++, resolver->treeScope() == element->treeScope() && resolver->scopingNode().isShadowRoot() ? 0 : cascadeOrder);
     }
 
-    collectTreeBoundaryCrossingRules(collector, includeEmptyRules);
+    collectTreeBoundaryCrossingRules(element, collector, includeEmptyRules);
     collector.sortAndTransferMatchedRules();
 
     matchHostRules(element, resolvers.first(), collector, includeEmptyRules);

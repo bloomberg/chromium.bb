@@ -299,9 +299,21 @@ SelectorChecker::Match SelectorChecker::matchForShadowDistributed(const Element*
 {
     ASSERT(element);
     Vector<InsertionPoint*, 8> insertionPoints;
+
+    const ContainerNode* scope = nextContext.scope;
+    BehaviorAtBoundary behaviorAtBoundary = nextContext.behaviorAtBoundary;
+
     collectDestinationInsertionPoints(*element, insertionPoints);
     for (size_t i = 0; i < insertionPoints.size(); ++i) {
         nextContext.element = insertionPoints[i];
+
+        // If a given scope is a shadow host of an insertion point but behaviorAtBoundary doesn't have ScopeIsShadowHost,
+        // we need to update behaviorAtBoundary to make selectors like ":host > ::content" work correctly.
+        if (scope == insertionPoints[i]->containingShadowRoot()->shadowHost() && !(behaviorAtBoundary & ScopeIsShadowHost))
+            nextContext.behaviorAtBoundary = static_cast<BehaviorAtBoundary>(behaviorAtBoundary | ScopeIsShadowHost);
+        else
+            nextContext.behaviorAtBoundary = behaviorAtBoundary;
+
         nextContext.isSubSelector = false;
         nextContext.elementStyle = 0;
         if (match(nextContext, dynamicPseudo, siblingTraversalStrategy) == SelectorMatches)

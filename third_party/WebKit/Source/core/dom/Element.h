@@ -318,6 +318,7 @@ public:
     ShadowRoot* userAgentShadowRoot() const;
     ShadowRoot& ensureUserAgentShadowRoot();
     const AtomicString& shadowPseudoId() const;
+    bool isInDescendantTreeOf(const Element* shadowHost) const;
 
     RenderStyle* computedStyle(PseudoId = NOPSEUDO);
 

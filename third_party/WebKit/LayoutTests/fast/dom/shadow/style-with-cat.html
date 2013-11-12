@@ -23,6 +23,13 @@ function borderColorShouldBe(selector, color)
     shouldBeEqualToString(text, color);
 }
 
+function borderColorShouldNotBe(selector, color)
+{
+    var text = 'borderColorOf(getNodeInTreeOfTrees("' + selector + '"))';
+    var unevaledString = '"' + color.replace(/\\/g, "\\\\").replace(/"/g, "\"") + '"';
+    shouldNotBe(text, unevaledString);
+}
+
 function cleanUp()
 {
     document.getElementById('sandbox').innerHTML = '';
@@ -343,6 +350,20 @@ sandbox.appendChild(
                         document.createTextNode('green border')))))));
 
 borderColorShouldBe('host//host2/target', 'rgb(0, 128, 0)');
+
+cleanUp();
+
+// :host ^^ * should not match desendant nodes of div#host.
+sandbox.appendChild(
+    createDOM('div', {'id': 'host'},
+        createShadowRoot(
+            createDOM('style', {},
+                document.createTextNode(':host ^^ * { border: 1px solid red; }')),
+            createDOM('content', {})),
+        createDOM('div', {'id': 'child'},
+            document.createTextNode('show not red'))));
+
+borderColorShouldNotBe('child', 'rgb(255, 0, 0)');
 
 cleanUp();
 

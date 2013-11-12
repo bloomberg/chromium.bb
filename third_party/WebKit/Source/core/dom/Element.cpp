@@ -2333,6 +2333,21 @@ void Element::setPart(const AtomicString& value)
     setAttribute(partAttr, value);
 }
 
+bool Element::isInDescendantTreeOf(const Element* shadowHost) const
+{
+    ASSERT(shadowHost);
+    ASSERT(isShadowHost(shadowHost));
+
+    const ShadowRoot* shadowRoot = containingShadowRoot();
+    while (shadowRoot) {
+        const Element* ancestorShadowHost = shadowRoot->shadowHost();
+        if (ancestorShadowHost == shadowHost)
+            return true;
+        shadowRoot = ancestorShadowHost->containingShadowRoot();
+    }
+    return false;
+}
+
 LayoutSize Element::minimumSizeForResizing() const
 {
     return hasRareData() ? elementRareData()->minimumSizeForResizing() : defaultMinimumSizeForResizing();
