@@ -1143,8 +1143,25 @@ bool DesktopRootWindowHostX11::Dispatch(const base::NativeEvent& event) {
       }
     }  // fallthrough
     case ButtonRelease: {
-      ui::MouseEvent mouseev(xev);
-      DispatchMouseEvent(&mouseev);
+      ui::EventType event_type = ui::EventTypeFromNative(xev);
+      switch (event_type) {
+        case ui::ET_MOUSEWHEEL: {
+          ui::MouseWheelEvent mouseev(xev);
+          DispatchMouseEvent(&mouseev);
+          break;
+        }
+        case ui::ET_MOUSE_PRESSED:
+        case ui::ET_MOUSE_RELEASED: {
+          ui::MouseEvent mouseev(xev);
+          DispatchMouseEvent(&mouseev);
+          break;
+        }
+        case ui::ET_UNKNOWN:
+          // No event is created for X11-release events for mouse-wheel buttons.
+          break;
+        default:
+          NOTREACHED() << event_type;
+      }
       break;
     }
     case FocusOut:
