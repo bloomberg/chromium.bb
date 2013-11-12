@@ -251,6 +251,7 @@ const wchar_t kLaunchModeValue[] = L"launch_mode";
 // This is used by breakpad and the metrics reporting.
 const wchar_t kBrowserCrashDumpAttemptsRegistryPath[] =
     L"Software\\" PRODUCT_STRING_PATH L"\\BrowserCrashDumpAttempts";
+const char kSafeModeEnvVar[] = "CHROME_SAFE_MODE";
 #endif
 
 #if defined(OS_CHROMEOS)

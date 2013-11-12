@@ -51,6 +51,7 @@
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/win/message_box_win.h"
 #include "ui/gfx/platform_font_win.h"
+#include "ui/gfx/switches.h"
 
 namespace {
 
@@ -85,6 +86,10 @@ class TranslationDelegate : public installer::TranslationDelegate {
  public:
   virtual string16 GetLocalizedString(int installer_string_id) OVERRIDE;
 };
+
+bool IsSafeModeStart() {
+  return ::GetEnvironmentVariableA(chrome::kSafeModeEnvVar, NULL, 0) != 0;
+}
 
 }  // namespace
 
@@ -208,6 +213,13 @@ void ChromeBrowserMainPartsWin::PreMainMessageLoopStart() {
 int ChromeBrowserMainPartsWin::PreCreateThreads() {
   int rv = ChromeBrowserMainParts::PreCreateThreads();
 
+  if (IsSafeModeStart()) {
+    // TODO(cpu): disable other troublesome features for safe mode.
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kDisableGpu);
+    CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kHighDPISupport, "0");
+  }
   // TODO(viettrungluu): why don't we run this earlier?
   if (!parsed_command_line().HasSwitch(switches::kNoErrorDialogs) &&
       base::win::GetVersion() < base::win::VERSION_XP) {

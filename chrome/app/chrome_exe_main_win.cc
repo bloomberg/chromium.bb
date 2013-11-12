@@ -16,6 +16,7 @@
 #include "chrome/app/metro_driver_win.h"
 #include "chrome/browser/chrome_process_finder_win.h"
 #include "chrome/browser/policy/policy_path_parser.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/breakpad/app/breakpad_client.h"
@@ -29,8 +30,18 @@ namespace {
 base::LazyInstance<chrome::ChromeBreakpadClient>::Leaky
     g_chrome_breakpad_client = LAZY_INSTANCE_INITIALIZER;
 
+void CheckSafeModeLaunch() {
+  unsigned short k1 = ::GetAsyncKeyState(VK_CONTROL);
+  unsigned short k2 = ::GetAsyncKeyState(VK_MENU);
+  const unsigned short kPressedMask = 0x8000;
+  if ((k1 & kPressedMask) && (k2 & kPressedMask))
+    ::SetEnvironmentVariableA(chrome::kSafeModeEnvVar, "1");
+}
+
 int RunChrome(HINSTANCE instance) {
   breakpad::SetBreakpadClient(g_chrome_breakpad_client.Pointer());
+
+  CheckSafeModeLaunch();
 
   bool exit_now = true;
   // We restarted because of a previous crash. Ask user if we should relaunch.
