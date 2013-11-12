@@ -1,13 +1,6 @@
-# Copyright 2011 The Swarming Authors. All rights reserved.
-# Use of this source code is governed under the Apache License, Version 2.0 that
-# can be found in the LICENSE file.
-
-"""Manages stubs in an simple and efficient way.
-
-Original source:
-https://chromium.googlesource.com/chromium/tools/depot_tools.git/ \
-    +/master/testing_support/auto_stub.py
-"""
+# Copyright (c) 2011 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 import inspect
 import unittest

@@ -12,11 +12,11 @@ import sys
 import threading
 import unittest
 
-import auto_stub
-
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
+sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party'))
 
+from depot_tools import auto_stub
 import swarming
 from utils import net
 

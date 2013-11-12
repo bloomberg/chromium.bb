@@ -21,6 +21,7 @@ def CommonChecks(input_api, output_api):
       join('googletest'),
       join('tests', 'gtest_fake'),
       join('tests'),
+      join('third_party'),
     ] + sys.path
     output.extend(input_api.canned_checks.RunPylint(input_api, output_api))
   finally:
