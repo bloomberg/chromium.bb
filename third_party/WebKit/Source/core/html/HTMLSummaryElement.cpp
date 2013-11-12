@@ -45,7 +45,6 @@ PassRefPtr<HTMLSummaryElement> HTMLSummaryElement::create(Document& document)
 HTMLSummaryElement::HTMLSummaryElement(Document& document)
     : HTMLElement(summaryTag, document)
 {
-    // FIXME: Shouldn't there be a ScriptWrappable::init call here?
 }
 
 RenderObject* HTMLSummaryElement::createRenderer(RenderStyle*)
