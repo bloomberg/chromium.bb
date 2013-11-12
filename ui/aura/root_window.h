@@ -16,7 +16,6 @@
 #include "ui/aura/aura_export.h"
 #include "ui/aura/client/capture_delegate.h"
 #include "ui/aura/root_window_host_delegate.h"
-#include "ui/aura/window.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer_animation_observer.h"
@@ -52,8 +51,7 @@ class RootWindowTransformer;
 class TestScreen;
 
 // RootWindow is responsible for hosting a set of windows.
-class AURA_EXPORT RootWindow : public Window,
-                               public ui::EventDispatcherDelegate,
+class AURA_EXPORT RootWindow : public ui::EventDispatcherDelegate,
                                public ui::GestureEventHelper,
                                public ui::LayerAnimationObserver,
                                public aura::client::CaptureDelegate,
@@ -81,7 +79,7 @@ class AURA_EXPORT RootWindow : public Window,
   Window* window() {
     return const_cast<Window*>(const_cast<const RootWindow*>(this)->window());
   }
-  const Window* window() const { return this; }
+  const Window* window() const { return window_.get(); }
   ui::Compositor* compositor() { return compositor_.get(); }
   gfx::NativeCursor last_cursor() const { return last_cursor_; }
   Window* mouse_pressed_handler() { return mouse_pressed_handler_; }
@@ -129,7 +127,7 @@ class AURA_EXPORT RootWindow : public Window,
   void OnMouseEventsEnableStateChanged(bool enabled);
 
   // Moves the cursor to the specified location relative to the root window.
-  virtual void MoveCursorTo(const gfx::Point& location) OVERRIDE;
+  void MoveCursorTo(const gfx::Point& location);
 
   // Moves the cursor to the |host_location| given in host coordinates.
   void MoveCursorToHostLocation(const gfx::Point& host_location);
@@ -244,12 +242,9 @@ class AURA_EXPORT RootWindow : public Window,
   void SetRootWindowTransformer(scoped_ptr<RootWindowTransformer> transformer);
   gfx::Transform GetRootTransform() const;
 
-  // Overridden from Window:
-  virtual Window* GetRootWindow() OVERRIDE;
-  virtual const Window* GetRootWindow() const OVERRIDE;
-  virtual void SetTransform(const gfx::Transform& transform) OVERRIDE;
-  virtual bool CanFocus() const OVERRIDE;
-  virtual bool CanReceiveEvents() const OVERRIDE;
+  void SetTransform(const gfx::Transform& transform);
+
+  void DeviceScaleFactorChanged(float device_scale_factor);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(RootWindowTest, KeepTranslatedEventInRoot);
@@ -304,12 +299,6 @@ class AURA_EXPORT RootWindow : public Window,
   // transform and insets.
   void UpdateRootWindowSize(const gfx::Size& host_size);
 
-  // Overridden from ui::EventTarget:
-  virtual ui::EventTarget* GetParentTarget() OVERRIDE;
-
-  // Overridden from ui::LayerDelegate:
-  virtual void OnDeviceScaleFactorChanged(float device_scale_factor) OVERRIDE;
-
   // Overridden from aura::client::CaptureDelegate:
   virtual void UpdateCapture(Window* old_capture, Window* new_capture) OVERRIDE;
   virtual void OnOtherRootGotCapture() OVERRIDE;
@@ -317,7 +306,7 @@ class AURA_EXPORT RootWindow : public Window,
   virtual void ReleaseNativeCapture() OVERRIDE;
 
   // Overridden from ui::EventDispatcherDelegate.
-  virtual bool CanDispatchToTarget(EventTarget* target) OVERRIDE;
+  virtual bool CanDispatchToTarget(ui::EventTarget* target) OVERRIDE;
 
   // Overridden from ui::GestureEventHelper.
   virtual bool CanDispatchToConsumer(ui::GestureConsumer* consumer) OVERRIDE;
@@ -379,6 +368,9 @@ class AURA_EXPORT RootWindow : public Window,
   void PostMouseMoveEventAfterWindowChange();
 
   gfx::Transform GetInverseRootTransform() const;
+
+  // TODO(beng): evaluate the ideal ownership model.
+  scoped_ptr<Window> window_;
 
   scoped_ptr<ui::Compositor> compositor_;
 

@@ -365,21 +365,20 @@ TEST_F(WindowTest, DISABLED_MoveCursorToWithTransformRootWindow) {
 #else
 TEST_F(WindowTest, MoveCursorToWithTransformRootWindow) {
 #endif
-  Window* root = root_window();
   gfx::Transform transform;
   transform.Translate(100.0, 100.0);
   transform.Rotate(90.0);
   transform.Scale(2.0, 5.0);
-  root->SetTransform(transform);
-  root->MoveCursorTo(gfx::Point(10, 10));
+  dispatcher()->SetTransform(transform);
+  dispatcher()->MoveCursorTo(gfx::Point(10, 10));
 #if !defined(OS_WIN)
   gfx::Point mouse_location;
   EXPECT_TRUE(dispatcher()->QueryMouseLocationForTest(&mouse_location));
   // TODO(yoshiki): fix this to build on Windows. See crbug.com/133413.OD
   EXPECT_EQ("50,120", mouse_location.ToString());
 #endif
-  EXPECT_EQ("10,10",
-      gfx::Screen::GetScreenFor(root)->GetCursorScreenPoint().ToString());
+  EXPECT_EQ("10,10", gfx::Screen::GetScreenFor(
+      root_window())->GetCursorScreenPoint().ToString());
 }
 
 // Tests Window::ConvertPointToWindow() with transform to non-root windows.
@@ -451,7 +450,7 @@ TEST_F(WindowTest, MoveCursorToWithComplexTransform) {
   transform.Translate(10.0, 20.0);
   transform.Rotate(10.0);
   transform.Scale(0.3f, 0.5f);
-  root->SetTransform(root_transform);
+  dispatcher()->SetTransform(root_transform);
   w1->SetTransform(transform);
   w11->SetTransform(transform);
   w111->SetTransform(transform);
@@ -1573,7 +1572,7 @@ TEST_F(WindowTest, TransformGesture) {
   gfx::Transform transform;
   transform.Translate(size.height(), 0.0);
   transform.Rotate(90.0);
-  root_window()->SetTransform(transform);
+  dispatcher()->SetTransform(transform);
 
   ui::TouchEvent press(
       ui::ET_TOUCH_PRESSED, gfx::Point(size.height() - 10, 10), 0, getTime());

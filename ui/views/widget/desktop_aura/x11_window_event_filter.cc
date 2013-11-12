@@ -10,6 +10,7 @@
 #include <X11/Xlib.h>
 
 #include "ui/aura/root_window.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/base/hit_test.h"
 #include "ui/events/event.h"

@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/root_window_host.h"
+#include "ui/aura/window.h"
 #include "ui/gfx/display.h"
 #include "ui/views/widget/desktop_aura/desktop_root_window_host_win.h"
 #include "ui/views/widget/desktop_aura/desktop_screen.h"

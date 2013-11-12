@@ -456,7 +456,7 @@ bool RootWindowHostX11::Dispatch(const base::NativeEvent& event) {
       if (static_cast<int>(xev->xbutton.button) == kBackMouseButton ||
           static_cast<int>(xev->xbutton.button) == kForwardMouseButton) {
         client::UserActionClient* gesture_client =
-            client::GetUserActionClient(delegate_->AsRootWindow());
+            client::GetUserActionClient(delegate_->AsRootWindow()->window());
         if (gesture_client) {
           gesture_client->OnUserAction(
               static_cast<int>(xev->xbutton.button) == kBackMouseButton ?
@@ -638,8 +638,9 @@ void RootWindowHostX11::SetBounds(const gfx::Rect& bounds) {
   // Even if the host window's size doesn't change, aura's root window
   // size, which is in DIP, changes when the scale changes.
   float current_scale = delegate_->GetDeviceScaleFactor();
-  float new_scale = gfx::Screen::GetScreenFor(delegate_->AsRootWindow())->
-      GetDisplayNearestWindow(delegate_->AsRootWindow()).device_scale_factor();
+  float new_scale = gfx::Screen::GetScreenFor(
+      delegate_->AsRootWindow()->window())->GetDisplayNearestWindow(
+          delegate_->AsRootWindow()->window()).device_scale_factor();
   bool origin_changed = bounds_.origin() != bounds.origin();
   bool size_changed = bounds_.size() != bounds.size();
   XWindowChanges changes = {0};
@@ -671,8 +672,8 @@ void RootWindowHostX11::SetBounds(const gfx::Rect& bounds) {
   if (size_changed || current_scale != new_scale) {
     delegate_->OnHostResized(bounds.size());
   } else {
-    delegate_->AsRootWindow()->SchedulePaintInRect(
-        delegate_->AsRootWindow()->bounds());
+    delegate_->AsRootWindow()->window()->SchedulePaintInRect(
+        delegate_->AsRootWindow()->window()->bounds());
   }
 }
 
@@ -851,7 +852,7 @@ void RootWindowHostX11::OnRootWindowInitialized(RootWindow* root_window) {
   //    RootWindow::Init is called.
   //    (set in DisplayManager::CreateRootWindowForDisplay)
   // Ready when NotifyRootWindowInitialized is called from RootWindow::Init.
-  if (!delegate_ || root_window != GetRootWindow()->window())
+  if (!delegate_ || root_window != GetRootWindow())
     return;
   UpdateIsInternalDisplay();
 
@@ -967,7 +968,7 @@ void RootWindowHostX11::DispatchXI2Event(const base::NativeEvent& event) {
           if (type == ui::ET_MOUSE_RELEASED)
             break;
           client::UserActionClient* gesture_client =
-              client::GetUserActionClient(delegate_->AsRootWindow());
+              client::GetUserActionClient(delegate_->AsRootWindow()->window());
           if (gesture_client) {
             bool reverse_direction =
                 ui::IsTouchpadEvent(xev) && ui::IsNaturalScrollEnabled();

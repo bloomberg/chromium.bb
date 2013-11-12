@@ -5,6 +5,7 @@
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 
 #include "ui/aura/root_window.h"
+#include "ui/aura/window.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/widget/widget.h"
 

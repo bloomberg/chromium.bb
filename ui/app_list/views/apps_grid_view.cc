@@ -28,6 +28,7 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/root_window.h"
+#include "ui/aura/window.h"
 #endif
 
 #if defined(OS_WIN) && !defined(USE_AURA)
