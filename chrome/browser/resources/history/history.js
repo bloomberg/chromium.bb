@@ -1314,11 +1314,10 @@ HistoryView.prototype.displayResults_ = function(doneLoading) {
 
     // Add all the days and their visits to the page.
     this.resultDiv_.appendChild(resultsFragment);
-
-    // After the results have been added to the DOM, determine the size of the
-    // time column.
-    this.setTimeColumnWidth_(this.resultDiv_);
   }
+  // After the results have been added to the DOM, determine the size of the
+  // time column.
+  this.setTimeColumnWidth_(this.resultDiv_);
 };
 
 /**
