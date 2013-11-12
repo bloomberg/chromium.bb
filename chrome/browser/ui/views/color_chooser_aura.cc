@@ -3,13 +3,14 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "content/public/browser/color_chooser.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_view.h"
 #include "ui/views/color_chooser/color_chooser_listener.h"
 #include "ui/views/color_chooser/color_chooser_view.h"
 #include "ui/views/widget/widget.h"
-
 
 namespace {
 
@@ -55,9 +56,9 @@ ColorChooserAura::ColorChooserAura(content::WebContents* web_contents,
                                    SkColor initial_color)
     : web_contents_(web_contents) {
   view_ = new views::ColorChooserView(this, initial_color);
-  widget_ = views::Widget::CreateWindowWithContext(
-      view_, web_contents->GetView()->GetNativeView());
-  widget_->SetAlwaysOnTop(true);
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
+  widget_ = views::Widget::CreateWindowWithParent(
+      view_, browser->window()->GetNativeWindow());
   widget_->Show();
 }
 
