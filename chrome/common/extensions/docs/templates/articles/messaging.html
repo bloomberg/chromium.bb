@@ -281,7 +281,7 @@ standard output streams.
 <h3 id="native-messaging-host">Native messaging host</h3>
 <p>
 In order to register a native messaging host the application must install a
-manifest file that defines native messaging host configuration. Below is an
+manifest file that defines the native messaging host configuration. Below is an
 example of the manifest file:
 <pre data-filename="manifest.json">
 {
@@ -303,7 +303,8 @@ example of the manifest file:
   </tr>
   <tr>
     <td><code>name</code></td>
-    <td>Native messaging host name.</td>
+    <td>Name of the native messaging host. Clients pass this string to
+    $ref:runtime.connectNative or $ref:runtime.sendNativeMessage.</td>
   </tr>
   <tr>
     <td><code>description</code></td>
@@ -334,17 +335,17 @@ example of the manifest file:
   <dt>Windows:</dt>
     <dd>The manifest file can be located anywhere in the file system.
      The application installer must create registry key
-     <code>HKEY_LOCAL_MACHINE\SOFTWARE\Google\Chrome\NativeMessagingHosts\<em>host_name</em></code>
+     <code>HKEY_LOCAL_MACHINE\SOFTWARE\Google\Chrome\NativeMessagingHosts\<em>com.my_company.my_application</em></code>
      and set default value of that key to the full path to the manifest file.
     </dd>
 
   <dt>OSX:</dt>
     <dd>The manifest file must be placed at
-    <code>/Library/Google/Chrome/NativeMessagingHosts/<em>host_name</em>.json</code>
+    <code>/Library/Google/Chrome/NativeMessagingHosts/<em>com.my_company.my_application</em>.json</code>
     </dd>
   <dt>Linux:</dt>
     <dd>The manifest file must be placed at
-    <code>/etc/opt/chrome/native-messaging-hosts/<em>host_name</em>.json</code>
+    <code>/etc/opt/chrome/native-messaging-hosts/<em>com.my_company.my_application</em>.json</code>
     </dd>
 </dl>
 
