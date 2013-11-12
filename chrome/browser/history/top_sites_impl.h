@@ -55,14 +55,15 @@ class TopSitesImpl : public TopSites {
   void Init(const base::FilePath& db_name);
 
   virtual bool SetPageThumbnail(const GURL& url,
-                        const gfx::Image& thumbnail,
-                        const ThumbnailScore& score) OVERRIDE;
+                                const gfx::Image& thumbnail,
+                                const ThumbnailScore& score) OVERRIDE;
   virtual bool SetPageThumbnailToJPEGBytes(
       const GURL& url,
       const base::RefCountedMemory* memory,
       const ThumbnailScore& score) OVERRIDE;
   virtual void GetMostVisitedURLs(
-      const GetMostVisitedURLsCallback& callback) OVERRIDE;
+      const GetMostVisitedURLsCallback& callback,
+      bool include_forced_urls) OVERRIDE;
   virtual bool GetPageThumbnail(
       const GURL& url,
       bool prefix_match,
@@ -82,7 +83,8 @@ class TopSitesImpl : public TopSites {
   virtual bool IsKnownURL(const GURL& url) OVERRIDE;
   virtual const std::string& GetCanonicalURLString(
       const GURL& url) const OVERRIDE;
-  virtual bool IsFull() OVERRIDE;
+  virtual bool IsNonForcedFull() OVERRIDE;
+  virtual bool IsForcedFull() OVERRIDE;
   virtual MostVisitedURLList GetPrepopulatePages() OVERRIDE;
   virtual bool loaded() const OVERRIDE;
 
@@ -92,15 +94,22 @@ class TopSitesImpl : public TopSites {
  private:
   friend class TopSitesImplTest;
   FRIEND_TEST_ALL_PREFIXES(TopSitesImplTest, DiffMostVisited);
+  FRIEND_TEST_ALL_PREFIXES(TopSitesImplTest, DiffMostVisitedWithForced);
+
+  typedef base::Callback<void(const MostVisitedURLList&,
+                              const MostVisitedURLList&)> PendingCallback;
 
   typedef std::pair<GURL, Images> TempImage;
   typedef std::list<TempImage> TempImages;
+  typedef std::vector<PendingCallback> PendingCallbacks;
 
   // Generates the diff of things that happened between "old" and "new."
   //
+  // This treats forced URLs separately than non-forced URLs.
+  //
   // The URLs that are in "new" but not "old" will be have their index into
-  // "new" put in |added_urls|. The URLs that are in "old" but not "new" will
-  // have their index into "old" put into |deleted_urls|.
+  // "new" put in |added_urls|. The non-forced URLs that are in "old" but not
+  // "new" will have their index into "old" put into |deleted_urls|.
   //
   // URLs appearing in both old and new lists but having different indices will
   // have their index into "new" be put into |moved_urls|.
@@ -146,9 +155,20 @@ class TopSitesImpl : public TopSites {
 
   // Add prepopulated pages: 'welcome to Chrome' and themes gallery to |urls|.
   // Returns true if any pages were added.
-  bool AddPrepopulatedPages(MostVisitedURLList* urls);
+  bool AddPrepopulatedPages(MostVisitedURLList* urls,
+                            size_t num_forced_urls);
+
+  // Add all the forced URLs from |cache_| into |new_list|, making sure not to
+  // add any URL that's already in |new_list|'s non-forced URLs. The forced URLs
+  // in |cache_| and |new_list| are assumed to appear at the front of the list
+  // and be sorted in increasing |last_forced_time|. This will still be true
+  // after the call. If the list of forced URLs overflows the older ones are
+  // dropped. Returns the number of forced URLs after the merge.
+  size_t MergeCachedForcedURLs(MostVisitedURLList* new_list);
 
   // Takes |urls|, produces it's copy in |out| after removing blacklisted URLs.
+  // Also ensures we respect the maximum number of forced URLs and non-forced
+  // URLs.
   void ApplyBlacklist(const MostVisitedURLList& urls, MostVisitedURLList* out);
 
   // Returns an MD5 hash of the URL. Hashing is required for blacklisted URLs.
@@ -163,11 +183,15 @@ class TopSitesImpl : public TopSites {
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) OVERRIDE;
 
-  // Resets top_sites_ and updates the db (in the background). All mutations to
-  // top_sites_ *must* go through this. Should be called from the UI thread.
+  // Updates URLs in |cache_| and the db (in the background).
+  // The non-forced URLs in |new_top_sites| replace those in |cache_|.
+  // The forced URLs of |new_top_sites| are merged with those in |cache_|,
+  // if the list of forced URLs overflows, the oldest ones are dropped.
+  // All mutations to cache_ *must* go through this. Should
+  // be called from the UI thread.
   void SetTopSites(const MostVisitedURLList& new_top_sites);
 
-  // Returns the number of most visted results to request from history. This
+  // Returns the number of most visited results to request from history. This
   // changes depending upon how many urls have been blacklisted. Should be
   // called from the UI thread.
   int num_results_to_request_from_history() const;
@@ -234,7 +258,7 @@ class TopSitesImpl : public TopSites {
   // Stores thumbnails for unknown pages. When SetPageThumbnail is
   // called, if we don't know about that URL yet and we don't have
   // enough Top Sites (new profile), we store it until the next
-  // SetTopSites call.
+  // SetNonForcedTopSites call.
   TempImages temp_images_;
 
   // URL List of prepopulated page.

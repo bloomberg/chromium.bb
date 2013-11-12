@@ -21,8 +21,11 @@ class MockTopSites : public history::TopSitesImpl {
   }
 
   // history::TopSitesImpl overrides.
-  virtual bool IsFull() OVERRIDE {
+  virtual bool IsNonForcedFull() OVERRIDE {
     return known_url_map_.size() >= capacity_;
+  }
+  virtual bool IsForcedFull() OVERRIDE {
+    return false;
   }
   virtual bool IsKnownURL(const GURL& url) OVERRIDE {
     return known_url_map_.find(url.spec()) != known_url_map_.end();
@@ -98,7 +101,7 @@ TEST_F(ThumbnailServiceTest, ShouldUpdateThumbnail) {
   ThumbnailScore bad_score;
   bad_score.time_at_snapshot = base::Time::UnixEpoch();  // Ancient time stamp.
   profile.AddKnownURL(kGoodURL, bad_score);
-  ASSERT_TRUE(profile.GetTopSites()->IsFull());
+  ASSERT_TRUE(profile.GetTopSites()->IsNonForcedFull());
 
   // Should be false, as the top sites data is full, and the new URL is
   // not known.

@@ -61,15 +61,15 @@ class TopSites
 
   typedef base::Callback<void(const MostVisitedURLList&)>
       GetMostVisitedURLsCallback;
-  typedef std::vector<GetMostVisitedURLsCallback> PendingCallbacks;
 
-  // Returns a list of most visited URLs via a callback. This may be invoked on
-  // any thread.
-  // NOTE: the callback is called immediately if we have the data cached. If
-  // data is not available yet, callback will later be posted to the thread
-  // called this function.
+  // Returns a list of most visited URLs via a callback, if
+  // |include_forced_urls| is false includes only non-forced URLs. This may be
+  // invoked on any thread. NOTE: the callback is called immediately if we have
+  // the data cached. If data is not available yet, callback will later be
+  // posted to the thread called this function.
   virtual void GetMostVisitedURLs(
-      const GetMostVisitedURLsCallback& callback) = 0;
+      const GetMostVisitedURLsCallback& callback,
+      bool include_forced_urls) = 0;
 
   // Gets a thumbnail for a given page. Returns true iff we have the thumbnail.
   // This may be invoked on any thread.
@@ -134,10 +134,15 @@ class TopSites
   // return it without modification.
   virtual const std::string& GetCanonicalURLString(const GURL& url) const = 0;
 
-  // Returns true if the top sites list is full (i.e. we already have the
-  // maximum number of top sites).  This function also returns false if
-  // TopSites isn't loaded yet.
-  virtual bool IsFull() = 0;
+  // Returns true if the top sites list of non-forced URLs is full (i.e. we
+  // already have the maximum number of non-forced top sites).  This function
+  // also returns false if TopSites isn't loaded yet.
+  virtual bool IsNonForcedFull() = 0;
+
+  // Returns true if the top sites list of forced URLs is full (i.e. we already
+  // have the maximum number of forced top sites).  This function also returns
+  // false if TopSites isn't loaded yet.
+  virtual bool IsForcedFull() = 0;
 
   virtual bool loaded() const = 0;
 

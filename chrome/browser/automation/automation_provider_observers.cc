@@ -1891,7 +1891,7 @@ void NTPInfoObserver::Observe(int type,
     if (request_ == *request_details.ptr()) {
       top_sites_->GetMostVisitedURLs(
           base::Bind(&NTPInfoObserver::OnTopSitesReceived,
-                     base::Unretained(this)));
+                     base::Unretained(this)), false);
     }
   }
 }

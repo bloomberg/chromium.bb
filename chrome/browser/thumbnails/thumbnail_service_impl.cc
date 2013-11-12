@@ -79,7 +79,7 @@ bool ThumbnailServiceImpl::ShouldAcquirePageThumbnail(const GURL& url) {
   if (!HistoryService::CanAddURL(url))
     return false;
   // Skip if the top sites list is full, and the URL is not known.
-  if (local_ptr->IsFull() && !local_ptr->IsKnownURL(url))
+  if (local_ptr->IsNonForcedFull() && !local_ptr->IsKnownURL(url))
     return false;
   // Skip if we don't have to udpate the existing thumbnail.
   ThumbnailScore current_score;

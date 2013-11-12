@@ -251,7 +251,7 @@ void InstantService::Observe(int type,
       if (top_sites) {
         top_sites->GetMostVisitedURLs(
             base::Bind(&InstantService::OnMostVisitedItemsReceived,
-                       weak_ptr_factory_.GetWeakPtr()));
+                       weak_ptr_factory_.GetWeakPtr()), false);
       }
       break;
     }

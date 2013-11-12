@@ -219,6 +219,7 @@ TEST_F(TopSitesDatabaseTest, AddRemoveEditThumbnails) {
   EXPECT_EQ(kUrl, urls[3].url);
 
   // Change a forced URL to non-forced using SetPageThumbnail.
+  url3.last_forced_time = base::Time();
   db.SetPageThumbnail(url3, 1, Images());
 
   db.GetPageThumbnails(&urls, &thumbnails);
@@ -230,7 +231,6 @@ TEST_F(TopSitesDatabaseTest, AddRemoveEditThumbnails) {
   EXPECT_EQ(plusUrl, urls[3].url);  // Plus moves to second non-forced URL.
 
   // Change a non-forced URL to earlier non-forced using UpdatePageRank.
-  url3.last_forced_time = base::Time();
   db.UpdatePageRank(url3, 0);
 
   db.GetPageThumbnails(&urls, &thumbnails);

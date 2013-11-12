@@ -24,7 +24,7 @@ bool TopSitesGetFunction::RunImpl() {
 
   ts->GetMostVisitedURLs(
       base::Bind(&TopSitesGetFunction::OnMostVisitedURLsAvailable,
-                 weak_ptr_factory_.GetWeakPtr()));
+                 weak_ptr_factory_.GetWeakPtr()), false);
   return true;
 }
 

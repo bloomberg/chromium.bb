@@ -89,7 +89,7 @@ void ThumbnailListSource::StartDataRequest(
   profile_->GetTopSites()->GetMostVisitedURLs(
       base::Bind(&ThumbnailListSource::OnMostVisitedURLsAvailable,
                  weak_ptr_factory_.GetWeakPtr(),
-                 callback));
+                 callback), false);
 }
 
 std::string ThumbnailListSource::GetMimeType(const std::string& path) const {

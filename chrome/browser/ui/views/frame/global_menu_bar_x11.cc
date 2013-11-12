@@ -547,7 +547,7 @@ void GlobalMenuBarX11::GetTopSitesData() {
 
   top_sites_->GetMostVisitedURLs(
       base::Bind(&GlobalMenuBarX11::OnTopSitesReceived,
-                 weak_ptr_factory_.GetWeakPtr()));
+                 weak_ptr_factory_.GetWeakPtr()), false);
 }
 
 void GlobalMenuBarX11::OnTopSitesReceived(

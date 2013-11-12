@@ -312,6 +312,9 @@ void TopSitesDatabase::UpdatePageRank(const MostVisitedURL& url,
 void TopSitesDatabase::UpdatePageRankNoTransaction(
     const MostVisitedURL& url, int new_rank) {
   DCHECK_GT(db_->transaction_nesting(), 0);
+  DCHECK((url.last_forced_time.is_null()) == (new_rank != kRankOfForcedURL))
+      << "Thumbnail without a forced time stamp has a forced rank, or the "
+      << "opposite.";
 
   int prev_rank = GetURLRank(url);
   if (prev_rank == kRankOfNonExistingURL) {

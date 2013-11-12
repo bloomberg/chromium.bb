@@ -159,7 +159,7 @@ void GetMostVisitedURLs(
       new NativeCallback(j_callback_obj, static_cast<int>(num_results));
   top_sites->GetMostVisitedURLs(
       base::Bind(&NativeCallback::OnMostVisitedURLsAvailable,
-                 native_callback));
+                 native_callback), false);
 }
 
 // May be called from any thread

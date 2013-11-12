@@ -168,7 +168,7 @@ void MostVisitedHandler::StartQueryForMostVisited() {
   if (ts) {
     ts->GetMostVisitedURLs(
         base::Bind(&MostVisitedHandler::OnMostVisitedUrlsAvailable,
-                   weak_ptr_factory_.GetWeakPtr()));
+                   weak_ptr_factory_.GetWeakPtr()), false);
   }
 }
 

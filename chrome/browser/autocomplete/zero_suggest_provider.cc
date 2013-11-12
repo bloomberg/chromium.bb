@@ -368,7 +368,7 @@ void ZeroSuggestProvider::Run(const GURL& suggest_url) {
     if (ts) {
       ts->GetMostVisitedURLs(
           base::Bind(&ZeroSuggestProvider::OnMostVisitedUrlsAvailable,
-                     weak_ptr_factory_.GetWeakPtr()));
+                     weak_ptr_factory_.GetWeakPtr()), false);
     }
   }
   have_pending_request_ = true;

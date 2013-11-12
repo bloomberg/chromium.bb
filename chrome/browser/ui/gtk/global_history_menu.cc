@@ -144,7 +144,7 @@ void GlobalHistoryMenu::GetTopSitesData() {
 
   top_sites_->GetMostVisitedURLs(
       base::Bind(&GlobalHistoryMenu::OnTopSitesReceived,
-                 weak_ptr_factory_.GetWeakPtr()));
+                 weak_ptr_factory_.GetWeakPtr()), false);
 }
 
 void GlobalHistoryMenu::OnTopSitesReceived(

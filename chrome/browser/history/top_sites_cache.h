@@ -42,7 +42,8 @@ class TopSitesCache {
   TopSitesCache();
   ~TopSitesCache();
 
-  // The top sites.
+  // Set the top sites. In |top_sites| all forced URLs must appear before
+  // non-forced URLs. This is only checked in debug.
   void SetTopSites(const MostVisitedURLList& top_sites);
   const MostVisitedURLList& top_sites() const { return top_sites_; }
 
@@ -78,6 +79,12 @@ class TopSitesCache {
 
   // Returns the index into |top_sites_| for |url|.
   size_t GetURLIndex(const GURL& url) const;
+
+  // Returns the number of non-forced URLs in the cache.
+  size_t GetNumNonForcedURLs() const;
+
+  // Returns the number of forced URLs in the cache.
+  size_t GetNumForcedURLs() const;
 
  private:
   // The entries in CanonicalURLs, see CanonicalURLs for details. The second
@@ -117,6 +124,9 @@ class TopSitesCache {
   typedef std::map<CanonicalURLEntry, size_t,
                    CanonicalURLComparator> CanonicalURLs;
 
+  // Count the number of forced URLs.
+  void CountForcedURLs();
+
   // Generates the set of canonical urls from |top_sites_|.
   void GenerateCanonicalURLs();
 
@@ -129,7 +139,12 @@ class TopSitesCache {
   // Returns the GURL corresponding to an iterator in |canonical_urls_|.
   const GURL& GetURLFromIterator(CanonicalURLs::const_iterator it) const;
 
-  // The top sites.
+  // The number of top sites with forced URLs.
+  size_t num_forced_urls_;
+
+  // The top sites. This list must always contain the forced URLs first followed
+  // by the non-forced URLs. This is not strictly enforced but is checked in
+  // debug.
   MostVisitedURLList top_sites_;
 
   // The images. These map from canonical url to image.

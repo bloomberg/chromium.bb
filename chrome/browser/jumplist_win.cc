@@ -526,7 +526,7 @@ void JumpList::Observe(int type,
       if (top_sites) {
         top_sites->GetMostVisitedURLs(
             base::Bind(&JumpList::OnMostVisitedURLsAvailable,
-                       weak_ptr_factory_.GetWeakPtr()));
+                       weak_ptr_factory_.GetWeakPtr()), false);
       }
       break;
     }
