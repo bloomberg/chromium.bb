@@ -59,6 +59,8 @@ public:
     virtual ~AnimationEffect() { }
     typedef HashMap<CSSPropertyID, RefPtr<CompositableValue> > CompositableValueMap;
     virtual PassOwnPtr<CompositableValueMap> sample(int iteration, double fraction) const = 0;
+
+    virtual bool isKeyframeAnimationEffect() const { return false; }
 };
 
 } // namespace WebCore

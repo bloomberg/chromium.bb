@@ -367,4 +367,13 @@ TEST(CoreAnimationKeyframeAnimationEffectTest, DependsOnUnderlyingValue)
     EXPECT_FALSE(effect->sample(0, 1)->begin()->value->dependsOnUnderlyingValue());
 }
 
+TEST(CoreAnimationKeyframeAnimationEffectTest, ToKeyframeAnimationEffect)
+{
+    KeyframeAnimationEffect::KeyframeVector keyframes(0);
+    RefPtr<KeyframeAnimationEffect> effect = KeyframeAnimationEffect::create(keyframes);
+
+    AnimationEffect* baseEffect = effect.get();
+    EXPECT_TRUE(toKeyframeAnimationEffect(baseEffect));
+}
+
 } // namespace

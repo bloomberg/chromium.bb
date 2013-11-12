@@ -87,6 +87,8 @@ public:
     // FIXME: Implement setFrames()
     const KeyframeVector& getFrames() const { return m_keyframes; }
 
+    virtual bool isKeyframeAnimationEffect() const OVERRIDE { return true; }
+
 private:
     class PropertySpecificKeyframe {
     public:
@@ -125,6 +127,8 @@ private:
     typedef HashMap<CSSPropertyID, OwnPtr<PropertySpecificKeyframeGroup> > KeyframeGroupMap;
     OwnPtr<KeyframeGroupMap> m_keyframeGroups;
 };
+
+DEFINE_TYPE_CASTS(KeyframeAnimationEffect, AnimationEffect, value, value->isKeyframeAnimationEffect(), value.isKeyframeAnimationEffect());
 
 } // namespace WebCore
 
