@@ -120,10 +120,6 @@ public:
     // ActiveDOMObject interface
     virtual void contextDestroyed();
 
-    void stopLoadingIcon();
-
-    void finalize();
-
     static const String& permission(ExecutionContext*);
     static const String& permissionString(NotificationClient::Permission);
     static void requestPermission(ExecutionContext*, PassRefPtr<NotificationPermissionCallback> = 0);
@@ -134,10 +130,9 @@ private:
 #endif
     Notification(ExecutionContext*, const String& title);
 
-    void setBody(const String& body) { m_body = body; }
+    void finalize();
 
-    void startLoadingIcon();
-    void finishLoadingIcon();
+    void setBody(const String& body) { m_body = body; }
 
     void showSoon();
 
