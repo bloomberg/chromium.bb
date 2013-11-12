@@ -435,11 +435,18 @@ def AddPerfTestOptions(option_parser):
 
   option_parser.usage = '%prog perf [options]'
   option_parser.commands_dict = {}
-  option_parser.example = ('%prog perf --steps perf_steps.json')
+  option_parser.example = ('%prog perf '
+                           '[--single-step command] or '
+                           '[--steps perf_steps.json] or '
+                           '[--print-step  step]')
 
   option_parser.add_option(
+      '--single-step',
+      help='Execute the given command with retries, but only print the result '
+           'for the "most successful" round.')
+  option_parser.add_option(
       '--steps',
-      help='JSON file containing the list of perf steps to run.')
+      help='JSON file containing the list of commands to run.')
   option_parser.add_option(
       '--flaky-steps',
       help=('A JSON file containing steps that are flaky '
@@ -472,11 +479,15 @@ def ProcessPerfTestOptions(options, error_func):
     A PerfOptions named tuple which contains all options relevant to
     perf tests.
   """
-  if not options.steps and not options.print_step:
-    error_func('Please specify --steps or --print-step')
+  # Only one of steps, print_step or single_step must be provided.
+  count = len(filter(None,
+                     [options.steps, options.print_step, options.single_step]))
+  if count != 1:
+    error_func('Please specify one of: --steps, --print-step, --single-step.')
   return perf_test_options.PerfOptions(
       options.steps, options.flaky_steps, options.print_step,
-      options.no_timeout, options.test_filter, options.dry_run)
+      options.no_timeout, options.test_filter, options.dry_run,
+      options.single_step)
 
 
 def _RunGTests(options, error_func, devices):
@@ -634,6 +645,10 @@ def _RunPerfTests(options, error_func, devices):
       results=results,
       test_type='Perf',
       test_package='Perf')
+
+  if perf_options.single_step:
+    return perf_test_runner.PrintTestOutput('single_step')
+
   # Always return 0 on the sharding stage. Individual tests exit_code
   # will be returned on the print_step stage.
   return 0

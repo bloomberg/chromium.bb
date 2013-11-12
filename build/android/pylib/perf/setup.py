@@ -66,8 +66,13 @@ def Setup(test_options):
   # Before running the tests, kill any leftover server.
   _KillPendingServers()
 
-  with file(test_options.steps, 'r') as f:
-    tests = json.load(f)
+  if test_options.single_step:
+    # Running a single command, build the tests structure.
+    tests = [['single_step', test_options.single_step]]
+
+  if test_options.steps:
+    with file(test_options.steps, 'r') as f:
+      tests = json.load(f)
 
   # The list is necessary to keep the steps order, but internally
   # the format is squashed from a list of lists into a single dict:
