@@ -6,6 +6,8 @@
 
 #include <stdlib.h>
 
+#include <algorithm>
+
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
@@ -253,6 +255,10 @@ bool Setup::DoSetup() {
     std::string build_path_8 = FilePathToUTF8(build_path);
     if (build_path_8.compare(0, 2, "//") != 0)
       build_path_8.insert(0, "//");
+#if defined(OS_WIN)
+    // Canonicalize to forward slashes on Windows.
+    std::replace(build_path_8.begin(), build_path_8.end(), '\\', '/');
+#endif
     build_settings_.SetBuildDir(SourceDir(build_path_8));
   } else {
     // Default output dir.
