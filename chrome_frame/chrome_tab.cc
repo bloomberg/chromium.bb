@@ -946,6 +946,11 @@ STDAPI DllCanUnloadNow() {
 STDAPI DllGetClassObject(REFCLSID rclsid, REFIID riid, LPVOID* ppv) {
   chrome_frame::ScopedCrashReporting crash_reporting;
 
+  // IE 11+ are unsupported.
+  if (GetIEVersion() > IE_10) {
+    return CLASS_E_CLASSNOTAVAILABLE;
+  }
+
   // If we found another module present when we were loaded, then delegate to
   // that:
   if (g_dll_get_class_object_redir_ptr) {
