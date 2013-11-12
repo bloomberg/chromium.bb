@@ -467,7 +467,7 @@ sub HeaderFilesForInterface
 sub NeedsResolveWrapperReachability
 {
     my $interface = shift;
-    return $interface->extendedAttributes->{"GenerateIsReachable"} || $interface->extendedAttributes->{"CustomIsReachable"} || $interface->extendedAttributes->{"SetReference"};
+    return $interface->extendedAttributes->{"GenerateIsReachable"} || $interface->extendedAttributes->{"CustomIsReachable"} || $interface->extendedAttributes->{"SetReference"} || SVGTypeNeedsToHoldContextElement($interface->name);
 }
 
 sub GenerateResolveWrapperReachability
@@ -480,15 +480,27 @@ sub GenerateResolveWrapperReachability
         return;
     }
 
+    my $nativeType = GetNativeTypeForConversions($interface);
     my $code = <<END;
 void ${v8ClassName}::resolveWrapperReachability(void* object, const v8::Persistent<v8::Object>& wrapper, v8::Isolate* isolate)
 {
-    ${implClassName}* impl = fromInternalPointer(object);
+    ${nativeType}* impl = fromInternalPointer(object);
 END
-    if ($interface->extendedAttributes->{"SetReference"}) {
+    my $needSetWrapperReferenceContext = SVGTypeNeedsToHoldContextElement($interface->name) || $interface->extendedAttributes->{"SetReference"};
+    if ($needSetWrapperReferenceContext) {
         $code .= <<END;
     v8::Local<v8::Object> creationContext = v8::Local<v8::Object>::New(isolate, wrapper);
     V8WrapperInstantiationScope scope(creationContext, isolate);
+END
+    }
+    if (SVGTypeNeedsToHoldContextElement($interface->name)) {
+        AddToImplIncludes("V8SVGPathElement.h");
+        $code .= <<END;
+    if (impl->contextElement()) {
+        if (!DOMDataStore::containsWrapper<V8SVGElement>(impl->contextElement(), isolate))
+            wrap(impl->contextElement(), creationContext, isolate);
+        DOMDataStore::setWrapperReference<V8SVGElement>(wrapper, impl->contextElement(), isolate);
+    }
 END
     }
     for my $setReference (@{$interface->extendedAttributes->{"SetReference"}}) {
@@ -4215,25 +4227,6 @@ v8::Handle<v8::Object> wrap($implClassName* impl, v8::Handle<v8::Object> creatio
 END
     }
 
-    # Add strong reference from TearOff to SVGElement, so that SVGElement would never get GC-ed while the TearOff is alive. We do this in V8-side to avoid circular reference on Blink side.
-    if (SVGTypeNeedsToHoldContextElement($interface->name)) {
-        # below include needed for SVGPathSegListPropertyTearOff
-        AddToImplIncludes("V8SVGPathElement.h");
-        AddToImplIncludes("bindings/v8/V8HiddenPropertyName.h");
-        $implementation{nameSpaceWebCore}->add(<<END);
-v8::Handle<v8::Object> wrap($nativeType* impl, v8::Handle<v8::Object> creationContext, v8::Isolate* isolate)
-{
-    ASSERT(impl);
-    ASSERT(!DOMDataStore::containsWrapper<${v8ClassName}>(impl, isolate));
-    v8::Handle<v8::Object> wrapper = ${v8ClassName}::createWrapper(impl, creationContext, isolate);
-    if (impl->contextElement())
-        V8HiddenPropertyName::setNamedHiddenReference(wrapper, "contextElement", toV8(impl->contextElement(), creationContext, isolate));
-    return wrapper;
-}
-
-END
-    }
-
     my @perContextEnabledFunctions;
     my @normalFunctions;
     my $needsDomainSafeFunctionSetter = 0;
@@ -6292,7 +6285,6 @@ sub NeedsSpecialWrap
     return 1 if $interface->extendedAttributes->{"CustomToV8"};
     return 1 if $interface->extendedAttributes->{"SpecialWrapFor"};
     return 1 if InheritsInterface($interface, "Document");
-    return 1 if SVGTypeNeedsToHoldContextElement($interface->name);
 
     return 0;
 }
