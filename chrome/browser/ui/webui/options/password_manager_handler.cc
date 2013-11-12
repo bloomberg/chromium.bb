@@ -1,21 +1,16 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/webui/options/password_manager_handler.h"
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/password_manager/password_manager_util.h"
-#include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/autofill/core/common/password_form.h"
@@ -31,16 +26,12 @@
 namespace options {
 
 PasswordManagerHandler::PasswordManagerHandler()
-    : populater_(this),
-      exception_populater_(this) {
-  require_reauthentication_ = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnablePasswordManagerReauthentication);
-}
+    : password_manager_presenter_(this) {}
 
-PasswordManagerHandler::~PasswordManagerHandler() {
-  PasswordStore* store = GetPasswordStore();
-  if (store)
-    store->RemoveObserver(this);
+PasswordManagerHandler::~PasswordManagerHandler() {}
+
+Profile* PasswordManagerHandler::GetProfile() {
+  return Profile::FromWebUI(web_ui());
 }
 
 void PasswordManagerHandler::GetLocalizedValues(
@@ -72,132 +63,87 @@ void PasswordManagerHandler::GetLocalizedValues(
                                chrome::kPasswordManagerLearnMoreURL);
 }
 
-void PasswordManagerHandler::InitializeHandler() {
-  // Due to the way that handlers are (re)initialized under certain types of
-  // navigation, we may already be initialized. (See bugs 88986 and 86448.)
-  // If this is the case, return immediately. This is a hack.
-  // TODO(mdm): remove this hack once it is no longer necessary.
-  if (!show_passwords_.GetPrefName().empty())
-    return;
-
-  show_passwords_.Init(prefs::kPasswordManagerAllowShowPasswords,
-                       Profile::FromWebUI(web_ui())->GetPrefs(),
-                       base::Bind(&PasswordManagerHandler::UpdatePasswordLists,
-                                  base::Unretained(this),
-                                  static_cast<base::ListValue*>(NULL)));
-  // We should not cache web_ui()->GetProfile(). See crosbug.com/6304.
-  PasswordStore* store = GetPasswordStore();
-  if (store)
-    store->AddObserver(this);
-}
-
 void PasswordManagerHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("updatePasswordLists",
-      base::Bind(&PasswordManagerHandler::UpdatePasswordLists,
+  web_ui()->RegisterMessageCallback(
+      "updatePasswordLists",
+      base::Bind(&PasswordManagerHandler::HandleUpdatePasswordLists,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("removeSavedPassword",
-      base::Bind(&PasswordManagerHandler::RemoveSavedPassword,
+  web_ui()->RegisterMessageCallback(
+      "removeSavedPassword",
+      base::Bind(&PasswordManagerHandler::HandleRemoveSavedPassword,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("removePasswordException",
-      base::Bind(&PasswordManagerHandler::RemovePasswordException,
+  web_ui()->RegisterMessageCallback(
+      "removePasswordException",
+      base::Bind(&PasswordManagerHandler::HandleRemovePasswordException,
                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("requestShowPassword",
-      base::Bind(&PasswordManagerHandler::RequestShowPassword,
+  web_ui()->RegisterMessageCallback(
+      "requestShowPassword",
+      base::Bind(&PasswordManagerHandler::HandleRequestShowPassword,
                  base::Unretained(this)));
 }
 
-void PasswordManagerHandler::OnLoginsChanged() {
-  UpdatePasswordLists(NULL);
+void PasswordManagerHandler::InitializeHandler() {
+  password_manager_presenter_.Initialize();
 }
 
-PasswordStore* PasswordManagerHandler::GetPasswordStore() {
-  return PasswordStoreFactory::GetForProfile(Profile::FromWebUI(web_ui()),
-                                             Profile::EXPLICIT_ACCESS).get();
-}
-
-void PasswordManagerHandler::UpdatePasswordLists(const ListValue* args) {
-  // Reset the current lists.
-  password_list_.clear();
-  password_exception_list_.clear();
-
-  languages_ = Profile::FromWebUI(web_ui())->GetPrefs()->
-      GetString(prefs::kAcceptLanguages);
-  populater_.Populate();
-  exception_populater_.Populate();
-}
-
-void PasswordManagerHandler::RemoveSavedPassword(const ListValue* args) {
-  PasswordStore* store = GetPasswordStore();
-  if (!store)
-    return;
+void PasswordManagerHandler::HandleRemoveSavedPassword(const ListValue* args) {
   std::string string_value = UTF16ToUTF8(ExtractStringValue(args));
   int index;
-  if (base::StringToInt(string_value, &index) && index >= 0 &&
-      static_cast<size_t>(index) < password_list_.size()) {
-    store->RemoveLogin(*password_list_[index]);
-    content::RecordAction(
-        content::UserMetricsAction("PasswordManager_RemoveSavedPassword"));
+  if (base::StringToInt(string_value, &index) && index >= 0) {
+    password_manager_presenter_.HandleRemoveSavedPassword(
+        static_cast<size_t>(index));
   }
 }
 
-void PasswordManagerHandler::RemovePasswordException(
+void PasswordManagerHandler::HandleRemovePasswordException(
     const ListValue* args) {
-  PasswordStore* store = GetPasswordStore();
-  if (!store)
-    return;
   std::string string_value = UTF16ToUTF8(ExtractStringValue(args));
   int index;
-  if (base::StringToInt(string_value, &index) && index >= 0 &&
-      static_cast<size_t>(index) < password_exception_list_.size()) {
-    store->RemoveLogin(*password_exception_list_[index]);
-    content::RecordAction(
-        content::UserMetricsAction("PasswordManager_RemovePasswordException"));
+  if (base::StringToInt(string_value, &index) && index >= 0) {
+    password_manager_presenter_.HandleRemovePasswordException(
+        static_cast<size_t>(index));
   }
 }
 
-void PasswordManagerHandler::RequestShowPassword(const ListValue* args) {
+void PasswordManagerHandler::HandleRequestShowPassword(const ListValue* args) {
   int index;
-  if (!ExtractIntegerValue(args, &index)) {
+  if (!ExtractIntegerValue(args, &index))
     NOTREACHED();
-    return;
-  }
 
-  if (IsAuthenticationRequired()) {
-    if (password_manager_util::AuthenticateUser())
-      last_authentication_time_ = base::TimeTicks::Now();
-    else
-      return;
-  }
+  password_manager_presenter_.HandleRequestShowPassword(
+      static_cast<size_t>(index));
+}
 
+void PasswordManagerHandler::ShowPassword(size_t index,
+                                          const string16& password_value) {
   // Call back the front end to reveal the password.
   web_ui()->CallJavascriptFunction(
       "PasswordManager.showPassword",
-      base::FundamentalValue(index),
-      StringValue(password_list_[index]->password_value));
+      base::FundamentalValue(static_cast<int>(index)),
+      StringValue(password_value));
 }
 
-void PasswordManagerHandler::SetPasswordList() {
-  // Due to the way that handlers are (re)initialized under certain types of
-  // navigation, we may not be initialized yet. (See bugs 88986 and 86448.)
-  // If this is the case, initialize on demand. This is a hack.
-  // TODO(mdm): remove this hack once it is no longer necessary.
-  if (show_passwords_.GetPrefName().empty())
-    InitializeHandler();
+void PasswordManagerHandler::HandleUpdatePasswordLists(const ListValue* args) {
+  password_manager_presenter_.UpdatePasswordLists();
+}
 
+void PasswordManagerHandler::SetPasswordList(
+    const ScopedVector<autofill::PasswordForm>& password_list,
+    bool show_passwords) {
   ListValue entries;
-  bool show_passwords = *show_passwords_ && !require_reauthentication_;
+  languages_ = GetProfile()->GetPrefs()->GetString(prefs::kAcceptLanguages);
   string16 placeholder(ASCIIToUTF16("        "));
-  for (size_t i = 0; i < password_list_.size(); ++i) {
+  for (size_t i = 0; i < password_list.size(); ++i) {
     ListValue* entry = new ListValue();
-    entry->Append(new StringValue(net::FormatUrl(password_list_[i]->origin,
+    entry->Append(new StringValue(net::FormatUrl(password_list[i]->origin,
                                                  languages_)));
-    entry->Append(new StringValue(password_list_[i]->username_value));
+    entry->Append(new StringValue(password_list[i]->username_value));
     if (show_passwords) {
-      entry->Append(new StringValue(password_list_[i]->password_value));
+      entry->Append(new StringValue(password_list[i]->password_value));
     } else {
       // Use a placeholder value with the same length as the password.
       entry->Append(new StringValue(
-          string16(password_list_[i]->password_value.length(), ' ')));
+          string16(password_list[i]->password_value.length(), ' ')));
     }
     entries.Append(entry);
   }
@@ -206,102 +152,16 @@ void PasswordManagerHandler::SetPasswordList() {
                                    entries);
 }
 
-void PasswordManagerHandler::SetPasswordExceptionList() {
+void PasswordManagerHandler::SetPasswordExceptionList(
+    const ScopedVector<autofill::PasswordForm>& password_exception_list) {
   ListValue entries;
-  for (size_t i = 0; i < password_exception_list_.size(); ++i) {
+  for (size_t i = 0; i < password_exception_list.size(); ++i) {
     entries.Append(new StringValue(
-        net::FormatUrl(password_exception_list_[i]->origin, languages_)));
+        net::FormatUrl(password_exception_list[i]->origin, languages_)));
   }
 
   web_ui()->CallJavascriptFunction("PasswordManager.setPasswordExceptionsList",
                                    entries);
-}
-
-bool PasswordManagerHandler::IsAuthenticationRequired() {
-  base::TimeDelta delta = base::TimeDelta::FromSeconds(60);
-  return require_reauthentication_ &&
-      (base::TimeTicks::Now() - last_authentication_time_) > delta;
-}
-
-PasswordManagerHandler::ListPopulater::ListPopulater(
-    PasswordManagerHandler* page)
-    : page_(page),
-      pending_login_query_(0) {
-}
-
-PasswordManagerHandler::ListPopulater::~ListPopulater() {
-}
-
-PasswordManagerHandler::PasswordListPopulater::PasswordListPopulater(
-    PasswordManagerHandler* page) : ListPopulater(page) {
-}
-
-void PasswordManagerHandler::PasswordListPopulater::Populate() {
-  PasswordStore* store = page_->GetPasswordStore();
-  if (store != NULL) {
-    if (pending_login_query_)
-      store->CancelRequest(pending_login_query_);
-
-    pending_login_query_ = store->GetAutofillableLogins(this);
-  } else {
-    LOG(ERROR) << "No password store! Cannot display passwords.";
-  }
-}
-
-void PasswordManagerHandler::PasswordListPopulater::
-    OnPasswordStoreRequestDone(
-        CancelableRequestProvider::Handle handle,
-        const std::vector<autofill::PasswordForm*>& result) {
-  DCHECK_EQ(pending_login_query_, handle);
-  pending_login_query_ = 0;
-  page_->password_list_.clear();
-  page_->password_list_.insert(page_->password_list_.end(),
-                               result.begin(), result.end());
-  page_->SetPasswordList();
-}
-
-void PasswordManagerHandler::PasswordListPopulater::OnGetPasswordStoreResults(
-    const std::vector<autofill::PasswordForm*>& results) {
-  // TODO(kaiwang): Implement when I refactor
-  // PasswordStore::GetAutofillableLogins and PasswordStore::GetBlacklistLogins.
-  NOTIMPLEMENTED();
-}
-
-PasswordManagerHandler::PasswordExceptionListPopulater::
-    PasswordExceptionListPopulater(PasswordManagerHandler* page)
-        : ListPopulater(page) {
-}
-
-void PasswordManagerHandler::PasswordExceptionListPopulater::Populate() {
-  PasswordStore* store = page_->GetPasswordStore();
-  if (store != NULL) {
-    if (pending_login_query_)
-      store->CancelRequest(pending_login_query_);
-
-    pending_login_query_ = store->GetBlacklistLogins(this);
-  } else {
-    LOG(ERROR) << "No password store! Cannot display exceptions.";
-  }
-}
-
-void PasswordManagerHandler::PasswordExceptionListPopulater::
-    OnPasswordStoreRequestDone(
-        CancelableRequestProvider::Handle handle,
-        const std::vector<autofill::PasswordForm*>& result) {
-  DCHECK_EQ(pending_login_query_, handle);
-  pending_login_query_ = 0;
-  page_->password_exception_list_.clear();
-  page_->password_exception_list_.insert(page_->password_exception_list_.end(),
-                                         result.begin(), result.end());
-  page_->SetPasswordExceptionList();
-}
-
-void PasswordManagerHandler::PasswordExceptionListPopulater::
-    OnGetPasswordStoreResults(
-        const std::vector<autofill::PasswordForm*>& results) {
-  // TODO(kaiwang): Implement when I refactor
-  // PasswordStore::GetAutofillableLogins and PasswordStore::GetBlacklistLogins.
-  NOTIMPLEMENTED();
 }
 
 }  // namespace options

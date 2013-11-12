@@ -1739,6 +1739,7 @@
         'browser/ui/webui/ntp/suggestions_combiner_unittest.cc',
         'browser/ui/webui/options/chromeos/cros_language_options_handler_unittest.cc',
         'browser/ui/webui/options/language_options_handler_unittest.cc',
+        'browser/ui/webui/options/password_manager_presenter_unittest.cc',
         'browser/ui/webui/options/pepper_flash_content_settings_utils_unittest.cc',
         'browser/ui/webui/performance_monitor/performance_monitor_ui_util_unittest.cc',
         'browser/ui/webui/print_preview/print_preview_ui_unittest.cc',

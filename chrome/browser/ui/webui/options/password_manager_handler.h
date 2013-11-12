@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,20 +8,16 @@
 #include <string>
 #include <vector>
 
-#include "base/memory/scoped_vector.h"
 #include "base/prefs/pref_member.h"
-#include "chrome/browser/password_manager/password_store.h"
-#include "chrome/browser/password_manager/password_store_consumer.h"
+#include "chrome/browser/ui/password/password_ui_view.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
-
-namespace autofill {
-struct PasswordForm;
-}
+#include "chrome/browser/ui/webui/options/password_manager_presenter.h"
 
 namespace options {
 
+// The WebUI based PasswordUIView. Displays passwords in the web ui.
 class PasswordManagerHandler : public OptionsPageUIHandler,
-                               public PasswordStore::Observer {
+                               public passwords_ui::PasswordUIView {
  public:
   PasswordManagerHandler();
   virtual ~PasswordManagerHandler();
@@ -31,109 +27,39 @@ class PasswordManagerHandler : public OptionsPageUIHandler,
   virtual void InitializeHandler() OVERRIDE;
   virtual void RegisterMessages() OVERRIDE;
 
-  // PasswordStore::Observer implementation.
-  virtual void OnLoginsChanged() OVERRIDE;
+  // PasswordUIView implementation.
+  virtual Profile* GetProfile() OVERRIDE;
+  virtual void ShowPassword(size_t index, const string16& password_value)
+      OVERRIDE;
+  virtual void SetPasswordList(
+      const ScopedVector<autofill::PasswordForm>& password_list,
+      bool show_passwords) OVERRIDE;
+  virtual void SetPasswordExceptionList(
+      const ScopedVector<autofill::PasswordForm>& password_exception_list)
+      OVERRIDE;
 
  private:
-  // The password store associated with the currently active profile.
-  PasswordStore* GetPasswordStore();
-
+  // Clears and then populates the list of passwords and password exceptions.
   // Called when the JS PasswordManager object is initialized.
-  void UpdatePasswordLists(const ListValue* args);
+  void HandleUpdatePasswordLists(const ListValue* args);
 
-  // Remove an entry.
-  // @param value the entry index to be removed.
-  void RemoveSavedPassword(const ListValue* args);
+  // Removes a saved password entry.
+  // |value| the entry index to be removed.
+  void HandleRemoveSavedPassword(const ListValue* args);
 
-  // Remove an password exception.
-  // @param value the entry index to be removed.
-  void RemovePasswordException(const ListValue* args);
+  // Removes a saved password exception.
+  // |value| the entry index to be removed.
+  void HandleRemovePasswordException(const ListValue* args);
 
-  // Remove all saved passwords
-  void RemoveAllSavedPasswords(const ListValue* args);
+  // Requests the plain text password for an entry to be revealed.
+  // |index| The index of the entry.
+  void HandleRequestShowPassword(const ListValue* args);
 
-  // Remove All password exceptions
-  void RemoveAllPasswordExceptions(const ListValue* args);
-
-  // Request the plain text password for an entry to be revealed.
-  // @param index The index of the entry.
-  void RequestShowPassword(const ListValue* args);
-
-  // Sets the password and exception list contents to the given data.
-  // We take ownership of the PasswordForms in the vector.
-  void SetPasswordList();
-  void SetPasswordExceptionList();
-
-  // Returns true if the user needs to be authenticated before a plaintext
-  // password is revealed.
-  bool IsAuthenticationRequired();
-
-  // A short class to mediate requests to the password store.
-  class ListPopulater : public PasswordStoreConsumer {
-   public:
-    explicit ListPopulater(PasswordManagerHandler* page);
-    virtual ~ListPopulater();
-
-    // Send a query to the password store to populate a list.
-    virtual void Populate() = 0;
-
-   protected:
-    PasswordManagerHandler* page_;
-    CancelableRequestProvider::Handle pending_login_query_;
-  };
-
-  // A short class to mediate requests to the password store for passwordlist.
-  class PasswordListPopulater : public ListPopulater {
-   public:
-    explicit PasswordListPopulater(PasswordManagerHandler* page);
-
-    // Send a query to the password store to populate a password list.
-    virtual void Populate() OVERRIDE;
-
-    // Send the password store's reply back to the handler.
-    virtual void OnPasswordStoreRequestDone(
-        CancelableRequestProvider::Handle handle,
-        const std::vector<autofill::PasswordForm*>& result) OVERRIDE;
-    virtual void OnGetPasswordStoreResults(
-        const std::vector<autofill::PasswordForm*>& results) OVERRIDE;
-  };
-
-  // A short class to mediate requests to the password store for exceptions.
-  class PasswordExceptionListPopulater : public ListPopulater {
-   public:
-    explicit PasswordExceptionListPopulater(PasswordManagerHandler* page);
-
-    // Send a query to the password store to populate a passwordException list.
-    virtual void Populate() OVERRIDE;
-
-    // Send the password store's reply back to the handler.
-    virtual void OnPasswordStoreRequestDone(
-        CancelableRequestProvider::Handle handle,
-        const std::vector<autofill::PasswordForm*>& result) OVERRIDE;
-    virtual void OnGetPasswordStoreResults(
-        const std::vector<autofill::PasswordForm*>& results) OVERRIDE;
-  };
-
-  // Password store consumer for populating the password list and exceptions.
-  PasswordListPopulater populater_;
-  PasswordExceptionListPopulater exception_populater_;
-
-  ScopedVector<autofill::PasswordForm> password_list_;
-  ScopedVector<autofill::PasswordForm> password_exception_list_;
-
-  // User's pref
+  // User pref for storing accept languages.
   std::string languages_;
 
-  // Whether to show stored passwords or not.
-  BooleanPrefMember show_passwords_;
-
-  // Indicates whether or not the password manager should require the user to
-  // reauthenticate before revealing plaintext passwords.
-  bool require_reauthentication_;
-
-  // The last time the user was successfully authenticated.
-  // Used to determine whether or not to reveal plaintext passwords.
-  base::TimeTicks last_authentication_time_;
+  // The PasswordManagerPresenter object owned by the this view.
+  options::PasswordManagerPresenter password_manager_presenter_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerHandler);
 };
