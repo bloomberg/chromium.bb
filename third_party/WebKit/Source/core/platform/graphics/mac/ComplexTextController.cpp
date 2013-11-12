@@ -27,8 +27,6 @@
 
 #include <ApplicationServices/ApplicationServices.h>
 #include "core/platform/graphics/Font.h"
-#include "core/rendering/RenderBlockFlow.h"
-#include "core/rendering/RenderText.h"
 #include "platform/geometry/FloatSize.h"
 #include "platform/graphics/TextRun.h"
 #include "platform/text/TextBreakIterator.h"
@@ -41,15 +39,14 @@ namespace WebCore {
 
 class TextLayout {
 public:
-    static bool isNeeded(RenderText* text, const Font& font)
+    static bool isNeeded(const TextRun& run, const Font& font)
     {
-        TextRun run = RenderBlockFlow::constructTextRun(text, font, text, text->style());
         return font.codePath(run) == Font::Complex;
     }
 
-    TextLayout(RenderText* text, const Font& font, float xPos)
+    TextLayout(const TextRun& run, unsigned textLength, const Font& font, float xPos)
         : m_font(font)
-        , m_run(constructTextRun(text, font, xPos))
+        , m_run(constructTextRun(run, textLength, font, xPos))
         , m_controller(adoptPtr(new ComplexTextController(&m_font, m_run, true)))
     {
     }
@@ -66,10 +63,10 @@ public:
     }
 
 private:
-    static TextRun constructTextRun(RenderText* text, const Font& font, float xPos)
+    static TextRun constructTextRun(const TextRun& textRun, unsigned textLength, const Font& font, float xPos)
     {
-        TextRun run = RenderBlockFlow::constructTextRun(text, font, text, text->style());
-        run.setCharactersLength(text->textLength());
+        TextRun run = textRun;
+        run.setCharactersLength(textLength);
         ASSERT(run.charactersLength() >= run.length());
 
         run.setXPos(xPos);
@@ -82,11 +79,11 @@ private:
     OwnPtr<ComplexTextController> m_controller;
 };
 
-PassOwnPtr<TextLayout> Font::createLayout(RenderText* text, float xPos, bool collapseWhiteSpace) const
+PassOwnPtr<TextLayout> Font::createLayoutForMacComplexText(const TextRun& run, unsigned textLength, float xPos, bool collapseWhiteSpace) const
 {
-    if (!collapseWhiteSpace || !TextLayout::isNeeded(text, *this))
+    if (!collapseWhiteSpace || !TextLayout::isNeeded(run, *this))
         return nullptr;
-    return adoptPtr(new TextLayout(text, *this, xPos));
+    return adoptPtr(new TextLayout(run, textLength, *this, xPos));
 }
 
 void Font::deleteLayout(TextLayout* layout)

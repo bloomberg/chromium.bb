@@ -52,6 +52,15 @@ struct RenderTextInfo {
     OwnPtr<TextLayout> m_layout;
     LazyLineBreakIterator m_lineBreakIterator;
     const Font* m_font;
+
+    void createLayout(RenderText* renderText, float xPos, bool collapseWhiteSpace)
+    {
+#if OS(MACOSX)
+        m_layout = m_font->createLayoutForMacComplexText(RenderBlockFlow::constructTextRun(renderText, *m_font, renderText, renderText->style()), renderText->textLength(), xPos, collapseWhiteSpace);
+#else
+        m_layout = nullptr;
+#endif
+    }
 };
 
 class WordMeasurement {
@@ -760,11 +769,11 @@ inline bool BreakingContext::handleText(WordMeasurements& wordMeasurements, bool
     if (m_renderTextInfo.m_text != renderText) {
         m_renderTextInfo.m_text = renderText;
         m_renderTextInfo.m_font = &font;
-        m_renderTextInfo.m_layout = font.createLayout(renderText, m_width.currentWidth(), m_collapseWhiteSpace);
+        m_renderTextInfo.createLayout(renderText, m_width.currentWidth(), m_collapseWhiteSpace);
         m_renderTextInfo.m_lineBreakIterator.resetStringAndReleaseIterator(renderText->text(), style->locale());
     } else if (m_renderTextInfo.m_layout && m_renderTextInfo.m_font != &font) {
         m_renderTextInfo.m_font = &font;
-        m_renderTextInfo.m_layout = font.createLayout(renderText, m_width.currentWidth(), m_collapseWhiteSpace);
+        m_renderTextInfo.createLayout(renderText, m_width.currentWidth(), m_collapseWhiteSpace);
     }
 
     TextLayout* textLayout = m_renderTextInfo.m_layout.get();

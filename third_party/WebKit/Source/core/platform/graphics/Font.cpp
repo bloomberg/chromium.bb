@@ -247,8 +247,9 @@ float Font::width(const TextRun& run, int& charsConsumed, String& glyphName) con
 
 #if !OS(MACOSX)
 
-PassOwnPtr<TextLayout> Font::createLayout(RenderText*, float, bool) const
+PassOwnPtr<TextLayout> Font::createLayoutForMacComplexText(const TextRun&, unsigned, float, bool) const
 {
+    ASSERT_NOT_REACHED();
     return nullptr;
 }
 

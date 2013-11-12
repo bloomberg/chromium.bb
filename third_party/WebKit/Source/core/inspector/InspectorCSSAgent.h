@@ -57,6 +57,7 @@ class MediaList;
 class Node;
 class NodeList;
 class PlatformFontUsage;
+class RenderText;
 class StyleResolver;
 class UpdateRegionLayoutTask;
 

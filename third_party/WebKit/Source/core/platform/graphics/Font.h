@@ -51,7 +51,6 @@ class FontPlatformData;
 class FontSelector;
 class GlyphBuffer;
 class GraphicsContext;
-class RenderText;
 class TextLayout;
 class TextRun;
 struct TextRunPaintInfo;
@@ -104,7 +103,7 @@ public:
     float width(const TextRun&, HashSet<const SimpleFontData*>* fallbackFonts = 0, GlyphOverflow* = 0) const;
     float width(const TextRun&, int& charsConsumed, String& glyphName) const;
 
-    PassOwnPtr<TextLayout> createLayout(RenderText*, float xPos, bool collapseWhiteSpace) const;
+    PassOwnPtr<TextLayout> createLayoutForMacComplexText(const TextRun&, unsigned textLength, float xPos, bool collapseWhiteSpace) const;
     static void deleteLayout(TextLayout*);
     static float width(TextLayout&, unsigned from, unsigned len, HashSet<const SimpleFontData*>* fallbackFonts = 0);
 
