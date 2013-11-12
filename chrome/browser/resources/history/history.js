@@ -1865,7 +1865,10 @@ function removeNode(node, onRemove) {
   node.classList.add('fade-out'); // Trigger CSS fade out animation.
 
   // Delete the node when the animation is complete.
-  node.addEventListener('webkitTransitionEnd', function() {
+  node.addEventListener('webkitTransitionEnd', function(e) {
+    if (e.currentTarget != e.target)
+      return;
+
     node.parentNode.removeChild(node);
     if (onRemove)
       onRemove();
@@ -1880,6 +1883,7 @@ function removeNode(node, onRemove) {
 function removeEntryFromView(entry) {
   var nextEntry = entry.nextSibling;
   var previousEntry = entry.previousSibling;
+  var dayResults = findAncestorByClass(entry, 'day-results');
 
   var toRemove = [entry];
 
@@ -1895,6 +1899,12 @@ function removeEntryFromView(entry) {
   if (nextEntry && nextEntry.className == 'gap' &&
       previousEntry && previousEntry.className == 'gap') {
     toRemove.push(nextEntry);
+  }
+
+  // If removing the last entry on a day, remove the entire day.
+  if (dayResults.querySelectorAll('.entry').length == 1) {
+    toRemove.push(dayResults.previousSibling);  // Remove the 'h3'.
+    toRemove.push(dayResults);
   }
 
   // Callback to be called when each node has finished animating. It detects

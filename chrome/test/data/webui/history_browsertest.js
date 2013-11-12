@@ -799,13 +799,18 @@ TEST_F('HistoryWebUIRealBackendTest', 'singleDeletion', function() {
     testDone([false, 'historyDeleted() called when deleting single entry']);
   });
 
+  expectEquals(2, document.querySelectorAll('.day').length);
+
   // Delete the first entry. The previous second entry should now be the first.
   removeEntry(document.querySelector('.entry'), function() {
-    expectEquals(document.querySelector('.entry a').textContent, secondTitle);
+    expectEquals(secondTitle, document.querySelector('.entry a').textContent);
+
+    // After removing the first entry, its day header should also be gone.
+    expectEquals(1, document.querySelectorAll('.day').length);
 
     // Delete another entry. The original third entry should now be the first.
     removeEntry(document.querySelector('.entry'), function() {
-      expectEquals(document.querySelector('.entry a').textContent, thirdTitle);
+      expectEquals(thirdTitle, document.querySelector('.entry a').textContent);
       testDone();
     });
   });
