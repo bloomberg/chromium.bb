@@ -744,7 +744,7 @@ TEST_P(EndToEndTest, InitialRTT) {
   // Now that acks have been exchanged, the RTT estimate has decreased on the
   // server and is not infinite on the client.
   EXPECT_FALSE(client_congestion_manager->SmoothedRtt().IsInfinite());
-  EXPECT_GE(kMaxInitialRoundTripTimeUs,
+  EXPECT_GE(static_cast<int64>(kMaxInitialRoundTripTimeUs),
             server_congestion_manager->SmoothedRtt().ToMicroseconds());
 }
 

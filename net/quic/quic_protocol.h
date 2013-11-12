@@ -56,7 +56,7 @@ const size_t kDefaultInitialWindow = 10;
 const size_t kMaxInitialWindow = 100;
 
 // Don't allow a client to suggest an RTT longer than 15 seconds.
-const uint32 kMaxInitialRoundTripTimeUs = 15 * kNumMicrosPerSecond;
+const size_t kMaxInitialRoundTripTimeUs = 15 * kNumMicrosPerSecond;
 
 // Maximum number of open streams per connection.
 const size_t kDefaultMaxStreamsPerConnection = 100;
