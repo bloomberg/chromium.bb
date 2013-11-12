@@ -108,4 +108,7 @@ leak:SimpleAlertInfoBarDelegate::Create
 # TODO(earthdok): Either annotate or narrow down the suppression.
 leak:content::RenderViewTest::TearDown
 
+# http://crbug.com/318221
+leak:base::EnsureProcessTerminated
+
 # PLEASE DO NOT ADD NEW SUPPRESSIONS HERE. See the comment above.
