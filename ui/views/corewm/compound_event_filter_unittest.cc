@@ -17,9 +17,11 @@
 
 namespace {
 
+#if defined(OS_CHROMEOS)
 base::TimeDelta GetTime() {
   return ui::EventTimeForNow();
 }
+#endif  // defined(OS_CHROMEOS)
 
 }
 
@@ -142,7 +144,7 @@ TEST_F(CompoundEventFilterTest, TouchHidesCursor) {
   EXPECT_FALSE(cursor_client.IsMouseEventsEnabled());
   aura::Env::GetInstance()->RemovePreTargetHandler(compound_filter.get());
 }
-#endif
+#endif  // defined(OS_CHROMEOS)
 
 // Tests that if an event filter consumes a gesture, then it doesn't focus the
 // window.
