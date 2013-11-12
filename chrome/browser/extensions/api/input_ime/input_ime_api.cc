@@ -311,7 +311,7 @@ bool InputImeEventRouter::RegisterIme(
           observer, component.name.c_str(), extension_id.c_str(),
           component.id.c_str(), component.description.c_str(),
           languages, layouts, component.options_page_url,
-          &error);
+          component.input_view_url, &error);
   if (!engine) {
     delete observer;
     LOG(ERROR) << "RegisterIme: " << error;

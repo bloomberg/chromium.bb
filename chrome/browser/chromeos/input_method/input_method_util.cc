@@ -638,7 +638,8 @@ InputMethodDescriptor InputMethodUtil::GetFallbackInputMethodDescriptor() {
                                layouts,
                                languages,
                                true,  // login keyboard.
-                               GURL());  // options page, not available.
+                               GURL(),  // options page, not available.
+                               GURL()); // input view page, not available.
 }
 
 void InputMethodUtil::ReloadInternalMaps() {

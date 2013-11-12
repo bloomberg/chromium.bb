@@ -58,6 +58,7 @@ InputMethodEngine* InputMethodEngine::CreateEngine(
     const std::vector<std::string>& languages,
     const std::vector<std::string>& layouts,
     const GURL& options_page,
+    const GURL& input_view,
     std::string* error) {
 
   InputMethodEngineIBus* engine = new InputMethodEngineIBus();
@@ -69,6 +70,7 @@ InputMethodEngine* InputMethodEngine::CreateEngine(
                      languages,
                      layouts,
                      options_page,
+                     input_view,
                      error);
   return engine;
 }

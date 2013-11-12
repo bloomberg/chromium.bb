@@ -427,6 +427,7 @@ void InputMethodManagerImpl::AddInputMethodExtension(
     const std::vector<std::string>& layouts,
     const std::vector<std::string>& languages,
     const GURL& options_url,
+    const GURL& inputview_url,
     InputMethodEngine* engine) {
   if (state_ == STATE_TERMINATING)
     return;
@@ -437,8 +438,8 @@ void InputMethodManagerImpl::AddInputMethodExtension(
     return;
   }
 
-  extra_input_methods_[id] =
-      InputMethodDescriptor(id, name, layouts, languages, false, options_url);
+  extra_input_methods_[id] = InputMethodDescriptor(
+      id, name, layouts, languages, false, options_url, inputview_url);
   if (Contains(enabled_extension_imes_, id) &&
       !ComponentExtensionIMEManager::IsComponentExtensionIMEId(id)) {
     if (!Contains(active_input_method_ids_, id)) {

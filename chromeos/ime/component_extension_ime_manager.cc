@@ -154,7 +154,8 @@ input_method::InputMethodDescriptors
               component_extension_imes_[i].engines[j].layouts,
               component_extension_imes_[i].engines[j].language_codes,
               false,  // Do not use IME on login screen.
-              component_extension_imes_[i].options_page_url));
+              component_extension_imes_[i].options_page_url,
+              component_extension_imes_[i].input_view_url));
     }
   }
   return result;

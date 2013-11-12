@@ -976,6 +976,7 @@ TEST_F(InputMethodManagerImplTest, TestAddRemoveExtensionInputMethods) {
       layouts,
       languages,
       GURL(),
+      GURL(),
       NULL);
 
   // Extension IMEs are not enabled by default.
@@ -1002,6 +1003,7 @@ TEST_F(InputMethodManagerImplTest, TestAddRemoveExtensionInputMethods) {
       "cafebabe input method",
       layouts,
       languages,
+      GURL(),
       GURL(),
       NULL);
   EXPECT_EQ(2U, manager_->GetNumActiveInputMethods());
@@ -1057,6 +1059,7 @@ TEST_F(InputMethodManagerImplTest, TestAddExtensionInputThenLockScreen) {
       "deadbeef input method",
       layouts,
       languages,
+      GURL(),
       GURL(),
       NULL);
   // Extension IME is not enabled by default.

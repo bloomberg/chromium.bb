@@ -63,6 +63,7 @@ bool InputComponentsHandler::Parse(Extension* extension,
     std::set<std::string> languages;
     std::set<std::string> layouts;
     std::string shortcut_keycode_str;
+    GURL input_view_url;
     bool shortcut_alt = false;
     bool shortcut_ctrl = false;
     bool shortcut_shift = false;
@@ -180,6 +181,19 @@ bool InputComponentsHandler::Parse(Extension* extension,
       }
     }
 
+    // Get input_components[i].input_view_url.
+    // Note: 'input_view' is optional in manifest.
+    std::string input_view_str;
+    if (module_value->GetString(keys::kInputView, &input_view_str)) {
+      input_view_url = extension->GetResourceURL(input_view_str);
+      if (!input_view_url.is_valid()) {
+        *error = ErrorUtils::FormatErrorMessageUTF16(
+            errors::kInvalidInputView,
+            base::IntToString(i));
+        return false;
+      }
+    }
+
     info->input_components.push_back(InputComponentInfo());
     info->input_components.back().name = name_str;
     info->input_components.back().type = type;
@@ -194,6 +208,7 @@ bool InputComponentsHandler::Parse(Extension* extension,
     info->input_components.back().shortcut_shift = shortcut_shift;
     info->input_components.back().options_page_url =
         extensions::ManifestURL::GetOptionsPage(extension);
+    info->input_components.back().input_view_url = input_view_url;
   }
   extension->SetManifestData(keys::kInputComponents, info.release());
   return true;

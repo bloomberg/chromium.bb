@@ -47,8 +47,9 @@ InputMethodWhitelist::GetSupportedInputMethods() const {
         layouts,
         languages,
         kInputMethods[i].is_login_keyboard,
-        GURL()));  // options page url, not available for non-extension input
-                   // method.
+        GURL(), // options page url.
+        GURL() // input view page url.
+        ));
   }
   return input_methods.Pass();
 }

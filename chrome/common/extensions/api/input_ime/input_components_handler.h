@@ -39,6 +39,7 @@ struct InputComponentInfo {
   bool shortcut_ctrl;
   bool shortcut_shift;
   GURL options_page_url;
+  GURL input_view_url;
 };
 
 struct InputComponents : public Extension::ManifestData {

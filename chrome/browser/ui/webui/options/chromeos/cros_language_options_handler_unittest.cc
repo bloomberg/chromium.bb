@@ -46,12 +46,8 @@ class CrosLanguageOptionsHandlerTest : public testing::Test {
     layouts.push_back(raw_layout);
     std::vector<std::string> languages;
     languages.push_back(language_code);
-    return InputMethodDescriptor(id,
-                                 "",  // name
-                                 layouts,
-                                 languages,
-                                 true,  // use on login screen.
-                                 GURL());  // options page url
+    return InputMethodDescriptor(
+        id, std::string(), layouts, languages, true, GURL(), GURL());
   }
 };
 

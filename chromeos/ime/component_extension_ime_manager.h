@@ -33,6 +33,7 @@ struct CHROMEOS_EXPORT ComponentExtensionIME {
   std::string manifest;  // the contents of manifest.json
   std::string description;  // description of extension.
   GURL options_page_url; // an URL to option page.
+  GURL input_view_url; // an URL to input view page.
   base::FilePath path;
   std::vector<ComponentExtensionEngine> engines;
 };

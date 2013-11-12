@@ -228,15 +228,25 @@ bool ComponentExtensionIMEManagerImpl::ReadExtensionInfo(
                           &out->description))
     return false;
   std::string url_string;
-  if (!manifest.GetString(extensions::manifest_keys::kOptionsPage, &url_string))
-    return true;  // It's okay to return true on no option page case.
-
-  GURL url = extensions::Extension::GetResourceURL(
-      extensions::Extension::GetBaseURLFromExtensionId(extension_id),
-      url_string);
-  if (!url.is_valid())
-    return false;
-  out->options_page_url = url;
+  if (manifest.GetString(extensions::manifest_keys::kOptionsPage,
+                         &url_string)) {
+    GURL url = extensions::Extension::GetResourceURL(
+        extensions::Extension::GetBaseURLFromExtensionId(extension_id),
+        url_string);
+    if (!url.is_valid())
+      return false;
+    out->options_page_url = url;
+  }
+  if (manifest.GetString(extensions::manifest_keys::kInputView,
+                         &url_string)) {
+    GURL url = extensions::Extension::GetResourceURL(
+        extensions::Extension::GetBaseURLFromExtensionId(extension_id),
+        url_string);
+    if (!url.is_valid())
+      return false;
+    out->input_view_url = url;
+  }
+  // It's okay to return true on no option page and/or input view page case.
   return true;
 }
 

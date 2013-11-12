@@ -53,6 +53,7 @@ const char kImport[] = "import";
 const char kIncognito[] = "incognito";
 const char kIncludeGlobs[] = "include_globs";
 const char kInputComponents[] = "input_components";
+const char kInputView[] = "input_view";
 const char kIsolation[] = "app.isolation";
 const char kJs[] = "js";
 const char kKey[] = "key";
@@ -373,6 +374,8 @@ const char kInvalidInputComponentShortcutKeycode[] =
     "Invalid value for 'input_components[*].shortcutKey.keyCode";
 const char kInvalidInputComponentType[] =
     "Invalid value for 'input_components[*].type";
+const char kInvalidInputView[] =
+    "Invalid value for 'input_view'.";
 const char kInvalidIntent[] =
     "Invalid value for intents[*]";
 const char kInvalidIntentDisposition[] =

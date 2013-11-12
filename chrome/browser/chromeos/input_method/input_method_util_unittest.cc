@@ -67,6 +67,7 @@ class InputMethodUtilTest : public testing::Test {
                                      layouts,
                                      languages,
                                      false,
+                                     GURL(""),
                                      GURL(""));
     input_methods.push_back(pinyin_ime);
 
@@ -77,6 +78,7 @@ class InputMethodUtilTest : public testing::Test {
                                      layouts,
                                      languages,
                                      false,
+                                     GURL(""),
                                      GURL(""));
     input_methods.push_back(zhuyin_ime);
 
@@ -95,7 +97,8 @@ class InputMethodUtilTest : public testing::Test {
                                  layouts,
                                  languages,
                                  true,
-                                 GURL());  // options page url
+                                 GURL(),  // options page url
+                                 GURL());  // input view page url
   }
 
   static string16 GetDisplayLanguageName(const std::string& language_code) {
