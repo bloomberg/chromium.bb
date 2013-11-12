@@ -76,9 +76,9 @@ bool extractTransferables(v8::Local<v8::Value> value, MessagePortArray& ports, A
     if (value->IsArray()) {
         v8::Local<v8::Array> array = v8::Local<v8::Array>::Cast(value);
         length = array->Length();
-    } else {
-        if (toV8Sequence(value, length, notASequence, isolate).IsEmpty())
-            return false;
+    } else if (toV8Sequence(value, length, isolate).IsEmpty()) {
+        notASequence = true;
+        return false;
     }
 
     v8::Local<v8::Object> transferrables = v8::Local<v8::Object>::Cast(value);

@@ -10,8 +10,8 @@ shouldBeTrue("(new Blob(['hello'], {type:'text/html', endings:'native'})) instan
 shouldBeTrue("(new Blob(['hello'], {type:'text/html', endings:'transparent'})) instanceof window.Blob");
 
 // Test invalid blob parts
-shouldThrow("new Blob('hello')", "'TypeError: First argument of the constructor is not of type Array'");
-shouldThrow("new Blob(0)", "'TypeError: First argument of the constructor is not of type Array'");
+shouldThrow("new Blob('hello')", '"TypeError: Failed to construct \'Blob\': The 1st argument is neither an array, nor does it have indexed properties."');
+shouldThrow("new Blob(0)", '"TypeError: Failed to construct \'Blob\': The 1st argument is neither an array, nor does it have indexed properties."');
 
 // Test valid blob parts.
 shouldBeTrue("(new Blob([])) instanceof window.Blob");
@@ -34,25 +34,25 @@ shouldThrow("new Blob([throwingObj])", "'Error'");
 
 // Test some invalid property bags
 shouldBeTrue("(new Blob([], {unknownKey:'value'})) instanceof window.Blob");    // Ignore invalid keys
-shouldThrow("new Blob([], {endings:'illegalValue'})", "'TypeError: The endings property must be either \"transparent\" or \"native\"'");
+shouldThrow("new Blob([], {endings:'illegalValue'})", "'TypeError: Failed to construct \\'Blob\\': The 2nd argument\\'s \"endings\" property must be either \"transparent\" or \"native\".'");
 shouldThrow("new Blob([], {endings:throwingObj})", "'Error'");
 shouldThrow("new Blob([], {type:throwingObj})", "'Error'");
-shouldThrow("new Blob([], {type:'hello\u00EE'})", "'SyntaxError: type must consist of ASCII characters'");
+shouldThrow("new Blob([], {type:'hello\u00EE'})", "'SyntaxError: Failed to construct \\'Blob\\': The 2nd argument\\'s \"type\" property must consist of ASCII characters.'");
 
 // Test that order of property bag evaluation is lexigraphical
 var throwingObj1 = { toString: function() { throw "Error 1"; } };
 var throwingObj2 = { toString: function() { throw "Error 2"; } };
 shouldThrow("new Blob([], {endings:throwingObj1, type:throwingObj2})", "'Error 1'");
 shouldThrow("new Blob([], {type:throwingObj2, endings:throwingObj1})", "'Error 1'");
-shouldThrow("new Blob([], {type:throwingObj2, endings:'illegal'})", "'TypeError: The endings property must be either \"transparent\" or \"native\"'");
+shouldThrow("new Blob([], {type:throwingObj2, endings:'illegal'})", "'TypeError: Failed to construct \\'Blob\\': The 2nd argument\\'s \"endings\" property must be either \"transparent\" or \"native\".'");
 
 // Test various non-object literals being used as property bags
-shouldThrow("(new Blob([], null)) instanceof window.Blob", "'TypeError: Second argument of the constructor is not of type Object'");
-shouldThrow("(new Blob([], undefined)) instanceof window.Blob", "'TypeError: Second argument of the constructor is not of type Object'");
-shouldThrow("(new Blob([], 123)) instanceof window.Blob", "'TypeError: Second argument of the constructor is not of type Object'");
-shouldThrow("(new Blob([], 123.4)) instanceof window.Blob", "'TypeError: Second argument of the constructor is not of type Object'");
-shouldThrow("(new Blob([], true)) instanceof window.Blob", "'TypeError: Second argument of the constructor is not of type Object'");
-shouldThrow("(new Blob([], 'abc')) instanceof window.Blob", "'TypeError: Second argument of the constructor is not of type Object'");
+shouldThrow("(new Blob([], null)) instanceof window.Blob", "'TypeError: Failed to construct \\'Blob\\': The 2nd argument is not of type Object.'");
+shouldThrow("(new Blob([], undefined)) instanceof window.Blob", "'TypeError: Failed to construct \\'Blob\\': The 2nd argument is not of type Object.'");
+shouldThrow("(new Blob([], 123)) instanceof window.Blob", "'TypeError: Failed to construct \\'Blob\\': The 2nd argument is not of type Object.'");
+shouldThrow("(new Blob([], 123.4)) instanceof window.Blob", "'TypeError: Failed to construct \\'Blob\\': The 2nd argument is not of type Object.'");
+shouldThrow("(new Blob([], true)) instanceof window.Blob", "'TypeError: Failed to construct \\'Blob\\': The 2nd argument is not of type Object.'");
+shouldThrow("(new Blob([], 'abc')) instanceof window.Blob", "'TypeError: Failed to construct \\'Blob\\': The 2nd argument is not of type Object.'");
 shouldBeTrue("(new Blob([], [])) instanceof window.Blob");
 shouldBeTrue("(new Blob([], /abc/)) instanceof window.Blob");
 shouldBeTrue("(new Blob([], function () {})) instanceof window.Blob");
@@ -99,4 +99,4 @@ shouldBe("new Blob({length: 0}).size", "0");
 shouldBe("new Blob({length: 1, 0: 'string'}).size", "6");
 shouldBe("new Blob({length: 2, 0: new Uint8Array(100), 1: new Int16Array(100)}).size", "300");
 shouldBe("new Blob({length: 1, 0: 'string'}, {type: 'text/html'}).type", "'text/html'");
-shouldThrow("new Blob({length: 0}, {endings:'illegal'})", "'TypeError: The endings property must be either \"transparent\" or \"native\"'");
+shouldThrow("new Blob({length: 0}, {endings:'illegal'})", "'TypeError: Failed to construct \\'Blob\\': The 2nd argument\\'s \"endings\" property must be either \"transparent\" or \"native\".'");

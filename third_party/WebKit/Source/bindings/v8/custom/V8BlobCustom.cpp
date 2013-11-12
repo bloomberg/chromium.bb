@@ -32,6 +32,7 @@
 #include "V8Blob.h"
 
 #include "bindings/v8/Dictionary.h"
+#include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/V8Binding.h"
 #include "bindings/v8/V8Utilities.h"
 #include "bindings/v8/custom/V8ArrayBufferCustom.h"
@@ -53,10 +54,9 @@ void V8Blob::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
     if (info[0]->IsArray()) {
         length = v8::Local<v8::Array>::Cast(info[0])->Length();
     } else {
-        bool notASequence = false;
-        toV8Sequence(info[0], length, notASequence, info.GetIsolate());
-        if (notASequence) {
-            throwTypeError("First argument of the constructor is not of type Array", info.GetIsolate());
+        const int sequenceArgumentIndex = 0;
+        if (toV8Sequence(info[sequenceArgumentIndex], length, info.GetIsolate()).IsEmpty()) {
+            throwTypeError(ExceptionMessages::failedToConstruct("Blob", ExceptionMessages::notAnArrayTypeArgumentOrValue(sequenceArgumentIndex + 1)), info.GetIsolate());
             return;
         }
     }
@@ -66,7 +66,7 @@ void V8Blob::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 
     if (info.Length() > 1) {
         if (!info[1]->IsObject()) {
-            throwTypeError("Second argument of the constructor is not of type Object", info.GetIsolate());
+            throwTypeError(ExceptionMessages::failedToConstruct("Blob", "The 2nd argument is not of type Object."), info.GetIsolate());
             return;
         }
 
@@ -75,7 +75,7 @@ void V8Blob::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
         V8TRYCATCH_VOID(bool, containsEndings, dictionary.get("endings", endings));
         if (containsEndings) {
             if (endings != "transparent" && endings != "native") {
-                throwTypeError("The endings property must be either \"transparent\" or \"native\"", info.GetIsolate());
+                throwTypeError(ExceptionMessages::failedToConstruct("Blob", "The 2nd argument's \"endings\" property must be either \"transparent\" or \"native\"."), info.GetIsolate());
                 return;
             }
         }
@@ -83,7 +83,7 @@ void V8Blob::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
         V8TRYCATCH_VOID(bool, containsType, dictionary.get("type", type));
         UNUSED_PARAM(containsType);
         if (!type.containsOnlyASCII()) {
-            throwError(v8SyntaxError, "type must consist of ASCII characters", info.GetIsolate());
+            throwError(v8SyntaxError, ExceptionMessages::failedToConstruct("Blob", "The 2nd argument's \"type\" property must consist of ASCII characters."), info.GetIsolate());
             return;
         }
         type = type.lower();

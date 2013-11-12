@@ -74,7 +74,7 @@ namespace WebCore {
 
     v8::ArrayBuffer::Allocator* v8ArrayBufferAllocator();
 
-    v8::Handle<v8::Value> toV8Sequence(v8::Handle<v8::Value>, uint32_t& length, bool& notASequence, v8::Isolate*);
+    v8::Handle<v8::Value> toV8Sequence(v8::Handle<v8::Value>, uint32_t& length, v8::Isolate*);
 
     inline v8::Handle<v8::Value> argumentOrNull(const v8::FunctionCallbackInfo<v8::Value>& info, int index)
     {
@@ -493,12 +493,10 @@ namespace WebCore {
 
         v8::Local<v8::Value> v8Value(v8::Local<v8::Value>::New(isolate, value));
         uint32_t length = 0;
-        bool notASequence = false;
         if (value->IsArray()) {
             length = v8::Local<v8::Array>::Cast(v8Value)->Length();
-        } else if (toV8Sequence(value, length, notASequence, isolate).IsEmpty()) {
-            if (notASequence)
-                throwTypeError(ExceptionMessages::notAnArrayTypeArgumentOrValue(argumentIndex), isolate);
+        } else if (toV8Sequence(value, length, isolate).IsEmpty()) {
+            throwTypeError(ExceptionMessages::notAnArrayTypeArgumentOrValue(argumentIndex), isolate);
             return Vector<RefPtr<T> >();
         }
 
@@ -513,12 +511,10 @@ namespace WebCore {
 
         v8::Local<v8::Value> v8Value(v8::Local<v8::Value>::New(isolate, value));
         uint32_t length = 0;
-        bool notASequence = false;
         if (value->IsArray()) {
             length = v8::Local<v8::Array>::Cast(v8Value)->Length();
-        } else if (toV8Sequence(value, length, notASequence, isolate).IsEmpty()) {
-            if (notASequence)
-                throwTypeError(ExceptionMessages::notASequenceTypeProperty(propertyName), isolate);
+        } else if (toV8Sequence(value, length, isolate).IsEmpty()) {
+            throwTypeError(ExceptionMessages::notASequenceTypeProperty(propertyName), isolate);
             return Vector<RefPtr<T> >();
         }
 
@@ -532,12 +528,10 @@ namespace WebCore {
     {
         v8::Local<v8::Value> v8Value(v8::Local<v8::Value>::New(isolate, value));
         uint32_t length = 0;
-        bool notASequence = false;
         if (value->IsArray()) {
             length = v8::Local<v8::Array>::Cast(v8Value)->Length();
-        } else if (toV8Sequence(value, length, notASequence, isolate).IsEmpty()) {
-            if (notASequence)
-                throwTypeError(ExceptionMessages::notAnArrayTypeArgumentOrValue(argumentIndex), isolate);
+        } else if (toV8Sequence(value, length, isolate).IsEmpty()) {
+            throwTypeError(ExceptionMessages::notAnArrayTypeArgumentOrValue(argumentIndex), isolate);
             return Vector<T>();
         }
 
@@ -567,7 +561,7 @@ namespace WebCore {
 
     // Validates that the passed object is a sequence type per WebIDL spec
     // http://www.w3.org/TR/2012/CR-WebIDL-20120419/#es-sequence
-    inline v8::Handle<v8::Value> toV8Sequence(v8::Handle<v8::Value> value, uint32_t& length, bool& notASequence, v8::Isolate* isolate)
+    inline v8::Handle<v8::Value> toV8Sequence(v8::Handle<v8::Value> value, uint32_t& length, v8::Isolate* isolate)
     {
         // Attempt converting to a sequence if the value is not already an array but is
         // any kind of object except for a native Date object or a native RegExp object.
@@ -575,8 +569,7 @@ namespace WebCore {
         // FIXME: Do we really need to special case Date and RegExp object?
         // https://www.w3.org/Bugs/Public/show_bug.cgi?id=22806
         if (!value->IsObject() || value->IsDate() || value->IsRegExp()) {
-            // Signal that the caller must handle the type error.
-            notASequence = true;
+            // The caller is responsible for reporting a TypeError.
             return v8Undefined();
         }
 
@@ -589,7 +582,7 @@ namespace WebCore {
         V8TRYCATCH(v8::Local<v8::Value>, lengthValue, object->Get(v8::String::NewSymbol("length")));
 
         if (lengthValue->IsUndefined() || lengthValue->IsNull()) {
-            notASequence = true;
+            // The caller is responsible for reporting a TypeError.
             return v8Undefined();
         }
 
