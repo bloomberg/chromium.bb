@@ -209,6 +209,13 @@
     'deep_memory_profiler': {
       'filepath': 'tools/(deep_memory_profiler|find_runtime_symbols)',
     },
+    'device_orientation': {
+      'filepath': 'content/browser/device_orientation/|'\
+                  'content/common/device_orientation/|'\
+                  'content/public/android/java/src/org/chromium/content/browser/DeviceMotionAndOrientation.java|'\
+                  'content/public/android/javatests/src/org/chromium/content/browser/DeviceMotionAndOrientationTest.java|'\
+                  'content/renderer/device_orientation/',
+    },
     'devtools': {
       'filepath': 'devtools',
     },
@@ -694,6 +701,7 @@
     'content_shell': ['jochen+watch@chromium.org'],
     'cookie_monster': ['erikwright@chromium.org'],
     'deep_memory_profiler': ['dmikurube+memory@chromium.org'],
+    'device_orientation': ['timvolodine@chromium.org', 'mvanouwerkerk@chromium.org'],
     'devtools': ['pfeldman@chromium.org', 'yurys@chromium.org',
                  'vsevik@chromium.org', 'aandrey+blink@chromium.org',
                  'paulirish+reviews@chromium.org',
