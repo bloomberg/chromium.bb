@@ -24,7 +24,7 @@ shouldBeTrue("(new Blob([new Blob([new Blob])])) instanceof window.Blob");
 shouldBe("(new Blob([12])).size", "2");
 shouldBe("(new Blob([[]])).size", "0");         // [].toString() is the empty string
 shouldBe("(new Blob([{}])).size", "15");;       // {}.toString() is the string "[object Object]"
-shouldBe("(new Blob([document])).size", "21");  // document.toString() is the string "[object HTMLDocument]" 
+shouldBe("(new Blob([document])).size", "21");  // document.toString() is the string "[object HTMLDocument]"
 
 var toStringingObj = { toString: function() { return "A string"; } };
 shouldBe("(new Blob([toStringingObj])).size", "8");
@@ -92,3 +92,11 @@ shouldBe("new Blob([(new Float32Array(100)).buffer]).size", "400");
 shouldBe("new Blob([(new Float64Array(100)).buffer]).size", "800");
 shouldBe("new Blob([(new Float64Array(100)).buffer, (new Int32Array(100)).buffer, (new Uint8Array(100)).buffer, (new DataView(new ArrayBuffer(100))).buffer]).size", "1400");
 shouldBe("new Blob([new Blob([(new Int32Array(100)).buffer]), (new Uint8Array(100)).buffer, (new Float32Array(100)).buffer, (new DataView(new ArrayBuffer(100))).buffer]).size", "1000");
+
+// Test passing blob parts in sequences.
+shouldBeTrue("new Blob({length: 0}) instanceof window.Blob");
+shouldBe("new Blob({length: 0}).size", "0");
+shouldBe("new Blob({length: 1, 0: 'string'}).size", "6");
+shouldBe("new Blob({length: 2, 0: new Uint8Array(100), 1: new Int16Array(100)}).size", "300");
+shouldBe("new Blob({length: 1, 0: 'string'}, {type: 'text/html'}).type", "'text/html'");
+shouldThrow("new Blob({length: 0}, {endings:'illegal'})", "'TypeError: The endings property must be either \"transparent\" or \"native\"'");

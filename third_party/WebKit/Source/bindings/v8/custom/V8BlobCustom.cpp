@@ -49,10 +49,16 @@ void V8Blob::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
         return;
     }
 
-    v8::Local<v8::Value> firstArg = info[0];
-    if (!firstArg->IsArray()) {
-        throwTypeError("First argument of the constructor is not of type Array", info.GetIsolate());
-        return;
+    uint32_t length = 0;
+    if (info[0]->IsArray()) {
+        length = v8::Local<v8::Array>::Cast(info[0])->Length();
+    } else {
+        bool notASequence = false;
+        toV8Sequence(info[0], length, notASequence, info.GetIsolate());
+        if (notASequence) {
+            throwTypeError("First argument of the constructor is not of type Array", info.GetIsolate());
+            return;
+        }
     }
 
     String type;
@@ -86,10 +92,7 @@ void V8Blob::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
     ASSERT(endings == "transparent" || endings == "native");
 
     BlobBuilder blobBuilder;
-
-    V8TRYCATCH_VOID(v8::Local<v8::Array>, blobParts, v8::Local<v8::Array>::Cast(firstArg));
-    uint32_t length = blobParts->Length();
-
+    v8::Local<v8::Object> blobParts = v8::Local<v8::Object>::Cast(info[0]);
     for (uint32_t i = 0; i < length; ++i) {
         v8::Local<v8::Value> item = blobParts->Get(v8::Uint32::New(i, info.GetIsolate()));
         ASSERT(!item.IsEmpty());
