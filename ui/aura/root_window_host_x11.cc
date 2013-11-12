@@ -416,7 +416,7 @@ bool RootWindowHostX11::Dispatch(const base::NativeEvent& event) {
 
   switch (xev->type) {
     case EnterNotify: {
-      aura::Window* root_window = GetRootWindow();
+      aura::Window* root_window = GetRootWindow()->window();
       client::CursorClient* cursor_client =
           client::GetCursorClient(root_window);
       if (cursor_client) {
