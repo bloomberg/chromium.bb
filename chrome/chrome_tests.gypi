@@ -366,6 +366,7 @@
         ['use_ash==1', {
           'sources': [
             '../ash/drag_drop/drag_drop_interactive_uitest.cc',
+            '../ash/wm/ash_native_cursor_manager_interactive_uitest.cc',
             'browser/ui/window_sizer/window_sizer_ash_uitest.cc',
           ],
         }],

@@ -416,6 +416,14 @@ bool RootWindowHostX11::Dispatch(const base::NativeEvent& event) {
 
   switch (xev->type) {
     case EnterNotify: {
+      aura::Window* root_window = GetRootWindow();
+      client::CursorClient* cursor_client =
+          client::GetCursorClient(root_window);
+      if (cursor_client) {
+        const gfx::Display display = gfx::Screen::GetScreenFor(root_window)->
+            GetDisplayNearestWindow(root_window);
+        cursor_client->SetDisplay(display);
+      }
       ui::MouseEvent mouse_event(xev);
       // EnterNotify creates ET_MOUSE_MOVE. Mark as synthesized as this is not
       // real mouse move event.
