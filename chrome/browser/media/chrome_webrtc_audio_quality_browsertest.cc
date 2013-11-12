@@ -45,7 +45,7 @@ static const base::FilePath::CharType kToolsPath[] =
     FILE_PATH_LITERAL("pyauto_private/media/tools");
 
 static const char kMainWebrtcTestHtmlPage[] =
-    "files/webrtc/webrtc_audio_quality_test.html";
+    "/webrtc/webrtc_audio_quality_test.html";
 
 static base::FilePath GetTestDataDir() {
   base::FilePath source_dir;
@@ -105,8 +105,7 @@ class WebrtcAudioQualityBrowserTest : public WebRtcTestBase {
   }
 
   bool HasAllRequiredResources() {
-    base::FilePath reference_file =
-        GetTestDataDir().Append(kReferenceFile);
+    base::FilePath reference_file = GetTestDataDir().Append(kReferenceFile);
     if (!base::PathExists(reference_file)) {
       LOG(ERROR) << "Cannot find the reference file to be used for audio "
           << "quality comparison: " << reference_file.value();
@@ -396,15 +395,13 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioQualityBrowserTest,
   }
 #endif
   ASSERT_TRUE(HasAllRequiredResources());
-  // TODO(phoglund): make this use embedded_test_server when that test server
-  // can handle files > ~400Kb.
-  ASSERT_TRUE(test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->InitializeAndWaitUntilReady());
   ASSERT_TRUE(peerconnection_server_.Start());
 
   ASSERT_TRUE(ForceMicrophoneVolumeTo100Percent());
 
   ui_test_utils::NavigateToURL(
-      browser(), test_server()->GetURL(kMainWebrtcTestHtmlPage));
+      browser(), embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
   content::WebContents* left_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
 
@@ -412,7 +409,7 @@ IN_PROC_BROWSER_TEST_F(WebrtcAudioQualityBrowserTest,
   content::WebContents* right_tab =
       browser()->tab_strip_model()->GetActiveWebContents();
   ui_test_utils::NavigateToURL(
-      browser(), test_server()->GetURL(kMainWebrtcTestHtmlPage));
+      browser(), embedded_test_server()->GetURL(kMainWebrtcTestHtmlPage));
 
   ConnectToPeerConnectionServer("peer 1", left_tab);
   ConnectToPeerConnectionServer("peer 2", right_tab);
