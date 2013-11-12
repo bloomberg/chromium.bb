@@ -111,6 +111,18 @@ public class TestTouchUtils extends android.test.TouchUtils {
     }
 
     /**
+     * Sends (synchronously) a long click to the View at its center.
+     *
+     * @param instrumentation Instrumentation object used by the test.
+     * @param v The view to long click.
+     */
+    public static void longClickView(Instrumentation instrumentation, View v) {
+        int x = v.getWidth() / 2;
+        int y = v.getHeight() / 2;
+        longClickView(instrumentation, v, x, y);
+    }
+
+    /**
      * Starts (synchronously) a drag motion. Normally followed by dragTo() and dragEnd().
      *
      * @param instrumentation Instrumentation object used by the test.
