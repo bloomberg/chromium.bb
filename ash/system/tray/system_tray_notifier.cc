@@ -220,6 +220,12 @@ void SystemTrayNotifier::NotifyDriveJobUpdated(
                     OnDriveJobUpdated(status));
 }
 
+void SystemTrayNotifier::NotifyDriveOfflineEnabled() {
+  FOR_EACH_OBSERVER(DriveObserver,
+                    drive_observers_,
+                    OnDriveOfflineEnabled());
+}
+
 void SystemTrayNotifier::NotifyRefreshIME(bool show_message) {
   FOR_EACH_OBSERVER(IMEObserver,
                     ime_observers_,

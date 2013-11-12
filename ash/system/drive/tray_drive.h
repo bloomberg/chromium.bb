@@ -41,6 +41,7 @@ class TrayDrive : public TrayImageItem,
 
   // Overridden from DriveObserver.
   virtual void OnDriveJobUpdated(const DriveOperationStatus& status) OVERRIDE;
+  virtual void OnDriveOfflineEnabled() OVERRIDE;
 
   // Delayed hiding of the tray item after encountering an empty operation list.
   void HideIfNoOperations();

@@ -124,6 +124,9 @@ const int kSessionLengthLimitMaxMs = 24 * 60 * 60 * 1000;  // 24 hours.
 const char kDisplaySettingsSubPageName[] = "display";
 const char kDisplayOverscanSettingsSubPageName[] = "displayOverscan";
 
+// The URL for the Google Drive settings page.
+const char kDriveSettingsPageURL[] = "https://drive.google.com";
+
 void ExtractIMEInfo(const input_method::InputMethodDescriptor& ime,
                     const input_method::InputMethodUtil& util,
                     ash::IMEInfo* info) {
@@ -525,11 +528,15 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   }
 
   virtual void ShowDriveSettings() OVERRIDE {
-    // TODO(hshi): Open the drive-specific settings page once we put it in.
-    // For now just show search result for downoads settings.
-    std::string sub_page = std::string(chrome::kSearchSubPage) + "#" +
-        l10n_util::GetStringUTF8(IDS_OPTIONS_DOWNLOADLOCATION_GROUP_NAME);
-    ShowSettingsSubPageForAppropriateBrowser(sub_page);
+    // TODO(tengs): Open the drive-specific settings page once we put it in.
+    // For now just show Google Drive main page.
+    chrome::ScopedTabbedBrowserDisplayer displayer(
+         ProfileManager::GetDefaultProfileOrOffTheRecord(),
+         chrome::HOST_DESKTOP_TYPE_ASH);
+    chrome::ShowSingletonTabOverwritingNTP(
+        displayer.browser(),
+        chrome::GetSingletonTabNavigateParams(displayer.browser(),
+                                              GURL(kDriveSettingsPageURL)));
   }
 
   virtual void ShowIMESettings() OVERRIDE {

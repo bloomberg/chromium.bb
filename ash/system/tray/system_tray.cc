@@ -49,6 +49,7 @@
 #if defined(OS_CHROMEOS)
 #include "ash/system/chromeos/audio/tray_audio.h"
 #include "ash/system/chromeos/brightness/tray_brightness.h"
+#include "ash/system/chromeos/drive/tray_drive_notice.h"
 #include "ash/system/chromeos/enterprise/tray_enterprise.h"
 #include "ash/system/chromeos/managed/tray_locally_managed_user.h"
 #include "ash/system/chromeos/network/tray_network.h"
@@ -183,6 +184,7 @@ void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
 
 #if defined(OS_CHROMEOS)
   AddTrayItem(new internal::TrayEnterprise(this));
+  AddTrayItem(new internal::TrayDriveNotice(this));
   AddTrayItem(new internal::TrayLocallyManagedUser(this));
   AddTrayItem(new internal::TrayIME(this));
   AddTrayItem(tray_accessibility_);

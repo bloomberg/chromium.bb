@@ -508,5 +508,8 @@ void TrayDrive::HideIfNoOperations() {
     detailed_->Update(&empty_list);
 }
 
+void TrayDrive::OnDriveOfflineEnabled() {
+}
+
 }  // namespace internal
 }  // namespace ash

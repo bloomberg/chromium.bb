@@ -363,6 +363,15 @@ Press Ctrl+Alt+Z to disable.
       <message name="IDS_ASH_STATUS_TRAY_DISPLAY_ORIENTATION_270" desc="The value of display orientation option item: 270-degree rotated">
         270&#x00B0;
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_DRIVE_OFFLINE_NOTICE" desc="The label in the tray notifying a first-time logged in user that they are being opted-in to Google Drive offline.">
+      Preparing Google Drive for offline... 
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DRIVE_DISABLE_OFFLINE" desc="The label in the detailed drive offline opt-in notice tray item explaining how to disable Google Drive offline.">
+      To disable Google Drive offline on this device, adjust your settings at drive.google.com.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_DRIVE_OFFLINE_FOOTER" desc="The label for the footer of the detailed drive offline opt-in notice tray item.">
+      Google Drive
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_DRIVE_SYNCING" desc="The label in the tray to indicate onoing file sync operations.">
         Syncing <ph name="count">$1<ex>3</ex></ph> file(s)
       </message>

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/first_run/drive_first_run_controller.h"
 
+#include "ash/shell.h"
+#include "ash/system/tray/system_tray_notifier.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -327,8 +329,8 @@ void DriveFirstRunController::CleanUp() {
 
 void DriveFirstRunController::OnOfflineInit(bool success) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-  // TODO(tengs): Notify ash system tray to display notice that Drive
-  // offline opt-in has occurred. See crbug.com/311452.
+  ash::Shell::GetInstance()->system_tray_notifier()
+      ->NotifyDriveOfflineEnabled();
   CleanUp();
 }
 

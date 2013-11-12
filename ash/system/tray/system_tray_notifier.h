@@ -101,6 +101,7 @@ public:
   void NotifyDateFormatChanged();
   void NotifySystemClockTimeUpdated();
   void NotifyDriveJobUpdated(const DriveOperationStatus& status);
+  void NotifyDriveOfflineEnabled();
   void NotifyRefreshIME(bool show_message);
   void NotifyShowLoginButtonChanged(bool show_login_button);
   void NotifyLocaleChanged(LocaleObserver::Delegate* delegate,
