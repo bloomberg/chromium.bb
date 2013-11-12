@@ -146,6 +146,9 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // the WebPlugin implementation when WebKit is about to remove the plugin.
   void Delete();
 
+  // Returns true if Delete() has been called on this object.
+  bool is_deleted() const;
+
   // Paints the current backing store to the web page.
   void Paint(blink::WebCanvas* canvas,
              const gfx::Rect& plugin_rect,
@@ -846,6 +849,8 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   v8::Isolate* isolate_;
 
   scoped_ptr<MouseLockDispatcher::LockTarget> lock_target_;
+
+  bool is_deleted_;
 
   // We use a weak ptr factory for scheduling DidChangeView events so that we
   // can tell whether updates are pending and consolidate them. When there's

@@ -524,6 +524,7 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
       external_document_load_(false),
       npp_(new NPP_t),
       isolate_(v8::Isolate::GetCurrent()),
+      is_deleted_(false),
       view_change_weak_ptr_factory_(this),
       weak_factory_(this) {
   pp_instance_ = HostGlobals::Get()->AddInstance(this);
@@ -601,6 +602,8 @@ PepperPluginInstanceImpl::~PepperPluginInstanceImpl() {
 // returned, then it needs to keep its own reference on the stack.
 
 void PepperPluginInstanceImpl::Delete() {
+  is_deleted_ = true;
+
   // Keep a reference on the stack. See NOTE above.
   scoped_refptr<PepperPluginInstanceImpl> ref(this);
   // Force the MessageChannel to release its "passthrough object" which should
@@ -629,6 +632,10 @@ void PepperPluginInstanceImpl::Delete() {
   // destruction, so we need its pointers to be up-to-date.
   BindGraphics(pp_instance(), 0);
   container_ = NULL;
+}
+
+bool PepperPluginInstanceImpl::is_deleted() const {
+  return is_deleted_;
 }
 
 void PepperPluginInstanceImpl::Paint(WebCanvas* canvas,
