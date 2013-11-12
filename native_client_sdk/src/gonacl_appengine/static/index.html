@@ -21,6 +21,33 @@
     <iframe src="/static/home/index.html" frameborder="0" name="content" width="100%" height="100%"></iframe>
   </section>
 
+  <div id="not-chrome" class="error" hidden>
+    <div class="message">
+      <h1>Sorry!</h1>
+      <img src="/static/styles/robot.png">
+      <p>Sorry, these demos require desktop Chrome.</p>
+      <p>
+        Take a look at <a href="http://trypepperjs.appspot.com/">pepper.js</a>
+        instead!
+      </p>
+    </div>
+  </div>
+
+  <div id="old-chrome" class="error" hidden>
+    <div class="message">
+      <h1>Whoa, hold on!</h1>
+      <img src="/static/styles/wrench.png">
+      <p>
+        PNaCl is only available on Chrome 31 or greater.
+      </p>
+      <p>
+        If you'd like to play with these stunning demos, you can <a
+          href="https://support.google.com/chrome/answer/95414?hl=en">update
+          Chrome</a>.
+      </p>
+    </div>
+  </div>
+
   <script>
     var examples = [
       {name: 'bullet', text: 'Bullet Physics'},
@@ -31,34 +58,60 @@
       {name: 'smoothlife', text: 'SmoothLife'},
       {name: 'cube', text: 'Rotating Cube'},
     ];
-
     var exampleUrls = {};  // Created below.
 
-    var listEl = document.querySelector('nav ul');
-    for (var i = 0; i < examples.length; ++i) {
-      var example = examples[i];
+    var isChrome = /Chrome\/([^\s]+)/.test(navigator.userAgent);
+    var isMobile = /Mobi/.test(navigator.userAgent);
+    var hasPnacl = navigator.mimeTypes['application/x-pnacl'] !== undefined;
 
-      // Populate exampleUrls
-      var url = '/static/' + example.name + '/index.html';
-      exampleUrls[example.name] = url;
-
-      // Create li
-      var listItemEl = document.createElement('li');
-      var anchorEl = document.createElement('a');
-      listItemEl.setAttribute('id', example.name);
-      anchorEl.setAttribute('href', url);
-      anchorEl.setAttribute('target', 'content');
-      anchorEl.textContent = example.text;
-
-      // Listen for clicks and update the nav
-      anchorEl.addEventListener('click', onLinkClick.bind(example), false);
-
-      listItemEl.appendChild(anchorEl);
-      listEl.appendChild(listItemEl);
+    if (isChrome && !isMobile) {
+      if (!hasPnacl) {
+        // Older version of Chrome?
+        showOldChromeErrorMessage();
+      } else {
+        init();
+      }
+    } else {
+      // Not Chrome, or is mobile Chrome.
+      showNotChromeErrorMessage();
     }
 
-    function updateUrl(exampleName) {
-      window.history.replaceState(null, '', '/demo/' + exampleName);
+    function showOldChromeErrorMessage() {
+      document.getElementById('old-chrome').removeAttribute('hidden');
+    }
+
+    function showNotChromeErrorMessage() {
+      document.getElementById('not-chrome').removeAttribute('hidden');
+    }
+
+    function init() {
+      makeExampleList();
+      setIframeFromLocation();
+    }
+
+    function makeExampleList() {
+      var listEl = document.querySelector('nav ul');
+      for (var i = 0; i < examples.length; ++i) {
+        var example = examples[i];
+
+        // Populate exampleUrls
+        var url = '/static/' + example.name + '/index.html';
+        exampleUrls[example.name] = url;
+
+        // Create li
+        var listItemEl = document.createElement('li');
+        var anchorEl = document.createElement('a');
+        listItemEl.setAttribute('id', example.name);
+        anchorEl.setAttribute('href', url);
+        anchorEl.setAttribute('target', 'content');
+        anchorEl.textContent = example.text;
+
+        // Listen for clicks and update the nav
+        anchorEl.addEventListener('click', onLinkClick.bind(example), false);
+
+        listItemEl.appendChild(anchorEl);
+        listEl.appendChild(listItemEl);
+      }
     }
 
     function onLinkClick(evt) {
@@ -67,34 +120,38 @@
         links[l].classList.remove('active');
       }
       evt.target.classList.add('active');
-
-      // The id is the same as the name.
       updateUrl(this.name);
     }
 
-    var anchorEl = document.createElement('a');
-    anchorEl.href = location.href;
-    var pathname = anchorEl.pathname;
-
-    // Load the correct page, based on the location.
-    var matches = pathname.match(/demo(?:\/(.*))?$/);
-    var iframeUrl = null;
-    if (matches) {
-      var matchedExample = matches[1];
-      // Strip trailing slash, if any.
-      if (matchedExample && matchedExample.slice(-1) === '/') {
-        matchedExample = matchedExample.slice(0, -1);
-      }
-
-      iframeUrl = exampleUrls[matchedExample];
-      if (iframeUrl) {
-        document.querySelector('iframe').src = iframeUrl;
-        updateUrl(matchedExample);
-      } else {
-        updateUrl('');
-      }
+    function updateUrl(exampleName) {
+      window.history.replaceState(null, '', '/demo/' + exampleName);
     }
 
+    function setIframeFromLocation() {
+      // Get the location's path.
+      var anchorEl = document.createElement('a');
+      anchorEl.href = location.href;
+      var pathname = anchorEl.pathname;
+
+      // Load the correct page, based on the demo name.
+      var matches = pathname.match(/demo(?:\/(.*))?$/);
+      var iframeUrl = null;
+      if (matches) {
+        var matchedExample = matches[1];
+        // Strip trailing slash, if any.
+        if (matchedExample && matchedExample.slice(-1) === '/') {
+          matchedExample = matchedExample.slice(0, -1);
+        }
+
+        iframeUrl = exampleUrls[matchedExample];
+        if (iframeUrl) {
+          document.querySelector('iframe').src = iframeUrl;
+          updateUrl(matchedExample);
+        } else {
+          updateUrl('');
+        }
+      }
+    }
   </script>
 </body>
 </html>

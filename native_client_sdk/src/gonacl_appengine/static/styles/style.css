@@ -129,6 +129,45 @@ section iframe {
   flex: 1 1 auto;
 }
 
+.error {
+  background-color: #ccc;
+  position: fixed;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+}
+
+.error h1 {
+  font-family: 'Open Sans';
+  font-weight: 300;
+  color: #555;
+  margin: 0;
+  padding: 20px 0 20px 10px;
+  font-size: 22px;
+  border-bottom: 1px solid #CCC;
+  margin-bottom: 20px;
+}
+
+.error .message {
+  background-color: #fff;
+  padding: 20px;
+  margin: auto;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 500px;
+  height: 350px;
+  box-shadow: 0 1px 1px rgba(0,0,0,0.3);
+}
+
+.error img {
+  float: right;
+  margin-left: 20px;
+}
+
 /** Demo **/
 
 .demo {
