@@ -2499,6 +2499,9 @@
               # flagged in an iOS build.
               'GCC_TREAT_WARNINGS_AS_ERRORS': 'NO',
               'RUN_CLANG_STATIC_ANALYZER': 'NO',
+              # Several internal ios directories generate numerous warnings for
+              # -Wobjc-missing-property-synthesis.
+              'CLANG_WARN_OBJC_MISSING_PROPERTY_SYNTHESIS': 'NO',
             },
           }],
         ],
