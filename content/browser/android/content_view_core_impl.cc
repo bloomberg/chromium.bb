@@ -578,6 +578,15 @@ void ContentViewCoreImpl::ShowDisambiguationPopup(
                                                java_bitmap.obj());
 }
 
+ScopedJavaLocalRef<jobject> ContentViewCoreImpl::CreateTouchEventSynthesizer() {
+  JNIEnv* env = AttachCurrentThread();
+
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return ScopedJavaLocalRef<jobject>();
+  return Java_ContentViewCore_createTouchEventSynthesizer(env, obj.obj());
+}
+
 ScopedJavaLocalRef<jobject> ContentViewCoreImpl::CreateOnePointTouchGesture(
     int32 start_x, int32 start_y, int32 delta_x, int32 delta_y) {
   JNIEnv* env = AttachCurrentThread();

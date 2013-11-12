@@ -30,6 +30,7 @@
 #include "content/browser/media/android/media_resource_getter_impl.h"
 #include "content/browser/power_save_blocker_android.h"
 #include "content/browser/renderer_host/ime_adapter_android.h"
+#include "content/browser/renderer_host/input/synthetic_gesture_target_android.h"
 #include "content/browser/renderer_host/java/java_bound_object.h"
 #include "content/browser/speech/speech_recognizer_impl_android.h"
 
@@ -64,6 +65,8 @@ base::android::RegistrationMethod kContentRegisteredMethods[] = {
     {"RegisterImeAdapter", content::RegisterImeAdapter},
     {"SpeechRecognizerImplAndroid",
      content::SpeechRecognizerImplAndroid::RegisterSpeechRecognizer},
+    {"TouchEventSynthesizer",
+     content::SyntheticGestureTargetAndroid::RegisterTouchEventSynthesizer},
     {"TouchPoint", content::RegisterTouchPoint},
     {"TracingControllerAndroid", content::RegisterTracingControllerAndroid},
     {"VibrationMessageFilter", content::VibrationMessageFilter::Register},

@@ -25,6 +25,7 @@
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/backing_store_aura.h"
 #include "content/browser/renderer_host/dip_util.h"
+#include "content/browser/renderer_host/input/synthetic_gesture_target_aura.h"
 #include "content/browser/renderer_host/overscroll_controller.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -2007,6 +2008,12 @@ void RenderWidgetHostViewAura::ProcessAckedTouchEvent(
       end = events.end(); iter != end; ++iter) {
     dispatcher->ProcessedTouchEvent((*iter), window_, result);
   }
+}
+
+scoped_ptr<SyntheticGestureTarget>
+RenderWidgetHostViewAura::CreateSyntheticGestureTarget() {
+  return scoped_ptr<SyntheticGestureTarget>(
+      new SyntheticGestureTargetAura(host_));
 }
 
 SyntheticGesture* RenderWidgetHostViewAura::CreateSmoothScrollGesture(

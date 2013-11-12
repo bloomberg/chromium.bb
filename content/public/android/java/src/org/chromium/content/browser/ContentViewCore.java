@@ -2557,6 +2557,12 @@ public class ContentViewCore
 
     @SuppressWarnings("unused")
     @CalledByNative
+    private TouchEventSynthesizer createTouchEventSynthesizer() {
+        return new TouchEventSynthesizer(this);
+    }
+
+    @SuppressWarnings("unused")
+    @CalledByNative
     private void onSelectionChanged(String text) {
         mLastSelectedText = text;
     }

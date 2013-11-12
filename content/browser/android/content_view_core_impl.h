@@ -278,6 +278,10 @@ class ContentViewCoreImpl : public ContentViewCore,
   void ShowDisambiguationPopup(
       const gfx::Rect& target_rect, const SkBitmap& zoomed_bitmap);
 
+  // Creates a java-side touch event, used for injecting touch event for
+  // testing/benchmarking purposes
+  base::android::ScopedJavaLocalRef<jobject> CreateTouchEventSynthesizer();
+
   // Creates a java-side touch gesture, e.g. used by
   // chrome.gpuBenchmarking.smoothScrollBy.
   base::android::ScopedJavaLocalRef<jobject> CreateOnePointTouchGesture(

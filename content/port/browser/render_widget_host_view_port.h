@@ -6,6 +6,7 @@
 #define CONTENT_PORT_BROWSER_RENDER_WIDGET_HOST_VIEW_PORT_H_
 
 #include "base/callback.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/process/kill.h"
 #include "base/strings/string16.h"
 #include "cc/output/compositor_frame.h"
@@ -42,6 +43,7 @@ namespace content {
 class BackingStore;
 class RenderWidgetHostViewFrameSubscriber;
 class SyntheticGesture;
+class SyntheticGestureTarget;
 struct WebPluginGeometry;
 struct NativeWebKeyboardEvent;
 
@@ -299,6 +301,10 @@ class CONTENT_EXPORT RenderWidgetHostViewPort : public RenderWidgetHostView,
 
   // Called by the host when the input flush has completed.
   virtual void OnDidFlushInput() = 0;
+
+  // Create a platform specific SyntheticGestureTarget implementation that will
+  // be used to inject synthetic input events.
+  virtual scoped_ptr<SyntheticGestureTarget> CreateSyntheticGestureTarget() = 0;
 
   virtual void GestureEventAck(int gesture_event_type,
                                InputEventAckState ack_result) = 0;

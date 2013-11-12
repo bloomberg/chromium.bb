@@ -8,6 +8,7 @@
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/renderer_host/basic_mouse_wheel_smooth_scroll_gesture.h"
+#include "content/browser/renderer_host/input/synthetic_gesture_target_base.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/port/browser/render_widget_host_view_frame_subscriber.h"
@@ -526,6 +527,14 @@ SyntheticGesture* RenderWidgetHostViewBase::CreatePinchGesture(
 
 void RenderWidgetHostViewBase::ProcessAckedTouchEvent(
     const TouchEventWithLatencyInfo& touch, InputEventAckState ack_result) {
+}
+
+scoped_ptr<SyntheticGestureTarget>
+RenderWidgetHostViewBase::CreateSyntheticGestureTarget() {
+  RenderWidgetHostImpl* host =
+      RenderWidgetHostImpl::From(GetRenderWidgetHost());
+  return scoped_ptr<SyntheticGestureTarget>(
+      new SyntheticGestureTargetBase(host));
 }
 
 // Platform implementation should override this method to allow frame

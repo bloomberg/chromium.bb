@@ -35,6 +35,7 @@
 #include "content/browser/renderer_host/dip_util.h"
 #include "content/browser/renderer_host/generic_touch_gesture_android.h"
 #include "content/browser/renderer_host/image_transport_factory_android.h"
+#include "content/browser/renderer_host/input/synthetic_gesture_target_android.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/gpu/client/gl_helper.h"
 #include "content/common/gpu/gpu_messages.h"
@@ -613,6 +614,12 @@ void RenderWidgetHostViewAndroid::ShowDisambiguationPopup(
     return;
 
   content_view_core_->ShowDisambiguationPopup(target_rect, zoomed_bitmap);
+}
+
+scoped_ptr<SyntheticGestureTarget>
+RenderWidgetHostViewAndroid::CreateSyntheticGestureTarget() {
+  return scoped_ptr<SyntheticGestureTarget>(new SyntheticGestureTargetAndroid(
+      host_, content_view_core_->CreateTouchEventSynthesizer()));
 }
 
 SyntheticGesture* RenderWidgetHostViewAndroid::CreateSmoothScrollGesture(

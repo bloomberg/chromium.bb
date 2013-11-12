@@ -31,6 +31,7 @@
     'public/android/java/src/org/chromium/content/browser/PowerSaveBlocker.java',
     'public/android/java/src/org/chromium/content/browser/GenericTouchGesture.java',
     'public/android/java/src/org/chromium/content/browser/SpeechRecognition.java',
+    'public/android/java/src/org/chromium/content/browser/TouchEventSynthesizer.java',
     'public/android/java/src/org/chromium/content/browser/TouchPoint.java',
     'public/android/java/src/org/chromium/content/browser/TracingControllerAndroid.java',
     'public/android/java/src/org/chromium/content/browser/VibrationMessageFilter.java',
