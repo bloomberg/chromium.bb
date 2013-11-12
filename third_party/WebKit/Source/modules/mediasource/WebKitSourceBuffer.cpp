@@ -34,24 +34,26 @@
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/TimeRanges.h"
-#include "core/platform/graphics/SourceBufferPrivate.h"
 #include "modules/mediasource/WebKitMediaSource.h"
 #include "platform/TraceEvent.h"
+#include "public/platform/WebSourceBuffer.h"
 #include "wtf/Uint8Array.h"
+
+using blink::WebSourceBuffer;
 
 namespace WebCore {
 
-PassRefPtr<WebKitSourceBuffer> WebKitSourceBuffer::create(PassOwnPtr<SourceBufferPrivate> sourceBufferPrivate, PassRefPtr<WebKitMediaSource> source)
+PassRefPtr<WebKitSourceBuffer> WebKitSourceBuffer::create(PassOwnPtr<WebSourceBuffer> webSourceBuffer, PassRefPtr<WebKitMediaSource> source)
 {
-    return adoptRef(new WebKitSourceBuffer(sourceBufferPrivate, source));
+    return adoptRef(new WebKitSourceBuffer(webSourceBuffer, source));
 }
 
-WebKitSourceBuffer::WebKitSourceBuffer(PassOwnPtr<SourceBufferPrivate> sourceBufferPrivate, PassRefPtr<WebKitMediaSource> source)
-    : m_private(sourceBufferPrivate)
+WebKitSourceBuffer::WebKitSourceBuffer(PassOwnPtr<WebSourceBuffer> webSourceBuffer, PassRefPtr<WebKitMediaSource> source)
+    : m_webSourceBuffer(webSourceBuffer)
     , m_source(source)
     , m_timestampOffset(0)
 {
-    ASSERT(m_private);
+    ASSERT(m_webSourceBuffer);
     ASSERT(m_source);
     ScriptWrappable::init(this);
 }
@@ -71,7 +73,7 @@ PassRefPtr<TimeRanges> WebKitSourceBuffer::buffered(ExceptionState& es) const
     }
 
     // 2. Return a new static normalized TimeRanges object for the media segments buffered.
-    return m_private->buffered();
+    return TimeRanges::create(m_webSourceBuffer->buffered());
 }
 
 double WebKitSourceBuffer::timestampOffset() const
@@ -96,7 +98,7 @@ void WebKitSourceBuffer::setTimestampOffset(double offset, ExceptionState& es)
 
     // 5. If this object is waiting for the end of a media segment to be appended, then throw an InvalidStateError
     // and abort these steps.
-    if (!m_private->setTimestampOffset(offset)) {
+    if (!m_webSourceBuffer->setTimestampOffset(offset)) {
         es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
@@ -130,8 +132,8 @@ void WebKitSourceBuffer::append(PassRefPtr<Uint8Array> data, ExceptionState& es)
     // 5.2. Queue a task to fire a simple event named sourceopen at media source.
     m_source->openIfInEndedState();
 
-    // Steps 6 & beyond are handled by the private implementation.
-    m_private->append(data->data(), data->length());
+    // Steps 6 & beyond are handled by m_webSourceBuffer.
+    m_webSourceBuffer->append(data->data(), data->length());
 }
 
 void WebKitSourceBuffer::abort(ExceptionState& es)
@@ -147,7 +149,7 @@ void WebKitSourceBuffer::abort(ExceptionState& es)
     }
 
     // 4. Run the reset parser state algorithm.
-    m_private->abort();
+    m_webSourceBuffer->abort();
 }
 
 void WebKitSourceBuffer::removedFromMediaSource()
@@ -155,7 +157,7 @@ void WebKitSourceBuffer::removedFromMediaSource()
     if (isRemoved())
         return;
 
-    m_private->removedFromMediaSource();
+    m_webSourceBuffer->removedFromMediaSource();
     m_source.clear();
 }
 

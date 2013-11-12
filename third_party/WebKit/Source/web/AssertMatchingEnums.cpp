@@ -76,7 +76,6 @@
 #include "core/page/PageVisibilityState.h"
 #include "core/page/Settings.h"
 #include "core/platform/Cursor.h"
-#include "core/platform/graphics/MediaSourcePrivate.h"
 #include "core/platform/graphics/filters/FilterOperation.h"
 #include "core/platform/mediastream/RTCDataChannelHandlerClient.h"
 #include "core/platform/mediastream/RTCPeerConnectionHandlerClient.h"
@@ -436,14 +435,6 @@ COMPILE_ASSERT_MATCHING_ENUM(WebMediaPlayer::ReadyStateHaveEnoughData, MediaPlay
 COMPILE_ASSERT_MATCHING_ENUM(WebMediaPlayer::PreloadNone, MediaPlayer::None);
 COMPILE_ASSERT_MATCHING_ENUM(WebMediaPlayer::PreloadMetaData, MediaPlayer::MetaData);
 COMPILE_ASSERT_MATCHING_ENUM(WebMediaPlayer::PreloadAuto, MediaPlayer::Auto);
-
-COMPILE_ASSERT_MATCHING_ENUM(WebMediaSource::AddStatusOk, MediaSourcePrivate::Ok);
-COMPILE_ASSERT_MATCHING_ENUM(WebMediaSource::AddStatusNotSupported, MediaSourcePrivate::NotSupported);
-COMPILE_ASSERT_MATCHING_ENUM(WebMediaSource::AddStatusReachedIdLimit, MediaSourcePrivate::ReachedIdLimit);
-
-COMPILE_ASSERT_MATCHING_ENUM(WebMediaSource::EndOfStreamStatusNoError, MediaSourcePrivate::EosNoError);
-COMPILE_ASSERT_MATCHING_ENUM(WebMediaSource::EndOfStreamStatusNetworkError, MediaSourcePrivate::EosNetworkError);
-COMPILE_ASSERT_MATCHING_ENUM(WebMediaSource::EndOfStreamStatusDecodeError, MediaSourcePrivate::EosDecodeError);
 
 COMPILE_ASSERT_MATCHING_ENUM(WebMediaPlayer::MediaKeyExceptionNoError, MediaPlayer::NoError);
 COMPILE_ASSERT_MATCHING_ENUM(WebMediaPlayer::MediaKeyExceptionInvalidPlayerState, MediaPlayer::InvalidPlayerState);

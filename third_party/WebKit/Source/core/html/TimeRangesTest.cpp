@@ -61,6 +61,16 @@ TEST(TimeRanges, SingleRange)
     ASSERT_RANGE("{ [1,2) }", TimeRanges::create(1, 2));
 }
 
+TEST(TimeRanges, CreateFromWebTimeRanges)
+{
+    blink::WebTimeRanges webRanges(static_cast<size_t>(2));
+    webRanges[0].start = 0;
+    webRanges[0].end = 1;
+    webRanges[1].start = 2;
+    webRanges[1].end = 3;
+    ASSERT_RANGE("{ [0,1) [2,3) }", TimeRanges::create(webRanges));
+}
+
 TEST(TimeRanges, AddOrder)
 {
     RefPtr<TimeRanges> rangeA = TimeRanges::create();

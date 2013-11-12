@@ -40,6 +40,17 @@ TimeRanges::TimeRanges(double start, double end)
     add(start, end);
 }
 
+PassRefPtr<TimeRanges> TimeRanges::create(const blink::WebTimeRanges& webRanges)
+{
+    RefPtr<TimeRanges> ranges = TimeRanges::create();
+
+    unsigned size = webRanges.size();
+    for (unsigned i = 0; i < size; ++i)
+        ranges->add(webRanges[i].start, webRanges[i].end);
+
+    return ranges.release();
+}
+
 PassRefPtr<TimeRanges> TimeRanges::copy() const
 {
     RefPtr<TimeRanges> newSession = TimeRanges::create();

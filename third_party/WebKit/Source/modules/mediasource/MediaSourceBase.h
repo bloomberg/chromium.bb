@@ -35,10 +35,14 @@
 #include "core/events/EventTarget.h"
 #include "core/html/HTMLMediaSource.h"
 #include "core/html/URLRegistry.h"
-#include "core/platform/graphics/MediaSourcePrivate.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
+
+namespace blink {
+class WebMediaSource;
+class WebSourceBuffer;
+}
 
 namespace WebCore {
 
@@ -61,7 +65,7 @@ public:
 
     // HTMLMediaSource
     virtual bool attachToElement(HTMLMediaElement*) OVERRIDE;
-    virtual void setPrivateAndOpen(PassOwnPtr<MediaSourcePrivate>) OVERRIDE;
+    virtual void setWebMediaSourceAndOpen(PassOwnPtr<blink::WebMediaSource>) OVERRIDE;
     virtual void close() OVERRIDE;
     virtual bool isClosed() const OVERRIDE;
     virtual double duration() const OVERRIDE;
@@ -91,12 +95,12 @@ protected:
     virtual void onReadyStateChange(const AtomicString& oldState, const AtomicString& newState) = 0;
     virtual Vector<RefPtr<TimeRanges> > activeRanges() const = 0;
 
-    PassOwnPtr<SourceBufferPrivate> createSourceBufferPrivate(const String& type, const MediaSourcePrivate::CodecsArray&, ExceptionState&);
+    PassOwnPtr<blink::WebSourceBuffer> createWebSourceBuffer(const String& type, const Vector<String>& codecs, ExceptionState&);
     void scheduleEvent(const AtomicString& eventName);
     GenericEventQueue* asyncEventQueue() const { return m_asyncEventQueue.get(); }
 
 private:
-    OwnPtr<MediaSourcePrivate> m_private;
+    OwnPtr<blink::WebMediaSource> m_webMediaSource;
     AtomicString m_readyState;
     OwnPtr<GenericEventQueue> m_asyncEventQueue;
     HTMLMediaElement* m_attachedElement;

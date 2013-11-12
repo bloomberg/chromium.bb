@@ -5,7 +5,6 @@
 #include "config.h"
 #include "WebMediaPlayerClientImpl.h"
 
-#include "MediaSourcePrivateImpl.h"
 #include "WebDocument.h"
 #include "WebFrameClient.h"
 #include "WebFrameImpl.h"
@@ -205,7 +204,7 @@ void WebMediaPlayerClientImpl::removeTextTrack(WebInbandTextTrack* textTrack)
 void WebMediaPlayerClientImpl::mediaSourceOpened(WebMediaSource* webMediaSource)
 {
     ASSERT(webMediaSource);
-    m_mediaSource->setPrivateAndOpen(adoptPtr(new MediaSourcePrivateImpl(adoptPtr(webMediaSource))));
+    m_mediaSource->setWebMediaSourceAndOpen(adoptPtr(webMediaSource));
 }
 
 void WebMediaPlayerClientImpl::requestFullscreen()
@@ -467,15 +466,8 @@ double WebMediaPlayerClientImpl::maxTimeSeekable() const
 
 PassRefPtr<TimeRanges> WebMediaPlayerClientImpl::buffered() const
 {
-    if (m_webMediaPlayer) {
-        const WebTimeRanges& webRanges = m_webMediaPlayer->buffered();
-
-        // FIXME: Save the time ranges in a member variable and update it when needed.
-        RefPtr<TimeRanges> ranges = TimeRanges::create();
-        for (size_t i = 0; i < webRanges.size(); ++i)
-            ranges->add(webRanges[i].start, webRanges[i].end);
-        return ranges.release();
-    }
+    if (m_webMediaPlayer)
+        return TimeRanges::create(m_webMediaPlayer->buffered());
     return TimeRanges::create();
 }
 

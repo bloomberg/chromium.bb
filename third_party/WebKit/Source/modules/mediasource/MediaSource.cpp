@@ -36,13 +36,15 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/events/GenericEventQueue.h"
 #include "core/html/TimeRanges.h"
+#include "modules/mediasource/MediaSourceRegistry.h"
 #include "platform/ContentType.h"
 #include "platform/Logging.h"
-#include "core/platform/graphics/SourceBufferPrivate.h"
-#include "modules/mediasource/MediaSourceRegistry.h"
 #include "platform/MIMETypeRegistry.h"
+#include "public/platform/WebSourceBuffer.h"
 #include "wtf/Uint8Array.h"
 #include "wtf/text/CString.h"
+
+using blink::WebSourceBuffer;
 
 namespace WebCore {
 
@@ -97,16 +99,16 @@ SourceBuffer* MediaSource::addSourceBuffer(const String& type, ExceptionState& e
     // 5. Create a new SourceBuffer object and associated resources.
     ContentType contentType(type);
     Vector<String> codecs = contentType.codecs();
-    OwnPtr<SourceBufferPrivate> sourceBufferPrivate = createSourceBufferPrivate(contentType.type(), codecs, es);
+    OwnPtr<WebSourceBuffer> webSourceBuffer = createWebSourceBuffer(contentType.type(), codecs, es);
 
-    if (!sourceBufferPrivate) {
+    if (!webSourceBuffer) {
         ASSERT(es.code() == NotSupportedError || es.code() == QuotaExceededError);
         // 2. If type contains a MIME type that is not supported ..., then throw a NotSupportedError exception and abort these steps.
         // 3. If the user agent can't handle any more SourceBuffer objects then throw a QuotaExceededError exception and abort these steps
         return 0;
     }
 
-    RefPtr<SourceBuffer> buffer = SourceBuffer::create(sourceBufferPrivate.release(), this, asyncEventQueue());
+    RefPtr<SourceBuffer> buffer = SourceBuffer::create(webSourceBuffer.release(), this, asyncEventQueue());
     // 6. Add the new object to sourceBuffers and fire a addsourcebuffer on that object.
     m_sourceBuffers->add(buffer);
     m_activeSourceBuffers->add(buffer);

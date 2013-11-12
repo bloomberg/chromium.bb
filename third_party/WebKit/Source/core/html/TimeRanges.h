@@ -27,6 +27,7 @@
 #define TimeRanges_h
 
 #include "bindings/v8/ScriptWrappable.h"
+#include "public/platform/WebTimeRange.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
@@ -47,6 +48,7 @@ public:
     {
         return adoptRef(new TimeRanges(start, end));
     }
+    static PassRefPtr<TimeRanges> create(const blink::WebTimeRanges&);
 
     PassRefPtr<TimeRanges> copy() const;
     void intersectWith(const TimeRanges*);

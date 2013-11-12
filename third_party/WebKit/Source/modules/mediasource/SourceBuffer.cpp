@@ -42,24 +42,27 @@
 #include "modules/mediasource/MediaSource.h"
 #include "platform/Logging.h"
 #include "platform/TraceEvent.h"
+#include "public/platform/WebSourceBuffer.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/ArrayBufferView.h"
 #include "wtf/MathExtras.h"
 
 #include <limits>
 
+using blink::WebSourceBuffer;
+
 namespace WebCore {
 
-PassRefPtr<SourceBuffer> SourceBuffer::create(PassOwnPtr<SourceBufferPrivate> sourceBufferPrivate, MediaSource* source, GenericEventQueue* asyncEventQueue)
+PassRefPtr<SourceBuffer> SourceBuffer::create(PassOwnPtr<WebSourceBuffer> webSourceBuffer, MediaSource* source, GenericEventQueue* asyncEventQueue)
 {
-    RefPtr<SourceBuffer> sourceBuffer(adoptRef(new SourceBuffer(sourceBufferPrivate, source, asyncEventQueue)));
+    RefPtr<SourceBuffer> sourceBuffer(adoptRef(new SourceBuffer(webSourceBuffer, source, asyncEventQueue)));
     sourceBuffer->suspendIfNeeded();
     return sourceBuffer.release();
 }
 
-SourceBuffer::SourceBuffer(PassOwnPtr<SourceBufferPrivate> sourceBufferPrivate, MediaSource* source, GenericEventQueue* asyncEventQueue)
+SourceBuffer::SourceBuffer(PassOwnPtr<WebSourceBuffer> webSourceBuffer, MediaSource* source, GenericEventQueue* asyncEventQueue)
     : ActiveDOMObject(source->executionContext())
-    , m_private(sourceBufferPrivate)
+    , m_webSourceBuffer(webSourceBuffer)
     , m_source(source)
     , m_asyncEventQueue(asyncEventQueue)
     , m_updating(false)
@@ -74,7 +77,7 @@ SourceBuffer::SourceBuffer(PassOwnPtr<SourceBufferPrivate> sourceBufferPrivate, 
     , m_streamMaxSize(0)
     , m_appendStreamAsyncPartRunner(this, &SourceBuffer::appendStreamAsyncPart)
 {
-    ASSERT(m_private);
+    ASSERT(m_webSourceBuffer);
     ASSERT(m_source);
     ScriptWrappable::init(this);
 }
@@ -97,7 +100,7 @@ PassRefPtr<TimeRanges> SourceBuffer::buffered(ExceptionState& es) const
     }
 
     // 2. Return a new static normalized TimeRanges object for the media segments buffered.
-    return m_private->buffered();
+    return TimeRanges::create(m_webSourceBuffer->buffered());
 }
 
 double SourceBuffer::timestampOffset() const
@@ -126,7 +129,7 @@ void SourceBuffer::setTimestampOffset(double offset, ExceptionState& es)
     // and abort these steps.
     //
     // FIXME: Add step 6 text when mode attribute is implemented.
-    if (!m_private->setTimestampOffset(offset)) {
+    if (!m_webSourceBuffer->setTimestampOffset(offset)) {
         es.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
@@ -166,7 +169,7 @@ void SourceBuffer::setAppendWindowStart(double start, ExceptionState& es)
         return;
     }
 
-    m_private->setAppendWindowStart(start);
+    m_webSourceBuffer->setAppendWindowStart(start);
 
     // 4. Update the attribute to the new value.
     m_appendWindowStart = start;
@@ -196,7 +199,7 @@ void SourceBuffer::setAppendWindowEnd(double end, ExceptionState& es)
         return;
     }
 
-    m_private->setAppendWindowEnd(end);
+    m_webSourceBuffer->setAppendWindowEnd(end);
 
     // 5. Update the attribute to the new value.
     m_appendWindowEnd = end;
@@ -259,7 +262,7 @@ void SourceBuffer::abort(ExceptionState& es)
     abortIfUpdating();
 
     // 4. Run the reset parser state algorithm.
-    m_private->abort();
+    m_webSourceBuffer->abort();
 
     // 5. Set appendWindowStart to 0.
     setAppendWindowStart(0, es);
@@ -354,7 +357,8 @@ void SourceBuffer::removedFromMediaSource()
 
     abortIfUpdating();
 
-    m_private->removedFromMediaSource();
+    m_webSourceBuffer->removedFromMediaSource();
+    m_webSourceBuffer.clear();
     m_source = 0;
     m_asyncEventQueue = 0;
 }
@@ -459,11 +463,11 @@ void SourceBuffer::appendBufferAsyncPart()
     size_t appendSize = m_pendingAppendData.size();
     if (!appendSize) {
         // Resize buffer for 0 byte appends so we always have a valid pointer.
-        // We need to convey all appends, even 0 byte ones to |m_private| so
-        // that it can clear its end of stream state if necessary.
+        // We need to convey all appends, even 0 byte ones to |m_webSourceBuffer|
+        // so that it can clear its end of stream state if necessary.
         m_pendingAppendData.resize(1);
     }
-    m_private->append(m_pendingAppendData.data(), appendSize);
+    m_webSourceBuffer->append(m_pendingAppendData.data(), appendSize);
 
     // 3. Set the updating attribute to false.
     m_updating = false;
@@ -487,7 +491,7 @@ void SourceBuffer::removeAsyncPart()
     // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-SourceBuffer-remove-void-double-start-double-end
 
     // 9. Run the coded frame removal algorithm with start and end as the start and end of the removal range.
-    m_private->remove(m_pendingRemoveStart, m_pendingRemoveEnd);
+    m_webSourceBuffer->remove(m_pendingRemoveStart, m_pendingRemoveEnd);
 
     // 10. Set the updating attribute to false.
     m_updating = false;
@@ -526,7 +530,7 @@ void SourceBuffer::appendStreamInternal(PassRefPtr<Stream> stream, ExceptionStat
     //  3. If the readyState attribute of the parent media source is in the "ended" state then run the following steps: ...
     m_source->openIfInEndedState();
 
-    //  Steps 4-5 of the prepare append algorithm are handled by m_private.
+    // Steps 4-5 of the prepare append algorithm are handled by m_webSourceBuffer.
 
     // 3. Set the updating attribute to true.
     m_updating = true;
@@ -589,7 +593,7 @@ void SourceBuffer::appendStreamDone(bool success)
     }
 
     // Section 3.5.6 Stream Append Loop
-    // Steps 1-11 are handled by appendStreamAsyncPart(), |m_loader|, and |m_private|.
+    // Steps 1-11 are handled by appendStreamAsyncPart(), |m_loader|, and |m_webSourceBuffer|.
     // 12. Loop Done: Set the updating attribute to false.
     m_updating = false;
 
@@ -620,7 +624,7 @@ void SourceBuffer::didReceiveDataForClient(const char* data, unsigned dataLength
     ASSERT(m_updating);
     ASSERT(m_loader);
 
-    m_private->append(reinterpret_cast<const unsigned char*>(data), dataLength);
+    m_webSourceBuffer->append(reinterpret_cast<const unsigned char*>(data), dataLength);
 }
 
 void SourceBuffer::didFinishLoading()

@@ -35,11 +35,13 @@
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/html/TimeRanges.h"
-#include "core/platform/graphics/SourceBufferPrivate.h"
 #include "modules/mediasource/MediaSourceRegistry.h"
 #include "platform/ContentType.h"
 #include "platform/MIMETypeRegistry.h"
+#include "public/platform/WebSourceBuffer.h"
 #include "wtf/Uint8Array.h"
+
+using blink::WebSourceBuffer;
 
 namespace WebCore {
 
@@ -96,11 +98,11 @@ WebKitSourceBuffer* WebKitMediaSource::addSourceBuffer(const String& type, Excep
     // 5. Create a new SourceBuffer object and associated resources.
     ContentType contentType(type);
     Vector<String> codecs = contentType.codecs();
-    OwnPtr<SourceBufferPrivate> sourceBufferPrivate = createSourceBufferPrivate(contentType.type(), codecs, es);
-    if (!sourceBufferPrivate)
+    OwnPtr<WebSourceBuffer> webSourceBuffer = createWebSourceBuffer(contentType.type(), codecs, es);
+    if (!webSourceBuffer)
         return 0;
 
-    RefPtr<WebKitSourceBuffer> buffer = WebKitSourceBuffer::create(sourceBufferPrivate.release(), this);
+    RefPtr<WebKitSourceBuffer> buffer = WebKitSourceBuffer::create(webSourceBuffer.release(), this);
     // 6. Add the new object to sourceBuffers and fire a addsourcebuffer on that object.
     m_sourceBuffers->add(buffer);
     m_activeSourceBuffers->add(buffer);

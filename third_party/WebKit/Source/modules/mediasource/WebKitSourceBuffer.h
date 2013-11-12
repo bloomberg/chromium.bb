@@ -36,16 +36,19 @@
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
+namespace blink {
+class WebSourceBuffer;
+}
+
 namespace WebCore {
 
 class ExceptionState;
-class SourceBufferPrivate;
 class TimeRanges;
 class WebKitMediaSource;
 
 class WebKitSourceBuffer FINAL : public RefCounted<WebKitSourceBuffer>, public ScriptWrappable {
 public:
-    static PassRefPtr<WebKitSourceBuffer> create(PassOwnPtr<SourceBufferPrivate>, PassRefPtr<WebKitMediaSource>);
+    static PassRefPtr<WebKitSourceBuffer> create(PassOwnPtr<blink::WebSourceBuffer>, PassRefPtr<WebKitMediaSource>);
 
     ~WebKitSourceBuffer();
 
@@ -59,11 +62,11 @@ public:
     void removedFromMediaSource();
 
 private:
-    WebKitSourceBuffer(PassOwnPtr<SourceBufferPrivate>, PassRefPtr<WebKitMediaSource>);
+    WebKitSourceBuffer(PassOwnPtr<blink::WebSourceBuffer>, PassRefPtr<WebKitMediaSource>);
 
     bool isRemoved() const;
 
-    OwnPtr<SourceBufferPrivate> m_private;
+    OwnPtr<blink::WebSourceBuffer> m_webSourceBuffer;
     RefPtr<WebKitMediaSource> m_source;
 
     double m_timestampOffset;

@@ -35,9 +35,12 @@
 #include "core/html/URLRegistry.h"
 #include "wtf/Forward.h"
 
+namespace blink {
+class WebMediaSource;
+}
+
 namespace WebCore {
 
-class MediaSourcePrivate;
 class TimeRanges;
 
 class HTMLMediaSource : public URLRegistrable {
@@ -56,7 +59,7 @@ public:
     // Once attached, the source uses the element to synchronously service some
     // API operations like duration change that may need to initiate seek.
     virtual bool attachToElement(HTMLMediaElement*) = 0;
-    virtual void setPrivateAndOpen(PassOwnPtr<MediaSourcePrivate>) = 0;
+    virtual void setWebMediaSourceAndOpen(PassOwnPtr<blink::WebMediaSource>) = 0;
     virtual void close() = 0;
     virtual bool isClosed() const = 0;
     virtual double duration() const = 0;
