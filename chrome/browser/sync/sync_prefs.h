@@ -50,9 +50,8 @@ class SyncPrefObserver {
 class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
                   public base::SupportsWeakPtr<SyncPrefs> {
  public:
-  // |pref_service| may be NULL (for unit tests), but in that case no
-  // setter methods should be called.  Does not take ownership of
-  // |pref_service|.
+  // |pref_service| may not be NULL.
+  // Does not take ownership of |pref_service|.
   explicit SyncPrefs(PrefService* pref_service);
 
   virtual ~SyncPrefs();

@@ -232,19 +232,6 @@ TEST_F(SyncPrefsTest, ClearPreferences) {
   EXPECT_TRUE(sync_prefs.GetEncryptionBootstrapToken().empty());
 }
 
-TEST_F(SyncPrefsTest, NullPrefService) {
-  SyncPrefs sync_prefs(NULL);
-
-  EXPECT_FALSE(sync_prefs.HasSyncSetupCompleted());
-  EXPECT_FALSE(sync_prefs.IsStartSuppressed());
-  EXPECT_EQ(base::Time(), sync_prefs.GetLastSyncedTime());
-  EXPECT_FALSE(sync_prefs.HasKeepEverythingSynced());
-  const syncer::ModelTypeSet user_types = syncer::UserTypes();
-  EXPECT_TRUE(sync_prefs.GetPreferredDataTypes(user_types).Empty());
-  EXPECT_FALSE(sync_prefs.IsManaged());
-  EXPECT_TRUE(sync_prefs.GetEncryptionBootstrapToken().empty());
-}
-
 }  // namespace
 
 }  // namespace browser_sync

@@ -65,21 +65,14 @@ class SyncTypedUrlModelAssociatorTest : public testing::Test {
   }
 };
 
-class TestTypedUrlModelAssociator : public TypedUrlModelAssociator {
- public:
-  TestTypedUrlModelAssociator()
-      : TypedUrlModelAssociator(&mock_, NULL, NULL) {}
- private:
-  ProfileSyncServiceMock mock_;
-};
-
 static void CreateModelAssociatorAsync(base::WaitableEvent* startup,
                                        base::WaitableEvent* aborted,
                                        base::WaitableEvent* done,
-                                       TypedUrlModelAssociator** associator) {
+                                       TypedUrlModelAssociator** associator,
+                                       ProfileSyncServiceMock* mock) {
   // Grab the done lock - when we exit, this will be released and allow the
   // test to finish.
-  *associator = new TestTypedUrlModelAssociator();
+  *associator = new TypedUrlModelAssociator(mock, NULL, NULL);
 
   // Signal frontend to call AbortAssociation and proceed after it's called.
   startup->Signal();
@@ -419,12 +412,15 @@ TEST_F(SyncTypedUrlModelAssociatorTest, TestAbort) {
   base::WaitableEvent startup(false, false);
   base::WaitableEvent aborted(false, false);
   base::WaitableEvent done(false, false);
-  TypedUrlModelAssociator* associator;
+  TestingProfile profile;
+  ProfileSyncServiceMock mock(&profile);
+  TypedUrlModelAssociator* associator(NULL);
   // Fire off to the DB thread to create the model associator and start
   // model association.
   db_thread.Start();
   base::Closure callback = base::Bind(
-      &CreateModelAssociatorAsync, &startup, &aborted, &done, &associator);
+      &CreateModelAssociatorAsync, &startup, &aborted, &done, &associator,
+                                   &mock);
   BrowserThread::PostTask(BrowserThread::DB, FROM_HERE, callback);
   // Wait for the model associator to get created and start assocation.
   ASSERT_TRUE(startup.TimedWait(TestTimeouts::action_timeout()));

@@ -85,7 +85,8 @@ class FrontendDataTypeControllerFake : public FrontendDataTypeController {
 class SyncFrontendDataTypeControllerTest : public testing::Test {
  public:
   SyncFrontendDataTypeControllerTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_) {}
+      : ui_thread_(BrowserThread::UI, &message_loop_),
+        service_(&profile_) {}
 
   virtual void SetUp() {
     profile_sync_factory_.reset(new ProfileSyncComponentsFactoryMock());

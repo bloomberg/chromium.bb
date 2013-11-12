@@ -33,8 +33,7 @@ class InvalidatorStorage : public base::SupportsWeakPtr<InvalidatorStorage>,
  public:
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  // |pref_service| may be NULL (for unit tests), but in that case no setter
-  // methods should be called. Does not own |pref_service|.
+  // |pref_service| may not be NULL. Does not own |pref_service|.
   explicit InvalidatorStorage(PrefService* pref_service);
   virtual ~InvalidatorStorage();
 
@@ -93,7 +92,6 @@ class InvalidatorStorage : public base::SupportsWeakPtr<InvalidatorStorage>,
   static void DeserializeMap(const base::DictionaryValue* max_versions_dict,
                              syncer::InvalidationStateMap* map);
 
-  // May be NULL.
   PrefService* const pref_service_;
 
   DISALLOW_COPY_AND_ASSIGN(InvalidatorStorage);

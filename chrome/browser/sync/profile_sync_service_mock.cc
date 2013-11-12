@@ -12,14 +12,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/testing_profile.h"
 
-ProfileSyncServiceMock::ProfileSyncServiceMock()
-    : ProfileSyncService(
-          NULL,
-          NULL,
-          NULL,
-          NULL,
-          ProfileSyncService::MANUAL_START) {}
-
 ProfileSyncServiceMock::ProfileSyncServiceMock(Profile* profile)
     : ProfileSyncService(
           NULL,

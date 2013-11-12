@@ -195,8 +195,10 @@ TEST_F(ProfileSyncServiceTest, InitialState) {
 // Tests that the sync service doesn't forget to notify observers about
 // setup state.
 TEST(ProfileSyncServiceTestBasic, SetupInProgress) {
+  scoped_ptr<TestingProfile> profile(new TestingProfile());
   ProfileSyncService service(
-      NULL, NULL, NULL, NULL, ProfileSyncService::MANUAL_START);
+      NULL, profile.get(), NULL, NULL,
+      ProfileSyncService::MANUAL_START);
   TestProfileSyncServiceObserver observer(&service);
   service.AddObserver(&observer);
   service.SetSetupInProgress(true);

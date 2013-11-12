@@ -77,7 +77,8 @@ BrowserContextKeyedService* BuildHistoryService(
 class SyncBookmarkDataTypeControllerTest : public testing::Test {
  public:
   SyncBookmarkDataTypeControllerTest()
-      : ui_thread_(BrowserThread::UI, &message_loop_) {}
+      : ui_thread_(BrowserThread::UI, &message_loop_),
+        service_(&profile_) {}
 
   virtual void SetUp() {
     model_associator_ = new ModelAssociatorMock();

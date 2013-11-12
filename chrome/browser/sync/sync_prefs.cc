@@ -27,17 +27,13 @@ SyncPrefObserver::~SyncPrefObserver() {}
 
 SyncPrefs::SyncPrefs(PrefService* pref_service)
     : pref_service_(pref_service) {
+  DCHECK(pref_service);
   RegisterPrefGroups();
-  // TODO(tim): Create a Mock instead of maintaining the if(!pref_service_) case
-  // throughout this file.  This is a problem now due to lack of injection at
-  // ProfileSyncService. Bug 130176.
-  if (pref_service_) {
-    // Watch the preference that indicates sync is managed so we can take
-    // appropriate action.
-    pref_sync_managed_.Init(prefs::kSyncManaged, pref_service_,
-                            base::Bind(&SyncPrefs::OnSyncManagedPrefChanged,
-                                       base::Unretained(this)));
-  }
+  // Watch the preference that indicates sync is managed so we can take
+  // appropriate action.
+  pref_sync_managed_.Init(prefs::kSyncManaged, pref_service_,
+                           base::Bind(&SyncPrefs::OnSyncManagedPrefChanged,
+                                      base::Unretained(this)));
 }
 
 SyncPrefs::~SyncPrefs() {
@@ -150,7 +146,6 @@ void SyncPrefs::RemoveSyncPrefObserver(SyncPrefObserver* sync_pref_observer) {
 
 void SyncPrefs::ClearPreferences() {
   DCHECK(CalledOnValidThread());
-  CHECK(pref_service_);
   pref_service_->ClearPref(prefs::kSyncLastSyncedTime);
   pref_service_->ClearPref(prefs::kSyncHasSetupCompleted);
   pref_service_->ClearPref(prefs::kSyncEncryptionBootstrapToken);
@@ -162,75 +157,59 @@ void SyncPrefs::ClearPreferences() {
 
 bool SyncPrefs::HasSyncSetupCompleted() const {
   DCHECK(CalledOnValidThread());
-  return
-      pref_service_ &&
-      pref_service_->GetBoolean(prefs::kSyncHasSetupCompleted);
+  return pref_service_->GetBoolean(prefs::kSyncHasSetupCompleted);
 }
 
 void SyncPrefs::SetSyncSetupCompleted() {
   DCHECK(CalledOnValidThread());
-  CHECK(pref_service_);
   pref_service_->SetBoolean(prefs::kSyncHasSetupCompleted, true);
   SetStartSuppressed(false);
 }
 
 bool SyncPrefs::SyncHasAuthError() const {
   DCHECK(CalledOnValidThread());
-  return
-      pref_service_ &&
-      pref_service_->GetBoolean(prefs::kSyncHasAuthError);
+  return pref_service_->GetBoolean(prefs::kSyncHasAuthError);
 }
 
 void SyncPrefs::SetSyncAuthError(bool error) {
   DCHECK(CalledOnValidThread());
-  CHECK(pref_service_);
   pref_service_->SetBoolean(prefs::kSyncHasAuthError, error);
 }
 
 bool SyncPrefs::IsStartSuppressed() const {
   DCHECK(CalledOnValidThread());
-  return
-      pref_service_ &&
-      pref_service_->GetBoolean(prefs::kSyncSuppressStart);
+  return pref_service_->GetBoolean(prefs::kSyncSuppressStart);
 }
 
 void SyncPrefs::SetStartSuppressed(bool is_suppressed) {
   DCHECK(CalledOnValidThread());
-  CHECK(pref_service_);
   pref_service_->SetBoolean(prefs::kSyncSuppressStart, is_suppressed);
 }
 
 std::string SyncPrefs::GetGoogleServicesUsername() const {
   DCHECK(CalledOnValidThread());
-  return pref_service_
-             ? pref_service_->GetString(prefs::kGoogleServicesUsername)
-             : std::string();
+  return pref_service_->GetString(prefs::kGoogleServicesUsername);
 }
 
 base::Time SyncPrefs::GetLastSyncedTime() const {
   DCHECK(CalledOnValidThread());
   return
       base::Time::FromInternalValue(
-          pref_service_ ?
-          pref_service_->GetInt64(prefs::kSyncLastSyncedTime) : 0);
+          pref_service_->GetInt64(prefs::kSyncLastSyncedTime));
 }
 
 void SyncPrefs::SetLastSyncedTime(base::Time time) {
   DCHECK(CalledOnValidThread());
-  CHECK(pref_service_);
   pref_service_->SetInt64(prefs::kSyncLastSyncedTime, time.ToInternalValue());
 }
 
 bool SyncPrefs::HasKeepEverythingSynced() const {
   DCHECK(CalledOnValidThread());
-  return
-      pref_service_ &&
-      pref_service_->GetBoolean(prefs::kSyncKeepEverythingSynced);
+  return pref_service_->GetBoolean(prefs::kSyncKeepEverythingSynced);
 }
 
 void SyncPrefs::SetKeepEverythingSynced(bool keep_everything_synced) {
   DCHECK(CalledOnValidThread());
-  CHECK(pref_service_);
   pref_service_->SetBoolean(prefs::kSyncKeepEverythingSynced,
                             keep_everything_synced);
 }
@@ -238,9 +217,6 @@ void SyncPrefs::SetKeepEverythingSynced(bool keep_everything_synced) {
 syncer::ModelTypeSet SyncPrefs::GetPreferredDataTypes(
     syncer::ModelTypeSet registered_types) const {
   DCHECK(CalledOnValidThread());
-  if (!pref_service_) {
-    return syncer::ModelTypeSet();
-  }
 
   // First remove any datatypes that are inconsistent with the current policies
   // on the client (so that "keep everything synced" doesn't include them).
@@ -267,7 +243,6 @@ void SyncPrefs::SetPreferredDataTypes(
     syncer::ModelTypeSet registered_types,
     syncer::ModelTypeSet preferred_types) {
   DCHECK(CalledOnValidThread());
-  CHECK(pref_service_);
   DCHECK(registered_types.HasAll(preferred_types));
   preferred_types = ResolvePrefGroups(registered_types, preferred_types);
   for (syncer::ModelTypeSet::Iterator i = registered_types.First();
@@ -278,14 +253,12 @@ void SyncPrefs::SetPreferredDataTypes(
 
 bool SyncPrefs::IsManaged() const {
   DCHECK(CalledOnValidThread());
-  return pref_service_ && pref_service_->GetBoolean(prefs::kSyncManaged);
+  return pref_service_->GetBoolean(prefs::kSyncManaged);
 }
 
 std::string SyncPrefs::GetEncryptionBootstrapToken() const {
   DCHECK(CalledOnValidThread());
-  return pref_service_
-             ? pref_service_->GetString(prefs::kSyncEncryptionBootstrapToken)
-             : std::string();
+  return pref_service_->GetString(prefs::kSyncEncryptionBootstrapToken);
 }
 
 void SyncPrefs::SetEncryptionBootstrapToken(const std::string& token) {
@@ -295,9 +268,8 @@ void SyncPrefs::SetEncryptionBootstrapToken(const std::string& token) {
 
 std::string SyncPrefs::GetKeystoreEncryptionBootstrapToken() const {
   DCHECK(CalledOnValidThread());
-  return pref_service_ ? pref_service_->GetString(
-                             prefs::kSyncKeystoreEncryptionBootstrapToken)
-                       : std::string();
+  return pref_service_->GetString(
+      prefs::kSyncKeystoreEncryptionBootstrapToken);
 }
 
 void SyncPrefs::SetKeystoreEncryptionBootstrapToken(const std::string& token) {
@@ -307,8 +279,7 @@ void SyncPrefs::SetKeystoreEncryptionBootstrapToken(const std::string& token) {
 
 std::string SyncPrefs::GetSyncSessionsGUID() const {
   DCHECK(CalledOnValidThread());
-  return pref_service_ ? pref_service_->GetString(prefs::kSyncSessionsGUID)
-                       : std::string();
+  return pref_service_->GetString(prefs::kSyncSessionsGUID);
 }
 
 void SyncPrefs::SetSyncSessionsGUID(const std::string& guid) {
@@ -377,8 +348,7 @@ const char* SyncPrefs::GetPrefNameForDataType(syncer::ModelType data_type) {
 #if defined(OS_CHROMEOS)
 std::string SyncPrefs::GetSpareBootstrapToken() const {
   DCHECK(CalledOnValidThread());
-  return pref_service_ ?
-      pref_service_->GetString(prefs::kSyncSpareBootstrapToken) : "";
+  return pref_service_->GetString(prefs::kSyncSpareBootstrapToken);
 }
 
 void SyncPrefs::SetSpareBootstrapToken(const std::string& token) {
@@ -389,7 +359,6 @@ void SyncPrefs::SetSpareBootstrapToken(const std::string& token) {
 
 void SyncPrefs::AcknowledgeSyncedTypes(syncer::ModelTypeSet types) {
   DCHECK(CalledOnValidThread());
-  CHECK(pref_service_);
   // Add the types to the current set of acknowledged
   // types, and then store the resulting set in prefs.
   const syncer::ModelTypeSet acknowledged_types =
@@ -410,15 +379,11 @@ void SyncPrefs::OnSyncManagedPrefChanged() {
 
 void SyncPrefs::SetManagedForTest(bool is_managed) {
   DCHECK(CalledOnValidThread());
-  CHECK(pref_service_);
   pref_service_->SetBoolean(prefs::kSyncManaged, is_managed);
 }
 
 syncer::ModelTypeSet SyncPrefs::GetAcknowledgeSyncedTypesForTest() const {
   DCHECK(CalledOnValidThread());
-  if (!pref_service_) {
-    return syncer::ModelTypeSet();
-  }
   return syncer::ModelTypeSetFromValue(
       *pref_service_->GetList(prefs::kSyncAcknowledgedSyncTypes));
 }
@@ -471,9 +436,6 @@ void SyncPrefs::RegisterDataTypePreferredPref(
 
 bool SyncPrefs::GetDataTypePreferred(syncer::ModelType type) const {
   DCHECK(CalledOnValidThread());
-  if (!pref_service_) {
-    return false;
-  }
   const char* pref_name = GetPrefNameForDataType(type);
   if (!pref_name) {
     NOTREACHED();
@@ -493,7 +455,6 @@ bool SyncPrefs::GetDataTypePreferred(syncer::ModelType type) const {
 void SyncPrefs::SetDataTypePreferred(
     syncer::ModelType type, bool is_preferred) {
   DCHECK(CalledOnValidThread());
-  CHECK(pref_service_);
   const char* pref_name = GetPrefNameForDataType(type);
   if (!pref_name) {
     NOTREACHED();

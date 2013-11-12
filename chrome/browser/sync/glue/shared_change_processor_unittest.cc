@@ -37,7 +37,8 @@ class SyncSharedChangeProcessorTest : public testing::Test {
  public:
   SyncSharedChangeProcessorTest()
       : ui_thread_(BrowserThread::UI, &ui_loop_),
-        db_thread_(BrowserThread::DB) {}
+        db_thread_(BrowserThread::DB),
+        sync_service_(&profile_) {}
 
   virtual ~SyncSharedChangeProcessorTest() {
     EXPECT_FALSE(db_syncable_service_.get());
@@ -117,6 +118,7 @@ class SyncSharedChangeProcessorTest : public testing::Test {
 
   scoped_refptr<SharedChangeProcessor> shared_change_processor_;
   NiceMock<ProfileSyncComponentsFactoryMock> sync_factory_;
+  TestingProfile profile_;
   NiceMock<ProfileSyncServiceMock> sync_service_;
   StrictMock<DataTypeErrorHandlerMock> error_handler_;
 

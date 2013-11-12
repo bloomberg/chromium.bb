@@ -24,8 +24,6 @@ using ::testing::Invoke;
 
 class ProfileSyncServiceMock : public ProfileSyncService {
  public:
-  // no-arg constructor provided so TestingProfile can use NiceMock.
-  ProfileSyncServiceMock();
   explicit ProfileSyncServiceMock(Profile* profile);
   virtual ~ProfileSyncServiceMock();
 

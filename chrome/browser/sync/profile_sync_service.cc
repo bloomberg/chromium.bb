@@ -159,8 +159,7 @@ ProfileSyncService::ProfileSyncService(
       passphrase_required_reason_(syncer::REASON_PASSPHRASE_NOT_REQUIRED),
       factory_(factory),
       profile_(profile),
-      // |profile| may be NULL in unit tests.
-      sync_prefs_(profile_ ? profile_->GetPrefs() : NULL),
+      sync_prefs_(profile_->GetPrefs()),
       sync_service_url_(kDevServerUrl),
       data_type_requested_sync_startup_(false),
       is_first_time_sync_configure_(false),
@@ -181,6 +180,7 @@ ProfileSyncService::ProfileSyncService(
       weak_factory_(this),
       connection_status_(syncer::CONNECTION_NOT_ATTEMPTED),
       last_get_token_error_(GoogleServiceAuthError::AuthErrorNone()) {
+  DCHECK(profile);
   // By default, dev, canary, and unbranded Chromium users will go to the
   // development servers. Development servers have more features than standard
   // sync servers. Users with officially-branded Chrome stable and beta builds

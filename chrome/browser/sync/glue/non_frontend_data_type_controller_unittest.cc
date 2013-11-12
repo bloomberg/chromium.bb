@@ -112,6 +112,7 @@ class SyncNonFrontendDataTypeControllerTest : public testing::Test {
   SyncNonFrontendDataTypeControllerTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
         db_thread_(BrowserThread::DB),
+        service_(&profile_),
         model_associator_(NULL),
         change_processor_(NULL) {}
 

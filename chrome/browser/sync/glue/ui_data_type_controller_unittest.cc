@@ -41,6 +41,7 @@ class SyncUIDataTypeControllerTest : public testing::Test {
  public:
   SyncUIDataTypeControllerTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
+        profile_sync_service_(&profile_),
         type_(syncer::PREFERENCES),
         change_processor_(new FakeGenericChangeProcessor()) {}
 

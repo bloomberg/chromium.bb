@@ -114,11 +114,8 @@ void InvalidatorStorage::RegisterProfilePrefs(
 
 InvalidatorStorage::InvalidatorStorage(PrefService* pref_service)
     : pref_service_(pref_service) {
-  // TODO(tim): Create a Mock instead of maintaining the if(!pref_service_) case
-  // throughout this file.  This is a problem now due to lack of injection at
-  // ProfileSyncService. Bug 130176.
-  if (pref_service_)
-    MigrateMaxInvalidationVersionsPref();
+  DCHECK(pref_service);
+  MigrateMaxInvalidationVersionsPref();
 }
 
 InvalidatorStorage::~InvalidatorStorage() {
@@ -127,9 +124,6 @@ InvalidatorStorage::~InvalidatorStorage() {
 InvalidationStateMap InvalidatorStorage::GetAllInvalidationStates() const {
   DCHECK(thread_checker_.CalledOnValidThread());
   InvalidationStateMap state_map;
-  if (!pref_service_) {
-    return state_map;
-  }
   const base::ListValue* state_map_list =
       pref_service_->GetList(prefs::kInvalidatorMaxInvalidationVersions);
   CHECK(state_map_list);
@@ -142,7 +136,6 @@ void InvalidatorStorage::SetMaxVersionAndPayload(
     int64 max_version,
     const std::string& payload) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  CHECK(pref_service_);
   InvalidationStateMap state_map = GetAllInvalidationStates();
   InvalidationStateMap::iterator it = state_map.find(id);
   if ((it != state_map.end()) && (max_version <= it->second.version)) {
@@ -160,7 +153,6 @@ void InvalidatorStorage::SetMaxVersionAndPayload(
 
 void InvalidatorStorage::Forget(const syncer::ObjectIdSet& ids) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  CHECK(pref_service_);
   InvalidationStateMap state_map = GetAllInvalidationStates();
   for (syncer::ObjectIdSet::const_iterator it = ids.begin(); it != ids.end();
        ++it) {
@@ -272,9 +264,7 @@ void InvalidatorStorage::SetInvalidatorClientId(const std::string& client_id) {
 }
 
 std::string InvalidatorStorage::GetInvalidatorClientId() const {
-  return pref_service_ ?
-      pref_service_->GetString(prefs::kInvalidatorClientId) :
-          std::string();
+  return pref_service_->GetString(prefs::kInvalidatorClientId);
 }
 
 void InvalidatorStorage::SetBootstrapData(const std::string& data) {
@@ -287,9 +277,7 @@ void InvalidatorStorage::SetBootstrapData(const std::string& data) {
 
 std::string InvalidatorStorage::GetBootstrapData() const {
   std::string base64_data(
-      pref_service_
-          ? pref_service_->GetString(prefs::kInvalidatorInvalidationState)
-          : std::string());
+      pref_service_->GetString(prefs::kInvalidatorInvalidationState));
   std::string data;
   base::Base64Decode(base64_data, &data);
   return data;
@@ -307,7 +295,6 @@ void InvalidatorStorage::GenerateAckHandles(
     const scoped_refptr<base::TaskRunner>& task_runner,
     const base::Callback<void(const syncer::AckHandleMap&)> callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  CHECK(pref_service_);
   InvalidationStateMap state_map = GetAllInvalidationStates();
 
   syncer::AckHandleMap ack_handles;
@@ -329,7 +316,6 @@ void InvalidatorStorage::GenerateAckHandles(
 void InvalidatorStorage::Acknowledge(const invalidation::ObjectId& id,
                                      const syncer::AckHandle& ack_handle) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  CHECK(pref_service_);
   InvalidationStateMap state_map = GetAllInvalidationStates();
 
   InvalidationStateMap::iterator it = state_map.find(id);

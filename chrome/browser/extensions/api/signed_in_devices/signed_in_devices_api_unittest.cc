@@ -31,7 +31,8 @@ namespace extensions {
 namespace utils = extension_function_test_utils;
 
 TEST(SignedInDevicesAPITest, GetSignedInDevices) {
-  ProfileSyncServiceMock pss_mock;
+  TestingProfile profile;
+  ProfileSyncServiceMock pss_mock(&profile);
   base::MessageLoop message_loop_;
   TestExtensionPrefs extension_prefs(
       message_loop_.message_loop_proxy().get());
@@ -107,14 +108,17 @@ TEST(SignedInDevicesAPITest, GetSignedInDevices) {
 class ProfileSyncServiceMockForExtensionTests:
     public ProfileSyncServiceMock {
  public:
-  ProfileSyncServiceMockForExtensionTests() {}
+  explicit ProfileSyncServiceMockForExtensionTests(Profile* p)
+      : ProfileSyncServiceMock(p) {}
   ~ProfileSyncServiceMockForExtensionTests() {}
+
   MOCK_METHOD0(Shutdown, void());
 };
 
 BrowserContextKeyedService* CreateProfileSyncServiceMock(
     content::BrowserContext* profile) {
-  return new ProfileSyncServiceMockForExtensionTests();
+  return new ProfileSyncServiceMockForExtensionTests(
+      Profile::FromBrowserContext(profile));
 }
 
 class ExtensionSignedInDevicesTest : public BrowserWithTestWindowTest {

@@ -29,7 +29,7 @@ using syncer::sessions::SyncSessionSnapshot;
 
 class SyncBackendMigratorTest : public testing::Test {
  public:
-  SyncBackendMigratorTest() { }
+  SyncBackendMigratorTest() : service_(&profile_) { }
   virtual ~SyncBackendMigratorTest() { }
 
   virtual void SetUp() {
@@ -104,6 +104,7 @@ class SyncBackendMigratorTest : public testing::Test {
   scoped_ptr<SyncSessionSnapshot> snap_;
   base::MessageLoop message_loop_;
   syncer::ModelTypeSet preferred_types_;
+  TestingProfile profile_;
   NiceMock<ProfileSyncServiceMock> service_;
   NiceMock<DataTypeManagerMock> manager_;
   syncer::TestUserShare test_user_share_;
