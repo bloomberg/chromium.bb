@@ -1772,7 +1772,8 @@ class TextureLayerNoExtraCommitForMailboxTest
   int prepare_mailbox_count_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(TextureLayerNoExtraCommitForMailboxTest);
+// Disabled, crashes: http://crbug.com/317854 .
+// SINGLE_AND_MULTI_THREAD_TEST_F(TextureLayerNoExtraCommitForMailboxTest);
 
 // Checks that changing a mailbox in the client for a TextureLayer that's
 // invisible correctly works and uses the new mailbox as soon as the layer
