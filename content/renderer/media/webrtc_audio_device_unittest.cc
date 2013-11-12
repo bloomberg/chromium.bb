@@ -980,6 +980,13 @@ TEST_F(MAYBE_WebRTCAudioDeviceTest, MAYBE_WebRtcPlayoutSetupTime) {
 
 TEST_F(MAYBE_WebRTCAudioDeviceTest,
        MAYBE_WebRtcLoopbackTimeWithoutSignalProcessing) {
+#if defined(OS_WIN)
+  // This test hangs on WinXP: see http://crbug.com/318189.
+  if (base::win::GetVersion() <= base::win::VERSION_XP) {
+    LOG(WARNING) << "Test disabled due to the test hangs on WinXP.";
+    return;
+  }
+#endif
   int latency = RunWebRtcLoopbackTimeTest(audio_manager_.get(), false);
   PrintPerfResultMs("webrtc_loopback_without_sigal_processing (100 packets)",
                     "t", latency);
@@ -996,6 +1003,13 @@ TEST_F(MAYBE_WebRTCAudioDeviceTest,
 
 TEST_F(MAYBE_WebRTCAudioDeviceTest,
        MAYBE_WebRtcLoopbackTimeWithSignalProcessing) {
+#if defined(OS_WIN)
+  // This test hangs on WinXP: see http://crbug.com/318189.
+  if (base::win::GetVersion() <= base::win::VERSION_XP) {
+    LOG(WARNING) << "Test disabled due to the test hangs on WinXP.";
+    return;
+  }
+#endif
   int latency = RunWebRtcLoopbackTimeTest(audio_manager_.get(), true);
   PrintPerfResultMs("webrtc_loopback_with_signal_processing (100 packets)",
                     "t", latency);
