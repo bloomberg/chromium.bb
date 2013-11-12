@@ -334,6 +334,12 @@ void RuleSet::addViewportRule(StyleRuleViewport* rule)
     m_viewportRules.append(rule);
 }
 
+void RuleSet::addFontFaceRule(StyleRuleFontFace* rule)
+{
+    ensurePendingRules(); // So that m_viewportRules.shrinkToFit() gets called.
+    m_fontFaceRules.append(rule);
+}
+
 void RuleSet::addRegionRule(StyleRuleRegion* regionRule, bool hasDocumentSecurityOrigin)
 {
     ensurePendingRules(); // So that m_regionSelectorsAndRuleSets.shrinkToFit() gets called.
@@ -385,13 +391,7 @@ void RuleSet::addChildRules(const Vector<RefPtr<StyleRuleBase> >& rules, const M
             if ((!mediaRule->mediaQueries() || medium.eval(mediaRule->mediaQueries(), resolver->viewportDependentMediaQueryResults())))
                 addChildRules(mediaRule->childRules(), medium, resolver, scope, hasDocumentSecurityOrigin, addRuleFlags);
         } else if (rule->isFontFaceRule() && resolver) {
-            // Add this font face to our set.
-            // FIXME(BUG 72461): We don't add @font-face rules of scoped style sheets for the moment.
-            if (!isDocumentScope(scope))
-                continue;
-            const StyleRuleFontFace* fontFaceRule = static_cast<StyleRuleFontFace*>(rule);
-            resolver->fontSelector()->addFontFaceRule(fontFaceRule);
-            resolver->invalidateMatchedPropertiesCache();
+            addFontFaceRule(static_cast<StyleRuleFontFace*>(rule));
         } else if (rule->isKeyframesRule() && resolver) {
             resolver->ensureScopedStyleResolver(scope)->addKeyframeStyle(static_cast<StyleRuleKeyframes*>(rule));
         } else if (rule->isRegionRule()) {
@@ -466,6 +466,7 @@ void RuleSet::compactRules()
     m_universalRules.shrinkToFit();
     m_pageRules.shrinkToFit();
     m_viewportRules.shrinkToFit();
+    m_fontFaceRules.shrinkToFit();
 }
 
 } // namespace WebCore
