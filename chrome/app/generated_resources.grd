@@ -14570,7 +14570,13 @@ Some features may be unavailable.  Please check that the profile exists and you 
         Restart
       </message>
       <message name="IDS_ENTERPRISE_DEVICE_REQUISITION_PROMPT_TEXT" desc="Prompt shown in the device requisition prompt popup.">
-        You're almost there. Restart the device to continue setup.
+        Use this device requisition when enrolling the device for enterprise management:
+      </message>
+      <message name="IDS_ENTERPRISE_DEVICE_REQUISITION_REMORA_PROMPT_TITLE" desc="Title for the device requisition remora prompt popup.">
+        Set up this device for remora only?
+      </message>
+      <message name="IDS_ENTERPRISE_DEVICE_REQUISITION_REMORA_PROMPT_TEXT" desc="Prompt shown in the device requisition remora prompt popup.">
+        Are you sure you want to continue?
       </message>
 
       <message name="IDS_ENTERPRISE_ENROLLMENT_STATUS_REGISTRATION_FAILED" desc="Error message shown on the enrollment screen upon failed device registration.">

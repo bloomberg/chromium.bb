@@ -594,11 +594,14 @@ cr.define('cr.ui.login', function() {
     showDeviceRequisitionRemoraPrompt_: function() {
       if (!this.deviceRequisitionRemoraDialog_) {
         this.deviceRequisitionRemoraDialog_ =
-            new cr.ui.dialogs.AlertDialog(document.body);
+            new cr.ui.dialogs.ConfirmDialog(document.body);
         this.deviceRequisitionRemoraDialog_.setOkLabel(
-            loadTimeData.getString('deviceRequisitionPromptOk'));
+            loadTimeData.getString('deviceRequisitionRemoraPromptOk'));
+        this.deviceRequisitionRemoraDialog_.setCancelLabel(
+            loadTimeData.getString('deviceRequisitionRemoraPromptCancel'));
       }
-      this.deviceRequisitionRemoraDialog_.show(
+      this.deviceRequisitionRemoraDialog_.showWithTitle(
+          loadTimeData.getString('deviceRequisitionRemoraPromptTitle'),
           loadTimeData.getString('deviceRequisitionRemoraPromptText'),
           function() {
             chrome.send('setDeviceRequisition', ['remora']);

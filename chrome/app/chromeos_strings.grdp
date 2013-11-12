@@ -230,6 +230,9 @@ Press any key to continue exploring.
   <message name="IDS_UPDATE_MSG" desc="Chrome OS OOBE: message shown during update stage.">
     <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> updates automatically so you always have the freshest version. When this download completes, <ph name="PRODUCT_NAME">$1<ex>Chrome</ex></ph> will restart and you'll be on your way.
   </message>
+  <message name="IDS_REMORA_CONFIRM_MESSAGE" desc="Remora confirm message on the first OOBE screen">
+    This device is ready to be set up.
+  </message>
   <message name="IDS_WELCOME_SCREEN_GREETING" desc="Greeting message on the OOBE welcome screen">
     Welcome!
   </message>

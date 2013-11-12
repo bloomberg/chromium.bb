@@ -11,6 +11,7 @@
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
 #include "chrome/browser/chromeos/login/language_switch_menu.h"
 #include "chrome/browser/chromeos/login/screens/core_oobe_actor.h"
+#include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/options/chromeos/cros_language_options_handler.h"
@@ -103,7 +104,11 @@ void NetworkScreenHandler::EnableContinue(bool enabled) {
 
 void NetworkScreenHandler::DeclareLocalizedValues(
     LocalizedValuesBuilder* builder) {
-  builder->Add("networkScreenGreeting", IDS_WELCOME_SCREEN_GREETING);
+  if (system::keyboard_settings::ForceKeyboardDrivenUINavigation())
+    builder->Add("networkScreenGreeting", IDS_REMORA_CONFIRM_MESSAGE);
+  else
+    builder->Add("networkScreenGreeting", IDS_WELCOME_SCREEN_GREETING);
+
   builder->Add("networkScreenTitle", IDS_WELCOME_SCREEN_TITLE);
   builder->Add("selectLanguage", IDS_LANGUAGE_SELECTION_SELECT);
   builder->Add("selectKeyboard", IDS_KEYBOARD_SELECTION_SELECT);

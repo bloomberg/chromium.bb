@@ -89,11 +89,16 @@ void CoreOobeHandler::DeclareLocalizedValues(LocalizedValuesBuilder* builder) {
                IDS_ENTERPRISE_DEVICE_REQUISITION_PROMPT_CANCEL);
   builder->Add("deviceRequisitionPromptOk",
                IDS_ENTERPRISE_DEVICE_REQUISITION_PROMPT_OK);
-  // TODO(xiyuan): Restore generic device requisition prompt text.
   builder->Add("deviceRequisitionPromptText",
                IDS_ENTERPRISE_DEVICE_REQUISITION_PROMPT_TEXT);
+  builder->Add("deviceRequisitionRemoraPromptCancel",
+               IDS_CONFIRM_MESSAGEBOX_NO_BUTTON_LABEL);
+  builder->Add("deviceRequisitionRemoraPromptOk",
+               IDS_CONFIRM_MESSAGEBOX_YES_BUTTON_LABEL);
+  builder->Add("deviceRequisitionRemoraPromptTitle",
+               IDS_ENTERPRISE_DEVICE_REQUISITION_REMORA_PROMPT_TITLE);
   builder->Add("deviceRequisitionRemoraPromptText",
-               IDS_ENTERPRISE_DEVICE_REQUISITION_PROMPT_TEXT);
+               IDS_ENTERPRISE_DEVICE_REQUISITION_REMORA_PROMPT_TEXT);
 }
 
 void CoreOobeHandler::Initialize() {
