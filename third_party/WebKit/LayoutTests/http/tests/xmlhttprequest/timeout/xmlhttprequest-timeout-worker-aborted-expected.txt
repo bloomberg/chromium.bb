@@ -7,4 +7,7 @@ PASS XHR2 Timeout Property Tests in Worker
 PASS XHR2 Timeout Property Tests in Worker 1 
 PASS XHR2 Timeout Property Tests in Worker 2 
 PASS XHR2 Timeout Property Tests in Worker 3 
+PASS XHR2 Timeout Property Tests in Worker 4 
+PASS XHR2 Timeout Property Tests in Worker 5 
+PASS XHR2 Timeout Property Tests in Worker 6 
 

@@ -7,4 +7,7 @@ PASS XHR2 Timeout Property Tests
 PASS XHR2 Timeout Property Tests 1 
 PASS XHR2 Timeout Property Tests 2 
 PASS XHR2 Timeout Property Tests 3 
+PASS XHR2 Timeout Property Tests 4 
+PASS XHR2 Timeout Property Tests 5 
+PASS XHR2 Timeout Property Tests 6 
 
