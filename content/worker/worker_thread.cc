@@ -23,7 +23,6 @@
 #include "third_party/WebKit/public/web/WebDatabase.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"
-#include "webkit/glue/webkit_glue.h"
 
 using blink::WebRuntimeFeatures;
 

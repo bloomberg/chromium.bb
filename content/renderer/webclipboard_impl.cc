@@ -23,7 +23,6 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/custom_data_helper.h"
 #include "url/gurl.h"
-#include "webkit/glue/webkit_glue.h"
 
 using blink::WebClipboard;
 using blink::WebData;

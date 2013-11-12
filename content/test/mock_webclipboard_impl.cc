@@ -18,7 +18,6 @@
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/size.h"
-#include "webkit/glue/webkit_glue.h"
 
 using blink::WebDragData;
 using blink::WebString;

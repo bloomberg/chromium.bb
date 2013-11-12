@@ -16,7 +16,6 @@
 #include "content/child/npapi/plugin_stream_url.h"
 #include "content/child/npapi/plugin_url_fetcher.h"
 #include "third_party/WebKit/public/web/WebInputEvent.h"
-#include "webkit/glue/webkit_glue.h"
 
 using blink::WebCursorInfo;
 using blink::WebInputEvent;

@@ -11,7 +11,6 @@
 #include "content/child/plugin_messages.h"
 #include "third_party/WebKit/public/web/WebBindings.h"
 #include "third_party/npapi/bindings/nphostapi.h"
-#include "webkit/glue/webkit_glue.h"
 
 using blink::WebBindings;
 

@@ -27,7 +27,6 @@
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
-#include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_LINUX) && !defined(USE_AURA)
 #include "ui/base/gtk/event_synthesis_gtk.h"

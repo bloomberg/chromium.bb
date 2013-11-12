@@ -53,7 +53,6 @@
 #include "ui/gfx/size.h"
 #include "ui/gfx/skia_util.h"
 #include "webkit/common/cursors/webcursor.h"
-#include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_POSIX)
 #include "ipc/ipc_channel_posix.h"

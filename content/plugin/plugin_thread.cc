@@ -28,7 +28,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/plugin/content_plugin_client.h"
 #include "ipc/ipc_channel_handle.h"
-#include "webkit/glue/webkit_glue.h"
 
 #if defined(TOOLKIT_GTK)
 #include "ui/gfx/gtk_util.h"

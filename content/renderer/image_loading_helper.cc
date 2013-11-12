@@ -20,7 +20,6 @@
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/size.h"
 #include "ui/gfx/skbitmap_operations.h"
-#include "webkit/glue/webkit_glue.h"
 
 using blink::WebFrame;
 using blink::WebVector;

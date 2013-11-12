@@ -49,7 +49,6 @@
 #include "webkit/child/websocketstreamhandle_impl.h"
 #include "webkit/child/weburlloader_impl.h"
 #include "webkit/common/user_agent/user_agent.h"
-#include "webkit/glue/webkit_glue.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/sys_utils.h"

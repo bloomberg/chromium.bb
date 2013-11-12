@@ -55,7 +55,6 @@
 #include "ui/gfx/size_f.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "v8/include/v8-testing.h"
-#include "webkit/glue/webkit_glue.h"
 
 using base::string16;
 using extensions::APIPermission;

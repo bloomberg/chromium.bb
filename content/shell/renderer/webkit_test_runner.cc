@@ -60,7 +60,6 @@
 #include "third_party/WebKit/public/web/WebView.h"
 #include "ui/gfx/rect.h"
 #include "webkit/common/webpreferences.h"
-#include "webkit/glue/webkit_glue.h"
 
 using blink::Platform;
 using blink::WebArrayBufferView;
