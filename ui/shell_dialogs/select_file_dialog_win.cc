@@ -34,6 +34,7 @@
 #if defined(USE_AURA)
 #include "ui/aura/remote_root_window_host_win.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/window.h"
 #endif
 
 namespace {

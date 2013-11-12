@@ -28,6 +28,7 @@
 #if defined(OS_CHROMEOS)
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/test_screen.h"
+#include "ui/aura/window.h"
 #include "ui/shell/minimal_shell.h"
 #endif
 
@@ -53,7 +54,7 @@ void ExamplesBrowserMainParts::PreMainMessageLoopRun() {
   // Ensure the X window gets mapped.
   minimal_shell_->root_window()->ShowRootWindow();
   // Ensure Aura knows where to open new windows.
-  window_context = minimal_shell_->root_window();
+  window_context = minimal_shell_->root_window()->window();
 #elif defined(USE_AURA)
   aura::Env::CreateInstance();
   gfx::Screen::SetScreenInstance(

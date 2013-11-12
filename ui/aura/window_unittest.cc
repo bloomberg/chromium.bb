@@ -1573,7 +1573,7 @@ TEST_F(WindowTest, TransformGesture) {
   gfx::Transform transform;
   transform.Translate(size.height(), 0.0);
   transform.Rotate(90.0);
-  root_window()->SetTransform(transform);
+  dispatcher()->SetTransform(transform);
 
   ui::TouchEvent press(
       ui::ET_TOUCH_PRESSED, gfx::Point(size.height() - 10, 10), 0, getTime());

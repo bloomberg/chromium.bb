@@ -141,7 +141,7 @@ RootWindow::CreateParams::CreateParams(const gfx::Rect& a_initial_bounds)
 // RootWindow, public:
 
 RootWindow::RootWindow(const CreateParams& params)
-    : Window(NULL),
+    : window_(new Window(NULL)),
       host_(CreateHost(this, params)),
       touch_ids_down_(0),
       last_cursor_(ui::kCursorNull),
@@ -180,7 +180,7 @@ RootWindow::~RootWindow() {
   // ~Window, but by that time any calls to virtual methods overriden here (such
   // as GetRootWindow()) result in Window's implementation. By destroying here
   // we ensure GetRootWindow() still returns this.
-  RemoveOrDestroyChildren();
+  window()->RemoveOrDestroyChildren();
 
   // Destroying/removing child windows may try to access |host_| (eg.
   // GetAcceleratedWidget())
@@ -199,7 +199,7 @@ RootWindow* RootWindow::GetForAcceleratedWidget(
 void RootWindow::Init() {
   compositor()->SetScaleAndSize(GetDeviceScaleFactorFromDisplay(window()),
                                 host_->GetBounds().size());
-  Window::Init(ui::LAYER_NOT_DRAWN);
+  window()->Init(ui::LAYER_NOT_DRAWN);
   compositor()->SetRootLayer(window()->layer());
   transformer_.reset(
       new SimpleRootWindowTransformer(window(), gfx::Transform()));
@@ -525,7 +525,7 @@ void RootWindow::SetRootWindowTransformer(
     scoped_ptr<RootWindowTransformer> transformer) {
   transformer_ = transformer.Pass();
   host_->SetInsets(transformer_->GetHostInsets());
-  Window::SetTransform(transformer_->GetTransform());
+  window()->SetTransform(transformer_->GetTransform());
   // If the layer is not animating, then we need to update the root window
   // size immediately.
   if (!window()->layer()->GetAnimator()->is_animating())
@@ -540,29 +540,14 @@ gfx::Transform RootWindow::GetRootTransform() const {
   return transform;
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// RootWindow, Window overrides:
-
-Window* RootWindow::GetRootWindow() {
-  return this;
-}
-
-const Window* RootWindow::GetRootWindow() const {
-  return this;
-}
-
 void RootWindow::SetTransform(const gfx::Transform& transform) {
   scoped_ptr<RootWindowTransformer> transformer(
       new SimpleRootWindowTransformer(window(), transform));
   SetRootWindowTransformer(transformer.Pass());
 }
 
-bool RootWindow::CanFocus() const {
-  return IsVisible();
-}
-
-bool RootWindow::CanReceiveEvents() const {
-  return IsVisible();
+void RootWindow::DeviceScaleFactorChanged(float device_scale_factor) {
+  host_->OnDeviceScaleFactorChanged(device_scale_factor);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -579,7 +564,7 @@ void RootWindow::MoveCursorToInternal(const gfx::Point& root_location,
   client::CursorClient* cursor_client = client::GetCursorClient(window());
   if (cursor_client) {
     const gfx::Display& display =
-        gfx::Screen::GetScreenFor(this)->GetDisplayNearestWindow(window());
+        gfx::Screen::GetScreenFor(window())->GetDisplayNearestWindow(window());
     cursor_client->SetDisplay(display);
   }
   synthesize_mouse_move_ = false;
@@ -688,44 +673,6 @@ void RootWindow::CleanupGestureRecognizerState(Window* window) {
 
 void RootWindow::UpdateRootWindowSize(const gfx::Size& host_size) {
   window()->SetBounds(transformer_->GetRootWindowBounds(host_size));
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// RootWindow, ui::EventTarget implementation:
-
-ui::EventTarget* RootWindow::GetParentTarget() {
-  return client::GetEventClient(this) ?
-      client::GetEventClient(this)->GetToplevelEventTarget() :
-          Env::GetInstance();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// RootWindow, ui::LayerDelegate implementation:
-
-void RootWindow::OnDeviceScaleFactorChanged(
-    float device_scale_factor) {
-  const bool cursor_is_in_bounds =
-      GetBoundsInScreen().Contains(Env::GetInstance()->last_mouse_location());
-  bool cursor_visible = false;
-  client::CursorClient* cursor_client = client::GetCursorClient(this);
-  if (cursor_is_in_bounds && cursor_client) {
-    cursor_visible = cursor_client->IsCursorVisible();
-    if (cursor_visible)
-      cursor_client->HideCursor();
-  }
-  host_->OnDeviceScaleFactorChanged(device_scale_factor);
-  Window::OnDeviceScaleFactorChanged(device_scale_factor);
-  // Update the device scale factor of the cursor client only when the last
-  // mouse location is on this root window.
-  if (cursor_is_in_bounds) {
-    if (cursor_client) {
-      const gfx::Display& display =
-          gfx::Screen::GetScreenFor(this)->GetDisplayNearestWindow(this);
-      cursor_client->SetDisplay(display);
-    }
-  }
-  if (cursor_is_in_bounds && cursor_client && cursor_visible)
-    cursor_client->ShowCursor();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

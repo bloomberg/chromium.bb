@@ -5,6 +5,7 @@
 #include "ui/aura/client/default_capture_client.h"
 
 #include "ui/aura/root_window.h"
+#include "ui/aura/window.h"
 
 namespace aura {
 namespace client {
@@ -12,11 +13,11 @@ namespace client {
 DefaultCaptureClient::DefaultCaptureClient(Window* root_window)
     : root_window_(root_window),
       capture_window_(NULL) {
-  client::SetCaptureClient(root_window_, this);
+  SetCaptureClient(root_window_, this);
 }
 
 DefaultCaptureClient::~DefaultCaptureClient() {
-  client::SetCaptureClient(root_window_, NULL);
+  SetCaptureClient(root_window_, NULL);
 }
 
 void DefaultCaptureClient::SetCapture(Window* window) {

@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/debug/stack_trace.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/window.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 

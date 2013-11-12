@@ -16,6 +16,7 @@
 #include "ui/aura/test/test_event_handler.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
+#include "ui/aura/window.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/base/hit_test.h"
 #include "ui/events/event.h"
@@ -1247,7 +1248,7 @@ namespace {
 // See description above DeleteRootFromHeldMouseEvent for details.
 class DeleteRootFromHeldMouseEventDelegate : public test::TestWindowDelegate {
  public:
-  explicit DeleteRootFromHeldMouseEventDelegate(aura::Window* root)
+  explicit DeleteRootFromHeldMouseEventDelegate(aura::RootWindow* root)
       : root_(root),
         got_mouse_event_(false),
         got_destroy_(false) {
@@ -1269,7 +1270,7 @@ class DeleteRootFromHeldMouseEventDelegate : public test::TestWindowDelegate {
   }
 
  private:
-  Window* root_;
+  RootWindow* root_;
   bool got_mouse_event_;
   bool got_destroy_;
 
