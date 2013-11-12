@@ -236,7 +236,6 @@ struct window {
 	int focus_count;
 
 	int resizing;
-	int fullscreen_method;
 	int configure_requests;
 
 	enum preferred_format preferred_format;
@@ -4122,7 +4121,7 @@ window_set_fullscreen(struct window *window, int fullscreen)
 		}
 		window->type = TYPE_FULLSCREEN;
 		wl_shell_surface_set_fullscreen(window->shell_surface,
-						window->fullscreen_method,
+						WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,
 						0, NULL);
 		window_defer_redraw_until_configure (window);
 	} else {
@@ -4137,13 +4136,6 @@ window_set_fullscreen(struct window *window, int fullscreen)
 		}
 
 	}
-}
-
-void
-window_set_fullscreen_method(struct window *window,
-			     enum wl_shell_surface_fullscreen_method method)
-{
-	window->fullscreen_method = method;
 }
 
 int
@@ -4381,7 +4373,6 @@ window_create_internal(struct display *display, int type)
 	}
 
 	window->type = type;
-	window->fullscreen_method = WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT;
 	window->configure_requests = 0;
 	window->preferred_format = WINDOW_PREFERRED_FORMAT_NONE;
 

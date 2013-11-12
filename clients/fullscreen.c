@@ -40,7 +40,6 @@ struct fullscreen {
 	int width, height;
 	int fullscreen;
 	float pointer_x, pointer_y;
-	enum wl_shell_surface_fullscreen_method fullscreen_method;
 };
 
 static void
@@ -114,7 +113,6 @@ redraw_handler(struct widget *widget, void *data)
 	cairo_t *cr;
 	int i;
 	double x, y, border;
-	const char *method_name[] = { "default", "scale", "driver", "fill" };
 
 	surface = window_get_surface(fullscreen->window);
 	if (surface == NULL ||
@@ -144,13 +142,13 @@ redraw_handler(struct widget *widget, void *data)
 		    "Surface size: %d, %d\n"
 		    "Scale: %d, transform: %d\n"
 		    "Pointer: %f,%f\n"
-		    "Fullscreen: %d, method: %s\n"
-		    "Keys: (s)cale, (t)ransform, si(z)e, (m)ethod, (f)ullscreen, (q)uit\n",
+		    "Fullscreen: %d\n"
+		    "Keys: (s)cale, (t)ransform, si(z)e, (f)ullscreen, (q)uit\n",
 		    fullscreen->width, fullscreen->height,
 		    window_get_buffer_scale (fullscreen->window),
 		    window_get_buffer_transform (fullscreen->window),
 		    fullscreen->pointer_x, fullscreen->pointer_y,
-		    fullscreen->fullscreen, method_name[fullscreen->fullscreen_method]);
+		    fullscreen->fullscreen);
 
 	y = 100;
 	i = 0;
@@ -220,13 +218,6 @@ key_handler(struct window *window, struct input *input, uint32_t time,
 		fullscreen->height = heights[current_size];
 		window_schedule_resize(fullscreen->window,
 				       fullscreen->width, fullscreen->height);
-		break;
-
-	case XKB_KEY_m:
-		fullscreen->fullscreen_method = (fullscreen->fullscreen_method + 1) % 4;
-		window_set_fullscreen_method(fullscreen->window,
-					     fullscreen->fullscreen_method);
-		window_schedule_redraw(window);
 		break;
 
 	case XKB_KEY_f:
@@ -306,8 +297,6 @@ int main(int argc, char *argv[])
 	fullscreen.width = 640;
 	fullscreen.height = 480;
 	fullscreen.fullscreen = 0;
-	fullscreen.fullscreen_method =
-		WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT;
 
 	for (i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "-w") == 0) {
@@ -338,8 +327,6 @@ int main(int argc, char *argv[])
 		window_add_widget(fullscreen.window, &fullscreen);
 
 	window_set_title(fullscreen.window, "Fullscreen");
-	window_set_fullscreen_method(fullscreen.window,
-				     fullscreen.fullscreen_method);
 
 	widget_set_transparent(fullscreen.widget, 0);
 	widget_set_default_cursor(fullscreen.widget, CURSOR_LEFT_PTR);
