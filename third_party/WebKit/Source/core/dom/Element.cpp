@@ -1617,9 +1617,8 @@ void Element::recalcChildStyle(StyleRecalcChange change)
     // This loop is deliberately backwards because we use insertBefore in the rendering tree, and want to avoid
     // a potentially n^2 loop to find the insertion point while resolving style. Having us start from the last
     // child and work our way back means in the common case, we'll find the insertion point in O(1) time.
-    // Reversing this loop can lead to non-deterministic results in our code to optimize out empty whitespace
-    // RenderTexts. We try to put off recalcing their style until the end to avoid this issue.
     // See crbug.com/288225
+    StyleResolver& styleResolver = *document().styleResolver();
     for (Node* child = lastChild(); child; child = child->previousSibling()) {
         if (child->isTextNode()) {
             toText(child)->recalcTextStyle(change);
@@ -1629,7 +1628,7 @@ void Element::recalcChildStyle(StyleRecalcChange change)
                 parentPusher.push();
                 element->recalcStyle(change);
             } else if (element->supportsStyleSharing()) {
-                document().styleResolver()->addToStyleSharingList(*element);
+                styleResolver.addToStyleSharingList(*element);
             }
         }
     }
