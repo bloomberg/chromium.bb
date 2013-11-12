@@ -39,13 +39,12 @@ namespace WebCore {
         DragDestinationActionAny     = UINT_MAX
     } DragDestinationAction;
 
-    // WebCoreDragSourceAction should be kept in sync with WebDragSourceAction
     typedef enum {
-        DragSourceActionNone         = 0,
-        DragSourceActionDHTML        = 1,
-        DragSourceActionImage        = 2,
-        DragSourceActionLink         = 4,
-        DragSourceActionSelection    = 8,
+        DragSourceActionNone,
+        DragSourceActionDHTML,
+        DragSourceActionImage,
+        DragSourceActionLink,
+        DragSourceActionSelection,
     } DragSourceAction;
 
     //matches NSDragOperation

@@ -303,7 +303,6 @@ private:
 
     bool m_mouseDownMayStartSelect;
     bool m_mouseDownMayStartDrag;
-    bool m_dragMayStartSelectionInstead;
     bool m_mouseDownWasSingleClickInSelection;
     enum SelectionInitiationState { HaveNotStartedSelection, PlacedCaret, ExtendedSelection };
     SelectionInitiationState m_selectionInitiationState;

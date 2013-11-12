@@ -135,7 +135,6 @@ static const double TextDragDelay = 0.15;
 static const double TextDragDelay = 0.0;
 #endif
 
-
 enum NoCursorChangeType { NoCursorChange };
 
 class OptionalCursor {
@@ -285,7 +284,6 @@ EventHandler::EventHandler(Frame* frame)
     , m_capturesDragging(false)
     , m_mouseDownMayStartSelect(false)
     , m_mouseDownMayStartDrag(false)
-    , m_dragMayStartSelectionInstead(false)
     , m_mouseDownWasSingleClickInSelection(false)
     , m_selectionInitiationState(HaveNotStartedSelection)
     , m_panScrollButtonPressed(false)
@@ -3217,13 +3215,9 @@ bool EventHandler::dispatchDragSrcEvent(const AtomicString& eventType, const Pla
     return !dispatchDragEvent(eventType, dragState().m_dragSrc.get(), event, dragState().m_dragClipboard.get());
 }
 
-static bool exactlyOneBitSet(DragSourceAction n)
-{
-    return n && !(n & (n - 1));
-}
-
 bool EventHandler::handleDrag(const MouseEventWithHitTestResults& event, CheckDragHysteresis checkDragHysteresis)
 {
+    ASSERT(event.event().type() == PlatformEvent::MouseMoved);
     // Callers must protect the reference to FrameView, since this function may dispatch DOM
     // events, causing page/FrameView to go away.
     ASSERT(m_frame);
@@ -3240,57 +3234,26 @@ bool EventHandler::handleDrag(const MouseEventWithHitTestResults& event, CheckDr
         return false;
     }
 
-    if (m_mouseDownMayStartDrag && !dragState().m_dragSrc) {
-        // try to find an element that wants to be dragged
-        HitTestRequest request(HitTestRequest::ReadOnly | HitTestRequest::ConfusingAndOftenMisusedDisallowShadowContent);
+    if (m_mouseDownMayStartDrag) {
+        HitTestRequest request(HitTestRequest::ReadOnly);
         HitTestResult result(m_mouseDownPos);
         m_frame->contentRenderer()->hitTest(request, result);
         Node* node = result.innerNode();
-        if (node)
-            dragState().m_dragSrc = m_frame->page()->dragController().draggableNode(m_frame, node, m_mouseDownPos, dragState());
-        else
+        if (node) {
+            DragController::SelectionDragPolicy selectionDragPolicy = event.event().timestamp() - m_mouseDownTimestamp < TextDragDelay
+                ? DragController::DelayedSelectionDragResolution
+                : DragController::ImmediateSelectionDragResolution;
+            dragState().m_dragSrc = m_frame->page()->dragController().draggableNode(m_frame, node, m_mouseDownPos, selectionDragPolicy, dragState().m_dragType);
+        } else {
             dragState().m_dragSrc = 0;
+        }
 
         if (!dragState().m_dragSrc)
             m_mouseDownMayStartDrag = false; // no element is draggable
-        else
-            m_dragMayStartSelectionInstead = (dragState().m_dragType & DragSourceActionSelection);
-    }
-
-    // For drags starting in the selection, the user must wait between the mousedown and mousedrag,
-    // or else we bail on the dragging stuff and allow selection to occur
-    if (m_mouseDownMayStartDrag && m_dragMayStartSelectionInstead && (dragState().m_dragType & DragSourceActionSelection) && event.event().timestamp() - m_mouseDownTimestamp < TextDragDelay) {
-        ASSERT(event.event().type() == PlatformEvent::MouseMoved);
-        if ((dragState().m_dragType & DragSourceActionImage)) {
-            // ... unless the mouse is over an image, then we start dragging just the image
-            dragState().m_dragType = DragSourceActionImage;
-        } else if (!(dragState().m_dragType & (DragSourceActionDHTML | DragSourceActionLink))) {
-            // ... but only bail if we're not over an unselectable element.
-            m_mouseDownMayStartDrag = false;
-            dragState().m_dragSrc = 0;
-        } else {
-            // Prevent the following case from occuring:
-            // 1. User starts a drag immediately after mouse down over an unselectable element.
-            // 2. We enter this block and decided that since we're over an unselectable element,
-            //    don't cancel the drag.
-            // 3. The drag gets resolved as a potential selection drag below /but/ we haven't
-            //    exceeded the drag hysteresis yet.
-            // 4. We enter this block again, and since it's now marked as a selection drag, we
-            //    cancel the drag.
-            m_dragMayStartSelectionInstead = false;
-        }
     }
 
     if (!m_mouseDownMayStartDrag)
         return !mouseDownMayStartSelect() && !m_mouseDownMayStartAutoscroll;
-
-    if (!exactlyOneBitSet(dragState().m_dragType)) {
-        ASSERT((dragState().m_dragType & DragSourceActionSelection));
-        ASSERT((dragState().m_dragType & ~DragSourceActionSelection) == DragSourceActionDHTML
-                || (dragState().m_dragType & ~DragSourceActionSelection) == DragSourceActionImage
-                || (dragState().m_dragType & ~DragSourceActionSelection) == DragSourceActionLink);
-        dragState().m_dragType = DragSourceActionSelection;
-    }
 
     // We are starting a text/image/url drag, so the cursor should be an arrow
     // FIXME <rdar://7577595>: Custom cursors aren't supported during drag and drop (default to pointer).
