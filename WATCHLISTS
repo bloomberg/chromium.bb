@@ -310,6 +310,13 @@
     'importer': {
       'filepath': 'import',
     },
+    'indexed_db': {
+      'filepath': 'content/browser/indexed_db|'\
+                  'content/child/indexed_db|'\
+                  'content/common/indexed_db|'\
+                  'content/public/browser/indexed_db|'\
+                  'content/test/data/indexeddb',
+    },
     'installer': {
       'filepath': 'chrome/installer/',
     },
@@ -728,6 +735,8 @@
     'i18n': ['jshin+watch@chromium.org'],
     'imageburner': ['tbarzic+watch@chromium.org'],
     'importer': ['tfarina@chromium.org'],
+    'indexed_db': ['alecflett@chromium.org', 'cmumford@chromium.org',
+                   'dgrogan@chromium.org', 'jsbell@chromium.org'],
     'installer': ['grt+watch@chromium.org'],
     'instant': ['dcblack@chromium.org', 'jered@chromium.org',
                 'dominich@chromium.org', 'samarth+watch@chromium.org',
