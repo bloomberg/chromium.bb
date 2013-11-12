@@ -243,18 +243,8 @@ void InspectorConsoleAgent::consoleCount(ScriptState* state, PassRefPtr<ScriptAr
     String identifier = title.isEmpty() ? String(lastCaller.sourceURL() + ':' + String::number(lastCaller.lineNumber()))
                                         : String(title + '@');
 
-    HashMap<String, unsigned>::iterator it = m_counts.find(identifier);
-    int count;
-    if (it == m_counts.end())
-        count = 1;
-    else {
-        count = it->value + 1;
-        m_counts.remove(it);
-    }
-
-    m_counts.add(identifier, count);
-
-    String message = title + ": " + String::number(count);
+    HashCountedSet<String>::AddResult result = m_counts.add(identifier);
+    String message = title + ": " + String::number(result.iterator->value);
     addMessageToConsole(ConsoleAPIMessageSource, LogMessageType, DebugMessageLevel, message, callStack);
 }
 

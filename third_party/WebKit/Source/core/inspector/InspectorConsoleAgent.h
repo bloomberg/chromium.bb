@@ -32,6 +32,7 @@
 #include "core/inspector/InspectorBaseAgent.h"
 #include "core/frame/ConsoleTypes.h"
 #include "wtf/Forward.h"
+#include "wtf/HashCountedSet.h"
 #include "wtf/HashMap.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/Vector.h"
@@ -111,7 +112,7 @@ protected:
     ConsoleMessage* m_previousMessage;
     Vector<OwnPtr<ConsoleMessage> > m_consoleMessages;
     int m_expiredConsoleMessageCount;
-    HashMap<String, unsigned> m_counts;
+    HashCountedSet<String> m_counts;
     HashMap<String, double> m_times;
     bool m_enabled;
 private:
