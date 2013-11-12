@@ -85,6 +85,7 @@
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/ime/extension_ime_util.h"
@@ -1115,6 +1116,13 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
   // Overridden from InputMethodManager::Observer.
   virtual void InputMethodChanged(
       input_method::InputMethodManager* manager, bool show_message) OVERRIDE {
+    // |show_message| in ash means the message_center notifications which should
+    // not be shown when kEnableIMEModeIndicator is on, since the mode indicator
+    // already notifies the user.
+    if (CommandLine::ForCurrentProcess()->HasSwitch(
+            switches::kEnableIMEModeIndicator)) {
+      show_message = false;
+    }
     GetSystemTrayNotifier()->NotifyRefreshIME(show_message);
   }
 
