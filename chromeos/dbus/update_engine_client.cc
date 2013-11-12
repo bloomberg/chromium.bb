@@ -252,7 +252,8 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
 
   // Called when GetStatus call failed.
   void OnGetStatusError(dbus::ErrorResponse* error) {
-    LOG(ERROR) << "GetStatus request failed with error: " << error->ToString();
+    LOG(ERROR) << "GetStatus request failed with error: "
+               << (error ? error->ToString() : "");
   }
 
   // Called when a response for SetReleaseChannel() is received.
