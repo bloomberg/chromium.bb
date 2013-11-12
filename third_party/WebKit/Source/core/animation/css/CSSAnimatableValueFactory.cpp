@@ -236,6 +236,13 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::createFromColor(CSSProper
     return AnimatableColor::create(resolvedColor, resolvedVisitedLinkColor);
 }
 
+inline static PassRefPtr<AnimatableValue> createFromShapeValue(ShapeValue* value)
+{
+    if (value)
+        return AnimatableShapeValue::create(value);
+    return AnimatableUnknown::create(CSSValueAuto);
+}
+
 // FIXME: Generate this function.
 PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID property, const RenderStyle& style)
 {
@@ -433,9 +440,9 @@ PassRefPtr<AnimatableValue> CSSAnimatableValueFactory::create(CSSPropertyID prop
     case CSSPropertyWebkitPerspectiveOriginY:
         return createFromLength(style.perspectiveOriginY(), style);
     case CSSPropertyShapeInside:
-        return AnimatableShapeValue::create(style.shapeInside());
+        return createFromShapeValue(style.shapeInside());
     case CSSPropertyShapeOutside:
-        return AnimatableShapeValue::create(style.shapeOutside());
+        return createFromShapeValue(style.shapeOutside());
     case CSSPropertyShapeMargin:
         return createFromLength(style.shapeMargin(), style);
     case CSSPropertyWebkitTextStrokeColor:

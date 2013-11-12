@@ -52,6 +52,7 @@ private:
     AnimatableShapeValue(ShapeValue* shape)
         : m_shape(shape)
     {
+        ASSERT(m_shape);
     }
     virtual AnimatableType type() const OVERRIDE { return TypeShapeValue; }
     virtual bool equalTo(const AnimatableValue*) const OVERRIDE;

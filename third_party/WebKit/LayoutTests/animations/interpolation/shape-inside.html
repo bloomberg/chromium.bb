@@ -41,5 +41,18 @@ assertInterpolation({
   {at: 1, is: 'rectangle(25px, 25px, 50px, 50px)'},
   {at: 1.5, is: 'rectangle(37.5px, 37.5px, 25px, 25px)'}
 ]);
+
+assertInterpolation({
+  property: 'shape-inside',
+  from: 'auto',
+  to: 'ellipse(0%, 0%, 100%, 100%)',
+}, [
+  {at: -0.3, is: 'auto'},
+  {at: 0, is: 'auto'},
+  {at: 0.3, is: 'auto'},
+  {at: 0.6, is: 'ellipse(0%, 0%, 100%, 100%)'},
+  {at: 1, is: 'ellipse(0%, 0%, 100%, 100%)'},
+  {at: 1.5, is: 'ellipse(0%, 0%, 100%, 100%)'}
+]);
 </script>
 </body>

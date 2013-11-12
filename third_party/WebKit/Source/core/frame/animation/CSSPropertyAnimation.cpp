@@ -131,7 +131,7 @@ static inline PassRefPtr<ClipPathOperation> blendFunc(const AnimationBase*, Clip
 static inline PassRefPtr<ShapeValue> blendFunc(const AnimationBase*, ShapeValue* from, ShapeValue* to, double progress)
 {
     // FIXME Bug 102723: Shape-inside should be able to animate a value of 'outside-shape' when shape-outside is set to a BasicShape
-    if (from->type() != ShapeValue::Shape || to->type() != ShapeValue::Shape)
+    if (!from || !to || from->type() != ShapeValue::Shape || to->type() != ShapeValue::Shape)
         return to;
 
     const BasicShape* fromShape = from->shape();

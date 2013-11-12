@@ -67,5 +67,18 @@ assertInterpolation({
   {at: 1, is: 'polygon(nonzero, 25px 25px, 50px 50px, 75px 75px)'},
   {at: 1.5, is: 'polygon(nonzero, 37.5px 37.5px, 62.5px 62.5px, 87.5px 87.5px)'}
 ]);
+
+assertInterpolation({
+  property: 'shape-outside',
+  from: 'auto',
+  to: 'ellipse(0%, 0%, 100%, 100%)',
+}, [
+  {at: -0.3, is: 'auto'},
+  {at: 0, is: 'auto'},
+  {at: 0.3, is: 'auto'},
+  {at: 0.6, is: 'ellipse(0%, 0%, 100%, 100%)'},
+  {at: 1, is: 'ellipse(0%, 0%, 100%, 100%)'},
+  {at: 1.5, is: 'ellipse(0%, 0%, 100%, 100%)'}
+]);
 </script>
 </body>
