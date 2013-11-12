@@ -114,8 +114,8 @@ public:
     void destroyedMessagePort(MessagePort*);
     const HashSet<MessagePort*>& messagePorts() const { return m_messagePorts; }
 
-    void ref() { m_client->refExecutionContext(); }
-    void deref() { m_client->derefExecutionContext(); }
+    void ref() { refExecutionContext(); }
+    void deref() { derefExecutionContext(); }
 
     // Gets the next id in a circular sequence from 1 to 2^31-1.
     int circularSequentialID();
@@ -141,6 +141,8 @@ private:
 
     void closeMessagePorts();
 
+    virtual void refExecutionContext() = 0;
+    virtual void derefExecutionContext() = 0;
     // LifecycleContext implementation.
 
     // Implementation details for DOMTimer. No other classes should call these functions.

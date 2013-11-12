@@ -66,8 +66,6 @@ public:
     virtual void logExceptionToConsole(const String& errorMessage, const String& sourceURL, int lineNumber, int columnNumber, PassRefPtr<ScriptCallStack>) = 0;
     virtual double timerAlignmentInterval() const = 0;
     virtual void didUpdateSecurityOrigin() = 0;
-    virtual void refExecutionContext() = 0;
-    virtual void derefExecutionContext() = 0;
 
     virtual void tasksWereSuspended() { }
     virtual void tasksWereResumed() { }
