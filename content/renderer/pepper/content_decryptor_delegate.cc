@@ -44,7 +44,7 @@ namespace {
 bool MakeBufferResource(PP_Instance instance,
                         const uint8* data, uint32_t size,
                         scoped_refptr<PPB_Buffer_Impl>* resource) {
-  TRACE_EVENT0("eme", "ContentDecryptorDelegate - MakeBufferResource");
+  TRACE_EVENT0("media", "ContentDecryptorDelegate - MakeBufferResource");
   DCHECK(resource);
 
   if (!data || !size) {
@@ -570,7 +570,7 @@ bool ContentDecryptorDelegate::DecryptAndDecodeVideo(
   const uint32_t request_id = next_decryption_request_id_++;
   DVLOG(2) << "DecryptAndDecodeVideo() - request_id " << request_id;
   TRACE_EVENT_ASYNC_BEGIN0(
-      "eme", "ContentDecryptorDelegate::DecryptAndDecodeVideo", request_id);
+      "media", "ContentDecryptorDelegate::DecryptAndDecodeVideo", request_id);
 
   PP_EncryptedBlockInfo block_info = {};
   if (!MakeEncryptedBlockInfo(encrypted_buffer, request_id, &block_info)) {
@@ -816,7 +816,7 @@ void ContentDecryptorDelegate::DeliverFrame(
   }
 
   TRACE_EVENT_ASYNC_END0(
-      "eme", "ContentDecryptorDelegate::DecryptAndDecodeVideo", request_id);
+      "media", "ContentDecryptorDelegate::DecryptAndDecodeVideo", request_id);
 
   DCHECK(!pending_video_decode_cb_.is_null());
   pending_video_decode_request_id_ = 0;
@@ -946,7 +946,7 @@ bool ContentDecryptorDelegate::MakeMediaBufferResource(
     media::Decryptor::StreamType stream_type,
     const scoped_refptr<media::DecoderBuffer>& encrypted_buffer,
     scoped_refptr<PPB_Buffer_Impl>* resource) {
-  TRACE_EVENT0("eme", "ContentDecryptorDelegate::MakeMediaBufferResource");
+  TRACE_EVENT0("media", "ContentDecryptorDelegate::MakeMediaBufferResource");
 
   // End of stream buffers are represented as null resources.
   if (encrypted_buffer->end_of_stream()) {

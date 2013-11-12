@@ -396,7 +396,7 @@ cdm::Status ClearKeyCdm::DecryptAndDecodeFrame(
     const cdm::InputBuffer& encrypted_buffer,
     cdm::VideoFrame* decoded_frame) {
   DVLOG(1) << "DecryptAndDecodeFrame()";
-  TRACE_EVENT0("eme", "ClearKeyCdm::DecryptAndDecodeFrame");
+  TRACE_EVENT0("media", "ClearKeyCdm::DecryptAndDecodeFrame");
 
   scoped_refptr<media::DecoderBuffer> buffer;
   cdm::Status status = DecryptToMediaDecoderBuffer(encrypted_buffer, &buffer);

@@ -211,7 +211,7 @@ void DecryptingVideoDecoder::DecodePendingBuffer() {
   DCHECK(message_loop_->BelongsToCurrentThread());
   DCHECK_EQ(state_, kPendingDecode) << state_;
   TRACE_EVENT_ASYNC_BEGIN0(
-      "eme", "DecryptingVideoDecoder::DecodePendingBuffer", ++trace_id_);
+      "media", "DecryptingVideoDecoder::DecodePendingBuffer", ++trace_id_);
 
   int buffer_size = 0;
   if (!pending_buffer_to_decode_->end_of_stream()) {
@@ -230,7 +230,7 @@ void DecryptingVideoDecoder::DeliverFrame(
   DVLOG(3) << "DeliverFrame() - status: " << status;
   DCHECK(message_loop_->BelongsToCurrentThread());
   TRACE_EVENT_ASYNC_END0(
-      "eme", "DecryptingVideoDecoder::DecodePendingBuffer", trace_id_);
+      "media", "DecryptingVideoDecoder::DecodePendingBuffer", trace_id_);
 
   if (state_ == kStopped)
     return;

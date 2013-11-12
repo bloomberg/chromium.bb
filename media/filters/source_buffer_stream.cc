@@ -398,7 +398,7 @@ void SourceBufferStream::OnNewMediaSegment(
 
 bool SourceBufferStream::Append(
     const SourceBufferStream::BufferQueue& buffers) {
-  TRACE_EVENT2("mse", "SourceBufferStream::Append",
+  TRACE_EVENT2("media", "SourceBufferStream::Append",
                "stream type", GetStreamTypeName(),
                "buffers to append", buffers.size());
 
@@ -822,7 +822,7 @@ int SourceBufferStream::GetRemovalRange(
 
 int SourceBufferStream::FreeBuffers(int total_bytes_to_free,
                                     bool reverse_direction) {
-  TRACE_EVENT2("mse", "SourceBufferStream::FreeBuffers",
+  TRACE_EVENT2("media", "SourceBufferStream::FreeBuffers",
                "total bytes to free", total_bytes_to_free,
                "reverse direction", reverse_direction);
 
