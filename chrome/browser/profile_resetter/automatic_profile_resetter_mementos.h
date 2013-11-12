@@ -75,10 +75,12 @@ class FileHostedPromptMemento {
   ~FileHostedPromptMemento();
 
   // Posts to the FILE thread to read the value, then returns the value to the
-  // calling thread.
+  // calling thread. It is safe to destroy this object as soon as this method
+  // (synchronously) returns.
   void ReadValue(const ReadValueCallback& callback) const;
 
-  // Asynchronously stores the value on the FILE thread.
+  // Asynchronously stores the value on the FILE thread. However, it is safe to
+  // destroy this object as soon as this method (synchronously) returns.
   void StoreValue(const std::string& value);
 
  private:

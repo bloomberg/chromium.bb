@@ -17,6 +17,7 @@
 #include "base/task_runner_util.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/time/time.h"
+#include "base/timer/elapsed_timer.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profile_resetter/automatic_profile_resetter_delegate.h"
@@ -28,25 +29,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "grit/browser_resources.h"
 #include "ui/base/resource/resource_bundle.h"
-
-
-// AutomaticProfileResetter::EvaluationResults -------------------------------
-
-// Encapsulates the output values extracted from the evaluator program.
-struct AutomaticProfileResetter::EvaluationResults {
-  EvaluationResults()
-      : had_prompted_already(false),
-        satisfied_criteria_mask(0),
-        combined_status_mask(0) {}
-
-  std::string memento_value_in_prefs;
-  std::string memento_value_in_local_state;
-  std::string memento_value_in_file;
-
-  bool had_prompted_already;
-  uint32 satisfied_criteria_mask;
-  uint32 combined_status_mask;
-};
 
 
 // Helpers -------------------------------------------------------------------
@@ -156,17 +138,18 @@ bool GetProgramAndHashSeedOverridesFromExperiment(std::string* program,
   return false;
 }
 
-// Deep-copies all preferences in |source| to a sub-tree named |value_tree_key|
-// in |target_dictionary|, with path expansion, and also creates an isomorphic
-// sub-tree under the key |is_user_controlled_tree_key| that contains only
-// Boolean values, indicating whether or not the corresponding preferences are
-// coming from the 'user' PrefStore.
-void BuildSubTreesFromPreferences(const PrefService* source,
-                                  const char* value_tree_key,
-                                  const char* is_user_controlled_tree_key,
-                                  base::DictionaryValue* target_dictionary) {
-  scoped_ptr<base::DictionaryValue> pref_name_to_value_map(
-      source->GetPreferenceValuesWithoutPathExpansion());
+// Takes |pref_name_to_value_map|, which shall be a deep-copy of all preferences
+// in |source| without path expansion; and (1.) creates a sub-tree from it named
+// |value_tree_key| in |target_dictionary| with path expansion, and (2.) also
+// creates an isomorphic sub-tree under the key |is_user_controlled_tree_key|
+// that contains only Boolean values indicating whether or not the corresponding
+// preference is coming from the 'user' PrefStore.
+void BuildSubTreesFromPreferences(
+    scoped_ptr<base::DictionaryValue> pref_name_to_value_map,
+    const PrefService* source,
+    const char* value_tree_key,
+    const char* is_user_controlled_tree_key,
+    base::DictionaryValue* target_dictionary) {
   std::vector<std::string> pref_names;
   pref_names.reserve(pref_name_to_value_map->size());
   for (base::DictionaryValue::Iterator it(*pref_name_to_value_map);
@@ -193,6 +176,215 @@ void BuildSubTreesFromPreferences(const PrefService* source,
 }  // namespace
 
 
+// AutomaticProfileResetter::InputBuilder ------------------------------------
+
+// Collects all the information that is required by the evaluator program to
+// assess whether or not the conditions for showing the reset prompt are met.
+//
+// This necessitates a lot of work that has to be performed on the UI thread,
+// such as: accessing the Preferences, Local State, and TemplateURLService.
+// In order to keep the browser responsive, the UI thread shall not be blocked
+// for long consecutive periods of time. Unfortunately, we cannot reduce the
+// total amount of work. Instead, what this class does is to split the work into
+// shorter tasks that are posted one-at-a-time to the UI thread in a serial
+// fashion, so as to give a chance to run other tasks that have accumulated in
+// the meantime.
+class AutomaticProfileResetter::InputBuilder
+    : public base::SupportsWeakPtr<InputBuilder> {
+ public:
+  typedef base::Callback<void(scoped_ptr<base::DictionaryValue>)>
+      ProgramInputCallback;
+
+  // The dependencies must have been initialized through |delegate|, i.e. the
+  // RequestCallback[...] methods must have already fired before calling this.
+  InputBuilder(Profile* profile, AutomaticProfileResetterDelegate* delegate)
+      : profile_(profile),
+        delegate_(delegate),
+        memento_in_prefs_(profile_),
+        memento_in_local_state_(profile_),
+        memento_in_file_(profile_) {}
+  ~InputBuilder() {}
+
+  // Assembles the data required by the evaluator program into a dictionary
+  // format, and posts it back to the UI thread with |callback| once ready. In
+  // order not to block the UI thread for long consecutive periods of time, the
+  // work is divided into smaller tasks, see class comment above for details.
+  // It is safe to destroy |this| immediately from within the |callback|.
+  void BuildEvaluatorProgramInput(const ProgramInputCallback& callback) {
+    DCHECK(!data_);
+    DCHECK(!callback.is_null());
+    data_.reset(new base::DictionaryValue);
+    callback_ = callback;
+
+    AddAsyncTask(base::Bind(&InputBuilder::IncludeMementoValues, AsWeakPtr()));
+    AddTask(base::Bind(&InputBuilder::IncludeUserPreferences, AsWeakPtr()));
+    AddTask(base::Bind(&InputBuilder::IncludeLocalState, AsWeakPtr()));
+    AddTask(base::Bind(&InputBuilder::IncludeSearchEngines, AsWeakPtr()));
+    AddTask(base::Bind(&InputBuilder::IncludeLoadedModules, AsWeakPtr()));
+
+    // Each task will post the next one. Just trigger the chain reaction.
+    PostNextTask();
+  }
+
+ private:
+  // Asynchronous task that includes memento values (or empty strings in case
+  // mementos are not there).
+  void IncludeMementoValues() {
+    data_->SetString(kMementoValueInPrefsKey, memento_in_prefs_.ReadValue());
+    data_->SetString(kMementoValueInLocalStateKey,
+                     memento_in_local_state_.ReadValue());
+    memento_in_file_.ReadValue(base::Bind(
+        &InputBuilder::IncludeFileBasedMementoCallback, AsWeakPtr()));
+  }
+
+  // Called back by |memento_in_file_| once the |memento_value| has been read.
+  void IncludeFileBasedMementoCallback(const std::string& memento_value) {
+    DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+    data_->SetString(kMementoValueInFileKey, memento_value);
+    // As an asynchronous task, we need to take care of posting the next task.
+    PostNextTask();
+  }
+
+  // Task that includes all user (i.e. profile-specific) preferences, along with
+  // information about whether the value is coming from the 'user' PrefStore.
+  // This is the most expensive operation, so it is itself split into two parts.
+  void IncludeUserPreferences() {
+    PrefService* prefs = profile_->GetPrefs();
+    DCHECK(prefs);
+    scoped_ptr<base::DictionaryValue> pref_name_to_value_map(
+        prefs->GetPreferenceValuesWithoutPathExpansion());
+    AddTask(base::Bind(&InputBuilder::IncludeUserPreferencesPartTwo,
+                       AsWeakPtr(),
+                       base::Passed(&pref_name_to_value_map)));
+  }
+
+  // Second part to above.
+  void IncludeUserPreferencesPartTwo(
+      scoped_ptr<base::DictionaryValue> pref_name_to_value_map) {
+    PrefService* prefs = profile_->GetPrefs();
+    DCHECK(prefs);
+    BuildSubTreesFromPreferences(
+        pref_name_to_value_map.Pass(),
+        prefs,
+        kUserPreferencesKey,
+        kUserPreferencesIsUserControlledKey,
+        data_.get());
+  }
+
+  // Task that includes all local state (i.e. shared) preferences, along with
+  // information about whether the value is coming from the 'user' PrefStore.
+  void IncludeLocalState() {
+    PrefService* local_state = g_browser_process->local_state();
+    DCHECK(local_state);
+    scoped_ptr<base::DictionaryValue> pref_name_to_value_map(
+        local_state->GetPreferenceValuesWithoutPathExpansion());
+    BuildSubTreesFromPreferences(
+        pref_name_to_value_map.Pass(),
+        local_state,
+        kLocalStateKey,
+        kLocalStateIsUserControlledKey,
+        data_.get());
+  }
+
+  // Task that includes all information related to search engines.
+  void IncludeSearchEngines() {
+    scoped_ptr<base::DictionaryValue> default_search_provider_details(
+        delegate_->GetDefaultSearchProviderDetails());
+    data_->Set(kDefaultSearchProviderKey,
+               default_search_provider_details.release());
+
+    scoped_ptr<base::ListValue> search_providers_details(
+        delegate_->GetPrepopulatedSearchProvidersDetails());
+    data_->Set(kSearchProvidersKey, search_providers_details.release());
+
+    data_->SetBoolean(kDefaultSearchProviderIsUserControlledKey,
+                      !delegate_->IsDefaultSearchProviderManaged());
+  }
+
+  // Task that includes information about loaded modules.
+  void IncludeLoadedModules() {
+    scoped_ptr<base::ListValue> loaded_module_digests(
+        delegate_->GetLoadedModuleNameDigests());
+    data_->Set(kLoadedModuleDigestsKey, loaded_module_digests.release());
+  }
+
+  // -------------------------------------------------------------------------
+
+  // Adds a |task| that can do as much asynchronous processing as it wants, but
+  // will need to finally call PostNextTask() on the UI thread when done.
+  void AddAsyncTask(const base::Closure& task) {
+    task_queue_.push(task);
+  }
+
+  // Convenience wrapper for synchronous tasks.
+  void SynchronousTaskWrapper(const base::Closure& task) {
+    base::ElapsedTimer timer;
+    task.Run();
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        "AutomaticProfileReset.InputBuilder.TaskDuration",
+        timer.Elapsed(),
+        base::TimeDelta::FromMilliseconds(1),
+        base::TimeDelta::FromSeconds(2),
+        50);
+    PostNextTask();
+  }
+
+  // Adds a task that needs to finish synchronously. In exchange, PostNextTask()
+  // is called automatically when the |task| returns, and execution time is
+  // measured.
+  void AddTask(const base::Closure& task) {
+    task_queue_.push(
+        base::Bind(&InputBuilder::SynchronousTaskWrapper, AsWeakPtr(), task));
+  }
+
+  // Posts the next task from the |task_queue_|, unless it is exhausted, in
+  // which case it posts |callback_| to return with the results.
+  void PostNextTask() {
+    base::Closure next_task;
+    if (task_queue_.empty()) {
+      next_task = base::Bind(callback_, base::Passed(&data_));
+    } else {
+      next_task = task_queue_.front();
+      task_queue_.pop();
+    }
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE, next_task);
+  }
+
+  Profile* profile_;
+  AutomaticProfileResetterDelegate* delegate_;
+  ProgramInputCallback callback_;
+
+  PreferenceHostedPromptMemento memento_in_prefs_;
+  LocalStateHostedPromptMemento memento_in_local_state_;
+  FileHostedPromptMemento memento_in_file_;
+
+  scoped_ptr<base::DictionaryValue> data_;
+  std::queue<base::Closure> task_queue_;
+
+  DISALLOW_COPY_AND_ASSIGN(InputBuilder);
+};
+
+
+// AutomaticProfileResetter::EvaluationResults -------------------------------
+
+// Encapsulates the output values extracted from the evaluator program.
+struct AutomaticProfileResetter::EvaluationResults {
+  EvaluationResults()
+      : had_prompted_already(false),
+        satisfied_criteria_mask(0),
+        combined_status_mask(0) {}
+
+  std::string memento_value_in_prefs;
+  std::string memento_value_in_local_state;
+  std::string memento_value_in_file;
+
+  bool had_prompted_already;
+  uint32 satisfied_criteria_mask;
+  uint32 combined_status_mask;
+};
+
+
 // AutomaticProfileResetter --------------------------------------------------
 
 AutomaticProfileResetter::AutomaticProfileResetter(Profile* profile)
@@ -200,9 +392,6 @@ AutomaticProfileResetter::AutomaticProfileResetter(Profile* profile)
       state_(STATE_UNINITIALIZED),
       enumeration_of_loaded_modules_ready_(false),
       template_url_service_ready_(false),
-      memento_in_prefs_(profile_),
-      memento_in_local_state_(profile_),
-      memento_in_file_(profile_),
       weak_ptr_factory_(this) {
   DCHECK(profile_);
 }
@@ -326,72 +515,22 @@ void AutomaticProfileResetter::BeginEvaluationFlow() {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK_EQ(state_, STATE_READY);
   DCHECK(!program_.empty());
+  DCHECK(!input_builder_);
 
   state_ = STATE_WORKING;
-  memento_in_file_.ReadValue(
+
+  input_builder_.reset(new InputBuilder(profile_, delegate_.get()));
+  input_builder_->BuildEvaluatorProgramInput(
       base::Bind(&AutomaticProfileResetter::ContinueWithEvaluationFlow,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-scoped_ptr<base::DictionaryValue>
-    AutomaticProfileResetter::BuildEvaluatorProgramInput(
-    const std::string& memento_value_in_file) {
-  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
-
-  scoped_ptr<base::DictionaryValue> input(new base::DictionaryValue);
-
-  // Include memento values (or empty strings in case mementos are not there).
-  input->SetString(kMementoValueInPrefsKey, memento_in_prefs_.ReadValue());
-  input->SetString(kMementoValueInLocalStateKey,
-                   memento_in_local_state_.ReadValue());
-  input->SetString(kMementoValueInFileKey, memento_value_in_file);
-
-  // Include all user (i.e. profile-specific) preferences, along with
-  // information about whether the value is coming from the 'user' PrefStore.
-  PrefService* prefs = profile_->GetPrefs();
-  DCHECK(prefs);
-  BuildSubTreesFromPreferences(prefs,
-                               kUserPreferencesKey,
-                               kUserPreferencesIsUserControlledKey,
-                               input.get());
-
-  // Include all local state (i.e. shared) preferences, along with information
-  // about whether the value is coming from the 'user' PrefStore.
-  PrefService* local_state = g_browser_process->local_state();
-  DCHECK(local_state);
-  BuildSubTreesFromPreferences(
-      local_state, kLocalStateKey, kLocalStateIsUserControlledKey, input.get());
-
-  // Include all information related to search engines.
-  scoped_ptr<base::DictionaryValue> default_search_provider_details(
-      delegate_->GetDefaultSearchProviderDetails());
-  input->Set(kDefaultSearchProviderKey,
-             default_search_provider_details.release());
-
-  scoped_ptr<base::ListValue> search_providers_details(
-      delegate_->GetPrepopulatedSearchProvidersDetails());
-  input->Set(kSearchProvidersKey, search_providers_details.release());
-
-  input->SetBoolean(kDefaultSearchProviderIsUserControlledKey,
-                    !delegate_->IsDefaultSearchProviderManaged());
-
-  // Include information about loaded modules.
-  scoped_ptr<base::ListValue> loaded_module_digests(
-      delegate_->GetLoadedModuleNameDigests());
-  input->Set(kLoadedModuleDigestsKey, loaded_module_digests.release());
-
-  return input.Pass();
-}
-
 void AutomaticProfileResetter::ContinueWithEvaluationFlow(
-    const std::string& memento_value_in_file) {
+    scoped_ptr<base::DictionaryValue> program_input) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
   DCHECK_EQ(state_, STATE_WORKING);
-  PrefService* prefs = profile_->GetPrefs();
-  DCHECK(prefs);
 
-  scoped_ptr<base::DictionaryValue> input(
-      BuildEvaluatorProgramInput(memento_value_in_file));
+  input_builder_.reset();
 
   base::SequencedWorkerPool* blocking_pool =
       content::BrowserThread::GetBlockingPool();
@@ -405,7 +544,7 @@ void AutomaticProfileResetter::ContinueWithEvaluationFlow(
       base::Bind(&EvaluateConditionsOnWorkerPoolThread,
                  hash_seed_,
                  program_,
-                 base::Passed(&input)),
+                 base::Passed(&program_input)),
       base::Bind(&AutomaticProfileResetter::FinishEvaluationFlow,
                  weak_ptr_factory_.GetWeakPtr()));
 }
@@ -456,9 +595,13 @@ void AutomaticProfileResetter::FinishEvaluationFlow(
                    results->combined_status_mask);
 
   if (results->satisfied_criteria_mask != 0 && !results->had_prompted_already) {
-    memento_in_prefs_.StoreValue(results->memento_value_in_prefs);
-    memento_in_local_state_.StoreValue(results->memento_value_in_local_state);
-    memento_in_file_.StoreValue(results->memento_value_in_file);
+    PreferenceHostedPromptMemento memento_in_prefs(profile_);
+    LocalStateHostedPromptMemento memento_in_local_state(profile_);
+    FileHostedPromptMemento memento_in_file(profile_);
+
+    memento_in_prefs.StoreValue(results->memento_value_in_prefs);
+    memento_in_local_state.StoreValue(results->memento_value_in_local_state);
+    memento_in_file.StoreValue(results->memento_value_in_file);
 
     if (ShouldPerformLiveRun()) {
       delegate_->ShowPrompt();

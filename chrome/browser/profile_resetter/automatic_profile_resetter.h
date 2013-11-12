@@ -66,6 +66,7 @@ class AutomaticProfileResetter : public BrowserContextKeyedService {
       const scoped_refptr<base::TaskRunner>& task_runner);
 
  private:
+  class InputBuilder;
   struct EvaluationResults;
 
   enum State {
@@ -94,19 +95,14 @@ class AutomaticProfileResetter : public BrowserContextKeyedService {
 
   // Begins the asynchronous evaluation flow, which will assess whether the
   // criteria for showing the reset prompt are met, whether we have already
-  // shown the prompt, and, in the end, will potentially trigger the prompt.
+  // shown the prompt; and, in the end, will potentially trigger the prompt.
   void BeginEvaluationFlow();
 
-  // Prepares the input of the evaluator program. This will contain all the
-  // state information required to assess whether or not the conditions for
-  // showing the reset prompt are met.
-  scoped_ptr<base::DictionaryValue> BuildEvaluatorProgramInput(
-      const std::string& memento_value_in_file);
-
-  // Called back by |memento_in_file_| once it has finished reading the value of
-  // the file-based memento. Continues the evaluation flow with collecting state
-  // information and assembling it as the input for the evaluator program.
-  void ContinueWithEvaluationFlow(const std::string& memento_value_in_file);
+  // Called by InputBuilder once it has finished assembling the |program_input|,
+  // and will continue with the evaluation flow by triggering the evaluator
+  // program on the worker thread.
+  void ContinueWithEvaluationFlow(
+      scoped_ptr<base::DictionaryValue> program_input);
 
   // Performs the bulk of the work. Invokes the JTL interpreter to run the
   // |program| that will evaluate whether the conditions are met for showing the
@@ -119,7 +115,7 @@ class AutomaticProfileResetter : public BrowserContextKeyedService {
       const std::string& program,
       scoped_ptr<base::DictionaryValue> program_input);
 
-  // Called back when EvaluateConditionsOnWorkerPoolThread completes executing
+  // Called back when EvaluateConditionsOnWorkerPoolThread() completes executing
   // the program with |results|. Finishes the evaluation flow, and, based on the
   // result, will potentially show the reset prompt.
   void FinishEvaluationFlow(scoped_ptr<EvaluationResults> results);
@@ -138,12 +134,9 @@ class AutomaticProfileResetter : public BrowserContextKeyedService {
   bool enumeration_of_loaded_modules_ready_;
   bool template_url_service_ready_;
 
+  scoped_ptr<InputBuilder> input_builder_;
   std::string hash_seed_;
   std::string program_;
-
-  PreferenceHostedPromptMemento memento_in_prefs_;
-  LocalStateHostedPromptMemento memento_in_local_state_;
-  FileHostedPromptMemento memento_in_file_;
 
   scoped_ptr<AutomaticProfileResetterDelegate> delegate_;
   scoped_refptr<base::TaskRunner> task_runner_for_waiting_;
