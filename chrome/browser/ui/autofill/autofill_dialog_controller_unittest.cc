@@ -432,9 +432,6 @@ class AutofillDialogControllerTest : public ChromeRenderViewHostTestHarness {
   // data for it.
   void SetUpControllerWithFormData(const FormData& form_data) {
     ResetControllerWithFormData(form_data);
-    std::vector<std::string> usernames;
-    usernames.push_back(kFakeEmail);
-    controller_->OnUserNameFetchSuccess(usernames);
     EXPECT_CALL(*controller()->GetTestingWalletClient(), GetWalletItems());
     controller_->OnDidFetchWalletCookieValue(std::string());
     controller()->OnDidGetWalletItems(CompleteAndValidWalletItems());
@@ -2692,9 +2689,6 @@ TEST_F(AutofillDialogControllerTest, DontGetWalletTillNecessary) {
   controller()->SignInLinkClicked();
   EXPECT_NE(TestAutofillDialogController::NOT_CHECKED,
             controller()->SignedInState());
-  std::vector<std::string> usernames;
-  usernames.push_back(kFakeEmail);
-  controller()->OnUserNameFetchSuccess(usernames);
   controller()->OnDidFetchWalletCookieValue(std::string());
   controller()->OnDidGetWalletItems(CompleteAndValidWalletItems());
   controller()->OnPassiveSigninFailure(GoogleServiceAuthError(

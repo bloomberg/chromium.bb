@@ -50,6 +50,8 @@ scoped_ptr<Address> GetTestNonDefaultShippingAddress();
 scoped_ptr<WalletItems> GetTestWalletItemsWithRequiredAction(
     RequiredAction action);
 scoped_ptr<WalletItems> GetTestWalletItems(AmexPermission amex_permission);
+scoped_ptr<WalletItems> GetTestWalletItemsWithUsers(
+    const std::vector<std::string>& users);
 scoped_ptr<WalletItems> GetTestWalletItemsWithDefaultIds(
     const std::string& default_instrument_id,
     const std::string& default_address_id,

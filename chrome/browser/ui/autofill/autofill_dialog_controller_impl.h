@@ -210,13 +210,8 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   virtual void UpdateAccountChooserView() OVERRIDE;
 
   // wallet::WalletSigninHelperDelegate implementation.
-  virtual void OnPassiveSigninSuccess(const std::vector<std::string>& username)
-      OVERRIDE;
+  virtual void OnPassiveSigninSuccess() OVERRIDE;
   virtual void OnPassiveSigninFailure(
-      const GoogleServiceAuthError& error) OVERRIDE;
-  virtual void OnUserNameFetchSuccess(const std::vector<std::string>& username)
-      OVERRIDE;
-  virtual void OnUserNameFetchFailure(
       const GoogleServiceAuthError& error) OVERRIDE;
   virtual void OnDidFetchWalletCookieValue(
       const std::string& cookie_value) OVERRIDE;
@@ -570,8 +565,8 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   // Called when the delay for enabling the submit button ends.
   void OnSubmitButtonDelayEnd();
 
-  // Initiates a fetch of the user's current Wallet cookie and Google username.
-  void FetchWalletCookieAndUserName();
+  // Gets the user's current Wallet cookie (gdToken) from the cookie jar.
+  void FetchWalletCookie();
 
   // The |profile| for |contents_|.
   Profile* const profile_;
@@ -600,10 +595,6 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   // The sign-in helper to fetch the user's Wallet cookie and to perform passive
   // sign-in. The helper is set only during fetch/sign-in, and NULL otherwise.
   scoped_ptr<wallet::WalletSigninHelper> signin_helper_;
-
-  // The sign-in helper to fetch the user's human-readable username. The helper
-  // is set only while fetching the username, and NULL otherwise.
-  scoped_ptr<wallet::WalletSigninHelper> username_fetcher_;
 
   // A client to talk to the Online Wallet API.
   wallet::WalletClient wallet_client_;

@@ -660,7 +660,7 @@ void AutofillDialogControllerImpl::Show() {
     LogDialogLatencyToShow();
   } else {
     // TODO(aruslan): UMA metrics for sign-in.
-    FetchWalletCookieAndUserName();
+    FetchWalletCookie();
   }
 }
 
@@ -945,11 +945,6 @@ AutofillDialogControllerImpl::DialogSignedInState
   if (wallet_items_->HasRequiredAction(wallet::PASSIVE_GAIA_AUTH))
     return REQUIRES_PASSIVE_SIGN_IN;
 
-  // Since the username can be pre-fetched as a performance optimization, Wallet
-  // required actions take precedence over a pending username fetch.
-  if (username_fetcher_)
-    return REQUIRES_RESPONSE;
-
   return SIGNED_IN;
 }
 
@@ -959,15 +954,7 @@ void AutofillDialogControllerImpl::SignedInStateUpdated() {
 
   switch (SignedInState()) {
     case SIGNED_IN:
-      // Start fetching the user name if we don't know it yet.
-      if (!account_chooser_model_.HasAccountsToChoose()) {
-        DCHECK(!username_fetcher_);
-        username_fetcher_.reset(new wallet::WalletSigninHelper(
-            this, profile_->GetRequestContext()));
-        username_fetcher_->StartUserNameFetch();
-      } else {
-        LogDialogLatencyToShow();
-      }
+      LogDialogLatencyToShow();
       break;
 
     case REQUIRES_SIGN_IN:
@@ -977,16 +964,11 @@ void AutofillDialogControllerImpl::SignedInStateUpdated() {
     case SIGN_IN_DISABLED:
       // Switch to the local account and refresh the dialog.
       signin_helper_.reset();
-      username_fetcher_.reset();
       OnWalletSigninError();
       handling_use_wallet_link_click_ = false;
       break;
 
     case REQUIRES_PASSIVE_SIGN_IN:
-      // Cancel any pending username fetch and clear any stale username data.
-      username_fetcher_.reset();
-      account_chooser_model_.ClearWalletAccounts();
-
       // Attempt to passively sign in the user.
       DCHECK(!signin_helper_);
       signin_helper_.reset(new wallet::WalletSigninHelper(
@@ -2057,7 +2039,7 @@ void AutofillDialogControllerImpl::SignInLinkClicked() {
   if (SignedInState() == NOT_CHECKED) {
     handling_use_wallet_link_click_ = true;
     account_chooser_model_.SelectActiveWalletAccount();
-    FetchWalletCookieAndUserName();
+    FetchWalletCookie();
     view_->UpdateAccountChooser();
   } else if (signin_registrar_.IsEmpty()) {
     // Start sign in.
@@ -2236,7 +2218,7 @@ void AutofillDialogControllerImpl::Observe(
   if (IsSignInContinueUrl(load_details->entry->GetVirtualURL())) {
     // TODO(estade): will need to update this when we fix <crbug.com/247755>.
     account_chooser_model_.SelectActiveWalletAccount();
-    FetchWalletCookieAndUserName();
+    FetchWalletCookie();
 
     // NOTE: |HideSignIn()| may delete the WebContents which doesn't expect to
     // be deleted while committing a nav entry. Just call |HideSignIn()| later.
@@ -2360,28 +2342,8 @@ void AutofillDialogControllerImpl::OnDidGetFullWallet(
   view_->UpdateOverlay();
 }
 
-void AutofillDialogControllerImpl::OnPassiveSigninSuccess(
-    const std::vector<std::string>& usernames) {
-  // TODO(estade): for now, we still only support single user login.
-  std::vector<std::string> username;
-  if (!usernames.empty())
-    username.push_back(usernames[0]);
-  account_chooser_model_.SetWalletAccounts(username);
-  signin_helper_->StartWalletCookieValueFetch();
-}
-
-void AutofillDialogControllerImpl::OnUserNameFetchSuccess(
-    const std::vector<std::string>& usernames) {
-  ScopedViewUpdates updates(view_.get());
-
-  // TODO(estade): for now, we still only support single user login.
-  std::vector<std::string> username;
-  if (!usernames.empty())
-    username.push_back(usernames[0]);
-
-  account_chooser_model_.SetWalletAccounts(username);
-  username_fetcher_.reset();
-  OnWalletOrSigninUpdate();
+void AutofillDialogControllerImpl::OnPassiveSigninSuccess() {
+  FetchWalletCookie();
 }
 
 void AutofillDialogControllerImpl::OnPassiveSigninFailure(
@@ -2390,19 +2352,6 @@ void AutofillDialogControllerImpl::OnPassiveSigninFailure(
   LOG(ERROR) << "failed to passively sign in: " << error.ToString();
   signin_helper_.reset();
   OnWalletSigninError();
-}
-
-void AutofillDialogControllerImpl::OnUserNameFetchFailure(
-    const GoogleServiceAuthError& error) {
-  // TODO(aruslan): report an error.
-  LOG(ERROR) << "failed to fetch the user account name: " << error.ToString();
-  username_fetcher_.reset();
-  // Only treat the failed fetch as an error if the user is known to already be
-  // signed in. Attempting to fetch the username prior to loading the
-  // |wallet_items_| is purely a performance optimization that shouldn't be
-  // treated as an error if it fails.
-  if (wallet_items_)
-    OnWalletSigninError();
 }
 
 void AutofillDialogControllerImpl::OnDidFetchWalletCookieValue(
@@ -2419,6 +2368,13 @@ void AutofillDialogControllerImpl::OnDidGetWalletItems(
   has_accepted_legal_documents_ = false;
 
   wallet_items_ = wallet_items.Pass();
+
+  // TODO(estade): support multiple users. http://crbug.com/247755
+  std::vector<std::string> username;
+  if (wallet_items_ && !wallet_items_->gaia_accounts().empty())
+    username.push_back(wallet_items_->gaia_accounts()[0]);
+  account_chooser_model_.SetWalletAccounts(username);
+
   ConstructLegalDocumentsText();
   OnWalletOrSigninUpdate();
 }
@@ -2684,7 +2640,6 @@ void AutofillDialogControllerImpl::OnWalletSigninError() {
 void AutofillDialogControllerImpl::DisableWallet(
     wallet::WalletClient::ErrorType error_type) {
   signin_helper_.reset();
-  username_fetcher_.reset();
   wallet_items_.reset();
   wallet_errors_.clear();
   GetWalletClient()->CancelRequests();
@@ -3579,14 +3534,10 @@ void AutofillDialogControllerImpl::OnSubmitButtonDelayEnd() {
   view_->UpdateButtonStrip();
 }
 
-void AutofillDialogControllerImpl::FetchWalletCookieAndUserName() {
+void AutofillDialogControllerImpl::FetchWalletCookie() {
   net::URLRequestContextGetter* request_context = profile_->GetRequestContext();
   signin_helper_.reset(new wallet::WalletSigninHelper(this, request_context));
   signin_helper_->StartWalletCookieValueFetch();
-
-  username_fetcher_.reset(
-      new wallet::WalletSigninHelper(this, request_context));
-  username_fetcher_->StartUserNameFetch();
 }
 
 }  // namespace autofill

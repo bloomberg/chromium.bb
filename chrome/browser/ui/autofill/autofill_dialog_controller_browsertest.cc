@@ -845,9 +845,6 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, MAYBE_PreservedSections) {
   EXPECT_FALSE(controller()->IsManuallyEditingSection(SECTION_SHIPPING));
 
   // Set up some Wallet state.
-  std::vector<std::string> usernames;
-  usernames.push_back("user@example.com");
-  controller()->OnUserNameFetchSuccess(usernames);
   controller()->OnDidFetchWalletCookieValue(std::string());
   controller()->OnDidGetWalletItems(
       wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED));
@@ -911,8 +908,6 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, MAYBE_PreservedSections) {
 
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
                        GeneratedCardLastFourAfterVerifyCvv) {
-  std::vector<std::string> usernames(1, "user@example.com");
-  controller()->OnUserNameFetchSuccess(usernames);
   controller()->OnDidFetchWalletCookieValue(std::string());
 
   scoped_ptr<wallet::WalletItems> wallet_items =
@@ -972,8 +967,6 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, SimulateSuccessfulSignIn) {
   InitializeController();
 
   controller()->OnDidFetchWalletCookieValue(std::string());
-  controller()->OnUserNameFetchFailure(GoogleServiceAuthError(
-      GoogleServiceAuthError::USER_NOT_SIGNED_UP));
   controller()->OnDidGetWalletItems(
       wallet::GetTestWalletItemsWithRequiredAction(wallet::GAIA_AUTH));
 
@@ -1015,8 +1008,6 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, SimulateSuccessfulSignIn) {
 
   controller()->OnDidGetWalletItems(
       wallet::GetTestWalletItems(wallet::AMEX_DISALLOWED));
-  std::vector<std::string> usernames(1, "user@example.com");
-  controller()->OnUserNameFetchSuccess(usernames);
 
   // Wallet should now be selected and Chrome shouldn't have crashed (which can
   // happen if the WebContents is deleted while proccessing a nav entry commit).

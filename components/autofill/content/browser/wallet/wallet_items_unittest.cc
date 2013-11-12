@@ -346,7 +346,32 @@ const char kWalletItems[] =
     "  ],"
     "  \"default_address_id\":\"default_address_id\","
     "  \"obfuscated_gaia_id\":\"obfuscated_gaia_id\","
-    "  \"amex_disallowed\":true";
+    "  \"amex_disallowed\":true,"
+    "  \"gaia_profile\":"
+    "  ["
+    "    {"
+    "      \"buyer_email\":\"user@chromium.org\","
+    "      \"gaia_index\":0,"
+    "      \"gaia_id\":\"123456789\","
+    "      \"buyer_name\":\"Joe Usecase\","
+    "      \"is_active\":true,"
+    "      \"avatar_url_27x27\":\"https://lh3.googleusercontent.com/27.jpg\","
+    "      \"avatar_url_54x54\":\"https://lh3.googleusercontent.com/54.jpg\","
+    "      \"avatar_url_48x48\":\"https://lh3.googleusercontent.com/48.jpg\","
+    "      \"avatar_url_96x96\":\"https://lh3.googleusercontent.com/96.jpg\""
+    "    },"
+    "    {"
+    "      \"buyer_email\":\"user2@chromium.org\","
+    "      \"gaia_index\":1,"
+    "      \"gaia_id\":\"123456789\","
+    "      \"buyer_name\":\"Jill Usecase\","
+    "      \"is_active\":false,"
+    "      \"avatar_url_27x27\":\"https://lh3.googleusercontent.com/27.jpg\","
+    "      \"avatar_url_54x54\":\"https://lh3.googleusercontent.com/54.jpg\","
+    "      \"avatar_url_48x48\":\"https://lh3.googleusercontent.com/48.jpg\","
+    "      \"avatar_url_96x96\":\"https://lh3.googleusercontent.com/96.jpg\""
+    "    }"
+    "  ]";
 
 const char kRequiredLegalDocument[] =
     "  ,"
@@ -488,7 +513,8 @@ TEST_F(WalletItemsTest, CreateWalletItemsWithRequiredActions) {
                        std::string(),
                        std::string(),
                        std::string(),
-                       AMEX_DISALLOWED);
+                       AMEX_DISALLOWED,
+                       std::vector<std::string>());
   EXPECT_EQ(expected, *WalletItems::CreateWalletItems(*dict));
 
   ASSERT_FALSE(required_actions.empty());
@@ -498,7 +524,8 @@ TEST_F(WalletItemsTest, CreateWalletItemsWithRequiredActions) {
                                          std::string(),
                                          std::string(),
                                          std::string(),
-                                         AMEX_DISALLOWED);
+                                         AMEX_DISALLOWED,
+                                         std::vector<std::string>());
   EXPECT_NE(expected, different_required_actions);
 }
 
@@ -525,12 +552,16 @@ TEST_F(WalletItemsTest, CreateWalletItemsMissingAmexDisallowed) {
 TEST_F(WalletItemsTest, CreateWalletItems) {
   SetUpDictionary(std::string(kWalletItems) + std::string(kCloseJson));
   std::vector<RequiredAction> required_actions;
+  std::vector<std::string> users;
+  users.push_back("user@chromium.org");
+  users.push_back("user2@chromium.org");
   WalletItems expected(required_actions,
                        "google_transaction_id",
                        "default_instrument_id",
                        "default_address_id",
                        "obfuscated_gaia_id",
-                       AMEX_DISALLOWED);
+                       AMEX_DISALLOWED,
+                       users);
 
   scoped_ptr<Address> billing_address(new Address("US",
                                                   ASCIIToUTF16("name"),

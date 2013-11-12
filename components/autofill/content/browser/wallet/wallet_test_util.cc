@@ -235,24 +235,30 @@ scoped_ptr<WalletItems> GetTestWalletItems(
     const std::vector<RequiredAction>& required_actions,
     const std::string& default_instrument_id,
     const std::string& default_address_id,
-    AmexPermission amex_permission) {
+    AmexPermission amex_permission,
+    const std::vector<std::string>& users) {
   return scoped_ptr<WalletItems>(
       new wallet::WalletItems(required_actions,
                               "google_transaction_id",
                               default_instrument_id,
                               default_address_id,
                               "obfuscated_gaia_id",
-                              amex_permission));
+                              amex_permission,
+                              users));
 }
 
 scoped_ptr<WalletItems> GetTestWalletItemsWithRequiredAction(
     RequiredAction action) {
-  std::vector<RequiredAction> required_actions;
-  required_actions.push_back(action);
+  std::vector<RequiredAction> required_actions(1, action);
+  std::vector<std::string> users;
+  if (action != GAIA_AUTH)
+    users.push_back("user@example.com");
+
   return GetTestWalletItems(required_actions,
                             "default_instrument_id",
                             "default_address_id",
-                            AMEX_ALLOWED);
+                            AMEX_ALLOWED,
+                            users);
 }
 
 scoped_ptr<WalletItems> GetTestWalletItems(AmexPermission amex_permission) {
@@ -261,14 +267,26 @@ scoped_ptr<WalletItems> GetTestWalletItems(AmexPermission amex_permission) {
                                           amex_permission);
 }
 
+
+scoped_ptr<WalletItems> GetTestWalletItemsWithUsers(
+    std::vector<std::string>& users) {
+  return GetTestWalletItems(std::vector<RequiredAction>(),
+                            "default_instrument_id",
+                            "default_address_id",
+                            AMEX_ALLOWED,
+                            users);
+}
+
 scoped_ptr<WalletItems> GetTestWalletItemsWithDefaultIds(
     const std::string& default_instrument_id,
     const std::string& default_address_id,
     AmexPermission amex_permission) {
+  std::vector<std::string> users(1, "user@example.com");
   return GetTestWalletItems(std::vector<RequiredAction>(),
                             default_instrument_id,
                             default_address_id,
-                            amex_permission);
+                            amex_permission,
+                            users);
 }
 
 }  // namespace wallet

@@ -47,28 +47,8 @@ class WalletSigninHelper : public net::URLFetcherDelegate {
   // on the original thread.
   void StartPassiveSignin();
 
-  // Initiates a fetch of the user name of a signed-in user.
-  // Either OnUserNameFetchSuccess or OnUserNameFetchFailure will
-  // be called on the original thread.
-  void StartUserNameFetch();
-
   // Initiates the fetch of the user's Google Wallet cookie.
   void StartWalletCookieValueFetch();
-
- protected:
-  // Sign-in helper states (for tests).
-  enum State {
-    IDLE,
-    PASSIVE_EXECUTING_SIGNIN,
-    PASSIVE_FETCHING_USERINFO,
-    USERNAME_FETCHING_USERINFO,
-  };
-
-  // (For tests) Current state of the sign-in helper.
-  State state() const { return state_; }
-
-  // (For tests) URL used to fetch the currently signed-in user info.
-  std::string GetGetAccountInfoUrlForTesting() const;
 
  private:
   // Called if a service authentication error occurs.
@@ -79,24 +59,6 @@ class WalletSigninHelper : public net::URLFetcherDelegate {
 
   // URLFetcherDelegate implementation.
   virtual void OnURLFetchComplete(const net::URLFetcher* fetcher) OVERRIDE;
-
-  // Initiates fetching of the currently signed-in user information.
-  void StartFetchingUserNameFromSession();
-
-  // Processes the user information received from the server by url_fetcher_
-  // and calls the delegate callbacks on success/failure.
-  void ProcessGetAccountInfoResponseAndFinish();
-
-  // Attempts to parse a response from the Online Wallet sign-in.
-  // Returns true if the response is correct and the sign-in has succeeded.
-  // Otherwise, it calls OnServiceError() and returns false.
-  bool ParseSignInResponse();
-
-  // Attempts to parse the GetAccountInfo response from the server.
-  // Returns true on success; the obtained email addresses are stored into
-  // |emails|.
-  bool ParseGetAccountInfoResponse(const net::URLFetcher* fetcher,
-                                   std::vector<std::string>* emails);
 
   // Callback for when the Google Wallet cookie has been retrieved.
   void ReturnWalletCookieValue(const std::string& cookie_value);
@@ -109,12 +71,6 @@ class WalletSigninHelper : public net::URLFetcherDelegate {
 
   // While passive login/merge session URL fetches are going on:
   scoped_ptr<net::URLFetcher> url_fetcher_;
-
-  // User account names (emails) fetched from OnGetUserInfoSuccess().
-  std::vector<std::string> emails_;
-
-  // Current internal state of the helper.
-  State state_;
 
   base::WeakPtrFactory<WalletSigninHelper> weak_ptr_factory_;
 

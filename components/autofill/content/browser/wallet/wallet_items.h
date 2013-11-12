@@ -259,6 +259,9 @@ class WalletItems {
   const std::vector<Address*>& addresses() const { return addresses_.get(); }
   const std::string& default_address_id() const { return default_address_id_; }
   const std::string& obfuscated_gaia_id() const { return obfuscated_gaia_id_; }
+  const std::vector<std::string>& gaia_accounts() const {
+    return gaia_accounts_;
+  }
   const std::vector<LegalDocument*>& legal_documents() const {
     return legal_documents_.get();
   }
@@ -267,7 +270,10 @@ class WalletItems {
   friend class WalletItemsTest;
   friend scoped_ptr<WalletItems> GetTestWalletItems(
       const std::vector<RequiredAction>&,
-      const std::string&, const std::string&, AmexPermission);
+      const std::string&,
+      const std::string&,
+      AmexPermission,
+      const std::vector<std::string>&);
   friend scoped_ptr<WalletItems> GetTestWalletItemsWithDefaultIds(
       RequiredAction action);
   FRIEND_TEST_ALL_PREFIXES(WalletItemsTest, CreateWalletItems);
@@ -279,7 +285,8 @@ class WalletItems {
               const std::string& default_instrument_id,
               const std::string& default_address_id,
               const std::string& obfuscated_gaia_id,
-              AmexPermission amex_permission);
+              AmexPermission amex_permission,
+              const std::vector<std::string>& gaia_accounts);
 
   // Actions that must be completed by the user before a FullWallet can be
   // issued to them by the Online Wallet service.
@@ -308,6 +315,11 @@ class WalletItems {
 
   // Whether Google Wallet allows American Express card for this merchant.
   AmexPermission amex_permission_;
+
+  // The complete set of logged in GAIA accounts. This just stores email
+  // addresses. The actual response has more metadata which we currently
+  // ignore.
+  std::vector<std::string> gaia_accounts_;
 
   DISALLOW_COPY_AND_ASSIGN(WalletItems);
 };

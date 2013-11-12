@@ -30,11 +30,6 @@ namespace wallet {
 
 namespace {
 
-// Toolbar::GetAccountInfo API URL (JSON).
-const char kGetAccountInfoUrlFormat[] =
-    "https://clients1.google.com/tbproxy/getaccountinfo?key=%d&rv=2"
-    "&requestor=chrome";
-
 const char kWalletCookieName[] = "gdtoken";
 
 // Callback for retrieving Google Wallet cookies. |callback| is passed the
@@ -46,7 +41,7 @@ void GetGoogleCookiesCallback(
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
   // Cookies for parent domains will also be returned; we only want cookies with
-  // exact host matches.
+  // exact host matches. TODO(estade): really?
   std::string host = wallet::GetPassiveAuthUrl().host();
   std::string wallet_cookie;
   for (size_t i = 0; i < cookies.size(); ++i) {
@@ -97,7 +92,6 @@ WalletSigninHelper::WalletSigninHelper(
     net::URLRequestContextGetter* getter)
     : delegate_(delegate),
       getter_(getter),
-      state_(IDLE),
       weak_ptr_factory_(this) {
   DCHECK(delegate_);
 }
@@ -106,25 +100,13 @@ WalletSigninHelper::~WalletSigninHelper() {
 }
 
 void WalletSigninHelper::StartPassiveSignin() {
-  DCHECK_EQ(IDLE, state_);
   DCHECK(!url_fetcher_);
 
-  state_ = PASSIVE_EXECUTING_SIGNIN;
-  emails_.clear();
   const GURL& url = wallet::GetPassiveAuthUrl();
   url_fetcher_.reset(net::URLFetcher::Create(
       0, url, net::URLFetcher::GET, this));
   url_fetcher_->SetRequestContext(getter_);
   url_fetcher_->Start();
-}
-
-void WalletSigninHelper::StartUserNameFetch() {
-  DCHECK_EQ(state_, IDLE);
-  DCHECK(!url_fetcher_);
-
-  state_ = USERNAME_FETCHING_USERINFO;
-  emails_.clear();
-  StartFetchingUserNameFromSession();
 }
 
 void WalletSigninHelper::StartWalletCookieValueFetch() {
@@ -142,29 +124,8 @@ void WalletSigninHelper::StartWalletCookieValueFetch() {
   content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE, task);
 }
 
-std::string WalletSigninHelper::GetGetAccountInfoUrlForTesting() const {
-  return base::StringPrintf(kGetAccountInfoUrlFormat, 0);
-}
-
 void WalletSigninHelper::OnServiceError(const GoogleServiceAuthError& error) {
-  const State state_with_error = state_;
-  state_ = IDLE;
-  url_fetcher_.reset();
-
-  switch(state_with_error) {
-    case IDLE:
-      NOTREACHED();
-      break;
-
-    case PASSIVE_EXECUTING_SIGNIN:  /*FALLTHROUGH*/
-    case PASSIVE_FETCHING_USERINFO:
-      delegate_->OnPassiveSigninFailure(error);
-      break;
-
-    case USERNAME_FETCHING_USERINFO:
-      delegate_->OnUserNameFetchFailure(error);
-      break;
-  }
+  delegate_->OnPassiveSigninFailure(error);
 }
 
 void WalletSigninHelper::OnOtherError() {
@@ -174,141 +135,33 @@ void WalletSigninHelper::OnOtherError() {
 void WalletSigninHelper::OnURLFetchComplete(
     const net::URLFetcher* fetcher) {
   DCHECK_EQ(url_fetcher_.get(), fetcher);
+  scoped_ptr<net::URLFetcher> url_fetcher(url_fetcher_.release());
+
   if (!fetcher->GetStatus().is_success() ||
       fetcher->GetResponseCode() < 200 ||
       fetcher->GetResponseCode() >= 300) {
-    LOG(ERROR) << "URLFetchFailure: state=" << state_
-               << " r=" << fetcher->GetResponseCode()
-               << " s=" << fetcher->GetStatus().status()
-               << " e=" << fetcher->GetStatus().error();
+    DVLOG(1) << "URLFetchFailure:"
+             << " r=" << fetcher->GetResponseCode()
+             << " s=" << fetcher->GetStatus().status()
+             << " e=" << fetcher->GetStatus().error();
     OnOtherError();
     return;
-  }
-
-  switch (state_) {
-    case USERNAME_FETCHING_USERINFO:  /*FALLTHROUGH*/
-    case PASSIVE_FETCHING_USERINFO:
-      ProcessGetAccountInfoResponseAndFinish();
-      break;
-
-    case PASSIVE_EXECUTING_SIGNIN:
-      if (ParseSignInResponse()) {
-        url_fetcher_.reset();
-        state_ = PASSIVE_FETCHING_USERINFO;
-        StartFetchingUserNameFromSession();
-      }
-      break;
-
-    default:
-      NOTREACHED() << "unexpected state_=" << state_;
-  }
-}
-
-void WalletSigninHelper::StartFetchingUserNameFromSession() {
-  const int random_number = static_cast<int>(base::RandUint64() % INT_MAX);
-  url_fetcher_.reset(
-      net::URLFetcher::Create(
-          0,
-          GURL(base::StringPrintf(kGetAccountInfoUrlFormat, random_number)),
-          net::URLFetcher::GET,
-          this));
-  url_fetcher_->SetRequestContext(getter_);
-  url_fetcher_->Start();  // This will result in OnURLFetchComplete callback.
-}
-
-void WalletSigninHelper::ProcessGetAccountInfoResponseAndFinish() {
-  if (!ParseGetAccountInfoResponse(url_fetcher_.get(), &emails_)) {
-    LOG(ERROR) << "failed to get the user emails";
-    OnOtherError();
-    return;
-  }
-
-  const State finishing_state = state_;
-  state_ = IDLE;
-  url_fetcher_.reset();
-  switch(finishing_state) {
-    case USERNAME_FETCHING_USERINFO:
-      delegate_->OnUserNameFetchSuccess(emails_);
-      break;
-
-    case PASSIVE_FETCHING_USERINFO:
-      delegate_->OnPassiveSigninSuccess(emails_);
-      break;
-
-    default:
-      NOTREACHED() << "unexpected state_=" << finishing_state;
-  }
-}
-
-bool WalletSigninHelper::ParseSignInResponse() {
-  if (!url_fetcher_) {
-    NOTREACHED();
-    return false;
   }
 
   std::string data;
-  if (!url_fetcher_->GetResponseAsString(&data)) {
+  if (!fetcher->GetResponseAsString(&data)) {
     DVLOG(1) << "failed to GetResponseAsString";
     OnOtherError();
-    return false;
+    return;
   }
 
   if (!LowerCaseEqualsASCII(data, "yes")) {
     OnServiceError(
         GoogleServiceAuthError(GoogleServiceAuthError::USER_NOT_SIGNED_UP));
-    return false;
+    return;
   }
 
-  return true;
-}
-
-bool WalletSigninHelper::ParseGetAccountInfoResponse(
-    const net::URLFetcher* fetcher, std::vector<std::string>* emails) {
-  DCHECK(emails);
-
-  std::string data;
-  if (!fetcher->GetResponseAsString(&data)) {
-    DVLOG(1) << "failed to GetResponseAsString";
-    return false;
-  }
-
-  scoped_ptr<base::Value> value(base::JSONReader::Read(data));
-  if (!value.get() || value->GetType() != base::Value::TYPE_DICTIONARY) {
-    DVLOG(1) << "failed to parse JSON response";
-    return false;
-  }
-
-  DictionaryValue* dict = static_cast<base::DictionaryValue*>(value.get());
-  base::ListValue* user_info;
-  if (!dict->GetListWithoutPathExpansion("user_info", &user_info)) {
-    DVLOG(1) << "no user_info in JSON response";
-    return false;
-  }
-
-  if (user_info->empty()) {
-    DVLOG(1) << "empty list in JSON response";
-    return false;
-  }
-
-  // |user_info| will contain each signed in user in the cookie jar.
-  for (size_t i = 0; i < user_info->GetSize(); ++i) {
-    base::DictionaryValue* user_info_detail;
-    if (!user_info->GetDictionary(i, &user_info_detail)) {
-      DVLOG(1) << "malformed dictionary in JSON response";
-      return false;
-    }
-
-    std::string email;
-    if (!user_info_detail->GetStringWithoutPathExpansion("email", &email) ||
-        email.empty()) {
-      DVLOG(1) << "no email in JSON response";
-      return false;
-    }
-
-    emails->push_back(email);
-  }
-
-  return true;
+  delegate_->OnPassiveSigninSuccess();
 }
 
 void WalletSigninHelper::ReturnWalletCookieValue(

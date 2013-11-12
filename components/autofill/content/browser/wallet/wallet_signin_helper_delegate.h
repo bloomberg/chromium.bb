@@ -20,21 +20,10 @@ class WalletSigninHelperDelegate {
   virtual ~WalletSigninHelperDelegate() {}
 
   // Called on a successful passive sign-in.
-  // |usernames| contains the signed-in user account names (emails).
-  virtual void OnPassiveSigninSuccess(const std::vector<std::string>& usernames)
-      = 0;
+  virtual void OnPassiveSigninSuccess() = 0;
 
   // Called on a failed passive sign-in; |error| describes the error.
   virtual void OnPassiveSigninFailure(const GoogleServiceAuthError& error) = 0;
-
-  // Called on a successful fetch of the signed-in account name.
-  // |usernames| contains the signed-in user account names (emails).
-  virtual void OnUserNameFetchSuccess(const std::vector<std::string>& usernames)
-      = 0;
-
-  // Called on a failed fetch of the signed-in account name.
-  // |error| described the error.
-  virtual void OnUserNameFetchFailure(const GoogleServiceAuthError& error) = 0;
 
   // Called when the Google Wallet cookie value has been retrieved.
   virtual void OnDidFetchWalletCookieValue(const std::string& cookie_value) = 0;
