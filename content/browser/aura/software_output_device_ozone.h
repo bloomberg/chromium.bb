@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_AURA_SOFTWARE_OUTPUT_DEVICE_OZONE_H_
 
 #include "cc/output/software_output_device.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace ui {
 class Compositor;
@@ -27,6 +28,8 @@ class SoftwareOutputDeviceOzone : public cc::SoftwareOutputDevice {
 
  private:
   ui::Compositor* compositor_;
+
+  gfx::AcceleratedWidget realized_widget_;
 
   DISALLOW_COPY_AND_ASSIGN(SoftwareOutputDeviceOzone);
 };

@@ -8,14 +8,23 @@
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/ozone/surface_factory_ozone.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/gl/vsync_provider.h"
 
 namespace content {
 
-SoftwareOutputDeviceOzone::SoftwareOutputDeviceOzone(
-    ui::Compositor* compositor) : compositor_(compositor) {
-  if (gfx::SurfaceFactoryOzone::GetInstance()->InitializeHardware() !=
-      gfx::SurfaceFactoryOzone::INITIALIZED)
+SoftwareOutputDeviceOzone::SoftwareOutputDeviceOzone(ui::Compositor* compositor)
+    : compositor_(compositor), realized_widget_(gfx::kNullAcceleratedWidget) {
+  gfx::SurfaceFactoryOzone* factory = gfx::SurfaceFactoryOzone::GetInstance();
+
+  if (factory->InitializeHardware() != gfx::SurfaceFactoryOzone::INITIALIZED)
     LOG(FATAL) << "Failed to initialize hardware in OZONE";
+
+  realized_widget_ = factory->RealizeAcceleratedWidget(compositor_->widget());
+
+  if (realized_widget_ == gfx::kNullAcceleratedWidget)
+    LOG(FATAL) << "Failed to get a realized AcceleratedWidget";
+
+  vsync_provider_.reset(factory->GetVSyncProvider(realized_widget_));
 }
 
 SoftwareOutputDeviceOzone::~SoftwareOutputDeviceOzone() {
@@ -31,13 +40,8 @@ void SoftwareOutputDeviceOzone::Resize(gfx::Size viewport_size) {
   gfx::SurfaceFactoryOzone* factory = gfx::SurfaceFactoryOzone::GetInstance();
   factory->AttemptToResizeAcceleratedWidget(compositor_->widget(),
                                             bounds);
-  gfx::AcceleratedWidget realized_widget = factory->RealizeAcceleratedWidget(
-      compositor_->widget());
 
-  if (realized_widget == gfx::kNullAcceleratedWidget)
-    LOG(FATAL) << "Failed to get a realized AcceleratedWidget";
-
-  canvas_ = skia::SharePtr(factory->GetCanvasForWidget(realized_widget));
+  canvas_ = skia::SharePtr(factory->GetCanvasForWidget(realized_widget_));
   device_ = skia::SharePtr(canvas_->getDevice());
 }
 
