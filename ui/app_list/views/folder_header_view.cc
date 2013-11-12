@@ -21,7 +21,7 @@ namespace {
 
 const int kPreferredWidth = 360;
 const int kPreferredHeight = 48;
-const int kIconDimension = 32;
+const int kIconDimension = 24;
 const int kPadding = 14;
 const int kFolderNameWidth = 150;
 const int kFolderNameHeight = 30;
