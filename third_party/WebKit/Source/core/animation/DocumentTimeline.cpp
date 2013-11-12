@@ -102,9 +102,6 @@ bool DocumentTimeline::serviceAnimations()
             m_timing->wakeAfter(timeToNextEffect - s_minimumDelay);
     }
 
-    if (m_document->view() && !m_players.isEmpty())
-        m_document->view()->scheduleAnimation();
-
     return didTriggerStyleRecalc;
 }
 

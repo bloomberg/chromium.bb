@@ -11,7 +11,7 @@
     }
     
     .animated {
-      -webkit-transition: opacity 200ms;
+      -webkit-transition: opacity 2000s step-end;
     }
   </style>
   <script>
@@ -28,34 +28,24 @@
 
     function testTransitions()
     {
-      if (window.testRunner) {
-        var numAnims = internals.numberOfActiveAnimations();
-        if (numAnims == 0)
-          log('No running transitions: PASS');
+      var box = document.getElementById('box');
+      box.className = 'animated';
+      box.style.opacity = '0.5';
+      if (getComputedStyle(box).opacity == '0.5')
+        log("Transition didn't start: FAIL");
+      else {
+        box.className = '';
+        if (getComputedStyle(box).opacity == '0.5')
+            log('No running transitions: PASS');
         else
-          log('Still ' + numAnims + ' transitions running: FAIL')
-
+            log('Transition still running: FAIL')
+      }
+      if (window.testRunner) {
         testRunner.notifyDone();
       }
     }
     
-    function removeStyle()
-    {
-      box.className = '';
-      window.setTimeout(testTransitions, 50);
-    }
-
-    function startTransition()
-    {
-      var box = document.getElementById('box');
-      box.className = 'animated';
-      window.setTimeout(function() {
-        box.style.opacity = '0.5';
-        window.setTimeout(removeStyle, 200);
-      }, 0);
-    }
-    
-    window.addEventListener('load', startTransition, false);
+    window.addEventListener('load', testTransitions, false);
   </script>
 </head>
 <body>
