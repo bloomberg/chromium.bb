@@ -1399,6 +1399,11 @@ public class AwContents {
         msg.sendToTarget();
     }
 
+    @VisibleForTesting
+    public float getPageScaleFactor() {
+        return (float)mPageScaleFactor;
+    }
+
     /**
      * @see android.webkit.WebView#getScale()
      *

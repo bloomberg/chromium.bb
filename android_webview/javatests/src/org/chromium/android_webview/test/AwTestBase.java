@@ -363,7 +363,7 @@ public class AwTestBase
         return runTestOnUiThreadAndGetResult(new Callable<Float>() {
             @Override
             public Float call() throws Exception {
-                return awContents.getContentViewCore().getScale();
+                return awContents.getPageScaleFactor();
             }
         });
     }
