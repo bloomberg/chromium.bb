@@ -36,7 +36,13 @@ RendererAccessibilityComplete::RendererAccessibilityComplete(
       last_scroll_offset_(gfx::Size()),
       ack_pending_(false) {
   WebAXObject::enableAccessibility();
+
+#if !defined(OS_ANDROID)
+  // Skip inline text boxes on Android - since there are no native Android
+  // APIs that compute the bounds of a range of text, it's a waste to
+  // include these in the AX tree.
   WebAXObject::enableInlineTextBoxAccessibility();
+#endif
 
   const WebDocument& document = GetMainDocument();
   if (!document.isNull()) {
