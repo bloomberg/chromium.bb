@@ -77,7 +77,6 @@ void TabAutofillManagerDelegate::ShowAutofillSettings() {
 
 void TabAutofillManagerDelegate::ConfirmSaveCreditCard(
     const AutofillMetrics& metric_logger,
-    const CreditCard& credit_card,
     const base::Closure& save_card_callback) {
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents_);

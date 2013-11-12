@@ -83,7 +83,7 @@ class PersonalDataManager : public WebDataServiceConsumer,
   // can prompt the user whether to save this data.
   // Returns |true| if sufficient address or credit card data was found.
   bool ImportFormData(const FormStructure& form,
-                      const CreditCard** credit_card);
+                      scoped_ptr<CreditCard>* credit_card);
 
   // Saves |imported_profile| to the WebDB if it exists. Returns the guid of
   // the new or updated profile, or the empty string if no profile was saved.

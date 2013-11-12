@@ -228,9 +228,9 @@ void AutofillMergeTest::MergeProfiles(const std::string& profiles,
       }
 
       // Import the profile.
-      const CreditCard* imported_credit_card;
+      scoped_ptr<CreditCard> imported_credit_card;
       personal_data_.ImportFormData(form_structure, &imported_credit_card);
-      EXPECT_EQ(static_cast<const CreditCard*>(NULL), imported_credit_card);
+      EXPECT_EQ(static_cast<CreditCard*>(NULL), imported_credit_card.get());
 
       // Clear the |form| to start a new profile.
       form.fields.clear();

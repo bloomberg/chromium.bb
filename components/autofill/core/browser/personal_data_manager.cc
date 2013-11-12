@@ -244,7 +244,7 @@ void PersonalDataManager::RemoveObserver(
 
 bool PersonalDataManager::ImportFormData(
     const FormStructure& form,
-    const CreditCard** imported_credit_card) {
+    scoped_ptr<CreditCard>* imported_credit_card) {
   scoped_ptr<AutofillProfile> imported_profile(new AutofillProfile);
   scoped_ptr<CreditCard> local_imported_credit_card(new CreditCard);
 
@@ -374,7 +374,7 @@ bool PersonalDataManager::ImportFormData(
     // We always save imported profiles.
     SaveImportedProfile(*imported_profile);
   }
-  *imported_credit_card = local_imported_credit_card.release();
+  *imported_credit_card = local_imported_credit_card.Pass();
 
   if (imported_profile.get() || *imported_credit_card || merged_credit_card)
     return true;

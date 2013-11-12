@@ -173,7 +173,6 @@ void AwAutofillManagerDelegate::ShowAutofillSettings() {
 
 void AwAutofillManagerDelegate::ConfirmSaveCreditCard(
     const autofill::AutofillMetrics& metric_logger,
-    const autofill::CreditCard& credit_card,
     const base::Closure& save_card_callback) {
   NOTIMPLEMENTED();
 }

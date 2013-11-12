@@ -25,7 +25,6 @@ class TestAutofillManagerDelegate : public AutofillManagerDelegate {
   virtual void ShowAutofillSettings() OVERRIDE;
   virtual void ConfirmSaveCreditCard(
       const AutofillMetrics& metric_logger,
-      const CreditCard& credit_card,
       const base::Closure& save_card_callback) OVERRIDE;
   virtual void ShowRequestAutocompleteDialog(
       const FormData& form,

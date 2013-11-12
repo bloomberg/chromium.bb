@@ -23,7 +23,6 @@ void TestAutofillManagerDelegate::ShowAutofillSettings() {}
 
 void TestAutofillManagerDelegate::ConfirmSaveCreditCard(
     const AutofillMetrics& metric_logger,
-    const CreditCard& credit_card,
     const base::Closure& save_card_callback) {}
 
 void TestAutofillManagerDelegate::ShowRequestAutocompleteDialog(

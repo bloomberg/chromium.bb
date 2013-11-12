@@ -63,7 +63,6 @@ class AwAutofillManagerDelegate
   virtual void ShowAutofillSettings() OVERRIDE;
   virtual void ConfirmSaveCreditCard(
       const autofill::AutofillMetrics& metric_logger,
-      const autofill::CreditCard& credit_card,
       const base::Closure& save_card_callback) OVERRIDE;
   virtual void ShowRequestAutocompleteDialog(
       const autofill::FormData& form,

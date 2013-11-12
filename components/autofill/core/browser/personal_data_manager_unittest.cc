@@ -600,7 +600,7 @@ TEST_F(PersonalDataManagerTest, ImportFormData) {
   form.fields.push_back(field);
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
-  const CreditCard* imported_credit_card;
+  scoped_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure,
                                              &imported_credit_card));
   ASSERT_FALSE(imported_credit_card);
@@ -641,10 +641,10 @@ TEST_F(PersonalDataManagerTest, ImportFormDataBadEmail) {
   form.fields.push_back(field);
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
-  const CreditCard* imported_credit_card;
+  scoped_ptr<CreditCard> imported_credit_card;
   EXPECT_FALSE(personal_data_->ImportFormData(form_structure,
                                               &imported_credit_card));
-  ASSERT_EQ(static_cast<CreditCard*>(NULL), imported_credit_card);
+  ASSERT_EQ(static_cast<CreditCard*>(NULL), imported_credit_card.get());
 
   const std::vector<AutofillProfile*>& results = personal_data_->GetProfiles();
   ASSERT_EQ(0U, results.size());
@@ -674,7 +674,7 @@ TEST_F(PersonalDataManagerTest, ImportFormDataTwoEmails) {
   form.fields.push_back(field);
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
-  const CreditCard* imported_credit_card;
+  scoped_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure,
                                              &imported_credit_card));
   const std::vector<AutofillProfile*>& results = personal_data_->GetProfiles();
@@ -705,7 +705,7 @@ TEST_F(PersonalDataManagerTest, ImportFormDataTwoDifferentEmails) {
   form.fields.push_back(field);
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
-  const CreditCard* imported_credit_card;
+  scoped_ptr<CreditCard> imported_credit_card;
   EXPECT_FALSE(personal_data_->ImportFormData(form_structure,
                                               &imported_credit_card));
   const std::vector<AutofillProfile*>& results = personal_data_->GetProfiles();
@@ -726,7 +726,7 @@ TEST_F(PersonalDataManagerTest, ImportFormDataNotEnoughFilledFields) {
   form.fields.push_back(field);
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
-  const CreditCard* imported_credit_card;
+  scoped_ptr<CreditCard> imported_credit_card;
   EXPECT_FALSE(personal_data_->ImportFormData(form_structure,
                                               &imported_credit_card));
   ASSERT_FALSE(imported_credit_card);
@@ -757,7 +757,7 @@ TEST_F(PersonalDataManagerTest, ImportFormMinimumAddressUSA) {
   form.fields.push_back(field);
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
-  const CreditCard* imported_credit_card;
+  scoped_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure,
                                               &imported_credit_card));
   const std::vector<AutofillProfile*>& profiles = personal_data_->GetProfiles();
@@ -784,9 +784,9 @@ TEST_F(PersonalDataManagerTest, ImportFormMinimumAddressGB) {
   form.fields.push_back(field);
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
-  const CreditCard* imported_credit_card;
+  scoped_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure,
-                                              &imported_credit_card));
+                                             &imported_credit_card));
   const std::vector<AutofillProfile*>& profiles = personal_data_->GetProfiles();
   ASSERT_EQ(1U, profiles.size());
 }
@@ -806,9 +806,9 @@ TEST_F(PersonalDataManagerTest, ImportFormMinimumAddressGI) {
   form.fields.push_back(field);
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
-  const CreditCard* imported_credit_card;
+  scoped_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure,
-                                              &imported_credit_card));
+                                             &imported_credit_card));
   const std::vector<AutofillProfile*>& profiles = personal_data_->GetProfiles();
   ASSERT_EQ(1U, profiles.size());
 }
@@ -845,7 +845,7 @@ TEST_F(PersonalDataManagerTest, ImportPhoneNumberSplitAcrossMultipleFields) {
   form.fields.push_back(field);
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
-  const CreditCard* imported_credit_card;
+  scoped_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure,
                                              &imported_credit_card));
   ASSERT_FALSE(imported_credit_card);
@@ -925,7 +925,7 @@ TEST_F(PersonalDataManagerTest, AggregateTwoDifferentProfiles) {
 
   FormStructure form_structure1(form1);
   form_structure1.DetermineHeuristicTypes(TestAutofillMetrics());
-  const CreditCard* imported_credit_card;
+  scoped_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure1,
                                              &imported_credit_card));
   ASSERT_FALSE(imported_credit_card);
@@ -1010,7 +1010,7 @@ TEST_F(PersonalDataManagerTest, AggregateTwoProfilesWithMultiValue) {
 
   FormStructure form_structure1(form1);
   form_structure1.DetermineHeuristicTypes(TestAutofillMetrics());
-  const CreditCard* imported_credit_card;
+  scoped_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure1,
                                              &imported_credit_card));
   ASSERT_FALSE(imported_credit_card);
@@ -1103,7 +1103,7 @@ TEST_F(PersonalDataManagerTest, AggregateSameProfileWithConflict) {
 
   FormStructure form_structure1(form1);
   form_structure1.DetermineHeuristicTypes(TestAutofillMetrics());
-  const CreditCard* imported_credit_card;
+  scoped_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure1,
                                              &imported_credit_card));
   ASSERT_FALSE(imported_credit_card);
@@ -1196,7 +1196,7 @@ TEST_F(PersonalDataManagerTest, AggregateProfileWithMissingInfoInOld) {
 
   FormStructure form_structure1(form1);
   form_structure1.DetermineHeuristicTypes(TestAutofillMetrics());
-  const CreditCard* imported_credit_card;
+  scoped_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure1,
                                              &imported_credit_card));
   EXPECT_FALSE(imported_credit_card);
@@ -1283,7 +1283,7 @@ TEST_F(PersonalDataManagerTest, AggregateProfileWithMissingInfoInNew) {
 
   FormStructure form_structure1(form1);
   form_structure1.DetermineHeuristicTypes(TestAutofillMetrics());
-  const CreditCard* imported_credit_card;
+  scoped_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure1,
                                              &imported_credit_card));
   ASSERT_FALSE(imported_credit_card);
@@ -1364,7 +1364,7 @@ TEST_F(PersonalDataManagerTest, AggregateProfileWithInsufficientAddress) {
 
   FormStructure form_structure1(form1);
   form_structure1.DetermineHeuristicTypes(TestAutofillMetrics());
-  const CreditCard* imported_credit_card;
+  scoped_ptr<CreditCard> imported_credit_card;
   EXPECT_FALSE(personal_data_->ImportFormData(form_structure1,
                                               &imported_credit_card));
   ASSERT_FALSE(imported_credit_card);
@@ -1418,7 +1418,7 @@ TEST_F(PersonalDataManagerTest, AggregateExistingAuxiliaryProfile) {
 
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
-  const CreditCard* imported_credit_card;
+  scoped_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure,
                                              &imported_credit_card));
   EXPECT_FALSE(imported_credit_card);
@@ -1451,12 +1451,11 @@ TEST_F(PersonalDataManagerTest, AggregateTwoDifferentCreditCards) {
 
   FormStructure form_structure1(form1);
   form_structure1.DetermineHeuristicTypes(TestAutofillMetrics());
-  const CreditCard* imported_credit_card;
+  scoped_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure1,
                                              &imported_credit_card));
   ASSERT_TRUE(imported_credit_card);
   personal_data_->SaveImportedCreditCard(*imported_credit_card);
-  delete imported_credit_card;
 
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
@@ -1489,7 +1488,6 @@ TEST_F(PersonalDataManagerTest, AggregateTwoDifferentCreditCards) {
                                              &imported_credit_card));
   ASSERT_TRUE(imported_credit_card);
   personal_data_->SaveImportedCreditCard(*imported_credit_card);
-  delete imported_credit_card;
 
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
@@ -1522,12 +1520,11 @@ TEST_F(PersonalDataManagerTest, AggregateInvalidCreditCard) {
 
   FormStructure form_structure1(form1);
   form_structure1.DetermineHeuristicTypes(TestAutofillMetrics());
-  const CreditCard* imported_credit_card;
+  scoped_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure1,
                                              &imported_credit_card));
   ASSERT_TRUE(imported_credit_card);
   personal_data_->SaveImportedCreditCard(*imported_credit_card);
-  delete imported_credit_card;
 
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
@@ -1587,12 +1584,11 @@ TEST_F(PersonalDataManagerTest, AggregateSameCreditCardWithConflict) {
 
   FormStructure form_structure1(form1);
   form_structure1.DetermineHeuristicTypes(TestAutofillMetrics());
-  const CreditCard* imported_credit_card;
+  scoped_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure1,
                                              &imported_credit_card));
   ASSERT_TRUE(imported_credit_card);
   personal_data_->SaveImportedCreditCard(*imported_credit_card);
-  delete imported_credit_card;
 
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
@@ -1659,12 +1655,11 @@ TEST_F(PersonalDataManagerTest, AggregateEmptyCreditCardWithConflict) {
 
   FormStructure form_structure1(form1);
   form_structure1.DetermineHeuristicTypes(TestAutofillMetrics());
-  const CreditCard* imported_credit_card;
+  scoped_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure1,
                                              &imported_credit_card));
   ASSERT_TRUE(imported_credit_card);
   personal_data_->SaveImportedCreditCard(*imported_credit_card);
-  delete imported_credit_card;
 
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
@@ -1725,12 +1720,11 @@ TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInNew) {
 
   FormStructure form_structure1(form1);
   form_structure1.DetermineHeuristicTypes(TestAutofillMetrics());
-  const CreditCard* imported_credit_card;
+  scoped_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure1,
                                              &imported_credit_card));
   ASSERT_TRUE(imported_credit_card);
   personal_data_->SaveImportedCreditCard(*imported_credit_card);
-  delete imported_credit_card;
 
   // Verify that the web database has been updated and the notification sent.
   EXPECT_CALL(personal_data_observer_,
@@ -1838,7 +1832,7 @@ TEST_F(PersonalDataManagerTest, AggregateCreditCardWithMissingInfoInOld) {
 
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
-  const CreditCard* imported_credit_card;
+  scoped_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure,
                                              &imported_credit_card));
   EXPECT_FALSE(imported_credit_card);
@@ -1893,7 +1887,7 @@ TEST_F(PersonalDataManagerTest, AggregateSameCreditCardWithSeparators) {
 
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
-  const CreditCard* imported_credit_card;
+  scoped_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure,
                                              &imported_credit_card));
   EXPECT_FALSE(imported_credit_card);
@@ -1951,7 +1945,7 @@ TEST_F(PersonalDataManagerTest, AggregateExistingVerifiedProfileWithConflict) {
 
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
-  const CreditCard* imported_credit_card;
+  scoped_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure,
                                              &imported_credit_card));
   EXPECT_FALSE(imported_credit_card);
@@ -2001,7 +1995,7 @@ TEST_F(PersonalDataManagerTest,
 
   FormStructure form_structure(form);
   form_structure.DetermineHeuristicTypes(TestAutofillMetrics());
-  const CreditCard* imported_credit_card;
+  scoped_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure,
                                              &imported_credit_card));
   ASSERT_FALSE(imported_credit_card);
@@ -2284,7 +2278,7 @@ TEST_F(PersonalDataManagerTest, CaseInsensitiveMultiValueAggregation) {
 
   FormStructure form_structure1(form1);
   form_structure1.DetermineHeuristicTypes(TestAutofillMetrics());
-  const CreditCard* imported_credit_card;
+  scoped_ptr<CreditCard> imported_credit_card;
   EXPECT_TRUE(personal_data_->ImportFormData(form_structure1,
                                              &imported_credit_card));
   ASSERT_FALSE(imported_credit_card);

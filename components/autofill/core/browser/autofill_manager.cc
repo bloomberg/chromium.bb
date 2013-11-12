@@ -697,7 +697,7 @@ bool AutofillManager::IsAutofillEnabled() const {
 }
 
 void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
-  const CreditCard* imported_credit_card;
+  scoped_ptr<CreditCard> imported_credit_card;
   if (!personal_data_->ImportFormData(submitted_form, &imported_credit_card))
     return;
 
@@ -706,7 +706,6 @@ void AutofillManager::ImportFormData(const FormStructure& submitted_form) {
   if (imported_credit_card) {
     manager_delegate_->ConfirmSaveCreditCard(
         *metric_logger_,
-        *imported_credit_card,
         base::Bind(
             base::IgnoreResult(&PersonalDataManager::SaveImportedCreditCard),
             base::Unretained(personal_data_), *imported_credit_card));

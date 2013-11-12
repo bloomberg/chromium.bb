@@ -60,7 +60,6 @@ class AutofillManagerDelegate {
   // data. |metric_logger| can be used to log user actions.
   virtual void ConfirmSaveCreditCard(
       const AutofillMetrics& metric_logger,
-      const CreditCard& credit_card,
       const base::Closure& save_card_callback) = 0;
 
   // Causes the dialog for request autocomplete feature to be shown.
