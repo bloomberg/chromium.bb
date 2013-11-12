@@ -524,7 +524,8 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
       external_document_load_(false),
       npp_(new NPP_t),
       isolate_(v8::Isolate::GetCurrent()),
-      view_change_weak_ptr_factory_(this) {
+      view_change_weak_ptr_factory_(this),
+      weak_factory_(this) {
   pp_instance_ = HostGlobals::Get()->AddInstance(this);
 
   memset(&current_print_settings_, 0, sizeof(current_print_settings_));
@@ -813,7 +814,7 @@ bool PepperPluginInstanceImpl::HandleDocumentLoad(
       pp_instance(),
       response,
       base::Bind(&PepperPluginInstanceImpl::DidDataFromWebURLResponse,
-                 AsWeakPtr(),
+                 weak_factory_.GetWeakPtr(),
                  response,
                  pending_host_id));
 
@@ -2496,7 +2497,7 @@ void PepperPluginInstanceImpl::SelectionChanged(PP_Instance instance) {
   base::MessageLoop::current()->PostTask(
       FROM_HERE,
       base::Bind(&PepperPluginInstanceImpl::RequestSurroundingText,
-                 AsWeakPtr(),
+                 weak_factory_.GetWeakPtr(),
                  static_cast<size_t>(kExtraCharsForTextInput)));
 }
 

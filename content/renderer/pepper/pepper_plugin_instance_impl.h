@@ -113,7 +113,6 @@ class RenderViewImpl;
 // ResourceTracker.
 class CONTENT_EXPORT PepperPluginInstanceImpl
     : public base::RefCounted<PepperPluginInstanceImpl>,
-      public base::SupportsWeakPtr<PepperPluginInstanceImpl>,
       public NON_EXPORTED_BASE(PepperPluginInstance),
       public ppapi::PPB_Instance_Shared,
       public NON_EXPORTED_BASE(cc::TextureLayerClient) {
@@ -854,6 +853,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // view_data_ but not send updates. This also allows us to cancel scheduled
   // view change events.
   base::WeakPtrFactory<PepperPluginInstanceImpl> view_change_weak_ptr_factory_;
+  base::WeakPtrFactory<PepperPluginInstanceImpl> weak_factory_;
 
   friend class PpapiPluginInstanceTest;
   DISALLOW_COPY_AND_ASSIGN(PepperPluginInstanceImpl);
