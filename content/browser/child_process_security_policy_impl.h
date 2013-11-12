@@ -177,13 +177,6 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // --site-per-process flags are used.
   void LockToOrigin(int child_id, const GURL& gurl);
 
-  // Determines if certain permissions were granted for a file fystem.
-  // |permissions| must be a bitwise-or'd value of base::PlatformFileFlags.
-  bool HasPermissionsForFileSystem(
-      int child_id,
-      const std::string& filesystem_id,
-      int permission);
-
   // Register FileSystem type and permission policy which should be used
   // for the type.  The |policy| must be a bitwise-or'd value of
   // fileapi::FilePermissionPolicy.
@@ -216,14 +209,13 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   void AddChild(int child_id);
 
   // Determines if certain permissions were granted for a file to given child
-  // process. |permissions| must be a bitwise-or'd value of
-  // base::PlatformFileFlags.
+  // process. |permissions| is an internally defined bit-set.
   bool ChildProcessHasPermissionsForFile(int child_id,
                                          const base::FilePath& file,
                                          int permissions);
 
-  // Grant a particular permission set for a file. |permissions| is a bit-set
-  // of base::PlatformFileFlags.
+  // Grant a particular permission set for a file. |permissions| is an
+  // internally defined bit-set.
   void GrantPermissionsForFile(int child_id,
                                const base::FilePath& file,
                                int permissions);
@@ -236,19 +228,26 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
       const std::string& filesystem_id,
       int permission);
 
-  // Deprecated: Use CanReadFile, etc. methods instead.
   // Determines if certain permissions were granted for a file. |permissions|
-  // must be a bitwise-or'd value of base::PlatformFileFlags.
+  // is an internally defined bit-set. If |child_id| is a worker process,
+  // this returns true if either the worker process or its parent renderer
+  // has permissions for the file.
   bool HasPermissionsForFile(int child_id,
                              const base::FilePath& file,
                              int permissions);
 
-  // Deprecated: Use CanReadFileSystemFile, etc. methods instead.
   // Determines if certain permissions were granted for a file in FileSystem
-  // API. |permissions| must be a bitwise-or'd value of base::PlatformFileFlags.
+  // API. |permissions| is an internally defined bit-set.
   bool HasPermissionsForFileSystemFile(int child_id,
                                        const fileapi::FileSystemURL& url,
                                        int permissions);
+
+  // Determines if certain permissions were granted for a file system.
+  // |permissions| is an internally defined bit-set.
+  bool HasPermissionsForFileSystem(
+      int child_id,
+      const std::string& filesystem_id,
+      int permission);
 
   // You must acquire this lock before reading or writing any members of this
   // class.  You must not block while holding this lock.
