@@ -1,0 +1,19 @@
+
+PASS Synchronous XMLHttpRequest and caching during document load 
+PASS Test repeated sync requests using verb 'GET with constant query 
+PASS Test repeated sync requests using verb 'GET with no query 
+PASS Test repeated sync requests using verb 'GET with unique query string 
+PASS Test repeated sync requests using verb 'GET with empty query 
+PASS Test repeated sync requests using verb 'PUT with constant query 
+PASS Test repeated sync requests using verb 'PUT with no query 
+PASS Test repeated sync requests using verb 'PUT with unique query string 
+PASS Test repeated sync requests using verb 'PUT with empty query 
+PASS Test repeated sync requests using verb 'POST with constant query 
+PASS Test repeated sync requests using verb 'POST with no query 
+PASS Test repeated sync requests using verb 'POST with unique query string 
+PASS Test repeated sync requests using verb 'POST with empty query 
+PASS Test repeated sync requests using verb 'PROPFIND with constant query 
+PASS Test repeated sync requests using verb 'PROPFIND with no query 
+PASS Test repeated sync requests using verb 'PROPFIND with unique query string 
+PASS Test repeated sync requests using verb 'PROPFIND with empty query 
+

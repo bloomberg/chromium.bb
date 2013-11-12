@@ -860,8 +860,9 @@ ResourceFetcher::RevalidationPolicy ResourceFetcher::determineRevalidationPolicy
         return Reload;
     }
 
-    // During the initial load, avoid loading the same resource multiple times for a single document, even if the cache policies would tell us to.
-    if (document() && !document()->loadEventFinished() && m_validatedURLs.contains(existingResource->url()))
+    // During the initial load, avoid loading the same resource multiple times for a single document,
+    // even if the cache policies would tell us to. Raw resources are exempted.
+    if (type != Resource::Raw && document() && !document()->loadEventFinished() && m_validatedURLs.contains(existingResource->url()))
         return Use;
 
     // CachePolicyReload always reloads

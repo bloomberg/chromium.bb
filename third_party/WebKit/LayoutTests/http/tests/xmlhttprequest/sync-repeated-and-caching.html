@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Synchronous XMLHttpRequest and caching during document load</title>
+</head>
+<body>
+<script src="../resources/testharness.js"></script>
+<script src="../resources/testharnessreport.js"></script>
+<script type="text/javascript">
+
+// Test what caching XMLHttpRequest performs when issuing
+// sync requests over various verbs and with various
+// kinds of query portions. Without any cache control
+// headers.
+var verbs = [ "GET",
+              "PUT",
+              "POST",
+              "PROPFIND"];
+
+var query_kinds = [
+    {query: "'?random'",
+     name: "constant query",
+     // The list of verbs we expect the request not to be repeated for.
+     should_cache: []},
+    {query: "",
+     name: "no query",
+     should_cache: []},
+    {query: "'?' + (Math.random() + Date.now()).toString()",
+     name: "unique query string",
+     should_cache: []},
+    {query: "'?'",
+     name: "empty query",
+     should_cache: []}];
+
+var base_url = "resources/echo-random.php";
+
+function runTest() {
+    for (var i = 0; i < verbs.length; i++) {
+        var verb = verbs[i];
+        for (var j = 0; j < query_kinds.length; j++) {
+            var q1 = eval(query_kinds[j].query) || "";
+
+            var request_url1 = base_url + q1;
+            var xhr1 = new XMLHttpRequest;
+            xhr1.open(verb, request_url1, false);
+            xhr1.send();
+            var result1 = xhr1.responseText;
+
+            var xhr2 = new XMLHttpRequest();
+            var q2 = eval(query_kinds[j].query) || "";
+            var request_url2 = base_url + q2;
+            xhr2.open(verb, request_url2, false);
+            xhr2.send();
+            var result2 = xhr2.responseText;
+
+            test(function () {
+                if (query_kinds[j].should_cache.indexOf(verb) >= 0)
+                    assert_true(result1 === result2);
+                else
+                    assert_false(result1 === result2);
+            }, "Test repeated sync requests using verb '" + verb + " with " + query_kinds[j].name);
+        }
+    }
+}
+
+test(runTest, document.title);
+</script>
+<div id="log"></div>
+</body>
+</html>
