@@ -26,9 +26,9 @@ window.onload = function() {
  */
 function NaClTerm(argv) {
   this.io = argv.io.push();
+  this.argv_ = argv;
 };
 
-var embed;
 var ansiCyan = '\x1b[36m';
 var ansiReset = '\x1b[0m';
 
@@ -46,12 +46,6 @@ NaClTerm.init = function() {
   // Useful for console debugging.
   window.term_ = terminal;
 
-  // We don't properly support the hterm bell sound, so we need to disable it.
-  terminal.prefs_.definePreference('audible-bell-sound', '');
-
-  terminal.setAutoCarriageReturn(true);
-  terminal.setCursorPosition(0, 0);
-  terminal.setCursorVisible(true);
   terminal.runCommandClass(NaClTerm, document.location.hash.substr(1));
   return true;
 };
@@ -67,15 +61,21 @@ NaClTerm.prototype.updateStatus = function(message) {
  * @private
  */
 NaClTerm.prototype.handleMessage_ = function(e) {
-  if (e.data.indexOf(NaClTerm.prefix) != 0) {
-    console.log('Got unhandled message: ' + e.data)
-    return;
-  }
-  var msg = e.data.substring(NaClTerm.prefix.length);
-  if (!this.loaded) {
-    this.bufferedOutput += msg;
+  if (e.data.indexOf(NaClTerm.prefix) == 0) {
+    var msg = e.data.substring(NaClTerm.prefix.length);
+    if (!this.loaded) {
+      this.bufferedOutput += msg;
+    } else {
+      this.io.print(msg);
+    }
+  } else if (e.data.indexOf('exited') == 0) {
+    var exitCode = e.data.split(':', 2)[1]
+    if (exitCode === undefined)
+      exitCode = 0;
+    this.exit(exitCode);
   } else {
-    this.io.print(msg);
+    console.log('unexpected message: ' + e.data);
+    return;
   }
 }
 
@@ -112,6 +112,7 @@ NaClTerm.prototype.handleLoad_ = function(e) {
     this.doneLoadingUrl();
   else
     this.io.print('Loaded.\n');
+  delete this.lastUrl
 
   document.getElementById('loading-cover').style.display = 'none';
 
@@ -122,7 +123,9 @@ NaClTerm.prototype.handleLoad_ = function(e) {
   // NaCl module that were buffered up unto this point
   this.loaded = true;
   this.io.print(this.bufferedOutput);
+  this.sendMessage(this.bufferedInput);
   this.bufferedOutput = ''
+  this.bufferedInput = ''
 }
 
 /**
@@ -159,12 +162,30 @@ NaClTerm.prototype.handleProgress_ = function(e) {
  * Handle crash event from NaCl.
  */
 NaClTerm.prototype.handleCrash_ = function(e) {
+ this.exit(this.embed.exitStatus);
+}
+
+/**
+ * Exit the command.
+ */
+NaClTerm.prototype.exit = function(code) {
  this.io.print(ansiCyan)
- if (embed.exitStatus == -1) {
-   this.updateStatus('Program crashed (exit status -1)')
+ if (code == -1) {
+   this.io.print('Program crashed (exit status -1)\n')
  } else {
-   this.updateStatus('Program exited (status=' + embed.exitStatus + ')');
+   this.io.print('Program exited (status=' + code + ')\n');
  }
+ this.loaded = false;
+};
+
+NaClTerm.prototype.restartNaCl = function() {
+  if (this.embed !== undefined) {
+    document.getElementById("listener").removeChild(this.embed);
+    delete this.embed;
+  }
+  this.io.terminal_.reset();
+  this.startCommand();
+  this.createEmbed(this.io.terminal_.screenSize.width, this.io.terminal_.screenSize.height);
 }
 
 /**
@@ -182,7 +203,7 @@ NaClTerm.prototype.createEmbed = function(width, height) {
     return;
   }
 
-  embed = document.createElement('object');
+  var embed = document.createElement('object');
   embed.width = 0;
   embed.height = 0;
   embed.data = NaClTerm.nmf;
@@ -211,7 +232,7 @@ NaClTerm.prototype.createEmbed = function(width, height) {
   addParam('PS_VERBOSITY', '2');
   addParam('PS_EXIT_MESSAGE', 'exited');
   addParam('TERM', 'xterm-256color');
-  addParam('LUA_DATA_URL', 'http://commondatastorage.googleapis.com/gonacl/demos/publish/test/lua');
+  addParam('LUA_DATA_URL', 'http://commondatastorage.googleapis.com/gonacl/demos/publish/234230_dev/lua');
 
   // Add ARGV arguments from query parameters.
   var args = lib.f.parseQuery(document.location.search);
@@ -222,7 +243,7 @@ NaClTerm.prototype.createEmbed = function(width, height) {
   // If the application has set NaClTerm.argv and there were
   // no arguments set in the query parameters then add the default
   // NaClTerm.argv arguments.
-  if (typeof(args['arg1']) === 'undefined' && NaClTerm.argv) {
+  if (args['arg1'] === undefined && NaClTerm.argv) {
     var argn = 1
     NaClTerm.argv.forEach(function(arg) {
       var argname = 'arg' + argn;
@@ -234,29 +255,48 @@ NaClTerm.prototype.createEmbed = function(width, height) {
   this.updateStatus('Loading...');
   this.io.print('Loading NaCl module.\n')
   document.getElementById("listener").appendChild(embed);
+  this.embed = embed;
 }
 
 NaClTerm.prototype.onTerminalResize_ = function(width, height) {
-  if (typeof(embed) === 'undefined')
+  if (this.embed === undefined)
     this.createEmbed(width, height);
   else
-    embed.postMessage({'tty_resize': [ width, height ]});
+    this.embed.postMessage({'tty_resize': [ width, height ]});
+}
+
+NaClTerm.prototype.sendMessage = function(msg) {
+  if (!this.loaded) {
+    this.bufferedInput += msg;
+    return;
+  }
+  var message = {};
+  message[NaClTerm.prefix] = msg;
+  this.embed.postMessage(message);
 }
 
 NaClTerm.prototype.onVTKeystroke_ = function(str) {
-  var message = {};
-  message[NaClTerm.prefix] = str;
-  embed.postMessage(message);
+  this.sendMessage(str)
+}
+
+NaClTerm.prototype.startCommand = function() {
+  // We don't properly support the hterm bell sound, so we need to disable it.
+  this.io.terminal_.prefs_.definePreference('audible-bell-sound', '');
+  this.io.terminal_.setAutoCarriageReturn(true);
+  this.io.terminal_.setCursorPosition(0, 0);
+  this.io.terminal_.setCursorVisible(true);
+
+  this.bufferedOutput = '';
+  this.bufferedInput = '';
+  this.loaded = false;
+  this.io.print(ansiCyan);
 }
 
 /*
  * This is invoked by the terminal as a result of terminal.runCommandClass().
  */
 NaClTerm.prototype.run = function() {
-  this.bufferedOutput = '';
-  this.loaded = false;
-  this.io.print(ansiCyan);
-
+  this.startCommand();
   this.io.onVTKeystroke = this.onVTKeystroke_.bind(this);
   this.io.onTerminalResize = this.onTerminalResize_.bind(this);
 };

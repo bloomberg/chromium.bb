@@ -109,6 +109,8 @@ lua_SRC_DIR = lua
 lua_TGT_DIR = lua/out/naclports/src/out/publish/lua/pnacl
 lua_SRCS = $(lua_SRC_DIR)/build.sh
 lua_TGTS = $(lua_TGT_DIR)/lua.pexe \
+           $(lua_TGT_DIR)/scimark.lua \
+           $(lua_TGT_DIR)/binarytrees.lua \
            $(lua_TGT_DIR)/luadata.tar \
            $(lua_TGT_DIR)/lua.nmf \
            $(lua_TGT_DIR)/hterm.concat.js

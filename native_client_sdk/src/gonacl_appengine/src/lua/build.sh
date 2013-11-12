@@ -12,7 +12,7 @@ cd ${SCRIPT_DIR}
 
 OUT_DIR=out
 NACLPORTS_URL=http://naclports.googlecode.com/svn/trunk/src
-NACLPORTS_REV=974
+NACLPORTS_REV=975
 NACLPORTS_DIR=${OUT_DIR}/naclports
 
 if [ -z "${NACL_SDK_ROOT:-}" ]; then
