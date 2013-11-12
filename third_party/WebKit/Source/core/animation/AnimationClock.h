@@ -45,8 +45,8 @@ public:
 
     void updateTime(double time)
     {
-        ASSERT(m_time <= time);
-        m_time = time;
+        if (time > m_time)
+            m_time = time;
         m_frozen = true;
     }
 
