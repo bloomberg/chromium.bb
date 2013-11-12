@@ -2577,6 +2577,9 @@
           'VCLinkerTool': {
             'TargetMachine': '1',
           },
+          'VCLibrarianTool': {
+            'TargetMachine': '1',
+          },
         },
         'msvs_configuration_platform': 'Win32',
       },
@@ -2598,6 +2601,7 @@
               ['<(windows_sdk_path)/Lib/win8/um/x86'],
             'AdditionalLibraryDirectories':
               ['<(windows_sdk_path)/Lib/win8/um/x64'],
+            'TargetMachine': '17', # x64
           },
         },
       },
