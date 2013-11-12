@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/inspector/JavaScriptCallFrame.h"
 
+#include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/V8Binding.h"
 
 namespace WebCore {
@@ -165,16 +166,16 @@ v8::Handle<v8::Object> JavaScriptCallFrame::innerCallFrame()
     return m_callFrame.newLocal(m_isolate);
 }
 
-v8::Handle<v8::Value> JavaScriptCallFrame::setVariableValue(int scopeNumber, const String& variableName, v8::Handle<v8::Value> newValue)
+ScriptValue JavaScriptCallFrame::setVariableValue(int scopeNumber, const String& variableName, const ScriptValue& newValue)
 {
     v8::Handle<v8::Object> callFrame = m_callFrame.newLocal(m_isolate);
     v8::Handle<v8::Function> setVariableValueFunction = v8::Handle<v8::Function>::Cast(callFrame->Get(v8::String::NewSymbol("setVariableValue")));
     v8::Handle<v8::Value> argv[] = {
         v8::Handle<v8::Value>(v8::Integer::New(scopeNumber, m_isolate)),
         v8String(variableName, m_isolate),
-        newValue
+        newValue.v8Value()
     };
-    return setVariableValueFunction->Call(callFrame, 3, argv);
+    return ScriptValue(setVariableValueFunction->Call(callFrame, 3, argv), m_isolate);
 }
 
 } // namespace WebCore

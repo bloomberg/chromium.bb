@@ -48,15 +48,6 @@ void V8JavaScriptCallFrame::restartMethodCustom(const v8::FunctionCallbackInfo<v
     v8SetReturnValue(info, impl->restart());
 }
 
-void V8JavaScriptCallFrame::setVariableValueMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    JavaScriptCallFrame* impl = V8JavaScriptCallFrame::toNative(info.Holder());
-    int scopeIndex = info[0]->Int32Value();
-    String variableName = toWebCoreStringWithUndefinedOrNullCheck(info[1]);
-    v8::Handle<v8::Value> newValue = info[2];
-    v8SetReturnValue(info, impl->setVariableValue(scopeIndex, variableName, newValue));
-}
-
 void V8JavaScriptCallFrame::scopeChainAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     JavaScriptCallFrame* impl = V8JavaScriptCallFrame::toNative(info.Holder());

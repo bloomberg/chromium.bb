@@ -40,6 +40,8 @@
 
 namespace WebCore {
 
+class ScriptValue;
+
 class JavaScriptCallFrame : public RefCounted<JavaScriptCallFrame>, public ScriptWrappable {
 public:
     static PassRefPtr<JavaScriptCallFrame> create(v8::Handle<v8::Context> debuggerContext, v8::Handle<v8::Object> callFrame)
@@ -64,7 +66,7 @@ public:
 
     v8::Handle<v8::Value> evaluate(const String& expression);
     v8::Handle<v8::Value> restart();
-    v8::Handle<v8::Value> setVariableValue(int scopeNumber, const String& variableName, v8::Handle<v8::Value> newValue);
+    ScriptValue setVariableValue(int scopeNumber, const String& variableName, const ScriptValue& newValue);
     v8::Handle<v8::Object> innerCallFrame();
 
 private:
