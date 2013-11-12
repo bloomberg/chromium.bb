@@ -24,14 +24,17 @@
                 findMediaElement();
                 var expected = 
                 {
-                    length : 3,
+                    length : 6,
                     tests:
                     [
                         {
                             property : "getCueAsHTML().textContent",
                             values : ["This cue has an amp & character.",
                                       "This cue has a less than < character.",
-                                      "This cue has a greater than > character."],
+                                      "This cue has a greater than > character.",
+                                      "This cue has a Left-to-Right Mark \u200e.",
+                                      "This cue has a Right-to-Left Mark \u200f.",
+                                      "This cue has a non-breaking space \u00a0."],
                         },
                     ],
                 };
@@ -63,7 +66,7 @@
         </script>
     </head>
     <body onload="enableAllTextTracks()">
-        <p>Tests special characters &amp;, &lt;, and &gt; in the cue text.</p>
+        <p>Tests entities in the cue text.</p>
         <video> 
             <track src="captions-webvtt/tc022-entities.vtt" onload="trackLoaded()">
             <track src="captions-webvtt/tc022-entities-wrong.vtt" onload="trackLoaded()">
