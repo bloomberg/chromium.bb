@@ -427,9 +427,6 @@ private:
     bool pausedForUserInteraction() const;
     bool couldPlayIfEnoughData() const;
 
-    double minTimeSeekable() const;
-    double maxTimeSeekable() const;
-
     // Pauses playback without changing any states or generating events
     void setPausedInternal(bool);
 

@@ -3174,8 +3174,12 @@ PassRefPtr<TimeRanges> HTMLMediaElement::played()
 
 PassRefPtr<TimeRanges> HTMLMediaElement::seekable() const
 {
-    double maxSeekable = maxTimeSeekable();
-    return maxSeekable ? TimeRanges::create(0, maxSeekable) : TimeRanges::create();
+    if (m_player) {
+        double maxTimeSeekable = m_player->maxTimeSeekable();
+        if (maxTimeSeekable)
+            return TimeRanges::create(0, maxTimeSeekable);
+    }
+    return TimeRanges::create();
 }
 
 bool HTMLMediaElement::potentiallyPlaying() const
@@ -3235,16 +3239,6 @@ bool HTMLMediaElement::pausedForUserInteraction() const
 {
 //    return !paused() && m_readyState >= HAVE_FUTURE_DATA && [UA requires a decitions from the user]
     return false;
-}
-
-double HTMLMediaElement::minTimeSeekable() const
-{
-    return 0;
-}
-
-double HTMLMediaElement::maxTimeSeekable() const
-{
-    return m_player ? m_player->maxTimeSeekable() : 0;
 }
 
 void HTMLMediaElement::updateVolume()
