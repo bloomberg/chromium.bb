@@ -26,10 +26,11 @@ COLOR = None
 
 # Map the internal names to the ones we normally show on the web ui.
 GERRIT_APPROVAL_MAP = {
-    'COMR': ['CQ', 'Commit Queue',],
-    'CRVW': ['CR', 'Code Review ',],
-    'SUBM': ['S ', 'Submitted   ',],
-    'VRIF': ['V ', 'Verified    ',],
+    'COMR': ['CQ', 'Commit Queue   ',],
+    'CRVW': ['CR', 'Code Review    ',],
+    'SUBM': ['S ', 'Submitted      ',],
+    'TBVF': ['TV', 'Trybot Verified',],
+    'VRIF': ['V ', 'Verified       ',],
 }
 
 # Order is important -- matches the web ui.  This also controls the short
