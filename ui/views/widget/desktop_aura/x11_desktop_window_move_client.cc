@@ -14,7 +14,6 @@
 #include "base/run_loop.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/window.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/events/event.h"
 #include "ui/gfx/screen.h"

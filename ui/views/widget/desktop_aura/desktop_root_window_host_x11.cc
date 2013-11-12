@@ -1059,7 +1059,7 @@ void DesktopRootWindowHostX11::DispatchMouseEvent(ui::MouseEvent* event) {
     // Another DesktopRootWindowHostX11 has installed itself as
     // capture. Translate the event's location and dispatch to the other.
     event->ConvertLocationToTarget(root_window_->window(),
-                                   g_current_capture->root_window_->window());
+                                   g_current_capture->root_window_);
     g_current_capture->root_window_host_delegate_->OnHostMouseEvent(event);
   }
 }
