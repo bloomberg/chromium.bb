@@ -583,7 +583,7 @@ void RootWindowController::Init(RootWindowType root_window_type,
   Shell::GetInstance()->InitRootWindow(root_window());
 
   root_window_->SetCursor(ui::kCursorPointer);
-  CreateContainersInRootWindow(root_window_->window());
+  CreateContainersInRootWindow(root_window_.get());
 
   if (root_window_type == VIRTUAL_KEYBOARD)
     return;
@@ -607,8 +607,7 @@ void RootWindowController::Init(RootWindowType root_window_type,
   } else {
     root_window_layout()->OnWindowResized();
     shell->desktop_background_controller()->OnRootWindowAdded(root_window());
-    shell->high_contrast_controller()->OnRootWindowAdded(
-        root_window_->window());
+    shell->high_contrast_controller()->OnRootWindowAdded(root_window_.get());
     root_window_->ShowRootWindow();
 
     // Create a launcher if a user is already logged.

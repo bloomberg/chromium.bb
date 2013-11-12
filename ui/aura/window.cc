@@ -14,7 +14,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "ui/aura/client/capture_client.h"
-#include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/event_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -33,47 +32,6 @@
 #include "ui/gfx/screen.h"
 
 namespace aura {
-
-class ScopedCursorHider {
- public:
-  explicit ScopedCursorHider(Window* window)
-      : window_(window),
-        hid_cursor_(false) {
-    if (!window_->HasDispatcher())
-      return;
-    const bool cursor_is_in_bounds = window_->GetBoundsInScreen().Contains(
-        Env::GetInstance()->last_mouse_location());
-    client::CursorClient* cursor_client = client::GetCursorClient(window_);
-    if (cursor_is_in_bounds && cursor_client &&
-        cursor_client->IsCursorVisible()) {
-      cursor_client->HideCursor();
-      hid_cursor_ = true;
-    }
-  }
-  ~ScopedCursorHider() {
-    if (!window_->HasDispatcher())
-      return;
-
-    // Update the device scale factor of the cursor client only when the last
-    // mouse location is on this root window.
-    if (hid_cursor_) {
-      client::CursorClient* cursor_client = client::GetCursorClient(window_);
-      if (cursor_client) {
-        const gfx::Display& display =
-            gfx::Screen::GetScreenFor(window_)->GetDisplayNearestWindow(
-                window_);
-        cursor_client->SetDisplay(display);
-        cursor_client->ShowCursor();
-      }
-    }
-  }
-
- private:
-  Window* window_;
-  bool hid_cursor_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedCursorHider);
-};
 
 Window::Window(WindowDelegate* delegate)
     : dispatcher_(NULL),
@@ -225,7 +183,7 @@ Window* Window::GetRootWindow() {
 }
 
 const Window* Window::GetRootWindow() const {
-  return dispatcher_ ? this : parent_ ? parent_->GetRootWindow() : NULL;
+  return parent_ ? parent_->GetRootWindow() : NULL;
 }
 
 WindowEventDispatcher* Window::GetDispatcher() {
@@ -578,9 +536,6 @@ bool Window::HasFocus() const {
 }
 
 bool Window::CanFocus() const {
-  if (dispatcher_)
-    return IsVisible();
-
   // NOTE: as part of focusing the window the ActivationClient may make the
   // window visible (by way of making a hidden ancestor visible). For this
   // reason we can't check visibility here and assume the client is doing it.
@@ -597,9 +552,6 @@ bool Window::CanFocus() const {
 }
 
 bool Window::CanReceiveEvents() const {
-  if (dispatcher_)
-    return IsVisible();
-
   // The client may forbid certain windows from receiving events at a given
   // point in time.
   client::EventClient* client = client::GetEventClient(GetRootWindow());
@@ -650,9 +602,6 @@ void* Window::GetNativeWindowProperty(const char* key) const {
 }
 
 void Window::OnDeviceScaleFactorChanged(float device_scale_factor) {
-  ScopedCursorHider hider(this);
-  if (dispatcher_)
-    dispatcher_->DeviceScaleFactorChanged(device_scale_factor);
   if (delegate_)
     delegate_->OnDeviceScaleFactorChanged(device_scale_factor);
 }
@@ -1173,11 +1122,6 @@ bool Window::CanAcceptEvent(const ui::Event& event) {
 }
 
 ui::EventTarget* Window::GetParentTarget() {
-  if (dispatcher_) {
-    return client::GetEventClient(this) ?
-        client::GetEventClient(this)->GetToplevelEventTarget() :
-            Env::GetInstance();
-  }
   return parent_;
 }
 

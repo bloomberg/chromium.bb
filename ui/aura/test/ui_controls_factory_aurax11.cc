@@ -15,7 +15,6 @@
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/test/ui_controls_factory_aura.h"
-#include "ui/aura/window.h"
 #include "ui/base/test/ui_controls_aura.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/compositor/dip_util.h"
@@ -146,7 +145,7 @@ class UIControlsX11 : public UIControlsAura {
     XMotionEvent* xmotion = &xevent.xmotion;
     xmotion->type = MotionNotify;
     gfx::Point point = ui::ConvertPointToPixel(
-        root_window_->window()->layer(),
+        root_window_->layer(),
         gfx::Point(static_cast<int>(x), static_cast<int>(y)));
     xmotion->x = point.x();
     xmotion->y = point.y();
@@ -168,11 +167,9 @@ class UIControlsX11 : public UIControlsAura {
     XButtonEvent* xbutton = &xevent.xbutton;
     gfx::Point mouse_loc = aura::Env::GetInstance()->last_mouse_location();
     aura::client::ScreenPositionClient* screen_position_client =
-          aura::client::GetScreenPositionClient(root_window_->window());
-    if (screen_position_client) {
-      screen_position_client->ConvertPointFromScreen(root_window_->window(),
-                                                     &mouse_loc);
-    }
+          aura::client::GetScreenPositionClient(root_window_);
+    if (screen_position_client)
+      screen_position_client->ConvertPointFromScreen(root_window_, &mouse_loc);
     xbutton->x = mouse_loc.x();
     xbutton->y = mouse_loc.y();
     xbutton->same_screen = True;

@@ -768,8 +768,8 @@ aura::RootWindow* DisplayController::AddRootWindowForDisplay(
       display.id();
   root_window->Init();
 
-  root_windows_[display.id()] = root_window->window();
-  SetDisplayPropertiesOnHostWindow(root_window, display);
+  root_windows_[display.id()] = root_window;
+  SetDisplayPropertiesOnHostWindow(root_window->GetDispatcher(), display);
 
 #if defined(OS_CHROMEOS)
   static bool force_constrain_pointer_to_root =

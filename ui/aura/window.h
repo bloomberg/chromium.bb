@@ -366,7 +366,6 @@ class AURA_EXPORT Window : public ui::LayerDelegate,
  private:
   friend class test::WindowTestApi;
   friend class LayoutManager;
-  friend class RootWindow;
 
   // Used when stacking windows.
   enum StackDirection {

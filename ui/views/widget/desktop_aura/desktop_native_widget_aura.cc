@@ -444,11 +444,11 @@ void DesktopNativeWidgetAura::InitNativeWidget(
           desktop_root_window_host_->CreateTooltip()));
   aura::client::SetTooltipClient(root_window_->window(),
                                  tooltip_controller_.get());
-  root_window_->window()->AddPreTargetHandler(tooltip_controller_.get());
+  root_window_->AddPreTargetHandler(tooltip_controller_.get());
 
   if (params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW) {
     visibility_controller_.reset(new views::corewm::VisibilityController);
-    aura::client::SetVisibilityClient(root_window_->window(),
+    aura::client::SetVisibilityClient(root_window_.get(),
                                       visibility_controller_.get());
     views::corewm::SetChildWindowVisibilityChangesAnimated(
         root_window_->window());
@@ -458,8 +458,7 @@ void DesktopNativeWidgetAura::InitNativeWidget(
 
   if (params.type == Widget::InitParams::TYPE_WINDOW) {
     focus_manager_event_handler_.reset(new FocusManagerEventHandler(this));
-    root_window_->window()->AddPreTargetHandler(
-        focus_manager_event_handler_.get());
+    root_window_->AddPreTargetHandler(focus_manager_event_handler_.get());
   }
 
   event_client_.reset(new DesktopEventClient);

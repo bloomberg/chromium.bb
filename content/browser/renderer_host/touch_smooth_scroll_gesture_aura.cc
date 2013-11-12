@@ -6,7 +6,6 @@
 
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/window.h"
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/transform.h"

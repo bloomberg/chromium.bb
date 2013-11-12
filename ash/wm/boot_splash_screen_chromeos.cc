@@ -6,7 +6,6 @@
 
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/window.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_type.h"
@@ -57,7 +56,7 @@ BootSplashScreen::BootSplashScreen(aura::RootWindow* root_window)
       layer_(new ui::Layer(ui::LAYER_TEXTURED)) {
   layer_->set_delegate(layer_delegate_.get());
 
-  ui::Layer* root_layer = root_window->window()->layer();
+  ui::Layer* root_layer = root_window->layer();
   layer_->SetBounds(gfx::Rect(root_layer->bounds().size()));
   root_layer->Add(layer_.get());
   root_layer->StackAtTop(layer_.get());

@@ -77,7 +77,6 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/root_window.h"
-#include "ui/aura/window.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/desktop_aura/desktop_root_window_host_win.h"
 #endif

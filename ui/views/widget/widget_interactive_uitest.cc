@@ -15,7 +15,6 @@
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/window.h"
 #endif
 
 #if defined(USE_AURA) && !defined(OS_CHROMEOS)

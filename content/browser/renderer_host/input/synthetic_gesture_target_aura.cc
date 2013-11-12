@@ -26,7 +26,8 @@ void SyntheticGestureTargetAura::QueueWebTouchEventToPlatform(
     const WebTouchEvent& web_touch,
     const ui::LatencyInfo& latency_info) {
   aura::Window* window = render_widget_host()->GetView()->GetNativeView();
-  aura::Window* root_window = window->GetRootWindow();
+  aura::RootWindow* root_window =
+      static_cast<aura::RootWindow*>(window->GetRootWindow());
   aura::client::ScreenPositionClient* position_client =
       aura::client::GetScreenPositionClient(root_window);
   DCHECK(position_client);
@@ -50,7 +51,7 @@ void SyntheticGestureTargetAura::QueueWebTouchEventToPlatform(
   DCHECK(conversion_success);
 
   aura::RootWindowHostDelegate* root_window_host_delegate =
-      root_window->GetDispatcher()->AsRootWindowHostDelegate();
+      root_window->AsRootWindowHostDelegate();
   for (ScopedVector<ui::TouchEvent>::iterator iter = events.begin(),
       end = events.end(); iter != end; ++iter) {
     root_window_host_delegate->OnHostTouchEvent(*iter);
