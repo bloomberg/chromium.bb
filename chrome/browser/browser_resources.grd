@@ -310,12 +310,6 @@
         <include name="IDR_CONNECTIVITY_DIAGNOSTICS_LAUNCHER_MANIFEST" file="resources\chromeos\connectivity_diagnostics_launcher\manifest.json" type="BINDATA" />
         <!-- manifest file of built-in speech synthesis extension -->
         <include name="IDR_SPEECH_SYNTHESIS_MANIFEST" file="resources\chromeos\speech_synthesis\manifest.json" type="BINDATA" />
-        <include name="IDR_DIAGNOSTICS_MAIN_CSS" file="resources\chromeos\diagnostics\main.css" type="BINDATA" />
-        <include name="IDR_DIAGNOSTICS_MAIN_HTML" file="resources\chromeos\diagnostics\main.html" flattenhtml="true" type="BINDATA" />
-        <include name="IDR_DIAGNOSTICS_MAIN_JS" file="resources\chromeos\diagnostics\main.js" type="BINDATA" />
-        <include name="IDR_DIAGNOSTICS_IMAGES_FAIL" file="resources\chromeos\diagnostics\fail.png" type="BINDATA" />
-        <include name="IDR_DIAGNOSTICS_IMAGES_TICK" file="resources\chromeos\diagnostics\tick.png" type="BINDATA" />
-        <include name="IDR_DIAGNOSTICS_IMAGES_WARNING" file="resources\chromeos\diagnostics\warning.png" type="BINDATA" />
         <include name="IDR_DRIVE_INTERNALS_CSS" file="resources\chromeos\drive_internals.css" type="BINDATA" />
         <include name="IDR_DRIVE_INTERNALS_HTML" file="resources\chromeos\drive_internals.html" flattenhtml="true" type="BINDATA" />
         <include name="IDR_DRIVE_INTERNALS_JS" file="resources\chromeos\drive_internals.js" type="BINDATA" />

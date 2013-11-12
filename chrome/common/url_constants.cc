@@ -100,7 +100,6 @@ const char kChromeUIActivationMessage[] = "chrome://activationmessage/";
 const char kChromeUIBluetoothPairingURL[] = "chrome://bluetooth-pairing/";
 const char kChromeUIChooseMobileNetworkURL[] =
     "chrome://choose-mobile-network/";
-const char kChromeUIDiagnosticsURL[] = "chrome://diagnostics/";
 const char kChromeUIDiscardsURL[] = "chrome://discards/";
 const char kChromeUIFirstRunURL[] = "chrome://first-run/";
 const char kChromeUIIdleLogoutDialogURL[] = "chrome://idle-logout/";
@@ -248,7 +247,6 @@ const char kChromeUIAppLaunchHost[] = "app-launch";
 const char kChromeUIBluetoothPairingHost[] = "bluetooth-pairing";
 const char kChromeUIChooseMobileNetworkHost[] = "choose-mobile-network";
 const char kChromeUICryptohomeHost[] = "cryptohome";
-const char kChromeUIDiagnosticsHost[] = "diagnostics";
 const char kChromeUIDiscardsHost[] = "discards";
 const char kChromeUIFirstRunHost[] = "first-run";
 const char kChromeUIIdleLogoutDialogHost[] = "idle-logout";
@@ -577,7 +575,6 @@ const char* const kChromeHostURLs[] = {
 #if defined(OS_CHROMEOS)
   kChromeUIChooseMobileNetworkHost,
   kChromeUICryptohomeHost,
-  kChromeUIDiagnosticsHost,
   kChromeUIDiscardsHost,
   kChromeUIDriveInternalsHost,
   kChromeUIFirstRunHost,
