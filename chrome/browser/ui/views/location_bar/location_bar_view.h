@@ -247,10 +247,14 @@ class LocationBarView : public LocationBar,
   virtual void OnMouseCaptureLost() OVERRIDE;
 #endif
 
-  LocationIconView* location_icon_view() { return location_icon_view_; }
-  const LocationIconView* location_icon_view() const {
-    return location_icon_view_;
-  }
+  views::ImageView* GetLocationIconView();
+  const views::ImageView* GetLocationIconView() const;
+
+  // Return a view suitable for anchoring location-bar-anchored bubbles to.
+  views::View* GetLocationBarAnchor();
+  // Return the point suitable for anchoring location-bar-anchored bubbles at.
+  // The point will be returned in the coordinates of the LocationBarView.
+  gfx::Point GetLocationBarAnchorPoint() const;
 
   views::View* location_entry_view() const { return location_entry_view_; }
 

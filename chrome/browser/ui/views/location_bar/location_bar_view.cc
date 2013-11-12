@@ -1004,6 +1004,28 @@ void LocationBarView::OnMouseCaptureLost() {
 }
 #endif
 
+views::ImageView* LocationBarView::GetLocationIconView() {
+  return location_icon_view_;
+}
+
+const views::ImageView* LocationBarView::GetLocationIconView() const {
+  return location_icon_view_;
+}
+
+views::View* LocationBarView::GetLocationBarAnchor() {
+  return GetLocationIconView();
+}
+
+gfx::Point LocationBarView::GetLocationBarAnchorPoint() const {
+  // The +1 in the next line creates a 1-px gap between icon and arrow tip.
+  gfx::Point icon_bottom(0, GetLocationIconView()->GetImageBounds().bottom() -
+      LocationBarView::kIconInternalPadding + 1);
+  gfx::Point icon_center(GetLocationIconView()->GetImageBounds().CenterPoint());
+  gfx::Point point(icon_center.x(), icon_bottom.y());
+  ConvertPointToTarget(GetLocationIconView(), this, &point);
+  return point;
+}
+
 views::View* LocationBarView::generated_credit_card_view() {
   return generated_credit_card_view_;
 }
@@ -1525,7 +1547,7 @@ void LocationBarView::ShowFirstRunBubbleInternal() {
   if (!browser)
     return; // Possible when browser is shutting down.
 
-  FirstRunBubble::ShowBubble(browser, location_icon_view_);
+  FirstRunBubble::ShowBubble(browser, GetLocationBarAnchor());
 #endif
 }
 

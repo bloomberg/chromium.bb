@@ -1283,7 +1283,7 @@ void BrowserView::ShowWebsiteSettings(Profile* profile,
                                       const GURL& url,
                                       const content::SSLStatus& ssl) {
   WebsiteSettingsPopupView::ShowPopup(
-      GetLocationBarView()->location_icon_view(), profile,
+      GetLocationBarView()->GetLocationIconView(), profile,
       web_contents, url, ssl, browser_.get());
 }
 
@@ -1902,11 +1902,9 @@ void BrowserView::InfoBarContainerStateChanged(bool is_animating) {
 
 bool BrowserView::DrawInfoBarArrows(int* x) const {
   if (x) {
-    const LocationIconView* location_icon_view =
-        toolbar_->location_bar()->location_icon_view();
-    gfx::Point icon_center(location_icon_view->GetImageBounds().CenterPoint());
-    ConvertPointToTarget(location_icon_view, this, &icon_center);
-    *x = icon_center.x();
+    gfx::Point anchor(toolbar_->location_bar()->GetLocationBarAnchorPoint());
+    ConvertPointToTarget(toolbar_->location_bar(), this, &anchor);
+    *x = anchor.x();
   }
   return true;
 }
@@ -2695,12 +2693,9 @@ int BrowserView::GetMaxTopInfoBarArrowHeight() {
   // popup.
   if (!IsFullscreen() &&
       !GetLocationBar()->GetLocationEntry()->model()->popup_model()->IsOpen()) {
-    const LocationIconView* location_icon_view =
-        toolbar_->location_bar()->location_icon_view();
-    // The +1 in the next line creates a 1-px gap between icon and arrow tip.
-    gfx::Point icon_bottom(0, location_icon_view->GetImageBounds().bottom() -
-        LocationBarView::kIconInternalPadding + 1);
-    ConvertPointToTarget(location_icon_view, this, &icon_bottom);
+    gfx::Point icon_bottom(
+        toolbar_->location_bar()->GetLocationBarAnchorPoint());
+    ConvertPointToTarget(toolbar_->location_bar(), this, &icon_bottom);
     gfx::Point infobar_top(0, infobar_container_->GetVerticalOverlap(NULL));
     ConvertPointToTarget(infobar_container_, this, &infobar_top);
     top_arrow_height = infobar_top.y() - icon_bottom.y();
