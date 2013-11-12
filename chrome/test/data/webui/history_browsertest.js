@@ -773,9 +773,8 @@ TEST_F('HistoryWebUIRealBackendTest', 'basic', function() {
 
 /**
  * Test individual deletion of history entries.
- * Disabled because it fails on all platforms: crbug.com/242293
  */
-TEST_F('HistoryWebUIRealBackendTest', 'DISABLED_singleDeletion', function() {
+TEST_F('HistoryWebUIRealBackendTest', 'singleDeletion', function() {
   // Deletes the history entry represented by |entryElement|, and calls callback
   // when the deletion is complete.
   var removeEntry = function(entryElement, callback) {
@@ -785,7 +784,7 @@ TEST_F('HistoryWebUIRealBackendTest', 'DISABLED_singleDeletion', function() {
     assertFalse(dropDownButton.disabled);
     assertFalse(removeMenuItem.disabled);
 
-    waitForCallback('removeNodeWithoutTransition', callback);
+    waitForCallback('onEntryRemoved', callback);
 
     cr.dispatchSimpleEvent(dropDownButton, 'mousedown');
     cr.dispatchSimpleEvent(removeMenuItem, 'activate');

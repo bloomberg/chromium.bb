@@ -1846,9 +1846,13 @@ function entryBoxClick(event) {
   event.preventDefault();
 }
 
-// This is pulled out so we can wait for it in tests.
-function removeNodeWithoutTransition(node) {
-  node.parentNode.removeChild(node);
+/**
+ * Called when an individual history entry has been removed from the page.
+ * This will only be called when all the elements affected by the deletion
+ * have been removed from the DOM and the animations have completed.
+ */
+function onEntryRemoved() {
+  historyView.updateSelectionEditButtons();
 }
 
 /**
@@ -1862,7 +1866,7 @@ function removeNode(node, onRemove) {
 
   // Delete the node when the animation is complete.
   node.addEventListener('webkitTransitionEnd', function() {
-    removeNodeWithoutTransition(node);
+    node.parentNode.removeChild(node);
     if (onRemove)
       onRemove();
   });
@@ -1877,22 +1881,35 @@ function removeEntryFromView(entry) {
   var nextEntry = entry.nextSibling;
   var previousEntry = entry.previousSibling;
 
-  removeNode(entry, function() {
-    historyView.updateSelectionEditButtons();
-  });
+  var toRemove = [entry];
 
   // if there is no previous entry, and the next entry is a gap, remove it
   if (!previousEntry && nextEntry && nextEntry.className == 'gap')
-    removeNode(nextEntry);
+    toRemove.push(nextEntry);
 
   // if there is no next entry, and the previous entry is a gap, remove it
   if (!nextEntry && previousEntry && previousEntry.className == 'gap')
-    removeNode(previousEntry);
+    toRemove.push(previousEntry);
 
   // if both the next and previous entries are gaps, remove one
   if (nextEntry && nextEntry.className == 'gap' &&
       previousEntry && previousEntry.className == 'gap') {
-    removeNode(nextEntry);
+    toRemove.push(nextEntry);
+  }
+
+  // Callback to be called when each node has finished animating. It detects
+  // when all the animations have completed, and then calls |onEntryRemoved|.
+  function onRemove() {
+    for (var i = 0; i < toRemove.length; ++i) {
+      if (toRemove[i].parentNode)
+        return;
+    }
+    onEntryRemoved();
+  }
+
+  // Kick off the removal process.
+  for (var i = 0; i < toRemove.length; ++i) {
+    removeNode(toRemove[i], onRemove);
   }
 }
 
