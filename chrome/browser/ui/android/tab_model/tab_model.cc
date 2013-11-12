@@ -123,3 +123,7 @@ void TabModel::Observe(
       NOTREACHED();
   }
 }
+
+content::WebContents* TabModel::CreateNewTabForDevTools(const GURL& url) {
+  return 0;
+}

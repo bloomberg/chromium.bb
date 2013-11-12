@@ -58,7 +58,7 @@ class TabModel : public content::NotificationObserver,
 
   // Used by Developer Tools to create a new tab with a given URL.
   // Replaces CreateTabForTesting.
-  virtual content::WebContents* CreateNewTabForDevTools(const GURL& url) = 0;
+  virtual content::WebContents* CreateNewTabForDevTools(const GURL& url);
 
   // Return true if we are currently restoring sessions asynchronously.
   virtual bool IsSessionRestoreInProgress() const = 0;
