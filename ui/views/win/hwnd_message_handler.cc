@@ -299,12 +299,6 @@ bool ProcessChildWindowMessage(UINT message,
 // The thickness of an auto-hide taskbar in pixels.
 const int kAutoHideTaskbarThicknessPx = 2;
 
-// For windows with the standard frame removed, the client area needs to be
-// different from the window area to avoid a "feature" in Windows's handling of
-// WM_NCCALCSIZE data. See the comment near the bottom of GetClientAreaInsets
-// for more details.
-const int kClientAreaBottomInsetHack = -1;
-
 }  // namespace
 
 // A scoping class that prevents a window from being able to redraw in response
@@ -786,10 +780,28 @@ void HWNDMessageHandler::FrameTypeChanged() {
                           &policy, sizeof(DWMNCRENDERINGPOLICY));
   }
 
-  ResetWindowRegion(true);
+  // Don't redraw the window here, because we need to hide and show the window
+  // which will also trigger a redraw.
+  ResetWindowRegion(true, false);
+
+  ::SetWindowPos(hwnd(), NULL, 0, 0, 0, 0,
+      SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
 
   // The non-client view needs to update too.
   delegate_->HandleFrameChanged();
+
+  // For some reason, we need to hide the window after we change the frame type.
+  // If we don't, the client area will be filled with black.  This is somehow
+  // related to an interaction between SetWindowRgn and Dwm, but it's not clear
+  // exactly what.
+  if (IsVisible()) {
+    SetWindowPos(hwnd(), NULL, 0, 0, 0, 0,
+        SWP_NOMOVE | SWP_NOSIZE | SWP_HIDEWINDOW);
+    SetWindowPos(hwnd(), NULL, 0, 0, 0, 0,
+        SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
+  }
+
+  UpdateWindow(hwnd());
 
   // WM_DWMCOMPOSITIONCHANGED is only sent to top level windows, however we want
   // to notify our children too, since we can have MDI child windows who need to
@@ -1043,22 +1055,10 @@ void HWNDMessageHandler::ClientAreaSizeChanged() {
   // In case of minimized window GetWindowRect can return normally unexpected
   // coordinates.
   if (!IsMinimized()) {
-    if (delegate_->WidgetSizeIsClientSize()) {
+    if (delegate_->WidgetSizeIsClientSize())
       GetClientRect(hwnd(), &r);
-      gfx::Insets insets;
-      bool got_insets = GetClientAreaInsets(&insets);
-      if (got_insets) {
-        // This is needed due to a hack that works around a "feature" in
-        // Windows's handling of WM_NCCALCSIZE. See the comment near the end of
-        // GetClientAreaInsets for more details.
-        if ((remove_standard_frame_ && !IsMaximized()) ||
-            !fullscreen_handler_->fullscreen()) {
-          r.bottom += kClientAreaBottomInsetHack;
-        }
-      }
-    } else {
+    else
       GetWindowRect(hwnd(), &r);
-    }
   }
   gfx::Size s(std::max(0, static_cast<int>(r.right - r.left)),
               std::max(0, static_cast<int>(r.bottom - r.top)));
@@ -1090,46 +1090,11 @@ bool HWNDMessageHandler::GetClientAreaInsets(gfx::Insets* insets) const {
     return true;
   }
 
-  // Returning empty insets for a window with the standard frame removed seems
-  // to cause Windows to treat the window specially, treating black as
-  // transparent and changing around some of the painting logic. I suspect it's
-  // some sort of horrible backwards-compatability hack, but the upshot of it
-  // is that if the insets are empty then in certain conditions (it seems to
-  // be subtly related to timing), the contents of windows with the standard
-  // frame removed will flicker to transparent during resize.
-  //
-  // To work around this, we increase the size of the client area by 1px
-  // *beyond* the bottom of the window. This prevents Windows from having a
-  // hissy fit and flashing the window incessantly during resizes, but it also
-  // means that the client area is reported 1px larger than it really is, so
-  // user code has to compensate by making its content shorter if it wants
-  // everything to appear inside the window.
-  if (remove_standard_frame_) {
-    *insets =
-        gfx::Insets(0, 0, IsMaximized() ? 0 : kClientAreaBottomInsetHack, 0);
-    return true;
-  }
-
-  // This is weird, but highly essential. If we don't offset the bottom edge
-  // of the client rect, the window client area and window area will match,
-  // and when returning to glass rendering mode from non-glass, the client
-  // area will not paint black as transparent. This is because (and I don't
-  // know why) the client area goes from matching the window rect to being
-  // something else. If the client area is not the window rect in both
-  // modes, the blackness doesn't occur. Because of this, we need to tell
-  // the RootView to lay out to fit the window rect, rather than the client
-  // rect when using the opaque frame.
-  // Note: this is only required for non-fullscreen windows. Note that
-  // fullscreen windows are in restored state, not maximized.
-  // Note that previously we used to inset by 1 instead of outset, but that
-  // doesn't work with Aura: http://crbug.com/172099 http://crbug.com/277228
-  *insets = gfx::Insets(
-      0, 0,
-      fullscreen_handler_->fullscreen() ? 0 : kClientAreaBottomInsetHack, 0);
+  *insets = gfx::Insets(0, 0, 0, 0);
   return true;
 }
 
-void HWNDMessageHandler::ResetWindowRegion(bool force) {
+void HWNDMessageHandler::ResetWindowRegion(bool force, bool redraw) {
   // A native frame uses the native window region, and we don't want to mess
   // with it.
   // WS_EX_COMPOSITED is used instead of WS_EX_LAYERED under aura. WS_EX_LAYERED
@@ -1139,7 +1104,7 @@ void HWNDMessageHandler::ResetWindowRegion(bool force) {
   if ((window_ex_style() & WS_EX_COMPOSITED) == 0 &&
       (!delegate_->IsUsingCustomFrame() || !delegate_->IsWidgetWindow())) {
     if (force)
-      SetWindowRgn(hwnd(), NULL, TRUE);
+      SetWindowRgn(hwnd(), NULL, redraw);
     return;
   }
 
@@ -1168,7 +1133,7 @@ void HWNDMessageHandler::ResetWindowRegion(bool force) {
 
   if (current_rgn_result == ERROR || !EqualRgn(current_rgn, new_region)) {
     // SetWindowRgn takes ownership of the HRGN created by CreateNativeRegion.
-    SetWindowRgn(hwnd(), new_region, TRUE);
+    SetWindowRgn(hwnd(), new_region, redraw);
   } else {
     DeleteObject(new_region);
   }
@@ -1381,12 +1346,7 @@ LRESULT HWNDMessageHandler::OnDwmCompositionChanged(UINT msg,
     SetMsgHandled(FALSE);
     return 0;
   }
-  // For some reason, we need to hide the window while we're changing the frame
-  // type only when we're changing it in response to WM_DWMCOMPOSITIONCHANGED.
-  // If we don't, the client area will be filled with black. I'm suspecting
-  // something skia-ey.
-  // Frame type toggling caused by the user (e.g. switching theme) doesn't seem
-  // to have this requirement.
+
   FrameTypeChanged();
   return 0;
 }
@@ -1417,11 +1377,6 @@ void HWNDMessageHandler::OnGetMinMaxInfo(MINMAXINFO* minmax_info) {
     CRect client_rect, window_rect;
     GetClientRect(hwnd(), &client_rect);
     GetWindowRect(hwnd(), &window_rect);
-    // Due to the client area bottom inset hack (detailed elsewhere), adjust
-    // the reported size of the client area in the case that the standard frame
-    // has been removed.
-    if (remove_standard_frame_)
-      client_rect.bottom += kClientAreaBottomInsetHack;
     window_rect -= client_rect;
     min_window_size.Enlarge(window_rect.Width(), window_rect.Height());
     if (!max_window_size.IsEmpty())
@@ -2028,7 +1983,7 @@ void HWNDMessageHandler::OnSize(UINT param, const CSize& size) {
   RedrawWindow(hwnd(), NULL, NULL, RDW_INVALIDATE | RDW_ALLCHILDREN);
   // ResetWindowRegion is going to trigger WM_NCPAINT. By doing it after we've
   // invoked OnSize we ensure the RootView has been laid out.
-  ResetWindowRegion(false);
+  ResetWindowRegion(false, true);
 }
 
 void HWNDMessageHandler::OnSysCommand(UINT notification_code,

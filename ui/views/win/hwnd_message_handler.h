@@ -252,7 +252,7 @@ class VIEWS_EXPORT HWNDMessageHandler :
   // Resets the window region for the current widget bounds if necessary.
   // If |force| is true, the window region is reset to NULL even for native
   // frame windows.
-  void ResetWindowRegion(bool force);
+  void ResetWindowRegion(bool force, bool redraw);
 
   // Calls DefWindowProc, safely wrapping the call in a ScopedRedrawLock to
   // prevent frame flicker. DefWindowProc handling can otherwise render the
