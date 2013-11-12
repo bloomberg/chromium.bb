@@ -51,6 +51,8 @@ class Forwarder(object):
   _LD_LIBRARY_PATH = 'LD_LIBRARY_PATH=%s' % _DEVICE_FORWARDER_FOLDER
   _LOCK_PATH = '/tmp/chrome.forwarder.lock'
   _MULTIPROCESSING_ENV_VAR = 'CHROME_FORWARDER_USE_MULTIPROCESSING'
+  # Defined in host_forwarder_main.cc
+  _HOST_FORWARDER_LOG = '/tmp/host_forwarder_log'
 
   _instance = None
 
@@ -132,12 +134,21 @@ class Forwarder(object):
       port_pairs: A list of tuples (device_port, host_port) to unmap.
     """
     with _FileLock(Forwarder._LOCK_PATH):
+      if not Forwarder._instance:
+        return
+      adb_serial = adb.Adb().GetSerialNumber()
+      if adb_serial not in Forwarder._instance._initialized_devices:
+        return
       port_map = Forwarder._GetInstanceLocked(
           None)._device_to_host_port_map
-      adb_serial = adb.Adb().GetSerialNumber()
       for (device_serial, device_port) in port_map.keys():
         if adb_serial == device_serial:
           Forwarder._UnmapDevicePortLocked(device_port, adb)
+      # There are no more ports mapped, kill the device_forwarder.
+      tool = valgrind_tools.CreateTool(None, adb)
+      Forwarder._KillDeviceLocked(adb, tool)
+      Forwarder._instance._initialized_devices.remove(adb_serial)
+
 
   @staticmethod
   def DevicePortForHostPort(host_port):
@@ -146,6 +157,18 @@ class Forwarder(object):
       (device_serial, device_port) = Forwarder._GetInstanceLocked(
           None)._host_to_device_port_map.get(host_port)
       return device_port
+
+  @staticmethod
+  def RemoveHostLog():
+    if os.path.exists(Forwarder._HOST_FORWARDER_LOG):
+      os.unlink(Forwarder._HOST_FORWARDER_LOG)
+
+  @staticmethod
+  def GetHostLog():
+    if not os.path.exists(Forwarder._HOST_FORWARDER_LOG):
+      return ''
+    with file(Forwarder._HOST_FORWARDER_LOG, 'r') as f:
+      return f.read()
 
   @staticmethod
   def _GetInstanceLocked(tool):

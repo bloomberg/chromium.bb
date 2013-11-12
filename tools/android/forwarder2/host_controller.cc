@@ -95,6 +95,8 @@ void HostController::ReadNextCommandSoon() {
 
 void HostController::ReadCommandOnInternalThread() {
   if (!ReceivedCommand(command::ACCEPT_SUCCESS, adb_control_socket_.get())) {
+    LOG(ERROR) << "Did not receive ACCEPT_SUCCESS for port: "
+               << host_port_;
     SelfDelete();
     return;
   }
@@ -112,9 +114,11 @@ void HostController::ReadCommandOnInternalThread() {
       ReadNextCommandSoon();
       return;
     }
+    LOG(ERROR) << "Will delete host controller: " << host_port_;
     SelfDelete();
     return;
   }
+  LOG(INFO) << "Will send HOST_SERVER_SUCCESS: " << host_port_;
   SendCommand(
       command::HOST_SERVER_SUCCESS, device_port_, adb_control_socket_.get());
   StartForwarder(host_server_data_socket.Pass());

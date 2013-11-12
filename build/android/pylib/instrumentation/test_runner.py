@@ -58,7 +58,7 @@ class TestRunner(base_test_runner.BaseTestRunner):
   _DEVICE_HAS_TEST_FILES = {}
 
   def __init__(self, test_options, device, shard_index, test_pkg,
-               ports_to_forward, additional_flags=None):
+               additional_flags=None):
     """Create a new TestRunner.
 
     Args:
@@ -66,8 +66,6 @@ class TestRunner(base_test_runner.BaseTestRunner):
       device: Attached android device.
       shard_index: Shard index.
       test_pkg: A TestPackage object.
-      ports_to_forward: A list of port numbers for which to set up forwarders.
-          Can be optionally requested by a test case.
       additional_flags: A list of additional flags to add to the command line.
     """
     super(TestRunner, self).__init__(device, test_options.tool,
@@ -77,7 +75,6 @@ class TestRunner(base_test_runner.BaseTestRunner):
 
     self.options = test_options
     self.test_pkg = test_pkg
-    self.ports_to_forward = ports_to_forward
     self.coverage_dir = test_options.coverage_dir
     # Use the correct command line file for the package under test.
     cmdline_file = [a.cmdline_file for a in constants.PACKAGE_INFO.itervalues()
@@ -157,15 +154,11 @@ class TestRunner(base_test_runner.BaseTestRunner):
     # launch lighttpd with same port at same time.
     http_server_ports = self.LaunchTestHttpServer(
         os.path.join(constants.DIR_SOURCE_ROOT), self._lighttp_port)
-    if self.ports_to_forward:
-      self._ForwardPorts([(port, port) for port in self.ports_to_forward])
     self.flags.AddFlags(['--disable-fre', '--enable-test-intents'])
 
   def TearDown(self):
     """Cleans up the test harness and saves outstanding data from test run."""
     self.flags.Restore()
-    if self.ports_to_forward:
-      self._UnmapPorts([(port, port) for port in self.ports_to_forward])
     super(TestRunner, self).TearDown()
 
   def TestSetup(self, test):

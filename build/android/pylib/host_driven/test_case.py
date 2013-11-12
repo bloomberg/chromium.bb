@@ -26,6 +26,8 @@ import time
 
 from pylib import android_commands
 from pylib import constants
+from pylib import forwarder
+from pylib import valgrind_tools
 from pylib.base import base_test_result
 from pylib.instrumentation import test_package
 from pylib.instrumentation import test_result
@@ -56,17 +58,23 @@ class HostDrivenTestCase(object):
 
     self.instrumentation_options = instrumentation_options
     self.ports_to_forward = []
+    self.has_forwarded_ports = False
 
+  # TODO(bulach): make ports_to_forward not optional and move the Forwarder
+  # mapping here.
   def SetUp(self, device, shard_index, push_deps,
-            cleanup_test_files):
+            cleanup_test_files, ports_to_forward=[]):
     self.device_id = device
     self.shard_index = shard_index
     self.adb = android_commands.AndroidCommands(self.device_id)
     self.push_deps = push_deps
     self.cleanup_test_files = cleanup_test_files
+    if ports_to_forward:
+      self.ports_to_forward = ports_to_forward
 
   def TearDown(self):
-    pass
+    if self.ports_to_forward:
+      forwarder.Forwarder.UnmapAllDevicePorts(self.adb)
 
   # TODO(craigdh): Remove GetOutDir once references have been removed
   # downstream.
@@ -77,6 +85,22 @@ class HostDrivenTestCase(object):
     logging.info('Running host-driven test: %s', self.tagged_name)
     # Get the test method on the derived class and execute it
     return getattr(self, self.test_name)()
+
+  def __GetHostForwarderLog(self):
+    return ('-- Begin Full HostForwarder log\n'
+            '%s\n'
+            '--End Full HostForwarder log\n' % forwarder.Forwarder.GetHostLog())
+
+  def __StartForwarder(self):
+    # Unmap any left over from previous test.
+    forwarder.Forwarder.UnmapAllDevicePorts(self.adb)
+    logging.warning('Forwarding %s %s', self.ports_to_forward,
+                    self.has_forwarded_ports)
+    if self.ports_to_forward and not self.has_forwarded_ports:
+      self.has_forwarded_ports = True
+      tool = valgrind_tools.CreateTool(None, self.adb)
+      forwarder.Forwarder.Map([(port, port) for port in self.ports_to_forward],
+                              self.adb, tool)
 
   def __RunJavaTest(self, test, test_pkg, additional_flags=None):
     """Runs a single Java test in a Java TestRunner.
@@ -89,10 +113,12 @@ class HostDrivenTestCase(object):
     Returns:
       TestRunResults object with a single test result.
     """
+    # TODO(bulach): move this to SetUp() stage.
+    self.__StartForwarder()
+
     java_test_runner = test_runner.TestRunner(self.instrumentation_options,
                                               self.device_id,
                                               self.shard_index, test_pkg,
-                                              self.ports_to_forward,
                                               additional_flags=additional_flags)
     try:
       java_test_runner.SetUp()
@@ -141,6 +167,7 @@ class HostDrivenTestCase(object):
         if not java_result.DidRunPass():
           result = java_result.GetNotPass().pop()
           log = result.GetLog()
+          log += self.__GetHostForwarderLog()
           test_type = result.GetType()
           done = True
           break

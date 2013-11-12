@@ -235,6 +235,7 @@ class HostControllersManager {
     // No other port is being forwarded to this device:
     // - Remove it from our internal serial -> adb port map.
     // - Remove from "adb forward" command.
+    LOG(INFO) << "Device " << device_serial << " has no more ports.";
     device_serial_to_adb_port_map_.erase(device_serial);
     const std::string serial_part = device_serial.empty() ?
         std::string() : std::string("-s ") + device_serial;
@@ -242,9 +243,23 @@ class HostControllersManager {
         "adb %s forward --remove tcp:%d",
         serial_part.c_str(),
         port);
-    LOG(INFO) << command;
     const int ret = system(command.c_str());
-    DCHECK(ret == 0);
+    LOG(INFO) << command << " ret: " << ret;
+    // Wait for the socket to be fully unmapped.
+    const std::string port_mapped_cmd = base::StringPrintf(
+        "lsof -nPi:%d",
+        port);
+    const int poll_interval_us = 500 * 1000;
+    int retries = 3;
+    while (retries) {
+      const int port_unmapped = system(port_mapped_cmd.c_str());
+      LOG(INFO) << "Device " << device_serial << " port " << port << " unmap "
+                << port_unmapped;
+      if (port_unmapped)
+        break;
+      --retries;
+      usleep(poll_interval_us);
+    }
   }
 
   int GetAdbPortForDevice(const std::string& device_serial) {

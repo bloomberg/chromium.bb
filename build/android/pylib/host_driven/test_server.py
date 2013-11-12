@@ -15,9 +15,12 @@ through accessing the member field |host| and the port name through |port|.
 For shutting down the server, call TearDown().
 """
 
+import logging
 import subprocess
 import os
 import os.path
+import time
+import urllib2
 
 from pylib import constants
 
@@ -45,7 +48,17 @@ _TEST_SERVER_HOST = '127.0.0.1'
 # Paths for supported test server executables.
 TEST_NET_SERVER_PATH = 'net/tools/testserver/testserver.py'
 TEST_SYNC_SERVER_PATH = 'sync/tools/testserver/sync_testserver.py'
-
+# Parameters to check that the server is up and running.
+TEST_SERVER_CHECK_PARAMS = {
+  TEST_NET_SERVER_PATH: {
+      'url_path': '/',
+      'response': 'Default response given for path'
+  },
+  TEST_SYNC_SERVER_PATH: {
+      'url_path': 'chromiumsync/time',
+      'response': '0123456789'
+  },
+}
 
 class TestServer(object):
   """Sets up a host driven test server on the host machine.
@@ -87,6 +100,21 @@ class TestServer(object):
            ('--port=%d' % self.port)]
     self._test_server_process = subprocess.Popen(
           cmd, env={'PYTHONPATH': python_path})
+    test_url = 'http://%s:%d/%s' % (self.host, self.port,
+        TEST_SERVER_CHECK_PARAMS[test_server_path]['url_path'])
+    expected_response = TEST_SERVER_CHECK_PARAMS[test_server_path]['response']
+    retries = 0
+    while retries < 5:
+      try:
+        d = urllib2.urlopen(test_url).read()
+        logging.info('URL %s GOT: %s' % (test_url, d))
+        if d.startswith(expected_response):
+          break
+      except Exception as e:
+        logging.info('URL %s GOT: %s' % (test_url, e))
+      time.sleep(retries * 0.1)
+      retries += 1
 
   def TearDown(self):
     self._test_server_process.kill()
+    self._test_server_process.wait()

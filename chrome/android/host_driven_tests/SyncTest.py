@@ -20,8 +20,6 @@ class SyncTest(test_case.HostDrivenTestCase):
     self.additional_flags = []
 
   def SetUp(self, device, shard_index, push_deps, cleanup_test_files):
-    super(SyncTest, self).SetUp(device, shard_index, push_deps,
-                                cleanup_test_files)
     self.test_server = test_server.TestServer(
         shard_index,
         constants.TEST_SYNC_SERVER_PORT,
@@ -30,11 +28,13 @@ class SyncTest(test_case.HostDrivenTestCase):
     self.additional_flags = [
         '--sync-url=http://%s:%d/chromiumsync' %
         (self.test_server.host, self.test_server.port)]
-    self.ports_to_forward = [self.test_server.port]
+    super(SyncTest, self).SetUp(device, shard_index, push_deps,
+                                cleanup_test_files,
+                                [self.test_server.port])
 
   def TearDown(self):
-    self.test_server.TearDown()
     super(SyncTest, self).TearDown()
+    self.test_server.TearDown()
 
   def _RunSyncTests(self, test_names):
     full_names = []

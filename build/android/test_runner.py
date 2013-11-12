@@ -15,6 +15,7 @@ import sys
 
 from pylib import android_commands
 from pylib import constants
+from pylib import forwarder
 from pylib import ports
 from pylib.base import base_test_result
 from pylib.base import test_dispatcher
@@ -687,6 +688,8 @@ def RunTestsCommand(command, options, args, option_parser):
   ProcessCommonOptions(options)
 
   devices = _GetAttachedDevices(options.test_device)
+
+  forwarder.Forwarder.RemoveHostLog()
 
   if command == 'gtest':
     return _RunGTests(options, option_parser.error, devices)

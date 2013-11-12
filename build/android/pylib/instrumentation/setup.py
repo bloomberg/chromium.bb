@@ -35,6 +35,6 @@ def Setup(test_options):
 
   def TestRunnerFactory(device, shard_index):
     return test_runner.TestRunner(test_options, device, shard_index,
-                                  test_pkg, [])
+                                  test_pkg)
 
   return (TestRunnerFactory, tests)
