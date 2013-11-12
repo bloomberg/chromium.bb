@@ -8,15 +8,12 @@
  * Progress center panel.
  *
  * @param {HTMLElement} element DOM Element of the process center panel.
- * @param {function(string)} cancelCallback Callback to becalled with the ID of
- *     the progress item when the cancel button is clicked.
  * @constructor
  */
-var ProgressCenterPanel = function(element, cancelCallback) {
+var ProgressCenterPanel = function(element) {
   this.element_ = element;
   this.openView_ = this.element_.querySelector('#progress-center-open-view');
   this.closeView_ = this.element_.querySelector('#progress-center-close-view');
-  this.cancelCallback_ = cancelCallback;
 
   /**
    * Reset is requested but it is pending until the transition of progress bar
@@ -32,6 +29,12 @@ var ProgressCenterPanel = function(element, cancelCallback) {
    * @private
    */
   this.closeViewItem_ = this.closeView_.querySelector('li');
+
+  /**
+   * Callback to becalled with the ID of the progress item when the cancel
+   * button is clicked.
+   */
+  this.cancelCallback = null;
 
   Object.seal(this);
 
@@ -132,7 +135,7 @@ ProgressCenterPanel.prototype.updateItem = function(item, summarizedItem) {
 
       // If the item is complete state, once update it because it may turn to
       // have the pre-complete attribute.
-      if (item.state == ProgressItemState.COMPLETE)
+      if (item.state === ProgressItemState.COMPLETE)
         ProgressCenterPanel.updateItemElement_(itemElement, item);
 
       // If the item has the pre-complete attribute, keep showing it. Otherwise,
@@ -244,6 +247,7 @@ ProgressCenterPanel.prototype.onClick_ = function(event) {
   else if ((event.target.classList.contains('toggle') &&
             this.closeView_.classList.contains('single')) ||
            event.target.classList.contains('cancel'))
-    this.cancelCallback_(
-        event.target.parentNode.parentNode.getAttribute('data-progress-id'));
+    if (this.cancelCallback)
+      this.cancelCallback(
+          event.target.parentNode.parentNode.getAttribute('data-progress-id'));
 };

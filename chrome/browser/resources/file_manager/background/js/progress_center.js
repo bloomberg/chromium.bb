@@ -9,8 +9,6 @@
  * @constructor
  */
 var ProgressCenter = function() {
-  cr.EventTarget.call(this);
-
   /**
    * Default container.
    * @type {ProgressItemContainer}
@@ -26,12 +24,21 @@ var ProgressCenter = function() {
   this.items_ = [];
 
   /**
+   * List of panel UI managed by the progress center.
+   * @type {Array.<ProgressCenterPanel>}
+   * @private
+   */
+  this.panels_ = [];
+
+  /**
    * Timeout callback to remove items.
    * @type {TimeoutManager}
    * @private
    */
   this.resetTimeout_ = new ProgressCenter.TimeoutManager(
       this.reset_.bind(this));
+
+  Object.seal(this);
 };
 
 /**
@@ -79,8 +86,6 @@ ProgressCenter.TimeoutManager.prototype.callImmediately = function() {
 };
 
 ProgressCenter.prototype = {
-  __proto__: cr.EventTarget.prototype,
-
   /**
    * Obtains the items to be displayed in the application window.
    * @private
@@ -108,10 +113,10 @@ ProgressCenter.prototype.updateItem = function(item) {
     this.items_[index] = item;
   }
 
-  // Disptach event.
-  var event = new Event(ProgressCenterEvent.ITEM_UPDATED);
-  event.item = item;
-  this.dispatchEvent(event);
+  // Update panels.
+  var summarizedItem = this.getSummarizedItem_();
+  for (var i = 0; i < this.panels_.length; i++)
+    this.panels_[i].updateItem(item, summarizedItem);
 
   // Reset if there is no item.
   for (var i = 0; i < this.items_.length; i++) {
@@ -163,12 +168,47 @@ ProgressCenter.prototype.switchContainer = function(newContainer) {
 };
 
 /**
+ * Adds a panel UI to the notification center.
+ * @param {ProgressCenterPanel} panel Panel UI.
+ */
+ProgressCenter.prototype.addPanel = function(panel) {
+  if (this.panels_.indexOf(panel) !== -1)
+    return;
+
+  // Update the panel list.
+  this.panels_.push(panel);
+
+  // Set the current items.
+  var summarizedItem = this.getSummarizedItem_();
+  var items = this.applicationItems;
+  for (var i = 0; i < items.length; i++)
+    panel.updateItem(items[i], summarizedItem);
+
+  // Register the cancel callback.
+  panel.cancelCallback = this.requestCancel.bind(this);
+};
+
+/**
+ * Removes a panel UI from the notification center.
+ * @param {ProgressCenterPanel} panel Panel UI.
+ */
+ProgressCenter.prototype.removePanel = function(panel) {
+  var index = this.panels_.indexOf(panel);
+  if (index === -1)
+    return;
+
+  this.panels_.splice(index, 1);
+  panel.cancelCallback = null;
+};
+
+/**
  * Obtains the summarized item to be displayed in the closed progress center
  * panel.
  * @return {ProgressCenterItem} Summarized item. Returns null if there is no
  *     item.
+ * @private
  */
-ProgressCenter.prototype.getSummarizedItem = function() {
+ProgressCenter.prototype.getSummarizedItem_ = function() {
   // Check the number of application items.
   var applicationItems = this.applicationItems;
   if (applicationItems.length == 0)
@@ -292,7 +332,8 @@ ProgressCenter.prototype.reset_ = function() {
   this.items_.splice(0, this.items_.length);
 
   // Dispatch a event.
-  this.dispatchEvent(new Event(ProgressCenterEvent.RESET));
+  for (var i = 0; i < this.panels_.length; i++)
+    this.panels_[i].reset();
 };
 
 /**

@@ -747,29 +747,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
 
     // Initialize progress center panel.
     this.progressCenterPanel_ = new ProgressCenterPanel(
-        dom.querySelector('#progress-center'),
-        this.backgroundPage_.background.progressCenter.requestCancel.bind(
-            this.backgroundPage_.background.progressCenter));
-    var initialItems =
-        this.backgroundPage_.background.progressCenter.applicationItems;
-    for (var i = 0; i < initialItems.length; i++) {
-      this.progressCenterPanel_.updateItem(
-          initialItems[i],
-          this.backgroundPage_.background.progressCenter.getSummarizedItem());
-    }
-    this.backgroundPage_.background.progressCenter.addEventListener(
-        ProgressCenterEvent.ITEM_UPDATED,
-        function(event) {
-          this.progressCenterPanel_.updateItem(
-              event.item,
-              this.backgroundPage_.background.progressCenter.
-                  getSummarizedItem());
-        }.bind(this));
-    this.backgroundPage_.background.progressCenter.addEventListener(
-        ProgressCenterEvent.RESET,
-        function(event) {
-          this.progressCenterPanel_.reset();
-        }.bind(this));
+        dom.querySelector('#progress-center'));
+    this.backgroundPage_.background.progressCenter.addPanel(
+        this.progressCenterPanel_);
 
     this.document_.addEventListener('keydown', this.onKeyDown_.bind(this));
 
@@ -2292,6 +2272,9 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
       this.filePopup_.contentWindow.unload(true /* exiting */);
     if (this.butterBar_)
       this.butterBar_.dispose();
+    if (this.progressCenterPanel_)
+      this.backgroundPage_.background.progressCenter.removePanel(
+          this.progressCenterPanel_);
     if (this.fileOperationManager_) {
       if (this.onCopyProgressBound_) {
         this.fileOperationManager_.removeEventListener(
