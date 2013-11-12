@@ -16,8 +16,9 @@ see .cc files in green and get confused.
 - For file base name with ambiguous state and that should not be checked for
   shebang, add it to IGNORED_FILENAMES.
 
-Any file not matching the above will be opened and looked if it has a shebang.
-It this doesn't match the executable bit on the file, the file will be flagged.
+Any file not matching the above will be opened and looked if it has a shebang
+or an ELF header. If this does not match the executable bit on the file, the
+file will be flagged.
 
 Note that all directory separators must be slashes (Unix-style) and not
 backslashes. All directories should be relative to the source root and all
@@ -99,6 +100,7 @@ NON_EXECUTABLE_EXTENSIONS = (
   'mm',
   'mms',
   'mock-http-headers',
+  'nexe',
   'nmf',
   'onc',
   'pat',
@@ -134,11 +136,24 @@ NON_EXECUTABLE_EXTENSIONS = (
 #
 # Case-insensitive, lower-case only.
 NON_EXECUTABLE_PATHS = (
+  'build/android/tests/symbolize/liba.so',
+  'build/android/tests/symbolize/libb.so',
   'chrome/installer/mac/sign_app.sh.in',
   'chrome/installer/mac/sign_versioned_dir.sh.in',
-  )
+  'chrome/test/data/components/ihfokbkgjpifnbbojhneepfflplebdkc/'
+      'ihfokbkgjpifnbbojhneepfflplebdkc_1/a_changing_binary_file',
+  'chrome/test/data/components/ihfokbkgjpifnbbojhneepfflplebdkc/'
+      'ihfokbkgjpifnbbojhneepfflplebdkc_2/a_changing_binary_file',
+  'chrome/test/data/extensions/uitest/plugins/plugin32.so',
+  'chrome/test/data/extensions/uitest/plugins/plugin64.so',
+  'chrome/test/data/extensions/uitest/plugins_private/plugin32.so',
+  'chrome/test/data/extensions/uitest/plugins_private/plugin64.so',
+  'courgette/testdata/elf-32-1',
+  'courgette/testdata/elf-32-2',
+  'courgette/testdata/elf-64',
+)
 
-# File names that are always whitelisted.  (These are all autoconf spew.)
+# File names that are always whitelisted.  (These are mostly autoconf spew.)
 #
 # Case-sensitive.
 IGNORED_FILENAMES = (
@@ -158,10 +173,9 @@ IGNORED_FILENAMES = (
 #
 # Case-insensitive, lower-case only.
 IGNORED_PATHS = (
-  # TODO(maruel): Detect ELF files.
-  'native_client_sdk/src/build_tools/sdk_tools/third_party/',
+  'native_client_sdk/src/build_tools/sdk_tools/third_party/fancy_urllib/'
+      '__init__.py',
   'out/',
-  'tools/gn/bin/',
   # TODO(maruel): Fix these.
   'third_party/android_testrunner/',
   'third_party/bintrees/',
@@ -274,13 +288,14 @@ def has_executable_bit(full_path):
   return bool(permission & os.stat(full_path).st_mode)
 
 
-def has_shebang(full_path):
-  """Returns if the file starts with #!/.
+def has_shebang_or_is_elf(full_path):
+  """Returns if the file starts with #!/ or is an ELF binary.
 
-  file_path is the absolute path to the file.
+  full_path is the absolute path to the file.
   """
   with open(full_path, 'rb') as f:
-    return f.read(3) == '#!/'
+    data = f.read(4)
+    return (data[:3] == '#!/', data == '\x7fELF')
 
 
 def check_file(root_path, rel_path, bare_output):
@@ -291,8 +306,8 @@ def check_file(root_path, rel_path, bare_output):
 
   If the file name is matched with must_be_executable() or
   must_not_be_executable(), only its executable bit is checked.
-  Otherwise, the first 3 bytes of the file are read to verify if it has a
-  shebang and compares this with the executable bit on the file.
+  Otherwise, the first few bytes of the file are read to verify if it has a
+  shebang or ELF header and compares this with the executable bit on the file.
   """
   full_path = os.path.join(root_path, rel_path)
   try:
@@ -316,15 +331,16 @@ def check_file(root_path, rel_path, bare_output):
       return '%s: Must not have executable bit set' % full_path
     return
 
-  # For the others, it depends on the shebang.
-  shebang = has_shebang(full_path)
-  if bit != shebang:
+  # For the others, it depends on the file header.
+  (shebang, elf) = has_shebang_or_is_elf(full_path)
+  if bit != (shebang or elf):
     if bare_output:
       return full_path
     if bit:
-      return '%s: Has executable bit but not shebang' % full_path
-    else:
+      return '%s: Has executable bit but not shebang or ELF header' % full_path
+    if shebang:
       return '%s: Has shebang but not executable bit' % full_path
+    return '%s: Has ELF header but not executable bit' % full_path
 
 
 def check_files(root, files, bare_output):
@@ -345,7 +361,7 @@ class ApiBase(object):
     self.root_dir = root_dir
     self.bare_output = bare_output
     self.count = 0
-    self.count_shebang = 0
+    self.count_read_header = 0
 
   def check_file(self, rel_path):
     logging.debug('check_file(%s)' % rel_path)
@@ -353,7 +369,7 @@ class ApiBase(object):
 
     if (not must_be_executable(rel_path) and
         not must_not_be_executable(rel_path)):
-      self.count_shebang += 1
+      self.count_read_header += 1
 
     return check_file(self.root_dir, rel_path, self.bare_output)
 
@@ -511,8 +527,8 @@ Examples:
   errors = api.check(start_dir)
 
   if not options.bare:
-    print 'Processed %s files, %d files where tested for shebang' % (
-        api.count, api.count_shebang)
+    print 'Processed %s files, %d files where tested for shebang/ELF header' % (
+        api.count, api.count_read_header)
 
   if errors:
     if not options.bare:
