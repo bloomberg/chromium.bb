@@ -1888,6 +1888,8 @@
             'dom/Entity.h',
             'dom/ExecutionContextTask.cpp',
             'dom/ExecutionContextTask.h',
+            'dom/MainThreadTaskRunner.cpp',
+            'dom/MainThreadTaskRunner.h',
             'dom/FullscreenElementStack.cpp',
             'dom/FullscreenElementStack.h',
             'dom/GlobalEventHandlers.h',
@@ -3501,6 +3503,7 @@
             'css/CSSCalculationValueTest.cpp',
             'css/CSSValueTestHelper.h',
             'editing/TextIteratorTest.cpp',
+            'dom/MainThreadTaskRunnerTest.cpp',
             'fetch/ImageResourceTest.cpp',
             'fetch/MemoryCacheTest.cpp',
             'fetch/ResourceFetcherTest.cpp',
@@ -3530,6 +3533,8 @@
             'platform/image-decoders/webp/WEBPImageDecoderTest.cpp',
             'platform/testing/FakeWebGraphicsContext3D.h',
             'rendering/RenderOverflowTest.cpp',
+            'testing/UnitTestHelpers.h',
+            'testing/UnitTestHelpers.cpp',
         ],
     }
 }

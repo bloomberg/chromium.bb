@@ -41,9 +41,9 @@
 #include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
 #include "core/page/Page.h"
+#include "core/testing/UnitTestHelpers.h"
 #include "platform/SharedBuffer.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebThread.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/WebUnitTestSupport.h"
@@ -51,20 +51,6 @@
 using namespace WebCore;
 
 namespace {
-
-class QuitTask : public blink::WebThread::Task {
-public:
-    virtual void run()
-    {
-        blink::Platform::current()->currentThread()->exitRunLoop();
-    }
-};
-
-void runPendingTasks()
-{
-    blink::Platform::current()->currentThread()->postTask(new QuitTask);
-    blink::Platform::current()->currentThread()->enterRunLoop();
-}
 
 TEST(ImageResourceTest, MultipartImage)
 {
@@ -147,7 +133,7 @@ TEST(ImageResourceTest, CancelOnDetach)
     EXPECT_NE(reinterpret_cast<Resource*>(0), memoryCache()->resourceForURL(testURL));
 
     // Trigger the cancel timer, ensure the load was cancelled and the resource was evicted from the cache.
-    runPendingTasks();
+    WebCore::testing::runPendingTasks();
     EXPECT_EQ(Resource::LoadError, cachedImage->status());
     EXPECT_EQ(reinterpret_cast<Resource*>(0), memoryCache()->resourceForURL(testURL));
 
