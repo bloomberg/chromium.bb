@@ -50,6 +50,11 @@
 
 namespace {
 
+// Timeout in seconds to wait for a reply for the initial Apple Event. Note that
+// kAEDefaultTimeout on Mac is "about one minute" according to Apple's
+// documentation, but is no longer supported for asynchronous Apple Events.
+const int kPingChromeTimeoutSeconds = 60;
+
 const app_mode::ChromeAppModeInfo* g_info;
 base::Thread* g_io_thread = NULL;
 
@@ -97,6 +102,10 @@ class AppShimController : public IPC::Listener {
   // was sent, or when the ping fails (if |success| is false).
   void OnPingChromeReply(bool success);
 
+  // Called |kPingChromeTimeoutSeconds| after startup, to allow a timeout on the
+  // ping event to be detected.
+  void OnPingChromeTimeout();
+
   // Connects to Chrome and sends a LaunchApp message.
   void Init();
 
@@ -134,6 +143,7 @@ class AppShimController : public IPC::Listener {
   IPC::ChannelProxy* channel_;
   base::scoped_nsobject<AppShimDelegate> delegate_;
   bool launch_app_done_;
+  bool ping_chrome_reply_received_;
 
   DISALLOW_COPY_AND_ASSIGN(AppShimController);
 };
@@ -141,7 +151,8 @@ class AppShimController : public IPC::Listener {
 AppShimController::AppShimController()
     : channel_(NULL),
       delegate_([[AppShimDelegate alloc] init]),
-      launch_app_done_(false) {
+      launch_app_done_(false),
+      ping_chrome_reply_received_(false) {
   // Since AppShimController is created before the main message loop starts,
   // NSApp will not be set, so use sharedApplication.
   [[NSApplication sharedApplication] setDelegate:delegate_];
@@ -153,12 +164,18 @@ AppShimController::~AppShimController() {
 }
 
 void AppShimController::OnPingChromeReply(bool success) {
+  ping_chrome_reply_received_ = true;
   if (!success) {
     [NSApp terminate:nil];
     return;
   }
 
   Init();
+}
+
+void AppShimController::OnPingChromeTimeout() {
+  if (!ping_chrome_reply_received_)
+    [NSApp terminate:nil];
 }
 
 void AppShimController::Init() {
@@ -476,9 +493,10 @@ void AppShimController::SendSetAppHidden(bool hidden) {
                   targetDescriptor:target
                           returnID:kAutoGenerateReturnID
                      transactionID:kAnyTransactionID];
-  // And away we go.
-  // TODO(jeremya): if we don't care about the contents of the reply, can we
-  // pass NULL for the reply event parameter?
+
+  // Note that AESendMessage effectively ignores kAEDefaultTimeout, because this
+  // call does not pass kAEWantReceipt (which is deprecated and unsupported on
+  // Mac). Instead, rely on OnPingChromeTimeout().
   OSStatus status = AESendMessage(
       [initial_event aeDesc], &replyEvent_, kAEQueueReply, kAEDefaultTimeout);
   if (status != noErr) {
@@ -577,14 +595,14 @@ int ChromeAppModeStart(const app_mode::ChromeAppModeInfo* info) {
       pid = [[existing_chrome objectAtIndex:0] processIdentifier];
   }
 
-  // Launch Chrome if it isn't already running.
-  ProcessSerialNumber psn;
-  if (pid > -1) {
-    OSStatus status = GetProcessForPID(pid, &psn);
-    if (status)
-      return 1;
+  AppShimController controller;
+  base::MessageLoopForUI main_message_loop;
+  main_message_loop.set_thread_name("MainThread");
+  base::PlatformThread::SetName("CrAppShimMain");
 
-  } else {
+  if (pid == -1) {
+    // Launch Chrome if it isn't already running.
+    ProcessSerialNumber psn;
     CommandLine command_line(CommandLine::NO_PROGRAM);
     command_line.AppendSwitch(switches::kSilentLaunch);
     command_line.AppendSwitchPath(switches::kProfileDirectory,
@@ -596,22 +614,33 @@ int ChromeAppModeStart(const app_mode::ChromeAppModeInfo* info) {
                                            &psn);
     if (!success)
       return 1;
+
+    base::Callback<void(bool)> on_ping_chrome_reply =
+        base::Bind(&AppShimController::OnPingChromeReply,
+                   base::Unretained(&controller));
+
+    // This code abuses the fact that Apple Events sent before the process is
+    // fully initialized don't receive a reply until its run loop starts. Once
+    // the reply is received, Chrome will have opened its IPC port, guaranteed.
+    [ReplyEventHandler pingProcess:psn
+                           andCall:on_ping_chrome_reply];
+
+    main_message_loop.PostDelayedTask(
+        FROM_HERE,
+        base::Bind(&AppShimController::OnPingChromeTimeout,
+                   base::Unretained(&controller)),
+        base::TimeDelta::FromSeconds(kPingChromeTimeoutSeconds));
+  } else {
+    // Chrome already running. Proceed to init. This could still fail if Chrome
+    // is still starting up or shutting down, but the process will exit quickly,
+    // which is preferable to waiting for the Apple Event to timeout after one
+    // minute.
+    main_message_loop.PostTask(
+        FROM_HERE,
+        base::Bind(&AppShimController::Init,
+                   base::Unretained(&controller)));
   }
 
-  AppShimController controller;
-  base::Callback<void(bool)> on_ping_chrome_reply =
-      base::Bind(&AppShimController::OnPingChromeReply,
-                 base::Unretained(&controller));
-
-  // This code abuses the fact that Apple Events sent before the process is
-  // fully initialized don't receive a reply until its run loop starts. Once
-  // the reply is received, Chrome will have opened its IPC port, guaranteed.
-  [ReplyEventHandler pingProcess:psn
-                         andCall:on_ping_chrome_reply];
-
-  base::MessageLoopForUI main_message_loop;
-  main_message_loop.set_thread_name("MainThread");
-  base::PlatformThread::SetName("CrAppShimMain");
   main_message_loop.Run();
   return 0;
 }
