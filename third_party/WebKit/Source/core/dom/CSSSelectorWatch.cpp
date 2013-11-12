@@ -90,31 +90,24 @@ void CSSSelectorWatch::updateSelectorMatches(const Vector<String>& removedSelect
 
     for (unsigned i = 0; i < removedSelectors.size(); ++i) {
         const String& selector = removedSelectors[i];
-        HashMap<String, int>::iterator count = m_matchingCallbackSelectors.find(selector);
-        if (count == m_matchingCallbackSelectors.end())
+        if (!m_matchingCallbackSelectors.remove(selector))
             continue;
-        --count->value;
-        if (!count->value) {
-            shouldUpdateTimer = true;
 
-            m_matchingCallbackSelectors.remove(count);
-            if (m_addedSelectors.contains(selector))
-                m_addedSelectors.remove(selector);
-            else
-                m_removedSelectors.add(selector);
-        }
+        // Count reached 0.
+        shouldUpdateTimer = true;
+        if (m_addedSelectors.contains(selector))
+            m_addedSelectors.remove(selector);
+        else
+            m_removedSelectors.add(selector);
     }
 
     for (unsigned i = 0; i < addedSelectors.size(); ++i) {
         const String& selector = addedSelectors[i];
-        HashMap<String, int>::iterator count = m_matchingCallbackSelectors.find(selector);
-        if (count != m_matchingCallbackSelectors.end()) {
-            ++count->value;
+        HashCountedSet<String>::AddResult result = m_matchingCallbackSelectors.add(selector);
+        if (!result.isNewEntry)
             continue;
-        }
-        shouldUpdateTimer = true;
 
-        m_matchingCallbackSelectors.set(selector, 1);
+        shouldUpdateTimer = true;
         if (m_removedSelectors.contains(selector))
             m_removedSelectors.remove(selector);
         else

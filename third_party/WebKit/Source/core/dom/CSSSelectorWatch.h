@@ -34,6 +34,7 @@
 #include "core/css/StyleRule.h"
 #include "core/dom/DocumentSupplementable.h"
 #include "platform/Timer.h"
+#include "wtf/HashCountedSet.h"
 #include "wtf/HashSet.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
@@ -63,7 +64,7 @@ private:
 
     // Maps a CSS selector string with a -webkit-callback property to the number
     // of matching RenderStyle objects in this document.
-    HashMap<String, int> m_matchingCallbackSelectors;
+    HashCountedSet<String> m_matchingCallbackSelectors;
     // Selectors are relative to m_matchingCallbackSelectors's contents at
     // the previous call to selectorMatchChanged.
     HashSet<String> m_addedSelectors;
