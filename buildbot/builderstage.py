@@ -148,7 +148,6 @@ class BuilderStage(object):
     if manifest_url is None:
       manifest_url = self._build_config['manifest_repo_url']
 
-    kwds.setdefault('referenced_repo', self._options.reference_repo)
     kwds.setdefault('branch', self._target_manifest_branch)
     kwds.setdefault('manifest', self._build_config['manifest'])
 

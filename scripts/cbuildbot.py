@@ -1085,14 +1085,6 @@ def _CreateParser():
                           default=True,
                           help='Override values from buildconfig and never '
                                'uprev.')
-  group.add_option('--reference-repo', action='store', default=None,
-                   dest='reference_repo',
-                   help='Reuse git data stored in an existing repo '
-                        'checkout. This can drastically reduce the network '
-                        'time spent setting up the trybot checkout.  By '
-                        "default, if this option isn't given but cbuildbot "
-                        'is invoked from a repo checkout, cbuildbot will '
-                        'use the repo root.')
   group.add_option('--resume', action='store_true', default=False,
                    help='Skip stages already successfully completed.')
   group.add_remote_option('--timeout', action='store', type='int', default=0,
@@ -1416,21 +1408,6 @@ def main(argv):
   bot_id = args[-1]
   build_config = _GetConfig(bot_id)
 
-  if options.reference_repo is None:
-    repo_path = os.path.join(options.sourceroot, '.repo')
-    # If we're being run from a repo checkout, reuse the repo's git pool to
-    # cut down on sync time.
-    if os.path.exists(repo_path):
-      options.reference_repo = options.sourceroot
-  elif options.reference_repo:
-    if not os.path.exists(options.reference_repo):
-      parser.error('Reference path %s does not exist'
-                   % (options.reference_repo,))
-    elif not os.path.exists(os.path.join(options.reference_repo, '.repo')):
-      parser.error('Reference path %s does not look to be the base of a '
-                   'repo checkout; no .repo exists in the root.'
-                   % (options.reference_repo,))
-
   if (options.buildbot or options.remote_trybot) and not options.resume:
     if not options.cgroups:
       parser.error('Options --buildbot/--remote-trybot and --nocgroups cannot '
@@ -1445,9 +1422,6 @@ def main(argv):
       parser.error("Option --buildbot/--remote-trybot requires the following "
                    "binaries which couldn't be found in $PATH: %s"
                    % (', '.join(missing)))
-
-  if options.reference_repo:
-    options.reference_repo = os.path.abspath(options.reference_repo)
 
   if options.dump_config:
     # This works, but option ordering is bad...
