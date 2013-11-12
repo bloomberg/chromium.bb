@@ -177,7 +177,9 @@ struct WEBKIT_COMMON_EXPORT WebPreferences {
   bool use_wide_viewport;
   bool viewport_meta_layout_size_quirk;
   bool viewport_meta_merge_content_quirk;
+  bool viewport_meta_non_user_scalable_quirk;
   bool viewport_meta_zero_values_quirk;
+  bool clobber_user_agent_initial_scale_quirk;
   bool ignore_main_frame_overflow_hidden_quirk;
   bool report_screen_size_in_physical_pixels_quirk;
 #endif

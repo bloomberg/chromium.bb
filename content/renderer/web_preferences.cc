@@ -345,8 +345,12 @@ void ApplyWebPreferences(const WebPreferences& prefs, WebView* web_view) {
       prefs.viewport_meta_layout_size_quirk);
   settings->setViewportMetaMergeContentQuirk(
       prefs.viewport_meta_merge_content_quirk);
+  settings->setViewportMetaNonUserScalableQuirk(
+      prefs.viewport_meta_non_user_scalable_quirk);
   settings->setViewportMetaZeroValuesQuirk(
       prefs.viewport_meta_zero_values_quirk);
+  settings->setClobberUserAgentInitialScaleQuirk(
+      prefs.clobber_user_agent_initial_scale_quirk);
   settings->setIgnoreMainFrameOverflowHiddenQuirk(
       prefs.ignore_main_frame_overflow_hidden_quirk);
   settings->setReportScreenSizeInPhysicalPixelsQuirk(
