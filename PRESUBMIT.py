@@ -1036,7 +1036,7 @@ def GetPreferredTrySlaves(project, change):
   if all(re.search('\.(m|mm)$|(^|[/_])mac[/_.]', f) for f in files):
     return ['mac_rel', 'mac:compile']
   if all(re.search('(^|[/_])win[/_.]', f) for f in files):
-    return ['win_rel', 'win7_aura', 'win:compile']
+    return ['win_rel', 'win:compile']
   if all(re.search('(^|[/_])android[/_.]', f) for f in files):
     return ['android_aosp', 'android_dbg', 'android_clang_dbg']
   if all(re.search('^native_client_sdk', f) for f in files):
@@ -1056,7 +1056,6 @@ def GetPreferredTrySlaves(project, change):
       'linux_rel',
       'mac_rel',
       'mac:compile',
-      'win7_aura',
       'win_rel',
       'win:compile',
       'win_x64_rel:base_unittests',
