@@ -63,10 +63,6 @@ class DevToolsAgent : public RenderViewObserver,
   virtual void setTraceEventCallback(TraceEventCallback cb);
 
   virtual void enableDeviceEmulation(
-      const blink::WebSize& device_size,
-      const blink::WebRect& view_rect, float device_scale_factor,
-      bool fit_to_view);
-  virtual void enableDeviceEmulation(
       const blink::WebRect& device_rect,
       const blink::WebRect& view_rect, float device_scale_factor,
       bool fit_to_view);

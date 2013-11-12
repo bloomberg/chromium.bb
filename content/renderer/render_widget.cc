@@ -194,8 +194,9 @@ class RenderWidget::ScreenMetricsEmulator {
   float device_scale_factor_;
   bool fit_to_view_;
 
-  // The computed scaled used to fit widget into browser window.
+  // The computed scale and offset used to fit widget into browser window.
   float scale_;
+  gfx::Point offset_;
 
   // Original values to restore back after emulation ends.
   gfx::Size original_size_;
@@ -270,6 +271,10 @@ void RenderWidget::ScreenMetricsEmulator::Apply(
     scale_ = 1.f;
   }
 
+  // Center emulated view inside available view space.
+  offset_.set_x((original_size_.width() - scale_ * widget_rect_.width()) / 2);
+  offset_.set_y((original_size_.height() - scale_ * widget_rect_.height()) / 2);
+
   widget_->screen_info_.rect = gfx::Rect(device_rect_.size());
   widget_->screen_info_.availableRect = gfx::Rect(device_rect_.size());
   widget_->screen_info_.deviceScaleFactor = device_scale_factor_;
@@ -280,7 +285,7 @@ void RenderWidget::ScreenMetricsEmulator::Apply(
   // - in order to fit into view, WebView applies offset and scale to the
   //   root layer.
   widget_->SetScreenMetricsEmulationParameters(
-      original_screen_info_.deviceScaleFactor, device_rect_.origin(), scale_);
+      original_screen_info_.deviceScaleFactor, offset_, scale_);
 
   widget_->SetDeviceScaleFactor(device_scale_factor_);
   widget_->view_screen_rect_ = widget_rect_;
@@ -319,9 +324,9 @@ void RenderWidget::ScreenMetricsEmulator::OnUpdateScreenRectsMessage(
 void RenderWidget::ScreenMetricsEmulator::OnShowContextMenu(
     ContextMenuParams* params) {
   params->x *= scale_;
-  params->x += device_rect_.x();
+  params->x += offset_.x();
   params->y *= scale_;
-  params->y += device_rect_.y();
+  params->y += offset_.y();
 }
 
 // RenderWidget ---------------------------------------------------------------
