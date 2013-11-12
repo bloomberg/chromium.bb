@@ -323,7 +323,6 @@ create_pointer_accelator_filter(accel_profile_func_t profile)
 		return NULL;
 
 	filter->base.interface = &accelerator_interface;
-	wl_list_init(&filter->base.link);
 
 	filter->profile = profile;
 	filter->last_velocity = 0.0;

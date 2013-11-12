@@ -50,7 +50,6 @@ struct weston_motion_filter_interface {
 
 struct weston_motion_filter {
 	struct weston_motion_filter_interface *interface;
-	struct wl_list link;
 };
 
 WL_EXPORT struct weston_motion_filter *
