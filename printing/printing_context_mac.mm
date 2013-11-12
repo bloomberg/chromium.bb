@@ -186,7 +186,6 @@ void PrintingContextMac::InitPrintSettingsFromPrintInfo() {
       static_cast<PMPageFormat>([print_info_.get() PMPageFormat]);
   PMPrinter printer;
   PMSessionGetCurrentPrinter(print_session, &printer);
-  settings_.set_selection_only(false);
   PrintSettingsInitializerMac::InitPrintSettings(
       printer, page_format, &settings_);
 }
