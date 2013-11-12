@@ -27,6 +27,9 @@ class PopupBlockerTabHelper
     : public content::WebContentsObserver,
       public content::WebContentsUserData<PopupBlockerTabHelper> {
  public:
+  // Mapping from popup IDs to blocked popup requests.
+  typedef std::map<int32, GURL> PopupIdMap;
+
   virtual ~PopupBlockerTabHelper();
 
   // Returns true if the popup request defined by |params| should be blocked.
@@ -43,8 +46,7 @@ class PopupBlockerTabHelper
   // Returns the number of blocked popups.
   size_t GetBlockedPopupsCount() const;
 
-  // Returns the mapping from popup IDs to blocked popup requests.
-  std::map<int32, GURL> GetBlockedPopupRequests();
+  PopupIdMap GetBlockedPopupRequests();
 
   // content::WebContentsObserver overrides:
   virtual void DidNavigateMainFrame(

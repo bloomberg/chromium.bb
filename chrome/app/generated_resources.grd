@@ -8128,6 +8128,12 @@ The following plug-in is unresponsive: <ph name="PLUGIN_NAME">$1
       <message name="IDS_POPUP_BLOCK_RADIO" desc="A radio button in the Content Settings dialog for preventing showing pop-up windows on any sites.">
         Do not allow any site to show pop-ups (recommended)
       </message>
+      <message name="IDS_POPUPS_BLOCKED_INFOBAR_BUTTON_SHOW" desc="Pop-up Blocking Show Button [CHAR-LIMIT=32]">
+        Always show
+      </message>
+      <message name="IDS_POPUPS_BLOCKED_INFOBAR_TEXT" desc="Pop-up Blocking Title [CHAR-LIMIT=32]">
+        Pop-ups blocked (<ph name="POP_UP_COUNT">$1<ex>3</ex></ph>)
+      </message>
       <message name="IDS_PLUGIN_TAB_LABEL" desc="Label for Plug-ins tab on Content Settings dialog">
         Plug-ins
       </message>

@@ -29,6 +29,7 @@
 #include "chrome/browser/tab_contents/navigation_metrics_recorder.h"
 #include "chrome/browser/translate/translate_tab_helper.h"
 #include "chrome/browser/ui/alternate_error_tab_observer.h"
+#include "chrome/browser/ui/android/content_settings/popup_blocked_infobar_delegate.h"
 #include "chrome/browser/ui/android/infobars/infobar_container_android.h"
 #include "chrome/browser/ui/android/tab_model/tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
@@ -255,9 +256,12 @@ void TabAndroid::Observe(int type,
         if (popup_blocker_helper)
           num_popups = popup_blocker_helper->GetBlockedPopupsCount();
 
-        Java_TabBase_onBlockedPopupsStateChanged(env,
-                                                 weak_java_tab_.get(env).obj(),
-                                                 num_popups);
+        if (num_popups > 0) {
+          PopupBlockedInfoBarDelegate::Create(
+              InfoBarService::FromWebContents(web_contents()),
+              num_popups);
+        }
+
         settings->SetBlockageHasBeenIndicated(CONTENT_SETTINGS_TYPE_POPUPS);
       }
       break;
@@ -359,19 +363,6 @@ base::android::ScopedJavaLocalRef<jobject> TabAndroid::GetProfileAndroid(
     return base::android::ScopedJavaLocalRef<jobject>();
 
   return profile_android->GetJavaObject();
-}
-
-void TabAndroid::LaunchBlockedPopups(JNIEnv* env, jobject obj) {
-  PopupBlockerTabHelper* popup_blocker_helper =
-      PopupBlockerTabHelper::FromWebContents(web_contents());
-  DCHECK(popup_blocker_helper);
-  std::map<int32, GURL> blocked_popups =
-      popup_blocker_helper->GetBlockedPopupRequests();
-  for (std::map<int32, GURL>::iterator it = blocked_popups.begin();
-      it != blocked_popups.end();
-      it++) {
-    popup_blocker_helper->ShowBlockedPopup(it->first);
-  }
 }
 
 ToolbarModel::SecurityLevel TabAndroid::GetSecurityLevel(JNIEnv* env,

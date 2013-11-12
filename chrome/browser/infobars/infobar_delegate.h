@@ -16,6 +16,7 @@ class ExtensionInfoBarDelegate;
 class InfoBar;
 class InsecureContentInfoBarDelegate;
 class MediaStreamInfoBarDelegate;
+class PopupBlockedInfoBarDelegate;
 class RegisterProtocolHandlerInfoBarDelegate;
 class ScreenCaptureInfoBarDelegate;
 class ThemeInstalledInfoBarDelegate;
@@ -95,6 +96,7 @@ class InfoBarDelegate {
   virtual ExtensionInfoBarDelegate* AsExtensionInfoBarDelegate();
   virtual InsecureContentInfoBarDelegate* AsInsecureContentInfoBarDelegate();
   virtual MediaStreamInfoBarDelegate* AsMediaStreamInfoBarDelegate();
+  virtual PopupBlockedInfoBarDelegate* AsPopupBlockedInfoBarDelegate();
   virtual RegisterProtocolHandlerInfoBarDelegate*
       AsRegisterProtocolHandlerInfoBarDelegate();
   virtual ScreenCaptureInfoBarDelegate* AsScreenCaptureInfoBarDelegate();

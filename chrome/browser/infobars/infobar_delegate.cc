@@ -71,6 +71,10 @@ MediaStreamInfoBarDelegate* InfoBarDelegate::AsMediaStreamInfoBarDelegate() {
   return NULL;
 }
 
+PopupBlockedInfoBarDelegate* InfoBarDelegate::AsPopupBlockedInfoBarDelegate() {
+  return NULL;
+}
+
 RegisterProtocolHandlerInfoBarDelegate*
     InfoBarDelegate::AsRegisterProtocolHandlerInfoBarDelegate() {
   return NULL;

@@ -678,22 +678,6 @@ public abstract class TabBase implements NavigationClient {
     }
 
     /**
-     * Launches all currently blocked popups that were spawned by the content of this tab.
-     */
-    protected void launchBlockedPopups() {
-        assert mContentViewCore != null;
-
-        nativeLaunchBlockedPopups(mNativeTabAndroid);
-    }
-
-    /**
-     * Called when the number of blocked popups has changed.
-     * @param numPopups The current number of blocked popups.
-     */
-    @CalledByNative
-    protected void onBlockedPopupsStateChanged(int numPopups) { }
-
-    /**
      * Called when the favicon of the content this tab represents changes.
      */
     @CalledByNative
@@ -782,7 +766,6 @@ public abstract class TabBase implements NavigationClient {
             ContentViewCore contentViewCore, ChromeWebContentsDelegateAndroid delegate);
     private native void nativeDestroyWebContents(int nativeTabAndroid, boolean deleteNative);
     private native Profile nativeGetProfileAndroid(int nativeTabAndroid);
-    private native void nativeLaunchBlockedPopups(int nativeTabAndroid);
     private native int nativeGetSecurityLevel(int nativeTabAndroid);
     private native void nativeSetActiveNavigationEntryTitleForUrl(int nativeTabAndroid, String url,
             String title);

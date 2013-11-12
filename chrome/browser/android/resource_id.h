@@ -36,6 +36,7 @@ DEFINE_RESOURCE_ID(IDR_INFOBAR_SAVE_PASSWORD, R.drawable.infobar_savepassword)
 DEFINE_RESOURCE_ID(IDR_INFOBAR_WARNING, R.drawable.infobar_warning)
 DEFINE_RESOURCE_ID(IDR_INFOBAR_THEME, R.drawable.infobar_theme)
 DEFINE_RESOURCE_ID(IDR_INFOBAR_TRANSLATE, R.drawable.infobar_translate)
+DEFINE_RESOURCE_ID(IDR_BLOCKED_POPUPS, R.drawable.infobar_blocked_popups)
 
 // WebsiteSettingsUI images.
 DEFINE_RESOURCE_ID(IDR_CONTROLLED_SETTING_MANDATORY_LARGE,\
