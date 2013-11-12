@@ -2263,6 +2263,8 @@
           # This define is required to pull in the new Win8 interfaces from
           # system headers like ShObjIdl.h.
           'NTDDI_VERSION=0x06020000',
+          # This is required for ATL to use XP-safe versions of its functions.
+          '_USING_V110_SDK71_',
         ],
         'include_dirs': [
           '<(DEPTH)/third_party/wtl/include',
