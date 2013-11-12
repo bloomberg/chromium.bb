@@ -2006,20 +2006,11 @@ void RenderObject::styleWillChange(StyleDifference diff, const RenderStyle* newS
         s_affectsParentBlock = false;
 
     if (view()->frameView()) {
-        bool shouldBlitOnFixedBackgroundImage = false;
-#if ENABLE(FAST_MOBILE_SCROLLING)
-        // On low-powered/mobile devices, preventing blitting on a scroll can cause noticeable delays
-        // when scrolling a page with a fixed background image. As an optimization, assuming there are
-        // no fixed positoned elements on the page, we can acclerate scrolling (via blitting) if we
-        // ignore the CSS property "background-attachment: fixed".
-        shouldBlitOnFixedBackgroundImage = true;
-#endif
-
-        bool newStyleSlowScroll = newStyle && !shouldBlitOnFixedBackgroundImage && newStyle->hasFixedBackgroundImage();
-        bool oldStyleSlowScroll = m_style && !shouldBlitOnFixedBackgroundImage && m_style->hasFixedBackgroundImage();
+        bool newStyleSlowScroll = newStyle && newStyle->hasFixedBackgroundImage();
+        bool oldStyleSlowScroll = m_style && m_style->hasFixedBackgroundImage();
 
         bool drawsRootBackground = isRoot() || (isBody() && !rendererHasBackground(document().documentElement()->renderer()));
-        if (drawsRootBackground && !shouldBlitOnFixedBackgroundImage) {
+        if (drawsRootBackground) {
             if (view()->compositor()->supportsFixedRootBackgroundCompositing()) {
                 if (newStyleSlowScroll && newStyle->hasEntirelyFixedBackground())
                     newStyleSlowScroll = false;

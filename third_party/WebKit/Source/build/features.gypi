@@ -54,7 +54,6 @@
       }],
       ['OS=="android"', {
         'feature_defines': [
-          'ENABLE_FAST_MOBILE_SCROLLING=1',
           'ENABLE_INPUT_SPEECH=0',
           'ENABLE_LEGACY_NOTIFICATIONS=0',
           'ENABLE_MEDIA_CAPTURE=1',
