@@ -100,8 +100,10 @@ void InsertionPoint::setDistribution(ContentDistribution& distribution)
 
 void InsertionPoint::attach(const AttachContext& context)
 {
-    // FIXME: This loop shouldn't be needed since the distributed nodes should
-    // never be detached, we can probably remove it.
+    // We need to attach the distribution here so that they're inserted in the right order
+    // otherwise the n^2 protection inside NodeRenderingContext will cause them to be
+    // inserted in the wrong place later. This also lets distributed nodes benefit from
+    // the n^2 protection.
     for (size_t i = 0; i < m_distribution.size(); ++i) {
         if (m_distribution.at(i)->needsAttach())
             m_distribution.at(i)->attach(context);

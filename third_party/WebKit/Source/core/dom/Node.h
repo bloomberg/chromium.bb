@@ -363,8 +363,6 @@ public:
     bool hovered() const { return isUserActionElement() && isUserActionElementHovered(); }
     bool focused() const { return isUserActionElement() && isUserActionElementFocused(); }
 
-    // FIXME: Don't let InsertionPoints attach out of order and remove
-    // childAttachedAllowedWhenAttachingChildren and child->needsAttach() checks.
     bool needsAttach() const { return !getFlag(IsAttachedFlag) || styleChangeType() == NeedsReattachStyleChange; }
     bool confusingAndOftenMisusedAttached() const { return getFlag(IsAttachedFlag); }
     void setAttached() { setFlag(IsAttachedFlag); }
