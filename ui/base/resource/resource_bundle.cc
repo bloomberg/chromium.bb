@@ -289,8 +289,7 @@ std::string ResourceBundle::LoadLocaleResources(
 void ResourceBundle::LoadTestResources(const base::FilePath& path,
                                        const base::FilePath& locale_path) {
   // Use the given resource pak for both common and localized resources.
-  scoped_ptr<DataPack> data_pack(
-      new DataPack(SCALE_FACTOR_100P));
+  scoped_ptr<DataPack> data_pack(new DataPack(SCALE_FACTOR_100P));
   if (!path.empty() && data_pack->LoadFromPath(path))
     AddDataPack(data_pack.release());
 
@@ -298,8 +297,7 @@ void ResourceBundle::LoadTestResources(const base::FilePath& path,
   if (!locale_path.empty() && data_pack->LoadFromPath(locale_path)) {
     locale_resources_data_.reset(data_pack.release());
   } else {
-    locale_resources_data_.reset(
-        new DataPack(ui::SCALE_FACTOR_NONE));
+    locale_resources_data_.reset(new DataPack(ui::SCALE_FACTOR_NONE));
   }
 }
 

@@ -702,10 +702,6 @@
         '../../base/base.gyp:base',
         '../../base/base.gyp:base_i18n',
         '../../base/base.gyp:test_support_base',
-        # TODO(jcivelli): ideally the resource needed by views would be
-        #                 factored out. (for some reason it pulls in a bunch
-        #                 unrelated things like v8, sqlite nss...).
-        '../../chrome/chrome_resources.gyp:packed_resources',
         '../../skia/skia.gyp:skia',
         '../../testing/gmock.gyp:gmock',
         '../../testing/gtest.gyp:gtest',
@@ -719,6 +715,7 @@
         '../gfx/gfx.gyp:gfx',
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
+        '../ui.gyp:ui_test_pak',
         '../ui_unittests.gyp:ui_test_support',
         'views',
         'views_test_support',
