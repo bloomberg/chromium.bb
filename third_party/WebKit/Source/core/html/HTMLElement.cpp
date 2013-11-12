@@ -658,7 +658,7 @@ void HTMLElement::setSpellcheck(bool enable)
 
 void HTMLElement::click()
 {
-    dispatchSimulatedClick(0, SendNoEvents, DoNotShowPressedLook);
+    dispatchSimulatedClick(0, SendNoEvents);
 }
 
 void HTMLElement::accessKeyAction(bool sendMouseEvents)

@@ -71,7 +71,7 @@ void EventDispatcher::dispatchScopedEvent(Node* node, PassRefPtr<EventDispatchMe
     ScopedEventQueue::instance()->enqueueEventDispatchMediator(mediator);
 }
 
-void EventDispatcher::dispatchSimulatedClick(Node* node, Event* underlyingEvent, SimulatedClickMouseEventOptions mouseEventOptions, SimulatedClickVisualOptions visualOptions)
+void EventDispatcher::dispatchSimulatedClick(Node* node, Event* underlyingEvent, SimulatedClickMouseEventOptions mouseEventOptions)
 {
     if (isDisabledFormControl(node))
         return;
@@ -88,7 +88,7 @@ void EventDispatcher::dispatchSimulatedClick(Node* node, Event* underlyingEvent,
 
     if (mouseEventOptions != SendNoEvents)
         EventDispatcher(node, SimulatedMouseEvent::create(EventTypeNames::mousedown, node->document().domWindow(), underlyingEvent)).dispatch();
-    node->setActive(true, visualOptions == ShowPressedLook);
+    node->setActive(true);
     if (mouseEventOptions != SendNoEvents)
         EventDispatcher(node, SimulatedMouseEvent::create(EventTypeNames::mouseup, node->document().domWindow(), underlyingEvent)).dispatch();
     node->setActive(false);

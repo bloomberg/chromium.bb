@@ -94,7 +94,7 @@ private:
     virtual bool isMouseFocusable() const;
     virtual bool isKeyboardFocusable() const OVERRIDE;
     virtual void defaultEventHandler(Event*);
-    virtual void setActive(bool active = true, bool pause = false);
+    virtual void setActive(bool = true) OVERRIDE FINAL;
     virtual void accessKeyAction(bool sendMouseEvents);
     virtual bool isURLAttribute(const Attribute&) const OVERRIDE;
     virtual bool canStartSelection() const;

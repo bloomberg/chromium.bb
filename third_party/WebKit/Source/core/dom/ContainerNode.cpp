@@ -847,7 +847,7 @@ void ContainerNode::setFocus(bool received)
         setNeedsStyleRecalc();
 }
 
-void ContainerNode::setActive(bool down, bool pause)
+void ContainerNode::setActive(bool down)
 {
     if (down == active())
         return;

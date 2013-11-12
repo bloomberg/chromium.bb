@@ -90,17 +90,17 @@ HTMLFormElement* HTMLLabelElement::form() const
     return FormAssociatedElement::findAssociatedForm(this, 0);
 }
 
-void HTMLLabelElement::setActive(bool down, bool pause)
+void HTMLLabelElement::setActive(bool down)
 {
     if (down == active())
         return;
 
     // Update our status first.
-    HTMLElement::setActive(down, pause);
+    HTMLElement::setActive(down);
 
     // Also update our corresponding control.
     if (HTMLElement* element = control())
-        element->setActive(down, pause);
+        element->setActive(down);
 }
 
 void HTMLLabelElement::setHovered(bool over)

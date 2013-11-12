@@ -2324,9 +2324,9 @@ bool Node::dispatchTouchEvent(PassRefPtr<TouchEvent> event)
     return EventDispatcher::dispatchEvent(this, TouchEventDispatchMediator::create(event));
 }
 
-void Node::dispatchSimulatedClick(Event* underlyingEvent, SimulatedClickMouseEventOptions eventOptions, SimulatedClickVisualOptions visualOptions)
+void Node::dispatchSimulatedClick(Event* underlyingEvent, SimulatedClickMouseEventOptions eventOptions)
 {
-    EventDispatcher::dispatchSimulatedClick(this, underlyingEvent, eventOptions, visualOptions);
+    EventDispatcher::dispatchSimulatedClick(this, underlyingEvent, eventOptions);
 }
 
 bool Node::dispatchBeforeLoadEvent(const String& sourceURL)
@@ -2569,7 +2569,7 @@ void Node::setFocus(bool flag)
     document().userActionElements().setFocused(this, flag);
 }
 
-void Node::setActive(bool flag, bool)
+void Node::setActive(bool flag)
 {
     document().userActionElements().setActive(this, flag);
 }

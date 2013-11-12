@@ -47,8 +47,8 @@ private:
     virtual void accessKeyAction(bool sendMouseEvents);
 
     // Overridden to update the hover/active state of the corresponding control.
-    virtual void setActive(bool = true, bool pause = false);
-    virtual void setHovered(bool = true);
+    virtual void setActive(bool = true) OVERRIDE;
+    virtual void setHovered(bool = true) OVERRIDE;
 
     // Overridden to either click() or focus() the corresponding control.
     virtual void defaultEventHandler(Event*);

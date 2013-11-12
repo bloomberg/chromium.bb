@@ -97,7 +97,7 @@ void RadioInputType::handleKeydownEvent(KeyboardEvent* event)
         if (inputElement->isRadioButton() && inputElement->name() == element().name() && inputElement->isFocusable()) {
             RefPtr<HTMLInputElement> protector(inputElement);
             document.setFocusedElement(inputElement);
-            inputElement->dispatchSimulatedClick(event, SendNoEvents, DoNotShowPressedLook);
+            inputElement->dispatchSimulatedClick(event, SendNoEvents);
             event->setDefaultHandled();
             return;
         }

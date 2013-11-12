@@ -230,7 +230,7 @@ void HTMLAnchorElement::defaultEventHandler(Event* event)
     HTMLElement::defaultEventHandler(event);
 }
 
-void HTMLAnchorElement::setActive(bool down, bool pause)
+void HTMLAnchorElement::setActive(bool down)
 {
     if (rendererIsEditable()) {
         EditableLinkBehavior editableLinkBehavior = EditableLinkDefaultBehavior;
@@ -259,7 +259,7 @@ void HTMLAnchorElement::setActive(bool down, bool pause)
 
     }
 
-    ContainerNode::setActive(down, pause);
+    ContainerNode::setActive(down);
 }
 
 void HTMLAnchorElement::parseAttribute(const QualifiedName& name, const AtomicString& value)

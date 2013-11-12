@@ -102,7 +102,7 @@ void HTMLSummaryElement::defaultEventHandler(Event* event)
 
         if (event->isKeyboardEvent()) {
             if (event->type() == EventTypeNames::keydown && toKeyboardEvent(event)->keyIdentifier() == "U+0020") {
-                setActive(true, true);
+                setActive(true);
                 // No setDefaultHandled() - IE dispatches a keypress in this case.
                 return;
             }

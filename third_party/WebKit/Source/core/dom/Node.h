@@ -409,7 +409,7 @@ public:
     void lazyAttach();
 
     virtual void setFocus(bool flag);
-    virtual void setActive(bool flag = true, bool pause = false);
+    virtual void setActive(bool flag = true);
     virtual void setHovered(bool flag = true);
 
     virtual short tabIndex() const;
@@ -666,7 +666,7 @@ public:
     bool dispatchGestureEvent(const PlatformGestureEvent&);
     bool dispatchTouchEvent(PassRefPtr<TouchEvent>);
 
-    void dispatchSimulatedClick(Event* underlyingEvent, SimulatedClickMouseEventOptions = SendNoEvents, SimulatedClickVisualOptions = ShowPressedLook);
+    void dispatchSimulatedClick(Event* underlyingEvent, SimulatedClickMouseEventOptions = SendNoEvents);
 
     virtual bool dispatchBeforeLoadEvent(const String& sourceURL);
     virtual void dispatchChangeEvent();

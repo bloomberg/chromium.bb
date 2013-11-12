@@ -29,11 +29,6 @@ enum SimulatedClickMouseEventOptions {
     SendMouseOverUpDownEvents
 };
 
-enum SimulatedClickVisualOptions {
-    DoNotShowPressedLook,
-    ShowPressedLook
-};
-
 } // namespace WebCore
 
 #endif // SimulatedClickOptions_h

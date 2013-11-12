@@ -54,7 +54,7 @@ public:
     static bool dispatchEvent(Node*, PassRefPtr<EventDispatchMediator>);
     static void dispatchScopedEvent(Node*, PassRefPtr<EventDispatchMediator>);
 
-    static void dispatchSimulatedClick(Node*, Event* underlyingEvent, SimulatedClickMouseEventOptions, SimulatedClickVisualOptions);
+    static void dispatchSimulatedClick(Node*, Event* underlyingEvent, SimulatedClickMouseEventOptions);
 
     bool dispatch();
     Node* node() const { return m_node.get(); }
