@@ -506,7 +506,7 @@ ChannelState WebSocketChannel::HandleFrame(
         // TODO(ricea): Need to fail the connection if UTF-8 is invalid
         // post-reassembly. Requires a streaming UTF-8 validator.
         // TODO(ricea): Can this copy be eliminated?
-        const char* const data_begin = data_buffer->data();
+        const char* const data_begin = size ? data_buffer->data() : NULL;
         const char* const data_end = data_begin + size;
         const std::vector<char> data(data_begin, data_end);
         // TODO(ricea): Handle the case when ReadFrames returns far
@@ -668,18 +668,17 @@ void WebSocketChannel::ParseClose(const scoped_refptr<IOBuffer>& buffer,
                                   size_t size,
                                   uint16* code,
                                   std::string* reason) {
-  const char* data = buffer->data();
   reason->clear();
   if (size < kWebSocketCloseCodeLength) {
     *code = kWebSocketErrorNoStatusReceived;
     if (size != 0) {
       VLOG(1) << "Close frame with payload size " << size << " received "
-              << "(the first byte is " << std::hex << static_cast<int>(data[0])
-              << ")";
-      return;
+              << "(the first byte is " << std::hex
+              << static_cast<int>(buffer->data()[0]) << ")";
     }
     return;
   }
+  const char* data = buffer->data();
   uint16 unchecked_code = 0;
   ReadBigEndian(data, &unchecked_code);
   COMPILE_ASSERT(sizeof(unchecked_code) == kWebSocketCloseCodeLength,
