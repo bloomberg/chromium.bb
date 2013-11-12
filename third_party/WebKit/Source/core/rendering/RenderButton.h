@@ -63,8 +63,6 @@ private:
 
     virtual bool hasLineIfEmpty() const { return node() && node()->hasTagName(HTMLNames::inputTag); }
 
-    virtual bool requiresForcedStyleRecalcPropagation() const { return true; }
-
     RenderBlock* m_inner;
 };
 

@@ -49,8 +49,6 @@ private:
     virtual void computePreferredLogicalWidths();
     virtual void paintObject(PaintInfo&, const LayoutPoint&);
 
-    virtual bool requiresForcedStyleRecalcPropagation() const { return true; }
-
     virtual bool supportsPartialLayout() const OVERRIDE { return false; }
 
     int maxFilenameWidth() const;

@@ -441,8 +441,6 @@ public:
     FlowThreadState flowThreadState() const { return m_bitfields.flowThreadState(); }
     void setFlowThreadState(FlowThreadState state) { m_bitfields.setFlowThreadState(state); }
 
-    virtual bool requiresForcedStyleRecalcPropagation() const { return false; }
-
     // FIXME: Until all SVG renders can be subclasses of RenderSVGModelObject we have
     // to add SVG renderer methods to RenderObject with an ASSERT_NOT_REACHED() default implementation.
     virtual bool isSVGRoot() const { return false; }

@@ -74,8 +74,6 @@ private:
 
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle);
 
-    virtual bool requiresForcedStyleRecalcPropagation() const { return true; }
-
     virtual void addOverflowFromChildren();
 
     void updateMarkerLocation();

@@ -44,7 +44,6 @@ private:
 
     virtual const char* renderName() const { return "RenderMeter"; }
     virtual bool isMeter() const { return true; }
-    virtual bool requiresForcedStyleRecalcPropagation() const { return true; }
 
     double valueRatio() const;
 };

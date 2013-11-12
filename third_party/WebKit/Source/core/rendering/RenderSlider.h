@@ -45,7 +45,6 @@ private:
     virtual int baselinePosition(FontBaseline, bool firstLine, LineDirectionMode, LinePositionMode = PositionOnContainingLine) const;
     virtual void computeIntrinsicLogicalWidths(LayoutUnit& minLogicalWidth, LayoutUnit& maxLogicalWidth) const OVERRIDE;
     virtual void computePreferredLogicalWidths() OVERRIDE;
-    virtual bool requiresForcedStyleRecalcPropagation() const { return true; }
     virtual void layout();
 
     SliderThumbElement* sliderThumbElement() const;

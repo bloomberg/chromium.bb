@@ -1567,7 +1567,7 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
         updateCallbackSelectors(oldStyle.get(), newStyle.get());
 
     if (RenderObject* renderer = this->renderer()) {
-        if (localChange != NoChange || pseudoStyleCacheIsInvalid(oldStyle.get(), newStyle.get()) || (change == Force && renderer->requiresForcedStyleRecalcPropagation()) || shouldNotifyRendererWithIdenticalStyles()) {
+        if (localChange != NoChange || pseudoStyleCacheIsInvalid(oldStyle.get(), newStyle.get()) || shouldNotifyRendererWithIdenticalStyles()) {
             renderer->setAnimatableStyle(newStyle.get());
         } else {
             // Although no change occurred, we use the new style so that the cousin style sharing code won't get

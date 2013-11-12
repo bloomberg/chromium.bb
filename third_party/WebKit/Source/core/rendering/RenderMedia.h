@@ -63,8 +63,6 @@ private:
     virtual bool isImage() const OVERRIDE FINAL { return false; }
     virtual void paintReplaced(PaintInfo&, const LayoutPoint&);
 
-    virtual bool requiresForcedStyleRecalcPropagation() const OVERRIDE FINAL { return true; }
-
     RenderObjectChildList m_children;
 };
 

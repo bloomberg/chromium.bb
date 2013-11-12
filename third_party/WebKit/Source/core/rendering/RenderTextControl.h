@@ -83,8 +83,6 @@ private:
     virtual void addFocusRingRects(Vector<IntRect>&, const LayoutPoint& additionalOffset, const RenderLayerModelObject* paintContainer = 0) OVERRIDE;
 
     virtual bool canBeProgramaticallyScrolled() const { return true; }
-
-    virtual bool requiresForcedStyleRecalcPropagation() const { return true; }
 };
 
 DEFINE_RENDER_OBJECT_TYPE_CASTS(RenderTextControl, isTextControl());

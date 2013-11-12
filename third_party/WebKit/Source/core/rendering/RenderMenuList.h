@@ -73,8 +73,6 @@ private:
 
     virtual void styleDidChange(StyleDifference, const RenderStyle* oldStyle);
 
-    virtual bool requiresForcedStyleRecalcPropagation() const { return true; }
-
     // PopupMenuClient methods
     virtual void valueChanged(unsigned listIndex, bool fireOnChange = true) OVERRIDE;
     virtual void selectionChanged(unsigned, bool) OVERRIDE { }
