@@ -1368,8 +1368,7 @@ void Element::attach(const AttachContext& context)
 
     NodeRenderingContext(this, context.resolvedStyle).createRendererForElementIfNeeded();
 
-    if (RenderStyle* style = renderStyle())
-        updateCallbackSelectors(0, style);
+    addCallbackSelectors();
 
     StyleResolverParentPusher pushParent(*this);
 
@@ -1407,10 +1406,7 @@ void Element::detach(const AttachContext& context)
     RenderWidget::UpdateSuspendScope suspendWidgetHierarchyUpdates;
     unregisterNamedFlowContentNode();
     cancelFocusAppearanceUpdate();
-    if (RenderStyle* style = renderStyle()) {
-        if (!style->callbackSelectors().isEmpty())
-            updateCallbackSelectors(style, 0);
-    }
+    removeCallbackSelectors();
     if (hasRareData()) {
         ElementRareData* data = elementRareData();
         data->setPseudoElement(BEFORE, 0);
@@ -1518,18 +1514,6 @@ void Element::recalcStyle(StyleRecalcChange change)
         reattachWhitespaceSiblings();
 }
 
-static bool callbackSelectorsDiffer(RenderStyle* style1, RenderStyle* style2)
-{
-    const Vector<String> emptyVector;
-    const Vector<String>& callbackSelectors1 = style1 ? style1->callbackSelectors() : emptyVector;
-    const Vector<String>& callbackSelectors2 = style2 ? style2->callbackSelectors() : emptyVector;
-    if (callbackSelectors1.isEmpty() && callbackSelectors2.isEmpty()) {
-        // Help the inliner with this common case.
-        return false;
-    }
-    return callbackSelectors1 != callbackSelectors2;
-}
-
 StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
 {
     ASSERT(document().inStyleRecalc());
@@ -1555,7 +1539,7 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
 
     InspectorInstrumentation::didRecalculateStyleForElement(this);
 
-    if (localChange != NoChange && callbackSelectorsDiffer(oldStyle.get(), newStyle.get()))
+    if (localChange != NoChange)
         updateCallbackSelectors(oldStyle.get(), newStyle.get());
 
     if (RenderObject* renderer = this->renderer()) {
@@ -1657,6 +1641,27 @@ void Element::checkForChildrenAdjacentRuleChanges()
 
         forceCheckOfAnyElementSibling = forceCheckOfAnyElementSibling || (childRulesChanged && hasIndirectAdjacentRules);
     }
+}
+
+void Element::updateCallbackSelectors(RenderStyle* oldStyle, RenderStyle* newStyle)
+{
+    Vector<String> emptyVector;
+    const Vector<String>& oldCallbackSelectors = oldStyle ? oldStyle->callbackSelectors() : emptyVector;
+    const Vector<String>& newCallbackSelectors = newStyle ? newStyle->callbackSelectors() : emptyVector;
+    if (oldCallbackSelectors.isEmpty() && newCallbackSelectors.isEmpty())
+        return;
+    if (oldCallbackSelectors != newCallbackSelectors)
+        CSSSelectorWatch::from(document()).updateSelectorMatches(oldCallbackSelectors, newCallbackSelectors);
+}
+
+void Element::addCallbackSelectors()
+{
+    updateCallbackSelectors(0, renderStyle());
+}
+
+void Element::removeCallbackSelectors()
+{
+    updateCallbackSelectors(renderStyle(), 0);
 }
 
 ElementShadow* Element::shadow() const
@@ -2579,15 +2584,6 @@ void Element::cancelFocusAppearanceUpdate()
         elementRareData()->setNeedsFocusAppearanceUpdateSoonAfterAttach(false);
     if (document().focusedElement() == this)
         document().cancelFocusAppearanceUpdate();
-}
-
-void Element::updateCallbackSelectors(RenderStyle* oldStyle, RenderStyle* newStyle)
-{
-    const Vector<String> emptyVector;
-    const Vector<String>& oldCallbackSelectors = oldStyle ? oldStyle->callbackSelectors() : emptyVector;
-    const Vector<String>& newCallbackSelectors = newStyle ? newStyle->callbackSelectors() : emptyVector;
-
-    CSSSelectorWatch::from(document()).updateSelectorMatches(oldCallbackSelectors, newCallbackSelectors);
 }
 
 void Element::normalizeAttributes()
