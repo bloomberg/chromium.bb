@@ -324,6 +324,7 @@ SVGFontFaceSrcElement
 SVGFontFaceUriElement
 SVGForeignObjectElement
 SVGGElement
+SVGGeometryElement
 SVGGlyphElement
 SVGGlyphRefElement
 SVGGradientElement

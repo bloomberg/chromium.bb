@@ -47,7 +47,7 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGEllipseElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGEllipseElement::SVGEllipseElement(const QualifiedName& tagName, Document& document)
-    : SVGGraphicsElement(tagName, document)
+    : SVGGeometryElement(tagName, document)
     , m_cx(LengthModeWidth)
     , m_cy(LengthModeHeight)
     , m_rx(LengthModeWidth)
@@ -82,7 +82,7 @@ void SVGEllipseElement::parseAttribute(const QualifiedName& name, const AtomicSt
     SVGParsingError parseError = NoError;
 
     if (!isSupportedAttribute(name))
-        SVGGraphicsElement::parseAttribute(name, value);
+        SVGGeometryElement::parseAttribute(name, value);
     else if (name == SVGNames::cxAttr)
         setCxBaseValue(SVGLength::construct(LengthModeWidth, value, parseError));
     else if (name == SVGNames::cyAttr)
@@ -102,7 +102,7 @@ void SVGEllipseElement::parseAttribute(const QualifiedName& name, const AtomicSt
 void SVGEllipseElement::svgAttributeChanged(const QualifiedName& attrName)
 {
     if (!isSupportedAttribute(attrName)) {
-        SVGGraphicsElement::svgAttributeChanged(attrName);
+        SVGGeometryElement::svgAttributeChanged(attrName);
         return;
     }
 

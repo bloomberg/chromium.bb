@@ -67,7 +67,7 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGPolyElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
 SVGPolyElement::SVGPolyElement(const QualifiedName& tagName, Document& document)
-    : SVGGraphicsElement(tagName, document)
+    : SVGGeometryElement(tagName, document)
 {
     registerAnimatedPropertiesForSVGPolyElement();
 }
@@ -86,7 +86,7 @@ bool SVGPolyElement::isSupportedAttribute(const QualifiedName& attrName)
 void SVGPolyElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
     if (!isSupportedAttribute(name)) {
-        SVGGraphicsElement::parseAttribute(name, value);
+        SVGGeometryElement::parseAttribute(name, value);
         return;
     }
 
@@ -113,7 +113,7 @@ void SVGPolyElement::parseAttribute(const QualifiedName& name, const AtomicStrin
 void SVGPolyElement::svgAttributeChanged(const QualifiedName& attrName)
 {
     if (!isSupportedAttribute(attrName)) {
-        SVGGraphicsElement::svgAttributeChanged(attrName);
+        SVGGeometryElement::svgAttributeChanged(attrName);
         return;
     }
 

@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-interface SVGPathElement : SVGGraphicsElement {
+interface SVGPathElement : SVGGeometryElement {
     readonly attribute SVGAnimatedNumber pathLength;
 
     float getTotalLength();

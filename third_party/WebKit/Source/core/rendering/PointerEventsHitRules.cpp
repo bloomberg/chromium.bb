@@ -32,7 +32,7 @@ PointerEventsHitRules::PointerEventsHitRules(EHitTesting hitTesting, const HitTe
     if (request.svgClipContent())
         pointerEvents = PE_FILL;
 
-    if (hitTesting == SVG_PATH_HITTESTING) {
+    if (hitTesting == SVG_GEOMETRY_HITTESTING) {
         switch (pointerEvents)
         {
             case PE_VISIBLE_PAINTED:

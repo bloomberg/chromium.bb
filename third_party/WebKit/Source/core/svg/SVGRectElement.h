@@ -25,11 +25,11 @@
 #include "core/svg/SVGAnimatedBoolean.h"
 #include "core/svg/SVGAnimatedLength.h"
 #include "core/svg/SVGExternalResourcesRequired.h"
-#include "core/svg/SVGGraphicsElement.h"
+#include "core/svg/SVGGeometryElement.h"
 
 namespace WebCore {
 
-class SVGRectElement FINAL : public SVGGraphicsElement,
+class SVGRectElement FINAL : public SVGGeometryElement,
                              public SVGExternalResourcesRequired {
 public:
     static PassRefPtr<SVGRectElement> create(const QualifiedName&, Document&);

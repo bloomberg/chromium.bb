@@ -79,7 +79,7 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGPathElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
 inline SVGPathElement::SVGPathElement(const QualifiedName& tagName, Document& document)
-    : SVGGraphicsElement(tagName, document)
+    : SVGGeometryElement(tagName, document)
     , m_pathByteStream(SVGPathByteStream::create())
     , m_pathSegList(PathSegUnalteredRole)
     , m_isAnimValObserved(false)
@@ -224,7 +224,7 @@ bool SVGPathElement::isSupportedAttribute(const QualifiedName& attrName)
 void SVGPathElement::parseAttribute(const QualifiedName& name, const AtomicString& value)
 {
     if (!isSupportedAttribute(name)) {
-        SVGGraphicsElement::parseAttribute(name, value);
+        SVGGeometryElement::parseAttribute(name, value);
         return;
     }
 
@@ -250,7 +250,7 @@ void SVGPathElement::parseAttribute(const QualifiedName& name, const AtomicStrin
 void SVGPathElement::svgAttributeChanged(const QualifiedName& attrName)
 {
     if (!isSupportedAttribute(attrName)) {
-        SVGGraphicsElement::svgAttributeChanged(attrName);
+        SVGGeometryElement::svgAttributeChanged(attrName);
         return;
     }
 
@@ -290,14 +290,14 @@ void SVGPathElement::invalidateMPathDependencies()
 
 Node::InsertionNotificationRequest SVGPathElement::insertedInto(ContainerNode* rootParent)
 {
-    SVGGraphicsElement::insertedInto(rootParent);
+    SVGGeometryElement::insertedInto(rootParent);
     invalidateMPathDependencies();
     return InsertionDone;
 }
 
 void SVGPathElement::removedFrom(ContainerNode* rootParent)
 {
-    SVGGraphicsElement::removedFrom(rootParent);
+    SVGGeometryElement::removedFrom(rootParent);
     invalidateMPathDependencies();
 }
 

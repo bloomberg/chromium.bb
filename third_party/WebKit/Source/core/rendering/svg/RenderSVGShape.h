@@ -37,6 +37,7 @@ namespace WebCore {
 
 class FloatPoint;
 class GraphicsContextStateSaver;
+class PointerEventsHitRules;
 class RenderSVGContainer;
 class RenderSVGPath;
 class RenderSVGResource;
@@ -54,6 +55,8 @@ public:
     virtual void setNeedsTransformUpdate() OVERRIDE FINAL { m_needsTransformUpdate = true; }
     virtual void fillShape(GraphicsContext*) const;
     virtual void strokeShape(GraphicsContext*) const;
+
+    bool nodeAtFloatPointInternal(const HitTestRequest&, const FloatPoint&, PointerEventsHitRules);
 
     Path& path() const
     {
