@@ -21,6 +21,7 @@
 #include "content/child/quota_dispatcher.h"
 #include "content/child/quota_message_filter.h"
 #include "content/child/thread_safe_sender.h"
+#include "content/child/web_database_observer_impl.h"
 #include "content/child/webblobregistry_impl.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/file_utilities_messages.h"
@@ -110,11 +111,12 @@ using blink::WebFileSystem;
 using blink::WebFrame;
 using blink::WebGamepads;
 using blink::WebIDBFactory;
-using blink::WebMIDIAccessor;
 using blink::Platform;
+using blink::WebMIDIAccessor;
 using blink::WebMediaStreamCenter;
 using blink::WebMediaStreamCenterClient;
 using blink::WebMimeRegistry;
+using blink::WebPlatformDatabaseObserver;
 using blink::WebRTCPeerConnectionHandler;
 using blink::WebRTCPeerConnectionHandlerClient;
 using blink::WebStorageNamespace;
@@ -219,6 +221,8 @@ RendererWebKitPlatformSupportImpl::RendererWebKitPlatformSupportImpl()
     quota_message_filter_ = ChildThread::current()->quota_message_filter();
     blob_registry_.reset(new WebBlobRegistryImpl(thread_safe_sender_));
     web_idb_factory_.reset(new RendererWebIDBFactoryImpl(thread_safe_sender_));
+    web_database_observer_impl_.reset(
+        new WebDatabaseObserverImpl(sync_message_filter_));
   }
 }
 
@@ -634,6 +638,11 @@ size_t RendererWebKitPlatformSupportImpl::audioHardwareBufferSize() {
 unsigned RendererWebKitPlatformSupportImpl::audioHardwareOutputChannels() {
   RenderThreadImpl* thread = RenderThreadImpl::current();
   return thread->GetAudioHardwareConfig()->GetOutputChannels();
+}
+
+WebPlatformDatabaseObserver*
+RendererWebKitPlatformSupportImpl::databaseObserver() {
+  return web_database_observer_impl_.get();
 }
 
 // TODO(crogers): remove deprecated API as soon as WebKit calls new API.

@@ -15,6 +15,7 @@
 #include "content/child/quota_dispatcher.h"
 #include "content/child/quota_message_filter.h"
 #include "content/child/thread_safe_sender.h"
+#include "content/child/web_database_observer_impl.h"
 #include "content/child/webblobregistry_impl.h"
 #include "content/child/webmessageportchannel_impl.h"
 #include "content/common/file_utilities_messages.h"
@@ -86,6 +87,8 @@ WorkerWebKitPlatformSupportImpl::WorkerWebKitPlatformSupportImpl(
   if (sender) {
     blob_registry_.reset(new WebBlobRegistryImpl(sender));
     web_idb_factory_.reset(new RendererWebIDBFactoryImpl(sender));
+    web_database_observer_impl_.reset(
+        new WebDatabaseObserverImpl(sync_message_filter));
   }
 }
 
@@ -211,6 +214,11 @@ blink::WebIDBFactory* WorkerWebKitPlatformSupportImpl::idbFactory() {
     web_idb_factory_.reset(
         new RendererWebIDBFactoryImpl(thread_safe_sender_.get()));
   return web_idb_factory_.get();
+}
+
+blink::WebPlatformDatabaseObserver*
+WorkerWebKitPlatformSupportImpl::databaseObserver() {
+  return web_database_observer_impl_.get();
 }
 
 WebMimeRegistry::SupportsType

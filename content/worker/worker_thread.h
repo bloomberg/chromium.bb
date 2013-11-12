@@ -15,7 +15,6 @@ namespace content {
 class AppCacheDispatcher;
 class DBMessageFilter;
 class IndexedDBMessageFilter;
-class WebDatabaseObserverImpl;
 class WebSharedWorkerStub;
 class WorkerWebKitPlatformSupportImpl;
 
@@ -46,7 +45,6 @@ class WorkerThread : public ChildThread {
 
   scoped_ptr<WorkerWebKitPlatformSupportImpl> webkit_platform_support_;
   scoped_ptr<AppCacheDispatcher> appcache_dispatcher_;
-  scoped_ptr<WebDatabaseObserverImpl> web_database_observer_impl_;
   scoped_refptr<DBMessageFilter> db_message_filter_;
   scoped_refptr<IndexedDBMessageFilter> indexed_db_message_filter_;
 

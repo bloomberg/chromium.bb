@@ -51,9 +51,6 @@ WorkerThread::WorkerThread() {
   appcache_dispatcher_.reset(
       new AppCacheDispatcher(this, new AppCacheFrontendImpl()));
 
-  web_database_observer_impl_.reset(
-      new WebDatabaseObserverImpl(sync_message_filter()));
-  blink::WebDatabase::setObserver(web_database_observer_impl_.get());
   db_message_filter_ = new DBMessageFilter();
   channel()->AddFilter(db_message_filter_.get());
 
@@ -75,6 +72,11 @@ WorkerThread::~WorkerThread() {
 
 void WorkerThread::Shutdown() {
   ChildThread::Shutdown();
+
+  if (webkit_platform_support_) {
+    webkit_platform_support_->web_database_observer_impl()->
+        WaitForAllDatabasesToClose();
+  }
 
   // Shutdown in reverse of the initialization order.
   channel()->RemoveFilter(indexed_db_message_filter_.get());

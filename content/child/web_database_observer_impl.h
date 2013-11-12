@@ -7,52 +7,71 @@
 
 #include "base/memory/ref_counted.h"
 #include "ipc/ipc_sync_message_filter.h"
-#include "third_party/WebKit/public/web/WebDatabaseObserver.h"
+#include "third_party/WebKit/public/platform/WebPlatformDatabaseObserver.h"
 #include "webkit/common/database/database_connections.h"
-
-namespace blink {
-class WebString;
-}
 
 namespace content {
 
-class WebDatabaseObserverImpl : public blink::WebDatabaseObserver {
+// TODO(kinuko): WebPlatformDatabaseObserver should be renamed to
+// WebDatabaseObserver once non-platform one is deprecated.
+class WebDatabaseObserverImpl : public blink::WebPlatformDatabaseObserver {
  public:
   explicit WebDatabaseObserverImpl(IPC::SyncMessageFilter* sender);
   virtual ~WebDatabaseObserverImpl();
 
-  virtual void databaseOpened(const blink::WebDatabase& database) OVERRIDE;
-  virtual void databaseModified(const blink::WebDatabase& database) OVERRIDE;
-  virtual void databaseClosed(const blink::WebString& origin_identifier,
-                              const blink::WebString& database_name);
-  // TODO(jochen): Remove this version once the blink side has rolled.
-  virtual void databaseClosed(const blink::WebDatabase& database);
-
+  virtual void databaseOpened(
+      const blink::WebString& origin_identifier,
+      const blink::WebString& database_name,
+      const blink::WebString& database_display_name,
+      unsigned long estimated_size);
+  virtual void databaseModified(
+      const blink::WebString& origin_identifier,
+      const blink::WebString& database_name);
+  virtual void databaseClosed(
+      const blink::WebString& origin_identifier,
+      const blink::WebString& database_name);
   virtual void reportOpenDatabaseResult(
-      const blink::WebDatabase& database, int callsite,
-      int websql_error, int sqlite_error) OVERRIDE;
+      const blink::WebString& origin_identifier,
+      const blink::WebString& database_name,
+      bool is_sync_database,
+      int callsite, int websql_error, int sqlite_error);
   virtual void reportChangeVersionResult(
-      const blink::WebDatabase& database, int callsite,
-      int websql_error, int sqlite_error) OVERRIDE;
+      const blink::WebString& origin_identifier,
+      const blink::WebString& database_name,
+      bool is_sync_database,
+      int callsite, int websql_error, int sqlite_error);
   virtual void reportStartTransactionResult(
-      const blink::WebDatabase& database, int callsite,
-      int websql_error, int sqlite_error) OVERRIDE;
+      const blink::WebString& origin_identifier,
+      const blink::WebString& database_name,
+      bool is_sync_database,
+      int callsite, int websql_error, int sqlite_error);
   virtual void reportCommitTransactionResult(
-      const blink::WebDatabase& database, int callsite,
-      int websql_error, int sqlite_error) OVERRIDE;
+      const blink::WebString& origin_identifier,
+      const blink::WebString& database_name,
+      bool is_sync_database,
+      int callsite, int websql_error, int sqlite_error);
   virtual void reportExecuteStatementResult(
-      const blink::WebDatabase& database, int callsite,
-      int websql_error, int sqlite_error) OVERRIDE;
+      const blink::WebString& origin_identifier,
+      const blink::WebString& database_name,
+      bool is_sync_database,
+      int callsite, int websql_error, int sqlite_error);
   virtual void reportVacuumDatabaseResult(
-      const blink::WebDatabase& database, int sqlite_error) OVERRIDE;
+      const blink::WebString& origin_identifier,
+      const blink::WebString& database_name,
+      bool is_sync_database,
+      int sqlite_error);
 
   void WaitForAllDatabasesToClose();
 
  private:
-  void HandleSqliteError(const blink::WebDatabase& database, int error);
+  void HandleSqliteError(const blink::WebString& origin_identifier,
+                         const blink::WebString& database_name,
+                         int error);
 
   scoped_refptr<IPC::SyncMessageFilter> sender_;
   scoped_refptr<webkit_database::DatabaseConnectionsWrapper> open_connections_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebDatabaseObserverImpl);
 };
 
 }  // namespace content

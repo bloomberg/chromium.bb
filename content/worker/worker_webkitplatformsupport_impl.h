@@ -25,6 +25,7 @@ class WebFileUtilities;
 namespace content {
 class QuotaMessageFilter;
 class ThreadSafeSender;
+class WebDatabaseObserverImpl;
 class WebFileSystemImpl;
 
 class WorkerWebKitPlatformSupportImpl : public WebKitPlatformSupportImpl,
@@ -70,10 +71,9 @@ class WorkerWebKitPlatformSupportImpl : public WebKitPlatformSupportImpl,
       const blink::WebString& vfs_file_name);
   virtual long long databaseGetSpaceAvailableForOrigin(
       const blink::WebString& origin_identifier);
-
   virtual blink::WebBlobRegistry* blobRegistry();
-
   virtual blink::WebIDBFactory* idbFactory();
+  virtual blink::WebPlatformDatabaseObserver* databaseObserver();
 
   // WebMimeRegistry methods:
   virtual blink::WebMimeRegistry::SupportsType supportsMIMEType(
@@ -100,6 +100,10 @@ class WorkerWebKitPlatformSupportImpl : public WebKitPlatformSupportImpl,
       blink::WebStorageQuotaType,
       blink::WebStorageQuotaCallbacks*) OVERRIDE;
 
+  WebDatabaseObserverImpl* web_database_observer_impl() {
+    return web_database_observer_impl_.get();
+  }
+
  private:
 
   class FileUtilities;
@@ -110,6 +114,7 @@ class WorkerWebKitPlatformSupportImpl : public WebKitPlatformSupportImpl,
   scoped_refptr<base::MessageLoopProxy> child_thread_loop_;
   scoped_refptr<IPC::SyncMessageFilter> sync_message_filter_;
   scoped_refptr<QuotaMessageFilter> quota_message_filter_;
+  scoped_ptr<WebDatabaseObserverImpl> web_database_observer_impl_;
 };
 
 }  // namespace content

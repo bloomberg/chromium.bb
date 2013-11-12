@@ -91,7 +91,6 @@ class RendererDemuxerAndroid;
 class RendererWebKitPlatformSupportImpl;
 class RenderProcessObserver;
 class VideoCaptureImplManager;
-class WebDatabaseObserverImpl;
 class WebGraphicsContext3DCommandBufferImpl;
 class WebRTCIdentityService;
 
@@ -426,9 +425,6 @@ class CONTENT_EXPORT RenderThreadImpl : public RenderThread,
 
   // Used on multiple threads.
   scoped_refptr<VideoCaptureImplManager> vc_manager_;
-
-  // Used on multiple script execution context threads.
-  scoped_ptr<WebDatabaseObserverImpl> web_database_observer_impl_;
 
 #if defined(OS_WIN)
   // Initialize COM when using plugins outside the sandbox.

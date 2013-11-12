@@ -40,6 +40,7 @@ class RendererClipboardClient;
 class ThreadSafeSender;
 class WebClipboardImpl;
 class WebCryptoImpl;
+class WebDatabaseObserverImpl;
 class WebFileSystemImpl;
 
 class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
@@ -95,6 +96,7 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   virtual double audioHardwareSampleRate();
   virtual size_t audioHardwareBufferSize();
   virtual unsigned audioHardwareOutputChannels();
+  virtual blink::WebPlatformDatabaseObserver* databaseObserver();
 
   // TODO(crogers): remove deprecated API as soon as WebKit calls new API.
   virtual blink::WebAudioDevice* createAudioDevice(
@@ -169,6 +171,10 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   static void SetMockDeviceOrientationDataForTesting(
       const blink::WebDeviceOrientationData& data);
 
+  WebDatabaseObserverImpl* web_database_observer_impl() {
+    return web_database_observer_impl_.get();
+  }
+
  private:
   bool CheckPreparsedJsCachingEnabled() const;
 
@@ -204,6 +210,8 @@ class CONTENT_EXPORT RendererWebKitPlatformSupportImpl
   scoped_refptr<IPC::SyncMessageFilter> sync_message_filter_;
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   scoped_refptr<QuotaMessageFilter> quota_message_filter_;
+
+  scoped_ptr<WebDatabaseObserverImpl> web_database_observer_impl_;
 
   webkit::WebCompositorSupportImpl compositor_support_;
 

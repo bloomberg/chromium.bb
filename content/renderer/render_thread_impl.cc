@@ -417,8 +417,10 @@ void RenderThreadImpl::Shutdown() {
   ChildThread::Shutdown();
 
   // Wait for all databases to be closed.
-  if (web_database_observer_impl_)
-    web_database_observer_impl_->WaitForAllDatabasesToClose();
+  if (webkit_platform_support_) {
+    webkit_platform_support_->web_database_observer_impl()->
+        WaitForAllDatabasesToClose();
+  }
 
   // Shutdown in reverse of the initialization order.
   if (devtools_agent_message_filter_.get()) {
@@ -703,10 +705,6 @@ void RenderThreadImpl::EnsureWebKitInitialized() {
 
   EnableWebCoreLogChannels(
       command_line.GetSwitchValueASCII(switches::kWebCoreLogChannels));
-
-  web_database_observer_impl_.reset(
-      new WebDatabaseObserverImpl(sync_message_filter()));
-  blink::WebDatabase::setObserver(web_database_observer_impl_.get());
 
   SetRuntimeFeaturesDefaultsAndUpdateFromArgs(command_line);
 
