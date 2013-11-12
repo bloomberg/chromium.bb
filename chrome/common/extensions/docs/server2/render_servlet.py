@@ -19,9 +19,9 @@ from third_party.handlebar import Handlebar
 
 def _MakeHeaders(content_type):
   return {
-    'x-frame-options': 'sameorigin',
-    'content-type': content_type,
-    'cache-control': 'max-age=300',
+    'X-Frame-Options': 'sameorigin',
+    'Content-Type': content_type,
+    'Cache-Control': 'max-age=300',
   }
 
 
@@ -102,6 +102,6 @@ class RenderServlet(Servlet):
     content_type = content_and_type.content_type
     if isinstance(content, unicode):
       content = content.encode('utf-8')
-      content_type += '; encoding=utf-8'
+      content_type += '; charset=utf-8'
 
     return Response.Ok(content, headers=_MakeHeaders(content_type))
