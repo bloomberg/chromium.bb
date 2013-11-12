@@ -81,8 +81,6 @@ BrokerProcessDispatcher::BrokerProcessDispatcher(
       flash_browser_operations_1_3_(NULL),
       flash_browser_operations_1_2_(NULL),
       flash_browser_operations_1_0_(NULL) {
-  ChildProcess::current()->AddRefProcess();
-
   if (get_plugin_interface) {
     flash_browser_operations_1_0_ =
         static_cast<const PPP_Flash_BrowserOperations_1_0*>(
@@ -105,10 +103,7 @@ BrokerProcessDispatcher::~BrokerProcessDispatcher() {
   // plugin. This is the case for common plugins where they may be used on a
   // source and destination page of a navigation. We don't want to tear down
   // and re-start processes each time in these cases.
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&ChildProcess::ReleaseProcess,
-                 base::Unretained(ChildProcess::current())),
+  process_ref_.ReleaseWithDelay(
       base::TimeDelta::FromSeconds(kBrokerReleaseTimeSeconds));
 }
 

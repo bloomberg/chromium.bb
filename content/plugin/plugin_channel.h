@@ -11,6 +11,7 @@
 #include "base/process/process.h"
 #include "build/build_config.h"
 #include "content/child/npapi/np_channel_base.h"
+#include "content/child/scoped_child_process_reference.h"
 #include "content/plugin/webplugin_delegate_stub.h"
 
 namespace base {
@@ -84,6 +85,8 @@ class PluginChannel : public NPChannelBase {
   void OnDidAbortLoading(int render_view_id);
 
   std::vector<scoped_refptr<WebPluginDelegateStub> > plugin_stubs_;
+
+  ScopedChildProcessReference process_ref_;
 
   // The id of the renderer who is on the other side of the channel.
   int renderer_id_;

@@ -6,6 +6,7 @@
 #define CONTENT_WORKER_WEBSHAREDWORKER_STUB_H_
 
 #include "base/memory/scoped_ptr.h"
+#include "content/child/scoped_child_process_reference.h"
 #include "content/worker/websharedworkerclient_proxy.h"
 #include "content/worker/worker_webapplicationcachehost_impl.h"
 #include "ipc/ipc_listener.h"
@@ -58,6 +59,8 @@ class WebSharedWorkerStub : public IPC::Listener {
       blink::WebContentSecurityPolicyType policy_type);
 
   void OnTerminateWorkerContext();
+
+  ScopedChildProcessReference process_ref_;
 
   int route_id_;
   WorkerAppCacheInitInfo appcache_init_info_;

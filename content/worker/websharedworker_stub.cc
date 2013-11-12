@@ -33,7 +33,6 @@ WebSharedWorkerStub::WebSharedWorkerStub(
   worker_thread->AddWorkerStub(this);
   // Start processing incoming IPCs for this worker.
   worker_thread->AddRoute(route_id_, this);
-  ChildProcess::current()->AddRefProcess();
 
   // TODO(atwilson): Add support for NaCl when they support MessagePorts.
   impl_ = blink::WebSharedWorker::create(client());
@@ -47,7 +46,6 @@ WebSharedWorkerStub::~WebSharedWorkerStub() {
   DCHECK(worker_thread);
   worker_thread->RemoveWorkerStub(this);
   worker_thread->RemoveRoute(route_id_);
-  ChildProcess::current()->ReleaseProcess();
 }
 
 void WebSharedWorkerStub::Shutdown() {

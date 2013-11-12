@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/memory/weak_ptr.h"
+#include "content/child/scoped_child_process_reference.h"
 #include "ppapi/c/ppp.h"
 #include "ppapi/proxy/broker_dispatcher.h"
 #include "ppapi/shared_impl/ppp_flash_browser_operations_shared.h"
@@ -77,6 +78,8 @@ class BrokerProcessDispatcher
   bool SetSitePermission(const base::FilePath& plugin_data_path,
                          PP_Flash_BrowserOperations_SettingType setting_type,
                          const ppapi::FlashSiteSettings& sites);
+
+  ScopedChildProcessReference process_ref_;
 
   PP_GetInterface_Func get_plugin_interface_;
 

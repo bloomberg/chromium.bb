@@ -33,10 +33,6 @@ namespace content {
 
 namespace {
 
-void PluginReleaseCallback() {
-  ChildProcess::current()->ReleaseProcess();
-}
-
 // How long we wait before releasing the plugin process.
 const int kPluginReleaseTimeMinutes = 5;
 
@@ -207,9 +203,7 @@ base::WaitableEvent* PluginChannel::GetModalDialogEvent(int render_view_id) {
 PluginChannel::~PluginChannel() {
   PluginThread::current()->Send(new PluginProcessHostMsg_ChannelDestroyed(
       renderer_id_));
-  base::MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&PluginReleaseCallback),
+  process_ref_.ReleaseWithDelay(
       base::TimeDelta::FromMinutes(kPluginReleaseTimeMinutes));
 }
 
@@ -246,7 +240,6 @@ PluginChannel::PluginChannel()
       filter_(new MessageFilter()),
       npp_(new struct _NPP) {
   set_send_unblocking_only_during_unblock_dispatch();
-  ChildProcess::current()->AddRefProcess();
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   log_messages_ = command_line->HasSwitch(switches::kLogPluginMessages);
 
