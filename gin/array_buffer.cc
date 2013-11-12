@@ -32,7 +32,7 @@ ArrayBufferAllocator* ArrayBufferAllocator::SharedInstance() {
   return instance;
 }
 
-// BufferView::Private --------------------------------------------------------
+// ArrayBuffer::Private -------------------------------------------------------
 
 // This class exists to solve a tricky lifetime problem. The V8 API doesn't
 // want to expose a direct view into the memory behind an array buffer because
@@ -42,18 +42,18 @@ ArrayBufferAllocator* ArrayBufferAllocator::SharedInstance() {
 // we're done with it and when V8 is done with it.
 //
 // To determine whether we're done with the memory, every view we have into
-// the array buffer takes a reference to the BufferView::Private object that
+// the array buffer takes a reference to the ArrayBuffer::Private object that
 // actually owns the memory. To determine when V8 is done with the memory, we
 // open a weak handle to the ArrayBuffer object. When we receive the weak
 // callback, we know the object is about to be garbage collected and we can
 // drop V8's implied reference to the memory.
 //
-// The final subtlety is that we need every BufferView into the same array
-// buffer to AddRef the same BufferView::Private. To make that work, we store a
-// pointer to the BufferView::Private object in an internal field of the
+// The final subtlety is that we need every ArrayBuffer into the same array
+// buffer to AddRef the same ArrayBuffer::Private. To make that work, we store
+// a pointer to the ArrayBuffer::Private object in an internal field of the
 // ArrayBuffer object.
 //
-class BufferView::Private {
+class ArrayBuffer::Private {
  public:
   static scoped_refptr<Private> From(v8::Isolate* isolate,
                                      v8::Handle<v8::ArrayBuffer> array);
@@ -77,7 +77,7 @@ class BufferView::Private {
   size_t length_;
 };
 
-scoped_refptr<BufferView::Private> BufferView::Private::From(
+scoped_refptr<ArrayBuffer::Private> ArrayBuffer::Private::From(
     v8::Isolate* isolate, v8::Handle<v8::ArrayBuffer> array) {
   if (array->IsExternal()) {
     return make_scoped_refptr(static_cast<Private*>(
@@ -86,18 +86,18 @@ scoped_refptr<BufferView::Private> BufferView::Private::From(
   return make_scoped_refptr(new Private(isolate, array));
 }
 
-void BufferView::Private::AddRef() {
+void ArrayBuffer::Private::AddRef() {
   ++ref_count_;
 }
 
-void BufferView::Private::Release() {
+void ArrayBuffer::Private::Release() {
   if (--ref_count_)
     return;
   delete this;
 }
 
-BufferView::Private::Private(v8::Isolate* isolate,
-                             v8::Handle<v8::ArrayBuffer> array)
+ArrayBuffer::Private::Private(v8::Isolate* isolate,
+                              v8::Handle<v8::ArrayBuffer> array)
     : ref_count_(0),
       array_buffer_(isolate, array) {
   // Take ownership of the array buffer.
@@ -111,40 +111,73 @@ BufferView::Private::Private(v8::Isolate* isolate,
   array_buffer_.SetWeak(this, WeakCallback);
 }
 
-BufferView::Private::~Private() {
+ArrayBuffer::Private::~Private() {
   ArrayBufferAllocator::SharedInstance()->Free(buffer_, length_);
 }
 
-void BufferView::Private::WeakCallback(
+void ArrayBuffer::Private::WeakCallback(
     const v8::WeakCallbackData<v8::ArrayBuffer, Private>& data) {
   Private* parameter = data.GetParameter();
   parameter->array_buffer_.Reset();
-  parameter->Release();  // Balanced in BufferView::Private::Private.
+  parameter->Release();  // Balanced in ArrayBuffer::Private::Private.
 }
 
-// BufferView -----------------------------------------------------------------
+// ArrayBuffer ----------------------------------------------------------------
 
-BufferView::BufferView(v8::Isolate* isolate,
-                       v8::Handle<v8::ArrayBufferView> view) {
-  Initialize(isolate, view->Buffer());
-  uint8_t* ptr = static_cast<uint8_t*>(bytes_);
-  bytes_ = static_cast<void*>(ptr + view->ByteOffset());
-  num_bytes_ = view->ByteLength();
+ArrayBuffer::ArrayBuffer(v8::Isolate* isolate)
+    : isolate_(isolate),
+      bytes_(0),
+      num_bytes_(0) {
 }
 
-BufferView::BufferView(v8::Isolate* isolate,
-                       v8::Handle<v8::ArrayBuffer> array) {
-  Initialize(isolate, array);
-}
-
-BufferView::~BufferView() {
-}
-
-void BufferView::Initialize(v8::Isolate* isolate,
-                            v8::Handle<v8::ArrayBuffer> array) {
-  private_ = BufferView::Private::From(isolate, array);
+ArrayBuffer::ArrayBuffer(v8::Isolate* isolate,
+                         v8::Handle<v8::ArrayBuffer> array)
+    : isolate_(isolate) {
+  private_ = ArrayBuffer::Private::From(isolate_, array);
   bytes_ = private_->buffer();
   num_bytes_ = private_->length();
+}
+
+ArrayBuffer::~ArrayBuffer() {
+}
+
+// Converter<ArrayBuffer> -----------------------------------------------------
+
+bool Converter<ArrayBuffer>::FromV8(v8::Handle<v8::Value> val,
+                                    ArrayBuffer* out) {
+  if (!val->IsArrayBuffer())
+    return false;
+  *out = ArrayBuffer(out->isolate(), v8::Handle<v8::ArrayBuffer>::Cast(val));
+  return true;
+}
+
+// ArrayBufferView ------------------------------------------------------------
+
+ArrayBufferView::ArrayBufferView(v8::Isolate* isolate)
+    : array_buffer_(isolate),
+      offset_(0),
+      num_bytes_(0) {
+}
+
+ArrayBufferView::ArrayBufferView(v8::Isolate* isolate,
+                                 v8::Handle<v8::ArrayBufferView> view)
+    : array_buffer_(isolate, view->Buffer()),
+      offset_(view->ByteOffset()),
+      num_bytes_(view->ByteLength()) {
+}
+
+ArrayBufferView::~ArrayBufferView() {
+}
+
+// Converter<ArrayBufferView> -------------------------------------------------
+
+bool Converter<ArrayBufferView>::FromV8(v8::Handle<v8::Value> val,
+                                        ArrayBufferView* out) {
+  if (!val->IsArrayBufferView())
+    return false;
+  *out = ArrayBufferView(out->isolate(),
+                         v8::Handle<v8::ArrayBufferView>::Cast(val));
+  return true;
 }
 
 }  // namespace gin

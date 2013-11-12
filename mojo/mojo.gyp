@@ -25,7 +25,9 @@
         'sample_app',
         'mojo_bindings',
         'mojo_bindings_test',
-        'native_viewport',
+        'mojo_js_bindings',
+        'mojo_js_bindings_unittests',
+        'mojo_bindings',
       ],
     },
     {
@@ -288,12 +290,10 @@
         '..'
       ],
       'dependencies': [
-        '../v8/tools/gyp/v8.gyp:v8',
+        'mojo_js_bindings',
       ],
       'sources': [
         'apps/js/main.cc',
-        'apps/js/v8_environment.cc',
-        'apps/js/v8_environment.h',
       ],
     },
     {
@@ -351,6 +351,43 @@
         'public/bindings/sample/generated/sample_service.h',
         'public/bindings/sample/generated/sample_service_internal.h',
         'public/bindings/sample/sample_test.cc',
+      ],
+    },
+     {
+      'target_name': 'mojo_js_bindings',
+      'type': 'static_library',
+      'include_dirs': [
+        '..'
+      ],
+      'dependencies': [
+        '../gin/gin.gyp:gin',
+        'mojo_system',
+      ],
+      'export_dependent_settings': [
+        '../gin/gin.gyp:gin',
+      ],
+      'sources': [
+        'public/bindings/js/core.cc',
+        'public/bindings/js/core.h',
+        'public/bindings/js/handle.cc',
+        'public/bindings/js/handle.h',
+        'public/bindings/js/mojo.cc',
+        'public/bindings/js/mojo.h',
+        'public/bindings/js/runner_delegate.cc',
+        'public/bindings/js/runner_delegate.h',
+      ],
+    },
+    {
+      'target_name': 'mojo_js_bindings_unittests',
+      'type': 'executable',
+      'dependencies': [
+        '../base/base.gyp:run_all_unittests',
+        '../gin/gin.gyp:gin_test',
+        'mojo_js_bindings',
+      ],
+      'sources': [
+        '../gin/test/run_all_unittests.cc',
+        'public/bindings/js/test/harness.cc',
       ],
     },
     {

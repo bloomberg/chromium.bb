@@ -49,6 +49,30 @@ bool Converter<uint32_t>::FromV8(Handle<Value> val, uint32_t* out) {
   return true;
 }
 
+Handle<Value> Converter<int64_t>::ToV8(Isolate* isolate, int64_t val) {
+  return Number::New(isolate, static_cast<double>(val)).As<Value>();
+}
+
+bool Converter<int64_t>::FromV8(Handle<Value> val, int64_t* out) {
+  if (!val->IsNumber())
+    return false;
+  // Even though IntegerValue returns int64_t, JavaScript cannot represent
+  // the full precision of int64_t, which means some rounding might occur.
+  *out = val->IntegerValue();
+  return true;
+}
+
+Handle<Value> Converter<uint64_t>::ToV8(Isolate* isolate, uint64_t val) {
+  return Number::New(isolate, static_cast<double>(val)).As<Value>();
+}
+
+bool Converter<uint64_t>::FromV8(Handle<Value> val, uint64_t* out) {
+  if (!val->IsNumber())
+    return false;
+  *out = static_cast<uint64_t>(val->IntegerValue());
+  return true;
+}
+
 Handle<Value> Converter<double>::ToV8(Isolate* isolate, double val) {
   return Number::New(isolate, val).As<Value>();
 }
@@ -87,7 +111,8 @@ bool Converter<Handle<Function> >::FromV8(Handle<Value> val,
   return true;
 }
 
-Handle<Value> Converter<Handle<Object> >::ToV8(Handle<Object> val) {
+Handle<Value> Converter<Handle<Object> >::ToV8(v8::Isolate* isolate,
+                                               Handle<Object> val) {
   return val.As<Value>();
 }
 
@@ -98,5 +123,14 @@ bool Converter<Handle<Object> >::FromV8(Handle<Value> val,
   *out = Handle<Object>::Cast(val);
   return true;
 }
+
+v8::Handle<v8::String> StringToSymbol(v8::Isolate* isolate,
+                                      const std::string& val) {
+  return String::NewFromUtf8(isolate,
+                             val.data(),
+                             String::kInternalizedString,
+                             val.length());
+}
+
 
 }  // namespace gin

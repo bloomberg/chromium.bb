@@ -20,8 +20,10 @@ class PerIsolateData {
 
   static PerIsolateData* From(v8::Isolate* isolate);
 
-  void RegisterObjectTemplate(WrapperInfo* info,
-                              v8::Local<v8::ObjectTemplate> object_template);
+  void SetObjectTemplate(WrapperInfo* info,
+                         v8::Local<v8::ObjectTemplate> object_template);
+
+  v8::Local<v8::ObjectTemplate> GetObjectTemplate(WrapperInfo* info);
 
  private:
   typedef std::map<

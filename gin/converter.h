@@ -40,6 +40,24 @@ struct Converter<uint32_t> {
 };
 
 template<>
+struct Converter<int64_t> {
+  // Warning: JavaScript cannot represent 64 integers precisely.
+  static v8::Handle<v8::Value> ToV8(v8::Isolate* isolate,
+                                    int64_t val);
+  static bool FromV8(v8::Handle<v8::Value> val,
+                     int64_t* out);
+};
+
+template<>
+struct Converter<uint64_t> {
+  // Warning: JavaScript cannot represent 64 integers precisely.
+  static v8::Handle<v8::Value> ToV8(v8::Isolate* isolate,
+                                    uint64_t val);
+  static bool FromV8(v8::Handle<v8::Value> val,
+                     uint64_t* out);
+};
+
+template<>
 struct Converter<double> {
   static v8::Handle<v8::Value> ToV8(v8::Isolate* isolate,
                                     double val);
@@ -63,7 +81,8 @@ struct Converter<v8::Handle<v8::Function> > {
 
 template<>
 struct Converter<v8::Handle<v8::Object> > {
-  static v8::Handle<v8::Value> ToV8(v8::Handle<v8::Object> val);
+  static v8::Handle<v8::Value> ToV8(v8::Isolate* isolate,
+                                    v8::Handle<v8::Object> val);
   static bool FromV8(v8::Handle<v8::Value> val,
                      v8::Handle<v8::Object>* out);
 };
@@ -110,6 +129,9 @@ inline v8::Handle<v8::String> StringToV8(
     v8::Isolate* isolate, std::string input) {
   return ConvertToV8(isolate, input).As<v8::String>();
 }
+
+v8::Handle<v8::String> StringToSymbol(v8::Isolate* isolate,
+                                      const std::string& val);
 
 template<typename T>
 bool ConvertFromV8(v8::Handle<v8::Value> input, T* result) {

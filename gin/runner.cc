@@ -44,7 +44,7 @@ void Runner::Run(Handle<Script> script) {
 }
 
 v8::Handle<v8::Function> Runner::GetMain() {
-  Handle<Value> property = global()->Get(StringToV8(isolate_, "main"));
+  Handle<Value> property = global()->Get(StringToSymbol(isolate_, "main"));
   if (property.IsEmpty())
     return v8::Handle<v8::Function>();
   Handle<Function> main;

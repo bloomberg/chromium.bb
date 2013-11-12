@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"  // For scoped_refptr only!
+#include "gin/converter.h"
 #include "v8/include/v8.h"
 
 namespace gin {
@@ -21,23 +22,55 @@ class ArrayBufferAllocator : public v8::ArrayBuffer::Allocator {
   static ArrayBufferAllocator* SharedInstance();
 };
 
-class BufferView {
+class ArrayBuffer {
  public:
-  BufferView(v8::Isolate* isolate, v8::Handle<v8::ArrayBufferView> view);
-  BufferView(v8::Isolate* isolate, v8::Handle<v8::ArrayBuffer> buffer);
-  ~BufferView();
+  explicit ArrayBuffer(v8::Isolate* isolate);
+  ArrayBuffer(v8::Isolate* isolate, v8::Handle<v8::ArrayBuffer> buffer);
+  ~ArrayBuffer();
 
   void* bytes() const { return bytes_; }
   size_t num_bytes() const { return num_bytes_; }
 
+  v8::Isolate* isolate() const { return isolate_; }
+
  private:
   class Private;
 
-  void Initialize(v8::Isolate* isolate, v8::Handle<v8::ArrayBuffer> buffer);
-
+  v8::Isolate* isolate_;
   scoped_refptr<Private> private_;
   void* bytes_;
   size_t num_bytes_;
+};
+
+template<>
+struct Converter<ArrayBuffer> {
+  static bool FromV8(v8::Handle<v8::Value> val,
+                     ArrayBuffer* out);
+};
+
+class ArrayBufferView {
+ public:
+  explicit ArrayBufferView(v8::Isolate* isolate);
+  ArrayBufferView(v8::Isolate* isolate, v8::Handle<v8::ArrayBufferView> view);
+  ~ArrayBufferView();
+
+  void* bytes() const {
+    return static_cast<uint8_t*>(array_buffer_.bytes()) + offset_;
+  }
+  size_t num_bytes() const { return num_bytes_; }
+
+  v8::Isolate* isolate() const { return array_buffer_.isolate(); }
+
+ private:
+  ArrayBuffer array_buffer_;
+  size_t offset_;
+  size_t num_bytes_;
+};
+
+template<>
+struct Converter<ArrayBufferView> {
+  static bool FromV8(v8::Handle<v8::Value> val,
+                     ArrayBufferView* out);
 };
 
 }  // namespace gin
