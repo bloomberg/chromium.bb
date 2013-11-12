@@ -964,6 +964,11 @@ const char kLoadExtension[]                 = "load-extension";
 // Makes Chrome default browser
 const char kMakeDefaultBrowser[]            = "make-default-browser";
 
+// Sets the managed user ID for any loaded or newly created profile to the
+// given value. Pass an empty string to mark the profile as non-supervised.
+// Used for testing.
+const char kManagedUserId[]                 = "managed-user-id";
+
 // Used to authenticate requests to the Sync service for managed users. Setting
 // this switch also causes Sync to be set up for a managed user.
 const char kManagedUserSyncToken[]          = "managed-user-sync-token";
@@ -998,9 +1003,6 @@ const char kNativeMessagingHosts[]          = "native-messaging-hosts";
 // Sets the base logging level for the net log. Log 0 logs the most data.
 // Intended primarily for use with --log-net-log.
 const char kNetLogLevel[]                   = "net-log-level";
-
-// Marks a newly created profile as a supervised profile. Used for tests.
-const char kNewProfileIsSupervised[]        = "new-profile-is-supervised";
 
 // Use new profile management system, including profile sign-out and new
 // choosers.

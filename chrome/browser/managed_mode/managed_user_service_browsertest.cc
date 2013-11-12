@@ -26,7 +26,7 @@ class ManagedUserServiceTestManaged : public InProcessBrowserTest {
  public:
   // content::BrowserTestBase:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
-    command_line->AppendSwitch(switches::kNewProfileIsSupervised);
+    command_line->AppendSwitchASCII(switches::kManagedUserId, "asdf");
   }
 };
 

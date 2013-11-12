@@ -1049,12 +1049,15 @@ void ProfileManager::InitProfileUserPrefs(Profile* profile) {
   if (!profile->GetPrefs()->HasPrefPath(prefs::kProfileName))
     profile->GetPrefs()->SetString(prefs::kProfileName, profile_name);
 
-  if (!profile->GetPrefs()->HasPrefPath(prefs::kManagedUserId)) {
-    if (managed_user_id.empty() &&
-        CommandLine::ForCurrentProcess()->HasSwitch(
-            switches::kNewProfileIsSupervised)) {
-      managed_user_id = "Test ID";
-    }
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  bool force_managed_user_id =
+      command_line->HasSwitch(switches::kManagedUserId);
+  if (force_managed_user_id) {
+    managed_user_id =
+        command_line->GetSwitchValueASCII(switches::kManagedUserId);
+  }
+  if (force_managed_user_id ||
+      !profile->GetPrefs()->HasPrefPath(prefs::kManagedUserId)) {
     profile->GetPrefs()->SetString(prefs::kManagedUserId, managed_user_id);
   }
 }

@@ -24,7 +24,7 @@ class SingleClientManagedUserSettingsSyncTest : public SyncTest {
   // SyncTest overrides:
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     SyncTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitch(switches::kNewProfileIsSupervised);
+    command_line->AppendSwitchASCII(switches::kManagedUserId, "asdf");
   }
 };
 

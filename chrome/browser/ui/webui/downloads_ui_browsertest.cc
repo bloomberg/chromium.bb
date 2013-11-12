@@ -25,5 +25,5 @@ void DownloadsUIBrowserTest::SetDeleteAllowed(bool allowed) {
 
 void DownloadsWebUIForSupervisedUsersTest::SetUpCommandLine(
     CommandLine* command_line) {
-  command_line->AppendSwitch(switches::kNewProfileIsSupervised);
+  command_line->AppendSwitchASCII(switches::kManagedUserId, "asdf");
 }

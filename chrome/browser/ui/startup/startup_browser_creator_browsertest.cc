@@ -972,7 +972,7 @@ class ManagedModeBrowserCreatorTest : public InProcessBrowserTest {
   virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
     InProcessBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitch(switches::kEnableManagedUsers);
-    command_line->AppendSwitch(switches::kNewProfileIsSupervised);
+    command_line->AppendSwitchASCII(switches::kManagedUserId, "asdf");
   }
 };
 

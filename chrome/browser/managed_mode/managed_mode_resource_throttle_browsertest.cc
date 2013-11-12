@@ -47,7 +47,7 @@ void ManagedModeResourceThrottleTest::SetUpOnMainThread() {
 
 void ManagedModeResourceThrottleTest::SetUpCommandLine(
     CommandLine* command_line) {
-  command_line->AppendSwitch(switches::kNewProfileIsSupervised);
+  command_line->AppendSwitchASCII(switches::kManagedUserId, "asdf");
 }
 
 // Tests that showing the blocking interstitial for a WebContents without a

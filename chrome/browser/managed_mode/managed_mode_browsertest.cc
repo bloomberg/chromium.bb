@@ -124,7 +124,7 @@ class ManagedModeBlockModeTest : public InProcessBrowserTest {
         "MAP *.new-example.com " + host_port + "," +
         "MAP *.a.com " + host_port);
 
-    command_line->AppendSwitch(switches::kNewProfileIsSupervised);
+    command_line->AppendSwitchASCII(switches::kManagedUserId, "asdf");
   }
 
   // Acts like a synchronous call to history's QueryHistory. Modified from
