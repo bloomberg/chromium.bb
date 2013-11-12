@@ -224,13 +224,8 @@ bool DesktopBackgroundController::SetDefaultWallpaper(bool is_guest) {
     switch_name = use_large ? switches::kAshGuestWallpaperLarge :
         switches::kAshGuestWallpaperSmall;
   } else {
-    const char* oem_switch_name = use_large ? switches::kAshOemWallpaperLarge :
-        switches::kAshOemWallpaperSmall;
-    const char* default_switch_name = use_large ?
-        switches::kAshDefaultWallpaperLarge :
+    switch_name = use_large ? switches::kAshDefaultWallpaperLarge :
         switches::kAshDefaultWallpaperSmall;
-    switch_name = command_line->HasSwitch(oem_switch_name) ? oem_switch_name :
-        default_switch_name;
   }
   file_path = command_line->GetSwitchValuePath(switch_name);
 

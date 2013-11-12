@@ -143,13 +143,6 @@ const char kAshHideNotificationsForFactory[] =
 // "1024x768*2" sets the scale factor to 2 for a high DPI display.
 const char kAshHostWindowBounds[] = "ash-host-window-bounds";
 
-// OEM-supplied wallpaper (as paths to trusted, non-user-writable JPEG files).
-// TODO(derat): Remove these switches once OEM wallpaper is passed via
-// kAshDefaultWallpaper{Large,Small} and kAshDefaultWallpaperIsOem is set
-// correctly: http://crbug.com/315267
-const char kAshOemWallpaperLarge[] = "ash-oem-wallpaper-large";
-const char kAshOemWallpaperSmall[] = "ash-oem-wallpaper-small";
-
 // Specifies the delay in milliseconds before beginning overview mode after
 // getting an alt tab keypress.
 const char kAshOverviewDelayOnAltTab[] = "ash-overview-delay-on-alt-tab";
