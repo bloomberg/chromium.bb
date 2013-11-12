@@ -134,7 +134,7 @@ int64 SeekPlatformFile(PlatformFile file,
 
 int ReadPlatformFile(PlatformFile file, int64 offset, char* data, int size) {
   base::ThreadRestrictions::AssertIOAllowed();
-  if (file == kInvalidPlatformFileValue)
+  if (file == kInvalidPlatformFileValue || size < 0)
     return -1;
 
   LARGE_INTEGER offset_li;
@@ -147,14 +147,24 @@ int ReadPlatformFile(PlatformFile file, int64 offset, char* data, int size) {
   DWORD bytes_read;
   if (::ReadFile(file, data, size, &bytes_read, &overlapped) != 0)
     return bytes_read;
-  else if (ERROR_HANDLE_EOF == GetLastError())
+  if (ERROR_HANDLE_EOF == GetLastError())
     return 0;
 
   return -1;
 }
 
 int ReadPlatformFileAtCurrentPos(PlatformFile file, char* data, int size) {
-  return ReadPlatformFile(file, 0, data, size);
+  base::ThreadRestrictions::AssertIOAllowed();
+  if (file == kInvalidPlatformFileValue || size < 0)
+    return -1;
+
+  DWORD bytes_read;
+  if (::ReadFile(file, data, size, &bytes_read, NULL) != 0)
+    return bytes_read;
+  if (ERROR_HANDLE_EOF == GetLastError())
+    return 0;
+
+  return -1;
 }
 
 int ReadPlatformFileNoBestEffort(PlatformFile file, int64 offset, char* data,
@@ -164,7 +174,7 @@ int ReadPlatformFileNoBestEffort(PlatformFile file, int64 offset, char* data,
 
 int ReadPlatformFileCurPosNoBestEffort(PlatformFile file,
                                        char* data, int size) {
-  return ReadPlatformFile(file, 0, data, size);
+  return ReadPlatformFileAtCurrentPos(file, data, size);
 }
 
 int WritePlatformFile(PlatformFile file, int64 offset,

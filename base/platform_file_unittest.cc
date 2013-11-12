@@ -398,3 +398,37 @@ TEST(PlatformFile, DISABLED_TouchGetInfoPlatformFile) {
   // Close the file handle to allow the temp directory to be deleted.
   base::ClosePlatformFile(file);
 }
+
+TEST(PlatformFile, ReadFileAtCurrentPosition) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  FilePath file_path =
+      temp_dir.path().AppendASCII("read_file_at_current_position");
+  base::PlatformFile file = base::CreatePlatformFile(
+      file_path,
+      base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_READ |
+          base::PLATFORM_FILE_WRITE,
+      NULL, NULL);
+  EXPECT_NE(base::kInvalidPlatformFileValue, file);
+
+  const char kData[] = "test";
+  const int kDataSize = arraysize(kData) - 1;
+  EXPECT_EQ(kDataSize, WriteFully(file, 0, kData, kDataSize));
+
+  EXPECT_EQ(0, SeekPlatformFile(
+      file, base::PLATFORM_FILE_FROM_BEGIN, 0));
+
+  char buffer[kDataSize];
+  int first_chunk_size = kDataSize / 2;
+  EXPECT_EQ(first_chunk_size,
+            base::ReadPlatformFileAtCurrentPos(
+                file, buffer, first_chunk_size));
+  EXPECT_EQ(kDataSize - first_chunk_size,
+            base::ReadPlatformFileAtCurrentPos(
+                file, buffer + first_chunk_size,
+                kDataSize - first_chunk_size));
+  EXPECT_EQ(std::string(buffer, buffer + kDataSize),
+            std::string(kData));
+
+  base::ClosePlatformFile(file);
+}
