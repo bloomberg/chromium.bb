@@ -140,7 +140,7 @@ def generate_overloads_by_type(methods, is_static):
                                     for name, count in method_counts.iteritems()
                                     if count > 1)
 
-    # Add overload index only to overloaded methods, so template code can
+    # Add overload information only to overloaded methods, so template code can
     # easily verify if a function is overloaded
     method_overloads = {}
     for method in methods:
@@ -148,8 +148,12 @@ def generate_overloads_by_type(methods, is_static):
         if (method['is_static'] != is_static or
             name not in overloaded_method_counts):
             continue
+        # Overload index includes self, so first append, then compute index
         method_overloads.setdefault(name, []).append(method)
-        method['overload_index'] = len(method_overloads[name])
+        method.update({
+            'overload_index': len(method_overloads[name]),
+            'overload_resolution_expression': overload_resolution_expression(method),
+        })
 
     # Resolution function is generated after last overloaded function;
     # package necessary information into |method.overloads| for that method.
@@ -168,3 +172,28 @@ def generate_overloads_by_type(methods, is_static):
                 overload['number_of_required_arguments']
                 for overload in overloads),
         }
+
+
+def overload_resolution_expression(method):
+    # Expression is an OR of ANDs: each term in the OR corresponds to a
+    # possible argument count for a given method, with type checks.
+    # FIXME: Blink's overload resolution algorithm is incorrect, per:
+    # https://code.google.com/p/chromium/issues/detail?id=293561
+    arguments = method['arguments']
+    checks = [overload_check_expression(method, index)
+              # check *omitting* optional arguments at |index| and up, e.g.:
+              # index 0 => argument_count 0 (no arguments)
+              # index 1 => argument_count 1 (index 0 argument only)
+              for index, argument in enumerate(arguments)
+              if argument['is_optional']]
+    # FIXME: this is wrong if a method has optional arguments and a variadic
+    # one, though there are not yet any examples of this
+    if not method['is_variadic']:
+        # Includes all optional arguments (len = last index + 1)
+        checks.append(overload_check_expression(method, len(arguments)))
+    return ' || '.join(checks)
+
+
+def overload_check_expression(method, argument_count):
+    # FIXME: add type checks per GenerateParametersCheckExpression
+    return 'info.Length() == %s' % argument_count

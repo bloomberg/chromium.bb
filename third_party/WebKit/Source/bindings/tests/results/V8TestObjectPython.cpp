@@ -4752,50 +4752,148 @@ static void voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArgMethodCa
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void overloadedMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void overloadedMethodA1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethod", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodA", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     V8TRYCATCH_VOID(int, longArg, toInt32(info[0]));
-    imp->overloadedMethod(longArg);
+    imp->overloadedMethodA(longArg);
 }
 
-static void overloadedMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void overloadedMethodA2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 2)) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethod", "TestObjectPython", ExceptionMessages::notEnoughArguments(2, info.Length())), info.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodA", "TestObjectPython", ExceptionMessages::notEnoughArguments(2, info.Length())), info.GetIsolate());
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     V8TRYCATCH_VOID(int, longArg1, toInt32(info[0]));
     V8TRYCATCH_VOID(int, longArg2, toInt32(info[1]));
-    imp->overloadedMethod(longArg1, longArg2);
+    imp->overloadedMethodA(longArg1, longArg2);
 }
 
-static void overloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void overloadedMethodAMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (info.Length() == 1) {
-        overloadedMethod1Method(info);
+        overloadedMethodA1Method(info);
         return;
     }
     if (info.Length() == 2) {
-        overloadedMethod2Method(info);
+        overloadedMethodA2Method(info);
         return;
     }
     if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethod", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodA", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
     throwUninformativeAndGenericTypeError(info.GetIsolate());
 }
 
-static void overloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void overloadedMethodAMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestObjectPythonV8Internal::overloadedMethodMethod(info);
+    TestObjectPythonV8Internal::overloadedMethodAMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void overloadedMethodB1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodB", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        return;
+    }
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    V8TRYCATCH_VOID(int, longArg, toInt32(info[0]));
+    imp->overloadedMethodB(longArg);
+}
+
+static void overloadedMethodB2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodB", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        return;
+    }
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    V8TRYCATCH_VOID(int, longArg1, toInt32(info[0]));
+    if (UNLIKELY(info.Length() <= 1)) {
+        imp->overloadedMethodB(longArg1);
+        return;
+    }
+    V8TRYCATCH_VOID(int, longArg2, toInt32(info[1]));
+    imp->overloadedMethodB(longArg1, longArg2);
+}
+
+static void overloadedMethodBMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (info.Length() == 1) {
+        overloadedMethodB1Method(info);
+        return;
+    }
+    if (info.Length() == 1 || info.Length() == 2) {
+        overloadedMethodB2Method(info);
+        return;
+    }
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodB", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        return;
+    }
+    throwUninformativeAndGenericTypeError(info.GetIsolate());
+}
+
+static void overloadedMethodBMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::overloadedMethodBMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void overloadedMethodC1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodC", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        return;
+    }
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    V8TRYCATCH_VOID(int, longArg, toInt32(info[0]));
+    imp->overloadedMethodC(longArg);
+}
+
+static void overloadedMethodC2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodC", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        return;
+    }
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    V8TRYCATCH_VOID(int, longArg, toInt32(info[0]));
+    V8TRYCATCH_VOID(Vector<int>, longArgs, toNativeArguments<int>(info, 1));
+    imp->overloadedMethodC(longArg, longArgs);
+}
+
+static void overloadedMethodCMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (info.Length() == 1) {
+        overloadedMethodC1Method(info);
+        return;
+    }
+    if () {
+        overloadedMethodC2Method(info);
+        return;
+    }
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodC", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        return;
+    }
+    throwUninformativeAndGenericTypeError(info.GetIsolate());
+}
+
+static void overloadedMethodCMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::overloadedMethodCMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -5857,7 +5955,9 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectPythonMethods[]
     {"voidMethodTestInterfaceEmptyArgOptionalLongArg", TestObjectPythonV8Internal::voidMethodTestInterfaceEmptyArgOptionalLongArgMethodCallback, 0, 1},
     {"voidMethodVariadicStringArg", TestObjectPythonV8Internal::voidMethodVariadicStringArgMethodCallback, 0, 1},
     {"voidMethodStringArgVariadicStringArg", TestObjectPythonV8Internal::voidMethodStringArgVariadicStringArgMethodCallback, 0, 2},
-    {"overloadedMethod", TestObjectPythonV8Internal::overloadedMethodMethodCallback, 0, 1},
+    {"overloadedMethodA", TestObjectPythonV8Internal::overloadedMethodAMethodCallback, 0, 1},
+    {"overloadedMethodB", TestObjectPythonV8Internal::overloadedMethodBMethodCallback, 0, 1},
+    {"overloadedMethodC", TestObjectPythonV8Internal::overloadedMethodCMethodCallback, 0, 1},
     {"voidMethodClampUnsignedShortArg", TestObjectPythonV8Internal::voidMethodClampUnsignedShortArgMethodCallback, 0, 1},
     {"voidMethodClampUnsignedLongArg", TestObjectPythonV8Internal::voidMethodClampUnsignedLongArgMethodCallback, 0, 1},
     {"voidMethodDefaultUndefinedLongArg", TestObjectPythonV8Internal::voidMethodDefaultUndefinedLongArgMethodCallback, 0, 0},

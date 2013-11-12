@@ -130,13 +130,9 @@ if (state.hadException()) {
 {% macro overload_resolution_method(overloads, world_suffix) %}
 static void {{overloads.name}}Method{{world_suffix}}(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    {# FIXME: Blink's overload resolution algorithm is incorrect, per:
-       https://code.google.com/p/chromium/issues/detail?id=293561 #}
     {% for method in overloads.methods %}
-    {# FIXME: actual resolution algorithm much more complicated;
-       see GenerateFunctionParametersCheck #}
-    if (info.Length() == {{method.number_of_required_arguments}}) {
-        {{overloads.name}}{{method.overload_index}}Method{{world_suffix}}(info);
+    if ({{method.overload_resolution_expression}}) {
+        {{method.name}}{{method.overload_index}}Method{{world_suffix}}(info);
         return;
     }
     {% endfor %}

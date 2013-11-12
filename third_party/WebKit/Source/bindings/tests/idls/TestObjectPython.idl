@@ -285,8 +285,12 @@ interface TestObjectPython {
     void voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg, TestInterfaceEmpty... variadicTestInterfaceEmptyArgs);
 
     // Overloaded methods
-    void overloadedMethod(long longArg);
-    void overloadedMethod(long longArg1, long longArg2);
+    void overloadedMethodA(long longArg);
+    void overloadedMethodA(long longArg1, long longArg2);
+    void overloadedMethodB(long longArg);
+    void overloadedMethodB(long longArg1, optional long longArg2);
+    void overloadedMethodC(long longArg);
+    void overloadedMethodC(long longArg, long... longArgs);
 
     static void overloadedStaticMethod(long longArg);
     static void overloadedStaticMethod(long longArg1, long longArg2);
