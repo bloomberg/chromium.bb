@@ -216,7 +216,7 @@ public:
     void finishAppendAuthorStyleSheets();
 
     TreeBoundaryCrossingRules& treeBoundaryCrossingRules() { return m_treeBoundaryCrossingRules; }
-    void addFontFaceRules(const Vector<StyleRuleFontFace*>&, const ContainerNode* scope = 0);
+    void processScopedRules(const RuleSet& authorRules, const ContainerNode* scope = 0);
 
     SelectorFilter& selectorFilter() { return m_selectorFilter; }
 

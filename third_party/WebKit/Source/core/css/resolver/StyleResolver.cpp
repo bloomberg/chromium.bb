@@ -209,15 +209,21 @@ void StyleResolver::finishAppendAuthorStyleSheets()
     collectViewportRules();
 }
 
-void StyleResolver::addFontFaceRules(const Vector<StyleRuleFontFace*>& rules, const ContainerNode* scope)
+void StyleResolver::processScopedRules(const RuleSet& authorRules, const ContainerNode* scope)
 {
+    const Vector<StyleRuleKeyframes*> keyframesRules = authorRules.keyframesRules();
+    for (unsigned i = 0; i < keyframesRules.size(); ++i)
+        ensureScopedStyleResolver(scope)->addKeyframeStyle(keyframesRules[i]);
+
     // Add this font face to our set.
     // FIXME(BUG 72461): We don't add @font-face rules of scoped style sheets for the moment.
     if (scope && !scope->isDocumentNode())
         return;
-    for (unsigned i = 0; i < rules.size(); ++i)
-        fontSelector()->addFontFaceRule(rules[i]);
-    if (rules.size())
+
+    const Vector<StyleRuleFontFace*> fontFaceRules = authorRules.fontFaceRules();
+    for (unsigned i = 0; i < fontFaceRules.size(); ++i)
+        fontSelector()->addFontFaceRule(fontFaceRules[i]);
+    if (fontFaceRules.size())
         invalidateMatchedPropertiesCache();
 }
 

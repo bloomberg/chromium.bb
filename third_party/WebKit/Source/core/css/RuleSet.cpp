@@ -32,7 +32,6 @@
 #include "HTMLNames.h"
 #include "RuntimeEnabledFeatures.h"
 #include "core/css/CSSFontSelector.h"
-#include "core/css/CSSKeyframesRule.h"
 #include "core/css/CSSSelector.h"
 #include "core/css/CSSSelectorList.h"
 #include "core/css/MediaQueryEvaluator.h"
@@ -340,6 +339,12 @@ void RuleSet::addFontFaceRule(StyleRuleFontFace* rule)
     m_fontFaceRules.append(rule);
 }
 
+void RuleSet::addKeyframesRule(StyleRuleKeyframes* rule)
+{
+    ensurePendingRules(); // So that m_viewportRules.shrinkToFit() gets called.
+    m_keyframesRules.append(rule);
+}
+
 void RuleSet::addRegionRule(StyleRuleRegion* regionRule, bool hasDocumentSecurityOrigin)
 {
     ensurePendingRules(); // So that m_regionSelectorsAndRuleSets.shrinkToFit() gets called.
@@ -390,10 +395,10 @@ void RuleSet::addChildRules(const Vector<RefPtr<StyleRuleBase> >& rules, const M
             StyleRuleMedia* mediaRule = static_cast<StyleRuleMedia*>(rule);
             if ((!mediaRule->mediaQueries() || medium.eval(mediaRule->mediaQueries(), resolver->viewportDependentMediaQueryResults())))
                 addChildRules(mediaRule->childRules(), medium, resolver, scope, hasDocumentSecurityOrigin, addRuleFlags);
-        } else if (rule->isFontFaceRule() && resolver) {
+        } else if (rule->isFontFaceRule()) {
             addFontFaceRule(static_cast<StyleRuleFontFace*>(rule));
-        } else if (rule->isKeyframesRule() && resolver) {
-            resolver->ensureScopedStyleResolver(scope)->addKeyframeStyle(static_cast<StyleRuleKeyframes*>(rule));
+        } else if (rule->isKeyframesRule()) {
+            addKeyframesRule(static_cast<StyleRuleKeyframes*>(rule));
         } else if (rule->isRegionRule()) {
             addRegionRule(static_cast<StyleRuleRegion*>(rule), hasDocumentSecurityOrigin);
         } else if (rule->isHostRule() && resolver) {

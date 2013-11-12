@@ -22,6 +22,7 @@
 #ifndef RuleSet_h
 #define RuleSet_h
 
+#include "core/css/CSSKeyframesRule.h"
 #include "core/css/RuleFeature.h"
 #include "core/css/StyleRule.h"
 #include "wtf/Forward.h"
@@ -125,6 +126,7 @@ public:
     const Vector<StyleRulePage*>& pageRules() const { ASSERT(!m_pendingRules); return m_pageRules; }
     const Vector<StyleRuleViewport*>& viewportRules() const { ASSERT(!m_pendingRules); return m_viewportRules; }
     const Vector<StyleRuleFontFace*>& fontFaceRules() const { return m_fontFaceRules; }
+    const Vector<StyleRuleKeyframes*>& keyframesRules() const { return m_keyframesRules; }
 
     unsigned ruleCount() const { return m_ruleCount; }
 
@@ -158,6 +160,7 @@ private:
     void addPageRule(StyleRulePage*);
     void addViewportRule(StyleRuleViewport*);
     void addFontFaceRule(StyleRuleFontFace*);
+    void addKeyframesRule(StyleRuleKeyframes*);
     void addRegionRule(StyleRuleRegion*, bool hasDocumentSecurityOrigin);
 
     void addChildRules(const Vector<RefPtr<StyleRuleBase> >&, const MediaQueryEvaluator& medium, StyleResolver*, const ContainerNode* scope, bool hasDocumentSecurityOrigin, AddRuleFlags);
@@ -192,6 +195,7 @@ private:
     Vector<StyleRulePage*> m_pageRules;
     Vector<StyleRuleViewport*> m_viewportRules;
     Vector<StyleRuleFontFace*> m_fontFaceRules;
+    Vector<StyleRuleKeyframes*> m_keyframesRules;
 
     unsigned m_ruleCount;
     OwnPtr<PendingRuleMaps> m_pendingRules;
