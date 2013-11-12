@@ -116,6 +116,7 @@
 #include "public/platform/WebIDBKey.h"
 #include "public/platform/WebIDBKeyPath.h"
 #include "public/platform/WebIDBMetadata.h"
+#include "public/platform/WebIDBTypes.h"
 #include "public/platform/WebMediaSource.h"
 #include "public/platform/WebMediaStreamSource.h"
 #include "public/platform/WebRTCDataChannelHandlerClient.h"

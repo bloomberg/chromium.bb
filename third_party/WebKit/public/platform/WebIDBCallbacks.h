@@ -27,6 +27,7 @@
 #define WebIDBCallbacks_h
 
 #include "WebCommon.h"
+#include "WebIDBTypes.h"
 #include "WebPrivatePtr.h"
 #include "WebString.h"
 #include "WebVector.h"
@@ -60,9 +61,10 @@ public:
     WebIDBCallbacks() { }
     virtual ~WebIDBCallbacks();
 
+    // FIXME: Remove once callers use the WebIDBDataLoss enum.
     enum DataLoss {
-        DataLossNone = 0,
-        DataLossTotal = 1
+        DataLossNone = WebIDBDataLossNone,
+        DataLossTotal = WebIDBDataLossTotal
     };
 
     // For classes that follow the PImpl pattern, pass a const reference.
@@ -78,7 +80,7 @@ public:
     virtual void onSuccess();
     virtual void onSuccess(const WebIDBKey&, const WebIDBKey& primaryKey, const WebData&);
     virtual void onBlocked(long long oldVersion);
-    virtual void onUpgradeNeeded(long long oldVersion, WebIDBDatabase*, const WebIDBMetadata&, DataLoss, WebString dataLossMessage);
+    virtual void onUpgradeNeeded(long long oldVersion, WebIDBDatabase*, const WebIDBMetadata&, unsigned short dataLoss, WebString dataLossMessage);
 
 private:
     WebPrivatePtr<WebCore::IDBCallbacks> m_private;

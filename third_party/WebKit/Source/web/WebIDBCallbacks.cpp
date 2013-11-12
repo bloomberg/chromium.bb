@@ -119,10 +119,10 @@ void WebIDBCallbacks::onBlocked(long long oldVersion)
     m_private->onBlocked(oldVersion);
 }
 
-void WebIDBCallbacks::onUpgradeNeeded(long long oldVersion, WebIDBDatabase* database, const WebIDBMetadata& metadata, DataLoss dataLoss, WebString dataLossMessage)
+void WebIDBCallbacks::onUpgradeNeeded(long long oldVersion, WebIDBDatabase* database, const WebIDBMetadata& metadata, unsigned short dataLoss, WebString dataLossMessage)
 {
     m_databaseProxy = IDBDatabaseBackendProxy::create(adoptPtr(database));
-    m_private->onUpgradeNeeded(oldVersion, m_databaseProxy.get(), metadata, dataLoss, dataLossMessage);
+    m_private->onUpgradeNeeded(oldVersion, m_databaseProxy.get(), metadata, static_cast<WebIDBDataLoss>(dataLoss), dataLossMessage);
 }
 
 } // namespace blink

@@ -44,6 +44,10 @@ enum WebIDBKeyPathType {
     WebIDBKeyPathTypeArray,
 };
 
+enum WebIDBDataLoss {
+    WebIDBDataLossNone = 0,
+    WebIDBDataLossTotal,
+};
 
 } // namespace blink
 
