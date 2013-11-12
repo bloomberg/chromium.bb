@@ -1503,7 +1503,7 @@ PassRefPtr<RenderStyle> Element::originalStyleForRenderer()
 bool Element::recalcStyle(StyleRecalcChange change)
 {
     ASSERT(document().inStyleRecalc());
-    ASSERT(!parentNode() || !parentNode()->needsStyleRecalc());
+    ASSERT(!parentOrShadowHostNode()->needsStyleRecalc());
 
     if (hasCustomStyleCallbacks())
         willRecalcStyle(change);
@@ -1545,7 +1545,7 @@ static bool callbackSelectorsDiffer(RenderStyle* style1, RenderStyle* style2)
 StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
 {
     ASSERT(document().inStyleRecalc());
-    ASSERT(!parentNode() || !parentNode()->needsStyleRecalc());
+    ASSERT(!parentOrShadowHostNode()->needsStyleRecalc());
     ASSERT(change >= Inherit || needsStyleRecalc());
     ASSERT(parentRenderStyle());
 
