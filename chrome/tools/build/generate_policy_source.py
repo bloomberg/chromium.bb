@@ -212,6 +212,7 @@ def _WritePolicyConstantHeader(policies, os, f):
           '\n'
           '#include "base/basictypes.h"\n'
           '#include "base/values.h"\n'
+          '#include "components/policy/core/common/policy_details.h"\n'
           '\n'
           'namespace policy {\n'
           '\n'
@@ -224,27 +225,10 @@ def _WritePolicyConstantHeader(policies, os, f):
             'configuration resides.\n'
             'extern const wchar_t kRegistryChromePolicyKey[];\n')
 
-  f.write('// Lists metadata such as name, expected type and id for all\n'
-          '// policies. Used to initialize ConfigurationPolicyProviders and\n'
-          '// CloudExternalDataManagers.\n'
-          'struct PolicyDefinitionList {\n'
-          '  struct Entry {\n'
-          '    const char* name;\n'
-          '    base::Value::Type value_type;\n'
-          '    bool device_policy;\n'
-          '    int id;\n'
-          '    size_t max_external_data_size;\n'
-          '  };\n'
-          '\n'
-          '  const Entry* begin;\n'
-          '  const Entry* end;\n'
-          '};\n'
-          '\n'
-          '// Returns true if the given policy is deprecated.\n'
-          'bool IsDeprecatedPolicy(const std::string& policy);\n'
-          '\n'
-          '// Returns the default policy definition list for Chrome.\n'
-          'const PolicyDefinitionList* GetChromePolicyDefinitionList();\n'
+  f.write('// Returns the PolicyDetails for |policy| if |policy| is a known\n'
+          '// Chrome policy, otherwise returns NULL.\n'
+          'const PolicyDetails* GetChromePolicyDetails('
+              'const std::string& policy);\n'
           '\n'
           '// Returns the schema data of the Chrome policy schema.\n'
           'const internal::SchemaData* GetChromeSchemaData();\n'
@@ -263,10 +247,6 @@ def _WritePolicyConstantHeader(policies, os, f):
 
 
 #------------------ policy constants source ------------------------#
-
-def _GetValueType(policy_type):
-  return policy_type if policy_type != 'TYPE_EXTERNAL' else 'TYPE_DICTIONARY'
-
 
 # A mapping of the simple schema types to base::Value::Types.
 SIMPLE_SCHEMA_NAME_MAP = {
@@ -363,6 +343,9 @@ class SchemaNodesGenerator:
       begin = len(self.property_nodes)
       self.property_nodes += properties
       end = len(self.property_nodes)
+      if index == 0:
+        self.root_properties_begin = begin
+        self.root_properties_end = end
 
       extra = len(self.properties_nodes)
       self.properties_nodes.append((begin, end, additionalProperties, name))
@@ -405,10 +388,12 @@ class SchemaNodesGenerator:
 
 
 def _WritePolicyConstantSource(policies, os, f):
-  f.write('#include "base/basictypes.h"\n'
+  f.write('#include "policy/policy_constants.h"\n'
+          '\n'
+          '#include <algorithm>\n'
+          '\n'
           '#include "base/logging.h"\n'
           '#include "components/policy/core/common/schema_internal.h"\n'
-          '#include "policy/policy_constants.h"\n'
           '\n'
           'namespace policy {\n'
           '\n'
@@ -426,34 +411,29 @@ def _WritePolicyConstantSource(policies, os, f):
     if policy.is_supported:
       chrome_schema['properties'][policy.name] = policy.schema
 
-  f.write('const PolicyDefinitionList::Entry kEntries[] = {\n')
+  # Note: this list must be kept in sync with the known property list of the
+  # Chrome schema, so that binary seaching in the PropertyNode array gets the
+  # right index on this array as well. See the implementation of
+  # GetChromePolicyDetails() below.
+  f.write('const PolicyDetails kChromePolicyDetails[] = {\n'
+          '//  is_deprecated  is_device_policy  id    max_external_data_size\n')
   for policy in policies:
     if policy.is_supported:
-      f.write('  { key::k%s, base::Value::%s, %s, %s, %s },\n' %
-          (policy.name, _GetValueType(policy.policy_type),
-              'true' if policy.is_device_only else 'false', policy.id,
-              policy.max_size))
+      f.write('  { %-14s %-16s %3s, %24s },\n' % (
+                  'true,' if policy.is_deprecated else 'false,',
+                  'true,' if policy.is_device_only else 'false,',
+                  policy.id,
+                  policy.max_size))
   f.write('};\n\n')
-
-  f.write('const PolicyDefinitionList kChromePolicyList = {\n'
-          '  kEntries,\n'
-          '  kEntries + arraysize(kEntries),\n'
-          '};\n\n')
-
-  has_deprecated_policies = any(
-      [p.is_supported and p.is_deprecated for p in policies])
-
-  if has_deprecated_policies:
-    f.write('// List of deprecated policies.\n'
-            'const char* kDeprecatedPolicyList[] = {\n')
-    for policy in policies:
-      if policy.is_supported and policy.is_deprecated:
-        f.write('  key::k%s,\n' % policy.name)
-    f.write('};\n\n')
 
   schema_generator = SchemaNodesGenerator(shared_strings)
   schema_generator.Generate(chrome_schema, 'root node')
   schema_generator.Write(f)
+
+  f.write('bool CompareKeys(const internal::PropertyNode& node,\n'
+          '                 const std::string& key) {\n'
+          '  return node.key < key;\n'
+          '}\n\n')
 
   f.write('}  // namespace\n\n')
 
@@ -466,23 +446,38 @@ def _WritePolicyConstantSource(policies, os, f):
             'L"' + CHROMIUM_POLICY_KEY + '";\n'
             '#endif\n\n')
 
-  f.write('bool IsDeprecatedPolicy(const std::string& policy) {\n')
-  if has_deprecated_policies:
-    # arraysize() doesn't work with empty arrays.
-    f.write('  for (size_t i = 0; i < arraysize(kDeprecatedPolicyList);'
-                ' ++i) {\n'
-            '    if (policy == kDeprecatedPolicyList[i])\n'
-            '      return true;\n'
-            '  }\n')
-  f.write('  return false;\n'
-          '}\n\n')
-
-  f.write('const PolicyDefinitionList* GetChromePolicyDefinitionList() {\n'
-          '  return &kChromePolicyList;\n'
-          '}\n\n')
-
   f.write('const internal::SchemaData* GetChromeSchemaData() {\n'
           '  return &kChromeSchemaData;\n'
+          '}\n\n')
+
+  f.write('const PolicyDetails* GetChromePolicyDetails('
+              'const std::string& policy) {\n'
+          '  // First index in kPropertyNodes of the Chrome policies.\n'
+          '  static const int begin_index = %s;\n'
+          '  // One-past-the-end of the Chrome policies in kPropertyNodes.\n'
+          '  static const int end_index = %s;\n' %
+          (schema_generator.root_properties_begin,
+           schema_generator.root_properties_end))
+  f.write('  const internal::PropertyNode* begin =\n'
+          '      kPropertyNodes + begin_index;\n'
+          '  const internal::PropertyNode* end = kPropertyNodes + end_index;\n'
+          '  const internal::PropertyNode* it =\n'
+          '      std::lower_bound(begin, end, policy, CompareKeys);\n'
+          '  if (it == end || it->key != policy)\n'
+          '    return NULL;\n'
+          '  // This relies on kPropertyNodes from begin_index to end_index\n'
+          '  // having exactly the same policies (and in the same order) as\n'
+          '  // kChromePolicyDetails, so that binary searching on the first\n'
+          '  // gets the same results as a binary search on the second would.\n'
+          '  // However, kPropertyNodes has the policy names and\n'
+          '  // kChromePolicyDetails doesn\'t, so we obtain the index into\n'
+          '  // the second array by searching the first to avoid duplicating\n'
+          '  // the policy name pointers.\n'
+          '  // Offsetting |it| from |begin| here obtains the index we\'re\n'
+          '  // looking for.\n'
+          '  size_t index = it - begin;\n'
+          '  CHECK_LT(index, arraysize(kChromePolicyDetails));\n'
+          '  return kChromePolicyDetails + index;\n'
           '}\n\n')
 
   f.write('namespace key {\n\n')

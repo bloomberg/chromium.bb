@@ -10,7 +10,6 @@
 #include "chrome/browser/chromeos/policy/cloud_external_data_store.h"
 #include "chrome/browser/policy/cloud/cloud_policy_store.h"
 #include "chrome/browser/policy/cloud/resource_cache.h"
-#include "policy/policy_constants.h"
 
 namespace policy {
 
@@ -21,12 +20,12 @@ const char kCacheKey[] = "data";
 }  // namespace
 
 UserCloudExternalDataManager::UserCloudExternalDataManager(
-    const PolicyDefinitionList* policy_definitions,
+    const GetChromePolicyDetailsCallback& get_policy_details,
     scoped_refptr<base::SequencedTaskRunner> backend_task_runner,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner,
     const base::FilePath& cache_path,
     CloudPolicyStore* policy_store)
-    : CloudExternalDataManagerBase(policy_definitions,
+    : CloudExternalDataManagerBase(get_policy_details,
                                    backend_task_runner,
                                    io_task_runner),
       resource_cache_(new ResourceCache(cache_path, backend_task_runner)) {

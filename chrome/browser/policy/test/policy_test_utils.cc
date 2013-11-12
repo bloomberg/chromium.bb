@@ -2,16 +2,37 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/policy/policy_test_utils.h"
+#include "chrome/browser/policy/test/policy_test_utils.h"
 
 #include <string>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/policy/policy_bundle.h"
 
 namespace policy {
+
+PolicyDetailsMap::PolicyDetailsMap() {}
+
+PolicyDetailsMap::~PolicyDetailsMap() {}
+
+GetChromePolicyDetailsCallback PolicyDetailsMap::GetCallback() const {
+  return base::Bind(&PolicyDetailsMap::Lookup, base::Unretained(this));
+}
+
+void PolicyDetailsMap::SetDetails(const std::string& policy,
+                                  const PolicyDetails* details) {
+  map_[policy] = details;
+}
+
+const PolicyDetails* PolicyDetailsMap::Lookup(const std::string& policy) const {
+  PolicyDetailsMapping::const_iterator it = map_.find(policy);
+  return it == map_.end() ? NULL : it->second;
+}
 
 bool PolicyServiceIsEmpty(const PolicyService* service) {
   const PolicyMap& map = service->GetPolicies(

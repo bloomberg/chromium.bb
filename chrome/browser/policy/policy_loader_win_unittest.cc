@@ -254,8 +254,7 @@ class RegistryTestHarness : public PolicyProviderTestHarness,
 
   virtual ConfigurationPolicyProvider* CreateProvider(
       SchemaRegistry* registry,
-      scoped_refptr<base::SequencedTaskRunner> task_runner,
-      const PolicyDefinitionList* policy_list) OVERRIDE;
+      scoped_refptr<base::SequencedTaskRunner> task_runner) OVERRIDE;
 
   virtual void InstallEmptyPolicy() OVERRIDE;
   virtual void InstallStringPolicy(const std::string& policy_name,
@@ -306,8 +305,7 @@ class PRegTestHarness : public PolicyProviderTestHarness,
 
   virtual ConfigurationPolicyProvider* CreateProvider(
       SchemaRegistry* registry,
-      scoped_refptr<base::SequencedTaskRunner> task_runner,
-      const PolicyDefinitionList* policy_list) OVERRIDE;
+      scoped_refptr<base::SequencedTaskRunner> task_runner) OVERRIDE;
 
   virtual void InstallEmptyPolicy() OVERRIDE;
   virtual void InstallStringPolicy(const std::string& policy_name,
@@ -424,10 +422,9 @@ void RegistryTestHarness::SetUp() {}
 
 ConfigurationPolicyProvider* RegistryTestHarness::CreateProvider(
     SchemaRegistry* registry,
-    scoped_refptr<base::SequencedTaskRunner> task_runner,
-    const PolicyDefinitionList* policy_list) {
-  scoped_ptr<AsyncPolicyLoader> loader(new PolicyLoaderWin(
-      task_runner, policy_list, kRegistryChromePolicyKey, this));
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+  scoped_ptr<AsyncPolicyLoader> loader(
+      new PolicyLoaderWin(task_runner, kRegistryChromePolicyKey, this));
   return new AsyncPolicyProvider(registry, loader.Pass());
 }
 
@@ -557,10 +554,9 @@ void PRegTestHarness::SetUp() {
 
 ConfigurationPolicyProvider* PRegTestHarness::CreateProvider(
     SchemaRegistry* registry,
-    scoped_refptr<base::SequencedTaskRunner> task_runner,
-    const PolicyDefinitionList* policy_list) {
-  scoped_ptr<AsyncPolicyLoader> loader(new PolicyLoaderWin(
-      task_runner, policy_list, kRegistryChromePolicyKey, this));
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+  scoped_ptr<AsyncPolicyLoader> loader(
+      new PolicyLoaderWin(task_runner, kRegistryChromePolicyKey, this));
   return new AsyncPolicyProvider(registry, loader.Pass());
 }
 
@@ -841,9 +837,7 @@ class PolicyLoaderWinTest : public PolicyTestBase,
   }
 
   bool Matches(const PolicyBundle& expected) {
-    PolicyLoaderWin loader(loop_.message_loop_proxy(),
-                           &test_policy_definitions::kList, kTestPolicyKey,
-                           this);
+    PolicyLoaderWin loader(loop_.message_loop_proxy(), kTestPolicyKey, this);
     scoped_ptr<PolicyBundle> loaded(
         loader.InitialLoad(schema_registry_.schema_map()));
     return loaded->Equals(expected);
@@ -853,13 +847,13 @@ class PolicyLoaderWinTest : public PolicyTestBase,
     RegKey hklm_key(HKEY_CURRENT_USER, kTestPolicyKey, KEY_ALL_ACCESS);
     ASSERT_TRUE(hklm_key.Valid());
     hklm_key.WriteValue(
-        UTF8ToUTF16(test_policy_definitions::kKeyString).c_str(),
+        UTF8ToUTF16(test_keys::kKeyString).c_str(),
         UTF8ToUTF16("registry").c_str());
   }
 
   bool MatchesRegistrySentinel() {
     base::DictionaryValue expected_policy;
-    expected_policy.SetString(test_policy_definitions::kKeyString, "registry");
+    expected_policy.SetString(test_keys::kKeyString, "registry");
     PolicyBundle expected;
     expected.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
         .LoadFrom(&expected_policy, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER);
@@ -868,14 +862,13 @@ class PolicyLoaderWinTest : public PolicyTestBase,
 
   bool MatchesTestBundle() {
     base::DictionaryValue expected_policy;
-    expected_policy.SetBoolean(test_policy_definitions::kKeyBoolean, true);
-    expected_policy.SetString(test_policy_definitions::kKeyString, "GPO");
-    expected_policy.SetInteger(test_policy_definitions::kKeyInteger, 42);
+    expected_policy.SetBoolean(test_keys::kKeyBoolean, true);
+    expected_policy.SetString(test_keys::kKeyString, "GPO");
+    expected_policy.SetInteger(test_keys::kKeyInteger, 42);
     scoped_ptr<base::ListValue> list(new base::ListValue());
     list->AppendString("GPO 1");
     list->AppendString("GPO 2");
-    expected_policy.Set(test_policy_definitions::kKeyStringList,
-                        list.release());
+    expected_policy.Set(test_keys::kKeyStringList, list.release());
     PolicyBundle expected;
     expected.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
         .LoadFrom(&expected_policy, POLICY_LEVEL_MANDATORY,
@@ -895,16 +888,16 @@ const char16 PolicyLoaderWinTest::kTestPolicyKey[] =
 TEST_F(PolicyLoaderWinTest, HKLMOverHKCU) {
   RegKey hklm_key(HKEY_LOCAL_MACHINE, kTestPolicyKey, KEY_ALL_ACCESS);
   ASSERT_TRUE(hklm_key.Valid());
-  hklm_key.WriteValue(UTF8ToUTF16(test_policy_definitions::kKeyString).c_str(),
+  hklm_key.WriteValue(UTF8ToUTF16(test_keys::kKeyString).c_str(),
                       UTF8ToUTF16("hklm").c_str());
   RegKey hkcu_key(HKEY_CURRENT_USER, kTestPolicyKey, KEY_ALL_ACCESS);
   ASSERT_TRUE(hkcu_key.Valid());
-  hkcu_key.WriteValue(UTF8ToUTF16(test_policy_definitions::kKeyString).c_str(),
+  hkcu_key.WriteValue(UTF8ToUTF16(test_keys::kKeyString).c_str(),
                       UTF8ToUTF16("hkcu").c_str());
 
   PolicyBundle expected;
   expected.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
-      .Set(test_policy_definitions::kKeyString,
+      .Set(test_keys::kKeyString,
            POLICY_LEVEL_MANDATORY,
            POLICY_SCOPE_MACHINE,
            base::Value::CreateStringValue("hklm"), NULL);

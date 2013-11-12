@@ -112,7 +112,7 @@ const char kTestChromeSchema[] =
     "  }"
     "}";
 
-namespace test_policy_definitions {
+namespace test_keys {
 
 const char kKeyString[] = "StringPolicy";
 const char kKeyBoolean[] = "BooleanPolicy";
@@ -120,19 +120,7 @@ const char kKeyInteger[] = "IntegerPolicy";
 const char kKeyStringList[] = "StringListPolicy";
 const char kKeyDictionary[] = "DictionaryPolicy";
 
-static const PolicyDefinitionList::Entry kEntries[] = {
-  { kKeyString,     base::Value::TYPE_STRING },
-  { kKeyBoolean,    base::Value::TYPE_BOOLEAN },
-  { kKeyInteger,    base::Value::TYPE_INTEGER },
-  { kKeyStringList, base::Value::TYPE_LIST },
-  { kKeyDictionary, base::Value::TYPE_DICTIONARY },
-};
-
-const PolicyDefinitionList kList = {
-  kEntries, kEntries + arraysize(kEntries)
-};
-
-}  // namespace test_policy_definitions
+}  // namespace test_keys
 
 PolicyTestBase::PolicyTestBase() {}
 
@@ -180,7 +168,7 @@ void ConfigurationPolicyProviderTest::SetUp() {
   test_harness_->SetUp();
 
   Schema extension_schema =
-      chrome_schema_.GetKnownProperty(test_policy_definitions::kKeyDictionary);
+      chrome_schema_.GetKnownProperty(test_keys::kKeyDictionary);
   ASSERT_TRUE(extension_schema.valid());
   schema_registry_.RegisterComponent(
       PolicyNamespace(POLICY_DOMAIN_EXTENSIONS,
@@ -195,10 +183,8 @@ void ConfigurationPolicyProviderTest::SetUp() {
                       "cccccccccccccccccccccccccccccccc"),
       extension_schema);
 
-  provider_.reset(test_harness_->CreateProvider(
-      &schema_registry_,
-      loop_.message_loop_proxy(),
-      &test_policy_definitions::kList));
+  provider_.reset(test_harness_->CreateProvider(&schema_registry_,
+                                                loop_.message_loop_proxy()));
   provider_->Init(&schema_registry_);
   // Some providers do a reload on init. Make sure any notifications generated
   // are fired now.
@@ -246,31 +232,31 @@ TEST_P(ConfigurationPolicyProviderTest, Empty) {
 TEST_P(ConfigurationPolicyProviderTest, StringValue) {
   const char kTestString[] = "string_value";
   base::StringValue expected_value(kTestString);
-  CheckValue(test_policy_definitions::kKeyString,
+  CheckValue(test_keys::kKeyString,
              expected_value,
              base::Bind(&PolicyProviderTestHarness::InstallStringPolicy,
                         base::Unretained(test_harness_.get()),
-                        test_policy_definitions::kKeyString,
+                        test_keys::kKeyString,
                         kTestString));
 }
 
 TEST_P(ConfigurationPolicyProviderTest, BooleanValue) {
   base::FundamentalValue expected_value(true);
-  CheckValue(test_policy_definitions::kKeyBoolean,
+  CheckValue(test_keys::kKeyBoolean,
              expected_value,
              base::Bind(&PolicyProviderTestHarness::InstallBooleanPolicy,
                         base::Unretained(test_harness_.get()),
-                        test_policy_definitions::kKeyBoolean,
+                        test_keys::kKeyBoolean,
                         true));
 }
 
 TEST_P(ConfigurationPolicyProviderTest, IntegerValue) {
   base::FundamentalValue expected_value(42);
-  CheckValue(test_policy_definitions::kKeyInteger,
+  CheckValue(test_keys::kKeyInteger,
              expected_value,
              base::Bind(&PolicyProviderTestHarness::InstallIntegerPolicy,
                         base::Unretained(test_harness_.get()),
-                        test_policy_definitions::kKeyInteger,
+                        test_keys::kKeyInteger,
                         42));
 }
 
@@ -278,11 +264,11 @@ TEST_P(ConfigurationPolicyProviderTest, StringListValue) {
   base::ListValue expected_value;
   expected_value.Set(0U, base::Value::CreateStringValue("first"));
   expected_value.Set(1U, base::Value::CreateStringValue("second"));
-  CheckValue(test_policy_definitions::kKeyStringList,
+  CheckValue(test_keys::kKeyStringList,
              expected_value,
              base::Bind(&PolicyProviderTestHarness::InstallStringListPolicy,
                         base::Unretained(test_harness_.get()),
-                        test_policy_definitions::kKeyStringList,
+                        test_keys::kKeyStringList,
                         &expected_value));
 }
 
@@ -312,11 +298,11 @@ TEST_P(ConfigurationPolicyProviderTest, DictionaryValue) {
   dict->Set("sublist", list);
   expected_value.Set("dictionary", dict);
 
-  CheckValue(test_policy_definitions::kKeyDictionary,
+  CheckValue(test_keys::kKeyDictionary,
              expected_value,
              base::Bind(&PolicyProviderTestHarness::InstallDictionaryPolicy,
                         base::Unretained(test_harness_.get()),
-                        test_policy_definitions::kKeyDictionary,
+                        test_keys::kKeyDictionary,
                         &expected_value));
 }
 
@@ -335,15 +321,14 @@ TEST_P(ConfigurationPolicyProviderTest, RefreshPolicies) {
   EXPECT_TRUE(provider_->policies().Equals(bundle));
 
   // OnUpdatePolicy is called when there are changes.
-  test_harness_->InstallStringPolicy(test_policy_definitions::kKeyString,
-                                     "value");
+  test_harness_->InstallStringPolicy(test_keys::kKeyString, "value");
   EXPECT_CALL(observer, OnUpdatePolicy(provider_.get())).Times(1);
   provider_->RefreshPolicies();
   loop_.RunUntilIdle();
   Mock::VerifyAndClearExpectations(&observer);
 
   bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
-      .Set(test_policy_definitions::kKeyString,
+      .Set(test_keys::kKeyString,
            test_harness_->policy_level(),
            test_harness_->policy_scope(),
            base::Value::CreateStringValue("value"),
@@ -414,8 +399,8 @@ TEST_P(Configuration3rdPartyPolicyProviderTest, Load3rdParty) {
   policy_dict.Set("dict", policy_dict.DeepCopy());
 
   // Install these policies as a Chrome policy.
-  test_harness_->InstallDictionaryPolicy(
-      test_policy_definitions::kKeyDictionary, &policy_dict);
+  test_harness_->InstallDictionaryPolicy(test_keys::kKeyDictionary,
+                                         &policy_dict);
   // Install them as 3rd party policies too.
   base::DictionaryValue policy_3rdparty;
   policy_3rdparty.Set("extensions.aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
@@ -433,7 +418,7 @@ TEST_P(Configuration3rdPartyPolicyProviderTest, Load3rdParty) {
   loop_.RunUntilIdle();
 
   PolicyMap expected_policy;
-  expected_policy.Set(test_policy_definitions::kKeyDictionary,
+  expected_policy.Set(test_keys::kKeyDictionary,
                       test_harness_->policy_level(),
                       test_harness_->policy_scope(),
                       policy_dict.DeepCopy(),

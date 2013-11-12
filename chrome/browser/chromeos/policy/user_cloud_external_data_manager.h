@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/policy/cloud_external_data_manager_base.h"
+#include "components/policy/core/common/policy_details.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -17,7 +18,6 @@ class SequencedTaskRunner;
 namespace policy {
 
 class CloudPolicyStore;
-struct PolicyDefinitionList;
 class ResourceCache;
 
 // Downloads, verifies, caches and retrieves external data referenced by
@@ -27,14 +27,14 @@ class ResourceCache;
 // because no other platform has policies referencing external data.
 class UserCloudExternalDataManager : public CloudExternalDataManagerBase {
  public:
-  // The |policy_definitions| are used to determine the maximum size that the
+  // |get_policy_details| is used to determine the maximum size that the
   // data referenced by each policy can have. Download scheduling, verification,
   // caching and retrieval tasks are done via the |backend_task_runner|, which
   // must support file I/O. Network I/O is done via the |io_task_runner|. The
   // manager is responsible for external data references by policies in
   // |policy_store|.
   UserCloudExternalDataManager(
-      const PolicyDefinitionList* policy_definitions,
+      const GetChromePolicyDetailsCallback& get_policy_details,
       scoped_refptr<base::SequencedTaskRunner> backend_task_runner,
       scoped_refptr<base::SequencedTaskRunner> io_task_runner,
       const base::FilePath& cache_path,

@@ -37,8 +37,7 @@ class TestHarness : public PolicyProviderTestHarness {
 
   virtual ConfigurationPolicyProvider* CreateProvider(
       SchemaRegistry* registry,
-      scoped_refptr<base::SequencedTaskRunner> task_runner,
-      const PolicyDefinitionList* policy_definition_list) OVERRIDE;
+      scoped_refptr<base::SequencedTaskRunner> task_runner) OVERRIDE;
 
   virtual void InstallEmptyPolicy() OVERRIDE;
   virtual void InstallStringPolicy(const std::string& policy_name,
@@ -73,8 +72,7 @@ void TestHarness::SetUp() {}
 
 ConfigurationPolicyProvider* TestHarness::CreateProvider(
     SchemaRegistry* registry,
-    scoped_refptr<base::SequencedTaskRunner> task_runner,
-    const PolicyDefinitionList* policy_definition_list) {
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
   // Create and initialize the store.
   store_.NotifyStoreLoaded();
   ConfigurationPolicyProvider* provider = new CloudPolicyManager(

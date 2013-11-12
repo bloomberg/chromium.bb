@@ -7,20 +7,18 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/testing_pref_service.h"
 #include "base/test/test_simple_task_runner.h"
-#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/mock_policy_service.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/policy_statistics_collector.h"
 #include "chrome/browser/policy/policy_types.h"
+#include "chrome/browser/policy/test/policy_test_utils.h"
 #include "components/policy/core/common/policy_pref_names.h"
-#include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -28,23 +26,43 @@ namespace policy {
 
 namespace {
 
-using testing::_;
-using testing::Lt;
-using testing::Return;
 using testing::ReturnRef;
 
 // Arbitrary policy names used for testing.
-const char* const kTestPolicy1 = key::kAlternateErrorPagesEnabled;
-const char* const kTestPolicy2 = key::kSearchSuggestEnabled;
+const char kTestPolicy1[] = "Test Policy 1";
+const char kTestPolicy2[] = "Test Policy 2";
+
+const int kTestPolicy1Id = 42;
+const int kTestPolicy2Id = 123;
+
+const char kTestChromeSchema[] =
+    "{"
+    "  \"type\": \"object\","
+    "  \"properties\": {"
+    "    \"Test Policy 1\": { \"type\": \"string\" },"
+    "    \"Test Policy 2\": { \"type\": \"string\" }"
+    "  }"
+    "}";
+
+const PolicyDetails kTestPolicyDetails[] = {
+  // is_deprecated  is_device_policy              id  max_external_data_size
+  {          false,            false, kTestPolicy1Id,                      0 },
+  {          false,            false, kTestPolicy2Id,                      0 },
+};
 
 class TestPolicyStatisticsCollector : public PolicyStatisticsCollector {
  public:
   TestPolicyStatisticsCollector(
+      const GetChromePolicyDetailsCallback& get_details,
+      const Schema& chrome_schema,
       PolicyService* policy_service,
       PrefService* prefs,
       const scoped_refptr<base::TaskRunner>& task_runner)
-      : PolicyStatisticsCollector(policy_service, prefs, task_runner) {
-  }
+      : PolicyStatisticsCollector(get_details,
+                                  chrome_schema,
+                                  policy_service,
+                                  prefs,
+                                  task_runner) {}
 
   MOCK_METHOD1(RecordPolicyUse, void(int));
 };
@@ -56,27 +74,19 @@ class PolicyStatisticsCollectorTest : public testing::Test {
   PolicyStatisticsCollectorTest()
       : update_delay_(base::TimeDelta::FromMilliseconds(
             PolicyStatisticsCollector::kStatisticsUpdateRate)),
-        test_policy_id1_(-1),
-        test_policy_id2_(-1),
         task_runner_(new base::TestSimpleTaskRunner()) {
   }
 
   virtual void SetUp() OVERRIDE {
+    std::string error;
+    chrome_schema_ = Schema::Parse(kTestChromeSchema, &error);
+    ASSERT_TRUE(chrome_schema_.valid()) << error;
+
+    policy_details_.SetDetails(kTestPolicy1, &kTestPolicyDetails[0]);
+    policy_details_.SetDetails(kTestPolicy2, &kTestPolicyDetails[1]);
+
     prefs_.registry()->RegisterInt64Pref(
         policy_prefs::kLastPolicyStatisticsUpdate, 0);
-
-    // Find ids for kTestPolicy1 and kTestPolicy2.
-    const policy::PolicyDefinitionList* policy_list =
-        policy::GetChromePolicyDefinitionList();
-    for (const policy::PolicyDefinitionList::Entry* policy = policy_list->begin;
-         policy != policy_list->end; ++policy) {
-      if (strcmp(policy->name, kTestPolicy1) == 0)
-        test_policy_id1_ = policy->id;
-      else if (strcmp(policy->name, kTestPolicy2) == 0)
-        test_policy_id2_ = policy->id;
-    }
-    ASSERT_TRUE(test_policy_id1_ != -1);
-    ASSERT_TRUE(test_policy_id2_ != -1);
 
     // Set up default function behaviour.
     EXPECT_CALL(policy_service_,
@@ -88,6 +98,8 @@ class PolicyStatisticsCollectorTest : public testing::Test {
     last_delay_ = base::TimeDelta::FromDays(-1);
     policy_map_.Clear();
     policy_statistics_collector_.reset(new TestPolicyStatisticsCollector(
+        policy_details_.GetCallback(),
+        chrome_schema_,
         &policy_service_,
         &prefs_,
         task_runner_));
@@ -108,11 +120,10 @@ class PolicyStatisticsCollectorTest : public testing::Test {
 
   const base::TimeDelta update_delay_;
 
-  int test_policy_id1_;
-  int test_policy_id2_;
-
   base::TimeDelta last_delay_;
 
+  PolicyDetailsMap policy_details_;
+  Schema chrome_schema_;
   TestingPrefServiceSimple prefs_;
   MockPolicyService policy_service_;
   PolicyMap policy_map_;
@@ -128,7 +139,7 @@ TEST_F(PolicyStatisticsCollectorTest, CollectPending) {
                   (base::Time::Now() - update_delay_).ToInternalValue());
 
   EXPECT_CALL(*policy_statistics_collector_.get(),
-              RecordPolicyUse(test_policy_id1_));
+              RecordPolicyUse(kTestPolicy1Id));
 
   policy_statistics_collector_->Initialize();
   EXPECT_EQ(1u, task_runner_->GetPendingTasks().size());
@@ -143,7 +154,7 @@ TEST_F(PolicyStatisticsCollectorTest, CollectPendingVeryOld) {
                   base::Time::FromDoubleT(1.0).ToInternalValue());
 
   EXPECT_CALL(*policy_statistics_collector_.get(),
-              RecordPolicyUse(test_policy_id1_));
+              RecordPolicyUse(kTestPolicy1Id));
 
   policy_statistics_collector_->Initialize();
   EXPECT_EQ(1u, task_runner_->GetPendingTasks().size());
@@ -169,9 +180,9 @@ TEST_F(PolicyStatisticsCollectorTest, MultiplePolicies) {
                   (base::Time::Now() - update_delay_).ToInternalValue());
 
   EXPECT_CALL(*policy_statistics_collector_.get(),
-              RecordPolicyUse(test_policy_id1_));
+              RecordPolicyUse(kTestPolicy1Id));
   EXPECT_CALL(*policy_statistics_collector_.get(),
-              RecordPolicyUse(test_policy_id2_));
+              RecordPolicyUse(kTestPolicy2Id));
 
   policy_statistics_collector_->Initialize();
   EXPECT_EQ(1u, task_runner_->GetPendingTasks().size());

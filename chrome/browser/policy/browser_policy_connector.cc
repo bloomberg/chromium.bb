@@ -335,6 +335,8 @@ void BrowserPolicyConnector::Init(
 
   policy_statistics_collector_.reset(
       new policy::PolicyStatisticsCollector(
+          base::Bind(&GetChromePolicyDetails),
+          GetChromeSchema(),
           GetPolicyService(),
           local_state_,
           base::MessageLoop::current()->message_loop_proxy()));
@@ -586,16 +588,12 @@ void BrowserPolicyConnector::SetTimezoneIfPolicyAvailable() {
 
 ConfigurationPolicyProvider* BrowserPolicyConnector::CreatePlatformProvider() {
 #if defined(OS_WIN)
-  const PolicyDefinitionList* policy_list = GetChromePolicyDefinitionList();
   scoped_ptr<AsyncPolicyLoader> loader(PolicyLoaderWin::Create(
-      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
-      policy_list));
+      BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE)));
   return new AsyncPolicyProvider(GetSchemaRegistry(), loader.Pass());
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
-  const PolicyDefinitionList* policy_list = GetChromePolicyDefinitionList();
   scoped_ptr<AsyncPolicyLoader> loader(new PolicyLoaderMac(
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),
-      policy_list,
       GetManagedPolicyPath(),
       new MacPreferences()));
   return new AsyncPolicyProvider(GetSchemaRegistry(), loader.Pass());

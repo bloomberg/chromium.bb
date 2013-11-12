@@ -33,6 +33,8 @@
 #include "chrome/browser/policy/preg_parser_win.h"
 #include "chrome/browser/policy/registry_dict_win.h"
 #include "components/json_schema/json_schema_constants.h"
+#include "components/policy/core/common/policy_namespace.h"
+#include "components/policy/core/common/schema.h"
 #include "policy/policy_constants.h"
 
 namespace schema = json_schema_constants;
@@ -210,12 +212,10 @@ const base::FilePath::CharType PolicyLoaderWin::kPRegFileName[] =
 
 PolicyLoaderWin::PolicyLoaderWin(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
-    const PolicyDefinitionList* policy_list,
     const string16& chrome_policy_key,
     AppliedGPOListProvider* gpo_provider)
     : AsyncPolicyLoader(task_runner),
       is_initialized_(false),
-      policy_list_(policy_list),
       chrome_policy_key_(chrome_policy_key),
       gpo_provider_(gpo_provider),
       user_policy_changed_event_(false, false),
@@ -245,10 +245,10 @@ PolicyLoaderWin::~PolicyLoaderWin() {
 
 // static
 scoped_ptr<PolicyLoaderWin> PolicyLoaderWin::Create(
-    scoped_refptr<base::SequencedTaskRunner> task_runner,
-    const PolicyDefinitionList* policy_list) {
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
   return make_scoped_ptr(
-      new PolicyLoaderWin(task_runner, policy_list, kRegistryChromePolicyKey,
+      new PolicyLoaderWin(task_runner,
+                          kRegistryChromePolicyKey,
                           g_win_gpo_list_provider.Pointer()));
 }
 
@@ -327,15 +327,20 @@ scoped_ptr<PolicyBundle> PolicyLoaderWin::Load() {
 }
 
 void PolicyLoaderWin::BuildChromePolicySchema() {
+  // TODO(joaodasilva): use the Schema directly instead of building this
+  // DictionaryValue.
   scoped_ptr<base::DictionaryValue> properties(new base::DictionaryValue());
-  for (const PolicyDefinitionList::Entry* e = policy_list_->begin;
-       e != policy_list_->end; ++e) {
-    const std::string schema_type = GetSchemaTypeForValueType(e->value_type);
+  const Schema* chrome_schema =
+      schema_map()->GetSchema(PolicyNamespace(POLICY_DOMAIN_CHROME, ""));
+  for (Schema::Iterator it = chrome_schema->GetPropertiesIterator();
+       !it.IsAtEnd(); it.Advance()) {
+    const std::string schema_type =
+        GetSchemaTypeForValueType(it.schema().type());
     scoped_ptr<base::DictionaryValue> entry_schema(new base::DictionaryValue());
     entry_schema->SetStringWithoutPathExpansion(json_schema_constants::kType,
                                                 schema_type);
 
-    if (e->value_type == base::Value::TYPE_LIST) {
+    if (it.schema().type() == base::Value::TYPE_LIST) {
       scoped_ptr<base::DictionaryValue> items_schema(
           new base::DictionaryValue());
       items_schema->SetStringWithoutPathExpansion(
@@ -343,7 +348,7 @@ void PolicyLoaderWin::BuildChromePolicySchema() {
       entry_schema->SetWithoutPathExpansion(json_schema_constants::kItems,
                                             items_schema.release());
     }
-    properties->SetWithoutPathExpansion(e->name, entry_schema.release());
+    properties->SetWithoutPathExpansion(it.key(), entry_schema.release());
   }
   chrome_policy_schema_.SetStringWithoutPathExpansion(
       json_schema_constants::kType, json_schema_constants::kObject);

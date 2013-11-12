@@ -8,14 +8,15 @@
 #include <string>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/location.h"
+#include "base/logging.h"
 #include "base/metrics/sparse_histogram.h"
 #include "base/prefs/pref_registry_simple.h"
 #include "base/prefs/pref_service.h"
 #include "base/task_runner.h"
 #include "chrome/browser/policy/policy_service.h"
 #include "components/policy/core/common/policy_pref_names.h"
-#include "policy/policy_constants.h"
 
 namespace policy {
 
@@ -23,10 +24,14 @@ const int PolicyStatisticsCollector::kStatisticsUpdateRate =
     24 * 60 * 60 * 1000;  // 24 hours.
 
 PolicyStatisticsCollector::PolicyStatisticsCollector(
+    const GetChromePolicyDetailsCallback& get_details,
+    const Schema& chrome_schema,
     PolicyService* policy_service,
     PrefService* prefs,
     const scoped_refptr<base::TaskRunner>& task_runner)
-    : policy_service_(policy_service),
+    : get_details_(get_details),
+      chrome_schema_(chrome_schema),
+      policy_service_(policy_service),
       prefs_(prefs),
       task_runner_(task_runner) {
 }
@@ -58,16 +63,19 @@ void PolicyStatisticsCollector::RecordPolicyUse(int id) {
 }
 
 void PolicyStatisticsCollector::CollectStatistics() {
-  const policy::PolicyDefinitionList* policy_list =
-      policy::GetChromePolicyDefinitionList();
   const PolicyMap& policies = policy_service_->GetPolicies(
       PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
 
   // Collect statistics.
-  for (const policy::PolicyDefinitionList::Entry* policy = policy_list->begin;
-       policy != policy_list->end; ++policy) {
-    if (policies.Get(policy->name))
-      RecordPolicyUse(policy->id);
+  for (Schema::Iterator it(chrome_schema_.GetPropertiesIterator());
+       !it.IsAtEnd(); it.Advance()) {
+    if (policies.Get(it.key())) {
+      const PolicyDetails* details = get_details_.Run(it.key());
+      if (details)
+        RecordPolicyUse(details->id);
+      else
+        NOTREACHED();
+    }
   }
 
   // Take care of next update.

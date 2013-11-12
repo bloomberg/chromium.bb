@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/policy/core/common/schema.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "grit/generated_resources.h"
@@ -173,12 +174,13 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, SendPolicyNames) {
   // Expect that the policy table contains all known policies in alphabetical
   // order and none of the policies have a set value.
   std::vector<std::vector<std::string> > expected_policies;
-  const policy::PolicyDefinitionList* policies =
-      policy::GetChromePolicyDefinitionList();
-  for (const policy::PolicyDefinitionList::Entry* policy = policies->begin;
-      policy != policies->end; ++policy) {
+  policy::Schema chrome_schema =
+      policy::Schema::Wrap(policy::GetChromeSchemaData());
+  ASSERT_TRUE(chrome_schema.valid());
+  for (policy::Schema::Iterator it = chrome_schema.GetPropertiesIterator();
+       !it.IsAtEnd(); it.Advance()) {
     expected_policies.push_back(
-        PopulateExpectedPolicy(policy->name, std::string(), NULL, false));
+        PopulateExpectedPolicy(it.key(), std::string(), NULL, false));
   }
 
   // Retrieve the contents of the policy table from the UI and verify that it
@@ -239,19 +241,20 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, SendPolicyValues) {
   // * All known policies whose value has not been set, in alphabetical order.
   std::vector<std::vector<std::string> > expected_policies;
   size_t first_unset_position = 0;
-  const policy::PolicyDefinitionList* policies =
-      policy::GetChromePolicyDefinitionList();
-  for (const policy::PolicyDefinitionList::Entry* policy = policies->begin;
-       policy != policies->end; ++policy) {
+  policy::Schema chrome_schema =
+      policy::Schema::Wrap(policy::GetChromeSchemaData());
+  ASSERT_TRUE(chrome_schema.valid());
+  for (policy::Schema::Iterator props = chrome_schema.GetPropertiesIterator();
+       !props.IsAtEnd(); props.Advance()) {
     std::map<std::string, std::string>::const_iterator it =
-        expected_values.find(policy->name);
+        expected_values.find(props.key());
     const std::string value =
         it == expected_values.end() ? std::string() : it->second;
-    const policy::PolicyMap::Entry* metadata = values.Get(policy->name);
+    const policy::PolicyMap::Entry* metadata = values.Get(props.key());
     expected_policies.insert(
         metadata ? expected_policies.begin() + first_unset_position++ :
                    expected_policies.end(),
-        PopulateExpectedPolicy(policy->name, value, metadata, false));
+        PopulateExpectedPolicy(props.key(), value, metadata, false));
   }
   expected_policies.insert(
       expected_policies.begin() + first_unset_position++,

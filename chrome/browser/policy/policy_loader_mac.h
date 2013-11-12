@@ -27,14 +27,12 @@ namespace policy {
 class PolicyBundle;
 class PolicyMap;
 class Schema;
-struct PolicyDefinitionList;
 
 // A policy loader that loads policies from the Mac preferences system, and
 // watches the managed preferences files for updates.
 class PolicyLoaderMac : public AsyncPolicyLoader {
  public:
   PolicyLoaderMac(scoped_refptr<base::SequencedTaskRunner> task_runner,
-                  const PolicyDefinitionList* policy_list,
                   const base::FilePath& managed_policy_path,
                   MacPreferences* preferences);
   virtual ~PolicyLoaderMac();
@@ -66,9 +64,6 @@ class PolicyLoaderMac : public AsyncPolicyLoader {
   void LoadPolicyForComponent(const std::string& bundle_id_string,
                               const Schema& schema,
                               PolicyMap* policy);
-
-  // List of recognized policies.
-  const PolicyDefinitionList* policy_list_;
 
   scoped_ptr<MacPreferences> preferences_;
 

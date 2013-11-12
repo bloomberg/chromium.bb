@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <algorithm>
+#include <iterator>
 #include <map>
 #include <sstream>
 #include <string>
@@ -12,6 +13,7 @@
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/prefs/pref_service.h"
@@ -30,6 +32,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/policy/core/common/schema.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
 #include "policy/policy_constants.h"
@@ -209,12 +212,16 @@ class PolicyTestCases {
       ADD_FAILURE() << "Error parsing policy_test_cases.json: " << error_string;
       return;
     }
-    const PolicyDefinitionList* list = GetChromePolicyDefinitionList();
-    for (const PolicyDefinitionList::Entry* policy = list->begin;
-         policy != list->end; ++policy) {
-      PolicyTestCase* policy_test_case = GetPolicyTestCase(dict, policy->name);
+    Schema chrome_schema = Schema::Wrap(GetChromeSchemaData());
+    if (!chrome_schema.valid()) {
+      ADD_FAILURE();
+      return;
+    }
+    for (Schema::Iterator it = chrome_schema.GetPropertiesIterator();
+         !it.IsAtEnd(); it.Advance()) {
+      PolicyTestCase* policy_test_case = GetPolicyTestCase(dict, it.key());
       if (policy_test_case)
-        (*policy_test_cases_)[policy->name] = policy_test_case;
+        (*policy_test_cases_)[it.key()] = policy_test_case;
     }
   }
 
@@ -379,11 +386,90 @@ void VerifyControlledSettingIndicators(Browser* browser,
 
 }  // namespace
 
+// A forward iterator that iterates over the Chrome policy names, using the
+// Chrome schema data.
+class TestCaseIterator
+    : public std::iterator<std::forward_iterator_tag, const char*> {
+ public:
+  static TestCaseIterator GetBegin() {
+    Schema chrome_schema = Schema::Wrap(GetChromeSchemaData());
+    CHECK(chrome_schema.valid());
+    return TestCaseIterator(chrome_schema.GetPropertiesIterator());
+  }
+
+  static TestCaseIterator GetEnd() {
+    return TestCaseIterator();
+  }
+
+  TestCaseIterator() {}
+
+  explicit TestCaseIterator(const Schema::Iterator& it)
+      : it_(it.IsAtEnd() ? NULL : new Schema::Iterator(it)) {}
+
+  TestCaseIterator(const TestCaseIterator& other)
+      : it_(other.it_ ? new Schema::Iterator(*other.it_) : NULL) {}
+
+  ~TestCaseIterator() {}
+
+  TestCaseIterator& operator=(const TestCaseIterator& other) {
+    it_.reset(other.it_ ? new Schema::Iterator(*other.it_) : NULL);
+    return *this;
+  }
+
+  bool Equals(const TestCaseIterator& other) const {
+    // Assume that both iterators are working with the same Schema; therefore
+    // the key()s returned are the same.
+    if (!it_ || !other.it_)
+      return !it_ && !other.it_;
+    return it_->key() == other.it_->key();
+  }
+
+  bool operator==(const TestCaseIterator& other) const {
+    return Equals(other);
+  }
+
+  bool operator !=(const TestCaseIterator& other) const {
+    return !Equals(other);
+  }
+
+  const char* operator*() const {
+    if (!it_) {
+      NOTREACHED();
+      return NULL;
+    }
+    return it_->key();
+  }
+
+  TestCaseIterator& Advance() {
+    if (it_) {
+      it_->Advance();
+      if (it_->IsAtEnd())
+        it_.reset();
+    } else {
+      NOTREACHED();
+    }
+    return *this;
+  }
+
+  TestCaseIterator& operator++() {
+    return Advance();
+  }
+
+  TestCaseIterator operator++(int) {
+    TestCaseIterator current = *this;
+    Advance();
+    return current;
+  }
+
+ private:
+  scoped_ptr<Schema::Iterator> it_;
+};
+
 // Base class for tests that change policy and are parameterized with a policy
 // definition.
 class PolicyPrefsTest
     : public InProcessBrowserTest,
-      public testing::WithParamInterface<PolicyDefinitionList::Entry> {
+      public testing::WithParamInterface<const char*> {
  protected:
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     EXPECT_CALL(provider_, IsInitializationComplete(_))
@@ -411,20 +497,22 @@ TEST(PolicyPrefsTestCoverageTest, AllPoliciesHaveATestCase) {
   // This test fails when a policy is added to
   // chrome/app/policy/policy_templates.json but a test case is not added to
   // chrome/test/data/policy/policy_test_cases.json.
+  Schema chrome_schema = Schema::Wrap(GetChromeSchemaData());
+  ASSERT_TRUE(chrome_schema.valid());
+
   PolicyTestCases policy_test_cases;
-  const PolicyDefinitionList* list = GetChromePolicyDefinitionList();
-  for (const PolicyDefinitionList::Entry* policy = list->begin;
-       policy != list->end; ++policy) {
-    EXPECT_TRUE(ContainsKey(policy_test_cases.map(), policy->name))
-        << "Missing policy test case for: " << policy->name;
+  for (Schema::Iterator it = chrome_schema.GetPropertiesIterator();
+       !it.IsAtEnd(); it.Advance()) {
+    EXPECT_TRUE(ContainsKey(policy_test_cases.map(), it.key()))
+        << "Missing policy test case for: " << it.key();
   }
 }
 
 IN_PROC_BROWSER_TEST_P(PolicyPrefsTest, PolicyToPrefsMapping) {
   // Verifies that policies make their corresponding preferences become managed,
   // and that the user can't override that setting.
-  const PolicyTestCase* test_case = policy_test_cases_.Get(GetParam().name);
-  ASSERT_TRUE(test_case) << "PolicyTestCase not found for " << GetParam().name;
+  const PolicyTestCase* test_case = policy_test_cases_.Get(GetParam());
+  ASSERT_TRUE(test_case) << "PolicyTestCase not found for " << GetParam();
   const ScopedVector<PrefMapping>& pref_mappings = test_case->pref_mappings();
   if (!test_case->IsSupported() || pref_mappings.empty())
     return;
@@ -469,9 +557,9 @@ IN_PROC_BROWSER_TEST_P(PolicyPrefsTest, CheckPolicyIndicators) {
   // Verifies that controlled setting indicators correctly show whether a pref's
   // value is recommended or enforced by a corresponding policy.
   const PolicyTestCase* policy_test_case =
-      policy_test_cases_.Get(GetParam().name);
+      policy_test_cases_.Get(GetParam());
   ASSERT_TRUE(policy_test_case) << "PolicyTestCase not found for "
-      << GetParam().name;
+      << GetParam();
   const ScopedVector<PrefMapping>& pref_mappings =
       policy_test_case->pref_mappings();
   if (!policy_test_case->IsSupported() || pref_mappings.empty())
@@ -564,10 +652,9 @@ IN_PROC_BROWSER_TEST_P(PolicyPrefsTest, CheckPolicyIndicators) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(
-    PolicyPrefsTestInstance,
-    PolicyPrefsTest,
-    testing::ValuesIn(GetChromePolicyDefinitionList()->begin,
-                      GetChromePolicyDefinitionList()->end));
+INSTANTIATE_TEST_CASE_P(PolicyPrefsTestInstance,
+                        PolicyPrefsTest,
+                        testing::ValuesIn(TestCaseIterator::GetBegin(),
+                                          TestCaseIterator::GetEnd()));
 
 }  // namespace policy

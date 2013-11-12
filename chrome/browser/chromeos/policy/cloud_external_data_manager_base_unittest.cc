@@ -24,13 +24,13 @@
 #include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/policy_types.h"
+#include "chrome/browser/policy/test/policy_test_utils.h"
 #include "net/http/http_status_code.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
 #include "net/url_request/url_request_status.h"
 #include "net/url_request/url_request_test_util.h"
-#include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -53,15 +53,11 @@ const char k20BytePolicyURL[] = "http://localhost/20_bytes";
 const char k10ByteData[] = "10 bytes..";
 const char k20ByteData[] = "20 bytes............";
 
-const PolicyDefinitionList::Entry kPolicyDefinitionListEntries[] = {
-  { kStringPolicy, base::Value::TYPE_STRING, false, 1, 0 },
-  { k10BytePolicy, base::Value::TYPE_DICTIONARY, false, 2, 10 },
-  { k20BytePolicy, base::Value::TYPE_DICTIONARY, false, 3, 20 },
-};
-
-const PolicyDefinitionList kPolicyDefinitionList = {
-  kPolicyDefinitionListEntries,
-  kPolicyDefinitionListEntries + arraysize(kPolicyDefinitionListEntries),
+const PolicyDetails kPolicyDetails[] = {
+//  is_deprecated  is_device_policy  id    max_external_data_size
+  { false,         false,             1,                        0 },
+  { false,         false,             2,                       10 },
+  { false,         false,             3,                       20 },
 };
 
 const char kCacheKey[] = "data";
@@ -140,6 +136,7 @@ class CloudExternalDataManagerBaseTest : public testing::Test {
   scoped_ptr<CloudExternalDataManagerBase> external_data_manager_;
 
   std::map<int, std::string*> callback_data_;
+  PolicyDetailsMap policy_details_;
 
   DISALLOW_COPY_AND_ASSIGN(CloudExternalDataManagerBaseTest);
 };
@@ -171,6 +168,10 @@ void CloudExternalDataManagerBaseTest::SetUp() {
 
   request_content_getter_ = new net::TestURLRequestContextGetter(
       base::MessageLoopProxy::current());
+
+  policy_details_.SetDetails(kStringPolicy, &kPolicyDetails[0]);
+  policy_details_.SetDetails(k10BytePolicy, &kPolicyDetails[1]);
+  policy_details_.SetDetails(k20BytePolicy, &kPolicyDetails[2]);
 }
 
 void CloudExternalDataManagerBaseTest::TearDown() {
@@ -181,7 +182,7 @@ void CloudExternalDataManagerBaseTest::TearDown() {
 
 void CloudExternalDataManagerBaseTest::SetUpExternalDataManager() {
   external_data_manager_.reset(new CloudExternalDataManagerBase(
-      &kPolicyDefinitionList,
+      policy_details_.GetCallback(),
       message_loop_.message_loop_proxy(),
       message_loop_.message_loop_proxy()));
   external_data_manager_->SetExternalDataStore(make_scoped_ptr(

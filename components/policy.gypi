@@ -20,6 +20,7 @@
       'conditions': [
         ['configuration_policy==1', {
           'sources': [
+            'policy/core/common/policy_details.h',
             'policy/core/common/policy_namespace.cc',
             'policy/core/common/policy_namespace.h',
             'policy/core/common/policy_pref_names.cc',

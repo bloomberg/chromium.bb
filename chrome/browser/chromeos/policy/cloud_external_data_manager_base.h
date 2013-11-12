@@ -11,6 +11,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/policy/cloud/cloud_external_data_manager.h"
+#include "components/policy/core/common/policy_details.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -20,7 +21,6 @@ namespace policy {
 
 class CloudExternalDataStore;
 class ExternalPolicyDataFetcherBackend;
-struct PolicyDefinitionList;
 
 // Downloads, verifies, caches and retrieves external data referenced by
 // policies.
@@ -29,12 +29,12 @@ struct PolicyDefinitionList;
 class CloudExternalDataManagerBase : public CloudExternalDataManager,
                                      public base::NonThreadSafe {
  public:
-  // The |policy_definitions| are used to determine the maximum size that the
+  // |get_policy_details| is used to determine the maximum size that the
   // data referenced by each policy can have. Download scheduling, verification,
   // caching and retrieval tasks are done via the |backend_task_runner|, which
   // must support file I/O. Network I/O is done via the |io_task_runner|.
   CloudExternalDataManagerBase(
-      const PolicyDefinitionList* policy_definitions,
+      const GetChromePolicyDetailsCallback& get_policy_details,
       scoped_refptr<base::SequencedTaskRunner> backend_task_runner,
       scoped_refptr<base::SequencedTaskRunner> io_task_runner);
   virtual ~CloudExternalDataManagerBase();

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
 
+#include "base/bind.h"
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
@@ -173,7 +174,7 @@ scoped_ptr<UserCloudPolicyManagerChromeOS>
       content::BrowserThread::GetMessageLoopProxyForThread(
           content::BrowserThread::IO);
   scoped_ptr<CloudExternalDataManager> external_data_manager(
-      new UserCloudExternalDataManager(GetChromePolicyDefinitionList(),
+      new UserCloudExternalDataManager(base::Bind(&GetChromePolicyDetails),
                                        backend_task_runner,
                                        io_task_runner,
                                        external_data_dir,

@@ -9,6 +9,8 @@
 #include "base/cancelable_callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/time/time.h"
+#include "components/policy/core/common/policy_details.h"
+#include "components/policy/core/common/schema.h"
 
 class PrefService;
 class PrefRegistrySimple;
@@ -29,7 +31,9 @@ class PolicyStatisticsCollector {
 
   // Neither |policy_service| nor |prefs| can be NULL and must stay valid
   // throughout the lifetime of PolicyStatisticsCollector.
-  PolicyStatisticsCollector(PolicyService* policy_service,
+  PolicyStatisticsCollector(const GetChromePolicyDetailsCallback& get_details,
+                            const Schema& chrome_schema,
+                            PolicyService* policy_service,
                             PrefService* prefs,
                             const scoped_refptr<base::TaskRunner>& task_runner);
   virtual ~PolicyStatisticsCollector();
@@ -47,6 +51,8 @@ class PolicyStatisticsCollector {
   void CollectStatistics();
   void ScheduleUpdate(base::TimeDelta delay);
 
+  GetChromePolicyDetailsCallback get_details_;
+  Schema chrome_schema_;
   PolicyService* policy_service_;
   PrefService* prefs_;
 

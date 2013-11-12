@@ -32,9 +32,14 @@
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
+#include "chrome/browser/policy/schema_map.h"
+#include "chrome/browser/policy/schema_registry.h"
+#include "chrome/browser/policy/schema_registry_service.h"
+#include "chrome/browser/policy/schema_registry_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
 #include "components/policy/core/common/policy_namespace.h"
+#include "components/policy/core/common/schema.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -63,13 +68,8 @@
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/policy/schema_map.h"
-#include "chrome/browser/policy/schema_registry.h"
-#include "chrome/browser/policy/schema_registry_service.h"
-#include "chrome/browser/policy/schema_registry_service_factory.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
-#include "components/policy/core/common/schema.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/manifest_constants.h"
 #endif
@@ -547,13 +547,19 @@ void PolicyUIHandler::OnPolicyUpdated(const policy::PolicyNamespace& ns,
 void PolicyUIHandler::SendPolicyNames() const {
   base::DictionaryValue names;
 
+  Profile* profile = Profile::FromWebUI(web_ui());
+  policy::SchemaRegistry* registry =
+      policy::SchemaRegistryServiceFactory::GetForContext(
+          profile->GetOriginalProfile());
+  scoped_refptr<policy::SchemaMap> schema_map = registry->schema_map();
+
   // Add Chrome policy names.
   base::DictionaryValue* chrome_policy_names = new base::DictionaryValue;
-  const policy::PolicyDefinitionList* list =
-      policy::GetChromePolicyDefinitionList();
-  for (const policy::PolicyDefinitionList::Entry* entry = list->begin;
-       entry != list->end; ++entry) {
-    chrome_policy_names->SetBoolean(entry->name, true);
+  policy::PolicyNamespace chrome_ns(policy::POLICY_DOMAIN_CHROME, "");
+  const policy::Schema* chrome_schema = schema_map->GetSchema(chrome_ns);
+  for (policy::Schema::Iterator it = chrome_schema->GetPropertiesIterator();
+       !it.IsAtEnd(); it.Advance()) {
+    chrome_policy_names->SetBoolean(it.key(), true);
   }
   names.Set("chromePolicyNames", chrome_policy_names);
 
@@ -561,16 +567,10 @@ void PolicyUIHandler::SendPolicyNames() const {
   // Add extension policy names.
   base::DictionaryValue* extension_policy_names = new base::DictionaryValue;
 
-  Profile* profile = Profile::FromWebUI(web_ui());
   extensions::ExtensionSystem* extension_system =
       extensions::ExtensionSystem::Get(profile);
   const ExtensionSet* extensions =
       extension_system->extension_service()->extensions();
-
-  policy::SchemaRegistry* registry =
-      policy::SchemaRegistryServiceFactory::GetForContext(
-          profile->GetOriginalProfile());
-  scoped_refptr<policy::SchemaMap> schema_map = registry->schema_map();
 
   for (ExtensionSet::const_iterator it = extensions->begin();
        it != extensions->end(); ++it) {

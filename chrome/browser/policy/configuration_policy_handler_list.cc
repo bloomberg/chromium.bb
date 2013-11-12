@@ -25,6 +25,7 @@
 #include "chrome/browser/sessions/restore_on_startup_policy_handler.h"
 #include "chrome/browser/sync/sync_policy_handler.h"
 #include "chrome/common/pref_names.h"
+#include "components/policy/core/common/policy_details.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "extensions/common/manifest.h"
 #include "grit/generated_resources.h"
@@ -491,7 +492,8 @@ void ConfigurationPolicyHandlerList::ApplyPolicySettings(
   for (PolicyMap::const_iterator it = policies.begin();
        it != policies.end();
        ++it) {
-    if (IsDeprecatedPolicy(it->first))
+    const PolicyDetails* details = GetChromePolicyDetails(it->first);
+    if (details && details->is_deprecated)
       errors->AddError(it->first, IDS_POLICY_DEPRECATED);
   }
 }

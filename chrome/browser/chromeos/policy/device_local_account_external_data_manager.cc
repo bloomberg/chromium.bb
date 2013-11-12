@@ -15,11 +15,11 @@ namespace policy {
 
 DeviceLocalAccountExternalDataManager::DeviceLocalAccountExternalDataManager(
     const std::string& account_id,
-    const PolicyDefinitionList* policy_definitions,
+    const GetChromePolicyDetailsCallback& get_policy_details,
     scoped_refptr<base::SequencedTaskRunner> backend_task_runner,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner,
     ResourceCache* resource_cache)
-    : CloudExternalDataManagerBase(policy_definitions,
+    : CloudExternalDataManagerBase(get_policy_details,
                                    backend_task_runner,
                                    io_task_runner) {
   SetExternalDataStore(make_scoped_ptr(new CloudExternalDataStore(

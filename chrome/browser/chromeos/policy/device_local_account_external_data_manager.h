@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/chromeos/policy/cloud_external_data_manager_base.h"
+#include "components/policy/core/common/policy_details.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -18,7 +19,6 @@ class SequencedTaskRunner;
 
 namespace policy {
 
-struct PolicyDefinitionList;
 class ResourceCache;
 
 // Downloads, verifies, caches and retrieves external data referenced by
@@ -39,7 +39,7 @@ class DeviceLocalAccountExternalDataManager
   friend class DeviceLocalAccountExternalDataService;
   friend class base::RefCounted<DeviceLocalAccountExternalDataManager>;
 
-  // The |policy_definitions| are used to determine the maximum size that the
+  // |get_policy_details| is used to determine the maximum size that the
   // data referenced by each policy can have. Download scheduling, verification,
   // caching and retrieval tasks are done via the |backend_task_runner|, which
   // must support file I/O. Network I/O is done via the |io_task_runner|. The
@@ -50,7 +50,7 @@ class DeviceLocalAccountExternalDataManager
   // cache, all its users must access the cache via |backend_task_runner| only.
   DeviceLocalAccountExternalDataManager(
       const std::string& account_id,
-      const PolicyDefinitionList* policy_definitions,
+      const GetChromePolicyDetailsCallback& get_policy_details,
       scoped_refptr<base::SequencedTaskRunner> backend_task_runner,
       scoped_refptr<base::SequencedTaskRunner> io_task_runner,
       ResourceCache* resource_cache);

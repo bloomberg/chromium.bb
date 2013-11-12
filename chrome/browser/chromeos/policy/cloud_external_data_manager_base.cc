@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/callback.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop_proxy.h"
@@ -23,7 +24,6 @@
 #include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "policy/policy_constants.h"
 
 namespace policy {
 
@@ -42,11 +42,11 @@ int max_external_data_size_for_testing = 0;
 // verification, caching and retrieval.
 class CloudExternalDataManagerBase::Backend {
  public:
-  // The |policy_definitions| are used to determine the maximum size that the
+  // |get_policy_details| is used to determine the maximum size that the
   // data referenced by each policy can have. This class can be instantiated on
   // any thread but from then on, may be accessed via the |task_runner_| only.
   // All FetchCallbacks will be invoked via |callback_task_runner|.
-  Backend(const PolicyDefinitionList* policy_definitions,
+  Backend(const GetChromePolicyDetailsCallback& get_policy_details,
           scoped_refptr<base::SequencedTaskRunner> task_runner,
           scoped_refptr<base::SequencedTaskRunner> callback_task_runner);
 
@@ -101,8 +101,7 @@ class CloudExternalDataManagerBase::Backend {
   // Map from policy names to the lists of callbacks defined above.
   typedef std::map<std::string, FetchCallbackList> FetchCallbackMap;
 
-  // Looks up the maximum size that the data referenced by |policy| can have in
-  // |policy_definitions_|.
+  // Looks up the maximum size that the data referenced by |policy| can have.
   size_t GetMaxExternalDataSize(const std::string& policy) const;
 
   // Invokes |callback| via the |callback_task_runner_|, passing |data| as a
@@ -116,7 +115,7 @@ class CloudExternalDataManagerBase::Backend {
 
   // Used to determine the maximum size that the data referenced by each policy
   // can have.
-  const PolicyDefinitionList* policy_definitions_;
+  GetChromePolicyDetailsCallback get_policy_details_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   scoped_refptr<base::SequencedTaskRunner> callback_task_runner_;
@@ -147,10 +146,10 @@ class CloudExternalDataManagerBase::Backend {
 };
 
 CloudExternalDataManagerBase::Backend::Backend(
-    const PolicyDefinitionList* policy_definitions,
+    const GetChromePolicyDetailsCallback& get_policy_details,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     scoped_refptr<base::SequencedTaskRunner> callback_task_runner)
-    : policy_definitions_(policy_definitions),
+    : get_policy_details_(get_policy_details),
       task_runner_(task_runner),
       callback_task_runner_(callback_task_runner),
       metadata_set_(false) {
@@ -301,14 +300,12 @@ size_t CloudExternalDataManagerBase::Backend::GetMaxExternalDataSize(
     return max_external_data_size_for_testing;
 
   // Look up the maximum size that the data referenced by |policy| can have in
-  // policy_definitions_, which is constructed from the information in
+  // get_policy_details, which is constructed from the information in
   // policy_templates.json, allowing the maximum data size to be specified as
   // part of the policy definition.
-  for (const PolicyDefinitionList::Entry* entry = policy_definitions_->begin;
-       entry != policy_definitions_->end; ++entry) {
-    if (entry->name == policy)
-      return entry->max_external_data_size;
-  }
+  const PolicyDetails* details = get_policy_details_.Run(policy);
+  if (details)
+    return details->max_external_data_size;
   NOTREACHED();
   return 0;
 }
@@ -339,12 +336,12 @@ void CloudExternalDataManagerBase::Backend::StartDownload(
 }
 
 CloudExternalDataManagerBase::CloudExternalDataManagerBase(
-    const PolicyDefinitionList* policy_definitions,
+    const GetChromePolicyDetailsCallback& get_policy_details,
     scoped_refptr<base::SequencedTaskRunner> backend_task_runner,
     scoped_refptr<base::SequencedTaskRunner> io_task_runner)
     : backend_task_runner_(backend_task_runner),
       io_task_runner_(io_task_runner),
-      backend_(new Backend(policy_definitions,
+      backend_(new Backend(get_policy_details,
                            backend_task_runner_,
                            base::MessageLoopProxy::current())) {
 }

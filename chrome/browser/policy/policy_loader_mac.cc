@@ -61,11 +61,9 @@ void ArrayEntryToValue(const void* value, void* context) {
 
 PolicyLoaderMac::PolicyLoaderMac(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
-    const PolicyDefinitionList* policy_list,
     const base::FilePath& managed_policy_path,
     MacPreferences* preferences)
     : AsyncPolicyLoader(task_runner),
-      policy_list_(policy_list),
       preferences_(preferences),
       managed_policy_path_(managed_policy_path) {}
 
@@ -84,17 +82,17 @@ scoped_ptr<PolicyBundle> PolicyLoaderMac::Load() {
   scoped_ptr<PolicyBundle> bundle(new PolicyBundle());
 
   // Load Chrome's policy.
-  // TODO(joaodasilva): Use the Chrome schema instead of the
-  // PolicyDefinitionList.
   PolicyMap& chrome_policy =
       bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
 
   PolicyLoadStatusSample status;
   bool policy_present = false;
-  const PolicyDefinitionList::Entry* current;
-  for (current = policy_list_->begin; current != policy_list_->end; ++current) {
+  const Schema* schema =
+      schema_map()->GetSchema(PolicyNamespace(POLICY_DOMAIN_CHROME, ""));
+  for (Schema::Iterator it = schema->GetPropertiesIterator();
+       !it.IsAtEnd(); it.Advance()) {
     base::ScopedCFTypeRef<CFStringRef> name(
-        base::SysUTF8ToCFStringRef(current->name));
+        base::SysUTF8ToCFStringRef(it.key()));
     base::ScopedCFTypeRef<CFPropertyListRef> value(
         preferences_->CopyAppValue(name, kCFPreferencesCurrentApplication));
     if (!value.get())
@@ -107,7 +105,7 @@ scoped_ptr<PolicyBundle> PolicyLoaderMac::Load() {
     // TODO(joaodasilva): figure the policy scope.
     base::Value* policy = CreateValueFromProperty(value);
     if (policy)
-      chrome_policy.Set(current->name, level, POLICY_SCOPE_USER, policy, NULL);
+      chrome_policy.Set(it.key(), level, POLICY_SCOPE_USER, policy, NULL);
     else
       status.Add(POLICY_LOAD_STATUS_PARSE_ERROR);
   }

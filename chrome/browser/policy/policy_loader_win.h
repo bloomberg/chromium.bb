@@ -28,7 +28,6 @@ class AppliedGPOListProvider;
 class PolicyLoadStatusSample;
 class PolicyMap;
 class RegistryDict;
-struct PolicyDefinitionList;
 
 // Interface for mocking out GPO enumeration in tests.
 class AppliedGPOListProvider {
@@ -51,15 +50,13 @@ class PolicyLoaderWin : public AsyncPolicyLoader,
   static const base::FilePath::CharType kPRegFileName[];
 
   PolicyLoaderWin(scoped_refptr<base::SequencedTaskRunner> task_runner,
-                  const PolicyDefinitionList* policy_list,
                   const string16& chrome_policy_key,
                   AppliedGPOListProvider* gpo_provider);
   virtual ~PolicyLoaderWin();
 
   // Creates a policy loader that uses the Win API to access GPO.
   static scoped_ptr<PolicyLoaderWin> Create(
-      scoped_refptr<base::SequencedTaskRunner> task_runner,
-      const PolicyDefinitionList* policy_list);
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   // AsyncPolicyLoader implementation.
   virtual void InitOnBackgroundThread() OVERRIDE;
@@ -110,7 +107,6 @@ class PolicyLoaderWin : public AsyncPolicyLoader,
   virtual void OnObjectSignaled(HANDLE object) OVERRIDE;
 
   bool is_initialized_;
-  const PolicyDefinitionList* policy_list_;
   const string16 chrome_policy_key_;
   class AppliedGPOListProvider* gpo_provider_;
   base::DictionaryValue chrome_policy_schema_;

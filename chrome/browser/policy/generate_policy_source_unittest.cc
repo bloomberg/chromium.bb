@@ -6,6 +6,8 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/values.h"
+#include "build/build_config.h"
+#include "components/policy/core/common/policy_details.h"
 #include "components/policy/core/common/schema.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -55,6 +57,14 @@ TEST(GeneratePolicySource, ChromeSchemaData) {
   ASSERT_TRUE(subschema.GetProperty(key::kProxyPacUrl).valid());
   ASSERT_TRUE(subschema.GetProperty(key::kProxyBypassList).valid());
 
+  // Verify that all the Chrome policies are there.
+  for (Schema::Iterator it = schema.GetPropertiesIterator();
+       !it.IsAtEnd(); it.Advance()) {
+    EXPECT_TRUE(it.key());
+    EXPECT_FALSE(std::string(it.key()).empty());
+    EXPECT_TRUE(GetChromePolicyDetails(it.key()));
+  }
+
   // The properties are iterated in order.
   const char* kExpectedProperties[] = {
     key::kProxyBypassList,
@@ -73,6 +83,41 @@ TEST(GeneratePolicySource, ChromeSchemaData) {
     EXPECT_EQ(base::Value::TYPE_STRING, it.schema().type());
   }
   EXPECT_TRUE(*next == NULL);
+}
+
+TEST(GeneratePolicySource, PolicyDetails) {
+  EXPECT_FALSE(GetChromePolicyDetails(""));
+  EXPECT_FALSE(GetChromePolicyDetails("no such policy"));
+  EXPECT_FALSE(GetChromePolicyDetails("AlternateErrorPagesEnable"));
+  EXPECT_FALSE(GetChromePolicyDetails("alternateErrorPagesEnabled"));
+  EXPECT_FALSE(GetChromePolicyDetails("AAlternateErrorPagesEnabled"));
+
+  const PolicyDetails* details =
+      GetChromePolicyDetails(key::kAlternateErrorPagesEnabled);
+  ASSERT_TRUE(details);
+  EXPECT_FALSE(details->is_deprecated);
+  EXPECT_FALSE(details->is_device_policy);
+  EXPECT_EQ(5, details->id);
+  EXPECT_EQ(0u, details->max_external_data_size);
+
+  details = GetChromePolicyDetails(key::kJavascriptEnabled);
+  ASSERT_TRUE(details);
+  EXPECT_TRUE(details->is_deprecated);
+  EXPECT_FALSE(details->is_device_policy);
+  EXPECT_EQ(9, details->id);
+  EXPECT_EQ(0u, details->max_external_data_size);
+
+#if defined(OS_CHROMEOS)
+  details = GetChromePolicyDetails(key::kDevicePolicyRefreshRate);
+  ASSERT_TRUE(details);
+  EXPECT_FALSE(details->is_deprecated);
+  EXPECT_TRUE(details->is_device_policy);
+  EXPECT_EQ(90, details->id);
+  EXPECT_EQ(0u, details->max_external_data_size);
+#endif
+
+  // TODO(bartfab): add a test that verifies a max_external_data_size larger
+  // than 0, once a type 'external' policy is added.
 }
 
 }  // namespace policy
