@@ -42,11 +42,11 @@
 
 namespace WebCore {
 
-static Frame* createWindow(Frame* openerFrame, Frame* lookupFrame, const FrameLoadRequest& request, const WindowFeatures& features, bool& created)
+static Frame* createWindow(Frame* openerFrame, Frame* lookupFrame, const FrameLoadRequest& request, const WindowFeatures& features, NavigationPolicy policy, ShouldSendReferrer shouldSendReferrer, bool& created)
 {
     ASSERT(!features.dialog || request.frameName().isEmpty());
 
-    if (!request.frameName().isEmpty() && request.frameName() != "_blank") {
+    if (!request.frameName().isEmpty() && request.frameName() != "_blank" && policy == NavigationPolicyIgnore) {
         if (Frame* frame = lookupFrame->loader().findFrameForNavigation(request.frameName(), openerFrame->document())) {
             if (request.frameName() != "_self") {
                 if (Page* page = frame->page())
@@ -73,7 +73,7 @@ static Frame* createWindow(Frame* openerFrame, Frame* lookupFrame, const FrameLo
     if (!oldPage)
         return 0;
 
-    Page* page = oldPage->chrome().client().createWindow(openerFrame, request, features);
+    Page* page = oldPage->chrome().client().createWindow(openerFrame, request, features, policy, shouldSendReferrer);
     if (!page)
         return 0;
 
@@ -106,7 +106,7 @@ static Frame* createWindow(Frame* openerFrame, Frame* lookupFrame, const FrameLo
     FloatRect newWindowRect = DOMWindow::adjustWindowRect(page, windowRect);
 
     page->chrome().setWindowRect(newWindowRect);
-    page->chrome().show();
+    page->chrome().show(policy);
 
     created = true;
     return frame;
@@ -134,7 +134,7 @@ Frame* createWindow(const String& urlString, const AtomicString& frameName, cons
     // We pass the opener frame for the lookupFrame in case the active frame is different from
     // the opener frame, and the name references a frame relative to the opener frame.
     bool created;
-    Frame* newFrame = createWindow(activeFrame, openerFrame, frameRequest, windowFeatures, created);
+    Frame* newFrame = createWindow(activeFrame, openerFrame, frameRequest, windowFeatures, NavigationPolicyIgnore, MaybeSendReferrer, created);
     if (!newFrame)
         return 0;
 
@@ -154,6 +154,35 @@ Frame* createWindow(const String& urlString, const AtomicString& frameName, cons
         newFrame->navigationScheduler().scheduleLocationChange(activeWindow->document()->securityOrigin(), completedURL.string(), referrer, false);
     }
     return newFrame;
+}
+
+void createWindowForRequest(const FrameLoadRequest& request, Frame* openerFrame, NavigationPolicy policy, ShouldSendReferrer shouldSendReferrer)
+{
+    if (openerFrame->document()->pageDismissalEventBeingDispatched() != Document::NoDismissal)
+        return;
+
+    if (openerFrame->document() && openerFrame->document()->isSandboxed(SandboxPopups))
+        return;
+
+    if (!DOMWindow::allowPopUp(openerFrame))
+        return;
+
+    if (policy == NavigationPolicyCurrentTab)
+        policy = NavigationPolicyNewForegroundTab;
+
+    WindowFeatures features;
+    bool created;
+    Frame* newFrame = createWindow(openerFrame, openerFrame, request, features, policy, shouldSendReferrer, created);
+    if (!newFrame)
+        return;
+    newFrame->page()->setOpenedByDOM();
+    if (shouldSendReferrer == MaybeSendReferrer) {
+        newFrame->loader().setOpener(openerFrame);
+        newFrame->document()->setReferrerPolicy(openerFrame->document()->referrerPolicy());
+    }
+    FrameLoadRequest newRequest(0, request.resourceRequest());
+    newRequest.setFormState(request.formState());
+    newFrame->loader().load(newRequest);
 }
 
 } // namespace WebCore

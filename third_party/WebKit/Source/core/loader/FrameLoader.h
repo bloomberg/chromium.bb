@@ -229,7 +229,6 @@ private:
     SubstituteData defaultSubstituteDataForURL(const KURL&);
 
     void checkNavigationPolicyAndContinueFragmentScroll(const NavigationAction&, bool isNewNavigation, ClientRedirectPolicy);
-    void checkNewWindowPolicyAndContinue(PassRefPtr<FormState>, const String& frameName, const NavigationAction&, ShouldSendReferrer);
 
     bool shouldPerformFragmentNavigation(bool isFormSubmission, const String& httpMethod, FrameLoadType, const KURL&);
     void scrollToFragmentWithParentBoundary(const KURL&);
@@ -239,8 +238,8 @@ private:
     void closeOldDataSources();
 
     // Calls continueLoadAfterNavigationPolicy
-    void loadWithNavigationAction(const ResourceRequest&, const NavigationAction&,
-        FrameLoadType, PassRefPtr<FormState>, const SubstituteData&, ClientRedirectPolicy = NotClientRedirect, const String& overrideEncoding = String());
+    void loadWithNavigationAction(const NavigationAction&, FrameLoadType, PassRefPtr<FormState>,
+        const SubstituteData&, ClientRedirectPolicy = NotClientRedirect, const String& overrideEncoding = String());
 
     void detachChildren();
     void closeAndRemoveChild(Frame*);

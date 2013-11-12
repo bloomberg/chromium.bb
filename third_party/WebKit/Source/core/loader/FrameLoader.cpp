@@ -72,6 +72,7 @@
 #include "core/loader/appcache/ApplicationCacheHost.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
+#include "core/page/CreateWindow.h"
 #include "core/page/EventHandler.h"
 #include "core/page/FrameTree.h"
 #include "core/page/Page.h"
@@ -718,7 +719,10 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
     NavigationAction action(request.resourceRequest(), newLoadType, request.formState(), request.triggeringEvent());
     if ((!targetFrame && !request.frameName().isEmpty()) || action.shouldOpenInNewWindow()) {
         TemporaryChange<bool> changeOpener(m_suppressOpenerInNewFrame, request.shouldSendReferrer() == NeverSendReferrer);
-        checkNewWindowPolicyAndContinue(request.formState(), request.frameName(), action, request.shouldSendReferrer());
+        if (action.policy() == NavigationPolicyDownload)
+            m_client->loadURLExternally(action.resourceRequest(), NavigationPolicyDownload);
+        else
+            createWindowForRequest(request, m_frame, action.policy(), request.shouldSendReferrer());
         return;
     }
 
@@ -727,7 +731,7 @@ void FrameLoader::load(const FrameLoadRequest& passedRequest)
         return;
     }
     bool sameURL = shouldTreatURLAsSameAsCurrent(request.resourceRequest().url());
-    loadWithNavigationAction(request.resourceRequest(), action, newLoadType, request.formState(), request.substituteData(), request.clientRedirect());
+    loadWithNavigationAction(action, newLoadType, request.formState(), request.substituteData(), request.clientRedirect());
     // Example of this case are sites that reload the same URL with a different cookie
     // driving the generated content, or a master frame with links that drive a target
     // frame, where the user has clicked on the same link repeatedly.
@@ -774,7 +778,7 @@ void FrameLoader::reload(ReloadPolicy reloadPolicy, const KURL& overrideURL, con
 
     FrameLoadType type = reloadPolicy == EndToEndReload ? FrameLoadTypeReloadFromOrigin : FrameLoadTypeReload;
     NavigationAction action(request, type, request.httpMethod() == "POST");
-    loadWithNavigationAction(request, action, type, 0, SubstituteData(), NotClientRedirect, overrideEncoding);
+    loadWithNavigationAction(action, type, 0, SubstituteData(), NotClientRedirect, overrideEncoding);
 }
 
 void FrameLoader::stopAllLoaders()
@@ -1294,7 +1298,7 @@ bool FrameLoader::shouldClose()
     return shouldClose;
 }
 
-void FrameLoader::loadWithNavigationAction(const ResourceRequest& request, const NavigationAction& action, FrameLoadType type, PassRefPtr<FormState> formState, const SubstituteData& substituteData, ClientRedirectPolicy clientRedirect, const String& overrideEncoding)
+void FrameLoader::loadWithNavigationAction(const NavigationAction& action, FrameLoadType type, PassRefPtr<FormState> formState, const SubstituteData& substituteData, ClientRedirectPolicy clientRedirect, const String& overrideEncoding)
 {
     ASSERT(m_client->hasWebView());
     if (m_frame->document()->pageDismissalEventBeingDispatched() != Document::NoDismissal)
@@ -1304,6 +1308,7 @@ void FrameLoader::loadWithNavigationAction(const ResourceRequest& request, const
     // document load because the event would leak subsequent activity by the frame which the parent
     // frame isn't supposed to learn. For example, if the child frame navigated to  a new URL, the
     // parent frame shouldn't learn the URL.
+    const ResourceRequest& request = action.resourceRequest();
     if (!m_stateMachine.committedFirstRealDocumentLoad() && m_frame->ownerElement() && !m_frame->ownerElement()->dispatchBeforeLoadEvent(request.url().string()))
         return;
 
@@ -1366,52 +1371,6 @@ void FrameLoader::loadWithNavigationAction(const ResourceRequest& request, const
     m_client->dispatchDidStartProvisionalLoad();
     ASSERT(m_provisionalDocumentLoader);
     m_provisionalDocumentLoader->startLoadingMainResource();
-}
-
-void FrameLoader::checkNewWindowPolicyAndContinue(PassRefPtr<FormState> formState, const String& frameName, const NavigationAction& action, ShouldSendReferrer shouldSendReferrer)
-{
-    if (m_frame->document()->pageDismissalEventBeingDispatched() != Document::NoDismissal)
-        return;
-
-    if (m_frame->document() && m_frame->document()->isSandboxed(SandboxPopups))
-        return;
-
-    if (!DOMWindow::allowPopUp(m_frame))
-        return;
-
-    NavigationPolicy navigationPolicy = action.shouldOpenInNewWindow() ? action.policy() : NavigationPolicyNewForegroundTab;
-    if (navigationPolicy == NavigationPolicyDownload) {
-        m_client->loadURLExternally(action.resourceRequest(), navigationPolicy);
-        return;
-    }
-
-    RefPtr<Frame> frame = m_frame;
-    RefPtr<Frame> mainFrame = m_frame;
-
-    if (!m_frame->settings() || m_frame->settings()->supportsMultipleWindows()) {
-        struct WindowFeatures features;
-        Page* newPage = m_frame->page()->chrome().client().createWindow(m_frame, FrameLoadRequest(m_frame->document()->securityOrigin(), action.resourceRequest()),
-            features, navigationPolicy, shouldSendReferrer);
-
-        // createWindow can return null (e.g., popup blocker denies the window).
-        if (!newPage)
-            return;
-        mainFrame = newPage->mainFrame();
-    }
-
-    if (frameName != "_blank")
-        mainFrame->tree().setName(frameName);
-
-    mainFrame->page()->setOpenedByDOM();
-    mainFrame->page()->chrome().show(navigationPolicy);
-    if (shouldSendReferrer == MaybeSendReferrer) {
-        mainFrame->loader().setOpener(frame.get());
-        mainFrame->document()->setReferrerPolicy(frame->document()->referrerPolicy());
-    }
-
-    // FIXME: We can't just send our NavigationAction to the new FrameLoader's loadWithNavigationAction(), we need to
-    // create a new one with a default NavigationType and no triggering event. We should figure out why.
-    mainFrame->loader().loadWithNavigationAction(action.resourceRequest(), NavigationAction(action.resourceRequest()), FrameLoadTypeStandard, formState, SubstituteData());
 }
 
 void FrameLoader::applyUserAgent(ResourceRequest& request)
@@ -1533,7 +1492,7 @@ void FrameLoader::loadHistoryItem(HistoryItem* item)
         addHTTPOriginIfNeeded(request, securityOrigin->toString());
     }
 
-    loadWithNavigationAction(request, NavigationAction(request, FrameLoadTypeBackForward, formData), FrameLoadTypeBackForward, 0, SubstituteData());
+    loadWithNavigationAction(NavigationAction(request, FrameLoadTypeBackForward, formData), FrameLoadTypeBackForward, 0, SubstituteData());
 }
 
 void FrameLoader::insertDummyHistoryItem()
