@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/apps/app_browsertest_util.h"
 #include "chrome/browser/automation/automation_util.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/prerender/prerender_link_manager.h"
 #include "chrome/browser/prerender/prerender_link_manager_factory.h"
@@ -69,15 +70,12 @@ class TestInterstitialPageDelegate : public content::InterstitialPageDelegate {
   virtual std::string GetHTMLContents() OVERRIDE { return std::string(); }
 };
 
-class WebContentsCreatedListener {
+// Used to get notified when a guest is created.
+class GuestContentBrowserClient : public chrome::ChromeContentBrowserClient {
  public:
-  WebContentsCreatedListener() : web_contents_(NULL) {
-    content::WebContents::AddCreatedCallback(
-        base::Bind(&WebContentsCreatedListener::CreatedCallback,
-                   base::Unretained(this)));
-  }
+  GuestContentBrowserClient() : web_contents_(NULL) {}
 
-  content::WebContents* WaitForWebContentsCreated() {
+  content::WebContents* WaitForGuestCreated() {
     if (web_contents_)
       return web_contents_;
 
@@ -87,18 +85,21 @@ class WebContentsCreatedListener {
   }
 
  private:
-  void CreatedCallback(content::WebContents* web_contents) {
-    web_contents_ = web_contents;
+  // ChromeContentBrowserClient implementation:
+  virtual void GuestWebContentsAttached(
+      content::WebContents* guest_web_contents,
+      content::WebContents* embedder_web_contents,
+      const base::DictionaryValue& extra_params) OVERRIDE {
+    ChromeContentBrowserClient::GuestWebContentsAttached(
+        guest_web_contents, embedder_web_contents, extra_params);
+    web_contents_ = guest_web_contents;
 
     if (message_loop_runner_)
       message_loop_runner_->Quit();
   }
 
- private:
   content::WebContents* web_contents_;
   scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(WebContentsCreatedListener);
 };
 
 class InterstitialObserver : public content::WebContentsObserver {
@@ -964,7 +965,9 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_InterstitialTeardown) {
   LoadAndLaunchPlatformApp("web_view/interstitial_teardown");
   ASSERT_TRUE(embedder_loaded_listener.WaitUntilSatisfied());
 
-  WebContentsCreatedListener web_contents_created_listener;
+  GuestContentBrowserClient new_client;
+  content::ContentBrowserClient* old_client =
+      SetBrowserClientForTesting(&new_client);
 
   // Now load the guest.
   content::WebContents* embedder_web_contents =
@@ -976,8 +979,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_InterstitialTeardown) {
   ASSERT_TRUE(second.WaitUntilSatisfied());
 
   // Wait for interstitial page to be shown in guest.
-  content::WebContents* guest_web_contents =
-      web_contents_created_listener.WaitForWebContentsCreated();
+  content::WebContents* guest_web_contents = new_client.WaitForGuestCreated();
+  SetBrowserClientForTesting(old_client);
   ASSERT_TRUE(guest_web_contents->GetRenderProcessHost()->IsGuest());
   WaitForInterstitial(guest_web_contents);
 
