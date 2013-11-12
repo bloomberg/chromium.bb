@@ -28,7 +28,6 @@
 
 #include "modules/webaudio/BiquadDSPKernel.h"
 
-#include "modules/webaudio/BiquadProcessor.h"
 #include "platform/FloatConversion.h"
 #include <limits.h>
 #include "wtf/Vector.h"

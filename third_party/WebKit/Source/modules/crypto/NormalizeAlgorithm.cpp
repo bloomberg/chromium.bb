@@ -36,7 +36,6 @@
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "platform/NotImplemented.h"
-#include "public/platform/WebCryptoAlgorithm.h"
 #include "public/platform/WebCryptoAlgorithmParams.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/ArrayBufferView.h"

@@ -30,7 +30,6 @@
 
 #include "core/platform/mediastream/MediaStreamCenter.h"
 #include "core/platform/mediastream/RTCPeerConnectionHandler.h"
-#include "modules/mediastream/MediaStream.h"
 #include "modules/webaudio/AudioContext.h"
 #include "modules/webaudio/AudioNodeInput.h"
 #include "platform/UUID.h"

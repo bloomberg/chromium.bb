@@ -31,7 +31,6 @@
 #include "modules/indexeddb/IDBDatabase.h"
 #include "modules/indexeddb/IDBFactory.h"
 #include "modules/indexeddb/IDBIndex.h"
-#include "modules/indexeddb/IDBKeyPath.h"
 #include "modules/indexeddb/IDBObjectStore.h"
 
 namespace WebCore {

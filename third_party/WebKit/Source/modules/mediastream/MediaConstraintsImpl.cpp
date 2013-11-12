@@ -36,7 +36,6 @@
 #include "bindings/v8/Dictionary.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
-#include "wtf/HashMap.h"
 #include "wtf/text/StringHash.h"
 
 namespace WebCore {

@@ -30,7 +30,6 @@
 
 #include "platform/Logging.h"
 #include "modules/webdatabase/Database.h"
-#include "modules/webdatabase/DatabaseBackend.h"
 
 namespace WebCore {
 

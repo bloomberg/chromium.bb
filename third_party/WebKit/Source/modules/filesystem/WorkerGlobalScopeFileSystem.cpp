@@ -34,7 +34,6 @@
 #include "core/fileapi/FileError.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "modules/filesystem/DOMFileSystemBase.h"
-#include "modules/filesystem/DOMFileSystemSync.h"
 #include "modules/filesystem/DirectoryEntrySync.h"
 #include "modules/filesystem/ErrorCallback.h"
 #include "modules/filesystem/FileEntrySync.h"

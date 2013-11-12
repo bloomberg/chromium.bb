@@ -35,7 +35,6 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/events/ProgressEvent.h"
 #include "core/fileapi/Blob.h"
-#include "core/fileapi/FileError.h"
 #include "public/platform/WebFileWriter.h"
 #include "public/platform/WebURL.h"
 #include "wtf/CurrentTime.h"

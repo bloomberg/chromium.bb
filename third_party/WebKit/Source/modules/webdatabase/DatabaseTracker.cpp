@@ -46,7 +46,6 @@
 #include "weborigin/SecurityOriginHash.h"
 #include "wtf/Assertions.h"
 #include "wtf/StdLibExtras.h"
-#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

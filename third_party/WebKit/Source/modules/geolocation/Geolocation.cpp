@@ -29,14 +29,12 @@
 #include "modules/geolocation/Geolocation.h"
 
 #include "core/dom/Document.h"
-#include "modules/geolocation/Geoposition.h"
 #include "wtf/CurrentTime.h"
 
 #include "modules/geolocation/Coordinates.h"
 #include "modules/geolocation/GeolocationController.h"
 #include "modules/geolocation/GeolocationError.h"
 #include "modules/geolocation/GeolocationPosition.h"
-#include "modules/geolocation/PositionError.h"
 
 namespace WebCore {
 

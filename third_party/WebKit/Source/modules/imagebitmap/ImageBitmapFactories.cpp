@@ -35,7 +35,6 @@
 #include "bindings/v8/ExceptionMessages.h"
 #include "bindings/v8/ExceptionState.h"
 #include "bindings/v8/ScriptScope.h"
-#include "bindings/v8/ScriptState.h"
 #include "core/fileapi/Blob.h"
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/HTMLImageElement.h"

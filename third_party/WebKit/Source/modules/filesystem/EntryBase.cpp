@@ -35,7 +35,6 @@
 #include "modules/filesystem/DOMFileSystemBase.h"
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/PassRefPtr.h"
-#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

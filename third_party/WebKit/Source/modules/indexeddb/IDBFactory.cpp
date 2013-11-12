@@ -39,7 +39,6 @@
 #include "modules/indexeddb/IDBFactoryBackendInterface.h"
 #include "modules/indexeddb/IDBHistograms.h"
 #include "modules/indexeddb/IDBKey.h"
-#include "modules/indexeddb/IDBOpenDBRequest.h"
 #include "modules/indexeddb/IDBTracing.h"
 #include "public/platform/Platform.h"
 #include "weborigin/DatabaseIdentifier.h"

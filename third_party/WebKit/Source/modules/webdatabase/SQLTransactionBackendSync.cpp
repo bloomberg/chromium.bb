@@ -48,7 +48,6 @@
 #include "modules/webdatabase/SQLTransactionSyncCallback.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
-#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

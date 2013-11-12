@@ -44,7 +44,6 @@
 #include "modules/webdatabase/SQLTransactionClient.h"
 #include "modules/webdatabase/SQLTransactionCoordinator.h"
 #include "wtf/StdLibExtras.h"
-#include "wtf/text/WTFString.h"
 
 
 // How does a SQLTransaction work?

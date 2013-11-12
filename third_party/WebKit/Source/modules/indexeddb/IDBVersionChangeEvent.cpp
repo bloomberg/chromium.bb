@@ -27,7 +27,6 @@
 #include "modules/indexeddb/IDBVersionChangeEvent.h"
 
 #include "core/events/ThreadLocalEventNames.h"
-#include "modules/indexeddb/IDBAny.h"
 
 namespace WebCore {
 

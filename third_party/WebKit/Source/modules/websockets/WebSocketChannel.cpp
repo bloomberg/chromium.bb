@@ -42,8 +42,6 @@
 #include "modules/websockets/ThreadableWebSocketChannelClientWrapper.h"
 #include "modules/websockets/WebSocketChannelClient.h"
 #include "modules/websockets/WorkerThreadableWebSocketChannel.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

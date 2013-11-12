@@ -35,7 +35,6 @@
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/filesystem/DirectoryReaderSync.h"
-#include "modules/filesystem/EntrySync.h"
 #include "modules/filesystem/FileEntrySync.h"
 #include "modules/filesystem/SyncCallbackHelper.h"
 

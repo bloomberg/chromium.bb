@@ -29,7 +29,6 @@
 #include "modules/webaudio/PannerNode.h"
 
 #include "core/dom/ExecutionContext.h"
-#include "platform/audio/AudioBus.h"
 #include "platform/audio/HRTFPanner.h"
 #include "modules/webaudio/AudioBufferSourceNode.h"
 #include "modules/webaudio/AudioContext.h"

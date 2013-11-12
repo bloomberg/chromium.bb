@@ -32,28 +32,20 @@
 #include "modules/websockets/NewWebSocketChannelImpl.h"
 
 #include "bindings/v8/ScriptCallStackFactory.h"
-#include "core/dom/ContextLifecycleObserver.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExecutionContext.h"
-#include "core/fileapi/Blob.h"
-#include "core/fileapi/FileError.h"
 #include "core/fileapi/FileReaderLoader.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
 #include "core/inspector/InspectorInstrumentation.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/loader/UniqueIdentifier.h"
-#include "modules/websockets/WebSocketChannel.h"
 #include "modules/websockets/WebSocketChannelClient.h"
 #include "platform/Logging.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebSocketHandle.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebVector.h"
 #include "weborigin/SecurityOrigin.h"
-#include "wtf/ArrayBuffer.h"
-#include "wtf/Vector.h"
-#include "wtf/text/WTFString.h"
 
 using blink::WebSocketHandle;
 

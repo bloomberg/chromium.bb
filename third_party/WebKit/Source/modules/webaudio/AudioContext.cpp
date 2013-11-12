@@ -35,11 +35,9 @@
 #include "core/html/HTMLMediaElement.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "platform/audio/FFTFrame.h"
-#include "platform/audio/HRTFDatabaseLoader.h"
 #include "platform/audio/HRTFPanner.h"
 #include "modules/mediastream/MediaStream.h"
 #include "modules/webaudio/AnalyserNode.h"
-#include "modules/webaudio/AsyncAudioDecoder.h"
 #include "modules/webaudio/AudioBuffer.h"
 #include "modules/webaudio/AudioBufferCallback.h"
 #include "modules/webaudio/AudioBufferSourceNode.h"
@@ -72,10 +70,7 @@
 
 #include "wtf/ArrayBuffer.h"
 #include "wtf/Atomics.h"
-#include "wtf/MainThread.h"
-#include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 
 // FIXME: check the proper way to reference an undefined thread ID

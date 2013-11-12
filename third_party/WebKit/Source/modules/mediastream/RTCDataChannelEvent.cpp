@@ -26,7 +26,6 @@
 #include "modules/mediastream/RTCDataChannelEvent.h"
 
 #include "core/events/ThreadLocalEventNames.h"
-#include "modules/mediastream/RTCDataChannel.h"
 
 namespace WebCore {
 

@@ -39,7 +39,6 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/frame/Frame.h"
-#include "core/frame/Navigator.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoaderClient.h"
 #include "core/workers/SharedWorker.h"

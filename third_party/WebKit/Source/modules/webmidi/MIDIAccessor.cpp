@@ -33,7 +33,6 @@
 
 #include "modules/webmidi/MIDIAccessorClient.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebMIDIAccessor.h"
 #include "wtf/text/WTFString.h"
 
 using blink::WebString;

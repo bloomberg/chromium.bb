@@ -31,7 +31,6 @@
 #include "config.h"
 #include "ServiceWorker.h"
 
-#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 

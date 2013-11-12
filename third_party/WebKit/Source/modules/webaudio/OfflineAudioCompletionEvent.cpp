@@ -29,7 +29,6 @@
 #include "modules/webaudio/OfflineAudioCompletionEvent.h"
 
 #include "core/events/ThreadLocalEventNames.h"
-#include "modules/webaudio/AudioBuffer.h"
 
 namespace WebCore {
 

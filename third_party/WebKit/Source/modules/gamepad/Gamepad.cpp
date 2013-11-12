@@ -25,7 +25,6 @@
 
 #include "config.h"
 #include "modules/gamepad/Gamepad.h"
-#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

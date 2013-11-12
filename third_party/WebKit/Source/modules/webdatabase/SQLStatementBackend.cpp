@@ -29,7 +29,6 @@
 #include "modules/webdatabase/SQLStatementBackend.h"
 
 #include "platform/Logging.h"
-#include "modules/webdatabase/sqlite/SQLValue.h"
 #include "modules/webdatabase/sqlite/SQLiteDatabase.h"
 #include "modules/webdatabase/sqlite/SQLiteStatement.h"
 #include "modules/webdatabase/AbstractSQLStatement.h"

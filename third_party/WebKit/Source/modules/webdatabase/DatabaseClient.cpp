@@ -32,7 +32,6 @@
 #include "DatabaseClient.h"
 
 #include "core/dom/Document.h"
-#include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerGlobalScope.h"
 
 namespace WebCore {

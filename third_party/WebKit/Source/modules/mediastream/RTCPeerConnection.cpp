@@ -49,7 +49,6 @@
 #include "modules/mediastream/RTCDataChannel.h"
 #include "modules/mediastream/RTCDataChannelEvent.h"
 #include "modules/mediastream/RTCErrorCallback.h"
-#include "modules/mediastream/RTCIceCandidate.h"
 #include "modules/mediastream/RTCIceCandidateEvent.h"
 #include "modules/mediastream/RTCSessionDescription.h"
 #include "modules/mediastream/RTCSessionDescriptionCallback.h"

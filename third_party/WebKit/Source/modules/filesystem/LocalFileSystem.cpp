@@ -36,7 +36,6 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/fileapi/FileError.h"
-#include "core/page/Page.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "modules/filesystem/FileSystemClient.h"
 #include "platform/AsyncFileSystemCallbacks.h"

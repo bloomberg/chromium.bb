@@ -35,7 +35,6 @@
 #include "platform/audio/FFTFrame.h"
 #include "platform/audio/VectorMath.h"
 #include "modules/webaudio/OscillatorNode.h"
-#include "wtf/OwnPtr.h"
 #include <algorithm>
 
 const unsigned PeriodicWaveSize = 4096; // This must be a power of two.

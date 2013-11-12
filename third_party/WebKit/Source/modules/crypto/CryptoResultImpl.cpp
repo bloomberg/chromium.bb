@@ -39,7 +39,6 @@
 #include "modules/crypto/NormalizeAlgorithm.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebArrayBuffer.h"
-#include "public/platform/WebCrypto.h"
 #include "public/platform/WebCryptoAlgorithm.h"
 #include "wtf/ArrayBufferView.h"
 

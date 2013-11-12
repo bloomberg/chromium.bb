@@ -32,9 +32,6 @@
 #include "modules/webdatabase/sqlite/SQLiteFileSystem.h"
 #include "modules/webdatabase/sqlite/SQLiteStatement.h"
 #include "modules/webdatabase/DatabaseAuthorizer.h"
-#include "wtf/text/CString.h"
-#include "wtf/text/WTFString.h"
-#include "wtf/Threading.h"
 
 namespace WebCore {
 

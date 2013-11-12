@@ -38,7 +38,6 @@
 #include "modules/filesystem/DOMFileSystemBase.h"
 #include "modules/filesystem/DirectoryEntry.h"
 #include "modules/filesystem/DirectoryReader.h"
-#include "modules/filesystem/EntriesCallback.h"
 #include "modules/filesystem/Entry.h"
 #include "modules/filesystem/EntryCallback.h"
 #include "modules/filesystem/ErrorCallback.h"

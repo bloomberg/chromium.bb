@@ -31,7 +31,6 @@
 #include "bindings/v8/IDBBindingUtilities.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/indexeddb/IDBDatabase.h"
-#include "modules/indexeddb/IDBKey.h"
 
 namespace WebCore {
 

@@ -30,7 +30,6 @@
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "bindings/v8/IDBBindingUtilities.h"
 #include "bindings/v8/ScriptState.h"
-#include "bindings/v8/SerializedScriptValue.h"
 #include "core/dom/DOMStringList.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
@@ -38,12 +37,8 @@
 #include "modules/indexeddb/IDBAny.h"
 #include "modules/indexeddb/IDBCursorWithValue.h"
 #include "modules/indexeddb/IDBDatabase.h"
-#include "modules/indexeddb/IDBIndex.h"
-#include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBKeyPath.h"
-#include "modules/indexeddb/IDBKeyRange.h"
 #include "modules/indexeddb/IDBTracing.h"
-#include "modules/indexeddb/IDBTransaction.h"
 #include "wtf/UnusedParam.h"
 
 namespace WebCore {

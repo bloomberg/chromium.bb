@@ -36,11 +36,9 @@
 #include "modules/indexeddb/IDBAny.h"
 #include "modules/indexeddb/IDBCallbacks.h"
 #include "modules/indexeddb/IDBCursorBackendInterface.h"
-#include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBObjectStore.h"
 #include "modules/indexeddb/IDBRequest.h"
 #include "modules/indexeddb/IDBTracing.h"
-#include "modules/indexeddb/IDBTransaction.h"
 #include <limits>
 
 namespace WebCore {

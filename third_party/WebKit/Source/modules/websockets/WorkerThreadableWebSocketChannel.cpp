@@ -40,18 +40,13 @@
 #include "core/inspector/ScriptCallFrame.h"
 #include "core/inspector/ScriptCallStack.h"
 #include "core/page/Settings.h"
-#include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerRunLoop.h"
 #include "core/workers/WorkerThread.h"
 #include "modules/websockets/MainThreadWebSocketChannel.h"
 #include "modules/websockets/ThreadableWebSocketChannelClientWrapper.h"
-#include "modules/websockets/WebSocketChannel.h"
-#include "modules/websockets/WebSocketChannelClient.h"
 #include "wtf/ArrayBuffer.h"
 #include "wtf/MainThread.h"
-#include "wtf/PassRefPtr.h"
-#include "wtf/text/WTFString.h"
 
 namespace WebCore {
 

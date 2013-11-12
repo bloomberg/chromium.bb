@@ -31,7 +31,6 @@
 #include "config.h"
 #include "modules/filesystem/DOMFileSystem.h"
 
-#include "core/dom/ExecutionContext.h"
 #include "core/fileapi/File.h"
 #include "modules/filesystem/DOMFilePath.h"
 #include "modules/filesystem/DirectoryEntry.h"

@@ -38,8 +38,6 @@
 #include "modules/webmidi/MIDIAccessPromise.h"
 #include "modules/webmidi/MIDIConnectionEvent.h"
 #include "modules/webmidi/MIDIController.h"
-#include "modules/webmidi/MIDIInput.h"
-#include "modules/webmidi/MIDIOutput.h"
 #include "modules/webmidi/MIDIPort.h"
 
 namespace WebCore {

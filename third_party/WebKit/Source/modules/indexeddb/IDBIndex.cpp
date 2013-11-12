@@ -30,9 +30,6 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "modules/indexeddb/IDBKey.h"
-#include "modules/indexeddb/IDBKeyRange.h"
-#include "modules/indexeddb/IDBObjectStore.h"
-#include "modules/indexeddb/IDBRequest.h"
 #include "modules/indexeddb/IDBTracing.h"
 #include "modules/indexeddb/IDBTransaction.h"
 

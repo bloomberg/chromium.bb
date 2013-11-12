@@ -43,7 +43,6 @@
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/network/HTTPParsers.h"
 #include "public/platform/Platform.h"
-#include "weborigin/KURL.h"
 #include "weborigin/SecurityOrigin.h"
 #include "wtf/CryptographicallyRandomNumber.h"
 #include "wtf/SHA1.h"
@@ -53,7 +52,6 @@
 #include "wtf/text/Base64.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/StringBuilder.h"
-#include "wtf/text/WTFString.h"
 #include "wtf/unicode/CharacterNames.h"
 
 namespace WebCore {
