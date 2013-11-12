@@ -154,7 +154,7 @@ namespace {
 
 const char kDotGoogleDotCom[] = ".google.com";
 
-base::LazyInstance<std::vector<WebContents::CreatedCallback> >
+base::LazyInstance<std::vector<WebContentsImpl::CreatedCallback> >
 g_created_callbacks = LAZY_INSTANCE_INITIALIZER;
 
 static int StartDownload(content::RenderViewHost* rvh,
@@ -293,11 +293,11 @@ WebContents* WebContents::CreateWithSessionStorage(
   return new_contents;
 }
 
-void WebContents::AddCreatedCallback(const CreatedCallback& callback) {
+void WebContentsImpl::AddCreatedCallback(const CreatedCallback& callback) {
   g_created_callbacks.Get().push_back(callback);
 }
 
-void WebContents::RemoveCreatedCallback(const CreatedCallback& callback) {
+void WebContentsImpl::RemoveCreatedCallback(const CreatedCallback& callback) {
   for (size_t i = 0; i < g_created_callbacks.Get().size(); ++i) {
     if (g_created_callbacks.Get().at(i).Equals(callback)) {
       g_created_callbacks.Get().erase(g_created_callbacks.Get().begin() + i);

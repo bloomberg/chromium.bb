@@ -5,14 +5,15 @@
 #ifndef CONTENT_PUBLIC_TEST_TEST_NAVIGATION_OBSERVER_H_
 #define CONTENT_PUBLIC_TEST_TEST_NAVIGATION_OBSERVER_H_
 
+#include <set>
+
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/memory/scoped_ptr.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/test/test_utils.h"
 
 namespace content {
-
+class WebContents;
 struct LoadCommittedDetails;
 
 // For browser_tests, which run on the UI thread, run a second
@@ -67,7 +68,7 @@ class TestNavigationObserver {
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
 
   // Callback invoked on WebContents creation.
-  WebContents::CreatedCallback web_contents_created_callback_;
+  base::Callback<void(WebContents*)> web_contents_created_callback_;
 
   // Living TestWebContentsObservers created by this observer.
   std::set<TestWebContentsObserver*> web_contents_observers_;

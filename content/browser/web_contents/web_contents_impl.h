@@ -541,9 +541,11 @@ class CONTENT_EXPORT WebContentsImpl
                             bool is_loading,
                             LoadNotificationDetails* details) OVERRIDE;
 
+  typedef base::Callback<void(WebContents*)> CreatedCallback;
 
  private:
   friend class NavigationControllerImpl;
+  friend class TestNavigationObserver;
   friend class WebContentsObserver;
   friend class WebContents;  // To implement factory methods.
 
@@ -773,6 +775,11 @@ class CONTENT_EXPORT WebContentsImpl
   gfx::Size GetSizeForNewRenderView() const;
 
   void OnFrameRemoved(RenderViewHostImpl* render_view_host, int64 frame_id);
+
+  // Adds/removes a callback called on creation of each new WebContents.
+  // Deprecated, about to remove.
+  static void AddCreatedCallback(const CreatedCallback& callback);
+  static void RemoveCreatedCallback(const CreatedCallback& callback);
 
   // Data for core operation ---------------------------------------------------
 

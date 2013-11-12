@@ -117,13 +117,6 @@ class WebContents : public PageNavigator,
       const CreateParams& params,
       const SessionStorageNamespaceMap& session_storage_namespace_map);
 
-  // Adds/removes a callback called on creation of each new WebContents.
-  typedef base::Callback<void(WebContents*)> CreatedCallback;
-  CONTENT_EXPORT static void AddCreatedCallback(
-      const CreatedCallback& callback);
-  CONTENT_EXPORT static void RemoveCreatedCallback(
-      const CreatedCallback& callback);
-
   // Returns a WebContents that wraps the RenderViewHost, or NULL if the
   // render view host's delegate isn't a WebContents.
   CONTENT_EXPORT static WebContents* FromRenderViewHost(

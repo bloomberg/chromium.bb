@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -87,11 +88,11 @@ void TestNavigationObserver::Wait() {
 }
 
 void TestNavigationObserver::StartWatchingNewWebContents() {
-  WebContents::AddCreatedCallback(web_contents_created_callback_);
+  WebContentsImpl::AddCreatedCallback(web_contents_created_callback_);
 }
 
 void TestNavigationObserver::StopWatchingNewWebContents() {
-  WebContents::RemoveCreatedCallback(web_contents_created_callback_);
+  WebContentsImpl::RemoveCreatedCallback(web_contents_created_callback_);
 }
 
 void TestNavigationObserver::RegisterAsObserver(WebContents* web_contents) {
