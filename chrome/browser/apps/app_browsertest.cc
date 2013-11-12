@@ -173,7 +173,7 @@ class ScopedPreviewTestingDelegate : PrintPreviewUI::TestingDelegate {
   gfx::Size dialog_size_;
 };
 
-#if !defined(OS_WIN)
+#if !defined(OS_CHROMEOS) && !defined(OS_WIN)
 bool CopyTestDataAndSetCommandLineArg(
     const base::FilePath& test_data_file,
     const base::FilePath& temp_dir,
@@ -187,7 +187,7 @@ bool CopyTestDataAndSetCommandLineArg(
   command_line->AppendArgPath(path);
   return true;
 }
-#endif
+#endif  // !defined(OS_CHROMEOS) && !defined(OS_WIN)
 
 #if !defined(OS_CHROMEOS)
 const char kTestFilePath[] = "platform_apps/launch_files/test.txt";

@@ -214,16 +214,17 @@ static void AddPattern(URLPatternSet* extent, const std::string& pattern) {
 }
 #endif
 
+#if !(defined(OS_LINUX) && defined(USE_AURA) && !defined(OS_CHROMEOS))
 base::FilePath GetTemporaryFile() {
   base::FilePath temp_file;
   CHECK(file_util::CreateTemporaryFile(&temp_file));
   return temp_file;
 }
 
-
 bool WaitForCountNotificationsCallback(int *count) {
   return --(*count) == 0;
 }
+#endif  // !(defined(OS_LINUX) && defined(USE_AURA) && !defined(OS_CHROMEOS))
 
 }  // namespace
 
@@ -1303,7 +1304,7 @@ void PackExtensionTestClient::OnPackFailure(const std::string& error_message,
 
 // TODO(aura): http://crbug.com/316919
 //
-// The ExetnsionServiceTest reliably has some tests fail on each run, except
+// The ExtensionServiceTest reliably has some tests fail on each run, except
 // that they're different tests each time. The problem appears to be that
 // another thread is holding a lock while ShadowingAtExitManager destroys all
 // LazyInstances<>. Something very bad is going on with threading here.
@@ -3126,7 +3127,7 @@ TEST_F(ExtensionServiceTest, LoadExtensionsWithPlugins) {
   EXPECT_EQ(2u, service_->extensions()->size());
   EXPECT_EQ(0u, service_->disabled_extensions()->size());
 }
-#endif
+#endif  // !defined(OS_CHROMEOS)
 
 namespace {
 

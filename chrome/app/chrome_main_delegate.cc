@@ -305,7 +305,7 @@ void SetUpProfilingShutdownHandler() {
   sigemptyset(&sigact.sa_mask);
   CHECK(sigaction(SIGTERM, &sigact, NULL) == 0);
 }
-#endif
+#endif  // !defined(OS_MACOSX) && !defined(OS_ANDROID)
 
 #endif  // OS_POSIX
 
