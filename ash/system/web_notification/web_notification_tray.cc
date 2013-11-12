@@ -446,6 +446,11 @@ void WebNotificationTray::ShowMessageCenterBubble() {
     message_center_tray_->ShowMessageCenterBubble();
 }
 
+void WebNotificationTray::UpdateAfterLoginStatusChange(
+    user::LoginStatus login_status) {
+  OnMessageCenterTrayChanged();
+}
+
 void WebNotificationTray::SetShelfAlignment(ShelfAlignment alignment) {
   if (alignment == shelf_alignment())
     return;

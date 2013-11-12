@@ -142,6 +142,8 @@ void StatusAreaWidget::UpdateAfterLoginStatusChange(
   login_status_ = login_status;
   if (system_tray_)
     system_tray_->UpdateAfterLoginStatusChange(login_status);
+  if (web_notification_tray_)
+    web_notification_tray_->UpdateAfterLoginStatusChange(login_status);
   if (logout_button_tray_)
     logout_button_tray_->UpdateAfterLoginStatusChange(login_status);
 }
