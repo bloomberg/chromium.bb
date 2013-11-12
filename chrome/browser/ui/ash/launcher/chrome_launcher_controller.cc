@@ -892,6 +892,13 @@ ash::ShelfAutoHideBehavior ChromeLauncherController::GetShelfAutoHideBehavior(
   if (chrome::IsRunningInAppMode())
     return ash::SHELF_AUTO_HIDE_ALWAYS_HIDDEN;
 
+#if defined(OS_WIN)
+   // Autohide functionality temporarily disabled for windows due to
+   // issue crbug.com/292864.
+   // TODO(shrikant): Remove this once the issue gets resolved.
+  return ash::SHELF_AUTO_HIDE_BEHAVIOR_NEVER;
+#endif
+
   // See comment in |kShelfAlignment| as to why we consider two prefs.
   const std::string behavior_value(
       GetPrefForRootWindow(profile_->GetPrefs(),
@@ -910,6 +917,12 @@ ash::ShelfAutoHideBehavior ChromeLauncherController::GetShelfAutoHideBehavior(
 
 bool ChromeLauncherController::CanUserModifyShelfAutoHideBehavior(
     aura::Window* root_window) const {
+#if defined(OS_WIN)
+   // Autohide functionality temporarily disabled for windows due to
+   // issue crbug.com/292864.
+   // TODO(shrikant): Remove this once the issue gets resolved.
+  return false;
+#endif
   return profile_->GetPrefs()->
       FindPreference(prefs::kShelfAutoHideBehaviorLocal)->IsUserModifiable();
 }
