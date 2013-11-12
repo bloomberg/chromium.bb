@@ -341,7 +341,9 @@
         '..'
       ],
       'dependencies': [
+        '../testing/gtest.gyp:gtest',
         'mojo_bindings',
+        'mojo_run_all_unittests',
         'mojo_system',
       ],
       'sources': [

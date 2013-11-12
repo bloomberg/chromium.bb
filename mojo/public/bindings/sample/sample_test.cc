@@ -3,12 +3,100 @@
 // found in the LICENSE file.
 
 #include <stdio.h>
+#include <string.h>
 
+#include <algorithm>
 #include <string>
 
 #include "mojo/public/bindings/sample/generated/sample_service.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace sample {
+
+// Make a sample |Foo| in the given |ScratchBuffer|.
+Foo* MakeFoo(mojo::ScratchBuffer* buf) {
+  const std::string kName("foopy");
+  mojo::String* name = mojo::String::NewCopyOf(buf, kName);
+
+  Bar* bar = Bar::New(buf);
+  bar->set_alpha(20);
+  bar->set_beta(40);
+  bar->set_gamma(60);
+
+  mojo::Array<Bar*>* extra_bars = mojo::Array<Bar*>::New(buf, 3);
+  for (size_t i = 0; i < extra_bars->size(); ++i) {
+    Bar* bar = Bar::New(buf);
+    uint8_t base = static_cast<uint8_t>(i * 100);
+    bar->set_alpha(base);
+    bar->set_beta(base + 20);
+    bar->set_gamma(base + 40);
+    (*extra_bars)[i] = bar;
+  }
+
+  mojo::Array<uint8_t>* data = mojo::Array<uint8_t>::New(buf, 10);
+  for (size_t i = 0; i < data->size(); ++i)
+    (*data)[i] = static_cast<uint8_t>(data->size() - i);
+
+  mojo::Array<mojo::Handle>* files = mojo::Array<mojo::Handle>::New(buf, 4);
+  for (size_t i = 0; i < files->size(); ++i)
+    (*files)[i].value = static_cast<MojoHandle>(0xFFFF - i);
+
+  Foo* foo = Foo::New(buf);
+  foo->set_name(name);
+  foo->set_x(1);
+  foo->set_y(2);
+  foo->set_a(false);
+  foo->set_b(true);
+  foo->set_c(false);
+  foo->set_bar(bar);
+  foo->set_extra_bars(extra_bars);
+  foo->set_data(data);
+  foo->set_files(files);
+
+  return foo;
+}
+
+// Check that the given |Foo| is identical to the one made by |MakeFoo()|.
+void CheckFoo(const Foo* foo) {
+  const std::string kName("foopy");
+  EXPECT_EQ(kName.size(), foo->name()->size());
+  for (size_t i = 0; i < std::min(kName.size(), foo->name()->size()); i++) {
+    // Test both |operator[]| and |at|.
+    EXPECT_EQ(kName[i], foo->name()->at(i)) << i;
+    EXPECT_EQ(kName[i], (*foo->name())[i]) << i;
+  }
+  EXPECT_EQ(kName, foo->name()->To<std::string>());
+
+  EXPECT_EQ(1, foo->x());
+  EXPECT_EQ(2, foo->y());
+  EXPECT_FALSE(foo->a());
+  EXPECT_TRUE(foo->b());
+  EXPECT_FALSE(foo->c());
+
+  EXPECT_EQ(20, foo->bar()->alpha());
+  EXPECT_EQ(40, foo->bar()->beta());
+  EXPECT_EQ(60, foo->bar()->gamma());
+
+  EXPECT_EQ(3u, foo->extra_bars()->size());
+  for (size_t i = 0; i < foo->extra_bars()->size(); i++) {
+    uint8_t base = static_cast<uint8_t>(i * 100);
+    EXPECT_EQ(base, (*foo->extra_bars())[i]->alpha()) << i;
+    EXPECT_EQ(base + 20, (*foo->extra_bars())[i]->beta()) << i;
+    EXPECT_EQ(base + 40, (*foo->extra_bars())[i]->gamma()) << i;
+  }
+
+  EXPECT_EQ(10u, foo->data()->size());
+  for (size_t i = 0; i < foo->data()->size(); ++i) {
+    EXPECT_EQ(static_cast<uint8_t>(foo->data()->size() - i),
+              foo->data()->at(i)) << i;
+  }
+
+  EXPECT_EQ(4u, foo->files()->size());
+  for (size_t i = 0; i < foo->files()->size(); ++i)
+    EXPECT_EQ(static_cast<MojoHandle>(0xFFFF - i),
+              foo->files()->at(i).value) << i;
+}
+
 
 static void PrintSpacer(int depth) {
   for (int i = 0; i < depth; ++i)
@@ -91,10 +179,15 @@ class ServiceImpl : public ServiceStub {
   virtual void Frobinate(const Foo* foo, bool baz, mojo::Handle port)
       MOJO_OVERRIDE {
     // Users code goes here to handle the incoming Frobinate message.
-    // We'll just dump the Foo structure and all of its members.
 
+    // We mainly check that we're given the expected arguments.
+    CheckFoo(foo);
+    EXPECT_TRUE(baz);
+    EXPECT_EQ(static_cast<MojoHandle>(10), port.value);
+
+    // Also dump the Foo structure and all of its members.
+    // TODO(vtl): Make it optional, so that the test spews less?
     printf("Frobinate:\n");
-
     int depth = 1;
     Print(depth, "foo", foo);
     Print(depth, "baz", baz);
@@ -116,7 +209,7 @@ class SimpleMessageReceiver : public mojo::MessageReceiver {
   }
 };
 
-void Exercise() {
+TEST(BindingsSampleTest, Basic) {
   SimpleMessageReceiver receiver;
 
   // User has a proxy to a Service somehow.
@@ -129,44 +222,8 @@ void Exercise() {
   // allocated.
 
   mojo::ScratchBuffer buf;
-
-  Bar* bar = Bar::New(&buf);
-  bar->set_alpha(20);
-  bar->set_beta(40);
-  bar->set_gamma(60);
-
-  const char kName[] = "foopy";
-  mojo::String* name = mojo::String::NewCopyOf(&buf, std::string(kName));
-
-  mojo::Array<Bar*>* extra_bars = mojo::Array<Bar*>::New(&buf, 3);
-  for (size_t i = 0; i < extra_bars->size(); ++i) {
-    Bar* bar = Bar::New(&buf);
-    uint8_t base = static_cast<uint8_t>(i * 100);
-    bar->set_alpha(base);
-    bar->set_beta(base + 20);
-    bar->set_gamma(base + 40);
-    (*extra_bars)[i] = bar;
-  }
-
-  mojo::Array<uint8_t>* data = mojo::Array<uint8_t>::New(&buf, 10);
-  for (size_t i = 0; i < data->size(); ++i)
-    (*data)[i] = static_cast<uint8_t>(data->size() - i);
-
-  mojo::Array<mojo::Handle>* files = mojo::Array<mojo::Handle>::New(&buf, 4);
-  for (size_t i = 0; i < files->size(); ++i)
-    (*files)[i].value = static_cast<MojoHandle>(0xFFFF - i);
-
-  Foo* foo = Foo::New(&buf);
-  foo->set_name(name);
-  foo->set_x(1);
-  foo->set_y(2);
-  foo->set_a(false);
-  foo->set_b(true);
-  foo->set_c(false);
-  foo->set_bar(bar);
-  foo->set_extra_bars(extra_bars);
-  foo->set_data(data);
-  foo->set_files(files);
+  Foo* foo = MakeFoo(&buf);
+  CheckFoo(foo);
 
   mojo::Handle port = { 10 };
 
@@ -174,9 +231,3 @@ void Exercise() {
 }
 
 }  // namespace sample
-
-int main() {
-  // TODO(vtl): Convert this to a gtest and use mojo_run_all_unittests.
-  // sample::Exercise();
-  return 0;
-}
