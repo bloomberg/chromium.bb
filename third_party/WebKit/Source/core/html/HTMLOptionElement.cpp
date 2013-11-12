@@ -361,7 +361,7 @@ String HTMLOptionElement::collectOptionInnerText() const
         if (node->isElementNode() && toScriptLoaderIfPossible(toElement(node)))
             node = NodeTraversal::nextSkippingChildren(node, this);
         else
-            node = NodeTraversal::next(node, this);
+            node = NodeTraversal::next(*node, this);
     }
     return text.toString();
 }

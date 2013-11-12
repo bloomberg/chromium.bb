@@ -386,7 +386,7 @@ void TextIterator::advance()
         if (!next) {
             next = m_node->nextSibling();
             if (!next) {
-                bool pastEnd = NodeTraversal::next(m_node) == m_pastEndNode;
+                bool pastEnd = NodeTraversal::next(*m_node) == m_pastEndNode;
                 Node* parentNode = m_node->parentOrShadowHostNode();
                 while (!next && parentNode) {
                     if ((pastEnd && parentNode == m_endContainer) || m_endContainer->isDescendantOf(parentNode))

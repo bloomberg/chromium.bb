@@ -63,7 +63,7 @@ static IntRect boundingBoxForEventNodes(Node* eventNode)
             continue;
         }
         result.unite(node->pixelSnappedBoundingBox());
-        node = NodeTraversal::next(node, eventNode);
+        node = NodeTraversal::next(*node, eventNode);
     }
     return eventNode->document().view()->contentsToWindow(result);
 }

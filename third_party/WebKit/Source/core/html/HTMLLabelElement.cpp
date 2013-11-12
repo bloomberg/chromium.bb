@@ -69,7 +69,7 @@ LabelableElement* HTMLLabelElement::control()
         // per http://dev.w3.org/html5/spec/Overview.html#the-label-element
         // the form element must be "labelable form-associated element".
         Element* element = this;
-        while ((element = ElementTraversal::next(element, this))) {
+        while ((element = ElementTraversal::next(*element, this))) {
             if (!supportsLabels(element))
                 continue;
             return toLabelableElement(element);

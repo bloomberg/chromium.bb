@@ -134,7 +134,7 @@ static inline HTMLVideoElement* descendentVideoElement(Node* root)
 {
     ASSERT(root);
 
-    for (Node* node = root; node; node = NodeTraversal::next(node, root)) {
+    for (Node* node = root; node; node = NodeTraversal::next(*node, root)) {
         if (isHTMLVideoElement(node))
             return toHTMLVideoElement(node);
     }

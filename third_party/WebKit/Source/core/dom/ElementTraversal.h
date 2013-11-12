@@ -37,10 +37,10 @@ Element* firstWithin(const Node*);
 Element* firstWithin(const ContainerNode*);
 
 // Pre-order traversal skipping non-element nodes.
-Element* next(const Node*);
-Element* next(const Node*, const Node* stayWithin);
-Element* next(const ContainerNode*);
-Element* next(const ContainerNode*, const Node* stayWithin);
+Element* next(const Node&);
+Element* next(const Node&, const Node* stayWithin);
+Element* next(const ContainerNode&);
+Element* next(const ContainerNode&, const Node* stayWithin);
 
 // Like next, but skips children.
 Element* nextSkippingChildren(const Node*);
@@ -69,26 +69,26 @@ inline Element* firstWithin(const ContainerNode* current) { return firstElementW
 inline Element* firstWithin(const Node* current) { return firstElementWithinTemplate(current); }
 
 template <class NodeType>
-inline Element* traverseNextElementTemplate(NodeType* current)
+inline Element* traverseNextElementTemplate(NodeType& current)
 {
     Node* node = NodeTraversal::next(current);
     while (node && !node->isElementNode())
         node = NodeTraversal::nextSkippingChildren(node);
     return toElement(node);
 }
-inline Element* next(const ContainerNode* current) { return traverseNextElementTemplate(current); }
-inline Element* next(const Node* current) { return traverseNextElementTemplate(current); }
+inline Element* next(const ContainerNode& current) { return traverseNextElementTemplate(current); }
+inline Element* next(const Node& current) { return traverseNextElementTemplate(current); }
 
 template <class NodeType>
-inline Element* traverseNextElementTemplate(NodeType* current, const Node* stayWithin)
+inline Element* traverseNextElementTemplate(NodeType& current, const Node* stayWithin)
 {
     Node* node = NodeTraversal::next(current, stayWithin);
     while (node && !node->isElementNode())
         node = NodeTraversal::nextSkippingChildren(node, stayWithin);
     return toElement(node);
 }
-inline Element* next(const ContainerNode* current, const Node* stayWithin) { return traverseNextElementTemplate(current, stayWithin); }
-inline Element* next(const Node* current, const Node* stayWithin) { return traverseNextElementTemplate(current, stayWithin); }
+inline Element* next(const ContainerNode& current, const Node* stayWithin) { return traverseNextElementTemplate(current, stayWithin); }
+inline Element* next(const Node& current, const Node* stayWithin) { return traverseNextElementTemplate(current, stayWithin); }
 
 template <class NodeType>
 inline Element* traverseNextElementSkippingChildrenTemplate(NodeType* current)

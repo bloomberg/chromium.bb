@@ -35,10 +35,10 @@ namespace NodeTraversal {
 // This uses the same order that tags appear in the source file. If the stayWithin
 // argument is non-null, the traversal will stop once the specified node is reached.
 // This can be used to restrict traversal to a particular sub-tree.
-Node* next(const Node*);
-Node* next(const Node*, const Node* stayWithin);
-Node* next(const ContainerNode*);
-Node* next(const ContainerNode*, const Node* stayWithin);
+Node* next(const Node&);
+Node* next(const Node&, const Node* stayWithin);
+Node* next(const ContainerNode&);
+Node* next(const ContainerNode&, const Node* stayWithin);
 
 // Like next, but skips children and starts with the next sibling.
 Node* nextSkippingChildren(const Node*);
@@ -68,30 +68,30 @@ Node* nextAncestorSibling(const Node*);
 Node* nextAncestorSibling(const Node*, const Node* stayWithin);
 
 template <class NodeType>
-inline Node* traverseNextTemplate(NodeType* current)
+inline Node* traverseNextTemplate(NodeType& current)
 {
-    if (current->firstChild())
-        return current->firstChild();
-    if (current->nextSibling())
-        return current->nextSibling();
-    return nextAncestorSibling(current);
+    if (current.firstChild())
+        return current.firstChild();
+    if (current.nextSibling())
+        return current.nextSibling();
+    return nextAncestorSibling(&current);
 }
-inline Node* next(const Node* current) { return traverseNextTemplate(current); }
-inline Node* next(const ContainerNode* current) { return traverseNextTemplate(current); }
+inline Node* next(const Node& current) { return traverseNextTemplate(current); }
+inline Node* next(const ContainerNode& current) { return traverseNextTemplate(current); }
 
 template <class NodeType>
-inline Node* traverseNextTemplate(NodeType* current, const Node* stayWithin)
+inline Node* traverseNextTemplate(NodeType& current, const Node* stayWithin)
 {
-    if (current->firstChild())
-        return current->firstChild();
+    if (current.firstChild())
+        return current.firstChild();
     if (current == stayWithin)
         return 0;
-    if (current->nextSibling())
-        return current->nextSibling();
-    return nextAncestorSibling(current, stayWithin);
+    if (current.nextSibling())
+        return current.nextSibling();
+    return nextAncestorSibling(&current, stayWithin);
 }
-inline Node* next(const Node* current, const Node* stayWithin) { return traverseNextTemplate(current, stayWithin); }
-inline Node* next(const ContainerNode* current, const Node* stayWithin) { return traverseNextTemplate(current, stayWithin); }
+inline Node* next(const Node& current, const Node* stayWithin) { return traverseNextTemplate(current, stayWithin); }
+inline Node* next(const ContainerNode& current, const Node* stayWithin) { return traverseNextTemplate(current, stayWithin); }
 
 template <class NodeType>
 inline Node* traverseNextSkippingChildrenTemplate(NodeType* current)

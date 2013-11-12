@@ -58,7 +58,7 @@ bool NodeIterator::NodePointer::moveToNext(Node* root)
         isPointerBeforeNode = false;
         return true;
     }
-    node = NodeTraversal::next(node.get(), root);
+    node = NodeTraversal::next(*node, root);
     return node;
 }
 
@@ -174,12 +174,12 @@ void NodeIterator::updateForNodeRemoval(Node& removedNode, NodePointer& referenc
         return;
 
     if (referenceNode.isPointerBeforeNode) {
-        Node* node = NodeTraversal::next(&removedNode, root());
+        Node* node = NodeTraversal::next(removedNode, root());
         if (node) {
             // Move out from under the node being removed if the new reference
             // node is a descendant of the node being removed.
             while (node && node->isDescendantOf(&removedNode))
-                node = NodeTraversal::next(node, root());
+                node = NodeTraversal::next(*node, root());
             if (node)
                 referenceNode.node = node;
         } else {
@@ -213,7 +213,7 @@ void NodeIterator::updateForNodeRemoval(Node& removedNode, NodePointer& referenc
                 referenceNode.node = node;
         } else {
             // FIXME: This branch doesn't appear to have any LayoutTests.
-            node = NodeTraversal::next(&removedNode, root());
+            node = NodeTraversal::next(removedNode, root());
             // Move out from under the node being removed if the reference node is
             // a descendant of the node being removed.
             if (willRemoveReferenceNodeAncestor) {

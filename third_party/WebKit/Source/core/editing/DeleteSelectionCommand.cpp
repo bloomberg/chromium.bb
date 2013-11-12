@@ -337,7 +337,7 @@ static Position firstEditablePositionInNode(Node* node)
     ASSERT(node);
     Node* next = node;
     while (next && !next->rendererIsEditable())
-        next = NodeTraversal::next(next, node);
+        next = NodeTraversal::next(*next, node);
     return next ? firstPositionInOrBeforeNode(next) : Position();
 }
 
@@ -429,7 +429,7 @@ void DeleteSelectionCommand::makeStylingElementsDirectChildrenOfEditableRootToPr
     RefPtr<Range> range = m_selectionToDelete.toNormalizedRange();
     RefPtr<Node> node = range->firstNode();
     while (node && node != range->pastLastNode()) {
-        RefPtr<Node> nextNode = NodeTraversal::next(node.get());
+        RefPtr<Node> nextNode = NodeTraversal::next(*node);
         if ((node->hasTagName(styleTag) && !(toElement(node)->hasAttribute(scopedAttr))) || node->hasTagName(linkTag)) {
             nextNode = NodeTraversal::nextSkippingChildren(node.get());
             RefPtr<ContainerNode> rootEditableElement = node->rootEditableElement();
@@ -449,13 +449,14 @@ void DeleteSelectionCommand::handleGeneralDelete()
 
     int startOffset = m_upstreamStart.deprecatedEditingOffset();
     Node* startNode = m_upstreamStart.deprecatedNode();
+    ASSERT(startNode);
 
     makeStylingElementsDirectChildrenOfEditableRootToPreventStyleLoss();
 
     // Never remove the start block unless it's a table, in which case we won't merge content in.
     if (startNode->isSameNode(m_startBlock.get()) && !startOffset && canHaveChildrenForEditing(startNode) && !isHTMLTableElement(startNode)) {
         startOffset = 0;
-        startNode = NodeTraversal::next(startNode);
+        startNode = NodeTraversal::next(*startNode);
         if (!startNode)
             return;
     }
@@ -501,7 +502,7 @@ void DeleteSelectionCommand::handleGeneralDelete()
                 // in a text node that needs to be trimmed
                 Text* text = toText(node);
                 deleteTextFromNode(text, startOffset, text->length() - startOffset);
-                node = NodeTraversal::next(node.get());
+                node = NodeTraversal::next(*node);
             } else {
                 node = startNode->childNode(startOffset);
             }
@@ -527,8 +528,9 @@ void DeleteSelectionCommand::handleGeneralDelete()
                 if (m_downstreamEnd.deprecatedNode() == n && m_downstreamEnd.deprecatedEditingOffset() >= caretMaxOffset(&n)) {
                     removeNode(node.get());
                     node = 0;
-                } else
-                    node = NodeTraversal::next(node.get());
+                } else {
+                    node = NodeTraversal::next(*node);
+                }
             }
         }
 

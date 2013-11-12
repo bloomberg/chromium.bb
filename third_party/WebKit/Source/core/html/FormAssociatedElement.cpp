@@ -135,7 +135,7 @@ void FormAssociatedElement::setForm(HTMLFormElement* newForm)
         m_form->removeFormElement(this);
     m_form = newForm;
     if (m_form)
-        m_form->registerFormElement(this);
+        m_form->registerFormElement(*this);
     didChangeForm();
 }
 
@@ -274,17 +274,28 @@ bool FormAssociatedElement::isFormControlElementWithState() const
     return false;
 }
 
-const HTMLElement* toHTMLElement(const FormAssociatedElement* associatedElement)
+const HTMLElement& toHTMLElement(const FormAssociatedElement& associatedElement)
 {
-    if (associatedElement->isFormControlElement())
+    if (associatedElement.isFormControlElement())
         return toHTMLFormControlElement(associatedElement);
     // Assumes the element is an HTMLObjectElement
     return toHTMLObjectElement(associatedElement);
 }
 
+const HTMLElement* toHTMLElement(const FormAssociatedElement* associatedElement)
+{
+    ASSERT(associatedElement);
+    return &toHTMLElement(*associatedElement);
+}
+
 HTMLElement* toHTMLElement(FormAssociatedElement* associatedElement)
 {
     return const_cast<HTMLElement*>(toHTMLElement(static_cast<const FormAssociatedElement*>(associatedElement)));
+}
+
+HTMLElement& toHTMLElement(FormAssociatedElement& associatedElement)
+{
+    return const_cast<HTMLElement&>(toHTMLElement(static_cast<const FormAssociatedElement&>(associatedElement)));
 }
 
 PassOwnPtr<FormAttributeTargetObserver> FormAttributeTargetObserver::create(const AtomicString& id, FormAssociatedElement* element)

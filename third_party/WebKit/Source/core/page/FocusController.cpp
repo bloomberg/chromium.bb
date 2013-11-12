@@ -468,7 +468,7 @@ Node* FocusController::findFocusableNode(FocusDirection direction, FocusNavigati
 Node* FocusController::findNodeWithExactTabIndex(Node* start, int tabIndex, FocusDirection direction)
 {
     // Search is inclusive of start
-    for (Node* node = start; node; node = direction == FocusDirectionForward ? NodeTraversal::next(node) : NodeTraversal::previous(node)) {
+    for (Node* node = start; node; node = direction == FocusDirectionForward ? NodeTraversal::next(*node) : NodeTraversal::previous(node)) {
         if (shouldVisit(node) && adjustedTabIndex(node) == tabIndex)
             return node;
     }
@@ -480,7 +480,7 @@ static Node* nextNodeWithGreaterTabIndex(Node* start, int tabIndex)
     // Search is inclusive of start
     int winningTabIndex = std::numeric_limits<short>::max() + 1;
     Node* winner = 0;
-    for (Node* node = start; node; node = NodeTraversal::next(node)) {
+    for (Node* node = start; node; node = NodeTraversal::next(*node)) {
         if (shouldVisit(node) && node->tabIndex() > tabIndex && node->tabIndex() < winningTabIndex) {
             winner = node;
             winningTabIndex = node->tabIndex();
@@ -511,14 +511,14 @@ Node* FocusController::nextFocusableNode(FocusNavigationScope scope, Node* start
         int tabIndex = adjustedTabIndex(start);
         // If a node is excluded from the normal tabbing cycle, the next focusable node is determined by tree order
         if (tabIndex < 0) {
-            for (Node* node = NodeTraversal::next(start); node; node = NodeTraversal::next(node)) {
+            for (Node* node = NodeTraversal::next(*start); node; node = NodeTraversal::next(*node)) {
                 if (shouldVisit(node) && adjustedTabIndex(node) >= 0)
                     return node;
             }
         }
 
         // First try to find a node with the same tabindex as start that comes after start in the scope.
-        if (Node* winner = findNodeWithExactTabIndex(NodeTraversal::next(start), tabIndex, FocusDirectionForward))
+        if (Node* winner = findNodeWithExactTabIndex(NodeTraversal::next(*start), tabIndex, FocusDirectionForward))
             return winner;
 
         if (!tabIndex)
@@ -780,7 +780,7 @@ void FocusController::findFocusCandidateInContainer(Node* container, const Layou
 
     for (; element; element = (element->isFrameOwnerElement() || canScrollInDirection(element, direction))
         ? ElementTraversal::nextSkippingChildren(element, container)
-        : ElementTraversal::next(element, container)) {
+        : ElementTraversal::next(*element, container)) {
         if (element == focusedElement)
             continue;
 

@@ -122,7 +122,7 @@ inline Element* DocumentOrderedMap::get(StringImpl* key, const TreeScope* scope)
 
     if (m_duplicateCounts.contains(key)) {
         // We know there's at least one node that matches; iterate to find the first one.
-        for (element = ElementTraversal::firstWithin(scope->rootNode()); element; element = ElementTraversal::next(element)) {
+        for (element = ElementTraversal::firstWithin(scope->rootNode()); element; element = ElementTraversal::next(*element)) {
             if (!keyMatches(key, element))
                 continue;
             m_duplicateCounts.remove(key);

@@ -677,8 +677,9 @@ static inline void removeDisallowedElementsFromSubtree(Element* subtree)
             // The subtree is not in document so this won't generate events that could mutate the tree.
             element->parentNode()->removeChild(element);
             element = next;
-        } else
-            element = ElementTraversal::next(element, subtree);
+        } else {
+            element = ElementTraversal::next(*element, subtree);
+        }
     }
 }
 

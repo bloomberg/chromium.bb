@@ -119,7 +119,9 @@ private:
 };
 
 HTMLElement* toHTMLElement(FormAssociatedElement*);
+HTMLElement& toHTMLElement(FormAssociatedElement&);
 const HTMLElement* toHTMLElement(const FormAssociatedElement*);
+const HTMLElement& toHTMLElement(const FormAssociatedElement&);
 
 } // namespace
 

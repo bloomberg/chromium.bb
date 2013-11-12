@@ -64,7 +64,7 @@ public:
     bool shouldAutocomplete() const;
 
     // FIXME: Should rename these two functions to say "form control" or "form-associated element" instead of "form element".
-    void registerFormElement(FormAssociatedElement*);
+    void registerFormElement(FormAssociatedElement&);
     void removeFormElement(FormAssociatedElement*);
 
     void registerImgElement(HTMLImageElement*);
@@ -146,7 +146,7 @@ private:
     void scheduleFormSubmission(PassRefPtr<FormSubmission>);
 
     unsigned formElementIndexWithFormAttribute(Element*, unsigned rangeStart, unsigned rangeEnd);
-    unsigned formElementIndex(FormAssociatedElement*);
+    unsigned formElementIndex(FormAssociatedElement&);
 
     // Returns true if the submission should proceed.
     bool validateInteractively(Event*);

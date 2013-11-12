@@ -610,7 +610,7 @@ static bool hasARenderedDescendant(Node* node, Node* excludedNode)
         }
         if (n->renderer())
             return true;
-        n = NodeTraversal::next(n, node);
+        n = NodeTraversal::next(*n, node);
     }
     return false;
 }

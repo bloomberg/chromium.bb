@@ -98,7 +98,7 @@ String AXNodeObject::accessibilityDescriptionForElements(Vector<Element*> &eleme
         Element* idElement = elements[i];
 
         builder.append(accessibleNameForNode(idElement));
-        for (Node* n = idElement->firstChild(); n; n = NodeTraversal::next(n, idElement))
+        for (Node* n = idElement->firstChild(); n; n = NodeTraversal::next(*n, idElement))
             builder.append(accessibleNameForNode(n));
 
         if (i != size - 1)

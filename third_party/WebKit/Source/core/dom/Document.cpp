@@ -2057,7 +2057,7 @@ void Document::removeAllEventListeners()
 
     if (DOMWindow* domWindow = this->domWindow())
         domWindow->removeAllEventListeners();
-    for (Node* node = firstChild(); node; node = NodeTraversal::next(node))
+    for (Node* node = firstChild(); node; node = NodeTraversal::next(*node))
         node->removeAllEventListeners();
 }
 
@@ -2638,7 +2638,7 @@ void Document::updateBaseURL()
     if (!equalIgnoringFragmentIdentifier(oldBaseURL, m_baseURL)) {
         // Base URL change changes any relative visited links.
         // FIXME: There are other URLs in the tree that would need to be re-evaluated on dynamic base URL change. Style should be invalidated too.
-        for (Element* element = ElementTraversal::firstWithin(this); element; element = ElementTraversal::next(element)) {
+        for (Element* element = ElementTraversal::firstWithin(this); element; element = ElementTraversal::next(*element)) {
             if (isHTMLAnchorElement(element))
                 toHTMLAnchorElement(element)->invalidateCachedVisitedLinkHash();
         }
@@ -2656,7 +2656,7 @@ void Document::processBaseElement()
     // Find the first href attribute in a base element and the first target attribute in a base element.
     const AtomicString* href = 0;
     const AtomicString* target = 0;
-    for (Element* element = ElementTraversal::firstWithin(this); element && (!href || !target); element = ElementTraversal::next(element)) {
+    for (Element* element = ElementTraversal::firstWithin(this); element && (!href || !target); element = ElementTraversal::next(*element)) {
         if (element->hasTagName(baseTag)) {
             if (!href) {
                 const AtomicString& value = element->fastGetAttribute(hrefAttr);

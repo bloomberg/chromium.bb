@@ -439,7 +439,7 @@ Vector<DocumentMarker*> DocumentMarkerController::markersInRange(Range* range, D
     ASSERT(endContainer);
 
     Node* pastLastNode = range->pastLastNode();
-    for (Node* node = range->firstNode(); node != pastLastNode; node = NodeTraversal::next(node)) {
+    for (Node* node = range->firstNode(); node != pastLastNode; node = NodeTraversal::next(*node)) {
         Vector<DocumentMarker*> markers = markersFor(node);
         Vector<DocumentMarker*>::const_iterator end = markers.end();
         for (Vector<DocumentMarker*>::const_iterator it = markers.begin(); it != end; ++it) {
@@ -644,7 +644,7 @@ void DocumentMarkerController::setMarkersActive(Range* range, bool active)
 
     Node* pastLastNode = range->pastLastNode();
 
-    for (Node* node = range->firstNode(); node != pastLastNode; node = NodeTraversal::next(node)) {
+    for (Node* node = range->firstNode(); node != pastLastNode; node = NodeTraversal::next(*node)) {
         int startOffset = node == startContainer ? range->startOffset() : 0;
         int endOffset = node == endContainer ? range->endOffset() : INT_MAX;
         setMarkersActive(node, startOffset, endOffset, active);
@@ -689,7 +689,7 @@ bool DocumentMarkerController::hasMarkers(Range* range, DocumentMarker::MarkerTy
     ASSERT(endContainer);
 
     Node* pastLastNode = range->pastLastNode();
-    for (Node* node = range->firstNode(); node != pastLastNode; node = NodeTraversal::next(node)) {
+    for (Node* node = range->firstNode(); node != pastLastNode; node = NodeTraversal::next(*node)) {
         Vector<DocumentMarker*> markers = markersFor(node);
         Vector<DocumentMarker*>::const_iterator end = markers.end();
         for (Vector<DocumentMarker*>::const_iterator it = markers.begin(); it != end; ++it) {

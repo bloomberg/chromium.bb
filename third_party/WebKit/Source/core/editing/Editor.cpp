@@ -978,13 +978,13 @@ void Editor::simplifyMarkup(Node* startNode, Node* endNode)
         // check if start node is before endNode
         Node* node = startNode;
         while (node && node != endNode)
-            node = NodeTraversal::next(node);
+            node = NodeTraversal::next(*node);
         if (!node)
             return;
     }
 
     ASSERT(m_frame.document());
-    SimplifyMarkupCommand::create(*m_frame.document(), startNode, endNode ? NodeTraversal::next(endNode) : 0)->apply();
+    SimplifyMarkupCommand::create(*m_frame.document(), startNode, endNode ? NodeTraversal::next(*endNode) : 0)->apply();
 }
 
 void Editor::copyImage(const HitTestResult& result)

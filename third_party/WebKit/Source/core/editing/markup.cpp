@@ -99,7 +99,7 @@ static void completeURLs(DocumentFragment* fragment, const String& baseURL)
 
     KURL parsedBaseURL(ParsedURLString, baseURL);
 
-    for (Element* element = ElementTraversal::firstWithin(fragment); element; element = ElementTraversal::next(element, fragment)) {
+    for (Element* element = ElementTraversal::firstWithin(fragment); element; element = ElementTraversal::next(*element, fragment)) {
         if (!element->hasAttributes())
             continue;
         unsigned length = element->attributeCount();
@@ -355,7 +355,7 @@ Node* StyledMarkupAccumulator::traverseNodesForSerialization(Node* startNode, No
         if (!n)
             break;
 
-        next = NodeTraversal::next(n);
+        next = NodeTraversal::next(*n);
         bool openedTag = false;
 
         if (isBlock(n) && canHaveChildrenForEditing(n) && next == pastEnd)
@@ -657,7 +657,7 @@ static const char fragmentMarkerTag[] = "webkit-fragment-marker";
 
 static bool findNodesSurroundingContext(Document* document, RefPtr<Node>& nodeBeforeContext, RefPtr<Node>& nodeAfterContext)
 {
-    for (Node* node = document->firstChild(); node; node = NodeTraversal::next(node)) {
+    for (Node* node = document->firstChild(); node; node = NodeTraversal::next(*node)) {
         if (node->nodeType() == Node::COMMENT_NODE && toCharacterData(node)->data() == fragmentMarkerTag) {
             if (!nodeBeforeContext)
                 nodeBeforeContext = node;
@@ -675,7 +675,7 @@ static void trimFragment(DocumentFragment* fragment, Node* nodeBeforeContext, No
     RefPtr<Node> next;
     for (RefPtr<Node> node = fragment->firstChild(); node; node = next) {
         if (nodeBeforeContext->isDescendantOf(node.get())) {
-            next = NodeTraversal::next(node.get());
+            next = NodeTraversal::next(*node);
             continue;
         }
         next = NodeTraversal::nextSkippingChildren(node.get());

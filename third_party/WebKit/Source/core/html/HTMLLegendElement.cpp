@@ -58,7 +58,7 @@ HTMLFormControlElement* HTMLLegendElement::associatedControl()
     // Find first form element inside the fieldset that is not a legend element.
     // FIXME: Should we consider tabindex?
     Element* element = fieldset;
-    while ((element = ElementTraversal::next(element, fieldset))) {
+    while ((element = ElementTraversal::next(*element, fieldset))) {
         if (element->isFormControlElement())
             return toHTMLFormControlElement(element);
     }

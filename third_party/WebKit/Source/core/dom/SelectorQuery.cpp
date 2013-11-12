@@ -82,7 +82,7 @@ public:
 private:
     Element* nextInternal(Element* element)
     {
-        for (; element; element = ElementTraversal::next(element, m_rootNode)) {
+        for (; element; element = ElementTraversal::next(*element, m_rootNode)) {
             if (element->hasClass() && element->classNames().contains(m_className))
                 return element;
         }
@@ -107,14 +107,14 @@ public:
     {
         Node* current = m_currentElement;
         ASSERT(current);
-        m_currentElement = nextInternal(ElementTraversal::next(m_currentElement, m_rootNode));
+        m_currentElement = nextInternal(ElementTraversal::next(*m_currentElement, m_rootNode));
         return current;
     }
 
 private:
     Element* nextInternal(Element* element)
     {
-        for (; element; element = ElementTraversal::next(element, m_rootNode)) {
+        for (; element; element = ElementTraversal::next(*element, m_rootNode)) {
             if (element->hasClass() && element->classNames().contains(m_className))
                 return element;
         }
@@ -187,7 +187,7 @@ static inline bool isTreeScopeRoot(Node* node)
 
 void SelectorDataList::collectElementsByClassName(Node& rootNode, const AtomicString& className, Vector<RefPtr<Node> >& traversalRoots) const
 {
-    for (Element* element = ElementTraversal::firstWithin(&rootNode); element; element = ElementTraversal::next(element, &rootNode)) {
+    for (Element* element = ElementTraversal::firstWithin(&rootNode); element; element = ElementTraversal::next(*element, &rootNode)) {
         if (element->hasClass() && element->classNames().contains(className))
             traversalRoots.append(element);
     }
@@ -195,7 +195,7 @@ void SelectorDataList::collectElementsByClassName(Node& rootNode, const AtomicSt
 
 void SelectorDataList::collectElementsByTagName(Node& rootNode, const QualifiedName& tagName, Vector<RefPtr<Node> >& traversalRoots) const
 {
-    for (Element* element = ElementTraversal::firstWithin(&rootNode); element; element = ElementTraversal::next(element, &rootNode)) {
+    for (Element* element = ElementTraversal::firstWithin(&rootNode); element; element = ElementTraversal::next(*element, &rootNode)) {
         if (SelectorChecker::tagMatches(*element, tagName))
             traversalRoots.append(element);
     }
@@ -203,7 +203,7 @@ void SelectorDataList::collectElementsByTagName(Node& rootNode, const QualifiedN
 
 Element* SelectorDataList::findElementByClassName(Node& rootNode, const AtomicString& className) const
 {
-    for (Element* element = ElementTraversal::firstWithin(&rootNode); element; element = ElementTraversal::next(element, &rootNode)) {
+    for (Element* element = ElementTraversal::firstWithin(&rootNode); element; element = ElementTraversal::next(*element, &rootNode)) {
         if (element->hasClass() && element->classNames().contains(className))
             return element;
     }
@@ -212,7 +212,7 @@ Element* SelectorDataList::findElementByClassName(Node& rootNode, const AtomicSt
 
 Element* SelectorDataList::findElementByTagName(Node& rootNode, const QualifiedName& tagName) const
 {
-    for (Element* element = ElementTraversal::firstWithin(&rootNode); element; element = ElementTraversal::next(element, &rootNode)) {
+    for (Element* element = ElementTraversal::firstWithin(&rootNode); element; element = ElementTraversal::next(*element, &rootNode)) {
         if (SelectorChecker::tagMatches(*element, tagName))
             return element;
     }
@@ -303,7 +303,7 @@ PassOwnPtr<SimpleNodeList> SelectorDataList::findTraverseRoots(Node* rootNode, b
 
 void SelectorDataList::executeSlowQueryAll(Node& rootNode, Vector<RefPtr<Node> >& matchedElements) const
 {
-    for (Element* element = ElementTraversal::firstWithin(&rootNode); element; element = ElementTraversal::next(element, &rootNode)) {
+    for (Element* element = ElementTraversal::firstWithin(&rootNode); element; element = ElementTraversal::next(*element, &rootNode)) {
         for (unsigned i = 0; i < m_selectors.size(); ++i) {
             if (selectorMatches(m_selectors[i], *element, rootNode)) {
                 matchedElements.append(element);
@@ -364,7 +364,7 @@ void SelectorDataList::executeQueryAll(Node& rootNode, Vector<RefPtr<Node> >& ma
 
     while (!traverseRoots->isEmpty()) {
         Node* traverseRoot = traverseRoots->next();
-        for (Element* element = ElementTraversal::firstWithin(traverseRoot); element; element = ElementTraversal::next(element, traverseRoot)) {
+        for (Element* element = ElementTraversal::firstWithin(traverseRoot); element; element = ElementTraversal::next(*element, traverseRoot)) {
             if (selectorMatches(selector, *element, rootNode))
                 matchedElements.append(element);
         }
@@ -418,7 +418,7 @@ Node* SelectorDataList::findTraverseRoot(Node& rootNode, bool& matchTraverseRoot
 
 Element* SelectorDataList::executeSlowQueryFirst(Node& rootNode) const
 {
-    for (Element* element = ElementTraversal::firstWithin(&rootNode); element; element = ElementTraversal::next(element, &rootNode)) {
+    for (Element* element = ElementTraversal::firstWithin(&rootNode); element; element = ElementTraversal::next(*element, &rootNode)) {
         for (unsigned i = 0; i < m_selectors.size(); ++i) {
             if (selectorMatches(m_selectors[i], *element, rootNode))
                 return element;
@@ -467,7 +467,7 @@ Element* SelectorDataList::executeQueryFirst(Node& rootNode) const
         return selectorMatches(m_selectors[0], element, rootNode) ? &element : 0;
     }
 
-    for (Element* element = ElementTraversal::firstWithin(traverseRootNode); element; element = ElementTraversal::next(element, traverseRootNode)) {
+    for (Element* element = ElementTraversal::firstWithin(traverseRootNode); element; element = ElementTraversal::next(*element, traverseRootNode)) {
         if (selectorMatches(m_selectors[0], *element, rootNode))
             return element;
     }

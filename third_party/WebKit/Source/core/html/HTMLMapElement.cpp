@@ -55,7 +55,7 @@ bool HTMLMapElement::mapMouseEvent(LayoutPoint location, const LayoutSize& size,
 {
     HTMLAreaElement* defaultArea = 0;
     Element* element = this;
-    while ((element = ElementTraversal::next(element, this))) {
+    while ((element = ElementTraversal::next(*element, this))) {
         if (isHTMLAreaElement(element)) {
             HTMLAreaElement* areaElt = toHTMLAreaElement(element);
             if (areaElt->isDefault()) {

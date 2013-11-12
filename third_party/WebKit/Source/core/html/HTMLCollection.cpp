@@ -306,26 +306,28 @@ inline Element* firstMatchingElement(const NodeListType* nodeList, ContainerNode
 {
     Element* element = ElementTraversal::firstWithin(root);
     while (element && !isMatchingElement(nodeList, element))
-        element = ElementTraversal::next(element, root);
+        element = ElementTraversal::next(*element, root);
     return element;
 }
 
 template <class NodeListType>
-inline Element* nextMatchingElement(const NodeListType* nodeList, Element* current, ContainerNode* root)
+inline Element* nextMatchingElement(const NodeListType* nodeList, Element& current, ContainerNode* root)
 {
+    Element* next = &current;
     do {
-        current = ElementTraversal::next(current, root);
-    } while (current && !isMatchingElement(nodeList, current));
-    return current;
+        next = ElementTraversal::next(*next, root);
+    } while (next && !isMatchingElement(nodeList, next));
+    return next;
 }
 
 template <class NodeListType>
-inline Element* traverseMatchingElementsForwardToOffset(const NodeListType* nodeList, unsigned offset, Element* currentElement, unsigned& currentOffset, ContainerNode* root)
+inline Element* traverseMatchingElementsForwardToOffset(const NodeListType* nodeList, unsigned offset, Element& currentElement, unsigned& currentOffset, ContainerNode* root)
 {
     ASSERT(currentOffset < offset);
-    while ((currentElement = nextMatchingElement(nodeList, currentElement, root))) {
+    Element* next = &currentElement;
+    while ((next = nextMatchingElement(nodeList, *next, root))) {
         if (++currentOffset == offset)
-            return currentElement;
+            return next;
     }
     return 0;
 }
@@ -355,7 +357,7 @@ inline Element* LiveNodeListBase::traverseLiveNodeListFirstElement(ContainerNode
 }
 
 // FIXME: This should be in LiveNodeList
-inline Element* LiveNodeListBase::traverseLiveNodeListForwardToOffset(unsigned offset, Element* currentElement, unsigned& currentOffset, ContainerNode* root) const
+inline Element* LiveNodeListBase::traverseLiveNodeListForwardToOffset(unsigned offset, Element& currentElement, unsigned& currentOffset, ContainerNode* root) const
 {
     ASSERT(isNodeList(type()));
     ASSERT(type() != ChildNodeListType);
@@ -476,9 +478,9 @@ inline Node* LiveNodeListBase::itemBeforeOrAfterCachedItem(unsigned offset, Cont
     if (type() == ChildNodeListType)
         currentItem = traverseChildNodeListForwardToOffset(offset, currentItem, currentOffset);
     else if (isNodeList(type()))
-        currentItem = traverseLiveNodeListForwardToOffset(offset, toElement(currentItem), currentOffset, root);
+        currentItem = traverseLiveNodeListForwardToOffset(offset, toElement(*currentItem), currentOffset, root);
     else
-        currentItem = static_cast<const HTMLCollection*>(this)->traverseForwardToOffset(offset, toElement(currentItem), currentOffset, offsetInArray, root);
+        currentItem = static_cast<const HTMLCollection*>(this)->traverseForwardToOffset(offset, toElement(*currentItem), currentOffset, offsetInArray, root);
 
     if (!currentItem) {
         // Did not find the item. On plus side, we now know the length.
@@ -549,31 +551,33 @@ inline Element* HTMLCollection::traverseFirstElement(unsigned& offsetInArray, Co
     return firstMatchingElement(static_cast<const HTMLCollection*>(this), root);
 }
 
-inline Element* HTMLCollection::traverseNextElement(unsigned& offsetInArray, Element* previous, ContainerNode* root) const
+inline Element* HTMLCollection::traverseNextElement(unsigned& offsetInArray, Element& previous, ContainerNode* root) const
 {
     if (overridesItemAfter())
-        return virtualItemAfter(offsetInArray, previous);
+        return virtualItemAfter(offsetInArray, &previous);
     ASSERT(!offsetInArray);
     if (shouldOnlyIncludeDirectChildren())
-        return nextMatchingChildElement(this, previous, root);
+        return nextMatchingChildElement(this, &previous, root);
     return nextMatchingElement(this, previous, root);
 }
 
-inline Element* HTMLCollection::traverseForwardToOffset(unsigned offset, Element* currentElement, unsigned& currentOffset, unsigned& offsetInArray, ContainerNode* root) const
+inline Element* HTMLCollection::traverseForwardToOffset(unsigned offset, Element& currentElement, unsigned& currentOffset, unsigned& offsetInArray, ContainerNode* root) const
 {
     ASSERT(currentOffset < offset);
     if (overridesItemAfter()) {
         offsetInArray = m_cachedElementsArrayOffset;
-        while ((currentElement = virtualItemAfter(offsetInArray, currentElement))) {
+        Element* next = &currentElement;
+        while ((next = virtualItemAfter(offsetInArray, next))) {
             if (++currentOffset == offset)
-                return currentElement;
+                return next;
         }
         return 0;
     }
     if (shouldOnlyIncludeDirectChildren()) {
-        while ((currentElement = nextMatchingChildElement(this, currentElement, root))) {
+        Element* next = &currentElement;
+        while ((next = nextMatchingChildElement(this, next, root))) {
             if (++currentOffset == offset)
-                return currentElement;
+                return next;
         }
         return 0;
     }
@@ -594,7 +598,7 @@ Node* HTMLCollection::namedItem(const AtomicString& name) const
 
     unsigned arrayOffset = 0;
     unsigned i = 0;
-    for (Element* element = traverseFirstElement(arrayOffset, root); element; element = traverseNextElement(arrayOffset, element, root)) {
+    for (Element* element = traverseFirstElement(arrayOffset, root); element; element = traverseNextElement(arrayOffset, *element, root)) {
         if (checkForNameMatch(element, /* checkName */ false, name)) {
             setItemCache(element, i, arrayOffset);
             return element;
@@ -603,7 +607,7 @@ Node* HTMLCollection::namedItem(const AtomicString& name) const
     }
 
     i = 0;
-    for (Element* element = traverseFirstElement(arrayOffset, root); element; element = traverseNextElement(arrayOffset, element, root)) {
+    for (Element* element = traverseFirstElement(arrayOffset, root); element; element = traverseNextElement(arrayOffset, *element, root)) {
         if (checkForNameMatch(element, /* checkName */ true, name)) {
             setItemCache(element, i, arrayOffset);
             return element;
@@ -624,7 +628,7 @@ void HTMLCollection::updateNameCache() const
         return;
 
     unsigned arrayOffset = 0;
-    for (Element* element = traverseFirstElement(arrayOffset, root); element; element = traverseNextElement(arrayOffset, element, root)) {
+    for (Element* element = traverseFirstElement(arrayOffset, root); element; element = traverseNextElement(arrayOffset, *element, root)) {
         const AtomicString& idAttrVal = element->getIdAttribute();
         if (!idAttrVal.isEmpty())
             appendIdCache(idAttrVal, element);

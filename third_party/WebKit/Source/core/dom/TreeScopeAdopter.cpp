@@ -51,7 +51,7 @@ void TreeScopeAdopter::moveTreeToNewScope(Node& root) const
     if (willMoveToNewDocument)
         oldDocument->incDOMTreeVersion();
 
-    for (Node* node = &root; node; node = NodeTraversal::next(node, &root)) {
+    for (Node* node = &root; node; node = NodeTraversal::next(*node, &root)) {
         updateTreeScope(*node);
 
         if (willMoveToNewDocument)
@@ -83,7 +83,7 @@ void TreeScopeAdopter::moveTreeToNewScope(Node& root) const
 
 void TreeScopeAdopter::moveTreeToNewDocument(Node& root, Document& oldDocument, Document* newDocument) const
 {
-    for (Node* node = &root; node; node = NodeTraversal::next(node, &root)) {
+    for (Node* node = &root; node; node = NodeTraversal::next(*node, &root)) {
         moveNodeToNewDocument(*node, oldDocument, newDocument);
         for (ShadowRoot* shadow = node->youngestShadowRoot(); shadow; shadow = shadow->olderShadowRoot())
             moveTreeToNewDocument(*shadow, oldDocument, newDocument);

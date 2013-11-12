@@ -56,9 +56,9 @@ Element* HTMLNameCollection::virtualItemAfter(unsigned& offsetInArray, Element* 
     if (!previous)
         current = ElementTraversal::firstWithin(ownerNode());
     else
-        current = ElementTraversal::next(previous, ownerNode());
+        current = ElementTraversal::next(*previous, ownerNode());
 
-    for (; current; current = ElementTraversal::next(current, ownerNode())) {
+    for (; current; current = ElementTraversal::next(*current, ownerNode())) {
         switch (type()) {
         case WindowNamedItems:
             // find only images, forms, applets, embeds and objects by name,

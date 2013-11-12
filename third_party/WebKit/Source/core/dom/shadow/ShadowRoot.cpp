@@ -397,7 +397,7 @@ const Vector<RefPtr<InsertionPoint> >& ShadowRoot::descendantInsertionPoints()
         return emptyList;
 
     Vector<RefPtr<InsertionPoint> > insertionPoints;
-    for (Element* element = ElementTraversal::firstWithin(this); element; element = ElementTraversal::next(element, this)) {
+    for (Element* element = ElementTraversal::firstWithin(this); element; element = ElementTraversal::next(*element, this)) {
         if (element->isInsertionPoint())
             insertionPoints.append(toInsertionPoint(element));
     }

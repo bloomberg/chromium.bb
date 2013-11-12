@@ -223,7 +223,7 @@ void StyleInvalidationAnalysis::invalidateStyle(Document* document)
             element = ElementTraversal::nextSkippingChildren(element);
             continue;
         }
-        element = ElementTraversal::next(element);
+        element = ElementTraversal::next(*element);
     }
 }
 

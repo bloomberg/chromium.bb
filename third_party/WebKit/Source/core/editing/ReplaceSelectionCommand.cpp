@@ -272,7 +272,7 @@ void ReplacementFragment::removeUnrenderedNodes(Node* holder)
 {
     Vector<RefPtr<Node> > unrendered;
 
-    for (Node* node = holder->firstChild(); node; node = NodeTraversal::next(node, holder))
+    for (Node* node = holder->firstChild(); node; node = NodeTraversal::next(*node, holder))
         if (!isNodeRendered(node) && !isTableStructureNode(node))
             unrendered.append(node);
 
@@ -313,7 +313,7 @@ void ReplacementFragment::removeInterchangeNodes(Node* container)
 
     node = container->firstChild();
     while (node) {
-        RefPtr<Node> next = NodeTraversal::next(node);
+        RefPtr<Node> next = NodeTraversal::next(*node);
         if (isInterchangeConvertedSpaceSpan(node)) {
             next = NodeTraversal::nextSkippingChildren(node);
             removeNodePreservingChildren(node);
@@ -333,7 +333,7 @@ inline void ReplaceSelectionCommand::InsertedNodes::respondToNodeInsertion(Node&
 inline void ReplaceSelectionCommand::InsertedNodes::willRemoveNodePreservingChildren(Node& node)
 {
     if (m_firstNodeInserted == node)
-        m_firstNodeInserted = NodeTraversal::next(&node);
+        m_firstNodeInserted = NodeTraversal::next(node);
     if (m_lastNodeInserted == node)
         m_lastNodeInserted = node.lastChild() ? node.lastChild() : NodeTraversal::nextSkippingChildren(&node);
 }
@@ -468,7 +468,7 @@ void ReplaceSelectionCommand::removeRedundantStylesAndKeepStyleSpanInline(Insert
     for (RefPtr<Node> node = insertedNodes.firstNodeInserted(); node && node != pastEndNode; node = next) {
         // FIXME: <rdar://problem/5371536> Style rules that match pasted content can change it's appearance
 
-        next = NodeTraversal::next(node.get());
+        next = NodeTraversal::next(*node);
         if (!node->isStyledElement())
             continue;
 
@@ -614,7 +614,7 @@ void ReplaceSelectionCommand::makeInsertedContentRoundTrippableWithHTMLTreeBuild
     RefPtr<Node> pastEndNode = insertedNodes.pastLastLeaf();
     RefPtr<Node> next;
     for (RefPtr<Node> node = insertedNodes.firstNodeInserted(); node && node != pastEndNode; node = next) {
-        next = NodeTraversal::next(node.get());
+        next = NodeTraversal::next(*node);
 
         if (!node->isHTMLElement())
             continue;
@@ -705,8 +705,9 @@ static void removeHeadContents(ReplacementFragment& fragment)
             || isHTMLTitleElement(node)) {
             next = NodeTraversal::nextSkippingChildren(node);
             fragment.removeNode(node);
-        } else
-            next = NodeTraversal::next(node);
+        } else {
+            next = NodeTraversal::next(*node);
+        }
     }
 }
 
@@ -753,7 +754,7 @@ void ReplaceSelectionCommand::handleStyleSpans(InsertedNodes& insertedNodes)
     // The style span that contains the source document's default style should be at
     // the top of the fragment, but Mail sometimes adds a wrapper (for Paste As Quotation),
     // so search for the top level style span instead of assuming it's at the top.
-    for (Node* node = insertedNodes.firstNodeInserted(); node; node = NodeTraversal::next(node)) {
+    for (Node* node = insertedNodes.firstNodeInserted(); node; node = NodeTraversal::next(*node)) {
         if (isLegacyAppleStyleSpan(node)) {
             wrappingStyleSpan = toHTMLElement(node);
             break;

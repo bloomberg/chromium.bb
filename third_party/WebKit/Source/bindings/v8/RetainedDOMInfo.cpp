@@ -81,7 +81,7 @@ intptr_t RetainedDOMInfo::GetElementCount()
     intptr_t count = 1;
     Node* current = m_root;
     while (current) {
-        current = NodeTraversal::next(current, m_root);
+        current = NodeTraversal::next(*current, m_root);
         ++count;
     }
     return count;

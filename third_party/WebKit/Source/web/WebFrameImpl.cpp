@@ -2319,7 +2319,7 @@ void WebFrameImpl::setFindEndstateFocusAndSelection()
         // This, for example, sets focus to the first link if you search for
         // text and text that is within one or more links.
         node = m_activeMatch->firstNode();
-        for (; node && node != m_activeMatch->pastLastNode(); node = NodeTraversal::next(node)) {
+        for (; node && node != m_activeMatch->pastLastNode(); node = NodeTraversal::next(*node)) {
             if (!node->isElementNode())
                 continue;
             Element* element = toElement(node);

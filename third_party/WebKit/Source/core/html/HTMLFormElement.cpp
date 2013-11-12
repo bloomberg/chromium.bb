@@ -541,20 +541,20 @@ unsigned HTMLFormElement::formElementIndexWithFormAttribute(Element* element, un
     return left + 1;
 }
 
-unsigned HTMLFormElement::formElementIndex(FormAssociatedElement* associatedElement)
+unsigned HTMLFormElement::formElementIndex(FormAssociatedElement& associatedElement)
 {
-    HTMLElement* associatedHTMLElement = toHTMLElement(associatedElement);
+    HTMLElement& associatedHTMLElement = toHTMLElement(associatedElement);
     // Treats separately the case where this element has the form attribute
     // for performance consideration.
-    if (associatedHTMLElement->fastHasAttribute(formAttr)) {
-        unsigned short position = compareDocumentPosition(associatedHTMLElement);
+    if (associatedHTMLElement.fastHasAttribute(formAttr)) {
+        unsigned short position = compareDocumentPosition(&associatedHTMLElement);
         if (position & DOCUMENT_POSITION_PRECEDING) {
             ++m_associatedElementsBeforeIndex;
             ++m_associatedElementsAfterIndex;
-            return HTMLFormElement::formElementIndexWithFormAttribute(associatedHTMLElement, 0, m_associatedElementsBeforeIndex - 1);
+            return HTMLFormElement::formElementIndexWithFormAttribute(&associatedHTMLElement, 0, m_associatedElementsBeforeIndex - 1);
         }
         if (position & DOCUMENT_POSITION_FOLLOWING && !(position & DOCUMENT_POSITION_CONTAINED_BY))
-            return HTMLFormElement::formElementIndexWithFormAttribute(associatedHTMLElement, m_associatedElementsAfterIndex, m_associatedElements.size());
+            return HTMLFormElement::formElementIndexWithFormAttribute(&associatedHTMLElement, m_associatedElementsAfterIndex, m_associatedElements.size());
     }
 
     // Check for the special case where this element is the very last thing in
@@ -563,7 +563,7 @@ unsigned HTMLFormElement::formElementIndex(FormAssociatedElement* associatedElem
     // that says "add this form element to the end of the array".
     if (ElementTraversal::next(associatedHTMLElement, this)) {
         unsigned i = m_associatedElementsBeforeIndex;
-        for (Element* element = this; element; element = ElementTraversal::next(element, this)) {
+        for (Element* element = this; element; element = ElementTraversal::next(*element, this)) {
             if (element == associatedHTMLElement) {
                 ++m_associatedElementsAfterIndex;
                 return i;
@@ -578,9 +578,9 @@ unsigned HTMLFormElement::formElementIndex(FormAssociatedElement* associatedElem
     return m_associatedElementsAfterIndex++;
 }
 
-void HTMLFormElement::registerFormElement(FormAssociatedElement* e)
+void HTMLFormElement::registerFormElement(FormAssociatedElement& e)
 {
-    m_associatedElements.insert(formElementIndex(e), e);
+    m_associatedElements.insert(formElementIndex(e), &e);
 }
 
 void HTMLFormElement::removeFormElement(FormAssociatedElement* e)

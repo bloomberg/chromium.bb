@@ -526,7 +526,7 @@ AXObject* AXObject::firstAccessibleObjectFromNode(const Node* node)
     AXObjectCache* cache = node->document().axObjectCache();
     AXObject* accessibleObject = cache->getOrCreate(node->renderer());
     while (accessibleObject && accessibleObject->accessibilityIsIgnored()) {
-        node = NodeTraversal::next(node);
+        node = NodeTraversal::next(*node);
 
         while (node && !node->renderer())
             node = NodeTraversal::nextSkippingChildren(node);

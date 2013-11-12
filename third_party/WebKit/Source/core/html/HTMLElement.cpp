@@ -777,7 +777,7 @@ static void setHasDirAutoFlagRecursively(Node* firstNode, bool flag, Node* lastN
         node->setSelfOrAncestorHasDirAutoAttribute(flag);
         if (node == lastNode)
             return;
-        node = NodeTraversal::next(node, firstNode);
+        node = NodeTraversal::next(*node, firstNode);
     }
 }
 
@@ -851,7 +851,7 @@ TextDirection HTMLElement::directionality(Node** strongDirectionalityTextNode) c
                 return textDirection;
             }
         }
-        node = NodeTraversal::next(node, this);
+        node = NodeTraversal::next(*node, this);
     }
     if (strongDirectionalityTextNode)
         *strongDirectionalityTextNode = 0;

@@ -737,7 +737,7 @@ bool Node::inActiveDocument() const
 void Node::lazyAttach()
 {
     markAncestorsWithChildNeedsStyleRecalc();
-    for (Node* node = this; node; node = NodeTraversal::next(node, this)) {
+    for (Node* node = this; node; node = NodeTraversal::next(*node, this)) {
         node->setAttached();
         node->setStyleChange(NeedsReattachStyleChange);
         if (node->isContainerNode())
@@ -1880,7 +1880,7 @@ void Node::showNodePathForThis() const
 
 static void traverseTreeAndMark(const String& baseIndent, const Node* rootNode, const Node* markedNode1, const char* markedLabel1, const Node* markedNode2, const char* markedLabel2)
 {
-    for (const Node* node = rootNode; node; node = NodeTraversal::next(node)) {
+    for (const Node* node = rootNode; node; node = NodeTraversal::next(*node)) {
         if (node == markedNode1)
             fprintf(stderr, "%s", markedLabel1);
         if (node == markedNode2)

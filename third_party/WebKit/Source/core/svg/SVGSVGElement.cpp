@@ -336,7 +336,7 @@ void SVGSVGElement::forceRedraw()
 PassRefPtr<NodeList> SVGSVGElement::collectIntersectionOrEnclosureList(const SVGRect& rect, SVGElement* referenceElement, CollectIntersectionOrEnclosure collect) const
 {
     Vector<RefPtr<Node> > nodes;
-    Element* element = ElementTraversal::next(referenceElement ? referenceElement : this);
+    Element* element = ElementTraversal::next(*(referenceElement ? referenceElement : this));
     while (element) {
         if (element->isSVGElement()) {
             SVGElement* svgElement = toSVGElement(element);
@@ -349,7 +349,7 @@ PassRefPtr<NodeList> SVGSVGElement::collectIntersectionOrEnclosureList(const SVG
             }
         }
 
-        element = ElementTraversal::next(element, referenceElement ? referenceElement : this);
+        element = ElementTraversal::next(*element, referenceElement ? referenceElement : this);
     }
     return StaticNodeList::adopt(nodes);
 }
@@ -772,7 +772,7 @@ Element* SVGSVGElement::getElementById(const AtomicString& id) const
 
     // Fall back to traversing our subtree. Duplicate ids are allowed, the first found will
     // be returned.
-    for (Node* node = firstChild(); node; node = NodeTraversal::next(node, this)) {
+    for (Node* node = firstChild(); node; node = NodeTraversal::next(*node, this)) {
         if (!node->isElementNode())
             continue;
 

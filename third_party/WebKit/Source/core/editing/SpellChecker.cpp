@@ -96,7 +96,7 @@ void SpellChecker::toggleContinuousSpellChecking()
     if (isContinuousSpellCheckingEnabled())
         return;
     for (Frame* frame = m_frame.page()->mainFrame(); frame && frame->document(); frame = frame->tree().traverseNext()) {
-        for (Node* node = frame->document()->rootNode(); node; node = NodeTraversal::next(node)) {
+        for (Node* node = frame->document()->rootNode(); node; node = NodeTraversal::next(*node)) {
             node->setAlreadySpellChecked(false);
         }
     }
@@ -726,7 +726,7 @@ void SpellChecker::didEndEditingOnTextField(Element* e)
     DocumentMarker::MarkerTypes markerTypes(DocumentMarker::Spelling);
     if (isGrammarCheckingEnabled() || unifiedTextCheckerEnabled())
         markerTypes.add(DocumentMarker::Grammar);
-    for (Node* node = innerText; node; node = NodeTraversal::next(node, innerText)) {
+    for (Node* node = innerText; node; node = NodeTraversal::next(*node, innerText)) {
         m_frame.document()->markers()->removeMarkers(node, markerTypes);
     }
 }

@@ -138,7 +138,7 @@ private:
     Node* itemBeforeOrAfterCachedItem(unsigned offset, ContainerNode* root) const;
     Node* traverseChildNodeListForwardToOffset(unsigned offset, Node* currentNode, unsigned& currentOffset) const;
     Element* traverseLiveNodeListFirstElement(ContainerNode* root) const;
-    Element* traverseLiveNodeListForwardToOffset(unsigned offset, Element* currentElement, unsigned& currentOffset, ContainerNode* root) const;
+    Element* traverseLiveNodeListForwardToOffset(unsigned offset, Element& currentElement, unsigned& currentOffset, ContainerNode* root) const;
     bool isLastItemCloserThanLastOrCachedItem(unsigned offset) const;
     bool isFirstItemCloserThanCachedItem(unsigned offset) const;
     Node* iterateForPreviousNode(Node* current) const;

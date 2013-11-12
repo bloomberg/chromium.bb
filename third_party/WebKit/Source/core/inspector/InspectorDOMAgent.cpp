@@ -954,7 +954,7 @@ void InspectorDOMAgent::performSearch(ErrorString*, const String& whitespaceTrim
             continue;
 
         // Manual plain text search.
-        while ((node = NodeTraversal::next(node, document->documentElement()))) {
+        while ((node = NodeTraversal::next(*node, document->documentElement()))) {
             switch (node->nodeType()) {
             case Node::TEXT_NODE:
             case Node::COMMENT_NODE:

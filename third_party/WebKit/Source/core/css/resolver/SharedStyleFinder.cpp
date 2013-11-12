@@ -239,7 +239,7 @@ bool SharedStyleFinder::canShareStyleWithElement(Element& candidate) const
 
 bool SharedStyleFinder::documentContainsValidCandidate() const
 {
-    for (Element* element = document().documentElement(); element; element = ElementTraversal::next(element)) {
+    for (Element* element = document().documentElement(); element; element = ElementTraversal::next(*element)) {
         if (canShareStyleWithElement(*element))
             return true;
     }

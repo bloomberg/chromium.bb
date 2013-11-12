@@ -1069,7 +1069,7 @@ String Range::toString(ExceptionState& es) const
     StringBuilder builder;
 
     Node* pastLast = pastLastNode();
-    for (Node* n = firstNode(); n != pastLast; n = NodeTraversal::next(n)) {
+    for (Node* n = firstNode(); n != pastLast; n = NodeTraversal::next(*n)) {
         if (n->nodeType() == Node::TEXT_NODE || n->nodeType() == Node::CDATA_SECTION_NODE) {
             String data = toCharacterData(n)->data();
             int length = data.length();
@@ -1478,7 +1478,7 @@ void Range::checkDeleteExtract(const String& methodName, ExceptionState& es)
         return;
 
     Node* pastLast = pastLastNode();
-    for (Node* n = firstNode(); n != pastLast; n = NodeTraversal::next(n)) {
+    for (Node* n = firstNode(); n != pastLast; n = NodeTraversal::next(*n)) {
         if (n->nodeType() == Node::DOCUMENT_TYPE_NODE) {
             es.throwUninformativeAndGenericDOMException(HierarchyRequestError);
             return;
@@ -1541,7 +1541,7 @@ void Range::textRects(Vector<IntRect>& rects, bool useSelectionHeight, RangeInFi
     bool someFixed = false;
 
     Node* stopNode = pastLastNode();
-    for (Node* node = firstNode(); node != stopNode; node = NodeTraversal::next(node)) {
+    for (Node* node = firstNode(); node != stopNode; node = NodeTraversal::next(*node)) {
         RenderObject* r = node->renderer();
         if (!r || !r->isText())
             continue;
@@ -1573,7 +1573,7 @@ void Range::textQuads(Vector<FloatQuad>& quads, bool useSelectionHeight, RangeIn
     bool someFixed = false;
 
     Node* stopNode = pastLastNode();
-    for (Node* node = firstNode(); node != stopNode; node = NodeTraversal::next(node)) {
+    for (Node* node = firstNode(); node != stopNode; node = NodeTraversal::next(*node)) {
         RenderObject* r = node->renderer();
         if (!r || !r->isText())
             continue;
@@ -1850,12 +1850,12 @@ void Range::getBorderAndTextQuads(Vector<FloatQuad>& quads) const
     Node* stopNode = pastLastNode();
 
     HashSet<Node*> nodeSet;
-    for (Node* node = firstNode(); node != stopNode; node = NodeTraversal::next(node)) {
+    for (Node* node = firstNode(); node != stopNode; node = NodeTraversal::next(*node)) {
         if (node->isElementNode())
             nodeSet.add(node);
     }
 
-    for (Node* node = firstNode(); node != stopNode; node = NodeTraversal::next(node)) {
+    for (Node* node = firstNode(); node != stopNode; node = NodeTraversal::next(*node)) {
         if (node->isElementNode()) {
             if (!nodeSet.contains(node->parentNode())) {
                 if (RenderBoxModelObject* renderBoxModelObject = toElement(node)->renderBoxModelObject()) {

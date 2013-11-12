@@ -1736,8 +1736,8 @@ static HTMLFormElement* scanForForm(Node* start)
 {
     if (!start)
         return 0;
-    Element* element = start->isElementNode() ? toElement(start) : ElementTraversal::next(start);
-    for (; element; element = ElementTraversal::next(element)) {
+    Element* element = start->isElementNode() ? toElement(start) : ElementTraversal::next(*start);
+    for (; element; element = ElementTraversal::next(*element)) {
         if (element->hasTagName(formTag))
             return toHTMLFormElement(element);
         if (element->isHTMLElement() && toHTMLElement(element)->isFormControlElement())
@@ -1810,7 +1810,7 @@ void FrameSelection::setSelectionFromNone()
 
     Node* node = document->documentElement();
     while (node && !node->hasTagName(bodyTag))
-        node = NodeTraversal::next(node);
+        node = NodeTraversal::next(*node);
     if (node)
         setSelection(VisibleSelection(firstPositionInOrBeforeNode(node), DOWNSTREAM));
 }

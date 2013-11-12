@@ -203,7 +203,7 @@ void ElementShadow::detach(const Node::AttachContext& context)
 void ElementShadow::removeAllEventListeners()
 {
     for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot()) {
-        for (Node* node = root; node; node = NodeTraversal::next(node))
+        for (Node* node = root; node; node = NodeTraversal::next(*node))
             node->removeAllEventListeners();
     }
 }
@@ -341,7 +341,7 @@ void ElementShadow::collectSelectFeatureSetFrom(ShadowRoot* root)
     if (!root->containsShadowRoots() && !root->containsContentElements())
         return;
 
-    for (Element* element = ElementTraversal::firstWithin(root); element; element = ElementTraversal::next(element, root)) {
+    for (Element* element = ElementTraversal::firstWithin(root); element; element = ElementTraversal::next(*element, root)) {
         if (ElementShadow* shadow = element->shadow())
             m_selectFeatures.add(shadow->ensureSelectFeatureSet());
         if (!isHTMLContentElement(element))
