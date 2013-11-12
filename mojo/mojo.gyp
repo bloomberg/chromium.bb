@@ -390,7 +390,7 @@
         'mojo_js_bindings',
       ],
       'sources': [
-        '../gin/test/run_all_unittests.cc',
+        'public/bindings/js/test/run_all_unittests.cc',
         'public/bindings/js/test/harness.cc',
       ],
     },

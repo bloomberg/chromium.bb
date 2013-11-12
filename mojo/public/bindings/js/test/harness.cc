@@ -32,6 +32,12 @@ class TestRunnerDelegate : public RunnerDelegate {
   }
 };
 
+std::string GetExceptionInfo(const v8::TryCatch& try_catch) {
+  std::string info;
+  gin::ConvertFromV8(try_catch.Message()->Get(), &info);
+  return info;
+}
+
 void RunTestFromFile(const base::FilePath& path) {
   EXPECT_TRUE(base::PathExists(path)) << path.LossyDisplayName();
   std::string source;
@@ -45,7 +51,7 @@ void RunTestFromFile(const base::FilePath& path) {
   v8::TryCatch try_catch;
   runner.Run(Script::New(gin::StringToV8(isolate, source)));
 
-  EXPECT_FALSE(try_catch.HasCaught());
+  EXPECT_FALSE(try_catch.HasCaught()) << GetExceptionInfo(try_catch);
 }
 
 void RunTest(std::string test) {
@@ -62,6 +68,10 @@ void RunTest(std::string test) {
 // TODO(abarth): Should we autogenerate these stubs from GYP?
 TEST(Harness, mojo_unittests_js) {
   RunTest("mojo_unittests.js");
+}
+
+TEST(Harness, core_unittests_js) {
+  RunTest("core_unittests.js");
 }
 
 }  // namespace

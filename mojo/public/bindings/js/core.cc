@@ -83,7 +83,7 @@ void WriteMessage(const v8::FunctionCallbackInfo<v8::Value>& info) {
   mojo::Handle handle = mojo::kInvalidHandle;
   gin::ArrayBufferView buffer(args.isolate());
   std::vector<mojo::Handle> handles;
-  MojoWaitFlags flags = MOJO_WAIT_FLAG_NONE;
+  MojoWriteMessageFlags flags = MOJO_WRITE_MESSAGE_FLAG_NONE;
 
   if (!args.GetNext(&handle) ||
       !args.GetNext(&buffer) ||
@@ -102,7 +102,7 @@ void ReadMessage(const v8::FunctionCallbackInfo<v8::Value>& info) {
   mojo::Handle handle = mojo::kInvalidHandle;
   gin::ArrayBufferView buffer(args.isolate());
   uint32_t num_handles = 0;
-  MojoWaitFlags flags = MOJO_WAIT_FLAG_NONE;
+  MojoReadMessageFlags flags = MOJO_READ_MESSAGE_FLAG_NONE;
 
   if (!args.GetNext(&handle) ||
       !args.GetNext(&buffer) ||
@@ -150,6 +150,59 @@ v8::Local<v8::ObjectTemplate> GetCoreTemplate(v8::Isolate* isolate) {
                v8::FunctionTemplate::New(WriteMessage));
     templ->Set(gin::StringToSymbol(isolate, "readMessage"),
                v8::FunctionTemplate::New(ReadMessage));
+
+    templ->Set(gin::StringToSymbol(isolate, "RESULT_OK"),
+               gin::ConvertToV8(isolate, MOJO_RESULT_OK));
+    templ->Set(gin::StringToSymbol(isolate, "RESULT_CANCELLED"),
+               gin::ConvertToV8(isolate, MOJO_RESULT_CANCELLED));
+    templ->Set(gin::StringToSymbol(isolate, "RESULT_UNKNOWN"),
+               gin::ConvertToV8(isolate, MOJO_RESULT_UNKNOWN));
+    templ->Set(gin::StringToSymbol(isolate, "RESULT_INVALID_ARGUMENT"),
+               gin::ConvertToV8(isolate, MOJO_RESULT_INVALID_ARGUMENT));
+    templ->Set(gin::StringToSymbol(isolate, "RESULT_DEADLINE_EXCEEDED"),
+               gin::ConvertToV8(isolate, MOJO_RESULT_DEADLINE_EXCEEDED));
+    templ->Set(gin::StringToSymbol(isolate, "RESULT_NOT_FOUND"),
+               gin::ConvertToV8(isolate, MOJO_RESULT_NOT_FOUND));
+    templ->Set(gin::StringToSymbol(isolate, "RESULT_ALREADY_EXISTS"),
+               gin::ConvertToV8(isolate, MOJO_RESULT_ALREADY_EXISTS));
+    templ->Set(gin::StringToSymbol(isolate, "RESULT_PERMISSION_DENIED"),
+               gin::ConvertToV8(isolate, MOJO_RESULT_PERMISSION_DENIED));
+    templ->Set(gin::StringToSymbol(isolate, "RESULT_RESOURCE_EXHAUSTED"),
+               gin::ConvertToV8(isolate, MOJO_RESULT_RESOURCE_EXHAUSTED));
+    templ->Set(gin::StringToSymbol(isolate, "RESULT_FAILED_PRECONDITION"),
+               gin::ConvertToV8(isolate, MOJO_RESULT_FAILED_PRECONDITION));
+    templ->Set(gin::StringToSymbol(isolate, "RESULT_ABORTED"),
+               gin::ConvertToV8(isolate, MOJO_RESULT_ABORTED));
+    templ->Set(gin::StringToSymbol(isolate, "RESULT_OUT_OF_RANGE"),
+               gin::ConvertToV8(isolate, MOJO_RESULT_OUT_OF_RANGE));
+    templ->Set(gin::StringToSymbol(isolate, "RESULT_UNIMPLEMENTED"),
+               gin::ConvertToV8(isolate, MOJO_RESULT_UNIMPLEMENTED));
+    templ->Set(gin::StringToSymbol(isolate, "RESULT_INTERNAL"),
+               gin::ConvertToV8(isolate, MOJO_RESULT_INTERNAL));
+    templ->Set(gin::StringToSymbol(isolate, "RESULT_UNAVAILABLE"),
+               gin::ConvertToV8(isolate, MOJO_RESULT_UNAVAILABLE));
+    templ->Set(gin::StringToSymbol(isolate, "RESULT_DATA_LOSS"),
+               gin::ConvertToV8(isolate, MOJO_RESULT_DATA_LOSS));
+
+    templ->Set(gin::StringToSymbol(isolate, "DEADLINE_INDEFINITE"),
+               gin::ConvertToV8(isolate, MOJO_DEADLINE_INDEFINITE));
+
+    templ->Set(gin::StringToSymbol(isolate, "WAIT_FLAG_NONE"),
+               gin::ConvertToV8(isolate, MOJO_WAIT_FLAG_NONE));
+    templ->Set(gin::StringToSymbol(isolate, "WAIT_FLAG_READABLE"),
+               gin::ConvertToV8(isolate, MOJO_WAIT_FLAG_READABLE));
+    templ->Set(gin::StringToSymbol(isolate, "WAIT_FLAG_READABLE"),
+               gin::ConvertToV8(isolate, MOJO_WAIT_FLAG_READABLE));
+    templ->Set(gin::StringToSymbol(isolate, "WAIT_FLAG_EVERYTHING"),
+               gin::ConvertToV8(isolate, MOJO_WAIT_FLAG_EVERYTHING));
+
+    templ->Set(gin::StringToSymbol(isolate, "WRITE_MESSAGE_FLAG_NONE"),
+               gin::ConvertToV8(isolate, MOJO_WRITE_MESSAGE_FLAG_NONE));
+
+    templ->Set(gin::StringToSymbol(isolate, "READ_MESSAGE_FLAG_NONE"),
+               gin::ConvertToV8(isolate, MOJO_READ_MESSAGE_FLAG_NONE));
+    templ->Set(gin::StringToSymbol(isolate, "READ_MESSAGE_FLAG_MAY_DISCARD"),
+               gin::ConvertToV8(isolate, MOJO_READ_MESSAGE_FLAG_MAY_DISCARD));
 
     data->SetObjectTemplate(&g_core_wrapper_info, templ);
   }
