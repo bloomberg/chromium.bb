@@ -307,7 +307,7 @@ html[dir='rtl'] #extension-settings .trash {
   opacity: 0;
 }
 
-.extension-list-item-wrapper.may-not-disable .trash {
+.extension-list-item-wrapper.may-not-remove .trash {
   visibility: hidden;
 }
 
@@ -319,7 +319,7 @@ html[dir='rtl'] #extension-settings .trash {
   padding: 5px 0 5px 5px;
 }
 
-.may-not-disable .optional-controls .optional-controls-disableable {
+.may-not-modify .optional-controls .optional-controls-disableable {
   display: none;
 }
 

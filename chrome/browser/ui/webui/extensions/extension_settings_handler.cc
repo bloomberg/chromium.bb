@@ -192,9 +192,19 @@ base::DictionaryValue* ExtensionSettingsHandler::CreateExtensionDetailValue(
   bool enabled = extension_service_->IsExtensionEnabled(extension->id());
   GetExtensionBasicInfo(extension, enabled, extension_data);
 
-  extension_data->SetBoolean(
-      "userModifiable",
-      management_policy_->UserMayModifySettings(extension, NULL));
+  ExtensionPrefs* prefs = extension_service_->extension_prefs();
+  int disable_reasons = prefs->GetDisableReasons(extension->id());
+
+  bool suspicious_install =
+      (disable_reasons & Extension::DISABLE_NOT_VERIFIED) != 0;
+  extension_data->SetBoolean("suspiciousInstall", suspicious_install);
+
+  bool managed_install =
+      !management_policy_->UserMayModifySettings(extension, NULL);
+  extension_data->SetBoolean("managedInstall", managed_install);
+
+  // We should not get into a state where both are true.
+  DCHECK(managed_install == false || suspicious_install == false);
 
   GURL icon =
       ExtensionIconSource::GetIconURL(extension,
@@ -399,13 +409,17 @@ void ExtensionSettingsHandler::GetLocalizedValues(
   source->AddString("extensionSettingsVisitWebStore",
       l10n_util::GetStringUTF16(IDS_EXTENSIONS_VISIT_WEBSTORE));
   source->AddString("extensionSettingsPolicyControlled",
-     l10n_util::GetStringUTF16(IDS_EXTENSIONS_POLICY_CONTROLLED));
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_POLICY_CONTROLLED));
   source->AddString("extensionSettingsManagedMode",
-     l10n_util::GetStringUTF16(IDS_EXTENSIONS_LOCKED_MANAGED_USER));
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_LOCKED_MANAGED_USER));
+  source->AddString("extensionSettingsSuspiciousInstall",
+      l10n_util::GetStringFUTF16(
+          IDS_EXTENSIONS_ADDED_WITHOUT_KNOWLEDGE,
+          l10n_util::GetStringUTF16(IDS_EXTENSION_WEB_STORE_TITLE)));
   source->AddString("extensionSettingsUseAppsDevTools",
-     l10n_util::GetStringUTF16(IDS_EXTENSIONS_USE_APPS_DEV_TOOLS));
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_USE_APPS_DEV_TOOLS));
   source->AddString("extensionSettingsOpenAppsDevTools",
-     l10n_util::GetStringUTF16(IDS_EXTENSIONS_OPEN_APPS_DEV_TOOLS));
+      l10n_util::GetStringUTF16(IDS_EXTENSIONS_OPEN_APPS_DEV_TOOLS));
   source->AddString("sideloadWipeoutUrl",
       chrome::kSideloadWipeoutHelpURL);
   source->AddString("sideloadWipoutLearnMore",

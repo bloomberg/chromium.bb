@@ -89,6 +89,9 @@ class Extension : public base::RefCountedThreadSafe<Extension> {
     DISABLE_UNKNOWN_FROM_SYNC = 1 << 5,
     DISABLE_PERMISSIONS_CONSENT = 1 << 6,  // Unused - abandoned experiment.
     DISABLE_KNOWN_DISABLED = 1 << 7,
+
+    // Disabled because we could not verify the install.
+    DISABLE_NOT_VERIFIED = 1 << 8,
   };
 
   enum InstallType {
