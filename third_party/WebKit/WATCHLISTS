@@ -186,6 +186,11 @@
       'filepath': 'Source/modules/vibration/' \
                   '|LayoutTests/fast/dom/navigator-vibration'
     },
+    'device_orientation': {
+      'filepath': 'Source/modules/device_orientation/' \
+                  '|LayoutTests/fast/dom/DeviceMotion/' \
+                  '|LayoutTests/fast/dom/DeviceOrientation/'
+    },
   },
 
   'WATCHLISTS': {
@@ -266,5 +271,6 @@
     'geolocation': [ 'mvanouwerkerk@chromium.org' ],
     'vibration': [ 'mvanouwerkerk@chromium.org' ],
     'spellcheck' : [ 'groby+blinkspell@chromium.org' ],
+    'device_orientation': [ 'timvolodine@chromium.org', 'mvanouwerkerk@chromium.org' ],
   },
 }
