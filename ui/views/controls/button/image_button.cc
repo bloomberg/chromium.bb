@@ -140,9 +140,17 @@ gfx::Point ImageButton::ComputeImagePaintPosition(const gfx::ImageSkia& image) {
   int x = 0, y = 0;
   gfx::Rect rect = GetContentsBounds();
 
-  if (h_alignment_ == ALIGN_CENTER)
+  HorizontalAlignment h_alignment = h_alignment_;
+  if (draw_image_mirrored_) {
+    if (h_alignment == ALIGN_RIGHT)
+      h_alignment = ALIGN_LEFT;
+    else if (h_alignment == ALIGN_LEFT)
+      h_alignment = ALIGN_RIGHT;
+  }
+
+  if (h_alignment == ALIGN_CENTER)
     x = (rect.width() - image.width()) / 2;
-  else if (h_alignment_ == ALIGN_RIGHT)
+  else if (h_alignment == ALIGN_RIGHT)
     x = rect.width() - image.width();
 
   if (v_alignment_ == ALIGN_MIDDLE)

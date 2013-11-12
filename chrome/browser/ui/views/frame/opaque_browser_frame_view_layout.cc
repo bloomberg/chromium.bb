@@ -510,7 +510,7 @@ void OpaqueBrowserFrameViewLayout::SetBoundsForButton(
          views::NonClientFrameView::kFrameShadowThickness) : 0;
 
       button->SetBounds(
-          leading_button_start_ - extra_width,
+          leading_button_start_,
           caption_y,
           button_size.width() + extra_width,
           button_size.height());

@@ -92,6 +92,8 @@ class VIEWS_EXPORT ImageButton : public CustomButton {
  private:
   FRIEND_TEST_ALL_PREFIXES(ImageButtonTest, Basics);
   FRIEND_TEST_ALL_PREFIXES(ImageButtonTest, ImagePositionWithBorder);
+  FRIEND_TEST_ALL_PREFIXES(ImageButtonTest, LeftAlignedMirrored);
+  FRIEND_TEST_ALL_PREFIXES(ImageButtonTest, RightAlignedMirrored);
 
   // Returns the correct position of the image for painting.
   gfx::Point ComputeImagePaintPosition(const gfx::ImageSkia& image);
