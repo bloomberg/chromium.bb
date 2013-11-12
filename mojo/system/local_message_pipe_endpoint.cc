@@ -51,9 +51,17 @@ bool LocalMessagePipeEndpoint::OnPeerClose() {
   return true;
 }
 
-MojoResult LocalMessagePipeEndpoint::EnqueueMessage(MessageInTransit* message) {
+MojoResult LocalMessagePipeEndpoint::EnqueueMessage(
+    MessageInTransit* message,
+    const std::vector<Dispatcher*>* dispatchers) {
   DCHECK(is_open_);
   DCHECK(is_peer_open_);
+
+  // TODO(vtl)
+  if (dispatchers) {
+    message->Destroy();
+    return MOJO_RESULT_UNIMPLEMENTED;
+  }
 
   bool was_empty = message_queue_.empty();
   message_queue_.push_back(message);
@@ -70,9 +78,11 @@ void LocalMessagePipeEndpoint::CancelAllWaiters() {
   waiter_list_.CancelAllWaiters();
 }
 
+// TODO(vtl): Support receiving handles.
 MojoResult LocalMessagePipeEndpoint::ReadMessage(
     void* bytes, uint32_t* num_bytes,
-    MojoHandle* handles, uint32_t* num_handles,
+    uint32_t max_num_dispatchers,
+    std::vector<scoped_refptr<Dispatcher> >* dispatchers,
     MojoReadMessageFlags flags) {
   DCHECK(is_open_);
 
@@ -95,10 +105,6 @@ MojoResult LocalMessagePipeEndpoint::ReadMessage(
     memcpy(bytes, message->data(), message->data_size());
   else
     not_enough_space = true;
-
-  // TODO(vtl): Support receiving handles.
-  if (num_handles)
-    *num_handles = 0;
 
   if (!not_enough_space || (flags & MOJO_READ_MESSAGE_FLAG_MAY_DISCARD)) {
     message_queue_.pop_front();

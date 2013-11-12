@@ -68,7 +68,9 @@ class MOJO_SYSTEM_EXPORT MessagePipe :
   // messages (typically to a |LocalMessagePipeEndpoint|). Unlike
   // |WriteMessage()|, |port| is the *destination* port. Takes ownership of
   // |message|.
-  MojoResult EnqueueMessage(unsigned port, MessageInTransit* message);
+  MojoResult EnqueueMessage(unsigned port,
+                            MessageInTransit* message,
+                            const std::vector<Dispatcher*>* dispatchers);
 
   // These are used by |Channel|.
   void Attach(unsigned port,

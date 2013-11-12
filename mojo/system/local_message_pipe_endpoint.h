@@ -25,14 +25,18 @@ class MOJO_SYSTEM_EXPORT LocalMessagePipeEndpoint : public MessagePipeEndpoint {
   // |MessagePipeEndpoint| implementation:
   virtual void Close() OVERRIDE;
   virtual bool OnPeerClose() OVERRIDE;
-  virtual MojoResult EnqueueMessage(MessageInTransit* message) OVERRIDE;
+  virtual MojoResult EnqueueMessage(
+      MessageInTransit* message,
+      const std::vector<Dispatcher*>* dispatchers) OVERRIDE;
 
   // There's a dispatcher for |LocalMessagePipeEndpoint|s, so we have to
   // implement/override these:
   virtual void CancelAllWaiters() OVERRIDE;
-  virtual MojoResult ReadMessage(void* bytes, uint32_t* num_bytes,
-                                 MojoHandle* handles, uint32_t* num_handles,
-                                 MojoReadMessageFlags flags) OVERRIDE;
+  virtual MojoResult ReadMessage(
+      void* bytes, uint32_t* num_bytes,
+      uint32_t max_num_dispatchers,
+      std::vector<scoped_refptr<Dispatcher> >* dispatchers,
+      MojoReadMessageFlags flags) OVERRIDE;
   virtual MojoResult AddWaiter(Waiter* waiter,
                                MojoWaitFlags flags,
                                MojoResult wake_result) OVERRIDE;

@@ -5,6 +5,10 @@
 #ifndef MOJO_SYSTEM_MESSAGE_PIPE_ENDPOINT_H_
 #define MOJO_SYSTEM_MESSAGE_PIPE_ENDPOINT_H_
 
+#include <stdint.h>
+
+#include <vector>
+
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "mojo/public/system/core.h"
@@ -15,6 +19,7 @@ namespace mojo {
 namespace system {
 
 class Channel;
+class Dispatcher;
 class Waiter;
 
 // This is an interface to one of the ends of a message pipe, and is used by
@@ -34,7 +39,9 @@ class MOJO_SYSTEM_EXPORT MessagePipeEndpoint {
   // Returns false if the endpoint should be closed and destroyed, else true.
   virtual bool OnPeerClose() = 0;
   // Takes ownership of |message|.
-  virtual MojoResult EnqueueMessage(MessageInTransit* message) = 0;
+  virtual MojoResult EnqueueMessage(
+      MessageInTransit* message,
+      const std::vector<Dispatcher*>* dispatchers) = 0;
 
   // Implementations must override these if they represent a local endpoint,
   // i.e., one for which there's a |MessagePipeDispatcher| (and thus a handle).
@@ -45,9 +52,11 @@ class MOJO_SYSTEM_EXPORT MessagePipeEndpoint {
   // though |MessagePipe|'s implementation may have to do a little more if the
   // operation involves both endpoints.
   virtual void CancelAllWaiters();
-  virtual MojoResult ReadMessage(void* bytes, uint32_t* num_bytes,
-                                 MojoHandle* handles, uint32_t* num_handles,
-                                 MojoReadMessageFlags flags);
+  virtual MojoResult ReadMessage(
+      void* bytes, uint32_t* num_bytes,
+      uint32_t max_num_dispatchers,
+      std::vector<scoped_refptr<Dispatcher> >* dispatchers,
+      MojoReadMessageFlags flags);
   virtual MojoResult AddWaiter(Waiter* waiter,
                                MojoWaitFlags flags,
                                MojoResult wake_result);

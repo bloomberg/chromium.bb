@@ -16,7 +16,8 @@ void MessagePipeEndpoint::CancelAllWaiters() {
 
 MojoResult MessagePipeEndpoint::ReadMessage(
     void* /*bytes*/, uint32_t* /*num_bytes*/,
-    MojoHandle* /*handles*/, uint32_t* /*num_handles*/,
+    uint32_t /*max_num_dispatchers*/,
+    std::vector<scoped_refptr<Dispatcher> >* /*dispatchers*/,
     MojoReadMessageFlags /*flags*/) {
   NOTREACHED();
   return MOJO_RESULT_INTERNAL;

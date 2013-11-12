@@ -54,7 +54,7 @@ bool ProxyMessagePipeEndpoint::OnPeerClose() {
   if (EnqueueMessage(MessageInTransit::Create(
           MessageInTransit::kTypeMessagePipe,
           MessageInTransit::kSubtypeMessagePipePeerClosed,
-          NULL, 0)) != MOJO_RESULT_OK) {
+          NULL, 0), NULL) != MOJO_RESULT_OK) {
     // TODO(vtl): Do something more sensible on error here?
     LOG(WARNING) << "Failed to send peer closed control message";
   }
@@ -65,12 +65,21 @@ bool ProxyMessagePipeEndpoint::OnPeerClose() {
   return !paused_message_queue_.empty();
 }
 
-MojoResult ProxyMessagePipeEndpoint::EnqueueMessage(MessageInTransit* message) {
+MojoResult ProxyMessagePipeEndpoint::EnqueueMessage(
+    MessageInTransit* message,
+    const std::vector<Dispatcher*>* dispatchers) {
   DCHECK(is_open_);
   // If our (local) peer isn't open, we should only be enqueueing our own
   // control messages.
   DCHECK(is_peer_open_ ||
          (message->type() == MessageInTransit::kTypeMessagePipe));
+
+  // TODO(vtl): Support sending handles over OS pipes.
+  if (dispatchers) {
+    message->Destroy();
+    NOTIMPLEMENTED();
+    return MOJO_RESULT_UNIMPLEMENTED;
+  }
 
   MojoResult rv = MOJO_RESULT_OK;
 
@@ -116,7 +125,7 @@ bool ProxyMessagePipeEndpoint::Run(MessageInTransit::EndpointId remote_id) {
            paused_message_queue_.begin();
        it != paused_message_queue_.end();
        ++it) {
-    result = EnqueueMessage(*it);
+    result = EnqueueMessage(*it, NULL);
     if (result != MOJO_RESULT_OK) {
       // TODO(vtl): Do something more sensible on error here?
       LOG(WARNING) << "Failed to send message";

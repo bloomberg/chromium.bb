@@ -38,7 +38,7 @@ MojoResult Dispatcher::ReadMessage(
     uint32_t max_num_dispatchers,
     std::vector<scoped_refptr<Dispatcher> >* dispatchers,
     MojoReadMessageFlags flags) {
-  DCHECK(max_num_dispatchers == 0 || !!dispatchers);
+  DCHECK(max_num_dispatchers == 0 || (dispatchers && dispatchers->empty()));
 
   base::AutoLock locker(lock_);
   if (is_closed_)

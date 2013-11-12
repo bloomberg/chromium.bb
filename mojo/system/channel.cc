@@ -186,8 +186,8 @@ void Channel::OnReadMessageForDownstream(const MessageInTransit& message) {
   MessageInTransit* own_message = MessageInTransit::Create(
       message.type(), message.subtype(), message.data(), message.data_size());
   if (endpoint_info.message_pipe->EnqueueMessage(
-          MessagePipe::GetPeerPort(endpoint_info.port),
-          own_message) != MOJO_RESULT_OK) {
+          MessagePipe::GetPeerPort(endpoint_info.port), own_message, NULL) !=
+              MOJO_RESULT_OK) {
     HandleLocalError(base::StringPrintf(
         "Failed to enqueue message to local destination ID %u",
         static_cast<unsigned>(local_id)));

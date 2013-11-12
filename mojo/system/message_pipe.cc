@@ -64,7 +64,7 @@ void MessagePipe::Close(unsigned port) {
 MojoResult MessagePipe::WriteMessage(
     unsigned port,
     const void* bytes, uint32_t num_bytes,
-    const std::vector<Dispatcher*>* /*dispatchers*/,
+    const std::vector<Dispatcher*>* dispatchers,
     MojoWriteMessageFlags flags) {
   DCHECK(port == 0 || port == 1);
   return EnqueueMessage(
@@ -72,7 +72,8 @@ MojoResult MessagePipe::WriteMessage(
       MessageInTransit::Create(
           MessageInTransit::kTypeMessagePipeEndpoint,
           MessageInTransit::kSubtypeMessagePipeEndpointData,
-          bytes, num_bytes));
+          bytes, num_bytes),
+      dispatchers);
 }
 
 MojoResult MessagePipe::ReadMessage(
@@ -87,7 +88,7 @@ MojoResult MessagePipe::ReadMessage(
   DCHECK(endpoints_[port].get());
 
   return endpoints_[port]->ReadMessage(bytes, num_bytes,
-                                       NULL, NULL,
+                                       max_num_dispatchers, dispatchers,
                                        flags);
 }
 
@@ -112,13 +113,17 @@ void MessagePipe::RemoveWaiter(unsigned port, Waiter* waiter) {
   endpoints_[port]->RemoveWaiter(waiter);
 }
 
-MojoResult MessagePipe::EnqueueMessage(unsigned port,
-                                       MessageInTransit* message) {
+MojoResult MessagePipe::EnqueueMessage(
+    unsigned port,
+    MessageInTransit* message,
+    const std::vector<Dispatcher*>* dispatchers) {
   DCHECK(port == 0 || port == 1);
   DCHECK(message);
 
-  if (message->type() == MessageInTransit::kTypeMessagePipe)
+  if (message->type() == MessageInTransit::kTypeMessagePipe) {
+    DCHECK(!dispatchers);
     return HandleControlMessage(port, message);
+  }
 
   DCHECK_EQ(message->type(), MessageInTransit::kTypeMessagePipeEndpoint);
 
@@ -131,7 +136,7 @@ MojoResult MessagePipe::EnqueueMessage(unsigned port,
     return MOJO_RESULT_FAILED_PRECONDITION;
   }
 
-  return endpoints_[port]->EnqueueMessage(message);
+  return endpoints_[port]->EnqueueMessage(message, dispatchers);
 }
 
 void MessagePipe::Attach(unsigned port,

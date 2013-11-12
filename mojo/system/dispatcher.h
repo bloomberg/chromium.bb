@@ -42,9 +42,9 @@ class MOJO_SYSTEM_EXPORT Dispatcher :
   MojoResult WriteMessage(const void* bytes, uint32_t num_bytes,
                           const std::vector<Dispatcher*>* dispatchers,
                           MojoWriteMessageFlags flags);
-  // |dispatchers| must be non-null if |max_num_dispatchers| is nonzero. On
-  // success, it will be set to the dispatchers to be received (and assigned
-  // handles) as part of the message.
+  // |dispatchers| must be non-null but empty, if |max_num_dispatchers| is
+  // nonzero. On success, it will be set to the dispatchers to be received (and
+  // assigned handles) as part of the message.
   MojoResult ReadMessage(
       void* bytes, uint32_t* num_bytes,
       uint32_t max_num_dispatchers,

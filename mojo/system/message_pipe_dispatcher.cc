@@ -45,21 +45,15 @@ MojoResult MessagePipeDispatcher::WriteMessageImplNoLock(
     const void* bytes, uint32_t num_bytes,
     const std::vector<Dispatcher*>* dispatchers,
     MojoWriteMessageFlags flags) {
+  DCHECK(!dispatchers || (dispatchers->size() > 0 &&
+                          dispatchers->size() <= kMaxMessageNumHandles));
+
   lock().AssertAcquired();
 
   if (!VerifyUserPointer<void>(bytes, num_bytes))
     return MOJO_RESULT_INVALID_ARGUMENT;
   if (num_bytes > kMaxMessageNumBytes)
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
-
-  if (dispatchers) {
-    DCHECK_GT(dispatchers->size(), 0u);
-    DCHECK_LE(dispatchers->size(), kMaxMessageNumHandles);
-
-    // TODO(vtl)
-    NOTIMPLEMENTED();
-    return MOJO_RESULT_UNIMPLEMENTED;
-  }
 
   return message_pipe_->WriteMessage(port_,
                                      bytes, num_bytes,
