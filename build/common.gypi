@@ -317,6 +317,10 @@
       # See http://clang.llvm.org/docs/MemorySanitizer.html
       'msan%': 0,
 
+      # Use the dynamic libraries instrumented by one of the sanitizers
+      # instead of the standard system libraries.
+      'use_instrumented_libraries%': 0,
+
       # Use a modified version of Clang to intercept allocated types and sizes
       # for allocated objects. clang_type_profiler=1 implies clang=1.
       # See http://dev.chromium.org/developers/deep-memory-profiler/cpp-object-type-identifier
@@ -854,6 +858,7 @@
     'msan%': '<(msan)',
     'tsan%': '<(tsan)',
     'tsan_blacklist%': '<(tsan_blacklist)',
+    'use_instrumented_libraries%': '<(use_instrumented_libraries)',
     'clang_type_profiler%': '<(clang_type_profiler)',
     'order_profiling%': '<(order_profiling)',
     'order_text_section%': '<(order_text_section)',
@@ -3414,6 +3419,24 @@
                   ['_type=="executable"', {
                     'ldflags': [
                       '-pie',
+                    ],
+                  }],
+                ],
+              }],
+            ],
+          }],
+          ['use_instrumented_libraries==1', {
+            'dependencies': [
+              '<(DEPTH)/third_party/instrumented_libraries/instrumented_libraries.gyp:instrumented_libraries',
+            ],
+            'conditions': [
+              ['asan==1', {
+                'target_conditions': [
+                  ['_toolset=="target"', {
+                    'ldflags': [
+                      # Add RPATH to result binary to make it linking instrumented libraries ($ORIGIN means relative RPATH)
+                      '-Wl,-R,\$$ORIGIN/instrumented_libraries/asan/lib/:\$$ORIGIN/instrumented_libraries/asan/usr/lib/x86_64-linux-gnu/',
+                      '-Wl,-z,origin',
                     ],
                   }],
                 ],
