@@ -26,9 +26,7 @@
 <translation id="2370289711218562573">Google Chrome ಇದೀಗ ಮೆಚ್ಚಿನವುಗಳನ್ನು/ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳನ್ನು ಆಮದು ಮಾಡಿಕೊಳ್ಳುತ್ತಿದೆ.</translation>
 <translation id="8762286861469007470">Chrome ಕ್ಯಾಪ್ಟೀವ್ ಪೋರ್ಟಲ್ ಡಿಟೆಕ್ಟರ್</translation>
 <translation id="2721687379934343312">On Mac ನಲ್ಲಿ, ಪಾಸ್‌ವರ್ಡ್‌‌ಗಳನ್ನು ನಿಮ್ಮ ಕೀಚೈನ್‌ನಲ್ಲಿ ಉಳಿಸಲಾಗಿದೆ ಹಾಗೂ ಈ OS X ಖಾತೆಯನ್ನು ಹಂಚಿಕೊಂಡಿರುವ ಬೇರೊಬ್ಬ ಬಳಕೆದಾರರು ಇದನ್ನು ಪ್ರವೇಶಿಸಬಹುದು ಅಥವಾ ಅದನ್ನು ಸಿಂಕ್‌ ಕೂಡ ಮಾಡಬಹುದು.</translation>
-<translation id="3993188379797269327"><ph name="FILE_NAME"/> ನಿಮ್ಮ Chrome ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಬದಲಿಸಬಹುದು.</translation>
 <translation id="1761870329818521071">ಪ್ರಸ್ತುತವಾಗಿ ಚಾಲನೆಯಲ್ಲಿರುವ ಅದೇ Google Chrome Frame ಆವೃತ್ತಿಯನ್ನು ಸ್ಥಾಪಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ. ದಯವಿಟ್ಟು  Google Chrome Frame ಅನ್ನು ಮುಚ್ಚಿ ಮತ್ತು ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
-<translation id="2040709530900803995">Google Chrome Renderer</translation>
 <translation id="6014844626092547096">ಇದೀಗ ನೀವು Chrome ಗೆ ಸೈನ್ ಇನ್ ಆಗಿರುವಿರಿ! ನಿಮ್ಮ ನಿರ್ವಾಹಕರಿಂದ ಸಿಂಕ್ ಅನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ.</translation>
 <translation id="3140883423282498090">ನೀವು ಮುಂದಿನ ಬಾರಿ Google Chrome ಮರುಪ್ರಾರಂಭಿಸಿದಾಗ ನಿಮ್ಮ ಬದಲಾವಣೆಗಳು ಕಾರ್ಯಗತಗೊಳ್ಳುತ್ತವೆ.</translation>
 <translation id="1773601347087397504">Chrome OS ಅನ್ನು ಬಳಸಿಕೊಳ್ಳುವುದರೊಂದಿಗೆ ಸಹಾಯವನ್ನು ಪಡೆಯಿರಿ</translation>
@@ -48,7 +46,6 @@
 <translation id="3080151273017101988">Google Chrome ಮುಚ್ಚಿದಾಗ ಚಾಲನೆಯಲ್ಲಿರುವ ಹಿನ್ನೆಲೆ ಅಪ್ಲಿಕೇಶನ್‌ಗಳನ್ನು ಮುಂದುವರಿಸಿ</translation>
 <translation id="4149882025268051530">ಆರ್ಕೈವ್ ಅನ್ನು ವಿಕಸನ ಮಾಡಲು ಇನ್ಸ್ಟಾಲರ್ ವಿಫಲವಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೊಮ್ಮೆ Google Chrome ಅನ್ನು ಡೌನ್ಲೋಡ್ ಮಾಡಿ.</translation>
 <translation id="6989339256997917931">Google Chrome ನವೀಕರಿಸಲಾಗಿದೆ, ಆದರೆ ನೀವು ಕನಿಷ್ಠ 30 ದಿನಗಳವರೆಗಾದರೂ ಇದನ್ನು ಬಳಸಿರಲಿಕ್ಕಿಲ್ಲ. </translation>
-<translation id="5744005218040929396">Google Chrome Utility</translation>
 <translation id="7060865993964054389">Google Chrome ಅಪ್ಲಿಕೇಶನ್ ಲಾಂಚರ್</translation>
 <translation id="1682634494516646069">Google Chrome ಗೆ ಇದರ ಡೇಟಾ ಡೈರೆಕ್ಟರಿಯನ್ನು ಓದಲಾಗುವುದಿಲ್ಲ ಮತ್ತು ಬರೆಯಲಾಗುವುದಿಲ್ಲ:
 
@@ -83,12 +80,15 @@
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="4585888816441913908">ಈ ಕಂಪ್ಯೂಟರ್ Google Chrome ಮತ್ತು Google Chrome ಫ್ರೇಮ್‌ನ ಇತ್ತೀಚಿನ ಆವೃತ್ತಿಯನ್ನು ಈಗಾಗಲೇ ಹೊಂದಿದೆ. ಸಾಫ್ಟ್‌ವೇರ್ ಕಾರ್ಯನಿರ್ವಹಿಸದಿದ್ದರೆ, ದಯವಿಟ್ಟು Google Chrome ಮತ್ತು Google Chrome ಫ್ರೇಮ್ ಎರಡನ್ನೂ ಅಸ್ಥಾಪಿಸಿ ಹಾಗೂ ನಂತರ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="3149510190863420837">Chrome ಅಪ್ಲಿಕೇಶನ್‌ಗಳು</translation>
+<translation id="7084448929020576097"><ph name="FILE_NAME"/> ದೋಷಪೂರಿತವಾಗಿದೆ, ಮತ್ತು Chrome ಇದನ್ನು ನಿರ್ಬಂಧಿಸಿದೆ.</translation>
 <translation id="6368958679917195344">ಹೆಚ್ಚುವರಿ <ph name="BEGIN_LINK_CROS_OSS"/>ತೆರೆದ ಮೂಲ ಸಾಫ್ಟ್‌ವೇರ್<ph name="END_LINK_CROS_OSS"/> ನಿಂದ Chrome OS ಮಾಡಲು ಸಾಧ್ಯ.</translation>
 <translation id="7459554271817304652">ನಿಮ್ಮ ವೈಯಕ್ತಿಕಗೊಳಿಸಿದ ಬ್ರೌಸರ್ ವೈಶಿಷ್ಟ್ಯಗಳನ್ನು ವೆಬ್‍ಗೆ ಉಳಿಸಲು ಮತ್ತು ಅವುಗಳನ್ನು Google Chrome ನಿಂದ ಯಾವುದೇ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ಪ್ರವೇಶಿಸಲು ಸಿಂಕ್ ಅನ್ನು ಹೊಂದಿಸಿ.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="473775607612524610">ನವೀಕರಣ</translation>
 <translation id="1195935957447623558">Google Chrome ಸರಿಯಾಗಿ ಶಟ್ ಡೌನ್ ಆಗಿಲ್ಲ. ನೀವು ತೆರೆದ ಪುಟವನ್ನು ಮರುತೆರೆಯಲು, ಪುನಃಸ್ಥಾಪನೆ ಕ್ಲಿಕ್ ಮಾಡಿ.</translation>
 <translation id="2576431527583832481">Chrome ಈಗ ತಾನೇ ಉತ್ತಮಗೊಂಡಿದೆ! ಹೊಸ ಆವೃತ್ತಿ ಲಭ್ಯವಿದೆ.</translation>
+<translation id="4633000520311261472">Chrome ಅನ್ನು ಸುರಕ್ಷಿತವಾಗಿರಿಸುವಂತೆ ಮಾಡಲು, <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> ನಲ್ಲಿ ಪಟ್ಟಿ ಮಾಡಲಾದ ಕೆಲವು ವಿಸ್ತರಣೆಗಳನ್ನು ನಾವು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿದ್ದೇವೆ ಮತ್ತು ಅವುಗಳನ್ನು ನಿಮ್ಮ ಅರಿವಿಲ್ಲದೆ ಸೇರಿಸಿರಬಹುದು.</translation>
+<translation id="556024056938947818">Google Chrome ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ತೋರಿಸಲು ಪ್ರಯತ್ನಿಸುತ್ತಿದೆ.</translation>
 <translation id="2580411288591421699">ಪ್ರಸ್ತುತ ಚಾಲನೆಯಲ್ಲಿರುವ ಅದೇ Google Chrome ಆವೃತ್ತಿಯನ್ನು ಸ್ಥಾಪಿಸಲಾಗುವುದಿಲ್ಲ. ದಯವಿಟ್ಟು Google Chrome ಮುಚ್ಚಿ ಹಾಗೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="8460191995881063249">Chrome ಅಧಿಸೂಚನೆ ಕೇಂದ್ರ</translation>
 <translation id="1457721931618994305">Google Chrome ನವೀಕರಿಸಲಾಗುತ್ತಿದೆ...</translation>
@@ -121,7 +121,6 @@
 <translation id="911206726377975832">ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಡೇಟಾವನ್ನು ಸಹ ಅಳಿಸುವುದೇ?</translation>
 <translation id="5855036575689098185">ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ಚಾಲನೆಯಾಗುತ್ತಿರುವ ಸಾಫ್ಟ್‌ವೇರ್ Google Chrome ನೊಂದಿಗೆ ಹೊಂದಾಣಿಕೆಯಾಗುವುದಿಲ್ಲ.</translation>
 <translation id="2044287590254833138">Google Chrome ಟೂಲ್ಬಾರ್</translation>
-<translation id="5074344184765391290">Chrome Plug-In Host</translation>
 <translation id="8862326446509486874">ಸಿಸ್ಟಂ ಮಟ್ಟದ ಸ್ಥಾಪನೆಗಾಗಿ ನೀವು ಸರಿಯಾದ ಹಕ್ಕುಗಳನ್ನು ಹೊಂದಿಲ್ಲ. ನಿರ್ವಾಹಕರಂತೆ ಮತ್ತೆ ಸ್ಥಾಪಕವನ್ನು ಚಲಿಸಲು ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="2874156562296220396"><ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> ತೆರೆದ ಮೂಲ ಪ್ರಾಜೆಕ್ಟ್ ಮತ್ತು ಇತರ <ph name="BEGIN_LINK_OSS"/>ತೆರೆದ ಮೂಲ ಸಾಫ್ಟ್ವೇರ್<ph name="END_LINK_OSS"/> ನಿಂದ Google Chrome ಅನ್ನು ಸಾಧ್ಯವಾಗಿಸಲಾಗಿದೆ.</translation>
 <translation id="3847841918622877581">ನಿಮ್ಮ ಬ್ರೌಸಿಂಗ್ ಅನುಭವವನ್ನು ಇನ್ನಷ್ಟು ಸುಧಾರಿಸಲು Google Chrome ವೆಬ್ ಸೇವೆಗಳನ್ನು ಬಳಸಬಹುದು.</translation>
@@ -135,6 +134,7 @@
 <translation id="4273752058983339720">ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್ ಅನ್ನು ನೀವು ಪ್ರಾರಂಭಿಸಿದಾಗ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಪ್ರಾರಂಭಿಸಲು Google Chrome ಅನ್ನು ಕಾನ್ಫಿಗರ್ ಮಾಡಲಾಗಿದೆ.</translation>
 <translation id="1104959162601287462">&amp;Chrome OS ಬಗ್ಗೆ</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
+<translation id="1140117203923356735">ಕೆಲವು ಮಾಲ್‌ವೇರ್‌ಗೆ <ph name="FILE_NAME"/> ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಬದಲಿಸುತ್ತದೆ, ಆದ್ದರಿಂದಾಗಿ Chrome ಇದನ್ನು ನಿರ್ಬಂಧಿಸಿದೆ.</translation>
 <translation id="5941830788786076944">Google Chrome ಅನ್ನು ಡೀಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಆಗಿ ಮಾಡಿ</translation>
 <translation id="7787950393032327779">ಮತ್ತೊಂದು ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ (<ph name="HOST_NAME"/>) ಇನ್ನೊಂದು Google Chrome ಪ್ರಕ್ರಿಯೆಯ (<ph name="PROCESS_ID"/>) ಮೂಲಕ ಬಳಸುತ್ತಿರುವಂತೆ ಪ್ರೊಫೈಲ್ ಕಂಡುಬರುತ್ತಿದೆ. ಪ್ರೊಫೈಲ್ ದೋಷಪೂರಿತವಾಗದಂತೆ Chrome ಅದನ್ನು ಲಾಕ್ ಮಾಡಿದೆ. ಬೇರೆ ಯಾವುದೇ ಪ್ರಕ್ರಿಯೆಗಳು ಈ ಪ್ರೊಫೈಲ್ ಬಳಸುತ್ತಿಲ್ಲವೆಂದು ನಿಮಗೆ ಖಚಿತವಾಗಿದ್ದರೆ, ನೀವು ಪ್ರೊಫೈಲ್ ಅನ್ನು ಅನ್‌ಲಾಕ್ ಮಾಡಬಹುದು ಮತ್ತು Chrome ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಬಹುದು.</translation>
 <translation id="1469002951682717133">Chrome ಅಪ್ಲಿಕೇಶನ್ ಲಾಂಚರ್</translation>
@@ -172,12 +172,11 @@
 <translation id="3444832043240812445">ನೀವು <ph name="BEGIN_LINK"/>ಕ್ರ‍್ಯಾಶ್‌‌ ವರದಿಮಾಡುವಿಕೆಯನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿದರೆ<ph name="END_LINK"/> ನಿಮ್ಮ ಇತ್ತೀಚಿನ ಕ್ರ‍್ಯಾಶ್‌ಗಳಲ್ಲಿ ಮಾಹಿತಿಯನ್ನು ಈ ಪುಟ ತೋರಿಸುತ್ತದೆ.</translation>
 <translation id="8614913330719544658">Google Chrome ಸ್ಪಂದಿಸುತ್ತಿಲ್ಲ. ಇದೀಗ ಮರುಪ್ರಾರಂಭಿಸುವುದೆ?
 </translation>
-<translation id="5318056482164160049">Google Chrome Plug-In Host</translation>
+<translation id="1175529839152551794">ನೀವು ಈಗ ಸೈನ್‌ ಇನ್ ಆಗಿರುವಿರಿ, ನಿಮ್ಮ ಲ್ಯಾಪ್‌ಟಾಪ್, ಫೋನ್ ಮತ್ತು ಟ್ಯಾಬ್ಲೆಟ್‌ನಾದ್ಯಾಂತ ಟ್ಯಾಬ್‌ಗಳು, ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು ಹಾಗೂ ಇತರೆ Chrome ವಿಷಯಗಳನ್ನು ನೀವು ಪಡೆಯಬಹುದು. Google ಸೇವೆಗಳಲ್ಲಿ ಇನ್ನಷ್ಟು ಸೂಕ್ತ ಸಲಹೆಗಳನ್ನು ಮತ್ತು ವೈಶಿಷ್ಟ್ಯಗಳನ್ನು ಸಹ ನೀವು ಪಡೆಯುವಿರಿ.</translation>
 <translation id="6126631249883707068">Google Chrome ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಉಳಿಸಲು ನೀವು ಬಯಸುವಿರಾ?</translation>
 <translation id="7773845170078702898">ಈ ಸೈಟ್‌ಗಾಗಿ ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್ ಉಳಿಸಲು ನಿಮಗೆ Google Chrome ಅಗತ್ಯವಿದೆಯೇ?</translation>
 <translation id="5046764976540625289">Chrome ಅನ್ನು ನಿರ್ಗಮಿಸಿ</translation>
 <translation id="4251615635259297716">ಈ ಖಾತೆಗೆ ನಿಮ್ಮ Chrome ಡೇಟಾವನ್ನು ಲಿಂಕ್ ಮಾಡುವುದೇ?</translation>
-<translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">ಇಂಟರ್ನೆಟ್ ಬ್ರೌಸರ್</translation>
 <translation id="8142608456917638009">Google Chrome ಗೆ ಅಪ್ಲಿಕೇಶನ್ ಶಾರ್ಟ್‌ಕಟ್ ರಚಿಸಲಾಗುತ್ತಿಲ್ಲ.</translation>
@@ -185,11 +184,11 @@
 <translation id="2189123953385179981"><ph name="SCHEME"/> ಲಿಂಕ್‌ಗಳನ್ನು ನಿರ್ವಹಿಸಲು ಬಾಹ್ಯ ಅಪ್ಲಿಕೇಶನ್ ಅನ್ನು ಪ್ರಾರಂಭಿಸಲು Google ChromeOS ಬೆಂಬಲಿಸುವುದಿಲ್ಲ. <ph name="PROTOLINK"/> ವಿನಂತಿಸಿದ ಲಿಂಕ್‌ ಆಗಿದೆ.</translation>
 <translation id="7396375882099008034">ನಿಮ್ಮ ಫೈರ್‌ವಾಲ್ ಮತ್ತು ಆಂಟಿವೈರಸ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ನೆಟ್‌ವರ್ಕ್ ಪ್ರವೇಶಿಸಲು
         Chrome ಗೆ ಅನುಮತಿಸಿ.</translation>
+<translation id="9102715433345326100">ಈ ಫೈಲ್ ದೋಷಪೂರಿತವಾಗಿದೆ, ಮತ್ತು Chrome ಇದನ್ನು ನಿರ್ಬಂಧಿಸಿದೆ.</translation>
 <translation id="8205111949707227942">ಐಚ್ಚಿಕ: Google ಗೆ ಬಳಕೆಯ ಅಂಕಿಅಂಶಗಳು ಮತ್ತು ಕ್ರ್ಯಾಷ್ ವರದಿ ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಕಳುಹಿಸುವುದರಿಂದ Chrome OS ಅನ್ನು ಉತ್ತಮಗೊಳಿಸಲು ಸಹಾಯ ಮಾಡಿ.</translation>
 <translation id="7253415505590551024">ಡೌನ್‌ಲೋಡ್‍‌ಗಳು ಪ್ರಸ್ತುತ ಪ್ರಗತಿಯಲ್ಲಿವೆ. Google Chrome ನಿಂದ ನಿರ್ಗಮಿಸಲು ಮತ್ತು ಡೌನ್‌ಲೋಡ್ ಅನ್ನು ರದ್ದುಗೊಳಿಸಲು ನೀವು ಬಯಸಿರುವಿರಾ?</translation>
 <translation id="7196020411877309443">ನಾನು ಇದನ್ನೇಕೆ ನೋಡುತ್ತಿದ್ದೇನೆ?</translation>
 <translation id="2769762047821873045">Google Chrome ನಿಮ್ಮ ಡೀಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಅಲ್ಲ.</translation>
-<translation id="1020869477857717497">Chrome ನಲ್ಲಿ ನಿಮ್ಮ ಹುಡುಕಾಟಗಳು ಹೇಗೆ ಕಾರ್ಯ ನಿರ್ವಹಿಸಬಹುದು ಎಂಬುದನ್ನು <ph name="FILE_NAME"/> ಬದಲಿಸಬಹುದು.</translation>
 <translation id="4567424176335768812"><ph name="USER_EMAIL_ADDRESS"/> ನಂತೆ ಸೈನ್ ಇನ್ ಮಾಡಿರುವಿರಿ. ನೀವು ಇದೀಗ ನಿಮ್ಮ ಎಲ್ಲಾ ಸೈನ್ ಇನ್ ಮಾಡಿರುವ ಸಾಧನಗಳಲ್ಲಿ ನಿಮ್ಮ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು, ಇತಿಹಾಸ ಮತ್ತು ಇತರ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಪ್ರವೇಶಿಸಬಹುದು.</translation>
 <translation id="6855094794438142393">ಇದಕ್ಕೆ ಹೋಗಿ
           Chrome ಮೆನು &gt;

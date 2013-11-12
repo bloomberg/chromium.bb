@@ -3,8 +3,11 @@
 <translationbundle lang="vi">
 <translation id="376869769528291915">:</translation>
 <translation id="6015796118275082299">Năm</translation>
+<translation id="2094750046714988961">Không thể khởi động profiler vì bộ nhớ ngoài không sẵn sàng</translation>
 <translation id="1256337885411059545">Không thể phát video</translation>
+<translation id="2520230379124234395">Đã chạy Profiler</translation>
 <translation id="7821540960913969614">Đặt ngày</translation>
+<translation id="4859501799452851758">Đã hoàn tất Profiler. Kết quả có trong <ph name="FILENAME"/>.</translation>
 <translation id="3845599764535987402">Giờ</translation>
 <translation id="4932733599132424254">Ngày</translation>
 <translation id="6727102863431372879">Đặt</translation>
@@ -20,6 +23,7 @@
 <translation id="2732718972699418926">SA</translation>
 <translation id="7096034533295549981">Đang tải video</translation>
 <translation id="1542044944667958430">Tìm kiếm trên web</translation>
+<translation id="6849295950938417341">Không khởi động được profiler</translation>
 <translation id="6527303717912515753">Chia sẻ</translation>
 <translation id="1822429046913737220">SA/CH</translation>
 <translation id="5789643057113097023">.</translation>

@@ -3,8 +3,11 @@
 <translationbundle lang="bg">
 <translation id="376869769528291915">:</translation>
 <translation id="6015796118275082299">Година</translation>
+<translation id="2094750046714988961">Не можем да стартираме профайлера, защото външното хранилище не е готово</translation>
 <translation id="1256337885411059545">Видеоклипът не може да се пусне</translation>
+<translation id="2520230379124234395">Профайлерът стартира</translation>
 <translation id="7821540960913969614">Задаване на датата</translation>
+<translation id="4859501799452851758">Профайлерът приключи. Резултатите са в/ъв „<ph name="FILENAME"/>“.</translation>
 <translation id="3845599764535987402">Час</translation>
 <translation id="4932733599132424254">Дата</translation>
 <translation id="6727102863431372879">Задаване</translation>
@@ -20,6 +23,7 @@
 <translation id="2732718972699418926">AM</translation>
 <translation id="7096034533295549981">Клип: Зарежда се</translation>
 <translation id="1542044944667958430">Търсене в мрежата</translation>
+<translation id="6849295950938417341">Стартирането на профайлера не бе успешно</translation>
 <translation id="6527303717912515753">Споделяне</translation>
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="5789643057113097023">.</translation>

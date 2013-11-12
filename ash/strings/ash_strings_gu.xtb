@@ -129,6 +129,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830"><ph name="NAME"/> ને સક્રિય કરી રહ્યું છે</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="1923539912171292317">આપમેળે ક્લિક્સ</translation>
 <translation id="1398853756734560583">મોટું કરો</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: કનેક્ટ કરી રહ્યું છે...</translation>
 <translation id="252373100621549798">અજ્ઞાત પ્રદર્શન</translation>
@@ -221,6 +222,7 @@
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">અભિનંદન! તમારી '<ph name="NAME"/>' ડેટા સેવાને સક્રિય કરવામાં આવી છે અને આગળ વધવા માટે તૈયાર છે.</translation>
 <translation id="412065659894267608"><ph name="HOUR"/>ક <ph name="MINUTE"/>મિ સુધીમાં પૂર્ણ</translation>
+<translation id="7297443947353982503">વપરાશકર્તાનામ/પાસવર્ડ ખોટો છે અથવા EAP-auth નિષ્ફળ થયું</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER"/> તરફથી SMS</translation>
 <translation id="1244147615850840081">વાહક</translation>
 </translationbundle>

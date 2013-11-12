@@ -28,9 +28,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="2370289711218562573">Google Chrome importeert momenteel favorieten/bladwijzers.</translation>
 <translation id="8762286861469007470">Chrome-detector van captive portals</translation>
 <translation id="2721687379934343312">Wachtwoorden worden op de Mac opgeslagen in je sleutelhanger en kunnen worden geopend of gesynchroniseerd door andere Chrome-gebruikers die dit OS X-account delen.</translation>
-<translation id="3993188379797269327"><ph name="FILE_NAME"/> kan je Chrome-instellingen wijzigen.</translation>
 <translation id="1761870329818521071">Kan dezelfde Google Chrome Frame-versie die momenteel actief is, niet installeren. Sluit Google Chrome Frame en probeer het opnieuw.</translation>
-<translation id="2040709530900803995">Google Chrome Renderer</translation>
 <translation id="6014844626092547096">Je bent nu ingelogd bij Chrome! Synchronisatie is uitgeschakeld door je beheerder.</translation>
 <translation id="3140883423282498090">Je wijzigingen worden toegepast als je Google Chrome opnieuw start.</translation>
 <translation id="1773601347087397504">Hulp bij het gebruik van Chrome OS</translation>
@@ -50,7 +48,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="3080151273017101988">Achtergrondapps blijven uitvoeren wanneer Google Chrome is gesloten</translation>
 <translation id="4149882025268051530">Het installatieprogramma kan het archief niet uitpakken. Download Google Chrome opnieuw.</translation>
 <translation id="6989339256997917931">Google Chrome is bijgewerkt, maar je hebt het programma minstens 30 dagen niet gebruikt.</translation>
-<translation id="5744005218040929396">Google Chrome</translation>
 <translation id="7060865993964054389">App-opstartprogramma van Google Chrome</translation>
 <translation id="1682634494516646069">Chrome kan niet lezen van en schrijven naar de gegevensdirectory:
 
@@ -85,12 +82,15 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="4585888816441913908">Deze computer beschikt al over een nieuwere versie van Google Chrome en Google Chrome Frame. Als de software niet werkt, verwijder je Google Chrome en Google Chrome Frame en probeer je het opnieuw.</translation>
 <translation id="3149510190863420837">Chrome-apps</translation>
+<translation id="7084448929020576097"><ph name="FILE_NAME"/> is schadelijk en is door Chrome geblokkeerd.</translation>
 <translation id="6368958679917195344">Chrome OS wordt mogelijk gemaakt door aanvullende <ph name="BEGIN_LINK_CROS_OSS"/>open source-software<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="7459554271817304652">Stel synchronisatie in om je persoonlijke browserfuncties online op te slaan en toegang te krijgen tot deze functies via Google Chrome, vanaf elke computer.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="473775607612524610">Bijwerken</translation>
 <translation id="1195935957447623558">Google Chrome is niet correct afgesloten. Klik op 'Herstellen' om de pagina's te openen die actief waren.</translation>
 <translation id="2576431527583832481">Chrome is nu nog beter! Er is een nieuwe versie beschikbaar.</translation>
+<translation id="4633000520311261472">Om Chrome veiliger te maken, hebben we een aantal extensies uitgeschakeld die niet worden vermeld in de <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> en mogelijk zonder je medeweten zijn geïnstalleerd.</translation>
+<translation id="556024056938947818">Google Chrome probeert wachtwoorden weer te geven.</translation>
 <translation id="2580411288591421699">Kan dezelfde Google Chrome-versie die momenteel actief is, niet installeren. Sluit Google Chrome en probeer het opnieuw.</translation>
 <translation id="8460191995881063249">Meldingscentrum van Chrome</translation>
 <translation id="1457721931618994305">Google Chrome bijwerken...</translation>
@@ -125,7 +125,6 @@ Als je inlogt, worden Chrome-gegevens zoals bladwijzers, geschiedenis en andere 
 <translation id="911206726377975832">Ook browsegegevens wissen?</translation>
 <translation id="5855036575689098185">De software op je computer is niet compatibel met Google Chrome.</translation>
 <translation id="2044287590254833138">Google Chrome Toolbar</translation>
-<translation id="5074344184765391290">Invoegtoepassingshost van Chrome</translation>
 <translation id="8862326446509486874">Je hebt geen rechten om op systeemniveau te installeren. Meld je aan als beheerder en voer het installatieprogramma opnieuw uit.</translation>
 <translation id="2874156562296220396">Google Chrome wordt mogelijk gemaakt door het open-source project <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> en andere <ph name="BEGIN_LINK_OSS"/>open-source software<ph name="END_LINK_OSS"/>.</translation>
 <translation id="3847841918622877581">Google Chrome kan webservices gebruiken om je internetervaring te verbeteren.</translation>
@@ -139,6 +138,7 @@ Als je inlogt, worden Chrome-gegevens zoals bladwijzers, geschiedenis en andere 
 <translation id="4273752058983339720">Google Chrome is geconfigureerd om automatisch te worden gestart als je je computer opstart.</translation>
 <translation id="1104959162601287462">Over &amp;Chrome OS</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
+<translation id="1140117203923356735"><ph name="FILE_NAME"/> brengt wijzigingen in instellingen aan die vergelijkbaar zijn met de wijzigingen die door bepaalde malware worden aangebracht en is daarom door Chrome geblokkeerd.</translation>
 <translation id="5941830788786076944">Google Chrome instellen als mijn standaardbrowser</translation>
 <translation id="7787950393032327779">Het profiel lijkt te worden gebruikt door een ander proces in Google Chrome (<ph name="PROCESS_ID"/>) op een andere computer (<ph name="HOST_NAME"/>). Het profiel is vergrendeld zodat het niet wordt beschadigd. Als je zeker weet dat dit profiel niet door andere processen wordt gebruikt, kun je het profiel ontgrendelen en Chrome opnieuw starten.</translation>
 <translation id="1469002951682717133">App-opstartprogramma van Chrome</translation>
@@ -173,23 +173,22 @@ Als je inlogt, worden Chrome-gegevens zoals bladwijzers, geschiedenis en andere 
 <translation id="576822117893741893">Het menu 'Chrome' weergeven</translation>
 <translation id="3444832043240812445">Deze pagina bevat alleen informatie over recente crashes als je <ph name="BEGIN_LINK"/>crashrapportage inschakelt<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome reageert niet meer. Nu opnieuw starten?</translation>
-<translation id="5318056482164160049">Invoegtoepassingshost van Google Chrome</translation>
+<translation id="1175529839152551794">Nu je bent ingelogd, kun je je tabbladen, bladwijzers en andere Chrome-instellingen op je laptop, telefoon en tablet gebruiken. Je ontvangt ook relevantere suggesties en functies in Google-services.</translation>
 <translation id="6126631249883707068">Wil je dat Google Chrome je wachtwoord opslaat?</translation>
 <translation id="7773845170078702898">Wil je dat Google Chrome je wachtwoord voor deze site opslaat?</translation>
 <translation id="5046764976540625289">Chrome sluiten</translation>
 <translation id="4251615635259297716">Wil je je Chrome-gegevens aan dit account koppelen?</translation>
-<translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Internetbrowser</translation>
 <translation id="8142608456917638009">Google Chrome kan geen app-snelkoppeling maken.</translation>
 <translation id="8255190535488645436">Google Chrome gebruikt je camera en microfoon.</translation>
 <translation id="2189123953385179981">Google Chrome OS biedt geen ondersteuning voor het starten van een externe applicatie om links van <ph name="SCHEME"/> te verwerken. De opgevraagde link is <ph name="PROTOLINK"/>.</translation>
 <translation id="7396375882099008034">Sta Chrome via je firewall- of antivirusinstellingen toe het netwerk te gebruiken.</translation>
+<translation id="9102715433345326100">Dit bestand is schadelijk en is daarom door Chrome geblokkeerd.</translation>
 <translation id="8205111949707227942">Optioneel: help Chrome OS beter te maken door Google automatisch gebruiksstatistieken en crashmeldingen te sturen.</translation>
 <translation id="7253415505590551024">Er worden momenteel downloads uitgevoerd. Wil je Google Chrome afsluiten en de downloads annuleren?</translation>
 <translation id="7196020411877309443">Waarom zie ik dit venster?</translation>
 <translation id="2769762047821873045">Google Chrome is niet je standaardbrowser.</translation>
-<translation id="1020869477857717497"><ph name="FILE_NAME"/> kan wijzigen hoe je zoekopdrachten werken in Chrome.</translation>
 <translation id="4567424176335768812">Je bent ingelogd als <ph name="USER_EMAIL_ADDRESS"/>. Je hebt nu toegang tot je bladwijzers, geschiedenis en andere instellingen op al je apparaten waarop je bent ingelogd.</translation>
 <translation id="6855094794438142393">Ga naar
           het menu 'Chrome' &gt;

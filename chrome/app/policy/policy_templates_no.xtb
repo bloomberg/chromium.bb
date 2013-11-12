@@ -85,6 +85,7 @@ Denne regelen brukes internt av Chrome.</translation>
           MERK: Standardatferden for forbruker- og bedriftsenheter er ikke den samme. På forbrukerenheter er overvåkede brukere aktivert som standard, men på bedriftsenheter er de deaktivert.</translation>
 <translation id="69525503251220566">Parameteret som tilbyr search-by-image-funksjonen for standardsøkemotoren</translation>
 <translation id="5469825884154817306">Blokkér bilder på disse nettstedene</translation>
+<translation id="5827231192798670332">Velger strategien som brukes for å frigjøre diskplass ved automatisk opprydding</translation>
 <translation id="8412312801707973447">Angir om OCSP/CRL-kontroller utføres på nettet</translation>
 <translation id="6649397154027560979">Denne innstillingen er avviklet. Bruk URLBlacklist i stedet.
 
@@ -185,6 +186,8 @@ Denne regelen brukes internt av Chrome.</translation>
 <translation id="6036523166753287175">Muliggjør kryssing av brannmur fra ekstern tilgangsvert</translation>
 <translation id="1096105751829466145">Standard søkeleverandør</translation>
 <translation id="7567380065339179813">Tillat programtillegg på disse nettstedene</translation>
+<translation id="4555850956567117258">Slå på ekstern attestasjon for brukeren</translation>
+<translation id="5966615072639944554">Utvidelser kan bruke API-et for ekstern attestasjon</translation>
 <translation id="1617235075406854669">Gjør det mulig å slette nettleser- og nedlastingslogg</translation>
 <translation id="5290940294294002042">Angi en liste over programtillegg som brukeren kan aktivere eller deaktivere</translation>
 <translation id="3153348162326497318">Gjør at du kan angi hvilke utvidelser brukerne IKKE kan installere. Utvidelser som allerede er installert, fjernes eller svartelistes.
@@ -238,6 +241,7 @@ Denne regelen brukes internt av Chrome.</translation>
 
           Hvis denne retningslinjen ikke angis, brukes AllowImages, og brukeren kan endre dette.</translation>
 <translation id="5630352020869108293">Gjenopprett den siste økten</translation>
+<translation id="2067011586099792101">Blokkér tilgang til nettsteder som ikke inngår i innholdspakker</translation>
 <translation id="4980635395568992380">Datatype:</translation>
 <translation id="3096595567015595053">Liste over aktiverte programtillegg</translation>
 <translation id="3048744057455266684">Hvis denne innstillingen er angitt og en nettadresse som blir foreslått av søkefeltet inneholder denne parameteren i søkestrengen eller fragmentidentifikatoren, viser forslaget søkeordene og søkeleverandøren i stedet for søkenettadressen.
@@ -257,9 +261,11 @@ Denne regelen brukes internt av Chrome.</translation>
         Hvis denne retningslinjen ikke angis, blir den globale standardverdien brukt for alle nettsteder – enten fra «DefaultCookiesSetting»-retningslinjen, om angitt, eller brukerens personlige konfigurering, om ikke.
 
           Hvis «RestoreOnStartup»-retningslinjen er angitt til å gjenopprette nettadresser fra tidligere økter, blir ikke denne retningslinjen overholdt, og informasjonskapsler lagres permanent for de aktuelle nettstedene.</translation>
+<translation id="4807950475297505572">Det fjernes brukere til nok plass er frigjort, i rekkefølgen «lengst tid siden forrige gang brukt»</translation>
 <translation id="8828766846428537606">Angir standard startside i <ph name="PRODUCT_NAME"/> og forhindrer brukerne i å endre den. Brukerens innstillinger for startside blir kun fullstendig overstyrt dersom du enten angir nettstedet på siden Ny fane som startside, eller angir den til å være en spesifikk nettadresse du velger. Hvis du ikke spesifiserer nettadressen for startsiden, kan brukeren fremdeles angi nettstedet på siden Ny fane som startside ved å spesifisere «chrome://newtab».</translation>
 <translation id="2231817271680715693">Importér nettleserlogg fra standard nettleser ved første kjøring</translation>
 <translation id="1353966721814789986">Oppstartssider</translation>
+<translation id="7173856672248996428">Midlertidig profil</translation>
 <translation id="1841130111523795147">Tillater brukeren å logge seg på <ph name="PRODUCT_NAME"/> og hindrer brukere i å endre denne innstillingen. 
 
       Hvis du angir denne innstillingen, kan du velge hvorvidt en bruker skal kunne logge seg på <ph name="PRODUCT_NAME"/>.</translation>
@@ -269,6 +275,7 @@ Denne regelen brukes internt av Chrome.</translation>
 <translation id="6368403635025849609">Tillat JavaScript på disse nettstedene</translation>
 <translation id="6074963268421707432">Ikke tillat noen nettsteder å vise skrivebordsvarslinger</translation>
 <translation id="8614804915612153606">Deaktiverer automatiske oppdateringer</translation>
+<translation id="4834526953114077364">Det fjernes brukere til nok plass er frigjort, i rekkefølgen «lengst tid siden forrige gang brukt og ikke pålogget de siste tre månedene»</translation>
 <translation id="382476126209906314">Konfigurer TalkGadget-prefikset for verter med ekstern adgang</translation>
 <translation id="6561396069801924653">Vis tilgjengelighetsalternativer i systemmenyen</translation>
 <translation id="8104962233214241919">Automatisk valg av klientsertifikater for disse nettstedene</translation>
@@ -333,6 +340,13 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
      Hvis du aktiverer eller deaktiverer denne innstillingen, kan ikke brukerne endre eller overstyre denne innstillingen i <ph name="PRODUCT_NAME"/>.
 
      Hvis denne retningslinjen ikke angis, blir blir gjeldende innstilling det samme som brukeren velger ved installasjon / første kjøring.</translation>
+<translation id="4784220343847172494">Kontrollerer den automatiske oppryddingsatferden på <ph name="PRODUCT_OS_NAME"/>-enheter. Det blir utløst en automatisk opprydding når mengden ledig diskplass når et kritisk nivå, slik at diskplass kan frigjøres.
+
+      Hvis du angir denne retningslinjen til «RemoveLRU», fjerner den automatiske oppryddingen brukere i rekkefølgen «lengst tid siden forrige pålogging», frem til det er frigjort nok diskplass.
+
+      Hvis du angir denne retningslinjen til «RemoveLRUIfDormant», fjerner den automatiske oppryddingen brukere som ikke har logget seg på de siste tre månedene, i rekkefølgen «lengst tid siden forrige pålogging», frem til det er frigjort nok diskplass.
+
+      Hvis denne retningslinjen ikke er angitt, blir den innebygde standardstrategien brukt ved automatisk opprydding. På nåværende tidspunkt vil dette si strategien RemoveLRUIfDormant.</translation>
 <translation id="6256787297633808491">Rapporteringer for hele systemet som skal brukes ved Chrome-oppstart</translation>
 <translation id="2516600974234263142">Aktiverer utskrift i <ph name="PRODUCT_NAME"/> og hindrer brukere fra å endre denne innstillingen.
 
@@ -440,6 +454,7 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
           Hvis denne innstillingen er aktivert, deaktiveres vertenes fysiske enheter for inn- og utdata mens en fjerntilkobling er aktiv.
 
           Hvis denne innstillingen er deaktivert eller ikke angitt, kan både lokale og eksterne brukere samhandle med verten når den deles.</translation>
+<translation id="4894257424747841850">Rapportliste over enhetsbrukere som har logget på i det siste. Hvis retningslinjen ikke er angitt, eller satt til «false», blir ikke brukerne rapportert.</translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="4897928009230106190">Angir parameterene som brukes når du utfører et forslagssøk med POST. De består av kommainndelte navn og verdi-par. Hvis en verdi er et malparameter, som {searchTerms} i eksempelet ovenfor, blir den erstattet med virkelige søkeordsdata.
 
@@ -515,8 +530,10 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
          Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra  retningslinjen DefaultCookiesSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis nevnte retningslinje ikke er angitt.</translation>
 <translation id="5457296720557564923">Lar sider få tilgang til minnebrukstatistikk for JavaScript. Denne innstillingen gjør statistikk fra profilpanelet i utviklerverktøyene tilgjengelig for nettsiden selv.</translation>
 <translation id="5776485039795852974">Spør hver gang et nettsted ønsker å vise skrivebordsvarslinger</translation>
+<translation id="5047604665028708335">Gi tilgang til nettsteder som ikke inngår i innholdspakker</translation>
 <translation id="5052081091120171147">Denne retningslinjen tvinger import av nettleserloggen fra den aktuelle standardnettleseren hvis den er aktivert. Hvis den er aktivert, påvirker denne retningslinjen også importdialogen. Hvis den er deaktivert, importeres ingen nettleserlogg. Hvis den ikke er angitt, er det mulig at brukeren får spørsmål om hvorvidt vedkommende ønsker å importere, eller så kan importeringen skje automatisk.</translation>
 <translation id="6786747875388722282">Utvidelser</translation>
+<translation id="7132877481099023201">Nettadresser som uten forespørsel blir gitt tilgang til enheter med videoopptak</translation>
 <translation id="8947415621777543415">Rapportering av enhetsposisjonen</translation>
 <translation id="1655229863189977773">Angi størrelse på diskbuffer i byte</translation>
 <translation id="6376842084200599664">Gjør at du kan angi en liste over utvidelser som installeres av seg selv uten samhandling med brukeren.
@@ -531,6 +548,7 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 
          Hvis denne retningslinjen ikke angis, kan brukeren avinstallere alle utvidelser i <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="6899705656741990703">Gjenkjenn mellomtjenerinnstillinger automatisk</translation>
+<translation id="8382184662529825177">Slå på bruken av ekstern attestasjon for innholdsbeskyttelse på enheten</translation>
 <translation id="7003334574344702284">Denne retningslinjen tvinger import av de lagrede passordene fra forrige standardnettleser hvis den er aktivert. Hvis den er aktivert, påvirker retningslinjen også importeringsdialogen.
 
       Hvis den er deaktivert, importeres ikke de lagrede passordene.
@@ -544,6 +562,13 @@ Hvis du aktiverer denne innstillingen, sendes anonym rapportering av bruk og pro
 <translation id="3236046242843493070">Nettadressemønstre du vil tillate installasjoner av utvidelser, programmer og brukerskript fra</translation>
 <translation id="2498238926436517902">Alltid skjul hyllen automatisk</translation>
 <translation id="253135976343875019">Forsinkelse for advarsel om inaktivitet når enheten kjører på AC-strøm</translation>
+<translation id="480987484799365700">Når denne retningslinjen er slått på, tvinger den profilen inn i midlertidig modus. Hvis denne retningslinjen er spesifisert som en OS-retningslinje (f.eks. GPO på Windows), er den gjeldende for alle profiler i systemet. Hvis den er angitt som en Nettsky-retningslinje, gjelder den bare for profiler pålogget via en administrert konto.
+
+      I denne modusen blir profildataene lagret på disk bare frem til brukerøkten er avsluttet. Funksjoner som for eksempel nettlogg, utvidelser med tilhørende data, og nettdata, herunder informasjonskapsler og nettdatabaser, slettes når nettleseren avsluttes. Brukeren kan imidlertid fortsatt manuelt laste ned data til disk, og lagre og skrive ut sider.
+
+      Hvis brukeren har slått på synkronisering, blir alle disse dataene lagret i vedkommendes synkroniseringsprofil på linje med vanlige profiler. Inkognitomodus er tilgjengelig om ikke eksplisitt deaktivert av retningslinjen.
+
+      Hvis retningslinjen ikke er slått på eller ikke angitt, aktiveres vanlige profiler ved pålogging.</translation>
 <translation id="6997592395211691850">Hvorvidt OCSP/CRL-sjekker på nettet er påkrevd for lokale klareringsankere</translation>
 <translation id="152657506688053119">Liste over alternative nettadresser for standard søkeleverandør</translation>
 <translation id="8992176907758534924">Ikke la noen nettsteder vise bilder</translation>
@@ -722,7 +747,6 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 <translation id="7003746348783715221">Valg for <ph name="PRODUCT_NAME"/></translation>
 <translation id="4723829699367336876">Aktiver kryssing av brannmur fra ekstern tilgangsklient</translation>
 <translation id="6367755442345892511">Om lanseringskanalen skal kunne konfigureres av brukeren</translation>
-<translation id="4035570660718398959">Tillat at brukerne løser inn tilbud via Chrome OS-registering.</translation>
 <translation id="3868347814555911633">Denne retningslinjen er aktiv bare i detaljistmodus.
 
       Oppfører utvidelser som automatisk installeres for demo-brukeren, for enheter i detaljistmodus. Disse utvidelsene lagres på enheten og kan installeres utenfor nettet, etter installeringen.
@@ -739,7 +763,6 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
       Denne innstillingen påvirker alle typer videoinndata, og ikke bare det innebygde kameraet.</translation>
 <translation id="7063895219334505671">Tillat forgrunnsvindu på disse nettstedene</translation>
 <translation id="4052765007567912447">Kontrollerer om brukeren kan vise passord i klartekst i passordbehandlingen. Hvis du deaktiverer denne innstillingen, tillater ikke passordbehandlingen at lagrede passord vises i klartekst i vinduet til passordbehandlingen. Hvis du aktiverer eller ikke angir denne retningslinjen, kan brukerne se passordene i klartekst i passordbehandlingen.</translation>
-<translation id="5213629107215526747">Nettadresser som blir gitt tilgang til enheter med videoopptak uten forespørsel.</translation>
 <translation id="5936622343001856595">Tvinger søkene i Google Nettsøk til å gjennomføres med Sikkert Søk aktivert, og hindrer brukere fra å endre denne innstillingen.
 
       Hvis du aktiverer denne innstillingen, er Sikkert Søk i Google Søk alltid aktivert.
@@ -750,6 +773,7 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
       Når denne innstillingen aktiveres, åpner <ph name="PRODUCT_NAME"/> utskriftsdialogen for systemet i stedet for den innebygde utskriftsforhåndsvisningen når en bruker ber om å skrive ut en side.
 
       Hvis denne innstillingen ikke angis, eller angis som feil, kommer utskriftskommandoene til å utløse forhåndsvisningsskjermen for utskrifter.</translation>
+<translation id="7933141401888114454">Slå på oppretting av overvåkede brukere</translation>
 <translation id="2824715612115726353">Aktiver inkognitomodus</translation>
 <translation id="1057535219415338480">Aktiverer nettverksforslag i <ph name="PRODUCT_NAME"/> og hindrer brukerne i å endre denne innstillingen.
 
@@ -797,7 +821,6 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
       Hvis denne retningslinjen ikke angis, kan dette aktiveres, men brukeren kan endre på dette.</translation>
 <translation id="2236488539271255289">Ikke la noen nettsteder angi lokale data</translation>
 <translation id="4467952432486360968">Blokkér tredjeparts informasjonskapsler</translation>
-<translation id="2041396837791669429">Blokkér tilgang til nettsteder som ikke er i innholdspakker</translation>
 <translation id="1305864769064309495">En ordliste som tildeler nettadresser boolske merker som spesifiserer om tilgang til verten skal tillates («true») eller blokkeres («false»).
 
           Denne regelen er bare for intern bruk i Chrome.</translation>
@@ -830,7 +853,6 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 
           Hvis denne innstillingen ikke angis, deaktiveres den store musepekeren til å å begynne med, men brukere kan aktivere den når som helst.</translation>
 <translation id="2633084400146331575">Aktiverer talerespons</translation>
-<translation id="7712008868843631413">Aktiver overvåkede brukere.</translation>
 <translation id="8731693562790917685">Innholdsinnstillinger lar deg angi hvordan innholdet for spesifikke elementer (f.eks. informasjonskapsler, bilder eller JavaScript) skal håndteres.</translation>
 <translation id="2411919772666155530">Blokkér varsler på disse nettstedene</translation>
 <translation id="6923366716660828830">Angir navnet på standard søkeleverandør. Hvis dette ikke angis, brukes vertsnavnet angitt av søkenettadressen.
@@ -844,7 +866,6 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 <translation id="467236746355332046">Støttede funksjoner:</translation>
 <translation id="7632724434767231364">Navn på GSSAPI-bibliotek</translation>
 <translation id="3038323923255997294">Fortsett å kjøre bakgrunnsprogrammer når <ph name="PRODUCT_NAME"/> er lukket</translation>
-<translation id="4652284479838524692">Aktiver ekstern bekreftelse for enheten.</translation>
 <translation id="8909280293285028130">Angir hvor lenge brukeren må være inaktiv før skjermen låses når enheten kjører på vekselstrøm.
 
           Når denne innstillingen er konfigurert til en verdi som er større en null, angir den hvor lenge brukeren må være inaktiv før <ph name="PRODUCT_OS_NAME"/> låser skjermen.
@@ -866,6 +887,7 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 
       Hvis denne retningslinjen er angitt som Usann eller ikke er konfigurert, tillates det oppretting av nye brukerkontoer dersom <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> ikke forhindrer brukeren fra å logge seg på.</translation>
 <translation id="4389091865841123886">Konfigurer ekstern attestering med TPM-mekanisme</translation>
+<translation id="3518214502751233558">Angi hvorvidt tidtaking av strømstyringsforsinkelser og øktlengde bare skal begynne å løpe etter brukerens første aktivitet i en økt</translation>
 <translation id="8256688113167012935">Kontrollerer hvilket kontonavn <ph name="PRODUCT_OS_NAME"/> viser på påloggingsskjermen for enhetens tilhørende lokale konto.
 
       Hvis denne innstillingen angis, bruker påloggingsskjermen den spesifiserte strengen i den bildebaserte påloggingsvelgeren for enhetens tilhørende lokale konto.
@@ -944,7 +966,6 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
     Hvis denne innstillingen aktiveres, skjules ikonene.
 
     Hvis denne innstillingen deaktiveres eller ikke angis, er ikonene synlige.</translation>
-<translation id="8401282319420373133">Utvidelser kan bruke API-en for ekstern attestering.</translation>
 <translation id="5085647276663819155">Deaktiver forhåndsvisning av utskrift</translation>
 <translation id="8672321184841719703">Målversjon for automatiske oppdateringer</translation>
 <translation id="1689963000958717134">Tillater skyving av nettverkskonfigurasjon for alle brukere av en <ph name="PRODUCT_OS_NAME"/>-enhet. Nettverkskonfigurasjonen er en JSON-formatert streng, som definert av Open Network Configuration-formatet beskrevet på <ph name="ONC_SPEC_URL"/></translation>
@@ -988,6 +1009,7 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
       Hvis innstillingen er aktivert, kan ikke brukere ta skjermdumper ved hjelp av hurtigtaster eller programmeringsgrensesnitt for utvidelser.
 
       Hvis innstillingen er deaktivert eller ikke angitt, er det fritt frem for å ta skjermdumper.</translation>
+<translation id="5697306356229823047">Rapportering av enhetsbrukere</translation>
 <translation id="8649763579836720255">Chrome OS-enheter can bruke ekstern godkjenning (godkjent tilgang) for å få et sertifikat utstedt av Chrome OS CA, som bekrefter at enheten er kvalifisert til å spille av beskyttet innhold. Denne prosessen involverer sending av godkjenningsinformasjon for maskinvaren til Chrome OS CA, som unikt identifiserer enheten.
 
           Hvis denne innstillingen angis til «false», kommer ikke enheten til å bruke ekstern godkjenning for innholdsbeskyttelse, og enheten kan sannsynligvis ikke spille av beskyttet innhold.
@@ -1060,6 +1082,7 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
      Hvis denne innstillingen er aktivert, lagres ikke nettleserloggen.
 
       Hvis denne innstillingen er deaktivert, lagres nettleserloggen.</translation>
+<translation id="7295019613773647480">Aktiver overvåkede brukere</translation>
 <translation id="2759224876420453487">Kontrollér brukeradferd i flerprofilsøkter</translation>
 <translation id="3844092002200215574">Konfigurerer katalogen som <ph name="PRODUCT_NAME"/> skal bruke til lagring av bufrede filer på disken.
 
@@ -1120,8 +1143,6 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
           Hvis du angir denne innstillingen, kan brukere midlertidig overstyre den ved å aktivere eller deaktivere høykontrastmodus. Brukernes valg er imidlertid ikke permanent, og standardinnstillingen gjenopprettes når påloggingssiden vises på nytt, eller brukeren har vært inaktiv på påloggingssiden i ett minutt.
 
           Hvis denne innstillingen angis, deaktiveres høykontrastmodus når påloggingssiden vises for første gang. Brukere kan aktivere eller deaktivere høykontrastmodus når som helst, og dens status på påloggingssiden forblir den samme mellom brukere.</translation>
-<translation id="8580857153747395000">Advarsel når nettsteder som ikke inngår i innholdspakker åpnes.</translation>
-<translation id="350796261613621561">Aktiver oppretting av overvåkede brukere.</translation>
 <translation id="602728333950205286">Umiddelbar nettadresse for standard søkeleverandør</translation>
 <translation id="3030000825273123558">Aktiver rapportering av beregninger</translation>
 <translation id="8465065632133292531">Parametere for Instant-nettadresser som bruker POST</translation>
@@ -1137,6 +1158,7 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 
           Hvis denne innstillingen er deaktivert, er ikke funksjonen tilgjengelig.</translation>
 <translation id="1675002386741412210">Støttes på:</translation>
+<translation id="1608755754295374538">Nettadresser som uten forespørsel blir gitt tilgang til enheter med lydopptak</translation>
 <translation id="3547954654003013442">Innstillinger for mellomtjener</translation>
 <translation id="5921713479449475707">Tillat automatisk oppdatering av nedlastinger via HTTP</translation>
 <translation id="4482640907922304445">Viser Startside-knappen i verktøylinjen til <ph name="PRODUCT_NAME"/>.
@@ -1148,8 +1170,8 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
       Hvis du aktiverer eller deaktiverer denne innstillingen, kan ikke brukerne endre eller overstyre denne innstillingen i <ph name="PRODUCT_NAME"/>.
 
       Hvis denne retningslinjen ikke angis, kan brukeren velge om denne knappen skal vises.</translation>
-<translation id="6897718480289510689">Tillat tilgang til nettsteder som ikke inngår i innholdspakker.</translation>
 <translation id="2518231489509538392">Tillat avspilling av lyd</translation>
+<translation id="8146727383888924340">Tillat at brukere løser inn tilbud via Chrome OS-registering</translation>
 <translation id="7301543427086558500">Angir en liste over alternative nettadresser som kan brukes til å hente ut søkeord fra søkemotoren. Nettadressene skal inneholde strengen <ph name="SEARCH_TERM_MARKER"/>, som brukes til å hente ut søkeordene.
 
       Denne retningslinjen er valgfri. Hvis den ikke er angitt, brukes alternative nettadresser til å hente ut søkeordene.
@@ -1178,7 +1200,11 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 <translation id="5208240613060747912">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer hvilke nettsteder som ikke får vise varsler.
 
           Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder, enten fra retningslinjen DefaultNotificationsSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis den nevnte retningslinjen ikke er angitt.</translation>
-<translation id="7927140259706020912">Nettadresser som blir gitt tilgang til enheter med lydopptak uten forespørsel.</translation>
+<translation id="346731943813722404">Angi hvorvidt tidtaking av strømstyringsforsinkelser og grense for øktens varighet bare skal begynne å løpe etter brukerens første aktivitet i en økt.
+
+          Hvis innstillingen er satt til True, begynner ikke tidtakingen av strømstyringsforsinkelser og øktens varighet å løpe før etter at brukerens første aktivitet i en økt er registrert.
+
+          Hvis innstillingen er satt til False eller ikke er angitt, begynner tidtakingen av strømstyringsforsinkelser og øktens varighet å løpe umiddelbart når økten starter.</translation>
 <translation id="4600786265870346112">Aktiver stor markør</translation>
 <translation id="8592105098257899882">Konfigurerer bufferstørrelsen <ph name="PRODUCT_NAME"/> vil bruke for lagring av bufrede filer på disken.
 
@@ -1363,7 +1389,6 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
           Innstillingsverdien må angis i millisekunder. Verdiene er låst til å være lavere enn inaktivitetsforsinkelsen.</translation>
 <translation id="1897365952389968758">Tillat alle nettsteder å kjøre JavaScript</translation>
 <translation id="5244714491205147861">Administrasjon av strømforbruk på påloggingsskjermen</translation>
-<translation id="3619270953033888719">Aktiver bruk av ekstern godkjenning for innholdsbeskyttelse på enheten.</translation>
 <translation id="922540222991413931">Konfigurering av installeringskilder for utvidelser, programmer og brukerskript</translation>
 <translation id="7323896582714668701">Ytterligere kommandolinjeparametere for <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Deaktiver synkronisering av data med Google</translation>
@@ -1395,6 +1420,7 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
           Hvis du vil se eksempelmønstre, kan du gå til http://www.chromium.org/developers/how-tos/chrome-frame-getting-started</translation>
 <translation id="3101501961102569744">Velg hvordan proxytjenerinnstillinger angis</translation>
 <translation id="1803646570632580723">Liste over programmer som er festet i programlisten</translation>
+<translation id="1062011392452772310">Slå på ekstern attestasjon for enheten</translation>
 <translation id="7774768074957326919">Bruk systeminnstillingene for mellomtjener</translation>
 <translation id="3891357445869647828">Aktiver JavaScript</translation>
 <translation id="868187325500643455">Tillat alle nettsteder å kjøre programtillegg</translation>
@@ -1434,7 +1460,6 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 <translation id="7194407337890404814">Navn for standard søkeleverandør</translation>
 <translation id="1843117931376765605">Oppdateringsfrekvens for brukerinnstilling</translation>
 <translation id="5535973522252703021">Godkjenningsliste for delegasjonstjener for Kerberos</translation>
-<translation id="4578030379102330182">Aktiver ekstern attestering for brukeren.</translation>
 <translation id="9187743794267626640">Deaktiver bruk av ekstern lagring</translation>
 <translation id="6353901068939575220">Angir parameterene som brukes når du utfører søker på en nettadresse med POST. De består av kommainndelte navn og verdi-par. Hvis en verdi er et malparameter, som {searchTerms} i eksempelet ovenfor, blir den erstattet med virkelig søkeordsdata.
 
@@ -1634,6 +1659,7 @@ Hvis denne retningslinjen ikke angis, svartelistes ingen nettadresser i nettlese
 <translation id="8303314579975657113">Angir hvilket GSSAPI-bibliotek som skal brukes for HTTP-autentisering. Du kan angi enten et biblioteksnavn eller en fullstendig bane.
 
           Hvis ingen innstillinger oppgis, går <ph name="PRODUCT_NAME"/> tilbake til å bruke et standard biblioteknavn.</translation>
+<translation id="8549772397068118889">Varsle ved besøk på nettsteder som ikke inngår i innholdspakker</translation>
 <translation id="7749402620209366169">Aktiverer to-delt autentisering for verter med ekstern adgang i stedet for brukerangitt PIN-kode.
 
           Hvis denne innstillingen er aktivert, må brukere oppgi en gyldig to-delt kode ved lesing av en vert.

@@ -91,6 +91,7 @@ Kama sera hii haijawekwa, kishale kikubwa huzimwa wakati skrini ya kuingia katik
           KUMBUKA: Tabia chaguo-msingi ya vifaa vya watumiaji na biashara zinatofautiana: kwenye vifaa vya watumiaji watumiaji wa kusimamiwa huwashwa kama chaguo-msingi, lakini kwenye vifaa vya biashara wao huzimwa kama chaguo-msingi.</translation>
 <translation id="69525503251220566">Kigezo kinachotoa kipengele cha kutafuta kwa picha kwa mtoa huduma wa utafutaji chaguo-msingi</translation>
 <translation id="5469825884154817306">Zuia picha katika tovuti hizi</translation>
+<translation id="5827231192798670332">Huchagua mkakati unaotumiwa kufuta baadhi ya faili ili kuacha nafasi wakati wa kufuta kiotomatiki</translation>
 <translation id="8412312801707973447">Ikiwa ukaguzi wa mtandaoni wa OCSP/CRL umeatekelezwa</translation>
 <translation id="6649397154027560979">Sera hii imeacha kuendesha huduma, tafadhali tumia URL Zilizoondolewa Idhini badala yake. 
 Huzima itifaki za miradi iliyoorodheshwa katika <ph name="PRODUCT_NAME"/> . 
@@ -192,6 +193,8 @@ Iwapo sera hii haitawekwa au orodha ni tupu miradi yote itapatikana katika <ph n
 <translation id="6036523166753287175">Inawezesha kutamba kwa ngome kutoka katika ufikivu wa mpangishaji wa mbali</translation>
 <translation id="1096105751829466145">Kitoaji chaguo-msingi cha utafutaji</translation>
 <translation id="7567380065339179813">Ruhusu programu jalizi kwenye tovuti hizi</translation>
+<translation id="4555850956567117258">Washa usahihishaji wa mbali kwa mtumiaji</translation>
+<translation id="5966615072639944554">Viendelezi vinaruhusiwa kutumia API ya usahihishaji wa mbali</translation>
 <translation id="1617235075406854669">Washa ufutaji wa historia ya upakuaji na kivinjari</translation>
 <translation id="5290940294294002042">Bainisha orodha ya programu jalizi ambayo mtumiaji anaweza kuwezesha au kulemaza</translation>
 <translation id="3153348162326497318">Inakuruhusu kubainisha viendelezi vipi ambavyo watumiaji HAWAWEZI kusakinisha. Viendelezi ambavyo tayari vimesakinishwa vitaondolewa ikiwa vitaondolewa idhini.
@@ -245,6 +248,7 @@ Kama sera hii haitawekwa, hii itawashwa lakini mtumiaji ataweza kuibadilisha.</t
 
           Ikiwa sera hii itasalia kama haijawekwa, 'AllowImages' zitatumiwa na mtumiaji ataweza kuibadilisha.</translation>
 <translation id="5630352020869108293">Rejesha kipindi kilichopita</translation>
+<translation id="2067011586099792101">Zuia ufikiaji wa tovuti zilizo nje ya vifurushi vya maudhui</translation>
 <translation id="4980635395568992380">Aina ya data:</translation>
 <translation id="3096595567015595053">Orodha ya programu jalizi zilizowezeshwa</translation>
 <translation id="3048744057455266684">Sera hii ikiwekwa na URL ya utafutaji inayopendekezwa kutoka kwenye sandukuu iwe na kigezo hiki katika mtiririko wa hoja au katika kitambulishi cha kipande, basi pendekezo litaonyesha maneno ya utafutaji na mtoa huduma ya utafutaji badala ya URL ya utafutaji ghafi.
@@ -264,11 +268,13 @@ Kama sera hii haitawekwa, hii itawashwa lakini mtumiaji ataweza kuibadilisha.</t
          Ikiwa sera hii itaachwa bila thamani chaguo-msingi yote itatumiwa kwa tovuti zote kutoka kwenye sera ya 'DefaultCookiesSetting' ikiwa imewekwa, au vinginevyo usanidi binafsi wa mtumiaji.
 
           Ikiwa sera ya &quot;RestoreOnStartup&quot; itawekwa ili kuhifadhi URL kutoka kwenye vipindi vya awali sera hii haitaheshimiwa na vidakuzi vitahifadhiwa kwa muda mrefu kwa tovuti hizo.</translation>
+<translation id="4807950475297505572">Watumiaji waliotumiwa mara chache hivi karibuni huondolewa hadi kuwe na nafasi ya kutosha</translation>
 <translation id="8828766846428537606">Sanidi ukurasa wa mwanzo chaguo-msingi katika <ph name="PRODUCT_NAME"/> na huzuia watumiaji kuubadilisha.
 
       Mipangilio ya ukurasa wa mtumiaji inafungwa kabisa, ukichagua ukurasa wa mwanzo kuwa ukurasa mpya wa kichupo, au uuweke kuwa URL na ubainishe URL ya ukurasa wa mwanzo. Iwapo hutaibainisha URL ya ukurasa wa mwanzo, basi bado mtumiaji anaweza kuweka ukurasa wa mwanzo kwenye ukurasa mpya wa kichupo kwa kubainisha 'chrome://newtab'.</translation>
 <translation id="2231817271680715693">Leta historia ya kivinjari kutoka kwenye kivinjari chaguo-msingi wakati wa uendeshaji wa kwanza</translation>
 <translation id="1353966721814789986">Kurasa za kuanza</translation>
+<translation id="7173856672248996428">Mfumo wa Muda Mfupi</translation>
 <translation id="1841130111523795147">Huruhusu mtumiaji kuingia katika <ph name="PRODUCT_NAME"/> na huwazuia watumiaji kubadilisha mpangilio huu.
 
       Ukiweka sera hii, unaweza kusanidi iwapo mtumiaji anaruhusiwa kuingia katika <ph name="PRODUCT_NAME"/> au la.</translation>
@@ -278,6 +284,7 @@ Kama sera hii haitawekwa, hii itawashwa lakini mtumiaji ataweza kuibadilisha.</t
 <translation id="6368403635025849609">Ruhusu JavaScript kwenye tovuti hizi</translation>
 <translation id="6074963268421707432">Usiruhusu tovuti yoyote ionyeshe arifa kwenye eneo-kazi</translation>
 <translation id="8614804915612153606">Inalemaza Kusasisha Otomatiki</translation>
+<translation id="4834526953114077364">Watumiaji waliotumiwa mara chache hivi karibuni ambao hawajaingia katika akaunti ndani ya miezi 3 huondolewa hadi kuwe na nafasi ya kutosha</translation>
 <translation id="382476126209906314">Sanidi kiambishi awali cha TalkGadget kwa ufikiaji wa wapangishaji wa mbali</translation>
 <translation id="6561396069801924653">Onyesha chaguo za ufikiaji katika menyu ya trei ya mfumo</translation>
 <translation id="8104962233214241919">Chagua kiotomatiki vyeti vya mteja vya tovuti hizi</translation>
@@ -345,6 +352,13 @@ Kama sera hii haitawekwa, hii itawashwa lakini mtumiaji ataweza kuibadilisha.</t
       Ukiwezesha au kulemaza mpangilio huu, watumiaji hawawezi kubadilisha au kufuta mpangilio huu katika <ph name="PRODUCT_NAME"/>.
 
       Ikiwa sera hii itaachwa bila kuwekwa mpangilio utakuwa kile alichokichagua mtumiaji wakati wa usakinishaji / uendeshaji wa kwanza.</translation>
+<translation id="4784220343847172494">Hudhibiti tabia ya kufuta kiotomatiki kwenye vifaa vya <ph name="PRODUCT_OS_NAME"/>. Ufutaji wa moja kwa moja huanzishwa wakati kiwango cha nafasi kwenye diski hufikia kiwango nyeti ili kurejesha nafasi kwenye diski.
+    
+    Kama sera hii imewekwa kwa 'RemoveLRU', ufutaji kiotomatiki utaendelea kuondoa watumiaji kutoka kwenye kifaa kwa kufuata mpangilio wa aliyeingia mara chache hivi karibuni hadi kuwe na nafasi ya kutosha.
+
+     Kama sera hii imewekwa kwa 'RemoveLRUIfDormant', ufutaji kiotomatiki utaendelea kuondoa watumiaji ambao hawajaingia katika akaunti kwa angalau miezi 3 kwa kufuata mpangilio wa aliyeingia mara chache hivi karibuni hadi kuwe na nafasi ya kutosha.
+
+      Kama sera hii haitawekwa, ufutaji kiotomatiki hutumia mkakati wa chaguo-msingi uliyojengewa ndani. Kwa sasa, inatumia mkakati wa 'RemoveLRUIfDormant'.</translation>
 <translation id="6256787297633808491">Alama za mfumo mzima zitatumika wakati wa kuanzisha Chrome</translation>
 <translation id="2516600974234263142">Huwasha kuchapisha katika <ph name="PRODUCT_NAME"/> na huzuia watumiaji kubadilisha mpangilio huu.
 
@@ -462,6 +476,9 @@ Mfumo wa kipimo  lazima uwe 100% au zaidi. Thamani zitakazofupisha kuchelewa kwa
           Ikiwa mpangilio huu utawezeshwa, basi vifaa halisi vya ingizo na towe vitalemazwa wakati muunganisho wa mbali unapoendelea.
 
           Ikiwa mpangilio huu utalemzwa au hautawekwa, basi watumiaji wa karibu na wa mbali wanaweza kuingiliana na seva pangishi inaposhirikiwa.</translation>
+<translation id="4894257424747841850">Ripoti orodha ya watumiaji wa kifaa ambao waliingia katika akaunti hivi karibuni.
+
+     Kama sera haitawekwa, au imewekwa kuwa sivyo, watumiaji hawataripotiwa.</translation>
 <translation id="1426410128494586442">Ndio</translation>
 <translation id="4897928009230106190">Hubainisha vigezo vinavyotumika wakati wa kufanya utafutaji kwa mapendekezo kutumia POST. Ina vikundi vya jina/thamani vinavyotenganishwa na koma. Kama thamani ni kigezo cha kiolezo, kama, {Hoja za utafutaji} katika mfano hapo juu, itabadilishwa na data ya hoja za utafutaji halisi.
 
@@ -534,12 +551,14 @@ Mpangilio huu umeondolewa kutoka Chrome 29 na matoleo mapya.</translation>
 
       Mipangilio hii inafanya takwimu za kumbukumbu kutoka kwenye kidirisha cha Wasifi wa Zana za Msanidi Programu kupatikana kwenye ukurasa wenyewe wa wavuti.</translation>
 <translation id="5776485039795852974">Uliza kila mara tovuti inapotaka kuonyesha arifa za eneo-kazi</translation>
+<translation id="5047604665028708335">Ruhusu ufikiaji wa tovuti zilizo nje ya vifurushi vya maudhui</translation>
 <translation id="5052081091120171147">Sera hii inalazimisha historia ya kuvinjari kuletwa kutoka kwenye kivinjari chaguo-msingi cha sasa ikiwa imewezeshwa. Ikiwa imewezeshwa, sera hii pia inaathiri kidadisi cha kuleta.
 
       Ikiwa imelemazwa, hakuna historia ya kuvinjari inayoletwa.
 
       Ikiwa haijawekwa, mtumiaji anaweza kuombwa iwapo anataka kuleta, au uletaji unaweza kufanyika kiotomatiki.</translation>
 <translation id="6786747875388722282">Viendelezi</translation>
+<translation id="7132877481099023201">URL ambazo zitapewa ufikiaji wa vifaa vya kunasa video bila ushawishi</translation>
 <translation id="8947415621777543415">Ripoti eneo la kifaa</translation>
 <translation id="1655229863189977773">Weka ukubwa wa kache ya diski katika baiti</translation>
 <translation id="6376842084200599664">Inakuruhusu kubainisha orodha ya viendelezi ambavyo vitasakinishwa kimya kimya, bila uchachawizaji wa mtumiaji.
@@ -554,6 +573,7 @@ Mpangilio huu umeondolewa kutoka Chrome 29 na matoleo mapya.</translation>
 
          Iwapo sera hii itasalia kama haijawekwa mtumiaji anaweza kusanidua kiendelezi chochote kwenye <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="6899705656741990703">Gundua mipangilio ya proksi moja kwa moja</translation>
+<translation id="8382184662529825177">Washa matumizi ya usahihishaji wa mbali wa kulinda maudhui ya kifaa</translation>
 <translation id="7003334574344702284">Sera hii inalazimisha manaenosiri yaliyohifadhiwa kuletwa kutoka kwenye kivinjari chaguo-msingi cha awali ikiwezeshwa. Ikiwezeshwa, sera hii pia inaathiri kidadisi cha kuleta.
 
       Ikilemazwa, manenosiri yaliyohifadhiwa hayataletwa.
@@ -567,6 +587,13 @@ Mpangilio huu umeondolewa kutoka Chrome 29 na matoleo mapya.</translation>
 <translation id="3236046242843493070">Ruwaza za URL ili kuruhusu viendelezi, programu, na hati za mtumiaji kusakinisha kutoka</translation>
 <translation id="2498238926436517902">Ficha rafu otomatiki kila wakati</translation>
 <translation id="253135976343875019">Onyo ya kuchelewa wakati wa kutokuwa na shughuli wakati wa kuendesha kwa nishati ya AC</translation>
+<translation id="480987484799365700">Kama imewekwa kuwashwa sera hii hulazimisha mfumo kubadilishwa kuwa hali ya muda mfupi. Kama sera hii imebainishwa kama sera ya Mfumo wa Uendeshaji (k.m. GPO kwenye Windows) itatumika kwa kila wasifu kwenye mfumo; ikiwa sera imewekwa kama sera ya Wingu itatumika tu kwa wasifu uliyoingia katika akaunti na akaunti inayosimamiwa.
+
+      Katika hali hii data ya wasifu inawekwa kwenye diski kwa urefu wa kipindi cha mtumiaji. Vipengee kama vile historia ya kivinjari, viendelezi na data zao, data ya wavuti kama vidakuzi na hifadhidata haziwekwi salama baada kivinjari kimefungwa. Hata hivyo, hii haizuii mtumiaji kujipakulia data yoyote kwenye diski, kuhifadhi kurasa au kuzichapisha.
+
+       Kama mtumiaji amewasha sawazisha zote data hii inahifadhiwa katika wasifu wake wa kusawazisha kama ilivyo na wasifu za kawaida. Pia Hali fiche inapatikana kama haijazimwa na sera.
+       
+        Kama sera imewekwa kuwa imezimwa ama imeachwa bila kuwekwa kuingia katika akaunti huelekeza katika wasifu wa kawaida.</translation>
 <translation id="6997592395211691850">Iwapo ukaguzi wa OCSP/CRL mtandaoni unahitajika kwa nanga za uaminifu za karibu</translation>
 <translation id="152657506688053119">Orodha ya URL mbadala za mtoa huduma chaguo-msingi wa utafutaji.</translation>
 <translation id="8992176907758534924">Usiruhusu tovuti yoyote kuonyesha picha</translation>
@@ -754,7 +781,6 @@ Kama sera hii haitawekwa, hali ya juu ya utofautishaji itazimwa mwanzoni lakini 
 <translation id="7003746348783715221"><ph name="PRODUCT_NAME"/> mapendeleo</translation>
 <translation id="4723829699367336876">Wezesha kutamba kwa ngome kutoka kwa mteja wa mbali kufikiwa</translation>
 <translation id="6367755442345892511">Ikiwa kituo cha kutoa kinastahili kusanidiwa na mtumiaji.</translation>
-<translation id="4035570660718398959">Ruhusu watumiaji kukomboa matoleo kupitia Usajili wa Chrome OS.</translation>
 <translation id="3868347814555911633">Sera hii ni amilifu katika modi ya rejareja tu.
 
       Inaorodhesha viendelezi ambavyo vinasakinishwa kiotomatiki kwa mtumiaji wa Onyesho, kwa vifaa katika modi ya rejareja. Viendelezi hivi vinahifadhiwa katika kifaa na vinaweza kusakinishwa nje ya mtandao, baada ya usakinishaji.
@@ -775,7 +801,6 @@ Sera hii huathiri aina zote za vifaa vya kuingiza video na si tu kamera iliyojen
           Ukilemaza mpangilio huu, kidhibiti cha nenosiri hakiruhusu kuonyesha manenosiri yaliyohifadhiwa katika maandishi yaliyo wazi ndani ya dirisha la kidhibiti cha nenosiri.
 
           Ukiwezesha au usipoweka sera hii, watumiaji wanaweza kuona manenosiri yao katika maandishi yaliyo wazi ndani ya kidhibiti cha nenosiri.</translation>
-<translation id="5213629107215526747">URL ambazo zitapewa ufikiaji kwa vifaa vya kuchukua video bila maombi.</translation>
 <translation id="5936622343001856595">Hulazimisha maswali katika Utafutaji wa Wavuti wa Google kufanywa na SafeSearch ikiwa imewashwa na huzuia watumiaji kubadilisha mpangilio huu.
 
       Ukiwasha mpangilio huu, SafeSearch katika Utafutaji wa Google huwa imewashwa wakati wote.
@@ -786,6 +811,7 @@ Sera hii huathiri aina zote za vifaa vya kuingiza video na si tu kamera iliyojen
    Mpangilio huu unapowashwa, <ph name="PRODUCT_NAME"/> itafungua mazungumzo ya kuchapisha ya mfumo badala ya uhakiki wa kuchapisha wa kijenzi cha ndani mtumiaji anapoomba ukurasa kuchapishwa.
 
     Iwapo sera hii haitawekwamu itawekwa kuwa uongo, amri za kuchapisha zitachochea skrini ya ukakiki ya kuchapisha.</translation>
+<translation id="7933141401888114454">Washa uundaji wa watumiaji wanaosimamiwa</translation>
 <translation id="2824715612115726353">Washa modi Fiche</translation>
 <translation id="1057535219415338480">Inawezesha ubashiri wa mtandao kwenye <ph name="PRODUCT_NAME"/> na kuzuia watumiaji kubadilisha mpangilio huu.
 
@@ -843,7 +869,6 @@ Sera hii huathiri aina zote za vifaa vya kuingiza video na si tu kamera iliyojen
       Ikiwa sera hii itaachwa bila kuwekwa, hii itawezeshwa lakini mtumiaji ataweza kuibadilisha.</translation>
 <translation id="2236488539271255289">Usiruhusu tovuti yoyote kuweka data ya karibu</translation>
 <translation id="4467952432486360968">Zuia vidakuzi vya wengine</translation>
-<translation id="2041396837791669429">Zuia ufikiaji katika tovuti zilizo nje ya mafurushi ya maudhui.</translation>
 <translation id="1305864769064309495">URL za kutia ramani kwenye kamusi ili kualamisha alama ya boolean inayobainisha iwapo ufikiaji kwa mpangishi unapaswa kuruhusiwa (ruhusu) au kuzuiwa (usiruhusu).
 
          Sera hii ni ya matumizi ya ndani pekee na Chrome yenyewe.</translation>
@@ -878,7 +903,6 @@ Iwapo sera hii imewekwa kuwa haitumiki, kishale kikubwa kitawashwa kila wakati.
 Iwapo utaweka sera hii, watumiaji hawezi kuibadilisha au kuipuuza. 
 Iwapo sera hii haijawekwa, kishale kikubwa kitazimwa mwanzoni lakini kitawashwa na mtumiaji wakati wowote.</translation>
 <translation id="2633084400146331575">Wezesha maoni yaliyozungumzwa</translation>
-<translation id="7712008868843631413">Washa watumiaji wanaosimamiwa.</translation>
 <translation id="8731693562790917685">Mipangilio ya Maudhui inakuruhusu kubainisha namna maudhui ya aina maalum (kwa mfano Vidakuzi, Picha au JavaScript) yanavyoshughulikiwa.</translation>
 <translation id="2411919772666155530">Zuia arifa katika tovuti hizi</translation>
 <translation id="6923366716660828830">Inabainisha jina la mtoaji wa utafutaji chaguo -msingi. Likiachwa tupu au bila kuwekwa, jina la mpangishaji lililobainishwa na URL ya utafutaji litatumiwa.
@@ -892,7 +916,6 @@ Iwapo sera hii haijawekwa, kishale kikubwa kitazimwa mwanzoni lakini kitawashwa 
 <translation id="467236746355332046">Vipengele vinavyohimiliwa:</translation>
 <translation id="7632724434767231364">Jina la maktaba ya GSSAPI</translation>
 <translation id="3038323923255997294">Endelea kuendesha programu za mandharinyuma wakati <ph name="PRODUCT_NAME"/> imefungwa</translation>
-<translation id="4652284479838524692">Washa uthibitishaji wa mbali wa kifaa.</translation>
 <translation id="8909280293285028130">Hubainisha urefu wa muda bila mchango wa mtumiaji ambapo baadaye skrini hufungwa inapoendeshwa kwa nishati ya AC.
 
           Sera hii inapowekwa kwenye thamani kubwa zaidi ya sufuri, hubainisha urefu wa muda ambao lazima mtumiaji asalie bila shughuli kabla ya <ph name="PRODUCT_OS_NAME"/> kufunga skrini.
@@ -914,6 +937,7 @@ Iwapo sera hii haijawekwa, kishale kikubwa kitazimwa mwanzoni lakini kitawashwa 
 
       Ikiwa sera hii imewekwa kuwa Ndivyo au haijasanidiwa, akaunti mpya za mtumiaji itaruhusiwa kuundwa mradi tu <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> haimzuii mtumiaji kuingia.</translation>
 <translation id="4389091865841123886">Sanidi uthibitishaji wa mbali unaotumia mfumo wa TPM.</translation>
+<translation id="3518214502751233558">Bainisha kama uchelewashaji wa usimamizi wa nishati na urefu wa kipindi lazima tu uenze kutekeleza baada ya shughuli ya awali ya mtumiaji katika kipindi.</translation>
 <translation id="8256688113167012935">Hudhibiti jina la akaunti <ph name="PRODUCT_OS_NAME"/> inayoonekana kwenye skrini ya kuingia kwa ajili ya akaunti ya kifaa cha karibu nawe inayolingana.
 
       Iwapo sera hii itawekwa, skrini ya kuingia itatumia uzi uliobainishwa katika kichaguaji cha kuingia kilicho na picha kwa ajili ya akaunti ya kifaa cha karibu nawe inayolingana.
@@ -997,7 +1021,6 @@ itabadilishwa na data ya hoja za utafutaji za kweli.
       Sera hii inapowekwa kwenye ndivyo, ikoni hufichwa.
 
       Sera hii inapowekwa kwente sivyo au isiposanidiwa, ikoni huonekana.</translation>
-<translation id="8401282319420373133">Viendelezi vinaruhusiwa kutumia API ya uthibitishaji wa mbali.</translation>
 <translation id="5085647276663819155">Lemaza Uhakiki wa Uchapishaji</translation>
 <translation id="8672321184841719703">Toleo Lengwa la Kusasisha Otomatiki</translation>
 <translation id="1689963000958717134">Inaruhusu kusukuma usanidi wa mtandao ili kutumika kwa watumiaji wote wa kifaa cha <ph name="PRODUCT_OS_NAME"/>. Usanidi wa mtandao ni mtungo wa JSON ulioumbizwa kama ilivyofafanuliwa na umbizo la Usanidi Huru wa Mtandao ulioelezwa kwenye <ph name="ONC_SPEC_URL"/></translation>
@@ -1042,6 +1065,7 @@ itabadilishwa na data ya hoja za utafutaji za kweli.
       Ikiwezeshwa picha kiwamba haziwezi kupigwa kwa kutumia mikato ya kibodi au APl za kiendelezi.
 
       Ikilemazwa au isopobainishwa, upigaji picha kiwamba unaruhusiwa.</translation>
+<translation id="5697306356229823047">Ripoti watumiaji wa kifaa</translation>
 <translation id="8649763579836720255">Vifaa vya Chrome OS vinaweza kutumia usahihishaji wa mbali (Ufikiaji Uliothibitishwa) kupata hati iliyotolewa na Chrome OS CA inayodai kifaa kinastahiki kucheza maudhui yanayolindwa. Utaratibu huu unahusisha kutuma maelezo ya vifaa vya maunzi vilivyoidhinshwa kwa Chrome OS CA ambayo inatambua kifaa kipekee. 
 
         Kama mpangilio huu sio wa kweli, kifaa hakitatumia usahihishaji wa mbali wa  kulinda maudhui na huenda kifaa hakitaweza kucheza maudhui yanayolindwa.
@@ -1125,6 +1149,7 @@ itabadilishwa na data ya hoja za utafutaji za kweli.
       Ikiwa mpangilio huu umewezeshwa, historia ya kuvinjari haihifadhiwi.
 
       Ikiwa mpangilio huu umelemazwa au haujawekwa, historia ya kuvinjari inahifadhiwa.</translation>
+<translation id="7295019613773647480">Washa watumiaji wanaosimamiwa</translation>
 <translation id="2759224876420453487">Dhibiti tabia ya mtumiaji katika kipindi cha wasifu nyingi</translation>
 <translation id="3844092002200215574">Inasanidi saraka ambayo <ph name="PRODUCT_NAME"/> itatumika kuhifadhi faili za kache kwenye diski.
 
@@ -1184,8 +1209,6 @@ Iwapo sera hii imewekwa kuwa kweli, hali ya juu ya utofautishaji itawashwa wakat
 Iwapo sera hii imewekwa kwa haitumiki, hali ya juu ya utofautishaji itazimwa wakati skrini ya kuingia katika akaunti itakapoonyeshwa.
 Iwapo utaweka sera hii, watumiaji wanaweza kwa muda kuipuuza kwa kuwasha au kuzima hali ya juu ya utofautishaji. Hata hivyo, chaguo la mtumiaji halitaendelea na chaguo-msingi  hurejeshwa tena wakati wowote skrini ya kuingia katika akaunto inapoonyeshwa upya au mtumiaji anaposalia bila kufanya kitu kwenye skrini ya kuingia katika akaunti kwa dakika moja. 
 Iwapo sera hii haijawekwa, hali ya juu ya utoafautishaji huzimwa wakati skrini ya kuingia katika akaunti inapoonyeshwa kwanza. Watumiaji wanaweza kuwasha au kuzima hali ya juu ya utofautishaji wakati wowote na hali yake kwenye skrini ya kuingia katika akaunti inaendelea kati ya watumiaji.</translation>
-<translation id="8580857153747395000">Onya ninapotembelea tovuti zilizo nje ya mafurushi ya maudhui.</translation>
-<translation id="350796261613621561">Washa uundaji wa watumiaji wa kusimamiwa.</translation>
 <translation id="602728333950205286">URL ya papo hapo ya kitoaji chaguo-msingi cha utafutaji</translation>
 <translation id="3030000825273123558">Wezesha kuripoti kwa metriki</translation>
 <translation id="8465065632133292531">Vigezo vya URL ya papo hapo inayotumia POST</translation>
@@ -1201,6 +1224,7 @@ Kama sera hii haitawekwa, kifaa kitatumia mfumo chaguo-msingi wa saa 24.</transl
 
           Mpangilio huu ukizimwa, basi kipengele hiki hakitapatikana.</translation>
 <translation id="1675002386741412210">Imehimiliwa kwenye:</translation>
+<translation id="1608755754295374538">URL ambazo zitapewa ufikiaji wa vifaa vya kunasa sauti bila ushawishi</translation>
 <translation id="3547954654003013442">Mipangilio ya proksi</translation>
 <translation id="5921713479449475707">Ruhusu vipakuliwa vya kusasisha kiotomatiki kupitia HTTP</translation>
 <translation id="4482640907922304445">Inaonyesha kitufe cha Mwanzo kwenye upauzana wa <ph name="PRODUCT_NAME"/>.
@@ -1212,8 +1236,8 @@ Kama sera hii haitawekwa, kifaa kitatumia mfumo chaguo-msingi wa saa 24.</transl
       Ukiwezesha au kulemaza mpangilio huu, watumiaji hawawezi kubadilisha au kufuta mpangilio huu kwenye <ph name="PRODUCT_NAME"/>.
 
       Kuacha sera hii kama haijawekwa kutaruhusu mtumiaji kuchagua iwapo ataonyesha kitufe cha mwanzo.</translation>
-<translation id="6897718480289510689">Ruhusu ufikiaji katika tovuti zilizo nje ya mafurushi ya maudhui.</translation>
 <translation id="2518231489509538392">Ruhusu kucheza sauti</translation>
+<translation id="8146727383888924340">Ruhusu watumiaji kukomboa matoleo kupitia Usajili wa Mfumo wa Uendeshaji wa Chrome</translation>
 <translation id="7301543427086558500">Hubainisha orodha ya URL mbadala zinazoweza kutumiwa ili kupata taminolijia za utafutaji kutoka kwenye mtambo wa kutafuta. URL zinafaa kuwa na maneno <ph name="SEARCH_TERM_MARKER"/>, ambayo yatatumika kupata taminolojia za utafutaji.
 
           Sera hii ni ya hiari, Iwapo haijawekwa, hakuna url mbadala zitazotumika kupata hoja za utafutaji.
@@ -1244,7 +1268,11 @@ Kama sera hii haitawekwa, kifaa kitatumia mfumo chaguo-msingi wa saa 24.</transl
 <translation id="5208240613060747912">Inakuruhusu kuweka orodha ya ruwaza za url ambazo zinabainisha tovuti ambazo haziruhusiwi kuonyesha arifa.
 
           Ikiwa sera hii itasalia kama haijawekwa thamani yote chaguo-msingi itatumika kwa tovuti zote kutoka katika sera ya 'DefaultNotificationsSetting' ikiwa imewekwa, au vinginevyo usanidi binafsi wa mtumiaji.</translation>
-<translation id="7927140259706020912">URL ambazo zitapewa ufikiaji wa vifaa vya kuchukua sauti bila maombi.</translation>
+<translation id="346731943813722404">Hubainisha iwapo ucheleweshaji wa usimamizi wa nishati na kikomo cha urefu wa kipindi lazima tu uanze kutekeleza baada ya kuonekana kwa shughuli ya kwanza ya mtumiaji katika kipindi.
+     
+        Iwapo sera hii imewekwa kuwa Ndivyo, ucheleweshaji wa usimamizi wa nishati na kikomo cha urefu wa kipindi havianzi kutekeleza mpaka shughuli ya kwanza ya mtumiaji ionekane katika kipindi.
+ 
+        Iwapo sera hii imewekwa kuwaSivyo ama imeachwa bila kuwekwa, ucheleweshaji wa usimamizi wa nishati na kikomo cha urefu wa kipindi huanza kutekeleza mara tu kipindi kinapoanza.</translation>
 <translation id="4600786265870346112">Washa kishale kikubwa</translation>
 <translation id="8592105098257899882">Inasanidi ukubwa wa akiba ambayo <ph name="PRODUCT_NAME"/> itautumia kwa kuhifadhi faili zilizoakibishwa kwenye diski..
 
@@ -1431,7 +1459,6 @@ Iwapo sera hii haijawekwa, maoni yanayotamkwaa yatazimwa mwanzoni lakini yanawez
           Sera ya thamani inastahili kubainishwa kwa nukta. Thamani zinabanwa ili kuwa chini ya ucheleweshaji wa kutokuwa na shughuli.</translation>
 <translation id="1897365952389968758">Ruhusu tovuti zote ziendeshe JavaScript</translation>
 <translation id="5244714491205147861">Udhibiti wa nishati kwenye skrini ya kuingia katika akaunti</translation>
-<translation id="3619270953033888719">Washa matumizi ya usahihishaji wa mbali wa maudhui yaliyohifadhiwa kwa kifaa.</translation>
 <translation id="922540222991413931">Sanidi viendelezi, programu, na vyanzo vya kusakinisha hati</translation>
 <translation id="7323896582714668701">Vigezo vya ziada vya mstari wa amri vya <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Lemaza usawazishaji wa data iliyna Google</translation>
@@ -1465,6 +1492,7 @@ Kama sera haitawekwa, thamani ya chaguo-msingi 'MultiProfileUserBehaviorUnrestri
           Kwa mifano ya ruwaza angalia http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="3101501961102569744">Chagua jinsi ya kubainisha mipangilio ya seva mbadala</translation>
 <translation id="1803646570632580723">Orodha ya programu zilizobanwa ili kuonekana kwenye kizunduzi</translation>
+<translation id="1062011392452772310">Washa usahihishaji wa mbali wa kifaa</translation>
 <translation id="7774768074957326919">Tumia mipangilio ya proksi ya mfumo</translation>
 <translation id="3891357445869647828">Wezesha JavaScript</translation>
 <translation id="868187325500643455">Ruhusu tovuti zote kuendesha programu jalizi moja kwa moja</translation>
@@ -1506,7 +1534,6 @@ Sera hii inatumika tu kama sera ya 'DefaultSearchProviderEnabled' imewashwa.</tr
 <translation id="7194407337890404814">Kitoaji chaguo-msingi cha utafutaji</translation>
 <translation id="1843117931376765605">Kiwango cha kuonyesha upya kwa sera ya mtumiaji</translation>
 <translation id="5535973522252703021">Orodha iliyoidhinishwa ya ukaumu wa seva ya Kerberos</translation>
-<translation id="4578030379102330182">Washa uthibitishaji wa mbali kwa mtumiaji.</translation>
 <translation id="9187743794267626640">Lemaza uangikaji wa hifadhi ya nje</translation>
 <translation id="6353901068939575220">Hubainisha vigezo vinavyotumika wakati wa kutafuta URL kwa kutumia POST.  Ina vikundi vya jina/thamani vinavyotenganishwa na koma. Kama thamani ni kigezo cha kiolezo, kama {Hoja za utafutaji} katika mfano hapo juu, itabadilishwa na data ya hoja za utafutaji halisi.
 
@@ -1727,6 +1754,7 @@ Sera hii inatumika tu kama sera ya 'DefaultSearchProviderEnabled' imewashwa.</tr
 <translation id="8303314579975657113">Hubainisha maktaba upi wa GSSAPI ya kutumia kwa Uthibitishaji wa HTTP. Unaweza kuweka tu jina la maktaba, au kijia kamili.
 
           Ikiwa hakuna mpangilio uliotolewa, <ph name="PRODUCT_NAME"/> itaendelea kutumia jina chaguo-msingi la maktaba.</translation>
+<translation id="8549772397068118889">Tahadharisha ninapotembelea tovuti zilizo nje ya vifurushi vya maudhui</translation>
 <translation id="7749402620209366169">Inawezesha uthibitishaji wa vipengee viwili kwa wapangishaji wa ufikivu wa mbali badala ya PIN iliyobainishwa na mtumiaji.
 
           Ikiwa mpangilio huu utawezeshwa, basi lazima mtumiaji atoe sababu mbili za msimbo halai anapofikia mpangishaji.

@@ -130,6 +130,7 @@ Premeu Ctrl+Alt+Z per desactivar-los.</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830">S'està activant <ph name="NAME"/></translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="1923539912171292317">Clics automàtics</translation>
 <translation id="1398853756734560583">Maximitza</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: s'està connectant...</translation>
 <translation id="252373100621549798">Pantalla desconeguda</translation>
@@ -222,6 +223,7 @@ Premeu Alt+Cerca o Maj per cancel·lar.</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Enhorabona. El servei de dades &quot;<ph name="NAME"/>&quot; s'ha activat i ja es pot fer servir.</translation>
 <translation id="412065659894267608">Falten <ph name="HOUR"/> h <ph name="MINUTE"/> min fins que estigui carregada completament</translation>
+<translation id="7297443947353982503">El nom d'usuari o la contrasenya és incorrecte o no s'ha pogut realitzar l'autorització d'EAP.</translation>
 <translation id="6359806961507272919">SMS de <ph name="PHONE_NUMBER"/></translation>
 <translation id="1244147615850840081">Operador</translation>
 </translationbundle>

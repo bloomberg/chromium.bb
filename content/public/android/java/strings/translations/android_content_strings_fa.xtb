@@ -3,8 +3,11 @@
 <translationbundle lang="fa">
 <translation id="376869769528291915">:</translation>
 <translation id="6015796118275082299">سال</translation>
+<translation id="2094750046714988961">نمایه‌ساز اجرا نمی‌شود زیرا حافظه خارجی آماده نیست</translation>
 <translation id="1256337885411059545">ویدیو پخش نمی‌شود</translation>
+<translation id="2520230379124234395">نمایه‌ساز اجرا شد</translation>
 <translation id="7821540960913969614">تنظیم تاریخ</translation>
+<translation id="4859501799452851758">نمایه‌ساز پایان یافت. نتایج در <ph name="FILENAME"/> ذخیره شده‌اند.</translation>
 <translation id="3845599764535987402">ساعت</translation>
 <translation id="4932733599132424254">تاریخ</translation>
 <translation id="6727102863431372879">تنظیم</translation>
@@ -20,6 +23,7 @@
 <translation id="2732718972699418926">ق.ظ</translation>
 <translation id="7096034533295549981">بارگیری ویدیو</translation>
 <translation id="1542044944667958430">جستجوی وب</translation>
+<translation id="6849295950938417341">نمایه‌ساز اجرا نشد</translation>
 <translation id="6527303717912515753">اشتراک‌گذاری</translation>
 <translation id="1822429046913737220">ق.ظ/ب.ظ</translation>
 <translation id="5789643057113097023">.</translation>

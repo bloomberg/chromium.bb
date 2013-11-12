@@ -130,6 +130,7 @@ Premi Ctrl+Alt+Z per disattivarlo.</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830">Attivazione di <ph name="NAME"/></translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="1923539912171292317">Clic automatici</translation>
 <translation id="1398853756734560583">Ingrandisci</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: connessione...</translation>
 <translation id="252373100621549798">Display sconosciuto</translation>
@@ -222,6 +223,7 @@ Premi Alt+tasto per la ricerca o Maiusc per annullare.</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Complimenti, il tuo servizio dati &quot;<ph name="NAME"/>&quot; è stato attivato ed è pronto all'uso.</translation>
 <translation id="412065659894267608"><ph name="HOUR"/> h e <ph name="MINUTE"/> m per completare la ricarica</translation>
+<translation id="7297443947353982503">Nome utente/password errati o autenticazione EAP non riuscita</translation>
 <translation id="6359806961507272919">SMS da <ph name="PHONE_NUMBER"/></translation>
 <translation id="1244147615850840081">Gestore</translation>
 </translationbundle>

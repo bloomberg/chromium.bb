@@ -1,26 +1,43 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="de">
+<translation id="6831043979455480757">Übersetzen</translation>
+<translation id="7644305409888602715">Seite wird in folgende Sprache übersetzt: <ph name="SOURCE_LANGUAGE"/>...</translation>
 <translation id="1491151370853475546">Diese Seite aktualisieren</translation>
 <translation id="7658239707568436148">Abbrechen</translation>
 <translation id="6458785801851713928">Die Synchronisierung ist für Ihre Domain nicht verfügbar.</translation>
 <translation id="2731700343119398978">Bitte warten...</translation>
+<translation id="7378627244592794276">Nein</translation>
 <translation id="3358663646935160692">Dieses Konto wird von <ph name="DOMAIN_NAME"/> verwaltet.
 
 Sie melden sich gerade mit einem verwalteten Konto an und geben dem Administrator des Kontos Kontrolle über Ihr Chrome-Profil. Ihre Chrome-Daten werden dauerhaft mit diesem Konto verknüpft. Wenn Sie sich aus diesem Konto abmelden, werden alle lokalen Chrome-Daten gelöscht.</translation>
 <translation id="1623104350909869708">Keine weiteren Dialogfelder auf dieser Seite zulassen</translation>
+<translation id="624558823898732418">Zielsprache: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="3896036286668839683">Zertifikats-Viewer</translation>
 <translation id="8583805026567836021">Kontodaten werden gelöscht</translation>
+<translation id="8730621377337864115">Fertig</translation>
 <translation id="4170011742729630528">Der Dienst ist momentan nicht verfügbar. Bitte versuchen Sie es später erneut.</translation>
 <translation id="8627706565932943526">Synchronisierungsfehler</translation>
+<translation id="656628257199996201"><ph name="SOURCE_LANGUAGE"/> immer übersetzen</translation>
+<translation id="9137013805542155359">Original anzeigen</translation>
+<translation id="5684874026226664614">Hoppla! Diese Seite konnte nicht übersetzt werden.</translation>
 <translation id="3136378934686431938">Bitte aktualisieren Sie Ihre Anmeldeinformationen.</translation>
+<translation id="6042308850641462728">Mehr</translation>
+<translation id="8034522405403831421">Diese Seite ist auf <ph name="SOURCE_LANGUAGE"/>. In folgende Sprache übersetzen: <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="8725066075913043281">Erneut versuchen</translation>
 <translation id="4510973599275542560">Nicht aktualisieren</translation>
 <translation id="9154176715500758432">Auf dieser Seite bleiben</translation>
 <translation id="7063006564040364415">Verbindung zum Synchronisierungsserver konnte nicht hergestellt werden.</translation>
+<translation id="4271185234001491831"><ph name="LANGUAGE"/> nie übersetzen</translation>
+<translation id="1285320974508926690">Diese Website nie übersetzen</translation>
+<translation id="5164482624172255778">Soll Google Chrome ab dem nächsten Aufruf eine Übersetzung von Seiten dieser Website anbieten, die auf <ph name="LANGUAGE"/> sind?</translation>
+<translation id="8528538445849828817">Sprache der Seite: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="6512448926095770873">Diese Seite verlassen</translation>
 <translation id="7947953824732555851">Annehmen und anmelden</translation>
 <translation id="6040143037577758943">Schließen</translation>
+<translation id="969096075394517431">Sprachen ändern</translation>
 <translation id="5032574515228824816">Eingabeaufforderung</translation>
+<translation id="1742134235943978220">In folgende Sprache übersetzt: <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="7495038789730067783">Anmeldung bestätigen</translation>
 </translationbundle>

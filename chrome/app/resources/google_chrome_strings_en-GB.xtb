@@ -30,9 +30,7 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="2370289711218562573">Google Chrome is now importing Favourites/Bookmarks.</translation>
 <translation id="8762286861469007470">Chrome Captive Portal detector</translation>
 <translation id="2721687379934343312">On Mac, passwords are saved to your Keychain and may be accessed or synced by other Chrome users sharing this OS X account.</translation>
-<translation id="3993188379797269327"><ph name="FILE_NAME"/> may change your Chrome settings.</translation>
 <translation id="1761870329818521071">Cannot install the same Google Chrome Frame version that is currently running. Please close Google Chrome Frame and try again.</translation>
-<translation id="2040709530900803995">Google Chrome Renderer</translation>
 <translation id="6014844626092547096">You're now signed in to Chrome! Sync is disabled by your administrator.</translation>
 <translation id="3140883423282498090">Your changes will take effect the next time you relaunch Google Chrome.</translation>
 <translation id="1773601347087397504">Get help with using Chrome OS</translation>
@@ -52,7 +50,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="3080151273017101988">Continue running background apps when Google Chrome is closed</translation>
 <translation id="4149882025268051530">The installer failed to uncompress archive. Please download Google Chrome again.</translation>
 <translation id="6989339256997917931">Google Chrome has been updated, but you haven't used it for at least 30 days.</translation>
-<translation id="5744005218040929396">Google Chrome Utility</translation>
 <translation id="7060865993964054389">Google Chrome App Launcher</translation>
 <translation id="1682634494516646069">Google Chrome cannot read and write to its data directory:
 
@@ -87,12 +84,15 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="4585888816441913908">This computer already has a more recent version of Google Chrome and Google Chrome Frame. If the software is not working, please uninstall both Google Chrome and Google Chrome Frame and try again.</translation>
 <translation id="3149510190863420837">Chrome Apps</translation>
+<translation id="7084448929020576097"><ph name="FILE_NAME"/> is malicious and Chrome has blocked it.</translation>
 <translation id="6368958679917195344">Chrome OS is made possible by additional <ph name="BEGIN_LINK_CROS_OSS"/>open-source software<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="7459554271817304652">Set up Sync to save your personalised browser features to the web and access them from Google Chrome on any computer.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="473775607612524610">Update</translation>
 <translation id="1195935957447623558">Google Chrome didn't shut down correctly. To reopen the pages that you had open, click Restore.</translation>
 <translation id="2576431527583832481">Chrome just got better! A new version is available.</translation>
+<translation id="4633000520311261472">To make Chrome safer, we disabled some extensions that aren't listed in the <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> and may have been added without your knowledge.</translation>
+<translation id="556024056938947818">Google Chrome is trying to show passwords.</translation>
 <translation id="2580411288591421699">Cannot install the same Google Chrome version that is currently running. Please close Google Chrome and try again.</translation>
 <translation id="8460191995881063249">Chrome Notification Center</translation>
 <translation id="1457721931618994305">Updating Google Chrome ...</translation>
@@ -127,7 +127,6 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="911206726377975832">Also delete your browsing data?</translation>
 <translation id="5855036575689098185">Software running on your computer is incompatible with Google Chrome.</translation>
 <translation id="2044287590254833138">Google Chrome Toolbar</translation>
-<translation id="5074344184765391290">Chrome Plug-In Host</translation>
 <translation id="8862326446509486874">You do not have appropriate rights for system-level installation. Try running the installer again as Administrator.</translation>
 <translation id="2874156562296220396">Google Chrome is made possible by the <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> open source project and other <ph name="BEGIN_LINK_OSS"/>open source software<ph name="END_LINK_OSS"/>.</translation>
 <translation id="3847841918622877581">Google Chrome may use web services to improve your browsing experience.</translation>
@@ -141,6 +140,7 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="4273752058983339720">Google Chrome is configured to automatically launch when you start your computer.</translation>
 <translation id="1104959162601287462">About the &amp;Chrome OS</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
+<translation id="1140117203923356735"><ph name="FILE_NAME"/> makes settings changes similar to some malware, so Chrome has blocked it.</translation>
 <translation id="5941830788786076944">Make Google Chrome the default browser</translation>
 <translation id="7787950393032327779">The profile appears to be in use by another Google Chrome process (<ph name="PROCESS_ID"/>) on another computer (<ph name="HOST_NAME"/>). Chrome has locked the profile so that it doesn't get corrupted. If you are sure no other processes are using this profile, you can unlock the profile and relaunch Chrome.</translation>
 <translation id="1469002951682717133">Chrome App Launcher</translation>
@@ -177,12 +177,11 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="576822117893741893">Show the Chrome menu</translation>
 <translation id="3444832043240812445">This page only shows information on your recent crashes if you <ph name="BEGIN_LINK"/>enable crash reporting<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome is unresponsive. Relaunch now?</translation>
-<translation id="5318056482164160049">Google Chrome Plug-In Host</translation>
+<translation id="1175529839152551794">Now that you're signed in, you can get your tabs, bookmarks and other Chrome stuff across your laptop, phone and tablet. You will also receive more relevant suggestions and features on Google services.</translation>
 <translation id="6126631249883707068">Do you want Google Chrome to save your password?</translation>
 <translation id="7773845170078702898">Do you want Google Chrome to save your password for this site?</translation>
 <translation id="5046764976540625289">Exit Chrome</translation>
 <translation id="4251615635259297716">Link my Chrome data to this account</translation>
-<translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Internet Browser</translation>
 <translation id="8142608456917638009">Google Chrome could not create an application shortcut.</translation>
@@ -190,11 +189,11 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="2189123953385179981">Google ChromeOS does not support launching an external application to handle <ph name="SCHEME"/> links. The link requested is <ph name="PROTOLINK"/>.</translation>
 <translation id="7396375882099008034">Allow Chrome to access the network in your firewall or antivirus
         settings.</translation>
+<translation id="9102715433345326100">This file is malicious and Chrome has blocked it.</translation>
 <translation id="8205111949707227942">Optional: Help make Chrome OS better by sending usage statistics and crash reports automatically to Google.</translation>
 <translation id="7253415505590551024">Downloads are currently in progress. Do you want to exit Google Chrome and cancel the downloads?</translation>
 <translation id="7196020411877309443">Why am I seeing this?</translation>
 <translation id="2769762047821873045">Google Chrome isn't your default browser.</translation>
-<translation id="1020869477857717497"><ph name="FILE_NAME"/> may change how your searches work in Chrome.</translation>
 <translation id="4567424176335768812">You're signed in as <ph name="USER_EMAIL_ADDRESS"/>. Now you can access your bookmarks, history and other settings on all your signed in devices.</translation>
 <translation id="6855094794438142393">Go to
           the Chrome menu &gt;

@@ -1,26 +1,43 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="vi">
+<translation id="6831043979455480757">Dịch</translation>
+<translation id="7644305409888602715">Đang dịch trang từ <ph name="SOURCE_LANGUAGE"/>...</translation>
 <translation id="1491151370853475546">Tải lại trang này</translation>
 <translation id="7658239707568436148">Hủy</translation>
 <translation id="6458785801851713928">Dịch vụ đồng bộ hóa không khả dụng cho miền của bạn.</translation>
 <translation id="2731700343119398978">Vui lòng chờ...</translation>
+<translation id="7378627244592794276">Không</translation>
 <translation id="3358663646935160692">Tài khoản này được quản lý bởi <ph name="DOMAIN_NAME"/>.
 
 Bạn đang đăng nhập bằng tài khoản được quản lý và cung cấp cho quản trị viên quyền kiểm soát đối với tiểu sử trên Chrome của bạn. Dữ liệu Chrome của bạn sẽ vĩnh viễn gắn với tài khoản này. Ngắt kết nối khỏi tài khoản này sẽ xóa các dữ liệu Chrome cục bộ.</translation>
 <translation id="1623104350909869708">Ngăn trang này tạo hộp thoại bổ sung</translation>
+<translation id="624558823898732418">Ngôn ngữ bản dịch: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="3896036286668839683">Trình xem chứng chỉ</translation>
 <translation id="8583805026567836021">Xóa dữ liệu tài khoản</translation>
+<translation id="8730621377337864115">Hoàn tất</translation>
 <translation id="4170011742729630528">Dịch vụ không khả dụng; thử lại sau.</translation>
 <translation id="8627706565932943526">Lỗi đồng bộ hóa</translation>
+<translation id="656628257199996201">Luôn dịch <ph name="SOURCE_LANGUAGE"/></translation>
+<translation id="9137013805542155359">Hiển thị văn bản gốc</translation>
+<translation id="5684874026226664614">Rất tiếc. Không thể dịch trang này.</translation>
 <translation id="3136378934686431938">Vui lòng cập nhật chi tiết đăng nhập của bạn.</translation>
+<translation id="6042308850641462728">Thêm</translation>
+<translation id="8034522405403831421">Trang này có ngôn ngữ là <ph name="SOURCE_LANGUAGE"/>. Dịch trang này sang <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="8725066075913043281">Thử lại</translation>
 <translation id="4510973599275542560">Không tải lại</translation>
 <translation id="9154176715500758432">Ở lại Trang này</translation>
 <translation id="7063006564040364415">Không thể kết nối với máy chủ đồng bộ hóa.</translation>
+<translation id="4271185234001491831">Không bao giờ dịch <ph name="LANGUAGE"/></translation>
+<translation id="1285320974508926690">Không bao giờ dịch trang web này</translation>
+<translation id="5164482624172255778">Bạn có muốn Google Chrome đề xuất dịch các trang <ph name="LANGUAGE"/> từ trang web này vào lần tiếp theo không?</translation>
+<translation id="8528538445849828817">Ngôn ngữ trang: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="6512448926095770873">Rời khỏi Trang này</translation>
 <translation id="7947953824732555851">Chấp nhận &amp; đăng nhập</translation>
 <translation id="6040143037577758943">Đóng</translation>
+<translation id="969096075394517431">Thay đổi ngôn ngữ</translation>
 <translation id="5032574515228824816">Lời nhắc</translation>
+<translation id="1742134235943978220">Đã được dịch sang <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="7495038789730067783">Xác nhận đăng nhập</translation>
 </translationbundle>

@@ -26,9 +26,7 @@
 <translation id="2370289711218562573">Google Chrome rozpoczął importowanie Ulubionych/Zakładek.</translation>
 <translation id="8762286861469007470">Detektor portalu przechwytującego Chrome</translation>
 <translation id="2721687379934343312">Na komputerach z systemem Mac hasła są zapisane w pęku kluczy. Inni użytkownicy Chrome udostępniający to konto systemu OS X mogą uzyskiwać do nich dostęp i je synchronizować.</translation>
-<translation id="3993188379797269327"><ph name="FILE_NAME"/> może zmienić ustawienia Chrome.</translation>
 <translation id="1761870329818521071">Nie można zainstalować tej samej wersji wtyczki Google Chrome Frame, która jest obecnie uruchomiona. Zamknij wtyczkę Google Chrome Frame i spróbuj ponownie.</translation>
-<translation id="2040709530900803995">Moduł renderowania Google Chrome</translation>
 <translation id="6014844626092547096">Jesteś zalogowany w Chrome. Administrator wyłączył synchronizację.</translation>
 <translation id="3140883423282498090">Zmiany zaczną obowiązywać po ponownym uruchomieniu Google Chrome.</translation>
 <translation id="1773601347087397504">Skorzystaj z pomocy dotyczącej używania systemu operacyjnego Chrome</translation>
@@ -48,7 +46,6 @@
 <translation id="3080151273017101988">Kontynuuj działanie aplikacji w tle po zamknięciu przeglądarki Google Chrome</translation>
 <translation id="4149882025268051530">Instalator nie może prawidłowo rozpakować archiwum. Pobierz Google Chrome ponownie.</translation>
 <translation id="6989339256997917931">Przeglądarka Google Chrome została zaktualizowana, ale nie była przez Ciebie używana przez co najmniej 30 dni.</translation>
-<translation id="5744005218040929396">Program Google Chrome</translation>
 <translation id="7060865993964054389">Program uruchamiający aplikacje Google Chrome</translation>
 <translation id="1682634494516646069">Google Chrome nie może odczytać ani zapisać danych w katalogu <ph name="USER_DATA_DIRECTORY"/>.</translation>
 <translation id="4343226815564935778">Katalog instalacyjny przeglądarki Google Chrome jest prawdopodobnie używany. Uruchom ponownie komputer i ponów próbę.</translation>
@@ -81,6 +78,7 @@
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="4585888816441913908">Na tym komputerze są już zainstalowane nowsze wersje Google Chrome i Google Chrome Frame. Jeśli oprogramowanie nie działa, odinstaluj Google Chrome i Google Chrome Frame, a następnie spróbuj ponownie.</translation>
 <translation id="3149510190863420837">Aplikacje Chrome</translation>
+<translation id="7084448929020576097">Plik <ph name="FILE_NAME"/> jest złośliwy i został zablokowany przez Chrome.</translation>
 <translation id="6368958679917195344">Opracowanie systemu operacyjnego Chrome było możliwe dzięki dodatkowemu <ph name="BEGIN_LINK_CROS_OSS"/>oprogramowaniu typu open source<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="7459554271817304652">Skonfiguruj synchronizację, by zapisać w internecie własne funkcje przeglądarki i mieć do nich dostęp w Google Chrome na każdym komputerze.</translation>
 <translation id="4331809312908958774">Chrome OS
@@ -88,6 +86,8 @@
 <translation id="473775607612524610">Aktualizuj</translation>
 <translation id="1195935957447623558">Przeglądarka Chrome nie została poprawnie zamknięta. Aby ponownie otworzyć strony, które były wyświetlone, kliknij przycisk Przywróć.</translation>
 <translation id="2576431527583832481">Chrome jest teraz jeszcze lepszy! Dostępna jest nowa wersja.</translation>
+<translation id="4633000520311261472">Aby poprawić bezpieczeństwo Chrome, wyłączyliśmy niektóre rozszerzenia niedostępne w <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/>, które mogły zostać dodane bez Twojej wiedzy.</translation>
+<translation id="556024056938947818">Google Chrome próbuje pokazać hasła.</translation>
 <translation id="2580411288591421699">Nie można zainstalować tej samej wersji przeglądarki Google Chrome co obecnie uruchomiona. Zamknij przeglądarkę Google Chrome i spróbuj ponownie.</translation>
 <translation id="8460191995881063249">Centrum powiadomień Chrome</translation>
 <translation id="1457721931618994305">Aktualizowanie &amp;Google Chrome...</translation>
@@ -120,7 +120,6 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="911206726377975832">Czy usunąć także dane przeglądarki?</translation>
 <translation id="5855036575689098185">Oprogramowanie, które działa na Twoim komputerze jest niezgodne z Google Chrome.</translation>
 <translation id="2044287590254833138">Pasek narzędzi Google Chrome</translation>
-<translation id="5074344184765391290">Serwer wtyczek przeglądarki Chrome</translation>
 <translation id="8862326446509486874">Nie masz odpowiednich uprawnień do przeprowadzenia instalacji na poziomie systemowym. Uruchom ponownie program instalacyjny jako administrator.</translation>
 <translation id="2874156562296220396">Stworzenie przeglądarki Google Chrome było możliwe dzięki projektowi open source <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> i innym <ph name="BEGIN_LINK_OSS"/>programom o otwartym kodzie źródłowym<ph name="END_LINK_OSS"/>.</translation>
 <translation id="3847841918622877581">Przeglądarka Google Chrome może korzystać z usług internetowych w celu poprawy wygody użytkowania.</translation>
@@ -134,6 +133,7 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="4273752058983339720">Google Chrome uruchamia się automatycznie po włączeniu komputera.</translation>
 <translation id="1104959162601287462">System operacyjny &amp;Chrome – informacje</translation>
 <translation id="5328989068199000832">Pliki binarne Google Chrome</translation>
+<translation id="1140117203923356735">Plik <ph name="FILE_NAME"/> zmienia ustawienia podobnie jak niektóre złośliwe programy, więc został zablokowany przez Chrome.</translation>
 <translation id="5941830788786076944">Ustaw Google Chrome jako domyślną przeglądarkę</translation>
 <translation id="7787950393032327779">Wygląda na to, że profil jest używany przez inny proces Google Chrome (<ph name="PROCESS_ID"/>) na innym komputerze (<ph name="HOST_NAME"/>). Chrome zablokował profil, by zapobiec jego uszkodzeniu. Jeśli masz pewność, że żadne inne procesy nie używają tego profilu, możesz go odblokować i ponownie uruchomić Chrome.</translation>
 <translation id="1469002951682717133">Program uruchamiający aplikacje Chrome</translation>
@@ -170,12 +170,11 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="576822117893741893">Pokaż menu Chrome</translation>
 <translation id="3444832043240812445">Ta strona zawiera informacje o ostatnich awariach tylko w przypadku <ph name="BEGIN_LINK"/>włączenia funkcji zgłaszania awarii<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Przeglądarka Google Chrome nie odpowiada. Uruchomić ją teraz ponownie?</translation>
-<translation id="5318056482164160049">Serwer wtyczek przeglądarki Google Chrome</translation>
+<translation id="1175529839152551794">Teraz, po zalogowaniu, masz dostęp do kart, zakładek i innych funkcji Chrome na laptopie, telefonie i tablecie. Korzystaj także z bardziej trafnych sugestii i lepiej dopasowanych funkcji w usługach Google.</translation>
 <translation id="6126631249883707068">Czy chcesz, aby przeglądarka Google Chrome zapisała hasło?</translation>
 <translation id="7773845170078702898">Czy Google Chrome ma zapisać hasło do tej strony?</translation>
 <translation id="5046764976540625289">Zakończ Chrome</translation>
 <translation id="4251615635259297716">Połączyć Twoje dane Chrome z tym kontem?</translation>
-<translation id="9039578207253536065">Moduł roboczy Google Chrome</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Przeglądarka internetowa</translation>
 <translation id="8142608456917638009">Google Chrome nie może utworzyć skrótu aplikacji.</translation>
@@ -183,11 +182,11 @@ Jeśli jednak zalogujesz się teraz, informacje Chrome, takie jak zakładki, his
 <translation id="2189123953385179981">System operacyjny Google ChromeOS nie umożliwia uruchamiania zewnętrznej aplikacji w celu obsługi linków typu <ph name="SCHEME"/>. Żądany link to <ph name="PROTOLINK"/>.</translation>
 <translation id="7396375882099008034">Zezwalaj Chrome na korzystanie z sieci w ustawieniach zapory sieciowej
         lub oprogramowania antywirusowego.</translation>
+<translation id="9102715433345326100">Ten plik jest złośliwy i został zablokowany przez Chrome.</translation>
 <translation id="8205111949707227942">Opcjonalnie: pomóż nam udoskonalać system operacyjny Chrome poprzez automatyczne wysyłanie do Google statystyk użytkowania i raportów o awariach.</translation>
 <translation id="7253415505590551024">Trwa pobieranie plików. Czy chcesz wyjść z Google Chrome i anulować pobieranie?</translation>
 <translation id="7196020411877309443">Dlaczego wyświetla mi się to okienko?</translation>
 <translation id="2769762047821873045">Google Chrome nie jest domyślną przeglądarką.</translation>
-<translation id="1020869477857717497"><ph name="FILE_NAME"/> może zmienić sposób wyszukiwania w Chrome.</translation>
 <translation id="4567424176335768812">Jesteś zalogowany jako <ph name="USER_EMAIL_ADDRESS"/>. Teraz możesz korzystać ze swoich zakładek, historii i innych ustawień na wszystkich zalogowanych urządzeniach.</translation>
 <translation id="6855094794438142393">Wybierz
           menu Chrome &gt;

@@ -130,6 +130,7 @@ Jei norite neleisti, paspauskite „Ctrl“ + „Alt“ + Z.</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830">Aktyvinamas „<ph name="NAME"/>“</translation>
 <translation id="8814190375133053267">WI-Fi</translation>
+<translation id="1923539912171292317">Automatiniai paspaudimai</translation>
 <translation id="1398853756734560583">Išskleisti</translation>
 <translation id="2692809339924654275">„<ph name="BLUETOOTH"/>“: jungiamasi...</translation>
 <translation id="252373100621549798">Nežinoma pateiktis</translation>
@@ -222,6 +223,7 @@ Jei norite atšaukti, paspauskite „Alt“ + paieškos klavišas arba „Alt“
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Sveikiname! Jūsų „<ph name="NAME"/>“ duomenų paslauga buvo suaktyvinta ir yra paruošta naudoti.</translation>
 <translation id="412065659894267608"><ph name="HOUR"/> val. <ph name="MINUTE"/> min. iki visiško įkrovimo</translation>
+<translation id="7297443947353982503">Naudotojo vardas / slaptažodis netinkamas arba EAP autentifikavimas nepavyko</translation>
 <translation id="6359806961507272919">SMS iš <ph name="PHONE_NUMBER"/></translation>
 <translation id="1244147615850840081">Operatorius</translation>
 </translationbundle>

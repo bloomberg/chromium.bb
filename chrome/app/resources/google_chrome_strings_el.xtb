@@ -26,9 +26,7 @@
 <translation id="2370289711218562573">Το Google Chrome πραγματοποιεί εισαγωγή Αγαπημένων/Σελιδοδεικτών.</translation>
 <translation id="8762286861469007470">Ανιχνευτής Chrome Captive Portal</translation>
 <translation id="2721687379934343312">Στο Mac, οι κωδικοί πρόσβασης αποθηκεύονται στο Keychain και ενδέχεται άλλοι χρήστες του Chrome, που μοιράζονται αυτόν τον λογαριασμό OS X, να αποκτήσουν πρόσβαση σε αυτούς ή να τους συγχρονίσουν.</translation>
-<translation id="3993188379797269327">Το αρχείο <ph name="FILE_NAME"/> είναι πιθανό να αλλάξει τις ρυθμίσεις σας του Chrome.</translation>
 <translation id="1761870329818521071">Δεν είναι δυνατή η εγκατάσταση της ίδιας έκδοσης του Google Chrome Frame που εκτελείται αυτήν τη στιγμή. Κλείστε το Google Chrome Frame και δοκιμάστε ξανά.</translation>
-<translation id="2040709530900803995">Google Chrome Renderer</translation>
 <translation id="6014844626092547096">Έχετε πλέον συνδεθεί στο Chrome! Ο συγχρονισμός έχει απενεργοποιηθεί από το διαχειριστή σας.</translation>
 <translation id="3140883423282498090">Οι αλλαγές που πραγματοποιήσατε θα ισχύσουν την επόμενη φορά που θα επανεκκινήσετε το Google Chrome.</translation>
 <translation id="1773601347087397504">Λήψη βοήθειας σχετικά με τη χρήση του Chrome OS</translation>
@@ -48,7 +46,6 @@
 <translation id="3080151273017101988">Να συνεχίζεται η εκτέλεση εφαρμογών παρασκηνίου όταν το Google Chrome είναι κλειστό</translation>
 <translation id="4149882025268051530">Η αποσυμπίεση του αρχείου από το πρόγραμμα εγκατάστασης απέτυχε. Κάντε λήψη του Google Chrome ξανά.</translation>
 <translation id="6989339256997917931">Το Google Chrome έχει ενημερωθεί, αλλά δεν το έχετε χρησιμοποιήσει για 30 ημέρες τουλάχιστον.</translation>
-<translation id="5744005218040929396">Βοηθητικό Πρόγραμμα του Google Chrome</translation>
 <translation id="7060865993964054389">Λειτουργία εκκίνησης εφαρμογών του Google Chrome</translation>
 <translation id="1682634494516646069">Το Google Chrome δεν έχει δυνατότητα ανάγνωσης και εγγραφής στον κατάλογο δεδομένων του:
 
@@ -83,12 +80,15 @@
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="4585888816441913908">Αυτός ο υπολογιστής διαθέτει ήδη μια πιο πρόσφατη έκδοση του Google Chrome και του Google Chrome Frame. Εάν το λογισμικό δεν λειτουργεί, καταργήστε την εγκατάσταση του Google Chrome και του Google Chrome Frame και προσπαθήστε ξανά.</translation>
 <translation id="3149510190863420837">Εφαρμογές Chrome</translation>
+<translation id="7084448929020576097">Το αρχείο <ph name="FILE_NAME"/> είναι κακόβουλο και έχει αποκλειστεί από το Chrome.</translation>
 <translation id="6368958679917195344">Το Chrome OS έγινε πραγματικότητα χάρη στην ύπαρξη πρόσθετων <ph name="BEGIN_LINK_CROS_OSS"/>λογισμικών ανοικτού κώδικα<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="7459554271817304652">Ρυθμίστε τον συγχρονισμό για την αποθήκευση όλων των εξατομικευμένων λειτουργιών του προγράμματος περιήγησής σας στον ιστό και μεταβείτε σε αυτές από το Google Chrome μέσω οποιουδήποτε υπολογιστή.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="473775607612524610">Ενημέρωση</translation>
 <translation id="1195935957447623558">Η λειτουργία του Google Chrome δεν τερματίστηκε σωστά. Για να ανοίξετε ξανά τις σελίδες που ήταν ανοικτές, επιλέξτε &quot;Επαναφορά&quot;.</translation>
 <translation id="2576431527583832481">Το Chrome μόλις βελτιώθηκε! Μια νέα έκδοση είναι διαθέσιμη.</translation>
+<translation id="4633000520311261472">Για να κάνουμε το Chrome πιο ασφαλές, απενεργοποιήσαμε ορισμένες επεκτάσεις που δεν αναφέρονται στο <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> και ενδέχεται να έχουν προστεθεί εν αγνοία σας.</translation>
+<translation id="556024056938947818">Το Google Chrome επιχειρεί να εμφανίσει κωδικούς πρόσβασης.</translation>
 <translation id="2580411288591421699">Δεν είναι δυνατή η εγκατάσταση της ίδιας έκδοσης του Google Chrome που εκτελείται αυτήν τη στιγμή. Κλείστε το Google Chrome και προσπαθήστε ξανά.</translation>
 <translation id="8460191995881063249">Κέντρο ειδοποιήσεων Chrome</translation>
 <translation id="1457721931618994305">Ενημέρωση του Google Chrome…</translation>
@@ -124,7 +124,6 @@
 <translation id="911206726377975832">Να γίνει διαγραφή και των δεδομένων περιήγησης;</translation>
 <translation id="5855036575689098185">Το λογισμικό που εκτελείται στον υπολογιστή δεν είναι συμβατό με το Google Chrome.</translation>
 <translation id="2044287590254833138">Γραμμή εργαλείων του Google Chrome</translation>
-<translation id="5074344184765391290">Εφαρμογή Προσθήκης του Chrome</translation>
 <translation id="8862326446509486874">Δεν έχετε τα απαραίτητα δικαιώματα για εγκατάσταση σε επίπεδο συστήματος. Δοκιμάστε να εκτελέσετε ξανά το πρόγραμμα εγκατάστασης ως Διαχειριστής.</translation>
 <translation id="2874156562296220396">Το Google Chrome υλοποιήθηκε με τη βοήθεια του έργου ανοικτού κώδικα <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> και άλλου <ph name="BEGIN_LINK_OSS"/>λογισμικού ανοικτού κώδικα<ph name="END_LINK_OSS"/>.</translation>
 <translation id="3847841918622877581">Το Google Chrome μπορεί να χρησιμοποιήσει υπηρεσίες ιστού για να βελτιώσει την εμπειρία περιήγησής σας.</translation>
@@ -138,6 +137,7 @@
 <translation id="4273752058983339720">Το Google Chrome έχει διαμορφωθεί για να ξεκινάει αυτόματα κατά την εκκίνηση του υπολογιστή σας.</translation>
 <translation id="1104959162601287462">Σχ&amp;ετικά με το Chrome OS</translation>
 <translation id="5328989068199000832">Δυαδικά αρχεία Google Chrome</translation>
+<translation id="1140117203923356735">Το αρχείο <ph name="FILE_NAME"/> πραγματοποιεί αλλαγές στις ρυθμίσεις, οι οποίες μοιάζουν με τις αλλαγές ορισμένων κακόβουλων προγραμμάτων (malware). Συνεπώς, το Chrome το έχει αποκλείσει.</translation>
 <translation id="5941830788786076944">Ορισμός Google Chrome ως προεπιλεγμένο πρόγραμμα περιήγησης</translation>
 <translation id="7787950393032327779">Το προφίλ φαίνεται ότι χρησιμοποιείται από άλλη διεργασία του Google Chrome (<ph name="PROCESS_ID"/>) σε άλλο υπολογιστή (<ph name="HOST_NAME"/>). Το Chrome έχει κλειδώσει το προφίλ, για να μην καταστραφεί. Αν είστε σίγουροι ότι το προφίλ δεν χρησιμοποιείται από κάποια άλλη διεργασία, μπορείτε να το ξεκλειδώσετε και να επανεκκινήσετε το Chrome.</translation>
 <translation id="1469002951682717133">Λειτουργία εκκίνησης εφαρμογών Chrome</translation>
@@ -174,12 +174,11 @@
 <translation id="576822117893741893">Εμφάνιση του μενού του Chrome</translation>
 <translation id="3444832043240812445">Αυτή η σελίδα εμφανίζει μόνο πληροφορίες για τα σφάλματα που παρουσιάστηκαν πρόσφατα εφόσον <ph name="BEGIN_LINK"/>έχετε ενεργοποιημένη την αναφορά σφαλμάτων<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Το Google Chrome δεν αποκρίνεται. Επανεκκίνηση τώρα;</translation>
-<translation id="5318056482164160049">Εφαρμογή Προσθήκης του Google Chrome</translation>
+<translation id="1175529839152551794">Τώρα που έχετε συνδεθεί, μπορείτε να αποκτάτε πρόσβαση στις καρτέλες, τους σελιδοδείκτες και άλλο υλικό του Chrome από το φορητό υπολογιστή, το τηλέφωνο και το tablet σας. Θα λαμβάνετε επίσης πιο συναφείς προτάσεις και λειτουργίες για τις υπηρεσίες Google.</translation>
 <translation id="6126631249883707068">Θέλετε το Google Chrome να αποθηκεύσει τον κωδικό πρόσβασής σας;</translation>
 <translation id="7773845170078702898">Θέλετε το Google Chrome να αποθηκεύσει τον κωδικό πρόσβασής σας για αυτόν τον ιστότοπο;</translation>
 <translation id="5046764976540625289">Έξοδος από το Chrome</translation>
 <translation id="4251615635259297716">Να συνδεθούν τα δεδομένα σας στο Chrome με αυτόν το λογαριασμό;</translation>
-<translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Πρόγραμμα περιήγησης Διαδικτύου</translation>
 <translation id="8142608456917638009">Το Google Chrome δεν κατάφερε να δημιουργήσει μια συντόμευση για την εφαρμογή.</translation>
@@ -187,11 +186,11 @@
 <translation id="2189123953385179981">Το Google ChromeOS δεν υποστηρίζει την εκκίνηση εξωτερικής εφαρμογής για το χειρισμό συνδέσμων <ph name="SCHEME"/>. Ο σύνδεσμος που ζητήθηκε είναι <ph name="PROTOLINK"/>.</translation>
 <translation id="7396375882099008034">Επιτρέψτε στο Chrome να αποκτήσει πρόσβαση στο δίκτυο στις ρυθμίσεις του τείχους
         προστασίας ή του λογισμικού προστασίας από ιούς που διαθέτετε.</translation>
+<translation id="9102715433345326100">Αυτό το αρχείο είναι κακόβουλο και έχει αποκλειστεί από το Chrome.</translation>
 <translation id="8205111949707227942">Προαιρετικό: Συμβάλετε στη βελτίωση του Chrome OS στέλνοντας αυτόματα στην Google στατιστικά στοιχεία χρήσης και αναφορές σφαλμάτων.</translation>
 <translation id="7253415505590551024">Αυτήν τη στιγμή, βρίσκονται σε εξέλιξη λήψεις. Θέλετε να κλείσετε το Google Chrome και να ακυρώσετε τις λήψεις;</translation>
 <translation id="7196020411877309443">Γιατί το βλέπω αυτό;</translation>
 <translation id="2769762047821873045">Το Google Chrome δεν είναι το προεπιλεγμένο πρόγραμμα περιήγησης.</translation>
-<translation id="1020869477857717497">Το αρχείο <ph name="FILE_NAME"/> είναι πιθανό να αλλάξει τον τρόπο λειτουργίας των αναζητήσεών σας στο Chrome.</translation>
 <translation id="4567424176335768812">Έχετε συνδεθεί ως <ph name="USER_EMAIL_ADDRESS"/>. Τώρα μπορείτε να αποκτήσετε πρόσβαση στους σελιδοδείκτες, το ιστορικό και σε άλλες ρυθμίσεις από όλες τις συσκευές στις οποίες έχετε συνδεθεί.</translation>
 <translation id="6855094794438142393">Μεταβείτε
           στο μενού του Chrome &gt;

@@ -95,6 +95,7 @@
           PERHATIAN: Gelagat lalai untuk peranti pengguna dan perusahaan berbeza: pada peranti pengguna, pengguna diselia didayakan secara lalai tetapi pada peranti perusahaan, pengguna diselia dilumpuhkan secara lalai.</translation>
 <translation id="69525503251220566">Parameter yang menyediakan ciri cari melalui imej untuk penyedia carian lalai</translation>
 <translation id="5469825884154817306">Sekat imej pada tapak ini</translation>
+<translation id="5827231192798670332">Pilih strategi yang digunakan untuk mengosongkan ruang cakera semasa pembersihan automatik</translation>
 <translation id="8412312801707973447">Sama ada semakan OCSP/CRL dalam talian dilaksanakan</translation>
 <translation id="6649397154027560979">Dasar ini tidak akan digunakan lagi, sebaliknya, sila gunakan URLBlacklist.
 
@@ -199,6 +200,8 @@
 <translation id="6036523166753287175">Dayakan penyusuran tembok api daripada hos akses jauh</translation>
 <translation id="1096105751829466145">Pembekal carian lalai</translation>
 <translation id="7567380065339179813">Benarkan pemalam pada tapak ini</translation>
+<translation id="4555850956567117258">Dayakan pembuktian jauh untuk pengguna</translation>
+<translation id="5966615072639944554">Pelanjutan dibenarkan untuk mengguna API pembuktian jauh</translation>
 <translation id="1617235075406854669">Dayakan pemadaman sejarah penyemak imbas dan muat turun</translation>
 <translation id="5290940294294002042">Tentukan senarai pemalam yang boleh didayakan atau dilumpuhkan pengguna</translation>
 <translation id="3153348162326497318">Membolehkan anda menentukan pelanjutan yang TIDAK boleh dipasang oleh pengguna. Pelanjutan yang telah dipasang akan dialih keluar jika telah disenaraihitamkan.
@@ -256,6 +259,7 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 
           Jika dasar ini dibiarkan tanpa ditetapkan, 'AllowImages' yang akan digunakan dan pengguna akan dapat mengubahnya.</translation>
 <translation id="5630352020869108293">Pulihkan sesi terakhir</translation>
+<translation id="2067011586099792101">Sekat akses ke tapak web di luar pek kandungan</translation>
 <translation id="4980635395568992380">Jenis data:</translation>
 <translation id="3096595567015595053">Senarai pemalam yang didayakan</translation>
 <translation id="3048744057455266684">Jika dasar ini ditetapkan dan URL carian yang dicadangkan dari kotak omni mengandungi parameter ini dalam rentetan pertanyaan atau dalam pengecam serpihan, maka cadangan akan memaparkan istilah carian dan penyedia carian, bukannya URL carian mentah.
@@ -275,11 +279,13 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada dari dasar 'DefaultCookiesSetting' jika dasar ini ditetapkan, jika tidak, konfigurasi peribadi pengguna akan digunakan.
 
           Jika dasar &quot;RestoreOnStartup&quot; ditetapkan untuk memulihkan URL dari sesi sebelumnya, dasar ini tidak akan dilaksanakan dan kuki akan disimpan secara kekal untuk tapak tersebut.</translation>
+<translation id="4807950475297505572">Pengguna yang paling kurang penggunaan baru-baru ini akan dialih keluar sehingga ada ruang kosong yang mencukupi</translation>
 <translation id="8828766846428537606">Menkonfigurasi halaman utama lalai dalam <ph name="PRODUCT_NAME"/> dan menghalang pengguna daripada mengubahnya.
 
       Tetapan halaman utama pengguna hanya dikunci sepenuhnya, jika anda memilih halaman utama sebagai halaman tab baharu atau pun menetapkannya sebagai URL dan menetapkan URL halaman utama. Jika anda tidak menetapkan URL halaman utama, maka pengguna masih boleh menetapkan halaman utama kepada halaman tab baharu dengan menetapkan 'chrome://newtab'.</translation>
 <translation id="2231817271680715693">Import sejarah penyemakan imbas daripada penyemak imbas lalai pada kali pertama menjalankannya</translation>
 <translation id="1353966721814789986">Halaman permulaan</translation>
+<translation id="7173856672248996428">Profil tidak kekal</translation>
 <translation id="1841130111523795147">Membenarkan pengguna log masuk ke <ph name="PRODUCT_NAME"/> dan menghalang pengguna daripada mengubah tetapan ini.
 
       Jika anda menetapkan dasar ini, anda boleh mengkonfigurasi jika pengguna dibenarkan untuk log masuk ke <ph name="PRODUCT_NAME"/> atau tidak.</translation>
@@ -289,6 +295,7 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 <translation id="6368403635025849609">Benarkan JavaScript pada tapak ini</translation>
 <translation id="6074963268421707432">Jangan benarkan mana-mana tapak untuk memaparkan pemberitahuan desktop</translation>
 <translation id="8614804915612153606">Lumpuhkan Kemas Kini Auto</translation>
+<translation id="4834526953114077364">Pengguna yang paling kurang penggunaan baru-baru ini serta tidak log masuk dalam tempoh 3 bulan yang lalu akan dialih keluar sehingga ada ruang kosong yang mencukupi</translation>
 <translation id="382476126209906314">Konfigurasi awalan TalkGadget untuk hos akses jauh</translation>
 <translation id="6561396069801924653">Tunjukkan pilihan kebolehcapaian dalam menu dulang sistem</translation>
 <translation id="8104962233214241919">Memilih sijil klien secara automatik untuk tapak ini</translation>
@@ -356,6 +363,13 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
       Jika anda mendayakan atau melumpuhkan tetapan ini, pengguna tidak boleh mengubah atau mengatasi tetapan ini dalam <ph name="PRODUCT_NAME"/>.
 
       Jika dasar ini dibiarkan tanpa ditetapkan, tetapan akan mengikut apa yang pengguna pilih semasa pemasangan / mula-mula dijalankan.</translation>
+<translation id="4784220343847172494">Mengawal gelagat pembersihan automatik pada peranti <ph name="PRODUCT_OS_NAME"/>. Pembersihan automatik dicetuskan apabila jumlah ruang cakera kosong mencapai tahap kritikal untuk mendapatkan semula sebahagian ruang cakera. 
+
+      Jika dasar ini ditetapkan kepada 'RemoveLRU', pembersihan automatik akan terus mengalih keluar pengguna daripada peranti ini dalam urutan paling kurang log masuk baru-baru ini sehingga ada ruang kosong yang mencukupi.
+
+      Jika dasar ini ditetapkan kepada 'RemoveLRUIfDormant', pembersihan automatik akan terus mengalih keluar pengguna yang tidak log masuk selama sekurang-kurangnya 3 bulan dalam urutan paling kurang log masuk baru-baru ini sehingga ada ruang kosong yang mencukupi.
+
+      Jika dasar ini tidak ditetapkan, pembersihan automatik akan menggunakan strategi lalai yang terbina sekali. Pada masa ini, strategi 'RemoveLRUIfDormant' digunakan.</translation>
 <translation id="6256787297633808491">Bendera di seluruh sistem akan digunakan semasa Chrome bermula</translation>
 <translation id="2516600974234263142">Mendayakan cetakan dalam <ph name="PRODUCT_NAME"/> dan menghalang pengguna daripada menukar tetapan ini.
 
@@ -473,6 +487,9 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
           Jika tetapan ini didayakan, maka peranti masukan dan keluaran fizikal hos akan dilumpuhkan semasa sambungan jauh sedang dijalankan.
 
           Jika tetapan ini dilumpuhkan atau tidak ditetapkan, maka kedua-dua pengguna setempat dan jauh boleh berinteraksi dengan hos apabila hos dikongsi.</translation>
+<translation id="4894257424747841850">Laporkan senarai pengguna peranti yang telah log masuk baru-baru ini.
+
+      Jika dasar ini tidak ditetapkan atau ditetapkan kepada palsu, pengguna tidak akan dilaporkan.</translation>
 <translation id="1426410128494586442">Ya</translation>
 <translation id="4897928009230106190">Menentukan parameter yang digunakan apabila melakukan carian cadangan dengan POST. Parameter ini mengandungi pasangan nama/nilai yang dipisahkan koma. Jika nilai merupakan parameter templat, seperti {searchTerms} dalam contoh di atas, nilai ini akan digantikan dengan data istilah carian sebenar.
 
@@ -550,12 +567,14 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 
       Tetapan ini menjadikan statistik memori dari panel Profil Alat Pembangun tersedia pada halaman web itu sendiri.</translation>
 <translation id="5776485039795852974">Tanya setiap kali tapak mahu menunjukkan pemberitahuan desktop</translation>
+<translation id="5047604665028708335">Benarkan akses ke tapak di luar pek kandungan</translation>
 <translation id="5052081091120171147">Jika didayakan, dasar ini memaksa sejarah penyemakan imbas diimport dari penyemak imbas lalai semasa. Jika didayakan, dasar ini juga memberikan kesan terhadap dialog import.
 
       Jika dilumpuhkan, tiada sejarah penyemakan imbas diimport.
 
       Jika ia tidak ditetapkan, pengguna mungkin ditanya sama ada hendak mengimport atau import boleh berlaku secara automatik.</translation>
 <translation id="6786747875388722282">Sambungan</translation>
+<translation id="7132877481099023201">URL yang akan diberikan akses kepada peranti tangkapan video tanpa gesaan</translation>
 <translation id="8947415621777543415">Laporkan lokasi peranti</translation>
 <translation id="1655229863189977773">Tetapkan saiz cache cakera dalam bait</translation>
 <translation id="6376842084200599664">Membolehkan anda menetapkan senarai pelanjutan yang akan dipasang secara senyap, tanpa interaksi pengguna.
@@ -570,6 +589,7 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 
           Jika dasar ini dibiarkan tanpa ditetapkan, pengguna boleh menyahpasang sebarang pelanjutan  dalam <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="6899705656741990703">Tetapan proksi auto kesan</translation>
+<translation id="8382184662529825177">Dayakan penggunaan pembuktian jauh untuk perlindungan kandungan bagi peranti</translation>
 <translation id="7003334574344702284">Dasar ini memaksa kata laluan yang disimpan diimport dari pelayar lalai sebelumnya jika didayakan. Jika didayakan, dasar ini juga memberi kesan pada dialog import.
 
       Jika dilumpuhkan, kata laluan yang disimpan tidak akan diimport.
@@ -583,6 +603,13 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 <translation id="3236046242843493070">Pola URL untuk membenarkan pemasangan pelanjutan, aplikasi dan skrip pengguna</translation>
 <translation id="2498238926436517902">Sentiasa sembunyikan rak secara automatik</translation>
 <translation id="253135976343875019">Kelewatan amaran melahu apabila dijalankan dengan kuasa AC</translation>
+<translation id="480987484799365700">Jika ditetapkan kepada didayakan, dasar ini memaksa profil ditukarkan kepada mod tidak kekal. Jika dasar ini ditetapkan sebagai dasar OS (contohnya GPO pada Windows), dasar ini akan dilaksanakan kepada setiap profil pada sistem; jika dasar ini ditetapkan sebagai dasar Awan, dasar ini akan dilaksanakan hanya kepada profil yang log masuk menggunakan akaun terurus. 
+
+      Dalam mod ini, data profil disimpan pada cakera hanya sepanjang sesi pengguna. Ciri seperti sejarah penyemak imbas, pelanjutan dan datanya, data web seperti kuki dan pangkalan data web tidak disimpan selepas penyemak imbas ditutup. Walau bagaimanapun hal ini tidak menghalang pengguna daripada memuat turun sebarang data kepada cakera secara manual, menyimpan halaman atau mencetaknya. 
+
+      Jika pengguna telah mendayakan penyegerakan, semua data ini disimpan dalam profil penyegerakan beliau sama seperti profil biasa. Mod inkognito turut disediakan jika tidak dilumpuhkan dengan jelas oleh dasar. 
+
+      Jika dasar ditetapkan kepada dilumpuhkan atau dibiarkan tanpa ditetapkan, log masuk akan dihalakan ke profil biasa.</translation>
 <translation id="6997592395211691850">Sama ada semakan OCSP/CRL dalam talian diperlukan untuk pengukuhan kepercayaan setempat</translation>
 <translation id="152657506688053119">Senarai URL alternatif untuk penyedia carian lalai</translation>
 <translation id="8992176907758534924">Jangan benarkan mana-mana tapak untuk menunjukkan imej</translation>
@@ -773,7 +800,6 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 <translation id="7003746348783715221">Keutamaan <ph name="PRODUCT_NAME"/></translation>
 <translation id="4723829699367336876">Dayakan penyusuran tembok api daripada klien akses jauh</translation>
 <translation id="6367755442345892511">Sama ada saluran pelepasan harus boleh dikonfigurasikan oleh pengguna</translation>
-<translation id="4035570660718398959">Benarkan pengguna menebus tawaran melalui Pendaftaran OS Chrome.</translation>
 <translation id="3868347814555911633">Dasar ini aktif dalam mod runcit sahaja.
 
       Senarai pelanjutan yang dipasang secara automatik untuk pengguna Tunjuk Cara, bagi peranti dalam mod runcit. Pelanjutan ini disimpan dalam peranti dan boleh dipasang semasa di luar talian selepas pemasangan.
@@ -797,7 +823,6 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
           Jika anda melumpuhkan tetapan ini, pengurus kata laluan tidak membenarkan pemaparan kata laluan yang disimpan menggunakan teks jelas dalam tetingkap pengurus kata laluan.
 
           Jika anda mendayakan atau tidak menetapkan dasar ini, pengguna boleh melihat kata laluan mereka dalam teks jelas dalam pengurus kata laluan.</translation>
-<translation id="5213629107215526747">URL yang akan diberikan akses kepada peranti tangkapan video tanpa gesaan.</translation>
 <translation id="5936622343001856595">Memaksa pertanyaan dalam Carian Web Google dilakukan dengan SafeSearch ditetapkan kepada aktif dan menghalang pengguna daripada menukar tetapan ini.
 
       Jika anda mendayakan tetapan ini, SafeSearch dalam Carian Google sentiasa diaktifkan.
@@ -808,6 +833,7 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
       Apabila tetapan ini didayakan, <ph name="PRODUCT_NAME"/> akan membuka dialog cetakan sistem dan bukannya pratonton cetakan terbina dalam apabila pengguna meminta untuk mencetak halaman.
 
       Jika dasar ini tidak ditetapkan atau ditetapkan kepada palsu, arahan cetakan akan mencetuskan skrin pratonton cetakan.</translation>
+<translation id="7933141401888114454">Dayakan penghasilan pengguna di bawah seliaan</translation>
 <translation id="2824715612115726353">Dayakan mod Inkognito</translation>
 <translation id="1057535219415338480">Mendayakan ramalan rangkaian dalam <ph name="PRODUCT_NAME"/> dan menghalang pengguna daripada mengubah tetapan ini.
 
@@ -865,7 +891,6 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
       Jika dasar ini dibiarkan tanpa ditetapkan, tetapan ini akan didayakan tetapi pengguna akan boleh mengubahnya.</translation>
 <translation id="2236488539271255289">Jangan benarkan mana-mana tapak untuk menetapkan data setempat</translation>
 <translation id="4467952432486360968">Sekat kuki pihak ketiga</translation>
-<translation id="2041396837791669429">Sekat akses ke tapak web di luar pek kandungan.</translation>
 <translation id="1305864769064309495">Kamus yang memetakan URL kepada bendera boolean yang menentukan sama ada akses kepada hos harus dibenarkan (benar) atau disekat (palsu).
 
           Dasar ini ialah untuk kegunaan dalaman oleh Chrome sendiri.</translation>
@@ -904,7 +929,6 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 
           Jika dasar ini dibiarkan tanpa ditetapkan, kursor besar dilumpuhkan pada mulanya tetapi boleh didayakan oleh pengguna pada bila-bila masa.</translation>
 <translation id="2633084400146331575">Dayakan maklum balas yang dituturkan</translation>
-<translation id="7712008868843631413">Dayakan pengguna diselia.</translation>
 <translation id="8731693562790917685">Tetapan Kandungan membenarkan anda untuk menentukan cara kandungan bagi jenis tertentu (contohnya Kuki, Imej atau JavaScript) dikendalikan.</translation>
 <translation id="2411919772666155530">Sekat pemberitahuan pada tapak ini</translation>
 <translation id="6923366716660828830">Menentukan nama penyedia carian lalai. Jika dibiarkan kosong atau tidak ditetapkan, nama hos yang ditentukan oleh URL carian akan digunakan.
@@ -918,7 +942,6 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 <translation id="467236746355332046">Ciri yang disokong:</translation>
 <translation id="7632724434767231364">Nama perpustakaan GSSAPI</translation>
 <translation id="3038323923255997294">Terus jalankan apl latar belakang apabila <ph name="PRODUCT_NAME"/> ditutup</translation>
-<translation id="4652284479838524692">Dayakan pembuktian jauh untuk peranti.</translation>
 <translation id="8909280293285028130">Menyatakan panjang masa tanpa input pengguna dan skrin akan dikunci selepas masa ini tamat apabila dijalankan dengan kuasa AC.
 
           Apabila dasar ini ditetapkan kepada nilai yang lebih besar daripada sifar, ia menyatakan panjang masa pengguna mesti kekal melahu sebelum <ph name="PRODUCT_OS_NAME"/> mengunci skrin.
@@ -940,6 +963,7 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 
       Jika dasar ini ditetapkan sebagai benar atau tidak dikonfigurasi, akaun pengguna baharu akan dibenarkan dicipta dengan syarat <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> tidak menghalang pengguna daripada log masuk.</translation>
 <translation id="4389091865841123886">Konfigurasikan pembuktian jauh dengan mekanisme TPM.</translation>
+<translation id="3518214502751233558">Tetapkan sama ada lengah pengurusan kuasa dan had tempoh sesi hanya harus mula dijalankan selepas aktiviti pengguna awal dalam sesi</translation>
 <translation id="8256688113167012935">Mengawal nama akaun yang <ph name="PRODUCT_OS_NAME"/> paparkan pada skrin log masuk untuk akaun setempat peranti yang sepadan.
 
       Jika dasar ini ditetapkan, skrin log masuk akan menggunakan rentetan yang dinyatakan dalam pemilih log masuk berasaskan gambar untuk akaun setempat peranti yang sepadan.
@@ -1020,7 +1044,6 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
       Apabila dasar ini ditetapkan kepada benar, ikon akan disembunyikan.
 
       Apabila dasar ini ditetapkan kepada palsu atau tidak dikonfigurasi, ikon akan kelihatan.</translation>
-<translation id="8401282319420373133">Pelanjutan dibenarkan untuk menggunakan API pembuktian jauh.</translation>
 <translation id="5085647276663819155">Lumpuhkan Pratonton Cetakan</translation>
 <translation id="8672321184841719703">Versi Kemas Kini Auto Sasaran</translation>
 <translation id="1689963000958717134">Membenarkan penolakan konfigurasi rangkaian digunakan untuk semua pengguna peranti <ph name="PRODUCT_OS_NAME"/>. Konfigurasi rangkaian ialah rentetan berformat JSON seperti yang ditakrifkan oleh format Konfigurasi Rangkaian Terbuka yang dihuraikan di <ph name="ONC_SPEC_URL"/></translation>
@@ -1065,6 +1088,7 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
       Jika didayakan, tangkapan skrin tidak boleh diambil menggunakan pintasan papan kekunci atau API pelanjutan.
 
       Jika dilumpuhkan atau tidak ditentukan, pengambilan tangkapan skrin dibenarkan.</translation>
+<translation id="5697306356229823047">Laporkan pengguna peranti</translation>
 <translation id="8649763579836720255">Peranti OS Chrome boleh menggunakan pembuktian jauh (Akses Disahkan) untuk mendapatkan perakuan yang dikeluarkan oleh CA OS Chrome yang menyatakan peranti layak memainkan kandungan yang dilindungi.  Proses ini melibatkan penghantaran maklumat sokongan kepada CA OS Chrome yang mengenal pasti peranti tersebut secara unik.
 
           Jika tetapan ini palsu, peranti tidak akan menggunakan pembuktian jauh untuk perlindungan kandungan dan peranti mungkin tidak dapat memainkan kandungan yang dilindungi.
@@ -1144,6 +1168,7 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
       Jika tetapan ini didayakan, sejarah penyemakan imbas tidak disimpan.
 
       Jika tetapan ini dilumpuhkan atau tidak ditetapkan, sejarah penyemakan imbas akan disimpan.</translation>
+<translation id="7295019613773647480">Dayakan pengguna diselia</translation>
 <translation id="2759224876420453487">Kawal kelakuan pengguna dalam sesi berbilang profil</translation>
 <translation id="3844092002200215574">Mengkonfigurasi direktori yang <ph name="PRODUCT_NAME"/> akan gunakan untuk menyimpan fail yang dicache pada cakera.
 
@@ -1207,8 +1232,6 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
           Jika anda menetapkan dasar ini, pengguna boleh mengatasinya secara sementara dengan mendayakan atau melumpuhkan mod kontras tinggi. Walau bagaimanapun, pilihan pengguna ini tidak berterusan dan lalai dipulihkan apabila skrin log masuk dipaparkan semula atau pengguna kekal melahu pada skrin log masuk selama satu minit.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, mod kontras tinggi dilumpuhkan apabila skrin log masuk mula-mula dipaparkan. Pengguna boleh mendayakan atau melumpuhkan mod kontras tinggi pada bila-bila masa dan statusnya pada skrin log masuk yang berterusan antara pengguna.</translation>
-<translation id="8580857153747395000">Beri amaran apabila melawat tapak web di luar pek kandungan.</translation>
-<translation id="350796261613621561">Dayakan penghasilan pengguna diselia.</translation>
 <translation id="602728333950205286">URL semerta pembekal carian lalai</translation>
 <translation id="3030000825273123558">Dayakan laporan metrik</translation>
 <translation id="8465065632133292531">Parameter untuk URL semerta yang menggunakan POST</translation>
@@ -1224,6 +1247,7 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 
           Jika tetapan ini dilumpuhkan, maka ciri ini tidak akan tersedia.</translation>
 <translation id="1675002386741412210">Disokong pada:</translation>
+<translation id="1608755754295374538">URL yang akan diberikan akses kepada peranti tangkapan audio tanpa gesaan</translation>
 <translation id="3547954654003013442">Tetapan proksi</translation>
 <translation id="5921713479449475707">Benarkan muat turun auto kemas kini melalui HTTP</translation>
 <translation id="4482640907922304445">Memaparkan butang Laman Utama pada bar alat <ph name="PRODUCT_NAME"/>.
@@ -1235,8 +1259,8 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
       Jika anda mendayakan atau melumpuhkan tetapan ini, pengguna tidak boleh mengubah atau mengatasi tetapan ini dalam <ph name="PRODUCT_NAME"/>.
 
       Membiarkan tetapan tanpa ditetapkan akan membolehkan pengguna memilih sama ada untuk memaparkan butang laman utama atau tidak.</translation>
-<translation id="6897718480289510689">Benarkan akses ke tapak web di luar pek kandungan.</translation>
 <translation id="2518231489509538392">Benarkan audio dimainkan</translation>
+<translation id="8146727383888924340">Benarkan pengguna menebus tawaran melalui Pendaftaran OS Chrome</translation>
 <translation id="7301543427086558500">Menetapkan senarai URL ganti yang boleh digunakan untuk mengeluarkan istilah carian daripada enjin carian. URL harus mengandungi rentetan <ph name="SEARCH_TERM_MARKER"/>, yang akan digunakan untuk menyari istilah carian.
 
           Ini dasar pilihan. Jika tidak ditetapkan, tiada url ganti akan digunakan untuk menyari istilah carian.
@@ -1267,7 +1291,11 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
 <translation id="5208240613060747912">Membolehkan anda menetapkan senarai pola url yang menentukan tapak yang tidak dibenarkan untuk memaparkan pemberitahuan.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada dari dasar 'DefaultNotificationsSetting' jika ia ditetapkan atau konfigurasi peribadi pengguna jika sebaliknya.</translation>
-<translation id="7927140259706020912">URL yang akan diberikan akses kepada peranti tangkapan audio tanpa gesaan.</translation>
+<translation id="346731943813722404">Menentukan sama ada lengah pengurusan kuasa dan had tempoh sesi hanya harus mula dijalankan selepas aktiviti pengguna awal dalam sesi.
+
+          Jika dasar ini ditetapkan kepada Benar, lengah pengurusan kuasa dan had tempoh sesi tidak mula dijalankan sehingga selepas aktiviti pengguna pertama telah diperhatikan dalam sesi.
+
+          Jika dasar ini ditetapkan kepada Palsu atau dibiarkan tanpa ditetapkan, lengah pengurusan kuasa dan had tempoh sesi akan mula dijalankan serta merta pada permulaan sesi.</translation>
 <translation id="4600786265870346112">Dayakan kursor besar</translation>
 <translation id="8592105098257899882">Mengkonfigurasi saiz cache yang <ph name="PRODUCT_NAME"/> akan gunakan untuk menyimpan fail yang dicache pada cakera.
 
@@ -1456,7 +1484,6 @@ chrome.enterprise.platformKeysPrivate.challengeUserKey().
           Nilai dasar harus dinyatakan dalam milisaat. Nilai diapit supaya kurang daripada atau sama dengan kelewatan melahu.</translation>
 <translation id="1897365952389968758">Benarkan semua tapak untuk menjalankan JavaScript</translation>
 <translation id="5244714491205147861">Pengurusan kuasa pada skrin log masuk</translation>
-<translation id="3619270953033888719">Dayakan penggunaan pembuktian untuk perlindungan kandungan bagi peranti.</translation>
 <translation id="922540222991413931">Konfigurasi pelanjutan, apl dan sumber pemasangan skrip pengguna</translation>
 <translation id="7323896582714668701">Parameter baris perintah tambahan untuk <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Lumpuhkan penyegerakan data dengan Google</translation>
@@ -1490,6 +1517,7 @@ Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai 'MultiProfileUserBehavior
           Untuk melihat contoh pola, lawati http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="3101501961102569744">Pilih cara untuk menentukan tetapan pelayan proksi</translation>
 <translation id="1803646570632580723">Senarai apl berpin untuk dipaparkan dalam pelancar</translation>
+<translation id="1062011392452772310">Dayakan pembuktian jauh untuk peranti</translation>
 <translation id="7774768074957326919">Gunakan tetapan sistem proksi</translation>
 <translation id="3891357445869647828">Dayakan JavaScript</translation>
 <translation id="868187325500643455">Benarkan semua tapak untuk menjalankan pemalam secara automatik</translation>
@@ -1533,7 +1561,6 @@ Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai 'MultiProfileUserBehavior
 <translation id="7194407337890404814">Nama pembekal carian lalai</translation>
 <translation id="1843117931376765605">Segar semula kadar untuk dasar pengguna</translation>
 <translation id="5535973522252703021">Senarai putih pelayan penugasan Kerberos</translation>
-<translation id="4578030379102330182">Dayakan pembuktian jauh untuk pengguna.</translation>
 <translation id="9187743794267626640">Lumpuhkan pelekapan storan luaran</translation>
 <translation id="6353901068939575220">Menentukan parameter yang digunakan apabila mencari URL dengan POST. Parameter ini mengandungi pasangan nama/nilai yang dipisahkan koma. Jika nilai merupakan parameter templat, seperti {searchTerms} dalam contoh di atas, nilai ini akan digantikan dengan data istilah carian sebenar.
 
@@ -1748,6 +1775,7 @@ Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai 'MultiProfileUserBehavior
 
       Penanda halaman terurus tidak disegerakkan ke akaun pengguna.</translation>
 <translation id="8303314579975657113">Menentukan perpustakaan GSSAPI yang akan digunakan untuk Pengesahan HTTP. Anda boleh menetapkan sama ada nama perpustakaan sahaja atau laluan penuh. Jika tiada tetapan diberikan, <ph name="PRODUCT_NAME"/> akan kembali menggunakan nama perpustakaan lalai.</translation>
+<translation id="8549772397068118889">Beri amaran apabila melawat tapak web di luar pek kandungan</translation>
 <translation id="7749402620209366169">Mendayakan pengesahan dua faktor untuk hos akses jauh dan bukan PIN yang ditentukan pengguna.
 
           Jika tetapan ini tidak didayakan, maka pengguna hendaklah memberikan kod dua faktor yang sah apabila mengakses hos.

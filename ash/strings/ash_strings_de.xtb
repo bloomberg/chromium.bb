@@ -130,6 +130,7 @@ Zum Deaktivieren Strg+Alt+Z drücken</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830"><ph name="NAME"/> wird aktiviert</translation>
 <translation id="8814190375133053267">WLAN</translation>
+<translation id="1923539912171292317">Automatische Klicks</translation>
 <translation id="1398853756734560583">Vergrößern</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: Verbindung wird hergestellt...</translation>
 <translation id="252373100621549798">Display unbekannt</translation>
@@ -222,6 +223,7 @@ Drücken Sie Alt+Such- oder Umschalttaste, um die Aktivierung aufzuheben.</trans
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Herzlichen Glückwunsch! Ihr Datendienst &quot;<ph name="NAME"/>&quot; wurde aktiviert und ist einsatzbereit.</translation>
 <translation id="412065659894267608">In <ph name="HOUR"/> Std. <ph name="MINUTE"/> Min. vollständig aufgeladen</translation>
+<translation id="7297443947353982503">Nutzername/Passwort falsch oder Fehler bei EAP-Authentifizierung</translation>
 <translation id="6359806961507272919">SMS von <ph name="PHONE_NUMBER"/></translation>
 <translation id="1244147615850840081">Mobilfunkanbieter</translation>
 </translationbundle>

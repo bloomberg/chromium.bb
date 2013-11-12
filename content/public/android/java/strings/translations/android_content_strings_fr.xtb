@@ -3,8 +3,11 @@
 <translationbundle lang="fr">
 <translation id="376869769528291915">:</translation>
 <translation id="6015796118275082299">Année</translation>
+<translation id="2094750046714988961">Impossible de démarrer le générateur de profils, car la mémoire de stockage externe n'est pas disponible.</translation>
 <translation id="1256337885411059545">Impossible de lire la vidéo.</translation>
+<translation id="2520230379124234395">Le générateur de profils a été lancé.</translation>
 <translation id="7821540960913969614">Définir la date</translation>
+<translation id="4859501799452851758">Le générateur de profils a terminé sa tâche. Les résultats ont été exportés dans le fichier <ph name="FILENAME"/>.</translation>
 <translation id="3845599764535987402">Heure</translation>
 <translation id="4932733599132424254">Date</translation>
 <translation id="6727102863431372879">Définir</translation>
@@ -20,6 +23,7 @@
 <translation id="2732718972699418926">a.m.</translation>
 <translation id="7096034533295549981">Chargement vidéo…</translation>
 <translation id="1542044944667958430">Recherche sur le Web</translation>
+<translation id="6849295950938417341">Échec du démarrage du générateur de profils.</translation>
 <translation id="6527303717912515753">Partager</translation>
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="5789643057113097023">.</translation>

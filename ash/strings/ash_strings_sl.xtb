@@ -130,6 +130,7 @@ Pritisnite Shift + Alt, da ga preklopite.</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830">Aktiviranje omrežja <ph name="NAME"/></translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="1923539912171292317">Samodejni kliki</translation>
 <translation id="1398853756734560583">Povečaj</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: vzpostavljanje povezave ...</translation>
 <translation id="252373100621549798">Neznan prikaz</translation>
@@ -222,6 +223,7 @@ Pritisnite Alt in tipko za iskanje ali Shift, da jo prekličete.</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Čestitamo. Podatkovna storitev omrežja »<ph name="NAME"/>« je aktivirana in lahko jo začnete uporabljati.</translation>
 <translation id="412065659894267608"><ph name="HOUR"/> h <ph name="MINUTE"/> min do napolnjenosti</translation>
+<translation id="7297443947353982503">Napačno uporabniško ime/geslo ali preverjanje pristnosti EAP ni uspelo</translation>
 <translation id="6359806961507272919">SMS od <ph name="PHONE_NUMBER"/></translation>
 <translation id="1244147615850840081">Operater</translation>
 </translationbundle>

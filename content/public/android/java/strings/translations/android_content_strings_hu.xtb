@@ -3,8 +3,11 @@
 <translationbundle lang="hu">
 <translation id="376869769528291915">:</translation>
 <translation id="6015796118275082299">Év</translation>
+<translation id="2094750046714988961">Nem lehet elindítani a profilozót, mert a külső tároló nem áll készen</translation>
 <translation id="1256337885411059545">Nem lehet lejátszani a videót</translation>
+<translation id="2520230379124234395">A profilozó elindult</translation>
 <translation id="7821540960913969614">Dátum beállítása</translation>
+<translation id="4859501799452851758">A profilozó végzett. Az eredmény a következőben található: <ph name="FILENAME"/>.</translation>
 <translation id="3845599764535987402">Óra</translation>
 <translation id="4932733599132424254">Dátum</translation>
 <translation id="6727102863431372879">Beállítás</translation>
@@ -20,6 +23,7 @@
 <translation id="2732718972699418926">de.</translation>
 <translation id="7096034533295549981">Videó betöltése</translation>
 <translation id="1542044944667958430">Internetes keresés</translation>
+<translation id="6849295950938417341">Nem sikerült elindítani a profilozót</translation>
 <translation id="6527303717912515753">Megosztás</translation>
 <translation id="1822429046913737220">de./du.</translation>
 <translation id="5789643057113097023">.</translation>

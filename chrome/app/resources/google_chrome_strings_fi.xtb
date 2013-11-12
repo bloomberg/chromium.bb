@@ -26,9 +26,7 @@
 <translation id="2370289711218562573">Google Chrome tuo suosikkeja/kirjanmerkkejä.</translation>
 <translation id="8762286861469007470">Chromen Captive Portal -havaitsin</translation>
 <translation id="2721687379934343312">Salasanat tallennetaan Macilla Avainnippuusi, ja muut Chrome-käyttäjät, jotka jakavat saman OS X -käyttöjärjestelmän tilin, voivat käyttää tai synkronoida niitä.</translation>
-<translation id="3993188379797269327"><ph name="FILE_NAME"/> voi muuttaa Chromen asetuksia.</translation>
 <translation id="1761870329818521071">Ei voi asentaa samaa Google Chrome -kehyksen versiota, joka tällä hetkellä on käytössä. Sulje Google Chrome -kehys ja yritä uudelleen.</translation>
-<translation id="2040709530900803995">Google Chrome Renderer</translation>
 <translation id="6014844626092547096">Olet nyt kirjautunut sisään Chromeen! Järjestelmänvalvoja on poistanut synkronoinnin käytöstä.</translation>
 <translation id="3140883423282498090">Muutokset tulevat voimaan, kun käynnistät Google Chromen seuraavan kerran.</translation>
 <translation id="1773601347087397504">Apua Chrome-käyttöjärjestelmän käytössä</translation>
@@ -48,7 +46,6 @@
 <translation id="3080151273017101988">Jätä taustaohjelmat käyntiin, kun Google Chrome suljetaan</translation>
 <translation id="4149882025268051530">Asennusohjelma ei pystynyt purkamaan arkistotiedostoa. Lataa Google Chrome uudelleen.</translation>
 <translation id="6989339256997917931">Google Chrome on päivitetty, mutta et ole käyttänyt sitä ainakaan 30 päivään.</translation>
-<translation id="5744005218040929396">Google Chrome Utility</translation>
 <translation id="7060865993964054389">Google Chromen sovellusten käynnistysohjelma</translation>
 <translation id="1682634494516646069">Chrome ei voi lukea tietohakemistoaan <ph name="USER_DATA_DIRECTORY"/> tai kirjoittaa siihen</translation>
 <translation id="4343226815564935778">Google Chromen asennushakemisto vaikuttaa olevan käytössä. Käynnistä tietokoneesi uudelleen ja yritä uudestaan.</translation>
@@ -81,6 +78,7 @@
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="4585888816441913908">Tässä tietokoneessa on jo Google Chromen uudempi versio ja Google Chrome -kehys. Jos sovellus ei toimi, poista sekä Google Chrome että Google Chrome -kehys ja yritä uudelleen.</translation>
 <translation id="3149510190863420837">Chrome-sovellukset</translation>
+<translation id="7084448929020576097"><ph name="FILE_NAME"/> on haitallinen, ja Chrome on estänyt sen.</translation>
 <translation id="6368958679917195344">Chrome-käyttöjärjestelmää tukee toinen <ph name="BEGIN_LINK_CROS_OSS"/>avoimen lähdekoodin ohjelmisto<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="7459554271817304652">Määrittämällä synkronoinnin voit tallentaa selaimesi tiedot verkkoon ja käyttää niitä minkä tahansa tietokoneen Google Chromella.</translation>
 <translation id="4331809312908958774">Chrome OS
@@ -88,6 +86,8 @@
 <translation id="473775607612524610">Päivitä</translation>
 <translation id="1195935957447623558">Avaa avoinna olleet sivut uudelleen klikkaamalla Palauta.</translation>
 <translation id="2576431527583832481">Chromesta tuli juuri entistä parempi! Uusi versio on saatavilla.</translation>
+<translation id="4633000520311261472">Paransimme Chromen turvallisuutta poistamalla käytöstä sovelluksia, joita ei löydy kohteesta <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> ja jotka on voitu lisätä ilman lupaasi.</translation>
+<translation id="556024056938947818">Google Chrome yrittää näyttää salasanoja.</translation>
 <translation id="2580411288591421699">Ei voi asentaa samaa Google Chromen versiota, joka tällä hetkellä on käytössä. Sulje Google Chrome ja yritä uudelleen.</translation>
 <translation id="8460191995881063249">Chromen ilmoituskeskus</translation>
 <translation id="1457721931618994305">Päivitetään Google Chromea...</translation>
@@ -120,7 +120,6 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="911206726377975832">Poistetaanko myös selailutiedot?</translation>
 <translation id="5855036575689098185">Tietokoneellasi käynnissä oleva ohjelmisto on yhteensopimaton Google Chromen kanssa.</translation>
 <translation id="2044287590254833138">Google Chrome-työkalupalkki</translation>
-<translation id="5074344184765391290">Chrome-laajennuksen isäntä</translation>
 <translation id="8862326446509486874">Sinulla ei ole käyttöoikeuksia järjestelmätason asennukseen. Kokeile asennusohjelman suorittamista uudelleen järjestelmänvalvojana.</translation>
 <translation id="2874156562296220396">Google Chromen mahdollistivat avoimen lähdekoodin projekti <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> ja muut <ph name="BEGIN_LINK_OSS"/>avoimen lähdekoodin ohjelmistot<ph name="END_LINK_OSS"/>.</translation>
 <translation id="3847841918622877581">Google Chrome voi käyttää verkkopalveluita parantaakseen selauskokemusta.</translation>
@@ -134,6 +133,7 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="4273752058983339720">Google Chrome on asetettu käynnistymään automaattisesti tietokoneen käynnistämisen yhteydessä.</translation>
 <translation id="1104959162601287462">Tietoja &amp;Chrome-käyttöjärjestelmästä</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
+<translation id="1140117203923356735"><ph name="FILE_NAME"/> tekee joidenkin haittaohjelmien tavoin muutoksia asetuksiin, joten Chrome on estänyt sen.</translation>
 <translation id="5941830788786076944">Tee Google Chromesta oletusselain</translation>
 <translation id="7787950393032327779">Profiili näyttäisi olevan toisen Google Chrome -prosessin (<ph name="PROCESS_ID"/>) käytössä toisella tietokoneella (<ph name="HOST_NAME"/>). Chrome on lukinnut profiilin, jotta se ei vioitu. Jos olet varma, että mikään toinen prosessi ei käytä tätä profiilia, voit poistaa profiilin lukituksen ja käynnistää Chromen uudelleen.</translation>
 <translation id="1469002951682717133">Chromen sovellusten käynnistysohjelma</translation>
@@ -170,23 +170,22 @@ Jos kirjaudut silti sisään, Chrome-tiedot, kuten kirjanmerkit, historia ja ase
 <translation id="576822117893741893">Näytä Chrome-valikko</translation>
 <translation id="3444832043240812445">Tällä sivulla näkyy tietoja viimeaikaisista kaatumisista vain, jos <ph name="BEGIN_LINK"/>otat kaatumisraportit käyttöön<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome ei vastaa. Käynnistetäänkö uudelleen?</translation>
-<translation id="5318056482164160049">Google Chrome Plug-In Host</translation>
+<translation id="1175529839152551794">Kirjautuneena käyttäjänä voit käyttää välilehtiäsi, kirjanmerkkejäsi ja muuta Chromen sisältöäsi kannettavalla tietokoneellasi, puhelimellasi ja tablet-laitteellasi. Saat myös osuvampia ehdotuksia ja voit käyttää paranneltuja ominaisuuksia Googlen palveluissa.</translation>
 <translation id="6126631249883707068">Haluatko, että Google Chrome tallentaa salasanasi?</translation>
 <translation id="7773845170078702898">Haluatko Google Chromen tallentavan tämän sivuston salasanan?</translation>
 <translation id="5046764976540625289">Poistu Chromesta</translation>
 <translation id="4251615635259297716">Linkitetäänkö Chrome-tiedot tähän tiliin?</translation>
-<translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Internetselain</translation>
 <translation id="8142608456917638009">Google Chrome ei voinut luoda sovelluksen pikakuvaketta.</translation>
 <translation id="8255190535488645436">Google Chrome käyttää kameraasi ja mikrofoniasi.</translation>
 <translation id="2189123953385179981">Google ChromeOS ei voi käynnistää ulkoista sovellusta käsittelemään <ph name="SCHEME"/>-linkkejä. Pyytämäsi linkki on <ph name="PROTOLINK"/>.</translation>
 <translation id="7396375882099008034">Salli verkon käyttö Chromelle palomuurin tai virustorjunnan asetuksissa.</translation>
+<translation id="9102715433345326100">Tämä tiedosto on haitallinen, ja Chrome on estänyt sen.</translation>
 <translation id="8205111949707227942">Valinnainen: lähetä automaattisesti käyttötilastoja ja virheraportteja Googlelle Chrome-käyttöjärjestelmän kehittämiseksi.</translation>
 <translation id="7253415505590551024">Latauksia on käynnissä. Haluatko sulkea Google Chromen ja peruuttaa lataukset?</translation>
 <translation id="7196020411877309443">Miksi minulle näytetään tämä ilmoitus?</translation>
 <translation id="2769762047821873045">Google Chrome ei ole oletusselain.</translation>
-<translation id="1020869477857717497"><ph name="FILE_NAME"/> voi muuttaa hakujen toimintatapaa Chromessa.</translation>
 <translation id="4567424176335768812">Olet kirjautunut Chromeen tilillä <ph name="USER_EMAIL_ADDRESS"/>. Nyt voit käyttää kirjanmerkkejäsi, historiaa ja muita asetuksia kaikilla laitteilla, joihin olet kirjautunut.</translation>
 <translation id="6855094794438142393">Avaa
           Chrome-valikko &gt;

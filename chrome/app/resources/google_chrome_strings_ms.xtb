@@ -26,9 +26,7 @@
 <translation id="2370289711218562573">Google Chrome kini mengimport Kegemaran/Penanda Halaman.</translation>
 <translation id="8762286861469007470">Pengesan Portal Tawanan Chrome</translation>
 <translation id="2721687379934343312">Pada Mac, kata laluan disimpan pada Keychain anda dan boleh diakses atau disegerakkan oleh pengguna Chrome lain yang berkongsi akaun OS X ini.</translation>
-<translation id="3993188379797269327"><ph name="FILE_NAME"/> boleh mengubah tetapan Chrome anda.</translation>
 <translation id="1761870329818521071">Tidak dapat memasang versi Google Chrome Frame sama yang sedang dijalankan. Sila tutup Google Chrome Frame dan cuba semula.</translation>
-<translation id="2040709530900803995">Pemapar Google Chrome</translation>
 <translation id="6014844626092547096">Anda sedang dilog masuk ke Chrome! Penyegerakan dilumpuhkan oleh pentadbir anda.</translation>
 <translation id="3140883423282498090">Perubahan anda akan berkuat kuasa apabila anda melancarkan semula Google Chrome pada masa hadapan.</translation>
 <translation id="1773601347087397504">Dapatkan bantuan untuk menggunakan Chrome OS</translation>
@@ -48,7 +46,6 @@
 <translation id="3080151273017101988">Terus menjalankan apl latar belakang apabila Google Chrome ditutup</translation>
 <translation id="4149882025268051530">Pemasang gagal untuk nyahmampat arkib. Sila muat turun Google Chrome semula.</translation>
 <translation id="6989339256997917931">Google Chrome telah dikemas kini, tetapi anda belum menggunakannya untuk sekurang-kurangnya 30 hari.</translation>
-<translation id="5744005218040929396">Kemudahan Google Chrome</translation>
 <translation id="7060865993964054389">Pelancar Apl Google Chrome</translation>
 <translation id="1682634494516646069">Google Chrome tidak dapat membaca atau menulis pada direktori datanya: <ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="4343226815564935778">Direktori pemasangan Google Chrome kelihatan sedang digunakan. Sila but semula komputer anda dan cuba semula.</translation>
@@ -81,12 +78,15 @@
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="4585888816441913908">Komputer ini mempunyai versi Google Chrome dan Google Chrome Frame lebih baharu. Jika perisian tidak berfungsi, sila nyahpasang kedua-dua Google Chrome dan Google Chrome Frame dan cuba semula.</translation>
 <translation id="3149510190863420837">Chrome Apps</translation>
+<translation id="7084448929020576097"><ph name="FILE_NAME"/> bersifat hasad dan Chrome telah menyekatnya.</translation>
 <translation id="6368958679917195344">OS Chrome menjadi kenyataan dengan <ph name="BEGIN_LINK_CROS_OSS"/>perisian sumber terbuka<ph name="END_LINK_CROS_OSS"/> tambahan.</translation>
 <translation id="7459554271817304652">Sediakan Penyegerakan untuk menyimpan ciri penyemak imbas anda yang diperibadikan ke web dan mengaksesnya dari Google Chrome pada mana-mana komputer.</translation>
 <translation id="4331809312908958774">OS Chrome</translation>
 <translation id="473775607612524610">Kemas kini</translation>
 <translation id="1195935957447623558">Google Chrome tidak ditutup dengan betul. Untuk buka semula halaman yang anda telah buka, klik Pulihkan.</translation>
 <translation id="2576431527583832481">Chrome telah dipertingkatkan! Versi baharu kini boleh didapati.</translation>
+<translation id="4633000520311261472">Untuk menjadikan Chrome lebih selamat, kami melumpuhkan beberapa pelanjutan yang tidak disenaraikan dalam <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> dan mungkin telah ditambah tanpa pengetahuan anda.</translation>
+<translation id="556024056938947818">Google Chrome sedang cuba memaparkan kata laluan.</translation>
 <translation id="2580411288591421699">Tidak dapat memasang versi Google Chrome yang sama yang kini dijalankan. Sila tutup Google Chrome dan cuba semula.</translation>
 <translation id="8460191995881063249">Pusat Pemberitahuan Chrome</translation>
 <translation id="1457721931618994305">Mengemas kini Google Chrome...</translation>
@@ -119,7 +119,6 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="911206726377975832">Padamkan juga data menyemak imbas anda?</translation>
 <translation id="5855036575689098185">Perisian yang dijalankan pada komputer anda tidak serasi dengan Google Chrome.</translation>
 <translation id="2044287590254833138">Bar Alat Google Chrome</translation>
-<translation id="5074344184765391290">Chrome Plug-In Host</translation>
 <translation id="8862326446509486874">Anda tidak mempunyai hak wajar untuk pemasangan peringkat sistem. Cuba jalankan pemasang semula sebagai Pentadbir.</translation>
 <translation id="2874156562296220396">Google Chrome berjaya dilaksanakan melalui projek sumber terbuka <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> dan <ph name="BEGIN_LINK_OSS"/>perisian sumber terbuka<ph name="END_LINK_OSS"/> yang lain.</translation>
 <translation id="3847841918622877581">Google Chrome boleh menggunakan perkhidmatan web untuk meningkatkan pengalaman penyemakan imbas anda.</translation>
@@ -133,6 +132,7 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="4273752058983339720">Google Chrome dikonfigurasi untuk dilancarkan secara automatik apabila anda memulakan komputer anda.</translation>
 <translation id="1104959162601287462">Mengenai &amp;Chrome OS</translation>
 <translation id="5328989068199000832">Perduaan Google Chrome</translation>
+<translation id="1140117203923356735"><ph name="FILE_NAME"/> membuat perubahan tetapan yang sama dengan perisian hasad, jadi Chrome telah menyekatnya.</translation>
 <translation id="5941830788786076944">Jadikan Google Chrome penyemak imbas lalai</translation>
 <translation id="7787950393032327779">Nampaknya profil digunakan oleh proses Google Chrome lain (<ph name="PROCESS_ID"/>) pada komputer lain (<ph name="HOST_NAME"/>). Chrome telah mengunci profil supaya profil tidak rosak. Jika anda pasti tiada proses lain yang menggunakan profil ini, anda boleh membuka profil dan melancarkan semula Chrome.</translation>
 <translation id="1469002951682717133">Pelancar Apl Chrome</translation>
@@ -168,12 +168,11 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="576822117893741893">Paparkan menu Chrome</translation>
 <translation id="3444832043240812445">Halaman ini hanya menunjukkan maklumat mengenai nahas terkini anda jika anda <ph name="BEGIN_LINK"/>mendayakan laporan nahas<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome tidak responsif. Lancarkan semula sekarang?</translation>
-<translation id="5318056482164160049">Hos Pemalam Google Chrome</translation>
+<translation id="1175529839152551794">Memandangkan anda kini telah log masuk, anda boleh mendapatkan tab, penanda halaman dan barangan Chrome anda yang lain merentas komputer riba, telefon dan tablet anda. Anda turut akan menerima cadangan dan ciri yang lebih berkaitan tentang perkhidmatan Google.</translation>
 <translation id="6126631249883707068">Adakah anda mahu Google Chrome menyimpan kata laluan anda?</translation>
 <translation id="7773845170078702898">Adakah anda mahu Google Chrome menyimpan kata laluan anda untuk tapak ini?</translation>
 <translation id="5046764976540625289">Keluar Daripada Chrome</translation>
 <translation id="4251615635259297716">Paut data Chrome anda ke akaun ini?</translation>
-<translation id="9039578207253536065">Pekerja Google Chrome</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Penyemak Imbas Internet</translation>
 <translation id="8142608456917638009">Google Chrome tidak dapat membuat pintasan aplikasi.</translation>
@@ -181,11 +180,11 @@ Teruskan juga log masuk akan menggabungkan maklumat Chrome seperti penanda halam
 <translation id="2189123953385179981">Google ChromeOS tidak menyokong pelancaran aplikasi dalaman untuk mengendalikan pautan <ph name="SCHEME"/>. Pautan yang diminta adalah <ph name="PROTOLINK"/>.</translation>
 <translation id="7396375882099008034">Benarkan Chrome mengakses rangkaian dalam tetapan firewall atau antivirus
         anda.</translation>
+<translation id="9102715433345326100">Fail ini bersifat hasad dan Chrome telah menyekatnya.</translation>
 <translation id="8205111949707227942">Pilihan: Bantu jadikan OS Chrome lebih baik dengan menghantar laporan statistik penggunaan dan nahas secara automatik ke Google.</translation>
 <translation id="7253415505590551024">Muat turun sedang dijalankan. Adakah anda ingin keluar dari Google Chrome dan membatalkan muat turun?</translation>
 <translation id="7196020411877309443">Mengapakah halaman ini yang saya lihat?</translation>
 <translation id="2769762047821873045">Google Chrome adalah bukan penyemak imbas lalai anda.</translation>
-<translation id="1020869477857717497"><ph name="FILE_NAME"/> boleh mengubah cara carian anda berfungsi dalam Chrome.</translation>
 <translation id="4567424176335768812">Anda telah log masuk sebagai <ph name="USER_EMAIL_ADDRESS"/>. Sekarang anda boleh mengakses penanda halaman, sejarah dan tetapan anda yang lain pada semua peranti yang anda gunakan untuk log masuk.</translation>
 <translation id="6855094794438142393">Pergi ke
           menu Chrome &gt;

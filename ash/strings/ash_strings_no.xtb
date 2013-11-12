@@ -22,7 +22,7 @@
 <translation id="938582441709398163">Tastaturbelegg</translation>
 <translation id="4387004326333427325">Autentiseringssertifikatet ble avvist eksternt</translation>
 <translation id="6979158407327259162">Google Disk</translation>
-<translation id="3683428399328702079"><ph name="DISPLAY_NAME"/>-oppløsningen ble endret til <ph name="RESOLUTION"/></translation>
+<translation id="3683428399328702079">Oppløsningen for <ph name="DISPLAY_NAME"/> ble endret til <ph name="RESOLUTION"/></translation>
 <translation id="6943836128787782965">Henting av HTTP mislyktes</translation>
 <translation id="2297568595583585744">Status-felt</translation>
 <translation id="1661867754829461514">Personlig kode mangler</translation>
@@ -130,6 +130,7 @@ Trykk på Ctrl+Alt+Z for å deaktivere.</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830">Aktiverer <ph name="NAME"/></translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="1923539912171292317">Automatiske klikk</translation>
 <translation id="1398853756734560583">Maksimer</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: kobler til ...</translation>
 <translation id="252373100621549798">Ukjent skjerm</translation>
@@ -222,6 +223,7 @@ Trykk på Alt + Søk eller Shift for å avbryte.</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Gratulerer! <ph name="NAME"/>-datatjenesten din er aktivert og klar til bruk.</translation>
 <translation id="412065659894267608"><ph name="HOUR"/> t og <ph name="MINUTE"/> m til batteriet er ferdigladet</translation>
+<translation id="7297443947353982503">Brukernavn/passord er galt, eller så mislyktes EAP-autorisasjonen</translation>
 <translation id="6359806961507272919">Tekstmelding fra <ph name="PHONE_NUMBER"/></translation>
 <translation id="1244147615850840081">Operatør</translation>
 </translationbundle>

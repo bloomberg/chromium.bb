@@ -130,6 +130,7 @@ Prima Ctrl+Alt+Z para desativar.</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830">A ativar <ph name="NAME"/></translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="1923539912171292317">Cliques automáticos</translation>
 <translation id="1398853756734560583">Maximizar</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: A ligar...</translation>
 <translation id="252373100621549798">Apresentação Desconhecida</translation>
@@ -222,6 +223,7 @@ Prima Alt + Pesquisar ou Shift para cancelar.</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Parabéns! O serviço de dados &quot;<ph name="NAME"/>&quot; foi ativado e está pronto a funcionar.</translation>
 <translation id="412065659894267608"><ph name="HOUR"/>h <ph name="MINUTE"/>m até ficar completa</translation>
+<translation id="7297443947353982503">Nome de utilizador ou palavra-passe incorreto ou falha na autenticação EAP</translation>
 <translation id="6359806961507272919">SMS de <ph name="PHONE_NUMBER"/></translation>
 <translation id="1244147615850840081">Operador</translation>
 </translationbundle>

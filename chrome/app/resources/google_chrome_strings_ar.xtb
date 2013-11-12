@@ -26,9 +26,7 @@
 <translation id="2370289711218562573">‏يقوم Google Chrome الآن باستيراد المفضلة/الإشارات.</translation>
 <translation id="8762286861469007470">‏أداة اكتشاف البوابات المقيدة في Chrome</translation>
 <translation id="2721687379934343312">‏في نظام التشغيل Mac، يتم حفظ كلمات المرور في تطبيق Keychain  ويمكن الدخول إليها أو مزامنتها من قبل مستخدمي Chrome الآخرين الذين يشاركون حساب نظام التشغيل X هذا.</translation>
-<translation id="3993188379797269327">‏<ph name="FILE_NAME"/> قد يغيّر إعدادات Chrome.</translation>
 <translation id="1761870329818521071">‏لا يمكن تثبيت إصدار إطار Google Chrome نفسه الذي يتم تشغيله حاليًا. الرجاء إغلاق إطار Google Chrome وإعادة المحاولة.</translation>
-<translation id="2040709530900803995">‏عارض Google Chrome</translation>
 <translation id="6014844626092547096">‏لقد سجلت الدخول الآن إلى Chrome! عطّل المشرف المزامنة.</translation>
 <translation id="3140883423282498090">‏ستسري التغييرات في المرة التالية التي تعيد فيها تشغيل Google Chrome.</translation>
 <translation id="1773601347087397504">‏الحصول على مساعدة بشأن استخدام نظام التشغيل Chrome</translation>
@@ -48,7 +46,6 @@
 <translation id="3080151273017101988">‏استمرار تشغيل تطبيقات الخلفية عند إغلاق Google Chrome</translation>
 <translation id="4149882025268051530">‏فشلت أداة المثبِّت في فك ضغط الأرشيف. يُرجى تنزيل Google Chrome مرة أخرى.</translation>
 <translation id="6989339256997917931">‏تم تحديث متصفح Google Chrome، ولكنك لم تستخدمه منذ أكثر من 30 يومًا.</translation>
-<translation id="5744005218040929396">‏أداة Google Chrome</translation>
 <translation id="7060865993964054389">‏مشغل تطبيقات Google Chrome</translation>
 <translation id="1682634494516646069">‏يتعذر على Google Chrome القراءة والكتابة في دليل البيانات الخاص به:
 
@@ -83,12 +80,15 @@
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="4585888816441913908">‏يحتوي جهاز الكمبيوتر هذا على إصدار أحدث من Google Chrome وإطار Google Chrome. إذا كان البرنامج لا يعمل، فالرجاء إزالة كل من Google Chrome وإطار Google Chrome وإعادة المحاولة.</translation>
 <translation id="3149510190863420837">‏تطبيقات Chrome</translation>
+<translation id="7084448929020576097">‏<ph name="FILE_NAME"/> برنامج ضار، وقد أجرى Chrome حظره.</translation>
 <translation id="6368958679917195344">‏أصبح نظام التشغيل Chrome متاحًا من خلال <ph name="BEGIN_LINK_CROS_OSS"/>برنامج مفتوح المصدر<ph name="END_LINK_CROS_OSS"/> إضافي.</translation>
 <translation id="7459554271817304652">‏يمكنك إعداد المزامنة لحفظ ميزات المتصفح المخصصة على الويب والدخول إليها من Google Chrome على أي كمبيوتر.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="473775607612524610">تحديث</translation>
 <translation id="1195935957447623558">‏لم يتمّ إغلاق Google Chrome بطريقة صحيحة. لإعادة فتح الصفحات التي سبق فتحها، انقر على زرّ إعادة.</translation>
 <translation id="2576431527583832481">‏لقد أصبح Chrome أفضل من ذي قبل! يتوفر إصدار جديد.</translation>
+<translation id="4633000520311261472">‏لجعل Chrome أكثر أمانًا، تم تعطيل بعض الإضافات غير المدرجة في <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> والتي ربما تمت إضافتها بدون علمك.</translation>
+<translation id="556024056938947818">‏يحاول Google Chrome إظهار كلمات المرور.</translation>
 <translation id="2580411288591421699">‏لا يمكن تثبيت نفس الإصدار المثبت من Google Chrome والذي يتم تشغيله حاليًا. الرجاء إغلاق Google Chrome وإعادة المحاولة.</translation>
 <translation id="8460191995881063249">‏مركز إشعارات Chrome</translation>
 <translation id="1457721931618994305">‏جارٍ تحديث Google Chrome...</translation>
@@ -123,7 +123,6 @@
 <translation id="911206726377975832">هل تريد أيضًا حذف بيانات التصفح؟</translation>
 <translation id="5855036575689098185">‏البرامج التي تعمل على جهاز الكمبيوتر لا تتوافق مع Google Chrome.</translation>
 <translation id="2044287590254833138">‏شريط أدوات Google Chrome</translation>
-<translation id="5074344184765391290">‏مضيف المكون الإضافي لمتصفح Chrome</translation>
 <translation id="8862326446509486874">لا تملك الحقوق الكافية للتثبيت على مستوى النظام. جرّب تشغيل المثبِّت بصفة مشرف.</translation>
 <translation id="2874156562296220396">‏نوفر لكم Google Chrome بفضل المشروع المفتوح المصدر <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> و<ph name="BEGIN_LINK_OSS"/>برامج أخرى مفتوحة المصدر<ph name="END_LINK_OSS"/>.</translation>
 <translation id="3847841918622877581">‏قد يستخدم Google Chrome خدمات الويب لتحسين تجربة التصفح لديك.</translation>
@@ -137,6 +136,7 @@
 <translation id="4273752058983339720">‏تمت تهيئة Google Chrome لإطلاقه تلقائيًا عند بدء تشغيل جهاز الكمبيوتر.</translation>
 <translation id="1104959162601287462">‏حول &amp;نظام التشغيل Google Chrome</translation>
 <translation id="5328989068199000832">‏ثنائيات Google Chrome</translation>
+<translation id="1140117203923356735">‏يجري <ph name="FILE_NAME"/> تغييرات على الإعدادات مشابهة لبعض البرامج الضارة، لذا فقد حظره Chrome.</translation>
 <translation id="5941830788786076944">‏جعل Google Chrome المتصفّح الافتراضي</translation>
 <translation id="7787950393032327779">‏يبدو أن الملف الشخصي قيد الاستخدام بواسطة عملية أخرى في Google Chrome (<ph name="PROCESS_ID"/>) على جهاز كمبيوتر آخر (<ph name="HOST_NAME"/>). وقد تمّ قفل الملف الشخصي من جانب Chrome لضمان عدم تعرضه للتلف. فإذا كنت واثقًا من عدم وجود عمليات أخرى قيد التشغيل على جهاز الكمبيوتر، فيُمكنك إلغاء قفل الملف الشخصي وإعادة تشغيل Chrome مجددًا.</translation>
 <translation id="1469002951682717133">‏مشغل تطبيقات Chrome</translation>
@@ -171,12 +171,11 @@
 <translation id="576822117893741893">‏إظهار قائمة Chrome</translation>
 <translation id="3444832043240812445">تعرض هذه الصفحة فقط معلومات عن الأعطال الحديثة إذا <ph name="BEGIN_LINK"/>مكّنت الإبلاغ عن الأعطال<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">‏لا يستجيب Google Chrome. هل تريد إعادة التشغيل الآن؟</translation>
-<translation id="5318056482164160049">‏مضيف المكون الإضافي لمتصفح Google Chrome</translation>
+<translation id="1175529839152551794">‏والآن بعد أن سجّلت دخولك، يمكنك الحصول على علامات التبويب والإشارات المرجعية وعناصر Chrome الأخرى عبر الكمبيوتر المحمول والهاتف والجهاز اللوحي: كما ستتلقى المزيد من الاقتراحات والميزات ذات الصلة في خدمات Google.</translation>
 <translation id="6126631249883707068">‏هل تريد من Google Chrome حفظ كلمة المرور؟</translation>
 <translation id="7773845170078702898">‏هل تريد من Google Chrome حفظ كلمة المرور لهذا الموقع؟</translation>
 <translation id="5046764976540625289">‏إنهاء Chrome</translation>
 <translation id="4251615635259297716">‏هل ترغب في ربط بياناتك في Chrome بهذا الحساب؟</translation>
-<translation id="9039578207253536065">‏عامل Google Chrome</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">متصفح الإنترنت</translation>
 <translation id="8142608456917638009">‏لم يتمكن Google Chrome من إنشاء اختصار للتطبيق.</translation>
@@ -184,11 +183,11 @@
 <translation id="2189123953385179981">‏لا يتيح نظام التشغيل Google ChromeOS إمكانية تشغيل تطبيق خارجي للتعامل مع روابط <ph name="SCHEME"/>. والرابط المطلوب هو <ph name="PROTOLINK"/>.</translation>
 <translation id="7396375882099008034">‏اسمح للمتصفح Chrome بالدخول إلى الشبكة من خلال إعدادات الجدار الناري أو
         برنامج مكافحة الفيروسات.</translation>
+<translation id="9102715433345326100">‏يُعد الملف برنامجًا ضارًا، وقد أجرى Chrome حظره.</translation>
 <translation id="8205111949707227942">‏اختياري: ساعد في تحسين Chrome OS عن طريق إرسال إحصاءات الاستخدام وتقارير الأعطال إلى Google تلقائيًا.</translation>
 <translation id="7253415505590551024">‏هناك تنزيلات قيد التقدم. هل تريد الخروج من Google Chrome وإلغاء التنزيلات؟</translation>
 <translation id="7196020411877309443">لماذا أرى مربع الحوار هذا؟</translation>
 <translation id="2769762047821873045">‏ليس Google Chrome متصفحك الافتراضي.</translation>
-<translation id="1020869477857717497">‏<ph name="FILE_NAME"/> قد يغيّر طريقة عمل عمليات البحث في Chrome.</translation>
 <translation id="4567424176335768812">لقد سجلت دخولك باعتبارك <ph name="USER_EMAIL_ADDRESS"/>. ويُمكنك الآن الاستمتاع بالدخول إلى الإشارات المرجعية، والسجلّ، والإعدادات الأخرى على جميع الأجهزة التي تسجّل الدخول إليها.</translation>
 <translation id="6855094794438142393">‏انتقل إلى
           قائمة Chrome &gt;

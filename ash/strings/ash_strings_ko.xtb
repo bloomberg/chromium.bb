@@ -55,7 +55,7 @@
 <translation id="3294437725009624529">손님</translation>
 <translation id="8190698733819146287">언어 및 입력 설정...</translation>
 <translation id="1279938420744323401"><ph name="DISPLAY_NAME"/>(<ph name="ANNOTATION"/>)</translation>
-<translation id="2942516765047364088">서가 위치</translation>
+<translation id="2942516765047364088">서가 정렬</translation>
 <translation id="8676770494376880701">저출력 충전기 연결됨</translation>
 <translation id="7170041865419449892">범위를 벗어났습니다.</translation>
 <translation id="4804818685124855865">연결 해제</translation>
@@ -130,6 +130,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830"><ph name="NAME"/> 활성화 중</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="1923539912171292317">자동 클릭</translation>
 <translation id="1398853756734560583">최대화</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: 연결하는 중...</translation>
 <translation id="252373100621549798">알 수 없는 디스플레이</translation>
@@ -222,6 +223,7 @@
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">축하합니다. '<ph name="NAME"/>' 데이터 서비스가 활성화되어 사용할 수 있습니다.</translation>
 <translation id="412065659894267608">충전 완료까지 <ph name="HOUR"/>시간 <ph name="MINUTE"/>분 남음</translation>
+<translation id="7297443947353982503">사용자 이름 또는 비밀번호가 잘못되었거나 EAP 인증에 실패했습니다.</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER"/>에서 전송된 SMS</translation>
 <translation id="1244147615850840081">네트워크 사업자</translation>
 </translationbundle>

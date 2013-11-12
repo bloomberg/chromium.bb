@@ -1,26 +1,43 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="uk">
+<translation id="6831043979455480757">Перекласти</translation>
+<translation id="7644305409888602715">Виконується переклад сторінки такою мовою: <ph name="SOURCE_LANGUAGE"/>…</translation>
 <translation id="1491151370853475546">Перезавантажити цю сторінку</translation>
 <translation id="7658239707568436148">Скасувати</translation>
 <translation id="6458785801851713928">Синхронізація не доступна для вашого домену.</translation>
 <translation id="2731700343119398978">Зачекайте...</translation>
+<translation id="7378627244592794276">Ні</translation>
 <translation id="3358663646935160692">Цим обліковим записом керує домен <ph name="DOMAIN_NAME"/>.
 
 Ви входите в керований обліковий запис і дозволяєте його адміністратору керувати вашим профілем Chrome. Ваші дані Chrome буде назавжди пов’язано з цим обліковим записом. Відключення від цього облікового запису видалить усі локальні дані Chrome.</translation>
 <translation id="1623104350909869708">Заборонити цій сторінці створювати додаткові діалогові вікна</translation>
+<translation id="624558823898732418">Мова перекладу: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="3896036286668839683">Перегляд сертифікатів</translation>
 <translation id="8583805026567836021">Очищення даних облікового запису</translation>
+<translation id="8730621377337864115">Виконано</translation>
 <translation id="4170011742729630528">Служба не доступна. Повторіть спробу пізніше.</translation>
 <translation id="8627706565932943526">Помилка синхронізації</translation>
+<translation id="656628257199996201">Завжди перекладати з такої мови: <ph name="SOURCE_LANGUAGE"/></translation>
+<translation id="9137013805542155359">Показати оригінал</translation>
+<translation id="5684874026226664614">На жаль, цю сторінку неможливо перекласти.</translation>
 <translation id="3136378934686431938">Оновіть свої дані для входу.</translation>
+<translation id="6042308850641462728">Більше</translation>
+<translation id="8034522405403831421">Мова цієї сторінки: <ph name="SOURCE_LANGUAGE"/>. Перекласти її такою мовою: <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="8725066075913043281">Повторити спробу</translation>
 <translation id="4510973599275542560">Не оновлювати</translation>
 <translation id="9154176715500758432">Залишатися на цій сторінці</translation>
 <translation id="7063006564040364415">Не вдалося з’єднатись із сервером синхронізації.</translation>
+<translation id="4271185234001491831">Ніколи не перекладати з такої мови: <ph name="LANGUAGE"/></translation>
+<translation id="1285320974508926690">Ніколи не перекладати цей сайт</translation>
+<translation id="5164482624172255778">Хочете, щоб Google Chrome наступного разу пропонував перекласти сторінки цього сайту, написані такою мовою: <ph name="LANGUAGE"/>?</translation>
+<translation id="8528538445849828817">Мова сторінки: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="6512448926095770873">Залишити цю сторінку</translation>
 <translation id="7947953824732555851">Прийняти й увійти</translation>
 <translation id="6040143037577758943">Закрити</translation>
+<translation id="969096075394517431">Змінити мови</translation>
 <translation id="5032574515228824816">Підказка</translation>
+<translation id="1742134235943978220">Перекладено такою мовою: <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">ОК</translation>
 <translation id="7495038789730067783">Підтвердити вхід</translation>
 </translationbundle>

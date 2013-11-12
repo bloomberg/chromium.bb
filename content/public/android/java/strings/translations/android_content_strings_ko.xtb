@@ -3,8 +3,11 @@
 <translationbundle lang="ko">
 <translation id="376869769528291915">:</translation>
 <translation id="6015796118275082299">연도</translation>
+<translation id="2094750046714988961">외부 저장소가 준비되지 않아 프로파일러를 시작할 수 없습니다.</translation>
 <translation id="1256337885411059545">동영상 재생 안됨</translation>
+<translation id="2520230379124234395">프로파일러가 시작되었습니다.</translation>
 <translation id="7821540960913969614">날짜 설정</translation>
+<translation id="4859501799452851758">프로파일러가 완료되었습니다. 결과는 <ph name="FILENAME"/>에 있습니다.</translation>
 <translation id="3845599764535987402">시</translation>
 <translation id="4932733599132424254">날짜</translation>
 <translation id="6727102863431372879">설정</translation>
@@ -20,6 +23,7 @@
 <translation id="2732718972699418926">오전</translation>
 <translation id="7096034533295549981">동영상 로드 중</translation>
 <translation id="1542044944667958430">웹 검색</translation>
+<translation id="6849295950938417341">프로파일러를 시작하지 못했습니다.</translation>
 <translation id="6527303717912515753">공유</translation>
 <translation id="1822429046913737220">오전/오후</translation>
 <translation id="5789643057113097023">.</translation>

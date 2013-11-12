@@ -3,8 +3,11 @@
 <translationbundle lang="am">
 <translation id="376869769528291915">:</translation>
 <translation id="6015796118275082299">ዓመት</translation>
+<translation id="2094750046714988961">ውጫዊ ማከማቻ ዝግጁ ስላልሆነ መገለጫ ሰሪውን ማስጀመር አልተቻለም</translation>
 <translation id="1256337885411059545">ቪዲዮ ማጫወት አልተቻለም</translation>
+<translation id="2520230379124234395">መገለጫ ሰሪ ተጀምሯል</translation>
 <translation id="7821540960913969614">ቀን ያዘጋጁ</translation>
+<translation id="4859501799452851758">መግለጫ ሰሪ ተጠናቅቋል። ውጤቶች በ<ph name="FILENAME"/> ውስጥ ናቸው።</translation>
 <translation id="3845599764535987402">ሰዓት</translation>
 <translation id="4932733599132424254">ቀን</translation>
 <translation id="6727102863431372879">አዘጋጅ</translation>
@@ -20,6 +23,7 @@
 <translation id="2732718972699418926">ጥዋት</translation>
 <translation id="7096034533295549981">ቪዲዮን በመጫን ላይ</translation>
 <translation id="1542044944667958430">የድር ፍለጋ</translation>
+<translation id="6849295950938417341">መገለጫ ሰሪውን ማስጀመር አልተሳካም</translation>
 <translation id="6527303717912515753">አጋራ</translation>
 <translation id="1822429046913737220">ጥዋት/ከሰዓት</translation>
 <translation id="5789643057113097023">.</translation>

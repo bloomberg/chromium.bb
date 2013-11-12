@@ -1,26 +1,43 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="iw">
+<translation id="6831043979455480757">תרגם</translation>
+<translation id="7644305409888602715">מתרגם את הדף ל<ph name="SOURCE_LANGUAGE"/>...</translation>
 <translation id="1491151370853475546">טען מחדש דף זה</translation>
 <translation id="7658239707568436148">ביטול</translation>
 <translation id="6458785801851713928">הסנכרון אינו זמין בדומיין שלך.</translation>
 <translation id="2731700343119398978">המתן בבקשה...</translation>
+<translation id="7378627244592794276">לא</translation>
 <translation id="3358663646935160692">‏החשבון הזה מנוהל על ידי <ph name="DOMAIN_NAME"/>.
 
 אתה נכנס לחשבון מנוהל, ונותן למנהל המערכת שליטה על פרופיל Chrome שלך. נתוני Chrome שלך ייקשרו באופן קבוע לחשבון הזה. התנתקות מהחשבון הזה תמחק את נתוני Chrome המקומיים.</translation>
 <translation id="1623104350909869708">מנע מהדף זה ליצור תיבות דו-שיח נוספות</translation>
+<translation id="624558823898732418">שפת תרגום: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="3896036286668839683">מציג האישורים</translation>
 <translation id="8583805026567836021">מנקה נתוני חשבון</translation>
+<translation id="8730621377337864115">בוצע</translation>
 <translation id="4170011742729630528">השירות אינו זמין. נסה שוב מאוחר יותר.</translation>
 <translation id="8627706565932943526">שגיאת סנכרון</translation>
+<translation id="656628257199996201">תרגם <ph name="SOURCE_LANGUAGE"/> תמיד</translation>
+<translation id="9137013805542155359">הצג מקור</translation>
+<translation id="5684874026226664614">אופס. לא ניתן היה לתרגם את הדף הזה.</translation>
 <translation id="3136378934686431938">עדכן את פרטי הכניסה שלך.</translation>
+<translation id="6042308850641462728">עוד</translation>
+<translation id="8034522405403831421">דף זה מוצג ב<ph name="SOURCE_LANGUAGE"/>. האם לתרגם אותו ל<ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="8725066075913043281">נסה שוב</translation>
 <translation id="4510973599275542560">אל תטען מחדש</translation>
 <translation id="9154176715500758432">הישאר בדף זה</translation>
 <translation id="7063006564040364415">לא ניתן היה להתחבר אל שרת הסנכרון.</translation>
+<translation id="4271185234001491831">אל תתרגם <ph name="LANGUAGE"/> אף פעם</translation>
+<translation id="1285320974508926690">לעולם אל תתרגם אתר זה</translation>
+<translation id="5164482624172255778">‏האם ברצונך ש-Google Chrome יציע בפעם הבאה לתרגם דפים בשפה <ph name="LANGUAGE"/> מאתר זה?</translation>
+<translation id="8528538445849828817">שפת הדף: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="6512448926095770873">צא מדף זה</translation>
 <translation id="7947953824732555851">קבל והיכנס</translation>
 <translation id="6040143037577758943">סגור</translation>
+<translation id="969096075394517431">החלף שפות</translation>
 <translation id="5032574515228824816">בקשה</translation>
+<translation id="1742134235943978220">תורגם ל<ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">אישור</translation>
 <translation id="7495038789730067783">אשר את הכניסה</translation>
 </translationbundle>

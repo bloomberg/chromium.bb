@@ -3,8 +3,11 @@
 <translationbundle lang="tr">
 <translation id="376869769528291915">:</translation>
 <translation id="6015796118275082299">Yıl</translation>
+<translation id="2094750046714988961">Harici depolama birimi hazır olmadığından profil düzenleyici başlatılamıyor</translation>
 <translation id="1256337885411059545">Video oynatılamıyor</translation>
+<translation id="2520230379124234395">Profil düzenleyici başlatıldı</translation>
 <translation id="7821540960913969614">Tarihi ayarlayın</translation>
+<translation id="4859501799452851758">Profil düzenleyici tamamlandı. Sonuçlar <ph name="FILENAME"/> dosyasındadır.</translation>
 <translation id="3845599764535987402">Saat</translation>
 <translation id="4932733599132424254">Tarih</translation>
 <translation id="6727102863431372879">Ayarla</translation>
@@ -20,6 +23,7 @@
 <translation id="2732718972699418926">ÖÖ</translation>
 <translation id="7096034533295549981">Video yükleniyor</translation>
 <translation id="1542044944667958430">Web arama</translation>
+<translation id="6849295950938417341">Profil düzenleyici başlatılamadı</translation>
 <translation id="6527303717912515753">Paylaş</translation>
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="5789643057113097023">.</translation>

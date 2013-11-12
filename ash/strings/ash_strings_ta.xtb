@@ -130,6 +130,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830"><ph name="NAME"/> ஐச் செயல்படுத்துகிறது</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="1923539912171292317">தன்னியக்க கிளிக்குகள்</translation>
 <translation id="1398853756734560583">பெரிதாக்கு</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: இணைக்கிறது...</translation>
 <translation id="252373100621549798">அறியாதது</translation>
@@ -222,6 +223,7 @@
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">வாழ்த்துகள்! உங்கள் '<ph name="NAME"/>' தரவு சேவை செயல்படுத்தப்பட்டது, அது பயன்படுத்துவதற்கு தயாராக உள்ளது.</translation>
 <translation id="412065659894267608">முழுவதும் சார்ஜ் ஆகும் நேரம் - <ph name="HOUR"/>ம <ph name="MINUTE"/>நி</translation>
+<translation id="7297443947353982503">பயனர்பெயர்/கடவுச்சொல் தவறானது அல்லது EAP-அங்கீகாரம் தோல்வி</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER"/> என்ற எண்ணிலிருந்து வந்த SMS</translation>
 <translation id="1244147615850840081">சேவை வழங்குநர்</translation>
 </translationbundle>

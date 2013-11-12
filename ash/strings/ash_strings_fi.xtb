@@ -130,6 +130,7 @@ Poista se käytöstä painamalla Ctrl+Alt+Z.</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830">Aktivoidaan <ph name="NAME"/></translation>
 <translation id="8814190375133053267">Wifi</translation>
+<translation id="1923539912171292317">Automaattiset klikkaukset</translation>
 <translation id="1398853756734560583">Suurenna</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: Yhdistetään…</translation>
 <translation id="252373100621549798">Tuntematon näyttö</translation>
@@ -220,6 +221,7 @@ Palvelimen viesti: <ph name="SERVER_MSG"/></translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Onnittelut! Tiedonsiirtopalvelusi <ph name="NAME"/> on aktivoitu ja käyttövalmis.</translation>
 <translation id="412065659894267608">Akku täynnä <ph name="HOUR"/> t <ph name="MINUTE"/> min kuluttua</translation>
+<translation id="7297443947353982503">Käyttäjänimi/salasana on virheellinen tai EAP-todennus epäonnistui</translation>
 <translation id="6359806961507272919">Tekstiviesti lähettäjältä <ph name="PHONE_NUMBER"/></translation>
 <translation id="1244147615850840081">Operaattori</translation>
 </translationbundle>

@@ -3,8 +3,11 @@
 <translationbundle lang="id">
 <translation id="376869769528291915">.</translation>
 <translation id="6015796118275082299">Tahun</translation>
+<translation id="2094750046714988961">Tidak dapat memulai profiler karena penyimpanan eksternal tidak siap</translation>
 <translation id="1256337885411059545">Tidak dapat memutar video</translation>
+<translation id="2520230379124234395">Profiler dimulai</translation>
 <translation id="7821540960913969614">Setel tanggal</translation>
+<translation id="4859501799452851758">Profiler selesai. Hasil berupa <ph name="FILENAME"/>.</translation>
 <translation id="3845599764535987402">Jam</translation>
 <translation id="4932733599132424254">Tanggal</translation>
 <translation id="6727102863431372879">Setel</translation>
@@ -20,6 +23,7 @@
 <translation id="2732718972699418926">AM</translation>
 <translation id="7096034533295549981">Memuat video</translation>
 <translation id="1542044944667958430">Penelusuran web</translation>
+<translation id="6849295950938417341">Gagal memulai profiler</translation>
 <translation id="6527303717912515753">Bagikan</translation>
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="5789643057113097023">:</translation>

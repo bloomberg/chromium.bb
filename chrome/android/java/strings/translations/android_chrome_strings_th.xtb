@@ -1,26 +1,43 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="th">
+<translation id="6831043979455480757">แปล</translation>
+<translation id="7644305409888602715">กำลังแปลหน้านี้เป็น <ph name="SOURCE_LANGUAGE"/>...</translation>
 <translation id="1491151370853475546">โหลดหน้าเว็บนี้ซ้ำ</translation>
 <translation id="7658239707568436148">ยกเลิก</translation>
 <translation id="6458785801851713928">การซิงค์ไม่พร้อมใช้งานสำหรับโดเมนของคุณ</translation>
 <translation id="2731700343119398978">โปรดรอสักครู่...</translation>
+<translation id="7378627244592794276">ไม่</translation>
 <translation id="3358663646935160692">ผู้จัดการบัญชีนี้คือ <ph name="DOMAIN_NAME"/>
 
 คุณกำลังลงชื่อเข้าใช้ด้วยบัญชีที่มีผู้อื่นเป็นผู้จัดการ และคุณอนุญาตให้ผู้ดูแลระบบควบคุมโปรไฟล์ Chrome ของคุณได้ ข้อมูล Chrome ของคุณจะเชื่อมโยงกับบัญชีนี้อย่างถาวร การยกเลิกการเชื่อมต่อกับบัญชีนี้จะเป็นการลบข้อมูล Chrome ในเครื่อง</translation>
 <translation id="1623104350909869708">ป้องกันหน้าเว็บนี้จากการสร้างการโต้ตอบเพิ่มเติม</translation>
+<translation id="624558823898732418">ภาษาที่แปล: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="3896036286668839683">เครื่องมือดูใบรับรอง</translation>
 <translation id="8583805026567836021">กำลังล้างข้อมูลบัญชี</translation>
+<translation id="8730621377337864115">เสร็จสิ้น</translation>
 <translation id="4170011742729630528">บริการนี้ยังไม่สามารถใช้ได้ โปรดลองอีกครั้งในภายหลัง</translation>
 <translation id="8627706565932943526">ข้อผิดพลาดในการซิงค์</translation>
+<translation id="656628257199996201">แปลภาษา<ph name="SOURCE_LANGUAGE"/>เสมอ</translation>
+<translation id="9137013805542155359">แสดงหน้าเว็บเดิม</translation>
+<translation id="5684874026226664614">อ๊ะ หน้านี้ไม่สามารถแปลได้</translation>
 <translation id="3136378934686431938">โปรดอัปเดตรายละเอียดการลงชื่อเข้าใช้ของคุณ</translation>
+<translation id="6042308850641462728">เพิ่มเติม</translation>
+<translation id="8034522405403831421">หน้าเว็บนี้อยู่ในภาษา<ph name="SOURCE_LANGUAGE"/> ต้องการแปลเป็นภาษา<ph name="TARGET_LANGUAGE"/>ไหม</translation>
+<translation id="8725066075913043281">ลองอีกครั้ง</translation>
 <translation id="4510973599275542560">อย่าโหลดซ้ำ</translation>
 <translation id="9154176715500758432">อยู่ในหน้านี้</translation>
 <translation id="7063006564040364415">ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์การซิงค์</translation>
+<translation id="4271185234001491831">ไม่ต้องแปลภาษา<ph name="LANGUAGE"/></translation>
+<translation id="1285320974508926690">ไม่ต้องแปลไซต์นี้</translation>
+<translation id="5164482624172255778">คุณต้องการให้ Google Chrome เสนอการแปลหน้าเว็บภาษา<ph name="LANGUAGE"/>จากไซต์นี้ในครั้งต่อไปไหม</translation>
+<translation id="8528538445849828817">ภาษาหน้าเว็บ: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="6512448926095770873">ออกจากหน้านี้</translation>
 <translation id="7947953824732555851">ยอมรับและลงชื่อเข้าใช้</translation>
 <translation id="6040143037577758943">ปิด</translation>
+<translation id="969096075394517431">เปลี่ยนภาษา</translation>
 <translation id="5032574515228824816">หน้าต่างแจ้งเตือน</translation>
+<translation id="1742134235943978220">แปลเป็นภาษา<ph name="TARGET_LANGUAGE"/>แล้ว</translation>
 <translation id="6965382102122355670">ตกลง</translation>
 <translation id="7495038789730067783">ยืนยันการลงชื่อเข้าใช้</translation>
 </translationbundle>

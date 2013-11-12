@@ -3,8 +3,11 @@
 <translationbundle lang="nl">
 <translation id="376869769528291915">:</translation>
 <translation id="6015796118275082299">Jaar</translation>
+<translation id="2094750046714988961">Kan profiler niet starten omdat externe opslag niet gereed is</translation>
 <translation id="1256337885411059545">Kan video niet afspelen</translation>
+<translation id="2520230379124234395">Profiler gestart</translation>
 <translation id="7821540960913969614">Datum instellen</translation>
+<translation id="4859501799452851758">Profiler klaar. De resultaten staan in <ph name="FILENAME"/>.</translation>
 <translation id="3845599764535987402">Uur</translation>
 <translation id="4932733599132424254">Datum</translation>
 <translation id="6727102863431372879">Instellen</translation>
@@ -20,6 +23,7 @@
 <translation id="2732718972699418926">a.m.</translation>
 <translation id="7096034533295549981">Video laden</translation>
 <translation id="1542044944667958430">Zoeken op internet</translation>
+<translation id="6849295950938417341">Kan profiler niet starten</translation>
 <translation id="6527303717912515753">Delen</translation>
 <translation id="1822429046913737220">a.m./p.m.</translation>
 <translation id="5789643057113097023">.</translation>

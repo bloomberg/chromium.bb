@@ -130,6 +130,7 @@
 <translation id="1957803754585243749">0 درجة</translation>
 <translation id="2354174487190027830">تنشيط <ph name="NAME"/></translation>
 <translation id="8814190375133053267">‏لاسلكي، Wi-Fi</translation>
+<translation id="1923539912171292317">النقرات التلقائية</translation>
 <translation id="1398853756734560583">تكبير</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: جارٍ التوصيل...</translation>
 <translation id="252373100621549798">شاشة عرض غير معروفة</translation>
@@ -219,6 +220,7 @@
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">تم تنشيط خدمة البيانات '<ph name="NAME"/>' وهي جاهزة للعمل.</translation>
 <translation id="412065659894267608"><ph name="HOUR"/>س <ph name="MINUTE"/>د حتى الاكتمال</translation>
+<translation id="7297443947353982503">‏اسم المستخدم/كلمة المرور غير صحيحة أو أخفقت مصادقة EAP</translation>
 <translation id="6359806961507272919">‏رسالة قصيرة SMS من الهاتف رقم <ph name="PHONE_NUMBER"/></translation>
 <translation id="1244147615850840081">شركة اتصالات</translation>
 </translationbundle>

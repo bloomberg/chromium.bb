@@ -130,6 +130,7 @@ Nospiediet Ctrl+Alt+Z, lai tos atspējotu.</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830">Notiek <ph name="NAME"/> aktivizēšana.</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="1923539912171292317">Automātiskie klikšķi</translation>
 <translation id="1398853756734560583">Maksimizēt</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: notiek savienojuma izveide...</translation>
 <translation id="252373100621549798">Nezināms displejs</translation>
@@ -222,6 +223,7 @@ Lai atceltu tā funkcionalitāti, nospiediet Alt+Meklēt vai Shift.</translation
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Jūsu “<ph name="NAME"/>” datu pakalpojums ir veiksmīgi aktivizēts, un to var izmantot.</translation>
 <translation id="412065659894267608">Līdz pilnīgai uzlādei atlikušais laiks: <ph name="HOUR"/> h <ph name="MINUTE"/> min</translation>
+<translation id="7297443947353982503">Lietotājvārds/parole nav pareiza vai arī EAP autentifikācija neizdevās</translation>
 <translation id="6359806961507272919">SMS no <ph name="PHONE_NUMBER"/></translation>
 <translation id="1244147615850840081">Mobilo sakaru operators</translation>
 </translationbundle>

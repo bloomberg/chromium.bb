@@ -130,6 +130,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830"><ph name="NAME"/>ని సక్రియం చేస్తోంది</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="1923539912171292317">స్వయంచాలక క్లిక్‌లు</translation>
 <translation id="1398853756734560583">గరిష్ఠీకరించు</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: కనెక్ట్ అవుతోంది...</translation>
 <translation id="252373100621549798">తెలియని ప్రదర్శన</translation>
@@ -222,6 +223,7 @@
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">అభినందనలు! మీ '<ph name="NAME"/>' డేటా సేవ సక్రియం చేయబడింది మరియు పని చేయడానికి సిద్ధంగా ఉంది.</translation>
 <translation id="412065659894267608">నిండే వరకు <ph name="HOUR"/>h <ph name="MINUTE"/>m అవుతుంది</translation>
+<translation id="7297443947353982503">వినియోగదారు పేరు/పాస్‌వర్డ్ తప్పు లేదా EAP-ప్రామాణీకరణ విఫలమైంది</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER"/> నుండి SMS</translation>
 <translation id="1244147615850840081">కారియర్</translation>
 </translationbundle>

@@ -130,6 +130,7 @@ Para inhabilitar esta opción, pulsa Ctrl+Alt+Z.</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830">Activación de <ph name="NAME"/></translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="1923539912171292317">Clics automáticos</translation>
 <translation id="1398853756734560583">Maximizar</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: conectando...</translation>
 <translation id="252373100621549798">Pantalla desconocida</translation>
@@ -222,6 +223,7 @@ Pulsa Alt y la tecla de búsqueda o Mayús para cancelar la operación.</transla
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">¡Enhorabuena! Tu servicio de datos <ph name="NAME"/> se ha activado y está listo para que lo uses.</translation>
 <translation id="412065659894267608"><ph name="HOUR"/> h y <ph name="MINUTE"/> min para completar la carga</translation>
+<translation id="7297443947353982503">Nombre de usuario o contraseña incorrectos o error de autenticación EAP</translation>
 <translation id="6359806961507272919">SMS de <ph name="PHONE_NUMBER"/></translation>
 <translation id="1244147615850840081">Operador</translation>
 </translationbundle>

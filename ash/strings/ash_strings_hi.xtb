@@ -117,7 +117,7 @@
 <translation id="8528322925433439945">मोबाइल ...</translation>
 <translation id="7049357003967926684">संबद्धता</translation>
 <translation id="8428213095426709021">सेटिंग</translation>
-<translation id="2372145515558759244">एप्स समन्वयित किए जा रहे हैं...</translation>
+<translation id="2372145515558759244">ऐप्स  समन्वयित किए जा रहे हैं...</translation>
 <translation id="7256405249507348194">अपरिचित त्रुटि: <ph name="DESC"/></translation>
 <translation id="7925247922861151263">AAA जांच विफल</translation>
 <translation id="8456362689280298700">पूरा होने में <ph name="HOUR"/>:<ph name="MINUTE"/> शेष</translation>
@@ -130,13 +130,14 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830"><ph name="NAME"/> सक्रिय हो रहा है</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="1923539912171292317">स्वत: क्‍लिक</translation>
 <translation id="1398853756734560583">बड़ा करें</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: कनेक्ट हो रहा है...</translation>
 <translation id="252373100621549798">अज्ञात डिस्प्ले</translation>
 <translation id="1882897271359938046"><ph name="DISPLAY_NAME"/> पर मिरर कर रहा है</translation>
 <translation id="2727977024730340865">कम-शक्ति वाले चार्जर में प्लग इन करें. बैटरी चार्ज करना संभवत: विश्वसनीय नहीं होगा.</translation>
 <translation id="3784455785234192852">लॉक करें</translation>
-<translation id="2805756323405976993">एप्स</translation>
+<translation id="2805756323405976993">ऐप्स </translation>
 <translation id="1512064327686280138">सक्रियण विफलता</translation>
 <translation id="5097002363526479830">नेटवर्क से कनेक्ट करने में विफल '<ph name="NAME"/>': <ph name="DETAILS"/></translation>
 <translation id="1850504506766569011">Wi-Fi बंद है.</translation>
@@ -222,6 +223,7 @@
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">बधाई हो! आपकी '<ph name="NAME"/>' डेटा सेवा सक्रिय हो गई है और अब वह चलने के लिए तैयार है.</translation>
 <translation id="412065659894267608">पूरी तरह से चार्ज होने में <ph name="HOUR"/>घं <ph name="MINUTE"/>मि शेष</translation>
+<translation id="7297443947353982503">उपयोगकर्ता नाम/पासवर्ड गलत या EAP-प्रमाणीकरण विफल रहा</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER"/> से SMS</translation>
 <translation id="1244147615850840081">कैरियर</translation>
 </translationbundle>

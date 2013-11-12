@@ -3,8 +3,11 @@
 <translationbundle lang="en-GB">
 <translation id="376869769528291915">:</translation>
 <translation id="6015796118275082299">Year</translation>
+<translation id="2094750046714988961">Can't start profiler because external storage is not ready</translation>
 <translation id="1256337885411059545">Cannot play video</translation>
+<translation id="2520230379124234395">Profiler started</translation>
 <translation id="7821540960913969614">Set date</translation>
+<translation id="4859501799452851758">Profiler finished. Results are in <ph name="FILENAME"/>.</translation>
 <translation id="3845599764535987402">Hour</translation>
 <translation id="4932733599132424254">Date</translation>
 <translation id="6727102863431372879">Set</translation>
@@ -20,6 +23,7 @@
 <translation id="2732718972699418926">a.m.</translation>
 <translation id="7096034533295549981">Loading video</translation>
 <translation id="1542044944667958430">Web search</translation>
+<translation id="6849295950938417341">Failed to start profiler</translation>
 <translation id="6527303717912515753">Share</translation>
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="5789643057113097023">.</translation>

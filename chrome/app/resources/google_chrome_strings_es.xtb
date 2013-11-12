@@ -30,9 +30,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="2370289711218562573">Google Chrome está importando Favoritos/Marcadores.</translation>
 <translation id="8762286861469007470">Detector de portales cautivos de Chrome</translation>
 <translation id="2721687379934343312">En los equipos Mac, las contraseñas se guardan en tu llavero y otros usuarios de Chrome que compartan esta cuenta de OS X pueden acceder a ellas o sincronizarlas.</translation>
-<translation id="3993188379797269327"><ph name="FILE_NAME"/> puede cambiar tu configuración de Chrome.</translation>
 <translation id="1761870329818521071">No se puede instalar la misma versión de Google Chrome Frame que se está ejecutando en este momento. Cierra Google Chrome Frame y vuelve a intentarlo.</translation>
-<translation id="2040709530900803995">Motor de renderización de Google Chrome</translation>
 <translation id="6014844626092547096">Has iniciado sesión en Chrome. El administrador ha inhabilitado la sincronización.</translation>
 <translation id="3140883423282498090">Los cambios se aplicarán la próxima vez que reinicies Google Chrome.</translation>
 <translation id="1773601347087397504">Obtener ayuda para utilizar Chrome OS</translation>
@@ -52,7 +50,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="3080151273017101988">Seguir ejecutando aplicaciones en segundo plano al cerrar Google Chrome</translation>
 <translation id="4149882025268051530">El programa de instalación no ha podido descomprimir el archivo. Vuelve a descargar Google Chrome.</translation>
 <translation id="6989339256997917931">Google Chrome se ha actualizado, pero llevas al menos 30 días sin utilizarlo.</translation>
-<translation id="5744005218040929396">Utilidades de Google Chrome</translation>
 <translation id="7060865993964054389">Menú de aplicaciones de Google Chrome</translation>
 <translation id="1682634494516646069">Google Chrome no puede leer el directorio de datos ni escribir en él:
 
@@ -87,12 +84,15 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="4585888816441913908">Este ordenador tiene instalada una versión más reciente de Google Chrome y Google Chrome Frame. Si el software no funciona, desinstala Google Chrome y Google Chrome Frame y vuelve a intentarlo.</translation>
 <translation id="3149510190863420837">Aplicaciones de Chrome</translation>
+<translation id="7084448929020576097"><ph name="FILE_NAME"/> es un archivo malicioso y Chrome lo ha bloqueado.</translation>
 <translation id="6368958679917195344">Chrome OS está creado con <ph name="BEGIN_LINK_CROS_OSS"/>software libre<ph name="END_LINK_CROS_OSS"/> adicional.</translation>
 <translation id="7459554271817304652">Configura la sincronización para guardar las funciones personalizadas de tu navegador en la Web y acceder a ellas desde Google Chrome en cualquier ordenador.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="473775607612524610">Actualizar</translation>
 <translation id="1195935957447623558">Google Chrome no se ha cerrado correctamente. Para volver a abrir las páginas que habías abierto, haz clic en &quot;Restaurar&quot;.</translation>
 <translation id="2576431527583832481">Chrome sigue mejorando. Hay una nueva versión disponible.</translation>
+<translation id="4633000520311261472">Para aumentar la seguridad de Chrome, hemos inhabilitado algunas extensiones que no figuran en <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> y que podrían haberse añadido sin tu conocimiento.</translation>
+<translation id="556024056938947818">Google Chrome está intentando mostrar contraseñas.</translation>
 <translation id="2580411288591421699">No se puede instalar la misma versión de Google Chrome que se está ejecutando. Cierra el navegador y vuelve a intentarlo.</translation>
 <translation id="8460191995881063249">Centro de notificaciones de Chrome</translation>
 <translation id="1457721931618994305">Actualizando Google Chrome...</translation>
@@ -127,7 +127,6 @@ Si decides iniciar sesión de todas formas, se fusionará la información de Chr
 <translation id="911206726377975832">¿Quieres borrar también los datos de navegación?</translation>
 <translation id="5855036575689098185">El software que se ejecuta en tu ordenador no es compatible con Google Chrome.</translation>
 <translation id="2044287590254833138">Barra de Google Chrome</translation>
-<translation id="5074344184765391290">Host del complemento de Chrome</translation>
 <translation id="8862326446509486874">No dispones de los derechos necesarios para la instalación en el sistema. Intenta ejecutar de nuevo el programa de instalación como administrador.</translation>
 <translation id="2874156562296220396">Google Chrome es una realidad gracias al proyecto de software libre <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> y a otros <ph name="BEGIN_LINK_OSS"/>programas de código abierto<ph name="END_LINK_OSS"/>.</translation>
 <translation id="3847841918622877581">Google Chrome puede utilizar servicios web para mejorar la experiencia de navegación de los usuarios.</translation>
@@ -141,6 +140,7 @@ Si decides iniciar sesión de todas formas, se fusionará la información de Chr
 <translation id="4273752058983339720">Google Chrome está configurado para abrirse automáticamente cuando se inicia el ordenador.</translation>
 <translation id="1104959162601287462">Información de &amp;Chrome OS</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
+<translation id="1140117203923356735"><ph name="FILE_NAME"/> realiza cambios de configuración parecidos a los de algunos programas de software malicioso, así que Chrome lo ha bloqueado.</translation>
 <translation id="5941830788786076944">Establecer Google Chrome como navegador predeterminado</translation>
 <translation id="7787950393032327779">Parece que otro proceso de Google Chrome (<ph name="PROCESS_ID"/>) está utilizando el perfil en otro ordenador (<ph name="HOST_NAME"/>). Chrome ha bloqueado el perfil para que no se dañe. Si estás seguro de que ningún otro proceso está utilizando este perfil, puedes desbloquearlo y volver a iniciar Chrome.</translation>
 <translation id="1469002951682717133">Menú de aplicaciones de Chrome</translation>
@@ -177,12 +177,11 @@ Si decides iniciar sesión de todas formas, se fusionará la información de Chr
 <translation id="576822117893741893">Mostrar el menú de Chrome</translation>
 <translation id="3444832043240812445">Esta página solo muestra información sobre fallos recientes si se <ph name="BEGIN_LINK"/>habilitan los informes sobre fallos<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome no responde. ¿Quieres reiniciarlo ahora?</translation>
-<translation id="5318056482164160049">Host del complemento de Google Chrome</translation>
+<translation id="1175529839152551794">Al haber iniciado sesión, puedes ver tus pestañas, tus marcadores y otros elementos de Chrome en tu portátil, teléfono o tablet. También recibirás más sugerencias y funciones relevantes en relación con los servicios de Google.</translation>
 <translation id="6126631249883707068">¿Quieres que Google Chrome guarde tu contraseña?</translation>
 <translation id="7773845170078702898">¿Quieres que Google Chrome guarde tu contraseña para este sitio?</translation>
 <translation id="5046764976540625289">Salir de Google Chrome</translation>
 <translation id="4251615635259297716">¿Quieres vincular tus datos de Chrome a esta cuenta?</translation>
-<translation id="9039578207253536065">Worker de Google Chrome</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Navegador de Internet</translation>
 <translation id="8142608456917638009">Google Chrome no ha podido crear un acceso directo a la aplicación.</translation>
@@ -190,11 +189,11 @@ Si decides iniciar sesión de todas formas, se fusionará la información de Chr
 <translation id="2189123953385179981">Google Chrome OS no puede iniciar una aplicación externa que administre enlaces <ph name="SCHEME"/>. El enlace solicitado es <ph name="PROTOLINK"/>.</translation>
 <translation id="7396375882099008034">Configura tu cortafuegos o tu antivirus para permitir el acceso de
         Chrome a la red.</translation>
+<translation id="9102715433345326100">Este archivo es malicioso y Chrome lo ha bloqueado.</translation>
 <translation id="8205111949707227942">Opcional: Ayúdanos a mejorar Google Chrome OS enviando estadísticas de uso e informes sobre fallos.</translation>
 <translation id="7253415505590551024">Actualmente hay descargas en curso. ¿Quieres salir de Google Chrome y cancelarlas?</translation>
 <translation id="7196020411877309443">¿Por qué aparece este mensaje?</translation>
 <translation id="2769762047821873045">Google Chrome no es tu navegador predeterminado.</translation>
-<translation id="1020869477857717497"><ph name="FILE_NAME"/> puede cambiar el funcionamiento de tus búsquedas en Chrome.</translation>
 <translation id="4567424176335768812">Has iniciado sesión como <ph name="USER_EMAIL_ADDRESS"/>. Ahora puedes acceder a tus marcadores, a tu historial y a otras opciones en todos los dispositivos en los que hayas iniciado sesión.</translation>
 <translation id="6855094794438142393">Accede al
           menú de Chrome, haz clic en

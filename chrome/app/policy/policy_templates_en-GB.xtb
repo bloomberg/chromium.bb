@@ -98,6 +98,7 @@
           NOTE: The default behaviour for consumer and enterprise devices differs: on consumer devices, supervised users are enabled by default, but on enterprise devices they are disabled by default.</translation>
 <translation id="69525503251220566">Parameter providing search-by-image feature for the default search provider</translation>
 <translation id="5469825884154817306">Block images on these sites</translation>
+<translation id="5827231192798670332">Selects the strategy used to free up disk space during automatic clean-up</translation>
 <translation id="8412312801707973447">Whether online OCSP/CRL checks are performed</translation>
 <translation id="6649397154027560979">This policy is deprecated, please use URLBlacklist instead.
 
@@ -202,6 +203,8 @@
 <translation id="6036523166753287175">Enable firewall traversal from remote access host</translation>
 <translation id="1096105751829466145">Default search provider</translation>
 <translation id="7567380065339179813">Allow plug-ins on these sites</translation>
+<translation id="4555850956567117258">Enable remote attestation for the user</translation>
+<translation id="5966615072639944554">Extensions allowed to to use the remote attestation API</translation>
 <translation id="1617235075406854669">Enable deleting browser and download history</translation>
 <translation id="5290940294294002042">Specify a list of plug-ins that the user can enable or disable</translation>
 <translation id="3153348162326497318">Allows you to specify which extensions the users CANNOT install. Extensions already installed will be removed if blacklisted.
@@ -260,6 +263,7 @@
 
           If this policy is left unset, 'AllowImages' will be used and the user will be able to change it.</translation>
 <translation id="5630352020869108293">Restore the last session</translation>
+<translation id="2067011586099792101">Block access to sites outside of content packs</translation>
 <translation id="4980635395568992380">Data Types</translation>
 <translation id="3096595567015595053">List of enabled plug-ins</translation>
 <translation id="3048744057455266684">If this policy is set and a search URL suggested from the omnibox contains this parameter in the query string or in the fragment identifier, then the suggestion will show the search terms and search provider instead of the raw search URL.
@@ -279,11 +283,13 @@
           If this policy is left not set, the global default value will be used for all sites, either from the 'DefaultCookiesSetting' policy if it is set, or the user's personal configuration otherwise.
 
           If the 'RestoreOnStartup' policy is set to restore URLs from previous sessions, this policy will not be respectred and cookies will be stored permanently for those sites.</translation>
+<translation id="4807950475297505572">Least recently used users are removed until there is enough free space</translation>
 <translation id="8828766846428537606">Configure the default home page in <ph name="PRODUCT_NAME"/> and prevent users from changing it.
 
       The user's home page settings are only completely locked down, if you either select the home page to be the new tab page, or set it to be a URL and specify a home page URL. If you don't specify the home page URL, then the user is still able to set the home page to the new tab page by specifying 'chrome://newtab'.</translation>
 <translation id="2231817271680715693">Import browsing history from default browser on first run</translation>
 <translation id="1353966721814789986">Startup pages:</translation>
+<translation id="7173856672248996428">Ephemeral profile</translation>
 <translation id="1841130111523795147">Allows the user to sign in to <ph name="PRODUCT_NAME"/> and prevents users from changing this setting.
 
       If you set this policy, you can configure if a user is allowed to sign in to <ph name="PRODUCT_NAME"/> or not.</translation>
@@ -293,6 +299,7 @@
 <translation id="6368403635025849609">Allow JavaScript on these sites</translation>
 <translation id="6074963268421707432">Do not allow any site to show desktop notifications</translation>
 <translation id="8614804915612153606">Disables Auto Update</translation>
+<translation id="4834526953114077364">Least recently used users who have not logged in within the last 3 months are removed until there is enough free space</translation>
 <translation id="382476126209906314">Configure the TalkGadget prefix for remote access hosts</translation>
 <translation id="6561396069801924653">Show accessibility options in system tray menu</translation>
 <translation id="8104962233214241919">Automatically select client certificates for these sites</translation>
@@ -360,6 +367,13 @@
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME"/>.
 
       If this policy is left unset the setting will be what the user chose upon installation / first run.</translation>
+<translation id="4784220343847172494">Controls the automatic clean-up behaviour on <ph name="PRODUCT_OS_NAME"/> devices. Automatic clean-up is triggered when the amount of free disk space reaches a critical level to recover some disk space.
+
+      If this policy is set to 'RemoveLRU', the automatic clean-up will keep removing users from the device in least-recently-logged-in order until there is enough free space.
+
+      If this policy is set to 'RemoveLRUIfDormant', the automatic clean-up will keep removing users who have not logged in for at least 3 months in least-recently-logged-in order until there is enough free space.
+
+      If this policy is not set, automatic clean-up uses the default built-in strategy. Currently, it is the 'RemoveLRUIfDormant' strategy.</translation>
 <translation id="6256787297633808491">System wide flags to be applied on Chrome start-up</translation>
 <translation id="2516600974234263142">Enables printing in <ph name="PRODUCT_NAME"/> and prevents users from changing this setting.
 
@@ -477,6 +491,9 @@
           If this setting is enabled, then hosts' physical input and output devices are disabled while a remote connection is in progress.
 
           If this setting is disabled or not set, then both local and remote users can interact with the host when it is being shared.</translation>
+<translation id="4894257424747841850">Report list of device users that have recently logged in.
+
+      If the policy is not set, or set to false, the users will not be reported.</translation>
 <translation id="1426410128494586442">Yes</translation>
 <translation id="4897928009230106190">Specifies the parameters used when doing suggestion search with POST. It consists of comma-separated name/value pairs. If a value is a template parameter, like {searchTerms} in above example, it will be replaced with real search terms data.
 
@@ -554,12 +571,14 @@
 
       This settings makes the memory statistics from the Developer Tools Profiles panel available to the web page itself.</translation>
 <translation id="5776485039795852974">Ask every time a site wants to show desktop notifications</translation>
+<translation id="5047604665028708335">Allow access to sites outside of content packs</translation>
 <translation id="5052081091120171147">This policy forces the browsing history to be imported from the current default browser, if enabled. If enabled, this policy also affects the import dialogue.
 
       If disabled, no browsing history is imported.
 
       If it is not set, the user may be asked whether to import or importing may happen automatically.</translation>
 <translation id="6786747875388722282">Extensions</translation>
+<translation id="7132877481099023201">URLs that will be granted access to video capture devices without prompt</translation>
 <translation id="8947415621777543415">Report device location</translation>
 <translation id="1655229863189977773">Set disk cache size in bytes</translation>
 <translation id="6376842084200599664">Allows you to specify a list of extensions that will be installed silently, without user interaction.
@@ -574,6 +593,7 @@
 
           If this policy is left not set the user can uninstall any extension  in <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="6899705656741990703">Auto detect proxy settings</translation>
+<translation id="8382184662529825177">Enable the use of remote attestation for content protection for the device</translation>
 <translation id="7003334574344702284">This policy forces the saved passwords to be imported from the previous default browser, if enabled. If enabled, this policy also affects the import dialogue.
 
       If disabled, the saved passwords are not imported.
@@ -583,6 +603,13 @@
 <translation id="3236046242843493070">URL patterns to allow extension, app, and user script installs from</translation>
 <translation id="2498238926436517902">Always auto-hide the shelf</translation>
 <translation id="253135976343875019">Idle warning delay when running on AC power</translation>
+<translation id="480987484799365700">If set to enabled this policy forces the profile to be switched to ephemeral mode. If this policy is specified as an OS policy (e.g. GPO on Windows) it will apply to every profile on the system; if the policy is set as a Cloud policy it will apply only to a profile signed in with a managed account.
+
+      In this mode the profile data is persisted on disk only for the length of the user session. Features like browser history, extensions and their data, web data like cookies and web databases are not preserved after the browser is closed. However this does not prevent the user from downloading any data to disk manually, save pages or print them.
+
+      If the user has enabled sync all this data is preserved in his sync profile just like with regular profiles. Incognito mode is also available if not explicitly disabled by policy.
+
+      If the policy is set to disabled or left not set signing in leads to regular profiles.</translation>
 <translation id="6997592395211691850">Whether online OCSP/CRL checks are required for local trust anchors</translation>
 <translation id="152657506688053119">List of alternative URLs for the default search provider</translation>
 <translation id="8992176907758534924">Do not allow any site to show images</translation>
@@ -776,7 +803,6 @@
 <translation id="7003746348783715221"><ph name="PRODUCT_NAME"/> preferences</translation>
 <translation id="4723829699367336876">Enable firewall traversal from remote access client</translation>
 <translation id="6367755442345892511">Whether the release channel should be configurable by the user</translation>
-<translation id="4035570660718398959">Allow users to redeem offers through Chrome OS Registration.</translation>
 <translation id="3868347814555911633">This policy is active in retail mode only.
 
       Lists extensions that are automatically installed for the Demo user, for devices in retail mode. These extensions are saved in the device and can be installed while offline, after the installation.
@@ -799,7 +825,6 @@
           If you disable this setting, the password manager does not allow showing stored passwords in clear text in the password manager window.
 
           If you enable or do not set this policy, users can view their passwords in clear text in the password manager.</translation>
-<translation id="5213629107215526747">URLs that will be granted access to video capture devices without prompt.</translation>
 <translation id="5936622343001856595">Forces queries in Google Web Search to be done with SafeSearch set to active and prevents users from changing this setting.
 
       If you enable this setting, SafeSearch in Google Search is always active.
@@ -810,6 +835,7 @@
       When this setting is enabled, <ph name="PRODUCT_NAME"/> will open the system print dialogue instead of the built-in print preview when a user requests a page to be printed.
 
       If this policy is not set or is set to false, print commands trigger the print preview screen.</translation>
+<translation id="7933141401888114454">Enable creation of supervised users</translation>
 <translation id="2824715612115726353">Enable Incognito mode</translation>
 <translation id="1057535219415338480">Enables network prediction in <ph name="PRODUCT_NAME"/> and prevents users from changing this setting.
 
@@ -863,7 +889,6 @@
       If this policy is left unset, this will be enabled but the user will be able to change it.</translation>
 <translation id="2236488539271255289">Do not allow any site to set local data</translation>
 <translation id="4467952432486360968">Block third-party cookies</translation>
-<translation id="2041396837791669429">Block access to sites outside of content packs.</translation>
 <translation id="1305864769064309495">A dictionary mapping URLs to a boolean flag specifying whether access to the host should be allowed (true) or blocked (false).
 
           This policy is for internal use by Chrome itself.</translation>
@@ -902,7 +927,6 @@
 
           If this policy is left unset, the large cursor is disabled initially but can be enabled by the user at any time.</translation>
 <translation id="2633084400146331575">Enable spoken feedback</translation>
-<translation id="7712008868843631413">Enable supervised users.</translation>
 <translation id="8731693562790917685">Content Settings allow you to specify how contents of a specific type (for example Cookies, Images or JavaScript) is handled.</translation>
 <translation id="2411919772666155530">Block notifications from these sites</translation>
 <translation id="6923366716660828830">Specifies the name of the default search provider. If left empty or not set, the host name specified by the search URL will be used.
@@ -916,7 +940,6 @@
 <translation id="467236746355332046">Supported features:</translation>
 <translation id="7632724434767231364">GSSAPI library name</translation>
 <translation id="3038323923255997294">Continue running background apps when <ph name="PRODUCT_NAME"/> is closed</translation>
-<translation id="4652284479838524692">Enable remote attestation for the device.</translation>
 <translation id="8909280293285028130">Specifies the length of time without user input after which the screen is locked when running on AC power.
 
           When this policy is set to a value greater than zero, it specifies the length of time that the user must remain idle before <ph name="PRODUCT_OS_NAME"/> locks the screen.
@@ -938,6 +961,7 @@
 
       If this policy is set to true or not configured, new user accounts are allowed to be created, provided that <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> does not prevent the user from logging in.</translation>
 <translation id="4389091865841123886">Configure the remote attestation with TPM mechanism.</translation>
+<translation id="3518214502751233558">Specify whether power management delays and the session length limit should only start running after initial user activity in a session</translation>
 <translation id="8256688113167012935">Controls the account name <ph name="PRODUCT_OS_NAME"/> shows on the login screen for the corresponding device-local account.
 
       If this policy is set, the login screen will use the specified string in the picture-based login chooser for the corresponding device-local account.
@@ -1020,7 +1044,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       When this policy is set to true, the icons are hidden.
 
       When this policy is set to false or is not configured, the icons are visible.</translation>
-<translation id="8401282319420373133">Extensions allowed to to use the remote attestation API.</translation>
 <translation id="5085647276663819155">Disable Print Preview</translation>
 <translation id="8672321184841719703">Target Auto-Update Version</translation>
 <translation id="1689963000958717134">Allows pushing network configuration to be applied for all users of a <ph name="PRODUCT_OS_NAME"/> device. The network configuration is a JSON-formatted string as defined by the Open Network Configuration format described at <ph name="ONC_SPEC_URL"/></translation>
@@ -1065,6 +1088,7 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
       If enabled screenshots cannot be taken using keyboard shortcuts or extension APIs.
 
       If disabled or not specified, taking screenshots is allowed.</translation>
+<translation id="5697306356229823047">Report device users</translation>
 <translation id="8649763579836720255">Chrome OS devices can use remote attestation (Verified Access) to get a certificate issued by the Chrome OS CA that asserts that the device is eligible to play protected content. This process involves sending hardware endorsement information to the Chrome OS CA which uniquely identifies the device.
 
           If this setting is false, the device will not use remote attestation for content protection and the device may be unable to play protected content.
@@ -1147,6 +1171,7 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
       If this setting is enabled, browsing history is not saved.
 
       If this setting is disabled or not set, browsing history is saved.</translation>
+<translation id="7295019613773647480">Enable supervised users</translation>
 <translation id="2759224876420453487">Control the user behaviour in a multiprofile session</translation>
 <translation id="3844092002200215574">Configures the directory that <ph name="PRODUCT_NAME"/> will use for storing cached files on the disk.
 
@@ -1210,8 +1235,6 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
           If you set this policy, users can temporarily override it by enabling or disabling high contrast mode. However, the user's choice is not persistent and the default is restored whenever the login screen is shown anew or the user remains idle on the login screen for a minute.
 
           If this policy is left unset, high contrast mode is disabled when the login screen is first shown. Users can enable or disable high contrast mode at any time and its status on the login screen is persisted between users.</translation>
-<translation id="8580857153747395000">Warn when visiting sites outside of content packs.</translation>
-<translation id="350796261613621561">Enable creation of supervised users.</translation>
 <translation id="602728333950205286">Default search provider instant URL</translation>
 <translation id="3030000825273123558">Enable metrics reporting</translation>
 <translation id="8465065632133292531">Parameters for instant URL which uses POST</translation>
@@ -1227,6 +1250,7 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 
           If this setting is disabled, then this feature will not be available.</translation>
 <translation id="1675002386741412210">Supported on:</translation>
+<translation id="1608755754295374538">URLs that will be granted access to audio capture devices without prompt</translation>
 <translation id="3547954654003013442">Proxy settings</translation>
 <translation id="5921713479449475707">Allow autoupdate downloads via HTTP</translation>
 <translation id="4482640907922304445">Shows the Home button on <ph name="PRODUCT_NAME"/>'s toolbar.
@@ -1238,8 +1262,8 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
       If you enable or disable this setting, users cannot change or override this setting in <ph name="PRODUCT_NAME"/>.
 
       Leaving this policy unset will allow the user to choose whether to show the home button.</translation>
-<translation id="6897718480289510689">Allow access to sites outside of content packs.</translation>
 <translation id="2518231489509538392">Allow playing audio</translation>
+<translation id="8146727383888924340">Allow users to redeem offers through Chrome OS Registration</translation>
 <translation id="7301543427086558500">Specifies a list of alternative URLs that can be used to extract search terms from the search engine. The URLs should contain the string <ph name="SEARCH_TERM_MARKER"/>, which will be used to extract the search terms.
 
           This policy is optional. If not set, no alternative urls will be used to extract search terms.
@@ -1270,7 +1294,11 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 <translation id="5208240613060747912">Allows you to set a list of url patterns that specify sites which are not allowed to display notifications.
 
           If this policy is left unset the global default value will be used for all sites either from the 'DefaultNotificationsSetting' policy, if it is set, or the user's personal configuration otherwise.</translation>
-<translation id="7927140259706020912">URLs that will be granted access to audio capture devices without prompt.</translation>
+<translation id="346731943813722404">Specifies whether power management delays and the session length limit should only start running after the first user activity has been observed in a session.
+
+          If this policy is set to True, power management delays and the session length limit do not start running until after the first user activity has been observed in a session.
+
+          If this policy is set to False or left unset, power management delays and the session length limit start running immediately on session start.</translation>
 <translation id="4600786265870346112">Enable large cursor</translation>
 <translation id="8592105098257899882">Configures the cache size that <ph name="PRODUCT_NAME"/> will use for storing cached files on the disk.
 
@@ -1457,7 +1485,6 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
           The policy value should be specified in milliseconds. Values are clamped to be less than or equal to the idle delay.</translation>
 <translation id="1897365952389968758">Allow all sites to run JavaScript (recommended)</translation>
 <translation id="5244714491205147861">Power mangement on the login screen</translation>
-<translation id="3619270953033888719">Enable the use of remote attestation for content protection for the device.</translation>
 <translation id="922540222991413931">Configure extension, app, and user script install sources</translation>
 <translation id="7323896582714668701">Additional command line parameters for <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Disable synchronisation of data with Google</translation>
@@ -1491,6 +1518,7 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
           For example patterns see http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="3101501961102569744">Choose how to specify proxy server settings</translation>
 <translation id="1803646570632580723">List of pinned apps to show in the launcher</translation>
+<translation id="1062011392452772310">Enable remote attestation for the device</translation>
 <translation id="7774768074957326919">Use system proxy settings</translation>
 <translation id="3891357445869647828">Enable JavaScript</translation>
 <translation id="868187325500643455">Allow all sites to automatically run plug-ins</translation>
@@ -1534,7 +1562,6 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 <translation id="7194407337890404814">Default search provider name</translation>
 <translation id="1843117931376765605">Refresh rate for user policy</translation>
 <translation id="5535973522252703021">Kerberos delegation server whitelist</translation>
-<translation id="4578030379102330182">Enable remote attestation for the user.</translation>
 <translation id="9187743794267626640">Disable mounting of external storage</translation>
 <translation id="6353901068939575220">Specifies the parameters used when searching a URL with POST. It consists of comma-separated name/value pairs. If a value is a template parameter, like {searchTerms} in above example, it will be replaced with real search terms data.
 
@@ -1751,6 +1778,7 @@ If this setting is not set, <ph name="PRODUCT_NAME"/> will allow the user to con
 <translation id="8303314579975657113">Specifies which GSSAPI library to use for HTTP Authentication. You can set either just a library name or a full path.
 
           If no setting is provided, <ph name="PRODUCT_NAME"/> will fall back to using a default library name.</translation>
+<translation id="8549772397068118889">Warn when visiting sites outside of content packs</translation>
 <translation id="7749402620209366169">Enables two-factor authentication for remote access hosts instead of a user-specified PIN.
 
           If this setting is enabled, then users must provide a valid two-factor code when accessing a host.

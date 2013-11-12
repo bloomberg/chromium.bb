@@ -26,9 +26,7 @@
 <translation id="2370289711218562573">விருப்பங்கள்/புக்மார்க்ஸ் ஐ Google Chrome இப்போது இறக்குமதி செய்கிறது.</translation>
 <translation id="8762286861469007470">Chrome கேப்டிவ் போர்ட்டல் கண்டறிவான்</translation>
 <translation id="2721687379934343312">Mac இல்,உங்கள் Keychain இல் கடவுச்சொல்கள் சேம்க்கப்படும் மேலும் இந்த OS X கணக்குகளை பகிரும் Chrome பயனர்களால் அணுகவோ ஒத்திசைக்கவோ முடுயும்.</translation>
-<translation id="3993188379797269327"><ph name="FILE_NAME"/> உங்கள் Chrome அமைப்புகளை மாற்றலாம்.</translation>
 <translation id="1761870329818521071">நடப்பில் இயங்கிக்கொண்டிருக்கும் அதே Google Chrome Frame பதிப்பை நிறுவ முடியாது. Google Chrome Frame ஐ மூடிவிட்டு மீண்டும் முயற்சி செய்க.</translation>
-<translation id="2040709530900803995">Google Chrome Renderer</translation>
 <translation id="6014844626092547096">தற்போது Chrome இல் உள்நுழைந்துள்ளீர்கள்! உங்கள் நிர்வாகியால் ஒத்திசைவு முடக்கப்பட்டுள்ளது.</translation>
 <translation id="3140883423282498090">அடுத்த முறை Google Chrome ஐ மீண்டும் தொடங்கியவுடன் உங்கள் மாற்றங்கள் செயல்படும்.</translation>
 <translation id="1773601347087397504">Chrome OS ஐப் பயன்படுத்தி உதவி பெறுக</translation>
@@ -48,7 +46,6 @@
 <translation id="3080151273017101988">Google Chrome மூடப்பட்டிருக்கும்போது பின்புல பயன்பாடுகளை இயக்க அனுமதி</translation>
 <translation id="4149882025268051530">காப்பகத்தை விரிவுபடுத்துவதில் இன்ஸ்டாலர் தோல்வியுற்றது. Google Chrome ஐ மீண்டும் பதிவிறக்குக.</translation>
 <translation id="6989339256997917931">Google Chrome புதுப்பிக்கப்பட்டது, ஆனால் இதை நீங்கள் குறைந்தபட்சம் 30 நாட்களாகப் பயன்படுத்தவில்லை.</translation>
-<translation id="5744005218040929396">Google Chrome Utility</translation>
 <translation id="7060865993964054389">Google Chrome பயன்பாட்டுத் துவக்கி</translation>
 <translation id="1682634494516646069">பின்வரும் தரவுக் கோப்பகத்தில் Google Chrome படிக்கவும் எழுதவும் செய்யாது:<ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="4343226815564935778">Google Chrome இன் நிறுவல் கோப்பகமானது பயன்பாட்டில் உள்ளது. உங்கள் கணினியை மறுதொடக்கம் செய்து மீண்டும் முயற்சி செய்க.</translation>
@@ -81,12 +78,15 @@
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="4585888816441913908">Google Chrome மற்றும் Google Chrome சட்டகத்தின் மிகச் சமீபத்திய பதிப்பு இந்தக் கணினியில் ஏற்கனவே உள்ளது. மென்பொருள் பணிபுரியவில்லை என்றால், Google Chrome மற்றும் Google Chrome சட்டகத்தினை நிறுவல்நீக்கம் செய்து, மீண்டும் முயற்சி செய்க.</translation>
 <translation id="3149510190863420837">Chrome பயன்பாடுகள்</translation>
+<translation id="7084448929020576097"><ph name="FILE_NAME"/> தீங்கிழைக்கக்கூடியது, இதை Chrome தடுத்துள்ளது.</translation>
 <translation id="6368958679917195344">கூடுதலான <ph name="BEGIN_LINK_CROS_OSS"/>ஓப்பன் சோர்ஸ் மென்பொருள்களால்<ph name="END_LINK_CROS_OSS"/> Chrome OS ஐ உருவாக்குவது சாத்தியமானது.</translation>
 <translation id="7459554271817304652">உங்கள் தனிப்பயனாக்கப்பட்ட உலாவி அம்சங்களை வலையில் சேமிக்க, ஒத்திசைவை அமைத்து, எந்த கணினியில் உள்ள Google Chromium இலிருந்தும் அவற்றை அணுகலாம்.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="473775607612524610">புதுப்பி</translation>
 <translation id="1195935957447623558">Google Chrome சரியாக நிறுத்தப்படவில்லை. நீங்கள் திறந்த பக்கங்களை மீண்டும் திறக்க, மீட்டமை என்பதைக் கிளிக் செய்க.</translation>
 <translation id="2576431527583832481">Chrome தற்போதுதான் சிறப்பைப் பெற்றது! புதிய பதிப்பு உள்ளது.</translation>
+<translation id="4633000520311261472">Chrome ஐப் பாதுகாப்பானதாக்க <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> இல் பட்டியலிடப்படாத சில நீட்டிப்புகளை நாங்கள் முடக்கிவிட்டோம் மேலும் அவை உங்களுக்குத் தெரியாமல் சேர்க்கப்பட்டிருக்கலாம்.</translation>
+<translation id="556024056938947818">Google Chrome ஆனது கடவுச்சொற்களைக் காட்ட முயற்சிக்கிறது.</translation>
 <translation id="2580411288591421699">நடப்பில் இயங்கிக்கொண்டிருக்கும் அதே Google Chrome பதிப்பை நிறுவ முடியாது. Google Chrome ஐ மூடிவிட்டு மீண்டும் முயற்சி செய்க.</translation>
 <translation id="8460191995881063249">Chrome அறிவிப்பு மையம்</translation>
 <translation id="1457721931618994305">Google Chrome ஐப் புதுப்பிக்கிறது...</translation>
@@ -118,7 +118,6 @@
 <translation id="911206726377975832">உங்கள் உலாவுதல் தரவையும் நீக்க வேண்டுமா?</translation>
 <translation id="5855036575689098185">உங்கள் கணினியில் இயங்கும் மென்பொருள் Google Chrome உடன் இணங்கவில்லை.</translation>
 <translation id="2044287590254833138">Google Chrome கருவிப்பட்டி</translation>
-<translation id="5074344184765391290">Chrome Plug-In Host</translation>
 <translation id="8862326446509486874">கணினி-சார்ந்த நிறுவலுக்கான முறையான உரிமைகள் உங்களிடம் இல்லை. அதனால் நிர்வாகியாக மீண்டும் நிறுவலை இயக்க முயற்சி செய்க.</translation>
 <translation id="2874156562296220396"><ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/>ஓபன் சோர்ஸ் திட்டப்பணி மற்றும் <ph name="BEGIN_LINK_OSS"/>ஓபன் சோர்ஸ் மென்பொருள்<ph name="END_LINK_OSS"/> இவற்றால் Google Chrome ஐ உருவாக்குவது சாத்தியமானது.</translation>
 <translation id="3847841918622877581">உங்கள் உலாவுதல் அனுபவத்தை மேம்படுத்த, Google Chrome ஆனது வலைச் சேவைகளைப் பயன்படுத்தக்கூடும்.</translation>
@@ -132,6 +131,7 @@
 <translation id="4273752058983339720">உங்கள் கணினியைத் துவக்கும் போது Google Chrome  தானாகவே தொடங்கும்படி உள்ளமைக்கப்பட்டிருக்கிறது.</translation>
 <translation id="1104959162601287462">&amp;Chrome OS அறிமுகம்</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
+<translation id="1140117203923356735"><ph name="FILE_NAME"/> ஆனது சில தீம்பொருள்களைப் போலவே அமைப்புகளில் மாற்றங்களைச் செய்வதால், Chrome அதைத் தடுத்துள்ளது.</translation>
 <translation id="5941830788786076944">Google Chrome ஐ இயல்புநிலை உலாவியாக அமை</translation>
 <translation id="7787950393032327779">இந்தச் சுயவிவரமானது மற்றொரு கணினியில் (<ph name="HOST_NAME"/>) மற்றொரு Google Chrome செயல்முறையால் (<ph name="PROCESS_ID"/>) பயன்படுத்தப்படுவதாகத் தோன்றுகிறது. Chrome, இந்தச் சுயவிவரத்தைப் பூட்டியுள்ளதால், இது சிதைவடையாது. இந்தச் சுயவிவரத்தை மற்ற செயல்முறைகள் பயன்படுத்தவில்லை என்பதில் நீங்கள் உறுதியாக இருந்தால், நீங்கள் சுயவிவரத்தைப் பூட்டுநீக்கி, Chrome ஐ மீண்டும் துவங்கலாம்.</translation>
 <translation id="1469002951682717133">Chrome பயன்பாட்டுத் துவக்கி</translation>
@@ -165,23 +165,22 @@
 <translation id="576822117893741893">Chrome மெனுவைக் காட்டு</translation>
 <translation id="3444832043240812445">நீங்கள் <ph name="BEGIN_LINK"/>செயலிழப்பு புகாரளித்தலை இயக்கியிருந்தால்<ph name="END_LINK"/> மட்டுமே, இந்தப் பக்கம் உங்களுடைய சமீபத்திய செயலிழப்புகளைப் பற்றிய தகவல்களைக் காண்பிக்கும்.</translation>
 <translation id="8614913330719544658">Google Chrome பதிலளிக்கவில்லை. இப்போது மீண்டும் தொடங்கவா?</translation>
-<translation id="5318056482164160049">Google Chrome Plug-In Host</translation>
+<translation id="1175529839152551794">இப்போது நீங்கள் உள்நுழைந்ததால், உங்கள் லேப்டாப், தொலைபேசி மற்றும் டேப்லெட் முழுவதிலும் உங்கள் தாவல்கள், புத்தகக்குறிகள், மேலும் பிற Chrome சார்ந்த விஷயங்களைப் பெறலாம். Google சேவைகளில் மேலும் தொடர்புடைய பரிந்துரைகளையும், அம்சங்களையும் பெறுவீர்கள்.</translation>
 <translation id="6126631249883707068">Google Chrome உங்கள் கடவுச்சொல்லைச் சேமிக்க  வேண்டுமா?</translation>
 <translation id="7773845170078702898">இந்தத் தளத்தில் உங்கள் கடவுச்சொல்லை Google Chrome சேமிக்க வேண்டுமா?</translation>
 <translation id="5046764976540625289">Chrome இலிருந்து வெளியேறு</translation>
 <translation id="4251615635259297716">உங்கள் Chrome தரவை இந்தக் கணக்குடன் இணைக்கவா?</translation>
-<translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">இணைய உலாவி</translation>
 <translation id="8142608456917638009">Google Chrome ஆல் பயன்பாட்டிற்கான குறுக்குவழியை உருவாக்க முடியவில்லை.</translation>
 <translation id="8255190535488645436">Google Chrome உங்கள் கேமராவையும் மைக்ரோஃபோனையும் பயன்படுத்துகிறது.</translation>
 <translation id="2189123953385179981"><ph name="SCHEME"/> இணைப்புகளைக் கையாள ஒரு வெளி பயன்பாட்டை தொடங்குவதை Google ChromeOS  ஆதரிக்காது. கோரப்பட்ட இணைப்பு <ph name="PROTOLINK"/>.</translation>
 <translation id="7396375882099008034">உங்கள் தீச்சுவர் அல்லது வைரஸ் தடுப்பு அமைப்புகளில் பிணையத்தை அணுக Chrome ஐ அனுமதிக்கவும்.</translation>
+<translation id="9102715433345326100">இது தீங்கிழைக்கும் கோப்பு, இதை Chrome தடுத்துள்ளது.</translation>
 <translation id="8205111949707227942">விருப்பத்தேர்வு: பயன்பாட்டு புள்ளிவிவரங்களையும், செயலிழப்பு புகார்களையும் தானாகவே Google க்கு அனுப்புவதன் மூலம் Chrome OS ஐ இன்னும் உருவாக்க உதவுக.</translation>
 <translation id="7253415505590551024">பதிவிறக்கங்கள் தற்போது செயலில் உள்ளது. Google Chrome இலிருந்து வெளியேறி, பதிவிறக்கங்களை ரத்து செய்ய விரும்புகிறீர்களா?</translation>
 <translation id="7196020411877309443">நான் ஏன் இதைக் காண்கிறேன்?</translation>
 <translation id="2769762047821873045">Google Chrome உங்கள் இயல்பு உலாவி அல்ல.</translation>
-<translation id="1020869477857717497"><ph name="FILE_NAME"/> Chrome இல் உங்கள் தேடல்கள் செயல்படும் விதத்தை மாற்றலாம்.</translation>
 <translation id="4567424176335768812">நீங்கள் <ph name="USER_EMAIL_ADDRESS"/> ஆக உள்நுழைந்துள்ளீர்கள். தற்போது உங்கள் புக்மார்க்குகள், வரலாறு மற்றும் பிற அமைப்புகளை நீங்கள் உள்நுழைந்துள்ள எல்லா சாதனங்களிலும் அணுகலாம்.</translation>
 <translation id="6855094794438142393">Chrome மெனு &gt;
           <ph name="SETTINGS_TITLE"/>

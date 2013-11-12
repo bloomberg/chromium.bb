@@ -129,6 +129,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830">Активация <ph name="NAME"/></translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="1923539912171292317">Автоматическое нажатие</translation>
 <translation id="1398853756734560583">Развернуть</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: соединение...</translation>
 <translation id="252373100621549798">Неизвестный дисплей</translation>
@@ -221,6 +222,7 @@
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Поздравляем! Служба передачи данных &quot;<ph name="NAME"/>&quot; активирована и готова к работе.</translation>
 <translation id="412065659894267608">До полной зарядки: <ph name="HOUR"/> ч <ph name="MINUTE"/> мин</translation>
+<translation id="7297443947353982503">Либо вы ввели неверное имя пользователя или пароль, либо не удалось выполнить аутентификацию по протоколу EAP</translation>
 <translation id="6359806961507272919">SMS от <ph name="PHONE_NUMBER"/></translation>
 <translation id="1244147615850840081">Оператор связи</translation>
 </translationbundle>

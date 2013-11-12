@@ -128,6 +128,7 @@ Ctrl+Alt+Z را فشار دید تا غیرفعال شود.</translation>
 <translation id="1957803754585243749">۰ درجه</translation>
 <translation id="2354174487190027830">فعال‌سازی <ph name="NAME"/></translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="1923539912171292317">کلیک‌های خودکار</translation>
 <translation id="1398853756734560583">بزرگ کردن</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: در حال اتصال...</translation>
 <translation id="252373100621549798">نمایش ناشناخته</translation>
@@ -220,6 +221,7 @@ Alt+جستجو یا Shift را برای لغو فشار دهید.</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">تبریک می‌گوییم! خدمات داده «<ph name="NAME"/>» شما فعال شده است و آماده استفاده است.</translation>
 <translation id="412065659894267608"><ph name="HOUR"/>ساعت <ph name="MINUTE"/>دقیقه مانده تا باتری شارژ شود</translation>
+<translation id="7297443947353982503">‏نام کاربری/گذرواژه نادرست است یا احراز هویت EAP ناموفق بود</translation>
 <translation id="6359806961507272919">پیامک از <ph name="PHONE_NUMBER"/></translation>
 <translation id="1244147615850840081">شرکت مخابراتی</translation>
 </translationbundle>

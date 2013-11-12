@@ -3,8 +3,11 @@
 <translationbundle lang="sl">
 <translation id="376869769528291915">:</translation>
 <translation id="6015796118275082299">Leto</translation>
+<translation id="2094750046714988961">Orodja za spremljanje delovanja aplikacije ali sistema ni mogoče zagnati, ker zunanja naprava za shranjevanje ni pripravljena</translation>
 <translation id="1256337885411059545">Videa ni mogoče predvajati</translation>
+<translation id="2520230379124234395">Orodje za spremljanje delovanja aplikacije ali sistema se je zagnalo</translation>
 <translation id="7821540960913969614">Nastavitev datuma</translation>
+<translation id="4859501799452851758">Orodje za spremljanje delovanja aplikacije ali sistema je končalo postopek. Rezultati so v datoteki <ph name="FILENAME"/>.</translation>
 <translation id="3845599764535987402">Ura</translation>
 <translation id="4932733599132424254">Datum</translation>
 <translation id="6727102863431372879">Nastavi</translation>
@@ -20,6 +23,7 @@
 <translation id="2732718972699418926">dop.</translation>
 <translation id="7096034533295549981">Nalaganje videa</translation>
 <translation id="1542044944667958430">Spletno iskanje</translation>
+<translation id="6849295950938417341">Orodja za spremljanje delovanja aplikacije ali sistema ni bilo mogoče zagnati</translation>
 <translation id="6527303717912515753">Skupna raba</translation>
 <translation id="1822429046913737220">Dopoldne/popoldne</translation>
 <translation id="5789643057113097023">.</translation>

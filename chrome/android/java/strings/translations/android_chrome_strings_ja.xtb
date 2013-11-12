@@ -1,26 +1,43 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ja">
+<translation id="6831043979455480757">翻訳</translation>
+<translation id="7644305409888602715">ページを<ph name="SOURCE_LANGUAGE"/>に翻訳しています...</translation>
 <translation id="1491151370853475546">このページを再読み込み</translation>
 <translation id="7658239707568436148">キャンセル</translation>
 <translation id="6458785801851713928">お使いのドメインでは同期機能をご利用いただけません。</translation>
 <translation id="2731700343119398978">お待ちください...</translation>
+<translation id="7378627244592794276">いいえ</translation>
 <translation id="3358663646935160692">このアカウントは <ph name="DOMAIN_NAME"/> によって管理されています。
 
 管理対象アカウントでログインし、アカウントの管理者に自分の Chrome プロフィールの管理を委ねようとしています。あなたの Chrome データはこのアカウントに永続的に関連付けられます。このアカウントを切り離すと、ローカルの Chrome データが削除されます。</translation>
 <translation id="1623104350909869708">このページで追加のダイアログが作成されないようにする</translation>
+<translation id="624558823898732418">翻訳言語: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="3896036286668839683">証明書ビューア</translation>
 <translation id="8583805026567836021">アカウント データをクリア中</translation>
+<translation id="8730621377337864115">完了</translation>
 <translation id="4170011742729630528">このサービスはご利用になれません。しばらくしてからもう一度お試しください。</translation>
 <translation id="8627706565932943526">同期エラー</translation>
+<translation id="656628257199996201"><ph name="SOURCE_LANGUAGE"/>を常に翻訳</translation>
+<translation id="9137013805542155359">原文のページを表示</translation>
+<translation id="5684874026226664614">このページを翻訳できませんでした。</translation>
 <translation id="3136378934686431938">ログイン情報を更新してください。</translation>
+<translation id="6042308850641462728">詳細表示</translation>
+<translation id="8034522405403831421">このページの言語は<ph name="SOURCE_LANGUAGE"/>です。<ph name="TARGET_LANGUAGE"/>に翻訳しますか？</translation>
+<translation id="8725066075913043281">やり直し</translation>
 <translation id="4510973599275542560">再読み込みの中止</translation>
 <translation id="9154176715500758432">このページにとどまる</translation>
 <translation id="7063006564040364415">同期サーバーに接続できませんでした。</translation>
+<translation id="4271185234001491831"><ph name="LANGUAGE"/>を翻訳しない</translation>
+<translation id="1285320974508926690">このサイトは翻訳しない</translation>
+<translation id="5164482624172255778">次回から Google Chrome でこのサイトの<ph name="LANGUAGE"/>ページの翻訳を表示しますか？</translation>
+<translation id="8528538445849828817">ページの言語: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="6512448926095770873">このページを離れる</translation>
 <translation id="7947953824732555851">同意してログイン</translation>
 <translation id="6040143037577758943">閉じる</translation>
+<translation id="969096075394517431">言語を変更</translation>
 <translation id="5032574515228824816">メッセージ</translation>
+<translation id="1742134235943978220"><ph name="TARGET_LANGUAGE"/>に翻訳しました。</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="7495038789730067783">ログインの確認</translation>
 </translationbundle>

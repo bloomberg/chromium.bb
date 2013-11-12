@@ -94,6 +94,7 @@
           TANDAAN: Magkaiba ang default na pagkilos ng mga device ng consumer at enterprise device: sa mga device ng consumer, naka-enable ang mga pinapangasiwaang user bilang default, ngunit sa mga enterprise device, naka-disable sila bilang default.</translation>
 <translation id="69525503251220566">Parameter na nagbibigay ng tampok na maghanap sa pamamagitan ng larawan para sa default na provider ng paghahanap</translation>
 <translation id="5469825884154817306">I-block ang mga larawan sa mga site na ito</translation>
+<translation id="5827231192798670332">Pinipili ang diskarteng gagamitin upang magbakante ng espasyo sa disk sa panahon ng awtomatikong pag-clean-up</translation>
 <translation id="8412312801707973447">Kung isinasagawa ang mga online na pagsusuri sa OCSP/CRL</translation>
 <translation id="6649397154027560979">Hindi na ginagamit ang patakarang ito, sa halip mangyaring gamitin ang URLBlacklist.
 
@@ -198,6 +199,8 @@
 <translation id="6036523166753287175">Paganahin ang firewall traversal mula sa host ng malayuang pag-access</translation>
 <translation id="1096105751829466145">Default na provider ng paghahanap</translation>
 <translation id="7567380065339179813">Pinapayagan ang mga plugin sa mga site na ito</translation>
+<translation id="4555850956567117258">I-enable ang malayuang pagpapatotoo para sa user</translation>
+<translation id="5966615072639944554">Mga extension na pinapayagang gamitin ang API ng malayuang pagpapatotoo</translation>
 <translation id="1617235075406854669">Paganahin ang pagtatanggal ng browser at kasaysayan ng pag-download</translation>
 <translation id="5290940294294002042">Tumukoy ng listahan ng mga plugin na maaaring paganahin o hindi paganahin ng user</translation>
 <translation id="3153348162326497318">Binibigyang-daan kang tukuyin kung aling mga extension ang HINDI maaaring i-install ng mga user. Aalisin ang mga extension na na-install na kung na-blacklist.
@@ -256,6 +259,7 @@
 
           Kung hinayaang hindi nakatakda ang patakarang ito, gagamitin ang 'AllowImages' at magagawa ng user na baguhin ito.</translation>
 <translation id="5630352020869108293">Ipanumbalik ang huling session</translation>
+<translation id="2067011586099792101">I-block ang access sa mga site na nasa labas ng mga pack ng nilalaman</translation>
 <translation id="4980635395568992380">Uri ng data:</translation>
 <translation id="3096595567015595053">Listahan ng mga pinaganang plugin</translation>
 <translation id="3048744057455266684">Kung nakatakda ang patakarang ito at may URL sa paghahanap na iminungkahi mula sa omnibox na naglalaman ng parameter na ito sa string ng query o sa tagatukoy ng fragment, ipapakita ng suhestiyon ang mga termino para sa paghahanap at search provider sa halip na ang mismong URL sa paghahanap.
@@ -276,9 +280,11 @@
 
           Kung ang patakarang &quot;RestoreOnStartup&quot; ay nakatakda upang magpanumbalik ng mga URL mula sa mga nakaraang session sa patakarang ito, hindi kikilalanin ang patakarang ito at permanenteng iimbak ang cookies para sa mga site na iyon.
 </translation>
+<translation id="4807950475297505572">Inaalis ang mga user na pinakahindi nagagamit kamakailan hangga't mayroon nang sapat na espasyo</translation>
 <translation id="8828766846428537606">I-configure ang default na home page sa <ph name="PRODUCT_NAME"/> at pinipigilan ang mga user sa pagbabago nito. Ang mga setting ng home page ng user ay lubos na naka-lock down lamang, kung pinili mo ang home page upang maging ang pahina ng bagong tab, o itakda ito upang maging URL at tumukoy ng URL ng home page. Kung hindi mo tutukuyin ang URL ng home page, maitatakda pa rin ung ser ang home page sa pahina ng bagong tab sa pamamagitan ng pagtukoy sa 'chrome://newtab'.</translation>
 <translation id="2231817271680715693">I-import ang kasaysayan ng pagba-browse mula sa default na browser sa unang pagtakbo</translation>
 <translation id="1353966721814789986">Mga pahina ng startup</translation>
+<translation id="7173856672248996428">Ephemeral na profile</translation>
 <translation id="1841130111523795147">Nagbibigay-daan sa user na mag-sign in sa <ph name="PRODUCT_NAME"/> at pinipigilan ang mga user na baguhin ang setting na ito.
 
       Kung itatakda mo ang patakarang ito, mako-configure mo kung papayagan ang user na mag-sign in sa <ph name="PRODUCT_NAME"/> o hindi.</translation>
@@ -288,6 +294,7 @@
 <translation id="6368403635025849609">Payagan ang JavaScript sa mga site na ito</translation>
 <translation id="6074963268421707432">Huwag payagan ang anumang site na magpakita ng mga notification sa desktop</translation>
 <translation id="8614804915612153606">Hindi Pinapagana ang Awtomatikong Pag-update</translation>
+<translation id="4834526953114077364">Inaalis ang mga user na pinakahindi nagagamit kamakailan na hindi nag-log in sa loob ng nakalipas na 3 buwan hangga't magkaroon ng sapat na libreng espasyo</translation>
 <translation id="382476126209906314">I-configure ang prefix ng TalkGadget para sa mga host ng malayuang pag-access</translation>
 <translation id="6561396069801924653">Ipakita ang mga pagpipilian sa accessibility sa tray menu ng system</translation>
 <translation id="8104962233214241919">Awtomatikong pumili ng mga certificate ng client para sa mga site na ito</translation>
@@ -355,6 +362,13 @@
       Kung pinagana mo o hindi mo pinagana ang setting na ito, hindi maaaring baguhin o i-override ng mga user ang setting na ito sa <ph name="PRODUCT_NAME"/>.
 
       Kung hinayaang hindi nakatakda ang patakarang ito ang setting ay magiging kung ano ang pinili ng user sa panahon ng pag-install/ unang pagtakbo.</translation>
+<translation id="4784220343847172494">Kinikontrol ang pag-uugali ng awtomatikong pag-clean-up sa mga <ph name="PRODUCT_OS_NAME"/> na device. Nati-trigger ang awtomatikong pag-clean-up kapag ang laki ng bakanteng espasyo sa disk ay umabot sa kritikal na antas upang makabawi ng ilang espasyo sa disk.
+
+      Kung nakatakda ang patakarang ito na 'RemoveLRU', patuloy na mag-aalis ang awtomatikong pag-clean-up ng mga user sa device sa pagkakasunud-sunod ng pinakahindi nakakapag-log-in kamakailan hangga't magkaroon ng sapat na bakanteng epsasyo.
+
+       Kung nakatakda ang patakarang ito na 'RemoveLRUIfDormant', pananatilihin ng awtomatikong pag-clean-up ang mga user na hindi nakapag-log in sa loob ng hindi bababa sa 3 buwan sa pagkakasunud-sunod na pinakahindi nakakapag-log-in kamakailan hangga't magkaroon ng sapat na bakanteng espasyo.
+
+      Kung hindi nakatakda ang patakarang ito, gagamitin ng awtomatikong pag-clean-up ang default na built-in na diskarte. Kasalukuyan, ito ay ang diskarteng 'RemoveLRUIfDormant'.</translation>
 <translation id="6256787297633808491">Mga flag para sa buong system na ilalapat sa pag-start up ng Chrome</translation>
 <translation id="2516600974234263142">Pinapagana ang pag-print sa <ph name="PRODUCT_NAME"/> at pinipigilan ang mga user na baguhin ang setting na ito.
 
@@ -473,6 +487,9 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Kung pinagana ang setting na ito, hindi papaganahin ang pisikal na input at output na device ng mga host habang kasalukuyang gumagana ang remote na koneksyon.
 
           Kung hindi pinagana ang setting na ito o hindi itinakda, maaaring makipag-ugnay ang parehong lokal at remote na mga user sa mga host kapag ibinabahagi ito.</translation>
+<translation id="4894257424747841850">I-ulat ang listahan ng mga user ng device na kamakailang nag-log in.
+
+      Kung hindi nakatakda ang patakaran, o nakatakda sa false, hindi i-uulat ang mga user.</translation>
 <translation id="1426410128494586442">Oo</translation>
 <translation id="4897928009230106190">Tinutukoy ang mga parameter na ginamit kapag gumagawa ng paghahanap ng mungkahi gamit ang POST. Binubuo ito ng mga pares ng pangalan/value na pinaghihiwalay ng kuwit. Kung isang parameter ng template ang isang value, tulad ng {searchTerms} sa halimbawa sa itaas, papalitan ito ng data ng tunay na mga termino para sa paghahanap.
 
@@ -550,12 +567,14 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Ginagawang available ng mga setting na ito ang mga istatistika ng memorya mula sa panel na Mga Profile ng Mga Tool ng Developer sa web page mismo.</translation>
 <translation id="5776485039795852974">Magtanong sa tuwing gustong ipakita ng site ang mga notification sa desktop</translation>
+<translation id="5047604665028708335">Payagan ang access sa mga site na nasa labas ng mga pack ng nilalaman</translation>
 <translation id="5052081091120171147">Pinupwersa ng patakarang ito na ma-import mula sa kasalukuyang default na browser ang kasaysayan ng pagba-browse kung pinagana. Kung pinagana, naaapektuhan rin ng patakarang ito ang dialog ng pag-import.
 
       Kung hindi pinagana, walang ini-import na kasaysayan ng pagba-browse.
 
       Kung hindi ito nakatakda, maaaring tanungin sa user kung mag-i-import o hindi, o maaaring awtomatikong mangyari ang pag-import.</translation>
 <translation id="6786747875388722282">Mga Extension</translation>
+<translation id="7132877481099023201">Mga URL na mabibigyan ng access sa mga device na nakakakuha ng video nang walang prompt.</translation>
 <translation id="8947415621777543415">I-ulat ang lokasyon ng device</translation>
 <translation id="1655229863189977773">Itakda ang laki ng cache ng disk sa bytes</translation>
 <translation id="6376842084200599664">Binibigyang-daan ka na tumukoy ng isang listahan ng mga extension na tahimik na mai-install, nang walang pakikipag-ugnayan ng user.
@@ -570,6 +589,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
           Kung hinayaang hindi nakatakda ang patakarang ito, maaaring i-uninstall ng user ang anumang extension sa <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="6899705656741990703">I-auto detect ang mga setting ng proxy</translation>
+<translation id="8382184662529825177">I-enable ang paggamit ng malayuang pagpapatotoo para sa pagprotekta sa nilalaman para sa device</translation>
 <translation id="7003334574344702284">Pinupwersa ng patakarang ito na ma-import mula sa nakaraang default na browser ang mga naka-save na password kung pinagana. Kung pinagana, naaapektuhan rin ng patakarang ito ang dialog ng import.
 
       Kung hindi pinagana, hindi ini-import ang mga naka-save na password.
@@ -583,6 +603,13 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="3236046242843493070">Mga pattern ng URL na bibigyang-daan ang mga manggagaling na pag-install ng extension, app, at script ng user</translation>
 <translation id="2498238926436517902">Palaging awtomatikong itago ang shelf</translation>
 <translation id="253135976343875019">Delay ng babala bago mag-idle kapag gumagamit ng AC power</translation>
+<translation id="480987484799365700">Kung nakatakda na naka-enable, pepwersahin ng patakarang ito ang profile na mailipat sa ephemeral mode. Kung nakatukoy ang patakarang ito bilang patakaran ng OS (hal. GPO sa Windows) ilalapat ito sa bawat profile sa system; kung nakatakda ang patakaran bilang isang patakaran sa Cloud, ilalapat lang ito sa isang profile na naka-sign na mayroong pinamamahalaang account.
+
+      Sa mode na ito pinapanatali lang sa disk ang data ng profile para lang sa kahabaan ng session ng user. Ang mga feature tulad ng kasaysayan ng browser, mga extension at ang data ng mga ito, data sa web tulad ng cookies at mga database sa web ay hindi pinananatili matapos na isara ang browser. Gayunpaman, hindi nito pinipigilan ang user na mag-download ng anumang data sa disk nang manu-mano, mag-save ng mga pahina o i-print ang mga ito.
+
+      Kung na-enable na ng user ang pag-sync, pinapanatali ang lahat ng data na ito sa kanyang profile sa pag-sync tulad ng sa mga regular na profile. Available rin ang Incognito mode kung hindi hayagang naka-disable sa patakaran.
+
+      Kung nakatakda ang patakaran na naka-disable o hinayaang hindi nakatakda, hahantong ang mga pag-sign in sa mga regular na profile.</translation>
 <translation id="6997592395211691850">Kung kinakailangan ang mga online na pagsusuri sa OCSP/CRL para sa mga lokal na pinagkakatiwalaang anchor</translation>
 <translation id="152657506688053119">Listahan ng mga kahaliling URL para sa default na search provider</translation>
 <translation id="8992176907758534924">Huwag payagan ang anumang site na magpakita ng mga larawan</translation>
@@ -770,7 +797,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7003746348783715221">Mga kagustuhan sa <ph name="PRODUCT_NAME"/></translation>
 <translation id="4723829699367336876">Paganahin ang firewall traversal mula sa client ng malayuang pag-access</translation>
 <translation id="6367755442345892511">Kung maaaring i-configure ng user ang release channel</translation>
-<translation id="4035570660718398959">Payagan ang mga user na kumuha ng mga alok sa pamamagitan ng Pagpaparehistro ng Chrome OS.</translation>
 <translation id="3868347814555911633">Sa retail mode lang aktibo ang patakarang ito.
 
       Nililista ang mga extension na awtomatikong naka-install para sa user ng Demo, para sa mga device na nasa retail mode. Naka-save ang mga extension na ito sa device at maaaring i-install habang naka-offline, pagkatapos ng pag-install.
@@ -793,7 +819,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Kung hindi mo pinagana ang setting na ito, hindi pinapayagan ng tagapamahala ng password ang pagpapakita ng mga naka-imbak na password sa malinaw na teksto sa window ng tagapamahala ng password.
 
           Kung pinagana o hindi mo itinakda ang patakarang ito, makikita ng mga user ang kanilang mga password sa malinaw na teksto sa tagapamahala ng password.</translation>
-<translation id="5213629107215526747">Mga URLs na mabibigyan ng access sa mga device sa pagkuha ng mga video nang hindi nagtatanong.</translation>
 <translation id="5936622343001856595">Pinupuwersa na gawin ang mga query sa Paghahanap sa Web ng Google nang nakatakda ang SafeSearch sa aktibo at pinipigilan ang mga user na baguhin ang setting na ito.
 
       Kung papaganahin mo ang setting na ito, laging magiging aktibo ang SafeSearch sa Paghahanap sa Google.
@@ -804,6 +829,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kapag pinagana ang setting na ito, bubuksan ng <ph name="PRODUCT_NAME"/> ang dialog ng system sa pag-print sa halip na ang built-in na preview sa pag-print kapag humihiling ang isang user na mag-print ng isang pahina.
 
       Kung hindi nakatakda ang patakarang ito o nakatakda sa false, iti-trigger ng mga command sa pag-print ang screen ng preview sa pag-print.</translation>
+<translation id="7933141401888114454">I-enable ang paggawa ng mga pinapangasiwaang user</translation>
 <translation id="2824715612115726353">Paganahin ang Incognito mode</translation>
 <translation id="1057535219415338480">Binibigyang-daan ang paghuhula ng network sa <ph name="PRODUCT_NAME"/> at pinipigilan ang mga user na baguhin ang setting na ito.
 
@@ -857,7 +883,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung hinayaang hindi nakatakda ang patakarang ito, papaganahin ito ngunit magagawa ng user na baguhin ito.</translation>
 <translation id="2236488539271255289">Huwag payagan ang anumang site na itakda ang data ng lokal</translation>
 <translation id="4467952432486360968">I-block ang cookies ng third party</translation>
-<translation id="2041396837791669429">I-block ang access sa mga site sa labas ng mga pack ng nilalaman.</translation>
 <translation id="1305864769064309495">Isang diksyunaryong nagmamapa ng mga URL sa isang boolean flag na tumutukoy kung dapat bang payagan (true) o i-block (false) ang access sa host.
 
           Ang patakarang ito ay para sa panloob na paggamit ng Chrome.</translation>
@@ -896,7 +921,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
           Kung hahayaang hindi nakatakda ang patakarang ito, naka-disable ang malaking cursor sa umpisa ngunit maaaring i-enable ng user anumang oras.</translation>
 <translation id="2633084400146331575">Paganahin ang pasalitang feedback</translation>
-<translation id="7712008868843631413">I-enable ang mga pinangangasiwaang user.</translation>
 <translation id="8731693562790917685">Pinapayagan ka ng Mga Setting ng Nilalaman na tukuyin kung paano pinamamahalaan ang mga nilalaman ng tukoy na uri (halimbawa Cookies, Mga Larawan o JavaScript).</translation>
 <translation id="2411919772666155530">I-block ang mga notification sa mga site na ito</translation>
 <translation id="6923366716660828830">Tinutukoy ang pangalan ng default na provider ng paghahanap. Kung hinayaang walang laman o hindi nakatakda, gagamitin ang pangalan ng host na tinukoy ng URL ng paghahanap.
@@ -910,7 +934,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="467236746355332046">Mga suportadong tampok:</translation>
 <translation id="7632724434767231364">Pangalan ng GSSAPI library</translation>
 <translation id="3038323923255997294">Magpatuloy sa pagpapatakbo ng apps sa background kapag nakasara ang <ph name="PRODUCT_NAME"/></translation>
-<translation id="4652284479838524692">I-enable ang remote na pagpapatotoo para sa device.</translation>
 <translation id="8909280293285028130">Tinutukoy ang tagal ng oras na walang input ng user na kapag lumipas ay ila-lock ang screen kapag tumatakbo habang nakasaksak sa kuryente.
 
           Kapag nakatakda ang patakarang ito sa halagang mas malaki kaysa sa zero, tinutukoy nito ang tagal ng oras na dapat manatiling idle ang user bago i-lock ng <ph name="PRODUCT_OS_NAME"/> ang screen.
@@ -932,6 +955,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
       Kung nakatakda sa true o hindi naka-configure ang patakarang ito, papayagang malikha ang mga bagong user account kung hindi pinipigilan ng <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> ang pag-log in ng user.</translation>
 <translation id="4389091865841123886">I-configure ang malayuang pagpapatunay gamit ang mekanismo ng TPM.</translation>
+<translation id="3518214502751233558">Tukuyin kung dapat lang magsimulang tumakbo ang mga pagkaantala sa pamamahala sa power at ang limitasyon sa haba ng session pagkatapos ng paunang aktibidad ng user sa isang session</translation>
 <translation id="8256688113167012935">Kinokontrol ang pangalan ng account na <ph name="PRODUCT_OS_NAME"/> na nakikita sa screen sa pag-login para sa katumbas na account na lokal sa device.
 
       Kung nakatakda ang patakarang ito, gagamitin ng screen sa pag-login ang tinukoy na string sa tagapili ng pag-login na nakabatay sa larawan para sa katumbas na account na lokal sa device.
@@ -1010,7 +1034,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kapag nakatakda sa true ang patakarang ito, nakatago ang mga icon.
 
       Kapag nakatakda sa false o hindi na-configure ang patakarang ito, nakikita ang mga icon.</translation>
-<translation id="8401282319420373133">Mga extension na pinapayagang gumamit sa remote attestation API.</translation>
 <translation id="5085647276663819155">Huwag paganahin ang Preview ng Pag-print</translation>
 <translation id="8672321184841719703">Target Auto Update Na Bersyon</translation>
 <translation id="1689963000958717134">Nagbibigay-daan na malapat sa lahat ng user ang configuration ng pushing network sa isang <ph name="PRODUCT_OS_NAME"/> na device. Ang configuration ng network ay isang string na naka-format sa JSON tulad ng tinutukoy ng format ng Configuration ng Open Network na inilalarawan sa <ph name="ONC_SPEC_URL"/></translation>
@@ -1055,6 +1078,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung pinapagana, hindi makakakuha ng mga screenshot gamit ang mga keyboard shortcut o mga extension API.
 
       Kung hindi pinapagana o hindi tinukoy, papayagan ang pagkuha ng mga screenshot.</translation>
+<translation id="5697306356229823047">I-ulat ang mga user ng device</translation>
 <translation id="8649763579836720255">Ang mga Chrome OS device ay maaaring gumamit ng malayuang attestation (Verified Access) upang kumuha ng certificate na ibinibigay ng Chrome OS CA na ihinahayag na karapat-dapat ang device na mag-play ng pinoprotektahang nilalaman.  Kabilang sa prosesong ito ang pagpapadala ng impormasyon sa pag-endorso sa hardware sa Chrome OS CA na natatanging tumutukoy sa device.
 
           Kung false ang setting na ito, hindi gagamit ng malayuang attestation ang device para sa pagprotekta sa nilalaman at maaaring hindi makapag-play ang device ng pinoprotektahang nilalaman.
@@ -1131,6 +1155,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung pinagana ang setting na ito, hindi sine-save ang kasaysayan ng pagba-browse.
 
       Kung hindi pinagana o hindi nakatakda ang setting na ito, sine-save ang kasaysayan ng pagba-browse.</translation>
+<translation id="7295019613773647480">I-enable ang mga pinangangasiwaang user</translation>
 <translation id="2759224876420453487">Kokontrolin ang pag-uugali ng user sa isang session na multiprofile</translation>
 <translation id="3844092002200215574">Kino-configure ang direktoryong gagamitin ng <ph name="PRODUCT_NAME"/> para sa pag-iimbak ng mga naka-cache na file sa disk.
 
@@ -1192,8 +1217,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Kung itatakda mo ang patakarang ito, maaaring pansamantalang i-override ng mga user ito sa pamamagitan ng pag-enable o pag-disable ng  high contrast mode. Gayunpaman, hindi mananaig ang pinili ng user at mababalik ang default sa tuwing ipapakitang muli ang screen sa pag-login o kung manatiling idle ang user sa screen sa loob ng isang minuto.
 
           Kung hahayaang hindi nakatakda ang patakarang ito, naka-disable ang high contrast mode kapag unang ipinakita ang screen sa pag-login. Maaaring i-enable o i-disable ng mga user ang high contrast mode anumang oras at mananatili ang katayuan nito sa screen sa pag-login sa pagitan ng mga user.</translation>
-<translation id="8580857153747395000">Magbabala kapag bumibisita sa mga site sa labas ng mga pack ng nilalaman.</translation>
-<translation id="350796261613621561">I-enable ang paggawa ng mga pinapangasiwaang user.</translation>
 <translation id="602728333950205286">Instant na URL ng default na provider ng paghahanap</translation>
 <translation id="3030000825273123558">Paganahin ang pag-uulat ng mga sukatan</translation>
 <translation id="8465065632133292531">Mga parameter para sa instant na URL na ginagamit ang POST</translation>
@@ -1209,6 +1232,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 
           Kung naka-disable ang setting na ito, hindi magiging available ang tampok na ito.</translation>
 <translation id="1675002386741412210">Suportado sa:</translation>
+<translation id="1608755754295374538">Mga URL na mabibigyan ng access sa mga device na nakakakuha ng audio nang walang prompt</translation>
 <translation id="3547954654003013442">Mga setting ng proxy</translation>
 <translation id="5921713479449475707">Pinapayagan ang mga pag-download ng autoupdate sa pamamagitan ng HTTP</translation>
 <translation id="4482640907922304445">Ipinapakita ang button na Home sa toolbar ng  <ph name="PRODUCT_NAME"/>.
@@ -1220,8 +1244,8 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung pinagana mo o hindi mo pinagana ang setting na ito, hindi maaaring baguhin o i-override ng mga user ang setting na ito sa <ph name="PRODUCT_NAME"/>.
 
       Bibigyang-daan ng pag-iwan sa patakarang ito na hindi nakatakda ang user na pumili kung ipapakita o hindi ang button na home.</translation>
-<translation id="6897718480289510689">Payagan ang access sa mga site sa labas ng mga pack ng nilalaman.</translation>
 <translation id="2518231489509538392">Payagan ang pag-play ng audio</translation>
+<translation id="8146727383888924340">Payagan ang mga user na kumuha ng mga alok sa pamamagitan ng Pagpaparehistro ng Chrome OS</translation>
 <translation id="7301543427086558500">Tinutukoy ang isang listahan ng mga kahaliling URL na magagamit upang kumuha ng mga termino para sa paghahanap sa search engine. Nilalaman dapat ng mga URL ang string na <ph name="SEARCH_TERM_MARKER"/>, na gagamitin upang kunin ang mga termino para sa paghahanap.
 
           Opsyonal ang patakarang ito. Kung hindi nakatakda, walang gagamiting mga kahaliling url upang kumuha ng mga termino para sa paghahanap.
@@ -1252,7 +1276,11 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="5208240613060747912">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url na tumutukoy sa mga site na hindi pinapayagang magpakita ng mga notification.
 
           Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakarang 'DefaultNotificationsSetting' kung nakatakda ito, o kung hindi man ay sa personal na configuration ng user.</translation>
-<translation id="7927140259706020912">Mga URL na mabibigyan ng access sa mga device na pangkuha ng audio nang walang prompt.</translation>
+<translation id="346731943813722404">Tinutukoy kung dapat lang magsimulang tumakbo ang mga pagkaantala sa pamamahala sa power at ang limitasyon sa haba ng session pagkatapos makita ang unang aktibidad ng user sa isang session.
+
+          Kung nakatakda ang patakarang ito sa True, hindi magsisimulang tumakbo ang mga pagkaantala sa pamamahala sa power management at ang limitasyon sa haba ng session hanggang makita ang unang aktibidad ng user sa isang session.
+
+          Kung nakatakda ang patakarang ito sa False o iniwang hindi nakatakda, agad na tatakbo ang mga pagkaantala sa pamamahala sa power at ang limitasyon sa haba ng session sa pagsisimula ng session.</translation>
 <translation id="4600786265870346112">I-enable ang malaking cursor</translation>
 <translation id="8592105098257899882">Kino-configure ang laki ng cache na gagamitin ng <ph name="PRODUCT_NAME"/> para sa pag-iimbak ng mga na-cache na file sa disk.
 
@@ -1440,7 +1468,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Dapat tukuyin ang halaga ng patakaran ayon sa millisecond. Kinakailangang mas mababa kaysa sa o katumbas ng idle delay ang mga halaga.</translation>
 <translation id="1897365952389968758">Pinapayagang magpatakbo ng JavaScript ang lahat ng mga site</translation>
 <translation id="5244714491205147861">Pamamahala sa power sa screen ng pag-login</translation>
-<translation id="3619270953033888719">Ine-enable ang paggamit ng malayuang attestation para sa pagprotekta sa nilalaman para sa device.</translation>
 <translation id="922540222991413931">Mag-configure ng mga pinagmulan ng pag-install ng extension, app, at script ng user</translation>
 <translation id="7323896582714668701">Mga karagdagang command line na parameter para sa <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Huwag paganahin pag-synchronize ng data sa Google</translation>
@@ -1474,6 +1501,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
           Para sa mga halimbawang pattern tingnan ang http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="3101501961102569744">Pumili kung paano tukuyin ang mga setting ng proxy server</translation>
 <translation id="1803646570632580723">Listahan ng mga na-pin na app na ipapakita sa launcher</translation>
+<translation id="1062011392452772310">I-enable ang malayuang pagpapatotoo para sa device</translation>
 <translation id="7774768074957326919">Gumamit ng mga setting ng proxy ng system</translation>
 <translation id="3891357445869647828">Paganahin ang JavaScript</translation>
 <translation id="868187325500643455">Payagan ang lahat ng site upang awtomatikong magpatakbo ng mga plugin</translation>
@@ -1517,7 +1545,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7194407337890404814">Pangalan ng default na provider ng paghahanap</translation>
 <translation id="1843117931376765605">I-refresh ang pag-rate para sa patakaran ng user</translation>
 <translation id="5535973522252703021">Whitelist ng server ng paglalaan ng Kerberos</translation>
-<translation id="4578030379102330182">I-enable ang malayuang pagpapatunay para sa user.</translation>
 <translation id="9187743794267626640">Huwag paganahin ang pag-mount ng panlabas na storage</translation>
 <translation id="6353901068939575220">Tinutukoy ang mga parameter na ginamit kapag naghahanap ng URL gamit ang POST. Binubuo ito ng mga pares ng pangalan/value na pinaghihiwalay ng kuwit. Kung isang parameter ng template ang isang value, tulad ng {searchTerms} sa halimbawa sa itaas, papalitan ito ng data ng tunay na mga termino para sa paghahanap.
 
@@ -1725,6 +1752,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="8303314579975657113">Tinutukoy kung aling library ng GSSAPI ang gagamitin para sa Pagpapatotoo ng HTTP. Makakapagtakda ka ng isang pangalan ng library, o isang buong daanan.
 
           Kung walang ibinigay na setting, babalik ang <ph name="PRODUCT_NAME"/> sa paggamit ng default na pangalan ng library.</translation>
+<translation id="8549772397068118889">Magbabala kapag bumibisita ng mga site na nasa labas ng mga pack ng nilalaman</translation>
 <translation id="7749402620209366169">Pinapagana ang pagpapatotoong may dalawang salik para sa mga host ng malayuang pag-access sa halip na isang PIN na tinukoy ng user.
 
           Kung pinapagana ang setting na ito, dapat magbigay ang mga user ng wastong code na may dalawang salik kapag nag-a-access ng host.

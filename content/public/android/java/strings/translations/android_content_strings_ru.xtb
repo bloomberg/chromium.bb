@@ -3,8 +3,11 @@
 <translationbundle lang="ru">
 <translation id="376869769528291915">:</translation>
 <translation id="6015796118275082299">Год</translation>
+<translation id="2094750046714988961">Не удалось запустить профайлер, поскольку внешнее хранилище недоступно</translation>
 <translation id="1256337885411059545">Не удается воспроизвести видео</translation>
+<translation id="2520230379124234395">Профайлер запущен</translation>
 <translation id="7821540960913969614">Выберите дату</translation>
+<translation id="4859501799452851758">Работа профайлера завершена. Результаты сохранены в файле <ph name="FILENAME"/>.</translation>
 <translation id="3845599764535987402">Часы</translation>
 <translation id="4932733599132424254">Дата</translation>
 <translation id="6727102863431372879">Установить</translation>
@@ -20,6 +23,7 @@
 <translation id="2732718972699418926">AM</translation>
 <translation id="7096034533295549981">Загрузка видео…</translation>
 <translation id="1542044944667958430">Веб-поиск</translation>
+<translation id="6849295950938417341">Не удалось запустить профайлер</translation>
 <translation id="6527303717912515753">Поделиться</translation>
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="5789643057113097023">:</translation>

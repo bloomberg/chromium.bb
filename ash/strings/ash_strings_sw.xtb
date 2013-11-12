@@ -130,6 +130,7 @@ Bonyeza Ctrl+Alt+Z ili ufunge.</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830">Inaanza kutumia <ph name="NAME"/></translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="1923539912171292317">Mibofyo ya kiotomatiki</translation>
 <translation id="1398853756734560583">Tanua</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: Inaunganisha...</translation>
 <translation id="252373100621549798">Onyesho Lisilojulikana</translation>
@@ -222,6 +223,7 @@ Bonyeza Alt + Utafutaji au Hama ili kughairi.</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Hongera! Huduma yako ya data ya '<ph name="NAME"/>' imeanza kutumika na iko tayari kwa matumizi.</translation>
 <translation id="412065659894267608">Saa<ph name="HOUR"/> dakika<ph name="MINUTE"/> ili ijae</translation>
+<translation id="7297443947353982503">Jina la mtumiaji/nenosiri sio sahihi au EAP-auth imeshindwa</translation>
 <translation id="6359806961507272919">SMS kutoka <ph name="PHONE_NUMBER"/></translation>
 <translation id="1244147615850840081">Mtoa huduma</translation>
 </translationbundle>

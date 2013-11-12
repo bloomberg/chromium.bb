@@ -130,6 +130,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830"><ph name="NAME"/>ን በማግበር ላይ</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="1923539912171292317">ራስ-ሰር ጠቅታዎች</translation>
 <translation id="1398853756734560583">አስፋ</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>፦ በመገናኘት ላይ...</translation>
 <translation id="252373100621549798">ያልታወቀ ማሳያ</translation>
@@ -222,6 +223,7 @@
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>፦ <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">እንኳን ደስ አለዎት! የእርስዎ «<ph name="NAME"/>» ውሂብ አገልግሎት ገባሪ ሆኖ ለመሄድ ዝግጁ ነው።</translation>
 <translation id="412065659894267608">ሙሉ እስኪሆን ድረስ <ph name="HOUR"/>ሰ <ph name="MINUTE"/>ደ</translation>
+<translation id="7297443947353982503">የተጠቃሚ ስም/ይለፍ ቃል ትክክል አይደለም ወይም EAP-auth አልተሳካም</translation>
 <translation id="6359806961507272919">ኤስ ኤም ኤስ ከ<ph name="PHONE_NUMBER"/></translation>
 <translation id="1244147615850840081">ድምጸ ተያያዥ ሞደም</translation>
 </translationbundle>

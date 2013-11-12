@@ -26,9 +26,7 @@
 <translation id="2370289711218562573">Google Chrome importerer nå favoritter/bokmerker.</translation>
 <translation id="8762286861469007470">Chrome Captive Portal-detektor</translation>
 <translation id="2721687379934343312">På Mac blir passord lagret i nøkkelringen. Andre Chrome-brukere som deler denne OS X-kontoen, har adgang til og kan synkronisere med disse passordene.</translation>
-<translation id="3993188379797269327"><ph name="FILE_NAME"/> kan endre Chrome-innstillingene dine.</translation>
 <translation id="1761870329818521071">Versjonen av Google Chrome Frame du prøver å installere, kjører allerede. Lukk Google Chrome Frame, og forsøk å installere på nytt.</translation>
-<translation id="2040709530900803995">Google Chrome-gjengiver</translation>
 <translation id="6014844626092547096">Du er nå logget på Chrome. Synkronisering er deaktivert av administratoren din.</translation>
 <translation id="3140883423282498090">Endringene dine trer i kraft neste gang du starter Google Chrome.</translation>
 <translation id="1773601347087397504">Få hjelp med å bruke Chrome OS</translation>
@@ -48,7 +46,6 @@
 <translation id="3080151273017101988">Fortsett kjøringen av bakgrunnsprogrammer når Google Chrome er lukket</translation>
 <translation id="4149882025268051530">Installasjonsprogrammet fikk ikke dekomprimert arkivet. Last ned Google Chrome på nytt.</translation>
 <translation id="6989339256997917931">Google Chrome har blitt oppdatert, men du har ikke brukt programmet på minst 30 dager.</translation>
-<translation id="5744005218040929396">Google Chromes verktøy</translation>
 <translation id="7060865993964054389">Google Chrome Appvelger</translation>
 <translation id="1682634494516646069">Google Chrome kan ikke lese og skrive til sin egen datakatalog: <ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="4343226815564935778">Det ser ut til at installasjonsmappen for Google Chrome er i bruk. Du må starte datamaskinen på nytt og prøve igjen.</translation>
@@ -81,12 +78,15 @@
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="4585888816441913908">Denne datamaskinen har allerede en nyere versjon av Google Chrome og Google Chrome Frame. Hvis programvaren ikke fungerer, må du avinstallere både Google Chrome og Google Chrome Frame, og deretter prøve på nytt.</translation>
 <translation id="3149510190863420837">Chrome-apper</translation>
+<translation id="7084448929020576097">Filen <ph name="FILE_NAME"/> er skadelig, og Chrome har blokkert den.</translation>
 <translation id="6368958679917195344">Chrome OS muliggjøres av <ph name="BEGIN_LINK_CROS_OSS"/>tilleggsprogramvare med åpen kildekode<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="7459554271817304652">Konfigurer Synkronisering til å lagre de personlig tilpassede nettleserfunksjonene dine på nettet slik at du kan bruke dem fra Google Chrome på enhver datamaskin.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="473775607612524610">Oppdater</translation>
 <translation id="1195935957447623558">Google Chrome ble ikke avsluttet på riktig måte. Klikk på Gjenopprett for å åpne de samme sidene du hadde oppe.</translation>
 <translation id="2576431527583832481">Chrome har blitt enda bedre. En ny versjon er nå tilgjengelig.</translation>
+<translation id="4633000520311261472">For å gjøre Chrome tryggere, har vi deaktivert noen utvidelser som ikke er oppført i <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/>, og som kan ha blitt lagt uten at du har vært klar over det.</translation>
+<translation id="556024056938947818">Google Chrome prøver å vise passord.</translation>
 <translation id="2580411288591421699">Google Chrome-versjonen du prøver å installere, kjører allerede. Lukk Google Chrome og forsøk å installere på nytt.</translation>
 <translation id="8460191995881063249">Chrome varselssenter</translation>
 <translation id="1457721931618994305">Oppdaterer Google Chrome …</translation>
@@ -119,7 +119,6 @@ Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen 
 <translation id="911206726377975832">Vil du slette all nettleserdata også?</translation>
 <translation id="5855036575689098185">Programvaren som kjører på datamaskinen din er ikke kompatibel med Google Chrome.</translation>
 <translation id="2044287590254833138">Google Chrome-verktøyraden</translation>
-<translation id="5074344184765391290">Chromes vert for programtillegg</translation>
 <translation id="8862326446509486874">Du har ikke de nødvendige rettighetene for å installere på systemnivå. Prøv å kjøre installasjonsprogrammet som administrator.</translation>
 <translation id="2874156562296220396">Google Chrome er tilgjengelig som følge av prosjektet for åpen kilde, <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/>, og annen <ph name="BEGIN_LINK_OSS"/>programvare for åpen kilde<ph name="END_LINK_OSS"/>.</translation>
 <translation id="3847841918622877581">Det kan hende at Google Chrome bruker nettbaserte tjenester for å forbedre din surfeopplevelse.</translation>
@@ -133,6 +132,7 @@ Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen 
 <translation id="4273752058983339720">Google Chrome er konfigurert til å åpnes automatisk når du starter datamaskinen.</translation>
 <translation id="1104959162601287462">Om &amp;Chrome OS</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
+<translation id="1140117203923356735">Filen <ph name="FILE_NAME"/> foretar endringer i innstillingene dine, mye på samme måte som skadelig programvare gjør, og Chrome har derfor blokkert den.</translation>
 <translation id="5941830788786076944">Gjør Google Chrome til standardleser</translation>
 <translation id="7787950393032327779">Profilen ser ut til å være i bruk av en annen Google Chrome-prosess (<ph name="PROCESS_ID"/>) på en annen datamaskin (<ph name="HOST_NAME"/>). Chrome har låst profilen slik at den ikke blir infisert. Hvis du er sikker på at ingen andre prosesser bruker profilen, kan du låse opp profilen og starte Chrome på nytt.</translation>
 <translation id="1469002951682717133">Chrome Appvelger</translation>
@@ -167,23 +167,22 @@ Hvis du logger deg på allikevel, blir Chrome-informasjon som bokmerker, loggen 
 <translation id="576822117893741893">Vis Chrome-menyen</translation>
 <translation id="3444832043240812445">Denne siden viser kun informasjon om nylige programstopp hvis du <ph name="BEGIN_LINK"/>aktiverer rapportering av programstopp<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome svarer ikke. Vil du starte på nytt nå?</translation>
-<translation id="5318056482164160049">Vert for programtillegg i Google Chrome</translation>
+<translation id="1175529839152551794">Nå som du er logget på, kan du bruke fanene og bokmerkene dine, samt andre Chrome-ting, på telefonen, nettbrettet og den bærbare datamaskinen din. Du mottar også mer relevante forslag og funksjoner på Google-tjenester.</translation>
 <translation id="6126631249883707068">Vil du at Google Chrome skal lagre passordet?</translation>
 <translation id="7773845170078702898">Vil du at Google Chrome skal lagre passordet du bruker på dette nettstedet?</translation>
 <translation id="5046764976540625289">Avslutt Chrome</translation>
 <translation id="4251615635259297716">Vil du koble Chrome-dataene dine til denne kontoen?</translation>
-<translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Nettleser</translation>
 <translation id="8142608456917638009">Google Chrome kunne ikke opprette appsnarveien.</translation>
 <translation id="8255190535488645436">Google Chrome bruker kameraet og mikrofonen din.</translation>
 <translation id="2189123953385179981">Google Chrome OS håndterer ikke at et eksternt program behandler linker i <ph name="SCHEME"/>. Den forespurte linken er <ph name="PROTOLINK"/>.</translation>
 <translation id="7396375882099008034">Tillat at Chrome bruker nettverket i brannmur- eller antivirusinnstillingene dine.</translation>
+<translation id="9102715433345326100">Denne filen er skadelig, og Chrome har blokkert den.</translation>
 <translation id="8205111949707227942">Valgfritt: Bidra til å gjøre Chrome OS bedre ved å sende brukerstatistikk og krasjrapporter automatisk til Google.</translation>
 <translation id="7253415505590551024">Du har aktive nedlastinger. Vil du avslutte Google Chrome og avbryte nedlastingene?</translation>
 <translation id="7196020411877309443">Hvorfor vises dette?</translation>
 <translation id="2769762047821873045">Google Chrome er ikke din standardnettleser.</translation>
-<translation id="1020869477857717497"><ph name="FILE_NAME"/> kan endre hvordan søkene dine fungerer i Chrome.</translation>
 <translation id="4567424176335768812">Du er logget på som <ph name="USER_EMAIL_ADDRESS"/>. Nå kan du bruke bokmerkene, loggen og andre innstillinger på alle enhetene du er logget på.</translation>
 <translation id="6855094794438142393">Gå til
           Chrome-menyen &gt;

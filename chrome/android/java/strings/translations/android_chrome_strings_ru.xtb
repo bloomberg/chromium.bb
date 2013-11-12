@@ -1,26 +1,43 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ru">
+<translation id="6831043979455480757">Перевести</translation>
+<translation id="7644305409888602715">Выполняется перевод на <ph name="SOURCE_LANGUAGE"/>…</translation>
 <translation id="1491151370853475546">Обновить страницу</translation>
 <translation id="7658239707568436148">Отмена</translation>
 <translation id="6458785801851713928">В вашем домене синхронизация отключена</translation>
 <translation id="2731700343119398978">Подождите…</translation>
+<translation id="7378627244592794276">Нет</translation>
 <translation id="3358663646935160692">Этот аккаунт зарегистрирован в домене <ph name="DOMAIN_NAME"/>.
 
 Если вы войдете в аккаунт, администратор домена сможет управлять вашим профилем Chrome. Ваши данные будут связаны с этим аккаунтом. Если вы из него выйдете, все данные Chrome будут удалены с устройства.</translation>
 <translation id="1623104350909869708">Запретить создание дополнительных диалоговых окон на этой странице</translation>
+<translation id="624558823898732418">Перевести на <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="3896036286668839683">Средство просмотра сертификатов</translation>
 <translation id="8583805026567836021">Удаление данных аккаунта</translation>
+<translation id="8730621377337864115">Готово</translation>
 <translation id="4170011742729630528">Сервис недоступен. Повторите попытку позже.</translation>
 <translation id="8627706565932943526">Ошибка синхронизации</translation>
+<translation id="656628257199996201">Всегда переводить <ph name="SOURCE_LANGUAGE"/></translation>
+<translation id="9137013805542155359">Показать оригинал</translation>
+<translation id="5684874026226664614">Не удалось перевести страницу</translation>
 <translation id="3136378934686431938">Измените данные аккаунта</translation>
+<translation id="6042308850641462728">Подробнее...</translation>
+<translation id="8034522405403831421">Язык этой страницы: <ph name="SOURCE_LANGUAGE"/>. Перевести ее на <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="8725066075913043281">Повторить попытку</translation>
 <translation id="4510973599275542560">Отмена</translation>
 <translation id="9154176715500758432">Остаться на этой странице</translation>
 <translation id="7063006564040364415">Не удалось связаться с сервером синхронизации</translation>
+<translation id="4271185234001491831">Никогда не переводить <ph name="LANGUAGE"/></translation>
+<translation id="1285320974508926690">Никогда не переводить этот сайт</translation>
+<translation id="5164482624172255778">Хотите, чтобы Google Chrome всегда предлагал перевести этот сайт, когда на его страницах используется <ph name="LANGUAGE"/>?</translation>
+<translation id="8528538445849828817">Исходный язык: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="6512448926095770873">Покинуть эту страницу</translation>
 <translation id="7947953824732555851">Принять и войти</translation>
 <translation id="6040143037577758943">Закрыть</translation>
+<translation id="969096075394517431">Изменить языки</translation>
 <translation id="5032574515228824816">Запрос</translation>
+<translation id="1742134235943978220">Переведено на <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">ОК</translation>
 <translation id="7495038789730067783">Подтвердите вход</translation>
 </translationbundle>

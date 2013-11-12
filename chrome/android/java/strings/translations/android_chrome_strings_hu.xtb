@@ -1,26 +1,43 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hu">
+<translation id="6831043979455480757">Fordítás</translation>
+<translation id="7644305409888602715">Oldal fordítása <ph name="SOURCE_LANGUAGE"/> nyelvre...</translation>
 <translation id="1491151370853475546">Az oldal újratöltése</translation>
 <translation id="7658239707568436148">Mégse</translation>
 <translation id="6458785801851713928">A szinkronizálási szolgáltatás az Ön domainjén nem érhető el.</translation>
 <translation id="2731700343119398978">Kérjük, várjon...</translation>
+<translation id="7378627244592794276">Nem</translation>
 <translation id="3358663646935160692">Ennek a fióknak <ph name="DOMAIN_NAME"/> a kezelője.
 
 Ön jelenleg kezelt fiókkal jelentkezik be, és engedélyezi a rendszergazdának az Ön Chrome-profiljához való hozzáférést. Chrome-adatai ezután véglegesen ehhez a fiókhoz társulnak. A fiók leválasztásával törölheti a helyi Chrome-adatokat.</translation>
 <translation id="1623104350909869708">Akadályozza meg, hogy ez az oldal további párbeszédablakokat hozzon létre.</translation>
+<translation id="624558823898732418">A fordítás nyelve: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="3896036286668839683">Tanúsítványmegtekintő</translation>
 <translation id="8583805026567836021">Fiókadatok törlése</translation>
+<translation id="8730621377337864115">Kész</translation>
 <translation id="4170011742729630528">A szolgáltatás nem érhető el, próbálja újra később.</translation>
 <translation id="8627706565932943526">Szinkronizálási hiba</translation>
+<translation id="656628257199996201">Mindig fordítson <ph name="SOURCE_LANGUAGE"/> nyelvről</translation>
+<translation id="9137013805542155359">Eredeti megjelenítése</translation>
+<translation id="5684874026226664614">Hoppá! Az oldalt nem sikerült lefordítani.</translation>
 <translation id="3136378934686431938">Kérjük, frissítse bejelentkezési adatait.</translation>
+<translation id="6042308850641462728">Hosszabban</translation>
+<translation id="8034522405403831421">Ez az oldal <ph name="SOURCE_LANGUAGE"/> nyelven van. Lefordítja <ph name="TARGET_LANGUAGE"/> nyelvre?</translation>
+<translation id="8725066075913043281">Újrapróbálás</translation>
 <translation id="4510973599275542560">Ne töltse újra</translation>
 <translation id="9154176715500758432">Maradok ezen az oldalon</translation>
 <translation id="7063006564040364415">Nem sikerült csatlakozni a szinkronizálószerverhez.</translation>
+<translation id="4271185234001491831">Soha ne fordítsa le a(z) <ph name="LANGUAGE"/> nyelvű szöveget</translation>
+<translation id="1285320974508926690">Ezt a webhelyet soha ne fordítsa</translation>
+<translation id="5164482624172255778">Szeretné, hogy a Google Chrome a jövőben felajánlja e webhely <ph name="LANGUAGE"/> nyelvű oldalainak fordítását?</translation>
+<translation id="8528538445849828817">Az oldal nyelve: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="6512448926095770873">Az oldal elhagyása</translation>
 <translation id="7947953824732555851">Elfogadás és bejelentkezés</translation>
 <translation id="6040143037577758943">Bezárás</translation>
+<translation id="969096075394517431">Nyelvek módosítása</translation>
 <translation id="5032574515228824816">Parancssor</translation>
+<translation id="1742134235943978220">Lefordítva <ph name="TARGET_LANGUAGE"/> nyelvre.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="7495038789730067783">Bejelentkezés megerősítése</translation>
 </translationbundle>

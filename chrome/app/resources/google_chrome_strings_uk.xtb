@@ -26,9 +26,7 @@
 <translation id="2370289711218562573">Google Chrome імпортує &quot;Улюблені/Закладки&quot;.</translation>
 <translation id="8762286861469007470">Детектор приєднаного порталу Chrome</translation>
 <translation id="2721687379934343312">В ОС Mac паролі зберігаються в системі Keychain, де вони можуть синхронізуватися та бути доступними для інших користувачів Chrome, які спільно користуються обліковим записом OS X.</translation>
-<translation id="3993188379797269327"><ph name="FILE_NAME"/> може змінити ваші налаштування Chrome.</translation>
 <translation id="1761870329818521071">Неможливо встановити версію Google Chrome Frame, аналогічну запущеній на цей момент. Закрийте Google Chrome Frame і повторіть спробу.</translation>
-<translation id="2040709530900803995">Рендерер Google Chrome</translation>
 <translation id="6014844626092547096">Ви ввійшли в Chrome. Проте ваш адміністратор вимкнув синхронізацію.</translation>
 <translation id="3140883423282498090">Ваші зміни почнуть діяти після наступного перезапуску Google Chrome.</translation>
 <translation id="1773601347087397504">Отримати довідку щодо користування ОС Chrome</translation>
@@ -48,7 +46,6 @@
 <translation id="3080151273017101988">Продовжувати роботу фонових програм, коли Google Chrome закрито</translation>
 <translation id="4149882025268051530">Не вдалося відкрити архів за допомогою програми встановлення. Завантажте Google Chrome ще раз.</translation>
 <translation id="6989339256997917931">Google Chrome оновлено, проте ви не користувалися цим веб-переглядачем щонайменше 30 днів.</translation>
-<translation id="5744005218040929396">Утиліта Google Chrome</translation>
 <translation id="7060865993964054389">Панель запуску програм Google Chrome</translation>
 <translation id="1682634494516646069">Google Chrome не може читати та записувати у свій каталог даних: <ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="4343226815564935778">Каталог встановлення Google Chrome наразі використовується. Перезавантажте свій комп'ютер і спробуйте ще раз.</translation>
@@ -81,12 +78,15 @@
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="4585888816441913908">На цьому комп’ютері вже встановлено новішу версію Google Chrome і Google Chrome Frame. Якщо це програмне забезпечення не працює, видаліть Google Chrome і Google Chrome Frame і повторіть спробу.</translation>
 <translation id="3149510190863420837">Програми Chrome</translation>
+<translation id="7084448929020576097">Файл <ph name="FILE_NAME"/> шкідливий, тому Chrome заблокував його.</translation>
 <translation id="6368958679917195344">ОС Chrome стала можливою завдяки додатковому <ph name="BEGIN_LINK_CROS_OSS"/>програмному забезпеченню з відкритим кодом<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="7459554271817304652">Налаштуйте синхронізацію, щоб зберегти свої персоналізовані функції веб-переглядача в Інтернеті й мати до них доступ із Google Chrome на будь-якому комп’ютері.</translation>
 <translation id="4331809312908958774">ОС Chrome</translation>
 <translation id="473775607612524610">Оновити</translation>
 <translation id="1195935957447623558">Роботу Google Chrome було завершено неправильно. Щоб знову відкрити сторінки, які ви відкривали, натисніть &quot;Відновити&quot;.</translation>
 <translation id="2576431527583832481">Chrome став ще кращим! Доступна нова версія.</translation>
+<translation id="4633000520311261472">Щоб зробити Chrome безпечнішим, ми вимкнути деякі розширення, установлені не з <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> і, можливо, додані без вашого відома.</translation>
+<translation id="556024056938947818">Google Chrome намагається показати паролі.</translation>
 <translation id="2580411288591421699">Поки Google Chrome працює, неможливо встановити версію, аналогічну поточній. Закрийте Google Chrome і повторіть спробу.</translation>
 <translation id="8460191995881063249">Центр сповіщень Chrome</translation>
 <translation id="1457721931618994305">Оновлення Google Chrome...</translation>
@@ -119,7 +119,6 @@
 <translation id="911206726377975832">Також видалити дані веб-перегляду?</translation>
 <translation id="5855036575689098185">Програмне забезпечення, запущене на вашому комп’ютері, не сумісне з Google Chrome.</translation>
 <translation id="2044287590254833138">Панель інструментів Google Chrome</translation>
-<translation id="5074344184765391290">Хост модуля Chrome</translation>
 <translation id="8862326446509486874">У вас немає відповідних прав для встановлення на рівні системи. Спробуйте запустити програму встановлення, увійшовши з правами адміністратора.</translation>
 <translation id="2874156562296220396">Google Chrome було створено на основі проекту програмного забезпечення з відкритим кодом <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> та іншого <ph name="BEGIN_LINK_OSS"/>програмного забезпечення з відкритим кодом<ph name="END_LINK_OSS"/>.</translation>
 <translation id="3847841918622877581">Google Chrome може використовувати веб-послуги для покращення умов перегляду.</translation>
@@ -133,6 +132,7 @@
 <translation id="4273752058983339720">Google Chrome налаштовано на автоматичний запуск після ввімкнення комп’ютера.</translation>
 <translation id="1104959162601287462">Про &amp;ОС Chrome</translation>
 <translation id="5328989068199000832">Бінарні файли Google Chrome</translation>
+<translation id="1140117203923356735">Файл <ph name="FILE_NAME"/> змінює налаштування, що характерно для зловмисного програмного забезпечення, тому Chrome заблокував його.</translation>
 <translation id="5941830788786076944">Зробити Google Chrome переглядачем за промовчанням</translation>
 <translation id="7787950393032327779">Схоже, профіль використовується іншим процесом Google Chrome (<ph name="PROCESS_ID"/>) на іншому комп’ютері (<ph name="HOST_NAME"/>). Chrome заблокував цей профіль, щоб запобігти його спотворенню. Якщо ви впевнені, що жоден інший процес не використовує цей профіль, розблокуйте профіль і перезапустіть Chrome.</translation>
 <translation id="1469002951682717133">Панель запуску програм Chrome</translation>
@@ -169,12 +169,11 @@
 <translation id="576822117893741893">Показати меню Chrome</translation>
 <translation id="3444832043240812445">На цій сторінці відображається інформація лише про останні випадки аварійного завершення роботи, якщо <ph name="BEGIN_LINK"/>ввімкнено повідомлення про аварійне завершення роботи<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome не відповідає. Перезапустити зараз?</translation>
-<translation id="5318056482164160049">Хост модуля Google Chrome</translation>
+<translation id="1175529839152551794">Тепер, коли ви ввійшли, ви можете користуватися своїми вкладками, закладками й іншими налаштуваннями Chrome на своєму ноутбуку, телефоні та планшеті. Ви також отримуватимете більш відповідні пропозиції та функції для служб Google.</translation>
 <translation id="6126631249883707068">Зберігати ваш пароль у Google Chrome?</translation>
 <translation id="7773845170078702898">Чи має Google Chrome зберегти ваш пароль для цього сайту?</translation>
 <translation id="5046764976540625289">Вийти з Chrome</translation>
 <translation id="4251615635259297716">Пов’язати ваші дані Chrome із цим обліковим записом?</translation>
-<translation id="9039578207253536065">Виконавець Google Chrome</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Інтернет-переглядач</translation>
 <translation id="8142608456917638009">Google Chrome не вдалося створити ярлик програми.</translation>
@@ -182,11 +181,11 @@
 <translation id="2189123953385179981">Google Chrome OS не підтримує запуск зовнішньої програми для роботи з посиланнями типу <ph name="SCHEME"/>. Потрібний тип посилання: <ph name="PROTOLINK"/>.</translation>
 <translation id="7396375882099008034">Надайте Chrome доступ до мережі в налаштуваннях свого брандмауера чи
         антивірусного програмного забезпечення.</translation>
+<translation id="9102715433345326100">Цей файл шкідливий, тому Chrome заблокував його.</translation>
 <translation id="8205111949707227942">Додатково. Допоможіть покращити ОС Chrome, автоматично надсилаючи статистику використання та звіти про аварійне завершення роботи до Google.</translation>
 <translation id="7253415505590551024">Тривають завантаження. Вийти з Google Chrome і скасувати ці завантаження?</translation>
 <translation id="7196020411877309443">Чому відображається це повідомлення?</translation>
 <translation id="2769762047821873045">Google Chrome не є веб-переглядачем за умовчанням.</translation>
-<translation id="1020869477857717497"><ph name="FILE_NAME"/> може змінити ваші налаштування пошуку в Chrome.</translation>
 <translation id="4567424176335768812">Ви ввійшли як <ph name="USER_EMAIL_ADDRESS"/>. Ваші закладки, історія й інші налаштування будуть доступні на всіх пристроях, на яких ви ввійдете в цей обліковий запис.</translation>
 <translation id="6855094794438142393">Перейдіть у
           меню Chrome &gt;

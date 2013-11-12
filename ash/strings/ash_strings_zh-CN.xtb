@@ -130,6 +130,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830">正在激活“<ph name="NAME"/>”</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="1923539912171292317">自动点击</translation>
 <translation id="1398853756734560583">最大化</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>：正在连接...</translation>
 <translation id="252373100621549798">未知展示广告</translation>
@@ -222,6 +223,7 @@
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>：<ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">恭喜！“<ph name="NAME"/>”数据服务已激活，您可以开始使用了。</translation>
 <translation id="412065659894267608">还需要 <ph name="HOUR"/> 小时 <ph name="MINUTE"/> 分钟才能充满电</translation>
+<translation id="7297443947353982503">用户名/密码错误或 EAP 身份验证失败</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER"/> 发来的短信</translation>
 <translation id="1244147615850840081">运营商</translation>
 </translationbundle>

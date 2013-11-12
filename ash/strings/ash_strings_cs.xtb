@@ -128,6 +128,7 @@ Stiskem kláves Ctrl+Alt+Z ji deaktivujete.</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830">Aktivace sítě <ph name="NAME"/></translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="1923539912171292317">Automatická kliknutí</translation>
 <translation id="1398853756734560583">Maximalizovat</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: Připojování...</translation>
 <translation id="252373100621549798">Neznámý displej</translation>
@@ -219,6 +220,7 @@ Vypnete jej stisknutím kombinace kláves Alt + Vyhledávání nebo Shift.</tran
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Blahopřejeme! Datová služba <ph name="NAME"/> byla aktivována a je připravena k použití.</translation>
 <translation id="412065659894267608"><ph name="HOUR"/> h <ph name="MINUTE"/> min do nabití</translation>
+<translation id="7297443947353982503">Neplatné uživatelské jméno/heslo nebo neúspěšná autorizace EAP</translation>
 <translation id="6359806961507272919">SMS z čísla <ph name="PHONE_NUMBER"/></translation>
 <translation id="1244147615850840081">Operátor</translation>
 </translationbundle>

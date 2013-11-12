@@ -1,24 +1,41 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ar">
+<translation id="6831043979455480757">الترجمة</translation>
+<translation id="7644305409888602715">جارٍ ترجمة الصفحة إلى <ph name="SOURCE_LANGUAGE"/>...</translation>
 <translation id="1491151370853475546">إعادة تحميل هذه الصفحة</translation>
 <translation id="7658239707568436148">إلغاء</translation>
 <translation id="6458785801851713928">المزامنة غير متاحة لنطاقك.</translation>
 <translation id="2731700343119398978">يرجى الانتظار...</translation>
+<translation id="7378627244592794276">لا</translation>
 <translation id="3358663646935160692">‏تتم إدارة هذا الحساب من خلال <ph name="DOMAIN_NAME"/>. لقد سجلت دخولك باستخدام حساب مُدار تمنح المشرف عليه إمكانية التحكم في ملفك الشخصي على Chrome. ستظل بياناتك على Chrome مرتبطة دائمًا بهذا الحساب. ويؤدي إلغاء الربط بهذا الحساب إلى حذف بيانات Chrome المحلية.</translation>
 <translation id="1623104350909869708">منع هذه الصفحة من إنشاء مربعات حوار إضافية.</translation>
+<translation id="624558823898732418">لغة الترجمة: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="3896036286668839683">عارض الشهادات</translation>
 <translation id="8583805026567836021">محو بيانات الحساب</translation>
+<translation id="8730621377337864115">انتهى</translation>
 <translation id="4170011742729630528">الخدمة غير متاحة، أعد المحاولة لاحقًا.</translation>
 <translation id="8627706565932943526">حدث خطأ أثناء المزامنة</translation>
+<translation id="656628257199996201">ترجمة <ph name="SOURCE_LANGUAGE"/> دائمًا</translation>
+<translation id="9137013805542155359">إظهار الصفحة الأصلية</translation>
+<translation id="5684874026226664614">عفوًا. تعذرت ترجمة هذه الصفحة.</translation>
 <translation id="3136378934686431938">الرجاء تحديث تفاصيل تسجيل الدخول.</translation>
+<translation id="6042308850641462728">المزيد</translation>
+<translation id="8034522405403831421">هذه الصفحة باللغة <ph name="SOURCE_LANGUAGE"/>. هل تريد ترجمتها إلى اللغة <ph name="TARGET_LANGUAGE"/>؟</translation>
+<translation id="8725066075913043281">أعد المحاولة</translation>
 <translation id="4510973599275542560">عدم إعادة التحميل</translation>
 <translation id="9154176715500758432">البقاء في هذه الصفحة</translation>
 <translation id="7063006564040364415">تعذر الاتصال بخادم المزامنة.</translation>
+<translation id="4271185234001491831">عدم الترجمة مطلقًا من اللغة <ph name="LANGUAGE"/></translation>
+<translation id="1285320974508926690">عدم ترجمة هذا الموقع مطلقًا</translation>
+<translation id="5164482624172255778">‏هل تريد أن يعرض Google Chrome ترجمة الصفحات باللغة <ph name="LANGUAGE"/> من هذا الموقع مرة أخرى؟</translation>
+<translation id="8528538445849828817">لغة الصفحة: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="6512448926095770873">مغادرة هذه الصفحة</translation>
 <translation id="7947953824732555851">قبول وتسجيل الدخول</translation>
 <translation id="6040143037577758943">إغلاق</translation>
+<translation id="969096075394517431">تغيير اللغات</translation>
 <translation id="5032574515228824816">مطالبة</translation>
+<translation id="1742134235943978220">تمت الترجمة إلى <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">موافق</translation>
 <translation id="7495038789730067783">تأكيد تسجيل الدخول</translation>
 </translationbundle>

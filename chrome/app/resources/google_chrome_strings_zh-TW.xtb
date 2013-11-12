@@ -28,9 +28,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="2370289711218562573">Google Chrome 現正匯入 [我的收藏/書籤]。</translation>
 <translation id="8762286861469007470">Chrome 強制性登入畫面偵測工具</translation>
 <translation id="2721687379934343312">在 Mac 上，密碼會儲存到您的「鑰匙圈」資料庫中，因此其他共用這個 OS X 帳戶的 Chrome 使用者都能存取或同步處理這些密碼。</translation>
-<translation id="3993188379797269327"><ph name="FILE_NAME"/> 會變更您的 Chrome 設定。</translation>
 <translation id="1761870329818521071">無法安裝這個版本的「Google Chrome 內嵌框架」，因為相同的版本目前正在執行中。請關閉「Google Chrome 內嵌框架」，然後再試一次。</translation>
-<translation id="2040709530900803995">Google Chrome 成像器</translation>
 <translation id="6014844626092547096">您現在已登入 Chrome！但管理員已關閉同步功能。</translation>
 <translation id="3140883423282498090">您的變更將於下次重新啟動 Google Chrome 時生效。</translation>
 <translation id="1773601347087397504">前往 Chrome 作業系統說明頁面</translation>
@@ -50,7 +48,6 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="3080151273017101988">Google Chrome 關閉時繼續執行背景應用程式</translation>
 <translation id="4149882025268051530">安裝程式無法解壓縮封存檔案，請再次下載 Google Chrome。</translation>
 <translation id="6989339256997917931">Google Chrome 已更新，但您至少已有 30 天未使用該瀏覽器。</translation>
-<translation id="5744005218040929396">Google Chrome 公用程式</translation>
 <translation id="7060865993964054389">Google Chrome 應用程式啟動器</translation>
 <translation id="1682634494516646069">Google Chrome 無法讀取及寫入資料目錄：<ph name="USER_DATA_DIRECTORY"/></translation>
 <translation id="4343226815564935778">Google Chrome 安裝目錄使用中。請重新啟動電腦，然後再試一次。</translation>
@@ -83,12 +80,15 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="4585888816441913908">這台電腦已安裝較新的 Google Chrome 和「Google Chrome 內嵌框架」版本，如果軟體無法順利運作，請解除安裝 Google Chrome 和「Google Chrome 內嵌框架」，然後再試一次。</translation>
 <translation id="3149510190863420837">Chrome 應用程式</translation>
+<translation id="7084448929020576097"><ph name="FILE_NAME"/> 是惡意軟體，因此已遭到 Chrome 封鎖。</translation>
 <translation id="6368958679917195344">Chrome 作業系統藉助了其他<ph name="BEGIN_LINK_CROS_OSS"/>開放原始碼軟體<ph name="END_LINK_CROS_OSS"/>的相關技術才得以問世。</translation>
 <translation id="7459554271817304652">設定同步處理功能，即可在網路上儲存您的個人化瀏覽器功能，並且透過任何電腦從 Google Chrome 使用這些功能。</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="473775607612524610">更新</translation>
 <translation id="1195935957447623558">Google Chrome 上次執行時並未正確關閉。如果要重新開啟您之前瀏覽的網頁，請按一下 [還原]。</translation>
 <translation id="2576431527583832481">Chrome 現在變得更進步了！歡迎您升級使用新版本。</translation>
+<translation id="4633000520311261472">為了讓 Chrome 的安全性更有保障，我們已將部分未列在 <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> 中的擴充功能停用，它們可能在您不知情的情況下加入瀏覽器。</translation>
+<translation id="556024056938947818">Google Chrome 即將顯示密碼。</translation>
 <translation id="2580411288591421699">您無法安裝這個版本的 Google Chrome，因為相同的版本目前正在執行中。請關閉 Google Chrome 然後再試一次。</translation>
 <translation id="8460191995881063249">Chrome 通知中心</translation>
 <translation id="1457721931618994305">正在更新 Google Chrome...</translation>
@@ -121,7 +121,6 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="911206726377975832">您要一併刪除瀏覽資料嗎？</translation>
 <translation id="5855036575689098185">您電腦上執行的軟體與 Google Chrome 不相容。</translation>
 <translation id="2044287590254833138">Google Chrome 工具列</translation>
-<translation id="5074344184765391290">Chrome Plug-In Host</translation>
 <translation id="8862326446509486874">您沒有在系統層級進行安裝的權限，請以管理員的身分執行安裝檔。</translation>
 <translation id="2874156562296220396">Google Chrome 的開發仰賴 <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> 開放原始碼計劃與其他<ph name="BEGIN_LINK_OSS"/>開放原始碼軟體<ph name="END_LINK_OSS"/>的協助才得以完成。</translation>
 <translation id="3847841918622877581">Google Chrome 會使用網路服務來改善瀏覽品質。</translation>
@@ -135,6 +134,7 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="4273752058983339720">已將 Google Chrome 設定為開機時自動啟動。</translation>
 <translation id="1104959162601287462">關於 Chrome 作業系統(&amp;C)</translation>
 <translation id="5328989068199000832">Google Chrome Binaries</translation>
+<translation id="1140117203923356735"><ph name="FILE_NAME"/> 會擅自變更某些設定 (類似部分惡意軟體的行為模式)，因此已遭到 Chrome 封鎖。</translation>
 <translation id="5941830788786076944">使用 Google Chrome 做為我的預設瀏覽器</translation>
 <translation id="7787950393032327779">另一台電腦 (<ph name="HOST_NAME"/>) 的 Google Chrome 處理程序 (<ph name="PROCESS_ID"/>) 正在使用這個設定檔。Chrome 已鎖定此設定檔，確保其不致受損。如果您確定其他處理程序目前未使用此設定檔，請予以解除鎖定，然後重新啟動 Chrome。</translation>
 <translation id="1469002951682717133">Chrome 應用程式啟動器</translation>
@@ -171,12 +171,11 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="576822117893741893">顯示 Chrome 選單</translation>
 <translation id="3444832043240812445">如果您<ph name="BEGIN_LINK"/>啟用當機報告功能<ph name="END_LINK"/>，這個頁面僅會顯示最近的當機資訊。</translation>
 <translation id="8614913330719544658">Google Chrome 沒有回應，要立即重新啟動嗎？</translation>
-<translation id="5318056482164160049">Google Chrome 外掛程式主控中心</translation>
+<translation id="1175529839152551794">您現在已登入 Chrome，可以使用您在筆電、手機和平板電腦中的分頁、書籤和其他 Chrome 設定。您也將收到更多 Google 服務的相關建議和功能。</translation>
 <translation id="6126631249883707068">您希望 Google Chrome 儲存密碼嗎？</translation>
 <translation id="7773845170078702898">您要讓 Google Chrome 儲存您在這個網站的密碼嗎？</translation>
 <translation id="5046764976540625289">結束 Chrome</translation>
 <translation id="4251615635259297716">要將您的 Chrome 資料連結至這個帳戶嗎？</translation>
-<translation id="9039578207253536065">Google Chrome 作業工具</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">網際網路瀏覽器</translation>
 <translation id="8142608456917638009">Google Chrome 無法建立應用程式捷徑。</translation>
@@ -184,11 +183,11 @@ Google Chrome 無法復原您的設定。</translation>
 <translation id="2189123953385179981">「Google Chrome 作業系統」未支援啟動外部應用程式以處理 <ph name="SCHEME"/> 連結；要求的連結為 <ph name="PROTOLINK"/>。</translation>
 <translation id="7396375882099008034">允許 Chrome 存取受到防火牆或防毒軟體設定所阻擋的
         網路。</translation>
+<translation id="9102715433345326100">這個檔案是惡意軟體，因此已遭到 Chrome 封鎖。</translation>
 <translation id="8205111949707227942">選擇性：把使用統計資料及當機報告自動傳送給 Google，將有助於 Chrome OS 更臻完美。</translation>
 <translation id="7253415505590551024">目前正在進行下載，您要結束 Google Chrome 並取消下載嗎？</translation>
 <translation id="7196020411877309443">為何出現這個對話框？</translation>
 <translation id="2769762047821873045">Google Chrome 並非您的預設瀏覽器。</translation>
-<translation id="1020869477857717497"><ph name="FILE_NAME"/> 會變更 Chrome 的搜尋功能運作方式。</translation>
 <translation id="4567424176335768812">您已使用 <ph name="USER_EMAIL_ADDRESS"/> 的身分登入，可以在所有登入的裝置上使用您的書籤、紀錄和其他設定。</translation>
 <translation id="6855094794438142393">前往
           Chrome 選單 &gt;

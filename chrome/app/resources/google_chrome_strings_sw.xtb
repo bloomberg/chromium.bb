@@ -30,9 +30,7 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="2370289711218562573">Google Chrome sasa inaingiza Vipendwa/Alamisho.</translation>
 <translation id="8762286861469007470">Kigunduzi cha Chrome Captive Portal</translation>
 <translation id="2721687379934343312">Kwenye Mac, manenosiri yanahifadhiwa kwenye Msururu wako wa kitufe na yanaweza kufikiwa au kulandanishwa na watumiaji wengine wa Chrome wanaoshiriki akaunti hii ya OS X.</translation>
-<translation id="3993188379797269327"><ph name="FILE_NAME"/> inaweza kubadilisha mipangilio yako ya Chrome.</translation>
 <translation id="1761870329818521071">Haiwezi kusakinisha toleo sawia la Google Chrome Frame ambalo linaendeshwa kwa sasa. Tafadhali funga Fremu ya Google Chrome na ujaribu tena.</translation>
-<translation id="2040709530900803995">Kionyeshi cha Google Chrome</translation>
 <translation id="6014844626092547096">Sasa umeingia kwenye Chrome! Usawazishaji umezimwa na msimamizi wako.</translation>
 <translation id="3140883423282498090">Mabadiliko yako yataanza kufanya kazi wakati ujao utakapozindua Google Chrome.</translation>
 <translation id="1773601347087397504">Pata msaada wa kutumia Chrome OS</translation>
@@ -52,7 +50,6 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="3080151273017101988">Endelea kuendesha programu za mandharinyuma wakati Google Chrome imefungwa</translation>
 <translation id="4149882025268051530">Kisanidi kimeshindwa kufungua saraka. Tafadhali pakua Google Chrome tena.</translation>
 <translation id="6989339256997917931">Google Chrome imesasishwa, lakini hujaitumia kwa angalau siku 30.</translation>
-<translation id="5744005218040929396">Kifaa cha Google Chrome</translation>
 <translation id="7060865993964054389">Kizinduzi cha Programu za Chrome</translation>
 <translation id="1682634494516646069">Google Chrome haiwezi kusoma na kuandika kwenye saraka yake ya data:
 
@@ -87,12 +84,15 @@ Baadhi ya vipengele huenda visipatikane na mabadiliko katika mapendeleo hayatahi
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="4585888816441913908">Kompyuta hii tayari ina toleo jipya zaidi la Google Chrome na Fremu ya Google Chrome. Ikiwa programu haifanyi kazi, tafadhali sanidua Google Chrome na Fremu ya Google Chrome na ujaribu tena.</translation>
 <translation id="3149510190863420837">Programu za Chrome</translation>
+<translation id="7084448929020576097"><ph name="FILE_NAME"/> ni hasidi, na Chrome imeizuia.</translation>
 <translation id="6368958679917195344">Chrome OS imewezeshwa na programu ya ziada ya <ph name="BEGIN_LINK_CROS_OSS"/>programu huria<ph name="END_LINK_CROS_OSS"/>.</translation>
 <translation id="7459554271817304652">Sanidi Usawazishaji ili kuhifadhi vipengele vyako vya kivinjari vilivyobinafsishwa kwenye mtandao na uvifikie kutoka Google Chrome kwenye kompyuta yoyote.</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="473775607612524610">Sasisha</translation>
 <translation id="1195935957447623558">Google Chrome haikufungika ipasavyo. Kufungua tena kurasa ulizokuwa umefungua, bofya Rejesha.</translation>
 <translation id="2576431527583832481">Chrome imekuwa bora! Toleo jipya linapatikana.</translation>
+<translation id="4633000520311261472">Ili kufanya Chrome salama zaidi, tumezima baadhi ya viendelezi ambavyo havijaorodheshwa katika <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> na ambavyo huendwa viliongezwa pasipo ridhaa yako.</translation>
+<translation id="556024056938947818">Google Chrome inajaribu kuonyesha manenosiri.</translation>
 <translation id="2580411288591421699">Huwezi kusakinisha toleo la Google Chrome ambalo tayari linatumika. Tafadhali funga Google Chrome na ujaribu tena.</translation>
 <translation id="8460191995881063249">Kituo cha Chrome cha Taarifa</translation>
 <translation id="1457721931618994305">Inasasisha Google Chrome...</translation>
@@ -127,7 +127,6 @@ Kuingia bila kujali kutaunganisha maelezo ya Chrome kama vile alamisho, historia
 <translation id="911206726377975832">Futa historia yako ya kuvinjari pia?</translation>
 <translation id="5855036575689098185">Programu unayotumia kwenye kompyuta yako haioani na Google Chrome.</translation>
 <translation id="2044287590254833138">Upau wa Google Chrome</translation>
-<translation id="5074344184765391290">Kipangishi cha Programu Jalizi za Chrome</translation>
 <translation id="8862326446509486874">Huna haki zifaazo ili kufanya usakinishaji wa kiwango cha mfumo. Jaribu kutumia kisakinishi kama msimamiaji kompyuta.</translation>
 <translation id="2874156562296220396">Google Chrome imefanikishwa na mradi wa programu huria wa <ph name="BEGIN_LINK_CHROMIUM"/>Chromium<ph name="END_LINK_CHROMIUM"/> na <ph name="BEGIN_LINK_OSS"/>programu huria<ph name="END_LINK_OSS"/> zingine.</translation>
 <translation id="3847841918622877581">Google Chrome inaweza itumie huduma za wavuti ili kuboresha utumizi wako wa kuvinjari.</translation>
@@ -141,6 +140,7 @@ Kuingia bila kujali kutaunganisha maelezo ya Chrome kama vile alamisho, historia
 <translation id="4273752058983339720">Google Chrome imesanidiwa ili kuzindua moja kwa moja unapowasha komyuta yako.</translation>
 <translation id="1104959162601287462">Kuhusu &amp;Chrome OS</translation>
 <translation id="5328989068199000832">Jozi za Google Chrome</translation>
+<translation id="1140117203923356735"><ph name="FILE_NAME"/> hufanya mabadiliko ya mipangilio sawa na baadhi ya programu hasidi, kwa hivyo Chrome imeizuia.</translation>
 <translation id="5941830788786076944">Fanya Google Chrome iwe kivinjari chaguo-msingi</translation>
 <translation id="7787950393032327779">Wasifu unaonekana kuwa unatumika na mchakato mwingine wa Google Chrome (<ph name="PROCESS_ID"/>) kwenye kompyuta nyingine (<ph name="HOST_NAME"/>). Chrome imefunga wasifu huu ili usifisidiwe. Kama una uhakika hakuna michakato mingine inayotumia wasifu huu, unaweza kufungua wasifu na uzindue Chrome tena.</translation>
 <translation id="1469002951682717133">Kizinduzi cha Programu za Chrome</translation>
@@ -175,23 +175,22 @@ Kuingia bila kujali kutaunganisha maelezo ya Chrome kama vile alamisho, historia
 <translation id="576822117893741893">Onyesha menyu ya Chrome</translation>
 <translation id="3444832043240812445">Ukurasa huu unaonyesha tu maelezo yako ya uharibifu wa hivi karibuni ukiwezesha <ph name="BEGIN_LINK"/>kuripoti uharibifu<ph name="END_LINK"/>.</translation>
 <translation id="8614913330719544658">Google Chrome imelemazwa. Izindue upya sasa?</translation>
-<translation id="5318056482164160049">Mpangishaji wa Programu Jalizi ya Google Chrome</translation>
+<translation id="1175529839152551794">Kwa kuwa sasa umeingia katika akaunti, unaweza kupata vichupo vyako, alamisho na vitu vingine vya Chrome vilivyo katika kompyuta yako ndogo, simu na kompyuta kibao. Pia utapokea mapendekezo na vipengele vinavyofaa zaidi kuhusu huduma za Google.</translation>
 <translation id="6126631249883707068">Je, ungependa Google Chrome ihifadhi nenosiri lako?</translation>
 <translation id="7773845170078702898">Je, unataka Google Chrome ihifadhi nenosiri lako kwa tovuti hii?</translation>
 <translation id="5046764976540625289">Ondoka Chrome</translation>
 <translation id="4251615635259297716">Ungependa kuunganisha data yako ya Chrome kwenye akaunti hii?</translation>
-<translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="9171640504251796339">http://www.google.com/support/chrome/bin/answer.py?hl=<ph name="GRITLANGCODE_1"/>&amp;answer=161796</translation>
 <translation id="8865765905101981392">Kivinjari Wavuti</translation>
 <translation id="8142608456917638009">Google Chrome haikuweza kuunda njia mkato ya programu.</translation>
 <translation id="8255190535488645436">Google Chrome inatumia kamera na maikrofoni yako.</translation>
 <translation id="2189123953385179981">Google ChromeOS haiauni kuzindua programu ya nje kushughulikia viungo vya <ph name="SCHEME"/>. Kiungo kilichoitishwa ni <ph name="PROTOLINK"/>.</translation>
 <translation id="7396375882099008034">Ruhusu Chrome ifikie mtandao kwenye mipangilio yako ya ngome au kingavirusi.</translation>
+<translation id="9102715433345326100">Faili hii ni hasidi, na Chrome imeizuia.</translation>
 <translation id="8205111949707227942">Hiari: Saidia kuifanya Chrome OS kuwa bora kwa kutuma kiotomatiki takwimu za utumiaji na ripoti za kuvurugika kwa Google.</translation>
 <translation id="7253415505590551024">Upakuaji unaendelea kwa sasa. Je, unataka kuondoka kwenye Google Chrome na kughairi upakuaji?</translation>
 <translation id="7196020411877309443">Ni kwa kwa nini ninaona hii?</translation>
 <translation id="2769762047821873045">Google Chrome sio kivinjari chako cha chaguo-msingi</translation>
-<translation id="1020869477857717497"><ph name="FILE_NAME"/> inaweza kubadilisha jinsi utafutaji wako unafanya kazi katika Chrome.</translation>
 <translation id="4567424176335768812">Umeingia katika akaunti kama <ph name="USER_EMAIL_ADDRESS"/>. Sasa unaweza kupata alamisho, historia, na mipangilio yako mingine kwenye vifaa vyako vyote vilivyoingia katika akaunti.</translation>
 <translation id="6855094794438142393">Nenda kwenye
           menyu ya Chrome &gt;

@@ -1,26 +1,43 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="it">
+<translation id="6831043979455480757">Traduci</translation>
+<translation id="7644305409888602715">Traduzione della pagina in <ph name="SOURCE_LANGUAGE"/> in corso...</translation>
 <translation id="1491151370853475546">Ricarica questa pagina</translation>
 <translation id="7658239707568436148">Annulla</translation>
 <translation id="6458785801851713928">Il servizio di sincronizzazione non è disponibile per il tuo dominio.</translation>
 <translation id="2731700343119398978">Attendi...</translation>
+<translation id="7378627244592794276">No</translation>
 <translation id="3358663646935160692">Questo account è gestito da <ph name="DOMAIN_NAME"/>.
 
 Stai per eseguire l'accesso con un account gestito e consentire al relativo amministratore di controllare il tuo profilo Chrome. I tuoi dati di Chrome verranno associati definitivamente a questo account. La disconnessione dall'account comporterà l'eliminazione dei dati di Chrome locali.</translation>
 <translation id="1623104350909869708">Impedisci la creazione di altre finestre di dialogo in questa pagina</translation>
+<translation id="624558823898732418">Lingua della traduzione: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="3896036286668839683">Visualizzatore certificati</translation>
 <translation id="8583805026567836021">Cancellazione dati dell'account</translation>
+<translation id="8730621377337864115">Fine</translation>
 <translation id="4170011742729630528">Il servizio non è disponibile, riprova più tardi.</translation>
 <translation id="8627706565932943526">Errore di sincronizzazione</translation>
+<translation id="656628257199996201">Traduci sempre da <ph name="SOURCE_LANGUAGE"/></translation>
+<translation id="9137013805542155359">Mostra originale</translation>
+<translation id="5684874026226664614">Spiacenti. Impossibile tradurre questa pagina.</translation>
 <translation id="3136378934686431938">Aggiorna i dati di accesso.</translation>
+<translation id="6042308850641462728">Più</translation>
+<translation id="8034522405403831421">Questa pagina è in <ph name="SOURCE_LANGUAGE"/>. Tradurla in <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="8725066075913043281">Riprova</translation>
 <translation id="4510973599275542560">Non ricaricare</translation>
 <translation id="9154176715500758432">Rimani su questa pagina</translation>
 <translation id="7063006564040364415">Impossibile collegarsi al server di sincronizzazione.</translation>
+<translation id="4271185234001491831">Non tradurre mai: <ph name="LANGUAGE"/></translation>
+<translation id="1285320974508926690">Non tradurre mai questo sito</translation>
+<translation id="5164482624172255778">Vuoi che Google Chrome ti proponga di tradurre le pagine in <ph name="LANGUAGE"/> di questo sito al prossimo accesso?</translation>
+<translation id="8528538445849828817">Lingua della pagina: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="6512448926095770873">Esci dalla pagina</translation>
 <translation id="7947953824732555851">Accetta e accedi</translation>
 <translation id="6040143037577758943">Chiudi</translation>
+<translation id="969096075394517431">Cambia le lingue</translation>
 <translation id="5032574515228824816">Messaggio</translation>
+<translation id="1742134235943978220">Tradotto in <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="7495038789730067783">Conferma accesso</translation>
 </translationbundle>

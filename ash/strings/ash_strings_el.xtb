@@ -130,6 +130,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830">Ενεργοποίηση <ph name="NAME"/></translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="1923539912171292317">Αυτόματα κλικ</translation>
 <translation id="1398853756734560583">Μεγιστοποίηση</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: Σύνδεση…</translation>
 <translation id="252373100621549798">Άγνωστη οθόνη</translation>
@@ -221,6 +222,7 @@
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Συγχαρητήρια! Η υπηρεσία δεδομένων &quot;<ph name="NAME"/>&quot; έχει ενεργοποιηθεί και είναι έτοιμη για χρήση.</translation>
 <translation id="412065659894267608"><ph name="HOUR"/>ω <ph name="MINUTE"/>λ μέχρι να ολοκληρωθεί η φόρτιση</translation>
+<translation id="7297443947353982503">Εσφαλμένο όνομα χρήστη/κωδικός πρόσβασης ή αποτυχία EAP-auth</translation>
 <translation id="6359806961507272919">SMS από <ph name="PHONE_NUMBER"/></translation>
 <translation id="1244147615850840081">Εταιρεία κινητής τηλεφωνίας</translation>
 </translationbundle>

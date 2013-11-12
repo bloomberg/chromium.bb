@@ -3,8 +3,11 @@
 <translationbundle lang="el">
 <translation id="376869769528291915">:</translation>
 <translation id="6015796118275082299">Έτος</translation>
+<translation id="2094750046714988961">Δεν είναι δυνατή η έναρξη του προγράμματος προφίλ επειδή ο εξωτερικός χώρος αποθήκευσης δεν είναι έτοιμος</translation>
 <translation id="1256337885411059545">Αδύνατη αναπαραγωγή βίντεο</translation>
+<translation id="2520230379124234395">Η λειτουργία του προγράμματος προφίλ έχει ξεκινήσει</translation>
 <translation id="7821540960913969614">Ορισμός ημερομηνίας</translation>
+<translation id="4859501799452851758">Η λειτουργία του προγράμματος προφίλ ολοκληρώθηκε. Τα αποτελέσματα βρίσκονται στο αρχείο <ph name="FILENAME"/>.</translation>
 <translation id="3845599764535987402">Ώρα</translation>
 <translation id="4932733599132424254">Ημερομηνία</translation>
 <translation id="6727102863431372879">Ορισμός</translation>
@@ -20,6 +23,7 @@
 <translation id="2732718972699418926">π.μ.</translation>
 <translation id="7096034533295549981">Φόρτωση βίντεο</translation>
 <translation id="1542044944667958430">Αναζήτηση στον Ιστό</translation>
+<translation id="6849295950938417341">Αποτυχία έναρξης προγράμματος προφίλ</translation>
 <translation id="6527303717912515753">Κοινή χρήση</translation>
 <translation id="1822429046913737220">Π.Μ./Μ.Μ.</translation>
 <translation id="5789643057113097023">.</translation>

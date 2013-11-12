@@ -18,7 +18,6 @@
 Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren worden niet opgeslagen.</translation>
 <translation id="4222661289444749267">Bijgewerkte versie van Chromium Frame.</translation>
 <translation id="4423735387467980091">Chromium aanpassen en beheren</translation>
-<translation id="2843244238218937196">Chromium Renderer</translation>
 <translation id="1881322772814446296">Je logt in op een beheerd account waarmee de eigenaar van dat account beheer krijgt over je Chromium-profiel. Je Chromium-gegevens zoals je apps, bladwijzers, geschiedenis, wachtwoorden en andere instellingen worden permanent gekoppeld aan <ph name="USER_NAME"/>. Je kunt deze gegevens verwijderen via het Google Accounts Dashboard, maar je kunt deze gegevens niet koppelen aan een ander account. Je kunt een nieuw profiel maken om je bestaande Chromium-gegevens apart te houden. <ph name="LEARN_MORE"/></translation>
 <translation id="7128196614940529818">Chromium Frame is reeds geïnstalleerd en beschikbaar voor alle gebruikers van deze computer. Als je Chromium Frame op gebruikersniveau wilt installeren, moet je eerst de versie op systeemniveau verwijderen die is geïnstalleerd door een beheerder.</translation>
 <translation id="731644333568559921">&amp;Chromium OS bijwerken</translation>
@@ -31,6 +30,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="6953661834318318668">Chromium-werkbalk</translation>
 <translation id="2245147136185581459">Chromium-detector van captive portals</translation>
 <translation id="4285930937574705105">De installatie is mislukt wegens een onbekende fout. Als Chromium momenteel actief is, moet je Chromium sluiten en het opnieuw proberen.</translation>
+<translation id="1396446129537741364">Chromium probeert wachtwoorden weer te geven.</translation>
 <translation id="3555616473548901994">Verwijdering voltooid.</translation>
 <translation id="2886012850691518054">Optioneel: help Chromium beter te maken door automatisch gebruiksstatistieken en crashmeldingen naar Google te verzenden.</translation>
 <translation id="580822234363523061">Ga naar
@@ -52,6 +52,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="4831257561365056138">Chromium App Launcher verwijderen</translation>
 <translation id="4222580632002216401">Je bent nu ingelogd bij Chromium! Synchronisatie is uitgeschakeld door je beheerder.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Waarschuwing:<ph name="END_BOLD"/> Chromium kan niet voorkomen dat extensies je browsergeschiedenis vastleggen. Als je deze extensie in de incognitomodus wilt uitschakelen, verwijder je het vinkje bij deze optie.</translation>
+<translation id="4516868174453854611">Nu je bent ingelogd, kun je je tabbladen, bladwijzers en andere Chromium-instellingen op je laptop, telefoon en tablet gebruiken. Je ontvangt ook relevantere suggesties en functies in Google services.</translation>
 <translation id="985602178874221306">De auteurs van Chromium</translation>
 <translation id="8628626585870903697">Chromium bevat niet de pdf-viewer die nodig is om de functie 'Afdrukvoorbeeld' te laten werken.</translation>
 <translation id="7138853919861947730">Chromium gebruikt mogelijk webservices om je surfervaring te verbeteren.</translation>
@@ -83,7 +84,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3509308970982693815">Sluit alle Chromium-vensters en probeer het opnieuw.</translation>
 <translation id="4077262827416206768">Sluit alle Chromium-vensters en start Chromium opnieuw om de wijziging toe te passen.</translation>
-<translation id="5472687196979159893"><ph name="FILE_NAME"/> kan wijzigen hoe je zoekopdrachten werken in Chromium.</translation>
+<translation id="750717762378961310">Dit bestand is schadelijk en is door Chromium geblokkeerd.</translation>
 <translation id="6944967875980567883">Modules die in Chromium zijn geladen</translation>
 <translation id="6899795326977034905">Wachtwoorden worden op de Mac opgeslagen in je sleutelhanger en kunnen worden geopend of gesynchroniseerd door andere Chromium-gebruikers die dit OS X-account delen.</translation>
 <translation id="118298050220780080">Je probeert &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; te bereiken, maar de server heeft een certificaat gepresenteerd dat werd geleverd door een entiteit die niet wordt vertrouwd door het besturingssysteem van je computer. Dit kan betekenen dat de server eigen aanmeldingsgegevens voor beveiliging heeft gemaakt, waar Chromium niet op kan vertrouwen voor identiteitsinformatie, of dat een aanvaller probeert je communicatie te onderscheppen.</translation>
@@ -124,7 +125,6 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="6248213926982192922">Chromium als standaardbrowser instellen</translation>
 <translation id="6309712487085796862">Chromium gebruikt je camera.</translation>
 <translation id="7337881442233988129">Chromium</translation>
-<translation id="3069161343438701711">Chromium Worker</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="6757767188268205357">Vraag me niet meer</translation>
 <translation id="1745962126679160932">Chromium slaat je gegevens veilig op, zodat je deze niet opnieuw hoeft op te geven, maar je moet nog steeds de beveiligingscode van je kaart opgeven voor toekomstige betalingen.</translation>
@@ -135,6 +135,7 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 <translation id="3582788516608077514">Chromium bijwerken...</translation>
 <translation id="7223968959479464213">Taakbeheer - Chromium</translation>
 <translation id="3838208658251026018">Chromium importeert nu de volgende items van <ph name="BROWSER_COMPONENT"/>:</translation>
+<translation id="1779356040007214683">Om Chromium veiliger te maken, hebben we een aantal extensies uitgeschakeld die niet worden vermeld in de <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> en mogelijk zonder je medeweten zijn geïnstalleerd.</translation>
 <translation id="6638567566961868659">Je vindt je bladwijzers in het menu 'Chromium' of in de bladwijzerbalk.</translation>
 <translation id="2673087257647337101">Bijwerken bijna voltooid. Start Chromium opnieuw om de update te voltooien.</translation>
 <translation id="5398878173008909840">Er is een nieuwe versie van Chromium beschikbaar.</translation>
@@ -156,9 +157,9 @@ Sommige functies zijn wellicht niet beschikbaar en wijzigingen in voorkeuren wor
 Sommige functies zijn mogelijk niet beschikbaar. Geef een andere profieldirectory op of gebruik een recentere versie van Chromium.</translation>
 <translation id="9013087743919948559">Toevoegen aan Chromium</translation>
 <translation id="6212496753309875659">Deze computer beschikt al over een recentere versie van Chromium. Als de software niet werkt, moet je Chromium verwijderen en het opnieuw proberen.</translation>
-<translation id="3014684866565908571">Chromium Utility</translation>
 <translation id="1298199220304005244">Hulp bij het gebruik van Chromium OS</translation>
 <translation id="8187289872471304532">Ga naar 'Applicaties &gt; Systeemvoorkeuren &gt; Netwerk &gt; Geavanceerd &gt; Proxy's' en verwijder de vinkjes bij proxyservers die zijn aangevinkt.</translation>
+<translation id="2801146392936645542"><ph name="FILE_NAME"/> is schadelijk en is door Chromium geblokkeerd.</translation>
 <translation id="4488676065623537541">Je factureringsgegevens zijn opgeslagen in Chromium.</translation>
 <translation id="1691304614444223855">Chromium Frame is bijgewerkt. Je moet je browser opnieuw opstarten. Chromium-versie: <ph name="TODO_0001"/>, Chromium Frame-versie: <ph name="TODO_0002"/></translation>
 <translation id="130631256467250065">Je wijzigingen worden doorgevoerd wanneer je het apparaat opnieuw opstart.</translation>
@@ -166,6 +167,7 @@ Sommige functies zijn mogelijk niet beschikbaar. Geef een andere profieldirector
 <translation id="1105130903706696483">Chromium is niet correct afgesloten. Als je de pagina's die geopend waren opnieuw wilt openen, moet je op 'Herstellen' klikken.</translation>
 <translation id="1929939181775079593">Chromium reageert niet. Nu opnieuw starten?</translation>
 <translation id="1414495520565016063">U bent ingelogd bij Chromium.</translation>
+<translation id="1902135785017821799"><ph name="FILE_NAME"/> brengt wijzigingen in instellingen aan die vergelijkbaar zijn met de wijzigingen die door bepaalde malware worden aangebracht en is daarom door Chromium geblokkeerd.</translation>
 <translation id="3155163173539279776">Chromium opnieuw starten</translation>
 <translation id="2966088006374919794">Chromium moet een externe applicatie starten om <ph name="SCHEME"/>-links te kunnen verwerken. De opgevraagde link is <ph name="PROTOLINK"/>.</translation>
 <translation id="6287463253129672858">Kan niet dezelfde Chromium Frame-versie installeren, omdat deze versie nu actief is. Sluit Chromium Frame en probeer het opnieuw.</translation>
@@ -195,10 +197,8 @@ Sommige functies zijn mogelijk niet beschikbaar. Geef een andere profieldirector
 <translation id="1708666629004767631">Er is een nieuwe, veiligere versie van Chromium beschikbaar.</translation>
 <translation id="1539981464052805551">Copyright 2013 De auteurs van Chromium. Alle rechten voorbehouden.</translation>
 <translation id="378917192836375108">Met Chromium kun je klikken op een telefoonnummer op internet om dit via Skype te bellen!</translation>
-<translation id="7331621180831839236"><ph name="FILE_NAME"/> kan je Chromium-instellingen wijzigen.</translation>
 <translation id="8724049448828509830">Er wordt momenteel een download uitgevoerd. Wil je Chromium afsluiten en de download annuleren?</translation>
 <translation id="3360567213983886831">Chromium Binaries</translation>
-<translation id="7503101070699687603">Chromium Plug-In Host</translation>
 <translation id="8985587603644336029">Iemand is eerder op deze computer ingelogd bij Chromium als <ph name="ACCOUNT_EMAIL_LAST"/>. Als dit niet je account is, maak je een nieuwe Chromium-gebruiker om je gegevens gescheiden te houden.
 
 Als je toch inlogt, worden Chromium-gegevens zoals bladwijzers, geschiedenis en andere instellingen samengevoegd met <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>

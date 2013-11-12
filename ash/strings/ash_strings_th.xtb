@@ -130,6 +130,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830">กำลังเปิดใช้งาน <ph name="NAME"/></translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="1923539912171292317">การคลิกอัตโนมัติ</translation>
 <translation id="1398853756734560583">ย่อ</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: กำลังเชื่อมต่อ...</translation>
 <translation id="252373100621549798">หน้าจอที่ไม่รู้จัก</translation>
@@ -222,6 +223,7 @@
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">ขอแสดงความยินดี! บริการข้อมูล &quot;<ph name="NAME"/>&quot; ของคุณได้เปิดใช้งานและพร้อมใช้งานแล้ว</translation>
 <translation id="412065659894267608">อีก <ph name="HOUR"/>ชม. <ph name="MINUTE"/>นาทีจึงจะเต็ม</translation>
+<translation id="7297443947353982503">ชื่อผู้ใช้/รหัสผ่านไม่ถูกต้องหรือการตรวจสอบสิทธิ์ EAP ล้มเหลว</translation>
 <translation id="6359806961507272919">SMS จาก <ph name="PHONE_NUMBER"/></translation>
 <translation id="1244147615850840081">ผู้ให้บริการ</translation>
 </translationbundle>

@@ -16,7 +16,6 @@
 <translation id="1065672644894730302">আপনার অভিরুচিগুলি পড়া যাবে না৷ কিছু বৈশিষ্ট্য অনুপলব্ধ থাকতে পারে ও অভিরুচিগুলিতে করা পরিবর্তনগুলি সংরক্ষিত হবে না৷</translation>
 <translation id="4222661289444749267">Chromium ফ্রেম আপডেট করুন৷</translation>
 <translation id="4423735387467980091">Chromium কাস্টমাইজ ও নিয়ন্ত্রণ করুন</translation>
-<translation id="2843244238218937196">Chromium পেশকারী</translation>
 <translation id="1881322772814446296">আপনি একটি পরিচালিত অ্যাকাউন্টের মাধ্যমে সাইন ইন করছেন এবং এর প্রশাসককে আপনার Chromium প্রোফাইলের উপরে নিয়ন্ত্রণ দিচ্ছেন৷ আপনার Chromium ডেটা, যেমন অ্যাপ্লিকেশান, বুকমার্ক, ইতিহাস, পাসওয়ার্ড এবং অন্যান্য সেটিংস <ph name="USER_NAME"/> এতে স্থায়ীভাবে সম্পৃক্ত হবে৷ আপনি Google অ্যাকাউন্টগুলির ড্যাশবোর্ডের মাধ্যমে এই ডেটাগুলি মুছতে সক্ষম হবেন, কিন্তু অন্য অ্যাকাউন্টের সাথে এই ডেটা সংশ্লিষ্ট করতে পারবেন না৷ বিকল্প হিসাবে আপনি আপনার বিদ্যমান Chromium তথ্য আলাদা রাখার জন্য একটি নতুন প্রোফাইল তৈরি করতে পারেন৷ <ph name="LEARN_MORE"/></translation>
 <translation id="7128196614940529818">এই কম্পিউটারে সকল ব্যবহারকারীর জন্য Chromium ফ্রেম ইতিমধ্যে ইনস্টল এবং উপলব্ধ হয়েছে৷ আপনি যদি ব্যবহারকারীর স্তরে Chromium ফ্রেম ইনস্টল করতে চান, প্রথমেই প্রশাসক দ্বারা ইনস্টল করা একটি সিস্টেম স্তরীয় সংস্করণ আপনাকে অবশ্যই আনইনস্টল করতে হবে৷</translation>
 <translation id="731644333568559921">&amp;Chromium OS আপডেট করুন</translation>
@@ -29,6 +28,7 @@
 <translation id="6953661834318318668">Chromium সরঞ্জামদণ্ড</translation>
 <translation id="2245147136185581459">Chromium ক্যাপটিভ পোর্টাল ডিটেকটর</translation>
 <translation id="4285930937574705105">অনির্দিষ্ট ত্রুটির কারণে ইনস্টলেশন ব্যর্থ৷ বর্তমানে Chromium চালু থাকলেও, দয়া করে এটি বন্ধ করুন এবং পুনরায় চেষ্টা করুন৷</translation>
+<translation id="1396446129537741364">Chromium পাসওয়ার্ডগুলি দেখানোর চেষ্টা করছে৷</translation>
 <translation id="3555616473548901994">আনইনস্টলেশন সম্পূর্ণ৷</translation>
 <translation id="2886012850691518054">ঐচ্ছিক: স্বয়ংক্রিয়ভাবে Google-এ ব্যবহার পরিসংখ্যান এবং ক্র্যাশ প্রতিবেদন পাঠিয়ে Chromium-কে আরো ভালো করতে সহায়তা করুন৷</translation>
 <translation id="580822234363523061">Chromium মেনুতে
@@ -50,6 +50,7 @@
 <translation id="4831257561365056138">Chromium অ্যাপ্লিকেশন লঞ্চার আনইনস্টল করুন</translation>
 <translation id="4222580632002216401">আপনি এখন Chromium এ সাইন ইন করেছেন! আপনার প্রশাসক দ্বারা সিঙ্ক অক্ষম করা আছে৷</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>সতর্কতা:<ph name="END_BOLD"/> আপনার ব্রাউজিং ইতিহাস রেকর্ডিং করা থেকে এক্সটেনশনগুলিতে বাধা দিতে পারেনা৷ ছদ্মবেশী মোডে এই এক্সটেনশনটি অক্ষম করতে, এই বিকল্পটি নির্বাচন মুক্ত করুন৷</translation>
+<translation id="4516868174453854611">এখন আপনি সাইন ইন করেছেন, তাই আপনি আপনার ট্যাব, বুকমার্ক এবং আপনার ল্যাপটপ, ফোন এবং ট্যাবলেট জুড়ে অন্য Chromium উপাদান পেতে পারেন৷ এছাড়াও আপনি Google পরিষেবাগুলিতে আরো প্রাসঙ্গিক প্রস্তাবনা ও বৈশিষ্ট্যগুলি গ্রহণ করবেন৷</translation>
 <translation id="985602178874221306">Chromium রচয়িতা</translation>
 <translation id="8628626585870903697">Chromium PDF দর্শক যা ফাংশানে প্রিন্ট প্রিভিউ জন্য আবশ্যক, তা অন্তর্ভূক্ত করেনি৷</translation>
 <translation id="7138853919861947730">আপনার ব্রাউজিং অভিজ্ঞতা উন্নত করতে Chromium ওয়েব পরিষেবাগুলি ব্যবহার করতে পারে৷</translation>
@@ -80,7 +81,7 @@
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3509308970982693815">দয়া করে সব Chromium উইন্ডো বন্ধ করুন ও আবার চেষ্টা করুন৷</translation>
 <translation id="4077262827416206768">দয়া করে সব Chromium উইন্ডো বন্ধ করুন এবং এই পরিবর্তন কার্যকরী করতে Chromium পুনরায় চালু করুন৷</translation>
-<translation id="5472687196979159893">Chromium এ আপনার অনুসন্ধানগুলি যেভাবে কাজ করে <ph name="FILE_NAME"/> তা পরিবর্তন করতে পারে৷</translation>
+<translation id="750717762378961310">এই ফাইলটি ক্ষতিকারক, এবং Chromium এটিকে অবরুদ্ধ করেছে৷</translation>
 <translation id="6944967875980567883">Chromium-এ মডিউলগুলি লোড হয়েছে</translation>
 <translation id="6899795326977034905">Mac  এ, পাসওয়ার্ডগুলি আপনার Keychain এ সঞ্চিত হয় এবং অন্য  Chromium ব্যবহারকারীরা এটি অ্যাকসেস বা সিঙ্ক করতে পারবে এই  OS X অ্যাকাউন্টটি ভাগ করে।</translation>
 <translation id="118298050220780080">আপনি &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;-এ পৌঁছানোর প্রয়াস করেছেন, কিন্তু সার্ভারটি একটি এমন শংসাপত্র উপস্থাপন করেছে যা একটি এমন সত্তা দ্বারা ইস্য করা হয়েছে যাকে আপনার কম্পিউটারের অপারেটিং সিস্টেম বিশ্বাস করে না৷ এর অর্থ হতে পারে যে সার্ভার নিজের নিরাপত্তা প্রমাণপ্রত্রাদির নিশ্চয়তা দিতে পারে, যা Chromium পরিচয় তথ্যের জন্য বিশ্বাস করে না অথবা হতে পারে একজন আক্রমণকারী আপনার যোগাযোগকে বাধা দেওয়ার চেষ্টা করছে৷</translation>
@@ -121,7 +122,6 @@
 <translation id="6248213926982192922">Chromium-কে ডিফল্ট ব্রাউজার করুন</translation>
 <translation id="6309712487085796862">Chromium আপনার ক্যামেরা ব্যবহার করছে৷</translation>
 <translation id="7337881442233988129">Chromium</translation>
-<translation id="3069161343438701711">Chromium কর্মী</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="6757767188268205357">আমাকে বাগ করবেন না</translation>
 <translation id="1745962126679160932">Chromium আপনার তথ্য নিরাপদে সঞ্চয় করে নেবে তাই আপনার আর টাইপ করা প্রয়োজন হবে না, কিন্তু ভবিষ্যতের অর্থপ্রদানের জন্য আপনাকে এখনো আপনার কার্ডের নিরাপত্তা কোড যাচাইকরণের প্রয়োজন হবে৷</translation>
@@ -132,6 +132,7 @@
 <translation id="3582788516608077514">Chromium আপডেট হচ্ছে...</translation>
 <translation id="7223968959479464213">টাস্ক ম্যানেজার - Chromium</translation>
 <translation id="3838208658251026018">Chromium বর্তমানে <ph name="BROWSER_COMPONENT"/> থেকে নিম্নোক্ত আইটেমগুলি আমদানি করছে:</translation>
+<translation id="1779356040007214683">Chromium কে আরো নিরাপদ করতে, আমরা কিছু এক্সটেনশান অক্ষম করেছি যা <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> এ তালিকাবদ্ধ করা হয়নি এবং হয়ত আপনাকে না জানিয়ে যোগ করা হয়েছে৷</translation>
 <translation id="6638567566961868659">Chromium মেনুতে বা বুকমার্ক দণ্ডে আপনার বুকমার্ক খুঁজুন৷</translation>
 <translation id="2673087257647337101">প্রায় আপ-টু-ডেট! আপডেট শেষ করতে Chromium পুনরায় চালু করুন৷</translation>
 <translation id="5398878173008909840">Chromium-এর একটি নতুন সংস্করণ উপলব্ধ আছে৷</translation>
@@ -151,10 +152,10 @@
 <translation id="6717134281241384636">আপনার প্রোফাইলটি ব্যবহার করতে পারা যাবে না কারণ এটি একটি Chromium-এর নতুন সংস্করণ৷ কিছু বিষয় অনুপলব্ধ হতে পারে৷ দয়া করে একটি ভিন্ন প্রোফাইল ডিরেক্টরি উল্লেখ করুন অথবা Chromium-এর একটি নতুন সংস্করণ ব্যবহার করুন৷</translation>
 <translation id="9013087743919948559">Chromium-এ জুড়ুন</translation>
 <translation id="6212496753309875659">এই কম্পিউটারে ইতিমধ্যে Chromium-এর আরো একটি সাম্প্রতিক সংস্করণ রয়েছে৷ যদি সফ্টওয়্যার কাজ না করে, দয়া করে Chromium আনইনস্টল করুন এবং পুনরায় চেষ্টা করুন৷</translation>
-<translation id="3014684866565908571">Chromium ইউটিলিটি</translation>
 <translation id="1298199220304005244">Chromium OS ব্যবহারে সাহায্য পেতে</translation>
 <translation id="8187289872471304532">Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies এ যান
           এবং নির্বাচিত থাকা যে কোনো প্রক্সি অনির্বাচন করুন৷</translation>
+<translation id="2801146392936645542"><ph name="FILE_NAME"/> ক্ষতিকারক, এবং Chromium এটিকে অবরুদ্ধ করেছে৷</translation>
 <translation id="4488676065623537541">আপনার বিলের বিশদ বিবরণ Chromium এ সংরক্ষিত হয়েছে৷</translation>
 <translation id="1691304614444223855">Chromium ফ্রেম আপডেট করা হয়েছে৷ দয়া করে আপনার ব্রাউজার পুনরায় চালু করুন৷ Chromium সংস্করণ: <ph name="TODO_0001"/>, Chromium ফ্রেম সংস্করণ: <ph name="TODO_0002"/></translation>
 <translation id="130631256467250065">পরের বার আপনি আপনার ডিভাইস পুনরারম্ভ করলে আপনার পরিবর্তনগুলি প্রভাবী হবে৷</translation>
@@ -162,6 +163,7 @@
 <translation id="1105130903706696483">Chromium সঠিকভাবে বন্ধ হয় নি৷আগের খোলা পাতাটি পুনরায় খুলতে,পুনরুদ্ধার ক্লিক করুন৷</translation>
 <translation id="1929939181775079593">Chromium সাড়া দিচ্ছে না৷ পুনরায় শুরু করবেন?</translation>
 <translation id="1414495520565016063">আপনি Chromium এ সাইন ইন করেছেন!</translation>
+<translation id="1902135785017821799"><ph name="FILE_NAME"/> কিছু ম্যালওয়্যারের মতো সেটিংস পরিবর্তন করে, তাই Chromium এটিকে অবরুদ্ধ করেছে৷</translation>
 <translation id="3155163173539279776">Chromium পুনরায় লঞ্চ করুন</translation>
 <translation id="2966088006374919794">Chromiumএকটি বহিঃস্থ অ্যপ্লিকেশন আরম্ভ করার জন্য <ph name="SCHEME"/> সংযোগগুলি নিয়ন্ত্রণ করে৷ অনুরোধকৃত লিংকটি হল <ph name="PROTOLINK"/>৷</translation>
 <translation id="6287463253129672858">একই Chromium ফ্রেম সংস্করণ যা বর্তমানে চলমান, ইনস্টল করতে পারবেন না৷ দয়া করে Chromium ফ্রেম বন্ধ করুন এবং পুনরায় চেষ্টা করুন৷</translation>
@@ -192,10 +194,8 @@
 <translation id="1708666629004767631">Chromium-এর একটি নতুন, নিরাপদ সংস্করণ উপলব্ধ আছে৷</translation>
 <translation id="1539981464052805551">কপিরাইট ২০১৩ Chromium রচয়িতা৷ সর্বস্বত্ত্ব সংরক্ষিত৷</translation>
 <translation id="378917192836375108">Chromium আপনাকে ওয়েবে কোনো ফোন নম্বরে ক্লিক করতে এবং Skype-এর মাধ্যমে সেটিতে কল করতে দেয়!</translation>
-<translation id="7331621180831839236"><ph name="FILE_NAME"/> আপনার Chromium সেটিংস পরিবর্তন করতে পারে৷</translation>
 <translation id="8724049448828509830">একটি ডাউনলোড বর্তমানে চলছে৷ আপনি কি Chromium থেকে প্রস্থান আর ডাউনলোড বাতিল করতে চান?</translation>
 <translation id="3360567213983886831">Chromium Binaries</translation>
-<translation id="7503101070699687603">Chromium প্লাগ-ইন হোস্ট</translation>
 <translation id="8985587603644336029">আগে কোনো একজন এই কম্পিউটারে <ph name="ACCOUNT_EMAIL_LAST"/> হিসাবে Chromium এ সাইন ইন করেছেন৷ যদি সেটি আপনার অ্যাকাউন্ট না হয়, তাহলে আপনার তথ্য আলাদা করে রাখতে একটি নতুন Chromium ব্যবহারকারী তৈরি করুন৷
 
 যেকোনো উপায়ে সাইন ইন করা হলে তা বুকমার্কগুলি, ইতিহাস, এবং অন্যান্য সেটিংসের মত Chromium তথ্যকে <ph name="ACCOUNT_EMAIL_NEW"/> এ মার্জ করবে৷</translation>

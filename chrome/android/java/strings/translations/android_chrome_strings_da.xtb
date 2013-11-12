@@ -1,26 +1,43 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
+<translation id="6831043979455480757">Oversæt</translation>
+<translation id="7644305409888602715">Oversætter siden til <ph name="SOURCE_LANGUAGE"/>...</translation>
 <translation id="1491151370853475546">Genindlæs denne side</translation>
 <translation id="7658239707568436148">Annuller</translation>
 <translation id="6458785801851713928">Synkronisering er ikke tilgængelig for dit domæne.</translation>
 <translation id="2731700343119398978">Vent et øjeblik...</translation>
+<translation id="7378627244592794276">Nej</translation>
 <translation id="3358663646935160692">Denne konto administreres af <ph name="DOMAIN_NAME"/>.
 
 Du logger ind med en administreret konto, og du giver administratoren kontrol over din Chrome-profil. Dine Chrome-data vil blive knyttet permanent til denne konto. Hvis du logger ud af denne konto, slettes de lokale Chrome-data.</translation>
 <translation id="1623104350909869708">Undgå, at denne side opretter yderligere dialogbokse</translation>
+<translation id="624558823898732418">Sprog, der skal oversættes til: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="3896036286668839683">Certifikatvisning</translation>
 <translation id="8583805026567836021">Kontodataene ryddes</translation>
+<translation id="8730621377337864115">Udført</translation>
 <translation id="4170011742729630528">Tjenesten er ikke tilgængelig. Prøv igen senere.</translation>
 <translation id="8627706565932943526">Synkroniseringsfejl</translation>
+<translation id="656628257199996201">Oversæt altid <ph name="SOURCE_LANGUAGE"/></translation>
+<translation id="9137013805542155359">Vis oprindelig</translation>
+<translation id="5684874026226664614">Ups! Denne side kunne ikke oversættes.</translation>
 <translation id="3136378934686431938">Opdater dine loginoplysninger.</translation>
+<translation id="6042308850641462728">Mere</translation>
+<translation id="8034522405403831421">Denne side er på <ph name="SOURCE_LANGUAGE"/>. Vil du oversætte den til <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="8725066075913043281">Forsøg igen</translation>
 <translation id="4510973599275542560">Genindlæs ikke siden</translation>
 <translation id="9154176715500758432">Bliv på denne side</translation>
 <translation id="7063006564040364415">Der kunne ikke oprettes forbindelse til synkroniseringsserveren.</translation>
+<translation id="4271185234001491831">Oversæt aldrig <ph name="LANGUAGE"/></translation>
+<translation id="1285320974508926690">Oversæt aldrig dette website</translation>
+<translation id="5164482624172255778">Skal Google Chrome tilbyde at oversætte sider på <ph name="LANGUAGE"/> fra dette website næste gang?</translation>
+<translation id="8528538445849828817">Siden er på <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="6512448926095770873">Forlad denne side</translation>
 <translation id="7947953824732555851">Acceptér og log ind</translation>
 <translation id="6040143037577758943">Luk</translation>
+<translation id="969096075394517431">Skift sprog</translation>
 <translation id="5032574515228824816">Meddelelse</translation>
+<translation id="1742134235943978220">Oversat til <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="7495038789730067783">Bekræft login</translation>
 </translationbundle>

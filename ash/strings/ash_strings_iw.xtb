@@ -130,6 +130,7 @@
 <translation id="1957803754585243749">‎0°‎</translation>
 <translation id="2354174487190027830">מפעיל את <ph name="NAME"/></translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="1923539912171292317">לחיצות אוטומטיות</translation>
 <translation id="1398853756734560583">הגדל</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: מתחבר...</translation>
 <translation id="252373100621549798">תצוגה לא ידועה</translation>
@@ -181,7 +182,7 @@
 <translation id="8300849813060516376">‏OTASP נכשל</translation>
 <translation id="2792498699870441125">‏Alt + חיפוש</translation>
 <translation id="8660803626959853127">מסנכרן <ph name="COUNT"/> קבצים</translation>
-<translation id="5958529069007801266">משתמש מבוקר</translation>
+<translation id="5958529069007801266">משתמש בפיקוח</translation>
 <translation id="3709443003275901162">‎9+‎</translation>
 <translation id="639644700271529076">‏CAPS LOCK כבוי</translation>
 <translation id="6248847161401822652">‏לחץ פעמיים על Control Shift Q כדי לצאת.</translation>
@@ -222,6 +223,7 @@
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>‏: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">ברכותינו! שירות הנתונים שלך, '<ph name="NAME"/>', הופעל ומוכן לשימוש.</translation>
 <translation id="412065659894267608"><ph name="HOUR"/> שעות ו-<ph name="MINUTE"/> דקות עד לטעינה מלאה</translation>
+<translation id="7297443947353982503">‏שם משתמש/סיסמה שגויים, או שאימות EAP נכשל</translation>
 <translation id="6359806961507272919">‏SMS מאת <ph name="PHONE_NUMBER"/> </translation>
 <translation id="1244147615850840081">ספק</translation>
 </translationbundle>

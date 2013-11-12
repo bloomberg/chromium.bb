@@ -1,26 +1,43 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
+<translation id="6831043979455480757">翻译</translation>
+<translation id="7644305409888602715">正在将网页内容翻译成<ph name="SOURCE_LANGUAGE"/>…</translation>
 <translation id="1491151370853475546">重新加载此页</translation>
 <translation id="7658239707568436148">取消</translation>
 <translation id="6458785801851713928">您的网域不支持同步。</translation>
 <translation id="2731700343119398978">请稍候...</translation>
+<translation id="7378627244592794276">否</translation>
 <translation id="3358663646935160692">此帐户由 <ph name="DOMAIN_NAME"/> 管理。
 
 您目前登录的帐户是一个托管帐户，该帐户的管理员将能够控制您的 Chrome 个人资料。您的 Chrome 数据将永远与此帐户相关联。断开与此帐户的关联将删除本地 Chrome 数据。</translation>
 <translation id="1623104350909869708">阻止此页创建其他对话框</translation>
+<translation id="624558823898732418">翻译语言：<ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="3896036286668839683">证书查看器</translation>
 <translation id="8583805026567836021">清除帐户数据</translation>
+<translation id="8730621377337864115">完成</translation>
 <translation id="4170011742729630528">此服务目前无法使用，请稍后再试。</translation>
 <translation id="8627706565932943526">同步错误</translation>
+<translation id="656628257199996201">一律翻译<ph name="SOURCE_LANGUAGE"/></translation>
+<translation id="9137013805542155359">显示原始网页</translation>
+<translation id="5684874026226664614">糟糕，此网页内容无法翻译。</translation>
 <translation id="3136378934686431938">请更新您的登录详情。</translation>
+<translation id="6042308850641462728">更多</translation>
+<translation id="8034522405403831421">此网页的源语言为<ph name="SOURCE_LANGUAGE"/>，要将其翻译成<ph name="TARGET_LANGUAGE"/>吗？</translation>
+<translation id="8725066075913043281">重试</translation>
 <translation id="4510973599275542560">不重新加载</translation>
 <translation id="9154176715500758432">留在此页</translation>
 <translation id="7063006564040364415">无法连接到同步服务器。</translation>
+<translation id="4271185234001491831">一律不翻译<ph name="LANGUAGE"/></translation>
+<translation id="1285320974508926690">一律不翻译此网站</translation>
+<translation id="5164482624172255778">下次访问这个网站时，您希望 Google Chrome 翻译此网站的<ph name="LANGUAGE"/>网页吗？</translation>
+<translation id="8528538445849828817">网页语言：<ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="6512448926095770873">离开此页</translation>
 <translation id="7947953824732555851">接受并登录</translation>
 <translation id="6040143037577758943">关闭</translation>
+<translation id="969096075394517431">更改语言</translation>
 <translation id="5032574515228824816">提示</translation>
+<translation id="1742134235943978220">已翻译成<ph name="TARGET_LANGUAGE"/>。</translation>
 <translation id="6965382102122355670">确定</translation>
 <translation id="7495038789730067783">确认登录</translation>
 </translationbundle>

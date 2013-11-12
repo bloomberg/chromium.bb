@@ -16,7 +16,6 @@
 <translation id="1065672644894730302">ユーザー設定ファイルを読み込むことができません。一部の機能が利用できない可能性があります。また、設定への変更は保存されません。</translation>
 <translation id="4222661289444749267">Chromium Frame が更新されました。</translation>
 <translation id="4423735387467980091">Chromium の設定</translation>
-<translation id="2843244238218937196">Chromium Renderer</translation>
 <translation id="1881322772814446296">現在、管理対象アカウントでログインしており、あなたの Chromium プロフィールを管理者が制御できる状態になっています。あなたの Chromium データ（アプリ、ブックマーク、履歴、パスワードなどの設定）は永続的に <ph name="USER_NAME"/> に関連付けられます。このデータは Google アカウントのダッシュボードを介して削除できますが、このデータを別のアカウントに関連付けることはできなくなります。新しいプロフィールを作成して、既存の Chromium データを別に保管することができます。<ph name="LEARN_MORE"/></translation>
 <translation id="7128196614940529818">このパソコンには既に Chromium Frame がインストールされており、パソコンのすべてのユーザーが使用できます。ユーザー レベルで Chromium Frame をインストールする場合は、管理者がインストールしたシステム レベルの Chromium Frame を最初にアンインストールする必要があります。</translation>
 <translation id="731644333568559921">Chromium OS を更新(&amp;C)</translation>
@@ -29,6 +28,7 @@
 <translation id="6953661834318318668">Chromium ツールバー</translation>
 <translation id="2245147136185581459">Chromium キャプティブ ポータル検出機能</translation>
 <translation id="4285930937574705105">原因不明のエラーによりインストールが失敗しました。実行中の Chromium を終了してからもう一度お試しください。</translation>
+<translation id="1396446129537741364">Chromium はパスワードを表示しようとしています。</translation>
 <translation id="3555616473548901994">アンインストールが完了しました。</translation>
 <translation id="2886012850691518054">オプション: 使用状況データと障害レポートを Google に自動送信して Chromium の機能向上に役立てる。</translation>
 <translation id="580822234363523061">このオプションを無効にするには:
@@ -50,6 +50,7 @@
 <translation id="4831257561365056138">Chromium アプリ ランチャーをアンインストール</translation>
 <translation id="4222580632002216401">Chromium にログインしています。同期は管理者によって無効にされています。</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>警告:<ph name="END_BOLD"/> 拡張機能による閲覧履歴の記録を Chromium で停止することはできません。シークレット モードでこの拡張機能を無効にするには、このオプションの選択を解除してください。</translation>
+<translation id="4516868174453854611">ログインしました。ノートパソコン、スマートフォン、タブレットで同じタブ、ブックマーク、その他の Chromium 設定をご利用いただけます。また、Google のサービスをご利用になる際に、より関連性の高いヒントや機能が表示されるようになります。</translation>
 <translation id="985602178874221306">Chromium 開発者</translation>
 <translation id="8628626585870903697">印刷プレビューの表示に必要な PDF ビューアが Chromium にインストールされていません。</translation>
 <translation id="7138853919861947730">Chromium は、より快適なブラウジングを提供する目的でウェブサービスを使用することがあります。</translation>
@@ -81,7 +82,7 @@
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3509308970982693815">すべての Chromium ウィンドウを閉じてからもう一度お試しください。</translation>
 <translation id="4077262827416206768">変更内容を反映するには、すべての Chromium ウィンドウを閉じてから Chromium を再起動してください。</translation>
-<translation id="5472687196979159893"><ph name="FILE_NAME"/> によって Chromium での検索時の動作が変更される場合があります。</translation>
+<translation id="750717762378961310">不正なファイルです。Chromium はこのファイルをブロックしました。</translation>
 <translation id="6944967875980567883">Chromium に読み込まれているモジュール</translation>
 <translation id="6899795326977034905">Mac では、パスワードはキーチェーンに保存され、この Mac OS X アカウントを共有する別の Chromium ユーザーがアクセスしたり同期したりできます。</translation>
 <translation id="118298050220780080">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; にアクセスしようとしましたが、サーバーから提示された証明書の発行元は、お使いのパソコンのオペレーティング システムによって信頼されていない発行元です。サーバーが独自のセキュリティ認証情報を生成し、それが Chromium では認証情報として信頼できないものであるか、悪意のあるユーザーが通信を傍受しようとしている可能性があります。</translation>
@@ -122,7 +123,6 @@
 <translation id="6248213926982192922">Chromium を既定のブラウザにする</translation>
 <translation id="6309712487085796862">Chromium がカメラを使用しています。</translation>
 <translation id="7337881442233988129">Chromium</translation>
-<translation id="3069161343438701711">Chromium Worker</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="6757767188268205357">今後は表示しない</translation>
 <translation id="1745962126679160932">Chromium で情報が安全に保存されるので、再度入力する必要はありません。ただし、今後もお支払いの際にカードのセキュリティ コードを入力する必要があります。</translation>
@@ -133,6 +133,7 @@
 <translation id="3582788516608077514">Chromium を更新しています...</translation>
 <translation id="7223968959479464213">タスク マネージャ - Chromium</translation>
 <translation id="3838208658251026018"><ph name="BROWSER_COMPONENT"/> から Chromium に次のアイテムをインポートしています:</translation>
+<translation id="1779356040007214683">Chromium をより安全にご利用いただくため、<ph name="IDS_EXTENSION_WEB_STORE_TITLE"/>で提供していない一部の拡張機能を無効にしました。これらは知らないうちに追加された可能性があります。</translation>
 <translation id="6638567566961868659">ブックマークは Chromium メニューやブックマーク バーに表示されます。</translation>
 <translation id="2673087257647337101">Chromium を再起動して更新を完了してください</translation>
 <translation id="5398878173008909840">Chromium の最新バージョンをぜひお試しください。</translation>
@@ -154,11 +155,11 @@
 一部の機能が利用できない可能性があります。別の場所のプロフィールを指定するか、新しいバージョンの Chromium をご使用ください。</translation>
 <translation id="9013087743919948559">Chromium に追加</translation>
 <translation id="6212496753309875659">新しいバージョンの Chromium が既にインストールされています。ソフトウェアが動作しない場合は、Chromium をアンインストールしてからもう一度お試しください。</translation>
-<translation id="3014684866565908571">Chromium Utility</translation>
 <translation id="1298199220304005244">Chromium OS の使用に関するアドバイス</translation>
 <translation id="8187289872471304532">このオプションを無効にするには:
           [アプリケーション] &gt; [システム環境設定] &gt; [ネットワーク] &gt; [詳細] &gt; [プロキシ] の順に移動して、
           選択されているプロキシの選択を解除します。</translation>
+<translation id="2801146392936645542"><ph name="FILE_NAME"/> は不正なファイルです。Chromium はこのファイルをブロックしました。</translation>
 <translation id="4488676065623537541">お支払い情報を Chromium に保存しました。</translation>
 <translation id="1691304614444223855">Chromium Frame が更新されました。ブラウザを再起動してください。Chromium バージョン: <ph name="TODO_0001"/>、Chromium Frame バージョン: <ph name="TODO_0002"/></translation>
 <translation id="130631256467250065">変更内容は、次回の端末の起動時に反映されます。</translation>
@@ -166,6 +167,7 @@
 <translation id="1105130903706696483">Chromium は正しく終了しませんでした。前回アクセスしたページをもう一度開くには、[復元] をクリックします。</translation>
 <translation id="1929939181775079593">Chromium が応答しません。今すぐ再起動しますか？</translation>
 <translation id="1414495520565016063">Chromium にログインしました</translation>
+<translation id="1902135785017821799"><ph name="FILE_NAME"/> で不正なソフトウェアに類似した設定の変更が加えられているため、Chromium はこのファイルをブロックしました。</translation>
 <translation id="3155163173539279776">Chromium を再起動します</translation>
 <translation id="2966088006374919794">Chromium では、<ph name="SCHEME"/> リンクを処理する際に外部アプリケーションの起動が必要になります。リクエストされたリンクは <ph name="PROTOLINK"/> です。</translation>
 <translation id="6287463253129672858">実行中の Chromium Frame と同じバージョンをインストールすることはできません。Chromium Frame を閉じてからもう一度お試しください。</translation>
@@ -196,10 +198,8 @@
 <translation id="1708666629004767631">Chromium がさらに安全になりました。最新バージョンをぜひお試しください。</translation>
 <translation id="1539981464052805551">Copyright 2013 The Chromium Authors. All rights reserved.</translation>
 <translation id="378917192836375108">Chromium では、ウェブサイト上の電話番号をクリックするだけで Skype で通話を発信できます。</translation>
-<translation id="7331621180831839236"><ph name="FILE_NAME"/> によって Chromium の設定が変更される場合があります。</translation>
 <translation id="8724049448828509830">現在ダウンロードを実行中です。ダウンロードがキャンセルされますが、Chromium を終了してもよろしいですか？</translation>
 <translation id="3360567213983886831">Chromium Binaries</translation>
-<translation id="7503101070699687603">Chromium Plug-In Host</translation>
 <translation id="8985587603644336029">別のユーザーが前回このパソコンから <ph name="ACCOUNT_EMAIL_LAST"/> として Chromium にログインしました。このメール アドレスがご自分のアカウントでない場合は、新しい Chromium ユーザーを作成して情報を個別に保持してください。
 
 このままログインすると、ブックマーク、履歴、その他の設定などの Chromium データが <ph name="ACCOUNT_EMAIL_NEW"/> と統合されます。</translation>

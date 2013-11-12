@@ -1,26 +1,43 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="cs">
+<translation id="6831043979455480757">Přeložit</translation>
+<translation id="7644305409888602715">Překlad stránky do jazyka: <ph name="SOURCE_LANGUAGE"/>...</translation>
 <translation id="1491151370853475546">Načíst tuto stránku znovu</translation>
 <translation id="7658239707568436148">Zrušit</translation>
 <translation id="6458785801851713928">Synchronizace není pro vaši doménu k dispozici.</translation>
 <translation id="2731700343119398978">Počkejte prosím...</translation>
+<translation id="7378627244592794276">Ne</translation>
 <translation id="3358663646935160692">Tento účet spravuje <ph name="DOMAIN_NAME"/>.
 
 Přihlašujete se pomocí spravovaného účtu a poskytujete jeho správci kontrolu nad vaším profilem Chrome. Údaje Chrome budou trvale přidruženy k tomuto účtu. Odpojením od tohoto účtu budou místní údaje Chrome trvale smazány.</translation>
 <translation id="1623104350909869708">Bránit této stránce ve vytváření dalších dialogových oken</translation>
+<translation id="624558823898732418">Překlad do jazyka: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="3896036286668839683">Prohlížeč certifikátů</translation>
 <translation id="8583805026567836021">Mazání dat účtu</translation>
+<translation id="8730621377337864115">Hotovo</translation>
 <translation id="4170011742729630528">Služba není k dispozici, zkuste to později.</translation>
 <translation id="8627706565932943526">Chyba synchronizace</translation>
+<translation id="656628257199996201">Vždy překládat jazyk <ph name="SOURCE_LANGUAGE"/></translation>
+<translation id="9137013805542155359">Zobrazit originál</translation>
+<translation id="5684874026226664614">Jejda. Tuto stránku se nepodařilo přeložit.</translation>
 <translation id="3136378934686431938">Aktualizujte prosím své přihlašovací údaje.</translation>
+<translation id="6042308850641462728">Více</translation>
+<translation id="8034522405403831421">Stránka je v jazyce <ph name="SOURCE_LANGUAGE"/>. Chcete ji přeložit do jazyka <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="8725066075913043281">Zkusit znovu</translation>
 <translation id="4510973599275542560">Nenačítat znovu</translation>
 <translation id="9154176715500758432">Zůstat na této stránce</translation>
 <translation id="7063006564040364415">K synchronizačnímu serveru se nelze připojit.</translation>
+<translation id="4271185234001491831">Jazyk <ph name="LANGUAGE"/> nikdy nepřekládat</translation>
+<translation id="1285320974508926690">Tento web nikdy nepřekládat</translation>
+<translation id="5164482624172255778">Chcete, aby Google Chrome při příští návštěvě nabízel překlad stránek v jazyce <ph name="LANGUAGE"/> z tohoto webu?</translation>
+<translation id="8528538445849828817">Jazyk stránek: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="6512448926095770873">Opustit tuto stránku</translation>
 <translation id="7947953824732555851">Přijmout a přihlásit</translation>
 <translation id="6040143037577758943">Zavřít</translation>
+<translation id="969096075394517431">Změnit jazyky</translation>
 <translation id="5032574515228824816">Výzva</translation>
+<translation id="1742134235943978220">Přeloženo do jazyka <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="7495038789730067783">Potvrdit přihlášení</translation>
 </translationbundle>

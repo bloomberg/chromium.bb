@@ -1,26 +1,43 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="sr">
+<translation id="6831043979455480757">Преведи</translation>
+<translation id="7644305409888602715">Превођење странице на <ph name="SOURCE_LANGUAGE"/>...</translation>
 <translation id="1491151370853475546">Поново учитај ову страницу</translation>
 <translation id="7658239707568436148">Откажи</translation>
 <translation id="6458785801851713928">Синхронизација није доступна за домен.</translation>
 <translation id="2731700343119398978">Сачекајте…</translation>
+<translation id="7378627244592794276">Не</translation>
 <translation id="3358663646935160692">Овим налогом управља <ph name="DOMAIN_NAME"/>.
 
 Пријављујете се помоћу управљаног налога и дајете администратору контролу над Chrome профилом. Chrome подаци ће постати трајно повезани са овим налогом. Ако прекинете везу са овим налогом, избрисаћете локалне Chrome податке.</translation>
 <translation id="1623104350909869708">Спречи ову страницу да прави додатне дијалоге</translation>
+<translation id="624558823898732418">Језик са ког се преводи: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="3896036286668839683">Приказивач сертификата</translation>
 <translation id="8583805026567836021">Брисање података о налогу</translation>
+<translation id="8730621377337864115">Готово</translation>
 <translation id="4170011742729630528">Услуга није доступна. Покушајте поново касније.</translation>
 <translation id="8627706565932943526">Грешка при синхронизацији</translation>
+<translation id="656628257199996201">Увек преводи <ph name="SOURCE_LANGUAGE"/></translation>
+<translation id="9137013805542155359">Прикажи оригинал</translation>
+<translation id="5684874026226664614">Упс, превођење ове странице није успело.</translation>
 <translation id="3136378934686431938">Ажурирајте податке за пријављивање.</translation>
+<translation id="6042308850641462728">Више</translation>
+<translation id="8034522405403831421">Језик ове странице је <ph name="SOURCE_LANGUAGE"/>. Желите ли да је преведете на <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="8725066075913043281">Покушајте поново</translation>
 <translation id="4510973599275542560">Не учитавај поново</translation>
 <translation id="9154176715500758432">Остани на овој страници</translation>
 <translation id="7063006564040364415">Није могуће повезивање са сервером за синхронизацију.</translation>
+<translation id="4271185234001491831">Никада не преводи <ph name="LANGUAGE"/></translation>
+<translation id="1285320974508926690">Никад не преводи овај сајт</translation>
+<translation id="5164482624172255778">Желите ли да Google Chrome следећи пут понуди да преведе странице са овог сајта чији је језик <ph name="LANGUAGE"/>?</translation>
+<translation id="8528538445849828817">Језик странице: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="6512448926095770873">Напусти ову страницу</translation>
 <translation id="7947953824732555851">Прихвати и пријави ме</translation>
 <translation id="6040143037577758943">Затвори</translation>
+<translation id="969096075394517431">Промени језике</translation>
 <translation id="5032574515228824816">Упит</translation>
+<translation id="1742134235943978220">Преведено је на <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">Потврди</translation>
 <translation id="7495038789730067783">Потврдите пријављивање</translation>
 </translationbundle>

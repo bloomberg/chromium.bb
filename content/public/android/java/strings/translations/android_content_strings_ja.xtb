@@ -3,8 +3,11 @@
 <translationbundle lang="ja">
 <translation id="376869769528291915">:</translation>
 <translation id="6015796118275082299">年</translation>
+<translation id="2094750046714988961">外部ストレージの準備ができていないためプロファイラを開始できません</translation>
 <translation id="1256337885411059545">動画を再生できません</translation>
+<translation id="2520230379124234395">プロファイラを開始しました</translation>
 <translation id="7821540960913969614">日付の設定</translation>
+<translation id="4859501799452851758">プロファイラを終了しました。結果は <ph name="FILENAME"/> をご覧ください。</translation>
 <translation id="3845599764535987402">時</translation>
 <translation id="4932733599132424254">日付</translation>
 <translation id="6727102863431372879">設定</translation>
@@ -20,6 +23,7 @@
 <translation id="2732718972699418926">AM</translation>
 <translation id="7096034533295549981">動画を読み込み中</translation>
 <translation id="1542044944667958430">ウェブ検索</translation>
+<translation id="6849295950938417341">プロファイラを開始できませんでした</translation>
 <translation id="6527303717912515753">共有</translation>
 <translation id="1822429046913737220">AM/PM</translation>
 <translation id="5789643057113097023">.</translation>

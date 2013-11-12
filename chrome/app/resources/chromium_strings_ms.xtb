@@ -16,7 +16,6 @@
 <translation id="1065672644894730302">Pilihan anda tidak dapat dibaca. Beberapa ciri mungkin tidak tersedia dan perubahan terhadap pilihan tidak akan disimpan.</translation>
 <translation id="4222661289444749267">Kemas Kini Chromium Frame.</translation>
 <translation id="4423735387467980091">Sesuaikan dan kawal Chromium</translation>
-<translation id="2843244238218937196">Pemapar Chromium</translation>
 <translation id="1881322772814446296">Anda log masuk menggunakan akaun yang terurus dan memberikan pentadbirnya kawalan ke atas profil Chromium anda. Data Chromium anda, seperti apl, penanda halaman, sejarah, kata laluan dan tetapan anda yang lain akan terikat kepada <ph name="USER_NAME"/> secara kekal. Anda akan dapat memadamkan data ini melalui Papan Pemuka Akaun Google, tetapi anda tidak akan dapat mengaitkan data ini dengan akaun lain. Anda boleh memilih untuk membuat profil baharu untuk mengasingkan data Chromium anda yang sedia ada. <ph name="LEARN_MORE"/></translation>
 <translation id="7128196614940529818">Chromium Frame telah dipasang dan tersedia untuk semua pengguna komputer ini. Jika anda ingin memasang Chromium Frame pada tahap pengguna, mula-mula anda mesti menyahpasang versi tahap sistem yang dipasang oleh pihak pentadbir.</translation>
 <translation id="731644333568559921">Kemas kini &amp;Chromium OS</translation>
@@ -29,6 +28,7 @@
 <translation id="6953661834318318668">Bar Alat Chromium</translation>
 <translation id="2245147136185581459">Pengesan Portal Tawanan Chromium</translation>
 <translation id="4285930937574705105">Pemasangan gagal disebabkan ralat yang tidak dinyatakan. Jika Chromium sedang dijalankan, sila tutup dan cuba semula.</translation>
+<translation id="1396446129537741364">Chromium sedang cuba memaparkan kata laluan.</translation>
 <translation id="3555616473548901994">Selesai nyahpasang.</translation>
 <translation id="2886012850691518054">Pilihan: Bantu jadikan Chromium lebih baik dengan menghantar statistik penggunaan dan laporan ranap kepada Google secara automatik.</translation>
 <translation id="580822234363523061">Pergi ke
@@ -50,6 +50,7 @@
 <translation id="4831257561365056138">Nyahpasang Pelancar Apl Chromium</translation>
 <translation id="4222580632002216401">Anda kini sedang log masuk ke Chromium! Penyegerakan dilumpuhkan oleh pentadbir anda.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Amaran:<ph name="END_BOLD"/> Chromium tidak dapat menghalang pelanjutan daripada merakamkan sejarah penyemakan imbas anda. Untuk melumpuhkan pelanjutan ini dalam mod inkognito, nyahpilih pilihan ini.</translation>
+<translation id="4516868174453854611">Memandangkan anda kini telah log masuk, anda boleh mendapatkan tab, penanda halaman dan barangan Chromium anda yang lain merentas komputer riba, telefon dan tablet anda. Anda turut akan menerima cadangan dan ciri yang lebih berkaitan tentang perkhidmatan Google.</translation>
 <translation id="985602178874221306">Pengarang Chromium</translation>
 <translation id="8628626585870903697">Chromium tidak menyertakan pemapar PDF yang diperlukan oleh Pratonton Cetakan untuk berfungsi.</translation>
 <translation id="7138853919861947730">Chromium boleh menggunakan perkhidmatan web untuk meningkatkan pengalaman penyemakan imbas anda.</translation>
@@ -80,7 +81,7 @@
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3509308970982693815">Sila tutup semua tetingkap Chromium dan cuba lagi.</translation>
 <translation id="4077262827416206768">Sila tutup semua tetingkap Chromium dan lancarkan semula Chromium agar perubahan ini boleh dilaksanakan.</translation>
-<translation id="5472687196979159893"><ph name="FILE_NAME"/> boleh mengubah cara carian anda berfungsi dalam Chromium.</translation>
+<translation id="750717762378961310">Fail ini bersifat hasad dan Chromium telah menyekatnya.</translation>
 <translation id="6944967875980567883">Modul yang dimuatkan dalam Chromium</translation>
 <translation id="6899795326977034905">Pada Mac, kata laluan disimpan pada Keychain anda dan boleh diakses atau disegerakkan oleh pengguna Chromium lain yang berkongsi akaun OS X ini.</translation>
 <translation id="118298050220780080">Anda cuba mencapai &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, tetapi pelayan menyampaikan sijil yang dikeluarkan oleh entiti yang tidak dipercayai oleh sistem pengendalian komputer anda. Ini mungkin bermakna pelayan tersebut telah menghasilkan bukti kelayakannya sendiri yang tidak dipercayai oleh Chromium untuk mendapatkan maklumat identiti atau penyerang mungkin cuba memintas komunikasi anda.</translation>
@@ -121,7 +122,6 @@
 <translation id="6248213926982192922">Jadikan Chromium penyemak imbas lalai</translation>
 <translation id="6309712487085796862">Chromium menggunakan kamera anda.</translation>
 <translation id="7337881442233988129">Chromium</translation>
-<translation id="3069161343438701711">Pekerja Chromium</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="6757767188268205357">Jangan ganggu saya</translation>
 <translation id="1745962126679160932">Chromium akan menyimpan maklumat anda dengan selamat supaya anda tidak perlu menaipkannya semula, tetapi anda masih perlu mengesahkan kod keselamatan kad anda untuk pembayaran pada masa hadapan.</translation>
@@ -132,6 +132,7 @@
 <translation id="3582788516608077514">Mengemas kini Chromium...</translation>
 <translation id="7223968959479464213">Pengurus Tugas - Chromium</translation>
 <translation id="3838208658251026018">Chromium kini mengimport item berikut daripada <ph name="BROWSER_COMPONENT"/>:</translation>
+<translation id="1779356040007214683">Untuk menjadikan Chromium lebih selamat, kami melumpuhkan beberapa pelanjutan yang tidak disenaraikan dalam <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> dan mungkin telah ditambah tanpa pengetahuan anda.</translation>
 <translation id="6638567566961868659">Cari penanda halaman anda dalam menu Chromium atau pada bar penanda halaman.</translation>
 <translation id="2673087257647337101">Hampir terkini! Lancarkan semula Chromium untuk selesai mengemas kini.</translation>
 <translation id="5398878173008909840">Terdapat versi baharu Chromium tersedia.</translation>
@@ -153,11 +154,11 @@
 Beberapa ciri mungkin tidak tersedia. Sila nyatakan direktori profil yang berbeza atau gunakan versi Chromium yang lebih baharu.</translation>
 <translation id="9013087743919948559">Tambah ke Chromium</translation>
 <translation id="6212496753309875659">Komputer ini telah mempunyai versi Chromium yang lebih baharu. Jika perisian tidak berfungsi, sila nyahpasang Chromium dan cuba lagi.</translation>
-<translation id="3014684866565908571">Utiliti Chromium</translation>
 <translation id="1298199220304005244">Dapatkan bantuan untuk menggunakan Chromium OS</translation>
 <translation id="8187289872471304532">Pergi ke
           Apikasi &gt; Pilihan Sistem &gt; Rangkaian &gt; Terperinci &gt; Proksi
           dan nyahpilih mana-mana proksi yang telah dipilih.</translation>
+<translation id="2801146392936645542"><ph name="FILE_NAME"/> bersifat hasad dan Chromium telah menyekatnya.</translation>
 <translation id="4488676065623537541">Butiran pengebilan anda telah disimpan dalam Chromium.</translation>
 <translation id="1691304614444223855">Chromium Frame telah dikemas kini. Sila lancarkan semula penyemak imbas anda. Chromium versi: <ph name="TODO_0001"/>, Chromium Frame versi: <ph name="TODO_0002"/></translation>
 <translation id="130631256467250065">Perubahan anda akan dilaksanakan apabila anda memulakan semula peranti anda pada masa akan datang.</translation>
@@ -165,6 +166,7 @@ Beberapa ciri mungkin tidak tersedia. Sila nyatakan direktori profil yang berbez
 <translation id="1105130903706696483">Chromium tidak ditutup dengan betul. Untuk membuka semula halaman yang anda telah buka, klik Pulihkan.</translation>
 <translation id="1929939181775079593">Chromium tidak responsif. Lancarkan semula sekarang?</translation>
 <translation id="1414495520565016063">Anda log masuk ke Chromium!</translation>
+<translation id="1902135785017821799"><ph name="FILE_NAME"/> membuat perubahan tetapan yang sama dengan perisian hasad, jadi Chromium telah menyekatnya.</translation>
 <translation id="3155163173539279776">Lancarkan Semula Chromium</translation>
 <translation id="2966088006374919794">Chromium perlu melancarkan aplikasi luaran untuk mengendalikan pautan <ph name="SCHEME"/>. Pautan yang diminta adalah <ph name="PROTOLINK"/>.</translation>
 <translation id="6287463253129672858">Tidak boleh memasang versi Chromium Frame yang sama dengan yang sedang dijalankan. Sila tutup Chromium Frame dan cuba lagi.</translation>
@@ -195,10 +197,8 @@ Beberapa ciri mungkin tidak tersedia. Sila nyatakan direktori profil yang berbez
 <translation id="1708666629004767631">Terdapat versi Chromium baharu yang lebih selamat tersedia.</translation>
 <translation id="1539981464052805551">Hak Cipta 2013 Pengarang Chromium. Hak cipta terpelihara.</translation>
 <translation id="378917192836375108">Chromium membolehkan anda mengklik nombor telefon pada web dan menghubunginya dengan Skype!</translation>
-<translation id="7331621180831839236"><ph name="FILE_NAME"/> boleh mengubah tetapan Chromium anda.</translation>
 <translation id="8724049448828509830">Muat turun sedang dijalankan. Adakah anda ingin keluar dari Chromium dan membatalkan muat turun?</translation>
 <translation id="3360567213983886831">Perduaan Chromium</translation>
-<translation id="7503101070699687603">Hos Pemalam Chromium</translation>
 <translation id="8985587603644336029">Seseorang telah log masuk ke Chromium pada komputer ini sebagai <ph name="ACCOUNT_EMAIL_LAST"/> sebelum ini. Jika itu bukan akaun anda, buat pengguna Chromium baharu untuk mengasingkan maklumat anda.
 
 Meneruskan juga log masuk akan menggabungkan maklumat Chromium seperti penanda halaman, sejarah dan tetapan lain ke <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>

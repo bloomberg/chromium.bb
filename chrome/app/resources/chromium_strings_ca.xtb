@@ -16,7 +16,6 @@
 <translation id="1065672644894730302">No es poden llegir les vostres preferències. És possible que algunes funcions no estiguin disponibles i que els canvis a les preferències no es desin.</translation>
 <translation id="4222661289444749267">Actualització de Chromium Frame.</translation>
 <translation id="4423735387467980091">Personalitza i controla Chromium</translation>
-<translation id="2843244238218937196">Renderitzador de Chromium</translation>
 <translation id="1881322772814446296">Esteu a punt d'iniciar la sessió amb un compte gestionat i d'atorgar el control del vostre perfil de Chromium a l'administrador corresponent. Les dades de Chromium, com ara aplicacions, adreces d'interès, historial, contrasenyes i altres configuracions, s'enllaçaran permanentment amb <ph name="USER_NAME"/>. Podreu suprimir aquestes dades mitjançant el Tauler de Comptes de Google, però no les podreu associar amb un altre compte. De manera opcional, podeu crear un perfil nou per mantenir les vostres dades de Chromium a part. <ph name="LEARN_MORE"/></translation>
 <translation id="7128196614940529818">Chromium Frame ja està instal·lat i disponible per a tots els usuaris d'aquest equip. Si voleu instal·lar Chromium Frame a nivell d'usuari, primer cal desinstal·lar la versió de nivell de sistema que un administrador ha instal·lat.</translation>
 <translation id="731644333568559921">Actualitza &amp;Chromium OS</translation>
@@ -29,6 +28,7 @@
 <translation id="6953661834318318668">Barra d'eines de Chromium</translation>
 <translation id="2245147136185581459">Detector de Captive Portal a Chromium</translation>
 <translation id="4285930937574705105">S'ha produït un error no especificat durant la instal·lació. Si Chromium s'està executant en aquests moments, tanqueu-lo i torneu-ho a provar.</translation>
+<translation id="1396446129537741364">Chromium està provant de mostrar les contrasenyes.</translation>
 <translation id="3555616473548901994">S'ha completat la desinstal·lació.</translation>
 <translation id="2886012850691518054">Opcional: Ajudeu a millorar Chromium i envieu-nos automàticament les estadístiques d'ús i els informes de bloqueig a Google.</translation>
 <translation id="580822234363523061">Aneu al
@@ -50,6 +50,7 @@
 <translation id="4831257561365056138">Desinstal·la el menú d'aplicacions de Chromium</translation>
 <translation id="4222580632002216401">Heu iniciat la sessió a Chromium. El vostre administrador ha desactivat la sincronització.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Advertiment:<ph name="END_BOLD"/> Chromium no pot evitar que les extensions registrin el vostre historial de navegació. Per desactivar aquesta extensió en mode d'incògnit, anul·leu la selecció d'aquesta opció.</translation>
+<translation id="4516868174453854611">Ara que teniu la sessió iniciada, podeu utilitzar les pestanyes, les adreces d'interès i altres característiques de Chromium des del portàtil, des del telèfon o des de la tauleta. També obtindreu suggeriments i funcions més rellevants als serveis de Google.</translation>
 <translation id="985602178874221306">Els autors de Chromium</translation>
 <translation id="8628626585870903697">Chromium no inclou el lector de PDF que és necessari perquè la visualització prèvia funcioni.</translation>
 <translation id="7138853919861947730">Chromium pot utilitzar serveis web per millorar la vostra experiència de navegació.</translation>
@@ -81,7 +82,7 @@
 <translation id="4298853828775962437">https://support.google.com/chrome/answer/161796?p=ib_chromeframe&amp;rd=1&amp;hl=ca</translation>
 <translation id="3509308970982693815">Tanqueu totes les finestres de Chromium i torneu-ho a provar.</translation>
 <translation id="4077262827416206768">Tanqueu totes les finestres de Chromium i torneu-lo a iniciar perquè s'apliqui aquest canvi.</translation>
-<translation id="5472687196979159893"><ph name="FILE_NAME"/> pot canviar el funcionament de les cerques a Chromium.</translation>
+<translation id="750717762378961310">Aquest fitxer és maliciós i Chromium l'ha bloquejat.</translation>
 <translation id="6944967875980567883">Mòduls carregats a Chromium</translation>
 <translation id="6899795326977034905">Als dispositius Mac, les contrasenyes es desen al clauer, i els usuaris de Chromium que comparteixin aquest compte d'OS X poden accedir-hi i sincronitzar-les.</translation>
 <translation id="118298050220780080">Heu provat d'accedir a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, però el servidor ha presentat un certificat emès per una entitat en què el sistema operatiu del vostre ordinador no confia. Això pot significar que el servidor ha generat les seves pròpies credencials de seguretat, en què Chromium no es pot fiar per a la vostra informació d'identitat. O bé pot significar que un atacant està provant d'interceptar les vostres comunicacions.</translation>
@@ -122,7 +123,6 @@
 <translation id="6248213926982192922">Estableix Chromium com a navegador predeterminat</translation>
 <translation id="6309712487085796862">Chromium està utilitzant la càmera.</translation>
 <translation id="7337881442233988129">Chromium</translation>
-<translation id="3069161343438701711">Aplicació de treball de Chromium</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="6757767188268205357">No em molestis</translation>
 <translation id="1745962126679160932">Chromium emmagatzemarà de manera segura la vostra informació perquè no hàgiu de tornar-la a escriure, però continuareu havent de verificar el codi de seguretat de la targeta per a pagaments futurs.</translation>
@@ -133,6 +133,7 @@
 <translation id="3582788516608077514">S'està actualitzant Chromium...</translation>
 <translation id="7223968959479464213">Gestor de tasques: Chromium</translation>
 <translation id="3838208658251026018">En aquests moments, Chromium està important els elements següents de <ph name="BROWSER_COMPONENT"/>:</translation>
+<translation id="1779356040007214683">Perquè Chromium sigui més segur, hem desactivat algunes de les extensions que no apareixen a <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/> i que és possible que s'hagin afegit sense que ho sapigueu.</translation>
 <translation id="6638567566961868659">Cerqueu les adreces d'interès al menú de Chromium o a la Barra d'adreces d'interès.</translation>
 <translation id="2673087257647337101">Gairebé esteu al dia! Reinicieu Chromium per completar l'actualització.</translation>
 <translation id="5398878173008909840">Hi ha disponible una versió nova de Chromium.</translation>
@@ -154,11 +155,11 @@
 És possible que algunes funcions no estiguin disponibles. Especifiqueu un altre directori de perfil o utilitzeu una versió més nova de Chromium.</translation>
 <translation id="9013087743919948559">Addició a Chromium</translation>
 <translation id="6212496753309875659">Aquest equip ja té una versió més recent de Chromium. Si el programari no funciona, desinstal·leu Chromium i torneu-ho a provar.</translation>
-<translation id="3014684866565908571">Utilitat de Chromium</translation>
 <translation id="1298199220304005244">Obtén ajuda per a l'ús de Chromium OS</translation>
 <translation id="8187289872471304532">Aneu a
           Aplicacions &gt; Preferències del sistema &gt; Xarxa &gt; Opcions avançades &gt; Servidors intermediaris
           i desmarqueu tots els servidors intermediaris que s'hagin seleccionat.</translation>
+<translation id="2801146392936645542"><ph name="FILE_NAME"/> és maliciós i Chromium l'ha bloquejat.</translation>
 <translation id="4488676065623537541">Els detalls de facturació s'han desat a Chromium.</translation>
 <translation id="1691304614444223855">S'ha actualitzat Chromium Frame. Torneu a iniciar el navegador. Versió de Chromium: <ph name="TODO_0001"/>; versió de Chromium Frame: <ph name="TODO_0002"/></translation>
 <translation id="130631256467250065">Els canvis es faran efectius la propera vegada que reinicieu el dispositiu.</translation>
@@ -166,6 +167,7 @@
 <translation id="1105130903706696483">Chromium no s'ha tancat correctament. Per tornar a obrir les pàgines que teníeu obertes, feu clic a Restaura.</translation>
 <translation id="1929939181775079593">Chromium no respon. Voleu tornar-lo a iniciar ara?</translation>
 <translation id="1414495520565016063">Teniu la sessió iniciada a Chromium.</translation>
+<translation id="1902135785017821799"><ph name="FILE_NAME"/> fa canvis a la configuració que recorden a alguns tipus de programari maliciós, de manera que Chromium l'ha bloquejat.</translation>
 <translation id="3155163173539279776">Torna a iniciar Chromium</translation>
 <translation id="2966088006374919794">Chromium necessita iniciar una aplicació externa per gestionar els enllaços <ph name="SCHEME"/>. L'enllaç sol·licitat és <ph name="PROTOLINK"/>.</translation>
 <translation id="6287463253129672858">No es pot instal·lar la mateixa versió de Chromium Frame que s'està executant actualment. Tanqueu Chromium Frame i torneu-ho a provar.</translation>
@@ -195,10 +197,8 @@
 <translation id="1708666629004767631">Hi ha disponible una versió nova més segura de Chromium.</translation>
 <translation id="1539981464052805551">Copyright 2013 Els autors de Chromium. Tots els drets reservats.</translation>
 <translation id="378917192836375108">Chromium us permet fer clic en un número de telèfon al web i trucar-hi amb Skype!</translation>
-<translation id="7331621180831839236"><ph name="FILE_NAME"/> pot canviar la vostra configuració de Chromium.</translation>
 <translation id="8724049448828509830">En aquests moments hi ha una baixada en curs. Voleu sortir de Chromium i cancel·lar la baixada?</translation>
 <translation id="3360567213983886831">Binaris Chromium</translation>
-<translation id="7503101070699687603">Amfitrió del connector de Chromium</translation>
 <translation id="8985587603644336029">Algú ha iniciat anteriorment la sessió a Chromium en aquest ordinador com a <ph name="ACCOUNT_EMAIL_LAST"/>. Si no és el vostre compte, creeu un usuari de Chromium per mantenir la informació separada.
 
 En iniciar la sessió, sigui amb l'usuari que sigui, es combinarà amb <ph name="ACCOUNT_EMAIL_NEW"/> la informació de Chromium com ara adreces d'interès, historial i altres configuracions.</translation>

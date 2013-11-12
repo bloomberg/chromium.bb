@@ -1,26 +1,43 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="hr">
+<translation id="6831043979455480757">Prevedi</translation>
+<translation id="7644305409888602715">Prevođenje stranice na <ph name="SOURCE_LANGUAGE"/>...</translation>
 <translation id="1491151370853475546">Ponovo učitaj ovu stranicu</translation>
 <translation id="7658239707568436148">Odustani</translation>
 <translation id="6458785801851713928">Sinkronizacija nije dostupna za vašu domenu.</translation>
 <translation id="2731700343119398978">Pričekajte...</translation>
+<translation id="7378627244592794276">Ne</translation>
 <translation id="3358663646935160692">Ovim računom upravlja domena <ph name="DOMAIN_NAME"/>.
 
 Prijavljujete se svojim upravljanim računom i njenom administratoru dajete nadzor nad svojim Chrome profilom. Vaši podaci na Chromeu bit će trajno povezani s ovim računom. Prekidanje veze s ovim računom dovest će do brisanja lokalnih podataka na Chromeu.</translation>
 <translation id="1623104350909869708">Spriječi da ova stranica stvori dodatne dijaloške okvire</translation>
+<translation id="624558823898732418">Jezik prijevoda: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="3896036286668839683">Preglednik certifikata</translation>
 <translation id="8583805026567836021">Brisanje podataka računa</translation>
+<translation id="8730621377337864115">Gotovo</translation>
 <translation id="4170011742729630528">Usluga nije dostupna, pokušajte ponovo kasnije.</translation>
 <translation id="8627706565932943526">Pogreška sinkronizacije</translation>
+<translation id="656628257199996201">Uvijek prevodi <ph name="SOURCE_LANGUAGE"/></translation>
+<translation id="9137013805542155359">Prikaži original</translation>
+<translation id="5684874026226664614">Ups. Stranicu nije bilo moguće prevesti.</translation>
 <translation id="3136378934686431938">Ažurirajte pojedinosti prijave.</translation>
+<translation id="6042308850641462728">Više</translation>
+<translation id="8034522405403831421">Jezik ove stranice jest <ph name="SOURCE_LANGUAGE"/>. Želite li je prevesti na <ph name="TARGET_LANGUAGE"/>?</translation>
+<translation id="8725066075913043281">Pokušajte ponovo</translation>
 <translation id="4510973599275542560">Ne učitavaj ponovo</translation>
 <translation id="9154176715500758432">Ostani na ovoj stranici</translation>
 <translation id="7063006564040364415">Nije uspjelo povezivanje s poslužiteljem za sinkronizaciju.</translation>
+<translation id="4271185234001491831">Nikad ne prevodi <ph name="LANGUAGE"/></translation>
+<translation id="1285320974508926690">Nikad nemoj prevoditi ovu web-lokaciju</translation>
+<translation id="5164482624172255778">Želite li da Google Chrome sljedeći put ponudi prijevod stranica s ove web-lokacije za <ph name="LANGUAGE"/> jezik?</translation>
+<translation id="8528538445849828817">Jezik stranice: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="6512448926095770873">Zatvori ovu stranicu</translation>
 <translation id="7947953824732555851">Prihv. i prijavi se</translation>
 <translation id="6040143037577758943">Zatvori</translation>
+<translation id="969096075394517431">Promijenite jezike</translation>
 <translation id="5032574515228824816">Upit</translation>
+<translation id="1742134235943978220">Prevedeno na <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">U redu</translation>
 <translation id="7495038789730067783">Potvrda prijave</translation>
 </translationbundle>

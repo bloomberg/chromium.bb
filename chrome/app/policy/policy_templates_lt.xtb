@@ -97,6 +97,7 @@
           PASTABA: numatytoji klientų ir įmonės įrenginių elgsena skiriasi: klientų įrenginiuose prižiūrimi naudotojai pagal numatytuosius nustatymus yra įgalinti, o įmonės įrenginiuose – neleidžiami.</translation>
 <translation id="69525503251220566">Parametras, nurodantis paieškos pagal vaizdą funkciją numatytajam paieškos teikėjui</translation>
 <translation id="5469825884154817306">Blokuoti vaizdus šiose svetainėse</translation>
+<translation id="5827231192798670332">Pasirenkama strategija, naudojama vietai diske atlaisvinti, kai atliekamas automatinis valymas</translation>
 <translation id="8412312801707973447">Ar atliekami OCSP / CRL patikrinimai prisijungus</translation>
 <translation id="6649397154027560979">Ši politika nebenaudojama, vietoje jos naudokite politiką „URLBlacklist“.
 
@@ -201,6 +202,8 @@
 <translation id="6036523166753287175">Įgalinkite užkardos apėjimą iš nuotolinės prieigos prieglobos</translation>
 <translation id="1096105751829466145">Numatytasis paieškos teikėjas</translation>
 <translation id="7567380065339179813">Leisti papildinius šiose svetainėse</translation>
+<translation id="4555850956567117258">Įgalinti nuotolinį naudotojo patvirtinimą</translation>
+<translation id="5966615072639944554">Plėtiniams leidžiama naudoti nuotolinio patvirtinimo API</translation>
 <translation id="1617235075406854669">Įgalinti naršyklės ištrynimą ir atsisiuntimo istoriją</translation>
 <translation id="5290940294294002042">Nurodyti papildinių, kuriuos naudotojas gali įgalinti arba kurių gali neleisti, sąrašą</translation>
 <translation id="3153348162326497318">Leidžiama nurodyti, kurių plėtinių naudotojas (-a) NEGALI įdiegti. Jau įdiegti plėtiniai bus pašalinti, jei jie įtraukti į juodąjį sąrašą.
@@ -259,6 +262,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 
           Nenustačius šios politikos, bus naudojama „Leisti vaizdus“ ir naudotojas (-a) galės tai pakeisti.</translation>
 <translation id="5630352020869108293">Atkurti paskutinę sesiją</translation>
+<translation id="2067011586099792101">Blokuoti prieigą prie svetainių, nesančių turinio paketuose</translation>
 <translation id="4980635395568992380">Duomenų tipas:</translation>
 <translation id="3096595567015595053">Įgalintų papildinių sąrašas</translation>
 <translation id="3048744057455266684">Jei ši politika yra nustatyta ir paieškos URL, pasiūlyto „Omnibox“, užklausos eilutėje ar fragmento identifikatoriuje yra šis parametras, pasiūlyme bus rodomi paieškos terminai ir paieškos teikėjas, o ne tiesiog paieškos URL.
@@ -278,11 +282,13 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
           Nenustačius šios politikos visose svetainėse naudojama visuotinė numatytoji vertė iš „Numatytųjų slapukų nustatymų“ politikos (jei ji nustatyta) arba naudotojo asmeninės konfigūracijos.
 
           Jei politika „Atkurti paleidžiant“ nustatyta atkurti URL iš ankstesnių sesijų, į šią politiką neatsižvelgiama ir šių svetainių slapukai saugomi visą laiką.</translation>
+<translation id="4807950475297505572">Naudotojai, kurie jungėsi seniausiai, šalinami, kol atsiras pakankamai laisvos vietos</translation>
 <translation id="8828766846428537606">Konfigūruojamas numatytasis pagrindinis „<ph name="PRODUCT_NAME"/>“ puslapis, kurio keisti naudotojams neleidžiama.
 
       Naudotojo pagrindinio puslapio nustatymai bus visiškai užrakinti tik tada, jei kaip pagrindinį puslapį pasirinksite naujo skirtuko puslapį arba nustatysite, kad į jį būtų įkeltas URL, ir nurodysite pagrindinio puslapio URL. Jei pagrindinio puslapio URL nenurodysite, naudotojui ir toliau bus leidžiama kaip pagrindinį puslapį nustatyti naujo skirtuko puslapį nurodant „chrome://newtab“.</translation>
 <translation id="2231817271680715693">Importuoti naršymo istoriją iš numatytosios naršyklės paleidžiant pirmą kartą</translation>
 <translation id="1353966721814789986">Paleisties puslapiai</translation>
+<translation id="7173856672248996428">Efemeriškas profilis</translation>
 <translation id="1841130111523795147">Naudotojui leidžiama prisijungti prie „<ph name="PRODUCT_NAME"/>“ ir neleidžiama keisti šio nustatymo.
 
       Jei nustatysite šią politiką, galėsite konfigūruoti, ar naudotojui leidžiama prisijungti prie „<ph name="PRODUCT_NAME"/>“, ar ne.</translation>
@@ -292,6 +298,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="6368403635025849609">Leisti „JavaScript“ šiose svetainėse</translation>
 <translation id="6074963268421707432">Neleisti jokioje svetainėje rodyti darbalaukio pranešimų</translation>
 <translation id="8614804915612153606">Neleidžiamas automatinis naujinys</translation>
+<translation id="4834526953114077364">Naudotojai, kurie jungėsi seniausiai ir kurie nebuvo prisijungę per paskutinius 3 mėnesius, šalinami, kol atsiras pakankamai laisvos vietos</translation>
 <translation id="382476126209906314">Konfigūruoti nuotolinės prieigos prieglobų „TalkGadget“ (Pokalbių programėlės) kodą</translation>
 <translation id="6561396069801924653">Rodyti pasiekiamumo parinktis sistemos dėklo meniu</translation>
 <translation id="8104962233214241919">Automatiškai pasirinkti šių svetainių kliento sertifikatus</translation>
@@ -359,6 +366,13 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
       Jei įgalinsite šį nustatymą arba jo neleisite, naudotojai negalės pakeisti ar panaikinti šio nustatymo  „<ph name="PRODUCT_NAME"/>“.
 
       Nenustačius šios politikos, bus taikomas tas nustatymas, kurį naudotojas (-a) pasirinko diegdamas (-a) / pirmą kartą paleisdamas (-a).</translation>
+<translation id="4784220343847172494">Valdomi automatinio valymo veiksmai, atliekami „<ph name="PRODUCT_OS_NAME"/>“ įrenginiuose. Automatinis valymas suaktyvinamas, kai laisvos vietos diske kiekis pasiekia kritinį lygį. Suaktyvinus šią funkciją, atkuriama šiek tiek vietos diske.
+
+      Jei nustatytas šios politikos nustatymas „RemoveLRU“, vykdant automatinį valymą iš įrenginio šalinami naudotojai, kurie jungėsi seniausiai, kol atsiranda pakankamai laisvos vietos.
+
+      Jei nustatytas šios politikos nustatymas „RemoveLRUIfDormant“, vykdant automatinį valymą šalinami naudotojai, kurie jungėsi seniausiai ir kurie per paskutinius 3 mėnesius nebuvo prisijungę. Naudotojai šalinami, kol atsiranda pakankamai laisvos vietos.
+
+      Jei ši politika nenustatyta, vykdant automatinį valymą naudojama numatytoji integruota strategija. Šiuo metu ši strategija yra „RemoveLRUIfDormant“.</translation>
 <translation id="6256787297633808491">Visos sistemos žymos, kurios bus taikomos paleidžiant „Chrome“</translation>
 <translation id="2516600974234263142">Įgalinamas spausdinimas „<ph name="PRODUCT_NAME"/>“ ir naudotojams neleidžiama keisti šio nustatymo.
 
@@ -476,6 +490,9 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
           Jei įgalintas šis nustatymas, fiziniai prieglobos įvesties ir išvesties įrenginiai išjungiami, kai bandoma prisijungti prie nuotolinio ryšio.
 
           Jei šis nustatymas išjungtas arba nenustatytas, vietiniai ir nuotoliniai naudotojai gali sąveikauti su priegloba, kai ji bendrinama.</translation>
+<translation id="4894257424747841850">Pateikite pastaruoju metu prisijungusių įrenginio naudotojų sąrašo ataskaitą.
+
+      Jei politika nenustatyta arba nustatyta į „False“, ataskaita apie naudotojus nebus pateikta.</translation>
 <translation id="1426410128494586442">Taip</translation>
 <translation id="4897928009230106190">Nurodomi parametrai, naudojami atliekant pasiūlymų paiešką naudojant POST. Jie sudaryti iš kableliais atskirtų pavadinimų / verčių porų. Jei vertė yra šablono parametras, pvz., {searchTerms} anksčiau pateiktame pavyzdyje, ji pakeičiama realiais paieškos terminų duomenimis.
 
@@ -551,12 +568,14 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
           Nenustačius šios politikos, visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „Numatytasis slapukų nustatymas“ (jei nustatyta) ar naudotojo asmeninės konfigūracijos.</translation>
 <translation id="5457296720557564923">Leidžiama puslapiams pasiekti „JavaScript“ atminties naudojimo statistiką. Dėl šio nustatymo tinklalapis gali pasiekti kūrėjo įrankių profilių skydo atminties statistiką.</translation>
 <translation id="5776485039795852974">Paklausti kaskart, kai svetainėje norima rodyti darbalaukio pranešimus</translation>
+<translation id="5047604665028708335">Leisti pasiekti svetaines, nesančias turinio paketuose</translation>
 <translation id="5052081091120171147">Pagal šią politiką naršymo istorija priverstinai importuojama iš esamos numatytosios naršyklės (jei įgalinta). Be to, jei įgalinta, ši politika turi įtakos importavimo dialogo langui.
 
       Jei neleidžiama, neimportuojama jokia naršymo istorija.
 
       Jei nenustatyta, naudotojo gali būti klausiama, ar importuoti, arba gali būti automatiškai importuojama.</translation>
 <translation id="6786747875388722282">Plėtiniai</translation>
+<translation id="7132877481099023201">URL, kuriems bus suteikta prieiga prie vaizdo įrašų užfiksavimo įrenginių be paraginimo</translation>
 <translation id="8947415621777543415">Pranešti įrenginio vietą</translation>
 <translation id="1655229863189977773">Nustatyti disko talpyklos dydį baitais</translation>
 <translation id="6376842084200599664">Leidžiama nurodyti plėtinių, kurie bus įdiegti be naudotojo veiksmų, sąrašą.
@@ -571,6 +590,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 
           Jei ši politika nenustatyta, naudotojas gali pašalinti bet kurį „<ph name="PRODUCT_NAME"/>“ plėtinį.</translation>
 <translation id="6899705656741990703">Automatiškai aptikti tarpinio serverio nustatymus</translation>
+<translation id="8382184662529825177">Įgalinti nuotolinio patvirtinimo naudojimą siekiant apsaugoti įrenginio turinį</translation>
 <translation id="7003334574344702284">Pagal šią politiką priverstinai importuojami išsaugoti slaptažodžiai iš ankstesnės numatytosios naršyklės (jei įgalinta). Be to, jei įgalinta, ši politika turi įtakos importavimo dialogo langui.
 
       Jei neleidžiama, išsaugoti slaptažodžiai neimportuojami.
@@ -584,6 +604,13 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="3236046242843493070">URL šablonai, kuriuos naudojant galima įdiegti plėtinį, programą ir naudotojo scenarijų iš</translation>
 <translation id="2498238926436517902">Visada automatiškai paslėpti lentyną</translation>
 <translation id="253135976343875019">Neveikos įspėjimo delsa, kai naudojama kintamosios srovės energija</translation>
+<translation id="480987484799365700">Jei ši politika įgalinama, profilis turi būti perjungtas į efemerišką režimą. Jei ši politika nurodyta kaip OS politika (pvz., „Windows“ sistemoje taikomas GPO), ji bus taikoma kiekvienam sistemos profiliui; jei politika nustatyta kaip debesies politika, ji bus taikoma tik tam profiliui, prie kurio prisijungta naudojant valdomą paskyrą.
+
+      Jei įjungtas šis režimas, profilio duomenys diske išlieka tik naudotojo seanso laiką. Uždarius naršyklę, funkcijos, pvz., naršyklės istorija, plėtiniai ir jų duomenys, bei žiniatinklio duomenys, pvz., slapukai ir žiniatinklio duomenų bazės, neišsaugomi. Tačiau naudotojas vis tiek gali neautomatiškai į diską atsisiųsti bet kokius failus, išsaugoti puslapius ar juos atsispausdinti.
+
+      Jei naudotojas įgalina sinchronizavimo funkciją, visi šie duomenys išsaugomi sinchronizavimo profilyje taip, kaip jie būtų išsaugomi įprastuose profiliuose. Be to, galima naudoti inkognito režimą, jei politikos nuostatose aiškiai nenurodyta, jog jis neleidžiamas.
+
+      Jei politika neįgalinta arba nenustatyta, prisijungiant jungiamasi prie įprastų profilių.</translation>
 <translation id="6997592395211691850">Ar internetinės OCSP / CRL patikros reikalingos vietiniams patikimiems prieraišams</translation>
 <translation id="152657506688053119">Alternatyvių numatytojo paieškos teikėjo URL sąrašas</translation>
 <translation id="8992176907758534924">Neleisti jokioje svetainėje rodyti vaizdų</translation>
@@ -777,7 +804,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="7003746348783715221">„<ph name="PRODUCT_NAME"/>“ nuostatos</translation>
 <translation id="4723829699367336876">Įgalinti užkardos apėjimą iš nuotolinės prieigos kliento programos</translation>
 <translation id="6367755442345892511">Ar naudotojui (-ai) turėtų būti leidžiama konfigūruoti paleidimo kanalą</translation>
-<translation id="4035570660718398959">Leisti naudotojams pasinaudoti pasiūlymais atliekant „Chrome“ OS registraciją.</translation>
 <translation id="3868347814555911633">Ši politika taikoma tik mažmeninės prekybos režimu.
 
       Nurodomi plėtiniai, kurie automatiškai įdiegiami demonstracinės versijos naudotojui (-ai) įrenginiuose mažmeninės prekybos režimu. Šie plėtiniai išsaugomi įrenginyje ir juos galima įdiegti neprisijungus, baigus diegimą.
@@ -800,7 +826,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
           Jei neleisite šio nustatymo, slaptažodžių tvarkytuvės lange nebus leidžiama rodyti aiškiai parašytų išsaugotų slaptažodžių.
 
           Jei įgalinsite šią politiką arba jos nenustatysite, naudotojai galės peržiūrėti aiškiai parašytus slaptažodžius slaptažodžių tvarkytuvėje.</translation>
-<translation id="5213629107215526747">URL, kuriems bus suteikta prieiga prie vaizdo fiksavimo įrenginių be paraginimo.</translation>
 <translation id="5936622343001856595">„Google“ žiniatinklio paieškos užklausos priverstinai vykdomos naudojant aktyvintą saugią paiešką. Neleidžiama naudotojams keisti šio nustatymo.
 
       Jei įgalinsite šį nustatymą, saugi paieška „Google“ paieškoje bus visada aktyvi.
@@ -811,6 +836,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
       Kai šis nustatymas įgalintas, „<ph name="PRODUCT_NAME"/>“ atvers sistemos spausdinimo dialogo langą, o ne integruotą spaudinio peržiūrą, kai naudotojas pateikia puslapio spausdinimo užklausą.
 
       Jei ši politika nenustatyta arba deaktyvinta, įvykdžius spausdinimo komandą atveriamas spaudinio peržiūros ekranas.</translation>
+<translation id="7933141401888114454">Įgalinti prižiūrimų naudotojų kūrimą</translation>
 <translation id="2824715612115726353">Įgalinti inkognito režimą</translation>
 <translation id="1057535219415338480">Įgalinamas tinklo numatymas „<ph name="PRODUCT_NAME"/>“ ir naudotojams neleidžiama keisti šio nustatymo.
 
@@ -864,7 +890,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
       Nenustačius šios politikos, tai bus įgalinta, bet naudotojas (-a) galės tai pakeisti.</translation>
 <translation id="2236488539271255289">Neleisti nė vienoje svetainėje nustatyti vietinių duomenų</translation>
 <translation id="4467952432486360968">Blokuoti trečiosios šalies slapukus</translation>
-<translation id="2041396837791669429">Blokuoti prieigą prie svetainių, neesančių turinio paketuose.</translation>
 <translation id="1305864769064309495">Žodynų susiejimo URL, skirti loginiam bandymui, nurodantys, ar prieiga prie prieglobos turėtų būti leidžiama (tiesa) arba blokuojama (netiesa).
 
 Ši politika skirta naudoti tik „Chrome“ viduje.</translation>
@@ -902,7 +927,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
           Jei nustatysite šią politiką, naudotojai negalės jos keisti arba nepaisyti.
           Jei ši politika nenustatyta, didelis žymeklis bus išjungtas, bet naudotojas galės jį bet kuriuo metu įgalinti.</translation>
 <translation id="2633084400146331575">Įgalinti žodinius atsiliepimus</translation>
-<translation id="7712008868843631413">Įgalinti prižiūrimus naudotojus.</translation>
 <translation id="8731693562790917685">Turinio nustatymų skiltyje leidžiama nurodyti, kaip turi būti naudojamas konkretaus tipo turinys (pvz., slapukai, vaizdai arba „JavaScript“).</translation>
 <translation id="2411919772666155530">Blokuoti pranešimus šiose svetainėse</translation>
 <translation id="6923366716660828830">Nurodomas numatytojo paieškos teikėjo pavadinimas. Jei laukas paliekamas tuščias arba nenustatomas, naudojamas paieškos URL nurodytas prieglobos pavadinimas.
@@ -916,7 +940,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="467236746355332046">Palaikomos funkcijos:</translation>
 <translation id="7632724434767231364">GSSAPI bibliotekos pavadinimas</translation>
 <translation id="3038323923255997294">Uždarius „<ph name="PRODUCT_NAME"/>“ toliau leisti fonines programas</translation>
-<translation id="4652284479838524692">Įgalinti nuotolinį įrenginio patvirtinimą.</translation>
 <translation id="8909280293285028130">Nurodoma laiko trukmė be naudotojo įvesties, po kurios ekranas užrakinamas, kai naudojama kintamosios srovės energija.
 
           Kai šios politikos vertė yra didesnė už nulį, ji nurodo laiko trukmę, kurią naudotojas turi neatlikti jokių veiksmų, kol „<ph name="PRODUCT_OS_NAME"/>“ užrakins ekraną.
@@ -938,6 +961,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 
       Jei ši politika nustatyta į „true“ (tiesa) arba nesukonfigūruota, leidžiama sukurti naujų naudotojų paskyrų, jei pagal „<ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/>“ leidžiama naudotojui prisijungti.</translation>
 <translation id="4389091865841123886">Konfigūruojamas nuotolinis patvirtinimas naudojant TPM mechanizmą.</translation>
+<translation id="3518214502751233558">Nurodykite, ar energijos valdymo delsa ir seanso ilgio apribojimas turėtų būti suaktyvinti tik naudotojui pradėjus seanso veiklą</translation>
 <translation id="8256688113167012935">Valdomas paskyros pavadinimas, kurį „<ph name="PRODUCT_OS_NAME"/>“ rodo atitinkamo įrenginio vietinės paskyros prisijungimo ekrane.
 
       Jei ši politika nustatyta, prisijungimo ekrano prisijungimo vardo parinkiklyje prie atitinkamos vietinės paskyros bus naudojama nurodyta eilutė.
@@ -1020,7 +1044,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
       Kai ši politika yra galiojanti, piktogramos yra slepiamos.
 
       Kai ši politika negalioja arba nesukonfigūruota, piktogramos yra matomos.</translation>
-<translation id="8401282319420373133">Plėtiniams leidžiama naudoti nuotolinio patvirtinimo API.</translation>
 <translation id="5085647276663819155">Neleisti spaudinio peržiūros</translation>
 <translation id="8672321184841719703">Taikomo automatinio naujinio versija</translation>
 <translation id="1689963000958717134">Leidžiama naudoti tinklo konfigūraciją, kad būtų taikoma visiems „<ph name="PRODUCT_OS_NAME"/>“ įrenginio naudotojams. Tinklo konfigūracija yra JSON suformatuota eilutė, kaip nurodyta atvirojo tinklo konfigūracijos formato, aprašyto šiuo adresu: <ph name="ONC_SPEC_URL"/></translation>
@@ -1065,6 +1088,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
       Jei įgalinta, ekrano kopijų negalima kurti naudojant sparčiuosius klavišus ar plėtinio API.
 
       Jei neleidžiama ar nenurodyta, leidžiama kurti ekrano kopijas.</translation>
+<translation id="5697306356229823047">Pateikti įrenginio naudotojų ataskaitą</translation>
 <translation id="8649763579836720255">„Chrome“ OS įrenginiai gali naudoti nuotolinį patvirtinimą (patvirtinta prieiga), kad gautų „Chrome“ OS CA išduotą sertifikatą, pagal kurį nurodoma, kad įrenginys yra tinkamas paleisti apsaugotą turinį. Šis procesas apima aparatinės įrangos patvirtinimo informacijos siuntimą „Chrome“ OS CA, kuri unikaliai identifikuoja įrenginį.
 
           Jei šis nustatymas negalioja, įrenginys nenaudos nuotolinio turinio apsaugos patvirtinimo ir galbūt įrenginys negalės paleisti apsaugoto turinio.
@@ -1147,6 +1171,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
       Jei įgalinsite šį nustatymą, naršymo istorija nebus išsaugoma.
 
       Jei šio nustatymo neleisite arba nenustatysite, naršymo istorija bus išsaugoma.</translation>
+<translation id="7295019613773647480">Įgalinti prižiūrimus naudotojus</translation>
 <translation id="2759224876420453487">Tvarkyti naudotojo elgseną kelių profilių seanse</translation>
 <translation id="3844092002200215574">Konfigūruojamas katalogas, kurį „<ph name="PRODUCT_NAME"/>“ naudos talpyklos failams diske saugoti.
 
@@ -1211,8 +1236,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
           Jei nustatysite šią politiką, naudotojai galės laikinai nepaisyti jos įgalinę arba išjungę didelio kontrasto režimą. Tačiau naudotojo pasirinkimas nėra ilgalaikis ir numatytasis nustatymas atkuriamas, kai prisijungimo ekranas rodomas iš naujo arba kai naudotojas vieną minutę neatlieka jokių veiksmų prisijungimo ekrane.
 
           Jei ši politika nenustatyta, didelio kontrasto režimas yra išjungtas, kai prisijungimo ekranas rodomas pirmą kartą. Naudotojai gali bet kada įgalinti arba išjungti didelio kontrasto režimą, o jo būsena skirtingiems naudotojams prisijungimo ekrane bus vienoda.</translation>
-<translation id="8580857153747395000">Įspėti, kai apsilankoma svetainėse, neesančiose turinio paketuose.</translation>
-<translation id="350796261613621561">Įgalinti prižiūrimų naudotojų kūrimą.</translation>
 <translation id="602728333950205286">Numatytojo paieškos teikėjo intuityviosios paieškos URL</translation>
 <translation id="3030000825273123558">Įgalinti metrikos ataskaitų teikimą</translation>
 <translation id="8465065632133292531">Intuityviosios paieškos URL parametrai, kuriuose naudojama POST</translation>
@@ -1228,6 +1251,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 
           Jei šis nustatymas neleidžiamas, ši funkcija nepasiekiama.</translation>
 <translation id="1675002386741412210">Palaikoma naudojant:</translation>
+<translation id="1608755754295374538">URL, kuriems bus suteikta prieiga prie garso užfiksavimo įrenginių be paraginimo</translation>
 <translation id="3547954654003013442">Įgaliotojo serverio nustatymai</translation>
 <translation id="5921713479449475707">Leisti automatinio naujinio atsisiuntimus naudojant HTTP</translation>
 <translation id="4482640907922304445">Rodomas pagrindinio puslapio mygtukas „<ph name="PRODUCT_NAME"/>“ įrankių juostoje.
@@ -1239,8 +1263,8 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
       Jei įgalinate šį nustatymą ar jo neleidžiate, naudotojai negali jo pakeisti ar panaikinti „<ph name="PRODUCT_NAME"/>“.
 
       Nenustačius šios politikos, naudotojas (-a) galės pasirinkti, ar rodyti pagrindinio puslapio mygtuką.</translation>
-<translation id="6897718480289510689">Leisti pasiekti svetaines, neesančias turinio paketuose.</translation>
 <translation id="2518231489509538392">Leisti paleisti garsą</translation>
+<translation id="8146727383888924340">Leisti naudotojams pasinaudoti pasiūlymais atliekant „Chrome“ OS registraciją</translation>
 <translation id="7301543427086558500">Nurodomas alternatyvių URL, kuriuos galima naudoti paieškos terminams iš paieškos variklio gauti, sąrašas. URL turėtų būti eilutė „<ph name="SEARCH_TERM_MARKER"/>“, kuri bus naudojama paieškos terminams gauti.
 
           Ši politika yra pasirenkamoji. Jei ji nenustatyta, gaunant paieškos terminus nebus naudojami jokie alternatyvūs URL.
@@ -1271,7 +1295,11 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="5208240613060747912">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose neleidžiama pateikti pranešimų, sąrašą.
 
           Nenustačius šios politikos, visose svetainėse naudojama visuotinė numatytoji vertė iš politikos „Numatytasis pranešimų nustatymas“ (jei nustatyta) arba naudotojo asmeninės konfigūracijos.</translation>
-<translation id="7927140259706020912">URL, kuriems bus suteikta prieiga prie garso fiksavimo įrenginių be paraginimo.</translation>
+<translation id="346731943813722404">Nurodo, ar energijos valdymo delsa ir seanso ilgio apribojimas turėtų būti suaktyvinti tik naudotojui pradėjus seanso veiklą.
+
+          Jei ši politika nustatyta į „True“, energijos valdymo delsa ir seanso ilgio apribojimas nesuaktyvinami, kol naudotojas nepradeda seanso veiklos.
+
+          Jei ši politika nustatyta į „False“, energijos valdymo delsa ir seanso ilgio apribojimas suaktyvinami iškart pradėjus seansą.</translation>
 <translation id="4600786265870346112">Įgalinti didelį žymeklį</translation>
 <translation id="8592105098257899882">Konfigūruojamas talpyklos, kurią „<ph name="PRODUCT_NAME"/>“ naudos talpykloje esantiems failams saugoti diske, dydis.
 
@@ -1458,7 +1486,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
           Politikos vertė turėtų būti nurodoma milisekundėmis. Vertės sumažinamos, kad neviršytų neveikos delsos laiko.</translation>
 <translation id="1897365952389968758">Leisti visose svetainėse paleisti „JavaScript“</translation>
 <translation id="5244714491205147861">Energijos valdymas prisijungimo ekrane</translation>
-<translation id="3619270953033888719">Įgalinti nuotolinio patvirtinimo naudojimą siekiant apsaugoti įrenginio turinį.</translation>
 <translation id="922540222991413931">Konfigūruokite plėtinio, programos ir naudotojo scenarijaus įdiegimo šaltinius.</translation>
 <translation id="7323896582714668701">Papildomi „<ph name="PRODUCT_NAME"/>“ komandinės eilutės parametrai</translation>
 <translation id="6931242315485576290">Neleisti sinchronizuoti duomenų su „Google“</translation>
@@ -1492,6 +1519,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
           Jei reikia pavyzdinių šablonų, žr. šiuo adresu: http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="3101501961102569744">Pasirinkti, kaip nurodyti tarpinio serverio nustatymus</translation>
 <translation id="1803646570632580723">Paleidimo priemonėje prisegtų rodomų programų sąrašas</translation>
+<translation id="1062011392452772310">Įgalinti nuotolinį įrenginio patvirtinimą</translation>
 <translation id="7774768074957326919">Naudoti sistemos tarpinio serverio nustatymus</translation>
 <translation id="3891357445869647828">Įgalinti „JavaScript“</translation>
 <translation id="868187325500643455">Leisti visose svetainėse automatiškai paleisti papildinius</translation>
@@ -1535,7 +1563,6 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="7194407337890404814">Numatytojo paieškos teikėjo pavadinimas</translation>
 <translation id="1843117931376765605">Atnaujinti naudotojo politikos reitingą</translation>
 <translation id="5535973522252703021">„Kerberos“ nukreipimo serverio baltasis sąrašas</translation>
-<translation id="4578030379102330182">Įgalinti nuotolinį naudotojo patvirtinimą.</translation>
 <translation id="9187743794267626640">Neleisti montuoti išorinės atminties</translation>
 <translation id="6353901068939575220">Nurodomi parametrai, naudojami ieškant URL naudojant POST. Jie sudaryti iš kableliais atskirtų pavadinimų / verčių porų. Jei vertė yra šablono parametras, pvz., {searchTerms} anksčiau pateiktame pavyzdyje, ji pakeičiama realiais paieškos terminų duomenimis.
 
@@ -1757,6 +1784,7 @@ Jei nustatyta kaip „Netiesa“ arba nenustatyta, kreipiantis į API įvyks kla
 <translation id="8303314579975657113">Nurodoma, kurią GSSAPI biblioteką reikia naudoti, nustatant HTTP autentifikavimą. Galima nustatyti vien tik bibliotekos pavadinimą arba visą kelią.
 
           Nustatymų nepateikus „<ph name="PRODUCT_NAME"/>“ naudos atsarginį numatytąjį bibliotekos pavadinimą.</translation>
+<translation id="8549772397068118889">Įspėti, kai apsilankoma svetainėse, nesančiose turinio paketuose</translation>
 <translation id="7749402620209366169">Įgalinamas nuotolinės prieigos prieglobų autentifikavimas dviem veiksniais vietoje naudotojo (-os) nurodyto PIN kodo naudojimo.
 
           Jei šis nustatymas įgalintas, naudotojai privalo pateikti galiojantį dviejų veiksnių kodą pasiekdami prieglobą.

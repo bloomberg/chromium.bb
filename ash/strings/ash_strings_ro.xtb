@@ -130,6 +130,7 @@ Apăsați Ctrl+Alt+Z pentru a-l dezactiva.</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830">Se activează <ph name="NAME"/></translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="1923539912171292317">Clicuri automate</translation>
 <translation id="1398853756734560583">Maximizați</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: se conectează...</translation>
 <translation id="252373100621549798">Afișaj necunoscut</translation>
@@ -222,6 +223,7 @@ Apăsați Alt+Căutare sau Shift pentru a anula.</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Felicitări! Serviciul de date „<ph name="NAME"/>” a fost activat și este gata de utilizare.</translation>
 <translation id="412065659894267608"><ph name="HOUR"/> h. <ph name="MINUTE"/> min. până la încărcare completă</translation>
+<translation id="7297443947353982503">Numele de utilizator sau parola sunt incorecte sau autentificarea EAP nu a reușit</translation>
 <translation id="6359806961507272919">SMS de la <ph name="PHONE_NUMBER"/></translation>
 <translation id="1244147615850840081">Operator</translation>
 </translationbundle>

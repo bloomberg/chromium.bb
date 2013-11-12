@@ -3,8 +3,11 @@
 <translationbundle lang="fi">
 <translation id="376869769528291915">.</translation>
 <translation id="6015796118275082299">Vuosi</translation>
+<translation id="2094750046714988961">Profiiliohjelmaa ei voi käynnistää, koska ulkoinen tallennustila ei ole valmis</translation>
 <translation id="1256337885411059545">Videon toistaminen epäonnistui</translation>
+<translation id="2520230379124234395">Profiiliohjelma käynnistyi</translation>
 <translation id="7821540960913969614">Aseta päivämäärä</translation>
+<translation id="4859501799452851758">Profiiliohjelma on valmis. Tulokset ovat tiedostossa <ph name="FILENAME"/>.</translation>
 <translation id="3845599764535987402">Tunti</translation>
 <translation id="4932733599132424254">Päiväys</translation>
 <translation id="6727102863431372879">Aseta</translation>
@@ -20,6 +23,7 @@
 <translation id="2732718972699418926">ap</translation>
 <translation id="7096034533295549981">Videota ladataan</translation>
 <translation id="1542044944667958430">Verkkohaku</translation>
+<translation id="6849295950938417341">Profiiliohjelman käynnistys epäonnistui</translation>
 <translation id="6527303717912515753">Jaa</translation>
 <translation id="1822429046913737220">AP/IP</translation>
 <translation id="5789643057113097023">,</translation>

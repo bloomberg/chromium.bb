@@ -130,6 +130,7 @@ Nhấn Ctrl+Alt+Z để tắt.</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830">Kích hoạt <ph name="NAME"/></translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="1923539912171292317">Nhấp chuột tự động</translation>
 <translation id="1398853756734560583">Phóng to</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: Đang kết nối...</translation>
 <translation id="252373100621549798">Màn hình không xác định</translation>
@@ -222,6 +223,7 @@ Nhấn Alt+Search hoặc Shift để hủy.</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Xin chúc mừng! Dịch vụ dữ liệu '<ph name="NAME"/>' của bạn đã được kích hoạt và sẵn sàng sử dụng.</translation>
 <translation id="412065659894267608"><ph name="HOUR"/>g <ph name="MINUTE"/>p cho đến khi đầy</translation>
+<translation id="7297443947353982503">Tên người dùng/mật khẩu không đúng hoặc xác thực EAP không thành công</translation>
 <translation id="6359806961507272919">SMS từ <ph name="PHONE_NUMBER"/></translation>
 <translation id="1244147615850840081">Nhà cung cấp</translation>
 </translationbundle>

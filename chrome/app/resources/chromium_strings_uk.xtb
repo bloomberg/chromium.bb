@@ -16,7 +16,6 @@
 <translation id="1065672644894730302">Не вдається розпізнати налаштування. Деякі функції можуть бути не доступні, а зміни в налаштуваннях не зберігатимуться.</translation>
 <translation id="4222661289444749267">Оновлення Chromium Frame.</translation>
 <translation id="4423735387467980091">Налаштування та керування Chromium</translation>
-<translation id="2843244238218937196">Рендерер Chromium</translation>
 <translation id="1881322772814446296">Ви входите, використовуючи дані облікового запису, яким керує адміністратор. Адміністратор може контролювати ваш профіль Chromium. Ваші дані Chromium, як-от програми, закладки, історія, паролі й інші налаштування, буде назавжди пов’язано з обліковим записом <ph name="USER_NAME"/>. Ці дані можна видалити на інформаційній панелі Облікових записів Google, але ви не зможете пов’язати їх з іншим обліковим записом. Проте ви можете створити новий профіль, щоб зберігати наявні дані Chromium окремо. <ph name="LEARN_MORE"/></translation>
 <translation id="7128196614940529818">Chromium Frame уже встановлений і доступний всім користувачам цього комп’ютера. Якщо ви хочете встановити Chromium Frame на рівні користувача, спершу треба видалити версію на рівні системи, установлену адміністратором.</translation>
 <translation id="731644333568559921">Оновити &amp;ОС Chromium</translation>
@@ -29,6 +28,7 @@
 <translation id="6953661834318318668">Панель інструментів Chromium</translation>
 <translation id="2245147136185581459">Детектор приєднаного порталу Chromium</translation>
 <translation id="4285930937574705105">Не вдалося встановити через невизначену помилку. Якщо Chromium зараз запущено, закрийте його та повторіть спробу.</translation>
+<translation id="1396446129537741364">Chromium намагається показати паролі.</translation>
 <translation id="3555616473548901994">Видалення завершено.</translation>
 <translation id="2886012850691518054">Додатково: допоможіть покращити Chromium,  автоматично надсилаючи статистику використання та звіти про аварійне завершення роботи в Google.</translation>
 <translation id="580822234363523061">Перейдіть у
@@ -50,6 +50,7 @@
 <translation id="4831257561365056138">Видалити панель запуску програм Chromium</translation>
 <translation id="4222580632002216401">Ви ввійшли в Chromium. Проте ваш адміністратор вимкнув синхронізацію.</translation>
 <translation id="4207043877577553402"><ph name="BEGIN_BOLD"/>Застереження:<ph name="END_BOLD"/> Chromium не може заборонити розширенням реєструвати вашу історію веб-перегляду. Щоб вимкнути це розширення в режимі анонімного перегляду, зніміть прапорець поруч із цим параметром.</translation>
+<translation id="4516868174453854611">Тепер, коли ви ввійшли, ви можете користуватися своїми вкладками, закладками й іншими налаштуваннями Chromium на своєму ноутбуку, телефоні та планшеті. Ви також отримуватимете більш відповідні пропозиції та функції для служб Google.</translation>
 <translation id="985602178874221306">The Chromium Authors</translation>
 <translation id="8628626585870903697">У Chromium немає засобу перегляду файлів PDF, який потрібен для перегляду версії для друку.</translation>
 <translation id="7138853919861947730">Chromium може використовувати веб-служби для покращення умов перегляду.</translation>
@@ -81,7 +82,7 @@
 <translation id="4298853828775962437">http://support.google.com/chrome/?p=ib_chromeframe</translation>
 <translation id="3509308970982693815">Закрийте всі вікна Chromium і повторіть спробу.</translation>
 <translation id="4077262827416206768">Щоб зміна почала діяти, закрийте всі вікна Chromium і перезапустіть його.</translation>
-<translation id="5472687196979159893"><ph name="FILE_NAME"/> може змінити ваші налаштування пошуку в Chromium.</translation>
+<translation id="750717762378961310">Цей файл шкідливий, тому Chromium заблокував його.</translation>
 <translation id="6944967875980567883">Модулі, завантажені в Chromium</translation>
 <translation id="6899795326977034905">В ОС Mac паролі зберігаються в системі Keychain, де їх можуть застосовувати чи синхронізувати інші користувачі Chromium, які спільно користуються цим обліковим записом ОС X.</translation>
 <translation id="118298050220780080">Ви спробували зв’язатися з доменом &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, але сервер надав сертифікат, виданий органом, який оперативна система вашого комп’ютера не вважає надійним. Це може означати, що сервер створив власні облікові дані системи захисту, ідентифікаційній інформації яких Chromium не може довіряти, або зловмисник намагається перехопити дані, якими ви обмінюєтеся.</translation>
@@ -122,7 +123,6 @@
 <translation id="6248213926982192922">Зробити Chromium переглядачем за умовчанням</translation>
 <translation id="6309712487085796862">Chromium використовує вашу камеру.</translation>
 <translation id="7337881442233988129">Chromium</translation>
-<translation id="3069161343438701711">Виконавець Chromium</translation>
 <translation id="5820394555380036790">ОС Chromium</translation>
 <translation id="6757767188268205357">Не турбувати мене</translation>
 <translation id="1745962126679160932">Chromium надійно зберігатиме вашу інформацію, тож вам не потрібно буде вводити її знову. Але під час майбутніх платежів ви все одно маєте підтверджувати код безпеки картки.</translation>
@@ -133,6 +133,7 @@
 <translation id="3582788516608077514">Оновлення Chromium...</translation>
 <translation id="7223968959479464213">Диспетчер завдань – Chromium</translation>
 <translation id="3838208658251026018">Chromium імпортує з <ph name="BROWSER_COMPONENT"/> такі елементи:</translation>
+<translation id="1779356040007214683">Щоб зробити Chromium безпечнішим, ми вимкнути деякі розширення, джерелом яких не є <ph name="IDS_EXTENSION_WEB_STORE_TITLE"/>, і які, можливо, було додано без вашого відома.</translation>
 <translation id="6638567566961868659">Шукайте свої закладки в меню Chromium або на панелі закладок.</translation>
 <translation id="2673087257647337101">Майже оновлено. Перезапустіть Chromium, щоб закінчити оновлення.</translation>
 <translation id="5398878173008909840">Доступна нова версія Chromium.</translation>
@@ -154,11 +155,11 @@
 Деякі функції можуть бути недоступними. Укажіть інший каталог профілю або скористайтеся новішою версією Chromium.</translation>
 <translation id="9013087743919948559">Додати в Chromium</translation>
 <translation id="6212496753309875659">На цьому комп’ютері вже встановлено новішу версію Chromium. Якщо програмне забезпечення не працює, видаліть Chromium і повторіть спробу.</translation>
-<translation id="3014684866565908571">Утиліта Chromium</translation>
 <translation id="1298199220304005244">Отримати довідку щодо користування ОС Chromium</translation>
 <translation id="8187289872471304532">Перейдіть у меню
           Applications &gt; System Preferences &gt; Network &gt; Advanced &gt; Proxies (Програми &gt; Системні налаштування &gt; Мережа &gt; Розширені &gt; Проксі-сервери)
           і зніміть прапорці біля всіх вибраних проксі-серверів.</translation>
+<translation id="2801146392936645542">Файл <ph name="FILE_NAME"/> шкідливий, тому Chromium заблокував його.</translation>
 <translation id="4488676065623537541">Ваші платіжні дані збережено в Chromium.</translation>
 <translation id="1691304614444223855">Chromium Frame оновлено. Перезапустіть свій веб-переглядач. Версія Chromium: <ph name="TODO_0001"/>, версія Chromium Frame: <ph name="TODO_0002"/></translation>
 <translation id="130631256467250065">Ваші зміни почнуть діяти під час наступного перезапуску пристрою.</translation>
@@ -166,6 +167,7 @@
 <translation id="1105130903706696483">Chromium завершив роботу неправильно. Щоб повернутися до відкритих сторінок, натисніть &quot;Відновити&quot;.</translation>
 <translation id="1929939181775079593">Chromium не відповідає. Перезапустити зараз?</translation>
 <translation id="1414495520565016063">Ви ввійшли в Chromium.</translation>
+<translation id="1902135785017821799">Файл <ph name="FILE_NAME"/> змінює налаштування подібно до зловмисного програмного забезпечення, тому Chromium заблокував його.</translation>
 <translation id="3155163173539279776">Перезапустити Chromium</translation>
 <translation id="2966088006374919794">Chromium потребує запуску зовнішньої програми обробки посилань типу <ph name="SCHEME"/>. Потрібний тип посилання: <ph name="PROTOLINK"/>.</translation>
 <translation id="6287463253129672858">Неможливо встановити версію Chromium Frame, аналогічну запущеній зараз. Закрийте Chromium Frame і повторіть спробу.</translation>
@@ -196,10 +198,8 @@
 <translation id="1708666629004767631">Доступна нова, надійніша версія Chromium.</translation>
 <translation id="1539981464052805551">Авторське право 2013 Автори Chromium. Усі права захищено.</translation>
 <translation id="378917192836375108">Chromium дозволяє натиснути номер телефону в Інтернеті та зателефонувати за ним через Skype.</translation>
-<translation id="7331621180831839236"><ph name="FILE_NAME"/> може змінити ваші налаштування Chromium.</translation>
 <translation id="8724049448828509830">Триває завантаження. Вийти з Chromium і скасувати це завантаження?</translation>
 <translation id="3360567213983886831">Бінарні файли Chromium</translation>
-<translation id="7503101070699687603">Хост плагіна Chromium</translation>
 <translation id="8985587603644336029">Хтось раніше входив у Chromium на цьому комп’ютері як <ph name="ACCOUNT_EMAIL_LAST"/>. Якщо це не ваш обліковий запис, створіть нового користувача Chromium, щоб зберігати свою інформацію окремо.
 
 Якщо ви все одно ввійдете, наявні дані Chromium, як-от закладки, історію й інші налаштування, буде об’єднано з обліковим записом <ph name="ACCOUNT_EMAIL_NEW"/>.</translation>

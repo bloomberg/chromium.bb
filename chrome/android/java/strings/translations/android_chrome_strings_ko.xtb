@@ -1,26 +1,43 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ko">
+<translation id="6831043979455480757">번역</translation>
+<translation id="7644305409888602715">페이지를 <ph name="SOURCE_LANGUAGE"/>로 번역 중...</translation>
 <translation id="1491151370853475546">페이지 새로고침</translation>
 <translation id="7658239707568436148">취소</translation>
 <translation id="6458785801851713928">도메인에 대해 동기화를 사용할 수 없습니다.</translation>
 <translation id="2731700343119398978">잠시 기다려 주세요...</translation>
+<translation id="7378627244592794276">번역 안함</translation>
 <translation id="3358663646935160692"><ph name="DOMAIN_NAME"/>에서 관리하는 계정입니다.
 
 관리 계정으로 로그인하면 사용자의 Chrome 프로필에 대한 제어 권한이 관리자에게 부여됩니다. 사용자의 Chrome 데이터는 이 계정에 영구적으로 연결되며, 이 계정의 연결을 해제하면 로컬 Chrome 데이터가 삭제됩니다.</translation>
 <translation id="1623104350909869708">이 페이지가 추가적인 대화를 생성하지 않도록 차단</translation>
+<translation id="624558823898732418">번역 언어: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="3896036286668839683">인증서 뷰어</translation>
 <translation id="8583805026567836021">계정 데이터 지우기</translation>
+<translation id="8730621377337864115">완료</translation>
 <translation id="4170011742729630528">서비스를 사용할 수 없습니다. 나중에 다시 시도해 주세요.</translation>
 <translation id="8627706565932943526">동기화 오류</translation>
+<translation id="656628257199996201"><ph name="SOURCE_LANGUAGE"/> 항상 번역</translation>
+<translation id="9137013805542155359">원본 보기</translation>
+<translation id="5684874026226664614">죄송합니다. 이 페이지를 번역할 수 없습니다.</translation>
 <translation id="3136378934686431938">로그인 세부정보를 업데이트하세요.</translation>
+<translation id="6042308850641462728">더보기</translation>
+<translation id="8034522405403831421">이 페이지는 <ph name="SOURCE_LANGUAGE"/>로 되어 있습니다. <ph name="TARGET_LANGUAGE"/>로 번역하시겠습니까?</translation>
+<translation id="8725066075913043281">다시 시도하세요</translation>
 <translation id="4510973599275542560">새로고침 안함</translation>
 <translation id="9154176715500758432">이 페이지에 머무르기</translation>
 <translation id="7063006564040364415">동기화 서버에 연결할 수 없습니다.</translation>
+<translation id="4271185234001491831"><ph name="LANGUAGE"/> 번역 안함</translation>
+<translation id="1285320974508926690">이 사이트 번역 안함</translation>
+<translation id="5164482624172255778">다음에 Chrome에서 이 사이트의 <ph name="LANGUAGE"/> 페이지를 번역하시겠습니까?</translation>
+<translation id="8528538445849828817">페이지 언어: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="6512448926095770873">이 페이지 나오기</translation>
 <translation id="7947953824732555851">수락 및 로그인</translation>
 <translation id="6040143037577758943">닫기</translation>
+<translation id="969096075394517431">언어 변경</translation>
 <translation id="5032574515228824816">프롬프트</translation>
+<translation id="1742134235943978220"><ph name="TARGET_LANGUAGE"/>로 번역했습니다.</translation>
 <translation id="6965382102122355670">확인</translation>
 <translation id="7495038789730067783">로그인 확인</translation>
 </translationbundle>

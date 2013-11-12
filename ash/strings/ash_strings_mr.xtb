@@ -130,6 +130,7 @@
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830"><ph name="NAME"/> सक्रिय करत आहे</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="1923539912171292317">स्वयंचलित क्लिक</translation>
 <translation id="1398853756734560583">वाढवा</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: कनेक्ट करत आहे...</translation>
 <translation id="252373100621549798">अज्ञात प्रदर्शन</translation>
@@ -222,6 +223,7 @@
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">अभिनंदन! आपली '<ph name="NAME"/>' डेटा सेवा सक्रिय केली गेली आहे आणि वापरण्यास  सज्ज आहे.</translation>
 <translation id="412065659894267608">पूर्ण होईपर्यंत  <ph name="HOUR"/>ता <ph name="MINUTE"/>मि</translation>
+<translation id="7297443947353982503">वापरकर्तानाव/संकेतशब्द चुकीचा किंवा EAP-प्रमाणीकरण अयशस्वी</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER"/> कडून SMS</translation>
 <translation id="1244147615850840081">कॅरियर</translation>
 </translationbundle>

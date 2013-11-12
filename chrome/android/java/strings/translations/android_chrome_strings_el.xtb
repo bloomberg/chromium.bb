@@ -1,26 +1,43 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="el">
+<translation id="6831043979455480757">Μετάφραση</translation>
+<translation id="7644305409888602715">Μετάφραση σελίδας στα <ph name="SOURCE_LANGUAGE"/>…</translation>
 <translation id="1491151370853475546">Εκ νέου φόρτωση αυτής της σελίδας</translation>
 <translation id="7658239707568436148">Ακύρωση</translation>
 <translation id="6458785801851713928">Η υπηρεσία συγχρονισμού δεν είναι διαθέσιμη για τον τομέα σας.</translation>
 <translation id="2731700343119398978">Περιμένετε…</translation>
+<translation id="7378627244592794276">Όχι</translation>
 <translation id="3358663646935160692">Αυτός ο λογαριασμός τελεί υπό διαχείριση του <ph name="DOMAIN_NAME"/>.
  
 Έχετε συνδεθεί με έναν διαχειριζόμενο λογαριασμό και παραχωρείτε τον έλεχγο διαχείρισής του μέσω του προφίλ σας Chrome. Τα δεδομένα σας Chrome θα συσχετιστούν μόνιμα με αυτόν το λογαριασμό. Η αποσύνδεση από αυτόν το λογαριασμό θα διαγράψει τα τοπικά δεδομένα Chrome.</translation>
 <translation id="1623104350909869708">Αποτροπή δημιουργίας πρόσθετων παραθύρων διαλόγου από αυτήν τη σελίδα</translation>
+<translation id="624558823898732418">Γλώσσα μετάφρασης: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="3896036286668839683">Πρόγραμμα προβ. πιστοποιητικού</translation>
 <translation id="8583805026567836021">Διαγραφή δεδομένων λογαριασμού</translation>
+<translation id="8730621377337864115">Τέλος</translation>
 <translation id="4170011742729630528">Η υπηρεσία δεν είναι διαθέσιμη. Δοκιμάστε ξανά αργότερα.</translation>
 <translation id="8627706565932943526">Σφάλμα συγχρονισμού</translation>
+<translation id="656628257199996201">Να γίνεται πάντα μετάφραση των <ph name="SOURCE_LANGUAGE"/></translation>
+<translation id="9137013805542155359">Εμφάνιση πρωτοτύπου</translation>
+<translation id="5684874026226664614">Ωχ. Δεν ήταν δυνατή η μετάφραση αυτής της σελίδας.</translation>
 <translation id="3136378934686431938">Ενημερώστε τις λεπτομέρειες της σύνδεσής σας.</translation>
+<translation id="6042308850641462728">Περισσότερα</translation>
+<translation id="8034522405403831421">Αυτή η σελίδα είναι στα <ph name="SOURCE_LANGUAGE"/>. Μετάφρασή της στα <ph name="TARGET_LANGUAGE"/>;</translation>
+<translation id="8725066075913043281">Προσπαθήστε ξανά</translation>
 <translation id="4510973599275542560">Να μην γίνει επαναφ.</translation>
 <translation id="9154176715500758432">Παραμονή σε αυτή τη σελίδα</translation>
 <translation id="7063006564040364415">Δεν ήταν δυνατή η σύνδεση στον διακομιστή συγχρονισμού.</translation>
+<translation id="4271185234001491831">Να μην γίνεται ποτέ μετάφραση από <ph name="LANGUAGE"/></translation>
+<translation id="1285320974508926690">Να μην γίνεται ποτέ μετάφραση αυτού του ιστότοπου</translation>
+<translation id="5164482624172255778">Θέλετε το Google Chrome να προσφέρεται να μεταφράσει τις σελίδες <ph name="LANGUAGE"/> από αυτόν τον ιστότοπο την επόμενη φορά;</translation>
+<translation id="8528538445849828817">Γλώσσα σελίδας: <ph name="SOURCE_LANGUAGE"/></translation>
 <translation id="6512448926095770873">Έξοδος από αυτή τη σελίδα</translation>
 <translation id="7947953824732555851">Αποδοχή και σύνδεση</translation>
 <translation id="6040143037577758943">Κλείσιμο</translation>
+<translation id="969096075394517431">Αλλαγή γλωσσών</translation>
 <translation id="5032574515228824816">Προτροπή</translation>
+<translation id="1742134235943978220">Έγινε μετάφραση σε <ph name="TARGET_LANGUAGE"/>.</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="7495038789730067783">Επιβεβαίωση σύνδεσης</translation>
 </translationbundle>

@@ -98,6 +98,7 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
           OPOMBA: Privzeta nastavitev se razlikuje v napravah za potrošnike in napravah za podjetja: v napravah za potrošnike so nadzorovani uporabniki privzeto omogočeni, v napravah za podjetja pa privzeto onemogočeni.</translation>
 <translation id="69525503251220566">Parameter, ki omogoča funkcijo iskanja po sliki za privzetega ponudnika iskanja</translation>
 <translation id="5469825884154817306">Blokiranje slik na teh mestih</translation>
+<translation id="5827231192798670332">Izbere strategijo za sproščanje prostora na disku med samodejnim čiščenjem</translation>
 <translation id="8412312801707973447">Ali se izvaja spletni pregled OCSP/CRL</translation>
 <translation id="6649397154027560979">Ta pravilnik je zastarel, Namesto njega uporabite URLBlacklist.
 
@@ -202,6 +203,8 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="6036523166753287175">Omogoči prehod skozi požarni zid iz gostitelja za oddaljeni dostop</translation>
 <translation id="1096105751829466145">Privzeti iskalnik</translation>
 <translation id="7567380065339179813">Dovoli vtičnike na teh mestih</translation>
+<translation id="4555850956567117258">Omogoči oddaljeno potrditev za uporabnika</translation>
+<translation id="5966615072639944554">Razširitve, ki lahko uporabljajo API za oddaljeno potrditev</translation>
 <translation id="1617235075406854669">Omogočanje brisanja zgodovine brskalnika in prenosov</translation>
 <translation id="5290940294294002042">Določite seznam vtičnikov, ki jih lahko uporabnik omogoči ali onemogoči</translation>
 <translation id="3153348162326497318">Omogoča nastavitev, katerih razširitev uporabniki NE morejo namestiti. Že nameščene razširitve bodo odstranjene, če so na seznamu blokiranih.
@@ -260,6 +263,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
           Če ta pravilnik ni nastavljen, bo uporabljen pravilnik »AllowImages« in uporabnik ga bo lahko spremenil.</translation>
 <translation id="5630352020869108293">Obnovi zadnjo sejo</translation>
+<translation id="2067011586099792101">Blokira dostop do spletnih mest zunaj paketov vsebine</translation>
 <translation id="4980635395568992380">Vrsta podatkov:</translation>
 <translation id="3096595567015595053">Seznam omogočenih vtičnikov</translation>
 <translation id="3048744057455266684">Če je pravilnik nastavljen in predlagani iskalni URL iz naslovne vrstice vsebuje ta parameter v poizvedbi ali identifikatorju delov, predlog prikaže iskalne izraze in ponudnika iskanja namesto neobdelanega iskalnega URL-ja.
@@ -279,11 +283,13 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
           Če pravilnik ni nastavljen, se za vsa spletna mesta uporabi globalna privzeta vrednost iz pravilnika »DefaultCookiesSetting«, kadar je ta pravilnik nastavljen, ali iz osebnih nastavitev uporabnika.
 
           Če je pravilnik »RestoreOnStartup« nastavljen, da se obnovijo URL-ji prejšnjih sej, ta pravilnik ne bo upoštevan in piškotki za ta spletna mesta bodo trajno shranjeni.</translation>
+<translation id="4807950475297505572">Uporabniki, pri katerih je minilo največ časa, odkar so bili uporabljeni, se odstranijo, dokler ni dovolj prostora</translation>
 <translation id="8828766846428537606">Nastavi privzeto domačo stran za <ph name="PRODUCT_NAME"/> in prepreči, da bi jo uporabniki spreminjali.
 
       Nastavitve domače strani uporabnika so popolnoma zaklenjene, če nastavite, da je stran z novim zavihkom domača stran oziroma izberete URL za domačo stran. Če ne navedete URL-ja domače strani, bo lahko uporabnik z ukazom »chrome://newtab« še vedno nastavil, da je domača stran stran z novim zavihkom.</translation>
 <translation id="2231817271680715693">Uvoz zgodovine brskanja privzetega brskalnika ob prvem zagonu</translation>
 <translation id="1353966721814789986">Začetne strani</translation>
+<translation id="7173856672248996428">Kratkotrajni profil</translation>
 <translation id="1841130111523795147">Dovoljuje uporabniku prijavo v <ph name="PRODUCT_NAME"/> in uporabnikom preprečuje spreminjanje te nastavitve.
 
       Če nastavite ta pravilnik, lahko določite, ali je uporabniku dovoljena prijava v <ph name="PRODUCT_NAME"/> ali ne.</translation>
@@ -293,6 +299,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="6368403635025849609">Dovoli JavaScript na teh mestih</translation>
 <translation id="6074963268421707432">Nobenemu spletnemu mestu ne dovoli, da pokaže namizna obvestila</translation>
 <translation id="8614804915612153606">Onemogoči samodejno posodabljanje</translation>
+<translation id="4834526953114077364">Uporabniki, pri katerih je minilo največ časa, odkar so bili uporabljeni, in se niso prijavili v zadnjih treh mesecih, se odstranijo, dokler ni dovolj prostora</translation>
 <translation id="382476126209906314">Nastavitev predpone »TalkGadget« za gostitelje oddaljenega dostopa</translation>
 <translation id="6561396069801924653">Prikaz možnosti funkcij za ljudi s posebnimi potrebami v meniju sistemske vrstice</translation>
 <translation id="8104962233214241919">Samodejno izberi potrdila odjemalcev za ta spletna mesta</translation>
@@ -360,6 +367,13 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Če to nastavitev omogočite ali onemogočite, je uporabniki v programu <ph name="PRODUCT_NAME"/> ne morejo spremeniti ali preglasiti.
 
       Če ta pravilnik ni nastavljen, bo veljala nastavitev, ki jo uporabnik izbere ob namestitvi ali ob prvem zagonu.</translation>
+<translation id="4784220343847172494">Nadzira delovanje samodejnega čiščenja v napravah s sistemom <ph name="PRODUCT_OS_NAME"/>. Samodejno čiščenje sprosti prostor na disku in se sproži, ko doseže količina nezasedenega prostora na disku kritično raven.
+
+      Če je ta pravilnik nastavljen na »RemoveLRU«, bo samodejno čiščenje odstranjevalo uporabnike iz naprave. Uporabniki bodo odstranjeni glede na čas, ki je pretekel od njihove zadnje prijave, pri čemer bodo najprej odstranjeni uporabniki z najdaljšim časom od zadnje prijave. Odstranjevanje se bo končalo takoj, ko bo na voljo dovolj prostora.
+
+      Če je ta pravilnik nastavljen na »RemoveLRUIfDormant«, bo samodejno čiščenje odstranjevalo uporabnike, ki se niso prijavili vsaj tri mesece. Nato bodo odstranjeni uporabniki z naslednjim najdaljšim časom od zadnje prijave. Odstranjevanje se bo končalo takoj, ko bo na voljo dovolj prostora.
+
+      Če ta pravilnik ni nastavljen, samodejno čiščenje uporablja privzeto vgrajeno strategijo. Trenutno je to strategija »RemoveLRUIfDormant«.</translation>
 <translation id="6256787297633808491">Sistemske zastavice, ki se uporabijo ob zagonu Chroma</translation>
 <translation id="2516600974234263142">Omogoča tiskanje v brskalniku <ph name="PRODUCT_NAME"/> in uporabnikom prepreči spreminjanje te nastavitve.
 
@@ -477,6 +491,9 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
           Če je ta nastavitev omogočena, so vhodne in izhodne naprave gostitelja onemogočene, ko je vzpostavljena povezava na daljavo.
 
           Če je ta nastavitev onemogočena ali ni nastavljena, lahko lokalni in oddaljeni uporabniki komunicirajo z gostiteljem, ko je v skupni rabi.</translation>
+<translation id="4894257424747841850">Poročanje o seznamu nedavno prijavljenih uporabnikov naprave.
+
+      Če pravilnik ni nastavljen ali je nastavljen na »False«, se poročilo o uporabnikih ne pošlje.</translation>
 <translation id="1426410128494586442">Da</translation>
 <translation id="4897928009230106190">Določa parametre, uporabljene pri iskanju predlogov z metodo POST. Sestavljena je iz parov ime/vrednost, ločenih z vejico. Če je vrednost parameter predloge, kot je v zgornjih primerih {searchTerms}, bo zamenjana s pravimi podatki iskalnih izrazov.
 
@@ -554,12 +571,14 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
       S to nastavitvijo so statistični podatki o pomnilniku iz plošče s profili v orodjih za razvijalce na voljo spletni strani.</translation>
 <translation id="5776485039795852974">Vprašaj me vsakič, ko želi mesto pokazati namizna obvestila</translation>
+<translation id="5047604665028708335">Omogoči dostop do spletnih mest zunaj paketov vsebine</translation>
 <translation id="5052081091120171147">Če je ta pravilnik omogočen, se zgodovina brskanja uvozi iz trenutnega privzetega brskalnika. Če je omogočen, ta pravilnik vpliva tudi na pogovorno okno za uvoz.
 
      Če je onemogočen, se zgodovina brskanja stran ne uvozi.
 
       Če ni nastavljen, bo uporabnik morda vprašan, ali naj jo uvozi, ali pa bo uvoz izveden samodejno.</translation>
 <translation id="6786747875388722282">Razširitve</translation>
+<translation id="7132877481099023201">URL-ji, ki jim bo brez poziva dovoljen dostop do naprav za zajem videa</translation>
 <translation id="8947415621777543415">Prijava lokacije naprave</translation>
 <translation id="1655229863189977773">Nastavi velikost predpomnilnika diska v bajtih</translation>
 <translation id="6376842084200599664">Omogoča določitev seznama razširitev, ki se namestijo v ozadju brez poseganja uporabnika.
@@ -574,6 +593,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
            Če ta pravilnik ni nastavljen, lahko uporabniki odstranijo katero koli razširitev v brskalniku <ph name="PRODUCT_NAME"/>.</translation>
 <translation id="6899705656741990703">Samodejno zaznavanje nastavitev proxyja</translation>
+<translation id="8382184662529825177">Omogoči uporabo oddaljenega potrjevanja za zaščito vsebine za napravo</translation>
 <translation id="7003334574344702284">Če je pravilnik omogočen, se shranjena gesla uvozijo iz prejšnjega privzetega brskalnika. Če je pravilnik omogočen, vpliva tudi na pogovorno okno za uvoz.
 
       Če je onemogočen, se shranjena gesla ne uvozijo.
@@ -587,6 +607,13 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="3236046242843493070">Vzorci URL-jev, ki omogočajo namestitev razširitev, aplikacij in uporabniških skriptov iz</translation>
 <translation id="2498238926436517902">Vedno samodejno skrij polico</translation>
 <translation id="253135976343875019">Časovni zamik opozorila o nedejavnosti ob napajanju iz električnega omrežja</translation>
+<translation id="480987484799365700">Če je ta pravilnik omogočen, vsili preklop profila v kratkotrajni način. Če je ta pravilnik naveden kot pravilnik operacijskega sistema (npr. predmet pravilnika skupine v sistemu Windows), velja za vsak profil v sistemu. Če je pravilnik nastavljen kot pravilnik za oblak, velja samo za profil, ki je prijavljen z upravljanim računom.
+
+      Podatki profila ostanejo v tem načinu na disku samo toliko časa, dokler traja seja uporabnika. Funkcije, kot so zgodovina brskalnika, razširitve in njihovi podatki ter spletni podatki (piškotki in spletne zbirke podatkov), se po zaprtju brskalnika ne ohranijo. Vendar to uporabniku ne prepreči ročnega prenašanja podatkov na disk in shranjevanja ali tiskanja strani.
+
+      Če je uporabnik omogočil sinhronizacijo, se vsi ti podatki ohranijo v profilu za sinhronizacijo, kot to velja za navadne profile. Če pravilnik tega izrecno ne onemogoča, je na voljo tudi način brez beleženja zgodovine.
+
+      Če je ta pravilnik onemogočen ali ni nastavljen, se pri prijavi uporabijo navadni profili.</translation>
 <translation id="6997592395211691850">Ali so potrebna spletna preverjanja OCSP/CRL za lokalna sidra zaupanja?</translation>
 <translation id="152657506688053119">Seznam nadomestnih URL-jev za privzetega ponudnika iskanja</translation>
 <translation id="8992176907758534924">Nobenemu spletnemu mestu ne dovoli prikaza slik</translation>
@@ -780,7 +807,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="7003746348783715221">Nastavitve za <ph name="PRODUCT_NAME"/></translation>
 <translation id="4723829699367336876">Omogoči prehod skozi požarni zid iz odjemalca za oddaljeni dostop</translation>
 <translation id="6367755442345892511">Ali lahko distribucijski kanal za nove izdaje nastavi uporabnik</translation>
-<translation id="4035570660718398959">Uporabnikom lahko unovčijo ponudbe prek registracije sistema Chrome OS.</translation>
 <translation id="3868347814555911633">Ta pravilnik je aktiven samo v maloprodajnem načinu.
 
       Navaja razširitve, samodejno nameščene za uporabnika predstavitvenega načina, za naprave v maloprodajnem načinu. Te razširitve so shranjene v napravi in jih je mogoče namestiti brez povezave.
@@ -803,7 +829,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
          Če to nastavitev onemogočite, upravitelj gesel v svojem oknu ne dovoli prikaza shranjenih gesel v besedilni obliki.
 
           Če ta pravilnik omogočite ali ga ne nastavite, si lahko uporabniki v upravitelju gesel ogledujejo gesla v besedilni obliki.</translation>
-<translation id="5213629107215526747">URL-ji, ki jim bo brez poziva dovoljen dostop do naprav za zajem videa.</translation>
 <translation id="5936622343001856595">Uveljavi izvajanje poizvedb v Google Spletnem iskanju z aktiviranim Google Varnim iskanjem in uporabnikom prepreči spreminjanje te nastavitve.
 
       Če to nastavitev omogočite, je Google Varno iskanje v Iskanju Google vedno aktivno.
@@ -814,6 +839,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Če je ta nastavitev omogočena, <ph name="PRODUCT_NAME"/> pri uporabnikovi zahtevi za tiskanje strani namesto vgrajenega predogleda tiskanja odpre sistemsko pogovorno okno za tiskanje.
 
       Če ta pravilnik ni nastavljen ali je nastavljen na »false«, ukazi za tiskanje sprožijo zaslon za predogled tiskanja.</translation>
+<translation id="7933141401888114454">Omogoči ustvarjanje zaščitenih uporabnikov</translation>
 <translation id="2824715612115726353">Omogoči način brez beleženja zgodovine</translation>
 <translation id="1057535219415338480">Omogoča omrežno predvidevanje v brskalniku <ph name="PRODUCT_NAME"/> in preprečuje uporabnikom spreminjanje te nastavitve.
 
@@ -865,7 +891,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Če ta pravilnik ni nastavljen, bo to omogočeno, vendar bo lahko uporabnik to spremenil.</translation>
 <translation id="2236488539271255289">Nobenemu mestu ne dovoli nastavljanja lokalnih podatkov</translation>
 <translation id="4467952432486360968">Blokiraj piškotke drugih spletnih mest</translation>
-<translation id="2041396837791669429">Blokiranje dostopa do spletnih mest zunaj paketov vsebine.</translation>
 <translation id="1305864769064309495">Slovar, v katerem so URL-ji preslikani na logično zastavico, ki določa, ali naj bo dostop do gostitelja dovoljen (True) ali blokiran (False).
 
           Ta pravilnik je namenjen za notranjo uporabo v Chromu samem.</translation>
@@ -904,7 +929,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
           Če pravilnika ne nastavite, je velik kazalec prvotno onemogočen, vendar ga lahko uporabniki kadar koli omogočijo.</translation>
 <translation id="2633084400146331575">Vklop izgovorjave</translation>
-<translation id="7712008868843631413">Omogočanje nadzorovanih uporabnikov.</translation>
 <translation id="8731693562790917685">Z nastavitvami vsebine lahko določite, kako se obravnava vsebina različnih vrst (npr. piškotki, slike ali JavaScript).</translation>
 <translation id="2411919772666155530">Blokiraj obvestila na teh mestih</translation>
 <translation id="6923366716660828830">Določa ime privzetega ponudnika iskanja. Če pravilnik ostane prazen ali če ni nastavljen, bo uporabljeno ime gostitelja, določeno z URL-jem iskanja.
@@ -918,7 +942,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="467236746355332046">Podprte funkcije:</translation>
 <translation id="7632724434767231364">Ime knjižnice GSSAPI</translation>
 <translation id="3038323923255997294">Nadaljuj izvajanje programov v ozadju, ko je <ph name="PRODUCT_NAME"/> zaprt</translation>
-<translation id="4652284479838524692">Omogoči oddaljeno potrditev naprave.</translation>
 <translation id="8909280293285028130">Določa trajanje uporabnikove nedejavnosti, po preteku katere se zaslon zaklene, če se napaja iz električnega omrežja.
 
           Če je pravilnik nastavljen na vrednost nad nič, določa, koliko časa mora biti uporabnik nedejaven, preden <ph name="PRODUCT_OS_NAME"/> zaklene zaslon.
@@ -940,6 +963,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
       Če je pravilnik omogočen ali ni nastavljen, je mogoče ustvariti nove uporabniške račune, če <ph name="DEVICEUSERWHITELISTPROTO_POLICY_NAME"/> uporabniku ne preprečuje prijave.</translation>
 <translation id="4389091865841123886">Konfiguriranje potrditve na daljavo z mehanizmom TPM.</translation>
+<translation id="3518214502751233558">Določi, ali naj se zakasnitve upravljanja porabe in omejitev dolžine seje začnejo izvajati šele po začetni dejavnosti uporabnika v seji</translation>
 <translation id="8256688113167012935">Nadzira prikaz imena računa na zaslonu za prijavo v sistemu <ph name="PRODUCT_OS_NAME"/> za ustrezen lokalni račun za napravo.
 
       Če je ta pravilnik nastavljen, bo zaslon za prijavo uporabil določen niz v slikovnem prijavnem izbirniku za ustrezen lokalni račun za napravo.
@@ -1022,7 +1046,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Če je ta pravilnik nastavljen na »True«, so ikone skrite.
 
       Če je ta pravilnik nastavljen na »False« ali ni konfiguriran, so ikone vidne.</translation>
-<translation id="8401282319420373133">Razširitve, ki lahko uporabljajo API za potrditev na daljavo.</translation>
 <translation id="5085647276663819155">Onemogoči predogled tiskanja</translation>
 <translation id="8672321184841719703">Ciljna različica za samodejne posodobitve</translation>
 <translation id="1689963000958717134">Omogoča pošiljanje omrežne konfiguracije, ki se uporablja za vse uporabnike, v napravo s sistemom <ph name="PRODUCT_OS_NAME"/>. Omrežna konfiguracija je niz v obliki zapisa JSON, kot je določeno z obliko konfiguracije odprtega omrežja, opisano na <ph name="ONC_SPEC_URL"/></translation>
@@ -1067,6 +1090,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Če je ta pravilnik omogočen, z bližnjimi tipkami ali API-ji razširitev ni mogoče ustvarjati posnetkov zaslona.
 
       Če je onemogočen ali ni določen, je ustvarjanje posnetkov zaslona dovoljeno.</translation>
+<translation id="5697306356229823047">Poročanje o uporabnikih naprave</translation>
 <translation id="8649763579836720255">Naprave Chrome OS lahko uporabljajo oddaljeno potrjevanje (potrjen dostop) za pridobitev potrdil, ki ga izda overitelj sistema Chrome OS, ki potrjuje, da je naprava primerna za predvajanje zaščitene vsebine. Pri tem postopku se overitelju sistema Chrome OS pošljejo potrditveni podatki strojne opreme, ki enolično določajo napravo.
 
           Če je ta možnost nastavljena na »false«, naprava za zaščito vsebine ne bo uporabljala oddaljenega potrjevanja in naprava morda ne bo mogla predvajati zaščitene vsebine.
@@ -1149,6 +1173,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Če to nastavitev omogočite, se zgodovina brskanja ne shranjuje.
 
       Če to nastavitev onemogočite ali je ne nastavite, se zgodovina brskanja shranjuje.</translation>
+<translation id="7295019613773647480">Omogoči nadzorovane uporabnike</translation>
 <translation id="2759224876420453487">Nadzor vedenja uporabnikov v večprofilni seji</translation>
 <translation id="3844092002200215574">Konfigurira imenik, ki ga bo <ph name="PRODUCT_NAME"/> uporabljal za shranjevanje predpomnjenih datotek na disk.
 
@@ -1211,8 +1236,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
          Če ta pravilnik vklopite, ga lahko uporabniki začasno preglasijo tako, da omogočijo ali onemogočijo visokokontrastni način, vendar ta nastavitev ni trajna in se privzeta nastavitev obnovi vsakič, ko je ponovno prikazan prijavni zaslon ali kadar je uporabnik eno minuto nedejaven na prijavnem zaslonu.
 
           Če ta pravilnik ni vklopljen, je visokokontrastni način onemogočen, ko je prvič prikazan prijavni zaslon. Uporabniki lahko kadar koli omogočijo ali onemogočijo lupo, pri čemer se njegovo stanje na prijavnem zaslonu ohrani med uporabniki.</translation>
-<translation id="8580857153747395000">Opozori pri odpiranju spletnih mest zunaj paketov vsebine.</translation>
-<translation id="350796261613621561">Omogočanje ustvarjanja nadzorovanih uporabnikov.</translation>
 <translation id="602728333950205286">Privzeti URL iskalnika za dinamično iskanje</translation>
 <translation id="3030000825273123558">Omogoči pošiljanje podatkov</translation>
 <translation id="8465065632133292531">Parametri za takojšnji URL, ki uporablja POST</translation>
@@ -1228,6 +1251,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 
           Če je ta nastavitev onemogočena, ta funkcija ne bo na voljo.</translation>
 <translation id="1675002386741412210">Na voljo podpora za:</translation>
+<translation id="1608755754295374538">URL-ji, ki jim bo brez poziva dovoljen dostop do naprav za zajem zvoka</translation>
 <translation id="3547954654003013442">Nastavitve proxyja</translation>
 <translation id="5921713479449475707">Dovoli samoposodobitvene prenose prek HTTP</translation>
 <translation id="4482640907922304445">Pokaže gumb za domačo stran v orodni vrstici brskalnika <ph name="PRODUCT_NAME"/>.
@@ -1239,8 +1263,8 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Če to nastavitev omogočite ali onemogočite, je uporabniki v brskalniku <ph name="PRODUCT_NAME"/> ne morejo spremeniti ali preglasiti.
 
       Če tega pravilnika ne nastavite, lahko uporabnik izbere, ali bo gumb za domačo stran prikazan.</translation>
-<translation id="6897718480289510689">Omogočanje dostopa do spletnih mest zunaj paketov vsebine.</translation>
 <translation id="2518231489509538392">Omogočanje predvajanje zvoka</translation>
+<translation id="8146727383888924340">Uporabnikom dovoli unovčenje ponudb prek registracije sistema Chrome OS.</translation>
 <translation id="7301543427086558500">Določa seznam nadomestnih URL-jev, ki jih je mogoče uporabiti za pridobivanje iskalnih izrazov iz iskalnika. URL-ji morajo vsebovati niz <ph name="SEARCH_TERM_MARKER"/>, ki bo uporabljen za pridobivanje iskalnih izrazov.
 
           Ta pravilnik je izbiren. Če ni nastavljen, za pridobivanje iskalnih izrazov ne bodo uporabljeni nadomestni URL-ji.
@@ -1271,7 +1295,11 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="5208240613060747912">Omogoča nastavitev seznama vzorcev URL-jev, s katerim so določena spletna mesta, ki jim ni dovoljeno prikazovati obvestil.
 
           Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultNotificationsSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultImagesSetting« ni nastavljen.</translation>
-<translation id="7927140259706020912">URL-ji, ki jim bo brez poziva dovoljen dostop do naprav za zajem zvoka.</translation>
+<translation id="346731943813722404">Določa, ali naj se zakasnitve upravljanja porabe in omejitev dolžine seje začnejo izvajati šele po prvi zaznani dejavnosti uporabnika v seji.
+
+          Če je pravilnik nastavljen na »True«, se zakasnitve upravljanja porabe in omejitev dolžine seje ne začnejo izvajati, dokler v seji ni zaznana prva dejavnost uporabnika.
+
+          Če je pravilnik nastavljen na »False« oziroma ni nastavljen, se zakasnitve upravljanja porabe in omejitev dolžine seje začnejo izvajati takoj ob začetku seje.</translation>
 <translation id="4600786265870346112">Omogoči velik kazalec</translation>
 <translation id="8592105098257899882">Konfigurira velikost predpomnilnika, ki ga bo <ph name="PRODUCT_NAME"/> uporabljal za shranjevanje predpomnjenih datotek na disk.
 
@@ -1457,7 +1485,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
           Vrednost pravilnika naj bo navedena v milisekundah. Vrednosti morajo biti manjše ali enake kot časovni zamik nedejavnosti.</translation>
 <translation id="1897365952389968758">Dovoli izvajanje JavaScripta vsem mestom</translation>
 <translation id="5244714491205147861">Upravljanje porabe na prijavnem zaslonu</translation>
-<translation id="3619270953033888719">Omogoči uporabo oddaljenega potrjevanja za zaščito vsebine za napravo.</translation>
 <translation id="922540222991413931">Konfiguriranje virov za namestitev razširitev, aplikacij in uporabniških skriptov</translation>
 <translation id="7323896582714668701">Dodatni parametri ukazne vrstice za <ph name="PRODUCT_NAME"/></translation>
 <translation id="6931242315485576290">Onemogoči sinhroniziranje podatkov z Googlom</translation>
@@ -1491,6 +1518,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
           Primere vzorcev si lahko ogledate na http://www.chromium.org/developers/how-tos/chrome-frame-getting-started.</translation>
 <translation id="3101501961102569744">Izberite, kako določiti nastavitve strežnika proxy</translation>
 <translation id="1803646570632580723">Seznam pripetih aplikacij v zaganjalniku</translation>
+<translation id="1062011392452772310">Omogoči oddaljeno potrditev naprave</translation>
 <translation id="7774768074957326919">Uporaba sistemskih nastavitev proxyja</translation>
 <translation id="3891357445869647828">Omogoči JavaScript</translation>
 <translation id="868187325500643455">Dovoli samodejno izvajanje vtičnikov vsem mestom</translation>
@@ -1534,7 +1562,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="7194407337890404814">Privzeto ime iskalnika</translation>
 <translation id="1843117931376765605">Osveži oceno za uporabniški pravilnik</translation>
 <translation id="5535973522252703021">Seznam dovoljenih delegacijskih strežnikov za Kerberos</translation>
-<translation id="4578030379102330182">Omogoči potrditev na daljavo za uporabnika.</translation>
 <translation id="9187743794267626640">Onemogoči vpenjanje zunanjega pomnilnika</translation>
 <translation id="6353901068939575220">Določa parametre, uporabljene pri iskanju URL-ja z metodo POST. Sestavljena je iz parov ime/vrednost, ločenih z vejico. Če je vrednost parameter predloge, kot je v zgornjih primerih {searchTerms}, bo zamenjana s pravimi podatki iskalnih izrazov.
 
@@ -1755,6 +1782,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="8303314579975657113">Določa, katera knjižnica GSSAPI bo uporabljena za preverjanje pristnosti HTTP. Nastavite lahko samo ime knjižnice ali celotno pot.
 
           Če ni določena nobena nastavitev, <ph name="PRODUCT_NAME"/> uporabi privzeto ime knjižnice.</translation>
+<translation id="8549772397068118889">Opozori pri odpiranju spletnih mest zunaj paketov vsebine</translation>
 <translation id="7749402620209366169">Za gostitelje oddaljenega dostopa omogoča preverjanje pristnosti v dveh korakih namesto z uporabniško določenim PIN-om.
 
           Če je ta nastavitev omogočena, mora uporabnik pri dostopu do gostitelja navesti veljavno kodo v dveh korakih.

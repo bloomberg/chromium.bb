@@ -47,7 +47,7 @@ Druk op Shift + Alt om te schakelen.j</translation>
 <translation id="7864539943188674973">Bluetooth uitschakelen</translation>
 <translation id="939252827960237676">Kan screenshot niet opslaan</translation>
 <translation id="1969011864782743497"><ph name="DEVICE_NAME"/> (USB)</translation>
-<translation id="3126069444801937830">Opnieuw starten voor bijwerken</translation>
+<translation id="3126069444801937830">Opnieuw starten om updates uit te voeren</translation>
 <translation id="2268813581635650749">Alle gebruikers uitloggen</translation>
 <translation id="735745346212279324">Verbinding met VPN verbroken</translation>
 <translation id="7320906967354320621">Inactief</translation>
@@ -130,6 +130,7 @@ Druk op Ctrl+Alt+Z om uit te schakelen.</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830"><ph name="NAME"/> activeren</translation>
 <translation id="8814190375133053267">Wifi</translation>
+<translation id="1923539912171292317">Automatische klikken</translation>
 <translation id="1398853756734560583">Maximaliseren</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: verbinden...</translation>
 <translation id="252373100621549798">Onbekend display</translation>
@@ -222,6 +223,7 @@ Druk op Alt+Zoeken of Shift om te annuleren.</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Gefeliciteerd! Je gegevensservice '<ph name="NAME"/>' is geactiveerd en kan worden gebruikt.</translation>
 <translation id="412065659894267608"><ph name="HOUR"/>u <ph name="MINUTE"/>m tot volledig opgeladen</translation>
+<translation id="7297443947353982503">Gebruikersnaam/wachtwoord onjuist of EAP-verificatie mislukt</translation>
 <translation id="6359806961507272919">Sms van <ph name="PHONE_NUMBER"/></translation>
 <translation id="1244147615850840081">Provider</translation>
 </translationbundle>

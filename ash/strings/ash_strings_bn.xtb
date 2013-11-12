@@ -130,6 +130,7 @@
 <translation id="1957803754585243749">০°</translation>
 <translation id="2354174487190027830"><ph name="NAME"/> সক্রিয় করা হচ্ছে</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="1923539912171292317">স্বয়ংক্রিয় ক্লিকগুলি</translation>
 <translation id="1398853756734560583">বড় করুন</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: সংযুক্ত হচ্ছে...</translation>
 <translation id="252373100621549798">অজানা প্রদর্শন</translation>
@@ -222,6 +223,7 @@ Alt+Search অথবা বাতিল করতে Shift টিপুন৷</t
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">অভিনন্দন! আপনার '<ph name="NAME"/>' ডেটা পরিষেবা সক্রিয় করা হয়েছে এবং ব্যবহার করার জন্য প্রস্তুত৷</translation>
 <translation id="412065659894267608"><ph name="HOUR"/>ঘন্টা <ph name="MINUTE"/> মিনিট পর্যন্ত পূর্ণ</translation>
+<translation id="7297443947353982503">ব্যবহারকারীর নাম/পাসওয়ার্ড ভুল অথবা EAP-প্রমাণীকরণ ব্যর্থ হয়েছে</translation>
 <translation id="6359806961507272919"><ph name="PHONE_NUMBER"/>-এর থেকে SMS...</translation>
 <translation id="1244147615850840081">কেরিয়ার</translation>
 </translationbundle>

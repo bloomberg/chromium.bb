@@ -130,6 +130,7 @@ Tekan Ctrl+Alt+Z untuk melumpuhkan.</translation>
 <translation id="1957803754585243749">0°</translation>
 <translation id="2354174487190027830">Mengaktifkan <ph name="NAME"/></translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
+<translation id="1923539912171292317">Klik automatik</translation>
 <translation id="1398853756734560583">Maksimumkan</translation>
 <translation id="2692809339924654275"><ph name="BLUETOOTH"/>: Menyambung...</translation>
 <translation id="252373100621549798">Paparan Tidak Diketahui</translation>
@@ -221,6 +222,7 @@ Tekan Alt+Search atau Shift untuk membatalkan.</translation>
 <translation id="3678715477168044796"><ph name="DISPLAY_NAME"/>: <ph name="ANNOTATION"/></translation>
 <translation id="2563856802393254086">Tahniah! Perkhidmatan data '<ph name="NAME"/>' anda telah diaktifkan dan sedia untuk digunakan.</translation>
 <translation id="412065659894267608"><ph name="HOUR"/>j <ph name="MINUTE"/>m sehingga penuh</translation>
+<translation id="7297443947353982503">Nama pengguna/kata laluan tidak betul atau EAP-auth gagal</translation>
 <translation id="6359806961507272919">SMS daripada <ph name="PHONE_NUMBER"/></translation>
 <translation id="1244147615850840081">Pembawa</translation>
 </translationbundle>
