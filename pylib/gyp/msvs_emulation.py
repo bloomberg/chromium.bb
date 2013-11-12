@@ -466,7 +466,17 @@ class MsvsSettings(object):
         else '/MAP'})
     ld('MapExports', map={'true': '/MAPINFO:EXPORTS'})
     ld('AdditionalOptions', prefix='')
-    ld('SubSystem', map={'1': 'CONSOLE', '2': 'WINDOWS'}, prefix='/SUBSYSTEM:')
+
+    xp_version = ''
+    # If we're targeting x86, make sure we're targeting XP.
+    if self._Setting(('VCLinkerTool', 'TargetMachine'),
+                     config, default='1') == '1':
+      xp_version = ',5.01'
+    ld('SubSystem',
+       map={'1': 'CONSOLE%s' % xp_version,
+            '2': 'WINDOWS%s' % xp_version},
+       prefix='/SUBSYSTEM:')
+
     ld('TerminalServerAware', map={'1': ':NO', '2': ''}, prefix='/TSAWARE')
     ld('LinkIncremental', map={'1': ':NO', '2': ''}, prefix='/INCREMENTAL')
     ld('FixedBaseAddress', map={'1': ':NO', '2': ''}, prefix='/FIXED')

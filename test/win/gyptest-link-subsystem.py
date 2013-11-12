@@ -23,6 +23,14 @@ if sys.platform == 'win32':
   test.build('subsystem.gyp', 'test_windows_ok', chdir=CHDIR)
   test.build('subsystem.gyp', 'test_windows_fail', chdir=CHDIR, status=1)
 
+  # Make sure we are targeting XP.
+  def GetHeaders(exe):
+    return test.run_dumpbin('/headers', test.built_file_path(exe, chdir=CHDIR))
+  if '5.01 subsystem version' not in GetHeaders('test_console_ok.exe'):
+    test.fail_test()
+  if '5.01 subsystem version' not in GetHeaders('test_windows_ok.exe'):
+    test.fail_test()
+
   # TODO(scottmg): There are other subsystems (WinCE, etc.) that we don't use.
 
   test.pass_test()
