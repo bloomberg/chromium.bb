@@ -278,4 +278,36 @@ TEST_F(SchemaMapTest, LegacyComponents) {
   EXPECT_TRUE(bundle.Equals(expected_bundle));
 }
 
+TEST_F(SchemaMapTest, GetChanges) {
+  DomainMap map;
+  map[POLICY_DOMAIN_CHROME][""] = Schema();
+  scoped_refptr<SchemaMap> older = new SchemaMap(map);
+  map[POLICY_DOMAIN_CHROME][""] = Schema();
+  scoped_refptr<SchemaMap> newer = new SchemaMap(map);
+
+  PolicyNamespaceList removed;
+  PolicyNamespaceList added;
+  newer->GetChanges(older, &removed, &added);
+  EXPECT_TRUE(removed.empty());
+  EXPECT_TRUE(added.empty());
+
+  map[POLICY_DOMAIN_CHROME][""] = Schema();
+  map[POLICY_DOMAIN_EXTENSIONS]["xyz"] = Schema();
+  newer = new SchemaMap(map);
+  newer->GetChanges(older, &removed, &added);
+  EXPECT_TRUE(removed.empty());
+  ASSERT_EQ(1u, added.size());
+  EXPECT_EQ(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "xyz"), added[0]);
+
+  older = newer;
+  map[POLICY_DOMAIN_EXTENSIONS]["abc"] = Schema();
+  newer = new SchemaMap(map);
+  newer->GetChanges(older, &removed, &added);
+  ASSERT_EQ(2u, removed.size());
+  EXPECT_EQ(PolicyNamespace(POLICY_DOMAIN_CHROME, ""), removed[0]);
+  EXPECT_EQ(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "xyz"), removed[1]);
+  ASSERT_EQ(1u, added.size());
+  EXPECT_EQ(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "abc"), added[0]);
+}
+
 }  // namespace policy

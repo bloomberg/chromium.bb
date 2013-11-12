@@ -80,4 +80,26 @@ bool SchemaMap::HasComponents() const {
   return false;
 }
 
+void SchemaMap::GetChanges(const scoped_refptr<SchemaMap>& older,
+                           PolicyNamespaceList* removed,
+                           PolicyNamespaceList* added) const {
+  GetNamespacesNotInOther(older, added);
+  older->GetNamespacesNotInOther(this, removed);
+}
+
+void SchemaMap::GetNamespacesNotInOther(const SchemaMap* other,
+                                        PolicyNamespaceList* list) const {
+  list->clear();
+  for (DomainMap::const_iterator domain = map_.begin();
+       domain != map_.end(); ++domain) {
+    const ComponentMap& components = domain->second;
+    for (ComponentMap::const_iterator comp = components.begin();
+         comp != components.end(); ++comp) {
+      PolicyNamespace ns(domain->first, comp->first);
+      if (!other->GetSchema(ns))
+        list->push_back(ns);
+    }
+  }
+}
+
 }  // namespace policy

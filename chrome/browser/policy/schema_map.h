@@ -42,8 +42,15 @@ class SchemaMap : public base::RefCountedThreadSafe<SchemaMap> {
   // than POLICY_DOMAIN_CHROME.
   bool HasComponents() const;
 
+  void GetChanges(const scoped_refptr<SchemaMap>& older,
+                  PolicyNamespaceList* removed,
+                  PolicyNamespaceList* added) const;
+
  private:
   friend class base::RefCountedThreadSafe<SchemaMap>;
+
+  void GetNamespacesNotInOther(const SchemaMap* other,
+                               PolicyNamespaceList* list) const;
 
   ~SchemaMap();
 

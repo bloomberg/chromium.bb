@@ -6,6 +6,7 @@
 #define COMPONENTS_POLICY_CORE_COMMON_POLICY_NAMESPACE_H_
 
 #include <string>
+#include <vector>
 
 #include "components/policy/policy_export.h"
 
@@ -43,6 +44,8 @@ struct POLICY_EXPORT PolicyNamespace {
   PolicyDomain domain;
   std::string component_id;
 };
+
+typedef std::vector<PolicyNamespace> PolicyNamespaceList;
 
 }  // namespace policy
 
