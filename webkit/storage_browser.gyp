@@ -156,6 +156,8 @@
         'browser/fileapi/quota/open_file_handle.h',
         'browser/fileapi/quota/open_file_handle_context.cc',
         'browser/fileapi/quota/open_file_handle_context.h',
+        'browser/fileapi/quota/quota_backend_impl.cc',
+        'browser/fileapi/quota/quota_backend_impl.h',
         'browser/fileapi/quota/quota_reservation.cc',
         'browser/fileapi/quota/quota_reservation.h',
         'browser/fileapi/quota/quota_reservation_buffer.cc',

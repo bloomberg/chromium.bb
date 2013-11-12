@@ -187,6 +187,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT SandboxFileSystemBackendDelegate
  private:
   friend class SandboxQuotaObserver;
   friend class SandboxFileSystemTestHelper;
+  friend class QuotaBackendImpl;
   FRIEND_TEST_ALL_PREFIXES(SandboxFileSystemBackendDelegateTest, IsAccessValid);
 
   // Performs API-specific validity checks on the given path |url|.

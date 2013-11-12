@@ -11,12 +11,6 @@
 
 namespace fileapi {
 
-namespace {
-
-void IgnoreResult(base::PlatformFileError error) {}
-
-}  // namespace
-
 QuotaReservationBuffer::QuotaReservationBuffer(
     base::WeakPtr<QuotaReservationManager> reservation_manager,
     const GURL& origin,
@@ -26,7 +20,7 @@ QuotaReservationBuffer::QuotaReservationBuffer(
       type_(type),
       reserved_quota_(0) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
-  reservation_manager_->IncreaseDirtyCount(origin, type);
+  reservation_manager_->IncrementDirtyCount(origin, type);
 }
 
 scoped_refptr<QuotaReservation> QuotaReservationBuffer::CreateReservation() {
@@ -49,10 +43,7 @@ void QuotaReservationBuffer::CommitFileGrowth(int64 quota_consumption,
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
   if (!reservation_manager_)
     return;
-
-  reservation_manager_->CommitQuotaUsage(
-      origin_, type_, usage_delta,
-      base::Bind(&IgnoreResult));
+  reservation_manager_->CommitQuotaUsage(origin_, type_, usage_delta);
 
   DCHECK_LE(quota_consumption, reserved_quota_);
   if (quota_consumption > 0) {
@@ -84,20 +75,20 @@ QuotaReservationBuffer::~QuotaReservationBuffer() {
   if (reserved_quota_ && reservation_manager_) {
     reservation_manager_->ReserveQuota(
         origin_, type_, -reserved_quota_,
-        base::Bind(&QuotaReservationBuffer::DecreaseDirtyCount,
+        base::Bind(&QuotaReservationBuffer::DecrementDirtyCount,
                    reservation_manager_, origin_, type_));
   }
   reservation_manager_->ReleaseReservationBuffer(this);
 }
 
 // static
-bool QuotaReservationBuffer::DecreaseDirtyCount(
+bool QuotaReservationBuffer::DecrementDirtyCount(
     base::WeakPtr<QuotaReservationManager> reservation_manager,
     const GURL& origin,
     FileSystemType type,
     base::PlatformFileError error) {
   if (error == base::PLATFORM_FILE_OK && reservation_manager) {
-    reservation_manager->DecreaseDirtyCount(origin, type);
+    reservation_manager->DecrementDirtyCount(origin, type);
     return true;
   }
   return false;

@@ -9,8 +9,9 @@
 
 namespace fileapi {
 
-QuotaReservationManager::QuotaReservationManager(QuotaBackend* backend)
-    : backend_(backend),
+QuotaReservationManager::QuotaReservationManager(
+    scoped_ptr<QuotaBackend> backend)
+    : backend_(backend.Pass()),
       weak_ptr_factory_(this) {
   DCHECK(sequence_checker_.CalledOnValidSequencedThread());
 }
@@ -37,19 +38,18 @@ void QuotaReservationManager::ReleaseReservedQuota(
 void QuotaReservationManager::CommitQuotaUsage(
     const GURL& origin,
     FileSystemType type,
-    int64 delta,
-    const StatusCallback& callback) {
-  backend_->CommitQuotaUsage(origin, type, delta, callback);
+    int64 delta) {
+  backend_->CommitQuotaUsage(origin, type, delta);
 }
 
-void QuotaReservationManager::IncreaseDirtyCount(const GURL& origin,
+void QuotaReservationManager::IncrementDirtyCount(const GURL& origin,
                                                  FileSystemType type) {
-  backend_->IncreaseDirtyCount(origin, type);
+  backend_->IncrementDirtyCount(origin, type);
 }
 
-void QuotaReservationManager::DecreaseDirtyCount(const GURL& origin,
+void QuotaReservationManager::DecrementDirtyCount(const GURL& origin,
                                                  FileSystemType type) {
-  backend_->DecreaseDirtyCount(origin, type);
+  backend_->DecrementDirtyCount(origin, type);
 }
 
 scoped_refptr<QuotaReservationBuffer>
