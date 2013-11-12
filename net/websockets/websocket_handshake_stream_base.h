@@ -25,9 +25,9 @@ class SpdySession;
 // HttpStreamBase.
 class NET_EXPORT WebSocketHandshakeStreamBase : public HttpStreamBase {
  public:
-  class Factory {
+  class CreateHelper {
    public:
-    virtual ~Factory() {}
+    virtual ~CreateHelper() {}
 
     // Create a WebSocketBasicHandshakeStream. This function (or the returned
     // object) takes the ownership of |connection|. This is called after the

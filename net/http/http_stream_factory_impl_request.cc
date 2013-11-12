@@ -17,11 +17,13 @@ HttpStreamFactoryImpl::Request::Request(
     const GURL& url,
     HttpStreamFactoryImpl* factory,
     HttpStreamRequest::Delegate* delegate,
-    WebSocketHandshakeStreamBase::Factory* websocket_handshake_stream_factory,
+    WebSocketHandshakeStreamBase::CreateHelper*
+        websocket_handshake_stream_create_helper,
     const BoundNetLog& net_log)
     : url_(url),
       factory_(factory),
-      websocket_handshake_stream_factory_(websocket_handshake_stream_factory),
+      websocket_handshake_stream_create_helper_(
+          websocket_handshake_stream_create_helper),
       delegate_(delegate),
       net_log_(net_log),
       completed_(false),
@@ -316,12 +318,12 @@ void HttpStreamFactoryImpl::Request::OnNewSpdySessionReady(
   // Cache this so we can still use it if the request is deleted.
   HttpStreamFactoryImpl* factory = factory_;
   if (factory->for_websockets_) {
-    DCHECK(websocket_handshake_stream_factory_);
+    DCHECK(websocket_handshake_stream_create_helper_);
     bool use_relative_url = direct || url().SchemeIs("wss");
     delegate_->OnWebSocketHandshakeStreamReady(
         job->server_ssl_config(),
         job->proxy_info(),
-        websocket_handshake_stream_factory_->CreateSpdyStream(
+        websocket_handshake_stream_create_helper_->CreateSpdyStream(
             spdy_session, use_relative_url));
   } else {
     bool use_relative_url = direct || url().SchemeIs("https");

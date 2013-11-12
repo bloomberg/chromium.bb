@@ -222,8 +222,8 @@ void HttpStreamFactoryImpl::Job::Orphan(const Request* request) {
     stream_factory_->OnOrphanedJobComplete(this);
   } else if (stream_factory_->for_websockets_) {
     // We cancel this job because a WebSocketHandshakeStream can't be created
-    // without a WebSocketHandshakeStreamBase::Factory which is stored in the
-    // Request class and isn't accessible from this job.
+    // without a WebSocketHandshakeStreamBase::CreateHelper which is stored in
+    // the Request class and isn't accessible from this job.
     if (connection_ && connection_->socket())
       connection_->socket()->Disconnect();
     stream_factory_->OnOrphanedJobComplete(this);
@@ -1064,10 +1064,10 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
       CHECK(stream_.get());
     } else if (stream_factory_->for_websockets_) {
       DCHECK(request_);
-      DCHECK(request_->websocket_handshake_stream_factory());
+      DCHECK(request_->websocket_handshake_stream_create_helper());
       websocket_stream_.reset(
-          request_->websocket_handshake_stream_factory()->CreateBasicStream(
-              connection_.release(), using_proxy));
+          request_->websocket_handshake_stream_create_helper()
+              ->CreateBasicStream(connection_.release(), using_proxy));
     } else if (!using_proxy && IsRequestEligibleForPipelining()) {
       // TODO(simonjam): Support proxies.
       stream_.reset(
@@ -1141,10 +1141,10 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
 
   if (stream_factory_->for_websockets_) {
     DCHECK(request_);
-    DCHECK(request_->websocket_handshake_stream_factory());
+    DCHECK(request_->websocket_handshake_stream_create_helper());
     bool use_relative_url = direct || request_info_.url.SchemeIs("wss");
     websocket_stream_.reset(
-        request_->websocket_handshake_stream_factory()->CreateSpdyStream(
+        request_->websocket_handshake_stream_create_helper()->CreateSpdyStream(
             spdy_session, use_relative_url));
   } else {
     bool use_relative_url = direct || request_info_.url.SchemeIs("https");

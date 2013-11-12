@@ -272,9 +272,10 @@ class WebSocketBasicHandshakeStream : public MockWebSocketHandshakeStream {
   scoped_ptr<ClientSocketHandle> connection_;
 };
 
-class WebSocketStreamFactory : public WebSocketHandshakeStreamBase::Factory {
+class WebSocketStreamCreateHelper
+    : public WebSocketHandshakeStreamBase::CreateHelper {
  public:
-  virtual ~WebSocketStreamFactory() {}
+  virtual ~WebSocketStreamCreateHelper() {}
 
   virtual WebSocketHandshakeStreamBase* CreateBasicStream(
       ClientSocketHandle* connection,
@@ -930,7 +931,7 @@ TEST_P(HttpStreamFactoryTest, RequestWebSocketBasicHandshakeStream) {
 
   SSLConfig ssl_config;
   StreamRequestWaiter waiter;
-  WebSocketStreamFactory factory;
+  WebSocketStreamCreateHelper create_helper;
   scoped_ptr<HttpStreamRequest> request(
       session->websocket_handshake_stream_factory()
           ->RequestWebSocketHandshakeStream(request_info,
@@ -938,7 +939,7 @@ TEST_P(HttpStreamFactoryTest, RequestWebSocketBasicHandshakeStream) {
                                             ssl_config,
                                             ssl_config,
                                             &waiter,
-                                            &factory,
+                                            &create_helper,
                                             BoundNetLog()));
   waiter.WaitForStream();
   EXPECT_TRUE(waiter.stream_done());
@@ -981,7 +982,7 @@ TEST_P(HttpStreamFactoryTest, RequestWebSocketBasicHandshakeStreamOverSSL) {
 
   SSLConfig ssl_config;
   StreamRequestWaiter waiter;
-  WebSocketStreamFactory factory;
+  WebSocketStreamCreateHelper create_helper;
   scoped_ptr<HttpStreamRequest> request(
       session->websocket_handshake_stream_factory()
           ->RequestWebSocketHandshakeStream(request_info,
@@ -989,7 +990,7 @@ TEST_P(HttpStreamFactoryTest, RequestWebSocketBasicHandshakeStreamOverSSL) {
                                             ssl_config,
                                             ssl_config,
                                             &waiter,
-                                            &factory,
+                                            &create_helper,
                                             BoundNetLog()));
   waiter.WaitForStream();
   EXPECT_TRUE(waiter.stream_done());
@@ -1029,7 +1030,7 @@ TEST_P(HttpStreamFactoryTest, RequestWebSocketBasicHandshakeStreamOverProxy) {
 
   SSLConfig ssl_config;
   StreamRequestWaiter waiter;
-  WebSocketStreamFactory factory;
+  WebSocketStreamCreateHelper create_helper;
   scoped_ptr<HttpStreamRequest> request(
       session->websocket_handshake_stream_factory()
           ->RequestWebSocketHandshakeStream(request_info,
@@ -1037,7 +1038,7 @@ TEST_P(HttpStreamFactoryTest, RequestWebSocketBasicHandshakeStreamOverProxy) {
                                             ssl_config,
                                             ssl_config,
                                             &waiter,
-                                            &factory,
+                                            &create_helper,
                                             BoundNetLog()));
   waiter.WaitForStream();
   EXPECT_TRUE(waiter.stream_done());
@@ -1143,7 +1144,7 @@ TEST_P(HttpStreamFactoryTest, RequestWebSocketSpdyHandshakeStream) {
 
   SSLConfig ssl_config;
   StreamRequestWaiter waiter1;
-  WebSocketStreamFactory factory;
+  WebSocketStreamCreateHelper create_helper;
   scoped_ptr<HttpStreamRequest> request1(
       session->websocket_handshake_stream_factory()
           ->RequestWebSocketHandshakeStream(request_info,
@@ -1151,7 +1152,7 @@ TEST_P(HttpStreamFactoryTest, RequestWebSocketSpdyHandshakeStream) {
                                             ssl_config,
                                             ssl_config,
                                             &waiter1,
-                                            &factory,
+                                            &create_helper,
                                             BoundNetLog()));
   waiter1.WaitForStream();
   EXPECT_TRUE(waiter1.stream_done());
@@ -1168,7 +1169,7 @@ TEST_P(HttpStreamFactoryTest, RequestWebSocketSpdyHandshakeStream) {
                                             ssl_config,
                                             ssl_config,
                                             &waiter2,
-                                            &factory,
+                                            &create_helper,
                                             BoundNetLog()));
   waiter2.WaitForStream();
   EXPECT_TRUE(waiter2.stream_done());
@@ -1233,7 +1234,7 @@ TEST_P(HttpStreamFactoryTest, OrphanedWebSocketStream) {
 
   SSLConfig ssl_config;
   StreamRequestWaiter waiter;
-  WebSocketStreamFactory factory;
+  WebSocketStreamCreateHelper create_helper;
   scoped_ptr<HttpStreamRequest> request(
       session->websocket_handshake_stream_factory()
           ->RequestWebSocketHandshakeStream(request_info,
@@ -1241,7 +1242,7 @@ TEST_P(HttpStreamFactoryTest, OrphanedWebSocketStream) {
                                             ssl_config,
                                             ssl_config,
                                             &waiter,
-                                            &factory,
+                                            &create_helper,
                                             BoundNetLog()));
   waiter.WaitForStream();
   EXPECT_TRUE(waiter.stream_done());

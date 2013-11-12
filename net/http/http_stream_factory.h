@@ -206,7 +206,7 @@ class NET_EXPORT HttpStreamFactory {
       const SSLConfig& server_ssl_config,
       const SSLConfig& proxy_ssl_config,
       HttpStreamRequest::Delegate* delegate,
-      WebSocketHandshakeStreamBase::Factory* factory,
+      WebSocketHandshakeStreamBase::CreateHelper* create_helper,
       const BoundNetLog& net_log) = 0;
 
   // Requests that enough connections for |num_streams| be opened.

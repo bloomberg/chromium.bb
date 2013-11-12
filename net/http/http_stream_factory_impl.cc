@@ -88,16 +88,16 @@ HttpStreamRequest* HttpStreamFactoryImpl::RequestWebSocketHandshakeStream(
     const SSLConfig& server_ssl_config,
     const SSLConfig& proxy_ssl_config,
     HttpStreamRequest::Delegate* delegate,
-    WebSocketHandshakeStreamBase::Factory* factory,
+    WebSocketHandshakeStreamBase::CreateHelper* create_helper,
     const BoundNetLog& net_log) {
   DCHECK(for_websockets_);
-  DCHECK(factory);
+  DCHECK(create_helper);
   return RequestStreamInternal(request_info,
                                priority,
                                server_ssl_config,
                                proxy_ssl_config,
                                delegate,
-                               factory,
+                               create_helper,
                                net_log);
 }
 
@@ -107,12 +107,13 @@ HttpStreamRequest* HttpStreamFactoryImpl::RequestStreamInternal(
     const SSLConfig& server_ssl_config,
     const SSLConfig& proxy_ssl_config,
     HttpStreamRequest::Delegate* delegate,
-    WebSocketHandshakeStreamBase::Factory* websocket_handshake_stream_factory,
+    WebSocketHandshakeStreamBase::CreateHelper*
+        websocket_handshake_stream_create_helper,
     const BoundNetLog& net_log) {
   Request* request = new Request(request_info.url,
                                  this,
                                  delegate,
-                                 websocket_handshake_stream_factory,
+                                 websocket_handshake_stream_create_helper,
                                  net_log);
 
   GURL alternate_url;
@@ -289,15 +290,15 @@ void HttpStreamFactoryImpl::OnNewSpdySessionReady(
                       using_spdy,
                       net_log);
     if (for_websockets_) {
-      WebSocketHandshakeStreamBase::Factory* factory =
-          request->websocket_handshake_stream_factory();
-      DCHECK(factory);
+      WebSocketHandshakeStreamBase::CreateHelper* create_helper =
+          request->websocket_handshake_stream_create_helper();
+      DCHECK(create_helper);
       bool use_relative_url = direct || request->url().SchemeIs("wss");
       request->OnWebSocketHandshakeStreamReady(
           NULL,
           used_ssl_config,
           used_proxy_info,
-          factory->CreateSpdyStream(spdy_session, use_relative_url));
+          create_helper->CreateSpdyStream(spdy_session, use_relative_url));
     } else {
       bool use_relative_url = direct || request->url().SchemeIs("https");
       request->OnStreamReady(
