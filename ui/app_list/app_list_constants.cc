@@ -6,14 +6,14 @@
 
 namespace app_list {
 
-const SkColor kContentsBackgroundColor = SkColorSetRGB(0xF5, 0xF5, 0xF5);
+const SkColor kContentsBackgroundColor = SkColorSetRGB(0xFB, 0xFB, 0xFB);
 const SkColor kSearchBoxBackground = SK_ColorWHITE;
 const SkColor kTopSeparatorColor = SkColorSetRGB(0xE5, 0xE5, 0xE5);
 
 // 6% black over kContentsBackgroundColor
 const SkColor kHighlightedColor = SkColorSetRGB(0xE6, 0xE6, 0xE6);
 // 10% black over kContentsBackgroundColor
-const SkColor kSelectedColor = SkColorSetRGB(0xDC, 0xDC, 0xDC);
+const SkColor kSelectedColor = SkColorSetRGB(0xF1, 0xF1, 0xF1);
 
 const SkColor kPagerHoverColor = SkColorSetRGB(0xB4, 0xB4, 0xB4);
 const SkColor kPagerNormalColor = SkColorSetRGB(0xE2, 0xE2, 0xE2);
@@ -26,6 +26,9 @@ const SkColor kResultURLTextColor = SkColorSetRGB(0x00, 0x99, 0x33);
 
 const SkColor kGridTitleColor = SkColorSetRGB(0x5A, 0x5A, 0x5A);
 const SkColor kGridTitleHoverColor = SkColorSetRGB(0x3C, 0x3C, 0x3C);
+
+// Color of the folder ink bubble.
+const SkColor kFolderBubbleColor = SkColorSetRGB(0xD7, 0xD7, 0xD7);
 
 // Duration in milliseconds for page transition.
 const int kPageTransitionDurationInMs = 180;

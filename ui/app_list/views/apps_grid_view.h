@@ -84,6 +84,7 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
 
   void SetSelectedView(views::View* view);
   void ClearSelectedView(views::View* view);
+  void ClearAnySelectedView();
   bool IsSelectedView(const views::View* view) const;
 
   // Ensures the view is visible. Note that if there is a running page

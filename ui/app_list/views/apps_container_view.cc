@@ -10,6 +10,7 @@
 #include "ui/app_list/views/app_list_folder_view.h"
 #include "ui/app_list/views/app_list_main_view.h"
 #include "ui/app_list/views/apps_grid_view.h"
+#include "ui/events/event.h"
 
 namespace app_list {
 
@@ -77,6 +78,13 @@ void AppsContainerView::Layout() {
     default:
       NOTREACHED();
   }
+}
+
+bool AppsContainerView::OnKeyPressed(const ui::KeyEvent& event) {
+  if (show_state_ == SHOW_APPS)
+    return apps_grid_view_->OnKeyPressed(event);
+  else
+    return app_list_folder_view_->OnKeyPressed(event);
 }
 
 void AppsContainerView::SetShowState(ShowState show_state) {

@@ -13,6 +13,7 @@
 #include "ui/app_list/views/apps_grid_view.h"
 #include "ui/app_list/views/contents_view.h"
 #include "ui/app_list/views/folder_header_view.h"
+#include "ui/events/event.h"
 #include "ui/views/view_model.h"
 #include "ui/views/view_model_utils.h"
 
@@ -71,6 +72,10 @@ gfx::Size AppListFolderView::GetPreferredSize() {
 void AppListFolderView::Layout() {
   CalculateIdealBounds();
   views::ViewModelUtils::SetViewBoundsToIdealBounds(*view_model_);
+}
+
+bool AppListFolderView::OnKeyPressed(const ui::KeyEvent& event) {
+  return items_grid_view_->OnKeyPressed(event);
 }
 
 void AppListFolderView::CalculateIdealBounds() {

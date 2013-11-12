@@ -41,6 +41,7 @@ class AppsContainerView : public views::View {
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize() OVERRIDE;
   virtual void Layout() OVERRIDE;
+  virtual bool OnKeyPressed(const ui::KeyEvent& event) OVERRIDE;
 
   AppsGridView* apps_grid_view() { return apps_grid_view_; }
 

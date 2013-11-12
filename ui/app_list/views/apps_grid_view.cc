@@ -423,6 +423,13 @@ void AppsGridView::ClearSelectedView(views::View* view) {
   }
 }
 
+void AppsGridView::ClearAnySelectedView() {
+  if (selected_view_) {
+    selected_view_->SchedulePaint();
+    selected_view_ = NULL;
+  }
+}
+
 bool AppsGridView::IsSelectedView(const views::View* view) const {
   return selected_view_ == view;
 }

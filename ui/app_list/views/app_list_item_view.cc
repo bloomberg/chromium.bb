@@ -48,9 +48,6 @@ const float kDraggingIconScale = 1.5f;
 // Delay in milliseconds of when the dragging UI should be shown for mouse drag.
 const int kMouseDragUIDelayInMs = 100;
 
-// Color of the folder dropping preview circle.
-const SkColor kFolderPreviewColor = SkColorSetRGB(0xE1, 0xE1, 0xE1);
-
 }  // namespace
 
 // static
@@ -275,6 +272,8 @@ void AppListItemView::OnPaint(gfx::Canvas* canvas) {
   if (model_->highlighted() && !model_->is_installing()) {
     canvas->FillRect(rect, kHighlightedColor);
     return;
+  } else if (apps_grid_view_->IsSelectedView(this)) {
+      canvas->FillRect(rect, kSelectedColor);
   }
 
   if (!switches::IsFolderUIEnabled()) {
@@ -290,7 +289,7 @@ void AppListItemView::OnPaint(gfx::Canvas* canvas) {
     SkPaint paint;
     paint.setStyle(SkPaint::kFill_Style);
     paint.setAntiAlias(true);
-    paint.setColor(kFolderPreviewColor);
+    paint.setColor(kFolderBubbleColor);
     canvas->DrawCircle(center, kFolderPreviewRadius, paint);
   }
 }
@@ -317,11 +316,17 @@ void AppListItemView::ShowContextMenuForView(views::View* source,
 }
 
 void AppListItemView::StateChanged() {
+  const bool is_folder_ui_enabled = switches::IsFolderUIEnabled();
+  if (is_folder_ui_enabled)
+    apps_grid_view_->ClearAnySelectedView();
+
   if (state() == STATE_HOVERED || state() == STATE_PRESSED) {
-    apps_grid_view_->SetSelectedView(this);
+    if (!is_folder_ui_enabled)
+      apps_grid_view_->SetSelectedView(this);
     title_->SetEnabledColor(kGridTitleHoverColor);
   } else {
-    apps_grid_view_->ClearSelectedView(this);
+    if (!is_folder_ui_enabled)
+      apps_grid_view_->ClearSelectedView(this);
     model_->SetHighlighted(false);
     title_->SetEnabledColor(kGridTitleColor);
   }

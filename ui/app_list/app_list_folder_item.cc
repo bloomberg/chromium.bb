@@ -4,6 +4,7 @@
 
 #include "ui/app_list/app_list_folder_item.h"
 
+#include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_item_list.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/canvas_image_source.h"
@@ -47,11 +48,10 @@ class FolderImageSource : public gfx::CanvasImageSource {
   virtual void Draw(gfx::Canvas* canvas) OVERRIDE {
     // Draw folder circle.
     gfx::Point center = gfx::Point(size().width() / 2 , size().height() / 2);
-    const SkColor kCircleColor = SkColorSetRGB(0xE1, 0xE1, 0xE1);
     SkPaint paint;
     paint.setStyle(SkPaint::kFill_Style);
     paint.setAntiAlias(true);
-    paint.setColor(kCircleColor);
+    paint.setColor(kFolderBubbleColor);
     canvas->DrawCircle(center, size().width() / 2, paint);
 
     if (icons_.size() == 0)

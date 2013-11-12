@@ -47,13 +47,13 @@ class APP_LIST_EXPORT AppListItemView : public views::CustomButton,
 
   void CancelContextMenu();
 
-  AppListItemModel* model() const { return model_; }
-
-  const views::Label* title() const { return title_; }
-
   gfx::ImageSkia GetDragImage();
 
   void SetAsAttemptedFolderTarget(bool is_target_folder);
+
+  AppListItemModel* model() const { return model_; }
+
+  const views::Label* title() const { return title_; }
 
  private:
   enum UIState {
