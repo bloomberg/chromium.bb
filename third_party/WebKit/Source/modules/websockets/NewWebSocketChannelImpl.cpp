@@ -51,17 +51,6 @@ using blink::WebSocketHandle;
 
 namespace WebCore {
 
-namespace {
-
-bool isClean(int code)
-{
-    return code == WebSocketChannel::CloseEventCodeNormalClosure
-        || (WebSocketChannel::CloseEventCodeMinimumUserDefined <= code
-        && code <= WebSocketChannel::CloseEventCodeMaximumUserDefined);
-}
-
-} // namespace
-
 class NewWebSocketChannelImpl::BlobLoader : public FileReaderLoaderClient {
 public:
     BlobLoader(PassRefPtr<BlobDataHandle>, NewWebSocketChannelImpl*);
@@ -243,7 +232,7 @@ void NewWebSocketChannelImpl::fail(const String& reason, MessageLevel level, con
         m_client->didReceiveMessageError();
     // |reason| is only for logging and should not be provided for scripts,
     // hence close reason must be empty.
-    handleDidClose(CloseEventCodeAbnormalClosure, String());
+    handleDidClose(false, CloseEventCodeAbnormalClosure, String());
     // handleDidClose may delete this object.
 }
 
@@ -340,7 +329,7 @@ void NewWebSocketChannelImpl::abortAsyncOperations()
     }
 }
 
-void NewWebSocketChannelImpl::handleDidClose(unsigned short code, const String& reason)
+void NewWebSocketChannelImpl::handleDidClose(bool wasClean, unsigned short code, const String& reason)
 {
     m_handle.clear();
     abortAsyncOperations();
@@ -350,7 +339,7 @@ void NewWebSocketChannelImpl::handleDidClose(unsigned short code, const String& 
     WebSocketChannelClient* client = m_client;
     m_client = 0;
     WebSocketChannelClient::ClosingHandshakeCompletionStatus status =
-        isClean(code) ? WebSocketChannelClient::ClosingHandshakeComplete : WebSocketChannelClient::ClosingHandshakeIncomplete;
+        wasClean ? WebSocketChannelClient::ClosingHandshakeComplete : WebSocketChannelClient::ClosingHandshakeIncomplete;
     client->didClose(m_bufferedAmount, status, code, reason);
     // client->didClose may delete this object.
 }
@@ -386,10 +375,10 @@ void NewWebSocketChannelImpl::didConnect(WebSocketHandle* handle, bool fail, con
 void NewWebSocketChannelImpl::didFail(WebSocketHandle* handle, const blink::WebString& message)
 {
     LOG(Network, "NewWebSocketChannelImpl %p didFail(%p, %s)", this, handle, message.utf8().data());
-    // FIXME: Hande the failure correctly.
-    // CloseEventCodeAbnormalClosure is the closing code for the closure
-    // without sending or receiving a Close control frame.
-    didClose(handle, false, CloseEventCodeAbnormalClosure, blink::WebString());
+    // This function is called when the browser is required to fail the
+    // WebSocketConnection. Hence we fail this channel by calling
+    // |this->failAsError| function.
+    failAsError(message);
     // |this| may be deleted.
 }
 
@@ -446,7 +435,6 @@ void NewWebSocketChannelImpl::didReceiveData(WebSocketHandle* handle, bool fin, 
 
 void NewWebSocketChannelImpl::didClose(WebSocketHandle* handle, bool wasClean, unsigned short code, const blink::WebString& reason)
 {
-    // FIXME: Use |wasClean| appropriately.
     LOG(Network, "NewWebSocketChannelImpl %p didClose(%p, %d, %u, %s)", this, handle, wasClean, code, String(reason).utf8().data());
     ASSERT(m_handle);
     m_handle.clear();
@@ -455,8 +443,7 @@ void NewWebSocketChannelImpl::didClose(WebSocketHandle* handle, bool wasClean, u
         m_identifier = 0;
     }
 
-    // FIXME: Maybe we should notify an error to m_client for some didClose messages.
-    handleDidClose(code, reason);
+    handleDidClose(wasClean, code, reason);
     // handleDidClose may delete this object.
 }
 

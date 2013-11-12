@@ -46,15 +46,19 @@ public:
     virtual void didConnect(WebSocketHandle*, bool fail, const WebString& selectedProtocol, const WebString& extensions) = 0;
 
     // Called when the browser is required to fail the connection.
-    // When this notification arrives the channel is closed as if
-    // didClose(false, 1006, "") arrived.
-    virtual void didFail(WebSocketHandle*, const WebString& message) = 0;
+    // |message| can be displayed in the inspector, but should not be passed
+    // to scripts.
+    // This message also implies that channel is closed with
+    // (wasClean = false, code = 1006, reason = "") and
+    // |handle| becomes unavailable.
+    virtual void didFail(WebSocketHandle* /* handle */, const WebString& message) = 0;
 
     // Called when data are received.
     virtual void didReceiveData(WebSocketHandle*, bool fin, WebSocketHandle::MessageType, const char* data, size_t /* size */) = 0;
 
     // Called when the handle is closed.
-    virtual void didClose(WebSocketHandle*, bool wasClean, unsigned short code, const WebString& reason) = 0;
+    // |handle| becomes unavailable once this notification arrives.
+    virtual void didClose(WebSocketHandle* /* handle */, bool wasClean, unsigned short code, const WebString& reason) = 0;
 
     virtual void didReceiveFlowControl(WebSocketHandle*, int64_t quota) = 0;
 };

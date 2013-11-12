@@ -118,7 +118,7 @@ private:
     void flowControlIfNecessary();
     void failAsError(const String& reason) { fail(reason, ErrorMessageLevel, m_sourceURLAtConnection, m_lineNumberAtConnection); }
     void abortAsyncOperations();
-    void handleDidClose(unsigned short code, const String& reason);
+    void handleDidClose(bool wasClean, unsigned short code, const String& reason);
     Document* document(); // can be called only when m_identifier > 0.
 
     // WebSocketHandleClient functions.
