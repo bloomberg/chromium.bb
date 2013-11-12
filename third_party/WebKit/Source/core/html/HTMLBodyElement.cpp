@@ -41,21 +41,15 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLBodyElement::HTMLBodyElement(const QualifiedName& tagName, Document& document)
-    : HTMLElement(tagName, document)
+HTMLBodyElement::HTMLBodyElement(Document& document)
+    : HTMLElement(bodyTag, document)
 {
-    ASSERT(hasTagName(bodyTag));
     ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLBodyElement> HTMLBodyElement::create(Document& document)
 {
-    return adoptRef(new HTMLBodyElement(bodyTag, document));
-}
-
-PassRefPtr<HTMLBodyElement> HTMLBodyElement::create(const QualifiedName& tagName, Document& document)
-{
-    return adoptRef(new HTMLBodyElement(tagName, document));
+    return adoptRef(new HTMLBodyElement(document));
 }
 
 HTMLBodyElement::~HTMLBodyElement()

@@ -38,18 +38,17 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-inline HTMLSourceElement::HTMLSourceElement(const QualifiedName& tagName, Document& document)
-    : HTMLElement(tagName, document)
+inline HTMLSourceElement::HTMLSourceElement(Document& document)
+    : HTMLElement(sourceTag, document)
     , m_errorEventTimer(this, &HTMLSourceElement::errorEventTimerFired)
 {
     LOG(Media, "HTMLSourceElement::HTMLSourceElement - %p", this);
-    ASSERT(hasTagName(sourceTag));
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLSourceElement> HTMLSourceElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<HTMLSourceElement> HTMLSourceElement::create(Document& document)
 {
-    return adoptRef(new HTMLSourceElement(tagName, document));
+    return adoptRef(new HTMLSourceElement(document));
 }
 
 Node::InsertionNotificationRequest HTMLSourceElement::insertedInto(ContainerNode* insertionPoint)

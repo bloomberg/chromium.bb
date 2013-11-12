@@ -38,14 +38,13 @@ enum ViewportErrorCode {
 class HTMLMetaElement FINAL : public HTMLElement {
 public:
     static PassRefPtr<HTMLMetaElement> create(Document&);
-    static PassRefPtr<HTMLMetaElement> create(const QualifiedName&, Document&);
 
     String content() const;
     String httpEquiv() const;
     String name() const;
 
 private:
-    HTMLMetaElement(const QualifiedName&, Document&);
+    explicit HTMLMetaElement(Document&);
 
     typedef void (HTMLMetaElement::*KeyValuePairCallback)(const String& key, const String& value, void* data);
     void processViewportKeyValuePair(const String& key, const String& value, void* data);

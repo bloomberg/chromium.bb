@@ -31,7 +31,7 @@ class RenderMeter;
 
 class HTMLMeterElement FINAL : public LabelableElement {
 public:
-    static PassRefPtr<HTMLMeterElement> create(const QualifiedName&, Document&);
+    static PassRefPtr<HTMLMeterElement> create(Document&);
 
     enum GaugeRegion {
         GaugeRegionOptimum,
@@ -63,7 +63,7 @@ public:
     bool canContainRangeEndPoint() const { return false; }
 
 private:
-    HTMLMeterElement(const QualifiedName&, Document&);
+    explicit HTMLMeterElement(Document&);
     virtual ~HTMLMeterElement();
 
     virtual bool areAuthorShadowsAllowed() const OVERRIDE { return false; }

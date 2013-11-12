@@ -32,26 +32,20 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLOListElement::HTMLOListElement(const QualifiedName& tagName, Document& document)
-    : HTMLElement(tagName, document)
+HTMLOListElement::HTMLOListElement(Document& document)
+    : HTMLElement(olTag, document)
     , m_start(0xBADBEEF)
     , m_itemCount(0)
     , m_hasExplicitStart(false)
     , m_isReversed(false)
     , m_shouldRecalculateItemCount(false)
 {
-    ASSERT(hasTagName(olTag));
     ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLOListElement> HTMLOListElement::create(Document& document)
 {
-    return adoptRef(new HTMLOListElement(olTag, document));
-}
-
-PassRefPtr<HTMLOListElement> HTMLOListElement::create(const QualifiedName& tagName, Document& document)
-{
-    return adoptRef(new HTMLOListElement(tagName, document));
+    return adoptRef(new HTMLOListElement(document));
 }
 
 bool HTMLOListElement::isPresentationAttribute(const QualifiedName& name) const

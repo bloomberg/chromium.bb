@@ -29,13 +29,13 @@ namespace WebCore {
 
 class HTMLAppletElement FINAL : public HTMLPlugInElement {
 public:
-    static PassRefPtr<HTMLAppletElement> create(const QualifiedName&, Document&, bool createdByParser);
+    static PassRefPtr<HTMLAppletElement> create(Document&, bool createdByParser);
 
 protected:
     virtual RenderWidget* renderWidgetForJSBindings() const OVERRIDE;
 
 private:
-    HTMLAppletElement(const QualifiedName&, Document&, bool createdByParser);
+    HTMLAppletElement(Document&, bool createdByParser);
 
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
     virtual bool isURLAttribute(const Attribute&) const OVERRIDE;

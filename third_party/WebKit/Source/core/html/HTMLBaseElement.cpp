@@ -33,16 +33,15 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-inline HTMLBaseElement::HTMLBaseElement(const QualifiedName& tagName, Document& document)
-    : HTMLElement(tagName, document)
+inline HTMLBaseElement::HTMLBaseElement(Document& document)
+    : HTMLElement(baseTag, document)
 {
-    ASSERT(hasTagName(baseTag));
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLBaseElement> HTMLBaseElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<HTMLBaseElement> HTMLBaseElement::create(Document& document)
 {
-    return adoptRef(new HTMLBaseElement(tagName, document));
+    return adoptRef(new HTMLBaseElement(document));
 }
 
 void HTMLBaseElement::parseAttribute(const QualifiedName& name, const AtomicString& value)

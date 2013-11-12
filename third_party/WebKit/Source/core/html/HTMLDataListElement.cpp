@@ -32,21 +32,22 @@
 #include "config.h"
 #include "core/html/HTMLDataListElement.h"
 
+#include "HTMLNames.h"
 #include "core/dom/IdTargetObserverRegistry.h"
 #include "core/frame/UseCounter.h"
 
 namespace WebCore {
 
-inline HTMLDataListElement::HTMLDataListElement(const QualifiedName& tagName, Document& document)
-    : HTMLElement(tagName, document)
+inline HTMLDataListElement::HTMLDataListElement(Document& document)
+    : HTMLElement(HTMLNames::datalistTag, document)
 {
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLDataListElement> HTMLDataListElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<HTMLDataListElement> HTMLDataListElement::create(Document& document)
 {
     UseCounter::count(document, UseCounter::DataListElement);
-    return adoptRef(new HTMLDataListElement(tagName, document));
+    return adoptRef(new HTMLDataListElement(document));
 }
 
 PassRefPtr<HTMLCollection> HTMLDataListElement::options()

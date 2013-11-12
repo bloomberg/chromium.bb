@@ -34,18 +34,17 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-PassRefPtr<HTMLDetailsElement> HTMLDetailsElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<HTMLDetailsElement> HTMLDetailsElement::create(Document& document)
 {
-    RefPtr<HTMLDetailsElement> details = adoptRef(new HTMLDetailsElement(tagName, document));
+    RefPtr<HTMLDetailsElement> details = adoptRef(new HTMLDetailsElement(document));
     details->ensureUserAgentShadowRoot();
     return details.release();
 }
 
-HTMLDetailsElement::HTMLDetailsElement(const QualifiedName& tagName, Document& document)
-    : HTMLElement(tagName, document)
+HTMLDetailsElement::HTMLDetailsElement(Document& document)
+    : HTMLElement(detailsTag, document)
     , m_isOpen(false)
 {
-    ASSERT(hasTagName(detailsTag));
     ScriptWrappable::init(this);
 }
 
@@ -58,7 +57,7 @@ void HTMLDetailsElement::didAddUserAgentShadowRoot(ShadowRoot& root)
 {
     DEFINE_STATIC_LOCAL(AtomicString, summarySelector, ("summary:first-of-type", AtomicString::ConstructFromLiteral));
 
-    RefPtr<HTMLSummaryElement> defaultSummary = HTMLSummaryElement::create(summaryTag, document());
+    RefPtr<HTMLSummaryElement> defaultSummary = HTMLSummaryElement::create(document());
     defaultSummary->appendChild(Text::create(document(), locale().queryString(blink::WebLocalizedString::DetailsLabel)));
 
     RefPtr<HTMLContentElement> content = HTMLContentElement::create(document());

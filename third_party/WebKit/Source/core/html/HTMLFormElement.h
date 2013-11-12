@@ -47,7 +47,6 @@ class HTMLInputElement;
 class HTMLFormElement FINAL : public HTMLElement {
 public:
     static PassRefPtr<HTMLFormElement> create(Document&);
-    static PassRefPtr<HTMLFormElement> create(const QualifiedName&, Document&);
     virtual ~HTMLFormElement();
 
     PassRefPtr<HTMLCollection> elements();
@@ -125,7 +124,7 @@ public:
     void anonymousNamedGetter(const AtomicString& name, bool&, RefPtr<NodeList>&, bool&, RefPtr<Node>&);
 
 private:
-    HTMLFormElement(const QualifiedName&, Document&);
+    explicit HTMLFormElement(Document&);
 
     virtual bool rendererIsNeeded(const RenderStyle&);
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;

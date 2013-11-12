@@ -222,6 +222,9 @@ public:
     String tagName() const { return nodeName(); }
     bool hasTagName(const QualifiedName& tagName) const { return m_tagName.matches(tagName); }
 
+    // Should be called only by Document::createElementNS to fix up m_tagName immediately after construction.
+    void setTagNameForCreateElementNS(const QualifiedName&);
+
     // A fast function for checking the local name against another atomic string.
     bool hasLocalName(const AtomicString& other) const { return m_tagName.localName() == other; }
     bool hasLocalName(const QualifiedName& other) const { return m_tagName.localName() == other.localName(); }
@@ -859,6 +862,14 @@ inline const StylePropertySet* Element::presentationAttributeStyle()
     // Need to call elementData() again since updatePresentationAttributeStyle()
     // might swap it with a UniqueElementData.
     return elementData()->presentationAttributeStyle();
+}
+
+inline void Element::setTagNameForCreateElementNS(const QualifiedName& tagName)
+{
+    // We expect this method to be called only to reset the prefix.
+    ASSERT(tagName.localName() == m_tagName.localName());
+    ASSERT(tagName.namespaceURI() == m_tagName.namespaceURI());
+    m_tagName = tagName;
 }
 
 inline bool isShadowHost(const Node* node)

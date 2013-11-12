@@ -34,7 +34,7 @@ namespace WebCore {
 static const double timeWithoutMouseMovementBeforeHidingFullscreenControls = 3;
 
 MediaControls::MediaControls(Document& document)
-    : HTMLDivElement(HTMLNames::divTag, document)
+    : HTMLDivElement(document)
     , m_mediaController(0)
     , m_panel(0)
     , m_textDisplayContainer(0)

@@ -270,7 +270,7 @@ int HTMLViewSourceDocument::addRange(const String& source, int start, int end, c
 
 PassRefPtr<Element> HTMLViewSourceDocument::addBase(const AtomicString& href)
 {
-    RefPtr<HTMLBaseElement> base = HTMLBaseElement::create(baseTag, *this);
+    RefPtr<HTMLBaseElement> base = HTMLBaseElement::create(*this);
     base->setAttribute(hrefAttr, href);
     m_current->parserAppendChild(base);
     return base.release();

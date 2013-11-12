@@ -30,14 +30,14 @@ namespace WebCore {
 
 class HTMLFrameElement FINAL : public HTMLFrameElementBase {
 public:
-    static PassRefPtr<HTMLFrameElement> create(const QualifiedName&, Document&);
+    static PassRefPtr<HTMLFrameElement> create(Document&);
 
     bool hasFrameBorder() const { return m_frameBorder; }
 
     bool noResize() const;
 
 private:
-    HTMLFrameElement(const QualifiedName&, Document&);
+    explicit HTMLFrameElement(Document&);
 
     virtual void attach(const AttachContext& = AttachContext()) OVERRIDE;
 

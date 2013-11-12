@@ -48,11 +48,10 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-inline HTMLObjectElement::HTMLObjectElement(const QualifiedName& tagName, Document& document, HTMLFormElement* form, bool createdByParser)
-    : HTMLPlugInElement(tagName, document, createdByParser, ShouldNotPreferPlugInsForImages)
+inline HTMLObjectElement::HTMLObjectElement(Document& document, HTMLFormElement* form, bool createdByParser)
+    : HTMLPlugInElement(objectTag, document, createdByParser, ShouldNotPreferPlugInsForImages)
     , m_useFallbackContent(false)
 {
-    ASSERT(hasTagName(objectTag));
     setForm(form ? form : findFormAncestor());
     ScriptWrappable::init(this);
 }
@@ -62,9 +61,9 @@ inline HTMLObjectElement::~HTMLObjectElement()
     setForm(0);
 }
 
-PassRefPtr<HTMLObjectElement> HTMLObjectElement::create(const QualifiedName& tagName, Document& document, HTMLFormElement* form, bool createdByParser)
+PassRefPtr<HTMLObjectElement> HTMLObjectElement::create(Document& document, HTMLFormElement* form, bool createdByParser)
 {
-    return adoptRef(new HTMLObjectElement(tagName, document, form, createdByParser));
+    return adoptRef(new HTMLObjectElement(document, form, createdByParser));
 }
 
 RenderWidget* HTMLObjectElement::existingRenderWidget() const

@@ -33,7 +33,6 @@ class Document;
 class HTMLBodyElement FINAL : public HTMLElement {
 public:
     static PassRefPtr<HTMLBodyElement> create(Document&);
-    static PassRefPtr<HTMLBodyElement> create(const QualifiedName&, Document&);
     virtual ~HTMLBodyElement();
 
     DEFINE_WINDOW_ATTRIBUTE_EVENT_LISTENER(blur);
@@ -47,7 +46,7 @@ public:
 #endif
 
 private:
-    HTMLBodyElement(const QualifiedName&, Document&);
+    explicit HTMLBodyElement(Document&);
 
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
     virtual bool isPresentationAttribute(const QualifiedName&) const OVERRIDE;

@@ -39,8 +39,8 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-inline HTMLTemplateElement::HTMLTemplateElement(const QualifiedName& tagName, Document& document)
-    : HTMLElement(tagName, document)
+inline HTMLTemplateElement::HTMLTemplateElement(Document& document)
+    : HTMLElement(templateTag, document)
 {
     ScriptWrappable::init(this);
 }
@@ -51,9 +51,9 @@ HTMLTemplateElement::~HTMLTemplateElement()
         m_content->clearHost();
 }
 
-PassRefPtr<HTMLTemplateElement> HTMLTemplateElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<HTMLTemplateElement> HTMLTemplateElement::create(Document& document)
 {
-    return adoptRef(new HTMLTemplateElement(tagName, document));
+    return adoptRef(new HTMLTemplateElement(document));
 }
 
 DocumentFragment* HTMLTemplateElement::content() const

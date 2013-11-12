@@ -28,6 +28,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import sys
+from collections import defaultdict
 
 import in_generator
 import template_expander
@@ -68,10 +69,16 @@ class MakeElementFactoryWriter(MakeQualifiedNamesWriter):
         fallback_interface = self.tags_in_file.parameters['fallbackInterfaceName'].strip('"')
         fallback_js_interface = self.tags_in_file.parameters['fallbackJSInterfaceName'].strip('"') or fallback_interface
 
-        for tag in self._template_context['tags']:
+        interface_counts = defaultdict(int)
+        tags = self._template_context['tags']
+        for tag in tags:
             tag['has_js_interface'] = self._has_js_interface(tag)
             tag['js_interface'] = self._js_interface(tag)
             tag['interface'] = self._interface(tag)
+            interface_counts[tag['interface']] += 1
+
+        for tag in tags:
+            tag['multipleTagNames'] = interface_counts[tag['interface']] > 1
 
         self._template_context.update({
             'fallback_interface': fallback_interface,

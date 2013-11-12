@@ -30,21 +30,15 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLUListElement::HTMLUListElement(const QualifiedName& tagName, Document& document)
-    : HTMLElement(tagName, document)
+HTMLUListElement::HTMLUListElement(Document& document)
+    : HTMLElement(ulTag, document)
 {
-    ASSERT(hasTagName(ulTag));
     ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLUListElement> HTMLUListElement::create(Document& document)
 {
-    return adoptRef(new HTMLUListElement(ulTag, document));
-}
-
-PassRefPtr<HTMLUListElement> HTMLUListElement::create(const QualifiedName& tagName, Document& document)
-{
-    return adoptRef(new HTMLUListElement(tagName, document));
+    return adoptRef(new HTMLUListElement(document));
 }
 
 bool HTMLUListElement::isPresentationAttribute(const QualifiedName& name) const

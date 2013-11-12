@@ -247,7 +247,7 @@ bool FileInputType::isFileUpload() const
 void FileInputType::createShadowSubtree()
 {
     ASSERT(element().shadow());
-    RefPtr<HTMLInputElement> button = HTMLInputElement::create(inputTag, element().document(), 0, false);
+    RefPtr<HTMLInputElement> button = HTMLInputElement::create(element().document(), 0, false);
     button->setType(InputTypeNames::button());
     button->setAttribute(valueAttr, locale().queryString(element().multiple() ? WebLocalizedString::FileButtonChooseMultipleFilesLabel : WebLocalizedString::FileButtonChooseFileLabel));
     button->setPart(AtomicString("-webkit-file-upload-button", AtomicString::ConstructFromLiteral));

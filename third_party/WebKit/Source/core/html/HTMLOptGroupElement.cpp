@@ -35,17 +35,16 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-inline HTMLOptGroupElement::HTMLOptGroupElement(const QualifiedName& tagName, Document& document)
-    : HTMLElement(tagName, document)
+inline HTMLOptGroupElement::HTMLOptGroupElement(Document& document)
+    : HTMLElement(optgroupTag, document)
 {
-    ASSERT(hasTagName(optgroupTag));
     setHasCustomStyleCallbacks();
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLOptGroupElement> HTMLOptGroupElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<HTMLOptGroupElement> HTMLOptGroupElement::create(Document& document)
 {
-    return adoptRef(new HTMLOptGroupElement(tagName, document));
+    return adoptRef(new HTMLOptGroupElement(document));
 }
 
 bool HTMLOptGroupElement::isDisabledFormControl() const

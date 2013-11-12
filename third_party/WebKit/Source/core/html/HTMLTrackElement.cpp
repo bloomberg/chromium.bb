@@ -50,12 +50,11 @@ static String urlForLoggingTrack(const KURL& url)
 }
 #endif
 
-inline HTMLTrackElement::HTMLTrackElement(const QualifiedName& tagName, Document& document)
-    : HTMLElement(tagName, document)
+inline HTMLTrackElement::HTMLTrackElement(Document& document)
+    : HTMLElement(trackTag, document)
     , m_loadTimer(this, &HTMLTrackElement::loadTimerFired)
 {
     LOG(Media, "HTMLTrackElement::HTMLTrackElement - %p", this);
-    ASSERT(hasTagName(trackTag));
     ScriptWrappable::init(this);
 }
 
@@ -65,9 +64,9 @@ HTMLTrackElement::~HTMLTrackElement()
         m_track->clearClient();
 }
 
-PassRefPtr<HTMLTrackElement> HTMLTrackElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<HTMLTrackElement> HTMLTrackElement::create(Document& document)
 {
-    return adoptRef(new HTMLTrackElement(tagName, document));
+    return adoptRef(new HTMLTrackElement(document));
 }
 
 Node::InsertionNotificationRequest HTMLTrackElement::insertedInto(ContainerNode* insertionPoint)

@@ -40,7 +40,7 @@ class HTMLOptionElement;
 class HTMLSelectElement FINAL : public HTMLFormControlElementWithState, public TypeAheadDataSource {
 public:
     static PassRefPtr<HTMLSelectElement> create(Document&);
-    static PassRefPtr<HTMLSelectElement> create(const QualifiedName&, Document&, HTMLFormElement*, bool createdByParser);
+    static PassRefPtr<HTMLSelectElement> create(Document&, HTMLFormElement*, bool createdByParser);
 
     int selectedIndex() const;
     void setSelectedIndex(int);
@@ -115,7 +115,7 @@ public:
     bool anonymousIndexedSetterRemove(unsigned, ExceptionState&);
 
 protected:
-    HTMLSelectElement(const QualifiedName&, Document&, HTMLFormElement*, bool createdByParser);
+    HTMLSelectElement(Document&, HTMLFormElement*, bool createdByParser);
 
 private:
     virtual const AtomicString& formControlType() const;

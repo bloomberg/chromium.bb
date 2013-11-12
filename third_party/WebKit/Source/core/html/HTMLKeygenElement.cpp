@@ -42,10 +42,9 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLKeygenElement::HTMLKeygenElement(const QualifiedName& tagName, Document& document, HTMLFormElement* form)
-    : HTMLFormControlElementWithState(tagName, document, form)
+HTMLKeygenElement::HTMLKeygenElement(Document& document, HTMLFormElement* form)
+    : HTMLFormControlElementWithState(keygenTag, document, form)
 {
-    ASSERT(hasTagName(keygenTag));
     ScriptWrappable::init(this);
     ensureUserAgentShadowRoot();
 }

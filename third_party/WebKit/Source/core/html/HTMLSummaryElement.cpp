@@ -35,17 +35,17 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-PassRefPtr<HTMLSummaryElement> HTMLSummaryElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<HTMLSummaryElement> HTMLSummaryElement::create(Document& document)
 {
-    RefPtr<HTMLSummaryElement> summary = adoptRef(new HTMLSummaryElement(tagName, document));
+    RefPtr<HTMLSummaryElement> summary = adoptRef(new HTMLSummaryElement(document));
     summary->ensureUserAgentShadowRoot();
     return summary.release();
 }
 
-HTMLSummaryElement::HTMLSummaryElement(const QualifiedName& tagName, Document& document)
-    : HTMLElement(tagName, document)
+HTMLSummaryElement::HTMLSummaryElement(Document& document)
+    : HTMLElement(summaryTag, document)
 {
-    ASSERT(hasTagName(summaryTag));
+    // FIXME: Shouldn't there be a ScriptWrappable::init call here?
 }
 
 RenderObject* HTMLSummaryElement::createRenderer(RenderStyle*)

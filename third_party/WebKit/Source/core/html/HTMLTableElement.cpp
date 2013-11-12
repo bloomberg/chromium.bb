@@ -46,26 +46,20 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLTableElement::HTMLTableElement(const QualifiedName& tagName, Document& document)
-    : HTMLElement(tagName, document)
+HTMLTableElement::HTMLTableElement(Document& document)
+    : HTMLElement(tableTag, document)
     , m_borderAttr(false)
     , m_borderColorAttr(false)
     , m_frameAttr(false)
     , m_rulesAttr(UnsetRules)
     , m_padding(1)
 {
-    ASSERT(hasTagName(tableTag));
     ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLTableElement> HTMLTableElement::create(Document& document)
 {
-    return adoptRef(new HTMLTableElement(tableTag, document));
-}
-
-PassRefPtr<HTMLTableElement> HTMLTableElement::create(const QualifiedName& tagName, Document& document)
-{
-    return adoptRef(new HTMLTableElement(tagName, document));
+    return adoptRef(new HTMLTableElement(document));
 }
 
 HTMLTableCaptionElement* HTMLTableElement::caption() const
@@ -166,7 +160,7 @@ PassRefPtr<HTMLElement> HTMLTableElement::createCaption()
 {
     if (HTMLTableCaptionElement* existingCaption = caption())
         return existingCaption;
-    RefPtr<HTMLTableCaptionElement> caption = HTMLTableCaptionElement::create(captionTag, document());
+    RefPtr<HTMLTableCaptionElement> caption = HTMLTableCaptionElement::create(document());
     setCaption(caption, IGNORE_EXCEPTION);
     return caption.release();
 }

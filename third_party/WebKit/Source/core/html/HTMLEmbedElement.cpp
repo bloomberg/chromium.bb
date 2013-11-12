@@ -38,21 +38,15 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-inline HTMLEmbedElement::HTMLEmbedElement(const QualifiedName& tagName, Document& document, bool createdByParser)
-    : HTMLPlugInElement(tagName, document, createdByParser, ShouldPreferPlugInsForImages)
+inline HTMLEmbedElement::HTMLEmbedElement(Document& document, bool createdByParser)
+    : HTMLPlugInElement(embedTag, document, createdByParser, ShouldPreferPlugInsForImages)
 {
-    ASSERT(hasTagName(embedTag));
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLEmbedElement> HTMLEmbedElement::create(const QualifiedName& tagName, Document& document, bool createdByParser)
+PassRefPtr<HTMLEmbedElement> HTMLEmbedElement::create(Document& document, bool createdByParser)
 {
-    return adoptRef(new HTMLEmbedElement(tagName, document, createdByParser));
-}
-
-PassRefPtr<HTMLEmbedElement> HTMLEmbedElement::create(Document& document)
-{
-    return create(embedTag, document, false);
+    return adoptRef(new HTMLEmbedElement(document, createdByParser));
 }
 
 static inline RenderWidget* findWidgetRenderer(const Node* n)

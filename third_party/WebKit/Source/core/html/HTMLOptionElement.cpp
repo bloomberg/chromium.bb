@@ -46,30 +46,24 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLOptionElement::HTMLOptionElement(const QualifiedName& tagName, Document& document)
-    : HTMLElement(tagName, document)
+HTMLOptionElement::HTMLOptionElement(Document& document)
+    : HTMLElement(optionTag, document)
     , m_disabled(false)
     , m_isSelected(false)
 {
-    ASSERT(hasTagName(optionTag));
     setHasCustomStyleCallbacks();
     ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLOptionElement> HTMLOptionElement::create(Document& document)
 {
-    return adoptRef(new HTMLOptionElement(optionTag, document));
-}
-
-PassRefPtr<HTMLOptionElement> HTMLOptionElement::create(const QualifiedName& tagName, Document& document)
-{
-    return adoptRef(new HTMLOptionElement(tagName, document));
+    return adoptRef(new HTMLOptionElement(document));
 }
 
 PassRefPtr<HTMLOptionElement> HTMLOptionElement::createForJSConstructor(Document& document, const String& data, const String& value,
     bool defaultSelected, bool selected, ExceptionState& es)
 {
-    RefPtr<HTMLOptionElement> element = adoptRef(new HTMLOptionElement(optionTag, document));
+    RefPtr<HTMLOptionElement> element = adoptRef(new HTMLOptionElement(document));
 
     RefPtr<Text> text = Text::create(document, data.isNull() ? "" : data);
 

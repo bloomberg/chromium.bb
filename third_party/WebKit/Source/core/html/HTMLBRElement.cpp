@@ -32,21 +32,15 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLBRElement::HTMLBRElement(const QualifiedName& tagName, Document& document)
-    : HTMLElement(tagName, document)
+HTMLBRElement::HTMLBRElement(Document& document)
+    : HTMLElement(brTag, document)
 {
-    ASSERT(hasTagName(brTag));
     ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLBRElement> HTMLBRElement::create(Document& document)
 {
-    return adoptRef(new HTMLBRElement(brTag, document));
-}
-
-PassRefPtr<HTMLBRElement> HTMLBRElement::create(const QualifiedName& tagName, Document& document)
-{
-    return adoptRef(new HTMLBRElement(tagName, document));
+    return adoptRef(new HTMLBRElement(document));
 }
 
 bool HTMLBRElement::isPresentationAttribute(const QualifiedName& name) const

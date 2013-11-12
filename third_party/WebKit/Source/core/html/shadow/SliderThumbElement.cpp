@@ -196,7 +196,7 @@ void RenderSliderContainer::layout()
 // --------------------------------
 
 inline SliderThumbElement::SliderThumbElement(Document& document)
-    : HTMLDivElement(HTMLNames::divTag, document)
+    : HTMLDivElement(document)
     , m_inDragMode(false)
 {
 }
@@ -435,7 +435,7 @@ const AtomicString& SliderThumbElement::part() const
 // --------------------------------
 
 inline SliderContainerElement::SliderContainerElement(Document& document)
-    : HTMLDivElement(HTMLNames::divTag, document)
+    : HTMLDivElement(document)
 {
 }
 

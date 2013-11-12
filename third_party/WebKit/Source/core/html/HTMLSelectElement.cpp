@@ -64,8 +64,8 @@ using namespace HTMLNames;
 // Upper limit agreed upon with representatives of Opera and Mozilla.
 static const unsigned maxSelectItems = 10000;
 
-HTMLSelectElement::HTMLSelectElement(const QualifiedName& tagName, Document& document, HTMLFormElement* form, bool createdByParser)
-    : HTMLFormControlElementWithState(tagName, document, form)
+HTMLSelectElement::HTMLSelectElement(Document& document, HTMLFormElement* form, bool createdByParser)
+    : HTMLFormControlElementWithState(selectTag, document, form)
     , m_typeAhead(this)
     , m_size(0)
     , m_lastOnChangeIndex(-1)
@@ -77,19 +77,17 @@ HTMLSelectElement::HTMLSelectElement(const QualifiedName& tagName, Document& doc
     , m_shouldRecalcListItems(false)
     , m_isParsingInProgress(createdByParser)
 {
-    ASSERT(hasTagName(selectTag));
     ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLSelectElement> HTMLSelectElement::create(Document& document)
 {
-    return adoptRef(new HTMLSelectElement(selectTag, document, 0, false));
+    return adoptRef(new HTMLSelectElement(document, 0, false));
 }
 
-PassRefPtr<HTMLSelectElement> HTMLSelectElement::create(const QualifiedName& tagName, Document& document, HTMLFormElement* form, bool createdByParser)
+PassRefPtr<HTMLSelectElement> HTMLSelectElement::create(Document& document, HTMLFormElement* form, bool createdByParser)
 {
-    ASSERT(tagName.matches(selectTag));
-    return adoptRef(new HTMLSelectElement(tagName, document, form, createdByParser));
+    return adoptRef(new HTMLSelectElement(document, form, createdByParser));
 }
 
 const AtomicString& HTMLSelectElement::formControlType() const

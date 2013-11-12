@@ -32,18 +32,17 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-inline HTMLFrameElement::HTMLFrameElement(const QualifiedName& tagName, Document& document)
-    : HTMLFrameElementBase(tagName, document)
+inline HTMLFrameElement::HTMLFrameElement(Document& document)
+    : HTMLFrameElementBase(frameTag, document)
     , m_frameBorder(true)
     , m_frameBorderSet(false)
 {
-    ASSERT(hasTagName(frameTag));
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLFrameElement> HTMLFrameElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<HTMLFrameElement> HTMLFrameElement::create(Document& document)
 {
-    return adoptRef(new HTMLFrameElement(tagName, document));
+    return adoptRef(new HTMLFrameElement(document));
 }
 
 bool HTMLFrameElement::rendererIsNeeded(const RenderStyle&)

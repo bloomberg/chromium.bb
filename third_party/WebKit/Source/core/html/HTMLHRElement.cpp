@@ -33,21 +33,15 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLHRElement::HTMLHRElement(const QualifiedName& tagName, Document& document)
-    : HTMLElement(tagName, document)
+HTMLHRElement::HTMLHRElement(Document& document)
+    : HTMLElement(hrTag, document)
 {
-    ASSERT(hasTagName(hrTag));
     ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLHRElement> HTMLHRElement::create(Document& document)
 {
-    return adoptRef(new HTMLHRElement(hrTag, document));
-}
-
-PassRefPtr<HTMLHRElement> HTMLHRElement::create(const QualifiedName& tagName, Document& document)
-{
-    return adoptRef(new HTMLHRElement(tagName, document));
+    return adoptRef(new HTMLHRElement(document));
 }
 
 bool HTMLHRElement::isPresentationAttribute(const QualifiedName& name) const

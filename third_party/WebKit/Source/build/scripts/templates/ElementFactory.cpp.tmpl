@@ -51,7 +51,9 @@ static PassRefPtr<{{namespace}}Element> {{tag|symbol}}Constructor(
     if (!RuntimeEnabledFeatures::{{tag.runtimeEnabled}}Enabled())
         return {{fallback_interface}}::create(tagName, document);
 {%- endif %}
-    return {{tag.interface}}::create(tagName, document
+    return {{tag.interface}}::create(
+{%- if namespace != 'HTML' or tag.multipleTagNames -%} tagName, {% endif -%}
+        document
 {%- if namespace == 'HTML' and tag.constructorNeedsFormElement %}, formElement{% endif -%}
 {%- if tag.constructorNeedsCreatedByParser %}, createdByParser{% endif -%}
     );

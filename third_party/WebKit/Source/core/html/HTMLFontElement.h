@@ -30,12 +30,12 @@ namespace WebCore {
 
 class HTMLFontElement FINAL : public HTMLElement {
 public:
-    static PassRefPtr<HTMLFontElement> create(const QualifiedName&, Document&);
+    static PassRefPtr<HTMLFontElement> create(Document&);
 
     static bool cssValueFromFontSizeNumber(const String&, CSSValueID&);
 
 private:
-    HTMLFontElement(const QualifiedName&, Document&);
+    explicit HTMLFontElement(Document&);
 
     virtual bool isPresentationAttribute(const QualifiedName&) const OVERRIDE;
     virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) OVERRIDE;

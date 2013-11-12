@@ -36,7 +36,7 @@ class HTMLImageElement FINAL : public HTMLElement {
     friend class HTMLFormElement;
 public:
     static PassRefPtr<HTMLImageElement> create(Document&);
-    static PassRefPtr<HTMLImageElement> create(const QualifiedName&, Document&, HTMLFormElement*);
+    static PassRefPtr<HTMLImageElement> create(Document&, HTMLFormElement*);
     static PassRefPtr<HTMLImageElement> createForJSConstructor(Document&, int width, int height);
 
     virtual ~HTMLImageElement();
@@ -82,7 +82,7 @@ public:
     virtual const AtomicString imageSourceURL() const OVERRIDE;
 
 protected:
-    HTMLImageElement(const QualifiedName&, Document&, HTMLFormElement* = 0);
+    explicit HTMLImageElement(Document&, HTMLFormElement* = 0);
 
     virtual void didMoveToNewDocument(Document& oldDocument) OVERRIDE;
 

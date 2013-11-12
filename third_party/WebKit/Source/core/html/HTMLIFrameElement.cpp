@@ -34,18 +34,17 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-inline HTMLIFrameElement::HTMLIFrameElement(const QualifiedName& tagName, Document& document)
-    : HTMLFrameElementBase(tagName, document)
+inline HTMLIFrameElement::HTMLIFrameElement(Document& document)
+    : HTMLFrameElementBase(iframeTag, document)
     , m_didLoadNonEmptyDocument(false)
 {
-    ASSERT(hasTagName(iframeTag));
     ScriptWrappable::init(this);
     setHasCustomStyleCallbacks();
 }
 
-PassRefPtr<HTMLIFrameElement> HTMLIFrameElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<HTMLIFrameElement> HTMLIFrameElement::create(Document& document)
 {
-    return adoptRef(new HTMLIFrameElement(tagName, document));
+    return adoptRef(new HTMLIFrameElement(document));
 }
 
 bool HTMLIFrameElement::isPresentationAttribute(const QualifiedName& name) const

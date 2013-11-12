@@ -37,7 +37,7 @@ class QualifiedName;
 
 class HTMLDialogElement FINAL : public HTMLElement {
 public:
-    static PassRefPtr<HTMLDialogElement> create(const QualifiedName&, Document&);
+    static PassRefPtr<HTMLDialogElement> create(Document&);
 
     void close(const String& returnValue, ExceptionState&);
     void closeDialog(const String& returnValue = String());
@@ -58,7 +58,7 @@ public:
     void setReturnValue(const String& returnValue) { m_returnValue = returnValue; }
 
 private:
-    HTMLDialogElement(const QualifiedName&, Document&);
+    explicit HTMLDialogElement(Document&);
 
     virtual bool isPresentationAttribute(const QualifiedName&) const OVERRIDE;
     virtual void defaultEventHandler(Event*) OVERRIDE;

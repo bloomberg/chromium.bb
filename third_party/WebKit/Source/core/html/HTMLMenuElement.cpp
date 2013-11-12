@@ -29,16 +29,15 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-inline HTMLMenuElement::HTMLMenuElement(const QualifiedName& tagName, Document& document)
-    : HTMLElement(tagName, document)
+inline HTMLMenuElement::HTMLMenuElement(Document& document)
+    : HTMLElement(menuTag, document)
 {
-    ASSERT(hasTagName(menuTag));
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLMenuElement> HTMLMenuElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<HTMLMenuElement> HTMLMenuElement::create(Document& document)
 {
-    return adoptRef(new HTMLMenuElement(tagName, document));
+    return adoptRef(new HTMLMenuElement(document));
 }
 
 }

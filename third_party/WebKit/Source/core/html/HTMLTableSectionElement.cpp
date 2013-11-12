@@ -64,7 +64,7 @@ PassRefPtr<HTMLElement> HTMLTableSectionElement::insertRow(int index, ExceptionS
     if (index < -1 || index > numRows)
         es.throwUninformativeAndGenericDOMException(IndexSizeError); // per the DOM
     else {
-        row = HTMLTableRowElement::create(trTag, document());
+        row = HTMLTableRowElement::create(document());
         if (numRows == index || index == -1)
             appendChild(row, es);
         else {

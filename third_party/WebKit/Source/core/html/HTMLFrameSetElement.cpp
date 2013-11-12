@@ -42,8 +42,8 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLFrameSetElement::HTMLFrameSetElement(const QualifiedName& tagName, Document& document)
-    : HTMLElement(tagName, document)
+HTMLFrameSetElement::HTMLFrameSetElement(Document& document)
+    : HTMLElement(framesetTag, document)
     , m_border(6)
     , m_borderSet(false)
     , m_borderColorSet(false)
@@ -51,14 +51,13 @@ HTMLFrameSetElement::HTMLFrameSetElement(const QualifiedName& tagName, Document&
     , m_frameborderSet(false)
     , m_noresize(false)
 {
-    ASSERT(hasTagName(framesetTag));
     ScriptWrappable::init(this);
     setHasCustomStyleCallbacks();
 }
 
-PassRefPtr<HTMLFrameSetElement> HTMLFrameSetElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<HTMLFrameSetElement> HTMLFrameSetElement::create(Document& document)
 {
-    return adoptRef(new HTMLFrameSetElement(tagName, document));
+    return adoptRef(new HTMLFrameSetElement(document));
 }
 
 bool HTMLFrameSetElement::isPresentationAttribute(const QualifiedName& name) const

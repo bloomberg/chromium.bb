@@ -39,18 +39,17 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLAppletElement::HTMLAppletElement(const QualifiedName& tagName, Document& document, bool createdByParser)
-    : HTMLPlugInElement(tagName, document, createdByParser, ShouldNotPreferPlugInsForImages)
+HTMLAppletElement::HTMLAppletElement(Document& document, bool createdByParser)
+    : HTMLPlugInElement(appletTag, document, createdByParser, ShouldNotPreferPlugInsForImages)
 {
-    ASSERT(hasTagName(appletTag));
     ScriptWrappable::init(this);
 
     m_serviceType = "application/x-java-applet";
 }
 
-PassRefPtr<HTMLAppletElement> HTMLAppletElement::create(const QualifiedName& tagName, Document& document, bool createdByParser)
+PassRefPtr<HTMLAppletElement> HTMLAppletElement::create(Document& document, bool createdByParser)
 {
-    return adoptRef(new HTMLAppletElement(tagName, document, createdByParser));
+    return adoptRef(new HTMLAppletElement(document, createdByParser));
 }
 
 void HTMLAppletElement::parseAttribute(const QualifiedName& name, const AtomicString& value)

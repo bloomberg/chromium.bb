@@ -441,7 +441,7 @@ DateTimeEditElement::EditControlOwner::~EditControlOwner()
 }
 
 DateTimeEditElement::DateTimeEditElement(Document& document, EditControlOwner& editControlOwner)
-    : HTMLDivElement(divTag, document)
+    : HTMLDivElement(document)
     , m_editControlOwner(&editControlOwner)
 {
     setHasCustomStyleCallbacks();

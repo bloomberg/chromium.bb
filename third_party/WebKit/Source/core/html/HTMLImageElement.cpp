@@ -42,14 +42,13 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLImageElement::HTMLImageElement(const QualifiedName& tagName, Document& document, HTMLFormElement* form)
-    : HTMLElement(tagName, document)
+HTMLImageElement::HTMLImageElement(Document& document, HTMLFormElement* form)
+    : HTMLElement(imgTag, document)
     , m_imageLoader(this)
     , m_form(form)
     , m_compositeOperator(CompositeSourceOver)
     , m_imageDevicePixelRatio(1.0f)
 {
-    ASSERT(hasTagName(imgTag));
     ScriptWrappable::init(this);
     if (form)
         form->registerImgElement(this);
@@ -57,12 +56,12 @@ HTMLImageElement::HTMLImageElement(const QualifiedName& tagName, Document& docum
 
 PassRefPtr<HTMLImageElement> HTMLImageElement::create(Document& document)
 {
-    return adoptRef(new HTMLImageElement(imgTag, document));
+    return adoptRef(new HTMLImageElement(document));
 }
 
-PassRefPtr<HTMLImageElement> HTMLImageElement::create(const QualifiedName& tagName, Document& document, HTMLFormElement* form)
+PassRefPtr<HTMLImageElement> HTMLImageElement::create(Document& document, HTMLFormElement* form)
 {
-    return adoptRef(new HTMLImageElement(tagName, document, form));
+    return adoptRef(new HTMLImageElement(document, form));
 }
 
 HTMLImageElement::~HTMLImageElement()
@@ -73,7 +72,7 @@ HTMLImageElement::~HTMLImageElement()
 
 PassRefPtr<HTMLImageElement> HTMLImageElement::createForJSConstructor(Document& document, int width, int height)
 {
-    RefPtr<HTMLImageElement> image = adoptRef(new HTMLImageElement(imgTag, document));
+    RefPtr<HTMLImageElement> image = adoptRef(new HTMLImageElement(document));
     if (width)
         image->setWidth(width);
     if (height)

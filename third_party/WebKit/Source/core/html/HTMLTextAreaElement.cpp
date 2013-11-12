@@ -75,22 +75,21 @@ static inline unsigned computeLengthForSubmission(const String& text)
     return text.length() + numberOfLineBreaks(text);
 }
 
-HTMLTextAreaElement::HTMLTextAreaElement(const QualifiedName& tagName, Document& document, HTMLFormElement* form)
-    : HTMLTextFormControlElement(tagName, document, form)
+HTMLTextAreaElement::HTMLTextAreaElement(Document& document, HTMLFormElement* form)
+    : HTMLTextFormControlElement(textareaTag, document, form)
     , m_rows(defaultRows)
     , m_cols(defaultCols)
     , m_wrap(SoftWrap)
     , m_isDirty(false)
     , m_wasModifiedByUser(false)
 {
-    ASSERT(hasTagName(textareaTag));
     setFormControlValueMatchesRenderer(true);
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLTextAreaElement> HTMLTextAreaElement::create(const QualifiedName& tagName, Document& document, HTMLFormElement* form)
+PassRefPtr<HTMLTextAreaElement> HTMLTextAreaElement::create(Document& document, HTMLFormElement* form)
 {
-    RefPtr<HTMLTextAreaElement> textArea = adoptRef(new HTMLTextAreaElement(tagName, document, form));
+    RefPtr<HTMLTextAreaElement> textArea = adoptRef(new HTMLTextAreaElement(document, form));
     textArea->ensureUserAgentShadowRoot();
     return textArea.release();
 }

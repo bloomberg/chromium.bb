@@ -27,14 +27,14 @@ namespace WebCore {
 
 class HTMLBDIElement FINAL : public HTMLElement {
 public:
-    static PassRefPtr<HTMLBDIElement> create(const QualifiedName& name, Document& document)
+    static PassRefPtr<HTMLBDIElement> create(Document& document)
     {
-        return adoptRef(new HTMLBDIElement(name, document));
+        return adoptRef(new HTMLBDIElement(document));
     }
 
 private:
-    HTMLBDIElement(const QualifiedName& name, Document& document)
-        : HTMLElement(name, document)
+    explicit HTMLBDIElement(Document& document)
+        : HTMLElement(HTMLNames::bdiTag, document)
     {
         // FIXME: Rename setSelfOrAncestorHasDirAutoAttribute to reflect the fact bdi also uses this flag.
         setSelfOrAncestorHasDirAutoAttribute(true);

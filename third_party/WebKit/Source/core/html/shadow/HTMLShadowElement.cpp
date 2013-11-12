@@ -38,16 +38,15 @@ namespace WebCore {
 
 class Document;
 
-inline HTMLShadowElement::HTMLShadowElement(const QualifiedName& tagName, Document& document)
-    : InsertionPoint(tagName, document)
+inline HTMLShadowElement::HTMLShadowElement(Document& document)
+    : InsertionPoint(HTMLNames::shadowTag, document)
 {
-    ASSERT(hasTagName(HTMLNames::shadowTag));
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLShadowElement> HTMLShadowElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<HTMLShadowElement> HTMLShadowElement::create(Document& document)
 {
-    return adoptRef(new HTMLShadowElement(tagName, document));
+    return adoptRef(new HTMLShadowElement(document));
 }
 
 HTMLShadowElement::~HTMLShadowElement()

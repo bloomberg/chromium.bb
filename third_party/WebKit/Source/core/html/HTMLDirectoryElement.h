@@ -29,10 +29,10 @@ namespace WebCore {
 
 class HTMLDirectoryElement FINAL : public HTMLElement {
 public:
-    static PassRefPtr<HTMLDirectoryElement> create(const QualifiedName& tagName, Document&);
+    static PassRefPtr<HTMLDirectoryElement> create(Document&);
 
 private:
-    HTMLDirectoryElement(const QualifiedName&, Document&);
+    explicit HTMLDirectoryElement(Document&);
 };
 
 } //namespace

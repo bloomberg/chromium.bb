@@ -38,11 +38,10 @@ using namespace HTMLNames;
 const double HTMLProgressElement::IndeterminatePosition = -1;
 const double HTMLProgressElement::InvalidPosition = -2;
 
-HTMLProgressElement::HTMLProgressElement(const QualifiedName& tagName, Document& document)
-    : LabelableElement(tagName, document)
+HTMLProgressElement::HTMLProgressElement(Document& document)
+    : LabelableElement(progressTag, document)
     , m_value(0)
 {
-    ASSERT(hasTagName(progressTag));
     ScriptWrappable::init(this);
 }
 
@@ -50,9 +49,9 @@ HTMLProgressElement::~HTMLProgressElement()
 {
 }
 
-PassRefPtr<HTMLProgressElement> HTMLProgressElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<HTMLProgressElement> HTMLProgressElement::create(Document& document)
 {
-    RefPtr<HTMLProgressElement> progress = adoptRef(new HTMLProgressElement(tagName, document));
+    RefPtr<HTMLProgressElement> progress = adoptRef(new HTMLProgressElement(document));
     progress->ensureUserAgentShadowRoot();
     return progress.release();
 }

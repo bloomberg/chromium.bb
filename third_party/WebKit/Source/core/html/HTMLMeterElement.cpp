@@ -37,10 +37,9 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLMeterElement::HTMLMeterElement(const QualifiedName& tagName, Document& document)
-    : LabelableElement(tagName, document)
+HTMLMeterElement::HTMLMeterElement(Document& document)
+    : LabelableElement(meterTag, document)
 {
-    ASSERT(hasTagName(meterTag));
     ScriptWrappable::init(this);
 }
 
@@ -48,9 +47,9 @@ HTMLMeterElement::~HTMLMeterElement()
 {
 }
 
-PassRefPtr<HTMLMeterElement> HTMLMeterElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<HTMLMeterElement> HTMLMeterElement::create(Document& document)
 {
-    RefPtr<HTMLMeterElement> meter = adoptRef(new HTMLMeterElement(tagName, document));
+    RefPtr<HTMLMeterElement> meter = adoptRef(new HTMLMeterElement(document));
     meter->ensureUserAgentShadowRoot();
     return meter;
 }

@@ -29,13 +29,13 @@ namespace WebCore {
 
 class HTMLBaseElement FINAL : public HTMLElement {
 public:
-    static PassRefPtr<HTMLBaseElement> create(const QualifiedName&, Document&);
+    static PassRefPtr<HTMLBaseElement> create(Document&);
 
     KURL href() const;
     void setHref(const AtomicString&);
 
 private:
-    HTMLBaseElement(const QualifiedName&, Document&);
+    explicit HTMLBaseElement(Document&);
 
     virtual String target() const;
     virtual bool isURLAttribute(const Attribute&) const OVERRIDE;

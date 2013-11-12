@@ -42,20 +42,14 @@ using namespace HTMLNames;
 
 PassRefPtr<HTMLContentElement> HTMLContentElement::create(Document& document)
 {
-    return adoptRef(new HTMLContentElement(contentTag, document));
+    return adoptRef(new HTMLContentElement(document));
 }
 
-PassRefPtr<HTMLContentElement> HTMLContentElement::create(const QualifiedName& tagName, Document& document)
-{
-    return adoptRef(new HTMLContentElement(tagName, document));
-}
-
-HTMLContentElement::HTMLContentElement(const QualifiedName& name, Document& document)
-    : InsertionPoint(name, document)
+HTMLContentElement::HTMLContentElement(Document& document)
+    : InsertionPoint(contentTag, document)
     , m_shouldParseSelect(false)
     , m_isValidSelector(true)
 {
-    ASSERT(hasTagName(contentTag));
     ScriptWrappable::init(this);
 }
 

@@ -47,7 +47,7 @@ namespace WebCore {
 using namespace HTMLNames;
 
 PasswordGeneratorButtonElement::PasswordGeneratorButtonElement(Document& document)
-    : HTMLDivElement(HTMLNames::divTag, document)
+    : HTMLDivElement(document)
     , m_isInHoverState(false)
 {
     setHasCustomStyleCallbacks();

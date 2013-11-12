@@ -32,7 +32,7 @@ class HTMLSelectElement;
 
 class HTMLOptGroupElement FINAL : public HTMLElement {
 public:
-    static PassRefPtr<HTMLOptGroupElement> create(const QualifiedName&, Document&);
+    static PassRefPtr<HTMLOptGroupElement> create(Document&);
 
     virtual bool isDisabledFormControl() const OVERRIDE;
     HTMLSelectElement* ownerSelectElement() const;
@@ -40,7 +40,7 @@ public:
     String groupLabelText() const;
 
 private:
-    HTMLOptGroupElement(const QualifiedName&, Document&);
+    explicit HTMLOptGroupElement(Document&);
 
     virtual const AtomicString& formControlType() const;
     virtual bool rendererIsFocusable() const OVERRIDE;

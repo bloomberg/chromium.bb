@@ -27,13 +27,13 @@ namespace WebCore {
 
 class HTMLDetailsElement FINAL : public HTMLElement {
 public:
-    static PassRefPtr<HTMLDetailsElement> create(const QualifiedName& tagName, Document&);
+    static PassRefPtr<HTMLDetailsElement> create(Document&);
     void toggleOpen();
 
     Element* findMainSummary() const;
 
 private:
-    HTMLDetailsElement(const QualifiedName&, Document&);
+    explicit HTMLDetailsElement(Document&);
 
     virtual RenderObject* createRenderer(RenderStyle*);
     virtual bool childShouldCreateRenderer(const Node& child) const OVERRIDE;

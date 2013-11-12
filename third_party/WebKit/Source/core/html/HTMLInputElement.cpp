@@ -99,8 +99,8 @@ const int HTMLInputElement::maximumLength = 524288;
 const int defaultSize = 20;
 const int maxSavedResults = 256;
 
-HTMLInputElement::HTMLInputElement(const QualifiedName& tagName, Document& document, HTMLFormElement* form, bool createdByParser)
-    : HTMLTextFormControlElement(tagName, document, form)
+HTMLInputElement::HTMLInputElement(Document& document, HTMLFormElement* form, bool createdByParser)
+    : HTMLTextFormControlElement(inputTag, document, form)
     , m_size(defaultSize)
     , m_maxLength(maximumLength)
     , m_maxResults(-1)
@@ -120,16 +120,15 @@ HTMLInputElement::HTMLInputElement(const QualifiedName& tagName, Document& docum
     , m_inputType(InputType::createText(*this))
     , m_inputTypeView(m_inputType)
 {
-    ASSERT(hasTagName(inputTag) || hasTagName(isindexTag));
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
     setHasCustomStyleCallbacks();
 #endif
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLInputElement> HTMLInputElement::create(const QualifiedName& tagName, Document& document, HTMLFormElement* form, bool createdByParser)
+PassRefPtr<HTMLInputElement> HTMLInputElement::create(Document& document, HTMLFormElement* form, bool createdByParser)
 {
-    RefPtr<HTMLInputElement> inputElement = adoptRef(new HTMLInputElement(tagName, document, form, createdByParser));
+    RefPtr<HTMLInputElement> inputElement = adoptRef(new HTMLInputElement(document, form, createdByParser));
     inputElement->ensureUserAgentShadowRoot();
     return inputElement.release();
 }

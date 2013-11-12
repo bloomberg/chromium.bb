@@ -35,17 +35,16 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-inline HTMLTitleElement::HTMLTitleElement(const QualifiedName& tagName, Document& document)
-    : HTMLElement(tagName, document)
+inline HTMLTitleElement::HTMLTitleElement(Document& document)
+    : HTMLElement(titleTag, document)
 {
-    ASSERT(hasTagName(titleTag));
     setHasCustomStyleCallbacks();
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLTitleElement> HTMLTitleElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<HTMLTitleElement> HTMLTitleElement::create(Document& document)
 {
-    return adoptRef(new HTMLTitleElement(tagName, document));
+    return adoptRef(new HTMLTitleElement(document));
 }
 
 Node::InsertionNotificationRequest HTMLTitleElement::insertedInto(ContainerNode* insertionPoint)

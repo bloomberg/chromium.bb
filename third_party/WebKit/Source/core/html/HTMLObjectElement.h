@@ -32,7 +32,7 @@ class HTMLFormElement;
 
 class HTMLObjectElement FINAL : public HTMLPlugInElement, public FormAssociatedElement {
 public:
-    static PassRefPtr<HTMLObjectElement> create(const QualifiedName&, Document&, HTMLFormElement*, bool createdByParser);
+    static PassRefPtr<HTMLObjectElement> create(Document&, HTMLFormElement*, bool createdByParser);
     virtual ~HTMLObjectElement();
 
     const String& classId() const { return m_classId; }
@@ -65,7 +65,7 @@ public:
     virtual bool canContainRangeEndPoint() const { return useFallbackContent(); }
 
 private:
-    HTMLObjectElement(const QualifiedName&, Document&, HTMLFormElement*, bool createdByParser);
+    HTMLObjectElement(Document&, HTMLFormElement*, bool createdByParser);
 
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
     virtual bool isPresentationAttribute(const QualifiedName&) const OVERRIDE;

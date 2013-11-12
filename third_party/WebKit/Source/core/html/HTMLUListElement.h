@@ -30,10 +30,9 @@ namespace WebCore {
 class HTMLUListElement FINAL : public HTMLElement {
 public:
     static PassRefPtr<HTMLUListElement> create(Document&);
-    static PassRefPtr<HTMLUListElement> create(const QualifiedName&, Document&);
 
 private:
-    HTMLUListElement(const QualifiedName&, Document&);
+    explicit HTMLUListElement(Document&);
 
     virtual bool isPresentationAttribute(const QualifiedName&) const OVERRIDE;
     virtual void collectStyleForPresentationAttribute(const QualifiedName&, const AtomicString&, MutableStylePropertySet*) OVERRIDE;

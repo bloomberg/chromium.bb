@@ -44,16 +44,15 @@ static bool supportsLabels(Element* element)
     return toLabelableElement(element)->supportLabels();
 }
 
-inline HTMLLabelElement::HTMLLabelElement(const QualifiedName& tagName, Document& document)
-    : HTMLElement(tagName, document)
+inline HTMLLabelElement::HTMLLabelElement(Document& document)
+    : HTMLElement(labelTag, document)
 {
-    ASSERT(hasTagName(labelTag));
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLLabelElement> HTMLLabelElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<HTMLLabelElement> HTMLLabelElement::create(Document& document)
 {
-    return adoptRef(new HTMLLabelElement(tagName, document));
+    return adoptRef(new HTMLLabelElement(document));
 }
 
 bool HTMLLabelElement::rendererIsFocusable() const

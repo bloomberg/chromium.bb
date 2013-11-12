@@ -57,19 +57,18 @@ static void runAutofocus(HTMLDialogElement* dialog)
     }
 }
 
-HTMLDialogElement::HTMLDialogElement(const QualifiedName& tagName, Document& document)
-    : HTMLElement(tagName, document)
+HTMLDialogElement::HTMLDialogElement(Document& document)
+    : HTMLElement(dialogTag, document)
     , m_centeringMode(Uninitialized)
     , m_centeredPosition(0)
     , m_returnValue("")
 {
-    ASSERT(hasTagName(dialogTag));
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLDialogElement> HTMLDialogElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<HTMLDialogElement> HTMLDialogElement::create(Document& document)
 {
-    return adoptRef(new HTMLDialogElement(tagName, document));
+    return adoptRef(new HTMLDialogElement(document));
 }
 
 void HTMLDialogElement::close(const String& returnValue, ExceptionState& es)

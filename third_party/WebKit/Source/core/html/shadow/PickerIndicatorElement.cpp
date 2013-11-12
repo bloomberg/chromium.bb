@@ -45,7 +45,7 @@ namespace WebCore {
 using namespace HTMLNames;
 
 inline PickerIndicatorElement::PickerIndicatorElement(Document& document, PickerIndicatorOwner& pickerIndicatorOwner)
-    : HTMLDivElement(divTag, document)
+    : HTMLDivElement(document)
     , m_pickerIndicatorOwner(&pickerIndicatorOwner)
 {
 }

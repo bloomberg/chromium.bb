@@ -43,18 +43,17 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-inline HTMLVideoElement::HTMLVideoElement(const QualifiedName& tagName, Document& document, bool createdByParser)
-    : HTMLMediaElement(tagName, document, createdByParser)
+inline HTMLVideoElement::HTMLVideoElement(Document& document, bool createdByParser)
+    : HTMLMediaElement(videoTag, document, createdByParser)
 {
-    ASSERT(hasTagName(videoTag));
     ScriptWrappable::init(this);
     if (document.settings())
         m_defaultPosterURL = document.settings()->defaultVideoPosterURL();
 }
 
-PassRefPtr<HTMLVideoElement> HTMLVideoElement::create(const QualifiedName& tagName, Document& document, bool createdByParser)
+PassRefPtr<HTMLVideoElement> HTMLVideoElement::create(Document& document, bool createdByParser)
 {
-    RefPtr<HTMLVideoElement> videoElement(adoptRef(new HTMLVideoElement(tagName, document, createdByParser)));
+    RefPtr<HTMLVideoElement> videoElement(adoptRef(new HTMLVideoElement(document, createdByParser)));
     videoElement->suspendIfNeeded();
     return videoElement.release();
 }

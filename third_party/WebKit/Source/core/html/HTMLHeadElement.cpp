@@ -30,21 +30,15 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLHeadElement::HTMLHeadElement(const QualifiedName& tagName, Document& document)
-    : HTMLElement(tagName, document)
+HTMLHeadElement::HTMLHeadElement(Document& document)
+    : HTMLElement(headTag, document)
 {
-    ASSERT(hasTagName(headTag));
     ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLHeadElement> HTMLHeadElement::create(Document& document)
 {
-    return adoptRef(new HTMLHeadElement(headTag, document));
-}
-
-PassRefPtr<HTMLHeadElement> HTMLHeadElement::create(const QualifiedName& tagName, Document& document)
-{
-    return adoptRef(new HTMLHeadElement(tagName, document));
+    return adoptRef(new HTMLHeadElement(document));
 }
 
 }

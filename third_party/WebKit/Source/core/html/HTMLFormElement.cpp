@@ -60,8 +60,8 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-HTMLFormElement::HTMLFormElement(const QualifiedName& tagName, Document& document)
-    : HTMLElement(tagName, document)
+HTMLFormElement::HTMLFormElement(Document& document)
+    : HTMLElement(formTag, document)
     , m_associatedElementsBeforeIndex(0)
     , m_associatedElementsAfterIndex(0)
     , m_wasUserSubmitted(false)
@@ -71,20 +71,13 @@ HTMLFormElement::HTMLFormElement(const QualifiedName& tagName, Document& documen
     , m_wasDemoted(false)
     , m_requestAutocompleteTimer(this, &HTMLFormElement::requestAutocompleteTimerFired)
 {
-    ASSERT(hasTagName(formTag));
     ScriptWrappable::init(this);
 }
 
 PassRefPtr<HTMLFormElement> HTMLFormElement::create(Document& document)
 {
     UseCounter::count(document, UseCounter::FormElement);
-    return adoptRef(new HTMLFormElement(formTag, document));
-}
-
-PassRefPtr<HTMLFormElement> HTMLFormElement::create(const QualifiedName& tagName, Document& document)
-{
-    UseCounter::count(document, UseCounter::FormElement);
-    return adoptRef(new HTMLFormElement(tagName, document));
+    return adoptRef(new HTMLFormElement(document));
 }
 
 HTMLFormElement::~HTMLFormElement()

@@ -37,7 +37,7 @@ namespace WebCore {
 using namespace HTMLNames;
 
 inline ClearButtonElement::ClearButtonElement(Document& document, ClearButtonOwner& clearButtonOwner)
-    : HTMLDivElement(divTag, document)
+    : HTMLDivElement(document)
     , m_clearButtonOwner(&clearButtonOwner)
     , m_capturing(false)
 {

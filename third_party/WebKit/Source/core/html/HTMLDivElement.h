@@ -30,10 +30,9 @@ namespace WebCore {
 class HTMLDivElement : public HTMLElement {
 public:
     static PassRefPtr<HTMLDivElement> create(Document&);
-    static PassRefPtr<HTMLDivElement> create(const QualifiedName&, Document&);
 
 protected:
-    HTMLDivElement(const QualifiedName&, Document&);
+    explicit HTMLDivElement(Document&);
 
 private:
     virtual bool isPresentationAttribute(const QualifiedName&) const OVERRIDE;

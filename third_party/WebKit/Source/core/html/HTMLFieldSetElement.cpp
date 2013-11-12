@@ -37,17 +37,16 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-inline HTMLFieldSetElement::HTMLFieldSetElement(const QualifiedName& tagName, Document& document, HTMLFormElement* form)
-    : HTMLFormControlElement(tagName, document, form)
+inline HTMLFieldSetElement::HTMLFieldSetElement(Document& document, HTMLFormElement* form)
+    : HTMLFormControlElement(fieldsetTag, document, form)
     , m_documentVersion(0)
 {
-    ASSERT(hasTagName(fieldsetTag));
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLFieldSetElement> HTMLFieldSetElement::create(const QualifiedName& tagName, Document& document, HTMLFormElement* form)
+PassRefPtr<HTMLFieldSetElement> HTMLFieldSetElement::create(Document& document, HTMLFormElement* form)
 {
-    return adoptRef(new HTMLFieldSetElement(tagName, document, form));
+    return adoptRef(new HTMLFieldSetElement(document, form));
 }
 
 void HTMLFieldSetElement::invalidateDisabledStateUnder(Element* base)

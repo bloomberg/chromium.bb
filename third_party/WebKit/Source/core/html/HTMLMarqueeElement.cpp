@@ -34,17 +34,16 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
-inline HTMLMarqueeElement::HTMLMarqueeElement(const QualifiedName& tagName, Document& document)
-    : HTMLElement(tagName, document)
+inline HTMLMarqueeElement::HTMLMarqueeElement(Document& document)
+    : HTMLElement(marqueeTag, document)
     , ActiveDOMObject(&document)
 {
-    ASSERT(hasTagName(marqueeTag));
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<HTMLMarqueeElement> HTMLMarqueeElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<HTMLMarqueeElement> HTMLMarqueeElement::create(Document& document)
 {
-    RefPtr<HTMLMarqueeElement> marqueeElement(adoptRef(new HTMLMarqueeElement(tagName, document)));
+    RefPtr<HTMLMarqueeElement> marqueeElement(adoptRef(new HTMLMarqueeElement(document)));
     marqueeElement->suspendIfNeeded();
     return marqueeElement.release();
 }
