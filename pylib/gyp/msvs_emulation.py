@@ -420,6 +420,7 @@ class MsvsSettings(object):
     libflags.extend(self._GetAdditionalLibraryDirectories(
         'VCLibrarianTool', config, gyp_to_build_path))
     lib('LinkTimeCodeGeneration', map={'true': '/LTCG'})
+    lib('TargetMachine', map={'1': 'X86', '17': 'X64'}, prefix='/MACHINE:')
     lib('AdditionalOptions')
     return libflags
 

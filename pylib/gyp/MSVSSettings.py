@@ -985,6 +985,7 @@ _Same(_lib, 'OutputFile', _file_name)  # /OUT
 _Same(_lib, 'SuppressStartupBanner', _boolean)  # /NOLOGO
 _Same(_lib, 'UseUnicodeResponseFiles', _boolean)
 _Same(_lib, 'LinkTimeCodeGeneration', _boolean)  # /LTCG
+_Same(_lib, 'TargetMachine', _target_machine_enumeration)
 
 # TODO(jeanluc) _link defines the same value that gets moved to
 # ProjectReference.  We may want to validate that they are consistent.
@@ -1003,7 +1004,6 @@ _MSBuildOnly(_lib, 'MinimumRequiredVersion', _string)
 _MSBuildOnly(_lib, 'Name', _file_name)  # /NAME
 _MSBuildOnly(_lib, 'RemoveObjects', _file_list)  # /REMOVE
 _MSBuildOnly(_lib, 'SubSystem', _subsystem_enumeration)
-_MSBuildOnly(_lib, 'TargetMachine', _target_machine_enumeration)
 _MSBuildOnly(_lib, 'TrackerLogDirectory', _folder_name)
 _MSBuildOnly(_lib, 'TreatLibWarningAsErrors', _boolean)  # /WX
 _MSBuildOnly(_lib, 'Verbose', _boolean)
