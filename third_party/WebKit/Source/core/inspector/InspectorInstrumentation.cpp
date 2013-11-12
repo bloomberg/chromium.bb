@@ -244,7 +244,6 @@ const char Paint[] = "Paint";
 const char Layer[] = "Layer";
 const char BeginFrame[] = "BeginFrame";
 const char UpdateLayer[] = "UpdateLayer";
-const char GPUTask[] = "GPUTask";
 };
 
 namespace InstrumentationEventArguments {
@@ -253,7 +252,6 @@ const char LayerTreeId[] = "layerTreeId";
 const char NodeId[] = "nodeId";
 const char PageId[] = "pageId";
 const char PixelRefId[] = "pixelRefId";
-const char OwnerPID[] = "ownerPID";
 };
 
 InstrumentingAgents* instrumentationForPage(Page* page)

@@ -93,6 +93,7 @@ public:
     virtual void evaluateInWebInspector(long callId, const WebString& script);
     virtual void setProcessId(long);
     virtual void setLayerTreeId(int);
+    virtual void processGPUEvent(double timestamp, int phase, unsigned ownerPID) OVERRIDE;
 
     // InspectorClient implementation.
     virtual void highlight();
@@ -108,6 +109,8 @@ public:
     virtual void getAllocatedObjects(HashSet<const void*>&);
     virtual void dumpUncountedAllocatedObjects(const HashMap<const void*, size_t>&);
     virtual void setTraceEventCallback(TraceEventCallback);
+    virtual void startGPUEventsRecording() OVERRIDE;
+    virtual void stopGPUEventsRecording() OVERRIDE;
 
     virtual void dispatchKeyEvent(const WebCore::PlatformKeyboardEvent&);
     virtual void dispatchMouseEvent(const WebCore::PlatformMouseEvent&);

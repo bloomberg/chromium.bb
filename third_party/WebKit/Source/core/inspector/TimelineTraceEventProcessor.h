@@ -219,8 +219,6 @@ private:
     void onLayerDeleted(const TraceEvent&);
     void onDrawLazyPixelRef(const TraceEvent&);
     void onLazyPixelRefDeleted(const TraceEvent&);
-    void onGPUTaskBegin(const TraceEvent&);
-    void onGPUTaskEnd(const TraceEvent&);
 
     WeakPtr<InspectorTimelineAgent> m_timelineAgent;
     TimelineTimeConverter m_timeConverter;

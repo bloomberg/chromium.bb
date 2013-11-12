@@ -37,6 +37,7 @@
 #include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
 #include "core/inspector/IdentifiersFactory.h"
+#include "core/inspector/InspectorClient.h"
 #include "core/inspector/InspectorCounters.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorInstrumentation.h"
@@ -268,8 +269,11 @@ void InspectorTimelineAgent::innerStart()
     m_timeConverter.reset();
     m_instrumentingAgents->setInspectorTimelineAgent(this);
     ScriptGCEvent::addEventListener(this);
-    if (m_client && m_pageAgent)
+    if (m_client && m_pageAgent) {
         m_traceEventProcessor = adoptRef(new TimelineTraceEventProcessor(m_weakFactory.createWeakPtr(), m_client));
+        if (m_state->getBoolean(TimelineAgentState::includeGPUEvents))
+            m_client->startGPUEventsRecording();
+    }
 }
 
 void InspectorTimelineAgent::stop(ErrorString* errorString, RefPtr<TypeBuilder::Array<TypeBuilder::Timeline::TimelineEvent> >& events)
@@ -294,6 +298,8 @@ void InspectorTimelineAgent::innerStop(bool fromConsole)
         m_traceEventProcessor->shutdown();
         m_traceEventProcessor.clear();
     }
+    if (m_state->getBoolean(TimelineAgentState::includeGPUEvents))
+        m_client->stopGPUEventsRecording();
     m_weakFactory.revokeAll();
     m_instrumentingAgents->setInspectorTimelineAgent(0);
     ScriptGCEvent::removeEventListener(this);
@@ -766,6 +772,17 @@ void InspectorTimelineAgent::didCloseWebSocket(Document* document, unsigned long
     appendRecord(TimelineRecordFactory::createGenericWebSocketData(identifier), TimelineRecordType::WebSocketDestroy, true, document->frame());
 }
 
+void InspectorTimelineAgent::processGPUEvent(const GPUEvent& event)
+{
+    double timelineTimestamp = m_timeConverter.fromMonotonicallyIncreasingTime(event.timestamp);
+    if (event.phase == GPUEvent::PhaseBegin) {
+        m_pendingGPURecord = TimelineRecordFactory::createBackgroundRecord(timelineTimestamp, "gpu", TimelineRecordType::GPUTask, TimelineRecordFactory::createGPUTaskData(event.ownerPID));
+    } else if (m_pendingGPURecord) {
+        m_pendingGPURecord->setNumber("endTime", timelineTimestamp);
+        sendEvent(m_pendingGPURecord.release());
+    }
+}
+
 void InspectorTimelineAgent::addRecordToTimeline(PassRefPtr<JSONObject> record)
 {
     commitFrameRecord();
@@ -958,11 +975,6 @@ double InspectorTimelineAgent::timestamp()
 Page* InspectorTimelineAgent::page()
 {
     return m_pageAgent ? m_pageAgent->page() : 0;
-}
-
-bool InspectorTimelineAgent::isCollectingGPUEvents() const
-{
-    return m_state->getBoolean(TimelineAgentState::includeGPUEvents);
 }
 
 } // namespace WebCore

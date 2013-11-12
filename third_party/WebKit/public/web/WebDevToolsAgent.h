@@ -74,6 +74,8 @@ public:
     virtual void willComposite() = 0;
     virtual void didComposite() = 0;
 
+    virtual void processGPUEvent(double timestamp, int phase, unsigned ownerPID) = 0;
+
     // Exposed for TestRunner.
     virtual void evaluateInWebInspector(long callId, const WebString& script) = 0;
 

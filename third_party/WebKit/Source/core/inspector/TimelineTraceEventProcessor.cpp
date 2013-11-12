@@ -177,14 +177,6 @@ TimelineTraceEventProcessor::TimelineTraceEventProcessor(WeakPtr<InspectorTimeli
     registerHandler(PlatformInstrumentation::ImageDecodeEvent, TRACE_EVENT_PHASE_END, &TimelineTraceEventProcessor::onImageDecodeEnd);
     registerHandler(PlatformInstrumentation::DrawLazyPixelRefEvent, TRACE_EVENT_PHASE_INSTANT, &TimelineTraceEventProcessor::onDrawLazyPixelRef);
     registerHandler(PlatformInstrumentation::LazyPixelRef, TRACE_EVENT_PHASE_DELETE_OBJECT, &TimelineTraceEventProcessor::onLazyPixelRefDeleted);
-    if (m_timelineAgent.get()->isCollectingGPUEvents()) {
-        // FIXME: Instead of filtering GPU events here on the client side
-        // just don't enable collection in the GPU process.
-        // Make sure GPU process agent can handle both client types connected
-        // simultaneously: ones that need GPU events and ones that do not.
-        registerHandler(InstrumentationEvents::GPUTask, TRACE_EVENT_PHASE_BEGIN, &TimelineTraceEventProcessor::onGPUTaskBegin);
-        registerHandler(InstrumentationEvents::GPUTask, TRACE_EVENT_PHASE_END, &TimelineTraceEventProcessor::onGPUTaskEnd);
-    }
 
     TraceEventDispatcher::instance()->addProcessor(this, m_inspectorClient);
 }
@@ -425,29 +417,10 @@ void TimelineTraceEventProcessor::onLazyPixelRefDeleted(const TraceEvent& event)
     m_pixelRefToImageInfo.remove(event.id());
 }
 
-void TimelineTraceEventProcessor::onGPUTaskBegin(const TraceEvent& event)
-{
-    RefPtr<JSONObject> data = JSONObject::create();
-    unsigned ownerPID = event.asUInt(InstrumentationEventArguments::OwnerPID);
-    m_gpuTask = createRecord(event, TimelineRecordType::GPUTask, TimelineRecordFactory::createGPUTaskData(ownerPID));
-}
-
-void TimelineTraceEventProcessor::onGPUTaskEnd(const TraceEvent& event)
-{
-    InspectorTimelineAgent* timelineAgent = m_timelineAgent.get();
-    if (!timelineAgent || !m_gpuTask)
-        return;
-    m_gpuTask->setNumber("endTime", m_timeConverter.fromMonotonicallyIncreasingTime(event.timestamp()));
-    timelineAgent->sendEvent(m_gpuTask);
-    m_gpuTask.clear();
-}
-
 PassRefPtr<JSONObject> TimelineTraceEventProcessor::createRecord(const TraceEvent& event, const String& recordType, PassRefPtr<JSONObject> data)
 {
     double startTime = m_timeConverter.fromMonotonicallyIncreasingTime(event.timestamp());
-    RefPtr<JSONObject> record = TimelineRecordFactory::createBackgroundRecord(startTime, String::number(event.threadIdentifier()));
-    record->setString("type", recordType);
-    record->setObject("data", data ? data : JSONObject::create());
+    RefPtr<JSONObject> record = TimelineRecordFactory::createBackgroundRecord(startTime, String::number(event.threadIdentifier()), recordType, data);
     return record.release();
 }
 

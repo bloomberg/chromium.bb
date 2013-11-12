@@ -122,6 +122,8 @@ public:
     void willComposite();
     void didComposite();
 
+    void processGPUEvent(double timestamp, int phase, unsigned ownerPID);
+
 private:
     InspectorController(Page*, InspectorClient*);
 

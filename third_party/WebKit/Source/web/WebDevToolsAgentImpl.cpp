@@ -469,6 +469,22 @@ void WebDevToolsAgentImpl::setTraceEventCallback(TraceEventCallback callback)
     m_client->setTraceEventCallback(callback);
 }
 
+void WebDevToolsAgentImpl::startGPUEventsRecording()
+{
+    m_client->startGPUEventsRecording();
+}
+
+void WebDevToolsAgentImpl::stopGPUEventsRecording()
+{
+    m_client->stopGPUEventsRecording();
+}
+
+void WebDevToolsAgentImpl::processGPUEvent(double timestamp, int phase, unsigned ownerPID)
+{
+    if (InspectorController* ic = inspectorController())
+        ic->processGPUEvent(timestamp, phase, ownerPID);
+}
+
 void WebDevToolsAgentImpl::dispatchKeyEvent(const PlatformKeyboardEvent& event)
 {
     m_generatingEvent = true;

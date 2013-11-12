@@ -57,11 +57,13 @@ PassRefPtr<JSONObject> TimelineRecordFactory::createGenericRecord(double startTi
     return record.release();
 }
 
-PassRefPtr<JSONObject> TimelineRecordFactory::createBackgroundRecord(double startTime, const String& threadName)
+PassRefPtr<JSONObject> TimelineRecordFactory::createBackgroundRecord(double startTime, const String& threadName, const String& type, PassRefPtr<JSONObject> data)
 {
     RefPtr<JSONObject> record = JSONObject::create();
     record->setNumber("startTime", startTime);
     record->setString("thread", threadName);
+    record->setString("type", type);
+    record->setObject("data", data ? data : JSONObject::create());
     return record.release();
 }
 

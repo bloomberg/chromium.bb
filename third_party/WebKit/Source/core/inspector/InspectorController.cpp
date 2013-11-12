@@ -437,4 +437,10 @@ void InspectorController::didComposite()
         timelineAgent->didComposite();
 }
 
+void InspectorController::processGPUEvent(double timestamp, int phase, unsigned ownerPID)
+{
+    if (InspectorTimelineAgent* timelineAgent = m_instrumentingAgents->inspectorTimelineAgent())
+        timelineAgent->processGPUEvent(InspectorTimelineAgent::GPUEvent(timestamp, phase, ownerPID));
+}
+
 } // namespace WebCore

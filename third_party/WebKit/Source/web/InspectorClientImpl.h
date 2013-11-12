@@ -77,6 +77,9 @@ public:
 
     virtual void setTraceEventCallback(TraceEventCallback);
 
+    virtual void startGPUEventsRecording() OVERRIDE;
+    virtual void stopGPUEventsRecording() OVERRIDE;
+
 private:
     WebDevToolsAgentImpl* devToolsAgent();
 

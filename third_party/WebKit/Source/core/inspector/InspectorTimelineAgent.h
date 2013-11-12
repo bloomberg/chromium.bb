@@ -108,6 +108,18 @@ class InspectorTimelineAgent
 public:
     enum InspectorType { PageInspector, WorkerInspector };
 
+    class GPUEvent {
+    public:
+        enum Phase { PhaseBegin, PhaseEnd };
+        GPUEvent(double timestamp, int phase, unsigned ownerPID) :
+            timestamp(timestamp),
+            phase(static_cast<Phase>(phase)),
+            ownerPID(ownerPID) { }
+        double timestamp;
+        Phase phase;
+        unsigned ownerPID;
+    };
+
     static PassOwnPtr<InspectorTimelineAgent> create(InstrumentingAgents* instrumentingAgents, InspectorPageAgent* pageAgent, InspectorMemoryAgent* memoryAgent, InspectorDOMAgent* domAgent, InspectorCompositeState* state, InspectorType type, InspectorClient* client)
     {
         return adoptPtr(new InspectorTimelineAgent(instrumentingAgents, pageAgent, memoryAgent, domAgent, state, type, client));
@@ -213,6 +225,8 @@ public:
     void didReceiveWebSocketHandshakeResponse(Document*, unsigned long identifier, const WebSocketHandshakeResponse&);
     void didCloseWebSocket(Document*, unsigned long identifier);
 
+    void processGPUEvent(const class GPUEvent&);
+
     // ScriptGCEventListener methods.
     virtual void didGC(double, double, size_t);
 
@@ -274,8 +288,6 @@ private:
     void innerStart();
     void innerStop(bool fromConsole);
 
-    bool isCollectingGPUEvents() const;
-
     InspectorPageAgent* m_pageAgent;
     InspectorMemoryAgent* m_memoryAgent;
     InspectorDOMAgent* m_domAgent;
@@ -301,6 +313,7 @@ private:
     int m_maxCallStackDepth;
     unsigned m_platformInstrumentationClientInstalledAtStackDepth;
     RefPtr<JSONObject> m_pendingFrameRecord;
+    RefPtr<JSONObject> m_pendingGPURecord;
     InspectorType m_inspectorType;
     InspectorClient* m_client;
     WeakPtrFactory<InspectorTimelineAgent> m_weakFactory;

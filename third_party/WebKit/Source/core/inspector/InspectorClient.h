@@ -52,6 +52,9 @@ public:
         unsigned char flags, double timestamp);
     virtual void setTraceEventCallback(TraceEventCallback) { }
 
+    virtual void startGPUEventsRecording() { }
+    virtual void stopGPUEventsRecording() { }
+
     virtual void overrideDeviceMetrics(int /*width*/, int /*height*/, float /*deviceScaleFactor*/, bool /*emulateViewport*/, bool /*fitWindow*/) { }
 
     virtual bool overridesShowPaintRects() { return false; }

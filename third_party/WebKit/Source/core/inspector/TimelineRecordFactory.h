@@ -48,7 +48,7 @@ namespace WebCore {
     class TimelineRecordFactory {
     public:
         static PassRefPtr<JSONObject> createGenericRecord(double startTime, int maxCallStackDepth, const String& type);
-        static PassRefPtr<JSONObject> createBackgroundRecord(double startTime, const String& thread);
+        static PassRefPtr<JSONObject> createBackgroundRecord(double startTime, const String& thread, const String& type, PassRefPtr<JSONObject> data = 0);
 
         static PassRefPtr<JSONObject> createGCEventData(const size_t usedHeapSizeDelta);
 

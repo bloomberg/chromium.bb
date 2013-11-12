@@ -85,6 +85,9 @@ public:
 
     virtual void setTraceEventCallback(TraceEventCallback) { }
 
+    virtual void startGPUEventsRecording() { }
+    virtual void stopGPUEventsRecording() { }
+
     // Called to emulate device dimensions, scale factor and input. Window should
     // occupy the whole device screen, while the view should be located at |viewRect|.
     // x-coordinate of |screenRect| defines the left and right gutters' width,
