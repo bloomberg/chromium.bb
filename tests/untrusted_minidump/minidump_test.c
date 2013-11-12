@@ -12,6 +12,12 @@
 #include "native_client/src/untrusted/minidump_generator/build_id.h"
 #include "native_client/tests/untrusted_minidump/minidump_test_lib.h"
 
+#if defined(__GLIBC__)
+# define DYNAMIC_LOADING_SUPPORT 1
+#else
+# define DYNAMIC_LOADING_SUPPORT 0
+#endif
+
 
 const char *g_minidump_filename;
 
@@ -50,12 +56,14 @@ void crash_wrapper2(int crash_in_lib) {
 }
 
 static void test_nacl_get_build_id(void) {
+#if !DYNAMIC_LOADING_SUPPORT
   const char *id_data;
   size_t id_size;
   int got_build_id = nacl_get_build_id(&id_data, &id_size);
   assert(got_build_id);
   assert(id_data != NULL);
   assert(id_size == 20);  /* ld uses SHA1 hash by default. */
+#endif
 }
 
 int main(int argc, char **argv) {

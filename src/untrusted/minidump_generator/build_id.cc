@@ -13,6 +13,12 @@
 #include "native_client/src/include/elf32.h"
 #include "native_client/src/include/elf64.h"
 
+#if defined(__GLIBC__)
+# define DYNAMIC_LOADING_SUPPORT 1
+#else
+# define DYNAMIC_LOADING_SUPPORT 0
+#endif
+
 
 // The next-generation (upstream) linkers define this symbol when the
 // ELF file and program headers are visible in the address space.  We
@@ -90,6 +96,13 @@ static int GetBuildId(const char **data, size_t *size) {
   return 0;
 }
 
+/*
+ * This is only useful (or meaningful) for the static-linking case.
+ * When this file is part of a shared object, then this would be
+ * finding the build ID of that shared object itself rather than that
+ * of the main executable.
+ */
+#if !DYNAMIC_LOADING_SUPPORT
 int nacl_get_build_id(const char **data, size_t *size) {
   if (__note_gnu_build_id_start != NULL) {
     assert(__note_gnu_build_id_end >= __note_gnu_build_id_start);
@@ -111,6 +124,7 @@ int nacl_get_build_id(const char **data, size_t *size) {
   fprintf(stderr, "Build ID not found: unexpected ELFCLASS\n");
   return 0;
 }
+#endif
 
 int nacl_get_build_id_from_notes(
     const void *notes, size_t notes_size,

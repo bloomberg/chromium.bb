@@ -59,11 +59,14 @@ static const size_t kMinidumpBufferSize =
     kLimitStackDumpSize + kLimitNonStackSize;
 
 static const char *g_module_name = "main.nexe";
-static MDGUID g_module_build_id;
-static int g_module_build_id_set;
 static nacl_minidump_callback_t g_callback_func;
 static MinidumpAllocator *g_minidump_writer;
 static int g_handling_exception = 0;
+
+#if !DYNAMIC_LOADING_SUPPORT
+static MDGUID g_module_build_id;
+static int g_module_build_id_set;
+#endif
 
 class MinidumpAllocator {
   char *buf_;
@@ -672,6 +675,12 @@ void nacl_minidump_register_crash_handler(void) {
     return;
   }
 
+#if !DYNAMIC_LOADING_SUPPORT
+  /*
+   * With dynamic linking, all modules' build IDs are discovered
+   * via dl_iterate_phdr->PT_NOTE->NT_BUILD_ID.  g_module_build_id
+   * is not used at all (see WriteModuleList, above).
+   */
   if (!g_module_build_id_set) {
     // Try to use the nexe's built-in build ID.
     const char *data_ptr;
@@ -685,6 +694,7 @@ void nacl_minidump_register_crash_handler(void) {
       g_module_build_id_set = 1;
     }
   }
+#endif
 
 #if DYNAMIC_LOADING_SUPPORT
   g_module_snapshot_workspace = new MinidumpAllocator(kLimitModuleListSize);
@@ -700,11 +710,16 @@ void nacl_minidump_set_module_name(const char *module_name) {
   g_module_name = module_name;
 }
 
+/*
+ * Under dynamic linking, this interface is a no-op.
+ */
 void nacl_minidump_set_module_build_id(
     const uint8_t data[NACL_MINIDUMP_BUILD_ID_SIZE]) {
+#if !DYNAMIC_LOADING_SUPPORT
   assert(sizeof(g_module_build_id) == NACL_MINIDUMP_BUILD_ID_SIZE);
   memcpy(&g_module_build_id, data, NACL_MINIDUMP_BUILD_ID_SIZE);
   g_module_build_id_set = 1;
+#endif
 }
 
 void nacl_minidump_snapshot_module_list(void) {
