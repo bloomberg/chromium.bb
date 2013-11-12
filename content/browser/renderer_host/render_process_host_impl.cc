@@ -1090,7 +1090,9 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
       TraceControllerImpl::GetInstance()->is_tracing_startup()) {
     // Pass kTraceStartup switch to renderer only if startup tracing has not
     // finished.
-    renderer_cmd->AppendSwitch(switches::kTraceStartup);
+    renderer_cmd->AppendSwitchASCII(
+        switches::kTraceStartup,
+        browser_cmd.GetSwitchValueASCII(switches::kTraceStartup));
   }
 
   // Disable databases in incognito mode.
