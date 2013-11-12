@@ -234,14 +234,6 @@ body:not(.controls-visible) .dynamic {
       url(../images/2x/topbar_button_close.png) 2x);
 }
 
-
-body.album #main-canvas-wrapper,
-body.album #main-fast-canvas-wrapper,
-body.browser #main-canvas-wrapper,
-body.browser #main-fast-canvas-wrapper {
-  display: none;
-}
-
 body.album #toolbar,
 body.browser #toolbar {
   display: none;
@@ -499,16 +491,23 @@ body.browser #picture-preview {
   bottom: 0;
   left: 0;
   outline: none;
+  opacity: 0;
   overflow: auto;
   position: absolute;
   right: 0;
   top: 0;
+  transition: opacity 200ms, visibility 0 200ms;
+  visibility: hidden;
   z-index: 1;  /* Hack to enable touch scrolling in album. */
 }
 
 #album .buttons,
 #browser .buttons {
   position: fixed;
+}
+
+#album {
+  background: black;
 }
 
 #album .padder {
@@ -534,8 +533,10 @@ body.browser #picture-preview {
   visibility: hidden;
 }
 
-body.browser #browser {
-  -webkit-animation: showBrowser 200ms;
+body.browser #browser,
+body.album #album {
+  opacity: 1;
+  transition: opacity 200ms;
   visibility: visible;
 }
 
@@ -564,19 +565,6 @@ body.browser #browser {
 
 #browser img.selected {
   -webkit-transform: scale(1.1);
-}
-
-body:not(.album):not(.browser) #album {
-  display: none;
-}
-
-@-webkit-keyframes showBrowser {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
 }
 
 /* Printing in the browser view. */
