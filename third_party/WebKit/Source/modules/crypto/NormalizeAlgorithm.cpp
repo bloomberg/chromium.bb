@@ -528,7 +528,7 @@ const char* algorithmOperationToName(AlgorithmOperation op)
     case GenerateKey:
         return "generateKey";
     case ImportKey:
-        return "generateKey";
+        return "importKey";
     case DeriveKey:
         return "deriveKey";
     case WrapKey:
