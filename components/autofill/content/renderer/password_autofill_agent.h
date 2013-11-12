@@ -139,6 +139,11 @@ class PasswordAutofillAgent : public content::RenderViewObserver {
                      blink::WebInputElement* found_input,
                      PasswordInfo* found_password);
 
+  // If |provisionally_saved_forms_| contains a form for |current_frame| or its
+  // children, return such frame.
+  blink::WebFrame* CurrentOrChildFrameWithSavedForms(
+      const blink::WebFrame* current_frame);
+
   // The logins we have filled so far with their associated info.
   LoginToPasswordInfoMap login_to_password_info_;
 

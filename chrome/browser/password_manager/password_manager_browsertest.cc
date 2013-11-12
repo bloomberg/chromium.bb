@@ -372,3 +372,22 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   EXPECT_EQ(0, snapshot->GetCount(0 /* failure */));
   EXPECT_EQ(1, snapshot->GetCount(1 /* success */));
 }
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, PromptForSubmitFromIframe) {
+  NavigateToFile("/password/password_submit_from_iframe.html");
+
+  // Submit a form in an iframe, then cause the whole page to navigate without a
+  // user gesture. We expect the save password prompt to be shown here, because
+  // some pages use such iframes for login forms.
+  NavigationObserver observer(WebContents());
+  std::string fill_and_submit =
+      "var iframe = document.getElementById('test_iframe');"
+      "var iframe_doc = iframe.contentDocument;"
+      "iframe_doc.getElementById('username_field').value = 'temp';"
+      "iframe_doc.getElementById('password_field').value = 'random';"
+      "iframe_doc.getElementById('submit_button').click()";
+
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  observer.Wait();
+  EXPECT_TRUE(observer.infobar_shown());
+}

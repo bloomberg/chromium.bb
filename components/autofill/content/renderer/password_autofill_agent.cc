@@ -451,6 +451,27 @@ void PasswordAutofillAgent::WillSubmitForm(blink::WebFrame* frame,
   }
 }
 
+blink::WebFrame* PasswordAutofillAgent::CurrentOrChildFrameWithSavedForms(
+    const blink::WebFrame* current_frame) {
+  for (FrameToPasswordFormMap::const_iterator it =
+           provisionally_saved_forms_.begin();
+       it != provisionally_saved_forms_.end();
+       ++it) {
+    blink::WebFrame* form_frame = it->first;
+    // The check that the returned frame is related to |current_frame| is mainly
+    // for double-checking. There should not be any unrelated frames in
+    // |provisionally_saved_forms_|, because the map is cleared after
+    // navigation. If there are reasons to remove this check in the future and
+    // keep just the first frame found, it might be a good idea to add a UMA
+    // statistic or a similar check on how many frames are here to choose from.
+    if (current_frame == form_frame ||
+        current_frame->findChildByName(form_frame->uniqueName())) {
+      return form_frame;
+    }
+  }
+  return NULL;
+}
+
 void PasswordAutofillAgent::DidStartProvisionalLoad(blink::WebFrame* frame) {
   if (!frame->parent()) {
     // If the navigation is not triggered by a user gesture, e.g. by some ajax
@@ -459,12 +480,13 @@ void PasswordAutofillAgent::DidStartProvisionalLoad(blink::WebFrame* frame) {
     // [http://crbug/43219]. Note that there are still some sites that this
     // fails for because they use some element other than a submit button to
     // trigger submission (which means WillSendSubmitEvent will not be called).
+    blink::WebFrame* form_frame = CurrentOrChildFrameWithSavedForms(frame);
     if (!blink::WebUserGestureIndicator::isProcessingUserGesture() &&
-        provisionally_saved_forms_[frame].get()) {
+        provisionally_saved_forms_[form_frame].get()) {
       Send(new AutofillHostMsg_PasswordFormSubmitted(
           routing_id(),
-          *provisionally_saved_forms_[frame]));
-      provisionally_saved_forms_.erase(frame);
+          *provisionally_saved_forms_[form_frame]));
+      provisionally_saved_forms_.erase(form_frame);
     }
     // Clear the whole map during main frame navigation.
     provisionally_saved_forms_.clear();
