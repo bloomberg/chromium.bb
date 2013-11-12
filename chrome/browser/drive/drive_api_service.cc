@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
 #include "base/values.h"
@@ -282,7 +283,7 @@ const char kDriveApiRootDirectoryResourceId[] = "root";
 DriveAPIService::DriveAPIService(
     OAuth2TokenService* oauth2_token_service,
     net::URLRequestContextGetter* url_request_context_getter,
-    base::TaskRunner* blocking_task_runner,
+    base::SequencedTaskRunner* blocking_task_runner,
     const GURL& base_url,
     const GURL& base_download_url,
     const GURL& wapi_base_url,

@@ -5,6 +5,7 @@
 #include "chrome/browser/google_apis/gdata_wapi_requests.h"
 
 #include "base/location.h"
+#include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/values.h"
 #include "chrome/browser/google_apis/gdata_wapi_parser.h"

@@ -9,6 +9,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/sequenced_task_runner.h"
 #include "base/values.h"
 #include "chrome/browser/drive/drive_api_util.h"
 #include "chrome/browser/google_apis/auth_service.h"
@@ -128,7 +129,7 @@ void ConvertAppListAndRun(
 GDataWapiService::GDataWapiService(
     OAuth2TokenService* oauth2_token_service,
     net::URLRequestContextGetter* url_request_context_getter,
-    base::TaskRunner* blocking_task_runner,
+    base::SequencedTaskRunner* blocking_task_runner,
     const GURL& base_url,
     const GURL& base_download_url,
     const std::string& custom_user_agent)

@@ -87,7 +87,8 @@ SyncFileSystemServiceFactory::BuildServiceInstanceFor(
         new drive::DriveAPIService(
             token_service,
             context->GetRequestContext(),
-            worker_pool.get(),
+            worker_pool->GetSequencedTaskRunner(
+                worker_pool->GetSequenceToken()).get(),
             base_drive_url, base_download_url, wapi_base_url,
             std::string() /* custom_user_agent */));
     drive_service->Initialize(token_service->GetPrimaryAccountId());

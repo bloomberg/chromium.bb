@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
+#include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/thread_task_runner_handle.h"
@@ -266,14 +267,14 @@ void URLFetcherCore::SetAutomaticallyRetryOnNetworkChanges(int max_retries) {
 
 void URLFetcherCore::SaveResponseToFileAtPath(
     const base::FilePath& file_path,
-    scoped_refptr<base::TaskRunner> file_task_runner) {
+    scoped_refptr<base::SequencedTaskRunner> file_task_runner) {
   DCHECK(delegate_task_runner_->BelongsToCurrentThread());
   SaveResponseWithWriter(scoped_ptr<URLFetcherResponseWriter>(
       new URLFetcherFileWriter(file_task_runner, file_path)));
 }
 
 void URLFetcherCore::SaveResponseToTemporaryFile(
-    scoped_refptr<base::TaskRunner> file_task_runner) {
+    scoped_refptr<base::SequencedTaskRunner> file_task_runner) {
   DCHECK(delegate_task_runner_->BelongsToCurrentThread());
   SaveResponseWithWriter(scoped_ptr<URLFetcherResponseWriter>(
       new URLFetcherFileWriter(file_task_runner, base::FilePath())));

@@ -21,7 +21,7 @@ class OAuth2TokenService;
 
 namespace base {
 class FilePath;
-class TaskRunner;
+class SequencedTaskRunner;
 }
 
 namespace google_apis {
@@ -54,7 +54,7 @@ class DriveAPIService : public DriveServiceInterface,
   DriveAPIService(
       OAuth2TokenService* oauth2_token_service,
       net::URLRequestContextGetter* url_request_context_getter,
-      base::TaskRunner* blocking_task_runner,
+      base::SequencedTaskRunner* blocking_task_runner,
       const GURL& base_url,
       const GURL& base_download_url,
       const GURL& wapi_base_url,
@@ -195,7 +195,7 @@ class DriveAPIService : public DriveServiceInterface,
 
   OAuth2TokenService* oauth2_token_service_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
-  scoped_refptr<base::TaskRunner> blocking_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   scoped_ptr<google_apis::RequestSender> sender_;
   ObserverList<DriveServiceObserver> observers_;
   google_apis::DriveApiUrlGenerator url_generator_;

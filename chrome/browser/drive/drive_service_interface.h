@@ -11,6 +11,10 @@
 #include "chrome/browser/google_apis/base_requests.h"
 #include "chrome/browser/google_apis/drive_common_callbacks.h"
 
+namespace base {
+class Time;
+}
+
 namespace drive {
 
 // Function which converts the given resource ID into the desired format.

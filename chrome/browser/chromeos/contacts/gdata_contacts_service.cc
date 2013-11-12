@@ -855,7 +855,8 @@ GDataContactsService::GDataContactsService(
   sender_.reset(new google_apis::RequestSender(
       auth_service,
       url_request_context_getter,
-      content::BrowserThread::GetBlockingPool(),
+      BrowserThread::GetBlockingPool()->GetSequencedTaskRunner(
+          BrowserThread::GetBlockingPool()->GetSequenceToken()).get(),
       "" /* custom_user_agent */));
 }
 

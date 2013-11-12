@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
+#include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/values.h"
 #include "chrome/browser/google_apis/drive_api_parser.h"

@@ -5,6 +5,7 @@
 #include "chrome/browser/google_apis/request_sender.h"
 
 #include "base/bind.h"
+#include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "chrome/browser/google_apis/auth_service.h"
 #include "chrome/browser/google_apis/base_requests.h"
@@ -15,7 +16,7 @@ namespace google_apis {
 RequestSender::RequestSender(
     AuthServiceInterface* auth_service,
     net::URLRequestContextGetter* url_request_context_getter,
-    base::TaskRunner* blocking_task_runner,
+    base::SequencedTaskRunner* blocking_task_runner,
     const std::string& custom_user_agent)
     : auth_service_(auth_service),
       url_request_context_getter_(url_request_context_getter),

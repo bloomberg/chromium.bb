@@ -22,7 +22,7 @@ class OAuth2TokenService;
 
 namespace base {
 class FilePath;
-class TaskRunner;
+class SequencedTaskRunner;
 }
 
 namespace google_apis {
@@ -51,7 +51,7 @@ class GDataWapiService : public DriveServiceInterface,
   // requests issued through the service if the value is not empty.
   GDataWapiService(OAuth2TokenService* oauth2_token_service,
                    net::URLRequestContextGetter* url_request_context_getter,
-                   base::TaskRunner* blocking_task_runner,
+                   base::SequencedTaskRunner* blocking_task_runner,
                    const GURL& base_url,
                    const GURL& base_download_url,
                    const std::string& custom_user_agent);
@@ -191,7 +191,7 @@ class GDataWapiService : public DriveServiceInterface,
 
   OAuth2TokenService* oauth2_token_service_;  // Not owned.
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
-  scoped_refptr<base::TaskRunner> blocking_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
   scoped_ptr<google_apis::RequestSender> sender_;
   ObserverList<DriveServiceObserver> observers_;
   // Request objects should hold a copy of this, rather than a const

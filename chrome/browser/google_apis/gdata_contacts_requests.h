@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/time/time.h"
 #include "chrome/browser/google_apis/base_requests.h"
 
 namespace google_apis {

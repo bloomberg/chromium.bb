@@ -17,7 +17,7 @@
 #include "chrome/browser/google_apis/gdata_errorcode.h"
 
 namespace base {
-class TaskRunner;
+class SequencedTaskRunner;
 }
 
 namespace net {
@@ -46,7 +46,7 @@ class RequestSender {
   // requests issued through the request sender if the value is not empty.
   RequestSender(AuthServiceInterface* auth_service,
                 net::URLRequestContextGetter* url_request_context_getter,
-                base::TaskRunner* blocking_task_runner,
+                base::SequencedTaskRunner* blocking_task_runner,
                 const std::string& custom_user_agent);
   ~RequestSender();
 
@@ -56,7 +56,7 @@ class RequestSender {
     return url_request_context_getter_;
   }
 
-  base::TaskRunner* blocking_task_runner() const {
+  base::SequencedTaskRunner* blocking_task_runner() const {
     return blocking_task_runner_.get();
   }
 
@@ -92,7 +92,7 @@ class RequestSender {
 
   scoped_ptr<AuthServiceInterface> auth_service_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
-  scoped_refptr<base::TaskRunner> blocking_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
   std::set<AuthenticatedRequestInterface*> in_flight_requests_;
   const std::string custom_user_agent_;

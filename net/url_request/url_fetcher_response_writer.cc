@@ -6,7 +6,7 @@
 
 #include "base/file_util.h"
 #include "base/location.h"
-#include "base/task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
 #include "net/base/file_stream.h"
 #include "net/base/io_buffer.h"
@@ -50,7 +50,7 @@ URLFetcherStringWriter* URLFetcherStringWriter::AsStringWriter() {
 }
 
 URLFetcherFileWriter::URLFetcherFileWriter(
-    scoped_refptr<base::TaskRunner> file_task_runner,
+    scoped_refptr<base::SequencedTaskRunner> file_task_runner,
     const base::FilePath& file_path)
     : weak_factory_(this),
       file_task_runner_(file_task_runner),

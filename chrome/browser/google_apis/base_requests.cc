@@ -6,6 +6,7 @@
 
 #include "base/json/json_reader.h"
 #include "base/location.h"
+#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner_util.h"
@@ -102,7 +103,7 @@ void ParseJson(base::TaskRunner* blocking_task_runner,
 }
 
 //=========================== ResponseWriter ==================================
-ResponseWriter::ResponseWriter(base::TaskRunner* file_task_runner,
+ResponseWriter::ResponseWriter(base::SequencedTaskRunner* file_task_runner,
                                const base::FilePath& file_path,
                                const GetContentCallback& get_content_callback)
     : get_content_callback_(get_content_callback) {
@@ -302,7 +303,7 @@ bool UrlFetchRequestBase::CalledOnValidThread() {
   return thread_checker_.CalledOnValidThread();
 }
 
-base::TaskRunner* UrlFetchRequestBase::blocking_task_runner() const {
+base::SequencedTaskRunner* UrlFetchRequestBase::blocking_task_runner() const {
   return sender_->blocking_task_runner();
 }
 

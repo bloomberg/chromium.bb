@@ -97,9 +97,9 @@ class URLFetcherCore
   void SetAutomaticallyRetryOnNetworkChanges(int max_retries);
   void SaveResponseToFileAtPath(
       const base::FilePath& file_path,
-      scoped_refptr<base::TaskRunner> file_task_runner);
+      scoped_refptr<base::SequencedTaskRunner> file_task_runner);
   void SaveResponseToTemporaryFile(
-      scoped_refptr<base::TaskRunner> file_task_runner);
+      scoped_refptr<base::SequencedTaskRunner> file_task_runner);
   void SaveResponseWithWriter(
       scoped_ptr<URLFetcherResponseWriter> response_writer);
   HttpResponseHeaders* GetResponseHeaders() const;

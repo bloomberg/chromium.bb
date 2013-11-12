@@ -94,7 +94,7 @@ class ResponseWriter : public net::URLFetcherResponseWriter {
  public:
   // If file_path is not empty, the response will be saved with file_writer_,
   // otherwise it will be saved to data_.
-  ResponseWriter(base::TaskRunner* file_task_runner,
+  ResponseWriter(base::SequencedTaskRunner* file_task_runner,
                  const base::FilePath& file_path,
                  const GetContentCallback& get_content_callback);
   virtual ~ResponseWriter();
@@ -193,7 +193,7 @@ class UrlFetchRequestBase : public AuthenticatedRequestInterface,
   ResponseWriter* response_writer() const { return response_writer_; }
 
   // Returns the task runner that should be used for blocking tasks.
-  base::TaskRunner* blocking_task_runner() const;
+  base::SequencedTaskRunner* blocking_task_runner() const;
 
  private:
   // URLFetcherDelegate overrides.

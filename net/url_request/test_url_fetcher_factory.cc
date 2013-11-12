@@ -142,11 +142,11 @@ void TestURLFetcher::SetAutomaticallyRetryOnNetworkChanges(int max_retries) {
 
 void TestURLFetcher::SaveResponseToFileAtPath(
     const base::FilePath& file_path,
-    scoped_refptr<base::TaskRunner> file_task_runner) {
+    scoped_refptr<base::SequencedTaskRunner> file_task_runner) {
 }
 
 void TestURLFetcher::SaveResponseToTemporaryFile(
-    scoped_refptr<base::TaskRunner> file_task_runner) {
+    scoped_refptr<base::SequencedTaskRunner> file_task_runner) {
 }
 
 void TestURLFetcher::SaveResponseWithWriter(

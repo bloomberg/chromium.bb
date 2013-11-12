@@ -124,9 +124,9 @@ class TestURLFetcher : public URLFetcher {
   virtual void SetAutomaticallyRetryOnNetworkChanges(int max_retries) OVERRIDE;
   virtual void SaveResponseToFileAtPath(
       const base::FilePath& file_path,
-      scoped_refptr<base::TaskRunner> file_task_runner) OVERRIDE;
+      scoped_refptr<base::SequencedTaskRunner> file_task_runner) OVERRIDE;
   virtual void SaveResponseToTemporaryFile(
-      scoped_refptr<base::TaskRunner> file_task_runner) OVERRIDE;
+      scoped_refptr<base::SequencedTaskRunner> file_task_runner) OVERRIDE;
   virtual void SaveResponseWithWriter(
       scoped_ptr<URLFetcherResponseWriter> response_writer) OVERRIDE;
   virtual HttpResponseHeaders* GetResponseHeaders() const OVERRIDE;

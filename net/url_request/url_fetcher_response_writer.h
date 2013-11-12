@@ -14,7 +14,7 @@
 #include "net/base/net_export.h"
 
 namespace base {
-class TaskRunner;
+class SequencedTaskRunner;
 }  // namespace base
 
 namespace net {
@@ -81,8 +81,9 @@ class NET_EXPORT URLFetcherFileWriter : public URLFetcherResponseWriter {
  public:
   // |file_path| is used as the destination path. If |file_path| is empty,
   // Initialize() will create a temporary file.
-  URLFetcherFileWriter(scoped_refptr<base::TaskRunner> file_task_runner,
-                       const base::FilePath& file_path);
+  URLFetcherFileWriter(
+      scoped_refptr<base::SequencedTaskRunner> file_task_runner,
+      const base::FilePath& file_path);
   virtual ~URLFetcherFileWriter();
 
   const base::FilePath& file_path() const { return file_path_; }
@@ -122,7 +123,7 @@ class NET_EXPORT URLFetcherFileWriter : public URLFetcherResponseWriter {
   base::WeakPtrFactory<URLFetcherFileWriter> weak_factory_;
 
   // Task runner on which file operations should happen.
-  scoped_refptr<base::TaskRunner> file_task_runner_;
+  scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
 
   // Destination file path.
   // Initialize() creates a temporary file if this variable is empty.
