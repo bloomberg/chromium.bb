@@ -42,10 +42,12 @@
 #include "core/events/ThreadLocalEventNames.h"
 #include "core/events/TransitionEvent.h"
 #include "core/events/WebKitAnimationEvent.h"
+#include "core/frame/UseCounter.h"
 #include "core/frame/animation/CSSPropertyAnimation.h"
 #include "core/platform/animation/CSSAnimationDataList.h"
 #include "core/platform/animation/TimingFunction.h"
 #include "core/rendering/style/KeyframeList.h"
+#include "public/platform/Platform.h"
 #include "wtf/HashSet.h"
 
 namespace WebCore {
@@ -113,6 +115,7 @@ static void resolveKeyframes(StyleResolver* resolver, Element* element, const Re
         return;
 
     // Construct and populate the style for each keyframe
+    PropertySet specifiedProperties;
     KeyframeAnimationEffect::KeyframeVector keyframes;
     HashMap<double, RefPtr<TimingFunction> > perKeyframeTimingFunctions;
     for (size_t i = 0; i < styleKeyframes.size(); ++i) {
@@ -126,6 +129,7 @@ static void resolveKeyframes(StyleResolver* resolver, Element* element, const Re
         const StylePropertySet* properties = styleKeyframe->properties();
         for (unsigned j = 0; j < properties->propertyCount(); j++) {
             CSSPropertyID property = properties->propertyAt(j).id();
+            specifiedProperties.add(property);
             if (property == CSSPropertyWebkitAnimationTimingFunction || property == CSSPropertyAnimationTimingFunction) {
                 // FIXME: This sometimes gets the wrong timing function. See crbug.com/288540.
                 timingFunction = KeyframeValue::timingFunction(keyframeStyle.get(), name);
@@ -145,6 +149,12 @@ static void resolveKeyframes(StyleResolver* resolver, Element* element, const Re
 
     if (!perKeyframeTimingFunctions.contains(0))
         perKeyframeTimingFunctions.set(0, defaultTimingFunction);
+
+    for (PropertySet::const_iterator iter = specifiedProperties.begin(); iter != specifiedProperties.end(); ++iter) {
+        const CSSPropertyID property = *iter;
+        ASSERT(property != CSSPropertyInvalid);
+        blink::Platform::current()->histogramSparse("WebCore.Animation.CSSProperties", UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(property));
+    }
 
     // Remove duplicate keyframes. In CSS the last keyframe at a given offset takes priority.
     std::stable_sort(keyframes.begin(), keyframes.end(), Keyframe::compareOffsets);
@@ -538,6 +548,8 @@ void CSSAnimations::maybeApplyPendingUpdate(Element* element)
         element->document().transitionTimeline()->play(transition.get());
         runningTransition.transition = transition.get();
         m_transitions.set(id, runningTransition);
+        ASSERT(id != CSSPropertyInvalid);
+        blink::Platform::current()->histogramSparse("WebCore.Animation.CSSProperties", UseCounter::mapCSSPropertyIdToCSSSampleIdForHistogram(id));
     }
 }
 
