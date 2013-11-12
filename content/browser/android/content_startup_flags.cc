@@ -73,6 +73,9 @@ void SetContentCommandLineFlags(int max_render_process_count,
   parsed_command_line->AppendSwitch(switches::kDisableGpuShaderDiskCache);
 
   parsed_command_line->AppendSwitch(switches::kEnableViewport);
+  parsed_command_line->AppendSwitch(switches::kEnableViewportMeta);
+  parsed_command_line->AppendSwitch(
+      switches::kMainFrameResizesAreOrientationChanges);
 
   // Disable anti-aliasing.
   parsed_command_line->AppendSwitch(

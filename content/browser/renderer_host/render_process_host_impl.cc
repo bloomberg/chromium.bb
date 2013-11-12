@@ -973,6 +973,8 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableTouchDragDrop,
     switches::kEnableTouchEditing,
     switches::kEnableViewport,
+    switches::kEnableViewportMeta,
+    switches::kMainFrameResizesAreOrientationChanges,
     switches::kEnableVtune,
     switches::kEnableWebAnimationsCSS,
     switches::kEnableWebAnimationsSVG,

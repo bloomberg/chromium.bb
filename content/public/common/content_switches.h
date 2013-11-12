@@ -168,6 +168,8 @@ CONTENT_EXPORT extern const char kEnableThreadedCompositing[];
 CONTENT_EXPORT extern const char kEnableUniversalAcceleratedOverflowScroll[];
 extern const char kEnableUserMediaScreenCapturing[];
 extern const char kEnableViewport[];
+extern const char kEnableViewportMeta[];
+extern const char kMainFrameResizesAreOrientationChanges[];
 extern const char kEnableVisualWordMovement[];
 CONTENT_EXPORT extern const char kEnableVtune[];
 extern const char kEnableWebAnimationsCSS[];

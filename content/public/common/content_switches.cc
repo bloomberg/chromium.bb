@@ -556,10 +556,19 @@ const char kEnableUniversalAcceleratedOverflowScroll[] =
 const char kEnableUserMediaScreenCapturing[] =
     "enable-usermedia-screen-capturing";
 
-// Enables the use of the viewport meta tag, which allows
+// Enables the use of the @viewport CSS rule, which allows
 // pages to control aspects of their own layout. This also turns on touch-screen
 // pinch gestures.
 const char kEnableViewport[]                = "enable-viewport";
+
+// Enables the use of the legacy viewport meta tag. Turning this on also
+// turns on the @viewport CSS rule
+const char kEnableViewportMeta[]            = "enable-viewport-meta";
+
+// Resizes of the main frame are the caused by changing between landscape
+// and portrait mode (i.e. Android) so the page should be rescaled to fit
+const char kMainFrameResizesAreOrientationChanges[] =
+    "main-frame-resizes-are-orientation-changes";
 
 // Enables moving cursor by word in visual order.
 const char kEnableVisualWordMovement[]      = "enable-visual-word-movement";

@@ -107,6 +107,8 @@ WebPreferences::WebPreferences()
 #endif
       supports_multiple_windows(true),
       viewport_enabled(false),
+      viewport_meta_enabled(false),
+      main_frame_resizes_are_orientation_changes(false),
       initialize_at_minimum_page_scale(true),
 #if defined(OS_MACOSX)
       smart_insert_delete_enabled(true),

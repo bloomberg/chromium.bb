@@ -3577,7 +3577,8 @@ NavigationState* RenderViewImpl::CreateNavigationStateFromPending() {
 
 void RenderViewImpl::ProcessViewLayoutFlags(const CommandLine& command_line) {
   bool enable_viewport =
-      command_line.HasSwitch(switches::kEnableViewport);
+      command_line.HasSwitch(switches::kEnableViewport) ||
+      command_line.HasSwitch(switches::kEnableViewportMeta);
 
   // If viewport tag is enabled, then the WebKit side will take care
   // of setting the fixed layout size and page scale limits.

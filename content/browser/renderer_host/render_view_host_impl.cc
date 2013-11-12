@@ -508,7 +508,15 @@ WebPreferences RenderViewHostImpl::GetWebkitPrefs(const GURL& url) {
 
   prefs.number_of_cpu_cores = base::SysInfo::NumberOfProcessors();
 
-  prefs.viewport_enabled = command_line.HasSwitch(switches::kEnableViewport);
+  prefs.viewport_meta_enabled =
+      command_line.HasSwitch(switches::kEnableViewportMeta);
+
+  prefs.viewport_enabled =
+      command_line.HasSwitch(switches::kEnableViewport) ||
+      prefs.viewport_meta_enabled;
+
+  prefs.main_frame_resizes_are_orientation_changes =
+      command_line.HasSwitch(switches::kMainFrameResizesAreOrientationChanges);
 
   prefs.deferred_image_decoding_enabled =
       command_line.HasSwitch(switches::kEnableDeferredImageDecoding) ||

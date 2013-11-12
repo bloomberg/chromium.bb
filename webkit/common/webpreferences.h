@@ -146,6 +146,8 @@ struct WEBKIT_COMMON_EXPORT WebPreferences {
   webkit_glue::EditingBehavior editing_behavior;
   bool supports_multiple_windows;
   bool viewport_enabled;
+  bool viewport_meta_enabled;
+  bool main_frame_resizes_are_orientation_changes;
   bool initialize_at_minimum_page_scale;
   bool smart_insert_delete_enabled;
   bool spatial_navigation_enabled;
