@@ -492,6 +492,7 @@ cr.define('options', function() {
       // Determine whether to bring the OK button into focus.
       var wasConfirmPageHidden = !this.confirmPageVisible_;
       this.confirmPageVisible_ = true;
+      this.customizePageVisible_ = false;
 
       $('confirm-sync-preferences').hidden = false;
       $('customize-sync-preferences').hidden = true;
@@ -588,6 +589,7 @@ cr.define('options', function() {
       // Determine whether to bring the OK button field into focus.
       var wasCustomizePageHidden = !this.customizePageVisible_;
       this.customizePageVisible_ = true;
+      this.confirmPageVisible_ = false;
 
       $('confirm-sync-preferences').hidden = true;
       $('customize-sync-preferences').hidden = false;
