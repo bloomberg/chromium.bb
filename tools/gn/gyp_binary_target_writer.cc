@@ -490,7 +490,7 @@ void GypBinaryTargetWriter::WriteIncludeDirs(const Flags& flags, int indent) {
 void GypBinaryTargetWriter::WriteDirectDependentSettings(int indent) {
   if (target_->direct_dependent_configs().empty())
     return;
-  out_ << "'direct_dependent_settings': {\n";
+  Indent(indent) << "'direct_dependent_settings': {\n";
 
   Flags flags(FlagsFromConfigList(target_->direct_dependent_configs()));
   if (target_->settings()->IsLinux())

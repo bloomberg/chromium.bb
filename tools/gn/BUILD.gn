@@ -4,9 +4,13 @@
 
 gyp_file = "gn.gyp"
 
-# Not defined when doing a pure GYP build, this lets the code key off of
-# GN-specific features (the last change target).
-defines = [ "GN_BUILD" ]
+# Not defined when doing a GYP build, this lets the code key off of GN-specific
+# features (the last change target). This can be removed when the last change
+# target is supported by the GN->GYP converter (see is_gyp conditional for that
+# below).
+if (!is_gyp) {
+  defines = [ "GN_BUILD" ]
+}
 
 static_library("gn_lib") {
   sources = [
@@ -167,8 +171,11 @@ executable("gn") {
 
   deps = [
     ":gn_lib",
-    "//build/util:last_change",
   ]
+  if (!is_gyp) {
+    # Currently this only works in GYP (see GN_BUILD above).
+    deps += "//build/util:last_change"
+  }
 }
 
 test("gn_unittests") {

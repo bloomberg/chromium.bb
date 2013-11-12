@@ -42,6 +42,10 @@ declare_args() {
   # Ozone is enabled.
   # TODO(brettw) this should be moved out of the main build config file.
   use_ozone = false
+
+  # Set to true on the command line when invoked by GYP. Build files can key
+  # off of this to make any GYP-output-specific changes to the build.
+  is_gyp = false
 }
 
 # =============================================================================
