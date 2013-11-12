@@ -50,21 +50,14 @@ class AddressField : public FormField {
 
   AddressField();
 
-  static bool ParseCompany(AutofillScanner* scanner,
-                           AddressField* address_field);
-  static bool ParseAddressLines(AutofillScanner* scanner,
-                                AddressField* address_field);
-  static bool ParseCountry(AutofillScanner* scanner,
-                           AddressField* address_field);
-  static bool ParseZipCode(AutofillScanner* scanner,
-                           AddressField* address_field);
-  static bool ParseCity(AutofillScanner* scanner,
-                        AddressField* address_field);
-  static bool ParseState(AutofillScanner* scanner,
-                         AddressField* address_field);
+  bool ParseCompany(AutofillScanner* scanner);
+  bool ParseAddressLines(AutofillScanner* scanner);
+  bool ParseCountry(AutofillScanner* scanner);
+  bool ParseZipCode(AutofillScanner* scanner);
+  bool ParseCity(AutofillScanner* scanner);
+  bool ParseState(AutofillScanner* scanner);
 
-  // Looks for an address type in the given text, which the caller must
-  // convert to lowercase.
+  // Looks for an address type in the given text.
   static AddressType AddressTypeFromText(const base::string16& text);
 
   // Tries to determine the billing/shipping type of this address.
