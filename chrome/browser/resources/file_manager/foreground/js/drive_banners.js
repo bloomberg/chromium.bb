@@ -54,7 +54,7 @@ function FileListBannerController(
   var authFailedText = this.authFailedBanner_.querySelector('.drive-text');
   authFailedText.innerHTML = util.htmlUnescape(str('DRIVE_NOT_REACHED'));
   authFailedText.querySelector('a').addEventListener('click', function(e) {
-    chrome.fileBrowserPrivate.logoutUser();
+    chrome.fileBrowserPrivate.logoutUserForReauthentication();
     e.preventDefault();
   });
   this.maybeShowAuthFailBanner_();

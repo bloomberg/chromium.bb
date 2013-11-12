@@ -277,9 +277,9 @@
     ],
     "functions": [
       {
-        "name": "logoutUser",
+        "name": "logoutUserForReauthentication",
         "type": "function",
-        "description": "Logout the current user.",
+        "description": "Logout the current user for navigating to the re-authentication screen for the Google account.",
         "parameters": []
       },
       {

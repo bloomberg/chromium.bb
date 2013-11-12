@@ -18,15 +18,16 @@ class AuthServiceInterface;
 
 namespace extensions {
 
-// Implements the chrome.fileBrowserPrivate.logoutUser method.
-class FileBrowserPrivateLogoutUserFunction
+// Implements the chrome.fileBrowserPrivate.logoutUserForReauthentication
+// method.
+class FileBrowserPrivateLogoutUserForReauthenticationFunction
     : public ChromeSyncExtensionFunction {
  public:
-  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.logoutUser",
-                             FILEBROWSERPRIVATE_LOGOUTUSER)
+  DECLARE_EXTENSION_FUNCTION("fileBrowserPrivate.logoutUserForReauthentication",
+                             FILEBROWSERPRIVATE_LOGOUTUSERFORREAUTHENTICATION)
 
  protected:
-  virtual ~FileBrowserPrivateLogoutUserFunction() {}
+  virtual ~FileBrowserPrivateLogoutUserForReauthenticationFunction() {}
 
   // SyncExtensionFunction overrides.
   virtual bool RunImpl() OVERRIDE;

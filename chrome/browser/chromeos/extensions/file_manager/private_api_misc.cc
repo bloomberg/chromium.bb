@@ -31,7 +31,7 @@ namespace {
 const char kCWSScope[] = "https://www.googleapis.com/auth/chromewebstore";
 }
 
-bool FileBrowserPrivateLogoutUserFunction::RunImpl() {
+bool FileBrowserPrivateLogoutUserForReauthenticationFunction::RunImpl() {
   chrome::AttemptUserExit();
   return true;
 }
