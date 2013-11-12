@@ -10,11 +10,13 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/webrtc_audio_private/webrtc_audio_private_api.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/media/webrtc_log_uploader.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/permissions/permissions_data.h"
@@ -330,6 +332,13 @@ IN_PROC_BROWSER_TEST_F(HangoutServicesBrowserTest,
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   WaitUntilAudioIsPlaying(tab);
+
+  // Override, i.e. disable, uploading. We don't want to try sending data to
+  // servers when running the test. We don't bother about the contents of the
+  // buffer |dummy|, that's tested in other tests.
+  std::string dummy;
+  g_browser_process->webrtc_log_uploader()->
+      OverrideUploadWithBufferForTesting(&dummy);
 
   ASSERT_TRUE(content::ExecuteScript(tab, "browsertestRunAllTests();"));
 
