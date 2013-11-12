@@ -6,7 +6,6 @@
 
 #include <string.h>  // For memcpy
 
-#include "ppapi/c/pp_file_info.h"
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_var.h"
@@ -96,48 +95,6 @@ bool ParamTraits<PP_Bool>::Read(const Message* m,
 
 // static
 void ParamTraits<PP_Bool>::Log(const param_type& p, std::string* l) {
-}
-
-// PP_FileInfo -------------------------------------------------------------
-
-// static
-void ParamTraits<PP_FileInfo>::Write(Message* m, const param_type& p) {
-  ParamTraits<int64_t>::Write(m, p.size);
-  ParamTraits<int>::Write(m, static_cast<int>(p.type));
-  ParamTraits<int>::Write(m, static_cast<int>(p.system_type));
-  ParamTraits<double>::Write(m, p.creation_time);
-  ParamTraits<double>::Write(m, p.last_access_time);
-  ParamTraits<double>::Write(m, p.last_modified_time);
-}
-
-// static
-bool ParamTraits<PP_FileInfo>::Read(const Message* m, PickleIterator* iter,
-                                        param_type* r) {
-  int type, system_type;
-  if (!ParamTraits<int64_t>::Read(m, iter, &r->size) ||
-      !ParamTraits<int>::Read(m, iter, &type) ||
-      !ParamTraits<int>::Read(m, iter, &system_type) ||
-      !ParamTraits<double>::Read(m, iter, &r->creation_time) ||
-      !ParamTraits<double>::Read(m, iter, &r->last_access_time) ||
-      !ParamTraits<double>::Read(m, iter, &r->last_modified_time))
-    return false;
-  if (type != PP_FILETYPE_REGULAR &&
-      type != PP_FILETYPE_DIRECTORY &&
-      type != PP_FILETYPE_OTHER)
-    return false;
-  r->type = static_cast<PP_FileType>(type);
-  if (system_type != PP_FILESYSTEMTYPE_INVALID &&
-      system_type != PP_FILESYSTEMTYPE_EXTERNAL &&
-      system_type != PP_FILESYSTEMTYPE_LOCALPERSISTENT &&
-      system_type != PP_FILESYSTEMTYPE_LOCALTEMPORARY &&
-      system_type != PP_FILESYSTEMTYPE_ISOLATED)
-    return false;
-  r->system_type = static_cast<PP_FileSystemType>(system_type);
-  return true;
-}
-
-// static
-void ParamTraits<PP_FileInfo>::Log(const param_type& p, std::string* l) {
 }
 
 // PP_NetAddress_Private -------------------------------------------------------
