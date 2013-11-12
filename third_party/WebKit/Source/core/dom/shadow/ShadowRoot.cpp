@@ -181,14 +181,10 @@ void ShadowRoot::recalcStyle(StyleRecalcChange change)
 
     // FIXME: This doesn't handle :hover + div properly like Element::recalcStyle does.
     for (Node* child = lastChild(); child; child = child->previousSibling()) {
-        bool didReattach = false;
         if (child->isTextNode())
-            didReattach = toText(child)->recalcTextStyle(change);
+            toText(child)->recalcTextStyle(change);
         else if (child->isElementNode() && shouldRecalcStyle(change, child))
-            didReattach = toElement(child)->recalcStyle(change);
-
-        if (didReattach)
-            child->reattachWhitespaceSiblings();
+            toElement(child)->recalcStyle(change);
     }
 
     styleResolver->popParentShadowRoot(*this);

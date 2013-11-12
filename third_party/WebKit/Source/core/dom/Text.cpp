@@ -305,7 +305,7 @@ void Text::attach(const AttachContext& context)
     CharacterData::attach(context);
 }
 
-bool Text::recalcTextStyle(StyleRecalcChange change)
+void Text::recalcTextStyle(StyleRecalcChange change)
 {
     if (RenderText* renderer = toRenderText(this->renderer())) {
         if (change != NoChange || needsStyleRecalc())
@@ -315,9 +315,8 @@ bool Text::recalcTextStyle(StyleRecalcChange change)
         clearNeedsStyleRecalc();
     } else if (needsStyleRecalc() || needsWhitespaceRenderer()) {
         reattach();
-        return true;
+        reattachWhitespaceSiblings();
     }
-    return false;
 }
 
 // If a whitespace node had no renderer and goes through a recalcStyle it may
