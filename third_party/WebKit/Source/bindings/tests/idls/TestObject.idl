@@ -213,10 +213,6 @@ callback TestCallbackFunction = void (TestEnumType formal1, TestObject formal2);
     static long classMethodWithOptional(optional long arg);
     [Custom] static void classMethod2(long arg);
 
-    // Static method with conditional on overloaded methods
-    [Conditional=Condition1] static void overloadedMethod1(long arg);
-    [Conditional=Condition1] static void overloadedMethod1([StrictTypeChecking] DOMString type);
-
     void classMethodWithClamp([Clamp] unsigned short objArgsShort, [Clamp] unsigned long objArgsLong);
 
     // [RuntimeEnabled] methods and attributes.

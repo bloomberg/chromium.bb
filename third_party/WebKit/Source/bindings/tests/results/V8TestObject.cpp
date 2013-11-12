@@ -4058,60 +4058,6 @@ static void classMethod2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-#if ENABLE(Condition1)
-static void overloadedMethod11Method(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethod1", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
-        return;
-    }
-    V8TRYCATCH_VOID(int, arg, toInt32(info[0]));
-    TestObj::overloadedMethod1(arg);
-}
-#endif // ENABLE(Condition1)
-
-#if ENABLE(Condition1)
-static void overloadedMethod12Method(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethod1", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
-        return;
-    }
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, type, info[0]);
-    TestObj::overloadedMethod1(type);
-}
-#endif // ENABLE(Condition1)
-
-#if ENABLE(Condition1)
-
-static void overloadedMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (info.Length() == 1) {
-        overloadedMethod11Method(info);
-        return;
-    }
-    if ((info.Length() == 1 && (info[0]->IsNull() || info[0]->IsUndefined() || info[0]->IsString() || info[0]->IsObject()))) {
-        overloadedMethod12Method(info);
-        return;
-    }
-    if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethod1", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
-        return;
-    }
-    throwUninformativeAndGenericTypeError(info.GetIsolate());
-}
-
-#endif // ENABLE(Condition1)
-
-#if ENABLE(Condition1)
-static void overloadedMethod1MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestObjV8Internal::overloadedMethod1Method(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
-}
-#endif // ENABLE(Condition1)
-
 static void classMethodWithClampMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 2)) {
@@ -5218,9 +5164,6 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestObjectTemplate(v8::Handle
     desc->Set(v8::String::NewSymbol("classMethod"), v8::FunctionTemplate::New(TestObjV8Internal::classMethodMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
     desc->Set(v8::String::NewSymbol("classMethodWithOptional"), v8::FunctionTemplate::New(TestObjV8Internal::classMethodWithOptionalMethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 0));
     desc->Set(v8::String::NewSymbol("classMethod2"), v8::FunctionTemplate::New(TestObjV8Internal::classMethod2MethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 1));
-#if ENABLE(Condition1)
-    desc->Set(v8::String::NewSymbol("overloadedMethod1"), v8::FunctionTemplate::New(TestObjV8Internal::overloadedMethod1MethodCallback, v8Undefined(), v8::Local<v8::Signature>(), 1));
-#endif // ENABLE(Condition1)
     if (RuntimeEnabledFeatures::featureNameEnabled())
         proto->Set(v8::String::NewSymbol("enabledAtRuntimeMethod"), v8::FunctionTemplate::New(TestObjV8Internal::enabledAtRuntimeMethodMethodCallback, v8Undefined(), defaultSignature, 1));
 
