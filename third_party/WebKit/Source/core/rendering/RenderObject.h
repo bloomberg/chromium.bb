@@ -41,7 +41,6 @@
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/transforms/TransformationMatrix.h"
-#include "wtf/HashSet.h"
 
 namespace WebCore {
 
@@ -129,7 +128,6 @@ struct AnnotatedRegionValue {
     bool draggable;
 };
 
-typedef WTF::HashSet<const RenderObject*> RenderObjectAncestorLineboxDirtySet;
 typedef WTF::HashMap<const RenderLayer*, Vector<LayoutRect> > LayerHitTestRects;
 
 #ifndef NDEBUG
@@ -413,21 +411,12 @@ public:
     bool hasColumns() const { return m_bitfields.hasColumns(); }
     void setHasColumns(bool b = true) { m_bitfields.setHasColumns(b); }
 
-    bool ancestorLineBoxDirty() const { return s_ancestorLineboxDirtySet && s_ancestorLineboxDirtySet->contains(this); }
-    void setAncestorLineBoxDirty(bool b = true)
+    bool ancestorLineBoxDirty() const { return m_bitfields.ancestorLineBoxDirty(); }
+    void setAncestorLineBoxDirty(bool value = true)
     {
-        if (b) {
-            if (!s_ancestorLineboxDirtySet)
-                s_ancestorLineboxDirtySet = new RenderObjectAncestorLineboxDirtySet;
-            s_ancestorLineboxDirtySet->add(this);
+        m_bitfields.setAncestorLineBoxDirty(value);
+        if (value)
             setNeedsLayout();
-        } else if (s_ancestorLineboxDirtySet) {
-            s_ancestorLineboxDirtySet->remove(this);
-            if (s_ancestorLineboxDirtySet->isEmpty()) {
-                delete s_ancestorLineboxDirtySet;
-                s_ancestorLineboxDirtySet = 0;
-            }
-        }
     }
 
     enum FlowThreadState {
@@ -1080,8 +1069,6 @@ private:
     RenderObject* m_previous;
     RenderObject* m_next;
 
-    static RenderObjectAncestorLineboxDirtySet* s_ancestorLineboxDirtySet;
-
 #ifndef NDEBUG
     unsigned m_hasAXObject             : 1;
     unsigned m_setNeedsLayoutForbidden : 1;
@@ -1124,6 +1111,7 @@ private:
             , m_hasReflection(false)
             , m_hasCounterNodeMap(false)
             , m_everHadLayout(false)
+            , m_ancestorLineBoxDirty(false)
             , m_childrenInline(false)
             , m_hasColumns(false)
             , m_positionedState(IsStaticallyPositioned)
@@ -1133,7 +1121,7 @@ private:
         {
         }
 
-        // 31 bits have been used here. There is one bit available.
+        // 32 bits have been used here, none are available.
         ADD_BOOLEAN_BITFIELD(selfNeedsLayout, SelfNeedsLayout);
         ADD_BOOLEAN_BITFIELD(needsPositionedMovementLayout, NeedsPositionedMovementLayout);
         ADD_BOOLEAN_BITFIELD(normalChildNeedsLayout, NormalChildNeedsLayout);
@@ -1157,6 +1145,7 @@ private:
 
         ADD_BOOLEAN_BITFIELD(hasCounterNodeMap, HasCounterNodeMap);
         ADD_BOOLEAN_BITFIELD(everHadLayout, EverHadLayout);
+        ADD_BOOLEAN_BITFIELD(ancestorLineBoxDirty, AncestorLineBoxDirty);
 
         // from RenderBlock
         ADD_BOOLEAN_BITFIELD(childrenInline, ChildrenInline);
