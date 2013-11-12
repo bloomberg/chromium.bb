@@ -83,6 +83,7 @@ leak:cc::FakeTileManager::AssignMemoryToTiles
 # Leak in unit_tests. http://crbug.com/282646
 leak:DeclarativeContentActionTest_ShowPageAction_Test::TestBody
 leak:DeclarativeContentRulesRegistryTest_ActiveRulesDoesntGrow_Test::TestBody
+leak:SavedFilesServiceUnitTest_NoRetainEntriesPermissionTest_Test::TestBody
 
 # Leak in unit_tests. http://crbug.com/309468
 leak:TranslateBubbleViewTest::SetUp
