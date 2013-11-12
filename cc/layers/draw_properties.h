@@ -35,8 +35,7 @@ struct CC_EXPORT DrawProperties {
         index_of_first_descendants_addition(0),
         num_descendants_added(0),
         index_of_first_render_surface_layer_list_addition(0),
-        num_render_surfaces_added(0),
-        skip_drawing(false) {}
+        num_render_surfaces_added(0) {}
 
   // Transforms objects from content space to target surface space, where
   // this layer would be drawn.
@@ -122,12 +121,6 @@ struct CC_EXPORT DrawProperties {
   size_t num_descendants_added;
   size_t index_of_first_render_surface_layer_list_addition;
   size_t num_render_surfaces_added;
-
-  // If the layer is part of a [sub]tree that has a touch/wheel event handler,
-  // then the layer is not skipped during CalculateDrawPropertiesInternal, even
-  // if it does not actually have anything to draw (e.g. zero opacity, or empty
-  // content). This flag is used to keep track of such layers.
-  bool skip_drawing;
 };
 
 }  // namespace cc

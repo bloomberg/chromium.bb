@@ -354,8 +354,8 @@ void LayerTreeImpl::UpdateDrawProperties() {
     UpdateRootScrollLayerSizeDelta();
 
   if (IsActiveTree() &&
-      RootContainerLayer() &&
-      !RootContainerLayer()->masks_to_bounds()) {
+      RootContainerLayer()
+      && !RootContainerLayer()->masks_to_bounds()) {
     UpdateSolidColorScrollbars();
   }
 
@@ -417,8 +417,6 @@ void LayerTreeImpl::UpdateDrawProperties() {
       if (!it.represents_itself())
         continue;
       LayerImpl* layer = *it;
-      if (layer->draw_properties().skip_drawing)
-        continue;
 
       layer->UpdateTilePriorities();
       if (layer->mask_layer())

@@ -4006,37 +4006,5 @@ class OcclusionTrackerTestEmptyEventLayerDoesNotOcclude
 
 ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestEmptyEventLayerDoesNotOcclude)
 
-template <class Types>
-class OcclusionTrackerTestZeroOpacityLayerDoesNotOcclude
-    : public OcclusionTrackerTest<Types> {
- protected:
-  explicit OcclusionTrackerTestZeroOpacityLayerDoesNotOcclude(bool opaque)
-      : OcclusionTrackerTest<Types>(opaque) {}
-  void RunMyTest() {
-    typename Types::ContentLayerType* root = this->CreateRoot(
-        this->identity_matrix, gfx::Point(), gfx::Size(400, 400));
-    typename Types::ContentLayerType* zero_opacity_layer =
-        this->CreateDrawingLayer(root, this->identity_matrix, gfx::Point(),
-                                 gfx::Size(200, 200), true);
-    this->SetDrawsContent(zero_opacity_layer, false);
-    zero_opacity_layer->SetTouchEventHandlerRegion(gfx::Rect(10, 10, 10, 10));
-
-    this->CalcDrawEtc(root);
-
-    TestOcclusionTrackerWithClip<typename Types::LayerType,
-                                 typename Types::RenderSurfaceType> occlusion(
-        gfx::Rect(0, 0, 1000, 1000), false);
-
-    this->VisitLayer(zero_opacity_layer, &occlusion);
-
-    EXPECT_EQ(gfx::Rect().ToString(),
-              occlusion.occlusion_from_outside_target().ToString());
-    EXPECT_EQ(gfx::Rect().ToString(),
-              occlusion.occlusion_from_inside_target().ToString());
-  }
-};
-
-ALL_OCCLUSIONTRACKER_TEST(OcclusionTrackerTestZeroOpacityLayerDoesNotOcclude);
-
 }  // namespace
 }  // namespace cc

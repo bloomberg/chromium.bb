@@ -5388,11 +5388,10 @@ TEST_F(LayerTreeHostCommonTest, HitTestingForEmptyLayers) {
   // (but not the empty layer without a touch handler) are in the RSSL.
   ASSERT_EQ(1u, render_surface_layer_list.size());
   EXPECT_EQ(1, render_surface_layer_list[0]->id());
-  ASSERT_EQ(4u, root->render_surface()->layer_list().size());
+  ASSERT_EQ(3u, root->render_surface()->layer_list().size());
   EXPECT_EQ(1, root->render_surface()->layer_list().at(0)->id());
-  EXPECT_EQ(2, root->render_surface()->layer_list().at(1)->id());
-  EXPECT_EQ(3, root->render_surface()->layer_list().at(2)->id());
-  EXPECT_EQ(4, root->render_surface()->layer_list().at(3)->id());
+  EXPECT_EQ(3, root->render_surface()->layer_list().at(1)->id());
+  EXPECT_EQ(4, root->render_surface()->layer_list().at(2)->id());
 
   // Hit testing for a point inside the empty no-handlers layer should return
   // the root layer.
@@ -5400,7 +5399,7 @@ TEST_F(LayerTreeHostCommonTest, HitTestingForEmptyLayers) {
   LayerImpl* result_layer = LayerTreeHostCommon::FindLayerThatIsHitByPoint(
       test_point, render_surface_layer_list);
   ASSERT_TRUE(result_layer);
-  EXPECT_EQ(2, result_layer->id());
+  EXPECT_EQ(1, result_layer->id());
 
   // Hit testing for a point inside the touch handler layer should return it.
   test_point = gfx::Point(15, 75);
@@ -5415,147 +5414,6 @@ TEST_F(LayerTreeHostCommonTest, HitTestingForEmptyLayers) {
           test_point, render_surface_layer_list);
   ASSERT_TRUE(result_layer);
   EXPECT_EQ(4, result_layer->id());
-}
-
-TEST_F(LayerTreeHostCommonTest, HitTestForZeroOpacityLayers) {
-  FakeImplProxy proxy;
-  FakeLayerTreeHostImpl host_impl(&proxy);
-  const int kRootId = 1;
-  const int kTouchHandlerId = 2;
-  const int kWheelHandlerId = 3;
-  const int kNoHandlerId = 4;
-  const int kGrandChildWithEventId = 5;
-
-  scoped_ptr<LayerImpl> root =
-      LayerImpl::Create(host_impl.active_tree(), 1);
-  gfx::Transform identity_matrix;
-  gfx::PointF anchor;
-  gfx::PointF position;
-  gfx::Size bounds(100, 100);
-  SetLayerPropertiesForTesting(root.get(),
-                               identity_matrix,
-                               identity_matrix,
-                               anchor,
-                               position,
-                               bounds,
-                               false);
-  root->SetDrawsContent(true);
-
-  {
-    // Child 1 - Zero opacity, without any event handler.
-    gfx::PointF position(10.f, 10.f);
-    gfx::Size bounds(30, 30);
-    scoped_ptr<LayerImpl> child =
-        LayerImpl::Create(host_impl.active_tree(), kNoHandlerId);
-    SetLayerPropertiesForTesting(child.get(),
-                                 identity_matrix,
-                                 identity_matrix,
-                                 anchor,
-                                 position,
-                                 bounds,
-                                 false);
-    child->SetOpacity(0.f);
-
-    // Grandchild - with a wheel handler.
-    scoped_ptr<LayerImpl> grand_child =
-        LayerImpl::Create(host_impl.active_tree(), kGrandChildWithEventId);
-    SetLayerPropertiesForTesting(grand_child.get(),
-                                 identity_matrix,
-                                 identity_matrix,
-                                 gfx::PointF(),
-                                 gfx::PointF(10, 10),
-                                 gfx::Size(10, 10),
-                                 false);
-    grand_child->SetHaveWheelEventHandlers(true);
-    child->AddChild(grand_child.Pass());
-    root->AddChild(child.Pass());
-  }
-
-  {
-    // Child 2 - Zero opacity, with touch event handler.
-    gfx::PointF position(70.f, 10.f);
-    gfx::Size bounds(30, 30);
-    scoped_ptr<LayerImpl> child =
-        LayerImpl::Create(host_impl.active_tree(), kTouchHandlerId);
-    SetLayerPropertiesForTesting(child.get(),
-                                 identity_matrix,
-                                 identity_matrix,
-                                 anchor,
-                                 position,
-                                 bounds,
-                                 false);
-    child->SetOpacity(0.f);
-    child->SetTouchEventHandlerRegion(gfx::Rect(10, 10, 10, 10));
-    root->AddChild(child.Pass());
-  }
-
-  {
-    // Child 3 - Zero opacity, with wheel event handler.
-    gfx::PointF position(10.f, 50.f);
-    gfx::Size bounds(30, 30);
-    scoped_ptr<LayerImpl> child =
-        LayerImpl::Create(host_impl.active_tree(), kWheelHandlerId);
-    SetLayerPropertiesForTesting(child.get(),
-                                 identity_matrix,
-                                 identity_matrix,
-                                 anchor,
-                                 position,
-                                 bounds,
-                                 false);
-    child->SetOpacity(0.f);
-    child->SetHaveWheelEventHandlers(true);
-    root->AddChild(child.Pass());
-  }
-
-  LayerImplList render_surface_layer_list;
-  LayerTreeHostCommon::CalcDrawPropsImplInputsForTesting inputs(
-      root.get(), root->bounds(), &render_surface_layer_list);
-  inputs.can_adjust_raster_scales = true;
-  LayerTreeHostCommon::CalculateDrawProperties(&inputs);
-
-  // Verify that the root layer and zero-opacity layers with touch/wheel
-  // handlers (but not the zero-opacity layer without a touch handler) are in
-  // the RSSL.
-  ASSERT_EQ(1u, render_surface_layer_list.size());
-  EXPECT_EQ(kRootId, render_surface_layer_list[0]->id());
-  ASSERT_EQ(5u, root->render_surface()->layer_list().size());
-  EXPECT_EQ(kRootId, root->render_surface()->layer_list().at(0)->id());
-  EXPECT_EQ(kNoHandlerId, root->render_surface()->layer_list().at(1)->id());
-  EXPECT_EQ(kGrandChildWithEventId,
-            root->render_surface()->layer_list().at(2)->id());
-  EXPECT_EQ(kTouchHandlerId, root->render_surface()->layer_list().at(3)->id());
-  EXPECT_EQ(kWheelHandlerId, root->render_surface()->layer_list().at(4)->id());
-
-  // Hit testing for a point inside the zero-opacity no-handler layer should
-  // return the root layer.
-  gfx::Point test_point = gfx::Point(15, 15);
-  LayerImpl* result_layer = LayerTreeHostCommon::FindLayerThatIsHitByPoint(
-      test_point, render_surface_layer_list);
-  ASSERT_TRUE(result_layer);
-  EXPECT_EQ(kNoHandlerId, result_layer->id());
-
-  // Hit testing for a point inside the child of the zero-opacity no-handler
-  // layer should return the child layer, since that layer has mousewheel
-  // handler.
-  test_point = gfx::Point(25, 25);
-  result_layer = LayerTreeHostCommon::FindLayerThatIsHitByPoint(
-      test_point, render_surface_layer_list);
-  ASSERT_TRUE(result_layer);
-  EXPECT_EQ(kGrandChildWithEventId, result_layer->id());
-
-  // Hit testing for a point inside the touch handler layer should return it.
-  test_point = gfx::Point(85, 25);
-  result_layer = LayerTreeHostCommon::FindLayerThatIsHitByPoint(
-          test_point, render_surface_layer_list);
-  ASSERT_TRUE(result_layer);
-  EXPECT_EQ(kTouchHandlerId, result_layer->id());
-
-  // Hit testing for a point inside the mousewheel layer should return it.
-  test_point = gfx::Point(15, 55);
-  result_layer = LayerTreeHostCommon::FindLayerThatIsHitByPoint(
-          test_point, render_surface_layer_list);
-  ASSERT_TRUE(result_layer);
-  EXPECT_EQ(kWheelHandlerId, result_layer->id());
 }
 
 TEST_F(LayerTreeHostCommonTest,
@@ -5883,7 +5741,7 @@ TEST_F(LayerTreeHostCommonTest,
   LayerImpl* test_layer = root->children()[0];
   EXPECT_RECT_EQ(gfx::Rect(0, 0, 100, 100), test_layer->visible_content_rect());
   ASSERT_EQ(1u, render_surface_layer_list.size());
-  ASSERT_EQ(2u, root->render_surface()->layer_list().size());
+  ASSERT_EQ(1u, root->render_surface()->layer_list().size());
 
   // Hit checking for a point outside the layer should return a null pointer
   // (the root layer does not draw content, so it will not be tested either).
@@ -5993,7 +5851,7 @@ TEST_F(LayerTreeHostCommonTest,
   // its layout size is 50x50, positioned at 25x25.
   LayerImpl* test_layer = root->children()[0];
   ASSERT_EQ(1u, render_surface_layer_list.size());
-  ASSERT_EQ(2u, root->render_surface()->layer_list().size());
+  ASSERT_EQ(1u, root->render_surface()->layer_list().size());
 
   // Check whether the child layer fits into the root after scaled.
   EXPECT_RECT_EQ(gfx::Rect(test_layer->content_bounds()),
@@ -6124,10 +5982,8 @@ TEST_F(LayerTreeHostCommonTest,
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, render_surface_layer_list.size());
-  ASSERT_EQ(3u, root->render_surface()->layer_list().size());
-  ASSERT_EQ(1, root->render_surface()->layer_list().at(0)->id());
-  ASSERT_EQ(123, root->render_surface()->layer_list().at(1)->id());
-  ASSERT_EQ(456, root->render_surface()->layer_list().at(2)->id());
+  ASSERT_EQ(1u, root->render_surface()->layer_list().size());
+  ASSERT_EQ(456, root->render_surface()->layer_list().at(0)->id());
 
   // Hit checking for a point outside the layer should return a null pointer.
   // Despite the child layer being very large, it should be clipped to the root
@@ -6229,10 +6085,9 @@ TEST_F(LayerTreeHostCommonTest,
 
   // Sanity check the scenario we just created.
   ASSERT_EQ(1u, render_surface_layer_list.size());
-  ASSERT_EQ(3u, root->render_surface()->layer_list().size());
-  ASSERT_EQ(1, root->render_surface()->layer_list().at(0)->id());
-  ASSERT_EQ(123, root->render_surface()->layer_list().at(1)->id());
-  ASSERT_EQ(1234, root->render_surface()->layer_list().at(2)->id());
+  ASSERT_EQ(2u, root->render_surface()->layer_list().size());
+  ASSERT_EQ(123, root->render_surface()->layer_list().at(0)->id());
+  ASSERT_EQ(1234, root->render_surface()->layer_list().at(1)->id());
 
   gfx::Point test_point(35, 35);
   LayerImpl* result_layer =

@@ -26,7 +26,6 @@ class FakePictureLayerImpl : public PictureLayerImpl {
       OVERRIDE;
   virtual void AppendQuads(QuadSink* quad_sink,
                            AppendQuadsData* append_quads_data) OVERRIDE;
-  virtual void UpdateTilePriorities() OVERRIDE;
   virtual gfx::Size CalculateTileSize(gfx::Size content_bounds) const OVERRIDE;
 
   using PictureLayerImpl::AddTiling;
@@ -50,9 +49,6 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   PictureLayerTilingSet* tilings() { return tilings_.get(); }
   PicturePileImpl* pile() { return pile_.get(); }
   size_t append_quads_count() { return append_quads_count_; }
-  size_t update_tile_priorities_count() const {
-    return update_tile_priorities_count_;
-  }
 
   const Region& invalidation() const { return invalidation_; }
   void set_invalidation(const Region& region) { invalidation_ = region; }
@@ -70,7 +66,6 @@ class FakePictureLayerImpl : public PictureLayerImpl {
   gfx::Size fixed_tile_size_;
 
   size_t append_quads_count_;
-  size_t update_tile_priorities_count_;
 };
 
 }  // namespace cc

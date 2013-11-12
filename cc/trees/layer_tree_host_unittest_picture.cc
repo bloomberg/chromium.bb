@@ -4,10 +4,7 @@
 
 #include "cc/trees/layer_tree_host.h"
 
-#include "cc/layers/solid_color_layer.h"
-#include "cc/test/fake_content_layer.h"
 #include "cc/test/fake_content_layer_client.h"
-#include "cc/test/fake_content_layer_impl.h"
 #include "cc/test/fake_picture_layer.h"
 #include "cc/test/fake_picture_layer_impl.h"
 #include "cc/test/layer_tree_test.h"
@@ -117,77 +114,6 @@ class LayerTreeHostPictureTestTwinLayer
 };
 
 MULTI_THREAD_TEST_F(LayerTreeHostPictureTestTwinLayer);
-
-class LayerTreeHostPictureNoUpdateTileProprityForZeroOpacityLayer
-    : public LayerTreeHostPictureTest {
- protected:
-  virtual void SetupTree() OVERRIDE {
-    parent_layer_ = FakeContentLayer::Create(&parent_client_);
-    parent_layer_->SetBounds(gfx::Size(40, 40));
-    parent_layer_->SetOpacity(0.f);
-    parent_layer_->SetIsDrawable(true);
-
-    scoped_refptr<Layer> root = SolidColorLayer::Create();
-    root->SetBounds(gfx::Size(60, 60));
-    root->SetOpacity(1.f);
-    root->SetIsDrawable(true);
-    root->AddChild(parent_layer_);
-    layer_tree_host()->SetRootLayer(root);
-
-    wheel_handler_ = FakeContentLayer::Create(NULL);
-    wheel_handler_->SetBounds(gfx::Size(10, 10));
-    wheel_handler_->SetHaveWheelEventHandlers(true);
-    wheel_handler_->SetIsDrawable(true);
-    parent_layer_->AddChild(wheel_handler_);
-
-    picture_ = FakePictureLayer::Create(&picture_client_);
-    picture_->SetBounds(gfx::Size(30, 30));
-    picture_->SetPosition(gfx::Point(10, 0));
-    picture_->SetIsDrawable(true);
-    parent_layer_->AddChild(picture_);
-
-    LayerTreeHostPictureTest::SetupTree();
-  }
-
-  virtual void BeginTest() OVERRIDE {
-    PostSetNeedsCommitToMainThread();
-  }
-
-  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    LayerTreeHostPictureTest::DrawLayersOnThread(impl);
-    FakeContentLayerImpl* parent =
-          static_cast<FakeContentLayerImpl*>(impl->RootLayer()->children()[0]);
-    EXPECT_TRUE(parent->DrawsContent());
-    EXPECT_FALSE(parent->opacity());
-    EXPECT_EQ(0u, parent->append_quads_count());
-    ASSERT_EQ(2u, parent->children().size());
-
-    FakeContentLayerImpl* child =
-        static_cast<FakeContentLayerImpl*>(parent->children()[0]);
-    EXPECT_TRUE(child->opacity());
-    EXPECT_EQ(0u, child->append_quads_count());
-
-    FakePictureLayerImpl* picimpl =
-        static_cast<FakePictureLayerImpl*>(parent->children()[1]);
-    EXPECT_TRUE(picimpl->opacity());
-    EXPECT_EQ(0u, picimpl->append_quads_count());
-    EXPECT_EQ(0u, picimpl->update_tile_priorities_count());
-
-    EndTest();
-  }
-
-  virtual void AfterTest() OVERRIDE {}
-
- private:
-  FakeContentLayerClient parent_client_;
-  FakeContentLayerClient picture_client_;
-  scoped_refptr<FakeContentLayer> parent_layer_;
-  scoped_refptr<FakeContentLayer> wheel_handler_;
-  scoped_refptr<FakePictureLayer> picture_;
-};
-
-MULTI_THREAD_TEST_F(
-    LayerTreeHostPictureNoUpdateTileProprityForZeroOpacityLayer);
 
 }  // namespace
 }  // namespace cc

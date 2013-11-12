@@ -408,7 +408,7 @@ void OcclusionTrackerBase<LayerType, RenderSurfaceType>::
   if (stack_.empty())
     return;
 
-  if (layer->draw_properties().skip_drawing)
+  if (!layer->DrawsContent())
     return;
 
   if (!LayerOpacityKnown(layer) || layer->draw_opacity() < 1)

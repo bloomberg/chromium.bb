@@ -5093,6 +5093,7 @@ SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestOffscreenContext_WithContext);
 class LayerTreeHostTestNoQuadsForEmptyLayer : public LayerTreeHostTest {
  protected:
   virtual void SetupTree() OVERRIDE {
+    LayerTreeHostTest::SetupTree();
     root_layer_ = FakeContentLayer::Create(&client_);
     root_layer_->SetBounds(gfx::Size(10, 10));
     root_layer_->SetIsDrawable(false);
@@ -5126,79 +5127,6 @@ class LayerTreeHostTestNoQuadsForEmptyLayer : public LayerTreeHostTest {
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestNoQuadsForEmptyLayer);
 
-class LayerTreeHostTestNoQuadsForZeroOpacityLayer : public LayerTreeHostTest {
- protected:
-  virtual void SetupTree() OVERRIDE {
-    parent_layer_ = FakeContentLayer::Create(&parent_client_);
-    parent_layer_->SetBounds(gfx::Size(40, 40));
-    parent_layer_->SetOpacity(0.f);
-    parent_layer_->SetIsDrawable(true);
-
-    scoped_refptr<Layer> root = SolidColorLayer::Create();
-    root->SetBounds(gfx::Size(60, 60));
-    root->SetOpacity(1.f);
-    root->SetIsDrawable(true);
-    root->AddChild(parent_layer_);
-    layer_tree_host()->SetRootLayer(root);
-
-    wheel_handler_ = FakeContentLayer::Create(NULL);
-    wheel_handler_->SetBounds(gfx::Size(10, 10));
-    wheel_handler_->SetHaveWheelEventHandlers(true);
-    wheel_handler_->SetIsDrawable(true);
-    parent_layer_->AddChild(wheel_handler_);
-
-    sibling_ = FakeContentLayer::Create(NULL);
-    sibling_->SetBounds(gfx::Size(30, 30));
-    sibling_->SetPosition(gfx::Point(10, 0));
-    sibling_->SetIsDrawable(true);
-    parent_layer_->AddChild(sibling_);
-
-    LayerTreeHostTest::SetupTree();
-  }
-
-  virtual void BeginTest() OVERRIDE {
-    PostSetNeedsCommitToMainThread();
-  }
-
-  virtual void DrawLayersOnThread(LayerTreeHostImpl* impl) OVERRIDE {
-    LayerTreeHostTest::DrawLayersOnThread(impl);
-    FakeContentLayerImpl* parent =
-          static_cast<FakeContentLayerImpl*>(impl->RootLayer()->children()[0]);
-    EXPECT_TRUE(parent->DrawsContent());
-    EXPECT_FALSE(parent->opacity());
-    EXPECT_EQ(0u, parent->append_quads_count());
-    ASSERT_EQ(2u, parent->children().size());
-
-    FakeContentLayerImpl* child =
-        static_cast<FakeContentLayerImpl*>(parent->children()[0]);
-    EXPECT_TRUE(child->opacity());
-    EXPECT_EQ(0u, child->append_quads_count());
-
-    child = static_cast<FakeContentLayerImpl*>(parent->children()[1]);
-    EXPECT_TRUE(child->opacity());
-    EXPECT_EQ(0u, child->append_quads_count());
-  }
-
-  virtual void DidCommit() OVERRIDE {
-    // The layer is transparent, so it should not be updated.
-    EXPECT_EQ(0u, parent_layer_->update_count());
-    ASSERT_EQ(2u, parent_layer_->children().size());
-
-    EXPECT_EQ(0u, wheel_handler_->update_count());
-    EXPECT_EQ(0u, sibling_->update_count());
-
-    EndTest();
-  }
-  virtual void AfterTest() OVERRIDE {}
-
- private:
-  FakeContentLayerClient parent_client_;
-  scoped_refptr<FakeContentLayer> parent_layer_;
-  scoped_refptr<FakeContentLayer> wheel_handler_;
-  scoped_refptr<FakeContentLayer> sibling_;
-};
-
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestNoQuadsForZeroOpacityLayer);
 
 }  // namespace
 
