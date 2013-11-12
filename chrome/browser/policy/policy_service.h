@@ -10,13 +10,10 @@
 
 #include "base/basictypes.h"
 #include "base/callback.h"
-#include "base/memory/ref_counted.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "components/policy/core/common/policy_namespace.h"
 
 namespace policy {
-
-class PolicyDomainDescriptor;
 
 // The PolicyService merges policies from all available sources, taking into
 // account their priorities. Policy clients can retrieve policy for their domain
@@ -54,20 +51,7 @@ class PolicyService {
 
   virtual void RemoveObserver(PolicyDomain domain, Observer* observer) = 0;
 
-  // Registers the |descriptor| of a policy domain, indicated by
-  // |descriptor->domain()|. This overrides the descriptor previously set, if
-  // there was one.
-  // This registration signals that there is interest in receiving policy for
-  // the components listed in the descriptor. The policy providers will try to
-  // load policy for these components, and validate it against the descriptor.
-  // Cached data for components that aren't registered anymore may be dropped.
-  virtual void RegisterPolicyDomain(
-      scoped_refptr<const PolicyDomainDescriptor> descriptor) = 0;
-
   virtual const PolicyMap& GetPolicies(const PolicyNamespace& ns) const = 0;
-
-  virtual scoped_refptr<const PolicyDomainDescriptor> GetPolicyDomainDescriptor(
-      PolicyDomain domain) const = 0;
 
   // The PolicyService loads policy from several sources, and some require
   // asynchronous loads. IsInitializationComplete() returns true once all

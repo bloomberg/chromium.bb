@@ -20,6 +20,7 @@ namespace policy {
 
 class AsyncPolicyLoader;
 class PolicyBundle;
+class SchemaRegistry;
 
 // A policy provider that loads its policies asynchronously on a background
 // thread. Platform-specific providers are created by passing an implementation
@@ -27,15 +28,17 @@ class PolicyBundle;
 class AsyncPolicyProvider : public ConfigurationPolicyProvider,
                             public base::NonThreadSafe {
  public:
-  explicit AsyncPolicyProvider(scoped_ptr<AsyncPolicyLoader> loader);
+  // The AsyncPolicyProvider does a synchronous load in its constructor, and
+  // therefore it needs the |registry| at construction time. The same |registry|
+  // should be passed later to Init().
+  AsyncPolicyProvider(SchemaRegistry* registry,
+                      scoped_ptr<AsyncPolicyLoader> loader);
   virtual ~AsyncPolicyProvider();
 
   // ConfigurationPolicyProvider implementation.
-  virtual void Init() OVERRIDE;
+  virtual void Init(SchemaRegistry* registry) OVERRIDE;
   virtual void Shutdown() OVERRIDE;
   virtual void RefreshPolicies() OVERRIDE;
-  virtual void RegisterPolicyDomain(
-      scoped_refptr<const PolicyDomainDescriptor> descriptor) OVERRIDE;
 
  private:
   // Helper for RefreshPolicies().

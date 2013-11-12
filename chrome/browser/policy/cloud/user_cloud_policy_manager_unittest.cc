@@ -12,6 +12,7 @@
 #include "chrome/browser/policy/cloud/mock_user_cloud_policy_store.h"
 #include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
+#include "chrome/browser/policy/schema_registry.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -53,7 +54,7 @@ class UserCloudPolicyManagerTest : public testing::Test {
         scoped_ptr<UserCloudPolicyStore>(store_),
         scoped_ptr<CloudExternalDataManager>(),
         loop_.message_loop_proxy()));
-    manager_->Init();
+    manager_->Init(&schema_registry_);
     manager_->AddObserver(&observer_);
     Mock::VerifyAndClearExpectations(store_);
   }
@@ -66,6 +67,7 @@ class UserCloudPolicyManagerTest : public testing::Test {
   PolicyBundle expected_bundle_;
 
   // Policy infrastructure.
+  SchemaRegistry schema_registry_;
   MockConfigurationPolicyObserver observer_;
   MockUserCloudPolicyStore* store_;  // Not owned.
   scoped_ptr<UserCloudPolicyManager> manager_;

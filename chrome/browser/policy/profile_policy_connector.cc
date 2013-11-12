@@ -12,6 +12,8 @@
 #include "chrome/browser/policy/cloud/cloud_policy_manager.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_service.h"
+#include "chrome/browser/policy/schema_registry_service.h"
+#include "chrome/browser/policy/schema_registry_service_factory.h"
 
 #if defined(OS_CHROMEOS)
 #include "base/bind.h"
@@ -56,7 +58,8 @@ void ProfilePolicyConnector::Init(
     // This case occurs for the signin profile.
     special_user_policy_provider_.reset(
         new LoginProfilePolicyProvider(connector->GetPolicyService()));
-    special_user_policy_provider_->Init();
+    special_user_policy_provider_->Init(
+        SchemaRegistryServiceFactory::GetForContext(profile_));
   } else {
     // |user| should never be NULL except for the signin profile.
     is_primary_user_ = user == chromeos::UserManager::Get()->GetPrimaryUser();
@@ -122,7 +125,8 @@ void ProfilePolicyConnector::InitializeDeviceLocalAccountPolicyProvider(
     return;
   special_user_policy_provider_.reset(new DeviceLocalAccountPolicyProvider(
       username, device_local_account_policy_service));
-  special_user_policy_provider_->Init();
+  special_user_policy_provider_->Init(
+      SchemaRegistryServiceFactory::GetForContext(profile_));
 }
 #endif
 

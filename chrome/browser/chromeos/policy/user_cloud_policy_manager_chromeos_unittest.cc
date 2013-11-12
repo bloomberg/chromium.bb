@@ -25,6 +25,7 @@
 #include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
+#include "chrome/browser/policy/schema_registry.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable.h"
 #include "chrome/browser/signin/profile_oauth2_token_service.h"
@@ -159,7 +160,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
         scoped_ptr<ResourceCache>(),
         wait_for_fetch,
         base::TimeDelta::FromSeconds(fetch_timeout)));
-    manager_->Init();
+    manager_->Init(&schema_registry_);
     manager_->AddObserver(&observer_);
     manager_->Connect(&prefs_, &device_management_service_, NULL,
                       USER_AFFILIATION_NONE);
@@ -297,6 +298,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
   MockCloudPolicyStore* store_;  // Not owned.
   MockCloudExternalDataManager* external_data_manager_;  // Not owned.
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
+  SchemaRegistry schema_registry_;
   scoped_ptr<UserCloudPolicyManagerChromeOS> manager_;
   scoped_ptr<UserCloudPolicyTokenForwarder> token_forwarder_;
 

@@ -56,4 +56,9 @@ void ProxyPolicyProvider::OnUpdatePolicy(
   UpdatePolicy(bundle.Pass());
 }
 
+void ProxyPolicyProvider::OnSchemaRegistryUpdated(bool has_new_schemas) {
+  // Ignore, and don't call RefreshPolicies. Policies only have to be refreshed
+  // when the delegate's registry is updated.
+}
+
 }  // namespace policy

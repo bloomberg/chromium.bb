@@ -53,7 +53,6 @@
 #endif
 
 using testing::AllOf;
-using testing::AnyNumber;
 using testing::Mock;
 using testing::Property;
 using testing::Return;
@@ -191,8 +190,6 @@ void PreferencesBrowserTest::SetUpInProcessBrowserTestFixture() {
   // Sets up a mock policy provider for user and device policies.
   EXPECT_CALL(policy_provider_, IsInitializationComplete(_))
       .WillRepeatedly(Return(true));
-  EXPECT_CALL(policy_provider_, RegisterPolicyDomain(_))
-      .Times(AnyNumber());
   policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
       &policy_provider_);
 };

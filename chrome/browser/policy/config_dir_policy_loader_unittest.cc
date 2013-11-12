@@ -33,6 +33,7 @@ class TestHarness : public PolicyProviderTestHarness {
   virtual void SetUp() OVERRIDE;
 
   virtual ConfigurationPolicyProvider* CreateProvider(
+      SchemaRegistry* registry,
       scoped_refptr<base::SequencedTaskRunner> task_runner,
       const PolicyDefinitionList* policy_definition_list) OVERRIDE;
 
@@ -82,11 +83,12 @@ void TestHarness::SetUp() {
 }
 
 ConfigurationPolicyProvider* TestHarness::CreateProvider(
+    SchemaRegistry* registry,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     const PolicyDefinitionList* policy_definition_list) {
   scoped_ptr<AsyncPolicyLoader> loader(new ConfigDirPolicyLoader(
       task_runner, test_dir(), POLICY_SCOPE_MACHINE));
-  return new AsyncPolicyProvider(loader.Pass());
+  return new AsyncPolicyProvider(registry, loader.Pass());
 }
 
 void TestHarness::InstallEmptyPolicy() {

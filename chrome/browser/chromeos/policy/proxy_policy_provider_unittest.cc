@@ -7,6 +7,7 @@
 #include "chrome/browser/chromeos/policy/proxy_policy_provider.h"
 #include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
+#include "chrome/browser/policy/schema_registry.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -18,7 +19,7 @@ class ProxyPolicyProviderTest : public testing::Test {
  protected:
   ProxyPolicyProviderTest() {
     mock_provider_.Init();
-    proxy_provider_.Init();
+    proxy_provider_.Init(&schema_registry_);
     proxy_provider_.AddObserver(&observer_);
   }
 
@@ -28,6 +29,7 @@ class ProxyPolicyProviderTest : public testing::Test {
     mock_provider_.Shutdown();
   }
 
+  SchemaRegistry schema_registry_;
   MockConfigurationPolicyObserver observer_;
   MockConfigurationPolicyProvider mock_provider_;
   ProxyPolicyProvider proxy_provider_;

@@ -83,8 +83,7 @@ class UserCloudPolicyManagerChromeOS
   // ConfigurationPolicyProvider:
   virtual void Shutdown() OVERRIDE;
   virtual bool IsInitializationComplete(PolicyDomain domain) const OVERRIDE;
-  virtual void RegisterPolicyDomain(
-      scoped_refptr<const PolicyDomainDescriptor> descriptor) OVERRIDE;
+  virtual void OnSchemaRegistryUpdated(bool has_new_schemas) OVERRIDE;
 
   // CloudPolicyManager:
   virtual scoped_ptr<PolicyBundle> CreatePolicyBundle() OVERRIDE;

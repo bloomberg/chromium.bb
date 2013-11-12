@@ -12,7 +12,6 @@
 #include "base/values.h"
 #include "chrome/browser/policy/cloud/cloud_policy_constants.h"
 #include "chrome/browser/policy/cloud/cloud_policy_validator.h"
-#include "chrome/browser/policy/cloud/resource_cache.h"
 #include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/proto/cloud/chrome_extension_policy.pb.h"
@@ -188,22 +187,23 @@ void ComponentCloudPolicyStore::Delete(const PolicyNamespace& ns) {
   }
 }
 
-void ComponentCloudPolicyStore::Purge(PolicyDomain domain,
-                                      const std::set<std::string>& keep) {
+void ComponentCloudPolicyStore::Purge(
+    PolicyDomain domain,
+    const ResourceCache::SubkeyFilter& filter) {
   DCHECK(CalledOnValidThread());
   const DomainConstants* constants = GetDomainConstants(domain);
   if (!constants)
     return;
 
-  cache_->PurgeOtherSubkeys(constants->proto_cache_key, keep);
-  cache_->PurgeOtherSubkeys(constants->data_cache_key, keep);
+  cache_->FilterSubkeys(constants->proto_cache_key, filter);
+  cache_->FilterSubkeys(constants->data_cache_key, filter);
 
   // Stop serving policies for purged namespaces.
   bool purged_current_policies = false;
   for (PolicyBundle::const_iterator it = policy_bundle_.begin();
        it != policy_bundle_.end(); ++it) {
     if (it->first.domain == domain &&
-        keep.find(it->first.component_id) == keep.end() &&
+        filter.Run(it->first.component_id) &&
         !policy_bundle_.Get(it->first).empty()) {
       policy_bundle_.Get(it->first).Clear();
       purged_current_policies = true;
@@ -214,8 +214,7 @@ void ComponentCloudPolicyStore::Purge(PolicyDomain domain,
   // policy state changes.
   std::map<PolicyNamespace, std::string>::iterator it = cached_hashes_.begin();
   while (it != cached_hashes_.end()) {
-    if (it->first.domain == domain &&
-        keep.find(it->first.component_id) == keep.end()) {
+    if (it->first.domain == domain && filter.Run(it->first.component_id)) {
       std::map<PolicyNamespace, std::string>::iterator prev = it;
       ++it;
       cached_hashes_.erase(prev);

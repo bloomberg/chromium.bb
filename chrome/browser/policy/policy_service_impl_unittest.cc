@@ -7,15 +7,12 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "chrome/browser/policy/mock_policy_service.h"
-#include "chrome/browser/policy/policy_domain_descriptor.h"
-#include "components/policy/core/common/schema.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -603,64 +600,6 @@ TEST_F(PolicyServiceTest, IsInitializationComplete) {
   // Cleanup.
   policy_service_->RemoveObserver(POLICY_DOMAIN_CHROME, &observer);
   policy_service_->RemoveObserver(POLICY_DOMAIN_EXTENSIONS, &observer);
-}
-
-TEST_F(PolicyServiceTest, RegisterPolicyDomain) {
-  EXPECT_FALSE(policy_service_->GetPolicyDomainDescriptor(POLICY_DOMAIN_CHROME)
-                   .get());
-  EXPECT_FALSE(policy_service_->GetPolicyDomainDescriptor(
-      POLICY_DOMAIN_EXTENSIONS).get());
-
-  EXPECT_CALL(provider1_, RegisterPolicyDomain(_)).Times(AnyNumber());
-  EXPECT_CALL(provider2_, RegisterPolicyDomain(_)).Times(AnyNumber());
-
-  scoped_refptr<const PolicyDomainDescriptor> chrome_descriptor =
-      new PolicyDomainDescriptor(POLICY_DOMAIN_CHROME);
-  EXPECT_CALL(provider0_, RegisterPolicyDomain(chrome_descriptor));
-  policy_service_->RegisterPolicyDomain(chrome_descriptor);
-  Mock::VerifyAndClearExpectations(&provider0_);
-
-  EXPECT_TRUE(policy_service_->GetPolicyDomainDescriptor(POLICY_DOMAIN_CHROME)
-                  .get());
-  EXPECT_FALSE(policy_service_->GetPolicyDomainDescriptor(
-      POLICY_DOMAIN_EXTENSIONS).get());
-
-  // Register another namespace.
-  std::string error;
-  Schema schema = Schema::Parse(
-      "{"
-      "  \"type\":\"object\","
-      "  \"properties\": {"
-      "    \"Boolean\": { \"type\": \"boolean\" },"
-      "    \"Integer\": { \"type\": \"integer\" },"
-      "    \"Null\": { \"type\": \"null\" },"
-      "    \"Number\": { \"type\": \"number\" },"
-      "    \"Object\": { \"type\": \"object\" },"
-      "    \"String\": { \"type\": \"string\" }"
-      "  }"
-      "}", &error);
-  ASSERT_TRUE(schema.valid()) << error;
-  scoped_refptr<PolicyDomainDescriptor> extensions_descriptor =
-      new PolicyDomainDescriptor(POLICY_DOMAIN_EXTENSIONS);
-  extensions_descriptor->RegisterComponent(kExtension, schema);
-  EXPECT_CALL(provider0_, RegisterPolicyDomain(
-      scoped_refptr<const PolicyDomainDescriptor>(extensions_descriptor)));
-  policy_service_->RegisterPolicyDomain(extensions_descriptor);
-  Mock::VerifyAndClearExpectations(&provider0_);
-
-  EXPECT_TRUE(policy_service_->GetPolicyDomainDescriptor(POLICY_DOMAIN_CHROME)
-                  .get());
-  EXPECT_TRUE(policy_service_->GetPolicyDomainDescriptor(
-      POLICY_DOMAIN_EXTENSIONS).get());
-
-  // Remove those components.
-  scoped_refptr<PolicyDomainDescriptor> empty_extensions_descriptor =
-      new PolicyDomainDescriptor(POLICY_DOMAIN_EXTENSIONS);
-  EXPECT_CALL(provider0_, RegisterPolicyDomain(
-      scoped_refptr<const PolicyDomainDescriptor>(
-          empty_extensions_descriptor)));
-  policy_service_->RegisterPolicyDomain(empty_extensions_descriptor);
-  Mock::VerifyAndClearExpectations(&provider0_);
 }
 
 }  // namespace policy

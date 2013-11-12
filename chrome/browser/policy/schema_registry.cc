@@ -53,9 +53,8 @@ void SchemaRegistry::RemoveObserver(Observer* observer) {
 }
 
 void SchemaRegistry::Notify(bool has_new_schemas) {
-  FOR_EACH_OBSERVER(Observer,
-                    observers_,
-                    OnSchemaRegistryUpdated(schema_map_, has_new_schemas));
+  FOR_EACH_OBSERVER(
+      Observer, observers_, OnSchemaRegistryUpdated(has_new_schemas));
 }
 
 bool SchemaRegistry::HasObservers() const {
@@ -108,9 +107,7 @@ void CombinedSchemaRegistry::UnregisterComponent(const PolicyNamespace& ns) {
   }
 }
 
-void CombinedSchemaRegistry::OnSchemaRegistryUpdated(
-    const scoped_refptr<SchemaMap>& current_map,
-    bool has_new_schemas) {
+void CombinedSchemaRegistry::OnSchemaRegistryUpdated(bool has_new_schemas) {
   Combine(has_new_schemas);
 }
 

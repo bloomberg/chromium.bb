@@ -5,7 +5,6 @@
 #include "chrome/browser/policy/policy_service_stub.h"
 
 #include "base/message_loop/message_loop.h"
-#include "chrome/browser/policy/policy_domain_descriptor.h"
 
 namespace policy {
 
@@ -19,18 +18,10 @@ void PolicyServiceStub::AddObserver(PolicyDomain domain,
 void PolicyServiceStub::RemoveObserver(PolicyDomain domain,
                                        Observer* observer) {}
 
-void PolicyServiceStub::RegisterPolicyDomain(
-    scoped_refptr<const PolicyDomainDescriptor> descriptor) {}
-
 const PolicyMap& PolicyServiceStub::GetPolicies(
     const PolicyNamespace& ns) const {
   return kEmpty_;
 };
-
-scoped_refptr<const PolicyDomainDescriptor>
-PolicyServiceStub::GetPolicyDomainDescriptor(PolicyDomain domain) const {
-  return NULL;
-}
 
 bool PolicyServiceStub::IsInitializationComplete(PolicyDomain domain) const {
   return true;

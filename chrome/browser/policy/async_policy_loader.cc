@@ -8,7 +8,6 @@
 #include "base/location.h"
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/policy/policy_bundle.h"
-#include "chrome/browser/policy/policy_domain_descriptor.h"
 
 using base::Time;
 using base::TimeDelta;
@@ -35,8 +34,8 @@ AsyncPolicyLoader::AsyncPolicyLoader(
 
 AsyncPolicyLoader::~AsyncPolicyLoader() {}
 
-base::Time AsyncPolicyLoader::LastModificationTime() {
-  return base::Time();
+Time AsyncPolicyLoader::LastModificationTime() {
+  return Time();
 }
 
 void AsyncPolicyLoader::Reload(bool force) {
@@ -59,29 +58,23 @@ void AsyncPolicyLoader::Reload(bool force) {
   }
 
   // Filter out mismatching policies.
-  for (DescriptorMap::iterator it = descriptor_map_.begin();
-       it != descriptor_map_.end(); ++it) {
-    it->second->FilterBundle(bundle.get());
-  }
+  schema_map_->FilterBundle(bundle.get());
 
   update_callback_.Run(bundle.Pass());
   ScheduleNextReload(TimeDelta::FromSeconds(kReloadIntervalSeconds));
 }
 
-void AsyncPolicyLoader::RegisterPolicyDomain(
-    scoped_refptr<const PolicyDomainDescriptor> descriptor) {
-  if (descriptor->domain() != POLICY_DOMAIN_CHROME) {
-    descriptor_map_[descriptor->domain()] = descriptor;
-    Reload(true);
-  }
-}
-
-scoped_ptr<PolicyBundle> AsyncPolicyLoader::InitialLoad() {
+scoped_ptr<PolicyBundle> AsyncPolicyLoader::InitialLoad(
+    const scoped_refptr<SchemaMap>& schema_map) {
   // This is the first load, early during startup. Use this to record the
   // initial |last_modification_time_|, so that potential changes made before
   // installing the watches can be detected.
   last_modification_time_ = LastModificationTime();
-  return Load();
+  schema_map_ = schema_map;
+  scoped_ptr<PolicyBundle> bundle(Load());
+  // Filter out mismatching policies.
+  schema_map_->FilterBundle(bundle.get());
+  return bundle.Pass();
 }
 
 void AsyncPolicyLoader::Init(const UpdateCallback& update_callback) {
@@ -99,6 +92,12 @@ void AsyncPolicyLoader::Init(const UpdateCallback& update_callback) {
 
   // Start periodic refreshes.
   ScheduleNextReload(TimeDelta::FromSeconds(kReloadIntervalSeconds));
+}
+
+void AsyncPolicyLoader::RefreshPolicies(scoped_refptr<SchemaMap> schema_map) {
+  DCHECK(task_runner_->RunsTasksOnCurrentThread());
+  schema_map_ = schema_map;
+  Reload(true);
 }
 
 void AsyncPolicyLoader::ScheduleNextReload(TimeDelta delay) {
@@ -127,7 +126,7 @@ bool AsyncPolicyLoader::IsSafeToReload(const Time& now, TimeDelta* delay) {
   }
 
   // Check whether the settle interval has elapsed.
-  const base::TimeDelta age = now - last_modification_clock_;
+  const TimeDelta age = now - last_modification_clock_;
   if (age < kSettleInterval) {
     *delay = kSettleInterval - age;
     return false;

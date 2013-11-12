@@ -29,15 +29,11 @@ class SchemaRegistry : public base::NonThreadSafe {
   class Observer {
    public:
     // Invoked whenever schemas are registered or unregistered.
-    // |current_map| is a reference to the current map, also returned by
-    // schema_map();
     // |has_new_schemas| is true if a new component has been registered since
     // the last update; this allows observers to ignore updates when
     // components are unregistered but still get a handle to the current map
     // (e.g. for periodic reloads).
-    virtual void OnSchemaRegistryUpdated(
-        const scoped_refptr<SchemaMap>& current_map,
-        bool has_new_schemas) = 0;
+    virtual void OnSchemaRegistryUpdated(bool has_new_schemas) = 0;
 
    protected:
     virtual ~Observer();
@@ -89,9 +85,7 @@ class CombinedSchemaRegistry : public SchemaRegistry,
 
   virtual void UnregisterComponent(const PolicyNamespace& ns) OVERRIDE;
 
-  virtual void OnSchemaRegistryUpdated(
-      const scoped_refptr<SchemaMap>& current_map,
-      bool has_new_schemas) OVERRIDE;
+  virtual void OnSchemaRegistryUpdated(bool has_new_schemas) OVERRIDE;
 
  private:
   void Combine(bool has_new_schemas);

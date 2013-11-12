@@ -26,7 +26,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
-using testing::AnyNumber;
 using testing::Return;
 using testing::_;
 
@@ -107,7 +106,6 @@ PolicyUITest::~PolicyUITest() {
 void PolicyUITest::SetUpInProcessBrowserTestFixture() {
   EXPECT_CALL(provider_, IsInitializationComplete(_))
       .WillRepeatedly(Return(true));
-  EXPECT_CALL(provider_, RegisterPolicyDomain(_)).Times(AnyNumber());
   policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
 }
 

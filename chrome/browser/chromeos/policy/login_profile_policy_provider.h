@@ -24,7 +24,7 @@ class LoginProfilePolicyProvider : public ConfigurationPolicyProvider,
   virtual ~LoginProfilePolicyProvider();
 
   // ConfigurationPolicyProvider:
-  virtual void Init() OVERRIDE;
+  virtual void Init(SchemaRegistry* registry) OVERRIDE;
   virtual void Shutdown() OVERRIDE;
   virtual void RefreshPolicies() OVERRIDE;
 

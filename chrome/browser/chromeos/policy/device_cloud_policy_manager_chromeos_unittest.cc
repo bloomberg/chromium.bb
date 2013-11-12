@@ -23,6 +23,7 @@
 #include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/proto/chromeos/chrome_device_policy.pb.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
+#include "chrome/browser/policy/schema_registry.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
@@ -98,7 +99,7 @@ class DeviceCloudPolicyManagerChromeOSTest
         install_attributes_.get()));
 
     chrome::RegisterLocalState(local_state_.registry());
-    manager_->Init();
+    manager_->Init(&schema_registry_);
 
     // DeviceOAuth2TokenService uses the system request context to fetch
     // OAuth tokens, then writes the token to local state, encrypting it
@@ -139,6 +140,7 @@ class DeviceCloudPolicyManagerChromeOSTest
   chromeos::system::MockStatisticsProvider mock_statistics_provider_;
 
   DeviceCloudPolicyStoreChromeOS* store_;
+  SchemaRegistry schema_registry_;
   scoped_ptr<DeviceCloudPolicyManagerChromeOS> manager_;
 
  private:

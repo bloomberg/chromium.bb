@@ -10,6 +10,8 @@
 #include "chrome/browser/policy/cloud/cloud_external_data_manager.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_store.h"
+#include "chrome/browser/policy/schema_registry_service.h"
+#include "chrome/browser/policy/schema_registry_service_factory.h"
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
 
@@ -49,7 +51,9 @@ UserCloudPolicyManagerFactory::RegisterForOffTheRecordBrowserContext(
 UserCloudPolicyManagerFactory::UserCloudPolicyManagerFactory()
     : BrowserContextKeyedBaseFactory(
         "UserCloudPolicyManager",
-        BrowserContextDependencyManager::GetInstance()) {}
+        BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(SchemaRegistryServiceFactory::GetInstance());
+}
 
 UserCloudPolicyManagerFactory::~UserCloudPolicyManagerFactory() {}
 
@@ -77,7 +81,7 @@ UserCloudPolicyManagerFactory::CreateManagerForOriginalBrowserContext(
                                  store.Pass(),
                                  scoped_ptr<CloudExternalDataManager>(),
                                  base::MessageLoopProxy::current()));
-  manager->Init();
+  manager->Init(SchemaRegistryServiceFactory::GetForContext(context));
   return manager.Pass();
 }
 

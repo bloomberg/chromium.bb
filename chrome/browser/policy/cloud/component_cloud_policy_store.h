@@ -6,12 +6,12 @@
 #define CHROME_BROWSER_POLICY_CLOUD_COMPONENT_CLOUD_POLICY_STORE_H_
 
 #include <map>
-#include <set>
 #include <string>
 
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/non_thread_safe.h"
+#include "chrome/browser/policy/cloud/resource_cache.h"
 #include "chrome/browser/policy/policy_bundle.h"
 #include "components/policy/core/common/policy_namespace.h"
 
@@ -22,8 +22,6 @@ class PolicyFetchResponse;
 }
 
 namespace policy {
-
-class ResourceCache;
 
 // Validates protobufs for external policy data, validates the data itself, and
 // caches both locally.
@@ -91,10 +89,10 @@ class ComponentCloudPolicyStore : public base::NonThreadSafe {
   // Deletes the storage of namespace |ns| and stops serving its policies.
   void Delete(const PolicyNamespace& ns);
 
-  // Deletes the storage of all components of |domain| that are not in
-  // |components_to_keep|, and stops serving their policies.
+  // Deletes the storage of all components of |domain| that pass then given
+  // |filter|, and stops serving their policies.
   void Purge(PolicyDomain domain,
-             const std::set<std::string>& components_to_keep);
+             const ResourceCache::SubkeyFilter& filter);
 
   // Validates |proto| and returns the corresponding policy namespace in |ns|,
   // and the parsed ExternalPolicyData in |payload|.

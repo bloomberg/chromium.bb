@@ -13,6 +13,7 @@
 #include "base/files/file_path_watcher.h"
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/policy/async_policy_loader.h"
+#include "components/policy/core/common/policy_namespace.h"
 
 class MacPreferences;
 
@@ -23,7 +24,7 @@ class Value;
 
 namespace policy {
 
-class PolicyDomainDescriptor;
+class PolicyBundle;
 class PolicyMap;
 class Schema;
 struct PolicyDefinitionList;
@@ -53,17 +54,17 @@ class PolicyLoaderMac : public AsyncPolicyLoader {
   // Callback for the FilePathWatcher.
   void OnFileUpdated(const base::FilePath& path, bool error);
 
-  // Loads policies for the components described in |descriptor|, which belong
-  // to the domain |domain_name|, and stores them in the |bundle|.
+  // Loads policies for the components described in the current schema_map()
+  // which belong to the domain |domain_name|, and stores them in the |bundle|.
   void LoadPolicyForDomain(
-      scoped_refptr<const PolicyDomainDescriptor> descriptor,
+      PolicyDomain domain,
       const std::string& domain_name,
       PolicyBundle* bundle);
 
   // Loads the policies described in |schema| from the bundle identified by
   // |bundle_id_string|, and stores them in |policy|.
   void LoadPolicyForComponent(const std::string& bundle_id_string,
-                              Schema schema,
+                              const Schema& schema,
                               PolicyMap* policy);
 
   // List of recognized policies.

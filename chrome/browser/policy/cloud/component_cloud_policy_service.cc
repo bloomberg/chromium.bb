@@ -4,6 +4,10 @@
 
 #include "chrome/browser/policy/cloud/component_cloud_policy_service.h"
 
+#include <map>
+#include <string>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/location.h"
@@ -16,29 +20,27 @@
 #include "chrome/browser/policy/cloud/component_cloud_policy_updater.h"
 #include "chrome/browser/policy/cloud/external_policy_data_fetcher.h"
 #include "chrome/browser/policy/cloud/resource_cache.h"
-#include "chrome/browser/policy/policy_domain_descriptor.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
+#include "chrome/browser/policy/schema_map.h"
+#include "components/policy/core/common/schema.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace em = enterprise_management;
 
 namespace policy {
 
+const char ComponentCloudPolicyService::kComponentNamespaceCache[] =
+    "component-namespace-cache";
+
 namespace {
 
-void GetComponentIds(scoped_refptr<const PolicyDomainDescriptor>& descriptor,
-                     std::set<std::string>* set) {
-  const PolicyDomainDescriptor::SchemaMap& map = descriptor->components();
-  for (PolicyDomainDescriptor::SchemaMap::const_iterator it = map.begin();
-       it != map.end(); ++it) {
-    set->insert(it->first);
-  }
+bool NotInSchemaMap(const scoped_refptr<SchemaMap> schema_map,
+                    PolicyDomain domain,
+                    const std::string& component_id) {
+  return schema_map->GetSchema(PolicyNamespace(domain, component_id)) == NULL;
 }
 
 }  // namespace
-
-const char ComponentCloudPolicyService::kComponentNamespaceCache[] =
-    "component-namespace-cache";
 
 ComponentCloudPolicyService::Delegate::~Delegate() {}
 
@@ -84,16 +86,12 @@ class ComponentCloudPolicyService::Backend
   // ComponentCloudPolicyStore::Delegate implementation:
   virtual void OnComponentCloudPolicyStoreUpdated() OVERRIDE;
 
-  // Passes the current descriptor of a domain, so that the disk cache
-  // can purge components that aren't being tracked anymore.
-  void RegisterPolicyDomain(
-      scoped_refptr<const PolicyDomainDescriptor> descriptor);
+  // Passes the current SchemaMap so that the disk cache can purge components
+  // that aren't being tracked anymore.
+  void OnSchemasUpdated(scoped_refptr<SchemaMap> schema_map);
 
  private:
-  typedef std::map<PolicyDomain, scoped_refptr<const PolicyDomainDescriptor> >
-      DomainMap;
-
-  scoped_ptr<ComponentMap> ReadCachedComponents();
+  scoped_ptr<PolicyNamespaceKeys> ReadCachedComponents();
 
   // The ComponentCloudPolicyService that owns |this|. Used to inform the
   // |service_| when policy changes.
@@ -109,7 +107,7 @@ class ComponentCloudPolicyService::Backend
   scoped_ptr<ResourceCache> cache_;
   scoped_ptr<ComponentCloudPolicyStore> store_;
   scoped_ptr<ComponentCloudPolicyUpdater> updater_;
-  DomainMap domain_map_;
+  scoped_refptr<SchemaMap> schema_map_;
 
   DISALLOW_COPY_AND_ASSIGN(Backend);
 };
@@ -132,9 +130,8 @@ void ComponentCloudPolicyService::Backend::Init() {
 }
 
 void ComponentCloudPolicyService::Backend::FinalizeInit() {
-  // Read the components that were cached in the last RegisterPolicyDomain()
-  // calls for each domain.
-  scoped_ptr<ComponentMap> components = ReadCachedComponents();
+  // Read the components that were cached in the last OnSchemasUpdated() call.
+  scoped_ptr<PolicyNamespaceKeys> components = ReadCachedComponents();
 
   // Read the initial policy.
   store_->Load();
@@ -175,13 +172,15 @@ void ComponentCloudPolicyService::Backend::UpdateExternalPolicy(
 
 void ComponentCloudPolicyService::Backend::
     OnComponentCloudPolicyStoreUpdated() {
-  scoped_ptr<PolicyBundle> bundle(new PolicyBundle);
-  bundle->CopyFrom(store_->policy());
-  for (DomainMap::iterator it = domain_map_.begin();
-       it != domain_map_.end(); ++it) {
-    it->second->FilterBundle(bundle.get());
+  if (!schema_map_) {
+    // No schemas have been registered yet, so keep serving the initial policy
+    // obtained from FinalizeInit().
+    return;
   }
 
+  scoped_ptr<PolicyBundle> bundle(new PolicyBundle);
+  bundle->CopyFrom(store_->policy());
+  schema_map_->FilterBundle(bundle.get());
   service_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&ComponentCloudPolicyService::OnPolicyUpdated,
@@ -189,49 +188,61 @@ void ComponentCloudPolicyService::Backend::
                  base::Passed(&bundle)));
 }
 
-void ComponentCloudPolicyService::Backend::RegisterPolicyDomain(
-    scoped_refptr<const PolicyDomainDescriptor> descriptor) {
+void ComponentCloudPolicyService::Backend::OnSchemasUpdated(
+    scoped_refptr<SchemaMap> schema_map) {
   // Store the current list of components in the cache.
-  StringSet ids;
-  std::string policy_type;
-  if (ComponentCloudPolicyStore::GetPolicyType(descriptor->domain(),
-                                               &policy_type)) {
-    GetComponentIds(descriptor, &ids);
+  const DomainMap& domains = schema_map->GetDomains();
+  for (DomainMap::const_iterator domain = domains.begin();
+       domain != domains.end(); ++domain) {
+    std::string domain_policy_type;
+    if (!ComponentCloudPolicyStore::GetPolicyType(domain->first,
+                                                  &domain_policy_type)) {
+      continue;
+    }
     Pickle pickle;
-    for (StringSet::const_iterator it = ids.begin(); it != ids.end(); ++it)
-      pickle.WriteString(*it);
+    const ComponentMap& components = domain->second;
+    for (ComponentMap::const_iterator comp = components.begin();
+         comp != components.end(); ++comp) {
+      pickle.WriteString(comp->first);
+    }
     std::string data(reinterpret_cast<const char*>(pickle.data()),
                      pickle.size());
-    cache_->Store(kComponentNamespaceCache, policy_type, data);
+    cache_->Store(kComponentNamespaceCache, domain_policy_type, data);
+
+    // Purge any components that have been removed.
+    if (store_) {
+      store_->Purge(domain->first,
+                    base::Bind(&NotInSchemaMap, schema_map, domain->first));
+    }
   }
 
-  domain_map_[descriptor->domain()] = descriptor;
-
-  // Purge any components that have been removed.
-  if (store_)
-    store_->Purge(descriptor->domain(), ids);
+  // Serve policies that may have updated while the backend was waiting for
+  // the schema_map.
+  const bool trigger_update = !schema_map_;
+  schema_map_ = schema_map;
+  if (trigger_update)
+    OnComponentCloudPolicyStoreUpdated();
 }
 
-scoped_ptr<ComponentCloudPolicyService::ComponentMap>
+scoped_ptr<ComponentCloudPolicyService::PolicyNamespaceKeys>
     ComponentCloudPolicyService::Backend::ReadCachedComponents() {
-  scoped_ptr<ComponentMap> components(new ComponentMap);
+  scoped_ptr<PolicyNamespaceKeys> keys(new PolicyNamespaceKeys);
   std::map<std::string, std::string> contents;
   cache_->LoadAllSubkeys(kComponentNamespaceCache, &contents);
   for (std::map<std::string, std::string>::iterator it = contents.begin();
        it != contents.end(); ++it) {
     PolicyDomain domain;
     if (ComponentCloudPolicyStore::GetPolicyDomain(it->first, &domain)) {
-      StringSet& set = (*components)[domain];
       const Pickle pickle(it->second.data(), it->second.size());
       PickleIterator pickit(pickle);
       std::string id;
       while (pickit.ReadString(&id))
-        set.insert(id);
+        keys->insert(std::make_pair(it->first, id));
     } else {
       cache_->Delete(kComponentNamespaceCache, it->first);
     }
   }
-  return components.Pass();
+  return keys.Pass();
 }
 
 ComponentCloudPolicyService::ComponentCloudPolicyService(
@@ -246,6 +257,7 @@ ComponentCloudPolicyService::ComponentCloudPolicyService(
       client_(NULL),
       store_(store),
       is_initialized_(false),
+      has_initial_keys_(false),
       weak_ptr_factory_(this) {
   store_->AddObserver(this);
 
@@ -300,10 +312,7 @@ void ComponentCloudPolicyService::Disconnect() {
   DCHECK(CalledOnValidThread());
   if (client_) {
     // Unregister all the current components.
-    for (ComponentMap::iterator it = registered_components_.begin();
-         it != registered_components_.end(); ++it) {
-      RemoveNamespacesToFetch(it->first, it->second);
-    }
+    RemoveNamespacesToFetch(keys_);
 
     client_->RemoveObserver(this);
     client_ = NULL;
@@ -316,29 +325,39 @@ void ComponentCloudPolicyService::Disconnect() {
   }
 }
 
-void ComponentCloudPolicyService::RegisterPolicyDomain(
-    scoped_refptr<const PolicyDomainDescriptor> descriptor) {
+void ComponentCloudPolicyService::OnSchemasUpdated(
+    const scoped_refptr<SchemaMap>& schema_map) {
   DCHECK(CalledOnValidThread());
-  DCHECK(SupportsDomain(descriptor->domain()));
 
-  // Send the new descriptor to the backend, to purge the cache.
+  // Send the new schemas to the backend, to purge the cache.
   backend_task_runner_->PostTask(FROM_HERE,
-                                 base::Bind(&Backend::RegisterPolicyDomain,
+                                 base::Bind(&Backend::OnSchemasUpdated,
                                             base::Unretained(backend_.get()),
-                                            descriptor));
+                                            schema_map));
 
-  // Register the current list of components for |domain| at the |client_|.
-  StringSet current_ids;
-  GetComponentIds(descriptor, &current_ids);
-  StringSet& registered_ids = registered_components_[descriptor->domain()];
-  if (client_ && is_initialized()) {
-    if (UpdateClientNamespaces(
-            descriptor->domain(), registered_ids, current_ids)) {
-      delegate_->OnComponentCloudPolicyRefreshNeeded();
+  // Register the current list of components for supported domains at the
+  // |client_|.
+  PolicyNamespaceKeys new_keys;
+  const DomainMap& domains = schema_map->GetDomains();
+  for (DomainMap::const_iterator domain = domains.begin();
+       domain != domains.end(); ++domain) {
+    std::string domain_policy_type;
+    if (!ComponentCloudPolicyStore::GetPolicyType(domain->first,
+                                                  &domain_policy_type)) {
+      continue;
+    }
+    const ComponentMap& components = domain->second;
+    for (ComponentMap::const_iterator comp = components.begin();
+         comp != components.end(); ++comp) {
+      new_keys.insert(std::make_pair(domain_policy_type, comp->first));
     }
   }
 
-  registered_ids = current_ids;
+  if (client_ && is_initialized() && UpdateClientNamespaces(keys_, new_keys))
+      delegate_->OnComponentCloudPolicyRefreshNeeded();
+
+  keys_.swap(new_keys);
+  has_initial_keys_ = true;
 }
 
 void ComponentCloudPolicyService::OnPolicyFetched(CloudPolicyClient* client) {
@@ -350,9 +369,7 @@ void ComponentCloudPolicyService::OnPolicyFetched(CloudPolicyClient* client) {
   for (CloudPolicyClient::ResponseMap::const_iterator it = responses.begin();
        it != responses.end(); ++it) {
     const PolicyNamespaceKey& key(it->first);
-    PolicyDomain domain;
-    if (ComponentCloudPolicyStore::GetPolicyDomain(key.first, &domain) &&
-        ContainsKey(registered_components_[domain], key.second)) {
+    if (ContainsKey(keys_, key)) {
       scoped_ptr<em::PolicyFetchResponse> response(
           new em::PolicyFetchResponse(*it->second));
       backend_task_runner_->PostTask(
@@ -409,7 +426,7 @@ void ComponentCloudPolicyService::InitializeBackend() {
 }
 
 void ComponentCloudPolicyService::OnBackendInitialized(
-    scoped_ptr<ComponentMap> cached_components,
+    scoped_ptr<PolicyNamespaceKeys> initial_keys,
     scoped_ptr<PolicyBundle> initial_policy) {
   DCHECK(CalledOnValidThread());
   // InitializeBackend() may be called multiple times if the |store_| fires
@@ -417,16 +434,10 @@ void ComponentCloudPolicyService::OnBackendInitialized(
   if (is_initialized())
     return;
 
-  // RegisterPolicyDomain() may have been called while the backend was
-  // initializing; only update |registered_components_| from |cached_components|
-  // for domains that haven't registered yet.
-  for (ComponentMap::iterator it = cached_components->begin();
-       it != cached_components->end(); ++it) {
-    // Lookup without inserting an empty set.
-    if (registered_components_.find(it->first) != registered_components_.end())
-      continue;  // Ignore the cached list if a more recent one was registered.
-    registered_components_[it->first].swap(it->second);
-  }
+  // OnSchemasUpdated() may have been called while the backend was initializing;
+  // in that case ignore the cached keys.
+  if (!has_initial_keys_)
+    keys_.swap(*initial_keys);
 
   // A client may have already connected while the backend was initializing.
   if (client_)
@@ -440,16 +451,11 @@ void ComponentCloudPolicyService::OnBackendInitialized(
 void ComponentCloudPolicyService::InitializeClient() {
   DCHECK(CalledOnValidThread());
   // Register all the current components.
-  bool added = false;
-  for (ComponentMap::iterator it = registered_components_.begin();
-       it != registered_components_.end(); ++it) {
-    added |= !it->second.empty();
-    AddNamespacesToFetch(it->first, it->second);
-  }
+  AddNamespacesToFetch(keys_);
   // The client may already have PolicyFetchResponses for registered components;
   // load them now.
   OnPolicyFetched(client_);
-  if (added && is_initialized())
+  if (!keys_.empty() && is_initialized())
     delegate_->OnComponentCloudPolicyRefreshNeeded();
 }
 
@@ -482,35 +488,33 @@ void ComponentCloudPolicyService::SetCredentialsAndReloadClient() {
 }
 
 bool ComponentCloudPolicyService::UpdateClientNamespaces(
-    PolicyDomain domain,
-    const StringSet& old_set,
-    const StringSet& new_set) {
+    const PolicyNamespaceKeys& old_keys,
+    const PolicyNamespaceKeys& new_keys) {
   DCHECK(CalledOnValidThread());
-  StringSet added = base::STLSetDifference<StringSet>(new_set, old_set);
-  StringSet removed = base::STLSetDifference<StringSet>(old_set, new_set);
-  AddNamespacesToFetch(domain, added);
-  RemoveNamespacesToFetch(domain, removed);
+  PolicyNamespaceKeys added =
+      base::STLSetDifference<PolicyNamespaceKeys>(new_keys, old_keys);
+  PolicyNamespaceKeys removed =
+      base::STLSetDifference<PolicyNamespaceKeys>(old_keys, new_keys);
+  AddNamespacesToFetch(added);
+  RemoveNamespacesToFetch(removed);
   return !added.empty();
 }
 
-void ComponentCloudPolicyService::AddNamespacesToFetch(PolicyDomain domain,
-                                                       const StringSet& set) {
+void ComponentCloudPolicyService::AddNamespacesToFetch(
+    const PolicyNamespaceKeys& keys) {
   DCHECK(CalledOnValidThread());
-  std::string policy_type;
-  if (ComponentCloudPolicyStore::GetPolicyType(domain, &policy_type)) {
-    for (StringSet::const_iterator it = set.begin(); it != set.end(); ++it)
-      client_->AddNamespaceToFetch(PolicyNamespaceKey(policy_type, *it));
+  for (PolicyNamespaceKeys::const_iterator it = keys.begin();
+       it != keys.end(); ++it) {
+    client_->AddNamespaceToFetch(*it);
   }
 }
 
 void ComponentCloudPolicyService::RemoveNamespacesToFetch(
-    PolicyDomain domain,
-    const StringSet& set) {
+    const PolicyNamespaceKeys& keys) {
   DCHECK(CalledOnValidThread());
-  std::string policy_type;
-  if (ComponentCloudPolicyStore::GetPolicyType(domain, &policy_type)) {
-    for (StringSet::const_iterator it = set.begin(); it != set.end(); ++it)
-      client_->RemoveNamespaceToFetch(PolicyNamespaceKey(policy_type, *it));
+  for (PolicyNamespaceKeys::const_iterator it = keys.begin();
+       it != keys.end(); ++it) {
+    client_->RemoveNamespaceToFetch(*it);
   }
 }
 

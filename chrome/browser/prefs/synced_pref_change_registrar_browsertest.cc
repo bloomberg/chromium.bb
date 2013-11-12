@@ -30,7 +30,6 @@
 
 namespace {
 
-using testing::AnyNumber;
 using testing::Return;
 using testing::_;
 
@@ -104,7 +103,6 @@ class SyncedPrefChangeRegistrarTest : public InProcessBrowserTest {
   virtual void SetUpInProcessBrowserTestFixture() OVERRIDE {
     EXPECT_CALL(policy_provider_, IsInitializationComplete(_))
         .WillRepeatedly(Return(true));
-    EXPECT_CALL(policy_provider_, RegisterPolicyDomain(_)).Times(AnyNumber());
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
         &policy_provider_);
   }

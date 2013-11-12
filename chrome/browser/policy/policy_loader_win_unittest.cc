@@ -34,6 +34,7 @@
 #include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "chrome/browser/policy/preg_parser_win.h"
+#include "chrome/browser/policy/schema_map.h"
 #include "components/json_schema/json_schema_constants.h"
 #include "policy/policy_constants.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -252,6 +253,7 @@ class RegistryTestHarness : public PolicyProviderTestHarness,
   virtual void SetUp() OVERRIDE;
 
   virtual ConfigurationPolicyProvider* CreateProvider(
+      SchemaRegistry* registry,
       scoped_refptr<base::SequencedTaskRunner> task_runner,
       const PolicyDefinitionList* policy_list) OVERRIDE;
 
@@ -303,6 +305,7 @@ class PRegTestHarness : public PolicyProviderTestHarness,
   virtual void SetUp() OVERRIDE;
 
   virtual ConfigurationPolicyProvider* CreateProvider(
+      SchemaRegistry* registry,
       scoped_refptr<base::SequencedTaskRunner> task_runner,
       const PolicyDefinitionList* policy_list) OVERRIDE;
 
@@ -420,11 +423,12 @@ RegistryTestHarness::~RegistryTestHarness() {}
 void RegistryTestHarness::SetUp() {}
 
 ConfigurationPolicyProvider* RegistryTestHarness::CreateProvider(
+    SchemaRegistry* registry,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     const PolicyDefinitionList* policy_list) {
   scoped_ptr<AsyncPolicyLoader> loader(new PolicyLoaderWin(
       task_runner, policy_list, kRegistryChromePolicyKey, this));
-  return new AsyncPolicyProvider(loader.Pass());
+  return new AsyncPolicyProvider(registry, loader.Pass());
 }
 
 void RegistryTestHarness::InstallEmptyPolicy() {}
@@ -552,11 +556,12 @@ void PRegTestHarness::SetUp() {
 }
 
 ConfigurationPolicyProvider* PRegTestHarness::CreateProvider(
+    SchemaRegistry* registry,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     const PolicyDefinitionList* policy_list) {
   scoped_ptr<AsyncPolicyLoader> loader(new PolicyLoaderWin(
       task_runner, policy_list, kRegistryChromePolicyKey, this));
-  return new AsyncPolicyProvider(loader.Pass());
+  return new AsyncPolicyProvider(registry, loader.Pass());
 }
 
 void PRegTestHarness::InstallEmptyPolicy() {}
@@ -789,12 +794,25 @@ class PolicyLoaderWinTest : public PolicyTestBase,
   virtual ~PolicyLoaderWinTest() {}
 
   virtual void SetUp() OVERRIDE {
+    PolicyTestBase::SetUp();
+
     ASSERT_TRUE(PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir_));
     test_data_dir_ = test_data_dir_.AppendASCII("chrome")
                                    .AppendASCII("test")
                                    .AppendASCII("data")
                                    .AppendASCII("policy")
                                    .AppendASCII("gpo");
+
+    // Unknown components will be filtered out. Register their names with an
+    // invalid schema to avoid that.
+    ComponentMap components;
+    components["aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"] = Schema();
+    components["bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"] = Schema();
+    components["int"] = Schema();
+    components["merge"] = Schema();
+    components["string"] = Schema();
+    components["test"] = Schema();
+    schema_registry_.RegisterComponents(POLICY_DOMAIN_EXTENSIONS, components);
   }
 
   // AppliedGPOListProvider:
@@ -826,7 +844,8 @@ class PolicyLoaderWinTest : public PolicyTestBase,
     PolicyLoaderWin loader(loop_.message_loop_proxy(),
                            &test_policy_definitions::kList, kTestPolicyKey,
                            this);
-    scoped_ptr<PolicyBundle> loaded(loader.Load());
+    scoped_ptr<PolicyBundle> loaded(
+        loader.InitialLoad(schema_registry_.schema_map()));
     return loaded->Equals(expected);
   }
 

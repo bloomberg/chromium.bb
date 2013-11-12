@@ -12,15 +12,17 @@
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/policy/async_policy_loader.h"
 #include "chrome/browser/policy/policy_bundle.h"
-#include "chrome/browser/policy/policy_domain_descriptor.h"
+#include "chrome/browser/policy/schema_registry.h"
 
 namespace policy {
 
-AsyncPolicyProvider::AsyncPolicyProvider(scoped_ptr<AsyncPolicyLoader> loader)
+AsyncPolicyProvider::AsyncPolicyProvider(
+    SchemaRegistry* registry,
+    scoped_ptr<AsyncPolicyLoader> loader)
     : loader_(loader.release()),
       weak_factory_(this) {
   // Make an immediate synchronous load on startup.
-  OnLoaderReloaded(loader_->InitialLoad());
+  OnLoaderReloaded(loader_->InitialLoad(registry->schema_map()));
 }
 
 AsyncPolicyProvider::~AsyncPolicyProvider() {
@@ -29,9 +31,9 @@ AsyncPolicyProvider::~AsyncPolicyProvider() {
   DCHECK(!loader_);
 }
 
-void AsyncPolicyProvider::Init() {
+void AsyncPolicyProvider::Init(SchemaRegistry* registry) {
   DCHECK(CalledOnValidThread());
-  ConfigurationPolicyProvider::Init();
+  ConfigurationPolicyProvider::Init(registry);
 
   if (!loader_)
     return;
@@ -89,17 +91,6 @@ void AsyncPolicyProvider::RefreshPolicies() {
       refresh_callback_.callback());
 }
 
-void AsyncPolicyProvider::RegisterPolicyDomain(
-    scoped_refptr<const PolicyDomainDescriptor> descriptor) {
-  if (loader_) {
-    loader_->task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&AsyncPolicyLoader::RegisterPolicyDomain,
-                   base::Unretained(loader_),
-                   descriptor));
-  }
-}
-
 void AsyncPolicyProvider::ReloadAfterRefreshSync() {
   DCHECK(CalledOnValidThread());
   // This task can only enter if it was posted from RefreshPolicies(), and it
@@ -114,10 +105,11 @@ void AsyncPolicyProvider::ReloadAfterRefreshSync() {
   if (!loader_)
     return;
 
-  loader_->task_runner()->PostTask(FROM_HERE,
-                                   base::Bind(&AsyncPolicyLoader::Reload,
-                                              base::Unretained(loader_),
-                                              true /* force */));
+  loader_->task_runner()->PostTask(
+      FROM_HERE,
+      base::Bind(&AsyncPolicyLoader::RefreshPolicies,
+                 base::Unretained(loader_),
+                 schema_map()));
 }
 
 void AsyncPolicyProvider::OnLoaderReloaded(scoped_ptr<PolicyBundle> bundle) {

@@ -32,7 +32,6 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #endif  // OS_CHROMEOS
 
-using testing::AnyNumber;
 using testing::Return;
 using testing::_;
 
@@ -56,7 +55,6 @@ class ExtensionNetworkingPrivateApiTest :
 #if defined(OS_CHROMEOS)
     EXPECT_CALL(provider_, IsInitializationComplete(_))
         .WillRepeatedly(Return(true));
-    EXPECT_CALL(provider_, RegisterPolicyDomain(_)).Times(AnyNumber());
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
 #endif
 

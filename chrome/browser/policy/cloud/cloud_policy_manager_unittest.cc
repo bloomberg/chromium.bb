@@ -16,6 +16,7 @@
 #include "chrome/browser/policy/configuration_policy_provider_test.h"
 #include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
+#include "chrome/browser/policy/schema_registry.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -35,6 +36,7 @@ class TestHarness : public PolicyProviderTestHarness {
   virtual void SetUp() OVERRIDE;
 
   virtual ConfigurationPolicyProvider* CreateProvider(
+      SchemaRegistry* registry,
       scoped_refptr<base::SequencedTaskRunner> task_runner,
       const PolicyDefinitionList* policy_definition_list) OVERRIDE;
 
@@ -70,6 +72,7 @@ TestHarness::~TestHarness() {}
 void TestHarness::SetUp() {}
 
 ConfigurationPolicyProvider* TestHarness::CreateProvider(
+    SchemaRegistry* registry,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     const PolicyDefinitionList* policy_definition_list) {
   // Create and initialize the store.
@@ -176,7 +179,7 @@ class CloudPolicyManagerTest : public testing::Test {
     EXPECT_CALL(store_, Load());
     manager_.reset(new TestCloudPolicyManager(&store_,
                                               loop_.message_loop_proxy()));
-    manager_->Init();
+    manager_->Init(&schema_registry_);
     Mock::VerifyAndClearExpectations(&store_);
     manager_->AddObserver(&observer_);
   }
@@ -196,6 +199,7 @@ class CloudPolicyManagerTest : public testing::Test {
   PolicyBundle expected_bundle_;
 
   // Policy infrastructure.
+  SchemaRegistry schema_registry_;
   MockConfigurationPolicyObserver observer_;
   MockCloudPolicyStore store_;
   scoped_ptr<TestCloudPolicyManager> manager_;

@@ -34,6 +34,7 @@
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/url_constants.h"
+#include "components/policy/core/common/policy_namespace.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -62,7 +63,10 @@
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
-#include "chrome/browser/policy/policy_domain_descriptor.h"
+#include "chrome/browser/policy/schema_map.h"
+#include "chrome/browser/policy/schema_registry.h"
+#include "chrome/browser/policy/schema_registry_service.h"
+#include "chrome/browser/policy/schema_registry_service_factory.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_set.h"
 #include "components/policy/core/common/schema.h"
@@ -556,15 +560,17 @@ void PolicyUIHandler::SendPolicyNames() const {
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   // Add extension policy names.
   base::DictionaryValue* extension_policy_names = new base::DictionaryValue;
+
+  Profile* profile = Profile::FromWebUI(web_ui());
   extensions::ExtensionSystem* extension_system =
-      extensions::ExtensionSystem::Get(Profile::FromWebUI(web_ui()));
+      extensions::ExtensionSystem::Get(profile);
   const ExtensionSet* extensions =
       extension_system->extension_service()->extensions();
-  scoped_refptr<const policy::PolicyDomainDescriptor> policy_domain_descriptor;
-  policy_domain_descriptor = GetPolicyService()->
-      GetPolicyDomainDescriptor(policy::POLICY_DOMAIN_EXTENSIONS);
-  const policy::PolicyDomainDescriptor::SchemaMap& schema_map =
-      policy_domain_descriptor->components();
+
+  policy::SchemaRegistry* registry =
+      policy::SchemaRegistryServiceFactory::GetForContext(
+          profile->GetOriginalProfile());
+  scoped_refptr<policy::SchemaMap> schema_map = registry->schema_map();
 
   for (ExtensionSet::const_iterator it = extensions->begin();
        it != extensions->end(); ++it) {
@@ -575,17 +581,16 @@ void PolicyUIHandler::SendPolicyNames() const {
       continue;
     base::DictionaryValue* extension_value = new base::DictionaryValue;
     extension_value->SetString("name", extension->name());
-    policy::PolicyDomainDescriptor::SchemaMap::const_iterator schema =
-        schema_map.find(extension->id());
+    const policy::Schema* schema =
+        schema_map->GetSchema(policy::PolicyNamespace(
+            policy::POLICY_DOMAIN_EXTENSIONS, extension->id()));
     base::DictionaryValue* policy_names = new base::DictionaryValue;
-    if (schema != schema_map.end()) {
+    if (schema) {
       // Get policy names from the extension's policy schema.
       // Store in a map, not an array, for faster lookup on JS side.
-      policy::Schema policy_schema = schema->second;
-      for (policy::Schema::Iterator it_policies =
-               policy_schema.GetPropertiesIterator();
-           !it_policies.IsAtEnd(); it_policies.Advance()) {
-        policy_names->SetBoolean(it_policies.key(), true);
+      for (policy::Schema::Iterator prop = schema->GetPropertiesIterator();
+           !prop.IsAtEnd(); prop.Advance()) {
+        policy_names->SetBoolean(prop.key(), true);
       }
     }
     extension_value->Set("policyNames", policy_names);

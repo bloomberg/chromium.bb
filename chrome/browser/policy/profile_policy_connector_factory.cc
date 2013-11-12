@@ -13,6 +13,7 @@
 #include "components/user_prefs/pref_registry_syncable.h"
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
+#include "chrome/browser/policy/schema_registry_service_factory.h"
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -58,6 +59,7 @@ ProfilePolicyConnectorFactory::ProfilePolicyConnectorFactory()
         "ProfilePolicyConnector",
         BrowserContextDependencyManager::GetInstance()) {
 #if defined(ENABLE_CONFIGURATION_POLICY)
+  DependsOn(SchemaRegistryServiceFactory::GetInstance());
 #if defined(OS_CHROMEOS)
   DependsOn(UserCloudPolicyManagerFactoryChromeOS::GetInstance());
 #else

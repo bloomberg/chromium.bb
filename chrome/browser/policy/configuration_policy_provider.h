@@ -10,16 +10,15 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/observer_list.h"
 #include "chrome/browser/policy/policy_bundle.h"
+#include "chrome/browser/policy/schema_registry.h"
 #include "components/policy/core/common/policy_namespace.h"
 
 namespace policy {
 
-class PolicyDomainDescriptor;
-
 // A mostly-abstract super class for platform-specific policy providers.
 // Platform-specific policy providers (Windows Group Policy, gconf,
 // etc.) should implement a subclass of this class.
-class ConfigurationPolicyProvider {
+class ConfigurationPolicyProvider : public SchemaRegistry::Observer {
  public:
   class Observer {
    public:
@@ -39,7 +38,9 @@ class ConfigurationPolicyProvider {
   // are created early during startup to provide the initial policies; the
   // Init() call allows them to perform initialization tasks that require
   // running message loops.
-  virtual void Init();
+  // The policy provider will load policy for the components registered in
+  // the |schema_registry| whose domain is supported by this provider.
+  virtual void Init(SchemaRegistry* registry);
 
   // Must be invoked before deleting the provider. Implementations can override
   // this method to do appropriate cleanup while threads are still running, and
@@ -67,13 +68,10 @@ class ConfigurationPolicyProvider {
   virtual void AddObserver(Observer* observer);
   virtual void RemoveObserver(Observer* observer);
 
-  // Notifies the provider that there is interest in loading policy for the
-  // listed components in the given |descriptor|. The list is complete; all the
-  // components that matter for the domain are included, and components not
-  // included can be discarded. The provider can ignore this information or use
-  // it to selectively load the corresponding policy from its sources.
-  virtual void RegisterPolicyDomain(
-      scoped_refptr<const PolicyDomainDescriptor> descriptor);
+  // SchemaRegistry::Observer:
+  // This base implementation calls RefreshPolicies if
+  // |has_new_schemas| is true.
+  virtual void OnSchemaRegistryUpdated(bool has_new_schemas) OVERRIDE;
 
  protected:
   // Subclasses must invoke this to update the policies currently served by
@@ -81,12 +79,16 @@ class ConfigurationPolicyProvider {
   // The observers are notified after the policies are updated.
   void UpdatePolicy(scoped_ptr<PolicyBundle> bundle);
 
+  const scoped_refptr<SchemaMap>& schema_map() const;
+
  private:
   // The policies currently configured at this provider.
   PolicyBundle policy_bundle_;
 
   // Whether Shutdown() has been invoked.
   bool did_shutdown_;
+
+  SchemaRegistry* schema_registry_;
 
   ObserverList<Observer, true> observer_list_;
 

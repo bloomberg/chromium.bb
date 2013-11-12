@@ -24,6 +24,8 @@
 #include "chrome/browser/policy/cloud/cloud_external_data_manager.h"
 #include "chrome/browser/policy/cloud/device_management_service.h"
 #include "chrome/browser/policy/cloud/resource_cache.h"
+#include "chrome/browser/policy/schema_registry_service.h"
+#include "chrome/browser/policy/schema_registry_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/chromeos_paths.h"
@@ -87,7 +89,9 @@ scoped_ptr<UserCloudPolicyManagerChromeOS>
 UserCloudPolicyManagerFactoryChromeOS::UserCloudPolicyManagerFactoryChromeOS()
     : BrowserContextKeyedBaseFactory(
         "UserCloudPolicyManagerChromeOS",
-        BrowserContextDependencyManager::GetInstance()) {}
+        BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(SchemaRegistryServiceFactory::GetInstance());
+}
 
 UserCloudPolicyManagerFactoryChromeOS::
     ~UserCloudPolicyManagerFactoryChromeOS() {}
@@ -193,7 +197,7 @@ scoped_ptr<UserCloudPolicyManagerChromeOS>
           resource_cache.Pass(),
           wait_for_initial_policy,
           base::TimeDelta::FromSeconds(kInitialPolicyFetchTimeoutSeconds)));
-  manager->Init();
+  manager->Init(SchemaRegistryServiceFactory::GetForContext(profile));
   manager->Connect(g_browser_process->local_state(),
                    device_management_service,
                    g_browser_process->system_request_context(),

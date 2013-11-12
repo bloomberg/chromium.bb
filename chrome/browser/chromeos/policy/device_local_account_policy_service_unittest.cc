@@ -31,6 +31,7 @@
 #include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "chrome/browser/policy/proto/chromeos/chrome_device_policy.pb.h"
+#include "chrome/browser/policy/schema_registry.h"
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/chromeos_paths.h"
 #include "chromeos/dbus/power_policy_controller.h"
@@ -774,6 +775,7 @@ class DeviceLocalAccountPolicyProviderTest
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
+  SchemaRegistry schema_registry_;
   scoped_ptr<DeviceLocalAccountPolicyProvider> provider_;
   MockConfigurationPolicyObserver provider_observer_;
 
@@ -791,7 +793,7 @@ DeviceLocalAccountPolicyProviderTest::DeviceLocalAccountPolicyProviderTest() {
 
 void DeviceLocalAccountPolicyProviderTest::SetUp() {
   DeviceLocalAccountPolicyServiceTestBase::SetUp();
-  provider_->Init();
+  provider_->Init(&schema_registry_);
   provider_->AddObserver(&provider_observer_);
 }
 

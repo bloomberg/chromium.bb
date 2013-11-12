@@ -13,6 +13,7 @@
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_bundle.h"
 #include "chrome/browser/policy/policy_map.h"
+#include "components/policy/core/common/policy_namespace.h"
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -20,6 +21,96 @@ using ::testing::Mock;
 using ::testing::_;
 
 namespace policy {
+
+const char kTestChromeSchema[] =
+    "{"
+    "  \"type\": \"object\","
+    "  \"properties\": {"
+    "    \"StringPolicy\": { \"type\": \"string\" },"
+    "    \"BooleanPolicy\": { \"type\": \"boolean\" },"
+    "    \"IntegerPolicy\": { \"type\": \"integer\" },"
+    "    \"StringListPolicy\": {"
+    "      \"type\": \"array\","
+    "      \"items\": { \"type\": \"string\" }"
+    "    },"
+    "    \"DictionaryPolicy\": {"
+    "      \"type\": \"object\","
+    "      \"properties\": {"
+    "        \"bool\": { \"type\": \"boolean\" },"
+    "        \"double\": { \"type\": \"number\" },"
+    "        \"int\": { \"type\": \"integer\" },"
+    "        \"string\": { \"type\": \"string\" },"
+    "        \"array\": {"
+    "          \"type\": \"array\","
+    "          \"items\": { \"type\": \"string\" }"
+    "        },"
+    "        \"dictionary\": {"
+    "          \"type\": \"object\","
+    "          \"properties\": {"
+    "            \"sub\": { \"type\": \"string\" },"
+    "            \"sublist\": {"
+    "              \"type\": \"array\","
+    "              \"items\": {"
+    "                \"type\": \"object\","
+    "                \"properties\": {"
+    "                  \"aaa\": { \"type\": \"integer\" },"
+    "                  \"bbb\": { \"type\": \"integer\" },"
+    "                  \"ccc\": { \"type\": \"string\" },"
+    "                  \"ddd\": { \"type\": \"string\" }"
+    "                }"
+    "              }"
+    "            }"
+    "          }"
+    "        },"
+    "        \"list\": {"
+    "          \"type\": \"array\","
+    "          \"items\": {"
+    "            \"type\": \"object\","
+    "            \"properties\": {"
+    "              \"subdictindex\": { \"type\": \"integer\" },"
+    "              \"subdict\": {"
+    "                \"type\": \"object\","
+    "                \"properties\": {"
+    "                  \"bool\": { \"type\": \"boolean\" },"
+    "                  \"double\": { \"type\": \"number\" },"
+    "                  \"int\": { \"type\": \"integer\" },"
+    "                  \"string\": { \"type\": \"string\" }"
+    "                }"
+    "              }"
+    "            }"
+    "          }"
+    "        },"
+    "        \"dict\": {"
+    "          \"type\": \"object\","
+    "          \"properties\": {"
+    "            \"bool\": { \"type\": \"boolean\" },"
+    "            \"double\": { \"type\": \"number\" },"
+    "            \"int\": { \"type\": \"integer\" },"
+    "            \"string\": { \"type\": \"string\" },"
+    "            \"list\": {"
+    "              \"type\": \"array\","
+    "              \"items\": {"
+    "                \"type\": \"object\","
+    "                \"properties\": {"
+    "                  \"subdictindex\": { \"type\": \"integer\" },"
+    "                  \"subdict\": {"
+    "                    \"type\": \"object\","
+    "                    \"properties\": {"
+    "                      \"bool\": { \"type\": \"boolean\" },"
+    "                      \"double\": { \"type\": \"number\" },"
+    "                      \"int\": { \"type\": \"integer\" },"
+    "                      \"string\": { \"type\": \"string\" }"
+    "                    }"
+    "                  }"
+    "                }"
+    "              }"
+    "            }"
+    "          }"
+    "        }"
+    "      }"
+    "    }"
+    "  }"
+    "}";
 
 namespace test_policy_definitions {
 
@@ -46,6 +137,14 @@ const PolicyDefinitionList kList = {
 PolicyTestBase::PolicyTestBase() {}
 
 PolicyTestBase::~PolicyTestBase() {}
+
+void PolicyTestBase::SetUp() {
+  std::string error;
+  chrome_schema_ = Schema::Parse(kTestChromeSchema, &error);
+  ASSERT_TRUE(chrome_schema_.valid()) << error;
+  schema_registry_.RegisterComponent(PolicyNamespace(POLICY_DOMAIN_CHROME, ""),
+                                     chrome_schema_);
+}
 
 void PolicyTestBase::TearDown() {
   loop_.RunUntilIdle();
@@ -80,9 +179,27 @@ void ConfigurationPolicyProviderTest::SetUp() {
   test_harness_.reset((*GetParam())());
   test_harness_->SetUp();
 
+  Schema extension_schema =
+      chrome_schema_.GetKnownProperty(test_policy_definitions::kKeyDictionary);
+  ASSERT_TRUE(extension_schema.valid());
+  schema_registry_.RegisterComponent(
+      PolicyNamespace(POLICY_DOMAIN_EXTENSIONS,
+                      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"),
+      extension_schema);
+  schema_registry_.RegisterComponent(
+      PolicyNamespace(POLICY_DOMAIN_EXTENSIONS,
+                      "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"),
+      extension_schema);
+  schema_registry_.RegisterComponent(
+      PolicyNamespace(POLICY_DOMAIN_EXTENSIONS,
+                      "cccccccccccccccccccccccccccccccc"),
+      extension_schema);
+
   provider_.reset(test_harness_->CreateProvider(
-      loop_.message_loop_proxy(), &test_policy_definitions::kList));
-  provider_->Init();
+      &schema_registry_,
+      loop_.message_loop_proxy(),
+      &test_policy_definitions::kList));
+  provider_->Init(&schema_registry_);
   // Some providers do a reload on init. Make sure any notifications generated
   // are fired now.
   loop_.RunUntilIdle();
@@ -172,13 +289,14 @@ TEST_P(ConfigurationPolicyProviderTest, StringListValue) {
 TEST_P(ConfigurationPolicyProviderTest, DictionaryValue) {
   base::DictionaryValue expected_value;
   expected_value.SetBoolean("bool", true);
+  expected_value.SetDouble("double", 123.456);
   expected_value.SetInteger("int", 123);
-  expected_value.SetString("str", "omg");
+  expected_value.SetString("string", "omg");
 
   base::ListValue* list = new base::ListValue();
   list->Set(0U, base::Value::CreateStringValue("first"));
   list->Set(1U, base::Value::CreateStringValue("second"));
-  expected_value.Set("list", list);
+  expected_value.Set("array", list);
 
   base::DictionaryValue* dict = new base::DictionaryValue();
   dict->SetString("sub", "value");
@@ -192,7 +310,7 @@ TEST_P(ConfigurationPolicyProviderTest, DictionaryValue) {
   sub->SetString("ddd", "444");
   list->Append(sub);
   dict->Set("sublist", list);
-  expected_value.Set("dict", dict);
+  expected_value.Set("dictionary", dict);
 
   CheckValue(test_policy_definitions::kKeyDictionary,
              expected_value,
@@ -283,7 +401,7 @@ TEST_P(Configuration3rdPartyPolicyProviderTest, Load3rdParty) {
   policy_dict.SetBoolean("bool", true);
   policy_dict.SetDouble("double", 123.456);
   policy_dict.SetInteger("int", 789);
-  policy_dict.SetString("str", "string value");
+  policy_dict.SetString("string", "string value");
 
   base::ListValue* list = new base::ListValue();
   for (int i = 0; i < 2; ++i) {

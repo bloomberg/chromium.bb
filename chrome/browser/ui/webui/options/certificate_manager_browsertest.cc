@@ -27,7 +27,6 @@
 #include "crypto/nss_util.h"
 #endif
 
-using testing::AnyNumber;
 using testing::Return;
 using testing::_;
 
@@ -44,7 +43,6 @@ class CertificateManagerBrowserTest : public options::OptionsUIBrowserTest {
     // Setup the policy provider for injecting certs through ONC policy.
     EXPECT_CALL(provider_, IsInitializationComplete(_))
         .WillRepeatedly(Return(true));
-    EXPECT_CALL(provider_, RegisterPolicyDomain(_)).Times(AnyNumber());
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
   }
 

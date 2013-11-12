@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
-#include "chrome/browser/policy/policy_domain_descriptor.h"
 #include "chrome/browser/policy/policy_map.h"
 
 namespace policy {
@@ -62,21 +61,9 @@ void PolicyServiceImpl::RemoveObserver(PolicyDomain domain,
   }
 }
 
-void PolicyServiceImpl::RegisterPolicyDomain(
-    scoped_refptr<const PolicyDomainDescriptor> descriptor) {
-  domain_descriptors_[descriptor->domain()] = descriptor;
-  for (Iterator it = providers_.begin(); it != providers_.end(); ++it)
-    (*it)->RegisterPolicyDomain(descriptor);
-}
-
 const PolicyMap& PolicyServiceImpl::GetPolicies(
     const PolicyNamespace& ns) const {
   return policy_bundle_.Get(ns);
-}
-
-scoped_refptr<const PolicyDomainDescriptor>
-PolicyServiceImpl::GetPolicyDomainDescriptor(PolicyDomain domain) const {
-  return domain_descriptors_[domain];
 }
 
 bool PolicyServiceImpl::IsInitializationComplete(PolicyDomain domain) const {

@@ -1119,7 +1119,6 @@
         'browser/policy/mock_policy_service.cc',
         'browser/policy/mock_policy_service.h',
         'browser/policy/policy_bundle_unittest.cc',
-        'browser/policy/policy_domain_descriptor_unittest.cc',
         'browser/policy/policy_loader_mac_unittest.cc',
         'browser/policy/policy_loader_win_unittest.cc',
         'browser/policy/policy_map_unittest.cc',

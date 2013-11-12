@@ -5,9 +5,7 @@
 #ifndef CHROME_BROWSER_POLICY_CLOUD_COMPONENT_CLOUD_POLICY_SERVICE_H_
 #define CHROME_BROWSER_POLICY_CLOUD_COMPONENT_CLOUD_POLICY_SERVICE_H_
 
-#include <map>
 #include <set>
-#include <string>
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
@@ -16,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/non_thread_safe.h"
 #include "chrome/browser/policy/cloud/cloud_policy_client.h"
+#include "chrome/browser/policy/cloud/cloud_policy_constants.h"
 #include "chrome/browser/policy/cloud/cloud_policy_store.h"
 #include "chrome/browser/policy/policy_bundle.h"
 #include "components/policy/core/common/policy_namespace.h"
@@ -31,8 +30,8 @@ class URLRequestContextGetter;
 namespace policy {
 
 class ExternalPolicyDataFetcherBackend;
-class PolicyDomainDescriptor;
 class ResourceCache;
+class SchemaMap;
 
 // Manages cloud policy for components.
 //
@@ -93,12 +92,12 @@ class ComponentCloudPolicyService : public CloudPolicyClient::Observer,
   // remote policy data.
   void Disconnect();
 
-  // |descriptor| lists the complete set of components to track for its domain.
+  // |schema_map| contains the schemas for all the components that this
+  // service should load policy for.
   // This purges unused components from the cache, and starts updating the
-  // components listed in the descriptor. It's only valid to call this for
-  // domains that are supported, i.e. SupportsDomain(domain) is true.
-  void RegisterPolicyDomain(
-      scoped_refptr<const PolicyDomainDescriptor> descriptor);
+  // components listed in the map.
+  // Unsupported domains in the map are ignored.
+  void OnSchemasUpdated(const scoped_refptr<SchemaMap>& schema_map);
 
   // CloudPolicyClient::Observer implementation:
   virtual void OnPolicyFetched(CloudPolicyClient* client) OVERRIDE;
@@ -111,21 +110,19 @@ class ComponentCloudPolicyService : public CloudPolicyClient::Observer,
 
  private:
   class Backend;
-  typedef std::set<std::string> StringSet;
-  typedef std::map<PolicyDomain, StringSet> ComponentMap;
+  typedef std::set<PolicyNamespaceKey> PolicyNamespaceKeys;
 
   void InitializeBackend();
-  void OnBackendInitialized(scoped_ptr<ComponentMap> components,
+  void OnBackendInitialized(scoped_ptr<PolicyNamespaceKeys> initial_keys,
                             scoped_ptr<PolicyBundle> initial_policy);
   void InitializeClient();
   void OnPolicyUpdated(scoped_ptr<PolicyBundle> policy);
 
   void SetCredentialsAndReloadClient();
-  bool UpdateClientNamespaces(PolicyDomain domain,
-                              const StringSet& old_set,
-                              const StringSet& new_set);
-  void AddNamespacesToFetch(PolicyDomain domain, const StringSet& set);
-  void RemoveNamespacesToFetch(PolicyDomain domain, const StringSet& set);
+  bool UpdateClientNamespaces(const PolicyNamespaceKeys& old_keys,
+                              const PolicyNamespaceKeys& new_keys);
+  void AddNamespacesToFetch(const PolicyNamespaceKeys& keys);
+  void RemoveNamespacesToFetch(const PolicyNamespaceKeys& keys);
 
   Delegate* delegate_;
 
@@ -149,16 +146,14 @@ class ComponentCloudPolicyService : public CloudPolicyClient::Observer,
   CloudPolicyClient* client_;
   CloudPolicyStore* store_;
 
-  // The currently registered components for each policy domain. If a policy
-  // domain doesn't have an entry in this map then it hasn't registered its
-  // component yet. A domain in this map with an empty set of components means
-  // that the domain is registered, but has no components.
-  ComponentMap registered_components_;
+  // The currently registered components for each policy domain.
+  PolicyNamespaceKeys keys_;
 
   // Contains all the current policies for components.
   PolicyBundle policy_;
 
   bool is_initialized_;
+  bool has_initial_keys_;
   base::WeakPtrFactory<ComponentCloudPolicyService> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ComponentCloudPolicyService);

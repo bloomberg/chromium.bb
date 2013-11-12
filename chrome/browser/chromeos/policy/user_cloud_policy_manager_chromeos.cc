@@ -19,7 +19,6 @@
 #include "chrome/browser/policy/cloud/cloud_policy_refresh_scheduler.h"
 #include "chrome/browser/policy/cloud/resource_cache.h"
 #include "chrome/browser/policy/policy_bundle.h"
-#include "chrome/browser/policy/policy_domain_descriptor.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -154,12 +153,12 @@ bool UserCloudPolicyManagerChromeOS::IsInitializationComplete(
   return true;
 }
 
-void UserCloudPolicyManagerChromeOS::RegisterPolicyDomain(
-    scoped_refptr<const PolicyDomainDescriptor> descriptor) {
-  if (ComponentCloudPolicyService::SupportsDomain(descriptor->domain()) &&
-      component_policy_service_) {
-    component_policy_service_->RegisterPolicyDomain(descriptor);
-  }
+void UserCloudPolicyManagerChromeOS::OnSchemaRegistryUpdated(
+    bool has_new_schemas) {
+  // Send the new map even if |has_new_schemas| is false, so that policies for
+  // components that have been removed can be dropped from the cache.
+  if (component_policy_service_)
+    component_policy_service_->OnSchemasUpdated(schema_map());
 }
 
 scoped_ptr<PolicyBundle> UserCloudPolicyManagerChromeOS::CreatePolicyBundle() {

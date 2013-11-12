@@ -168,7 +168,7 @@ class BrowserPolicyConnector {
   // Set the timezone as soon as the policies are available.
   void SetTimezoneIfPolicyAvailable();
 
-  static ConfigurationPolicyProvider* CreatePlatformProvider();
+  ConfigurationPolicyProvider* CreatePlatformProvider();
 
   // Whether Init() but not Shutdown() has been invoked.
   bool is_initialized_;

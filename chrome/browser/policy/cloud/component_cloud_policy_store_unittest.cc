@@ -5,10 +5,10 @@
 #include "chrome/browser/policy/cloud/component_cloud_policy_store.h"
 
 #include <map>
-#include <set>
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
@@ -46,6 +46,14 @@ const char kTestPolicy[] =
 
 std::string TestPolicyHash() {
   return base::SHA1HashString(kTestPolicy);
+}
+
+bool NotEqual(const std::string& expected, const std::string& key) {
+  return key != expected;
+}
+
+bool True(const std::string& ignored) {
+  return true;
 }
 
 class MockComponentCloudPolicyStoreDelegate
@@ -282,10 +290,9 @@ TEST_F(ComponentCloudPolicyStoreTest, Purge) {
   EXPECT_FALSE(IsEmpty());
   EXPECT_TRUE(store_->policy().Equals(expected_bundle_));
 
-  // Purge other namespaces.
-  std::set<std::string> keep;
-  keep.insert(kTestExtension);
-  store_->Purge(POLICY_DOMAIN_EXTENSIONS, keep);
+  // Purge other components.
+  store_->Purge(POLICY_DOMAIN_EXTENSIONS,
+                base::Bind(&NotEqual, kTestExtension));
 
   // The policy for |ns| is still served.
   EXPECT_TRUE(store_->policy().Equals(expected_bundle_));
@@ -301,8 +308,7 @@ TEST_F(ComponentCloudPolicyStoreTest, Purge) {
 
   // Now purge everything.
   EXPECT_CALL(store_delegate_, OnComponentCloudPolicyStoreUpdated());
-  keep.clear();
-  store_->Purge(POLICY_DOMAIN_EXTENSIONS, keep);
+  store_->Purge(POLICY_DOMAIN_EXTENSIONS, base::Bind(&True));
   Mock::VerifyAndClearExpectations(&store_delegate_);
 
   // No policies are served anymore.

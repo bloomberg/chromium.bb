@@ -13,6 +13,7 @@
 #include "chrome/browser/policy/async_policy_loader.h"
 #include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
+#include "chrome/browser/policy/schema_registry.h"
 #include "policy/policy_constants.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -84,6 +85,7 @@ class AsyncPolicyProviderTest : public testing::Test {
   virtual void TearDown() OVERRIDE;
 
   base::MessageLoop loop_;
+  SchemaRegistry schema_registry_;
   PolicyBundle initial_bundle_;
   MockPolicyLoader* loader_;
   scoped_ptr<AsyncPolicyProvider> provider_;
@@ -104,9 +106,9 @@ void AsyncPolicyProviderTest::SetUp() {
   EXPECT_CALL(*loader_, InitOnBackgroundThread()).Times(1);
   EXPECT_CALL(*loader_, MockLoad()).WillOnce(Return(&initial_bundle_));
 
-  provider_.reset(
-      new AsyncPolicyProvider(scoped_ptr<AsyncPolicyLoader>(loader_)));
-  provider_->Init();
+  provider_.reset(new AsyncPolicyProvider(
+      &schema_registry_, scoped_ptr<AsyncPolicyLoader>(loader_)));
+  provider_->Init(&schema_registry_);
   // Verify that the initial load is done synchronously:
   EXPECT_TRUE(provider_->policies().Equals(initial_bundle_));
 

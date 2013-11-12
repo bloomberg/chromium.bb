@@ -44,8 +44,7 @@ class MockSchemaRegistryObserver : public SchemaRegistry::Observer {
   MockSchemaRegistryObserver() {}
   virtual ~MockSchemaRegistryObserver() {}
 
-  MOCK_METHOD2(OnSchemaRegistryUpdated,
-               void(const scoped_refptr<SchemaMap>&, bool));
+  MOCK_METHOD1(OnSchemaRegistryUpdated, void(bool));
 };
 
 }  // namespace
@@ -65,14 +64,14 @@ TEST(SchemaRegistryTest, Notifications) {
   EXPECT_FALSE(registry.schema_map()->GetSchema(
       PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "abc")));
 
-  EXPECT_CALL(observer, OnSchemaRegistryUpdated(_, true));
+  EXPECT_CALL(observer, OnSchemaRegistryUpdated(true));
   registry.RegisterComponent(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "abc"),
                              schema);
   Mock::VerifyAndClearExpectations(&observer);
 
   // Re-register also triggers notifications, because the Schema might have
   // changed.
-  EXPECT_CALL(observer, OnSchemaRegistryUpdated(_, true));
+  EXPECT_CALL(observer, OnSchemaRegistryUpdated(true));
   registry.RegisterComponent(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "abc"),
                              schema);
   Mock::VerifyAndClearExpectations(&observer);
@@ -80,7 +79,7 @@ TEST(SchemaRegistryTest, Notifications) {
   EXPECT_TRUE(registry.schema_map()->GetSchema(
       PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "abc")));
 
-  EXPECT_CALL(observer, OnSchemaRegistryUpdated(_, false));
+  EXPECT_CALL(observer, OnSchemaRegistryUpdated(false));
   registry.UnregisterComponent(
       PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "abc"));
   Mock::VerifyAndClearExpectations(&observer);
@@ -93,7 +92,7 @@ TEST(SchemaRegistryTest, Notifications) {
   components["abc"] = schema;
   components["def"] = schema;
   components["xyz"] = schema;
-  EXPECT_CALL(observer, OnSchemaRegistryUpdated(_, true));
+  EXPECT_CALL(observer, OnSchemaRegistryUpdated(true));
   registry.RegisterComponents(POLICY_DOMAIN_EXTENSIONS, components);
   Mock::VerifyAndClearExpectations(&observer);
 
@@ -112,38 +111,38 @@ TEST(SchemaRegistryTest, Combined) {
   CombinedSchemaRegistry combined;
   combined.AddObserver(&observer);
 
-  EXPECT_CALL(observer, OnSchemaRegistryUpdated(_, _)).Times(0);
+  EXPECT_CALL(observer, OnSchemaRegistryUpdated(_)).Times(0);
   registry1.RegisterComponent(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "abc"),
                               schema);
   Mock::VerifyAndClearExpectations(&observer);
 
   // Starting to track a registry issues notifications when it comes with new
   // schemas.
-  EXPECT_CALL(observer, OnSchemaRegistryUpdated(_, true));
+  EXPECT_CALL(observer, OnSchemaRegistryUpdated(true));
   combined.Track(&registry1);
   Mock::VerifyAndClearExpectations(&observer);
 
   // Adding a new empty registry does not trigger notifications.
-  EXPECT_CALL(observer, OnSchemaRegistryUpdated(_, _)).Times(0);
+  EXPECT_CALL(observer, OnSchemaRegistryUpdated(_)).Times(0);
   combined.Track(&registry2);
   Mock::VerifyAndClearExpectations(&observer);
 
   // Adding the same component to the combined registry itself triggers
   // notifications.
-  EXPECT_CALL(observer, OnSchemaRegistryUpdated(_, true));
+  EXPECT_CALL(observer, OnSchemaRegistryUpdated(true));
   combined.RegisterComponent(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "abc"),
                              schema);
   Mock::VerifyAndClearExpectations(&observer);
 
   // Adding components to the sub-registries triggers notifications.
-  EXPECT_CALL(observer, OnSchemaRegistryUpdated(_, true));
+  EXPECT_CALL(observer, OnSchemaRegistryUpdated(true));
   registry2.RegisterComponent(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "def"),
                               schema);
   Mock::VerifyAndClearExpectations(&observer);
 
   // If the same component is published in 2 sub-registries then the combined
   // registry publishes one of them.
-  EXPECT_CALL(observer, OnSchemaRegistryUpdated(_, true));
+  EXPECT_CALL(observer, OnSchemaRegistryUpdated(true));
   registry1.RegisterComponent(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "def"),
                               schema);
   Mock::VerifyAndClearExpectations(&observer);
@@ -160,7 +159,7 @@ TEST(SchemaRegistryTest, Combined) {
   EXPECT_FALSE(combined.schema_map()->GetSchema(
       PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "xyz")));
 
-  EXPECT_CALL(observer, OnSchemaRegistryUpdated(_, false));
+  EXPECT_CALL(observer, OnSchemaRegistryUpdated(false));
   registry1.UnregisterComponent(
       PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "abc"));
   Mock::VerifyAndClearExpectations(&observer);
@@ -168,7 +167,7 @@ TEST(SchemaRegistryTest, Combined) {
   EXPECT_TRUE(combined.schema_map()->GetSchema(
       PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "abc")));
 
-  EXPECT_CALL(observer, OnSchemaRegistryUpdated(_, false));
+  EXPECT_CALL(observer, OnSchemaRegistryUpdated(false));
   combined.UnregisterComponent(
       PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "abc"));
   Mock::VerifyAndClearExpectations(&observer);
@@ -176,7 +175,7 @@ TEST(SchemaRegistryTest, Combined) {
   EXPECT_FALSE(combined.schema_map()->GetSchema(
       PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "abc")));
 
-  EXPECT_CALL(observer, OnSchemaRegistryUpdated(_, false));
+  EXPECT_CALL(observer, OnSchemaRegistryUpdated(false));
   registry1.UnregisterComponent(
       PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "def"));
   Mock::VerifyAndClearExpectations(&observer);
@@ -184,7 +183,7 @@ TEST(SchemaRegistryTest, Combined) {
   EXPECT_TRUE(combined.schema_map()->GetSchema(
       PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "def")));
 
-  EXPECT_CALL(observer, OnSchemaRegistryUpdated(_, false));
+  EXPECT_CALL(observer, OnSchemaRegistryUpdated(false));
   registry2.UnregisterComponent(
       PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "def"));
   Mock::VerifyAndClearExpectations(&observer);
@@ -192,7 +191,7 @@ TEST(SchemaRegistryTest, Combined) {
   EXPECT_FALSE(combined.schema_map()->GetSchema(
       PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "def")));
 
-  EXPECT_CALL(observer, OnSchemaRegistryUpdated(_, true)).Times(2);
+  EXPECT_CALL(observer, OnSchemaRegistryUpdated(true)).Times(2);
   registry1.RegisterComponent(PolicyNamespace(POLICY_DOMAIN_CHROME, ""),
                               schema);
   registry2.RegisterComponent(PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, "hij"),
@@ -201,11 +200,11 @@ TEST(SchemaRegistryTest, Combined) {
 
   // Untracking |registry1| doesn't trigger an update nofitication, because it
   // doesn't contain any components.
-  EXPECT_CALL(observer, OnSchemaRegistryUpdated(_, _)).Times(0);
+  EXPECT_CALL(observer, OnSchemaRegistryUpdated(_)).Times(0);
   combined.Untrack(&registry1);
   Mock::VerifyAndClearExpectations(&observer);
 
-  EXPECT_CALL(observer, OnSchemaRegistryUpdated(_, false));
+  EXPECT_CALL(observer, OnSchemaRegistryUpdated(false));
   combined.Untrack(&registry2);
   Mock::VerifyAndClearExpectations(&observer);
 

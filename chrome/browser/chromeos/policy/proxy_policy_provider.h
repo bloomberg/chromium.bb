@@ -29,6 +29,9 @@ class ProxyPolicyProvider : public ConfigurationPolicyProvider,
   // ConfigurationPolicyProvider::Observer:
   virtual void OnUpdatePolicy(ConfigurationPolicyProvider* provider) OVERRIDE;
 
+  // SchemaRegistry::Observer:
+  virtual void OnSchemaRegistryUpdated(bool has_new_schemas) OVERRIDE;
+
  private:
   ConfigurationPolicyProvider* delegate_;
 

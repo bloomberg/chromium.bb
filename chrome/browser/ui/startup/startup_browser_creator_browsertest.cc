@@ -57,7 +57,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::_;
-using testing::AnyNumber;
 using testing::Return;
 #endif  // defined(ENABLE_CONFIGURATION_POLICY) && !defined(OS_CHROMEOS)
 
@@ -1038,7 +1037,6 @@ void StartupBrowserCreatorFirstRunTest::SetUpInProcessBrowserTestFixture() {
 
   EXPECT_CALL(provider_, IsInitializationComplete(_))
       .WillRepeatedly(Return(true));
-  EXPECT_CALL(provider_, RegisterPolicyDomain(_)).Times(AnyNumber());
   policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
 #endif  // defined(ENABLE_CONFIGURATION_POLICY)
 }

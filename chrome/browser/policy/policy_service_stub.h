@@ -24,14 +24,8 @@ class PolicyServiceStub : public PolicyService {
   virtual void RemoveObserver(PolicyDomain domain,
                               Observer* observer) OVERRIDE;
 
-  virtual void RegisterPolicyDomain(
-      scoped_refptr<const PolicyDomainDescriptor> descriptor) OVERRIDE;
-
   virtual const PolicyMap& GetPolicies(
       const PolicyNamespace& ns) const OVERRIDE;
-
-  virtual scoped_refptr<const PolicyDomainDescriptor> GetPolicyDomainDescriptor(
-      PolicyDomain domain) const OVERRIDE;
 
   virtual bool IsInitializationComplete(PolicyDomain domain) const OVERRIDE;
 

@@ -127,6 +127,7 @@ class TestHarness : public PolicyProviderTestHarness {
   virtual void SetUp() OVERRIDE;
 
   virtual ConfigurationPolicyProvider* CreateProvider(
+      SchemaRegistry* registry,
       scoped_refptr<base::SequencedTaskRunner> task_runner,
       const PolicyDefinitionList* policy_definition_list) OVERRIDE;
 
@@ -160,12 +161,13 @@ TestHarness::~TestHarness() {}
 void TestHarness::SetUp() {}
 
 ConfigurationPolicyProvider* TestHarness::CreateProvider(
+    SchemaRegistry* registry,
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     const PolicyDefinitionList* policy_definition_list) {
   prefs_ = new MockPreferences();
   scoped_ptr<AsyncPolicyLoader> loader(new PolicyLoaderMac(
       task_runner, policy_definition_list, base::FilePath(), prefs_));
-  return new AsyncPolicyProvider(loader.Pass());
+  return new AsyncPolicyProvider(registry, loader.Pass());
 }
 
 void TestHarness::InstallEmptyPolicy() {}
@@ -232,27 +234,27 @@ INSTANTIATE_TEST_CASE_P(
 class PolicyLoaderMacTest : public PolicyTestBase {
  protected:
   PolicyLoaderMacTest()
-      : prefs_(new MockPreferences()),
-        loader_(new PolicyLoaderMac(loop_.message_loop_proxy(),
-                                    &test_policy_definitions::kList,
-                                    base::FilePath(),
-                                    prefs_)),
-        provider_(scoped_ptr<AsyncPolicyLoader>(loader_)) {}
+      : prefs_(new MockPreferences()) {}
   virtual ~PolicyLoaderMacTest() {}
 
   virtual void SetUp() OVERRIDE {
     PolicyTestBase::SetUp();
-    provider_.Init();
+    scoped_ptr<AsyncPolicyLoader> loader(
+        new PolicyLoaderMac(loop_.message_loop_proxy(),
+                            &test_policy_definitions::kList,
+                            base::FilePath(),
+                            prefs_));
+    provider_.reset(new AsyncPolicyProvider(&schema_registry_, loader.Pass()));
+    provider_->Init(&schema_registry_);
   }
 
   virtual void TearDown() OVERRIDE {
-    provider_.Shutdown();
+    provider_->Shutdown();
     PolicyTestBase::TearDown();
   }
 
   MockPreferences* prefs_;
-  PolicyLoaderMac* loader_;
-  AsyncPolicyProvider provider_;
+  scoped_ptr<AsyncPolicyProvider> provider_;
 };
 
 TEST_F(PolicyLoaderMacTest, Invalid) {
@@ -268,10 +270,10 @@ TEST_F(PolicyLoaderMacTest, Invalid) {
   prefs_->AddTestItem(name, invalid_data.get(), false);
 
   // Make the provider read the updated |prefs_|.
-  provider_.RefreshPolicies();
+  provider_->RefreshPolicies();
   loop_.RunUntilIdle();
   const PolicyBundle kEmptyBundle;
-  EXPECT_TRUE(provider_.policies().Equals(kEmptyBundle));
+  EXPECT_TRUE(provider_->policies().Equals(kEmptyBundle));
 }
 
 TEST_F(PolicyLoaderMacTest, TestNonForcedValue) {
@@ -283,7 +285,7 @@ TEST_F(PolicyLoaderMacTest, TestNonForcedValue) {
   prefs_->AddTestItem(name, test_value.get(), false);
 
   // Make the provider read the updated |prefs_|.
-  provider_.RefreshPolicies();
+  provider_->RefreshPolicies();
   loop_.RunUntilIdle();
   PolicyBundle expected_bundle;
   expected_bundle.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
@@ -292,7 +294,7 @@ TEST_F(PolicyLoaderMacTest, TestNonForcedValue) {
            POLICY_SCOPE_USER,
            base::Value::CreateStringValue("string value"),
            NULL);
-  EXPECT_TRUE(provider_.policies().Equals(expected_bundle));
+  EXPECT_TRUE(provider_->policies().Equals(expected_bundle));
 }
 
 TEST_F(PolicyLoaderMacTest, TestConversions) {

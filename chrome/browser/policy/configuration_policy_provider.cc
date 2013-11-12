@@ -6,7 +6,6 @@
 
 #include "base/callback.h"
 #include "chrome/browser/policy/external_data_fetcher.h"
-#include "chrome/browser/policy/policy_domain_descriptor.h"
 #include "chrome/browser/policy/policy_map.h"
 #include "policy/policy_constants.h"
 
@@ -68,21 +67,37 @@ void FixDeprecatedPolicies(PolicyMap* policies) {
 ConfigurationPolicyProvider::Observer::~Observer() {}
 
 ConfigurationPolicyProvider::ConfigurationPolicyProvider()
-    : did_shutdown_(false) {}
+    : did_shutdown_(false),
+      schema_registry_(NULL) {}
 
 ConfigurationPolicyProvider::~ConfigurationPolicyProvider() {
   DCHECK(did_shutdown_);
 }
 
-void ConfigurationPolicyProvider::Init() {}
+void ConfigurationPolicyProvider::Init(SchemaRegistry* registry) {
+  schema_registry_ = registry;
+  schema_registry_->AddObserver(this);
+}
 
 void ConfigurationPolicyProvider::Shutdown() {
   did_shutdown_ = true;
+  if (schema_registry_) {
+    // Unit tests don't initialize the BrowserPolicyConnector but call
+    // shutdown; handle that.
+    schema_registry_->RemoveObserver(this);
+    schema_registry_ = NULL;
+  }
 }
 
 bool ConfigurationPolicyProvider::IsInitializationComplete(
     PolicyDomain domain) const {
   return true;
+}
+
+void ConfigurationPolicyProvider::OnSchemaRegistryUpdated(
+    bool has_new_schemas) {
+  if (has_new_schemas)
+    RefreshPolicies();
 }
 
 void ConfigurationPolicyProvider::UpdatePolicy(
@@ -98,6 +113,11 @@ void ConfigurationPolicyProvider::UpdatePolicy(
                     OnUpdatePolicy(this));
 }
 
+const scoped_refptr<SchemaMap>&
+ConfigurationPolicyProvider::schema_map() const {
+  return schema_registry_->schema_map();
+}
+
 void ConfigurationPolicyProvider::AddObserver(Observer* observer) {
   observer_list_.AddObserver(observer);
 }
@@ -105,8 +125,5 @@ void ConfigurationPolicyProvider::AddObserver(Observer* observer) {
 void ConfigurationPolicyProvider::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
-
-void ConfigurationPolicyProvider::RegisterPolicyDomain(
-    scoped_refptr<const PolicyDomainDescriptor> descriptor) {}
 
 }  // namespace policy

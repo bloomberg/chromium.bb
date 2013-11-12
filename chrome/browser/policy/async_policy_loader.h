@@ -5,14 +5,12 @@
 #ifndef CHROME_BROWSER_POLICY_ASYNC_POLICY_LOADER_H_
 #define CHROME_BROWSER_POLICY_ASYNC_POLICY_LOADER_H_
 
-#include <map>
-
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "components/policy/core/common/policy_namespace.h"
+#include "chrome/browser/policy/schema_map.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -21,7 +19,6 @@ class SequencedTaskRunner;
 namespace policy {
 
 class PolicyBundle;
-class PolicyDomainDescriptor;
 
 // Base implementation for platform-specific policy loaders. Together with the
 // AsyncPolicyProvider, this base implementation takes care of the initial load,
@@ -55,6 +52,11 @@ class AsyncPolicyLoader {
   // or base::Time() if it doesn't apply, which is the default.
   virtual base::Time LastModificationTime();
 
+  // Used by the AsyncPolicyProvider to do the initial Load(). The first load
+  // is also used to initialize |last_modification_time_| and
+  // |schema_map_|.
+  scoped_ptr<PolicyBundle> InitialLoad(const scoped_refptr<SchemaMap>& schemas);
+
   // Implementations should invoke Reload() when a change is detected. This
   // must be invoked from the background thread and will trigger a Load(),
   // and pass the returned bundle to the provider.
@@ -66,19 +68,7 @@ class AsyncPolicyLoader {
   // makes sure the policies are reloaded if the update events aren't triggered.
   void Reload(bool force);
 
-  // Passes the current |descriptor| for a domain, which is used to determine
-  // which policy names are supported for each component.
-  void RegisterPolicyDomain(
-      scoped_refptr<const PolicyDomainDescriptor> descriptor);
-
- protected:
-  typedef std::map<PolicyDomain, scoped_refptr<const PolicyDomainDescriptor> >
-      DescriptorMap;
-
-  // Returns the current DescriptorMap. This can be used by implementations to
-  // determine the components registered for each domain, and to filter out
-  // unknonwn policies.
-  const DescriptorMap& descriptor_map() const { return descriptor_map_; }
+  const scoped_refptr<SchemaMap>& schema_map() const { return schema_map_; }
 
  private:
   // Allow AsyncPolicyProvider to call Init().
@@ -86,13 +76,12 @@ class AsyncPolicyLoader {
 
   typedef base::Callback<void(scoped_ptr<PolicyBundle>)> UpdateCallback;
 
-  // Used by the AsyncPolicyProvider to do the initial Load(). The first load
-  // is also used to initialize |last_modification_time_|.
-  scoped_ptr<PolicyBundle> InitialLoad();
-
   // Used by the AsyncPolicyProvider to install the |update_callback_|.
   // Invoked on the background thread.
   void Init(const UpdateCallback& update_callback);
+
+  // Used by the AsyncPolicyProvider to reload with an updated SchemaMap.
+  void RefreshPolicies(scoped_refptr<SchemaMap> schema_map);
 
   // Cancels any pending periodic reload and posts one |delay| time units from
   // now.
@@ -121,8 +110,8 @@ class AsyncPolicyLoader {
   // non-local filesystem involved.
   base::Time last_modification_clock_;
 
-  // A map of the currently registered domains and their descriptors.
-  DescriptorMap descriptor_map_;
+  // The current policy schemas that this provider should load.
+  scoped_refptr<SchemaMap> schema_map_;
 
   DISALLOW_COPY_AND_ASSIGN(AsyncPolicyLoader);
 };

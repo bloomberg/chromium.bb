@@ -65,8 +65,8 @@ LoginProfilePolicyProvider::LoginProfilePolicyProvider(
 LoginProfilePolicyProvider::~LoginProfilePolicyProvider() {
 }
 
-void LoginProfilePolicyProvider::Init() {
-  ConfigurationPolicyProvider::Init();
+void LoginProfilePolicyProvider::Init(SchemaRegistry* registry) {
+  ConfigurationPolicyProvider::Init(registry);
   device_policy_service_->AddObserver(POLICY_DOMAIN_CHROME, this);
   if (device_policy_service_->IsInitializationComplete(POLICY_DOMAIN_CHROME))
     UpdateFromDevicePolicy();
