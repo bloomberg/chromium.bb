@@ -46,6 +46,12 @@
 #include "grit/chrome_frame_resources.h"
 #include "url/url_util.h"
 
+#if _ATL_VER >= 0x0C00
+// This was removed between the VS2010 version and the VS2013 version, and
+// the unsuffixed version was repurposed to mean 'S'.
+#define UpdateRegistryFromResourceS UpdateRegistryFromResource
+#endif
+
 using base::win::RegKey;
 
 namespace {
