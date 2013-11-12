@@ -2322,7 +2322,7 @@ ssl3_CalculatePaddingExtensionLength(unsigned int clientHelloLength)
 /* ssl3_AppendPaddingExtension possibly adds an extension which ensures that a
  * ClientHello record is either < 256 bytes or is >= 512 bytes. This ensures
  * that we don't trigger bugs in F5 products. */
-unsigned int
+PRInt32
 ssl3_AppendPaddingExtension(sslSocket *ss, unsigned int extensionLen,
 			    PRUint32 maxBytes)
 {
@@ -2337,7 +2337,7 @@ ssl3_AppendPaddingExtension(sslSocket *ss, unsigned int extensionLen,
 	extensionLen > maxBytes ||
 	paddingLen > sizeof(padding)) {
 	PORT_Assert(0);
-	return 0;
+	return -1;
     }
 
     if (SECSuccess != ssl3_AppendHandshakeNumber(ss, ssl_padding_xtn, 2))

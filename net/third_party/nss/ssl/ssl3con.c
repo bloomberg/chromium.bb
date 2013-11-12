@@ -5248,7 +5248,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
      * in F5 devices.
      *
      * This is not done for DTLS nor for renegotiation. */
-    if (!IS_DTLS(ss) && !ss->firstHsDone) {
+    if (!IS_DTLS(ss) && isTLS && !ss->firstHsDone) {
         paddingExtensionLen = ssl3_CalculatePaddingExtensionLength(length);
         total_exten_len += paddingExtensionLen;
         length += paddingExtensionLen;

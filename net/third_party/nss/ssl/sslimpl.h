@@ -240,7 +240,7 @@ ssl3_CallHelloExtensionSenders(sslSocket *ss, PRBool append, PRUint32 maxBytes,
 extern unsigned int
 ssl3_CalculatePaddingExtensionLength(unsigned int clientHelloLength);
 
-extern unsigned int
+extern PRInt32
 ssl3_AppendPaddingExtension(sslSocket *ss, unsigned int extensionLen,
 			    PRUint32 maxBytes);
 

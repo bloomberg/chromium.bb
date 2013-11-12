@@ -1,5 +1,5 @@
 diff --git a/nss/lib/ssl/ssl3con.c b/nss/lib/ssl/ssl3con.c
-index 8b8b758..567d481 100644
+index 8b8b758..882e356 100644
 --- a/nss/lib/ssl/ssl3con.c
 +++ b/nss/lib/ssl/ssl3con.c
 @@ -4975,6 +4975,7 @@ ssl3_SendClientHello(sslSocket *ss, PRBool resending)
@@ -20,7 +20,7 @@ index 8b8b758..567d481 100644
 +     * in F5 devices.
 +     *
 +     * This is not done for DTLS nor for renegotiation. */
-+    if (!IS_DTLS(ss) && !ss->firstHsDone) {
++    if (!IS_DTLS(ss) && isTLS && !ss->firstHsDone) {
 +        paddingExtensionLen = ssl3_CalculatePaddingExtensionLength(length);
 +        total_exten_len += paddingExtensionLen;
 +        length += paddingExtensionLen;
@@ -46,7 +46,7 @@ index 8b8b758..567d481 100644
      } 
      if (ss->ssl3.hs.sendingSCSV) {
 diff --git a/nss/lib/ssl/ssl3ext.c b/nss/lib/ssl/ssl3ext.c
-index 0415770..8be042e 100644
+index 0415770..cdebcc9 100644
 --- a/nss/lib/ssl/ssl3ext.c
 +++ b/nss/lib/ssl/ssl3ext.c
 @@ -2297,3 +2297,56 @@ ssl3_ClientSendSigAlgsXtn(sslSocket * ss, PRBool append, PRUint32 maxBytes)
@@ -78,7 +78,7 @@ index 0415770..8be042e 100644
 +/* ssl3_AppendPaddingExtension possibly adds an extension which ensures that a
 + * ClientHello record is either < 256 bytes or is >= 512 bytes. This ensures
 + * that we don't trigger bugs in F5 products. */
-+unsigned int
++PRInt32
 +ssl3_AppendPaddingExtension(sslSocket *ss, unsigned int extensionLen,
 +			    PRUint32 maxBytes)
 +{
@@ -93,7 +93,7 @@ index 0415770..8be042e 100644
 +	extensionLen > maxBytes ||
 +	paddingLen > sizeof(padding)) {
 +	PORT_Assert(0);
-+	return 0;
++	return -1;
 +    }
 +
 +    if (SECSuccess != ssl3_AppendHandshakeNumber(ss, ssl_padding_xtn, 2))
@@ -107,7 +107,7 @@ index 0415770..8be042e 100644
 +    return extensionLen;
 +}
 diff --git a/nss/lib/ssl/sslimpl.h b/nss/lib/ssl/sslimpl.h
-index 614eed1..621f25e 100644
+index 614eed1..9c789bf 100644
 --- a/nss/lib/ssl/sslimpl.h
 +++ b/nss/lib/ssl/sslimpl.h
 @@ -237,6 +237,13 @@ extern PRInt32
@@ -117,7 +117,7 @@ index 614eed1..621f25e 100644
 +extern unsigned int
 +ssl3_CalculatePaddingExtensionLength(unsigned int clientHelloLength);
 +
-+extern unsigned int
++extern PRInt32
 +ssl3_AppendPaddingExtension(sslSocket *ss, unsigned int extensionLen,
 +			    PRUint32 maxBytes);
 +
