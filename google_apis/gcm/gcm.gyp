@@ -31,16 +31,22 @@
       'dependencies': [
         '../../base/base.gyp:base',
         '../../base/third_party/dynamic_annotations/dynamic_annotations.gyp:dynamic_annotations',
+        '../../components/components.gyp:encryptor',
         '../../net/net.gyp:net',
+        '../../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
         '../../third_party/protobuf/protobuf.gyp:protobuf_lite'
       ],
       'sources': [
+        'base/mcs_message.h',
+        'base/mcs_message.cc',
         'base/mcs_util.h',
         'base/mcs_util.cc',
         'base/socket_stream.h',
         'base/socket_stream.cc',
         'engine/connection_handler.h',
         'engine/connection_handler.cc',
+        'engine/rmq_store.h',
+        'engine/rmq_store.cc',
         'gcm_client.cc',
         'gcm_client.h',
         'gcm_client_impl.cc',
@@ -63,6 +69,7 @@
       'dependencies': [
         '../../base/base.gyp:run_all_unittests',
         '../../base/base.gyp:base',
+        '../../components/components.gyp:encryptor',
         '../../net/net.gyp:net_test_support',
         '../../testing/gtest.gyp:gtest',
         '../../third_party/protobuf/protobuf.gyp:protobuf_lite',
@@ -72,6 +79,7 @@
         'base/mcs_util_unittest.cc',
         'base/socket_stream_unittest.cc',
         'engine/connection_handler_unittest.cc',
+        'engine/rmq_store_unittest.cc',
       ]
     },
   ],
