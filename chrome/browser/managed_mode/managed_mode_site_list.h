@@ -12,18 +12,12 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
-#include "extensions/common/extension_resource.h"
 
-class ExtensionServiceInterface;
 class Profile;
 
 namespace base {
 class DictionaryValue;
 class ListValue;
-}
-
-namespace extensions {
-class Extension;
 }
 
 // This class represents a "site list" that is part of a content pack. It is
@@ -59,7 +53,7 @@ class ManagedModeSiteList {
   };
 
   ManagedModeSiteList(const std::string& extension_id,
-                      const extensions::ExtensionResource& path);
+                      const base::FilePath& path);
   ~ManagedModeSiteList();
 
   // Creates a copy of the site list.
@@ -80,7 +74,7 @@ class ManagedModeSiteList {
                         base::DictionaryValue* dest);
 
   std::string extension_id_;
-  extensions::ExtensionResource path_;
+  base::FilePath path_;
   scoped_ptr<base::DictionaryValue> categories_;
   scoped_ptr<base::ListValue> sites_;
 

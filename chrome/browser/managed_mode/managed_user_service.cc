@@ -8,8 +8,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/metrics/field_trial.h"
 #include "base/prefs/pref_service.h"
-#include "base/prefs/scoped_user_pref_update.h"
-#include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -30,12 +28,10 @@
 #include "chrome/browser/signin/signin_manager.h"
 #include "chrome/browser/signin/signin_manager_base.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
-#include "chrome/browser/sync/glue/session_model_associator.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/managed_mode_private/managed_mode_handler.h"
 #include "chrome/common/extensions/extension_set.h"
@@ -44,7 +40,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_source.h"
-#include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
@@ -56,7 +51,6 @@
 #endif
 
 using base::DictionaryValue;
-using base::Value;
 using content::BrowserThread;
 
 const char kManagedModeFinchActive[] = "Active";
@@ -420,8 +414,10 @@ ScopedVector<ManagedModeSiteList> ManagedUserService::GetActiveSiteLists() {
 
     extensions::ExtensionResource site_list =
         extensions::ManagedModeInfo::GetContentPackSiteList(extension);
-    if (!site_list.empty())
-      site_lists.push_back(new ManagedModeSiteList(extension->id(), site_list));
+    if (!site_list.empty()) {
+      site_lists.push_back(new ManagedModeSiteList(extension->id(),
+                                                   site_list.GetFilePath()));
+    }
   }
 
   return site_lists.Pass();

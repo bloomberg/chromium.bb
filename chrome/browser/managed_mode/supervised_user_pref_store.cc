@@ -56,7 +56,7 @@ SupervisedUserPrefStore::SupervisedUserPrefStore(
 }
 
 bool SupervisedUserPrefStore::GetValue(const std::string& key,
-                                    const base::Value** value) const {
+                                       const base::Value** value) const {
   DCHECK(prefs_);
   return prefs_->GetValue(key, value);
 }
@@ -118,7 +118,6 @@ void SupervisedUserPrefStore::OnNewSettingsAvailable(
   for (std::vector<std::string>::const_iterator pref(changed_prefs.begin());
        pref != changed_prefs.end();
        ++pref) {
-    FOR_EACH_OBSERVER(
-        PrefStore::Observer, observers_, OnPrefValueChanged(*pref));
+    FOR_EACH_OBSERVER(Observer, observers_, OnPrefValueChanged(*pref));
   }
 }

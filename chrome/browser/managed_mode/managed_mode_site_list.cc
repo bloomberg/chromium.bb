@@ -134,7 +134,7 @@ ManagedModeSiteList::Site::~Site() {}
 
 ManagedModeSiteList::ManagedModeSiteList(
     const std::string& extension_id,
-    const extensions::ExtensionResource& path)
+    const base::FilePath& path)
     : extension_id_(extension_id),
       path_(path) {
 }
@@ -194,30 +194,29 @@ bool ManagedModeSiteList::LazyLoad() {
   if (sites_.get())
     return true;
 
-  base::FilePath path = path_.GetFilePath();
-  JSONFileValueSerializer serializer(path);
+  JSONFileValueSerializer serializer(path_);
   std::string error;
   scoped_ptr<base::Value> value(serializer.Deserialize(NULL, &error));
   if (!value.get()) {
-    LOG(ERROR) << "Couldn't load site list " << path.value() << ": "
+    LOG(ERROR) << "Couldn't load site list " << path_.value() << ": "
                << error;
     return false;
   }
 
   DictionaryValue* dict = NULL;
   if (!value->GetAsDictionary(&dict)) {
-    LOG(ERROR) << "Site list " << path.value() << " is invalid";
+    LOG(ERROR) << "Site list " << path_.value() << " is invalid";
     return false;
   }
 
   int version = 0;
   if (!dict->GetInteger(kSitelistFormatVersionKey, &version)) {
-    LOG(ERROR) << "Site list " << path.value() << " has invalid version";
+    LOG(ERROR) << "Site list " << path_.value() << " has invalid version";
     return false;
   }
 
   if (version > kSitelistFormatVersion) {
-    LOG(ERROR) << "Site list " << path.value() << " has a too new format";
+    LOG(ERROR) << "Site list " << path_.value() << " has a too new format";
     return false;
   }
 
