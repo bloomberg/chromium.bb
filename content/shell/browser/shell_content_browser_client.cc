@@ -8,8 +8,6 @@
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/storage_partition.h"
@@ -152,12 +150,6 @@ void ShellContentBrowserClient::RenderProcessHostCreated(
       BrowserContext::GetDefaultStoragePartition(browser_context())
           ->GetURLRequestContext()));
   host->Send(new ShellViewMsg_SetWebKitSourceDir(webkit_source_dir_));
-  registrar_.Add(this,
-                 NOTIFICATION_RENDERER_PROCESS_CREATED,
-                 Source<RenderProcessHost>(host));
-  registrar_.Add(this,
-                 NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-                 Source<RenderProcessHost>(host));
 }
 
 net::URLRequestContextGetter* ShellContentBrowserClient::CreateRequestContext(
@@ -321,35 +313,6 @@ void ShellContentBrowserClient::GetAdditionalMappedFilesForChildProcess(
 #endif  // defined(OS_ANDROID)
 }
 #endif  // defined(OS_POSIX) && !defined(OS_MACOSX)
-
-void ShellContentBrowserClient::Observe(int type,
-                                        const NotificationSource& source,
-                                        const NotificationDetails& details) {
-  switch (type) {
-    case NOTIFICATION_RENDERER_PROCESS_CREATED: {
-      registrar_.Remove(this,
-                        NOTIFICATION_RENDERER_PROCESS_CREATED,
-                        source);
-      registrar_.Remove(this,
-                        NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-                        source);
-      break;
-    }
-
-    case NOTIFICATION_RENDERER_PROCESS_TERMINATED: {
-      registrar_.Remove(this,
-                        NOTIFICATION_RENDERER_PROCESS_CREATED,
-                        source);
-      registrar_.Remove(this,
-                        NOTIFICATION_RENDERER_PROCESS_TERMINATED,
-                        source);
-      break;
-    }
-
-    default:
-      NOTREACHED();
-  }
-}
 
 ShellBrowserContext* ShellContentBrowserClient::browser_context() {
   return shell_browser_main_parts_->browser_context();
