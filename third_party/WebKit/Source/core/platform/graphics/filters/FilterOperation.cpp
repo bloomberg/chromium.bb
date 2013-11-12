@@ -116,22 +116,6 @@ PassRefPtr<FilterOperation> BasicComponentTransferFilterOperation::blend(const F
     return BasicComponentTransferFilterOperation::create(result, m_type);
 }
 
-PassRefPtr<FilterOperation> GammaFilterOperation::blend(const FilterOperation* from, double progress) const
-{
-    if (!from)
-        return GammaFilterOperation::create(
-            WebCore::blend(m_amplitude, 1.0, progress),
-            WebCore::blend(m_exponent, 1.0, progress),
-            WebCore::blend(m_offset, 0.0, progress), m_type);
-
-    ASSERT_WITH_SECURITY_IMPLICATION(from->isSameType(*this));
-    const GammaFilterOperation* fromOp = static_cast<const GammaFilterOperation*>(from);
-    return GammaFilterOperation::create(
-        WebCore::blend(fromOp->amplitude(), m_amplitude, progress),
-        WebCore::blend(fromOp->exponent(), m_exponent, progress),
-        WebCore::blend(fromOp->offset(), m_offset, progress), m_type);
-}
-
 PassRefPtr<FilterOperation> BlurFilterOperation::blend(const FilterOperation* from, double progress) const
 {
     LengthType lengthType = m_stdDeviation.type();

@@ -93,8 +93,6 @@ public:
     virtual OperationType getOperationType() const { return m_type; }
     virtual bool isSameType(const FilterOperation& o) const { return o.getOperationType() == m_type; }
 
-    virtual bool isDefault() const { return false; }
-
     // True if the alpha channel of any pixel can change under this operation.
     virtual bool affectsOpacity() const { return false; }
     // True if the the value of one pixel can affect the value of another pixel under this operation, such as blur.
@@ -114,34 +112,6 @@ private:
 
 #define DEFINE_FILTER_OPERATION_TYPE_CASTS(thisType, type) \
     DEFINE_TYPE_CASTS(thisType, FilterOperation, op, op->getOperationType() == FilterOperation::type, op.getOperationType() == FilterOperation::type);
-
-// FIXME: DefaultFilterOperation is not used.
-class DefaultFilterOperation : public FilterOperation {
-public:
-    static PassRefPtr<DefaultFilterOperation> create(OperationType type)
-    {
-        return adoptRef(new DefaultFilterOperation(type));
-    }
-
-private:
-    virtual PassRefPtr<FilterOperation> blend(const FilterOperation*, double) const OVERRIDE
-    {
-        ASSERT_NOT_REACHED();
-        return 0;
-    }
-
-    virtual bool operator==(const FilterOperation& o) const
-    {
-        return isSameType(o);
-    }
-
-    virtual bool isDefault() const { return true; }
-
-    DefaultFilterOperation(OperationType type)
-        : FilterOperation(type)
-    {
-    }
-};
 
 class ReferenceFilterOperation : public FilterOperation {
 public:
@@ -270,42 +240,6 @@ inline bool isBasicComponentTransferFilterOperation(const FilterOperation& opera
 }
 
 DEFINE_TYPE_CASTS(BasicComponentTransferFilterOperation, FilterOperation, op, isBasicComponentTransferFilterOperation(*op), isBasicComponentTransferFilterOperation(op));
-
-// FIXME: GammaFilterOperation is not used.
-class GammaFilterOperation : public FilterOperation {
-public:
-    static PassRefPtr<GammaFilterOperation> create(double amplitude, double exponent, double offset, OperationType type)
-    {
-        return adoptRef(new GammaFilterOperation(amplitude, exponent, offset, type));
-    }
-
-    double amplitude() const { return m_amplitude; }
-    double exponent() const { return m_exponent; }
-    double offset() const { return m_offset; }
-
-
-private:
-    virtual PassRefPtr<FilterOperation> blend(const FilterOperation* from, double progress) const OVERRIDE;
-    virtual bool operator==(const FilterOperation& o) const
-    {
-        if (!isSameType(o))
-            return false;
-        const GammaFilterOperation* other = static_cast<const GammaFilterOperation*>(&o);
-        return m_amplitude == other->m_amplitude && m_exponent == other->m_exponent && m_offset == other->m_offset;
-    }
-
-    GammaFilterOperation(double amplitude, double exponent, double offset, OperationType type)
-        : FilterOperation(type)
-        , m_amplitude(amplitude)
-        , m_exponent(exponent)
-        , m_offset(offset)
-    {
-    }
-
-    double m_amplitude;
-    double m_exponent;
-    double m_offset;
-};
 
 class BlurFilterOperation : public FilterOperation {
 public:
