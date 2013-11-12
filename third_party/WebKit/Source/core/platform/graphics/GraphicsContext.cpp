@@ -1679,11 +1679,6 @@ void GraphicsContext::adjustLineToPixelBoundaries(FloatPoint& p1, FloatPoint& p2
     }
 }
 
-static bool scalesMatch(AffineTransform a, AffineTransform b)
-{
-    return a.xScale() == b.xScale() && a.yScale() == b.yScale();
-}
-
 PassOwnPtr<ImageBuffer> GraphicsContext::createCompatibleBuffer(const IntSize& size, bool hasAlpha) const
 {
     // Make the buffer larger if the context's transform is scaling it so we need a higher
@@ -1701,13 +1696,6 @@ PassOwnPtr<ImageBuffer> GraphicsContext::createCompatibleBuffer(const IntSize& s
         static_cast<float>(scaledSize.height()) / size.height()));
 
     return buffer.release();
-}
-
-bool GraphicsContext::isCompatibleWithBuffer(ImageBuffer* buffer) const
-{
-    GraphicsContext* bufferContext = buffer->context();
-
-    return scalesMatch(getCTM(), bufferContext->getCTM()) && m_accelerated == bufferContext->isAccelerated();
 }
 
 void GraphicsContext::addCornerArc(SkPath* path, const SkRect& rect, const IntSize& size, int startAngle)

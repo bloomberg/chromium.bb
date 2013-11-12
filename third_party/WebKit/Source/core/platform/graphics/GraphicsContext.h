@@ -368,7 +368,6 @@ public:
     // Create an image buffer compatible with this context, with suitable resolution
     // for drawing into the buffer and then into this context.
     PassOwnPtr<ImageBuffer> createCompatibleBuffer(const IntSize&, bool hasAlpha = true) const;
-    bool isCompatibleWithBuffer(ImageBuffer*) const;
 
     static void adjustLineToPixelBoundaries(FloatPoint& p1, FloatPoint& p2, float strokeWidth, StrokeStyle);
 
