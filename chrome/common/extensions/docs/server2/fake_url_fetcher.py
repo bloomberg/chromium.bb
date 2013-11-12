@@ -12,7 +12,7 @@ from local_file_system import LocalFileSystem
 class _Response(object):
   def __init__(self, content=''):
     self.content = content
-    self.headers = { 'content-type': 'none' }
+    self.headers = {'Content-Type': 'none'}
     self.status_code = 200
 
 
