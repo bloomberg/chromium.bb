@@ -32,28 +32,29 @@ int InitInternal(const base::FilePath& path,
   int64 rv = file_stream->OpenSync(
       path, base::PLATFORM_FILE_OPEN | base::PLATFORM_FILE_READ);
   if (rv != OK) {
-    // If the file can't be opened, we'll just upload an empty file.
+    // If the file can't be opened, the upload should fail.
     DLOG(WARNING) << "Failed to open \"" << path.value()
                   << "\" for reading: " << rv;
-    file_stream.reset();
+    return rv;
   } else if (range_offset) {
     rv = file_stream->SeekSync(FROM_BEGIN, range_offset);
     if (rv < 0) {
       DLOG(WARNING) << "Failed to seek \"" << path.value()
                     << "\" to offset: " << range_offset << " (" << rv << ")";
-      file_stream.reset();
+      return rv;
     }
   }
 
   int64 length = 0;
-  if (file_stream.get() &&
-      file_util::GetFileSize(path, &length) &&
-      range_offset < static_cast<uint64>(length)) {
+  if (!file_util::GetFileSize(path, &length)) {
+    DLOG(WARNING) << "Failed to get file size of \"" << path.value() << "\"";
+    return ERR_FILE_NOT_FOUND;
+  }
+
+  if (range_offset < static_cast<uint64>(length)) {
     // Compensate for the offset.
     length = std::min(length - range_offset, range_length);
   }
-  *out_content_length = length;
-  out_file_stream->reset(file_stream.release());
 
   // If the underlying file has been changed and the expected file modification
   // time is set, treat it as error. Note that the expected modification time
@@ -61,11 +62,18 @@ int InitInternal(const base::FilePath& path,
   // time_t to compare. This check is used for sliced files.
   if (!expected_modification_time.is_null()) {
     base::PlatformFileInfo info;
-    if (file_util::GetFileInfo(path, &info) &&
-        expected_modification_time.ToTimeT() != info.last_modified.ToTimeT()) {
+    if (!file_util::GetFileInfo(path, &info)) {
+      DLOG(WARNING) << "Failed to get file info of \"" << path.value() << "\"";
+      return ERR_FILE_NOT_FOUND;
+    }
+
+    if (expected_modification_time.ToTimeT() != info.last_modified.ToTimeT()) {
       return ERR_UPLOAD_FILE_CHANGED;
     }
   }
+
+  *out_content_length = length;
+  out_file_stream->reset(file_stream.release());
 
   return OK;
 }

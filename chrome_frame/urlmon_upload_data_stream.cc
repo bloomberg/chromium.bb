@@ -59,11 +59,10 @@ net::UploadDataStream* CreateUploadDataStream(net::UploadData* upload_data) {
 
 }  // namespace
 
-void UrlmonUploadDataStream::Initialize(net::UploadData* upload_data) {
+bool UrlmonUploadDataStream::Initialize(net::UploadData* upload_data) {
   upload_data_ = upload_data;
   request_body_stream_.reset(CreateUploadDataStream(upload_data));
-  const int result = request_body_stream_->Init(net::CompletionCallback());
-  DCHECK_EQ(net::OK, result);
+  return request_body_stream_->Init(net::CompletionCallback()) == net::OK;
 }
 
 STDMETHODIMP UrlmonUploadDataStream::Read(void* pv, ULONG cb, ULONG* read) {

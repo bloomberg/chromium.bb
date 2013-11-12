@@ -32,6 +32,7 @@ bool PluginUrlRequest::Initialize(PluginUrlRequestDelegate* delegate,
   extra_headers_ = extra_headers;
   resource_type_ = resource_type;
   load_flags_ = load_flags;
+  enable_frame_busting_ = enable_frame_busting;
 
   if (upload_data) {
     // We store a pointer to UrlmonUploadDataStream and not net::UploadData
@@ -44,7 +45,11 @@ bool PluginUrlRequest::Initialize(PluginUrlRequestDelegate* delegate,
       NOTREACHED();
     } else {
       upload_stream->AddRef();
-      upload_stream->Initialize(upload_data);
+      if (!upload_stream->Initialize(upload_data)) {
+        upload_stream->Release();
+        return true;
+      }
+
       upload_data_.Attach(upload_stream);
       is_chunked_upload_ = upload_data->is_chunked();
       STATSTG stat;
@@ -52,8 +57,6 @@ bool PluginUrlRequest::Initialize(PluginUrlRequestDelegate* delegate,
       post_data_len_ = stat.cbSize.QuadPart;
     }
   }
-
-  enable_frame_busting_ = enable_frame_busting;
 
   return true;
 }

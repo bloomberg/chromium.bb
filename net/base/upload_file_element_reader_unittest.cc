@@ -231,9 +231,7 @@ TEST_F(UploadFileElementReaderTest, WrongPath) {
                                   base::Time()));
   TestCompletionCallback init_callback;
   ASSERT_EQ(ERR_IO_PENDING, reader_->Init(init_callback.callback()));
-  EXPECT_EQ(OK, init_callback.WaitForResult());
-  EXPECT_EQ(0U, reader_->GetContentLength());
-  EXPECT_EQ(0U, reader_->BytesRemaining());
+  EXPECT_EQ(ERR_FILE_NOT_FOUND, init_callback.WaitForResult());
 }
 
 
@@ -366,9 +364,7 @@ TEST_F(UploadFileElementReaderSyncTest, WrongPath) {
   const base::FilePath wrong_path(FILE_PATH_LITERAL("wrong_path"));
   reader_.reset(new UploadFileElementReaderSync(
       wrong_path, 0, kuint64max, base::Time()));
-  ASSERT_EQ(OK, reader_->Init(CompletionCallback()));
-  EXPECT_EQ(0U, reader_->GetContentLength());
-  EXPECT_EQ(0U, reader_->BytesRemaining());
+  ASSERT_EQ(ERR_FILE_NOT_FOUND, reader_->Init(CompletionCallback()));
 }
 
 }  // namespace net

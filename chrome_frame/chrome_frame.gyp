@@ -430,6 +430,7 @@
       'include_dirs': [
         '<(DEPTH)/breakpad/src',
       ],
+      'defines': [ 'CHROME_FRAME_NET_TESTS=1' ],
       'sources': [
         '../net/url_request/url_request_unittest.cc',
         'test/chrome_frame_test_utils.cc',

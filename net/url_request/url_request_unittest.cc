@@ -4690,15 +4690,6 @@ TEST_F(URLRequestTestHTTP, PostFileTest) {
                                     0,
                                     kuint64max,
                                     base::Time()));
-
-    // This file should just be ignored in the upload stream.
-    element_readers.push_back(new UploadFileElementReader(
-        base::MessageLoopProxy::current().get(),
-        base::FilePath(FILE_PATH_LITERAL(
-            "c:\\path\\to\\non\\existant\\file.randomness.12345")),
-        0,
-        kuint64max,
-        base::Time()));
     r.set_upload(make_scoped_ptr(
         new UploadDataStream(element_readers.Pass(), 0)));
 
@@ -4721,6 +4712,50 @@ TEST_F(URLRequestTestHTTP, PostFileTest) {
 
     EXPECT_EQ(size, d.bytes_received());
     EXPECT_EQ(std::string(&buf[0], size), d.data_received());
+  }
+}
+
+TEST_F(URLRequestTestHTTP, PostUnreadableFileTest) {
+  ASSERT_TRUE(test_server_.Start());
+
+  TestDelegate d;
+  {
+    URLRequest r(test_server_.GetURL("echo"), DEFAULT_PRIORITY,
+                 &d, &default_context_);
+    r.set_method("POST");
+
+    ScopedVector<UploadElementReader> element_readers;
+
+    element_readers.push_back(new UploadFileElementReader(
+        base::MessageLoopProxy::current().get(),
+        base::FilePath(FILE_PATH_LITERAL(
+            "c:\\path\\to\\non\\existant\\file.randomness.12345")),
+        0,
+        kuint64max,
+        base::Time()));
+    r.set_upload(make_scoped_ptr(
+        new UploadDataStream(element_readers.Pass(), 0)));
+
+    r.Start();
+    EXPECT_TRUE(r.is_pending());
+
+    base::RunLoop().Run();
+
+    // TODO(tzik): Remove this #if after we stop supporting Chrome Frame.
+    // http://crbug.com/317432
+#if defined(CHROME_FRAME_NET_TESTS)
+    EXPECT_FALSE(d.request_failed());
+    EXPECT_FALSE(d.received_data_before_response());
+    EXPECT_EQ(0, d.bytes_received());
+    EXPECT_EQ(URLRequestStatus::SUCCESS, r.status().status());
+    EXPECT_EQ(OK, r.status().error());
+#else
+    EXPECT_TRUE(d.request_failed());
+    EXPECT_FALSE(d.received_data_before_response());
+    EXPECT_EQ(0, d.bytes_received());
+    EXPECT_EQ(URLRequestStatus::FAILED, r.status().status());
+    EXPECT_EQ(ERR_FILE_NOT_FOUND, r.status().error());
+#endif  // defined(CHROME_FRAME_NET_TESTS)
   }
 }
 

@@ -27,7 +27,7 @@ class UrlmonUploadDataStream : public CComObjectRootEx<CComMultiThreadModel>,
     COM_INTERFACE_ENTRY(IStream)
   END_COM_MAP()
 
-  void Initialize(net::UploadData* upload_data);
+  bool Initialize(net::UploadData* upload_data);
 
   // Partial implementation of IStream.
   STDMETHOD(Read)(void* pv, ULONG cb, ULONG* read);

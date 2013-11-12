@@ -12,6 +12,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/test/test_file_util.h"
 #include "net/base/auth.h"
 #include "net/base/net_log_unittest.h"
 #include "net/base/request_priority.h"
@@ -456,6 +457,33 @@ class SpdyNetworkTransactionTest
       google_post_request_.upload_data_stream = upload_data_stream_.get();
       google_post_request_initialized_ = true;
     }
+    return google_post_request_;
+  }
+
+  const HttpRequestInfo& CreateUnreadableFilePostRequest() {
+    if (google_post_request_initialized_)
+      return google_post_request_;
+
+    base::FilePath file_path;
+    CHECK(file_util::CreateTemporaryFileInDir(temp_dir_.path(), &file_path));
+    CHECK_EQ(static_cast<int>(kUploadDataSize),
+             file_util::WriteFile(file_path, kUploadData, kUploadDataSize));
+    CHECK(file_util::MakeFileUnreadable(file_path));
+
+    ScopedVector<UploadElementReader> element_readers;
+    element_readers.push_back(
+        new UploadFileElementReader(base::MessageLoopProxy::current().get(),
+                                    file_path,
+                                    0,
+                                    kUploadDataSize,
+                                    base::Time()));
+    upload_data_stream_.reset(
+        new UploadDataStream(element_readers.Pass(), 0));
+
+    google_post_request_.method = "POST";
+    google_post_request_.url = GURL(kDefaultURL);
+    google_post_request_.upload_data_stream = upload_data_stream_.get();
+    google_post_request_initialized_ = true;
     return google_post_request_;
   }
 
@@ -1783,6 +1811,28 @@ TEST_P(SpdyNetworkTransactionTest, FilePost) {
   EXPECT_EQ(OK, out.rv);
   EXPECT_EQ("HTTP/1.1 200 OK", out.status_line);
   EXPECT_EQ("hello!", out.response_data);
+}
+
+// Test that a POST with a unreadable file fails.
+TEST_P(SpdyNetworkTransactionTest, UnreadableFilePost) {
+  MockWrite writes[] = {
+    MockWrite(ASYNC, 0, 0)  // EOF
+  };
+  MockRead reads[] = {
+    MockRead(ASYNC, 0, 0)  // EOF
+  };
+
+  DelayedSocketData data(1, reads, arraysize(reads), writes, arraysize(writes));
+  NormalSpdyTransactionHelper helper(CreateUnreadableFilePostRequest(),
+                                     DEFAULT_PRIORITY,
+                                     BoundNetLog(), GetParam(), NULL);
+  helper.RunPreTestSetup();
+  helper.AddData(&data);
+  helper.RunDefaultTest();
+
+  base::RunLoop().RunUntilIdle();
+  helper.VerifyDataNotConsumed();
+  EXPECT_EQ(ERR_ACCESS_DENIED, helper.output().rv);
 }
 
 // Test that a complex POST works.

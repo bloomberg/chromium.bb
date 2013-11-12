@@ -7724,25 +7724,12 @@ TEST_P(HttpNetworkTransactionTest, UploadUnreadableFile) {
   request.upload_data_stream = &upload_data_stream;
   request.load_flags = 0;
 
-  // If we try to upload an unreadable file, the network stack should report
-  // the file size as zero and upload zero bytes for that file.
+  // If we try to upload an unreadable file, the transaction should fail.
   scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
   scoped_ptr<HttpTransaction> trans(
       new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
 
-  MockRead data_reads[] = {
-    MockRead("HTTP/1.0 200 OK\r\n\r\n"),
-    MockRead(SYNCHRONOUS, OK),
-  };
-  MockWrite data_writes[] = {
-    MockWrite("POST /upload HTTP/1.1\r\n"
-              "Host: www.google.com\r\n"
-              "Connection: keep-alive\r\n"
-              "Content-Length: 0\r\n\r\n"),
-    MockWrite(SYNCHRONOUS, OK),
-  };
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), data_writes,
-                                arraysize(data_writes));
+  StaticSocketDataProvider data(NULL, 0, NULL, 0);
   session_deps_.socket_factory->AddSocketDataProvider(&data);
 
   TestCompletionCallback callback;
@@ -7751,103 +7738,10 @@ TEST_P(HttpNetworkTransactionTest, UploadUnreadableFile) {
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   rv = callback.WaitForResult();
-  EXPECT_EQ(OK, rv);
+  EXPECT_EQ(ERR_ACCESS_DENIED, rv);
 
   const HttpResponseInfo* response = trans->GetResponseInfo();
-  ASSERT_TRUE(response != NULL);
-  EXPECT_TRUE(response->headers.get() != NULL);
-  EXPECT_EQ("HTTP/1.0 200 OK", response->headers->GetStatusLine());
-
-  base::DeleteFile(temp_file, false);
-}
-
-TEST_P(HttpNetworkTransactionTest, UnreadableUploadFileAfterAuthRestart) {
-  base::FilePath temp_file;
-  ASSERT_TRUE(file_util::CreateTemporaryFile(&temp_file));
-  std::string temp_file_contents("Unreadable file.");
-  std::string unreadable_contents(temp_file_contents.length(), '\0');
-  ASSERT_TRUE(file_util::WriteFile(temp_file, temp_file_contents.c_str(),
-                                   temp_file_contents.length()));
-
-  ScopedVector<UploadElementReader> element_readers;
-  element_readers.push_back(
-      new UploadFileElementReader(base::MessageLoopProxy::current().get(),
-                                  temp_file,
-                                  0,
-                                  kuint64max,
-                                  base::Time()));
-  UploadDataStream upload_data_stream(element_readers.Pass(), 0);
-
-  HttpRequestInfo request;
-  request.method = "POST";
-  request.url = GURL("http://www.google.com/upload");
-  request.upload_data_stream = &upload_data_stream;
-  request.load_flags = 0;
-
-  scoped_refptr<HttpNetworkSession> session(CreateSession(&session_deps_));
-  scoped_ptr<HttpTransaction> trans(
-      new HttpNetworkTransaction(DEFAULT_PRIORITY, session));
-
-  MockRead data_reads[] = {
-    MockRead("HTTP/1.1 401 Unauthorized\r\n"),
-    MockRead("WWW-Authenticate: Basic realm=\"MyRealm1\"\r\n"),
-    MockRead("Content-Length: 0\r\n\r\n"),  // No response body.
-
-    MockRead("HTTP/1.1 200 OK\r\n"),
-    MockRead("Content-Length: 0\r\n\r\n"),
-    MockRead(SYNCHRONOUS, OK),
-  };
-  MockWrite data_writes[] = {
-    MockWrite("POST /upload HTTP/1.1\r\n"
-              "Host: www.google.com\r\n"
-              "Connection: keep-alive\r\n"
-              "Content-Length: 16\r\n\r\n"),
-    MockWrite(SYNCHRONOUS, temp_file_contents.c_str()),
-
-    MockWrite("POST /upload HTTP/1.1\r\n"
-              "Host: www.google.com\r\n"
-              "Connection: keep-alive\r\n"
-              "Content-Length: 0\r\n"
-              "Authorization: Basic Zm9vOmJhcg==\r\n\r\n"),
-    MockWrite(SYNCHRONOUS, unreadable_contents.c_str(),
-              temp_file_contents.length()),
-    MockWrite(SYNCHRONOUS, OK),
-  };
-  StaticSocketDataProvider data(data_reads, arraysize(data_reads), data_writes,
-                                arraysize(data_writes));
-  session_deps_.socket_factory->AddSocketDataProvider(&data);
-
-  TestCompletionCallback callback1;
-
-  int rv = trans->Start(&request, callback1.callback(), BoundNetLog());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-
-  rv = callback1.WaitForResult();
-  EXPECT_EQ(OK, rv);
-
-  const HttpResponseInfo* response = trans->GetResponseInfo();
-  ASSERT_TRUE(response != NULL);
-  ASSERT_TRUE(response->headers.get() != NULL);
-  EXPECT_EQ("HTTP/1.1 401 Unauthorized", response->headers->GetStatusLine());
-  EXPECT_TRUE(CheckBasicServerAuth(response->auth_challenge.get()));
-
-  // Now make the file unreadable and try again.
-  ASSERT_TRUE(file_util::MakeFileUnreadable(temp_file));
-
-  TestCompletionCallback callback2;
-
-  rv = trans->RestartWithAuth(
-      AuthCredentials(kFoo, kBar), callback2.callback());
-  EXPECT_EQ(ERR_IO_PENDING, rv);
-
-  rv = callback2.WaitForResult();
-  EXPECT_EQ(OK, rv);
-
-  response = trans->GetResponseInfo();
-  ASSERT_TRUE(response != NULL);
-  EXPECT_TRUE(response->headers.get() != NULL);
-  EXPECT_TRUE(response->auth_challenge.get() == NULL);
-  EXPECT_EQ("HTTP/1.1 200 OK", response->headers->GetStatusLine());
+  EXPECT_FALSE(response);
 
   base::DeleteFile(temp_file, false);
 }
