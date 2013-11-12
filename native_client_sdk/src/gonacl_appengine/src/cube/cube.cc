@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "common/fps.h"
 #include "matrix.h"
 #include "ppapi/cpp/graphics_3d.h"
 #include "ppapi/cpp/instance.h"
@@ -240,7 +241,9 @@ class CubeInstance : public pp::Instance {
         mvp_loc_(0),
         x_angle_(0),
         y_angle_(0),
-        animating_(true) {}
+        animating_(true) {
+    FpsInit(&fps_state_);
+  }
 
   virtual bool Init(uint32_t argc, const char* argn[], const char* argv[]) {
     return true;
@@ -471,6 +474,10 @@ class CubeInstance : public pp::Instance {
     Render();
     context_.SwapBuffers(
         callback_factory_.NewCallback(&CubeInstance::MainLoop));
+
+    double fps;
+    if (FpsStep(&fps_state_, &fps))
+      PostMessage(fps);
   }
 
   pp::CompletionCallbackFactory<CubeInstance> callback_factory_;
@@ -493,6 +500,7 @@ class CubeInstance : public pp::Instance {
   float x_angle_;
   float y_angle_;
   bool animating_;
+  FpsState fps_state_;
 };
 
 class CubeModule : public pp::Module {

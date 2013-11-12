@@ -25,6 +25,13 @@ function NaClAMBulletDropObject() {
   aM.sendMessage('dropobject', {});
 }
 
+// Values used to display simulation time every second.
+var fps = {
+  lastTimeMs: +new Date(),
+  sumSimTime: 0,
+  numSteps: 0
+};
+
 function NaClAMBulletStepSceneHandler(msg) {
   // Step the scene
   var i;
@@ -35,14 +42,28 @@ function NaClAMBulletStepSceneHandler(msg) {
       skipSceneUpdates--;
       return;
     }
-    var simTime = msg.header.simtime;
-    document.getElementById('simulationTime').textContent = simTime;
     TransformBuffer = new Float32Array(msg.frames[0]);
     numTransforms = TransformBuffer.length/16;
     for (i = 0; i < numTransforms; i++) {
       for (j = 0; j < 16; j++) {
         objects[i].matrixWorld.elements[j] = TransformBuffer[i*16+j];
       }
+    }
+
+    var simTime = msg.header.simtime;
+    fps.sumSimTime += simTime;
+    fps.numSteps++;
+
+    // Update FPS.
+    var curTimeMs = +new Date();
+    if (curTimeMs - fps.lastTimeMs > 1000) {  // 1 sec
+      var meanSimTime = fps.sumSimTime / fps.numSteps;
+      $('simulationTime').textContent = meanSimTime.toFixed(0);
+      $('fps').textContent =
+          (fps.numSteps * 1000 / (curTimeMs - fps.lastTimeMs)).toFixed(1);
+      fps.lastTimeMs = curTimeMs;
+      fps.sumSimTime = 0;
+      fps.numSteps = 0;
     }
   }
 }

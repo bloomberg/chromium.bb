@@ -13,7 +13,7 @@ include $(NACL_SDK_ROOT)/tools/common.mk
 TARGET = cube
 LIBS = $(DEPS) ppapi_gles2 ppapi_cpp ppapi pthread
 
-CFLAGS = -Wall
+CFLAGS = -Wall -I..
 SOURCES = \
 	cube.cc \
 	texture.cc \

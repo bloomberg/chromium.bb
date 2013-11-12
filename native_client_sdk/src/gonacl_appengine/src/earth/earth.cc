@@ -22,12 +22,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/time.h>
 #include <unistd.h>
 
 #include <algorithm>
 #include <string>
 
+#include "common/fps.h"
 #include "sdk_util/macros.h"
 #include "sdk_util/thread_pool.h"
 
@@ -49,19 +49,6 @@ const float kWheelSpeed = 2.0f;
 const float kLightMin = 0.0f;
 const float kLightMax = 2.0f;
 const int kFrameTimeBufferSize = 512;
-
-// Timer helper for benchmarking.  Returns seconds elapsed since program start,
-// as a double.
-timeval start_tv;
-int start_tv_retv = gettimeofday(&start_tv, NULL);
-
-inline double getseconds() {
-  const double usec_to_sec = 0.000001;
-  timeval tv;
-  if ((0 == start_tv_retv) && (0 == gettimeofday(&tv, NULL)))
-    return (tv.tv_sec - start_tv.tv_sec) + tv.tv_usec * usec_to_sec;
-  return 0.0;
-}
 
 // RGBA helper functions.
 inline float ExtractR(uint32_t c) {
@@ -302,6 +289,7 @@ class Planet : public pp::Instance {
   bool benchmarking_;
   double benchmark_start_time_;
   double benchmark_end_time_;
+  FpsState fps_state_;
 };
 
 
@@ -397,6 +385,7 @@ Planet::Planet(PP_Instance instance) : pp::Instance(instance),
   night_tex_ = NULL;
   name_for_tex_ = "";
   last_mouse_pos_ = PP_MakePoint(0, 0);
+  FpsInit(&fps_state_);
 
   Reset();
 
@@ -854,6 +843,10 @@ void Planet::Update() {
     EndBenchmark();
 
   FlushPixelBuffer();
+
+  double fps;
+  if (FpsStep(&fps_state_, &fps))
+    PostUpdateMessage("fps", fps);
 }
 
 void Planet::CreateContext(const pp::Size& size) {

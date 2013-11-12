@@ -14,12 +14,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/time.h>
 #include <unistd.h>
 
 #include <algorithm>
 #include <string>
 
+#include "common/fps.h"
 #include "ppapi_simple/ps.h"
 #include "ppapi_simple/ps_context_2d.h"
 #include "ppapi_simple/ps_event.h"
@@ -137,6 +137,7 @@ class Voronoi {
   bool draw_points_;
   bool draw_interiors_;
   ThreadPool* workers_;
+  FpsState fps_state_;
 };
 
 
@@ -165,6 +166,7 @@ Voronoi::Voronoi() : num_regions_(kDefaultNumRegions), num_threads_(0),
   workers_ = new ThreadPool(num_threads_);
   PSEventSetFilter(PSE_ALL);
   ps_context_ = PSContext2DAllocate(PP_IMAGEDATAFORMAT_BGRA_PREMUL);
+  FpsInit(&fps_state_);
 }
 
 Voronoi::~Voronoi() {
@@ -472,8 +474,11 @@ void Voronoi::Update() {
 
   UpdateSim();
   Render();
-
   PSContext2DSwapBuffer(ps_context_);
+
+  double fps;
+  if (FpsStep(&fps_state_, &fps))
+    PostUpdateMessage("fps", fps);
 }
 
 // Starting point for the module.  We do not use main since it would

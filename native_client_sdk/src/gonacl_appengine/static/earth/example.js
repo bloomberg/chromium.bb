@@ -42,7 +42,7 @@ function browserSupportsPNaCl() {
  * @return {string}
  */
 function getDataURL(name) {
-  var revision = 233080;
+  var revision = '234237_dev';
   var baseUrl = 'http://commondatastorage.googleapis.com/gonacl/demos/publish/';
   return baseUrl + revision + '/earth/' + name;
 }
@@ -238,19 +238,22 @@ function loadTexture(name) {
  * @param {Object} message_event
  */
 function handleMessage(message_event) {
-  if (message_event.data['message'] == 'set_zoom') {
+  var message = message_event.data.message;
+  var value = message_event.data.value;
+  if (message == 'set_zoom') {
     // zoom slider
-    var zoom = message_event.data['value'];
-    $('zoomRange').value = zoom;
-  } else if (message_event.data['message'] == 'set_light') {
+    $('zoomRange').value = value;
+  } else if (message == 'set_light') {
     // light slider
-    var light = message_event.data['value'];
-    $('lightRange').value = light;
-  } else if (message_event.data['message'] == 'request_textures') {
+    $('lightRange').value = value;
+  } else if (message == 'request_textures') {
     // NaCl module is requesting a set of textures.
-    var names = message_event.data['names'];
+    var names = message_event.data.names;
     for (var i = 0; i < names.length; i++)
       loadTexture(names[i]);
+  } else if (message == 'fps') {
+    // NaCl module notifying current FPS.
+    $('fps').textContent = message_event.data.value.toFixed(1);
   }
 }
 

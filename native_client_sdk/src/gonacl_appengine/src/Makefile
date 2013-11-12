@@ -78,7 +78,8 @@ earth_SRC_DIR = earth
 earth_TGT_DIR = earth/pnacl/Release
 earth_JPG_DIR = ../../examples/demo/earth
 earth_SRCS = $(earth_SRC_DIR)/earth.cc \
-             $(earth_SRC_DIR)/Makefile
+             $(earth_SRC_DIR)/Makefile \
+             common/fps.h
 earth_TGTS = $(earth_TGT_DIR)/earth.pexe \
              $(earth_TGT_DIR)/earth.nmf
 earth_JPGS = $(earth_JPG_DIR)/earth.jpg \
@@ -124,7 +125,8 @@ $(lua_TGTS): $(lua_SRCS)
 voronoi_SRC_DIR = voronoi
 voronoi_TGT_DIR = voronoi/pnacl/Release
 voronoi_SRCS = $(voronoi_SRC_DIR)/voronoi.cc \
-               $(voronoi_SRC_DIR)/Makefile
+               $(voronoi_SRC_DIR)/Makefile \
+               common/fps.h
 voronoi_TGTS = $(voronoi_TGT_DIR)/voronoi.pexe \
                $(voronoi_TGT_DIR)/voronoi.nmf
 
@@ -137,7 +139,8 @@ $(voronoi_TGTS): $(voronoi_SRCS)
 life_SRC_DIR = life
 life_TGT_DIR = life/pnacl/Release
 life_SRCS = $(life_SRC_DIR)/life.c \
-            $(life_SRC_DIR)/Makefile
+            $(life_SRC_DIR)/Makefile \
+            common/fps.h
 life_TGTS = $(life_TGT_DIR)/life.pexe \
             $(life_TGT_DIR)/life.nmf
 
@@ -166,7 +169,8 @@ cube_SRCS = $(cube_SRC_DIR)/cube.cc \
             $(cube_SRC_DIR)/matrix.cc \
             $(cube_SRC_DIR)/matrix.h \
             $(cube_SRC_DIR)/texture.cc \
-            $(cube_SRC_DIR)/Makefile
+            $(cube_SRC_DIR)/Makefile \
+            common/fps.h
 cube_TGTS = $(cube_TGT_DIR)/cube.pexe \
             $(cube_TGT_DIR)/cube.nmf
 

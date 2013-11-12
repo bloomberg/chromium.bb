@@ -9,12 +9,16 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "common/fps.h"
+
 #include "ppapi/c/pp_resource.h"
 #include "ppapi/c/ppb_core.h"
 #include "ppapi/c/ppb_graphics_2d.h"
 #include "ppapi/c/ppb_image_data.h"
 #include "ppapi/c/ppb_input_event.h"
 #include "ppapi/c/ppb_instance.h"
+#include "ppapi/c/ppb_messaging.h"
+#include "ppapi/c/ppb_var.h"
 #include "ppapi/c/ppb_view.h"
 
 #include "ppapi_simple/ps_event.h"
@@ -29,6 +33,7 @@ PPB_InputEvent* g_pInputEvent;
 PPB_KeyboardInputEvent* g_pKeyboardInput;
 PPB_MouseInputEvent* g_pMouseInput;
 PPB_TouchInputEvent* g_pTouchInput;
+PPB_Messaging* g_pMessaging;
 
 struct {
   PP_Resource ctx;
@@ -38,6 +43,7 @@ struct {
   uint8_t* cell_out;
 } g_Context;
 
+struct FpsState g_fps_state;
 
 const unsigned int kInitialRandSeed = 0xC0DE533D;
 
@@ -278,6 +284,8 @@ void Render() {
  */
 int example_main(int argc, char *argv[]) {
   fprintf(stdout,"Started main.\n");
+  FpsInit(&g_fps_state);
+
   g_pCore = (PPB_Core*)PSGetInterface(PPB_CORE_INTERFACE);
   g_pGraphics2D = (PPB_Graphics2D*)PSGetInterface(PPB_GRAPHICS_2D_INTERFACE);
   g_pInstance = (PPB_Instance*)PSGetInterface(PPB_INSTANCE_INTERFACE);
@@ -292,6 +300,7 @@ int example_main(int argc, char *argv[]) {
       (PPB_MouseInputEvent*) PSGetInterface(PPB_MOUSE_INPUT_EVENT_INTERFACE);
   g_pTouchInput =
       (PPB_TouchInputEvent*) PSGetInterface(PPB_TOUCH_INPUT_EVENT_INTERFACE);
+  g_pMessaging = (PPB_Messaging*)PSGetInterface(PPB_MESSAGING_INTERFACE);
 
   PSEventSetFilter(PSE_ALL);
   while (1) {
@@ -304,7 +313,10 @@ int example_main(int argc, char *argv[]) {
 
     /* Render a frame, blocking until complete. */
     if (g_Context.bound) {
+      double fps;
       Render();
+      if (FpsStep(&g_fps_state, &fps))
+        g_pMessaging->PostMessage(PSGetInstanceId(), PP_MakeDouble(fps));
     }
   }
   return 0;

@@ -42,7 +42,7 @@ function browserSupportsPNaCl() {
  * @return {string}
  */
 function getDataURL(name) {
-  var revision = 233080;
+  var revision = '234237_dev';
   var baseUrl = 'http://commondatastorage.googleapis.com/gonacl/demos/publish/';
   return baseUrl + revision + '/voronoi/' + name;
 }
@@ -91,6 +91,7 @@ function attachDefaultListeners() {
   listenerDiv.addEventListener('error', moduleLoadError, true);
   listenerDiv.addEventListener('progress', moduleLoadProgress, true);
   listenerDiv.addEventListener('crash', handleCrash, true);
+  listenerDiv.addEventListener('message', handleMessage, true);
   attachListeners();
 }
 
@@ -106,6 +107,16 @@ function handleCrash(event) {
     updateStatus('CRASHED');
   } else {
     updateStatus('EXITED [' + naclModule.exitStatus + ']');
+  }
+}
+
+/**
+ * Handle a message coming from the NaCl module.
+ * @param {Object} message_event
+ */
+function handleMessage(event) {
+  if (event.data.message == 'fps') {
+    $('fps').textContent = event.data.value.toFixed(1);
   }
 }
 

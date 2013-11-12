@@ -42,7 +42,7 @@ function browserSupportsPNaCl() {
  * @return {string}
  */
 function getDataURL(name) {
-  var revision = 233080;
+  var revision = '234237_dev';
   var baseUrl = 'http://commondatastorage.googleapis.com/gonacl/demos/publish/';
   return baseUrl + revision + '/cube/' + name;
 }
@@ -227,16 +227,17 @@ function loadTexture(name) {
  * Handle a message coming from the NaCl module.
  * @param {Object} message_event
  */
-function handleMessage(message_event) {
-  if (!(event.data instanceof Array))
-    return;
-  if (event.data.length != 2)
-    return;
-
-  var xAngle = event.data[0];
-  var yAngle = event.data[1];
-  $('xAngle').value = xAngle;
-  $('yAngle').value = yAngle;
+function handleMessage(event) {
+  if (event.data instanceof Array) {
+    if (event.data.length != 2)
+      return;
+    var xAngle = event.data[0];
+    var yAngle = event.data[1];
+    $('xAngle').value = xAngle;
+    $('yAngle').value = yAngle;
+  } else if (typeof(event.data) === 'number') {
+    $('fps').textContent = event.data.toFixed(1);
+  }
 }
 
 /**
