@@ -148,9 +148,13 @@ class ASH_EXPORT ShelfView : public views::View,
     NOT_REMOVABLE, // Item is fixed and can never be removed.
   };
 
-  bool is_overflow_mode() const {
-    return first_visible_index_ > 0;
-  }
+  // Returns true when this ShelfView is used for Overflow Bubble.
+  // In this mode, it does not show app list, panel and overflow button.
+  // Note:
+  //   * When Shelf can contain only one item (overflow button) due to very
+  //     small resolution screen, overflow bubble can show app list and panel
+  //     button.
+  bool is_overflow_mode() const { return overflow_mode_; }
 
   bool dragging() const {
     return drag_pointer_ != NONE;
@@ -323,9 +327,7 @@ class ASH_EXPORT ShelfView : public views::View,
   // item in |model_|.
   scoped_ptr<views::ViewModel> view_model_;
 
-  // Index of first visible launcher item. When it it greater than 0,
-  // ShelfView is hosted in an overflow bubble. In this mode, it does not
-  // show app list, panel, and overflow button.
+  // Index of first visible launcher item.
   int first_visible_index_;
 
   // Last index of a launcher button that is visible
@@ -420,6 +422,9 @@ class ASH_EXPORT ShelfView : public views::View,
 
   // Holds ShelfLayoutManager.
   ShelfLayoutManager* layout_manager_;
+
+  // True when this ShelfView is used for Overflow Bubble.
+  bool overflow_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfView);
 };

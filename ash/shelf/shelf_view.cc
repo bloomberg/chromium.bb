@@ -400,7 +400,8 @@ ShelfView::ShelfView(LauncherModel* model,
       dragged_off_shelf_(false),
       snap_back_from_rip_off_view_(NULL),
       item_manager_(Shell::GetInstance()->launcher_item_delegate_manager()),
-      layout_manager_(shelf_layout_manager) {
+      layout_manager_(shelf_layout_manager),
+      overflow_mode_(false) {
   DCHECK(model_);
   bounds_animator_.reset(new views::BoundsAnimator(this));
   bounds_animator_->AddObserver(this);
@@ -1244,6 +1245,7 @@ void ShelfView::ToggleOverflowBubble() {
 
   ShelfView* overflow_view =
       new ShelfView(model_, delegate_, layout_manager_);
+  overflow_view->overflow_mode_ = true;
   overflow_view->Init();
   overflow_view->set_owner_overflow_bubble(overflow_bubble_.get());
   overflow_view->OnShelfAlignmentChanged();
