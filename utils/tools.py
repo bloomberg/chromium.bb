@@ -22,21 +22,25 @@ class OptionParserWithLogging(optparse.OptionParser):
   def __init__(self, verbose=0, log_file=None, **kwargs):
     kwargs.setdefault('description', sys.modules['__main__'].__doc__)
     optparse.OptionParser.__init__(self, **kwargs)
-    self.add_option(
+    self.group_logging = optparse.OptionGroup(self, 'Logging')
+    self.group_logging.add_option(
         '-v', '--verbose',
         action='count',
         default=verbose,
         help='Use multiple times to increase verbosity')
     if self.enable_log_file:
-      self.add_option(
+      self.group_logging.add_option(
           '-l', '--log-file',
           default=log_file,
           help='The name of the file to store rotating log details')
-      self.add_option(
+      self.group_logging.add_option(
           '--no-log', action='store_const', const='', dest='log_file',
           help='Disable log file')
 
   def parse_args(self, *args, **kwargs):
+    # Make sure this group is always the last one.
+    self.add_option_group(self.group_logging)
+
     options, args = optparse.OptionParser.parse_args(self, *args, **kwargs)
     levels = [logging.ERROR, logging.INFO, logging.DEBUG]
     level = levels[min(len(levels) - 1, options.verbose)]

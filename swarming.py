@@ -479,34 +479,41 @@ def collect(url, test_name, timeout, decorate):
 
 def add_trigger_options(parser):
   """Adds all options to trigger a task on Swarming."""
-  parser.add_option(
+  parser.server_group.add_option(
       '-I', '--isolate-server',
       metavar='URL', default='',
       help='Isolate server to use')
-  parser.add_option(
-      '-w', '--working_dir', default='swarm_tests',
-      help='Working directory on the swarm slave side. default: %default.')
-  parser.add_option(
+
+  parser.filter_group = tools.optparse.OptionGroup(parser, 'Filtering slaves')
+  parser.filter_group.add_option(
       '-o', '--os', default=sys.platform,
       help='Swarm OS image to request. Should be one of the valid sys.platform '
            'values like darwin, linux2 or win32 default: %default.')
-  parser.add_option(
-      '-e', '--env', default=[], action='append', nargs=2, metavar='FOO bar',
-      help='environment variables to set')
-  parser.add_option(
+  parser.filter_group.add_option(
       '-d', '--dimensions', default=[], action='append', nargs=2,
       dest='dimensions', metavar='FOO bar',
       help='dimension to filter on')
-  parser.add_option(
+  parser.add_option_group(parser.filter_group)
+
+  parser.task_group = tools.optparse.OptionGroup(parser, 'Task properties')
+  parser.task_group.add_option(
+      '-w', '--working_dir', default='swarm_tests',
+      help='Working directory on the swarm slave side. default: %default.')
+  parser.task_group.add_option(
+      '-e', '--env', default=[], action='append', nargs=2, metavar='FOO bar',
+      help='environment variables to set')
+  parser.task_group.add_option(
       '-T', '--task-prefix', default='',
       help='Prefix to give the swarm test request. default: %default')
-  parser.add_option(
+  parser.task_group.add_option(
+      '--priority', type='int', default=100,
+      help='The lower value, the more important the task is')
+  parser.add_option_group(parser.task_group)
+
+  parser.group_logging.add_option(
       '--profile', action='store_true',
       default=bool(os.environ.get('ISOLATE_DEBUG')),
       help='Have run_isolated.py print profiling info')
-  parser.add_option(
-      '--priority', type='int', default=100,
-      help='The lower value, the more important the task is')
 
 
 def process_trigger_options(parser, options):
@@ -521,13 +528,14 @@ def process_trigger_options(parser, options):
 
 
 def add_collect_options(parser):
-  parser.add_option(
+  parser.server_group.add_option(
       '-t', '--timeout',
       type='float',
       default=DEFAULT_SHARD_WAIT_TIME,
       help='Timeout to wait for result, set to 0 for no timeout; default: '
            '%default s')
-  parser.add_option('--decorate', action='store_true', help='Decorate output')
+  parser.group_logging.add_option(
+      '--decorate', action='store_true', help='Decorate output')
 
 
 @subcommand.usage('test_name')
@@ -619,7 +627,7 @@ def CMDtrigger(parser, args):
   packages it if needed and sends a Swarm manifest file to the Swarm server.
   """
   add_trigger_options(parser)
-  parser.add_option(
+  parser.task_group.add_option(
       '--task', nargs=4, action='append', default=[], dest='tasks',
       help='Task to trigger. The format is '
            '(hash|isolated, test_name, shards, test_filter). This may be '
@@ -658,10 +666,12 @@ class OptionParserSwarming(tools.OptionParserWithLogging):
   def __init__(self, **kwargs):
     tools.OptionParserWithLogging.__init__(
         self, prog='swarming.py', **kwargs)
-    self.add_option(
+    self.server_group = tools.optparse.OptionGroup(self, 'Server')
+    self.server_group.add_option(
         '-S', '--swarming',
         metavar='URL', default='',
         help='Swarming server to use')
+    self.add_option_group(self.server_group)
 
   def parse_args(self, *args, **kwargs):
     options, args = tools.OptionParserWithLogging.parse_args(
