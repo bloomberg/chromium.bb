@@ -311,7 +311,8 @@ bool TimeTicks::IsHighResNowFastAndReliable() {
 
 // static
 TimeTicks TimeTicks::ThreadNow() {
-#if defined(_POSIX_THREAD_CPUTIME) && (_POSIX_THREAD_CPUTIME >= 0)
+#if (defined(_POSIX_THREAD_CPUTIME) && (_POSIX_THREAD_CPUTIME >= 0)) || \
+    defined(OS_ANDROID)
   return ClockNow(CLOCK_THREAD_CPUTIME_ID);
 #else
   NOTREACHED();
