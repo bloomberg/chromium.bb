@@ -47,36 +47,6 @@ crbug.com/260351 [ Linux ] plugins/mouse-click-plugin-clears-selection.html [ Im
 # SVG TESTS
 # -----------------------------------------------------------------
 
-# Flaky mostly on XP, where the <use> batiklogo.svg doesn't arrive in time to get rendered.
-crbug.com/258991 [ XP ] svg/batik/text/verticalTextOnPath.svg [ Failure Pass ]
-crbug.com/258991 [ XP ] svg/batik/text/textLayout.svg [ Failure Pass ]
-# NB: uncomment these when they have been rebaselined per crbug.com/316628.
-# crbug.com/258991 [ XP ] svg/batik/text/smallFonts.svg [ Failure Pass ]
-crbug.com/258991 [ XP ] svg/batik/text/textOnPath.svg [ Failure Pass ]
-# crbug.com/258991 [ XP ] svg/batik/text/textFeatures.svg [ Failure Pass ImageOnlyFailure ]
-crbug.com/258991 [ XP ] svg/batik/text/textPosition2.svg [ Failure Pass ]
-crbug.com/258991 [ XP ] svg/batik/text/textLayout2.svg [ Failure Pass ]
-# crbug.com/258991 [ XP ] svg/batik/text/textEffect.svg [ Failure Pass ]
-crbug.com/258991 [ XP ] svg/batik/text/verticalText.svg [ Failure Pass ]
-# crbug.com/258991 [ XP ] svg/batik/text/textProperties.svg [ Failure Pass ]
-# crbug.com/258991 [ XP ] svg/batik/text/textEffect3.svg [ Failure Pass ]
-crbug.com/258991 [ XP ] svg/batik/text/longTextOnPath.svg [ Failure Pass ]
-crbug.com/258991 [ XP ] svg/batik/text/textPosition.svg [ Failure Pass ]
-crbug.com/258991 [ Win ] svg/batik/text/textProperties2.svg [ Failure Pass ]
-crbug.com/258991 [ XP ] svg/batik/text/textDecoration.svg [ Failure Pass ]
-crbug.com/258991 [ XP ] svg/batik/text/textAnchor.svg [ Failure Pass ]
-crbug.com/258991 [ XP ] svg/batik/text/textEffect2.svg [ Failure Pass ]
-crbug.com/258991 [ XP ] svg/batik/text/textLength.svg [ Failure Pass ]
-crbug.com/258991 [ XP ] svg/batik/text/textStyles.svg [ Failure Pass ]
-crbug.com/258991 [ XP ] svg/batik/text/textOnPathSpaces.svg [ Failure Pass ]
-crbug.com/258991 [ Release ] svg/batik/filters/feTile.svg [ Failure Pass ]
-crbug.com/258991 [ XP ] svg/batik/filters/filterRegions.svg [ Failure Pass ]
-crbug.com/258991 [ Release ] svg/batik/masking/maskRegions.svg [ Failure Pass ]
-crbug.com/258991 [ XP ] svg/batik/paints/gradientLimit.svg [ Failure Pass ]
-crbug.com/258991 [ XP ] svg/batik/paints/patternRegions-positioned-objects.svg [ Failure Pass ]
-crbug.com/258991 [ XP ] svg/batik/paints/patternRegionA.svg [ Failure Pass ]
-crbug.com/258991 [ XP ] svg/batik/paints/patternRegions.svg [ Failure Pass ]
-
 # Text::inDocument() returns false but should not.
 crbug.com/264138 dom/xhtml/level3/core/nodecomparedocumentposition38.xhtml [ Failure ]
 
