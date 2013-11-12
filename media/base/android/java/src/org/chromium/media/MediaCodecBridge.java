@@ -210,6 +210,11 @@ class MediaCodecBridge {
 
     @CalledByNative
     private static MediaCodecBridge create(String mime, boolean isSecure) {
+        // Creation of ".secure" codecs sometimes crash instead of throwing exceptions
+        // on pre-JBMR2 devices.
+        if (isSecure && Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            return null;
+        }
         MediaCodec mediaCodec = null;
         try {
             // |isSecure| only applies to video decoders.
