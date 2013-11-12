@@ -141,9 +141,6 @@ class CONTENT_EXPORT MediaStreamManager
                       int capture_session_id) OVERRIDE;
   virtual void DevicesEnumerated(MediaStreamType stream_type,
                                  const StreamDeviceInfoArray& devices) OVERRIDE;
-  virtual void Error(MediaStreamType stream_type,
-                     int capture_session_id,
-                     MediaStreamProviderError error) OVERRIDE;
 
   // Implements base::SystemMonitor::DevicesChangedObserver.
   virtual void OnDevicesChanged(
