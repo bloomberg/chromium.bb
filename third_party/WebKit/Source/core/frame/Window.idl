@@ -103,7 +103,7 @@
 
     [DoNotCheckSecurity] readonly attribute boolean closed;
 
-    [Replaceable, DoNotCheckSecurityOnGetter] readonly attribute unsigned long length;
+    [Replaceable, DoNotCheckSecurity=Getter] readonly attribute unsigned long length;
 
     attribute DOMString name;
 
@@ -113,13 +113,13 @@
     attribute DOMString defaultstatus;
 
     // Self referential attributes
-    [Replaceable, DoNotCheckSecurityOnGetter] readonly attribute Window self;
+    [Replaceable, DoNotCheckSecurity=Getter] readonly attribute Window self;
     [DoNotCheckSecurity, Unforgeable] readonly attribute Window window;
-    [Replaceable, DoNotCheckSecurityOnGetter] readonly attribute  Window frames;
+    [Replaceable, DoNotCheckSecurity=Getter] readonly attribute  Window frames;
 
-    [DoNotCheckSecurityOnGetter, Custom=Setter] attribute Window opener;
-    [Replaceable, DoNotCheckSecurityOnGetter] readonly attribute Window parent;
-    [DoNotCheckSecurityOnGetter, Unforgeable] readonly attribute Window top;
+    [DoNotCheckSecurity=Getter, Custom=Setter] attribute Window opener;
+    [Replaceable, DoNotCheckSecurity=Getter] readonly attribute Window parent;
+    [DoNotCheckSecurity=Getter, Unforgeable] readonly attribute Window top;
 
     // DOM Level 2 AbstractView Interface
     readonly attribute Document document;

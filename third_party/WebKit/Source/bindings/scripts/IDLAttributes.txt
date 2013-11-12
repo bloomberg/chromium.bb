@@ -55,9 +55,7 @@ Default=NullString|Undefined
 DependentLifetime
 DeprecateAs=*
 DoNotCheckConstants
-DoNotCheckSecurity
-DoNotCheckSecurityOnGetter
-DoNotCheckSecurityOnSetter
+DoNotCheckSecurity=|Getter|Setter
 DoNotCheckSignature
 DoNotGenerateToV8
 DoNotGenerateWrap

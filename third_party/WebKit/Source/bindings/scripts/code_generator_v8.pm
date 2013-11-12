@@ -3120,14 +3120,16 @@ sub GenerateAttributeConfigurationParameters
     my $implClassName = GetImplName($interface);
 
     my @accessControlList;
-    if ($attrExt->{"DoNotCheckSecurityOnGetter"}) {
-        push(@accessControlList, "v8::ALL_CAN_READ");
-    } elsif ($attrExt->{"DoNotCheckSecurityOnSetter"}) {
-        push(@accessControlList, "v8::ALL_CAN_WRITE");
-    } elsif ($attrExt->{"DoNotCheckSecurity"}) {
-        push(@accessControlList, "v8::ALL_CAN_READ");
-        if (!IsReadonly($attribute)) {
+    if (my $doNotCheckSecurity = $attrExt->{"DoNotCheckSecurity"}) {
+        if ($doNotCheckSecurity eq "Getter") {
+            push(@accessControlList, "v8::ALL_CAN_READ");
+        } elsif ($doNotCheckSecurity eq "Setter") {
             push(@accessControlList, "v8::ALL_CAN_WRITE");
+        } else {
+            push(@accessControlList, "v8::ALL_CAN_READ");
+            if (!IsReadonly($attribute)) {
+                push(@accessControlList, "v8::ALL_CAN_WRITE");
+            }
         }
     }
     if ($attrExt->{"Unforgeable"}) {

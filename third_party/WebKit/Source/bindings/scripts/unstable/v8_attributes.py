@@ -323,18 +323,20 @@ def wrapper_type_info(attribute):
     return 'const_cast<WrapperTypeInfo*>(&V8%s::wrapperTypeInfo)' % v8_types.constructor_type(attribute.idl_type)
 
 
-# [DoNotCheckSecurity], [DoNotCheckSecurityOnGetter], [DoNotCheckSecurityOnSetter], [Unforgeable]
+# [DoNotCheckSecurity], [Unforgeable]
 def access_control_list(attribute):
     extended_attributes = attribute.extended_attributes
     access_control = []
     if 'DoNotCheckSecurity' in extended_attributes:
-        access_control.append('v8::ALL_CAN_READ')
-        if not attribute.is_read_only:
+        do_not_check_security = extended_attributes['DoNotCheckSecurity']
+        if do_not_check_security == 'Getter':
+            access_control.append('v8::ALL_CAN_READ')
+        elif do_not_check_security == 'Setter':
             access_control.append('v8::ALL_CAN_WRITE')
-    if 'DoNotCheckSecurityOnSetter' in extended_attributes:
-        access_control.append('v8::ALL_CAN_WRITE')
-    if 'DoNotCheckSecurityOnGetter' in extended_attributes:
-        access_control.append('v8::ALL_CAN_READ')
+        else:
+            access_control.append('v8::ALL_CAN_READ')
+            if not attribute.is_read_only:
+                access_control.append('v8::ALL_CAN_WRITE')
     if 'Unforgeable' in extended_attributes:
         access_control.append('v8::PROHIBITS_OVERWRITING')
     return access_control or ['v8::DEFAULT']

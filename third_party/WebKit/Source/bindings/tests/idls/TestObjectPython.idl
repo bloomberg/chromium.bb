@@ -120,8 +120,8 @@ interface TestObjectPython {
     // methods are implemented
     [DoNotCheckSecurity] attribute long doNotCheckSecurityLongAttribute;
     [DoNotCheckSecurity] readonly attribute long doNotCheckSecurityReadonlyLongAttribute;  // Separate read only attribute to check attribute configuration
-    [DoNotCheckSecurityOnGetter] attribute long doNotCheckSecurityOnGetterLongAttribute;
-    [DoNotCheckSecurityOnSetter] attribute long doNotCheckSecurityOnSetterLongAttribute;
+    [DoNotCheckSecurity=Getter] attribute long doNotCheckSecurityOnGetterLongAttribute;
+    [DoNotCheckSecurity=Setter] attribute long doNotCheckSecurityOnSetterLongAttribute;
     [EnforceRange] attribute long enforceRangeLongAttribute;
     [GetterRaisesException] attribute long getterRaisesExceptionLongAttribute;
     [ImplementedAs=implementedAsName] attribute long implementedAsLongAttribute;
