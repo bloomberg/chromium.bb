@@ -193,7 +193,7 @@ static WebLayerPositionConstraint computePositionConstraint(const RenderLayer* l
 
         // Composited layers that inherit a fixed position state will be positioned with respect to the nearest compositedLayerMapping's GraphicsLayer.
         // So, once we find a layer that has its own compositedLayerMapping, we can stop searching for a fixed position RenderObject.
-    } while (layer && layer->compositedLayerMapping());
+    } while (layer && !layer->compositedLayerMapping());
     return WebLayerPositionConstraint();
 }
 
