@@ -2490,7 +2490,7 @@ libs-support-bitcode() {
   ${cc_cmd} -c sjlj_eh_redirect.c -o "${build_dir}"/sjlj_eh_redirect.bc
 
   # Install libpnaclmm.a (__atomic_*).
-  StepBanner "LIBS-SUPPORT" "Install ${arch} pnaclmm.bc"
+  StepBanner "LIBS-SUPPORT" "Install ${arch} libpnaclmm.a"
   ${cc_cmd} -c pnaclmm.c -o "${build_dir}"/pnaclmm.bc
   ${PNACL_AR} rc "${build_dir}"/libpnaclmm.a "${build_dir}"/pnaclmm.bc
 

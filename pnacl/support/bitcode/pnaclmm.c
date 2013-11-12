@@ -179,8 +179,12 @@ DO_FOR_ALL_ATOMIC_SIZES()
   __atomic_compare_exchange_##BYTES(                                    \
       I##BYTES *mem, I##BYTES *expected, I##BYTES desired,              \
       int success, int failure) {                                       \
-    return __llvm_nacl_atomic_cmpxchg_##BYTES(                          \
-        mem, *expected, desired, map_mem(success), map_mem(failure));   \
+    I##BYTES e = *expected;                                             \
+    I##BYTES old = __llvm_nacl_atomic_cmpxchg_##BYTES(                  \
+        mem, e, desired, map_mem(success), map_mem(failure));           \
+    bool succeeded = old == e;                                          \
+    *expected = old;                                                    \
+    return succeeded;                                                   \
   }                                                                     \
   DO_ATOMIC_RMW(BITS, BYTES, add, Add)                                  \
   DO_ATOMIC_RMW(BITS, BYTES, sub, Sub)                                  \
@@ -251,10 +255,10 @@ bool __pnacl_atomic_compare_exchange(size_t size, void *mem, void *expected,
                                      void *desired, int success, int failure) {
 #define DO_ATOMIC(BITS, BYTES)                          \
   case BYTES: {                                         \
-    I##BYTES e = *(I##BYTES*)(expected);                \
     I##BYTES d = *(I##BYTES*)(desired);                 \
     return __atomic_compare_exchange_##BYTES(           \
-        (I##BYTES*)(mem), &e, d, success, failure);     \
+        (I##BYTES*)(mem), (I##BYTES*)(expected), d,     \
+        success, failure);                              \
   }
   switch(size) {
     DO_FOR_ALL_ATOMIC_SIZES();
