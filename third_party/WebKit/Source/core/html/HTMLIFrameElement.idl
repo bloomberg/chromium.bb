@@ -34,11 +34,11 @@ interface HTMLIFrameElement : HTMLElement {
     [Reflect, TreatNullAs=NullString] attribute DOMString width;
 
     // Introduced in DOM Level 2:
-    [CheckSecurityForNode] readonly attribute Document contentDocument;
+    [CheckSecurity=Node] readonly attribute Document contentDocument;
 
     // Extensions
     readonly attribute Window contentWindow;
 
-    [CheckSecurityForNode, RaisesException] SVGDocument getSVGDocument();
+    [CheckSecurity=Node, RaisesException] SVGDocument getSVGDocument();
 };
 

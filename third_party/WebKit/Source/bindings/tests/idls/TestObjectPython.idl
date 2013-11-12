@@ -106,7 +106,7 @@ interface TestObjectPython {
     [ActivityLogging=SetterForAllWorlds] attribute long activityLoggingSetterForAllWorldsLongAttribute;
     [CachedAttribute=isValueDirty] attribute any cachedAttributeAnyAttribute;
     [CallWith=ExecutionContext] attribute any callWithExecutionContextAnyAttribute;
-    [CheckSecurityForNode] readonly attribute Document checkSecurityForNodeReadonlyDocumentAttribute;  // All uses are read only
+    [CheckSecurity=Node] readonly attribute Document checkSecurityForNodeReadonlyDocumentAttribute;  // All uses are read only
     [Conditional=Condition] attribute long conditionalLongAttribute;
     [Conditional=Condition1&Condition2] attribute long conditionalAndLongAttribute;
     [Conditional=Condition1|Condition2] attribute long conditionalOrLongAttribute;
@@ -320,7 +320,7 @@ interface TestObjectPython {
     [CallWith=ScriptState&ScriptArguments] void callWithScriptStateScriptArgumentsVoidMethodOptionalBooleanArg(optional boolean optionalBooleanArg);
     [CallWith=ActiveWindow] void callWithActiveWindow();
     [CallWith=ActiveWindow&FirstWindow] void callWithActiveWindowScriptWindow();
-    [CheckSecurityForNode] void checkSecurityForNodeVoidMethod();
+    [CheckSecurity=Node] void checkSecurityForNodeVoidMethod();
     [Conditional=Condition] void conditionalConditionVoidMethod();
     [Conditional=Condition1&Condition2] void conditionalCondition1AndCondition2VoidMethod();
     [Conditional=Condition] static void conditionalConditionStaticVoidMethod();

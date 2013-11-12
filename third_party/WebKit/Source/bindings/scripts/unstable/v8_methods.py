@@ -76,7 +76,7 @@ def generate_method(interface, method):
     is_call_with_script_state = has_extended_attribute_value(method, 'CallWith', 'ScriptState')
     if is_call_with_script_state:
         includes.add('bindings/v8/ScriptState.h')
-    is_check_security_for_node = 'CheckSecurityForNode' in extended_attributes
+    is_check_security_for_node = 'CheckSecurity' in extended_attributes
     if is_check_security_for_node:
         includes.add('bindings/v8/BindingSecurity.h')
     is_custom_element_callbacks = 'CustomElementCallbacks' in extended_attributes

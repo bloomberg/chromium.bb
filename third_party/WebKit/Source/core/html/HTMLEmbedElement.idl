@@ -32,6 +32,6 @@
 [Custom, NotEnumerable] getter Node (DOMString name);
 [Custom] setter Node (DOMString name, Node value);
 
-[CheckSecurityForNode, RaisesException] SVGDocument getSVGDocument();
+[CheckSecurity=Node, RaisesException] SVGDocument getSVGDocument();
 };
 

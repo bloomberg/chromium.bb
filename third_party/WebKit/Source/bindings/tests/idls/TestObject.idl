@@ -230,8 +230,8 @@ callback TestCallbackFunction = void (TestEnumType formal1, TestObject formal2);
     [RaisesException] DOMString[] stringArrayFunction(DOMString[] values);
     [RaisesException] DOMStringList domStringListFunction(DOMStringList values);
 
-    [CheckSecurityForNode] readonly attribute Document contentDocument;
-    [CheckSecurityForNode, RaisesException] SVGDocument getSVGDocument();
+    [CheckSecurity=Node] readonly attribute Document contentDocument;
+    [CheckSecurity=Node, RaisesException] SVGDocument getSVGDocument();
 
     void convert1([TreatNullAs=NullString] TestNode value);
     void convert2([TreatNullAs=NullString, TreatUndefinedAs=NullString] TestNode value);

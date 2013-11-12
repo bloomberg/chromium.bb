@@ -27,10 +27,10 @@
 // HTML 5 draft spec:
 // http://www.w3.org/html/wg/drafts/html/master/browsers.html#window
 [
-    CheckSecurity,
+    CheckSecurity=Frame,
     CustomToV8,
     DoNotGenerateWrap,
-    ImplementedAs=DOMWindow
+    ImplementedAs=DOMWindow,
 ] interface Window : EventTarget {
     // DOM Level 0
     [Replaceable] readonly attribute Screen screen;
@@ -48,7 +48,7 @@
 
     Selection getSelection();
 
-    [CheckSecurityForNode] readonly attribute Element frameElement;
+    [CheckSecurity=Node] readonly attribute Element frameElement;
 
     [DoNotCheckSecurity, CallWith=ExecutionContext] void focus();
     [DoNotCheckSecurity] void blur();

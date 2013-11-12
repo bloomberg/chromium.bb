@@ -1505,14 +1505,14 @@ END
     }
 
     my $useExceptions = 1 if $attribute->extendedAttributes->{"GetterRaisesException"} ||  $attribute->extendedAttributes->{"RaisesException"};
-    if ($useExceptions || $attribute->extendedAttributes->{"CheckSecurityForNode"}) {
+    if ($useExceptions || $attribute->extendedAttributes->{"CheckSecurity"}) {
         AddToImplIncludes("bindings/v8/ExceptionMessages.h");
         AddToImplIncludes("bindings/v8/ExceptionState.h");
         $code .= "    ExceptionState es(info.GetIsolate());\n";
     }
 
     # Generate security checks if necessary
-    if ($attribute->extendedAttributes->{"CheckSecurityForNode"}) {
+    if ($attribute->extendedAttributes->{"CheckSecurity"}) {
         AddToImplIncludes("bindings/v8/BindingSecurity.h");
         $code .= "    if (!BindingSecurity::shouldAllowAccessToNode(imp->" . GetImplName($attribute) . "(), es)) {\n";
         $code .= "        v8SetReturnValueNull(info);\n";
@@ -2397,7 +2397,7 @@ END
 END
     }
 
-    if ($function->extendedAttributes->{"CheckSecurityForNode"}) {
+    if ($function->extendedAttributes->{"CheckSecurity"}) {
         AddToImplIncludes("bindings/v8/BindingSecurity.h");
         $code .= "    if (!BindingSecurity::shouldAllowAccessToNode(imp->" . GetImplName($function) . "(es), es)) {\n";
         $code .= "        v8SetReturnValueNull(info);\n";

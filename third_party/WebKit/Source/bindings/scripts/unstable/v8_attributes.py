@@ -126,8 +126,8 @@ def generate_getter(interface, attribute, contents):
         attribute.name == 'onerror'):
         includes.add('bindings/v8/V8ErrorHandler.h')
 
-    # [CheckSecurityForNode]
-    is_check_security_for_node = 'CheckSecurityForNode' in extended_attributes
+    # [CheckSecurity]
+    is_check_security_for_node = 'CheckSecurity' in extended_attributes
     if is_check_security_for_node:
         includes.add('bindings/v8/BindingSecurity.h')
     if is_check_security_for_node or contents['is_getter_raises_exception']:
