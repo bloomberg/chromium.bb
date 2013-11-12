@@ -262,9 +262,9 @@ void TextAutosizer::processContainer(float multiplier, RenderBlock* container, T
 
 void TextAutosizer::setMultiplier(RenderObject* renderer, float multiplier)
 {
-    // FIXME: Investigate if a clone() is needed and whether it does the right thing w.r.t. style sharing.
     RefPtr<RenderStyle> newStyle = RenderStyle::clone(renderer->style());
     newStyle->setTextAutosizingMultiplier(multiplier);
+    newStyle->setUnique();
     renderer->setStyle(newStyle.release());
 }
 
