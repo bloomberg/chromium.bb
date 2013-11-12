@@ -337,6 +337,9 @@ void GpuDataManagerImplPrivate::InitializeForTesting(
 }
 
 bool GpuDataManagerImplPrivate::IsFeatureBlacklisted(int feature) const {
+  if (CommandLine::ForCurrentProcess()->HasSwitch("chrome-frame") &&
+      feature == gpu::GPU_FEATURE_TYPE_TEXTURE_SHARING)
+    return false;
 #if defined(OS_CHROMEOS)
   if (feature == gpu::GPU_FEATURE_TYPE_PANEL_FITTING &&
       CommandLine::ForCurrentProcess()->HasSwitch(
