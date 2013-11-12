@@ -873,6 +873,13 @@ void SearchProvider::ClearAllResults() {
 }
 
 void SearchProvider::RemoveAllStaleResults() {
+  // We only need to remove stale results (which ensures the top-scoring
+  // match is inlineable) if the user is not in reorder mode.  In reorder
+  // mode, the autocomplete system will reorder results to make sure the
+  // top result is inlineable.
+  const bool omnibox_will_reorder_for_legal_default_match =
+      OmniboxFieldTrial::ReorderForLegalDefaultMatch(
+          input_.current_page_classification());
   // In theory it would be better to run an algorithm like that in
   // RemoveStaleResults(...) below that uses all four results lists
   // and both verbatim scores at once.  However, that will be much
@@ -880,14 +887,18 @@ void SearchProvider::RemoveAllStaleResults() {
   // and ease in reasoning about the invariants involved, this code
   // removes stales results from the keyword provider and default
   // provider independently.
-  RemoveStaleResults(input_.text(), GetVerbatimRelevance(NULL),
-                     &default_results_.suggest_results,
-                     &default_results_.navigation_results);
-  if (!keyword_input_.text().empty()) {
-    RemoveStaleResults(keyword_input_.text(), GetKeywordVerbatimRelevance(NULL),
-                       &keyword_results_.suggest_results,
-                       &keyword_results_.navigation_results);
-  } else {
+  if (!omnibox_will_reorder_for_legal_default_match) {
+    RemoveStaleResults(input_.text(), GetVerbatimRelevance(NULL),
+                       &default_results_.suggest_results,
+                       &default_results_.navigation_results);
+    if (!keyword_input_.text().empty()) {
+      RemoveStaleResults(keyword_input_.text(),
+                         GetKeywordVerbatimRelevance(NULL),
+                         &keyword_results_.suggest_results,
+                         &keyword_results_.navigation_results);
+    }
+  }
+  if (keyword_input_.text().empty()) {
     // User is either in keyword mode with a blank input or out of
     // keyword mode entirely.
     keyword_results_.Clear();
