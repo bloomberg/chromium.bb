@@ -247,6 +247,7 @@ crbug.com/243596 [ Win ] inspector-protocol/input/dispatchMouseEvent.html [ Fail
 crbug.com/243599 [ Debug ] http/tests/plugins/interrupted-get-url.html [ Crash Pass ]
 crbug.com/243782 fullscreen/full-screen-remove-ancestor.html [ Pass Timeout ]
 crbug.com/246077 fullscreen/full-screen-render-inline.html [ ImageOnlyFailure ]
+crbug.com/318210 svg/text/text-style-recalc-crash.html [ Pass Timeout ]
 
 # Seems to be hit by the try jobs only.
 crbug.com/243599 [ Linux Win ] http/tests/xmlhttprequest/access-control-repeated-failed-preflight-crash.html [ Crash Pass Timeout ]
