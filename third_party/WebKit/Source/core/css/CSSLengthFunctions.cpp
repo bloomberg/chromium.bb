@@ -65,7 +65,6 @@ LayoutUnit minimumValueForLength(const Length& length, LayoutUnit maximumValue, 
     case FillAvailable:
     case Auto:
         return 0;
-    case Relative:
     case Intrinsic:
     case MinIntrinsic:
     case MinContent:
@@ -94,7 +93,6 @@ LayoutUnit valueForLength(const Length& length, LayoutUnit maximumValue, RenderV
     case FillAvailable:
     case Auto:
         return maximumValue;
-    case Relative:
     case Intrinsic:
     case MinIntrinsic:
     case MinContent:
@@ -134,7 +132,6 @@ float floatValueForLength(const Length& length, float maximumValue, RenderView* 
         return static_cast<int>(renderView->viewportPercentageMin(length.viewportPercentageLength()));
     case ViewportPercentageMax:
         return static_cast<int>(renderView->viewportPercentageMax(length.viewportPercentageLength()));
-    case Relative:
     case Intrinsic:
     case MinIntrinsic:
     case MinContent:

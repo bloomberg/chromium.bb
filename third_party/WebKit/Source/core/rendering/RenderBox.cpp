@@ -3031,7 +3031,6 @@ LayoutUnit RenderBox::computeReplacedLogicalWidthUsing(Length logicalWidth) cons
         case Intrinsic:
         case MinIntrinsic:
         case Auto:
-        case Relative:
         case ExtendToZoom:
         case Undefined:
             return intrinsicLogicalWidth();

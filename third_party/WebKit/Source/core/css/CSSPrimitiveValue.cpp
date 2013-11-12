@@ -301,7 +301,6 @@ CSSPrimitiveValue::CSSPrimitiveValue(const Length& length, float zoom)
     case Calculated:
         init(CSSCalcValue::create(length.calculationValue(), zoom));
         return;
-    case Relative:
     case Undefined:
         ASSERT_NOT_REACHED();
         break;
@@ -369,7 +368,6 @@ void CSSPrimitiveValue::init(const Length& length)
             m_value.num = length.viewportPercentageLength();
             break;
         case Calculated:
-        case Relative:
         case Undefined:
             ASSERT_NOT_REACHED();
             break;

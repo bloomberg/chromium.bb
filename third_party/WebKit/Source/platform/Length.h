@@ -36,7 +36,7 @@
 namespace WebCore {
 
 enum LengthType {
-    Auto, Relative, Percent, Fixed,
+    Auto, Percent, Fixed,
     Intrinsic, MinIntrinsic,
     MinContent, MaxContent, FillAvailable, FitContent,
     Calculated,
@@ -224,7 +224,6 @@ public:
     }
 
     bool isAuto() const { return type() == Auto; }
-    bool isRelative() const { return type() == Relative; }
     bool isPercent() const { return type() == Percent || type() == Calculated; }
     bool isFixed() const { return type() == Fixed; }
     bool isIntrinsicOrAuto() const { return type() == Auto || isLegacyIntrinsic() || isIntrinsic(); }

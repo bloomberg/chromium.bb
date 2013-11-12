@@ -763,7 +763,6 @@ PassRefPtr<CSSCalcExpressionNode> CSSCalcValue::createExpressionNode(const Lengt
     case FillAvailable:
     case FitContent:
     case ExtendToZoom:
-    case Relative:
     case Undefined:
         ASSERT_NOT_REACHED();
         return 0;

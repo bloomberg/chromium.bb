@@ -48,7 +48,6 @@ float floatValueForLength(const Length& length, float maximumValue)
     case ViewportPercentageMin:
     case ViewportPercentageMax:
         return 0;
-    case Relative:
     case Intrinsic:
     case MinIntrinsic:
     case MinContent:

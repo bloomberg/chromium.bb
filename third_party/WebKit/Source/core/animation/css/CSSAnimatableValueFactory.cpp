@@ -89,7 +89,6 @@ static PassRefPtr<AnimatableValue> createFromLength(const Length& length, const 
     case Undefined:
         return AnimatableUnknown::create(CSSValueNone);
     case ExtendToZoom: // Does not apply to elements.
-    case Relative: // Does not get used by interpolable properties.
         ASSERT_NOT_REACHED();
         return 0;
     }
