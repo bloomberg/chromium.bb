@@ -52,6 +52,30 @@ VolumeType MountTypeToVolumeType(
   return VOLUME_TYPE_DOWNLOADS_DIRECTORY;
 }
 
+// Returns a string representation of the given volume type.
+std::string VolumeTypeToString(VolumeType type) {
+  switch (type) {
+    case VOLUME_TYPE_GOOGLE_DRIVE:
+      return "drive";
+    case VOLUME_TYPE_DOWNLOADS_DIRECTORY:
+      return "downloads";
+    case VOLUME_TYPE_REMOVABLE_DISK_PARTITION:
+      return "removable";
+    case VOLUME_TYPE_MOUNTED_ARCHIVE_FILE:
+      return "archive";
+  }
+  NOTREACHED();
+  return "";
+}
+
+// Generates a unique volume ID for the given volume info.
+std::string GenerateVolumeId(const VolumeInfo& volume_info) {
+  // For the same volume type, base names are unique, as mount points are
+  // flat for the same volume type.
+  return (VolumeTypeToString(volume_info.type) + ":" +
+          volume_info.mount_path.BaseName().AsUTF8Unsafe());
+}
+
 // Returns the VolumeInfo for Drive file system.
 VolumeInfo CreateDriveVolumeInfo() {
   const base::FilePath& drive_path = drive::util::GetDriveMountPointPath();
@@ -64,6 +88,7 @@ VolumeInfo CreateDriveVolumeInfo() {
   volume_info.mount_condition = chromeos::disks::MOUNT_CONDITION_NONE;
   volume_info.is_parent = false;
   volume_info.is_read_only = false;
+  volume_info.volume_id = GenerateVolumeId(volume_info);
   return volume_info;
 }
 
@@ -77,6 +102,7 @@ VolumeInfo CreateDownloadsVolumeInfo(
   volume_info.mount_condition = chromeos::disks::MOUNT_CONDITION_NONE;
   volume_info.is_parent = false;
   volume_info.is_read_only = false;
+  volume_info.volume_id = GenerateVolumeId(volume_info);
   return volume_info;
 }
 
@@ -100,6 +126,7 @@ VolumeInfo CreateVolumeInfoFromMountPointInfo(
     volume_info.is_parent = false;
     volume_info.is_read_only = false;
   }
+  volume_info.volume_id = GenerateVolumeId(volume_info);
 
   return volume_info;
 }
@@ -234,6 +261,22 @@ std::vector<VolumeInfo> VolumeManager::GetVolumeInfoList() const {
   }
 
   return result;
+}
+
+bool VolumeManager::FindVolumeInfoById(const std::string& volume_id,
+                                       VolumeInfo* result) const {
+  DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
+  DCHECK(result);
+
+  std::vector<VolumeInfo> info_list = GetVolumeInfoList();
+  for (size_t i = 0; i < info_list.size(); ++i) {
+    if (info_list[i].volume_id == volume_id) {
+      *result = info_list[i];
+      return true;
+    }
+  }
+
+  return false;
 }
 
 void VolumeManager::OnFileSystemMounted() {

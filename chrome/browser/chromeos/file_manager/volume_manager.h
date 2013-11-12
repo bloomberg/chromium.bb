@@ -47,6 +47,9 @@ struct VolumeInfo {
   VolumeInfo();
   ~VolumeInfo();
 
+  // The ID of the volume.
+  std::string volume_id;
+
   // The type of mounted volume.
   VolumeType type;
 
@@ -116,6 +119,11 @@ class VolumeManager : public BrowserContextKeyedService,
 
   // Returns the information about all volumes currently mounted.
   std::vector<VolumeInfo> GetVolumeInfoList() const;
+
+  // Finds VolumeInfo for the given volume ID. If found, returns true and the
+  // result is written into |result|. Returns false otherwise.
+  bool FindVolumeInfoById(const std::string& volume_id,
+                          VolumeInfo* result) const;
 
   // drive::DriveIntegrationServiceObserver overrides.
   virtual void OnFileSystemMounted() OVERRIDE;

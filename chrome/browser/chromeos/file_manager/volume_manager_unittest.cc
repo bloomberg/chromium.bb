@@ -652,4 +652,23 @@ TEST_F(VolumeManagerTest, OnExternalStorageDisabledChanged) {
   EXPECT_EQ("mount2", unmount_request2.mount_path);
 }
 
+TEST_F(VolumeManagerTest, GetVolumeInfoList) {
+  volume_manager_->Initialize();  // Adds "Downloads"
+  std::vector<VolumeInfo> info_list = volume_manager_->GetVolumeInfoList();
+  ASSERT_EQ(1u, info_list.size());
+  EXPECT_EQ("downloads:Downloads", info_list[0].volume_id);
+  EXPECT_EQ(VOLUME_TYPE_DOWNLOADS_DIRECTORY, info_list[0].type);
+}
+
+TEST_F(VolumeManagerTest, FindVolumeInfoById) {
+  volume_manager_->Initialize();  // Adds "Downloads"
+  VolumeInfo volume_info;
+  ASSERT_FALSE(volume_manager_->FindVolumeInfoById(
+      "nonexistent", &volume_info));
+  ASSERT_TRUE(volume_manager_->FindVolumeInfoById(
+      "downloads:Downloads", &volume_info));
+  EXPECT_EQ("downloads:Downloads", volume_info.volume_id);
+  EXPECT_EQ(VOLUME_TYPE_DOWNLOADS_DIRECTORY, volume_info.type);
+}
+
 }  // namespace file_manager

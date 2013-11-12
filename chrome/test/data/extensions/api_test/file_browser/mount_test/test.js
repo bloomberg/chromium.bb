@@ -4,7 +4,7 @@
 
 // These have to be sync'd with file_browser_private_apitest.cc
 var expectedVolume1 = {
-  volumeId: 'id:/removable/mount_path1',
+  volumeId: 'removable:mount_path1',
   mountPath: '/removable/mount_path1',
   sourcePath: 'device_path1',
   volumeType: 'removable',
@@ -13,7 +13,7 @@ var expectedVolume1 = {
 };
 
 var expectedVolume2 = {
-  volumeId: 'id:/removable/mount_path2',
+  volumeId: 'removable:mount_path2',
   mountPath: '/removable/mount_path2',
   sourcePath: 'device_path2',
   volumeType: 'removable',
@@ -22,7 +22,7 @@ var expectedVolume2 = {
 };
 
 var expectedVolume3 = {
-  volumeId: 'id:/removable/mount_path3',
+  volumeId: 'removable:mount_path3',
   mountPath: '/removable/mount_path3',
   sourcePath: 'device_path3',
   volumeType: 'removable',
@@ -31,14 +31,14 @@ var expectedVolume3 = {
 };
 
 var expectedDownloadsVolume = {
-  volumeId: 'id:/Downloads',
+  volumeId: 'downloads:Downloads',
   mountPath: '/Downloads',
   volumeType: 'downloads',
   isReadOnly: false
 };
 
 var expectedDriveVolume = {
-  volumeId: 'id:/drive',
+  volumeId: 'drive:drive',
   mountPath: '/drive',
   sourcePath: '/special/drive',
   volumeType: 'drive',
@@ -46,7 +46,7 @@ var expectedDriveVolume = {
 };
 
 var expectedArchiveVolume = {
-  volumeId: 'id:/archive/archive_mount_path',
+  volumeId: 'archive:archive_mount_path',
   mountPath: '/archive/archive_mount_path',
   sourcePath: 'archive_path',
   volumeType: 'archive',

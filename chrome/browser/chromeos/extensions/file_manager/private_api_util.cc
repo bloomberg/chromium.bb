@@ -138,10 +138,7 @@ void VolumeInfoToVolumeMetadata(
     volume_metadata->mount_path = "/" + relative_mount_path.AsUTF8Unsafe();
   }
 
-  // TODO(satorux): Find a better way to generate unique IDs. IDs should
-  // probably be assigned when VolumeInfo list is created. For now, IDs are
-  // generated from the mount path here. crbug.com/316077
-  volume_metadata->volume_id = "id:" + volume_metadata->mount_path;
+  volume_metadata->volume_id = volume_info.volume_id;
 
   if (!volume_info.source_path.empty()) {
     volume_metadata->source_path.reset(
