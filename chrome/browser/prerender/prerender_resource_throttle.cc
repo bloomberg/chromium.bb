@@ -5,7 +5,9 @@
 #include "chrome/browser/prerender/prerender_resource_throttle.h"
 
 #include "chrome/browser/prerender/prerender_final_status.h"
+#include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_tracker.h"
+#include "chrome/browser/prerender/prerender_util.h"
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_request_info.h"
 #include "net/url_request/url_request.h"
@@ -23,6 +25,35 @@ PrerenderResourceThrottle::PrerenderResourceThrottle(
       throttled_(false) {
 }
 
+void PrerenderResourceThrottle::WillStartRequest(bool* defer) {
+  const content::ResourceRequestInfo* info =
+      content::ResourceRequestInfo::ForRequest(request_);
+  int child_id = info->GetChildID();
+  int route_id = info->GetRouteID();
+
+  // If the prerender was used since the throttle was added, leave it
+  // alone.
+  if (!tracker_->IsPrerenderingOnIOThread(child_id, route_id))
+    return;
+
+  // Abort any prerenders that spawn requests that use unsupported HTTP methods
+  // or schemes.
+  if (!prerender::PrerenderManager::IsValidHttpMethod(request_->method()) &&
+      tracker_->TryCancelOnIOThread(
+          child_id, route_id, prerender::FINAL_STATUS_INVALID_HTTP_METHOD)) {
+    controller()->Cancel();
+    return;
+  }
+  if (!prerender::PrerenderManager::DoesSubresourceURLHaveValidScheme(
+          request_->url()) &&
+      tracker_->TryCancelOnIOThread(
+          child_id, route_id, prerender::FINAL_STATUS_UNSUPPORTED_SCHEME)) {
+    ReportUnsupportedPrerenderScheme(request_->url());
+    controller()->Cancel();
+    return;
+  }
+}
+
 void PrerenderResourceThrottle::WillRedirectRequest(const GURL& new_url,
                                                     bool* defer) {
   DCHECK(!throttled_);
@@ -36,6 +67,15 @@ void PrerenderResourceThrottle::WillRedirectRequest(const GURL& new_url,
   // alone.
   if (!tracker_->IsPrerenderingOnIOThread(child_id, route_id))
     return;
+
+  // Abort any prerenders with requests which redirect to invalid schemes.
+  if (!prerender::PrerenderManager::DoesURLHaveValidScheme(new_url) &&
+      tracker_->TryCancel(
+          child_id, route_id, prerender::FINAL_STATUS_UNSUPPORTED_SCHEME)) {
+    ReportUnsupportedPrerenderScheme(new_url);
+    controller()->Cancel();
+    return;
+  }
 
   // Only defer redirects with the Follow-Only-When-Prerender-Shown
   // header.

@@ -67,6 +67,27 @@ bool IsPageSpeedServiceVersionNumber(const std::string& version) {
   return (num_parsed == 4);
 }
 
+enum PrerenderSchemeCancelReason {
+  PRERENDER_SCHEME_CANCEL_REASON_EXTERNAL_PROTOCOL,
+  PRERENDER_SCHEME_CANCEL_REASON_DATA,
+  PRERENDER_SCHEME_CANCEL_REASON_BLOB,
+  PRERENDER_SCHEME_CANCEL_REASON_FILE,
+  PRERENDER_SCHEME_CANCEL_REASON_FILESYSTEM,
+  PRERENDER_SCHEME_CANCEL_REASON_WEBSOCKET,
+  PRERENDER_SCHEME_CANCEL_REASON_FTP,
+  PRERENDER_SCHEME_CANCEL_REASON_CHROME,
+  PRERENDER_SCHEME_CANCEL_REASON_CHROME_EXTENSION,
+  PRERENDER_SCHEME_CANCEL_REASON_ABOUT,
+  PRERENDER_SCHEME_CANCEL_REASON_UNKNOWN,
+  PRERENDER_SCHEME_CANCEL_REASON_MAX,
+};
+
+void ReportPrerenderSchemeCancelReason(PrerenderSchemeCancelReason reason) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Prerender.SchemeCancelReason", reason,
+      PRERENDER_SCHEME_CANCEL_REASON_MAX);
+}
+
 }  // namespace
 
 bool MaybeGetQueryStringBasedAliasURL(
@@ -216,6 +237,37 @@ void URLRequestResponseStarted(net::URLRequest* request) {
   GatherPagespeedData(info->GetResourceType(),
                       request->url(),
                       request->response_headers());
+}
+
+void ReportPrerenderExternalURL() {
+  ReportPrerenderSchemeCancelReason(
+      PRERENDER_SCHEME_CANCEL_REASON_EXTERNAL_PROTOCOL);
+}
+
+void ReportUnsupportedPrerenderScheme(const GURL& url) {
+  if (url.SchemeIs("data")) {
+    ReportPrerenderSchemeCancelReason(PRERENDER_SCHEME_CANCEL_REASON_DATA);
+  } else if (url.SchemeIs("blob")) {
+    ReportPrerenderSchemeCancelReason(PRERENDER_SCHEME_CANCEL_REASON_BLOB);
+  } else if (url.SchemeIsFile()) {
+    ReportPrerenderSchemeCancelReason(PRERENDER_SCHEME_CANCEL_REASON_FILE);
+  } else if (url.SchemeIsFileSystem()) {
+    ReportPrerenderSchemeCancelReason(
+        PRERENDER_SCHEME_CANCEL_REASON_FILESYSTEM);
+  } else if (url.SchemeIs("ws") || url.SchemeIs("wss")) {
+    ReportPrerenderSchemeCancelReason(PRERENDER_SCHEME_CANCEL_REASON_WEBSOCKET);
+  } else if (url.SchemeIs("ftp")) {
+    ReportPrerenderSchemeCancelReason(PRERENDER_SCHEME_CANCEL_REASON_FTP);
+  } else if (url.SchemeIs("chrome")) {
+    ReportPrerenderSchemeCancelReason(PRERENDER_SCHEME_CANCEL_REASON_CHROME);
+  } else if (url.SchemeIs("chrome-extension")) {
+    ReportPrerenderSchemeCancelReason(
+        PRERENDER_SCHEME_CANCEL_REASON_CHROME_EXTENSION);
+  } else if (url.SchemeIs("about")) {
+    ReportPrerenderSchemeCancelReason(PRERENDER_SCHEME_CANCEL_REASON_ABOUT);
+  } else {
+    ReportPrerenderSchemeCancelReason(PRERENDER_SCHEME_CANCEL_REASON_UNKNOWN);
+  }
 }
 
 }  // namespace prerender

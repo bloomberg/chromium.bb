@@ -57,6 +57,12 @@ void GatherPagespeedData(const ResourceType::Type resource_type,
 // just started.
 void URLRequestResponseStarted(net::URLRequest* request);
 
+// Report a URL was canceled due to trying to handle an external URL.
+void ReportPrerenderExternalURL();
+
+// Report a URL was canceled due to unsupported prerender scheme.
+void ReportUnsupportedPrerenderScheme(const GURL& url);
+
 }  // namespace prerender
 
 #endif  // CHROME_BROWSER_PRERENDER_PRERENDER_UTIL_H_

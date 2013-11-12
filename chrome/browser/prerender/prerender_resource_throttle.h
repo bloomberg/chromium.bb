@@ -18,9 +18,9 @@ namespace prerender {
 
 class PrerenderTracker;
 
-// This class defers resource requests in prerenders, to be followed
-// after the prerender becomes visible. Currently it is only used to
-// defer redirects.
+// This class implements policy on resource requests in prerenders.  It cancels
+// prerenders on certain requests.  It also defers certain requests until after
+// the prerender is swapped in.
 //
 // TODO(davidben): Experiment with deferring network requests that
 // would otherwise cancel the prerender.
@@ -32,6 +32,7 @@ class PrerenderResourceThrottle
                             PrerenderTracker* tracker);
 
   // content::ResourceThrottle implementation:
+  virtual void WillStartRequest(bool* defer) OVERRIDE;
   virtual void WillRedirectRequest(const GURL& new_url, bool* defer) OVERRIDE;
 
   // Called by the PrerenderTracker when a prerender becomes visible.
