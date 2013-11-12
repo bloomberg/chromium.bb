@@ -142,7 +142,7 @@ def write_details(logname, outfile, root_dir, blacklist, results):
     }
 
   # Make it dense if there is more than 20 results.
-  trace_inputs.write_json(
+  tools.write_json(
       outfile,
       results_processed,
       len(results_processed) > 20)

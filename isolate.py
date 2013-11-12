@@ -1386,7 +1386,7 @@ def save_isolated(isolated, data):
 
   Returns the list of child isolated files that are included by |isolated|.
   """
-  trace_inputs.write_json(isolated, data, True)
+  tools.write_json(isolated, data, True)
   return []
 
 
@@ -1422,7 +1422,7 @@ def chromium_save_isolated(isolated, data, variables, algo):
   files = []
   for index, f in enumerate(slaves):
     slavepath = isolated[:-len('.isolated')] + '.%d.isolated' % index
-    trace_inputs.write_json(slavepath, f, True)
+    tools.write_json(slavepath, f, True)
     data.setdefault('includes', []).append(
         isolateserver.hash_file(slavepath, algo))
     files.append(os.path.basename(slavepath))
@@ -1467,7 +1467,7 @@ class Flattenable(object):
   def load_file(cls, filename, *args, **kwargs):
     """Loads the data from a file or return an empty instance."""
     try:
-      out = cls.load(trace_inputs.read_json(filename), *args, **kwargs)
+      out = cls.load(tools.read_json(filename), *args, **kwargs)
       logging.debug('Loaded %s(%s)', cls.__name__, filename)
     except (IOError, ValueError) as e:
       # On failure, loads the default instance.
@@ -1791,7 +1791,7 @@ class CompleteState(object):
       logging.debug('Total size: %d bytes' % total_bytes)
     saved_state_file = isolatedfile_to_state(self.isolated_filepath)
     logging.debug('Dumping to %s' % saved_state_file)
-    trace_inputs.write_json(saved_state_file, self.saved_state.flatten(), True)
+    tools.write_json(saved_state_file, self.saved_state.flatten(), True)
 
   @property
   def root_dir(self):

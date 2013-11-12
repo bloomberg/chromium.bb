@@ -23,7 +23,6 @@ import csv
 import errno
 import getpass
 import glob
-import json
 import logging
 import os
 import re
@@ -281,30 +280,6 @@ def strace_process_quoted_arguments(text):
         'String is incorrectly terminated: %r' % text,
         text)
   return out
-
-
-def read_json(filepath):
-  with open(filepath, 'r') as f:
-    return json.load(f)
-
-
-def write_json(filepath_or_handle, data, dense):
-  """Writes data into filepath or file handle encoded as json.
-
-  If dense is True, the json is packed. Otherwise, it is human readable.
-  """
-  if hasattr(filepath_or_handle, 'write'):
-    if dense:
-      filepath_or_handle.write(
-          json.dumps(data, sort_keys=True, separators=(',',':')))
-    else:
-      filepath_or_handle.write(json.dumps(data, sort_keys=True, indent=2))
-  else:
-    with open(filepath_or_handle, 'wb') as f:
-      if dense:
-        json.dump(data, f, sort_keys=True, separators=(',',':'))
-      else:
-        json.dump(data, f, sort_keys=True, indent=2)
 
 
 def assert_is_renderable(pseudo_string):
@@ -747,7 +722,7 @@ class ApiBase(object):
               os.remove(self._scripts_to_cleanup.pop())
             except OSError as e:
               logging.error('Failed to delete a temporary script: %s', e)
-          write_json(self._logname, self._gen_logdata(), False)
+          tools.write_json(self._logname, self._gen_logdata(), False)
         finally:
           self._initialized = False
 
@@ -1495,7 +1470,7 @@ class Strace(ApiBase):
   def parse_log(cls, logname, blacklist, trace_name):
     logging.info('parse_log(%s, ..., %s)', logname, trace_name)
     assert os.path.isabs(logname)
-    data = read_json(logname)
+    data = tools.read_json(logname)
     out = []
     for item in data['traces']:
       if trace_name and item['trace'] != trace_name:
@@ -2341,7 +2316,7 @@ class Dtrace(ApiBase):
       # All the HFS metadata is in the form /.vol/...
       return blacklist(filepath) or re.match(r'^\/\.vol\/.+$', filepath)
 
-    data = read_json(logname)
+    data = tools.read_json(logname)
     out = []
     for item in data['traces']:
       if trace_name and item['trace'] != trace_name:
@@ -3118,7 +3093,7 @@ class LogmanTrace(ApiBase):
           'trace': item['trace'],
         },
       )
-      for item in read_json(logname)['traces']
+      for item in tools.read_json(logname)['traces']
       if not trace_name or item['trace'] == trace_name
     ]
 
@@ -3357,7 +3332,7 @@ def CMDread(parser, args):
           print('  %s' % f.path)
 
     if options.json:
-      write_json(sys.stdout, output_as_json, False)
+      tools.write_json(sys.stdout, output_as_json, False)
   except KeyboardInterrupt:
     return 1
   except IOError as e:

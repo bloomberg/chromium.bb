@@ -59,11 +59,6 @@ def write_content(filepath, content):
     f.write(content)
 
 
-def write_json(filepath, data):
-  with open(filepath, 'wb') as f:
-    json.dump(data, f, sort_keys=True, indent=2)
-
-
 def tree_modes(root):
   """Returns the dict of files in a directory with their filemode.
 
@@ -127,6 +122,7 @@ class RunIsolatedTest(unittest.TestCase):
 
   def _store_result(self, result_data):
     """Stores a .isolated file in the hash table."""
+    # Need to know the hash before writting the file.
     result_text = json.dumps(result_data, sort_keys=True, indent=2)
     result_hash = ALGO(result_text).hexdigest()
     write_content(os.path.join(self.table, result_hash), result_text)

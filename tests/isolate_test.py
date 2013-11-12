@@ -19,6 +19,7 @@ sys.path.insert(0, os.path.join(ROOT_DIR, 'third_party'))
 from depot_tools import auto_stub
 import isolate
 from utils import file_path
+from utils import tools
 # Create shortcuts.
 from isolate import KEY_TOUCHED, KEY_TRACKED, KEY_UNTRACKED
 
@@ -722,7 +723,7 @@ class IsolateTest(IsolateBase):
         }],
       ],
     }
-    isolate.trace_inputs.write_json(
+    tools.write_json(
         os.path.join(self.cwd, 'included.isolate'), included_isolate, True)
     values = {
       'includes': ['included.isolate'],
@@ -1124,7 +1125,7 @@ class IsolateLoad(IsolateBase):
       },
     }
     options = self._get_option(isolate_file)
-    isolate.trace_inputs.write_json(options.isolated, input_data, False)
+    tools.write_json(options.isolated, input_data, False)
 
     # A CompleteState object contains two parts:
     # - Result instance stored in complete_state.isolated, corresponding to the
@@ -1495,7 +1496,7 @@ class IsolateLoad(IsolateBase):
     # By saving the files, it forces splitting the data up.
     complete_state.save_files()
 
-    actual_isolated_master = isolate.trace_inputs.read_json(
+    actual_isolated_master = tools.read_json(
         os.path.join(self.directory, 'foo.isolated'))
     expected_isolated_master = {
       u'algo': u'sha-1',
@@ -1518,7 +1519,7 @@ class IsolateLoad(IsolateBase):
     self._cleanup_isolated(expected_isolated_master)
     self.assertEqual(expected_isolated_master, actual_isolated_master)
 
-    actual_isolated_0 = isolate.trace_inputs.read_json(
+    actual_isolated_0 = tools.read_json(
         os.path.join(self.directory, 'foo.0.isolated'))
     expected_isolated_0 = {
       u'algo': u'sha-1',
@@ -1536,7 +1537,7 @@ class IsolateLoad(IsolateBase):
     self._cleanup_isolated(expected_isolated_0)
     self.assertEqual(expected_isolated_0, actual_isolated_0)
 
-    actual_isolated_1 = isolate.trace_inputs.read_json(
+    actual_isolated_1 = tools.read_json(
         os.path.join(self.directory, 'foo.1.isolated'))
     expected_isolated_1 = {
       u'algo': u'sha-1',
@@ -1554,7 +1555,7 @@ class IsolateLoad(IsolateBase):
     self._cleanup_isolated(expected_isolated_1)
     self.assertEqual(expected_isolated_1, actual_isolated_1)
 
-    actual_saved_state = isolate.trace_inputs.read_json(
+    actual_saved_state = tools.read_json(
         isolate.isolatedfile_to_state(options.isolated))
     isolated_base = unicode(os.path.basename(options.isolated))
     expected_saved_state = {

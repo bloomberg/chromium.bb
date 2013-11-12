@@ -4,6 +4,7 @@
 
 """Various utility functions and classes not specific to any single area."""
 
+import json
 import logging
 import logging.handlers
 import optparse
@@ -117,6 +118,28 @@ def fix_python_path(cmd):
   elif out[0].endswith('.py'):
     out.insert(0, sys.executable)
   return out
+
+
+def read_json(filepath):
+  with open(filepath, 'r') as f:
+    return json.load(f)
+
+
+def write_json(filepath_or_handle, data, dense):
+  """Writes data into filepath or file handle encoded as json.
+
+  If dense is True, the json is packed. Otherwise, it is human readable.
+  """
+  if dense:
+    kwargs = {'sort_keys': True, 'separators': (',',':')}
+  else:
+    kwargs = {'sort_keys': True, 'indent': 2}
+
+  if hasattr(filepath_or_handle, 'write'):
+    json.dump(data, filepath_or_handle, **kwargs)
+  else:
+    with open(filepath_or_handle, 'wb') as f:
+      json.dump(data, f, **kwargs)
 
 
 def report_error(error):
