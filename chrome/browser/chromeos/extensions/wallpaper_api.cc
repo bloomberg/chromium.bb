@@ -33,7 +33,7 @@ bool WallpaperSetWallpaperFunction::RunImpl() {
   user_id_hash_ =
       chromeos::UserManager::Get()->GetLoggedInUser()->username_hash();
 
-  StartDecode(*(params->details.wallpaper_data));
+  StartDecode(params->details.wallpaper_data);
 
   return true;
 }
@@ -43,8 +43,8 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
   chromeos::WallpaperManager* wallpaper_manager =
       chromeos::WallpaperManager::Get();
   chromeos::UserImage::RawImage raw_image(
-      params->details.wallpaper_data->begin(),
-      params->details.wallpaper_data->end());
+      params->details.wallpaper_data.begin(),
+      params->details.wallpaper_data.end());
   chromeos::UserImage image(wallpaper, raw_image);
   base::FilePath thumbnail_path = wallpaper_manager->GetCustomWallpaperPath(
       chromeos::kThumbnailWallpaperSubDir, user_id_hash_, params->details.name);

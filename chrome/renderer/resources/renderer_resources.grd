@@ -99,9 +99,6 @@ without changes to the corresponding grd file. fb9 -->
         <include name="IDR_WEB_VIEW_EXPERIMENTAL_JS" file="extensions\web_view_experimental.js" type="BINDATA" />
         <include name="IDR_WEB_VIEW_JS" file="extensions\web_view.js" type="BINDATA" />
 
-        <if expr="pp_ifdef('chromeos')">
-          <include name="IDR_WALLPAPER_CUSTOM_BINDINGS_JS" file="extensions\wallpaper_custom_bindings.js" type="BINDATA" />
-        </if>
         <!-- Platform app support. -->
         <include name="IDR_PLATFORM_APP_CSS" file="extensions\platform_app.css" type="BINDATA" />
         <include name="IDR_PLATFORM_APP_JS" file="extensions\platform_app.js" type="BINDATA" />

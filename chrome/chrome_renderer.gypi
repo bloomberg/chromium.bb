@@ -404,11 +404,6 @@
             '../third_party/hunspell/hunspell.gyp:hunspell',
           ],
         }],
-        ['chromeos==1', {
-          'sources': [
-            'renderer/resources/extensions/wallpaper_custom_bindings.js',
-          ],
-        }],
         ['OS=="mac"', {
           'dependencies': [
             '../third_party/mach_override/mach_override.gyp:mach_override',

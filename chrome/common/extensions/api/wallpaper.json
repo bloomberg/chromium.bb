@@ -23,13 +23,7 @@
           "properties": {
             "wallpaperData": {
               "type": "binary",
-              "optional": true,
               "description": "The jpeg or png encoded wallpaper image."
-            },
-            "url": {
-              "type": "string",
-              "optional": true,
-              "description": "The url of online wallpaper."
             },
             "layout": {
               "type": "string",

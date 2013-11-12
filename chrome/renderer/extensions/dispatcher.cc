@@ -1048,10 +1048,6 @@ void Dispatcher::PopulateSourceMap() {
   source_map_.RegisterSource("denyAdView", IDR_AD_VIEW_DENY_JS);
   source_map_.RegisterSource("platformApp", IDR_PLATFORM_APP_JS);
   source_map_.RegisterSource("injectAppTitlebar", IDR_INJECT_APP_TITLEBAR_JS);
-
-#if defined OS_CHROMEOS
-  source_map_.RegisterSource("wallpaper", IDR_WALLPAPER_CUSTOM_BINDINGS_JS);
-#endif
 }
 
 void Dispatcher::PopulateLazyBindingsMap() {
