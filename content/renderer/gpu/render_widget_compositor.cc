@@ -594,8 +594,8 @@ void RenderWidgetCompositor::setShowScrollBottleneckRects(bool show) {
   layer_tree_host_->SetDebugState(debug_state);
 }
 
-void RenderWidgetCompositor::WillBeginMainFrame() {
-  widget_->InstrumentWillBeginFrame();
+void RenderWidgetCompositor::WillBeginMainFrame(int frame_id) {
+  widget_->InstrumentWillBeginFrame(frame_id);
   widget_->willBeginCompositorFrame();
 }
 

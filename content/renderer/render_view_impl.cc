@@ -6100,12 +6100,12 @@ bool RenderViewImpl::CanComposeInline() {
   return true;
 }
 
-void RenderViewImpl::InstrumentWillBeginFrame() {
+void RenderViewImpl::InstrumentWillBeginFrame(int frame_id) {
   if (!webview())
     return;
   if (!webview()->devToolsAgent())
     return;
-  webview()->devToolsAgent()->didBeginFrame();
+  webview()->devToolsAgent()->didBeginFrame(frame_id);
 }
 
 void RenderViewImpl::InstrumentDidBeginFrame() {

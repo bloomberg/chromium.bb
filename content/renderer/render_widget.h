@@ -212,7 +212,7 @@ class CONTENT_EXPORT RenderWidget
   void StartHandlingImeEvent();
   void FinishHandlingImeEvent();
 
-  virtual void InstrumentWillBeginFrame() {}
+  virtual void InstrumentWillBeginFrame(int frame_id) {}
   virtual void InstrumentDidBeginFrame() {}
   virtual void InstrumentDidCancelFrame() {}
   virtual void InstrumentWillComposite() {}

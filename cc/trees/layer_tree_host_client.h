@@ -19,7 +19,7 @@ class OutputSurface;
 
 class LayerTreeHostClient {
  public:
-  virtual void WillBeginMainFrame() = 0;
+  virtual void WillBeginMainFrame(int frame_id) = 0;
   // Marks finishing compositing-related tasks on the main thread. In threaded
   // mode, this corresponds to DidCommit().
   virtual void DidBeginMainFrame() = 0;

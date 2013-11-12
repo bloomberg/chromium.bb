@@ -112,7 +112,7 @@ class RenderWidgetCompositor : public blink::WebLayerTreeView,
   virtual void setShowScrollBottleneckRects(bool show);
 
   // cc::LayerTreeHostClient implementation.
-  virtual void WillBeginMainFrame() OVERRIDE;
+  virtual void WillBeginMainFrame(int frame_id) OVERRIDE;
   virtual void DidBeginMainFrame() OVERRIDE;
   virtual void Animate(double frame_begin_time) OVERRIDE;
   virtual void Layout() OVERRIDE;

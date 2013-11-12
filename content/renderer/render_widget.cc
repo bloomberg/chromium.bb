@@ -1463,7 +1463,7 @@ void RenderWidget::DoDeferredUpdate() {
 
   // Tracking of frame rate jitter
   base::TimeTicks frame_begin_ticks = gfx::FrameTime::Now();
-  InstrumentWillBeginFrame();
+  InstrumentWillBeginFrame(0);
   AnimateIfNeeded();
 
   // Layout may generate more invalidation.  It may also enable the

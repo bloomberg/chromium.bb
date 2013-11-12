@@ -768,7 +768,7 @@ class CONTENT_EXPORT RenderViewImpl
 #endif
   virtual bool CanComposeInline() OVERRIDE;
   virtual void DidCommitCompositorFrame() OVERRIDE;
-  virtual void InstrumentWillBeginFrame() OVERRIDE;
+  virtual void InstrumentWillBeginFrame(int frame_id) OVERRIDE;
   virtual void InstrumentDidBeginFrame() OVERRIDE;
   virtual void InstrumentDidCancelFrame() OVERRIDE;
   virtual void InstrumentWillComposite() OVERRIDE;
