@@ -136,6 +136,56 @@ TEST_F(VariationsSeedProcessorTest, CheckStudyChannel) {
   }
 }
 
+TEST_F(VariationsSeedProcessorTest, CheckStudyFormFactor) {
+  VariationsSeedProcessor seed_processor;
+
+  const Study_FormFactor form_factors[] = {
+    Study_FormFactor_DESKTOP,
+    Study_FormFactor_PHONE,
+    Study_FormFactor_TABLET,
+  };
+
+  ASSERT_EQ(Study_FormFactor_FormFactor_ARRAYSIZE,
+            static_cast<int>(arraysize(form_factors)));
+
+  bool form_factor_added[arraysize(form_factors)] = { 0 };
+  Study_Filter filter;
+
+  for (size_t i = 0; i <= arraysize(form_factors); ++i) {
+    for (size_t j = 0; j < arraysize(form_factors); ++j) {
+      const bool expected = form_factor_added[j] ||
+                            filter.form_factor_size() == 0;
+      const bool result = seed_processor.CheckStudyFormFactor(filter,
+                                                              form_factors[j]);
+      EXPECT_EQ(expected, result) << "Case " << i << "," << j << " failed!";
+    }
+
+    if (i < arraysize(form_factors)) {
+      filter.add_form_factor(form_factors[i]);
+      form_factor_added[i] = true;
+    }
+  }
+
+  // Do the same check in the reverse order.
+  filter.clear_form_factor();
+  memset(&form_factor_added, 0, sizeof(form_factor_added));
+  for (size_t i = 0; i <= arraysize(form_factors); ++i) {
+    for (size_t j = 0; j < arraysize(form_factors); ++j) {
+      const bool expected = form_factor_added[j] ||
+                            filter.form_factor_size() == 0;
+      const bool result = seed_processor.CheckStudyFormFactor(filter,
+                                                              form_factors[j]);
+      EXPECT_EQ(expected, result) << "Case " << i << "," << j << " failed!";
+    }
+
+    if (i < arraysize(form_factors)) {
+      const int index = arraysize(form_factors) - i - 1;;
+      filter.add_form_factor(form_factors[index]);
+      form_factor_added[index] = true;
+    }
+  }
+}
+
 TEST_F(VariationsSeedProcessorTest, CheckStudyLocale) {
   VariationsSeedProcessor seed_processor;
 
@@ -365,7 +415,7 @@ TEST_F(VariationsSeedProcessorTest, FilterAndValidateStudies) {
   std::vector<ProcessedStudy> processed_studies;
   VariationsSeedProcessor().FilterAndValidateStudies(
       seed, "en-CA", base::Time::Now(), base::Version("20.0.0.0"),
-      Study_Channel_STABLE, &processed_studies);
+      Study_Channel_STABLE, Study_FormFactor_DESKTOP, &processed_studies);
 
   // Check that only the first kTrial1Name study was kept.
   ASSERT_EQ(2U, processed_studies.size());
@@ -485,7 +535,8 @@ TEST_F(VariationsSeedProcessorTest,
     base::FieldTrialList field_trial_list(NULL);
     study1->set_expiry_date(TimeToProtoTime(year_ago));
     seed_processor.CreateTrialsFromSeed(seed, "en-CA", base::Time::Now(),
-                                        version, Study_Channel_STABLE);
+                                        version, Study_Channel_STABLE,
+                                        Study_FormFactor_DESKTOP);
     EXPECT_EQ(kGroup1Name, base::FieldTrialList::FindFullName(kTrialName));
   }
 
@@ -496,7 +547,8 @@ TEST_F(VariationsSeedProcessorTest,
     study1->clear_expiry_date();
     study2->set_expiry_date(TimeToProtoTime(year_ago));
     seed_processor.CreateTrialsFromSeed(seed, "en-CA", base::Time::Now(),
-                                        version, Study_Channel_STABLE);
+                                        version, Study_Channel_STABLE,
+                                        Study_FormFactor_DESKTOP);
     EXPECT_EQ(kGroup1Name, base::FieldTrialList::FindFullName(kTrialName));
   }
 }
@@ -638,7 +690,8 @@ TEST_F(VariationsSeedProcessorTest, StartsActive) {
   VariationsSeedProcessor seed_processor;
   seed_processor.CreateTrialsFromSeed(seed, "en-CA", base::Time::Now(),
                                       base::Version("20.0.0.0"),
-                                      Study_Channel_STABLE);
+                                      Study_Channel_STABLE,
+                                      Study_FormFactor_DESKTOP);
 
   // Non-specified and ACTIVATION_EXPLICIT should not start active, but
   // ACTIVATION_AUTO should.

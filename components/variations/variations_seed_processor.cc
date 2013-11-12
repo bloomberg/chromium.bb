@@ -69,10 +69,11 @@ void VariationsSeedProcessor::CreateTrialsFromSeed(
     const std::string& locale,
     const base::Time& reference_date,
     const base::Version& version,
-    Study_Channel channel) {
+    Study_Channel channel,
+    Study_FormFactor form_factor) {
   std::vector<ProcessedStudy> filtered_studies;
   FilterAndValidateStudies(seed, locale, reference_date, version, channel,
-                           &filtered_studies);
+                           form_factor, &filtered_studies);
 
   for (size_t i = 0; i < filtered_studies.size(); ++i)
     CreateTrialFromStudy(filtered_studies[i]);
@@ -84,6 +85,7 @@ void VariationsSeedProcessor::FilterAndValidateStudies(
     const base::Time& reference_date,
     const base::Version& version,
     Study_Channel channel,
+    Study_FormFactor form_factor,
     std::vector<ProcessedStudy>* filtered_studies) {
   DCHECK(version.IsValid());
 
@@ -96,7 +98,8 @@ void VariationsSeedProcessor::FilterAndValidateStudies(
 
   for (int i = 0; i < seed.study_size(); ++i) {
     const Study& study = seed.study(i);
-    if (!ShouldAddStudy(study, locale, reference_date, version, channel))
+    if (!ShouldAddStudy(study, locale, reference_date,
+                        version, channel, form_factor))
       continue;
 
     if (IsStudyExpired(study, reference_date)) {
@@ -132,6 +135,20 @@ bool VariationsSeedProcessor::CheckStudyChannel(const Study_Filter& filter,
 
   for (int i = 0; i < filter.channel_size(); ++i) {
     if (filter.channel(i) == channel)
+      return true;
+  }
+  return false;
+}
+
+bool VariationsSeedProcessor::CheckStudyFormFactor(
+    const Study_Filter& filter,
+    Study_FormFactor form_factor) {
+  // An empty form factor list matches all form factors.
+  if (filter.form_factor_size() == 0)
+    return true;
+
+  for (int i = 0; i < filter.form_factor_size(); ++i) {
+    if (filter.form_factor(i) == form_factor)
       return true;
   }
   return false;
@@ -285,10 +302,17 @@ bool VariationsSeedProcessor::ShouldAddStudy(
     const std::string& locale,
     const base::Time& reference_date,
     const base::Version& version,
-    Study_Channel channel) {
+    Study_Channel channel,
+    Study_FormFactor form_factor) {
   if (study.has_filter()) {
     if (!CheckStudyChannel(study.filter(), channel)) {
       DVLOG(1) << "Filtered out study " << study.name() << " due to channel.";
+      return false;
+    }
+
+    if (!CheckStudyFormFactor(study.filter(), form_factor)) {
+      DVLOG(1) << "Filtered out study " << study.name() <<
+                  " due to form factor.";
       return false;
     }
 

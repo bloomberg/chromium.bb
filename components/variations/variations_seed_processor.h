@@ -32,10 +32,12 @@ class VariationsSeedProcessor {
                             const std::string& locale,
                             const base::Time& reference_date,
                             const base::Version& version,
-                            Study_Channel channel);
+                            Study_Channel channel,
+                            Study_FormFactor form_factor);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(VariationsSeedProcessorTest, CheckStudyChannel);
+  FRIEND_TEST_ALL_PREFIXES(VariationsSeedProcessorTest, CheckStudyFormFactor);
   FRIEND_TEST_ALL_PREFIXES(VariationsSeedProcessorTest, CheckStudyLocale);
   FRIEND_TEST_ALL_PREFIXES(VariationsSeedProcessorTest, CheckStudyPlatform);
   FRIEND_TEST_ALL_PREFIXES(VariationsSeedProcessorTest, CheckStudyStartDate);
@@ -62,6 +64,7 @@ class VariationsSeedProcessor {
                                 const base::Time& reference_date,
                                 const base::Version& version,
                                 Study_Channel channel,
+                                Study_FormFactor form_factor,
                                 std::vector<ProcessedStudy>* filtered_studies);
 
   // Validates |study| and if valid, adds it to |filtered_studies| as a
@@ -72,6 +75,11 @@ class VariationsSeedProcessor {
 
   // Checks whether a study is applicable for the given |channel| per |filter|.
   bool CheckStudyChannel(const Study_Filter& filter, Study_Channel channel);
+
+  // Checks whether a study is applicable for the given |form_factor| per
+  // |filter|.
+  bool CheckStudyFormFactor(const Study_Filter& filter,
+                            Study_FormFactor form_factor);
 
   // Checks whether a study is applicable for the given |locale| per |filter|.
   bool CheckStudyLocale(const Study_Filter& filter, const std::string& locale);
@@ -102,7 +110,8 @@ class VariationsSeedProcessor {
                       const std::string& locale,
                       const base::Time& reference_date,
                       const base::Version& version,
-                      Study_Channel channel);
+                      Study_Channel channel,
+                      Study_FormFactor form_factor);
 
   // Validates the sanity of |study| and computes the total probability.
   bool ValidateStudyAndComputeTotalProbability(

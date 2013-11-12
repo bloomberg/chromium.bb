@@ -34,6 +34,7 @@
 #include "net/http/http_util.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_request_status.h"
+#include "ui/base/device_form_factor.h"
 #include "url/gurl.h"
 
 #if defined(OS_CHROMEOS)
@@ -153,6 +154,21 @@ void RecordVariationSeedEmptyHistogram(VariationSeedEmptyState state) {
                             VARIATIONS_SEED_EMPTY_ENUM_SIZE);
 }
 
+// Get current form factor and convert it from enum DeviceFormFactor to enum
+// Study_FormFactor.
+Study_FormFactor GetCurrentFormFactor(){
+  switch (ui::GetDeviceFormFactor()) {
+    case ui::DEVICE_FORM_FACTOR_PHONE:
+      return Study_FormFactor_PHONE;
+    case ui::DEVICE_FORM_FACTOR_TABLET:
+      return Study_FormFactor_TABLET;
+    case ui::DEVICE_FORM_FACTOR_DESKTOP:
+      return Study_FormFactor_DESKTOP;
+  }
+  NOTREACHED();
+  return Study_FormFactor_DESKTOP;
+}
+
 }  // namespace
 
 VariationsService::VariationsService(PrefService* local_state)
@@ -204,7 +220,7 @@ bool VariationsService::CreateTrialsFromSeed() {
 
   VariationsSeedProcessor().CreateTrialsFromSeed(
       seed, g_browser_process->GetApplicationLocale(), reference_date,
-      current_version, GetChannelForVariations());
+      current_version, GetChannelForVariations(), GetCurrentFormFactor());
 
   // Log the "freshness" of the seed that was just used. The freshness is the
   // time between the last successful seed download and now.

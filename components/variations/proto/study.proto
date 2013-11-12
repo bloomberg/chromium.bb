@@ -78,7 +78,7 @@ message Study {
     optional string forcing_flag = 5;
 
     // Parameter values for this experiment.
-    repeated Param param = 6; 
+    repeated Param param = 6;
   }
 
   // List of experiments in this study. This list should include the default /
@@ -112,10 +112,17 @@ message Study {
     PLATFORM_IOS      = 5;
   }
 
+  // Possible form factors Chrome is running on.
+  enum FormFactor {
+    DESKTOP = 0;
+    PHONE   = 1;
+    TABLET  = 2;
+  }
+
   // Filtering criteria specifying whether this study is applicable to a given
   // Chrome instance.
   //
-  // Next tag: 7
+  // Next tag: 8
   message Filter {
     // The start date of the study in Unix time format. (Seconds since midnight
     // January 1, 1970 UTC). See: http://en.wikipedia.org/wiki/Unix_time
@@ -150,6 +157,11 @@ message Study {
     // applies to all locales.
     // Ex: ["en-US", "en-CA"]
     repeated string locale = 6;
+
+    // List of form factors that will receive this study. If omitted, the study
+    // applies to all form factors.
+    // Ex: [PHONE, TABLET]
+    repeated FormFactor form_factor = 7;
   }
 
   // Filtering criteria for this study. A study that is filtered out for a given
