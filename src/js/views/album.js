@@ -91,7 +91,7 @@ camera.views.Album.prototype.onLeave = function() {
  * @override
  */
 camera.views.Album.prototype.onActivate = function() {
-  document.querySelector('#album .padder').focus();
+  document.querySelector('#album').focus();
 };
 
 /**
