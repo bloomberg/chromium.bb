@@ -45,7 +45,6 @@ enum PropertyWhitelistType {
 };
 
 class CSSSelector;
-class ContainerNode;
 class MediaQueryEvaluator;
 class StyleResolver;
 class StyleRuleRegion;
@@ -122,7 +121,7 @@ class RuleSet {
 public:
     static PassOwnPtr<RuleSet> create() { return adoptPtr(new RuleSet); }
 
-    void addRulesFromSheet(StyleSheetContents*, const MediaQueryEvaluator&, StyleResolver* = 0, const ContainerNode* = 0);
+    void addRulesFromSheet(StyleSheetContents*, const MediaQueryEvaluator&, StyleResolver* = 0);
     void addStyleRule(StyleRule*, AddRuleFlags);
     void addRule(StyleRule*, unsigned selectorIndex, AddRuleFlags);
 
@@ -180,7 +179,7 @@ private:
     void addHostRule(StyleRuleHost*);
     void addRegionRule(StyleRuleRegion*, bool hasDocumentSecurityOrigin);
 
-    void addChildRules(const Vector<RefPtr<StyleRuleBase> >&, const MediaQueryEvaluator& medium, StyleResolver*, const ContainerNode* scope, bool hasDocumentSecurityOrigin, AddRuleFlags);
+    void addChildRules(const Vector<RefPtr<StyleRuleBase> >&, const MediaQueryEvaluator& medium, StyleResolver*, bool hasDocumentSecurityOrigin, AddRuleFlags);
     bool findBestRuleSetAndAdd(const CSSSelector*, RuleData&);
 
     void compactRules();

@@ -32,6 +32,7 @@
 
 namespace WebCore {
 
+class ContainerNode;
 class RuleFeatureSet;
 
 class TreeBoundaryCrossingRules {
