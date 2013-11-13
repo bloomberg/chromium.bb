@@ -26,8 +26,14 @@ struct Foo {
   handle[] files @9;
 };
 
+[Peer=ServiceClient]
 interface Service {
   void Frobinate(Foo foo @0, bool baz @1, handle port @2) @0;
+};
+
+[Peer=Service]
+interface ServiceClient {
+  void DidFrobinate(int32 result @0) @0;
 };
 
 }

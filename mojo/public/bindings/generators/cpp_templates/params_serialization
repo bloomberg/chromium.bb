@@ -1,5 +1,5 @@
 template <>
-class ObjectTraits<sample::Service_Frobinate_Params> {
+class ObjectTraits<$CLASS> {
  public:
   static void EncodePointersAndHandles(
       $CLASS* $NAME,

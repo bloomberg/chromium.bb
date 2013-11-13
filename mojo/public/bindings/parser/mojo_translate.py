@@ -6,6 +6,7 @@
 """Translate parse tree to Mojom IR"""
 
 
+import os
 import sys
 
 
@@ -34,6 +35,14 @@ def MapOrdinal(ordinal):
   if ordinal == None:
     return None;
   return int(ordinal[1:])  # Strip leading '@'
+
+
+def GetAttribute(attributes, name):
+  out = None
+  for attribute in attributes:
+    if attribute[0] == 'ATTRIBUTE' and attribute[1] == name:
+      out = attribute[2]
+  return out
 
 
 def MapFields(fields):
@@ -74,16 +83,17 @@ class MojomBuilder():
   def AddStruct(self, name, attributes, fields):
     struct = {}
     struct['name'] = name
+    # TODO(darin): Add support for |attributes|
+    #struct['attributes'] = MapAttributes(attributes)
     struct['fields'] = MapFields(fields)
     self.mojom['structs'].append(struct)
-    # TODO(darin): Add support for |attributes|
 
   def AddInterface(self, name, attributes, methods):
     interface = {}
     interface['name'] = name
+    interface['peer'] = GetAttribute(attributes, 'Peer')
     interface['methods'] = MapMethods(methods)
     self.mojom['interfaces'].append(interface)
-    # TODO(darin): Add support for |attributes|
 
   def AddModule(self, name, namespace, contents):
     self.mojom['name'] = name

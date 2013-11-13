@@ -311,7 +311,8 @@ class CPPGenerator(object):
               (method.name, ", ".join(params), method_postfix))
     return template.substitute(
         CLASS=interface.name,
-        METHODS='.\n'.join(methods))
+        PEER=interface.peer,
+        METHODS='\n'.join(methods))
 
   def GetInterfaceClassDeclarations(self):
     template = self.GetTemplate("interface_declaration")

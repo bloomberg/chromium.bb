@@ -49,27 +49,31 @@ void SimpleBindingsSupport::CancelWait(AsyncWaitID async_wait_id) {
 }
 
 void SimpleBindingsSupport::Process() {
-  typedef std::pair<AsyncWaitCallback*, MojoResult> Result;
-  std::list<Result> results;
+  for (;;) {
+    typedef std::pair<AsyncWaitCallback*, MojoResult> Result;
+    std::list<Result> results;
 
-  WaiterList::iterator it = waiters_.begin();
-  while (it != waiters_.end()) {
-    Waiter* waiter = *it;
-    MojoResult result;
-    if (IsReady(waiter->handle, waiter->flags, &result)) {
-      results.push_back(std::make_pair(waiter->callback, result));
-      WaiterList::iterator doomed = it++;
-      waiters_.erase(doomed);
-      delete waiter;
-    } else {
-      ++it;
+    WaiterList::iterator it = waiters_.begin();
+    while (it != waiters_.end()) {
+      Waiter* waiter = *it;
+      MojoResult result;
+      if (IsReady(waiter->handle, waiter->flags, &result)) {
+        results.push_back(std::make_pair(waiter->callback, result));
+        WaiterList::iterator doomed = it++;
+        waiters_.erase(doomed);
+        delete waiter;
+      } else {
+        ++it;
+      }
     }
-  }
 
-  for (std::list<Result>::const_iterator it = results.begin();
-       it != results.end();
-       ++it) {
-    it->first->OnHandleReady(it->second);
+    for (std::list<Result>::const_iterator it = results.begin();
+         it != results.end();
+         ++it) {
+      it->first->OnHandleReady(it->second);
+    }
+    if (results.empty())
+      break;
   }
 }
 

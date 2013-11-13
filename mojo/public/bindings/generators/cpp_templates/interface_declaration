@@ -1,4 +1,11 @@
+class ${CLASS}Proxy;
+class ${CLASS}Stub;
+class $PEER;
+
 class $CLASS {
  public:
+  typedef ${CLASS}Proxy _Proxy;
+  typedef ${CLASS}Stub _Stub;
+  typedef $PEER _Peer;
 $METHODS
 };

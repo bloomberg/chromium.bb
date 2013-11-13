@@ -127,12 +127,14 @@ def MethodFromData(kinds, data):
 def InterfaceToData(interface):
   return {
     istr(0, 'name'):    interface.name,
-    istr(1, 'methods'): map(MethodToData, interface.methods)
+    istr(1, 'peer'):    interface.peer,
+    istr(2, 'methods'): map(MethodToData, interface.methods)
   }
 
 def InterfaceFromData(kinds, data):
   interface = mojom.Interface()
   interface.name = data['name']
+  interface.peer = data['peer']
   interface.methods = map(
     lambda method: MethodFromData(kinds, method), data['methods'])
   return interface

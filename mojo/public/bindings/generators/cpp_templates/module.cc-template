@@ -7,7 +7,7 @@
 #include "mojo/public/bindings/lib/message_builder.h"
 #include "$INTERNAL_HEADER"
 
-namespace sample {
+namespace $NAMESPACE {
 namespace {
 
 #pragma pack(push, 1)
@@ -26,7 +26,7 @@ $PARAM_DEFINITIONS
 $STRUCT_DEFINITIONS
 
 $INTERFACE_DEFINITIONS
-}  // namespace sample
+}  // namespace $NAMESPACE
 
 namespace mojo {
 namespace internal {

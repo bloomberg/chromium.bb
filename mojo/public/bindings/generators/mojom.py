@@ -104,8 +104,9 @@ class Method(object):
 
 
 class Interface(object):
-  def __init__(self, name = None):
+  def __init__(self, name = None, peer = None):
     self.name = name
+    self.peer = peer
     self.methods = []
 
   def AddMethod(self, name, ordinal = None):

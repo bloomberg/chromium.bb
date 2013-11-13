@@ -50,6 +50,35 @@ class Service_Frobinate_Params {
 };
 MOJO_COMPILE_ASSERT(sizeof(Service_Frobinate_Params) == 24,
                     bad_sizeof_Service_Frobinate_Params);
+
+const uint32_t kServiceClient_DidFrobinate_Name = 0;
+
+class ServiceClient_DidFrobinate_Params {
+ public:
+  static ServiceClient_DidFrobinate_Params* New(mojo::Buffer* buf) {
+    return new (buf->Allocate(sizeof(ServiceClient_DidFrobinate_Params)))
+        ServiceClient_DidFrobinate_Params();
+  }
+
+  void set_result(int32_t result) { result_ = result; }
+
+  int32_t result() const { return result_; }
+
+ private:
+  friend class mojo::internal::ObjectTraits<ServiceClient_DidFrobinate_Params>;
+
+  ServiceClient_DidFrobinate_Params() {
+    _header_.num_bytes = sizeof(*this);
+    _header_.num_fields = 3;
+  }
+
+  mojo::internal::StructHeader _header_;
+  int32_t result_;
+  uint8_t _pad0_[4];
+};
+MOJO_COMPILE_ASSERT(sizeof(ServiceClient_DidFrobinate_Params) == 16,
+                    bad_sizeof_ServiceClient_DidFrobinate_Params);
+
 #if defined(__clang__)
 #pragma clang diagnostic pop
 #endif
@@ -130,6 +159,48 @@ bool ServiceStub::Accept(mojo::Message* message) {
       Frobinate(params->foo(), params->baz(), params->port());
       break;
     }
+  }
+  return true;
+}
+
+ServiceClientProxy::ServiceClientProxy(mojo::MessageReceiver* receiver)
+    : receiver_(receiver) {
+}
+
+void ServiceClientProxy::DidFrobinate(int32_t result) {
+  size_t payload_size =
+      mojo::internal::Align(sizeof(ServiceClient_DidFrobinate_Params));
+
+
+  mojo::MessageBuilder builder(kServiceClient_DidFrobinate_Name, payload_size);
+
+  ServiceClient_DidFrobinate_Params* params =
+      ServiceClient_DidFrobinate_Params::New(builder.buffer());
+
+  params->set_result(result);
+
+  mojo::Message message;
+  mojo::internal::EncodePointersAndHandles(params, &message.handles);
+
+  message.data = builder.Finish();
+
+  receiver_->Accept(&message);
+}
+
+
+bool ServiceClientStub::Accept(mojo::Message* message) {
+  switch (message->data->header.name) {
+    case kServiceClient_DidFrobinate_Name: {
+      ServiceClient_DidFrobinate_Params* params =
+          reinterpret_cast<ServiceClient_DidFrobinate_Params*>(
+              message->data->payload);
+
+      if (!mojo::internal::DecodePointersAndHandles(params, *message))
+        return false;
+      DidFrobinate(params->result());
+      break;
+    }
+
   }
   return true;
 }
@@ -245,6 +316,21 @@ class ObjectTraits<sample::Service_Frobinate_Params> {
     }
 
     // TODO: validate
+    return true;
+  }
+};
+
+template <>
+class ObjectTraits<sample::ServiceClient_DidFrobinate_Params> {
+ public:
+  static void EncodePointersAndHandles(
+      sample::ServiceClient_DidFrobinate_Params* params,
+      std::vector<Handle>* handles) {
+  }
+
+  static bool DecodePointersAndHandles(
+      sample::ServiceClient_DidFrobinate_Params* params,
+      const Message& message) {
     return true;
   }
 };

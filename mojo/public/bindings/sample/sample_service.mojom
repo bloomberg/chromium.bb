@@ -21,11 +21,21 @@
       {'name': 'files', 'kind': 'a:h', 'ordinal': 9}]}],
   'interfaces': [{
     'name': 'Service',
+    'attributes':
+      {'Peer': 'ServiceClient'},
     'methods': [{
       'name': 'Frobinate',
       'ordinal': 0,
       'parameters': [
         {'name': 'foo', 'kind': 'x:Foo', 'ordinal': 0},
         {'name': 'baz', 'kind': 'b', 'ordinal': 1},
-        {'name': 'port', 'kind': 'h', 'ordinal': 2}]}]}]
+        {'name': 'port', 'kind': 'h', 'ordinal': 2}]}]}, {
+    'name': 'ServiceClient',
+    'attributes':
+      {'Peer': 'Service'},
+    'methods': [{
+      'name': 'DidFrobinate',
+      'ordinal': 0,
+      'parameters': [
+        {'name': 'result', 'kind': 'i32', 'ordinal': 0}]}]}]
 }
