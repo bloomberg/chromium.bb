@@ -14,7 +14,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/ibus/ibus_component.h"
 #include "chromeos/dbus/ibus/ibus_engine_factory_service.h"
 #include "chromeos/dbus/ibus/ibus_engine_service.h"
 #include "chromeos/dbus/ibus/ibus_text.h"
@@ -49,7 +48,6 @@ InputMethodEngineIBus::InputMethodEngineIBus()
       observer_(NULL),
       preedit_text_(new IBusText()),
       preedit_cursor_(0),
-      component_(new IBusComponent()),
       candidate_window_(new input_method::CandidateWindow()),
       window_visible_(false),
       ibus_engine_factory_service_(IBusEngineFactoryService::Create()),
@@ -96,20 +94,6 @@ void InputMethodEngineIBus::Initialize(
     ibus_id_ = extension_ime_util::GetInputMethodID(extension_id, engine_id);
   }
 
-  component_.reset(new IBusComponent());
-  component_->set_name(std::string(kEngineBusPrefix) + std::string(engine_id));
-  component_->set_description(description);
-  component_->set_author(engine_name);
-
-  // TODO(nona): Remove IBusComponent once ibus is gone.
-  IBusComponent::EngineDescription engine_desc;
-  engine_desc.engine_id = ibus_id_;
-  engine_desc.display_name = description;
-  engine_desc.description = description;
-  engine_desc.language_code = (languages.empty()) ? "" : languages[0];
-  engine_desc.author = ibus_id_;
-
-  component_->mutable_engine_description()->push_back(engine_desc);
   manager->AddInputMethodExtension(ibus_id_, engine_name, layouts, languages,
                                    options_page, input_view, this);
   RegisterComponent();

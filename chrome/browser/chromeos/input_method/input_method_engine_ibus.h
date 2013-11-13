@@ -14,7 +14,6 @@
 
 namespace chromeos {
 
-class IBusComponent;
 class IBusText;
 
 class IBusEngineFactoryService;
@@ -150,9 +149,6 @@ class InputMethodEngineIBus : public InputMethodEngine,
   // The current preedit text, and it's cursor position.
   scoped_ptr<IBusText> preedit_text_;
   int preedit_cursor_;
-
-  // The current engine component.
-  scoped_ptr<IBusComponent> component_;
 
   // The current candidate window.
   scoped_ptr<input_method::CandidateWindow> candidate_window_;
