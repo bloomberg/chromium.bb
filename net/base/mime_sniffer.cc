@@ -236,7 +236,7 @@ static const MagicNumber kExtraMagicNumbers[] = {
   MAGIC_NUMBER("video/3gpp", "....ftyp3g")
   MAGIC_NUMBER("video/3gpp", "....ftypavcl")
   MAGIC_NUMBER("video/mp4", "....ftyp")
-  MAGIC_NUMBER("video/quicktime", "MOVI")
+  MAGIC_NUMBER("video/quicktime", "....moov")
   MAGIC_NUMBER("application/x-shockwave-flash", "CWS")
   MAGIC_NUMBER("application/x-shockwave-flash", "FWS")
   MAGIC_NUMBER("video/x-flv", "FLV")
