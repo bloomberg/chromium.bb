@@ -49,11 +49,6 @@ AbstractWorker::~AbstractWorker()
 {
 }
 
-void AbstractWorker::contextDestroyed()
-{
-    ActiveDOMObject::contextDestroyed();
-}
-
 KURL AbstractWorker::resolveURL(const String& url, ExceptionState& es)
 {
     if (url.isEmpty()) {

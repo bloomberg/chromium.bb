@@ -55,7 +55,6 @@ public:
 
     DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
 
-    virtual void contextDestroyed() OVERRIDE;
     AbstractWorker(ExecutionContext*);
     virtual ~AbstractWorker();
 

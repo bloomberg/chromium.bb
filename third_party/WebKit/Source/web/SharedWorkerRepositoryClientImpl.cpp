@@ -98,7 +98,7 @@ private:
 SharedWorkerScriptLoader::~SharedWorkerScriptLoader()
 {
     if (m_loading)
-        m_worker->unsetPendingActivity(m_worker.get());
+        m_worker->unsetPreventGC();
 }
 
 void SharedWorkerScriptLoader::load()
@@ -109,7 +109,7 @@ void SharedWorkerScriptLoader::load()
         sendConnect();
     } else {
         // Keep the worker + JS wrapper alive until the resource load is complete in case we need to dispatch an error event.
-        m_worker->setPendingActivity(m_worker.get());
+        m_worker->setPreventGC();
         m_loading = true;
 
         m_scriptLoader->loadAsynchronously(m_worker->executionContext(), m_url, DenyCrossOriginRequests, this);

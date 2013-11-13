@@ -47,6 +47,11 @@ public:
 
     virtual const AtomicString& interfaceName() const OVERRIDE;
 
+    // Prevents this SharedWorker + JS wrapper from being garbage collected.
+    void setPreventGC();
+    // Allows this SharedWorker + JS wrapper to be garbage collected.
+    void unsetPreventGC();
+
 private:
     explicit SharedWorker(ExecutionContext*);
 

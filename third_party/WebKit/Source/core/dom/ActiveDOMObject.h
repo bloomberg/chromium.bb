@@ -44,11 +44,21 @@ public:
     bool suspendIfNeededCalled() const { return m_suspendIfNeededCalled; }
 #endif
 
+    // Should return true if there's any pending asynchronous activity, and so
+    // this object must not be garbage collected.
+    //
+    // Default implementation is that it returns true iff
+    // m_pendingActivityCount is non-zero.
     virtual bool hasPendingActivity() const;
 
+    // These methods have an empty default implementation so that subclasses
+    // which don't need special treatment can skip implementation.
     virtual void suspend();
     virtual void resume();
     virtual void stop();
+
+protected:
+    virtual ~ActiveDOMObject();
 
     template<class T> void setPendingActivity(T* thisObject)
     {
@@ -63,9 +73,6 @@ public:
         --m_pendingActivityCount;
         thisObject->deref();
     }
-
-protected:
-    virtual ~ActiveDOMObject();
 
 private:
     unsigned m_pendingActivityCount;

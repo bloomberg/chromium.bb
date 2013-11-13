@@ -94,4 +94,14 @@ const AtomicString& SharedWorker::interfaceName() const
     return EventTargetNames::SharedWorker;
 }
 
+void SharedWorker::setPreventGC()
+{
+    setPendingActivity(this);
+}
+
+void SharedWorker::unsetPreventGC()
+{
+    unsetPendingActivity(this);
+}
+
 } // namespace WebCore
