@@ -8,6 +8,8 @@
 #ifndef BASE_PROCESS_LINUX_INTERNAL_H_
 #define BASE_PROCESS_LINUX_INTERNAL_H_
 
+#include <unistd.h>
+
 #include "base/files/file_path.h"
 
 namespace base {
