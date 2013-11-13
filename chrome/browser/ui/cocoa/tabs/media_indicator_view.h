@@ -34,6 +34,9 @@ class Animation;
 // Starts the animation to transition the indicator to the new |mediaState|.
 - (void)updateIndicator:(TabMediaState)mediaState;
 
+// Register a callback to be invoked whenever the animation completes.
+- (void)setAnimationDoneCallbackObject:(id)anObject withSelector:(SEL)selector;
+
 @end
 
 @interface MediaIndicatorView(TestingAPI)

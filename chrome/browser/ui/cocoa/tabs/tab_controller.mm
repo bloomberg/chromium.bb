@@ -277,8 +277,13 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
   [mediaIndicatorView_ removeFromSuperview];
   mediaIndicatorView_.reset([mediaIndicatorView retain]);
   [self updateVisibility];
-  if (mediaIndicatorView_)
+  if (mediaIndicatorView_) {
     [[self view] addSubview:mediaIndicatorView_];
+    [mediaIndicatorView_
+      setAnimationDoneCallbackObject:self
+                        withSelector:@selector(updateVisibility)];
+
+  }
 }
 
 - (HoverCloseButton*)closeButton {

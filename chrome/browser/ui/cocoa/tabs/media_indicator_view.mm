@@ -14,25 +14,34 @@ class MediaIndicatorViewAnimationDelegate : public gfx::AnimationDelegate {
                                       TabMediaState* mediaState,
                                       TabMediaState* animatingMediaState)
       : view_(view), mediaState_(mediaState),
-        animatingMediaState_(animatingMediaState) {}
+        animatingMediaState_(animatingMediaState),
+        doneCallbackObject_(nil), doneCallbackSelector_(nil) {}
   virtual ~MediaIndicatorViewAnimationDelegate() {}
+
+  void SetAnimationDoneCallback(id anObject, SEL selector) {
+    doneCallbackObject_ = anObject;
+    doneCallbackSelector_ = selector;
+  }
 
   virtual void AnimationEnded(const gfx::Animation* animation) OVERRIDE {
     *animatingMediaState_ = *mediaState_;
     [view_ setNeedsDisplay:YES];
+    [doneCallbackObject_ performSelector:doneCallbackSelector_];
   }
   virtual void AnimationProgressed(const gfx::Animation* animation) OVERRIDE {
     [view_ setNeedsDisplay:YES];
   }
   virtual void AnimationCanceled(const gfx::Animation* animation) OVERRIDE {
-    *animatingMediaState_ = *mediaState_;
-    [view_ setNeedsDisplay:YES];
+    AnimationEnded(animation);
   }
 
  private:
   NSView* const view_;
   TabMediaState* const mediaState_;
   TabMediaState* const animatingMediaState_;
+
+  id doneCallbackObject_;
+  SEL doneCallbackSelector_;
 };
 
 @implementation MediaIndicatorView
@@ -77,6 +86,11 @@ class MediaIndicatorViewAnimationDelegate : public gfx::AnimationDelegate {
   animation_ = chrome::CreateTabMediaIndicatorFadeAnimation(mediaState_);
   animation_->set_delegate(delegate_.get());
   animation_->Start();
+}
+
+- (void)setAnimationDoneCallbackObject:(id)anObject withSelector:(SEL)selector {
+  if (delegate_)
+    delegate_->SetAnimationDoneCallback(anObject, selector);
 }
 
 - (void)drawRect:(NSRect)rect {
