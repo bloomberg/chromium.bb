@@ -365,6 +365,16 @@ bool FontPlatformData::isFixedPitch() const
 #endif
 }
 
+bool FontPlatformData::operator==(const FontPlatformData& a) const
+{
+    return SkTypeface::Equal(m_typeface.get(), a.m_typeface.get())
+        && m_textSize == a.m_textSize
+        && m_fakeBold == a.m_fakeBold
+        && m_fakeItalic == a.m_fakeItalic
+        && m_orientation == a.m_orientation
+        && m_isHashTableDeletedValue == a.m_isHashTableDeletedValue;
+}
+
 #if USE(HARFBUZZ)
 HarfBuzzFace* FontPlatformData::harfBuzzFace() const
 {

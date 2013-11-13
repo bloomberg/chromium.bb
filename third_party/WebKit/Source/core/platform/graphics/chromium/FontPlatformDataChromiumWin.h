@@ -111,10 +111,7 @@ public:
     unsigned hash() const;
 #endif
 
-    bool operator==(const FontPlatformData& other) const
-    {
-        return m_font == other.m_font && m_textSize == other.m_textSize && m_fakeBold == other.m_fakeBold && m_fakeItalic == other.m_fakeItalic && m_orientation == other.m_orientation;
-    }
+    bool operator==(const FontPlatformData&) const;
 
 #if ENABLE(OPENTYPE_VERTICAL)
     PassRefPtr<OpenTypeVerticalData> verticalData() const;
