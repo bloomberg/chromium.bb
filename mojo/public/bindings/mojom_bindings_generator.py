@@ -9,8 +9,8 @@
 import os
 import sys
 from optparse import OptionParser
-from parser import mojo_parser
-from parser import mojo_translate
+from parse import mojo_parser
+from parse import mojo_translate
 from generators import mojom_data
 from generators import mojom_cpp_generator
 
@@ -26,6 +26,9 @@ def Main():
   if len(args) < 1:
     parser.print_help()
     sys.exit(1)
+
+  if not os.path.exists(options.output_dir):
+    os.makedirs(options.output_dir)
 
   for filename in args:
     name = os.path.splitext(os.path.basename(filename))[0]

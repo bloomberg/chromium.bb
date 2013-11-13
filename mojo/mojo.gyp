@@ -24,6 +24,7 @@
         'mojo_js',
         'sample_app',
         'mojo_bindings',
+        'mojom_test',
         'mojo_bindings_test',
         'mojo_js_bindings',
         'mojo_js_bindings_unittests',
@@ -348,10 +349,26 @@
       ],
     },
     {
+      'target_name': 'mojom_test',
+      'type': 'executable',
+      'sources': [
+        'public/bindings/sample/sample_test.cc',
+        'public/bindings/sample/sample_service.mojom',
+      ],
+      'includes': [ 'public/bindings/mojom_bindings_generator.gypi' ],
+      'dependencies': [
+        '../testing/gtest.gyp:gtest',
+        'mojo_bindings',
+        'mojo_run_all_unittests',
+        'mojo_system',
+      ],
+    },
+    {
       'target_name': 'mojo_bindings_test',
       'type': 'executable',
       'include_dirs': [
-        '..'
+        '..',
+        '<(DEPTH)/mojo/public/bindings/sample',
       ],
       'dependencies': [
         '../testing/gtest.gyp:gtest',
@@ -360,9 +377,9 @@
         'mojo_system',
       ],
       'sources': [
-        'public/bindings/sample/generated/sample_service.cc',
-        'public/bindings/sample/generated/sample_service.h',
-        'public/bindings/sample/generated/sample_service_internal.h',
+        'public/bindings/sample/mojom/sample_service.cc',
+        'public/bindings/sample/mojom/sample_service.h',
+        'public/bindings/sample/mojom/sample_service_internal.h',
         'public/bindings/sample/sample_test.cc',
       ],
     },
