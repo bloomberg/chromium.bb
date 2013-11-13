@@ -50,8 +50,6 @@ const char kOpenedUnixSocketsCommand[] = "shell:cat /proc/net/unix";
 const char kListProcessesCommand[] = "shell:ps";
 const char kDumpsysCommand[] = "shell:dumpsys window policy";
 const char kDumpsysScreenSizePrefix[] = "mStable=";
-const char kLaunchBrowserCommand[] =
-    "shell:am start -a android.intent.action.VIEW -n %s/%s";
 
 const char kUnknownModel[] = "Offline";
 
@@ -593,7 +591,7 @@ void AdbPagesCommand::CreateBrowsers(
 
   browsers_ = remote_device->browsers();
 
-  // Create RemotePackage instances.
+  // Find installed packages not mapped to browsers.
   typedef std::multimap<std::string, const BrowserDescriptor*>
       DescriptorMultimap;
   DescriptorMultimap socket_to_descriptor;
@@ -612,13 +610,6 @@ void AdbPagesCommand::CreateBrowsers(
           DescriptorMultimap::value_type(descriptor->socket, descriptor));
       continue;
     }
-
-    remote_device->AddPackage(new DevToolsAdbBridge::RemotePackage(
-        adb_thread_,
-        remote_device->device(),
-        descriptor->display_name,
-        descriptor->package,
-        descriptor->launch_activity));
   }
 
   // Try naming remaining unnamed browsers.
@@ -1098,35 +1089,6 @@ DevToolsAdbBridge::RemoteBrowser::~RemoteBrowser() {
 }
 
 
-// DevToolsAdbBridge::RemotePackage -------------------------------------------
-
-DevToolsAdbBridge::RemotePackage::RemotePackage(
-    scoped_refptr<RefCountedAdbThread> adb_thread,
-    scoped_refptr<AndroidDevice> device,
-    const std::string& display_name,
-    const std::string& package_name,
-    const std::string& launch_activity)
-    : adb_thread_(adb_thread),
-      device_(device),
-      display_name_(display_name),
-      package_name_(package_name),
-      launch_activity_(launch_activity) {
-}
-
-
-void DevToolsAdbBridge::RemotePackage::Launch() {
-  adb_thread_->message_loop()->PostTask(
-      FROM_HERE,
-      base::Bind(&AndroidDevice::RunCommand,
-                 device_,
-                 base::StringPrintf(kLaunchBrowserCommand,
-                                    package_name_.c_str(),
-                                    launch_activity_.c_str()),
-                 base::Bind(&NoOp)));
-}
-
-DevToolsAdbBridge::RemotePackage::~RemotePackage() {}
-
 // DevToolsAdbBridge::RemoteDevice --------------------------------------------
 
 DevToolsAdbBridge::RemoteDevice::RemoteDevice(
@@ -1149,11 +1111,6 @@ bool DevToolsAdbBridge::RemoteDevice::IsConnected() {
 void DevToolsAdbBridge::RemoteDevice::AddBrowser(
     scoped_refptr<RemoteBrowser> browser) {
   browsers_.push_back(browser);
-}
-
-void DevToolsAdbBridge::RemoteDevice::AddPackage(
-    scoped_refptr<RemotePackage> package) {
-  packages_.push_back(package);
 }
 
 DevToolsAdbBridge::RemoteDevice::~RemoteDevice() {

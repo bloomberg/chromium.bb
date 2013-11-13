@@ -27,10 +27,6 @@ function open(browserId, url) {
   chrome.send('open', [browserId, url]);
 }
 
-function launch(packageId) {
-  chrome.send('launch', [packageId]);
-}
-
 function removeChildren(element_id) {
   var element = $(element_id);
   element.textContent = '';
@@ -174,10 +170,6 @@ function populateRemoteTargets(devices) {
       browserList.className = 'browsers';
       deviceSection.appendChild(browserList);
 
-      var packageList = document.createElement('div');
-      packageList.className = 'packages';
-      deviceSection.appendChild(packageList);
-
       var authenticating = document.createElement('div');
       authenticating.className = 'device-auth';
       deviceSection.appendChild(authenticating);
@@ -301,33 +293,6 @@ function populateRemoteTargets(devices) {
         if (majorChromeVersion >= MIN_VERSION_TAB_CLOSE)
           addActionLink(row, 'close', close.bind(null, page), page.attached);
       }
-    }
-
-    var packageList = deviceSection.querySelector('.packages');
-    packageList.textContent = '';
-
-    if (device.packages.length) {
-      var packagesHeader = document.createElement('div');
-      packagesHeader.className = 'packages-header';
-      packagesHeader.textContent =
-          device.browsers.length ? 'Also installed:' : 'Installed browsers:';
-      packageList.appendChild(packagesHeader);
-    }
-
-    for (var p = 0; p < device.packages.length; p++) {
-      var packageSection = document.createElement('div');
-      packageSection.className = 'package';
-      packageList.appendChild(packageSection);
-
-      var launchButton = document.createElement('button');
-      launchButton.textContent = 'Launch';
-      launchButton.addEventListener(
-          'click', launch.bind(null, device.packages[p].adbGlobalId), true);
-      packageSection.appendChild(launchButton);
-
-      var packageDisplayName = document.createElement('span');
-      packageDisplayName.textContent = device.packages[p].adbBrowserName;
-      packageSection.appendChild(packageDisplayName);
     }
   }
 }

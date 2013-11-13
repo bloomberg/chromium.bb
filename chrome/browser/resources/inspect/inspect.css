@@ -233,25 +233,6 @@ a.disabled {
   line-height: 13px;
 }
 
-.packages-header {
-  font-size: 110%;
-  font-weight: bold;
-  margin-bottom: 4px;
-  margin-top: 10px;
-}
-
-.package {
-  margin: 6px 12px;
-}
-
-.package span {
-  font-weight: bold;
-}
-
-.package button {
-  margin-right: 12px;
-}
-
 #device-settings {
   border-bottom: 1px solid #eee;
   padding: 5px 0;

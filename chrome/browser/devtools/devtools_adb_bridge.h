@@ -135,36 +135,7 @@ class DevToolsAdbBridge
     DISALLOW_COPY_AND_ASSIGN(RemoteBrowser);
   };
 
-  class RemotePackage : public base::RefCounted<RemotePackage> {
-   public:
-    RemotePackage(
-        scoped_refptr<RefCountedAdbThread> adb_thread,
-        scoped_refptr<AndroidDevice> device,
-        const std::string& display_name,
-        const std::string& package_name,
-        const std::string& launch_activity);
-
-    scoped_refptr<AndroidDevice> device() { return device_; }
-    std::string display_name() { return display_name_; }
-    std::string package_name() { return package_name_; }
-
-    void Launch();
-
-   private:
-    friend class base::RefCounted<RemotePackage>;
-    virtual ~RemotePackage();
-
-    scoped_refptr<RefCountedAdbThread> adb_thread_;
-    scoped_refptr<AndroidDevice> device_;
-    const std::string display_name_;
-    const std::string package_name_;
-    const std::string launch_activity_;
-
-    DISALLOW_COPY_AND_ASSIGN(RemotePackage);
-  };
-
   typedef std::vector<scoped_refptr<RemoteBrowser> > RemoteBrowsers;
-  typedef std::vector<scoped_refptr<RemotePackage> > RemotePackages;
 
   class RemoteDevice : public base::RefCounted<RemoteDevice> {
    public:
@@ -174,11 +145,9 @@ class DevToolsAdbBridge
     std::string GetModel();
     bool IsConnected();
     void AddBrowser(scoped_refptr<RemoteBrowser> browser);
-    void AddPackage(scoped_refptr<RemotePackage> package);
 
     scoped_refptr<AndroidDevice> device() { return device_; }
     RemoteBrowsers& browsers() { return browsers_; }
-    RemotePackages& packages() { return packages_; }
     gfx::Size screen_size() { return screen_size_; }
     void set_screen_size(const gfx::Size& size) { screen_size_ = size; }
 
@@ -188,7 +157,6 @@ class DevToolsAdbBridge
 
     scoped_refptr<AndroidDevice> device_;
     RemoteBrowsers browsers_;
-    RemotePackages packages_;
     gfx::Size screen_size_;
 
     DISALLOW_COPY_AND_ASSIGN(RemoteDevice);

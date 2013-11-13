@@ -76,7 +76,6 @@ const char kActivateCommand[]  = "activate";
 const char kCloseCommand[]  = "close";
 const char kReloadCommand[]  = "reload";
 const char kOpenCommand[]  = "open";
-const char kLaunchCommand[]  = "launch";
 
 const char kDiscoverUsbDevicesEnabledCommand[] =
     "set-discover-usb-devices-enabled";
@@ -103,7 +102,6 @@ const char kAdbBrowserChromeVersionField[] = "adbBrowserChromeVersion";
 const char kAdbGlobalIdField[] = "adbGlobalId";
 const char kAdbBrowsersField[] = "browsers";
 const char kAdbPagesField[] = "pages";
-const char kAdbPackagesField[] = "packages";
 const char kAdbPortStatus[] = "adbPortStatus";
 const char kAdbScreenWidthField[] = "adbScreenWidth";
 const char kAdbScreenHeightField[] = "adbScreenHeight";
@@ -140,7 +138,6 @@ class InspectMessageHandler : public WebUIMessageHandler {
   void HandleCloseCommand(const ListValue* args);
   void HandleReloadCommand(const ListValue* args);
   void HandleOpenCommand(const ListValue* args);
-  void HandleLaunchCommand(const ListValue* args);
   void HandleBooleanPrefChanged(const char* pref_name,
                                 const ListValue* args);
   void HandlePortForwardingConfigCommand(const ListValue* args);
@@ -181,9 +178,6 @@ void InspectMessageHandler::RegisterMessages() {
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(kOpenCommand,
       base::Bind(&InspectMessageHandler::HandleOpenCommand,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kLaunchCommand,
-      base::Bind(&InspectMessageHandler::HandleLaunchCommand,
                  base::Unretained(this)));
 }
 
@@ -238,19 +232,6 @@ void InspectMessageHandler::HandleOpenCommand(const ListValue* args) {
      return;
   }
   remote_browser->Open(gurl.spec());
-}
-
-void InspectMessageHandler::HandleLaunchCommand(const ListValue* args) {
-  if (args->GetSize() != 1)
-    return;
-  std::string package_id;
-  if (!args->GetString(0, &package_id))
-    return;
-  scoped_refptr<DevToolsAdbBridge::RemotePackage> remote_package =
-      inspect_ui_->FindRemotePackage(package_id);
-  if (!remote_package)
-    return;
-  remote_package->Launch();
 }
 
 DevToolsTargetImpl* InspectMessageHandler::FindTarget(const ListValue* args) {
@@ -424,12 +405,6 @@ InspectUI::FindRemoteBrowser(const std::string& id) {
   return it == remote_browsers_.end() ? NULL : it->second;
 }
 
-scoped_refptr<DevToolsAdbBridge::RemotePackage>
-InspectUI::FindRemotePackage(const std::string& id) {
-  RemotePackages::iterator it = remote_packages_.find(id);
-  return it == remote_packages_.end() ? NULL : it->second;
-}
-
 void InspectUI::InspectDevices(Browser* browser) {
   content::RecordAction(content::UserMetricsAction("InspectDevices"));
   chrome::NavigateParams params(chrome::GetSingletonTabNavigateParams(
@@ -583,7 +558,6 @@ void InspectUI::RemoteDevicesChanged(
         port_forwarding_controller->UpdateDeviceList(*devices);
 
   remote_browsers_.clear();
-  remote_packages_.clear();
   STLDeleteValues(&remote_targets_);
   ListValue device_list;
   for (DevToolsAdbBridge::RemoteDevices::iterator dit = devices->begin();
@@ -642,24 +616,6 @@ void InspectUI::RemoteDevicesChanged(
         page_list->Append(page_data);
       }
       browser_list->Append(browser_data);
-    }
-
-    ListValue* package_list = new ListValue();
-    device_data->Set(kAdbPackagesField, package_list);
-
-    DevToolsAdbBridge::RemotePackages& packages = device->packages();
-    for (DevToolsAdbBridge::RemotePackages::iterator pit = packages.begin();
-        pit != packages.end(); ++pit) {
-      DevToolsAdbBridge::RemotePackage* package = pit->get();
-      DictionaryValue* package_data = new DictionaryValue();
-      package_data->SetString(kAdbBrowserNameField, package->display_name());
-      std::string package_id = base::StringPrintf(
-          "package:%s:%s",
-          device->GetSerial().c_str(), // Ensure uniqueness across devices.
-          package->package_name().c_str()); // Ensure uniqueness on the device.
-      package_data->SetString(kAdbGlobalIdField, package_id);
-      remote_packages_[package_id] = package;
-      package_list->Append(package_data);
     }
 
     if (port_forwarding_controller) {
