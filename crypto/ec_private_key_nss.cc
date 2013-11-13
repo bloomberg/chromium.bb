@@ -25,8 +25,8 @@ extern "C" {
 
 namespace {
 
-PK11SlotInfo* GetKeySlot() {
-  return crypto::GetPublicNSSKeySlot();
+PK11SlotInfo* GetTempKeySlot() {
+  return PK11_GetInternalSlot();
 }
 
 class EllipticCurveSupportChecker {
@@ -37,7 +37,7 @@ class EllipticCurveSupportChecker {
     // support ECDSA may block NSS, and the value may also change as devices are
     // inserted/removed, so we would need to re-check on every use.
     crypto::EnsureNSSInit();
-    crypto::ScopedPK11Slot slot(GetKeySlot());
+    crypto::ScopedPK11Slot slot(GetTempKeySlot());
     supported_ = PK11_DoesMechanism(slot.get(), CKM_EC_KEY_PAIR_GEN) &&
         PK11_DoesMechanism(slot.get(), CKM_ECDSA);
   }
@@ -88,58 +88,59 @@ bool ECPrivateKey::IsSupported() {
 
 // static
 ECPrivateKey* ECPrivateKey::Create() {
-  return CreateWithParams(PR_FALSE /* not permanent */,
-                          PR_FALSE /* not sensitive */);
+  EnsureNSSInit();
+
+  ScopedPK11Slot slot(GetTempKeySlot());
+  return CreateWithParams(slot.get(),
+                          false /* not permanent */,
+                          false /* not sensitive */);
 }
 
-// static
-ECPrivateKey* ECPrivateKey::CreateSensitive() {
 #if defined(USE_NSS)
-  return CreateWithParams(PR_TRUE /* permanent */,
-                          PR_TRUE /* sensitive */);
-#else
-  // If USE_NSS is not defined, we initialize NSS with no databases, so we can't
-  // create permanent keys.
-  NOTREACHED();
-  return NULL;
-#endif
+// static
+ECPrivateKey* ECPrivateKey::CreateSensitive(PK11SlotInfo* slot) {
+  return CreateWithParams(
+      slot, true /* permanent */, true /* sensitive */);
 }
+#endif
 
 // static
 ECPrivateKey* ECPrivateKey::CreateFromEncryptedPrivateKeyInfo(
     const std::string& password,
     const std::vector<uint8>& encrypted_private_key_info,
     const std::vector<uint8>& subject_public_key_info) {
+  EnsureNSSInit();
+
+  ScopedPK11Slot slot(GetTempKeySlot());
   return CreateFromEncryptedPrivateKeyInfoWithParams(
+      slot.get(),
       password,
       encrypted_private_key_info,
       subject_public_key_info,
-      PR_FALSE /* not permanent */,
-      PR_FALSE /* not sensitive */);
+      false /* not permanent */,
+      false /* not sensitive */);
 }
 
+#if defined(USE_NSS)
 // static
 ECPrivateKey* ECPrivateKey::CreateSensitiveFromEncryptedPrivateKeyInfo(
+    PK11SlotInfo* slot,
     const std::string& password,
     const std::vector<uint8>& encrypted_private_key_info,
     const std::vector<uint8>& subject_public_key_info) {
-#if defined(USE_NSS)
   return CreateFromEncryptedPrivateKeyInfoWithParams(
+      slot,
       password,
       encrypted_private_key_info,
       subject_public_key_info,
-      PR_TRUE /* permanent */,
-      PR_TRUE /* sensitive */);
-#else
-  // If USE_NSS is not defined, we initialize NSS with no databases, so we can't
-  // create permanent keys.
-  NOTREACHED();
-  return NULL;
-#endif
+      true /* permanent */,
+      true /* sensitive */);
 }
+#endif
 
 // static
 bool ECPrivateKey::ImportFromEncryptedPrivateKeyInfo(
+    PK11SlotInfo* slot,
     const std::string& password,
     const uint8* encrypted_private_key_info,
     size_t encrypted_private_key_info_len,
@@ -148,8 +149,7 @@ bool ECPrivateKey::ImportFromEncryptedPrivateKeyInfo(
     bool sensitive,
     SECKEYPrivateKey** key,
     SECKEYPublicKey** public_key) {
-  ScopedPK11Slot slot(GetKeySlot());
-  if (!slot.get())
+  if (!slot)
     return false;
 
   *public_key = SECKEY_ExtractPublicKey(decoded_spki);
@@ -188,7 +188,7 @@ bool ECPrivateKey::ImportFromEncryptedPrivateKeyInfo(
   };
 
   rv = ImportEncryptedECPrivateKeyInfoAndReturnKey(
-      slot.get(),
+      slot,
       &epki,
       &password_item,
       NULL,  // nickname
@@ -275,15 +275,13 @@ bool ECPrivateKey::ExportECParams(std::vector<uint8>* output) {
 ECPrivateKey::ECPrivateKey() : key_(NULL), public_key_(NULL) {}
 
 // static
-ECPrivateKey* ECPrivateKey::CreateWithParams(bool permanent,
+ECPrivateKey* ECPrivateKey::CreateWithParams(PK11SlotInfo* slot,
+                                             bool permanent,
                                              bool sensitive) {
-  EnsureNSSInit();
+  if (!slot)
+    return NULL;
 
   scoped_ptr<ECPrivateKey> result(new ECPrivateKey);
-
-  ScopedPK11Slot slot(GetKeySlot());
-  if (!slot.get())
-    return NULL;
 
   SECOidData* oid_data = SECOID_FindOIDByTag(SEC_OID_SECG_EC_SECP256R1);
   if (!oid_data) {
@@ -306,7 +304,7 @@ ECPrivateKey* ECPrivateKey::CreateWithParams(bool permanent,
   ec_parameters.data[1] = oid_data->oid.len;
   memcpy(ec_parameters.data + 2, oid_data->oid.data, oid_data->oid.len);
 
-  result->key_ = PK11_GenerateKeyPair(slot.get(),
+  result->key_ = PK11_GenerateKeyPair(slot,
                                       CKM_EC_KEY_PAIR_GEN,
                                       &ec_parameters,
                                       &result->public_key_,
@@ -323,13 +321,12 @@ ECPrivateKey* ECPrivateKey::CreateWithParams(bool permanent,
 
 // static
 ECPrivateKey* ECPrivateKey::CreateFromEncryptedPrivateKeyInfoWithParams(
+    PK11SlotInfo* slot,
     const std::string& password,
     const std::vector<uint8>& encrypted_private_key_info,
     const std::vector<uint8>& subject_public_key_info,
     bool permanent,
     bool sensitive) {
-  EnsureNSSInit();
-
   scoped_ptr<ECPrivateKey> result(new ECPrivateKey);
 
   SECItem encoded_spki = {
@@ -344,7 +341,8 @@ ECPrivateKey* ECPrivateKey::CreateFromEncryptedPrivateKeyInfoWithParams(
     return NULL;
   }
 
-  bool success = ECPrivateKey::ImportFromEncryptedPrivateKeyInfo(
+  bool success = ImportFromEncryptedPrivateKeyInfo(
+      slot,
       password,
       &encrypted_private_key_info[0],
       encrypted_private_key_info.size(),

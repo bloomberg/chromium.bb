@@ -101,12 +101,6 @@ ECPrivateKey* ECPrivateKey::Create() {
 }
 
 // static
-ECPrivateKey* ECPrivateKey::CreateSensitive() {
-  NOTIMPLEMENTED();
-  return NULL;
-}
-
-// static
 ECPrivateKey* ECPrivateKey::CreateFromEncryptedPrivateKeyInfo(
     const std::string& password,
     const std::vector<uint8>& encrypted_private_key_info,
@@ -148,15 +142,6 @@ ECPrivateKey* ECPrivateKey::CreateFromEncryptedPrivateKeyInfo(
     return NULL;
 
   return result.release();
-}
-
-// static
-ECPrivateKey* ECPrivateKey::CreateSensitiveFromEncryptedPrivateKeyInfo(
-    const std::string& password,
-    const std::vector<uint8>& encrypted_private_key_info,
-    const std::vector<uint8>& subject_public_key_info) {
-  NOTIMPLEMENTED();
-  return NULL;
 }
 
 bool ECPrivateKey::ExportEncryptedPrivateKey(

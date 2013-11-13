@@ -2357,8 +2357,10 @@ int SSLClientSocketNSS::Core::ImportChannelIDKeys(SECKEYPublicKey** public_key,
   if (cert == NULL)
     return MapNSSError(PORT_GetError());
 
+  crypto::ScopedPK11Slot slot(PK11_GetInternalSlot());
   // Set the private key.
   if (!crypto::ECPrivateKey::ImportFromEncryptedPrivateKeyInfo(
+          slot.get(),
           ServerBoundCertService::kEPKIPassword,
           reinterpret_cast<const unsigned char*>(
               domain_bound_private_key_.data()),

@@ -20,8 +20,9 @@
 #if defined(USE_OPENSSL)
 // Forward declaration for openssl/*.h
 typedef struct evp_pkey_st EVP_PKEY;
-#elif defined(USE_NSS) || defined(OS_WIN) || defined(OS_MACOSX)
+#else
 // Forward declaration.
+typedef struct PK11SlotInfoStr PK11SlotInfo;
 typedef struct SECKEYPrivateKeyStr SECKEYPrivateKey;
 typedef struct SECKEYPublicKeyStr SECKEYPublicKey;
 #endif
@@ -180,15 +181,17 @@ class CRYPTO_EXPORT RSAPrivateKey {
       const std::vector<uint8>& input);
 
 #if defined(USE_NSS)
-  // Create a new random instance. Can return NULL if initialization fails.
-  // The created key is permanent and is not exportable in plaintext form.
-  static RSAPrivateKey* CreateSensitive(uint16 num_bits);
+  // Create a new random instance in |slot|. Can return NULL if initialization
+  // fails.  The created key is permanent and is not exportable in plaintext
+  // form.
+  static RSAPrivateKey* CreateSensitive(PK11SlotInfo* slot, uint16 num_bits);
 
-  // Create a new instance by importing an existing private key. The format is
-  // an ASN.1-encoded PrivateKeyInfo block from PKCS #8. This can return NULL if
-  // initialization fails.
+  // Create a new instance in |slot| by importing an existing private key. The
+  // format is an ASN.1-encoded PrivateKeyInfo block from PKCS #8. This can
+  // return NULL if initialization fails.
   // The created key is permanent and is not exportable in plaintext form.
   static RSAPrivateKey* CreateSensitiveFromPrivateKeyInfo(
+      PK11SlotInfo* slot,
       const std::vector<uint8>& input);
 
   // Create a new instance by referencing an existing private key
@@ -207,7 +210,7 @@ class CRYPTO_EXPORT RSAPrivateKey {
 
 #if defined(USE_OPENSSL)
   EVP_PKEY* key() { return key_; }
-#elif defined(USE_NSS) || defined(OS_WIN) || defined(OS_MACOSX)
+#else
   SECKEYPrivateKey* key() { return key_; }
   SECKEYPublicKey* public_key() { return public_key_; }
 #endif
@@ -231,11 +234,13 @@ class CRYPTO_EXPORT RSAPrivateKey {
   // methods above instead.
   RSAPrivateKey();
 
+#if !defined(USE_OPENSSL)
   // Shared helper for Create() and CreateSensitive().
   // TODO(cmasone): consider replacing |permanent| and |sensitive| with a
   //                flags arg created by ORing together some enumerated values.
   // Note: |permanent| is only supported when USE_NSS is defined.
-  static RSAPrivateKey* CreateWithParams(uint16 num_bits,
+  static RSAPrivateKey* CreateWithParams(PK11SlotInfo* slot,
+                                         uint16 num_bits,
                                          bool permanent,
                                          bool sensitive);
 
@@ -243,13 +248,15 @@ class CRYPTO_EXPORT RSAPrivateKey {
   // CreateSensitiveFromPrivateKeyInfo().
   // Note: |permanent| is only supported when USE_NSS is defined.
   static RSAPrivateKey* CreateFromPrivateKeyInfoWithParams(
+      PK11SlotInfo* slot,
       const std::vector<uint8>& input,
       bool permanent,
       bool sensitive);
+#endif
 
 #if defined(USE_OPENSSL)
   EVP_PKEY* key_;
-#elif defined(USE_NSS) || defined(OS_WIN) || defined(OS_MACOSX)
+#else
   SECKEYPrivateKey* key_;
   SECKEYPublicKey* public_key_;
 #endif

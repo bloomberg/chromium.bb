@@ -51,7 +51,11 @@ RSAPrivateKey::~RSAPrivateKey() {
 
 // static
 RSAPrivateKey* RSAPrivateKey::Create(uint16 num_bits) {
-  return CreateWithParams(num_bits,
+  EnsureNSSInit();
+
+  ScopedPK11Slot slot(PK11_GetInternalSlot());
+  return CreateWithParams(slot.get(),
+                          num_bits,
                           false /* not permanent */,
                           false /* not sensitive */);
 }
@@ -59,23 +63,32 @@ RSAPrivateKey* RSAPrivateKey::Create(uint16 num_bits) {
 // static
 RSAPrivateKey* RSAPrivateKey::CreateFromPrivateKeyInfo(
     const std::vector<uint8>& input) {
-  return CreateFromPrivateKeyInfoWithParams(input,
-                                            false /* not permanent */,
-                                            false /* not sensitive */);
+  EnsureNSSInit();
+
+  ScopedPK11Slot slot(PK11_GetInternalSlot());
+  return CreateFromPrivateKeyInfoWithParams(
+      slot.get(),
+      input,
+      false /* not permanent */,
+      false /* not sensitive */);
 }
 
 #if defined(USE_NSS)
 // static
-RSAPrivateKey* RSAPrivateKey::CreateSensitive(uint16 num_bits) {
-  return CreateWithParams(num_bits,
+RSAPrivateKey* RSAPrivateKey::CreateSensitive(PK11SlotInfo* slot,
+                                              uint16 num_bits) {
+  return CreateWithParams(slot,
+                          num_bits,
                           true /* permanent */,
                           true /* sensitive */);
 }
 
 // static
 RSAPrivateKey* RSAPrivateKey::CreateSensitiveFromPrivateKeyInfo(
+    PK11SlotInfo* slot,
     const std::vector<uint8>& input) {
-  return CreateFromPrivateKeyInfoWithParams(input,
+  return CreateFromPrivateKeyInfoWithParams(slot,
+                                            input,
                                             true /* permanent */,
                                             true /* sensitive */);
 }
@@ -200,29 +213,19 @@ RSAPrivateKey::RSAPrivateKey() : key_(NULL), public_key_(NULL) {
 }
 
 // static
-RSAPrivateKey* RSAPrivateKey::CreateWithParams(uint16 num_bits,
+RSAPrivateKey* RSAPrivateKey::CreateWithParams(PK11SlotInfo* slot,
+                                               uint16 num_bits,
                                                bool permanent,
                                                bool sensitive) {
-#if !defined(USE_NSS)
-  if (permanent) {
-    NOTIMPLEMENTED();
+  if (!slot)
     return NULL;
-  }
-#endif
-
-  EnsureNSSInit();
 
   scoped_ptr<RSAPrivateKey> result(new RSAPrivateKey);
-
-  ScopedPK11Slot slot(permanent ? GetPrivateNSSKeySlot() :
-                      PK11_GetInternalSlot());
-  if (!slot.get())
-    return NULL;
 
   PK11RSAGenParams param;
   param.keySizeInBits = num_bits;
   param.pe = 65537L;
-  result->key_ = PK11_GenerateKeyPair(slot.get(),
+  result->key_ = PK11_GenerateKeyPair(slot,
                                       CKM_RSA_PKCS_KEY_PAIR_GEN,
                                       &param,
                                       &result->public_key_,
@@ -237,25 +240,14 @@ RSAPrivateKey* RSAPrivateKey::CreateWithParams(uint16 num_bits,
 
 // static
 RSAPrivateKey* RSAPrivateKey::CreateFromPrivateKeyInfoWithParams(
-    const std::vector<uint8>& input, bool permanent, bool sensitive) {
-#if !defined(USE_NSS)
-  if (permanent) {
-    NOTIMPLEMENTED();
+    PK11SlotInfo* slot,
+    const std::vector<uint8>& input,
+    bool permanent,
+    bool sensitive) {
+  if (!slot)
     return NULL;
-  }
-#endif
-
-  // This method currently leaks some memory.
-  // See http://crbug.com/34742.
-  ANNOTATE_SCOPED_MEMORY_LEAK;
-  EnsureNSSInit();
 
   scoped_ptr<RSAPrivateKey> result(new RSAPrivateKey);
-
-  ScopedPK11Slot slot(permanent ? GetPrivateNSSKeySlot() :
-                      PK11_GetInternalSlot());
-  if (!slot.get())
-    return NULL;
 
   SECItem der_private_key_info;
   der_private_key_info.data = const_cast<unsigned char*>(&input.front());
@@ -265,7 +257,7 @@ RSAPrivateKey* RSAPrivateKey::CreateFromPrivateKeyInfoWithParams(
   const unsigned int key_usage = KU_KEY_ENCIPHERMENT | KU_DATA_ENCIPHERMENT |
                                  KU_DIGITAL_SIGNATURE;
   SECStatus rv =  PK11_ImportDERPrivateKeyInfoAndReturnKey(
-      slot.get(), &der_private_key_info, NULL, NULL, permanent, sensitive,
+      slot, &der_private_key_info, NULL, NULL, permanent, sensitive,
       key_usage, &result->key_, NULL);
   if (rv != SECSuccess) {
     NOTREACHED();
