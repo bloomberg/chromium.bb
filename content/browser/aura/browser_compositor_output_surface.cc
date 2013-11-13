@@ -16,6 +16,18 @@
 
 namespace content {
 
+bool SizeRequiresSoftwareCompositor(gfx::Size size) {
+#if defined(OS_WIN)
+  // Some GPU drivers have issues with windows smaller than 64 pixels wide or
+  // tall, so switch those to software if necessary. Switch to hardware if the
+  // size of the window increases to greater than that. http://crbug.com/286609
+  return size.width() != 0 && size.height() != 0 &&
+         (size.width() < 64 || size.height() < 64);
+#else
+  return false;
+#endif
+}
+
 BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
     const scoped_refptr<ContextProviderCommandBuffer>& context_provider,
     int surface_id,
@@ -26,11 +38,13 @@ BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
       surface_id_(surface_id),
       output_surface_map_(output_surface_map),
       compositor_message_loop_(compositor_message_loop),
-      compositor_(compositor) {
+      compositor_(compositor),
+      failed_creating_gpu_compositor_(false) {
   Initialize();
 }
 
 BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
+    bool failed_creating_gpu_compositor,
     scoped_ptr<cc::SoftwareOutputDevice> software_device,
     int surface_id,
     IDMap<BrowserCompositorOutputSurface>* output_surface_map,
@@ -40,7 +54,8 @@ BrowserCompositorOutputSurface::BrowserCompositorOutputSurface(
       surface_id_(surface_id),
       output_surface_map_(output_surface_map),
       compositor_message_loop_(compositor_message_loop),
-      compositor_(compositor) {
+      compositor_(compositor),
+      failed_creating_gpu_compositor_(failed_creating_gpu_compositor) {
   Initialize();
 }
 
@@ -85,6 +100,12 @@ void BrowserCompositorOutputSurface::Reshape(gfx::Size size,
   OutputSurface::Reshape(size, scale_factor);
   if (reflector_.get())
     reflector_->OnReshape(size);
+  bool use_software = SizeRequiresSoftwareCompositor(size);
+  if (software_device() && !use_software && !failed_creating_gpu_compositor_) {
+    DidLoseOutputSurface();
+  }
+  if (!software_device() && use_software)
+    DidLoseOutputSurface();
 }
 
 void BrowserCompositorOutputSurface::OnUpdateVSyncParameters(

@@ -17,13 +17,15 @@
 namespace content {
 
 SoftwareBrowserCompositorOutputSurface::SoftwareBrowserCompositorOutputSurface(
+    bool failed_creating_hardware,
     scoped_refptr<BrowserCompositorOutputSurfaceProxy> surface_proxy,
     scoped_ptr<cc::SoftwareOutputDevice> software_device,
     int surface_id,
     IDMap<BrowserCompositorOutputSurface>* output_surface_map,
     base::MessageLoopProxy* compositor_message_loop,
     base::WeakPtr<ui::Compositor> compositor)
-    : BrowserCompositorOutputSurface(software_device.Pass(),
+    : BrowserCompositorOutputSurface(failed_creating_hardware,
+                                     software_device.Pass(),
                                      surface_id,
                                      output_surface_map,
                                      compositor_message_loop,

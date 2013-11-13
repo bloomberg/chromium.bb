@@ -24,6 +24,10 @@ class ContextProviderCommandBuffer;
 class ReflectorImpl;
 class WebGraphicsContext3DCommandBufferImpl;
 
+// Determines whether the window size requires that the software renderer be
+// used instead of the hardware renderer.
+bool SizeRequiresSoftwareCompositor(gfx::Size size);
+
 class CONTENT_EXPORT BrowserCompositorOutputSurface
     : public cc::OutputSurface,
       public base::NonThreadSafe {
@@ -50,6 +54,7 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
 
   // Constructor used by the software implementation.
   BrowserCompositorOutputSurface(
+      bool failed_creating_gpu_compositor,
       scoped_ptr<cc::SoftwareOutputDevice> software_device,
       int surface_id,
       IDMap<BrowserCompositorOutputSurface>* output_surface_map,
@@ -62,6 +67,8 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
   scoped_refptr<base::MessageLoopProxy> compositor_message_loop_;
   base::WeakPtr<ui::Compositor> compositor_;
   scoped_refptr<ReflectorImpl> reflector_;
+
+  bool failed_creating_gpu_compositor_;
 
  private:
   void Initialize();
