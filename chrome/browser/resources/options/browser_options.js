@@ -279,8 +279,9 @@ cr.define('options', function() {
       };
       $('privacyClearDataButton').hidden = OptionsPage.isSettingsApp();
       // 'metricsReportingEnabled' element is only present on Chrome branded
-      // builds.
-      if ($('metricsReportingEnabled')) {
+      // builds, and the 'metricsReportingCheckboxAction' message is only
+      // handled on ChromeOS.
+      if ($('metricsReportingEnabled') && cr.isChromeOS) {
         $('metricsReportingEnabled').onclick = function(event) {
           chrome.send('metricsReportingCheckboxAction',
               [String(event.currentTarget.checked)]);
