@@ -54,9 +54,6 @@ leak:GrGpuGL::flushGraphicsState
 # xrandr leak. http://crbug.com/119677
 leak:XRRFindDisplay
 
-# http://crbug.com/318707
-leak:_XConnectXCB
-
 #### Actual bugs in Chromium code ####
 # PLEASE DO NOT ADD NEW SUPPRESSIONS TO THIS SECTION. Instead, commits that
 # introduce memory leaks should be reverted.
