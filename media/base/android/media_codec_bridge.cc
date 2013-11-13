@@ -122,8 +122,6 @@ void MediaCodecBridge::GetCodecsInfo(
     CodecsInfo info;
     info.codecs = AndroidMimeTypeToCodecType(mime_type);
     ConvertJavaStringToUTF8(env, j_codec_name.obj(), &info.name);
-    info.secure_decoder_supported =
-        Java_CodecInfo_isSecureDecoderSupported(env, j_info.obj());
     codecs_info->push_back(info);
   }
 }

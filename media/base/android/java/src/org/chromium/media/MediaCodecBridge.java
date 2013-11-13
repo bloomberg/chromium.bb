@@ -84,12 +84,10 @@ class MediaCodecBridge {
     private static class CodecInfo {
         private final String mCodecType;  // e.g. "video/x-vnd.on2.vp8".
         private final String mCodecName;  // e.g. "OMX.google.vp8.decoder".
-        private final boolean mIsSecureDecoderSupported;
 
-        private CodecInfo(String codecType, String codecName, boolean isSecureDecoderSupported) {
+        private CodecInfo(String codecType, String codecName) {
             mCodecType = codecType;
             mCodecName = codecName;
-            mIsSecureDecoderSupported = isSecureDecoderSupported;
         }
 
         @CalledByNative("CodecInfo")
@@ -97,9 +95,6 @@ class MediaCodecBridge {
 
         @CalledByNative("CodecInfo")
         private String codecName() { return mCodecName; }
-
-        @CalledByNative("CodecInfo")
-        private boolean isSecureDecoderSupported() { return mIsSecureDecoderSupported; }
     }
 
     private static class DequeueOutputResult {
@@ -152,29 +147,12 @@ class MediaCodecBridge {
                 continue;
             }
 
-            boolean secureDecoderSupported = false;
             String codecString = info.getName();
-            // ".secure" codecs sometimes crash instead of throwing on pre-JBMR2
-            // platforms, but this code isn't run on them anyway (MediaDrm
-            // unavailable) so we side-step the issue.  http://crbug.com/314868
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-                String secureCodecName = codecString + ".secure";
-                try {
-                    MediaCodec secureCodec = MediaCodec.createByCodecName(secureCodecName);
-                    if (secureCodec != null) {
-                        secureDecoderSupported = true;
-                        secureCodec.release();
-                    }
-                } catch (Exception e) {
-                    Log.e(TAG, "Failed to create " + secureCodecName);
-                }
-            }
-
             String[] supportedTypes = info.getSupportedTypes();
             for (int j = 0; j < supportedTypes.length; ++j) {
-                if (!CodecInfoMap.containsKey(supportedTypes[j]) || secureDecoderSupported) {
+                if (!CodecInfoMap.containsKey(supportedTypes[j])) {
                     CodecInfoMap.put(supportedTypes[j], new CodecInfo(
-                        supportedTypes[j], codecString, secureDecoderSupported));
+                        supportedTypes[j], codecString));
                 }
             }
         }
