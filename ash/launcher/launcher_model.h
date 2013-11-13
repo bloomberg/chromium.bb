@@ -12,7 +12,7 @@
 
 namespace ash {
 
-class LauncherModelObserver;
+class ShelfModelObserver;
 
 // Model used by ShelfView.
 class ASH_EXPORT LauncherModel {
@@ -67,8 +67,8 @@ class ASH_EXPORT LauncherModel {
   void SetStatus(Status status);
   Status status() const { return status_; }
 
-  void AddObserver(LauncherModelObserver* observer);
-  void RemoveObserver(LauncherModelObserver* observer);
+  void AddObserver(ShelfModelObserver* observer);
+  void RemoveObserver(ShelfModelObserver* observer);
 
  private:
   // Makes sure |index| is in line with the type-based order of items. If that
@@ -81,7 +81,7 @@ class ASH_EXPORT LauncherModel {
 
   LauncherItems items_;
   Status status_;
-  ObserverList<LauncherModelObserver> observers_;
+  ObserverList<ShelfModelObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherModel);
 };

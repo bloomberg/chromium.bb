@@ -44,24 +44,23 @@ LauncherItemDelegate* LauncherItemDelegateManager::GetLauncherItemDelegate(
   return NULL;
 }
 
-void LauncherItemDelegateManager::LauncherItemAdded(int index) {
+void LauncherItemDelegateManager::ShelfItemAdded(int index) {
 }
 
-void LauncherItemDelegateManager::LauncherItemRemoved(int index,
-                                                      ash::LauncherID id) {
+void LauncherItemDelegateManager::ShelfItemRemoved(int index, LauncherID id) {
   RemoveLauncherItemDelegate(id);
 }
 
-void LauncherItemDelegateManager::LauncherItemMoved(int start_index,
-                                                    int target_index) {
+void LauncherItemDelegateManager::ShelfItemMoved(int start_index,
+                                                 int target_index) {
 }
 
-void LauncherItemDelegateManager::LauncherItemChanged(
+void LauncherItemDelegateManager::ShelfItemChanged(
     int index,
     const LauncherItem& old_item) {
 }
 
-void LauncherItemDelegateManager::LauncherStatusChanged() {
+void LauncherItemDelegateManager::ShelfStatusChanged() {
 }
 
 void LauncherItemDelegateManager::RemoveLauncherItemDelegate(

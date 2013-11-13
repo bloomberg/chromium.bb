@@ -429,7 +429,7 @@ void ShelfView::Init() {
     view_model_->Add(child, static_cast<int>(i - items.begin()));
     AddChildView(child);
   }
-  LauncherStatusChanged();
+  ShelfStatusChanged();
   overflow_button_ = new OverflowButton(this);
   overflow_button_->set_context_menu_controller(this);
   ConfigureChildView(overflow_button_);
@@ -1416,7 +1416,7 @@ void ShelfView::OnGestureEvent(ui::GestureEvent* event) {
     event->StopPropagation();
 }
 
-void ShelfView::LauncherItemAdded(int model_index) {
+void ShelfView::ShelfItemAdded(int model_index) {
   {
     base::AutoReset<bool> cancelling_drag(
         &cancelling_drag_model_changed_, true);
@@ -1452,7 +1452,7 @@ void ShelfView::LauncherItemAdded(int model_index) {
   }
 }
 
-void ShelfView::LauncherItemRemoved(int model_index, LauncherID id) {
+void ShelfView::ShelfItemRemoved(int model_index, LauncherID id) {
   if (id == context_menu_id_)
     launcher_menu_runner_.reset();
   {
@@ -1492,8 +1492,8 @@ void ShelfView::LauncherItemRemoved(int model_index, LauncherID id) {
     tooltip_->Close();
 }
 
-void ShelfView::LauncherItemChanged(int model_index,
-                                    const ash::LauncherItem& old_item) {
+void ShelfView::ShelfItemChanged(int model_index,
+                                 const LauncherItem& old_item) {
   const LauncherItem& item(model_->items()[model_index]);
   if (old_item.type != item.type) {
     // Type changed, swap the views.
@@ -1537,7 +1537,7 @@ void ShelfView::LauncherItemChanged(int model_index,
   }
 }
 
-void ShelfView::LauncherItemMoved(int start_index, int target_index) {
+void ShelfView::ShelfItemMoved(int start_index, int target_index) {
   view_model_->Move(start_index, target_index);
   // When cancelling a drag due to a launcher item being added, the currently
   // dragged item is moved back to its initial position. AnimateToIdealBounds
@@ -1547,7 +1547,7 @@ void ShelfView::LauncherItemMoved(int start_index, int target_index) {
     AnimateToIdealBounds();
 }
 
-void ShelfView::LauncherStatusChanged() {
+void ShelfView::ShelfStatusChanged() {
   if (ash::switches::UseAlternateShelfLayout())
     return;
   AppListButton* app_list_button =

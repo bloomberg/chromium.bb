@@ -7,7 +7,7 @@
 #include <algorithm>
 
 #include "ash/ash_switches.h"
-#include "ash/launcher/launcher_model_observer.h"
+#include "ash/shelf/shelf_model_observer.h"
 
 namespace ash {
 
@@ -74,8 +74,7 @@ int LauncherModel::AddAt(int index, const LauncherItem& item) {
   index = ValidateInsertionIndex(item.type, index);
   items_.insert(items_.begin() + index, item);
   items_[index].id = next_id_++;
-  FOR_EACH_OBSERVER(LauncherModelObserver, observers_,
-                    LauncherItemAdded(index));
+  FOR_EACH_OBSERVER(ShelfModelObserver, observers_, ShelfItemAdded(index));
   return index;
 }
 
@@ -86,8 +85,8 @@ void LauncherModel::RemoveItemAt(int index) {
          items_[index].type != TYPE_BROWSER_SHORTCUT);
   LauncherID id = items_[index].id;
   items_.erase(items_.begin() + index);
-  FOR_EACH_OBSERVER(LauncherModelObserver, observers_,
-                    LauncherItemRemoved(index, id));
+  FOR_EACH_OBSERVER(ShelfModelObserver, observers_,
+                    ShelfItemRemoved(index, id));
 }
 
 void LauncherModel::Move(int index, int target_index) {
@@ -97,8 +96,8 @@ void LauncherModel::Move(int index, int target_index) {
   LauncherItem item(items_[index]);
   items_.erase(items_.begin() + index);
   items_.insert(items_.begin() + target_index, item);
-  FOR_EACH_OBSERVER(LauncherModelObserver, observers_,
-                    LauncherItemMoved(index, target_index));
+  FOR_EACH_OBSERVER(ShelfModelObserver, observers_,
+                    ShelfItemMoved(index, target_index));
 }
 
 void LauncherModel::Set(int index, const LauncherItem& item) {
@@ -109,8 +108,8 @@ void LauncherModel::Set(int index, const LauncherItem& item) {
   LauncherItem old_item(items_[index]);
   items_[index] = item;
   items_[index].id = old_item.id;
-  FOR_EACH_OBSERVER(LauncherModelObserver, observers_,
-                    LauncherItemChanged(index, old_item));
+  FOR_EACH_OBSERVER(ShelfModelObserver, observers_,
+                    ShelfItemChanged(index, old_item));
 
   // If the type changes confirm that the item is still in the right order.
   if (new_index != index) {
@@ -153,15 +152,14 @@ void LauncherModel::SetStatus(Status status) {
     return;
 
   status_ = status;
-  FOR_EACH_OBSERVER(LauncherModelObserver, observers_,
-                    LauncherStatusChanged());
+  FOR_EACH_OBSERVER(ShelfModelObserver, observers_, ShelfStatusChanged());
 }
 
-void LauncherModel::AddObserver(LauncherModelObserver* observer) {
+void LauncherModel::AddObserver(ShelfModelObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void LauncherModel::RemoveObserver(LauncherModelObserver* observer) {
+void LauncherModel::RemoveObserver(ShelfModelObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 

@@ -8,7 +8,7 @@
 #include <string>
 
 #include "ash/ash_switches.h"
-#include "ash/launcher/launcher_model_observer.h"
+#include "ash/shelf/shelf_model_observer.h"
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -17,10 +17,10 @@ namespace ash {
 
 namespace {
 
-// LauncherModelObserver implementation that tracks what message are invoked.
-class TestLauncherModelObserver : public LauncherModelObserver {
+// ShelfModelObserver implementation that tracks what message are invoked.
+class TestShelfModelObserver : public ShelfModelObserver {
  public:
-  TestLauncherModelObserver()
+  TestShelfModelObserver()
       : added_count_(0),
         removed_count_(0),
         changed_count_(0),
@@ -39,21 +39,21 @@ class TestLauncherModelObserver : public LauncherModelObserver {
     return result;
   }
 
-  // LauncherModelObserver overrides:
-  virtual void LauncherItemAdded(int index) OVERRIDE {
+  // ShelfModelObserver overrides:
+  virtual void ShelfItemAdded(int index) OVERRIDE {
     added_count_++;
   }
-  virtual void LauncherItemRemoved(int index, LauncherID id) OVERRIDE {
+  virtual void ShelfItemRemoved(int index, LauncherID id) OVERRIDE {
     removed_count_++;
   }
-  virtual void LauncherItemChanged(int index,
-                                   const LauncherItem& old_item) OVERRIDE {
+  virtual void ShelfItemChanged(int index,
+                                const LauncherItem& old_item) OVERRIDE {
     changed_count_++;
   }
-  virtual void LauncherItemMoved(int start_index, int target_index) OVERRIDE {
+  virtual void ShelfItemMoved(int start_index, int target_index) OVERRIDE {
     moved_count_++;
   }
-  virtual void LauncherStatusChanged() OVERRIDE {
+  virtual void ShelfStatusChanged() OVERRIDE {
   }
 
  private:
@@ -70,7 +70,7 @@ class TestLauncherModelObserver : public LauncherModelObserver {
   int changed_count_;
   int moved_count_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestLauncherModelObserver);
+  DISALLOW_COPY_AND_ASSIGN(TestShelfModelObserver);
 };
 
 }  // namespace
@@ -82,7 +82,7 @@ class LauncherModelTest : public testing::Test {
 
   virtual void SetUp() {
     model_.reset(new LauncherModel);
-    observer_.reset(new TestLauncherModelObserver);
+    observer_.reset(new TestShelfModelObserver);
     EXPECT_EQ(0, model_->item_count());
 
     LauncherItem item;
@@ -99,7 +99,7 @@ class LauncherModelTest : public testing::Test {
   }
 
   scoped_ptr<LauncherModel> model_;
-  scoped_ptr<TestLauncherModelObserver> observer_;
+  scoped_ptr<TestShelfModelObserver> observer_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LauncherModelTest);

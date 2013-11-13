@@ -1113,7 +1113,7 @@ void ChromeLauncherController::OnLauncherDestroyed(ash::Launcher* launcher) {
   // Launcher is already in its destructor.
 }
 
-void ChromeLauncherController::LauncherItemAdded(int index) {
+void ChromeLauncherController::ShelfItemAdded(int index) {
   // The app list launcher can get added to the shelf after we applied the
   // preferences. In that case the item might be at the wrong spot. As such we
   // call the function again.
@@ -1122,12 +1122,11 @@ void ChromeLauncherController::LauncherItemAdded(int index) {
     UpdateAppLaunchersFromPref();
 }
 
-void ChromeLauncherController::LauncherItemRemoved(int index,
-                                                   ash::LauncherID id) {
+void ChromeLauncherController::ShelfItemRemoved(int index, ash::LauncherID id) {
 }
 
-void ChromeLauncherController::LauncherItemMoved(int start_index,
-                                                 int target_index) {
+void ChromeLauncherController::ShelfItemMoved(int start_index,
+                                              int target_index) {
   const ash::LauncherItem& item = model_->items()[target_index];
   // We remember the moved item position if it is either pinnable or
   // it is the app list with the alternate shelf layout.
@@ -1137,12 +1136,12 @@ void ChromeLauncherController::LauncherItemMoved(int start_index,
     PersistPinnedState();
 }
 
-void ChromeLauncherController::LauncherItemChanged(
+void ChromeLauncherController::ShelfItemChanged(
     int index,
     const ash::LauncherItem& old_item) {
 }
 
-void ChromeLauncherController::LauncherStatusChanged() {
+void ChromeLauncherController::ShelfStatusChanged() {
 }
 
 void ChromeLauncherController::ActiveUserChanged(

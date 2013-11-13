@@ -14,9 +14,9 @@
 #include "ash/display/display_controller.h"
 #include "ash/launcher/launcher_delegate.h"
 #include "ash/launcher/launcher_item_delegate.h"
-#include "ash/launcher/launcher_model_observer.h"
 #include "ash/launcher/launcher_types.h"
 #include "ash/shelf/shelf_layout_manager_observer.h"
+#include "ash/shelf/shelf_model_observer.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/shell_observer.h"
 #include "base/basictypes.h"
@@ -87,7 +87,7 @@ class ChromeLauncherControllerUserSwitchObserver {
 //   ShellWindowLauncherController.
 // * Shortcuts have no LauncherItemController.
 class ChromeLauncherController : public ash::LauncherDelegate,
-                                 public ash::LauncherModelObserver,
+                                 public ash::ShelfModelObserver,
                                  public ash::ShellObserver,
                                  public ash::DisplayController::Observer,
                                  public content::NotificationObserver,
@@ -294,13 +294,13 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   virtual bool CanPin() const OVERRIDE;
   virtual void UnpinAppWithID(const std::string& app_id) OVERRIDE;
 
-  // ash::LauncherModelObserver overrides:
-  virtual void LauncherItemAdded(int index) OVERRIDE;
-  virtual void LauncherItemRemoved(int index, ash::LauncherID id) OVERRIDE;
-  virtual void LauncherItemMoved(int start_index, int target_index) OVERRIDE;
-  virtual void LauncherItemChanged(int index,
-                                   const ash::LauncherItem& old_item) OVERRIDE;
-  virtual void LauncherStatusChanged() OVERRIDE;
+  // ash::ShelfModelObserver overrides:
+  virtual void ShelfItemAdded(int index) OVERRIDE;
+  virtual void ShelfItemRemoved(int index, ash::LauncherID id) OVERRIDE;
+  virtual void ShelfItemMoved(int start_index, int target_index) OVERRIDE;
+  virtual void ShelfItemChanged(int index,
+                                const ash::LauncherItem& old_item) OVERRIDE;
+  virtual void ShelfStatusChanged() OVERRIDE;
 
   // content::NotificationObserver overrides:
   virtual void Observe(int type,

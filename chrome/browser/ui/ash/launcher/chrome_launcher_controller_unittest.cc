@@ -11,7 +11,7 @@
 #include "ash/ash_switches.h"
 #include "ash/launcher/launcher_item_delegate_manager.h"
 #include "ash/launcher/launcher_model.h"
-#include "ash/launcher/launcher_model_observer.h"
+#include "ash/shelf/shelf_model_observer.h"
 #include "ash/shell.h"
 #include "ash/test/launcher_item_delegate_manager_test_api.h"
 #include "base/command_line.h"
@@ -86,40 +86,40 @@ const char kCrxAppPrefix[] = "_crx_";
 
 namespace {
 
-// LauncherModelObserver implementation that tracks what messages are invoked.
-class TestLauncherModelObserver : public ash::LauncherModelObserver {
+// ShelfModelObserver implementation that tracks what messages are invoked.
+class TestShelfModelObserver : public ash::ShelfModelObserver {
  public:
-  TestLauncherModelObserver()
+  TestShelfModelObserver()
     : added_(0),
       removed_(0),
       changed_(0) {
   }
 
-  virtual ~TestLauncherModelObserver() {
+  virtual ~TestShelfModelObserver() {
   }
 
-  // LauncherModelObserver
-  virtual void LauncherItemAdded(int index) OVERRIDE {
+  // Overridden from ash::ShelfModelObserver:
+  virtual void ShelfItemAdded(int index) OVERRIDE {
     ++added_;
     last_index_ = index;
   }
 
-  virtual void LauncherItemRemoved(int index, ash::LauncherID id) OVERRIDE {
+  virtual void ShelfItemRemoved(int index, ash::LauncherID id) OVERRIDE {
     ++removed_;
     last_index_ = index;
   }
 
-  virtual void LauncherItemChanged(int index,
-                                   const ash::LauncherItem& old_item) OVERRIDE {
+  virtual void ShelfItemChanged(int index,
+                                const ash::LauncherItem& old_item) OVERRIDE {
     ++changed_;
     last_index_ = index;
   }
 
-  virtual void LauncherItemMoved(int start_index, int target_index) OVERRIDE {
+  virtual void ShelfItemMoved(int start_index, int target_index) OVERRIDE {
     last_index_ = target_index;
   }
 
-  virtual void LauncherStatusChanged() OVERRIDE {
+  virtual void ShelfStatusChanged() OVERRIDE {
   }
 
   void clear_counts() {
@@ -140,7 +140,7 @@ class TestLauncherModelObserver : public ash::LauncherModelObserver {
   int changed_;
   int last_index_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestLauncherModelObserver);
+  DISALLOW_COPY_AND_ASSIGN(TestShelfModelObserver);
 };
 
 // Test implementation of AppIconLoader.
@@ -273,7 +273,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
     BrowserWithTestWindowTest::SetUp();
 
     model_.reset(new ash::LauncherModel);
-    model_observer_.reset(new TestLauncherModelObserver);
+    model_observer_.reset(new TestShelfModelObserver);
     model_->AddObserver(model_observer_.get());
 
     if (ash::Shell::HasInstance()) {
@@ -591,7 +591,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
   scoped_refptr<Extension> extension7_;
   scoped_refptr<Extension> extension8_;
   scoped_ptr<ChromeLauncherController> launcher_controller_;
-  scoped_ptr<TestLauncherModelObserver> model_observer_;
+  scoped_ptr<TestShelfModelObserver> model_observer_;
   scoped_ptr<ash::LauncherModel> model_;
 
   // |item_delegate_manager_| owns |test_controller_|.

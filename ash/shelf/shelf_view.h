@@ -8,8 +8,8 @@
 #include <utility>
 #include <vector>
 
-#include "ash/launcher/launcher_model_observer.h"
 #include "ash/shelf/shelf_button_host.h"
+#include "ash/shelf/shelf_model_observer.h"
 #include "ash/wm/gestures/shelf_gesture_handler.h"
 #include "base/observer_list.h"
 #include "ui/app_list/views/app_list_drag_and_drop_host.h"
@@ -48,7 +48,7 @@ class ShelfLayoutManager;
 class ShelfTooltipManager;
 
 class ASH_EXPORT ShelfView : public views::View,
-                             public LauncherModelObserver,
+                             public ShelfModelObserver,
                              public views::ButtonListener,
                              public ShelfButtonHost,
                              public views::ContextMenuController,
@@ -247,13 +247,13 @@ class ASH_EXPORT ShelfView : public views::View,
   // Overridden from ui::EventHandler:
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
 
-  // Overridden from LauncherModelObserver:
-  virtual void LauncherItemAdded(int model_index) OVERRIDE;
-  virtual void LauncherItemRemoved(int model_index, LauncherID id) OVERRIDE;
-  virtual void LauncherItemChanged(int model_index,
-                                   const ash::LauncherItem& old_item) OVERRIDE;
-  virtual void LauncherItemMoved(int start_index, int target_index) OVERRIDE;
-  virtual void LauncherStatusChanged() OVERRIDE;
+  // Overridden from ShelfModelObserver:
+  virtual void ShelfItemAdded(int model_index) OVERRIDE;
+  virtual void ShelfItemRemoved(int model_index, LauncherID id) OVERRIDE;
+  virtual void ShelfItemChanged(int model_index,
+                                const LauncherItem& old_item) OVERRIDE;
+  virtual void ShelfItemMoved(int start_index, int target_index) OVERRIDE;
+  virtual void ShelfStatusChanged() OVERRIDE;
 
   // Overridden from ShelfButtonHost:
   virtual void PointerPressedOnButton(views::View* view,
