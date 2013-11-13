@@ -45,6 +45,7 @@ PassOwnPtr<ResourceRequest> ResourceRequest::adopt(PassOwnPtr<CrossThreadResourc
 
     request->setHTTPBody(data->m_httpBody);
     request->setAllowCookies(data->m_allowCookies);
+    request->setReportUploadProgress(data->m_reportUploadProgress);
     request->setHasUserGesture(data->m_hasUserGesture);
     request->setDownloadToFile(data->m_downloadToFile);
     request->setRequestorID(data->m_requestorID);
@@ -68,6 +69,7 @@ PassOwnPtr<CrossThreadResourceRequestData> ResourceRequest::copyData() const
     if (m_httpBody)
         data->m_httpBody = m_httpBody->deepCopy();
     data->m_allowCookies = m_allowCookies;
+    data->m_reportUploadProgress = m_reportUploadProgress;
     data->m_hasUserGesture = m_hasUserGesture;
     data->m_downloadToFile = m_downloadToFile;
     data->m_requestorID = m_requestorID;

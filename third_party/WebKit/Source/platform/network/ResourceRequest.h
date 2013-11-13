@@ -255,6 +255,7 @@ public:
     OwnPtr<CrossThreadHTTPHeaderMapData> m_httpHeaders;
     RefPtr<FormData> m_httpBody;
     bool m_allowCookies;
+    bool m_reportUploadProgress;
     bool m_hasUserGesture;
     bool m_downloadToFile;
     ResourceLoadPriority m_priority;
