@@ -383,8 +383,7 @@ static base::LazyInstance<std::string>::Leaky
   g_version_extension = LAZY_INSTANCE_INITIALIZER;
 
 MetricsLog::MetricsLog(const std::string& client_id, int session_id)
-    : MetricsLogBase(client_id, session_id, MetricsLog::GetVersionString()),
-      creation_time_(base::TimeTicks::Now()) {
+    : MetricsLogBase(client_id, session_id, MetricsLog::GetVersionString()) {
 #if defined(OS_CHROMEOS)
   UpdateMultiProfileUserCount();
 #endif
@@ -678,20 +677,18 @@ void MetricsLog::WritePluginList(
 void MetricsLog::RecordEnvironment(
     const std::vector<content::WebPluginInfo>& plugin_list,
     const GoogleUpdateMetrics& google_update_metrics,
-    const std::vector<chrome_variations::ActiveGroupId>& synthetic_trials,
     base::TimeDelta incremental_uptime) {
   DCHECK(!locked());
 
   PrefService* pref = GetPrefService();
   WriteStabilityElement(plugin_list, incremental_uptime, pref);
 
-  RecordEnvironmentProto(plugin_list, google_update_metrics, synthetic_trials);
+  RecordEnvironmentProto(plugin_list, google_update_metrics);
 }
 
 void MetricsLog::RecordEnvironmentProto(
     const std::vector<content::WebPluginInfo>& plugin_list,
-    const GoogleUpdateMetrics& google_update_metrics,
-    const std::vector<chrome_variations::ActiveGroupId>& synthetic_trials) {
+    const GoogleUpdateMetrics& google_update_metrics) {
   SystemProfileProto* system_profile = uma_proto()->mutable_system_profile();
 
   std::string brand_code;
@@ -786,7 +783,6 @@ void MetricsLog::RecordEnvironmentProto(
   std::vector<ActiveGroupId> field_trial_ids;
   GetFieldTrialIds(&field_trial_ids);
   WriteFieldTrials(field_trial_ids, system_profile);
-  WriteFieldTrials(synthetic_trials, system_profile);
 
 #if defined(OS_CHROMEOS)
   PerfDataProto perf_data_proto;

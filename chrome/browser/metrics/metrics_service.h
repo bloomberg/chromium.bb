@@ -44,10 +44,6 @@ class DictionaryValue;
 class MessageLoopProxy;
 }
 
-namespace chrome_variations {
-struct ActiveGroupId;
-}
-
 namespace content {
 class RenderProcessHost;
 class WebContents;
@@ -70,27 +66,6 @@ bool IsOmniboxEnabled(Profile* profile);
 namespace tracked_objects {
 struct ProcessDataSnapshot;
 }
-
-// A Field Trial and its selected group, which represent a particular
-// Chrome configuration state. For example, the trial name could map to
-// a preference name, and the group name could map to a preference value.
-struct SyntheticTrialGroup {
- public:
-  ~SyntheticTrialGroup();
-
-  chrome_variations::ActiveGroupId id;
-  base::TimeTicks start_time;
-
- private:
-  friend class MetricsService;
-  FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, RegisterSyntheticTrial);
-
-  // This constructor is private specifically so as to control which code is
-  // able to access it. New code that wishes to use it should be added as a
-  // friend class.
-  SyntheticTrialGroup(uint32 trial, uint32 group, base::TimeTicks start);
-
-};
 
 class MetricsService
     : public chrome_browser_metrics::TrackingSynchronizerObserver,
@@ -239,16 +214,6 @@ class MetricsService
   // This value should be true when process has completed shutdown.
   static bool UmaMetricsProperlyShutdown();
 
-  // Registers a field trial name and group to be used to annotate a UMA report
-  // with a particular Chrome configuration state. A UMA report will be
-  // annotated with this trial group if and only if all events in the report
-  // were created after the trial is registered. Only one group name may be
-  // registered at a time for a given trial_name. Only the last group name that
-  // is registered for a given trial name will be recorded. The values passed
-  // in must not correspond to any real field trial in the code.
-  // To use this method, SyntheticTrialGroup should friend your class.
-  void RegisterSyntheticFieldTrial(const SyntheticTrialGroup& trial_group);
-
  private:
   // The MetricsService has a lifecycle that is stored as a state.
   // See metrics_service.cc for description of this lifecycle.
@@ -276,8 +241,6 @@ class MetricsService
   };
 
   struct ChildProcessStats;
-
-  typedef std::vector<SyntheticTrialGroup> SyntheticTrialGroups;
 
   // First part of the init task. Called on the FILE thread to load hardware
   // class information.
@@ -452,11 +415,6 @@ class MetricsService
   // process, and false otherwise.
   static bool IsPluginProcess(int process_type);
 
-  // Returns a list of synthetic field trials that were active for the entire
-  // duration of the current log.
-  void GetCurrentSyntheticFieldTrials(
-      std::vector<chrome_variations::ActiveGroupId>* synthetic_trials);
-
   content::ActionCallback action_callback_;
 
   content::NotificationRegistrar registrar_;
@@ -558,15 +516,11 @@ class MetricsService
   // exited-cleanly bit in the prefs.
   static ShutdownCleanliness clean_shutdown_status_;
 
-  // Field trial groups that map to Chrome configuration states.
-  SyntheticTrialGroups synthetic_trial_groups_;
-
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, ClientIdCorrectlyFormatted);
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, IsPluginProcess);
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, LowEntropySource0NotReset);
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest,
                            PermutedEntropyCacheClearedWhenLowEntropyReset);
-  FRIEND_TEST_ALL_PREFIXES(MetricsServiceTest, RegisterSyntheticTrial);
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceBrowserTest,
                            CheckLowEntropySourceUsed);
   FRIEND_TEST_ALL_PREFIXES(MetricsServiceReportingTest,

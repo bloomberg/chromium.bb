@@ -12,7 +12,6 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
-#include "components/variations/metrics_util.h"
 #include "content/public/common/process_type.h"
 #include "content/public/test/test_browser_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -28,23 +27,6 @@ class MetricsServiceTest : public testing::Test {
 
   PrefService* GetLocalState() {
     return testing_local_state_.Get();
-  }
-
-  // Returns true if there is a synthetic trial in the given vector that matches
-  // the given trial name and trial group; returns false otherwise.
-  bool HasSyntheticTrial(
-      const std::vector<chrome_variations::ActiveGroupId>& synthetic_trials,
-      const std::string& trial_name,
-      const std::string& trial_group) {
-    uint32 trial_name_hash = metrics::HashName(trial_name);
-    uint32 trial_group_hash = metrics::HashName(trial_group);
-    for (std::vector<chrome_variations::ActiveGroupId>::const_iterator it =
-             synthetic_trials.begin();
-         it != synthetic_trials.end(); ++it) {
-      if ((*it).name == trial_name_hash && (*it).group == trial_group_hash)
-        return true;
-    }
-    return false;
   }
 
  private:
@@ -134,56 +116,4 @@ TEST_F(MetricsServiceTest, PermutedEntropyCacheClearedWhenLowEntropyReset) {
 
     EXPECT_TRUE(GetLocalState()->GetString(kCachePrefName).empty());
   }
-}
-
-TEST_F(MetricsServiceTest, RegisterSyntheticTrial) {
-  MetricsService service;
-
-  // Add two synthetic trials and confirm that they show up in the list.
-  SyntheticTrialGroup trial1(metrics::HashName("TestTrial1"),
-                             metrics::HashName("Group1"),
-                             base::TimeTicks::Now());
-  service.RegisterSyntheticFieldTrial(trial1);
-
-  SyntheticTrialGroup trial2(metrics::HashName("TestTrial2"),
-                             metrics::HashName("Group2"),
-                             base::TimeTicks::Now());
-  service.RegisterSyntheticFieldTrial(trial2);
-
-  service.log_manager_.BeginLoggingWithLog(new MetricsLog("clientID", 1),
-                                           MetricsLogManager::INITIAL_LOG);
-
-  std::vector<chrome_variations::ActiveGroupId> synthetic_trials;
-  service.GetCurrentSyntheticFieldTrials(&synthetic_trials);
-  EXPECT_EQ(2U, synthetic_trials.size());
-  EXPECT_TRUE(HasSyntheticTrial(synthetic_trials, "TestTrial1", "Group1"));
-  EXPECT_TRUE(HasSyntheticTrial(synthetic_trials, "TestTrial2", "Group2"));
-
-  // Change the group for the first trial after the log started.
-  SyntheticTrialGroup trial3(metrics::HashName("TestTrial1"),
-                             metrics::HashName("Group2"),
-                             base::TimeTicks::Now());
-  service.RegisterSyntheticFieldTrial(trial3);
-  service.GetCurrentSyntheticFieldTrials(&synthetic_trials);
-  EXPECT_EQ(1U, synthetic_trials.size());
-  EXPECT_TRUE(HasSyntheticTrial(synthetic_trials, "TestTrial2", "Group2"));
-
-  // Add a new trial after the log started and confirm that it doesn't show up.
-  SyntheticTrialGroup trial4(metrics::HashName("TestTrial3"),
-                             metrics::HashName("Group3"),
-                             base::TimeTicks::Now());
-  service.RegisterSyntheticFieldTrial(trial4);
-  service.GetCurrentSyntheticFieldTrials(&synthetic_trials);
-  EXPECT_EQ(1U, synthetic_trials.size());
-  EXPECT_TRUE(HasSyntheticTrial(synthetic_trials, "TestTrial2", "Group2"));
-
-  // Start a new log.
-  service.log_manager_.FinishCurrentLog();
-  service.log_manager_.BeginLoggingWithLog(new MetricsLog("clientID", 1),
-                                           MetricsLogManager::ONGOING_LOG);
-  service.GetCurrentSyntheticFieldTrials(&synthetic_trials);
-  EXPECT_EQ(3U, synthetic_trials.size());
-  EXPECT_TRUE(HasSyntheticTrial(synthetic_trials, "TestTrial1", "Group2"));
-  EXPECT_TRUE(HasSyntheticTrial(synthetic_trials, "TestTrial2", "Group2"));
-  EXPECT_TRUE(HasSyntheticTrial(synthetic_trials, "TestTrial3", "Group3"));
 }
