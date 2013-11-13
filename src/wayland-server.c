@@ -701,11 +701,15 @@ registry_bind(struct wl_client *client,
 		if (global->name == name)
 			break;
 
-	if (&global->link == &display->global_list ||
-	    global->version < version)
+	if (&global->link == &display->global_list)
 		wl_resource_post_error(resource,
 				       WL_DISPLAY_ERROR_INVALID_OBJECT,
-				       "invalid global %d", name);
+				       "invalid global %s (%d)", interface, name);
+	else if (global->version < version)
+		wl_resource_post_error(resource,
+				       WL_DISPLAY_ERROR_INVALID_OBJECT,
+				       "invalid version for global %s (%d): have %d, wanted %d",
+				       interface, name, global->version, version);
 	else
 		global->bind(client, global->data, version, id);
 }
