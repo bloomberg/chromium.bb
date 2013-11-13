@@ -115,7 +115,7 @@ cr.define('speech', function() {
   /**
    * Called when an error happened during the speech recognition.
    *
-   * @param {Error} e The error object.
+   * @param {SpeechRecognitionError} e The error object.
    */
   SpeechManager.prototype.onSpeechRecognitionError = function(e) {
     this.setState_(SpeechState.UNINITIALIZED);

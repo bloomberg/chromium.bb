@@ -19,8 +19,7 @@ cr.define('speech', function() {
     this.recognizer_ = new window.webkitSpeechRecognition();
     this.recognizer_.continuous = true;
     this.recognizer_.interimResults = true;
-    // TODO(mukai): should switch to the user's UI language.
-    this.recognizer_.lang = 'en_US';
+    this.recognizer_.lang = navigator.language;
 
     this.recognizer_.onresult = this.onRecognizerResult_.bind(this);
     if (this.delegate_) {
@@ -28,8 +27,7 @@ cr.define('speech', function() {
           this.delegate_.onSpeechRecognitionStarted.bind(this.delegate_);
       this.recognizer_.onend =
           this.delegate_.onSpeechRecognitionEnded.bind(this.delegate_);
-      this.recognizer_.onerror =
-          this.delegate_.onSpeechRecognitionError.bind(this.delegate_);
+      this.recognizer_.onerror = this.onRecognizerError_.bind(this);
     }
   }
 
@@ -51,6 +49,22 @@ cr.define('speech', function() {
     }
     if (this.delegate_)
       this.delegate_.onSpeechRecognized(result, isFinal);
+  };
+
+  /**
+   * Called when an error happens in speech recognition.
+   *
+   * @param {SpeechRecognitionError} error The error data.
+   * @private
+   */
+  SpeechRecognitionManager.prototype.onRecognizerError_ = function(error) {
+    if (error.error == 'language-not-supported') {
+      // Falls back to English and restart.
+      this.recognizer_.lang = 'en-US';
+      this.start();
+    } else {
+      this.delegate_.onSpeechRecognitionError(error);
+    }
   };
 
   /**
