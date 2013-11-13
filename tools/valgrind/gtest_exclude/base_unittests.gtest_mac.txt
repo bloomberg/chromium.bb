@@ -15,4 +15,6 @@ ProcessMemoryTest.MacTerminateOnHeapCorruption
 ProcessMemoryTest.MacMallocFailureDoesNotTerminate
 
 # Times out on Valgrind/Mac, see http://crbug.com/172044
-MessageLoopTest.RecursivePosts
+MessageLoopTestTypeUI.RecursivePosts
+MessageLoopTestTypeIO.RecursivePosts
+MessageLoopTestTypeDefault.RecursivePosts
