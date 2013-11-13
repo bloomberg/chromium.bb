@@ -67,7 +67,13 @@ content::ContentBrowserClient*
 }
 
 void ExamplesMainDelegate::InitializeResourceBundle() {
-  ui::ResourceBundle::InitSharedInstanceWithLocale("en-US", NULL);
+  base::FilePath pak_dir;
+  PathService::Get(base::DIR_MODULE, &pak_dir);
+
+  base::FilePath pak_file;
+  pak_file = pak_dir.Append(FILE_PATH_LITERAL("ui_test.pak"));
+
+  ui::ResourceBundle::InitSharedInstanceWithPakPath(pak_file);
 }
 
 }  // namespace examples

@@ -862,7 +862,6 @@
       'type': '<(component)',
       'dependencies': [
         '../../base/base.gyp:base',
-        '../../chrome/chrome_resources.gyp:packed_resources',
         '../../skia/skia.gyp:skia',
         '../../third_party/icu/icu.gyp:icui18n',
         '../../third_party/icu/icu.gyp:icuuc',
@@ -870,6 +869,7 @@
         '../gfx/gfx.gyp:gfx',
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
+        '../ui.gyp:ui_test_pak',
         'views',
       ],
       'include_dirs': [
@@ -954,7 +954,6 @@
       'dependencies': [
         '../../base/base.gyp:base',
         '../../base/base.gyp:base_i18n',
-        '../../chrome/chrome_resources.gyp:packed_resources',
         '../../content/content.gyp:content',
         '../../skia/skia.gyp:skia',
         '../../third_party/icu/icu.gyp:icui18n',
@@ -964,6 +963,7 @@
         '../gfx/gfx.gyp:gfx',
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
+        '../ui.gyp:ui_test_pak',
         'controls/webview/webview.gyp:webview',
         'views',
       ],
@@ -1044,7 +1044,6 @@
       'dependencies': [
         '../../base/base.gyp:base',
         '../../base/base.gyp:base_i18n',
-        '../../chrome/chrome_resources.gyp:packed_resources',
         '../../content/content.gyp:content',
         '../../content/content_shell_and_tests.gyp:content_shell_lib',
         '../../content/content_shell_and_tests.gyp:test_support_content',
@@ -1056,6 +1055,7 @@
         '../shell/shell.gyp:shell',
         '../ui.gyp:ui',
         '../ui.gyp:ui_resources',
+        '../ui.gyp:ui_test_pak',
         'views',
         'views_examples_with_content_lib',
         'views_test_support'
