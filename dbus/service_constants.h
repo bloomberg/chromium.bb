@@ -699,16 +699,17 @@ const char kErrorPinRequiredMsg[] = "org.chromium.flimflam.Error.PinRequired";
 const char kUnknownString[] = "UNKNOWN";
 
 // Function names.
-const char kSetPropertiesFunction[] = "SetProperties";
 const char kClearPropertiesFunction[] = "ClearProperties";
 const char kCompleteCellularActivationFunction[] = "CompleteCellularActivation";
 const char kConfigureServiceForProfileFunction[] = "ConfigureServiceForProfile";
 const char kConnectToBestServicesFunction[] = "ConnectToBestServices";
 const char kGetLoadableProfileEntriesFunction[] = "GetLoadableProfileEntries";
 const char kGetNetworksForGeolocation[] = "GetNetworksForGeolocation";
+const char kPerformTDLSOperationFunction[] = "PerformTDLSOperation";
 const char kRefreshFunction[] = "Refresh";
 const char kResetFunction[] = "Reset";
 const char kSetCarrierFunction[] = "SetCarrier";
+const char kSetPropertiesFunction[] = "SetProperties";
 const char kVerifyAndEncryptCredentialsFunction[] =
     "VerifyAndEncryptCredentials";
 const char kVerifyAndEncryptDataFunction[] = "VerifyAndEncryptData";
@@ -816,6 +817,20 @@ const char kPacketTransmitFailuresProperty[] = "PacketTransmitFailures";
 const char kPacketTransmitSuccessesProperty[] = "PacketTrasmitSuccesses";
 const char kTransmitBitrateProperty[] = "TransmitBitrate";
 const char kTransmitRetriesProperty[] = "TransmitRetries";
+
+// WiFi TDLS operations.
+const char kTDLSDiscoverOperation[] = "Discover";
+const char kTDLSSetupOperation[] = "Setup";
+const char kTDLSStatusOperation[] = "Status";
+const char kTDLSTeardownOperation[] = "Teardown";
+
+// WiFi TDLS states.
+const char kTDLSConnectedState[] = "Connected";
+const char kTDLSDisabledState[] = "Disabled";
+const char kTDLSDisconnectedState[] = "Disconnected";
+const char kTDLSNonexistentState[] = "Nonexistent";
+const char kTDLSUnknownState[] = "Unknown";
+
 
 // Cellular service carriers.
 const char kCarrierGenericUMTS[] = "Generic UMTS";
