@@ -4853,10 +4853,10 @@ TEST_F(GLES2DecoderManualInitTest,
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
-class MultisampledRenderToTextureTest : public GLES2DecoderTestWithExtensions {
-};
+class GLES2DecoderMultisampledRenderToTextureTest
+    : public GLES2DecoderTestWithExtensions {};
 
-TEST_P(MultisampledRenderToTextureTest,
+TEST_P(GLES2DecoderMultisampledRenderToTextureTest,
        NotCompatibleWithRenderbufferStorageMultisampleCHROMIUM) {
   DoBindRenderbuffer(GL_RENDERBUFFER, client_renderbuffer_id_,
                     kServiceRenderbufferId);
@@ -4867,7 +4867,8 @@ TEST_P(MultisampledRenderToTextureTest,
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
-TEST_P(MultisampledRenderToTextureTest, RenderbufferStorageMultisampleEXT) {
+TEST_P(GLES2DecoderMultisampledRenderToTextureTest,
+       RenderbufferStorageMultisampleEXT) {
   DoBindRenderbuffer(GL_RENDERBUFFER, client_renderbuffer_id_,
                     kServiceRenderbufferId);
   InSequence sequence;
@@ -4906,8 +4907,8 @@ TEST_P(MultisampledRenderToTextureTest, RenderbufferStorageMultisampleEXT) {
 }
 
 INSTANTIATE_TEST_CASE_P(
-    MultisampledRenderToTextureTests,
-    MultisampledRenderToTextureTest,
+    GLES2DecoderMultisampledRenderToTextureTests,
+    GLES2DecoderMultisampledRenderToTextureTest,
     ::testing::Values("GL_EXT_multisampled_render_to_texture",
                       "GL_IMG_multisampled_render_to_texture"));
 
