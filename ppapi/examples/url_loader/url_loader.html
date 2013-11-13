@@ -39,7 +39,7 @@
   <script>
 
   function HandleMessage(message_event) {
-    document.getElementById("log_result").innerHTML = message_event.data;
+    document.getElementById("log_result").textContent = message_event.data;
   }
 
   // Attach a listener for the message event. This must happen after the plugin
