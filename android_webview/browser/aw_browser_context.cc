@@ -22,7 +22,6 @@
 #include "components/user_prefs/user_prefs.h"
 #include "components/visitedlink/browser/visitedlink_master.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/cookie_crypto_delegate.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/storage_partition.h"
@@ -145,8 +144,7 @@ void AwBrowserContext::PreMainMessageLoopRun() {
       NULL,
       NULL,
       BrowserThread::GetMessageLoopProxyForThread(BrowserThread::IO),
-      background_task_runner,
-      scoped_ptr<content::CookieCryptoDelegate>());
+      background_task_runner);
 
   cookie_store_->GetCookieMonster()->SetPersistSessionCookies(true);
   url_request_context_getter_ =
