@@ -182,7 +182,7 @@ for text_end, variant in test_specs:
       # thereafter with no space for a halt sled.  Ensure sel_ldr catches
       # that case.  NaClAbort() behaves differently when code coverage is
       # enabled: it calls exit() rather than abort().
-      if env.Bit('coverage_enabled'):
+      if 'TRUSTED_ENV' in env and env['TRUSTED_ENV'].Bit('coverage_enabled'):
         expected_exit_status = 'naclabort_coverage'
       else:
         expected_exit_status = 'trusted_sigabrt'
