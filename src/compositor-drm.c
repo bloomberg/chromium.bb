@@ -974,6 +974,7 @@ static void
 drm_output_set_cursor(struct drm_output *output)
 {
 	struct weston_view *ev = output->cursor_view;
+	struct weston_buffer *buffer;
 	struct drm_compositor *c =
 		(struct drm_compositor *) output->base.compositor;
 	EGLint handle, stride;
@@ -988,18 +989,22 @@ drm_output_set_cursor(struct drm_output *output)
 		return;
 	}
 
-	if (ev->surface->buffer_ref.buffer &&
+	buffer = ev->surface->buffer_ref.buffer;
+
+	if (buffer &&
 	    pixman_region32_not_empty(&output->cursor_plane.damage)) {
 		pixman_region32_fini(&output->cursor_plane.damage);
 		pixman_region32_init(&output->cursor_plane.damage);
 		output->current_cursor ^= 1;
 		bo = output->cursor_bo[output->current_cursor];
 		memset(buf, 0, sizeof buf);
-		stride = wl_shm_buffer_get_stride(ev->surface->buffer_ref.buffer->shm_buffer);
-		s = wl_shm_buffer_get_data(ev->surface->buffer_ref.buffer->shm_buffer);
+		stride = wl_shm_buffer_get_stride(buffer->shm_buffer);
+		s = wl_shm_buffer_get_data(buffer->shm_buffer);
+		wl_shm_buffer_begin_access(buffer->shm_buffer);
 		for (i = 0; i < ev->geometry.height; i++)
 			memcpy(buf + i * 64, s + i * stride,
 			       ev->geometry.width * 4);
+		wl_shm_buffer_end_access(buffer->shm_buffer);
 
 		if (gbm_bo_write(bo, buf, sizeof buf) < 0)
 			weston_log("failed update cursor: %m\n");

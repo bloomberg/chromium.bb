@@ -342,6 +342,8 @@ rpi_resource_update(struct rpi_resource *resource, struct weston_buffer *buffer,
 		pixman_region32_intersect(&write_region,
 					  &write_region, region);
 
+	wl_shm_buffer_begin_access(buffer->shm_buffer);
+
 #ifdef HAVE_RESOURCE_WRITE_DATA_RECT
 	/* XXX: Can this do a format conversion, so that scanout does not have to? */
 	r = pixman_region32_rectangles(&write_region, &n);
@@ -375,6 +377,8 @@ rpi_resource_update(struct rpi_resource *resource, struct weston_buffer *buffer,
 	DBG("%s: %p %ux%u@%u,%u, ret %d\n", __func__, resource,
 	    width, r->y2 - r->y1, 0, r->y1, ret);
 #endif
+
+	wl_shm_buffer_end_access(buffer->shm_buffer);
 
 	pixman_region32_fini(&write_region);
 

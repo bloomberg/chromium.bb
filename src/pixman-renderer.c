@@ -305,6 +305,9 @@ repaint_region(struct weston_view *ev, struct weston_output *output,
 	else
 		pixman_image_set_filter(ps->image, PIXMAN_FILTER_NEAREST, NULL, 0);
 
+	if (ps->buffer_ref.buffer)
+		wl_shm_buffer_begin_access(ps->buffer_ref.buffer->shm_buffer);
+
 	pixman_image_composite32(pixman_op,
 				 ps->image, /* src */
 				 NULL /* mask */,
@@ -314,6 +317,9 @@ repaint_region(struct weston_view *ev, struct weston_output *output,
 				 0, 0, /* dest_x, dest_y */
 				 pixman_image_get_width (po->shadow_image), /* width */
 				 pixman_image_get_height (po->shadow_image) /* height */);
+
+	if (ps->buffer_ref.buffer)
+		wl_shm_buffer_end_access(ps->buffer_ref.buffer->shm_buffer);
 
 	if (pr->repaint_debug)
 		pixman_image_composite32(PIXMAN_OP_OVER,

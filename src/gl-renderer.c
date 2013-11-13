@@ -899,10 +899,12 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 	glBindTexture(GL_TEXTURE_2D, gs->textures[0]);
 
 	if (!gr->has_unpack_subimage) {
+		wl_shm_buffer_begin_access(buffer->shm_buffer);
 		glTexImage2D(GL_TEXTURE_2D, 0, format,
 			     gs->pitch, buffer->height, 0,
 			     format, pixel_type,
 			     wl_shm_buffer_get_data(buffer->shm_buffer));
+		wl_shm_buffer_end_access(buffer->shm_buffer);
 
 		goto done;
 	}
@@ -914,13 +916,16 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 	if (gs->needs_full_upload) {
 		glPixelStorei(GL_UNPACK_SKIP_PIXELS_EXT, 0);
 		glPixelStorei(GL_UNPACK_SKIP_ROWS_EXT, 0);
+		wl_shm_buffer_begin_access(buffer->shm_buffer);
 		glTexSubImage2D(GL_TEXTURE_2D, 0,
 				0, 0, gs->pitch, buffer->height,
 				format, pixel_type, data);
+		wl_shm_buffer_end_access(buffer->shm_buffer);
 		goto done;
 	}
 
 	rectangles = pixman_region32_rectangles(&gs->texture_damage, &n);
+	wl_shm_buffer_begin_access(buffer->shm_buffer);
 	for (i = 0; i < n; i++) {
 		pixman_box32_t r;
 
@@ -932,6 +937,7 @@ gl_renderer_flush_damage(struct weston_surface *surface)
 				r.x2 - r.x1, r.y2 - r.y1,
 				format, pixel_type, data);
 	}
+	wl_shm_buffer_end_access(buffer->shm_buffer);
 #endif
 
 done:

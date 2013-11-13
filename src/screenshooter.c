@@ -144,6 +144,8 @@ screenshooter_frame_notify(struct wl_listener *listener, void *data)
 	d = wl_shm_buffer_get_data(l->buffer->shm_buffer);
 	s = pixels + stride * (l->buffer->height - 1);
 
+	wl_shm_buffer_begin_access(l->buffer->shm_buffer);
+
 	switch (compositor->read_format) {
 	case PIXMAN_a8r8g8b8:
 	case PIXMAN_x8r8g8b8:
@@ -162,6 +164,8 @@ screenshooter_frame_notify(struct wl_listener *listener, void *data)
 	default:
 		break;
 	}
+
+	wl_shm_buffer_end_access(l->buffer->shm_buffer);
 
 	screenshooter_send_done(l->resource);
 	free(pixels);
