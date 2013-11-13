@@ -91,6 +91,9 @@ void ExtensionAccessibilityEventRouter::HandleMenuEvent(
     case ui::AccessibilityTypes::EVENT_MENUPOPUPEND:
       OnMenuClosed(info);
       break;
+    case ui::AccessibilityTypes::EVENT_FOCUS:
+      OnControlFocused(info);
+      break;
     default:
       NOTREACHED();
   }
