@@ -372,9 +372,6 @@ PassRefPtr<DocumentFragment> WebVTTParser::createDocumentFragmentFromCueText(Doc
 
 void WebVTTParser::createNewCue()
 {
-    if (!m_currentContent.length())
-        return;
-
     RefPtr<TextTrackCue> cue = TextTrackCue::create(*m_document, m_currentStartTime, m_currentEndTime, m_currentContent.toString());
     cue->setId(m_currentId);
     cue->setCueSettings(m_currentSettings);
