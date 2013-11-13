@@ -46,14 +46,7 @@ node = env.CommandValidatorTestNacl('whole_archive_test.out',
                                     image=nexe)
 env.AddNodeToTestSuite(node,
                        ['toolchain_tests', 'small_tests'],
-                       'run_whole_archive_test',
-                       # The old ncval doesn't like the new linker's style
-                       # of padding the code segment.  TODO(mcgrathr):
-                       # Remove this is_broken= when we the old ncval is no
-                       # longer ever built and used for this test.
-                       is_broken=(env.IsNewLinker() and
-                                  env.Bit('target_x86') and
-                                  not env.Bit('validator_ragel')))
+                       'run_whole_archive_test')
 
 
 def AddIntrinsicTest(test_env, src, exit_status,
