@@ -501,6 +501,10 @@ bool SchedulerStateMachine::ShouldCommit() const {
   return commit_state_ == COMMIT_STATE_READY_TO_COMMIT;
 }
 
+bool SchedulerStateMachine::IsCommitStateWaiting() const {
+  return commit_state_ == COMMIT_STATE_FRAME_IN_PROGRESS;
+}
+
 bool SchedulerStateMachine::ShouldManageTiles() const {
   // ManageTiles only really needs to be called immediately after commit
   // and then periodically after that.  Limiting to once per frame prevents

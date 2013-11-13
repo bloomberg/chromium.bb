@@ -8,6 +8,8 @@
 
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
 #include "base/time/time.h"
 #include "cc/test/scheduler_test_common.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -55,6 +57,7 @@ class FakeSchedulerClient : public SchedulerClient {
     draw_will_happen_ = true;
     swap_will_happen_if_draw_happens_ = true;
     num_draws_ = 0;
+    log_anticipated_draw_time_change_ = false;
   }
 
   Scheduler* CreateScheduler(const SchedulerSettings& settings) {
@@ -62,6 +65,11 @@ class FakeSchedulerClient : public SchedulerClient {
     return scheduler_.get();
   }
 
+  // Most tests don't care about DidAnticipatedDrawTimeChange, so only record it
+  // for tests that do.
+  void set_log_anticipated_draw_time_change(bool log) {
+    log_anticipated_draw_time_change_ = log;
+  }
   bool needs_begin_impl_frame() { return needs_begin_impl_frame_; }
   int num_draws() const { return num_draws_; }
   int num_actions_() const { return static_cast<int>(actions_.size()); }
@@ -86,7 +94,7 @@ class FakeSchedulerClient : public SchedulerClient {
     swap_will_happen_if_draw_happens_ = swap_will_happen_if_draw_happens;
   }
 
-  // Scheduler Implementation.
+  // SchedulerClient implementation.
   virtual void SetNeedsBeginImplFrame(bool enable) OVERRIDE {
     actions_.push_back("SetNeedsBeginImplFrame");
     states_.push_back(scheduler_->StateAsValue().release());
@@ -147,7 +155,10 @@ class FakeSchedulerClient : public SchedulerClient {
     actions_.push_back("ScheduledActionManageTiles");
     states_.push_back(scheduler_->StateAsValue().release());
   }
-  virtual void DidAnticipatedDrawTimeChange(base::TimeTicks) OVERRIDE {}
+  virtual void DidAnticipatedDrawTimeChange(base::TimeTicks) OVERRIDE {
+    if (log_anticipated_draw_time_change_)
+      actions_.push_back("DidAnticipatedDrawTimeChange");
+  }
   virtual base::TimeDelta DrawDurationEstimate() OVERRIDE {
     return base::TimeDelta();
   }
@@ -171,6 +182,7 @@ class FakeSchedulerClient : public SchedulerClient {
   bool draw_will_happen_;
   bool swap_will_happen_if_draw_happens_;
   int num_draws_;
+  bool log_anticipated_draw_time_change_;
   std::vector<const char*> actions_;
   ScopedVector<base::Value> states_;
   scoped_ptr<Scheduler> scheduler_;
@@ -1215,6 +1227,59 @@ TEST(SchedulerTest, NotSkipMainFrameIfHighLatencyAndCanActivateTooLong) {
   // Set up client so that estimates indicate that the activate cannot finish
   // before the deadline (~8ms by default).
   MainFrameInHighLatencyMode(1, 10, true);
+}
+
+void SpinForMillis(int millis) {
+  base::RunLoop run_loop;
+  base::MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      run_loop.QuitClosure(),
+      base::TimeDelta::FromMilliseconds(millis));
+  run_loop.Run();
+}
+
+TEST(SchedulerTest, PollForCommitCompletion) {
+  FakeSchedulerClient client;
+  client.set_log_anticipated_draw_time_change(true);
+  SchedulerSettings settings = SchedulerSettings();
+  settings.throttle_frame_production = false;
+  Scheduler* scheduler = client.CreateScheduler(settings);
+
+  scheduler->SetCanDraw(true);
+  scheduler->SetCanStart();
+  scheduler->SetVisible(true);
+  scheduler->DidCreateAndInitializeOutputSurface();
+
+  scheduler->SetNeedsCommit();
+  EXPECT_TRUE(scheduler->CommitPending());
+  scheduler->FinishCommit();
+  scheduler->SetNeedsRedraw();
+  BeginFrameArgs impl_frame_args = BeginFrameArgs::CreateForTesting();
+  const int interval = 1;
+  impl_frame_args.interval = base::TimeDelta::FromMilliseconds(interval);
+  scheduler->BeginImplFrame(impl_frame_args);
+  scheduler->OnBeginImplFrameDeadline();
+
+  // At this point, we've drawn a frame.  Start another commit, but hold off on
+  // the FinishCommit for now.
+  EXPECT_FALSE(scheduler->CommitPending());
+  scheduler->SetNeedsCommit();
+  EXPECT_TRUE(scheduler->CommitPending());
+
+  // Spin the event loop a few times and make sure we get more
+  // DidAnticipateDrawTimeChange calls every time.
+  int actions_so_far = client.num_actions_();
+
+  // Does three iterations to make sure that the timer is properly repeating.
+  for (int i = 0; i < 3; ++i) {
+    // Wait for 2x the frame interval to match
+    // cc::Scheduler::advance_commit_state_timer_'s rate.
+    SpinForMillis(interval * 2);
+    EXPECT_GT(client.num_actions_(), actions_so_far);
+    EXPECT_STREQ(client.Action(client.num_actions_() - 1),
+                 "DidAnticipatedDrawTimeChange");
+    actions_so_far = client.num_actions_();
+  }
 }
 
 }  // namespace

@@ -158,6 +158,20 @@ void Scheduler::SetupNextBeginImplFrameIfNeeded() {
   if (should_call_set_needs_begin_impl_frame) {
     client_->SetNeedsBeginImplFrame(needs_begin_impl_frame);
     last_set_needs_begin_impl_frame_ = needs_begin_impl_frame;
+
+    // At this point we'd prefer to advance through the commit flow by
+    // drawing a frame, however it's possible that the frame rate controller
+    // will not give us a BeginImplFrame until the commit completes.  See
+    // crbug.com/317430 for an example of a swap ack being held on commit. Thus
+    // we set this repeating timer to poll on ProcessScheduledActions until we
+    // successfully reach BeginImplFrame. Since we'd rather get a BeginImplFrame
+    // by the normally mechanism, we set the interval to twice the interval from
+    // the previous frame.
+    advance_commit_state_timer_.Start(
+        FROM_HERE,
+        last_begin_impl_frame_args_.interval * 2,
+        base::Bind(&Scheduler::ProcessScheduledActions,
+                   base::Unretained(this)));
   }
 
   // Setup PollForAnticipatedDrawTriggers if we need to monitor state but
@@ -187,6 +201,7 @@ void Scheduler::BeginImplFrame(const BeginFrameArgs& args) {
   DCHECK(state_machine_.HasInitializedOutputSurface());
   last_begin_impl_frame_args_ = args;
   last_begin_impl_frame_args_.deadline -= client_->DrawDurationEstimate();
+  advance_commit_state_timer_.Stop();
   state_machine_.OnBeginImplFrame(last_begin_impl_frame_args_);
 
   if (settings_.switch_to_low_latency_if_possible) {

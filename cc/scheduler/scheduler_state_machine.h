@@ -235,6 +235,8 @@ class CC_EXPORT SchedulerStateMachine {
 
   bool SupportsProactiveBeginImplFrame() const;
 
+  bool IsCommitStateWaiting() const;
+
  protected:
   bool BeginImplFrameNeededToDraw() const;
   bool ProactiveBeginImplFrameWanted() const;
