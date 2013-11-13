@@ -55,9 +55,6 @@ class OnMoreDataConverter
   // Source callback.
   AudioOutputStream::AudioSourceCallback* source_callback_;
 
-  // |source| passed to OnMoreIOData() which should be passed downstream.
-  AudioBus* source_bus_;
-
   // Last AudioBuffersState object received via OnMoreData(), used to correct
   // playback delay by ProvideInput() and passed on to |source_callback_|.
   AudioBuffersState current_buffers_state_;
@@ -299,7 +296,6 @@ OnMoreDataConverter::OnMoreDataConverter(const AudioParameters& input_params,
     : io_ratio_(static_cast<double>(input_params.GetBytesPerSecond()) /
                 output_params.GetBytesPerSecond()),
       source_callback_(NULL),
-      source_bus_(NULL),
       input_bytes_per_second_(input_params.GetBytesPerSecond()),
       audio_converter_(input_params, output_params, false) {}
 
@@ -334,7 +330,10 @@ int OnMoreDataConverter::OnMoreData(AudioBus* dest,
 int OnMoreDataConverter::OnMoreIOData(AudioBus* source,
                                       AudioBus* dest,
                                       AudioBuffersState buffers_state) {
-  source_bus_ = source;
+  // Note: The input portion of OnMoreIOData() is not supported when a converter
+  // has been injected.  Downstream clients prefer silence to potentially split
+  // apart input data.
+
   current_buffers_state_ = buffers_state;
   audio_converter_.Convert(dest);
 
@@ -355,12 +354,7 @@ double OnMoreDataConverter::ProvideInput(AudioBus* dest,
 
   // Retrieve data from the original callback.
   const int frames = source_callback_->OnMoreIOData(
-      source_bus_, dest, new_buffers_state);
-
-  // |source_bus_| should only be provided once.
-  // TODO(dalecurtis, crogers): This is not a complete fix.  If ProvideInput()
-  // is called multiple times, we need to do something more clever here.
-  source_bus_ = NULL;
+      NULL, dest, new_buffers_state);
 
   // Zero any unfilled frames if anything was filled, otherwise we'll just
   // return a volume of zero and let AudioConverter drop the output.

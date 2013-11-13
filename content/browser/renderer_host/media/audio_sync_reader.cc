@@ -81,18 +81,11 @@ void AudioSyncReader::Read(const AudioBus* source, AudioBus* dest) {
 
   // Copy optional synchronized live audio input for consumption by renderer
   // process.
-  if (source && input_bus_) {
-    // TODO(rtoy): In some cases with device and sample-rate changes it's
-    // possible for an AOR to insert a resampler in the path. Because this is
-    // used with the Web Audio API, it'd be better to bypass the device change
-    // handling in AOR and instead let the renderer-side Web Audio code deal
-    // with this.
-    if (source->frames() == input_bus_->frames() &&
-        source->channels() == input_bus_->channels()) {
+  if (input_bus_) {
+    if (source)
       source->CopyTo(input_bus_.get());
-    } else {
+    else
       input_bus_->Zero();
-    }
   }
 
   if (mute_audio_)
