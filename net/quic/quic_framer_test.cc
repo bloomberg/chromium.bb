@@ -1589,7 +1589,7 @@ TEST_P(QuicFramerTest, StreamFrameInFecGroup) {
   EXPECT_EQ("hello world!", visitor_.stream_frames_[0]->data);
 }
 
-TEST_P(QuicFramerTest, AckFramev11) {
+TEST_P(QuicFramerTest, DISABLED_AckFramev11) {
   if (GetParam() > QUIC_VERSION_11) {
     return;
   }
@@ -2217,7 +2217,7 @@ TEST_P(QuicFramerTest, RstStreamFrame) {
   }
 }
 
-TEST_P(QuicFramerTest, ConnectionCloseFramev11) {
+TEST_P(QuicFramerTest, DISABLED_ConnectionCloseFramev11) {
   if (GetParam() > QUIC_VERSION_11) {
     return;
   }
@@ -2880,7 +2880,7 @@ TEST_P(QuicFramerTest, BuildVersionNegotiationPacket) {
                                       AsChars(packet), arraysize(packet));
 }
 
-TEST_P(QuicFramerTest, BuildAckFramePacketv11) {
+TEST_P(QuicFramerTest, DISABLED_BuildAckFramePacketv11) {
   if (GetParam() > QUIC_VERSION_11) {
     return;
   }
@@ -3261,7 +3261,7 @@ TEST_P(QuicFramerTest, BuildRstFramePacket) {
                                       AsChars(packet), arraysize(packet));
 }
 
-TEST_P(QuicFramerTest, BuildCloseFramePacketv11) {
+TEST_P(QuicFramerTest, DISABLED_BuildCloseFramePacketv11) {
   if (GetParam() > QUIC_VERSION_11) {
     return;
   }
@@ -3900,7 +3900,7 @@ TEST_P(QuicFramerTest, StopPacketProcessing) {
   EXPECT_EQ(QUIC_NO_ERROR, framer_.error());
 }
 
-TEST_P(QuicFramerTest, ConnectionCloseWithInvalidAck) {
+TEST_P(QuicFramerTest, DISABLED_ConnectionCloseWithInvalidAck) {
   if (GetParam() > QUIC_VERSION_11) {
     return;
   }

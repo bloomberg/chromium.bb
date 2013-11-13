@@ -95,8 +95,8 @@ TEST(QuicProtocolTest, QuicTagToQuicVersion) {
 #endif
 
   // Explicitly test specific versions.
-  EXPECT_EQ(QUIC_VERSION_11,
-            QuicTagToQuicVersion(MakeQuicTag('Q', '0', '1', '1')));
+  EXPECT_EQ(QUIC_VERSION_12,
+            QuicTagToQuicVersion(MakeQuicTag('Q', '0', '1', '2')));
 
   for (size_t i = 0; i < arraysize(kSupportedQuicVersions); ++i) {
     QuicVersion version = kSupportedQuicVersions[i];

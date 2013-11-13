@@ -915,8 +915,8 @@ QuicFramer::AckFrameInfo QuicFramer::GetAckFrameInfo(
 
   AckFrameInfo ack_info;
   if (!received_info.missing_packets.empty()) {
-    DCHECK_GE(frame.received_info.largest_observed,
-              *frame.received_info.missing_packets.rend());
+    DCHECK_GE(received_info.largest_observed,
+              *received_info.missing_packets.rbegin());
     size_t cur_range_length = 0;
     SequenceNumberSet::const_iterator iter =
         received_info.missing_packets.begin();

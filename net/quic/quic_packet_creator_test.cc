@@ -293,7 +293,7 @@ TEST_F(QuicPacketCreatorTest, ReserializeFramesWithSequenceNumberLength) {
 }
 
 // TODO(rtenneti): Delete this when QUIC_VERSION_11 is deprecated.
-TEST_F(QuicPacketCreatorTest, SerializeConnectionClosev11) {
+TEST_F(QuicPacketCreatorTest, DISABLED_SerializeConnectionClosev11) {
   client_framer_.set_version(QUIC_VERSION_11);
   server_framer_.set_version(QUIC_VERSION_11);
   QuicConnectionCloseFrame frame;
