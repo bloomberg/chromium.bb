@@ -460,9 +460,8 @@ void ScriptDebugServer::handleV8DebugEvent(const v8::Debug::EventDetails& eventD
             if (!stackTrace->GetFrameCount())
                 return;
             RefPtr<JavaScriptCallFrame> topFrame = wrapCallFrames(eventDetails.GetExecutionState(), 1);
-            if (topFrame && executeSkipPauseRequest(listener->shouldSkipExceptionPause(topFrame), eventDetails.GetExecutionState())) {
+            if (executeSkipPauseRequest(listener->shouldSkipExceptionPause(topFrame), eventDetails.GetExecutionState()))
                 return;
-            }
             v8::Handle<v8::Object> eventData = eventDetails.GetEventData();
             v8::Handle<v8::Value> exceptionGetterValue = eventData->Get(v8::String::NewSymbol("exception"));
             ASSERT(!exceptionGetterValue.IsEmpty() && exceptionGetterValue->IsFunction());
@@ -473,18 +472,14 @@ void ScriptDebugServer::handleV8DebugEvent(const v8::Debug::EventDetails& eventD
             v8::Handle<v8::Value> argv[] = { eventDetails.GetEventData() };
             v8::Handle<v8::Value> hitBreakpoints = V8ScriptRunner::callInternalFunction(getBreakpointNumbersFunction, debuggerScript, WTF_ARRAY_LENGTH(argv), argv, m_isolate);
             ASSERT(hitBreakpoints->IsArray());
-
             RefPtr<JavaScriptCallFrame> topFrame = wrapCallFrames(eventDetails.GetExecutionState(), 1);
-            if (topFrame) {
-                ScriptDebugListener::SkipPauseRequest skipRequest;
-                if (v8::Handle<v8::Array>::Cast(hitBreakpoints)->Length())
-                    skipRequest = listener->shouldSkipBreakpointPause(topFrame);
-                else
-                    skipRequest = listener->shouldSkipStepPause(topFrame);
-                if (executeSkipPauseRequest(skipRequest, eventDetails.GetExecutionState()))
-                    return;
-            }
-
+            ScriptDebugListener::SkipPauseRequest skipRequest;
+            if (v8::Handle<v8::Array>::Cast(hitBreakpoints)->Length())
+                skipRequest = listener->shouldSkipBreakpointPause(topFrame);
+            else
+                skipRequest = listener->shouldSkipStepPause(topFrame);
+            if (executeSkipPauseRequest(skipRequest, eventDetails.GetExecutionState()))
+                return;
             handleProgramBreak(eventDetails, v8::Handle<v8::Value>(), hitBreakpoints.As<v8::Array>());
         }
     }

@@ -463,18 +463,20 @@ ScriptDebugListener::SkipPauseRequest InspectorDebuggerAgent::shouldSkipExceptio
 {
     if (m_skipAllPauses)
         return ScriptDebugListener::Continue;
+    if (!topFrame)
+        return ScriptDebugListener::NoSkip;
 
     String topFrameScriptUrl = scriptURL(topFrame.get());
     if (m_cachedSkipStackRegExp && !topFrameScriptUrl.isEmpty() && m_cachedSkipStackRegExp->match(topFrameScriptUrl) != -1)
         return ScriptDebugListener::Continue;
 
-    // Prepare top frame parameters;
-    int topFrameLineNumber = topFrame->line();
-    int topFrameColumnNumber = topFrame->column();
-
     // Match against breakpoints.
     if (topFrameScriptUrl.isEmpty())
         return ScriptDebugListener::NoSkip;
+
+    // Prepare top frame parameters.
+    int topFrameLineNumber = topFrame->line();
+    int topFrameColumnNumber = topFrame->column();
 
     RefPtr<JSONObject> breakpointsCookie = m_state->getObject(DebuggerAgentState::javaScriptBreakpoints);
     for (JSONObject::iterator it = breakpointsCookie->begin(); it != breakpointsCookie->end(); ++it) {
@@ -512,6 +514,8 @@ ScriptDebugListener::SkipPauseRequest InspectorDebuggerAgent::shouldSkipBreakpoi
 {
     if (m_skipAllPauses)
         return ScriptDebugListener::Continue;
+    if (!topFrame)
+        return ScriptDebugListener::NoSkip;
     return ScriptDebugListener::NoSkip;
 }
 
@@ -519,6 +523,8 @@ ScriptDebugListener::SkipPauseRequest InspectorDebuggerAgent::shouldSkipStepPaus
 {
     if (m_skipAllPauses)
         return ScriptDebugListener::Continue;
+    if (!topFrame)
+        return ScriptDebugListener::NoSkip;
 
     if (m_cachedSkipStackRegExp) {
         String scriptUrl = scriptURL(topFrame.get());
@@ -1025,6 +1031,8 @@ bool InspectorDebuggerAgent::canBreakProgram()
 
 void InspectorDebuggerAgent::breakProgram(InspectorFrontend::Debugger::Reason::Enum breakReason, PassRefPtr<JSONObject> data)
 {
+    if (m_skipAllPauses)
+        return;
     m_breakReason = breakReason;
     m_breakAuxData = data;
     scriptDebugServer().breakProgram();

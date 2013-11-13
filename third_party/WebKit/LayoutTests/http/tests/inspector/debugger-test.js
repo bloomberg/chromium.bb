@@ -83,6 +83,11 @@ InspectorTest.runTestFunctionAndWaitUntilPaused = function(callback)
     InspectorTest.waitUntilPaused(callback);
 };
 
+InspectorTest.waitUntilPausedNextTime = function(callback)
+{
+    InspectorTest._waitUntilPausedCallback = InspectorTest.safeWrap(callback);
+};
+
 InspectorTest.waitUntilPaused = function(callback)
 {
     callback = InspectorTest.safeWrap(callback);
@@ -91,6 +96,11 @@ InspectorTest.waitUntilPaused = function(callback)
         callback.apply(callback, InspectorTest._pausedScriptArguments);
     else
         InspectorTest._waitUntilPausedCallback = callback;
+};
+
+InspectorTest.waitUntilResumedNextTime = function(callback)
+{
+    InspectorTest._waitUntilResumedCallback = InspectorTest.safeWrap(callback);
 };
 
 InspectorTest.waitUntilResumed = function(callback)

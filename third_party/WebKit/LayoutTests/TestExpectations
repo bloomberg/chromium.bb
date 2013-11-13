@@ -291,7 +291,6 @@ crbug.com/282634 [ SnowLeopard Debug ] svg/as-object/nested-embedded-svg-size-ch
 crbug.com/284779 crbug.com/284782 http/tests/media/media-source/mediasource-duration.html [ Failure Pass Crash ]
 crbug.com/284793 http/tests/media/media-source/mediasource-play-then-seek-back.html [ Failure Pass ]
 
-crbug.com/286081 inspector/debugger/long-resume-vs-reload.html [ Failure Pass Timeout ]
 crbug.com/286287 [ Linux Mac Android ] http/tests/inspector/network/network-initiator.html [ Failure Pass ]
 crbug.com/306228 [ Win ] http/tests/inspector/network/network-initiator.html [ Pass Failure Timeout ]
 
