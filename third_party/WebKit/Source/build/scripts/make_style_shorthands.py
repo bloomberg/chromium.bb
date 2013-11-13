@@ -43,8 +43,8 @@ class StylePropertyShorthandWriter(in_generator.Writer):
         'runtimeEnabledShorthand': None,
     }
 
-    def __init__(self, in_files, enabled_conditions):
-        super(StylePropertyShorthandWriter, self).__init__(in_files, enabled_conditions)
+    def __init__(self, in_files):
+        super(StylePropertyShorthandWriter, self).__init__(in_files)
         self._outputs = {("StylePropertyShorthand.cpp"): self.generate_style_property_shorthand_cpp, ("StylePropertyShorthand.h"): self.generate_style_property_shorthand_h}
 
         self._properties = self.in_file.name_dictionaries

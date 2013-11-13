@@ -50,8 +50,8 @@ class RuntimeFeatureWriter(in_generator.Writer):
         'status': None,
     }
 
-    def __init__(self, in_file_path, enabled_conditions):
-        super(RuntimeFeatureWriter, self).__init__(in_file_path, enabled_conditions)
+    def __init__(self, in_file_path):
+        super(RuntimeFeatureWriter, self).__init__(in_file_path)
         self._outputs = {(self.class_name + ".h"): self.generate_header,
                          (self.class_name + ".cpp"): self.generate_implementation,
                         }

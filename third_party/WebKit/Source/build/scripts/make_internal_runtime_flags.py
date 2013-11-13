@@ -40,8 +40,8 @@ import template_expander
 class InternalRuntimeFlagsWriter(make_runtime_features.RuntimeFeatureWriter):
     class_name = "InternalRuntimeFlags"
 
-    def __init__(self, in_file_path, enabled_conditions):
-        super(InternalRuntimeFlagsWriter, self).__init__(in_file_path, enabled_conditions)
+    def __init__(self, in_file_path):
+        super(InternalRuntimeFlagsWriter, self).__init__(in_file_path)
         self._outputs = {(self.class_name + ".idl"): self.generate_idl,
                          (self.class_name + ".h"): self.generate_header,
                         }

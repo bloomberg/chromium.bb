@@ -59,8 +59,8 @@ class MakeQualifiedNamesWriter(in_generator.Writer):
         'symbol': _symbol,
     }
 
-    def __init__(self, in_file_paths, enabled_conditions):
-        super(MakeQualifiedNamesWriter, self).__init__(None, enabled_conditions)
+    def __init__(self, in_file_paths):
+        super(MakeQualifiedNamesWriter, self).__init__(None)
         assert len(in_file_paths) <= 2, 'MakeQualifiedNamesWriter requires at most 2 in files, got %d.' % len(in_file_paths)
 
         if len(in_file_paths) == 2:

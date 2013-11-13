@@ -59,8 +59,8 @@ class MakeNamesWriter(in_generator.Writer):
         'to_macro_style': name_utilities.to_macro_style,
     }
 
-    def __init__(self, in_file_path, enabled_conditions):
-        super(MakeNamesWriter, self).__init__(in_file_path, enabled_conditions)
+    def __init__(self, in_file_path):
+        super(MakeNamesWriter, self).__init__(in_file_path)
 
         namespace = self.in_file.parameters['namespace'].strip('"')
         export = self.in_file.parameters['export'].strip('"')

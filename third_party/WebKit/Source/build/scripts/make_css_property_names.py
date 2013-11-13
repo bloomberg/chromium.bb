@@ -183,24 +183,22 @@ class CSSPropertiesWriter(in_generator.Writer):
     class_name = "CSSPropertyNames"
     defaults = {
         'alias_for': None,
-        'condition': None,
         'is_internal': False,
     }
 
-    def __init__(self, file_paths, enabled_conditions):
-        in_generator.Writer.__init__(self, file_paths, enabled_conditions)
+    def __init__(self, file_paths):
+        in_generator.Writer.__init__(self, file_paths)
         self._outputs = {(self.class_name + ".h"): self.generate_header,
                          (self.class_name + ".cpp"): self.generate_implementation,
                         }
 
-        all_properties = self.in_file.name_dictionaries
-        self._aliases = filter(lambda property: property['alias_for'], all_properties)
+        self._aliases = filter(lambda property: property['alias_for'], self.in_file.name_dictionaries)
         for offset, property in enumerate(self._aliases):
             # Aliases use the enum_name that they are an alias for.
             property['enum_name'] = self._enum_name_from_property_name(property['alias_for'])
             # Aliases do not get an enum_value.
 
-        self._properties = filter(lambda property: not property['alias_for'] and not property['condition'] or property['condition'] in self._enabled_conditions, all_properties)
+        self._properties = filter(lambda property: not property['alias_for'], self.in_file.name_dictionaries)
         if len(self._properties) > 1024:
             print "ERROR : There is more than 1024 CSS Properties, you need to update CSSProperty.h/StylePropertyMetadata m_propertyID accordingly."
             exit(1)

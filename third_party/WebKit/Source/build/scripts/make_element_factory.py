@@ -53,8 +53,8 @@ class MakeElementFactoryWriter(MakeQualifiedNamesWriter):
     })
     filters = MakeQualifiedNamesWriter.filters
 
-    def __init__(self, in_file_paths, enabled_conditions):
-        super(MakeElementFactoryWriter, self).__init__(in_file_paths, enabled_conditions)
+    def __init__(self, in_file_paths):
+        super(MakeElementFactoryWriter, self).__init__(in_file_paths)
 
         # FIXME: When we start using these element factories, we'll want to
         # remove the "new" prefix and also have our base class generate

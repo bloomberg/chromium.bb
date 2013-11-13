@@ -41,14 +41,13 @@ class Writer(object):
     valid_values = None
     default_parameters = None
 
-    def __init__(self, in_files, enabled_conditions):
+    def __init__(self, in_files):
         if isinstance(in_files, basestring):
             in_files = [in_files]
         if in_files:
             self.in_file = InFile.load_from_files(in_files, self.defaults, self.valid_values, self.default_parameters)
         else:
             self.in_file = None
-        self._enabled_conditions = enabled_conditions
         self._outputs = {}  # file_name -> generator
 
     def wrap_with_condition(self, string, condition):
@@ -84,26 +83,6 @@ class Maker(object):
     def __init__(self, writer_class):
         self._writer_class = writer_class
 
-    def _enabled_conditions_from_defines(self, defines_arg_string):
-        if not defines_arg_string:
-            return []
-
-        defines_strings = shlex.split(defines_arg_string)
-
-        # We only care about feature defines.
-        enable_prefix = 'ENABLE_'
-
-        enabled_conditions = []
-        for define_string in defines_strings:
-            split_define = define_string.split('=')
-            if split_define[1] != '1':
-                continue
-            define = split_define[0]
-            if not define.startswith(enable_prefix):
-                continue
-            enabled_conditions.append(define[len(enable_prefix):])
-        return enabled_conditions
-
     def main(self, argv):
         script_name = os.path.basename(argv[0])
         args = argv[1:]
@@ -116,7 +95,5 @@ class Maker(object):
         parser.add_option("--output_dir", default=os.getcwd())
         (options, args) = parser.parse_args()
 
-        enabled_conditions = self._enabled_conditions_from_defines(options.defines)
-
-        writer = self._writer_class(args, enabled_conditions)
+        writer = self._writer_class(args)
         writer.write_files(options.output_dir)

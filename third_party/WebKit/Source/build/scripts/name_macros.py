@@ -64,8 +64,8 @@ INTERFACES_HEADER_TEMPLATE = """%(license)s
 
 
 class Writer(in_generator.Writer):
-    def __init__(self, in_file_path, enabled_conditions):
-        super(Writer, self).__init__(in_file_path, enabled_conditions)
+    def __init__(self, in_file_path):
+        super(Writer, self).__init__(in_file_path)
         self.namespace = self.in_file.parameters['namespace'].strip('"')
         self._entries_by_conditional = {}
         self._unconditional_entries = []

@@ -63,8 +63,8 @@ class StyleBuilderWriter(in_generator.Writer):
         'custom_value': False,
     }
 
-    def __init__(self, in_files, enabled_conditions):
-        super(StyleBuilderWriter, self).__init__(in_files, enabled_conditions)
+    def __init__(self, in_files):
+        super(StyleBuilderWriter, self).__init__(in_files)
         self._outputs = {("StyleBuilderFunctions.h"): self.generate_style_builder_functions_h,
                          ("StyleBuilderFunctions.cpp"): self.generate_style_builder_functions_cpp,
                          ("StyleBuilder.cpp"): self.generate_style_builder,

@@ -107,18 +107,16 @@ bool isValueAllowedInMode(unsigned short id, CSSParserMode mode)
 class CSSValueKeywordsWriter(in_generator.Writer):
     class_name = "CSSValueKeywords"
     defaults = {
-        'condition': None,
         'mode': None,
     }
 
-    def __init__(self, file_paths, enabled_conditions):
-        in_generator.Writer.__init__(self, file_paths, enabled_conditions)
+    def __init__(self, file_paths):
+        in_generator.Writer.__init__(self, file_paths)
         self._outputs = {(self.class_name + ".h"): self.generate_header,
                          (self.class_name + ".cpp"): self.generate_implementation,
                         }
 
-        all_properties = self.in_file.name_dictionaries
-        self._value_keywords = filter(lambda property: not property['condition'] or property['condition'] in self._enabled_conditions, all_properties)
+        self._value_keywords = self.in_file.name_dictionaries
         first_property_id = 1
         for offset, property in enumerate(self._value_keywords):
             property['name'] = property['name'].lower()
