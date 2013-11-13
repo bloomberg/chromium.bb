@@ -591,7 +591,7 @@ function unsetModal(dialog) {
   }
 
   if (window.holdDevices) {
-    populateDeviceLists(window.holdDevices);
+    populateRemoteTargets(window.holdDevices);
     delete window.holdDevices;
   }
 
