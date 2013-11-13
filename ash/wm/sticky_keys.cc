@@ -13,6 +13,7 @@
 #include "base/debug/stack_trace.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_tracker.h"
 #include "ui/events/event.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 
@@ -288,13 +289,23 @@ void StickyKeysHandler::DispatchEventAndReleaseModifier(ui::Event* event) {
   DCHECK(modifier_up_event_.get());
   aura::Window* target = static_cast<aura::Window*>(event->target());
   DCHECK(target);
+  aura::Window* root_window = target->GetRootWindow();
+  DCHECK(root_window);
+
+  aura::WindowTracker window_tracker;
+  window_tracker.Add(target);
 
   event_from_myself_ = true;
   if (event->IsKeyEvent())
     delegate_->DispatchKeyEvent(static_cast<ui::KeyEvent*>(event), target);
   else
     delegate_->DispatchMouseEvent(static_cast<ui::MouseEvent*>(event), target);
-  delegate_->DispatchKeyEvent(modifier_up_event_.get(), target);
+
+  // The action triggered above may have destroyed the event target, in which
+  // case we will dispatch the modifier up event to the root window instead.
+  aura::Window* modifier_up_target =
+      window_tracker.Contains(target) ? target : root_window;
+  delegate_->DispatchKeyEvent(modifier_up_event_.get(), modifier_up_target);
   event_from_myself_ = false;
 }
 

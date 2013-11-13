@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_AURA_WINDOW_LIFE_TRACKER_H_
-#define UI_AURA_WINDOW_LIFE_TRACKER_H_
+#ifndef UI_AURA_WINDOW_TRACKER_H_
+#define UI_AURA_WINDOW_TRACKER_H_
 
 #include <set>
 
@@ -47,4 +47,4 @@ class AURA_EXPORT WindowTracker : public WindowObserver {
 
 }  // namespace aura
 
-#endif  // UI_AURA_WINDOW_LIFE_TRACKER_H_
+#endif  // UI_AURA_WINDOW_TRACKER_H_

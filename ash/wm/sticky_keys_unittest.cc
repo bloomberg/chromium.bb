@@ -8,45 +8,54 @@
 #undef None
 #undef Bool
 
+#include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "base/bind.h"
+#include "base/callback.h"
 #include "base/memory/scoped_vector.h"
+#include "ui/aura/window.h"
+#include "ui/events/event_handler.h"
 #include "ui/events/x/events_x_utils.h"
 
 namespace ash {
-
-// A stub implementation of EventTarget.
-class StubEventTarget : public ui::EventTarget {
- public:
-  StubEventTarget() {}
-  virtual ~StubEventTarget() {}
-
-  virtual bool CanAcceptEvent(const ui::Event& event) OVERRIDE {
-    return true;
-  }
-
-  virtual EventTarget* GetParentTarget() OVERRIDE {
-    return NULL;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(StubEventTarget);
-};
 
 // A testable and StickyKeysHandler.
 class MockStickyKeysHandlerDelegate :
     public StickyKeysHandler::StickyKeysHandlerDelegate {
  public:
-  MockStickyKeysHandlerDelegate() {}
+  class Delegate {
+   public:
+    virtual aura::Window* GetExpectedTarget() = 0;
+    virtual void OnShortcutPressed() = 0;
+
+   protected:
+    virtual ~Delegate() {}
+  };
+
+  MockStickyKeysHandlerDelegate(Delegate* delegate) : delegate_(delegate) {}
+
   virtual ~MockStickyKeysHandlerDelegate() {}
 
   // StickyKeysHandler override.
   virtual void DispatchKeyEvent(ui::KeyEvent* event,
                                 aura::Window* target) OVERRIDE {
+    ASSERT_EQ(delegate_->GetExpectedTarget(), target);
+
+    // Detect a special shortcut when it is dispatched. This shortcut will
+    // not be hit in the LOCKED state as this case does not involve the
+    // delegate.
+    if (event->type() == ui::ET_KEY_PRESSED &&
+        event->key_code() == ui::VKEY_J &&
+        event->flags() | ui::EF_CONTROL_DOWN) {
+      delegate_->OnShortcutPressed();
+    }
+
     events_.push_back(event->Copy());
   }
 
   virtual void DispatchMouseEvent(ui::MouseEvent* event,
                                   aura::Window* target) OVERRIDE {
+    ASSERT_EQ(delegate_->GetExpectedTarget(), target);
     events_.push_back(new ui::MouseEvent(event->native_event()));
   }
 
@@ -62,20 +71,41 @@ class MockStickyKeysHandlerDelegate :
 
  private:
   ScopedVector<ui::Event> events_;
+  Delegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(MockStickyKeysHandlerDelegate);
 };
 
-class StickyKeysTest : public test::AshTestBase {
+class StickyKeysTest : public test::AshTestBase,
+                       public MockStickyKeysHandlerDelegate::Delegate {
  protected:
+  StickyKeysTest()
+      : target_(NULL),
+        root_window_(NULL) {}
+
   virtual void SetUp() OVERRIDE {
-    target_.reset(new StubEventTarget());
     test::AshTestBase::SetUp();
+
+    // |target_| owned by root window of shell. It is still safe to delete
+    // it ourselves.
+    target_ = CreateTestWindowInShellWithId(0);
+    root_window_ = target_->GetRootWindow();
   }
 
   virtual void TearDown() OVERRIDE {
     test::AshTestBase::TearDown();
-    target_.reset();
+  }
+
+  // Overridden from MockStickyKeysHandlerDelegate::Delegate:
+  virtual aura::Window* GetExpectedTarget() OVERRIDE {
+    return target_ ? target_ : root_window_;
+  }
+
+  virtual void OnShortcutPressed() OVERRIDE {
+    if (target_) {
+      delete target_;
+      target_ = NULL;
+    }
   }
 
   // Generates keyboard event.
@@ -89,7 +119,7 @@ class StickyKeysTest : public test::AshTestBase {
     xevs_.push_back(xev);
     ui::KeyEvent* event =  new ui::KeyEvent(xev, false);
     ui::Event::DispatcherApi dispatcher(event);
-    dispatcher.set_target(target_.get());
+    dispatcher.set_target(target_);
     return event;
   }
 
@@ -102,7 +132,7 @@ class StickyKeysTest : public test::AshTestBase {
     xevs_.push_back(xev);
     ui::MouseEvent* event = new ui::MouseEvent(xev);
     ui::Event::DispatcherApi dispatcher(event);
-    dispatcher.set_target(target_.get());
+    dispatcher.set_target(target_);
     return event;
   }
 
@@ -113,19 +143,24 @@ class StickyKeysTest : public test::AshTestBase {
     xevs_.push_back(xev);
     ui::MouseWheelEvent* event = new ui::MouseWheelEvent(xev);
     ui::Event::DispatcherApi dispatcher(event);
-    dispatcher.set_target(target_.get());
+    dispatcher.set_target(target_);
     return event;
   }
 
+  aura::Window* target() { return target_; }
+
  private:
-  scoped_ptr<StubEventTarget> target_;
+  // Owned by root window of shell, but we can still delete |target_| safely.
+  aura::Window* target_;
+  // The root window of |target_|. Not owned.
+  aura::Window* root_window_;
   ScopedVector<XEvent> xevs_;
 };
 
 TEST_F(StickyKeysTest, BasicOneshotScenarioTest) {
   scoped_ptr<ui::KeyEvent> ev;
   MockStickyKeysHandlerDelegate* mock_delegate =
-      new MockStickyKeysHandlerDelegate();
+      new MockStickyKeysHandlerDelegate(this);
   StickyKeysHandler sticky_key(ui::EF_SHIFT_DOWN, mock_delegate);
 
   EXPECT_EQ(StickyKeysHandler::DISABLED, sticky_key.current_state());
@@ -172,7 +207,7 @@ TEST_F(StickyKeysTest, BasicOneshotScenarioTest) {
 TEST_F(StickyKeysTest, BasicLockedScenarioTest) {
   scoped_ptr<ui::KeyEvent> ev;
   MockStickyKeysHandlerDelegate* mock_delegate =
-      new MockStickyKeysHandlerDelegate();
+      new MockStickyKeysHandlerDelegate(this);
   StickyKeysHandler sticky_key(ui::EF_SHIFT_DOWN, mock_delegate);
 
   EXPECT_EQ(StickyKeysHandler::DISABLED, sticky_key.current_state());
@@ -229,7 +264,7 @@ TEST_F(StickyKeysTest, BasicLockedScenarioTest) {
 TEST_F(StickyKeysTest, NonTargetModifierTest) {
   scoped_ptr<ui::KeyEvent> ev;
   MockStickyKeysHandlerDelegate* mock_delegate =
-      new MockStickyKeysHandlerDelegate();
+      new MockStickyKeysHandlerDelegate(this);
   StickyKeysHandler sticky_key(ui::EF_SHIFT_DOWN, mock_delegate);
 
   EXPECT_EQ(StickyKeysHandler::DISABLED, sticky_key.current_state());
@@ -278,7 +313,7 @@ TEST_F(StickyKeysTest, NormalShortcutTest) {
   // Sticky keys should not be enabled if we perform a normal shortcut.
   scoped_ptr<ui::KeyEvent> ev;
   MockStickyKeysHandlerDelegate* mock_delegate =
-      new MockStickyKeysHandlerDelegate();
+      new MockStickyKeysHandlerDelegate(this);
   StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN, mock_delegate);
 
   EXPECT_EQ(StickyKeysHandler::DISABLED, sticky_key.current_state());
@@ -302,7 +337,7 @@ TEST_F(StickyKeysTest, MouseEventOneshot) {
   scoped_ptr<ui::MouseEvent> ev;
   scoped_ptr<ui::KeyEvent> kev;
   MockStickyKeysHandlerDelegate* mock_delegate =
-      new MockStickyKeysHandlerDelegate();
+      new MockStickyKeysHandlerDelegate(this);
   StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN, mock_delegate);
 
   EXPECT_EQ(StickyKeysHandler::DISABLED, sticky_key.current_state());
@@ -346,7 +381,7 @@ TEST_F(StickyKeysTest, MouseEventLocked) {
   scoped_ptr<ui::MouseEvent> ev;
   scoped_ptr<ui::KeyEvent> kev;
   MockStickyKeysHandlerDelegate* mock_delegate =
-      new MockStickyKeysHandlerDelegate();
+      new MockStickyKeysHandlerDelegate(this);
   StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN, mock_delegate);
 
   EXPECT_EQ(StickyKeysHandler::DISABLED, sticky_key.current_state());
@@ -394,6 +429,29 @@ TEST_F(StickyKeysTest, MouseEventLocked) {
   kev.reset(GenerateKey(false, ui::VKEY_N));
   sticky_key.HandleKeyEvent(kev.get());
   EXPECT_EQ(StickyKeysHandler::LOCKED, sticky_key.current_state());
+}
+
+TEST_F(StickyKeysTest, EventTargetDestroyed) {
+  scoped_ptr<ui::KeyEvent> ev;
+  MockStickyKeysHandlerDelegate* mock_delegate =
+      new MockStickyKeysHandlerDelegate(this);
+  StickyKeysHandler sticky_key(ui::EF_CONTROL_DOWN, mock_delegate);
+
+  target()->Focus();
+
+  // Go into ENABLED state.
+  EXPECT_EQ(StickyKeysHandler::DISABLED, sticky_key.current_state());
+  ev.reset(GenerateKey(true, ui::VKEY_CONTROL));
+  sticky_key.HandleKeyEvent(ev.get());
+  ev.reset(GenerateKey(false, ui::VKEY_CONTROL));
+  sticky_key.HandleKeyEvent(ev.get());
+  EXPECT_EQ(StickyKeysHandler::ENABLED, sticky_key.current_state());
+
+  // CTRL+J is a special shortcut that will destroy the event target.
+  ev.reset(GenerateKey(true, ui::VKEY_J));
+  sticky_key.HandleKeyEvent(ev.get());
+  EXPECT_EQ(StickyKeysHandler::DISABLED, sticky_key.current_state());
+  EXPECT_FALSE(target());
 }
 
 }  // namespace ash
