@@ -22,6 +22,7 @@
 #include "cc/trees/layer_tree_impl.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "cc/trees/proxy.h"
+#include "ui/gfx/box_f.h"
 #include "ui/gfx/point_conversions.h"
 #include "ui/gfx/quad_f.h"
 #include "ui/gfx/rect_conversions.h"
@@ -1329,6 +1330,14 @@ void LayerImpl::AsValueInto(base::DictionaryValue* state) const {
 
   state->SetBoolean("can_use_lcd_text", can_use_lcd_text());
   state->SetBoolean("contents_opaque", contents_opaque());
+
+  if (layer_animation_controller_->IsAnimatingProperty(Animation::Transform) ||
+      layer_animation_controller_->IsAnimatingProperty(Animation::Filter)) {
+    gfx::BoxF box(bounds().width(), bounds().height(), 0.f);
+    gfx::BoxF inflated;
+    if (layer_animation_controller_->AnimatedBoundsForBox(box, &inflated))
+      state->Set("animated_bounds", MathUtil::AsValue(inflated).release());
+  }
 }
 
 size_t LayerImpl::GPUMemoryUsageInBytes() const { return 0; }

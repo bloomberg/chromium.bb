@@ -590,6 +590,17 @@ scoped_ptr<base::Value> MathUtil::AsValue(const gfx::Transform& transform) {
   return res.PassAs<base::Value>();
 }
 
+scoped_ptr<base::Value> MathUtil::AsValue(const gfx::BoxF& box) {
+  scoped_ptr<base::ListValue> res(new base::ListValue());
+  res->AppendInteger(box.x());
+  res->AppendInteger(box.y());
+  res->AppendInteger(box.z());
+  res->AppendInteger(box.width());
+  res->AppendInteger(box.height());
+  res->AppendInteger(box.depth());
+  return res.PassAs<base::Value>();
+}
+
 scoped_ptr<base::Value> MathUtil::AsValueSafely(double value) {
   return scoped_ptr<base::Value>(base::Value::CreateDoubleValue(
       std::min(value, std::numeric_limits<double>::max())));

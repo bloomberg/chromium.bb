@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "cc/base/cc_export.h"
+#include "ui/gfx/box_f.h"
 #include "ui/gfx/point3_f.h"
 #include "ui/gfx/point_f.h"
 #include "ui/gfx/size.h"
@@ -172,6 +173,7 @@ class CC_EXPORT MathUtil {
   static scoped_ptr<base::Value> AsValue(const gfx::QuadF& q);
   static scoped_ptr<base::Value> AsValue(const gfx::RectF& rect);
   static scoped_ptr<base::Value> AsValue(const gfx::Transform& transform);
+  static scoped_ptr<base::Value> AsValue(const gfx::BoxF& box);
 
   // Returns a base::Value representation of the floating point value.
   // If the value is inf, returns max double/float representation.
