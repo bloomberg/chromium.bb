@@ -54,6 +54,20 @@
 
 namespace {
 
+struct GObjectDeleter {
+  void operator()(void* ptr) {
+    g_object_unref(ptr);
+  }
+};
+struct GtkIconInfoDeleter {
+  void operator()(GtkIconInfo* ptr) {
+    gtk_icon_info_free(ptr);
+  }
+};
+typedef scoped_ptr<GIcon, GObjectDeleter> ScopedGIcon;
+typedef scoped_ptr<GtkIconInfo, GtkIconInfoDeleter> ScopedGtkIconInfo;
+typedef scoped_ptr<GdkPixbuf, GObjectDeleter> ScopedGdkPixbuf;
+
 // Prefix for app indicator ids
 const char kAppIndicatorIdPrefix[] = "chrome_app_indicator_";
 
@@ -465,6 +479,31 @@ scoped_ptr<views::StatusIconLinux> Gtk2UI::CreateLinuxStatusIcon(
   } else {
     return scoped_ptr<views::StatusIconLinux>();
   }
+}
+
+gfx::Image Gtk2UI::GetIconForContentType(
+    const std::string& content_type,
+    int size) const {
+  // This call doesn't take a reference.
+  GtkIconTheme* theme = gtk_icon_theme_get_default();
+
+  ScopedGIcon icon(g_content_type_get_icon(content_type.c_str()));
+  ScopedGtkIconInfo icon_info(
+      gtk_icon_theme_lookup_by_gicon(
+          theme, icon.get(), size,
+          static_cast<GtkIconLookupFlags>(GTK_ICON_LOOKUP_FORCE_SIZE)));
+  if (!icon_info)
+    return gfx::Image();
+  ScopedGdkPixbuf pixbuf(gtk_icon_info_load_icon(icon_info.get(), NULL));
+  if (!pixbuf)
+    return gfx::Image();
+
+  SkBitmap bitmap = GdkPixbufToImageSkia(pixbuf.get());
+  DCHECK_EQ(size, bitmap.width());
+  DCHECK_EQ(size, bitmap.height());
+  gfx::ImageSkia image_skia = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
+  image_skia.MakeThreadSafe();
+  return gfx::Image(image_skia);
 }
 
 void Gtk2UI::AddWindowButtonOrderObserver(

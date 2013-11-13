@@ -87,6 +87,12 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
       const gfx::ImageSkia& image,
       const string16& tool_tip) const = 0;
 
+  // Returns the icon for a given content type from the icon theme.
+  // TODO(davidben): Add an observer for the theme changing, so we can drop the
+  // caches.
+  virtual gfx::Image GetIconForContentType(
+      const std::string& content_type, int size) const = 0;
+
   // Notifies the observer about changes about how window buttons should be
   // laid out. If the order is anything other than the default min,max,close on
   // the right, will immediately send a button change event to the observer.
