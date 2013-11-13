@@ -65,16 +65,15 @@ void* PSInstance::MainThreadThunk(void *info) {
 
   int ret = si->inst_->MainThread(si->argc_, si->argv_);
 
-  char* exit_message = si->inst_->exit_message_;
-  bool should_exit = exit_message == NULL;
+  bool should_exit = si->inst_->exit_message_ == NULL;
 
-  if (exit_message) {
+  if (si->inst_->exit_message_) {
     // Send the exit message to JavaScript. Don't call exit(), so the message
     // doesn't get dropped.
     si->inst_->Log("Posting exit message to JavaScript.\n");
-    si->inst_->PostMessage(exit_message);
-    free(exit_message);
-    exit_message = si->inst_->exit_message_ = NULL;
+    std::stringstream ss;
+    ss << si->inst_->exit_message_ << ":" << ret;
+    si->inst_->PostMessage(ss.str());
   }
 
   // Clean up StartInfo.
@@ -83,7 +82,6 @@ void* PSInstance::MainThreadThunk(void *info) {
   }
   delete[] si->argv_;
   delete si;
-
 
   if (should_exit) {
     // Exit the entire process once the 'main' thread returns.
@@ -267,10 +265,7 @@ bool PSInstance::ProcessProperties() {
     }
   }
 
-  const char* exit_message = getenv("PS_EXIT_MESSAGE");
-  if (exit_message) {
-    exit_message_ = strdup(exit_message);
-  }
+  exit_message_ = getenv("PS_EXIT_MESSAGE");
 
   // Set line buffering on stdout and stderr
 #if !defined(WIN32)

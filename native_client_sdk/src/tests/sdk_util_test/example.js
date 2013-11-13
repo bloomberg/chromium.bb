@@ -44,7 +44,7 @@ function endCommand(testName, testResult) {
   testResultEl.textContent = testResult;
 }
 
-function testendCommand() {
+function testendCommand(exitCode) {
   testsFinished = true;
 
   if (failedTests) {
