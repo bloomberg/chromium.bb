@@ -247,13 +247,13 @@ void WebVTTParser::collectMetadataHeader(const String& line)
         return;
 
     unsigned colonPosition = line.find(":");
-    m_currentHeaderName = line.substring(0, colonPosition);
+    String headerName = line.substring(0, colonPosition);
 
     // 15.5 If metadata's name equals "Region":
-    if (m_currentHeaderName == regionHeaderName) {
-        m_currentHeaderValue = line.substring(colonPosition + 1, line.length() - 1);
+    if (headerName == regionHeaderName) {
+        String headerValue = line.substring(colonPosition + 1);
         // 15.5.1 - 15.5.8 Region creation: Let region be a new text track region [...]
-        createNewRegion();
+        createNewRegion(headerValue);
     }
 }
 
@@ -393,13 +393,13 @@ void WebVTTParser::resetCueValues()
     m_currentContent.clear();
 }
 
-void WebVTTParser::createNewRegion()
+void WebVTTParser::createNewRegion(const String& headerValue)
 {
-    if (!m_currentHeaderValue.length())
+    if (headerValue.isEmpty())
         return;
 
     RefPtr<VTTRegion> region = VTTRegion::create();
-    region->setRegionSettings(m_currentHeaderValue);
+    region->setRegionSettings(headerValue);
 
     // 15.5.10 If the text track list of regions regions contains a region
     // with the same region identifier value as region, remove that region.

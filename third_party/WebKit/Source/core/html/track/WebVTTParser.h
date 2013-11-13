@@ -130,12 +130,9 @@ private:
     void resetCueValues();
 
     void collectMetadataHeader(const String&);
-    void createNewRegion();
+    void createNewRegion(const String& headerValue);
 
     void skipWhiteSpace(const String&, unsigned*);
-
-    String m_currentHeaderName;
-    String m_currentHeaderValue;
 
     BufferedLineReader m_lineReader;
     RefPtr<TextResourceDecoder> m_decoder;
