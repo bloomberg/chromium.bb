@@ -66,6 +66,9 @@ public:
     BLINK_EXPORT static void enablePrefixedEncryptedMedia(bool);
     BLINK_EXPORT static bool isPrefixedEncryptedMediaEnabled();
 
+    BLINK_EXPORT static void enableDirectWrite(bool);
+    BLINK_EXPORT static bool isDirectWriteEnabled();
+
     BLINK_EXPORT static void enableExperimentalCanvasFeatures(bool);
     BLINK_EXPORT static bool isExperimentalCanvasFeaturesEnabled();
 
