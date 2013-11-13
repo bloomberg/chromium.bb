@@ -27,6 +27,7 @@
 #include "core/html/HTMLDialogElement.h"
 
 #include "bindings/v8/ExceptionState.h"
+#include "core/accessibility/AXObjectCache.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/html/HTMLFormControlElement.h"
@@ -57,6 +58,18 @@ static void runAutofocus(HTMLDialogElement* dialog)
     }
 }
 
+static void inertSubtreesChanged(Document& document)
+{
+    // When a modal dialog opens or closes, nodes all over the accessibility
+    // tree can change inertness which means they must be added or removed from
+    // the tree. The most foolproof way is to clear the entire tree and rebuild
+    // it, though a more clever way is probably possible.
+    Document* topDocument = document.topDocument();
+    topDocument->clearAXObjectCache();
+    if (AXObjectCache* cache = topDocument->axObjectCache())
+        cache->childrenChanged(cache->getOrCreate(topDocument));
+}
+
 HTMLDialogElement::HTMLDialogElement(Document& document)
     : HTMLElement(dialogTag, document)
     , m_centeringMode(Uninitialized)
@@ -85,7 +98,11 @@ void HTMLDialogElement::closeDialog(const String& returnValue)
     if (!fastHasAttribute(openAttr))
         return;
     setBooleanAttribute(openAttr, false);
+
+    HTMLDialogElement* activeModalDialog = document().activeModalDialog();
     document().removeFromTopLayer(this);
+    if (activeModalDialog == this)
+        inertSubtreesChanged(document());
 
     if (!returnValue.isNull())
         m_returnValue = returnValue;
@@ -120,6 +137,7 @@ void HTMLDialogElement::showModal(ExceptionState& es)
 
     runAutofocus(this);
     forceLayoutForCentering();
+    inertSubtreesChanged(document());
 }
 
 void HTMLDialogElement::setCentered(LayoutUnit centeredPosition)
