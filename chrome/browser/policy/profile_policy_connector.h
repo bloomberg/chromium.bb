@@ -8,17 +8,8 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/callback.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
-
-class Profile;
-
-namespace net {
-class CertTrustAnchorProvider;
-}
 
 namespace chromeos {
 class User;
@@ -29,18 +20,20 @@ namespace policy {
 class CloudPolicyManager;
 class ConfigurationPolicyProvider;
 class PolicyService;
+class SchemaRegistry;
 
 // A BrowserContextKeyedService that creates and manages the per-Profile policy
 // components.
 class ProfilePolicyConnector : public BrowserContextKeyedService {
  public:
-  explicit ProfilePolicyConnector(Profile* profile);
+  ProfilePolicyConnector();
   virtual ~ProfilePolicyConnector();
 
   // If |force_immediate_load| then disk caches will be loaded synchronously.
   void Init(bool force_immediate_load,
 #if defined(OS_CHROMEOS)
             const chromeos::User* user,
+            SchemaRegistry* schema_registry,
 #endif
             CloudPolicyManager* user_cloud_policy_manager);
 
@@ -52,27 +45,12 @@ class ProfilePolicyConnector : public BrowserContextKeyedService {
   // This is never NULL.
   PolicyService* policy_service() const { return policy_service_.get(); }
 
-#if defined(OS_CHROMEOS)
-  // Returns a callback that should be called if a policy installed certificate
-  // was trusted for the associated profile. The closure can be safely used (on
-  // the UI thread) even after this Connector is destructed.
-  base::Closure GetPolicyCertTrustedCallback();
-#endif
-
-  // Returns true if |profile()| has used certificates installed via policy
-  // to establish a secure connection before. This means that it may have
-  // cached content from an untrusted source.
-  bool UsedPolicyCertificates();
-
  private:
-#if defined(ENABLE_CONFIGURATION_POLICY)
+#if defined(ENABLE_CONFIGURATION_POLICY) && defined(OS_CHROMEOS)
+  void InitializeDeviceLocalAccountPolicyProvider(
+      const std::string& username,
+      SchemaRegistry* schema_registry);
 
-#if defined(OS_CHROMEOS)
-  void SetUsedPolicyCertificatesOnce();
-  void InitializeDeviceLocalAccountPolicyProvider(const std::string& username);
-#endif
-
-#if defined(OS_CHROMEOS)
   // Some of the user policy configuration affects browser global state, and
   // can only come from one Profile. |is_primary_user_| is true if this
   // connector belongs to the first signed-in Profile, and in that case that
@@ -81,13 +59,7 @@ class ProfilePolicyConnector : public BrowserContextKeyedService {
   bool is_primary_user_;
 
   scoped_ptr<ConfigurationPolicyProvider> special_user_policy_provider_;
-
-  base::WeakPtrFactory<ProfilePolicyConnector> weak_ptr_factory_;
 #endif
-
-  Profile* profile_;
-
-#endif  // ENABLE_CONFIGURATION_POLICY
 
   scoped_ptr<PolicyService> policy_service_;
 

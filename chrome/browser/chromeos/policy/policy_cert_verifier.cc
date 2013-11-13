@@ -5,7 +5,6 @@
 #include "chrome/browser/chromeos/policy/policy_cert_verifier.h"
 
 #include "base/logging.h"
-#include "base/memory/ref_counted.h"
 #include "chrome/browser/browser_process.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
@@ -56,7 +55,7 @@ void PolicyCertVerifier::InitializeOnIOThread() {
       net::CertVerifyProc::CreateDefault();
   if (!verify_proc->SupportsAdditionalTrustAnchors()) {
     LOG(WARNING)
-        << "Additional trust anchors not supported in the current platform!";
+        << "Additional trust anchors not supported on the current platform!";
   }
   net::MultiThreadedCertVerifier* verifier =
       new net::MultiThreadedCertVerifier(verify_proc.get());

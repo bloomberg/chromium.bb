@@ -12,29 +12,22 @@
 #include "chrome/browser/policy/cloud/cloud_policy_manager.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
 #include "chrome/browser/policy/policy_service.h"
-#include "chrome/browser/policy/schema_registry_service.h"
-#include "chrome/browser/policy/schema_registry_service_factory.h"
 
 #if defined(OS_CHROMEOS)
-#include "base/bind.h"
-#include "base/prefs/pref_service.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_provider.h"
 #include "chrome/browser/chromeos/policy/login_profile_policy_provider.h"
 #include "chrome/browser/policy/policy_service.h"
-#include "chrome/common/pref_names.h"
 #endif
 
 namespace policy {
 
-ProfilePolicyConnector::ProfilePolicyConnector(Profile* profile)
-    :
+ProfilePolicyConnector::ProfilePolicyConnector()
 #if defined(OS_CHROMEOS)
-      is_primary_user_(false),
-      weak_ptr_factory_(this),
+    : is_primary_user_(false)
 #endif
-      profile_(profile) {}
+      {}
 
 ProfilePolicyConnector::~ProfilePolicyConnector() {}
 
@@ -42,6 +35,7 @@ void ProfilePolicyConnector::Init(
     bool force_immediate_load,
 #if defined(OS_CHROMEOS)
     const chromeos::User* user,
+    SchemaRegistry* schema_registry,
 #endif
     CloudPolicyManager* user_cloud_policy_manager) {
   BrowserPolicyConnector* connector =
@@ -55,16 +49,18 @@ void ProfilePolicyConnector::Init(
 
 #if defined(OS_CHROMEOS)
   if (!user) {
+    DCHECK(schema_registry);
     // This case occurs for the signin profile.
     special_user_policy_provider_.reset(
         new LoginProfilePolicyProvider(connector->GetPolicyService()));
-    special_user_policy_provider_->Init(
-        SchemaRegistryServiceFactory::GetForContext(profile_));
+    special_user_policy_provider_->Init(schema_registry);
   } else {
     // |user| should never be NULL except for the signin profile.
     is_primary_user_ = user == chromeos::UserManager::Get()->GetPrimaryUser();
-    if (user->GetType() == chromeos::User::USER_TYPE_PUBLIC_ACCOUNT)
-      InitializeDeviceLocalAccountPolicyProvider(user->email());
+    if (user->GetType() == chromeos::User::USER_TYPE_PUBLIC_ACCOUNT) {
+      InitializeDeviceLocalAccountPolicyProvider(user->email(),
+                                                 schema_registry);
+    }
   }
   if (special_user_policy_provider_)
     providers.push_back(special_user_policy_provider_.get());
@@ -96,27 +92,9 @@ void ProfilePolicyConnector::Shutdown() {
 }
 
 #if defined(OS_CHROMEOS)
-base::Closure ProfilePolicyConnector::GetPolicyCertTrustedCallback() {
-  return base::Bind(&ProfilePolicyConnector::SetUsedPolicyCertificatesOnce,
-                    weak_ptr_factory_.GetWeakPtr());
-}
-#endif
-
-bool ProfilePolicyConnector::UsedPolicyCertificates() {
-#if defined(OS_CHROMEOS)
-  return profile_->GetPrefs()->GetBoolean(prefs::kUsedPolicyCertificatesOnce);
-#else
-  return false;
-#endif
-}
-
-#if defined(OS_CHROMEOS)
-void ProfilePolicyConnector::SetUsedPolicyCertificatesOnce() {
-  profile_->GetPrefs()->SetBoolean(prefs::kUsedPolicyCertificatesOnce, true);
-}
-
 void ProfilePolicyConnector::InitializeDeviceLocalAccountPolicyProvider(
-    const std::string& username) {
+    const std::string& username,
+    SchemaRegistry* schema_registry) {
   BrowserPolicyConnector* connector =
       g_browser_process->browser_policy_connector();
   DeviceLocalAccountPolicyService* device_local_account_policy_service =
@@ -125,8 +103,7 @@ void ProfilePolicyConnector::InitializeDeviceLocalAccountPolicyProvider(
     return;
   special_user_policy_provider_.reset(new DeviceLocalAccountPolicyProvider(
       username, device_local_account_policy_service));
-  special_user_policy_provider_->Init(
-      SchemaRegistryServiceFactory::GetForContext(profile_));
+  special_user_policy_provider_->Init(schema_registry);
 }
 #endif
 

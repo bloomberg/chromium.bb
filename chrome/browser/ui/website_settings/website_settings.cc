@@ -25,8 +25,6 @@
 #include "chrome/browser/content_settings/host_content_settings_map.h"
 #include "chrome/browser/content_settings/local_shared_objects_container.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
 #include "chrome/browser/ui/website_settings/website_settings_infobar_delegate.h"
@@ -47,6 +45,11 @@
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/policy/policy_cert_service.h"
+#include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
+#endif
 
 using content::BrowserThread;
 
@@ -264,12 +267,17 @@ void WebsiteSettings::Init(Profile* profile,
       (!net::IsCertStatusError(ssl.cert_status) ||
        net::IsCertStatusMinorError(ssl.cert_status))) {
     // There are no major errors. Check for minor errors.
-    if (policy::ProfilePolicyConnectorFactory::GetForProfile(profile)->
-        UsedPolicyCertificates()) {
+#if defined(OS_CHROMEOS)
+    policy::PolicyCertService* service =
+        policy::PolicyCertServiceFactory::GetForProfile(profile);
+    const bool used_policy_certs = service && service->UsedPolicyCertificates();
+#else
+    const bool used_policy_certs = false;
+#endif
+    if (used_policy_certs) {
       site_identity_status_ = SITE_IDENTITY_STATUS_ADMIN_PROVIDED_CERT;
-      site_identity_details_ =
-          l10n_util::GetStringFUTF16(IDS_CERT_POLICY_PROVIDED_CERT_MESSAGE,
-                                     UTF8ToUTF16(url.host()));
+      site_identity_details_ = l10n_util::GetStringFUTF16(
+          IDS_CERT_POLICY_PROVIDED_CERT_MESSAGE, UTF8ToUTF16(url.host()));
     } else if (net::IsCertStatusMinorError(ssl.cert_status)) {
       site_identity_status_ = SITE_IDENTITY_STATUS_CERT_REVOCATION_UNKNOWN;
       string16 issuer_name(UTF8ToUTF16(cert->issuer().GetDisplayName()));

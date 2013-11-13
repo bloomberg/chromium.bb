@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
 #include "chrome/browser/chromeos/policy/network_configuration_updater.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 
@@ -25,16 +26,22 @@ typedef std::vector<scoped_refptr<X509Certificate> > CertificateList;
 
 namespace policy {
 
-class PolicyCertVerifier;
 class PolicyService;
 
 // Implements additional special handling of ONC user policies. Namely string
 // expansion with the user's name (or email address, etc.) and handling of "Web"
-// trust of certificates. Web trusted certificates are pushed to the
-// PolicyCertVerifier if set.
+// trust of certificates.
 class UserNetworkConfigurationUpdater : public NetworkConfigurationUpdater,
                                         public BrowserContextKeyedService {
  public:
+  class WebTrustedCertsObserver {
+   public:
+    // Is called everytime the list of imported certificates with Web trust is
+    // changed.
+    virtual void OnTrustAnchorsChanged(
+        const net::CertificateList& trust_anchors) = 0;
+  };
+
   virtual ~UserNetworkConfigurationUpdater();
 
   // Creates an updater that applies the ONC user policy from |policy_service|
@@ -49,13 +56,8 @@ class UserNetworkConfigurationUpdater : public NetworkConfigurationUpdater,
       PolicyService* policy_service,
       chromeos::ManagedNetworkConfigurationHandler* network_config_handler);
 
-  // Sets the CertVerifier on which the current list of Web trusted server and
-  // CA certificates will be set. Policy updates will trigger further calls to
-  // |cert_verifier| later. |cert_verifier| must be valid until
-  // SetPolicyCertVerifier is called again (with another CertVerifier or NULL)
-  // or until this Updater is destructed. |cert_verifier|'s methods are only
-  // called on the IO thread. This function must be called on the UI thread.
-  void SetPolicyCertVerifier(PolicyCertVerifier* cert_verifier);
+  void AddTrustedCertsObserver(WebTrustedCertsObserver* observer);
+  void RemoveTrustedCertsObserver(WebTrustedCertsObserver* observer);
 
   // Sets |certs| to the list of Web trusted server and CA certificates from the
   // last received policy.
@@ -78,8 +80,7 @@ class UserNetworkConfigurationUpdater : public NetworkConfigurationUpdater,
       base::ListValue* network_configs_onc,
       base::DictionaryValue* global_network_config) OVERRIDE;
 
-  // Push |web_trust_certs_| to |cert_verifier_| if necessary.
-  void SetTrustAnchors();
+  void NotifyTrustAnchorsChanged();
 
   // Whether Web trust is allowed or not. Only relevant for user policies.
   bool allow_trusted_certificates_from_policy_;
@@ -88,8 +89,7 @@ class UserNetworkConfigurationUpdater : public NetworkConfigurationUpdater,
   // is used for device policy.
   const chromeos::User* user_;
 
-  // Calls to this object are only allowed on the IO Thread.
-  PolicyCertVerifier* cert_verifier_;
+  ObserverList<WebTrustedCertsObserver, true> observer_list_;
 
   // Contains the certificates of the last import that requested web trust. Must
   // be empty if Web trust from policy is not allowed.

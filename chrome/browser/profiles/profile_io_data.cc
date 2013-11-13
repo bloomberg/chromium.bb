@@ -62,7 +62,6 @@
 #include "content/public/browser/resource_context.h"
 #include "extensions/browser/info_map.h"
 #include "extensions/common/constants.h"
-#include "net/cert/cert_verifier.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/http/http_transaction_factory.h"
@@ -90,12 +89,10 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/drive/drive_protocol_handler.h"
+#include "chrome/browser/chromeos/policy/policy_cert_service.h"
+#include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/policy/policy_cert_verifier.h"
-#include "chrome/browser/chromeos/policy/user_network_configuration_updater.h"
-#include "chrome/browser/chromeos/policy/user_network_configuration_updater_factory.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
-#include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chromeos/settings/cros_settings_names.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -227,25 +224,6 @@ class DebugDevToolsInterceptor
 };
 #endif  // defined(DEBUG_DEVTOOLS)
 
-#if defined(OS_CHROMEOS)
-scoped_ptr<policy::PolicyCertVerifier> CreatePolicyCertVerifier(
-    Profile* profile) {
-  policy::ProfilePolicyConnector* connector =
-      policy::ProfilePolicyConnectorFactory::GetForProfile(profile);
-  base::Closure policy_cert_trusted_callback =
-      base::Bind(base::IgnoreResult(&content::BrowserThread::PostTask),
-                 content::BrowserThread::UI,
-                 FROM_HERE,
-                 connector->GetPolicyCertTrustedCallback());
-  scoped_ptr<policy::PolicyCertVerifier> cert_verifier(
-      new policy::PolicyCertVerifier(policy_cert_trusted_callback));
-  policy::UserNetworkConfigurationUpdater* network_configuration_updater =
-      policy::UserNetworkConfigurationUpdaterFactory::GetForProfile(profile);
-  if (network_configuration_updater)
-    network_configuration_updater->SetPolicyCertVerifier(cert_verifier.get());
-  return cert_verifier.Pass();
-}
-#endif
 }  // namespace
 
 void ProfileIOData::InitializeOnUIThread(Profile* profile) {
@@ -301,9 +279,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   params->managed_mode_url_filter =
       managed_user_service->GetURLFilterForIOThread();
 #endif
-#if defined(OS_CHROMEOS)
-  params->cert_verifier = CreatePolicyCertVerifier(profile);
-#endif
 
   params->profile = profile;
   profile_params_.reset(params.release());
@@ -351,6 +326,9 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
     signin_allowed_.MoveToThread(io_message_loop_proxy);
   }
 
+#if defined(OS_CHROMEOS)
+  cert_verifier_ = policy::PolicyCertServiceFactory::CreateForProfile(profile);
+#endif
   // The URLBlacklistManager has to be created on the UI thread to register
   // observers of |pref_service|, and it also has to clean up on
   // ShutdownOnUIThread to release these observers on the right thread.
@@ -847,9 +825,13 @@ void ProfileIOData::Init(content::ProtocolHandlerMap* protocol_handlers) const {
 #endif
 
 #if defined(OS_CHROMEOS)
-  profile_params_->cert_verifier->InitializeOnIOThread();
-  cert_verifier_ = profile_params_->cert_verifier.Pass();
-  main_request_context_->set_cert_verifier(cert_verifier_.get());
+  if (cert_verifier_) {
+    cert_verifier_->InitializeOnIOThread();
+    main_request_context_->set_cert_verifier(cert_verifier_.get());
+  } else {
+    main_request_context_->set_cert_verifier(
+        io_thread_globals->cert_verifier.get());
+  }
 #else
   main_request_context_->set_cert_verifier(
       io_thread_globals->cert_verifier.get());

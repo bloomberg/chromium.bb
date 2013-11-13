@@ -12,10 +12,12 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "net/base/completion_callback.h"
 #include "net/cert/cert_trust_anchor_provider.h"
 #include "net/cert/cert_verifier.h"
 
 namespace net {
+class CertVerifyResult;
 class X509Certificate;
 typedef std::vector<scoped_refptr<X509Certificate> > CertificateList;
 }
@@ -27,15 +29,18 @@ namespace policy {
 class PolicyCertVerifier : public net::CertVerifier,
                            public net::CertTrustAnchorProvider {
  public:
-  // This object must be created on the UI thread. It's member functions and
-  // destructor must be called on the IO thread. |anchor_used_callback| is
-  // called on the IO thread everytime a certificate from the additional trust
-  // anchors (set with SetTrustAnchors) is used.
+  // Except for tests, PolicyCertVerifier should only be created by
+  // PolicyCertService, which is the counterpart of this class on the UI thread.
+  // Except of the constructor, all methods and the destructor must be called on
+  // the IO thread. Calls |anchor_used_callback| on the IO thread everytime a
+  // certificate from the additional trust anchors (set with SetTrustAnchors) is
+  // used.
   explicit PolicyCertVerifier(const base::Closure& anchor_used_callback);
   virtual ~PolicyCertVerifier();
 
   void InitializeOnIOThread();
 
+  // Sets the additional trust anchors.
   void SetTrustAnchors(const net::CertificateList& trust_anchors);
 
   // CertVerifier:

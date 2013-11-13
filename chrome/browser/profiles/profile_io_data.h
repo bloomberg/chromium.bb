@@ -46,7 +46,6 @@ class InfoMap;
 }
 
 namespace net {
-class CertVerifier;
 class CookieStore;
 class FraudulentCertificateReporter;
 class FtpTransactionFactory;
@@ -277,10 +276,6 @@ class ProfileIOData {
     scoped_refptr<const ManagedModeURLFilter> managed_mode_url_filter;
 #endif
 
-#if defined(OS_CHROMEOS)
-    scoped_ptr<policy::PolicyCertVerifier> cert_verifier;
-#endif
-
     // The profile this struct was populated from. It's passed as a void* to
     // ensure it's not accidently used on the IO thread. Before using it on the
     // UI thread, call ProfileManager::IsValidProfile to ensure it's alive.
@@ -501,7 +496,7 @@ class ProfileIOData {
   mutable scoped_ptr<net::HttpServerProperties>
       http_server_properties_;
 #if defined(OS_CHROMEOS)
-  mutable scoped_ptr<net::CertVerifier> cert_verifier_;
+  mutable scoped_ptr<policy::PolicyCertVerifier> cert_verifier_;
 #endif
 
 #if defined(ENABLE_NOTIFICATIONS)

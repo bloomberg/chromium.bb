@@ -9,7 +9,6 @@
 #include "base/logging.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/net/onc_utils.h"
-#include "chrome/browser/chromeos/policy/policy_cert_verifier.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
 #include "chromeos/network/onc/onc_certificate_importer.h"
 #include "content/public/browser/browser_thread.h"
@@ -38,6 +37,16 @@ UserNetworkConfigurationUpdater::CreateForUserPolicy(
   return updater.Pass();
 }
 
+void UserNetworkConfigurationUpdater::AddTrustedCertsObserver(
+    WebTrustedCertsObserver* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void UserNetworkConfigurationUpdater::RemoveTrustedCertsObserver(
+    WebTrustedCertsObserver* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
 UserNetworkConfigurationUpdater::UserNetworkConfigurationUpdater(
     bool allow_trusted_certs_from_policy,
     const chromeos::User& user,
@@ -50,14 +59,7 @@ UserNetworkConfigurationUpdater::UserNetworkConfigurationUpdater(
                                   policy_service,
                                   network_config_handler),
       allow_trusted_certificates_from_policy_(allow_trusted_certs_from_policy),
-      user_(&user),
-      cert_verifier_(NULL) {}
-
-void UserNetworkConfigurationUpdater::SetPolicyCertVerifier(
-    PolicyCertVerifier* cert_verifier) {
-  cert_verifier_ = cert_verifier;
-  SetTrustAnchors();
-}
+      user_(&user) {}
 
 void UserNetworkConfigurationUpdater::GetWebTrustedCertificates(
     net::CertificateList* certs) const {
@@ -72,7 +74,7 @@ void UserNetworkConfigurationUpdater::ImportCertificates(
       onc_source_,
       allow_trusted_certificates_from_policy_ ? &web_trust_certs_ : NULL);
 
-  SetTrustAnchors();
+  NotifyTrustAnchorsChanged();
 }
 
 void UserNetworkConfigurationUpdater::ApplyNetworkPolicy(
@@ -87,15 +89,10 @@ void UserNetworkConfigurationUpdater::ApplyNetworkPolicy(
                                      *global_network_config);
 }
 
-void UserNetworkConfigurationUpdater::SetTrustAnchors() {
-  if (!cert_verifier_)
-    return;
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO,
-      FROM_HERE,
-      base::Bind(&PolicyCertVerifier::SetTrustAnchors,
-                 base::Unretained(cert_verifier_),
-                 web_trust_certs_));
+void UserNetworkConfigurationUpdater::NotifyTrustAnchorsChanged() {
+  FOR_EACH_OBSERVER(WebTrustedCertsObserver,
+                    observer_list_,
+                    OnTrustAnchorsChanged(web_trust_certs_));
 }
 
 }  // namespace policy

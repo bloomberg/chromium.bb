@@ -641,8 +641,7 @@ void TestingProfile::CreateProfilePolicyConnector() {
 #else
   service.reset(new policy::PolicyServiceStub());
 #endif
-  profile_policy_connector_.reset(
-      new policy::ProfilePolicyConnector(this));
+  profile_policy_connector_.reset(new policy::ProfilePolicyConnector());
   profile_policy_connector_->InitForTesting(service.Pass());
   policy::ProfilePolicyConnectorFactory::GetInstance()->SetServiceForTesting(
       this, profile_policy_connector_.get());

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/run_loop.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/login/user.h"
-#include "chrome/browser/chromeos/policy/policy_cert_verifier.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater.h"
 #include "chrome/browser/policy/external_data_fetcher.h"
 #include "chrome/browser/policy/mock_configuration_policy_provider.h"
@@ -59,6 +59,16 @@ class FakeUser : public chromeos::User {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeUser);
+};
+
+class FakeWebTrustedCertsObserver
+    : public UserNetworkConfigurationUpdater::WebTrustedCertsObserver {
+ public:
+  virtual void OnTrustAnchorsChanged(
+      const net::CertificateList& trust_anchors) OVERRIDE {
+    trust_anchors_ = trust_anchors;
+  }
+  net::CertificateList trust_anchors_;
 };
 
 const char kFakeONC[] =
@@ -206,9 +216,6 @@ class NetworkConfigurationUpdaterTest : public testing::Test {
 };
 
 TEST_F(NetworkConfigurationUpdaterTest, PolicyIsValidatedAndRepaired) {
-  std::string onc_policy =
-      chromeos::onc::test_utils::ReadTestData("toplevel_partially_invalid.onc");
-
   scoped_ptr<base::DictionaryValue> onc_repaired =
       chromeos::onc::test_utils::ReadTestDictionary(
           "repaired_toplevel_partially_invalid.onc");
@@ -224,6 +231,8 @@ TEST_F(NetworkConfigurationUpdaterTest, PolicyIsValidatedAndRepaired) {
       &global_config_repaired);
   ASSERT_TRUE(global_config_repaired);
 
+  std::string onc_policy =
+      chromeos::onc::test_utils::ReadTestData("toplevel_partially_invalid.onc");
   PolicyMap policy;
   policy.Set(key::kOpenNetworkConfiguration,
              POLICY_LEVEL_MANDATORY,
@@ -262,19 +271,27 @@ TEST_F(NetworkConfigurationUpdaterTest,
       CreateNetworkConfigurationUpdaterForUserPolicy(
           false /* do not allow trusted certs from policy */);
 
-  // Certificates with the "Web" trust flag set should not be forwarded to the
-  // trust provider.
-  policy::PolicyCertVerifier cert_verifier((
-      base::Closure() /* no policy cert trusted callback */));
-  updater->SetPolicyCertVerifier(&cert_verifier);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(cert_verifier.GetAdditionalTrustAnchors().empty());
+  // Certificates with the "Web" trust flag set should not be forwarded to
+  // observers.
+  FakeWebTrustedCertsObserver observer;
+  updater->AddTrustedCertsObserver(&observer);
 
-  // |cert_verifier| must outlive the updater.
-  network_configuration_updater_.reset();
+  base::RunLoop().RunUntilIdle();
+
+  net::CertificateList trust_anchors;
+  updater->GetWebTrustedCertificates(&trust_anchors);
+  EXPECT_TRUE(trust_anchors.empty());
+
+  EXPECT_TRUE(observer.trust_anchors_.empty());
+  updater->RemoveTrustedCertsObserver(&observer);
 }
 
-TEST_F(NetworkConfigurationUpdaterTest, AllowTrustedCertificatesFromPolicy) {
+TEST_F(NetworkConfigurationUpdaterTest,
+       AllowTrustedCertificatesFromPolicyInitially) {
+  // Ignore network configuration changes.
+  EXPECT_CALL(network_config_handler_, SetPolicy(_, _, _, _))
+      .Times(AnyNumber());
+
   net::CertificateList cert_list;
   cert_list =
       net::CreateCertificateListFromFile(net::GetTestCertsDirectory(),
@@ -282,8 +299,6 @@ TEST_F(NetworkConfigurationUpdaterTest, AllowTrustedCertificatesFromPolicy) {
                                          net::X509Certificate::FORMAT_AUTO);
   ASSERT_EQ(1u, cert_list.size());
 
-  EXPECT_CALL(network_config_handler_,
-              SetPolicy(onc::ONC_SOURCE_USER_POLICY, _, _, _));
   EXPECT_CALL(*certificate_importer_,
               ImportCertificates(_, onc::ONC_SOURCE_USER_POLICY, _))
       .WillRepeatedly(SetCertificateList(cert_list));
@@ -292,16 +307,76 @@ TEST_F(NetworkConfigurationUpdaterTest, AllowTrustedCertificatesFromPolicy) {
       CreateNetworkConfigurationUpdaterForUserPolicy(
           true /* allow trusted certs from policy */);
 
-  // Certificates with the "Web" trust flag set should be forwarded to the
-  // trust provider.
-  policy::PolicyCertVerifier cert_verifier((
-      base::Closure() /* no policy cert trusted callback */));
-  updater->SetPolicyCertVerifier(&cert_verifier);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1u, cert_verifier.GetAdditionalTrustAnchors().size());
 
-  // |cert_verifier| must outlive the updater.
-  network_configuration_updater_.reset();
+  // Certificates with the "Web" trust flag set will be returned.
+  net::CertificateList trust_anchors;
+  updater->GetWebTrustedCertificates(&trust_anchors);
+  EXPECT_EQ(1u, trust_anchors.size());
+}
+
+TEST_F(NetworkConfigurationUpdaterTest,
+       AllowTrustedCertificatesFromPolicyOnUpdate) {
+  // Ignore network configuration changes.
+  EXPECT_CALL(network_config_handler_, SetPolicy(_, _, _, _))
+      .Times(AnyNumber());
+
+  // Start with an empty certificate list.
+  EXPECT_CALL(*certificate_importer_,
+              ImportCertificates(_, onc::ONC_SOURCE_USER_POLICY, _))
+      .WillRepeatedly(SetCertificateList(net::CertificateList()));
+
+  UserNetworkConfigurationUpdater* updater =
+      CreateNetworkConfigurationUpdaterForUserPolicy(
+          true /* allow trusted certs from policy */);
+
+  FakeWebTrustedCertsObserver observer;
+  updater->AddTrustedCertsObserver(&observer);
+
+  base::RunLoop().RunUntilIdle();
+
+  // Verify that the returned certificate list is empty.
+  Mock::VerifyAndClearExpectations(certificate_importer_);
+  {
+    net::CertificateList trust_anchors;
+    updater->GetWebTrustedCertificates(&trust_anchors);
+    EXPECT_TRUE(trust_anchors.empty());
+  }
+  EXPECT_TRUE(observer.trust_anchors_.empty());
+
+  // Now use a non-empty certificate list to test the observer notification.
+  net::CertificateList cert_list;
+  cert_list =
+      net::CreateCertificateListFromFile(net::GetTestCertsDirectory(),
+                                         "ok_cert.pem",
+                                         net::X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(1u, cert_list.size());
+
+  EXPECT_CALL(*certificate_importer_,
+              ImportCertificates(_, onc::ONC_SOURCE_USER_POLICY, _))
+      .WillOnce(SetCertificateList(cert_list));
+
+  // Change to any non-empty policy, so that updates are triggered. The actual
+  // content of the policy is irrelevant.
+  PolicyMap policy;
+  policy.Set(key::kOpenNetworkConfiguration,
+             POLICY_LEVEL_MANDATORY,
+             POLICY_SCOPE_USER,
+             new base::StringValue(kFakeONC),
+             NULL);
+  UpdateProviderPolicy(policy);
+  base::RunLoop().RunUntilIdle();
+
+  // Certificates with the "Web" trust flag set will be returned and forwarded
+  // to observers.
+  {
+    net::CertificateList trust_anchors;
+    updater->GetWebTrustedCertificates(&trust_anchors);
+    EXPECT_EQ(1u, trust_anchors.size());
+  }
+  EXPECT_EQ(1u, observer.trust_anchors_.size());
+
+  updater->RemoveTrustedCertsObserver(&observer);
 }
 
 class NetworkConfigurationUpdaterTestWithParam

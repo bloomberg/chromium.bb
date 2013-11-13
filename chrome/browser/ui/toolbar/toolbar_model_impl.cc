@@ -12,8 +12,6 @@
 #include "chrome/browser/autocomplete/autocomplete_input.h"
 #include "chrome/browser/autocomplete/autocomplete_match.h"
 #include "chrome/browser/google/google_util.h"
-#include "chrome/browser/policy/profile_policy_connector.h"
-#include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/ssl/ssl_error_info.h"
@@ -35,6 +33,11 @@
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/x509_certificate.h"
 #include "ui/base/l10n/l10n_util.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/policy/policy_cert_service.h"
+#include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
+#endif
 
 using content::NavigationController;
 using content::NavigationEntry;
@@ -66,11 +69,14 @@ ToolbarModel::SecurityLevel ToolbarModelImpl::GetSecurityLevelForWebContents(
     case content::SECURITY_STYLE_AUTHENTICATION_BROKEN:
       return SECURITY_ERROR;
 
-    case content::SECURITY_STYLE_AUTHENTICATED:
-      if (policy::ProfilePolicyConnectorFactory::GetForProfile(
-          Profile::FromBrowserContext(web_contents->GetBrowserContext()))->
-          UsedPolicyCertificates())
+    case content::SECURITY_STYLE_AUTHENTICATED: {
+#if defined(OS_CHROMEOS)
+      policy::PolicyCertService* service =
+          policy::PolicyCertServiceFactory::GetForProfile(
+              Profile::FromBrowserContext(web_contents->GetBrowserContext()));
+      if (service && service->UsedPolicyCertificates())
         return SECURITY_POLICY_WARNING;
+#endif
       if (!!(ssl.content_status & SSLStatus::DISPLAYED_INSECURE_CONTENT))
         return SECURITY_WARNING;
       if (net::IsCertStatusError(ssl.cert_status)) {
@@ -81,7 +87,7 @@ ToolbarModel::SecurityLevel ToolbarModelImpl::GetSecurityLevelForWebContents(
           content::CertStore::GetInstance()->RetrieveCert(ssl.cert_id, NULL))
         return EV_SECURE;
       return SECURE;
-
+    }
     default:
       NOTREACHED();
       return NONE;
