@@ -213,9 +213,9 @@ typedef std::map<chromeos::DisplayPowerState, std::string>
     DisplayPowerStateToStringMap;
 
 const DisplayPowerStateToStringMap* GetDisplayPowerStateToStringMap() {
+  // Don't save or retore ALL_OFF state. crbug.com/318456.
   static const DisplayPowerStateToStringMap* map = ash::CreateToStringMap(
       chromeos::DISPLAY_POWER_ALL_ON, "all_on",
-      chromeos::DISPLAY_POWER_ALL_OFF, "all_off",
       chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON,
       "internal_off_external_on",
       chromeos::DISPLAY_POWER_INTERNAL_ON_EXTERNAL_OFF,
@@ -234,9 +234,10 @@ bool GetDisplayPowerStateFromString(const base::StringPiece& state,
 void StoreDisplayPowerState(DisplayPowerState power_state) {
   const DisplayPowerStateToStringMap* map = GetDisplayPowerStateToStringMap();
   DisplayPowerStateToStringMap::const_iterator iter = map->find(power_state);
-  std::string value = iter != map->end() ? iter->second : std::string();
-  PrefService* local_state = g_browser_process->local_state();
-  local_state->SetString(prefs::kDisplayPowerState, value);
+  if (iter != map->end()) {
+    PrefService* local_state = g_browser_process->local_state();
+    local_state->SetString(prefs::kDisplayPowerState, iter->second);
+  }
 }
 
 void StoreCurrentDisplayPowerState() {

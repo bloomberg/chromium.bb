@@ -134,7 +134,7 @@ class DisplayPreferencesTest : public ash::test::AshTestBase {
         GetRegisteredDisplayLayout(pair).ToString();
   }
 
-  const PrefService* local_state() const { return &local_state_; }
+  PrefService* local_state() { return &local_state_; }
 
  private:
   MockUserManager* mock_user_manager_;  // Not owned.
@@ -515,6 +515,29 @@ TEST_F(DisplayPreferencesTest, DisplayPowerStateAfterRestart) {
   EXPECT_EQ(
       chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON,
       ash::Shell::GetInstance()->output_configurator()->power_state());
+}
+
+TEST_F(DisplayPreferencesTest, DontSaveAndRestoreAllOff) {
+  ash::Shell* shell = ash::Shell::GetInstance();
+  StoreDisplayPowerStateForTest(
+      chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON);
+  LoadDisplayPreferences(false);
+  // DisplayPowerState should be ignored at boot.
+  EXPECT_EQ(chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON,
+            shell->output_configurator()->power_state());
+
+  StoreDisplayPowerStateForTest(
+      chromeos::DISPLAY_POWER_ALL_OFF);
+  EXPECT_EQ(chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON,
+            shell->output_configurator()->power_state());
+  EXPECT_EQ("internal_off_external_on",
+            local_state()->GetString(prefs::kDisplayPowerState));
+
+  // Don't try to load
+  local_state()->SetString(prefs::kDisplayPowerState, "all_off");
+  LoadDisplayPreferences(false);
+  EXPECT_EQ(chromeos::DISPLAY_POWER_INTERNAL_OFF_EXTERNAL_ON,
+            shell->output_configurator()->power_state());
 }
 
 }  // namespace chromeos

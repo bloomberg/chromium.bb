@@ -28,6 +28,17 @@ std::map<T, std::string>* CreateToStringMap(T k1, const std::string& v1,
 }
 
 template<typename T>
+std::map<T, std::string>* CreateToStringMap(T k1, const std::string& v1,
+                                            T k2, const std::string& v2,
+                                            T k3, const std::string& v3) {
+  std::map<T, std::string>* map = new std::map<T, std::string>();
+  (*map)[k1] = v1;
+  (*map)[k2] = v2;
+  (*map)[k3] = v3;
+  return map;
+}
+
+template<typename T>
 bool ReverseFind(const std::map<T, std::string>* map,
                  const base::StringPiece& value,
                  T* key) {
