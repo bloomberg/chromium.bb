@@ -89,7 +89,7 @@ Handle<Value> Converter<std::string>::ToV8(Isolate* isolate,
   return String::NewFromUtf8(isolate,
                              val.data(),
                              String::kNormalString,
-                             val.length());
+                             static_cast<uint32_t>(val.length()));
 }
 
 bool Converter<std::string>::FromV8(Handle<Value> val,
@@ -129,7 +129,7 @@ v8::Handle<v8::String> StringToSymbol(v8::Isolate* isolate,
   return String::NewFromUtf8(isolate,
                              val.data(),
                              String::kInternalizedString,
-                             val.length());
+                             static_cast<uint32_t>(val.length()));
 }
 
 

@@ -26,7 +26,8 @@ const char kFlags[] = "--use_strict --harmony";
 void Initialize() {
   v8::V8::SetArrayBufferAllocator(ArrayBufferAllocator::SharedInstance());
   v8::V8::InitializeICU();
-  v8::V8::SetFlagsFromString(kFlags, strlen(kFlags));
+  v8::V8::SetFlagsFromString(kFlags,
+      static_cast<uint32_t>(sizeof(kFlags) / sizeof(kFlags[0])) - 1);
   v8::V8::SetEntropySource(&GenerateEntropy);
   v8::V8::Initialize();
 
