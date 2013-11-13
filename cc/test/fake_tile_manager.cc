@@ -80,7 +80,7 @@ void FakeTileManager::AssignMemoryToTiles(
   tiles_for_raster.clear();
   all_tiles.Clear();
 
-  ManageTiles(state);
+  SetGlobalStateForTesting(state);
   GetTilesWithAssignedBins(&all_tiles);
   AssignGpuMemoryToTiles(&all_tiles, &tiles_for_raster);
 }

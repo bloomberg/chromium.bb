@@ -105,6 +105,18 @@ class CC_EXPORT TileManager : public RasterWorkerPoolClient,
     return raster_worker_pool_.get();
   }
 
+  void SetGlobalStateForTesting(
+      const GlobalStateThatImpactsTilePriority& state) {
+    if (state != global_state_) {
+      global_state_ = state;
+      prioritized_tiles_dirty_ = true;
+      resource_pool_->SetResourceUsageLimits(
+          global_state_.memory_limit_in_bytes,
+          global_state_.unused_memory_limit_in_bytes,
+          global_state_.num_resources_limit);
+    }
+  }
+
  protected:
   TileManager(TileManagerClient* client,
               ResourceProvider* resource_provider,
