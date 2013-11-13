@@ -14068,6 +14068,22 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Prerender.PeriodicCleanupDeleteContentsTime"
+    units="milliseconds">
+  <summary>
+    How long the cleanup portion of PrerenderManager::PeriodicCleanup takes, to
+    measure jank.
+  </summary>
+</histogram>
+
+<histogram name="Prerender.PeriodicCleanupResourceCheckTime"
+    units="milliseconds">
+  <summary>
+    How long the resource check portion of PrerenderManager::PeriodicCleanup
+    takes, to measure jank.
+  </summary>
+</histogram>
+
 <histogram name="Prerender.PrerenderCountOf3Max">
   <summary>
     After launching a prerender, how many simultanious prerenders are recorded

@@ -18,6 +18,7 @@
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "base/timer/elapsed_timer.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -1244,10 +1245,8 @@ void PrerenderManager::StopSchedulingPeriodicCleanups() {
 
 void PrerenderManager::PeriodicCleanup() {
   DCHECK(CalledOnValidThread());
-  DeleteOldWebContents();
-  DeleteOldEntries();
-  if (active_prerenders_.empty())
-    StopSchedulingPeriodicCleanups();
+
+  base::ElapsedTimer resource_timer;
 
   // Grab a copy of the current PrerenderContents pointers, so that we
   // will not interfere with potential deletions of the list.
@@ -1262,7 +1261,23 @@ void PrerenderManager::PeriodicCleanup() {
                 std::mem_fun(
                     &PrerenderContents::DestroyWhenUsingTooManyResources));
 
+  // Measure how long the resource checks took. http://crbug.com/305419.
+  UMA_HISTOGRAM_TIMES("Prerender.PeriodicCleanupResourceCheckTime",
+                      resource_timer.Elapsed());
+
+  base::ElapsedTimer cleanup_timer;
+
+  // Perform deferred cleanup work.
+  DeleteOldWebContents();
+  DeleteOldEntries();
+  if (active_prerenders_.empty())
+    StopSchedulingPeriodicCleanups();
+
   to_delete_prerenders_.clear();
+
+  // Measure how long a the various cleanup tasks took. http://crbug.com/305419.
+  UMA_HISTOGRAM_TIMES("Prerender.PeriodicCleanupDeleteContentsTime",
+                      cleanup_timer.Elapsed());
 }
 
 void PrerenderManager::PostCleanupTask() {
