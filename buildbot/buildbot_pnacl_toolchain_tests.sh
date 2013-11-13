@@ -255,23 +255,24 @@ archived-frontend-test() {
 
   echo "@@@BUILD_STEP archived_frontend [${arch}]\
         rev ${ARCHIVED_TOOLCHAIN_REV} RUN@@@"
+  local archived_flags="${flags} built_elsewhere=1 toolchain_feature_version=0"
   # For QEMU limit parallelism to avoid flake.
   if [[ ${arch} = arm ]] ; then
     ${SCONS_COMMON_SLOW} ${SCONS_PICK_TC} \
-      ${flags} ${targets} built_elsewhere=1 || handle-error
+      ${archived_flags} ${targets} || handle-error
     # Also test the fast-translation option
     echo "@@@BUILD_STEP archived_frontend [${arch} translate-fast]\
         rev ${ARCHIVED_TOOLCHAIN_REV} RUN@@@"
-    ${SCONS_COMMON_SLOW} ${SCONS_PICK_TC} ${flags} translate_fast=1 \
-      built_elsewhere=1 ${targets} || handle-error
+    ${SCONS_COMMON_SLOW} ${SCONS_PICK_TC} ${archived_flags} translate_fast=1 \
+      ${targets} || handle-error
   else
     ${SCONS_COMMON} ${SCONS_PICK_TC} \
-      ${flags} ${targets} built_elsewhere=1 || handle-error
+      ${archived_flags} ${targets} || handle-error
     # Also test the fast-translation option
     echo "@@@BUILD_STEP archived_frontend [${arch} translate-fast]\
         rev ${ARCHIVED_TOOLCHAIN_REV} RUN@@@"
-    ${SCONS_COMMON} ${SCONS_PICK_TC} ${flags} translate_fast=1 \
-      built_elsewhere=1 ${targets} || handle-error
+    ${SCONS_COMMON} ${SCONS_PICK_TC} ${archived_flags} translate_fast=1 \
+      ${targets} || handle-error
   fi
 }
 

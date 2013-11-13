@@ -172,6 +172,10 @@ ACCEPTABLE_ARGUMENTS = set([
     'bindir',
     # Where a Breakpad build output directory is for optional Breakpad testing.
     'breakpad_tools_dir',
+    # Allows overriding the version number in the toolchain's
+    # FEATURE_VERSION file.  This is used for PNaCl ABI compatibility
+    # testing.
+    'toolchain_feature_version',
   ])
 
 
