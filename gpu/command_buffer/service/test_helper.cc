@@ -235,8 +235,13 @@ void TestHelper::SetupContextGroupInitExpectations(
   EXPECT_CALL(*gl, GetIntegerv(GL_MAX_RENDERBUFFER_SIZE, _))
       .WillOnce(SetArgumentPointee<1>(kMaxRenderbufferSize))
       .RetiresOnSaturation();
-  if (strstr(extensions, "GL_EXT_framebuffer_multisample")) {
+  if (strstr(extensions, "GL_EXT_framebuffer_multisample") ||
+      strstr(extensions, "GL_EXT_multisampled_render_to_texture")) {
     EXPECT_CALL(*gl, GetIntegerv(GL_MAX_SAMPLES, _))
+        .WillOnce(SetArgumentPointee<1>(kMaxSamples))
+        .RetiresOnSaturation();
+  } else if (strstr(extensions, "GL_IMG_multisampled_render_to_texture")) {
+    EXPECT_CALL(*gl, GetIntegerv(GL_MAX_SAMPLES_IMG, _))
         .WillOnce(SetArgumentPointee<1>(kMaxSamples))
         .RetiresOnSaturation();
   }

@@ -1583,7 +1583,8 @@ TEST_F(GLES2DecoderTest2, ViewportInvalidArgs3_0) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
-// TODO(gman): BlitFramebufferEXT
+// TODO(gman): BlitFramebufferCHROMIUM
+// TODO(gman): RenderbufferStorageMultisampleCHROMIUM
 // TODO(gman): RenderbufferStorageMultisampleEXT
 // TODO(gman): FramebufferTexture2DMultisampleEXT
 // TODO(gman): TexStorage2DEXT
@@ -1616,8 +1617,6 @@ TEST_F(GLES2DecoderTest2, PopGroupMarkerEXTValidArgs) {
 // TODO(gman): SwapBuffers
 // TODO(gman): GetMaxValueInBufferCHROMIUM
 // TODO(gman): GenSharedIdsCHROMIUM
-
-// TODO(gman): DeleteSharedIdsCHROMIUM
 
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_2_AUTOGEN_H_
 

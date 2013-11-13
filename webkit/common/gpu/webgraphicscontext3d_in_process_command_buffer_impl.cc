@@ -438,7 +438,7 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::blitFramebufferCHROMIUM(
     WGC3Dint dstX0, WGC3Dint dstY0, WGC3Dint dstX1, WGC3Dint dstY1,
     WGC3Dbitfield mask, WGC3Denum filter) {
   ClearContext();
-  gl_->BlitFramebufferEXT(
+  gl_->BlitFramebufferCHROMIUM(
       srcX0, srcY0, srcX1, srcY1,
       dstX0, dstY0, dstX1, dstY1,
       mask, filter);
@@ -449,7 +449,7 @@ void WebGraphicsContext3DInProcessCommandBufferImpl::
         WGC3Denum target, WGC3Dsizei samples, WGC3Denum internalformat,
         WGC3Dsizei width, WGC3Dsizei height) {
   ClearContext();
-  gl_->RenderbufferStorageMultisampleEXT(
+  gl_->RenderbufferStorageMultisampleCHROMIUM(
       target, samples, internalformat, width, height);
 }
 

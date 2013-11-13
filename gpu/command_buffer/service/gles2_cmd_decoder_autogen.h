@@ -2628,8 +2628,9 @@ error::Error GLES2DecoderImpl::HandleViewport(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderImpl::HandleBlitFramebufferEXT(
-    uint32 immediate_data_size, const gles2::cmds::BlitFramebufferEXT& c) {
+error::Error GLES2DecoderImpl::HandleBlitFramebufferCHROMIUM(
+    uint32 immediate_data_size,
+    const gles2::cmds::BlitFramebufferCHROMIUM& c) {
   if (ShouldDeferDraws() || ShouldDeferReads())
     return error::kDeferCommandUntilLater;
   GLint srcX0 = static_cast<GLint>(c.srcX0);
@@ -2643,11 +2644,48 @@ error::Error GLES2DecoderImpl::HandleBlitFramebufferEXT(
   GLbitfield mask = static_cast<GLbitfield>(c.mask);
   GLenum filter = static_cast<GLenum>(c.filter);
   if (!validators_->blit_filter.IsValid(filter)) {
-    LOCAL_SET_GL_ERROR_INVALID_ENUM("glBlitFramebufferEXT", filter, "filter");
+    LOCAL_SET_GL_ERROR_INVALID_ENUM("glBlitFramebufferCHROMIUM", filter,
+    "filter");
     return error::kNoError;
   }
-  DoBlitFramebufferEXT(
+  DoBlitFramebufferCHROMIUM(
       srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask, filter);
+  return error::kNoError;
+}
+
+error::Error GLES2DecoderImpl::HandleRenderbufferStorageMultisampleCHROMIUM(
+    uint32 immediate_data_size,
+    const gles2::cmds::RenderbufferStorageMultisampleCHROMIUM& c) {
+  GLenum target = static_cast<GLenum>(c.target);
+  GLsizei samples = static_cast<GLsizei>(c.samples);
+  GLenum internalformat = static_cast<GLenum>(c.internalformat);
+  GLsizei width = static_cast<GLsizei>(c.width);
+  GLsizei height = static_cast<GLsizei>(c.height);
+  if (!validators_->render_buffer_target.IsValid(target)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM("glRenderbufferStorageMultisampleCHROMIUM", target, "target");  // NOLINT
+    return error::kNoError;
+  }
+  if (samples < 0) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_VALUE, "glRenderbufferStorageMultisampleCHROMIUM", "samples < 0");  // NOLINT
+    return error::kNoError;
+  }
+  if (!validators_->render_buffer_format.IsValid(internalformat)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM("glRenderbufferStorageMultisampleCHROMIUM", internalformat, "internalformat");  // NOLINT
+    return error::kNoError;
+  }
+  if (width < 0) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_VALUE, "glRenderbufferStorageMultisampleCHROMIUM", "width < 0");  // NOLINT
+    return error::kNoError;
+  }
+  if (height < 0) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_VALUE, "glRenderbufferStorageMultisampleCHROMIUM", "height < 0");  // NOLINT
+    return error::kNoError;
+  }
+  DoRenderbufferStorageMultisampleCHROMIUM(
+      target, samples, internalformat, width, height);
   return error::kNoError;
 }
 
@@ -2682,7 +2720,7 @@ error::Error GLES2DecoderImpl::HandleRenderbufferStorageMultisampleEXT(
         GL_INVALID_VALUE, "glRenderbufferStorageMultisampleEXT", "height < 0");
     return error::kNoError;
   }
-  DoRenderbufferStorageMultisample(
+  DoRenderbufferStorageMultisampleEXT(
       target, samples, internalformat, width, height);
   return error::kNoError;
 }

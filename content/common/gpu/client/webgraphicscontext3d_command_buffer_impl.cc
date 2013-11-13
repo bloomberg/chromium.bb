@@ -605,14 +605,14 @@ void WebGraphicsContext3DCommandBufferImpl::blitFramebufferCHROMIUM(
     WGC3Dint srcX0, WGC3Dint srcY0, WGC3Dint srcX1, WGC3Dint srcY1,
     WGC3Dint dstX0, WGC3Dint dstY0, WGC3Dint dstX1, WGC3Dint dstY1,
     WGC3Dbitfield mask, WGC3Denum filter) {
-  gl_->BlitFramebufferEXT(
+  gl_->BlitFramebufferCHROMIUM(
       srcX0, srcY0, srcX1, srcY1,
       dstX0, dstY0, dstX1, dstY1,
       mask, filter);
 }
 
 DELEGATE_TO_GL_5(renderbufferStorageMultisampleCHROMIUM,
-                 RenderbufferStorageMultisampleEXT, WGC3Denum, WGC3Dsizei,
+                 RenderbufferStorageMultisampleCHROMIUM, WGC3Denum, WGC3Dsizei,
                  WGC3Denum, WGC3Dsizei, WGC3Dsizei)
 
 DELEGATE_TO_GL_1R(createStreamTextureCHROMIUM, CreateStreamTextureCHROMIUM,

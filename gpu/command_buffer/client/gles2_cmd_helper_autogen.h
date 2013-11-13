@@ -1468,15 +1468,25 @@
     }
   }
 
-  void BlitFramebufferEXT(
+  void BlitFramebufferCHROMIUM(
       GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0,
       GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter) {
-    gles2::cmds::BlitFramebufferEXT* c =
-        GetCmdSpace<gles2::cmds::BlitFramebufferEXT>();
+    gles2::cmds::BlitFramebufferCHROMIUM* c =
+        GetCmdSpace<gles2::cmds::BlitFramebufferCHROMIUM>();
     if (c) {
       c->Init(
           srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask,
           filter);
+    }
+  }
+
+  void RenderbufferStorageMultisampleCHROMIUM(
+      GLenum target, GLsizei samples, GLenum internalformat, GLsizei width,
+      GLsizei height) {
+    gles2::cmds::RenderbufferStorageMultisampleCHROMIUM* c =
+        GetCmdSpace<gles2::cmds::RenderbufferStorageMultisampleCHROMIUM>();
+    if (c) {
+      c->Init(target, samples, internalformat, width, height);
     }
   }
 

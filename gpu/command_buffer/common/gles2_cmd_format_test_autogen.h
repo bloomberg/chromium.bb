@@ -3234,8 +3234,9 @@ TEST_F(GLES2FormatTest, Viewport) {
       next_cmd, sizeof(cmd));
 }
 
-TEST_F(GLES2FormatTest, BlitFramebufferEXT) {
-  cmds::BlitFramebufferEXT& cmd = *GetBufferAs<cmds::BlitFramebufferEXT>();
+TEST_F(GLES2FormatTest, BlitFramebufferCHROMIUM) {
+  cmds::BlitFramebufferCHROMIUM& cmd =
+      *GetBufferAs<cmds::BlitFramebufferCHROMIUM>();
   void* next_cmd = cmd.Set(
       &cmd,
       static_cast<GLint>(11),
@@ -3248,7 +3249,7 @@ TEST_F(GLES2FormatTest, BlitFramebufferEXT) {
       static_cast<GLint>(18),
       static_cast<GLbitfield>(19),
       static_cast<GLenum>(20));
-  EXPECT_EQ(static_cast<uint32>(cmds::BlitFramebufferEXT::kCmdId),
+  EXPECT_EQ(static_cast<uint32>(cmds::BlitFramebufferCHROMIUM::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<GLint>(11), cmd.srcX0);
@@ -3261,6 +3262,30 @@ TEST_F(GLES2FormatTest, BlitFramebufferEXT) {
   EXPECT_EQ(static_cast<GLint>(18), cmd.dstY1);
   EXPECT_EQ(static_cast<GLbitfield>(19), cmd.mask);
   EXPECT_EQ(static_cast<GLenum>(20), cmd.filter);
+  CheckBytesWrittenMatchesExpectedSize(
+      next_cmd, sizeof(cmd));
+}
+
+TEST_F(GLES2FormatTest, RenderbufferStorageMultisampleCHROMIUM) {
+  cmds::RenderbufferStorageMultisampleCHROMIUM& cmd =
+      *GetBufferAs<cmds::RenderbufferStorageMultisampleCHROMIUM>();
+  void* next_cmd = cmd.Set(
+      &cmd,
+      static_cast<GLenum>(11),
+      static_cast<GLsizei>(12),
+      static_cast<GLenum>(13),
+      static_cast<GLsizei>(14),
+      static_cast<GLsizei>(15));
+  EXPECT_EQ(
+      static_cast<uint32>(
+          cmds::RenderbufferStorageMultisampleCHROMIUM::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<GLenum>(11), cmd.target);
+  EXPECT_EQ(static_cast<GLsizei>(12), cmd.samples);
+  EXPECT_EQ(static_cast<GLenum>(13), cmd.internalformat);
+  EXPECT_EQ(static_cast<GLsizei>(14), cmd.width);
+  EXPECT_EQ(static_cast<GLsizei>(15), cmd.height);
   CheckBytesWrittenMatchesExpectedSize(
       next_cmd, sizeof(cmd));
 }

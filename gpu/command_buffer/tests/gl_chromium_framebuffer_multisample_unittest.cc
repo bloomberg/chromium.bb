@@ -82,7 +82,7 @@ TEST_F(GLChromiumFramebufferMultisampleTest, DrawAndResolve) {
   GLuint sample_fbo, sample_rb;
   glGenRenderbuffers(1, &sample_rb);
   glBindRenderbuffer(GL_RENDERBUFFER, sample_rb);
-  glRenderbufferStorageMultisampleEXT(
+  glRenderbufferStorageMultisampleCHROMIUM(
       GL_RENDERBUFFER, num_samples, GL_RGBA8_OES, width, height);
   GLint param = 0;
   glGetRenderbufferParameteriv(
@@ -137,16 +137,16 @@ TEST_F(GLChromiumFramebufferMultisampleTest, DrawAndResolve) {
   glBindFramebuffer(GL_DRAW_FRAMEBUFFER, resolve_fbo);
   glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
   glClear(GL_COLOR_BUFFER_BIT);
-  glBlitFramebufferEXT(0,
-                       0,
-                       width,
-                       height,
-                       0,
-                       0,
-                       width,
-                       height,
-                       GL_COLOR_BUFFER_BIT,
-                       GL_NEAREST);
+  glBlitFramebufferCHROMIUM(0,
+                            0,
+                            width,
+                            height,
+                            0,
+                            0,
+                            width,
+                            height,
+                            GL_COLOR_BUFFER_BIT,
+                            GL_NEAREST);
 
   // Verify.
   const uint8 green[] = {0, 255, 0, 255};

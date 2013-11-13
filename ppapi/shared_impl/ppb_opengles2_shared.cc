@@ -1207,7 +1207,7 @@ void BlitFramebufferEXT(
   Enter3D enter(context_id, true);
   if (enter.succeeded()) {
     ToGles2Impl(
-        &enter)->BlitFramebufferEXT(
+        &enter)->BlitFramebufferCHROMIUM(
             srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, mask,
             filter);
   }
@@ -1219,7 +1219,7 @@ void RenderbufferStorageMultisampleEXT(
   Enter3D enter(context_id, true);
   if (enter.succeeded()) {
     ToGles2Impl(
-        &enter)->RenderbufferStorageMultisampleEXT(
+        &enter)->RenderbufferStorageMultisampleCHROMIUM(
             target, samples, internalformat, width, height);
   }
 }

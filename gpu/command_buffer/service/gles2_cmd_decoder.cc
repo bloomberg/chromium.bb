@@ -1143,8 +1143,8 @@ class GLES2DecoderImpl : public GLES2Decoder,
   void DoBindVertexArrayOES(GLuint array);
   void EmulateVertexArrayState();
 
-  // Wrapper for glBlitFramebufferEXT.
-  void DoBlitFramebufferEXT(
+  // Wrapper for glBlitFramebufferCHROMIUM.
+  void DoBlitFramebufferCHROMIUM(
       GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1,
       GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1,
       GLbitfield mask, GLenum filter);
@@ -1286,10 +1286,22 @@ class GLES2DecoderImpl : public GLES2Decoder,
   void DoRenderbufferStorage(
       GLenum target, GLenum internalformat, GLsizei width, GLsizei height);
 
-  // Wrapper for glRenderbufferStorageMultisampleEXT.
-  void DoRenderbufferStorageMultisample(
+  // Handler for glRenderbufferStorageMultisampleCHROMIUM.
+  void DoRenderbufferStorageMultisampleCHROMIUM(
       GLenum target, GLsizei samples, GLenum internalformat,
       GLsizei width, GLsizei height);
+
+  // Handler for glRenderbufferStorageMultisampleEXT
+  // (multisampled_render_to_texture).
+  void DoRenderbufferStorageMultisampleEXT(
+      GLenum target, GLsizei samples, GLenum internalformat,
+      GLsizei width, GLsizei height);
+
+  // Common validation for multisample extensions.
+  bool ValidateRenderbufferStorageMultisample(GLsizei samples,
+                                              GLenum internalformat,
+                                              GLsizei width,
+                                              GLsizei height);
 
   // Verifies that the currently bound multisample renderbuffer is valid
   // Very slow! Only done on platforms with driver bugs that return invalid
@@ -4975,7 +4987,7 @@ void GLES2DecoderImpl::DoGetRenderbufferParameteriv(
   }
 }
 
-void GLES2DecoderImpl::DoBlitFramebufferEXT(
+void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
     GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1,
     GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1,
     GLbitfield mask, GLenum filter) {
@@ -4983,11 +4995,11 @@ void GLES2DecoderImpl::DoBlitFramebufferEXT(
   if (!features().chromium_framebuffer_multisample) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_OPERATION,
-        "glBlitFramebufferEXT", "function not available");
+        "glBlitFramebufferCHROMIUM", "function not available");
     return;
   }
 
-  if (!CheckBoundFramebuffersValid("glBlitFramebufferEXT")) {
+  if (!CheckBoundFramebuffersValid("glBlitFramebufferCHROMIUM")) {
     return;
   }
 
@@ -5002,31 +5014,16 @@ void GLES2DecoderImpl::DoBlitFramebufferEXT(
   EnableDisable(GL_SCISSOR_TEST, state_.enable_flags.scissor_test);
 }
 
-void GLES2DecoderImpl::DoRenderbufferStorageMultisample(
-    GLenum target, GLsizei samples, GLenum internalformat,
-    GLsizei width, GLsizei height) {
-  if (!features().chromium_framebuffer_multisample &&
-      !features().multisampled_render_to_texture) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION,
-        "glRenderbufferStorageMultisample", "function not available");
-    return;
-  }
-
-  Renderbuffer* renderbuffer =
-      GetRenderbufferInfoForTarget(GL_RENDERBUFFER);
-  if (!renderbuffer) {
-    LOCAL_SET_GL_ERROR(
-        GL_INVALID_OPERATION,
-        "glRenderbufferStorageMultisample", "no renderbuffer bound");
-    return;
-  }
-
+bool GLES2DecoderImpl::ValidateRenderbufferStorageMultisample(
+    GLsizei samples,
+    GLenum internalformat,
+    GLsizei width,
+    GLsizei height) {
   if (samples > renderbuffer_manager()->max_samples()) {
     LOCAL_SET_GL_ERROR(
         GL_INVALID_VALUE,
         "glRenderbufferStorageMultisample", "samples too large");
-    return;
+    return false;
   }
 
   if (width > renderbuffer_manager()->max_renderbuffer_size() ||
@@ -5034,7 +5031,7 @@ void GLES2DecoderImpl::DoRenderbufferStorageMultisample(
     LOCAL_SET_GL_ERROR(
         GL_INVALID_VALUE,
         "glRenderbufferStorageMultisample", "dimensions too large");
-    return;
+    return false;
   }
 
   uint32 estimated_size = 0;
@@ -5043,31 +5040,56 @@ void GLES2DecoderImpl::DoRenderbufferStorageMultisample(
     LOCAL_SET_GL_ERROR(
         GL_OUT_OF_MEMORY,
         "glRenderbufferStorageMultsample", "dimensions too large");
-    return;
+    return false;
   }
 
   if (!EnsureGPUMemoryAvailable(estimated_size)) {
     LOCAL_SET_GL_ERROR(
         GL_OUT_OF_MEMORY,
         "glRenderbufferStorageMultsample", "out of memory");
+    return false;
+  }
+
+  return true;
+}
+
+void GLES2DecoderImpl::DoRenderbufferStorageMultisampleCHROMIUM(
+    GLenum target, GLsizei samples, GLenum internalformat,
+    GLsizei width, GLsizei height) {
+  if (!features().chromium_framebuffer_multisample) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
+                       "glRenderbufferStorageMultisampleCHROMIUM",
+                       "function not available");
+    return;
+  }
+
+  Renderbuffer* renderbuffer = GetRenderbufferInfoForTarget(GL_RENDERBUFFER);
+  if (!renderbuffer) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
+                       "glRenderbufferStorageMultisampleCHROMIUM",
+                       "no renderbuffer bound");
+    return;
+  }
+
+  if (!ValidateRenderbufferStorageMultisample(
+      samples, internalformat, width, height)) {
     return;
   }
 
   GLenum impl_format =
       renderbuffer_manager()->InternalRenderbufferFormatToImplFormat(
           internalformat);
-  LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glRenderbufferStorageMultisample");
+  LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER(
+      "glRenderbufferStorageMultisampleCHROMIUM");
   if (IsAngle()) {
     glRenderbufferStorageMultisampleANGLE(
-        target, samples, impl_format, width, height);
-  } else if (features().use_img_for_multisampled_render_to_texture) {
-    glRenderbufferStorageMultisampleIMG(
         target, samples, impl_format, width, height);
   } else {
     glRenderbufferStorageMultisampleEXT(
         target, samples, impl_format, width, height);
   }
-  GLenum error = LOCAL_PEEK_GL_ERROR("glRenderbufferStorageMultisample");
+  GLenum error =
+      LOCAL_PEEK_GL_ERROR("glRenderbufferStorageMultisampleCHROMIUM");
   if (error == GL_NO_ERROR) {
 
     if (workarounds().validate_multisample_buffer_allocation) {
@@ -5075,11 +5097,56 @@ void GLES2DecoderImpl::DoRenderbufferStorageMultisample(
           renderbuffer->service_id(), impl_format)) {
         LOCAL_SET_GL_ERROR(
             GL_OUT_OF_MEMORY,
-            "glRenderbufferStorageMultisample", "out of memory");
+            "glRenderbufferStorageMultisampleCHROMIUM", "out of memory");
         return;
       }
     }
 
+    // TODO(gman): If renderbuffers tracked which framebuffers they were
+    // attached to we could just mark those framebuffers as not complete.
+    framebuffer_manager()->IncFramebufferStateChangeCount();
+    renderbuffer_manager()->SetInfo(
+        renderbuffer, samples, internalformat, width, height);
+  }
+}
+
+// This is the handler for multisampled_render_to_texture extensions.
+void GLES2DecoderImpl::DoRenderbufferStorageMultisampleEXT(
+    GLenum target, GLsizei samples, GLenum internalformat,
+    GLsizei width, GLsizei height) {
+  if (!features().multisampled_render_to_texture) {
+    LOCAL_SET_GL_ERROR(
+        GL_INVALID_OPERATION,
+        "glRenderbufferStorageMultisampleEXT", "function not available");
+    return;
+  }
+
+  Renderbuffer* renderbuffer = GetRenderbufferInfoForTarget(GL_RENDERBUFFER);
+  if (!renderbuffer) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION,
+                       "glRenderbufferStorageMultisampleEXT",
+                       "no renderbuffer bound");
+    return;
+  }
+
+  if (!ValidateRenderbufferStorageMultisample(
+      samples, internalformat, width, height)) {
+    return;
+  }
+
+  GLenum impl_format =
+      renderbuffer_manager()->InternalRenderbufferFormatToImplFormat(
+          internalformat);
+  LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER("glRenderbufferStorageMultisampleEXT");
+  if (features().use_img_for_multisampled_render_to_texture) {
+    glRenderbufferStorageMultisampleIMG(
+        target, samples, impl_format, width, height);
+  } else {
+    glRenderbufferStorageMultisampleEXT(
+        target, samples, impl_format, width, height);
+  }
+  GLenum error = LOCAL_PEEK_GL_ERROR("glRenderbufferStorageMultisampleEXT");
+  if (error == GL_NO_ERROR) {
     // TODO(gman): If renderbuffers tracked which framebuffers they were
     // attached to we could just mark those framebuffers as not complete.
     framebuffer_manager()->IncFramebufferStateChangeCount();

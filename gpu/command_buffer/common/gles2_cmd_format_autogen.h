@@ -7861,9 +7861,9 @@ COMPILE_ASSERT(offsetof(Viewport, width) == 12,
 COMPILE_ASSERT(offsetof(Viewport, height) == 16,
                OffsetOf_Viewport_height_not_16);
 
-struct BlitFramebufferEXT {
-  typedef BlitFramebufferEXT ValueType;
-  static const CommandId kCmdId = kBlitFramebufferEXT;
+struct BlitFramebufferCHROMIUM {
+  typedef BlitFramebufferCHROMIUM ValueType;
+  static const CommandId kCmdId = kBlitFramebufferCHROMIUM;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
   static uint32 ComputeSize() {
@@ -7915,31 +7915,89 @@ struct BlitFramebufferEXT {
   uint32 filter;
 };
 
-COMPILE_ASSERT(sizeof(BlitFramebufferEXT) == 44,
-               Sizeof_BlitFramebufferEXT_is_not_44);
-COMPILE_ASSERT(offsetof(BlitFramebufferEXT, header) == 0,
-               OffsetOf_BlitFramebufferEXT_header_not_0);
-COMPILE_ASSERT(offsetof(BlitFramebufferEXT, srcX0) == 4,
-               OffsetOf_BlitFramebufferEXT_srcX0_not_4);
-COMPILE_ASSERT(offsetof(BlitFramebufferEXT, srcY0) == 8,
-               OffsetOf_BlitFramebufferEXT_srcY0_not_8);
-COMPILE_ASSERT(offsetof(BlitFramebufferEXT, srcX1) == 12,
-               OffsetOf_BlitFramebufferEXT_srcX1_not_12);
-COMPILE_ASSERT(offsetof(BlitFramebufferEXT, srcY1) == 16,
-               OffsetOf_BlitFramebufferEXT_srcY1_not_16);
-COMPILE_ASSERT(offsetof(BlitFramebufferEXT, dstX0) == 20,
-               OffsetOf_BlitFramebufferEXT_dstX0_not_20);
-COMPILE_ASSERT(offsetof(BlitFramebufferEXT, dstY0) == 24,
-               OffsetOf_BlitFramebufferEXT_dstY0_not_24);
-COMPILE_ASSERT(offsetof(BlitFramebufferEXT, dstX1) == 28,
-               OffsetOf_BlitFramebufferEXT_dstX1_not_28);
-COMPILE_ASSERT(offsetof(BlitFramebufferEXT, dstY1) == 32,
-               OffsetOf_BlitFramebufferEXT_dstY1_not_32);
-COMPILE_ASSERT(offsetof(BlitFramebufferEXT, mask) == 36,
-               OffsetOf_BlitFramebufferEXT_mask_not_36);
-COMPILE_ASSERT(offsetof(BlitFramebufferEXT, filter) == 40,
-               OffsetOf_BlitFramebufferEXT_filter_not_40);
+COMPILE_ASSERT(sizeof(BlitFramebufferCHROMIUM) == 44,
+               Sizeof_BlitFramebufferCHROMIUM_is_not_44);
+COMPILE_ASSERT(offsetof(BlitFramebufferCHROMIUM, header) == 0,
+               OffsetOf_BlitFramebufferCHROMIUM_header_not_0);
+COMPILE_ASSERT(offsetof(BlitFramebufferCHROMIUM, srcX0) == 4,
+               OffsetOf_BlitFramebufferCHROMIUM_srcX0_not_4);
+COMPILE_ASSERT(offsetof(BlitFramebufferCHROMIUM, srcY0) == 8,
+               OffsetOf_BlitFramebufferCHROMIUM_srcY0_not_8);
+COMPILE_ASSERT(offsetof(BlitFramebufferCHROMIUM, srcX1) == 12,
+               OffsetOf_BlitFramebufferCHROMIUM_srcX1_not_12);
+COMPILE_ASSERT(offsetof(BlitFramebufferCHROMIUM, srcY1) == 16,
+               OffsetOf_BlitFramebufferCHROMIUM_srcY1_not_16);
+COMPILE_ASSERT(offsetof(BlitFramebufferCHROMIUM, dstX0) == 20,
+               OffsetOf_BlitFramebufferCHROMIUM_dstX0_not_20);
+COMPILE_ASSERT(offsetof(BlitFramebufferCHROMIUM, dstY0) == 24,
+               OffsetOf_BlitFramebufferCHROMIUM_dstY0_not_24);
+COMPILE_ASSERT(offsetof(BlitFramebufferCHROMIUM, dstX1) == 28,
+               OffsetOf_BlitFramebufferCHROMIUM_dstX1_not_28);
+COMPILE_ASSERT(offsetof(BlitFramebufferCHROMIUM, dstY1) == 32,
+               OffsetOf_BlitFramebufferCHROMIUM_dstY1_not_32);
+COMPILE_ASSERT(offsetof(BlitFramebufferCHROMIUM, mask) == 36,
+               OffsetOf_BlitFramebufferCHROMIUM_mask_not_36);
+COMPILE_ASSERT(offsetof(BlitFramebufferCHROMIUM, filter) == 40,
+               OffsetOf_BlitFramebufferCHROMIUM_filter_not_40);
 
+// GL_CHROMIUM_framebuffer_multisample
+struct RenderbufferStorageMultisampleCHROMIUM {
+  typedef RenderbufferStorageMultisampleCHROMIUM ValueType;
+  static const CommandId kCmdId = kRenderbufferStorageMultisampleCHROMIUM;
+  static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  static uint32 ComputeSize() {
+    return static_cast<uint32>(sizeof(ValueType));  // NOLINT
+  }
+
+  void SetHeader() {
+    header.SetCmd<ValueType>();
+  }
+
+  void Init(
+      GLenum _target, GLsizei _samples, GLenum _internalformat, GLsizei _width,
+      GLsizei _height) {
+    SetHeader();
+    target = _target;
+    samples = _samples;
+    internalformat = _internalformat;
+    width = _width;
+    height = _height;
+  }
+
+  void* Set(
+      void* cmd, GLenum _target, GLsizei _samples, GLenum _internalformat,
+      GLsizei _width, GLsizei _height) {
+    static_cast<ValueType*>(
+        cmd)->Init(_target, _samples, _internalformat, _width, _height);
+    return NextCmdAddress<ValueType>(cmd);
+  }
+
+  gpu::CommandHeader header;
+  uint32 target;
+  int32 samples;
+  uint32 internalformat;
+  int32 width;
+  int32 height;
+};
+
+COMPILE_ASSERT(sizeof(RenderbufferStorageMultisampleCHROMIUM) == 24,
+               Sizeof_RenderbufferStorageMultisampleCHROMIUM_is_not_24);
+COMPILE_ASSERT(offsetof(RenderbufferStorageMultisampleCHROMIUM, header) == 0,
+               OffsetOf_RenderbufferStorageMultisampleCHROMIUM_header_not_0);
+COMPILE_ASSERT(offsetof(RenderbufferStorageMultisampleCHROMIUM, target) == 4,
+               OffsetOf_RenderbufferStorageMultisampleCHROMIUM_target_not_4);
+COMPILE_ASSERT(offsetof(RenderbufferStorageMultisampleCHROMIUM, samples) == 8,
+               OffsetOf_RenderbufferStorageMultisampleCHROMIUM_samples_not_8);
+COMPILE_ASSERT(
+    offsetof(RenderbufferStorageMultisampleCHROMIUM, internalformat) == 12,
+               OffsetOf_RenderbufferStorageMultisampleCHROMIUM_internalformat_not_12);  // NOLINT
+COMPILE_ASSERT(offsetof(RenderbufferStorageMultisampleCHROMIUM, width) == 16,
+               OffsetOf_RenderbufferStorageMultisampleCHROMIUM_width_not_16);
+COMPILE_ASSERT(offsetof(RenderbufferStorageMultisampleCHROMIUM, height) == 20,
+               OffsetOf_RenderbufferStorageMultisampleCHROMIUM_height_not_20);
+
+// GL_EXT_multisampled_render_to_texture
 struct RenderbufferStorageMultisampleEXT {
   typedef RenderbufferStorageMultisampleEXT ValueType;
   static const CommandId kCmdId = kRenderbufferStorageMultisampleEXT;

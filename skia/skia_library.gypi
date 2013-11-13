@@ -43,6 +43,7 @@
       'SK_ENABLE_LEGACY_API_ALIASING=1',
       'SK_ATTR_DEPRECATED=SK_NOTHING_ARG1',
       'SK_SUPPORT_LEGACY_COLORTYPE=1',
+      'GR_GL_IGNORE_ES3_MSAA=0',
     ],
 
     'default_font_cache_limit%': '(20*1024*1024)',

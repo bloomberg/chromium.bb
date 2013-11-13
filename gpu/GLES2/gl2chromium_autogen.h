@@ -156,7 +156,9 @@
 #define glVertexAttrib4fv GLES2_GET_FUN(VertexAttrib4fv)
 #define glVertexAttribPointer GLES2_GET_FUN(VertexAttribPointer)
 #define glViewport GLES2_GET_FUN(Viewport)
-#define glBlitFramebufferEXT GLES2_GET_FUN(BlitFramebufferEXT)
+#define glBlitFramebufferCHROMIUM GLES2_GET_FUN(BlitFramebufferCHROMIUM)
+#define glRenderbufferStorageMultisampleCHROMIUM GLES2_GET_FUN( \
+    RenderbufferStorageMultisampleCHROMIUM)
 #define glRenderbufferStorageMultisampleEXT GLES2_GET_FUN( \
     RenderbufferStorageMultisampleEXT)
 #define glFramebufferTexture2DMultisampleEXT GLES2_GET_FUN( \

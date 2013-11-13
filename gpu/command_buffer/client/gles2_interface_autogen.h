@@ -217,9 +217,12 @@ virtual void VertexAttribPointer(
     GLuint indx, GLint size, GLenum type, GLboolean normalized, GLsizei stride,
     const void* ptr) = 0;
 virtual void Viewport(GLint x, GLint y, GLsizei width, GLsizei height) = 0;
-virtual void BlitFramebufferEXT(
+virtual void BlitFramebufferCHROMIUM(
     GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, GLint dstX0,
     GLint dstY0, GLint dstX1, GLint dstY1, GLbitfield mask, GLenum filter) = 0;
+virtual void RenderbufferStorageMultisampleCHROMIUM(
+    GLenum target, GLsizei samples, GLenum internalformat, GLsizei width,
+    GLsizei height) = 0;
 virtual void RenderbufferStorageMultisampleEXT(
     GLenum target, GLsizei samples, GLenum internalformat, GLsizei width,
     GLsizei height) = 0;

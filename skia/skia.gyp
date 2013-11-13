@@ -66,10 +66,12 @@
           'defines': [
             'SKIA_DLL',
             'SKIA_IMPLEMENTATION=1',
+            'GR_GL_IGNORE_ES3_MSAA=0',
           ],
           'direct_dependent_settings': {
             'defines': [
               'SKIA_DLL',
+              'GR_GL_IGNORE_ES3_MSAA=0',
             ],
           },
         },

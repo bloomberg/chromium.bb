@@ -1260,8 +1260,8 @@ _FUNCTION_INFO = {
     # TODO(gman): remove this once client side caching works.
     'client_test': False,
   },
-  'BlitFramebufferEXT': {
-    'decoder_func': 'DoBlitFramebufferEXT',
+  'BlitFramebufferCHROMIUM': {
+    'decoder_func': 'DoBlitFramebufferCHROMIUM',
     'unit_test': False,
     'extension': True,
     'pepper_interface': 'FramebufferBlit',
@@ -1901,13 +1901,24 @@ _FUNCTION_INFO = {
     'gl_test_func': 'glRenderbufferStorageEXT',
     'expectation': False,
   },
-  'RenderbufferStorageMultisampleEXT': {
-    'decoder_func': 'DoRenderbufferStorageMultisample',
-    'gl_test_func': 'glRenderbufferStorageMultisampleEXT',
+  'RenderbufferStorageMultisampleCHROMIUM': {
+    'cmd_comment':
+        '// GL_CHROMIUM_framebuffer_multisample\n',
+    'decoder_func': 'DoRenderbufferStorageMultisampleCHROMIUM',
+    'gl_test_func': 'glRenderbufferStorageMultisampleCHROMIUM',
     'expectation': False,
     'unit_test': False,
     'extension': True,
     'pepper_interface': 'FramebufferMultisample',
+  },
+  'RenderbufferStorageMultisampleEXT': {
+    'cmd_comment':
+        '// GL_EXT_multisampled_render_to_texture\n',
+    'decoder_func': 'DoRenderbufferStorageMultisampleEXT',
+    'gl_test_func': 'glRenderbufferStorageMultisampleEXT',
+    'expectation': False,
+    'unit_test': False,
+    'extension': True,
   },
   'ReadPixels': {
     'cmd_comment':
