@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_NOTIFICATIONS_LOGIN_STATE_NOTIFICATION_BLOCKER_CHROMEOS_H_
 
 #include "ash/shell_observer.h"
+#include "chrome/browser/chromeos/login/user_adding_screen.h"
 #include "chromeos/login/login_state.h"
 #include "ui/message_center/notification_blocker.h"
 
@@ -19,7 +20,8 @@
 class LoginStateNotificationBlockerChromeOS
     : public message_center::NotificationBlocker,
       public ash::ShellObserver,
-      public chromeos::LoginState::Observer {
+      public chromeos::LoginState::Observer,
+      public chromeos::UserAddingScreen::Observer {
  public:
   explicit LoginStateNotificationBlockerChromeOS(
       message_center::MessageCenter* message_center);
@@ -36,6 +38,10 @@ class LoginStateNotificationBlockerChromeOS
 
   // chromeos::LoginState::Observer overrides:
   virtual void LoggedInStateChanged() OVERRIDE;
+
+  // chromeos::UserAddingScreen::Observer overrides:
+  virtual void OnUserAddingStarted() OVERRIDE;
+  virtual void OnUserAddingFinished() OVERRIDE;
 
   bool locked_;
   bool observing_;

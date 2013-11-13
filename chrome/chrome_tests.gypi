@@ -1319,6 +1319,7 @@
         'browser/net/predictor_browsertest.cc',
         'browser/net/proxy_browsertest.cc',
         'browser/net/websocket_browsertest.cc',
+        'browser/notifications/login_state_notification_blocker_chromeos_browsertest.cc',
         'browser/notifications/message_center_notifications_browsertest.cc',
         'browser/notifications/sync_notifier/chrome_notifier_delegate_browsertest.cc',
         'browser/notifications/sync_notifier/notification_bitmap_fetcher_browsertest.cc',
@@ -1741,6 +1742,7 @@
           ],
           'sources!': [
             'browser/extensions/api/terminal/terminal_private_apitest.cc',
+            'browser/notifications/login_state_notification_blocker_chromeos_browsertest.cc',
             'browser/ui/ash/caps_lock_delegate_chromeos_browsertest.cc',
             'test/data/webui/certificate_viewer_dialog_test.js',
             'test/data/webui/certificate_viewer_ui_test-inl.h',
