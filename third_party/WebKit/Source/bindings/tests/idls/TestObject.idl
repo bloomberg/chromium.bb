@@ -196,17 +196,15 @@ callback TestCallbackFunction = void (TestEnumType formal1, TestObject formal2);
     void callbackFunctionArgument(TestCallbackFunction function);
 
     // Overloads
-    void    overloadedMethod(TestObject? objArg, [StrictTypeChecking] DOMString strArg);
-    void    overloadedMethod(TestObject? objArg, optional long longArg);
-    void    overloadedMethod([StrictTypeChecking] DOMString strArg);
     void    overloadedMethod(long longArg);
-    void    overloadedMethod(TestCallback callback);
-    void    overloadedMethod(DOMStringList? listArg);
-    void    overloadedMethod(DOMString[]? arrayArg);
+    void    overloadedMethod(TestCallback callbackArg);
     void    overloadedMethod(TestObject objArg);
     void    overloadedMethod(DOMString[] arrayArg);
-    void    overloadedMethod(sequence<unsigned long> arrayArg);
-    void    overloadedMethod(DOMString strArg);
+    void    overloadedMethod(sequence<unsigned long> sequenceArg);
+    void    overloadedMethodA(TestObject? objArg, optional long longArg);
+    void    overloadedMethodA(TestObject? objArg, DOMString strArg);
+    void    overloadedMethodB(DOMString strArg);
+    void    overloadedMethodB([StrictTypeChecking] DOMString strArg);
 
     // Class methods within JavaScript (like what's used for IDBKeyRange).
     static void classMethod();

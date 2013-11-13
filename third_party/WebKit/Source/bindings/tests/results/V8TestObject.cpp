@@ -3832,45 +3832,6 @@ static void callbackFunctionArgumentMethodCallback(const v8::FunctionCallbackInf
 
 static void overloadedMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (UNLIKELY(info.Length() < 2)) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethod", "TestObject", ExceptionMessages::notEnoughArguments(2, info.Length())), info.GetIsolate());
-        return;
-    }
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[1]);
-    imp->overloadedMethod(objArg, strArg);
-}
-
-static void overloadedMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethod", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
-        return;
-    }
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
-    if (UNLIKELY(info.Length() <= 1)) {
-        imp->overloadedMethod(objArg);
-        return;
-    }
-    V8TRYCATCH_VOID(int, longArg, toInt32(info[1]));
-    imp->overloadedMethod(objArg, longArg);
-}
-
-static void overloadedMethod3Method(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethod", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
-        return;
-    }
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[0]);
-    imp->overloadedMethod(strArg);
-}
-
-static void overloadedMethod4Method(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
     if (UNLIKELY(info.Length() < 1)) {
         throwTypeError(ExceptionMessages::failedToExecute("overloadedMethod", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
@@ -3880,7 +3841,7 @@ static void overloadedMethod4Method(const v8::FunctionCallbackInfo<v8::Value>& i
     imp->overloadedMethod(longArg);
 }
 
-static void overloadedMethod5Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void overloadedMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
         throwTypeError(ExceptionMessages::failedToExecute("overloadedMethod", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
@@ -3891,34 +3852,11 @@ static void overloadedMethod5Method(const v8::FunctionCallbackInfo<v8::Value>& i
         throwTypeError(ExceptionMessages::failedToExecute("overloadedMethod", "TestObject", "The callback provided as parameter 1 is not a function."), info.GetIsolate());
         return;
     }
-    RefPtr<TestCallback> callback = V8TestCallback::create(info[0], getExecutionContext());
-    imp->overloadedMethod(callback);
+    RefPtr<TestCallback> callbackArg = V8TestCallback::create(info[0], getExecutionContext());
+    imp->overloadedMethod(callbackArg);
 }
 
-static void overloadedMethod6Method(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethod", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
-        return;
-    }
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(DOMStringList*, listArg, V8DOMStringList::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8DOMStringList::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
-    imp->overloadedMethod(listArg);
-}
-
-static void overloadedMethod7Method(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethod", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
-        return;
-    }
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    bool arrayArgIsNull = info[0]->IsNull();
-    V8TRYCATCH_VOID(Vector<String>, arrayArg, toNativeArray<String>(info[0], 1, info.GetIsolate()));
-    imp->overloadedMethod(arrayArgIsNull ? 0 : &arrayArg);
-}
-
-static void overloadedMethod8Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void overloadedMethod3Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
         throwTypeError(ExceptionMessages::failedToExecute("overloadedMethod", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
@@ -3929,7 +3867,7 @@ static void overloadedMethod8Method(const v8::FunctionCallbackInfo<v8::Value>& i
     imp->overloadedMethod(objArg);
 }
 
-static void overloadedMethod9Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void overloadedMethod4Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
         throwTypeError(ExceptionMessages::failedToExecute("overloadedMethod", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
@@ -3940,72 +3878,37 @@ static void overloadedMethod9Method(const v8::FunctionCallbackInfo<v8::Value>& i
     imp->overloadedMethod(arrayArg);
 }
 
-static void overloadedMethod10Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+static void overloadedMethod5Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
         throwTypeError(ExceptionMessages::failedToExecute("overloadedMethod", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(Vector<unsigned>, arrayArg, toNativeArray<unsigned>(info[0], 1, info.GetIsolate()));
-    imp->overloadedMethod(arrayArg);
-}
-
-static void overloadedMethod11Method(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethod", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
-        return;
-    }
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[0]);
-    imp->overloadedMethod(strArg);
+    V8TRYCATCH_VOID(Vector<unsigned>, sequenceArg, toNativeArray<unsigned>(info[0], 1, info.GetIsolate()));
+    imp->overloadedMethod(sequenceArg);
 }
 
 static void overloadedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (((info.Length() == 2) && (info[0]->IsNull() || V8TestObject::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))) && (info[1]->IsNull() || info[1]->IsUndefined() || info[1]->IsString() || info[1]->IsObject()))) {
+    if (((info.Length() == 1))) {
         overloadedMethod1Method(info);
         return;
     }
-    if (((info.Length() == 1) && (info[0]->IsNull() || V8TestObject::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())))) || ((info.Length() == 2) && (info[0]->IsNull() || V8TestObject::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))))) {
+    if (((info.Length() == 1) && (info[0]->IsNull() || info[0]->IsFunction()))) {
         overloadedMethod2Method(info);
         return;
     }
-    if (((info.Length() == 1) && (info[0]->IsNull() || info[0]->IsUndefined() || info[0]->IsString() || info[0]->IsObject()))) {
+    if (((info.Length() == 1) && (V8TestObject::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))))) {
         overloadedMethod3Method(info);
         return;
     }
-    if (((info.Length() == 1))) {
+    if (((info.Length() == 1) && (info[0]->IsArray()))) {
         overloadedMethod4Method(info);
         return;
     }
-    if (((info.Length() == 1) && (info[0]->IsNull() || info[0]->IsFunction()))) {
+    if (((info.Length() == 1) && (info[0]->IsArray()))) {
         overloadedMethod5Method(info);
-        return;
-    }
-    if (((info.Length() == 1) && (info[0]->IsNull() || V8DOMStringList::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))))) {
-        overloadedMethod6Method(info);
-        return;
-    }
-    if (((info.Length() == 1) && (info[0]->IsNull() || info[0]->IsArray()))) {
-        overloadedMethod7Method(info);
-        return;
-    }
-    if (((info.Length() == 1) && (V8TestObject::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))))) {
-        overloadedMethod8Method(info);
-        return;
-    }
-    if (((info.Length() == 1) && (info[0]->IsArray()))) {
-        overloadedMethod9Method(info);
-        return;
-    }
-    if (((info.Length() == 1) && (info[0]->IsArray()))) {
-        overloadedMethod10Method(info);
-        return;
-    }
-    if (((info.Length() == 1))) {
-        overloadedMethod11Method(info);
         return;
     }
     if (UNLIKELY(info.Length() < 1)) {
@@ -4019,6 +3922,104 @@ static void overloadedMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Va
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestObjV8Internal::overloadedMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void overloadedMethodA1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodA", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        return;
+    }
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    if (UNLIKELY(info.Length() <= 1)) {
+        imp->overloadedMethodA(objArg);
+        return;
+    }
+    V8TRYCATCH_VOID(int, longArg, toInt32(info[1]));
+    imp->overloadedMethodA(objArg, longArg);
+}
+
+static void overloadedMethodA2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 2)) {
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodA", "TestObject", ExceptionMessages::notEnoughArguments(2, info.Length())), info.GetIsolate());
+        return;
+    }
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[1]);
+    imp->overloadedMethodA(objArg, strArg);
+}
+
+static void overloadedMethodAMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (((info.Length() == 1) && (info[0]->IsNull() || V8TestObject::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())))) || ((info.Length() == 2) && (info[0]->IsNull() || V8TestObject::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))))) {
+        overloadedMethodA1Method(info);
+        return;
+    }
+    if (((info.Length() == 2) && (info[0]->IsNull() || V8TestObject::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))))) {
+        overloadedMethodA2Method(info);
+        return;
+    }
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodA", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        return;
+    }
+    throwUninformativeAndGenericTypeError(info.GetIsolate());
+}
+
+static void overloadedMethodAMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjV8Internal::overloadedMethodAMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void overloadedMethodB1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodB", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        return;
+    }
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[0]);
+    imp->overloadedMethodB(strArg);
+}
+
+static void overloadedMethodB2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodB", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        return;
+    }
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[0]);
+    imp->overloadedMethodB(strArg);
+}
+
+static void overloadedMethodBMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (((info.Length() == 1))) {
+        overloadedMethodB1Method(info);
+        return;
+    }
+    if (((info.Length() == 1) && (info[0]->IsNull() || info[0]->IsUndefined() || info[0]->IsString() || info[0]->IsObject()))) {
+        overloadedMethodB2Method(info);
+        return;
+    }
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodB", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        return;
+    }
+    throwUninformativeAndGenericTypeError(info.GetIsolate());
+}
+
+static void overloadedMethodBMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjV8Internal::overloadedMethodBMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -5069,7 +5070,9 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectMethods[] = {
 #endif // ENABLE(Condition1) || ENABLE(Condition2)
     {"callbackFunctionReturnValue", TestObjV8Internal::callbackFunctionReturnValueMethodCallback, 0, 0},
     {"callbackFunctionArgument", TestObjV8Internal::callbackFunctionArgumentMethodCallback, 0, 1},
-    {"overloadedMethod", TestObjV8Internal::overloadedMethodMethodCallback, 0, 2},
+    {"overloadedMethod", TestObjV8Internal::overloadedMethodMethodCallback, 0, 1},
+    {"overloadedMethodA", TestObjV8Internal::overloadedMethodAMethodCallback, 0, 1},
+    {"overloadedMethodB", TestObjV8Internal::overloadedMethodBMethodCallback, 0, 1},
     {"classMethodWithClamp", TestObjV8Internal::classMethodWithClampMethodCallback, 0, 2},
     {"methodWithUnsignedLongSequence", TestObjV8Internal::methodWithUnsignedLongSequenceMethodCallback, 0, 1},
     {"stringArrayFunction", TestObjV8Internal::stringArrayFunctionMethodCallback, 0, 1},

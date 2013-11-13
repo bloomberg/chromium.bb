@@ -233,6 +233,8 @@ def argument_node_to_idl_argument(node):
         child_class = child.GetClass()
         if child_class == 'Type':
             idl_type = type_node_to_type(child)
+            # FIXME: Doesn't handle nullable arrays (Foo[]?), and arrays of
+            # nullable (Foo?[]) are treated as nullable arrays. No actual use.
             is_nullable = child.GetProperty('NULLABLE')
         elif child_class == 'ExtAttributes':
             extended_attributes = ext_attributes_node_to_extended_attributes(child)

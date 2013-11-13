@@ -144,6 +144,7 @@ def generate_argument(interface, method, argument, index):
         'idl_type': idl_type,
         'index': index,
         'is_clamp': 'Clamp' in extended_attributes,
+        'is_nullable': argument.is_nullable,
         'is_optional': argument.is_optional,
         'is_strict_type_checking': 'StrictTypeChecking' in extended_attributes,
         'is_variadic_wrapper_type': argument.is_variadic and v8_types.is_wrapper_type(idl_type),
