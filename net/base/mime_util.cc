@@ -17,6 +17,10 @@
 #include "net/base/mime_util.h"
 #include "net/base/platform_mime_util.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+#endif
+
 using std::string;
 
 namespace {
@@ -304,11 +308,10 @@ static const char* const proprietary_media_types[] = {
 static const char* const common_media_codecs[] = {
 #if !defined(OS_ANDROID)  // Android doesn't support Ogg Theora.
   "theora",
-  "vp9",  // TODO(tomfinegan): Move vp9 back down with vp8 once VP9 is supported
-          // on Android. https://crbug.com/285016
 #endif
   "vorbis",
   "vp8",
+  "vp9",
   "1"  // WAVE_FORMAT_PCM.
 };
 
@@ -409,19 +412,24 @@ static const char* const supported_javascript_types[] = {
   "text/livescript"
 };
 
+#if defined(OS_ANDROID)
+static bool IsCodecSupportedOnAndroid(const std::string& codec) {
+  // VP9 is supported only in KitKat+ (API Level 19).
+  if ((!codec.compare("vp9") || !codec.compare("vp9.0")) &&
+      base::android::BuildInfo::GetInstance()->sdk_int() < 19) {
+    return false;
+  }
+  return true;
+}
+#endif
+
 struct MediaFormatStrict {
   const char* mime_type;
   const char* codecs_list;
 };
 
 static const MediaFormatStrict format_codec_mappings[] = {
-  // TODO(tomfinegan): Remove this if/else when VP9 is supported on Android.
-  // https://crbug.com/285016
-#if !defined(OS_ANDROID)
   { "video/webm", "vorbis,vp8,vp8.0,vp9,vp9.0" },
-#else
-  { "video/webm", "vorbis,vp8,vp8.0" },
-#endif
   { "audio/webm", "vorbis" },
   { "audio/wav", "1" }
 };
@@ -471,8 +479,13 @@ void MimeUtil::InitializeMimeTypeMaps() {
   for (size_t i = 0; i < arraysize(supported_javascript_types); ++i)
     javascript_map_.insert(supported_javascript_types[i]);
 
-  for (size_t i = 0; i < arraysize(common_media_codecs); ++i)
+  for (size_t i = 0; i < arraysize(common_media_codecs); ++i) {
+#if defined(OS_ANDROID)
+    if (!IsCodecSupportedOnAndroid(common_media_codecs[i]))
+      continue;
+#endif
     codecs_map_.insert(common_media_codecs[i]);
+  }
 #if defined(USE_PROPRIETARY_CODECS)
   for (size_t i = 0; i < arraysize(proprietary_media_codecs); ++i)
     codecs_map_.insert(proprietary_media_codecs[i]);
@@ -486,8 +499,13 @@ void MimeUtil::InitializeMimeTypeMaps() {
                      false);
 
     MimeMappings codecs;
-    for (size_t j = 0; j < mime_type_codecs.size(); ++j)
+    for (size_t j = 0; j < mime_type_codecs.size(); ++j) {
+#if defined(OS_ANDROID)
+      if (!IsCodecSupportedOnAndroid(mime_type_codecs[j]))
+        continue;
+#endif
       codecs.insert(mime_type_codecs[j]);
+    }
     strict_format_map_[format_codec_mappings[i].mime_type] = codecs;
   }
 }
