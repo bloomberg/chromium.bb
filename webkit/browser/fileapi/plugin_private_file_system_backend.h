@@ -31,10 +31,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT PluginPrivateFileSystemBackend
       public FileSystemQuotaUtil {
  public:
   class FileSystemIDToPluginMap;
-  typedef base::Callback<void(const GURL& root,
-                              const std::string& filesystem_id,
-                              base::PlatformFileError result)>
-      OpenPrivateFileSystemCallback;
+  typedef base::Callback<void(base::PlatformFileError result)> StatusCallback;
 
   PluginPrivateFileSystemBackend(
       base::SequencedTaskRunner* file_task_runner,
@@ -52,9 +49,10 @@ class WEBKIT_STORAGE_BROWSER_EXPORT PluginPrivateFileSystemBackend
   void OpenPrivateFileSystem(
       const GURL& origin_url,
       FileSystemType type,
+      const std::string& filesystem_id,
       const std::string& plugin_id,
       OpenFileSystemMode mode,
-      const OpenPrivateFileSystemCallback& callback);
+      const StatusCallback& callback);
 
   // FileSystemBackend overrides.
   virtual bool CanHandleType(FileSystemType type) const OVERRIDE;

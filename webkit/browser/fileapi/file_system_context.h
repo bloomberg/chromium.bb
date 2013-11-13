@@ -174,15 +174,8 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
                               const base::FilePath& file_path,
                               bool is_directory)> ResolveURLCallback;
 
-  // Used for DeleteFileSystem.
-  typedef base::Callback<void(base::PlatformFileError result)>
-      DeleteFileSystemCallback;
-
-  // Used for OpenPluginPrivateFileSystem.
-  typedef base::Callback<void(const GURL& root,
-                              const std::string& filesystem_id,
-                              base::PlatformFileError result)>
-      OpenPluginPrivateFileSystemCallback;
+  // Used for DeleteFileSystem and OpenPluginPrivateFileSystem.
+  typedef base::Callback<void(base::PlatformFileError result)> StatusCallback;
 
   // Opens the filesystem for the given |origin_url| and |type|, and dispatches
   // |callback| on completion.
@@ -207,7 +200,7 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
   void DeleteFileSystem(
       const GURL& origin_url,
       FileSystemType type,
-      const DeleteFileSystemCallback& callback);
+      const StatusCallback& callback);
 
   // Creates new FileStreamReader instance to read a file pointed by the given
   // filesystem URL |url| starting from |offset|. |expected_modification_time|
@@ -269,9 +262,10 @@ class WEBKIT_STORAGE_BROWSER_EXPORT FileSystemContext
   void OpenPluginPrivateFileSystem(
       const GURL& origin_url,
       FileSystemType type,
+      const std::string& filesystem_id,
       const std::string& plugin_id,
       OpenFileSystemMode mode,
-      const OpenPluginPrivateFileSystemCallback& callback);
+      const StatusCallback& callback);
 
  private:
   typedef std::map<FileSystemType, FileSystemBackend*>

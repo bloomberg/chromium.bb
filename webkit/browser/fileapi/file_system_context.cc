@@ -348,7 +348,7 @@ void FileSystemContext::ResolveURL(
 void FileSystemContext::DeleteFileSystem(
     const GURL& origin_url,
     FileSystemType type,
-    const DeleteFileSystemCallback& callback) {
+    const StatusCallback& callback) {
   DCHECK(io_task_runner_->RunsTasksOnCurrentThread());
   DCHECK(origin_url == origin_url.GetOrigin());
   DCHECK(!callback.is_null());
@@ -439,12 +439,13 @@ bool FileSystemContext::CanServeURLRequest(const FileSystemURL& url) const {
 void FileSystemContext::OpenPluginPrivateFileSystem(
     const GURL& origin_url,
     FileSystemType type,
+    const std::string& filesystem_id,
     const std::string& plugin_id,
     OpenFileSystemMode mode,
-    const OpenPluginPrivateFileSystemCallback& callback) {
+    const StatusCallback& callback) {
   DCHECK(plugin_private_backend_);
   plugin_private_backend_->OpenPrivateFileSystem(
-      origin_url, type, plugin_id, mode, callback);
+      origin_url, type, filesystem_id, plugin_id, mode, callback);
 }
 
 FileSystemContext::~FileSystemContext() {
