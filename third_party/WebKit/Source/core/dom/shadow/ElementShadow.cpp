@@ -143,12 +143,14 @@ ShadowRoot& ElementShadow::addShadowRoot(Element& shadowHost, ShadowRoot::Shadow
 {
     RefPtr<ShadowRoot> shadowRoot = ShadowRoot::create(&shadowHost.document(), type);
 
+    for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot())
+        root->lazyReattachIfAttached();
+
     shadowRoot->setParentOrShadowHostNode(&shadowHost);
     shadowRoot->setParentTreeScope(&shadowHost.treeScope());
     m_shadowRoots.push(shadowRoot.get());
     ChildNodeInsertionNotifier(shadowHost).notify(*shadowRoot);
     setNeedsDistributionRecalc();
-    shadowHost.lazyReattachIfAttached();
 
     // addShadowRoot() affects apply-author-styles. However, we know that the youngest shadow root has not had any children yet.
     // The youngest shadow root's apply-author-styles is default (false). So we can just set m_applyAuthorStyles false.
@@ -264,9 +266,10 @@ const DestinationInsertionPoints* ElementShadow::destinationInsertionPointsFor(c
 
 void ElementShadow::distribute()
 {
-    host()->setNeedsStyleRecalc();
     Vector<HTMLShadowElement*, 32> shadowInsertionPoints;
     DistributionPool pool(*host());
+
+    host()->setNeedsStyleRecalc();
 
     for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot()) {
         HTMLShadowElement* shadowInsertionPoint = 0;

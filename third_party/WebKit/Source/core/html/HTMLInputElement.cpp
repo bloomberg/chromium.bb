@@ -151,6 +151,7 @@ void HTMLInputElement::didAddShadowRoot(ShadowRoot& root)
         return;
     m_inputTypeView->destroyShadowSubtree();
     m_inputTypeView = InputTypeView::create(*this);
+    lazyReattachIfAttached();
 }
 
 HTMLInputElement::~HTMLInputElement()
