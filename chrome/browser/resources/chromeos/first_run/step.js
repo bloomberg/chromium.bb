@@ -172,8 +172,8 @@ cr.define('cr.FirstRun', function() {
       this.style.setProperty('left', left + 'px');
       this.style.setProperty('top', top + 'px');
       if (shouldShowBefore) {
-        this.style.setProperty('opacity', '1');
         this.hide();
+        this.style.setProperty('opacity', '1');
       }
     },
 

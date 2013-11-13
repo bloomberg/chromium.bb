@@ -133,3 +133,9 @@
   display: inline;
 }
 
+#help #completion-image {
+  background-image: url('chrome://theme/IDR_FIRST_RUN_COMPLETION');
+  display: inline-block;
+  height: 153px;
+  width: 400px;
+}
