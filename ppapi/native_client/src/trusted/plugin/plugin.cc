@@ -1471,9 +1471,9 @@ void Plugin::EnqueueProgressEvent(PP_NaClEventType event_type,
                                   uint64_t loaded_bytes,
                                   uint64_t total_bytes) {
   PLUGIN_PRINTF(("Plugin::EnqueueProgressEvent ("
-                 "event_type='%s', url='%s', length_computable=%d, "
+                 "event_type='%d', url='%s', length_computable=%d, "
                  "loaded=%" NACL_PRIu64 ", total=%" NACL_PRIu64 ")\n",
-                 event_type,
+                 static_cast<int>(event_type),
                  url.c_str(),
                  static_cast<int>(length_computable),
                  loaded_bytes,
