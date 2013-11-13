@@ -1112,17 +1112,18 @@ void DeepHeapProfile::WriteProcMaps(const char* prefix,
 #else  // USE_DEEP_HEAP_PROFILE
 
 DeepHeapProfile::DeepHeapProfile(HeapProfileTable* heap_profile,
-                                 const char* prefix)
+                                 const char* prefix,
+                                 enum PageFrameType pageframe_type)
     : heap_profile_(heap_profile) {
 }
 
 DeepHeapProfile::~DeepHeapProfile() {
 }
 
-int DeepHeapProfile::DumpOrderedProfile(const char* reason,
-                                        char raw_buffer[],
-                                        int buffer_size,
-                                        RawFD fd) {
+void DeepHeapProfile::DumpOrderedProfile(const char* reason,
+                                         char raw_buffer[],
+                                         int buffer_size,
+                                         RawFD fd) {
 }
 
 #endif  // USE_DEEP_HEAP_PROFILE
