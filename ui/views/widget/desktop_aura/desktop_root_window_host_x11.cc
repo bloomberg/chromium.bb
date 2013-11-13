@@ -28,6 +28,8 @@
 #include "ui/events/x/device_data_manager.h"
 #include "ui/events/x/device_list_cache_x.h"
 #include "ui/events/x/touch_factory_x11.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/insets.h"
 #include "ui/gfx/path.h"
 #include "ui/gfx/path_x11.h"
@@ -37,6 +39,7 @@
 #include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/ime/input_method.h"
 #include "ui/views/linux_ui/linux_ui.h"
+#include "ui/views/views_delegate.h"
 #include "ui/views/widget/desktop_aura/desktop_dispatcher_client.h"
 #include "ui/views/widget/desktop_aura/desktop_drag_drop_client_aurax11.h"
 #include "ui/views/widget/desktop_aura/desktop_native_cursor_manager.h"
@@ -72,6 +75,7 @@ const char* kAtomsToCache[] = {
   "WM_DELETE_WINDOW",
   "WM_PROTOCOLS",
   "WM_S0",
+  "_NET_WM_ICON",
   "_NET_WM_PID",
   "_NET_WM_PING",
   "_NET_WM_STATE",
@@ -595,8 +599,26 @@ void DesktopRootWindowHostX11::SetOpacity(unsigned char opacity) {
 
 void DesktopRootWindowHostX11::SetWindowIcons(
     const gfx::ImageSkia& window_icon, const gfx::ImageSkia& app_icon) {
-  // TODO(erg):
-  NOTIMPLEMENTED();
+  // TODO(erg): The way we handle icons across different versions of chrome
+  // could be substantially improved. The Windows version does its own thing
+  // and only sometimes comes down this code path. The icon stuff in
+  // ChromeViewsDelegate is hard coded to use HICONs. Likewise, we're hard
+  // coded to be given two images instead of an arbitrary collection of images
+  // so that we can pass to the WM.
+  //
+  // All of this could be made much, much better.
+  std::vector<unsigned long> data;
+
+  if (window_icon.HasRepresentation(1.0f))
+    SerializeImageRepresentation(window_icon.GetRepresentation(1.0f), &data);
+
+  if (app_icon.HasRepresentation(1.0f))
+    SerializeImageRepresentation(app_icon.GetRepresentation(1.0f), &data);
+
+  if (data.empty())
+    XDeleteProperty(xdisplay_, xwindow_, atom_cache_.GetAtom("_NET_WM_ICON"));
+  else
+    ui::SetAtomArrayProperty(xwindow_, "_NET_WM_ICON", "CARDINAL", data);
 }
 
 void DesktopRootWindowHostX11::InitModalType(ui::ModalType modal_type) {
@@ -1017,6 +1039,14 @@ void DesktopRootWindowHostX11::InitX11Window(
     DCHECK(window_parent_);
     window_parent_->window_children_.insert(this);
   }
+
+  // If we have a delegate which is providing a default window icon, use that
+  // icon.
+  gfx::ImageSkia* window_icon = ViewsDelegate::views_delegate ?
+      ViewsDelegate::views_delegate->GetDefaultWindowIcon() : NULL;
+  if (window_icon) {
+    SetWindowIcons(gfx::ImageSkia(), *window_icon);
+  }
 }
 
 bool DesktopRootWindowHostX11::IsWindowManagerPresent() {
@@ -1094,6 +1124,23 @@ void DesktopRootWindowHostX11::ResetWindowRegion() {
                    static_cast<unsigned short>(bounds_.height()) };
   XShapeCombineRectangles(xdisplay_, xwindow_, ShapeBounding,
                           0, 0, &r, 1, ShapeSet, YXBanded);
+}
+
+void DesktopRootWindowHostX11::SerializeImageRepresentation(
+    const gfx::ImageSkiaRep& rep,
+    std::vector<unsigned long>* data) {
+  int width = rep.GetWidth();
+  data->push_back(width);
+
+  int height = rep.GetHeight();
+  data->push_back(height);
+
+  const SkBitmap& bitmap = rep.sk_bitmap();
+  SkAutoLockPixels locker(bitmap);
+
+  for (int y = 0; y < height; ++y)
+    for (int x = 0; x < width; ++x)
+      data->push_back(bitmap.getColor(x, y));
 }
 
 std::list<XID>& DesktopRootWindowHostX11::open_windows() {

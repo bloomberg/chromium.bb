@@ -50,6 +50,8 @@ class TestViewsDelegate : public ViewsDelegate {
   virtual HICON GetDefaultWindowIcon() const OVERRIDE {
     return NULL;
   }
+#elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  virtual gfx::ImageSkia* GetDefaultWindowIcon() const OVERRIDE;
 #endif
   virtual NonClientFrameView* CreateDefaultNonClientFrameView(
       Widget* widget) OVERRIDE;

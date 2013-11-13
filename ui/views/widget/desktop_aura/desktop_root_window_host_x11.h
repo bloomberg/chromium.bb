@@ -20,6 +20,11 @@
 #include "ui/views/views_export.h"
 #include "ui/views/widget/desktop_aura/desktop_root_window_host.h"
 
+namespace gfx {
+class ImageSkia;
+class ImageSkiaRep;
+}
+
 namespace views {
 class DesktopDragDropClientAuraX11;
 class DesktopDispatcherClient;
@@ -178,6 +183,10 @@ private:
 
   // Resets the window region for the current widget bounds if necessary.
   void ResetWindowRegion();
+
+  // Serializes an image to the format used by _NET_WM_ICON.
+  void SerializeImageRepresentation(const gfx::ImageSkiaRep& rep,
+                                    std::vector<unsigned long>* data);
 
   // See comment for variable open_windows_.
   static std::list<XID>& open_windows();

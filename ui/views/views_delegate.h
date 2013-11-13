@@ -29,6 +29,7 @@ class SiteInstance;
 }
 
 namespace gfx {
+class ImageSkia;
 class Rect;
 }
 
@@ -88,6 +89,8 @@ class VIEWS_EXPORT ViewsDelegate {
 #if defined(OS_WIN)
   // Retrieves the default window icon to use for windows if none is specified.
   virtual HICON GetDefaultWindowIcon() const = 0;
+#elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  virtual gfx::ImageSkia* GetDefaultWindowIcon() const = 0;
 #endif
 
   // Creates a default NonClientFrameView to be used for windows that don't

@@ -43,6 +43,12 @@ bool TestViewsDelegate::GetSavedWindowPlacement(
   return false;
 }
 
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
+gfx::ImageSkia* TestViewsDelegate::GetDefaultWindowIcon() const {
+  return NULL;
+}
+#endif
+
 NonClientFrameView* TestViewsDelegate::CreateDefaultNonClientFrameView(
     Widget* widget) {
   return NULL;

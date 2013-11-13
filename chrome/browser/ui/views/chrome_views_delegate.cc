@@ -14,6 +14,8 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/views/accessibility/accessibility_event_router_views.h"
 #include "chrome/common/pref_names.h"
+#include "grit/chrome_unscaled_resources.h"
+#include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/gfx/rect.h"
 #include "ui/gfx/screen.h"
@@ -150,6 +152,11 @@ void ChromeViewsDelegate::NotifyMenuItemFocused(const string16& menu_name,
 #if defined(OS_WIN)
 HICON ChromeViewsDelegate::GetDefaultWindowIcon() const {
   return GetAppIcon();
+}
+#elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
+gfx::ImageSkia* ChromeViewsDelegate::GetDefaultWindowIcon() const {
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  return rb.GetImageSkiaNamed(IDR_PRODUCT_LOGO_64);
 }
 #endif
 
