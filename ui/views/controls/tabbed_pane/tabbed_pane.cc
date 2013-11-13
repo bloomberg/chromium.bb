@@ -43,8 +43,6 @@ class Tab : public View {
 
   // Overridden from View:
   virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseCaptureLost() OVERRIDE;
   virtual void OnMouseEntered(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnMouseExited(const ui::MouseEvent& event) OVERRIDE;
   virtual void OnGestureEvent(ui::GestureEvent* event) OVERRIDE;
@@ -55,7 +53,6 @@ class Tab : public View {
   enum TabState {
     TAB_INACTIVE,
     TAB_ACTIVE,
-    TAB_PRESSED,
     TAB_HOVERED,
   };
 
@@ -108,18 +105,10 @@ void Tab::SetSelected(bool selected) {
 }
 
 bool Tab::OnMousePressed(const ui::MouseEvent& event) {
-  SetState(TAB_PRESSED);
-  return true;
-}
-
-void Tab::OnMouseReleased(const ui::MouseEvent& event) {
-  SetState(selected() ? TAB_ACTIVE : TAB_HOVERED);
-  if (GetLocalBounds().Contains(event.location()))
+  if (event.IsOnlyLeftMouseButton() &&
+      GetLocalBounds().Contains(event.location()))
     tabbed_pane_->SelectTab(this);
-}
-
-void Tab::OnMouseCaptureLost() {
-  SetState(TAB_INACTIVE);
+  return true;
 }
 
 void Tab::OnMouseEntered(const ui::MouseEvent& event) {
@@ -133,8 +122,7 @@ void Tab::OnMouseExited(const ui::MouseEvent& event) {
 void Tab::OnGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
     case ui::ET_GESTURE_TAP_DOWN:
-      SetState(TAB_PRESSED);
-      break;
+      // Fallthrough.
     case ui::ET_GESTURE_TAP:
       // SelectTab also sets the right tab color.
       tabbed_pane_->SelectTab(this);
@@ -177,9 +165,6 @@ void Tab::SetState(TabState tab_state) {
     case TAB_ACTIVE:
       title_->SetEnabledColor(kTabTitleColor_Active);
       title_->SetFont(gfx::Font().DeriveFont(0, gfx::Font::BOLD));
-      break;
-    case TAB_PRESSED:
-      // No visual distinction for pressed state.
       break;
     case TAB_HOVERED:
       title_->SetEnabledColor(kTabTitleColor_Hovered);
