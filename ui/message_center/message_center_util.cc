@@ -31,4 +31,9 @@ bool IsRichNotificationEnabled() {
   return true;
 }
 
+bool IsExperimentalNotificationUIEnabled() {
+  return CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalNotificationUI);
+}
+
 }  // namespace message_center

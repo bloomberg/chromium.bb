@@ -10,5 +10,8 @@ namespace switches {
 const char kDisableRichNotifications[] = "disable-rich-notifications";
 const char kEnableRichNotifications[] = "enable-rich-notifications";
 
+const char kEnableExperimentalNotificationUI[] =
+    "enable-experimental-notification-ui";
+
 }  // namespace switches
 }  // namespace message_center

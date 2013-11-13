@@ -1359,6 +1359,14 @@ const Experiment kExperiments[] = {
         message_center::switches::kDisableRichNotifications)
   },
   {
+    "enable-experimental-notification-ui",
+    IDS_FLAGS_ENABLE_EXPERIMENTAL_NOTIFICATION_UI_NAME,
+    IDS_FLAGS_ENABLE_EXPERIMENTAL_NOTIFICATION_UI_DESCRIPTION,
+    kOsDesktop,
+    SINGLE_VALUE_TYPE(
+        message_center::switches::kEnableExperimentalNotificationUI)
+  },
+  {
     "enable-sync-synced-notifications",
     IDS_FLAGS_ENABLE_SYNCED_NOTIFICATIONS_NAME,
     IDS_FLAGS_ENABLE_SYNCED_NOTIFICATIONS_DESCRIPTION,

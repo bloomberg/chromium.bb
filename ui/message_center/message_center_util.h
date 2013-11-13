@@ -17,6 +17,8 @@ MESSAGE_CENTER_EXPORT bool IsRichNotificationEnabled();
 #define RUN_MESSAGE_CENTER_TESTS 1
 #endif
 
+MESSAGE_CENTER_EXPORT bool IsExperimentalNotificationUIEnabled();
+
 }  // namespace message_center
 
 #endif  // UI_MESSAGE_CENTER_MESSAGE_CENTER_UTIL_H_

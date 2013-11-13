@@ -6690,6 +6690,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_ENABLE_RICH_NOTIFICATIONS_DESCRIPTION" desc="Description for the flag to enable rich notifications.">
         Enable rich templated notifications. Both HTML5 notifications and app notifications will be shown through new Notification Center.
       </message>
+      <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_NOTIFICATION_UI_NAME" desc="Name of the flag to enable experimental UI for notifications.">
+        Enable experimental UI for Notifications
+      </message>
+      <message name="IDS_FLAGS_ENABLE_EXPERIMENTAL_NOTIFICATION_UI_DESCRIPTION" desc="Description for the flag to enable experimental UI for notifications.">
+        Used for various Notification Center features under construction/polish that are not yet ready to be shipped.
+      </message>
       <message name="IDS_FLAGS_ENABLE_SYNCED_NOTIFICATIONS_NAME" desc="Name of the flag to enable synced notifications.">
         Enable Synced Notifications
       </message>
