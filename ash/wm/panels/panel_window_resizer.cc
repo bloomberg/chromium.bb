@@ -207,6 +207,8 @@ void PanelWindowResizer::StartedDragging() {
 void PanelWindowResizer::FinishDragging() {
   if (!did_move_or_resize_)
     return;
+  if (details_.bounds_change & WindowResizer::kBoundsChange_Resizes)
+    should_attach_ = was_attached_;
   if (wm::GetWindowState(GetTarget())->panel_attached() != should_attach_) {
     wm::GetWindowState(GetTarget())->set_panel_attached(should_attach_);
     // We use last known location to ensure that after the drag the panel

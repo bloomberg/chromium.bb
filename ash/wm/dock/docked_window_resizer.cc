@@ -260,9 +260,14 @@ void DockedWindowResizer::FinishedDragging() {
       window->SetBounds(bounds);
     }
   }
-  // No longer restore to pre-docked bounds if a window has been resized.
-  if (is_resized && is_docked_)
-    window_state->ClearRestoreBounds();
+  // If a window has restore bounds, update the restore origin and width but not
+  // the height (since the height is auto-calculated for the docked windows).
+  if (is_resized && is_docked_ && window_state->HasRestoreBounds()) {
+    gfx::Rect restore_bounds = window->GetBoundsInScreen();
+    restore_bounds.set_height(
+        window_state->GetRestoreBoundsInScreen().height());
+    window_state->SetRestoreBoundsInScreen(restore_bounds);
+  }
 
   // Check if the window needs to be docked or returned to workspace.
   DockedAction action = DOCKED_ACTION_NONE;
