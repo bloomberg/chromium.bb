@@ -66,7 +66,7 @@ bool AXMenuListPopup::computeAccessibilityIsIgnored() const
 
 AXMenuListOption* AXMenuListPopup::menuListOptionAXObject(HTMLElement* element) const
 {
-    if (!element || !element->hasTagName(optionTag) || !element->confusingAndOftenMisusedAttached())
+    if (!element->hasTagName(optionTag))
         return 0;
 
     AXObject* object = document()->axObjectCache()->getOrCreate(MenuListOptionRole);
@@ -114,7 +114,9 @@ void AXMenuListPopup::childrenChanged()
     AXObjectCache* cache = axObjectCache();
     for (size_t i = m_children.size(); i > 0 ; --i) {
         AXObject* child = m_children[i - 1].get();
-        if (child->actionElement() && !child->actionElement()->confusingAndOftenMisusedAttached()) {
+        // FIXME: How could children end up in here that have no actionElement(), the check
+        // in menuListOptionAXObject would seem to prevent that.
+        if (child->actionElement()) {
             child->detachFromParent();
             cache->remove(child->axObjectID());
         }
@@ -122,11 +124,15 @@ void AXMenuListPopup::childrenChanged()
 
     m_children.clear();
     m_haveChildren = false;
-    addChildren();
 }
 
 void AXMenuListPopup::didUpdateActiveOption(int optionIndex)
 {
+    // We defer creation of the children until updating the active option so that we don't
+    // create AXObjects for <option> elements while they're in the middle of removal.
+    if (!m_haveChildren)
+        addChildren();
+
     ASSERT_ARG(optionIndex, optionIndex >= 0);
     ASSERT_ARG(optionIndex, optionIndex < static_cast<int>(m_children.size()));
 

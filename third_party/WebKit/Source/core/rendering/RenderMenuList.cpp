@@ -379,13 +379,8 @@ void RenderMenuList::didUpdateActiveOption(int optionIndex)
     int listIndex = select->optionToListIndex(optionIndex);
     if (listIndex < 0 || listIndex >= static_cast<int>(select->listItems().size()))
         return;
-
-    HTMLElement* listItem = select->listItems()[listIndex];
-    ASSERT(listItem);
-    if (listItem->confusingAndOftenMisusedAttached()) {
-        if (AXMenuList* menuList = toAXMenuList(document().axObjectCache()->get(this)))
-            menuList->didUpdateActiveOption(optionIndex);
-    }
+    if (AXMenuList* menuList = toAXMenuList(document().axObjectCache()->get(this)))
+        menuList->didUpdateActiveOption(optionIndex);
 }
 
 String RenderMenuList::itemText(unsigned listIndex) const
