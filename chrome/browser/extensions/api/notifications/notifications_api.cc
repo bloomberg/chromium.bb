@@ -366,7 +366,6 @@ bool NotificationsApiFunction::UpdateNotification(
     notification->set_icon(icon);
   }
 
-  message_center::RichNotificationData optional_fields;
   if (message_center::IsRichNotificationEnabled()) {
     if (options->priority)
       notification->set_priority(*options->priority);
@@ -379,13 +378,15 @@ bool NotificationsApiFunction::UpdateNotification(
       size_t number_of_buttons = options->buttons->size();
       number_of_buttons = number_of_buttons > 2 ? 2 : number_of_buttons;
 
+      std::vector<message_center::ButtonInfo> buttons;
       for (size_t i = 0; i < number_of_buttons; i++) {
-        message_center::ButtonInfo info(
+        message_center::ButtonInfo button(
             UTF8ToUTF16((*options->buttons)[i]->title));
         NotificationBitmapToGfxImage((*options->buttons)[i]->icon_bitmap.get(),
-                                     &info.icon);
-        optional_fields.buttons.push_back(info);
+                                     &button.icon);
+        buttons.push_back(button);
       }
+      notification->set_buttons(buttons);
     }
 
     if (options->context_message)
@@ -424,7 +425,7 @@ bool NotificationsApiFunction::UpdateNotification(
       if (notification->type() != message_center::NOTIFICATION_TYPE_MULTIPLE)
         return false;
 
-      std::vector< message_center::NotificationItem> items;
+      std::vector<message_center::NotificationItem> items;
       using api::notifications::NotificationItem;
       std::vector<linked_ptr<NotificationItem> >::iterator i;
       for (i = options->items->begin(); i != options->items->end(); ++i) {

@@ -133,6 +133,9 @@ class MESSAGE_CENTER_EXPORT Notification {
   const std::vector<ButtonInfo>& buttons() const {
     return optional_fields_.buttons;
   }
+  void set_buttons(const std::vector<ButtonInfo>& buttons) {
+    optional_fields_.buttons = buttons;
+  }
   void SetButtonIcon(size_t index, const gfx::Image& icon);
 
   bool shown_as_popup() const { return shown_as_popup_; }

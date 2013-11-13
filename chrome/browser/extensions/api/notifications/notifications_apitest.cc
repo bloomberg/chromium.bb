@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/notifications/notifications_api.h"
@@ -14,6 +16,7 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_switches.h"
 #include "ui/message_center/message_center_util.h"
+#include "ui/message_center/notification_list.h"
 #include "ui/message_center/notifier_settings.h"
 
 using extensions::Extension;
@@ -642,7 +645,8 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestPartialUpdate) {
         "\"type\": \"basic\","
         "\"iconUrl\": \"an/image/that/does/not/exist.png\","
         "\"title\": \"Attention!\","
-        "\"message\": \"Check out Cirque du Soleil\""
+        "\"message\": \"Check out Cirque du Soleil\","
+        "\"buttons\": [{\"title\": \"Button\"}]"
         "}]",
         browser(),
         utils::NONE));
@@ -653,6 +657,8 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestPartialUpdate) {
   }
 
   // Update a few properties in the existing notification.
+  const char kNewTitle[] = "Changed!";
+  const char kNewMessage[] = "Too late! The show ended yesterday";
   {
     scoped_refptr<extensions::NotificationsUpdateFunction>
         notification_function(
@@ -665,8 +671,8 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestPartialUpdate) {
         "[\"" + notification_id +
             "\", "
             "{"
-            "\"title\": \"Changed!\","
-            "\"message\": \"Too late! The show ended yesterday\""
+            "\"title\": \"" + kNewTitle + "\","
+            "\"message\": \"" + kNewMessage + "\""
             "}]",
         browser(),
         utils::NONE));
@@ -677,7 +683,8 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestPartialUpdate) {
     ASSERT_TRUE(copy_bool_value);
   }
 
-  // Update another property in the existing notification.
+  // Update some other properties in the existing notification.
+  int kNewPriority = 2;
   {
     scoped_refptr<extensions::NotificationsUpdateFunction>
         notification_function(
@@ -690,7 +697,8 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestPartialUpdate) {
         "[\"" + notification_id +
             "\", "
             "{"
-            "\"priority\": 2"
+            "\"priority\": " + base::IntToString(kNewPriority) + ","
+            "\"buttons\": []"
             "}]",
         browser(),
         utils::NONE));
@@ -700,6 +708,16 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestPartialUpdate) {
     ASSERT_TRUE(result->GetAsBoolean(&copy_bool_value));
     ASSERT_TRUE(copy_bool_value);
   }
+
+  // Get the updated notification and verify its data.
+  const message_center::NotificationList::Notifications& notifications =
+      g_browser_process->message_center()->GetVisibleNotifications();
+  ASSERT_EQ(1u, notifications.size());
+  message_center::Notification* notification = *(notifications.begin());
+  EXPECT_EQ(ASCIIToUTF16(kNewTitle), notification->title());
+  EXPECT_EQ(ASCIIToUTF16(kNewMessage), notification->message());
+  EXPECT_EQ(kNewPriority, notification->priority());
+  EXPECT_EQ(0u, notification->buttons().size());
 }
 
 // MessaceCenter-specific test.
