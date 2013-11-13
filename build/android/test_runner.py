@@ -436,12 +436,13 @@ def AddPerfTestOptions(option_parser):
   option_parser.usage = '%prog perf [options]'
   option_parser.commands_dict = {}
   option_parser.example = ('%prog perf '
-                           '[--single-step command] or '
+                           '[--single-step -- command args] or '
                            '[--steps perf_steps.json] or '
-                           '[--print-step  step]')
+                           '[--print-step step]')
 
   option_parser.add_option(
       '--single-step',
+      action='store_true',
       help='Execute the given command with retries, but only print the result '
            'for the "most successful" round.')
   option_parser.add_option(
@@ -468,7 +469,7 @@ def AddPerfTestOptions(option_parser):
   AddCommonOptions(option_parser)
 
 
-def ProcessPerfTestOptions(options, error_func):
+def ProcessPerfTestOptions(options, args, error_func):
   """Processes all perf test options.
 
   Args:
@@ -484,10 +485,13 @@ def ProcessPerfTestOptions(options, error_func):
                      [options.steps, options.print_step, options.single_step]))
   if count != 1:
     error_func('Please specify one of: --steps, --print-step, --single-step.')
+  single_step = None
+  if options.single_step:
+    single_step = ' '.join(args[2:])
   return perf_test_options.PerfOptions(
       options.steps, options.flaky_steps, options.print_step,
       options.no_timeout, options.test_filter, options.dry_run,
-      options.single_step)
+      single_step)
 
 
 def _RunGTests(options, error_func, devices):
@@ -628,10 +632,10 @@ def _RunMonkeyTests(options, error_func, devices):
   return exit_code
 
 
-def _RunPerfTests(options, error_func, devices):
+def _RunPerfTests(options, args, error_func, devices):
   """Subcommand of RunTestsCommands which runs perf tests."""
-  perf_options = ProcessPerfTestOptions(options, error_func)
-    # Just print the results from a single previously executed step.
+  perf_options = ProcessPerfTestOptions(options, args, error_func)
+  # Just print the results from a single previously executed step.
   if perf_options.print_step:
     return perf_test_runner.PrintTestOutput(perf_options.print_step)
 
@@ -696,9 +700,14 @@ def RunTestsCommand(command, options, args, option_parser):
   """
 
   # Check for extra arguments
-  if len(args) > 2:
+  if len(args) > 2 and command != 'perf':
     option_parser.error('Unrecognized arguments: %s' % (' '.join(args[2:])))
     return constants.ERROR_EXIT_CODE
+  if command == 'perf':
+    if ((options.single_step and len(args) <= 2) or
+        (not options.single_step and len(args) > 2)):
+      option_parser.error('Unrecognized arguments: %s' % (' '.join(args)))
+      return constants.ERROR_EXIT_CODE
 
   ProcessCommonOptions(options)
 
@@ -717,7 +726,7 @@ def RunTestsCommand(command, options, args, option_parser):
   elif command == 'monkey':
     return _RunMonkeyTests(options, option_parser.error, devices)
   elif command == 'perf':
-    return _RunPerfTests(options, option_parser.error, devices)
+    return _RunPerfTests(options, args, option_parser.error, devices)
   else:
     raise Exception('Unknown test type.')
 
