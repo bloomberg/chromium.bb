@@ -265,9 +265,10 @@ class ChromeLauncher(BrowserLauncher):
 
   def MakeCmd(self, url, host, port):
     cmd = [self.binary,
-            # Note that we do not use "--enable-logging" here because
-            # it actually turns off logging to the Buildbot logs on
-            # Windows (see http://crbug.com/169941).
+            # --enable-logging enables stderr output from Chromium subprocesses
+            # on Windows (see
+            # https://code.google.com/p/chromium/issues/detail?id=171836)
+            '--enable-logging',
             '--disable-web-resources',
             '--disable-preconnect',
             # This is speculative, sync should not occur with a clean profile.
