@@ -1934,13 +1934,11 @@ invalid_rule:
     error error_location rule_error_recovery at_invalid_rule_header_end invalid_block {
         parser->reportError($2, CSSParser::InvalidRuleError);
         $$ = 0;
-        parser->endInvalidRule();
     }
   | error_location invalid_at rule_error_recovery at_invalid_rule_header_end at_rule_end {
         parser->resumeErrorLogging();
         parser->reportError($1, CSSParser::InvalidRuleError);
         $$ = 0;
-        parser->endInvalidRule();
     }
     ;
 
