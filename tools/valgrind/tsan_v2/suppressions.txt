@@ -131,3 +131,6 @@ race:net::URLFetcherCore::Stop
 
 # http://crbug.com/310851
 race:net::ProxyResolverV8Tracing::Job::~Job
+
+# http://crbug.com/313726
+race:CallbackWasCalled
