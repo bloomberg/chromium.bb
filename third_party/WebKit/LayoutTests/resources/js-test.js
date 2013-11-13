@@ -242,6 +242,7 @@ function shouldBecomeEqual(_a, _b, completionHandler, timeout)
   if (timeout === undefined)
     timeout = 500;
 
+  var _bv;
   var condition = function() {
     var exception;
     var _av;
@@ -250,7 +251,7 @@ function shouldBecomeEqual(_a, _b, completionHandler, timeout)
     } catch (e) {
       exception = e;
     }
-    var _bv = eval(_b);
+    _bv = eval(_b);
     if (exception)
       testFailed(_a + " should become " + _bv + ". Threw exception " + exception);
     if (isResultCorrect(_av, _bv)) {
@@ -261,7 +262,7 @@ function shouldBecomeEqual(_a, _b, completionHandler, timeout)
   };
   var failureTime = Date.now() + timeout;
   var failureHandler = function () {
-    testFailed(_a + " failed to change to " + _b + " in " + (timeout / 1000) + " seconds.");
+    testFailed(_a + " failed to change to " + _bv + " in " + (timeout / 1000) + " seconds.");
     completionHandler();
   };
   _waitForCondition(condition, failureTime, completionHandler, failureHandler);
@@ -361,6 +362,7 @@ function shouldBecomeDifferent(_a, _b, completionHandler, timeout)
   if (timeout === undefined)
     timeout = 500;
 
+  var _bv;
   var condition = function() {
     var exception;
     var _av;
@@ -369,7 +371,7 @@ function shouldBecomeDifferent(_a, _b, completionHandler, timeout)
     } catch (e) {
       exception = e;
     }
-    var _bv = eval(_b);
+    _bv = eval(_b);
     if (exception)
       testFailed(_a + " should became not equal to " + _bv + ". Threw exception " + exception);
     if (!isResultCorrect(_av, _bv)) {
@@ -380,7 +382,7 @@ function shouldBecomeDifferent(_a, _b, completionHandler, timeout)
   };
   var failureTime = Date.now() + timeout;
   var failureHandler = function () {
-    testFailed(_a + " did not become different from " + _b + " in " + (timeout / 1000) + " seconds.");
+    testFailed(_a + " did not become different from " + _bv + " in " + (timeout / 1000) + " seconds.");
     completionHandler();
   };
   _waitForCondition(condition, failureTime, completionHandler, failureHandler);
