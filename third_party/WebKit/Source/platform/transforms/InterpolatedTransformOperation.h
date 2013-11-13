@@ -47,8 +47,7 @@ public:
 private:
     virtual bool isIdentity() const { return false; }
 
-    virtual OperationType getOperationType() const { return Interpolated; }
-    virtual bool isSameType(const TransformOperation& o) const { return o.getOperationType() == Interpolated; }
+    virtual OperationType type() const OVERRIDE { return Interpolated; }
 
     virtual bool operator==(const TransformOperation&) const;
     virtual bool apply(TransformationMatrix&, const FloatSize& borderBoxSize) const;

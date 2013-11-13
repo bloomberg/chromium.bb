@@ -67,8 +67,7 @@ PassOwnPtr<WebTransformOperations> toWebTransformOperations(const TransformOpera
     if (!webTransformOperations)
         return nullptr;
     for (size_t j = 0; j < transformOperations.size(); ++j) {
-        TransformOperation::OperationType operationType = transformOperations.operations()[j]->getOperationType();
-        switch (operationType) {
+        switch (transformOperations.operations()[j]->type()) {
         case TransformOperation::ScaleX:
         case TransformOperation::ScaleY:
         case TransformOperation::ScaleZ:
