@@ -55,8 +55,6 @@ public:
     bool isLoaded() const;
     bool isValid() const;
 
-    const AtomicString& string() const { return m_string; }
-
     void setFontFace(CSSFontFace* face) { m_face = face; }
 
     virtual void didStartFontLoad(FontResource*) OVERRIDE;
@@ -73,7 +71,6 @@ public:
     void setHasExternalSVGFont(bool value) { m_hasExternalSVGFont = value; }
 #endif
 
-    bool isDecodeError() const;
     bool ensureFontData();
     bool isLocalFontAvailable(const FontDescription&);
     void willUseFontData();

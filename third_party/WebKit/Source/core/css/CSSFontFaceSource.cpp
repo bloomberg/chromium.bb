@@ -244,13 +244,6 @@ bool CSSFontFaceSource::isSVGFontFaceSource() const
 }
 #endif
 
-bool CSSFontFaceSource::isDecodeError() const
-{
-    if (m_font)
-        return m_font->status() == Resource::DecodeError;
-    return false;
-}
-
 bool CSSFontFaceSource::ensureFontData()
 {
     if (!m_font)
