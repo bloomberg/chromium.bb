@@ -85,6 +85,7 @@ const char* kAtomsToCache[] = {
   "_NET_WM_WINDOW_TYPE",
   "_NET_WM_WINDOW_TYPE_MENU",
   "_NET_WM_WINDOW_TYPE_NORMAL",
+  "_NET_WM_WINDOW_TYPE_NOTIFICATION",
   "_NET_WM_WINDOW_TYPE_TOOLTIP",
   "XdndActionAsk",
   "XdndActionCopy"
@@ -904,6 +905,11 @@ void DesktopRootWindowHostX11::InitX11Window(
       break;
     case Widget::InitParams::TYPE_TOOLTIP:
       window_type = atom_cache_.GetAtom("_NET_WM_WINDOW_TYPE_TOOLTIP");
+      break;
+    case Widget::InitParams::TYPE_POPUP:
+      swa.override_redirect = True;
+      attribute_mask |= CWOverrideRedirect;
+      window_type = atom_cache_.GetAtom("_NET_WM_WINDOW_TYPE_NOTIFICATION");
       break;
     default:
       window_type = atom_cache_.GetAtom("_NET_WM_WINDOW_TYPE_NORMAL");
