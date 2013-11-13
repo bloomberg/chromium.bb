@@ -198,17 +198,14 @@ cr.define('login', function() {
       // Camera selection
       if (imageGrid.selectionType == 'camera') {
         $('flip-photo').tabIndex = 0;
-
         // No current image selected.
-        if (imageGrid.cameraLive) {
+        if (imageGrid.cameraLive)
           $('ok-button').disabled = true;
-          chrome.send('selectImage',
-                      [imageGrid.selectedItemUrl,
-                       imageGrid.selectionType,
-                       !imageGrid.inProgramSelection]);
-        }
+        else
+          this.notifyImageSelected_();
       } else {
         $('flip-photo').tabIndex = -1;
+        this.notifyImageSelected_();
       }
       // Start/stop camera on (de)selection.
       if (!imageGrid.inProgramSelection &&
@@ -440,7 +437,19 @@ cr.define('login', function() {
     updateProfileImageCaption_: function() {
       this.profileImageCaption = loadTimeData.getString(
         this.profileImageLoading_ ? 'profilePhotoLoading' : 'profilePhoto');
-    }
+    },
+
+    /**
+     * Notifies chrome about image selection.
+     * @private
+     */
+    notifyImageSelected_: function() {
+      var imageGrid = $('user-image-grid');
+      chrome.send('selectImage',
+                  [imageGrid.selectedItemUrl,
+                   imageGrid.selectionType,
+                   !imageGrid.inProgramSelection]);
+    },
   };
 
   // Forward public APIs to private implementations.
