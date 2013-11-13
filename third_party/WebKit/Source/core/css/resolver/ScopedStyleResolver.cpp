@@ -33,6 +33,7 @@
 #include "core/css/RuleFeature.h"
 #include "core/css/RuleSet.h"
 #include "core/css/StyleRule.h"
+#include "core/css/StyleSheetContents.h"
 #include "core/css/resolver/StyleResolver.h" // For MatchRequest.
 #include "core/css/resolver/ViewportStyleResolver.h"
 #include "core/dom/Document.h"
@@ -251,7 +252,7 @@ void ScopedStyleResolver::addRulesFromSheet(StyleSheetContents* sheet, const Med
     if (!m_authorStyle)
         m_authorStyle = RuleSet::create();
     m_authorStyle->addRulesFromSheet(sheet, medium, resolver, &m_scopingNode);
-    resolver->processScopedRules(*m_authorStyle, &m_scopingNode);
+    resolver->processScopedRules(*m_authorStyle, sheet->baseURL(), &m_scopingNode);
 }
 
 inline RuleSet* ScopedStyleResolver::ensureAtHostRuleSetFor(const ShadowRoot* shadowRoot)

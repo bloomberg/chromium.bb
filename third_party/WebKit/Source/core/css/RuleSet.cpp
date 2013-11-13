@@ -56,11 +56,6 @@ static inline bool isDocumentScope(const ContainerNode* scope)
     return !scope || scope->isDocumentNode();
 }
 
-static inline bool isScopingNodeInShadowTree(const ContainerNode* scopingNode)
-{
-    return scopingNode && scopingNode->isInShadowTree();
-}
-
 static inline bool isSelectorMatchingHTMLBasedOnRuleHash(const CSSSelector* selector)
 {
     ASSERT(selector);
@@ -335,14 +330,20 @@ void RuleSet::addViewportRule(StyleRuleViewport* rule)
 
 void RuleSet::addFontFaceRule(StyleRuleFontFace* rule)
 {
-    ensurePendingRules(); // So that m_viewportRules.shrinkToFit() gets called.
+    ensurePendingRules(); // So that m_fontFaceRules.shrinkToFit() gets called.
     m_fontFaceRules.append(rule);
 }
 
 void RuleSet::addKeyframesRule(StyleRuleKeyframes* rule)
 {
-    ensurePendingRules(); // So that m_viewportRules.shrinkToFit() gets called.
+    ensurePendingRules(); // So that m_keyframesRules.shrinkToFit() gets called.
     m_keyframesRules.append(rule);
+}
+
+void RuleSet::addHostRule(StyleRuleHost* rule)
+{
+    ensurePendingRules(); // So that m_hostRules.shrinkToFit() gets called.
+    m_hostRules.append(rule);
 }
 
 void RuleSet::addRegionRule(StyleRuleRegion* regionRule, bool hasDocumentSecurityOrigin)
@@ -401,13 +402,8 @@ void RuleSet::addChildRules(const Vector<RefPtr<StyleRuleBase> >& rules, const M
             addKeyframesRule(static_cast<StyleRuleKeyframes*>(rule));
         } else if (rule->isRegionRule()) {
             addRegionRule(static_cast<StyleRuleRegion*>(rule), hasDocumentSecurityOrigin);
-        } else if (rule->isHostRule() && resolver) {
-            if (!isScopingNodeInShadowTree(scope))
-                continue;
-            bool enabled = resolver->buildScopedStyleTreeInDocumentOrder();
-            resolver->setBuildScopedStyleTreeInDocumentOrder(false);
-            resolver->ensureScopedStyleResolver(scope->shadowHost())->addHostRule(static_cast<StyleRuleHost*>(rule), hasDocumentSecurityOrigin, scope);
-            resolver->setBuildScopedStyleTreeInDocumentOrder(enabled);
+        } else if (rule->isHostRule()) {
+            addHostRule(static_cast<StyleRuleHost*>(rule));
         } else if (rule->isViewportRule()) {
             addViewportRule(static_cast<StyleRuleViewport*>(rule));
         } else if (rule->isSupportsRule() && static_cast<StyleRuleSupports*>(rule)->conditionIsSupported()) {

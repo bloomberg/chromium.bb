@@ -209,22 +209,30 @@ void StyleResolver::finishAppendAuthorStyleSheets()
     collectViewportRules();
 }
 
-void StyleResolver::processScopedRules(const RuleSet& authorRules, const ContainerNode* scope)
+void StyleResolver::processScopedRules(const RuleSet& authorRules, const KURL& sheetBaseURL, const ContainerNode* scope)
 {
     const Vector<StyleRuleKeyframes*> keyframesRules = authorRules.keyframesRules();
     for (unsigned i = 0; i < keyframesRules.size(); ++i)
         ensureScopedStyleResolver(scope)->addKeyframeStyle(keyframesRules[i]);
 
-    // Add this font face to our set.
-    // FIXME(BUG 72461): We don't add @font-face rules of scoped style sheets for the moment.
-    if (scope && !scope->isDocumentNode())
-        return;
+    const Vector<StyleRuleHost*> hostRules = authorRules.hostRules();
+    if (hostRules.size() && scope && scope->isInShadowTree()) {
+        bool enabled = buildScopedStyleTreeInDocumentOrder();
+        setBuildScopedStyleTreeInDocumentOrder(false);
+        bool hasDocumentSecurityOrigin = document().securityOrigin()->canRequest(sheetBaseURL);
+        for (unsigned i = 0; i < hostRules.size(); ++i)
+            ensureScopedStyleResolver(scope->shadowHost())->addHostRule(hostRules[i], hasDocumentSecurityOrigin, scope);
+        setBuildScopedStyleTreeInDocumentOrder(enabled);
+    }
 
-    const Vector<StyleRuleFontFace*> fontFaceRules = authorRules.fontFaceRules();
-    for (unsigned i = 0; i < fontFaceRules.size(); ++i)
-        fontSelector()->addFontFaceRule(fontFaceRules[i]);
-    if (fontFaceRules.size())
-        invalidateMatchedPropertiesCache();
+    // FIXME(BUG 72461): We don't add @font-face rules of scoped style sheets for the moment.
+    if (!scope || scope->isDocumentNode()) {
+        const Vector<StyleRuleFontFace*> fontFaceRules = authorRules.fontFaceRules();
+        for (unsigned i = 0; i < fontFaceRules.size(); ++i)
+            fontSelector()->addFontFaceRule(fontFaceRules[i]);
+        if (fontFaceRules.size())
+            invalidateMatchedPropertiesCache();
+    }
 }
 
 void StyleResolver::resetAuthorStyle(const ContainerNode* scopingNode)
