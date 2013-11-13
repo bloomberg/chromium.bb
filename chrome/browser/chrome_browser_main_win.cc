@@ -22,7 +22,7 @@
 #include "base/win/windows_version.h"
 #include "base/win/wrapped_window_proc.h"
 #include "chrome/browser/browser_util_win.h"
-#include "chrome/browser/install_module_verifier_win.h"
+#include "chrome/browser/install_verification/win/install_verification.h"
 #include "chrome/browser/profiles/profile_info_cache.h"
 #include "chrome/browser/profiles/profile_shortcut_manager.h"
 #include "chrome/browser/shell_integration.h"
@@ -246,7 +246,7 @@ void ChromeBrowserMainPartsWin::PostBrowserStart() {
   content::BrowserThread::GetMessageLoopProxyForThread(
       content::BrowserThread::UI)->PostDelayedTask(
           FROM_HERE,
-          base::Bind(&BeginModuleVerification),
+          base::Bind(&VerifyInstallation),
           base::TimeDelta::FromSeconds(45));
 }
 
