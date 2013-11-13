@@ -27,10 +27,10 @@
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/login/auth_sync_observer.h"
 #include "chrome/browser/chromeos/login/auth_sync_observer_factory.h"
 #include "chrome/browser/chromeos/login/default_pinned_apps_field_trial.h"
-#include "chrome/browser/chromeos/login/language_switch_menu.h"
 #include "chrome/browser/chromeos/login/login_display.h"
 #include "chrome/browser/chromeos/login/login_utils.h"
 #include "chrome/browser/chromeos/login/multi_profile_first_run_notification.h"
@@ -737,21 +737,25 @@ std::string UserManagerImpl::GetUserDisplayEmail(
 
 // TODO(alemate): http://crbug.com/288941 : Respect preferred language list in
 // the Google user profile.
-void UserManagerImpl::RespectLocalePreference(Profile* profile,
-                                              const User* user) const {
+//
+// Returns true if callback will be called.
+bool UserManagerImpl::RespectLocalePreference(
+    Profile* profile,
+    const User* user,
+    scoped_ptr<locale_util::SwitchLanguageCallback> callback) const {
   if (g_browser_process == NULL)
-    return;
+    return false;
   if ((user == NULL) || (user != GetPrimaryUser()) ||
       (!user->is_profile_created()))
-    return;
+    return false;
 
   // In case of Multi Profile mode we don't apply profile locale because it is
   // unsafe.
   if (GetLoggedInUsers().size() != 1)
-    return;
+    return false;
   const PrefService* prefs = profile->GetPrefs();
   if (prefs == NULL)
-    return;
+    return false;
 
   std::string pref_locale;
   const std::string pref_app_locale =
@@ -766,7 +770,7 @@ void UserManagerImpl::RespectLocalePreference(Profile* profile,
   const std::string* account_locale = NULL;
   if (pref_locale.empty() && user->has_gaia_account()) {
     if (user->GetAccountLocale() == NULL)
-      return;  // wait until Account profile is loaded.
+      return false;  // wait until Account profile is loaded.
     account_locale = user->GetAccountLocale();
     pref_locale = *account_locale;
   }
@@ -790,7 +794,9 @@ void UserManagerImpl::RespectLocalePreference(Profile* profile,
   // is different from the login screen UI language, is not desirable. Note
   // that input method preferences are synced, so users can use their
   // farovite input methods as soon as the preferences are synced.
-  chromeos::LanguageSwitchMenu::SwitchLanguage(pref_locale);
+  locale_util::SwitchLanguage(pref_locale, false, callback.Pass());
+
+  return true;
 }
 
 Profile* UserManagerImpl::GetProfileByUser(const User* user) const {

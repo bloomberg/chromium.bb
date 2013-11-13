@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_flow.h"
 
@@ -326,9 +327,11 @@ class UserManager {
       const = 0;
 
   // Changes browser locale (selects best suitable locale from different
-  // user settings).
-  virtual void RespectLocalePreference(Profile* profile,
-                                       const User* user) const = 0;
+  // user settings). Returns true if callback will be called.
+  virtual bool RespectLocalePreference(
+      Profile* profile,
+      const User* user,
+      scoped_ptr<locale_util::SwitchLanguageCallback> callback) const = 0;
 
  private:
   friend class ScopedUserManagerEnabler;

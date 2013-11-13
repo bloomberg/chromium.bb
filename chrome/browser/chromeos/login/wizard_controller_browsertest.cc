@@ -15,10 +15,10 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/login/enrollment/enrollment_screen.h"
 #include "chrome/browser/chromeos/login/enrollment/mock_enrollment_screen.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
-#include "chrome/browser/chromeos/login/language_switch_menu.h"
 #include "chrome/browser/chromeos/login/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/mock_authenticator.h"
 #include "chrome/browser/chromeos/login/mock_login_status_consumer.h"
@@ -79,6 +79,45 @@ class PrefStoreStub : public TestingPrefStore {
   virtual ~PrefStoreStub() {}
 };
 
+struct SwitchLanguageTestData {
+  SwitchLanguageTestData() : success(false), done(false) {}
+
+  std::string requested_locale;
+  std::string loaded_locale;
+  bool success;
+  bool done;
+};
+
+void OnLocaleSwitched(SwitchLanguageTestData* self,
+                      const std::string& locale,
+                      const std::string& loaded_locale,
+                      const bool success) {
+  self->requested_locale = locale;
+  self->loaded_locale = loaded_locale;
+  self->success = success;
+  self->done = true;
+}
+
+void RunSwitchLanguageTest(const std::string& locale,
+                                  const std::string& expected_locale,
+                                  const bool expect_success) {
+  SwitchLanguageTestData data;
+  scoped_ptr<locale_util::SwitchLanguageCallback> callback(
+      new locale_util::SwitchLanguageCallback(
+          base::Bind(&OnLocaleSwitched, base::Unretained(&data))));
+  locale_util::SwitchLanguage(locale, true, callback.Pass());
+
+  // Token writing moves control to BlockingPool and back.
+  base::RunLoop().RunUntilIdle();
+  content::BrowserThread::GetBlockingPool()->FlushForTesting();
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(data.done, true);
+  EXPECT_EQ(data.requested_locale, locale);
+  EXPECT_EQ(data.loaded_locale, expected_locale);
+  EXPECT_EQ(data.success, expect_success);
+}
+
 }  // namespace
 
 using ::testing::_;
@@ -128,7 +167,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerTest, SwitchLanguage) {
   const std::wstring en_str =
       UTF16ToWide(l10n_util::GetStringUTF16(IDS_NETWORK_SELECTION_TITLE));
 
-  LanguageSwitchMenu::SwitchLanguage("fr");
+  RunSwitchLanguageTest("fr", "fr", true);
   EXPECT_EQ("fr", g_browser_process->GetApplicationLocale());
   EXPECT_STREQ("fr", icu::Locale::getDefault().getLanguage());
   EXPECT_FALSE(base::i18n::IsRTL());
@@ -137,7 +176,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerTest, SwitchLanguage) {
 
   EXPECT_NE(en_str, fr_str);
 
-  LanguageSwitchMenu::SwitchLanguage("ar");
+  RunSwitchLanguageTest("ar", "ar", true);
   EXPECT_EQ("ar", g_browser_process->GetApplicationLocale());
   EXPECT_STREQ("ar", icu::Locale::getDefault().getLanguage());
   EXPECT_TRUE(base::i18n::IsRTL());

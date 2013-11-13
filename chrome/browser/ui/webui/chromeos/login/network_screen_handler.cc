@@ -4,12 +4,16 @@
 
 #include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/input_method/input_method_util.h"
-#include "chrome/browser/chromeos/login/language_switch_menu.h"
+#include "chrome/browser/chromeos/login/input_events_blocker.h"
 #include "chrome/browser/chromeos/login/screens/core_oobe_actor.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
@@ -43,7 +47,8 @@ NetworkScreenHandler::NetworkScreenHandler(CoreOobeActor* core_oobe_actor)
       screen_(NULL),
       core_oobe_actor_(core_oobe_actor),
       is_continue_enabled_(false),
-      show_on_init_(false) {
+      show_on_init_(false),
+      weak_ptr_factory_(this) {
   DCHECK(core_oobe_actor_);
 }
 
@@ -159,21 +164,51 @@ void NetworkScreenHandler::HandleOnExit() {
     screen_->OnContinuePressed();
 }
 
+struct NetworkScreenHandlerOnLanguageChangedCallbackData {
+  explicit NetworkScreenHandlerOnLanguageChangedCallbackData(
+      base::WeakPtr<NetworkScreenHandler>& handler)
+      : handler_(handler) {}
+
+  base::WeakPtr<NetworkScreenHandler> handler_;
+
+  // Block UI while resource bundle is being reloaded.
+  chromeos::InputEventsBlocker input_events_blocker;
+};
+
+// static
+void NetworkScreenHandler::OnLanguageChangedCallback(
+    scoped_ptr<NetworkScreenHandlerOnLanguageChangedCallbackData> context,
+    const std::string& /*requested locale*/,
+    const std::string& /*loaded_locale*/,
+    const bool /*success*/) {
+  if (!context or !context->handler_)
+    return;
+
+  NetworkScreenHandler* const self = context->handler_.get();
+
+  DictionaryValue localized_strings;
+  static_cast<OobeUI*>(self->web_ui()->GetController())
+      ->GetLocalizedStrings(&localized_strings);
+  self->core_oobe_actor_->ReloadContent(localized_strings);
+
+  // Buttons are recreated, updated "Continue" button state.
+  self->EnableContinue(self->is_continue_enabled_);
+}
+
 void NetworkScreenHandler::HandleOnLanguageChanged(const std::string& locale) {
   const std::string app_locale = g_browser_process->GetApplicationLocale();
   if (app_locale == locale)
     return;
 
-  // TODO(altimofeev): make language change async.
-  LanguageSwitchMenu::SwitchLanguageAndEnableKeyboardLayouts(locale);
-
-  DictionaryValue localized_strings;
-  static_cast<OobeUI*>(web_ui()->GetController())->GetLocalizedStrings(
-      &localized_strings);
-  core_oobe_actor_->ReloadContent(localized_strings);
-
-  // Buttons are recreated, updated "Continue" button state.
-  EnableContinue(is_continue_enabled_);
+  base::WeakPtr<NetworkScreenHandler> weak_self =
+      weak_ptr_factory_.GetWeakPtr();
+  scoped_ptr<NetworkScreenHandlerOnLanguageChangedCallbackData> callback_data(
+      new NetworkScreenHandlerOnLanguageChangedCallbackData(weak_self));
+  scoped_ptr<locale_util::SwitchLanguageCallback> callback(
+      new locale_util::SwitchLanguageCallback(
+          base::Bind(&NetworkScreenHandler::OnLanguageChangedCallback,
+                     base::Passed(callback_data.Pass()))));
+  locale_util::SwitchLanguage(locale, true, callback.Pass());
 }
 
 void NetworkScreenHandler::HandleOnInputMethodChanged(const std::string& id) {

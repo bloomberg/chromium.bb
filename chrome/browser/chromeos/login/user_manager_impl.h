@@ -143,8 +143,10 @@ class UserManagerImpl
   virtual void OnPolicyUpdated(const std::string& user_id) OVERRIDE;
   virtual void OnDeviceLocalAccountsChanged() OVERRIDE;
 
-  virtual void RespectLocalePreference(Profile* profile, const User* user) const
-      OVERRIDE;
+  virtual bool RespectLocalePreference(
+      Profile* profile,
+      const User* user,
+      scoped_ptr<locale_util::SwitchLanguageCallback> callback) const OVERRIDE;
 
  private:
   friend class SupervisedUserManagerImpl;

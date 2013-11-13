@@ -274,8 +274,11 @@ base::FilePath FakeUserManager::GetUserProfileDir(
   return base::FilePath();
 }
 
-void FakeUserManager::RespectLocalePreference(Profile* profile,
-                                              const User* user) const {
+bool FakeUserManager::RespectLocalePreference(
+    Profile* profile,
+    const User* user,
+    scoped_ptr<locale_util::SwitchLanguageCallback> callback) const {
+  return false;
 }
 
 }  // namespace chromeos

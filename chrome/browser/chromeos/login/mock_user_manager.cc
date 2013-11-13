@@ -92,8 +92,11 @@ void MockUserManager::ClearUserList() {
   user_list_.clear();
 }
 
-void MockUserManager::RespectLocalePreference(Profile* profile,
-                                              const User* user) const {
+bool MockUserManager::RespectLocalePreference(
+    Profile* profile,
+    const User* user,
+    scoped_ptr<locale_util::SwitchLanguageCallback> callback) const {
+  return false;
 }
 
 }  // namespace chromeos
