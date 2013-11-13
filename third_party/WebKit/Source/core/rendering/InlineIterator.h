@@ -627,6 +627,8 @@ inline void InlineBidiResolver::appendRun()
                 adjustMidpointsAndAppendRunsForObjectIfNeeded(obj, start, end, *this, AppendingRunsForObject, isolateTracker);
         }
 
+        if (isEndOfLine)
+            m_reachedEndOfLine = true;
         m_eor.increment();
         m_sor = m_eor;
     }
