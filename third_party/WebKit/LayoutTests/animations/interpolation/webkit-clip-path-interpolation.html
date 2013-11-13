@@ -43,5 +43,18 @@ assertInterpolation({
   {at: 1, is: 'circle(50px, 50px, 50px)'},
   {at: 1.5, is: 'circle(62.5px, 37.5px, 70px)'}
 ]);
+
+assertInterpolation({
+  property: '-webkit-clip-path',
+  from: 'none',
+  to: 'circle(1px, 2px, 3px)'
+}, [
+  {at: -0.3, is: 'none'},
+  {at: 0, is: 'none'},
+  {at: 0.3, is: 'none'},
+  {at: 0.6, is: 'circle(1px, 2px, 3px)'},
+  {at: 1, is: 'circle(1px, 2px, 3px)'},
+  {at: 1.5, is: 'circle(1px, 2px, 3px)'}
+]);
 </script>
 </body>
