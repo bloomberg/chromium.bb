@@ -333,8 +333,6 @@ window_get_display(struct window *window);
 void
 window_move(struct window *window, struct input *input, uint32_t time);
 void
-window_touch_move(struct window *window, struct input *input, uint32_t time);
-void
 window_get_allocation(struct window *window, struct rectangle *allocation);
 void
 window_schedule_redraw(struct window *window);

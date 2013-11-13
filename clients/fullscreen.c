@@ -283,8 +283,7 @@ touch_handler(struct widget *widget, struct input *input,
 		   float x, float y, void *data)
 {
 	struct fullscreen *fullscreen = data;
-	window_touch_move(fullscreen->window, input, 
-			  display_get_serial(fullscreen->display));
+	window_move(fullscreen->window, input, display_get_serial(fullscreen->display));
 }
 
 static void

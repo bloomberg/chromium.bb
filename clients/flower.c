@@ -158,8 +158,7 @@ touch_down_handler(struct widget *widget, struct input *input,
 		   float x, float y, void *data)
 {
 	struct flower *flower = data;
-	window_touch_move(flower->window, input, 
-			  display_get_serial(flower->display));
+	window_move(flower->window, input, display_get_serial(flower->display));
 }
 
 int main(int argc, char *argv[])

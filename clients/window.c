@@ -3590,16 +3590,6 @@ window_move(struct window *window, struct input *input, uint32_t serial)
 	wl_shell_surface_move(window->shell_surface, input->seat, serial);
 }
 
-void
-window_touch_move(struct window *window, struct input *input, uint32_t serial)
-{
-	if (!window->shell_surface)
-		return;
-
-	wl_shell_surface_move(window->shell_surface, input->seat, 
-			      window->display->serial);
-}
-
 static void
 surface_set_synchronized(struct surface *surface)
 {

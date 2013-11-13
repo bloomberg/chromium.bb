@@ -227,8 +227,7 @@ touch_handler(struct widget *widget, struct input *input,
 		   float x, float y, void *data)
 {
 	struct transformed *transformed = data;
-	window_touch_move(transformed->window, input, 
-			  display_get_serial(transformed->display));
+	window_move(transformed->window, input, display_get_serial(transformed->display));
 }
 
 static void
