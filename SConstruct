@@ -2736,10 +2736,11 @@ nacl_env = MakeArchSpecificEnv().Clone(
     LIST_MAPPINGS_LIBS = ['nacl_list_mappings_private'],
     )
 
+# TODO(mcgrathr): Remove this after the new binutils has settled.
 def IsNewLinker(env):
   """Return True if using a new-style linker with the new-style layout.
 That means the linker supports the -Trodata-segment switch."""
-  return env.Bit('target_arm') or env.Bit('bitcode')
+  return True
 
 nacl_env.AddMethod(IsNewLinker)
 
@@ -3005,9 +3006,9 @@ nacl_env.Replace(PPAPI_LIBS=['ppapi'])
 # See http://code.google.com/p/nativeclient/issues/detail?id=1298
 def GetLinkerScriptBaseName(env):
   if env.Bit('build_x86_64'):
-    return 'elf64_nacl'
+    return 'elf_x86_64_nacl'
   else:
-    return 'elf_nacl'
+    return 'elf_i386_nacl'
 
 if (nacl_env.Bit('nacl_glibc') and
     nacl_env.Bit('nacl_static_link')):

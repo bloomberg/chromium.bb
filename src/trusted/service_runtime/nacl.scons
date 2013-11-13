@@ -56,9 +56,9 @@ def NewAsmEnv(env, defines, rodata_address, rwdata_address):
                 ' -o ${TARGET} ${SOURCES}')
 
   if env.Bit('target_x86_32'):
-    link_cmd += ' -melf_nacl'
+    link_cmd += ' -melf_i386_nacl'
   elif env.Bit('target_x86_64'):
-    link_cmd += ' -melf64_nacl'
+    link_cmd += ' -melf_x86_64_nacl'
   elif env.Bit('target_arm'):
     link_cmd += ' -marmelf_nacl'
   elif env.Bit('target_mips32'):
