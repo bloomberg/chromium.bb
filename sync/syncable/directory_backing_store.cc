@@ -156,6 +156,8 @@ DirectoryBackingStore::DirectoryBackingStore(const string& dir_name)
     dir_name_(dir_name),
     needs_column_refresh_(false) {
   db_->set_histogram_tag("SyncDirectory");
+  db_->set_page_size(4096);
+  db_->set_cache_size(32);
 }
 
 DirectoryBackingStore::DirectoryBackingStore(const string& dir_name,
