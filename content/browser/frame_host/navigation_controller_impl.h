@@ -90,8 +90,8 @@ class CONTENT_EXPORT NavigationControllerImpl
       const NavigationController& source) OVERRIDE;
   virtual void CopyStateFromAndPrune(
       NavigationController* source) OVERRIDE;
-  virtual bool CanPruneAllButVisible() OVERRIDE;
-  virtual void PruneAllButVisible() OVERRIDE;
+  virtual bool CanPruneAllButLastCommitted() OVERRIDE;
+  virtual void PruneAllButLastCommitted() OVERRIDE;
   virtual void ClearAllScreenshots() OVERRIDE;
 
   // The session storage namespace that all child RenderViews belonging to
@@ -301,10 +301,11 @@ class CONTENT_EXPORT NavigationControllerImpl
   void PruneOldestEntryIfFull();
 
   // Removes all entries except the last committed entry.  If there is a new
-  // pending navigation it is preserved. In contrast to PruneAllButVisible()
-  // this does not update the session history of the RenderView.  Callers
-  // must ensure that |CanPruneAllButVisible| returns true before calling this.
-  void PruneAllButVisibleInternal();
+  // pending navigation it is preserved. In contrast to
+  // PruneAllButLastCommitted() this does not update the session history of the
+  // RenderView.  Callers must ensure that |CanPruneAllButLastCommitted| returns
+  // true before calling this.
+  void PruneAllButLastCommittedInternal();
 
   // Returns true if the navigation is likley to be automatic rather than
   // user-initiated.

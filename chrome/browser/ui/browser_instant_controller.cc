@@ -80,7 +80,7 @@ bool BrowserInstantController::MaybeSwapInInstantNTPContents(
     // source contents.
     // TODO(sreeram): Always using the local URL is wrong in the case of the
     // first tab in a window where we might want to use the remote URL. Fix.
-    if (!instant_ntp->GetController().CanPruneAllButVisible()) {
+    if (!instant_ntp->GetController().CanPruneAllButLastCommitted()) {
       source_contents->GetController().LoadURL(chrome::GetLocalInstantURL(
           profile()), content::Referrer(), content::PAGE_TRANSITION_GENERATED,
           std::string());
@@ -94,10 +94,10 @@ bool BrowserInstantController::MaybeSwapInInstantNTPContents(
     }
   } else {
     // If the Instant NTP hasn't yet committed an entry, we can't call
-    // PruneAllButVisible.  In that case, there shouldn't be any entries to
-    // prune anyway.
-    if (instant_ntp->GetController().CanPruneAllButVisible())
-      instant_ntp->GetController().PruneAllButVisible();
+    // PruneAllButLastCommitted.  In that case, there shouldn't be any entries
+    // to prune anyway.
+    if (instant_ntp->GetController().CanPruneAllButLastCommitted())
+      instant_ntp->GetController().PruneAllButLastCommitted();
     else
       CHECK(!instant_ntp->GetController().GetLastCommittedEntry());
 

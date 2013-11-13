@@ -1229,7 +1229,7 @@ void NavigationControllerImpl::CopyStateFrom(
 void NavigationControllerImpl::CopyStateFromAndPrune(
     NavigationController* temp) {
   // It is up to callers to check the invariants before calling this.
-  CHECK(CanPruneAllButVisible());
+  CHECK(CanPruneAllButLastCommitted());
 
   NavigationControllerImpl* source =
       static_cast<NavigationControllerImpl*>(temp);
@@ -1246,7 +1246,7 @@ void NavigationControllerImpl::CopyStateFromAndPrune(
       delegate_->GetMaxPageIDForSiteInstance(site_instance.get());
 
   // Remove all the entries leaving the active entry.
-  PruneAllButVisibleInternal();
+  PruneAllButLastCommittedInternal();
 
   // We now have one entry, possibly with a new pending entry.  Ensure that
   // adding the entries from source won't put us over the limit.
@@ -1283,7 +1283,7 @@ void NavigationControllerImpl::CopyStateFromAndPrune(
   }
 }
 
-bool NavigationControllerImpl::CanPruneAllButVisible() {
+bool NavigationControllerImpl::CanPruneAllButLastCommitted() {
   // If there is no last committed entry, we cannot prune.  Even if there is a
   // pending entry, it may not commit, leaving this WebContents blank, despite
   // possibly giving it new entries via CopyStateFromAndPrune.
@@ -1304,8 +1304,8 @@ bool NavigationControllerImpl::CanPruneAllButVisible() {
   return true;
 }
 
-void NavigationControllerImpl::PruneAllButVisible() {
-  PruneAllButVisibleInternal();
+void NavigationControllerImpl::PruneAllButLastCommitted() {
+  PruneAllButLastCommittedInternal();
 
   // We should still have a last committed entry.
   DCHECK_NE(-1, last_committed_entry_index_);
@@ -1321,9 +1321,9 @@ void NavigationControllerImpl::PruneAllButVisible() {
       entry->site_instance(), 0, entry->GetPageID());
 }
 
-void NavigationControllerImpl::PruneAllButVisibleInternal() {
+void NavigationControllerImpl::PruneAllButLastCommittedInternal() {
   // It is up to callers to check the invariants before calling this.
-  CHECK(CanPruneAllButVisible());
+  CHECK(CanPruneAllButLastCommitted());
 
   // Erase all entries but the last committed entry.  There may still be a
   // new pending entry after this.

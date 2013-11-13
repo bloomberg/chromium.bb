@@ -1202,8 +1202,8 @@ void ContentViewCoreImpl::ContinuePendingReload(JNIEnv* env, jobject obj) {
 
 void ContentViewCoreImpl::ClearHistory(JNIEnv* env, jobject obj) {
   // TODO(creis): Do callers of this need to know if it fails?
-  if (web_contents_->GetController().CanPruneAllButVisible())
-    web_contents_->GetController().PruneAllButVisible();
+  if (web_contents_->GetController().CanPruneAllButLastCommitted())
+    web_contents_->GetController().PruneAllButLastCommitted();
 }
 
 void ContentViewCoreImpl::AddJavascriptInterface(

@@ -2101,7 +2101,7 @@ TEST_F(WebContentsImplTest, CopyStateFromAndPruneTargetInterstitial) {
 
   // Ensure that we do not allow calling CopyStateFromAndPrune when an
   // interstitial is showing in the target.
-  EXPECT_FALSE(other_controller.CanPruneAllButVisible());
+  EXPECT_FALSE(other_controller.CanPruneAllButLastCommitted());
 }
 
 // Regression test for http://crbug.com/168611 - the URLs passed by the

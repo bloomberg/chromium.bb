@@ -1057,8 +1057,8 @@ void ViewSource(Browser* browser,
   // Note that Clone does not copy the pending or transient entries, so the
   // active entry in view_source_contents will be the last committed entry.
   WebContents* view_source_contents = contents->Clone();
-  DCHECK(view_source_contents->GetController().CanPruneAllButVisible());
-  view_source_contents->GetController().PruneAllButVisible();
+  DCHECK(view_source_contents->GetController().CanPruneAllButLastCommitted());
+  view_source_contents->GetController().PruneAllButLastCommitted();
   NavigationEntry* active_entry =
       view_source_contents->GetController().GetActiveEntry();
   if (!active_entry)

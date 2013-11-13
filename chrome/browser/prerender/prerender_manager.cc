@@ -470,7 +470,7 @@ bool PrerenderManager::MaybeUsePrerenderedPage(const GURL& url,
     // there is a pending entry, it may not commit.
     // TODO(creis): If there is a pending navigation and no last committed
     // entry, we might be able to transfer the network request instead.
-    if (!new_web_contents->GetController().CanPruneAllButVisible()) {
+    if (!new_web_contents->GetController().CanPruneAllButLastCommitted()) {
       // Abort this prerender so it is not used later. http://crbug.com/292121
       prerender_data->contents()->Destroy(FINAL_STATUS_NAVIGATION_UNCOMMITTED);
       return false;

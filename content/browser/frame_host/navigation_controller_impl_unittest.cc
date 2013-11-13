@@ -3467,8 +3467,8 @@ TEST_F(NavigationControllerTest, HistoryNavigate) {
   EXPECT_TRUE(message == NULL);
 }
 
-// Test call to PruneAllButVisible for the only entry.
-TEST_F(NavigationControllerTest, PruneAllButVisibleForSingle) {
+// Test call to PruneAllButLastCommitted for the only entry.
+TEST_F(NavigationControllerTest, PruneAllButLastCommittedForSingle) {
   NavigationControllerImpl& controller = controller_impl();
   const GURL url1("http://foo1");
   NavigateAndCommit(url1);
@@ -3477,14 +3477,14 @@ TEST_F(NavigationControllerTest, PruneAllButVisibleForSingle) {
       GetSiteInstanceFromEntry(controller.GetEntryAtIndex(0)), 0,
       controller.GetEntryAtIndex(0)->GetPageID());
 
-  controller.PruneAllButVisible();
+  controller.PruneAllButLastCommitted();
 
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
   EXPECT_EQ(controller.GetEntryAtIndex(0)->GetURL(), url1);
 }
 
-// Test call to PruneAllButVisible for first entry.
-TEST_F(NavigationControllerTest, PruneAllButVisibleForFirst) {
+// Test call to PruneAllButLastCommitted for first entry.
+TEST_F(NavigationControllerTest, PruneAllButLastCommittedForFirst) {
   NavigationControllerImpl& controller = controller_impl();
   const GURL url1("http://foo/1");
   const GURL url2("http://foo/2");
@@ -3501,14 +3501,14 @@ TEST_F(NavigationControllerTest, PruneAllButVisibleForFirst) {
       GetSiteInstanceFromEntry(controller.GetEntryAtIndex(0)), 0,
       controller.GetEntryAtIndex(0)->GetPageID());
 
-  controller.PruneAllButVisible();
+  controller.PruneAllButLastCommitted();
 
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
   EXPECT_EQ(controller.GetEntryAtIndex(0)->GetURL(), url1);
 }
 
-// Test call to PruneAllButVisible for intermediate entry.
-TEST_F(NavigationControllerTest, PruneAllButVisibleForIntermediate) {
+// Test call to PruneAllButLastCommitted for intermediate entry.
+TEST_F(NavigationControllerTest, PruneAllButLastCommittedForIntermediate) {
   NavigationControllerImpl& controller = controller_impl();
   const GURL url1("http://foo/1");
   const GURL url2("http://foo/2");
@@ -3524,15 +3524,15 @@ TEST_F(NavigationControllerTest, PruneAllButVisibleForIntermediate) {
       GetSiteInstanceFromEntry(controller.GetEntryAtIndex(1)), 0,
       controller.GetEntryAtIndex(1)->GetPageID());
 
-  controller.PruneAllButVisible();
+  controller.PruneAllButLastCommitted();
 
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
   EXPECT_EQ(controller.GetEntryAtIndex(0)->GetURL(), url2);
 }
 
-// Test call to PruneAllButVisible for a pending entry that is not yet in the
-// list of entries.
-TEST_F(NavigationControllerTest, PruneAllButVisibleForPendingNotInList) {
+// Test call to PruneAllButLastCommitted for a pending entry that is not yet in
+// the list of entries.
+TEST_F(NavigationControllerTest, PruneAllButLastCommittedForPendingNotInList) {
   NavigationControllerImpl& controller = controller_impl();
   const GURL url1("http://foo/1");
   const GURL url2("http://foo/2");
@@ -3549,7 +3549,7 @@ TEST_F(NavigationControllerTest, PruneAllButVisibleForPendingNotInList) {
 
   contents()->ExpectSetHistoryLengthAndPrune(
       NULL, 0, controller.GetPendingEntry()->GetPageID());
-  controller.PruneAllButVisible();
+  controller.PruneAllButLastCommitted();
 
   // We should only have the last committed and pending entries at this point,
   // and the pending entry should still not be in the entry list.
