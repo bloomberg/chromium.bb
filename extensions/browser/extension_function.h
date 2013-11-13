@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_FUNCTION_H_
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_FUNCTION_H_
+#ifndef EXTENSIONS_BROWSER_EXTENSION_FUNCTION_H_
+#define EXTENSIONS_BROWSER_EXTENSION_FUNCTION_H_
 
 #include <list>
 #include <string>
@@ -432,4 +432,4 @@ class SyncIOThreadExtensionFunction : public IOThreadExtensionFunction {
   virtual ~SyncIOThreadExtensionFunction();
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_FUNCTION_H_
+#endif  // EXTENSIONS_BROWSER_EXTENSION_FUNCTION_H_

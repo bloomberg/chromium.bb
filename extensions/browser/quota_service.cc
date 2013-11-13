@@ -6,7 +6,7 @@
 
 #include "base/message_loop/message_loop.h"
 #include "base/stl_util.h"
-#include "chrome/browser/extensions/extension_function.h"
+#include "extensions/browser/extension_function.h"
 #include "extensions/common/error_utils.h"
 
 namespace {

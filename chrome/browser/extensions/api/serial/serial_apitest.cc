@@ -10,11 +10,11 @@
 #include "chrome/browser/extensions/api/serial/serial_api.h"
 #include "chrome/browser/extensions/api/serial/serial_connection.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
 #include "chrome/browser/extensions/extension_test_message_listener.h"
 #include "chrome/browser/ui/browser.h"
 #include "content/public/browser/browser_thread.h"
+#include "extensions/browser/extension_function.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::_;

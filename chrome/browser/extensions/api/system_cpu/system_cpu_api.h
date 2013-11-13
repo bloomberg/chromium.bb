@@ -4,8 +4,8 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_SYSTEM_CPU_SYSTEM_CPU_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_SYSTEM_CPU_SYSTEM_CPU_API_H_
 
-#include "chrome/browser/extensions/extension_function.h"
 #include "chrome/common/extensions/api/system_cpu.h"
+#include "extensions/browser/extension_function.h"
 
 namespace extensions {
 

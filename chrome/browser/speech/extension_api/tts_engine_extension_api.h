@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "base/memory/singleton.h"
-#include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/speech/tts_controller.h"
+#include "extensions/browser/extension_function.h"
 
 class Utterance;
 

@@ -6,8 +6,8 @@
 #include "base/process/process.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
-#include "chrome/browser/extensions/extension_function.h"
 #include "content/public/test/test_browser_thread.h"
+#include "extensions/browser/extension_function.h"
 #include "extensions/browser/quota_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

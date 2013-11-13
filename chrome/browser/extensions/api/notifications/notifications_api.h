@@ -9,8 +9,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/api/api_function.h"
-#include "chrome/browser/extensions/extension_function.h"
 #include "chrome/common/extensions/api/notifications.h"
+#include "extensions/browser/extension_function.h"
 #include "ui/message_center/notification_types.h"
 
 class Notification;
@@ -113,8 +113,8 @@ class NotificationsGetAllFunction : public NotificationsApiFunction {
   DECLARE_EXTENSION_FUNCTION("notifications.getAll", NOTIFICATIONS_GET_ALL)
 };
 
-class NotificationsGetPermissionLevelFunction :
-    public NotificationsApiFunction {
+class NotificationsGetPermissionLevelFunction
+    : public NotificationsApiFunction {
  public:
   NotificationsGetPermissionLevelFunction();
 

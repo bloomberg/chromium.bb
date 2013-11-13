@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_WALLPAPER_FUNCTION_BASE_H_
 
 #include "ash/desktop_background/desktop_background_controller.h"
-#include "chrome/browser/extensions/extension_function.h"
+#include "extensions/browser/extension_function.h"
 #include "ui/gfx/image/image_skia.h"
 
 namespace wallpaper_api_util {

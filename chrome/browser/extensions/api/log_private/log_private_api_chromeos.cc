@@ -16,8 +16,8 @@
 #include "chrome/browser/extensions/api/log_private/filter_handler.h"
 #include "chrome/browser/extensions/api/log_private/log_parser.h"
 #include "chrome/browser/extensions/api/log_private/syslog_parser.h"
-#include "chrome/browser/extensions/extension_function.h"
 #include "chrome/common/extensions/api/log_private.h"
+#include "extensions/browser/extension_function.h"
 
 namespace extensions {
 namespace {

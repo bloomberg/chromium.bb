@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_API_IDENTITY_PRIVATE_IDENTITY_PRIVATE_API_H_
 #define CHROME_BROWSER_EXTENSIONS_API_IDENTITY_PRIVATE_IDENTITY_PRIVATE_API_H_
 
-#include "chrome/browser/extensions/extension_function.h"
+#include "extensions/browser/extension_function.h"
 
 namespace extensions {
 
@@ -25,6 +25,6 @@ class IdentityPrivateGetResourcesFunction : public SyncExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(IdentityPrivateGetResourcesFunction);
 };
 
-}  // extensions
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_IDENTITY_PRIVATE_IDENTITY_PRIVATE_API_H_

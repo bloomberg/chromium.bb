@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_CHROME_EXTENSION_FUNCTION_H_
 #define CHROME_BROWSER_EXTENSIONS_CHROME_EXTENSION_FUNCTION_H_
 
-#include "chrome/browser/extensions/extension_function.h"
+#include "extensions/browser/extension_function.h"
 
 class Browser;
 class Profile;

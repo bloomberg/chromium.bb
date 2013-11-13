@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "chrome/browser/extensions/extension_function.h"
+#include "extensions/browser/extension_function.h"
 
 namespace extensions {
 

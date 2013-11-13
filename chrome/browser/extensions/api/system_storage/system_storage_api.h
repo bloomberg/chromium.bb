@@ -6,8 +6,8 @@
 #define CHROME_BROWSER_EXTENSIONS_API_SYSTEM_STORAGE_SYSTEM_STORAGE_API_H_
 
 #include "chrome/browser/extensions/api/system_storage/storage_info_provider.h"
-#include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/storage_monitor/storage_monitor.h"
+#include "extensions/browser/extension_function.h"
 
 namespace extensions {
 

@@ -685,8 +685,6 @@
         'browser/extensions/extension_error_ui.h',
         'browser/extensions/extension_error_ui_default.cc',
         'browser/extensions/extension_error_ui_default.h',
-        'browser/extensions/extension_function.cc',
-        'browser/extensions/extension_function.h',
         'browser/extensions/extension_function_dispatcher.cc',
         'browser/extensions/extension_function_dispatcher.h',
         'browser/extensions/extension_function_registry.cc',

@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/io_thread.h"
+#include "extensions/browser/extension_function.h"
 #include "net/base/address_list.h"
 #include "net/base/completion_callback.h"
 #include "net/dns/host_resolver.h"

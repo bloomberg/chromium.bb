@@ -8,9 +8,9 @@
 #include "base/memory/singleton.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_function.h"
 #include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/speech/tts_platform.h"
+#include "extensions/browser/extension_function.h"
 
 #import <Cocoa/Cocoa.h>
 

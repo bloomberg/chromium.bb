@@ -66,7 +66,7 @@ class CookiesEventRouter : public content::NotificationObserver {
 // AsyncExtensionFunction, and are not threadsafe, so they should not be
 // concurrently accessed from multiple threads. They modify |result_| and other
 // member variables directly.
-// See chrome/browser/extensions/extension_function.h for more information.
+// See extensions/browser/extension_function.h for more information.
 class CookiesFunction : public ChromeAsyncExtensionFunction {
  protected:
   virtual ~CookiesFunction() {}

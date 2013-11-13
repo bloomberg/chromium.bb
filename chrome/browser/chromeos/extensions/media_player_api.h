@@ -11,7 +11,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/extensions/api/profile_keyed_api_factory.h"
-#include "chrome/browser/extensions/extension_function.h"
+#include "extensions/browser/extension_function.h"
 
 class Profile;
 

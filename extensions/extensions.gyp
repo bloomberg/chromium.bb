@@ -150,6 +150,8 @@
         'browser/extension_prefs_scope.h',
         'browser/extension_error.cc',
         'browser/extension_error.h',
+        'browser/extension_function.cc',
+        'browser/extension_function.h',
         'browser/extensions_browser_client.cc',
         'browser/extensions_browser_client.h',
         'browser/info_map.cc',
