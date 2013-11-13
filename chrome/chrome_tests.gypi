@@ -465,6 +465,7 @@
           ],
         }],
         ['OS=="win"', {
+          'msvs_large_pdb': 1,
           'include_dirs': [
             '../third_party/wtl/include',
           ],
