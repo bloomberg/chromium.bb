@@ -43,12 +43,13 @@ class VectorMathPerfTest : public testing::Test {
          kVectorSize - (aligned ? 0 : 1),
          output_vector_.get());
     }
-    double total_time_seconds = (TimeTicks::HighResNow() - start).InSecondsF();
+    double total_time_milliseconds =
+        (TimeTicks::HighResNow() - start).InMillisecondsF();
     perf_test::PrintResult(test_name,
                            "",
                            trace_name,
-                           kBenchmarkIterations / total_time_seconds,
-                           "runs/s",
+                           kBenchmarkIterations / total_time_milliseconds,
+                           "runs/ms",
                            true);
   }
 

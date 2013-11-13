@@ -10,7 +10,7 @@
 
 namespace media {
 
-static const int kBenchmarkIterations = 100;
+static const int kBenchmarkIterations = 20;
 
 template <typename T>
 void RunInterleaveBench(AudioBus* bus, const std::string& trace_name) {
@@ -22,20 +22,21 @@ void RunInterleaveBench(AudioBus* bus, const std::string& trace_name) {
   for (int i = 0; i < kBenchmarkIterations; ++i) {
     bus->ToInterleaved(bus->frames(), byte_size, interleaved.get());
   }
-  double total_time_seconds =
-      (base::TimeTicks::HighResNow() - start).InSecondsF();
+  double total_time_milliseconds =
+      (base::TimeTicks::HighResNow() - start).InMillisecondsF();
   perf_test::PrintResult(
       "audio_bus_to_interleaved", "", trace_name,
-      kBenchmarkIterations / total_time_seconds, "runs/s", true);
+      total_time_milliseconds / kBenchmarkIterations, "ms", true);
 
   start = base::TimeTicks::HighResNow();
   for (int i = 0; i < kBenchmarkIterations; ++i) {
     bus->FromInterleaved(interleaved.get(), bus->frames(), byte_size);
   }
-  total_time_seconds = (base::TimeTicks::HighResNow() - start).InSecondsF();
+  total_time_milliseconds =
+      (base::TimeTicks::HighResNow() - start).InMillisecondsF();
   perf_test::PrintResult(
       "audio_bus_from_interleaved", "", trace_name,
-      kBenchmarkIterations / total_time_seconds, "runs/s", true);
+      total_time_milliseconds / kBenchmarkIterations, "ms", true);
 }
 
 // Benchmark the FromInterleaved() and ToInterleaved() methods.

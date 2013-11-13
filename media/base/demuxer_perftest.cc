@@ -17,7 +17,7 @@
 
 namespace media {
 
-static const int kBenchmarkIterations = 5000;
+static const int kBenchmarkIterations = 500;
 
 class DemuxerHostImpl : public media::DemuxerHost {
  public:
@@ -208,18 +208,18 @@ static void RunDemuxerBenchmark(const std::string& filename) {
 }
 
 TEST(DemuxerPerfTest, Demuxer) {
-  RunDemuxerBenchmark("media/test/data/bear.ogv");
-  RunDemuxerBenchmark("media/test/data/bear-640x360.webm");
-  RunDemuxerBenchmark("media/test/data/sfx_s16le.wav");
+  RunDemuxerBenchmark("bear.ogv");
+  RunDemuxerBenchmark("bear-640x360.webm");
+  RunDemuxerBenchmark("sfx_s16le.wav");
 #if defined(USE_PROPRIETARY_CODECS)
-  RunDemuxerBenchmark("media/test/data/bear-1280x720.mp4");
-  RunDemuxerBenchmark("media/test/data/sfx.mp3");
+  RunDemuxerBenchmark("bear-1280x720.mp4");
+  RunDemuxerBenchmark("sfx.mp3");
 #endif
 #if defined(OS_CHROMEOS)
-  RunDemuxerBenchmark("media/test/data/bear.flac");
+  RunDemuxerBenchmark("bear.flac");
 #endif
 #if defined(USE_PROPRIETARY_CODECS) && defined(OS_CHROMEOS)
-  RunDemuxerBenchmark("media/test/data/bear.avi");
+  RunDemuxerBenchmark("bear.avi");
 #endif
 }
 

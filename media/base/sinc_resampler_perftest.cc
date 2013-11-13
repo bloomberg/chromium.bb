@@ -40,13 +40,13 @@ static void RunConvolveBenchmark(
                 resampler->get_kernel_for_testing(),
                 kKernelInterpolationFactor);
   }
-  double total_time_seconds =
-      (base::TimeTicks::HighResNow() - start).InSecondsF();
+  double total_time_milliseconds =
+      (base::TimeTicks::HighResNow() - start).InMillisecondsF();
   perf_test::PrintResult("sinc_resampler_convolve",
                          "",
                          trace_name,
-                         kBenchmarkIterations / total_time_seconds,
-                         "runs/s",
+                         kBenchmarkIterations / total_time_milliseconds,
+                         "runs/ms",
                          true);
 }
 
