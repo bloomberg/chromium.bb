@@ -47,11 +47,6 @@ const size_t kNotificationMaximumItems = 5;
 const int kAutocloseDefaultDelaySeconds = 8;
 const int kAutocloseHighPriorityDelaySeconds = 25;
 
-// Around notifications ////////////////////////////////////////////////////////
-
-// Pixel dimensions.
-const int kMarginBetweenItems = 10;
-
 // Colors.
 const SkColor kBackgroundLightColor = SkColorSetRGB(0xf1, 0xf1, 0xf1);
 const SkColor kBackgroundDarkColor = SkColorSetRGB(0xe7, 0xe7, 0xe7);

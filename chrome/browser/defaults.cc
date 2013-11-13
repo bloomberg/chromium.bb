@@ -16,13 +16,6 @@ const bool kCanToggleSystemTitleBar = true;
 
 const int kOmniboxFontPixelSize = 16;
 
-#if defined(TOOLKIT_VIEWS)
-// Windows and Chrome OS have bigger shadows in the tab art.
-const int kMiniTabWidth = 64;
-#else
-const int kMiniTabWidth = 56;
-#endif
-
 const bool kRestorePopups = false;
 
 #if defined(OS_CHROMEOS) || defined(OS_MACOSX)

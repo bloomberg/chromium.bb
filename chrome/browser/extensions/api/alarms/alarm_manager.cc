@@ -33,7 +33,9 @@ const char kRegisteredAlarms[] = "alarms";
 const char kAlarmGranularity[] = "granularity";
 
 // The minimum period between polling for alarms to run.
-const base::TimeDelta kDefaultMinPollPeriod = base::TimeDelta::FromDays(1);
+const base::TimeDelta kDefaultMinPollPeriod() {
+  return base::TimeDelta::FromDays(1);
+}
 
 class DefaultAlarmDelegate : public AlarmManager::Delegate {
  public:
@@ -315,7 +317,7 @@ void AlarmManager::ScheduleNextPoll() {
   // alarms_ guarantees that none of its contained lists are empty.
   base::Time soonest_alarm_time = base::Time::FromJsTime(
       alarms_.begin()->second.begin()->js_alarm->scheduled_time);
-  base::TimeDelta min_granularity = kDefaultMinPollPeriod;
+  base::TimeDelta min_granularity = kDefaultMinPollPeriod();
   for (AlarmMap::const_iterator m_it = alarms_.begin(), m_end = alarms_.end();
        m_it != m_end; ++m_it) {
     for (AlarmList::const_iterator l_it = m_it->second.begin();

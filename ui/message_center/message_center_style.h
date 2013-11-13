@@ -112,9 +112,8 @@ const int kContextMessageLineLimit = 1;
 // Around notifications ////////////////////////////////////////////////////////
 
 // DIP dimensions (H = horizontal, V = vertical).
-MESSAGE_CENTER_EXPORT extern const int kMarginBetweenItems; // H & V space
-                                                            // around & between
-                                                            // notifications.
+const int kMarginBetweenItems = 10;  // H & V space around & between
+                                     // notifications.
 
 // Colors.
 extern const SkColor kBackgroundLightColor;  // Behind notifications, gradient

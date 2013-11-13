@@ -33,7 +33,9 @@ const char kMetricDb[] = "Metrics";
 const double kDefaultMaxValue = 0.0;
 
 // If the db is quiet for this number of minutes, then it is considered down.
-const base::TimeDelta kActiveIntervalTimeout = base::TimeDelta::FromMinutes(5);
+const base::TimeDelta kActiveIntervalTimeout() {
+  return base::TimeDelta::FromMinutes(5);
+}
 
 TimeRange ActiveIntervalToTimeRange(const std::string& start_time,
                                     const std::string& end_time) {
@@ -575,7 +577,7 @@ void Database::UpdateActiveInterval() {
   std::string end_time;
   // If the last update was too long ago.
   if (start_time_key_.empty() ||
-      current_time - last_update_time_ > kActiveIntervalTimeout) {
+      current_time - last_update_time_ > kActiveIntervalTimeout()) {
     start_time_key_ = key_builder_->CreateActiveIntervalKey(current_time);
     end_time = start_time_key_;
   } else {

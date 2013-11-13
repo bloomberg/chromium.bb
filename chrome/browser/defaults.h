@@ -23,8 +23,15 @@ extern const bool kCanToggleSystemTitleBar;
 // Size of the font used in the omnibox, in pixels.
 extern const int kOmniboxFontPixelSize;
 
-// Width of mini-tabs.
-extern const int kMiniTabWidth;
+// Width of mini-tabs.  Inline because other constants are computed depending
+// on this, which causes static initializers if the value isn't available in
+// all translation units that do this.
+#if defined(TOOLKIT_VIEWS)
+// Windows and Chrome OS have bigger shadows in the tab art.
+const int kMiniTabWidth = 64;
+#else
+const int kMiniTabWidth = 56;
+#endif
 
 // Should session restore restore popup windows?
 extern const bool kRestorePopups;
