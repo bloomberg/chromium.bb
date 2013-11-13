@@ -212,6 +212,9 @@ public class AwTestBase
         public AwTestContainerView createAwTestContainerView(AwTestRunnerActivity activity) {
             return new AwTestContainerView(activity);
         }
+        public AwSettings createAwSettings(Context context, boolean supportsLegacyQuirks) {
+            return new AwSettings(context, false, supportsLegacyQuirks);
+        }
     }
 
     protected TestDependencyFactory createTestDependencyFactory() {
@@ -246,12 +249,13 @@ public class AwTestBase
         final TestDependencyFactory testDependencyFactory = createTestDependencyFactory();
         final AwTestContainerView testContainerView =
             testDependencyFactory.createAwTestContainerView(getActivity());
+        AwSettings awSettings = testDependencyFactory.createAwSettings(getActivity(),
+                supportsLegacyQuirks);
         // TODO(mnaganov): Should also have tests for the "pure Chromium" mode.
         // See http://crbug.com/278106
         testContainerView.initialize(new AwContents(
                 mBrowserContext, testContainerView, testContainerView.getInternalAccessDelegate(),
-                awContentsClient, false, testDependencyFactory.createLayoutSizer(),
-                supportsLegacyQuirks));
+                awContentsClient, awSettings, testDependencyFactory.createLayoutSizer()));
         AwContents.setShouldDownloadFavicons();
         return testContainerView;
     }

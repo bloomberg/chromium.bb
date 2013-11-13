@@ -472,62 +472,27 @@ public class AwContents {
      * @param browserContext the browsing context to associate this view contents with.
      * @param containerView the view-hierarchy item this object will be bound to.
      * @param internalAccessAdapter to access private methods on containerView.
-     * @param contentsClient will receive API callbacks from this WebView Contents
-     * @param isAccessFromFileURLsGrantedByDefault passed to AwSettings.
+     * @param contentsClient will receive API callbacks from this WebView Contents.
+     * @param awSettings AwSettings instance used to configure the AwContents.
      *
      * This constructor uses the default view sizing policy.
      */
     public AwContents(AwBrowserContext browserContext, ViewGroup containerView,
             InternalAccessDelegate internalAccessAdapter, AwContentsClient contentsClient,
-            boolean isAccessFromFileURLsGrantedByDefault) {
-        this(browserContext, containerView, internalAccessAdapter, contentsClient,
-                isAccessFromFileURLsGrantedByDefault, new AwLayoutSizer());
-    }
-
-    public AwContents(AwBrowserContext browserContext, ViewGroup containerView,
-            InternalAccessDelegate internalAccessAdapter, AwContentsClient contentsClient,
-            boolean isAccessFromFileURLsGrantedByDefault, AwLayoutSizer layoutSizer) {
-        this(browserContext, containerView, internalAccessAdapter, contentsClient,
-                isAccessFromFileURLsGrantedByDefault, layoutSizer, false);
-    }
-
-    private static ContentViewCore createAndInitializeContentViewCore(ViewGroup containerView,
-            InternalAccessDelegate internalDispatcher, int nativeWebContents,
-            ContentViewCore.GestureStateListener pinchGestureStateListener,
-            ContentViewClient contentViewClient,
-            ContentViewCore.ZoomControlsDelegate zoomControlsDelegate) {
-      Context context = containerView.getContext();
-      ContentViewCore contentViewCore = new ContentViewCore(context);
-      // Note INPUT_EVENTS_DELIVERED_IMMEDIATELY is passed to avoid triggering vsync in the
-      // compositor, not because input events are delivered immediately.
-      contentViewCore.initialize(containerView, internalDispatcher, nativeWebContents,
-              context instanceof Activity ?
-                      new ActivityWindowAndroid((Activity) context) : new WindowAndroid(context),
-                ContentViewCore.INPUT_EVENTS_DELIVERED_IMMEDIATELY);
-      contentViewCore.setGestureStateListener(pinchGestureStateListener);
-      contentViewCore.setContentViewClient(contentViewClient);
-      contentViewCore.setZoomControlsDelegate(zoomControlsDelegate);
-      return contentViewCore;
+            AwSettings awSettings) {
+        this(browserContext, containerView, internalAccessAdapter, contentsClient, awSettings,
+                new AwLayoutSizer());
     }
 
     /**
      * @param layoutSizer the AwLayoutSizer instance implementing the sizing policy for the view.
      *
      * This version of the constructor is used in test code to inject test versions of the above
-     * documented classes
+     * documented classes.
      */
     public AwContents(AwBrowserContext browserContext, ViewGroup containerView,
             InternalAccessDelegate internalAccessAdapter, AwContentsClient contentsClient,
-            boolean isAccessFromFileURLsGrantedByDefault, AwLayoutSizer layoutSizer,
-            boolean supportsLegacyQuirks) {
-        this(browserContext, containerView, internalAccessAdapter, contentsClient,
-                layoutSizer, new AwSettings(containerView.getContext(),
-                        isAccessFromFileURLsGrantedByDefault, supportsLegacyQuirks));
-    }
-
-    public AwContents(AwBrowserContext browserContext, ViewGroup containerView,
-            InternalAccessDelegate internalAccessAdapter, AwContentsClient contentsClient,
-            AwLayoutSizer layoutSizer, AwSettings settings) {
+            AwSettings settings, AwLayoutSizer layoutSizer) {
         mBrowserContext = browserContext;
         mContainerView = containerView;
         mInternalAccessAdapter = internalAccessAdapter;
@@ -569,6 +534,25 @@ public class AwContents {
 
         onVisibilityChanged(mContainerView, mContainerView.getVisibility());
         onWindowVisibilityChanged(mContainerView.getWindowVisibility());
+    }
+
+    private static ContentViewCore createAndInitializeContentViewCore(ViewGroup containerView,
+            InternalAccessDelegate internalDispatcher, int nativeWebContents,
+            ContentViewCore.GestureStateListener pinchGestureStateListener,
+            ContentViewClient contentViewClient,
+            ContentViewCore.ZoomControlsDelegate zoomControlsDelegate) {
+      Context context = containerView.getContext();
+      ContentViewCore contentViewCore = new ContentViewCore(context);
+      // Note INPUT_EVENTS_DELIVERED_IMMEDIATELY is passed to avoid triggering vsync in the
+      // compositor, not because input events are delivered immediately.
+      contentViewCore.initialize(containerView, internalDispatcher, nativeWebContents,
+              context instanceof Activity ?
+                      new ActivityWindowAndroid((Activity) context) : new WindowAndroid(context),
+                ContentViewCore.INPUT_EVENTS_DELIVERED_IMMEDIATELY);
+      contentViewCore.setGestureStateListener(pinchGestureStateListener);
+      contentViewCore.setContentViewClient(contentViewClient);
+      contentViewCore.setZoomControlsDelegate(zoomControlsDelegate);
+      return contentViewCore;
     }
 
     /**

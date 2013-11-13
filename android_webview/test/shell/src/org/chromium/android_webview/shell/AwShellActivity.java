@@ -31,6 +31,7 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwDevToolsServer;
 import org.chromium.android_webview.AwLayoutSizer;
+import org.chromium.android_webview.AwSettings;
 import org.chromium.android_webview.test.AwTestContainerView;
 import org.chromium.android_webview.test.NullContentsClient;
 import org.chromium.content.browser.LoadUrlParams;
@@ -91,9 +92,11 @@ public class AwShellActivity extends Activity {
         if (mBrowserContext == null) {
             mBrowserContext = new AwBrowserContext(sharedPreferences);
         }
+        final AwSettings awSettings = new AwSettings(this /*context*/,
+                false /*isAccessFromFileURLsGrantedByDefault*/, true /*supportsLegacyQuirks*/);
         testContainerView.initialize(new AwContents(mBrowserContext, testContainerView,
                 testContainerView.getInternalAccessDelegate(),
-                awContentsClient, false, new AwLayoutSizer(), true));
+                awContentsClient, awSettings, new AwLayoutSizer()));
         testContainerView.getAwContents().getSettings().setJavaScriptEnabled(true);
         if (mDevToolsServer == null) {
             mDevToolsServer = new AwDevToolsServer();
