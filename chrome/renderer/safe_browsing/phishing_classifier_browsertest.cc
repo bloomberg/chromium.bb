@@ -198,13 +198,7 @@ class PhishingClassifierTest : public InProcessBrowserTest {
 };
 
 // Flaky on Mac Blink bots: crbug.com/316709
-#if defined(OS_MACOSX)
-#define MAYBE_TestClassification DISABLED_TestClassification
-#else
-#define MAYBE_TestClassification TestClassification
-#endif
-
-IN_PROC_BROWSER_TEST_F(PhishingClassifierTest, MAYBE_TestClassification) {
+IN_PROC_BROWSER_TEST_F(PhishingClassifierTest, TestClassification) {
   host_resolver()->AddRule("*", "127.0.0.1");
 
   // No scorer yet, so the classifier is not ready.
@@ -274,14 +268,7 @@ IN_PROC_BROWSER_TEST_F(PhishingClassifierTest, MAYBE_TestClassification) {
   EXPECT_EQ(PhishingClassifier::kInvalidScore, phishy_score);
 }
 
-// Flaky on Mac Blink bots: crbug.com/316709
-#if defined(OS_MACOSX)
-#define MAYBE_DisableDetection DISABLED_DisableDetection
-#else
-#define MAYBE_DisableDetection DisableDetection
-#endif
-
-IN_PROC_BROWSER_TEST_F(PhishingClassifierTest, MAYBE_DisableDetection) {
+IN_PROC_BROWSER_TEST_F(PhishingClassifierTest, DisableDetection) {
   // No scorer yet, so the classifier is not ready.
   EXPECT_FALSE(classifier_->is_ready());
 
