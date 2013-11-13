@@ -239,12 +239,6 @@ class CONTENT_EXPORT ContentRendererClient {
   // startup steps).
   virtual bool IsExternalPepperPlugin(const std::string& module_name);
 
-  // Returns true if plugin living in the container can use
-  // pp::FileIO::RequestOSFileHandle.
-  // TODO(teravest): Remove this when FileIO is moved to the browser.
-  virtual bool IsPluginAllowedToCallRequestOSFileHandle(
-      blink::WebPluginContainer* container);
-
   // Returns whether BrowserPlugin should be allowed within the |container|.
   virtual bool AllowBrowserPlugin(blink::WebPluginContainer* container);
 

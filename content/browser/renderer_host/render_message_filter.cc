@@ -389,7 +389,6 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message,
                         OnDidDeleteOutOfProcessPepperInstance)
     IPC_MESSAGE_HANDLER(ViewHostMsg_OpenChannelToPpapiBroker,
                         OnOpenChannelToPpapiBroker)
-    IPC_MESSAGE_HANDLER(ViewHostMsg_AsyncOpenPepperFile, OnAsyncOpenPepperFile)
 #endif
     IPC_MESSAGE_HANDLER_GENERIC(ViewHostMsg_UpdateRect,
         render_widget_helper_->DidReceiveBackingStoreMsg(message))
@@ -440,8 +439,6 @@ base::TaskRunner* RenderMessageFilter::OverrideTaskRunnerForMessage(
   if (message.type() == ViewHostMsg_GetAudioHardwareConfig::ID)
     return audio_manager_->GetMessageLoop().get();
 #endif
-  if (message.type() == ViewHostMsg_AsyncOpenPepperFile::ID)
-    return BrowserThread::GetBlockingPool();
   return NULL;
 }
 
@@ -986,33 +983,6 @@ void RenderMessageFilter::OnKeygenOnWorkerThread(
       reply_msg,
       keygen_handler.GenKeyAndSignChallenge());
   Send(reply_msg);
-}
-
-void RenderMessageFilter::OnAsyncOpenPepperFile(int routing_id,
-                                                const base::FilePath& path,
-                                                int pp_open_flags) {
-  int platform_file_flags = 0;
-  if (!CanOpenWithPepperFlags(pp_open_flags, render_process_id_, path) ||
-      !ppapi::PepperFileOpenFlagsToPlatformFileFlags(
-          pp_open_flags, &platform_file_flags)) {
-    DLOG(ERROR) <<
-        "Bad pp_open_flags in ViewMsgHost_AsyncOpenPepperFile message: " <<
-        pp_open_flags;
-    RecordAction(UserMetricsAction("BadMessageTerminate_AOF"));
-    BadMessageReceived();
-    return;
-  }
-
-  base::PlatformFileError error_code = base::PLATFORM_FILE_OK;
-  base::PlatformFile file = base::CreatePlatformFile(
-      path, platform_file_flags, NULL, &error_code);
-  IPC::PlatformFileForTransit file_for_transit =
-      file != base::kInvalidPlatformFileValue ?
-          IPC::GetFileHandleForProcess(file, PeerHandle(), true) :
-          IPC::InvalidPlatformFileForTransit();
-
-  Send(new ViewMsg_AsyncOpenPepperFile_ACK(
-      routing_id, error_code, file_for_transit));
 }
 
 void RenderMessageFilter::OnMediaLogEvents(

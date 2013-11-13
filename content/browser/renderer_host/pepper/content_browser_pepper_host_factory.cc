@@ -6,6 +6,7 @@
 
 #include "content/browser/renderer_host/pepper/browser_ppapi_host_impl.h"
 #include "content/browser/renderer_host/pepper/pepper_browser_font_singleton_host.h"
+#include "content/browser/renderer_host/pepper/pepper_file_io_host.h"
 #include "content/browser/renderer_host/pepper/pepper_file_ref_host.h"
 #include "content/browser/renderer_host/pepper/pepper_file_system_browser_host.h"
 #include "content/browser/renderer_host/pepper/pepper_flash_file_message_filter.h"
@@ -67,6 +68,10 @@ scoped_ptr<ResourceHost> ContentBrowserPepperHostFactory::CreateResourceHost(
 
   // Public interfaces.
   switch (message.type()) {
+    case PpapiHostMsg_FileIO_Create::ID: {
+      return scoped_ptr<ResourceHost>(new PepperFileIOHost(
+          host_, instance, params.pp_resource()));
+    }
     case PpapiHostMsg_FileSystem_Create::ID: {
       PP_FileSystemType file_system_type;
       if (!ppapi::UnpackMessage<PpapiHostMsg_FileSystem_Create>(message,

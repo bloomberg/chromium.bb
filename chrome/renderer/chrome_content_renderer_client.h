@@ -131,10 +131,6 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   virtual const void* CreatePPAPIInterface(
       const std::string& interface_name) OVERRIDE;
   virtual bool IsExternalPepperPlugin(const std::string& module_name) OVERRIDE;
-  // TODO(victorhsieh): move to ChromeContentBrowserClient once we migrate
-  // PPAPI FileIO host to browser.
-  virtual bool IsPluginAllowedToCallRequestOSFileHandle(
-      blink::WebPluginContainer* container) OVERRIDE;
   virtual blink::WebSpeechSynthesizer* OverrideSpeechSynthesizer(
       blink::WebSpeechSynthesizerClient* client) OVERRIDE;
   virtual bool ShouldReportDetailedMessageForSource(
@@ -219,10 +215,6 @@ class ChromeContentRendererClient : public content::ContentRendererClient {
   scoped_refptr<WebRtcLoggingMessageFilter> webrtc_logging_message_filter_;
 #endif
   scoped_ptr<SearchBouncer> search_bouncer_;
-
-#if defined(ENABLE_PLUGINS)
-  std::set<std::string> allowed_file_handle_origins_;
-#endif
 };
 
 #endif  // CHROME_RENDERER_CHROME_CONTENT_RENDERER_CLIENT_H_

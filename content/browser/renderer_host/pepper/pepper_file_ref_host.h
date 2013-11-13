@@ -18,7 +18,6 @@
 #include "webkit/browser/fileapi/file_system_url.h"
 
 namespace content {
-
 class PepperFileRefHost;
 
 // Internal and external filesystems have very different codepaths for

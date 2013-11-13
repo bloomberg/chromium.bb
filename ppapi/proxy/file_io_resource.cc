@@ -79,7 +79,7 @@ int32_t FileIOResource::ReadOp::DoWork() {
 FileIOResource::FileIOResource(Connection connection, PP_Instance instance)
     : PluginResource(connection, instance),
       file_system_type_(PP_FILESYSTEMTYPE_INVALID) {
-  SendCreate(RENDERER, PpapiHostMsg_FileIO_Create());
+  SendCreate(BROWSER, PpapiHostMsg_FileIO_Create());
 }
 
 FileIOResource::~FileIOResource() {
@@ -113,7 +113,7 @@ int32_t FileIOResource::Open(PP_Resource file_ref,
   // don't want the plugin destroying it during the Open operation.
   file_ref_ = enter.resource();
 
-  Call<PpapiPluginMsg_FileIO_OpenReply>(RENDERER,
+  Call<PpapiPluginMsg_FileIO_OpenReply>(BROWSER,
       PpapiHostMsg_FileIO_Open(
           file_ref,
           open_flags),
@@ -182,7 +182,7 @@ int32_t FileIOResource::Touch(PP_Time last_access_time,
   if (rv != PP_OK)
     return rv;
 
-  Call<PpapiPluginMsg_FileIO_GeneralReply>(RENDERER,
+  Call<PpapiPluginMsg_FileIO_GeneralReply>(BROWSER,
       PpapiHostMsg_FileIO_Touch(last_access_time, last_modified_time),
       base::Bind(&FileIOResource::OnPluginMsgGeneralComplete, this,
                  callback));
@@ -231,7 +231,7 @@ int32_t FileIOResource::Write(int64_t offset,
   // TODO(brettw) it would be nice to use a shared memory buffer for large
   // writes rather than having to copy to a string (which will involve a number
   // of extra copies to serialize over IPC).
-  Call<PpapiPluginMsg_FileIO_GeneralReply>(RENDERER,
+  Call<PpapiPluginMsg_FileIO_GeneralReply>(BROWSER,
       PpapiHostMsg_FileIO_Write(offset, std::string(buffer, bytes_to_write)),
       base::Bind(&FileIOResource::OnPluginMsgGeneralComplete, this,
                  callback));
@@ -247,7 +247,7 @@ int32_t FileIOResource::SetLength(int64_t length,
   if (rv != PP_OK)
     return rv;
 
-  Call<PpapiPluginMsg_FileIO_GeneralReply>(RENDERER,
+  Call<PpapiPluginMsg_FileIO_GeneralReply>(BROWSER,
       PpapiHostMsg_FileIO_SetLength(length),
       base::Bind(&FileIOResource::OnPluginMsgGeneralComplete, this,
                  callback));
@@ -262,7 +262,7 @@ int32_t FileIOResource::Flush(scoped_refptr<TrackedCallback> callback) {
   if (rv != PP_OK)
     return rv;
 
-  Call<PpapiPluginMsg_FileIO_GeneralReply>(RENDERER,
+  Call<PpapiPluginMsg_FileIO_GeneralReply>(BROWSER,
       PpapiHostMsg_FileIO_Flush(),
       base::Bind(&FileIOResource::OnPluginMsgGeneralComplete, this,
                  callback));
@@ -275,7 +275,7 @@ void FileIOResource::Close() {
   if (file_handle_) {
     file_handle_ = NULL;
   }
-  Post(RENDERER, PpapiHostMsg_FileIO_Close());
+  Post(BROWSER, PpapiHostMsg_FileIO_Close());
 }
 
 int32_t FileIOResource::RequestOSFileHandle(
@@ -286,7 +286,7 @@ int32_t FileIOResource::RequestOSFileHandle(
   if (rv != PP_OK)
     return rv;
 
-  Call<PpapiPluginMsg_FileIO_RequestOSFileHandleReply>(RENDERER,
+  Call<PpapiPluginMsg_FileIO_RequestOSFileHandleReply>(BROWSER,
       PpapiHostMsg_FileIO_RequestOSFileHandle(),
       base::Bind(&FileIOResource::OnPluginMsgRequestOSFileHandleComplete, this,
                  callback, handle));

@@ -126,16 +126,6 @@ class FileSystemDispatcher : public IPC::Listener {
                  const base::Time& last_modified_time,
                  const StatusCallback& callback);
 
-  // This returns a raw open PlatformFile, unlike the above, which are
-  // self-contained operations.
-  void OpenPepperFile(const GURL& file_path,
-                      int pp_open_flags,
-                      const OpenFileCallback& success_callback,
-                      const StatusCallback& error_callback);
-  // This must be paired with OpenFile, and called after finished using the
-  // raw PlatformFile returned from OpenFile.
-  void NotifyCloseFile(int file_open_id);
-
   // The caller must send FileSystemHostMsg_DidReceiveSnapshot message
   // with |request_id| passed to |success_callback| after the snapshot file
   // is successfully received.

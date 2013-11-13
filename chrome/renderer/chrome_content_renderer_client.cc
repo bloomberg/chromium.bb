@@ -209,22 +209,10 @@ bool ShouldUseJavaScriptSettingForPlugin(const WebPluginInfo& plugin) {
   return false;
 }
 
-#if defined(ENABLE_PLUGINS)
-const char* kPredefinedAllowedFileHandleOrigins[] = {
-  "6EAED1924DB611B6EEF2A664BD077BE7EAD33B8F",  // see crbug.com/234789
-  "4EB74897CB187C7633357C2FE832E0AD6A44883A"   // see crbug.com/234789
-};
-#endif
-
 }  // namespace
 
 ChromeContentRendererClient::ChromeContentRendererClient() {
   g_current_client = this;
-
-#if defined(ENABLE_PLUGINS)
-  for (size_t i = 0; i < arraysize(kPredefinedAllowedFileHandleOrigins); ++i)
-    allowed_file_handle_origins_.insert(kPredefinedAllowedFileHandleOrigins[i]);
-#endif
 }
 
 ChromeContentRendererClient::~ChromeContentRendererClient() {
@@ -1302,24 +1290,6 @@ bool ChromeContentRendererClient::IsExternalPepperPlugin(
   // We must defer certain plugin events for NaCl instances since we switch
   // from the in-process to the out-of-process proxy after instantiating them.
   return module_name == "Native Client";
-}
-
-bool ChromeContentRendererClient::IsPluginAllowedToCallRequestOSFileHandle(
-    blink::WebPluginContainer* container) {
-#if defined(ENABLE_PLUGINS)
-  if (!container)
-    return false;
-  GURL url = container->element().document().baseURL();
-  const ExtensionSet* extension_set = extension_dispatcher_->extensions();
-
-  if (chrome::IsExtensionOrSharedModuleWhitelisted(
-          url, extension_set, allowed_file_handle_origins_) ||
-      chrome::IsHostAllowedByCommandLine(
-          url, extension_set, switches::kAllowNaClFileHandleAPI)) {
-    return true;
-  }
-#endif
-  return false;
 }
 
 blink::WebSpeechSynthesizer*
