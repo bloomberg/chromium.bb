@@ -88,7 +88,7 @@ public:
         // We have to clear internal state before calling Inspector's code.
         PropertySetCSSStyleDeclaration* localCopyStyleDecl = s_currentDecl;
         s_currentDecl = 0;
-        InspectorInstrumentation::didMutateStyle(localCopyStyleDecl, s_shouldNotifyInspector);
+        InspectorInstrumentation::didMutateStyle(localCopyStyleDecl, localCopyStyleDecl->parentElement());
 
         if (!s_shouldNotifyInspector)
             return;
