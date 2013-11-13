@@ -193,7 +193,6 @@ CSSParserContext::CSSParserContext(CSSParserMode mode, const KURL& baseURL)
     : baseURL(baseURL)
     , mode(mode)
     , isHTMLDocument(false)
-    , needsSiteSpecificQuirks(false)
     , useLegacyBackgroundSizeShorthandBehavior(false)
 {
 }
@@ -203,7 +202,6 @@ CSSParserContext::CSSParserContext(const Document& document, const KURL& baseURL
     , charset(charset)
     , mode(document.inQuirksMode() ? HTMLQuirksMode : HTMLStandardMode)
     , isHTMLDocument(document.isHTMLDocument())
-    , needsSiteSpecificQuirks(document.settings() ? document.settings()->needsSiteSpecificQuirks() : false)
     , useLegacyBackgroundSizeShorthandBehavior(document.settings() ? document.settings()->useLegacyBackgroundSizeShorthandBehavior() : false)
 {
 }
@@ -214,7 +212,6 @@ bool operator==(const CSSParserContext& a, const CSSParserContext& b)
         && a.charset == b.charset
         && a.mode == b.mode
         && a.isHTMLDocument == b.isHTMLDocument
-        && a.needsSiteSpecificQuirks == b.needsSiteSpecificQuirks
         && a.useLegacyBackgroundSizeShorthandBehavior == b.useLegacyBackgroundSizeShorthandBehavior;
 }
 
