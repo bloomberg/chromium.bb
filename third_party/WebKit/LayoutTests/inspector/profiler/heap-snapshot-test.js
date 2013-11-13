@@ -564,8 +564,8 @@ InspectorTest.createHeapSnapshot = function(instanceCount, firstId)
     // Mocking results of running the following code:
     // 
     // function A() { this.a = this; }
-    // function B(x) { this.a = new A(x); }
-    // for (var i = 0; i < instanceCount; ++i) new B();
+    // function B() { this.a = new A(); }
+    // for (var i = 0; i < instanceCount; ++i) window[i] = new B();
     // 
     // Set A and B object sizes to pseudo random numbers. It is used in sorting tests.
 

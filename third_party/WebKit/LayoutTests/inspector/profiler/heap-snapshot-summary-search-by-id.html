@@ -1,0 +1,123 @@
+<html>
+<head>
+  <script src="../../http/tests/inspector/inspector-test.js"></script>
+  <script src="heap-snapshot-test.js"></script>
+<script>
+
+function test()
+{
+    var instanceCount = 200;
+    function createHeapSnapshot()
+    {
+        return InspectorTest.createHeapSnapshot(instanceCount, 100);
+    }
+
+    InspectorTest.runHeapSnapshotTestSuite([
+        function testSearch(next)
+        {
+            InspectorTest.takeAndOpenSnapshot(createHeapSnapshot, step1);
+
+            function step1()
+            {
+                InspectorTest.switchToView("Summary", step2);
+            }
+
+            var view;
+            function step2()
+            {
+                view = InspectorTest.currentProfileView();
+                view.performSearch("@101", checkNodeIsHighlighted.bind(this, "A", "101", step3));
+            }
+
+            function step3()
+            {
+                view.searchCanceled();
+                view.performSearch("@a", step4);
+            }
+
+            function step4(view, resultCount)
+            {
+                if (resultCount !== 0) {
+                    InspectorTest.addResult("FAIL: node @a found");
+                    return next();
+                }
+                view.searchCanceled();
+                view.performSearch("@999", step5);
+            }
+
+            function step5(view, resultCount)
+            {
+                if (resultCount !== 0) {
+                    InspectorTest.addResult("FAIL: found node @999");
+                    return next();
+                }
+                view.searchCanceled();
+                view.performSearch("@100", checkNodeIsHighlighted.bind(this, "B", "100", step6));
+            }
+
+            function step6()
+            {
+                view.searchCanceled();
+                view.performSearch("@400", checkNodeIsHighlighted.bind(this, "B", "400", step7));
+            }
+
+            function step7()
+            {
+                view.searchCanceled();
+                view.performSearch("@401", checkNodeIsHighlighted.bind(this, "A", "401", next));
+            }
+
+            function checkNodeIsHighlighted(constructorName, nodeId, onSuccess, view, resultCount) {
+                if (resultCount !== 1) {
+                    InspectorTest.addResult("FAIL: node @" + nodeId + " not found");
+                    return next();
+                }
+                try {
+                    var constructorsGrid = InspectorTest.currentProfileView().dataGrid;
+                    var constructorNodes = constructorsGrid.rootNode().children;
+                    var constructorNode;
+                    for (var i = 0; i < constructorNodes.length; i++) {
+                        if (constructorNodes[i].data.object === constructorName) {
+                            constructorNode = constructorNodes[i];
+                            break;
+                        }
+                    }
+                    if (!constructorNode) {
+                        InspectorTest.addResult("FAIL: constructor " + constructorName + " not found in viewport");
+                        return next();
+                    }
+                    var instanceNodes = constructorNode.children;
+                    for (var i = 0; i < instanceNodes.length; i++) {
+                        if (instanceNodes[i].snapshotNodeId == nodeId) {
+                            if (!instanceNodes[i].element.hasStyleClass("highlighted-row")) {
+                                if (constructorsGrid._nodeToHighlightAfterScroll === instanceNodes[i]) {
+                                    function afterScroll(nodeToHighlight)
+                                    {
+                                        onSuccess();
+                                    }
+                                    InspectorTest.addSniffer(WebInspector.HeapSnapshotSortableDataGrid.prototype, "highlightNode", afterScroll);
+                                } else {
+                                    InspectorTest.addResult("FAIL: node is not highlighted");
+                                    return next();
+                                }
+                            }
+                            return onSuccess();
+                        }
+                    }
+                } catch (e) {
+                    InspectorTest.addResult("EXCEPTION: " + e);
+                }
+                return next();
+            }
+        }
+    ]);
+}
+
+</script>
+</head>
+<body onload="runTest()">
+<p>
+Tests search in Summary view of detailed heap snapshots.
+</p>
+</body>
+</html>
