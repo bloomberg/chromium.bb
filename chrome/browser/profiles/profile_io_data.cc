@@ -44,7 +44,6 @@
 #include "chrome/browser/net/load_time_stats.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/net/resource_prefetch_predictor_observer.h"
-#include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/policy/url_blacklist_manager.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor_factory.h"
@@ -255,11 +254,6 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
         new chrome_browser_net::ResourcePrefetchPredictorObserver(predictor));
   }
 
-#if defined(ENABLE_NOTIFICATIONS)
-  params->notification_service =
-      DesktopNotificationServiceFactory::GetForProfile(profile);
-#endif
-
   ProtocolHandlerRegistry* protocol_handler_registry =
       ProtocolHandlerRegistryFactory::GetForProfile(profile);
   DCHECK(protocol_handler_registry);
@@ -388,9 +382,6 @@ ProfileIOData::AppRequestContext::~AppRequestContext() {}
 
 ProfileIOData::ProfileParams::ProfileParams()
     : io_thread(NULL),
-#if defined(ENABLE_NOTIFICATIONS)
-      notification_service(NULL),
-#endif
       profile(NULL) {
 }
 
@@ -398,9 +389,6 @@ ProfileIOData::ProfileParams::~ProfileParams() {}
 
 ProfileIOData::ProfileIOData(bool is_incognito)
     : initialized_(false),
-#if defined(ENABLE_NOTIFICATIONS)
-      notification_service_(NULL),
-#endif
       resource_context_(new ResourceContext(this)),
       load_time_stats_(NULL),
       initialized_on_UI_thread_(false),
@@ -621,13 +609,6 @@ HostContentSettingsMap* ProfileIOData::GetHostContentSettingsMap() const {
   return host_content_settings_map_.get();
 }
 
-#if defined(ENABLE_NOTIFICATIONS)
-DesktopNotificationService* ProfileIOData::GetNotificationService() const {
-  DCHECK(initialized_);
-  return notification_service_;
-}
-#endif
-
 void ProfileIOData::InitializeMetricsEnabledStateOnUIThread() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 #if defined(OS_CHROMEOS)
@@ -807,9 +788,6 @@ void ProfileIOData::Init(content::ProtocolHandlerMap* protocol_handlers) const {
   // Take ownership over these parameters.
   cookie_settings_ = profile_params_->cookie_settings;
   host_content_settings_map_ = profile_params_->host_content_settings_map;
-#if defined(ENABLE_NOTIFICATIONS)
-  notification_service_ = profile_params_->notification_service;
-#endif
   extension_info_map_ = profile_params_->extension_info_map;
 
   resource_context_->host_resolver_ = io_thread_globals->host_resolver.get();

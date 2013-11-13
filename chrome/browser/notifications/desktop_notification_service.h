@@ -151,11 +151,6 @@ class DesktopNotificationService : public BrowserContextKeyedService,
 
   ContentSetting GetContentSetting(const GURL& origin);
 
-  // Checks to see if a given origin has permission to create desktop
-  // notifications.
-  blink::WebNotificationPresenter::Permission
-      HasPermission(const GURL& origin);
-
   // Returns true if the notifier with |notifier_id| is allowed to send
   // notifications.
   bool IsNotifierEnabled(const message_center::NotifierId& notifier_id);

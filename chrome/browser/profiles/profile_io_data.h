@@ -29,7 +29,6 @@
 class ChromeHttpUserAgentSettings;
 class ChromeNetworkDelegate;
 class CookieSettings;
-class DesktopNotificationService;
 class HostContentSettingsMap;
 class ManagedModeURLFilter;
 class Profile;
@@ -118,10 +117,6 @@ class ProfileIOData {
   extensions::InfoMap* GetExtensionInfoMap() const;
   CookieSettings* GetCookieSettings() const;
   HostContentSettingsMap* GetHostContentSettingsMap() const;
-
-#if defined(ENABLE_NOTIFICATIONS)
-  DesktopNotificationService* GetNotificationService() const;
-#endif
 
   IntegerPrefMember* session_startup_pref() const {
     return &session_startup_pref_;
@@ -255,10 +250,6 @@ class ProfileIOData {
     scoped_refptr<extensions::InfoMap> extension_info_map;
     scoped_ptr<chrome_browser_net::ResourcePrefetchPredictorObserver>
         resource_prefetch_predictor_observer_;
-
-#if defined(ENABLE_NOTIFICATIONS)
-    DesktopNotificationService* notification_service;
-#endif
 
     // This pointer exists only as a means of conveying a url job factory
     // pointer from the protocol handler registry on the UI thread to the
@@ -497,10 +488,6 @@ class ProfileIOData {
       http_server_properties_;
 #if defined(OS_CHROMEOS)
   mutable scoped_ptr<policy::PolicyCertVerifier> cert_verifier_;
-#endif
-
-#if defined(ENABLE_NOTIFICATIONS)
-  mutable DesktopNotificationService* notification_service_;
 #endif
 
   mutable scoped_ptr<net::TransportSecurityPersister>

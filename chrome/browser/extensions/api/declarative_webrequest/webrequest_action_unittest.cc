@@ -125,10 +125,14 @@ void WebRequestActionWithThreadsTest::SetUp() {
   extension_info_map_ = new InfoMap;
   ASSERT_TRUE(extension_info_map_.get());
   extension_info_map_->AddExtension(
-      extension_.get(), base::Time::Now(), false /*incognito_enabled*/);
+      extension_.get(),
+      base::Time::Now(),
+      false /*incognito_enabled*/,
+      false /*notifications_disabled*/);
   extension_info_map_->AddExtension(extension_all_urls_.get(),
                                     base::Time::Now(),
-                                    false /*incognito_enabled*/);
+                                    false /*incognito_enabled*/,
+                                    false /*notifications_disabled*/);
 }
 
 bool WebRequestActionWithThreadsTest::ActionWorksOnRequest(

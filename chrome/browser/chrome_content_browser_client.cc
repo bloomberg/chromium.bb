@@ -1948,31 +1948,37 @@ blink::WebNotificationPresenter::Permission
         int render_process_id) {
 #if defined(ENABLE_NOTIFICATIONS)
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  // Sometimes a notification may be invoked during the shutdown.
-  // See http://crbug.com/256638
-  if (browser_shutdown::IsTryingToQuit())
-    return blink::WebNotificationPresenter::PermissionNotAllowed;
 
   ProfileIOData* io_data = ProfileIOData::FromResourceContext(context);
+  InfoMap* extension_info_map = io_data->GetExtensionInfoMap();
 
-  DesktopNotificationService* notification_service =
-      io_data->GetNotificationService();
-  if (notification_service) {
-    InfoMap* extension_info_map = io_data->GetExtensionInfoMap();
-    ExtensionSet extensions;
-    extension_info_map->GetExtensionsWithAPIPermissionForSecurityOrigin(
-        source_origin, render_process_id,
-        extensions::APIPermission::kNotification, &extensions);
-    for (ExtensionSet::const_iterator iter = extensions.begin();
-         iter != extensions.end(); ++iter) {
-      NotifierId notifier_id(NotifierId::APPLICATION, (*iter)->id());
-      if (notification_service->IsNotifierEnabled(notifier_id))
-        return blink::WebNotificationPresenter::PermissionAllowed;
-    }
-
-    return notification_service->HasPermission(source_origin);
+  // We want to see if there is an extension that hasn't been manually disabled
+  // that has the notifications permission and applies to this security origin.
+  // First, get the list of extensions with permission for the origin.
+  ExtensionSet extensions;
+  extension_info_map->GetExtensionsWithAPIPermissionForSecurityOrigin(
+      source_origin, render_process_id,
+      extensions::APIPermission::kNotification, &extensions);
+  for (ExtensionSet::const_iterator iter = extensions.begin();
+       iter != extensions.end(); ++iter) {
+    // Then, check to see if it's been disabled by the user.
+    if (!extension_info_map->AreNotificationsDisabled((*iter)->id()))
+      return blink::WebNotificationPresenter::PermissionAllowed;
   }
 
+  // No enabled extensions exist, so check the normal host content settings.
+  HostContentSettingsMap* host_content_settings_map =
+      io_data->GetHostContentSettingsMap();
+  ContentSetting setting = host_content_settings_map->GetContentSetting(
+      source_origin,
+      source_origin,
+      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
+      NO_RESOURCE_IDENTIFIER);
+
+  if (setting == CONTENT_SETTING_ALLOW)
+    return blink::WebNotificationPresenter::PermissionAllowed;
+  if (setting == CONTENT_SETTING_BLOCK)
+    return blink::WebNotificationPresenter::PermissionDenied;
   return blink::WebNotificationPresenter::PermissionNotAllowed;
 #else
   return blink::WebNotificationPresenter::PermissionAllowed;

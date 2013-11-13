@@ -27,43 +27,6 @@ class DesktopNotificationServiceTest : public ChromeRenderViewHostTestHarness {
   DesktopNotificationService* service_;
 };
 
-TEST_F(DesktopNotificationServiceTest, SettingsForSchemes) {
-  GURL url("file:///html/test.html");
-
-  EXPECT_EQ(CONTENT_SETTING_ASK,
-            service_->GetDefaultContentSetting(NULL));
-  EXPECT_EQ(blink::WebNotificationPresenter::PermissionNotAllowed,
-            service_->HasPermission(url));
-
-  service_->GrantPermission(url);
-  EXPECT_EQ(blink::WebNotificationPresenter::PermissionAllowed,
-            service_->HasPermission(url));
-
-  service_->DenyPermission(url);
-  EXPECT_EQ(blink::WebNotificationPresenter::PermissionDenied,
-            service_->HasPermission(url));
-
-  GURL https_url("https://testurl");
-  GURL http_url("http://testurl");
-  EXPECT_EQ(CONTENT_SETTING_ASK,
-            service_->GetDefaultContentSetting(NULL));
-  EXPECT_EQ(blink::WebNotificationPresenter::PermissionNotAllowed,
-            service_->HasPermission(http_url));
-  EXPECT_EQ(blink::WebNotificationPresenter::PermissionNotAllowed,
-            service_->HasPermission(https_url));
-
-  service_->GrantPermission(https_url);
-  EXPECT_EQ(blink::WebNotificationPresenter::PermissionNotAllowed,
-            service_->HasPermission(http_url));
-  EXPECT_EQ(blink::WebNotificationPresenter::PermissionAllowed,
-            service_->HasPermission(https_url));
-
-  service_->DenyPermission(http_url);
-  EXPECT_EQ(blink::WebNotificationPresenter::PermissionDenied,
-            service_->HasPermission(http_url));
-  EXPECT_EQ(blink::WebNotificationPresenter::PermissionAllowed,
-            service_->HasPermission(https_url));
-}
 
 TEST_F(DesktopNotificationServiceTest, GetNotificationsSettings) {
   service_->GrantPermission(GURL("http://allowed2.com"));

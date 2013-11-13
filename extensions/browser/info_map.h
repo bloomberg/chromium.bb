@@ -35,7 +35,8 @@ class InfoMap : public base::RefCountedThreadSafe<InfoMap> {
   // Callback for when new extensions are loaded.
   void AddExtension(const extensions::Extension* extension,
                     base::Time install_time,
-                    bool incognito_enabled);
+                    bool incognito_enabled,
+                    bool notifications_disabled);
 
   // Callback for when an extension is unloaded.
   void RemoveExtension(const std::string& extension_id,
@@ -84,6 +85,12 @@ class InfoMap : public base::RefCountedThreadSafe<InfoMap> {
   // it.
   void SetSigninProcess(int process_id);
   bool IsSigninProcess(int process_id) const;
+
+  // Notifications can be enabled/disabled in real time by the user.
+  void SetNotificationsDisabled(const std::string& extension_id,
+                               bool notifications_disabled);
+  bool AreNotificationsDisabled(const std::string& extension_id)
+      const;
 
  private:
   friend class base::RefCountedThreadSafe<InfoMap>;

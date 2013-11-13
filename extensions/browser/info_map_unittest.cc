@@ -90,9 +90,9 @@ TEST_F(InfoMapTest, RefCounting) {
   EXPECT_TRUE(extension3->HasOneRef());
 
   // Add a ref to each extension and give it to the info map.
-  info_map->AddExtension(extension1.get(), base::Time(), false);
-  info_map->AddExtension(extension2.get(), base::Time(), false);
-  info_map->AddExtension(extension3.get(), base::Time(), false);
+  info_map->AddExtension(extension1.get(), base::Time(), false, false);
+  info_map->AddExtension(extension2.get(), base::Time(), false, false);
+  info_map->AddExtension(extension3.get(), base::Time(), false, false);
 
   // Release extension1, and the info map should have the only ref.
   const Extension* weak_extension1 = extension1.get();
@@ -116,8 +116,8 @@ TEST_F(InfoMapTest, Properties) {
   scoped_refptr<Extension> extension1(CreateExtension("extension1"));
   scoped_refptr<Extension> extension2(CreateExtension("extension2"));
 
-  info_map->AddExtension(extension1.get(), base::Time(), false);
-  info_map->AddExtension(extension2.get(), base::Time(), false);
+  info_map->AddExtension(extension1.get(), base::Time(), false, false);
+  info_map->AddExtension(extension2.get(), base::Time(), false, false);
 
   EXPECT_EQ(2u, info_map->extensions().size());
   EXPECT_EQ(extension1.get(), info_map->extensions().GetByID(extension1->id()));
@@ -137,8 +137,8 @@ TEST_F(InfoMapTest, CheckPermissions) {
   ASSERT_TRUE(app->is_app());
   ASSERT_TRUE(app->web_extent().MatchesURL(app_url));
 
-  info_map->AddExtension(app.get(), base::Time(), false);
-  info_map->AddExtension(extension.get(), base::Time(), false);
+  info_map->AddExtension(app.get(), base::Time(), false, false);
+  info_map->AddExtension(extension.get(), base::Time(), false, false);
 
   // The app should have the notifications permission, either from a
   // chrome-extension URL or from its web extent.
@@ -159,6 +159,18 @@ TEST_F(InfoMapTest, CheckPermissions) {
   GURL evil_url("http://evil.com/a.html");
   match = info_map->extensions().GetExtensionOrAppByURL(evil_url);
   EXPECT_FALSE(match);
+}
+
+TEST_F(InfoMapTest, TestNotificationsDisabled) {
+  scoped_refptr<InfoMap> info_map(new InfoMap());
+  scoped_refptr<Extension> app(LoadManifest("manifest_tests",
+                                            "valid_app.json"));
+  info_map->AddExtension(app.get(), base::Time(), false, false);
+
+  EXPECT_FALSE(info_map->AreNotificationsDisabled(app->id()));
+  info_map->SetNotificationsDisabled(app->id(), true);
+  EXPECT_TRUE(info_map->AreNotificationsDisabled(app->id()));
+  info_map->SetNotificationsDisabled(app->id(), false);
 }
 
 }  // namespace extensions

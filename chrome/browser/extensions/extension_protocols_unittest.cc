@@ -165,7 +165,7 @@ TEST_F(ExtensionProtocolTest, IncognitoRequest) {
     scoped_refptr<Extension> extension =
         CreateTestExtension(cases[i].name, cases[i].incognito_split_mode);
     extension_info_map_->AddExtension(
-        extension.get(), base::Time::Now(), cases[i].incognito_enabled);
+        extension.get(), base::Time::Now(), cases[i].incognito_enabled, false);
 
     // First test a main frame request.
     {
@@ -225,7 +225,10 @@ TEST_F(ExtensionProtocolTest, ComponentResourceRequest) {
   SetProtocolHandler(false);
 
   scoped_refptr<Extension> extension = CreateWebStoreExtension();
-  extension_info_map_->AddExtension(extension.get(), base::Time::Now(), false);
+  extension_info_map_->AddExtension(extension.get(),
+                                    base::Time::Now(),
+                                    false,
+                                    false);
 
   // First test it with the extension enabled.
   {
@@ -259,7 +262,10 @@ TEST_F(ExtensionProtocolTest, ResourceRequestResponseHeaders) {
   SetProtocolHandler(false);
 
   scoped_refptr<Extension> extension = CreateTestResponseHeaderExtension();
-  extension_info_map_->AddExtension(extension.get(), base::Time::Now(), false);
+  extension_info_map_->AddExtension(extension.get(),
+                                    base::Time::Now(),
+                                    false,
+                                    false);
 
   {
     net::URLRequest request(extension->GetResourceURL("test.dat"),
@@ -294,7 +300,10 @@ TEST_F(ExtensionProtocolTest, AllowFrameRequests) {
   SetProtocolHandler(false);
 
   scoped_refptr<Extension> extension = CreateTestExtension("foo", false);
-  extension_info_map_->AddExtension(extension.get(), base::Time::Now(), false);
+  extension_info_map_->AddExtension(extension.get(),
+                                    base::Time::Now(),
+                                    false,
+                                    false);
 
   // All MAIN_FRAME and SUB_FRAME requests should succeed.
   {

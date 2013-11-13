@@ -58,7 +58,6 @@ using content::BrowserThread;
 using content::RenderViewHost;
 using content::WebContents;
 using message_center::NotifierId;
-using blink::WebNotificationPresenter;
 using blink::WebTextDirection;
 
 
@@ -650,27 +649,6 @@ void DesktopNotificationService::OnStringListPrefChanged(
   }
 }
 
-blink::WebNotificationPresenter::Permission
-    DesktopNotificationService::HasPermission(const GURL& origin) {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  HostContentSettingsMap* host_content_settings_map =
-      profile_->GetHostContentSettingsMap();
-  ContentSetting setting = host_content_settings_map->GetContentSetting(
-      origin,
-      origin,
-      CONTENT_SETTINGS_TYPE_NOTIFICATIONS,
-      NO_RESOURCE_IDENTIFIER);
-
-  if (setting == CONTENT_SETTING_ALLOW)
-    return blink::WebNotificationPresenter::PermissionAllowed;
-  if (setting == CONTENT_SETTING_BLOCK)
-    return blink::WebNotificationPresenter::PermissionDenied;
-  if (setting == CONTENT_SETTING_ASK)
-    return blink::WebNotificationPresenter::PermissionNotAllowed;
-  NOTREACHED() << "Invalid notifications settings value: " << setting;
-  return blink::WebNotificationPresenter::PermissionNotAllowed;
-}
-
 void DesktopNotificationService::Observe(
     int type,
     const content::NotificationSource& source,
@@ -700,4 +678,14 @@ void DesktopNotificationService::FirePermissionLevelChangedEvent(
       args.Pass()));
   extensions::ExtensionSystem::Get(profile_)->event_router()->
       DispatchEventToExtension(notifier_id.id, event.Pass());
+
+  // Tell the IO thread that this extension's permission for notifications
+  // has changed.
+  extensions::InfoMap* extension_info_map =
+      extensions::ExtensionSystem::Get(profile_)->info_map();
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&extensions::InfoMap::SetNotificationsDisabled,
+                 extension_info_map, notifier_id.id, !enabled));
+
 }

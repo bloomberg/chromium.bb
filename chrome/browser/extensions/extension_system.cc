@@ -46,6 +46,12 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/manifest.h"
 
+#if defined(ENABLE_NOTIFICATIONS)
+#include "chrome/browser/notifications/desktop_notification_service.h"
+#include "chrome/browser/notifications/desktop_notification_service_factory.h"
+#include "ui/message_center/notifier_settings.h"
+#endif
+
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/chromeos/extensions/device_local_account_management_policy_provider.h"
@@ -397,13 +403,24 @@ void ExtensionSystemImpl::RegisterExtensionWithRequestContexts(
   }
   bool incognito_enabled =
       extension_util::IsIncognitoEnabled(extension->id(), extension_service());
-  BrowserThread::PostTask(BrowserThread::IO,
-                          FROM_HERE,
-                          base::Bind(&InfoMap::AddExtension,
-                                     info_map(),
-                                     make_scoped_refptr(extension),
-                                     install_time,
-                                     incognito_enabled));
+
+  bool notifications_disabled = false;
+#if defined(ENABLE_NOTIFICATIONS)
+  message_center::NotifierId notifier_id(
+      message_center::NotifierId::APPLICATION,
+      extension->id());
+
+  DesktopNotificationService* notification_service =
+      DesktopNotificationServiceFactory::GetForProfile(profile_);
+  notifications_disabled =
+      !notification_service->IsNotifierEnabled(notifier_id);
+#endif
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&InfoMap::AddExtension, info_map(),
+                 make_scoped_refptr(extension), install_time,
+                 incognito_enabled, notifications_disabled));
 }
 
 void ExtensionSystemImpl::UnregisterExtensionWithRequestContexts(

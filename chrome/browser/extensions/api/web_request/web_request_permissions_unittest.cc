@@ -63,9 +63,13 @@ void ExtensionWebRequestHelpersTestWithThreadsTest::SetUp() {
   extension_info_map_ = new extensions::InfoMap;
   extension_info_map_->AddExtension(permissionless_extension_.get(),
                                     base::Time::Now(),
-                                    false /*incognito_enabled*/);
+                                    false /*incognito_enabled*/,
+                                    false /*notifications_disabled*/);
   extension_info_map_->AddExtension(
-      com_extension_.get(), base::Time::Now(), false /*incognito_enabled*/);
+      com_extension_.get(),
+      base::Time::Now(),
+      false /*incognito_enabled*/,
+      false /*notifications_disabled*/);
 }
 
 TEST_F(ExtensionWebRequestHelpersTestWithThreadsTest, TestHideRequestForURL) {

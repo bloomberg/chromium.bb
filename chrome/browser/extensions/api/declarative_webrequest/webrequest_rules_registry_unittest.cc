@@ -256,10 +256,12 @@ void WebRequestRulesRegistryTest::SetUp() {
   ASSERT_TRUE(extension_info_map_.get());
   extension_info_map_->AddExtension(extension_.get(),
                                     base::Time() + base::TimeDelta::FromDays(1),
-                                    false /*incognito_enabled*/);
+                                    false /*incognito_enabled*/,
+                                    false /*notifications_disabled*/);
   extension_info_map_->AddExtension(extension2_.get(),
                                     base::Time() + base::TimeDelta::FromDays(2),
-                                    false /*incognito_enabled*/);
+                                    false /*incognito_enabled*/,
+                                    false /*notifications_disabled*/);
 }
 
 

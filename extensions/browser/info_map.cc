@@ -29,6 +29,9 @@ struct InfoMap::ExtraData {
   // True if the user has allowed this extension to run in incognito mode.
   bool incognito_enabled;
 
+  // True if the user has disabled notifications for this extension manually.
+  bool notifications_disabled;
+
   ExtraData();
   ~ExtraData();
 };
@@ -43,13 +46,15 @@ const ProcessMap& InfoMap::process_map() const { return process_map_; }
 
 void InfoMap::AddExtension(const Extension* extension,
                            base::Time install_time,
-                           bool incognito_enabled) {
+                           bool incognito_enabled,
+                           bool notifications_disabled) {
   CheckOnValidThread();
   extensions_.Insert(extension);
   disabled_extensions_.Remove(extension->id());
 
   extra_data_[extension->id()].install_time = install_time;
   extra_data_[extension->id()].incognito_enabled = incognito_enabled;
+  extra_data_[extension->id()].notifications_disabled = notifications_disabled;
 }
 
 void InfoMap::RemoveExtension(const std::string& extension_id,
@@ -169,6 +174,22 @@ void InfoMap::SetSigninProcess(int process_id) {
 
 bool InfoMap::IsSigninProcess(int process_id) const {
   return process_id == signin_process_id_;
+}
+
+void InfoMap::SetNotificationsDisabled(
+    const std::string& extension_id,
+    bool notifications_disabled) {
+  ExtraDataMap::iterator iter = extra_data_.find(extension_id);
+  if (iter != extra_data_.end())
+    iter->second.notifications_disabled = notifications_disabled;
+}
+
+bool InfoMap::AreNotificationsDisabled(
+    const std::string& extension_id) const {
+  ExtraDataMap::const_iterator iter = extra_data_.find(extension_id);
+  if (iter != extra_data_.end())
+    return iter->second.notifications_disabled;
+  return false;
 }
 
 InfoMap::~InfoMap() {
