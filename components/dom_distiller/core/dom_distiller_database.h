@@ -15,6 +15,7 @@
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
+#include "base/threading/thread_collision_warner.h"
 #include "components/dom_distiller/core/article_entry.h"
 
 namespace base {
@@ -81,7 +82,7 @@ class DomDistillerDatabase
     virtual bool Load(EntryVector* entries) OVERRIDE;
 
    private:
-    base::ThreadChecker thread_checker_;
+    DFAKE_MUTEX(thread_checker_);
     scoped_ptr<leveldb::DB> db_;
   };
 

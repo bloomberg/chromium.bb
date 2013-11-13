@@ -23,16 +23,14 @@ using base::SequencedTaskRunner;
 
 namespace dom_distiller {
 
-DomDistillerDatabase::LevelDB::LevelDB() {
-  thread_checker_.DetachFromThread();
-}
+DomDistillerDatabase::LevelDB::LevelDB() {}
 
 DomDistillerDatabase::LevelDB::~LevelDB() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DFAKE_SCOPED_LOCK(thread_checker_);
 }
 
 bool DomDistillerDatabase::LevelDB::Init(const base::FilePath& database_dir) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DFAKE_SCOPED_LOCK(thread_checker_);
 
   leveldb::Options options;
   options.create_if_missing = true;
@@ -59,7 +57,7 @@ bool DomDistillerDatabase::LevelDB::Init(const base::FilePath& database_dir) {
 }
 
 bool DomDistillerDatabase::LevelDB::Save(const EntryVector& entries) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DFAKE_SCOPED_LOCK(thread_checker_);
 
   leveldb::WriteBatch updates;
   for (EntryVector::const_iterator it = entries.begin(); it != entries.end();
@@ -80,7 +78,7 @@ bool DomDistillerDatabase::LevelDB::Save(const EntryVector& entries) {
 }
 
 bool DomDistillerDatabase::LevelDB::Load(EntryVector* entries) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DFAKE_SCOPED_LOCK(thread_checker_);
 
   leveldb::ReadOptions options;
   scoped_ptr<leveldb::Iterator> db_iterator(db_->NewIterator(options));
