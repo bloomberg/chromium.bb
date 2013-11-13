@@ -97,6 +97,17 @@ class ChildProcessSecurityPolicy {
       int child_id,
       const std::string& filesystem_id) = 0;
 
+  // Grants create, read and write access permissions to the given isolated
+  // file system identified by |filesystem_id|.  See comments for
+  // GrantReadFileSystem for more details.  You do NOT need to give direct
+  // permission to individual file paths.
+  //
+  // This must be called with a great care as this gives create, read and write
+  // permissions to all files/directories included in the file system.
+  virtual void GrantCreateReadWriteFileSystem(
+      int child_id,
+      const std::string& filesystem_id) = 0;
+
   // Grants permission to copy-into filesystem |filesystem_id|. 'copy-into'
   // is used to allow copying files into the destination filesystem without
   // granting more general create and write permissions.
