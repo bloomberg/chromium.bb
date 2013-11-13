@@ -54,6 +54,13 @@ class AutofillDialogViewDelegate;
 // Validate every visible details section.
 - (BOOL)validate;
 
+// Find the first visible and invalid user input field. Returns nil if no field
+// is found. Looks at both direct input fields and input fields in suggestions.
+- (NSControl*)firstInvalidField;
+
+// Positions the scrollview so that given |field| is visible.
+- (void)scrollToView:(NSView*)field;
+
 @end
 
 #endif  // CHROME_BROWSER_UI_COCOA_AUTOFILL_AUTOFILL_DETAILS_CONTAINER_H_

@@ -526,6 +526,8 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
 - (IBAction)accept:(id)sender {
   if ([mainContainer_ validate])
     autofillDialog_->delegate()->OnAccept();
+  else
+    [mainContainer_ makeFirstInvalidInputFirstResponder];
 }
 
 - (IBAction)cancel:(id)sender {

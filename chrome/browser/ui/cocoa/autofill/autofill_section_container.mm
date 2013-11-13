@@ -377,6 +377,11 @@ bool CompareInputRows(const autofill::DetailInput* input1,
   return showSuggestions_ ? [[suggestContainer_ inputField] stringValue] : nil;
 }
 
+- (void)addInputsToArray:(NSMutableArray*)array {
+  [array addObjectsFromArray:[inputs_ subviews]];
+  [array addObject:[suggestContainer_ inputField]];
+}
+
 #pragma mark Internal API for AutofillSectionContainer.
 
 - (void)textfieldEditedOrActivated:(NSControl<AutofillInputField>*)field

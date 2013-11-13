@@ -97,6 +97,60 @@
   return allValid;
 }
 
+- (NSView*)firstInvalidField {
+  base::scoped_nsobject<NSMutableArray> fields([[NSMutableArray alloc] init]);
+
+  for (AutofillSectionContainer* details in details_.get()) {
+    if (![[details view] isHidden])
+      [details addInputsToArray:fields];
+  }
+
+  NSPoint selectedFieldOrigin = NSZeroPoint;
+  NSView* selectedField = nil;
+  for (NSView<AutofillInputField>* field in fields.get()) {
+    if (!base::mac::ObjCCast<NSView>(field))
+      continue;
+    if (![field conformsToProtocol:@protocol(AutofillInputField)])
+      continue;
+    if ([field isHiddenOrHasHiddenAncestor])
+      continue;
+    if (![field invalid])
+      continue;
+
+    NSPoint fieldOrigin = [field convertPoint:[field bounds].origin toView:nil];
+    if (fieldOrigin.y < selectedFieldOrigin.y)
+      continue;
+    if (fieldOrigin.y == selectedFieldOrigin.y &&
+        fieldOrigin.x > selectedFieldOrigin.x)
+      continue;
+
+    selectedField = field;
+    selectedFieldOrigin = fieldOrigin;
+  }
+
+  return selectedField;
+}
+
+- (void)scrollToView:(NSView*)field {
+  const CGFloat bottomPadding = 5.0;  // Padding below the visible field.
+
+  NSClipView* clipView = [scrollView_ contentView];
+  NSRect fieldRect = [field convertRect:[field bounds] toView:clipView];
+
+  // If the entire field is already visible, let's not scroll.
+  NSRect documentRect = [clipView documentVisibleRect];
+  documentRect = [[clipView documentView] convertRect:documentRect
+                                               toView:clipView];
+  if (NSContainsRect(documentRect, fieldRect))
+    return;
+
+  NSPoint scrollPoint = [clipView constrainScrollPoint:
+      NSMakePoint(NSMinX(fieldRect), NSMinY(fieldRect) - bottomPadding)];
+  [clipView scrollToPoint:scrollPoint];
+  [scrollView_ reflectScrolledClipView:clipView];
+  [self updateErrorBubble];
+}
+
 - (void)updateErrorBubble {
   if (!delegate_->ShouldShowErrorBubble()) {
     [errorBubbleController_ close];
@@ -122,6 +176,8 @@
 }
 
 - (void)showErrorBubbleForField:(NSControl<AutofillInputField>*)field {
+  if (errorBubbleController_)
+    [errorBubbleController_ close];
   DCHECK(!errorBubbleController_);
   NSWindow* parentWindow = [field window];
   DCHECK(parentWindow);

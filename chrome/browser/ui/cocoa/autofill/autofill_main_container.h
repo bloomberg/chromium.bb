@@ -79,6 +79,9 @@ namespace autofill {
 // Updates status of "save in Chrome" checkbox.
 - (void)updateSaveInChrome;
 
+// Makes the first invalid input first responder.
+- (void)makeFirstInvalidInputFirstResponder;
+
 @end
 
 

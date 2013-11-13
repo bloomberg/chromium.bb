@@ -320,6 +320,15 @@
       (delegate_->ShouldSaveInChrome() ? NSOnState : NSOffState)];
 }
 
+- (void)makeFirstInvalidInputFirstResponder {
+  NSView* field = [detailsContainer_ firstInvalidField];
+  if (!field)
+    return;
+
+  [detailsContainer_ scrollToView:field];
+  [[[self view] window] makeFirstResponder:field];
+}
+
 - (void)updateWalletIcon {
   gfx::Image image = delegate_->ButtonStripImage();
   [buttonStripImage_ setHidden:image.IsEmpty()];

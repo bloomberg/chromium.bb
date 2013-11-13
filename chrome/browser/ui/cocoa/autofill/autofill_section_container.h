@@ -92,6 +92,9 @@ class AutofillDialogViewDelegate;
 // suggestion is currently showing.
 - (NSString*)suggestionText;
 
+// Collects all input fields (direct & suggestions) into the given |array|.
+- (void)addInputsToArray:(NSMutableArray*)array;
+
 @end
 
 @interface AutofillSectionContainer (ForTesting)
