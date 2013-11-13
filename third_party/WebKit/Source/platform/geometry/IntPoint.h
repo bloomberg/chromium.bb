@@ -41,7 +41,7 @@ typedef struct _NSPoint NSPoint;
 
 namespace WebCore {
 
-class IntPoint {
+class PLATFORM_EXPORT IntPoint {
 public:
     IntPoint() : m_x(0), m_y(0) { }
     IntPoint(int x, int y) : m_x(x), m_y(y) { }

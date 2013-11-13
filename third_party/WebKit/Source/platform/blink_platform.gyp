@@ -86,6 +86,12 @@
       '<(DEPTH)/third_party/angle_dx11/include',
       '<(SHARED_INTERMEDIATE_DIR)/blink',
     ],
+    'xcode_settings': {
+      # Some Mac-specific parts of WebKit won't compile without having this
+      # prefix header injected.
+      # FIXME: make this a first-class setting.
+      'GCC_PREFIX_HEADER': '../core/WebCorePrefixMac.h',
+    },
     'sources': [
       '<@(platform_files)',
 
@@ -115,6 +121,20 @@
           # The Mac uses mac/KillRingMac.mm instead of the dummy
           # implementation.
           ['exclude', 'KillRingNone\\.cpp$'],
+
+          ['include', 'geometry/mac/FloatPointMac\\.mm$'],
+          ['include', 'geometry/mac/FloatRectMac\\.mm$'],
+          ['include', 'geometry/mac/FloatSizeMac\\.mm$'],
+          ['include', 'geometry/mac/IntPointMac\\.mm$'],
+          ['include', 'geometry/mac/IntRectMac\\.mm$'],
+
+          ['include', 'geometry/cg/FloatPointCG\\.cpp$'],
+          ['include', 'geometry/cg/FloatRectCG\\.cpp$'],
+          ['include', 'geometry/cg/FloatSizeCG\\.cpp$'],
+          ['include', 'geometry/cg/IntPointCG\\.cpp$'],
+          ['include', 'geometry/cg/IntRectCG\\.cpp$'],
+          ['include', 'geometry/cg/IntSizeCG\\.cpp$'],
+
         ],
         'defines': [
         'WebFontCache=ChromiumWebCoreObjCWebFontCache',
@@ -122,6 +142,8 @@
       }, { # OS!="mac"
         'sources/': [
           ['exclude', 'mac/'],
+          ['exclude', 'geometry/mac/'],
+          ['exclude', 'geometry/cg/'],
         ],
       }],
       ['OS=="win"', {

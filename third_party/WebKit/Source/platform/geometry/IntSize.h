@@ -41,7 +41,7 @@ typedef struct _NSSize NSSize;
 
 namespace WebCore {
 
-class IntSize {
+class PLATFORM_EXPORT IntSize {
 public:
     IntSize() : m_width(0), m_height(0) { }
     IntSize(int width, int height) : m_width(width), m_height(height) { }
