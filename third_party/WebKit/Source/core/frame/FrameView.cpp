@@ -30,8 +30,6 @@
 #include "HTMLNames.h"
 #include "RuntimeEnabledFeatures.h"
 #include "core/accessibility/AXObjectCache.h"
-#include "core/animation/AnimationClock.h"
-#include "core/animation/DocumentTimeline.h"
 #include "core/css/FontFaceSet.h"
 #include "core/css/resolver/StyleResolver.h"
 #include "core/dom/DocumentMarkerController.h"
@@ -2050,15 +2048,9 @@ void FrameView::serviceScriptedAnimations(double monotonicAnimationStartTime)
         frame->view()->serviceScrollAnimations();
         if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled())
             frame->animation().serviceAnimations();
-        if (RuntimeEnabledFeatures::webAnimationsEnabled()) {
-            frame->document()->animationClock().updateTime(monotonicAnimationStartTime);
-            bool didTriggerStyleRecalc = frame->document()->timeline()->serviceAnimations();
-            didTriggerStyleRecalc |= frame->document()->transitionTimeline()->serviceAnimations();
-            if (!didTriggerStyleRecalc)
-                frame->document()->animationClock().unfreeze();
-            frame->document()->timeline()->dispatchEvents();
-            frame->document()->transitionTimeline()->dispatchEvents();
-        }
+
+        frame->document()->serviceAnimations(monotonicAnimationStartTime);
+        frame->document()->dispatchAnimationEvents();
     }
 
     Vector<RefPtr<Document> > documents;

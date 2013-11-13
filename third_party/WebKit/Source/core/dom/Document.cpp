@@ -1517,6 +1517,27 @@ PassRefPtr<TreeWalker> Document::createTreeWalker(Node* root, unsigned whatToSho
     return TreeWalker::create(root, whatToShow, filter);
 }
 
+void Document::serviceAnimations(double monotonicAnimationStartTime)
+{
+    if (!RuntimeEnabledFeatures::webAnimationsEnabled())
+        return;
+
+    animationClock().updateTime(monotonicAnimationStartTime);
+    bool didTriggerStyleRecalc = timeline()->serviceAnimations();
+    didTriggerStyleRecalc |= transitionTimeline()->serviceAnimations();
+    if (!didTriggerStyleRecalc)
+        animationClock().unfreeze();
+}
+
+void Document::dispatchAnimationEvents()
+{
+    if (!RuntimeEnabledFeatures::webAnimationsEnabled())
+        return;
+
+    timeline()->dispatchEvents();
+    transitionTimeline()->dispatchEvents();
+}
+
 void Document::scheduleStyleRecalc()
 {
     if (shouldDisplaySeamlesslyWithParent()) {
