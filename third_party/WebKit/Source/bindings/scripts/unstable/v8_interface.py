@@ -201,21 +201,26 @@ def overload_resolution_expression(method):
 
 
 def overload_check_expression(method, argument_count):
-    def check_argument(index, argument):
-        cpp_value = 'info[%s]' % index
-        idl_type = argument['idl_type']
-        # FIXME: proper type checking, sharing code with attributes and methods
-        # FIXME: [StrictTypeChecking] DOMString
-        # FIXME: nullable types
-        if v8_types.array_or_sequence_type(idl_type):
-            return '%s->IsArray()' % cpp_value
-        if v8_types.is_wrapper_type(idl_type):
-            return 'V8{idl_type}::HasInstance({cpp_value}, info.GetIsolate(), worldType(info.GetIsolate()))'.format(idl_type=idl_type, cpp_value=cpp_value)
-        return None
-
     overload_checks = ['info.Length() == %s' % argument_count]
     arguments = method['arguments'][:argument_count]
-    overload_checks.extend(check_argument(index, argument)
-                                          for index, argument in
-                                          enumerate(arguments))
+    overload_checks.extend(overload_check_argument(index, argument)
+                           for index, argument in
+                           enumerate(arguments))
     return ' && '.join('(%s)' % check for check in overload_checks if check)
+
+
+def overload_check_argument(index, argument):
+    cpp_value = 'info[%s]' % index
+    idl_type = argument['idl_type']
+    # FIXME: proper type checking, sharing code with attributes and methods
+    # FIXME: nullable types
+    if idl_type == 'DOMString' and argument['is_strict_type_checking']:
+        return ' || '.join(['%s->IsNull()' % cpp_value,
+                            '%s->IsUndefined()' % cpp_value,
+                            '%s->IsString()' % cpp_value,
+                            '%s->IsObject()' % cpp_value])
+    if v8_types.array_or_sequence_type(idl_type):
+        return '%s->IsArray()' % cpp_value
+    if v8_types.is_wrapper_type(idl_type):
+        return 'V8{idl_type}::HasInstance({cpp_value}, info.GetIsolate(), worldType(info.GetIsolate()))'.format(idl_type=idl_type, cpp_value=cpp_value)
+    return None

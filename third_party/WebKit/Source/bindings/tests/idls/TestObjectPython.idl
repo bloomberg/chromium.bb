@@ -295,6 +295,8 @@ interface TestObjectPython {
     void overloadedMethodD(TestInterfaceEmpty testInterfaceEmptyArg);
     void overloadedMethodE(long longArg);
     void overloadedMethodE(long[] longArrayArg);
+    void overloadedMethodG();
+    void overloadedMethodG([StrictTypeChecking] DOMString strictTypeCheckingStringArg);
 
     static void overloadedStaticMethod(long longArg);
     static void overloadedStaticMethod(long longArg1, long longArg2);

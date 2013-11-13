@@ -111,6 +111,7 @@ def generate_method(interface, method):
         'is_per_world_bindings': 'PerWorldBindings' in extended_attributes,
         'is_raises_exception': is_raises_exception,
         'is_static': is_static,
+        'is_strict_type_checking': 'StrictTypeChecking' in extended_attributes,
         'is_variadic': arguments and arguments[-1].is_variadic,
         'measure_as': v8_utilities.measure_as(method),  # [MeasureAs]
         'name': name,
@@ -144,8 +145,9 @@ def generate_argument(interface, method, argument, index):
         'index': index,
         'is_clamp': 'Clamp' in extended_attributes,
         'is_optional': argument.is_optional,
-        'is_strict_type_checking': 'StrictTypeChecking' in method.extended_attributes and v8_types.is_wrapper_type(idl_type),
+        'is_strict_type_checking': 'StrictTypeChecking' in extended_attributes,
         'is_variadic_wrapper_type': argument.is_variadic and v8_types.is_wrapper_type(idl_type),
+        'is_wrapper_type': v8_types.is_wrapper_type(idl_type),
         'name': argument.name,
         'v8_set_return_value': v8_set_return_value(method, this_cpp_value),
         'v8_value_to_local_cpp_value': v8_value_to_local_cpp_value(argument, index),

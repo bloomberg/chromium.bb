@@ -36,9 +36,9 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
         return;
     }
     {% endif %}
-    {% if argument.is_strict_type_checking %}
-    {# Type checking for interface types (if interface not implemented, throw
-       TypeError), per http://www.w3.org/TR/WebIDL/#es-interface #}
+    {% if method.is_strict_type_checking and argument.is_wrapper_type %}
+    {# Type checking for wrapper interface types (if interface not implemented,
+       throw TypeError), per http://www.w3.org/TR/WebIDL/#es-interface #}
     if (info.Length() > {{argument.index}} && !isUndefinedOrNull(info[{{argument.index}}]) && !V8{{argument.idl_type}}::HasInstance(info[{{argument.index}}], info.GetIsolate(), worldType(info.GetIsolate()))) {
         throwTypeError(ExceptionMessages::failedToExecute("{{method.name}}", "{{interface_name}}", "parameter {{argument.index + 1}} is not of type '{{argument.idl_type}}'."), info.GetIsolate());
         return;

@@ -4989,6 +4989,43 @@ static void overloadedMethodEMethodCallback(const v8::FunctionCallbackInfo<v8::V
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
+static void overloadedMethodG1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    imp->overloadedMethodG();
+}
+
+static void overloadedMethodG2Method(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedMethodG", "TestObjectPython", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        return;
+    }
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strictTypeCheckingStringArg, info[0]);
+    imp->overloadedMethodG(strictTypeCheckingStringArg);
+}
+
+static void overloadedMethodGMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (((info.Length() == 0))) {
+        overloadedMethodG1Method(info);
+        return;
+    }
+    if (((info.Length() == 1) && (info[0]->IsNull() || info[0]->IsUndefined() || info[0]->IsString() || info[0]->IsObject()))) {
+        overloadedMethodG2Method(info);
+        return;
+    }
+    throwUninformativeAndGenericTypeError(info.GetIsolate());
+}
+
+static void overloadedMethodGMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::overloadedMethodGMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
 static void overloadedStaticMethod1Method(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
@@ -6052,6 +6089,7 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectPythonMethods[]
     {"overloadedMethodC", TestObjectPythonV8Internal::overloadedMethodCMethodCallback, 0, 1},
     {"overloadedMethodD", TestObjectPythonV8Internal::overloadedMethodDMethodCallback, 0, 1},
     {"overloadedMethodE", TestObjectPythonV8Internal::overloadedMethodEMethodCallback, 0, 1},
+    {"overloadedMethodG", TestObjectPythonV8Internal::overloadedMethodGMethodCallback, 0, 0},
     {"voidMethodClampUnsignedShortArg", TestObjectPythonV8Internal::voidMethodClampUnsignedShortArgMethodCallback, 0, 1},
     {"voidMethodClampUnsignedLongArg", TestObjectPythonV8Internal::voidMethodClampUnsignedLongArgMethodCallback, 0, 1},
     {"voidMethodDefaultUndefinedLongArg", TestObjectPythonV8Internal::voidMethodDefaultUndefinedLongArgMethodCallback, 0, 0},
