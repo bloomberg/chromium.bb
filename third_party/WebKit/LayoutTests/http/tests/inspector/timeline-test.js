@@ -16,6 +16,7 @@ InspectorTest.timelinePropertyFormatters = {
     counters: "formatAsTypeName",
     timerId: "formatAsTypeName",
     scriptLine: "formatAsTypeName",
+    layerId: "formatAsTypeName",
     lineNumber: "formatAsTypeName",
     frameId: "formatAsTypeName",
     encodedDataLength: "formatAsTypeName",

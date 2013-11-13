@@ -3007,7 +3007,7 @@ void FrameView::paintContents(GraphicsContext* p, const IntRect& rect)
         s_inPaintContents = false;
     }
 
-    InspectorInstrumentation::didPaint(renderView, p, rect);
+    InspectorInstrumentation::didPaint(renderView, 0, p, rect);
 }
 
 void FrameView::setPaintBehavior(PaintBehavior behavior)

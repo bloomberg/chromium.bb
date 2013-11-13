@@ -46,6 +46,7 @@ class Document;
 class DocumentLoader;
 class Frame;
 class GraphicsContext;
+class GraphicsLayer;
 class InjectedScriptManager;
 class InspectorClient;
 class InspectorOverlay;
@@ -148,7 +149,7 @@ public:
     void applyScreenHeightOverride(long*);
     bool shouldApplyScreenHeightOverride();
     void applyEmulatedMedia(String*);
-    void didPaint(RenderObject*, GraphicsContext*, const LayoutRect&);
+    void didPaint(RenderObject*, const GraphicsLayer*, GraphicsContext*, const LayoutRect&);
     void didLayout(RenderObject*);
     void didScroll();
     void didResizeMainFrame();

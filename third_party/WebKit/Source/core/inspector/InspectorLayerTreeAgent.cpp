@@ -52,7 +52,7 @@
 
 namespace WebCore {
 
-inline String idForLayer(GraphicsLayer* graphicsLayer)
+inline String idForLayer(const GraphicsLayer* graphicsLayer)
 {
     return String::number(graphicsLayer->platformLayer()->id());
 }
@@ -149,14 +149,11 @@ void InspectorLayerTreeAgent::layerTreeDidChange()
     m_frontend->layerTreeDidChange(buildLayerTree());
 }
 
-void InspectorLayerTreeAgent::didPaint(RenderObject* renderer, GraphicsContext*, const LayoutRect& rect)
+void InspectorLayerTreeAgent::didPaint(RenderObject*, const GraphicsLayer* graphicsLayer, GraphicsContext*, const LayoutRect& rect)
 {
-    RenderLayer* renderLayer = toRenderLayerModelObject(renderer)->layer();
-    CompositedLayerMapping* compositedLayerMapping = renderLayer->compositedLayerMapping();
     // Should only happen for FrameView paints when compositing is off. Consider different instrumentation method for that.
-    if (!compositedLayerMapping)
+    if (!graphicsLayer)
         return;
-    GraphicsLayer* graphicsLayer = compositedLayerMapping->mainGraphicsLayer();
     RefPtr<TypeBuilder::DOM::Rect> domRect = TypeBuilder::DOM::Rect::create()
         .setX(rect.x())
         .setY(rect.y())

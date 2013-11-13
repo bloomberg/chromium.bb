@@ -1685,8 +1685,6 @@ void CompositedLayerMapping::doPaintTask(GraphicsLayerPaintInfo& paintInfo, Grap
     else if (compositor()->fixedRootBackgroundLayer())
         paintFlags |= PaintLayerPaintingSkipRootBackground;
 
-    InspectorInstrumentation::willPaint(paintInfo.renderLayer->renderer());
-
     // Note carefully: in theory it is appropriate to invoke context->save() here
     // and restore the context after painting. For efficiency, we are assuming that
     // it is equivalent to manually undo this offset translation, which means we are
@@ -1720,8 +1718,6 @@ void CompositedLayerMapping::doPaintTask(GraphicsLayerPaintInfo& paintInfo, Grap
 
     // Manually restore the context to its original state by applying the opposite translation.
     context->translate(offset);
-
-    InspectorInstrumentation::didPaint(paintInfo.renderLayer->renderer(), context, clip);
 }
 
 static void paintScrollbar(Scrollbar* scrollbar, GraphicsContext& context, const IntRect& clip)
@@ -1745,6 +1741,7 @@ void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, G
     if (Page* page = renderer()->frame()->page())
         page->setIsPainting(true);
 #endif
+    InspectorInstrumentation::willPaint(m_owningLayer->renderer());
 
     if (graphicsLayer == m_graphicsLayer.get()
         || graphicsLayer == m_foregroundLayer.get()
@@ -1776,6 +1773,7 @@ void CompositedLayerMapping::paintContents(const GraphicsLayer* graphicsLayer, G
         m_owningLayer->scrollableArea()->paintResizer(&context, IntPoint(), transformedClip);
         context.restore();
     }
+    InspectorInstrumentation::didPaint(m_owningLayer->renderer(), graphicsLayer, &context, clip);
 #ifndef NDEBUG
     if (Page* page = renderer()->frame()->page())
         page->setIsPainting(false);

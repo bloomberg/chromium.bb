@@ -59,6 +59,7 @@ class Element;
 class DeviceOrientationData;
 class GeolocationPosition;
 class GraphicsContext;
+class GraphicsLayer;
 class InspectorTimelineAgent;
 class InstrumentingAgents;
 class RenderLayer;

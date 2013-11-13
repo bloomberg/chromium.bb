@@ -94,7 +94,7 @@ namespace WebCore {
 
         static PassRefPtr<JSONObject> createLayerData(long long layerRootNodeId);
 
-        static PassRefPtr<JSONObject> createPaintData(const FloatQuad&, long long layerRootNodeId);
+        static PassRefPtr<JSONObject> createPaintData(const FloatQuad&, long long layerRootNodeId, int graphicsLayerId);
 
         static PassRefPtr<JSONObject> createFrameData(int frameId);
 

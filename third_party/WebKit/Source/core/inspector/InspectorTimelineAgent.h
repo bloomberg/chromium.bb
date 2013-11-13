@@ -53,6 +53,7 @@ class Event;
 class FloatQuad;
 class Frame;
 class GraphicsContext;
+class GraphicsLayer;
 class InspectorClient;
 class InspectorDOMAgent;
 class InspectorFrontend;
@@ -167,7 +168,7 @@ public:
     void didRecalculateStyleForElement();
 
     void willPaint(RenderObject*);
-    void didPaint(RenderObject*, GraphicsContext*, const LayoutRect&);
+    void didPaint(RenderObject*, const GraphicsLayer*, GraphicsContext*, const LayoutRect&);
 
     void willPaintImage(RenderImage*);
     void didPaintImage();

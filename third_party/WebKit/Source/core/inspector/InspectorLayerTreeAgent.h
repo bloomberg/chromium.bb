@@ -63,7 +63,7 @@ public:
 
     // Called from InspectorInstrumentation
     void layerTreeDidChange();
-    void didPaint(RenderObject*, GraphicsContext*, const LayoutRect&);
+    void didPaint(RenderObject*, const GraphicsLayer*, GraphicsContext*, const LayoutRect&);
 
     // Called from the front-end.
     virtual void enable(ErrorString*);

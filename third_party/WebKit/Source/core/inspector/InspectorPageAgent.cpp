@@ -970,7 +970,7 @@ void InspectorPageAgent::didRunJavaScriptDialog()
     m_frontend->javascriptDialogClosed();
 }
 
-void InspectorPageAgent::didPaint(RenderObject*, GraphicsContext* context, const LayoutRect& rect)
+void InspectorPageAgent::didPaint(RenderObject*, const GraphicsLayer*, GraphicsContext* context, const LayoutRect& rect)
 {
     if (!m_enabled || m_client->overridesShowPaintRects() || !m_state->getBoolean(PageAgentState::pageAgentShowPaintRects))
         return;

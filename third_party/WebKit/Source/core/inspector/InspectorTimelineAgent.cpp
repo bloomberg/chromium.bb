@@ -50,6 +50,7 @@
 #include "core/inspector/TimelineTraceEventProcessor.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/page/PageConsole.h"
+#include "core/platform/graphics/GraphicsLayer.h"
 #include "core/platform/graphics/chromium/DeferredImageDecoder.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderView.h"
@@ -458,13 +459,14 @@ void InspectorTimelineAgent::willPaint(RenderObject* renderer)
     pushCurrentRecord(JSONObject::create(), TimelineRecordType::Paint, true, frame, true);
 }
 
-void InspectorTimelineAgent::didPaint(RenderObject* renderer, GraphicsContext*, const LayoutRect& clipRect)
+void InspectorTimelineAgent::didPaint(RenderObject* renderer, const GraphicsLayer* graphicsLayer, GraphicsContext*, const LayoutRect& clipRect)
 {
     TimelineRecordEntry& entry = m_recordStack.last();
     ASSERT(entry.type == TimelineRecordType::Paint);
     FloatQuad quad;
     localToPageQuad(*renderer, clipRect, &quad);
-    entry.data = TimelineRecordFactory::createPaintData(quad, nodeId(renderer));
+    int graphicsLayerId = graphicsLayer ? graphicsLayer->platformLayer()->id() : 0;
+    entry.data = TimelineRecordFactory::createPaintData(quad, nodeId(renderer), graphicsLayerId);
     didCompleteCurrentRecord(TimelineRecordType::Paint);
 }
 

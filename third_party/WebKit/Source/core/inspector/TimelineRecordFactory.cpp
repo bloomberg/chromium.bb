@@ -256,10 +256,11 @@ PassRefPtr<JSONObject> TimelineRecordFactory::createLayerData(long long rootNode
     return createNodeData(rootNodeId);
 }
 
-PassRefPtr<JSONObject> TimelineRecordFactory::createPaintData(const FloatQuad& quad, long long layerRootNodeId)
+PassRefPtr<JSONObject> TimelineRecordFactory::createPaintData(const FloatQuad& quad, long long layerRootNodeId, int graphicsLayerId)
 {
     RefPtr<JSONObject> data = TimelineRecordFactory::createLayerData(layerRootNodeId);
     data->setArray("clip", createQuad(quad));
+    data->setNumber("layerId", graphicsLayerId);
     return data.release();
 }
 
