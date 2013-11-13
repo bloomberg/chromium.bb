@@ -47,6 +47,7 @@
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLImageElement.h"
 #include "core/html/HTMLTemplateElement.h"
+#include "core/svg/SVGElement.h"
 #include "platform/TraceEvent.h"
 
 namespace WebCore {
@@ -160,10 +161,11 @@ private:
         for (Node* node = rootNode; node; node = NodeTraversal::next(*node)) {
             if (node->containsWrapper()) {
                 // FIXME: Remove the special handling for image elements.
+                // FIXME: Remove the special handling for SVG context elements.
                 // The same special handling is in V8GCController::opaqueRootForGC().
                 // Maybe should image elements be active DOM nodes?
                 // See https://code.google.com/p/chromium/issues/detail?id=164882
-                if (!node->isV8CollectableDuringMinorGC() || (node->hasTagName(HTMLNames::imgTag) && toHTMLImageElement(node)->hasPendingActivity())) {
+                if (!node->isV8CollectableDuringMinorGC() || (node->hasTagName(HTMLNames::imgTag) && toHTMLImageElement(node)->hasPendingActivity()) || (node->isSVGElement() && toSVGElement(node)->isContextElement())) {
                     // This node is not in the new space of V8. This indicates that
                     // the minor GC cannot anyway judge reachability of this DOM tree.
                     // Thus we give up traversing the DOM tree.

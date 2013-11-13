@@ -32,6 +32,7 @@ SVGAnimatedProperty::SVGAnimatedProperty(SVGElement* contextElement, const Quali
     , m_isAnimating(false)
     , m_isReadOnly(false)
 {
+    contextElement->setContextElement();
 }
 
 SVGAnimatedProperty::~SVGAnimatedProperty()

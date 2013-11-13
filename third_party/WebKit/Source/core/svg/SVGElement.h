@@ -139,6 +139,9 @@ public:
 
     void invalidateRelativeLengthClients(SubtreeLayoutScope* = 0);
 
+    bool isContextElement() const { return m_isContextElement; }
+    void setContextElement() { m_isContextElement = true; }
+
 protected:
     SVGElement(const QualifiedName&, Document&, ConstructionType = CreateSVGElement);
 
@@ -217,6 +220,7 @@ private:
     bool m_inRelativeLengthClientsInvalidation;
 #endif
     bool m_animatedPropertiesDestructed;
+    bool m_isContextElement;
 };
 
 struct SVGAttributeHashTranslator {
