@@ -144,8 +144,11 @@ class TestRunner(base_test_runner.BaseTestRunner):
     logfile = sys.stdout
     if self._options.single_step:
       logfile = None
+    cwd = os.path.abspath(constants.DIR_SOURCE_ROOT)
+    if full_cmd.startswith('src/'):
+      cwd = os.path.abspath(os.path.join(constants.DIR_SOURCE_ROOT, os.pardir))
     output, exit_code = pexpect.run(
-        full_cmd, cwd=os.path.abspath(constants.DIR_SOURCE_ROOT),
+        full_cmd, cwd=cwd,
         withexitstatus=True, logfile=logfile, timeout=timeout,
         env=os.environ)
     end_time = datetime.datetime.now()

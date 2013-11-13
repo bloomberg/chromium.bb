@@ -33,9 +33,9 @@ def _KillPendingServers():
         except Exception as e:
           logging.warning('Failed killing %s %s %s', server, pid, e)
   # Restart the adb server with taskset to set a single CPU affinity.
-  cmd_helper.RunCmd(['adb', 'kill-server'])
-  cmd_helper.RunCmd(['taskset', '-c', '0', 'adb', 'start-server'])
-  cmd_helper.RunCmd(['taskset', '-c', '0', 'adb', 'root'])
+  cmd_helper.RunCmd([constants.ADB_PATH, 'kill-server'])
+  cmd_helper.RunCmd(['taskset', '-c', '0', constants.ADB_PATH, 'start-server'])
+  cmd_helper.RunCmd(['taskset', '-c', '0', constants.ADB_PATH, 'root'])
   i = 1
   while not android_commands.GetAttachedDevices():
     time.sleep(i)
