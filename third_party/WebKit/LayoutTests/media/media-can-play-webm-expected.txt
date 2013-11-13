@@ -6,5 +6,16 @@ EXPECTED (video.canPlayType('audio/webm') == 'maybe') OK
 EXPECTED (video.canPlayType('video/webm') == 'maybe') OK
 EXPECTED (video.canPlayType('audio/webm; codecs=vorbis') == 'probably') OK
 EXPECTED (video.canPlayType('video/webm; codecs=vp8,vorbis') == 'probably') OK
+EXPECTED (video.canPlayType('video/webm; codecs=vp8') == 'probably') OK
+EXPECTED (video.canPlayType('video/webm; codecs=vp8.0') == 'probably') OK
+EXPECTED (video.canPlayType('video/webm; codecs=vp8.0,vorbis') == 'probably') OK
+EXPECTED (video.canPlayType('video/webm; codecs=vp8.1') == '') OK
+EXPECTED (video.canPlayType('video/webm; codecs=vp9') == 'probably') OK
+EXPECTED (video.canPlayType('video/webm; codecs=vp9,vorbis') == 'probably') OK
+EXPECTED (video.canPlayType('video/webm; codecs=vp9.0') == 'probably') OK
+EXPECTED (video.canPlayType('video/webm; codecs=vp9.0,vorbis') == 'probably') OK
+EXPECTED (video.canPlayType('video/webm; codecs=vp9.1') == '') OK
+EXPECTED (video.canPlayType('audio/webm; codecs=opus') == '') OK
+EXPECTED (video.canPlayType('video/webm; codecs=vp9,opus') == '') OK
 END OF TEST
 

@@ -11,6 +11,19 @@
 
                 testExpected("video.canPlayType('audio/webm; codecs=vorbis')", "probably");
                 testExpected("video.canPlayType('video/webm; codecs=vp8,vorbis')", "probably");
+                testExpected("video.canPlayType('video/webm; codecs=vp8')", "probably");
+                testExpected("video.canPlayType('video/webm; codecs=vp8.0')", "probably");
+                testExpected("video.canPlayType('video/webm; codecs=vp8.0,vorbis')", "probably");
+                testExpected("video.canPlayType('video/webm; codecs=vp8.1')", "");
+
+                testExpected("video.canPlayType('video/webm; codecs=vp9')", "probably");
+                testExpected("video.canPlayType('video/webm; codecs=vp9,vorbis')", "probably");
+                testExpected("video.canPlayType('video/webm; codecs=vp9.0')", "probably");
+                testExpected("video.canPlayType('video/webm; codecs=vp9.0,vorbis')", "probably");
+                testExpected("video.canPlayType('video/webm; codecs=vp9.1')", "");
+
+                testExpected("video.canPlayType('audio/webm; codecs=opus')", "");
+                testExpected("video.canPlayType('video/webm; codecs=vp9,opus')", "");
 
                 endTest();
             }
