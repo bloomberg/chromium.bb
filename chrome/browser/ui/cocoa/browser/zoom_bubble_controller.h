@@ -67,6 +67,9 @@ class WebContents;
 // Closes the bubble synchronously, bypassing any animations.
 - (void)closeWithoutAnimation;
 
+// TODO(shess): For diagnosing <http://crbug.com/318425>.
+- (content::WebContents*)webContents;
+
 @end
 
 namespace chrome {

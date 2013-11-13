@@ -298,6 +298,10 @@ void SetZoomBubbleAutoCloseDelayForTesting(NSTimeInterval time_interval) {
   }
 }
 
+- (content::WebContents*)webContents {
+  return contents_;
+}
+
 @end
 
 @implementation ZoomHoverButton

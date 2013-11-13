@@ -42,6 +42,12 @@ void ZoomDecoration::Update(ZoomController* zoom_controller) {
 
   SetVisible(true);
 
+  // TODO(shess): For diagnosing <http://crbug.com/318425>.  If the
+  // crashes shift from GetUserData() to here, then things should be
+  // refactored to remove |ZoomBubbleController.content_|.
+  if (bubble_)
+    CHECK_EQ(owner_->GetWebContents(), [bubble_ webContents]);
+
   [bubble_ onZoomChanged];
 }
 
