@@ -190,7 +190,7 @@ void StyleResolver::appendAuthorStyleSheets(unsigned firstNew, const Vector<RefP
             continue;
 
         StyleSheetContents* sheet = cssSheet->contents();
-        const ContainerNode* scopingNode = ScopedStyleResolver::scopingNodeFor(cssSheet);
+        ContainerNode* scopingNode = ScopedStyleResolver::scopingNodeFor(cssSheet);
         if (!scopingNode && cssSheet->ownerNode() && cssSheet->ownerNode()->isInShadowTree())
             continue;
 
@@ -211,7 +211,15 @@ void StyleResolver::finishAppendAuthorStyleSheets()
     collectViewportRules();
 }
 
-void StyleResolver::processScopedRules(const RuleSet& authorRules, const KURL& sheetBaseURL, const ContainerNode* scope)
+void StyleResolver::addTreeBoundaryCrossingRules(const Vector<MinimalRuleData>& rules, ContainerNode* scope)
+{
+    for (unsigned i = 0; i < rules.size(); ++i) {
+        const MinimalRuleData& info = rules[i];
+        m_treeBoundaryCrossingRules.addRule(info.m_rule, info.m_selectorIndex, scope, info.m_flags);
+    }
+}
+
+void StyleResolver::processScopedRules(const RuleSet& authorRules, const KURL& sheetBaseURL, ContainerNode* scope)
 {
     const Vector<StyleRuleKeyframes*> keyframesRules = authorRules.keyframesRules();
     for (unsigned i = 0; i < keyframesRules.size(); ++i)
@@ -227,6 +235,8 @@ void StyleResolver::processScopedRules(const RuleSet& authorRules, const KURL& s
         setBuildScopedStyleTreeInDocumentOrder(enabled);
     }
 
+    addTreeBoundaryCrossingRules(authorRules.treeBoundaryCrossingRules(), scope);
+
     // FIXME(BUG 72461): We don't add @font-face rules of scoped style sheets for the moment.
     if (!scope || scope->isDocumentNode()) {
         const Vector<StyleRuleFontFace*> fontFaceRules = authorRules.fontFaceRules();
@@ -234,6 +244,8 @@ void StyleResolver::processScopedRules(const RuleSet& authorRules, const KURL& s
             fontSelector()->addFontFaceRule(fontFaceRules[i]);
         if (fontFaceRules.size())
             invalidateMatchedPropertiesCache();
+    } else {
+        addTreeBoundaryCrossingRules(authorRules.shadowDistributedRules(), scope);
     }
 }
 

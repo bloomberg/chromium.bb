@@ -43,7 +43,7 @@
 
 namespace WebCore {
 
-ScopedStyleResolver* ScopedStyleTree::ensureScopedStyleResolver(const ContainerNode& scopingNode)
+ScopedStyleResolver* ScopedStyleTree::ensureScopedStyleResolver(ContainerNode& scopingNode)
 {
     bool isNewEntry;
     ScopedStyleResolver* scopedStyleResolver = addScopedStyleResolver(scopingNode, isNewEntry);
@@ -62,7 +62,7 @@ ScopedStyleResolver* ScopedStyleTree::scopedStyleResolverFor(const ContainerNode
     return lookupScopedStyleResolverFor(&scopingNode);
 }
 
-ScopedStyleResolver* ScopedStyleTree::addScopedStyleResolver(const ContainerNode& scopingNode, bool& isNewEntry)
+ScopedStyleResolver* ScopedStyleTree::addScopedStyleResolver(ContainerNode& scopingNode, bool& isNewEntry)
 {
     HashMap<const ContainerNode*, OwnPtr<ScopedStyleResolver> >::AddResult addResult = m_authorStyles.add(&scopingNode, nullptr);
 
@@ -84,7 +84,7 @@ void ScopedStyleTree::setupScopedStylesTree(ScopedStyleResolver* target)
     // Since StyleResolver creates RuleSets according to styles' document
     // order, a parent of the given ScopedRuleData has been already
     // prepared.
-    for (const ContainerNode* node = scopingNode.parentOrShadowHostNode(); node; node = node->parentOrShadowHostNode()) {
+    for (ContainerNode* node = scopingNode.parentOrShadowHostNode(); node; node = node->parentOrShadowHostNode()) {
         if (ScopedStyleResolver* scopedResolver = scopedStyleResolverFor(*node)) {
             target->setParent(scopedResolver);
             break;
@@ -225,7 +225,7 @@ void ScopedStyleTree::remove(const ContainerNode* scopingNode)
     m_authorStyles.remove(scopingNode);
 }
 
-const ContainerNode* ScopedStyleResolver::scopingNodeFor(const CSSStyleSheet* sheet)
+ContainerNode* ScopedStyleResolver::scopingNodeFor(const CSSStyleSheet* sheet)
 {
     ASSERT(sheet);
 

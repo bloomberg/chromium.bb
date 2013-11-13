@@ -50,9 +50,9 @@ class StyleSheetContents;
 class ScopedStyleResolver {
     WTF_MAKE_NONCOPYABLE(ScopedStyleResolver); WTF_MAKE_FAST_ALLOCATED;
 public:
-    static PassOwnPtr<ScopedStyleResolver> create(const ContainerNode& scopingNode) { return adoptPtr(new ScopedStyleResolver(scopingNode)); }
+    static PassOwnPtr<ScopedStyleResolver> create(ContainerNode& scopingNode) { return adoptPtr(new ScopedStyleResolver(scopingNode)); }
 
-    static const ContainerNode* scopingNodeFor(const CSSStyleSheet*);
+    static ContainerNode* scopingNodeFor(const CSSStyleSheet*);
 
     const ContainerNode& scopingNode() const { return m_scopingNode; }
     const TreeScope& treeScope() const { return m_scopingNode.treeScope(); }
@@ -79,12 +79,12 @@ public:
     void collectViewportRulesTo(StyleResolver*) const;
 
 private:
-    explicit ScopedStyleResolver(const ContainerNode& scopingNode) : m_scopingNode(scopingNode), m_parent(0) { }
+    explicit ScopedStyleResolver(ContainerNode& scopingNode) : m_scopingNode(scopingNode), m_parent(0) { }
 
     RuleSet* ensureAtHostRuleSetFor(const ShadowRoot*);
     RuleSet* atHostRuleSetFor(const ShadowRoot*) const;
 
-    const ContainerNode& m_scopingNode;
+    ContainerNode& m_scopingNode;
     ScopedStyleResolver* m_parent;
 
     OwnPtr<RuleSet> m_authorStyle;
@@ -99,7 +99,7 @@ class ScopedStyleTree {
 public:
     ScopedStyleTree() : m_scopedResolverForDocument(0), m_buildInDocumentOrder(true) { }
 
-    ScopedStyleResolver* ensureScopedStyleResolver(const ContainerNode& scopingNode);
+    ScopedStyleResolver* ensureScopedStyleResolver(ContainerNode& scopingNode);
     ScopedStyleResolver* lookupScopedStyleResolverFor(const ContainerNode* scopingNode)
     {
         HashMap<const ContainerNode*, OwnPtr<ScopedStyleResolver> >::iterator it = m_authorStyles.find(scopingNode);
@@ -107,7 +107,7 @@ public:
     }
 
     ScopedStyleResolver* scopedStyleResolverFor(const ContainerNode& scopingNode);
-    ScopedStyleResolver* addScopedStyleResolver(const ContainerNode& scopingNode, bool& isNewEntry);
+    ScopedStyleResolver* addScopedStyleResolver(ContainerNode& scopingNode, bool& isNewEntry);
     void clear();
 
     // for fast-path.

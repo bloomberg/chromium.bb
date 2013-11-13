@@ -143,7 +143,7 @@ public:
     void finishAppendAuthorStyleSheets();
 
     TreeBoundaryCrossingRules& treeBoundaryCrossingRules() { return m_treeBoundaryCrossingRules; }
-    void processScopedRules(const RuleSet& authorRules, const KURL&, const ContainerNode* scope = 0);
+    void processScopedRules(const RuleSet& authorRules, const KURL&, ContainerNode* scope = 0);
 
     SelectorFilter& selectorFilter() { return m_selectorFilter; }
 
@@ -152,7 +152,7 @@ public:
     bool styleTreeHasOnlyScopedResolverForDocument() const { return m_styleTree.hasOnlyScopedResolverForDocument(); }
     ScopedStyleResolver* styleTreeScopedStyleResolverForDocument() const { return m_styleTree.scopedStyleResolverForDocument(); }
 
-    ScopedStyleResolver* ensureScopedStyleResolver(const ContainerNode* scope)
+    ScopedStyleResolver* ensureScopedStyleResolver(ContainerNode* scope)
     {
         return m_styleTree.ensureScopedStyleResolver(scope ? *scope : document());
     }
@@ -220,6 +220,8 @@ private:
 
 private:
     void initWatchedSelectorRules(const Vector<RefPtr<StyleRule> >& watchedSelectors);
+
+    void addTreeBoundaryCrossingRules(const Vector<MinimalRuleData>&, ContainerNode* scope);
 
     // FIXME: This should probably go away, folded into FontBuilder.
     void updateFont(StyleResolverState&);

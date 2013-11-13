@@ -51,6 +51,19 @@ class StyleResolver;
 class StyleRuleRegion;
 class StyleSheetContents;
 
+struct MinimalRuleData {
+    MinimalRuleData(StyleRule* rule, unsigned selectorIndex, AddRuleFlags flags)
+    : m_rule(rule)
+    , m_selectorIndex(selectorIndex)
+    , m_flags(flags)
+    {
+    }
+
+    StyleRule* m_rule;
+    unsigned m_selectorIndex;
+    AddRuleFlags m_flags;
+};
+
 class RuleData {
     WTF_MAKE_FAST_ALLOCATED;
 public:
@@ -128,6 +141,8 @@ public:
     const Vector<StyleRuleFontFace*>& fontFaceRules() const { return m_fontFaceRules; }
     const Vector<StyleRuleKeyframes*>& keyframesRules() const { return m_keyframesRules; }
     const Vector<StyleRuleHost*>& hostRules() const { return m_hostRules; }
+    const Vector<MinimalRuleData>& treeBoundaryCrossingRules() const { return m_treeBoundaryCrossingRules; }
+    const Vector<MinimalRuleData>& shadowDistributedRules() const { return m_shadowDistributedRules; }
 
     unsigned ruleCount() const { return m_ruleCount; }
 
@@ -199,6 +214,8 @@ private:
     Vector<StyleRuleFontFace*> m_fontFaceRules;
     Vector<StyleRuleKeyframes*> m_keyframesRules;
     Vector<StyleRuleHost*> m_hostRules;
+    Vector<MinimalRuleData> m_treeBoundaryCrossingRules;
+    Vector<MinimalRuleData> m_shadowDistributedRules;
 
     unsigned m_ruleCount;
     OwnPtr<PendingRuleMaps> m_pendingRules;

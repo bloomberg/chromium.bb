@@ -51,11 +51,6 @@ using namespace HTMLNames;
 
 // -----------------------------------------------------------------
 
-static inline bool isDocumentScope(const ContainerNode* scope)
-{
-    return !scope || scope->isDocumentNode();
-}
-
 static inline bool isSelectorMatchingHTMLBasedOnRuleHash(const CSSSelector* selector)
 {
     ASSERT(selector);
@@ -382,13 +377,12 @@ void RuleSet::addChildRules(const Vector<RefPtr<StyleRuleBase> >& rules, const M
             const CSSSelectorList& selectorList = styleRule->selectorList();
             for (size_t selectorIndex = 0; selectorIndex != kNotFound; selectorIndex = selectorList.indexOfNextSelectorAfter(selectorIndex)) {
                 if (selectorList.hasCombinatorCrossingTreeBoundaryAt(selectorIndex)) {
-                    resolver->treeBoundaryCrossingRules().addRule(styleRule, selectorIndex, const_cast<ContainerNode*>(scope), addRuleFlags);
+                    m_treeBoundaryCrossingRules.append(MinimalRuleData(styleRule, selectorIndex, addRuleFlags));
                 } else if (selectorList.hasShadowDistributedAt(selectorIndex)) {
-                    if (isDocumentScope(scope))
-                        continue;
-                    resolver->treeBoundaryCrossingRules().addRule(styleRule, selectorIndex, const_cast<ContainerNode*>(scope), addRuleFlags);
-                } else
+                    m_shadowDistributedRules.append(MinimalRuleData(styleRule, selectorIndex, addRuleFlags));
+                } else {
                     addRule(styleRule, selectorIndex, addRuleFlags);
+                }
             }
         } else if (rule->isPageRule()) {
             addPageRule(static_cast<StyleRulePage*>(rule));
