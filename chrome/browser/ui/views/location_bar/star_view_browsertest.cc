@@ -22,6 +22,7 @@
 #if defined(OS_WIN) && defined(USE_AURA)
 #include "content/public/browser/web_contents_view.h"
 #include "ui/aura/root_window.h"
+#include "ui/aura/window.h"
 #endif
 
 namespace {
