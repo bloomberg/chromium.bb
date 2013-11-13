@@ -30,6 +30,7 @@ PASS WebVTT parser tests, space-chars.vtt
 PASS WebVTT parser tests, timings-garbage.vtt 
 PASS WebVTT parser tests, timings-too-short.vtt 
 PASS WebVTT parser tests, timings-too-long.vtt 
+PASS WebVTT parser tests, newlines.vtt 
 PASS WebVTT parser tests, omitted-hours.vtt 
 PASS WebVTT parser tests, timings-60.vtt 
 PASS WebVTT parser tests, timings-negative.vtt 
