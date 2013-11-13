@@ -373,6 +373,9 @@ void QuicClientSession::OnConnectionClosed(QuicErrorCode error,
   }
   socket_->Close();
   QuicSession::OnConnectionClosed(error, from_peer);
+  DCHECK(streams()->empty());
+  CloseAllStreams(ERR_UNEXPECTED);
+  CloseAllObservers(ERR_UNEXPECTED);
   NotifyFactoryOfSessionClosedLater();
 }
 

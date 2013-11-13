@@ -15,6 +15,7 @@
 
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "net/base/net_errors.h"
 #include "net/quic/crypto/quic_decrypter.h"
 #include "net/quic/crypto/quic_encrypter.h"
 #include "net/quic/iovector.h"
@@ -1338,6 +1339,9 @@ bool QuicConnection::WritePacket(EncryptionLevel level,
   WriteResult result =
       writer_->WritePacket(encrypted->data(), encrypted->length(),
                            self_address().address(), peer_address(), this);
+  if (result.error_code == ERR_IO_PENDING) {
+    DCHECK_EQ(WRITE_STATUS_BLOCKED, result.status);
+  }
   if (debug_visitor_) {
     // Pass the write result to the visitor.
     debug_visitor_->OnPacketSent(sequence_number, level, *encrypted, result);
