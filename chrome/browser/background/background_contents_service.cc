@@ -8,6 +8,7 @@
 #include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "base/message_loop/message_loop.h"
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
@@ -49,6 +50,11 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 
+#if defined(ENABLE_NOTIFICATIONS)
+#include "ui/message_center/message_center.h"
+#include "ui/message_center/message_center_util.h"
+#endif
+
 using content::SiteInstance;
 using content::WebContents;
 using extensions::BackgroundInfo;
@@ -60,8 +66,17 @@ namespace {
 const char kNotificationPrefix[] = "app.background.crashed.";
 
 void CloseBalloon(const std::string& balloon_id) {
-  g_browser_process->notification_ui_manager()->
-      CancelById(balloon_id);
+  NotificationUIManager* notification_ui_manager =
+      g_browser_process->notification_ui_manager();
+  bool cancelled ALLOW_UNUSED = notification_ui_manager->CancelById(balloon_id);
+#if defined(ENABLE_NOTIFICATIONS)
+  if (cancelled && message_center::IsRichNotificationEnabled()) {
+    // TODO(dewittj): Add this functionality to the notification UI manager's
+    // API.
+    g_browser_process->message_center()->SetVisibility(
+        message_center::VISIBILITY_TRANSIENT);
+  }
+#endif
 }
 
 // Closes the crash notification balloon for the app/extension with this id.

@@ -151,9 +151,12 @@ ChangeQueue::ChangeQueue() {}
 ChangeQueue::~ChangeQueue() {}
 
 void ChangeQueue::ApplyChanges(MessageCenter* message_center) {
-  ScopedVector<Change>::const_iterator iter = changes_.begin();
-  for (; iter != changes_.end(); ++iter) {
-    Change* change = *iter;
+  // This method is re-entrant.
+  while (!changes_.empty()) {
+    ScopedVector<Change>::iterator iter = changes_.begin();
+    scoped_ptr<Change> change(*iter);
+    // TODO(dewittj): Replace changes_ with a deque.
+    changes_.weak_erase(iter);
     // |message_center| is taking ownership of each element here.
     switch (change->type()) {
       case CHANGE_TYPE_ADD:
@@ -171,8 +174,6 @@ void ChangeQueue::ApplyChanges(MessageCenter* message_center) {
         NOTREACHED();
     }
   }
-
-  changes_.clear();
 }
 
 void ChangeQueue::AddNotification(scoped_ptr<Notification> notification) {
