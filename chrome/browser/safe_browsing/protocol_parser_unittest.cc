@@ -4,6 +4,9 @@
 //
 // Program to test the SafeBrowsing protocol parsing v2.1.
 
+#include <map>
+#include <string>
+
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/safe_browsing/protocol_parser.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
@@ -781,4 +784,110 @@ TEST(SafeBrowsingProtocolParsingTest, TestSubDownloadWhitelistChunk) {
   SBFullHash full;
   memcpy(full.full_hash, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", 32);
   EXPECT_TRUE(entry->FullHashAt(0) == full);
+}
+
+// There should be one test case for every list added here.  Each list
+// chunk data should contain exactly one add chunk and one sub chunk.
+TEST(SafeBrowsingProtocolParsingTest, TestAllLists) {
+  std::map<std::string, std::string> add_testdata;
+  // goog-*-shavar lists have a host-key followed by one or more prefixes.
+  add_testdata[safe_browsing_util::kMalwareList] = std::string(
+      "a:129057:4:34\n\xd9\xb8\xb2\x14\x00\xe4""B7P\x00\xaf\x91"
+      "{\xd7\x01\xad\xa6\xb5""X\xbb\xcf""F\xcf\x00\xf7""A\xbd"
+      "p\x00\xab\xd7\x89\xd3\x00", 48);
+  add_testdata[safe_browsing_util::kPhishingList] = std::string(
+      "a:301377:4:9\n\xdb\xe0\xaa\x8e\x01\x85\xba\xb2\x9e", 22);
+  add_testdata[safe_browsing_util::kBinUrlList] = std::string(
+      "a:19420:4:18\n_\x92\x9e\xcd\x01\x03""}I\xa2\\3\xe6""h\x01\xee"
+      "H\xf6\xe4", 31);
+  add_testdata[safe_browsing_util::kSideEffectFreeWhitelist] = std::string(
+      "a:1818:4:9\n\x85\xd0\xfe""i\x01""}\x98\xb1\xe5", 20);
+  // goog-*-digestvar lists have no host-key data.
+  add_testdata[safe_browsing_util::kBinHashList] = std::string(
+      "a:5:4:4\nBBBB", 12);
+  add_testdata[safe_browsing_util::kExtensionBlacklist] = std::string(
+      "a:81:4:8\nhleedfcc", 17);
+  // goog-*-sha256 lists have host-keys but they only contains
+  // full-length entires.
+  add_testdata[safe_browsing_util::kCsdWhiteList] = std::string(
+      "a:35:32:37\n\x06\xf9\xb1\xaf\x01\x06\xf9\xb1\xaf""5\xc""9!\x17\x1e"
+      "*-\xc9"",*>YSl6\xf9""B\xb8\x96""O\x98""r\xf2\xd5\x8d\xe3""T\x99", 48);
+  // goog-*-digest256 has no host-keys and contains only full-length
+  // hashes.
+  add_testdata[safe_browsing_util::kDownloadWhiteList] = std::string(
+      "a:42:32:32\n\xc8\xec\x9f\x9c\x9b\x9a"",\x82""G:F(\xe9\xad\x9c""b$\x8a"
+      "\xba""%\x19\xae""c\x03\x87""~\xd1\xd3""bvC\xfd", 43);
+  add_testdata[safe_browsing_util::kIPBlacklist] = std::string(
+      "a:12:32:32\n8\x99\x17\xda\xec""+i`\x1a\xb3""8pVh\n$\x01\xd1\x12"
+      ":\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00", 43);
+
+  std::map<std::string, std::string> sub_testdata;
+  // goog-*-shavar lists have a host-key, add number followed by zero or more
+  // prefixes.
+  sub_testdata[safe_browsing_util::kMalwareList] = std::string(
+      "s:122930:4:9\n\x85""!_\x13\x00\x00\x01\xf1\xa2", 22);
+  sub_testdata[safe_browsing_util::kPhishingList] = std::string(
+      "s:150181:4:9\nr\x90""zt\x00\x00\x04\x9f""@", 22);
+  sub_testdata[safe_browsing_util::kBinUrlList] = std::string(
+      "s:3:4:13\nHOST\x01""####BBBB", 22);
+  sub_testdata[safe_browsing_util::kSideEffectFreeWhitelist] = std::string(
+      "s:4:4:9\nHOST\x00""####", 17);
+  // goog-*-digestvar lists have no host-key data.
+  sub_testdata[safe_browsing_util::kBinHashList] = std::string(
+      "s:5:4:8\n####BBBB", 16);
+  sub_testdata[safe_browsing_util::kExtensionBlacklist] = std::string(
+      "s:3:4:8\n\x00\x00\x00""%pgkc", 16);
+  // goog-*-sha256 lists have host-keys but they only contains
+  // full-length entires.
+  sub_testdata[safe_browsing_util::kCsdWhiteList] = std::string(
+      "s:1:32:41\n\x1a""\"[\n\x01\x00\x00\x00\x15\x1""a\"[\n\xe9\x81""P\x11"
+      "LR\xcb""3\x00""B\x90\xb3\x15""K\xf5\xdc\xd0""V\xc2""aI\x1e""-\xc8"
+      "\xce"":\t\x01", 51);
+  // goog-*-digest256 has no host-keys and contains only full-length
+  // hashes.
+  sub_testdata[safe_browsing_util::kDownloadWhiteList] = std::string(
+      "s:15:32:36\n\x00\x00\x00""-\x12""!\xa2\x8d""z\x80""a\xfb\x14\xff"
+      "f\x13\x18\xcc\xdb\xbd\xc0\xb1""~\xd6\x82""[\xf6\xdc\xa1\x81"
+      "TI%\xef""C\xab", 47);
+  sub_testdata[safe_browsing_util::kIPBlacklist] = std::string(
+      "s:13:32:108\n\x00\x00\x00\rL2\x1e\xc6""P3\x94\x1f\xf1""Cv\x18\x9d\xdf"
+      "ih4M.c\x80\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\r_"
+      "\xfd\xbe""v\x87\xba""'\x1d\x12\r\xc0\xde""B\xc8""{a\xe7\x07""u\x11\x80"
+      "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\tz\xfe\xdb"
+      "h\t\x08\xc5""dd\x9""ag\xee\xf5\x83\x91""@\xd9\xa4""i*\x80\x00\x00\x00"
+      "\x00\x00\x00\x00\x00\x00\x00\x00", 120);
+
+  SafeBrowsingProtocolParser parser;
+  for (size_t i = 0; i < arraysize(safe_browsing_util::kAllLists); ++i) {
+    std::string listname = safe_browsing_util::kAllLists[i];
+
+    {
+      ASSERT_EQ(add_testdata.count(listname), 1U)
+          << "Missing add chunk test case for Safe Browsing list: " << listname;
+      const std::string& chunk_data = add_testdata[listname];
+      SBChunkList chunks;
+      EXPECT_TRUE(parser.ParseChunk(listname,
+                                    chunk_data.data(),
+                                    static_cast<int>(chunk_data.length()),
+                                    &chunks))
+          << "Unable to parse add chunk data for listname: "
+          << listname;
+      ASSERT_EQ(chunks.size(), 1U);
+      EXPECT_TRUE(chunks[0].is_add);
+    }
+    {
+      ASSERT_EQ(sub_testdata.count(listname), 1U)
+          << "Missing sub chunk test case for Safe Browsing list: " << listname;
+      const std::string& chunk_data = sub_testdata[listname];
+      SBChunkList chunks;
+      EXPECT_TRUE(parser.ParseChunk(listname,
+                                    chunk_data.data(),
+                                    static_cast<int>(chunk_data.length()),
+                                    &chunks))
+          << "Unable to parse sub chunk data for listname: "
+          << listname;
+      ASSERT_EQ(chunks.size(), 1U);
+      EXPECT_FALSE(chunks[0].is_add);
+    }
+  }
 }

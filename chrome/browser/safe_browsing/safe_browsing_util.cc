@@ -152,6 +152,17 @@ void SBEntry::SetFullHashAt(int index, const SBFullHash& full_hash) {
 
 // Utility functions -----------------------------------------------------------
 
+namespace {
+bool IsKnownList(const std::string& name) {
+  for (size_t i = 0; i < arraysize(safe_browsing_util::kAllLists); ++i) {
+    if (!strcmp(safe_browsing_util::kAllLists[i], name.c_str())) {
+      return true;
+    }
+  }
+  return false;
+}
+}  // namespace
+
 namespace safe_browsing_util {
 
 // Listnames that browser can process.
@@ -166,6 +177,19 @@ const char kDownloadWhiteList[] = "goog-downloadwhite-digest256";
 const char kExtensionBlacklist[] = "goog-badcrxids-digestvar";
 const char kSideEffectFreeWhitelist[] = "goog-sideeffectfree-shavar";
 const char kIPBlacklist[] = "goog-badip-digest256";
+
+const char* kAllLists[10] = {
+  kMalwareList,
+  kPhishingList,
+  kBinUrlList,
+  kBinHashList,
+  kCsdWhiteList,
+  kDownloadWhiteList,
+  kDownloadWhiteList,
+  kExtensionBlacklist,
+  kSideEffectFreeWhitelist,
+  kIPBlacklist,
+};
 
 ListType GetListId(const std::string& name) {
   ListType id;
@@ -225,6 +249,7 @@ bool GetListName(ListType list_id, std::string* list) {
     default:
       return false;
   }
+  DCHECK(IsKnownList(*list));
   return true;
 }
 

@@ -274,8 +274,11 @@ bool SafeBrowsingProtocolParser::ParseAddChunk(const std::string& list_name,
     chunk_host.host = 0;
     chunk_host.entry = SBEntry::Create(type, prefix_count);
     hosts->push_back(chunk_host);
-    if (!ReadPrefixes(&chunk_data, &remaining, chunk_host.entry, prefix_count))
+    if (!ReadPrefixes(&chunk_data, &remaining, chunk_host.entry,
+                      prefix_count)) {
+      DVLOG(2) << "Unable to read chunk data for list: " << list_name;
       return false;
+    }
     DCHECK_GE(remaining, 0);
   } else {
     SBPrefix host;
@@ -312,7 +315,8 @@ bool SafeBrowsingProtocolParser::ParseSubChunk(const std::string& list_name,
 
   if (list_name == safe_browsing_util::kBinHashList ||
       list_name == safe_browsing_util::kDownloadWhiteList ||
-      list_name == safe_browsing_util::kExtensionBlacklist) {
+      list_name == safe_browsing_util::kExtensionBlacklist ||
+      list_name == safe_browsing_util::kIPBlacklist) {
     SBChunkHost chunk_host;
     // Set host to 0 and it won't be used for kBinHashList.
     chunk_host.host = 0;

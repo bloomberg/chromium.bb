@@ -302,6 +302,9 @@ extern const char kSideEffectFreeWhitelist[];
 // SafeBrowsing csd malware IP blacklist name.
 extern const char kIPBlacklist[];
 
+// This array must contain all Safe Browsing lists.
+extern const char* kAllLists[10];
+
 enum ListType {
   INVALID = -1,
   MALWARE = 0,
