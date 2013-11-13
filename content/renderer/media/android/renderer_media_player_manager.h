@@ -158,6 +158,7 @@ class RendererMediaPlayerManager : public RenderViewObserver {
   void OnDidEnterFullscreen(int player_id);
   void OnPlayerPlay(int player_id);
   void OnPlayerPause(int player_id);
+  void OnRequestFullscreen(int player_id);
   void OnKeyAdded(int media_keys_id, const std::string& session_id);
   void OnKeyError(int media_keys_id,
                   const std::string& session_id,

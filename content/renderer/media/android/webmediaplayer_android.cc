@@ -811,6 +811,10 @@ void WebMediaPlayerAndroid::OnMediaPlayerPause() {
   client_->playbackStateChanged();
 }
 
+void WebMediaPlayerAndroid::OnRequestFullscreen() {
+  client_->requestFullscreen();
+}
+
 void WebMediaPlayerAndroid::OnDurationChanged(const base::TimeDelta& duration) {
   DCHECK(main_loop_->BelongsToCurrentThread());
   // Only MSE |player_type_| registers this callback.

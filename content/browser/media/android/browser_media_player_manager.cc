@@ -17,6 +17,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
+#include "content/public/common/content_switches.h"
 #include "media/base/android/media_drm_bridge.h"
 #include "media/base/android/media_player_bridge.h"
 #include "media/base/android/media_source_player.h"
@@ -325,7 +326,18 @@ void BrowserMediaPlayerManager::OnProtectedSurfaceRequested(int player_id) {
     return;
   }
 
-  OnEnterFullscreen(player_id);
+  // Send an IPC to the render process to request the video element to enter
+  // fullscreen. OnEnterFullscreen() will be called later on success.
+  // This guarantees the fullscreen video will be rendered correctly.
+  // During the process, DisableFullscreenEncryptedMediaPlayback() may get
+  // called before or after OnEnterFullscreen(). If it is called before
+  // OnEnterFullscreen(), the player will not enter fullscreen. And it will
+  // retry the process once the GenerateKeyRequest is allowed to proceed
+  // TODO(qinmin): make this flag default on android.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kDisableGestureRequirementForMediaFullscreen)) {
+    Send(new MediaPlayerMsg_RequestFullscreen(routing_id(), player_id));
+  }
 }
 
 void BrowserMediaPlayerManager::OnKeyAdded(int media_keys_id,
@@ -395,6 +407,10 @@ void BrowserMediaPlayerManager::DisableFullscreenEncryptedMediaPlayback() {
 
 void BrowserMediaPlayerManager::OnEnterFullscreen(int player_id) {
   DCHECK_EQ(fullscreen_player_id_, -1);
+  if (media_keys_ids_pending_approval_.find(player_id) !=
+      media_keys_ids_pending_approval_.end()) {
+    return;
+  }
 
   if (video_view_.get()) {
     fullscreen_player_id_ = player_id;

@@ -175,6 +175,7 @@ class WebMediaPlayerAndroid
   void OnDidExitFullscreen();
   void OnMediaPlayerPlay();
   void OnMediaPlayerPause();
+  void OnRequestFullscreen();
 
   // Called when the player is released.
   virtual void OnPlayerReleased();
