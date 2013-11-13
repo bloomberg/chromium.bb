@@ -109,20 +109,30 @@ using namespace XMLNames;
 
 class StyleResolverParentPusher {
 public:
-    explicit StyleResolverParentPusher(Element& parent, StyleRecalcChange change = NoChange)
+    explicit StyleResolverParentPusher(Element& parent)
         : m_parent(parent)
         , m_pushedStyleResolver(0)
     {
-        if ((change >= Inherit || parent.childNeedsStyleRecalc()) && (parent.hasChildNodes() || parent.youngestShadowRoot())) {
-            m_pushedStyleResolver = m_parent.document().styleResolver();
-            m_pushedStyleResolver->pushParentElement(m_parent);
-        }
     }
-
+    void push()
+    {
+        if (m_pushedStyleResolver)
+            return;
+        m_pushedStyleResolver = m_parent.document().styleResolver();
+        m_pushedStyleResolver->pushParentElement(m_parent);
+    }
     ~StyleResolverParentPusher()
     {
+
         if (!m_pushedStyleResolver)
             return;
+
+        // This tells us that our pushed style selector is in a bad state,
+        // so we should just bail out in that scenario.
+        ASSERT(m_pushedStyleResolver == m_parent.document().styleResolver());
+        if (m_pushedStyleResolver != m_parent.document().styleResolver())
+            return;
+
         m_pushedStyleResolver->popParentElement(m_parent);
     }
 
@@ -1356,6 +1366,8 @@ void Element::attach(const AttachContext& context)
 {
     ASSERT(document().inStyleRecalc());
 
+    StyleResolverParentPusher parentPusher(*this);
+
     // We've already been through detach when doing a lazyAttach, but we might
     // need to clear any state that's been added since then.
     if (hasRareData() && styleChangeType() == NeedsReattachStyleChange) {
@@ -1370,13 +1382,15 @@ void Element::attach(const AttachContext& context)
 
     addCallbackSelectors();
 
-    StyleResolverParentPusher pushParent(*this);
-
     createPseudoElementIfNeeded(BEFORE);
 
     // When a shadow root exists, it does the work of attaching the children.
-    if (ElementShadow* shadow = this->shadow())
+    if (ElementShadow* shadow = this->shadow()) {
+        parentPusher.push();
         shadow->attach(context);
+    } else if (firstChild()) {
+        parentPusher.push();
+    }
 
     ContainerNode::attach(context);
 
@@ -1567,11 +1581,13 @@ void Element::recalcChildStyle(StyleRecalcChange change)
     ASSERT(change >= Inherit || childNeedsStyleRecalc());
     ASSERT(!needsStyleRecalc());
 
-    StyleResolverParentPusher pushParent(*this, change);
+    StyleResolverParentPusher parentPusher(*this);
 
     for (ShadowRoot* root = youngestShadowRoot(); root; root = root->olderShadowRoot()) {
-        if (shouldRecalcStyle(change, root))
+        if (shouldRecalcStyle(change, root)) {
+            parentPusher.push();
             root->recalcStyle(change);
+        }
     }
 
     if (shouldRecalcStyle(change, this))
@@ -1590,10 +1606,12 @@ void Element::recalcChildStyle(StyleRecalcChange change)
             toText(child)->recalcTextStyle(change);
         } else if (child->isElementNode()) {
             Element* element = toElement(child);
-            if (shouldRecalcStyle(change, element))
+            if (shouldRecalcStyle(change, element)) {
+                parentPusher.push();
                 element->recalcStyle(change);
-            else if (element->supportsStyleSharing())
+            } else if (element->supportsStyleSharing()) {
                 styleResolver.addToStyleSharingList(*element);
+            }
         }
     }
 
