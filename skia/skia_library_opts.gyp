@@ -51,6 +51,7 @@
             '../third_party/skia/src/opts/SkXfermode_opts_none.cpp',
             '../third_party/skia/src/opts/SkBitmapFilter_opts_SSE2.cpp',
             '../third_party/skia/src/opts/SkMorphology_opts_SSE2.cpp',
+            '../third_party/skia/src/opts/SkBlurImage_opts_SSE2.cpp',
           ],
           'dependencies': [
             'skia_opts_ssse3',
@@ -109,6 +110,7 @@
             '../third_party/skia/src/opts/SkUtils_opts_none.cpp',
             '../third_party/skia/src/opts/SkXfermode_opts_none.cpp',
             '../third_party/skia/src/opts/SkMorphology_opts_none.cpp',
+            '../third_party/skia/src/opts/SkBlurImage_opts_none.cpp',
           ],
         }],
         [ 'target_arch == "arm" and arm_version >= 6', {
@@ -118,7 +120,7 @@
             '../third_party/skia/src/opts/SkBlitRow_opts_arm.h',
             '../third_party/skia/src/opts/opts_check_arm.cpp',
             '../third_party/skia/src/opts/SkXfermode_opts_none.cpp',
-            '../third_party/skia/src/opts/SkMorphology_opts_none.cpp',
+            '../third_party/skia/src/opts/SkBlurImage_opts_none.cpp',
           ],
         }],
         [ 'target_arch == "mipsel"',{
@@ -132,6 +134,7 @@
             '../third_party/skia/src/opts/SkUtils_opts_none.cpp',
             '../third_party/skia/src/opts/SkXfermode_opts_none.cpp',
             '../third_party/skia/src/opts/SkMorphology_opts_none.cpp',
+            '../third_party/skia/src/opts/SkBlurImage_opts_none.cpp',
           ],
         }],
       ],
@@ -195,6 +198,7 @@
         '../third_party/skia/src/opts/SkUtils_opts_none.cpp',
         '../third_party/skia/src/opts/SkXfermode_opts_none.cpp',
         '../third_party/skia/src/opts/SkMorphology_opts_none.cpp',
+        '../third_party/skia/src/opts/SkBlurImage_opts_none.cpp',
       ],
     },
   ],
@@ -239,6 +243,7 @@
             '../third_party/skia/src/opts/SkBitmapProcState_matrix_repeat_neon.h',
             '../third_party/skia/src/opts/SkBlitRow_opts_arm_neon.cpp',
             '../third_party/skia/src/opts/SkXfermode_opts_arm_neon.cpp',
+            '../third_party/skia/src/opts/SkMorphology_opts_neon.cpp',
           ],
           'conditions': [
             ['arm_neon == 1', {

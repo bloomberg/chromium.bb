@@ -16,6 +16,11 @@
          ['exclude', '_android\\.(cc|cpp)$'],
       ],
     }],
+    [ 'OS == "android"', {
+      'defines': [
+        'SK_FONTHOST_DOES_NOT_USE_FONTMGR',
+      ],
+    }],
     [ 'OS != "ios"', {
       'sources/': [
          ['exclude', '_ios\\.(cc|cpp|mm?)$'],
