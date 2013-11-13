@@ -839,6 +839,7 @@ void DisplayManager::AddRemoveDisplay() {
   }
   num_connected_displays_ = new_display_info_list.size();
   mirrored_display_id_ = gfx::Display::kInvalidDisplayID;
+  non_desktop_display_ = gfx::Display();
   UpdateDisplays(new_display_info_list);
 }
 
