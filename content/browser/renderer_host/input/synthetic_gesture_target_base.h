@@ -27,25 +27,25 @@ class SyntheticGestureTargetBase : public SyntheticGestureTarget {
   explicit SyntheticGestureTargetBase(RenderWidgetHostImpl* host);
   virtual ~SyntheticGestureTargetBase();
 
-  virtual void QueueWebTouchEventToPlatform(
+  virtual void DispatchWebTouchEventToPlatform(
       const blink::WebTouchEvent& web_touch,
       const ui::LatencyInfo& latency_info);
 
-  virtual void QueueWebMouseWheelEventToPlatform(
+  virtual void DispatchWebMouseWheelEventToPlatform(
       const blink::WebMouseWheelEvent& web_wheel,
       const ui::LatencyInfo& latency_info);
 
-  virtual void QueueWebMouseEventToPlatform(
+  virtual void DispatchWebMouseEventToPlatform(
       const blink::WebMouseEvent& web_mouse,
       const ui::LatencyInfo& latency_info);
 
   // SyntheticGestureTarget:
-  virtual void QueueInputEventToPlatform(const InputEvent& event) OVERRIDE;
+  virtual void DispatchInputEventToPlatform(const InputEvent& event) OVERRIDE;
 
   virtual void OnSyntheticGestureCompleted(
       SyntheticGestureNew::Result result) OVERRIDE;
 
-  virtual base::TimeDelta GetSyntheticGestureUpdateRate() const OVERRIDE;
+  virtual void SetNeedsFlush() OVERRIDE;
 
   virtual SyntheticGestureParams::GestureSourceType
       GetDefaultSyntheticGestureSourceType() const OVERRIDE;

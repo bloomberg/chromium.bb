@@ -14,21 +14,30 @@ namespace content {
 
 class InputEvent;
 
-// Interface between the synthetic gesture controller and the RWHV.
+// Interface between the synthetic gesture controller and the RenderWidgetHost.
 class CONTENT_EXPORT SyntheticGestureTarget {
  public:
   SyntheticGestureTarget() {}
   virtual ~SyntheticGestureTarget() {}
 
-  virtual void QueueInputEventToPlatform(const InputEvent& event) = 0;
+  // Allows synthetic gestures to insert input events in the highest level of
+  // input processing on the target platform (e.g. Java on Android), so that
+  // the event traverses the entire input processing stack.
+  virtual void DispatchInputEventToPlatform(const InputEvent& event) = 0;
 
+  // Called by SyntheticGestureController when a gesture has finished.
   virtual void OnSyntheticGestureCompleted(
       SyntheticGestureNew::Result result) = 0;
 
-  virtual base::TimeDelta GetSyntheticGestureUpdateRate() const = 0;
+  // Called by SyntheticGestureController to request a flush at a time
+  // appropriate for the platform, e.g. aligned with vsync.
+  virtual void SetNeedsFlush() = 0;
 
+  // Returns the default gesture source type for the target.
   virtual SyntheticGestureParams::GestureSourceType
       GetDefaultSyntheticGestureSourceType() const = 0;
+
+  // Check if a particular gesture type is supported by the target.
   virtual bool SupportsSyntheticGestureSourceType(
       SyntheticGestureParams::GestureSourceType gesture_source_type) const = 0;
 };

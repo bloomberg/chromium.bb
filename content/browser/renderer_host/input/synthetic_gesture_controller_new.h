@@ -8,7 +8,6 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "content/browser/renderer_host/input/synthetic_gesture_new.h"
 #include "content/common/content_export.h"
 #include "content/common/input/synthetic_gesture_params.h"
@@ -29,9 +28,10 @@ class CONTENT_EXPORT SyntheticGestureControllerNew {
   void QueueSyntheticGesture(
       scoped_ptr<SyntheticGestureNew> synthetic_gesture);
 
- private:
-  void ForwardInputEvents();
+  // Forward input events of the currently processed gesture.
+  void Flush(base::TimeTicks timestamp);
 
+ private:
   void StartGesture(const SyntheticGestureNew& gesture);
   void StopGesture(const SyntheticGestureNew& gesture,
                    SyntheticGestureNew::Result result);
@@ -39,7 +39,6 @@ class CONTENT_EXPORT SyntheticGestureControllerNew {
   scoped_ptr<SyntheticGestureTarget> gesture_target_;
   ScopedVector<SyntheticGestureNew> pending_gesture_queue_;
 
-  base::RepeatingTimer<SyntheticGestureControllerNew> timer_;
   base::TimeTicks last_tick_time_;
 
   DISALLOW_COPY_AND_ASSIGN(SyntheticGestureControllerNew);

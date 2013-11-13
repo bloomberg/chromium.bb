@@ -22,7 +22,7 @@ class SyntheticGestureTargetAndroid : public SyntheticGestureTargetBase {
 
   static bool RegisterTouchEventSynthesizer(JNIEnv* env);
 
-  virtual void QueueWebTouchEventToPlatform(
+  virtual void DispatchWebTouchEventToPlatform(
       const blink::WebTouchEvent& web_touch,
       const ui::LatencyInfo& latency_info) OVERRIDE;
 

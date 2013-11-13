@@ -18,6 +18,7 @@
 
 #include "base/memory/scoped_ptr.h"
 #include "base/callback_forward.h"
+#include "base/timer/timer.h"
 #include "content/common/content_export.h"
 #include "content/port/browser/render_widget_host_view_port.h"
 #include "ui/gfx/native_widget_types.h"
@@ -159,12 +160,16 @@ protected:
   float current_device_scale_factor_;
 
  private:
+  void FlushInput();
+
   // Manager of the tree representation of the WebKit render tree.
   scoped_ptr<BrowserAccessibilityManager> browser_accessibility_manager_;
 
   gfx::Rect current_display_area_;
 
   uint32 renderer_frame_number_;
+
+  base::OneShotTimer<RenderWidgetHostViewBase> flush_input_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewBase);
 };

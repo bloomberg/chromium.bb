@@ -22,7 +22,7 @@ SyntheticGestureTargetAura::SyntheticGestureTargetAura(
     : SyntheticGestureTargetBase(host) {
 }
 
-void SyntheticGestureTargetAura::QueueWebTouchEventToPlatform(
+void SyntheticGestureTargetAura::DispatchWebTouchEventToPlatform(
     const WebTouchEvent& web_touch,
     const ui::LatencyInfo& latency_info) {
   aura::Window* window = render_widget_host()->GetView()->GetNativeView();
@@ -60,7 +60,7 @@ void SyntheticGestureTargetAura::QueueWebTouchEventToPlatform(
 SyntheticGestureParams::GestureSourceType
 SyntheticGestureTargetAura::GetDefaultSyntheticGestureSourceType() const {
   // TODO(297960): Change this to MOUSE_INPUT when a native impl of
-  // QueueWebMouseWheelEventToPlatform is ready.
+  // DispatchWebMouseWheelEventToPlatform is ready.
   return SyntheticGestureParams::TOUCH_INPUT;
 }
 

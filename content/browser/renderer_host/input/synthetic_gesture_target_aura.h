@@ -19,7 +19,7 @@ class SyntheticGestureTargetAura : public SyntheticGestureTargetBase {
   explicit SyntheticGestureTargetAura(RenderWidgetHostImpl* host);
 
   // SyntheticGestureTargetBase:
-  virtual void QueueWebTouchEventToPlatform(
+  virtual void DispatchWebTouchEventToPlatform(
       const blink::WebTouchEvent& web_touch,
       const ui::LatencyInfo& latency_info) OVERRIDE;
 

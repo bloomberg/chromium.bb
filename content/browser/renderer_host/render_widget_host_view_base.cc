@@ -378,6 +378,13 @@ void RenderWidgetHostViewBase::DetachPluginsHelper(HWND parent) {
 
 #endif  // OS_WIN
 
+namespace {
+
+// How many microseconds apart input events should be flushed.
+const int kFlushInputRateInUs = 16666;
+
+}
+
 RenderWidgetHostViewBase::RenderWidgetHostViewBase()
     : popup_type_(blink::WebPopupTypeNone),
       mouse_locked_(false),
@@ -462,7 +469,14 @@ void RenderWidgetHostViewBase::OnDidFlushInput() {
 }
 
 void RenderWidgetHostViewBase::OnSetNeedsFlushInput() {
-  NOTIMPLEMENTED();
+  if (flush_input_timer_.IsRunning())
+    return;
+
+  flush_input_timer_.Start(
+      FROM_HERE,
+      base::TimeDelta::FromMicroseconds(kFlushInputRateInUs),
+      this,
+      &RenderWidgetHostViewBase::FlushInput);
 }
 
 void RenderWidgetHostViewBase::GestureEventAck(int gesture_event_type,
@@ -584,6 +598,15 @@ uint32 RenderWidgetHostViewBase::RendererFrameNumber() {
 
 void RenderWidgetHostViewBase::DidReceiveRendererFrame() {
   ++renderer_frame_number_;
+}
+
+void RenderWidgetHostViewBase::FlushInput() {
+  RenderWidgetHostImpl* impl = NULL;
+  if (GetRenderWidgetHost())
+    impl = RenderWidgetHostImpl::From(GetRenderWidgetHost());
+  if (!impl)
+    return;
+  impl->FlushInput();
 }
 
 }  // namespace content

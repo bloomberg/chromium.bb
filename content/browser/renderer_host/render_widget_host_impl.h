@@ -523,6 +523,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   // Called by RenderWidgetHostView in response to OnSetNeedsFlushInput.
   void FlushInput();
 
+  // InputRouterClient
+  virtual void SetNeedsFlush() OVERRIDE;
+
   // Indicates whether the renderer drives the RenderWidgetHosts's size or the
   // other way around.
   bool should_auto_resize() { return should_auto_resize_; }
@@ -725,7 +728,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl : virtual public RenderWidgetHost,
   virtual void DecrementInFlightEventCount() OVERRIDE;
   virtual void OnHasTouchEventHandlers(bool has_handlers) OVERRIDE;
   virtual OverscrollController* GetOverscrollController() const OVERRIDE;
-  virtual void SetNeedsFlush() OVERRIDE;
   virtual void DidFlush() OVERRIDE;
 
   // InputAckHandler

@@ -90,7 +90,7 @@ SyntheticSmoothScrollGestureNew::ForwardMouseInputEvents(
 
 void SyntheticSmoothScrollGestureNew::ForwardTouchEvent(
     SyntheticGestureTarget* target) {
-  target->QueueInputEventToPlatform(
+  target->DispatchInputEventToPlatform(
       InputEvent(touch_event_, ui::LatencyInfo(), false));
 }
 
@@ -100,7 +100,7 @@ void SyntheticSmoothScrollGestureNew::ForwardMouseWheelEvent(
   blink::WebMouseWheelEvent mouse_wheel_event =
       SyntheticWebMouseWheelEventBuilder::Build(0, delta, 0, false);
 
-  target->QueueInputEventToPlatform(
+  target->DispatchInputEventToPlatform(
       InputEvent(mouse_wheel_event, ui::LatencyInfo(), false));
 }
 

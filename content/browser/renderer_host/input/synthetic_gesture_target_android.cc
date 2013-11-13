@@ -39,7 +39,7 @@ void SyntheticGestureTargetAndroid::TouchInject(
                                   static_cast<int>(action), pointer_count);
 }
 
-void SyntheticGestureTargetAndroid::QueueWebTouchEventToPlatform(
+void SyntheticGestureTargetAndroid::DispatchWebTouchEventToPlatform(
     const blink::WebTouchEvent& web_touch, const ui::LatencyInfo&) {
   JNIEnv* env = base::android::AttachCurrentThread();
 

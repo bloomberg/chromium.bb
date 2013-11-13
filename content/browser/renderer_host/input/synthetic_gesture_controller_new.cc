@@ -25,36 +25,40 @@ void SyntheticGestureControllerNew::QueueSyntheticGesture(
   pending_gesture_queue_.push_back(synthetic_gesture.release());
 
   // Start forwarding input events if the queue was previously empty.
-  if (pending_gesture_queue_.size() == 1) {
+  if (pending_gesture_queue_.size() == 1)
     StartGesture(*pending_gesture_queue_.front());
-    last_tick_time_ = base::TimeTicks::Now();
-    timer_.Start(FROM_HERE,
-                 gesture_target_->GetSyntheticGestureUpdateRate(),
-                 this,
-                 &SyntheticGestureControllerNew::ForwardInputEvents);
-  }
 }
 
-void SyntheticGestureControllerNew::ForwardInputEvents() {
-  DCHECK(!pending_gesture_queue_.empty());
-  DCHECK(!last_tick_time_.is_null());
+void SyntheticGestureControllerNew::Flush(base::TimeTicks timestamp) {
+  if (pending_gesture_queue_.empty())
+    return;
 
-  base::TimeTicks now = base::TimeTicks::Now();
-  base::TimeDelta interval = now - last_tick_time_;
-  last_tick_time_ = now;
+  if (last_tick_time_.is_null()) {
+    last_tick_time_ = timestamp;
+    gesture_target_->SetNeedsFlush();
+    return;
+  }
+
+  base::TimeDelta interval = timestamp - last_tick_time_;
+  last_tick_time_ = timestamp;
   SyntheticGestureNew::Result result =
       pending_gesture_queue_.front()->ForwardInputEvents(interval,
                                                          gesture_target_.get());
 
-  if (result != SyntheticGestureNew::GESTURE_RUNNING) {
+  if (result == SyntheticGestureNew::GESTURE_RUNNING) {
+    gesture_target_->SetNeedsFlush();
+    return;
+  }
 
-    StopGesture(*pending_gesture_queue_.front(), result);
-    pending_gesture_queue_.erase(pending_gesture_queue_.begin());
+  StopGesture(*pending_gesture_queue_.front(), result);
+  pending_gesture_queue_.erase(pending_gesture_queue_.begin());
 
-    if (!pending_gesture_queue_.empty())
-      StartGesture(*pending_gesture_queue_.front());
-    else
-      timer_.Stop();
+  if (!pending_gesture_queue_.empty()) {
+    StartGesture(*pending_gesture_queue_.front());
+  } else {
+    // Reset last_tick_time_ so that we don't use an old value when a new
+    // gestures is queued.
+    last_tick_time_ = base::TimeTicks();
   }
 }
 
@@ -62,6 +66,7 @@ void SyntheticGestureControllerNew::StartGesture(
     const SyntheticGestureNew& gesture) {
   TRACE_EVENT_ASYNC_BEGIN0("benchmark", "SyntheticGestureController::running",
                            &gesture);
+  gesture_target_->SetNeedsFlush();
 }
 
 void SyntheticGestureControllerNew::StopGesture(

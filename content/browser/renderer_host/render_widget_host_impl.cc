@@ -404,6 +404,11 @@ void RenderWidgetHostImpl::FlushInput() {
   input_router_->Flush();
 }
 
+void RenderWidgetHostImpl::SetNeedsFlush() {
+  if (view_)
+    view_->OnSetNeedsFlushInput();
+}
+
 void RenderWidgetHostImpl::Init() {
   DCHECK(process_->HasConnection());
 
@@ -1992,11 +1997,6 @@ void RenderWidgetHostImpl::OnHasTouchEventHandlers(bool has_handlers) {
 
 OverscrollController* RenderWidgetHostImpl::GetOverscrollController() const {
   return overscroll_controller_.get();
-}
-
-void RenderWidgetHostImpl::SetNeedsFlush() {
-  if (view_)
-    view_->OnSetNeedsFlushInput();
 }
 
 void RenderWidgetHostImpl::DidFlush() {
