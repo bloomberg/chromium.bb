@@ -39,14 +39,6 @@ class IBusDaemonControllerDaemonlessImpl : public IBusDaemonController {
   virtual bool Start() OVERRIDE {
     if (is_started_)
       return false;
-    // IBusBus should be initialized but it is okay to pass "dummy address" as
-    // the bus address because the actual dbus implementation is stub if the
-    // Chrome OS is working on Linux desktop. This path is not used in
-    // production at this moment, only for Chrome OS on Linux Desktop.
-    // TODO(nona): Remove InitIBusBus oncer all legacy ime is migrated to IME
-    // extension API.
-    DBusThreadManager::Get()->InitIBusBus("dummy address",
-                                          base::Bind(&base::DoNothing));
     is_started_ = true;
     FOR_EACH_OBSERVER(Observer, observers_, OnConnected());
     return true;

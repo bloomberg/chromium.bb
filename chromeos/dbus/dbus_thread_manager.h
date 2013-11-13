@@ -37,7 +37,6 @@ class CryptohomeClient;
 class DBusClient;
 class DebugDaemonClient;
 class GsmSMSClient;
-class IBusClient;
 class IBusEngineFactoryService;
 class IBusEngineService;
 class ImageBurnerClient;
@@ -109,14 +108,6 @@ class CHROMEOS_EXPORT DBusThreadManager {
   virtual void AddObserver(DBusThreadManagerObserver* observer) = 0;
   virtual void RemoveObserver(DBusThreadManagerObserver* observer) = 0;
 
-  // Creates new IBusBus instance to communicate with ibus-daemon with specified
-  // ibus address. |on_disconnected_callback| will be called when the connection
-  // with ibus-daemon is disconnected. Must be called before using ibus related
-  // clients.
-  // TODO(nona): Support shutdown to enable dynamical ibus-daemon shutdown.
-  virtual void InitIBusBus(const std::string& ibus_address,
-                           const base::Closure& on_disconnected_callback) = 0;
-
   // Returns various D-Bus bus instances, owned by DBusThreadManager.
   virtual dbus::Bus* GetSystemBus() = 0;
 
@@ -152,8 +143,6 @@ class CHROMEOS_EXPORT DBusThreadManager {
   virtual SMSClient* GetSMSClient() = 0;
   virtual SystemClockClient* GetSystemClockClient() = 0;
   virtual UpdateEngineClient* GetUpdateEngineClient() = 0;
-
-  virtual IBusClient* GetIBusClient() = 0;
 
   virtual ~DBusThreadManager();
 

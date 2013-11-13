@@ -103,21 +103,12 @@ class InputMethodEngineIBus : public InputMethodEngine,
   void OnDisconnected();
 
  private:
-  // Returns true if the connection to ibus-daemon is avaiable.
-  bool IsConnected();
-
   // Converts MenuItem to InputMethodProperty.
   void MenuItemToProperty(const MenuItem& item,
                           input_method::InputMethodProperty* property);
 
   // Registers the engine component.
   void RegisterComponent();
-
-  // Called when the RegisterComponent is failed.
-  void OnComponentRegistrationFailed();
-
-  // Called when the RegisterComponent is succeeded.
-  void OnComponentRegistered();
 
   // Called when the ibus-daemon sends CreateEngine message with corresponding
   // engine id.

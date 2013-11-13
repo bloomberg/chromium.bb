@@ -25,7 +25,6 @@
 #include "chromeos/dbus/debug_daemon_client.h"
 #include "chromeos/dbus/fake_dbus_thread_manager.h"
 #include "chromeos/dbus/gsm_sms_client.h"
-#include "chromeos/dbus/ibus/ibus_client.h"
 #include "chromeos/dbus/image_burner_client.h"
 #include "chromeos/dbus/introspectable_client.h"
 #include "chromeos/dbus/modem_messaging_client.h"
@@ -96,12 +95,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   virtual void RemoveObserver(DBusThreadManagerObserver* observer) OVERRIDE {
     DCHECK(observer);
     observers_.RemoveObserver(observer);
-  }
-
-  virtual void InitIBusBus(
-      const std::string &ibus_address,
-      const base::Closure& on_disconnected_callback) OVERRIDE {
-    ibus_client_.reset(IBusClient::Create());
   }
 
   virtual dbus::Bus* GetSystemBus() OVERRIDE {
@@ -230,10 +223,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
     return update_engine_client_.get();
   }
 
-  virtual IBusClient* GetIBusClient() OVERRIDE {
-    return ibus_client_.get();
-  }
-
  private:
   // Constructs all clients -- stub or real implementation according to
   // |client_type| and |client_type_override| -- and stores them in the
@@ -335,7 +324,6 @@ class DBusThreadManagerImpl : public DBusThreadManager {
   scoped_ptr<SessionManagerClient> session_manager_client_;
   scoped_ptr<SMSClient> sms_client_;
   scoped_ptr<UpdateEngineClient> update_engine_client_;
-  scoped_ptr<IBusClient> ibus_client_;
 
   scoped_ptr<PowerPolicyController> power_policy_controller_;
 };

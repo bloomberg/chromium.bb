@@ -22,7 +22,6 @@
 #include "chromeos/dbus/fake_nfc_record_client.h"
 #include "chromeos/dbus/fake_nfc_tag_client.h"
 #include "chromeos/dbus/gsm_sms_client.h"
-#include "chromeos/dbus/ibus/ibus_client.h"
 #include "chromeos/dbus/image_burner_client.h"
 #include "chromeos/dbus/introspectable_client.h"
 #include "chromeos/dbus/modem_messaging_client.h"
@@ -70,7 +69,6 @@ void FakeDBusThreadManager::SetFakeClients() {
       scoped_ptr<CryptohomeClient>(CryptohomeClient::Create(client_type)));
   SetDebugDaemonClient(
       scoped_ptr<DebugDaemonClient>(DebugDaemonClient::Create(client_type)));
-  SetIBusClient(make_scoped_ptr(IBusClient::Create()));
   SetShillManagerClient(
       scoped_ptr<ShillManagerClient>(ShillManagerClient::Create(client_type)));
   SetShillDeviceClient(
@@ -257,10 +255,6 @@ void FakeDBusThreadManager::SetUpdateEngineClient(
   update_engine_client_ = client.Pass();
 }
 
-void FakeDBusThreadManager::SetIBusClient(scoped_ptr<IBusClient> client) {
-  ibus_client_ = client.Pass();
-}
-
 void FakeDBusThreadManager::AddObserver(
     DBusThreadManagerObserver* observer) {
   DCHECK(observer);
@@ -271,11 +265,6 @@ void FakeDBusThreadManager::RemoveObserver(
     DBusThreadManagerObserver* observer) {
   DCHECK(observer);
   observers_.RemoveObserver(observer);
-}
-
-void FakeDBusThreadManager::InitIBusBus(
-    const std::string& ibus_address,
-    const base::Closure& closure) {
 }
 
 dbus::Bus* FakeDBusThreadManager::GetSystemBus() {
@@ -415,10 +404,6 @@ SystemClockClient* FakeDBusThreadManager::GetSystemClockClient() {
 
 UpdateEngineClient* FakeDBusThreadManager::GetUpdateEngineClient() {
   return update_engine_client_.get();
-}
-
-IBusClient* FakeDBusThreadManager::GetIBusClient() {
-  return ibus_client_.get();
 }
 
 }  // namespace chromeos

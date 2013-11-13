@@ -136,9 +136,6 @@ class InputMethodManagerImpl : public InputMethodManager,
   // that only contains an input method ID of a keyboard layout.
   bool ContainsOnlyKeyboardLayout(const std::vector<std::string>& value);
 
-  // Returns true if the connection to ibus-daemon is established.
-  bool IsIBusConnectionAlive();
-
   // Creates and initializes |candidate_window_controller_| if it hasn't been
   // done.
   void MaybeInitializeCandidateWindowController();

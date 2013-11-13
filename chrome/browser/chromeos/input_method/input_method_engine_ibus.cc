@@ -14,7 +14,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/ibus/ibus_client.h"
 #include "chromeos/dbus/ibus/ibus_component.h"
 #include "chromeos/dbus/ibus/ibus_engine_factory_service.h"
 #include "chromeos/dbus/ibus/ibus_engine_service.h"
@@ -113,10 +112,7 @@ void InputMethodEngineIBus::Initialize(
   component_->mutable_engine_description()->push_back(engine_desc);
   manager->AddInputMethodExtension(ibus_id_, engine_name, layouts, languages,
                                    options_page, input_view, this);
-  // If connection is avaiable, register component. If there are no connection
-  // to ibus-daemon, OnConnected callback will register component instead.
-  if (IsConnected())
-    RegisterComponent();
+  RegisterComponent();
 }
 
 void InputMethodEngineIBus::StartIme() {
@@ -599,30 +595,11 @@ void InputMethodEngineIBus::OnConnected() {
 void InputMethodEngineIBus::OnDisconnected() {
 }
 
-bool InputMethodEngineIBus::IsConnected() {
-  return DBusThreadManager::Get()->GetIBusClient() != NULL;
-}
-
 void InputMethodEngineIBus::RegisterComponent() {
-  IBusClient* client = DBusThreadManager::Get()->GetIBusClient();
-  client->RegisterComponent(
-      *component_.get(),
-      base::Bind(&InputMethodEngineIBus::OnComponentRegistered,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&InputMethodEngineIBus::OnComponentRegistrationFailed,
-                 weak_ptr_factory_.GetWeakPtr()));
-}
-
-void InputMethodEngineIBus::OnComponentRegistered() {
   ibus_engine_factory_service_->SetCreateEngineHandler(
       ibus_id_,
       base::Bind(&InputMethodEngineIBus::CreateEngineHandler,
                  weak_ptr_factory_.GetWeakPtr()));
-}
-
-void InputMethodEngineIBus::OnComponentRegistrationFailed() {
-  DVLOG(1) << "Failed to register input method components.";
-  // TODO(nona): Implement error handling.
 }
 
 void InputMethodEngineIBus::CreateEngineHandler(

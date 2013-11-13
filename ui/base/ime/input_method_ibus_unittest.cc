@@ -15,7 +15,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/ibus/ibus_text.h"
-#include "chromeos/dbus/ibus/mock_ibus_client.h"
 #include "chromeos/ime/ibus_bridge.h"
 #include "chromeos/ime/ibus_keymap.h"
 #include "chromeos/ime/mock_ime_candidate_window_handler.h"
@@ -106,57 +105,6 @@ class TestableInputMethodIBus : public InputMethodIBus {
  private:
   ProcessKeyEventPostIMEArgs process_key_event_post_ime_args_;
   int process_key_event_post_ime_call_count_;
-};
-
-class CreateInputContextSuccessHandler {
- public:
-  explicit CreateInputContextSuccessHandler(const dbus::ObjectPath& object_path)
-      : object_path_(object_path) {
-  }
-
-  void Run(const std::string& client_name,
-           const chromeos::IBusClient::CreateInputContextCallback& callback) {
-    EXPECT_EQ("chrome", client_name);
-    callback.Run(object_path_);
-  }
-
- private:
-  dbus::ObjectPath object_path_;
-
-  DISALLOW_COPY_AND_ASSIGN(CreateInputContextSuccessHandler);
-};
-
-class CreateInputContextNoResponseHandler {
- public:
-  CreateInputContextNoResponseHandler() {}
-  void Run(const std::string& client_name,
-           const chromeos::IBusClient::CreateInputContextCallback& callback) {
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CreateInputContextNoResponseHandler);
-};
-
-class CreateInputContextDelayHandler {
- public:
-  explicit CreateInputContextDelayHandler(const dbus::ObjectPath& object_path)
-    : object_path_(object_path) {
-  }
-
-  void Run(const std::string& client_name,
-           const chromeos::IBusClient::CreateInputContextCallback& callback) {
-    callback_ = callback;
-  }
-
-  void RunCallback() {
-    callback_.Run(object_path_);
-  }
-
- private:
-  dbus::ObjectPath object_path_;
-  chromeos::IBusClient::CreateInputContextCallback callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(CreateInputContextDelayHandler);
 };
 
 class SynchronousKeyEventHandler {

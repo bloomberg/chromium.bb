@@ -63,12 +63,9 @@ class CHROMEOS_EXPORT FakeDBusThreadManager : public DBusThreadManager {
   void SetSMSClient(scoped_ptr<SMSClient> client);
   void SetSystemClockClient(scoped_ptr<SystemClockClient> client);
   void SetUpdateEngineClient(scoped_ptr<UpdateEngineClient> client);
-  void SetIBusClient(scoped_ptr<IBusClient> client);
 
   virtual void AddObserver(DBusThreadManagerObserver* observer) OVERRIDE;
   virtual void RemoveObserver(DBusThreadManagerObserver* observer) OVERRIDE;
-  virtual void InitIBusBus(const std::string& ibus_address,
-                           const base::Closure& closure) OVERRIDE;
   virtual dbus::Bus* GetSystemBus() OVERRIDE;
 
   virtual BluetoothAdapterClient* GetBluetoothAdapterClient() OVERRIDE;
@@ -103,7 +100,6 @@ class CHROMEOS_EXPORT FakeDBusThreadManager : public DBusThreadManager {
   virtual SMSClient* GetSMSClient() OVERRIDE;
   virtual SystemClockClient* GetSystemClockClient() OVERRIDE;
   virtual UpdateEngineClient* GetUpdateEngineClient() OVERRIDE;
-  virtual IBusClient* GetIBusClient() OVERRIDE;
 
  private:
   // Note: Keep this before other members so they can call AddObserver() in
@@ -139,7 +135,6 @@ class CHROMEOS_EXPORT FakeDBusThreadManager : public DBusThreadManager {
   scoped_ptr<SessionManagerClient> session_manager_client_;
   scoped_ptr<SMSClient> sms_client_;
   scoped_ptr<UpdateEngineClient> update_engine_client_;
-  scoped_ptr<IBusClient> ibus_client_;
 
   scoped_ptr<PowerPolicyController> power_policy_controller_;
 

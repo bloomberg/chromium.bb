@@ -19,7 +19,6 @@
 #include "chrome/browser/chromeos/input_method/input_method_engine_ibus.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/ibus/ibus_client.h"
 #include "chromeos/ime/component_extension_ime_manager.h"
 #include "chromeos/ime/extension_ime_util.h"
 #include "chromeos/ime/input_method_delegate.h"
@@ -296,13 +295,11 @@ bool InputMethodManagerImpl::ChangeInputMethodInternal(
     }
   }
 
-  if (!component_extension_ime_manager_->IsInitialized() ||
-      (!InputMethodUtil::IsKeyboardLayout(input_method_id_to_switch) &&
-       !IsIBusConnectionAlive())) {
-    // We can't change input method before the initialization of component
-    // extension ime manager or before connection to ibus-daemon is not
-    // established. ChangeInputMethod will be called with
-    // |pending_input_method_| when the both initialization is done.
+  if (!component_extension_ime_manager_->IsInitialized()) {
+    // We can't change input method before the initialization of
+    // component extension ime manager.  ChangeInputMethod will be
+    // called with |pending_input_method_| when the initialization is
+    // done.
     pending_input_method_ = input_method_id_to_switch;
     return false;
   }
@@ -310,7 +307,6 @@ bool InputMethodManagerImpl::ChangeInputMethodInternal(
   pending_input_method_.clear();
   IBusEngineHandlerInterface* engine = IBusBridge::Get()->GetEngineHandler();
   const std::string current_input_method_id = current_input_method_.id();
-  IBusClient* client = DBusThreadManager::Get()->GetIBusClient();
   if (InputMethodUtil::IsKeyboardLayout(input_method_id_to_switch)) {
     FOR_EACH_OBSERVER(InputMethodManager::Observer,
                       observers_,
@@ -320,9 +316,15 @@ bool InputMethodManagerImpl::ChangeInputMethodInternal(
       IBusBridge::Get()->SetEngineHandler(NULL);
     }
   } else {
-    DCHECK(client);
-    client->SetGlobalEngine(input_method_id_to_switch,
-                            base::Bind(&base::DoNothing));
+    // Disable the current engine and enable the next engine.
+    if (engine)
+      engine->Disable();
+    IBusBridge::Get()->CreateEngine(input_method_id_to_switch);
+    IBusEngineHandlerInterface* next_engine =
+        IBusBridge::Get()->GetEngineHandler();
+    IBusBridge::Get()->SetEngineHandler(next_engine);
+    if (next_engine)
+      next_engine->Enable();
   }
 
   if (current_input_method_id != input_method_id_to_switch) {
@@ -864,10 +866,6 @@ void InputMethodManagerImpl::MaybeInitializeCandidateWindowController() {
     candidate_window_controller_->AddObserver(this);
   else
     DVLOG(1) << "Failed to initialize the candidate window controller";
-}
-
-bool InputMethodManagerImpl::IsIBusConnectionAlive() {
-  return DBusThreadManager::Get() && DBusThreadManager::Get()->GetIBusClient();
 }
 
 }  // namespace input_method
