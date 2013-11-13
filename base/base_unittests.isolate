@@ -18,6 +18,7 @@
           '<(PRODUCT_DIR)',
           '<(PRODUCT_DIR)/base_unittests<(EXECUTABLE_SUFFIX)',
           '--brave-new-test-launcher',
+          '--test-launcher-bot-mode',
         ],
         'isolate_dependency_tracked': [
           '../testing/xvfb.py',
@@ -42,6 +43,7 @@
           '../testing/test_env.py',
           '<(PRODUCT_DIR)/base_unittests<(EXECUTABLE_SUFFIX)',
           '--brave-new-test-launcher',
+          '--test-launcher-bot-mode',
         ],
       },
     }],

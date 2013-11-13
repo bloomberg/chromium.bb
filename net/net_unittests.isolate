@@ -22,6 +22,7 @@
           '../testing/test_env.py',
           '<(PRODUCT_DIR)/net_unittests<(EXECUTABLE_SUFFIX)',
           '--brave-new-test-launcher',
+          '--test-launcher-bot-mode',
         ],
         'isolate_dependency_tracked': [
           '../testing/test_env.py',
