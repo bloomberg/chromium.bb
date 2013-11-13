@@ -838,12 +838,12 @@ PassRefPtr<HTMLElement> createListItemElement(Document& document)
 
 PassRefPtr<HTMLElement> createHTMLElement(Document& document, const QualifiedName& name)
 {
-    return HTMLElementFactory::createHTMLElement(name, document, 0, false);
+    return createHTMLElement(document, name.localName());
 }
 
 PassRefPtr<HTMLElement> createHTMLElement(Document& document, const AtomicString& tagName)
 {
-    return createHTMLElement(document, QualifiedName(nullAtom, tagName, xhtmlNamespaceURI));
+    return HTMLElementFactory::createHTMLElement(tagName, document, 0, false);
 }
 
 bool isTabSpanNode(const Node *node)

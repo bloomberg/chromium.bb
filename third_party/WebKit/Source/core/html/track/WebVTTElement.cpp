@@ -90,24 +90,24 @@ PassRefPtr<HTMLElement> WebVTTElement::createEquivalentHTMLElement(Document& doc
     case WebVTTNodeTypeClass:
     case WebVTTNodeTypeLanguage:
     case WebVTTNodeTypeVoice:
-        htmlElement = HTMLElementFactory::createHTMLElement(HTMLNames::spanTag, document);
+        htmlElement = HTMLElementFactory::createHTMLElement(HTMLNames::spanTag.localName(), document);
         htmlElement.get()->setAttribute(HTMLNames::titleAttr, getAttribute(voiceAttributeName()));
         htmlElement.get()->setAttribute(HTMLNames::langAttr, getAttribute(langAttributeName()));
         break;
     case WebVTTNodeTypeItalic:
-        htmlElement = HTMLElementFactory::createHTMLElement(HTMLNames::iTag, document);
+        htmlElement = HTMLElementFactory::createHTMLElement(HTMLNames::iTag.localName(), document);
         break;
     case WebVTTNodeTypeBold:
-        htmlElement = HTMLElementFactory::createHTMLElement(HTMLNames::bTag, document);
+        htmlElement = HTMLElementFactory::createHTMLElement(HTMLNames::bTag.localName(), document);
         break;
     case WebVTTNodeTypeUnderline:
-        htmlElement = HTMLElementFactory::createHTMLElement(HTMLNames::uTag, document);
+        htmlElement = HTMLElementFactory::createHTMLElement(HTMLNames::uTag.localName(), document);
         break;
     case WebVTTNodeTypeRuby:
-        htmlElement = HTMLElementFactory::createHTMLElement(HTMLNames::rubyTag, document);
+        htmlElement = HTMLElementFactory::createHTMLElement(HTMLNames::rubyTag.localName(), document);
         break;
     case WebVTTNodeTypeRubyText:
-        htmlElement = HTMLElementFactory::createHTMLElement(HTMLNames::rtTag, document);
+        htmlElement = HTMLElementFactory::createHTMLElement(HTMLNames::rtTag.localName(), document);
         break;
     default:
         ASSERT_NOT_REACHED();
