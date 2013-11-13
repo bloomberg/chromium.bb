@@ -27,6 +27,10 @@ void GLImage::DidUseTexImage() {
   NOTIMPLEMENTED();
 }
 
+void GLImage::SetReleaseAfterUse() {
+  // Default no-op implementation for workaround.
+}
+
 GLImage::~GLImage() {}
 
 }  // namespace gfx

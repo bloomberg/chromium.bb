@@ -9,7 +9,7 @@
 namespace gpu {
 namespace gles2 {
 
-ImageManager::ImageManager() {
+ImageManager::ImageManager() : release_after_use_(false) {
 }
 
 ImageManager::~ImageManager() {
@@ -37,6 +37,9 @@ bool ImageManager::RegisterGpuMemoryBuffer(int32 id,
   if (!gl_image)
     return false;
 
+  if (release_after_use_)
+    gl_image->SetReleaseAfterUse();
+
   AddImage(gl_image.get(), id);
   return true;
 }
@@ -59,6 +62,10 @@ gfx::GLImage* ImageManager::LookupImage(int32 service_id) {
     return iter->second.get();
 
   return NULL;
+}
+
+void ImageManager::SetReleaseAfterUse() {
+  release_after_use_ = true;
 }
 
 }  // namespace gles2

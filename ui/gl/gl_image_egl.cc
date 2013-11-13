@@ -12,6 +12,7 @@ namespace gfx {
 GLImageEGL::GLImageEGL(gfx::Size size)
     : egl_image_(EGL_NO_IMAGE_KHR),
       size_(size),
+      release_after_use_(false),
       in_use_(false) {
 }
 
@@ -76,7 +77,8 @@ bool GLImageEGL::BindTexImage() {
 }
 
 void GLImageEGL::ReleaseTexImage() {
-  // Nothing to do here as image is released after each use.
+  // Nothing to do here as image is released after each use or there is no need
+  // to release image.
 }
 
 void GLImageEGL::WillUseTexImage() {
@@ -90,6 +92,10 @@ void GLImageEGL::WillUseTexImage() {
 void GLImageEGL::DidUseTexImage() {
   DCHECK(in_use_);
   in_use_ = false;
+
+  if (!release_after_use_)
+    return;
+
   char zero[4] = { 0, };
   glTexImage2D(GL_TEXTURE_2D,
                0,
@@ -100,6 +106,10 @@ void GLImageEGL::DidUseTexImage() {
                GL_RGBA,
                GL_UNSIGNED_BYTE,
                &zero);
+}
+
+void GLImageEGL::SetReleaseAfterUse() {
+  release_after_use_ = true;
 }
 
 }  // namespace gfx

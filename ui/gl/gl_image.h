@@ -39,6 +39,10 @@ class GL_EXPORT GLImage : public base::RefCounted<GLImage> {
   // Called after the texture has been used for drawing.
   virtual void DidUseTexImage();
 
+  // Indicate that image should be released after use.
+  // (For an Android work-around only).
+  virtual void SetReleaseAfterUse();
+
   // Create a GL image for a window.
   static scoped_refptr<GLImage> CreateGLImage(gfx::PluginWindowHandle window);
 

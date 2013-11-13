@@ -37,6 +37,9 @@ class GPU_EXPORT ImageManager
   void RemoveImage(int32 service_id);
   gfx::GLImage* LookupImage(int32 service_id);
 
+  // For Android specific workaround.
+  void SetReleaseAfterUse();
+
  private:
   friend class base::RefCounted<ImageManager>;
 
@@ -44,6 +47,7 @@ class GPU_EXPORT ImageManager
 
   typedef base::hash_map<uint32, scoped_refptr<gfx::GLImage> > GLImageMap;
   GLImageMap gl_images_;
+  bool release_after_use_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageManager);
 };

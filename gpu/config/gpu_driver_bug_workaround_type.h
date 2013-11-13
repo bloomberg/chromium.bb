@@ -80,6 +80,8 @@
          validate_multisample_buffer_allocation)             \
   GPU_OP(WAKE_UP_GPU_BEFORE_DRAWING,                         \
          wake_up_gpu_before_drawing)                         \
+  GPU_OP(RELEASE_IMAGE_AFTER_USE,                            \
+         release_image_after_use)                            \
 
 namespace gpu {
 
