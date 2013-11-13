@@ -32,7 +32,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/webdata/encryptor/encryptor.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/cookie_crypto_delegate.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/resource_context.h"
@@ -51,6 +53,42 @@
 #endif
 
 namespace {
+
+// Use the operating system's mechanisms to encrypt cookies before writing
+// them to persistent store.  Currently this only is done with desktop OS's
+// because ChromeOS and Android already protect the entire profile contents.
+//
+// TODO(bcwhite): Enable on MACOSX -- requires all Cookie tests to call
+// Encryptor::UseMockKeychain or will hang waiting for user input.
+#if defined(OS_WIN) || defined(OS_LINUX)  //  || defined(OS_MACOSX)
+class CookieOSCryptoDelegate : public content::CookieCryptoDelegate {
+ public:
+  virtual bool EncryptString(const std::string& plaintext,
+                             std::string* ciphertext) OVERRIDE;
+  virtual bool DecryptString(const std::string& ciphertext,
+                             std::string* plaintext) OVERRIDE;
+};
+
+bool CookieOSCryptoDelegate::EncryptString(const std::string& plaintext,
+                                           std::string* ciphertext) {
+  return Encryptor::EncryptString(plaintext, ciphertext);
+}
+
+bool CookieOSCryptoDelegate::DecryptString(const std::string& ciphertext,
+                                           std::string* plaintext) {
+  return Encryptor::DecryptString(ciphertext, plaintext);
+}
+
+scoped_ptr<content::CookieCryptoDelegate> CreateCookieCryptoIfUseful() {
+  return scoped_ptr<content::CookieCryptoDelegate>(
+      new CookieOSCryptoDelegate);
+}
+#else
+scoped_ptr<content::CookieCryptoDelegate> CreateCookieCryptoIfUseful() {
+  return scoped_ptr<content::CookieCryptoDelegate>();
+}
+#endif
+
 
 net::BackendType ChooseCacheBackendType() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
@@ -402,7 +440,8 @@ void ProfileImplIOData::InitializeInternal(
         lazy_params_->cookie_path,
         lazy_params_->restore_old_session_cookies,
         lazy_params_->special_storage_policy.get(),
-        profile_params->cookie_monster_delegate.get());
+        profile_params->cookie_monster_delegate.get(),
+        CreateCookieCryptoIfUseful());
     cookie_store->GetCookieMonster()->SetPersistSessionCookies(true);
   }
 
@@ -500,7 +539,8 @@ void ProfileImplIOData::
           lazy_params_->extensions_cookie_path,
           lazy_params_->restore_old_session_cookies,
           NULL,
-          NULL);
+          NULL,
+          CreateCookieCryptoIfUseful());
   // Enable cookies for devtools and extension URLs.
   const char* schemes[] = {chrome::kChromeDevToolsScheme,
                            extensions::kExtensionScheme};
@@ -586,7 +626,8 @@ ProfileImplIOData::InitializeAppRequestContext(
         cookie_path,
         false,
         NULL,
-        NULL);
+        NULL,
+        CreateCookieCryptoIfUseful());
   }
 
   // Transfer ownership of the cookies and cache to AppRequestContext.
