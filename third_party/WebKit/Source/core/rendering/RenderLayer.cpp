@@ -2020,7 +2020,7 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
     ClipperContext clipperContext;
     if (renderer()->hasClipPath() && !context->paintingDisabled() && style) {
         ASSERT(style->clipPath());
-        if (style->clipPath()->getOperationType() == ClipPathOperation::SHAPE) {
+        if (style->clipPath()->type() == ClipPathOperation::SHAPE) {
             hasClipPath = true;
             context->save();
             ShapeClipPathOperation* clipPath = static_cast<ShapeClipPathOperation*>(style->clipPath());
@@ -2031,7 +2031,7 @@ void RenderLayer::paintLayerContents(GraphicsContext* context, const LayerPainti
             }
 
             context->clipPath(clipPath->path(rootRelativeBounds), clipPath->windRule());
-        } else if (style->clipPath()->getOperationType() == ClipPathOperation::REFERENCE) {
+        } else if (style->clipPath()->type() == ClipPathOperation::REFERENCE) {
             ReferenceClipPathOperation* referenceClipPathOperation = static_cast<ReferenceClipPathOperation*>(style->clipPath());
             Document& document = renderer()->document();
             // FIXME: It doesn't work with forward or external SVG references (https://bugs.webkit.org/show_bug.cgi?id=90405)

@@ -2695,9 +2695,9 @@ PassRefPtr<CSSValue> CSSComputedStyleDeclaration::getPropertyCSSValue(CSSPropert
             return valueForCounterDirectives(*style, propertyID);
         case CSSPropertyWebkitClipPath:
             if (ClipPathOperation* operation = style->clipPath()) {
-                if (operation->getOperationType() == ClipPathOperation::SHAPE)
+                if (operation->type() == ClipPathOperation::SHAPE)
                     return valueForBasicShape(*style, static_cast<ShapeClipPathOperation*>(operation)->basicShape());
-                if (operation->getOperationType() == ClipPathOperation::REFERENCE) {
+                if (operation->type() == ClipPathOperation::REFERENCE) {
                     ReferenceClipPathOperation* referenceOperation = static_cast<ReferenceClipPathOperation*>(operation);
                     return CSSPrimitiveValue::create(referenceOperation->url(), CSSPrimitiveValue::CSS_URI);
                 }
