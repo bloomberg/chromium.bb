@@ -23,29 +23,30 @@ function test()
     InspectorTest.evaluateInPage("var unused = document.body.offsetWidth; testRunner.display();", function() {
          InspectorTest.evaluateWithTimeline("performActions()", onTimelineRecorded);
     });
-    function getPopoverRow(record, row, callback)
+
+    function clickValueLink(record, row)
     {
-        var helper = record.generatePopupContent(onPopupContentReady);
-        function onPopupContentReady(popover)
+        var helper = record.generatePopupContent(onDetailsContentReady);
+
+        function onDetailsContentReady(element)
         {
-            // Temporarily attach popover so that document.evaluate() works
-            document.body.appendChild(popover);
-            var result = document.evaluate("//table/tr/td[position()=1 and text()='" + row.escapeCharacters("\"\'") + "']/following-sibling::td/child::*", popover, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
-            popover.remove();
-            callback(result.singleNodeValue);
+            var rows = element.querySelectorAll(".timeline-details-view-row");
+            for (var i = 0; i < rows.length; ++i) {
+                if (rows[i].firstChild.textContent.indexOf(row) !== -1) {
+                    rows[i].lastChild.firstChild.click();
+                    return;
+                }
+            }
         }
     }
+
     function onTimelineRecorded(records)
     {
         var layoutRecord = InspectorTest.findPresentationRecord("Layout");
         WebInspector.notifications.addEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, onSelectedNodeChanged);
-        getPopoverRow(layoutRecord, "Layout root", clickOnLink);
-
-        function clickOnLink(link)
-        {
-            link.click();
-        }
+        clickValueLink(layoutRecord, "Layout root");
     }
+
     function onSelectedNodeChanged()
     {
         // avoid using WebInspector.panel("elements"), as we get first event from constructor,
