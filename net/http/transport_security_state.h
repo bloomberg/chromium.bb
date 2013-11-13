@@ -35,7 +35,7 @@ class SSLInfo;
 class NET_EXPORT TransportSecurityState
     : NON_EXPORTED_BASE(public base::NonThreadSafe) {
  public:
-  class Delegate {
+  class NET_EXPORT Delegate {
    public:
     // This function may not block and may be called with internal locks held.
     // Thus it must not reenter the TransportSecurityState object.

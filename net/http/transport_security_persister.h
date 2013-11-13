@@ -30,8 +30,8 @@
 //   copies the current state of the TransportSecurityState, serializes
 //   and writes to disk.
 
-#ifndef CHROME_BROWSER_NET_TRANSPORT_SECURITY_PERSISTER_H_
-#define CHROME_BROWSER_NET_TRANSPORT_SECURITY_PERSISTER_H_
+#ifndef NET_HTTP_TRANSPORT_SECURITY_PERSISTER_H_
+#define NET_HTTP_TRANSPORT_SECURITY_PERSISTER_H_
 
 #include <string>
 
@@ -39,29 +39,32 @@
 #include "base/files/important_file_writer.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "net/base/net_export.h"
 #include "net/http/transport_security_state.h"
 
 namespace base {
 class SequencedTaskRunner;
 }
 
+namespace net {
+
 // Reads and updates on-disk TransportSecurity state. Clients of this class
 // should create, destroy, and call into it from one thread.
 //
 // file_task_runner is the task runner this class should use internally to
 // perform file IO, and can optionally be associated with a different thread.
-class TransportSecurityPersister
-    : public net::TransportSecurityState::Delegate,
+class NET_EXPORT TransportSecurityPersister
+    : public TransportSecurityState::Delegate,
       public base::ImportantFileWriter::DataSerializer {
  public:
-  TransportSecurityPersister(net::TransportSecurityState* state,
+  TransportSecurityPersister(TransportSecurityState* state,
                              const base::FilePath& profile_path,
                              base::SequencedTaskRunner* file_task_runner,
                              bool readonly);
   virtual ~TransportSecurityPersister();
 
   // Called by the TransportSecurityState when it changes its state.
-  virtual void StateIsDirty(net::TransportSecurityState*) OVERRIDE;
+  virtual void StateIsDirty(TransportSecurityState*) OVERRIDE;
 
   // ImportantFileWriter::DataSerializer:
   //
@@ -89,7 +92,7 @@ class TransportSecurityPersister
   //     "dynamic_spki_hashes": list of strings
   //
   // The JSON dictionary keys are strings containing
-  // Base64(SHA256(net::TransportSecurityState::CanonicalizeHost(domain))).
+  // Base64(SHA256(TransportSecurityState::CanonicalizeHost(domain))).
   // The reason for hashing them is so that the stored state does not
   // trivially reveal a user's browsing history to an attacker reading the
   // serialized state on disk.
@@ -110,11 +113,11 @@ class TransportSecurityPersister
   // state; false otherwise.
   static bool Deserialize(const std::string& serialized,
                           bool* dirty,
-                          net::TransportSecurityState* state);
+                          TransportSecurityState* state);
 
   void CompleteLoad(const std::string& state);
 
-  net::TransportSecurityState* transport_security_state_;
+  TransportSecurityState* transport_security_state_;
 
   // Helper for safely writing the data.
   base::ImportantFileWriter writer_;
@@ -130,4 +133,6 @@ class TransportSecurityPersister
   DISALLOW_COPY_AND_ASSIGN(TransportSecurityPersister);
 };
 
-#endif  // CHROME_BROWSER_NET_TRANSPORT_SECURITY_PERSISTER_H_
+}  // namespace net
+
+#endif  // NET_HTTP_TRANSPORT_SECURITY_PERSISTER_H_

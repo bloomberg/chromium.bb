@@ -1267,8 +1267,6 @@
         'browser/net/ssl_config_service_manager_pref.cc',
         'browser/net/timed_cache.cc',
         'browser/net/timed_cache.h',
-        'browser/net/transport_security_persister.cc',
-        'browser/net/transport_security_persister.h',
         'browser/net/url_info.cc',
         'browser/net/url_info.h',
         'browser/network_time/navigation_time_helper.cc',

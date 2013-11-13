@@ -1052,7 +1052,6 @@
         'browser/net/spdyproxy/http_auth_handler_spdyproxy_unittest.cc',
         'browser/net/sqlite_server_bound_cert_store_unittest.cc',
         'browser/net/ssl_config_service_manager_pref_unittest.cc',
-        'browser/net/transport_security_persister_unittest.cc',
         'browser/net/url_info_unittest.cc',
         'browser/network_time/navigation_time_helper_unittest.cc',
         'browser/network_time/network_time_tracker_unittest.cc',

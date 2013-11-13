@@ -35,7 +35,6 @@ class ManagedModeURLFilter;
 class Profile;
 class ProtocolHandlerRegistry;
 class SigninNamesOnIOThread;
-class TransportSecurityPersister;
 
 namespace chrome_browser_net {
 class LoadTimeStats;
@@ -57,6 +56,7 @@ class ServerBoundCertService;
 class ProxyConfigService;
 class ProxyService;
 class SSLConfigService;
+class TransportSecurityPersister;
 class TransportSecurityState;
 class URLRequestJobFactoryImpl;
 }  // namespace net
@@ -508,7 +508,7 @@ class ProfileIOData {
   mutable DesktopNotificationService* notification_service_;
 #endif
 
-  mutable scoped_ptr<TransportSecurityPersister>
+  mutable scoped_ptr<net::TransportSecurityPersister>
       transport_security_persister_;
 
   // These are only valid in between LazyInitialize() and their accessor being

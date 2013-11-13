@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/transport_security_persister.h"
+#include "net/http/transport_security_persister.h"
 
 #include <map>
 #include <string>
@@ -15,29 +15,28 @@
 #include "net/http/transport_security_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using net::TransportSecurityPersister;
 using net::TransportSecurityState;
 
 class TransportSecurityPersisterTest : public testing::Test {
  public:
-  TransportSecurityPersisterTest()
-      : message_loop_(base::MessageLoop::TYPE_IO) {
+  TransportSecurityPersisterTest() {
   }
 
   virtual ~TransportSecurityPersisterTest() {
-    message_loop_.RunUntilIdle();
+    base::MessageLoopForIO::current()->RunUntilIdle();
   }
 
   virtual void SetUp() OVERRIDE {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     persister_.reset(new TransportSecurityPersister(
-        &state_, temp_dir_.path(), message_loop_.message_loop_proxy(), false));
+        &state_,
+        temp_dir_.path(),
+        base::MessageLoopForIO::current()->message_loop_proxy(),
+        false));
   }
 
  protected:
-  // Ordering is important here. If member variables are not destroyed in the
-  // right order, then DCHECKs will fail all over the place.
-  base::MessageLoop message_loop_;
-
   base::ScopedTempDir temp_dir_;
   TransportSecurityState state_;
   scoped_ptr<TransportSecurityPersister> persister_;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/net/transport_security_persister.h"
+#include "net/http/transport_security_persister.h"
 
 #include "base/base64.h"
 #include "base/bind.h"
@@ -89,6 +89,9 @@ std::string LoadState(const base::FilePath& path) {
 }
 
 }  // namespace
+
+
+namespace net {
 
 TransportSecurityPersister::TransportSecurityPersister(
     TransportSecurityState* state,
@@ -308,3 +311,5 @@ void TransportSecurityPersister::CompleteLoad(const std::string& state) {
   if (dirty)
     StateIsDirty(transport_security_state_);
 }
+
+}  // namespace net

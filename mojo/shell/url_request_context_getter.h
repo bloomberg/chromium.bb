@@ -9,6 +9,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/message_loop/message_loop_proxy.h"
 #include "net/base/network_delegate.h"
+#include "net/http/transport_security_persister.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_context_storage.h"
 
@@ -40,6 +41,7 @@ class URLRequestContextGetter : public net::URLRequestContextGetter {
   scoped_ptr<net::NetLog> net_log_;
   scoped_ptr<net::URLRequestContextStorage> storage_;
   scoped_ptr<net::URLRequestContext> url_request_context_;
+  scoped_ptr<net::TransportSecurityPersister> transport_security_persister_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestContextGetter);
 };

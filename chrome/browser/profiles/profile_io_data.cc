@@ -44,7 +44,6 @@
 #include "chrome/browser/net/load_time_stats.h"
 #include "chrome/browser/net/proxy_service_factory.h"
 #include "chrome/browser/net/resource_prefetch_predictor_observer.h"
-#include "chrome/browser/net/transport_security_persister.h"
 #include "chrome/browser/notifications/desktop_notification_service_factory.h"
 #include "chrome/browser/policy/url_blacklist_manager.h"
 #include "chrome/browser/predictors/resource_prefetch_predictor.h"
@@ -68,6 +67,7 @@
 #include "net/cookies/cookie_monster.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/http/http_util.h"
+#include "net/http/transport_security_persister.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/proxy/proxy_script_fetcher_impl.h"
 #include "net/proxy/proxy_service.h"
@@ -820,7 +820,7 @@ void ProfileIOData::Init(content::ProtocolHandlerMap* protocol_handlers) const {
 
   transport_security_state_.reset(new net::TransportSecurityState());
   transport_security_persister_.reset(
-      new TransportSecurityPersister(
+      new net::TransportSecurityPersister(
           transport_security_state_.get(),
           profile_params_->path,
           BrowserThread::GetMessageLoopProxyForThread(BrowserThread::FILE),

@@ -22,6 +22,12 @@
 namespace mojo {
 namespace shell {
 
+namespace {
+
+const bool kTransportSecurityPersisterIsReadOnly = false;
+
+}  // namespace
+
 URLRequestContextGetter::URLRequestContextGetter(
     base::FilePath base_path,
     base::SingleThreadTaskRunner* network_task_runner,
@@ -55,7 +61,18 @@ net::URLRequestContext* URLRequestContextGetter::GetURLRequestContext() {
     storage_->set_proxy_service(net::ProxyService::CreateDirect());
     storage_->set_ssl_config_service(new net::SSLConfigServiceDefaults);
     storage_->set_cert_verifier(net::CertVerifier::CreateDefault());
-    storage_->set_transport_security_state(new net::TransportSecurityState());
+
+    net::TransportSecurityState* transport_security_state =
+        new net::TransportSecurityState();
+    storage_->set_transport_security_state(transport_security_state);
+
+    transport_security_persister_.reset(
+        new net::TransportSecurityPersister(
+            transport_security_state,
+            base_path_,
+            file_task_runner_,
+            kTransportSecurityPersisterIsReadOnly));
+
     storage_->set_server_bound_cert_service(new net::ServerBoundCertService(
         new net::DefaultServerBoundCertStore(NULL), file_task_runner_));
     storage_->set_http_server_properties(
