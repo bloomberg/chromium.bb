@@ -46,7 +46,7 @@ void DispatchOnLaunchedEventImpl(const std::string& extension_id,
       extensions::ExtensionSystem::Get(profile);
   scoped_ptr<Event> event(new Event(app_runtime::OnLaunched::kEventName,
                                     args.Pass()));
-  event->restrict_to_profile = profile;
+  event->restrict_to_browser_context = profile;
   system->event_router()->DispatchEventWithLazyListener(extension_id,
                                                         event.Pass());
   system->extension_service()->extension_prefs()->SetLastLaunchTime(
@@ -68,7 +68,7 @@ void AppEventRouter::DispatchOnRestartedEvent(Profile* profile,
   scoped_ptr<base::ListValue> arguments(new base::ListValue());
   scoped_ptr<Event> event(new Event(app_runtime::OnRestarted::kEventName,
                                     arguments.Pass()));
-  event->restrict_to_profile = profile;
+  event->restrict_to_browser_context = profile;
   extensions::ExtensionSystem::Get(profile)->event_router()->
       DispatchEventToExtension(extension->id(), event.Pass());
 }

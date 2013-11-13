@@ -178,6 +178,6 @@ void AshKeyboardControllerProxy::SetUpdateInputType(ui::TextInputType type) {
   scoped_ptr<extensions::Event> event(new extensions::Event(
       virtual_keyboard_private::OnTextInputBoxFocused::kEventName,
       event_args.Pass()));
-  event->restrict_to_profile = profile;
+  event->restrict_to_browser_context = profile;
   router->DispatchEventToExtension(kVirtualKeyboardExtensionID, event.Pass());
 }

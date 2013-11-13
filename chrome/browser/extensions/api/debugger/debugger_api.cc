@@ -397,7 +397,7 @@ void ExtensionDevToolsClientHost::SendDetachedEvent() {
                                                     detach_reason_));
   scoped_ptr<extensions::Event> event(new extensions::Event(
       OnDetach::kEventName, args.Pass()));
-  event->restrict_to_profile = profile_;
+  event->restrict_to_browser_context = profile_;
   extensions::ExtensionSystem::Get(profile_)->event_router()->
       DispatchEventToExtension(extension_id_, event.Pass());
 }
@@ -447,7 +447,7 @@ void ExtensionDevToolsClientHost::DispatchOnInspectorFrontend(
     scoped_ptr<ListValue> args(OnEvent::Create(debuggee_, method_name, params));
     scoped_ptr<extensions::Event> event(new extensions::Event(
         OnEvent::kEventName, args.Pass()));
-    event->restrict_to_profile = profile_;
+    event->restrict_to_browser_context = profile_;
     extensions::ExtensionSystem::Get(profile_)->event_router()->
         DispatchEventToExtension(extension_id_, event.Pass());
   } else {

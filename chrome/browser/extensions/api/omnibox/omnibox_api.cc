@@ -101,7 +101,7 @@ void ExtensionOmniboxEventRouter::OnInputStarted(
   scoped_ptr<Event> event(new Event(
       omnibox::OnInputStarted::kEventName,
       make_scoped_ptr(new base::ListValue())));
-  event->restrict_to_profile = profile;
+  event->restrict_to_browser_context = profile;
   ExtensionSystem::Get(profile)->event_router()->
       DispatchEventToExtension(extension_id, event.Pass());
 }
@@ -121,7 +121,7 @@ bool ExtensionOmniboxEventRouter::OnInputChanged(
 
   scoped_ptr<Event> event(new Event(omnibox::OnInputChanged::kEventName,
                                     args.Pass()));
-  event->restrict_to_profile = profile;
+  event->restrict_to_browser_context = profile;
   ExtensionSystem::Get(profile)->event_router()->
       DispatchEventToExtension(extension_id, event.Pass());
   return true;
@@ -154,7 +154,7 @@ void ExtensionOmniboxEventRouter::OnInputEntered(
 
   scoped_ptr<Event> event(new Event(omnibox::OnInputEntered::kEventName,
                                     args.Pass()));
-  event->restrict_to_profile = profile;
+  event->restrict_to_browser_context = profile;
   ExtensionSystem::Get(profile)->event_router()->
       DispatchEventToExtension(extension_id, event.Pass());
 
@@ -170,7 +170,7 @@ void ExtensionOmniboxEventRouter::OnInputCancelled(
   scoped_ptr<Event> event(new Event(
       omnibox::OnInputCancelled::kEventName,
       make_scoped_ptr(new base::ListValue())));
-  event->restrict_to_profile = profile;
+  event->restrict_to_browser_context = profile;
   ExtensionSystem::Get(profile)->event_router()->
       DispatchEventToExtension(extension_id, event.Pass());
 }

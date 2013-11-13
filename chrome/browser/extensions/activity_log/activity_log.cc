@@ -337,8 +337,8 @@ ActivityLogFactory::ActivityLogFactory()
 }
 
 // static
-ActivityLog* ActivityLog::GetInstance(Profile* profile) {
-  return ActivityLogFactory::GetForProfile(profile);
+ActivityLog* ActivityLog::GetInstance(content::BrowserContext* context) {
+  return ActivityLogFactory::GetForBrowserContext(context);
 }
 
 ActivityLogFactory::~ActivityLogFactory() {

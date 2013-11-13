@@ -5,11 +5,15 @@
 #include "chrome/browser/extensions/chrome_extensions_browser_client.h"
 
 #include "base/command_line.h"
+#include "base/version.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
+#include "chrome/common/pref_names.h"
 
 namespace extensions {
 
@@ -26,6 +30,12 @@ ChromeExtensionsBrowserClient::~ChromeExtensionsBrowserClient() {}
 
 bool ChromeExtensionsBrowserClient::IsShuttingDown() {
   return g_browser_process->IsShuttingDown();
+}
+
+bool ChromeExtensionsBrowserClient::IsValidContext(
+    content::BrowserContext* context) {
+  Profile* profile = static_cast<Profile*>(context);
+  return g_browser_process->profile_manager()->IsValidProfile(profile);
 }
 
 bool ChromeExtensionsBrowserClient::IsSameContext(
@@ -68,6 +78,36 @@ bool ChromeExtensionsBrowserClient::DeferLoadingBackgroundHosts(
   return chrome::GetTotalBrowserCountForProfile(profile) == 0 &&
          CommandLine::ForCurrentProcess()->HasSwitch(switches::kShowAppList);
 #endif
+}
+
+bool ChromeExtensionsBrowserClient::DidVersionUpdate(
+    ExtensionPrefs* extension_prefs) {
+  // Unit tests may not provide prefs; assume everything is up-to-date.
+  if (!extension_prefs)
+    return false;
+
+  // If we're inside a browser test, then assume prefs are all up-to-date.
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kTestType))
+    return false;
+
+  PrefService* pref_service = extension_prefs->pref_service();
+  base::Version last_version;
+  if (pref_service->HasPrefPath(prefs::kExtensionsLastChromeVersion)) {
+    std::string last_version_str =
+        pref_service->GetString(prefs::kExtensionsLastChromeVersion);
+    last_version = base::Version(last_version_str);
+  }
+
+  chrome::VersionInfo current_version_info;
+  std::string current_version = current_version_info.Version();
+  pref_service->SetString(prefs::kExtensionsLastChromeVersion,
+                          current_version);
+
+  // If there was no version string in prefs, assume we're out of date.
+  if (!last_version.IsValid())
+    return true;
+
+  return last_version.IsOlderThan(current_version);
 }
 
 // static

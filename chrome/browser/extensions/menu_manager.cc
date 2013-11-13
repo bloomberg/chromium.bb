@@ -679,14 +679,14 @@ void MenuManager::ExecuteCommand(Profile* profile,
     scoped_ptr<Event> event(new Event(
         event_names::kOnContextMenus,
         scoped_ptr<base::ListValue>(args->DeepCopy())));
-    event->restrict_to_profile = profile;
+    event->restrict_to_browser_context = profile;
     event->user_gesture = EventRouter::USER_GESTURE_ENABLED;
     event_router->DispatchEventToExtension(item->extension_id(), event.Pass());
   }
   {
     scoped_ptr<Event> event(new Event(context_menus::OnClicked::kEventName,
                                       args.Pass()));
-    event->restrict_to_profile = profile;
+    event->restrict_to_browser_context = profile;
     event->user_gesture = EventRouter::USER_GESTURE_ENABLED;
     event_router->DispatchEventToExtension(item->extension_id(), event.Pass());
   }

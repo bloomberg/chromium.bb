@@ -29,6 +29,10 @@
 class Profile;
 using content::BrowserThread;
 
+namespace content {
+class BrowserContext;
+}
+
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
@@ -52,7 +56,7 @@ class ActivityLog : public BrowserContextKeyedService,
 
   // ActivityLog is a singleton, so don't instantiate it with the constructor;
   // use GetInstance instead.
-  static ActivityLog* GetInstance(Profile* profile);
+  static ActivityLog* GetInstance(content::BrowserContext* context);
 
   // Add/remove observer: the activityLogPrivate API only listens when the
   // ActivityLog extension is registered for an event.
@@ -206,9 +210,9 @@ class ActivityLog : public BrowserContextKeyedService,
 // each profile.
 class ActivityLogFactory : public BrowserContextKeyedServiceFactory {
  public:
-  static ActivityLog* GetForProfile(Profile* profile) {
+  static ActivityLog* GetForBrowserContext(content::BrowserContext* context) {
     return static_cast<ActivityLog*>(
-        GetInstance()->GetServiceForBrowserContext(profile, true));
+        GetInstance()->GetServiceForBrowserContext(context, true));
   }
 
   static ActivityLogFactory* GetInstance();

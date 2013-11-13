@@ -9,6 +9,7 @@
 #include "chrome/browser/extensions/event_router.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync_file_system/sync_event_observer.h"
 #include "chrome/browser/sync_file_system/sync_file_system_service.h"
 #include "chrome/browser/sync_file_system/syncable_file_system_util.h"
@@ -110,7 +111,7 @@ void ExtensionSyncEventObserver::BroadcastOrDispatchEvent(
   DCHECK(event_router);
 
   scoped_ptr<Event> event(new Event(event_name, values.Pass()));
-  event->restrict_to_profile = profile_;
+  event->restrict_to_browser_context = profile_;
 
   // No app_origin, broadcast to all listening extensions for this event name.
   if (broadcast_mode) {

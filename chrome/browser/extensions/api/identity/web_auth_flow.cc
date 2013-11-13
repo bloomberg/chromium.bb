@@ -90,7 +90,7 @@ void WebAuthFlow::Start() {
 
   scoped_ptr<Event> event(
       new Event(identity_private::OnWebFlowRequest::kEventName, args.Pass()));
-  event->restrict_to_profile = profile_;
+  event->restrict_to_browser_context = profile_;
   ExtensionSystem* system = ExtensionSystem::Get(profile_);
 
   extensions::ComponentLoader* component_loader =

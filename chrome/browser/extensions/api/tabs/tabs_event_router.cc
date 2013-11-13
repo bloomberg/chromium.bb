@@ -39,7 +39,7 @@ namespace tabs = api::tabs;
 
 void WillDispatchTabUpdatedEvent(WebContents* contents,
                                  const DictionaryValue* changed_properties,
-                                 Profile* profile,
+                                 content::BrowserContext* context,
                                  const Extension* extension,
                                  ListValue* event_args) {
   // Overwrite the second argument with the appropriate properties dictionary,
@@ -177,7 +177,7 @@ void TabsEventRouter::OnBrowserSetLastActive(Browser* browser) {
 
 static void WillDispatchTabCreatedEvent(WebContents* contents,
                                         bool active,
-                                        Profile* profile,
+                                        content::BrowserContext* context,
                                         const Extension* extension,
                                         ListValue* event_args) {
   DictionaryValue* tab_value = ExtensionTabUtil::CreateTabValue(
@@ -193,7 +193,7 @@ void TabsEventRouter::TabCreatedAt(WebContents* contents,
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   scoped_ptr<ListValue> args(new ListValue);
   scoped_ptr<Event> event(new Event(tabs::OnCreated::kEventName, args.Pass()));
-  event->restrict_to_profile = profile;
+  event->restrict_to_browser_context = profile;
   event->user_gesture = EventRouter::USER_GESTURE_NOT_ENABLED;
   event->will_dispatch_callback =
       base::Bind(&WillDispatchTabCreatedEvent, contents, active);
@@ -420,7 +420,7 @@ void TabsEventRouter::DispatchEvent(
     return;
 
   scoped_ptr<Event> event(new Event(event_name, args.Pass()));
-  event->restrict_to_profile = profile;
+  event->restrict_to_browser_context = profile;
   event->user_gesture = user_gesture;
   ExtensionSystem::Get(profile)->event_router()->BroadcastEvent(event.Pass());
 }
@@ -461,7 +461,7 @@ void TabsEventRouter::DispatchTabUpdatedEvent(
 
   scoped_ptr<Event> event(
       new Event(tabs::OnUpdated::kEventName, args_base.Pass()));
-  event->restrict_to_profile = profile;
+  event->restrict_to_browser_context = profile;
   event->user_gesture = EventRouter::USER_GESTURE_NOT_ENABLED;
   event->will_dispatch_callback =
       base::Bind(&WillDispatchTabUpdatedEvent,

@@ -121,7 +121,7 @@ void EventRouterForwarder::CallEventRouter(
     return;
 
   scoped_ptr<Event> event(new Event(event_name, event_args.Pass()));
-  event->restrict_to_profile = restrict_to_profile;
+  event->restrict_to_browser_context = restrict_to_profile;
   event->event_url = event_url;
   if (extension_id.empty()) {
     ExtensionSystem::Get(profile)->event_router()->BroadcastEvent(event.Pass());

@@ -101,7 +101,7 @@ void PermissionsUpdater::DispatchEvent(
       PackPermissionSet(changed_permissions);
   value->Append(permissions->ToValue().release());
   scoped_ptr<Event> event(new Event(event_name, value.Pass()));
-  event->restrict_to_profile = profile_;
+  event->restrict_to_browser_context = profile_;
   ExtensionSystem::Get(profile_)->event_router()->
       DispatchEventToExtension(extension_id, event.Pass());
 }

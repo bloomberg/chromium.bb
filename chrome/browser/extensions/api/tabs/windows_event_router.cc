@@ -21,6 +21,8 @@
 #include "ui/base/x/active_window_watcher_x.h"
 #endif
 
+using content::BrowserContext;
+
 namespace extensions {
 
 namespace windows = extensions::api::windows;
@@ -106,19 +108,19 @@ void WindowsEventRouter::Observe(
 #endif
 }
 
-static void WillDispatchWindowFocusedEvent(Profile* new_active_profile,
+static void WillDispatchWindowFocusedEvent(BrowserContext* new_active_context,
                                            int window_id,
-                                           Profile* profile,
+                                           BrowserContext* context,
                                            const Extension* extension,
                                            base::ListValue* event_args) {
   // When switching between windows in the default and incognito profiles,
   // dispatch WINDOW_ID_NONE to extensions whose profile lost focus that
   // can't see the new focused window across the incognito boundary.
   // See crbug.com/46610.
-  if (new_active_profile && new_active_profile != profile &&
-      !extension_util::CanCrossIncognito(
-          extension,
-          extensions::ExtensionSystem::Get(profile)->extension_service())) {
+  if (new_active_context && new_active_context != context &&
+      !extension_util::CanCrossIncognito(extension,
+                                         ExtensionSystem::GetForBrowserContext(
+                                             context)->extension_service())) {
     event_args->Clear();
     event_args->Append(new base::FundamentalValue(
         extension_misc::kUnknownWindowId));
@@ -149,7 +151,9 @@ void WindowsEventRouter::OnActiveWindowChanged(
   scoped_ptr<Event> event(new Event(windows::OnFocusChanged::kEventName,
                                     make_scoped_ptr(new base::ListValue())));
   event->will_dispatch_callback =
-      base::Bind(&WillDispatchWindowFocusedEvent, window_profile, window_id);
+      base::Bind(&WillDispatchWindowFocusedEvent,
+                 static_cast<BrowserContext*>(window_profile),
+                 window_id);
   ExtensionSystem::Get(profile_)->event_router()->BroadcastEvent(event.Pass());
 }
 
@@ -157,7 +161,7 @@ void WindowsEventRouter::DispatchEvent(const std::string& event_name,
                                       Profile* profile,
                                       scoped_ptr<base::ListValue> args) {
   scoped_ptr<Event> event(new Event(event_name, args.Pass()));
-  event->restrict_to_profile = profile;
+  event->restrict_to_browser_context = profile;
   ExtensionSystem::Get(profile)->event_router()->BroadcastEvent(event.Pass());
 }
 

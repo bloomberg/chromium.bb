@@ -23,6 +23,7 @@
 #include "ipc/ipc_sender.h"
 
 class GURL;
+class PrefService;
 class Profile;
 
 namespace content {
@@ -74,7 +75,10 @@ class EventRouter : public content::NotificationObserver,
                             UserGestureState user_gesture,
                             const EventFilteringInfo& info);
 
-  EventRouter(Profile* profile, ExtensionPrefs* extension_prefs);
+  // An EventRouter is shared between |browser_context| and its associated
+  // incognito context. |extension_prefs| may be NULL in tests.
+  EventRouter(content::BrowserContext* browser_context,
+              ExtensionPrefs* extension_prefs);
   virtual ~EventRouter();
 
   // Add or remove the process/extension pair as a listener for |event_name|.
@@ -151,7 +155,8 @@ class EventRouter : public content::NotificationObserver,
                                      scoped_ptr<Event> event);
 
   // Record the Event Ack from the renderer. (One less event in-flight.)
-  void OnEventAck(Profile* profile, const std::string& extension_id);
+  void OnEventAck(content::BrowserContext* context,
+                  const std::string& extension_id);
 
  private:
   // The extension and process that contains the event listener for a given
@@ -214,25 +219,21 @@ class EventRouter : public content::NotificationObserver,
                               content::RenderProcessHost* process,
                               const linked_ptr<Event>& event);
 
-  // Returns false when the event is scoped to a profile and the listening
-  // extension does not have access to events from that profile. Also fills
+  // Returns false when the event is scoped to a context and the listening
+  // extension does not have access to events from that context. Also fills
   // |event_args| with the proper arguments to send, which may differ if
   // the event crosses the incognito boundary.
-  bool CanDispatchEventToProfile(Profile* profile,
-                                 const Extension* extension,
-                                 const linked_ptr<Event>& event);
+  bool CanDispatchEventToBrowserContext(content::BrowserContext* context,
+                                        const Extension* extension,
+                                        const linked_ptr<Event>& event);
 
   // Possibly loads given extension's background page in preparation to
   // dispatch an event.  Returns true if the event was queued for subsequent
   // dispatch, false otherwise.
   bool MaybeLoadLazyBackgroundPageToDispatchEvent(
-      Profile* profile,
+      content::BrowserContext* context,
       const Extension* extension,
       const linked_ptr<Event>& event);
-
-  // Returns true if registered events are from this version of Chrome. Else,
-  // clear them, and return false.
-  bool CheckRegisteredEventsUpToDate();
 
   // Adds a filter to an event.
   void AddFilterToEvent(const std::string& event_name,
@@ -251,7 +252,7 @@ class EventRouter : public content::NotificationObserver,
 
   // Track of the number of dispatched events that have not yet sent an
   // ACK from the renderer.
-  void IncrementInFlightEvents(Profile* profile,
+  void IncrementInFlightEvents(content::BrowserContext* context,
                                const Extension* extension);
 
   // static
@@ -266,7 +267,10 @@ class EventRouter : public content::NotificationObserver,
   virtual void OnListenerAdded(const EventListener* listener) OVERRIDE;
   virtual void OnListenerRemoved(const EventListener* listener) OVERRIDE;
 
-  Profile* profile_;
+  content::BrowserContext* browser_context_;
+
+  // The ExtensionPrefs associated with |profile_|. May be NULL in tests.
+  ExtensionPrefs* extension_prefs_;
 
   content::NotificationRegistrar registrar_;
 
@@ -275,16 +279,18 @@ class EventRouter : public content::NotificationObserver,
   typedef base::hash_map<std::string, Observer*> ObserverMap;
   ObserverMap observers_;
 
-  // True if we should dispatch the event signalling that Chrome was updated
-  // upon loading an extension.
+  // True if we should dispatch the chrome.runtime.onInstalled event with
+  // reason "chrome_update" upon loading each extension.
+  // TODO(jamescook): Move this to RuntimeEventRouter.
   bool dispatch_chrome_updated_event_;
 
   DISALLOW_COPY_AND_ASSIGN(EventRouter);
 };
 
 struct Event {
-  typedef base::Callback<
-      void(Profile*, const Extension*, base::ListValue*)> WillDispatchCallback;
+  typedef base::Callback<void(content::BrowserContext*,
+                              const Extension*,
+                              base::ListValue*)> WillDispatchCallback;
 
   // The event to dispatch.
   std::string event_name;
@@ -292,10 +298,10 @@ struct Event {
   // Arguments to send to the event listener.
   scoped_ptr<base::ListValue> event_args;
 
-  // If non-NULL, then the event will not be sent to other profiles unless the
-  // extension has permission (e.g. incognito tab update -> normal profile only
-  // works if extension is allowed incognito access).
-  Profile* restrict_to_profile;
+  // If non-NULL, then the event will not be sent to other BrowserContexts
+  // unless the extension has permission (e.g. incognito tab update -> normal
+  // tab only works if extension is allowed incognito access).
+  content::BrowserContext* restrict_to_browser_context;
 
   // If not empty, the event is only sent to extensions with host permissions
   // for this url.
@@ -319,11 +325,11 @@ struct Event {
 
   Event(const std::string& event_name,
         scoped_ptr<base::ListValue> event_args,
-        Profile* restrict_to_profile);
+        content::BrowserContext* restrict_to_browser_context);
 
   Event(const std::string& event_name,
         scoped_ptr<base::ListValue> event_args,
-        Profile* restrict_to_profile,
+        content::BrowserContext* restrict_to_browser_context,
         const GURL& event_url,
         EventRouter::UserGestureState user_gesture,
         const EventFilteringInfo& info);

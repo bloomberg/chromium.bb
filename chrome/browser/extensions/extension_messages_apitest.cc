@@ -64,7 +64,7 @@ class MessageSender : public content::NotificationObserver {
                                       Profile* profile,
                                       GURL event_url) {
     scoped_ptr<Event> event(new Event("test.onMessage", event_args.Pass()));
-    event->restrict_to_profile = profile;
+    event->restrict_to_browser_context = profile;
     event->event_url = event_url;
     return event.Pass();
   }

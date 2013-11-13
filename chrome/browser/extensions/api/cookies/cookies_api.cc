@@ -140,7 +140,7 @@ void CookiesEventRouter::DispatchEvent(
   if (!router)
     return;
   scoped_ptr<Event> event(new Event(event_name, event_args.Pass()));
-  event->restrict_to_profile = profile;
+  event->restrict_to_browser_context = profile;
   event->event_url = cookie_domain;
   router->BroadcastEvent(event.Pass());
 }

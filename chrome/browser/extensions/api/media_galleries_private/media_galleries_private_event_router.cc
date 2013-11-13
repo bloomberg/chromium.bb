@@ -138,7 +138,7 @@ void MediaGalleriesPrivateEventRouter::DispatchEvent(
     return;
   scoped_ptr<extensions::Event> event(new extensions::Event(
       event_name, event_args.Pass()));
-  event->restrict_to_profile = profile_;
+  event->restrict_to_browser_context = profile_;
   router->BroadcastEvent(event.Pass());
 }
 

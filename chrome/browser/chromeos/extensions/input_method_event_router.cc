@@ -44,7 +44,7 @@ void ExtensionInputMethodEventRouter::InputMethodChanged(
   // The router will only send the event to extensions that are listening.
   scoped_ptr<extensions::Event> event(new extensions::Event(
       extensions::event_names::kOnInputMethodChanged, args.Pass()));
-  event->restrict_to_profile = profile;
+  event->restrict_to_browser_context = profile;
   extensions::ExtensionSystem::Get(profile)->event_router()->
       BroadcastEvent(event.Pass());
 }

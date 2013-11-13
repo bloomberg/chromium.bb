@@ -142,11 +142,11 @@ void RuntimeEventRouter::DispatchOnStartupEvent(
 
 // static
 void RuntimeEventRouter::DispatchOnInstalledEvent(
-    Profile* profile,
+    content::BrowserContext* context,
     const std::string& extension_id,
     const Version& old_version,
     bool chrome_updated) {
-  ExtensionSystem* system = ExtensionSystem::Get(profile);
+  ExtensionSystem* system = ExtensionSystem::GetForBrowserContext(context);
   if (!system)
     return;
 

@@ -143,7 +143,7 @@ void MDnsAPI::OnDnsSdEvent(const std::string& service_type,
   scoped_ptr<base::ListValue> results = mdns::OnServiceList::Create(args);
   scoped_ptr<Event> event(
       new Event(mdns::OnServiceList::kEventName, results.Pass()));
-  event->restrict_to_profile = profile_;
+  event->restrict_to_browser_context = profile_;
   event->filter_info.SetServiceType(service_type);
 
   // TODO(justinlin): To avoid having listeners without filters getting all

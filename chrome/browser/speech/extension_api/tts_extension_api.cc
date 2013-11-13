@@ -123,7 +123,7 @@ void TtsExtensionEventHandler::OnTtsEvent(Utterance* utterance,
 
   scoped_ptr<extensions::Event> event(
       new extensions::Event(events::kOnEvent, arguments.Pass()));
-  event->restrict_to_profile = utterance->profile();
+  event->restrict_to_browser_context = utterance->profile();
   event->event_url = utterance->src_url();
   extensions::ExtensionSystem::Get(utterance->profile())->event_router()->
       DispatchEventToExtension(utterance->src_extension_id(), event.Pass());

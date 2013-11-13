@@ -86,7 +86,7 @@ void SignedInDevicesChangeObserver::OnDeviceInfoChange() {
       api::signed_in_devices::OnDeviceInfoChange::kEventName,
       result.Pass()));
 
-  event->restrict_to_profile = profile_;
+  event->restrict_to_browser_context = profile_;
 
   ExtensionSystem::Get(profile_)->event_router()->DispatchEventToExtension(
       extension_id_, event.Pass());

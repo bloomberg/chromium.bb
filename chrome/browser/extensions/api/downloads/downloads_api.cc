@@ -893,12 +893,12 @@ std::map<DownloadManager*, ManagerDestructionObserver*>*
 void OnDeterminingFilenameWillDispatchCallback(
     bool* any_determiners,
     ExtensionDownloadsEventRouterData* data,
-    Profile* profile,
+    content::BrowserContext* context,
     const extensions::Extension* extension,
     base::ListValue* event_args) {
   *any_determiners = true;
-  base::Time installed = extensions::ExtensionSystem::Get(
-      profile)->extension_service()->extension_prefs()->
+  base::Time installed = extensions::ExtensionSystem::GetForBrowserContext(
+      context)->extension_service()->extension_prefs()->
     GetInstallTime(extension->id());
   data->AddPendingDeterminer(extension->id(), installed);
 }
@@ -1875,7 +1875,7 @@ void ExtensionDownloadsEventRouter::DispatchEvent(
   // chrome://downloads works. The "restrict_to_profile" mechanism does not
   // anticipate this, so it does not automatically prevent sharing off-record
   // events with on-record extension renderers.
-  event->restrict_to_profile =
+  event->restrict_to_browser_context =
       (include_incognito && !profile_->IsOffTheRecord()) ? NULL : profile_;
   event->will_dispatch_callback = will_dispatch_callback;
   extensions::ExtensionSystem::Get(profile_)->event_router()->

@@ -11,6 +11,8 @@ class BrowserContext;
 
 namespace extensions {
 
+class ExtensionPrefs;
+
 // Interface to allow the extensions module to make browser-process-specific
 // queries of the embedder. Should be Set() once in the browser process.
 //
@@ -23,6 +25,9 @@ class ExtensionsBrowserClient {
 
   // Returns true if the embedder has started shutting down.
   virtual bool IsShuttingDown() = 0;
+
+  // Returns true if the |context| is known to the embedder.
+  virtual bool IsValidContext(content::BrowserContext* context) = 0;
 
   // Returns true if the BrowserContexts could be considered equivalent, for
   // example, if one is an off-the-record context owned by the other.
@@ -47,6 +52,12 @@ class ExtensionsBrowserClient {
   // Returns true if loading background pages should be deferred.
   virtual bool DeferLoadingBackgroundHosts(
       content::BrowserContext* context) const = 0;
+
+  // Returns true if the client version has updated since the last run. Called
+  // once each time the extensions system is loaded per browser_context. The
+  // implementation may wish to use |extension_prefs| to record the current
+  // version for later comparison. |extension_prefs| may be NULL in tests.
+  virtual bool DidVersionUpdate(ExtensionPrefs* extension_prefs) = 0;
 
   // Returns the single instance of |this|.
   static ExtensionsBrowserClient* Get();

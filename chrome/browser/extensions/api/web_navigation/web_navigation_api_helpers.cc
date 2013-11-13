@@ -47,7 +47,7 @@ void DispatchEvent(content::BrowserContext* browser_context,
   Profile* profile = Profile::FromBrowserContext(browser_context);
   if (profile && extensions::ExtensionSystem::Get(profile)->event_router()) {
     scoped_ptr<Event> event(new Event(event_name, args.Pass()));
-    event->restrict_to_profile = profile;
+    event->restrict_to_browser_context = profile;
     event->filter_info = info;
     ExtensionSystem::Get(profile)->event_router()->BroadcastEvent(event.Pass());
   }

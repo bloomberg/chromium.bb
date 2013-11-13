@@ -455,7 +455,7 @@ class MockEventRouter : public EventRouter {
                void(const std::string& extension_id,
                     const std::string& event_name,
                     base::ListValue* event_args,
-                    Profile* source_profile,
+                    content::BrowserContext* source_context,
                     const GURL& event_url,
                     EventRouter::UserGestureState state));
 
@@ -464,7 +464,7 @@ class MockEventRouter : public EventRouter {
     DispatchEventToExtensionMock(extension_id,
                                  event->event_name,
                                  event->event_args.release(),
-                                 event->restrict_to_profile,
+                                 event->restrict_to_browser_context,
                                  event->event_url,
                                  event->user_gesture);
   }

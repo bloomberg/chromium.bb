@@ -71,7 +71,7 @@ static void DispatchEventToExtension(Profile* profile,
                                      scoped_ptr<base::ListValue> args) {
   scoped_ptr<extensions::Event> event(new extensions::Event(
       event_name, args.Pass()));
-  event->restrict_to_profile = profile;
+  event->restrict_to_browser_context = profile;
   extensions::ExtensionSystem::Get(profile)->event_router()->
       DispatchEventToExtension(extension_id, event.Pass());
 }

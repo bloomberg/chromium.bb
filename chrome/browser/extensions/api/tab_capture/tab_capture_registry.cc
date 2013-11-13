@@ -330,7 +330,7 @@ void TabCaptureRegistry::DispatchStatusChangeEvent(
   args->Append(info->ToValue().release());
   scoped_ptr<Event> event(new Event(tab_capture::OnStatusChanged::kEventName,
       args.Pass()));
-  event->restrict_to_profile = profile_;
+  event->restrict_to_browser_context = profile_;
 
   router->DispatchEventToExtension(request->extension_id, event.Pass());
 }

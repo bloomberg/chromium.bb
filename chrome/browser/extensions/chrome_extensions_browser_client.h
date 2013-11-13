@@ -31,6 +31,7 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
 
   // BrowserClient overrides:
   virtual bool IsShuttingDown() OVERRIDE;
+  virtual bool IsValidContext(content::BrowserContext* context) OVERRIDE;
   virtual bool IsSameContext(content::BrowserContext* first,
                              content::BrowserContext* second) OVERRIDE;
   virtual bool HasOffTheRecordContext(
@@ -41,6 +42,7 @@ class ChromeExtensionsBrowserClient : public ExtensionsBrowserClient {
       content::BrowserContext* context) OVERRIDE;
   virtual bool DeferLoadingBackgroundHosts(
       content::BrowserContext* context) const OVERRIDE;
+  virtual bool DidVersionUpdate(ExtensionPrefs* extension_prefs) OVERRIDE;
 
   // Get the LazyInstance for ChromeBrowserClient.
   static ChromeExtensionsBrowserClient* GetInstance();
