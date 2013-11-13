@@ -875,6 +875,11 @@
           # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
           'msvs_disabled_warnings': [ 4267, ],
         }],
+        ['OS=="win" and win_use_allocator_shim==1', {
+          'dependencies': [
+            '../base/allocator/allocator.gyp:allocator',
+          ],
+        }],
         ['use_x11!=1', {
           'sources/': [
             ['exclude', 'display/display_change_observer_chromeos_unittest.cc'],
