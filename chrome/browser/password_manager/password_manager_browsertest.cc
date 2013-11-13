@@ -391,3 +391,19 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, PromptForSubmitFromIframe) {
   observer.Wait();
   EXPECT_TRUE(observer.infobar_shown());
 }
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
+                       PromptForInputElementWithoutName) {
+  // Check that the prompt is shown for forms where input elements miss the
+  // "name" attribute but the "id" is present.
+  NavigateToFile("/password/password_form.html");
+
+  NavigationObserver observer(WebContents());
+  std::string fill_and_submit =
+      "document.getElementById('username_field_no_name').value = 'temp';"
+      "document.getElementById('password_field_no_name').value = 'random';"
+      "document.getElementById('input_submit_button_no_name').click()";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  observer.Wait();
+  EXPECT_TRUE(observer.infobar_shown());
+}
