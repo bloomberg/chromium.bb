@@ -468,7 +468,7 @@ Node* FocusController::findFocusableNode(FocusDirection direction, FocusNavigati
 Node* FocusController::findNodeWithExactTabIndex(Node* start, int tabIndex, FocusDirection direction)
 {
     // Search is inclusive of start
-    for (Node* node = start; node; node = direction == FocusDirectionForward ? NodeTraversal::next(*node) : NodeTraversal::previous(node)) {
+    for (Node* node = start; node; node = direction == FocusDirectionForward ? NodeTraversal::next(*node) : NodeTraversal::previous(*node)) {
         if (shouldVisit(node) && adjustedTabIndex(node) == tabIndex)
             return node;
     }
@@ -495,7 +495,7 @@ static Node* previousNodeWithLowerTabIndex(Node* start, int tabIndex)
     // Search is inclusive of start
     int winningTabIndex = 0;
     Node* winner = 0;
-    for (Node* node = start; node; node = NodeTraversal::previous(node)) {
+    for (Node* node = start; node; node = NodeTraversal::previous(*node)) {
         int currentTabIndex = adjustedTabIndex(node);
         if ((shouldVisit(node) || isNonKeyboardFocusableShadowHost(node)) && currentTabIndex < tabIndex && currentTabIndex > winningTabIndex) {
             winner = node;
@@ -549,7 +549,7 @@ Node* FocusController::previousFocusableNode(FocusNavigationScope scope, Node* s
     Node* startingNode;
     int startingTabIndex;
     if (start) {
-        startingNode = NodeTraversal::previous(start);
+        startingNode = NodeTraversal::previous(*start);
         startingTabIndex = adjustedTabIndex(start);
     } else {
         startingNode = last;
@@ -558,7 +558,7 @@ Node* FocusController::previousFocusableNode(FocusNavigationScope scope, Node* s
 
     // However, if a node is excluded from the normal tabbing cycle, the previous focusable node is determined by tree order
     if (startingTabIndex < 0) {
-        for (Node* node = startingNode; node; node = NodeTraversal::previous(node)) {
+        for (Node* node = startingNode; node; node = NodeTraversal::previous(*node)) {
             if (shouldVisit(node) && adjustedTabIndex(node) >= 0)
                 return node;
         }

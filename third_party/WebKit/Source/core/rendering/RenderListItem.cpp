@@ -150,7 +150,8 @@ static RenderListItem* nextListItem(const Node* listNode, const RenderListItem* 
 static RenderListItem* previousListItem(const Node* listNode, const RenderListItem* item)
 {
     Node* current = item->node();
-    for (current = ElementTraversal::previousIncludingPseudo(current, listNode); current; current = ElementTraversal::previousIncludingPseudo(current, listNode)) {
+    ASSERT(current);
+    for (current = ElementTraversal::previousIncludingPseudo(*current, listNode); current; current = ElementTraversal::previousIncludingPseudo(*current, listNode)) {
         RenderObject* renderer = current->renderer();
         if (!renderer || (renderer && !renderer->isListItem()))
             continue;

@@ -1115,18 +1115,18 @@ VisiblePosition startOfParagraph(const VisiblePosition& c, EditingBoundaryCrossi
             break;
         if (boundaryCrossingRule == CanSkipOverEditingBoundary) {
             while (n && n->rendererIsEditable() != startNode->rendererIsEditable())
-                n = NodeTraversal::previousPostOrder(n, startBlock);
+                n = NodeTraversal::previousPostOrder(*n, startBlock);
             if (!n || !n->isDescendantOf(highestRoot))
                 break;
         }
         RenderObject* r = n->renderer();
         if (!r) {
-            n = NodeTraversal::previousPostOrder(n, startBlock);
+            n = NodeTraversal::previousPostOrder(*n, startBlock);
             continue;
         }
         RenderStyle* style = r->style();
         if (style->visibility() != VISIBLE) {
-            n = NodeTraversal::previousPostOrder(n, startBlock);
+            n = NodeTraversal::previousPostOrder(*n, startBlock);
             continue;
         }
 
@@ -1149,13 +1149,14 @@ VisiblePosition startOfParagraph(const VisiblePosition& c, EditingBoundaryCrossi
             }
             node = n;
             offset = 0;
-            n = NodeTraversal::previousPostOrder(n, startBlock);
+            n = NodeTraversal::previousPostOrder(*n, startBlock);
         } else if (editingIgnoresContent(n) || isRenderedTable(n)) {
             node = n;
             type = Position::PositionIsBeforeAnchor;
-            n = n->previousSibling() ? n->previousSibling() : NodeTraversal::previousPostOrder(n, startBlock);
-        } else
-            n = NodeTraversal::previousPostOrder(n, startBlock);
+            n = n->previousSibling() ? n->previousSibling() : NodeTraversal::previousPostOrder(*n, startBlock);
+        } else {
+            n = NodeTraversal::previousPostOrder(*n, startBlock);
+        }
     }
 
     if (type == Position::PositionIsOffsetInAnchor) {

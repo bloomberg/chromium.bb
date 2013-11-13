@@ -346,7 +346,7 @@ inline void ReplaceSelectionCommand::InsertedNodes::willRemoveNode(Node& node)
     } else if (m_firstNodeInserted == node)
         m_firstNodeInserted = NodeTraversal::nextSkippingChildren(m_firstNodeInserted.get());
     else if (m_lastNodeInserted == node)
-        m_lastNodeInserted = NodeTraversal::previousSkippingChildren(m_lastNodeInserted.get());
+        m_lastNodeInserted = NodeTraversal::previousSkippingChildren(*m_lastNodeInserted);
 }
 
 inline void ReplaceSelectionCommand::InsertedNodes::didReplaceNode(Node& node, Node& newNode)

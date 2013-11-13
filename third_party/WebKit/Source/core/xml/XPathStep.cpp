@@ -327,7 +327,7 @@ void Step::nodesInAxis(Node* context, NodeSet& nodes) const
 
             Node* n = context;
             while (ContainerNode* parent = n->parentNode()) {
-                for (n = NodeTraversal::previous(n); n != parent; n = NodeTraversal::previous(n))
+                for (n = NodeTraversal::previous(*n); n != parent; n = NodeTraversal::previous(*n))
                     if (nodeMatches(n, PrecedingAxis, m_nodeTest))
                         nodes.append(n);
                 n = parent;

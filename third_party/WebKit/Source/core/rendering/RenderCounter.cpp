@@ -58,9 +58,10 @@ static CounterMaps& counterMaps()
 static RenderObject* previousInPreOrder(const RenderObject* object)
 {
     Element* self = toElement(object->node());
-    Element* previous = ElementTraversal::previousIncludingPseudo(self);
+    ASSERT(self);
+    Element* previous = ElementTraversal::previousIncludingPseudo(*self);
     while (previous && !previous->renderer())
-        previous = ElementTraversal::previousIncludingPseudo(previous);
+        previous = ElementTraversal::previousIncludingPseudo(*previous);
     return previous ? previous->renderer() : 0;
 }
 
@@ -69,9 +70,10 @@ static RenderObject* previousInPreOrder(const RenderObject* object)
 static RenderObject* previousSiblingOrParent(const RenderObject* object)
 {
     Element* self = toElement(object->node());
-    Element* previous = ElementTraversal::pseudoAwarePreviousSibling(self);
+    ASSERT(self);
+    Element* previous = ElementTraversal::pseudoAwarePreviousSibling(*self);
     while (previous && !previous->renderer())
-        previous = ElementTraversal::pseudoAwarePreviousSibling(previous);
+        previous = ElementTraversal::pseudoAwarePreviousSibling(*previous);
     if (previous)
         return previous->renderer();
     previous = self->parentElement();

@@ -1115,7 +1115,7 @@ void ApplyStyleCommand::removeInlineStyle(EditingStyle* style, const Position &s
         }
         if (node->isHTMLElement() && nodeFullySelected(node.get(), start, end)) {
             RefPtr<HTMLElement> elem = toHTMLElement(node);
-            RefPtr<Node> prev = NodeTraversal::previousPostOrder(elem.get());
+            RefPtr<Node> prev = NodeTraversal::previousPostOrder(*elem);
             RefPtr<Node> next = NodeTraversal::next(*elem);
             RefPtr<EditingStyle> styleToPushDown;
             RefPtr<Node> childNode;

@@ -255,7 +255,7 @@ template <> inline bool isMatchingElement(const ClassNodeList* nodeList, Element
 
 static Node* previousNode(Node& base, Node& previous, bool onlyIncludeDirectChildren)
 {
-    return onlyIncludeDirectChildren ? previous.previousSibling() : NodeTraversal::previous(&previous, &base);
+    return onlyIncludeDirectChildren ? previous.previousSibling() : NodeTraversal::previous(previous, &base);
 }
 
 static inline Node* lastDescendent(Node& node)
