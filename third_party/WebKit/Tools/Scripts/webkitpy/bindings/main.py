@@ -120,7 +120,7 @@ class BindingsTests(object):
                '--include', '.',
                '--outputDir', output_directory,
                '--interfaceDependenciesFile', self.interface_dependencies_filename,
-               '--idlAttributesFile', 'bindings/scripts/IDLAttributes.txt',
+               '--idlAttributesFile', 'bindings/IDLExtendedAttributes.txt',
                idl_file]
         try:
             output = self.run_command(cmd)
@@ -135,7 +135,7 @@ class BindingsTests(object):
         cmd = ['python',
                'bindings/scripts/unstable/idl_compiler.py',
                '--output-dir', output_directory,
-               '--idl-attributes-file', 'bindings/scripts/IDLAttributes.txt',
+               '--idl-attributes-file', 'bindings/IDLExtendedAttributes.txt',
                '--include', '.',
                '--interface-dependencies-file',
                self.interface_dependencies_filename,

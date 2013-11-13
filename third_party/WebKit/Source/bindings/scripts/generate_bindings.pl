@@ -300,7 +300,10 @@ sub checkIfIDLAttributesExists
     }
     if ($error) {
         die "IDL ATTRIBUTE CHECKER ERROR: $error
-If you want to add a new IDL attribute, you need to add it to bindings/scripts/IDLAttributes.txt and add explanations to the Blink IDL document (http://chromium.org/blink/webidl).
+If you want to add a new IDL extended attribute, please add it to:
+    bindings/IDLExtendedAttributes.txt
+and add an explanation to the Blink IDL documentation at:
+    http://www.chromium.org/blink/webidl/blink-idl-extended-attributes
 ";
     }
 }

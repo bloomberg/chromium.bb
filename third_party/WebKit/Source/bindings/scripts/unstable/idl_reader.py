@@ -71,7 +71,10 @@ class IdlReader:
             except idl_validator.IDLInvalidExtendedAttributeError as error:
                 raise idl_validator.IDLInvalidExtendedAttributeError("""IDL ATTRIBUTE ERROR in file %s:
     %s
-    If you want to add a new IDL extended attribute, please add it to bindings/scripts/IDLAttributes.txt and add an explanation to the Blink IDL document at http://chromium.org/blink/webidl
+If you want to add a new IDL extended attribute, please add it to
+    bindings/IDLExtendedAttributes.txt
+and add an explanation to the Blink IDL documentation at:
+    http://www.chromium.org/blink/webidl/blink-idl-extended-attributes
     """ % (idl_filename, str(error)))
 
         return definitions

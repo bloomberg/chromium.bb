@@ -218,7 +218,7 @@
           'scripts/idl_parser.pm',
           'scripts/idl_serializer.pm',
           '../build/scripts/preprocessor.pm',
-          'scripts/IDLAttributes.txt',
+          'IDLExtendedAttributes.txt',
           # FIXME: If the dependency structure changes, we rebuild all files,
           # since we're not computing dependencies file-by-file in the build.
           '<(SHARED_INTERMEDIATE_DIR)/blink/InterfaceDependencies.txt',
@@ -262,7 +262,7 @@
           '--outputDir',
           '<(bindings_output_dir)',
           '--idlAttributesFile',
-          'scripts/IDLAttributes.txt',
+          'IDLExtendedAttributes.txt',
           '<@(generator_include_dirs)',
           '<@(extra_blink_generator_include_dirs)',
           '--interfaceDependenciesFile',
