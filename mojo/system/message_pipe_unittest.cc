@@ -214,7 +214,7 @@ TEST(MessagePipeTest, CloseWithQueuedIncomingMessages) {
   uint32_t buffer_size;
 
   // Write some messages from port 1 (to port 0).
-  for (size_t i = 0; i < 5; i++) {
+  for (int32_t i = 0; i < 5; i++) {
     buffer[0] = i;
     EXPECT_EQ(MOJO_RESULT_OK,
               mp->WriteMessage(1,

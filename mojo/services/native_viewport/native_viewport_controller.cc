@@ -4,6 +4,8 @@
 
 #include "mojo/services/native_viewport/native_viewport_controller.h"
 
+#include <limits>
+
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/stringprintf.h"
@@ -70,8 +72,9 @@ void NativeViewportController::OnDestroyed() {
 }
 
 void NativeViewportController::SendString(const std::string& string) {
-  WriteMessage(pipe_, string.c_str(), string.size()+1, NULL, 0,
-                MOJO_WRITE_MESSAGE_FLAG_NONE);
+  DCHECK_LT(string.size() + 1, std::numeric_limits<uint32_t>::max());
+  WriteMessage(pipe_, string.c_str(), static_cast<uint32_t>(string.size() + 1),
+               NULL, 0, MOJO_WRITE_MESSAGE_FLAG_NONE);
 }
 
 }  // namespace services

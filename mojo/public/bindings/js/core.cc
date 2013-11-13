@@ -60,7 +60,7 @@ void WaitMany(const v8::FunctionCallbackInfo<v8::Value>& info) {
     return args.ThrowTypeError("Arrays must have the same length.");
 
   args.Return(mojo::WaitMany(handles.data(), flags.data(),
-                             handles.size(), deadline));
+                             static_cast<uint32_t>(handles.size()), deadline));
 }
 
 void CreateMessagePipe(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -92,8 +92,11 @@ void WriteMessage(const v8::FunctionCallbackInfo<v8::Value>& info) {
     return args.ThrowError();
   }
 
-  args.Return(mojo::WriteMessage(handle, buffer.bytes(), buffer.num_bytes(),
-                                 handles.data(), handles.size(), flags));
+  args.Return(mojo::WriteMessage(handle, buffer.bytes(),
+                                 static_cast<uint32_t>(buffer.num_bytes()),
+                                 handles.data(),
+                                 static_cast<uint32_t>(handles.size()),
+                                 flags));
 }
 
 void ReadMessage(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -111,7 +114,7 @@ void ReadMessage(const v8::FunctionCallbackInfo<v8::Value>& info) {
     return args.ThrowError();
   }
 
-  uint32_t num_bytes = buffer.num_bytes();
+  uint32_t num_bytes = static_cast<uint32_t>(buffer.num_bytes());
   std::vector<mojo::Handle> handles(num_handles);
   MojoResult result = mojo::ReadMessage(handle, buffer.bytes(), &num_bytes,
                                         handles.data(), &num_handles, flags);

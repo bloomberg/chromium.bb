@@ -57,7 +57,7 @@ class BindingsConnectorTest : public testing::Test {
     size_t payload_size = strlen(text) + 1;  // Plus null terminator.
     size_t num_bytes = sizeof(MessageHeader) + payload_size;
     message->data = static_cast<MessageData*>(malloc(num_bytes));
-    message->data->header.num_bytes = num_bytes;
+    message->data->header.num_bytes = static_cast<uint32_t>(num_bytes);
     message->data->header.name = 1;
     memcpy(message->data->payload, text, payload_size);
   }
