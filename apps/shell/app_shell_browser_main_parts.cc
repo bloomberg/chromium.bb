@@ -50,7 +50,7 @@ void AppShellBrowserMainParts::PreMainMessageLoopRun() {
   // window with a WebView just to ensure that the content module is properly
   // initialized.
   ShowWebViewWindow(browser_context_.get(),
-                    minimal_shell_->root_window());
+                    minimal_shell_->root_window()->window());
 }
 
 bool AppShellBrowserMainParts::MainMessageLoopRun(int* result_code)  {
