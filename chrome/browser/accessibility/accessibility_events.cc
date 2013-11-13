@@ -282,3 +282,12 @@ void AccessibilitySliderInfo::SerializeToDict(DictionaryValue *dict) const {
   AccessibilityControlInfo::SerializeToDict(dict);
   dict->SetString(keys::kStringValueKey, value_);
 }
+
+AccessibilityAlertInfo::AccessibilityAlertInfo(Profile* profile,
+                                               const std::string& name)
+    : AccessibilityControlInfo(profile, name) {
+}
+
+const char* AccessibilityAlertInfo::type() const {
+  return keys::kTypeAlert;
+}

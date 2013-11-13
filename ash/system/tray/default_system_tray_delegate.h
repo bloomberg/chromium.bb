@@ -86,7 +86,6 @@ class ASH_EXPORT DefaultSystemTrayDelegate : public SystemTrayDelegate {
   virtual bool GetSessionLengthLimit(
       base::TimeDelta* session_length_limit) OVERRIDE;
   virtual int GetSystemTrayMenuWidth() OVERRIDE;
-  virtual void MaybeSpeak(const std::string& utterance) const OVERRIDE;
 
  private:
   bool bluetooth_enabled_;

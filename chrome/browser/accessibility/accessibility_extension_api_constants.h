@@ -34,7 +34,8 @@ extern const char kOnTextChanged[];
 extern const char kOnMenuOpened[];
 extern const char kOnMenuClosed[];
 
-// Types of controls that can receive accessibility events
+// Types of controls that can receive accessibility events.
+extern const char kTypeAlert[];
 extern const char kTypeButton[];
 extern const char kTypeCheckbox[];
 extern const char kTypeComboBox[];

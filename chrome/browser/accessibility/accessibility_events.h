@@ -344,4 +344,12 @@ class AccessibilitySliderInfo : public AccessibilityControlInfo {
   std::string value_;
 };
 
+// Accessibility information about an alert passed to onControlAction event.
+class AccessibilityAlertInfo : public AccessibilityControlInfo {
+ public:
+  AccessibilityAlertInfo(Profile* profile, const std::string& name);
+
+  virtual const char* type() const OVERRIDE;
+};
+
 #endif  // CHROME_BROWSER_ACCESSIBILITY_ACCESSIBILITY_EVENTS_H_

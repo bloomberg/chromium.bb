@@ -102,8 +102,6 @@ void UserImageScreen::OnCameraPresenceCheckDone() {
 void UserImageScreen::HideCurtain() {
   if (actor_)
     actor_->HideCurtain();
-  AccessibilityManager::Get()->MaybeSpeak(
-      l10n_util::GetStringUTF8(IDS_OPTIONS_CHANGE_PICTURE_DIALOG_TEXT));
 }
 
 

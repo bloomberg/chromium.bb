@@ -20,6 +20,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/version.h"
+#include "chrome/browser/accessibility/accessibility_events.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
@@ -59,6 +60,7 @@
 #include "net/http/http_transaction_factory.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "ui/base/accessibility/accessibility_types.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/widget/widget.h"
 
@@ -424,7 +426,7 @@ void ExistingUserController::PerformLogin(
   } else {
     login_performer_->PerformLogin(user_context, auth_mode);
   }
-  AccessibilityManager::Get()->MaybeSpeak(
+  SendAccessibilityAlert(
       l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_LOGIN_SIGNING_IN));
 }
 
@@ -442,7 +444,7 @@ void ExistingUserController::LoginAsRetailModeUser() {
   login_performer_.reset(new LoginPerformer(this));
   is_login_in_progress_ = true;
   login_performer_->LoginRetailMode();
-  AccessibilityManager::Get()->MaybeSpeak(
+  SendAccessibilityAlert(
       l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_LOGIN_SIGNIN_DEMOUSER));
 }
 
@@ -495,7 +497,7 @@ void ExistingUserController::LoginAsGuest() {
   login_performer_.reset(new LoginPerformer(this));
   is_login_in_progress_ = true;
   login_performer_->LoginOffTheRecord();
-  AccessibilityManager::Get()->MaybeSpeak(
+  SendAccessibilityAlert(
       l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_LOGIN_SIGNIN_OFFRECORD));
 }
 
@@ -551,7 +553,7 @@ void ExistingUserController::LoginAsPublicAccount(
   login_performer_.reset(new LoginPerformer(this));
   is_login_in_progress_ = true;
   login_performer_->LoginAsPublicAccount(username);
-  AccessibilityManager::Get()->MaybeSpeak(
+  SendAccessibilityAlert(
       l10n_util::GetStringUTF8(IDS_CHROMEOS_ACC_LOGIN_SIGNIN_PUBLIC_ACCOUNT));
 }
 
@@ -1100,6 +1102,13 @@ void ExistingUserController::ShowGaiaPasswordChanged(
 
   login_display_->SetUIEnabled(true);
   login_display_->ShowGaiaPasswordChanged(username);
+}
+
+void ExistingUserController::SendAccessibilityAlert(
+    const std::string& alert_text) {
+  AccessibilityAlertInfo event(ProfileHelper::GetSigninProfile(), alert_text);
+  SendControlAccessibilityNotification(
+      ui::AccessibilityTypes::EVENT_VALUE_CHANGED, &event);
 }
 
 }  // namespace chromeos

@@ -185,7 +185,6 @@ void WebUILoginDisplay::ShowError(int error_msg_id,
 
   webui_handler_->ShowError(login_attempts, error_text, help_link,
                             help_topic_id);
-  AccessibilityManager::Get()->MaybeSpeak(error_text);
 }
 
 void WebUILoginDisplay::ShowErrorScreen(LoginDisplay::SigninError error_id) {

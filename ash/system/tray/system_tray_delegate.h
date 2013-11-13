@@ -308,9 +308,6 @@ class ASH_EXPORT SystemTrayDelegate {
 
   // Get the system tray menu size in pixels (dependent on the language).
   virtual int GetSystemTrayMenuWidth() = 0;
-
-  // Speaks the given text if spoken feedback is enabled.
-  virtual void MaybeSpeak(const std::string& utterance) const = 0;
 };
 
 }  // namespace ash

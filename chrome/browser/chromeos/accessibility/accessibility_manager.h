@@ -91,12 +91,6 @@ class AccessibilityManager : public content::NotificationObserver,
   // Toggles whether Chrome OS spoken feedback is on or off.
   void ToggleSpokenFeedback(ash::AccessibilityNotificationVisibility notify);
 
-  // Speaks the specified string.
-  void Speak(const std::string& text);
-
-  // Speaks the given text if the accessibility pref is already set.
-  void MaybeSpeak(const std::string& text);
-
   // Enables or disables the high contrast mode for Chrome.
   void EnableHighContrast(bool enabled);
 

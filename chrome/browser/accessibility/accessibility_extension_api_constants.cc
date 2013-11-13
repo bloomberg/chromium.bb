@@ -23,6 +23,7 @@ const char kMessageKey[] = "message";
 const char kStringValueKey[] = "details.stringValue";
 
 // Types of controls that can receive accessibility events.
+const char kTypeAlert[] = "alert";
 const char kTypeButton[] = "button";
 const char kTypeCheckbox[] = "checkbox";
 const char kTypeComboBox[] = "combobox";

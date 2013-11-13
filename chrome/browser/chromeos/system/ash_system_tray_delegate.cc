@@ -842,10 +842,6 @@ class SystemTrayDelegate : public ash::SystemTrayDelegate,
         IDS_SYSTEM_TRAY_MENU_BUBBLE_WIDTH_PIXELS);
   }
 
-  virtual void MaybeSpeak(const std::string& utterance) const OVERRIDE {
-    AccessibilityManager::Get()->MaybeSpeak(utterance);
-  }
-
  private:
   ash::SystemTray* GetPrimarySystemTray() {
     return ash::Shell::GetInstance()->GetPrimarySystemTray();

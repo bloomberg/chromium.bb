@@ -505,25 +505,6 @@ void AccessibilityManager::ToggleSpokenFeedback(
   EnableSpokenFeedback(!IsSpokenFeedbackEnabled(), notify);
 }
 
-void AccessibilityManager::Speak(const std::string& text) {
-  UtteranceContinuousParameters params;
-
-  Utterance* utterance = new Utterance(profile_);
-  utterance->set_text(text);
-  utterance->set_lang(g_browser_process->GetApplicationLocale());
-  utterance->set_continuous_parameters(params);
-  utterance->set_can_enqueue(false);
-  utterance->set_options(new DictionaryValue());
-
-  TtsController* controller = TtsController::GetInstance();
-  controller->SpeakOrEnqueue(utterance);
-}
-
-void AccessibilityManager::MaybeSpeak(const std::string& text) {
-  if (IsSpokenFeedbackEnabled())
-    Speak(text);
-}
-
 void AccessibilityManager::EnableHighContrast(bool enabled) {
   if (!profile_)
     return;
