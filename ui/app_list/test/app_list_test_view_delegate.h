@@ -48,6 +48,7 @@ class AppListTestViewDelegate  : public AppListViewDelegate {
   virtual void OpenSettings() OVERRIDE {}
   virtual void OpenHelp() OVERRIDE {}
   virtual void OpenFeedback() OVERRIDE {}
+  virtual void ToggleSpeechRecognition() OVERRIDE {}
   virtual void ShowForProfileByPath(
       const base::FilePath& profile_path) OVERRIDE {};
   virtual content::WebContents* GetStartPageContents() OVERRIDE;

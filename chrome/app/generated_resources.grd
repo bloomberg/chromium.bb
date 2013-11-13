@@ -15391,6 +15391,12 @@ Do you accept?
     <message name="IDS_APP_LIST_CONTACT_VIDEO_TOOLTIP" desc="Tooltip text for the 'video' icon displayed next to a contact search result.">
       Start Hangout
     </message>
+    <message name="IDS_APP_LIST_START_SPEECH_RECOGNITION" desc="Tooltip text for the button to start the speech recognition.">
+      Start speech recognition
+    </message>
+    <message name="IDS_APP_LIST_STOP_SPEECH_RECOGNITION" desc="Tooltip text for the button to stop the speech recognition.">
+      Stop speech recognition
+    </message>
     <if expr="not pp_ifdef('use_titlecase')">
       <message name="IDS_APP_LIST_CONTEXT_MENU_NEW_TAB" desc="Title text for the 'open new' context menu item of an app list item configured to open in a tab">
         New tab

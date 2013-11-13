@@ -67,6 +67,10 @@ void StartPageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "search",
       base::Bind(&StartPageHandler::HandleSearch, base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "setSpeechRecognitionState",
+      base::Bind(&StartPageHandler::HandleSpeechRecognition,
+                 base::Unretained(this)));
 }
 
 void StartPageHandler::OnRecommendedAppsChanged() {
@@ -126,6 +130,15 @@ void StartPageHandler::HandleSearch(const base::ListValue* args) {
   CHECK(args->GetString(0, &query));
 
   StartPageService::Get(Profile::FromWebUI(web_ui()))->OnSearch(query);
+}
+
+void StartPageHandler::HandleSpeechRecognition(const base::ListValue* args) {
+  bool recognizing;
+  CHECK(args->GetBoolean(0, &recognizing));
+
+  StartPageService* service =
+      StartPageService::Get(Profile::FromWebUI(web_ui()));
+  service->OnSpeechRecognitionStateChanged(recognizing);
 }
 
 }  // namespace app_list

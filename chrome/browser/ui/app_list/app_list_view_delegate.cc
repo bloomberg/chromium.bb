@@ -271,6 +271,13 @@ void AppListViewDelegate::OpenFeedback() {
                            chrome::kAppLauncherCategoryTag);
 }
 
+void AppListViewDelegate::ToggleSpeechRecognition() {
+  app_list::StartPageService* service =
+      app_list::StartPageService::Get(profile_);
+  if (service)
+    service->ToggleSpeechRecognition();
+}
+
 void AppListViewDelegate::ShowForProfileByPath(
     const base::FilePath& profile_path) {
   controller_->ShowForProfileByPath(profile_path);
@@ -278,6 +285,10 @@ void AppListViewDelegate::ShowForProfileByPath(
 
 void AppListViewDelegate::OnSearch(const base::string16& query) {
   model_->search_box()->SetText(query);
+}
+
+void AppListViewDelegate::OnSpeechRecognitionStateChanged(bool recognizing) {
+  model_->search_box()->SetSpeechRecognitionButtonState(recognizing);
 }
 
 void AppListViewDelegate::Observe(

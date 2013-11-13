@@ -66,19 +66,34 @@ cr.define('appList.startPage', function() {
     $('start-page').setRecommendedApps(apps);
   }
 
+  /**
+   * Invoked when the app-list bubble is shown.
+   */
   function onAppListShown() {
     speechManager.start();
   }
 
+  /**
+   * Invoked when the app-list bubble is hidden.
+   */
   function onAppListHidden() {
     speechManager.stop();
+  }
+
+  /**
+   * Invoked when the user explicitly wants to toggle the speech recognition
+   * state.
+   */
+  function toggleSpeechRecognition() {
+    speechManager.toggleSpeechRecognition();
   }
 
   return {
     initialize: initialize,
     setRecommendedApps: setRecommendedApps,
     onAppListShown: onAppListShown,
-    onAppListHidden: onAppListHidden
+    onAppListHidden: onAppListHidden,
+    toggleSpeechRecognition: toggleSpeechRecognition
   };
 });
 

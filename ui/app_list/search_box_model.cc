@@ -9,6 +9,20 @@
 
 namespace app_list {
 
+SearchBoxModel::ToggleButtonProperty::ToggleButtonProperty(
+    const gfx::ImageSkia& icon,
+    const gfx::ImageSkia& toggled_icon,
+    const base::string16& tooltip,
+    const base::string16& toggled_tooltip)
+    : icon(icon),
+      toggled_icon(toggled_icon),
+      tooltip(tooltip),
+      toggled_tooltip(toggled_tooltip) {
+}
+
+SearchBoxModel::ToggleButtonProperty::~ToggleButtonProperty() {
+}
+
 SearchBoxModel::SearchBoxModel() {
 }
 
@@ -18,6 +32,20 @@ SearchBoxModel::~SearchBoxModel() {
 void SearchBoxModel::SetIcon(const gfx::ImageSkia& icon) {
   icon_ = icon;
   FOR_EACH_OBSERVER(SearchBoxModelObserver, observers_, IconChanged());
+}
+
+void SearchBoxModel::SetSpeechRecognitionButton(
+    scoped_ptr<SearchBoxModel::ToggleButtonProperty> speech_button) {
+  speech_button_ = speech_button.Pass();
+  FOR_EACH_OBSERVER(SearchBoxModelObserver,
+                    observers_,
+                    SpeechRecognitionButtonPropChanged());
+}
+
+void SearchBoxModel::SetSpeechRecognitionButtonState(bool toggled) {
+  FOR_EACH_OBSERVER(SearchBoxModelObserver,
+                    observers_,
+                    SetSpeechRecognitionButtonState(toggled));
 }
 
 void SearchBoxModel::SetHintText(const base::string16& hint_text) {

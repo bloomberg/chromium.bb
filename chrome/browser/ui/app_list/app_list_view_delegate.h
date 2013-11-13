@@ -80,6 +80,7 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
   virtual void OpenSettings() OVERRIDE;
   virtual void OpenHelp() OVERRIDE;
   virtual void OpenFeedback() OVERRIDE;
+  virtual void ToggleSpeechRecognition() OVERRIDE;
   virtual void ShowForProfileByPath(
       const base::FilePath& profile_path) OVERRIDE;
   virtual content::WebContents* GetStartPageContents() OVERRIDE;
@@ -87,6 +88,7 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
 
   // Overridden from app_list::StartPageObserver:
   virtual void OnSearch(const base::string16& query) OVERRIDE;
+  virtual void OnSpeechRecognitionStateChanged(bool recognizing) OVERRIDE;
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,

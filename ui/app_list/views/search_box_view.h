@@ -8,6 +8,7 @@
 #include <string>
 
 #include "ui/app_list/search_box_model_observer.h"
+#include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/menu_button_listener.h"
 #include "ui/views/controls/textfield/textfield_controller.h"
 #include "ui/views/view.h"
@@ -32,6 +33,7 @@ class SearchBoxViewDelegate;
 // contents and selection model of the Textfield.
 class SearchBoxView : public views::View,
                       public views::TextfieldController,
+                      public views::ButtonListener,
                       public views::MenuButtonListener,
                       public SearchBoxModelObserver {
  public:
@@ -68,12 +70,18 @@ class SearchBoxView : public views::View,
   virtual bool HandleKeyEvent(views::Textfield* sender,
                               const ui::KeyEvent& key_event) OVERRIDE;
 
+  // Overridden from views::ButtonListener:
+  virtual void ButtonPressed(views::Button* sender,
+                             const ui::Event& event) OVERRIDE;
+
   // Overridden from views::MenuButtonListener:
   virtual void OnMenuButtonClicked(View* source,
                                    const gfx::Point& point) OVERRIDE;
 
   // Overridden from SearchBoxModelObserver:
   virtual void IconChanged() OVERRIDE;
+  virtual void SpeechRecognitionButtonPropChanged() OVERRIDE;
+  virtual void SetSpeechRecognitionButtonState(bool toggled) OVERRIDE;
   virtual void HintTextChanged() OVERRIDE;
   virtual void SelectionModelChanged() OVERRIDE;
   virtual void TextChanged() OVERRIDE;
@@ -85,6 +93,7 @@ class SearchBoxView : public views::View,
   scoped_ptr<AppListMenuViews> menu_;
 
   views::ImageView* icon_view_;  // Owned by views hierarchy.
+  views::ToggleImageButton* speech_button_;  // Owned by views hierarchy.
   views::MenuButton* menu_button_;  // Owned by views hierarchy.
   views::Textfield* search_box_;  // Owned by views hierarchy.
   views::View* contents_view_;  // Owned by views hierarchy.

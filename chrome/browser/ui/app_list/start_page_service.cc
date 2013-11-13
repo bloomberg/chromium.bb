@@ -149,8 +149,19 @@ void StartPageService::RemoveObserver(StartPageObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
+void StartPageService::ToggleSpeechRecognition() {
+  contents_->GetWebUI()->CallJavascriptFunction(
+      "appList.startPage.toggleSpeechRecognition");
+}
+
 void StartPageService::OnSearch(const base::string16& query) {
   FOR_EACH_OBSERVER(StartPageObserver, observers_, OnSearch(query));
+}
+
+void StartPageService::OnSpeechRecognitionStateChanged(bool recognizing) {
+  FOR_EACH_OBSERVER(StartPageObserver,
+                    observers_,
+                    OnSpeechRecognitionStateChanged(recognizing));
 }
 
 void StartPageService::Shutdown() {

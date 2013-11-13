@@ -323,6 +323,10 @@ class ExampleAppListViewDelegate : public app_list::AppListViewDelegate {
     // Nothing needs to be done.
   }
 
+  virtual void ToggleSpeechRecognition() OVERRIDE {
+    NOTIMPLEMENTED();
+  }
+
   virtual void ShowForProfileByPath(
       const base::FilePath& profile_path) OVERRIDE {
     // Nothing needs to be done.

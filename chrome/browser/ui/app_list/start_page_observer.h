@@ -14,6 +14,10 @@ class StartPageObserver {
   // Invoked when a search query happens from the start page.
   virtual void OnSearch(const base::string16& query) = 0;
 
+  // Invoked when the online speech recognition state is changed. |recognizing|
+  // is the new state and true when the speech recognition is running currently.
+  virtual void OnSpeechRecognitionStateChanged(bool recognizing) = 0;
+
  protected:
   virtual ~StartPageObserver() {}
 };

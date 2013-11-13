@@ -100,6 +100,7 @@ cr.define('speech', function() {
    */
   SpeechManager.prototype.onSpeechRecognitionStarted = function() {
     this.setState_(SpeechState.RECOGNIZING);
+    chrome.send('setSpeechRecognitionState', [true]);
   };
 
   /**
@@ -108,6 +109,7 @@ cr.define('speech', function() {
   SpeechManager.prototype.onSpeechRecognitionEnded = function() {
     // Restarts the hotword recognition.
     this.audioManager_.start();
+    chrome.send('setSpeechRecognitionState', [false]);
   };
 
   /**
@@ -146,6 +148,18 @@ cr.define('speech', function() {
     this.audioManager_.stop();
     this.speechRecognitionManager_.stop();
     this.setState_(SpeechState.READY);
+  };
+
+  /**
+   * Toggles the current state of speech recognition.
+   */
+  SpeechManager.prototype.toggleSpeechRecognition = function() {
+    if (this.state == SpeechState.RECOGNIZING) {
+      this.speechRecognitionManager_.stop();
+    } else {
+      this.audioManager_.stop();
+      this.speechRecognitionManager_.start();
+    }
   };
 
   return {

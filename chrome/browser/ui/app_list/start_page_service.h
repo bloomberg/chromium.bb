@@ -38,9 +38,12 @@ class StartPageService : public BrowserContextKeyedService {
   void AddObserver(StartPageObserver* observer);
   void RemoveObserver(StartPageObserver* observer);
 
+  void ToggleSpeechRecognition();
+
   content::WebContents* contents() { return contents_.get(); }
   RecommendedApps* recommended_apps() { return recommended_apps_.get(); }
   void OnSearch(const base::string16& query);
+  void OnSpeechRecognitionStateChanged(bool recognizing);
 
  private:
   // A BrowserContextKeyedServiceFactory for this service.

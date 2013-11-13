@@ -22,6 +22,7 @@
 #include "chrome/browser/ui/app_list/search/people/people_provider.h"
 #include "chrome/browser/ui/app_list/search/search_provider.h"
 #include "chrome/browser/ui/app_list/search/webstore/webstore_provider.h"
+#include "chrome/browser/ui/app_list/start_page_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/user_metrics.h"
 #include "grit/generated_resources.h"
@@ -53,10 +54,23 @@ SearchController::SearchController(Profile* profile,
 SearchController::~SearchController() {}
 
 void SearchController::Init() {
+  ui::ResourceBundle& bundle = ui::ResourceBundle::GetSharedInstance();
   search_box_->SetHintText(
       l10n_util::GetStringUTF16(IDS_SEARCH_BOX_HINT));
-  search_box_->SetIcon(*ui::ResourceBundle::GetSharedInstance().
-      GetImageSkiaNamed(IDR_OMNIBOX_SEARCH));
+  search_box_->SetIcon(*bundle.GetImageSkiaNamed(IDR_OMNIBOX_SEARCH));
+  if (StartPageService::Get(profile_)) {
+    search_box_->SetSpeechRecognitionButton(
+        scoped_ptr<SearchBoxModel::ToggleButtonProperty>(
+            new SearchBoxModel::ToggleButtonProperty(
+                // Right now provides the same image for both state.
+                // TODO(mukai, jennschen): Replace them by the real images.
+                *bundle.GetImageSkiaNamed(IDR_OMNIBOX_MIC_SEARCH),
+                *bundle.GetImageSkiaNamed(IDR_OMNIBOX_MIC_SEARCH),
+                l10n_util::GetStringUTF16(
+                    IDS_APP_LIST_START_SPEECH_RECOGNITION),
+                l10n_util::GetStringUTF16(
+                    IDS_APP_LIST_STOP_SPEECH_RECOGNITION))));
+  }
 
   mixer_->Init();
 
