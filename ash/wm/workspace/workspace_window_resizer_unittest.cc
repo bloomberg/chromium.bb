@@ -556,6 +556,43 @@ TEST_F(WorkspaceWindowResizerTest, AttachedResize_BOTTOM_3_Compress) {
   EXPECT_EQ("20,366 100x134", window3_->bounds().ToString());
 }
 
+// Tests that touch-dragging a window does not lock the mouse cursor
+// and therefore shows the cursor on a mousemove.
+TEST_F(WorkspaceWindowResizerTest, MouseMoveWithTouchDrag) {
+  window_->SetBounds(gfx::Rect(0, 300, 400, 300));
+  window2_->SetBounds(gfx::Rect(400, 200, 100, 200));
+
+  Shell* shell = Shell::GetInstance();
+  aura::test::EventGenerator generator(window_->GetRootWindow());
+
+  // The cursor should not be locked initially.
+  EXPECT_FALSE(shell->cursor_manager()->IsCursorLocked());
+
+  std::vector<aura::Window*> windows;
+  windows.push_back(window2_.get());
+  scoped_ptr<WorkspaceWindowResizer> resizer(WorkspaceWindowResizer::Create(
+      window_.get(), gfx::Point(), HTRIGHT,
+      aura::client::WINDOW_MOVE_SOURCE_TOUCH, windows));
+  ASSERT_TRUE(resizer.get());
+
+  // Creating a WorkspaceWindowResizer should not lock the cursor.
+  EXPECT_FALSE(shell->cursor_manager()->IsCursorLocked());
+
+  // The cursor should be hidden after touching the screen and
+  // starting a drag.
+  EXPECT_TRUE(shell->cursor_manager()->IsCursorVisible());
+  generator.PressTouch();
+  resizer->Drag(CalculateDragPoint(*resizer, 100, 10), 0);
+  EXPECT_FALSE(shell->cursor_manager()->IsCursorVisible());
+  EXPECT_FALSE(shell->cursor_manager()->IsCursorLocked());
+
+  // Moving the mouse should show the cursor.
+  generator.MoveMouseBy(1, 1);
+  EXPECT_TRUE(shell->cursor_manager()->IsCursorVisible());
+  EXPECT_FALSE(shell->cursor_manager()->IsCursorLocked());
+
+  resizer->RevertDrag();
+}
 
 // Assertions around dragging to the left/right edge of the screen.
 TEST_F(WorkspaceWindowResizerTest, Edge) {

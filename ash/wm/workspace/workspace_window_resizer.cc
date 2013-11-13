@@ -344,8 +344,10 @@ class WindowSize {
 };
 
 WorkspaceWindowResizer::~WorkspaceWindowResizer() {
-  Shell* shell = Shell::GetInstance();
-  shell->cursor_manager()->UnlockCursor();
+  if (did_lock_cursor_) {
+    Shell* shell = Shell::GetInstance();
+    shell->cursor_manager()->UnlockCursor();
+  }
   if (instance_ == this)
     instance_ = NULL;
 }
@@ -505,6 +507,7 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
     const std::vector<aura::Window*>& attached_windows)
     : details_(details),
       attached_windows_(attached_windows),
+      did_lock_cursor_(false),
       did_move_or_resize_(false),
       total_min_(0),
       total_initial_size_(0),
@@ -514,8 +517,13 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
       weak_ptr_factory_(this) {
   DCHECK(details_.is_resizable);
 
-  Shell* shell = Shell::GetInstance();
-  shell->cursor_manager()->LockCursor();
+  // A mousemove should still show the cursor even if the window is
+  // being moved or resized with touch, so do not lock the cursor.
+  if (details.source != aura::client::WINDOW_MOVE_SOURCE_TOUCH) {
+    Shell* shell = Shell::GetInstance();
+    shell->cursor_manager()->LockCursor();
+    did_lock_cursor_ = true;
+  }
 
   aura::Window* dock_container = Shell::GetContainer(
       window()->GetRootWindow(), kShellWindowId_DockedContainer);

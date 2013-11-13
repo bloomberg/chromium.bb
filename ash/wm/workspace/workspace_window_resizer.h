@@ -171,6 +171,8 @@ class ASH_EXPORT WorkspaceWindowResizer : public WindowResizer {
 
   const std::vector<aura::Window*> attached_windows_;
 
+  bool did_lock_cursor_;
+
   // Set to true once Drag() is invoked and the bounds of the window change.
   bool did_move_or_resize_;
 
