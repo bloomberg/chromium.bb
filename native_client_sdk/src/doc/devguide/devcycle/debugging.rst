@@ -205,16 +205,14 @@ Debugging with nacl-gdb
 The Native Client SDK includes a command-line debugger that you can use to
 debug Native Client modules. The debugger is based on the GNU debugger `gdb
 <http://www.gnu.org/software/gdb/>`_, and is located at
-``toolchain/<platform>_<architecture>_<library>/bin/<prefix>-nacl-gdb``, where:
+``toolchain/<platform>_x86_newlib/bin/x86_64-nacl-gdb`` (where *<platform>*
+is the platform of your development machine: ``win``, ``mac``, or
+``linux``).
 
-* *<platform>* is the platform of your development machine (win, mac, or linux)
-* *<architecture>* is your target architecture (x86 or arm)
-* *<library>* is the C library you are compiling with (newlib or glibc)
-* *<prefix>* depends on the module you are debugging (i686- for x86 32-bit
-  modules, x86_64- for x86 64-bit modules, arm- for ARM modules)
-
-For example, to debug an x86 64-bit module built with glibc on Windows, you
-would use ``toolchain/win_x86_glibc/bin/x86_64-nacl-gdb``.
+Note that this same copy of GDB can be used to debug any NaCl program,
+whether built using newlib or glibc for x86-32, x86-64 or ARM.  In the SDK,
+``i686-nacl-gdb`` is an alias for ``x86_64-nacl-gdb``, and the ``newlib``
+and ``glibc`` toolchains both contain the same version of GDB.
 
 .. Note::
   :class: note
