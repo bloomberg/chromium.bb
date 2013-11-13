@@ -7,24 +7,12 @@ var MIN_VERSION_TARGET_ID = 26;
 var MIN_VERSION_NEW_TAB = 29;
 var MIN_VERSION_TAB_ACTIVATE = 30;
 
-function inspect(data) {
-  chrome.send('inspect', [data]);
+function sendCommand(command, args) {
+  chrome.send(command, Array.prototype.slice.call(arguments, 1));
 }
 
-function activate(data) {
-  chrome.send('activate', [data]);
-}
-
-function close(data) {
-  chrome.send('close', [data]);
-}
-
-function reload(data) {
-  chrome.send('reload', [data]);
-}
-
-function open(browserId, url) {
-  chrome.send('open', [browserId, url]);
+function sendTargetCommand(command, target) {
+  sendCommand(command, target.source, target.id);
 }
 
 function removeChildren(element_id) {
@@ -49,7 +37,7 @@ function onload() {
   var selectedTabName = window.location.hash.slice(1) || 'devices';
   selectTab(selectedTabName);
   initSettings();
-  chrome.send('init-ui');
+  sendCommand('init-ui');
 }
 
 function selectTab(id) {
@@ -67,6 +55,17 @@ function selectTab(id) {
     }
   }
   window.location.hash = id;
+}
+
+function populateTargets(source, data) {
+  if (source == 'renderers')
+    populateWebContentsTargets(data);
+  else if (source == 'workers')
+    populateWorkerTargets(data);
+  else if (source == 'adb')
+    populateRemoteTargets(data);
+  else
+    console.error('Unknown source type: ' + source);
 }
 
 function populateWebContentsTargets(data) {
@@ -132,7 +131,7 @@ function populateRemoteTargets(devices) {
       section.remove();
   }
 
-  var newDeviceIds = devices.map(function(d) { return d.adbGlobalId });
+  var newDeviceIds = devices.map(function(d) { return d.id });
   Array.prototype.forEach.call(
       deviceList.querySelectorAll('.device'),
       removeObsolete.bind(null, newDeviceIds));
@@ -140,10 +139,10 @@ function populateRemoteTargets(devices) {
   for (var d = 0; d < devices.length; d++) {
     var device = devices[d];
 
-    var deviceSection = $(device.adbGlobalId);
+    var deviceSection = $(device.id);
     if (!deviceSection) {
       deviceSection = document.createElement('div');
-      deviceSection.id = device.adbGlobalId;
+      deviceSection.id = device.id;
       deviceSection.className = 'device';
       deviceList.appendChild(deviceSection);
 
@@ -209,7 +208,7 @@ function populateRemoteTargets(devices) {
 
     var browserList = deviceSection.querySelector('.browsers');
     var newBrowserIds =
-        device.browsers.map(function(b) { return b.adbGlobalId });
+        device.browsers.map(function(b) { return b.id });
     Array.prototype.forEach.call(
         browserList.querySelectorAll('.browser'),
         removeObsolete.bind(null, newBrowserIds));
@@ -220,12 +219,12 @@ function populateRemoteTargets(devices) {
       var majorChromeVersion = browser.adbBrowserChromeVersion;
 
       var pageList;
-      var browserSection = $(browser.adbGlobalId);
+      var browserSection = $(browser.id);
       if (browserSection) {
         pageList = browserSection.querySelector('.pages');
       } else {
         browserSection = document.createElement('div');
-        browserSection.id = browser.adbGlobalId;
+        browserSection.id = browser.id;
         browserSection.className = 'browser';
         insertChildSortedById(browserList, browserSection);
 
@@ -249,10 +248,11 @@ function populateRemoteTargets(devices) {
           newPageUrl.placeholder = 'Open tab with url';
           newPage.appendChild(newPageUrl);
 
-          var openHandler = function(browserId, input) {
-            open(browserId, input.value || 'about:blank');
+          var openHandler = function(sourceId, browserId, input) {
+            sendCommand(
+                'open', sourceId, browserId, input.value || 'about:blank');
             input.value = '';
-          }.bind(null, browser.adbGlobalId, newPageUrl);
+          }.bind(null, browser.source, browser.id, newPageUrl);
           newPageUrl.addEventListener('keyup', function(handler, event) {
             if (event.keyIdentifier == 'Enter' && event.target.value)
               handler();
@@ -286,12 +286,18 @@ function populateRemoteTargets(devices) {
           addWebViewDetails(row, page);
         else
           addFavicon(row, page);
-        if (majorChromeVersion >= MIN_VERSION_TAB_ACTIVATE)
-          addActionLink(row, 'focus tab', activate.bind(null, page), false);
-        if (majorChromeVersion)
-          addActionLink(row, 'reload', reload.bind(null, page), page.attached);
-        if (majorChromeVersion >= MIN_VERSION_TAB_CLOSE)
-          addActionLink(row, 'close', close.bind(null, page), page.attached);
+        if (majorChromeVersion >= MIN_VERSION_TAB_ACTIVATE) {
+          addActionLink(row, 'focus tab',
+              sendTargetCommand.bind(null, 'activate', page), false);
+        }
+        if (majorChromeVersion) {
+          addActionLink(row, 'reload',
+              sendTargetCommand.bind(null, 'reload', page), page.attached);
+        }
+        if (majorChromeVersion >= MIN_VERSION_TAB_CLOSE) {
+          addActionLink(row, 'close',
+              sendTargetCommand.bind(null, 'close', page), page.attached);
+        }
       }
     }
   }
@@ -322,7 +328,8 @@ function addToAppsList(data) {
 function addToWorkersList(data) {
   var row =
       addTargetToList(data, $('workers-list'), ['name', 'description', 'url']);
-  addActionLink(row, 'terminate', close.bind(null, data), data.attached);
+  addActionLink(row, 'terminate',
+      sendTargetCommand.bind(null, 'close', data), data.attached);
 }
 
 function addToOthersList(data) {
@@ -467,7 +474,7 @@ function addTargetToList(data, list, properties) {
   actionBox.className = 'actions';
   subrowBox.appendChild(actionBox);
 
-  addActionLink(row, 'inspect', inspect.bind(null, data),
+  addActionLink(row, 'inspect', sendTargetCommand.bind(null, 'inspect', data),
       data.hasNoUniqueId || data.adbAttachedForeign);
 
   list.appendChild(row);
@@ -502,11 +509,11 @@ function initSettings() {
 }
 
 function enableDiscoverUsbDevices(event) {
-  chrome.send('set-discover-usb-devices-enabled', [event.target.checked]);
+  sendCommand('set-discover-usb-devices-enabled', event.target.checked);
 }
 
 function enablePortForwarding(event) {
-  chrome.send('set-port-forwarding-enabled', [event.target.checked]);
+  sendCommand('set-port-forwarding-enabled', event.target.checked);
 }
 
 function handleKey(event) {
@@ -617,7 +624,7 @@ function commitPortForwardingConfig(closeConfig) {
     if (port && location)
       config[port] = location;
   }
-  chrome.send('set-port-forwarding-config', [config]);
+  sendCommand('set-port-forwarding-config', config);
 }
 
 function updateDiscoverUsbDevicesEnabled(enabled) {

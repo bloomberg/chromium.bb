@@ -192,6 +192,8 @@
             'browser/devtools/devtools_protocol.h',
             'browser/devtools/devtools_target_impl.cc',
             'browser/devtools/devtools_target_impl.h',
+            'browser/devtools/devtools_targets_ui.cc',
+            'browser/devtools/devtools_targets_ui.h',
             'browser/devtools/devtools_toggle_action.cc',
             'browser/devtools/devtools_toggle_action.h',
             'browser/devtools/devtools_window.cc',

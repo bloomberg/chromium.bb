@@ -1044,7 +1044,15 @@ void DevToolsAdbBridge::RemoteBrowser::SendProtocolCommand(
 
 static void NoOp(int, const std::string&) {}
 
-void DevToolsAdbBridge::RemoteBrowser::Open(const std::string& url) {
+void DevToolsAdbBridge::RemoteBrowser::Open(const std::string& input_url) {
+  GURL gurl(input_url);
+  if (!gurl.is_valid()) {
+    gurl = GURL("http://" + input_url);
+    if (!gurl.is_valid())
+     return;
+  }
+  std::string url = gurl.spec();
+
   ParsedVersion parsed_version = GetParsedVersion();
   if (IsChrome() &&
       !parsed_version.empty() &&
