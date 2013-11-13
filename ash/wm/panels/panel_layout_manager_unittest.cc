@@ -21,6 +21,7 @@
 #include "ash/test/shelf_view_test_api.h"
 #include "ash/test/shell_test_api.h"
 #include "ash/test/test_launcher_delegate.h"
+#include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/window_util.h"
 #include "base/basictypes.h"
 #include "base/command_line.h"
@@ -770,6 +771,21 @@ TEST_F(PanelLayoutManagerTest, PanelsHideAndRestoreWithShelf) {
   EXPECT_FALSE(w1->IsVisible());
   EXPECT_FALSE(w2->IsVisible());
   EXPECT_FALSE(w3->IsVisible());
+
+  // While in full-screen mode, the panel windows should still be in the
+  // switchable window list - http://crbug.com/313919.
+  MruWindowTracker::WindowList switchable_window_list =
+      Shell::GetInstance()->mru_window_tracker()->BuildMruWindowList();
+  EXPECT_EQ(3u, switchable_window_list.size());
+  EXPECT_NE(switchable_window_list.end(),
+      std::find(switchable_window_list.begin(), switchable_window_list.end(),
+          w1.get()));
+  EXPECT_NE(switchable_window_list.end(),
+      std::find(switchable_window_list.begin(), switchable_window_list.end(),
+          w2.get()));
+  EXPECT_NE(switchable_window_list.end(),
+      std::find(switchable_window_list.begin(), switchable_window_list.end(),
+          w3.get()));
 
   SetShelfVisibilityState(Shell::GetPrimaryRootWindow(), SHELF_VISIBLE);
   RunAllPendingInMessageLoop();

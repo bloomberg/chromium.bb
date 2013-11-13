@@ -4,13 +4,16 @@
 
 #include "ash/wm/overview/window_selector_controller.h"
 
+#include "ash/root_window_controller.h"
 #include "ash/session_state_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_delegate.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/window_selector.h"
+#include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/metrics/histogram.h"
+#include "ui/aura/window.h"
 
 namespace ash {
 
@@ -69,6 +72,18 @@ bool WindowSelectorController::IsSelecting() {
 
 void WindowSelectorController::OnWindowSelected(aura::Window* window) {
   window_selector_.reset();
+
+  // If there is a fullscreen window on this display and it was not selected
+  // it should exit fullscreen mode.
+  internal::RootWindowController* controller =
+      internal::GetRootWindowController(window->GetRootWindow());
+  aura::Window* fullscreen_window = NULL;
+  if (controller)
+    fullscreen_window = controller->GetTopmostFullscreenWindow();
+  if (fullscreen_window && fullscreen_window != window) {
+    wm::GetWindowState(fullscreen_window)->ToggleFullscreen();
+  }
+
   wm::ActivateWindow(window);
   last_selection_time_ = base::Time::Now();
 }

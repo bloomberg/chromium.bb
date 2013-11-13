@@ -259,6 +259,39 @@ TEST_F(WindowSelectorTest, Basic) {
   EXPECT_FALSE(aura::client::GetCursorClient(root_window)->IsCursorLocked());
 }
 
+// Tests entering overview mode with two windows and selecting one.
+TEST_F(WindowSelectorTest, FullscreenWindow) {
+  gfx::Rect bounds(0, 0, 400, 400);
+  scoped_ptr<aura::Window> window1(CreateWindow(bounds));
+  scoped_ptr<aura::Window> window2(CreateWindow(bounds));
+  scoped_ptr<aura::Window> panel1(CreatePanelWindow(bounds));
+  wm::ActivateWindow(window1.get());
+
+  wm::GetWindowState(window1.get())->ToggleFullscreen();
+  // The panel is hidden in fullscreen mode.
+  EXPECT_FALSE(panel1->IsVisible());
+  EXPECT_TRUE(wm::GetWindowState(window1.get())->IsFullscreen());
+
+  // Enter overview and select the fullscreen window.
+  ToggleOverview();
+
+  // The panel becomes temporarily visible for the overview.
+  EXPECT_TRUE(panel1->IsVisible());
+  ClickWindow(window1.get());
+
+  // The window is still fullscreen as it was selected. The panel should again
+  // be hidden.
+  EXPECT_TRUE(wm::GetWindowState(window1.get())->IsFullscreen());
+  EXPECT_FALSE(panel1->IsVisible());
+
+  // Entering overview and selecting another window should exit fullscreen.
+  // TODO(flackr): Currently the panel remains hidden, but should become visible
+  // again.
+  ToggleOverview();
+  ClickWindow(window2.get());
+  EXPECT_FALSE(wm::GetWindowState(window1.get())->IsFullscreen());
+}
+
 // Tests that the shelf dimming state is removed while in overview and restored
 // on exiting overview.
 TEST_F(WindowSelectorTest, OverviewUndimsShelf) {

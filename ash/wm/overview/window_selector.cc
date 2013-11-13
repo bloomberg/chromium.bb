@@ -347,11 +347,11 @@ void WindowSelector::Step(WindowSelector::Direction direction) {
 }
 
 void WindowSelector::SelectWindow() {
-  ResetFocusRestoreWindow(false);
   SelectWindow(windows_[selected_window_]->SelectionWindow());
 }
 
 void WindowSelector::SelectWindow(aura::Window* window) {
+  ResetFocusRestoreWindow(false);
   if (showing_window_ && showing_window_->window() == window)
     showing_window_->CancelRestore();
   ScopedVector<WindowSelectorItem>::iterator iter =

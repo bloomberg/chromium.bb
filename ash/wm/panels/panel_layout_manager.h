@@ -25,6 +25,7 @@
 
 namespace aura {
 class Window;
+class WindowTracker;
 }
 
 namespace gfx {
@@ -175,9 +176,12 @@ class ASH_EXPORT PanelLayoutManager
   Launcher* launcher_;
   // The shelf layout manager being observed for visibility changes.
   ShelfLayoutManager* shelf_layout_manager_;
-  // Tracks the visibility of the shelf. Defaults to false when there is no
-  // shelf.
-  bool shelf_hidden_;
+
+  // When not NULL, the shelf is hidden (i.e. full screen) and this tracks the
+  // set of panel windows which have been temporarily hidden and need to be
+  // restored when the shelf becomes visible again.
+  scoped_ptr<aura::WindowTracker> restore_windows_on_shelf_visible_;
+
   // The last active panel. Used to maintain stacking order even if no panels
   // are currently focused.
   aura::Window* last_active_panel_;

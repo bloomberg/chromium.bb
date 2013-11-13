@@ -521,6 +521,12 @@ const aura::Window* RootWindowController::GetTopmostFullscreenWindow() const {
   return NULL;
 }
 
+aura::Window* RootWindowController::GetTopmostFullscreenWindow() {
+  return const_cast<aura::Window*>(
+      const_cast<const RootWindowController*>(this)->
+          GetTopmostFullscreenWindow());
+}
+
 void RootWindowController::ActivateKeyboard(
     keyboard::KeyboardController* keyboard_controller) {
   if (!keyboard::IsKeyboardEnabled() ||

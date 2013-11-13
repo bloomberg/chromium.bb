@@ -219,6 +219,7 @@ class ASH_EXPORT RootWindowController : public ShellObserver {
   // Returns the window, if any, which is in fullscreen mode. If multiple
   // windows are in fullscreen state, the topmost one is preferred.
   const aura::Window* GetTopmostFullscreenWindow() const;
+  aura::Window* GetTopmostFullscreenWindow();
 
   // Activate virtual keyboard on current root window controller.
   void ActivateKeyboard(keyboard::KeyboardController* keyboard_controller);

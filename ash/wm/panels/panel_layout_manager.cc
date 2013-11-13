@@ -28,6 +28,7 @@
 #include "ui/aura/client/window_tree_client.h"
 #include "ui/aura/root_window.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_tracker.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/rect.h"
@@ -260,7 +261,6 @@ PanelLayoutManager::PanelLayoutManager(aura::Window* panel_container)
       dragged_panel_(NULL),
       launcher_(NULL),
       shelf_layout_manager_(NULL),
-      shelf_hidden_(false),
       last_active_panel_(NULL),
       weak_factory_(this) {
   DCHECK(panel_container);
@@ -461,10 +461,18 @@ void PanelLayoutManager::OnShelfAlignmentChanged(aura::Window* root_window) {
 void PanelLayoutManager::OnWindowShowTypeChanged(
     wm::WindowState* window_state,
     wm::WindowShowType old_type) {
-  // The window property will still be set, but no actual change will occur
-  // until WillChangeVisibilityState is called when the shelf is visible again.
-  if (shelf_hidden_)
+  // If the shelf is currently hidden then windows will not actually be shown
+  // but the set to restore when the shelf becomes visible is updated.
+  if (restore_windows_on_shelf_visible_) {
+    if (window_state->IsMinimized()) {
+      MinimizePanel(window_state->window());
+      restore_windows_on_shelf_visible_->Remove(window_state->window());
+    } else {
+      restore_windows_on_shelf_visible_->Add(window_state->window());
+    }
     return;
+  }
+
   if (window_state->IsMinimized())
     MinimizePanel(window_state->window());
   else
@@ -506,17 +514,31 @@ void PanelLayoutManager::WillChangeVisibilityState(
   // On entering / leaving full screen mode the shelf visibility state is
   // changed to / from SHELF_HIDDEN. In this state, panel windows should hide
   // to allow the full-screen application to use the full screen.
-  shelf_hidden_ = new_state == ash::SHELF_HIDDEN;
+  bool shelf_hidden = new_state == ash::SHELF_HIDDEN;
+  if (!shelf_hidden) {
+    if (restore_windows_on_shelf_visible_) {
+      scoped_ptr<aura::WindowTracker> restore_windows(
+          restore_windows_on_shelf_visible_.Pass());
+      for (aura::WindowTracker::Windows::const_iterator iter =
+           restore_windows->windows().begin(); iter !=
+           restore_windows->windows().end(); ++iter) {
+        RestorePanel(*iter);
+      }
+    }
+    return;
+  }
+
+  if (restore_windows_on_shelf_visible_)
+    return;
+  scoped_ptr<aura::WindowTracker> minimized_windows(new aura::WindowTracker);
   for (PanelList::iterator iter = panel_windows_.begin();
        iter != panel_windows_.end(); ++iter) {
-    if (shelf_hidden_) {
-      if (iter->window->IsVisible())
-        MinimizePanel(iter->window);
-    } else {
-      if (!wm::GetWindowState(iter->window)->IsMinimized())
-        RestorePanel(iter->window);
+    if (iter->window->IsVisible()) {
+      minimized_windows->Add(iter->window);
+      wm::GetWindowState(iter->window)->Minimize();
     }
   }
+  restore_windows_on_shelf_visible_ = minimized_windows.Pass();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -585,12 +607,11 @@ void PanelLayoutManager::Relayout() {
       continue;
     }
 
-    // If the shelf is currently hidden (full-screen mode), hide panel until
+    // If the shelf is currently hidden (full-screen mode), minimize panel until
     // full-screen mode is exited.
-    if (shelf_hidden_) {
-      // The call to Hide does not set the minimize property, so the window will
-      // be restored when the shelf becomes visible again.
-      panel->Hide();
+    if (restore_windows_on_shelf_visible_) {
+      wm::GetWindowState(panel)->Minimize();
+      restore_windows_on_shelf_visible_->Add(panel);
       continue;
     }
 
