@@ -4,6 +4,7 @@
 
 #include "chromeos/display/output_configurator.h"
 
+#include <cmath>
 #include <cstdarg>
 #include <map>
 #include <string>
@@ -128,6 +129,11 @@ class TestDelegate : public OutputConfigurator::Delegate {
     return actions;
   }
 
+  const OutputConfigurator::CoordinateTransformation& get_ctm(
+      int touch_device_id) {
+    return ctms_[touch_device_id];
+  }
+
   // OutputConfigurator::Delegate overrides:
   virtual void InitXRandRExtension(int* event_base) OVERRIDE {
     AppendAction(kInitXRandR);
@@ -171,6 +177,7 @@ class TestDelegate : public OutputConfigurator::Delegate {
       int touch_device_id,
       const OutputConfigurator::CoordinateTransformation& ctm) OVERRIDE {
     AppendAction(GetCTMAction(touch_device_id, ctm));
+    ctms_[touch_device_id] = ctm;
   }
   virtual void SendProjectingStateToPowerManager(bool projecting) OVERRIDE {
     AppendAction(projecting ? kProjectingOn : kProjectingOff);
@@ -206,6 +213,9 @@ class TestDelegate : public OutputConfigurator::Delegate {
   }
 
   std::map<RRMode, ModeDetails> modes_;
+
+  // Most-recently-configured transformation matrices, keyed by touch device ID.
+  std::map<int, OutputConfigurator::CoordinateTransformation> ctms_;
 
   // Outputs to be returned by GetOutputs().
   std::vector<OutputConfigurator::OutputSnapshot> outputs_;
@@ -1221,6 +1231,36 @@ TEST_F(OutputConfiguratorTest, OutputProtectionTwoClients) {
   EXPECT_EQ(GetSetHDCPStateAction(outputs_[1].output,
                                   HDCP_STATE_UNDESIRED).c_str(),
             delegate_->GetActionsAndClear());
+}
+
+TEST_F(OutputConfiguratorTest, CTMForMultiScreens) {
+  outputs_[0].touch_device_id = 1;
+  outputs_[1].touch_device_id = 2;
+
+  UpdateOutputs(2, false);
+  configurator_.Init(false);
+  state_controller_.set_state(STATE_DUAL_EXTENDED);
+  configurator_.Start(0);
+
+  const int kDualHeight =
+      kSmallModeHeight + OutputConfigurator::kVerticalGap + kBigModeHeight;
+  const int kDualWidth = kBigModeWidth;
+
+  OutputConfigurator::CoordinateTransformation ctm1 = delegate_->get_ctm(1);
+  OutputConfigurator::CoordinateTransformation ctm2 = delegate_->get_ctm(2);
+
+  EXPECT_EQ(kSmallModeHeight - 1, round((kDualHeight - 1) * ctm1.y_scale));
+  EXPECT_EQ(0, round((kDualHeight - 1) * ctm1.y_offset));
+
+  EXPECT_EQ(kBigModeHeight - 1, round((kDualHeight - 1) * ctm2.y_scale));
+  EXPECT_EQ(kSmallModeHeight + OutputConfigurator::kVerticalGap,
+            round((kDualHeight - 1) * ctm2.y_offset));
+
+  EXPECT_EQ(kSmallModeWidth - 1, round((kDualWidth - 1) * ctm1.x_scale));
+  EXPECT_EQ(0, round((kDualWidth - 1) * ctm1.x_offset));
+
+  EXPECT_EQ(kBigModeWidth - 1, round((kDualWidth - 1) * ctm2.x_scale));
+  EXPECT_EQ(0, round((kDualWidth - 1) * ctm2.x_offset));
 }
 
 }  // namespace chromeos

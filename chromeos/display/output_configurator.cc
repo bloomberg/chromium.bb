@@ -932,16 +932,8 @@ bool OutputConfigurator::EnterState(
 
       for (size_t i = 0; i < updated_outputs.size(); ++i) {
         OutputSnapshot* output = &updated_outputs[i];
-        if (output->touch_device_id) {
-          const ModeInfo* mode_info =
-              GetModeInfo(*output, output->selected_mode);
-          DCHECK(mode_info);
-          CoordinateTransformation* ctm = &(output->transform);
-          ctm->x_scale = static_cast<float>(mode_info->width) / width;
-          ctm->x_offset = static_cast<float>(output->x) / width;
-          ctm->y_scale = static_cast<float>(mode_info->height) / height;
-          ctm->y_offset = static_cast<float>(output->y) / height;
-        }
+        if (output->touch_device_id)
+          output->transform = GetExtendedModeCTM(*output, width, height);
       }
       break;
     }
@@ -1038,6 +1030,45 @@ OutputConfigurator::GetMirrorModeCTM(
   }
 
   return ctm;  // Same aspect ratio - return identity
+}
+
+OutputConfigurator::CoordinateTransformation
+OutputConfigurator::GetExtendedModeCTM(
+    const OutputConfigurator::OutputSnapshot& output,
+    int framebuffer_width,
+    int framebuffer_height) {
+  CoordinateTransformation ctm;  // Default to identity
+  const ModeInfo* mode_info = GetModeInfo(output, output.selected_mode);
+  DCHECK(mode_info);
+  if (!mode_info)
+    return ctm;
+  // An example of how to calculate the CTM.
+  // Suppose we have 2 monitors, the first one has size 1366 x 768.
+  // The second one has size 2560 x 1600
+  // The total size of framebuffer is 2560 x 2428
+  // where 2428 = 768 + 60 (hidden gap) + 1600
+  // and the sceond monitor is translated to Point (0, 828) in the
+  // framebuffer.
+  // X will first map input event location to [0, 2560) x [0, 2428),
+  // then apply CTM on it.
+  // So to compute CTM, for monitor1, we have
+  // x_scale = (1366 - 1) / (2560 - 1)
+  // x_offset = 0 / (2560 - 1)
+  // y_scale = (768 - 1) / (2428 - 1)
+  // y_offset = 0 / (2428 -1)
+  // For Monitor 2, we have
+  // x_scale = (2560 - 1) / (2560 - 1)
+  // x_offset = 0 / (2560 - 1)
+  // y_scale = (1600 - 1) / (2428 - 1)
+  // y_offset = 828 / (2428 -1)
+  // See the unittest OutputConfiguratorTest.CTMForMultiScreens.
+  ctm.x_scale =
+      static_cast<float>(mode_info->width - 1) / (framebuffer_width - 1);
+  ctm.x_offset = static_cast<float>(output.x) / (framebuffer_width - 1);
+  ctm.y_scale =
+      static_cast<float>(mode_info->height - 1) / (framebuffer_height - 1);
+  ctm.y_offset = static_cast<float>(output.y) / (framebuffer_height - 1);
+  return ctm;
 }
 
 float OutputConfigurator::GetMirroredDisplayAreaRatio(

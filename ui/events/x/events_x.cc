@@ -4,6 +4,7 @@
 
 #include "ui/events/event_constants.h"
 
+#include <cmath>
 #include <string.h>
 #include <X11/extensions/XInput.h>
 #include <X11/extensions/XInput2.h>
@@ -422,8 +423,8 @@ gfx::Point EventLocationFromNative(const base::NativeEvent& native_event) {
     case GenericEvent: {
       XIDeviceEvent* xievent =
           static_cast<XIDeviceEvent*>(native_event->xcookie.data);
-      return gfx::Point(static_cast<int>(xievent->event_x),
-                        static_cast<int>(xievent->event_y));
+      return gfx::Point(round(xievent->event_x),
+                        round(xievent->event_y));
     }
   }
   return gfx::Point();

@@ -487,6 +487,15 @@ class CHROMEOS_EXPORT OutputConfigurator
   CoordinateTransformation GetMirrorModeCTM(
       const OutputConfigurator::OutputSnapshot& output);
 
+  // Computes the relevant transformation for extended mode.
+  // |output| is the output on which extended mode is being applied.
+  // |width| and |height| are the width and height of the combined framebuffer.
+  // Returns the transformation or identity if computations fail.
+  CoordinateTransformation GetExtendedModeCTM(
+      const OutputConfigurator::OutputSnapshot& output,
+      int framebuffer_width,
+      int frame_buffer_height);
+
   // Returns the ratio between mirrored mode area and native mode area:
   // (mirror_mode_width * mirrow_mode_height) / (native_width * native_height)
   float GetMirroredDisplayAreaRatio(
