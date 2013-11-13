@@ -34,7 +34,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/Frame.h"
 #include "core/page/Settings.h"
-#include "weborigin/SecurityOrigin.h"
+#include "platform/weborigin/SecurityOrigin.h"
 
 namespace WebCore {
 

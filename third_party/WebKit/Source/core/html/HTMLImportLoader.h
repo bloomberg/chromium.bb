@@ -34,7 +34,7 @@
 #include "core/fetch/RawResource.h"
 #include "core/fetch/ResourcePtr.h"
 #include "core/html/HTMLImport.h"
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"
 

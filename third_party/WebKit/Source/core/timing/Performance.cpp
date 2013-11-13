@@ -41,7 +41,7 @@
 #include "core/timing/PerformanceResourceTiming.h"
 #include "core/timing/PerformanceTiming.h"
 #include "core/timing/PerformanceUserTiming.h"
-#include "weborigin/SecurityOrigin.h"
+#include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/CurrentTime.h"
 
 #include "core/frame/Frame.h"

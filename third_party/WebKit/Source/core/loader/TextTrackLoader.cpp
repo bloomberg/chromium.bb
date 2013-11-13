@@ -35,7 +35,7 @@
 #include "core/html/track/WebVTTParser.h"
 #include "platform/Logging.h"
 #include "platform/SharedBuffer.h"
-#include "weborigin/SecurityOrigin.h"
+#include "platform/weborigin/SecurityOrigin.h"
 
 namespace WebCore {
 

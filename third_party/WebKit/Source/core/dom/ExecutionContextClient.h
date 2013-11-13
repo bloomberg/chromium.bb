@@ -29,7 +29,7 @@
 
 #include "core/frame/ConsoleTypes.h"
 #include "platform/LifecycleNotifier.h"
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/Forward.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"

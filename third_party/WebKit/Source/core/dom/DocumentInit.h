@@ -30,7 +30,7 @@
 
 #include "core/dom/SandboxFlags.h"
 #include "core/dom/SecurityContext.h"
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 #include "wtf/WeakPtr.h"

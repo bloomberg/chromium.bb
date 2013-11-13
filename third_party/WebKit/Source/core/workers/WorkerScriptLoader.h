@@ -31,7 +31,7 @@
 #include "core/loader/ThreadableLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "platform/network/ResourceRequest.h"
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/FastAllocBase.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"

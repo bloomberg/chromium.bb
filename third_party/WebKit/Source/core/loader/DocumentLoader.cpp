@@ -57,10 +57,10 @@
 #include "platform/Logging.h"
 #include "platform/UserGestureIndicator.h"
 #include "platform/plugins/PluginData.h"
+#include "platform/weborigin/SchemeRegistry.h"
+#include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebMimeRegistry.h"
-#include "weborigin/SchemeRegistry.h"
-#include "weborigin/SecurityPolicy.h"
 #include "wtf/Assertions.h"
 #include "wtf/text/WTFString.h"
 

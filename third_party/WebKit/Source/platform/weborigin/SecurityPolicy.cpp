@@ -27,11 +27,11 @@
  */
 
 #include "config.h"
-#include "weborigin/SecurityPolicy.h"
+#include "platform/weborigin/SecurityPolicy.h"
 
-#include "weborigin/KURL.h"
-#include "weborigin/OriginAccessEntry.h"
-#include "weborigin/SecurityOrigin.h"
+#include "platform/weborigin/KURL.h"
+#include "platform/weborigin/OriginAccessEntry.h"
+#include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/MainThread.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
@@ -93,9 +93,9 @@ bool SecurityPolicy::isAccessWhiteListed(const SecurityOrigin* activeOrigin, con
 {
     if (OriginAccessWhiteList* list = originAccessMap().get(activeOrigin->toString())) {
         for (size_t i = 0; i < list->size();  ++i) {
-           if (list->at(i).matchesOrigin(*targetOrigin))
-               return true;
-       }
+            if (list->at(i).matchesOrigin(*targetOrigin))
+                return true;
+        }
     }
     return false;
 }

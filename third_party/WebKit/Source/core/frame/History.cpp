@@ -37,8 +37,8 @@
 #include "core/frame/Frame.h"
 #include "core/page/BackForwardClient.h"
 #include "core/page/Page.h"
-#include "weborigin/KURL.h"
-#include "weborigin/SecurityOrigin.h"
+#include "platform/weborigin/KURL.h"
+#include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/MainThread.h"
 
 namespace WebCore {

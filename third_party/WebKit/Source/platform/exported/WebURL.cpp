@@ -31,7 +31,7 @@
 #include "config.h"
 #include "public/platform/WebURL.h"
 
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 
 namespace blink {
 

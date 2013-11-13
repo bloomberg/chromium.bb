@@ -41,11 +41,14 @@
 #include "core/loader/UniqueIdentifier.h"
 #include "modules/websockets/WebSocketChannelClient.h"
 #include "platform/Logging.h"
+#include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebVector.h"
-#include "weborigin/SecurityOrigin.h"
+#include "wtf/ArrayBuffer.h"
+#include "wtf/Vector.h"
+#include "wtf/text/WTFString.h"
 
 using blink::WebSocketHandle;
 

@@ -25,6 +25,7 @@
 #include "core/rendering/RenderView.h"
 #include "modules/mediastream/MediaStreamRegistry.h"
 #include "platform/geometry/IntSize.h"
+#include "platform/weborigin/KURL.h"
 #include "public/platform/WebAudioSourceProvider.h"
 #include "public/platform/WebCanvas.h"
 #include "public/platform/WebCompositorSupport.h"

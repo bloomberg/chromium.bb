@@ -38,7 +38,7 @@
 #include "core/inspector/JSONParser.h"
 #include "core/workers/WorkerGlobalScopeProxy.h"
 #include "platform/JSONValues.h"
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 

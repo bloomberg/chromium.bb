@@ -32,7 +32,7 @@
 #include "core/fetch/TextResourceDecoder.h"
 #include "core/inspector/InspectorPageAgent.h"
 #include "platform/network/HTTPHeaderMap.h"
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/Deque.h"
 #include "wtf/HashMap.h"
 #include "wtf/RefCounted.h"

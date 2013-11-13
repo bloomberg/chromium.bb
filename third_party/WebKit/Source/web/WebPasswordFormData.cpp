@@ -35,7 +35,7 @@
 #include "core/dom/Document.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 
 #include "DOMUtilitiesPrivate.h"
 #include "WebPasswordFormUtils.h"

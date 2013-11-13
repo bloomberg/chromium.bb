@@ -27,7 +27,7 @@
 #ifndef DOMURLUtilsReadOnly_h
 #define DOMURLUtilsReadOnly_h
 
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/Forward.h"
 #include "wtf/text/WTFString.h"
 

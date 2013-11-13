@@ -26,7 +26,7 @@
 #include "config.h"
 #include "core/loader/DocumentLoadTiming.h"
 
-#include "weborigin/SecurityOrigin.h"
+#include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/RefPtr.h"
 

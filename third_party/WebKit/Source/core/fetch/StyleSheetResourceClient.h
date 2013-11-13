@@ -27,7 +27,7 @@
 #define StyleSheetResourceClient_h
 
 #include "core/fetch/ResourceClient.h"
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/Forward.h"
 
 namespace WebCore {

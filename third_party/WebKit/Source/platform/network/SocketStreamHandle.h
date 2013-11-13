@@ -33,7 +33,7 @@
 #define SocketStreamHandle_h
 
 #include "platform/PlatformExport.h"
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/StreamBuffer.h"

@@ -33,8 +33,8 @@
 #define Prerender_h
 
 #include "platform/PlatformExport.h"
-#include "weborigin/KURL.h"
-#include "weborigin/ReferrerPolicy.h"
+#include "platform/weborigin/KURL.h"
+#include "platform/weborigin/ReferrerPolicy.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"

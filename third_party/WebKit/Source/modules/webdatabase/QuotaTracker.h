@@ -31,7 +31,7 @@
 #ifndef QuotaTracker_h
 #define QuotaTracker_h
 
-#include "weborigin/SecurityOrigin.h"
+#include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/HashMap.h"
 #include "wtf/ThreadingPrimitives.h"
 #include "wtf/text/StringHash.h"

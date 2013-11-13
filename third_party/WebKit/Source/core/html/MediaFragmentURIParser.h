@@ -26,7 +26,7 @@
 #ifndef MediaFragmentURIParser_h
 #define MediaFragmentURIParser_h
 
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {

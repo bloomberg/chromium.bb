@@ -28,7 +28,7 @@
 #include "platform/MIMETypeFromURL.h"
 
 #include "platform/MIMETypeRegistry.h"
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {

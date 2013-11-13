@@ -41,7 +41,7 @@
 #include "platform/AsyncMethodRunner.h"
 #include "platform/SharedBuffer.h"
 #include "platform/text/TextDirection.h"
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"

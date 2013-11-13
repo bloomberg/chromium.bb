@@ -43,7 +43,7 @@
 #include "platform/JSONValues.h"
 #include "platform/network/FormData.h"
 #include "platform/text/DecodeEscapeSequences.h"
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/MainThread.h"
 #include "wtf/text/TextEncoding.h"
 

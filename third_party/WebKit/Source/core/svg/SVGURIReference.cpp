@@ -24,7 +24,7 @@
 
 #include "XLinkNames.h"
 #include "core/dom/Document.h"
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 
 namespace WebCore {
 

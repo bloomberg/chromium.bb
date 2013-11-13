@@ -32,7 +32,7 @@
 #define LinkResource_h
 
 #include "core/fetch/FetchRequest.h"
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/RefCounted.h"
 #include "wtf/text/WTFString.h"
 

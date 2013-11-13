@@ -42,12 +42,12 @@
 #include "core/platform/graphics/skia/NativeImageSkia.h"
 #include "core/rendering/RenderImage.h"
 #include "platform/clipboard/ClipboardUtilities.h"
+#include "platform/weborigin/KURL.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebClipboard.h"
 #include "public/platform/WebDragData.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
-#include "weborigin/KURL.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
 

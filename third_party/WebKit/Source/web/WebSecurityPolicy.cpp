@@ -34,9 +34,9 @@
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "core/loader/FrameLoader.h"
-#include "weborigin/SchemeRegistry.h"
-#include "weborigin/SecurityOrigin.h"
-#include "weborigin/SecurityPolicy.h"
+#include "platform/weborigin/SchemeRegistry.h"
+#include "platform/weborigin/SecurityOrigin.h"
+#include "platform/weborigin/SecurityPolicy.h"
 
 using namespace WebCore;
 

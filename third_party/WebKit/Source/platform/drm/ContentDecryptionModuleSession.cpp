@@ -31,10 +31,10 @@
 #include "config.h"
 #include "platform/drm/ContentDecryptionModuleSession.h"
 
+#include "platform/weborigin/KURL.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebContentDecryptionModule.h"
 #include "public/platform/WebURL.h"
-#include "weborigin/KURL.h"
 #include "wtf/Uint8Array.h"
 
 namespace WebCore {

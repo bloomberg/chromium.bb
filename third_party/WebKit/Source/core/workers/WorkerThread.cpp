@@ -36,9 +36,9 @@
 #include "modules/webdatabase/DatabaseManager.h"
 #include "modules/webdatabase/DatabaseTask.h"
 #include "platform/PlatformThreadData.h"
+#include "platform/weborigin/KURL.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebWorkerRunLoop.h"
-#include "weborigin/KURL.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/text/WTFString.h"
 

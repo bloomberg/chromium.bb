@@ -26,7 +26,7 @@
 #include "config.h"
 #include "platform/URLPatternMatcher.h"
 
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/StdLibExtras.h"
 
 namespace WebCore {

@@ -21,7 +21,7 @@
 #define FormData_h
 
 #include "platform/blob/BlobData.h"
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/Forward.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"

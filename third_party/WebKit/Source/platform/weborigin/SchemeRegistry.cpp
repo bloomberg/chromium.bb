@@ -25,7 +25,7 @@
  */
 
 #include "config.h"
-#include "weborigin/SchemeRegistry.h"
+#include "platform/weborigin/SchemeRegistry.h"
 
 #include "wtf/MainThread.h"
 

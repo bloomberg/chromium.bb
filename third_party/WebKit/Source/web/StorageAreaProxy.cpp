@@ -40,7 +40,7 @@
 #include "core/page/PageGroup.h"
 #include "core/storage/Storage.h"
 #include "core/storage/StorageEvent.h"
-#include "weborigin/SecurityOrigin.h"
+#include "platform/weborigin/SecurityOrigin.h"
 
 #include "WebFrameImpl.h"
 #include "WebPermissionClient.h"

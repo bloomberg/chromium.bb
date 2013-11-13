@@ -61,8 +61,8 @@
 #include "core/html/HTMLHeadElement.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/rendering/RenderObject.h"
+#include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebURL.h"
-#include "weborigin/SecurityOrigin.h"
 #include "wtf/PassRefPtr.h"
 #include <v8.h>
 

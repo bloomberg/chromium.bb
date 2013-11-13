@@ -31,7 +31,7 @@
 #ifndef IconURL_h
 #define IconURL_h
 
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 
 namespace WebCore {
 

@@ -29,8 +29,8 @@
 #include "core/frame/FrameView.h"
 #include "core/rendering/RenderPart.h"
 #include "core/svg/SVGDocument.h"
-#include "weborigin/SecurityOrigin.h"
-#include "weborigin/SecurityPolicy.h"
+#include "platform/weborigin/SecurityOrigin.h"
+#include "platform/weborigin/SecurityPolicy.h"
 
 namespace WebCore {
 

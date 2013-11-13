@@ -36,6 +36,7 @@
 #include "platform/graphics/DisplayList.h"
 #include "platform/graphics/TextRunIterator.h"
 #include "platform/text/BidiResolver.h"
+#include "platform/weborigin/KURL.h"
 #include "third_party/skia/include/core/SkAnnotation.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
 #include "third_party/skia/include/core/SkData.h"
@@ -46,7 +47,6 @@
 #include "third_party/skia/include/effects/SkBlurMaskFilter.h"
 #include "third_party/skia/include/effects/SkCornerPathEffect.h"
 #include "third_party/skia/include/effects/SkLumaColorFilter.h"
-#include "weborigin/KURL.h"
 #include "wtf/Assertions.h"
 #include "wtf/MathExtras.h"
 

@@ -26,7 +26,7 @@
 #ifndef XSSAuditorDelegate_h
 #define XSSAuditorDelegate_h
 
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/Vector.h"

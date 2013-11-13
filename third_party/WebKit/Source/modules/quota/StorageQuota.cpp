@@ -36,11 +36,11 @@
 #include "modules/quota/StorageErrorCallback.h"
 #include "modules/quota/StorageUsageCallback.h"
 #include "modules/quota/WebStorageQuotaCallbacksImpl.h"
+#include "platform/weborigin/KURL.h"
+#include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebStorageQuotaCallbacks.h"
 #include "public/platform/WebStorageQuotaType.h"
-#include "weborigin/KURL.h"
-#include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {
 

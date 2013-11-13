@@ -31,11 +31,11 @@
 #include "config.h"
 #include "WebSecurityOrigin.h"
 
+#include "platform/weborigin/DatabaseIdentifier.h"
+#include "platform/weborigin/KURL.h"
+#include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
-#include "weborigin/DatabaseIdentifier.h"
-#include "weborigin/KURL.h"
-#include "weborigin/SecurityOrigin.h"
 #include "wtf/PassRefPtr.h"
 
 using namespace WebCore;

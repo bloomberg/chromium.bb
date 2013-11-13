@@ -40,9 +40,9 @@
 #include "modules/indexeddb/IDBHistograms.h"
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBTracing.h"
+#include "platform/weborigin/DatabaseIdentifier.h"
+#include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
-#include "weborigin/DatabaseIdentifier.h"
-#include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {
 

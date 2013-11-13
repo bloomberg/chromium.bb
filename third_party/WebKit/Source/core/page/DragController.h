@@ -28,7 +28,7 @@
 
 #include "core/page/DragActions.h"
 #include "platform/geometry/IntPoint.h"
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/Forward.h"
 
 namespace WebCore {

@@ -39,7 +39,6 @@
                 '../Source/testing/testing.gyp:TestRunner',
                 '../Source/platform/blink_platform_tests.gyp:blink_platform_unittests',
                 '../Source/web/web_tests.gyp:webkit_unit_tests',
-                '../Source/weborigin/weborigin_tests.gyp:weborigin_unittests',
                 '../Source/wtf/wtf_tests.gyp:wtf_unittests',
             ],
             'conditions': [

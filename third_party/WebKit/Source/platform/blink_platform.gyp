@@ -62,14 +62,13 @@
     'dependencies': [
       '../config.gyp:config',
       '../wtf/wtf.gyp:wtf',
-      '../weborigin/weborigin.gyp:weborigin',
       '<(DEPTH)/skia/skia.gyp:skia',
       # FIXME: This dependency exists for CSS Custom Filters, via the file ANGLEPlatformBridge
       # The code touching ANGLE should really be moved into the ANGLE directory.
       '<(DEPTH)/third_party/angle_dx11/src/build_angle.gyp:translator',
-      '<(DEPTH)/url/url.gyp:url_lib',
       '<(DEPTH)/third_party/icu/icu.gyp:icui18n',
       '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
+      '<(DEPTH)/url/url.gyp:url_lib',
       'platform_derived_sources.gyp:make_platform_derived_sources',
       'blink_common',
     ],
@@ -77,6 +76,7 @@
       # FIXME: This dependency exists for CSS Custom Filters, via the file ANGLEPlatformBridge
       # The code touching ANGLE should really be moved into the ANGLE directory.
       '<(DEPTH)/third_party/angle_dx11/src/build_angle.gyp:translator',
+      '<(DEPTH)/url/url.gyp:url_lib',
     ],
     'defines': [
       'BLINK_PLATFORM_IMPLEMENTATION=1',

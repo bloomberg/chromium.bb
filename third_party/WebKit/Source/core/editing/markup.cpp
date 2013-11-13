@@ -58,7 +58,7 @@
 #include "core/html/HTMLTextFormControlElement.h"
 #include "core/frame/Frame.h"
 #include "core/rendering/RenderObject.h"
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringBuilder.h"
 

@@ -32,7 +32,7 @@
 #include "public/platform/WebURLError.h"
 
 #include "platform/network/ResourceError.h"
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/text/CString.h"
 
 using namespace WebCore;

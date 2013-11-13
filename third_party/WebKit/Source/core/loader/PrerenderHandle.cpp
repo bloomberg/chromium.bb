@@ -36,8 +36,8 @@
 #include "core/loader/FrameLoader.h"
 #include "core/loader/PrerendererClient.h"
 #include "platform/Prerender.h"
-#include "weborigin/ReferrerPolicy.h"
-#include "weborigin/SecurityPolicy.h"
+#include "platform/weborigin/ReferrerPolicy.h"
+#include "platform/weborigin/SecurityPolicy.h"
 
 namespace WebCore {
 

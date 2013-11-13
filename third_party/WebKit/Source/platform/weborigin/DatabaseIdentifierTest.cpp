@@ -29,10 +29,10 @@
  */
 
 #include "config.h"
-#include "weborigin/DatabaseIdentifier.h"
+#include "platform/weborigin/DatabaseIdentifier.h"
 
-#include "weborigin/KURL.h"
-#include "weborigin/SecurityOrigin.h"
+#include "platform/weborigin/KURL.h"
+#include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/testing/WTFTestHelpers.h"
 
 #include <gtest/gtest.h>

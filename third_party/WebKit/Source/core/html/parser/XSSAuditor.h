@@ -29,7 +29,7 @@
 #include "core/html/parser/HTMLToken.h"
 #include "platform/network/HTTPParsers.h"
 #include "platform/text/SuffixTree.h"
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/TextEncoding.h"
 

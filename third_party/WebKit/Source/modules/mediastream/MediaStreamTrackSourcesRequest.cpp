@@ -29,8 +29,8 @@
 
 #include "core/dom/ExecutionContext.h"
 #include "modules/mediastream/MediaStreamTrackSourcesCallback.h"
+#include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebSourceInfo.h"
-#include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {
 

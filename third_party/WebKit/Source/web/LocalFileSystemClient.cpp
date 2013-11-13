@@ -36,8 +36,8 @@
 #include "WorkerPermissionClient.h"
 #include "core/dom/Document.h"
 #include "core/workers/WorkerGlobalScope.h"
+#include "platform/weborigin/SecurityOrigin.h"
 #include "public/web/WebPermissionClient.h"
-#include "weborigin/SecurityOrigin.h"
 #include "wtf/text/WTFString.h"
 
 using namespace WebCore;

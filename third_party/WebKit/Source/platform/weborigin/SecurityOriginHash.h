@@ -29,8 +29,8 @@
 #ifndef SecurityOriginHash_h
 #define SecurityOriginHash_h
 
-#include "weborigin/SecurityOrigin.h"
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
+#include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/RefPtr.h"
 
 namespace WebCore {
@@ -79,11 +79,12 @@ struct SecurityOriginHash {
 } // namespace WebCore
 
 namespace WTF {
-    template<typename> struct DefaultHash;
 
-    template<> struct DefaultHash<RefPtr<WebCore::SecurityOrigin> > {
-        typedef WebCore::SecurityOriginHash Hash;
-    };
+template<typename> struct DefaultHash;
+
+template<> struct DefaultHash<RefPtr<WebCore::SecurityOrigin> > {
+    typedef WebCore::SecurityOriginHash Hash;
+};
 
 } // namespace WTF
 

@@ -69,12 +69,12 @@
 #include "core/rendering/RenderWidget.h"
 #include "platform/Widget.h"
 #include "platform/text/TextBreakIterator.h"
+#include "platform/weborigin/KURL.h"
 #include "public/platform/WebPoint.h"
 #include "public/platform/WebString.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLResponse.h"
 #include "public/platform/WebVector.h"
-#include "weborigin/KURL.h"
 #include "wtf/text/WTFString.h"
 
 using namespace WebCore;

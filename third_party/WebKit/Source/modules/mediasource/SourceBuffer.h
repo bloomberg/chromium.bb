@@ -36,7 +36,7 @@
 #include "core/events/EventTarget.h"
 #include "core/fileapi/FileReaderLoaderClient.h"
 #include "platform/AsyncMethodRunner.h"
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"

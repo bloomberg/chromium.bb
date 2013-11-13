@@ -28,7 +28,7 @@
 #define CrossOriginPreflightResultCache_h
 
 #include "core/fetch/ResourceLoaderOptions.h"
-#include "weborigin/KURLHash.h"
+#include "platform/weborigin/KURLHash.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/PassOwnPtr.h"

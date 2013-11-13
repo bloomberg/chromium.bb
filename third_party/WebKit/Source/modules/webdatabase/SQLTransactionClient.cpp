@@ -36,10 +36,10 @@
 #include "modules/webdatabase/DatabaseBackendBase.h"
 #include "modules/webdatabase/DatabaseContext.h"
 #include "modules/webdatabase/DatabaseObserver.h"
+#include "platform/weborigin/DatabaseIdentifier.h"
+#include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebPlatformDatabaseObserver.h"
-#include "weborigin/DatabaseIdentifier.h"
-#include "weborigin/SecurityOrigin.h"
 
 namespace WebCore {
 

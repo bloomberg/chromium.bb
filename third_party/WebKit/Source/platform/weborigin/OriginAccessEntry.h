@@ -31,14 +31,14 @@
 #ifndef OriginAccessEntry_h
 #define OriginAccessEntry_h
 
-#include "weborigin/WebOriginExport.h"
+#include "platform/PlatformExport.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {
 
 class SecurityOrigin;
 
-class WEBORIGIN_EXPORT OriginAccessEntry {
+class PLATFORM_EXPORT OriginAccessEntry {
 public:
     enum SubdomainSetting {
         AllowSubdomains,
@@ -67,7 +67,7 @@ private:
     bool m_hostIsIPAddress;
 };
 
-WEBORIGIN_EXPORT inline bool operator==(const OriginAccessEntry& a, const OriginAccessEntry& b)
+PLATFORM_EXPORT inline bool operator==(const OriginAccessEntry& a, const OriginAccessEntry& b)
 {
     return equalIgnoringCase(a.protocol(), b.protocol())
         && equalIgnoringCase(a.host(), b.host())
@@ -75,7 +75,7 @@ WEBORIGIN_EXPORT inline bool operator==(const OriginAccessEntry& a, const Origin
         && a.ipAddressSettings() == b.ipAddressSettings();
 }
 
-WEBORIGIN_EXPORT inline bool operator!=(const OriginAccessEntry& a, const OriginAccessEntry& b)
+PLATFORM_EXPORT inline bool operator!=(const OriginAccessEntry& a, const OriginAccessEntry& b)
 {
     return !(a == b);
 }

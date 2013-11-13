@@ -41,8 +41,8 @@
 #include "core/page/Page.h"
 #include "core/frame/UseCounter.h"
 #include "core/workers/SharedWorkerRepositoryClient.h"
-#include "weborigin/KURL.h"
-#include "weborigin/SecurityOrigin.h"
+#include "platform/weborigin/KURL.h"
+#include "platform/weborigin/SecurityOrigin.h"
 
 namespace WebCore {
 

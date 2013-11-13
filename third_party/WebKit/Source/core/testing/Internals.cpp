@@ -121,8 +121,8 @@
 #include "platform/TraceEvent.h"
 #include "platform/geometry/IntRect.h"
 #include "platform/geometry/LayoutRect.h"
+#include "platform/weborigin/SchemeRegistry.h"
 #include "public/platform/WebLayer.h"
-#include "weborigin/SchemeRegistry.h"
 #include "wtf/dtoa.h"
 #include "wtf/text/StringBuffer.h"
 

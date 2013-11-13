@@ -103,6 +103,7 @@
 #include "platform/network/ResourceResponse.h"
 #include "platform/text/TextChecking.h"
 #include "platform/text/TextDecoration.h"
+#include "platform/weborigin/ReferrerPolicy.h"
 #include "public/platform/WebClipboard.h"
 #include "public/platform/WebCompositingReasons.h"
 #include "public/platform/WebFileError.h"
@@ -126,7 +127,6 @@
 #include "public/platform/WebURLResponse.h"
 #include "public/web/WebNavigationPolicy.h"
 #include "public/web/WebSerializedScriptValueVersion.h"
-#include "weborigin/ReferrerPolicy.h"
 #include "wtf/Assertions.h"
 #include "wtf/text/StringImpl.h"
 

@@ -36,7 +36,7 @@
 #include "WebNotificationPresenter.h"
 #include "core/dom/ExecutionContext.h"
 #include "modules/notifications/Notification.h"
-#include "weborigin/SecurityOrigin.h"
+#include "platform/weborigin/SecurityOrigin.h"
 
 using namespace WebCore;
 

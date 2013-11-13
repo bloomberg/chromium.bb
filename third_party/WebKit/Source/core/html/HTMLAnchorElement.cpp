@@ -48,12 +48,12 @@
 #include "platform/PlatformMouseEvent.h"
 #include "platform/network/DNS.h"
 #include "platform/network/ResourceRequest.h"
+#include "platform/weborigin/KnownPorts.h"
+#include "platform/weborigin/SecurityOrigin.h"
+#include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebPrescientNetworking.h"
 #include "public/platform/WebURL.h"
-#include "weborigin/KnownPorts.h"
-#include "weborigin/SecurityOrigin.h"
-#include "weborigin/SecurityPolicy.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace WebCore {

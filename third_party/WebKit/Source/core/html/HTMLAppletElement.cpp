@@ -33,7 +33,7 @@
 #include "core/page/Settings.h"
 #include "core/rendering/RenderApplet.h"
 #include "platform/Widget.h"
-#include "weborigin/SecurityOrigin.h"
+#include "platform/weborigin/SecurityOrigin.h"
 
 namespace WebCore {
 

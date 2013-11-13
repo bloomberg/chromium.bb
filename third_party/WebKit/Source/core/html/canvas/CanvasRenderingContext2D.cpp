@@ -65,7 +65,7 @@
 #include "platform/graphics/DrawLooper.h"
 #include "platform/graphics/TextRun.h"
 #include "platform/transforms/AffineTransform.h"
-#include "weborigin/SecurityOrigin.h"
+#include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/CheckedArithmetic.h"
 #include "wtf/MathExtras.h"
 #include "wtf/OwnPtr.h"

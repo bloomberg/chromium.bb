@@ -32,7 +32,7 @@
 #define PrerenderHandle_h
 
 #include "core/dom/DocumentLifecycleObserver.h"
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/PassRefPtr.h"

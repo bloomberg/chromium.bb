@@ -31,7 +31,7 @@
 
 #include "platform/SharedBuffer.h"
 #include "platform/network/ResourceResponse.h"
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 

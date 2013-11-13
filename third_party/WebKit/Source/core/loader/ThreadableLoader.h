@@ -32,7 +32,7 @@
 #define ThreadableLoader_h
 
 #include "core/fetch/ResourceLoaderOptions.h"
-#include "weborigin/SecurityOrigin.h"
+#include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"

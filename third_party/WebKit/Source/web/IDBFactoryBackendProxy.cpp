@@ -49,7 +49,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "modules/indexeddb/IDBDatabaseCallbacks.h"
-#include "weborigin/SecurityOrigin.h"
+#include "platform/weborigin/SecurityOrigin.h"
 
 
 using namespace WebCore;

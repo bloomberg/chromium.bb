@@ -29,10 +29,9 @@
  */
 
 #include "config.h"
+#include "platform/weborigin/SecurityOrigin.h"
 
-#include "weborigin/KURL.h"
-#include "weborigin/SecurityOrigin.h"
-
+#include "platform/weborigin/KURL.h"
 #include <gtest/gtest.h>
 
 using WebCore::SecurityOrigin;

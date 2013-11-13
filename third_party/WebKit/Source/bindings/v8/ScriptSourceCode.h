@@ -33,7 +33,7 @@
 
 #include "core/fetch/ResourcePtr.h"
 #include "core/fetch/ScriptResource.h"
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/TextPosition.h"
 #include "wtf/text/WTFString.h"

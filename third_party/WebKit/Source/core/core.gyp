@@ -357,7 +357,6 @@
         '../wtf/wtf.gyp:wtf',
         '../config.gyp:config',
         '../platform/blink_platform.gyp:blink_platform',
-        '../weborigin/weborigin.gyp:weborigin',
         '<(DEPTH)/gpu/gpu.gyp:gles2_c_lib',
         '<(DEPTH)/skia/skia.gyp:skia',
         '<(DEPTH)/third_party/angle_dx11/src/build_angle.gyp:translator',

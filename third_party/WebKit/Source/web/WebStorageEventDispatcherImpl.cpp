@@ -33,9 +33,9 @@
 
 #include "StorageAreaProxy.h"
 #include "WebViewImpl.h"
+#include "platform/weborigin/KURL.h"
+#include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/WebURL.h"
-#include "weborigin/KURL.h"
-#include "weborigin/SecurityOrigin.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace blink {

@@ -22,7 +22,7 @@
 #define StyleSheetContents_h
 
 #include "core/css/CSSParserMode.h"
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/HashMap.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/RefCounted.h"

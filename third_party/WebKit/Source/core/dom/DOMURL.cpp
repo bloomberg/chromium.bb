@@ -35,7 +35,7 @@
 #include "core/fileapi/Blob.h"
 #include "core/html/PublicURLManager.h"
 #include "platform/blob/BlobURL.h"
-#include "weborigin/SecurityOrigin.h"
+#include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/MainThread.h"
 
 namespace WebCore {

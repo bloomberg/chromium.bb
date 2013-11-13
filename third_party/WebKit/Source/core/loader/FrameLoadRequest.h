@@ -31,7 +31,7 @@
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/loader/SubstituteData.h"
 #include "platform/network/ResourceRequest.h"
-#include "weborigin/SecurityOrigin.h"
+#include "platform/weborigin/SecurityOrigin.h"
 
 namespace WebCore {
 class Frame;

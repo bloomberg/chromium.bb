@@ -31,7 +31,7 @@
 #include "platform/network/FormData.h"
 #include "platform/network/HTTPHeaderMap.h"
 #include "platform/network/ResourceLoadPriority.h"
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/OwnPtr.h"
 
 namespace WebCore {

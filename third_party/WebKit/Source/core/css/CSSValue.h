@@ -22,7 +22,7 @@
 #define CSSValue_h
 
 #include "core/dom/ExceptionCode.h"
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"

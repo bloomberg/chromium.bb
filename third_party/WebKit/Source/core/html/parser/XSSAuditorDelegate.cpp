@@ -34,7 +34,7 @@
 #include "core/loader/PingLoader.h"
 #include "platform/JSONValues.h"
 #include "platform/network/FormData.h"
-#include "weborigin/SecurityOrigin.h"
+#include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace WebCore {

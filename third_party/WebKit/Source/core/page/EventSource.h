@@ -37,7 +37,7 @@
 #include "core/events/EventTarget.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "platform/Timer.h"
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 

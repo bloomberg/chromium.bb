@@ -32,7 +32,7 @@
 // original KURL's.
 
 #include "config.h"
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 
 #include "wtf/testing/WTFTestHelpers.h"
 #include <gtest/gtest.h>

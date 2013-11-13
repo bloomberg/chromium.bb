@@ -27,13 +27,13 @@
  */
 
 #include "config.h"
-#include "weborigin/DatabaseIdentifier.h"
+#include "platform/weborigin/DatabaseIdentifier.h"
 
-#include "weborigin/KURL.h"
-#include "weborigin/KnownPorts.h"
-#include "weborigin/SchemeRegistry.h"
-#include "weborigin/SecurityOriginCache.h"
-#include "weborigin/SecurityPolicy.h"
+#include "platform/weborigin/KURL.h"
+#include "platform/weborigin/KnownPorts.h"
+#include "platform/weborigin/SchemeRegistry.h"
+#include "platform/weborigin/SecurityOriginCache.h"
+#include "platform/weborigin/SecurityPolicy.h"
 #include "wtf/HexNumber.h"
 #include "wtf/MainThread.h"
 #include "wtf/StdLibExtras.h"

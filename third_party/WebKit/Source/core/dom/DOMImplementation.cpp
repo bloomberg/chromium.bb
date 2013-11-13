@@ -53,7 +53,7 @@
 #include "platform/MIMETypeRegistry.h"
 #include "platform/graphics/media/MediaPlayer.h"
 #include "platform/plugins/PluginData.h"
-#include "weborigin/SecurityOrigin.h"
+#include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/StdLibExtras.h"
 
 namespace WebCore {

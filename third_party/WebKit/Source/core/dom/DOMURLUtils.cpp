@@ -27,7 +27,7 @@
 #include "config.h"
 #include "core/dom/DOMURLUtils.h"
 
-#include "weborigin/KnownPorts.h"
+#include "platform/weborigin/KnownPorts.h"
 
 namespace WebCore {
 

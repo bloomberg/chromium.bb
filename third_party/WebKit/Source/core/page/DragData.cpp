@@ -36,7 +36,7 @@
 #include "modules/filesystem/DraggedIsolatedFileSystem.h"
 #include "platform/FileMetadata.h"
 #include "platform/clipboard/ClipboardMimeTypes.h"
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {

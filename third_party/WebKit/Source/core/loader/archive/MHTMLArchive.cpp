@@ -37,7 +37,7 @@
 #include "platform/SerializedResource.h"
 #include "platform/SharedBuffer.h"
 #include "platform/text/QuotedPrintable.h"
-#include "weborigin/SchemeRegistry.h"
+#include "platform/weborigin/SchemeRegistry.h"
 #include "wtf/CryptographicallyRandomNumber.h"
 #include "wtf/DateMath.h"
 #include "wtf/GregorianDateTime.h"

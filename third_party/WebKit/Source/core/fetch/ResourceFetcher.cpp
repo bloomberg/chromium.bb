@@ -61,10 +61,10 @@
 #include "core/page/Settings.h"
 #include "platform/Logging.h"
 #include "platform/TraceEvent.h"
+#include "platform/weborigin/SecurityOrigin.h"
+#include "platform/weborigin/SecurityPolicy.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURL.h"
-#include "weborigin/SecurityOrigin.h"
-#include "weborigin/SecurityPolicy.h"
 #include "wtf/text/CString.h"
 #include "wtf/text/WTFString.h"
 

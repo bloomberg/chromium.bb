@@ -36,7 +36,7 @@
 #include "core/inspector/InspectorCounters.h"
 #include "core/rendering/style/RenderStyleConstants.h"
 #include "platform/geometry/LayoutRect.h"
-#include "weborigin/KURLHash.h"
+#include "platform/weborigin/KURLHash.h"
 #include "wtf/Forward.h"
 #include "wtf/ListHashSet.h"
 #include "wtf/text/AtomicString.h"

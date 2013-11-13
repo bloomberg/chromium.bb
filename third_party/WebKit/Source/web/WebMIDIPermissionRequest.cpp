@@ -34,7 +34,7 @@
 #include "WebSecurityOrigin.h"
 #include "core/dom/Document.h"
 #include "modules/webmidi/MIDIAccess.h"
-#include "weborigin/SecurityOrigin.h"
+#include "platform/weborigin/SecurityOrigin.h"
 
 using namespace WebCore;
 

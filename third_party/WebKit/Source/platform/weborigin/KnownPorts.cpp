@@ -25,9 +25,9 @@
  */
 
 #include "config.h"
-#include "weborigin/KnownPorts.h"
+#include "platform/weborigin/KnownPorts.h"
 
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/HashMap.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/StringHash.h"

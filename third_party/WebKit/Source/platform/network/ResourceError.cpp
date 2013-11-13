@@ -27,10 +27,10 @@
 #include "config.h"
 #include "platform/network/ResourceError.h"
 
+#include "platform/weborigin/KURL.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLError.h"
-#include "weborigin/KURL.h"
 
 namespace WebCore {
 

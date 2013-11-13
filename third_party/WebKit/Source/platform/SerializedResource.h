@@ -32,7 +32,7 @@
 #define SerializedResource_h
 
 #include "platform/SharedBuffer.h"
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/text/WTFString.h"
 
 namespace WebCore {

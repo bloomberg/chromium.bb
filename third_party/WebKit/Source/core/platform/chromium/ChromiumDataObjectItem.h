@@ -33,7 +33,7 @@
 
 #include "core/fileapi/File.h"
 #include "platform/SharedBuffer.h"
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
 #include "wtf/text/WTFString.h"

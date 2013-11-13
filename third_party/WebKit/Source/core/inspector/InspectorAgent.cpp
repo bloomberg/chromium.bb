@@ -44,7 +44,7 @@
 #include "core/frame/Frame.h"
 #include "core/page/Page.h"
 #include "platform/JSONValues.h"
-#include "weborigin/SecurityOrigin.h"
+#include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/text/StringBuilder.h"
 
 namespace WebCore {

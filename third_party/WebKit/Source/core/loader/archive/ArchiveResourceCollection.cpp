@@ -29,7 +29,7 @@
 #include "config.h"
 #include "core/loader/archive/ArchiveResourceCollection.h"
 
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 
 namespace WebCore {
 

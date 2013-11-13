@@ -38,7 +38,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/QualifiedName.h"
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 
 #include <gmock/gmock.h>
 #include <gtest/gtest.h>

@@ -30,7 +30,7 @@
 #include "core/dom/Node.h"
 #include "core/fetch/CSSStyleSheetResource.h"
 #include "platform/TraceEvent.h"
-#include "weborigin/SecurityOrigin.h"
+#include "platform/weborigin/SecurityOrigin.h"
 #include "wtf/Deque.h"
 
 namespace WebCore {

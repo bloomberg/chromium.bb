@@ -32,7 +32,7 @@
 #define BlobData_h
 
 #include "platform/FileMetadata.h"
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/Forward.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/ThreadSafeRefCounted.h"

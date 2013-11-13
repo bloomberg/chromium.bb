@@ -31,7 +31,7 @@
 #include "core/editing/EditingBehaviorTypes.h"
 #include "platform/Timer.h"
 #include "platform/geometry/IntSize.h"
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/HashMap.h"
 #include "wtf/text/AtomicString.h"
 #include "wtf/text/AtomicStringHash.h"

@@ -33,7 +33,7 @@
 #define FrameLoaderClientImpl_h
 
 #include "core/loader/FrameLoaderClient.h"
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/RefPtr.h"
 

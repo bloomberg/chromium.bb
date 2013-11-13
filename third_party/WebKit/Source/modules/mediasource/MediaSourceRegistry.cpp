@@ -32,7 +32,7 @@
 #include "modules/mediasource/MediaSourceRegistry.h"
 
 #include "modules/mediasource/MediaSourceBase.h"
-#include "weborigin/KURL.h"
+#include "platform/weborigin/KURL.h"
 #include "wtf/MainThread.h"
 
 namespace WebCore {
