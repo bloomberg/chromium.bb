@@ -63,18 +63,26 @@ def GeomMeanAndStdDevFromHistogram(histogram_json):
   return geom_mean, math.sqrt(sum_of_squares / count)
 
 
+def _ValueToString(v):
+  # Special case for floats so we don't print using scientific notation.
+  if isinstance(v, float):
+    return '%f' % v
+  else:
+    return str(v)
+
+
 def _MeanAndStdDevFromList(values):
   avg = None
   sd = None
   if len(values) > 1:
     try:
-      value = '[%s]' % ','.join([str(v) for v in values])
+      value = '[%s]' % ','.join([_ValueToString(v) for v in values])
       avg = sum([float(v) for v in values]) / len(values)
       sqdiffs = [(float(v) - avg) ** 2 for v in values]
       variance = sum(sqdiffs) / (len(values) - 1)
       sd = math.sqrt(variance)
     except ValueError:
-      value = ", ".join(values)
+      value = ', '.join(values)
   else:
     value = values[0]
   return value, avg, sd
