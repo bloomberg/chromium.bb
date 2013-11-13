@@ -38,7 +38,6 @@ class PeaceKeeperMeasurement(page_measurement.PageMeasurement):
             test_frame.contentWindow.onbeforeunload = {};
             if ((msg.indexOf("Submit ok.")) != -1) {
               _done = true;
-              var __data = {};
               __results["test"] = benchmark.testObjectName;
               __results["score"] = benchmark.test.result;
               if (typeof(benchmark.test.unit) != "undefined") {
@@ -199,4 +198,60 @@ class PeaceKeeperTextParsing(PeaceKeeperBenchmark):
                 'stringWeighted',
                 'stringValidateForm'
                ]
+
+
+class PeaceKeeperHTML5Canvas(PeaceKeeperBenchmark):
+  """PeaceKeeper HTML5 Canvas benchmark suite.
+
+  These tests use HTML5 Canvas, which is a web technology for drawing and
+  manipulating graphics without external plug-ins.
+  1. experimentalRipple01: Simulates a 'water ripple' effect by using HTML 5
+    Canvas. It measures the browser's ability to draw individual pixels.
+  2. experimentalRipple02: Same test as 'experimentalRipple01', but with a
+    larger canvas and thus a heavier workload.
+  """
+
+  tag = 'experimental'
+  test_param = ['experimentalRipple01',
+                'experimentalRipple02'
+               ]
+
+
+class PeaceKeeperHTML5Capabilities(PeaceKeeperBenchmark):
+  """PeaceKeeper HTML5 Capabilities benchmark suite.
+
+  These tests checks browser HTML5 capabilities support for WebGL, Video
+  foramts, simple 2D sprite based games and web worker.
+  This benchmark only tests HTML5 capability and thus is not calculate into the
+  overall score.
+  1. HTML5 - WebGL: WebGL allows full blown 3D graphics to be rendered in a
+    browser without the need for any external plug-ins.
+    a) webglSphere
+  2. HTML5 - Video: hese tests find out which HTML5 video formats are supposed
+    by your browser. Peacekeeper only checks if your browser is able to play a
+    specific format, no other valuation is done.
+    a) videoCodecH264
+    b) videoCodecTheora
+    c) videoCodecWebM
+    d) videoPosterSupport
+  3.HTML5 - Web Worker: These tests use HTML5 Web Worker, which allows
+    JavaScript to multhread - ie. the ability to perform multiple actions
+    concurrently.
+    a) workerContrast01
+    b) workerContrast02
+  4. HTML5 - Game: This test simulates a simple 2D, sprite-based game.
+    The test itself is the real game, and what is shown is a recorded play.
+    a) gamingSpitfire
+  """
+
+  tag = 'html5'
+  test_param = ['webglSphere',
+                'gamingSpitfire',
+                'videoCodecH264',
+                'videoCodecTheora',
+                'videoCodecWebM',
+                'videoPosterSupport',
+                'workerContrast01',
+                'workerContrast02'
+                ]
 
