@@ -113,7 +113,7 @@ jboolean RecentlyClosedTabsBridge::OpenRecentlyClosedTab(JNIEnv* env,
 
   SessionRestore::RestoreForeignSessionTab(web_contents,
                                            session_tab,
-                                           NEW_FOREGROUND_TAB);
+                                           CURRENT_TAB);
   return true;
 }
 

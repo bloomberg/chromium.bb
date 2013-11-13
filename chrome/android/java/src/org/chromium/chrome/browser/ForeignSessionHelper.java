@@ -148,6 +148,7 @@ public class ForeignSessionHelper {
 
     /**
      * Sets callback instance that will be called on every foreign session sync update.
+     * @param callback The callback to be invoked.
      */
     public void setOnForeignSessionCallback(ForeignSessionCallback callback) {
         nativeSetOnForeignSessionCallback(mNativeForeignSessionHelper, callback);
@@ -166,7 +167,7 @@ public class ForeignSessionHelper {
                 @Override
                 public int compare(ForeignSession lhs, ForeignSession rhs) {
                     return lhs.modifiedTime < rhs.modifiedTime ? 1 :
-                        (lhs.modifiedTime == rhs.modifiedTime ? 0: -1);
+                        (lhs.modifiedTime == rhs.modifiedTime ? 0 : -1);
                 }
             });
         } else {
@@ -177,13 +178,29 @@ public class ForeignSessionHelper {
     }
 
     /**
+     * TODO(apiccion): Remvoe this method once downstream CL Lands.
+     * See: http://crbug.com/257102
      * Opens the given foreign tab in a new tab.
      * @param session Session that the target tab belongs to.
-     * @param tab     Target tab to open.
-     * @return        {@code True} iff the tab is successfully opened.
+     * @param tab Target tab to open.
+     * @return {@code True} iff the tab is successfully opened.
      */
     public boolean openForeignSessionTab(ForeignSession session, ForeignSessionTab tab) {
-        return nativeOpenForeignSessionTab(mNativeForeignSessionHelper, session.tag, tab.id);
+        return nativeOpenForeignSessionTabOld(mNativeForeignSessionHelper, session.tag, tab.id);
+    }
+
+    /**
+     * Opens the given foreign tab in a new tab.
+     * @param tab Tab to load the session into.
+     * @param session Session that the target tab belongs to.
+     * @param foreignTab Target tab to open.
+     * @param windowOpenDisposition The WindowOpenDisposition flag.
+     * @return {@code True} iff the tab is successfully opened.
+     */
+    public boolean openForeignSessionTab(TabBase tab, ForeignSession session,
+            ForeignSessionTab foreignTab, int windowOpenDisposition) {
+        return nativeOpenForeignSessionTab(mNativeForeignSessionHelper, tab, session.tag,
+                foreignTab.id, windowOpenDisposition);
     }
 
     /**
@@ -204,8 +221,13 @@ public class ForeignSessionHelper {
             int nativeForeignSessionHelper, ForeignSessionCallback callback);
     private static native boolean nativeGetForeignSessions(int nativeForeignSessionHelper,
             List<ForeignSession> resultSessions);
-    private static native boolean nativeOpenForeignSessionTab(
+    // TODO(apiccion): Remvoe this method once downstream CL Lands.
+    // See: http://crbug.com/257102
+    private static native boolean nativeOpenForeignSessionTabOld(
             int nativeForeignSessionHelper, String sessionTag, int tabId);
+    private static native boolean nativeOpenForeignSessionTab(
+            int nativeForeignSessionHelper, TabBase tab, String sessionTag, int tabId,
+            int disposition);
     private static native void nativeDeleteForeignSession(
             int nativeForeignSessionHelper, String sessionTag);
 }

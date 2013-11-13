@@ -3,3 +3,6 @@ sky@chromium.org
 
 per-file restore_on_startup_policy_handler*=joaodasilva@chromium.org
 per-file restore_on_startup_policy_handler*=dconnelly@chromium.org
+
+per-file session_restore_android*=yfriedman@chromium.org
+per-file session_restore_android*=felipeg@chromium.org

@@ -65,7 +65,8 @@ class SessionRestore {
   // Specifically used in the restoration of a foreign session.  This method
   // restores the given session tab to the browser of |source_web_contents| if
   // the disposition is not NEW_WINDOW. Returns the WebContents corresponding
-  // to the restored tab.
+  // to the restored tab. If |disposition| is CURRENT_TAB, |source_web_contents|
+  // may be destroyed.
   static content::WebContents* RestoreForeignSessionTab(
       content::WebContents* source_web_contents,
       const SessionTab& tab,

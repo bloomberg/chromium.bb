@@ -28,10 +28,18 @@ class ForeignSessionHelper : public content::NotificationObserver {
   jboolean IsTabSyncEnabled(JNIEnv* env, jobject obj);
   void SetOnForeignSessionCallback(JNIEnv* env, jobject obj, jobject callback);
   jboolean GetForeignSessions(JNIEnv* env, jobject obj, jobject result);
+  // TODO(apiccion): Remvoe this method once downstream CL Lands.
+  // See: http://crbug.com/257102
+  jboolean OpenForeignSessionTabOld(JNIEnv* env,
+                                    jobject obj,
+                                    jstring session_tag,
+                                    jint tab_id);
   jboolean OpenForeignSessionTab(JNIEnv* env,
                                  jobject obj,
+                                 jobject j_tab,
                                  jstring session_tag,
-                                 jint tab_id);
+                                 jint tab_id,
+                                 jint disposition);
   void DeleteForeignSession(JNIEnv* env, jobject obj, jstring session_tag);
 
   // NotificationObserver implemenation
