@@ -65,6 +65,7 @@ class RuleData;
 class Settings;
 class StyleKeyframe;
 class StylePropertySet;
+class StyleResolverStats;
 class StyleRule;
 class StyleRuleKeyframes;
 class StyleRulePage;
@@ -88,80 +89,6 @@ enum RuleMatchingBehavior {
 
 const unsigned styleSharingListSize = 40;
 typedef WTF::Deque<Element*, styleSharingListSize> StyleSharingList;
-
-#undef STYLE_STATS
-
-#ifdef STYLE_STATS
-struct StyleSharingStats {
-    void addSearch() { ++m_searches; ++m_totalSearches; }
-    void addElementEligibleForSharing() { ++m_elementsEligibleForSharing; ++m_totalElementsEligibleForSharing; }
-    void addStyleShared() { ++m_stylesShared; ++m_totalStylesShared; }
-    void addSearchFoundSiblingForSharing() { ++m_searchFoundSiblingForSharing; ++m_totalSearchFoundSiblingForSharing; }
-    void addSearchMissedSharing() { ++m_searchesMissedSharing; ++m_totalSearchesMissedSharing; }
-    void addMatchedPropertiesSearch() { ++m_matchedPropertiesSearches; ++m_totalMatchedPropertiesSearches; }
-    void addMatchedPropertiesHit() { ++m_matchedPropertiesHit; ++m_totalMatchedPropertiesHit; }
-    void addMatchedPropertiesHitSharedInherited() { ++m_matchedPropertiesSharedInheritedHit; ++m_totalMatchedPropertiesSharedInheritedHit; }
-    void addMatchedPropertiesToCache() { ++m_matchedPropertiesToCache; ++m_totalMatchedPropertiesToCache; }
-    void addMatchedPropertiesEnteredIntoCache() { ++m_matchedPropertiesEnteredIntoCache; ++m_totalMatchedPropertiesEnteredIntoCache; }
-
-    void clear()
-    {
-        m_searches = m_elementsEligibleForSharing = m_stylesShared = m_searchesMissedSharing = m_searchFoundSiblingForSharing =
-            m_matchedPropertiesSearches = m_matchedPropertiesHit = m_matchedPropertiesSharedInheritedHit = m_matchedPropertiesToCache =
-            m_matchedPropertiesEnteredIntoCache = 0;
-    }
-
-    void printStats() const;
-
-    unsigned m_searches;
-    unsigned m_elementsEligibleForSharing;
-    unsigned m_stylesShared;
-    unsigned m_searchFoundSiblingForSharing;
-    unsigned m_searchesMissedSharing;
-    unsigned m_matchedPropertiesSearches;
-    unsigned m_matchedPropertiesHit;
-    unsigned m_matchedPropertiesSharedInheritedHit;
-    unsigned m_matchedPropertiesToCache;
-    unsigned m_matchedPropertiesEnteredIntoCache;
-
-    unsigned m_totalSearches;
-    unsigned m_totalElementsEligibleForSharing;
-    unsigned m_totalStylesShared;
-    unsigned m_totalSearchFoundSiblingForSharing;
-    unsigned m_totalSearchesMissedSharing;
-    unsigned m_totalMatchedPropertiesSearches;
-    unsigned m_totalMatchedPropertiesHit;
-    unsigned m_totalMatchedPropertiesSharedInheritedHit;
-    unsigned m_totalMatchedPropertiesToCache;
-    unsigned m_totalMatchedPropertiesEnteredIntoCache;
-};
-
-#define STYLE_STATS_ADD_SEARCH() StyleResolver::styleSharingStats().addSearch();
-#define STYLE_STATS_ADD_ELEMENT_ELIGIBLE_FOR_SHARING() StyleResolver::styleSharingStats().addElementEligibleForSharing();
-#define STYLE_STATS_ADD_STYLE_SHARED() StyleResolver::styleSharingStats().addStyleShared();
-#define STYLE_STATS_ADD_SEARCH_FOUND_SIBLING_FOR_SHARING() StyleResolver::styleSharingStats().addSearchFoundSiblingForSharing();
-#define STYLE_STATS_ADD_SEARCH_MISSED_SHARING() StyleResolver::styleSharingStats().addSearchMissedSharing();
-#define STYLE_STATS_PRINT() StyleResolver::styleSharingStats().printStats();
-#define STYLE_STATS_CLEAR() StyleResolver::styleSharingStats().clear();
-#define STYLE_STATS_ADD_MATCHED_PROPERTIES_SEARCH() StyleResolver::styleSharingStats().addMatchedPropertiesSearch();
-#define STYLE_STATS_ADD_MATCHED_PROPERTIES_HIT() StyleResolver::styleSharingStats().addMatchedPropertiesHit();
-#define STYLE_STATS_ADD_MATCHED_PROPERTIES_HIT_SHARED_INHERITED() StyleResolver::styleSharingStats().addMatchedPropertiesHitSharedInherited();
-#define STYLE_STATS_ADD_MATCHED_PROPERTIES_TO_CACHE() StyleResolver::styleSharingStats().addMatchedPropertiesToCache();
-#define STYLE_STATS_ADD_MATCHED_PROPERTIES_ENTERED_INTO_CACHE() StyleResolver::styleSharingStats().addMatchedPropertiesEnteredIntoCache();
-#else
-#define STYLE_STATS_ADD_SEARCH() (void(0));
-#define STYLE_STATS_ADD_ELEMENT_ELIGIBLE_FOR_SHARING() (void(0));
-#define STYLE_STATS_ADD_STYLE_SHARED() (void(0));
-#define STYLE_STATS_ADD_SEARCH_FOUND_SIBLING_FOR_SHARING() (void(0));
-#define STYLE_STATS_ADD_SEARCH_MISSED_SHARING() (void(0));
-#define STYLE_STATS_PRINT() (void(0));
-#define STYLE_STATS_CLEAR() (void(0));
-#define STYLE_STATS_ADD_MATCHED_PROPERTIES_SEARCH() (void(0));
-#define STYLE_STATS_ADD_MATCHED_PROPERTIES_HIT() (void(0));
-#define STYLE_STATS_ADD_MATCHED_PROPERTIES_HIT_SHARED_INHERITED() (void(0));
-#define STYLE_STATS_ADD_MATCHED_PROPERTIES_TO_CACHE() (void(0));
-#define STYLE_STATS_ADD_MATCHED_PROPERTIES_ENTERED_INTO_CACHE() (void(0));
-#endif
 
 struct CSSPropertyValue {
     CSSPropertyValue(CSSPropertyID property, CSSValue* value)
@@ -280,9 +207,12 @@ public:
     void addToStyleSharingList(Element&);
     void clearStyleSharingList();
 
-#ifdef STYLE_STATS
-    ALWAYS_INLINE static StyleSharingStats& styleSharingStats() { return m_styleSharingStats; }
-#endif
+    StyleResolverStats* stats() { return m_styleResolverStats.get(); }
+    StyleResolverStats* statsTotals() { return m_styleResolverStatsTotals.get(); }
+    enum StatsReportType { ReportDefaultStats, ReportSlowStats };
+    void enableStats(StatsReportType = ReportDefaultStats);
+    void disableStats();
+    void printStats();
 
 private:
     // FontSelectorClient implementation.
@@ -373,9 +303,9 @@ private:
 
     StyleSharingList m_styleSharingList;
 
-#ifdef STYLE_STATS
-    static StyleSharingStats m_styleSharingStats;
-#endif
+    OwnPtr<StyleResolverStats> m_styleResolverStats;
+    OwnPtr<StyleResolverStats> m_styleResolverStatsTotals;
+    unsigned m_styleResolverStatsSequence;
 };
 
 inline bool checkRegionSelector(const CSSSelector* regionSelector, Element* regionElement)

@@ -32,6 +32,7 @@
 #include "HTMLNames.h"
 #include "XMLNames.h"
 #include "core/css/resolver/StyleResolver.h"
+#include "core/css/resolver/StyleResolverStats.h"
 #include "core/dom/ContainerNode.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
@@ -240,7 +241,7 @@ bool SharedStyleFinder::canShareStyleWithElement(Element& candidate) const
 bool SharedStyleFinder::documentContainsValidCandidate() const
 {
     for (Element* element = document().documentElement(); element; element = ElementTraversal::next(*element)) {
-        if (canShareStyleWithElement(*element))
+        if (element->supportsStyleSharing() && canShareStyleWithElement(*element))
             return true;
     }
     return false;
@@ -274,38 +275,40 @@ bool SharedStyleFinder::matchesRuleSet(RuleSet* ruleSet)
 
 RenderStyle* SharedStyleFinder::findSharedStyle()
 {
-    STYLE_STATS_ADD_SEARCH();
+    INCREMENT_STYLE_STATS_COUNTER(m_styleResolver, sharedStyleLookups);
 
     if (!element().supportsStyleSharing())
         return 0;
-
-    STYLE_STATS_ADD_ELEMENT_ELIGIBLE_FOR_SHARING();
 
     // Cache whether context.element() is affected by any known class selectors.
     m_elementAffectedByClassRules = element().hasClass() && classNamesAffectedByRules(element().classNames());
 
     Element* shareElement = findElementForStyleSharing();
 
-#ifdef STYLE_STATS
-    // FIXME: these stats don't to into account whether or not sibling/attribute
-    // rules prevent these nodes from actually sharing
-    if (shareElement)
-        STYLE_STATS_ADD_SEARCH_FOUND_SIBLING_FOR_SHARING();
-    else if (documentContainsValidCandidate())
-        STYLE_STATS_ADD_SEARCH_MISSED_SHARING();
-#endif
-
-    // If we have exhausted all our budget or our cousins.
-    if (!shareElement)
+    if (!shareElement) {
+        if (m_styleResolver.stats() && m_styleResolver.stats()->printMissedCandidateCount && documentContainsValidCandidate())
+            INCREMENT_STYLE_STATS_COUNTER(m_styleResolver, sharedStyleMissed);
         return 0;
+    }
 
-    // Can't share if sibling or attribute rules apply. This is checked at the end as it should rarely fail.
-    if (matchesRuleSet(m_siblingRuleSet) || matchesRuleSet(m_uncommonAttributeRuleSet))
+    INCREMENT_STYLE_STATS_COUNTER(m_styleResolver, sharedStyleFound);
+
+    if (matchesRuleSet(m_siblingRuleSet)) {
+        INCREMENT_STYLE_STATS_COUNTER(m_styleResolver, sharedStyleRejectedBySiblingRules);
         return 0;
+    }
+
+    if (matchesRuleSet(m_uncommonAttributeRuleSet)) {
+        INCREMENT_STYLE_STATS_COUNTER(m_styleResolver, sharedStyleRejectedByUncommonAttributeRules);
+        return 0;
+    }
+
     // Tracking child index requires unique style for each node. This may get set by the sibling rule match above.
-    if (!element().parentElement()->childrenSupportStyleSharing())
+    if (!element().parentElement()->childrenSupportStyleSharing()) {
+        INCREMENT_STYLE_STATS_COUNTER(m_styleResolver, sharedStyleRejectedByParent);
         return 0;
-    STYLE_STATS_ADD_STYLE_SHARED();
+    }
+
     return shareElement->renderStyle();
 }
 

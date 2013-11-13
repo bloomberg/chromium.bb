@@ -45,6 +45,7 @@
 #include "core/animation/DocumentTimeline.h"
 #include "core/css/StyleSheetContents.h"
 #include "core/css/resolver/StyleResolver.h"
+#include "core/css/resolver/StyleResolverStats.h"
 #include "core/css/resolver/ViewportStyleResolver.h"
 #include "core/dom/ClientRect.h"
 #include "core/dom/ClientRectList.h"
@@ -301,6 +302,35 @@ bool Internals::isLoadingFromMemoryCache(const String& url)
 void Internals::crash()
 {
     CRASH();
+}
+
+void Internals::setStyleResolverStatsEnabled(bool enabled)
+{
+    Document* document = contextDocument();
+    if (enabled)
+        document->styleResolver()->enableStats(StyleResolver::ReportSlowStats);
+    else
+        document->styleResolver()->disableStats();
+}
+
+String Internals::styleResolverStatsReport(ExceptionState& es) const
+{
+    Document* document = contextDocument();
+    if (!document->styleResolver()->stats()) {
+        es.throwDOMException(InvalidStateError, "Style resolver stats not enabled");
+        return String();
+    }
+    return document->styleResolver()->stats()->report();
+}
+
+String Internals::styleResolverStatsTotalsReport(ExceptionState& es) const
+{
+    Document* document = contextDocument();
+    if (!document->styleResolver()->statsTotals()) {
+        es.throwDOMException(InvalidStateError, "Style resolver stats not enabled");
+        return String();
+    }
+    return document->styleResolver()->statsTotals()->report();
 }
 
 PassRefPtr<Element> Internals::createContentElement(ExceptionState& es)

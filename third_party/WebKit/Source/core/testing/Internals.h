@@ -85,6 +85,10 @@ public:
 
     void crash();
 
+    void setStyleResolverStatsEnabled(bool);
+    String styleResolverStatsReport(ExceptionState&) const;
+    String styleResolverStatsTotalsReport(ExceptionState&) const;
+
     size_t numberOfScopedHTMLStyleChildren(const Node*, ExceptionState&) const;
     PassRefPtr<CSSComputedStyleDeclaration> computedStyleIncludingVisitedInfo(Node*, ExceptionState&) const;
 

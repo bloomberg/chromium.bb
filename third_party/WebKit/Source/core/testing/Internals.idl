@@ -37,6 +37,10 @@
 
     void crash();
 
+    void setStyleResolverStatsEnabled(boolean enabled);
+    [RaisesException] DOMString styleResolverStatsReport();
+    [RaisesException] DOMString styleResolverStatsTotalsReport();
+
     [RaisesException] unsigned long numberOfScopedHTMLStyleChildren(Node scope);
     [RaisesException] CSSStyleDeclaration computedStyleIncludingVisitedInfo(Node node);
 

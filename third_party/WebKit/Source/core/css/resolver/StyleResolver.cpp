@@ -63,6 +63,7 @@
 #include "core/css/resolver/SharedStyleFinder.h"
 #include "core/css/resolver/StyleAdjuster.h"
 #include "core/css/resolver/StyleBuilder.h"
+#include "core/css/resolver/StyleResolverStats.h"
 #include "core/css/resolver/ViewportStyleResolver.h"
 #include "core/dom/CSSSelectorWatch.h"
 #include "core/dom/NodeRenderStyle.h"
@@ -126,6 +127,7 @@ StyleResolver::StyleResolver(Document& document)
     , m_fontSelector(CSSFontSelector::create(&document))
     , m_viewportStyleResolver(ViewportStyleResolver::create(&document))
     , m_styleResourceLoader(document.fetcher())
+    , m_styleResolverStatsSequence(0)
 {
     Element* root = document.documentElement();
 
@@ -321,6 +323,7 @@ void StyleResolver::addToStyleSharingList(Element& element)
     // otherwise we could leave stale pointers in there.
     if (!document().inStyleRecalc())
         return;
+    INCREMENT_STYLE_STATS_COUNTER(*this, sharedStyleCandidates);
     if (m_styleSharingList.size() >= styleSharingListSize)
         m_styleSharingList.remove(--m_styleSharingList.end());
     m_styleSharingList.prepend(&element);
@@ -1222,7 +1225,8 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
 {
     const Element* element = state.element();
     ASSERT(element);
-    STYLE_STATS_ADD_MATCHED_PROPERTIES_SEARCH();
+
+    INCREMENT_STYLE_STATS_COUNTER(*this, matchedPropertyApply);
 
     unsigned cacheHash = matchResult.isCacheable ? computeMatchedPropertiesHash(matchResult.matchedProperties.data(), matchResult.matchedProperties.size()) : 0;
     bool applyInheritedOnly = false;
@@ -1230,13 +1234,13 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
 
     if (cacheHash && (cachedMatchedProperties = m_matchedPropertiesCache.find(cacheHash, state, matchResult))
         && MatchedPropertiesCache::isCacheable(element, state.style(), state.parentStyle())) {
-        STYLE_STATS_ADD_MATCHED_PROPERTIES_HIT();
+        INCREMENT_STYLE_STATS_COUNTER(*this, matchedPropertyCacheHit);
         // We can build up the style by copying non-inherited properties from an earlier style object built using the same exact
         // style declarations. We then only need to apply the inherited properties, if any, as their values can depend on the
         // element context. This is fast and saves memory by reusing the style data structures.
         state.style()->copyNonInheritedFrom(cachedMatchedProperties->renderStyle.get());
         if (state.parentStyle()->inheritedDataShared(cachedMatchedProperties->parentRenderStyle.get()) && !isAtShadowBoundary(element)) {
-            STYLE_STATS_ADD_MATCHED_PROPERTIES_HIT_SHARED_INHERITED();
+            INCREMENT_STYLE_STATS_COUNTER(*this, matchedPropertyCacheInheritedHit);
 
             EInsideLink linkStatus = state.style()->insideLink();
             // If the cache item parent style has identical inherited properties to the current parent style then the
@@ -1337,22 +1341,46 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
 
     ASSERT(!state.fontBuilder().fontDirty());
 
-#ifdef STYLE_STATS
-    if (!cachedMatchedProperties)
-        STYLE_STATS_ADD_MATCHED_PROPERTIES_TO_CACHE();
-#endif
-
     if (cachedMatchedProperties || !cacheHash)
         return;
     if (!MatchedPropertiesCache::isCacheable(element, state.style(), state.parentStyle()))
         return;
-    STYLE_STATS_ADD_MATCHED_PROPERTIES_ENTERED_INTO_CACHE();
+    INCREMENT_STYLE_STATS_COUNTER(*this, matchedPropertyCacheAdded);
     m_matchedPropertiesCache.add(state.style(), state.parentStyle(), cacheHash, matchResult);
 }
 
 CSSPropertyValue::CSSPropertyValue(CSSPropertyID id, const StylePropertySet& propertySet)
     : property(id), value(propertySet.getPropertyCSSValue(id).get())
 { }
+
+void StyleResolver::enableStats(StatsReportType reportType)
+{
+    if (m_styleResolverStats)
+        return;
+    m_styleResolverStats = StyleResolverStats::create();
+    m_styleResolverStatsTotals = StyleResolverStats::create();
+    if (reportType == ReportSlowStats) {
+        m_styleResolverStats->printMissedCandidateCount = true;
+        m_styleResolverStatsTotals->printMissedCandidateCount = true;
+    }
+}
+
+void StyleResolver::disableStats()
+{
+    m_styleResolverStatsSequence = 0;
+    m_styleResolverStats.clear();
+    m_styleResolverStatsTotals.clear();
+}
+
+void StyleResolver::printStats()
+{
+    if (!m_styleResolverStats)
+        return;
+    fprintf(stderr, "=== Style Resolver Stats (resolve #%u) (%s) ===\n", ++m_styleResolverStatsSequence, m_document.url().string().utf8().data());
+    fprintf(stderr, "%s\n", m_styleResolverStats->report().utf8().data());
+    fprintf(stderr, "== Totals ==\n");
+    fprintf(stderr, "%s\n", m_styleResolverStatsTotals->report().utf8().data());
+}
 
 void StyleResolver::applyPropertiesToStyle(const CSSPropertyValue* properties, size_t count, RenderStyle* style)
 {
@@ -1388,40 +1416,5 @@ bool StyleResolver::affectedByViewportChange() const
     }
     return false;
 }
-
-#ifdef STYLE_STATS
-StyleSharingStats StyleResolver::m_styleSharingStats;
-
-static void printStyleStats(unsigned searches, unsigned elementsEligibleForSharing, unsigned stylesShared, unsigned searchFoundSiblingForSharing, unsigned searchesMissedSharing,
-    unsigned matchedPropertiesSearches, unsigned matchedPropertiesHit, unsigned matchedPropertiesSharedInheritedHit, unsigned matchedPropertiesToCache, unsigned matchedPropertiesEnteredIntoCache)
-{
-    double percentOfElementsSharingStyle = (stylesShared * 100.0) / searches;
-    double percentOfNodesEligibleForSharing = (elementsEligibleForSharing * 100.0) / searches;
-    double percentOfEligibleSharingRelativesFound = (searchFoundSiblingForSharing * 100.0) / searches;
-    double percentOfMatchedPropertiesHit = (matchedPropertiesHit * 100.0) / matchedPropertiesSearches;
-    double percentOfMatchedPropertiesSharedInheritedHit = (matchedPropertiesSharedInheritedHit * 100.0) / matchedPropertiesSearches;
-    double percentOfMatchedPropertiesEnteredIntoCache = (matchedPropertiesEnteredIntoCache * 100.0) / matchedPropertiesToCache;
-
-    fprintf(stderr, "%u elements checked, %u were eligible for style sharing (%.2f%%).\n", searches, elementsEligibleForSharing, percentOfNodesEligibleForSharing);
-    fprintf(stderr, "%u elements were found to share with, %u were possible (%.2f%%).\n", searchFoundSiblingForSharing, searchesMissedSharing + searchFoundSiblingForSharing, percentOfEligibleSharingRelativesFound);
-    fprintf(stderr, "%u styles were actually shared once sibling and attribute rules were considered (%.2f%%).\n", stylesShared, percentOfElementsSharingStyle);
-    fprintf(stderr, "%u/%u (%.2f%%) matched property lookups hit the cache.\n", matchedPropertiesHit, matchedPropertiesSearches, percentOfMatchedPropertiesHit);
-    fprintf(stderr, "%u/%u (%.2f%%) matched property lookups hit the cache and shared inherited data.\n", matchedPropertiesSharedInheritedHit, matchedPropertiesSearches, percentOfMatchedPropertiesSharedInheritedHit);
-    fprintf(stderr, "%u/%u (%.2f%%) matched properties were cacheable\n", matchedPropertiesEnteredIntoCache, matchedPropertiesToCache, percentOfMatchedPropertiesEnteredIntoCache);
-}
-
-void StyleSharingStats::printStats() const
-{
-    fprintf(stderr, "--------------------------------------------------------------------------------\n");
-    fprintf(stderr, "This recalc style:\n");
-    printStyleStats(m_searches, m_elementsEligibleForSharing, m_stylesShared, m_searchFoundSiblingForSharing, m_searchesMissedSharing,
-        m_matchedPropertiesSearches, m_matchedPropertiesHit, m_matchedPropertiesSharedInheritedHit, m_matchedPropertiesToCache, m_matchedPropertiesEnteredIntoCache);
-
-    fprintf(stderr, "Total:\n");
-    printStyleStats(m_totalSearches, m_totalElementsEligibleForSharing, m_totalStylesShared, m_totalSearchFoundSiblingForSharing, m_totalSearchesMissedSharing,
-        m_totalMatchedPropertiesSearches, m_totalMatchedPropertiesHit, m_totalMatchedPropertiesSharedInheritedHit, m_totalMatchedPropertiesToCache, m_totalMatchedPropertiesEnteredIntoCache);
-    fprintf(stderr, "--------------------------------------------------------------------------------\n");
-}
-#endif
 
 } // namespace WebCore

@@ -55,6 +55,7 @@
 #include "core/css/StyleSheetList.h"
 #include "core/css/resolver/FontBuilder.h"
 #include "core/css/resolver/StyleResolver.h"
+#include "core/css/resolver/StyleResolverStats.h"
 #include "core/dom/AddConsoleMessageTask.h"
 #include "core/dom/Attr.h"
 #include "core/dom/CDATASection.h"
@@ -1712,6 +1713,11 @@ void Document::recalcStyle(StyleRecalcChange change)
         if (styleChangeType() >= SubtreeStyleChange)
             change = Force;
 
+        // FIXME: Cannot access the styleResolver() before calling styleForDocument below because
+        // apparently the StyleResolver's constructor has side effects. We should fix it.
+        // See printing/setPrinting.html, printing/width-overflow.html though they only fail on
+        // mac when accessing the resolver by what appears to be a viewport size difference.
+
         if (change == Force || (change >= Inherit && shouldDisplaySeamlesslyWithParent())) {
             m_hasNodesWithPlaceholderStyle = false;
             RefPtr<RenderStyle> documentStyle = StyleResolver::styleForDocument(*this, m_styleResolver ? m_styleResolver->fontSelector() : 0);
@@ -1722,11 +1728,22 @@ void Document::recalcStyle(StyleRecalcChange change)
 
         clearNeedsStyleRecalc();
 
+        // Uncomment to enable printing of statistics about style sharing and the matched property cache.
+        // Optionally pass StyleResolver::ReportSlowStats to print numbers that require crawling the
+        // entire DOM (where collecting them is very slow).
+        // FIXME: Expose this as a runtime flag.
+        // styleResolver()->enableStats(/*StyleResolver::ReportSlowStats*/);
+
+        if (StyleResolverStats* stats = styleResolver()->stats())
+            stats->reset();
+
         if (Element* documentElement = this->documentElement()) {
             inheritHtmlAndBodyElementStyles(change);
             if (shouldRecalcStyle(change, documentElement))
                 documentElement->recalcStyle(change);
         }
+
+        styleResolver()->printStats();
 
         view()->updateCompositingLayersAfterStyleChange();
 
@@ -1744,9 +1761,6 @@ void Document::recalcStyle(StyleRecalcChange change)
             m_styleResolver->clearStyleSharingList();
         }
     }
-
-    STYLE_STATS_PRINT();
-    STYLE_STATS_CLEAR();
 
     InspectorInstrumentation::didRecalculateStyle(cookie);
 

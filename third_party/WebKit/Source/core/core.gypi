@@ -839,6 +839,8 @@
             'css/resolver/StyleResolverIncludes.h',
             'css/resolver/StyleResolverState.cpp',
             'css/resolver/StyleResolverState.h',
+            'css/resolver/StyleResolverStats.cpp',
+            'css/resolver/StyleResolverStats.h',
             'css/resolver/StyleResourceLoader.cpp',
             'css/resolver/StyleResourceLoader.h',
             'css/resolver/TransformBuilder.cpp',
