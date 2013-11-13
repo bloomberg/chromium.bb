@@ -2860,6 +2860,7 @@
             'platform/graphics/filters/FilterOperation.h',
             'platform/graphics/filters/FilterOperations.cpp',
             'platform/graphics/filters/FilterOperations.h',
+            'platform/graphics/filters/ParallelJobs.h',
             'platform/graphics/filters/PointLightSource.cpp',
             'platform/graphics/filters/PointLightSource.h',
             'platform/graphics/filters/ReferenceFilter.cpp',

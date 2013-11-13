@@ -27,9 +27,9 @@
 #include "core/platform/graphics/filters/FEConvolveMatrix.h"
 
 #include "core/platform/graphics/filters/Filter.h"
+#include "core/platform/graphics/filters/ParallelJobs.h"
 #include "platform/text/TextStream.h"
 #include "wtf/OwnPtr.h"
-#include "wtf/ParallelJobs.h"
 #include "wtf/Uint8ClampedArray.h"
 
 #include "SkMatrixConvolutionImageFilter.h"
@@ -454,7 +454,7 @@ void FEConvolveMatrix::applySoftware()
 
         int optimalThreadNumber = (absolutePaintRect().width() * absolutePaintRect().height()) / s_minimalRectDimension;
         if (optimalThreadNumber > 1) {
-            WTF::ParallelJobs<InteriorPixelParameters> parallelJobs(&WebCore::FEConvolveMatrix::setInteriorPixelsWorker, optimalThreadNumber);
+            ParallelJobs<InteriorPixelParameters> parallelJobs(&WebCore::FEConvolveMatrix::setInteriorPixelsWorker, optimalThreadNumber);
             const int numOfThreads = parallelJobs.numberOfJobs();
 
             // Split the job into "heightPerThread" jobs but there a few jobs that need to be slightly larger since

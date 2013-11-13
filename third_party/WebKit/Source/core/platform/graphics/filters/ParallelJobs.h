@@ -28,15 +28,18 @@
 #ifndef ParallelJobs_h
 #define ParallelJobs_h
 
+#include "platform/Task.h"
+#include "public/platform/Platform.h"
+#include "public/platform/WebThread.h"
 #include "wtf/Assertions.h"
 #include "wtf/Noncopyable.h"
-#include "wtf/RefPtr.h"
+#include "wtf/OwnPtr.h"
 #include "wtf/Vector.h"
 
 // Usage:
 //
 //     // Initialize parallel jobs
-//     ParallelJobs<TypeOfParameter> parallelJobs(&worker [, requestedNumberOfJobs]);
+//     ParallelJobs<TypeOfParameter> parallelJobs(&worker, requestedNumberOfJobs);
 //
 //     // Fill the parameter array
 //     for(i = 0; i < parallelJobs.numberOfJobs(); ++i) {
@@ -49,36 +52,24 @@
 //     parallelJobs.execute();
 //
 
-#if !defined(ENABLE_THREADING_LIBDISPATCH) && HAVE(DISPATCH_H)
-#define ENABLE_THREADING_LIBDISPATCH 1
-#elif !defined(THREADING_GENERIC)
-#define ENABLE_THREADING_GENERIC 1
-#endif
-
-#if ENABLE(THREADING_GENERIC)
-#include "wtf/ParallelJobsGeneric.h"
-
-#elif ENABLE(THREADING_LIBDISPATCH)
-#include "wtf/ParallelJobsLibdispatch.h"
-
-#else
-#error "No parallel processing API for ParallelJobs"
-
-#endif
-
-namespace WTF {
+namespace WebCore {
 
 template<typename Type>
 class ParallelJobs {
+    WTF_MAKE_NONCOPYABLE(ParallelJobs);
     WTF_MAKE_FAST_ALLOCATED;
 public:
     typedef void (*WorkerFunction)(Type*);
 
-    ParallelJobs(WorkerFunction func, int requestedJobNumber) :
-        m_parallelEnvironment(reinterpret_cast<ParallelEnvironment::ThreadFunction>(func), sizeof(Type), requestedJobNumber)
+    ParallelJobs(WorkerFunction func, size_t requestedJobNumber)
+        : m_func(func)
     {
-        m_parameters.grow(m_parallelEnvironment.numberOfJobs());
-        ASSERT(numberOfJobs() == m_parameters.size());
+        m_parameters.grow(requestedJobNumber);
+        // The main thread can execute one job, so only create requestJobNumber - 1 threads.
+        for (size_t i = 0; i < requestedJobNumber - 1; ++i) {
+            OwnPtr<blink::WebThread> thread = adoptPtr(blink::Platform::current()->createThread("Unfortunate parallel worker"));
+            m_threads.append(thread.release());
+        }
     }
 
     size_t numberOfJobs()
@@ -93,16 +84,18 @@ public:
 
     void execute()
     {
-        m_parallelEnvironment.execute(reinterpret_cast<unsigned char*>(m_parameters.data()));
+        for (size_t i = 0; i < numberOfJobs() - 1; ++i)
+            m_threads[i]->postTask(new Task(WTF::bind(m_func, &parameter(i))));
+        m_func(&parameter(numberOfJobs() - 1));
+        m_threads.clear();
     }
 
 private:
-    ParallelEnvironment m_parallelEnvironment;
+    WorkerFunction m_func;
+    Vector<OwnPtr<blink::WebThread> > m_threads;
     Vector<Type> m_parameters;
 };
 
-} // namespace WTF
-
-using WTF::ParallelJobs;
+} // namespace WebCore
 
 #endif // ParallelJobs_h

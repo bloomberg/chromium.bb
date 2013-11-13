@@ -30,10 +30,10 @@
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/cpu/arm/filters/FEGaussianBlurNEON.h"
 #include "core/platform/graphics/filters/Filter.h"
+#include "core/platform/graphics/filters/ParallelJobs.h"
 #include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/text/TextStream.h"
 #include "wtf/MathExtras.h"
-#include "wtf/ParallelJobs.h"
 #include "wtf/Uint8ClampedArray.h"
 
 #include "SkBlurImageFilter.h"
@@ -168,7 +168,7 @@ inline void FEGaussianBlur::platformApply(Uint8ClampedArray* srcPixelArray, Uint
     int optimalThreadNumber = (paintSize.width() * paintSize.height()) / (s_minimalRectDimension + extraHeight * paintSize.width());
 
     if (optimalThreadNumber > 1) {
-        WTF::ParallelJobs<PlatformApplyParameters> parallelJobs(&platformApplyWorker, optimalThreadNumber);
+        ParallelJobs<PlatformApplyParameters> parallelJobs(&platformApplyWorker, optimalThreadNumber);
 
         int jobs = parallelJobs.numberOfJobs();
         if (jobs > 1) {

@@ -29,10 +29,10 @@
 #include "SkPerlinNoiseShader.h"
 #include "SkRectShaderImageFilter.h"
 #include "core/platform/graphics/filters/Filter.h"
+#include "core/platform/graphics/filters/ParallelJobs.h"
 #include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/text/TextStream.h"
 #include "wtf/MathExtras.h"
-#include "wtf/ParallelJobs.h"
 #include "wtf/Uint8ClampedArray.h"
 
 namespace WebCore {
@@ -371,7 +371,7 @@ void FETurbulence::applySoftware()
     int optimalThreadNumber = (absolutePaintRect().width() * absolutePaintRect().height()) / s_minimalRectDimension;
     if (optimalThreadNumber > 1) {
         // Initialize parallel jobs
-        WTF::ParallelJobs<FillRegionParameters> parallelJobs(&WebCore::FETurbulence::fillRegionWorker, optimalThreadNumber);
+        ParallelJobs<FillRegionParameters> parallelJobs(&WebCore::FETurbulence::fillRegionWorker, optimalThreadNumber);
 
         // Fill the parameter array
         int i = parallelJobs.numberOfJobs();
