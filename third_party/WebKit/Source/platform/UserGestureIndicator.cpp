@@ -26,7 +26,9 @@
 #include "config.h"
 #include "platform/UserGestureIndicator.h"
 
+#include "wtf/Assertions.h"
 #include "wtf/CurrentTime.h"
+#include "wtf/MainThread.h"
 
 namespace WebCore {
 
@@ -114,6 +116,10 @@ UserGestureIndicator* UserGestureIndicator::s_topmostIndicator = 0;
 UserGestureIndicator::UserGestureIndicator(ProcessingUserGestureState state)
     : m_previousState(s_state)
 {
+    // Silently ignore UserGestureIndicators on non-main threads.
+    if (!isMainThread())
+        return;
+
     // We overwrite s_state only if the caller is definite about the gesture state.
     if (isDefinite(state)) {
         if (!s_topmostIndicator) {
@@ -135,6 +141,10 @@ UserGestureIndicator::UserGestureIndicator(ProcessingUserGestureState state)
 UserGestureIndicator::UserGestureIndicator(PassRefPtr<UserGestureToken> token)
     : m_previousState(s_state)
 {
+    // Silently ignore UserGestureIndicators on non-main threads.
+    if (!isMainThread())
+        return;
+
     if (token) {
         static_cast<GestureToken*>(token.get())->resetTimestamp();
         if (!s_topmostIndicator) {
@@ -155,6 +165,8 @@ UserGestureIndicator::UserGestureIndicator(PassRefPtr<UserGestureToken> token)
 
 UserGestureIndicator::~UserGestureIndicator()
 {
+    if (!isMainThread())
+        return;
     s_state = m_previousState;
     if (s_topmostIndicator == this)
         s_topmostIndicator = 0;
@@ -163,19 +175,21 @@ UserGestureIndicator::~UserGestureIndicator()
 
 bool UserGestureIndicator::processingUserGesture()
 {
+    if (!isMainThread())
+        return false;
     return s_topmostIndicator && static_cast<GestureToken*>(s_topmostIndicator->currentToken())->hasGestures() && (s_state == DefinitelyProcessingNewUserGesture || s_state == DefinitelyProcessingUserGesture);
 }
 
 bool UserGestureIndicator::consumeUserGesture()
 {
-    if (!s_topmostIndicator)
+    if (!isMainThread() || !s_topmostIndicator)
         return false;
     return static_cast<GestureToken*>(s_topmostIndicator->currentToken())->consumeGesture();
 }
 
 UserGestureToken* UserGestureIndicator::currentToken()
 {
-    if (!s_topmostIndicator)
+    if (!isMainThread() || !s_topmostIndicator)
         return 0;
     return s_topmostIndicator->m_token.get();
 }
@@ -184,12 +198,14 @@ UserGestureIndicatorDisabler::UserGestureIndicatorDisabler()
     : m_savedState(UserGestureIndicator::s_state)
     , m_savedIndicator(UserGestureIndicator::s_topmostIndicator)
 {
+    RELEASE_ASSERT(isMainThread());
     UserGestureIndicator::s_state = DefinitelyNotProcessingUserGesture;
     UserGestureIndicator::s_topmostIndicator = 0;
 }
 
 UserGestureIndicatorDisabler::~UserGestureIndicatorDisabler()
 {
+    RELEASE_ASSERT(isMainThread());
     UserGestureIndicator::s_state = m_savedState;
     UserGestureIndicator::s_topmostIndicator = m_savedIndicator;
 }
