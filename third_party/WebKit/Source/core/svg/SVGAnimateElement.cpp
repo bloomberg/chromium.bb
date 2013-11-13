@@ -44,9 +44,9 @@ SVGAnimateElement::SVGAnimateElement(const QualifiedName& tagName, Document& doc
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<SVGAnimateElement> SVGAnimateElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<SVGAnimateElement> SVGAnimateElement::create(Document& document)
 {
-    return adoptRef(new SVGAnimateElement(tagName, document));
+    return adoptRef(new SVGAnimateElement(SVGNames::animateTag, document));
 }
 
 SVGAnimateElement::~SVGAnimateElement()

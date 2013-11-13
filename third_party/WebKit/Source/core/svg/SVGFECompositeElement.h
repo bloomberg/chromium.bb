@@ -75,10 +75,10 @@ struct SVGPropertyTraits<CompositeOperationType> {
 
 class SVGFECompositeElement FINAL : public SVGFilterPrimitiveStandardAttributes {
 public:
-    static PassRefPtr<SVGFECompositeElement> create(const QualifiedName&, Document&);
+    static PassRefPtr<SVGFECompositeElement> create(Document&);
 
 private:
-    SVGFECompositeElement(const QualifiedName&, Document&);
+    explicit SVGFECompositeElement(Document&);
 
     bool isSupportedAttribute(const QualifiedName&);
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;

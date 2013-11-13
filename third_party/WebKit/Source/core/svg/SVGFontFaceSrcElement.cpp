@@ -33,16 +33,15 @@ namespace WebCore {
 
 using namespace SVGNames;
 
-inline SVGFontFaceSrcElement::SVGFontFaceSrcElement(const QualifiedName& tagName, Document& document)
-    : SVGElement(tagName, document)
+inline SVGFontFaceSrcElement::SVGFontFaceSrcElement(Document& document)
+    : SVGElement(font_face_srcTag, document)
 {
-    ASSERT(hasTagName(font_face_srcTag));
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<SVGFontFaceSrcElement> SVGFontFaceSrcElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<SVGFontFaceSrcElement> SVGFontFaceSrcElement::create(Document& document)
 {
-    return adoptRef(new SVGFontFaceSrcElement(tagName, document));
+    return adoptRef(new SVGFontFaceSrcElement(document));
 }
 
 PassRefPtr<CSSValueList> SVGFontFaceSrcElement::srcValue() const

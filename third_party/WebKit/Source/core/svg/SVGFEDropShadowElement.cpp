@@ -46,21 +46,20 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFEDropShadowElement)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGFilterPrimitiveStandardAttributes)
 END_REGISTER_ANIMATED_PROPERTIES
 
-inline SVGFEDropShadowElement::SVGFEDropShadowElement(const QualifiedName& tagName, Document& document)
-    : SVGFilterPrimitiveStandardAttributes(tagName, document)
+inline SVGFEDropShadowElement::SVGFEDropShadowElement(Document& document)
+    : SVGFilterPrimitiveStandardAttributes(SVGNames::feDropShadowTag, document)
     , m_dx(2)
     , m_dy(2)
     , m_stdDeviationX(2)
     , m_stdDeviationY(2)
 {
-    ASSERT(hasTagName(SVGNames::feDropShadowTag));
     ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGFEDropShadowElement();
 }
 
-PassRefPtr<SVGFEDropShadowElement> SVGFEDropShadowElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<SVGFEDropShadowElement> SVGFEDropShadowElement::create(Document& document)
 {
-    return adoptRef(new SVGFEDropShadowElement(tagName, document));
+    return adoptRef(new SVGFEDropShadowElement(document));
 }
 
 const AtomicString& SVGFEDropShadowElement::stdDeviationXIdentifier()

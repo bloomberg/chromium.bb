@@ -29,16 +29,15 @@
 
 namespace WebCore {
 
-inline SVGFEMergeElement::SVGFEMergeElement(const QualifiedName& tagName, Document& document)
-    : SVGFilterPrimitiveStandardAttributes(tagName, document)
+inline SVGFEMergeElement::SVGFEMergeElement(Document& document)
+    : SVGFilterPrimitiveStandardAttributes(SVGNames::feMergeTag, document)
 {
-    ASSERT(hasTagName(SVGNames::feMergeTag));
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<SVGFEMergeElement> SVGFEMergeElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<SVGFEMergeElement> SVGFEMergeElement::create(Document& document)
 {
-    return adoptRef(new SVGFEMergeElement(tagName, document));
+    return adoptRef(new SVGFEMergeElement(document));
 }
 
 PassRefPtr<FilterEffect> SVGFEMergeElement::build(SVGFilterBuilder* filterBuilder, Filter* filter)

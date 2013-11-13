@@ -78,20 +78,19 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGPathElement)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
-inline SVGPathElement::SVGPathElement(const QualifiedName& tagName, Document& document)
-    : SVGGeometryElement(tagName, document)
+inline SVGPathElement::SVGPathElement(Document& document)
+    : SVGGeometryElement(SVGNames::pathTag, document)
     , m_pathByteStream(SVGPathByteStream::create())
     , m_pathSegList(PathSegUnalteredRole)
     , m_isAnimValObserved(false)
 {
-    ASSERT(hasTagName(SVGNames::pathTag));
     ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGPathElement();
 }
 
-PassRefPtr<SVGPathElement> SVGPathElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<SVGPathElement> SVGPathElement::create(Document& document)
 {
-    return adoptRef(new SVGPathElement(tagName, document));
+    return adoptRef(new SVGPathElement(document));
 }
 
 float SVGPathElement::getTotalLength()

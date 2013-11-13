@@ -43,19 +43,18 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGCursorElement)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGTests)
 END_REGISTER_ANIMATED_PROPERTIES
 
-inline SVGCursorElement::SVGCursorElement(const QualifiedName& tagName, Document& document)
-    : SVGElement(tagName, document)
+inline SVGCursorElement::SVGCursorElement(Document& document)
+    : SVGElement(SVGNames::cursorTag, document)
     , m_x(LengthModeWidth)
     , m_y(LengthModeHeight)
 {
-    ASSERT(hasTagName(SVGNames::cursorTag));
     ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGCursorElement();
 }
 
-PassRefPtr<SVGCursorElement> SVGCursorElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<SVGCursorElement> SVGCursorElement::create(Document& document)
 {
-    return adoptRef(new SVGCursorElement(tagName, document));
+    return adoptRef(new SVGCursorElement(document));
 }
 
 SVGCursorElement::~SVGCursorElement()

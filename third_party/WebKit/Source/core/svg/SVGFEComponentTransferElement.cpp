@@ -40,17 +40,16 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFEComponentTransferElement)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGFilterPrimitiveStandardAttributes)
 END_REGISTER_ANIMATED_PROPERTIES
 
-inline SVGFEComponentTransferElement::SVGFEComponentTransferElement(const QualifiedName& tagName, Document& document)
-    : SVGFilterPrimitiveStandardAttributes(tagName, document)
+inline SVGFEComponentTransferElement::SVGFEComponentTransferElement(Document& document)
+    : SVGFilterPrimitiveStandardAttributes(SVGNames::feComponentTransferTag, document)
 {
-    ASSERT(hasTagName(SVGNames::feComponentTransferTag));
     ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGFEComponentTransferElement();
 }
 
-PassRefPtr<SVGFEComponentTransferElement> SVGFEComponentTransferElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<SVGFEComponentTransferElement> SVGFEComponentTransferElement::create(Document& document)
 {
-    return adoptRef(new SVGFEComponentTransferElement(tagName, document));
+    return adoptRef(new SVGFEComponentTransferElement(document));
 }
 
 bool SVGFEComponentTransferElement::isSupportedAttribute(const QualifiedName& attrName)

@@ -81,8 +81,8 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGSVGElement)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
-inline SVGSVGElement::SVGSVGElement(const QualifiedName& tagName, Document& doc)
-    : SVGGraphicsElement(tagName, doc)
+inline SVGSVGElement::SVGSVGElement(Document& doc)
+    : SVGGraphicsElement(SVGNames::svgTag, doc)
     , m_x(LengthModeWidth)
     , m_y(LengthModeHeight)
     , m_width(LengthModeWidth, "100%")
@@ -91,16 +91,15 @@ inline SVGSVGElement::SVGSVGElement(const QualifiedName& tagName, Document& doc)
     , m_zoomAndPan(SVGZoomAndPanMagnify)
     , m_timeContainer(SMILTimeContainer::create(this))
 {
-    ASSERT(hasTagName(SVGNames::svgTag));
     ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGSVGElement();
 
     UseCounter::count(doc, UseCounter::SVGSVGElement);
 }
 
-PassRefPtr<SVGSVGElement> SVGSVGElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<SVGSVGElement> SVGSVGElement::create(Document& document)
 {
-    return adoptRef(new SVGSVGElement(tagName, document));
+    return adoptRef(new SVGSVGElement(document));
 }
 
 SVGSVGElement::~SVGSVGElement()

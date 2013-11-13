@@ -28,16 +28,15 @@
 
 namespace WebCore {
 
-inline SVGAltGlyphDefElement::SVGAltGlyphDefElement(const QualifiedName& tagName, Document& document)
-    : SVGElement(tagName, document)
+inline SVGAltGlyphDefElement::SVGAltGlyphDefElement(Document& document)
+    : SVGElement(SVGNames::altGlyphDefTag, document)
 {
-    ASSERT(hasTagName(SVGNames::altGlyphDefTag));
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<SVGAltGlyphDefElement> SVGAltGlyphDefElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<SVGAltGlyphDefElement> SVGAltGlyphDefElement::create(Document& document)
 {
-    return adoptRef(new SVGAltGlyphDefElement(tagName, document));
+    return adoptRef(new SVGAltGlyphDefElement(document));
 }
 
 bool SVGAltGlyphDefElement::hasValidGlyphElements(Vector<String>& glyphNames) const

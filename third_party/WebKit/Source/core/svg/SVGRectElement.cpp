@@ -50,8 +50,8 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGRectElement)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
-inline SVGRectElement::SVGRectElement(const QualifiedName& tagName, Document& document)
-    : SVGGeometryElement(tagName, document)
+inline SVGRectElement::SVGRectElement(Document& document)
+    : SVGGeometryElement(SVGNames::rectTag, document)
     , m_x(LengthModeWidth)
     , m_y(LengthModeHeight)
     , m_width(LengthModeWidth)
@@ -59,14 +59,13 @@ inline SVGRectElement::SVGRectElement(const QualifiedName& tagName, Document& do
     , m_rx(LengthModeWidth)
     , m_ry(LengthModeHeight)
 {
-    ASSERT(hasTagName(SVGNames::rectTag));
     ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGRectElement();
 }
 
-PassRefPtr<SVGRectElement> SVGRectElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<SVGRectElement> SVGRectElement::create(Document& document)
 {
-    return adoptRef(new SVGRectElement(tagName, document));
+    return adoptRef(new SVGRectElement(document));
 }
 
 bool SVGRectElement::isSupportedAttribute(const QualifiedName& attrName)

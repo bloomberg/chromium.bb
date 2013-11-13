@@ -29,16 +29,15 @@
 
 namespace WebCore {
 
-inline SVGTextElement::SVGTextElement(const QualifiedName& tagName, Document& doc)
-    : SVGTextPositioningElement(tagName, doc)
+inline SVGTextElement::SVGTextElement(Document& doc)
+    : SVGTextPositioningElement(SVGNames::textTag, doc)
 {
-    ASSERT(hasTagName(SVGNames::textTag));
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<SVGTextElement> SVGTextElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<SVGTextElement> SVGTextElement::create(Document& document)
 {
-    return adoptRef(new SVGTextElement(tagName, document));
+    return adoptRef(new SVGTextElement(document));
 }
 
 // We override SVGGraphics::animatedLocalTransform() so that the transform-origin

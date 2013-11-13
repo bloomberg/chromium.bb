@@ -30,12 +30,12 @@ class CSSFontFaceSrcValue;
 
 class SVGFontFaceNameElement FINAL : public SVGElement {
 public:
-    static PassRefPtr<SVGFontFaceNameElement> create(const QualifiedName&, Document&);
+    static PassRefPtr<SVGFontFaceNameElement> create(Document&);
 
     PassRefPtr<CSSFontFaceSrcValue> srcValue() const;
 
 private:
-    SVGFontFaceNameElement(const QualifiedName&, Document&);
+    explicit SVGFontFaceNameElement(Document&);
 
     virtual bool rendererIsNeeded(const RenderStyle&) OVERRIDE { return false; }
 };

@@ -31,16 +31,15 @@
 
 namespace WebCore {
 
-inline SVGGlyphElement::SVGGlyphElement(const QualifiedName& tagName, Document& document)
-    : SVGElement(tagName, document)
+inline SVGGlyphElement::SVGGlyphElement(Document& document)
+    : SVGElement(SVGNames::glyphTag, document)
 {
-    ASSERT(hasTagName(SVGNames::glyphTag));
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<SVGGlyphElement> SVGGlyphElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<SVGGlyphElement> SVGGlyphElement::create(Document& document)
 {
-    return adoptRef(new SVGGlyphElement(tagName, document));
+    return adoptRef(new SVGGlyphElement(document));
 }
 
 void SVGGlyphElement::invalidateGlyphCache()

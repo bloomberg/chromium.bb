@@ -42,17 +42,16 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFEGaussianBlurElement)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGFilterPrimitiveStandardAttributes)
 END_REGISTER_ANIMATED_PROPERTIES
 
-inline SVGFEGaussianBlurElement::SVGFEGaussianBlurElement(const QualifiedName& tagName, Document& document)
-    : SVGFilterPrimitiveStandardAttributes(tagName, document)
+inline SVGFEGaussianBlurElement::SVGFEGaussianBlurElement(Document& document)
+    : SVGFilterPrimitiveStandardAttributes(SVGNames::feGaussianBlurTag, document)
 {
-    ASSERT(hasTagName(SVGNames::feGaussianBlurTag));
     ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGFEGaussianBlurElement();
 }
 
-PassRefPtr<SVGFEGaussianBlurElement> SVGFEGaussianBlurElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<SVGFEGaussianBlurElement> SVGFEGaussianBlurElement::create(Document& document)
 {
-    return adoptRef(new SVGFEGaussianBlurElement(tagName, document));
+    return adoptRef(new SVGFEGaussianBlurElement(document));
 }
 
 const AtomicString& SVGFEGaussianBlurElement::stdDeviationXIdentifier()

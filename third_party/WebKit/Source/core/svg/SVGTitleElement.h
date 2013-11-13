@@ -27,10 +27,10 @@ namespace WebCore {
 
 class SVGTitleElement FINAL : public SVGElement {
 public:
-    static PassRefPtr<SVGTitleElement> create(const QualifiedName&, Document&);
+    static PassRefPtr<SVGTitleElement> create(Document&);
 
 private:
-    SVGTitleElement(const QualifiedName&, Document&);
+    explicit SVGTitleElement(Document&);
 
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
     virtual void removedFrom(ContainerNode*) OVERRIDE;

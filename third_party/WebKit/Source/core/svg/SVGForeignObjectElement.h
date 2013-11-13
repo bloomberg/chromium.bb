@@ -32,10 +32,10 @@ namespace WebCore {
 class SVGForeignObjectElement FINAL : public SVGGraphicsElement,
                                       public SVGExternalResourcesRequired {
 public:
-    static PassRefPtr<SVGForeignObjectElement> create(const QualifiedName&, Document&);
+    static PassRefPtr<SVGForeignObjectElement> create(Document&);
 
 private:
-    SVGForeignObjectElement(const QualifiedName&, Document&);
+    explicit SVGForeignObjectElement(Document&);
 
     virtual bool isValid() const { return SVGTests::isValid(); }
     bool isSupportedAttribute(const QualifiedName&);

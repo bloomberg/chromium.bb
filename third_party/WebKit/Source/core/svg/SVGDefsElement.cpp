@@ -35,17 +35,16 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGDefsElement)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
-inline SVGDefsElement::SVGDefsElement(const QualifiedName& tagName, Document& document)
-    : SVGGraphicsElement(tagName, document)
+inline SVGDefsElement::SVGDefsElement(Document& document)
+    : SVGGraphicsElement(SVGNames::defsTag, document)
 {
-    ASSERT(hasTagName(SVGNames::defsTag));
     ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGDefsElement();
 }
 
-PassRefPtr<SVGDefsElement> SVGDefsElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<SVGDefsElement> SVGDefsElement::create(Document& document)
 {
-    return adoptRef(new SVGDefsElement(tagName, document));
+    return adoptRef(new SVGDefsElement(document));
 }
 
 bool SVGDefsElement::isValid() const

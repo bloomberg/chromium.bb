@@ -48,19 +48,18 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFEDiffuseLightingElement)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGFilterPrimitiveStandardAttributes)
 END_REGISTER_ANIMATED_PROPERTIES
 
-inline SVGFEDiffuseLightingElement::SVGFEDiffuseLightingElement(const QualifiedName& tagName, Document& document)
-    : SVGFilterPrimitiveStandardAttributes(tagName, document)
+inline SVGFEDiffuseLightingElement::SVGFEDiffuseLightingElement(Document& document)
+    : SVGFilterPrimitiveStandardAttributes(SVGNames::feDiffuseLightingTag, document)
     , m_diffuseConstant(1)
     , m_surfaceScale(1)
 {
-    ASSERT(hasTagName(SVGNames::feDiffuseLightingTag));
     ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGFEDiffuseLightingElement();
 }
 
-PassRefPtr<SVGFEDiffuseLightingElement> SVGFEDiffuseLightingElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<SVGFEDiffuseLightingElement> SVGFEDiffuseLightingElement::create(Document& document)
 {
-    return adoptRef(new SVGFEDiffuseLightingElement(tagName, document));
+    return adoptRef(new SVGFEDiffuseLightingElement(document));
 }
 
 const AtomicString& SVGFEDiffuseLightingElement::kernelUnitLengthXIdentifier()

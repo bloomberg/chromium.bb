@@ -37,17 +37,16 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFETileElement)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGFilterPrimitiveStandardAttributes)
 END_REGISTER_ANIMATED_PROPERTIES
 
-inline SVGFETileElement::SVGFETileElement(const QualifiedName& tagName, Document& document)
-    : SVGFilterPrimitiveStandardAttributes(tagName, document)
+inline SVGFETileElement::SVGFETileElement(Document& document)
+    : SVGFilterPrimitiveStandardAttributes(SVGNames::feTileTag, document)
 {
-    ASSERT(hasTagName(SVGNames::feTileTag));
     ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGFETileElement();
 }
 
-PassRefPtr<SVGFETileElement> SVGFETileElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<SVGFETileElement> SVGFETileElement::create(Document& document)
 {
-    return adoptRef(new SVGFETileElement(tagName, document));
+    return adoptRef(new SVGFETileElement(document));
 }
 
 bool SVGFETileElement::isSupportedAttribute(const QualifiedName& attrName)

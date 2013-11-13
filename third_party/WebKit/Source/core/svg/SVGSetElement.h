@@ -28,10 +28,10 @@ namespace WebCore {
 // SVGAnimateElement implements superset of the functionality.
 class SVGSetElement FINAL : public SVGAnimateElement {
 public:
-    static PassRefPtr<SVGSetElement> create(const QualifiedName&, Document&);
+    static PassRefPtr<SVGSetElement> create(Document&);
 
 private:
-    SVGSetElement(const QualifiedName&, Document&);
+    explicit SVGSetElement(Document&);
     virtual void updateAnimationMode() OVERRIDE;
 };
 

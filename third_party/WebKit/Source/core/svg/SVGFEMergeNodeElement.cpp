@@ -35,17 +35,16 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFEMergeNodeElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(in1)
 END_REGISTER_ANIMATED_PROPERTIES
 
-inline SVGFEMergeNodeElement::SVGFEMergeNodeElement(const QualifiedName& tagName, Document& document)
-    : SVGElement(tagName, document)
+inline SVGFEMergeNodeElement::SVGFEMergeNodeElement(Document& document)
+    : SVGElement(SVGNames::feMergeNodeTag, document)
 {
-    ASSERT(hasTagName(SVGNames::feMergeNodeTag));
     ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGFEMergeNodeElement();
 }
 
-PassRefPtr<SVGFEMergeNodeElement> SVGFEMergeNodeElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<SVGFEMergeNodeElement> SVGFEMergeNodeElement::create(Document& document)
 {
-    return adoptRef(new SVGFEMergeNodeElement(tagName, document));
+    return adoptRef(new SVGFEMergeNodeElement(document));
 }
 
 bool SVGFEMergeNodeElement::isSupportedAttribute(const QualifiedName& attrName)

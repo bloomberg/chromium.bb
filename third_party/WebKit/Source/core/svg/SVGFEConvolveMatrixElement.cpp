@@ -62,18 +62,17 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFEConvolveMatrixElement)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGFilterPrimitiveStandardAttributes)
 END_REGISTER_ANIMATED_PROPERTIES
 
-inline SVGFEConvolveMatrixElement::SVGFEConvolveMatrixElement(const QualifiedName& tagName, Document& document)
-    : SVGFilterPrimitiveStandardAttributes(tagName, document)
+inline SVGFEConvolveMatrixElement::SVGFEConvolveMatrixElement(Document& document)
+    : SVGFilterPrimitiveStandardAttributes(SVGNames::feConvolveMatrixTag, document)
     , m_edgeMode(EDGEMODE_DUPLICATE)
 {
-    ASSERT(hasTagName(SVGNames::feConvolveMatrixTag));
     ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGFEConvolveMatrixElement();
 }
 
-PassRefPtr<SVGFEConvolveMatrixElement> SVGFEConvolveMatrixElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<SVGFEConvolveMatrixElement> SVGFEConvolveMatrixElement::create(Document& document)
 {
-    return adoptRef(new SVGFEConvolveMatrixElement(tagName, document));
+    return adoptRef(new SVGFEConvolveMatrixElement(document));
 }
 
 const AtomicString& SVGFEConvolveMatrixElement::kernelUnitLengthXIdentifier()

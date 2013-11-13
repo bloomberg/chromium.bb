@@ -40,12 +40,11 @@ namespace WebCore {
 
 using namespace SVGNames;
 
-inline SVGAnimateMotionElement::SVGAnimateMotionElement(const QualifiedName& tagName, Document& document)
-    : SVGAnimationElement(tagName, document)
+inline SVGAnimateMotionElement::SVGAnimateMotionElement(Document& document)
+    : SVGAnimationElement(animateMotionTag, document)
     , m_hasToPointAtEndOfDuration(false)
 {
     setCalcMode(CalcModePaced);
-    ASSERT(hasTagName(animateMotionTag));
     ScriptWrappable::init(this);
 }
 
@@ -55,9 +54,9 @@ SVGAnimateMotionElement::~SVGAnimateMotionElement()
         clearAnimatedType(targetElement());
 }
 
-PassRefPtr<SVGAnimateMotionElement> SVGAnimateMotionElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<SVGAnimateMotionElement> SVGAnimateMotionElement::create(Document& document)
 {
-    return adoptRef(new SVGAnimateMotionElement(tagName, document));
+    return adoptRef(new SVGAnimateMotionElement(document));
 }
 
 bool SVGAnimateMotionElement::hasValidAttributeType()

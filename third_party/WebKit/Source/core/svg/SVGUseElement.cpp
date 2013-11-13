@@ -71,8 +71,8 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGUseElement)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
-inline SVGUseElement::SVGUseElement(const QualifiedName& tagName, Document& document, bool wasInsertedByParser)
-    : SVGGraphicsElement(tagName, document)
+inline SVGUseElement::SVGUseElement(Document& document, bool wasInsertedByParser)
+    : SVGGraphicsElement(SVGNames::useTag, document)
     , m_x(LengthModeWidth)
     , m_y(LengthModeHeight)
     , m_width(LengthModeWidth)
@@ -83,15 +83,14 @@ inline SVGUseElement::SVGUseElement(const QualifiedName& tagName, Document& docu
     , m_svgLoadEventTimer(this, &SVGElement::svgLoadEventTimerFired)
 {
     ASSERT(hasCustomStyleCallbacks());
-    ASSERT(hasTagName(SVGNames::useTag));
     ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGUseElement();
 }
 
-PassRefPtr<SVGUseElement> SVGUseElement::create(const QualifiedName& tagName, Document& document, bool wasInsertedByParser)
+PassRefPtr<SVGUseElement> SVGUseElement::create(Document& document, bool wasInsertedByParser)
 {
     // Always build a #shadow-root for SVGUseElement.
-    RefPtr<SVGUseElement> use = adoptRef(new SVGUseElement(tagName, document, wasInsertedByParser));
+    RefPtr<SVGUseElement> use = adoptRef(new SVGUseElement(document, wasInsertedByParser));
     use->ensureUserAgentShadowRoot();
     return use.release();
 }
@@ -723,7 +722,7 @@ void SVGUseElement::expandUseElementsInShadowTree(Node* element)
 
         // Don't ASSERT(target) here, it may be "pending", too.
         // Setup sub-shadow tree root node
-        RefPtr<SVGGElement> cloneParent = SVGGElement::create(SVGNames::gTag, *referencedDocument());
+        RefPtr<SVGGElement> cloneParent = SVGGElement::create(*referencedDocument());
         use->cloneChildNodes(cloneParent.get());
 
         // Spec: In the generated content, the 'use' will be replaced by 'g', where all attributes from the
@@ -771,7 +770,7 @@ void SVGUseElement::expandSymbolElementsInShadowTree(Node* element)
         // the generated 'svg'. If attributes width and/or height are not specified, the generated
         // 'svg' element will use values of 100% for these attributes.
         ASSERT(referencedDocument());
-        RefPtr<SVGSVGElement> svgElement = SVGSVGElement::create(SVGNames::svgTag, *referencedDocument());
+        RefPtr<SVGSVGElement> svgElement = SVGSVGElement::create(*referencedDocument());
 
         // Transfer all data (attributes, etc.) from <symbol> to the new <svg> element.
         svgElement->cloneDataFromElement(*toElement(element));

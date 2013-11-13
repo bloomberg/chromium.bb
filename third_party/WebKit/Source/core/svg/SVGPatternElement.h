@@ -45,14 +45,14 @@ class SVGPatternElement FINAL : public SVGElement,
                                 public SVGExternalResourcesRequired,
                                 public SVGFitToViewBox {
 public:
-    static PassRefPtr<SVGPatternElement> create(const QualifiedName&, Document&);
+    static PassRefPtr<SVGPatternElement> create(Document&);
 
     void collectPatternAttributes(PatternAttributes&) const;
 
     virtual AffineTransform localCoordinateSpaceTransform(SVGElement::CTMScope) const;
 
 private:
-    SVGPatternElement(const QualifiedName&, Document&);
+    explicit SVGPatternElement(Document&);
 
     virtual bool isValid() const { return SVGTests::isValid(); }
     virtual bool needsPendingResourceHandling() const { return false; }

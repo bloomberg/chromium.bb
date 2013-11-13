@@ -30,17 +30,16 @@
 
 namespace WebCore {
 
-inline SVGAnimateTransformElement::SVGAnimateTransformElement(const QualifiedName& tagName, Document& document)
-    : SVGAnimateElement(tagName, document)
+inline SVGAnimateTransformElement::SVGAnimateTransformElement(Document& document)
+    : SVGAnimateElement(SVGNames::animateTransformTag, document)
     , m_type(SVGTransform::SVG_TRANSFORM_UNKNOWN)
 {
-    ASSERT(hasTagName(SVGNames::animateTransformTag));
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<SVGAnimateTransformElement> SVGAnimateTransformElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<SVGAnimateTransformElement> SVGAnimateTransformElement::create(Document& document)
 {
-    return adoptRef(new SVGAnimateTransformElement(tagName, document));
+    return adoptRef(new SVGAnimateTransformElement(document));
 }
 
 bool SVGAnimateTransformElement::hasValidAttributeType()

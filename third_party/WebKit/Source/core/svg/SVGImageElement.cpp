@@ -53,22 +53,21 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGImageElement)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
-inline SVGImageElement::SVGImageElement(const QualifiedName& tagName, Document& document)
-    : SVGGraphicsElement(tagName, document)
+inline SVGImageElement::SVGImageElement(Document& document)
+    : SVGGraphicsElement(SVGNames::imageTag, document)
     , m_x(LengthModeWidth)
     , m_y(LengthModeHeight)
     , m_width(LengthModeWidth)
     , m_height(LengthModeHeight)
     , m_imageLoader(this)
 {
-    ASSERT(hasTagName(SVGNames::imageTag));
     ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGImageElement();
 }
 
-PassRefPtr<SVGImageElement> SVGImageElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<SVGImageElement> SVGImageElement::create(Document& document)
 {
-    return adoptRef(new SVGImageElement(tagName, document));
+    return adoptRef(new SVGImageElement(document));
 }
 
 bool SVGImageElement::currentFrameHasSingleSecurityOrigin() const

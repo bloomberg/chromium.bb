@@ -28,10 +28,10 @@ namespace WebCore {
 
 class SVGFETileElement FINAL : public SVGFilterPrimitiveStandardAttributes {
 public:
-    static PassRefPtr<SVGFETileElement> create(const QualifiedName&, Document&);
+    static PassRefPtr<SVGFETileElement> create(Document&);
 
 private:
-    SVGFETileElement(const QualifiedName&, Document&);
+    explicit SVGFETileElement(Document&);
 
     bool isSupportedAttribute(const QualifiedName&);
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;

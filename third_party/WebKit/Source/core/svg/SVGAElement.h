@@ -33,10 +33,10 @@ class SVGAElement FINAL : public SVGGraphicsElement,
                           public SVGURIReference,
                           public SVGExternalResourcesRequired {
 public:
-    static PassRefPtr<SVGAElement> create(const QualifiedName&, Document&);
+    static PassRefPtr<SVGAElement> create(Document&);
 
 private:
-    SVGAElement(const QualifiedName&, Document&);
+    explicit SVGAElement(Document&);
 
     virtual bool isValid() const { return SVGTests::isValid(); }
 

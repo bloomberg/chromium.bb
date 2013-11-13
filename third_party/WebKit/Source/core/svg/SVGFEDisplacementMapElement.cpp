@@ -44,19 +44,18 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFEDisplacementMapElement)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGFilterPrimitiveStandardAttributes)
 END_REGISTER_ANIMATED_PROPERTIES
 
-inline SVGFEDisplacementMapElement::SVGFEDisplacementMapElement(const QualifiedName& tagName, Document& document)
-    : SVGFilterPrimitiveStandardAttributes(tagName, document)
+inline SVGFEDisplacementMapElement::SVGFEDisplacementMapElement(Document& document)
+    : SVGFilterPrimitiveStandardAttributes(SVGNames::feDisplacementMapTag, document)
     , m_xChannelSelector(CHANNEL_A)
     , m_yChannelSelector(CHANNEL_A)
 {
-    ASSERT(hasTagName(SVGNames::feDisplacementMapTag));
     ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGFEDisplacementMapElement();
 }
 
-PassRefPtr<SVGFEDisplacementMapElement> SVGFEDisplacementMapElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<SVGFEDisplacementMapElement> SVGFEDisplacementMapElement::create(Document& document)
 {
-    return adoptRef(new SVGFEDisplacementMapElement(tagName, document));
+    return adoptRef(new SVGFEDisplacementMapElement(document));
 }
 
 bool SVGFEDisplacementMapElement::isSupportedAttribute(const QualifiedName& attrName)

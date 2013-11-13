@@ -46,20 +46,19 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFETurbulenceElement)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGFilterPrimitiveStandardAttributes)
 END_REGISTER_ANIMATED_PROPERTIES
 
-inline SVGFETurbulenceElement::SVGFETurbulenceElement(const QualifiedName& tagName, Document& document)
-    : SVGFilterPrimitiveStandardAttributes(tagName, document)
+inline SVGFETurbulenceElement::SVGFETurbulenceElement(Document& document)
+    : SVGFilterPrimitiveStandardAttributes(SVGNames::feTurbulenceTag, document)
     , m_numOctaves(1)
     , m_stitchTiles(SVG_STITCHTYPE_NOSTITCH)
     , m_type(FETURBULENCE_TYPE_TURBULENCE)
 {
-    ASSERT(hasTagName(SVGNames::feTurbulenceTag));
     ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGFETurbulenceElement();
 }
 
-PassRefPtr<SVGFETurbulenceElement> SVGFETurbulenceElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<SVGFETurbulenceElement> SVGFETurbulenceElement::create(Document& document)
 {
-    return adoptRef(new SVGFETurbulenceElement(tagName, document));
+    return adoptRef(new SVGFETurbulenceElement(document));
 }
 
 const AtomicString& SVGFETurbulenceElement::baseFrequencyXIdentifier()

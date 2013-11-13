@@ -46,21 +46,20 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGEllipseElement)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
-inline SVGEllipseElement::SVGEllipseElement(const QualifiedName& tagName, Document& document)
-    : SVGGeometryElement(tagName, document)
+inline SVGEllipseElement::SVGEllipseElement(Document& document)
+    : SVGGeometryElement(SVGNames::ellipseTag, document)
     , m_cx(LengthModeWidth)
     , m_cy(LengthModeHeight)
     , m_rx(LengthModeWidth)
     , m_ry(LengthModeHeight)
 {
-    ASSERT(hasTagName(SVGNames::ellipseTag));
     ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGEllipseElement();
 }
 
-PassRefPtr<SVGEllipseElement> SVGEllipseElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<SVGEllipseElement> SVGEllipseElement::create(Document& document)
 {
-    return adoptRef(new SVGEllipseElement(tagName, document));
+    return adoptRef(new SVGEllipseElement(document));
 }
 
 bool SVGEllipseElement::isSupportedAttribute(const QualifiedName& attrName)

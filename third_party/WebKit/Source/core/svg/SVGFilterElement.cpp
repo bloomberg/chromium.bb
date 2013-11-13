@@ -58,8 +58,8 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFilterElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(externalResourcesRequired)
 END_REGISTER_ANIMATED_PROPERTIES
 
-inline SVGFilterElement::SVGFilterElement(const QualifiedName& tagName, Document& document)
-    : SVGElement(tagName, document)
+inline SVGFilterElement::SVGFilterElement(Document& document)
+    : SVGElement(SVGNames::filterTag, document)
     , m_filterUnits(SVGUnitTypes::SVG_UNIT_TYPE_OBJECTBOUNDINGBOX)
     , m_primitiveUnits(SVGUnitTypes::SVG_UNIT_TYPE_USERSPACEONUSE)
     , m_x(LengthModeWidth, "-10%")
@@ -69,14 +69,13 @@ inline SVGFilterElement::SVGFilterElement(const QualifiedName& tagName, Document
 {
     // Spec: If the x/y attribute is not specified, the effect is as if a value of "-10%" were specified.
     // Spec: If the width/height attribute is not specified, the effect is as if a value of "120%" were specified.
-    ASSERT(hasTagName(SVGNames::filterTag));
     ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGFilterElement();
 }
 
-PassRefPtr<SVGFilterElement> SVGFilterElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<SVGFilterElement> SVGFilterElement::create(Document& document)
 {
-    return adoptRef(new SVGFilterElement(tagName, document));
+    return adoptRef(new SVGFilterElement(document));
 }
 
 const AtomicString& SVGFilterElement::filterResXIdentifier()

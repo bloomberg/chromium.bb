@@ -39,14 +39,14 @@ class SVGFilterElement FINAL : public SVGElement,
                                public SVGURIReference,
                                public SVGExternalResourcesRequired {
 public:
-    static PassRefPtr<SVGFilterElement> create(const QualifiedName&, Document&);
+    static PassRefPtr<SVGFilterElement> create(Document&);
 
     void setFilterRes(unsigned filterResX, unsigned filterResY);
     void addClient(Node*);
     void removeClient(Node*);
 
 private:
-    SVGFilterElement(const QualifiedName&, Document&);
+    explicit SVGFilterElement(Document&);
 
     virtual bool needsPendingResourceHandling() const { return false; }
 

@@ -49,21 +49,20 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGForeignObjectElement)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGGraphicsElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
-inline SVGForeignObjectElement::SVGForeignObjectElement(const QualifiedName& tagName, Document& document)
-    : SVGGraphicsElement(tagName, document)
+inline SVGForeignObjectElement::SVGForeignObjectElement(Document& document)
+    : SVGGraphicsElement(SVGNames::foreignObjectTag, document)
     , m_x(LengthModeWidth)
     , m_y(LengthModeHeight)
     , m_width(LengthModeWidth)
     , m_height(LengthModeHeight)
 {
-    ASSERT(hasTagName(SVGNames::foreignObjectTag));
     ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGForeignObjectElement();
 }
 
-PassRefPtr<SVGForeignObjectElement> SVGForeignObjectElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<SVGForeignObjectElement> SVGForeignObjectElement::create(Document& document)
 {
-    return adoptRef(new SVGForeignObjectElement(tagName, document));
+    return adoptRef(new SVGForeignObjectElement(document));
 }
 
 bool SVGForeignObjectElement::isSupportedAttribute(const QualifiedName& attrName)

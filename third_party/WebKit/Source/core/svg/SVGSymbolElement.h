@@ -34,10 +34,10 @@ class SVGSymbolElement FINAL : public SVGElement,
                                public SVGExternalResourcesRequired,
                                public SVGFitToViewBox {
 public:
-    static PassRefPtr<SVGSymbolElement> create(const QualifiedName&, Document&);
+    static PassRefPtr<SVGSymbolElement> create(Document&);
 
 private:
-    SVGSymbolElement(const QualifiedName&, Document&);
+    explicit SVGSymbolElement(Document&);
 
     virtual bool supportsFocus() const OVERRIDE { return hasFocusEventListeners(); }
 

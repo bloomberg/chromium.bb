@@ -39,17 +39,16 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGMPathElement)
     REGISTER_LOCAL_ANIMATED_PROPERTY(externalResourcesRequired)
 END_REGISTER_ANIMATED_PROPERTIES
 
-inline SVGMPathElement::SVGMPathElement(const QualifiedName& tagName, Document& document)
-    : SVGElement(tagName, document)
+inline SVGMPathElement::SVGMPathElement(Document& document)
+    : SVGElement(SVGNames::mpathTag, document)
 {
-    ASSERT(hasTagName(SVGNames::mpathTag));
     ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGMPathElement();
 }
 
-PassRefPtr<SVGMPathElement> SVGMPathElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<SVGMPathElement> SVGMPathElement::create(Document& document)
 {
-    return adoptRef(new SVGMPathElement(tagName, document));
+    return adoptRef(new SVGMPathElement(document));
 }
 
 SVGMPathElement::~SVGMPathElement()

@@ -41,18 +41,17 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFEBlendElement)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGFilterPrimitiveStandardAttributes)
 END_REGISTER_ANIMATED_PROPERTIES
 
-inline SVGFEBlendElement::SVGFEBlendElement(const QualifiedName& tagName, Document& document)
-    : SVGFilterPrimitiveStandardAttributes(tagName, document)
+inline SVGFEBlendElement::SVGFEBlendElement(Document& document)
+    : SVGFilterPrimitiveStandardAttributes(SVGNames::feBlendTag, document)
     , m_mode(FEBLEND_MODE_NORMAL)
 {
-    ASSERT(hasTagName(SVGNames::feBlendTag));
     ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGFEBlendElement();
 }
 
-PassRefPtr<SVGFEBlendElement> SVGFEBlendElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<SVGFEBlendElement> SVGFEBlendElement::create(Document& document)
 {
-    return adoptRef(new SVGFEBlendElement(tagName, document));
+    return adoptRef(new SVGFEBlendElement(document));
 }
 
 bool SVGFEBlendElement::isSupportedAttribute(const QualifiedName& attrName)

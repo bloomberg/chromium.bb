@@ -35,7 +35,7 @@ class SVGAnimatedTypeAnimator;
 
 class SVGAnimateElement : public SVGAnimationElement {
 public:
-    static PassRefPtr<SVGAnimateElement> create(const QualifiedName&, Document&);
+    static PassRefPtr<SVGAnimateElement> create(Document&);
     virtual ~SVGAnimateElement();
 
     AnimatedPropertyType determineAnimatedPropertyType(SVGElement*) const;

@@ -27,16 +27,15 @@
 
 namespace WebCore {
 
-inline SVGFontFaceNameElement::SVGFontFaceNameElement(const QualifiedName& tagName, Document& document)
-    : SVGElement(tagName, document)
+inline SVGFontFaceNameElement::SVGFontFaceNameElement(Document& document)
+    : SVGElement(SVGNames::font_face_nameTag, document)
 {
-    ASSERT(hasTagName(SVGNames::font_face_nameTag));
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<SVGFontFaceNameElement> SVGFontFaceNameElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<SVGFontFaceNameElement> SVGFontFaceNameElement::create(Document& document)
 {
-    return adoptRef(new SVGFontFaceNameElement(tagName, document));
+    return adoptRef(new SVGFontFaceNameElement(document));
 }
 
 PassRefPtr<CSSFontFaceSrcValue> SVGFontFaceNameElement::srcValue() const

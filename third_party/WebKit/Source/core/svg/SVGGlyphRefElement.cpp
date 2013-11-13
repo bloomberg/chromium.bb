@@ -37,21 +37,20 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGGlyphRefElement)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
-inline SVGGlyphRefElement::SVGGlyphRefElement(const QualifiedName& tagName, Document& document)
-    : SVGElement(tagName, document)
+inline SVGGlyphRefElement::SVGGlyphRefElement(Document& document)
+    : SVGElement(SVGNames::glyphRefTag, document)
     , m_x(0)
     , m_y(0)
     , m_dx(0)
     , m_dy(0)
 {
-    ASSERT(hasTagName(SVGNames::glyphRefTag));
     ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGGlyphRefElement();
 }
 
-PassRefPtr<SVGGlyphRefElement> SVGGlyphRefElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<SVGGlyphRefElement> SVGGlyphRefElement::create(Document& document)
 {
-    return adoptRef(new SVGGlyphRefElement(tagName, document));
+    return adoptRef(new SVGGlyphRefElement(document));
 }
 
 bool SVGGlyphRefElement::hasValidGlyphElement(String& glyphName) const

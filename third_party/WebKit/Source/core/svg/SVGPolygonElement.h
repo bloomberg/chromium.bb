@@ -28,10 +28,10 @@ namespace WebCore {
 
 class SVGPolygonElement FINAL : public SVGPolyElement {
 public:
-    static PassRefPtr<SVGPolygonElement> create(const QualifiedName&, Document&);
+    static PassRefPtr<SVGPolygonElement> create(Document&);
 
 private:
-    SVGPolygonElement(const QualifiedName&, Document&);
+    explicit SVGPolygonElement(Document&);
 };
 
 DEFINE_NODE_TYPE_CASTS(SVGPolygonElement, hasTagName(SVGNames::polygonTag));

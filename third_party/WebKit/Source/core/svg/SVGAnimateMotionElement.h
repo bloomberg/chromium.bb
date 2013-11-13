@@ -32,11 +32,11 @@ class SVGAnimateMotionElement FINAL : public SVGAnimationElement {
 public:
     virtual ~SVGAnimateMotionElement();
 
-    static PassRefPtr<SVGAnimateMotionElement> create(const QualifiedName&, Document&);
+    static PassRefPtr<SVGAnimateMotionElement> create(Document&);
     void updateAnimationPath();
 
 private:
-    SVGAnimateMotionElement(const QualifiedName&, Document&);
+    explicit SVGAnimateMotionElement(Document&);
 
     virtual bool hasValidAttributeType();
     virtual bool hasValidAttributeName();

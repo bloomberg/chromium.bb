@@ -32,10 +32,10 @@ namespace WebCore {
 class SVGCircleElement FINAL : public SVGGeometryElement,
                                public SVGExternalResourcesRequired {
 public:
-    static PassRefPtr<SVGCircleElement> create(const QualifiedName&, Document&);
+    static PassRefPtr<SVGCircleElement> create(Document&);
 
 private:
-    SVGCircleElement(const QualifiedName&, Document&);
+    explicit SVGCircleElement(Document&);
 
     virtual bool isValid() const { return SVGTests::isValid(); }
     virtual bool supportsFocus() const OVERRIDE { return hasFocusEventListeners(); }

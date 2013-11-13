@@ -24,16 +24,15 @@
 
 namespace WebCore {
 
-inline SVGDescElement::SVGDescElement(const QualifiedName& tagName, Document& document)
-    : SVGElement(tagName, document)
+inline SVGDescElement::SVGDescElement(Document& document)
+    : SVGElement(SVGNames::descTag, document)
 {
-    ASSERT(hasTagName(SVGNames::descTag));
     ScriptWrappable::init(this);
 }
 
-PassRefPtr<SVGDescElement> SVGDescElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<SVGDescElement> SVGDescElement::create(Document& document)
 {
-    return adoptRef(new SVGDescElement(tagName, document));
+    return adoptRef(new SVGDescElement(document));
 }
 
 String SVGDescElement::description() const

@@ -29,12 +29,12 @@ namespace WebCore {
 
 class SVGStopElement FINAL : public SVGElement {
 public:
-    static PassRefPtr<SVGStopElement> create(const QualifiedName&, Document&);
+    static PassRefPtr<SVGStopElement> create(Document&);
 
     Color stopColorIncludingOpacity() const;
 
 private:
-    SVGStopElement(const QualifiedName&, Document&);
+    explicit SVGStopElement(Document&);
 
     bool isSupportedAttribute(const QualifiedName&);
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;

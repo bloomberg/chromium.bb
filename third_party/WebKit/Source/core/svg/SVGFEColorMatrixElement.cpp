@@ -41,18 +41,17 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFEColorMatrixElement)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGFilterPrimitiveStandardAttributes)
 END_REGISTER_ANIMATED_PROPERTIES
 
-inline SVGFEColorMatrixElement::SVGFEColorMatrixElement(const QualifiedName& tagName, Document& document)
-    : SVGFilterPrimitiveStandardAttributes(tagName, document)
+inline SVGFEColorMatrixElement::SVGFEColorMatrixElement(Document& document)
+    : SVGFilterPrimitiveStandardAttributes(SVGNames::feColorMatrixTag, document)
     , m_type(FECOLORMATRIX_TYPE_MATRIX)
 {
-    ASSERT(hasTagName(SVGNames::feColorMatrixTag));
     ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGFEColorMatrixElement();
 }
 
-PassRefPtr<SVGFEColorMatrixElement> SVGFEColorMatrixElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<SVGFEColorMatrixElement> SVGFEColorMatrixElement::create(Document& document)
 {
-    return adoptRef(new SVGFEColorMatrixElement(tagName, document));
+    return adoptRef(new SVGFEColorMatrixElement(document));
 }
 
 bool SVGFEColorMatrixElement::isSupportedAttribute(const QualifiedName& attrName)

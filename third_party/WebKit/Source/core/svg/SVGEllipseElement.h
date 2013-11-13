@@ -32,10 +32,10 @@ namespace WebCore {
 class SVGEllipseElement FINAL : public SVGGeometryElement,
                                 public SVGExternalResourcesRequired {
 public:
-    static PassRefPtr<SVGEllipseElement> create(const QualifiedName&, Document&);
+    static PassRefPtr<SVGEllipseElement> create(Document&);
 
 private:
-    SVGEllipseElement(const QualifiedName&, Document&);
+    explicit SVGEllipseElement(Document&);
 
     virtual bool isValid() const { return SVGTests::isValid(); }
     virtual bool supportsFocus() const OVERRIDE { return hasFocusEventListeners(); }

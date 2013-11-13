@@ -30,12 +30,12 @@ namespace WebCore {
 
 class SVGHKernElement FINAL : public SVGElement {
 public:
-    static PassRefPtr<SVGHKernElement> create(const QualifiedName&, Document&);
+    static PassRefPtr<SVGHKernElement> create(Document&);
 
     void buildHorizontalKerningPair(KerningPairVector&);
 
 private:
-    SVGHKernElement(const QualifiedName&, Document&);
+    explicit SVGHKernElement(Document&);
 
     virtual InsertionNotificationRequest insertedInto(ContainerNode*) OVERRIDE;
     virtual void removedFrom(ContainerNode*) OVERRIDE;

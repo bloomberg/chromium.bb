@@ -43,18 +43,17 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGFEMorphologyElement)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGFilterPrimitiveStandardAttributes)
 END_REGISTER_ANIMATED_PROPERTIES
 
-inline SVGFEMorphologyElement::SVGFEMorphologyElement(const QualifiedName& tagName, Document& document)
-    : SVGFilterPrimitiveStandardAttributes(tagName, document)
+inline SVGFEMorphologyElement::SVGFEMorphologyElement(Document& document)
+    : SVGFilterPrimitiveStandardAttributes(SVGNames::feMorphologyTag, document)
     , m_svgOperator(FEMORPHOLOGY_OPERATOR_ERODE)
 {
-    ASSERT(hasTagName(SVGNames::feMorphologyTag));
     ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGFEMorphologyElement();
 }
 
-PassRefPtr<SVGFEMorphologyElement> SVGFEMorphologyElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<SVGFEMorphologyElement> SVGFEMorphologyElement::create(Document& document)
 {
-    return adoptRef(new SVGFEMorphologyElement(tagName, document));
+    return adoptRef(new SVGFEMorphologyElement(document));
 }
 
 const AtomicString& SVGFEMorphologyElement::radiusXIdentifier()

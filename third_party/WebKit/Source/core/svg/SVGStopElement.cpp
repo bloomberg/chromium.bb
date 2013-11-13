@@ -37,18 +37,17 @@ BEGIN_REGISTER_ANIMATED_PROPERTIES(SVGStopElement)
     REGISTER_PARENT_ANIMATED_PROPERTIES(SVGElement)
 END_REGISTER_ANIMATED_PROPERTIES
 
-inline SVGStopElement::SVGStopElement(const QualifiedName& tagName, Document& document)
-    : SVGElement(tagName, document)
+inline SVGStopElement::SVGStopElement(Document& document)
+    : SVGElement(SVGNames::stopTag, document)
     , m_offset(0)
 {
-    ASSERT(hasTagName(SVGNames::stopTag));
     ScriptWrappable::init(this);
     registerAnimatedPropertiesForSVGStopElement();
 }
 
-PassRefPtr<SVGStopElement> SVGStopElement::create(const QualifiedName& tagName, Document& document)
+PassRefPtr<SVGStopElement> SVGStopElement::create(Document& document)
 {
-    return adoptRef(new SVGStopElement(tagName, document));
+    return adoptRef(new SVGStopElement(document));
 }
 
 bool SVGStopElement::isSupportedAttribute(const QualifiedName& attrName)

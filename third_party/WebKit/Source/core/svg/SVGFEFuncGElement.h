@@ -28,10 +28,10 @@ namespace WebCore {
 
 class SVGFEFuncGElement FINAL : public SVGComponentTransferFunctionElement {
 public:
-    static PassRefPtr<SVGFEFuncGElement> create(const QualifiedName&, Document&);
+    static PassRefPtr<SVGFEFuncGElement> create(Document&);
 
 private:
-    SVGFEFuncGElement(const QualifiedName&, Document&);
+    explicit SVGFEFuncGElement(Document&);
 };
 
 DEFINE_NODE_TYPE_CASTS(SVGFEFuncGElement, hasTagName(SVGNames::feFuncGTag));

@@ -27,12 +27,12 @@ namespace WebCore {
 
 class SVGDescElement FINAL : public SVGElement {
 public:
-    static PassRefPtr<SVGDescElement> create(const QualifiedName&, Document&);
+    static PassRefPtr<SVGDescElement> create(Document&);
 
     String description() const;
 
 private:
-    SVGDescElement(const QualifiedName&, Document&);
+    explicit SVGDescElement(Document&);
 
     virtual bool rendererIsNeeded(const RenderStyle&) { return false; }
 };

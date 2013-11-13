@@ -39,14 +39,14 @@ class SVGFEImageElement FINAL : public SVGFilterPrimitiveStandardAttributes,
                                 public SVGExternalResourcesRequired,
                                 public ImageResourceClient {
 public:
-    static PassRefPtr<SVGFEImageElement> create(const QualifiedName&, Document&);
+    static PassRefPtr<SVGFEImageElement> create(Document&);
 
     bool currentFrameHasSingleSecurityOrigin() const;
 
     virtual ~SVGFEImageElement();
 
 private:
-    SVGFEImageElement(const QualifiedName&, Document&);
+    explicit SVGFEImageElement(Document&);
 
     bool isSupportedAttribute(const QualifiedName&);
     virtual void parseAttribute(const QualifiedName&, const AtomicString&) OVERRIDE;
