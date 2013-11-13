@@ -41,8 +41,11 @@ class TileManagerPerfTest : public testing::Test {
 
     resource_provider_ =
         ResourceProvider::Create(output_surface_.get(), NULL, 0, false, 1);
+    size_t raster_task_limit_bytes = 32 * 1024 * 1024;  // 16-64MB in practice.
     tile_manager_ = make_scoped_ptr(
-        new FakeTileManager(&tile_manager_client_, resource_provider_.get()));
+        new FakeTileManager(&tile_manager_client_,
+                            resource_provider_.get(),
+                            raster_task_limit_bytes));
     picture_pile_ = FakePicturePileImpl::CreatePile();
   }
 

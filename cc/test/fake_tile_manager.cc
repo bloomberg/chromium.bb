@@ -63,6 +63,16 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
                   std::numeric_limits<unsigned>::max(),
                   NULL) {}
 
+FakeTileManager::FakeTileManager(TileManagerClient* client,
+                                 ResourceProvider* resource_provider,
+                                 size_t raster_task_limit_bytes)
+    : TileManager(client,
+                  resource_provider,
+                  make_scoped_ptr<RasterWorkerPool>(new FakeRasterWorkerPool),
+                  1,
+                  raster_task_limit_bytes,
+                  NULL) {}
+
 FakeTileManager::~FakeTileManager() {}
 
 void FakeTileManager::AssignMemoryToTiles(
