@@ -362,10 +362,9 @@ class NET_EXPORT_PRIVATE QuicFramer {
 
   typedef std::map<QuicPacketSequenceNumber, uint8> NackRangeMap;
 
-  class AckFrameInfo {
-   public:
+  struct AckFrameInfo {
     AckFrameInfo();
-    virtual ~AckFrameInfo();
+    ~AckFrameInfo();
 
     // The maximum delta between ranges.
     QuicPacketSequenceNumber max_delta;
