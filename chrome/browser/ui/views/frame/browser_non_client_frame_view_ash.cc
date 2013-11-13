@@ -394,23 +394,11 @@ int BrowserNonClientFrameViewAsh::NonClientTopBorderHeight() const {
 }
 
 bool BrowserNonClientFrameViewAsh::UseShortHeader() const {
-  // Restored browser -> tall header
-  // Maximized browser -> short header
-  // Fullscreen browser, no immersive reveal -> hidden or super short light bar
-  // Fullscreen browser, immersive reveal -> short header
-  // Popup&App window -> tall header
-  // Panels use short header and are handled via ash::PanelFrameView.
-  // Dialogs use short header and are handled via ash::CustomFrameViewAsh.
-  Browser* browser = browser_view()->browser();
-  switch (browser->type()) {
-    case Browser::TYPE_TABBED:
-      return frame()->IsMaximized() || frame()->IsFullscreen();
-    case Browser::TYPE_POPUP:
-      return false;
-    default:
-      NOTREACHED();
-      return false;
-  }
+  // Restored tabbed browser windows use the tall header. All other windows use
+  // the short header.
+  return frame()->IsMaximized() ||
+         frame()->IsFullscreen() ||
+         !browser_view()->IsBrowserTypeNormal();
 }
 
 bool BrowserNonClientFrameViewAsh::UseImmersiveLightbarHeaderStyle() const {

@@ -32,12 +32,10 @@ class ASH_EXPORT FrameCaptionButtonContainerView
     MINIMIZE_DISALLOWED
   };
   enum HeaderStyle {
-    // Dialogs, panels, packaged apps, tabbed maximized/fullscreen browser
-    // windows.
+    // Default.
     HEADER_STYLE_SHORT,
 
-    // Restored tabbed browser windows, popups for browser windows, restored
-    // hosted app windows, popups for hosted app windows.
+    // Restored tabbed browser windows.
     HEADER_STYLE_TALL,
 
     // AppNonClientFrameViewAsh.

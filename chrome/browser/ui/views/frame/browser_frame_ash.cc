@@ -113,20 +113,6 @@ class BrowserFrameAsh::WindowPropertyWatcher : public aura::WindowObserver {
     }
   }
 
-  virtual void OnWindowBoundsChanged(aura::Window* window,
-                                     const gfx::Rect& old_bounds,
-                                     const gfx::Rect& new_bounds) OVERRIDE {
-    // Don't do anything if we don't have our non-client view yet.
-    if (!browser_frame_->non_client_view())
-      return;
-
-    // If the window just moved to the top of the screen, or just moved away
-    // from it, invoke Layout() so the header size can change.
-    if ((old_bounds.y() == 0 && new_bounds.y() != 0) ||
-        (old_bounds.y() != 0 && new_bounds.y() == 0))
-      browser_frame_->non_client_view()->Layout();
-  }
-
  private:
   BrowserFrameAsh* browser_frame_ash_;
   BrowserFrame* browser_frame_;
