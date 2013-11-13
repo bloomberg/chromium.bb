@@ -219,6 +219,16 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   }
   extension_service_->Init();
 
+  // Make the chrome://extension-icon/ resource available.
+  content::URLDataSource::Add(profile_, new ExtensionIconSource(profile_));
+
+  extension_warning_service_.reset(new ExtensionWarningService(profile_));
+  extension_warning_badge_service_.reset(
+      new ExtensionWarningBadgeService(profile_));
+  extension_warning_service_->AddObserver(
+      extension_warning_badge_service_.get());
+  error_console_.reset(new ErrorConsole(profile_, extension_service_.get()));
+
   if (extensions_enabled) {
     // Load any extensions specified with --load-extension.
     // TODO(yoz): Seems like this should move into ExtensionService::Init.
@@ -236,16 +246,6 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
       }
     }
   }
-
-  // Make the chrome://extension-icon/ resource available.
-  content::URLDataSource::Add(profile_, new ExtensionIconSource(profile_));
-
-  extension_warning_service_.reset(new ExtensionWarningService(profile_));
-  extension_warning_badge_service_.reset(
-      new ExtensionWarningBadgeService(profile_));
-  extension_warning_service_->AddObserver(
-      extension_warning_badge_service_.get());
-  error_console_.reset(new ErrorConsole(profile_, extension_service_.get()));
 }
 
 void ExtensionSystemImpl::Shared::Shutdown() {
