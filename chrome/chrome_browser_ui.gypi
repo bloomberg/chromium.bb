@@ -220,6 +220,7 @@
         'browser/ui/app_list/recommended_apps.cc',
         'browser/ui/app_list/recommended_apps.h',
         'browser/ui/app_list/recommended_apps_observer.h',
+        'browser/ui/app_list/start_page_observer.h',
         'browser/ui/app_list/start_page_service.cc',
         'browser/ui/app_list/start_page_service.h',
         'browser/ui/app_modal_dialogs/app_modal_dialog.cc',

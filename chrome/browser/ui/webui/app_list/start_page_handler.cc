@@ -64,6 +64,9 @@ void StartPageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "launchApp",
       base::Bind(&StartPageHandler::HandleLaunchApp, base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "search",
+      base::Bind(&StartPageHandler::HandleSearch, base::Unretained(this)));
 }
 
 void StartPageHandler::OnRecommendedAppsChanged() {
@@ -116,6 +119,13 @@ void StartPageHandler::HandleLaunchApp(const base::ListValue* args) {
                           app,
                           AppListControllerDelegate::LAUNCH_FROM_APP_LIST,
                           ui::EF_NONE);
+}
+
+void StartPageHandler::HandleSearch(const base::ListValue* args) {
+  base::string16 query;
+  CHECK(args->GetString(0, &query));
+
+  StartPageService::Get(Profile::FromWebUI(web_ui()))->OnSearch(query);
 }
 
 }  // namespace app_list

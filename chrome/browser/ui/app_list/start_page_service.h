@@ -10,6 +10,8 @@
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/observer_list.h"
+#include "base/strings/string16.h"
 #include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/web_contents.h"
 
@@ -22,6 +24,7 @@ class Profile;
 namespace app_list {
 
 class RecommendedApps;
+class StartPageObserver;
 
 // StartPageService collects data to be displayed in app list's start page
 // and hosts the start page contents.
@@ -32,8 +35,12 @@ class StartPageService : public BrowserContextKeyedService {
   // Gets the instance for the given profile.
   static StartPageService* Get(Profile* profile);
 
+  void AddObserver(StartPageObserver* observer);
+  void RemoveObserver(StartPageObserver* observer);
+
   content::WebContents* contents() { return contents_.get(); }
   RecommendedApps* recommended_apps() { return recommended_apps_.get(); }
+  void OnSearch(const base::string16& query);
 
  private:
   // A BrowserContextKeyedServiceFactory for this service.
@@ -59,6 +66,7 @@ class StartPageService : public BrowserContextKeyedService {
   scoped_ptr<StartPageWebContentsDelegate> contents_delegate_;
   scoped_ptr<ProfileDestroyObserver> profile_destroy_observer_;
   scoped_ptr<RecommendedApps> recommended_apps_;
+  ObserverList<StartPageObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(StartPageService);
 };

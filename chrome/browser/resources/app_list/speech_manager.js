@@ -87,10 +87,12 @@ cr.define('speech', function() {
    * @param {boolean} isFinal Whether the result is final or not.
    */
   SpeechManager.prototype.onSpeechRecognized = function(result, isFinal) {
-    // TODO(mukai): updates the UI, make requests, and/or sends the result
-    // to the web_ui handler.
     console.log('speech result: ' + result + ' ' +
         (isFinal ? 'final' : 'interim'));
+    if (isFinal) {
+      chrome.send('search', [result]);
+      this.speechRecognitionManager_.stop();
+    }
   };
 
   /**

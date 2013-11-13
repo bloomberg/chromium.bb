@@ -86,9 +86,17 @@ AppListViewDelegate::AppListViewDelegate(
   CHECK(controller_);
   RegisterForNotifications();
   g_browser_process->profile_manager()->GetProfileInfoCache().AddObserver(this);
+  app_list::StartPageService* service =
+      app_list::StartPageService::Get(profile_);
+  if (service)
+    service->AddObserver(this);
 }
 
 AppListViewDelegate::~AppListViewDelegate() {
+  app_list::StartPageService* service =
+      app_list::StartPageService::Get(profile_);
+  if (service)
+    service->RemoveObserver(this);
   g_browser_process->
       profile_manager()->GetProfileInfoCache().RemoveObserver(this);
 }
@@ -266,6 +274,10 @@ void AppListViewDelegate::OpenFeedback() {
 void AppListViewDelegate::ShowForProfileByPath(
     const base::FilePath& profile_path) {
   controller_->ShowForProfileByPath(profile_path);
+}
+
+void AppListViewDelegate::OnSearch(const base::string16& query) {
+  model_->search_box()->SetText(query);
 }
 
 void AppListViewDelegate::Observe(

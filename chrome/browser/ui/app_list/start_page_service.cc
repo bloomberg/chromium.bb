@@ -14,6 +14,7 @@
 #include "chrome/browser/media/media_stream_infobar_delegate.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/recommended_apps.h"
+#include "chrome/browser/ui/app_list/start_page_observer.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
@@ -139,6 +140,18 @@ StartPageService::StartPageService(Profile* profile)
 }
 
 StartPageService::~StartPageService() {}
+
+void StartPageService::AddObserver(StartPageObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void StartPageService::RemoveObserver(StartPageObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
+void StartPageService::OnSearch(const base::string16& query) {
+  FOR_EACH_OBSERVER(StartPageObserver, observers_, OnSearch(query));
+}
 
 void StartPageService::Shutdown() {
   contents_.reset();

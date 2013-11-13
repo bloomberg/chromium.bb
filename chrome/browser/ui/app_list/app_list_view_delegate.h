@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "chrome/browser/ui/app_list/chrome_signin_delegate.h"
+#include "chrome/browser/ui/app_list/start_page_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/app_list/app_list_view_delegate.h"
@@ -43,6 +44,7 @@ class AppSyncUIStateWatcher;
 #endif
 
 class AppListViewDelegate : public app_list::AppListViewDelegate,
+                            public app_list::StartPageObserver,
                             public content::NotificationObserver,
                             public ProfileInfoCacheObserver {
  public:
@@ -82,6 +84,9 @@ class AppListViewDelegate : public app_list::AppListViewDelegate,
       const base::FilePath& profile_path) OVERRIDE;
   virtual content::WebContents* GetStartPageContents() OVERRIDE;
   virtual const Users& GetUsers() const OVERRIDE;
+
+  // Overridden from app_list::StartPageObserver:
+  virtual void OnSearch(const base::string16& query) OVERRIDE;
 
   // Overridden from content::NotificationObserver:
   virtual void Observe(int type,
