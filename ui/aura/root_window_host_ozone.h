@@ -11,6 +11,7 @@
 #include "base/message_loop/message_loop.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/events/ozone/event_factory_ozone.h"
+#include "ui/gfx/insets.h"
 #include "ui/gfx/rect.h"
 
 namespace aura {
