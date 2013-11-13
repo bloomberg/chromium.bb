@@ -506,3 +506,6 @@ crbug.com/318632 webaudio/audiobuffersource-multi-channels.html [ NeedsManualReb
 crbug.com/318632 webaudio/test-basic.html [ NeedsManualRebaseline ]
 
 crbug.com/61724 fast/css/first-letter-punctuation-follow.html [ NeedsRebaseline ]
+
+crbug.com/318777 virtual/threaded/animations/display-none-terminates-animation.html  [ Failure Pass ]
+crbug.com/318777 virtual/web-animations-css/animations/display-change-does-not-terminate-animation.html  [ Failure Pass ]
