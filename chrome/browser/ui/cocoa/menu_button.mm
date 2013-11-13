@@ -132,7 +132,7 @@
   // should. I don't understand it.
   NSRect frame = [self menuRect];
   frame.origin.x -= 2.0;
-  frame.size.height += 10.0;
+  frame.size.height -= 19.0 - NSHeight(frame);
 
   // Make our pop-up button cell and set things up. This is, as of 10.5, the
   // official Apple-recommended hack. Later, perhaps |-[NSMenu
