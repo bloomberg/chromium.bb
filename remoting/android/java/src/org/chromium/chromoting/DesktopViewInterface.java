@@ -11,6 +11,9 @@ public interface DesktopViewInterface {
     /** Inject a mouse-move event, with optional button press/release. */
     void injectMouseEvent(int x, int y, int button, boolean pressed);
 
+    /** Triggers a brief cursor animation to indicate a long-press event. */
+    void showLongPressFeedback();
+
     /** Shows the action bar. */
     void showActionBar();
 

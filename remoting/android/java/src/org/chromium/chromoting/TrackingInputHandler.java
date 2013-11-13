@@ -367,6 +367,7 @@ public class TrackingInputHandler implements TouchInputHandler {
             mHeldButton = mouseButtonFromPointerCount(pointerCount);
             if (mHeldButton != BUTTON_UNDEFINED) {
                 injectButtonEvent(mHeldButton, true);
+                mViewer.showLongPressFeedback();
             }
         }
     }

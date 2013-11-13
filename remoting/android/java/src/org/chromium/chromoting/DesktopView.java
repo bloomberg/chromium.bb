@@ -12,7 +12,10 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Point;
+import android.graphics.RadialGradient;
+import android.graphics.Shader;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.text.InputType;
 import android.util.Log;
 import android.view.inputmethod.InputMethodManager;
@@ -40,6 +43,68 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface, Ru
     // be dropped if this is already set to true. This is used by the main thread and the painting
     // thread, so the access should be synchronized on |mRenderData|.
     private boolean mRepaintPending;
+
+    /** Helper class for displaying the long-press feedback animation. This class is thread-safe. */
+    private static class FeedbackAnimator {
+        /** Total duration of the animation, in milliseconds. */
+        private static final float TOTAL_DURATION_MS = 220;
+
+        /** Start time of the animation, from {@link SystemClock#uptimeMillis()}. */
+        private long mStartTime = 0;
+
+        private boolean mRunning = false;
+
+        /** Lock to allow multithreaded access to {@link #mStartTime} and {@link #mRunning}. */
+        private Object mLock = new Object();
+
+        private Paint mPaint = new Paint();
+
+        public boolean isAnimationRunning() {
+            synchronized (mLock) {
+                return mRunning;
+            }
+        }
+
+        /**
+         * Begins a new animation sequence. After calling this method, the caller should
+         * call {@link #render(Canvas, float, float, float)} periodically whilst
+         * {@link #isAnimationRunning()} returns true.
+         */
+        public void startAnimation() {
+            synchronized (mLock) {
+                mRunning = true;
+                mStartTime = SystemClock.uptimeMillis();
+            }
+        }
+
+        public void render(Canvas canvas, float x, float y, float size) {
+            // |progress| is 0 at the beginning, 1 at the end.
+            float progress;
+            synchronized (mLock) {
+                progress = (SystemClock.uptimeMillis() - mStartTime) / TOTAL_DURATION_MS;
+                if (progress >= 1) {
+                    mRunning = false;
+                    return;
+                }
+            }
+
+            // Animation grows from 0 to |size|, and goes from fully opaque to transparent for a
+            // seamless fading-out effect. The animation needs to have more than one color so it's
+            // visible over any background color.
+            float radius = size * progress;
+            int alpha = (int)((1 - progress) * 0xff);
+
+            int transparentBlack = Color.argb(0, 0, 0, 0);
+            int white = Color.argb(alpha, 0xff, 0xff, 0xff);
+            int black = Color.argb(alpha, 0, 0, 0);
+            mPaint.setShader(new RadialGradient(x, y, radius,
+                    new int[] {transparentBlack, white, black, transparentBlack},
+                    new float[] {0.0f, 0.8f, 0.9f, 1.0f}, Shader.TileMode.CLAMP));
+            canvas.drawCircle(x, y, radius, mPaint);
+        }
+    }
+
+    private FeedbackAnimator mFeedbackAnimator = new FeedbackAnimator();
 
     public DesktopView(Activity context) {
         super(context);
@@ -80,6 +145,8 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface, Ru
      */
     @Override
     public void run() {
+        long startTimeMs = SystemClock.uptimeMillis();
+
         if (Looper.myLooper() == Looper.getMainLooper()) {
             Log.w("deskview", "Canvas being redrawn on UI thread");
         }
@@ -109,23 +176,39 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface, Ru
         }
 
         Canvas canvas = getHolder().lockCanvas();
+        int x, y;
         synchronized (mRenderData) {
             mRepaintPending = false;
             canvas.setMatrix(mRenderData.transform);
+            x = mRenderData.cursorPosition.x;
+            y = mRenderData.cursorPosition.y;
         }
 
         canvas.drawColor(Color.BLACK);
         canvas.drawBitmap(image, 0, 0, new Paint());
+
+        if (mFeedbackAnimator.isAnimationRunning()) {
+            float scaleFactor;
+            synchronized (mRenderData) {
+                scaleFactor = mRenderData.transform.mapRadius(1);
+            }
+            mFeedbackAnimator.render(canvas, x, y, 40 / scaleFactor);
+
+            // Trigger a repaint request for the next frame of the animation.
+            getHandler().postAtTime(new Runnable() {
+                @Override
+                public void run() {
+                    requestRepaint();
+                }
+            }, startTimeMs + 30);
+        }
+
         Bitmap cursorBitmap = JniInterface.getCursorBitmap();
         if (cursorBitmap != null) {
             Point hotspot = JniInterface.getCursorHotspot();
-            int bitmapX, bitmapY;
-            synchronized (mRenderData) {
-                bitmapX = mRenderData.cursorPosition.x - hotspot.x;
-                bitmapY = mRenderData.cursorPosition.y - hotspot.y;
-            }
-            canvas.drawBitmap(cursorBitmap, bitmapX, bitmapY, new Paint());
+            canvas.drawBitmap(cursorBitmap, x - hotspot.x, y - hotspot.y, new Paint());
         }
+
         getHolder().unlockCanvasAndPost(canvas);
     }
 
@@ -216,6 +299,12 @@ public class DesktopView extends SurfaceView implements DesktopViewInterface, Ru
             // TODO(lambroslambrou): Optimize this by only repainting the affected areas.
             requestRepaint();
         }
+    }
+
+    @Override
+    public void showLongPressFeedback() {
+        mFeedbackAnimator.startAnimation();
+        requestRepaint();
     }
 
     @Override
