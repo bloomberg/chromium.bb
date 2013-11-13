@@ -90,7 +90,7 @@ net::URLRequestContextGetter* TestConfigurator::RequestContext() {
   return context_.get();
 }
 
-// Don't use the utility process to decode files.
+// Don't use the utility process to run code out-of-process.
 bool TestConfigurator::InProcess() { return true; }
 
 ComponentPatcher* TestConfigurator::CreateComponentPatcher() {

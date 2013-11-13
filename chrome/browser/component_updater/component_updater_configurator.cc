@@ -31,8 +31,6 @@ const int kDelayOneHour = kDelayOneMinute * 60;
 // Debug values you can pass to --component-updater=value1,value2.
 // Speed up component checking.
 const char kSwitchFastUpdate[] = "fast-update";
-// Force out-of-process-xml parsing.
-const char kSwitchOutOfProcess[] = "out-of-process";
 // Add "testrequest=1" parameter to the update check query.
 const char kSwitchRequestParam[] = "test-request";
 // Disables pings. Pings are the requests sent to the update server that report
@@ -112,7 +110,6 @@ class ChromeConfigurator : public ComponentUpdateService::Configurator {
   std::string extra_info_;
   std::string url_source_;
   bool fast_update_;
-  bool out_of_process_;
   bool pings_enabled_;
   bool deltas_enabled_;
 };
@@ -123,7 +120,6 @@ ChromeConfigurator::ChromeConfigurator(const CommandLine* cmdline,
         extra_info_(chrome::OmahaQueryParams::Get(
             chrome::OmahaQueryParams::CHROME)),
         fast_update_(false),
-        out_of_process_(false),
         pings_enabled_(false),
         deltas_enabled_(false) {
   // Parse comma-delimited debug flags.
@@ -131,7 +127,6 @@ ChromeConfigurator::ChromeConfigurator(const CommandLine* cmdline,
   Tokenize(cmdline->GetSwitchValueASCII(switches::kComponentUpdater),
       ",", &switch_values);
   fast_update_ = HasSwitchValue(switch_values, kSwitchFastUpdate);
-  out_of_process_ = HasSwitchValue(switch_values, kSwitchOutOfProcess);
   pings_enabled_ = !HasSwitchValue(switch_values, kSwitchDisablePings);
 #if defined(OS_WIN)
   deltas_enabled_ = !HasSwitchValue(switch_values, kSwitchDisableDeltaUpdates);
@@ -200,7 +195,7 @@ net::URLRequestContextGetter* ChromeConfigurator::RequestContext() {
 }
 
 bool ChromeConfigurator::InProcess() {
-  return !out_of_process_;
+  return false;
 }
 
 ComponentPatcher* ChromeConfigurator::CreateComponentPatcher() {

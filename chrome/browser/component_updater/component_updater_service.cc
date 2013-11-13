@@ -28,14 +28,12 @@
 #include "chrome/browser/component_updater/component_unpacker.h"
 #include "chrome/browser/component_updater/component_updater_ping_manager.h"
 #include "chrome/browser/component_updater/crx_update_item.h"
-#include "chrome/common/chrome_utility_messages.h"
 #include "chrome/common/chrome_version_info.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/update_manifest.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/resource_controller.h"
 #include "content/public/browser/resource_throttle.h"
-#include "content/public/browser/utility_process_host.h"
-#include "content/public/browser/utility_process_host_client.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -46,8 +44,6 @@
 #include "url/gurl.h"
 
 using content::BrowserThread;
-using content::UtilityProcessHost;
-using content::UtilityProcessHostClient;
 using extensions::Extension;
 
 // The component updater is designed to live until process shutdown, so
@@ -316,42 +312,6 @@ class CrxUpdateService : public ComponentUpdateService {
   virtual content::ResourceThrottle* GetOnDemandResourceThrottle(
       net::URLRequest* request, const std::string& crx_id) OVERRIDE;
 
-  // The only purpose of this class is to forward the
-  // UtilityProcessHostClient callbacks so CrxUpdateService does
-  // not have to derive from it because that is refcounted.
-  class ManifestParserBridge : public UtilityProcessHostClient {
-   public:
-    explicit ManifestParserBridge(CrxUpdateService* service)
-        : service_(service) {}
-
-    virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE {
-      bool handled = true;
-      IPC_BEGIN_MESSAGE_MAP(ManifestParserBridge, message)
-        IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_ParseUpdateManifest_Succeeded,
-                            OnParseUpdateManifestSucceeded)
-        IPC_MESSAGE_HANDLER(ChromeUtilityHostMsg_ParseUpdateManifest_Failed,
-                            OnParseUpdateManifestFailed)
-        IPC_MESSAGE_UNHANDLED(handled = false)
-      IPC_END_MESSAGE_MAP()
-      return handled;
-    }
-
-   private:
-    virtual ~ManifestParserBridge() {}
-
-    // Omaha update response XML was successfully parsed.
-    void OnParseUpdateManifestSucceeded(const UpdateManifest::Results& r) {
-      service_->OnParseUpdateManifestSucceeded(r);
-    }
-    // Omaha update response XML could not be parsed.
-    void OnParseUpdateManifestFailed(const std::string& e) {
-      service_->OnParseUpdateManifestFailed(e);
-    }
-
-    CrxUpdateService* service_;
-    DISALLOW_COPY_AND_ASSIGN(ManifestParserBridge);
-  };
-
   // Context for a update check url request. See DelegateWithContext above.
   struct UpdateContext {
     base::Time start;
@@ -387,10 +347,9 @@ class CrxUpdateService : public ComponentUpdateService {
     kStepDelayLong,
   };
 
-  // See ManifestParserBridge.
+
   void OnParseUpdateManifestSucceeded(const UpdateManifest::Results& results);
 
-  // See ManifestParserBridge.
   void OnParseUpdateManifestFailed(const std::string& error_message);
 
   bool AddItemToUpdateCheck(CrxUpdateItem* item, std::string* query);
@@ -917,18 +876,11 @@ void CrxUpdateService::OnURLFetchComplete(const net::URLFetcher* source,
 // attacker was able to feed us a malicious xml string.
 void CrxUpdateService::ParseManifest(const std::string& xml) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-  if (config_->InProcess()) {
-    UpdateManifest manifest;
-    if (!manifest.Parse(xml))
-       CrxUpdateService::OnParseUpdateManifestFailed(manifest.errors());
-    else
-       CrxUpdateService::OnParseUpdateManifestSucceeded(manifest.results());
-  } else {
-    UtilityProcessHost* host =
-        UtilityProcessHost::Create(new ManifestParserBridge(this),
-                                   base::MessageLoopProxy::current().get());
-    host->Send(new ChromeUtilityMsg_ParseUpdateManifest(xml));
-  }
+  UpdateManifest manifest;
+  if (!manifest.Parse(xml))
+     CrxUpdateService::OnParseUpdateManifestFailed(manifest.errors());
+  else
+     CrxUpdateService::OnParseUpdateManifestSucceeded(manifest.results());
 }
 
 // A valid Omaha update check has arrived, from only the list of components that

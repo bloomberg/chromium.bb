@@ -88,7 +88,7 @@ class TestConfigurator : public ComponentUpdateService::Configurator {
 
   virtual net::URLRequestContextGetter* RequestContext() OVERRIDE;
 
-  // Don't use the utility process to decode files.
+  // Don't use the utility process to run component updater code.
   virtual bool InProcess() OVERRIDE;
 
   virtual ComponentPatcher* CreateComponentPatcher() OVERRIDE;
