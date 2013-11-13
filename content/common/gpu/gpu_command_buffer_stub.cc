@@ -575,6 +575,18 @@ void GpuCommandBufferStub::SetLatencyInfoCallback(
   latency_info_callback_ = callback;
 }
 
+int32 GpuCommandBufferStub::GetRequestedAttribute(int attr) const {
+  // The command buffer is pairs of enum, value
+  // search for the requested attribute, return the value.
+  for (std::vector<int32>::const_iterator it = requested_attribs_.begin();
+       it != requested_attribs_.end(); ++it) {
+    if (*it++ == attr) {
+      return *it;
+    }
+  }
+  return -1;
+}
+
 void GpuCommandBufferStub::OnSetGetBuffer(int32 shm_id,
                                           IPC::Message* reply_message) {
   TRACE_EVENT0("gpu", "GpuCommandBufferStub::OnSetGetBuffer");

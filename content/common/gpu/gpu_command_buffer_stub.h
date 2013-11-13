@@ -121,6 +121,8 @@ class GpuCommandBufferStub
 
   gfx::GpuPreference gpu_preference() { return gpu_preference_; }
 
+  int32 GetRequestedAttribute(int attr) const;
+
   // Sends a message to the console.
   void SendConsoleMessage(int32 id, const std::string& message);
 

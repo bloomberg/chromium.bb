@@ -82,6 +82,7 @@ class IOSurfaceImageTransportSurface
 
   uint32 fbo_id_;
   GLuint texture_id_;
+  GLuint depth_stencil_renderbuffer_id_;
 
   base::ScopedCFTypeRef<CFTypeRef> io_surface_;
 
@@ -135,6 +136,7 @@ IOSurfaceImageTransportSurface::IOSurfaceImageTransportSurface(
       frontbuffer_suggested_allocation_(true),
       fbo_id_(0),
       texture_id_(0),
+      depth_stencil_renderbuffer_id_(0),
       io_surface_handle_(0),
       context_(NULL),
       scale_factor_(1.f),
@@ -338,7 +340,7 @@ void IOSurfaceImageTransportSurface::OnWillDestroyStub() {
 void IOSurfaceImageTransportSurface::UnrefIOSurface() {
   // If we have resources to destroy, then make sure that we have a current
   // context which we can use to delete the resources.
-  if (context_ || fbo_id_ || texture_id_) {
+  if (context_ || fbo_id_ || texture_id_ || depth_stencil_renderbuffer_id_) {
     DCHECK(gfx::GLContext::GetCurrent() == context_);
     DCHECK(context_->IsCurrent(this));
     DCHECK(CGLGetCurrentContext());
@@ -352,6 +354,11 @@ void IOSurfaceImageTransportSurface::UnrefIOSurface() {
   if (texture_id_) {
     glDeleteTextures(1, &texture_id_);
     texture_id_ = 0;
+  }
+
+  if (depth_stencil_renderbuffer_id_) {
+    glDeleteRenderbuffersEXT(1, &depth_stencil_renderbuffer_id_);
+    depth_stencil_renderbuffer_id_ = 0;
   }
 
   io_surface_.reset();
@@ -402,6 +409,37 @@ void IOSurfaceImageTransportSurface::CreateIOSurface() {
                             texture_id_,
                             0);
 
+
+  // Search through the provided attributes; if the caller has
+  // requested a stencil buffer, try to get one.
+
+  int32 stencil_bits =
+      helper_->stub()->GetRequestedAttribute(EGL_STENCIL_SIZE);
+  if (stencil_bits > 0) {
+    // Create and bind the stencil buffer
+    bool has_packed_depth_stencil =
+         GLSurface::ExtensionsContain(
+             reinterpret_cast<const char *>(glGetString(GL_EXTENSIONS)),
+                                            "GL_EXT_packed_depth_stencil");
+
+    if (has_packed_depth_stencil) {
+      glGenRenderbuffersEXT(1, &depth_stencil_renderbuffer_id_);
+      glBindRenderbufferEXT(GL_RENDERBUFFER_EXT,
+                            depth_stencil_renderbuffer_id_);
+      glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH24_STENCIL8_EXT,
+                              rounded_size_.width(), rounded_size_.height());
+      glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT,
+                                  GL_STENCIL_ATTACHMENT_EXT,
+                                  GL_RENDERBUFFER_EXT,
+                                  depth_stencil_renderbuffer_id_);
+    }
+
+    // If we asked for stencil but the extension isn't present,
+    // it's OK to silently fail; subsequent code will/must check
+    // for the presence of a stencil buffer before attempting to
+    // do stencil-based operations.
+  }
+
   // Allocate a new IOSurface, which is the GPU resource that can be
   // shared across processes.
   base::ScopedCFTypeRef<CFMutableDictionaryRef> properties;
@@ -439,12 +477,18 @@ void IOSurfaceImageTransportSurface::CreateIOSurface() {
           io_surface_.get(),
           plane);
   if (cglerror != kCGLNoError) {
-    DLOG(ERROR) << "CGLTexImageIOSurface2D: " << cglerror;
     UnrefIOSurface();
     return;
   }
 
   glFlush();
+
+  GLenum status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
+  if (status != GL_FRAMEBUFFER_COMPLETE_EXT) {
+    DLOG(ERROR) << "Framebuffer was incomplete: " << status;
+    UnrefIOSurface();
+    return;
+  }
 
   glBindTexture(target, previous_texture_id);
   // The FBO remains bound for this GL context.
