@@ -1208,12 +1208,8 @@ TEST_F(TemplateURLTest, ExtraQueryParams) {
 }
 
 // Tests replacing pageClassification.
-#if defined(OS_ANDROID)
-#define MAYBE_ReplacePageClassification DISABLED_ReplacePageClassification
-#else
-#define MAYBE_ReplacePageClassification ReplacePageClassification
-#endif
-TEST_F(TemplateURLTest, MAYBE_ReplacePageClassification) {
+TEST_F(TemplateURLTest, ReplacePageClassification) {
+  UIThreadSearchTermsData::SetGoogleBaseURL("http://www.google.com/");
   TemplateURLData data;
   data.input_encodings.push_back("UTF-8");
   data.SetURL("{google:baseURL}?{google:pageClassification}q={searchTerms}");
