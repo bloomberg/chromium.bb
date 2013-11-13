@@ -4,14 +4,17 @@
 
 #include "chrome/common/extensions/chrome_extensions_client.h"
 
+#include "base/command_line.h"
 #include "chrome/common/extensions/chrome_manifest_handlers.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/features/base_feature_provider.h"
 #include "chrome/common/url_constants.h"
 #include "content/public/common/url_constants.h"
+#include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/common/permissions/permission_message.h"
+#include "extensions/common/switches.h"
 #include "extensions/common/url_pattern.h"
 #include "extensions/common/url_pattern_set.h"
 #include "grit/generated_resources.h"
@@ -121,6 +124,26 @@ URLPatternSet ChromeExtensionsClient::GetPermittedChromeSchemeHosts(
                                 chrome::kChromeUIThumbnailURL));
   }
   return hosts;
+}
+
+bool ChromeExtensionsClient::IsScriptableURL(
+    const GURL& url, std::string* error) const {
+  // The gallery is special-cased as a restricted URL for scripting to prevent
+  // access to special JS bindings we expose to the gallery (and avoid things
+  // like extensions removing the "report abuse" link).
+  // TODO(erikkay): This seems like the wrong test.  Shouldn't we we testing
+  // against the store app extent?
+  GURL store_url(extension_urls::GetWebstoreLaunchURL());
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kAllowScriptingGallery)) {
+    return true;
+  }
+  if (url.host() == store_url.host()) {
+    if (error)
+      *error = manifest_errors::kCannotScriptGallery;
+    return false;
+  }
+  return true;
 }
 
 // static

@@ -38,7 +38,8 @@ class ChromeExtensionsClient : public ExtensionsClient {
   virtual URLPatternSet GetPermittedChromeSchemeHosts(
       const Extension* extension,
       const APIPermissionSet& api_permissions) const OVERRIDE;
-
+  virtual bool IsScriptableURL(const GURL& url, std::string* error) const
+      OVERRIDE;
   // Get the LazyInstance for ChromeExtensionsClient.
   static ChromeExtensionsClient* GetInstance();
 

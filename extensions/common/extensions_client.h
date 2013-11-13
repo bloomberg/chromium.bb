@@ -9,6 +9,8 @@
 #include <string>
 #include <vector>
 
+class GURL;
+
 namespace extensions {
 
 class APIPermissionSet;
@@ -62,6 +64,9 @@ class ExtensionsClient {
   virtual URLPatternSet GetPermittedChromeSchemeHosts(
       const Extension* extension,
       const APIPermissionSet& api_permissions) const = 0;
+
+  // Returns false if content scripts are forbidden from running on |url|.
+  virtual bool IsScriptableURL(const GURL& url, std::string* error) const = 0;
 
   // Return the extensions client.
   static ExtensionsClient* Get();

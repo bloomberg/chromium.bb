@@ -12,7 +12,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/extensions/extension_constants.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
@@ -20,7 +19,6 @@
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"
 #include "extensions/common/manifest.h"
-#include "extensions/common/manifest_constants.h"
 #include "extensions/common/manifest_constants.h"
 #include "extensions/common/permissions/api_permission_set.h"
 #include "extensions/common/permissions/permission_message_provider.h"
@@ -461,12 +459,6 @@ bool PermissionsData::CanExecuteScriptOnPage(const Extension* extension,
                                              int process_id,
                                              std::string* error) {
   base::AutoLock auto_lock(extension->permissions_data()->runtime_lock_);
-  // The gallery is special-cased as a restricted URL for scripting to prevent
-  // access to special JS bindings we expose to the gallery (and avoid things
-  // like extensions removing the "report abuse" link).
-  // TODO(erikkay): This seems like the wrong test.  Shouldn't we we testing
-  // against the store app extent?
-  GURL store_url(extension_urls::GetWebstoreLaunchURL());
   const CommandLine* command_line = CommandLine::ForCurrentProcess();
   bool can_execute_everywhere = CanExecuteScriptEverywhere(extension);
 
@@ -476,11 +468,8 @@ bool PermissionsData::CanExecuteScriptOnPage(const Extension* extension,
            script, process_id, error))
     return false;
 
-  if ((document_url.host() == store_url.host()) &&
-      !can_execute_everywhere &&
-      !command_line->HasSwitch(switches::kAllowScriptingGallery)) {
-    if (error)
-      *error = errors::kCannotScriptGallery;
+  if (!can_execute_everywhere &&
+      !ExtensionsClient::Get()->IsScriptableURL(document_url, error)) {
     return false;
   }
 
