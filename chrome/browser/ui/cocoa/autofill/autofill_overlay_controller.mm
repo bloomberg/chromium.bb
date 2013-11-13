@@ -15,10 +15,10 @@
 namespace {
 
 // Spacing around the message in the overlay view.
-const CGFloat kOverlayLabelMargin = 10;
+const CGFloat kOverlayLabelPadding = 34;
 
 // Spacing below image and above text messages in overlay view.
-const CGFloat kOverlayImageBottomMargin = 50;
+const CGFloat kOverlayImageVerticalPadding = 90;
 
 // TODO(groby): Unify colors with Views.
 // Slight shading for mouse hover and legal document background.
@@ -88,7 +88,7 @@ SkColor kSubtleBorderColor = 0xffdfdfdf;
 
 - (CGFloat)heightForWidth:(CGFloat)width {
   return NSHeight([label_ frame]) + autofill::kArrowHeight +
-      2 * kOverlayLabelMargin;
+      2 * kOverlayLabelPadding;
 }
 
 - (void)setMessage:(const autofill::DialogOverlayString&)message {
@@ -111,7 +111,7 @@ SkColor kSubtleBorderColor = 0xffdfdfdf;
     return;
 
   CGFloat labelHeight = NSHeight([label_ frame]);
-  [label_ setFrame:NSMakeRect(0, kOverlayLabelMargin,
+  [label_ setFrame:NSMakeRect(0, kOverlayLabelPadding,
                               NSWidth([self bounds]), labelHeight)];
   // TODO(groby): useful DCHECK() goes here.
 }
@@ -176,7 +176,7 @@ SkColor kSubtleBorderColor = 0xffdfdfdf;
     return 0;
 
   // Overlays with text messages express a size preference.
-  return kOverlayImageBottomMargin +
+  return 2 * kOverlayImageVerticalPadding +
       [messageView_ heightForWidth:width] +
       [[imageView_ image] size].height;
 }
@@ -200,7 +200,7 @@ SkColor kSubtleBorderColor = 0xffdfdfdf;
 
   NSSize imageSize = [[imageView_ image] size];
   [imageView_ setFrame:NSMakeRect(
-       0, NSMaxY([messageView_ frame]) + kOverlayImageBottomMargin,
+       0, NSMaxY([messageView_ frame]) + kOverlayImageVerticalPadding,
        NSWidth(bounds), imageSize.height)];
 }
 

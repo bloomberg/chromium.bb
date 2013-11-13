@@ -443,33 +443,26 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
 }
 
 - (NSSize)preferredSize {
-  NSSize contentSize;
+  NSSize size;
 
   // Overall size is determined by either main container or sign in view.
   if ([[signInContainer_ view] isHidden])
-    contentSize = [mainContainer_ preferredSize];
+    size = [mainContainer_ preferredSize];
   else
-    contentSize = [signInContainer_ preferredSize];
+    size = [signInContainer_ preferredSize];
 
   // Always make room for the header.
-  NSSize headerSize = NSMakeSize(contentSize.width, kAccountChooserHeight);
-  NSSize size = contentSize;
   size.height += kDecorationHeight;
+
+  if (![[overlayController_ view] isHidden]) {
+    CGFloat height = [overlayController_ heightForWidth:size.width];
+    if (height != 0.0)
+      size.height = height;
+  }
 
   // Show as much of the main view as is possible without going past the
   // bottom of the browser window.
   size.height = std::min(size.height, [self maxHeight]);
-
-  if (![[overlayController_ view] isHidden]) {
-    CGFloat height = [overlayController_ heightForWidth:size.width];
-    // TODO(groby): This currently reserves size on top of the overlay image
-    // equivalent to the height of the header. Clarify with UX what the final
-    // padding will be.
-    if (height != 0.0) {
-      size.height =
-          height + headerSize.height + autofill::kDetailVerticalPadding;
-    }
-  }
 
   return size;
 }
