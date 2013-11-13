@@ -263,6 +263,11 @@ cr.define('print_preview', function() {
                     print_preview.Destination.Origin.DEVICE)) {
           this.cloudPrintInterface_.printer(this.initialDestinationId_,
                                             this.initialDestinationOrigin_);
+        } else if (this.initialDestinationOrigin_ ==
+                   print_preview.Destination.Origin.PRIVET) {
+          // TODO(noamsml): Resolve a specific printer instead of listing all
+          // privet printers in this case.
+          this.nativeLayer_.startGetPrivetDestinations();
         } else {
           this.onAutoSelectFailed_();
         }
