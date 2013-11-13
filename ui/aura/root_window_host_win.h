@@ -6,7 +6,7 @@
 #define UI_AURA_ROOT_WINDOW_HOST_WIN_H_
 
 #include "base/compiler_specific.h"
-#include "ui/aura/root_window_host.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/ui_export.h"
 #include "ui/gfx/win/window_impl.h"
 

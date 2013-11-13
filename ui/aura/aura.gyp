@@ -88,8 +88,6 @@
         'layout_manager.h',
         'remote_root_window_host_win.cc',
         'remote_root_window_host_win.h',
-        'root_window_host.h',
-        'root_window_host_delegate.h',
         'root_window_host_ozone.cc',
         'root_window_host_ozone.h',
         'root_window_host_win.cc',
@@ -105,6 +103,8 @@
         'window_observer.h',
         'window_tracker.cc',
         'window_tracker.h',
+        'window_tree_host.h',
+        'window_tree_host_delegate.h',
       ],
       'conditions': [
         ['use_x11==1', {

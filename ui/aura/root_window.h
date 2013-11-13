@@ -15,7 +15,7 @@
 #include "base/message_loop/message_loop.h"
 #include "ui/aura/aura_export.h"
 #include "ui/aura/client/capture_delegate.h"
-#include "ui/aura/root_window_host_delegate.h"
+#include "ui/aura/window_tree_host_delegate.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer_animation_observer.h"

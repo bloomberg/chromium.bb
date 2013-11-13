@@ -22,8 +22,8 @@
 
 #if defined(USE_AURA)
 #include "ui/aura/root_window.h"
-#include "ui/aura/root_window_host_delegate.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_tree_host_delegate.h"
 #endif // defined(USE_AURA)
 
 class OmniboxViewViewsTest : public InProcessBrowserTest {

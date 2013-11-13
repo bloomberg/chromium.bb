@@ -6,9 +6,9 @@
 #include "base/sys_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/root_window.h"
-#include "ui/aura/root_window_host_delegate.h"
 #include "ui/aura/root_window_host_x11.h"
 #include "ui/aura/test/aura_test_base.h"
+#include "ui/aura/window_tree_host_delegate.h"
 #include "ui/events/x/events_x_utils.h"
 
 namespace {

@@ -4,7 +4,7 @@
 
 #include "ash/host/root_window_host_factory.h"
 
-#include "ui/aura/root_window_host.h"
+#include "ui/aura/window_tree_host.h"
 
 namespace {
 

@@ -16,7 +16,7 @@
 #include "ui/gfx/size_f.h"
 
 #if defined(OS_WIN)
-#include "ui/aura/root_window_host.h"
+#include "ui/aura/window_tree_host.h"
 #endif
 
 namespace ash {

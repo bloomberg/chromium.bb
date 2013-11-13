@@ -8,7 +8,7 @@
 #include "base/command_line.h"
 #include "base/win/windows_version.h"
 #include "ui/aura/remote_root_window_host_win.h"
-#include "ui/aura/root_window_host.h"
+#include "ui/aura/window_tree_host.h"
 
 namespace {
 
