@@ -927,9 +927,17 @@ void MediaStreamManager::DevicesEnumerated(
       !std::equal(devices.begin(), devices.end(), cache->devices.begin(),
                   StreamDeviceInfo::IsEqual)) {
     StopRemovedDevices(cache->devices, devices);
-    cache->valid = true;
     cache->devices = devices;
     need_update_clients = true;
+
+    // The device might not be able to be enumerated when it is not warmed up,
+    // for example, when the machine just wakes up from sleep. We set the cache
+    // to be invalid so that the next media request will trigger the
+    // enumeration again. See issue/317673.
+    if (devices.size())
+      cache->valid = true;
+    else
+      cache->valid = false;
   }
 
   if (need_update_clients && monitoring_started_)
