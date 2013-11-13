@@ -43,6 +43,7 @@ class AutofillDriverImpl : public AutofillDriver,
 
   // AutofillDriver:
   virtual bool IsOffTheRecord() const OVERRIDE;
+  virtual net::URLRequestContextGetter* GetURLRequestContext() OVERRIDE;
   virtual content::WebContents* GetWebContents() OVERRIDE;
   virtual base::SequencedWorkerPool* GetBlockingPool() OVERRIDE;
   virtual bool RendererIsAvailable() OVERRIDE;

@@ -191,10 +191,9 @@ AutofillManager::AutofillManager(
       weak_ptr_factory_(this) {
   if (enable_download_manager == ENABLE_AUTOFILL_DOWNLOAD_MANAGER) {
     download_manager_.reset(
-        new AutofillDownloadManager(
-            driver->GetWebContents()->GetBrowserContext(),
-            manager_delegate_->GetPrefs(),
-            this));
+        new AutofillDownloadManager(driver,
+                                    manager_delegate_->GetPrefs(),
+                                    this));
   }
 }
 

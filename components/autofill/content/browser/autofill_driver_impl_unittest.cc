@@ -17,6 +17,7 @@
 #include "components/autofill/core/common/autofill_messages.h"
 #include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data_predictions.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
@@ -159,6 +160,14 @@ class AutofillDriverImplTest : public ChromeRenderViewHostTestHarness {
   scoped_ptr<TestAutofillManagerDelegate> test_manager_delegate_;
   scoped_ptr<TestAutofillDriverImpl> driver_;
 };
+
+TEST_F(AutofillDriverImplTest, GetURLRequestContext) {
+  net::URLRequestContextGetter* request_context =
+      driver_->GetURLRequestContext();
+  net::URLRequestContextGetter* expected_request_context =
+      web_contents()->GetBrowserContext()->GetRequestContext();
+  EXPECT_EQ(request_context, expected_request_context);
+}
 
 TEST_F(AutofillDriverImplTest, NavigatedToDifferentPage) {
   EXPECT_CALL(*driver_->mock_autofill_manager(), Reset());

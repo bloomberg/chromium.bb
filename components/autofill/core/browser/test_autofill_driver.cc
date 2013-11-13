@@ -10,7 +10,8 @@ namespace autofill {
 
 TestAutofillDriver::TestAutofillDriver(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      blocking_pool_(new base::SequencedWorkerPool(4, "TestAutofillDriver")) {}
+      blocking_pool_(new base::SequencedWorkerPool(4, "TestAutofillDriver")),
+      url_request_context_(NULL) {}
 
 TestAutofillDriver::~TestAutofillDriver() {
   blocking_pool_->Shutdown();
@@ -18,6 +19,10 @@ TestAutofillDriver::~TestAutofillDriver() {
 
 bool TestAutofillDriver::IsOffTheRecord() const {
   return false;
+}
+
+net::URLRequestContextGetter* TestAutofillDriver::GetURLRequestContext() {
+  return url_request_context_;
 }
 
 content::WebContents* TestAutofillDriver::GetWebContents() {
@@ -52,6 +57,11 @@ void TestAutofillDriver::RendererShouldClearFilledForm() {
 }
 
 void TestAutofillDriver::RendererShouldClearPreviewedForm() {
+}
+
+void TestAutofillDriver::SetURLRequestContext(
+    net::URLRequestContextGetter* url_request_context) {
+  url_request_context_ = url_request_context;
 }
 
 }  // namespace autofill

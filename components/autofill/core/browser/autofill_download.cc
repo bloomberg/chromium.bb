@@ -14,18 +14,16 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "components/autofill/core/browser/autofill_download_url.h"
+#include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_metrics.h"
 #include "components/autofill/core/browser/autofill_xml_parser.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/common/autofill_pref_names.h"
-#include "content/public/browser/browser_context.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"
 #include "third_party/libjingle/source/talk/xmllite/xmlparser.h"
 #include "url/gurl.h"
-
-using content::BrowserContext;
 
 namespace autofill {
 
@@ -68,10 +66,10 @@ struct AutofillDownloadManager::FormRequestData {
   AutofillRequestType request_type;
 };
 
-AutofillDownloadManager::AutofillDownloadManager(BrowserContext* context,
+AutofillDownloadManager::AutofillDownloadManager(AutofillDriver* driver,
                                                  PrefService* pref_service,
                                                  Observer* observer)
-    : browser_context_(context),
+    : driver_(driver),
       pref_service_(pref_service),
       observer_(observer),
       max_form_cache_size_(kMaxFormCacheSize),
@@ -186,7 +184,7 @@ bool AutofillDownloadManager::StartRequest(
     const std::string& form_xml,
     const FormRequestData& request_data) {
   net::URLRequestContextGetter* request_context =
-      browser_context_->GetRequestContext();
+      driver_->GetURLRequestContext();
   DCHECK(request_context);
   GURL request_url;
   if (request_data.request_type == AutofillDownloadManager::REQUEST_QUERY)

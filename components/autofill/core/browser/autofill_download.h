@@ -20,16 +20,13 @@
 
 class PrefService;
 
-namespace content {
-class BrowserContext;
-}  // namespace content
-
 namespace net {
 class URLFetcher;
 }  // namespace net
 
 namespace autofill {
 
+class AutofillDriver;
 class AutofillMetrics;
 class FormStructure;
 
@@ -64,9 +61,9 @@ class AutofillDownloadManager : public net::URLFetcherDelegate {
     virtual ~Observer() {}
   };
 
-  // |context| and |pref_service| must outlive this instance.
+  // |driver| and |pref_service| must outlive this instance.
   // |observer| - observer to notify on successful completion or error.
-  AutofillDownloadManager(content::BrowserContext* context,
+  AutofillDownloadManager(AutofillDriver* driver,
                           PrefService* pref_service,
                           Observer* observer);
   virtual ~AutofillDownloadManager();
@@ -136,9 +133,9 @@ class AutofillDownloadManager : public net::URLFetcherDelegate {
   void SetPositiveUploadRate(double rate);
   void SetNegativeUploadRate(double rate);
 
-  // The BrowserContext that this instance will use. Must not be null, and must
+  // The AutofillDriver that this instance will use. Must not be null, and must
   // outlive this instance.
-  content::BrowserContext* const browser_context_;  // WEAK
+  AutofillDriver* const driver_;  // WEAK
 
   // The PrefService that this instance will use. Must not be null, and must
   // outlive this instance.

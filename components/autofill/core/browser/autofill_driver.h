@@ -17,6 +17,10 @@ namespace content {
 class WebContents;
 }
 
+namespace net {
+class URLRequestContextGetter;
+}
+
 namespace autofill {
 
 class FormStructure;
@@ -39,6 +43,9 @@ class AutofillDriver {
   // Returns whether the user is currently operating in an off-the-record
   // (i.e., incognito) context.
   virtual bool IsOffTheRecord() const = 0;
+
+  // Returns the URL request context information associated with this driver.
+  virtual net::URLRequestContextGetter* GetURLRequestContext() = 0;
 
   // TODO(blundell): Remove this method once shared code no longer needs to
   // know about WebContents.

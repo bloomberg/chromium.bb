@@ -71,6 +71,10 @@ bool AutofillDriverImpl::IsOffTheRecord() const {
   return web_contents()->GetBrowserContext()->IsOffTheRecord();
 }
 
+net::URLRequestContextGetter* AutofillDriverImpl::GetURLRequestContext() {
+  return web_contents()->GetBrowserContext()->GetRequestContext();
+}
+
 content::WebContents* AutofillDriverImpl::GetWebContents() {
   return web_contents();
 }
