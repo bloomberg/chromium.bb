@@ -245,8 +245,9 @@ void ReadTraceFileCallback(TaskProxy* proxy, const base::FilePath& path) {
   escaped_contents.reserve(size);
   for (size_t i = 0; i < size; ++i) {
     char c = file_contents[i];
-    if (c < ' ') {
-      escaped_contents += base::StringPrintf("\\u%04x", c);
+    if (c < ' ' || c == 0x7f) {
+      escaped_contents += base::StringPrintf("\\u%04x",
+                                             static_cast<uint8_t>(c));
       continue;
     }
     if (c == '\\' || c == '\'')
@@ -337,19 +338,46 @@ void TracingMessageHandler::LoadTraceFileComplete(string16* contents,
   // We need to pass contents to tracingController.onLoadTraceFileComplete, but
   // that may be arbitrarily big, and IPCs messages are limited in size. So we
   // need to cut it into pieces and rebuild the string in Javascript.
-  // |contents| has already been escaped in ReadTraceFileCallback.
-  // IPC::Channel::kMaximumMessageSize is in bytes, and we need to account for
-  // overhead.
+  // |contents| has already been escaped in ReadTraceFileCallback, so we need to
+  // avoid splitting escape sequences (e.g., \' or \u1234) to keep the data
+  // intact. IPC::Channel::kMaximumMessageSize is in bytes, and we need to
+  // account for overhead.
   const size_t kMaxSize = IPC::Channel::kMaximumMessageSize / 2 - 128;
+  const size_t kControlCharEscapeSequenceSize = 5;
   string16 first_prefix = UTF8ToUTF16("window.traceData = '");
   string16 prefix = UTF8ToUTF16("window.traceData += '");
   string16 suffix = UTF8ToUTF16("';");
 
   RenderViewHost* rvh = web_ui()->GetWebContents()->GetRenderViewHost();
-  for (size_t i = 0; i < contents->size(); i += kMaxSize) {
-    string16 javascript = i == 0 ? first_prefix : prefix;
-    javascript += contents->substr(i, kMaxSize) + suffix;
+
+  size_t flush_offset = 0;
+  size_t token_start = 0;
+  while (flush_offset < contents->size()) {
+    size_t token_end = token_start;
+    if ((*contents)[token_end] == '\\') {
+      token_end++;
+      DCHECK(token_end < contents->size());
+      if (token_end < contents->size() && (*contents)[token_end] == 'u') {
+        token_end += kControlCharEscapeSequenceSize;
+      } else {
+        token_end++;
+      }
+    } else {
+      token_end++;
+    }
+    token_end = std::min(contents->size(), token_end);
+    size_t token_size = token_end - token_start;
+    size_t flush_size = token_start - flush_offset;
+    if (token_end == contents->size()) {
+      flush_size = contents->size() - flush_offset;
+    } else if (flush_size + token_size < kMaxSize) {
+      token_start += token_size;
+      continue;
+    }
+    string16 javascript = flush_offset == 0 ? first_prefix : prefix;
+    javascript += contents->substr(flush_offset, flush_size) + suffix;
     rvh->ExecuteJavascriptInWebFrame(string16(), javascript);
+    flush_offset += flush_size;
   }
 
   // The CallJavascriptFunction is not used because we need to pass
