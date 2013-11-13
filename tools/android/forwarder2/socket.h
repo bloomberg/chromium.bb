@@ -50,8 +50,16 @@ class Socket {
   // Returns the number of bytes read.
   int Read(void* buffer, size_t buffer_size);
 
-  // Same as Read(), just a wrapper around write().
+  // Non-blocking version of Read() above. This must be called after a
+  // successful call to select(). The socket must also be in non-blocking mode
+  // before calling this method.
+  int NonBlockingRead(void* buffer, size_t buffer_size);
+
+  // Wrapper around send().
   int Write(const void* buffer, size_t count);
+
+  // Same as NonBlockingRead() but for writing.
+  int NonBlockingWrite(const void* buffer, size_t count);
 
   // Calls Read() multiple times until num_bytes is written to the provided
   // buffer. No bounds checking is performed.
@@ -104,6 +112,8 @@ class Socket {
     int fd;
     bool was_fired;
   };
+
+  bool SetNonBlocking();
 
   // If |host| is empty, use localhost.
   bool InitTcpSocket(const std::string& host, int port);

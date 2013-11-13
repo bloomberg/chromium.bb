@@ -100,8 +100,25 @@ bool Socket::InitSocketInternal() {
     return false;
   tools::DisableNagle(socket_);
   int reuse_addr = 1;
-  setsockopt(socket_, SOL_SOCKET, SO_REUSEADDR,
-             &reuse_addr, sizeof(reuse_addr));
+  setsockopt(socket_, SOL_SOCKET, SO_REUSEADDR, &reuse_addr,
+             sizeof(reuse_addr));
+  if (!SetNonBlocking())
+    return false;
+  return true;
+}
+
+bool Socket::SetNonBlocking() {
+  const int flags = fcntl(socket_, F_GETFL);
+  if (flags < 0) {
+    PLOG(ERROR) << "fcntl";
+    return false;
+  }
+  if (flags & O_NONBLOCK)
+    return true;
+  if (fcntl(socket_, F_SETFL, flags | O_NONBLOCK) < 0) {
+    PLOG(ERROR) << "fcntl";
+    return false;
+  }
   return true;
 }
 
@@ -174,7 +191,7 @@ bool Socket::BindAndListen() {
     }
     errno = 0;
     if (getsockname(socket_, addr_ptr, &addrlen) != 0) {
-      LOG(ERROR) << "getsockname error: " << safe_strerror(errno);;
+      PLOG(ERROR) << "getsockname";
       SetSocketError();
       return false;
     }
@@ -195,45 +212,38 @@ bool Socket::Accept(Socket* new_socket) {
     SetSocketError();
     return false;
   }
-
   tools::DisableNagle(new_socket_fd);
   new_socket->socket_ = new_socket_fd;
+  if (!new_socket->SetNonBlocking())
+    return false;
   return true;
 }
 
 bool Socket::Connect() {
-  // Set non-block because we use select for connect.
-  const int kFlags = fcntl(socket_, F_GETFL);
-  DCHECK(!(kFlags & O_NONBLOCK));
-  fcntl(socket_, F_SETFL, kFlags | O_NONBLOCK);
+  DCHECK(fcntl(socket_, F_GETFL) & O_NONBLOCK);
   errno = 0;
   if (HANDLE_EINTR(connect(socket_, addr_ptr_, addr_len_)) < 0 &&
       errno != EINPROGRESS) {
     SetSocketError();
-    PRESERVE_ERRNO_HANDLE_EINTR(fcntl(socket_, F_SETFL, kFlags));
     return false;
   }
   // Wait for connection to complete, or receive a notification.
   if (!WaitForEvent(WRITE, kConnectTimeOut)) {
     SetSocketError();
-    PRESERVE_ERRNO_HANDLE_EINTR(fcntl(socket_, F_SETFL, kFlags));
     return false;
   }
   int socket_errno;
   socklen_t opt_len = sizeof(socket_errno);
   if (getsockopt(socket_, SOL_SOCKET, SO_ERROR, &socket_errno, &opt_len) < 0) {
-    LOG(ERROR) << "getsockopt(): " << safe_strerror(errno);
+    PLOG(ERROR) << "getsockopt()";
     SetSocketError();
-    PRESERVE_ERRNO_HANDLE_EINTR(fcntl(socket_, F_SETFL, kFlags));
     return false;
   }
   if (socket_errno != 0) {
     LOG(ERROR) << "Could not connect to host: " << safe_strerror(socket_errno);
     SetSocketError();
-    PRESERVE_ERRNO_HANDLE_EINTR(fcntl(socket_, F_SETFL, kFlags));
     return false;
   }
-  fcntl(socket_, F_SETFL, kFlags);
   return true;
 }
 
@@ -247,6 +257,7 @@ bool Socket::Resolve(const std::string& host) {
 
   int errcode = getaddrinfo(host.c_str(), NULL, &hints, &res);
   if (errcode != 0) {
+    errno = 0;
     SetSocketError();
     freeaddrinfo(res);
     return false;
@@ -302,8 +313,8 @@ int Socket::ReadNumBytes(void* buffer, size_t num_bytes) {
 
 void Socket::SetSocketError() {
   socket_error_ = true;
-  // We never use non-blocking socket.
-  DCHECK(errno != EAGAIN && errno != EWOULDBLOCK);
+  DCHECK_NE(EAGAIN, errno);
+  DCHECK_NE(EWOULDBLOCK, errno);
   Close();
 }
 
@@ -313,15 +324,43 @@ int Socket::Read(void* buffer, size_t buffer_size) {
     return 0;
   }
   int ret = HANDLE_EINTR(read(socket_, buffer, buffer_size));
-  if (ret < 0)
+  if (ret < 0) {
+    PLOG(ERROR) << "read";
     SetSocketError();
+  }
+  return ret;
+}
+
+int Socket::NonBlockingRead(void* buffer, size_t buffer_size) {
+  DCHECK(fcntl(socket_, F_GETFL) & O_NONBLOCK);
+  int ret = HANDLE_EINTR(read(socket_, buffer, buffer_size));
+  if (ret < 0) {
+    PLOG(ERROR) << "read";
+    SetSocketError();
+  }
   return ret;
 }
 
 int Socket::Write(const void* buffer, size_t count) {
-  int ret = HANDLE_EINTR(send(socket_, buffer, count, MSG_NOSIGNAL));
-  if (ret < 0)
+  if (!WaitForEvent(WRITE, kNoTimeout)) {
     SetSocketError();
+    return 0;
+  }
+  int ret = HANDLE_EINTR(send(socket_, buffer, count, MSG_NOSIGNAL));
+  if (ret < 0) {
+    PLOG(ERROR) << "send";
+    SetSocketError();
+  }
+  return ret;
+}
+
+int Socket::NonBlockingWrite(const void* buffer, size_t count) {
+  DCHECK(fcntl(socket_, F_GETFL) & O_NONBLOCK);
+  int ret = HANDLE_EINTR(send(socket_, buffer, count, MSG_NOSIGNAL));
+  if (ret < 0) {
+    PLOG(ERROR) << "send";
+    SetSocketError();
+  }
   return ret;
 }
 
@@ -363,8 +402,9 @@ int Socket::WriteNumBytes(const void* buffer, size_t num_bytes) {
 }
 
 bool Socket::WaitForEvent(EventType type, int timeout_secs) {
-  if (events_.empty() || socket_ == -1)
+  if (socket_ == -1)
     return true;
+  DCHECK(fcntl(socket_, F_GETFL) & O_NONBLOCK);
   fd_set read_fds;
   fd_set write_fds;
   FD_ZERO(&read_fds);
@@ -388,6 +428,7 @@ bool Socket::WaitForEvent(EventType type, int timeout_secs) {
       max_fd = events_[i].fd;
   if (HANDLE_EINTR(
           select(max_fd + 1, &read_fds, &write_fds, NULL, tv_ptr)) <= 0) {
+    PLOG(ERROR) << "select";
     return false;
   }
   bool event_was_fired = false;
