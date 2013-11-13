@@ -16,6 +16,7 @@
 #include "chrome/common/ntp_logging_events.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/renderer/searchbox/searchbox.h"
+#include "content/public/common/url_constants.h"
 #include "content/public/renderer/render_view.h"
 #include "grit/renderer_resources.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
@@ -345,6 +346,10 @@ class SearchBoxExtensionWrapper : public v8::Extension {
   static void GetAppLauncherEnabled(
       const v8::FunctionCallbackInfo<v8::Value>& args);
 
+  // Gets the desired navigation behavior from a click event.
+  static void GetDispositionFromClick(
+      const v8::FunctionCallbackInfo<v8::Value>& args);
+
   // Gets Most Visited Items.
   static void GetMostVisitedItems(
       const v8::FunctionCallbackInfo<v8::Value>& args);
@@ -517,6 +522,8 @@ v8::Handle<v8::FunctionTemplate> SearchBoxExtensionWrapper::GetNativeFunction(
     return v8::FunctionTemplate::New(Focus);
   if (name->Equals(v8::String::New("GetAppLauncherEnabled")))
     return v8::FunctionTemplate::New(GetAppLauncherEnabled);
+  if (name->Equals(v8::String::New("GetDispositionFromClick")))
+    return v8::FunctionTemplate::New(GetDispositionFromClick);
   if (name->Equals(v8::String::New("GetMostVisitedItems")))
     return v8::FunctionTemplate::New(GetMostVisitedItems);
   if (name->Equals(v8::String::New("GetMostVisitedItemData")))
@@ -609,6 +616,26 @@ void SearchBoxExtensionWrapper::GetAppLauncherEnabled(
 
   args.GetReturnValue().Set(
       SearchBox::Get(render_view)->app_launcher_enabled());
+}
+
+// static
+void SearchBoxExtensionWrapper::GetDispositionFromClick(
+    const v8::FunctionCallbackInfo<v8::Value>& args) {
+  content::RenderView* render_view = GetRenderView();
+  if (!render_view || args.Length() != 5) return;
+
+  bool middle_button = args[0]->BooleanValue();
+  bool alt_key = args[1]->BooleanValue();
+  bool ctrl_key = args[2]->BooleanValue();
+  bool meta_key = args[3]->BooleanValue();
+  bool shift_key = args[4]->BooleanValue();
+
+  WindowOpenDisposition disposition = ui::DispositionFromClick(middle_button,
+                                                               alt_key,
+                                                               ctrl_key,
+                                                               meta_key,
+                                                               shift_key);
+  args.GetReturnValue().Set(v8::Int32::New(disposition));
 }
 
 // static
@@ -917,10 +944,12 @@ void SearchBoxExtensionWrapper::NavigateContentWindow(
   DVLOG(1) << render_view << " NavigateContentWindow: " << destination_url;
 
   // Navigate the main frame.
-  if (destination_url.is_valid()) {
+  if (destination_url.is_valid() &&
+      !destination_url.SchemeIs(content::kJavaScriptScheme)) {
     WindowOpenDisposition disposition = CURRENT_TAB;
-    if (args[1]->Uint32Value() == 2)
-      disposition = NEW_BACKGROUND_TAB;
+    if (args[1]->IsNumber()) {
+      disposition = (WindowOpenDisposition) args[1]->Uint32Value();
+    }
     SearchBox::Get(render_view)->NavigateToURL(destination_url, disposition,
                                                is_most_visited_item_url);
   }

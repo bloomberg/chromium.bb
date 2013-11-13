@@ -83,6 +83,7 @@ if (!chrome.embeddedSearch) {
       native function CheckIsUserSignedInToChromeAs();
       native function DeleteMostVisitedItem();
       native function GetAppLauncherEnabled();
+      native function GetDispositionFromClick();
       native function GetMostVisitedItems();
       native function GetThemeBackgroundInfo();
       native function IsInputInProgress();
@@ -122,6 +123,18 @@ if (!chrome.embeddedSearch) {
 
       this.deleteMostVisitedItem = function(restrictedId) {
         DeleteMostVisitedItem(restrictedId);
+      };
+
+      this.getDispositionFromClick = function(middle_button,
+                                              alt_key,
+                                              ctrl_key,
+                                              meta_key,
+                                              shift_key) {
+        return GetDispositionFromClick(middle_button,
+                                       alt_key,
+                                       ctrl_key,
+                                       meta_key,
+                                       shift_key);
       };
 
       this.checkIsUserSignedIntoChromeAs = function(identity) {

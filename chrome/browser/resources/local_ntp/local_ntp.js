@@ -7,13 +7,14 @@
  * @fileoverview The local InstantExtended NTP.
  */
 
+
 /**
  * Controls rendering the new tab page for InstantExtended.
  * @return {Object} A limited interface for testing the local NTP.
  */
 function LocalNTP() {
 <include src="../../../../ui/webui/resources/js/assert.js">
-
+<include src="window_disposition_util.js">
 
 
 /**
@@ -99,16 +100,6 @@ var NTP_DISPOSE_STATE = {
  * @const
  */
 var MIDDLE_MOUSE_BUTTON = 1;
-
-
-/**
- * Possible behaviors for navigateContentWindow.
- * @enum {number}
- */
-var WindowOpenDisposition = {
-  CURRENT_TAB: 1,
-  NEW_BACKGROUND_TAB: 2
-};
 
 
 /**
@@ -543,8 +534,9 @@ function createTile(page, position) {
     var rid = page.rid;
     tileElement.classList.add(CLASSES.PAGE);
 
-    var navigateFunction = function() {
-      ntpApiHandle.navigateContentWindow(rid);
+    var navigateFunction = function(e) {
+      e.preventDefault();
+      ntpApiHandle.navigateContentWindow(rid, getDispositionFromEvent(e));
     };
 
     // The click handler for navigating to the page identified by the RID.
@@ -921,18 +913,6 @@ function getEmbeddedSearchApiHandle() {
   return null;
 }
 
-/**
- * Extract the desired navigation behavior from a click button.
- * @param {number} button The Event#button property of a click event.
- * @return {WindowOpenDisposition} The desired behavior for
- *     navigateContentWindow.
- */
-function getDispositionFromClickButton(button) {
-  if (button == MIDDLE_MOUSE_BUTTON)
-    return WindowOpenDisposition.NEW_BACKGROUND_TAB;
-  return WindowOpenDisposition.CURRENT_TAB;
-}
-
 
 /**
  * Prepares the New Tab Page by adding listeners, rendering the current
@@ -973,8 +953,9 @@ function init() {
     var recentTabsLink = document.createElement('span');
     recentTabsLink.id = IDS.RECENT_TABS;
     recentTabsLink.addEventListener('click', function(event) {
+      event.preventDefault();
       ntpApiHandle.navigateContentWindow(
-          'chrome://history', getDispositionFromClickButton(event.button));
+          'chrome://history', getDispositionFromEvent(event));
     });
     recentTabsLink.textContent = recentTabsText;
     ntpContents.appendChild(recentTabsLink);
