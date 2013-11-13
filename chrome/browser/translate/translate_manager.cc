@@ -726,7 +726,9 @@ void TranslateManager::ShowBubble(WebContents* web_contents,
 // static
 std::string TranslateManager::GetTargetLanguage(PrefService* prefs) {
   std::string ui_lang =
-      GetLanguageCode(g_browser_process->GetApplicationLocale());
+      TranslatePrefs::ConvertLangCodeForTranslation(
+          GetLanguageCode(g_browser_process->GetApplicationLocale()));
+
   if (IsSupportedLanguage(ui_lang))
     return ui_lang;
 

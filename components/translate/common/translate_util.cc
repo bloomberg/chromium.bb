@@ -77,7 +77,7 @@ void ToTranslateLanguageSynonym(std::string* language) {
   if (main_part.empty())
     return;
 
-  // Apply liner search here because number of items in the list is just four.
+  // Apply linear search here because number of items in the list is just four.
   for (size_t i = 0; i < arraysize(kLanguageCodeSynonyms); ++i) {
     if (main_part == kLanguageCodeSynonyms[i].chrome_language) {
       main_part = std::string(kLanguageCodeSynonyms[i].translate_language);

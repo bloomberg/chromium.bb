@@ -285,7 +285,7 @@ void TranslateLanguageList::OnResourceRequestsAllowed() {
                                     kAlphaLanguageQueryValue);
 
     std::string message = base::StringPrintf(
-        "Language list includeing alpha languages fetch starts (URL: %s)",
+        "Language list including alpha languages fetch starts (URL: %s)",
         url.spec().c_str());
     NotifyEvent(__LINE__, message);
 
