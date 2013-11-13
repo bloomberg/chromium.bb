@@ -5,29 +5,53 @@
 #include "content/browser/service_worker/service_worker_dispatcher_host.h"
 
 #include "base/strings/utf_string_conversions.h"
-#include "content/browser/service_worker/service_worker_context.h"
+#include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/service_worker_messages.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/platform/WebServiceWorkerError.h"
 #include "url/gurl.h"
 
-using blink::WebServiceWorkerError;
-
 namespace content {
 
-ServiceWorkerDispatcherHost::ServiceWorkerDispatcherHost(
-    int render_process_id,
-    ServiceWorkerContext* context) : context_(context) {}
-
-ServiceWorkerDispatcherHost::~ServiceWorkerDispatcherHost() {}
-
 namespace {
+
+const char kDisabledErrorMessage[] =
+    "ServiceWorker is disabled";
 const char kDomainMismatchErrorMessage[] =
     "Scope and scripts do not have the same origin";
+
+// TODO(alecflett): Store the service_worker_id keyed by (domain+pattern,
+// script) so we don't always return a new service worker id.
+int64 NextWorkerId() {
+  static int64 service_worker_id = 0;
+  return service_worker_id++;
 }
 
-bool ServiceWorkerDispatcherHost::OnMessageReceived(const IPC::Message& message,
-                                                    bool* message_was_ok) {
+}  // namespace
+
+ServiceWorkerDispatcherHost::ServiceWorkerDispatcherHost(
+    int render_process_id) {
+}
+
+ServiceWorkerDispatcherHost::~ServiceWorkerDispatcherHost() {
+}
+
+void ServiceWorkerDispatcherHost::Init(
+    ServiceWorkerContextWrapper* context_wrapper) {
+  if (!BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+    BrowserThread::PostTask(
+        BrowserThread::IO, FROM_HERE,
+        base::Bind(&ServiceWorkerDispatcherHost::Init,
+                    this, make_scoped_refptr(context_wrapper)));
+      return;
+  }
+  context_ = context_wrapper->context()->AsWeakPtr();
+}
+
+bool ServiceWorkerDispatcherHost::OnMessageReceived(
+    const IPC::Message& message,
+    bool* message_was_ok) {
   if (IPC_MESSAGE_CLASS(message) != ServiceWorkerMsgStart)
     return false;
 
@@ -44,24 +68,17 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(const IPC::Message& message,
   return handled;
 }
 
-// TODO(alecflett): Store the service_worker_id keyed by (domain+pattern,
-// script) so we don't always return a new service worker id.
-static int64 NextWorkerId() {
-  static int64 service_worker_id = 0;
-  return service_worker_id++;
-}
-
 void ServiceWorkerDispatcherHost::OnRegisterServiceWorker(
     int32 thread_id,
     int32 request_id,
     const GURL& scope,
     const GURL& script_url) {
-  if (!context_->IsEnabled()) {
+  if (!context_ || !context_->IsEnabled()) {
     Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
         thread_id,
         request_id,
         blink::WebServiceWorkerError::DisabledError,
-        ASCIIToUTF16("ServiceWorker is disabled")));
+        ASCIIToUTF16(kDisabledErrorMessage)));
     return;
   }
 
@@ -87,12 +104,12 @@ void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(int32 thread_id,
   // TODO(alecflett): This check is insufficient for release. Add a
   // ServiceWorker-specific policy query in
   // ChildProcessSecurityImpl. See http://crbug.com/311631.
-  if (!context_->IsEnabled()) {
+  if (!context_ || !context_->IsEnabled()) {
     Send(new ServiceWorkerMsg_ServiceWorkerRegistrationError(
         thread_id,
         request_id,
-        WebServiceWorkerError::DisabledError,
-        ASCIIToUTF16("ServiceWorker is disabled")));
+        blink::WebServiceWorkerError::DisabledError,
+        ASCIIToUTF16(kDisabledErrorMessage)));
     return;
   }
 

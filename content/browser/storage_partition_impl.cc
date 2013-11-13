@@ -325,7 +325,7 @@ StoragePartitionImpl::StoragePartitionImpl(
     webkit_database::DatabaseTracker* database_tracker,
     DOMStorageContextWrapper* dom_storage_context,
     IndexedDBContextImpl* indexed_db_context,
-    ServiceWorkerContext* service_worker_context,
+    ServiceWorkerContextWrapper* service_worker_context,
     WebRTCIdentityStore* webrtc_identity_store,
     quota::SpecialStoragePolicy* special_storage_policy)
     : partition_path_(partition_path),
@@ -354,6 +354,9 @@ StoragePartitionImpl::~StoragePartitionImpl() {
 
   if (GetDOMStorageContext())
     GetDOMStorageContext()->Shutdown();
+
+  if (GetServiceWorkerContext())
+    GetServiceWorkerContext()->Shutdown();
 }
 
 // TODO(ajwong): Break the direct dependency on |context|. We only
@@ -412,8 +415,9 @@ StoragePartitionImpl* StoragePartitionImpl::Create(
                                quota_manager->proxy(),
                                idb_task_runner);
 
-  scoped_refptr<ServiceWorkerContext> service_worker_context =
-      new ServiceWorkerContext(path, quota_manager->proxy());
+  scoped_refptr<ServiceWorkerContextWrapper> service_worker_context =
+      new ServiceWorkerContextWrapper();
+  service_worker_context->Init(path, quota_manager->proxy());
 
   scoped_refptr<ChromeAppCacheService> appcache_service =
       new ChromeAppCacheService(quota_manager->proxy());
@@ -473,7 +477,7 @@ IndexedDBContextImpl* StoragePartitionImpl::GetIndexedDBContext() {
   return indexed_db_context_.get();
 }
 
-ServiceWorkerContext* StoragePartitionImpl::GetServiceWorkerContext() {
+ServiceWorkerContextWrapper* StoragePartitionImpl::GetServiceWorkerContext() {
   return service_worker_context_.get();
 }
 

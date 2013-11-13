@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/service_worker/service_worker_context.h"
+#include "content/browser/service_worker/service_worker_context_core.h"
 
 #include "base/command_line.h"
 #include "base/files/file_path.h"
@@ -11,22 +11,27 @@
 
 namespace content {
 
+namespace {
+
 const base::FilePath::CharType kServiceWorkerDirectory[] =
     FILE_PATH_LITERAL("ServiceWorker");
 
-ServiceWorkerContext::ServiceWorkerContext(
-    const base::FilePath& path,
+}  // namespace
+
+ServiceWorkerContextCore::ServiceWorkerContextCore(
+    const base::FilePath& user_data_directory,
     quota::QuotaManagerProxy* quota_manager_proxy)
     : quota_manager_proxy_(quota_manager_proxy) {
-  if (!path.empty())
-    path_ = path.Append(kServiceWorkerDirectory);
+  if (!user_data_directory.empty())
+    path_ = user_data_directory.Append(kServiceWorkerDirectory);
 }
 
-bool ServiceWorkerContext::IsEnabled() {
+bool ServiceWorkerContextCore::IsEnabled() {
   return CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kEnableServiceWorker);
 }
 
-ServiceWorkerContext::~ServiceWorkerContext() {}
+ServiceWorkerContextCore::~ServiceWorkerContextCore() {
+}
 
 }  // namespace content
