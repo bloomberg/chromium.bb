@@ -1290,7 +1290,6 @@
         'browser/lifetime/browser_close_manager_browsertest.cc',
         'browser/loadtimes_extension_bindings_browsertest.cc',
         'browser/locale_tests_browsertest.cc',
-        'browser/logging_chrome_browsertest.cc',
         'browser/managed_mode/managed_mode_browsertest.cc',
         'browser/managed_mode/managed_mode_resource_throttle_browsertest.cc',
         'browser/managed_mode/managed_user_service_browsertest.cc',

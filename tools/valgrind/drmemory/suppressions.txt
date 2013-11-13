@@ -217,12 +217,6 @@ name=AboutHandler::AboutCrash deliberate crash
 chrome.dll!AboutHandler::AboutCrash
 
 UNADDRESSABLE ACCESS
-name=RendererCrashTest.Crash deliberate crash
-# function is small, little risk for false negative in rest of it
-# TODO(bruening): switch to annotation once have support for that
-chrome.dll!HandleRendererErrorTestParameters
-
-UNADDRESSABLE ACCESS
 name=NPAPITesterBase.NoHangIfInitCrashes deliberate crash
 # function is small, little risk for false negative in rest of it
 # TODO(bruening): switch to annotation once have support for that
