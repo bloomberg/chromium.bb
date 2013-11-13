@@ -28,26 +28,6 @@ namespace chromeos {
 
 namespace {
 
-void IgnoreResult(bool mount_success, cryptohome::MountError mount_error) {}
-
-// Converts a user id to the old non-canonicalized format. We need this
-// old user id to cleanup crypthomes from older verisons.
-// TODO(tengs): Remove this after all clients migrated to new home.
-std::string GetOldUserId(const std::string& user_id) {
-  size_t separator_pos = user_id.find('@');
-  if (separator_pos != user_id.npos && separator_pos < user_id.length() - 1) {
-    std::string username = user_id.substr(0, separator_pos);
-    std::string domain = user_id.substr(separator_pos + 1);
-    StringToUpperASCII(&username);
-    return username + "@" + domain;
-  } else {
-    LOG(ERROR) << "User id "
-        << user_id << " does not seem to be a valid format";
-    NOTREACHED();
-    return user_id;
-  }
-}
-
 KioskAppLaunchError::Error LoginFailureToKioskAppLaunchError(
     const LoginFailure& error) {
   switch (error.reason()) {
@@ -156,18 +136,6 @@ void KioskProfileLoader::Start() {
 }
 
 void KioskProfileLoader::LoginAsKioskAccount() {
-  // Nuke old home that uses |app_id_| as cryptohome user id.
-  // TODO(xiyuan): Remove this after all clients migrated to new home.
-  cryptohome::AsyncMethodCaller::GetInstance()->AsyncRemove(
-      app_id_,
-      base::Bind(&IgnoreResult));
-
-  // Nuke old home that uses non-canonicalized user id.
-  // TODO(tengs): Remove this after all clients migrated to new home.
-  cryptohome::AsyncMethodCaller::GetInstance()->AsyncRemove(
-      GetOldUserId(user_id_),
-      base::Bind(&IgnoreResult));
-
   login_performer_.reset(new LoginPerformer(this));
   login_performer_->LoginAsKioskAccount(user_id_);
 }
