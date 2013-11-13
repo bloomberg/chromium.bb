@@ -28,6 +28,31 @@
   };
   callback LoginStatusCallback = void (LoginStatusDict status);
 
+  dictionary ExtensionInfoDict {
+    DOMString id;
+    DOMString version;
+    DOMString name;
+    DOMString publicKey;
+    DOMString description;
+    DOMString backgroundUrl;
+    DOMString optionsUrl;
+
+    DOMString[] hostPermissions;
+    DOMString[] effectiveHostPermissions;
+    DOMString[] apiPermissions;
+
+    boolean isComponent;
+    boolean isInternal;
+    boolean isUserInstalled;
+    boolean isEnabled;
+    boolean allowedInIncognito;
+    boolean hasPageAction;
+  };
+  dictionary ExtensionsInfoArray {
+    ExtensionInfoDict[] extensions;
+  };
+  callback ExtensionsInfoCallback = void (ExtensionsInfoArray info);
+
   interface Functions {
     // Logout of a user session.
     static void logout();
@@ -44,6 +69,9 @@
 
     // Locks the screen.
     static void lockScreen();
+
+    // Get info about installed extensions.
+    static void getExtensionsInfo(ExtensionsInfoCallback callback);
 
     // Simulates a memory access bug for asan testing.
     static void simulateAsanMemoryBug();

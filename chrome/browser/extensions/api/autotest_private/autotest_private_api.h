@@ -61,6 +61,17 @@ class AutotestPrivateLockScreenFunction : public ChromeSyncExtensionFunction {
   virtual bool RunImpl() OVERRIDE;
 };
 
+class AutotestPrivateGetExtensionsInfoFunction
+    : public ChromeSyncExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.getExtensionsInfo",
+                             AUTOTESTPRIVATE_GETEXTENSIONSINFO)
+
+ private:
+  virtual ~AutotestPrivateGetExtensionsInfoFunction() {}
+  virtual bool RunImpl() OVERRIDE;
+};
+
 class AutotestPrivateSimulateAsanMemoryBugFunction
     : public ChromeSyncExtensionFunction {
  public:

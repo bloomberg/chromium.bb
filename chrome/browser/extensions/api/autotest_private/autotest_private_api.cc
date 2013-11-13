@@ -6,9 +6,18 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/extensions/api/autotest_private/autotest_private_api_factory.h"
+#include "chrome/browser/extensions/extension_action_manager.h"
 #include "chrome/browser/extensions/extension_function_registry.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/common/extensions/api/autotest_private.h"
+#include "chrome/common/extensions/manifest_url_handler.h"
+#include "chrome/common/extensions/permissions/permissions_data.h"
+#include "extensions/common/manifest_handlers/background_info.h"
+#include "extensions/common/permissions/api_permission_set.h"
+#include "extensions/common/permissions/permission_set.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/screen_locker.h"
@@ -18,6 +27,38 @@
 #endif
 
 namespace extensions {
+namespace {
+
+ListValue* GetHostPermissions(const Extension* ext, bool effective_perm) {
+  extensions::URLPatternSet pattern_set;
+  if (effective_perm) {
+    pattern_set =
+        extensions::PermissionsData::GetEffectiveHostPermissions(ext);
+  } else {
+    pattern_set = ext->GetActivePermissions()->explicit_hosts();
+  }
+
+  ListValue* permissions = new ListValue;
+  for (extensions::URLPatternSet::const_iterator perm = pattern_set.begin();
+       perm != pattern_set.end(); ++perm) {
+    permissions->Append(new StringValue(perm->GetAsString()));
+  }
+
+  return permissions;
+}
+
+ListValue* GetAPIPermissions(const Extension* ext) {
+  ListValue* permissions = new ListValue;
+  std::set<std::string> perm_list =
+      ext->GetActivePermissions()->GetAPIsAsStrings();
+  for (std::set<std::string>::const_iterator perm = perm_list.begin();
+       perm != perm_list.end(); ++perm) {
+    permissions->Append(new StringValue(perm->c_str()));
+  }
+  return permissions;
+}
+
+}  // namespace
 
 bool AutotestPrivateLogoutFunction::RunImpl() {
   DVLOG(1) << "AutotestPrivateLogoutFunction";
@@ -104,6 +145,69 @@ bool AutotestPrivateLockScreenFunction::RunImpl() {
   chromeos::DBusThreadManager::Get()->GetSessionManagerClient()->
       RequestLockScreen();
 #endif
+  return true;
+}
+
+bool AutotestPrivateGetExtensionsInfoFunction::RunImpl() {
+  DVLOG(1) << "AutotestPrivateGetExtensionsInfoFunction";
+
+  ExtensionService* service = extensions::ExtensionSystem::Get(
+      GetProfile())->extension_service();
+  const ExtensionSet* extensions = service->extensions();
+  const ExtensionSet* disabled_extensions = service->disabled_extensions();
+  ExtensionActionManager* extension_action_manager =
+      ExtensionActionManager::Get(GetProfile());
+
+  ListValue* extensions_values = new ListValue;
+  ExtensionList all;
+  all.insert(all.end(),
+             extensions->begin(),
+             extensions->end());
+  all.insert(all.end(),
+             disabled_extensions->begin(),
+             disabled_extensions->end());
+  for (ExtensionList::const_iterator it = all.begin();
+       it != all.end(); ++it) {
+    const Extension* extension = it->get();
+    std::string id = extension->id();
+    DictionaryValue* extension_value = new DictionaryValue;
+    extension_value->SetString("id", id);
+    extension_value->SetString("version", extension->VersionString());
+    extension_value->SetString("name", extension->name());
+    extension_value->SetString("publicKey", extension->public_key());
+    extension_value->SetString("description", extension->description());
+    extension_value->SetString("backgroundUrl",
+        extensions::BackgroundInfo::GetBackgroundURL(extension).spec());
+    extension_value->SetString("optionsUrl",
+        extensions::ManifestURL::GetOptionsPage(extension).spec());
+
+    extension_value->Set("hostPermissions",
+                         GetHostPermissions(extension, false));
+    extension_value->Set("effectiveHostPermissions",
+                         GetHostPermissions(extension, true));
+    extension_value->Set("apiPermissions", GetAPIPermissions(extension));
+
+    Manifest::Location location = extension->location();
+    extension_value->SetBoolean("isComponent",
+                                location == Manifest::COMPONENT);
+    extension_value->SetBoolean("isInternal",
+                                location == Manifest::INTERNAL);
+    extension_value->SetBoolean("isUserInstalled",
+        location == Manifest::INTERNAL ||
+        Manifest::IsUnpackedLocation(location));
+    extension_value->SetBoolean("isEnabled", service->IsExtensionEnabled(id));
+    extension_value->SetBoolean("allowedInIncognito",
+        extension_util::IsIncognitoEnabled(id, service));
+    extension_value->SetBoolean(
+        "hasPageAction",
+        extension_action_manager->GetPageAction(*extension) != NULL);
+
+    extensions_values->Append(extension_value);
+  }
+
+  DictionaryValue* return_value(new DictionaryValue);
+  return_value->Set("extensions", extensions_values);
+  SetResult(return_value);
   return true;
 }
 
