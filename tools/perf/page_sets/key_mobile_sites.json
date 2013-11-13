@@ -160,8 +160,8 @@
       "credentials": "google",
       "navigate_steps": [
         { "action": "navigate" },
-        { "action": "wait", "condition": "element", "text": "Inbox" },
-        { "action": "wait", "seconds": 5 }
+        { "action": "wait", "javascript": "document.getElementById('og_user_warning') !== null" },
+        { "action": "wait", "javascript": "document.getElementById('og_user_warning') === null" }
       ],
       "smoothness": {
         "action": "scroll",
