@@ -296,6 +296,7 @@ void Picture::GatherPixelRefs(
 
 int Picture::Raster(
     SkCanvas* canvas,
+    SkDrawPictureCallback* callback,
     const Region& negated_content_region,
     float contents_scale) {
   TRACE_EVENT_BEGIN1(
@@ -313,7 +314,7 @@ int Picture::Raster(
 
   canvas->scale(contents_scale, contents_scale);
   canvas->translate(layer_rect_.x(), layer_rect_.y());
-  picture_->draw(canvas);
+  picture_->draw(canvas, callback);
   SkIRect bounds;
   canvas->getClipDeviceBounds(&bounds);
   canvas->restore();

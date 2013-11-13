@@ -71,6 +71,7 @@ class CC_EXPORT Picture
   // Apply this scale and raster the negated region into the canvas. See comment
   // in PicturePileImpl::RasterCommon for explanation on negated content region.
   int Raster(SkCanvas* canvas,
+             SkDrawPictureCallback* callback,
              const Region& negated_content_region,
              float contents_scale);
 

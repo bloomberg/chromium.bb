@@ -13,8 +13,6 @@
 #include "skia/ext/lazy_pixel_ref.h"
 #include "skia/ext/paint_simplifier.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/utils/SkNWayCanvas.h"
-#include "ui/gfx/skia_util.h"
 
 namespace cc {
 
@@ -32,6 +30,10 @@ class IdentityAllocator : public SkBitmap::Allocator {
  private:
   void* buffer_;
 };
+
+// Flag to indicate whether we should try and detect that
+// a tile is of solid color.
+const bool kUseColorEstimator = true;
 
 class DisableLCDTextFilter : public SkDrawFilter {
  public:
@@ -71,11 +73,34 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
         rendering_stats_(rendering_stats),
         reply_(reply) {}
 
-  // Overridden from internal::RasterWorkerPoolTask:
-  virtual bool RunOnWorkerThread(unsigned thread_index,
-                                 void* buffer,
-                                 gfx::Size size,
-                                 int stride) OVERRIDE {
+  void RunAnalysisOnThread(unsigned thread_index) {
+    TRACE_EVENT1("cc",
+                 "RasterWorkerPoolTaskImpl::RunAnalysisOnThread",
+                 "data",
+                 TracedValue::FromValue(DataAsValue().release()));
+
+    DCHECK(picture_pile_.get());
+    DCHECK(rendering_stats_);
+
+    PicturePileImpl* picture_clone =
+        picture_pile_->GetCloneForDrawingOnThread(thread_index);
+
+    DCHECK(picture_clone);
+
+    picture_clone->AnalyzeInRect(content_rect_, contents_scale_, &analysis_);
+
+    // Record the solid color prediction.
+    UMA_HISTOGRAM_BOOLEAN("Renderer4.SolidColorTilesAnalyzed",
+                          analysis_.is_solid_color);
+
+    // Clear the flag if we're not using the estimator.
+    analysis_.is_solid_color &= kUseColorEstimator;
+  }
+
+  bool RunRasterOnThread(unsigned thread_index,
+                         void* buffer,
+                         gfx::Size size,
+                         int stride) {
     TRACE_EVENT2(
         "cc", "RasterWorkerPoolTaskImpl::RunRasterOnThread",
         "data",
@@ -88,6 +113,9 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
 
     DCHECK(picture_pile_.get());
     DCHECK(buffer);
+
+    if (analysis_.is_solid_color)
+      return false;
 
     PicturePileImpl* picture_clone =
         picture_pile_->GetCloneForDrawingOnThread(thread_index);
@@ -117,22 +145,8 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
         break;
     }
 
-    SkBitmap empty_bitmap;
-    empty_bitmap.setConfig(
-        SkBitmap::kNo_Config, content_rect_.width(), content_rect_.height());
-    gfx::Rect analysis_rect(
-        picture_clone->AnalysisRectForRaster(content_rect_, contents_scale_));
-    skia::AnalysisDevice analysis_device(empty_bitmap,
-                                         gfx::RectToSkRect(analysis_rect));
-    skia::AnalysisCanvas analysis_canvas(&analysis_device);
-
-    SkBitmapDevice raster_device(bitmap);
-    SkCanvas raster_canvas(&raster_device);
-
-    SkNWayCanvas canvas(content_rect_.width(), content_rect_.height());
-    canvas.addCanvas(&analysis_canvas);
-    canvas.addCanvas(&raster_canvas);
-
+    SkBitmapDevice device(bitmap);
+    SkCanvas canvas(&device);
     skia::RefPtr<SkDrawFilter> draw_filter;
     switch (raster_mode_) {
       case LOW_QUALITY_RASTER_MODE:
@@ -178,17 +192,18 @@ class RasterWorkerPoolTaskImpl : public internal::RasterWorkerPoolTask {
 
     ChangeBitmapConfigIfNeeded(bitmap, buffer);
 
-    analysis_.is_solid_color =
-        analysis_canvas.GetColorIfSolid(&analysis_.solid_color);
-    analysis_.has_text = analysis_canvas.HasText();
-
-    // Record the solid color prediction.
-    UMA_HISTOGRAM_BOOLEAN("Renderer4.SolidColorTilesAnalyzed",
-                          analysis_.is_solid_color);
-
-    return !analysis_.is_solid_color;
+    return true;
   }
 
+  // Overridden from internal::RasterWorkerPoolTask:
+  virtual bool RunOnWorkerThread(unsigned thread_index,
+                                 void* buffer,
+                                 gfx::Size size,
+                                 int stride)
+      OVERRIDE {
+    RunAnalysisOnThread(thread_index);
+    return RunRasterOnThread(thread_index, buffer, size, stride);
+  }
   virtual void CompleteOnOriginThread() OVERRIDE {
     reply_.Run(analysis_, !HasFinishedRunning() || WasCanceled());
   }

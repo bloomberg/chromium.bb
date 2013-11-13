@@ -52,6 +52,14 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
       float contents_scale,
       RenderingStatsInstrumentation* stats_instrumentation);
 
+  // Called when analyzing a tile. We can use AnalysisCanvas as
+  // SkDrawPictureCallback, which allows us to early out from analysis.
+  void RasterForAnalysis(
+      skia::AnalysisCanvas* canvas,
+      gfx::Rect canvas_rect,
+      float contents_scale);
+
+
   skia::RefPtr<SkPicture> GetFlattenedPicture();
 
   struct CC_EXPORT Analysis {
@@ -62,6 +70,10 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
     bool has_text;
     SkColor solid_color;
   };
+
+  void AnalyzeInRect(gfx::Rect content_rect,
+                     float contents_scale,
+                     Analysis* analysis);
 
   class CC_EXPORT PixelRefIterator {
    public:
@@ -84,9 +96,6 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
     Picture::PixelRefIterator pixel_ref_iterator_;
     std::set<const void*> processed_pictures_;
   };
-
-  gfx::Rect AnalysisRectForRaster(gfx::Rect content_rect,
-                                  float contents_scale) const;
 
   void DidBeginTracing();
 
@@ -122,6 +131,7 @@ class CC_EXPORT PicturePileImpl : public PicturePileBase {
 
   void RasterCommon(
       SkCanvas* canvas,
+      SkDrawPictureCallback* callback,
       gfx::Rect canvas_rect,
       float contents_scale,
       RenderingStatsInstrumentation* rendering_stats_instrumentation);
