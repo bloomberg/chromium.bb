@@ -998,8 +998,7 @@ PassRefPtr<Element> Document::createElement(const QualifiedName& qName, bool cre
     if (e->prefix() != qName.prefix())
         e->setTagNameForCreateElementNS(qName);
 
-    // <image> uses imgTag so we need a special rule.
-    ASSERT((qName.matches(imageTag) && e->tagQName().matches(imgTag) && e->tagQName().prefix() == qName.prefix()) || qName == e->tagQName());
+    ASSERT(qName == e->tagQName());
 
     return e.release();
 }

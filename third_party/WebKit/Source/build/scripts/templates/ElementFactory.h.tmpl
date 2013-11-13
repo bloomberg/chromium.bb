@@ -9,15 +9,12 @@
 
 namespace WebCore {
 
-class Element;
 class Document;
-class QualifiedName;
+class {{namespace}}Element;
 
 {%- if namespace == 'HTML'  %}
 class HTMLFormElement;
 {%- endif %}
-
-class {{namespace}}Element;
 
 class {{namespace}}ElementFactory {
 public:

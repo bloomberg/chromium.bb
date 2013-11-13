@@ -29,7 +29,7 @@ typedef PassRefPtr<{{namespace}}Element> (*ConstructorFunction)(Document&,
                                                                 {%- endif %}
                                                                 bool createdByParser);
 
-typedef HashMap<StringImpl*, ConstructorFunction> FunctionMap;
+typedef HashMap<AtomicString, ConstructorFunction> FunctionMap;
 
 static FunctionMap* g_constructors = 0;
 
@@ -60,7 +60,7 @@ static PassRefPtr<{{namespace}}Element> {{tag|symbol}}Constructor(
 
 static void addTag(const QualifiedName& tag, ConstructorFunction func)
 {
-    g_constructors->set(tag.localName().impl(), func);
+    g_constructors->set(tag.localName(), func);
 }
 
 static void createFunctionMap()
@@ -88,7 +88,7 @@ PassRefPtr<{{namespace}}Element> {{namespace}}ElementFactory::create{{namespace}
 
     if (!g_constructors)
         createFunctionMap();
-    if (ConstructorFunction function = g_constructors->get(localName.impl()))
+    if (ConstructorFunction function = g_constructors->get(localName))
         return function(document, {%- if namespace == 'HTML' %}formElement,{% endif %} createdByParser);
 
     return {{fallback_interface}}::create(QualifiedName(nullAtom, localName, {{namespace_prefix}}NamespaceURI), document);
