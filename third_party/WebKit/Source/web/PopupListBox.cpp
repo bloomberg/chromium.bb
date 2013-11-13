@@ -292,6 +292,11 @@ HostWindow* PopupListBox::hostWindow() const
     return parent() ? parent()->hostWindow() : 0;
 }
 
+bool PopupListBox::shouldPlaceVerticalScrollbarOnLeft() const
+{
+    return m_popupClient->menuStyle().textDirection() == RTL;
+}
+
 // From HTMLSelectElement.cpp
 static String stripLeadingWhiteSpace(const String& string)
 {
@@ -359,7 +364,7 @@ void PopupListBox::paint(GraphicsContext* gc, const IntRect& rect)
 {
     // Adjust coords for scrolled frame.
     IntRect r = intersection(rect, frameRect());
-    int tx = x() - scrollX();
+    int tx = x() - scrollX() + ((shouldPlaceVerticalScrollbarOnLeft() && verticalScrollbar()) ? verticalScrollbar()->width() : 0);
     int ty = y() - scrollY();
 
     r.move(-tx, -ty);
@@ -671,7 +676,10 @@ void PopupListBox::invalidateRow(int index)
 
     // Invalidate in the window contents, as FramelessScrollView::invalidateRect
     // paints in the window coordinates.
-    invalidateRect(contentsToWindow(getRowBounds(index)));
+    IntRect clipRect = contentsToWindow(getRowBounds(index));
+    if (shouldPlaceVerticalScrollbarOnLeft() && verticalScrollbar())
+        clipRect.move(verticalScrollbar()->width(), 0);
+    invalidateRect(clipRect);
 }
 
 void PopupListBox::scrollToRevealRow(int index)

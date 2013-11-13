@@ -85,7 +85,10 @@ HostWindow* FramelessScrollView::hostWindow() const
 
 IntRect FramelessScrollView::windowClipRect(bool clipToContents) const
 {
-    return contentsToWindow(visibleContentRect(clipToContents ? ExcludeScrollbars : IncludeScrollbars));
+    IntRect clipRect = visibleContentRect(clipToContents ? ExcludeScrollbars : IncludeScrollbars);
+    if (shouldPlaceVerticalScrollbarOnLeft() && verticalScrollbar())
+        clipRect.move(verticalScrollbar()->width(), 0);
+    return contentsToWindow(clipRect);
 }
 
 void FramelessScrollView::paintContents(GraphicsContext*, const IntRect&)

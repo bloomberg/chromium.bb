@@ -128,6 +128,7 @@ public:
 
     // ScrollView
     virtual HostWindow* hostWindow() const OVERRIDE;
+    virtual bool shouldPlaceVerticalScrollbarOnLeft() const OVERRIDE;
 
     // PopupListBox methods
 
