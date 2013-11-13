@@ -1937,7 +1937,10 @@ function toggleHandler(e) {
     // the height to auto so that it is computed and then set it to the
     // computed value in pixels so the transition works properly.
     var height = innerResultList.clientHeight;
-    innerResultList.style.height = height + 'px';
+    innerResultList.style.height = 0;
+    setTimeout(function() {
+      innerResultList.style.height = height + 'px';
+    }, 0);
     innerArrow.classList.remove('collapse');
     innerArrow.classList.add('expand');
   } else {
