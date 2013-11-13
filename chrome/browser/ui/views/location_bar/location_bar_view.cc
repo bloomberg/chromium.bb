@@ -494,22 +494,24 @@ void LocationBarView::SetAnimationOffset(int offset) {
 }
 
 void LocationBarView::UpdateContentSettingsIcons() {
-  RefreshContentSettingViews();
-  Layout();
-  SchedulePaint();
+  if (RefreshContentSettingViews()) {
+    Layout();
+    SchedulePaint();
+  }
 }
 
 void LocationBarView::UpdateManagePasswordsIconAndBubble() {
-  RefreshManagePasswordsIconView();
-  Layout();
-  SchedulePaint();
+  if (RefreshManagePasswordsIconView()) {
+    Layout();
+    SchedulePaint();
+  }
   ShowManagePasswordsBubbleIfNeeded();
 }
 
 void LocationBarView::UpdatePageActions() {
   size_t count_before = page_action_views_.size();
-  RefreshPageActionViews();
-  RefreshScriptBubble();
+  bool changed = RefreshPageActionViews();
+  changed |= RefreshScriptBubble();
   if (page_action_views_.size() != count_before) {
     content::NotificationService::current()->Notify(
         chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_COUNT_CHANGED,
@@ -517,8 +519,10 @@ void LocationBarView::UpdatePageActions() {
         content::NotificationService::NoDetails());
   }
 
-  Layout();
-  SchedulePaint();
+  if (changed) {
+    Layout();
+    SchedulePaint();
+  }
 }
 
 void LocationBarView::InvalidatePageActions() {
@@ -600,10 +604,10 @@ void LocationBarView::ShowBookmarkPrompt() {
 
 void LocationBarView::ZoomChangedForActiveTab(bool can_show_bubble) {
   DCHECK(zoom_view_);
-  RefreshZoomView();
-
-  Layout();
-  SchedulePaint();
+  if (RefreshZoomView()) {
+    Layout();
+    SchedulePaint();
+  }
 
   if (can_show_bubble && zoom_view_->visible() && delegate_->GetWebContents())
     ZoomBubbleView::ShowBubble(delegate_->GetWebContents(), true);
@@ -1376,12 +1380,17 @@ int LocationBarView::GetHorizontalEdgeThickness() const {
       browser_->window()->IsMaximized()) ? 0 : vertical_edge_thickness();
 }
 
-void LocationBarView::RefreshContentSettingViews() {
+bool LocationBarView::RefreshContentSettingViews() {
+  bool visibility_changed = false;
   for (ContentSettingViews::const_iterator i(content_setting_views_.begin());
        i != content_setting_views_.end(); ++i) {
+    const bool was_visible = (*i)->visible();
     (*i)->Update(GetToolbarModel()->input_in_progress() ?
         NULL : GetWebContents());
+    if (was_visible != (*i)->visible())
+      visibility_changed = true;
   }
+  return visibility_changed;
 }
 
 void LocationBarView::DeletePageActionViews() {
@@ -1391,9 +1400,11 @@ void LocationBarView::DeletePageActionViews() {
   STLDeleteElements(&page_action_views_);
 }
 
-void LocationBarView::RefreshPageActionViews() {
+bool LocationBarView::RefreshPageActionViews() {
   if (is_popup_mode_)
-    return;
+    return false;
+
+  bool changed = false;
 
   // Remember the previous visibility of the page actions so that we can
   // notify when this changes.
@@ -1417,6 +1428,8 @@ void LocationBarView::RefreshPageActionViews() {
   // On startup we sometimes haven't loaded any extensions. This makes sure
   // we catch up when the extensions (and any page actions) load.
   if (page_actions_ != new_page_actions) {
+    changed = true;
+
     page_actions_.swap(new_page_actions);
     DeletePageActionViews();  // Delete the old views (if any).
 
@@ -1451,6 +1464,7 @@ void LocationBarView::RefreshPageActionViews() {
       ExtensionAction* action = (*i)->image_view()->page_action();
       if (old_visibility.find(action) == old_visibility.end() ||
           old_visibility[action] != (*i)->visible()) {
+        changed = true;
         content::NotificationService::current()->Notify(
             chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
             content::Source<ExtensionAction>(action),
@@ -1458,6 +1472,7 @@ void LocationBarView::RefreshPageActionViews() {
       }
     }
   }
+  return changed;
 }
 
 size_t LocationBarView::ScriptBubbleScriptsRunning() {
@@ -1477,30 +1492,36 @@ size_t LocationBarView::ScriptBubbleScriptsRunning() {
   return script_count;
 }
 
-void LocationBarView::RefreshScriptBubble() {
+bool LocationBarView::RefreshScriptBubble() {
   if (!script_bubble_icon_view_)
-    return;
+    return false;
   size_t script_count = ScriptBubbleScriptsRunning();
+  const bool was_visible = script_bubble_icon_view_->visible();
   script_bubble_icon_view_->SetVisible(script_count > 0);
   if (script_count > 0)
     script_bubble_icon_view_->SetScriptCount(script_count);
+  return was_visible != script_bubble_icon_view_->visible();
 }
 
-void LocationBarView::RefreshZoomView() {
+bool LocationBarView::RefreshZoomView() {
   DCHECK(zoom_view_);
   WebContents* web_contents = GetWebContents();
   if (!web_contents)
-    return;
+    return false;
+  const bool was_visible = zoom_view_->visible();
   zoom_view_->Update(ZoomController::FromWebContents(web_contents));
+  return was_visible != zoom_view_->visible();
 }
 
-void LocationBarView::RefreshManagePasswordsIconView() {
+bool LocationBarView::RefreshManagePasswordsIconView() {
   DCHECK(manage_passwords_icon_view_);
   WebContents* web_contents = GetWebContents();
   if (!web_contents)
-    return;
+    return false;
+  const bool was_visible = manage_passwords_icon_view_->visible();
   manage_passwords_icon_view_->Update(
       ManagePasswordsIconController::FromWebContents(web_contents));
+  return was_visible != manage_passwords_icon_view_->visible();
 }
 
 void LocationBarView::RefreshTranslateIcon() {

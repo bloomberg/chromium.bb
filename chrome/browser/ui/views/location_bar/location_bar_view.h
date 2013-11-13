@@ -382,25 +382,28 @@ class LocationBarView : public LocationBar,
   }
 
   // Updates the visibility state of the Content Blocked icons to reflect what
-  // is actually blocked on the current page.
-  void RefreshContentSettingViews();
+  // is actually blocked on the current page. Returns true if the visibility
+  // of at least one of the views in |content_setting_views_| changed.
+  bool RefreshContentSettingViews();
 
   // Deletes all page action views that we have created.
   void DeletePageActionViews();
 
   // Updates the views for the Page Actions, to reflect state changes for
-  // PageActions.
-  void RefreshPageActionViews();
+  // PageActions. Returns true if the visibility of a PageActionWithBadgeView
+  // changed, or PageActionWithBadgeView were created/destroyed.
+  bool RefreshPageActionViews();
 
   // Returns the number of scripts currently running on the page.
   size_t ScriptBubbleScriptsRunning();
 
   // Updates the Script Bubble Icon, to reflect the number of content scripts
-  // running on the page.
-  void RefreshScriptBubble();
+  // running on the page. Returns true if the visibility of the bubble changed.
+  bool RefreshScriptBubble();
 
-  // Updates the view for the zoom icon based on the current tab's zoom.
-  void RefreshZoomView();
+  // Updates the view for the zoom icon based on the current tab's zoom. Returns
+  // true if the visibility of the view changed.
+  bool RefreshZoomView();
 
   // Updates the Translate icon based on the current tab's Translate status.
   void RefreshTranslateIcon();
@@ -408,7 +411,8 @@ class LocationBarView : public LocationBar,
   // Sets the visibility of view to new_vis.
   void ToggleVisibility(bool new_vis, views::View* view);
 
-  void RefreshManagePasswordsIconView();
+  // Updates |manage_passwords_icon_view_|. Returns true if visibility changed.
+  bool RefreshManagePasswordsIconView();
 
   // Shows the manage passwords bubble if there is a savable password.
   void ShowManagePasswordsBubbleIfNeeded();

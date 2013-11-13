@@ -24,6 +24,9 @@ ImageView::~ImageView() {
 }
 
 void ImageView::SetImage(const gfx::ImageSkia& img) {
+  if (image_.BackedBySameObjectAs(img))
+    return;
+
   gfx::Size pref_size(GetPreferredSize());
   image_ = img;
   if (pref_size != GetPreferredSize())

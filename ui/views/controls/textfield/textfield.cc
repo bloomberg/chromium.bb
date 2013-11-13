@@ -290,6 +290,10 @@ void Textfield::SetFont(const gfx::Font& font) {
 }
 
 void Textfield::SetHorizontalMargins(int left, int right) {
+  if (horizontal_margins_were_set_ &&
+      left == margins_.left() && right == margins_.right()) {
+    return;
+  }
   margins_.Set(margins_.top(), left, margins_.bottom(), right);
   horizontal_margins_were_set_ = true;
   if (native_wrapper_)
@@ -298,6 +302,10 @@ void Textfield::SetHorizontalMargins(int left, int right) {
 }
 
 void Textfield::SetVerticalMargins(int top, int bottom) {
+  if (vertical_margins_were_set_ &&
+      top == margins_.top() && bottom == margins_.bottom()) {
+    return;
+  }
   margins_.Set(top, margins_.left(), bottom, margins_.right());
   vertical_margins_were_set_ = true;
   if (native_wrapper_)

@@ -192,12 +192,13 @@ void StatusBubbleViews::StatusView::SetText(const string16& text,
     StartHiding();
   } else {
     // We want to show the string.
-    text_ = text;
+    if (text != text_) {
+      text_ = text;
+      SchedulePaint();
+    }
     if (should_animate_open)
       StartShowing();
   }
-
-  SchedulePaint();
 }
 
 void StatusBubbleViews::StatusView::Show() {
