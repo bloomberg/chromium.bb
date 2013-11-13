@@ -80,6 +80,12 @@
     static void function17(Callback7 cb);
     // |cb|: Override callback comment.
     static void function18(Callback7 cb);
+
+    static long function19();
+    static MyType1 function20();
+    static MyType1[] function21();
+    static EnumType function22();
+    static EnumType[] function23();
   };
 
   interface Events {

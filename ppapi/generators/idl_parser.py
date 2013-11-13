@@ -732,10 +732,10 @@ class IDLParser(IDLLexer):
     if self.parse_debug: DumpReduction('attribute', p)
 
   def p_member_function(self, p):
-    """member_function : modifiers static SYMBOL SYMBOL param_list"""
+    """member_function : modifiers static SYMBOL arrays SYMBOL param_list"""
     typeref = self.BuildAttribute('TYPEREF', p[3])
-    children = ListFromConcat(p[1], p[2], typeref, p[5])
-    p[0] = self.BuildNamed('Member', p, 4, children)
+    children = ListFromConcat(p[1], p[2], typeref, p[4], p[6])
+    p[0] = self.BuildNamed('Member', p, 5, children)
     if self.parse_debug: DumpReduction('function', p)
 
   def p_static(self, p):

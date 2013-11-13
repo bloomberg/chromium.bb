@@ -12,7 +12,7 @@ var lastError = require('lastError');
 var sendRequest = require('sendRequest').sendRequest;
 var GetModuleSystem = requireNative('v8_context').GetModuleSystem;
 // TODO(sammc): Don't require extension. See http://crbug.com/235689.
-var GetExtensionViews = requireNative('extension').GetExtensionViews;
+var GetExtensionViews = requireNative('runtime').GetExtensionViews;
 
 // Fallback to using the current window if no background page is running.
 var backgroundPage = GetExtensionViews(-1, 'BACKGROUND')[0] || window;

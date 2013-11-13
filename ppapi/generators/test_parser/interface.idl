@@ -27,6 +27,9 @@ interface Interface1 {
       [out] PP_Size size,
       /* OK Param(is_always_opaque) */
       [out] PP_Bool is_always_opaque);
+
+  /* OK Member(ReturnArray) */
+  PP_Resource[] ReturnArray();
 };
 
 

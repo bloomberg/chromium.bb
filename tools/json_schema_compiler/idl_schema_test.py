@@ -18,6 +18,11 @@ def getParams(schema, name):
   return function['parameters']
 
 
+def getReturns(schema, name):
+  function = getFunction(schema, name)
+  return function['returns']
+
+
 def getType(schema, id):
   for item in schema['types']:
     if item['id'] == id:
@@ -109,6 +114,23 @@ class IdlSchemaTest(unittest.TestCase):
     self.assertEquals('idl_basics', idl_basics['namespace'])
     self.assertTrue(idl_basics['internal'])
     self.assertFalse(idl_basics['nodoc'])
+
+  def testReturnTypes(self):
+    schema = self.idl_basics
+    self.assertEquals({'name': 'function19', 'type': 'integer'},
+                      getReturns(schema, 'function19'))
+    self.assertEquals({'name': 'function20', '$ref': 'MyType1',
+                       'optional': True},
+                      getReturns(schema, 'function20'))
+    self.assertEquals({'name': 'function21', 'type': 'array',
+                       'items': {'$ref': 'MyType1'}},
+                      getReturns(schema, 'function21'))
+    self.assertEquals({'name': 'function22', '$ref': 'EnumType',
+                       'optional': True},
+                      getReturns(schema, 'function22'))
+    self.assertEquals({'name': 'function23', 'type': 'array',
+                       'items': {'$ref': 'EnumType'}},
+                      getReturns(schema, 'function23'))
 
   def testChromeOSPlatformsNamespace(self):
     schema = idl_schema.Load('test/idl_namespace_chromeos.idl')[0]

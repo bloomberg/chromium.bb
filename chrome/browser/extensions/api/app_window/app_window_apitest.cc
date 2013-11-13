@@ -142,4 +142,9 @@ IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, WindowsApiAlwaysOnTop) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(PlatformAppBrowserTest, WindowsApiGet) {
+  EXPECT_TRUE(RunPlatformAppTest("platform_apps/windows_api_get"))
+      << message_;
+}
+
 }  // namespace extensions

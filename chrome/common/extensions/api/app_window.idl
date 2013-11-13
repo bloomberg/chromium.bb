@@ -222,6 +222,9 @@ namespace app.window {
 
     // The JavaScript 'window' object for the created child.
     [instanceOf=Window] object contentWindow;
+
+    // The id the window was created with.
+    DOMString id;
   };
 
   interface Functions {
@@ -253,6 +256,13 @@ namespace app.window {
     // otherWindow.chrome.app.window.current().
     [nocompile] static AppWindow current();
     [nocompile, nodoc] static void initializeAppWindow(object state);
+
+    // Gets an array of all currently created app windows.
+    [nocompile] static AppWindow[] getAll();
+
+    // Gets an $ref:AppWindow with the given id. If no window with the given id
+    // exists null is returned.
+    [nocompile] static AppWindow get(DOMString id);
   };
 
   interface Events {

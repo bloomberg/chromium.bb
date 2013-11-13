@@ -41,7 +41,6 @@
 #include "chrome/renderer/extensions/document_custom_bindings.h"
 #include "chrome/renderer/extensions/dom_activity_logger.h"
 #include "chrome/renderer/extensions/event_bindings.h"
-#include "chrome/renderer/extensions/extension_custom_bindings.h"
 #include "chrome/renderer/extensions/extension_groups.h"
 #include "chrome/renderer/extensions/extension_helper.h"
 #include "chrome/renderer/extensions/feedback_private_custom_bindings.h"
@@ -905,9 +904,6 @@ void Dispatcher::RegisterNativeHandlers(ModuleSystem* module_system,
   module_system->RegisterNativeHandler("document_natives",
       scoped_ptr<NativeHandler>(
           new DocumentCustomBindings(this, context)));
-  module_system->RegisterNativeHandler("extension",
-      scoped_ptr<NativeHandler>(
-          new ExtensionCustomBindings(this, context)));
   module_system->RegisterNativeHandler("sync_file_system",
       scoped_ptr<NativeHandler>(
           new SyncFileSystemCustomBindings(this, context)));

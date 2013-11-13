@@ -100,7 +100,7 @@ class Callspec(object):
     return_type = None
     if self.node.GetProperty('TYPEREF') not in ('void', None):
       return_type = Typeref(self.node.GetProperty('TYPEREF'),
-                            self.node,
+                            self.node.parent,
                             {'name': self.node.GetName()}).process(callbacks)
       # The IDL parser doesn't allow specifying return types as optional.
       # Instead we infer any object return values to be optional.

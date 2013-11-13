@@ -11,7 +11,6 @@
 #include "chrome/renderer/extensions/chrome_v8_extension.h"
 #include "chrome/renderer/extensions/dispatcher.h"
 #include "chrome/renderer/extensions/event_bindings.h"
-#include "chrome/renderer/extensions/extension_custom_bindings.h"
 #include "chrome/renderer/spellchecker/spellcheck.h"
 #include "components/autofill/content/renderer/autofill_agent.h"
 #include "components/autofill/content/renderer/password_autofill_agent.h"
@@ -32,7 +31,6 @@
 #include "ui/base/gtk/event_synthesis_gtk.h"
 #endif
 
-using extensions::ExtensionCustomBindings;
 using blink::WebFrame;
 using blink::WebInputEvent;
 using blink::WebMouseEvent;

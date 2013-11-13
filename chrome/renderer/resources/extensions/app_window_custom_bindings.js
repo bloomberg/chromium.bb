@@ -5,6 +5,7 @@
 // Custom binding for the app_window API.
 
 var appWindowNatives = requireNative('app_window_natives');
+var runtimeNatives = requireNative('runtime');
 var Binding = require('binding').Binding;
 var Event = require('event_bindings').Event;
 var forEach = require('utils').forEach;
@@ -80,6 +81,20 @@ appWindow.registerCustomHook(function(bindingsAPI) {
       return null;
     }
     return currentAppWindow;
+  });
+
+  apiFunctions.setHandleRequest('getAll', function() {
+    var views = runtimeNatives.GetExtensionViews(-1, 'SHELL');
+    return $Array.map(views, function(win) {
+      return win.chrome.app.window.current();
+    });
+  });
+
+  apiFunctions.setHandleRequest('get', function(id) {
+    var windows = $Array.filter(chrome.app.window.getAll(), function(win) {
+      return win.id == id;
+    });
+    return windows.length > 0 ? windows[0] : null;
   });
 
   // This is an internal function, but needs to be bound with setHandleRequest

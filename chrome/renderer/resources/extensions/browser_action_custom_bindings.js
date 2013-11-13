@@ -7,7 +7,7 @@
 var binding = require('binding').Binding.create('browserAction');
 
 var setIcon = require('setIcon').setIcon;
-var getExtensionViews = requireNative('extension').GetExtensionViews;
+var getExtensionViews = requireNative('runtime').GetExtensionViews;
 
 binding.registerCustomHook(function(bindingsAPI) {
   var apiFunctions = bindingsAPI.apiFunctions;
