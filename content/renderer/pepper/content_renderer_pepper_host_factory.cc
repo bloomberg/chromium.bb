@@ -35,6 +35,8 @@ using ppapi::proxy::SerializedTrueTypeFontDesc;
 using ppapi::UnpackMessage;
 
 namespace content {
+
+#if defined(ENABLE_WEBRTC)
 namespace {
 
 bool CanUseMediaStreamAPI(const RendererPpapiHost* host,
@@ -50,7 +52,8 @@ bool CanUseMediaStreamAPI(const RendererPpapiHost* host,
   return content_renderer_client->AllowPepperMediaStreamAPI(document_url);
 }
 
-}
+}  // namespace
+#endif  // defined(ENABLE_WEBRTC)
 
 ContentRendererPepperHostFactory::ContentRendererPepperHostFactory(
     RendererPpapiHostImpl* host)

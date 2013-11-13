@@ -1826,6 +1826,7 @@
         }],
         ['enable_webrtc==0', {
           'sources!': [
+            'browser/extensions/api/webrtc_audio_private/webrtc_audio_private_browsertest.cc',
             'browser/extensions/api/webrtc_logging_private/webrtc_logging_private_apitest.cc',
             'browser/media/chrome_webrtc_browsertest.cc',
           ],
