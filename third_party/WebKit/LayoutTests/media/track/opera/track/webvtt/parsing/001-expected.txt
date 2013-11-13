@@ -30,7 +30,6 @@ PASS WebVTT parser tests, space-chars.vtt
 PASS WebVTT parser tests, timings-garbage.vtt 
 PASS WebVTT parser tests, timings-too-short.vtt 
 PASS WebVTT parser tests, timings-too-long.vtt 
-FAIL WebVTT parser tests, newlines.vtt assert_equals: number of cues expected 4 but got 3
 PASS WebVTT parser tests, omitted-hours.vtt 
 PASS WebVTT parser tests, timings-60.vtt 
 PASS WebVTT parser tests, timings-negative.vtt 
