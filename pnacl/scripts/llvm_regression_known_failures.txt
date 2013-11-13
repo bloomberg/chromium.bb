@@ -15,3 +15,8 @@ Clang::PCH/objc_stmts.m win
 LLVM::Analysis/Profiling/load-branch-weights-switches.ll win
 LLVM::Analysis/Profiling/load-branch-weights-loops.ll win
 LLVM::Analysis/Profiling/load-branch-weights-ifs.ll win
+
+
+# Fixed in upstream r183033 (I cherry-picked the code change but not the
+# test because the test will cause a merge conflict).
+Clang::CodeGen/atomics-inlining.c
