@@ -46,6 +46,11 @@ class ProfileDownloader : public net::URLFetcherDelegate,
   // token is available. Should not be called more than once.
   virtual void Start();
 
+  // Starts downloading profile information if the necessary authorization token
+  // is ready. If not, subscribes to token service and starts fetching if the
+  // token is available. Should not be called more than once.
+  virtual void StartForAccount(const std::string& account_id);
+
   // On successful download this returns the full name of the user. For example
   // "Pat Smith".
   virtual string16 GetProfileFullName() const;
@@ -116,6 +121,7 @@ class ProfileDownloader : public net::URLFetcherDelegate,
   void StartFetchingOAuth2AccessToken();
 
   ProfileDownloaderDelegate* delegate_;
+  std::string account_id_;
   std::string auth_token_;
   scoped_ptr<net::URLFetcher> user_entry_fetcher_;
   scoped_ptr<net::URLFetcher> profile_image_fetcher_;

@@ -214,6 +214,10 @@ ProfileDownloader::ProfileDownloader(ProfileDownloaderDelegate* delegate)
 }
 
 void ProfileDownloader::Start() {
+  StartForAccount(std::string());
+}
+
+void ProfileDownloader::StartForAccount(const std::string& account_id) {
   VLOG(1) << "Starting profile downloader...";
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -228,8 +232,9 @@ void ProfileDownloader::Start() {
     return;
   }
 
-  if (service->RefreshTokenIsAvailable(
-          service->GetPrimaryAccountId())) {
+  account_id_ =
+      account_id.empty() ? service->GetPrimaryAccountId() : account_id;
+  if (service->RefreshTokenIsAvailable(account_id_)) {
     StartFetchingOAuth2AccessToken();
   } else {
     service->AddObserver(this);
@@ -283,7 +288,7 @@ void ProfileDownloader::StartFetchingOAuth2AccessToken() {
   ProfileOAuth2TokenService* token_service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(profile);
   oauth2_access_token_request_ = token_service->StartRequest(
-      token_service->GetPrimaryAccountId(), scopes, this);
+      account_id_, scopes, this);
 }
 
 ProfileDownloader::~ProfileDownloader() {
@@ -389,7 +394,7 @@ void ProfileDownloader::OnRefreshTokenAvailable(const std::string& account_id) {
   ProfileOAuth2TokenService* service =
       ProfileOAuth2TokenServiceFactory::GetForProfile(
           delegate_->GetBrowserProfile());
-  if (account_id != service->GetPrimaryAccountId())
+  if (account_id != account_id_)
     return;
 
   service->RemoveObserver(this);
@@ -414,7 +419,8 @@ void ProfileDownloader::OnGetTokenFailure(
     const GoogleServiceAuthError& error) {
   DCHECK_EQ(request, oauth2_access_token_request_.get());
   oauth2_access_token_request_.reset();
-  LOG(WARNING) << "ProfileDownloader: token request using refresh token failed";
+  LOG(WARNING) << "ProfileDownloader: token request using refresh token failed:"
+               << error.ToString();
   delegate_->OnProfileDownloadFailure(
       this, ProfileDownloaderDelegate::TOKEN_ERROR);
 }
