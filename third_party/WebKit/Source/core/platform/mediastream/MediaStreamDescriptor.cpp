@@ -33,8 +33,8 @@
 
 #include "core/platform/mediastream/MediaStreamDescriptor.h"
 
-#include "core/platform/mediastream/MediaStreamComponent.h"
 #include "platform/UUID.h"
+#include "platform/mediastream/MediaStreamComponent.h"
 #include "platform/mediastream/MediaStreamSource.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"

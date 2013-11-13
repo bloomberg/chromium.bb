@@ -26,7 +26,7 @@
 
 #include "public/platform/WebMediaStreamTrack.h"
 
-#include "core/platform/mediastream/MediaStreamComponent.h"
+#include "platform/mediastream/MediaStreamComponent.h"
 #include "platform/mediastream/MediaStreamSource.h"
 #include "public/platform/WebAudioSourceProvider.h"
 #include "public/platform/WebMediaStream.h"

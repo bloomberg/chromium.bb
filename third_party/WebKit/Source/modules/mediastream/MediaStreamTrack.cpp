@@ -31,9 +31,9 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/events/Event.h"
 #include "core/platform/mediastream/MediaStreamCenter.h"
-#include "core/platform/mediastream/MediaStreamComponent.h"
 #include "modules/mediastream/MediaStreamTrackSourcesCallback.h"
 #include "modules/mediastream/MediaStreamTrackSourcesRequest.h"
+#include "platform/mediastream/MediaStreamComponent.h"
 #include "public/platform/WebSourceInfo.h"
 
 namespace WebCore {

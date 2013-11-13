@@ -32,7 +32,7 @@
 #ifndef MediaStreamDescriptor_h
 #define MediaStreamDescriptor_h
 
-#include "core/platform/mediastream/MediaStreamComponent.h"
+#include "platform/mediastream/MediaStreamComponent.h"
 #include "platform/mediastream/MediaStreamSource.h"
 #include "wtf/RefCounted.h"
 #include "wtf/Vector.h"

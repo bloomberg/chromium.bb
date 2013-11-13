@@ -370,6 +370,8 @@
       'mac/WebFontCache.mm',
       'mediastream/MediaConstraints.cpp',
       'mediastream/MediaConstraints.h',
+      'mediastream/MediaStreamComponent.cpp',
+      'mediastream/MediaStreamComponent.h',
       'mediastream/MediaStreamSource.cpp',
       'mediastream/MediaStreamSource.h',
       'mediastream/RTCConfiguration.h',

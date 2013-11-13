@@ -47,7 +47,7 @@ namespace WebCore {
 class MediaStreamDescriptor;
 class MediaStreamSource;
 
-class MediaStreamComponent : public RefCounted<MediaStreamComponent> {
+class PLATFORM_EXPORT MediaStreamComponent : public RefCounted<MediaStreamComponent> {
 public:
     class ExtraData : public RefCounted<ExtraData> {
     public:

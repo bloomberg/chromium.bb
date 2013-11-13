@@ -2963,8 +2963,6 @@
             'platform/mac/ThemeMac.mm',
             'platform/mediastream/MediaStreamCenter.cpp',
             'platform/mediastream/MediaStreamCenter.h',
-            'platform/mediastream/MediaStreamComponent.cpp',
-            'platform/mediastream/MediaStreamComponent.h',
             'platform/mediastream/MediaStreamDescriptor.cpp',
             'platform/mediastream/MediaStreamDescriptor.h',
             'platform/mediastream/RTCDataChannelHandler.cpp',
