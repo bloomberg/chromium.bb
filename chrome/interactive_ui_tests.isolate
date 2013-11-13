@@ -83,6 +83,7 @@
         ],
         'isolate_dependency_untracked': [
           '../third_party/python_26/',
+          '<(PRODUCT_DIR)/plugins/npapi_test_plugin.dll',
         ],
       },
     }],
