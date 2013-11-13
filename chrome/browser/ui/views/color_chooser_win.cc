@@ -6,12 +6,18 @@
 
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/views/color_chooser_dialog.h"
 #include "content/public/browser/color_chooser.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_view.h"
 #include "ui/views/color_chooser/color_chooser_listener.h"
+
+#if defined(USE_ASH)
+#include "chrome/browser/ui/views/color_chooser_aura.h"
+#endif
 
 class ColorChooserWin : public content::ColorChooser,
                         public views::ColorChooserListener {
@@ -96,6 +102,11 @@ namespace chrome {
 
 content::ColorChooser* ShowColorChooser(content::WebContents* web_contents,
                                         SkColor initial_color) {
+#if defined(USE_ASH)
+  gfx::NativeView native_view = web_contents->GetView()->GetNativeView();
+  if (GetHostDesktopTypeForNativeView(native_view) == HOST_DESKTOP_TYPE_ASH)
+    return ColorChooserAura::Open(web_contents, initial_color);
+#endif
   return ColorChooserWin::Open(web_contents, initial_color);
 }
 

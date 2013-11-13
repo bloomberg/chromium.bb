@@ -1720,6 +1720,7 @@
         'browser/ui/views/collected_cookies_views.cc',
         'browser/ui/views/collected_cookies_views.h',
         'browser/ui/views/color_chooser_aura.cc',
+        'browser/ui/views/color_chooser_aura.h',
         'browser/ui/views/color_chooser_dialog.cc',
         'browser/ui/views/color_chooser_dialog.h',
         'browser/ui/views/color_chooser_win.cc',
@@ -2832,9 +2833,6 @@
             ['exclude', '^browser/ui/views/importer/import_progress_dialog_view.cc'],
             ['exclude', '^browser/ui/views/omnibox/omnibox_view_win.cc'],
             ['exclude', '^browser/ui/views/omnibox/omnibox_view_win.h'],
-            ['exclude', '^browser/ui/views/color_chooser_dialog.cc'],
-            ['exclude', '^browser/ui/views/color_chooser_dialog.h'],
-            ['exclude', '^browser/ui/views/color_chooser_win.cc'],
             ['exclude', '^browser/ui/views/tabs/native_view_photobooth.h'],
             ['exclude', '^browser/ui/views/tabs/native_view_photobooth_win.cc'],
             ['exclude', '^browser/ui/views/tabs/native_view_photobooth_win.h'],
@@ -2872,6 +2870,8 @@
               ],
             }, {
               'sources/': [
+                ['exclude', '^browser/ui/views/color_chooser_dialog.cc'],
+                ['exclude', '^browser/ui/views/color_chooser_dialog.h'],
                 ['exclude', '^browser/ui/views/external_protocol_dialog.cc'],
                 ['exclude', '^browser/ui/views/frame/glass_browser_frame_view.cc'],
                 ['exclude', '^browser/ui/views/frame/glass_browser_frame_view.h'],

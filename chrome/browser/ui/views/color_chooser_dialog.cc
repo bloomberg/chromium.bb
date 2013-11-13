@@ -12,6 +12,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "skia/ext/skia_utils_win.h"
 #include "ui/views/color_chooser/color_chooser_listener.h"
+#include "ui/views/win/hwnd_util.h"
 
 using content::BrowserThread;
 
@@ -32,8 +33,9 @@ ColorChooserDialog::ColorChooserDialog(views::ColorChooserListener* listener,
     : listener_(listener) {
   DCHECK(listener_);
   CopyCustomColors(g_custom_colors, custom_colors_);
-  ExecuteOpenParams execute_params(initial_color, BeginRun(owning_window),
-                                   owning_window);
+  HWND owning_hwnd = views::HWNDForNativeWindow(owning_window);
+  ExecuteOpenParams execute_params(initial_color, BeginRun(owning_hwnd),
+                                   owning_hwnd);
   execute_params.run_state.dialog_thread->message_loop()->PostTask(FROM_HERE,
       base::Bind(&ColorChooserDialog::ExecuteOpen, this, execute_params));
 }
@@ -41,8 +43,9 @@ ColorChooserDialog::ColorChooserDialog(views::ColorChooserListener* listener,
 ColorChooserDialog::~ColorChooserDialog() {
 }
 
-bool ColorChooserDialog::IsRunning(HWND owning_hwnd) const {
-  return listener_ && IsRunningDialogForOwner(owning_hwnd);
+bool ColorChooserDialog::IsRunning(gfx::NativeWindow owning_window) const {
+  return listener_ && IsRunningDialogForOwner(
+      views::HWNDForNativeWindow(owning_window));
 }
 
 void ColorChooserDialog::ListenerDestroyed() {
