@@ -88,14 +88,28 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
   void SetAddressBarURL(const GURL& url) {
     url_entry_->SetText(ASCIIToUTF16(url.spec()));
   }
-  void SetWebContents(WebContents* web_contents) {
+  void SetWebContents(WebContents* web_contents, const gfx::Size& size) {
     contents_view_->SetLayoutManager(new views::FillLayout());
     web_view_ = new views::WebView(web_contents->GetBrowserContext());
     web_view_->SetWebContents(web_contents);
+    web_view_->SetPreferredSize(size);
     web_contents->GetView()->Focus();
     contents_view_->AddChildView(web_view_);
     Layout();
+
+    // Resize the widget, keeping the same origin.
+    gfx::Rect bounds = GetWidget()->GetWindowBoundsInScreen();
+    bounds.set_size(GetWidget()->GetRootView()->GetPreferredSize());
+    GetWidget()->SetBounds(bounds);
+
+    // Resizing a widget on chromeos doesn't automatically resize the root, need
+    // to explicitly do that.
+#if defined(OS_CHROMEOS)
+    GetWidget()->GetNativeWindow()->GetDispatcher()->SetHostSize(
+        bounds.size());
+#endif
   }
+
   void SetWindowTitle(const string16& title) { title_ = title; }
   void EnableUIControl(UIControl control, bool is_enabled) {
     if (control == BACK_BUTTON) {
@@ -347,16 +361,16 @@ void Shell::PlatformSetIsLoading(bool loading) {
 
 void Shell::PlatformCreateWindow(int width, int height) {
 #if defined(OS_CHROMEOS)
-  window_widget_ =
-      views::Widget::CreateWindowWithContextAndBounds(
-          new ShellWindowDelegateView(this),
-          minimal_shell_->GetDefaultParent(NULL, NULL, gfx::Rect()),
-          gfx::Rect(0, 0, width, height));
+  window_widget_ = views::Widget::CreateWindowWithContextAndBounds(
+      new ShellWindowDelegateView(this),
+      minimal_shell_->GetDefaultParent(NULL, NULL, gfx::Rect()),
+      gfx::Rect(0, 0, width, height));
 #else
-  window_widget_ =
-      views::Widget::CreateWindowWithBounds(new ShellWindowDelegateView(this),
-               gfx::Rect(0, 0, width, height));
+  window_widget_ = views::Widget::CreateWindowWithBounds(
+      new ShellWindowDelegateView(this), gfx::Rect(0, 0, width, height));
 #endif
+
+  content_size_ = gfx::Size(width, height);
 
   window_ = window_widget_->GetNativeWindow();
   // Call ShowRootWindow on RootWindow created by MinimalShell without
@@ -367,8 +381,8 @@ void Shell::PlatformCreateWindow(int width, int height) {
 
 void Shell::PlatformSetContents() {
   ShellWindowDelegateView* delegate_view =
-    static_cast<ShellWindowDelegateView*>(window_widget_->widget_delegate());
-  delegate_view->SetWebContents(web_contents_.get());
+      static_cast<ShellWindowDelegateView*>(window_widget_->widget_delegate());
+  delegate_view->SetWebContents(web_contents_.get(), content_size_);
 }
 
 void Shell::PlatformResizeSubViews() {

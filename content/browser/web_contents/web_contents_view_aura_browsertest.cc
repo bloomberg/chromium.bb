@@ -148,9 +148,6 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
     ASSERT_TRUE(test_server()->Start());
     GURL test_url(test_server()->GetURL(url));
     NavigateToURL(shell(), test_url);
-    aura::Window* content =
-        shell()->web_contents()->GetView()->GetContentNativeView();
-    content->GetDispatcher()->SetHostSize(gfx::Size(800, 600));
 
     WebContentsImpl* web_contents =
         static_cast<WebContentsImpl*>(shell()->web_contents());

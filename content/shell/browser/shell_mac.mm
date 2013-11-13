@@ -165,8 +165,7 @@ void Shell::PlatformSetIsLoading(bool loading) {
 
 void Shell::PlatformCreateWindow(int width, int height) {
   if (headless_) {
-    content_width_ = width;
-    content_height_ = height;
+    content_size_ = gfx::Size(width, height);
     return;
   }
 
@@ -245,7 +244,7 @@ void Shell::PlatformSetContents() {
   [web_view setAutoresizingMask:(NSViewWidthSizable | NSViewHeightSizable)];
 
   if (headless_) {
-    SizeTo(content_width_, content_height_);
+    SizeTo(content_size_);
     return;
   }
 
@@ -258,13 +257,13 @@ void Shell::PlatformSetContents() {
   [web_view setNeedsDisplay:YES];
 }
 
-void Shell::SizeTo(int width, int height) {
+void Shell::SizeTo(const gfx::Size& content_size) {
   if (!headless_) {
     NOTREACHED();
     return;
   }
   NSView* web_view = web_contents_->GetView()->GetNativeView();
-  NSRect frame = NSMakeRect(0, 0, width, height);
+  NSRect frame = NSMakeRect(0, 0, content_size.width(), content_size.height());
   [web_view setFrame:frame];
 }
 

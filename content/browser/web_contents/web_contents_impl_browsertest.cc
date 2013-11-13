@@ -32,7 +32,7 @@ void ResizeWebContentsView(Shell* shell, const gfx::Size& size,
   // The cleaner and shorter SizeContents is preferred as more platforms convert
   // to Aura.
 #if defined(TOOLKIT_GTK) || defined(OS_MACOSX)
-  shell->SizeTo(size.width(), size.height());
+  shell->SizeTo(size);
   // If |set_start_page| is true, start with blank page to make sure resize
   // takes effect.
   if (set_start_page)

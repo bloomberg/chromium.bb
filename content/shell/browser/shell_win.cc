@@ -130,25 +130,25 @@ void Shell::PlatformCreateWindow(int width, int height) {
 
   ShowWindow(window_, SW_SHOW);
 
-  SizeTo(width, height);
+  SizeTo(gfx::Size(width, height));
 }
 
 void Shell::PlatformSetContents() {
   SetParent(web_contents_->GetView()->GetNativeView(), window_);
 }
 
-void Shell::SizeTo(int width, int height) {
+void Shell::SizeTo(const gfx::Size& size) {
   RECT rc, rw;
   GetClientRect(window_, &rc);
   GetWindowRect(window_, &rw);
 
   int client_width = rc.right - rc.left;
   int window_width = rw.right - rw.left;
-  window_width = (window_width - client_width) + width;
+  window_width = (window_width - client_width) + size.width();
 
   int client_height = rc.bottom - rc.top;
   int window_height = rw.bottom - rw.top;
-  window_height = (window_height - client_height) + height;
+  window_height = (window_height - client_height) + size.height();
 
   // Add space for the url bar.
   window_height += kURLBarHeight;

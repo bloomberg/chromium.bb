@@ -104,8 +104,7 @@ void Shell::PlatformSetIsLoading(bool loading) {
 void Shell::PlatformCreateWindow(int width, int height) {
   ui_elements_height_ = 0;
   if (headless_) {
-    content_width_ = width;
-    content_height_ = height;
+    content_size_ = gfx::Size(width, height);
     return;
   }
 
@@ -220,7 +219,7 @@ void Shell::PlatformCreateWindow(int width, int height) {
   ui_elements_height_ += elm_size.height;
 
   // We're ready to set an initial window size.
-  SizeTo(width, height);
+  SizeTo(gfx::Size(width, height));
 
   // Finally, show the window.
   gtk_widget_show_all(GTK_WIDGET(window_));
@@ -228,7 +227,7 @@ void Shell::PlatformCreateWindow(int width, int height) {
 
 void Shell::PlatformSetContents() {
   if (headless_) {
-    SizeTo(content_width_, content_height_);
+    SizeTo(content_size_);
     return;
   }
 
@@ -236,17 +235,18 @@ void Shell::PlatformSetContents() {
   gtk_container_add(GTK_CONTAINER(vbox_), content_view->GetNativeView());
 }
 
-void Shell::SizeTo(int width, int height) {
-  content_width_ = width;
-  content_height_ = height;
+void Shell::SizeTo(const gfx::Size& content_size) {
+  content_size_ = content_size;
 
   if (window_) {
-    gtk_window_resize(window_, width, height + ui_elements_height_);
+    gtk_window_resize(window_,
+                      content_size.width(),
+                      content_size.height() + ui_elements_height_);
   } else if (web_contents_) {
     RenderWidgetHostView* render_widget_host_view =
         web_contents_->GetRenderWidgetHostView();
     if (render_widget_host_view)
-      render_widget_host_view->SetSize(gfx::Size(width, height));
+      render_widget_host_view->SetSize(content_size);
   }
 }
 

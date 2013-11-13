@@ -72,7 +72,7 @@ class Shell : public WebContentsDelegate,
 #if (defined(OS_WIN) && !defined(USE_AURA)) || \
     defined(TOOLKIT_GTK) || defined(OS_MACOSX)
   // Resizes the main window to the given dimensions.
-  void SizeTo(int width, int height);
+  void SizeTo(const gfx::Size& content_size);
 #endif
 
   // Do one time initialization at application startup.
@@ -241,6 +241,8 @@ class Shell : public WebContentsDelegate,
   gfx::NativeWindow window_;
   gfx::NativeEditView url_edit_view_;
 
+  gfx::Size content_size_;
+
 #if defined(OS_WIN) && !defined(USE_AURA)
   WNDPROC default_edit_wnd_proc_;
   static HINSTANCE instance_handle_;
@@ -255,8 +257,6 @@ class Shell : public WebContentsDelegate,
   GtkWidget* spinner_;
   GtkToolItem* spinner_item_;
 
-  int content_width_;
-  int content_height_;
   int ui_elements_height_; // height of menubar, toolbar, etc.
 #elif defined(OS_ANDROID)
   base::android::ScopedJavaGlobalRef<jobject> java_object_;
@@ -271,9 +271,6 @@ class Shell : public WebContentsDelegate,
 #else // defined(TOOLKIT_VIEWS)
   static ShellAuraPlatformData* platform_;
 #endif // defined(TOOLKIT_VIEWS)
-#elif defined(OS_MACOSX)
-  int content_width_;
-  int content_height_;
 #endif
 
   bool headless_;

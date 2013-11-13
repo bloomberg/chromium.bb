@@ -259,7 +259,7 @@ bool WebKitTestController::PrepareForLayoutTest(
 #if (defined(OS_WIN) && !defined(USE_AURA)) || \
     defined(TOOLKIT_GTK) || defined(OS_MACOSX)
     // Shell::SizeTo is not implemented on all platforms.
-    main_window_->SizeTo(initial_size_.width(), initial_size_.height());
+    main_window_->SizeTo(initial_size_);
 #endif
     main_window_->web_contents()->GetRenderViewHost()->GetView()
         ->SetSize(initial_size_);
