@@ -26,8 +26,11 @@
 [
     GenerateIsReachable=element
 ] interface DOMStringMap {
+    [ImplementedAs=anonymousIndexedGetter, NotEnumerable] getter DOMString (unsigned long index);
+    [ImplementedAs=anonymousIndexedSetter, RaisesException, NotEnumerable] setter DOMString (unsigned long index, DOMString value);
+    [ImplementedAs=anonymousIndexedDeleter, RaisesException, NotEnumerable] deleter boolean (unsigned long index);
     [ImplementedAs=item, OverrideBuiltins] getter DOMString (DOMString name);
-    [ImplementedAs=anonymousNamedDeleter, RaisesException] deleter boolean (DOMString name);
     [ImplementedAs=anonymousNamedSetter, RaisesException, OverrideBuiltins] setter DOMString (DOMString name, DOMString value);
+    [ImplementedAs=anonymousNamedDeleter, RaisesException] deleter boolean (DOMString name);
 };
 

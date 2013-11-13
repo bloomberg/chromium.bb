@@ -73,6 +73,19 @@ public:
     }
     bool namedPropertyQuery(const AtomicString&, ExceptionState&);
 
+    String anonymousIndexedGetter(uint32_t index)
+    {
+        return item(String::number(index));
+    }
+    bool anonymousIndexedSetter(uint32_t index, const String& value, ExceptionState& es)
+    {
+        return anonymousNamedSetter(String::number(index), value, es);
+    }
+    bool anonymousIndexedDeleter(uint32_t index, ExceptionState& es)
+    {
+        return anonymousNamedDeleter(AtomicString(String::number(index)), es);
+    }
+
     virtual Element* element() = 0;
 
 protected:

@@ -19,7 +19,25 @@ shouldBeTrue("testGet('data-foo--', 'foo--')");
 shouldBeTrue("testGet('data-Foo', 'foo')"); // HTML lowercases all attributes.
 shouldBeTrue("testGet('data-', '')");
 shouldBeTrue("testGet('data-\xE0', '\xE0')");
+shouldBeTrue("testGet('data-1', '1')");
+shouldBeTrue("testGet('data-01', '01')");
+shouldBeTrue("testGet('data-zx81', 'zx81')");
+shouldBeTrue("testGet('data-i4770k', 'i4770k')");
+shouldBeTrue("testGet('data-r-7', 'r-7')");
+shouldBeTrue("testGet('data-r-7-k', 'r-7K')");
 shouldBeUndefined("document.body.dataset.nonExisting");
+debug("");
+
+function testIsUndefined(attr, prop)
+{
+    var d = document.createElement("div");
+    d.setAttribute(attr, "value");
+    return d.dataset[prop] === undefined;
+}
+
+shouldBeTrue("testIsUndefined('data-022', '22')");
+shouldBeTrue("testIsUndefined('data-22', '022')");
+
 debug("");
 
 function matchesNothingInDataset(attr)
@@ -50,6 +68,24 @@ shouldBeTrue("testSet('Foo', 'data--foo')");
 shouldBeTrue("testSet('-Foo', 'data---foo')");
 shouldBeTrue("testSet('', 'data-')");
 shouldBeTrue("testSet('\xE0', 'data-\xE0')");
+shouldBeTrue("testSet('32', 'data-32')");
+shouldBeTrue("testSet('0032', 'data-0032')");
+shouldBeTrue("testSet('i18n', 'data-i18n')");
+shouldBeTrue("testSet('d2', 'data-d2')");
+shouldBeTrue("testSet('2d', 'data-2d')");
+shouldBeTrue("testSet('d-2', 'data-d-2')");
+shouldBeTrue("testSet('A--S', 'data--a---s')");
+debug("");
+
+function testIsNull(prop, attr)
+{
+    var d = document.createElement("div");
+    d.dataset[prop] = "value";
+    return d.getAttribute(attr) === null;
+}
+
+shouldBeTrue("testIsNull('0123', 'data-123')");
+shouldBeTrue("testIsNull('123', 'data-0123')");
 debug("");
 
 shouldThrow("testSet('-foo', 'dummy')", '"SyntaxError: Failed to set the \'-foo\' property on \'DOMStringMap\': \'-foo\' is not a valid property name."');
@@ -72,6 +108,14 @@ shouldBeTrue("testDelete('data--foo', 'Foo')");
 shouldBeTrue("testDelete('data---foo', '-Foo')");
 shouldBeTrue("testDelete('data-', '')");
 shouldBeTrue("testDelete('data-\xE0', '\xE0')");
+shouldBeTrue("testDelete('data-33', '33')");
+shouldBeTrue("testDelete('data-00033', '00033')");
+shouldBeTrue("testDelete('data-r2', 'r2')");
+shouldBeTrue("testDelete('data-2r', '2r')");
+shouldBeTrue("testDelete('data-r-2', 'r-2')");
+shouldBeTrue("testDelete('data--r-2-', 'R-2-')");
+shouldBeTrue("testDelete('data--r-2r', 'R-2r')");
+shouldBeTrue("testDelete('data--r-2-----r', 'R-2----R')");
 debug("");
 
 shouldBeFalse("testDelete('dummy', '-foo')");
@@ -95,12 +139,16 @@ shouldBe("testForIn(['data-foo', 'data-bar', 'data-baz'])", "3");
 shouldBe("testForIn(['data-foo', 'data-bar', 'dataFoo'])", "2");
 shouldBe("testForIn(['data-foo', 'data-bar', 'style'])", "2");
 shouldBe("testForIn(['data-foo', 'data-bar', 'data-'])", "3");
+shouldBe("testForIn(['data-foo', 'data-bar', 'data-43'])", "3");
+shouldBe("testForIn(['data-foo', 'data-oric1', 'data-bar'])", "3");
+shouldBe("testForIn(['data-foo', 'data-oric-1', 'data-bar'])", "3");
+shouldBe("testForIn(['data-foo', 'data-oric-1x', 'data-bar'])", "3");
 
 
 debug("");
 debug("Property override:");
 var div = document.createElement("div");
-// If the Object prorotype already has "foo", dataset doesn't create the
+// If the Object prototype already has "foo", dataset doesn't create the
 // corresponding attribute for "foo".
 shouldBe("Object.prototype.foo = 'on Object'; div.dataset.foo", "'on Object'");
 shouldBe("div.dataset['foo'] = 'on dataset'; div.dataset.foo", "'on dataset'");
@@ -121,6 +169,30 @@ debug("Remove the JavaScript property:");
 shouldBe("div.setAttribute('data-foo', 'attr'); delete div.dataset.foo; div.dataset.foo", "'on Object'");
 shouldBeFalse("div.hasAttribute('foo')");
 shouldBeUndefined("delete div.dataset.Bar; div.dataset.Bar");
+
+shouldBe("Object.prototype[11] = 'on Object'; div.dataset[11]", "'on Object'");
+shouldBe("div.dataset['11'] = 'on dataset'; div.dataset[11]", "'on dataset'");
+shouldBeTrue("div.hasAttribute('data-11')");
+shouldBe("div.setAttribute('data-11', 'attr'); div.dataset[11]", "'attr'");
+debug("Update the JavaScript property:");
+shouldBe("div.dataset[11] = 'updated'; div.dataset[11]", "'updated'");
+shouldBe("div.getAttribute('data-11')", "'updated'");
+
+shouldBe("Object.prototype['a500'] = 'on Object'; div.dataset['a500']", "'on Object'");
+shouldBe("div.dataset['a500'] = 'on dataset'; div.dataset['a500']", "'on dataset'");
+shouldBeTrue("div.hasAttribute('data-a500')");
+shouldBe("div.setAttribute('data-a500', 'attr'); div.dataset['a500']", "'attr'");
+debug("Update the JavaScript property:");
+shouldBe("div.dataset['a500'] = 'updated'; div.dataset['a500']", "'updated'");
+shouldBe("div.getAttribute('data-a500')", "'updated'");
+
+shouldBe("Object.prototype['a-500k'] = 'on Object'; div.dataset['a-500k']", "'on Object'");
+shouldBe("div.dataset['a-500k'] = 'on dataset'; div.dataset['a-500k']", "'on dataset'");
+shouldBeTrue("div.hasAttribute('data-a-500k')");
+shouldBe("div.setAttribute('data-a-500k', 'attr'); div.dataset['a-500k']", "'attr'");
+debug("Update the JavaScript property:");
+shouldBe("div.dataset['a-500k'] = 'updated'; div.dataset['a-500k']", "'updated'");
+shouldBe("div.getAttribute('data-a-500k')", "'updated'");
 
 debug("");
 debug("Set null:");

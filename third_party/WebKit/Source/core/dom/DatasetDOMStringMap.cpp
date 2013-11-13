@@ -83,7 +83,7 @@ static bool propertyNameMatchesAttributeName(const String& propertyName, const S
     unsigned p = 0;
     bool wordBoundary = false;
     while (a < attributeLength && p < propertyLength) {
-        if (attributeName[a] == '-' && a + 1 < attributeLength && attributeName[a + 1] != '-')
+        if (attributeName[a] == '-' && a + 1 < attributeLength && isASCIILower(attributeName[a + 1]))
             wordBoundary = true;
         else {
             if ((wordBoundary ? toASCIIUpper(attributeName[a]) : attributeName[a]) != propertyName[p])
