@@ -152,7 +152,7 @@ void WebSocketChannel::SendAddChannelRequest(
     const std::vector<std::string>& requested_subprotocols,
     const GURL& origin) {
   // Delegate to the tested version.
-  SendAddChannelRequestWithFactory(
+  SendAddChannelRequestWithSuppliedCreator(
       socket_url,
       requested_subprotocols,
       origin,
@@ -253,9 +253,9 @@ void WebSocketChannel::SendAddChannelRequestForTesting(
     const GURL& socket_url,
     const std::vector<std::string>& requested_subprotocols,
     const GURL& origin,
-    const WebSocketStreamFactory& factory) {
-  SendAddChannelRequestWithFactory(
-      socket_url, requested_subprotocols, origin, factory);
+    const WebSocketStreamCreator& creator) {
+  SendAddChannelRequestWithSuppliedCreator(
+      socket_url, requested_subprotocols, origin, creator);
 }
 
 void WebSocketChannel::SetClosingHandshakeTimeoutForTesting(
@@ -263,16 +263,16 @@ void WebSocketChannel::SetClosingHandshakeTimeoutForTesting(
   timeout_ = delay;
 }
 
-void WebSocketChannel::SendAddChannelRequestWithFactory(
+void WebSocketChannel::SendAddChannelRequestWithSuppliedCreator(
     const GURL& socket_url,
     const std::vector<std::string>& requested_subprotocols,
     const GURL& origin,
-    const WebSocketStreamFactory& factory) {
+    const WebSocketStreamCreator& creator) {
   DCHECK_EQ(FRESHLY_CONSTRUCTED, state_);
   socket_url_ = socket_url;
   scoped_ptr<WebSocketStream::ConnectDelegate> connect_delegate(
       new ConnectDelegate(this));
-  stream_request_ = factory.Run(socket_url_,
+  stream_request_ = creator.Run(socket_url_,
                                 requested_subprotocols,
                                 origin,
                                 url_request_context_,

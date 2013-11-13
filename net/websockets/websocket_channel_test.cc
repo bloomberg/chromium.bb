@@ -649,8 +649,8 @@ class MockWebSocketStream : public WebSocketStream {
   MOCK_METHOD0(AsWebSocketStream, WebSocketStream*());
 };
 
-struct ArgumentCopyingWebSocketStreamFactory {
-  scoped_ptr<WebSocketStreamRequest> Factory(
+struct ArgumentCopyingWebSocketStreamCreator {
+  scoped_ptr<WebSocketStreamRequest> Create(
       const GURL& socket_url,
       const std::vector<std::string>& requested_subprotocols,
       const GURL& origin,
@@ -695,15 +695,15 @@ class WebSocketChannelTest : public ::testing::Test {
         connect_data_.socket_url,
         connect_data_.requested_subprotocols,
         connect_data_.origin,
-        base::Bind(&ArgumentCopyingWebSocketStreamFactory::Factory,
-                   base::Unretained(&connect_data_.factory)));
+        base::Bind(&ArgumentCopyingWebSocketStreamCreator::Create,
+                   base::Unretained(&connect_data_.creator)));
   }
 
   // Same as CreateChannelAndConnect(), but calls the on_success callback as
   // well. This method is virtual so that subclasses can also set the stream.
   virtual void CreateChannelAndConnectSuccessfully() {
     CreateChannelAndConnect();
-    connect_data_.factory.connect_delegate->OnSuccess(stream_.Pass());
+    connect_data_.creator.connect_delegate->OnSuccess(stream_.Pass());
   }
 
   // Returns a WebSocketEventInterface to be passed to the WebSocketChannel.
@@ -737,8 +737,8 @@ class WebSocketChannelTest : public ::testing::Test {
     // Origin of the request
     GURL origin;
 
-    // A fake WebSocketStreamFactory that just records its arguments.
-    ArgumentCopyingWebSocketStreamFactory factory;
+    // A fake WebSocketStreamCreator that just records its arguments.
+    ArgumentCopyingWebSocketStreamCreator creator;
   };
   ConnectData connect_data_;
 
@@ -875,16 +875,16 @@ class WebSocketChannelStreamTest : public WebSocketChannelTest {
   scoped_ptr<MockWebSocketStream> mock_stream_;
 };
 
-// Simple test that everything that should be passed to the factory function is
-// passed to the factory function.
-TEST_F(WebSocketChannelTest, EverythingIsPassedToTheFactoryFunction) {
+// Simple test that everything that should be passed to the creator function is
+// passed to the creator function.
+TEST_F(WebSocketChannelTest, EverythingIsPassedToTheCreatorFunction) {
   connect_data_.socket_url = GURL("ws://example.com/test");
   connect_data_.origin = GURL("http://example.com/test");
   connect_data_.requested_subprotocols.push_back("Sinbad");
 
   CreateChannelAndConnect();
 
-  const ArgumentCopyingWebSocketStreamFactory& actual = connect_data_.factory;
+  const ArgumentCopyingWebSocketStreamCreator& actual = connect_data_.creator;
 
   EXPECT_EQ(&connect_data_.url_request_context, actual.url_request_context);
 
@@ -902,7 +902,7 @@ TEST_F(WebSocketChannelTest, EverythingIsPassedToTheFactoryFunction) {
 TEST_F(WebSocketChannelDeletingTest, OnAddChannelResponseFail) {
   CreateChannelAndConnect();
   EXPECT_TRUE(channel_);
-  connect_data_.factory.connect_delegate->OnFailure(
+  connect_data_.creator.connect_delegate->OnFailure(
       kWebSocketErrorNoStatusReceived);
   EXPECT_EQ(NULL, channel_.get());
 }
@@ -1139,7 +1139,7 @@ TEST_F(WebSocketChannelEventInterfaceTest, ConnectSuccessReported) {
 
   CreateChannelAndConnect();
 
-  connect_data_.factory.connect_delegate->OnSuccess(stream_.Pass());
+  connect_data_.creator.connect_delegate->OnSuccess(stream_.Pass());
 }
 
 TEST_F(WebSocketChannelEventInterfaceTest, ConnectFailureReported) {
@@ -1148,7 +1148,7 @@ TEST_F(WebSocketChannelEventInterfaceTest, ConnectFailureReported) {
 
   CreateChannelAndConnect();
 
-  connect_data_.factory.connect_delegate->OnFailure(
+  connect_data_.creator.connect_delegate->OnFailure(
       kWebSocketErrorNoStatusReceived);
 }
 
@@ -1158,7 +1158,7 @@ TEST_F(WebSocketChannelEventInterfaceTest, ProtocolPassed) {
 
   CreateChannelAndConnect();
 
-  connect_data_.factory.connect_delegate->OnSuccess(
+  connect_data_.creator.connect_delegate->OnSuccess(
       scoped_ptr<WebSocketStream>(new FakeWebSocketStream("Bob", "")));
 }
 
@@ -2256,7 +2256,7 @@ class WebSocketChannelStreamTimeoutTest : public WebSocketChannelStreamTest {
     CreateChannelAndConnect();
     channel_->SetClosingHandshakeTimeoutForTesting(
         TimeDelta::FromMilliseconds(kVeryTinyTimeoutMillis));
-    connect_data_.factory.connect_delegate->OnSuccess(stream_.Pass());
+    connect_data_.creator.connect_delegate->OnSuccess(stream_.Pass());
   }
 };
 

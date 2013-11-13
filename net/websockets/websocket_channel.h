@@ -34,7 +34,7 @@ class URLRequestContext;
 // clarification.
 class NET_EXPORT WebSocketChannel {
  public:
-  // The type of a WebSocketStream factory callback. Must match the signature of
+  // The type of a WebSocketStream creator callback. Must match the signature of
   // WebSocketStream::CreateAndConnectStream().
   typedef base::Callback<scoped_ptr<WebSocketStreamRequest>(
       const GURL&,
@@ -42,7 +42,7 @@ class NET_EXPORT WebSocketChannel {
       const GURL&,
       URLRequestContext*,
       const BoundNetLog&,
-      scoped_ptr<WebSocketStream::ConnectDelegate>)> WebSocketStreamFactory;
+      scoped_ptr<WebSocketStream::ConnectDelegate>)> WebSocketStreamCreator;
 
   // Creates a new WebSocketChannel in an idle state.
   // SendAddChannelRequest() must be called immediately afterwards to start the
@@ -88,13 +88,13 @@ class NET_EXPORT WebSocketChannel {
   // processing to OnClosingHandshake() if necessary.
   void StartClosingHandshake(uint16 code, const std::string& reason);
 
-  // Starts the connection process, using a specified factory function rather
+  // Starts the connection process, using a specified creator callback rather
   // than the default. This is exposed for testing.
   void SendAddChannelRequestForTesting(
       const GURL& socket_url,
       const std::vector<std::string>& requested_protocols,
       const GURL& origin,
-      const WebSocketStreamFactory& factory);
+      const WebSocketStreamCreator& creator);
 
   // The default timout for the closing handshake is a sensible value (see
   // kClosingHandshakeTimeoutSeconds in websocket_channel.cc). However, we can
@@ -140,12 +140,12 @@ class NET_EXPORT WebSocketChannel {
   // connection process.
   class ConnectDelegate;
 
-  // Starts the connection progress, using a specified factory function.
-  void SendAddChannelRequestWithFactory(
+  // Starts the connection process, using the supplied creator callback.
+  void SendAddChannelRequestWithSuppliedCreator(
       const GURL& socket_url,
       const std::vector<std::string>& requested_protocols,
       const GURL& origin,
-      const WebSocketStreamFactory& factory);
+      const WebSocketStreamCreator& creator);
 
   // Success callback from WebSocketStream::CreateAndConnectStream(). Reports
   // success to the event interface. May delete |this|.
@@ -238,7 +238,7 @@ class NET_EXPORT WebSocketChannel {
   // The object receiving events.
   const scoped_ptr<WebSocketEventInterface> event_interface_;
 
-  // The URLRequestContext to pass to the WebSocketStream factory.
+  // The URLRequestContext to pass to the WebSocketStream creator.
   URLRequestContext* const url_request_context_;
 
   // The WebSocketStream on which to send and receive data.
