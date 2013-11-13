@@ -39,7 +39,10 @@
     }],
   ],
 
-  'direct_dependent_settings': {
+  # We would prefer this to be direct_dependent_settings,
+  # however we currently have no means to enforce that direct dependents
+  # re-export if they include Skia headers in their public headers.
+  'all_dependent_settings': {
     'include_dirs': [
       '..',
       'config',
