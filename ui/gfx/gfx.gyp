@@ -373,6 +373,10 @@
           'dependencies': [
             '<(DEPTH)/build/linux/system.gyp:pangocairo',
           ],
+          'sources!': [
+            'platform_font_ozone.cc',
+            'render_text_ozone.cc',
+          ],
         }],
         ['ozone_platform_dri==1', {
           'dependencies': [

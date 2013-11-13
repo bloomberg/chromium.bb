@@ -457,9 +457,8 @@
       'dependencies': [
         '../build/linux/system.gyp:pangocairo',
       ],
-    }, {  # use_pango == 0
       'sources!': [
-        'common/font_list_pango.cc',
+        'common/font_list_ozone.cc',
       ],
     }],
     ['use_x11 == 1', {

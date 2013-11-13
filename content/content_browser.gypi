@@ -1426,6 +1426,9 @@
       'dependencies': [
         '../build/linux/system.gyp:pangocairo',
       ],
+      'sources!': [
+        'pepper_truetype_font_list_ozone.cc',
+      ],
     }],
     ['OS=="android"', {
       'dependencies': [
