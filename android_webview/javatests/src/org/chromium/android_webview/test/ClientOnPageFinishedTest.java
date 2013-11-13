@@ -84,13 +84,13 @@ public class ClientOnPageFinishedTest extends AwTestBase {
             final String testPath = "/test.html";
             final String syncPath = "/sync.html";
 
-            webServer.setResponse(testPath, testHtml, null);
+            final String testUrl = webServer.setResponse(testPath, testHtml, null);
             final String syncUrl = webServer.setResponse(syncPath, testHtml, null);
 
             assertEquals(0, onPageFinishedHelper.getCallCount());
             final int pageWithSubresourcesCallCount = onPageFinishedHelper.getCallCount();
             loadDataAsync(mAwContents,
-                          "<html><iframe src=\"" + testPath + "\" /></html>",
+                          "<html><iframe src=\"" + testUrl + "\" /></html>",
                           "text/html",
                           false);
 
