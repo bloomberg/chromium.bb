@@ -40,11 +40,9 @@ SessionService* SessionServiceFactory::GetForProfileForSessionRestore(
   SessionService* service = GetForProfile(profile);
   if (!service && !CommandLine::ForCurrentProcess()->HasSwitch(
                        switches::kDisableBatchedShutdown)) {
-    SessionServiceFactory* factory = GetInstance();
     // If the service has been shutdown, remove the reference to NULL for
-    // |profile| so GetServiceForBrowserContext will recreate it.
-    factory->BrowserContextShutdown(profile);
-    factory->BrowserContextDestroyed(profile);
+    // |profile| so GetForProfile will recreate it.
+    GetInstance()->Disassociate(profile);
     service = GetForProfile(profile);
   }
   return service;

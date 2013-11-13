@@ -123,6 +123,9 @@ class SessionService : public BaseSessionService,
                  const SessionID& tab_id,
                  bool closed_by_user_gesture);
 
+  // Notification a window has opened.
+  void WindowOpened(Browser* browser);
+
   // Notification the window is about to close.
   void WindowClosing(const SessionID& window_id);
 

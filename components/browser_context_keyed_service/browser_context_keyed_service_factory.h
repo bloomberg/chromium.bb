@@ -75,6 +75,9 @@ class BROWSER_CONTEXT_KEYED_SERVICE_EXPORT BrowserContextKeyedServiceFactory
   void Associate(content::BrowserContext* context,
                  BrowserContextKeyedService* service);
 
+  // Removes the mapping from |context| to a service.
+  void Disassociate(content::BrowserContext* context);
+
   // All subclasses of BrowserContextKeyedServiceFactory must return a
   // BrowserContextKeyedService instead of just a BrowserContextKeyedBase.
   virtual BrowserContextKeyedService* BuildServiceInstanceFor(

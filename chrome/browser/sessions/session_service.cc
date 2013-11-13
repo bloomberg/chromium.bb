@@ -304,6 +304,16 @@ void SessionService::TabClosed(const SessionID& window_id,
   }
 }
 
+void SessionService::WindowOpened(Browser* browser) {
+  if (!ShouldTrackBrowser(browser))
+    return;
+
+  AppType app_type = browser->is_app() ? TYPE_APP : TYPE_NORMAL;
+  RestoreIfNecessary(std::vector<GURL>(), browser);
+  SetWindowType(browser->session_id(), browser->type(), app_type);
+  SetWindowAppName(browser->session_id(), browser->app_name());
+}
+
 void SessionService::WindowClosing(const SessionID& window_id) {
   if (!ShouldTrackChangesToWindow(window_id))
     return;
@@ -523,9 +533,6 @@ void SessionService::Init() {
                  content::NotificationService::AllSources());
   registrar_.Add(this, content::NOTIFICATION_NAV_ENTRY_COMMITTED,
                  content::NotificationService::AllSources());
-  // Wait for NOTIFICATION_BROWSER_WINDOW_READY so that is_app() is set.
-  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_WINDOW_READY,
-                 content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(
       this, chrome::NOTIFICATION_TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED,
       content::NotificationService::AllSources());
@@ -588,18 +595,6 @@ void SessionService::Observe(int type,
                              const content::NotificationDetails& details) {
   // All of our messages have the NavigationController as the source.
   switch (type) {
-    case chrome::NOTIFICATION_BROWSER_WINDOW_READY: {
-      Browser* browser = content::Source<Browser>(source).ptr();
-      if (!ShouldTrackBrowser(browser))
-        return;
-
-      AppType app_type = browser->is_app() ? TYPE_APP : TYPE_NORMAL;
-      RestoreIfNecessary(std::vector<GURL>(), browser);
-      SetWindowType(browser->session_id(), browser->type(), app_type);
-      SetWindowAppName(browser->session_id(), browser->app_name());
-      break;
-    }
-
     case content::NOTIFICATION_NAV_LIST_PRUNED: {
       WebContents* web_contents =
           content::Source<content::NavigationController>(source).ptr()->

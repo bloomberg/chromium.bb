@@ -95,6 +95,15 @@ void BrowserContextKeyedServiceFactory::Associate(
   mapping_.insert(std::make_pair(context, service));
 }
 
+void BrowserContextKeyedServiceFactory::Disassociate(
+    content::BrowserContext* context) {
+  BrowserContextKeyedServices::iterator it = mapping_.find(context);
+  if (it != mapping_.end()) {
+    delete it->second;
+    mapping_.erase(it);
+  }
+}
+
 void BrowserContextKeyedServiceFactory::BrowserContextShutdown(
     content::BrowserContext* context) {
   BrowserContextKeyedServices::iterator it = mapping_.find(context);
@@ -104,11 +113,7 @@ void BrowserContextKeyedServiceFactory::BrowserContextShutdown(
 
 void BrowserContextKeyedServiceFactory::BrowserContextDestroyed(
     content::BrowserContext* context) {
-  BrowserContextKeyedServices::iterator it = mapping_.find(context);
-  if (it != mapping_.end()) {
-    delete it->second;
-    mapping_.erase(it);
-  }
+  Disassociate(context);
 
   // For unit tests, we also remove the factory function both so we don't
   // maintain a big map of dead pointers, but also since we may have a second

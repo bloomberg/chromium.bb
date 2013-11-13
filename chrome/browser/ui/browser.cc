@@ -411,6 +411,11 @@ Browser::Browser(const CreateParams& params)
   extension_window_controller_.reset(
       new BrowserExtensionWindowController(this));
 
+  SessionService* session_service =
+      SessionServiceFactory::GetForProfileForSessionRestore(profile_);
+  if (session_service)
+    session_service->WindowOpened(this);
+
   // TODO(beng): Move BrowserList::AddBrowser() to the end of this function and
   //             replace uses of this with BL's notifications.
   content::NotificationService::current()->Notify(
