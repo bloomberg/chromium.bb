@@ -61,6 +61,14 @@ class MockSimpleDispatcher : public SimpleDispatcher {
   friend class base::RefCountedThreadSafe<MockSimpleDispatcher>;
   virtual ~MockSimpleDispatcher() {}
 
+  virtual scoped_refptr<Dispatcher>
+      CreateEquivalentDispatcherAndCloseImplNoLock() OVERRIDE {
+    scoped_refptr<MockSimpleDispatcher> rv(new MockSimpleDispatcher());
+    rv->satisfied_flags_ = satisfied_flags_;
+    rv->satisfiable_flags_ = satisfiable_flags_;
+    return scoped_refptr<Dispatcher>(rv.get());
+  }
+
   // |SimpleDispatcher| implementation:
   virtual MojoWaitFlags SatisfiedFlagsNoLock() const OVERRIDE {
     lock().AssertAcquired();

@@ -38,8 +38,8 @@ class MOJO_SYSTEM_EXPORT LocalMessagePipeEndpoint : public MessagePipeEndpoint {
   virtual void CancelAllWaiters() OVERRIDE;
   virtual MojoResult ReadMessage(
       void* bytes, uint32_t* num_bytes,
-      uint32_t max_num_dispatchers,
       std::vector<scoped_refptr<Dispatcher> >* dispatchers,
+      uint32_t* num_dispatchers,
       MojoReadMessageFlags flags) OVERRIDE;
   virtual MojoResult AddWaiter(Waiter* waiter,
                                MojoWaitFlags flags,

@@ -12,7 +12,10 @@
 namespace mojo {
 namespace system {
 
-MessagePipeDispatcher::MessagePipeDispatcher() {
+const unsigned kInvalidPort = static_cast<unsigned>(-1);
+
+MessagePipeDispatcher::MessagePipeDispatcher()
+    : port_(kInvalidPort) {
 }
 
 void MessagePipeDispatcher::Init(scoped_refptr<MessagePipe> message_pipe,
@@ -38,6 +41,7 @@ MojoResult MessagePipeDispatcher::CloseImplNoLock() {
   lock().AssertAcquired();
   message_pipe_->Close(port_);
   message_pipe_ = NULL;
+  port_ = kInvalidPort;
   return MOJO_RESULT_OK;
 }
 
@@ -63,8 +67,8 @@ MojoResult MessagePipeDispatcher::WriteMessageImplNoLock(
 
 MojoResult MessagePipeDispatcher::ReadMessageImplNoLock(
     void* bytes, uint32_t* num_bytes,
-    uint32_t max_num_dispatchers,
     std::vector<scoped_refptr<Dispatcher> >* dispatchers,
+    uint32_t* num_dispatchers,
     MojoReadMessageFlags flags) {
   lock().AssertAcquired();
 
@@ -77,7 +81,7 @@ MojoResult MessagePipeDispatcher::ReadMessageImplNoLock(
 
   return message_pipe_->ReadMessage(port_,
                                     bytes, num_bytes,
-                                    max_num_dispatchers, dispatchers,
+                                    dispatchers, num_dispatchers,
                                     flags);
 }
 
@@ -91,6 +95,17 @@ MojoResult MessagePipeDispatcher::AddWaiterImplNoLock(Waiter* waiter,
 void MessagePipeDispatcher::RemoveWaiterImplNoLock(Waiter* waiter) {
   lock().AssertAcquired();
   message_pipe_->RemoveWaiter(port_, waiter);
+}
+
+scoped_refptr<Dispatcher>
+MessagePipeDispatcher::CreateEquivalentDispatcherAndCloseImplNoLock() {
+  lock().AssertAcquired();
+
+  scoped_refptr<MessagePipeDispatcher> rv = new MessagePipeDispatcher;
+  rv->Init(message_pipe_, port_);
+  message_pipe_ = NULL;
+  port_ = kInvalidPort;
+  return scoped_refptr<Dispatcher>(rv.get());
 }
 
 }  // namespace system

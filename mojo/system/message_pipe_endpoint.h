@@ -64,8 +64,8 @@ class MOJO_SYSTEM_EXPORT MessagePipeEndpoint {
   virtual void CancelAllWaiters();
   virtual MojoResult ReadMessage(
       void* bytes, uint32_t* num_bytes,
-      uint32_t max_num_dispatchers,
       std::vector<scoped_refptr<Dispatcher> >* dispatchers,
+      uint32_t* num_dispatchers,
       MojoReadMessageFlags flags);
   virtual MojoResult AddWaiter(Waiter* waiter,
                                MojoWaitFlags flags,

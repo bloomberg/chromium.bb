@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "mojo/system/channel.h"
+#include "mojo/system/dispatcher.h"
 #include "mojo/system/local_message_pipe_endpoint.h"
 #include "mojo/system/message_in_transit.h"
 #include "mojo/system/message_pipe_endpoint.h"
@@ -79,8 +80,8 @@ MojoResult MessagePipe::WriteMessage(
 MojoResult MessagePipe::ReadMessage(
     unsigned port,
     void* bytes, uint32_t* num_bytes,
-    uint32_t max_num_dispatchers,
     std::vector<scoped_refptr<Dispatcher> >* dispatchers,
+    uint32_t* num_dispatchers,
     MojoReadMessageFlags flags) {
   DCHECK(port == 0 || port == 1);
 
@@ -88,7 +89,7 @@ MojoResult MessagePipe::ReadMessage(
   DCHECK(endpoints_[port].get());
 
   return endpoints_[port]->ReadMessage(bytes, num_bytes,
-                                       max_num_dispatchers, dispatchers,
+                                       dispatchers, num_dispatchers,
                                        flags);
 }
 
@@ -142,12 +143,20 @@ MojoResult MessagePipe::EnqueueMessage(
     return result;
   }
 
-  // TODO(vtl): No endpoints currently support transferring dispatchers, so we
-  // can get away with this. What we really need to do is create equivalent
-  // dispatchers here (and close the original dispatchers).
-  DCHECK(!dispatchers);
+  if (dispatchers) {
+    DCHECK(!dispatchers->empty());
 
-  endpoints_[port]->EnqueueMessage(message, NULL);
+    std::vector<scoped_refptr<Dispatcher> > replacement_dispatchers;
+    for (size_t i = 0; i < dispatchers->size(); i++) {
+      replacement_dispatchers.push_back(
+          (*dispatchers)[i]->CreateEquivalentDispatcherAndCloseNoLock());
+    }
+
+    endpoints_[port]->EnqueueMessage(message, &replacement_dispatchers);
+  } else {
+    endpoints_[port]->EnqueueMessage(message, NULL);
+  }
+
   return MOJO_RESULT_OK;
 }
 

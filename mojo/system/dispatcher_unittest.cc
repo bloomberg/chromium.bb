@@ -25,6 +25,11 @@ class TrivialDispatcher : public Dispatcher {
   friend class base::RefCountedThreadSafe<TrivialDispatcher>;
   virtual ~TrivialDispatcher() {}
 
+  virtual scoped_refptr<Dispatcher>
+      CreateEquivalentDispatcherAndCloseImplNoLock() OVERRIDE {
+    return scoped_refptr<Dispatcher>(new TrivialDispatcher());
+  }
+
   DISALLOW_COPY_AND_ASSIGN(TrivialDispatcher);
 };
 

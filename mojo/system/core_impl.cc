@@ -244,6 +244,11 @@ MojoResult CoreImpl::WriteMessage(
         break;
       }
 
+      // We shouldn't race with things that close dispatchers, since closing can
+      // only take place either under |handle_table_lock_| or when the handle is
+      // marked as busy.
+      DCHECK(!entries[i]->dispatcher->is_closed_no_lock());
+
       // Hang on to the pointer to the dispatcher (which we'll need to release
       // the lock without going through the handle table).
       dispatchers[i] = entries[i]->dispatcher;
@@ -281,6 +286,7 @@ MojoResult CoreImpl::WriteMessage(
       HandleTableMap::iterator it = handle_table_.find(handles[i]);
       DCHECK(it != handle_table_.end());
       DCHECK(it->second.busy);
+      it->second.busy = false;  // For the sake of a |DCHECK()|.
       handle_table_.erase(it);
     }
   } else {
@@ -307,28 +313,25 @@ MojoResult CoreImpl::ReadMessage(
   if (!dispatcher.get())
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  uint32_t max_num_dispatchers = 0;
   if (num_handles) {
     if (!VerifyUserPointer<uint32_t>(num_handles, 1))
       return MOJO_RESULT_INVALID_ARGUMENT;
     if (!VerifyUserPointer<MojoHandle>(handles, *num_handles))
       return MOJO_RESULT_INVALID_ARGUMENT;
-    max_num_dispatchers = *num_handles;
   }
 
   // Easy case: won't receive any handles.
-  if (max_num_dispatchers == 0)
+  if (!num_handles || *num_handles == 0)
     return dispatcher->ReadMessage(bytes, num_bytes, 0, NULL, flags);
 
   std::vector<scoped_refptr<Dispatcher> > dispatchers;
   MojoResult rv = dispatcher->ReadMessage(bytes, num_bytes,
-                                          max_num_dispatchers, &dispatchers,
+                                          &dispatchers, num_handles,
                                           flags);
   if (!dispatchers.empty()) {
     DCHECK_EQ(rv, MOJO_RESULT_OK);
-
-    *num_handles = static_cast<uint32_t>(dispatchers.size());
-    DCHECK_LE(*num_handles, max_num_dispatchers);
+    DCHECK(num_handles);
+    DCHECK_LE(dispatchers.size(), static_cast<size_t>(*num_handles));
 
     base::AutoLock locker(handle_table_lock_);
 

@@ -66,12 +66,7 @@ bool LocalMessagePipeEndpoint::OnPeerClose() {
 
 MojoResult LocalMessagePipeEndpoint::CanEnqueueMessage(
     const MessageInTransit* /*message*/,
-    const std::vector<Dispatcher*>* dispatchers) {
-  // TODO(vtl)
-  if (dispatchers) {
-    NOTIMPLEMENTED();
-    return MOJO_RESULT_UNIMPLEMENTED;
-  }
+    const std::vector<Dispatcher*>* /*dispatchers*/) {
   return MOJO_RESULT_OK;
 }
 
@@ -80,9 +75,6 @@ void LocalMessagePipeEndpoint::EnqueueMessage(
     std::vector<scoped_refptr<Dispatcher> >* dispatchers) {
   DCHECK(is_open_);
   DCHECK(is_peer_open_);
-
-  // TODO(vtl)
-  DCHECK(!dispatchers || dispatchers->empty());
 
   bool was_empty = message_queue_.empty();
   message_queue_.push_back(MessageQueueEntry());
@@ -100,15 +92,16 @@ void LocalMessagePipeEndpoint::CancelAllWaiters() {
   waiter_list_.CancelAllWaiters();
 }
 
-// TODO(vtl): Support receiving handles.
 MojoResult LocalMessagePipeEndpoint::ReadMessage(
     void* bytes, uint32_t* num_bytes,
-    uint32_t max_num_dispatchers,
     std::vector<scoped_refptr<Dispatcher> >* dispatchers,
+    uint32_t* num_dispatchers,
     MojoReadMessageFlags flags) {
   DCHECK(is_open_);
+  DCHECK(!dispatchers || dispatchers->empty());
 
   const uint32_t max_bytes = num_bytes ? *num_bytes : 0;
+  const uint32_t max_num_dispatchers = num_dispatchers ? *num_dispatchers : 0;
 
   if (message_queue_.empty()) {
     return is_peer_open_ ? MOJO_RESULT_NOT_FOUND :
@@ -117,16 +110,31 @@ MojoResult LocalMessagePipeEndpoint::ReadMessage(
 
   // TODO(vtl): If |flags & MOJO_READ_MESSAGE_FLAG_MAY_DISCARD|, we could pop
   // and release the lock immediately.
-  bool not_enough_space = false;
-  MessageInTransit* const message = message_queue_.front().message;
+  bool enough_space = true;
+  const MessageInTransit* queued_message = message_queue_.front().message;
   if (num_bytes)
-    *num_bytes = message->data_size();
-  if (message->data_size() <= max_bytes)
-    memcpy(bytes, message->data(), message->data_size());
+    *num_bytes = queued_message->data_size();
+  if (queued_message->data_size() <= max_bytes)
+    memcpy(bytes, queued_message->data(), queued_message->data_size());
   else
-    not_enough_space = true;
+    enough_space = false;
 
-  if (!not_enough_space || (flags & MOJO_READ_MESSAGE_FLAG_MAY_DISCARD)) {
+  std::vector<scoped_refptr<Dispatcher> >* queued_dispatchers =
+      &message_queue_.front().dispatchers;
+  if (num_dispatchers)
+    *num_dispatchers = static_cast<uint32_t>(queued_dispatchers->size());
+  if (enough_space) {
+    if (queued_dispatchers->empty()) {
+      // Nothing to do.
+    } else if (queued_dispatchers->size() <= max_num_dispatchers) {
+      DCHECK(dispatchers);
+      dispatchers->swap(*queued_dispatchers);
+    } else {
+      enough_space = false;
+    }
+  }
+
+  if (enough_space || (flags & MOJO_READ_MESSAGE_FLAG_MAY_DISCARD)) {
     message_queue_.pop_front();
 
     // Now it's empty, thus no longer readable.
@@ -138,7 +146,7 @@ MojoResult LocalMessagePipeEndpoint::ReadMessage(
     }
   }
 
-  if (not_enough_space)
+  if (!enough_space)
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
 
   return MOJO_RESULT_OK;

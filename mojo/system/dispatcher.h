@@ -42,13 +42,13 @@ class MOJO_SYSTEM_EXPORT Dispatcher :
   MojoResult WriteMessage(const void* bytes, uint32_t num_bytes,
                           const std::vector<Dispatcher*>* dispatchers,
                           MojoWriteMessageFlags flags);
-  // |dispatchers| must be non-null but empty, if |max_num_dispatchers| is
-  // nonzero. On success, it will be set to the dispatchers to be received (and
-  // assigned handles) as part of the message.
+  // |dispatchers| must be non-null but empty, if |num_dispatchers| is non-null
+  // and nonzero. On success, it will be set to the dispatchers to be received
+  // (and assigned handles) as part of the message.
   MojoResult ReadMessage(
       void* bytes, uint32_t* num_bytes,
-      uint32_t max_num_dispatchers,
       std::vector<scoped_refptr<Dispatcher> >* dispatchers,
+      uint32_t* num_dispatchers,
       MojoReadMessageFlags flags);
 
   // Adds a waiter to this dispatcher. The waiter will be woken up when this
@@ -67,6 +67,13 @@ class MOJO_SYSTEM_EXPORT Dispatcher :
                        MojoWaitFlags flags,
                        MojoResult wake_result);
   void RemoveWaiter(Waiter* waiter);
+
+  // Creates an equivalent dispatcher -- representing the same resource as this
+  // dispatcher -- and close (i.e., disable) this dispatcher. I.e., this
+  // dispatcher will look as though it was closed, but the resource it
+  // represents will be assigned to the new dispatcher. This must be called
+  // under the dispatcher's lock.
+  scoped_refptr<Dispatcher> CreateEquivalentDispatcherAndCloseNoLock();
 
  protected:
   Dispatcher();
@@ -90,20 +97,29 @@ class MOJO_SYSTEM_EXPORT Dispatcher :
       MojoWriteMessageFlags flags);
   virtual MojoResult ReadMessageImplNoLock(
       void* bytes, uint32_t* num_bytes,
-      uint32_t max_num_dispatchers,
       std::vector<scoped_refptr<Dispatcher> >* dispatchers,
+      uint32_t* num_dispatchers,
       MojoReadMessageFlags flags);
   virtual MojoResult AddWaiterImplNoLock(Waiter* waiter,
                                          MojoWaitFlags flags,
                                          MojoResult wake_result);
   virtual void RemoveWaiterImplNoLock(Waiter* waiter);
 
+  // This must be implemented by subclasses, since only they can instantiate a
+  // new dispatcher of the same class. See
+  // |CreateEquivalentDispatcherAndCloseNoLock()| for more details.
+  virtual scoped_refptr<Dispatcher>
+      CreateEquivalentDispatcherAndCloseImplNoLock() = 0;
+
   // Available to subclasses. (Note: Returns a non-const reference, just like
-  // |base::AutoLock|'s constructor takes a non-const reference.
+  // |base::AutoLock|'s constructor takes a non-const reference.)
   base::Lock& lock() const { return lock_; }
 
+  bool is_closed_no_lock() const { return is_closed_; }
+
  private:
-  // For |WriteMessage()|, |CoreImpl| needs access to |lock()|.
+  // For |WriteMessage()|, |CoreImpl| needs access to |lock()| and
+  // |is_closed_no_lock()|.
   friend class CoreImpl;
 
   // This protects the following members as well as any state added by

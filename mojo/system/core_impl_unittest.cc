@@ -6,6 +6,7 @@
 
 #include <limits>
 
+#include "base/basictypes.h"
 #include "mojo/system/core_test_base.h"
 
 namespace mojo {
@@ -378,6 +379,120 @@ TEST_F(CoreImplTest, MessagePipe) {
                                  MOJO_WRITE_MESSAGE_FLAG_NONE));
 
   EXPECT_EQ(MOJO_RESULT_OK, core()->Close(h[1]));
+}
+
+TEST_F(CoreImplTest, MessagePipeBasicLocalHandlePassing) {
+  const char kHello[] = "hello";
+  const uint32_t kHelloSize = static_cast<uint32_t>(sizeof(kHello));
+  const char kWorld[] = "world!!!";
+  const uint32_t kWorldSize = static_cast<uint32_t>(sizeof(kWorld));
+  char buffer[100];
+  const uint32_t kBufferSize = static_cast<uint32_t>(sizeof(buffer));
+  uint32_t num_bytes;
+  MojoHandle handles[10];
+  uint32_t num_handles;
+  MojoHandle h_received;
+
+  MojoHandle h_passing[2];
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->CreateMessagePipe(&h_passing[0], &h_passing[1]));
+
+  MojoHandle h_passed[2];
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->CreateMessagePipe(&h_passed[0], &h_passed[1]));
+
+  // Make sure that |h_passing[]| work properly.
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->WriteMessage(h_passing[0],
+                                 kHello, kHelloSize,
+                                 NULL, 0,
+                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->Wait(h_passing[1], MOJO_WAIT_FLAG_READABLE, 1000000000));
+  num_bytes = kBufferSize;
+  num_handles = arraysize(handles);
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->ReadMessage(h_passing[1],
+                                buffer, &num_bytes,
+                                handles, &num_handles,
+                                MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(kHelloSize, num_bytes);
+  EXPECT_STREQ(kHello, buffer);
+  EXPECT_EQ(0u, num_handles);
+
+  // Make sure that |h_passed[]| work properly.
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->WriteMessage(h_passed[0],
+                                 kHello, kHelloSize,
+                                 NULL, 0,
+                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->Wait(h_passed[1], MOJO_WAIT_FLAG_READABLE, 1000000000));
+  num_bytes = kBufferSize;
+  num_handles = arraysize(handles);
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->ReadMessage(h_passed[1],
+                                buffer, &num_bytes,
+                                handles, &num_handles,
+                                MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(kHelloSize, num_bytes);
+  EXPECT_STREQ(kHello, buffer);
+  EXPECT_EQ(0u, num_handles);
+
+  // Send |h_passed[1]| from |h_passing[0]| to |h_passing[1]|.
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->WriteMessage(h_passing[0],
+                                 kWorld, kWorldSize,
+                                 &h_passed[1], 1,
+                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->Wait(h_passing[1], MOJO_WAIT_FLAG_READABLE, 1000000000));
+  num_bytes = kBufferSize;
+  num_handles = arraysize(handles);
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->ReadMessage(h_passing[1],
+                                buffer, &num_bytes,
+                                handles, &num_handles,
+                                MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(kWorldSize, num_bytes);
+  EXPECT_STREQ(kWorld, buffer);
+  EXPECT_EQ(1u, num_handles);
+  h_received = handles[0];
+  EXPECT_NE(h_received, MOJO_HANDLE_INVALID);
+  EXPECT_NE(h_received, h_passing[0]);
+  EXPECT_NE(h_received, h_passing[1]);
+  EXPECT_NE(h_received, h_passed[0]);
+
+  // Note: We rely on the Mojo system not re-using handle values very often.
+  EXPECT_NE(h_received, h_passed[1]);
+
+  // |h_passed[1]| should no longer be valid; check that trying to close it
+  // fails. See above note.
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT, core()->Close(h_passed[1]));
+
+  // Write to |h_passed[0]|. Should receive on |h_received|.
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->WriteMessage(h_passed[0],
+                                 kHello, kHelloSize,
+                                 NULL, 0,
+                                 MOJO_WRITE_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->Wait(h_received, MOJO_WAIT_FLAG_READABLE, 1000000000));
+  num_bytes = kBufferSize;
+  num_handles = arraysize(handles);
+  EXPECT_EQ(MOJO_RESULT_OK,
+            core()->ReadMessage(h_received,
+                                buffer, &num_bytes,
+                                handles, &num_handles,
+                                MOJO_READ_MESSAGE_FLAG_NONE));
+  EXPECT_EQ(kHelloSize, num_bytes);
+  EXPECT_STREQ(kHello, buffer);
+  EXPECT_EQ(0u, num_handles);
+
+  EXPECT_EQ(MOJO_RESULT_OK, core()->Close(h_passing[0]));
+  EXPECT_EQ(MOJO_RESULT_OK, core()->Close(h_passing[1]));
+  EXPECT_EQ(MOJO_RESULT_OK, core()->Close(h_passed[0]));
+  EXPECT_EQ(MOJO_RESULT_OK, core()->Close(h_received));
 }
 
 }  // namespace

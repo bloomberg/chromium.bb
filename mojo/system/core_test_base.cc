@@ -64,8 +64,8 @@ class MockDispatcher : public Dispatcher {
 
   virtual MojoResult ReadMessageImplNoLock(
       void* bytes, uint32_t* num_bytes,
-      uint32_t /*max_num_dispatchers*/,
       std::vector<scoped_refptr<Dispatcher> >* /*dispatchers*/,
+      uint32_t* /*num_dispatchers*/,
       MojoReadMessageFlags /*flags*/) OVERRIDE {
     info_->IncrementReadMessageCallCount();
     lock().AssertAcquired();
@@ -92,6 +92,11 @@ class MockDispatcher : public Dispatcher {
   virtual void CancelAllWaitersNoLock() OVERRIDE {
     info_->IncrementCancelAllWaitersCallCount();
     lock().AssertAcquired();
+  }
+
+  virtual scoped_refptr<Dispatcher>
+      CreateEquivalentDispatcherAndCloseImplNoLock() OVERRIDE {
+    return scoped_refptr<Dispatcher>(new MockDispatcher(info_));
   }
 
   CoreTestBase::MockHandleInfo* const info_;
