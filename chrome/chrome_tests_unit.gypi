@@ -2489,6 +2489,7 @@
         }],
         ['OS=="mac"', {
           'sources': [
+            'browser/media_galleries/fileapi/iphoto_file_util_unittest.cc',
             'utility/media_galleries/iphoto_library_parser_unittest.cc',
           ],
         }],

@@ -34,16 +34,16 @@ class IPhotoDataProvider : public iapps::IAppsDataProvider {
   virtual void DoParseLibrary(const base::FilePath& library_path,
                               const ReadyCallback& ready_callback) OVERRIDE;
 
-  std::vector<std::string> GetAlbumNames() const;
-  std::map<std::string, base::FilePath> GetAlbumContents(
+  virtual std::vector<std::string> GetAlbumNames() const;
+  virtual std::map<std::string, base::FilePath> GetAlbumContents(
       const std::string& album) const;
-  base::FilePath GetPhotoLocationInAlbum(const std::string& album,
-                                         const std::string& filename) const;
+  virtual base::FilePath GetPhotoLocationInAlbum(
+      const std::string& album,
+      const std::string& filename) const;
 
  private:
-
   typedef base::hash_map<std::string, base::FilePath> FileIndex;
-  // Map from album name to a map of filename to ID.
+  // Map from album name to a map of filename to path.
   typedef base::hash_map<std::string, FileIndex> DirIndex;
 
   void OnLibraryParsed(const ReadyCallback& ready_callback,
