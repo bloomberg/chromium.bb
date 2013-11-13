@@ -49,6 +49,8 @@ static const std::string VideoCodecToAndroidMimeType(const VideoCodec& codec) {
       return "video/avc";
     case kCodecVP8:
       return "video/x-vnd.on2.vp8";
+    case kCodecVP9:
+      return "video/x-vnd.on2.vp9";
     default:
       return std::string();
   }
@@ -62,6 +64,8 @@ static const std::string CodecTypeToAndroidMimeType(const std::string& codec) {
     return "audio/mp4a-latm";
   if (codec == "vp8" || codec == "vp8.0")
     return "video/x-vnd.on2.vp8";
+  if (codec == "vp9" || codec  == "vp9.0")
+    return "video/x-vnd.on2.vp9";
   if (codec == "vorbis")
     return "audio/vorbis";
   return std::string();

@@ -13,6 +13,10 @@
 #include "media/mp3/mp3_stream_parser.h"
 #include "media/webm/webm_stream_parser.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"
+#endif
+
 #if defined(USE_PROPRIETARY_CODECS)
 #if defined(ENABLE_MPEG2TS_STREAM_PARSER)
 #include "media/mp2t/mp2t_stream_parser.h"
@@ -66,10 +70,8 @@ struct SupportedTypeInfo {
 
 static const CodecInfo kVP8CodecInfo = { "vp8", CodecInfo::VIDEO, NULL,
                                          CodecInfo::HISTOGRAM_VP8 };
-#if !defined(OS_ANDROID)
 static const CodecInfo kVP9CodecInfo = { "vp9", CodecInfo::VIDEO, NULL,
                                          CodecInfo::HISTOGRAM_VP9 };
-#endif
 static const CodecInfo kVorbisCodecInfo = { "vorbis", CodecInfo::AUDIO, NULL,
                                             CodecInfo::HISTOGRAM_VORBIS };
 static const CodecInfo kOpusCodecInfo = { "opus", CodecInfo::AUDIO, NULL,
@@ -77,11 +79,7 @@ static const CodecInfo kOpusCodecInfo = { "opus", CodecInfo::AUDIO, NULL,
 
 static const CodecInfo* kVideoWebMCodecs[] = {
   &kVP8CodecInfo,
-#if !defined(OS_ANDROID)
-  // TODO(wonsik): crbug.com/285016 query Android platform for codec
-  // capabilities.
   &kVP9CodecInfo,
-#endif
   &kVorbisCodecInfo,
   &kOpusCodecInfo,
   NULL
@@ -271,6 +269,13 @@ static bool VerifyCodec(
         audio_codecs->push_back(codec_info->tag);
       return true;
     case CodecInfo::VIDEO:
+#if defined(OS_ANDROID)
+      // VP9 is only supported on KitKat+ (API Level 19).
+      if (codec_info->tag == CodecInfo::HISTOGRAM_VP9 &&
+          base::android::BuildInfo::GetInstance()->sdk_int() < 19) {
+        return false;
+      }
+#endif
       if (video_codecs)
         video_codecs->push_back(codec_info->tag);
       return true;
