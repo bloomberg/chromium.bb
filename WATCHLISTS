@@ -434,7 +434,8 @@
                   '|chrome/browser/ui/views/panels'
     },
     'pepper_api': {
-      'filepath': 'ppapi/c/',
+      'filepath': 'ppapi/api'\
+                  '|ppapi/c',
     },
     'perf': {
       'filepath': 'tools/perf' \
@@ -778,7 +779,9 @@
                'dcheng@chromium.org', 'jianli@chromium.org'],
     'pepper_api': ['piman+watch@chromium.org',
                    'ihf+watch@chromium.org', 'yzshen+watch@chromium.org',
-                   'yusukes+watch@chromium.org', 'raymes+watch@chromium.org'],
+                   'yusukes+watch@chromium.org', 'raymes+watch@chromium.org',
+                   'noelallen@chromium.org', 'binji@chromium.org',
+                   'nfullagar@chromium.org', 'teravest+watch@chromium.org'],
     'perf': ['chrome-speed-team+watch@google.com'],
     'plugin': ['jam@chromium.org',
                'stuartmorgan+watch@chromium.org'],
