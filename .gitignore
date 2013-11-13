@@ -35,6 +35,7 @@
 .pydevproject
 # Settings directory for eclipse
 /.settings
+.checkstyle
 cscope.*
 Session.vim
 tags
