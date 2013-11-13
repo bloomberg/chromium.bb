@@ -1,0 +1,15 @@
+Chrome Early Loading Framework (aka ChromeELF)
+
+chrome_elf.dll is shipped in Chrome's version directory to ease updates,
+and is loaded early in chrome.exe's lifetime. This is done by turning the
+version directory into a private assembly which refers to chrome_elf.dll
+(http://msdn.microsoft.com/library/aa374224.aspx).
+
+In an ideal world, this would be done by embedding an application config in
+chrome.exe that would refer to the proper version directory via a
+probing\privatePath attribute (http://msdn.microsoft.com/library/aa374182.aspx).
+This would allow us to refer to dlls in the version directory without having to
+make the version directory itself into an assembly. It would also avoid naming
+conflicts (as the WinSxS dir and GAC both take precedence over private
+assemblies when searching for dlls). Unfortunately, the probing\privatePath
+attribute is only supported for Windows 7 and later.

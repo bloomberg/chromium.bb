@@ -470,6 +470,7 @@
             '../base/base.gyp:base',
             '../breakpad/breakpad.gyp:breakpad_handler',
             '../breakpad/breakpad.gyp:breakpad_sender',
+            '../chrome_elf/chrome_elf.gyp:chrome_elf',
             '../components/components.gyp:breakpad_component',
             '../sandbox/sandbox.gyp:sandbox',
             'app/policy/cloud_policy_codegen.gyp:policy',
@@ -498,6 +499,7 @@
             'VCManifestTool': {
               'AdditionalManifestFiles': [
                 '$(ProjectDir)\\app\\chrome.exe.manifest',
+                '<(SHARED_INTERMEDIATE_DIR)/chrome_elf/version_assembly.manifest',
               ],
             },
           },
@@ -513,6 +515,18 @@
               'action': ['cp', '-f', '<@(_inputs)', '<@(_outputs)'],
               'message': 'Copy first run complete sentinel file',
               'msvs_cygwin_shell': 1,
+            },
+            {
+              'action_name': 'chrome_exe_manifest',
+              'includes': [
+                  '../chrome_elf/chrome_exe_manifest_action.gypi',
+              ],
+            },
+            {
+              'action_name': 'version_assembly_manifest',
+              'includes': [
+                  '../chrome_elf/version_assembly_manifest_action.gypi',
+              ],
             },
           ],
         }, {  # 'OS!="win"

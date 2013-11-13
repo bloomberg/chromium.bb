@@ -19,6 +19,7 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome_elf/chrome_elf_main.h"
 #include "components/breakpad/app/breakpad_client.h"
 #include "components/breakpad/app/breakpad_win.h"
 #include "content/public/app/startup_helper_win.h"
@@ -118,6 +119,10 @@ int APIENTRY wWinMain(HINSTANCE instance, HINSTANCE prev, wchar_t*, int) {
 
   if (AttemptFastNotify(*CommandLine::ForCurrentProcess()))
     return 0;
+
+  // The purpose of this call is to force the addition of an entry in the IAT
+  // for chrome_elf.dll to force a load time dependency.
+  InitChromeElf();
 
   MetroDriver metro_driver;
   if (metro_driver.in_metro_mode())

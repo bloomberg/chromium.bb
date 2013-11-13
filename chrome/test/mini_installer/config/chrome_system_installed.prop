@@ -3,9 +3,13 @@
     "$PROGRAM_FILES\\$CHROME_DIR\\Application\\chrome.exe": {"exists": true},
     "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$MINI_INSTALLER_FILE_VERSION\\chrome.dll":
         {"exists": true},
+    "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$MINI_INSTALLER_FILE_VERSION\\chrome_elf.dll":
+        {"exists": true},
     "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$MINI_INSTALLER_FILE_VERSION\\Installer\\chrome.7z":
         {"exists": true},
     "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$MINI_INSTALLER_FILE_VERSION\\Installer\\setup.exe":
+        {"exists": true},
+    "$PROGRAM_FILES\\$CHROME_DIR\\Application\\$MINI_INSTALLER_FILE_VERSION\\$MINI_INSTALLER_FILE_VERSION.manifest":
         {"exists": true}
   },
   "RegistryEntries": {

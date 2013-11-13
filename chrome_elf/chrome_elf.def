@@ -1,0 +1,4 @@
+LIBRARY  "chrome_elf.dll"
+
+EXPORTS
+  InitChromeElf
