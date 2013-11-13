@@ -81,6 +81,8 @@ void SetContentCommandLineFlags(int max_render_process_count,
   parsed_command_line->AppendSwitch(
       cc::switches::kDisableCompositedAntialiasing);
 
+  parsed_command_line->AppendSwitch(switches::kUIPrioritizeInGpuProcess);
+
   if (!plugin_descriptor.empty()) {
     parsed_command_line->AppendSwitchNative(
       switches::kRegisterPepperPlugins, plugin_descriptor);

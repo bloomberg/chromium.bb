@@ -41,6 +41,7 @@ class ImageTransportFactoryAndroid {
 
   virtual blink::WebGraphicsContext3D* GetContext3D() = 0;
   virtual GLHelper* GetGLHelper() = 0;
+  virtual uint32 GetChannelID() = 0;
 
   static void AddObserver(ImageTransportFactoryAndroidObserver* observer);
   static void RemoveObserver(ImageTransportFactoryAndroidObserver* observer);

@@ -977,7 +977,13 @@ gfx::Rect RenderWidgetHostViewAndroid::GetBoundsInRootWindow() {
 }
 
 gfx::GLSurfaceHandle RenderWidgetHostViewAndroid::GetCompositingSurface() {
-  return gfx::GLSurfaceHandle(gfx::kNullPluginWindow, gfx::NATIVE_TRANSPORT);
+  gfx::GLSurfaceHandle handle =
+      gfx::GLSurfaceHandle(gfx::kNullPluginWindow, gfx::NATIVE_TRANSPORT);
+  if (CompositorImpl::IsInitialized()) {
+    handle.parent_client_id =
+        ImageTransportFactoryAndroid::GetInstance()->GetChannelID();
+  }
+  return handle;
 }
 
 void RenderWidgetHostViewAndroid::ProcessAckedTouchEvent(

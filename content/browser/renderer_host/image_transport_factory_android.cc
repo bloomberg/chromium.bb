@@ -47,6 +47,9 @@ class CmdBufferImageTransportFactory : public ImageTransportFactoryAndroid {
     return context_.get();
   }
   virtual GLHelper* GetGLHelper() OVERRIDE;
+  virtual uint32 GetChannelID() OVERRIDE {
+    return context_->GetChannelID();
+  }
 
  private:
   scoped_ptr<WebGraphicsContext3DCommandBufferImpl> context_;
