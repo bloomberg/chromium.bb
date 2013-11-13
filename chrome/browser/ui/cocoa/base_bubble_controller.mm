@@ -40,6 +40,7 @@
     parentWindow_ = parentWindow;
     anchor_ = anchoredAt;
     shouldOpenAsKeyWindow_ = YES;
+    shouldCloseOnResignKey_ = YES;
 
     // Watch to see if the parent window closes, and if so, close this one.
     NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
