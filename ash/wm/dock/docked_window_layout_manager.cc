@@ -591,11 +591,13 @@ void DockedWindowLayoutManager::OnWindowVisibilityChanging(
     aura::Window* window, bool visible) {
   if (IsPopupOrTransient(window))
     return;
-  int animation_type = WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE;
+  int animation_type = views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT;
   if (visible) {
-    animation_type = views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_DEFAULT;
+    animation_type = views::corewm::WINDOW_VISIBILITY_ANIMATION_TYPE_DROP;
     views::corewm::SetWindowVisibilityAnimationDuration(
         window, base::TimeDelta::FromMilliseconds(kFadeDurationMs));
+  } else if (wm::GetWindowState(window)->IsMinimized()) {
+    animation_type = WINDOW_VISIBILITY_ANIMATION_TYPE_MINIMIZE;
   }
   views::corewm::SetWindowVisibilityAnimationType(window, animation_type);
 }
