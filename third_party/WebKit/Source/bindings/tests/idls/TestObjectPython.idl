@@ -52,7 +52,7 @@ interface TestObjectPython {
     attribute unsigned long unsignedLongAttribute;
     attribute unsigned long long unsignedLongLongAttribute;
     attribute unsigned short unsignedShortAttribute;
-    // Special names (start with acronym)
+    // Names that with an acronym
     attribute long cssAttribute;
     attribute long imeAttribute;
     attribute long svgAttribute;
@@ -61,7 +61,7 @@ interface TestObjectPython {
     attribute NodeFilter nodeFilterAttribute;
     attribute SerializedScriptValue serializedScriptValueAttribute;
     attribute any anyAttribute;
-    // Special type conversions
+    // Custom type conversions
     attribute Promise promiseAttribute;
     // DOM Node types
     attribute Document documentAttribute;
@@ -97,7 +97,7 @@ interface TestObjectPython {
     // Constructors
     // attribute attribute TestSubObjConstructor TestSubObj;
     attribute TestObjectAConstructor testObjectAConstructorAttribute;
-    // Special types
+    // Exceptional type
     attribute EventHandler eventHandlerAttribute;
 
     // Extended attributes
@@ -140,13 +140,13 @@ interface TestObjectPython {
     [RaisesException] attribute long raisesExceptionLongAttribute;
     [Reflect] attribute TestInterface reflectTestInterfaceAttribute;
     [Reflect=reflectedNameAttribute] attribute TestInterface reflectReflectedNameAttributeTestAttribute;
-    // [Reflect] special types: special getters, special setters, or range
-    // checking for unsigned
+    // [Reflect] exceptional types: exceptional getters, exceptional setters,
+    // or range checking for unsigned
     [Reflect] attribute boolean reflectBooleanAttribute;
     [Reflect] attribute long reflectLongAttribute;
     [Reflect] attribute unsigned short reflectUnsignedShortAttribute;
     [Reflect] attribute unsigned long reflectUnsignedLongAttribute;
-    // [Reflect] special names
+    // [Reflect] exceptional names
     [Reflect] attribute DOMString id;
     [Reflect] attribute DOMString name;
     [Reflect] attribute DOMString class;
@@ -206,7 +206,7 @@ interface TestObjectPython {
     TestInterfaceEmpty testInterfaceEmptyMethod();
     void voidMethodTestInterfaceEmptyArg(TestInterfaceEmpty testInterfaceEmptyArg);
     void voidMethodLongArgTestInterfaceEmptyArg(long longArg, TestInterfaceEmpty testInterfaceEmptyArg);
-    // Special type conversions
+    // Custom type conversions
     CompareHow compareHowMethod();
     MediaQueryListListener mediaQueryListListenerMethod();
     any anyMethod();
@@ -250,7 +250,7 @@ interface TestObjectPython {
     // Enumerations
     TestEnum testEnumMethod();
     void voidMethodTestEnumArg(TestEnum testEnumTypeArg);
-    // Special types
+    // Exceptional types
     Dictionary dictionaryMethod();
     NodeFilter nodeFilterMethod();
     Promise promiseMethod();
@@ -271,13 +271,13 @@ interface TestObjectPython {
     DOMString stringMethodOptionalLongArg(optional long optionalLongArg);
     TestInterfaceEmpty testInterfaceEmptyMethodOptionalLongArg(optional long optionalLongArg);
     long longMethodOptionalLongArg(optional long optionalLongArg);
-    // Optional arguments: special case
-    void voidMethodOptionalDictionaryArg(optional Dictionary optionalDictionaryArg);
-
     void voidMethodLongArgOptionalLongArg(long longArg, optional long optionalLongArg);
     void voidMethodLongArgOptionalLongArgOptionalLongArg(long longArg, optional long optionalLongArg1, optional long optionalLongArg2);
     void voidMethodLongArgOptionalTestInterfaceEmptyArg(long longArg, optional TestInterfaceEmpty optionalTestInterfaceEmpty);
     void voidMethodTestInterfaceEmptyArgOptionalLongArg(TestInterfaceEmpty optionalTestInterfaceEmpty, optional long longArg);
+    // Optional arguments: exceptional case
+    void voidMethodOptionalDictionaryArg(optional Dictionary optionalDictionaryArg);
+
     // Variadic operations
     void voidMethodVariadicStringArg(DOMString... variadicStringArgs);
     void voidMethodStringArgVariadicStringArg(DOMString stringArg, DOMString... variadicStringArgs);
@@ -305,6 +305,14 @@ interface TestObjectPython {
 
     static void overloadedStaticMethod(long longArg);
     static void overloadedStaticMethod(long longArg1, long longArg2);
+
+    // Exceptional methods for EventListener
+    void addEventListener(DOMString type,
+                          EventListener listener,
+                          optional boolean useCapture);
+    void removeEventListener(DOMString type,
+                             EventListener listener,
+                             optional boolean useCapture);
 
     // Extended attributes for arguments
     // [Clamp]

@@ -307,6 +307,10 @@ INCLUDES_FOR_TYPE = {
     'any': set(['bindings/v8/ScriptValue.h']),
     'EventHandler': set(['bindings/v8/V8AbstractEventListener.h',
                          'bindings/v8/V8EventListenerList.h']),
+    'EventListener': set(['bindings/v8/BindingSecurity.h',
+                          'bindings/v8/ExceptionState.h',
+                          'bindings/v8/V8EventListenerList.h',
+                          'core/frame/DOMWindow.h']),
     'Promise': set(['bindings/v8/ScriptPromise.h']),
     'SerializedScriptValue': set(['bindings/v8/SerializedScriptValue.h']),
 }

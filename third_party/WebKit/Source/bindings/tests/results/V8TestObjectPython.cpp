@@ -80,6 +80,7 @@
 #include "core/dom/ContextFeatures.h"
 #include "core/dom/Document.h"
 #include "core/dom/custom/CustomElementCallbackDispatcher.h"
+#include "core/frame/DOMWindow.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/ScriptArguments.h"
 #include "platform/TraceEvent.h"
@@ -4557,24 +4558,6 @@ static void longMethodOptionalLongArgMethodCallback(const v8::FunctionCallbackIn
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void voidMethodOptionalDictionaryArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(Dictionary, optionalDictionaryArg, Dictionary(info[0], info.GetIsolate()));
-    if (!optionalDictionaryArg.isUndefinedOrNull() && !optionalDictionaryArg.isObject()) {
-        throwTypeError(ExceptionMessages::failedToExecute("voidMethodOptionalDictionaryArg", "TestObjectPython", "parameter 1 ('optionalDictionaryArg') is not an object."), info.GetIsolate());
-        return;
-    }
-    imp->voidMethodOptionalDictionaryArg(optionalDictionaryArg);
-}
-
-static void voidMethodOptionalDictionaryArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestObjectPythonV8Internal::voidMethodOptionalDictionaryArgMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
-}
-
 static void voidMethodLongArgOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (UNLIKELY(info.Length() < 1)) {
@@ -4669,6 +4652,24 @@ static void voidMethodTestInterfaceEmptyArgOptionalLongArgMethodCallback(const v
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestObjectPythonV8Internal::voidMethodTestInterfaceEmptyArgOptionalLongArgMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void voidMethodOptionalDictionaryArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
+    V8TRYCATCH_VOID(Dictionary, optionalDictionaryArg, Dictionary(info[0], info.GetIsolate()));
+    if (!optionalDictionaryArg.isUndefinedOrNull() && !optionalDictionaryArg.isObject()) {
+        throwTypeError(ExceptionMessages::failedToExecute("voidMethodOptionalDictionaryArg", "TestObjectPython", "parameter 1 ('optionalDictionaryArg') is not an object."), info.GetIsolate());
+        return;
+    }
+    imp->voidMethodOptionalDictionaryArg(optionalDictionaryArg);
+}
+
+static void voidMethodOptionalDictionaryArgMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::voidMethodOptionalDictionaryArgMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -5188,6 +5189,62 @@ static void overloadedStaticMethodMethodCallback(const v8::FunctionCallbackInfo<
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestObjectPythonV8Internal::overloadedStaticMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void addEventListenerMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    EventTarget* impl = V8TestObjectPython::toNative(info.Holder());
+    if (DOMWindow* window = impl->toDOMWindow()) {
+        ExceptionState es(info.GetIsolate());
+        if (!BindingSecurity::shouldAllowAccessToFrame(window->frame(), es)) {
+            es.throwIfNeeded();
+            return;
+        }
+        if (!window->document())
+            return;
+    }
+    RefPtr<EventListener> listener = V8EventListenerList::getEventListener(info[1], false, ListenerFindOrCreate);
+    if (listener) {
+        V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, eventName, info[0]);
+        impl->addEventListener(eventName, listener, info[2]->BooleanValue());
+        if (!impl->toNode())
+            createHiddenDependency(info.Holder(), info[1], V8TestObjectPython::eventListenerCacheIndex, info.GetIsolate());
+    }
+}
+
+static void addEventListenerMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::addEventListenerMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void removeEventListenerMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    EventTarget* impl = V8TestObjectPython::toNative(info.Holder());
+    if (DOMWindow* window = impl->toDOMWindow()) {
+        ExceptionState es(info.GetIsolate());
+        if (!BindingSecurity::shouldAllowAccessToFrame(window->frame(), es)) {
+            es.throwIfNeeded();
+            return;
+        }
+        if (!window->document())
+            return;
+    }
+    RefPtr<EventListener> listener = V8EventListenerList::getEventListener(info[1], false, ListenerFindOnly);
+    if (listener) {
+        V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, eventName, info[0]);
+        impl->removeEventListener(eventName, listener.get(), info[2]->BooleanValue());
+        if (!impl->toNode())
+            removeHiddenDependency(info.Holder(), info[1], V8TestObjectPython::eventListenerCacheIndex, info.GetIsolate());
+    }
+}
+
+static void removeEventListenerMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjectPythonV8Internal::removeEventListenerMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -6197,11 +6254,11 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectPythonMethods[]
     {"stringMethodOptionalLongArg", TestObjectPythonV8Internal::stringMethodOptionalLongArgMethodCallback, 0, 0},
     {"testInterfaceEmptyMethodOptionalLongArg", TestObjectPythonV8Internal::testInterfaceEmptyMethodOptionalLongArgMethodCallback, 0, 0},
     {"longMethodOptionalLongArg", TestObjectPythonV8Internal::longMethodOptionalLongArgMethodCallback, 0, 0},
-    {"voidMethodOptionalDictionaryArg", TestObjectPythonV8Internal::voidMethodOptionalDictionaryArgMethodCallback, 0, 0},
     {"voidMethodLongArgOptionalLongArg", TestObjectPythonV8Internal::voidMethodLongArgOptionalLongArgMethodCallback, 0, 1},
     {"voidMethodLongArgOptionalLongArgOptionalLongArg", TestObjectPythonV8Internal::voidMethodLongArgOptionalLongArgOptionalLongArgMethodCallback, 0, 1},
     {"voidMethodLongArgOptionalTestInterfaceEmptyArg", TestObjectPythonV8Internal::voidMethodLongArgOptionalTestInterfaceEmptyArgMethodCallback, 0, 1},
     {"voidMethodTestInterfaceEmptyArgOptionalLongArg", TestObjectPythonV8Internal::voidMethodTestInterfaceEmptyArgOptionalLongArgMethodCallback, 0, 1},
+    {"voidMethodOptionalDictionaryArg", TestObjectPythonV8Internal::voidMethodOptionalDictionaryArgMethodCallback, 0, 0},
     {"voidMethodVariadicStringArg", TestObjectPythonV8Internal::voidMethodVariadicStringArgMethodCallback, 0, 1},
     {"voidMethodStringArgVariadicStringArg", TestObjectPythonV8Internal::voidMethodStringArgVariadicStringArgMethodCallback, 0, 2},
     {"overloadedMethodA", TestObjectPythonV8Internal::overloadedMethodAMethodCallback, 0, 1},
@@ -6212,6 +6269,8 @@ static const V8DOMConfiguration::MethodConfiguration V8TestObjectPythonMethods[]
     {"overloadedMethodF", TestObjectPythonV8Internal::overloadedMethodFMethodCallback, 0, 1},
     {"overloadedMethodG", TestObjectPythonV8Internal::overloadedMethodGMethodCallback, 0, 0},
     {"overloadedPerWorldBindingsMethod", TestObjectPythonV8Internal::overloadedPerWorldBindingsMethodMethodCallback, TestObjectPythonV8Internal::overloadedPerWorldBindingsMethodMethodCallbackForMainWorld, 0},
+    {"addEventListener", TestObjectPythonV8Internal::addEventListenerMethodCallback, 0, 2},
+    {"removeEventListener", TestObjectPythonV8Internal::removeEventListenerMethodCallback, 0, 2},
     {"voidMethodClampUnsignedShortArg", TestObjectPythonV8Internal::voidMethodClampUnsignedShortArgMethodCallback, 0, 1},
     {"voidMethodClampUnsignedLongArg", TestObjectPythonV8Internal::voidMethodClampUnsignedLongArgMethodCallback, 0, 1},
     {"voidMethodDefaultUndefinedLongArg", TestObjectPythonV8Internal::voidMethodDefaultUndefinedLongArgMethodCallback, 0, 0},

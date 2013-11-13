@@ -3,6 +3,9 @@
 {% filter conditional(method.conditional_string) %}
 static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
+    {% if method.name in ['addEventListener', 'removeEventListener'] %}
+    {{add_remove_event_listener_method(method.name) | indent}}
+    {% else %}
     {% if method.number_of_required_arguments %}
     if (UNLIKELY(info.Length() < {{method.number_of_required_arguments}})) {
         throwTypeError(ExceptionMessages::failedToExecute("{{method.name}}", "{{interface_name}}", ExceptionMessages::notEnoughArguments({{method.number_of_required_arguments}}, info.Length())), info.GetIsolate());
@@ -85,8 +88,37 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     {% endif %}
     {% endfor %}{# arguments #}
     {{cpp_method_call(method, method.v8_set_return_value, method.cpp_value) | indent}}
+    {% endif %}{# addEventListener, removeEventListener #}
 }
 {% endfilter %}
+{% endmacro %}
+
+
+{######################################}
+{% macro add_remove_event_listener_method(method_name) %}
+{# Set template values for addEventListener vs. removeEventListener #}
+{% set listener_lookup_type, listener, hidden_dependency_action =
+    ('ListenerFindOrCreate', 'listener', 'createHiddenDependency')
+    if method_name == 'addEventListener' else
+    ('ListenerFindOnly', 'listener.get()', 'removeHiddenDependency')
+%}
+EventTarget* impl = {{v8_class_name}}::toNative(info.Holder());
+if (DOMWindow* window = impl->toDOMWindow()) {
+    ExceptionState es(info.GetIsolate());
+    if (!BindingSecurity::shouldAllowAccessToFrame(window->frame(), es)) {
+        es.throwIfNeeded();
+        return;
+    }
+    if (!window->document())
+        return;
+}
+RefPtr<EventListener> listener = V8EventListenerList::getEventListener(info[1], false, {{listener_lookup_type}});
+if (listener) {
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, eventName, info[0]);
+    impl->{{method_name}}(eventName, {{listener}}, info[2]->BooleanValue());
+    if (!impl->toNode())
+        {{hidden_dependency_action}}(info.Holder(), info[1], {{v8_class_name}}::eventListenerCacheIndex, info.GetIsolate());
+}
 {% endmacro %}
 
 

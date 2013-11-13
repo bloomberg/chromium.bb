@@ -3105,15 +3105,13 @@ static void addEventListenerMethod(const v8::FunctionCallbackInfo<v8::Value>& in
             es.throwIfNeeded();
             return;
         }
-
         if (!window->document())
             return;
     }
-
     RefPtr<EventListener> listener = V8EventListenerList::getEventListener(info[1], false, ListenerFindOrCreate);
     if (listener) {
-        V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, stringResource, info[0]);
-        impl->addEventListener(stringResource, listener, info[2]->BooleanValue());
+        V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, eventName, info[0]);
+        impl->addEventListener(eventName, listener, info[2]->BooleanValue());
         if (!impl->toNode())
             createHiddenDependency(info.Holder(), info[1], V8TestObject::eventListenerCacheIndex, info.GetIsolate());
     }
@@ -3135,15 +3133,13 @@ static void removeEventListenerMethod(const v8::FunctionCallbackInfo<v8::Value>&
             es.throwIfNeeded();
             return;
         }
-
         if (!window->document())
             return;
     }
-
     RefPtr<EventListener> listener = V8EventListenerList::getEventListener(info[1], false, ListenerFindOnly);
     if (listener) {
-        V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, stringResource, info[0]);
-        impl->removeEventListener(stringResource, listener.get(), info[2]->BooleanValue());
+        V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, eventName, info[0]);
+        impl->removeEventListener(eventName, listener.get(), info[2]->BooleanValue());
         if (!impl->toNode())
             removeHiddenDependency(info.Holder(), info[1], V8TestObject::eventListenerCacheIndex, info.GetIsolate());
     }

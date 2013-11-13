@@ -2320,15 +2320,13 @@ sub GenerateFunction
             es.throwIfNeeded();
             return;
         }
-
         if (!window->document())
             return;
     }
-
     RefPtr<EventListener> listener = V8EventListenerList::getEventListener(info[1], false, ListenerFind${lookupType});
     if (listener) {
-        V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, stringResource, info[0]);
-        impl->${implName}(stringResource, listener${passRefPtrHandling}, info[2]->BooleanValue());
+        V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithNullCheck>, eventName, info[0]);
+        impl->${implName}(eventName, listener${passRefPtrHandling}, info[2]->BooleanValue());
         if (!impl->toNode())
             ${hiddenDependencyAction}HiddenDependency(info.Holder(), info[1], ${v8ClassName}::eventListenerCacheIndex, info.GetIsolate());
     }
