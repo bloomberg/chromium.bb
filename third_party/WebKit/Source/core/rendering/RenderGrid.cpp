@@ -885,7 +885,7 @@ void RenderGrid::layoutGridItems()
     for (size_t i = 0; i < sizingData.rowTracks.size(); ++i)
         setLogicalHeight(logicalHeight() + sizingData.rowTracks[i].m_usedBreadth);
 
-    // FIXME: We should handle min / max logical height.
+    // Min / max logical height is handled by the call to updateLogicalHeight in layoutBlock.
 
     setLogicalHeight(logicalHeight() + borderAndPaddingLogicalHeight());
 }
