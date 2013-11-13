@@ -31,7 +31,6 @@
 #include "RuntimeEnabledFeatures.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/dom/NodeRenderStyle.h"
-#include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/ScopedEventQueue.h"
 #include "core/fileapi/FileList.h"
@@ -425,16 +424,6 @@ String InputType::validationMessage() const
 bool InputType::shouldSubmitImplicitly(Event* event)
 {
     return event->isKeyboardEvent() && event->type() == EventTypeNames::keypress && toKeyboardEvent(event)->charCode() == '\r';
-}
-
-void InputType::createShadowSubtree()
-{
-}
-
-void InputType::destroyShadowSubtree()
-{
-    if (ShadowRoot* root = element().userAgentShadowRoot())
-        root->removeChildren();
 }
 
 Decimal InputType::parseToNumber(const String&, const Decimal& defaultValue) const

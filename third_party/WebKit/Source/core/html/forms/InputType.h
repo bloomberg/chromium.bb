@@ -165,11 +165,6 @@ public:
     virtual void accessKeyAction(bool sendMouseEvents);
     virtual bool canBeSuccessfulSubmitButton();
 
-    // Shadow tree handling
-
-    virtual void createShadowSubtree();
-    virtual void destroyShadowSubtree();
-
     // Miscellaneous functions
 
     virtual bool rendererIsNeeded();

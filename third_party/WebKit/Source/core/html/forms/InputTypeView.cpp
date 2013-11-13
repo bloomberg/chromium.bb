@@ -28,6 +28,7 @@
 #include "config.h"
 #include "core/html/forms/InputTypeView.h"
 
+#include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/rendering/RenderObject.h"
@@ -121,6 +122,16 @@ void InputTypeView::handleBlurEvent()
 
 void InputTypeView::attach()
 {
+}
+
+void InputTypeView::createShadowSubtree()
+{
+}
+
+void InputTypeView::destroyShadowSubtree()
+{
+    if (ShadowRoot* root = element().userAgentShadowRoot())
+        root->removeChildren();
 }
 
 void InputTypeView::altAttributeChanged()

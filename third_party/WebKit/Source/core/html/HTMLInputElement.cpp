@@ -142,13 +142,14 @@ HTMLImageLoader* HTMLInputElement::imageLoader()
 
 void HTMLInputElement::didAddUserAgentShadowRoot(ShadowRoot&)
 {
-    m_inputType->createShadowSubtree();
+    m_inputTypeView->createShadowSubtree();
 }
 
 void HTMLInputElement::didAddShadowRoot(ShadowRoot& root)
 {
     if (!root.isOldestAuthorShadowRoot())
         return;
+    m_inputTypeView->destroyShadowSubtree();
     m_inputTypeView = InputTypeView::create(*this);
 }
 
@@ -412,7 +413,7 @@ void HTMLInputElement::updateType()
     bool didStoreValue = m_inputType->storesValueSeparateFromAttribute();
     bool didRespectHeightAndWidth = m_inputType->shouldRespectHeightAndWidthAttributes();
 
-    m_inputType->destroyShadowSubtree();
+    m_inputTypeView->destroyShadowSubtree();
     lazyReattachIfAttached();
 
     m_inputType = newType.release();
@@ -420,7 +421,7 @@ void HTMLInputElement::updateType()
         m_inputTypeView = InputTypeView::create(*this);
     else
         m_inputTypeView = m_inputType;
-    m_inputType->createShadowSubtree();
+    m_inputTypeView->createShadowSubtree();
 
     bool hasTouchEventHandler = m_inputTypeView->hasTouchEventHandler();
     if (hasTouchEventHandler != m_hasTouchEventHandler) {
@@ -729,9 +730,9 @@ void HTMLInputElement::parseAttribute(const QualifiedName& name, const AtomicStr
             // styles depending on whether the speech button is visible or
             // not. So we reset the whole thing and recreate to get the right
             // styles and layout.
-            m_inputType->destroyShadowSubtree();
+            m_inputTypeView->destroyShadowSubtree();
             lazyReattachIfAttached();
-            m_inputType->createShadowSubtree();
+            m_inputTypeView->createShadowSubtree();
             setFormControlValueMatchesRenderer(false);
         }
         UseCounter::count(document(), UseCounter::PrefixedSpeechAttribute);

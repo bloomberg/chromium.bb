@@ -95,6 +95,8 @@ public:
     virtual RenderObject* createRenderer(RenderStyle*) const;
     virtual PassRefPtr<RenderStyle> customStyleForRenderer(PassRefPtr<RenderStyle>);
     virtual void attach();
+    virtual void createShadowSubtree();
+    virtual void destroyShadowSubtree();
     virtual void minOrMaxAttributeChanged();
     virtual void stepAttributeChanged();
     virtual void altAttributeChanged();
