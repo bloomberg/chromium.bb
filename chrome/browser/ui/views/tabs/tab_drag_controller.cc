@@ -1812,6 +1812,7 @@ void TabDragController::EndDragImpl(EndDragType type) {
         CompleteDrag();
     }
   } else if (drag_data_.size() > 1) {
+    initial_selection_model_.Clear();
     RevertDrag();
   }  // else case the only tab we were dragging was deleted. Nothing to do.
 
