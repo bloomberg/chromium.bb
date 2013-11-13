@@ -169,19 +169,12 @@ bool GestureEventFilter::ShouldForwardForCoalescing(
       break;
   }
   EnqueueEvent(gesture_event);
-
-  // Ensure that if the added event ignores its ack, it is fired and
-  // removed from |coalesced_gesture_events_|.
-  SendEventsIgnoringAck();
   return ShouldHandleEventNow();
 }
 
 void GestureEventFilter::ProcessGestureAck(InputEventAckState ack_result,
                                            WebInputEvent::Type type,
                                            const ui::LatencyInfo& latency) {
-  if (ShouldIgnoreAckForGestureType(type))
-    return;
-
   if (coalesced_gesture_events_.empty()) {
     DLOG(ERROR) << "Received unexpected ACK for event type " << type;
     return;
@@ -204,10 +197,6 @@ void GestureEventFilter::ProcessGestureAck(InputEventAckState ack_result,
       touchpad_tap_suppression_controller_->GestureFlingCancelAck(processed);
   }
   coalesced_gesture_events_.pop_front();
-
-  // If the event which was just ACKed was blocking events ignoring ack, fire
-  // those events now.
-  SendEventsIgnoringAck();
 
   if (ignore_next_ack_) {
     ignore_next_ack_ = false;
@@ -367,26 +356,6 @@ gfx::Transform GestureEventFilter::GetTransformForEvent(
     gesture_transform.Translate(gesture_event.event.x, gesture_event.event.y);
   }
   return gesture_transform;
-}
-
-void GestureEventFilter::SendEventsIgnoringAck() {
-  GestureEventWithLatencyInfo gesture_event;
-  while (!coalesced_gesture_events_.empty()) {
-    gesture_event = coalesced_gesture_events_.front();
-    if (!GestureEventFilter::ShouldIgnoreAckForGestureType(
-            gesture_event.event.type)) {
-      return;
-    }
-    coalesced_gesture_events_.pop_front();
-    client_->SendGestureEventImmediately(gesture_event);
-  }
-}
-
-bool GestureEventFilter::ShouldIgnoreAckForGestureType(
-    WebInputEvent::Type type) {
-  return type == WebInputEvent::GestureTapDown ||
-      type == WebInputEvent::GestureShowPress ||
-      type == WebInputEvent::GestureTapCancel;
 }
 
 void GestureEventFilter::EnqueueEvent(

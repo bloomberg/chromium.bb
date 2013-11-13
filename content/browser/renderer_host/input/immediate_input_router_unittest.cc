@@ -558,4 +558,127 @@ TEST_F(ImmediateInputRouterTest, UnhandledWheelEvent) {
   EXPECT_EQ(ack_handler_->acked_wheel_event().deltaY, -5);
 }
 
+// Test that GestureShowPress, GestureTapDown and GestureTapCancel events don't
+// wait for ACKs.
+TEST_F(ImmediateInputRouterTest, GestureTypesIgnoringAck) {
+  // The show press, tap down and tap cancel events will be acked immediately,
+  // since they ignore ack disposition.
+  SimulateGestureEvent(WebInputEvent::GestureShowPress,
+                       WebGestureEvent::Touchscreen);
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
+
+  SimulateGestureEvent(WebInputEvent::GestureTapDown,
+                       WebGestureEvent::Touchscreen);
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
+
+  SimulateGestureEvent(WebInputEvent::GestureTapCancel,
+                       WebGestureEvent::Touchscreen);
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(1U, ack_handler_->GetAndResetAckCount());
+
+  // Interleave a few events that do and do not ignore acks, ensuring that
+  // ack-ignoring events aren't dispatched until all prior events which observe
+  // their ack disposition have been dispatched.
+  SimulateGestureEvent(WebInputEvent::GesturePinchBegin,
+                       WebGestureEvent::Touchpad);
+  ASSERT_EQ(1U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
+
+  SimulateGestureEvent(WebInputEvent::GestureTapDown,
+                       WebGestureEvent::Touchscreen);
+  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
+
+  SimulateGestureEvent(WebInputEvent::GesturePinchUpdate,
+                       WebGestureEvent::Touchpad);
+  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
+
+  SimulateGestureEvent(WebInputEvent::GestureShowPress,
+                       WebGestureEvent::Touchscreen);
+  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
+
+  SimulateGestureEvent(WebInputEvent::GesturePinchEnd,
+                       WebGestureEvent::Touchpad);
+  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
+
+  SimulateGestureEvent(WebInputEvent::GestureTapCancel,
+                       WebGestureEvent::Touchscreen);
+  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
+
+  // Now ack each event. Ack-ignoring events should not be dispatched until all
+  // prior events which observe ack disposition have been fired, at which
+  // point they should be sent immediately.
+  SendInputEventACK(WebInputEvent::GesturePinchBegin,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(2U, ack_handler_->GetAndResetAckCount());
+
+  // For events which ignore ack disposition, non-synthetic acks are ignored.
+  SendInputEventACK(WebInputEvent::GestureTapDown,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
+
+  SendInputEventACK(WebInputEvent::GesturePinchUpdate,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(2U, ack_handler_->GetAndResetAckCount());
+
+  // For events which ignore ack disposition, non-synthetic acks are ignored.
+  SendInputEventACK(WebInputEvent::GestureShowPress,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
+
+  SendInputEventACK(WebInputEvent::GesturePinchEnd,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(2U, ack_handler_->GetAndResetAckCount());
+
+  // For events which ignore ack disposition, non-synthetic acks are ignored.
+  SendInputEventACK(WebInputEvent::GestureTapCancel,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
+}
+
+// Test that GestureShowPress events don't get out of order due to
+// ignoring their acks.
+TEST_F(ImmediateInputRouterTest, GestureShowPressIsInOrder) {
+  SimulateGestureEvent(WebInputEvent::GestureTap,
+                       WebGestureEvent::Touchscreen);
+
+  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
+
+  SimulateGestureEvent(WebInputEvent::GestureShowPress,
+                       WebGestureEvent::Touchscreen);
+
+  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+  // The ShowPress, though it ignores ack, is still stuck in the queue
+  // behind the Tap which requires an ack.
+  EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
+
+  SimulateGestureEvent(WebInputEvent::GestureShowPress,
+                       WebGestureEvent::Touchscreen);
+
+  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
+  // ShowPress has entered the queue.
+  EXPECT_EQ(0U, ack_handler_->GetAndResetAckCount());
+
+  SendInputEventACK(WebInputEvent::GestureTap,
+                    INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+
+  // Now that the Tap has been ACKed, the ShowPress events should receive
+  // synthetics acks, and fire immediately.
+  EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
+  EXPECT_EQ(3U, ack_handler_->GetAndResetAckCount());
+}
+
 }  // namespace content

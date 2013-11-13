@@ -209,6 +209,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
     static final int INPUT_EVENT_ACK_STATE_CONSUMED = 1;
     static final int INPUT_EVENT_ACK_STATE_NOT_CONSUMED = 2;
     static final int INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS = 3;
+    static final int INPUT_EVENT_ACK_STATE_IGNORED = 4;
 
     // Return values of sendPendingEventToNative();
     static final int EVENT_FORWARDED_TO_NATIVE = 0;
@@ -1121,6 +1122,7 @@ class ContentViewGestureHandler implements LongPressDelegate {
                     assert(false);
                     break;
                 case INPUT_EVENT_ACK_STATE_CONSUMED:
+                case INPUT_EVENT_ACK_STATE_IGNORED:
                     mJavaScriptIsConsumingGesture = true;
                     mZoomManager.passTouchEventThrough(ackedEvent);
                     trySendPendingEventsToNative();
