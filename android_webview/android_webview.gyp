@@ -155,6 +155,7 @@
         'browser/in_process_view_renderer.cc',
         'browser/in_process_view_renderer.h',
         'browser/input_stream.h',
+        'browser/intercepted_request_data.cc',
         'browser/intercepted_request_data.h',
         'browser/jni_dependency_factory.h',
         'browser/gl_view_renderer_manager.cc',
