@@ -771,7 +771,7 @@ static void setHasDirAutoFlagRecursively(Node* firstNode, bool flag, Node* lastN
         if (elementAffectsDirectionality(node)) {
             if (node == lastNode)
                 return;
-            node = NodeTraversal::nextSkippingChildren(node, firstNode);
+            node = NodeTraversal::nextSkippingChildren(*node, firstNode);
             continue;
         }
         node->setSelfOrAncestorHasDirAutoAttribute(flag);
@@ -829,7 +829,7 @@ TextDirection HTMLElement::directionality(Node** strongDirectionalityTextNode) c
         // Skip bdi, script, style and text form controls.
         if (equalIgnoringCase(node->nodeName(), "bdi") || node->hasTagName(scriptTag) || node->hasTagName(styleTag)
             || (node->isElementNode() && toElement(node)->isTextFormControl())) {
-            node = NodeTraversal::nextSkippingChildren(node, this);
+            node = NodeTraversal::nextSkippingChildren(*node, this);
             continue;
         }
 
@@ -837,7 +837,7 @@ TextDirection HTMLElement::directionality(Node** strongDirectionalityTextNode) c
         if (node->isElementNode()) {
             AtomicString dirAttributeValue = toElement(node)->fastGetAttribute(dirAttr);
             if (isValidDirAttribute(dirAttributeValue)) {
-                node = NodeTraversal::nextSkippingChildren(node, this);
+                node = NodeTraversal::nextSkippingChildren(*node, this);
                 continue;
             }
         }
@@ -898,8 +898,8 @@ void HTMLElement::calculateAndAdjustDirectionality()
 void HTMLElement::adjustDirectionalityIfNeededAfterChildrenChanged(Node* beforeChange, int childCountDelta)
 {
     if (document().renderer() && childCountDelta < 0) {
-        Node* node = beforeChange ? NodeTraversal::nextSkippingChildren(beforeChange) : 0;
-        for (int counter = 0; node && counter < childCountDelta; counter++, node = NodeTraversal::nextSkippingChildren(node)) {
+        Node* node = beforeChange ? NodeTraversal::nextSkippingChildren(*beforeChange) : 0;
+        for (int counter = 0; node && counter < childCountDelta; counter++, node = NodeTraversal::nextSkippingChildren(*node)) {
             if (elementAffectsDirectionality(node))
                 continue;
 
@@ -910,9 +910,9 @@ void HTMLElement::adjustDirectionalityIfNeededAfterChildrenChanged(Node* beforeC
     if (!selfOrAncestorHasDirAutoAttribute())
         return;
 
-    Node* oldMarkedNode = beforeChange ? NodeTraversal::nextSkippingChildren(beforeChange) : 0;
+    Node* oldMarkedNode = beforeChange ? NodeTraversal::nextSkippingChildren(*beforeChange) : 0;
     while (oldMarkedNode && elementAffectsDirectionality(oldMarkedNode))
-        oldMarkedNode = NodeTraversal::nextSkippingChildren(oldMarkedNode, this);
+        oldMarkedNode = NodeTraversal::nextSkippingChildren(*oldMarkedNode, this);
     if (oldMarkedNode)
         setHasDirAutoFlagRecursively(oldMarkedNode, false);
 

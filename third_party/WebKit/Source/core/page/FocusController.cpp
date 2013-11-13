@@ -779,7 +779,7 @@ void FocusController::findFocusCandidateInContainer(Node* container, const Layou
     current.visibleNode = focusedElement;
 
     for (; element; element = (element->isFrameOwnerElement() || canScrollInDirection(element, direction))
-        ? ElementTraversal::nextSkippingChildren(element, container)
+        ? ElementTraversal::nextSkippingChildren(*element, container)
         : ElementTraversal::next(*element, container)) {
         if (element == focusedElement)
             continue;

@@ -747,36 +747,36 @@ static bool shouldEmitNewlineForNode(Node* node, bool emitsOriginalText)
     return emitsOriginalText || !(node->isInShadowTree() && node->shadowHost()->hasTagName(inputTag));
 }
 
-static bool shouldEmitNewlinesBeforeAndAfterNode(Node* node)
+static bool shouldEmitNewlinesBeforeAndAfterNode(Node& node)
 {
     // Block flow (versus inline flow) is represented by having
     // a newline both before and after the element.
-    RenderObject* r = node->renderer();
+    RenderObject* r = node.renderer();
     if (!r) {
-        return (node->hasTagName(blockquoteTag)
-            || node->hasTagName(ddTag)
-            || node->hasTagName(divTag)
-            || node->hasTagName(dlTag)
-            || node->hasTagName(dtTag)
-            || node->hasTagName(h1Tag)
-            || node->hasTagName(h2Tag)
-            || node->hasTagName(h3Tag)
-            || node->hasTagName(h4Tag)
-            || node->hasTagName(h5Tag)
-            || node->hasTagName(h6Tag)
-            || node->hasTagName(hrTag)
-            || node->hasTagName(liTag)
-            || node->hasTagName(listingTag)
-            || node->hasTagName(olTag)
-            || node->hasTagName(pTag)
-            || node->hasTagName(preTag)
-            || node->hasTagName(trTag)
-            || node->hasTagName(ulTag));
+        return (node.hasTagName(blockquoteTag)
+            || node.hasTagName(ddTag)
+            || node.hasTagName(divTag)
+            || node.hasTagName(dlTag)
+            || node.hasTagName(dtTag)
+            || node.hasTagName(h1Tag)
+            || node.hasTagName(h2Tag)
+            || node.hasTagName(h3Tag)
+            || node.hasTagName(h4Tag)
+            || node.hasTagName(h5Tag)
+            || node.hasTagName(h6Tag)
+            || node.hasTagName(hrTag)
+            || node.hasTagName(liTag)
+            || node.hasTagName(listingTag)
+            || node.hasTagName(olTag)
+            || node.hasTagName(pTag)
+            || node.hasTagName(preTag)
+            || node.hasTagName(trTag)
+            || node.hasTagName(ulTag));
     }
 
     // Need to make an exception for table cells, because they are blocks, but we
     // want them tab-delimited rather than having newlines before and after.
-    if (isTableCell(node))
+    if (isTableCell(&node))
         return false;
 
     // Need to make an exception for table row elements, because they are neither
@@ -791,21 +791,22 @@ static bool shouldEmitNewlinesBeforeAndAfterNode(Node* node)
         && !r->isFloatingOrOutOfFlowPositioned() && !r->isBody() && !r->isRubyText();
 }
 
-static bool shouldEmitNewlineAfterNode(Node* node)
+static bool shouldEmitNewlineAfterNode(Node& node)
 {
     // FIXME: It should be better but slower to create a VisiblePosition here.
     if (!shouldEmitNewlinesBeforeAndAfterNode(node))
         return false;
     // Check if this is the very last renderer in the document.
     // If so, then we should not emit a newline.
-    while ((node = NodeTraversal::nextSkippingChildren(node))) {
-        if (node->renderer())
+    Node* next = &node;
+    while ((next = NodeTraversal::nextSkippingChildren(*next))) {
+        if (next->renderer())
             return true;
     }
     return false;
 }
 
-static bool shouldEmitNewlineBeforeNode(Node* node)
+static bool shouldEmitNewlineBeforeNode(Node& node)
 {
     return shouldEmitNewlinesBeforeAndAfterNode(node);
 }
@@ -936,7 +937,7 @@ void TextIterator::representNodeOffsetZero()
     if (shouldEmitTabBeforeNode(m_node)) {
         if (shouldRepresentNodeOffsetZero())
             emitCharacter('\t', m_node->parentNode(), m_node, 0, 0);
-    } else if (shouldEmitNewlineBeforeNode(m_node)) {
+    } else if (shouldEmitNewlineBeforeNode(*m_node)) {
         if (shouldRepresentNodeOffsetZero())
             emitCharacter('\n', m_node->parentNode(), m_node, 0, 0);
     } else if (shouldEmitSpaceBeforeAndAfterNode(m_node)) {
@@ -974,7 +975,7 @@ void TextIterator::exitNode()
     // the logic in _web_attributedStringFromRange match. We'll get that for free when we switch to use
     // TextIterator in _web_attributedStringFromRange.
     // See <rdar://problem/5428427> for an example of how this mismatch will cause problems.
-    if (m_lastTextNode && shouldEmitNewlineAfterNode(m_node)) {
+    if (m_lastTextNode && shouldEmitNewlineAfterNode(*m_node)) {
         // use extra newline to represent margin bottom, as needed
         bool addNewline = shouldEmitExtraNewlineForNode(m_node);
 
@@ -1313,7 +1314,7 @@ bool SimplifiedBackwardsTextIterator::handleNonTextNode()
 {
     // We can use a linefeed in place of a tab because this simple iterator is only used to
     // find boundaries, not actual content. A linefeed breaks words, sentences, and paragraphs.
-    if (shouldEmitNewlineForNode(m_node, m_emitsOriginalText) || shouldEmitNewlineAfterNode(m_node) || shouldEmitTabBeforeNode(m_node)) {
+    if (shouldEmitNewlineForNode(m_node, m_emitsOriginalText) || shouldEmitNewlineAfterNode(*m_node) || shouldEmitTabBeforeNode(m_node)) {
         unsigned index = m_node->nodeIndex();
         // The start of this emitted range is wrong. Ensuring correctness would require
         // VisiblePositions and so would be slow. previousBoundary expects this.
@@ -1324,7 +1325,7 @@ bool SimplifiedBackwardsTextIterator::handleNonTextNode()
 
 void SimplifiedBackwardsTextIterator::exitNode()
 {
-    if (shouldEmitNewlineForNode(m_node, m_emitsOriginalText) || shouldEmitNewlineBeforeNode(m_node) || shouldEmitTabBeforeNode(m_node)) {
+    if (shouldEmitNewlineForNode(m_node, m_emitsOriginalText) || shouldEmitNewlineBeforeNode(*m_node) || shouldEmitTabBeforeNode(m_node)) {
         // The start of this emitted range is wrong. Ensuring correctness would require
         // VisiblePositions and so would be slow. previousBoundary expects this.
         emitCharacter('\n', m_node, 0, 0);

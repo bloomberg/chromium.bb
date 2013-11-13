@@ -363,7 +363,7 @@ Node* StyledMarkupAccumulator::traverseNodesForSerialization(Node* startNode, No
             continue;
 
         if (!n->renderer() && !enclosingNodeWithTag(firstPositionInOrBeforeNode(n), selectTag)) {
-            next = NodeTraversal::nextSkippingChildren(n);
+            next = NodeTraversal::nextSkippingChildren(*n);
             // Don't skip over pastEnd.
             if (pastEnd && pastEnd->isDescendantOf(n))
                 next = pastEnd;
@@ -678,7 +678,7 @@ static void trimFragment(DocumentFragment* fragment, Node* nodeBeforeContext, No
             next = NodeTraversal::next(*node);
             continue;
         }
-        next = NodeTraversal::nextSkippingChildren(node.get());
+        next = NodeTraversal::nextSkippingChildren(*node);
         ASSERT(!node->contains(nodeAfterContext));
         node->parentNode()->removeChild(node.get(), ASSERT_NO_EXCEPTION);
         if (nodeBeforeContext == node)
@@ -687,7 +687,7 @@ static void trimFragment(DocumentFragment* fragment, Node* nodeBeforeContext, No
 
     ASSERT(nodeAfterContext->parentNode());
     for (RefPtr<Node> node = nodeAfterContext; node; node = next) {
-        next = NodeTraversal::nextSkippingChildren(node.get());
+        next = NodeTraversal::nextSkippingChildren(*node);
         node->parentNode()->removeChild(node.get(), ASSERT_NO_EXCEPTION);
     }
 }

@@ -315,7 +315,7 @@ void ReplacementFragment::removeInterchangeNodes(Node* container)
     while (node) {
         RefPtr<Node> next = NodeTraversal::next(*node);
         if (isInterchangeConvertedSpaceSpan(node)) {
-            next = NodeTraversal::nextSkippingChildren(node);
+            next = NodeTraversal::nextSkippingChildren(*node);
             removeNodePreservingChildren(node);
         }
         node = next.get();
@@ -335,7 +335,7 @@ inline void ReplaceSelectionCommand::InsertedNodes::willRemoveNodePreservingChil
     if (m_firstNodeInserted == node)
         m_firstNodeInserted = NodeTraversal::next(node);
     if (m_lastNodeInserted == node)
-        m_lastNodeInserted = node.lastChild() ? node.lastChild() : NodeTraversal::nextSkippingChildren(&node);
+        m_lastNodeInserted = node.lastChild() ? node.lastChild() : NodeTraversal::nextSkippingChildren(node);
 }
 
 inline void ReplaceSelectionCommand::InsertedNodes::willRemoveNode(Node& node)
@@ -343,10 +343,11 @@ inline void ReplaceSelectionCommand::InsertedNodes::willRemoveNode(Node& node)
     if (m_firstNodeInserted == node && m_lastNodeInserted == node) {
         m_firstNodeInserted = 0;
         m_lastNodeInserted = 0;
-    } else if (m_firstNodeInserted == node)
-        m_firstNodeInserted = NodeTraversal::nextSkippingChildren(m_firstNodeInserted.get());
-    else if (m_lastNodeInserted == node)
+    } else if (m_firstNodeInserted == node) {
+        m_firstNodeInserted = NodeTraversal::nextSkippingChildren(*m_firstNodeInserted);
+    } else if (m_lastNodeInserted == node) {
         m_lastNodeInserted = NodeTraversal::previousSkippingChildren(*m_lastNodeInserted);
+    }
 }
 
 inline void ReplaceSelectionCommand::InsertedNodes::didReplaceNode(Node& node, Node& newNode)
@@ -703,7 +704,7 @@ static void removeHeadContents(ReplacementFragment& fragment)
             || node->hasTagName(metaTag)
             || node->hasTagName(styleTag)
             || isHTMLTitleElement(node)) {
-            next = NodeTraversal::nextSkippingChildren(node);
+            next = NodeTraversal::nextSkippingChildren(*node);
             fragment.removeNode(node);
         } else {
             next = NodeTraversal::next(*node);

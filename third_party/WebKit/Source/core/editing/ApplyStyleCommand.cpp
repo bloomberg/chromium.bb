@@ -351,7 +351,7 @@ void ApplyStyleCommand::applyRelativeFontStyleChange(EditingStyle* style)
     // an ancestor of the start node), we gather nodes up to the next sibling of the end node
     Node *beyondEnd;
     if (start.deprecatedNode()->isDescendantOf(end.deprecatedNode()))
-        beyondEnd = NodeTraversal::nextSkippingChildren(end.deprecatedNode());
+        beyondEnd = NodeTraversal::nextSkippingChildren(*end.deprecatedNode());
     else
         beyondEnd = NodeTraversal::next(*end.deprecatedNode());
 
@@ -683,7 +683,7 @@ void ApplyStyleCommand::fixRangeAndApplyInlineStyle(EditingStyle* style, const P
 
     Node* pastEndNode = end.deprecatedNode();
     if (end.deprecatedEditingOffset() >= caretMaxOffset(end.deprecatedNode()))
-        pastEndNode = NodeTraversal::nextSkippingChildren(end.deprecatedNode());
+        pastEndNode = NodeTraversal::nextSkippingChildren(*end.deprecatedNode());
 
     // FIXME: Callers should perform this operation on a Range that includes the br
     // if they want style applied to the empty line.
@@ -703,13 +703,13 @@ void ApplyStyleCommand::fixRangeAndApplyInlineStyle(EditingStyle* style, const P
     applyInlineStyleToNodeRange(style, startNode, pastEndNode);
 }
 
-static bool containsNonEditableRegion(Node* node)
+static bool containsNonEditableRegion(Node& node)
 {
-    if (!node->rendererIsEditable())
+    if (!node.rendererIsEditable())
         return true;
 
     Node* sibling = NodeTraversal::nextSkippingChildren(node);
-    for (Node* descendent = node->firstChild(); descendent && descendent != sibling; descendent = NodeTraversal::next(*descendent)) {
+    for (Node* descendent = node.firstChild(); descendent && descendent != sibling; descendent = NodeTraversal::next(*descendent)) {
         if (!descendent->rendererIsEditable())
             return true;
     }
@@ -762,7 +762,7 @@ void ApplyStyleCommand::applyInlineStyleToNodeRange(EditingStyle* style, PassRef
                 break;
             // Add to this element's inline style and skip over its contents.
             HTMLElement* element = toHTMLElement(node);
-            next = NodeTraversal::nextSkippingChildren(node.get());
+            next = NodeTraversal::nextSkippingChildren(*node);
             if (!style->style())
                 continue;
             RefPtr<MutableStylePropertySet> inlineStyle = copyStyleOrCreateEmpty(element->inlineStyle());
@@ -775,10 +775,10 @@ void ApplyStyleCommand::applyInlineStyleToNodeRange(EditingStyle* style, PassRef
             continue;
 
         if (node->childNodeCount()) {
-            if (node->contains(pastEndNode.get()) || containsNonEditableRegion(node.get()) || !node->parentNode()->rendererIsEditable())
+            if (node->contains(pastEndNode.get()) || containsNonEditableRegion(*node) || !node->parentNode()->rendererIsEditable())
                 continue;
             if (editingIgnoresContent(node.get())) {
-                next = NodeTraversal::nextSkippingChildren(node.get());
+                next = NodeTraversal::nextSkippingChildren(*node);
                 continue;
             }
         }
@@ -787,14 +787,15 @@ void ApplyStyleCommand::applyInlineStyleToNodeRange(EditingStyle* style, PassRef
         Node* runEnd = node.get();
         Node* sibling = node->nextSibling();
         while (sibling && sibling != pastEndNode && !sibling->contains(pastEndNode.get())
-               && (!isBlock(sibling) || sibling->hasTagName(brTag))
-               && !containsNonEditableRegion(sibling)) {
+            && (!isBlock(sibling) || sibling->hasTagName(brTag))
+            && !containsNonEditableRegion(*sibling)) {
             runEnd = sibling;
             sibling = runEnd->nextSibling();
         }
-        next = NodeTraversal::nextSkippingChildren(runEnd);
+        ASSERT(runEnd);
+        next = NodeTraversal::nextSkippingChildren(*runEnd);
 
-        Node* pastEndNode = NodeTraversal::nextSkippingChildren(runEnd);
+        Node* pastEndNode = NodeTraversal::nextSkippingChildren(*runEnd);
         if (!shouldApplyInlineStyleToRun(style, runStart, pastEndNode))
             continue;
 
@@ -849,7 +850,7 @@ void ApplyStyleCommand::removeConflictingInlineStyleFromRun(EditingStyle* style,
     for (RefPtr<Node> node = next; node && node->inDocument() && node != pastEndNode; node = next) {
         if (editingIgnoresContent(node.get())) {
             ASSERT(!node->contains(pastEndNode.get()));
-            next = NodeTraversal::nextSkippingChildren(node.get());
+            next = NodeTraversal::nextSkippingChildren(*node);
         } else {
             next = NodeTraversal::next(*node);
         }
@@ -1109,7 +1110,7 @@ void ApplyStyleCommand::removeInlineStyle(EditingStyle* style, const Position &s
         RefPtr<Node> next;
         if (editingIgnoresContent(node.get())) {
             ASSERT(node == end.deprecatedNode() || !node->contains(end.deprecatedNode()));
-            next = NodeTraversal::nextSkippingChildren(node.get());
+            next = NodeTraversal::nextSkippingChildren(*node);
         } else {
             next = NodeTraversal::next(*node);
         }

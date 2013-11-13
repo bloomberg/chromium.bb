@@ -64,8 +64,8 @@ Node* previousIncludingPseudo(const Node&, const Node* stayWithin = 0);
 Node* nextIncludingPseudo(const Node*, const Node* stayWithin = 0);
 Node* nextIncludingPseudoSkippingChildren(const Node*, const Node* stayWithin = 0);
 
-Node* nextAncestorSibling(const Node*);
-Node* nextAncestorSibling(const Node*, const Node* stayWithin);
+Node* nextAncestorSibling(const Node&);
+Node* nextAncestorSibling(const Node&, const Node* stayWithin);
 
 template <class NodeType>
 inline Node* traverseNextTemplate(NodeType& current)
@@ -74,7 +74,7 @@ inline Node* traverseNextTemplate(NodeType& current)
         return current.firstChild();
     if (current.nextSibling())
         return current.nextSibling();
-    return nextAncestorSibling(&current);
+    return nextAncestorSibling(current);
 }
 inline Node* next(const Node& current) { return traverseNextTemplate(current); }
 inline Node* next(const ContainerNode& current) { return traverseNextTemplate(current); }
@@ -88,32 +88,32 @@ inline Node* traverseNextTemplate(NodeType& current, const Node* stayWithin)
         return 0;
     if (current.nextSibling())
         return current.nextSibling();
-    return nextAncestorSibling(&current, stayWithin);
+    return nextAncestorSibling(current, stayWithin);
 }
 inline Node* next(const Node& current, const Node* stayWithin) { return traverseNextTemplate(current, stayWithin); }
 inline Node* next(const ContainerNode& current, const Node* stayWithin) { return traverseNextTemplate(current, stayWithin); }
 
 template <class NodeType>
-inline Node* traverseNextSkippingChildrenTemplate(NodeType* current)
+inline Node* traverseNextSkippingChildrenTemplate(NodeType& current)
 {
-    if (current->nextSibling())
-        return current->nextSibling();
+    if (current.nextSibling())
+        return current.nextSibling();
     return nextAncestorSibling(current);
 }
-inline Node* nextSkippingChildren(const Node* current) { return traverseNextSkippingChildrenTemplate(current); }
-inline Node* nextSkippingChildren(const ContainerNode* current) { return traverseNextSkippingChildrenTemplate(current); }
+inline Node* nextSkippingChildren(const Node& current) { return traverseNextSkippingChildrenTemplate(current); }
+inline Node* nextSkippingChildren(const ContainerNode& current) { return traverseNextSkippingChildrenTemplate(current); }
 
 template <class NodeType>
-inline Node* traverseNextSkippingChildrenTemplate(NodeType* current, const Node* stayWithin)
+inline Node* traverseNextSkippingChildrenTemplate(NodeType& current, const Node* stayWithin)
 {
     if (current == stayWithin)
         return 0;
-    if (current->nextSibling())
-        return current->nextSibling();
+    if (current.nextSibling())
+        return current.nextSibling();
     return nextAncestorSibling(current, stayWithin);
 }
-inline Node* nextSkippingChildren(const Node* current, const Node* stayWithin) { return traverseNextSkippingChildrenTemplate(current, stayWithin); }
-inline Node* nextSkippingChildren(const ContainerNode* current, const Node* stayWithin) { return traverseNextSkippingChildrenTemplate(current, stayWithin); }
+inline Node* nextSkippingChildren(const Node& current, const Node* stayWithin) { return traverseNextSkippingChildrenTemplate(current, stayWithin); }
+inline Node* nextSkippingChildren(const ContainerNode& current, const Node* stayWithin) { return traverseNextSkippingChildrenTemplate(current, stayWithin); }
 
 }
 

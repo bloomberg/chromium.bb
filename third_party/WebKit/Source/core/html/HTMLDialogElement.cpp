@@ -52,7 +52,7 @@ static void runAutofocus(HTMLDialogElement* dialog)
             }
         }
         if (node->hasTagName(dialogTag))
-            next = NodeTraversal::nextSkippingChildren(node, dialog);
+            next = NodeTraversal::nextSkippingChildren(*node, dialog);
         else
             next = NodeTraversal::next(*node, dialog);
     }

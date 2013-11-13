@@ -74,25 +74,25 @@ Node* nextIncludingPseudoSkippingChildren(const Node* current, const Node* stayW
     return 0;
 }
 
-Node* nextAncestorSibling(const Node* current)
+Node* nextAncestorSibling(const Node& current)
 {
-    ASSERT(!current->nextSibling());
-    for (current = current->parentNode(); current; current = current->parentNode()) {
-        if (current->nextSibling())
-            return current->nextSibling();
+    ASSERT(!current.nextSibling());
+    for (Node* parent = current.parentNode(); parent; parent = parent->parentNode()) {
+        if (parent->nextSibling())
+            return parent->nextSibling();
     }
     return 0;
 }
 
-Node* nextAncestorSibling(const Node* current, const Node* stayWithin)
+Node* nextAncestorSibling(const Node& current, const Node* stayWithin)
 {
-    ASSERT(!current->nextSibling());
+    ASSERT(!current.nextSibling());
     ASSERT(current != stayWithin);
-    for (current = current->parentNode(); current; current = current->parentNode()) {
-        if (current == stayWithin)
+    for (Node* parent = current.parentNode(); parent; parent = parent->parentNode()) {
+        if (parent == stayWithin)
             return 0;
-        if (current->nextSibling())
-            return current->nextSibling();
+        if (parent->nextSibling())
+            return parent->nextSibling();
     }
     return 0;
 }

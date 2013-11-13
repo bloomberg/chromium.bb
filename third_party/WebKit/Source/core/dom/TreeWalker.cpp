@@ -267,7 +267,7 @@ Children:
         if (acceptNodeResult == NodeFilter::FILTER_REJECT)
             break;
     }
-    while (Node* nextSibling = NodeTraversal::nextSkippingChildren(node.get(), root())) {
+    while (Node* nextSibling = NodeTraversal::nextSkippingChildren(*node, root())) {
         node = nextSibling;
         short acceptNodeResult = acceptNode(state, node.get());
         if (state && state->hadException())

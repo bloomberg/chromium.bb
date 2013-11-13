@@ -75,7 +75,7 @@ public:
     {
         Node* current = m_currentElement;
         ASSERT(current);
-        m_currentElement = nextInternal(ElementTraversal::nextSkippingChildren(m_currentElement, m_rootNode));
+        m_currentElement = nextInternal(ElementTraversal::nextSkippingChildren(*m_currentElement, m_rootNode));
         return current;
     }
 

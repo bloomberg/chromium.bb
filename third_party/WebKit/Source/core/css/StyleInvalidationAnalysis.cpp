@@ -220,7 +220,7 @@ void StyleInvalidationAnalysis::invalidateStyle(Document* document)
         if (elementMatchesSelectorScopes(element, m_idScopes, m_classScopes)) {
             element->setNeedsStyleRecalc();
             // The whole subtree is now invalidated, we can skip to the next sibling.
-            element = ElementTraversal::nextSkippingChildren(element);
+            element = ElementTraversal::nextSkippingChildren(*element);
             continue;
         }
         element = ElementTraversal::next(*element);

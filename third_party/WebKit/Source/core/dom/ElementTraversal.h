@@ -43,10 +43,10 @@ Element* next(const ContainerNode&);
 Element* next(const ContainerNode&, const Node* stayWithin);
 
 // Like next, but skips children.
-Element* nextSkippingChildren(const Node*);
-Element* nextSkippingChildren(const Node*, const Node* stayWithin);
-Element* nextSkippingChildren(const ContainerNode*);
-Element* nextSkippingChildren(const ContainerNode*, const Node* stayWithin);
+Element* nextSkippingChildren(const Node&);
+Element* nextSkippingChildren(const Node&, const Node* stayWithin);
+Element* nextSkippingChildren(const ContainerNode&);
+Element* nextSkippingChildren(const ContainerNode&, const Node* stayWithin);
 
 // Pre-order traversal including the pseudo-elements.
 Element* previousIncludingPseudo(const Node&, const Node* stayWithin = 0);
@@ -73,7 +73,7 @@ inline Element* traverseNextElementTemplate(NodeType& current)
 {
     Node* node = NodeTraversal::next(current);
     while (node && !node->isElementNode())
-        node = NodeTraversal::nextSkippingChildren(node);
+        node = NodeTraversal::nextSkippingChildren(*node);
     return toElement(node);
 }
 inline Element* next(const ContainerNode& current) { return traverseNextElementTemplate(current); }
@@ -84,33 +84,33 @@ inline Element* traverseNextElementTemplate(NodeType& current, const Node* stayW
 {
     Node* node = NodeTraversal::next(current, stayWithin);
     while (node && !node->isElementNode())
-        node = NodeTraversal::nextSkippingChildren(node, stayWithin);
+        node = NodeTraversal::nextSkippingChildren(*node, stayWithin);
     return toElement(node);
 }
 inline Element* next(const ContainerNode& current, const Node* stayWithin) { return traverseNextElementTemplate(current, stayWithin); }
 inline Element* next(const Node& current, const Node* stayWithin) { return traverseNextElementTemplate(current, stayWithin); }
 
 template <class NodeType>
-inline Element* traverseNextElementSkippingChildrenTemplate(NodeType* current)
+inline Element* traverseNextElementSkippingChildrenTemplate(NodeType& current)
 {
     Node* node = NodeTraversal::nextSkippingChildren(current);
     while (node && !node->isElementNode())
-        node = NodeTraversal::nextSkippingChildren(node);
+        node = NodeTraversal::nextSkippingChildren(*node);
     return toElement(node);
 }
-inline Element* nextSkippingChildren(const ContainerNode* current) { return traverseNextElementSkippingChildrenTemplate(current); }
-inline Element* nextSkippingChildren(const Node* current) { return traverseNextElementSkippingChildrenTemplate(current); }
+inline Element* nextSkippingChildren(const ContainerNode& current) { return traverseNextElementSkippingChildrenTemplate(current); }
+inline Element* nextSkippingChildren(const Node& current) { return traverseNextElementSkippingChildrenTemplate(current); }
 
 template <class NodeType>
-inline Element* traverseNextElementSkippingChildrenTemplate(NodeType* current, const Node* stayWithin)
+inline Element* traverseNextElementSkippingChildrenTemplate(NodeType& current, const Node* stayWithin)
 {
     Node* node = NodeTraversal::nextSkippingChildren(current, stayWithin);
     while (node && !node->isElementNode())
-        node = NodeTraversal::nextSkippingChildren(node, stayWithin);
+        node = NodeTraversal::nextSkippingChildren(*node, stayWithin);
     return toElement(node);
 }
-inline Element* nextSkippingChildren(const ContainerNode* current, const Node* stayWithin) { return traverseNextElementSkippingChildrenTemplate(current, stayWithin); }
-inline Element* nextSkippingChildren(const Node* current, const Node* stayWithin) { return traverseNextElementSkippingChildrenTemplate(current, stayWithin); }
+inline Element* nextSkippingChildren(const ContainerNode& current, const Node* stayWithin) { return traverseNextElementSkippingChildrenTemplate(current, stayWithin); }
+inline Element* nextSkippingChildren(const Node& current, const Node* stayWithin) { return traverseNextElementSkippingChildrenTemplate(current, stayWithin); }
 
 inline Element* previousIncludingPseudo(const Node& current, const Node* stayWithin)
 {
