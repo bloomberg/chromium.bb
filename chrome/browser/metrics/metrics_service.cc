@@ -183,6 +183,7 @@
 #include "chrome/browser/metrics/metrics_reporting_scheduler.h"
 #include "chrome/browser/metrics/time_ticks_experiment_win.h"
 #include "chrome/browser/metrics/tracking_synchronizer.h"
+#include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/browser/net/http_pipelining_compatibility_client.h"
 #include "chrome/browser/net/network_stats.h"
 #include "chrome/browser/omnibox/omnibox_log.h"
@@ -200,6 +201,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "components/variations/entropy_provider.h"
+#include "components/variations/metrics_util.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/histogram_fetcher.h"
 #include "content/public/browser/load_notification_details.h"
@@ -336,6 +338,18 @@ void MarkAppCleanShutdownAndCommit() {
 }
 
 }  // namespace
+
+
+SyntheticTrialGroup::SyntheticTrialGroup(uint32 trial,
+                                         uint32 group,
+                                         base::TimeTicks start)
+    : start_time(start) {
+  id.name = trial;
+  id.group = group;
+}
+
+SyntheticTrialGroup::~SyntheticTrialGroup() {
+}
 
 // static
 MetricsService::ShutdownCleanliness MetricsService::clean_shutdown_status_ =
@@ -1207,10 +1221,14 @@ void MetricsService::CloseCurrentLog() {
   MetricsLog* current_log =
       static_cast<MetricsLog*>(log_manager_.current_log());
   DCHECK(current_log);
-  current_log->RecordEnvironmentProto(plugins_, google_update_metrics_);
+  std::vector<chrome_variations::ActiveGroupId> synthetic_trials;
+  GetCurrentSyntheticFieldTrials(&synthetic_trials);
+  current_log->RecordEnvironmentProto(plugins_, google_update_metrics_,
+                                      synthetic_trials);
   PrefService* pref = g_browser_process->local_state();
   current_log->RecordIncrementalStabilityElements(plugins_,
                                                   GetIncrementalUptime(pref));
+
   RecordCurrentHistograms();
 
   log_manager_.FinishCurrentLog();
@@ -1444,7 +1462,10 @@ void MetricsService::PrepareInitialLog() {
   DCHECK(initial_log_.get());
   initial_log_->set_hardware_class(hardware_class_);
   PrefService* pref = g_browser_process->local_state();
+  std::vector<chrome_variations::ActiveGroupId> synthetic_trials;
+  GetCurrentSyntheticFieldTrials(&synthetic_trials);
   initial_log_->RecordEnvironment(plugins_, google_update_metrics_,
+                                  synthetic_trials,
                                   GetIncrementalUptime(pref));
 
   // Histograms only get written to the current log, so make the new log current
@@ -1676,6 +1697,35 @@ bool MetricsService::UmaMetricsProperlyShutdown() {
   CHECK(clean_shutdown_status_ == CLEANLY_SHUTDOWN ||
         clean_shutdown_status_ == NEED_TO_SHUTDOWN);
   return clean_shutdown_status_ == CLEANLY_SHUTDOWN;
+}
+
+void MetricsService::RegisterSyntheticFieldTrial(
+    const SyntheticTrialGroup& trial) {
+  for (size_t i = 0; i < synthetic_trial_groups_.size(); ++i) {
+    if (synthetic_trial_groups_[i].id.name == trial.id.name) {
+      if (synthetic_trial_groups_[i].id.group != trial.id.group) {
+        synthetic_trial_groups_[i].id.group = trial.id.group;
+        synthetic_trial_groups_[i].start_time = trial.start_time;
+      }
+      return;
+    }
+  }
+
+  SyntheticTrialGroup trial_group(
+      trial.id.name, trial.id.group, base::TimeTicks::Now());
+  synthetic_trial_groups_.push_back(trial_group);
+}
+
+void MetricsService::GetCurrentSyntheticFieldTrials(
+    std::vector<chrome_variations::ActiveGroupId>* synthetic_trials) {
+  DCHECK(synthetic_trials);
+  synthetic_trials->clear();
+  const MetricsLog* current_log =
+      static_cast<const MetricsLog*>(log_manager_.current_log());
+  for (size_t i = 0; i < synthetic_trial_groups_.size(); ++i) {
+    if (synthetic_trial_groups_[i].start_time <= current_log->creation_time())
+      synthetic_trials->push_back(synthetic_trial_groups_[i].id);
+  }
 }
 
 void MetricsService::LogCleanShutdown() {
