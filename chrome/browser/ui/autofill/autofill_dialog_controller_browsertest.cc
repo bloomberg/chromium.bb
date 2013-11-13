@@ -321,7 +321,6 @@ class AutofillDialogControllerTest : public InProcessBrowserTest {
             "</script>"
           "</body>"
         "</html>"));
-    content::WaitForLoadStop(contents);
 
     dom_message_queue_.reset(new content::DOMMessageQueue);
 
@@ -768,7 +767,13 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, LongNotifications) {
             controller()->GetTestableView()->GetSize().width());
 }
 
-IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AutocompleteEvent) {
+// http://crbug.com/318526
+#if defined(OS_MACOSX)
+#define MAYBE_AutocompleteEvent DISABLED_AutocompleteEvent
+#else
+#define MAYBE_AutocompleteEvent AutocompleteEvent
+#endif
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, MAYBE_AutocompleteEvent) {
   AutofillDialogControllerImpl* controller =
       SetUpHtmlAndInvoke("<input autocomplete='cc-name'>");
 
@@ -782,8 +787,16 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, AutocompleteEvent) {
   ExpectDomMessage("success");
 }
 
+// http://crbug.com/318526
+#if defined(OS_MACOSX)
+#define MAYBE_AutocompleteErrorEventReasonInvalid \
+    DISABLED_AutocompleteErrorEventReasonInvalid
+#else
+#define MAYBE_AutocompleteErrorEventReasonInvalid \
+    AutocompleteErrorEventReasonInvalid
+#endif
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
-                       AutocompleteErrorEventReasonInvalid) {
+                       MAYBE_AutocompleteErrorEventReasonInvalid) {
   AutofillDialogControllerImpl* controller =
       SetUpHtmlAndInvoke("<input autocomplete='cc-name' pattern='.*zebra.*'>");
 
@@ -801,8 +814,16 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
   ExpectDomMessage("error: invalid");
 }
 
+// http://crbug.com/318526
+#if defined(OS_MACOSX)
+#define MAYBE_AutocompleteErrorEventReasonCancel \
+    DISABLED_AutocompleteErrorEventReasonCancel
+#else
+#define MAYBE_AutocompleteErrorEventReasonCancel \
+    AutocompleteErrorEventReasonCancel
+#endif
 IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
-                       AutocompleteErrorEventReasonCancel) {
+                       MAYBE_AutocompleteErrorEventReasonCancel) {
   SetUpHtmlAndInvoke("<input autocomplete='cc-name'>")->GetTestableView()->
       CancelForTesting();
   ExpectDomMessage("error: cancel");
@@ -1014,9 +1035,16 @@ IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, SimulateSuccessfulSignIn) {
   EXPECT_TRUE(account_chooser_model.WalletIsSelected());
 }
 
+// http://crbug.com/318526
+#if defined(OS_MACOSX)
+#define MAYBE_FillFormIncludesCVC DISABLED_FillFormIncludesCVC
+#else
+#define MAYBE_FillFormIncludesCVC FillFormIncludesCVC
+#endif
 // Verify that filling a form works correctly, including filling the CVC when
 // that is requested separately.
-IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest, FillFormIncludesCVC) {
+IN_PROC_BROWSER_TEST_F(AutofillDialogControllerTest,
+                       MAYBE_FillFormIncludesCVC) {
   AutofillDialogControllerImpl* controller =
       SetUpHtmlAndInvoke("<input autocomplete='cc-csc'>");
 
