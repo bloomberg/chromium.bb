@@ -12,12 +12,6 @@
 
 namespace gpu {
 
-const int kCommandsPerFlushCheck = 100;
-
-#if !defined(OS_ANDROID)
-const double kFlushDelay = 1.0 / (5.0 * 60.0);
-#endif
-
 CommandBufferHelper::CommandBufferHelper(CommandBuffer* command_buffer)
     : command_buffer_(command_buffer),
       ring_buffer_id_(-1),
@@ -196,12 +190,7 @@ void CommandBufferHelper::WaitForToken(int32 token) {
 // around, adding a noops. Thus this function may change the value of put_. The
 // function will return early if an error occurs, in which case the available
 // space may not be available.
-void CommandBufferHelper::WaitForAvailableEntries(int32 count) {
-  AllocateRingBuffer();
-  if (!usable()) {
-    return;
-  }
-  DCHECK(HaveRingBuffer());
+bool CommandBufferHelper::WaitForAvailableEntries(int32 count) {
   DCHECK(count < total_entry_count_);
   if (put_ + count > total_entry_count_) {
     // There's not enough room between the current put and the end of the
@@ -215,7 +204,7 @@ void CommandBufferHelper::WaitForAvailableEntries(int32 count) {
         // Do not loop forever if the flush fails, meaning the command buffer
         // reader has shutdown.
         if (!FlushSync())
-          return;
+          return false;
       }
     }
     // Insert Noops to fill out the buffer.
@@ -234,46 +223,29 @@ void CommandBufferHelper::WaitForAvailableEntries(int32 count) {
       // Do not loop forever if the flush fails, meaning the command buffer
       // reader has shutdown.
       if (!FlushSync())
-        return;
+        return false;
     }
   }
-  // Force a flush if the buffer is getting half full, or even earlier if the
-  // reader is known to be idle.
-  int32 pending =
-      (put_ + total_entry_count_ - last_put_sent_) % total_entry_count_;
-  int32 limit = total_entry_count_ /
-      ((get_offset() == last_put_sent_) ? 16 : 2);
-  if (pending > limit) {
-    Flush();
-  } else if (flush_automatically_ &&
-             (commands_issued_ % kCommandsPerFlushCheck == 0)) {
-#if !defined(OS_ANDROID)
-    // Allow this command buffer to be pre-empted by another if a "reasonable"
-    // amount of work has been done. On highend machines, this reduces the
-    // latency of GPU commands. However, on Android, this can cause the
-    // kernel to thrash between generating GPU commands and executing them.
-    clock_t current_time = clock();
-    if (current_time - last_flush_time_ > kFlushDelay * CLOCKS_PER_SEC)
-      Flush();
-#endif
-  }
+  FlushIfNeeded();
+  return true;
 }
 
 CommandBufferEntry* CommandBufferHelper::GetSpace(uint32 entries) {
+  ++commands_issued_;
+  if (HaveRingBuffer() && usable() && entries <= SpaceAvailableImmediately()) {
+    FlushIfNeeded();
+    return GetSpaceForEntries(entries);
+  }
+
   AllocateRingBuffer();
   if (!usable()) {
     return NULL;
   }
   DCHECK(HaveRingBuffer());
-  ++commands_issued_;
-  WaitForAvailableEntries(entries);
-  CommandBufferEntry* space = &entries_[put_];
-  put_ += entries;
-  DCHECK_LE(put_, total_entry_count_);
-  if (put_ == total_entry_count_) {
-    put_ = 0;
-  }
-  return space;
+  if (!WaitForAvailableEntries(entries))
+    return NULL;
+
+  return GetSpaceForEntries(entries);
 }
 
 }  // namespace gpu
