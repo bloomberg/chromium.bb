@@ -290,9 +290,7 @@ def RemoveThirdPartyLibjingleDirectory():
 
 def _CleanupPreviousGitRuns():
   """Performs necessary cleanup between runs."""
-  if os.name != 'nt':
-    return
-  # On windows, if a previous run of git crashed, bot was reset, etc... we
+  # If a previous run of git crashed, bot was reset, etc... we
   # might end up with leftover index.lock files.
   for (path, dir, files) in os.walk(os.getcwd()):
     for cur_file in files:
