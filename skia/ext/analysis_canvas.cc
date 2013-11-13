@@ -196,6 +196,16 @@ void AnalysisDevice::drawOval(const SkDraw& draw,
   is_transparent_ = false;
 }
 
+void AnalysisDevice::drawRRect(const SkDraw& draw,
+                               const SkRRect& rr,
+                               const SkPaint& paint) {
+  // This should add the SkRRect to an SkPath, and call
+  // drawPath, but since drawPath ignores the SkPath, just
+  // do the same work here.
+  is_solid_color_ = false;
+  is_transparent_ = false;
+}
+
 void AnalysisDevice::drawPath(const SkDraw& draw,
                               const SkPath& path,
                               const SkPaint& paint,

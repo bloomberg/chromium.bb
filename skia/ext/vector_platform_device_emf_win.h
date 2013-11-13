@@ -42,6 +42,8 @@ class VectorPlatformDeviceEmf : public SkBitmapDevice, public PlatformDevice {
                           const SkPaint& paint) OVERRIDE;
   virtual void drawRect(const SkDraw& draw, const SkRect& r,
                         const SkPaint& paint) OVERRIDE;
+  virtual void drawRRect(const SkDraw&, const SkRRect& rr,
+                         const SkPaint& paint) OVERRIDE;
   virtual void drawPath(const SkDraw& draw, const SkPath& path,
                         const SkPaint& paint,
                         const SkMatrix* prePathMatrix = NULL,

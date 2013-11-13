@@ -86,6 +86,9 @@ class SK_API AnalysisDevice : public SkBitmapDevice {
   virtual void drawRect(const SkDraw& draw,
                         const SkRect& rect,
                         const SkPaint& paint) OVERRIDE;
+  virtual void drawRRect(const SkDraw& draw,
+                         const SkRRect& rr,
+                         const SkPaint& paint) OVERRIDE;
   virtual void drawOval(const SkDraw& draw,
                         const SkRect& oval,
                         const SkPaint& paint) OVERRIDE;

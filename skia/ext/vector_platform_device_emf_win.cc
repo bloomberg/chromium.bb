@@ -211,6 +211,13 @@ void VectorPlatformDeviceEmf::drawRect(const SkDraw& draw,
   Cleanup();
 }
 
+void VectorPlatformDeviceEmf::drawRRect(const SkDraw& draw, const SkRRect& rr,
+                                        const SkPaint& paint) {
+  SkPath path;
+  path.addRRect(rr);
+  this->drawPath(draw, path, paint, NULL, true);
+}
+
 void VectorPlatformDeviceEmf::drawPath(const SkDraw& draw,
                                        const SkPath& path,
                                        const SkPaint& paint,
