@@ -77,6 +77,8 @@ enum SpellcheckAttributeState {
     SpellcheckAttributeDefault
 };
 
+typedef Vector<RefPtr<RenderStyle>, 4> PseudoStyleCache;
+
 class Element : public ContainerNode {
 public:
     static PassRefPtr<Element> create(const QualifiedName&, Document*);
@@ -617,7 +619,7 @@ private:
     virtual void formatForDebugger(char* buffer, unsigned length) const;
 #endif
 
-    bool pseudoStyleCacheIsInvalid(const RenderStyle* currentStyle, RenderStyle* newStyle);
+    bool pseudoStyleCacheIsInvalid(const PseudoStyleCache*, RenderStyle* newStyle);
 
     void cancelFocusAppearanceUpdate();
 
