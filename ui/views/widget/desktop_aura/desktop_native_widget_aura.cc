@@ -660,8 +660,11 @@ void DesktopNativeWidgetAura::SetShape(gfx::NativeRegion shape) {
 void DesktopNativeWidgetAura::Close() {
   if (!content_window_)
     return;
-  desktop_root_window_host_->Close();
+
   content_window_->SuppressPaint();
+  content_window_->Hide();
+
+  desktop_root_window_host_->Close();
 }
 
 void DesktopNativeWidgetAura::CloseNow() {

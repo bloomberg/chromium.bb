@@ -157,9 +157,9 @@ DesktopRootWindowHostWin::CreateDragDropClient(
 }
 
 void DesktopRootWindowHostWin::Close() {
+  // TODO(beng): Move this entire branch to DNWA so it can be shared with X11.
   if (should_animate_window_close_) {
     pending_close_ = true;
-    content_window_->Hide();
     const bool is_animating =
         content_window_->layer()->GetAnimator()->IsAnimatingProperty(
             ui::LayerAnimationElement::VISIBILITY);
