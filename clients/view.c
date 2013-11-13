@@ -168,7 +168,7 @@ fullscreen_handler(struct window *window, void *data)
 }
 
 static void
-close_handler(struct window *window, void *data)
+close_handler(void *data)
 {
 	struct view *view = data;
 

@@ -221,7 +221,6 @@ struct surface {
 
 struct window {
 	struct display *display;
-	struct window *parent;
 	struct wl_list window_output_list;
 	char *title;
 	struct rectangle saved_allocation;
@@ -358,6 +357,7 @@ struct window_frame {
 
 struct menu {
 	struct window *window;
+	struct window *parent;
 	struct widget *widget;
 	struct input *input;
 	struct frame *frame;
@@ -2274,8 +2274,7 @@ frame_menu_func(struct window *window,
 	switch (index) {
 	case 0: /* close */
 		if (window->close_handler)
-			window->close_handler(window->parent,
-					      window->user_data);
+			window->close_handler(window->user_data);
 		else
 			display_exit(window->display);
 		break;
@@ -2392,8 +2391,7 @@ frame_handle_status(struct window_frame *frame, struct input *input,
 
 	if (status & FRAME_STATUS_CLOSE) {
 		if (window->close_handler)
-			window->close_handler(window->parent,
-					      window->user_data);
+			window->close_handler(window->user_data);
 		else
 			display_exit(window->display);
 		return;
@@ -2894,8 +2892,7 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
 		   input->modifiers == MOD_ALT_MASK &&
 		   state == WL_KEYBOARD_KEY_STATE_PRESSED) {
 		if (window->close_handler)
-			window->close_handler(window->parent,
-					      window->user_data);
+			window->close_handler(window->user_data);
 		else
 			display_exit(window->display);
 	} else if (window->key_handler) {
@@ -4230,8 +4227,7 @@ surface_create(struct window *window)
 }
 
 static struct window *
-window_create_internal(struct display *display,
-		       struct window *parent, int type)
+window_create_internal(struct display *display, int type)
 {
 	struct window *window;
 	struct surface *surface;
@@ -4239,7 +4235,6 @@ window_create_internal(struct display *display,
 	window = xzalloc(sizeof *window);
 	wl_list_init(&window->subsurface_list);
 	window->display = display;
-	window->parent = parent;
 
 	surface = surface_create(window);
 	window->main_surface = surface;
@@ -4283,13 +4278,13 @@ window_create_internal(struct display *display,
 struct window *
 window_create(struct display *display)
 {
-	return window_create_internal(display, NULL, TYPE_NONE);
+	return window_create_internal(display, TYPE_NONE);
 }
 
 struct window *
 window_create_custom(struct display *display)
 {
-	return window_create_internal(display, NULL, TYPE_CUSTOM);
+	return window_create_internal(display, TYPE_CUSTOM);
 }
 
 struct window *
@@ -4298,8 +4293,7 @@ window_create_transient(struct display *display, struct window *parent,
 {
 	struct window *window;
 
-	window = window_create_internal(parent->display,
-					parent, TYPE_TRANSIENT);
+	window = window_create_internal(parent->display, TYPE_TRANSIENT);
 
 	window->x = x;
 	window->y = y;
@@ -4307,7 +4301,7 @@ window_create_transient(struct display *display, struct window *parent,
 	if (display->shell)
 		wl_shell_surface_set_transient(
 			window->shell_surface,
-			window->parent->main_surface->surface,
+			parent->main_surface->surface,
 			window->x, window->y, flags);
 
 	return window;
@@ -4374,8 +4368,8 @@ menu_button_handler(struct widget *widget,
 	    (menu->release_count > 0 || time - menu->time > 500)) {
 		/* Either relase after press-drag-release or
 		 * click-motion-click. */
-		menu->func(menu->window->parent, input,
-			   menu->current, menu->window->parent->user_data);
+		menu->func(menu->parent, input,
+			   menu->current, menu->parent->user_data);
 		input_ungrab(input);
 		menu_destroy(menu);
 	} else if (state == WL_POINTER_BUTTON_STATE_RELEASED) {
@@ -4437,13 +4431,14 @@ window_show_menu(struct display *display,
 	if (!menu)
 		return;
 
-	window = window_create_internal(parent->display, parent, TYPE_MENU);
+	window = window_create_internal(parent->display, TYPE_MENU);
 	if (!window) {
 		free(menu);
 		return;
 	}
 
 	menu->window = window;
+	menu->parent = parent;
 	menu->widget = window_add_widget(menu->window, menu);
 	window_set_buffer_scale (menu->window, window_get_buffer_scale (parent));
 	window_set_buffer_transform (menu->window, window_get_buffer_transform (parent));
@@ -4477,7 +4472,7 @@ window_show_menu(struct display *display,
 	frame_interior(menu->frame, &ix, &iy, NULL, NULL);
 	wl_shell_surface_set_popup(window->shell_surface, input->seat,
 				   display_get_serial(window->display),
-				   window->parent->main_surface->surface,
+				   parent->main_surface->surface,
 				   window->x - ix, window->y - iy, 0);
 }
 

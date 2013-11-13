@@ -214,7 +214,7 @@ typedef void (*window_drop_handler_t)(struct window *window,
 				      struct input *input,
 				      int32_t x, int32_t y, void *data);
 
-typedef void (*window_close_handler_t)(struct window *window, void *data);
+typedef void (*window_close_handler_t)(void *data);
 typedef void (*window_fullscreen_handler_t)(struct window *window, void *data);
 
 typedef void (*window_output_handler_t)(struct window *window, struct output *output,

@@ -2212,7 +2212,7 @@ fullscreen_handler(struct window *window, void *data)
 }
 
 static void
-close_handler(struct window *window, void *data)
+close_handler(void *data)
 {
 	struct terminal *terminal = data;
 
