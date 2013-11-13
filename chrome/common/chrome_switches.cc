@@ -424,6 +424,13 @@ const char kDisableRestoreSessionState[]    = "disable-restore-session-state";
 const char kDisableScriptedPrintThrottling[] =
     "disable-scripted-print-throttling";
 
+// Disable SPDY/2. This is a temporary testing flag. See
+// http://crbug.com/303957 .
+const char kDisableSpdy2[]                  = "disable-spdy2";
+
+// Disable SPDY/3.1. This is a temporary testing flag.
+const char kDisableSpdy31[]                 = "disable-spdy31";
+
 // Disables syncing browser data to a Google Account.
 const char kDisableSync[]                   = "disable-sync";
 
@@ -739,13 +746,6 @@ const char kEnableStickyKeys[]              = "enable-sticky-keys";
 
 // Disables support of sticky keys.
 const char kDisableStickyKeys[]              = "disable-sticky-keys";
-
-// Enable SPDY/2. This is a temporary testing flag. See
-// http://crbug.com/303957 .
-const char kEnableSpdy2[]                   = "enable-spdy2";
-
-// Disable SPDY/3.1. This is a temporary testing flag.
-const char kDisableSpdy31[]                 = "disable-spdy31";
 
 // Enable SPDY/4 alpha 2. This is a temporary testing flag.
 const char kEnableSpdy4a2[]                 = "enable-spdy4a2";

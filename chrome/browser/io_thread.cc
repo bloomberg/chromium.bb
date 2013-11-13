@@ -733,8 +733,8 @@ void IOThread::InitializeNetworkOptions(const CommandLine& command_line) {
       net::HttpStreamFactory::EnableNpnSpdy4a2();
     } else if (command_line.HasSwitch(switches::kDisableSpdy31)) {
       net::HttpStreamFactory::EnableNpnSpdy3();
-    } else if (command_line.HasSwitch(switches::kEnableSpdy2)) {
-      net::HttpStreamFactory::EnableNpnSpdy31WithSpdy2();
+    } else if (command_line.HasSwitch(switches::kDisableSpdy2)) {
+      net::HttpStreamFactory::EnableNpnSpdy31();
     } else if (command_line.HasSwitch(switches::kEnableNpnHttpOnly)) {
       net::HttpStreamFactory::EnableNpnHttpOnly();
     } else {
@@ -743,7 +743,10 @@ void IOThread::InitializeNetworkOptions(const CommandLine& command_line) {
          net::HttpStreamFactory::set_spdy_enabled(false);
       } else {
         // Use SPDY/3.1 by default.
-        net::HttpStreamFactory::EnableNpnSpdy31();
+        //
+        // TODO(akalin): Turn off SPDY/2 by default
+        // (http://crbug.com/318651).
+        net::HttpStreamFactory::EnableNpnSpdy31WithSpdy2();
       }
     }
   }
