@@ -7,6 +7,7 @@
 
 #include <map>
 #include <string>
+#include <vector>
 
 #include "base/memory/weak_ptr.h"
 #include "net/base/address_list.h"
@@ -206,6 +207,10 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // actual origin, which has a plausible set of initial certificates (or at
   // least server public key).
   CanonicalHostMap canonical_hostname_to_origin_map_;
+
+  // Contains list of suffixes (for exmaple ".c.youtube.com",
+  // ".googlevideo.com") of cannoncial hostnames.
+  std::vector<std::string> cannoncial_suffixes_;
 
   QuicConfig config_;
 

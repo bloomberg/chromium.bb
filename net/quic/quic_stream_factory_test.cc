@@ -22,6 +22,10 @@
 #include "net/socket/socket_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::StringPiece;
+using std::string;
+using std::vector;
+
 namespace net {
 namespace test {
 
@@ -459,64 +463,86 @@ TEST_F(QuicStreamFactoryTest, OnIPAddressChanged) {
 }
 
 TEST_F(QuicStreamFactoryTest, SharedCryptoConfig) {
-  HostPortProxyPair host_port_proxy_pair1(HostPortPair("r1.c.youtube.com", 80),
-                                          ProxyServer::Direct());
+  vector<string> cannoncial_suffixes;
+  cannoncial_suffixes.push_back(string(".c.youtube.com"));
+  cannoncial_suffixes.push_back(string(".googlevideo.com"));
 
-  QuicCryptoClientConfig* crypto_config1 =
-      QuicStreamFactoryPeer::GetOrCreateCryptoConfig(&factory_,
-                                                     host_port_proxy_pair1);
-  DCHECK(crypto_config1);
-  QuicCryptoClientConfig::CachedState* cached1 =
-      crypto_config1->LookupOrCreate(host_port_proxy_pair1.first.host());
-  EXPECT_FALSE(cached1->proof_valid());
-  EXPECT_TRUE(cached1->source_address_token().empty());
+  for (unsigned i = 0; i < cannoncial_suffixes.size(); ++i) {
+    string r1_host_name("r1");
+    string r2_host_name("r2");
+    r1_host_name.append(cannoncial_suffixes[i]);
+    r2_host_name.append(cannoncial_suffixes[i]);
 
-  // Mutate the cached1 to have different data.
-  // TODO(rtenneti): mutate other members of CachedState.
-  cached1->set_source_address_token("c.youtube.com");
-  cached1->SetProofValid();
+    HostPortProxyPair host_port_proxy_pair1(HostPortPair(r1_host_name, 80),
+                                            ProxyServer::Direct());
 
-  HostPortProxyPair host_port_proxy_pair2(HostPortPair("r2.c.youtube.com", 80),
-                                          ProxyServer::Direct());
-  QuicCryptoClientConfig* crypto_config2 =
-      QuicStreamFactoryPeer::GetOrCreateCryptoConfig(&factory_,
-                                                     host_port_proxy_pair2);
-  DCHECK(crypto_config2);
-  QuicCryptoClientConfig::CachedState* cached2 =
-      crypto_config2->LookupOrCreate(host_port_proxy_pair2.first.host());
-  EXPECT_EQ(cached1->source_address_token(), cached2->source_address_token());
-  EXPECT_TRUE(cached2->proof_valid());
+    QuicCryptoClientConfig* crypto_config1 =
+        QuicStreamFactoryPeer::GetOrCreateCryptoConfig(&factory_,
+                                                       host_port_proxy_pair1);
+    DCHECK(crypto_config1);
+    QuicCryptoClientConfig::CachedState* cached1 =
+        crypto_config1->LookupOrCreate(host_port_proxy_pair1.first.host());
+    EXPECT_FALSE(cached1->proof_valid());
+    EXPECT_TRUE(cached1->source_address_token().empty());
+
+    // Mutate the cached1 to have different data.
+    // TODO(rtenneti): mutate other members of CachedState.
+    cached1->set_source_address_token(r1_host_name);
+    cached1->SetProofValid();
+
+    HostPortProxyPair host_port_proxy_pair2(HostPortPair(r2_host_name, 80),
+                                            ProxyServer::Direct());
+    QuicCryptoClientConfig* crypto_config2 =
+        QuicStreamFactoryPeer::GetOrCreateCryptoConfig(&factory_,
+                                                       host_port_proxy_pair2);
+    DCHECK(crypto_config2);
+    QuicCryptoClientConfig::CachedState* cached2 =
+        crypto_config2->LookupOrCreate(host_port_proxy_pair2.first.host());
+    EXPECT_EQ(cached1->source_address_token(), cached2->source_address_token());
+    EXPECT_TRUE(cached2->proof_valid());
+  }
 }
 
 TEST_F(QuicStreamFactoryTest, CryptoConfigWhenProofIsInvalid) {
-  HostPortProxyPair host_port_proxy_pair1(HostPortPair("r1.c.youtube.com", 80),
-                                          ProxyServer::Direct());
+  vector<string> cannoncial_suffixes;
+  cannoncial_suffixes.push_back(string(".c.youtube.com"));
+  cannoncial_suffixes.push_back(string(".googlevideo.com"));
 
-  QuicCryptoClientConfig* crypto_config1 =
-      QuicStreamFactoryPeer::GetOrCreateCryptoConfig(&factory_,
-                                                     host_port_proxy_pair1);
-  DCHECK(crypto_config1);
-  QuicCryptoClientConfig::CachedState* cached1 =
-      crypto_config1->LookupOrCreate(host_port_proxy_pair1.first.host());
-  EXPECT_FALSE(cached1->proof_valid());
-  EXPECT_TRUE(cached1->source_address_token().empty());
+  for (unsigned i = 0; i < cannoncial_suffixes.size(); ++i) {
+    string r3_host_name("r3");
+    string r4_host_name("r4");
+    r3_host_name.append(cannoncial_suffixes[i]);
+    r4_host_name.append(cannoncial_suffixes[i]);
 
-  // Mutate the cached1 to have different data.
-  // TODO(rtenneti): mutate other members of CachedState.
-  cached1->set_source_address_token("c.youtube.com");
-  cached1->SetProofInvalid();
+    HostPortProxyPair host_port_proxy_pair1(HostPortPair(r3_host_name, 80),
+                                            ProxyServer::Direct());
 
-  HostPortProxyPair host_port_proxy_pair2(HostPortPair("r2.c.youtube.com", 80),
-                                          ProxyServer::Direct());
-  QuicCryptoClientConfig* crypto_config2 =
-      QuicStreamFactoryPeer::GetOrCreateCryptoConfig(&factory_,
-                                                     host_port_proxy_pair2);
-  DCHECK(crypto_config2);
-  QuicCryptoClientConfig::CachedState* cached2 =
-      crypto_config2->LookupOrCreate(host_port_proxy_pair2.first.host());
-  EXPECT_NE(cached1->source_address_token(), cached2->source_address_token());
-  EXPECT_TRUE(cached2->source_address_token().empty());
-  EXPECT_FALSE(cached2->proof_valid());
+    QuicCryptoClientConfig* crypto_config1 =
+        QuicStreamFactoryPeer::GetOrCreateCryptoConfig(&factory_,
+                                                       host_port_proxy_pair1);
+    DCHECK(crypto_config1);
+    QuicCryptoClientConfig::CachedState* cached1 =
+        crypto_config1->LookupOrCreate(host_port_proxy_pair1.first.host());
+    EXPECT_FALSE(cached1->proof_valid());
+    EXPECT_TRUE(cached1->source_address_token().empty());
+
+    // Mutate the cached1 to have different data.
+    // TODO(rtenneti): mutate other members of CachedState.
+    cached1->set_source_address_token(r3_host_name);
+    cached1->SetProofInvalid();
+
+    HostPortProxyPair host_port_proxy_pair2(HostPortPair(r4_host_name, 80),
+                                            ProxyServer::Direct());
+    QuicCryptoClientConfig* crypto_config2 =
+        QuicStreamFactoryPeer::GetOrCreateCryptoConfig(&factory_,
+                                                       host_port_proxy_pair2);
+    DCHECK(crypto_config2);
+    QuicCryptoClientConfig::CachedState* cached2 =
+        crypto_config2->LookupOrCreate(host_port_proxy_pair2.first.host());
+    EXPECT_NE(cached1->source_address_token(), cached2->source_address_token());
+    EXPECT_TRUE(cached2->source_address_token().empty());
+    EXPECT_FALSE(cached2->proof_valid());
+  }
 }
 
 }  // namespace test

@@ -31,6 +31,9 @@
 #include "net/quic/quic_protocol.h"
 #include "net/socket/client_socket_factory.h"
 
+using std::string;
+using std::vector;
+
 namespace net {
 
 // Responsible for creating a new QUIC session to the specified server, and
@@ -256,6 +259,8 @@ QuicStreamFactory::QuicStreamFactory(
   config_.set_idle_connection_state_lifetime(
       QuicTime::Delta::FromSeconds(30),
       QuicTime::Delta::FromSeconds(30));
+  cannoncial_suffixes_.push_back(string(".c.youtube.com"));
+  cannoncial_suffixes_.push_back(string(".googlevideo.com"));
 }
 
 QuicStreamFactory::~QuicStreamFactory() {
@@ -506,12 +511,17 @@ void QuicStreamFactory::PopulateFromCanonicalConfig(
     const HostPortProxyPair& host_port_proxy_pair,
     QuicCryptoClientConfig* crypto_config) {
   const string server_hostname = host_port_proxy_pair.first.host();
-  const string kYouTubeSuffix(".c.youtube.com");
-  if (!EndsWith(server_hostname, kYouTubeSuffix, false)) {
-    return;
-  }
 
-  HostPortPair canonical_host_port(kYouTubeSuffix,
+  unsigned i = 0;
+  for (; i < cannoncial_suffixes_.size(); ++i) {
+    if (EndsWith(server_hostname, cannoncial_suffixes_[i], false)) {
+      break;
+    }
+  }
+  if (i == cannoncial_suffixes_.size())
+    return;
+
+  HostPortPair canonical_host_port(cannoncial_suffixes_[i],
                                    host_port_proxy_pair.first.port());
   if (!ContainsKey(canonical_hostname_to_origin_map_, canonical_host_port)) {
     // This is the first host we've seen which matches the suffix, so make it
