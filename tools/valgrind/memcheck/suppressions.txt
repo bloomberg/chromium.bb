@@ -542,18 +542,18 @@
    Memcheck:Leak
    fun:_Znw*
    ...
-   fun:_ZN3IPC12ChannelProxy7Context13CreateChannelERKSsRKNS_7Channel4ModeE
-   fun:_ZN3IPC12ChannelProxy4InitERKSsNS_7Channel4ModeEP11MessageLoopb
-   fun:_ZN3IPC12ChannelProxyC2ERKSsNS_7Channel4ModeEP11MessageLoopPNS0_7ContextEb
+   fun:_ZN3IPC12ChannelProxy7Context13CreateChannel*Channel4ModeE
+   fun:_ZN3IPC12ChannelProxy4Init*
    ...
-   fun:_ZN3IPC11SyncChannelC1ERKSsNS_7Channel4ModeEPNS3_8ListenerEPNS_12ChannelProxy13MessageFilterEP11MessageLoopbPN4base13WaitableEventE
+   fun:_ZN3IPC11SyncChannel*Channel4Mode*Listener*
 }
 {
    bug_17540
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN4base19MessagePumpLibevent19WatchFileDescriptorEibNS0_4ModeEPNS0_21FileDescriptorWatcherEPNS0_7WatcherE
-   fun:_ZN4base16MessageLoopForIO19WatchFileDescriptorEibNS_4ModeEPN4base19MessagePumpLibevent21FileDescriptorWatcherEPNS2_7WatcherE
+   fun:_ZN4base19MessagePumpLibevent19WatchFileDescriptor*FileDescriptorWatcherEPNS0_7WatcherE
+   fun:_ZN4base16MessageLoopForIO19WatchFileDescriptor*MessagePumpLibevent21FileDescriptorWatcherEPNS2_7WatcherE
+   ...
    fun:_ZN3IPC7Channel11ChannelImpl7ConnectEv
    fun:_ZN3IPC7Channel7ConnectEv
    fun:_ZN3IPC12ChannelProxy7Context15OnChannelOpenedEv
