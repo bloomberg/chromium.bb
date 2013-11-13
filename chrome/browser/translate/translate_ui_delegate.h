@@ -21,16 +21,32 @@ class WebContents;
 
 // The TranslateUIDelegate is a generic delegate for UI which offers Translate
 // feature to the user.
+//
+// Note: TranslateInfobarDelegate should be updated if this implementation is
+// updated.
 class TranslateUIDelegate {
  public:
   enum {
     NO_INDEX = -1,
   };
 
+  // A pair whose key is a language code and value is the language's
+  // displayable name.
+  typedef std::pair<std::string, string16> LanguageNamePair;
+
   TranslateUIDelegate(content::WebContents* web_contents,
                       const std::string& original_language,
                       const std::string& target_language);
   virtual ~TranslateUIDelegate();
+
+  // Retrieves the displayable names of the supported languages, based on
+  // |locale|. The returned names are sorted in alphabetical order.
+  static std::vector<LanguageNamePair> GetSortedLanguageNames(
+      const std::string& locale);
+
+  // Gets the host of the page of |web_contents|, or an empty string if no URL
+  // is associated with the current page.
+  static std::string GetPageHost(content::WebContents* web_contents);
 
   content::WebContents* web_contents() { return web_contents_; }
 
@@ -91,13 +107,7 @@ class TranslateUIDelegate {
   void SetAlwaysTranslate(bool value);
 
  private:
-  // Gets the host of the page being translated, or an empty string if no URL is
-  // associated with the current page.
-  std::string GetPageHost();
-
   content::WebContents* web_contents_;
-
-  typedef std::pair<std::string, string16> LanguageNamePair;
 
   // The list supported languages for translation.
   // The pair first string is the language ISO code (ex: en, fr...), the second
@@ -107,13 +117,6 @@ class TranslateUIDelegate {
 
   // The index for language the page is originally in.
   size_t original_language_index_;
-
-  // The index for language the page is originally in that was originally
-  // reported (original_language_index_ changes if the user selects a new
-  // original language, but this one does not).  This is necessary to report
-  // language detection errors with the right original language even if the user
-  // changed the original language.
-  size_t initial_original_language_index_;
 
   // The index for language the page should be translated to.
   size_t target_language_index_;

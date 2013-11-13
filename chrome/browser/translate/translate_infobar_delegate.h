@@ -13,7 +13,6 @@
 #include "base/logging.h"
 #include "chrome/browser/infobars/infobar_delegate.h"
 #include "chrome/browser/translate/translate_prefs.h"
-#include "chrome/browser/translate/translate_ui_delegate.h"
 #include "chrome/common/translate/translate_errors.h"
 #include "components/translate/common/translate_constants.h"
 
@@ -26,6 +25,8 @@ struct ShortcutConfiguration {
   int never_translate_min_count;
 };
 
+// NOTE: TranslateUIDelegate should be updated if this implementation is
+// updated.
 class TranslateInfoBarDelegate : public InfoBarDelegate {
  public:
   // The different types of infobars that can be shown for translation.
@@ -70,38 +71,45 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
                      const ShortcutConfiguration& shortcut_config);
 
   // Returns the number of languages supported.
-  size_t num_languages() const { return ui_delegate_.GetNumberOfLanguages(); }
+  size_t num_languages() const {
+
+    return languages_.size();
+  }
 
   // Returns the ISO code for the language at |index|.
   std::string language_code_at(size_t index) const {
-    return ui_delegate_.GetLanguageCodeAt(index);
+    DCHECK_LT(index, num_languages());
+    return languages_[index].first;
   }
 
   // Returns the displayable name for the language at |index|.
   string16 language_name_at(size_t index) const {
-    return ui_delegate_.GetLanguageNameAt(index);
+    if (index == static_cast<size_t>(kNoIndex))
+      return string16();
+    DCHECK_LT(index, num_languages());
+    return languages_[index].second;
   }
 
   Type infobar_type() const { return infobar_type_; }
 
   TranslateErrors::Type error_type() const { return error_type_; }
 
-  size_t original_language_index() const {
-    return ui_delegate_.GetOriginalLanguageIndex();
-  }
+  size_t original_language_index() const { return original_language_index_; }
+
   void UpdateOriginalLanguageIndex(size_t language_index);
 
-  size_t target_language_index() const {
-    return ui_delegate_.GetTargetLanguageIndex();
-  }
+  size_t target_language_index() const { return target_language_index_; }
+
   void UpdateTargetLanguageIndex(size_t language_index);
 
   // Convenience methods.
   std::string original_language_code() const {
-    return ui_delegate_.GetOriginalLanguageCode();
+    return (original_language_index() == static_cast<size_t>(kNoIndex)) ?
+        translate::kUnknownLanguageCode :
+        language_code_at(original_language_index());
   }
   std::string target_language_code() const {
-    return ui_delegate_.GetTargetLanguageCode();
+    return language_code_at(target_language_index());
   }
 
   // Returns true if the current infobar indicates an error (in which case it
@@ -199,7 +207,14 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   // infobar.
   BackgroundAnimationType background_animation_;
 
-  TranslateUIDelegate ui_delegate_;
+  // The list of the languages supported for translation.
+  std::vector<LanguageNamePair> languages_;
+
+  // The index of the webpage's original language.
+  size_t original_language_index_;
+
+  // The index of the language the webpage will be translated into.
+  size_t target_language_index_;
 
   // The error that occurred when trying to translate (NONE if no error).
   TranslateErrors::Type error_type_;

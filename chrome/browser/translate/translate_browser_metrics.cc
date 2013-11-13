@@ -25,6 +25,14 @@ const char kTranslateUndisplayableLanguage[] =
     "Translate.UndisplayableLanguage";
 const char kTranslateUnsupportedLanguageAtInitiation[] =
     "Translate.UnsupportedLanguageAtInitiation";
+const char kTranslateDeclineTranslate[] = "Translate.DeclineTranslate";
+const char kTranslateRevertTranslation[] = "Translate.RevertTranslation";
+const char kTranslatePerformTranslate[] = "Translate.Translate";
+const char kTranslateNeverTranslateLang[] = "Translate.NeverTranslateLang";
+const char kTranslateNeverTranslateSite[] = "Translate.NeverTranslateSite";
+const char kTranslateAlwaysTranslateLang[] = "Translate.AlwaysTranslateLang";
+const char kTranslateModifyOriginalLang[] = "Translate.ModifyOriginalLang";
+const char kTranslateModifyTargetLang[] = "Translate.ModifyTargetLang";
 
 struct MetricsEntry {
   TranslateBrowserMetrics::MetricsNameIndex index;
@@ -43,6 +51,22 @@ const MetricsEntry kMetricsEntries[] = {
     kTranslateUndisplayableLanguage },
   { TranslateBrowserMetrics::UMA_UNSUPPORTED_LANGUAGE_AT_INITIATION,
     kTranslateUnsupportedLanguageAtInitiation },
+  { TranslateBrowserMetrics::UMA_DECLINE_TRANSLATE,
+    kTranslateDeclineTranslate },
+  { TranslateBrowserMetrics::UMA_REVERT_TRANSLATION,
+    kTranslateRevertTranslation },
+  { TranslateBrowserMetrics::UMA_PERFORM_TRANSLATE,
+    kTranslatePerformTranslate },
+  { TranslateBrowserMetrics::UMA_NEVER_TRANSLATE_LANG,
+    kTranslateNeverTranslateLang },
+  { TranslateBrowserMetrics::UMA_NEVER_TRANSLATE_SITE,
+    kTranslateNeverTranslateSite },
+  { TranslateBrowserMetrics::UMA_ALWAYS_TRANSLATE_LANG,
+    kTranslateAlwaysTranslateLang },
+  { TranslateBrowserMetrics::UMA_MODIFY_ORIGINAL_LANG,
+    kTranslateModifyOriginalLang },
+  { TranslateBrowserMetrics::UMA_MODIFY_TARGET_LANG,
+    kTranslateModifyTargetLang },
 };
 
 COMPILE_ASSERT(arraysize(kMetricsEntries) == TranslateBrowserMetrics::UMA_MAX,
