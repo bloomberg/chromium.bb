@@ -32,9 +32,19 @@
 #include <string.h>
 #include <sys/mman.h>
 #include <unistd.h>
+#include <assert.h>
+#include <signal.h>
+#include <pthread.h>
 
 #include "wayland-private.h"
 #include "wayland-server.h"
+
+/* This once_t is used to synchronize installing the SIGBUS handler
+ * and creating the TLS key. This will be done in the first call
+ * wl_shm_buffer_begin_access which can happen from any thread */
+static pthread_once_t wl_shm_sigbus_once = PTHREAD_ONCE_INIT;
+static pthread_key_t wl_shm_sigbus_data_key;
+static struct sigaction wl_shm_old_sigbus_action;
 
 struct wl_shm_pool {
 	struct wl_resource *resource;
@@ -50,6 +60,12 @@ struct wl_shm_buffer {
 	uint32_t format;
 	int offset;
 	struct wl_shm_pool *pool;
+};
+
+struct wl_shm_sigbus_data {
+	struct wl_shm_pool *current_pool;
+	int access_count;
+	int fallback_mapping_used;
 };
 
 static void
@@ -367,4 +383,119 @@ WL_EXPORT int32_t
 wl_shm_buffer_get_height(struct wl_shm_buffer *buffer)
 {
 	return buffer->height;
+}
+
+static void
+reraise_sigbus(void)
+{
+	/* If SIGBUS is raised for some other reason than accessing
+	 * the pool then we'll uninstall the signal handler so we can
+	 * reraise it. This would presumably kill the process */
+	sigaction(SIGBUS, &wl_shm_old_sigbus_action, NULL);
+	raise(SIGBUS);
+}
+
+static void
+sigbus_handler(int signum, siginfo_t *info, void *context)
+{
+	struct wl_shm_sigbus_data *sigbus_data =
+		pthread_getspecific(wl_shm_sigbus_data_key);
+	struct wl_shm_pool *pool;
+
+	if (sigbus_data == NULL) {
+		reraise_sigbus();
+		return;
+	}
+
+	pool = sigbus_data->current_pool;
+
+	/* If the offending address is outside the mapped space for
+	 * the pool then the error is a real problem so we'll reraise
+	 * the signal */
+	if (pool == NULL ||
+	    (char *) info->si_addr < pool->data ||
+	    (char *) info->si_addr >= pool->data + pool->size) {
+		reraise_sigbus();
+		return;
+	}
+
+	sigbus_data->fallback_mapping_used = 1;
+
+	/* This should replace the previous mapping */
+	if (mmap(pool->data, pool->size,
+		 PROT_READ | PROT_WRITE,
+		 MAP_PRIVATE | MAP_FIXED | MAP_ANONYMOUS,
+		 0, 0) == (void *) -1) {
+		reraise_sigbus();
+		return;
+	}
+}
+
+static void
+destroy_sigbus_data(void *data)
+{
+	struct wl_shm_sigbus_data *sigbus_data = data;
+
+	free(sigbus_data);
+}
+
+static void
+init_sigbus_data_key(void)
+{
+	struct sigaction new_action = {
+		.sa_sigaction = sigbus_handler,
+		.sa_flags = SA_SIGINFO | SA_NODEFER
+	};
+
+	sigemptyset(&new_action.sa_mask);
+
+	sigaction(SIGBUS, &new_action, &wl_shm_old_sigbus_action);
+
+	pthread_key_create(&wl_shm_sigbus_data_key, destroy_sigbus_data);
+}
+
+WL_EXPORT void
+wl_shm_buffer_begin_access(struct wl_shm_buffer *buffer)
+{
+	struct wl_shm_pool *pool = buffer->pool;
+	struct wl_shm_sigbus_data *sigbus_data;
+
+	pthread_once(&wl_shm_sigbus_once, init_sigbus_data_key);
+
+	sigbus_data = pthread_getspecific(wl_shm_sigbus_data_key);
+	if (sigbus_data == NULL) {
+		sigbus_data = malloc(sizeof *sigbus_data);
+		if (sigbus_data == NULL)
+			return;
+
+		memset(sigbus_data, 0, sizeof *sigbus_data);
+
+		pthread_setspecific(wl_shm_sigbus_data_key, sigbus_data);
+	}
+
+	assert(sigbus_data->current_pool == NULL ||
+	       sigbus_data->current_pool == pool);
+
+	sigbus_data->current_pool = pool;
+	sigbus_data->access_count++;
+}
+
+WL_EXPORT void
+wl_shm_buffer_end_access(struct wl_shm_buffer *buffer)
+{
+	struct wl_shm_sigbus_data *sigbus_data =
+		pthread_getspecific(wl_shm_sigbus_data_key);
+
+	assert(sigbus_data->access_count >= 1);
+
+	if (--sigbus_data->access_count == 0) {
+		if (sigbus_data->fallback_mapping_used) {
+			wl_resource_post_error(buffer->resource,
+					       WL_SHM_ERROR_INVALID_FD,
+					       "error accessing SHM buffer");
+			sigbus_data->fallback_mapping_used = 0;
+		}
+
+		sigbus_data->current_pool = NULL;
+	}
 }

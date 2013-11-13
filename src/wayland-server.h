@@ -412,6 +412,12 @@ wl_resource_get_destroy_listener(struct wl_resource *resource,
 
 struct wl_shm_buffer;
 
+void
+wl_shm_buffer_begin_access(struct wl_shm_buffer *buffer);
+
+void
+wl_shm_buffer_end_access(struct wl_shm_buffer *buffer);
+
 struct wl_shm_buffer *
 wl_shm_buffer_get(struct wl_resource *resource);
 
