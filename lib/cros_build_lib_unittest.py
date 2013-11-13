@@ -815,7 +815,7 @@ class TestManifestCheckout(cros_test_lib.TempDirTestCase):
         <manifest>
           <include name="include-target.xml" />
           <include name="empty.xml" />
-          <project name="monkeys" remote="foon" revision="master" />
+          <project name="monkeys" path="baz" remote="foon" revision="master" />
         </manifest>""")
     # First, verify it properly explodes if the include can't be found.
     self.assertRaises(EnvironmentError,

@@ -249,13 +249,55 @@ def NormalizeRef(ref):
   return ref
 
 
+class ProjectCheckout(dict):
+  """Attributes of a given project in the manifest checkout.
+
+  TODO(davidjames): Convert this into an ordinary object instead of a dict.
+  """
+
+  def __init__(self, attrs):
+    """Constructor.
+
+    Args:
+      attrs: The attributes associated with this checkout, as a dictionary.
+    """
+    dict.__init__(self, attrs)
+
+  def AssertPushable(self):
+    """Verify that it is safe to push changes to this repository."""
+    if not self['pushable']:
+      remote = self['remote']
+      raise AssertionError('Remote %s is not pushable.' % (remote,))
+
+  def GetPath(self, absolute=False):
+    """Get the path to the checkout.
+
+    Args:
+      absolute:  If True, return an absolute path. If False,
+        return a path relative to the repo root.
+    """
+    return self['local_path'] if absolute else self['path']
+
+
 class Manifest(object):
   """SAX handler that parses the manifest document.
 
   Properties:
-    default: the attributes of the <default> tag.
-    projects: a dictionary keyed by project name containing the attributes of
-              each <project> tag.
+    checkouts_by_name: A dictionary mapping the names for <project> tags to a
+      list of ProjectCheckout objects.
+    checkouts_by_path: A dictionary mapping paths for <project> tags to a single
+      ProjectCheckout object.
+    default: The attributes of the <default> tag.
+    includes: A list of XML files that should be pulled in to the manifest.
+      These includes are represented as a list of (name, path) tuples.
+    manifest_include_dir: If given, this is where to start looking for
+      include targets.
+    projects: DEPRECATED. A dictionary mapping the names for <project> tags to
+      a single ProjectCheckout object. This is now deprecated, since each
+      project can map to multiple ProjectCheckout objects.
+    remotes: A dictionary mapping <remote> tags to the associated attributes.
+    revision: The revision of the manifest repository. If not specified, this
+      will be TOT.
   """
 
   _instance_cache = {}
@@ -271,6 +313,8 @@ class Manifest(object):
 
     self.default = {}
     self.projects = {}
+    self.checkouts_by_path = {}
+    self.checkouts_by_name = {}
     self.remotes = {}
     self.includes = []
     self.revision = None
@@ -285,9 +329,7 @@ class Manifest(object):
     parser.setContentHandler(handler)
     parser.parse(source)
     if finalize:
-      # Rewrite projects mixing defaults in and adding our attributes.
-      for data in self.projects.itervalues():
-        self._FinalizeProjectData(data)
+      self._FinalizeAllProjectData()
 
   def _ProcessElement(self, name, attrs):
     """Stores the default manifest properties and per-project overrides."""
@@ -299,6 +341,8 @@ class Manifest(object):
       self.remotes[attrs['name']] = attrs
     elif name == 'project':
       self.projects[attrs['name']] = attrs
+      self.checkouts_by_path[attrs['path']] = attrs
+      self.checkouts_by_name.setdefault(attrs['name'], []).append(attrs)
     elif name == 'manifest':
       self.revision = attrs.get('revision')
     elif name == 'include':
@@ -326,6 +370,11 @@ class Manifest(object):
     """
     return self.projects[os.path.normpath(project)]['path']
 
+  def _FinalizeAllProjectData(self):
+    """Rewrite projects mixing defaults in and adding our attributes."""
+    for path_data in self.checkouts_by_path.itervalues():
+      self._FinalizeProjectData(path_data)
+
   def _FinalizeProjectData(self, attrs):
     """Sets up useful properties for a project.
 
@@ -342,20 +391,26 @@ class Manifest(object):
     # 'repo manifest -r' adds an 'upstream' attribute to the project tag for the
     # manifests it generates.  We can use the attribute to get a valid branch
     # instead of a sha1 for these types of manifests.
-    pre_rev = attrs.get('upstream', attrs['revision'])
-    # In cases where the revision is a branch name, make sure it is in refs/*
-    # form.
-    if not IsSHA1(pre_rev):
-      pre_rev = NormalizeRef(pre_rev)
-    local_rev = rev = pre_rev
-    if rev.startswith('refs/'):
-      local_rev = 'refs/remotes/%s/%s' % (remote_name, StripRefsHeads(rev))
-    attrs['local_revision'] = local_rev
+    upstream = attrs.get('upstream', attrs['revision'])
+    if IsSHA1(upstream):
+      # The current version of repo we use has a bug: When you create a new
+      # repo checkout from a revlocked manifest, the 'upstream' attribute will
+      # just point at a SHA1. The default revision will still be correct,
+      # however. For now, return the default revision as our best guess as to
+      # what the upstream branch for this repository would be. This guess may
+      # sometimes be wrong, but it's correct for all of the repositories where
+      # we need to push changes (e.g., the overlays).
+      # TODO(davidjames): Either fix the repo bug, or update our logic here to
+      # check the manifest repository to find the right tracking branch.
+      upstream = self.default['revision']
+
+    attrs['tracking_branch'] = 'refs/remotes/%s/%s' % (
+        remote_name, StripRefs(upstream),
+    )
 
     attrs['pushable'] = remote in constants.GIT_REMOTES
     if attrs['pushable']:
       attrs['push_remote'] = remote
-      attrs['push_remote_local'] = attrs['local_revision']
       attrs['push_remote_url'] = constants.GIT_REMOTES[remote]
       attrs['push_url'] = '%s/%s' % (attrs['push_remote_url'], attrs['name'])
     groups = set(attrs.get('groups', 'default').replace(',', ' ').split())
@@ -370,22 +425,21 @@ class Manifest(object):
       attrs[key] = os.path.normpath(attrs[key])
 
   def GetAttributeForProject(self, project, attribute):
-    """Gets an attribute for a project, falling back to defaults if needed."""
+    """Get |attribute| from |project|, falling back to defaults if needed."""
     return self.projects[project].get(attribute)
 
-  def GetProjectsLocalRevision(self, project):
-    """Returns the upstream defined revspec for a project.
+  def GetProjectsTrackingBranch(self, project):
+    """Returns the remote tracking branch for a given project.
+
+    Each project tracks a remote branch. Most projects will track the same
+    branch as the manifest, but some projects may specify a custom branch.
+    Return the remote tracking branch, including the appropriate
+    refs/remotes/{cros,cros-internal} prefix.
 
     Args:
       project: Which project we're looking at.
     """
-    return self.GetAttributeForProject(project, 'local_revision')
-
-  def AssertProjectIsPushable(self, project):
-    """Verify that the project has push_* attributes populated."""
-    data = self.projects[project]
-    if not data['pushable']:
-      raise AssertionError('Remote %s is not pushable.' % data['remote'])
+    return self.GetAttributeForProject(project, 'tracking_branch')
 
   @staticmethod
   def _GetManifestHash(source, ignore_missing=False):
@@ -459,7 +513,6 @@ class ManifestCheckout(Manifest):
     self.manifest_path = os.path.realpath(manifest_path)
     manifest_include_dir = os.path.dirname(self.manifest_path)
     self.manifest_branch = self._GetManifestsBranch(self.root)
-    self.default_branch = 'refs/remotes/m/%s' % self.manifest_branch
     self._content_merging = {}
     self.configured_groups = self._GetManifestGroups(self.root)
     Manifest.__init__(self, self.manifest_path,
@@ -479,20 +532,14 @@ class ManifestCheckout(Manifest):
       manifest_path = os.path.join(root, '.repo', 'manifest.xml')
     return root, manifest_path
 
-  def GetProjectsLocalRevision(self, project, fallback=True):
-    """Returns the upstream defined revspec for a project.
+  def AssertProjectIsPushable(self, project):
+    """Verify that the |project| has push_* attributes populated."""
+    for checkout in self.FindCheckouts(project):
+      checkout.AssertPushable()
 
-    Args:
-      project: Which project we're looking at.
-      fallback: If True, return the revision for revision locked manifests.
-        If False, remotes/m/<default_branch> is returned.
-    """
-    ref = Manifest.GetProjectsLocalRevision(self, project)
-    if ref.startswith("refs/") or not fallback:
-      return ref
-    # Revlocked manifests return sha1s; use the repo defined branch
-    # so tracking is supported.
-    return self.default_branch
+  def GetAttributeForProject(self, project, attribute, branch=None):
+    """Get |attribute| from |project|, falling back to defaults if needed."""
+    return self.FindCheckout(project, branch=branch).get(attribute)
 
   def ProjectIsContentMerging(self, project):
     """Returns whether the given project has content merging enabled in git.
@@ -516,31 +563,104 @@ class ManifestCheckout(Manifest):
           data['local_path'], data['push_remote'])
     return result
 
-  def FindProjectFromPath(self, path):
-    """Find the associated projects for a given pathway.
-
-    The pathway can either be to the root of a project, or within the
-    project itself (chromite/buildbot for example).  It may be relative
-    to the repo root, or an absolute path.  If it is absolute path,
-    it's the callers responsibility to ensure the pathway intersects
-    the root of the checkout.
+  def FindCheckouts(self, project, branch=None):
+    """Returns the list of checkouts for a given |project|/|branch|.
 
     Returns:
-      None if no project is found, else the project.
+      A list of ProjectCheckout objects.
     """
+    checkouts = []
+    for checkout in self.checkouts_by_name.get(project, []):
+      if project == checkout['name']:
+        upstream = checkout['tracking_branch']
+        if branch is None or StripRefs(branch) == StripRefs(upstream):
+          checkouts.append(checkout)
+    return checkouts
+
+  def FindCheckout(self, project, branch=None, strict=True):
+    """Returns the checkout associated with a given project/branch.
+
+    Args:
+      project: The project to look for.
+      branch: The branch that the project is tracking.
+      strict: Raise AssertionError if a checkout cannot be found.
+
+    Raises:
+      AssertionError if there is more than one checkout associated with the
+      given project/branch combination.
+
+    Returns:
+      A ProjectCheckout object.
+    """
+    checkouts = self.FindCheckouts(project, branch)
+    if len(checkouts) < 1:
+      if strict:
+        raise AssertionError('Could not find checkout of %s' % (project,))
+      return None
+    elif len(checkouts) > 1:
+      raise AssertionError('Too many checkouts found for %s' % project)
+    return checkouts[0]
+
+  def ListCheckouts(self):
+    """List the checkouts in the manifest.
+
+    Returns:
+      A list of ProjectCheckout objects.
+    """
+    return self.checkouts_by_path.values()
+
+  def FindCheckoutFromPath(self, path, strict=True):
+    """Find the associated checkouts for a given |path|.
+
+    The |path| can either be to the root of a project, or within the
+    project itself (chromite/buildbot for example).  It may be relative
+    to the repo root, or an absolute path.  If |path| is not within a
+    checkout, return None.
+
+    Args:
+      path: Path to examine.
+      strict: If True, fail when no checkout is found.
+
+    Returns:
+      None if no checkout is found, else the checkout."""
     # Realpath everything sans the target to keep people happy about
     # how symlinks are handled; exempt the final node since following
     # through that is unlikely even remotely desired.
     tmp = os.path.join(self.root, os.path.dirname(path))
     path = os.path.join(os.path.realpath(tmp), os.path.basename(path))
     path = os.path.normpath(path) + '/'
-    candidates = [(x['path'], name) for name, x in self.projects.iteritems()
-                  if path.startswith(x['local_path'] + '/')]
+    candidates = []
+    for checkout in self.ListCheckouts():
+      if path.startswith(checkout['local_path'] + '/'):
+        candidates.append((checkout['path'], checkout))
+
     if not candidates:
+      if strict:
+        raise AssertionError('Could not find repo project at %s' % (path,))
       return None
-    # That which has the greatest common path prefix is the owner of
-    # the given pathway, thus we return that.
-    return sorted(candidates)[-1][1]
+
+    # The checkout with the greatest common path prefix is the owner of
+    # the given pathway. Return that.
+    return max(candidates)[1]
+
+  def FindProjectFromPath(self, path, strict=True):
+    """Find the project name associated with a given pathway.
+
+    See FindCheckoutFromPath for arguments.
+    """
+    checkout = self.FindCheckoutFromPath(path, strict=strict)
+    if checkout:
+      return checkout['name']
+
+  def _FinalizeAllProjectData(self):
+    """Rewrite projects mixing defaults in and adding our attributes."""
+    Manifest._FinalizeAllProjectData(self)
+    for d in (self.projects, self.checkouts_by_path):
+      for key, value in d.iteritems():
+        d[key] = ProjectCheckout(value)
+    for key, value in self.checkouts_by_name.iteritems():
+      self.checkouts_by_name[key] = \
+          [ProjectCheckout(x) for x in value]
 
   def _FinalizeProjectData(self, attrs):
     Manifest._FinalizeProjectData(self, attrs)
@@ -600,17 +720,15 @@ class ManifestCheckout(Manifest):
     """Returns the path for a project.
 
     Args:
-      project: Project to get the path for.
-      absolute:  If True, return an absolute pathway.  If False,
-        relative pathway.
+      project: Project name to get the path for.
+      absolute:  If True, return an absolute path. If False,
+        return a path relative to the repo root.
 
     Raises:
       KeyError if the project isn't known.
     """
-    path = Manifest.GetProjectPath(self, project)
-    if absolute:
-      return os.path.join(self.root, path)
-    return path
+    checkout = self.FindCheckout(os.path.normpath(project))
+    return checkout.GetPath(absolute)
 
   # pylint: disable=W0221
   @classmethod
@@ -865,26 +983,24 @@ def GetTrackingBranchViaManifest(git_repo, for_checkout=True, for_push=False,
     if manifest is None:
       manifest = ManifestCheckout.Cached(git_repo)
 
-    project = manifest.FindProjectFromPath(git_repo)
-    if project is None:
+    checkout = manifest.FindCheckoutFromPath(git_repo, strict=False)
+
+    if checkout is None:
       return None
 
     if for_push:
-      manifest.AssertProjectIsPushable(project)
+      checkout.AssertPushable()
 
-    data = manifest.projects[project]
     if for_push:
-      remote = data['push_remote']
+      remote = checkout['push_remote']
     else:
-      remote = data['remote']
+      remote = checkout['remote']
 
     if for_checkout:
-      revision = data['local_revision']
-      if for_push:
-        revision = data['push_remote_local']
+      revision = checkout['tracking_branch']
     else:
-      revision = data['revision']
-      if not revision.startswith("refs/heads/"):
+      revision = checkout['revision']
+      if not revision.startswith('refs/heads/'):
         return None
 
     return remote, revision

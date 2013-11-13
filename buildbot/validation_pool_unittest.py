@@ -82,7 +82,7 @@ class MockManifest(object):
       return os.path.join(self.root, project)
     return project
 
-  def GetProjectsLocalRevision(self, _project):
+  def GetProjectsTrackingBranch(self, _project):
     return 'refs/remotes/cros/master'
 
   def ProjectExists(self, _project):

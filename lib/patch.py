@@ -149,6 +149,21 @@ class BrokenChangeID(PatchException):
     return 'has a broken ChangeId: %s' % (self.message,)
 
 
+class ChangeMatchesMultipleCheckouts(PatchException):
+  """Raised if the given change matches multiple checkouts."""
+
+  def ShortExplanation(self):
+    return ('matches multiple checkouts. Does the manifest check out the '
+            'same project and branch to different locations?')
+
+
+class ChangeNotInManifest(PatchException):
+  """Raised if we try to apply a not-in-manifest change."""
+
+  def ShortExplanation(self):
+    return 'could not be found in the repo manifest.'
+
+
 def MakeChangeId(unusable=False):
   """Create a random Change-Id.
 
@@ -750,9 +765,9 @@ class GitRepoPatch(object):
     Raises:
       ApplyPatchException: If the patch failed to apply.
     """
-    manifest_branch = manifest.GetProjectsLocalRevision(self.project)
-    self.Apply(manifest.GetProjectPath(self.project, True),
-               manifest_branch, trivial=trivial)
+    checkout = self.GetCheckout(manifest)
+    upstream = checkout['tracking_branch']
+    self.Apply(checkout.GetPath(absolute=True), upstream, trivial=trivial)
 
   def GerritDependencies(self):
     """Returns a list of Gerrit change numbers that this patch depends on.
@@ -884,6 +899,28 @@ class GitRepoPatch(object):
     cmd = ['ls-tree', '--full-name', '--name-only', '-z', tree_revision, '--']
     output = git.RunGit(git_repo, cmd + targets, error_code_ok=True).output
     return unicode(output, 'ascii', 'ignore').split('\0')[:-1]
+
+  def GetCheckout(self, manifest, strict=True):
+    """Get the ProjectCheckout associated with this patch.
+
+    Raises:
+      ChangeMatchesMultipleCheckouts if there are multiple checkouts that
+      match this change.
+
+    Args:
+      manifest: A ManifestCheckout object.
+      strict: If the change refers to a project/branch that is not in the
+        manifest, raise a ChangeNotInManifest error.
+    """
+    checkouts = manifest.FindCheckouts(self.project, self.tracking_branch)
+    if len(checkouts) != 1:
+      if len(checkouts) > 1:
+        raise ChangeMatchesMultipleCheckouts(self)
+      elif strict:
+        raise ChangeNotInManifest(self)
+      return None
+
+    return checkouts[0]
 
   def PatchLink(self):
     """Return a CL link for this patch."""
@@ -1294,14 +1331,22 @@ class GerritPatch(GitRepoPatch):
     return self.id == other.id
 
 
-def GeneratePatchesFromRepo(git_repo, project, tracking_branch, branch,
-                            remote, allow_empty=False, starting_ref=None):
-  if starting_ref is None:
-    starting_ref = branch
+def GeneratePatchesFromRepo(git_repo, project, tracking_branch, branch, remote,
+                            allow_empty=False):
+  """Create a list of LocalPatch objects from a repo on disk.
+
+  Args:
+    git_repo: The path to the repo.
+    project: The name of the associated project.
+    tracking_branch: The remote tracking branch we want to test against.
+    branch: The name of our local branch, where we will look for patches.
+    remote: The name of the remote to use. E.g. 'cros'
+    allow_empty: Whether to allow the case where no patches were specified.
+  """
 
   result = git.RunGit(
       git_repo,
-      ['rev-list', '--reverse', '%s..%s' % (tracking_branch, starting_ref)])
+      ['rev-list', '--reverse', '%s..%s' % (tracking_branch, branch)])
 
   sha1s = result.output.splitlines()
   if not sha1s:
@@ -1320,17 +1365,24 @@ def PrepareLocalPatches(manifest, patches):
 
   Args:
     manifest: The manifest object for the checkout in question.
-    patches:  A list of user-specified patches, in project[:branch] form.
+    patches:  A list of user-specified patches, in project:branch form.
+      cbuildbot pre-processes the patch names before sending them to us,
+      so we can expect that branch names will always be present.
   """
   patch_info = []
   for patch in patches:
     project, branch = patch.split(':')
-    project_dir = manifest.GetProjectPath(project, True)
-    tracking_branch = manifest.GetProjectsLocalRevision(project)
-    remote = manifest.GetAttributeForProject(project, 'remote')
+    project_patch_info = []
+    for checkout in manifest.FindCheckouts(project):
+      tracking_branch = checkout['tracking_branch']
+      project_dir = checkout.GetPath(absolute=True)
+      remote = checkout['remote']
+      project_patch_info.extend(GeneratePatchesFromRepo(
+          project_dir, project, tracking_branch, branch, remote))
 
-    patch_info.extend(GeneratePatchesFromRepo(
-        project_dir, project, tracking_branch, branch, remote))
+    if not project_patch_info:
+      cros_build_lib.Die('No changes found in %s:%s' % (project, branch))
+    patch_info.extend(project_patch_info)
 
   return patch_info
 

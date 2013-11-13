@@ -623,11 +623,13 @@ class PrepareLocalPatchesTests(cros_build_lib_unittest.RunCommandTestCase):
     self.tracking_branch = 'kernel'
     self.patches = ['%s:%s' % (self.project, self.branch)]
     self.manifest = mock.MagicMock()
-    self.PatchObject(self.manifest, 'GetProjectPath', return_value=self.path)
-    self.PatchObject(self.manifest, 'GetProjectsLocalRevision',
-                     return_value=self.tracking_branch)
-    self.PatchObject(self.manifest, 'GetAttributeForProject',
-                     return_value='cros')
+    attrs = dict(tracking_branch=self.tracking_branch,
+                 local_path=self.path,
+                 remote='cros')
+    checkout = git.ProjectCheckout(attrs)
+    self.PatchObject(
+        self.manifest, 'FindCheckouts', return_value=[checkout]
+    )
 
   def PrepareLocalPatches(self, output):
     """Check the returned GitRepoPatchInfo against golden values."""

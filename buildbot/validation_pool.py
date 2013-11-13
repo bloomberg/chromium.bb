@@ -983,29 +983,53 @@ class PatchSeries(object):
 
 
 class _ManifestShim(object):
-  """Class used in conjunction with PatchSeries to support standalone git repos.
+  """A fake manifest that only contains a single repository.
 
-  This works via duck typing; we match the 4 necessary methods that PatchSeries
-  uses.
+  This fake manifest is used to allow us to filter out patches for
+  the PatchSeries class. It isn't a complete implementation -- we just
+  implement the functions that PatchSeries uses. It works via duck typing.
+
+  All of the below methods accept the same arguments as the corresponding
+  methods in git.ManifestCheckout.*, but they do not make any use of the
+  arguments -- they just always return information about this project.
   """
 
   def __init__(self, path, tracking_branch, remote='origin',
                content_merging=True):
 
-    self.path = path
-    self.tracking_branch = 'refs/remotes/%s/%s' % (remote, tracking_branch)
+    tracking_branch = 'refs/remotes/%s/%s' % (
+        remote, git.StripRefs(tracking_branch),
+    )
+    attrs = dict(local_path=path, path=path, tracking_branch=tracking_branch)
+    self.checkout = git.ProjectCheckout(attrs)
     self.content_merging = content_merging
 
-  def GetProjectsLocalRevision(self, _project):
-    return self.tracking_branch
+  def FindCheckouts(self, *_args, **_kwargs):
+    """Returns the list of checkouts.
 
-  def GetProjectPath(self, _project, _absolute=False):
-    return self.path
+    In this case, we only have one repository so we just return that repository.
+    We accept the same arguments as git.ManifestCheckout.FindCheckouts, but we
+    do not make any use of them.
 
-  def ProjectExists(self, _project):
+    Returns:
+      A list of ProjectCheckout objects.
+    """
+    return [self.checkout]
+
+  def GetProjectsTrackingBranch(self, *_args, **_kwargs):
+    """Get the tracking branch for this project."""
+    return self.checkout['tracking_branch']
+
+  def GetProjectPath(self, *_args, **_kwargs):
+    """Return the path to this repository."""
+    return self.checkout['path']
+
+  def ProjectExists(self, *_args, **_kwargs):
+    """Check whether this project exists."""
     return True
 
-  def ProjectIsContentMerging(self, _project):
+  def ProjectIsContentMerging(self, *_args, **_kwargs):
+    """Check whether this project has content-merging enabled."""
     return self.content_merging
 
 
