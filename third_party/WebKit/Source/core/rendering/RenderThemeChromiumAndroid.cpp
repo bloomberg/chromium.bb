@@ -28,6 +28,7 @@
 
 #include "CSSValueKeywords.h"
 #include "UserAgentStyleSheets.h"
+#include "core/html/forms/InputTypeNames.h"
 #include "core/platform/ScrollbarTheme.h"
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderMediaControls.h"
@@ -105,7 +106,8 @@ int RenderThemeChromiumAndroid::menuListArrowPadding() const
 
 bool RenderThemeChromiumAndroid::supportsDataListUI(const AtomicString& type) const
 {
-    return false;
+    // FIXME: Add other input types.
+    return type == InputTypeNames::color();
 }
 
 } // namespace WebCore

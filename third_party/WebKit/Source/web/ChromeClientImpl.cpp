@@ -44,6 +44,7 @@
 #include "WebAXObject.h"
 #include "WebAutofillClient.h"
 #include "WebColorChooser.h"
+#include "WebColorSuggestion.h"
 #include "WebConsoleMessage.h"
 #include "WebCursorInfo.h"
 #include "WebFileChooserCompletionImpl.h"
@@ -615,13 +616,6 @@ PassOwnPtr<ColorChooser> ChromeClientImpl::createColorChooser(ColorChooserClient
         controller = adoptPtr(new ColorChooserUIController(this, chooserClient));
     controller->openUI();
     return controller.release();
-}
-PassOwnPtr<WebColorChooser> ChromeClientImpl::createWebColorChooser(WebColorChooserClient* chooserClient, const WebColor& initialColor)
-{
-    WebViewClient* client = m_webView->client();
-    if (!client)
-        return nullptr;
-    return adoptPtr(client->createColorChooser(chooserClient, initialColor));
 }
 
 PassRefPtr<DateTimeChooser> ChromeClientImpl::openDateTimeChooser(DateTimeChooserClient* pickerClient, const DateTimeChooserParameters& parameters)

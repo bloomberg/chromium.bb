@@ -28,31 +28,28 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ColorChooserClient_h
-#define ColorChooserClient_h
+#ifndef WebColorSuggestion_h
+#define WebColorSuggestion_h
 
-#include "platform/ColorChooser.h"
-#include "platform/ColorSuggestion.h"
-#include "platform/PlatformExport.h"
-#include "platform/geometry/IntRect.h"
-#include "wtf/OwnPtr.h"
-#include "wtf/PassOwnPtr.h"
-#include "wtf/Vector.h"
+#include "public/platform/WebColor.h"
+#include "public/platform/WebString.h"
 
 namespace WebCore {
+struct ColorSuggestion;
+}
 
-class PLATFORM_EXPORT ColorChooserClient {
-public:
-    virtual ~ColorChooserClient();
+namespace blink {
 
-    virtual void didChooseColor(const Color&) = 0;
-    virtual void didEndChooser() = 0;
-    virtual IntRect elementRectRelativeToRootView() const = 0;
-    virtual Color currentColor() = 0;
-    virtual bool shouldShowSuggestions() const = 0;
-    virtual Vector<ColorSuggestion> suggestions() const = 0;
+struct WebColorSuggestion {
+    WebColor color;
+    WebString label;
+
+#if BLINK_IMPLEMENTATION
+    WebColorSuggestion(const WebCore::ColorSuggestion&);
+    WebColorSuggestion& operator=(const WebCore::ColorSuggestion&);
+#endif
 };
 
-} // namespace WebCore
+} // namespace blink
 
-#endif // ColorChooserClient_h
+#endif // WebColorSuggestion_h

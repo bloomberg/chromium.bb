@@ -53,6 +53,11 @@ namespace WebCore {
 
 using namespace HTMLNames;
 
+// Upper limit of number of datalist suggestions shown.
+static const unsigned maxSuggestions = 1000;
+// Upper limit for the length of the labels for datalist suggestions.
+static const unsigned maxSuggestionLabelLength = 1000;
+
 static bool isValidColorString(const String& value)
 {
     if (value.isEmpty())
@@ -225,9 +230,9 @@ bool ColorInputType::shouldShowSuggestions() const
     return false;
 }
 
-Vector<Color> ColorInputType::suggestions() const
+Vector<ColorSuggestion> ColorInputType::suggestions() const
 {
-    Vector<Color> suggestions;
+    Vector<ColorSuggestion> suggestions;
     if (RuntimeEnabledFeatures::dataListElementEnabled()) {
         HTMLDataListElement* dataList = element().dataList();
         if (dataList) {
@@ -238,7 +243,10 @@ Vector<Color> ColorInputType::suggestions() const
                 Color color(option->value());
                 if (!color.isValid())
                     continue;
-                suggestions.append(color);
+                ColorSuggestion suggestion(color, option->label().left(maxSuggestionLabelLength));
+                suggestions.append(suggestion);
+                if (suggestions.size() >= maxSuggestions)
+                    break;
             }
         }
     }

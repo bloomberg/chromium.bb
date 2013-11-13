@@ -47,7 +47,7 @@ public:
     virtual IntRect elementRectRelativeToRootView() const OVERRIDE;
     virtual Color currentColor() OVERRIDE;
     virtual bool shouldShowSuggestions() const OVERRIDE;
-    virtual Vector<Color> suggestions() const OVERRIDE;
+    virtual Vector<ColorSuggestion> suggestions() const OVERRIDE;
 
 private:
     ColorInputType(HTMLInputElement& element) : BaseClickableWithKeyInputType(element) { }
