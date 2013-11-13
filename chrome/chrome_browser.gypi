@@ -127,6 +127,8 @@
         'browser/android/most_visited_sites.h',
         'browser/android/omnibox/omnibox_prerender.cc',
         'browser/android/omnibox/omnibox_prerender.h',
+        'browser/android/prerender_condition_platform.cc',
+        'browser/android/prerender_condition_platform.h',
         'browser/android/provider/blocking_ui_thread_async_request.cc',
         'browser/android/provider/blocking_ui_thread_async_request.h',
         'browser/android/provider/bookmark_model_observer_task.cc',

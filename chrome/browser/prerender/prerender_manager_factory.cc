@@ -24,6 +24,10 @@
 #include "chromeos/network/network_handler.h"
 #endif
 
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/prerender_condition_platform.h"
+#endif
+
 namespace prerender {
 
 // static
@@ -56,7 +60,8 @@ PrerenderManagerFactory::~PrerenderManagerFactory() {
 }
 
 BrowserContextKeyedService* PrerenderManagerFactory::BuildServiceInstanceFor(
-    content::BrowserContext* profile) const {
+    content::BrowserContext* browser_context) const {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
   CHECK(g_browser_process->prerender_tracker());
 #if defined(OS_ANDROID)
   if (base::android::SysUtils::IsLowEndDevice())
@@ -64,10 +69,14 @@ BrowserContextKeyedService* PrerenderManagerFactory::BuildServiceInstanceFor(
 #endif
 
   PrerenderManager* prerender_manager = new PrerenderManager(
-      static_cast<Profile*>(profile), g_browser_process->prerender_tracker());
+      profile, g_browser_process->prerender_tracker());
 #if defined(OS_CHROMEOS)
   if (chromeos::NetworkHandler::IsInitialized())
     prerender_manager->AddCondition(new chromeos::PrerenderConditionNetwork);
+#endif
+#if defined(OS_ANDROID)
+  prerender_manager->AddCondition(new android::PrerenderConditionPlatform(
+      browser_context));
 #endif
   return prerender_manager;
 }

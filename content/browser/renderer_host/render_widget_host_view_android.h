@@ -342,6 +342,9 @@ class RenderWidgetHostViewAndroid
 
   int accelerated_surface_route_id_;
 
+  // Size to use if we have no backing ContentViewCore
+  gfx::Size default_size_;
+
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAndroid);
 };
 

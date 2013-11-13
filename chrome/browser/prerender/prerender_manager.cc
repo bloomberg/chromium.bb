@@ -321,12 +321,6 @@ PrerenderHandle* PrerenderManager::AddPrerenderFromLinkRelPrerender(
     const GURL& url,
     const content::Referrer& referrer,
     const gfx::Size& size) {
-#if defined(OS_ANDROID)
-  // TODO(jcivelli): http://crbug.com/113322 We should have an option to disable
-  //                link-prerender and enable omnibox-prerender only.
-  return NULL;
-#else
-  DCHECK(!size.IsEmpty());
   Origin origin = ORIGIN_LINK_REL_PRERENDER_CROSSDOMAIN;
   SessionStorageNamespace* session_storage_namespace = NULL;
   // Unit tests pass in a process_id == -1.
@@ -380,7 +374,6 @@ PrerenderHandle* PrerenderManager::AddPrerenderFromLinkRelPrerender(
 
   return AddPrerender(origin, process_id, url, referrer, size,
                       session_storage_namespace);
-#endif
 }
 
 PrerenderHandle* PrerenderManager::AddPrerenderFromOmnibox(

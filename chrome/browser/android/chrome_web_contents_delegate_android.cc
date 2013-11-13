@@ -12,6 +12,8 @@
 #include "chrome/browser/media/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/protected_media_identifier_permission_context.h"
 #include "chrome/browser/media/protected_media_identifier_permission_context_factory.h"
+#include "chrome/browser/prerender/prerender_manager.h"
+#include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_modal_dialogs/javascript_dialog_manager.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
@@ -267,6 +269,16 @@ WebContents* ChromeWebContentsDelegateAndroid::OpenURLFromTab(
                                               blink::WebWindowFeatures())) {
       return NULL;
     }
+  }
+
+  if (disposition == CURRENT_TAB) {
+    // Only prerender for a current-tab navigation to avoid session storage
+    // namespace issues.
+    nav_params.target_contents = source;
+    prerender::PrerenderManager* prerender_manager =
+        prerender::PrerenderManagerFactory::GetForProfile(profile);
+    if (prerender_manager->MaybeUsePrerenderedPage(params.url, &nav_params))
+      return nav_params.target_contents;
   }
 
   return WebContentsDelegateAndroid::OpenURLFromTab(source, params);

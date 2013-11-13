@@ -212,6 +212,7 @@ void RenderWidgetHostViewAndroid::WasResized() {
 void RenderWidgetHostViewAndroid::SetSize(const gfx::Size& size) {
   // Ignore the given size as only the Java code has the power to
   // resize the view on Android.
+  default_size_ = size;
   WasResized();
 }
 
@@ -375,7 +376,7 @@ bool RenderWidgetHostViewAndroid::IsShowing() {
 
 gfx::Rect RenderWidgetHostViewAndroid::GetViewBounds() const {
   if (!content_view_core_)
-    return gfx::Rect();
+    return gfx::Rect(default_size_);
 
   gfx::Size size = content_view_core_->GetViewportSizeDip();
   gfx::Size offset = content_view_core_->GetViewportSizeOffsetDip();
