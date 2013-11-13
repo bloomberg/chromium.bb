@@ -704,8 +704,8 @@ END
     $header{class}->addFooter("};");
 
     $header{classPublic}->add(<<END);
-    static bool HasInstance(v8::Handle<v8::Value>, v8::Isolate*, WrapperWorldType);
-    static bool HasInstanceInAnyWorld(v8::Handle<v8::Value>, v8::Isolate*);
+    static bool hasInstance(v8::Handle<v8::Value>, v8::Isolate*, WrapperWorldType);
+    static bool hasInstanceInAnyWorld(v8::Handle<v8::Value>, v8::Isolate*);
     static v8::Handle<v8::FunctionTemplate> GetTemplate(v8::Isolate*, WrapperWorldType);
     static ${nativeType}* toNative(v8::Handle<v8::Object> object)
     {
@@ -1888,7 +1888,7 @@ sub GenerateNormalAttributeSetter
     if ($attribute->extendedAttributes->{"StrictTypeChecking"}) {
         my $argType = $attribute->type;
         if (IsWrapperType($argType)) {
-            $code .= "    if (!isUndefinedOrNull(jsValue) && !V8${argType}::HasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate()))) {\n";
+            $code .= "    if (!isUndefinedOrNull(jsValue) && !V8${argType}::hasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate()))) {\n";
             $code .= "        throwTypeError(ExceptionMessages::failedToSet(\"${attrName}\", \"${interfaceName}\", \"The provided value is not of type '${argType}'.\"), info.GetIsolate());\n";
             $code .= "        return;\n";
             $code .= "    }\n";
@@ -2132,9 +2132,9 @@ sub GenerateParametersCheckExpression
             }
         } elsif (IsWrapperType($type)) {
             if ($parameter->isNullable) {
-                push(@andExpression, "${value}->IsNull() || V8${type}::HasInstance($value, info.GetIsolate(), worldType(info.GetIsolate()))");
+                push(@andExpression, "${value}->IsNull() || V8${type}::hasInstance($value, info.GetIsolate(), worldType(info.GetIsolate()))");
             } else {
-                push(@andExpression, "V8${type}::HasInstance($value, info.GetIsolate(), worldType(info.GetIsolate()))");
+                push(@andExpression, "V8${type}::hasInstance($value, info.GetIsolate(), worldType(info.GetIsolate()))");
             }
         }
 
@@ -2572,7 +2572,7 @@ END
             if (IsWrapperType($argType)) {
                 $parameterCheckString .= "    Vector<$nativeElementType> $parameterName;\n";
                 $parameterCheckString .= "    for (int i = $paramIndex; i < info.Length(); ++i) {\n";
-                $parameterCheckString .= "        if (!V8${argType}::HasInstance(info[i], info.GetIsolate(), worldType(info.GetIsolate()))) {\n";
+                $parameterCheckString .= "        if (!V8${argType}::hasInstance(info[i], info.GetIsolate(), worldType(info.GetIsolate()))) {\n";
                 $parameterCheckString .= "            throwTypeError(ExceptionMessages::failedToExecute(\"$functionName\", \"$interfaceName\", \"parameter $humanFriendlyIndex is not of type \'$argType\'.\"), info.GetIsolate());\n";
                 $parameterCheckString .= "            return;\n";
                 $parameterCheckString .= "        }\n";
@@ -2616,7 +2616,7 @@ END
                 my $argValue = "info[$paramIndex]";
                 my $argType = $parameter->type;
                 if (IsWrapperType($argType)) {
-                    $parameterCheckString .= "    if (info.Length() > $paramIndex && !isUndefinedOrNull($argValue) && !V8${argType}::HasInstance($argValue, info.GetIsolate(), worldType(info.GetIsolate()))) {\n";
+                    $parameterCheckString .= "    if (info.Length() > $paramIndex && !isUndefinedOrNull($argValue) && !V8${argType}::hasInstance($argValue, info.GetIsolate(), worldType(info.GetIsolate()))) {\n";
                     $parameterCheckString .= "        throwTypeError(ExceptionMessages::failedToExecute(\"$functionName\", \"$interfaceName\", \"parameter $humanFriendlyIndex is not of type \'$argType\'.\"), info.GetIsolate());\n";
                     $parameterCheckString .= "        return;\n";
                     $parameterCheckString .= "    }\n";
@@ -4554,14 +4554,14 @@ v8::Handle<v8::FunctionTemplate> ${v8ClassName}::GetTemplate(v8::Isolate* isolat
 
 END
     $implementation{nameSpaceWebCore}->add(<<END);
-bool ${v8ClassName}::HasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+bool ${v8ClassName}::hasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, currentWorldType);
 }
 
 END
     $implementation{nameSpaceWebCore}->add(<<END);
-bool ${v8ClassName}::HasInstanceInAnyWorld(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate)
+bool ${v8ClassName}::hasInstanceInAnyWorld(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate)
 {
     return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, MainWorld)
         || V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, IsolatedWorld)
@@ -5431,7 +5431,7 @@ sub JSValueToNative
     AddIncludesForType($type);
 
     AddToImplIncludes("V8${type}.h");
-    return "V8${type}::HasInstance($value, $getIsolate, worldType($getIsolate)) ? V8${type}::toNative(v8::Handle<v8::Object>::Cast($value)) : 0";
+    return "V8${type}::hasInstance($value, $getIsolate, worldType($getIsolate)) ? V8${type}::toNative(v8::Handle<v8::Object>::Cast($value)) : 0";
 }
 
 sub CreateCustomSignature

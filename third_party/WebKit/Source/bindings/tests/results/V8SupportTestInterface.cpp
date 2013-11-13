@@ -218,7 +218,7 @@ static void supplementalNodeAttributeGetterCallback(v8::Local<v8::String>, const
 static void supplementalNodeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     SupportTestInterface* imp = V8SupportTestInterface::toNative(info.Holder());
-    V8TRYCATCH_VOID(Node*, cppValue, V8Node::HasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(Node*, cppValue, V8Node::hasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
     SupportTestPartialInterface::setSupplementalNode(imp, WTF::getPtr(cppValue));
 }
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
@@ -253,7 +253,7 @@ static void Node13AttributeGetterCallback(v8::Local<v8::String>, const v8::Prope
 static void Node13AttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     SupportTestInterface* imp = V8SupportTestInterface::toNative(info.Holder());
-    V8TRYCATCH_VOID(Node*, cppValue, V8Node::HasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(Node*, cppValue, V8Node::hasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
     SupportTestPartialInterface::setNode13(imp, WTF::getPtr(cppValue));
 }
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
@@ -288,7 +288,7 @@ static void Node14AttributeGetterCallback(v8::Local<v8::String>, const v8::Prope
 static void Node14AttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     SupportTestInterface* imp = V8SupportTestInterface::toNative(info.Holder());
-    V8TRYCATCH_VOID(Node*, cppValue, V8Node::HasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(Node*, cppValue, V8Node::hasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
     SupportTestPartialInterface::setNode14(imp, WTF::getPtr(cppValue));
 }
 #endif // ENABLE(Condition11) || ENABLE(Condition12)
@@ -329,7 +329,7 @@ static void supplementalMethod2Method(const v8::FunctionCallbackInfo<v8::Value>&
     SupportTestInterface* imp = V8SupportTestInterface::toNative(info.Holder());
     ExceptionState es(info.GetIsolate());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[0]);
-    V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::HasInstance(info[1], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(info[1])) : 0);
+    V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::hasInstance(info[1], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(info[1])) : 0);
     ExecutionContext* scriptContext = getExecutionContext();
     RefPtr<TestObj> result = SupportTestPartialInterface::supplementalMethod2(scriptContext, imp, strArg, objArg, es);
     if (es.throwIfNeeded())
@@ -464,12 +464,12 @@ v8::Handle<v8::FunctionTemplate> V8SupportTestInterface::GetTemplate(v8::Isolate
     return handleScope.Close(templ);
 }
 
-bool V8SupportTestInterface::HasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+bool V8SupportTestInterface::hasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, currentWorldType);
 }
 
-bool V8SupportTestInterface::HasInstanceInAnyWorld(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate)
+bool V8SupportTestInterface::hasInstanceInAnyWorld(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate)
 {
     return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, MainWorld)
         || V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, IsolatedWorld)

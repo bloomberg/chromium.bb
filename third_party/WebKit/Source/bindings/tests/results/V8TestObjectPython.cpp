@@ -757,7 +757,7 @@ static void documentAttributeAttributeGetterCallback(v8::Local<v8::String>, cons
 static void documentAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(Document*, cppValue, V8Document::HasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Document::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(Document*, cppValue, V8Document::hasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Document::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
     imp->setDocumentAttribute(WTF::getPtr(cppValue));
 }
 
@@ -784,7 +784,7 @@ static void documentFragmentAttributeAttributeGetterCallback(v8::Local<v8::Strin
 static void documentFragmentAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(DocumentFragment*, cppValue, V8DocumentFragment::HasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8DocumentFragment::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(DocumentFragment*, cppValue, V8DocumentFragment::hasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8DocumentFragment::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
     imp->setDocumentFragmentAttribute(WTF::getPtr(cppValue));
 }
 
@@ -811,7 +811,7 @@ static void documentTypeAttributeAttributeGetterCallback(v8::Local<v8::String>, 
 static void documentTypeAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(DocumentType*, cppValue, V8DocumentType::HasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8DocumentType::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(DocumentType*, cppValue, V8DocumentType::hasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8DocumentType::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
     imp->setDocumentTypeAttribute(WTF::getPtr(cppValue));
 }
 
@@ -838,7 +838,7 @@ static void elementAttributeAttributeGetterCallback(v8::Local<v8::String>, const
 static void elementAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(Element*, cppValue, V8Element::HasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Element::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(Element*, cppValue, V8Element::hasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Element::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
     imp->setElementAttribute(WTF::getPtr(cppValue));
 }
 
@@ -865,7 +865,7 @@ static void entityAttributeAttributeGetterCallback(v8::Local<v8::String>, const 
 static void entityAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(Entity*, cppValue, V8Entity::HasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Entity::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(Entity*, cppValue, V8Entity::hasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Entity::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
     imp->setEntityAttribute(WTF::getPtr(cppValue));
 }
 
@@ -892,7 +892,7 @@ static void nodeAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8
 static void nodeAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(Node*, cppValue, V8Node::HasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(Node*, cppValue, V8Node::hasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
     imp->setNodeAttribute(WTF::getPtr(cppValue));
 }
 
@@ -919,7 +919,7 @@ static void shadowRootAttributeAttributeGetterCallback(v8::Local<v8::String>, co
 static void shadowRootAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(ShadowRoot*, cppValue, V8ShadowRoot::HasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8ShadowRoot::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(ShadowRoot*, cppValue, V8ShadowRoot::hasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8ShadowRoot::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
     imp->setShadowRootAttribute(WTF::getPtr(cppValue));
 }
 
@@ -1027,7 +1027,7 @@ static void testInterfaceEmptyAttributeAttributeGetterCallback(v8::Local<v8::Str
 static void testInterfaceEmptyAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestInterfaceEmpty*, cppValue, V8TestInterfaceEmpty::HasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, cppValue, V8TestInterfaceEmpty::hasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
     imp->setTestInterfaceEmptyAttribute(WTF::getPtr(cppValue));
 }
 
@@ -1054,7 +1054,7 @@ static void selfAttributeGetterCallback(v8::Local<v8::String>, const v8::Propert
 static void selfAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestInterfaceEmpty*, cppValue, V8TestInterfaceEmpty::HasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, cppValue, V8TestInterfaceEmpty::hasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
     imp->setSelf(WTF::getPtr(cppValue));
 }
 
@@ -1094,7 +1094,7 @@ static void htmlCollectionAttributeAttributeGetterCallback(v8::Local<v8::String>
 static void htmlCollectionAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(HTMLCollection*, cppValue, V8HTMLCollection::HasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8HTMLCollection::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(HTMLCollection*, cppValue, V8HTMLCollection::hasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8HTMLCollection::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
     imp->setHTMLCollectionAttribute(WTF::getPtr(cppValue));
 }
 
@@ -1121,7 +1121,7 @@ static void htmlElementAttributeAttributeGetterCallback(v8::Local<v8::String>, c
 static void htmlElementAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(HTMLElement*, cppValue, V8HTMLElement::HasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8HTMLElement::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(HTMLElement*, cppValue, V8HTMLElement::hasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8HTMLElement::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
     imp->setHTMLElementAttribute(WTF::getPtr(cppValue));
 }
 
@@ -2485,7 +2485,7 @@ static void reflectTestInterfaceAttributeAttributeGetterCallback(v8::Local<v8::S
 static void reflectTestInterfaceAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestInterface*, cppValue, V8TestInterface::HasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterface::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(TestInterface*, cppValue, V8TestInterface::hasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterface::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     imp->setAttribute(HTMLNames::reflecttestinterfaceattributeAttr, WTF::getPtr(cppValue));
 }
@@ -2514,7 +2514,7 @@ static void reflectReflectedNameAttributeTestAttributeAttributeGetterCallback(v8
 static void reflectReflectedNameAttributeTestAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestInterface*, cppValue, V8TestInterface::HasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterface::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(TestInterface*, cppValue, V8TestInterface::hasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterface::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     imp->setAttribute(HTMLNames::reflectedNameAttributeAttr, WTF::getPtr(cppValue));
 }
@@ -2990,12 +2990,12 @@ static void strictTypeCheckingTestInterfaceAttributeAttributeGetterCallback(v8::
 
 static void strictTypeCheckingTestInterfaceAttributeAttributeSetter(v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
-    if (!isUndefinedOrNull(jsValue) && !V8TestInterface::HasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate()))) {
+    if (!isUndefinedOrNull(jsValue) && !V8TestInterface::hasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate()))) {
         throwTypeError(ExceptionMessages::failedToSet("strictTypeCheckingTestInterfaceAttribute", "TestObjectPython", "The provided value is not of type 'TestInterface'."), info.GetIsolate());
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestInterface*, cppValue, V8TestInterface::HasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterface::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
+    V8TRYCATCH_VOID(TestInterface*, cppValue, V8TestInterface::hasInstance(jsValue, info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterface::toNative(v8::Handle<v8::Object>::Cast(jsValue)) : 0);
     imp->setStrictTypeCheckingTestInterfaceAttribute(WTF::getPtr(cppValue));
 }
 
@@ -3656,7 +3656,7 @@ static void voidMethodTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
     imp->voidMethodTestInterfaceEmptyArg(testInterfaceEmptyArg);
 }
 
@@ -3675,7 +3675,7 @@ static void voidMethodLongArgTestInterfaceEmptyArgMethod(const v8::FunctionCallb
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     V8TRYCATCH_VOID(int, longArg, toInt32(info[0]));
-    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::HasInstance(info[1], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[1])) : 0);
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::hasInstance(info[1], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[1])) : 0);
     imp->voidMethodLongArgTestInterfaceEmptyArg(longArg, testInterfaceEmptyArg);
 }
 
@@ -3786,7 +3786,7 @@ static void voidMethodAttrArgMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(Attr*, attrArg, V8Attr::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8Attr::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(Attr*, attrArg, V8Attr::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8Attr::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
     imp->voidMethodAttrArg(attrArg);
 }
 
@@ -3804,7 +3804,7 @@ static void voidMethodDocumentArgMethod(const v8::FunctionCallbackInfo<v8::Value
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(Document*, documentArg, V8Document::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8Document::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(Document*, documentArg, V8Document::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8Document::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
     imp->voidMethodDocumentArg(documentArg);
 }
 
@@ -3822,7 +3822,7 @@ static void voidMethodDocumentTypeArgMethod(const v8::FunctionCallbackInfo<v8::V
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(DocumentType*, documentTypeArg, V8DocumentType::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8DocumentType::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(DocumentType*, documentTypeArg, V8DocumentType::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8DocumentType::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
     imp->voidMethodDocumentTypeArg(documentTypeArg);
 }
 
@@ -3840,7 +3840,7 @@ static void voidMethodElementArgMethod(const v8::FunctionCallbackInfo<v8::Value>
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(Element*, elementArg, V8Element::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8Element::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(Element*, elementArg, V8Element::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8Element::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
     imp->voidMethodElementArg(elementArg);
 }
 
@@ -3858,7 +3858,7 @@ static void voidMethodNodeArgMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(Node*, nodeArg, V8Node::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(Node*, nodeArg, V8Node::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
     imp->voidMethodNodeArg(nodeArg);
 }
 
@@ -4217,7 +4217,7 @@ static void voidMethodNullableStringArgMethod(const v8::FunctionCallbackInfo<v8:
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestInterfaceEmpty*, nullableTestInterfaceEmptyArg, V8TestInterfaceEmpty::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, nullableTestInterfaceEmptyArg, V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
     imp->voidMethodNullableStringArg(nullableTestInterfaceEmptyArg);
 }
 
@@ -4474,7 +4474,7 @@ static void voidMethodOptionalTestInterfaceEmptyArgMethod(const v8::FunctionCall
         imp->voidMethodOptionalTestInterfaceEmptyArg();
         return;
     }
-    V8TRYCATCH_VOID(TestInterfaceEmpty*, optionalTestInterfaceEmptyArg, V8TestInterfaceEmpty::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, optionalTestInterfaceEmptyArg, V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
     imp->voidMethodOptionalTestInterfaceEmptyArg(optionalTestInterfaceEmptyArg);
 }
 
@@ -4638,7 +4638,7 @@ static void voidMethodLongArgOptionalTestInterfaceEmptyArgMethod(const v8::Funct
         imp->voidMethodLongArgOptionalTestInterfaceEmptyArg(longArg);
         return;
     }
-    V8TRYCATCH_VOID(TestInterfaceEmpty*, optionalTestInterfaceEmpty, V8TestInterfaceEmpty::HasInstance(info[1], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[1])) : 0);
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, optionalTestInterfaceEmpty, V8TestInterfaceEmpty::hasInstance(info[1], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[1])) : 0);
     imp->voidMethodLongArgOptionalTestInterfaceEmptyArg(longArg, optionalTestInterfaceEmpty);
 }
 
@@ -4656,7 +4656,7 @@ static void voidMethodTestInterfaceEmptyArgOptionalLongArgMethod(const v8::Funct
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestInterfaceEmpty*, optionalTestInterfaceEmpty, V8TestInterfaceEmpty::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, optionalTestInterfaceEmpty, V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
     if (UNLIKELY(info.Length() <= 1)) {
         imp->voidMethodTestInterfaceEmptyArgOptionalLongArg(optionalTestInterfaceEmpty);
         return;
@@ -4710,7 +4710,7 @@ static void voidMethodVariadicTestInterfaceEmptyArgMethod(const v8::FunctionCall
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     Vector<RefPtr<TestInterfaceEmpty> > variadicTestInterfaceEmptyArgs;
     for (int i = 0; i < info.Length(); ++i) {
-        if (!V8TestInterfaceEmpty::HasInstance(info[i], info.GetIsolate(), worldType(info.GetIsolate()))) {
+        if (!V8TestInterfaceEmpty::hasInstance(info[i], info.GetIsolate(), worldType(info.GetIsolate()))) {
             throwTypeError(ExceptionMessages::failedToExecute("voidMethodVariadicTestInterfaceEmptyArg", "TestObjectPython", "parameter 1 is not of type 'TestInterfaceEmpty'."), info.GetIsolate());
             return;
         }
@@ -4733,10 +4733,10 @@ static void voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArgMethod(c
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
     Vector<RefPtr<TestInterfaceEmpty> > variadicTestInterfaceEmptyArgs;
     for (int i = 1; i < info.Length(); ++i) {
-        if (!V8TestInterfaceEmpty::HasInstance(info[i], info.GetIsolate(), worldType(info.GetIsolate()))) {
+        if (!V8TestInterfaceEmpty::hasInstance(info[i], info.GetIsolate(), worldType(info.GetIsolate()))) {
             throwTypeError(ExceptionMessages::failedToExecute("voidMethodTestInterfaceEmptyArgVariadicTestInterfaceEmptyArg", "TestObjectPython", "parameter 2 is not of type 'TestInterfaceEmpty'."), info.GetIsolate());
             return;
         }
@@ -4915,7 +4915,7 @@ static void overloadedMethodD2Method(const v8::FunctionCallbackInfo<v8::Value>& 
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
     imp->overloadedMethodD(testInterfaceEmptyArg);
 }
 
@@ -4925,7 +4925,7 @@ static void overloadedMethodDMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         overloadedMethodD1Method(info);
         return;
     }
-    if (((info.Length() == 1) && (V8TestInterfaceEmpty::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))))) {
+    if (((info.Length() == 1) && (V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))))) {
         overloadedMethodD2Method(info);
         return;
     }
@@ -5007,7 +5007,7 @@ static void overloadedMethodF2Method(const v8::FunctionCallbackInfo<v8::Value>& 
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyNullableArg, V8TestInterfaceEmpty::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyNullableArg, V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
     imp->overloadedMethodF(testInterfaceEmptyNullableArg);
 }
 
@@ -5017,7 +5017,7 @@ static void overloadedMethodFMethod(const v8::FunctionCallbackInfo<v8::Value>& i
         overloadedMethodF1Method(info);
         return;
     }
-    if (((info.Length() == 1) && (info[0]->IsNull() || V8TestInterfaceEmpty::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))))) {
+    if (((info.Length() == 1) && (info[0]->IsNull() || V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))))) {
         overloadedMethodF2Method(info);
         return;
     }
@@ -5236,7 +5236,7 @@ static void voidMethodClampUnsignedLongArgMethodCallback(const v8::FunctionCallb
 static void voidMethodDefaultUndefinedTestInterfaceEmptyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestInterfaceEmpty*, defaultUndefinedTestInterfaceEmptyArg, V8TestInterfaceEmpty::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, defaultUndefinedTestInterfaceEmptyArg, V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
     imp->voidMethodDefaultUndefinedTestInterfaceEmptyArg(defaultUndefinedTestInterfaceEmptyArg);
 }
 
@@ -5814,7 +5814,7 @@ static void perWorldBindingsVoidMethodTestInterfaceEmptyArgMethod(const v8::Func
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
     imp->perWorldBindingsVoidMethodTestInterfaceEmptyArg(testInterfaceEmptyArg);
 }
 
@@ -5832,7 +5832,7 @@ static void perWorldBindingsVoidMethodTestInterfaceEmptyArgMethodForMainWorld(co
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
     imp->perWorldBindingsVoidMethodTestInterfaceEmptyArg(testInterfaceEmptyArg);
 }
 
@@ -5954,11 +5954,11 @@ static void strictTypeCheckingVoidMethodTestInterfaceEmptyArgMethod(const v8::Fu
         return;
     }
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    if (info.Length() > 0 && !isUndefinedOrNull(info[0]) && !V8TestInterfaceEmpty::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))) {
+    if (info.Length() > 0 && !isUndefinedOrNull(info[0]) && !V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))) {
         throwTypeError(ExceptionMessages::failedToExecute("strictTypeCheckingVoidMethodTestInterfaceEmptyArg", "TestObjectPython", "parameter 1 is not of type 'TestInterfaceEmpty'."), info.GetIsolate());
         return;
     }
-    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(TestInterfaceEmpty*, testInterfaceEmptyArg, V8TestInterfaceEmpty::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestInterfaceEmpty::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
     imp->strictTypeCheckingVoidMethodTestInterfaceEmptyArg(testInterfaceEmptyArg);
 }
 
@@ -6434,12 +6434,12 @@ v8::Handle<v8::FunctionTemplate> V8TestObjectPython::GetTemplate(v8::Isolate* is
     return handleScope.Close(templ);
 }
 
-bool V8TestObjectPython::HasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+bool V8TestObjectPython::hasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, currentWorldType);
 }
 
-bool V8TestObjectPython::HasInstanceInAnyWorld(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate)
+bool V8TestObjectPython::hasInstanceInAnyWorld(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate)
 {
     return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, MainWorld)
         || V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, IsolatedWorld)

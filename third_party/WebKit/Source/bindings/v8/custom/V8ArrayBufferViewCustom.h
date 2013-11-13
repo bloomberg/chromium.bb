@@ -43,11 +43,11 @@ namespace WebCore {
 
 class V8ArrayBufferView {
 public:
-    static bool HasInstance(v8::Handle<v8::Value> value, v8::Isolate*, WrapperWorldType)
+    static bool hasInstance(v8::Handle<v8::Value> value, v8::Isolate*, WrapperWorldType)
     {
         return value->IsArrayBufferView();
     }
-    static bool HasInstanceInAnyWorld(v8::Handle<v8::Value> value, v8::Isolate*)
+    static bool hasInstanceInAnyWorld(v8::Handle<v8::Value> value, v8::Isolate*)
     {
         return value->IsArrayBufferView();
     }

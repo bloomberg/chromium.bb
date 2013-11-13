@@ -296,7 +296,7 @@ static WebGLUniformLocation* toWebGLUniformLocation(v8::Handle<v8::Value> value,
 {
     ok = false;
     WebGLUniformLocation* location = 0;
-    if (V8WebGLUniformLocation::HasInstance(value, isolate, worldType(isolate))) {
+    if (V8WebGLUniformLocation::hasInstance(value, isolate, worldType(isolate))) {
         location = V8WebGLUniformLocation::toNative(value->ToObject());
         ok = true;
     }
@@ -315,11 +315,11 @@ void V8WebGLRenderingContext::getAttachedShadersMethodCustom(const v8::FunctionC
     }
 
     WebGLRenderingContext* context = V8WebGLRenderingContext::toNative(info.Holder());
-    if (info.Length() > 0 && !isUndefinedOrNull(info[0]) && !V8WebGLProgram::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))) {
+    if (info.Length() > 0 && !isUndefinedOrNull(info[0]) && !V8WebGLProgram::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))) {
         throwUninformativeAndGenericTypeError(info.GetIsolate());
         return;
     }
-    WebGLProgram* program = V8WebGLProgram::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8WebGLProgram::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0;
+    WebGLProgram* program = V8WebGLProgram::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8WebGLProgram::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0;
     Vector<RefPtr<WebGLShader> > shaders;
     bool succeed = context->getAttachedShaders(program, shaders);
     if (!succeed) {
@@ -385,11 +385,11 @@ void V8WebGLRenderingContext::getProgramParameterMethodCustom(const v8::Function
     }
 
     WebGLRenderingContext* context = V8WebGLRenderingContext::toNative(info.Holder());
-    if (info.Length() > 0 && !isUndefinedOrNull(info[0]) && !V8WebGLProgram::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))) {
+    if (info.Length() > 0 && !isUndefinedOrNull(info[0]) && !V8WebGLProgram::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))) {
         throwUninformativeAndGenericTypeError(info.GetIsolate());
         return;
     }
-    WebGLProgram* program = V8WebGLProgram::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8WebGLProgram::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0;
+    WebGLProgram* program = V8WebGLProgram::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8WebGLProgram::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0;
     unsigned pname = toInt32(info[1]);
     WebGLGetInfo args = context->getProgramParameter(program, pname);
     v8SetReturnValue(info, toV8Object(args, info.Holder(), info.GetIsolate()));
@@ -408,11 +408,11 @@ void V8WebGLRenderingContext::getShaderParameterMethodCustom(const v8::FunctionC
     }
 
     WebGLRenderingContext* context = V8WebGLRenderingContext::toNative(info.Holder());
-    if (info.Length() > 0 && !isUndefinedOrNull(info[0]) && !V8WebGLShader::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))) {
+    if (info.Length() > 0 && !isUndefinedOrNull(info[0]) && !V8WebGLShader::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))) {
         throwUninformativeAndGenericTypeError(info.GetIsolate());
         return;
     }
-    WebGLShader* shader = V8WebGLShader::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8WebGLShader::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0;
+    WebGLShader* shader = V8WebGLShader::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8WebGLShader::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0;
     unsigned pname = toInt32(info[1]);
     WebGLGetInfo args = context->getShaderParameter(shader, pname);
     v8SetReturnValue(info, toV8Object(args, info.Holder(), info.GetIsolate()));
@@ -446,13 +446,13 @@ void V8WebGLRenderingContext::getUniformMethodCustom(const v8::FunctionCallbackI
     }
 
     WebGLRenderingContext* context = V8WebGLRenderingContext::toNative(info.Holder());
-    if (info.Length() > 0 && !isUndefinedOrNull(info[0]) && !V8WebGLProgram::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))) {
+    if (info.Length() > 0 && !isUndefinedOrNull(info[0]) && !V8WebGLProgram::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))) {
         throwUninformativeAndGenericTypeError(info.GetIsolate());
         return;
     }
-    WebGLProgram* program = V8WebGLProgram::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8WebGLProgram::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0;
+    WebGLProgram* program = V8WebGLProgram::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8WebGLProgram::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0;
 
-    if (info.Length() > 1 && !isUndefinedOrNull(info[1]) && !V8WebGLUniformLocation::HasInstance(info[1], info.GetIsolate(), worldType(info.GetIsolate()))) {
+    if (info.Length() > 1 && !isUndefinedOrNull(info[1]) && !V8WebGLUniformLocation::hasInstance(info[1], info.GetIsolate(), worldType(info.GetIsolate()))) {
         throwUninformativeAndGenericTypeError(info.GetIsolate());
         return;
     }
@@ -519,7 +519,7 @@ static void vertexAttribAndUniformHelperf(const v8::FunctionCallbackInfo<v8::Val
     if (isFunctionToCallForAttribute(functionToCall))
         index = toInt32(info[0]);
     else {
-        if (info.Length() > 0 && !isUndefinedOrNull(info[0]) && !V8WebGLUniformLocation::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))) {
+        if (info.Length() > 0 && !isUndefinedOrNull(info[0]) && !V8WebGLUniformLocation::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))) {
             throwUninformativeAndGenericTypeError(info.GetIsolate());
             return;
         }
@@ -528,7 +528,7 @@ static void vertexAttribAndUniformHelperf(const v8::FunctionCallbackInfo<v8::Val
 
     WebGLRenderingContext* context = V8WebGLRenderingContext::toNative(info.Holder());
 
-    if (V8Float32Array::HasInstance(info[1], info.GetIsolate(), worldType(info.GetIsolate()))) {
+    if (V8Float32Array::hasInstance(info[1], info.GetIsolate(), worldType(info.GetIsolate()))) {
         Float32Array* array = V8Float32Array::toNative(info[1]->ToObject());
         ASSERT(array != NULL);
         switch (functionToCall) {
@@ -589,14 +589,14 @@ static void uniformHelperi(const v8::FunctionCallbackInfo<v8::Value>& info, Func
     }
 
     WebGLRenderingContext* context = V8WebGLRenderingContext::toNative(info.Holder());
-    if (info.Length() > 0 && !isUndefinedOrNull(info[0]) && !V8WebGLUniformLocation::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))) {
+    if (info.Length() > 0 && !isUndefinedOrNull(info[0]) && !V8WebGLUniformLocation::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))) {
         throwUninformativeAndGenericTypeError(info.GetIsolate());
         return;
     }
     bool ok = false;
     WebGLUniformLocation* location = toWebGLUniformLocation(info[0], ok, info.GetIsolate());
 
-    if (V8Int32Array::HasInstance(info[1], info.GetIsolate(), worldType(info.GetIsolate()))) {
+    if (V8Int32Array::hasInstance(info[1], info.GetIsolate(), worldType(info.GetIsolate()))) {
         Int32Array* array = V8Int32Array::toNative(info[1]->ToObject());
         ASSERT(array != NULL);
         switch (functionToCall) {
@@ -689,7 +689,7 @@ static void uniformMatrixHelper(const v8::FunctionCallbackInfo<v8::Value>& info,
 
     WebGLRenderingContext* context = V8WebGLRenderingContext::toNative(info.Holder());
 
-    if (info.Length() > 0 && !isUndefinedOrNull(info[0]) && !V8WebGLUniformLocation::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))) {
+    if (info.Length() > 0 && !isUndefinedOrNull(info[0]) && !V8WebGLUniformLocation::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))) {
         throwUninformativeAndGenericTypeError(info.GetIsolate());
         return;
     }
@@ -697,7 +697,7 @@ static void uniformMatrixHelper(const v8::FunctionCallbackInfo<v8::Value>& info,
     WebGLUniformLocation* location = toWebGLUniformLocation(info[0], ok, info.GetIsolate());
 
     bool transpose = info[1]->BooleanValue();
-    if (V8Float32Array::HasInstance(info[2], info.GetIsolate(), worldType(info.GetIsolate()))) {
+    if (V8Float32Array::hasInstance(info[2], info.GetIsolate(), worldType(info.GetIsolate()))) {
         Float32Array* array = V8Float32Array::toNative(info[2]->ToObject());
         ASSERT(array != NULL);
         switch (matrixSize) {

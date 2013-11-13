@@ -394,7 +394,7 @@ def v8_value_to_cpp_value(idl_type, extended_attributes, v8_value, index):
         add_includes_for_type(idl_type)
     else:
         cpp_expression_format = (
-            'V8{idl_type}::HasInstance({v8_value}, info.GetIsolate(), worldType(info.GetIsolate())) ? '
+            'V8{idl_type}::hasInstance({v8_value}, info.GetIsolate(), worldType(info.GetIsolate())) ? '
             'V8{idl_type}::toNative(v8::Handle<v8::Object>::Cast({v8_value})) : 0')
         add_includes_for_type(idl_type)
 

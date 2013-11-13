@@ -73,7 +73,7 @@ void V8HTMLOptionsCollection::namedItemMethodCustom(const v8::FunctionCallbackIn
 
 void V8HTMLOptionsCollection::addMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (!V8HTMLOptionElement::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))) {
+    if (!V8HTMLOptionElement::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))) {
         setDOMException(TypeMismatchError, info.GetIsolate());
         return;
     }

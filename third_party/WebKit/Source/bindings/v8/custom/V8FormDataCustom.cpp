@@ -51,7 +51,7 @@ void V8FormData::appendMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& i
     String name = toWebCoreStringWithNullCheck(info[0]);
 
     v8::Handle<v8::Value> arg = info[1];
-    if (V8Blob::HasInstance(arg, info.GetIsolate(), worldType(info.GetIsolate()))) {
+    if (V8Blob::hasInstance(arg, info.GetIsolate(), worldType(info.GetIsolate()))) {
         v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(arg);
         Blob* blob = V8Blob::toNative(object);
         ASSERT(blob);

@@ -39,7 +39,7 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     {% if method.is_strict_type_checking and argument.is_wrapper_type %}
     {# Type checking for wrapper interface types (if interface not implemented,
        throw TypeError), per http://www.w3.org/TR/WebIDL/#es-interface #}
-    if (info.Length() > {{argument.index}} && !isUndefinedOrNull(info[{{argument.index}}]) && !V8{{argument.idl_type}}::HasInstance(info[{{argument.index}}], info.GetIsolate(), worldType(info.GetIsolate()))) {
+    if (info.Length() > {{argument.index}} && !isUndefinedOrNull(info[{{argument.index}}]) && !V8{{argument.idl_type}}::hasInstance(info[{{argument.index}}], info.GetIsolate(), worldType(info.GetIsolate()))) {
         throwTypeError(ExceptionMessages::failedToExecute("{{method.name}}", "{{interface_name}}", "parameter {{argument.index + 1}} is not of type '{{argument.idl_type}}'."), info.GetIsolate());
         return;
     }
@@ -60,7 +60,7 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     {% elif argument.is_variadic_wrapper_type %}
     Vector<{{argument.cpp_type}} > {{argument.name}};
     for (int i = {{argument.index}}; i < info.Length(); ++i) {
-        if (!V8{{argument.idl_type}}::HasInstance(info[i], info.GetIsolate(), worldType(info.GetIsolate()))) {
+        if (!V8{{argument.idl_type}}::hasInstance(info[i], info.GetIsolate(), worldType(info.GetIsolate()))) {
             throwTypeError(ExceptionMessages::failedToExecute("{{method.name}}", "{{interface_name}}", "parameter {{argument.index + 1}} is not of type '{{argument.idl_type}}'."), info.GetIsolate());
             return;
         }

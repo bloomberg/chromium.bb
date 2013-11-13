@@ -101,7 +101,7 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 static void constructor3(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    V8TRYCATCH_VOID(Blob*, blob, V8Blob::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8Blob::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
+    V8TRYCATCH_VOID(Blob*, blob, V8Blob::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8Blob::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
 
     RefPtr<TestOverloadedConstructors> impl = TestOverloadedConstructors::create(blob);
     v8::Handle<v8::Object> wrapper = info.Holder();
@@ -123,15 +123,15 @@ static void constructor4(const v8::FunctionCallbackInfo<v8::Value>& info)
 
 static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    if (((info.Length() == 1) && (V8ArrayBuffer::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))))) {
+    if (((info.Length() == 1) && (V8ArrayBuffer::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))))) {
         TestOverloadedConstructorsV8Internal::constructor1(info);
         return;
     }
-    if (((info.Length() == 1) && (V8ArrayBufferView::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))))) {
+    if (((info.Length() == 1) && (V8ArrayBufferView::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))))) {
         TestOverloadedConstructorsV8Internal::constructor2(info);
         return;
     }
-    if (((info.Length() == 1) && (V8Blob::HasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))))) {
+    if (((info.Length() == 1) && (V8Blob::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))))) {
         TestOverloadedConstructorsV8Internal::constructor3(info);
         return;
     }
@@ -198,12 +198,12 @@ v8::Handle<v8::FunctionTemplate> V8TestOverloadedConstructors::GetTemplate(v8::I
     return handleScope.Close(templ);
 }
 
-bool V8TestOverloadedConstructors::HasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate, WrapperWorldType currentWorldType)
+bool V8TestOverloadedConstructors::hasInstance(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate, WrapperWorldType currentWorldType)
 {
     return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, currentWorldType);
 }
 
-bool V8TestOverloadedConstructors::HasInstanceInAnyWorld(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate)
+bool V8TestOverloadedConstructors::hasInstanceInAnyWorld(v8::Handle<v8::Value> jsValue, v8::Isolate* isolate)
 {
     return V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, MainWorld)
         || V8PerIsolateData::from(isolate)->hasInstance(&wrapperTypeInfo, jsValue, IsolatedWorld)

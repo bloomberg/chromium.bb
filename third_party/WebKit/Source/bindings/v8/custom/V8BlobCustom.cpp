@@ -96,15 +96,15 @@ void V8Blob::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
     for (uint32_t i = 0; i < length; ++i) {
         v8::Local<v8::Value> item = blobParts->Get(v8::Uint32::New(i, info.GetIsolate()));
         ASSERT(!item.IsEmpty());
-        if (V8ArrayBuffer::HasInstance(item, info.GetIsolate(), worldType(info.GetIsolate()))) {
+        if (V8ArrayBuffer::hasInstance(item, info.GetIsolate(), worldType(info.GetIsolate()))) {
             ArrayBuffer* arrayBuffer = V8ArrayBuffer::toNative(v8::Handle<v8::Object>::Cast(item));
             ASSERT(arrayBuffer);
             blobBuilder.append(arrayBuffer);
-        } else if (V8ArrayBufferView::HasInstance(item, info.GetIsolate(), worldType(info.GetIsolate()))) {
+        } else if (V8ArrayBufferView::hasInstance(item, info.GetIsolate(), worldType(info.GetIsolate()))) {
             ArrayBufferView* arrayBufferView = V8ArrayBufferView::toNative(v8::Handle<v8::Object>::Cast(item));
             ASSERT(arrayBufferView);
             blobBuilder.append(arrayBufferView);
-        } else if (V8Blob::HasInstance(item, info.GetIsolate(), worldType(info.GetIsolate()))) {
+        } else if (V8Blob::hasInstance(item, info.GetIsolate(), worldType(info.GetIsolate()))) {
             Blob* blob = V8Blob::toNative(v8::Handle<v8::Object>::Cast(item));
             ASSERT(blob);
             blobBuilder.append(blob);
