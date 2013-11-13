@@ -103,7 +103,8 @@ class LocalPacketSender : public PacketSender {
     scoped_refptr<net::WrappedIOBuffer> buffer(
         new net::WrappedIOBuffer(reinterpret_cast<const char*>(data)));
     int rv = udp_socket_->SendTo(
-        buffer.get(), packet.size(), send_address_, callback.callback());
+        buffer.get(), static_cast<int>(packet.size()), send_address_,
+        callback.callback());
     return (rv == packet.size());
   }
 
