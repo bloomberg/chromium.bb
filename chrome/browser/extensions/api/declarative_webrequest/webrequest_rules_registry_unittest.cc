@@ -48,9 +48,11 @@ namespace keys2 = url_matcher_constants;
 
 class TestWebRequestRulesRegistry : public WebRequestRulesRegistry {
  public:
-  explicit TestWebRequestRulesRegistry(
+  TestWebRequestRulesRegistry(
       scoped_refptr<InfoMap> extension_info_map)
-      : WebRequestRulesRegistry(NULL /*profile*/, NULL /* cache_delegate */),
+      : WebRequestRulesRegistry(NULL /*profile*/,
+                                NULL /* cache_delegate */,
+                                WebViewKey(0, 0)),
         num_clear_cache_calls_(0) {
     SetExtensionInfoMapForTesting(extension_info_map);
   }

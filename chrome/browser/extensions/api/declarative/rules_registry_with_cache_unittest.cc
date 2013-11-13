@@ -46,7 +46,8 @@ class RulesRegistryWithCacheTest : public testing::Test {
       : ui_thread_(content::BrowserThread::UI, &message_loop_),
         file_thread_(content::BrowserThread::FILE, &message_loop_),
         registry_(new TestRulesRegistry(content::BrowserThread::UI,
-                                        "" /*event_name*/)) {}
+                                        "" /*event_name*/,
+                                        RulesRegistry::WebViewKey(0, 0))) {}
 
   virtual ~RulesRegistryWithCacheTest() {}
 
@@ -229,12 +230,15 @@ TEST_F(RulesRegistryWithCacheTest, DeclarativeRulesStored) {
   TestingValueStore* store = system->value_store();
 
   const std::string event_name("testEvent");
+  const RulesRegistry::WebViewKey key(0, 0);
   const std::string rules_stored_key(
       RulesCacheDelegate::GetRulesStoredKey(
           event_name, profile.IsOffTheRecord()));
   scoped_ptr<RulesCacheDelegate> cache_delegate(new RulesCacheDelegate(false));
   scoped_refptr<RulesRegistry> registry(new TestRulesRegistry(
-      &profile, event_name, content::BrowserThread::UI, cache_delegate.get()));
+      &profile, event_name, content::BrowserThread::UI,
+      cache_delegate.get(),
+      RulesRegistry::WebViewKey(0, 0)));
 
   // 1. Test the handling of preferences.
   // Default value is always true.
@@ -301,6 +305,7 @@ TEST_F(RulesRegistryWithCacheTest, RulesStoredFlagMultipleRegistries) {
 
   const std::string event_name1("testEvent1");
   const std::string event_name2("testEvent2");
+  const RulesRegistry::WebViewKey key(0, 0);
   const std::string rules_stored_key1(
       RulesCacheDelegate::GetRulesStoredKey(
           event_name1, profile.IsOffTheRecord()));
@@ -310,12 +315,14 @@ TEST_F(RulesRegistryWithCacheTest, RulesStoredFlagMultipleRegistries) {
   scoped_ptr<RulesCacheDelegate> cache_delegate1(new RulesCacheDelegate(false));
   scoped_refptr<RulesRegistry> registry1(new TestRulesRegistry(
       &profile, event_name1, content::BrowserThread::UI,
-      cache_delegate1.get()));
+      cache_delegate1.get(),
+      RulesRegistry::WebViewKey(0, 0)));
 
   scoped_ptr<RulesCacheDelegate> cache_delegate2(new RulesCacheDelegate(false));
   scoped_refptr<RulesRegistry> registry2(new TestRulesRegistry(
       &profile, event_name2, content::BrowserThread::UI,
-      cache_delegate2.get()));
+      cache_delegate2.get(),
+      RulesRegistry::WebViewKey(0, 0)));
 
   // Checkt the correct default values.
   EXPECT_TRUE(cache_delegate1->GetDeclarativeRulesStored(kExtensionId));
@@ -355,17 +362,24 @@ TEST_F(RulesRegistryWithCacheTest, RulesPreservedAcrossRestart) {
   // 2. First run, adding a rule for the extension.
   scoped_ptr<RulesCacheDelegate> cache_delegate(new RulesCacheDelegate(false));
   scoped_refptr<TestRulesRegistry> registry(new TestRulesRegistry(
-      &profile, "testEvent", content::BrowserThread::UI, cache_delegate.get()));
+      &profile,
+      "testEvent",
+      content::BrowserThread::UI,
+      cache_delegate.get(),
+      RulesRegistry::WebViewKey(0, 0)));
 
   AddRule(kExtensionId, kRuleId, registry.get());
   message_loop_.RunUntilIdle();  // Posted tasks store the added rule.
   EXPECT_EQ(1, GetNumberOfRules(kExtensionId, registry.get()));
 
   // 3. Restart the TestRulesRegistry and see the rule still there.
-  cache_delegate.reset(
-      new RulesCacheDelegate(false));
+  cache_delegate.reset(new RulesCacheDelegate(false));
   registry = new TestRulesRegistry(
-      &profile, "testEvent", content::BrowserThread::UI, cache_delegate.get());
+      &profile,
+      "testEvent",
+      content::BrowserThread::UI,
+      cache_delegate.get(),
+      RulesRegistry::WebViewKey(0, 0));
 
   message_loop_.RunUntilIdle();  // Posted tasks retrieve the stored rule.
   EXPECT_EQ(1, GetNumberOfRules(kExtensionId, registry.get()));

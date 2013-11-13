@@ -262,6 +262,9 @@ void ExtensionAPI::InitDefaultConfiguration() {
   RegisterSchemaResource("webstore", IDR_EXTENSION_API_JSON_WEBSTORE);
   RegisterSchemaResource("webstorePrivate",
       IDR_EXTENSION_API_JSON_WEBSTOREPRIVATE);
+  RegisterSchemaResource("webViewRequest",
+      IDR_EXTENSION_API_JSON_WEBVIEW_REQUEST);
+
   default_configuration_initialized_ = true;
 }
 

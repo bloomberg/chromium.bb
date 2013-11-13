@@ -722,6 +722,10 @@
     "dependencies": ["permission:webview"],
     "contexts": ["blessed_extension", "unblessed_extension"]
   },
+  "webViewRequest": {
+    "dependencies": ["permission:webview"],
+    "contexts": ["blessed_extension", "unblessed_extension"]
+  },
   "webviewTag": {
     "internal": true,
     "channel": "stable",

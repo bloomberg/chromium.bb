@@ -14,6 +14,7 @@
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
+#include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
 #include "chrome/browser/extensions/api/declarative_webrequest/request_stage.h"
 #include "chrome/browser/extensions/api/web_request/web_request_api_helpers.h"
 #include "chrome/browser/extensions/api/web_request/web_request_permissions.h"
@@ -139,6 +140,7 @@ class ExtensionWebRequestEventRouter
   // the rule registry for |profile|.
   void RegisterRulesRegistry(
       void* profile,
+      const extensions::RulesRegistryService::WebViewKey& webview_key,
       scoped_refptr<extensions::WebRequestRulesRegistry> rules_registry);
 
   // Dispatches the OnBeforeRequest event to any extensions whose filters match
@@ -422,9 +424,12 @@ class ExtensionWebRequestEventRouter
 
   CallbacksForPageLoad callbacks_for_page_load_;
 
-  // Maps each profile (and OTRProfile) to its respective rules registry.
-  std::map<void*, scoped_refptr<extensions::WebRequestRulesRegistry> >
-      rules_registries_;
+  typedef std::pair<void*, extensions::RulesRegistryService::WebViewKey>
+      RulesRegistryKey;
+  // Maps each profile (and OTRProfile) and a webview key to its respective
+  // rules registry.
+  std::map<RulesRegistryKey,
+      scoped_refptr<extensions::WebRequestRulesRegistry> > rules_registries_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionWebRequestEventRouter);
 };

@@ -1043,6 +1043,8 @@ void Dispatcher::PopulateSourceMap() {
   source_map_.RegisterSource("webView", IDR_WEB_VIEW_JS);
   source_map_.RegisterSource("webViewExperimental",
                              IDR_WEB_VIEW_EXPERIMENTAL_JS);
+  source_map_.RegisterSource("webViewRequest",
+                             IDR_WEB_VIEW_REQUEST_CUSTOM_BINDINGS_JS);
   source_map_.RegisterSource("denyWebView", IDR_WEB_VIEW_DENY_JS);
   source_map_.RegisterSource("adView", IDR_AD_VIEW_JS);
   source_map_.RegisterSource("denyAdView", IDR_AD_VIEW_DENY_JS);

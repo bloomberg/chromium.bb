@@ -57,6 +57,7 @@ IN_PROC_BROWSER_TEST_F(DeclarativeApiTest, DeclarativeApi) {
       extensions::RulesRegistryService::Get(browser()->profile());
   scoped_refptr<RulesRegistry> rules_registry =
       rules_registry_service->GetRulesRegistry(
+          RulesRegistry::WebViewKey(0, 0),
           extensions::declarative_webrequest_constants::kOnRequest);
 
   std::vector<linked_ptr<RulesRegistry::Rule> > known_rules;

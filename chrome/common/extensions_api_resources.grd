@@ -35,6 +35,7 @@
       <include name="IDR_EXTENSION_API_JSON_WEBREQUESTINTERNAL" file="extensions\api\web_request_internal.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_WEBSTORE" file="extensions\api\webstore.json" type="BINDATA" />
       <include name="IDR_EXTENSION_API_JSON_WEBSTOREPRIVATE" file="extensions\api\webstore_private.json" type="BINDATA" />
+      <include name="IDR_EXTENSION_API_JSON_WEBVIEW_REQUEST" file="extensions\api\webview_request.json" type="BINDATA" />
     </includes>
   </release>
 </grit>

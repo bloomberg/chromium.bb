@@ -34,12 +34,13 @@ function WebRequestEvent(eventName, opt_argSchemas, opt_extraArgSchemas,
   this.eventName_ = eventName;
   this.argSchemas_ = opt_argSchemas;
   this.extraArgSchemas_ = opt_extraArgSchemas;
-  this.webViewInstanceId_ = opt_webViewInstanceId ? opt_webViewInstanceId : 0;
+  this.webViewInstanceId_ = opt_webViewInstanceId || 0;
   this.subEvents_ = [];
   this.eventOptions_ = eventBindings.parseEventOptions(opt_eventOptions);
   if (this.eventOptions_.supportsRules) {
     this.eventForRules_ =
-        new eventBindings.Event(eventName, opt_argSchemas, opt_eventOptions);
+        new eventBindings.Event(eventName, opt_argSchemas, opt_eventOptions,
+                                opt_webViewInstanceId);
   }
 }
 

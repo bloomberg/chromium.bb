@@ -187,11 +187,16 @@
   //
   // If opt_eventOptions exists, it is a dictionary that contains the boolean
   // entries "supportsListeners" and "supportsRules".
-  var Event = function(opt_eventName, opt_argSchemas, opt_eventOptions) {
+  // If opt_webViewInstanceId exists, it is an integer uniquely identifying a
+  // <webview> tag within the embedder. If it does not exist, then this is an
+  // extension event rather than a <webview> event.
+  var Event = function(opt_eventName, opt_argSchemas, opt_eventOptions,
+                       opt_webViewInstanceId) {
     this.eventName_ = opt_eventName;
     this.argSchemas_ = opt_argSchemas;
     this.listeners_ = [];
     this.eventOptions_ = parseEventOptions(opt_eventOptions);
+    this.webViewInstanceId_ = opt_webViewInstanceId || 0;
 
     if (!this.eventName_) {
       if (this.eventOptions_.supportsRules)
@@ -447,10 +452,11 @@
     ensureRuleSchemasLoaded();
     // We remove the first parameter from the validation to give the user more
     // meaningful error messages.
-    validate([rules, opt_cb],
+    validate([this.webViewInstanceId_, rules, opt_cb],
              $Array.splice(
                  $Array.slice(ruleFunctionSchemas.addRules.parameters), 1));
-    sendRequest("events.addRules", [this.eventName_, rules, opt_cb],
+    sendRequest("events.addRules",
+                [this.eventName_, this.webViewInstanceId_, rules,  opt_cb],
                 ruleFunctionSchemas.addRules.parameters);
   }
 
@@ -460,11 +466,14 @@
     ensureRuleSchemasLoaded();
     // We remove the first parameter from the validation to give the user more
     // meaningful error messages.
-    validate([ruleIdentifiers, opt_cb],
+    validate([this.webViewInstanceId_, ruleIdentifiers, opt_cb],
              $Array.splice(
                  $Array.slice(ruleFunctionSchemas.removeRules.parameters), 1));
     sendRequest("events.removeRules",
-                [this.eventName_, ruleIdentifiers, opt_cb],
+                [this.eventName_,
+                 this.webViewInstanceId_,
+                 ruleIdentifiers,
+                 opt_cb],
                 ruleFunctionSchemas.removeRules.parameters);
   }
 
@@ -474,12 +483,12 @@
     ensureRuleSchemasLoaded();
     // We remove the first parameter from the validation to give the user more
     // meaningful error messages.
-    validate([ruleIdentifiers, cb],
+    validate([this.webViewInstanceId_, ruleIdentifiers, cb],
              $Array.splice(
                  $Array.slice(ruleFunctionSchemas.getRules.parameters), 1));
 
     sendRequest("events.getRules",
-                [this.eventName_, ruleIdentifiers, cb],
+                [this.eventName_, this.webViewInstanceId_, ruleIdentifiers, cb],
                 ruleFunctionSchemas.getRules.parameters);
   }
 

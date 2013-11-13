@@ -30,10 +30,10 @@ var WEB_VIEW_EXPERIMENTAL_EVENTS = {
 /**
  * @private
  */
-WebViewInternal.prototype.maybeAttachWebRequestEventToWebview_ =
-    function(eventName, webRequestEvent) {
+WebViewInternal.prototype.maybeAttachWebRequestEventToObject_ =
+    function(obj, eventName, webRequestEvent) {
   Object.defineProperty(
-      this.webviewNode_,
+      obj,
       eventName,
       {
         get: webRequestEvent,

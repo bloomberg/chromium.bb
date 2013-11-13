@@ -353,6 +353,10 @@ function testInvalidChromeExtensionURL() {
 
 function testWebRequestAPIExistence() {
   var apiPropertiesToCheck = [
+    // Declarative WebRequest API.
+    'onMessage',
+    'onRequest',
+    // WebRequest API.
     'onBeforeRequest',
     'onBeforeSendHeaders',
     'onSendHeaders',
@@ -368,13 +372,20 @@ function testWebRequestAPIExistence() {
   webview.addEventListener('loadstop', function(e) {
     for (var i = 0; i < apiPropertiesToCheck.length; ++i) {
       embedder.test.assertEq('object',
-                             typeof webview[apiPropertiesToCheck[i]]);
+                             typeof webview.request[apiPropertiesToCheck[i]]);
       embedder.test.assertEq(
-          'function', typeof webview[apiPropertiesToCheck[i]].addListener);
-      embedder.test.assertEq(webview[apiPropertiesToCheck[i]],
-                             webview.request[apiPropertiesToCheck[i]]);
+          'function',
+          typeof webview.request[apiPropertiesToCheck[i]].addListener);
+      embedder.test.assertEq(
+          'function',
+          typeof webview.request[apiPropertiesToCheck[i]].addRules);
+      embedder.test.assertEq(
+          'function',
+          typeof webview.request[apiPropertiesToCheck[i]].getRules);
+      embedder.test.assertEq(
+          'function',
+          typeof webview.request[apiPropertiesToCheck[i]].removeRules);
     }
-
     embedder.test.succeed();
   });
   webview.setAttribute('src', 'data:text/html,webview check api');
@@ -882,6 +893,45 @@ function testWebRequestAPI() {
   document.body.appendChild(webview);
 }
 
+// This test verifies that the basic use cases of the declarative WebRequest API
+// work as expected. This test demonstrates that rules can be added prior to
+// navigation and attachment.
+// 1. It adds a rule to block URLs that contain guest.
+// 2. It attempts to navigate to a guest.html page.
+// 3. It detects the appropriate loadabort message.
+// 4. It removes the rule blocking the page and reloads.
+// 5. The page loads successfully.
+function testDeclarativeWebRequestAPI() {
+  var step = 1;
+  var webview = new WebView();
+  var rule = {
+    conditions: [
+      new chrome.webViewRequest.RequestMatcher(
+        {
+          url: { urlContains: 'guest' }
+        }
+      )
+    ],
+    actions: [
+      new chrome.webViewRequest.CancelRequest()
+    ]
+  };
+  webview.request.onRequest.addRules([rule]);
+  webview.addEventListener('loadabort', function(e) {
+    embedder.test.assertEq(1, step);
+    embedder.test.assertEq('ERR_BLOCKED_BY_CLIENT', e.reason);
+    step = 2;
+    webview.request.onRequest.removeRules();
+    webview.reload();
+  });
+  webview.addEventListener('loadcommit', function(e) {
+    embedder.test.assertEq(2, step);
+    embedder.test.succeed();
+  });
+  webview.src = embedder.emptyGuestURL;
+  document.body.appendChild(webview);
+}
+
 // This test verifies that the WebRequest API onBeforeRequest event fires on
 // clients*.google.com URLs.
 function testWebRequestAPIGoogleProperty() {
@@ -1174,6 +1224,7 @@ embedder.test.testList = {
   'testNewWindowNoPreventDefault': testNewWindowNoPreventDefault,
   'testNewWindowNoReferrerLink': testNewWindowNoReferrerLink,
   'testContentLoadEvent': testContentLoadEvent,
+  'testDeclarativeWebRequestAPI': testDeclarativeWebRequestAPI,
   'testWebRequestAPI': testWebRequestAPI,
   'testWebRequestAPIGoogleProperty': testWebRequestAPIGoogleProperty,
   'testWebRequestListenerSurvivesReparenting':

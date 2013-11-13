@@ -13,12 +13,14 @@ namespace extensions {
 class TestRulesRegistry : public RulesRegistry {
  public:
   TestRulesRegistry(content::BrowserThread::ID owner_thread,
-                    const std::string& event_name);
+                    const std::string& event_name,
+                    const WebViewKey& webview_key);
   TestRulesRegistry(
       Profile* profile,
       const std::string& event_name,
       content::BrowserThread::ID owner_thread,
-      RulesCacheDelegate* cache_delegate);
+      RulesCacheDelegate* cache_delegate,
+      const WebViewKey& webview_key);
 
   // RulesRegistry implementation:
   virtual std::string AddRulesImpl(

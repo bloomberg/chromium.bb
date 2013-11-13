@@ -78,6 +78,7 @@ using extensions::ExtensionWarningService;
 using extensions::ExtensionWarningSet;
 using extensions::InfoMap;
 using extensions::Feature;
+using extensions::RulesRegistryService;
 using extensions::web_navigation_api_helpers::GetFrameId;
 
 namespace helpers = extension_web_request_api_helpers;
@@ -600,11 +601,13 @@ ExtensionWebRequestEventRouter::~ExtensionWebRequestEventRouter() {
 
 void ExtensionWebRequestEventRouter::RegisterRulesRegistry(
     void* profile,
+    const RulesRegistryService::WebViewKey& webview_key,
     scoped_refptr<extensions::WebRequestRulesRegistry> rules_registry) {
+  RulesRegistryKey key(profile, webview_key);
   if (rules_registry.get())
-    rules_registries_[profile] = rules_registry;
+    rules_registries_[key] = rules_registry;
   else
-    rules_registries_.erase(profile);
+    rules_registries_.erase(key);
 }
 
 int ExtensionWebRequestEventRouter::OnBeforeRequest(
@@ -1854,6 +1857,29 @@ bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
     net::URLRequest* request,
     extensions::RequestStage request_stage,
     const net::HttpResponseHeaders* original_response_headers) {
+  bool is_main_frame = false;
+  int64 frame_id = -1;
+  bool parent_is_main_frame = false;
+  int64 parent_frame_id = -1;
+  int tab_id = -1;
+  int window_id = -1;
+  int render_process_host_id = -1;
+  int routing_id = -1;
+  ResourceType::Type resource_type = ResourceType::LAST_TYPE;
+
+  ExtractRequestInfoDetails(request, &is_main_frame, &frame_id,
+                            &parent_is_main_frame, &parent_frame_id,
+                            &tab_id, &window_id, &render_process_host_id,
+                            &routing_id, &resource_type);
+  ExtensionRendererState::WebViewInfo webview_info;
+  bool is_guest = ExtensionRendererState::GetInstance()->
+      GetWebViewInfo(render_process_host_id, routing_id, &webview_info);
+
+  RulesRegistryService::WebViewKey webview_key(
+      is_guest ? webview_info.embedder_process_id : 0,
+      is_guest ? webview_info.instance_id : 0);
+  RulesRegistryKey rules_key(profile, webview_key);
+
   // If this check fails, check that the active stages are up-to-date in
   // browser/extensions/api/declarative_webrequest/request_stage.h .
   DCHECK(request_stage & extensions::kActiveStages);
@@ -1869,16 +1895,18 @@ bool ExtensionWebRequestEventRouter::ProcessDeclarativeRules(
   typedef std::vector<RelevantRegistry> RelevantRegistries;
   RelevantRegistries relevant_registries;
 
-  if (rules_registries_.find(profile) != rules_registries_.end()) {
+  if (rules_registries_.find(rules_key) != rules_registries_.end()) {
     relevant_registries.push_back(
-        std::make_pair(rules_registries_[profile].get(), false));
+        std::make_pair(rules_registries_[rules_key].get(), false));
   }
 
   void* cross_profile = GetCrossProfile(profile);
+  RulesRegistryKey cross_profile_rules_key(cross_profile, webview_key);
   if (cross_profile &&
-      rules_registries_.find(cross_profile) != rules_registries_.end()) {
+      rules_registries_.find(cross_profile_rules_key) !=
+          rules_registries_.end()) {
     relevant_registries.push_back(
-        std::make_pair(rules_registries_[cross_profile].get(), true));
+        std::make_pair(rules_registries_[cross_profile_rules_key].get(), true));
   }
 
   // The following block is experimentally enabled and its impact on load time

@@ -74,10 +74,12 @@ RulesRegistry::RulesRegistry(
     Profile* profile,
     const std::string& event_name,
     content::BrowserThread::ID owner_thread,
-    RulesCacheDelegate* cache_delegate)
+    RulesCacheDelegate* cache_delegate,
+    const WebViewKey& webview_key)
     : profile_(profile),
       owner_thread_(owner_thread),
       event_name_(event_name),
+      webview_key_(webview_key),
       weak_ptr_factory_(profile ? this : NULL),
       process_changed_rules_requested_(profile ? NOT_SCHEDULED_FOR_PROCESSING
                                                : NEVER_PROCESS),

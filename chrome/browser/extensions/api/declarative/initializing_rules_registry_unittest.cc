@@ -22,9 +22,10 @@ TEST(InitializingRulesRegistryTest, FillOptionalIdentifiers) {
   base::MessageLoopForUI message_loop;
   content::TestBrowserThread thread(content::BrowserThread::UI, &message_loop);
 
+  const RulesRegistry::WebViewKey key(0, 0);
   std::string error;
   scoped_refptr<RulesRegistry> registry =
-      new TestRulesRegistry(content::BrowserThread::UI, "" /*event_name*/);
+      new TestRulesRegistry(content::BrowserThread::UI, "" /*event_name*/, key);
 
   // Add rules and check that their identifiers are filled and unique.
 
@@ -137,9 +138,10 @@ TEST(InitializingRulesRegistryTest, FillOptionalPriority) {
   base::MessageLoopForUI message_loop;
   content::TestBrowserThread thread(content::BrowserThread::UI, &message_loop);
 
+  const RulesRegistry::WebViewKey key(0, 0);
   std::string error;
   scoped_refptr<RulesRegistry> registry =
-      new TestRulesRegistry(content::BrowserThread::UI, "" /*event_name*/);
+      new TestRulesRegistry(content::BrowserThread::UI, "" /*event_name*/, key);
 
   // Add rules and check that their priorities are filled if they are empty.
 

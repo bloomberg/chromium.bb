@@ -10,9 +10,12 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/api/declarative/rules_registry_service.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
+#include "chrome/browser/guestview/webview/webview_guest.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/events.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "extensions/common/extension_api.h"
 
 using extensions::api::events::Rule;
@@ -21,15 +24,43 @@ namespace AddRules = extensions::api::events::Event::AddRules;
 namespace GetRules = extensions::api::events::Event::GetRules;
 namespace RemoveRules = extensions::api::events::Event::RemoveRules;
 
+
 namespace extensions {
 
-RulesFunction::RulesFunction() : rules_registry_(NULL) {}
+namespace {
+
+const char kWebRequest[] = "declarativeWebRequest.";
+const char kWebView[] = "webview.";
+const char kWebViewExpectedError[] = "Webview event with Webview ID expected.";
+
+bool IsWebViewEvent(const std::string& event_name) {
+  // Sample event names:
+  // webview.onRequest.
+  // webview.OnMessage.
+  return event_name.compare(0, strlen(kWebView), kWebView) == 0;
+}
+
+std::string GetWebRequestEventName(const std::string& event_name) {
+  std::string web_request_event_name(event_name);
+  if (IsWebViewEvent(web_request_event_name))
+    web_request_event_name.replace(0, strlen(kWebView), kWebRequest);
+  return web_request_event_name;
+}
+
+}  // namespace
+
+RulesFunction::RulesFunction()
+    : rules_registry_(NULL) {
+}
 
 RulesFunction::~RulesFunction() {}
 
 bool RulesFunction::HasPermission() {
   std::string event_name;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &event_name));
+  if (IsWebViewEvent(event_name) &&
+      extension_->HasAPIPermission(extensions::APIPermission::kWebView))
+    return true;
   Feature::Availability availability =
       ExtensionAPI::GetSharedInstance()->IsAvailable(
           event_name, extension_, Feature::BLESSED_EXTENSION_CONTEXT,
@@ -41,9 +72,22 @@ bool RulesFunction::RunImpl() {
   std::string event_name;
   EXTENSION_FUNCTION_VALIDATE(args_->GetString(0, &event_name));
 
+  int webview_instance_id = 0;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetInteger(1, &webview_instance_id));
+  int embedder_process_id = render_view_host()->GetProcess()->GetID();
+
+  bool has_webview = webview_instance_id != 0;
+  if (has_webview != IsWebViewEvent(event_name))
+    EXTENSION_FUNCTION_ERROR(kWebViewExpectedError);
+  event_name = GetWebRequestEventName(event_name);
+
+  // If we are not operating on a particular <webview>, then the key is (0, 0).
+  RulesRegistryService::WebViewKey key(
+      webview_instance_id ? embedder_process_id : 0, webview_instance_id);
+
   RulesRegistryService* rules_registry_service =
       RulesRegistryService::Get(GetProfile());
-  rules_registry_ = rules_registry_service->GetRulesRegistry(event_name);
+  rules_registry_ = rules_registry_service->GetRulesRegistry(key, event_name);
   // Raw access to this function is not available to extensions, therefore
   // there should never be a request for a nonexisting rules registry.
   EXTENSION_FUNCTION_VALIDATE(rules_registry_.get());

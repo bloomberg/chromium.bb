@@ -40,6 +40,18 @@ class RulesCacheDelegate;
 class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
  public:
   typedef extensions::api::events::Rule Rule;
+  struct WebViewKey {
+    int embedder_process_id;
+    int webview_instance_id;
+    WebViewKey(int embedder_process_id, int webview_instance_id)
+        : embedder_process_id(embedder_process_id),
+          webview_instance_id(webview_instance_id) {}
+    bool operator<(const WebViewKey& other) const {
+      return embedder_process_id < other.embedder_process_id ||
+          ((embedder_process_id == other.embedder_process_id) &&
+           (webview_instance_id < other.webview_instance_id));
+    }
+  };
 
   enum Defaults { DEFAULT_PRIORITY = 100 };
   // After the RulesCacheDelegate object (the part of the registry which runs on
@@ -50,7 +62,8 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
   RulesRegistry(Profile* profile,
                 const std::string& event_name,
                 content::BrowserThread::ID owner_thread,
-                RulesCacheDelegate* cache_delegate);
+                RulesCacheDelegate* cache_delegate,
+                const WebViewKey& webview_key);
 
   const OneShotEvent& ready() const {
     return ready_;
@@ -120,6 +133,11 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
   // Every ExtensionId counts as one entry, even if it contains no rules.
   size_t GetNumberOfUsedRuleIdentifiersForTesting() const;
 
+  // Returns the RulesCacheDelegate. This is used for testing.
+  RulesCacheDelegate* rules_cache_delegate_for_testing() const {
+    return cache_delegate_.get();
+  }
+
   // Returns the profile where the rules registry lives.
   Profile* profile() const { return profile_; }
 
@@ -129,6 +147,12 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
 
   // The name of the event with which rules are registered.
   const std::string& event_name() const { return event_name_; }
+
+  // The key that identifies the webview (or tabs) in which these rules apply.
+  // If the rules apply to the main browser, then this returns the tuple (0, 0).
+  const WebViewKey& webview_key() const {
+    return webview_key_;
+  }
 
  protected:
   virtual ~RulesRegistry();
@@ -191,6 +215,9 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
 
   // The name of the event with which rules are registered.
   const std::string event_name_;
+
+  // The key that identifies the context in which these rules apply.
+  WebViewKey webview_key_;
 
   RulesDictionary rules_;
 

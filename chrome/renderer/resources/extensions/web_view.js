@@ -11,12 +11,14 @@
 
 var DocumentNatives = requireNative('document_natives');
 var EventBindings = require('event_bindings');
+var IdGenerator = requireNative('id_generator');
 var MessagingNatives = requireNative('messaging_natives');
 var WebRequestEvent = require('webRequestInternal').WebRequestEvent;
 var WebRequestSchema =
     requireNative('schema_registry').GetSchema('webRequest');
+var DeclarativeWebRequestSchema =
+    requireNative('schema_registry').GetSchema('declarativeWebRequest');
 var WebView = require('binding').Binding.create('webview').generate();
-var idGenerator = requireNative('id_generator');
 
 // This secret enables hiding <webview> private members from the outside scope.
 // Outside of this file, |secret| is inaccessible. The only way to access the
@@ -556,7 +558,7 @@ WebViewInternal.prototype.handleSizeChangedEvent_ =
  */
 WebViewInternal.prototype.setupWebviewNodeEvents_ = function() {
   var self = this;
-  this.viewInstanceId_ = idGenerator.GetNextId();
+  this.viewInstanceId_ = IdGenerator.GetNextId();
   var onInstanceIdAllocated = function(e) {
     var detail = e.detail ? JSON.parse(e.detail) : {};
     self.instanceId_ = detail.windowId;
@@ -871,12 +873,20 @@ WebViewInternal.prototype.setupWebRequestEvents_ = function() {
             new WebRequestEvent(
                 'webview.' + webRequestEvent.name,
                 webRequestEvent.parameters,
-                webRequestEvent.extraParameters, null,
+                webRequestEvent.extraParameters, webRequestEvent.options,
                 self.viewInstanceId_);
       }
       return self[webRequestEvent.name + '_'];
     };
   };
+
+  for (var i = 0; i < DeclarativeWebRequestSchema.events.length; ++i) {
+    var eventSchema = DeclarativeWebRequestSchema.events[i];
+    var webRequestEvent = createWebRequestEvent(eventSchema);
+    this.maybeAttachWebRequestEventToObject_(request,
+                                             eventSchema.name,
+                                             webRequestEvent);
+  }
 
   // Populate the WebRequest events from the API definition.
   for (var i = 0; i < WebRequestSchema.events.length; ++i) {
@@ -889,8 +899,9 @@ WebViewInternal.prototype.setupWebRequestEvents_ = function() {
           enumerable: true
         }
     );
-    this.maybeAttachWebRequestEventToWebview_(WebRequestSchema.events[i].name,
-                                              webRequestEvent);
+    this.maybeAttachWebRequestEventToObject_(this.webviewNode_,
+                                             WebRequestSchema.events[i].name,
+                                             webRequestEvent);
   }
   Object.defineProperty(
       this.webviewNode_,
@@ -1023,7 +1034,7 @@ WebViewInternal.prototype.maybeGetExperimentalEvents_ = function() {};
  * Implemented when the experimental API is available.
  * @private
  */
-WebViewInternal.prototype.maybeAttachWebRequestEventToWebview_ = function() {};
+WebViewInternal.prototype.maybeAttachWebRequestEventToObject_ = function() {};
 
 /**
  * Implemented when the experimental API is available.

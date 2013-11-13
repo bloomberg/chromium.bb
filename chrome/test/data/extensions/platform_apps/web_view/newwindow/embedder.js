@@ -328,6 +328,48 @@ function testNewWindowWebRequest() {
   embedder.setUpNewWindowRequest_(webview, 'guest.html', '', testName);
 }
 
+// This test verifies that declarative rules added prior to new window
+// attachment apply correctly.
+function testNewWindowDeclarativeWebRequest() {
+  var testName = 'testNewWindowWebRequest';
+  var webview = embedder.setUpGuest_('foobar');
+
+  var onNewWindow = function(e) {
+    chrome.test.log('Embedder notified on newwindow');
+    embedder.assertCorrectEvent_(e, '');
+
+    var newwebview = new WebView();
+    var rule = {
+      conditions: [
+        new chrome.webViewRequest.RequestMatcher(
+          {
+            url: { urlContains: 'guest' }
+          }
+        )
+      ],
+      actions: [
+        new chrome.webViewRequest.CancelRequest()
+      ]
+    };
+    newwebview.request.onRequest.addRules([rule]);
+    newwebview.addEventListener('loadabort', function(e) {
+      embedder.test.assertEq('ERR_BLOCKED_BY_CLIENT', e.reason);
+      embedder.test.succeed();
+    });
+    document.querySelector('#webview-tag-container').appendChild(newwebview);
+    e.preventDefault();
+    try {
+      e.window.attach(newwebview);
+    } catch (e) {
+      embedder.test.fail();
+    }
+  };
+  webview.addEventListener('newwindow', onNewWindow);
+
+  // Load a new window with the given name.
+  embedder.setUpNewWindowRequest_(webview, 'guest.html', '', testName);
+}
+
 // This test verifies that a WebRequest event listener's lifetime is not
 // tied to the context in which it was created but instead at least the
 // lifetime of the embedder window to which it was attached.
@@ -421,6 +463,7 @@ embedder.test.testList = {
   'testNewWindowClose': testNewWindowClose,
   'testNewWindowExecuteScript': testNewWindowExecuteScript,
   'testNewWindowOpenInNewTab': testNewWindowOpenInNewTab,
+  'testNewWindowDeclarativeWebRequest': testNewWindowDeclarativeWebRequest,
   'testNewWindowWebRequest': testNewWindowWebRequest,
   'testNewWindowWebRequestCloseWindow': testNewWindowWebRequestCloseWindow,
   'testNewWindowWebRequestRemoveElement': testNewWindowWebRequestRemoveElement

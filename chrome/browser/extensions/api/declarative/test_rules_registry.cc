@@ -9,21 +9,25 @@
 namespace extensions {
 
 TestRulesRegistry::TestRulesRegistry(content::BrowserThread::ID owner_thread,
-                                     const std::string& event_name)
+                                     const std::string& event_name,
+                                     const WebViewKey& webview_key)
     : RulesRegistry(NULL /*profile*/,
                     event_name,
                     owner_thread,
-                    NULL) {}
+                    NULL,
+                    webview_key) {}
 
 TestRulesRegistry::TestRulesRegistry(
     Profile* profile,
     const std::string& event_name,
     content::BrowserThread::ID owner_thread,
-    RulesCacheDelegate* cache_delegate)
+    RulesCacheDelegate* cache_delegate,
+    const WebViewKey& webview_key)
     : RulesRegistry(profile,
                     event_name,
                     owner_thread,
-                    cache_delegate) {}
+                    cache_delegate,
+                    webview_key) {}
 
 std::string TestRulesRegistry::AddRulesImpl(
     const std::string& extension_id,

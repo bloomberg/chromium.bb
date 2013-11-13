@@ -113,6 +113,12 @@
                 "description": "Name of the event this function affects."
               },
               {
+                "name": "webViewInstanceId",
+                "type": "integer",
+                "nodoc": true,
+                "description": "If provided, this is an integer that uniquely identfies the <webview> associated with this function call."
+              },
+              {
                 "name": "rules",
                 "type": "array",
                 "items": {"$ref": "Rule"},
@@ -146,6 +152,12 @@
                 "description": "Name of the event this function affects."
               },
               {
+                "name": "webViewInstanceId",
+                "type": "integer",
+                "nodoc": true,
+                "description": "If provided, this is an integer that uniquely identfies the <webview> associated with this function call."
+              },
+              {
                 "name": "ruleIdentifiers",
                 "optional": "true",
                 "type": "array",
@@ -177,6 +189,12 @@
                 "name": "eventName",
                 "type": "string",
                 "description": "Name of the event this function affects."
+              },
+              {
+                "name": "webViewInstanceId",
+                "type": "integer",
+                "nodoc": true,
+                "description": "If provided, this is an integer that uniquely identfies the <webview> associated with this function call."
               },
               {
                 "name": "ruleIdentifiers",
