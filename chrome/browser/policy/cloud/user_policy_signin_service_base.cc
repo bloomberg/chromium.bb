@@ -148,8 +148,6 @@ scoped_ptr<CloudPolicyClient> UserPolicySigninServiceBase::PrepareToRegister(
     return scoped_ptr<CloudPolicyClient>();
   }
 
-  GetManager()->SetSigninUsername(username);
-
   // If the DeviceManagementService is not yet initialized, start it up now.
   device_management_service_->ScheduleInitialization(0);
 
