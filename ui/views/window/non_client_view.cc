@@ -15,8 +15,6 @@
 namespace views {
 
 // static
-const int NonClientFrameView::kFrameShadowThickness = 1;
-const int NonClientFrameView::kClientEdgeThickness = 1;
 const char NonClientFrameView::kViewClassName[] =
     "ui/views/window/NonClientFrameView";
 

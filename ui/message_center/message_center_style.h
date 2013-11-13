@@ -15,19 +15,18 @@ namespace message_center {
 // Exported values /////////////////////////////////////////////////////////////
 
 // Square image sizes in DIPs.
-MESSAGE_CENTER_EXPORT extern const int kNotificationButtonIconSize;
-MESSAGE_CENTER_EXPORT extern const int kNotificationIconSize;
-MESSAGE_CENTER_EXPORT extern const int kNotificationPreferredImageSize;
-MESSAGE_CENTER_EXPORT extern const float kNotificationPreferredImageRatio;
-MESSAGE_CENTER_EXPORT extern const int kSettingsIconSize;
+const int kNotificationButtonIconSize = 16;
+const int kNotificationIconSize = 80;
+const int kNotificationPreferredImageSize = 360;
+const float kNotificationPreferredImageRatio = 1.5;
+const int kSettingsIconSize = 16;
 
 // Limits.
-MESSAGE_CENTER_EXPORT extern const size_t kMaxVisiblePopupNotifications;
-MESSAGE_CENTER_EXPORT extern const size_t kMaxVisibleMessageCenterNotifications;
+const size_t kMaxVisibleMessageCenterNotifications = 100;
+const size_t kMaxVisiblePopupNotifications = 3;
 
-// DIP dimension
-MESSAGE_CENTER_EXPORT extern const int kNotificationWidth;  // H size of the
-                                                            // whole card.
+// DIP dimension; H size of the whole card.
+const int kNotificationWidth = 360;
 
 // Colors.
 MESSAGE_CENTER_EXPORT extern const SkColor kMessageCenterBorderColor;
@@ -52,17 +51,18 @@ const int kCheckboxSizeWithPadding = 24;
 // Within a notification ///////////////////////////////////////////////////////
 
 // DIP dimensions (H = horizontal, V = vertical).
-extern const int kControlButtonSize;  // Square size of close & expand buttons.
-extern const int kIconToTextPadding;  // H space between icon & title/message.
-extern const int kTextTopPadding;     // V space between text elements.
-extern const int kIconBottomPadding;  // Minimum non-zero V space between icon
-                                      // and frame.
+
+const int kControlButtonSize = 29;  // Square size of close & expand buttons.
+const int kIconToTextPadding = 16;  // H space between icon & title/message.
+const int kTextTopPadding = 12;     // V space between text elements.
+const int kIconBottomPadding = 16;  // Minimum non-zero V space between icon
+                                    // and frame.
 
 // Text sizes.
-extern const int kTitleFontSize;             // For title only.
-extern const int kTitleLineHeight;           // In DIPs.
-extern const int kMessageFontSize;           // For everything but title.
-extern const int kMessageLineHeight;         // In DIPs.
+const int kTitleFontSize = 14;             // For title only.
+const int kTitleLineHeight = 20;           // In DIPs.
+const int kMessageFontSize = 12;           // For everything but title.
+const int kMessageLineHeight = 18;         // In DIPs.
 
 // Colors.
 extern const SkColor kNotificationBackgroundColor; // Background of the card.

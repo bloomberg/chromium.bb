@@ -109,12 +109,6 @@ bool IsStreamlinedHostedAppsEnabled() {
 // static
 const char ToolbarView::kViewClassName[] = "ToolbarView";
 
-// The space between items is 3 px in general.
-const int ToolbarView::kStandardSpacing = 3;
-// The top of the toolbar has an edge we have to skip over in addition to the
-// above spacing.
-const int ToolbarView::kVertSpacing = 5;
-
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, public:
 

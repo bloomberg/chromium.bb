@@ -10,36 +10,11 @@ namespace message_center {
 
 // Exported values /////////////////////////////////////////////////////////////
 
-// Square image sizes in pixels.
-const int kNotificationButtonIconSize = 16;
-const int kNotificationIconSize = 80;
-// Same as kNotificationWidth.
-const int kNotificationPreferredImageSize = 360;
-const float kNotificationPreferredImageRatio = 1.5;
-const int kSettingsIconSize = 16;
-
-// Limits.
-const size_t kMaxVisibleMessageCenterNotifications = 100;
-const size_t kMaxVisiblePopupNotifications = 3;
-
 // Colors.
 const SkColor kMessageCenterBorderColor = SkColorSetRGB(0xC7, 0xCA, 0xCE);
 const SkColor kMessageCenterShadowColor = SkColorSetARGB(0.5 * 255, 0, 0, 0);
 
 // Within a notification ///////////////////////////////////////////////////////
-
-// Pixel dimensions.
-const int kControlButtonSize = 29;
-const int kNotificationWidth = 360;
-const int kIconToTextPadding = 16;
-const int kTextTopPadding = 12;
-const int kIconBottomPadding = 16;
-
-// Text sizes.
-const int kTitleFontSize = 14;
-const int kTitleLineHeight = 20;
-const int kMessageFontSize = 12;
-const int kMessageLineHeight = 18;
 
 // Colors.
 const SkColor kNotificationBackgroundColor = SkColorSetRGB(255, 255, 255);

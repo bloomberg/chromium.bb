@@ -26,12 +26,16 @@ class VIEWS_EXPORT NonClientFrameView : public View {
  public:
   // Internal class name.
   static const char kViewClassName[];
-  // Various edges of the frame border have a 1 px shadow along their edges; in
-  // a few cases we shift elements based on this amount for visual appeal.
-  static const int kFrameShadowThickness;
-  // In restored mode, we draw a 1 px edge around the content area inside the
-  // frame border.
-  static const int kClientEdgeThickness;
+
+  enum {
+    // Various edges of the frame border have a 1 px shadow along their edges;
+    // in a few cases we shift elements based on this amount for visual appeal.
+    kFrameShadowThickness = 1,
+
+    // In restored mode, we draw a 1 px edge around the content area inside the
+    // frame border.
+    kClientEdgeThickness = 1,
+  };
 
   // Sets whether the window should be rendered as active regardless of the
   // actual active state. Used when bubbles become active to make their parent

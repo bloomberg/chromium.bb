@@ -6,7 +6,6 @@
 #define UI_VIEWS_MOUSE_CONSTANTS_H_
 
 #include "base/basictypes.h"
-#include "ui/views/views_export.h"
 
 namespace views {
 
@@ -14,11 +13,11 @@ namespace views {
 // considered intentional. This is to prevent spurious mouse releases from
 // activating controls, especially when some UI element is revealed under the
 // source of the activation (ex. menus showing underneath menu buttons).
-VIEWS_EXPORT extern const int kMinimumMsPressedToActivate;
+const int kMinimumMsPressedToActivate = 200;
 
-// The amount of time, in milliseconds, between clicks until they're considered
-// intentionally different.
-VIEWS_EXPORT extern const int kMinimumMsBetweenButtonClicks;
+// The amount of time, in milliseconds, between clicks until they're
+// considered intentionally different.
+const int kMinimumMsBetweenButtonClicks = 100;
 
 }  // namespace views
 
