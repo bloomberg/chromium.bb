@@ -2731,6 +2731,7 @@
             'platform/graphics/FontPlatformData.h',
             'platform/graphics/FrameData.cpp',
             'platform/graphics/FrameData.h',
+            'platform/graphics/GaneshUtils.cpp',
             'platform/graphics/GeneratedImage.cpp',
             'platform/graphics/GeneratedImage.h',
             'platform/graphics/GlyphPageTreeNode.cpp',

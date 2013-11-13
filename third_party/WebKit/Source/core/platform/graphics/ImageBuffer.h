@@ -62,7 +62,8 @@ enum Multiply {
 enum RenderingMode {
     Unaccelerated,
     UnacceleratedNonPlatformBuffer, // Use plain memory allocation rather than platform API to allocate backing store.
-    Accelerated
+    TextureBacked, // Allocate a texture-based SkBitmap for the backing store.
+    Accelerated, // Besides a texture-based SkBitmap for the backing store, allocate Canvas2DLayerBridge, etc as well for 2D Canvas drawing.
 };
 
 enum BackingStoreCopy {
@@ -124,6 +125,9 @@ public:
     // with textures that are RGB or RGBA format, UNSIGNED_BYTE type and level 0, as specified in
     // Extensions3D::canUseCopyTextureCHROMIUM().
     bool copyToPlatformTexture(GraphicsContext3D&, Platform3DObject, GC3Denum, GC3Denum, GC3Dint, bool, bool);
+
+    Platform3DObject getBackingTexture();
+    bool copyRenderingResultsFromDrawingBuffer(DrawingBuffer*);
 
 private:
     bool isValid() const;

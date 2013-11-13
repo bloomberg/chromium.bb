@@ -35,9 +35,11 @@
 
 #include "core/platform/graphics/BitmapImage.h"
 #include "core/platform/graphics/Extensions3D.h"
+#include "core/platform/graphics/GaneshUtils.h"
 #include "core/platform/graphics/GraphicsContext.h"
 #include "core/platform/graphics/GraphicsContext3D.h"
 #include "core/platform/graphics/chromium/Canvas2DLayerBridge.h"
+#include "core/platform/graphics/gpu/DrawingBuffer.h"
 #include "core/platform/graphics/gpu/SharedGraphicsContext3D.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"
 #include "core/platform/graphics/skia/SkiaUtils.h"
@@ -55,6 +57,7 @@
 #include "third_party/skia/include/effects/SkTableColorFilter.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "third_party/skia/include/gpu/SkGpuDevice.h"
+#include "third_party/skia/include/gpu/SkGrPixelRef.h"
 #include "wtf/MathExtras.h"
 #include "wtf/text/Base64.h"
 #include "wtf/text/WTFString.h"
@@ -73,6 +76,20 @@ static PassRefPtr<SkCanvas> createAcceleratedCanvas(const IntSize& size, Canvas2
     // If canvas buffer allocation failed, debug build will have asserted
     // For release builds, we must verify whether the device has a render target
     return (*outLayerBridge) ? (*outLayerBridge)->getCanvas() : 0;
+}
+
+static PassRefPtr<SkCanvas> createTextureBackedCanvas(const IntSize& size)
+{
+    RefPtr<GraphicsContext3D> context3D = SharedGraphicsContext3D::get();
+    if (!context3D)
+        return 0;
+    GrContext* gr = context3D->grContext();
+    if (!gr)
+        return 0;
+    SkBitmap* bitmap = new SkBitmap;
+    if (!bitmap || !ensureTextureBackedSkBitmap(gr, *bitmap, size, kDefault_GrSurfaceOrigin, kRGBA_8888_GrPixelConfig))
+        return 0;
+    return adoptRef(new SkCanvas(*bitmap));
 }
 
 static PassRefPtr<SkCanvas> createNonPlatformCanvas(const IntSize& size)
@@ -132,6 +149,12 @@ ImageBuffer::ImageBuffer(const IntSize& size, float resolutionScale, RenderingMo
             renderingMode = UnacceleratedNonPlatformBuffer;
     }
 
+    if (renderingMode == TextureBacked) {
+        m_canvas = createTextureBackedCanvas(size);
+        if (!m_canvas)
+            renderingMode = UnacceleratedNonPlatformBuffer;
+    }
+
     if (renderingMode == UnacceleratedNonPlatformBuffer)
         m_canvas = createNonPlatformCanvas(size);
 
@@ -151,10 +174,12 @@ ImageBuffer::ImageBuffer(const IntSize& size, float resolutionScale, RenderingMo
     // Clear the background transparent or opaque, as required. It would be nice if this wasn't
     // required, but the canvas is currently filled with the magic transparency
     // color. Can we have another way to manage this?
-    if (opacityMode == Opaque)
-        m_canvas->drawARGB(255, 0, 0, 0, SkXfermode::kSrc_Mode);
-    else
-        m_canvas->drawARGB(0, 0, 0, 0, SkXfermode::kClear_Mode);
+    if (renderingMode != TextureBacked) {
+        if (opacityMode == Opaque)
+            m_canvas->drawARGB(255, 0, 0, 0, SkXfermode::kSrc_Mode);
+        else
+            m_canvas->drawARGB(0, 0, 0, 0, SkXfermode::kClear_Mode);
+    }
 
     success = true;
 }
@@ -242,6 +267,29 @@ bool ImageBuffer::copyToPlatformTexture(GraphicsContext3D& context, Platform3DOb
 static bool drawNeedsCopy(GraphicsContext* src, GraphicsContext* dst)
 {
     return (src == dst);
+}
+
+Platform3DObject ImageBuffer::getBackingTexture()
+{
+    if (!m_context || !m_context->bitmap())
+        return 0;
+    const SkBitmap& bitmap = *m_context->bitmap();
+    if (bitmap.getTexture())
+        return (bitmap.getTexture())->getTextureHandle();
+    return 0;
+}
+
+bool ImageBuffer::copyRenderingResultsFromDrawingBuffer(DrawingBuffer* drawingBuffer)
+{
+    if (!drawingBuffer)
+        return false;
+    RefPtr<GraphicsContext3D> context3D = SharedGraphicsContext3D::get();
+    Platform3DObject tex = getBackingTexture();
+    if (!context3D || !tex)
+        return false;
+
+    return drawingBuffer->copyToPlatformTexture(*(context3D.get()), tex, GraphicsContext3D::RGBA,
+        GraphicsContext3D::UNSIGNED_BYTE, 0, true, false);
 }
 
 void ImageBuffer::draw(GraphicsContext* context, const FloatRect& destRect, const FloatRect& srcRect,

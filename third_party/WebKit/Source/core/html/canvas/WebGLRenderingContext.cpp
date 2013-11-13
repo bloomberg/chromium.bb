@@ -900,7 +900,8 @@ void WebGLRenderingContext::paintRenderingResultsToCanvas()
     m_markedCanvasDirty = false;
 
     m_drawingBuffer->commit();
-    m_context->paintRenderingResultsToCanvas(canvas()->buffer(), m_drawingBuffer.get());
+    if (!(canvas()->buffer())->copyRenderingResultsFromDrawingBuffer(m_drawingBuffer.get()))
+        m_context->paintRenderingResultsToCanvas(canvas()->buffer(), m_drawingBuffer.get());
 
     if (m_framebufferBinding)
         m_context->bindFramebuffer(GraphicsContext3D::FRAMEBUFFER, objectOrZero(m_framebufferBinding.get()));

@@ -16,6 +16,7 @@
 #include "core/html/HTMLMediaSource.h"
 #include "core/html/TimeRanges.h"
 #include "core/frame/Frame.h"
+#include "core/platform/graphics/GaneshUtils.h"
 #include "platform/audio/AudioBus.h"
 #include "platform/audio/AudioSourceProviderClient.h"
 #include "core/platform/graphics/GraphicsContext.h"
@@ -623,33 +624,16 @@ void WebMediaPlayerClientImpl::paintOnAndroid(WebCore::GraphicsContext* context,
         return;
 
     // Copy video texture into a RGBA texture based bitmap first as video texture on Android is GL_TEXTURE_EXTERNAL_OES
-    // which is not supported by Skia yet. The bitmap's size needs to be the same as the video.
-    int videoWidth = naturalSize().width();
-    int videoHeight = naturalSize().height();
-
+    // which is not supported by Skia yet. The bitmap's size needs to be the same as the video and use naturalSize() here.
     // Check if we could reuse existing texture based bitmap.
     // Otherwise, release existing texture based bitmap and allocate a new one based on video size.
-    if (videoWidth != m_bitmap.width() || videoHeight != m_bitmap.height() || !m_texture.get()) {
-        GrTextureDesc desc;
-        desc.fConfig = kSkia8888_GrPixelConfig;
-        desc.fWidth = videoWidth;
-        desc.fHeight = videoHeight;
-        desc.fOrigin = kTopLeft_GrSurfaceOrigin;
-        desc.fFlags = (kRenderTarget_GrTextureFlagBit | kNoStencil_GrTextureFlagBit);
-        GrContext* ct = context3D->grContext();
-        if (!ct)
-            return;
-        m_texture.reset(ct->createUncachedTexture(desc, NULL, 0));
-        if (!m_texture.get())
-            return;
-        m_bitmap.setConfig(SkBitmap::kARGB_8888_Config, videoWidth, videoHeight);
-        m_bitmap.setPixelRef(new SkGrPixelRef(m_texture))->unref();
-    }
+    if (!ensureTextureBackedSkBitmap(context3D->grContext(), m_bitmap, naturalSize(), kTopLeft_GrSurfaceOrigin, kSkia8888_GrPixelConfig))
+        return;
 
     // Copy video texture to bitmap texture.
     WebGraphicsContext3D* webGraphicsContext3D = context3D->webContext();
     WebCanvas* canvas = context->canvas();
-    unsigned int textureId = static_cast<unsigned int>(m_texture->getTextureHandle());
+    unsigned textureId = static_cast<unsigned>((m_bitmap.getTexture())->getTextureHandle());
     if (!m_webMediaPlayer->copyVideoTextureToPlatformTexture(webGraphicsContext3D, textureId, 0, GraphicsContext3D::RGBA, GraphicsContext3D::UNSIGNED_BYTE, true, false))
         return;
 

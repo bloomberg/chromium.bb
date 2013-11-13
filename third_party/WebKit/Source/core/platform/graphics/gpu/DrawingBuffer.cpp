@@ -313,7 +313,7 @@ bool DrawingBuffer::copyToPlatformTexture(GraphicsContext3D& context, Platform3D
         }
         m_context->flush();
     }
-    Platform3DObject sourceTexture = frontColorBuffer() ? frontColorBuffer() : colorBuffer();
+    Platform3DObject sourceTexture = colorBuffer();
 
     if (!context.makeContextCurrent())
         return false;
@@ -368,6 +368,16 @@ void DrawingBuffer::paintCompositedResultsToCanvas(ImageBuffer* imageBuffer)
         return;
 
     Extensions3D* extensions = m_context->extensions();
+
+    if (!imageBuffer)
+        return;
+    Platform3DObject tex = imageBuffer->getBackingTexture();
+    if (tex) {
+        extensions->copyTextureCHROMIUM(GraphicsContext3D::TEXTURE_2D, m_frontColorBuffer,
+            tex, 0, GraphicsContext3D::RGBA, GraphicsContext3D::UNSIGNED_BYTE);
+        return;
+    }
+
     // Since the m_frontColorBuffer was produced and sent to the compositor, it cannot be bound to an fbo.
     // We have to make a copy of it here and bind that copy instead.
     // FIXME: That's not true any more, provided we don't change texture

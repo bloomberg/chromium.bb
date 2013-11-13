@@ -460,7 +460,7 @@ void HTMLCanvasElement::createImageBuffer()
     if (!deviceSize.width() || !deviceSize.height())
         return;
 
-    RenderingMode renderingMode = shouldAccelerate(deviceSize) ? Accelerated : UnacceleratedNonPlatformBuffer;
+    RenderingMode renderingMode = is3D() ? TextureBacked : (shouldAccelerate(deviceSize) ? Accelerated : UnacceleratedNonPlatformBuffer);
     int msaaSampleCount = 0;
     if (document().settings())
         msaaSampleCount = document().settings()->accelerated2dCanvasMSAASampleCount();

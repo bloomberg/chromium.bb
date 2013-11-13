@@ -159,7 +159,6 @@ private:
     // texture internally. It should be removed and replaced by the normal paint path.
     // https://code.google.com/p/skia/issues/detail?id=1189
     void paintOnAndroid(WebCore::GraphicsContext* context, WebCore::GraphicsContext3D* context3D, const WebCore::IntRect& rect, uint8_t alpha);
-    SkAutoTUnref<GrTexture> m_texture;
     SkBitmap m_bitmap;
 #endif
 
