@@ -62,9 +62,6 @@ crbug.com/309963 animations/play-state-initially-paused-start-event.html [ Timeo
 crbug.com/309963 virtual/threaded/animations/play-state-initially-paused.html [ Timeout ]
 crbug.com/309963 virtual/threaded/animations/play-state-initially-paused-start-event.html [ Timeout ]
 
-crbug.com/303430 [ Debug ] animations/interpolation/line-height-interpolation.html [ Crash ]
-crbug.com/303430 [ Debug ] virtual/threaded/animations/interpolation/line-height-interpolation.html [ Crash ]
-
 # This has flaky output so can't be rebaselined.
 crbug.com/258896 animations/transition-and-animation-3.html [ Failure ]
 
