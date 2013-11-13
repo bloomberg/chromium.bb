@@ -59,6 +59,8 @@ def Setup(test_options):
   Returns:
     A tuple of (TestRunnerFactory, tests).
   """
+  # TODO(bulach): remove this once the bot side lands. BUG=318369
+  constants.SetBuildType('Release')
   if os.path.exists(constants.PERF_OUTPUT_DIR):
     shutil.rmtree(constants.PERF_OUTPUT_DIR)
   os.makedirs(constants.PERF_OUTPUT_DIR)
