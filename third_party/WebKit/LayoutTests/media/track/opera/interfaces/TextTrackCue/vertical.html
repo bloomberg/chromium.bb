@@ -43,7 +43,7 @@ t_parsed.step(function(){
         assert_equals(c3.vertical, 'lr');
         this.done();
     });
-    t.src = 'data:text/vtt,'+encodeURIComponent('WEBVTT\n\n00:00:00.000 --> 00:00:00.001\ntest'+
+    t.src = 'data:text/vtt,'+encodeURIComponent('WEBVTT\n\n00:00:00.000 --> 00:00:00.001\ntest\n'+
                                                 '00:00:00.000 --> 00:00:00.001 vertical:rl\ntest\n\n'+
                                                 '00:00:00.000 --> 00:00:00.001 vertical:lr\ntest');
     t.track.mode = 'showing';
