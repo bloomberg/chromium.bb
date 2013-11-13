@@ -260,8 +260,8 @@ bool PnaclComponentInstaller::Install(const base::DictionaryValue& manifest,
   base::FilePath path = GetPnaclBaseDirectory().AppendASCII(
       version.GetString());
   if (base::PathExists(path)) {
-    LOG(WARNING) << "Target path already exists, not installing.";
-    return false;
+    if (!base::DeleteFile(path, true))
+      return false;
   }
   if (!base::Move(unpack_path, path)) {
     LOG(WARNING) << "Move failed, not installing.";
