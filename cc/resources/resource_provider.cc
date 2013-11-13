@@ -279,7 +279,7 @@ ResourceProvider::Resource::Resource(uint8_t* pixels,
   DCHECK(wrap_mode == GL_CLAMP_TO_EDGE || wrap_mode == GL_REPEAT);
 }
 
-ResourceProvider::Child::Child() {}
+ResourceProvider::Child::Child() : marked_for_deletion(false) {}
 
 ResourceProvider::Child::~Child() {}
 
@@ -313,7 +313,7 @@ scoped_ptr<ResourceProvider> ResourceProvider::Create(
 
 ResourceProvider::~ResourceProvider() {
   while (!children_.empty())
-    DestroyChild(children_.begin()->first);
+    DestroyChildInternal(children_.begin(), ForShutdown);
   while (!resources_.empty())
     DeleteResourceInternal(resources_.begin(), ForShutdown);
 
@@ -964,11 +964,17 @@ int ResourceProvider::CreateChild(const ReturnCallback& return_callback) {
 }
 
 void ResourceProvider::DestroyChild(int child_id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
   ChildMap::iterator it = children_.find(child_id);
   DCHECK(it != children_.end());
+  DestroyChildInternal(it, Normal);
+}
+
+void ResourceProvider::DestroyChildInternal(ChildMap::iterator it,
+                                            DeleteStyle style) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   Child& child = it->second;
+  DCHECK(style == ForShutdown || !child.marked_for_deletion);
 
   ResourceIdArray resources_for_child;
 
@@ -981,11 +987,9 @@ void ResourceProvider::DestroyChild(int child_id) {
 
   // If the child is going away, don't consider any resources in use.
   child.in_use_resources.clear();
+  child.marked_for_deletion = true;
 
-  DeleteAndReturnUnusedResourcesToChild(
-      &child, ForShutdown, resources_for_child);
-
-  children_.erase(it);
+  DeleteAndReturnUnusedResourcesToChild(it, style, resources_for_child);
 }
 
 const ResourceProvider::ResourceIdMap& ResourceProvider::GetChildToParentMap(
@@ -993,6 +997,7 @@ const ResourceProvider::ResourceIdMap& ResourceProvider::GetChildToParentMap(
   DCHECK(thread_checker_.CalledOnValidThread());
   ChildMap::const_iterator it = children_.find(child);
   DCHECK(it != children_.end());
+  DCHECK(!it->second.marked_for_deletion);
   return it->second.child_to_parent_map;
 }
 
@@ -1031,6 +1036,7 @@ void ResourceProvider::ReceiveFromChild(
   if (context3d)
     context3d->makeContextCurrent();
   Child& child_info = children_.find(child)->second;
+  DCHECK(!child_info.marked_for_deletion);
   for (TransferableResourceArray::const_iterator it = resources.begin();
        it != resources.end();
        ++it) {
@@ -1102,7 +1108,10 @@ void ResourceProvider::DeclareUsedResourcesFromChild(
     const ResourceIdArray& resources_from_child) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  Child& child_info = children_.find(child)->second;
+  ChildMap::iterator child_it = children_.find(child);
+  DCHECK(child_it != children_.end());
+  Child& child_info = child_it->second;
+  DCHECK(!child_info.marked_for_deletion);
   child_info.in_use_resources.clear();
 
   for (size_t i = 0; i < resources_from_child.size(); ++i) {
@@ -1123,7 +1132,7 @@ void ResourceProvider::DeclareUsedResourcesFromChild(
     if (!resource_is_in_use)
       unused.push_back(local_id);
   }
-  DeleteAndReturnUnusedResourcesToChild(&child_info, Normal, unused);
+  DeleteAndReturnUnusedResourcesToChild(child_it, Normal, unused);
 }
 
 // static
@@ -1145,7 +1154,6 @@ void ResourceProvider::ReceiveReturnsFromParent(
     context3d->makeContextCurrent();
 
   int child_id = 0;
-  Child* child_info = NULL;
   ResourceIdArray resources_for_child;
 
   std::vector<std::pair<ReturnedResource, ResourceMap::iterator> >
@@ -1170,6 +1178,7 @@ void ResourceProvider::ReceiveReturnsFromParent(
             sorted_resources.end(),
             CompareResourceMapIteratorsByChildId);
 
+  ChildMap::iterator child_it = children_.end();
   for (size_t i = 0; i < sorted_resources.size(); ++i) {
     ReturnedResource& returned = sorted_resources[i].first;
     ResourceMap::iterator& map_iterator = sorted_resources[i].second;
@@ -1201,17 +1210,16 @@ void ResourceProvider::ReceiveReturnsFromParent(
 
     // Delete the resource and return it to the child it came from one.
     if (resource->child_id != child_id) {
-      ChildMap::iterator child_it = children_.find(resource->child_id);
-      DCHECK(child_it != children_.end());
-
       if (child_id) {
         DCHECK_NE(resources_for_child.size(), 0u);
+        DCHECK(child_it != children_.end());
         DeleteAndReturnUnusedResourcesToChild(
-            child_info, Normal, resources_for_child);
+            child_it, Normal, resources_for_child);
         resources_for_child.clear();
       }
 
-      child_info = &child_it->second;
+      child_it = children_.find(resource->child_id);
+      DCHECK(child_it != children_.end());
       child_id = resource->child_id;
     }
     resources_for_child.push_back(local_id);
@@ -1219,8 +1227,9 @@ void ResourceProvider::ReceiveReturnsFromParent(
 
   if (child_id) {
     DCHECK_NE(resources_for_child.size(), 0u);
+    DCHECK(child_it != children_.end());
     DeleteAndReturnUnusedResourcesToChild(
-        child_info, Normal, resources_for_child);
+        child_it, Normal, resources_for_child);
   }
 }
 
@@ -1262,13 +1271,14 @@ void ResourceProvider::TransferResource(WebGraphicsContext3D* context,
 }
 
 void ResourceProvider::DeleteAndReturnUnusedResourcesToChild(
-    Child* child_info,
+    ChildMap::iterator child_it,
     DeleteStyle style,
     const ResourceIdArray& unused) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(child_info);
+  DCHECK(child_it != children_.end());
+  Child* child_info = &child_it->second;
 
-  if (unused.empty())
+  if (unused.empty() && !child_info->marked_for_deletion)
     return;
 
   WebGraphicsContext3D* context3d = Context3d();
@@ -1346,6 +1356,12 @@ void ResourceProvider::DeleteAndReturnUnusedResourcesToChild(
 
   if (!to_return.empty())
     child_info->return_callback.Run(to_return);
+
+  if (child_info->marked_for_deletion &&
+      child_info->parent_to_child_map.empty()) {
+    DCHECK(child_info->child_to_parent_map.empty());
+    children_.erase(child_it);
+  }
 }
 
 void ResourceProvider::AcquirePixelBuffer(ResourceId id) {

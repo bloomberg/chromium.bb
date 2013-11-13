@@ -1345,33 +1345,43 @@ TEST_P(ResourceProviderTest, DestroyChildWithExportedResources) {
     ResourceProvider::ResourceIdArray no_resources;
     resource_provider_->DeclareUsedResourcesFromChild(child_id, no_resources);
 
-    // Destroy the child, the resources should be returned immediately from the
-    // parent and marked as lost.
+    // Destroy the child, the resources should not be returned yet.
     EXPECT_EQ(0u, returned_to_child.size());
     EXPECT_EQ(2u, resource_provider_->num_resources());
 
     resource_provider_->DestroyChild(child_id);
 
-    EXPECT_EQ(0u, resource_provider_->num_resources());
-    ASSERT_EQ(2u, returned_to_child.size());
-    if (GetParam() == ResourceProvider::GLTexture) {
-      EXPECT_NE(0u, returned_to_child[0].sync_point);
-      EXPECT_NE(0u, returned_to_child[1].sync_point);
-    }
-    EXPECT_TRUE(returned_to_child[0].lost);
-    EXPECT_TRUE(returned_to_child[1].lost);
-    returned_to_child.clear();
+    EXPECT_EQ(2u, resource_provider_->num_resources());
+    ASSERT_EQ(0u, returned_to_child.size());
 
-    // Return the resources from the grandparent to the parent. They should be
-    // dropped on the floor since they were already returned to the child.
+    // Return a resource from the grandparent, it should be returned at this
+    // point.
     EXPECT_EQ(2u, list.size());
     EXPECT_EQ(mapped_id1, list[0].id);
     EXPECT_EQ(mapped_id2, list[1].id);
+    TransferableResourceArray return_list;
+    return_list.push_back(list[1]);
+    list.pop_back();
     ReturnedResourceArray returned;
-    TransferableResource::ReturnResources(list, &returned);
+    TransferableResource::ReturnResources(return_list, &returned);
     resource_provider_->ReceiveReturnsFromParent(returned);
 
-    EXPECT_EQ(0u, returned_to_child.size());
+    EXPECT_EQ(1u, resource_provider_->num_resources());
+    ASSERT_EQ(1u, returned_to_child.size());
+    if (GetParam() == ResourceProvider::GLTexture) {
+      EXPECT_NE(0u, returned_to_child[0].sync_point);
+    }
+    EXPECT_FALSE(returned_to_child[0].lost);
+    returned_to_child.clear();
+
+    // Destroy the parent resource provider. The resource that's left should be
+    // lost at this point, and returned.
+    resource_provider_.reset();
+    ASSERT_EQ(1u, returned_to_child.size());
+    if (GetParam() == ResourceProvider::GLTexture) {
+      EXPECT_NE(0u, returned_to_child[0].sync_point);
+    }
+    EXPECT_TRUE(returned_to_child[0].lost);
   }
 }
 

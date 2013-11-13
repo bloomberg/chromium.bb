@@ -423,6 +423,7 @@ class CC_EXPORT ResourceProvider {
     ResourceIdMap parent_to_child_map;
     ReturnCallback return_callback;
     ResourceIdSet in_use_resources;
+    bool marked_for_deletion;
   };
   typedef base::hash_map<int, Child> ChildMap;
 
@@ -455,9 +456,10 @@ class CC_EXPORT ResourceProvider {
     ForShutdown,
   };
   void DeleteResourceInternal(ResourceMap::iterator it, DeleteStyle style);
-  void DeleteAndReturnUnusedResourcesToChild(Child* child_info,
+  void DeleteAndReturnUnusedResourcesToChild(ChildMap::iterator child_it,
                                              DeleteStyle style,
                                              const ResourceIdArray& unused);
+  void DestroyChildInternal(ChildMap::iterator it, DeleteStyle style);
   void LazyCreate(Resource* resource);
   void LazyAllocate(Resource* resource);
 

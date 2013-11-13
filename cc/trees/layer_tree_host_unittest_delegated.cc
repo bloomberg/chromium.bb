@@ -1812,7 +1812,8 @@ class DelegatedFrameIsActivatedDuringCommit
  protected:
   DelegatedFrameIsActivatedDuringCommit()
       : wait_thread_("WAIT"),
-        wait_event_(false, false) {
+        wait_event_(false, false),
+        returned_resource_count_(0) {
     wait_thread_.Start();
   }
 
@@ -1874,9 +1875,6 @@ class DelegatedFrameIsActivatedDuringCommit
         // So this commit number should complete after the third activate.
         EXPECT_EQ(2, layer_tree_host()->source_frame_number());
         break;
-      case 3:
-        EndTest();
-        break;
     }
   }
 
@@ -1896,23 +1894,32 @@ class DelegatedFrameIsActivatedDuringCommit
         scoped_ptr<DelegatedFrameData> frame =
             CreateFrameData(gfx::Rect(0, 0, 1, 1), gfx::Rect(0, 0, 1, 1));
         SetFrameData(frame.Pass());
-
-        ReturnedResourceArray resources;
-        resource_collection_->TakeUnusedResourcesForChildCompositor(&resources);
-        {
-          unsigned expected[] = {999, 555};
-          EXPECT_RESOURCES(expected, resources);
-          EXPECT_TRUE(TestAndResetAvailable());
-        }
         break;
       }
     }
+  }
+
+  virtual void SwapBuffersOnThread(LayerTreeHostImpl* host_impl,
+                                   bool result) OVERRIDE {
+    ReturnUnusedResourcesFromParent(host_impl);
+  }
+
+  virtual void UnusedResourcesAreAvailable() OVERRIDE {
+    LayerTreeHostDelegatedTestCaseSingleDelegatedLayer::
+        UnusedResourcesAreAvailable();
+    ReturnedResourceArray resources;
+    resource_collection_->TakeUnusedResourcesForChildCompositor(&resources);
+    EXPECT_TRUE(TestAndResetAvailable());
+    returned_resource_count_ += resources.size();
+    if (returned_resource_count_ == 2)
+      EndTest();
   }
 
   base::Thread wait_thread_;
   base::WaitableEvent wait_event_;
   base::Lock activate_lock_;
   int activate_count_;
+  size_t returned_resource_count_;
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(
