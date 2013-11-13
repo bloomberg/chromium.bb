@@ -2306,7 +2306,11 @@ ssl3_CalculatePaddingExtensionLength(unsigned int clientHelloLength)
 				clientHelloLength;
     unsigned int extensionLength;
 
-    if (recordLength < 256 || recordLength >= 512) {
+    /* This condition should be:
+     *   if (recordLength < 256 || recordLength >= 512) {
+     * It has been changed, temporarily, to test whether 512 byte ClientHellos
+     * are a compatibility problem. */
+    if (recordLength >= 512) {
 	return 0;
     }
 
@@ -2327,7 +2331,7 @@ ssl3_AppendPaddingExtension(sslSocket *ss, unsigned int extensionLen,
 			    PRUint32 maxBytes)
 {
     unsigned int paddingLen = extensionLen - 4;
-    unsigned char padding[256];
+    unsigned char padding[512];
 
     if (extensionLen == 0) {
 	return 0;

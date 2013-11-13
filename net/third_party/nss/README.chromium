@@ -143,6 +143,7 @@ Patches:
     add an extension to make it 512 bytes. This works around a bug in F5
     terminators.
     patches/paddingextension.patch
+    patches/paddingextensionall.patch
 
 Apply the patches to NSS by running the patches/applypatches.sh script.  Read
 the comments at the top of patches/applypatches.sh for instructions.

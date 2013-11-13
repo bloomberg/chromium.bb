@@ -1,0 +1,26 @@
+diff --git a/nss/lib/ssl/ssl3ext.c b/nss/lib/ssl/ssl3ext.c
+index cdebcc9..03cf05c 100644
+--- a/nss/lib/ssl/ssl3ext.c
++++ b/nss/lib/ssl/ssl3ext.c
+@@ -2306,7 +2306,11 @@ ssl3_CalculatePaddingExtensionLength(unsigned int clientHelloLength)
+ 				clientHelloLength;
+     unsigned int extensionLength;
+ 
+-    if (recordLength < 256 || recordLength >= 512) {
++    /* This condition should be:
++     *   if (recordLength < 256 || recordLength >= 512) {
++     * It has been changed, temporarily, to test whether 512 byte ClientHellos
++     * are a compatibility problem. */
++    if (recordLength >= 512) {
+ 	return 0;
+     }
+ 
+@@ -2327,7 +2331,7 @@ ssl3_AppendPaddingExtension(sslSocket *ss, unsigned int extensionLen,
+ 			    PRUint32 maxBytes)
+ {
+     unsigned int paddingLen = extensionLen - 4;
+-    unsigned char padding[256];
++    unsigned char padding[512];
+ 
+     if (extensionLen == 0) {
+ 	return 0;

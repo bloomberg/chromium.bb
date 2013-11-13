@@ -67,3 +67,5 @@ patch -p4 < $patches_dir/canfalsestart.patch
 patch -p4 < $patches_dir/nullcipher_934016.patch
 
 patch -p4 < $patches_dir/paddingextension.patch
+
+patch -p4 < $patches_dir/paddingextensionall.patch
