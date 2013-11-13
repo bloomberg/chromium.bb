@@ -300,6 +300,9 @@ interface TestObjectPython {
     void overloadedMethodG();
     void overloadedMethodG([StrictTypeChecking] DOMString strictTypeCheckingStringArg);
 
+    [PerWorldBindings] void overloadedPerWorldBindingsMethod();
+    [PerWorldBindings] void overloadedPerWorldBindingsMethod(long longArg);
+
     static void overloadedStaticMethod(long longArg);
     static void overloadedStaticMethod(long longArg1, long longArg2);
 

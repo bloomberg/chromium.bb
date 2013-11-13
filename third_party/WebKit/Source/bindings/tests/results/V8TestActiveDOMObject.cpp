@@ -192,17 +192,6 @@ static void perWorldBindingsMethodWithDoNotCheckSecurityMethod(const v8::Functio
     imp->perWorldBindingsMethodWithDoNotCheckSecurity(url);
 }
 
-static void perWorldBindingsMethodWithDoNotCheckSecurityMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("perWorldBindingsMethodWithDoNotCheckSecurity", "TestActiveDOMObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
-        return;
-    }
-    TestActiveDOMObject* imp = V8TestActiveDOMObject::toNative(info.Holder());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, url, info[0]);
-    imp->perWorldBindingsMethodWithDoNotCheckSecurity(url);
-}
-
 static void perWorldBindingsMethodWithDoNotCheckSecurityMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
@@ -212,13 +201,6 @@ static void perWorldBindingsMethodWithDoNotCheckSecurityMethodCallback(const v8:
         contextData->activityLogger()->log("TestActiveDOMObject.perWorldBindingsMethodWithDoNotCheckSecurity", info.Length(), loggerArgs.data(), "Method");
     }
     TestActiveDOMObjectV8Internal::perWorldBindingsMethodWithDoNotCheckSecurityMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
-}
-
-static void perWorldBindingsMethodWithDoNotCheckSecurityMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestActiveDOMObjectV8Internal::perWorldBindingsMethodWithDoNotCheckSecurityMethodForMainWorld(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -258,6 +240,24 @@ static void perWorldBindingsMethodWithDoNotCheckSecurityAttributeGetterCallback(
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
     TestActiveDOMObjectV8Internal::perWorldBindingsMethodWithDoNotCheckSecurityAttributeGetter(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void perWorldBindingsMethodWithDoNotCheckSecurityMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("perWorldBindingsMethodWithDoNotCheckSecurity", "TestActiveDOMObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        return;
+    }
+    TestActiveDOMObject* imp = V8TestActiveDOMObject::toNative(info.Holder());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, url, info[0]);
+    imp->perWorldBindingsMethodWithDoNotCheckSecurity(url);
+}
+
+static void perWorldBindingsMethodWithDoNotCheckSecurityMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestActiveDOMObjectV8Internal::perWorldBindingsMethodWithDoNotCheckSecurityMethodForMainWorld(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 

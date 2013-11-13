@@ -4240,35 +4240,24 @@ END
     # Generate methods for functions.
     foreach my $function (@{$interface->functions}) {
         next if $function->name eq "";
-        GenerateFunction($function, $interface, "");
+        my @worldSuffixes = ("");
         if ($function->extendedAttributes->{"PerWorldBindings"}) {
-            GenerateFunction($function, $interface, "ForMainWorld");
+            push(@worldSuffixes, "ForMainWorld");
         }
-        if ($function->{overloadIndex} == @{$function->{overloads}}) {
-            if ($function->{overloadIndex} > 1) {
-                GenerateOverloadedFunction($function, $interface, "");
-                if ($function->extendedAttributes->{"PerWorldBindings"}) {
-                    GenerateOverloadedFunction($function, $interface, "ForMainWorld");
+        foreach my $worldSuffix (@worldSuffixes) {
+            GenerateFunction($function, $interface, $worldSuffix);
+            if ($function->{overloadIndex} == @{$function->{overloads}}) {
+                if ($function->{overloadIndex} > 1) {
+                    GenerateOverloadedFunction($function, $interface, $worldSuffix);
                 }
+                GenerateFunctionCallback($function, $interface, $worldSuffix);
             }
-            GenerateFunctionCallback($function, $interface, "");
-            if ($function->extendedAttributes->{"PerWorldBindings"}) {
-                GenerateFunctionCallback($function, $interface, "ForMainWorld");
-            }
-        }
 
-        # If the function does not need domain security check, we need to
-        # generate an access getter that returns different function objects
-        # for different calling context.
-        if ($interface->extendedAttributes->{"CheckSecurity"} && $function->extendedAttributes->{"DoNotCheckSecurity"}) {
-            if (!HasCustomMethod($function->extendedAttributes) || $function->{overloadIndex} == 1) {
-                my @worldSuffixes = ("");
-                if ($function->extendedAttributes->{"PerWorldBindings"}) {
-                    push(@worldSuffixes, "ForMainWorld");
-                }
-                foreach my $worldSuffix (@worldSuffixes) {
-                    GenerateDomainSafeFunctionGetter($function, $interface, $worldSuffix);
-                }
+            # If the function does not need domain security check, we need to
+            # generate an access getter that returns different function objects
+            # for different calling context.
+            if ($interface->extendedAttributes->{"CheckSecurity"} && $function->extendedAttributes->{"DoNotCheckSecurity"} && (!HasCustomMethod($function->extendedAttributes) || $function->{overloadIndex} == 1)) {
+                GenerateDomainSafeFunctionGetter($function, $interface, $worldSuffix);
                 if (!$function->extendedAttributes->{"ReadOnly"}) {
                     $needsDomainSafeFunctionSetter = 1;
                 }

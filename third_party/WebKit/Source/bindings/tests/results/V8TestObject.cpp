@@ -4456,17 +4456,17 @@ static void perWorldMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info
     imp->perWorldMethod();
 }
 
-static void perWorldMethodMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    imp->perWorldMethod();
-}
-
 static void perWorldMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
     TestObjV8Internal::perWorldMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void perWorldMethodMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    imp->perWorldMethod();
 }
 
 static void perWorldMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -4510,18 +4510,6 @@ static void overloadedPerWorldMethod2Method(const v8::FunctionCallbackInfo<v8::V
     imp->overloadedPerWorldMethod(strArg, longArg);
 }
 
-static void overloadedPerWorldMethod2MethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (UNLIKELY(info.Length() < 2)) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedPerWorldMethod", "TestObject", ExceptionMessages::notEnoughArguments(2, info.Length())), info.GetIsolate());
-        return;
-    }
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[0]);
-    V8TRYCATCH_VOID(int, longArg, toInt32(info[1]));
-    imp->overloadedPerWorldMethod(strArg, longArg);
-}
-
 static void overloadedPerWorldMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (((info.Length() == 1))) {
@@ -4539,6 +4527,25 @@ static void overloadedPerWorldMethodMethod(const v8::FunctionCallbackInfo<v8::Va
     throwUninformativeAndGenericTypeError(info.GetIsolate());
 }
 
+static void overloadedPerWorldMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
+    TestObjV8Internal::overloadedPerWorldMethodMethod(info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void overloadedPerWorldMethod2MethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 2)) {
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedPerWorldMethod", "TestObject", ExceptionMessages::notEnoughArguments(2, info.Length())), info.GetIsolate());
+        return;
+    }
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[0]);
+    V8TRYCATCH_VOID(int, longArg, toInt32(info[1]));
+    imp->overloadedPerWorldMethod(strArg, longArg);
+}
+
 static void overloadedPerWorldMethodMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (((info.Length() == 1))) {
@@ -4554,13 +4561,6 @@ static void overloadedPerWorldMethodMethodForMainWorld(const v8::FunctionCallbac
         return;
     }
     throwUninformativeAndGenericTypeError(info.GetIsolate());
-}
-
-static void overloadedPerWorldMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
-    TestObjV8Internal::overloadedPerWorldMethodMethod(info);
-    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
 static void overloadedPerWorldMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -4604,17 +4604,6 @@ static void activityLoggedMethod2Method(const v8::FunctionCallbackInfo<v8::Value
     imp->activityLoggedMethod2(longArg);
 }
 
-static void activityLoggedMethod2MethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("activityLoggedMethod2", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
-        return;
-    }
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, longArg, toInt32(info[0]));
-    imp->activityLoggedMethod2(longArg);
-}
-
 static void activityLoggedMethod2MethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
@@ -4625,6 +4614,17 @@ static void activityLoggedMethod2MethodCallback(const v8::FunctionCallbackInfo<v
     }
     TestObjV8Internal::activityLoggedMethod2Method(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void activityLoggedMethod2MethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("activityLoggedMethod2", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        return;
+    }
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    V8TRYCATCH_VOID(int, longArg, toInt32(info[0]));
+    imp->activityLoggedMethod2(longArg);
 }
 
 static void activityLoggedMethod2MethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -4650,17 +4650,6 @@ static void activityLoggedInIsolatedWorldMethodMethod(const v8::FunctionCallback
     imp->activityLoggedInIsolatedWorldMethod(longArg);
 }
 
-static void activityLoggedInIsolatedWorldMethodMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("activityLoggedInIsolatedWorldMethod", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
-        return;
-    }
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_VOID(int, longArg, toInt32(info[0]));
-    imp->activityLoggedInIsolatedWorldMethod(longArg);
-}
-
 static void activityLoggedInIsolatedWorldMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMMethod");
@@ -4671,6 +4660,17 @@ static void activityLoggedInIsolatedWorldMethodMethodCallback(const v8::Function
     }
     TestObjV8Internal::activityLoggedInIsolatedWorldMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void activityLoggedInIsolatedWorldMethodMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("activityLoggedInIsolatedWorldMethod", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        return;
+    }
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    V8TRYCATCH_VOID(int, longArg, toInt32(info[0]));
+    imp->activityLoggedInIsolatedWorldMethod(longArg);
 }
 
 static void activityLoggedInIsolatedWorldMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -4714,18 +4714,6 @@ static void overloadedActivityLoggedMethod2Method(const v8::FunctionCallbackInfo
     imp->overloadedActivityLoggedMethod(strArg, longArg);
 }
 
-static void overloadedActivityLoggedMethod2MethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (UNLIKELY(info.Length() < 2)) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedActivityLoggedMethod", "TestObject", ExceptionMessages::notEnoughArguments(2, info.Length())), info.GetIsolate());
-        return;
-    }
-    TestObj* imp = V8TestObject::toNative(info.Holder());
-    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[0]);
-    V8TRYCATCH_VOID(int, longArg, toInt32(info[1]));
-    imp->overloadedActivityLoggedMethod(strArg, longArg);
-}
-
 static void overloadedActivityLoggedMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     if (((info.Length() == 1))) {
@@ -4734,23 +4722,6 @@ static void overloadedActivityLoggedMethodMethod(const v8::FunctionCallbackInfo<
     }
     if (((info.Length() == 2))) {
         overloadedActivityLoggedMethod2Method(info);
-        return;
-    }
-    if (UNLIKELY(info.Length() < 1)) {
-        throwTypeError(ExceptionMessages::failedToExecute("overloadedActivityLoggedMethod", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
-        return;
-    }
-    throwUninformativeAndGenericTypeError(info.GetIsolate());
-}
-
-static void overloadedActivityLoggedMethodMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
-{
-    if (((info.Length() == 1))) {
-        overloadedActivityLoggedMethod1MethodForMainWorld(info);
-        return;
-    }
-    if (((info.Length() == 2))) {
-        overloadedActivityLoggedMethod2MethodForMainWorld(info);
         return;
     }
     if (UNLIKELY(info.Length() < 1)) {
@@ -4770,6 +4741,35 @@ static void overloadedActivityLoggedMethodMethodCallback(const v8::FunctionCallb
     }
     TestObjV8Internal::overloadedActivityLoggedMethodMethod(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void overloadedActivityLoggedMethod2MethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (UNLIKELY(info.Length() < 2)) {
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedActivityLoggedMethod", "TestObject", ExceptionMessages::notEnoughArguments(2, info.Length())), info.GetIsolate());
+        return;
+    }
+    TestObj* imp = V8TestObject::toNative(info.Holder());
+    V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[0]);
+    V8TRYCATCH_VOID(int, longArg, toInt32(info[1]));
+    imp->overloadedActivityLoggedMethod(strArg, longArg);
+}
+
+static void overloadedActivityLoggedMethodMethodForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)
+{
+    if (((info.Length() == 1))) {
+        overloadedActivityLoggedMethod1MethodForMainWorld(info);
+        return;
+    }
+    if (((info.Length() == 2))) {
+        overloadedActivityLoggedMethod2MethodForMainWorld(info);
+        return;
+    }
+    if (UNLIKELY(info.Length() < 1)) {
+        throwTypeError(ExceptionMessages::failedToExecute("overloadedActivityLoggedMethod", "TestObject", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
+        return;
+    }
+    throwUninformativeAndGenericTypeError(info.GetIsolate());
 }
 
 static void overloadedActivityLoggedMethodMethodCallbackForMainWorld(const v8::FunctionCallbackInfo<v8::Value>& info)

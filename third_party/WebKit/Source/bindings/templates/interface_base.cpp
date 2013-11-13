@@ -98,9 +98,6 @@ template <typename T> void V8_USE(T) { }
 {% if not method.is_custom %}
 {{generate_method(method, world_suffix)}}
 {% endif %}
-{% endfor %}
-{# FIXME: merge these two |world_suffix| loops #}
-{% for world_suffix in method.world_suffixes %}
 {% if method.overloads %}
 {{overload_resolution_method(method.overloads, world_suffix)}}
 {% endif %}
