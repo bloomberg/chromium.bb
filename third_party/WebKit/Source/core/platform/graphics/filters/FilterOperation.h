@@ -26,7 +26,6 @@
 #ifndef FilterOperation_h
 #define FilterOperation_h
 
-#include "core/fetch/DocumentResourceReference.h"
 #include "core/platform/graphics/filters/Filter.h"
 #include "core/platform/graphics/filters/ReferenceFilter.h"
 #include "platform/Length.h"
@@ -126,9 +125,6 @@ public:
     const String& url() const { return m_url; }
     const String& fragment() const { return m_fragment; }
 
-    DocumentResourceReference* documentResourceReference() const { return m_documentResourceReference.get(); }
-    void setDocumentResourceReference(PassOwnPtr<DocumentResourceReference> documentResourceReference) { m_documentResourceReference = documentResourceReference; }
-
     ReferenceFilter* filter() const { return m_filter.get(); }
     void setFilter(PassRefPtr<ReferenceFilter> filter) { m_filter = filter; }
 
@@ -156,7 +152,6 @@ private:
 
     String m_url;
     String m_fragment;
-    OwnPtr<DocumentResourceReference> m_documentResourceReference;
     RefPtr<ReferenceFilter> m_filter;
 };
 

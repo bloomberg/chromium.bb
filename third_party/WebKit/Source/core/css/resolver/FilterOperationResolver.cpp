@@ -39,6 +39,7 @@
 #include "core/platform/graphics/filters/custom/CustomFilterOperation.h"
 #include "core/rendering/style/StyleCustomFilterProgram.h"
 #include "core/rendering/style/StyleShader.h"
+#include "core/rendering/svg/ReferenceFilterBuilder.h"
 #include "core/svg/SVGURIReference.h"
 #include "platform/graphics/filters/custom/CustomFilterArrayParameter.h"
 #include "platform/graphics/filters/custom/CustomFilterConstants.h"
@@ -406,7 +407,7 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, const Re
                 if (!svgDocumentValue->loadRequested())
                     state.elementStyleResources().addPendingSVGDocument(operation.get(), svgDocumentValue);
                 else if (svgDocumentValue->cachedSVGDocument())
-                    operation->setDocumentResourceReference(adoptPtr(new DocumentResourceReference(svgDocumentValue->cachedSVGDocument())));
+                    ReferenceFilterBuilder::setDocumentResourceReference(operation.get(), adoptPtr(new DocumentResourceReference(svgDocumentValue->cachedSVGDocument())));
             }
             operations.operations().append(operation);
             continue;

@@ -34,7 +34,6 @@
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/dom/Element.h"
 #include "core/fetch/DocumentResource.h"
-#include "core/fetch/DocumentResourceReference.h"
 #include "core/platform/graphics/filters/FilterEffect.h"
 #include "core/platform/graphics/filters/SourceAlpha.h"
 #include "core/rendering/svg/RenderSVGResourceFilter.h"
@@ -43,6 +42,31 @@
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
 
 namespace WebCore {
+
+HashMap<const FilterOperation*, OwnPtr<DocumentResourceReference> >* ReferenceFilterBuilder::documentResourceReferences = 0;
+
+DocumentResourceReference* ReferenceFilterBuilder::documentResourceReference(const FilterOperation* filterOperation)
+{
+    if (!documentResourceReferences)
+        return 0;
+
+    return documentResourceReferences->get(filterOperation);
+}
+
+void ReferenceFilterBuilder::setDocumentResourceReference(const FilterOperation* filterOperation, PassOwnPtr<DocumentResourceReference> documentResourceReference)
+{
+    if (!documentResourceReferences)
+        documentResourceReferences = new HashMap<const FilterOperation*, OwnPtr<DocumentResourceReference> >;
+    documentResourceReferences->add(filterOperation, documentResourceReference);
+}
+
+void ReferenceFilterBuilder::clearDocumentResourceReference(const FilterOperation* filterOperation)
+{
+    if (!documentResourceReferences)
+        return;
+
+    documentResourceReferences->remove(filterOperation);
+}
 
 // Returns whether or not the SVGElement object contains a valid color-interpolation-filters attribute
 static bool getSVGElementColorSpace(SVGElement* svgElement, ColorSpace& cs)
@@ -91,13 +115,14 @@ PassRefPtr<FilterEffect> ReferenceFilterBuilder::build(Filter* parentFilter, Ren
 
     Document* document = &renderer->document();
 
-    DocumentResourceReference* documentResourceReference = filterOperation->documentResourceReference();
-    DocumentResource* cachedSVGDocument = documentResourceReference ? documentResourceReference->document() : 0;
+    if (DocumentResourceReference* documentResourceRef = documentResourceReference(filterOperation)) {
+        DocumentResource* cachedSVGDocument = documentResourceRef->document();
 
-    // If we have an SVG document, this is an external reference. Otherwise
-    // we look up the referenced node in the current document.
-    if (cachedSVGDocument)
-        document = cachedSVGDocument->document();
+        // If we have an SVG document, this is an external reference. Otherwise
+        // we look up the referenced node in the current document.
+        if (cachedSVGDocument)
+            document = cachedSVGDocument->document();
+    }
 
     if (!document)
         return 0;

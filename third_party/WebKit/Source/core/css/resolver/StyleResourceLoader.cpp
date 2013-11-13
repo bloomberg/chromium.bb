@@ -43,6 +43,7 @@
 #include "core/rendering/style/StyleGeneratedImage.h"
 #include "core/rendering/style/StylePendingImage.h"
 #include "core/rendering/style/StylePendingShader.h"
+#include "core/rendering/svg/ReferenceFilterBuilder.h"
 
 namespace WebCore {
 
@@ -71,7 +72,7 @@ void StyleResourceLoader::loadPendingSVGDocuments(RenderStyle* renderStyle, cons
                 continue;
 
             // Stash the DocumentResource on the reference filter.
-            referenceFilter->setDocumentResourceReference(adoptPtr(new DocumentResourceReference(resource)));
+            ReferenceFilterBuilder::setDocumentResourceReference(referenceFilter, adoptPtr(new DocumentResourceReference(resource)));
         }
     }
 }

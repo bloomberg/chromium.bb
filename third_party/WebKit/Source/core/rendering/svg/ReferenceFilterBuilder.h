@@ -31,19 +31,29 @@
 #ifndef ReferenceFilterBuilder_h
 #define ReferenceFilterBuilder_h
 
+#include "core/fetch/DocumentResourceReference.h"
 #include "core/platform/graphics/filters/FilterEffect.h"
+#include "wtf/HashMap.h"
 #include "wtf/PassRefPtr.h"
 
 namespace WebCore {
 
 class Filter;
 class FilterEffect;
+class FilterOperation;
 class ReferenceFilterOperation;
 class RenderObject;
 
 class ReferenceFilterBuilder {
 public:
+    static DocumentResourceReference* documentResourceReference(const FilterOperation*);
+    static void setDocumentResourceReference(const FilterOperation*, PassOwnPtr<DocumentResourceReference>);
+    static void clearDocumentResourceReference(const FilterOperation*);
+
     static PassRefPtr<FilterEffect> build(Filter*, RenderObject* renderer, FilterEffect* previousEffect, const ReferenceFilterOperation*);
+
+private:
+    static HashMap<const FilterOperation*, OwnPtr<DocumentResourceReference> >* documentResourceReferences;
 };
 
 }

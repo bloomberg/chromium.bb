@@ -37,6 +37,7 @@
 #include "core/platform/graphics/filters/custom/CustomFilterProgram.h"
 #include "core/rendering/FilterEffectRenderer.h"
 #include "core/rendering/RenderLayer.h"
+#include "core/rendering/svg/ReferenceFilterBuilder.h"
 #include "core/rendering/svg/RenderSVGResourceContainer.h"
 #include "core/svg/SVGFilterElement.h"
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
@@ -119,7 +120,7 @@ void RenderLayerFilterInfo::updateReferenceFilterClients(const FilterOperations&
         if (filterOperation->type() != FilterOperation::REFERENCE)
             continue;
         ReferenceFilterOperation* referenceFilterOperation = toReferenceFilterOperation(filterOperation.get());
-        DocumentResourceReference* documentReference = referenceFilterOperation->documentResourceReference();
+        DocumentResourceReference* documentReference = ReferenceFilterBuilder::documentResourceReference(referenceFilterOperation);
         DocumentResource* cachedSVGDocument = documentReference ? documentReference->document() : 0;
 
         if (cachedSVGDocument) {
