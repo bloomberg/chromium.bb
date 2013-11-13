@@ -161,12 +161,10 @@ void SystemTray::InitializeTrayItems(SystemTrayDelegate* delegate) {
 void SystemTray::CreateItems(SystemTrayDelegate* delegate) {
 #if !defined(OS_WIN)
   AddTrayItem(new internal::TraySessionLengthLimit(this));
-  // In multi-profile user mode we can have multiple user tiles.
+  // Create user items for each possible user.
   ash::Shell* shell = ash::Shell::GetInstance();
   int maximum_user_profiles =
-      shell->delegate()->IsMultiProfilesEnabled() ?
-          shell->session_state_delegate()->GetMaximumNumberOfLoggedInUsers() :
-          1;
+          shell->session_state_delegate()->GetMaximumNumberOfLoggedInUsers();
   for (int i = 0; i < maximum_user_profiles; i++) {
     internal::TrayUser* tray_user = new internal::TrayUser(this, i);
     AddTrayItem(tray_user);
