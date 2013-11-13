@@ -485,9 +485,6 @@ void CSSAnimations::calculateAnimationUpdate(CSSAnimationUpdate* update, Element
 
 void CSSAnimations::maybeApplyPendingUpdate(Element* element)
 {
-    if (!element->renderer())
-        m_pendingUpdate = nullptr;
-
     if (!m_pendingUpdate) {
         m_previousCompositableValuesForAnimations.clear();
         return;
