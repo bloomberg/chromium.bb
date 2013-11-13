@@ -277,15 +277,17 @@ class MyActivity(object):
   # authenticate to.
   def check_cookies(self):
     cookie_file = os.path.expanduser('~/.codereview_upload_cookies')
-    cookie_jar = cookielib.MozillaCookieJar(cookie_file)
     if not os.path.exists(cookie_file):
-      exit(1)
-
-    try:
-      cookie_jar.load()
-      print 'Found cookie file: %s' % cookie_file
-    except (cookielib.LoadError, IOError):
-      exit(1)
+      print 'No Rietveld cookie file found.'
+      cookie_jar = []
+    else:
+      cookie_jar = cookielib.MozillaCookieJar(cookie_file)
+      try:
+        cookie_jar.load()
+        print 'Found cookie file: %s' % cookie_file
+      except (cookielib.LoadError, IOError):
+        print 'Error loading Rietveld cookie file: %s' % cookie_file
+        cookie_jar = []
 
     filtered_instances = []
 
