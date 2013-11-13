@@ -24,7 +24,8 @@ static const int kMenuCornerRadiusForAura = 0;
 
 #if !defined(OS_WIN)
 void MenuConfig::Init(const ui::NativeTheme* theme) {
-  InitAura(theme);
+  if (theme == ui::NativeThemeAura::instance())
+    InitAura(theme);
 }
 #endif
 
