@@ -317,6 +317,7 @@ v8.log
 /tools/gyp
 /tools/histograms
 /tools/json_schema_compiler/test/json_schema_compiler_tests.xml
+/tools/metrics/histograms/histograms.before.pretty-print.xml
 /tools/page_cycler/acid3
 /tools/perf/data
 /tools/perf/results.html
