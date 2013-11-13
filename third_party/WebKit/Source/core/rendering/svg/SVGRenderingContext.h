@@ -76,9 +76,6 @@ public:
     void prepareToRenderSVGContent(RenderObject*, PaintInfo&, NeedsGraphicsContextSave = DontSaveGraphicsContext);
     bool isRenderingPrepared() const { return m_renderingFlags & RenderingPrepared; }
 
-    // Patterns need a different float-to-integer coordinate mapping.
-    static bool createImageBufferForPattern(const FloatRect& absoluteTargetRect, const FloatRect& clampedAbsoluteTargetRect, OwnPtr<ImageBuffer>&, RenderingMode);
-
     static void renderSubtree(GraphicsContext*, RenderObject*, const AffineTransform&);
 
     static float calculateScreenFontSizeScalingFactor(const RenderObject*);

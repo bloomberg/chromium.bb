@@ -239,9 +239,8 @@ PassOwnPtr<ImageBuffer> RenderSVGResourcePattern::createTileImage(const PatternA
 {
     clampedAbsoluteTileBoundaries = SVGRenderingContext::clampedAbsoluteTargetRect(absoluteTileBoundaries);
 
-    OwnPtr<ImageBuffer> tileImage;
-
-    if (!SVGRenderingContext::createImageBufferForPattern(absoluteTileBoundaries, clampedAbsoluteTileBoundaries, tileImage, Unaccelerated))
+    OwnPtr<ImageBuffer> tileImage = ImageBuffer::createBufferForTile(absoluteTileBoundaries.size(), clampedAbsoluteTileBoundaries.size(), Unaccelerated);
+    if (!tileImage)
         return nullptr;
 
     GraphicsContext* tileImageContext = tileImage->context();

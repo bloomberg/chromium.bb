@@ -108,6 +108,28 @@ PassOwnPtr<ImageBuffer> ImageBuffer::createCompatibleBuffer(const IntSize& size,
     return buf.release();
 }
 
+PassOwnPtr<ImageBuffer> ImageBuffer::createBufferForTile(const FloatSize& tileSize, const FloatSize& clampedTileSize, RenderingMode renderingMode)
+{
+    IntSize imageSize(roundedIntSize(clampedTileSize));
+    IntSize unclampedImageSize(roundedIntSize(tileSize));
+
+    // Don't create empty ImageBuffers.
+    if (imageSize.isEmpty())
+        return nullptr;
+
+    OwnPtr<ImageBuffer> image = ImageBuffer::create(imageSize, 1, renderingMode);
+    if (!image)
+        return nullptr;
+
+    GraphicsContext* imageContext = image->context();
+    ASSERT(imageContext);
+
+    // Compensate rounding effects, as the absolute target rect is using floating-point numbers and the image buffer size is integer.
+    imageContext->scale(FloatSize(unclampedImageSize.width() / tileSize.width(), unclampedImageSize.height() / tileSize.height()));
+
+    return image.release();
+}
+
 ImageBuffer::ImageBuffer(const IntSize& size, float resolutionScale, const GraphicsContext* compatibleContext, bool hasAlpha, bool& success)
     : m_size(size)
     , m_logicalSize(size)

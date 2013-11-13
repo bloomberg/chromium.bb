@@ -96,6 +96,9 @@ public:
 
     static PassOwnPtr<ImageBuffer> createCompatibleBuffer(const IntSize&, float resolutionScale, const GraphicsContext*, bool hasAlpha);
 
+    // Tiles may need float-to-integer coordinate mapping.
+    static PassOwnPtr<ImageBuffer> createBufferForTile(const FloatSize& tileSize, const FloatSize& clampedTileSize, RenderingMode);
+
     ~ImageBuffer();
 
     // The actual resolution of the backing store

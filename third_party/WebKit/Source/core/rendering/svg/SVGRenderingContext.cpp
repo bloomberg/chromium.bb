@@ -238,29 +238,6 @@ void SVGRenderingContext::calculateTransformationToOutermostCoordinateSystem(con
         absoluteTransform.scale(deviceScaleFactor);
 }
 
-bool SVGRenderingContext::createImageBufferForPattern(const FloatRect& absoluteTargetRect, const FloatRect& clampedAbsoluteTargetRect, OwnPtr<ImageBuffer>& imageBuffer, RenderingMode renderingMode)
-{
-    IntSize imageSize(roundedIntSize(clampedAbsoluteTargetRect.size()));
-    IntSize unclampedImageSize(roundedIntSize(absoluteTargetRect.size()));
-
-    // Don't create empty ImageBuffers.
-    if (imageSize.isEmpty())
-        return false;
-
-    OwnPtr<ImageBuffer> image = ImageBuffer::create(imageSize, 1, renderingMode);
-    if (!image)
-        return false;
-
-    GraphicsContext* imageContext = image->context();
-    ASSERT(imageContext);
-
-    // Compensate rounding effects, as the absolute target rect is using floating-point numbers and the image buffer size is integer.
-    imageContext->scale(FloatSize(unclampedImageSize.width() / absoluteTargetRect.width(), unclampedImageSize.height() / absoluteTargetRect.height()));
-
-    imageBuffer = image.release();
-    return true;
-}
-
 void SVGRenderingContext::renderSubtree(GraphicsContext* context, RenderObject* item, const AffineTransform& subtreeContentTransformation)
 {
     ASSERT(item);

@@ -30,7 +30,6 @@
 #include "core/platform/graphics/Pattern.h"
 #include "core/platform/graphics/filters/Filter.h"
 #include "core/platform/graphics/filters/SkiaImageFilterBuilder.h"
-#include "core/rendering/svg/SVGRenderingContext.h"
 #include "platform/text/TextStream.h"
 #include "platform/transforms/AffineTransform.h"
 #include "third_party/skia/include/core/SkDevice.h"
@@ -68,8 +67,8 @@ void FETile::applySoftware()
         tileRect.scale(filter->filterResolution().width(), filter->filterResolution().height());
     }
 
-    OwnPtr<ImageBuffer> tileImage;
-    if (!SVGRenderingContext::createImageBufferForPattern(tileRect, tileRect, tileImage, filter()->renderingMode()))
+    OwnPtr<ImageBuffer> tileImage = ImageBuffer::createBufferForTile(tileRect.size(), tileRect.size(), filter()->renderingMode());
+    if (!tileImage)
         return;
 
     GraphicsContext* tileImageContext = tileImage->context();
