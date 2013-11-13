@@ -137,7 +137,6 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
   // return |add_prefixes_result| and |add_full_hashes_result|.
   virtual bool FinishUpdate(
       const std::vector<SBAddFullHash>& pending_adds,
-      const std::set<SBPrefix>& prefix_misses,
       SBAddPrefixes* add_prefixes_result,
       std::vector<SBAddFullHash>* add_full_hashes_result) OVERRIDE;
   virtual bool CancelUpdate() OVERRIDE;
@@ -169,7 +168,6 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
  private:
   // Update store file with pending full hashes.
   virtual bool DoUpdate(const std::vector<SBAddFullHash>& pending_adds,
-                        const std::set<SBPrefix>& prefix_misses,
                         SBAddPrefixes* add_prefixes_result,
                         std::vector<SBAddFullHash>* add_full_hashes_result);
 

@@ -15149,6 +15149,10 @@ other types of suffix sets.
 
 <histogram name="SB2.BloomFilterFalsePositives"
     enum="SB2BloomFilterFalsePositives">
+  <obsolete>
+    This became misleading around M-22 (September 2012), deleted in M-32
+    (November 2013).
+  </obsolete>
   <summary>
     All prefix misses (server returned no full hashes) and prefix misses due to
     false positives in the bloom filter.

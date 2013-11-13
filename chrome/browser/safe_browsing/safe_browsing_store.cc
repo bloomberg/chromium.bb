@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "base/metrics/histogram.h"
+#include "base/logging.h"
 
 namespace {
 
@@ -120,49 +120,7 @@ void RemoveDeleted(ItemsT* items, const base::hash_set<int32>& del_set) {
   items->erase(end_iter, items->end());
 }
 
-enum MissTypes {
-  MISS_TYPE_ALL,
-  MISS_TYPE_FALSE,
-
-  // Always at the end.
-  MISS_TYPE_MAX
-};
-
 }  // namespace
-
-void SBCheckPrefixMisses(const SBAddPrefixes& add_prefixes,
-                         const std::set<SBPrefix>& prefix_misses) {
-  if (prefix_misses.empty())
-    return;
-
-  // Record a hit for all prefixes which missed when sent to the
-  // server.
-  for (size_t i = 0; i < prefix_misses.size(); ++i) {
-    UMA_HISTOGRAM_ENUMERATION("SB2.BloomFilterFalsePositives",
-                              MISS_TYPE_ALL, MISS_TYPE_MAX);
-  }
-
-  // Collect the misses which are not present in |add_prefixes|.
-  // Since |add_prefixes| can contain multiple copies of the same
-  // prefix, it is not sufficient to count the number of elements
-  // present in both collections.
-  std::set<SBPrefix> false_misses(prefix_misses.begin(), prefix_misses.end());
-  for (SBAddPrefixes::const_iterator iter = add_prefixes.begin();
-       iter != add_prefixes.end(); ++iter) {
-    // |erase()| on an absent element should cost like |find()|.
-    false_misses.erase(iter->prefix);
-  }
-
-  // Record a hit for prefixes which we shouldn't have sent in the
-  // first place.
-  for (size_t i = 0; i < false_misses.size(); ++i) {
-    UMA_HISTOGRAM_ENUMERATION("SB2.BloomFilterFalsePositives",
-                              MISS_TYPE_FALSE, MISS_TYPE_MAX);
-  }
-
-  // Divide |MISS_TYPE_FALSE| by |MISS_TYPE_ALL| to get the
-  // bloom-filter false-positive rate.
-}
 
 void SBProcessSubs(SBAddPrefixes* add_prefixes,
                    SBSubPrefixes* sub_prefixes,
