@@ -65,6 +65,7 @@ void SimpleFontData::platformInit()
     m_platformData.setupPaint(&paint);
     paint.getFontMetrics(&metrics);
     SkTypeface* face = paint.getTypeface();
+    ASSERT(face);
 
     static const uint32_t vdmxTag = SkSetFourByteTag('V', 'D', 'M', 'X');
     int pixelSize = m_platformData.size() + 0.5;
