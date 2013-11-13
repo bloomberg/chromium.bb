@@ -42,7 +42,7 @@ public class SyncStatusHelper {
     @VisibleForTesting
     public static class CachedAccountSyncSettings {
         private final String mContractAuthority;
-        private final SyncContentResolverDelegate mSyncContentResolverWrapper;
+        private final SyncContentResolverDelegate mSyncContentResolverDelegate;
         private Account mAccount;
         private boolean mDidUpdate;
         private boolean mSyncAutomatically;
@@ -51,7 +51,7 @@ public class SyncStatusHelper {
         public CachedAccountSyncSettings(String contractAuthority,
                 SyncContentResolverDelegate contentResolverWrapper) {
             mContractAuthority = contractAuthority;
-            mSyncContentResolverWrapper = contentResolverWrapper;
+            mSyncContentResolverDelegate = contentResolverWrapper;
         }
 
         private void ensureSettingsAreForAccount(Account account) {
@@ -104,9 +104,9 @@ public class SyncStatusHelper {
             mAccount = account;
 
             StrictMode.ThreadPolicy oldPolicy = temporarilyAllowDiskWritesAndDiskReads();
-            mSyncAutomatically = mSyncContentResolverWrapper.getSyncAutomatically(
+            mSyncAutomatically = mSyncContentResolverDelegate.getSyncAutomatically(
                     account, mContractAuthority);
-            mIsSyncable = mSyncContentResolverWrapper.getIsSyncable(account, mContractAuthority);
+            mIsSyncable = mSyncContentResolverDelegate.getIsSyncable(account, mContractAuthority);
             StrictMode.setThreadPolicy(oldPolicy);
             mDidUpdate = (oldIsSyncable != mIsSyncable)
                 || (oldSyncAutomatically != mSyncAutomatically)
@@ -117,7 +117,7 @@ public class SyncStatusHelper {
         protected void setIsSyncableInternal(Account account) {
             mIsSyncable = 1;
             StrictMode.ThreadPolicy oldPolicy = temporarilyAllowDiskWritesAndDiskReads();
-            mSyncContentResolverWrapper.setIsSyncable(account, mContractAuthority, 1);
+            mSyncContentResolverDelegate.setIsSyncable(account, mContractAuthority, 1);
             StrictMode.setThreadPolicy(oldPolicy);
             mDidUpdate = true;
         }
@@ -126,7 +126,7 @@ public class SyncStatusHelper {
         protected void setSyncAutomaticallyInternal(Account account, boolean value) {
             mSyncAutomatically = value;
             StrictMode.ThreadPolicy oldPolicy = temporarilyAllowDiskWritesAndDiskReads();
-            mSyncContentResolverWrapper.setSyncAutomatically(account, mContractAuthority, value);
+            mSyncContentResolverDelegate.setSyncAutomatically(account, mContractAuthority, value);
             StrictMode.setThreadPolicy(oldPolicy);
             mDidUpdate = true;
         }
@@ -149,7 +149,7 @@ public class SyncStatusHelper {
 
     private final Context mApplicationContext;
 
-    private final SyncContentResolverDelegate mSyncContentResolverWrapper;
+    private final SyncContentResolverDelegate mSyncContentResolverDelegate;
 
     private boolean mCachedMasterSyncAutomatically;
 
@@ -168,19 +168,19 @@ public class SyncStatusHelper {
 
     /**
      * @param context the context
-     * @param syncContentResolverWrapper an implementation of SyncContentResolverWrapper
+     * @param syncContentResolverDelegate an implementation of {@link SyncContentResolverDelegate}.
      */
     private SyncStatusHelper(Context context,
-            SyncContentResolverDelegate syncContentResolverWrapper,
+            SyncContentResolverDelegate syncContentResolverDelegate,
             CachedAccountSyncSettings cachedAccountSettings) {
         mApplicationContext = context.getApplicationContext();
-        mSyncContentResolverWrapper = syncContentResolverWrapper;
+        mSyncContentResolverDelegate = syncContentResolverDelegate;
         mContractAuthority = getContractAuthority();
         mCachedSettings = cachedAccountSettings;
 
         updateMasterSyncAutomaticallySetting();
 
-        mSyncContentResolverWrapper.addStatusChangeListener(
+        mSyncContentResolverDelegate.addStatusChangeListener(
                 ContentResolver.SYNC_OBSERVER_TYPE_SETTINGS,
                 new AndroidSyncSettingsChangedObserver());
     }
@@ -188,7 +188,7 @@ public class SyncStatusHelper {
     private void updateMasterSyncAutomaticallySetting() {
         StrictMode.ThreadPolicy oldPolicy = temporarilyAllowDiskWritesAndDiskReads();
         synchronized (mCachedSettings) {
-            mCachedMasterSyncAutomatically = mSyncContentResolverWrapper
+            mCachedMasterSyncAutomatically = mSyncContentResolverDelegate
                     .getMasterSyncAutomatically();
         }
         StrictMode.setThreadPolicy(oldPolicy);
@@ -197,9 +197,9 @@ public class SyncStatusHelper {
     /**
      * A factory method for the SyncStatusHelper.
      *
-     * It is possible to override the SyncContentResolverWrapper to use in tests for the
+     * It is possible to override the {@link SyncContentResolverDelegate} to use in tests for the
      * instance of the SyncStatusHelper by calling overrideSyncStatusHelperForTests(...) with
-     * your SyncContentResolverWrapper.
+     * your {@link SyncContentResolverDelegate}.
      *
      * @param context the ApplicationContext is retrieved from the context used as an argument.
      * @return a singleton instance of the SyncStatusHelper
@@ -218,31 +218,31 @@ public class SyncStatusHelper {
     }
 
     /**
-     * Tests might want to consider overriding the context and SyncContentResolverWrapper so they
-     * do not use the real ContentResolver in Android.
+     * Tests might want to consider overriding the context and {@link SyncContentResolverDelegate}
+     * so they do not use the real ContentResolver in Android.
      *
      * @param context the context to use
-     * @param syncContentResolverWrapper the SyncContentResolverWrapper to use
+     * @param syncContentResolverDelegate the {@link SyncContentResolverDelegate} to use
      */
     @VisibleForTesting
     public static void overrideSyncStatusHelperForTests(Context context,
-            SyncContentResolverDelegate syncContentResolverWrapper,
+            SyncContentResolverDelegate syncContentResolverDelegate,
             CachedAccountSyncSettings cachedAccountSettings) {
         synchronized (INSTANCE_LOCK) {
             if (sSyncStatusHelper != null) {
                 throw new IllegalStateException("SyncStatusHelper already exists");
             }
-            sSyncStatusHelper = new SyncStatusHelper(context, syncContentResolverWrapper,
+            sSyncStatusHelper = new SyncStatusHelper(context, syncContentResolverDelegate,
                     cachedAccountSettings);
         }
     }
 
     @VisibleForTesting
     public static void overrideSyncStatusHelperForTests(Context context,
-            SyncContentResolverDelegate syncContentResolverWrapper) {
+            SyncContentResolverDelegate syncContentResolverDelegate) {
         CachedAccountSyncSettings cachedAccountSettings = new CachedAccountSyncSettings(
-                context.getPackageName(), syncContentResolverWrapper);
-        overrideSyncStatusHelperForTests(context, syncContentResolverWrapper,
+                context.getPackageName(), syncContentResolverDelegate);
+        overrideSyncStatusHelperForTests(context, syncContentResolverDelegate,
                 cachedAccountSettings);
     }
 
@@ -379,9 +379,9 @@ public class SyncStatusHelper {
                 getGoogleAccounts();
         for (Account accountToSetNotSyncable : googleAccounts) {
             if (!accountToSetNotSyncable.equals(account) &&
-                    mSyncContentResolverWrapper.getIsSyncable(
+                    mSyncContentResolverDelegate.getIsSyncable(
                             accountToSetNotSyncable, mContractAuthority) > 0) {
-                mSyncContentResolverWrapper.setIsSyncable(accountToSetNotSyncable,
+                mSyncContentResolverDelegate.setIsSyncable(accountToSetNotSyncable,
                         mContractAuthority, 0);
             }
         }

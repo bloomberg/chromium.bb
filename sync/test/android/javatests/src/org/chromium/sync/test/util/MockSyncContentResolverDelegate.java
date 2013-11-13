@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
- * Mock implementation of the SyncContentResolverWrapper.
+ * Mock implementation of the {@link SyncContentResolverDelegate}.
  *
  * This implementation only supports status change listeners for the type
  * SYNC_OBSERVER_TYPE_SETTINGS.
