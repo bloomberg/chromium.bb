@@ -587,9 +587,7 @@ void StyleResolver::matchAllRules(StyleResolverState& state, ElementRuleCollecto
     if (state.element()->isStyledElement()) {
         if (state.element()->inlineStyle()) {
             // Inline style is immutable as long as there is no CSSOM wrapper.
-            // FIXME: Media control shadow trees seem to have problems with caching.
-            bool isInlineStyleCacheable = !state.element()->inlineStyle()->isMutable() && !state.element()->isInShadowTree();
-            // FIXME: Constify.
+            bool isInlineStyleCacheable = !state.element()->inlineStyle()->isMutable();
             collector.addElementStyleProperties(state.element()->inlineStyle(), isInlineStyleCacheable);
         }
 
