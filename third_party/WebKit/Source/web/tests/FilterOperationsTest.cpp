@@ -36,7 +36,7 @@ namespace {
 TEST(FilterOperationsTest, getOutsetsBlur)
 {
     FilterOperations ops;
-    ops.operations().append(BlurFilterOperation::create(Length(20.0, WebCore::Fixed), FilterOperation::BLUR));
+    ops.operations().append(BlurFilterOperation::create(Length(20.0, WebCore::Fixed)));
     EXPECT_TRUE(ops.hasOutsets());
     FilterOutsets outsets = ops.outsets();
     EXPECT_EQ(57, outsets.top());
@@ -48,7 +48,7 @@ TEST(FilterOperationsTest, getOutsetsBlur)
 TEST(FilterOperationsTest, getOutsetsDropShadow)
 {
     FilterOperations ops;
-    ops.operations().append(DropShadowFilterOperation::create(IntPoint(3, 8), 20, Color(1, 2, 3), FilterOperation::DROP_SHADOW));
+    ops.operations().append(DropShadowFilterOperation::create(IntPoint(3, 8), 20, Color(1, 2, 3)));
     EXPECT_TRUE(ops.hasOutsets());
     FilterOutsets outsets = ops.outsets();
     EXPECT_EQ(49, outsets.top());

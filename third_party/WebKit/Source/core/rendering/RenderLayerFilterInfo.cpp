@@ -116,7 +116,7 @@ void RenderLayerFilterInfo::updateReferenceFilterClients(const FilterOperations&
     removeReferenceFilterClients();
     for (size_t i = 0; i < operations.size(); ++i) {
         RefPtr<FilterOperation> filterOperation = operations.operations().at(i);
-        if (filterOperation->getOperationType() != FilterOperation::REFERENCE)
+        if (filterOperation->type() != FilterOperation::REFERENCE)
             continue;
         ReferenceFilterOperation* referenceFilterOperation = toReferenceFilterOperation(filterOperation.get());
         DocumentResourceReference* documentReference = referenceFilterOperation->documentResourceReference();
@@ -172,7 +172,7 @@ void RenderLayerFilterInfo::updateCustomFilterClients(const FilterOperations& op
     CustomFilterProgramList cachedCustomFilterPrograms;
     for (size_t i = 0; i < operations.size(); ++i) {
         const FilterOperation* filterOperation = operations.at(i);
-        if (filterOperation->getOperationType() != FilterOperation::CUSTOM)
+        if (filterOperation->type() != FilterOperation::CUSTOM)
             continue;
         RefPtr<CustomFilterProgram> program = toCustomFilterOperation(filterOperation)->program();
         cachedCustomFilterPrograms.append(program);

@@ -124,7 +124,7 @@ bool FilterEffectRenderer::build(RenderObject* renderer, const FilterOperations&
     for (size_t i = 0; i < operations.operations().size(); ++i) {
         RefPtr<FilterEffect> effect;
         FilterOperation* filterOperation = operations.operations().at(i).get();
-        switch (filterOperation->getOperationType()) {
+        switch (filterOperation->type()) {
         case FilterOperation::REFERENCE: {
             effect = ReferenceFilterBuilder::build(this, renderer, previousEffect.get(), toReferenceFilterOperation(filterOperation));
             break;
@@ -271,7 +271,7 @@ bool FilterEffectRenderer::build(RenderObject* renderer, const FilterOperations&
         }
 
         if (effect) {
-            if (filterOperation->getOperationType() != FilterOperation::REFERENCE) {
+            if (filterOperation->type() != FilterOperation::REFERENCE) {
                 // Unlike SVG, filters applied here should not clip to their primitive subregions.
                 effect->setClipsToBounds(false);
                 effect->setOperatingColorSpace(ColorSpaceDeviceRGB);

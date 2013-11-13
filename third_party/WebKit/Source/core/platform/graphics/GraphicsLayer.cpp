@@ -1057,7 +1057,7 @@ static bool copyWebCoreFilterOperationsToWebFilterOperations(const FilterOperati
 {
     for (size_t i = 0; i < filters.size(); ++i) {
         const FilterOperation& op = *filters.at(i);
-        switch (op.getOperationType()) {
+        switch (op.type()) {
         case FilterOperation::REFERENCE:
             return false; // Not supported.
         case FilterOperation::GRAYSCALE:
@@ -1065,7 +1065,7 @@ static bool copyWebCoreFilterOperationsToWebFilterOperations(const FilterOperati
         case FilterOperation::SATURATE:
         case FilterOperation::HUE_ROTATE: {
             float amount = toBasicColorMatrixFilterOperation(op).amount();
-            switch (op.getOperationType()) {
+            switch (op.type()) {
             case FilterOperation::GRAYSCALE:
                 webFilters.appendGrayscaleFilter(amount);
                 break;
@@ -1088,7 +1088,7 @@ static bool copyWebCoreFilterOperationsToWebFilterOperations(const FilterOperati
         case FilterOperation::BRIGHTNESS:
         case FilterOperation::CONTRAST: {
             float amount = toBasicComponentTransferFilterOperation(op).amount();
-            switch (op.getOperationType()) {
+            switch (op.type()) {
             case FilterOperation::INVERT:
                 webFilters.appendInvertFilter(amount);
                 break;

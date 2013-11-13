@@ -401,7 +401,7 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, const Re
             CSSSVGDocumentValue* svgDocumentValue = toCSSSVGDocumentValue(argument);
             KURL url = state.document().completeURL(svgDocumentValue->url());
 
-            RefPtr<ReferenceFilterOperation> operation = ReferenceFilterOperation::create(svgDocumentValue->url(), url.fragmentIdentifier(), operationType);
+            RefPtr<ReferenceFilterOperation> operation = ReferenceFilterOperation::create(svgDocumentValue->url(), url.fragmentIdentifier());
             if (SVGURIReference::isExternalURIReference(svgDocumentValue->url(), state.document())) {
                 if (!svgDocumentValue->loadRequested())
                     state.elementStyleResources().addPendingSVGDocument(operation.get(), svgDocumentValue);
@@ -470,7 +470,7 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, const Re
             if (stdDeviation.isUndefined())
                 return false;
 
-            operations.operations().append(BlurFilterOperation::create(stdDeviation, operationType));
+            operations.operations().append(BlurFilterOperation::create(stdDeviation));
             break;
         }
         case CSSFilterValue::DropShadowFilterOperation: {
@@ -488,7 +488,7 @@ bool FilterOperationResolver::createFilterOperations(CSSValue* inValue, const Re
             if (item->color)
                 shadowColor = state.document().textLinkColors().colorFromPrimitiveValue(item->color.get(), state.style()->visitedDependentColor(CSSPropertyColor));
 
-            operations.operations().append(DropShadowFilterOperation::create(location, blur, shadowColor.isValid() ? shadowColor : Color::transparent, operationType));
+            operations.operations().append(DropShadowFilterOperation::create(location, blur, shadowColor.isValid() ? shadowColor : Color::transparent));
             break;
         }
         case CSSFilterValue::UnknownFilterOperation:

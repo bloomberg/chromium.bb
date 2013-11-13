@@ -120,26 +120,26 @@ PassRefPtr<FilterOperation> BlurFilterOperation::blend(const FilterOperation* fr
 {
     LengthType lengthType = m_stdDeviation.type();
     if (!from)
-        return BlurFilterOperation::create(m_stdDeviation.blend(Length(lengthType), progress, ValueRangeNonNegative), m_type);
+        return BlurFilterOperation::create(m_stdDeviation.blend(Length(lengthType), progress, ValueRangeNonNegative));
 
     const BlurFilterOperation* fromOp = toBlurFilterOperation(from);
-    return BlurFilterOperation::create(m_stdDeviation.blend(fromOp->m_stdDeviation, progress, ValueRangeNonNegative), m_type);
+    return BlurFilterOperation::create(m_stdDeviation.blend(fromOp->m_stdDeviation, progress, ValueRangeNonNegative));
 }
 
 PassRefPtr<FilterOperation> DropShadowFilterOperation::blend(const FilterOperation* from, double progress) const
 {
-    if (!from)
+    if (!from) {
         return DropShadowFilterOperation::create(
             WebCore::blend(IntPoint(), m_location, progress),
             WebCore::blend(0, m_stdDeviation, progress),
-            WebCore::blend(Color(Color::transparent), m_color, progress),
-            m_type);
+            WebCore::blend(Color(Color::transparent), m_color, progress));
+    }
 
     const DropShadowFilterOperation* fromOp = toDropShadowFilterOperation(from);
     return DropShadowFilterOperation::create(
         WebCore::blend(fromOp->location(), m_location, progress),
         WebCore::blend(fromOp->stdDeviation(), m_stdDeviation, progress),
-        WebCore::blend(fromOp->color(), m_color, progress), m_type);
+        WebCore::blend(fromOp->color(), m_color, progress));
 }
 
 } // namespace WebCore

@@ -100,7 +100,7 @@ bool SkiaImageFilterBuilder::buildFilterOperations(const FilterOperations& opera
 
     for (size_t i = 0; i < operations.size(); ++i) {
         const FilterOperation& op = *operations.at(i);
-        switch (op.getOperationType()) {
+        switch (op.type()) {
         case FilterOperation::REFERENCE: {
             RefPtr<SkImageFilter> filter;
             ReferenceFilter* referenceFilter = toReferenceFilterOperation(op).filter();
@@ -130,7 +130,7 @@ bool SkiaImageFilterBuilder::buildFilterOperations(const FilterOperations& opera
         case FilterOperation::SATURATE:
         case FilterOperation::HUE_ROTATE: {
             float amount = toBasicColorMatrixFilterOperation(op).amount();
-            switch (op.getOperationType()) {
+            switch (op.type()) {
             case FilterOperation::GRAYSCALE:
                 filters->appendGrayscaleFilter(amount);
                 break;
@@ -153,7 +153,7 @@ bool SkiaImageFilterBuilder::buildFilterOperations(const FilterOperations& opera
         case FilterOperation::BRIGHTNESS:
         case FilterOperation::CONTRAST: {
             float amount = toBasicComponentTransferFilterOperation(op).amount();
-            switch (op.getOperationType()) {
+            switch (op.type()) {
             case FilterOperation::INVERT:
                 filters->appendInvertFilter(amount);
                 break;

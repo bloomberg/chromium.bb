@@ -4011,7 +4011,7 @@ FilterOperations RenderLayer::computeFilterOperations(const RenderStyle* style)
     if (filters.hasReferenceFilter()) {
         for (size_t i = 0; i < filters.size(); ++i) {
             FilterOperation* filterOperation = filters.operations().at(i).get();
-            if (filterOperation->getOperationType() != FilterOperation::REFERENCE)
+            if (filterOperation->type() != FilterOperation::REFERENCE)
                 continue;
             ReferenceFilterOperation* referenceOperation = toReferenceFilterOperation(filterOperation);
             // FIXME: Cache the ReferenceFilter if it didn't change.
@@ -4037,7 +4037,7 @@ FilterOperations RenderLayer::computeFilterOperations(const RenderStyle* style)
     FilterOperations outputFilters;
     for (size_t i = 0; i < filters.size(); ++i) {
         RefPtr<FilterOperation> filterOperation = filters.operations().at(i);
-        if (filterOperation->getOperationType() == FilterOperation::CUSTOM) {
+        if (filterOperation->type() == FilterOperation::CUSTOM) {
             // We have to wait until the program of CSS Shaders is loaded before setting it on the layer.
             // Note that we will handle the loading of the shaders and repainting of the layer in updateOrRemoveFilterClients.
             const CustomFilterOperation* customOperation = toCustomFilterOperation(filterOperation.get());

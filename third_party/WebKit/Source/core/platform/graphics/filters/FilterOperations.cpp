@@ -73,12 +73,12 @@ bool FilterOperations::operator==(const FilterOperations& o) const
 bool FilterOperations::canInterpolateWith(const FilterOperations& other) const
 {
     for (size_t i = 0; i < operations().size(); ++i) {
-        if (!FilterOperation::canInterpolate(operations()[i]->getOperationType()))
+        if (!FilterOperation::canInterpolate(operations()[i]->type()))
             return false;
     }
 
     for (size_t i = 0; i < other.operations().size(); ++i) {
-        if (!FilterOperation::canInterpolate(other.operations()[i]->getOperationType()))
+        if (!FilterOperation::canInterpolate(other.operations()[i]->type()))
             return false;
     }
 
@@ -93,7 +93,7 @@ bool FilterOperations::canInterpolateWith(const FilterOperations& other) const
 bool FilterOperations::hasCustomFilter() const
 {
     for (size_t i = 0; i < m_operations.size(); ++i) {
-        FilterOperation::OperationType type = m_operations.at(i)->getOperationType();
+        FilterOperation::OperationType type = m_operations.at(i)->type();
         if (type == FilterOperation::CUSTOM || type == FilterOperation::VALIDATED_CUSTOM)
             return true;
     }
@@ -103,7 +103,7 @@ bool FilterOperations::hasCustomFilter() const
 bool FilterOperations::hasReferenceFilter() const
 {
     for (size_t i = 0; i < m_operations.size(); ++i) {
-        if (m_operations.at(i)->getOperationType() == FilterOperation::REFERENCE)
+        if (m_operations.at(i)->type() == FilterOperation::REFERENCE)
             return true;
     }
     return false;
@@ -112,7 +112,7 @@ bool FilterOperations::hasReferenceFilter() const
 bool FilterOperations::hasOutsets() const
 {
     for (size_t i = 0; i < m_operations.size(); ++i) {
-        FilterOperation::OperationType operationType = m_operations.at(i).get()->getOperationType();
+        FilterOperation::OperationType operationType = m_operations.at(i)->type();
         if (operationType == FilterOperation::BLUR || operationType == FilterOperation::DROP_SHADOW || operationType == FilterOperation::REFERENCE)
             return true;
     }
@@ -124,7 +124,7 @@ FilterOutsets FilterOperations::outsets() const
     FilterOutsets totalOutsets;
     for (size_t i = 0; i < m_operations.size(); ++i) {
         FilterOperation* filterOperation = m_operations.at(i).get();
-        switch (filterOperation->getOperationType()) {
+        switch (filterOperation->type()) {
         case FilterOperation::BLUR: {
             BlurFilterOperation* blurOperation = toBlurFilterOperation(filterOperation);
             float stdDeviation = floatValueForLength(blurOperation->stdDeviation(), 0);
