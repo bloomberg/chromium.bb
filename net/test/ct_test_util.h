@@ -16,6 +16,9 @@ namespace ct {
 struct LogEntry;
 struct SignedCertificateTimestamp;
 
+// Note: unless specified otherwise, all test data is taken from Certificate
+// Transparency test data repository.
+
 // Fills |entry| with test data for an X.509 entry.
 void GetX509CertLogEntry(LogEntry* entry);
 
@@ -27,6 +30,18 @@ std::string GetTestDigitallySigned();
 
 // Returns the binary representation of a test serialized SCT.
 std::string GetTestSignedCertificateTimestamp();
+
+// Test log key
+std::string GetTestPublicKey();
+
+// ID of test log key
+std::string GetTestPublicKeyId();
+
+// SCT for the X509Certificate provided above.
+void GetX509CertSCT(SignedCertificateTimestamp* sct);
+
+// SCT for the Precertificate log entry provided above.
+void GetPrecertSCT(SignedCertificateTimestamp* sct);
 
 }  // namespace ct
 
