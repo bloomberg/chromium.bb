@@ -69,6 +69,7 @@ namespace Inspector {
 namespace Page {
 
   extern const char kData[];
+  extern const char kMetadata[];
   extern const char kParamDeviceScaleFactor[];
   extern const char kParamPageScaleFactor[];
   extern const char kParamPageScaleFactorMin[];

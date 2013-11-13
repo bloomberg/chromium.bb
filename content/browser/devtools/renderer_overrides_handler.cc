@@ -576,17 +576,19 @@ void RendererOverridesHandler::ScreenshotCaptured(
 
   // Consider metadata empty in case it has no device scale factor.
   if (metadata.device_scale_factor != 0) {
-    response->SetDouble(devtools::Page::kParamDeviceScaleFactor,
+    base::DictionaryValue* response_metadata = new base::DictionaryValue();
+
+    response_metadata->SetDouble(devtools::Page::kParamDeviceScaleFactor,
                         metadata.device_scale_factor);
-    response->SetDouble(devtools::Page::kParamPageScaleFactor,
+    response_metadata->SetDouble(devtools::Page::kParamPageScaleFactor,
                         metadata.page_scale_factor);
-    response->SetDouble(devtools::Page::kParamPageScaleFactorMin,
+    response_metadata->SetDouble(devtools::Page::kParamPageScaleFactorMin,
                         metadata.min_page_scale_factor);
-    response->SetDouble(devtools::Page::kParamPageScaleFactorMax,
+    response_metadata->SetDouble(devtools::Page::kParamPageScaleFactorMax,
                         metadata.max_page_scale_factor);
-    response->SetDouble(devtools::Page::kParamOffsetTop,
+    response_metadata->SetDouble(devtools::Page::kParamOffsetTop,
                         metadata.location_bar_content_translation.y());
-    response->SetDouble(devtools::Page::kParamOffsetBottom,
+    response_metadata->SetDouble(devtools::Page::kParamOffsetBottom,
                         metadata.overdraw_bottom_height);
 
     base::DictionaryValue* viewport = new base::DictionaryValue();
@@ -595,7 +597,13 @@ void RendererOverridesHandler::ScreenshotCaptured(
     viewport->SetDouble(devtools::kParamWidth, metadata.viewport_size.width());
     viewport->SetDouble(devtools::kParamHeight,
                         metadata.viewport_size.height());
-    response->Set(devtools::Page::kParamViewport, viewport);
+    response_metadata->Set(devtools::Page::kParamViewport, viewport);
+
+    // Temporarily duplicate properties to refactor API smoothly.
+    // TODO(dzvorygin): remove after refactor.
+    response->MergeDictionary(response_metadata);
+
+    response->Set(devtools::Page::kMetadata, response_metadata);
   }
 
   if (command) {
