@@ -793,6 +793,11 @@
             'renderer/media/rtc_video_decoder_factory_tv_unittest.cc',
           ],
         }],
+	['use_dbus==0', {
+          'sources!': [
+            'browser/geolocation/wifi_data_provider_linux_unittest.cc',
+          ],
+	}],
       ],
     },
   ],

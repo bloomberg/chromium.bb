@@ -18,12 +18,9 @@ bool EmptyWifiDataProvider::GetData(WifiData* data) {
   return true;
 }
 
-// Only define for platforms that lack a real wifi data provider.
-#if !defined(OS_WIN) && !defined(OS_MACOSX) && !defined(OS_LINUX)
 // static
 WifiDataProviderImplBase* WifiDataProvider::DefaultFactoryFunction() {
   return new EmptyWifiDataProvider();
 }
-#endif
 
 }  // namespace content

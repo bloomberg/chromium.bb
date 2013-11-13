@@ -503,6 +503,13 @@
           'use_pango%': 1,
         }],
 
+        # DBus usage.
+        ['OS=="linux"', {
+          'use_dbus%': 1,
+        }, {
+          'use_dbus%': 0,
+        }],
+
         # We always use skia text rendering in Aura on Windows, since GDI
         # doesn't agree with our BackingStore.
         # TODO(beng): remove once skia text rendering is on by default.
@@ -813,6 +820,7 @@
     'use_nss%': '<(use_nss)',
     'os_bsd%': '<(os_bsd)',
     'os_posix%': '<(os_posix)',
+    'use_dbus%': '<(use_dbus)',
     'use_glib%': '<(use_glib)',
     'use_pango%': '<(use_pango)',
     'use_ozone%': '<(use_ozone)',

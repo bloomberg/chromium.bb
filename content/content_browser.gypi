@@ -1399,13 +1399,11 @@
     }],
     ['toolkit_uses_gtk == 1', {
       'dependencies': [
-        '../build/linux/system.gyp:dbus',
         # For FcLangSetAdd call in render_sandbox_host_linux.cc
         '../build/linux/system.gyp:fontconfig',
         '../build/linux/system.gyp:gtk',
         # For XShm* in backing_store_x.cc
         '../build/linux/system.gyp:x11',
-        '../dbus/dbus.gyp:dbus',
       ],
     }],
     ['OS=="linux"', {
@@ -1416,9 +1414,7 @@
     }],
     ['OS=="linux" and use_aura==1', {
       'dependencies': [
-        '../build/linux/system.gyp:dbus',
         '../build/linux/system.gyp:fontconfig',
-        '../dbus/dbus.gyp:dbus',
       ],
     }],
     ['use_x11==1', {
@@ -1484,6 +1480,9 @@
       'sources/': [
         ['exclude', '^browser/device_orientation/data_fetcher_shared_memory_default.cc$'],
       ],
+      'sources!': [
+        'browser/geolocation/empty_wifi_data_provider.cc',
+      ],
       'dependencies': [
         '../third_party/sudden_motion_sensor/sudden_motion_sensor.gyp:sudden_motion_sensor',
       ],
@@ -1508,7 +1507,6 @@
     ['os_bsd==1', {
       'sources/': [
         ['exclude', '^browser/gamepad/gamepad_platform_data_fetcher_linux\\.cc$'],
-        ['exclude', '^browser/geolocation/wifi_data_provider_linux\\.cc$'],
       ],
     }],
     ['use_aura!=1 and OS!="win"', {
@@ -1592,6 +1590,24 @@
       'dependencies': [
         '../third_party/flac/flac.gyp:libflac',
         '../third_party/speex/speex.gyp:libspeex',
+      ],
+    }],
+    ['OS == "win"', {
+      'sources!': [
+        'browser/geolocation/empty_wifi_data_provider.cc',
+      ],
+    }],
+    ['OS == "linux" and use_dbus==1', {
+      'sources!': [
+        'browser/geolocation/empty_wifi_data_provider.cc',
+      ],
+      'dependencies': [
+        '../build/linux/system.gyp:dbus',
+        '../dbus/dbus.gyp:dbus',
+      ],
+    }, {  # OS != "linux" or use_dbus==0
+      'sources!': [
+        'browser/geolocation/wifi_data_provider_linux.cc',
       ],
     }],
   ],
