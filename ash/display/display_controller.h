@@ -163,7 +163,7 @@ class ASH_EXPORT DisplayController : public gfx::DisplayObserver,
   virtual void CreateOrUpdateNonDesktopDisplay(
       const internal::DisplayInfo& info) OVERRIDE;
   virtual void CloseNonDesktopDisplay() OVERRIDE;
-  virtual void PreDisplayConfigurationChange(bool dispay_removed) OVERRIDE;
+  virtual void PreDisplayConfigurationChange(bool clear_focus) OVERRIDE;
   virtual void PostDisplayConfigurationChange() OVERRIDE;
 
  private:

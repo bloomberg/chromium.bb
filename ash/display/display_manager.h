@@ -59,7 +59,9 @@ class ASH_EXPORT DisplayManager
     virtual void CloseNonDesktopDisplay() = 0;
 
     // Called before and after the display configuration changes.
-    virtual void PreDisplayConfigurationChange(bool display_removed) = 0;
+    // When |clear_focus| is true, the implementation should
+    // deactivate the active window and set the focus window to NULL.
+    virtual void PreDisplayConfigurationChange(bool clear_focus) = 0;
     virtual void PostDisplayConfigurationChange() = 0;
   };
 

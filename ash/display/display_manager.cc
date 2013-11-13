@@ -693,8 +693,14 @@ void DisplayManager::UpdateDisplays(
       removed_displays.empty()) {
     return;
   }
+  // Clear focus if the display has been removed, but don't clear focus if
+  // the destkop has been moved from one display to another
+  // (mirror -> docked, docked -> single internal).
+  bool clear_focus =
+      !removed_displays.empty() &&
+      !(removed_displays.size() == 1 && added_display_indices.size() == 1);
   if (delegate_)
-    delegate_->PreDisplayConfigurationChange(!removed_displays.empty());
+    delegate_->PreDisplayConfigurationChange(clear_focus);
 
   size_t updated_index;
   if (UpdateSecondaryDisplayBoundsForLayout(&new_displays, &updated_index) &&

@@ -15,6 +15,7 @@
 #include "ash/test/ash_test_base.h"
 #include "ash/test/cursor_manager_test_api.h"
 #include "ash/test/display_manager_test_api.h"
+#include "ash/wm/window_state.h"
 #include "base/command_line.h"
 #include "ui/aura/client/activation_change_observer.h"
 #include "ui/aura/client/activation_client.h"
@@ -437,6 +438,66 @@ TEST_F(DisplayControllerTest, SecondaryDisplayLayout) {
   UpdateDisplay("500x500");
   EXPECT_LE(1, observer.GetFocusChangedCountAndReset());
   EXPECT_LE(1, observer.GetActivationChangedCountAndReset());
+}
+
+namespace {
+
+internal::DisplayInfo CreateDisplayInfo(int64 id,
+                                        const gfx::Rect& bounds,
+                                        float device_scale_factor) {
+  internal::DisplayInfo info(id, "", false);
+  info.SetBounds(bounds);
+  info.set_device_scale_factor(device_scale_factor);
+  return info;
+}
+
+}  // namespace
+
+TEST_F(DisplayControllerTest, MirrorToDockedWithFullscreen) {
+  // Creates windows to catch activation change event.
+  scoped_ptr<aura::Window> w1(CreateTestWindowInShellWithId(1));
+  w1->Focus();
+
+  // Docked mode.
+  internal::DisplayManager* display_manager =
+      Shell::GetInstance()->display_manager();
+
+  const internal::DisplayInfo internal_display_info =
+      CreateDisplayInfo(1, gfx::Rect(0, 0, 500, 500), 2.0f);
+  const internal::DisplayInfo external_display_info =
+      CreateDisplayInfo(2, gfx::Rect(0, 0, 500, 500), 1.0f);
+
+  std::vector<internal::DisplayInfo> display_info_list;
+  // Mirror.
+  display_info_list.push_back(internal_display_info);
+  display_info_list.push_back(external_display_info);
+  display_manager->OnNativeDisplaysChanged(display_info_list);
+  const int64 internal_display_id =
+      test::DisplayManagerTestApi(display_manager).
+      SetFirstDisplayAsInternalDisplay();
+  EXPECT_EQ(1, internal_display_id);
+  EXPECT_EQ(2U, display_manager->num_connected_displays());
+  EXPECT_EQ(1U, display_manager->GetNumDisplays());
+
+  wm::WindowState* window_state = wm::GetWindowState(w1.get());
+  window_state->ToggleFullscreen();
+  EXPECT_TRUE(window_state->IsFullscreen());
+  EXPECT_EQ("0,0 250x250", w1->bounds().ToString());
+  // Dock mode.
+  TestObserver observer;
+  display_info_list.clear();
+  display_info_list.push_back(external_display_info);
+  display_manager->OnNativeDisplaysChanged(display_info_list);
+  EXPECT_EQ(1U, display_manager->GetNumDisplays());
+  EXPECT_EQ(1U, display_manager->num_connected_displays());
+  EXPECT_EQ(0, observer.GetChangedDisplayIdAndReset());
+  EXPECT_EQ(0, observer.GetBoundsChangedCountAndReset());
+  EXPECT_EQ(1, observer.CountAndReset());
+  EXPECT_EQ(0, observer.GetFocusChangedCountAndReset());
+  EXPECT_EQ(0, observer.GetActivationChangedCountAndReset());
+
+  EXPECT_TRUE(window_state->IsFullscreen());
+  EXPECT_EQ("0,0 500x500", w1->bounds().ToString());
 }
 
 TEST_F(DisplayControllerTest, BoundsUpdated) {
@@ -1180,7 +1241,6 @@ TEST_F(DisplayControllerTest, DockToSingle) {
   display_info_list.push_back(internal_display_info);
   display_info_list.push_back(external_display_info);
   display_manager->OnNativeDisplaysChanged(display_info_list);
-  EXPECT_EQ(2U, display_manager->GetNumDisplays());
   const int64 internal_display_id =
       test::DisplayManagerTestApi(display_manager).
       SetFirstDisplayAsInternalDisplay();

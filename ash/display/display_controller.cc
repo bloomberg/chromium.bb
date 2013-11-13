@@ -143,7 +143,7 @@ class FocusActivationStore {
         active_(NULL) {
   }
 
-  void Store(bool display_removed) {
+  void Store(bool clear_focus) {
     if (!activation_client_) {
       aura::Window* root = Shell::GetPrimaryRootWindow();
       activation_client_ = aura::client::GetActivationClient(root);
@@ -158,7 +158,7 @@ class FocusActivationStore {
       tracker_.Add(active_);
 
     // Deactivate the window to close menu / bubble windows.
-    if (display_removed)
+    if (clear_focus)
       activation_client_->DeactivateWindow(active_);
 
     // Release capture if any.
@@ -167,7 +167,7 @@ class FocusActivationStore {
     // window may be deleted when losing focus (fullscreen flash for
     // example).  If the focused window is still alive after move, it'll
     // be re-focused below.
-    if (display_removed)
+    if (clear_focus)
       focus_client_->FocusWindow(NULL);
   }
 
@@ -702,9 +702,9 @@ void DisplayController::CloseNonDesktopDisplay() {
   virtual_keyboard_window_controller_->Close();
 }
 
-void DisplayController::PreDisplayConfigurationChange(bool display_removed) {
+void DisplayController::PreDisplayConfigurationChange(bool clear_focus) {
   FOR_EACH_OBSERVER(Observer, observers_, OnDisplayConfigurationChanging());
-  focus_activation_store_->Store(display_removed);
+  focus_activation_store_->Store(clear_focus);
 
   gfx::Point point_in_screen = Shell::GetScreen()->GetCursorScreenPoint();
   gfx::Display display =
