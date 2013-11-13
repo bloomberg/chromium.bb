@@ -1940,12 +1940,6 @@ window_get_wl_surface(struct window *window)
 	return window->main_surface->surface;
 }
 
-struct wl_shell_surface *
-window_get_wl_shell_surface(struct window *window)
-{
-	return window->shell_surface;
-}
-
 static void
 tooltip_redraw_handler(struct widget *widget, void *data)
 {
@@ -5252,12 +5246,6 @@ EGLConfig
 display_get_argb_egl_config(struct display *d)
 {
 	return d->argb_config;
-}
-
-struct wl_shell *
-display_get_shell(struct display *display)
-{
-	return display->shell;
 }
 
 int

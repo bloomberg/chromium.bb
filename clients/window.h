@@ -87,9 +87,6 @@ display_get_cairo_device(struct display *display);
 struct wl_compositor *
 display_get_compositor(struct display *display);
 
-struct wl_shell *
-display_get_shell(struct display *display);
-
 struct output *
 display_get_output(struct display *display);
 
@@ -348,9 +345,6 @@ window_get_surface(struct window *window);
 
 struct wl_surface *
 window_get_wl_surface(struct window *window);
-
-struct wl_shell_surface *
-window_get_wl_shell_surface(struct window *window);
 
 enum window_buffer_type {
 	WINDOW_BUFFER_TYPE_EGL_WINDOW,
