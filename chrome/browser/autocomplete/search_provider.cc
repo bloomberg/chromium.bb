@@ -1287,12 +1287,31 @@ void SearchProvider::ConvertResultsToAutocompleteMatches() {
                       base::TimeTicks::Now() - start_time);
 }
 
-bool SearchProvider::IsTopMatchNavigationInKeywordMode() const {
-  return (!providers_.keyword_provider().empty() &&
-          (matches_.front().type == AutocompleteMatchType::NAVSUGGEST));
+ACMatches::const_iterator SearchProvider::FindTopMatch(
+    bool autocomplete_result_will_reorder_for_default_match) const {
+  if (!autocomplete_result_will_reorder_for_default_match)
+    return matches_.begin();
+  ACMatches::const_iterator it = matches_.begin();
+  while ((it != matches_.end()) && !it->allowed_to_be_default_match)
+    ++it;
+  return it;
 }
 
-bool SearchProvider::IsTopMatchScoreTooLow() const {
+bool SearchProvider::IsTopMatchNavigationInKeywordMode(
+    bool autocomplete_result_will_reorder_for_default_match) const {
+  ACMatches::const_iterator first_match =
+      FindTopMatch(autocomplete_result_will_reorder_for_default_match);
+  return !providers_.keyword_provider().empty() &&
+      (first_match != matches_.end()) &&
+      (first_match->type == AutocompleteMatchType::NAVSUGGEST);
+}
+
+bool SearchProvider::IsTopMatchScoreTooLow(
+    bool autocomplete_result_will_reorder_for_default_match) const {
+  // In reorder mode, there's no such thing as a score that's too low.
+  if (autocomplete_result_will_reorder_for_default_match)
+    return false;
+
   // Here we use CalculateRelevanceForVerbatimIgnoringKeywordModeState()
   // rather than CalculateRelevanceForVerbatim() because the latter returns
   // a very low score (250) if keyword mode is active.  This is because
@@ -1306,10 +1325,14 @@ bool SearchProvider::IsTopMatchScoreTooLow() const {
       CalculateRelevanceForVerbatimIgnoringKeywordModeState();
 }
 
-bool SearchProvider::IsTopMatchSearchWithURLInput() const {
-  return input_.type() == AutocompleteInput::URL &&
-         matches_.front().relevance > CalculateRelevanceForVerbatim() &&
-         matches_.front().type != AutocompleteMatchType::NAVSUGGEST;
+bool SearchProvider::IsTopMatchSearchWithURLInput(
+    bool autocomplete_result_will_reorder_for_default_match) const {
+  ACMatches::const_iterator first_match =
+      FindTopMatch(autocomplete_result_will_reorder_for_default_match);
+  return (input_.type() == AutocompleteInput::URL) &&
+      (first_match != matches_.end()) &&
+      (first_match->relevance > CalculateRelevanceForVerbatim()) &&
+      (first_match->type != AutocompleteMatchType::NAVSUGGEST);
 }
 
 bool SearchProvider::HasValidDefaultMatch(
@@ -1339,7 +1362,14 @@ void SearchProvider::UpdateMatches() {
        keyword_results_.HasServerProvidedScores())) {
     // These blocks attempt to repair undesirable behavior by suggested
     // relevances with minimal impact, preserving other suggested relevances.
-    if (IsTopMatchNavigationInKeywordMode()) {
+
+    // True if the omnibox will reorder matches as necessary to make the first
+    // one something that is allowed to be the default match.
+    const bool omnibox_will_reorder_for_legal_default_match =
+        OmniboxFieldTrial::ReorderForLegalDefaultMatch(
+            input_.current_page_classification());
+    if (IsTopMatchNavigationInKeywordMode(
+        omnibox_will_reorder_for_legal_default_match)) {
       // Correct the suggested relevance scores if the top match is a
       // navigation in keyword mode, since inlining a navigation match
       // would break the user out of keyword mode.  By the way, if the top
@@ -1350,27 +1380,21 @@ void SearchProvider::UpdateMatches() {
       // relevance scores at this time.
       DemoteKeywordNavigationMatchesPastTopQuery();
       ConvertResultsToAutocompleteMatches();
-      DCHECK(!IsTopMatchNavigationInKeywordMode());
+      DCHECK(!IsTopMatchNavigationInKeywordMode(
+          omnibox_will_reorder_for_legal_default_match));
     }
-    // True if the omnibox will reorder matches as necessary to make the top
-    // one something that is allowed to be the default match.
-    const bool omnibox_will_reorder_for_legal_default_match =
-        OmniboxFieldTrial::ReorderForLegalDefaultMatch(
-            input_.current_page_classification());
-    if (!omnibox_will_reorder_for_legal_default_match &&
-        IsTopMatchScoreTooLow()) {
+    if (IsTopMatchScoreTooLow(omnibox_will_reorder_for_legal_default_match)) {
       // Disregard the suggested verbatim relevance if the top score is below
       // the usual verbatim value. For example, a BarProvider may rely on
       // SearchProvider's verbatim or inlineable matches for input "foo" (all
       // allowed to be default match) to always outrank its own lowly-ranked
-      // "bar" matches that shouldn't be the default match.  This only needs
-      // to be enforced when the omnibox will not reorder results to make a
-      // legal default match first.
+      // "bar" matches that shouldn't be the default match.
       default_results_.verbatim_relevance = -1;
       keyword_results_.verbatim_relevance = -1;
       ConvertResultsToAutocompleteMatches();
     }
-    if (IsTopMatchSearchWithURLInput()) {
+    if (IsTopMatchSearchWithURLInput(
+        omnibox_will_reorder_for_legal_default_match)) {
       // Disregard the suggested search and verbatim relevances if the input
       // type is URL and the top match is a highly-ranked search suggestion.
       // For example, prevent a search for "foo.com" from outranking another
@@ -1395,10 +1419,12 @@ void SearchProvider::UpdateMatches() {
       ApplyCalculatedRelevance();
       ConvertResultsToAutocompleteMatches();
     }
-    DCHECK(!IsTopMatchNavigationInKeywordMode());
-    DCHECK(omnibox_will_reorder_for_legal_default_match ||
-        !IsTopMatchScoreTooLow());
-    DCHECK(!IsTopMatchSearchWithURLInput());
+    DCHECK(!IsTopMatchNavigationInKeywordMode(
+        omnibox_will_reorder_for_legal_default_match));
+    DCHECK(!IsTopMatchScoreTooLow(
+        omnibox_will_reorder_for_legal_default_match));
+    DCHECK(!IsTopMatchSearchWithURLInput(
+        omnibox_will_reorder_for_legal_default_match));
     DCHECK(HasValidDefaultMatch(omnibox_will_reorder_for_legal_default_match));
   }
 

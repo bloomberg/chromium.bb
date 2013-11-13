@@ -418,11 +418,22 @@ class SearchProvider : public AutocompleteProvider,
   // Converts the parsed results to a set of AutocompleteMatches, |matches_|.
   void ConvertResultsToAutocompleteMatches();
 
+  // Returns an iterator to the first match in |matches_| which might
+  // be chosen as default.  If
+  // |autocomplete_result_will_reorder_for_default_match| is false,
+  // this simply means the first match; otherwise, it means the first
+  // match for which the |allowed_to_be_default_match| member is true.
+  ACMatches::const_iterator FindTopMatch(
+    bool autocomplete_result_will_reorder_for_default_match) const;
+
   // Checks if suggested relevances violate certain expected constraints.
   // See UpdateMatches() for the use and explanation of these constraints.
-  bool IsTopMatchNavigationInKeywordMode() const;
-  bool IsTopMatchScoreTooLow() const;
-  bool IsTopMatchSearchWithURLInput() const;
+  bool IsTopMatchNavigationInKeywordMode(
+      bool autocomplete_result_will_reorder_for_default_match) const;
+  bool IsTopMatchScoreTooLow(
+      bool autocomplete_result_will_reorder_for_default_match) const;
+  bool IsTopMatchSearchWithURLInput(
+      bool autocomplete_result_will_reorder_for_default_match) const;
   bool HasValidDefaultMatch(
       bool autocomplete_result_will_reorder_for_default_match) const;
 
