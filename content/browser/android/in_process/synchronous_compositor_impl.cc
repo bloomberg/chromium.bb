@@ -251,7 +251,9 @@ scoped_refptr<StreamTextureFactorySynchronousImpl::ContextProvider>
 SynchronousCompositorFactoryImpl::TryCreateStreamTextureFactory() {
   scoped_refptr<StreamTextureFactorySynchronousImpl::ContextProvider>
       context_provider;
-  if (CanCreateMainThreadContext() && offscreen_context_for_main_thread_) {
+  if (CanCreateMainThreadContext() &&
+      GetOffscreenContextProviderForMainThread()) {
+    DCHECK(offscreen_context_for_main_thread_);
     DCHECK(wrapped_gl_context_for_main_thread_);
     context_provider =
         new VideoContextProvider(offscreen_context_for_main_thread_,
