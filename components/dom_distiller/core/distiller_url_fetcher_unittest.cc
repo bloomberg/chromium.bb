@@ -29,23 +29,25 @@ public:
  protected:
   // testing::Test implementation:
   virtual void SetUp() OVERRIDE {
-    url_fetcher_.reset(new dom_distiller::DistillerURLFetcher());
+    url_fetcher_.reset(new dom_distiller::DistillerURLFetcher(NULL));
     factory_.reset(new net::FakeURLFetcherFactory(NULL));
     factory_->SetFakeResponse(
         GURL(kTestPageA),
         std::string(kTestPageAResponse, sizeof(kTestPageAResponse)),
-        net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+        net::HTTP_OK,
+        net::URLRequestStatus::SUCCESS);
     factory_->SetFakeResponse(
         GURL(kTestPageB),
         std::string(kTestPageBResponse, sizeof(kTestPageBResponse)),
-        net::HTTP_INTERNAL_SERVER_ERROR, net::URLRequestStatus::FAILED);
+        net::HTTP_INTERNAL_SERVER_ERROR,
+        net::URLRequestStatus::SUCCESS);
   }
 
   void Fetch(const std::string& url,
              const std::string& expected_response) {
     base::MessageLoop loop(base::MessageLoop::TYPE_UI);
     url_fetcher_->FetchURL(
-        NULL, url,
+        url,
         base::Bind(&DistillerURLFetcherTest::FetcherCallback,
                    base::Unretained(this)));
     loop.RunUntilIdle();

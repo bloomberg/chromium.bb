@@ -15,20 +15,31 @@ using net::URLFetcher;
 
 namespace dom_distiller {
 
-DistillerURLFetcher::DistillerURLFetcher() {
+DistillerURLFetcherFactory::DistillerURLFetcherFactory(
+    net::URLRequestContextGetter* context_getter)
+  : context_getter_(context_getter) {
+}
+
+DistillerURLFetcher*
+DistillerURLFetcherFactory::CreateDistillerURLFetcher() const {
+  return new DistillerURLFetcher(context_getter_);
+}
+
+
+DistillerURLFetcher::DistillerURLFetcher(
+    net::URLRequestContextGetter* context_getter)
+  : context_getter_(context_getter) {
 }
 
 DistillerURLFetcher::~DistillerURLFetcher() {
 }
 
-void DistillerURLFetcher::FetchURL(
-    net::URLRequestContextGetter* context_getter,
-    const std::string& url,
-    const URLFetcherCallback& callback) {
+void DistillerURLFetcher::FetchURL(const std::string& url,
+                                   const URLFetcherCallback& callback) {
   // Don't allow a fetch if one is pending.
   DCHECK(!url_fetcher_ || !url_fetcher_->GetStatus().is_io_pending());
   callback_ = callback;
-  url_fetcher_.reset(CreateURLFetcher(context_getter, url));
+  url_fetcher_.reset(CreateURLFetcher(context_getter_, url));
   url_fetcher_->Start();
 }
 

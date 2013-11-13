@@ -5,8 +5,10 @@
 #include "components/dom_distiller/content/dom_distiller_service_factory.h"
 
 #include "components/browser_context_keyed_service/browser_context_dependency_manager.h"
+#include "components/dom_distiller/content/distiller_page_web_contents.h"
 #include "components/dom_distiller/core/distiller.h"
 #include "components/dom_distiller/core/dom_distiller_store.h"
+#include "content/public/browser/browser_context.h"
 
 namespace dom_distiller {
 
@@ -38,7 +40,13 @@ DomDistillerServiceFactory::~DomDistillerServiceFactory() {}
 BrowserContextKeyedService* DomDistillerServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* profile) const {
   scoped_ptr<DomDistillerStoreInterface> dom_distiller_store;
-  scoped_ptr<DistillerFactory> distiller_factory;
+  scoped_ptr<DistillerPageFactory> distiller_page_factory(
+      new DistillerPageWebContentsFactory(profile));
+  scoped_ptr<DistillerURLFetcherFactory> distiller_url_fetcher_factory(
+      new DistillerURLFetcherFactory(profile->GetRequestContext()));
+  scoped_ptr<DistillerFactory> distiller_factory(
+      new DistillerFactory(distiller_page_factory.Pass(),
+                           distiller_url_fetcher_factory.Pass()));
   return new DomDistillerContextKeyedService(dom_distiller_store.Pass(),
                                              distiller_factory.Pass());
 }

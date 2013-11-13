@@ -32,12 +32,15 @@
           'type': 'static_library',
           'dependencies': [
             'dom_distiller_core',
+            '../skia/skia.gyp:skia',
             '../sync/sync.gyp:sync',
           ],
           'include_dirs': [
             '..',
           ],
           'sources': [
+            'dom_distiller/content/distiller_page_web_contents.h',
+            'dom_distiller/content/distiller_page_web_contents.cc',
             'dom_distiller/content/dom_distiller_service_factory.h',
             'dom_distiller/content/dom_distiller_service_factory.cc',
           ],
@@ -64,8 +67,9 @@
           'type': 'static_library',
           'dependencies': [
             'distilled_page_proto',
+            'dom_distiller_resources',
             '../base/base.gyp:base',
-            #'../skia/skia.gyp:skia',
+            '../skia/skia.gyp:skia',
             '../sync/sync.gyp:sync',
             '../third_party/protobuf/protobuf.gyp:protobuf_lite',
             '../third_party/leveldatabase/leveldatabase.gyp:leveldatabase',
@@ -76,6 +80,10 @@
           'sources': [
             'dom_distiller/core/article_entry.cc',
             'dom_distiller/core/article_entry.h',
+            'dom_distiller/core/distiller.cc',
+            'dom_distiller/core/distiller.h',
+            'dom_distiller/core/distiller_page.cc',
+            'dom_distiller/core/distiller_page.h',
             'dom_distiller/core/distiller_url_fetcher.cc',
             'dom_distiller/core/distiller_url_fetcher.h',
             'dom_distiller/core/dom_distiller_constants.cc',

@@ -541,7 +541,6 @@ void ResourceBundle::InitSharedInstance(Delegate* delegate) {
   // On platforms other than iOS, 100P is always a supported scale factor.
   supported_scale_factors.push_back(SCALE_FACTOR_100P);
 #endif
-
 #if defined(OS_ANDROID)
   const gfx::Display display =
       gfx::Screen::GetNativeScreen()->GetPrimaryDisplay();

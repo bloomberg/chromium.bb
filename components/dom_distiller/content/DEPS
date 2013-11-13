@@ -1,4 +1,7 @@
 include_rules = [
   "+components/browser_context_keyed_service",
-  "+content/public/browser",
+  "+content/public",
+  "+content/shell",
+  "+content/test",
+  "+net/test",
 ]

@@ -23,6 +23,7 @@
             'autofill/core/common/password_form_fill_data_unittest.cc',
             'browser_context_keyed_service/browser_context_dependency_manager_unittest.cc',
             'browser_context_keyed_service/dependency_graph_unittest.cc',
+            'dom_distiller/core/distiller_unittest.cc',
             'dom_distiller/core/distiller_url_fetcher_unittest.cc',
             'dom_distiller/core/dom_distiller_database_unittest.cc',
             'dom_distiller/core/dom_distiller_model_unittest.cc',
@@ -220,6 +221,75 @@
             },
           ],
         }],
+      ],
+    }],
+    ['OS!="ios"', {
+      'targets': [
+        {
+          'target_name': 'components_browsertests',
+          'type': '<(gtest_target_type)',
+          'defines!': ['CONTENT_IMPLEMENTATION'],
+          'dependencies': [
+            '../content/content_shell_and_tests.gyp:content_browser_test_support',
+            '../content/content_shell_and_tests.gyp:test_support_content',
+            '../skia/skia.gyp:skia',
+            '../testing/gtest.gyp:gtest',
+            'components.gyp:dom_distiller_content',
+            'components.gyp:dom_distiller_core',
+          ],
+          'include_dirs': [
+            '..',
+          ],
+          'defines': [
+            'HAS_OUT_OF_PROC_TEST_RUNNER',
+          ],
+          'sources': [
+            '../content/test/content_test_launcher.cc',
+            'dom_distiller/content/distiller_page_web_contents_browsertest.cc',
+          ],
+          'conditions': [
+            ['OS=="win"', {
+              'resource_include_dirs': [
+                '<(SHARED_INTERMEDIATE_DIR)/webkit',
+              ],
+              'sources': [
+                '../content/shell/app/resource.h',
+                '../content/shell/app/shell.rc',
+                # TODO:  It would be nice to have these pulled in
+                # automatically from direct_dependent_settings in
+                # their various targets (net.gyp:net_resources, etc.),
+                # but that causes errors in other targets when
+                # resulting .res files get referenced multiple times.
+                '<(SHARED_INTERMEDIATE_DIR)/net/net_resources.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/webkit/blink_resources.rc',
+                '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_en-US.rc',
+              ],
+              'dependencies': [
+                '<(DEPTH)/net/net.gyp:net_resources',
+                '<(DEPTH)/third_party/iaccessible2/iaccessible2.gyp:iaccessible2',
+                '<(DEPTH)/third_party/isimpledom/isimpledom.gyp:isimpledom',
+                '<(DEPTH)/webkit/webkit_resources.gyp:webkit_strings',
+                '<(DEPTH)/webkit/webkit_resources.gyp:webkit_resources',
+              ],
+              'configurations': {
+                'Debug_Base': {
+                  'msvs_settings': {
+                    'VCLinkerTool': {
+                      'LinkIncremental': '<(msvs_large_module_debug_link_mode)',
+                    },
+                  },
+                },
+              },
+              # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
+              'msvs_disabled_warnings': [ 4267, ],
+            }],
+            ['OS=="win" and win_use_allocator_shim==1', {
+              'dependencies': [
+                '../base/allocator/allocator.gyp:allocator',
+              ],
+            }],
+          ],
+        },
       ],
     }],
   ],
