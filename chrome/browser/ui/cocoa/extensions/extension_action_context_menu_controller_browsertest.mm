@@ -58,7 +58,7 @@ class ExtensionActionContextMenuControllerTest : public ExtensionBrowserTest {
 
     content::WebContents* contents =
         browser()->tab_strip_model()->GetActiveWebContents();
-    action_->SetAppearance(ExtensionTabUtil::GetTabId(contents),
+    action_->SetAppearance(extensions::ExtensionTabUtil::GetTabId(contents),
                            ExtensionAction::ACTIVE);
 
     BrowserWindowCocoa* window =

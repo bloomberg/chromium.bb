@@ -133,8 +133,10 @@ ExtensionToolbarModel::Action ExtensionToolbarModel::ExecuteBrowserAction(
     bool should_grant) {
   content::WebContents* web_contents = NULL;
   int tab_id = 0;
-  if (!ExtensionTabUtil::GetDefaultTab(browser, &web_contents, &tab_id))
+  if (!extensions::ExtensionTabUtil::GetDefaultTab(
+          browser, &web_contents, &tab_id)) {
     return ACTION_NONE;
+  }
 
   ExtensionAction* browser_action =
       extensions::ExtensionActionManager::Get(profile_)->

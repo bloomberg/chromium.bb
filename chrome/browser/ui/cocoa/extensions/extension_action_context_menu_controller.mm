@@ -165,7 +165,7 @@ class AsyncUninstaller : public ExtensionUninstallDialog::Delegate {
 
 - (void)onOptions:(id)sender {
   DCHECK(!extensions::ManifestURL::GetOptionsPage(extension_).is_empty());
-  ExtensionTabUtil::OpenOptionsPage(extension_, browser_);
+  extensions::ExtensionTabUtil::OpenOptionsPage(extension_, browser_);
 }
 
 - (void)onUninstall:(id)sender {
@@ -209,7 +209,7 @@ class AsyncUninstaller : public ExtensionUninstallDialog::Delegate {
   if (!activeTab)
     return;
 
-  int tabId = ExtensionTabUtil::GetTabId(activeTab);
+  int tabId = extensions::ExtensionTabUtil::GetTabId(activeTab);
 
   GURL url = action_->GetPopupUrl(tabId);
   if (!url.is_valid())

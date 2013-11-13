@@ -50,13 +50,13 @@ bool InfobarsShowFunction::RunImpl() {
 
   Browser* browser = NULL;
   content::WebContents* web_contents = NULL;
-  if (!ExtensionTabUtil::GetTabById(tab_id,
-                                    GetProfile(),
-                                    include_incognito(),
-                                    &browser,
-                                    NULL,
-                                    &web_contents,
-                                    NULL)) {
+  if (!extensions::ExtensionTabUtil::GetTabById(tab_id,
+                                                GetProfile(),
+                                                include_incognito(),
+                                                &browser,
+                                                NULL,
+                                                &web_contents,
+                                                NULL)) {
     error_ = extensions::ErrorUtils::FormatErrorMessage(
         extensions::tabs_constants::kTabNotFoundError,
         base::IntToString(tab_id));

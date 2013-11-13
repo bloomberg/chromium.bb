@@ -3731,7 +3731,7 @@ void TestingAutomationProvider::TriggerPageActionById(
     return;
   }
 
-  if (page_action->HasPopup(ExtensionTabUtil::GetTabId(tab))) {
+  if (page_action->HasPopup(extensions::ExtensionTabUtil::GetTabId(tab))) {
     // This observer will delete itself.
     new ExtensionPopupObserver(
         this, reply_message, extension->id());
@@ -3797,7 +3797,7 @@ void TestingAutomationProvider::TriggerBrowserActionById(
   }
   browser_actions.Press(action_index);
 
-  if (action->HasPopup(ExtensionTabUtil::GetTabId(tab))) {
+  if (action->HasPopup(extensions::ExtensionTabUtil::GetTabId(tab))) {
     // This observer will delete itself.
     new ExtensionPopupObserver(
         this, reply_message, extension->id());

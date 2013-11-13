@@ -293,8 +293,9 @@ void ExtensionActionAPI::PageActionExecuted(Profile* profile,
   DispatchOldPageActionEvent(profile, page_action.extension_id(),
                              page_action.id(), tab_id, url, button);
   WebContents* web_contents = NULL;
-  if (!ExtensionTabUtil::GetTabById(tab_id, profile, profile->IsOffTheRecord(),
-                                    NULL, NULL, &web_contents, NULL)) {
+  if (!extensions::ExtensionTabUtil::GetTabById(
+          tab_id, profile, profile->IsOffTheRecord(),
+          NULL, NULL, &web_contents, NULL)) {
     return;
   }
   ExtensionActionExecuted(profile, page_action, web_contents);
@@ -306,8 +307,9 @@ void ExtensionActionAPI::ScriptBadgeExecuted(
     const ExtensionAction& script_badge,
     int tab_id) {
   WebContents* web_contents = NULL;
-  if (!ExtensionTabUtil::GetTabById(tab_id, profile, profile->IsOffTheRecord(),
-                                    NULL, NULL, &web_contents, NULL)) {
+  if (!extensions::ExtensionTabUtil::GetTabById(
+          tab_id, profile, profile->IsOffTheRecord(),
+          NULL, NULL, &web_contents, NULL)) {
     return;
   }
   ExtensionActionExecuted(profile, script_badge, web_contents);
@@ -373,7 +375,7 @@ void ExtensionActionAPI::ExtensionActionExecuted(
 
   if (event_name) {
     scoped_ptr<base::ListValue> args(new base::ListValue());
-    DictionaryValue* tab_value = ExtensionTabUtil::CreateTabValue(
+    DictionaryValue* tab_value = extensions::ExtensionTabUtil::CreateTabValue(
         web_contents);
     args->Append(tab_value);
 
@@ -926,7 +928,7 @@ bool PageActionsFunction::SetPageActionEnabled(bool enable) {
 
   // Find the WebContents that contains this tab id.
   WebContents* contents = NULL;
-  bool result = ExtensionTabUtil::GetTabById(
+  bool result = extensions::ExtensionTabUtil::GetTabById(
       tab_id, GetProfile(), include_incognito(), NULL, NULL, &contents, NULL);
   if (!result || !contents) {
     error_ = extensions::ErrorUtils::FormatErrorMessage(

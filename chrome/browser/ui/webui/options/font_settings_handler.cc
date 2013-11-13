@@ -304,7 +304,7 @@ void FontSettingsHandler::HandleOpenAdvancedFontSettingsOptions(
   const extensions::Extension* extension = GetAdvancedFontSettingsExtension();
   if (!extension)
     return;
-  ExtensionTabUtil::OpenOptionsPage(extension,
+  extensions::ExtensionTabUtil::OpenOptionsPage(extension,
       chrome::FindBrowserWithWebContents(web_ui()->GetWebContents()));
 }
 

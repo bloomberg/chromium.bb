@@ -166,7 +166,8 @@ void PageActionDecoration::UpdateVisibility(WebContents* contents,
                                             const GURL& url) {
   // Save this off so we can pass it back to the extension when the action gets
   // executed. See PageActionDecoration::OnMousePressed.
-  current_tab_id_ = contents ? ExtensionTabUtil::GetTabId(contents) : -1;
+  current_tab_id_ =
+      contents ? extensions::ExtensionTabUtil::GetTabId(contents) : -1;
   current_url_ = url;
 
   bool visible = contents &&

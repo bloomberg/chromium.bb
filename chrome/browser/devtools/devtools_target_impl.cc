@@ -74,7 +74,7 @@ RenderViewHostTarget::RenderViewHostTarget(RenderViewHost* rvh, bool is_tab) {
 
   if (is_tab) {
     type_ = kTargetTypePage;
-    tab_id_ = ExtensionTabUtil::GetTabId(web_contents);
+    tab_id_ = extensions::ExtensionTabUtil::GetTabId(web_contents);
   } else {
     Profile* profile =
         Profile::FromBrowserContext(web_contents->GetBrowserContext());

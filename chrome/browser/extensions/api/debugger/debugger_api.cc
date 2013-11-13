@@ -485,13 +485,13 @@ void DebuggerFunction::FormatErrorMessage(const std::string& format) {
 bool DebuggerFunction::InitAgentHost() {
   if (debuggee_.tab_id) {
     WebContents* web_contents = NULL;
-    bool result = ExtensionTabUtil::GetTabById(*debuggee_.tab_id,
-                                               GetProfile(),
-                                               include_incognito(),
-                                               NULL,
-                                               NULL,
-                                               &web_contents,
-                                               NULL);
+    bool result = extensions::ExtensionTabUtil::GetTabById(*debuggee_.tab_id,
+                                                           GetProfile(),
+                                                           include_incognito(),
+                                                           NULL,
+                                                           NULL,
+                                                           &web_contents,
+                                                           NULL);
     if (result && web_contents) {
       if (content::HasWebUIScheme(web_contents->GetURL())) {
         error_ = ErrorUtils::FormatErrorMessage(

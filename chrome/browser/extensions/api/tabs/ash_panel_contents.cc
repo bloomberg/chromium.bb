@@ -109,7 +109,8 @@ base::DictionaryValue* AshPanelWindowController::CreateTabValue(
       extensions::tabs_constants::kUrlKey, web_contents->GetURL().spec());
   tab_value->SetString(
       extensions::tabs_constants::kStatusKey,
-      ExtensionTabUtil::GetTabStatusText(web_contents->IsLoading()));
+      extensions::ExtensionTabUtil::GetTabStatusText(
+          web_contents->IsLoading()));
   tab_value->SetBoolean(
       extensions::tabs_constants::kActiveKey,
       shell_window_->GetBaseWindow()->IsActive());

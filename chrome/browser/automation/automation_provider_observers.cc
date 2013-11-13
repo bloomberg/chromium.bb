@@ -765,7 +765,7 @@ void BrowserOpenedNotificationObserver::Observe(
   if (type == chrome::NOTIFICATION_BROWSER_OPENED) {
     // Store the new browser ID and continue waiting for a new tab within it
     // to stop loading.
-    new_window_id_ = ExtensionTabUtil::GetWindowId(
+    new_window_id_ = extensions::ExtensionTabUtil::GetWindowId(
         content::Source<Browser>(source).ptr());
   } else {
     DCHECK_EQ(content::NOTIFICATION_LOAD_STOP, type);
@@ -1952,8 +1952,8 @@ void AppLaunchObserver::Observe(int type,
                                 const content::NotificationSource& source,
                                 const content::NotificationDetails& details) {
   if (type == chrome::NOTIFICATION_BROWSER_WINDOW_READY) {
-    new_window_id_ =
-        ExtensionTabUtil::GetWindowId(content::Source<Browser>(source).ptr());
+    new_window_id_ = extensions::ExtensionTabUtil::GetWindowId(
+        content::Source<Browser>(source).ptr());
     return;
   }
 
@@ -2523,7 +2523,7 @@ void BrowserOpenedWithNewProfileNotificationObserver::Observe(
   } else if (type == chrome::NOTIFICATION_BROWSER_OPENED) {
     // Store the new browser ID and continue waiting for a new tab within it
     // to stop loading.
-    new_window_id_ = ExtensionTabUtil::GetWindowId(
+    new_window_id_ = extensions::ExtensionTabUtil::GetWindowId(
         content::Source<Browser>(source).ptr());
   } else {
     DCHECK_EQ(content::NOTIFICATION_LOAD_STOP, type);
@@ -2633,7 +2633,7 @@ void BrowserOpenedWithExistingProfileNotificationObserver::Observe(
 
   if (type == chrome::NOTIFICATION_BROWSER_OPENED) {
     // Store the new browser ID and continue waiting for NOTIFICATION_LOAD_STOP.
-    new_window_id_ = ExtensionTabUtil::GetWindowId(
+    new_window_id_ = extensions::ExtensionTabUtil::GetWindowId(
         content::Source<Browser>(source).ptr());
   } else if (type == content::NOTIFICATION_LOAD_STOP) {
     // Only consider if the loaded tab is in the new window.

@@ -31,7 +31,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, MAYBE_GetLastFocusedWindow) {
   // Create a new window which making it the "last focused" window.
   // Note that "last focused" means the "top" most window.
   Browser* new_browser = CreateBrowser(browser()->profile());
-  int focused_window_id = ExtensionTabUtil::GetWindowId(new_browser);
+  int focused_window_id =
+      extensions::ExtensionTabUtil::GetWindowId(new_browser);
 
   scoped_refptr<extensions::WindowsGetLastFocusedFunction> function =
       new extensions::WindowsGetLastFocusedFunction();
@@ -81,7 +82,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsTest, DISABLED_QueryLastFocusedWindowTabs) {
 
   GURL url;
   AddTabAtIndexToBrowser(focused_window, 0, url, content::PAGE_TRANSITION_LINK);
-  int focused_window_id = ExtensionTabUtil::GetWindowId(focused_window);
+  int focused_window_id =
+      extensions::ExtensionTabUtil::GetWindowId(focused_window);
 
   // Get tabs in the 'last focused' window called from non-focused browser.
   scoped_refptr<extensions::TabsQueryFunction> function =

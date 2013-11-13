@@ -112,7 +112,7 @@ void ExtensionContextMenuModel::ExecuteCommand(int command_id,
     }
     case CONFIGURE:
       DCHECK(!extensions::ManifestURL::GetOptionsPage(extension).is_empty());
-      ExtensionTabUtil::OpenOptionsPage(extension, browser_);
+      extensions::ExtensionTabUtil::OpenOptionsPage(extension, browser_);
       break;
     case HIDE: {
       extensions::ExtensionActionAPI::SetBrowserActionVisibility(

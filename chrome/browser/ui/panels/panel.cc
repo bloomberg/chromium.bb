@@ -121,7 +121,7 @@ base::DictionaryValue* PanelExtensionWindowController::CreateTabValue(
   tab_value->SetString(
       extensions::tabs_constants::kUrlKey, web_contents->GetURL().spec());
   tab_value->SetString(extensions::tabs_constants::kStatusKey,
-                       ExtensionTabUtil::GetTabStatusText(
+                       extensions::ExtensionTabUtil::GetTabStatusText(
                            web_contents->IsLoading()));
   tab_value->SetBoolean(
       extensions::tabs_constants::kActiveKey, panel_->IsActive());

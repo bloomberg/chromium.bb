@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_TAB_UTIL_H__
-#define CHROME_BROWSER_EXTENSIONS_EXTENSION_TAB_UTIL_H__
+#ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_TAB_UTIL_H_
+#define CHROME_BROWSER_EXTENSIONS_EXTENSION_TAB_UTIL_H_
 
 #include <string>
 
@@ -25,14 +25,13 @@ namespace content {
 class WebContents;
 }
 
-namespace extensions {
-class Extension;
-class WindowController;
-}
-
 namespace gfx {
 class Rect;
 }
+
+namespace extensions {
+class Extension;
+class WindowController;
 
 // Provides various utility functions that help manipulate tabs.
 class ExtensionTabUtil {
@@ -42,9 +41,8 @@ class ExtensionTabUtil {
   static int GetTabId(const content::WebContents* web_contents);
   static std::string GetTabStatusText(bool is_loading);
   static int GetWindowIdOfTab(const content::WebContents* web_contents);
-  static base::ListValue* CreateTabList(
-      const Browser* browser,
-      const extensions::Extension* extension);
+  static base::ListValue* CreateTabList(const Browser* browser,
+                                        const Extension* extension);
 
   // Creates a Tab object (see chrome/common/extensions/api/tabs.json) with
   // information about the state of a browser tab.  Depending on the
@@ -52,14 +50,14 @@ class ExtensionTabUtil {
   // data such as the tab's URL.
   static base::DictionaryValue* CreateTabValue(
       const content::WebContents* web_contents,
-      const extensions::Extension* extension) {
+      const Extension* extension) {
     return CreateTabValue(web_contents, NULL, -1, extension);
   }
   static base::DictionaryValue* CreateTabValue(
       const content::WebContents* web_contents,
       TabStripModel* tab_strip,
       int tab_index,
-      const extensions::Extension* extension);
+      const Extension* extension);
 
   // Creates a Tab object but performs no extension permissions checks; the
   // returned object will contain privacy-sensitive data.
@@ -76,13 +74,13 @@ class ExtensionTabUtil {
   // given the permissions of the extension and the tab in question.  The
   // tab_info object is modified in place.
   static void ScrubTabValueForExtension(const content::WebContents* contents,
-                                        const extensions::Extension* extension,
+                                        const Extension* extension,
                                         base::DictionaryValue* tab_info);
 
   // Removes any privacy-sensitive fields from a Tab object if appropriate,
   // given the permissions of the extension in question.
-  static void ScrubTabForExtension(const extensions::Extension* extension,
-                                   extensions::api::tabs::Tab* tab);
+  static void ScrubTabForExtension(const Extension* extension,
+                                   api::tabs::Tab* tab);
 
   // Gets the |tab_strip_model| and |tab_index| for the given |web_contents|.
   static bool GetTabStripModel(const content::WebContents* web_contents,
@@ -108,7 +106,7 @@ class ExtensionTabUtil {
   // extension base, we decided it wasn't worth breaking existing extensions to
   // fix.
   static GURL ResolvePossiblyRelativeURL(const std::string& url_string,
-      const extensions::Extension* extension);
+                                         const Extension* extension);
 
   // Returns true if |url| is used for testing crashes.
   static bool IsCrashURL(const GURL& url);
@@ -124,12 +122,13 @@ class ExtensionTabUtil {
   static void ForEachTab(
       const base::Callback<void(content::WebContents*)>& callback);
 
-  static extensions::WindowController* GetWindowControllerOfTab(
+  static WindowController* GetWindowControllerOfTab(
       const content::WebContents* web_contents);
 
   // Open the extension's options page.
-  static void OpenOptionsPage(const extensions::Extension* extension,
-                              Browser* browser);
+  static void OpenOptionsPage(const Extension* extension, Browser* browser);
 };
 
-#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_TAB_UTIL_H__
+}  // namespace extensions
+
+#endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_TAB_UTIL_H_

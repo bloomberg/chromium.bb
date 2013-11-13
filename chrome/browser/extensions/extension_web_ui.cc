@@ -332,7 +332,7 @@ void ExtensionWebUI::UnregisterAndReplaceOverride(const std::string& page,
     // tabs for this override and get them to reload the original URL.
     base::Callback<void(WebContents*)> callback =
         base::Bind(&UnregisterAndReplaceOverrideForWebContents, page, profile);
-    ExtensionTabUtil::ForEachTab(callback);
+    extensions::ExtensionTabUtil::ForEachTab(callback);
   }
 }
 
