@@ -84,6 +84,14 @@ When the user opens the text editor in a new client,
 Google Drive pushes new text files to that instance of the text editor.
 </p>
 
+<p>
+Note: Unlike regular Filesystem API, Chrome's Sync Filesystem API
+currently does <b>NOT</b> support directory operations, except for
+reading directory entries in the root directory.
+An attempt to create a directory in Sync Filesystem will result
+in INVALID_MODIFICATION_ERROR.
+</p>
+
 <h2 id="filesystem">Using the Chrome Filesystem API</h2>
 <h3 id="filesystem-manifest">Adding file system permission</h3>
 
