@@ -20,6 +20,18 @@ namespace views {
 
 // Desktop implementation of CaptureClient. There is one CaptureClient per
 // DesktopNativeWidgetAura.
+//
+// DesktopCaptureClient and CaptureController (used by ash) differ slightly in
+// how they handle capture. CaptureController is a singleton shared among all
+// RootWindows created by ash. An implication of this is that all RootWindows
+// know which window has capture. This is not the case with
+// DesktopCaptureClient. Instead each RootWindow has its own
+// DesktopCaptureClient. This means only the RootWindow of the Window that has
+// capture knows which window has capture. All others think no one has
+// capture. This behavior is necessitated by Windows occassionally delivering
+// mouse events to a window other than the capture window and expecting that
+// window to get the event. If we shared the capture window on the desktop this
+// behavior would not be possible.
 class VIEWS_EXPORT DesktopCaptureClient : public aura::client::CaptureClient {
  public:
   explicit DesktopCaptureClient(aura::Window* root);
@@ -29,6 +41,7 @@ class VIEWS_EXPORT DesktopCaptureClient : public aura::client::CaptureClient {
   virtual void SetCapture(aura::Window* window) OVERRIDE;
   virtual void ReleaseCapture(aura::Window* window) OVERRIDE;
   virtual aura::Window* GetCaptureWindow() OVERRIDE;
+  virtual aura::Window* GetGlobalCaptureWindow() OVERRIDE;
 
  private:
   typedef std::set<DesktopCaptureClient*> CaptureClients;

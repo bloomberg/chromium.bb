@@ -67,6 +67,9 @@ class NoneCaptureClient : public aura::client::CaptureClient {
   virtual aura::Window* GetCaptureWindow() OVERRIDE {
     return NULL;
   }
+  virtual aura::Window* GetGlobalCaptureWindow() OVERRIDE {
+    return NULL;
+  }
 
   DISALLOW_COPY_AND_ASSIGN(NoneCaptureClient);
 };

@@ -84,4 +84,13 @@ aura::Window* DesktopCaptureClient::GetCaptureWindow() {
   return capture_window_;
 }
 
+aura::Window* DesktopCaptureClient::GetGlobalCaptureWindow() {
+  for (CaptureClients::iterator i = capture_clients_->begin();
+       i != capture_clients_->end(); ++i) {
+    if ((*i)->capture_window_)
+      return (*i)->capture_window_;
+  }
+  return NULL;
+}
+
 }  // namespace views

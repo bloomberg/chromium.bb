@@ -86,6 +86,10 @@ aura::Window* CaptureController::GetCaptureWindow() {
   return capture_window_;
 }
 
+aura::Window* CaptureController::GetGlobalCaptureWindow() {
+  return capture_window_;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // CaptureController, private:
 

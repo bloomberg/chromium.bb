@@ -21,8 +21,15 @@ class AURA_EXPORT CaptureClient {
   // Releases a capture from the |window|.
   virtual void ReleaseCapture(Window* window) = 0;
 
-  // Returns the current capture window.
+  // Returns the current capture window. This may only return a Window if the
+  // Window that has capture is a child of the Window the CaptureClient is
+  // installed on. GetGlobalCaptureWindow() can be used to locate the Window
+  // that has capture regardless of the Window the CaptureClient is installed
+  // on.
   virtual Window* GetCaptureWindow() = 0;
+
+  // See description of GetCaptureWindow() for details.
+  virtual Window* GetGlobalCaptureWindow() = 0;
 
  protected:
   virtual ~CaptureClient() {}

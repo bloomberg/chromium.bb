@@ -33,6 +33,7 @@ class VIEWS_EXPORT CaptureController : public aura::client::CaptureClient {
   virtual void SetCapture(aura::Window* window) OVERRIDE;
   virtual void ReleaseCapture(aura::Window* window) OVERRIDE;
   virtual aura::Window* GetCaptureWindow() OVERRIDE;
+  virtual aura::Window* GetGlobalCaptureWindow() OVERRIDE;
 
  private:
   friend class ScopedCaptureClient;

@@ -8,6 +8,7 @@
 
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
+#include "ui/aura/client/capture_client.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/screen_position_client.h"
@@ -57,8 +58,28 @@ aura::Window* GetTooltipTarget(const ui::MouseEvent& event,
     case ui::ET_MOUSE_MOVED:
     case ui::ET_MOUSE_DRAGGED: {
       aura::Window* event_target = static_cast<aura::Window*>(event.target());
-      if (!event_target || !event_target->HasCapture())
+      if (!event_target)
+        return NULL;
+
+      // If a window other than |event_target| has capture, ignore the event.
+      // This can happen when RootWindow creates events when showing/hiding, or
+      // the system generates an extra event. We have to check
+      // GetGlobalCaptureWindow() as Windows does not use a singleton
+      // CaptureClient.
+      if (!event_target->HasCapture()) {
+        aura::Window* root = event_target->GetRootWindow();
+        if (root) {
+          aura::client::CaptureClient* capture_client =
+              aura::client::GetCaptureClient(root);
+          if (capture_client) {
+            aura::Window* capture_window =
+                capture_client->GetGlobalCaptureWindow();
+            if (capture_window && event_target != capture_window)
+              return NULL;
+          }
+        }
         return event_target;
+      }
 
       // If |target| has capture all events go to it, even if the mouse is
       // really over another window. Find the real window the mouse is over.

@@ -50,5 +50,9 @@ Window* DefaultCaptureClient::GetCaptureWindow() {
   return capture_window_;
 }
 
+Window* DefaultCaptureClient::GetGlobalCaptureWindow() {
+  return capture_window_;
+}
+
 }  // namespace client
 }  // namespace aura
