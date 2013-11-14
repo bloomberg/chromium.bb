@@ -2336,8 +2336,8 @@ newlib-configure() {
         --disable-texinfo \
         --disable-libgloss \
         --enable-newlib-iconv \
-        --enable-newlib-iconv-from-encodings=UTF-8,UTF-16,UCS-4 \
-        --enable-newlib-iconv-to-encodings=UTF-8,UTF-16,UCS-4 \
+        --enable-newlib-iconv-from-encodings=UTF-8,UTF-16LE,UCS-4LE,UTF-16,UCS-4 \
+        --enable-newlib-iconv-to-encodings=UTF-8,UTF-16LE,UCS-4LE,UTF-16,UCS-4 \
         --enable-newlib-io-long-long \
         --enable-newlib-io-long-double \
         --enable-newlib-io-c99-formats \
