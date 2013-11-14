@@ -67,11 +67,15 @@ void AppContainer::Load(const GURL& app_url) {
 
 void AppContainer::DidCompleteLoad(const GURL& app_url,
                                    const base::FilePath& app_path) {
+  Handle shell_handle;
   Handle app_handle;
-  MojoResult result = CreateMessagePipe(&shell_handle_, &app_handle);
+  MojoResult result = CreateMessagePipe(&shell_handle, &app_handle);
   if (result < MOJO_RESULT_OK) {
     // Failure..
   }
+
+  hello_world_service_.reset(
+    new examples::HelloWorldServiceImpl(shell_handle));
 
   // Launch the app on its own thread.
   // TODO(beng): Create a unique thread name.
@@ -82,25 +86,18 @@ void AppContainer::DidCompleteLoad(const GURL& app_url,
       base::Bind(&LaunchAppOnThread, app_path, app_handle),
       base::Bind(&AppContainer::AppCompleted, weak_factory_.GetWeakPtr()));
 
-  const char* hello_msg = "Hello";
-  result = WriteMessage(shell_handle_, hello_msg,
-                        static_cast<uint32_t>(strlen(hello_msg)+1),
-                        NULL, 0, MOJO_WRITE_MESSAGE_FLAG_NONE);
-  if (result < MOJO_RESULT_OK) {
-    // Failure..
-  }
-
   // TODO(beng): This should be created on demand by the NativeViewportService
   //             when it is retrieved by the app.
-  native_viewport_controller_.reset(
-      new services::NativeViewportController(context_, shell_handle_));
+  // native_viewport_controller_.reset(
+  //     new services::NativeViewportController(context_, shell_handle_));
 }
 
 void AppContainer::AppCompleted() {
-  native_viewport_controller_->Close();
+  hello_world_service_.reset();
+  // TODO(aa): This code gets replaced once we have a service manager.
+  // native_viewport_controller_->Close();
 
   thread_.reset();
-  Close(shell_handle_);
 }
 
 }  // namespace shell
