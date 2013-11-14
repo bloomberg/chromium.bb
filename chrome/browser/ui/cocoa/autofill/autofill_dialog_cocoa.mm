@@ -389,13 +389,6 @@ void AutofillDialogCocoa::OnConstrainedWindowClosed(
         (NSViewWidthSizable | NSViewHeightSizable)];
     [[[self window] contentView] addSubview:flippedContentView];
     [mainContainer_ setAnchorView:[[accountChooser_ subviews] objectAtIndex:1]];
-
-    NSRect contentRect = clientRect;
-    contentRect.origin = NSZeroPoint;
-    contentRect.size.width += 2 * chrome_style::kHorizontalPadding;
-    contentRect.size.height += NSHeight(headerRect) +
-                               chrome_style::kClientBottomPadding +
-                               chrome_style::kTitleTopPadding;
   }
   return self;
 }
