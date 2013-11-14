@@ -27,7 +27,13 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
+#include "chrome/browser/shell_integration.h"
+#include "chrome/browser/ui/app_list/app_list_service.h"
+#include "chrome/browser/ui/app_list/app_list_util.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/web_applications/web_app_ui.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/extensions/extension.h"
@@ -37,6 +43,7 @@
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "chrome/common/extensions/manifest_handlers/icons_handler.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/url_constants.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
@@ -125,6 +132,14 @@ TabHelper::TabHelper(content::WebContents* web_contents)
                      &web_contents->GetController()));
 
   registrar_.Add(this,
+                 chrome::NOTIFICATION_CRX_INSTALLER_DONE,
+                 content::Source<CrxInstaller>(NULL));
+
+  registrar_.Add(this,
+                 chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR,
+                 content::NotificationService::AllSources());
+
+  registrar_.Add(this,
                  chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::NotificationService::AllSources());
 }
@@ -143,6 +158,20 @@ void TabHelper::CreateApplicationShortcuts() {
     return;
 
   pending_web_app_action_ = CREATE_SHORTCUT;
+
+  // Start fetching web app info for CreateApplicationShortcut dialog and show
+  // the dialog when the data is available in OnDidGetApplicationInfo.
+  GetApplicationInfo(entry->GetPageID());
+}
+
+void TabHelper::CreateHostedAppFromWebContents() {
+  DCHECK(CanCreateApplicationShortcuts());
+  NavigationEntry* entry =
+      web_contents()->GetController().GetLastCommittedEntry();
+  if (!entry)
+    return;
+
+  pending_web_app_action_ = CREATE_HOSTED_APP;
 
   // Start fetching web app info for CreateApplicationShortcut dialog and show
   // the dialog when the data is available in OnDidGetApplicationInfo.
@@ -279,6 +308,10 @@ void TabHelper::OnDidGetApplicationInfo(int32 page_id,
           web_contents());
       break;
     }
+    case CREATE_HOSTED_APP: {
+      CreateHostedApp(info);
+      break;
+    }
     case UPDATE_SHORTCUT: {
       web_app::UpdateShortcutForTabContents(web_contents());
       break;
@@ -288,8 +321,44 @@ void TabHelper::OnDidGetApplicationInfo(int32 page_id,
       break;
   }
 
-  pending_web_app_action_ = NONE;
+  // The hosted app action will be cleared once the installation completes or
+  // fails.
+  if (pending_web_app_action_ != CREATE_HOSTED_APP)
+    pending_web_app_action_ = NONE;
 #endif
+}
+
+void TabHelper::CreateHostedApp(const WebApplicationInfo& info) {
+  ShellIntegration::ShortcutInfo shortcut_info;
+  web_app::GetShortcutInfoForTab(web_contents(), &shortcut_info);
+  WebApplicationInfo web_app_info;
+
+  web_app_info.is_bookmark_app = true;
+  web_app_info.app_url = shortcut_info.url;
+  web_app_info.title = shortcut_info.title;
+  web_app_info.urls.push_back(web_app_info.app_url);
+
+  // TODO(calamity): this should attempt to download the best icon that it can
+  // from |info.icons| rather than just using the favicon as it scales up badly.
+  // Fix this once |info.icons| gets populated commonly.
+
+  // Get the smallest icon in the icon family (should have only 1).
+  const gfx::Image* icon = shortcut_info.favicon.GetBest(0, 0);
+  SkBitmap bitmap = icon ? icon->AsBitmap() : SkBitmap();
+
+  if (!icon->IsEmpty()) {
+    WebApplicationInfo::IconInfo icon_info;
+    icon_info.data = bitmap;
+    icon_info.width = icon_info.data.width();
+    icon_info.height = icon_info.data.height();
+    web_app_info.icons.push_back(icon_info);
+  }
+
+  ExtensionService* service = profile_->GetExtensionService();
+  scoped_refptr<extensions::CrxInstaller> installer(
+      extensions::CrxInstaller::CreateSilent(service));
+  installer->set_error_on_unsupported_requirements(true);
+  installer->InstallWebApp(web_app_info);
 }
 
 void TabHelper::OnInlineWebstoreInstall(
@@ -475,7 +544,50 @@ void TabHelper::Observe(int type,
       }
       break;
     }
+    case chrome::NOTIFICATION_CRX_INSTALLER_DONE: {
+      if (pending_web_app_action_ != CREATE_HOSTED_APP)
+        return;
 
+      pending_web_app_action_ = NONE;
+
+      const Extension* extension =
+          content::Details<const Extension>(details).ptr();
+      if (!extension || !extension->from_bookmark())
+        return;
+
+      // If enabled, launch the app launcher and highlight the new app.
+      // Otherwise, open the chrome://apps page in a new foreground tab.
+      if (IsAppLauncherEnabled()) {
+        AppListService::Get(chrome::GetHostDesktopTypeForNativeView(
+            web_contents()->GetView()->GetNativeView()))->
+            ShowForProfile(profile_);
+
+        content::NotificationService::current()->Notify(
+            chrome::NOTIFICATION_APP_INSTALLED_TO_APPLIST,
+            content::Source<Profile>(profile_),
+            content::Details<const std::string>(&extension->id()));
+        return;
+      }
+
+      // Android does not implement browser_finder.cc.
+#if !defined(OS_ANDROID)
+      Browser* browser =
+          chrome::FindBrowserWithWebContents(web_contents());
+      if (browser) {
+        browser->OpenURL(
+            content::OpenURLParams(GURL(chrome::kChromeUIAppsURL),
+                                   content::Referrer(),
+                                   NEW_FOREGROUND_TAB,
+                                   content::PAGE_TRANSITION_LINK,
+                                   false));
+      }
+#endif
+    }
+    case chrome::NOTIFICATION_EXTENSION_INSTALL_ERROR: {
+      if (pending_web_app_action_ == CREATE_HOSTED_APP)
+        pending_web_app_action_ = NONE;
+      break;
+    }
     case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
       if (script_bubble_controller_) {
         script_bubble_controller_->OnExtensionUnloaded(
