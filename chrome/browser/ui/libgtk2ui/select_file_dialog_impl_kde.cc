@@ -20,6 +20,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "grit/generated_resources.h"
 #include "grit/ui_strings.h"
+#include "ui/aura/root_window.h"
 #include "ui/base/l10n/l10n_util.h"
 
 // These conflict with base/tracked_objects.h, so need to come last.
@@ -298,8 +299,7 @@ void SelectFileDialogImplKDE::GetKDialogCommandLine(const std::string& type,
   CHECK(command_line);
 
   // Attach to the current Chrome window.
-  GdkWindow* gdk_window = gtk_widget_get_window(GTK_WIDGET((parent)));
-  int window_id = GDK_DRAWABLE_XID(gdk_window);
+  int window_id = parent->GetDispatcher()->GetAcceleratedWidget();
   command_line->AppendSwitchNative(
       desktop_ == base::nix::DESKTOP_ENVIRONMENT_KDE3 ? "--embed" : "--attach",
       base::IntToString(window_id));
