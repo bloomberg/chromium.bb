@@ -55,7 +55,7 @@ struct GrammarDetail;
 
 class EditorClient {
 public:
-    virtual ~EditorClient() {  }
+    virtual ~EditorClient() { }
 
     virtual bool smartInsertDeleteEnabled() = 0;
     virtual bool isSelectTrailingWhitespaceEnabled() = 0;

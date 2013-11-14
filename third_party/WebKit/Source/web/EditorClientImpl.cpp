@@ -52,9 +52,9 @@
 #include "core/editing/UndoStep.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/ThreadLocalEventNames.h"
+#include "core/frame/Frame.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/page/EventHandler.h"
-#include "core/frame/Frame.h"
 #include "core/page/Page.h"
 #include "core/page/Settings.h"
 #include "core/platform/chromium/KeyboardCodes.h"
@@ -67,7 +67,7 @@ using namespace WebCore;
 namespace blink {
 
 // Arbitrary depth limit for the undo stack, to keep it from using
-// unbounded memory.  This is the maximum number of distinct undoable
+// unbounded memory. This is the maximum number of distinct undoable
 // actions -- unbroken stretches of typed characters are coalesced
 // into a single action.
 static const size_t maximumUndoStackDepth = 1000;
@@ -266,7 +266,7 @@ static const unsigned OptionKey  = AltKey;
 // Do not use this constant for anything but cursor movement commands. Keys
 // with cmd set have their |isSystemKey| bit set, so chances are the shortcut
 // will not be executed. Another, less important, reason is that shortcuts
-// defined in the renderer do not blink the menu item that they triggered.  See
+// defined in the renderer do not blink the menu item that they triggered. See
 // http://crbug.com/25856 and the bugs linked from there for details.
 static const unsigned CommandKey = MetaKey;
 #endif
@@ -304,12 +304,10 @@ static const KeyDownEntry keyDownEntries[] = {
     { VKEY_RIGHT,  ShiftKey,           "MoveRightAndModifySelection"          },
 #if OS(MACOSX)
     { VKEY_RIGHT,  OptionKey,          "MoveWordRight"                        },
-    { VKEY_RIGHT,  OptionKey | ShiftKey,
-      "MoveWordRightAndModifySelection"                                       },
+    { VKEY_RIGHT,  OptionKey | ShiftKey, "MoveWordRightAndModifySelection"    },
 #else
     { VKEY_RIGHT,  CtrlKey,            "MoveWordRight"                        },
-    { VKEY_RIGHT,  CtrlKey | ShiftKey,
-      "MoveWordRightAndModifySelection"                                       },
+    { VKEY_RIGHT,  CtrlKey | ShiftKey, "MoveWordRightAndModifySelection"      },
 #endif
     { VKEY_UP,     0,                  "MoveUp"                               },
     { VKEY_UP,     ShiftKey,           "MoveUpAndModifySelection"             },
@@ -413,13 +411,11 @@ const char* EditorClientImpl::interpretKeyEvent(const KeyboardEvent* evt)
         keyPressCommandsMap = new HashMap<int, const char*>;
 
         for (unsigned i = 0; i < arraysize(keyDownEntries); i++) {
-            keyDownCommandsMap->set(keyDownEntries[i].modifiers << 16 | keyDownEntries[i].virtualKey,
-                                    keyDownEntries[i].name);
+            keyDownCommandsMap->set(keyDownEntries[i].modifiers << 16 | keyDownEntries[i].virtualKey, keyDownEntries[i].name);
         }
 
         for (unsigned i = 0; i < arraysize(keyPressEntries); i++) {
-            keyPressCommandsMap->set(keyPressEntries[i].modifiers << 16 | keyPressEntries[i].charCode,
-                                     keyPressEntries[i].name);
+            keyPressCommandsMap->set(keyPressEntries[i].modifiers << 16 | keyPressEntries[i].charCode, keyPressEntries[i].name);
         }
     }
 
@@ -525,9 +521,7 @@ bool EditorClientImpl::handleEditingKeyboardEvent(KeyboardEvent* evt)
 void EditorClientImpl::handleKeyboardEvent(KeyboardEvent* evt)
 {
     // Give the embedder a chance to handle the keyboard event.
-    if ((m_webView->client()
-         && m_webView->client()->handleCurrentKeyboardEvent())
-        || handleEditingKeyboardEvent(evt))
+    if ((m_webView->client() && m_webView->client()->handleCurrentKeyboardEvent()) || handleEditingKeyboardEvent(evt))
         evt->setDefaultHandled();
 }
 
@@ -536,7 +530,7 @@ void EditorClientImpl::textFieldDidEndEditing(Element* element)
     if (m_webView->autofillClient() && element->hasTagName(HTMLNames::inputTag))
         m_webView->autofillClient()->textFieldDidEndEditing(WebInputElement(toHTMLInputElement(element)));
 
-    // Notification that focus was lost.  Be careful with this, it's also sent
+    // Notification that focus was lost. Be careful with this, it's also sent
     // when the page is being closed.
 
     // Hide any showing popup.
@@ -550,16 +544,13 @@ void EditorClientImpl::textDidChangeInTextField(Element* element)
         m_webView->autofillClient()->textFieldDidChange(WebInputElement(inputElement));
 }
 
-bool EditorClientImpl::doTextFieldCommandFromEvent(Element* element,
-                                                   KeyboardEvent* event)
+bool EditorClientImpl::doTextFieldCommandFromEvent(Element* element, KeyboardEvent* event)
 {
-    if (m_webView->autofillClient() && element->hasTagName(HTMLNames::inputTag)) {
-        m_webView->autofillClient()->textFieldDidReceiveKeyDown(WebInputElement(toHTMLInputElement(element)),
-                                                                WebKeyboardEventBuilder(*event));
-    }
+    if (m_webView->autofillClient() && element->hasTagName(HTMLNames::inputTag))
+        m_webView->autofillClient()->textFieldDidReceiveKeyDown(WebInputElement(toHTMLInputElement(element)), WebKeyboardEventBuilder(*event));
 
     // The Mac code appears to use this method as a hook to implement special
-    // keyboard commands specific to Safari's auto-fill implementation.  We
+    // keyboard commands specific to Safari's auto-fill implementation. We
     // just return false to allow the default action.
     return false;
 }
@@ -570,9 +561,7 @@ bool EditorClientImpl::shouldEraseMarkersAfterChangeSelection(TextCheckingType t
     return !frame || !frame->settings() || (!frame->settings()->asynchronousSpellCheckingEnabled() && !frame->settings()->unifiedTextCheckerEnabled());
 }
 
-void EditorClientImpl::checkSpellingOfString(const String& text,
-                                             int* misspellingLocation,
-                                             int* misspellingLength)
+void EditorClientImpl::checkSpellingOfString(const String& text, int* misspellingLocation, int* misspellingLength)
 {
     // SpellCheckWord will write (0, 0) into the output vars, which is what our
     // caller expects if the word is spelled correctly.
@@ -580,9 +569,9 @@ void EditorClientImpl::checkSpellingOfString(const String& text,
     int spellLength = 0;
 
     // Check to see if the provided text is spelled correctly.
-    if (m_webView->spellCheckClient())
+    if (m_webView->spellCheckClient()) {
         m_webView->spellCheckClient()->spellCheck(text, spellLocation, spellLength, 0);
-    else {
+    } else {
         spellLocation = 0;
         spellLength = 0;
     }

@@ -48,7 +48,7 @@ class WebTextCheckingCompletionImpl;
 
 class EditorClientImpl : public WebCore::EditorClient, public WebCore::TextCheckerClient {
 public:
-    EditorClientImpl(WebViewImpl* webView);
+    EditorClientImpl(WebViewImpl*);
 
     virtual ~EditorClientImpl();
 
