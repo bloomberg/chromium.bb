@@ -51,15 +51,14 @@ class CdmAdapter : public pp::Instance,
   // PPP_ContentDecryptor_Private implementation.
   // Note: Results of calls to these methods must be reported through the
   // PPB_ContentDecryptor_Private interface.
-  // TODO(jrummell): |can_challenge_platform| should be removed.
-  virtual void Initialize(const std::string& key_system,
-                          bool can_challenge_platform) OVERRIDE;
-  virtual void GenerateKeyRequest(const std::string& type,
+  virtual void Initialize(const std::string& key_system) OVERRIDE;
+  virtual void GenerateKeyRequest(uint32_t reference_id,
+                                  const std::string& type,
                                   pp::VarArrayBuffer init_data) OVERRIDE;
-  virtual void AddKey(const std::string& session_id,
+  virtual void AddKey(uint32_t reference_id,
                       pp::VarArrayBuffer key,
                       pp::VarArrayBuffer init_data) OVERRIDE;
-  virtual void CancelKeyRequest(const std::string& session_id) OVERRIDE;
+  virtual void CancelKeyRequest(uint32_t reference_id) OVERRIDE;
   virtual void Decrypt(
       pp::Buffer_Dev encrypted_buffer,
       const PP_EncryptedBlockInfo& encrypted_block_info) OVERRIDE;
@@ -105,45 +104,33 @@ class CdmAdapter : public pp::Instance,
       cdm::Status decoder_status) OVERRIDE;
 
  private:
-  struct SessionInfo {
-    SessionInfo(const std::string& key_system_in,
-                const std::string& session_id_in)
-        : key_system(key_system_in),
-          session_id(session_id_in) {}
-    const std::string key_system;
-    const std::string session_id;
-  };
-
   typedef linked_ptr<DecryptedBlockImpl> LinkedDecryptedBlock;
   typedef linked_ptr<VideoFrameImpl> LinkedVideoFrame;
   typedef linked_ptr<AudioFramesImpl> LinkedAudioFrames;
 
   bool CreateCdmInstance(const std::string& key_system);
 
-  void SendUnknownKeyError(const std::string& key_system,
-                           const std::string& session_id);
-
-  void SendKeyAdded(const std::string& key_system,
-                    const std::string& session_id);
-
-  // TODO(jrummell): Drop the |key_system| parameter.
-  void SendKeyErrorInternal(const std::string& key_system,
-                            const std::string& session_id,
+  void SendUnknownKeyError(uint32_t reference_id);
+  void SendKeyAdded(uint32_t reference_id);
+  void SendKeyErrorInternal(uint32_t reference_id,
                             cdm::MediaKeyError error_code,
                             uint32_t system_code);
 
   // <code>PPB_ContentDecryptor_Private</code> dispatchers. These are passed to
   // <code>callback_factory_</code> to ensure that calls into
   // <code>PPP_ContentDecryptor_Private</code> are asynchronous.
-  void KeyAdded(int32_t result, const SessionInfo& session_info);
+  void KeyAdded(int32_t result, uint32_t reference_id);
   void KeyMessage(int32_t result,
-                  const SessionInfo& session_info,
+                  uint32_t reference_id,
                   const std::vector<uint8>& message,
                   const std::string& default_url);
   void KeyError(int32_t result,
-                const SessionInfo& session_info,
+                uint32_t reference_id,
                 cdm::MediaKeyError error_code,
                 uint32_t system_code);
+  void SetSessionId(int32_t result,
+                    uint32_t reference_id,
+                    const std::string& session_id);
   void DeliverBlock(int32_t result,
                     const cdm::Status& status,
                     const LinkedDecryptedBlock& decrypted_block,
@@ -171,7 +158,6 @@ class CdmAdapter : public pp::Instance,
   void TimerExpired(int32_t result, void* context);
 
   bool IsValidVideoFrame(const LinkedVideoFrame& video_frame);
-
 
 #if defined(OS_CHROMEOS)
   void SendPlatformChallengeDone(int32_t result);

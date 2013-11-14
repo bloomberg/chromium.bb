@@ -2219,27 +2219,29 @@ PP_Var PepperPluginInstanceImpl::GetDefaultCharSet(PP_Instance instance) {
 // Therefore, |content_decryptor_delegate_| must have been initialized when
 // the following methods are called.
 void PepperPluginInstanceImpl::KeyAdded(PP_Instance instance,
-                                        PP_Var key_system_var,
-                                        PP_Var session_id_var) {
-  content_decryptor_delegate_->KeyAdded(key_system_var, session_id_var);
+                                        uint32_t reference_id) {
+  content_decryptor_delegate_->KeyAdded(reference_id);
 }
 
 void PepperPluginInstanceImpl::KeyMessage(PP_Instance instance,
-                                          PP_Var key_system_var,
-                                          PP_Var session_id_var,
+                                          uint32_t reference_id,
                                           PP_Var message_var,
                                           PP_Var default_url_var) {
   content_decryptor_delegate_->KeyMessage(
-      key_system_var, session_id_var, message_var, default_url_var);
+      reference_id, message_var, default_url_var);
 }
 
 void PepperPluginInstanceImpl::KeyError(PP_Instance instance,
-                                        PP_Var key_system_var,
-                                        PP_Var session_id_var,
+                                        uint32_t reference_id,
                                         int32_t media_error,
                                         int32_t system_code) {
-  content_decryptor_delegate_->KeyError(
-      key_system_var, session_id_var, media_error, system_code);
+  content_decryptor_delegate_->KeyError(reference_id, media_error, system_code);
+}
+
+void PepperPluginInstanceImpl::SetSessionId(PP_Instance instance,
+                                            uint32_t reference_id,
+                                            PP_Var session_id_var) {
+  content_decryptor_delegate_->SetSessionId(reference_id, session_id_var);
 }
 
 void PepperPluginInstanceImpl::DeliverBlock(

@@ -35,18 +35,22 @@ class PpapiDecryptor : public media::MediaKeys, public media::Decryptor {
       const media::KeyAddedCB& key_added_cb,
       const media::KeyErrorCB& key_error_cb,
       const media::KeyMessageCB& key_message_cb,
+      const media::SetSessionIdCB& set_session_id_cb,
       const base::Closure& destroy_plugin_cb);
 
   virtual ~PpapiDecryptor();
 
   // media::MediaKeys implementation.
-  virtual bool GenerateKeyRequest(const std::string& type,
+  virtual bool GenerateKeyRequest(uint32 reference_id,
+                                  const std::string& type,
                                   const uint8* init_data,
                                   int init_data_length) OVERRIDE;
-  virtual void AddKey(const uint8* key, int key_length,
-                      const uint8* init_data, int init_data_length,
-                      const std::string& session_id) OVERRIDE;
-  virtual void CancelKeyRequest(const std::string& session_id) OVERRIDE;
+  virtual void AddKey(uint32 reference_id,
+                      const uint8* key,
+                      int key_length,
+                      const uint8* init_data,
+                      int init_data_length) OVERRIDE;
+  virtual void CancelKeyRequest(uint32 reference_id) OVERRIDE;
   virtual Decryptor* GetDecryptor() OVERRIDE;
 
   // media::Decryptor implementation.
@@ -70,26 +74,27 @@ class PpapiDecryptor : public media::MediaKeys, public media::Decryptor {
   virtual void DeinitializeDecoder(StreamType stream_type) OVERRIDE;
 
  private:
-  PpapiDecryptor(
-      const scoped_refptr<PepperPluginInstanceImpl>& plugin_instance,
-      ContentDecryptorDelegate* plugin_cdm_delegate,
-      const media::KeyAddedCB& key_added_cb,
-      const media::KeyErrorCB& key_error_cb,
-      const media::KeyMessageCB& key_message_cb,
-      const base::Closure& destroy_plugin_cb);
+  PpapiDecryptor(const scoped_refptr<PepperPluginInstanceImpl>& plugin_instance,
+                 ContentDecryptorDelegate* plugin_cdm_delegate,
+                 const media::KeyAddedCB& key_added_cb,
+                 const media::KeyErrorCB& key_error_cb,
+                 const media::KeyMessageCB& key_message_cb,
+                 const media::SetSessionIdCB& set_session_id_cb,
+                 const base::Closure& destroy_plugin_cb);
 
-  void ReportFailureToCallPlugin(const std::string& session_id);
+  void ReportFailureToCallPlugin(uint32 reference_id);
 
   void OnDecoderInitialized(StreamType stream_type, bool success);
 
   // Callbacks for |plugin_cdm_delegate_| to fire key events.
-  void KeyAdded(const std::string& session_id);
-  void KeyError(const std::string& session_id,
+  void KeyAdded(uint32 reference_id);
+  void KeyError(uint32 reference_id,
                 media::MediaKeys::KeyError error_code,
                 int system_code);
-  void KeyMessage(const std::string& session_id,
+  void KeyMessage(uint32 reference_id,
                   const std::vector<uint8>& message,
                   const std::string& default_url);
+  void SetSessionId(uint32 reference_id, const std::string& session_id);
 
   base::WeakPtr<PpapiDecryptor> weak_this_;
 
@@ -104,6 +109,7 @@ class PpapiDecryptor : public media::MediaKeys, public media::Decryptor {
   media::KeyAddedCB key_added_cb_;
   media::KeyErrorCB key_error_cb_;
   media::KeyMessageCB key_message_cb_;
+  media::SetSessionIdCB set_session_id_cb_;
 
   // Called to destroy the helper plugin when this class no longer needs it.
   base::Closure destroy_plugin_cb_;

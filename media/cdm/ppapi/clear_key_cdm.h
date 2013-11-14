@@ -71,10 +71,14 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
   // this Client class as well. Investigate this possibility.
   class Client {
    public:
+    // TODO(jrummell): Remove bitmask and rename kNone to kInvalid once CDM
+    // interface supports reference_id passing completely.
     enum Status {
-      kKeyAdded,
-      kKeyError,
-      kKeyMessage
+      kNone = 0,
+      kKeyAdded = 1 << 0,
+      kKeyError = 1 << 1,
+      kKeyMessage = 1 << 2,
+      kSetSessionId = 1 << 3
     };
 
     Client();
@@ -84,23 +88,28 @@ class ClearKeyCdm : public ClearKeyCdmInterface {
     const std::string& session_id() { return session_id_; }
     const std::vector<uint8>& key_message() { return key_message_; }
     const std::string& default_url() { return default_url_; }
+    MediaKeys::KeyError error_code() { return error_code_; }
+    int system_code() { return system_code_; }
 
     // Resets the Client to a clean state.
     void Reset();
 
-    void KeyAdded(const std::string& session_id);
-    void KeyError(const std::string& session_id,
+    void KeyAdded(uint32 reference_id);
+    void KeyError(uint32 reference_id,
                   MediaKeys::KeyError error_code,
                   int system_code);
-    void KeyMessage(const std::string& session_id,
+    void KeyMessage(uint32 reference_id,
                     const std::vector<uint8>& message,
                     const std::string& default_url);
+    void SetSessionId(uint32 reference_id, const std::string& session_id);
 
    private:
     Status status_;
     std::string session_id_;
     std::vector<uint8> key_message_;
     std::string default_url_;
+    MediaKeys::KeyError error_code_;
+    int system_code_;
   };
 
   // Prepares next heartbeat message and sets a timer for it.

@@ -4,7 +4,7 @@
  */
 
 /* From private/ppp_content_decryptor_private.idl,
- *   modified Wed Sep 18 16:14:30 2013.
+ *   modified Fri Oct 18 18:11:09 2013.
  */
 
 #ifndef PPAPI_C_PRIVATE_PPP_CONTENT_DECRYPTOR_PRIVATE_H_
@@ -18,10 +18,10 @@
 #include "ppapi/c/pp_var.h"
 #include "ppapi/c/private/pp_content_decryptor.h"
 
-#define PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_7 \
-    "PPP_ContentDecryptor_Private;0.7"
+#define PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_8 \
+    "PPP_ContentDecryptor_Private;0.8"
 #define PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE \
-    PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_7
+    PPP_CONTENTDECRYPTOR_PRIVATE_INTERFACE_0_8
 
 /**
  * @file
@@ -42,20 +42,14 @@
  * Decryption Module (CDM) for v0.1 of the proposed Encrypted Media Extensions:
  * http://goo.gl/rbdnR
  */
-struct PPP_ContentDecryptor_Private_0_7 {
+struct PPP_ContentDecryptor_Private_0_8 {
   /**
    * Initialize for the specified key system.
    *
    * @param[in] key_system A <code>PP_Var</code> of type
    * <code>PP_VARTYPE_STRING</code> containing the name of the key system.
-   *
-   * @param[in] can_challenge_platform A <code>PP_Bool</code> that
-   * indicates if the underlying host platform can be challenged;
-   * i.e., verified as a trusted platform.
    */
-  void (*Initialize)(PP_Instance instance,
-                     struct PP_Var key_system,
-                     PP_Bool can_challenge_platform);
+  void (*Initialize)(PP_Instance instance, struct PP_Var key_system);
   /**
    * Generates a key request. key_system specifies the key or licensing system
    * to use. type contains the MIME type of init_data. init_data is a data
@@ -66,6 +60,9 @@ struct PPP_ContentDecryptor_Private_0_7 {
    * browser by the CDM via <code>KeyMessage()</code> on the
    * <code>PPB_ContentDecryptor_Private</code> interface.
    *
+   * @param[in] reference_id A reference for the session for which the key
+   * should be generated.
+   *
    * @param[in] type A <code>PP_Var</code> of type
    * <code>PP_VARTYPE_STRING</code> containing the MIME type for init_data.
    *
@@ -74,6 +71,7 @@ struct PPP_ContentDecryptor_Private_0_7 {
    * initialization data.
    */
   void (*GenerateKeyRequest)(PP_Instance instance,
+                             uint32_t reference_id,
                              struct PP_Var type,
                              struct PP_Var init_data);
   /**
@@ -87,8 +85,8 @@ struct PPP_ContentDecryptor_Private_0_7 {
    * <code>PPB_ContentDecryptor_Private</code> interface, and the browser
    * must notify the web application.
    *
-   * @param[in] session_id A <code>PP_Var</code> of type
-   * <code>PP_VARTYPE_STRING</code> containing the session ID.
+   * @param[in] reference_id A reference for the session for which the key
+   * should be added.
    *
    * @param[in] key A <code>PP_Var</code> of type
    * <code>PP_VARTYPE_ARRAYBUFFER</code> containing the decryption key, license,
@@ -99,16 +97,16 @@ struct PPP_ContentDecryptor_Private_0_7 {
    * initialization data.
    */
   void (*AddKey)(PP_Instance instance,
-                 struct PP_Var session_id,
+                 uint32_t reference_id,
                  struct PP_Var key,
                  struct PP_Var init_data);
   /**
    * Cancels a pending key request for the specified session ID.
    *
-   * @param[in] session_id A <code>PP_Var</code> of type
-   * <code>PP_VARTYPE_STRING</code> containing the session ID.
+   * @param[in] reference_id A reference for the session for which the key
+   * request should be cancelled.
    */
-  void (*CancelKeyRequest)(PP_Instance instance, struct PP_Var session_id);
+  void (*CancelKeyRequest)(PP_Instance instance, uint32_t reference_id);
   /**
    * Decrypts the block and returns the unencrypted block via
    * <code>DeliverBlock()</code> on the
@@ -235,7 +233,7 @@ struct PPP_ContentDecryptor_Private_0_7 {
       const struct PP_EncryptedBlockInfo* encrypted_block_info);
 };
 
-typedef struct PPP_ContentDecryptor_Private_0_7 PPP_ContentDecryptor_Private;
+typedef struct PPP_ContentDecryptor_Private_0_8 PPP_ContentDecryptor_Private;
 /**
  * @}
  */

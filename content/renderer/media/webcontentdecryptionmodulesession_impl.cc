@@ -11,15 +11,21 @@
 
 namespace content {
 
+static const uint32 kStartingReferenceId = 1;
+uint32 WebContentDecryptionModuleSessionImpl::next_reference_id_ =
+    kStartingReferenceId;
+COMPILE_ASSERT(kStartingReferenceId != media::MediaKeys::kInvalidReferenceId,
+               invalid_starting_value);
+
 WebContentDecryptionModuleSessionImpl::WebContentDecryptionModuleSessionImpl(
     media::MediaKeys* media_keys,
     Client* client,
     const SessionClosedCB& session_closed_cb)
     : media_keys_(media_keys),
       client_(client),
-      session_closed_cb_(session_closed_cb) {
+      session_closed_cb_(session_closed_cb),
+      reference_id_(next_reference_id_++) {
   DCHECK(media_keys_);
-  // TODO(ddorwin): Populate session_id_ from the real implementation.
 }
 
 WebContentDecryptionModuleSessionImpl::
@@ -41,22 +47,22 @@ void WebContentDecryptionModuleSessionImpl::generateKeyRequest(
     return;
   }
 
-  media_keys_->GenerateKeyRequest(UTF16ToASCII(mime_type),
-                                  init_data, init_data_length);
+  media_keys_->GenerateKeyRequest(
+      reference_id_, UTF16ToASCII(mime_type), init_data, init_data_length);
 }
 
 void WebContentDecryptionModuleSessionImpl::update(const uint8* key,
                                                    size_t key_length) {
   DCHECK(key);
-  media_keys_->AddKey(key, key_length, NULL, 0, session_id_);
+  media_keys_->AddKey(reference_id_, key, key_length, NULL, 0);
 }
 
 void WebContentDecryptionModuleSessionImpl::close() {
-  media_keys_->CancelKeyRequest(session_id_);
-
   // Detach from the CDM.
+  // TODO(jrummell): We shouldn't detach here because closed and other events
+  // may be fired in the latest version of the spec. http://crbug.com/309235
   if (!session_closed_cb_.is_null())
-    base::ResetAndReturn(&session_closed_cb_).Run(session_id_);
+    base::ResetAndReturn(&session_closed_cb_).Run(reference_id_);
 }
 
 void WebContentDecryptionModuleSessionImpl::KeyAdded() {
@@ -76,6 +82,17 @@ void WebContentDecryptionModuleSessionImpl::KeyMessage(
   client_->keyMessage(message.empty() ? NULL : &message[0],
                       message.size(),
                       GURL(destination_url));
+}
+
+void WebContentDecryptionModuleSessionImpl::SetSessionId(
+    const std::string& session_id) {
+  // Due to heartbeat messages, SetSessionId() can get called multiple times.
+  // TODO(jrummell): Once all CDMs are updated to support reference ids,
+  // SetSessionId() should only be called once, and the second check can be
+  // removed.
+  DCHECK(session_id_.empty() || session_id_ == session_id)
+      << "Session ID may not be changed once set.";
+  session_id_ = session_id;
 }
 
 }  // namespace content

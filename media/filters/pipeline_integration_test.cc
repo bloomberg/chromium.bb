@@ -79,18 +79,21 @@ class FakeEncryptedMedia {
    public:
     virtual ~AppBase() {}
 
-    virtual void KeyAdded(const std::string& session_id) = 0;
+    virtual void KeyAdded(uint32 reference_id) = 0;
 
     // Errors are not expected unless overridden.
-    virtual void KeyError(const std::string& session_id,
+    virtual void KeyError(uint32 reference_id,
                           MediaKeys::KeyError error_code,
                           int system_code) {
       FAIL() << "Unexpected Key Error";
     }
 
-    virtual void KeyMessage(const std::string& session_id,
+    virtual void KeyMessage(uint32 reference_id,
                             const std::vector<uint8>& message,
                             const std::string& default_url) = 0;
+
+    virtual void SetSession(uint32 reference_id,
+                            const std::string& session_id) = 0;
 
     virtual void NeedKey(const std::string& type,
                          const std::vector<uint8>& init_data,
@@ -98,12 +101,12 @@ class FakeEncryptedMedia {
   };
 
   FakeEncryptedMedia(AppBase* app)
-      : decryptor_(base::Bind(&FakeEncryptedMedia::KeyAdded,
-                              base::Unretained(this)),
-                   base::Bind(&FakeEncryptedMedia::KeyError,
-                              base::Unretained(this)),
-                   base::Bind(&FakeEncryptedMedia::KeyMessage,
-                              base::Unretained(this))),
+      : decryptor_(
+            base::Bind(&FakeEncryptedMedia::KeyAdded, base::Unretained(this)),
+            base::Bind(&FakeEncryptedMedia::KeyError, base::Unretained(this)),
+            base::Bind(&FakeEncryptedMedia::KeyMessage, base::Unretained(this)),
+            base::Bind(&FakeEncryptedMedia::SetSession,
+                       base::Unretained(this))),
         app_(app) {
   }
 
@@ -112,20 +115,24 @@ class FakeEncryptedMedia {
   }
 
   // Callbacks for firing key events. Delegate to |app_|.
-  void KeyAdded(const std::string& session_id) {
-    app_->KeyAdded(session_id);
+  void KeyAdded(uint32 reference_id) {
+    app_->KeyAdded(reference_id);
   }
 
-  void KeyError(const std::string& session_id,
+  void KeyError(uint32 reference_id,
                 MediaKeys::KeyError error_code,
                 int system_code) {
-    app_->KeyError(session_id, error_code, system_code);
+    app_->KeyError(reference_id, error_code, system_code);
   }
 
-  void KeyMessage(const std::string& session_id,
+  void KeyMessage(uint32 reference_id,
                   const std::vector<uint8>& message,
                   const std::string& default_url) {
-    app_->KeyMessage(session_id, message, default_url);
+    app_->KeyMessage(reference_id, message, default_url);
+  }
+
+  void SetSession(uint32 reference_id, const std::string& session_id) {
+    app_->SetSession(reference_id, session_id);
   }
 
   void NeedKey(const std::string& type,
@@ -141,28 +148,36 @@ class FakeEncryptedMedia {
 // Provides |kSecretKey| in response to needkey.
 class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
  public:
-  virtual void KeyAdded(const std::string& session_id) OVERRIDE {
-    EXPECT_FALSE(session_id.empty());
+  KeyProvidingApp() : current_reference_id_(0) {}
+
+  virtual void KeyAdded(uint32 reference_id) OVERRIDE {
+    EXPECT_GT(reference_id, 0u);
   }
 
-  virtual void KeyMessage(const std::string& session_id,
+  virtual void KeyMessage(uint32 reference_id,
                           const std::vector<uint8>& message,
                           const std::string& default_url) OVERRIDE {
-    EXPECT_FALSE(session_id.empty());
+    EXPECT_GT(reference_id, 0u);
     EXPECT_FALSE(message.empty());
 
-    current_session_id_ = session_id;
+    current_reference_id_ = reference_id;
+  }
+
+  virtual void SetSession(uint32 reference_id,
+                          const std::string& session_id) OVERRIDE {
+    EXPECT_GT(reference_id, 0u);
+    EXPECT_FALSE(session_id.empty());
   }
 
   virtual void NeedKey(const std::string& type,
                        const std::vector<uint8>& init_data,
                        AesDecryptor* decryptor) OVERRIDE {
-    if (current_session_id_.empty()) {
-      EXPECT_TRUE(decryptor->GenerateKeyRequest(type, kInitData,
-                                                arraysize(kInitData)));
+    if (current_reference_id_ == 0u) {
+      EXPECT_TRUE(decryptor->GenerateKeyRequest(
+          12, type, kInitData, arraysize(kInitData)));
     }
 
-    EXPECT_FALSE(current_session_id_.empty());
+    EXPECT_EQ(current_reference_id_, 12u);
 
     // Clear Key really needs the key ID in |init_data|. For WebM, they are the
     // same, but this is not the case for ISO CENC. Therefore, provide the
@@ -174,27 +189,34 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
       key_id_length = arraysize(kKeyId);
     }
 
-    decryptor->AddKey(kSecretKey, arraysize(kSecretKey),
-                      key_id, key_id_length, current_session_id_);
+    decryptor->AddKey(current_reference_id_,
+                      kSecretKey, arraysize(kSecretKey),
+                      key_id, key_id_length);
   }
 
-  std::string current_session_id_;
+  uint32 current_reference_id_;
 };
 
 // Ignores needkey and does not perform a license request
 class NoResponseApp : public FakeEncryptedMedia::AppBase {
  public:
-  virtual void KeyAdded(const std::string& session_id) OVERRIDE {
-    EXPECT_FALSE(session_id.empty());
+  virtual void KeyAdded(uint32 reference_id) OVERRIDE {
+    EXPECT_GT(reference_id, 0u);
     FAIL() << "Unexpected KeyAdded";
   }
 
-  virtual void KeyMessage(const std::string& session_id,
+  virtual void KeyMessage(uint32 reference_id,
                           const std::vector<uint8>& message,
                           const std::string& default_url) OVERRIDE {
-    EXPECT_FALSE(session_id.empty());
+    EXPECT_GT(reference_id, 0u);
     EXPECT_FALSE(message.empty());
     FAIL() << "Unexpected KeyMessage";
+  }
+
+  virtual void SetSession(uint32 reference_id,
+                          const std::string& session_id) OVERRIDE {
+    EXPECT_GT(reference_id, 0u);
+    EXPECT_FALSE(session_id.empty());
   }
 
   virtual void NeedKey(const std::string& type,

@@ -31,14 +31,14 @@ class ContentDecryptor_Private {
   // TODO(tomfinegan): This could be optimized to pass pp::Var instead of
   // strings. The change would allow the CDM wrapper to reuse vars when
   // replying to the browser.
-  virtual void Initialize(const std::string& key_system,
-                          bool can_challenge_platform) = 0;
-  virtual void GenerateKeyRequest(const std::string& type,
+  virtual void Initialize(const std::string& key_system) = 0;
+  virtual void GenerateKeyRequest(uint32_t reference_id,
+                                  const std::string& type,
                                   pp::VarArrayBuffer init_data) = 0;
-  virtual void AddKey(const std::string& session_id,
+  virtual void AddKey(uint32_t reference_id,
                       pp::VarArrayBuffer key,
                       pp::VarArrayBuffer init_data) = 0;
-  virtual void CancelKeyRequest(const std::string& session_id) = 0;
+  virtual void CancelKeyRequest(uint32_t reference_id) = 0;
   virtual void Decrypt(pp::Buffer_Dev encrypted_buffer,
                        const PP_EncryptedBlockInfo& encrypted_block_info) = 0;
   virtual void InitializeAudioDecoder(
@@ -59,16 +59,14 @@ class ContentDecryptor_Private {
 
   // PPB_ContentDecryptor_Private methods for passing data from the decryptor
   // to the browser.
-  void KeyAdded(const std::string& key_system,
-                const std::string& session_id);
-  void KeyMessage(const std::string& key_system,
-                  const std::string& session_id,
+  void KeyAdded(uint32_t reference_id);
+  void KeyMessage(uint32_t reference_id,
                   pp::VarArrayBuffer message,
                   const std::string& default_url);
-  void KeyError(const std::string& key_system,
-                const std::string& session_id,
+  void KeyError(uint32_t reference_id,
                 int32_t media_error,
                 int32_t system_code);
+  void SetSessionId(uint32_t reference_id, const std::string& session_id);
 
   // The plugin must not hold a reference to the encrypted buffer resource
   // provided to Decrypt() when it calls this method. The browser will reuse

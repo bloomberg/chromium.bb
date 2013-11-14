@@ -143,18 +143,18 @@ class PPB_Instance_API {
 #if !defined(OS_NACL)
   // Content Decryptor.
   virtual void KeyAdded(PP_Instance instance,
-                        PP_Var key_system,
-                        PP_Var session_id) = 0;
+                        uint32 reference_id) = 0;
   virtual void KeyMessage(PP_Instance instance,
-                          PP_Var key_system,
-                          PP_Var session_id,
+                          uint32 reference_id,
                           PP_Var message,
                           PP_Var default_url) = 0;
   virtual void KeyError(PP_Instance instance,
-                        PP_Var key_system,
-                        PP_Var session_id,
+                        uint32 reference_id,
                         int32_t media_error,
                         int32_t system_error) = 0;
+  virtual void SetSessionId(PP_Instance instance,
+                            uint32 reference_id,
+                            PP_Var session_id) = 0;
   virtual void DeliverBlock(PP_Instance instance,
                             PP_Resource decrypted_block,
                             const PP_DecryptedBlockInfo* block_info) = 0;

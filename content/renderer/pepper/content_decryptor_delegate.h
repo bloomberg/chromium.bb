@@ -39,23 +39,24 @@ class ContentDecryptorDelegate {
       const PPP_ContentDecryptor_Private* plugin_decryption_interface);
   ~ContentDecryptorDelegate();
 
-  void Initialize(const std::string& key_system,
-                  const bool can_challenge_platform);
+  void Initialize(const std::string& key_system);
 
   void SetKeyEventCallbacks(const media::KeyAddedCB& key_added_cb,
                             const media::KeyErrorCB& key_error_cb,
-                            const media::KeyMessageCB& key_message_cb);
+                            const media::KeyMessageCB& key_message_cb,
+                            const media::SetSessionIdCB& set_session_id_cb);
 
   // Provides access to PPP_ContentDecryptor_Private.
-  bool GenerateKeyRequest(const std::string& type,
+  bool GenerateKeyRequest(uint32 reference_id,
+                          const std::string& type,
                           const uint8* init_data,
                           int init_data_length);
-  bool AddKey(const std::string& session_id,
+  bool AddKey(uint32 reference_id,
               const uint8* key,
               int key_length,
               const uint8* init_data,
               int init_data_length);
-  bool CancelKeyRequest(const std::string& session_id);
+  bool CancelKeyRequest(uint32 reference_id);
   bool Decrypt(media::Decryptor::StreamType stream_type,
                const scoped_refptr<media::DecoderBuffer>& encrypted_buffer,
                const media::Decryptor::DecryptCB& decrypt_cb);
@@ -79,18 +80,14 @@ class ContentDecryptorDelegate {
       const media::Decryptor::VideoDecodeCB& video_decode_cb);
 
   // PPB_ContentDecryptor_Private dispatching methods.
-  // TODO(ddorwin): Remove this method.
-  void NeedKey(PP_Var key_system, PP_Var session_id, PP_Var init_data);
-  // TODO(ddorwin): Remove key_system_var parameter from these methods.
-  void KeyAdded(PP_Var key_system, PP_Var session_id);
-  void KeyMessage(PP_Var key_system,
-                  PP_Var session_id,
+  void KeyAdded(uint32 reference_id);
+  void KeyMessage(uint32 reference_id,
                   PP_Var message,
                   PP_Var default_url);
-  void KeyError(PP_Var key_system,
-                PP_Var session_id,
+  void KeyError(uint32 reference_id,
                 int32_t media_error,
                 int32_t system_code);
+  void SetSessionId(uint32 reference_id, PP_Var session_id_var);
   void DeliverBlock(PP_Resource decrypted_block,
                     const PP_DecryptedBlockInfo* block_info);
   void DecoderInitializeDone(PP_DecryptorStreamType decoder_type,
@@ -145,6 +142,7 @@ class ContentDecryptorDelegate {
   media::KeyAddedCB key_added_cb_;
   media::KeyErrorCB key_error_cb_;
   media::KeyMessageCB key_message_cb_;
+  media::SetSessionIdCB set_session_id_cb_;
 
   gfx::Size natural_size_;
 

@@ -110,8 +110,7 @@ bool InitializePppDecryptorBuffer(PP_Instance instance,
 }
 
 void Initialize(PP_Instance instance,
-                PP_Var key_system,
-                PP_Bool can_challenge_platform) {
+                PP_Var key_system) {
   HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
   if (!dispatcher) {
     NOTREACHED();
@@ -122,11 +121,11 @@ void Initialize(PP_Instance instance,
       new PpapiMsg_PPPContentDecryptor_Initialize(
           API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE,
           instance,
-          SerializedVarSendInput(dispatcher, key_system),
-          PP_ToBool(can_challenge_platform)));
+          SerializedVarSendInput(dispatcher, key_system)));
 }
 
 void GenerateKeyRequest(PP_Instance instance,
+                        uint32_t reference_id,
                         PP_Var type,
                         PP_Var init_data) {
   HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
@@ -139,12 +138,13 @@ void GenerateKeyRequest(PP_Instance instance,
       new PpapiMsg_PPPContentDecryptor_GenerateKeyRequest(
           API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE,
           instance,
+          reference_id,
           SerializedVarSendInput(dispatcher, type),
           SerializedVarSendInput(dispatcher, init_data)));
 }
 
 void AddKey(PP_Instance instance,
-            PP_Var session_id,
+            uint32_t reference_id,
             PP_Var key,
             PP_Var init_data) {
   HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
@@ -157,12 +157,12 @@ void AddKey(PP_Instance instance,
       new PpapiMsg_PPPContentDecryptor_AddKey(
           API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE,
           instance,
-          SerializedVarSendInput(dispatcher, session_id),
+          reference_id,
           SerializedVarSendInput(dispatcher, key),
           SerializedVarSendInput(dispatcher, init_data)));
 }
 
-void CancelKeyRequest(PP_Instance instance, PP_Var session_id) {
+void CancelKeyRequest(PP_Instance instance, uint32_t reference_id) {
   HostDispatcher* dispatcher = HostDispatcher::GetForInstance(instance);
   if (!dispatcher) {
     NOTREACHED();
@@ -173,7 +173,7 @@ void CancelKeyRequest(PP_Instance instance, PP_Var session_id) {
       new PpapiMsg_PPPContentDecryptor_CancelKeyRequest(
           API_ID_PPP_CONTENT_DECRYPTOR_PRIVATE,
           instance,
-          SerializedVarSendInput(dispatcher, session_id)));
+          reference_id));
 }
 
 void Decrypt(PP_Instance instance,
@@ -434,24 +434,24 @@ bool PPP_ContentDecryptor_Private_Proxy::OnMessageReceived(
 
 void PPP_ContentDecryptor_Private_Proxy::OnMsgInitialize(
     PP_Instance instance,
-    SerializedVarReceiveInput key_system,
-    bool can_challenge_platform) {
+    SerializedVarReceiveInput key_system) {
   if (ppp_decryptor_impl_) {
     CallWhileUnlocked(
         ppp_decryptor_impl_->Initialize,
         instance,
-        ExtractReceivedVarAndAddRef(dispatcher(), &key_system),
-        PP_FromBool(can_challenge_platform));
+        ExtractReceivedVarAndAddRef(dispatcher(), &key_system));
   }
 }
 
 void PPP_ContentDecryptor_Private_Proxy::OnMsgGenerateKeyRequest(
     PP_Instance instance,
+    uint32_t reference_id,
     SerializedVarReceiveInput type,
     SerializedVarReceiveInput init_data) {
   if (ppp_decryptor_impl_) {
     CallWhileUnlocked(ppp_decryptor_impl_->GenerateKeyRequest,
                       instance,
+                      reference_id,
                       ExtractReceivedVarAndAddRef(dispatcher(), &type),
                       ExtractReceivedVarAndAddRef(dispatcher(), &init_data));
   }
@@ -459,13 +459,13 @@ void PPP_ContentDecryptor_Private_Proxy::OnMsgGenerateKeyRequest(
 
 void PPP_ContentDecryptor_Private_Proxy::OnMsgAddKey(
     PP_Instance instance,
-    SerializedVarReceiveInput session_id,
+    uint32_t reference_id,
     SerializedVarReceiveInput key,
     SerializedVarReceiveInput init_data) {
   if (ppp_decryptor_impl_) {
     CallWhileUnlocked(ppp_decryptor_impl_->AddKey,
                       instance,
-                      ExtractReceivedVarAndAddRef(dispatcher(), &session_id),
+                      reference_id,
                       ExtractReceivedVarAndAddRef(dispatcher(), &key),
                       ExtractReceivedVarAndAddRef(dispatcher(), &init_data));
   }
@@ -473,11 +473,11 @@ void PPP_ContentDecryptor_Private_Proxy::OnMsgAddKey(
 
 void PPP_ContentDecryptor_Private_Proxy::OnMsgCancelKeyRequest(
     PP_Instance instance,
-    SerializedVarReceiveInput session_id) {
+    uint32_t reference_id) {
   if (ppp_decryptor_impl_) {
     CallWhileUnlocked(ppp_decryptor_impl_->CancelKeyRequest,
                       instance,
-                      ExtractReceivedVarAndAddRef(dispatcher(), &session_id));
+                      reference_id);
   }
 }
 

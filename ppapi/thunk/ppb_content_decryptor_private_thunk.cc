@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 // From private/ppb_content_decryptor_private.idl,
-//   modified Thu Oct 10 14:49:51 2013.
+//   modified Thu Oct 17 15:03:48 2013.
 
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/c/private/ppb_content_decryptor_private.h"
@@ -18,46 +18,44 @@ namespace thunk {
 
 namespace {
 
-void KeyAdded(PP_Instance instance,
-              struct PP_Var key_system,
-              struct PP_Var session_id) {
+void KeyAdded(PP_Instance instance, uint32_t reference_id) {
   VLOG(4) << "PPB_ContentDecryptor_Private::KeyAdded()";
   EnterInstance enter(instance);
   if (enter.failed())
     return;
-  enter.functions()->KeyAdded(instance, key_system, session_id);
+  enter.functions()->KeyAdded(instance, reference_id);
 }
 
 void KeyMessage(PP_Instance instance,
-                struct PP_Var key_system,
-                struct PP_Var session_id,
+                uint32_t reference_id,
                 struct PP_Var message,
                 struct PP_Var default_url) {
   VLOG(4) << "PPB_ContentDecryptor_Private::KeyMessage()";
   EnterInstance enter(instance);
   if (enter.failed())
     return;
-  enter.functions()->KeyMessage(instance,
-                                key_system,
-                                session_id,
-                                message,
-                                default_url);
+  enter.functions()->KeyMessage(instance, reference_id, message, default_url);
 }
 
 void KeyError(PP_Instance instance,
-              struct PP_Var key_system,
-              struct PP_Var session_id,
+              uint32_t reference_id,
               int32_t media_error,
               int32_t system_code) {
   VLOG(4) << "PPB_ContentDecryptor_Private::KeyError()";
   EnterInstance enter(instance);
   if (enter.failed())
     return;
-  enter.functions()->KeyError(instance,
-                              key_system,
-                              session_id,
-                              media_error,
-                              system_code);
+  enter.functions()->KeyError(instance, reference_id, media_error, system_code);
+}
+
+void SetSessionId(PP_Instance instance,
+                  uint32_t reference_id,
+                  struct PP_Var session_id) {
+  VLOG(4) << "PPB_ContentDecryptor_Private::SetSessionId()";
+  EnterInstance enter(instance);
+  if (enter.failed())
+    return;
+  enter.functions()->SetSessionId(instance, reference_id, session_id);
 }
 
 void DeliverBlock(PP_Instance instance,
@@ -133,11 +131,12 @@ void DeliverSamples(
                                     decrypted_sample_info);
 }
 
-const PPB_ContentDecryptor_Private_0_7
-    g_ppb_contentdecryptor_private_thunk_0_7 = {
+const PPB_ContentDecryptor_Private_0_8
+    g_ppb_contentdecryptor_private_thunk_0_8 = {
   &KeyAdded,
   &KeyMessage,
   &KeyError,
+  &SetSessionId,
   &DeliverBlock,
   &DecoderInitializeDone,
   &DecoderDeinitializeDone,
@@ -148,9 +147,9 @@ const PPB_ContentDecryptor_Private_0_7
 
 }  // namespace
 
-const PPB_ContentDecryptor_Private_0_7*
-    GetPPB_ContentDecryptor_Private_0_7_Thunk() {
-  return &g_ppb_contentdecryptor_private_thunk_0_7;
+const PPB_ContentDecryptor_Private_0_8*
+    GetPPB_ContentDecryptor_Private_0_8_Thunk() {
+  return &g_ppb_contentdecryptor_private_thunk_0_8;
 }
 
 }  // namespace thunk

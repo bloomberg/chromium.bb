@@ -50,6 +50,7 @@ static scoped_ptr<media::MediaKeys> CreatePpapiDecryptor(
     const media::KeyAddedCB& key_added_cb,
     const media::KeyErrorCB& key_error_cb,
     const media::KeyMessageCB& key_message_cb,
+    const media::SetSessionIdCB& set_session_id_cb,
     const base::Closure& destroy_plugin_cb,
     blink::WebMediaPlayerClient* web_media_player_client,
     blink::WebFrame* web_frame) {
@@ -61,7 +62,7 @@ static scoped_ptr<media::MediaKeys> CreatePpapiDecryptor(
   const scoped_refptr<PepperPluginInstanceImpl>& plugin_instance =
       CreateHelperPlugin(plugin_type, web_media_player_client, web_frame);
   if (!plugin_instance.get()) {
-    DLOG(ERROR) << "ProxyDecryptor: plugin instance creation failed.";
+    DLOG(ERROR) << "Plugin instance creation failed.";
     return scoped_ptr<media::MediaKeys>();
   }
 
@@ -71,6 +72,7 @@ static scoped_ptr<media::MediaKeys> CreatePpapiDecryptor(
                              key_added_cb,
                              key_error_cb,
                              key_message_cb,
+                             set_session_id_cb,
                              destroy_plugin_cb);
 
   if (!decryptor)
@@ -100,10 +102,11 @@ scoped_ptr<media::MediaKeys> ContentDecryptionModuleFactory::Create(
 #endif  // defined(ENABLE_PEPPER_CDMS)
     const media::KeyAddedCB& key_added_cb,
     const media::KeyErrorCB& key_error_cb,
-    const media::KeyMessageCB& key_message_cb) {
+    const media::KeyMessageCB& key_message_cb,
+    const media::SetSessionIdCB& set_session_id_cb) {
   if (CanUseAesDecryptor(key_system)) {
-    return scoped_ptr<media::MediaKeys>(
-        new media::AesDecryptor(key_added_cb, key_error_cb, key_message_cb));
+    return scoped_ptr<media::MediaKeys>(new media::AesDecryptor(
+        key_added_cb, key_error_cb, key_message_cb, set_session_id_cb));
   }
 
 #if defined(ENABLE_PEPPER_CDMS)
@@ -112,12 +115,22 @@ scoped_ptr<media::MediaKeys> ContentDecryptionModuleFactory::Create(
   if (!web_media_player_client)
     return scoped_ptr<media::MediaKeys>();
 
-  return CreatePpapiDecryptor(
-      key_system, key_added_cb, key_error_cb, key_message_cb,
-      destroy_plugin_cb, web_media_player_client, web_frame);
+  return CreatePpapiDecryptor(key_system,
+                              key_added_cb,
+                              key_error_cb,
+                              key_message_cb,
+                              set_session_id_cb,
+                              destroy_plugin_cb,
+                              web_media_player_client,
+                              web_frame);
 #elif defined(OS_ANDROID)
-  scoped_ptr<ProxyMediaKeys> proxy_media_keys(new ProxyMediaKeys(
-      manager, media_keys_id, key_added_cb, key_error_cb, key_message_cb));
+  scoped_ptr<ProxyMediaKeys> proxy_media_keys(
+      new ProxyMediaKeys(manager,
+                         media_keys_id,
+                         key_added_cb,
+                         key_error_cb,
+                         key_message_cb,
+                         set_session_id_cb));
   proxy_media_keys->InitializeCDM(key_system, frame_url);
   return proxy_media_keys.PassAs<media::MediaKeys>();
 #else

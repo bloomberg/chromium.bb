@@ -91,15 +91,18 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
   virtual void DestroyAllMediaPlayers() OVERRIDE;
   virtual void OnProtectedSurfaceRequested(int player_id) OVERRIDE;
   virtual void OnKeyAdded(int media_keys_id,
-                          const std::string& session_id) OVERRIDE;
+                          uint32 reference_id) OVERRIDE;
   virtual void OnKeyError(int media_keys_id,
-                          const std::string& session_id,
+                          uint32 reference_id,
                           media::MediaKeys::KeyError error_code,
                           int system_code) OVERRIDE;
   virtual void OnKeyMessage(int media_keys_id,
-                            const std::string& session_id,
+                            uint32 reference_id,
                             const std::vector<uint8>& message,
                             const std::string& destination_url) OVERRIDE;
+  virtual void OnSetSessionId(int media_keys_id,
+                              uint32 reference_id,
+                              const std::string& session_id) OVERRIDE;
 
 #if defined(GOOGLE_TV)
   void AttachExternalVideoSurface(int player_id, jobject surface);
@@ -133,13 +136,14 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
                        const std::vector<uint8>& uuid,
                        const GURL& frame_url);
   void OnGenerateKeyRequest(int media_keys_id,
+                            uint32 reference_id,
                             const std::string& type,
                             const std::vector<uint8>& init_data);
   void OnAddKey(int media_keys_id,
+                uint32 reference_id,
                 const std::vector<uint8>& key,
-                const std::vector<uint8>& init_data,
-                const std::string& session_id);
-  void OnCancelKeyRequest(int media_keys_id, const std::string& session_id);
+                const std::vector<uint8>& init_data);
+  void OnCancelKeyRequest(int media_keys_id, uint32 reference_id);
   void OnSetMediaKeys(int player_id, int media_keys_id);
 
 #if defined(GOOGLE_TV)
@@ -160,7 +164,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
       int player_id,
       media::MediaPlayerAndroid* player);
 
-  // Add a new MediaDrmBridge for the given |uuid|, |media_keys_id|, and
+  // Adds a new MediaDrmBridge for the given |uuid|, |media_keys_id|, and
   // |frame_url|.
   void AddDrmBridge(int media_keys_id,
                     const std::vector<uint8>& uuid,
@@ -171,6 +175,7 @@ class CONTENT_EXPORT BrowserMediaPlayerManager
 
  private:
   void GenerateKeyIfAllowed(int media_keys_id,
+                            uint32 reference_id,
                             const std::string& type,
                             const std::vector<uint8>& init_data,
                             bool allowed);

@@ -7,12 +7,21 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "content/renderer/media/crypto/content_decryption_module_factory.h"
 #if defined(OS_ANDROID)
 #include "content/renderer/media/android/renderer_media_player_manager.h"
 #endif  // defined(OS_ANDROID)
 
 namespace content {
+
+// Since these reference IDs may conflict with the ones generated in
+// WebContentDecryptionModuleSessionImpl for the short time both paths are
+// active, start with 100000 and generate the IDs from there.
+// TODO(jrummell): Only allow one path http://crbug.com/306680.
+uint32 ProxyDecryptor::next_reference_id_ = 100000;
+
+const uint32 INVALID_REFERENCE_ID = 0;
 
 #if defined(ENABLE_PEPPER_CDMS)
 void ProxyDecryptor::DestroyHelperPlugin() {
@@ -29,9 +38,9 @@ ProxyDecryptor::ProxyDecryptor(
     RendererMediaPlayerManager* manager,
     int media_keys_id,
 #endif  // defined(ENABLE_PEPPER_CDMS)
-    const media::KeyAddedCB& key_added_cb,
-    const media::KeyErrorCB& key_error_cb,
-    const media::KeyMessageCB& key_message_cb)
+    const KeyAddedCB& key_added_cb,
+    const KeyErrorCB& key_error_cb,
+    const KeyMessageCB& key_message_cb)
     : weak_ptr_factory_(this),
 #if defined(ENABLE_PEPPER_CDMS)
       web_media_player_client_(web_media_player_client),
@@ -43,6 +52,9 @@ ProxyDecryptor::ProxyDecryptor(
       key_added_cb_(key_added_cb),
       key_error_cb_(key_error_cb),
       key_message_cb_(key_message_cb) {
+  DCHECK(!key_added_cb_.is_null());
+  DCHECK(!key_error_cb_.is_null());
+  DCHECK(!key_message_cb_.is_null());
 }
 
 ProxyDecryptor::~ProxyDecryptor() {
@@ -97,7 +109,10 @@ bool ProxyDecryptor::InitializeCDM(const std::string& key_system,
 bool ProxyDecryptor::GenerateKeyRequest(const std::string& type,
                                         const uint8* init_data,
                                         int init_data_length) {
-  if (!media_keys_->GenerateKeyRequest(type, init_data, init_data_length)) {
+  // Use a unique reference id for this request.
+  uint32 reference_id = next_reference_id_++;
+  if (!media_keys_->GenerateKeyRequest(
+           reference_id, type, init_data, init_data_length)) {
     media_keys_.reset();
     return false;
   }
@@ -113,14 +128,35 @@ void ProxyDecryptor::AddKey(const uint8* key,
   DVLOG(1) << "AddKey()";
 
   // WebMediaPlayerImpl ensures GenerateKeyRequest() has been called.
-  media_keys_->AddKey(key, key_length, init_data, init_data_length, session_id);
+  uint32 reference_id = LookupReferenceId(session_id);
+  if (reference_id == INVALID_REFERENCE_ID) {
+    // Session hasn't been referenced before, so it is an error.
+    // Note that the specification says "If sessionId is not null and is
+    // unrecognized, throw an INVALID_ACCESS_ERR." However, for backwards
+    // compatibility the error is not thrown, but rather reported as a
+    // KeyError.
+    key_error_cb_.Run(
+        std::string(), media::MediaKeys::kUnknownError, 0);
+  }
+  else {
+    media_keys_->AddKey(
+        reference_id, key, key_length, init_data, init_data_length);
+  }
 }
 
 void ProxyDecryptor::CancelKeyRequest(const std::string& session_id) {
   DVLOG(1) << "CancelKeyRequest()";
 
   // WebMediaPlayerImpl ensures GenerateKeyRequest() has been called.
-  media_keys_->CancelKeyRequest(session_id);
+  uint32 reference_id = LookupReferenceId(session_id);
+  if (reference_id == INVALID_REFERENCE_ID) {
+    // Session hasn't been created, so it is an error.
+    key_error_cb_.Run(
+        std::string(), media::MediaKeys::kUnknownError, 0);
+  }
+  else {
+    media_keys_->CancelKeyRequest(reference_id);
+  }
 }
 
 scoped_ptr<media::MediaKeys> ProxyDecryptor::CreateMediaKeys(
@@ -140,23 +176,60 @@ scoped_ptr<media::MediaKeys> ProxyDecryptor::CreateMediaKeys(
 #endif  // defined(ENABLE_PEPPER_CDMS)
       base::Bind(&ProxyDecryptor::KeyAdded, weak_ptr_factory_.GetWeakPtr()),
       base::Bind(&ProxyDecryptor::KeyError, weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&ProxyDecryptor::KeyMessage, weak_ptr_factory_.GetWeakPtr()));
+      base::Bind(&ProxyDecryptor::KeyMessage, weak_ptr_factory_.GetWeakPtr()),
+      base::Bind(&ProxyDecryptor::SetSessionId,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ProxyDecryptor::KeyAdded(const std::string& session_id) {
-  key_added_cb_.Run(session_id);
+void ProxyDecryptor::KeyAdded(uint32 reference_id) {
+  // Assumes that SetSessionId() has been called before this.
+  key_added_cb_.Run(LookupSessionId(reference_id));
 }
 
-void ProxyDecryptor::KeyError(const std::string& session_id,
+void ProxyDecryptor::KeyError(uint32 reference_id,
                               media::MediaKeys::KeyError error_code,
                               int system_code) {
-  key_error_cb_.Run(session_id, error_code, system_code);
+  // Assumes that SetSessionId() has been called before this.
+  key_error_cb_.Run(LookupSessionId(reference_id), error_code, system_code);
 }
 
-void ProxyDecryptor::KeyMessage(const std::string& session_id,
+void ProxyDecryptor::KeyMessage(uint32 reference_id,
                                 const std::vector<uint8>& message,
                                 const std::string& default_url) {
-  key_message_cb_.Run(session_id, message, default_url);
+  // Assumes that SetSessionId() has been called before this.
+  key_message_cb_.Run(LookupSessionId(reference_id), message, default_url);
+}
+
+void ProxyDecryptor::SetSessionId(uint32 reference_id,
+                                  const std::string& session_id) {
+  // Due to heartbeat messages, SetSessionId() can get called multiple times.
+  SessionIdMap::iterator it = sessions_.find(reference_id);
+  DCHECK(it == sessions_.end() || it->second == session_id);
+  if (it == sessions_.end())
+    sessions_[reference_id] = session_id;
+}
+
+uint32 ProxyDecryptor::LookupReferenceId(const std::string& session_id) {
+  for (SessionIdMap::iterator it = sessions_.begin();
+       it != sessions_.end();
+       ++it) {
+    if (it->second == session_id)
+      return it->first;
+  }
+
+  // If |session_id| is null, then use the single reference id.
+  if (session_id.empty() && sessions_.size() == 1)
+    return sessions_.begin()->first;
+
+  return INVALID_REFERENCE_ID;
+}
+
+const std::string& ProxyDecryptor::LookupSessionId(uint32 reference_id) {
+  DCHECK_NE(reference_id, INVALID_REFERENCE_ID);
+
+  // Session may not exist if error happens during GenerateKeyRequest().
+  SessionIdMap::iterator it = sessions_.find(reference_id);
+  return (it != sessions_.end()) ? it->second : EmptyString();
 }
 
 }  // namespace content

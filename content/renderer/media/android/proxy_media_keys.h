@@ -24,28 +24,31 @@ class ProxyMediaKeys : public media::MediaKeys {
                  int media_keys_id,
                  const media::KeyAddedCB& key_added_cb,
                  const media::KeyErrorCB& key_error_cb,
-                 const media::KeyMessageCB& key_message_cb);
+                 const media::KeyMessageCB& key_message_cb,
+                 const media::SetSessionIdCB& set_session_id_cb);
   virtual ~ProxyMediaKeys();
 
   void InitializeCDM(const std::string& key_system, const GURL& frame_url);
 
   // MediaKeys implementation.
-  virtual bool GenerateKeyRequest(const std::string& type,
+  virtual bool GenerateKeyRequest(uint32 reference_id,
+                                  const std::string& type,
                                   const uint8* init_data,
                                   int init_data_length) OVERRIDE;
-  virtual void AddKey(const uint8* key, int key_length,
-                      const uint8* init_data, int init_data_length,
-                      const std::string& session_id) OVERRIDE;
-  virtual void CancelKeyRequest(const std::string& session_id) OVERRIDE;
+  virtual void AddKey(uint32 reference_id,
+                      const uint8* key, int key_length,
+                      const uint8* init_data, int init_data_length) OVERRIDE;
+  virtual void CancelKeyRequest(uint32 reference_id) OVERRIDE;
 
   // Callbacks.
-  void OnKeyAdded(const std::string& session_id);
-  void OnKeyError(const std::string& session_id,
+  void OnKeyAdded(uint32 reference_id);
+  void OnKeyError(uint32 reference_id,
                   media::MediaKeys::KeyError error_code,
                   int system_code);
-  void OnKeyMessage(const std::string& session_id,
+  void OnKeyMessage(uint32 reference_id,
                     const std::vector<uint8>& message,
                     const std::string& destination_url);
+  void OnSetSessionId(uint32 reference_id, const std::string& session_id);
 
  private:
   RendererMediaPlayerManager* manager_;
@@ -53,6 +56,7 @@ class ProxyMediaKeys : public media::MediaKeys {
   media::KeyAddedCB key_added_cb_;
   media::KeyErrorCB key_error_cb_;
   media::KeyMessageCB key_message_cb_;
+  media::SetSessionIdCB set_session_id_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyMediaKeys);
 };

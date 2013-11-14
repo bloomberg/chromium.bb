@@ -341,26 +341,33 @@ void BrowserMediaPlayerManager::OnProtectedSurfaceRequested(int player_id) {
 }
 
 void BrowserMediaPlayerManager::OnKeyAdded(int media_keys_id,
-                                           const std::string& session_id) {
-  Send(new MediaKeysMsg_KeyAdded(routing_id(), media_keys_id, session_id));
+                                           uint32 reference_id) {
+  Send(new MediaKeysMsg_KeyAdded(routing_id(), media_keys_id, reference_id));
 }
 
 void BrowserMediaPlayerManager::OnKeyError(
     int media_keys_id,
-    const std::string& session_id,
+    uint32 reference_id,
     media::MediaKeys::KeyError error_code,
     int system_code) {
   Send(new MediaKeysMsg_KeyError(routing_id(), media_keys_id,
-                                 session_id, error_code, system_code));
+                                 reference_id, error_code, system_code));
 }
 
 void BrowserMediaPlayerManager::OnKeyMessage(
     int media_keys_id,
-    const std::string& session_id,
+    uint32 reference_id,
     const std::vector<uint8>& message,
     const std::string& destination_url) {
   Send(new MediaKeysMsg_KeyMessage(routing_id(), media_keys_id,
-                                   session_id, message, destination_url));
+                                   reference_id, message, destination_url));
+}
+
+void BrowserMediaPlayerManager::OnSetSessionId(int media_keys_id,
+                                               uint32 reference_id,
+                                               const std::string& session_id) {
+  Send(new MediaKeysMsg_SetSessionId(
+      routing_id(), media_keys_id, reference_id, session_id));
 }
 
 #if defined(GOOGLE_TV)
@@ -517,18 +524,19 @@ void BrowserMediaPlayerManager::OnInitializeCDM(
 
 void BrowserMediaPlayerManager::OnGenerateKeyRequest(
     int media_keys_id,
+    uint32 reference_id,
     const std::string& type,
     const std::vector<uint8>& init_data) {
   if (CommandLine::ForCurrentProcess()
       ->HasSwitch(switches::kDisableInfobarForProtectedMediaIdentifier)) {
-    GenerateKeyIfAllowed(media_keys_id, type, init_data, true);
+    GenerateKeyIfAllowed(media_keys_id, reference_id, type, init_data, true);
     return;
   }
 
   MediaDrmBridge* drm_bridge = GetDrmBridge(media_keys_id);
   if (!drm_bridge) {
     DLOG(WARNING) << "No MediaDrmBridge for ID: " << media_keys_id << " found";
-    OnKeyError(media_keys_id, "", media::MediaKeys::kUnknownError, 0);
+    OnKeyError(media_keys_id, reference_id, media::MediaKeys::kUnknownError, 0);
     return;
   }
 
@@ -542,23 +550,25 @@ void BrowserMediaPlayerManager::OnGenerateKeyRequest(
       base::Bind(&BrowserMediaPlayerManager::GenerateKeyIfAllowed,
                  weak_ptr_factory_.GetWeakPtr(),
                  media_keys_id,
+                 reference_id,
                  type,
                  init_data));
 }
 
 void BrowserMediaPlayerManager::OnAddKey(int media_keys_id,
+                                         uint32 reference_id,
                                          const std::vector<uint8>& key,
-                                         const std::vector<uint8>& init_data,
-                                         const std::string& session_id) {
+                                         const std::vector<uint8>& init_data) {
   MediaDrmBridge* drm_bridge = GetDrmBridge(media_keys_id);
   if (!drm_bridge) {
     DLOG(WARNING) << "No MediaDrmBridge for ID: " << media_keys_id << " found";
-    OnKeyError(media_keys_id, session_id, media::MediaKeys::kUnknownError, 0);
+    OnKeyError(media_keys_id, reference_id, media::MediaKeys::kUnknownError, 0);
     return;
   }
 
-  drm_bridge->AddKey(&key[0], key.size(), &init_data[0], init_data.size(),
-                     session_id);
+  drm_bridge->AddKey(reference_id,
+                     &key[0], key.size(),
+                     &init_data[0], init_data.size());
   // In EME v0.1b MediaKeys lives in the media element. So the |media_keys_id|
   // is the same as the |player_id|.
   // TODO(xhwang): Separate |media_keys_id| and |player_id|.
@@ -569,15 +579,15 @@ void BrowserMediaPlayerManager::OnAddKey(int media_keys_id,
 
 void BrowserMediaPlayerManager::OnCancelKeyRequest(
     int media_keys_id,
-    const std::string& session_id) {
+    uint32 reference_id) {
   MediaDrmBridge* drm_bridge = GetDrmBridge(media_keys_id);
   if (!drm_bridge) {
     DLOG(WARNING) << "No MediaDrmBridge for ID: " << media_keys_id << " found";
-    OnKeyError(media_keys_id, session_id, media::MediaKeys::kUnknownError, 0);
+    OnKeyError(media_keys_id, reference_id, media::MediaKeys::kUnknownError, 0);
     return;
   }
 
-  drm_bridge->CancelKeyRequest(session_id);
+  drm_bridge->CancelKeyRequest(reference_id);
 }
 
 void BrowserMediaPlayerManager::AddPlayer(MediaPlayerAndroid* player) {
@@ -640,8 +650,9 @@ void BrowserMediaPlayerManager::AddDrmBridge(int media_keys_id,
   scoped_ptr<MediaDrmBridge> drm_bridge(MediaDrmBridge::Create(
       media_keys_id, uuid, frame_url, security_level, this));
   if (!drm_bridge) {
+    // This failure will be discovered and reported by OnGenerateKeyRequest()
+    // as GetDrmBridge() will return null.
     DVLOG(1) << "failed to create drm bridge.";
-    OnKeyError(media_keys_id, "", media::MediaKeys::kUnknownError, 0);
     return;
   }
 
@@ -673,6 +684,7 @@ void BrowserMediaPlayerManager::OnSetMediaKeys(int player_id,
 
 void BrowserMediaPlayerManager::GenerateKeyIfAllowed(
     int media_keys_id,
+    uint32 reference_id,
     const std::string& type,
     const std::vector<uint8>& init_data,
     bool allowed) {
@@ -682,12 +694,13 @@ void BrowserMediaPlayerManager::GenerateKeyIfAllowed(
   MediaDrmBridge* drm_bridge = GetDrmBridge(media_keys_id);
   if (!drm_bridge) {
     DLOG(WARNING) << "No MediaDrmBridge for ID: " << media_keys_id << " found";
-    OnKeyError(media_keys_id, "", media::MediaKeys::kUnknownError, 0);
+    OnKeyError(media_keys_id, reference_id, media::MediaKeys::kUnknownError, 0);
     return;
   }
   media_keys_ids_pending_approval_.erase(media_keys_id);
   media_keys_ids_approved_.insert(media_keys_id);
-  drm_bridge->GenerateKeyRequest(type, &init_data[0], init_data.size());
+  drm_bridge->GenerateKeyRequest(
+      reference_id, type, &init_data[0], init_data.size());
 
   // TODO(qinmin): currently |media_keys_id| and player ID are identical.
   // This might not be true in the future.

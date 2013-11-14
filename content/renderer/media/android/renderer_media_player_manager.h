@@ -94,13 +94,14 @@ class RendererMediaPlayerManager : public RenderViewObserver {
                      const std::vector<uint8>& uuid,
                      const GURL& frame_url);
   void GenerateKeyRequest(int media_keys_id,
+                          uint32 reference_id,
                           const std::string& type,
                           const std::vector<uint8>& init_data);
   void AddKey(int media_keys_id,
+              uint32 reference_id,
               const std::vector<uint8>& key,
-              const std::vector<uint8>& init_data,
-              const std::string& session_id);
-  void CancelKeyRequest(int media_keys_id, const std::string& session_id);
+              const std::vector<uint8>& init_data);
+  void CancelKeyRequest(int media_keys_id, uint32 reference_id);
 
   // Registers and unregisters a WebMediaPlayerAndroid object.
   int RegisterMediaPlayer(WebMediaPlayerAndroid* player);
@@ -159,15 +160,18 @@ class RendererMediaPlayerManager : public RenderViewObserver {
   void OnPlayerPlay(int player_id);
   void OnPlayerPause(int player_id);
   void OnRequestFullscreen(int player_id);
-  void OnKeyAdded(int media_keys_id, const std::string& session_id);
+  void OnKeyAdded(int media_keys_id, uint32 reference_id);
   void OnKeyError(int media_keys_id,
-                  const std::string& session_id,
+                  uint32 reference_id,
                   media::MediaKeys::KeyError error_code,
                   int system_code);
   void OnKeyMessage(int media_keys_id,
-                    const std::string& session_id,
+                    uint32 reference_id,
                     const std::vector<uint8>& message,
                     const std::string& destination_url);
+  void OnSetSessionId(int media_keys_id,
+                      uint32 reference_id,
+                      const std::string& session_id);
 
   // Info for all available WebMediaPlayerAndroid on a page; kept so that
   // we can enumerate them to send updates about tab focus and visibility.

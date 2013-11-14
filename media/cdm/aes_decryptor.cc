@@ -259,17 +259,19 @@ static scoped_refptr<DecoderBuffer> DecryptData(const DecoderBuffer& input,
 
 AesDecryptor::AesDecryptor(const KeyAddedCB& key_added_cb,
                            const KeyErrorCB& key_error_cb,
-                           const KeyMessageCB& key_message_cb)
+                           const KeyMessageCB& key_message_cb,
+                           const SetSessionIdCB& set_session_id_cb)
     : key_added_cb_(key_added_cb),
       key_error_cb_(key_error_cb),
-      key_message_cb_(key_message_cb) {
-}
+      key_message_cb_(key_message_cb),
+      set_session_id_cb_(set_session_id_cb) {}
 
 AesDecryptor::~AesDecryptor() {
   STLDeleteValues(&key_map_);
 }
 
-bool AesDecryptor::GenerateKeyRequest(const std::string& type,
+bool AesDecryptor::GenerateKeyRequest(uint32 reference_id,
+                                      const std::string& type,
                                       const uint8* init_data,
                                       int init_data_length) {
   std::string session_id_string(base::UintToString(next_session_id_++));
@@ -280,15 +282,16 @@ bool AesDecryptor::GenerateKeyRequest(const std::string& type,
   if (init_data && init_data_length)
     message.assign(init_data, init_data + init_data_length);
 
-  key_message_cb_.Run(session_id_string, message, std::string());
+  set_session_id_cb_.Run(reference_id, session_id_string);
+  key_message_cb_.Run(reference_id, message, std::string());
   return true;
 }
 
-void AesDecryptor::AddKey(const uint8* key,
+void AesDecryptor::AddKey(uint32 reference_id,
+                          const uint8* key,
                           int key_length,
                           const uint8* init_data,
-                          int init_data_length,
-                          const std::string& session_id) {
+                          int init_data_length) {
   CHECK(key);
   CHECK_GT(key_length, 0);
 
@@ -301,9 +304,6 @@ void AesDecryptor::AddKey(const uint8* key,
   // key and |init_data| is the key id), if |key| is not valid JSON, then
   // attempt to process it as a raw key.
 
-  // TODO(xhwang): Add |session_id| check after we figure out how:
-  // https://www.w3.org/Bugs/Public/show_bug.cgi?id=16550
-
   std::string key_string(reinterpret_cast<const char*>(key), key_length);
   JWKKeys jwk_keys;
   if (ExtractJWKKeys(key_string, &jwk_keys)) {
@@ -313,12 +313,12 @@ void AesDecryptor::AddKey(const uint8* key,
 
     // Make sure that at least one key was extracted.
     if (jwk_keys.empty()) {
-      key_error_cb_.Run(session_id, MediaKeys::kUnknownError, 0);
+      key_error_cb_.Run(reference_id, MediaKeys::kUnknownError, 0);
       return;
     }
     for (JWKKeys::iterator it = jwk_keys.begin() ; it != jwk_keys.end(); ++it) {
       if (!AddDecryptionKey(it->first, it->second)) {
-        key_error_cb_.Run(session_id, MediaKeys::kUnknownError, 0);
+        key_error_cb_.Run(reference_id, MediaKeys::kUnknownError, 0);
         return;
       }
     }
@@ -329,7 +329,7 @@ void AesDecryptor::AddKey(const uint8* key,
     if (key_string.length() !=
         static_cast<size_t>(DecryptConfig::kDecryptionKeySize)) {
       DVLOG(1) << "Invalid key length: " << key_string.length();
-      key_error_cb_.Run(session_id, MediaKeys::kUnknownError, 0);
+      key_error_cb_.Run(reference_id, MediaKeys::kUnknownError, 0);
       return;
     }
 
@@ -347,7 +347,7 @@ void AesDecryptor::AddKey(const uint8* key,
                               init_data_length);
     if (!AddDecryptionKey(key_id_string, key_string)) {
       // Error logged in AddDecryptionKey()
-      key_error_cb_.Run(session_id, MediaKeys::kUnknownError, 0);
+      key_error_cb_.Run(reference_id, MediaKeys::kUnknownError, 0);
       return;
     }
   }
@@ -358,10 +358,10 @@ void AesDecryptor::AddKey(const uint8* key,
   if (!new_video_key_cb_.is_null())
     new_video_key_cb_.Run();
 
-  key_added_cb_.Run(session_id);
+  key_added_cb_.Run(reference_id);
 }
 
-void AesDecryptor::CancelKeyRequest(const std::string& session_id) {
+void AesDecryptor::CancelKeyRequest(uint32 reference_id) {
 }
 
 Decryptor* AesDecryptor::GetDecryptor() {

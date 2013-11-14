@@ -72,15 +72,18 @@ class MockMediaPlayerManager : public MediaPlayerManager {
   }
   virtual void OnProtectedSurfaceRequested(int player_id) OVERRIDE {}
   virtual void OnKeyAdded(int key_id,
-                          const std::string& session_id) OVERRIDE {}
+                          uint32 reference_id) OVERRIDE {}
   virtual void OnKeyError(int key_id,
-                          const std::string& session_id,
+                          uint32 reference_id,
                           MediaKeys::KeyError error_code,
                           int system_code) OVERRIDE {}
   virtual void OnKeyMessage(int key_id,
-                            const std::string& session_id,
+                            uint32 reference_id,
                             const std::vector<uint8>& message,
                             const std::string& destination_url) OVERRIDE {}
+  virtual void OnSetSessionId(int media_keys_id,
+                              uint32 reference_id,
+                              const std::string& session_id) OVERRIDE {}
 
  private:
   base::MessageLoop* message_loop_;

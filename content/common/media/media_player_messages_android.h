@@ -287,33 +287,39 @@ IPC_MESSAGE_ROUTED3(MediaKeysHostMsg_InitializeCDM,
                     std::vector<uint8> /* uuid */,
                     GURL /* frame url */)
 
-IPC_MESSAGE_ROUTED3(MediaKeysHostMsg_GenerateKeyRequest,
+IPC_MESSAGE_ROUTED4(MediaKeysHostMsg_GenerateKeyRequest,
                     int /* media_keys_id */,
+                    uint32_t /* reference_id */,
                     std::string /* type */,
                     std::vector<uint8> /* init_data */)
 
 IPC_MESSAGE_ROUTED4(MediaKeysHostMsg_AddKey,
                     int /* media_keys_id */,
+                    uint32_t /* reference_id */,
                     std::vector<uint8> /* key */,
-                    std::vector<uint8> /* init_data */,
-                    std::string /* session_id */)
+                    std::vector<uint8> /* init_data */)
 
 IPC_MESSAGE_ROUTED2(MediaKeysHostMsg_CancelKeyRequest,
                     int /* media_keys_id */,
-                    std::string /* session_id */)
+                    uint32_t /* reference_id */)
 
 IPC_MESSAGE_ROUTED2(MediaKeysMsg_KeyAdded,
                     int /* media_keys_id */,
-                    std::string /* session_id */)
+                    uint32_t /* reference_id */)
 
 IPC_MESSAGE_ROUTED4(MediaKeysMsg_KeyError,
                     int /* media_keys_id */,
-                    std::string /* session_id */,
+                    uint32_t /* reference_id */,
                     media::MediaKeys::KeyError /* error_code */,
                     int /* system_code */)
 
 IPC_MESSAGE_ROUTED4(MediaKeysMsg_KeyMessage,
                     int /* media_keys_id */,
-                    std::string /* session_id */,
+                    uint32_t /* reference_id */,
                     std::vector<uint8> /* message */,
                     std::string /* destination_url */)
+
+IPC_MESSAGE_ROUTED3(MediaKeysMsg_SetSessionId,
+                    int /* media_keys_id */,
+                    uint32_t /* reference_id */,
+                    std::string /* session_id */)

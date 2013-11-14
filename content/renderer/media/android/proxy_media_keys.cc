@@ -17,12 +17,14 @@ ProxyMediaKeys::ProxyMediaKeys(RendererMediaPlayerManager* manager,
                                int media_keys_id,
                                const media::KeyAddedCB& key_added_cb,
                                const media::KeyErrorCB& key_error_cb,
-                               const media::KeyMessageCB& key_message_cb)
+                               const media::KeyMessageCB& key_message_cb,
+                               const media::SetSessionIdCB& set_session_id_cb)
     : manager_(manager),
       media_keys_id_(media_keys_id),
       key_added_cb_(key_added_cb),
       key_error_cb_(key_error_cb),
-      key_message_cb_(key_message_cb) {
+      key_message_cb_(key_message_cb),
+      set_session_id_cb_(set_session_id_cb) {
   DCHECK(manager_);
 }
 
@@ -40,43 +42,50 @@ void ProxyMediaKeys::InitializeCDM(const std::string& key_system,
 #endif
 }
 
-bool ProxyMediaKeys::GenerateKeyRequest(const std::string& type,
+bool ProxyMediaKeys::GenerateKeyRequest(uint32 reference_id,
+                                        const std::string& type,
                                         const uint8* init_data,
                                         int init_data_length) {
   manager_->GenerateKeyRequest(
       media_keys_id_,
+      reference_id,
       type,
       std::vector<uint8>(init_data, init_data + init_data_length));
   return true;
 }
 
-void ProxyMediaKeys::AddKey(const uint8* key, int key_length,
-                            const uint8* init_data, int init_data_length,
-                            const std::string& session_id) {
+void ProxyMediaKeys::AddKey(uint32 reference_id,
+                            const uint8* key, int key_length,
+                            const uint8* init_data, int init_data_length) {
   manager_->AddKey(media_keys_id_,
-                 std::vector<uint8>(key, key + key_length),
-                 std::vector<uint8>(init_data, init_data + init_data_length),
-                 session_id);
+                   reference_id,
+                   std::vector<uint8>(key, key + key_length),
+                   std::vector<uint8>(init_data, init_data + init_data_length));
 }
 
-void ProxyMediaKeys::CancelKeyRequest(const std::string& session_id) {
-  manager_->CancelKeyRequest(media_keys_id_, session_id);
+void ProxyMediaKeys::CancelKeyRequest(uint32 reference_id) {
+  manager_->CancelKeyRequest(media_keys_id_, reference_id);
 }
 
-void ProxyMediaKeys::OnKeyAdded(const std::string& session_id) {
-  key_added_cb_.Run(session_id);
+void ProxyMediaKeys::OnKeyAdded(uint32 reference_id) {
+  key_added_cb_.Run(reference_id);
 }
 
-void ProxyMediaKeys::OnKeyError(const std::string& session_id,
+void ProxyMediaKeys::OnKeyError(uint32 reference_id,
                                 media::MediaKeys::KeyError error_code,
                                 int system_code) {
-  key_error_cb_.Run(session_id, error_code, system_code);
+  key_error_cb_.Run(reference_id, error_code, system_code);
 }
 
-void ProxyMediaKeys::OnKeyMessage(const std::string& session_id,
+void ProxyMediaKeys::OnKeyMessage(uint32 reference_id,
                                   const std::vector<uint8>& message,
                                   const std::string& destination_url) {
-  key_message_cb_.Run(session_id, message, destination_url);
+  key_message_cb_.Run(reference_id, message, destination_url);
+}
+
+void ProxyMediaKeys::OnSetSessionId(uint32 reference_id,
+                                    const std::string& session_id) {
+  set_session_id_cb_.Run(reference_id, session_id);
 }
 
 }  // namespace content

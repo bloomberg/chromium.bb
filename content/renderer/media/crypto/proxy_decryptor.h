@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_MEDIA_CRYPTO_PROXY_DECRYPTOR_H_
 #define CONTENT_RENDERER_MEDIA_CRYPTO_PROXY_DECRYPTOR_H_
 
+#include <map>
 #include <string>
 #include <vector>
 
@@ -33,11 +34,26 @@ class RendererMediaPlayerManager;
 // ProxyDecryptor is for EME v0.1b only. It should not be used for the WD API.
 // A decryptor proxy that creates a real decryptor object on demand and
 // forwards decryptor calls to it.
+//
+// Now that the Pepper API calls use reference ID to match responses with
+// requests, this class maintains a mapping between reference ID and session ID.
+// Callers of this class expect session IDs in the responses.
+//
 // TODO(xhwang): Currently we don't support run-time switching among decryptor
 // objects. Fix this when needed.
 // TODO(xhwang): The ProxyDecryptor is not a Decryptor. Find a better name!
-class ProxyDecryptor : public media::MediaKeys {
+class ProxyDecryptor {
  public:
+  // These are similar to the callbacks in media_keys.h, but pass back the
+  // session ID rather than a reference ID.
+  typedef base::Callback<void(const std::string& session_id)> KeyAddedCB;
+  typedef base::Callback<void(const std::string& session_id,
+                              media::MediaKeys::KeyError error_code,
+                              int system_code)> KeyErrorCB;
+  typedef base::Callback<void(const std::string& session_id,
+                              const std::vector<uint8>& message,
+                              const std::string& default_url)> KeyMessageCB;
+
   ProxyDecryptor(
 #if defined(ENABLE_PEPPER_CDMS)
       blink::WebMediaPlayerClient* web_media_player_client,
@@ -46,9 +62,9 @@ class ProxyDecryptor : public media::MediaKeys {
       RendererMediaPlayerManager* manager,
       int media_keys_id,
 #endif  // defined(ENABLE_PEPPER_CDMS)
-      const media::KeyAddedCB& key_added_cb,
-      const media::KeyErrorCB& key_error_cb,
-      const media::KeyMessageCB& key_message_cb);
+      const KeyAddedCB& key_added_cb,
+      const KeyErrorCB& key_error_cb,
+      const KeyMessageCB& key_message_cb);
   virtual ~ProxyDecryptor();
 
   // Only call this once.
@@ -60,29 +76,40 @@ class ProxyDecryptor : public media::MediaKeys {
   // NULL immediately and reset.
   void SetDecryptorReadyCB(const media::DecryptorReadyCB& decryptor_ready_cb);
 
-  // MediaKeys implementation.
   // May only be called after InitializeCDM() succeeds.
-  virtual bool GenerateKeyRequest(const std::string& type,
-                                  const uint8* init_data,
-                                  int init_data_length) OVERRIDE;
-  virtual void AddKey(const uint8* key, int key_length,
-                      const uint8* init_data, int init_data_length,
-                      const std::string& session_id) OVERRIDE;
-  virtual void CancelKeyRequest(const std::string& session_id) OVERRIDE;
+  bool GenerateKeyRequest(const std::string& type,
+                          const uint8* init_data,
+                          int init_data_length);
+  void AddKey(const uint8* key, int key_length,
+              const uint8* init_data, int init_data_length,
+              const std::string& session_id);
+  void CancelKeyRequest(const std::string& session_id);
 
  private:
+  // This is reference_id <-> session_id map.
+  typedef std::map<uint32, std::string> SessionIdMap;
+
   // Helper function to create MediaKeys to handle the given |key_system|.
   scoped_ptr<media::MediaKeys> CreateMediaKeys(const std::string& key_system,
                                                const GURL& frame_url);
 
   // Callbacks for firing key events.
-  void KeyAdded(const std::string& session_id);
-  void KeyError(const std::string& session_id,
+  void KeyAdded(uint32 reference_id);
+  void KeyError(uint32 reference_id,
                 media::MediaKeys::KeyError error_code,
                 int system_code);
-  void KeyMessage(const std::string& session_id,
+  void KeyMessage(uint32 reference_id,
                   const std::vector<uint8>& message,
                   const std::string& default_url);
+  void SetSessionId(uint32 reference_id, const std::string& session_id);
+
+  // Helper function to determine reference_id for the provided |session_id|.
+  uint32 LookupReferenceId(const std::string& session_id);
+
+  // Helper function to determine session_id for the provided |reference_id|.
+  // The returned session_id is only valid on the main thread, and should be
+  // stored by copy.
+  const std::string& LookupSessionId(uint32 reference_id);
 
   base::WeakPtrFactory<ProxyDecryptor> weak_ptr_factory_;
 
@@ -103,15 +130,22 @@ class ProxyDecryptor : public media::MediaKeys {
   scoped_ptr<media::MediaKeys> media_keys_;
 
   // Callbacks for firing key events.
-  media::KeyAddedCB key_added_cb_;
-  media::KeyErrorCB key_error_cb_;
-  media::KeyMessageCB key_message_cb_;
+  KeyAddedCB key_added_cb_;
+  KeyErrorCB key_error_cb_;
+  KeyMessageCB key_message_cb_;
 
   // Protects the |decryptor_|. Note that |decryptor_| itself should be thread
   // safe as per the Decryptor interface.
   base::Lock lock_;
 
   media::DecryptorReadyCB decryptor_ready_cb_;
+
+  // Reference IDs are used to uniquely track sessions so that CDM callbacks
+  // can get mapped to the correct session ID. Reference ID should be unique
+  // per renderer process for debugging purposes.
+  static uint32 next_reference_id_;
+
+  SessionIdMap sessions_;
 
   DISALLOW_COPY_AND_ASSIGN(ProxyDecryptor);
 };

@@ -445,18 +445,18 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
 
   // PPB_ContentDecryptor_Private implementation.
   virtual void KeyAdded(PP_Instance instance,
-                        PP_Var key_system,
-                        PP_Var session_id) OVERRIDE;
+                        uint32_t reference_id) OVERRIDE;
   virtual void KeyMessage(PP_Instance instance,
-                          PP_Var key_system,
-                          PP_Var session_id,
+                          uint32_t reference_id,
                           PP_Var message,
                           PP_Var default_url) OVERRIDE;
   virtual void KeyError(PP_Instance instance,
-                        PP_Var key_system,
-                        PP_Var session_id,
+                        uint32_t reference_id,
                         int32_t media_error,
                         int32_t system_code) OVERRIDE;
+  virtual void SetSessionId(PP_Instance instance,
+                            uint32_t reference_id,
+                            PP_Var session_id_var) OVERRIDE;
   virtual void DeliverBlock(PP_Instance instance,
                             PP_Resource decrypted_block,
                             const PP_DecryptedBlockInfo* block_info) OVERRIDE;

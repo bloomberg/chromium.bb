@@ -262,28 +262,29 @@ ContentDecryptorDelegate::ContentDecryptorDelegate(
 ContentDecryptorDelegate::~ContentDecryptorDelegate() {
 }
 
-void ContentDecryptorDelegate::Initialize(const std::string& key_system,
-                                          bool can_challenge_platform) {
+void ContentDecryptorDelegate::Initialize(const std::string& key_system) {
   DCHECK(!key_system.empty());
   DCHECK(key_system_.empty());
   key_system_ = key_system;
 
   plugin_decryption_interface_->Initialize(
       pp_instance_,
-      StringVar::StringToPPVar(key_system_),
-      PP_FromBool(can_challenge_platform));
+      StringVar::StringToPPVar(key_system_));
 }
 
 void ContentDecryptorDelegate::SetKeyEventCallbacks(
     const media::KeyAddedCB& key_added_cb,
     const media::KeyErrorCB& key_error_cb,
-    const media::KeyMessageCB& key_message_cb) {
+    const media::KeyMessageCB& key_message_cb,
+    const media::SetSessionIdCB& set_session_id_cb) {
   key_added_cb_ = key_added_cb;
   key_error_cb_ = key_error_cb;
   key_message_cb_ = key_message_cb;
+  set_session_id_cb_ = set_session_id_cb;
 }
 
-bool ContentDecryptorDelegate::GenerateKeyRequest(const std::string& type,
+bool ContentDecryptorDelegate::GenerateKeyRequest(uint32 reference_id,
+                                                  const std::string& type,
                                                   const uint8* init_data,
                                                   int init_data_length) {
   PP_Var init_data_array =
@@ -292,12 +293,13 @@ bool ContentDecryptorDelegate::GenerateKeyRequest(const std::string& type,
 
   plugin_decryption_interface_->GenerateKeyRequest(
       pp_instance_,
+      reference_id,
       StringVar::StringToPPVar(type),
       init_data_array);
   return true;
 }
 
-bool ContentDecryptorDelegate::AddKey(const std::string& session_id,
+bool ContentDecryptorDelegate::AddKey(uint32 reference_id,
                                       const uint8* key,
                                       int key_length,
                                       const uint8* init_data,
@@ -310,17 +312,12 @@ bool ContentDecryptorDelegate::AddKey(const std::string& session_id,
           init_data_length, init_data);
 
   plugin_decryption_interface_->AddKey(
-      pp_instance_,
-      StringVar::StringToPPVar(session_id),
-      key_array,
-      init_data_array);
+      pp_instance_, reference_id, key_array, init_data_array);
   return true;
 }
 
-bool ContentDecryptorDelegate::CancelKeyRequest(const std::string& session_id) {
-  plugin_decryption_interface_->CancelKeyRequest(
-      pp_instance_,
-      StringVar::StringToPPVar(session_id));
+bool ContentDecryptorDelegate::CancelKeyRequest(uint32 reference_id) {
+  plugin_decryption_interface_->CancelKeyRequest(pp_instance_, reference_id);
   return true;
 }
 
@@ -597,35 +594,18 @@ bool ContentDecryptorDelegate::DecryptAndDecodeVideo(
   return true;
 }
 
-void ContentDecryptorDelegate::NeedKey(PP_Var key_system_var,
-                                       PP_Var session_id_var,
-                                       PP_Var init_data_var) {
-  // TODO(ddorwin): Remove from PPB_ContentDecryptor_Private.
-  NOTREACHED();
-}
-
-void ContentDecryptorDelegate::KeyAdded(PP_Var key_system_var,
-                                        PP_Var session_id_var) {
+void ContentDecryptorDelegate::KeyAdded(uint32 reference_id) {
   if (key_added_cb_.is_null())
     return;
 
-  StringVar* session_id_string = StringVar::FromPPVar(session_id_var);
-  if (!session_id_string) {
-    key_error_cb_.Run(std::string(), media::MediaKeys::kUnknownError, 0);
-    return;
-  }
-
-  key_added_cb_.Run(session_id_string->value());
+  key_added_cb_.Run(reference_id);
 }
 
-void ContentDecryptorDelegate::KeyMessage(PP_Var key_system_var,
-                                          PP_Var session_id_var,
+void ContentDecryptorDelegate::KeyMessage(uint32 reference_id,
                                           PP_Var message_var,
                                           PP_Var default_url_var) {
   if (key_message_cb_.is_null())
     return;
-
-  StringVar* session_id_string = StringVar::FromPPVar(session_id_var);
 
   ArrayBufferVar* message_array_buffer =
       ArrayBufferVar::FromPPVar(message_var);
@@ -638,32 +618,38 @@ void ContentDecryptorDelegate::KeyMessage(PP_Var key_system_var,
 
   StringVar* default_url_string = StringVar::FromPPVar(default_url_var);
 
-  if (!session_id_string || !default_url_string) {
-    key_error_cb_.Run(std::string(), media::MediaKeys::kUnknownError, 0);
+  if (!default_url_string) {
+    key_error_cb_.Run(reference_id, media::MediaKeys::kUnknownError, 0);
     return;
   }
 
-  key_message_cb_.Run(session_id_string->value(),
-                      message,
-                      default_url_string->value());
+  key_message_cb_.Run(reference_id, message, default_url_string->value());
 }
 
-void ContentDecryptorDelegate::KeyError(PP_Var key_system_var,
-                                        PP_Var session_id_var,
+void ContentDecryptorDelegate::KeyError(uint32 reference_id,
                                         int32_t media_error,
                                         int32_t system_code) {
   if (key_error_cb_.is_null())
     return;
 
+  key_error_cb_.Run(reference_id,
+                    static_cast<media::MediaKeys::KeyError>(media_error),
+                    system_code);
+}
+
+void ContentDecryptorDelegate::SetSessionId(uint32 reference_id,
+                                            PP_Var session_id_var) {
+  if (set_session_id_cb_.is_null())
+    return;
+
   StringVar* session_id_string = StringVar::FromPPVar(session_id_var);
+
   if (!session_id_string) {
-    key_error_cb_.Run(std::string(), media::MediaKeys::kUnknownError, 0);
+    key_error_cb_.Run(reference_id, media::MediaKeys::kUnknownError, 0);
     return;
   }
 
-  key_error_cb_.Run(session_id_string->value(),
-                    static_cast<media::MediaKeys::KeyError>(media_error),
-                    system_code);
+  set_session_id_cb_.Run(reference_id, session_id_string->value());
 }
 
 void ContentDecryptorDelegate::DecoderInitializeDone(

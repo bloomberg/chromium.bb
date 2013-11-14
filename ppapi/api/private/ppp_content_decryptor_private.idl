@@ -9,7 +9,7 @@
  * Decryption Modules, not normal plugins.
  */
 label Chrome {
-  M31 = 0.7
+  M32 = 0.8
 };
 
 /**
@@ -25,15 +25,10 @@ interface PPP_ContentDecryptor_Private {
    *
    * @param[in] key_system A <code>PP_Var</code> of type
    * <code>PP_VARTYPE_STRING</code> containing the name of the key system.
-   *
-   * @param[in] can_challenge_platform A <code>PP_Bool</code> that
-   * indicates if the underlying host platform can be challenged;
-   * i.e., verified as a trusted platform.
    */
   void Initialize(
       [in] PP_Instance instance,
-      [in] PP_Var key_system,
-      [in] PP_Bool can_challenge_platform);
+      [in] PP_Var key_system);
 
   /**
    * Generates a key request. key_system specifies the key or licensing system
@@ -45,6 +40,9 @@ interface PPP_ContentDecryptor_Private {
    * browser by the CDM via <code>KeyMessage()</code> on the
    * <code>PPB_ContentDecryptor_Private</code> interface.
    *
+   * @param[in] reference_id A reference for the session for which the key
+   * should be generated.
+   *
    * @param[in] type A <code>PP_Var</code> of type
    * <code>PP_VARTYPE_STRING</code> containing the MIME type for init_data.
    *
@@ -54,6 +52,7 @@ interface PPP_ContentDecryptor_Private {
    */
   void GenerateKeyRequest(
       [in] PP_Instance instance,
+      [in] uint32_t reference_id,
       [in] PP_Var type,
       [in] PP_Var init_data);
 
@@ -68,8 +67,8 @@ interface PPP_ContentDecryptor_Private {
    * <code>PPB_ContentDecryptor_Private</code> interface, and the browser
    * must notify the web application.
    *
-   * @param[in] session_id A <code>PP_Var</code> of type
-   * <code>PP_VARTYPE_STRING</code> containing the session ID.
+   * @param[in] reference_id A reference for the session for which the key
+   * should be added.
    *
    * @param[in] key A <code>PP_Var</code> of type
    * <code>PP_VARTYPE_ARRAYBUFFER</code> containing the decryption key, license,
@@ -81,19 +80,19 @@ interface PPP_ContentDecryptor_Private {
    */
   void AddKey(
       [in] PP_Instance instance,
-      [in] PP_Var session_id,
+      [in] uint32_t reference_id,
       [in] PP_Var key,
       [in] PP_Var init_data);
 
   /**
    * Cancels a pending key request for the specified session ID.
    *
-   * @param[in] session_id A <code>PP_Var</code> of type
-   * <code>PP_VARTYPE_STRING</code> containing the session ID.
+   * @param[in] reference_id A reference for the session for which the key
+   * request should be cancelled.
    */
   void CancelKeyRequest(
       [in] PP_Instance instance,
-      [in] PP_Var session_id);
+      [in] uint32_t reference_id);
 
   /**
    * Decrypts the block and returns the unencrypted block via

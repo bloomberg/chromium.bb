@@ -192,7 +192,8 @@ class AesDecryptorTest : public testing::Test {
       : decryptor_(
             base::Bind(&AesDecryptorTest::KeyAdded, base::Unretained(this)),
             base::Bind(&AesDecryptorTest::KeyError, base::Unretained(this)),
-            base::Bind(&AesDecryptorTest::KeyMessage, base::Unretained(this))),
+            base::Bind(&AesDecryptorTest::KeyMessage, base::Unretained(this)),
+            base::Bind(&AesDecryptorTest::SetSession, base::Unretained(this))),
         decrypt_cb_(base::Bind(&AesDecryptorTest::BufferDecrypted,
                                base::Unretained(this))),
         original_data_(kOriginalData, kOriginalData + kOriginalDataSize),
@@ -210,11 +211,12 @@ class AesDecryptorTest : public testing::Test {
 
  protected:
   void GenerateKeyRequest(const std::vector<uint8>& key_id) {
+    reference_id_ = 6;
     DCHECK(!key_id.empty());
-    EXPECT_CALL(*this, KeyMessage(StrNe(std::string()), key_id, ""))
-        .WillOnce(SaveArg<0>(&session_id_string_));
+    EXPECT_CALL(*this, SetSession(reference_id_, StrNe(std::string())));
+    EXPECT_CALL(*this, KeyMessage(reference_id_, key_id, ""));
     EXPECT_TRUE(decryptor_.GenerateKeyRequest(
-        std::string(), &key_id[0], key_id.size()));
+        reference_id_, std::string(), &key_id[0], key_id.size()));
   }
 
   enum AddKeyExpectation {
@@ -230,33 +232,33 @@ class AesDecryptorTest : public testing::Test {
     DCHECK(!key.empty());
 
     if (result == KEY_ADDED) {
-      EXPECT_CALL(*this, KeyAdded(session_id_string_));
+      EXPECT_CALL(*this, KeyAdded(reference_id_));
     } else if (result == KEY_ERROR) {
-      EXPECT_CALL(*this, KeyError(session_id_string_,
-                                  MediaKeys::kUnknownError, 0));
+      EXPECT_CALL(*this, KeyError(reference_id_, MediaKeys::kUnknownError, 0));
     } else {
       NOTREACHED();
     }
 
-    decryptor_.AddKey(&key[0], key.size(), &key_id[0], key_id.size(),
-                      session_id_string_);
+    decryptor_.AddKey(
+        reference_id_, &key[0], key.size(), &key_id[0], key_id.size());
   }
 
   void AddKeyAndExpect(const std::string& key, AddKeyExpectation result) {
     DCHECK(!key.empty());
 
     if (result == KEY_ADDED) {
-      EXPECT_CALL(*this, KeyAdded(session_id_string_));
+      EXPECT_CALL(*this, KeyAdded(reference_id_));
     } else if (result == KEY_ERROR) {
-      EXPECT_CALL(*this,
-                  KeyError(session_id_string_, MediaKeys::kUnknownError, 0));
+      EXPECT_CALL(*this, KeyError(reference_id_, MediaKeys::kUnknownError, 0));
     } else {
       NOTREACHED();
     }
 
-    decryptor_.AddKey(reinterpret_cast<const uint8*>(key.c_str()), key.length(),
-                      NULL, 0,
-                      session_id_string_);
+    decryptor_.AddKey(reference_id_,
+                      reinterpret_cast<const uint8*>(key.c_str()),
+                      key.length(),
+                      NULL,
+                      0);
   }
 
   MOCK_METHOD2(BufferDecrypted, void(Decryptor::Status,
@@ -307,15 +309,17 @@ class AesDecryptorTest : public testing::Test {
     }
   }
 
-  MOCK_METHOD1(KeyAdded, void(const std::string&));
-  MOCK_METHOD3(KeyError, void(const std::string&,
-                              MediaKeys::KeyError, int));
-  MOCK_METHOD3(KeyMessage, void(const std::string& session_id,
-                                const std::vector<uint8>& message,
-                                const std::string& default_url));
+  MOCK_METHOD1(KeyAdded, void(uint32 reference_id));
+  MOCK_METHOD3(KeyError, void(uint32 reference_id, MediaKeys::KeyError, int));
+  MOCK_METHOD3(KeyMessage,
+               void(uint32 reference_id,
+                    const std::vector<uint8>& message,
+                    const std::string& default_url));
+  MOCK_METHOD2(SetSession,
+               void(uint32 reference_id, const std::string& session_id));
 
   AesDecryptor decryptor_;
-  std::string session_id_string_;
+  uint32 reference_id_;
   AesDecryptor::DecryptCB decrypt_cb_;
 
   // Constants for testing.
@@ -329,8 +333,31 @@ class AesDecryptorTest : public testing::Test {
 };
 
 TEST_F(AesDecryptorTest, GenerateKeyRequestWithNullInitData) {
-  EXPECT_CALL(*this, KeyMessage(StrNe(std::string()), IsEmpty(), ""));
-  EXPECT_TRUE(decryptor_.GenerateKeyRequest(std::string(), NULL, 0));
+  reference_id_ = 8;
+  EXPECT_CALL(*this, KeyMessage(reference_id_, IsEmpty(), ""));
+  EXPECT_CALL(*this, SetSession(reference_id_, StrNe(std::string())));
+  EXPECT_TRUE(
+      decryptor_.GenerateKeyRequest(reference_id_, std::string(), NULL, 0));
+}
+
+TEST_F(AesDecryptorTest, MultipleGenerateKeyRequest) {
+  uint32 reference_id1 = 10;
+  EXPECT_CALL(*this, KeyMessage(reference_id1, IsEmpty(), ""));
+  EXPECT_CALL(*this, SetSession(reference_id1, StrNe(std::string())));
+  EXPECT_TRUE(
+      decryptor_.GenerateKeyRequest(reference_id1, std::string(), NULL, 0));
+
+  uint32 reference_id2 = 11;
+  EXPECT_CALL(*this, KeyMessage(reference_id2, IsEmpty(), ""));
+  EXPECT_CALL(*this, SetSession(reference_id2, StrNe(std::string())));
+  EXPECT_TRUE(
+      decryptor_.GenerateKeyRequest(reference_id2, std::string(), NULL, 0));
+
+  uint32 reference_id3 = 23;
+  EXPECT_CALL(*this, KeyMessage(reference_id3, IsEmpty(), ""));
+  EXPECT_CALL(*this, SetSession(reference_id3, StrNe(std::string())));
+  EXPECT_TRUE(
+      decryptor_.GenerateKeyRequest(reference_id3, std::string(), NULL, 0));
 }
 
 TEST_F(AesDecryptorTest, NormalDecryption) {

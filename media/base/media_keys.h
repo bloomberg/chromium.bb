@@ -37,6 +37,8 @@ class MEDIA_EXPORT MediaKeys {
     kMaxKeyError  // Must be last and greater than any legit value.
   };
 
+  const static uint32 kInvalidReferenceId = 0;
+
   MediaKeys();
   virtual ~MediaKeys();
 
@@ -44,7 +46,8 @@ class MEDIA_EXPORT MediaKeys {
   // Returns true if generating key request succeeded, false otherwise.
   // Note: AddKey() and CancelKeyRequest() should only be called after
   // GenerateKeyRequest() returns true.
-  virtual bool GenerateKeyRequest(const std::string& type,
+  virtual bool GenerateKeyRequest(uint32 reference_id,
+                                  const std::string& type,
                                   const uint8* init_data,
                                   int init_data_length) = 0;
 
@@ -52,12 +55,14 @@ class MEDIA_EXPORT MediaKeys {
   // key. It can be any data that the key system accepts, such as a license.
   // If multiple calls of this function set different keys for the same
   // key ID, the older key will be replaced by the newer key.
-  virtual void AddKey(const uint8* key, int key_length,
-                      const uint8* init_data, int init_data_length,
-                      const std::string& session_id) = 0;
+  virtual void AddKey(uint32 reference_id,
+                      const uint8* key,
+                      int key_length,
+                      const uint8* init_data,
+                      int init_data_length) = 0;
 
-  // Cancels the key request specified by |session_id|.
-  virtual void CancelKeyRequest(const std::string& session_id) = 0;
+  // Cancels the key request specified by |reference_id|.
+  virtual void CancelKeyRequest(uint32 reference_id) = 0;
 
   // Gets the Decryptor object associated with the MediaKeys. Returns NULL if
   // no Decryptor object is associated. The returned object is only guaranteed
@@ -70,15 +75,21 @@ class MEDIA_EXPORT MediaKeys {
 
 // Key event callbacks. See the spec for details:
 // http://dvcs.w3.org/hg/html-media/raw-file/eme-v0.1b/encrypted-media/encrypted-media.html#event-summary
-typedef base::Callback<void(const std::string& session_id)> KeyAddedCB;
+typedef base::Callback<void(uint32 reference_id)> KeyAddedCB;
 
-typedef base::Callback<void(const std::string& session_id,
+typedef base::Callback<void(uint32 reference_id,
                             media::MediaKeys::KeyError error_code,
                             int system_code)> KeyErrorCB;
 
-typedef base::Callback<void(const std::string& session_id,
+typedef base::Callback<void(uint32 reference_id,
                             const std::vector<uint8>& message,
                             const std::string& default_url)> KeyMessageCB;
+
+// Called by the CDM when it generates the |session_id| as a result of a
+// GenerateKeyRequest() call. Must be called before KeyMessageCB or KeyAddedCB
+// events are fired.
+typedef base::Callback<void(uint32 reference_id,
+                            const std::string& session_id)> SetSessionIdCB;
 }  // namespace media
 
 #endif  // MEDIA_BASE_MEDIA_KEYS_H_
