@@ -8,7 +8,8 @@ from telemetry.page import page_measurement
 class LoadingTimeline(page_measurement.PageMeasurement):
   def __init__(self, *args, **kwargs):
     super(LoadingTimeline, self).__init__(*args, **kwargs)
-    self._timeline_metric = timeline.TimelineMetric(timeline.TIMELINE_MODE)
+    self._timeline_metric = timeline.TimelineMetric(
+        timeline.TIMELINE_MODE, 'thread 0')
 
   @property
   def results_are_the_same_on_every_page(self):
