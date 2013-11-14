@@ -71,14 +71,14 @@ class MinimalInputEventFilter : public ui::internal::InputMethodDelegate,
         input_method_(ui::CreateInputMethod(this,
                                             gfx::kNullAcceleratedWidget)) {
     input_method_->Init(true);
-    root_->AddPreTargetHandler(this);
-    root_->SetProperty(aura::client::kRootWindowInputMethodKey,
+    root_->window()->AddPreTargetHandler(this);
+    root_->window()->SetProperty(aura::client::kRootWindowInputMethodKey,
                        input_method_.get());
   }
 
   virtual ~MinimalInputEventFilter() {
-    root_->RemovePreTargetHandler(this);
-    root_->SetProperty(aura::client::kRootWindowInputMethodKey,
+    root_->window()->RemovePreTargetHandler(this);
+    root_->window()->SetProperty(aura::client::kRootWindowInputMethodKey,
                        static_cast<ui::InputMethod*>(NULL));
   }
 
@@ -129,17 +129,17 @@ ShellAuraPlatformData::ShellAuraPlatformData() {
   gfx::Screen::SetScreenInstance(gfx::SCREEN_TYPE_NATIVE, screen);
   root_window_.reset(screen->CreateRootWindowForPrimaryDisplay());
   root_window_->ShowRootWindow();
-  root_window_->SetLayoutManager(new FillLayout(root_window_.get()));
+  root_window_->window()->SetLayoutManager(new FillLayout(root_window_.get()));
 
   focus_client_.reset(new aura::test::TestFocusClient());
-  aura::client::SetFocusClient(root_window_.get(), focus_client_.get());
+  aura::client::SetFocusClient(root_window_->window(), focus_client_.get());
 
   activation_client_.reset(
-      new aura::client::DefaultActivationClient(root_window_.get()));
+      new aura::client::DefaultActivationClient(root_window_->window()));
   capture_client_.reset(
-      new aura::client::DefaultCaptureClient(root_window_.get()));
+      new aura::client::DefaultCaptureClient(root_window_->window()));
   window_tree_client_.reset(
-      new aura::test::TestWindowTreeClient(root_window_.get()));
+      new aura::test::TestWindowTreeClient(root_window_->window()));
   ime_filter_.reset(new MinimalInputEventFilter(root_window_.get()));
 }
 
@@ -184,7 +184,7 @@ void Shell::PlatformCreateWindow(int width, int height) {
 void Shell::PlatformSetContents() {
   CHECK(platform_);
   aura::Window* content = web_contents_->GetView()->GetNativeView();
-  aura::Window* parent = platform_->window();
+  aura::Window* parent = platform_->window()->window();
   if (parent->Contains(content))
     return;
   parent->AddChild(content);
