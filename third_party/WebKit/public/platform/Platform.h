@@ -78,6 +78,7 @@ class WebMimeRegistry;
 class WebPlatformDatabaseObserver;
 class WebPluginListBuilder;
 class WebPrescientNetworking;
+class WebPublicSuffixList;
 class WebRTCPeerConnectionHandler;
 class WebRTCPeerConnectionHandlerClient;
 class WebSandboxSupport;
@@ -333,6 +334,12 @@ public:
     // If refresh is true, then cached information should not be used to
     // satisfy this call.
     virtual void getPluginList(bool refresh, WebPluginListBuilder*) { }
+
+
+    // Public Suffix List --------------------------------------------------
+
+    // May return null on some platforms.
+    virtual WebPublicSuffixList* publicSuffixList() { return 0; }
 
 
     // Resources -----------------------------------------------------------
