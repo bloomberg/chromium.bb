@@ -108,6 +108,7 @@ class MockSchemaRegistryObserver : public policy::SchemaRegistry::Observer {
   virtual ~MockSchemaRegistryObserver() {}
 
   MOCK_METHOD1(OnSchemaRegistryUpdated, void(bool));
+  MOCK_METHOD0(OnSchemaRegistryReady, void());
 };
 
 }  // namespace
@@ -120,6 +121,7 @@ class ExtensionSettingsApiTest : public ExtensionApiTest {
 #if defined(ENABLE_CONFIGURATION_POLICY)
     EXPECT_CALL(policy_provider_, IsInitializationComplete(_))
         .WillRepeatedly(Return(true));
+    policy_provider_.SetAutoRefresh();
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(
         &policy_provider_);
 #endif
@@ -585,15 +587,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, PRE_ManagedStorageEvents) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-#if defined(OS_CHROMEOS) || defined(OS_WIN) || \
-    (defined(OS_LINUX) && defined(USE_AURA))
-// Flakily times out. http://crbug.com/171477
-#define MAYBE_ManagedStorageEvents DISABLED_ManagedStorageEvents
-#else
-#define MAYBE_ManagedStorageEvents ManagedStorageEvents
-#endif
-
-IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, MAYBE_ManagedStorageEvents) {
+IN_PROC_BROWSER_TEST_F(ExtensionSettingsApiTest, ManagedStorageEvents) {
   // This test runs after PRE_ManagedStorageEvents without having deleted the
   // profile, so the extension is still around. While the browser restarted the
   // policy went back to the empty default, and so the extension should receive

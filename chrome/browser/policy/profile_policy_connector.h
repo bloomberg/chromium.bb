@@ -33,8 +33,8 @@ class ProfilePolicyConnector : public BrowserContextKeyedService {
   void Init(bool force_immediate_load,
 #if defined(OS_CHROMEOS)
             const chromeos::User* user,
-            SchemaRegistry* schema_registry,
 #endif
+            SchemaRegistry* schema_registry,
             CloudPolicyManager* user_cloud_policy_manager);
 
   void InitForTesting(scoped_ptr<PolicyService> service);
@@ -46,7 +46,8 @@ class ProfilePolicyConnector : public BrowserContextKeyedService {
   PolicyService* policy_service() const { return policy_service_.get(); }
 
  private:
-#if defined(ENABLE_CONFIGURATION_POLICY) && defined(OS_CHROMEOS)
+#if defined(ENABLE_CONFIGURATION_POLICY)
+#if defined(OS_CHROMEOS)
   void InitializeDeviceLocalAccountPolicyProvider(
       const std::string& username,
       SchemaRegistry* schema_registry);
@@ -59,7 +60,10 @@ class ProfilePolicyConnector : public BrowserContextKeyedService {
   bool is_primary_user_;
 
   scoped_ptr<ConfigurationPolicyProvider> special_user_policy_provider_;
-#endif
+#endif  // defined(OS_CHROMEOS)
+
+  scoped_ptr<ConfigurationPolicyProvider> forwarding_policy_provider_;
+#endif  // defined(ENABLE_CONFIGURATION_POLICY)
 
   scoped_ptr<PolicyService> policy_service_;
 

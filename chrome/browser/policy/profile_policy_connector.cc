@@ -11,14 +11,14 @@
 #include "chrome/browser/policy/browser_policy_connector.h"
 #include "chrome/browser/policy/cloud/cloud_policy_manager.h"
 #include "chrome/browser/policy/configuration_policy_provider.h"
-#include "chrome/browser/policy/policy_service.h"
+#include "chrome/browser/policy/forwarding_policy_provider.h"
+#include "chrome/browser/policy/policy_service_impl.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_provider.h"
 #include "chrome/browser/chromeos/policy/login_profile_policy_provider.h"
-#include "chrome/browser/policy/policy_service.h"
 #endif
 
 namespace policy {
@@ -35,14 +35,28 @@ void ProfilePolicyConnector::Init(
     bool force_immediate_load,
 #if defined(OS_CHROMEOS)
     const chromeos::User* user,
-    SchemaRegistry* schema_registry,
 #endif
+    SchemaRegistry* schema_registry,
     CloudPolicyManager* user_cloud_policy_manager) {
+  // |providers| contains a list of the policy providers available for the
+  // PolicyService of this connector, in decreasing order of priority.
+  //
+  // Note: all the providers appended to this vector must eventually become
+  // initialized for every policy domain, otherwise some subsystems will never
+  // use the policies exposed by the PolicyService!
+  // The default ConfigurationPolicyProvider::IsInitializationComplete()
+  // result is true, so take care if a provider overrides that.
+  std::vector<ConfigurationPolicyProvider*> providers;
+
   BrowserPolicyConnector* connector =
       g_browser_process->browser_policy_connector();
-  // |providers| contains a list of the policy providers available for the
-  // PolicyService of this connector.
-  std::vector<ConfigurationPolicyProvider*> providers;
+
+  if (connector->GetPlatformProvider()) {
+    forwarding_policy_provider_.reset(
+        new ForwardingPolicyProvider(connector->GetPlatformProvider()));
+    forwarding_policy_provider_->Init(schema_registry);
+    providers.push_back(forwarding_policy_provider_.get());
+  }
 
   if (user_cloud_policy_manager)
     providers.push_back(user_cloud_policy_manager);
@@ -66,7 +80,7 @@ void ProfilePolicyConnector::Init(
     providers.push_back(special_user_policy_provider_.get());
 #endif
 
-  policy_service_ = connector->CreatePolicyService(providers);
+  policy_service_.reset(new PolicyServiceImpl(providers));
 
 #if defined(OS_CHROMEOS)
   if (is_primary_user_) {
@@ -89,6 +103,8 @@ void ProfilePolicyConnector::Shutdown() {
   if (special_user_policy_provider_)
     special_user_policy_provider_->Shutdown();
 #endif
+  if (forwarding_policy_provider_)
+    forwarding_policy_provider_->Shutdown();
 }
 
 #if defined(OS_CHROMEOS)

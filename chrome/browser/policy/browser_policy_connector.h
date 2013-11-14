@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_POLICY_BROWSER_POLICY_CONNECTOR_H_
 
 #include <string>
-#include <vector>
 
 #include "base/basictypes.h"
 #include "base/memory/ref_counted.h"
@@ -76,6 +75,9 @@ class BrowserPolicyConnector {
   // providers also load policies for the components of each Profile.
   CombinedSchemaRegistry* GetSchemaRegistry();
 
+  // Returns the platform policy provider.
+  ConfigurationPolicyProvider* GetPlatformProvider();
+
   // Returns the browser-global PolicyService, that contains policies for the
   // whole browser.
   PolicyService* GetPolicyService();
@@ -98,14 +100,6 @@ class BrowserPolicyConnector {
   // Schedules initialization of the cloud policy backend services, if the
   // services are already constructed.
   void ScheduleServiceInitialization(int64 delay_milliseconds);
-
-  // Creates a new PolicyService that gets its policies from the global policy
-  // providers owned by the BrowserPolicyConnector and the optional
-  // |additional_providers|, which will have lower priority.
-  // The lifetime of the returned PolicyService is tied to the lifetime of
-  // the BrowserPolicyConnector.
-  scoped_ptr<PolicyService> CreatePolicyService(
-      const std::vector<ConfigurationPolicyProvider*>& additional_providers);
 
   const ConfigurationPolicyHandlerList* GetHandlerList() const;
 

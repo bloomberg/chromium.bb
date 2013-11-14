@@ -10,7 +10,13 @@ namespace policy {
 
 SchemaRegistry::Observer::~Observer() {}
 
-SchemaRegistry::SchemaRegistry() : schema_map_(new SchemaMap) {}
+SchemaRegistry::SchemaRegistry() : schema_map_(new SchemaMap) {
+  for (int i = 0; i < POLICY_DOMAIN_SIZE; ++i)
+    domains_ready_[i] = false;
+#if !defined(ENABLE_EXTENSIONS)
+  domains_ready_[POLICY_DOMAIN_EXTENSIONS] = true;
+#endif
+}
 
 SchemaRegistry::~SchemaRegistry() {}
 
@@ -44,6 +50,22 @@ void SchemaRegistry::UnregisterComponent(const PolicyNamespace& ns) {
   }
 }
 
+bool SchemaRegistry::IsReady() const {
+  for (int i = 0; i < POLICY_DOMAIN_SIZE; ++i) {
+    if (!domains_ready_[i])
+      return false;
+  }
+  return true;
+}
+
+void SchemaRegistry::SetReady(PolicyDomain domain) {
+  if (domains_ready_[domain])
+    return;
+  domains_ready_[domain] = true;
+  if (IsReady())
+    FOR_EACH_OBSERVER(Observer, observers_, OnSchemaRegistryReady());
+}
+
 void SchemaRegistry::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
 }
@@ -62,7 +84,13 @@ bool SchemaRegistry::HasObservers() const {
 }
 
 CombinedSchemaRegistry::CombinedSchemaRegistry()
-    : own_schema_map_(new SchemaMap) {}
+    : own_schema_map_(new SchemaMap) {
+  // The combined registry is always ready, since it can always start tracking
+  // another registry that is not ready yet and going from "ready" to "not
+  // ready" is not allowed.
+  for (int i = 0; i < POLICY_DOMAIN_SIZE; ++i)
+    SetReady(static_cast<PolicyDomain>(i));
+}
 
 CombinedSchemaRegistry::~CombinedSchemaRegistry() {}
 
@@ -109,6 +137,10 @@ void CombinedSchemaRegistry::UnregisterComponent(const PolicyNamespace& ns) {
 
 void CombinedSchemaRegistry::OnSchemaRegistryUpdated(bool has_new_schemas) {
   Combine(has_new_schemas);
+}
+
+void CombinedSchemaRegistry::OnSchemaRegistryReady() {
+  // Ignore.
 }
 
 void CombinedSchemaRegistry::Combine(bool has_new_schemas) {

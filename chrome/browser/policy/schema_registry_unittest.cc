@@ -45,6 +45,7 @@ class MockSchemaRegistryObserver : public SchemaRegistry::Observer {
   virtual ~MockSchemaRegistryObserver() {}
 
   MOCK_METHOD1(OnSchemaRegistryUpdated, void(bool));
+  MOCK_METHOD0(OnSchemaRegistryReady, void());
 };
 
 }  // namespace
@@ -98,6 +99,33 @@ TEST(SchemaRegistryTest, Notifications) {
 
   registry.RemoveObserver(&observer);
   EXPECT_FALSE(registry.HasObservers());
+}
+
+TEST(SchemaRegistryTest, IsReady) {
+  SchemaRegistry registry;
+  MockSchemaRegistryObserver observer;
+  registry.AddObserver(&observer);
+
+  EXPECT_FALSE(registry.IsReady());
+#if defined(ENABLE_EXTENSIONS)
+  EXPECT_CALL(observer, OnSchemaRegistryReady()).Times(0);
+  registry.SetReady(POLICY_DOMAIN_EXTENSIONS);
+  Mock::VerifyAndClearExpectations(&observer);
+  EXPECT_FALSE(registry.IsReady());
+#endif
+  EXPECT_CALL(observer, OnSchemaRegistryReady());
+  registry.SetReady(POLICY_DOMAIN_CHROME);
+  Mock::VerifyAndClearExpectations(&observer);
+  EXPECT_TRUE(registry.IsReady());
+  EXPECT_CALL(observer, OnSchemaRegistryReady()).Times(0);
+  registry.SetReady(POLICY_DOMAIN_CHROME);
+  Mock::VerifyAndClearExpectations(&observer);
+  EXPECT_TRUE(registry.IsReady());
+
+  CombinedSchemaRegistry combined;
+  EXPECT_TRUE(combined.IsReady());
+
+  registry.RemoveObserver(&observer);
 }
 
 TEST(SchemaRegistryTest, Combined) {

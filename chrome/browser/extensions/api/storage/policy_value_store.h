@@ -32,12 +32,9 @@ class PolicyValueStore : public ValueStore {
                    scoped_ptr<ValueStore> delegate);
   virtual ~PolicyValueStore();
 
-  // Stores |policy| in the persistent database represented by the |delegate_|.
-  // If |notify_if_changed| and |policy| differs from the previously persisted
-  // version, then a notification is sent to the |observers_| with a list of the
-  // changes detected.
-  void SetCurrentPolicy(const policy::PolicyMap& policy,
-                        bool notify_if_changed);
+  // Stores |policy| in the persistent database represented by the |delegate_|
+  // and notifies observers with the changes from the previous policy.
+  void SetCurrentPolicy(const policy::PolicyMap& policy);
 
   // Clears all the stored data and deletes the database.
   void DeleteStorage();

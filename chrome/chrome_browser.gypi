@@ -1554,6 +1554,8 @@
         'browser/policy/external_data_manager.h',
         'browser/policy/file_selection_dialogs_policy_handler.cc',
         'browser/policy/file_selection_dialogs_policy_handler.h',
+        'browser/policy/forwarding_policy_provider.cc',
+        'browser/policy/forwarding_policy_provider.h',
         'browser/policy/javascript_policy_handler.cc',
         'browser/policy/javascript_policy_handler.h',
         'browser/policy/policy_bundle.cc',

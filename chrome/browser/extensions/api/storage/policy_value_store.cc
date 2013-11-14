@@ -38,8 +38,7 @@ PolicyValueStore::PolicyValueStore(
 
 PolicyValueStore::~PolicyValueStore() {}
 
-void PolicyValueStore::SetCurrentPolicy(const policy::PolicyMap& policy,
-                                        bool notify_if_changed) {
+void PolicyValueStore::SetCurrentPolicy(const policy::PolicyMap& policy) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::FILE));
   // Convert |policy| to a dictionary value. Only include mandatory policies
   // for now.
@@ -94,7 +93,7 @@ void PolicyValueStore::SetCurrentPolicy(const policy::PolicyMap& policy,
         changes.end(), result->changes().begin(), result->changes().end());
   }
 
-  if (!changes.empty() && notify_if_changed) {
+  if (!changes.empty()) {
     observers_->Notify(
         &SettingsObserver::OnSettingsChanged,
         extension_id_,

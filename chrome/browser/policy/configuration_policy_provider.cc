@@ -94,12 +94,6 @@ bool ConfigurationPolicyProvider::IsInitializationComplete(
   return true;
 }
 
-void ConfigurationPolicyProvider::OnSchemaRegistryUpdated(
-    bool has_new_schemas) {
-  if (has_new_schemas)
-    RefreshPolicies();
-}
-
 void ConfigurationPolicyProvider::UpdatePolicy(
     scoped_ptr<PolicyBundle> bundle) {
   if (bundle.get())
@@ -125,5 +119,10 @@ void ConfigurationPolicyProvider::AddObserver(Observer* observer) {
 void ConfigurationPolicyProvider::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
+
+void ConfigurationPolicyProvider::OnSchemaRegistryUpdated(
+    bool has_new_schemas) {}
+
+void ConfigurationPolicyProvider::OnSchemaRegistryReady() {}
 
 }  // namespace policy

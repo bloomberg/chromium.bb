@@ -125,7 +125,7 @@ TEST_F(PolicyValueStoreTest, DontProvideRecommendedPolicies) {
   policies.Set("may", policy::POLICY_LEVEL_RECOMMENDED,
                policy::POLICY_SCOPE_USER,
                new base::FundamentalValue(456), NULL);
-  store_->SetCurrentPolicy(policies, false);
+  store_->SetCurrentPolicy(policies);
   ValueStore::ReadResult result = store_->Get();
   ASSERT_FALSE(result->HasError());
   EXPECT_EQ(1u, result->settings().size());
@@ -153,66 +153,76 @@ TEST_F(PolicyValueStoreTest, ReadOnly) {
 }
 
 TEST_F(PolicyValueStoreTest, NotifyOnChanges) {
+  // Notify when setting the initial policy.
+  const base::StringValue value("111");
+  {
+    ValueStoreChangeList changes;
+    changes.push_back(ValueStoreChange("aaa", NULL, value.DeepCopy()));
+    EXPECT_CALL(observer_,
+                OnSettingsChanged(kTestExtensionId,
+                                  settings_namespace::MANAGED,
+                                  ValueStoreChange::ToJson(changes)));
+  }
+
   policy::PolicyMap policies;
   policies.Set("aaa", policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-               new base::StringValue("111"), NULL);
-  EXPECT_CALL(observer_, OnSettingsChanged(_, _, _)).Times(0);
-  // No notification when setting the initial policy.
-  store_->SetCurrentPolicy(policies, false);
-  loop_.RunUntilIdle();
-  Mock::VerifyAndClearExpectations(&observer_);
-
-  // And no notifications on changes when not asked for.
-  policies.Set("aaa", policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-               new base::StringValue("222"), NULL);
-  policies.Set("bbb", policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
-               new base::StringValue("223"), NULL);
-  EXPECT_CALL(observer_, OnSettingsChanged(_, _, _)).Times(0);
-  store_->SetCurrentPolicy(policies, false);
+               value.DeepCopy(), NULL);
+  store_->SetCurrentPolicy(policies);
   loop_.RunUntilIdle();
   Mock::VerifyAndClearExpectations(&observer_);
 
   // Notify when new policies are added.
-  ValueStoreChangeList changes;
-  base::StringValue value("333");
-  changes.push_back(ValueStoreChange("ccc", NULL, value.DeepCopy()));
-  policies.Set("ccc", policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+  {
+    ValueStoreChangeList changes;
+    changes.push_back(ValueStoreChange("bbb", NULL, value.DeepCopy()));
+    EXPECT_CALL(observer_,
+                OnSettingsChanged(kTestExtensionId,
+                                  settings_namespace::MANAGED,
+                                  ValueStoreChange::ToJson(changes)));
+  }
+
+  policies.Set("bbb", policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                value.DeepCopy(), NULL);
-  EXPECT_CALL(observer_, OnSettingsChanged(kTestExtensionId,
-                                           settings_namespace::MANAGED,
-                                           ValueStoreChange::ToJson(changes)));
-  store_->SetCurrentPolicy(policies, true);
+  store_->SetCurrentPolicy(policies);
   loop_.RunUntilIdle();
   Mock::VerifyAndClearExpectations(&observer_);
 
   // Notify when policies change.
-  changes.clear();
-  base::StringValue new_value("444");
-  changes.push_back(
-      ValueStoreChange("ccc", value.DeepCopy(), new_value.DeepCopy()));
-  policies.Set("ccc", policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+  const base::StringValue new_value("222");
+  {
+    ValueStoreChangeList changes;
+    changes.push_back(
+        ValueStoreChange("bbb", value.DeepCopy(), new_value.DeepCopy()));
+    EXPECT_CALL(observer_,
+                OnSettingsChanged(kTestExtensionId,
+                                  settings_namespace::MANAGED,
+                                  ValueStoreChange::ToJson(changes)));
+  }
+
+  policies.Set("bbb", policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                new_value.DeepCopy(), NULL);
-  EXPECT_CALL(observer_, OnSettingsChanged(kTestExtensionId,
-                                           settings_namespace::MANAGED,
-                                           ValueStoreChange::ToJson(changes)));
-  store_->SetCurrentPolicy(policies, true);
+  store_->SetCurrentPolicy(policies);
   loop_.RunUntilIdle();
   Mock::VerifyAndClearExpectations(&observer_);
 
   // Notify when policies are removed.
-  changes.clear();
-  changes.push_back(ValueStoreChange("ccc", new_value.DeepCopy(), NULL));
-  policies.Erase("ccc");
-  EXPECT_CALL(observer_, OnSettingsChanged(kTestExtensionId,
-                                           settings_namespace::MANAGED,
-                                           ValueStoreChange::ToJson(changes)));
-  store_->SetCurrentPolicy(policies, true);
+  {
+    ValueStoreChangeList changes;
+    changes.push_back(ValueStoreChange("bbb", new_value.DeepCopy(), NULL));
+    EXPECT_CALL(observer_,
+                OnSettingsChanged(kTestExtensionId,
+                                  settings_namespace::MANAGED,
+                                  ValueStoreChange::ToJson(changes)));
+  }
+
+  policies.Erase("bbb");
+  store_->SetCurrentPolicy(policies);
   loop_.RunUntilIdle();
   Mock::VerifyAndClearExpectations(&observer_);
 
-  // Don't notify when there aren't changes.
+  // Don't notify when there aren't any changes.
   EXPECT_CALL(observer_, OnSettingsChanged(_, _, _)).Times(0);
-  store_->SetCurrentPolicy(policies, true);
+  store_->SetCurrentPolicy(policies);
   loop_.RunUntilIdle();
   Mock::VerifyAndClearExpectations(&observer_);
 }

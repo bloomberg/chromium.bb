@@ -35,6 +35,9 @@ class SchemaRegistry : public base::NonThreadSafe {
     // (e.g. for periodic reloads).
     virtual void OnSchemaRegistryUpdated(bool has_new_schemas) = 0;
 
+    // Invoked when all policy domains become ready.
+    virtual void OnSchemaRegistryReady() = 0;
+
    protected:
     virtual ~Observer();
   };
@@ -54,6 +57,14 @@ class SchemaRegistry : public base::NonThreadSafe {
 
   virtual void UnregisterComponent(const PolicyNamespace& ns);
 
+  // Returns true if all domains have registered the initial components.
+  bool IsReady() const;
+
+  // This indicates that the initial components for |domain| have all been
+  // registered. It must be invoked at least once for each policy domain;
+  // subsequent calls for the same domain are ignored.
+  void SetReady(PolicyDomain domain);
+
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
@@ -66,6 +77,7 @@ class SchemaRegistry : public base::NonThreadSafe {
 
  private:
   ObserverList<Observer, true> observers_;
+  bool domains_ready_[POLICY_DOMAIN_SIZE];
 
   DISALLOW_COPY_AND_ASSIGN(SchemaRegistry);
 };
@@ -86,6 +98,8 @@ class CombinedSchemaRegistry : public SchemaRegistry,
   virtual void UnregisterComponent(const PolicyNamespace& ns) OVERRIDE;
 
   virtual void OnSchemaRegistryUpdated(bool has_new_schemas) OVERRIDE;
+
+  virtual void OnSchemaRegistryReady() OVERRIDE;
 
  private:
   void Combine(bool has_new_schemas);

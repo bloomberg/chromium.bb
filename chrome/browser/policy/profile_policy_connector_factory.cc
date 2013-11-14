@@ -13,14 +13,14 @@
 #include "components/user_prefs/pref_registry_syncable.h"
 
 #if defined(ENABLE_CONFIGURATION_POLICY)
+#include "chrome/browser/policy/schema_registry_service.h"
+#include "chrome/browser/policy/schema_registry_service_factory.h"
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_manager_factory_chromeos.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/policy/schema_registry_service.h"
-#include "chrome/browser/policy/schema_registry_service_factory.h"
 #else
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager.h"
 #include "chrome/browser/policy/cloud/user_cloud_policy_manager_factory.h"
@@ -60,8 +60,8 @@ ProfilePolicyConnectorFactory::ProfilePolicyConnectorFactory()
         "ProfilePolicyConnector",
         BrowserContextDependencyManager::GetInstance()) {
 #if defined(ENABLE_CONFIGURATION_POLICY)
-#if defined(OS_CHROMEOS)
   DependsOn(SchemaRegistryServiceFactory::GetInstance());
+#if defined(OS_CHROMEOS)
   DependsOn(UserCloudPolicyManagerFactoryChromeOS::GetInstance());
 #else
   DependsOn(UserCloudPolicyManagerFactory::GetInstance());
@@ -88,31 +88,34 @@ ProfilePolicyConnectorFactory::CreateForProfileInternal(
     Profile* profile,
     bool force_immediate_load) {
   DCHECK(connectors_.find(profile) == connectors_.end());
+
+  SchemaRegistry* schema_registry = NULL;
+  CloudPolicyManager* user_cloud_policy_manager = NULL;
+
 #if defined(ENABLE_CONFIGURATION_POLICY)
+  schema_registry = SchemaRegistryServiceFactory::GetForContext(profile);
+
 #if defined(OS_CHROMEOS)
-  SchemaRegistry* schema_registry =
-      SchemaRegistryServiceFactory::GetForContext(profile);
   chromeos::User* user = NULL;
   if (!chromeos::ProfileHelper::IsSigninProfile(profile)) {
     chromeos::UserManager* user_manager = chromeos::UserManager::Get();
     user = user_manager->GetUserByProfile(profile);
     CHECK(user);
   }
-  CloudPolicyManager* user_cloud_policy_manager =
+  user_cloud_policy_manager =
       UserCloudPolicyManagerFactoryChromeOS::GetForProfile(profile);
 #else
-  CloudPolicyManager* user_cloud_policy_manager =
+  user_cloud_policy_manager =
       UserCloudPolicyManagerFactory::GetForBrowserContext(profile);
-#endif
-#else
-  CloudPolicyManager* user_cloud_policy_manager = NULL;
-#endif
+#endif  // defined(OS_CHROMEOS)
+#endif  // defined(ENABLE_CONFIGURATION_POLICY)
+
   ProfilePolicyConnector* connector = new ProfilePolicyConnector();
   connector->Init(force_immediate_load,
 #if defined(ENABLE_CONFIGURATION_POLICY) && defined(OS_CHROMEOS)
                   user,
-                  schema_registry,
 #endif
+                  schema_registry,
                   user_cloud_policy_manager);
   connectors_[profile] = connector;
   return make_scoped_ptr(connector);

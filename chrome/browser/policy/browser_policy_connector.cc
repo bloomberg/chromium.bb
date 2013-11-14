@@ -387,11 +387,20 @@ void BrowserPolicyConnector::Shutdown() {
 
 PolicyService* BrowserPolicyConnector::GetPolicyService() {
   if (!policy_service_) {
+    // |providers| in decreasing order of priority.
     std::vector<ConfigurationPolicyProvider*> providers;
+    if (g_testing_provider) {
+      providers.push_back(g_testing_provider);
+    } else {
+      if (platform_provider_)
+        providers.push_back(platform_provider_.get());
 #if defined(OS_CHROMEOS)
-    providers.push_back(&global_user_cloud_policy_provider_);
+      if (device_cloud_policy_manager_)
+        providers.push_back(device_cloud_policy_manager_.get());
+      providers.push_back(&global_user_cloud_policy_provider_);
 #endif
-    policy_service_ = CreatePolicyService(providers);
+    }
+    policy_service_.reset(new PolicyServiceImpl(providers));
   }
   return policy_service_.get();
 }
@@ -402,6 +411,12 @@ const Schema& BrowserPolicyConnector::GetChromeSchema() const {
 
 CombinedSchemaRegistry* BrowserPolicyConnector::GetSchemaRegistry() {
   return &schema_registry_;
+}
+
+ConfigurationPolicyProvider* BrowserPolicyConnector::GetPlatformProvider() {
+  if (g_testing_provider)
+    return g_testing_provider;
+  return platform_provider_.get();
 }
 
 #if defined(OS_CHROMEOS)
@@ -425,25 +440,6 @@ void BrowserPolicyConnector::ScheduleServiceInitialization(
   // initialized (unit tests).
   if (device_management_service_)
     device_management_service_->ScheduleInitialization(delay_milliseconds);
-}
-
-scoped_ptr<PolicyService> BrowserPolicyConnector::CreatePolicyService(
-    const std::vector<ConfigurationPolicyProvider*>& additional_providers) {
-  std::vector<ConfigurationPolicyProvider*> providers;
-  if (g_testing_provider) {
-    providers.push_back(g_testing_provider);
-  } else {
-    // |providers| in decreasing order of priority.
-    if (platform_provider_)
-      providers.push_back(platform_provider_.get());
-#if defined(OS_CHROMEOS)
-    if (device_cloud_policy_manager_)
-      providers.push_back(device_cloud_policy_manager_.get());
-#endif
-    std::copy(additional_providers.begin(), additional_providers.end(),
-              std::back_inserter(providers));
-  }
-  return scoped_ptr<PolicyService>(new PolicyServiceImpl(providers));
 }
 
 const ConfigurationPolicyHandlerList*

@@ -69,9 +69,8 @@ class ConfigurationPolicyProvider : public SchemaRegistry::Observer {
   virtual void RemoveObserver(Observer* observer);
 
   // SchemaRegistry::Observer:
-  // This base implementation calls RefreshPolicies if
-  // |has_new_schemas| is true.
   virtual void OnSchemaRegistryUpdated(bool has_new_schemas) OVERRIDE;
+  virtual void OnSchemaRegistryReady() OVERRIDE;
 
  protected:
   // Subclasses must invoke this to update the policies currently served by

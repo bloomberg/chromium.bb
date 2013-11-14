@@ -16,6 +16,7 @@ SchemaRegistryService::SchemaRegistryService(
     : global_registry_(global_registry) {
   if (chrome_schema.valid())
     RegisterComponent(PolicyNamespace(POLICY_DOMAIN_CHROME, ""), chrome_schema);
+  SetReady(POLICY_DOMAIN_CHROME);
   if (global_registry_)
     global_registry->Track(this);
 }

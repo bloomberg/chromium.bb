@@ -40,7 +40,13 @@ class MockConfigurationPolicyProvider : public ConfigurationPolicyProvider {
     ConfigurationPolicyProvider::Init(&registry_);
   }
 
+  // Convenience method that installs an expectation on RefreshPolicies that
+  // just notifies the observers and serves the same policies.
+  void SetAutoRefresh();
+
  private:
+  void RefreshWithSamePolicies();
+
   SchemaRegistry registry_;
 
   DISALLOW_COPY_AND_ASSIGN(MockConfigurationPolicyProvider);
