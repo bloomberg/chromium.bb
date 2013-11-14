@@ -189,6 +189,9 @@ const char kPrefGeometryCache[] = "geometry_cache";
 // A preference that indicates when an extension is last launched.
 const char kPrefLastLaunchTime[] = "last_launch_time";
 
+// A list of installed ids and a signature.
+const char kInstallSignature[] = "extensions.install_signature";
+
 // Provider of write access to a dictionary storing extension prefs.
 class ScopedExtensionPrefUpdate : public DictionaryPrefUpdate {
  public:
@@ -1714,6 +1717,21 @@ void ExtensionPrefs::SetGeometryCache(
   UpdateExtensionPref(extension_id, kPrefGeometryCache, cache.release());
 }
 
+const DictionaryValue* ExtensionPrefs::GetInstallSignature() {
+ return prefs_->GetDictionary(kInstallSignature);
+}
+
+void ExtensionPrefs::SetInstallSignature(const DictionaryValue* signature) {
+  if (signature) {
+    prefs_->Set(kInstallSignature, *signature);
+    DVLOG(1) << "SetInstallSignature - saving";
+  } else {
+    DVLOG(1) << "SetInstallSignature - clearing";
+    prefs_->ClearPref(kInstallSignature);
+  }
+}
+
+
 ExtensionPrefs::ExtensionPrefs(
     PrefService* prefs,
     const base::FilePath& root_dir,
@@ -1787,13 +1805,16 @@ void ExtensionPrefs::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
   registry->RegisterListPref(prefs::kExtensionKnownDisabled,
                              user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
-
 #if defined(TOOLKIT_VIEWS)
   registry->RegisterIntegerPref(
       prefs::kBrowserActionContainerWidth,
       0,
       user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
 #endif
+  registry->RegisterDictionaryPref(
+      kInstallSignature,
+      user_prefs::PrefRegistrySyncable::UNSYNCABLE_PREF);
+
 }
 
 template <class ExtensionIdContainer>

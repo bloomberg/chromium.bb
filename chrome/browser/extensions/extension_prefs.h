@@ -510,6 +510,11 @@ class ExtensionPrefs : public ExtensionScopedPrefs,
   void SetGeometryCache(const std::string& extension_id,
                         scoped_ptr<base::DictionaryValue> cache);
 
+  // Used for verification of installed extension ids. For the Set method, pass
+  // null to remove the preference.
+  const base::DictionaryValue* GetInstallSignature();
+  void SetInstallSignature(const DictionaryValue* signature);
+
  private:
   friend class ExtensionPrefsBlacklistedExtensions;  // Unit test.
   friend class ExtensionPrefsUninstallExtension;     // Unit test.

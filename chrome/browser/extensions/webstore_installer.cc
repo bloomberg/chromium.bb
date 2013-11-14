@@ -24,6 +24,7 @@
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/install_tracker.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
+#include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -282,6 +283,13 @@ void WebstoreInstaller::Start() {
   pending_modules_.push_back(info);
 
   total_modules_ = pending_modules_.size();
+
+  std::set<std::string> ids;
+  std::list<SharedModuleInfo::ImportInfo>::const_iterator i;
+  for (i = pending_modules_.begin(); i != pending_modules_.end(); ++i) {
+    ids.insert(i->extension_id);
+  }
+  ExtensionSystem::Get(profile_)->install_verifier()->AddProvisional(ids);
 
   // TODO(crbug.com/305343): Query manifest of dependencises before
   // downloading & installing those dependencies.

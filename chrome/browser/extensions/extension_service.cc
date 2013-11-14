@@ -52,6 +52,7 @@
 #include "chrome/browser/extensions/external_install_ui.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/browser/extensions/external_provider_interface.h"
+#include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/extensions/installed_loader.h"
 #include "chrome/browser/extensions/management_policy.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
@@ -120,6 +121,7 @@ using extensions::Extension;
 using extensions::ExtensionIdSet;
 using extensions::ExtensionInfo;
 using extensions::FeatureSwitch;
+using extensions::InstallVerifier;
 using extensions::ManagementPolicy;
 using extensions::Manifest;
 using extensions::PermissionMessage;
@@ -773,6 +775,9 @@ bool ExtensionService::UninstallExtension(
      sync_change = extension_sync_service_->PrepareToSyncUninstallExtension(
         extension.get(), is_ready());
   }
+
+  extensions::ExtensionSystem::Get(profile_)->install_verifier()->Remove(
+      extension->id());
 
   if (IsUnacknowledgedExternalExtension(extension.get())) {
     UMA_HISTOGRAM_ENUMERATION("Extensions.ExternalExtensionEvent",
@@ -2175,6 +2180,10 @@ void ExtensionService::AddNewOrUpdatedExtension(
                                          blacklisted_for_malware,
                                          page_ordinal);
   delayed_installs_.Remove(extension->id());
+  if (extensions::ManifestURL::UpdatesFromGallery(extension)) {
+    extensions::ExtensionSystem::Get(profile_)->install_verifier()->Add(
+        extension->id(), InstallVerifier::AddResultCallback());
+  }
   FinishInstallation(extension);
 }
 

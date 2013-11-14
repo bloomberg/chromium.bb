@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/extension_prefs_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
+#include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/extensions/management_policy.h"
 #include "chrome/browser/extensions/standard_management_policy_provider.h"
 #include "chrome/browser/extensions/state_store.h"
@@ -79,6 +80,8 @@ ExtensionService* TestExtensionSystem::CreateExtensionService(
     bool autoupdate_enabled) {
   if (!ExtensionPrefs::Get(profile_))
     CreateExtensionPrefs(command_line, install_directory);
+  install_verifier_.reset(new InstallVerifier(ExtensionPrefs::Get(profile_),
+                                              NULL));
   // The ownership of |value_store_| is immediately transferred to state_store_,
   // but we keep a naked pointer to the TestingValueStore.
   scoped_ptr<TestingValueStore> value_store(new TestingValueStore());
@@ -156,6 +159,10 @@ const OneShotEvent& TestExtensionSystem::ready() const {
 
 ErrorConsole* TestExtensionSystem::error_console() {
   return error_console_.get();
+}
+
+InstallVerifier* TestExtensionSystem::install_verifier() {
+  return install_verifier_.get();
 }
 
 // static

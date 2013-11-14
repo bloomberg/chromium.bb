@@ -25,6 +25,7 @@
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/extension_warning_badge_service.h"
 #include "chrome/browser/extensions/extension_warning_set.h"
+#include "chrome/browser/extensions/install_verifier.h"
 #include "chrome/browser/extensions/management_policy.h"
 #include "chrome/browser/extensions/navigation_observer.h"
 #include "chrome/browser/extensions/standard_management_policy_provider.h"
@@ -152,6 +153,8 @@ void ExtensionSystemImpl::Shared::RegisterManagementPolicyProviders() {
   }
 #endif  // defined (OS_CHROMEOS)
 
+  management_policy_->RegisterProvider(install_verifier_.get());
+
 #endif  // defined(ENABLE_EXTENSIONS)
 }
 
@@ -186,6 +189,10 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   // These services must be registered before the ExtensionService tries to
   // load any extensions.
   {
+    install_verifier_.reset(new InstallVerifier(ExtensionPrefs::Get(profile_),
+                                                profile_->GetRequestContext()));
+    install_verifier_->Init();
+
     management_policy_.reset(new ManagementPolicy);
     RegisterManagementPolicyProviders();
   }
@@ -304,6 +311,10 @@ ErrorConsole* ExtensionSystemImpl::Shared::error_console() {
   return error_console_.get();
 }
 
+InstallVerifier* ExtensionSystemImpl::Shared::install_verifier() {
+  return install_verifier_.get();
+}
+
 //
 // ExtensionSystemImpl
 //
@@ -392,6 +403,10 @@ const OneShotEvent& ExtensionSystemImpl::ready() const {
 
 ErrorConsole* ExtensionSystemImpl::error_console() {
   return shared_->error_console();
+}
+
+InstallVerifier* ExtensionSystemImpl::install_verifier() {
+  return shared_->install_verifier();
 }
 
 void ExtensionSystemImpl::RegisterExtensionWithRequestContexts(

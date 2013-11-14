@@ -35,6 +35,7 @@ class ExtensionSystemSharedFactory;
 class ExtensionWarningBadgeService;
 class ExtensionWarningService;
 class InfoMap;
+class InstallVerifier;
 class LazyBackgroundTaskQueue;
 class ManagementPolicy;
 class NavigationObserver;
@@ -111,6 +112,9 @@ class ExtensionSystem : public BrowserContextKeyedService {
   // The ErrorConsole is created at startup.
   virtual ErrorConsole* error_console() = 0;
 
+  // The InstallVerifier is created at startup.
+  virtual InstallVerifier* install_verifier() = 0;
+
   // Called by the ExtensionService that lives in this system. Gives the
   // info map a chance to react to the load event before the EXTENSION_LOADED
   // notification has fired. The purpose for handling this event first is to
@@ -159,6 +163,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
   virtual ExtensionWarningService* warning_service() OVERRIDE;
   virtual Blacklist* blacklist() OVERRIDE;  // shared
   virtual ErrorConsole* error_console() OVERRIDE;
+  virtual InstallVerifier* install_verifier() OVERRIDE;
 
   virtual void RegisterExtensionWithRequestContexts(
       const Extension* extension) OVERRIDE;
@@ -199,6 +204,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
     EventRouter* event_router();
     ExtensionWarningService* warning_service();
     ErrorConsole* error_console();
+    InstallVerifier* install_verifier();
     const OneShotEvent& ready() const { return ready_; }
 
    private:
@@ -226,6 +232,7 @@ class ExtensionSystemImpl : public ExtensionSystem {
     scoped_ptr<ExtensionWarningService> extension_warning_service_;
     scoped_ptr<ExtensionWarningBadgeService> extension_warning_badge_service_;
     scoped_ptr<ErrorConsole> error_console_;
+    scoped_ptr<InstallVerifier> install_verifier_;
 
 #if defined(OS_CHROMEOS)
     scoped_ptr<chromeos::DeviceLocalAccountManagementPolicyProvider>
