@@ -4,6 +4,7 @@
 
 """Runs a monkey test on a single device."""
 
+import logging
 import random
 
 from pylib import constants
@@ -66,8 +67,16 @@ class TestRunner(base_test_runner.BaseTestRunner):
       output = '\n'.join(self._LaunchMonkeyTest())
       after_pids = self.adb.ExtractPid(self._package)
 
-    crashed = (not before_pids or not after_pids
-               or after_pids[0] != before_pids[0])
+    crashed = True
+    if not before_pids:
+      logging.error('Failed to start the process.')
+    elif not after_pids:
+      logging.error('Process %s has died.', before_pids[0])
+    elif before_pids[0] != after_pids[0]:
+      logging.error('Detected process restart %s -> %s',
+                    before_pids[0], after_pids[0])
+    else:
+      crashed = False
 
     results = base_test_result.TestRunResults()
     success_pattern = 'Events injected: %d' % self._options.event_count
@@ -77,5 +86,8 @@ class TestRunner(base_test_runner.BaseTestRunner):
     else:
       result = base_test_result.BaseTestResult(
           test_name, base_test_result.ResultType.FAIL, log=output)
+      if 'chrome' in self._options.package:
+        logging.warning('Start MinidumpUploadService...')
+        self.adb.StartCrashUploadService(self._package)
     results.AddResult(result)
     return results, False

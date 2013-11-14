@@ -741,6 +741,19 @@ class AndroidCommands(object):
     start_line = m.group(0)
     return GetLogTimestamp(start_line, self.GetDeviceYear())
 
+  def StartCrashUploadService(self, package):
+    # TODO(frankf): We really need a python wrapper around Intent
+    # to be shared with StartActivity/BroadcastIntent.
+    cmd = (
+      'am startservice -a %s.crash.ACTION_FIND_ALL -n '
+      '%s/%s.crash.MinidumpUploadService' %
+      (constants.PACKAGE_INFO['chrome'].package,
+       package,
+       constants.PACKAGE_INFO['chrome'].package))
+    am_output = self.RunShellCommand(cmd)
+    assert am_output and 'Starting' in am_output[-1], 'Service failed to start'
+    time.sleep(15)
+
   def BroadcastIntent(self, package, intent, *args):
     """Send a broadcast intent.
 
