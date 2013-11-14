@@ -613,6 +613,9 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   // Indicates if there is onging composition text.
   bool has_composition_text_;
 
+  // Whether return characters should be passed on to the RenderWidgetHostImpl.
+  bool accept_return_character_;
+
   // Current tooltip text.
   string16 tooltip_;
 

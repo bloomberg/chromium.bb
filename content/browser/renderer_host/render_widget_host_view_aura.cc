@@ -458,6 +458,7 @@ RenderWidgetHostViewAura::RenderWidgetHostViewAura(RenderWidgetHost* host)
       text_input_mode_(ui::TEXT_INPUT_MODE_DEFAULT),
       can_compose_inline_(true),
       has_composition_text_(false),
+      accept_return_character_(false),
       last_output_surface_id_(0),
       pending_delegated_ack_count_(0),
       skipped_frames_(false),
@@ -2166,7 +2167,8 @@ void RenderWidgetHostViewAura::InsertChar(char16 ch, int flags) {
     return;
   }
 
-  if (host_) {
+  // Ignore character messages for VKEY_RETURN sent on CTRL+M. crbug.com/315547
+  if (host_ && (accept_return_character_ || ch != ui::VKEY_RETURN)) {
     double now = ui::EventTimeForNow().InSecondsF();
     // Send a blink::WebInputEvent::Char event to |host_|.
     NativeWebKeyboardEvent webkit_event(ui::ET_KEY_PRESSED,
@@ -2596,6 +2598,8 @@ void RenderWidgetHostViewAura::OnKeyEvent(ui::KeyEvent* event) {
           ui::EventTimeForNow().InSecondsF());
       host_->ForwardKeyboardEvent(webkit_event);
     } else {
+      if (event->key_code() == ui::VKEY_RETURN)
+        accept_return_character_ = event->type() == ui::ET_KEY_PRESSED;
       NativeWebKeyboardEvent webkit_event(event);
       host_->ForwardKeyboardEvent(webkit_event);
     }
