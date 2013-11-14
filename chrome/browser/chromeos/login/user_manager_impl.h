@@ -187,6 +187,10 @@ class UserManagerImpl
   // list. Returns |NULL| otherwise.
   const User* FindUserInList(const std::string& user_id) const;
 
+  // Returns |true| if user with the given id is found in the persistent list.
+  // Returns |false| otherwise. Does not trigger user loading.
+  const bool UserExistsInList(const std::string& user_id) const;
+
   // Same as FindUserInList but returns non-const pointer to User object.
   User* FindUserInListAndModify(const std::string& user_id);
 
@@ -317,6 +321,17 @@ class UserManagerImpl
       const scoped_ptr<UpdateUserAccountDataCallbackData>& data);
 
   Profile* GetProfileByUser(const User* user) const;
+
+  // Implementation for RemoveUser method. This is an asynchronous part of the
+  // method, that verifies that owner will not get deleted, and calls
+  // |RemoveNonOwnerUserInternal|.
+  void RemoveUserInternal(const std::string& user_email,
+                          RemoveUserDelegate* delegate);
+
+  // Implementation for RemoveUser method. It is synchronous. It is called from
+  // RemoveUserInternal after owner check.
+  void RemoveNonOwnerUserInternal(const std::string& user_email,
+                                  RemoveUserDelegate* delegate);
 
   // MultiProfileUserControllerDelegate implementation:
   virtual void OnUserNotAllowed() OVERRIDE;

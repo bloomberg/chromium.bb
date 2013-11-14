@@ -263,6 +263,7 @@ void SupervisedUserManagerImpl::RollbackUserCreationTransaction() {
   if (user_id.empty()) {
     // Not much to do - just remove transaction.
     prefs->ClearPref(kLocallyManagedUserCreationTransactionDisplayName);
+    prefs->CommitPendingWrite();
     return;
   }
 
@@ -272,10 +273,10 @@ void SupervisedUserManagerImpl::RollbackUserCreationTransaction() {
                  << user_id << ", will not remove data";
     prefs->ClearPref(kLocallyManagedUserCreationTransactionDisplayName);
     prefs->ClearPref(kLocallyManagedUserCreationTransactionUserId);
+    prefs->CommitPendingWrite();
     return;
   }
-
-  owner_->RemoveUser(user_id, NULL);
+  owner_->RemoveNonOwnerUserInternal(user_id, NULL);
 
   prefs->ClearPref(kLocallyManagedUserCreationTransactionDisplayName);
   prefs->ClearPref(kLocallyManagedUserCreationTransactionUserId);
@@ -287,6 +288,9 @@ void SupervisedUserManagerImpl::RemoveNonCryptohomeData(
   PrefService* prefs = g_browser_process->local_state();
   ListPrefUpdate prefs_new_users_update(prefs, kLocallyManagedUsersFirstRun);
   prefs_new_users_update->Remove(base::StringValue(user_id), NULL);
+
+  DictionaryPrefUpdate synd_id_update(prefs, kManagedUserSyncId);
+  synd_id_update->RemoveWithoutPathExpansion(user_id, NULL);
 
   DictionaryPrefUpdate managers_update(prefs, kManagedUserManagers);
   managers_update->RemoveWithoutPathExpansion(user_id, NULL);
