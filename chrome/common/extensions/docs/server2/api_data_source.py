@@ -179,12 +179,7 @@ class _JSCModel(object):
       'returns': None,
       'id': _CreateId(function, 'method')
     }
-    if function.deprecated is not None:
-      function_dict['deprecated'] = self._FormatDescription(
-          function.deprecated)
-    if (function.parent is not None and
-        not isinstance(function.parent, model.Namespace)):
-      function_dict['parentName'] = function.parent.simple_name
+    self._AddCommonProperties(function_dict, function)
     if function.returns:
       function_dict['returns'] = self._GenerateType(function.returns)
     for param in function.params:
@@ -219,12 +214,7 @@ class _JSCModel(object):
       'id': _CreateId(event, 'event'),
       'byName': {},
     }
-    if event.deprecated is not None:
-      event_dict['deprecated'] = self._FormatDescription(
-          event.deprecated)
-    if (event.parent is not None and
-        not isinstance(event.parent, model.Namespace)):
-      event_dict['parentName'] = event.parent.simple_name
+    self._AddCommonProperties(event_dict, event)
     # Add the Event members to each event in this object.
     # If refs are disabled then don't worry about this, since it's only needed
     # for rendering, and disable_refs=True implies we're not rendering.
@@ -297,6 +287,7 @@ class _JSCModel(object):
       'returns': None,
       'id': _CreateId(property_, 'property')
     }
+    self._AddCommonProperties(property_dict, property_)
 
     if type_.property_type == model.PropertyType.FUNCTION:
       function = type_.function
@@ -304,10 +295,6 @@ class _JSCModel(object):
         property_dict['parameters'].append(self._GenerateProperty(param))
       if function.returns:
         property_dict['returns'] = self._GenerateType(function.returns)
-
-    if (property_.parent is not None and
-        not isinstance(property_.parent, model.Namespace)):
-      property_dict['parentName'] = property_.parent.simple_name
 
     value = property_.value
     if value is not None:
@@ -477,6 +464,14 @@ class _JSCModel(object):
               (PRIVATE_TEMPLATES, node['partial'])).Get()
       misc_rows.append({ 'title': category, 'content': content })
     return misc_rows
+
+  def _AddCommonProperties(self, target, src):
+    if src.deprecated is not None:
+      target['deprecated'] = self._FormatDescription(
+          src.deprecated)
+    if (src.parent is not None and
+        not isinstance(src.parent, model.Namespace)):
+      target['parentName'] = src.parent.simple_name
 
 
 class _LazySamplesGetter(object):

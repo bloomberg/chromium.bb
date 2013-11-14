@@ -8,6 +8,9 @@
   </span>
 </dt>
 <dd>
+{{?deprecated}}
+  {{+partials.warning_deprecated item:property}}
+{{/deprecated}}
 {{?description}}
   {{{description}}}
 {{/description}}
