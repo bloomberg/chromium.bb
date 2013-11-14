@@ -36,6 +36,7 @@
 #include "ash/wm/panels/panel_window_event_handler.h"
 #include "ash/wm/root_window_layout_manager.h"
 #include "ash/wm/screen_dimmer.h"
+#include "ash/wm/solo_window_tracker.h"
 #include "ash/wm/stacking_controller.h"
 #include "ash/wm/status_area_layout_manager.h"
 #include "ash/wm/system_background_controller.h"
@@ -396,6 +397,13 @@ void RootWindowController::OnWallpaperAnimationFinished(views::Widget* widget) {
 void RootWindowController::CloseChildWindows() {
   mouse_event_target_.reset();
 
+  // |solo_window_tracker_| must be shut down before windows are destroyed.
+  if (solo_window_tracker_) {
+    if (docked_layout_manager_)
+      docked_layout_manager_->RemoveObserver(solo_window_tracker_.get());
+    solo_window_tracker_.reset();
+  }
+
   // Deactivate keyboard container before closing child windows and shutting
   // down associated layout managers.
   DeactivateKeyboard(Shell::GetInstance()->keyboard_controller());
@@ -563,7 +571,6 @@ void RootWindowController::DeactivateKeyboard(
   }
 }
 
-
 ////////////////////////////////////////////////////////////////////////////////
 // RootWindowController, private:
 
@@ -617,10 +624,14 @@ void RootWindowController::Init(RootWindowType root_window_type,
         root_window_->window());
     root_window_->ShowRootWindow();
 
-    // Create a launcher if a user is already logged.
+    // Create a launcher if a user is already logged in.
     if (shell->session_state_delegate()->NumberOfLoggedInUsers())
       shelf()->CreateLauncher();
   }
+
+  solo_window_tracker_.reset(new SoloWindowTracker(root_window_.get()));
+  if (docked_layout_manager_)
+    docked_layout_manager_->AddObserver(solo_window_tracker_.get());
 }
 
 void RootWindowController::InitLayoutManagers() {

@@ -6,25 +6,18 @@
 
 #include <vector>
 
-#include "ash/ash_constants.h"
 #include "ash/root_window_controller.h"
-#include "ash/root_window_settings.h"
-#include "ash/shell.h"
-#include "ash/shell_window_ids.h"
 #include "ash/wm/caption_buttons/frame_caption_button_container_view.h"
+#include "ash/wm/solo_window_tracker.h"
 #include "ash/wm/window_state.h"
-#include "ash/wm/window_util.h"
 #include "base/logging.h"  // DCHECK
 #include "grit/ash_resources.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPaint.h"
 #include "third_party/skia/include/core/SkPath.h"
-#include "ui/aura/client/aura_constants.h"
-#include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
-#include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/animation/slide_animation.h"
@@ -36,7 +29,6 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
-using aura::RootWindow;
 using aura::Window;
 using views::Widget;
 
@@ -70,9 +62,6 @@ const int kThemeFrameImageInsetX = 5;
 const int kActivationCrossfadeDurationMs = 200;
 // Alpha/opacity value for fully-opaque headers.
 const int kFullyOpaque = 255;
-
-// A flag to enable/disable solo window header.
-bool solo_window_header_enabled = true;
 
 // Tiles an image into an area, rounding the top corners. Samples |image|
 // starting |image_inset_x| pixels from the left of the image.
@@ -143,53 +132,6 @@ void PaintFrameImagesInRoundRect(gfx::Canvas* canvas,
   }
 }
 
-// Returns true if |child| and all ancestors are visible. Useful to ensure that
-// a window is individually visible and is not part of a hidden workspace.
-bool IsVisibleToRoot(Window* child) {
-  for (Window* window = child; window; window = window->parent()) {
-    // We must use TargetVisibility() because windows animate in and out and
-    // IsVisible() also tracks the layer visibility state.
-    if (!window->TargetVisibility())
-      return false;
-  }
-  return true;
-}
-
-// Returns true if |window| is a "normal" window for purposes of solo window
-// computations. Returns false for windows that are:
-// * Not drawn (for example, DragDropTracker uses one for mouse capture)
-// * Modal alerts (it looks odd for headers to change when an alert opens)
-// * Constrained windows (ditto)
-bool IsSoloWindowHeaderCandidate(aura::Window* window) {
-  return window &&
-      window->type() == aura::client::WINDOW_TYPE_NORMAL &&
-      window->layer() &&
-      window->layer()->type() != ui::LAYER_NOT_DRAWN &&
-      window->GetProperty(aura::client::kModalKey) == ui::MODAL_TYPE_NONE &&
-      !window->GetProperty(ash::kConstrainedWindowKey);
-}
-
-// Returns a list of windows in |root_window|| that potentially could have
-// a transparent solo-window header.
-std::vector<Window*> GetWindowsForSoloHeaderUpdate(Window* root_window) {
-  std::vector<Window*> windows;
-  // Avoid memory allocations for typical window counts.
-  windows.reserve(16);
-  // Collect windows from the desktop.
-  Window* desktop = ash::Shell::GetContainer(
-      root_window, ash::internal::kShellWindowId_DefaultContainer);
-  windows.insert(windows.end(),
-                 desktop->children().begin(),
-                 desktop->children().end());
-  // Collect "always on top" windows.
-  Window* top_container =
-      ash::Shell::GetContainer(
-          root_window, ash::internal::kShellWindowId_AlwaysOnTopContainer);
-  windows.insert(windows.end(),
-                 top_container->children().begin(),
-                 top_container->children().end());
-  return windows;
-}
 }  // namespace
 
 namespace ash {
@@ -265,18 +207,6 @@ void HeaderPainter::Init(
 
   // Solo-window header updates are handled by the WorkspaceLayoutManager when
   // this window is added to the desktop.
-}
-
-// static
-void HeaderPainter::SetSoloWindowHeadersEnabled(bool enabled) {
-  solo_window_header_enabled = enabled;
-}
-
-// static
-void HeaderPainter::UpdateSoloWindowHeader(Window* root_window) {
-  // Use a separate function here so callers outside of HeaderPainter don't need
-  // to know about "ignorable_window".
-  UpdateSoloWindowInRoot(root_window, NULL /* ignorable_window */);
 }
 
 // static
@@ -571,17 +501,6 @@ void HeaderPainter::OnTrackedByWorkspaceChanged(wm::WindowState* window_state,
 ///////////////////////////////////////////////////////////////////////////////
 // aura::WindowObserver overrides:
 
-void HeaderPainter::OnWindowVisibilityChanged(aura::Window* window,
-                                              bool visible) {
-  // OnWindowVisibilityChanged can be called for the child windows of |window_|.
-  if (window != window_)
-    return;
-
-  // Window visibility change may trigger the change of window solo-ness in a
-  // different window.
-  UpdateSoloWindowInRoot(window_->GetRootWindow(), visible ? NULL : window_);
-}
-
 void HeaderPainter::OnWindowDestroying(aura::Window* destroying) {
   DCHECK_EQ(window_, destroying);
 
@@ -589,10 +508,6 @@ void HeaderPainter::OnWindowDestroying(aura::Window* destroying) {
   // already destroyed when our destructor runs.
   window_->RemoveObserver(this);
   wm::GetWindowState(window_)->RemoveObserver(this);
-
-  // If we have two or more windows open and we close this one, we might trigger
-  // the solo window appearance for another window.
-  UpdateSoloWindowInRoot(window_->GetRootWindow(), window_);
 
   window_ = NULL;
 }
@@ -607,19 +522,6 @@ void HeaderPainter::OnWindowBoundsChanged(aura::Window* window,
        (old_bounds.y() != 0 && new_bounds.y() == 0))) {
     SchedulePaintForHeader();
   }
-}
-
-void HeaderPainter::OnWindowAddedToRootWindow(aura::Window* window) {
-  // Needs to trigger the window appearance change if the window moves across
-  // root windows and a solo window is already in the new root.
-  UpdateSoloWindowInRoot(window->GetRootWindow(), NULL /* ignore_window */);
-}
-
-void HeaderPainter::OnWindowRemovingFromRootWindow(aura::Window* window) {
-  // Needs to trigger the window appearance change if the window moves across
-  // root windows and only one window is left in the previous root.  Because
-  // |window| is not yet moved, |window| has to be ignored.
-  UpdateSoloWindowInRoot(window->GetRootWindow(), window);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -673,82 +575,18 @@ int HeaderPainter::GetHeaderOpacity(
   if (ShouldUseMinimalHeaderStyle(THEMED_NO))
     return kFullyOpaque;
 
-  // Single browser window is very transparent.
-  if (UseSoloWindowHeader())
+  // Solo header is very transparent.
+  ash::SoloWindowTracker* solo_window_tracker =
+      internal::RootWindowController::ForWindow(window_)->solo_window_tracker();
+  if (solo_window_tracker &&
+      solo_window_tracker->GetWindowWithSoloHeader() == window_) {
     return kSoloWindowOpacity;
+  }
 
   // Otherwise, change transparency based on window activation status.
   if (header_mode == ACTIVE)
     return kActiveWindowOpacity;
   return kInactiveWindowOpacity;
-}
-
-bool HeaderPainter::UseSoloWindowHeader() const {
-  if (!solo_window_header_enabled)
-    return false;
-  // Don't use transparent headers for panels, pop-ups, etc.
-  if (!IsSoloWindowHeaderCandidate(window_))
-    return false;
-  aura::Window* root = window_->GetRootWindow();
-  // Don't recompute every time, as it would require many window property
-  // lookups.
-  return internal::GetRootWindowSettings(root)->solo_window_header;
-}
-
-// static
-bool HeaderPainter::UseSoloWindowHeaderInRoot(Window* root_window,
-                                              Window* ignore_window) {
-  int visible_window_count = 0;
-  std::vector<Window*> windows = GetWindowsForSoloHeaderUpdate(root_window);
-  for (std::vector<Window*>::const_iterator it = windows.begin();
-       it != windows.end();
-       ++it) {
-    Window* window = *it;
-    // Various sorts of windows "don't count" for this computation.
-    if (ignore_window == window ||
-        !IsSoloWindowHeaderCandidate(window) ||
-        !IsVisibleToRoot(window))
-      continue;
-    if (wm::GetWindowState(window)->IsMaximized())
-      return false;
-    ++visible_window_count;
-    if (visible_window_count > 1)
-      return false;
-  }
-  // Count must be tested because all windows might be "don't count" windows
-  // in the loop above.
-  return visible_window_count == 1;
-}
-
-// static
-void HeaderPainter::UpdateSoloWindowInRoot(Window* root,
-                                           Window* ignore_window) {
-#if defined(OS_WIN)
-  // Non-Ash Windows doesn't do solo-window counting for transparency effects,
-  // as the desktop background and window frames are managed by the OS.
-  if (!ash::Shell::HasInstance())
-    return;
-#endif
-  if (!root)
-    return;
-  internal::RootWindowSettings* root_window_settings =
-      internal::GetRootWindowSettings(root);
-  bool old_solo_header = root_window_settings->solo_window_header;
-  bool new_solo_header = UseSoloWindowHeaderInRoot(root, ignore_window);
-  if (old_solo_header == new_solo_header)
-    return;
-  root_window_settings->solo_window_header = new_solo_header;
-
-  // Invalidate all the window frames in the desktop. There should only be
-  // a few.
-  std::vector<Window*> windows = GetWindowsForSoloHeaderUpdate(root);
-  for (std::vector<Window*>::const_iterator it = windows.begin();
-       it != windows.end();
-       ++it) {
-    Widget* widget = Widget::GetWidgetForNativeWindow(*it);
-    if (widget && widget->non_client_view())
-      widget->non_client_view()->SchedulePaint();
-  }
 }
 
 void HeaderPainter::SchedulePaintForHeader() {

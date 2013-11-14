@@ -17,8 +17,7 @@ DEFINE_OWNED_WINDOW_PROPERTY_KEY(RootWindowSettings,
                                  kRootWindowSettingsKey, NULL);
 
 RootWindowSettings::RootWindowSettings()
-    : solo_window_header(false),
-      display_id(gfx::Display::kInvalidDisplayID),
+    : display_id(gfx::Display::kInvalidDisplayID),
       controller(NULL) {
 }
 
