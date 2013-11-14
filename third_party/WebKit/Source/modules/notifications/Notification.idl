@@ -57,5 +57,5 @@
     [Conditional=LEGACY_NOTIFICATIONS] void cancel();
     void close();
 
-    void show();
+    [Conditional=LEGACY_NOTIFICATIONS] void show();
 };
