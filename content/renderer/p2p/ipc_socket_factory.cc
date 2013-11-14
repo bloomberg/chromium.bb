@@ -10,6 +10,7 @@
 #include "base/debug/trace_event.h"
 #include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_proxy.h"
+#include "content/renderer/p2p/host_address_request.h"
 #include "content/renderer/p2p/socket_client.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "jingle/glue/utils.h"
@@ -453,6 +454,12 @@ talk_base::AsyncPacketSocket* IpcPacketSocketFactory::CreateClientTcpSocket(
                     remote_address))
     return NULL;
   return socket.release();
+}
+
+talk_base::AsyncResolverInterface*
+IpcPacketSocketFactory::CreateAsyncResolver() {
+  NOTREACHED();
+  return NULL;
 }
 
 }  // namespace content

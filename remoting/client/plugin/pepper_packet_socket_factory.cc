@@ -375,4 +375,10 @@ talk_base::AsyncPacketSocket* PepperPacketSocketFactory::CreateClientTcpSocket(
   return NULL;
 }
 
+talk_base::AsyncResolverInterface*
+PepperPacketSocketFactory::CreateAsyncResolver() {
+  NOTREACHED();
+  return NULL;
+}
+
 }  // namespace remoting

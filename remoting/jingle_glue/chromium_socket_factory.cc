@@ -371,4 +371,10 @@ ChromiumPacketSocketFactory::CreateClientTcpSocket(
   return NULL;
 }
 
+talk_base::AsyncResolverInterface*
+ChromiumPacketSocketFactory::CreateAsyncResolver() {
+  NOTREACHED();
+  return NULL;
+}
+
 }  // namespace remoting

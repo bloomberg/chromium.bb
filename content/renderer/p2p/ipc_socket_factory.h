@@ -40,6 +40,7 @@ class IpcPacketSocketFactory : public talk_base::PacketSocketFactory {
       const talk_base::ProxyInfo& proxy_info,
       const std::string& user_agent,
       int opts) OVERRIDE;
+  virtual talk_base::AsyncResolverInterface* CreateAsyncResolver() OVERRIDE;
 
  private:
   P2PSocketDispatcher* socket_dispatcher_;
