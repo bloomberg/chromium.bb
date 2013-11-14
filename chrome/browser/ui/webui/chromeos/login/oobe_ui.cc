@@ -430,11 +430,15 @@ void OobeUI::ShowRetailModeLoginSpinner() {
   signin_screen_handler_->ShowRetailModeLoginSpinner();
 }
 
-void OobeUI::ShowSigninScreen(SigninScreenHandlerDelegate* delegate,
+void OobeUI::ShowSigninScreen(const LoginScreenContext& context,
+                              SigninScreenHandlerDelegate* delegate,
                               NativeWindowDelegate* native_window_delegate) {
   signin_screen_handler_->SetDelegate(delegate);
   signin_screen_handler_->SetNativeWindowDelegate(native_window_delegate);
-  signin_screen_handler_->Show(core_handler_->show_oobe_ui());
+
+  LoginScreenContext actual_context(context);
+  actual_context.set_oobe_ui(core_handler_->show_oobe_ui());
+  signin_screen_handler_->Show(actual_context);
 }
 
 void OobeUI::ResetSigninScreenHandlerDelegate() {

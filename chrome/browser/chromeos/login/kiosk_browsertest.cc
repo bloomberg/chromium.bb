@@ -334,7 +334,7 @@ class KioskTest : public InProcessBrowserTest {
     chromeos::WizardController* wizard_controller =
         chromeos::WizardController::default_controller();
     CHECK(wizard_controller);
-    wizard_controller->SkipToLoginForTesting();
+    wizard_controller->SkipToLoginForTesting(LoginScreenContext());
     login_signal.Wait();
 
     // Wait for the Kiosk App configuration to reload, then launch the app.
@@ -572,7 +572,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, AutolaunchWarningCancel) {
       chromeos::WizardController::default_controller();
   CHECK(wizard_controller);
   ReloadAutolaunchKioskApps();
-  wizard_controller->SkipToLoginForTesting();
+  wizard_controller->SkipToLoginForTesting(LoginScreenContext());
 
   EXPECT_FALSE(KioskAppManager::Get()->GetAutoLaunchApp().empty());
   EXPECT_FALSE(KioskAppManager::Get()->IsAutoLaunchEnabled());
@@ -600,7 +600,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, AutolaunchWarningConfirm) {
   chromeos::WizardController* wizard_controller =
       chromeos::WizardController::default_controller();
   CHECK(wizard_controller);
-  wizard_controller->SkipToLoginForTesting();
+  wizard_controller->SkipToLoginForTesting(LoginScreenContext());
 
   ReloadAutolaunchKioskApps();
   EXPECT_FALSE(KioskAppManager::Get()->GetAutoLaunchApp().empty());
@@ -636,7 +636,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableCancel) {
             GetConsumerKioskModeStatus());
 
   // Wait for the login UI to come up and switch to the kiosk_enable screen.
-  wizard_controller->SkipToLoginForTesting();
+  wizard_controller->SkipToLoginForTesting(LoginScreenContext());
   content::WindowedNotificationObserver(
       chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
       content::NotificationService::AllSources()).Wait();
@@ -671,10 +671,10 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableConfirmed) {
   // Check Kiosk mode status.
   EXPECT_EQ(KioskAppManager::CONSUMER_KIOSK_MODE_CONFIGURABLE,
             GetConsumerKioskModeStatus());
-  wizard_controller->SkipToLoginForTesting();
+  wizard_controller->SkipToLoginForTesting(LoginScreenContext());
 
   // Wait for the login UI to come up and switch to the kiosk_enable screen.
-  wizard_controller->SkipToLoginForTesting();
+  wizard_controller->SkipToLoginForTesting(LoginScreenContext());
   content::WindowedNotificationObserver(
       chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
       content::NotificationService::AllSources()).Wait();
@@ -716,10 +716,10 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableAbortedWithAutoEnrollment) {
   // Check Kiosk mode status.
   EXPECT_EQ(KioskAppManager::CONSUMER_KIOSK_MODE_CONFIGURABLE,
             GetConsumerKioskModeStatus());
-  wizard_controller->SkipToLoginForTesting();
+  wizard_controller->SkipToLoginForTesting(LoginScreenContext());
 
   // Wait for the login UI to come up and switch to the kiosk_enable screen.
-  wizard_controller->SkipToLoginForTesting();
+  wizard_controller->SkipToLoginForTesting(LoginScreenContext());
   content::WindowedNotificationObserver(
       chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
       content::NotificationService::AllSources()).Wait();
@@ -754,7 +754,7 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableAfter2ndSigninScreen) {
             GetConsumerKioskModeStatus());
 
   // Wait for the login UI to come up and switch to the kiosk_enable screen.
-  wizard_controller->SkipToLoginForTesting();
+  wizard_controller->SkipToLoginForTesting(LoginScreenContext());
   content::WindowedNotificationObserver(
       chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
       content::NotificationService::AllSources()).Wait();
@@ -775,7 +775,8 @@ IN_PROC_BROWSER_TEST_F(KioskTest, KioskEnableAfter2ndSigninScreen) {
       content::NotificationService::AllSources()).Wait();
 
   // Show signin screen again.
-  chromeos::LoginDisplayHostImpl::default_host()->StartSignInScreen();
+  chromeos::LoginDisplayHostImpl::default_host()->StartSignInScreen(
+      LoginScreenContext());
   OobeScreenWaiter(OobeDisplay::SCREEN_GAIA_SIGNIN).Wait();
 
   // Show kiosk enable screen again.
@@ -850,7 +851,7 @@ IN_PROC_BROWSER_TEST_F(KioskEnterpriseTest, DISABLED_EnterpriseKioskApp) {
   chromeos::WizardController::SkipPostLoginScreensForTesting();
   chromeos::WizardController* wizard_controller =
       chromeos::WizardController::default_controller();
-  wizard_controller->SkipToLoginForTesting();
+  wizard_controller->SkipToLoginForTesting(LoginScreenContext());
 
   // Wait for the Kiosk App configuration to reload, then launch the app.
   KioskAppManager::App app;
@@ -956,7 +957,7 @@ IN_PROC_BROWSER_TEST_F(KioskHiddenWebUITest, AutolaunchWarning) {
       chromeos::WizardController::default_controller();
   CHECK(wizard_controller);
   ReloadAutolaunchKioskApps();
-  wizard_controller->SkipToLoginForTesting();
+  wizard_controller->SkipToLoginForTesting(LoginScreenContext());
 
   EXPECT_FALSE(KioskAppManager::Get()->GetAutoLaunchApp().empty());
   EXPECT_FALSE(KioskAppManager::Get()->IsAutoLaunchEnabled());

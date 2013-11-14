@@ -36,6 +36,7 @@
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/login/wizard_in_process_browser_test.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -375,7 +376,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
   MockConsumer mock_consumer;
 
   // Must have a pending signin to resume after auto-enrollment:
-  LoginDisplayHostImpl::default_host()->StartSignInScreen();
+  LoginDisplayHostImpl::default_host()->StartSignInScreen(LoginScreenContext());
   EXPECT_FALSE(ExistingUserController::current_controller() == NULL);
   ExistingUserController::current_controller()->DoAutoEnrollment();
   ExistingUserController::current_controller()->set_login_status_consumer(
@@ -403,7 +404,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest, ControlFlowResetScreen) {
   EXPECT_EQ(WizardController::default_controller()->GetNetworkScreen(),
             WizardController::default_controller()->current_screen());
 
-  LoginDisplayHostImpl::default_host()->StartSignInScreen();
+  LoginDisplayHostImpl::default_host()->StartSignInScreen(LoginScreenContext());
   EXPECT_FALSE(ExistingUserController::current_controller() == NULL);
   ExistingUserController::current_controller()->OnStartDeviceReset();
 
@@ -422,7 +423,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerFlowTest,
   EXPECT_EQ(WizardController::default_controller()->GetNetworkScreen(),
             WizardController::default_controller()->current_screen());
 
-  LoginDisplayHostImpl::default_host()->StartSignInScreen();
+  LoginDisplayHostImpl::default_host()->StartSignInScreen(LoginScreenContext());
   EXPECT_FALSE(ExistingUserController::current_controller() == NULL);
   ExistingUserController::current_controller()->ShowWrongHWIDScreen();
 
@@ -593,7 +594,7 @@ IN_PROC_BROWSER_TEST_F(WizardControllerProxyAuthOnSigninTest,
   EXPECT_EQ(WizardController::default_controller()->GetNetworkScreen(),
             WizardController::default_controller()->current_screen());
 
-  LoginDisplayHostImpl::default_host()->StartSignInScreen();
+  LoginDisplayHostImpl::default_host()->StartSignInScreen(LoginScreenContext());
   auth_needed_waiter.Wait();
 }
 

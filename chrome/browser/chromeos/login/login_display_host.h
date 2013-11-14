@@ -21,6 +21,7 @@ class Widget;
 namespace chromeos {
 
 class AppLaunchController;
+class LoginScreenContext;
 class WebUILoginView;
 class WizardController;
 
@@ -96,7 +97,7 @@ class LoginDisplayHost {
   virtual void StartUserAdding(const base::Closure& completion_callback) = 0;
 
   // Starts sign in screen.
-  virtual void StartSignInScreen() = 0;
+  virtual void StartSignInScreen(const LoginScreenContext& context) = 0;
 
   // Resumes a previously started sign in screen.
   virtual void ResumeSignInScreen() = 0;

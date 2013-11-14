@@ -27,6 +27,7 @@ class CoreOobeHandler;
 class ErrorScreenHandler;
 class KioskAppMenuHandler;
 class KioskEnableScreenActor;
+class LoginScreenContext;
 class NativeWindowDelegate;
 class NetworkDropdownHandler;
 class NetworkStateInformer;
@@ -109,7 +110,8 @@ class OobeUI : public OobeDisplay,
   void ShowRetailModeLoginSpinner();
 
   // Shows the signin screen.
-  void ShowSigninScreen(SigninScreenHandlerDelegate* delegate,
+  void ShowSigninScreen(const LoginScreenContext& context,
+                        SigninScreenHandlerDelegate* delegate,
                         NativeWindowDelegate* native_window_delegate);
 
   // Shows the kiosk splash screen.

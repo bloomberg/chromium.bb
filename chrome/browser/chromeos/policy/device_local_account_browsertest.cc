@@ -71,6 +71,7 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
@@ -106,6 +107,7 @@
 
 namespace em = enterprise_management;
 
+using chromeos::LoginScreenContext;
 using testing::InvokeWithoutArgs;
 using testing::Return;
 using testing::_;
@@ -540,7 +542,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, StartSession) {
     run_loop.Run();
 
   // Start login into the device-local account.
-  host->StartSignInScreen();
+  host->StartSignInScreen(LoginScreenContext());
   chromeos::ExistingUserController* controller =
       chromeos::ExistingUserController::current_controller();
   ASSERT_TRUE(controller);
@@ -595,7 +597,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, FullscreenDisallowed) {
   chrome::StartKeepAlive();
 
   // Start login into the device-local account.
-  host->StartSignInScreen();
+  host->StartSignInScreen(LoginScreenContext());
   chromeos::ExistingUserController* controller =
       chromeos::ExistingUserController::current_controller();
   ASSERT_TRUE(controller);
@@ -687,7 +689,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsUncached) {
       base::Bind(DoesInstallFailureReferToId, kGoodExtensionID));
 
   // Start login into the device-local account.
-  host->StartSignInScreen();
+  host->StartSignInScreen(LoginScreenContext());
   chromeos::ExistingUserController* controller =
       chromeos::ExistingUserController::current_controller();
   ASSERT_TRUE(controller);
@@ -786,7 +788,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsCached) {
       base::Bind(DoesInstallFailureReferToId, kGoodExtensionID));
 
   // Start login into the device-local account.
-  host->StartSignInScreen();
+  host->StartSignInScreen(LoginScreenContext());
   chromeos::ExistingUserController* controller =
       chromeos::ExistingUserController::current_controller();
   ASSERT_TRUE(controller);
@@ -922,7 +924,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountExternalDataTest, ExternalData) {
   chrome::StartKeepAlive();
 
   // Start login into the device-local account.
-  host->StartSignInScreen();
+  host->StartSignInScreen(LoginScreenContext());
   chromeos::ExistingUserController* controller =
       chromeos::ExistingUserController::current_controller();
   ASSERT_TRUE(controller);
@@ -993,7 +995,7 @@ IN_PROC_BROWSER_TEST_P(TermsOfServiceTest, TermsOfServiceScreen) {
     oobe_ui_wait_run_loop.Run();
 
   // Start login into the device-local account.
-  host->StartSignInScreen();
+  host->StartSignInScreen(LoginScreenContext());
   chromeos::ExistingUserController* controller =
       chromeos::ExistingUserController::current_controller();
   ASSERT_TRUE(controller);

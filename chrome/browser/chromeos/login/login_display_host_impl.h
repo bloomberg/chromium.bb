@@ -73,7 +73,7 @@ class LoginDisplayHostImpl : public LoginDisplayHost,
   virtual AppLaunchController* GetAppLaunchController() OVERRIDE;
   virtual void StartUserAdding(
       const base::Closure& completion_callback) OVERRIDE;
-  virtual void StartSignInScreen() OVERRIDE;
+  virtual void StartSignInScreen(const LoginScreenContext& context) OVERRIDE;
   virtual void ResumeSignInScreen() OVERRIDE;
   virtual void OnPreferencesChanged() OVERRIDE;
   virtual void PrewarmAuthentication() OVERRIDE;

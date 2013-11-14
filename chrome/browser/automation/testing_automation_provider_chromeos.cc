@@ -38,6 +38,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -327,7 +328,7 @@ void TestingAutomationProvider::SkipToLogin(DictionaryValue* args,
   WizardControllerObserver* observer =
       new WizardControllerObserver(wizard_controller, this, reply_message);
   observer->set_screen_to_wait_for(WizardController::kLoginScreenName);
-  wizard_controller->SkipToLoginForTesting();
+  wizard_controller->SkipToLoginForTesting(chromeos::LoginScreenContext());
 }
 
 void TestingAutomationProvider::GetOOBEScreenInfo(DictionaryValue* args,

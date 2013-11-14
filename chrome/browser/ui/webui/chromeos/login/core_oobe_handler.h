@@ -13,6 +13,10 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
+namespace base {
+class ListValue;
+}
+
 namespace chromeos {
 
 class OobeUI;
@@ -83,7 +87,7 @@ class CoreOobeHandler : public BaseScreenHandler,
   void HandleSkipUpdateEnrollAfterEula();
   void HandleUpdateCurrentScreen(const std::string& screen);
   void HandleSetDeviceRequisition(const std::string& requisition);
-  void HandleSkipToLoginForTesting();
+  void HandleSkipToLoginForTesting(const base::ListValue* args);
 
   // Updates a11y menu state based on the current a11y features state(on/off).
   void UpdateA11yState();

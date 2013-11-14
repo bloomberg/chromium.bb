@@ -246,8 +246,7 @@ cr.define('cr.ui', function() {
    * @param {string} password Login password.
    */
   Oobe.loginForTesting = function(username, password) {
-    chrome.send('skipToLoginForTesting');
-    Oobe.showSigninUI(username);
+    chrome.send('skipToLoginForTesting', [username]);
     chrome.send('completeLogin', [username, password]);
   };
 

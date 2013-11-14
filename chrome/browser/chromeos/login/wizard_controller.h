@@ -35,6 +35,7 @@ class KioskAutolaunchScreen;
 class KioskEnableScreen;
 class LocallyManagedUserCreationScreen;
 class LoginDisplayHost;
+class LoginScreenContext;
 class NetworkScreen;
 class OobeDisplay;
 class ResetScreen;
@@ -96,7 +97,7 @@ class WizardController : public ScreenObserver {
                                  base::DictionaryValue* screen_parameters);
 
   // Advances to login screen. Should be used in for testing only.
-  void SkipToLoginForTesting();
+  void SkipToLoginForTesting(const LoginScreenContext& context);
 
   // Adds and removes an observer.
   void AddObserver(Observer* observer);
@@ -164,7 +165,7 @@ class WizardController : public ScreenObserver {
   void ShowLocallyManagedUserCreationScreen();
 
   // Shows images login screen.
-  void ShowLoginScreen();
+  void ShowLoginScreen(const LoginScreenContext& context);
 
   // Resumes a pending login screen.
   void ResumeLoginScreen();

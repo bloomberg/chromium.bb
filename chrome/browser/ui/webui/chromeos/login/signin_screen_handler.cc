@@ -369,6 +369,26 @@ static bool SetUserInputMethodImpl(
 
 }  // namespace
 
+// LoginScreenContext implementation ------------------------------------------
+
+LoginScreenContext::LoginScreenContext() {
+  Init();
+}
+
+LoginScreenContext::LoginScreenContext(const base::ListValue* args) {
+  Init();
+
+  if (!args || args->GetSize() == 0)
+    return;
+  std::string email;
+  if (args->GetString(0, &email))
+    email_ = email;
+}
+
+void LoginScreenContext::Init() {
+  oobe_ui_ = false;
+}
+
 // SigninScreenHandler implementation ------------------------------------------
 
 SigninScreenHandler::SigninScreenHandler(
@@ -526,30 +546,16 @@ void SigninScreenHandler::DeclareLocalizedValues(
     builder->Add("demoLoginMessage", IDS_KIOSK_MODE_LOGIN_MESSAGE);
 }
 
-void SigninScreenHandler::Show(bool oobe_ui) {
+void SigninScreenHandler::Show(const LoginScreenContext& context) {
   CHECK(delegate_);
-  oobe_ui_ = oobe_ui;
-  if (!page_is_ready()) {
-    show_on_init_ = true;
-    return;
-  }
 
-  if (oobe_ui) {
-    // Shows new user sign-in for OOBE.
-    HandleShowAddUser(NULL);
-  } else {
-    // Populates account picker. Animation is turned off for now until we
-    // figure out how to make it fast enough.
-    SendUserList(false);
-
-    // Reset Caps Lock state when login screen is shown.
-    input_method::InputMethodManager::Get()->GetXKeyboard()->
-        SetCapsLockEnabled(false);
-
-    DictionaryValue params;
-    params.SetBoolean("disableAddUser", AllWhitelistedUsersPresent());
-    UpdateUIState(UI_STATE_ACCOUNT_PICKER, &params);
-  }
+  // Just initialize internal fields from context and call ShowImpl().
+  oobe_ui_ = context.oobe_ui();
+  if (!context.email().empty())
+    email_ = context.email();
+  else
+    email_.clear();
+  ShowImpl();
 }
 
 void SigninScreenHandler::ShowRetailModeLoginSpinner() {
@@ -577,6 +583,30 @@ void SigninScreenHandler::UpdateState(ErrorScreenActor::ErrorReason reason) {
 }
 
 // SigninScreenHandler, private: -----------------------------------------------
+
+void SigninScreenHandler::ShowImpl() {
+  if (!page_is_ready()) {
+    show_on_init_ = true;
+    return;
+  }
+
+  if (oobe_ui_) {
+    // Shows new user sign-in for OOBE.
+    OnShowAddUser(email_);
+  } else {
+    // Populates account picker. Animation is turned off for now until we
+    // figure out how to make it fast enough.
+    SendUserList(false);
+
+    // Reset Caps Lock state when login screen is shown.
+    input_method::InputMethodManager::Get()->GetXKeyboard()->
+        SetCapsLockEnabled(false);
+
+    DictionaryValue params;
+    params.SetBoolean("disableAddUser", AllWhitelistedUsersPresent());
+    UpdateUIState(UI_STATE_ACCOUNT_PICKER, &params);
+  }
+}
 
 void SigninScreenHandler::UpdateUIState(UIState ui_state,
                                         DictionaryValue* params) {
@@ -810,7 +840,7 @@ void SigninScreenHandler::Initialize() {
 
   if (show_on_init_) {
     show_on_init_ = false;
-    Show(oobe_ui_);
+    ShowImpl();
   }
 }
 
@@ -1315,22 +1345,11 @@ void SigninScreenHandler::HandleShowAddUser(const base::ListValue* args) {
                                "ShowLoginWebUI",
                                LoginDisplayHostImpl::kShowLoginWebUIid,
                                "ShowAddUser");
-  email_.clear();
+  std::string email;
   // |args| can be null if it's OOBE.
   if (args)
-    args->GetString(0, &email_);
-  is_account_picker_showing_first_time_ = false;
-
-  if (gaia_silent_load_ && email_.empty()) {
-    dns_cleared_ = true;
-    cookies_cleared_ = true;
-    ShowSigninScreenIfReady();
-  } else {
-    StartClearingDnsCache();
-    StartClearingCookies(base::Bind(
-        &SigninScreenHandler::ShowSigninScreenIfReady,
-        weak_factory_.GetWeakPtr()));
-  }
+    args->GetString(0, &email);
+  OnShowAddUser(email);
 }
 
 void SigninScreenHandler::HandleToggleEnrollmentScreen() {
@@ -1746,7 +1765,7 @@ bool SigninScreenHandler::AllWhitelistedUsersPresent() {
 
 void SigninScreenHandler::CancelPasswordChangedFlowInternal() {
   if (delegate_) {
-    Show(oobe_ui_);
+    ShowImpl();
     delegate_->CancelPasswordChangedFlow();
   }
 }
@@ -1828,6 +1847,22 @@ void SigninScreenHandler::ContinueKioskEnableFlow(bool should_auto_enroll) {
 
   if (delegate_)
     delegate_->ShowKioskEnableScreen();
+}
+
+void SigninScreenHandler::OnShowAddUser(const std::string& email) {
+  email_ = email;
+  is_account_picker_showing_first_time_ = false;
+
+  if (gaia_silent_load_ && email_.empty()) {
+    dns_cleared_ = true;
+    cookies_cleared_ = true;
+    ShowSigninScreenIfReady();
+  } else {
+    StartClearingDnsCache();
+    StartClearingCookies(base::Bind(
+        &SigninScreenHandler::ShowSigninScreenIfReady,
+        weak_factory_.GetWeakPtr()));
+  }
 }
 
 }  // namespace chromeos

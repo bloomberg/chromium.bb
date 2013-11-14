@@ -50,6 +50,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/options/options_util.h"
+#include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/chromeos_constants.h"
@@ -282,14 +283,14 @@ void WizardController::ShowNetworkScreen() {
   SetCurrentScreen(GetNetworkScreen());
 }
 
-void WizardController::ShowLoginScreen() {
+void WizardController::ShowLoginScreen(const LoginScreenContext& context) {
   if (!time_eula_accepted_.is_null()) {
     base::TimeDelta delta = base::Time::Now() - time_eula_accepted_;
     UMA_HISTOGRAM_MEDIUM_TIMES("OOBE.EULAToSignInTime", delta);
   }
   VLOG(1) << "Showing login screen.";
   SetStatusAreaVisible(true);
-  host_->StartSignInScreen();
+  host_->StartSignInScreen(context);
   smooth_show_timer_.Stop();
   oobe_display_ = NULL;
   login_screen_started_ = true;
@@ -411,11 +412,12 @@ void WizardController::ShowLocallyManagedUserCreationScreen() {
   SetCurrentScreen(screen);
 }
 
-void WizardController::SkipToLoginForTesting() {
+void WizardController::SkipToLoginForTesting(
+    const LoginScreenContext& context) {
   StartupUtils::MarkEulaAccepted();
   PerformPostEulaActions();
   PerformPostUpdateActions();
-  ShowLoginScreen();
+  ShowLoginScreen(context);
 }
 
 void WizardController::SkipPostLoginScreensForTesting() {
@@ -459,12 +461,12 @@ void WizardController::OnNetworkConnected() {
 void WizardController::OnNetworkOffline() {
   // TODO(dpolukhin): if(is_out_of_box_) we cannot work offline and
   // should report some error message here and stay on the same screen.
-  ShowLoginScreen();
+  ShowLoginScreen(LoginScreenContext());
 }
 
 void WizardController::OnConnectionFailed() {
   // TODO(dpolukhin): show error message after login screen is displayed.
-  ShowLoginScreen();
+  ShowLoginScreen(LoginScreenContext());
 }
 
 void WizardController::OnUpdateCompleted() {
@@ -552,18 +554,18 @@ void WizardController::OnEnrollmentDone() {
   if (KioskAppManager::Get()->IsAutoLaunchEnabled())
     AutoLaunchKioskApp();
   else
-    ShowLoginScreen();
+    ShowLoginScreen(LoginScreenContext());
 }
 
 void WizardController::OnResetCanceled() {
   if (previous_screen_)
     SetCurrentScreen(previous_screen_);
   else
-    ShowLoginScreen();
+    ShowLoginScreen(LoginScreenContext());
 }
 
 void WizardController::OnKioskAutolaunchCanceled() {
-  ShowLoginScreen();
+  ShowLoginScreen(LoginScreenContext());
 }
 
 void WizardController::OnKioskAutolaunchConfirmed() {
@@ -572,14 +574,14 @@ void WizardController::OnKioskAutolaunchConfirmed() {
 }
 
 void WizardController::OnKioskEnableCompleted() {
-  ShowLoginScreen();
+  ShowLoginScreen(LoginScreenContext());
 }
 
 void WizardController::OnWrongHWIDWarningSkipped() {
   if (previous_screen_)
     SetCurrentScreen(previous_screen_);
   else
-    ShowLoginScreen();
+    ShowLoginScreen(LoginScreenContext());
 }
 
 void WizardController::OnAutoEnrollmentDone() {
@@ -592,7 +594,7 @@ void WizardController::OnOOBECompleted() {
     ShowEnrollmentScreen();
   } else {
     PerformPostUpdateActions();
-    ShowLoginScreen();
+    ShowLoginScreen(LoginScreenContext());
   }
 }
 
@@ -686,7 +688,7 @@ void WizardController::AdvanceToScreen(const std::string& screen_name) {
   if (screen_name == kNetworkScreenName) {
     ShowNetworkScreen();
   } else if (screen_name == kLoginScreenName) {
-    ShowLoginScreen();
+    ShowLoginScreen(LoginScreenContext());
   } else if (screen_name == kUpdateScreenName) {
     InitiateOOBEUpdate();
   } else if (screen_name == kUserImageScreenName) {
@@ -713,7 +715,7 @@ void WizardController::AdvanceToScreen(const std::string& screen_name) {
     if (is_out_of_box_) {
       ShowNetworkScreen();
     } else {
-      ShowLoginScreen();
+      ShowLoginScreen(LoginScreenContext());
     }
   }
 }

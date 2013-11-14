@@ -554,10 +554,13 @@ void LoginDisplayHostImpl::StartUserAdding(
   sign_in_controller_->Init(
       chromeos::UserManager::Get()->GetUsersAdmittedForMultiProfile());
   CHECK(webui_login_display_);
-  GetOobeUI()->ShowSigninScreen(webui_login_display_, webui_login_display_);
+  GetOobeUI()->ShowSigninScreen(LoginScreenContext(),
+                                webui_login_display_,
+                                webui_login_display_);
 }
 
-void LoginDisplayHostImpl::StartSignInScreen() {
+void LoginDisplayHostImpl::StartSignInScreen(
+    const LoginScreenContext& context) {
   TryToPlayStartupSound(true);
 
   restore_path_ = RESTORE_SIGN_IN;
@@ -615,7 +618,9 @@ void LoginDisplayHostImpl::StartSignInScreen() {
       kPolicyServiceInitializationDelayMilliseconds);
 
   CHECK(webui_login_display_);
-  GetOobeUI()->ShowSigninScreen(webui_login_display_, webui_login_display_);
+  GetOobeUI()->ShowSigninScreen(context,
+                                webui_login_display_,
+                                webui_login_display_);
   if (chromeos::KioskModeSettings::Get()->IsKioskModeEnabled())
     SetStatusAreaVisible(false);
   TRACE_EVENT_ASYNC_STEP_INTO0("ui",
@@ -913,7 +918,7 @@ void LoginDisplayHostImpl::StartPostponedWebUI() {
                   wizard_screen_parameters_.Pass());
       break;
     case RESTORE_SIGN_IN:
-      StartSignInScreen();
+      StartSignInScreen(LoginScreenContext());
       break;
     case RESTORE_ADD_USER_INTO_SESSION:
       StartUserAdding(completion_callback_);
@@ -1144,7 +1149,7 @@ void ShowLoginWizard(const std::string& first_screen_name) {
           ResourceBundle::GetSharedInstance().ReloadLocaleResources(locale);
       g_browser_process->SetApplicationLocale(loaded_locale);
     }
-    display_host->StartSignInScreen();
+    display_host->StartSignInScreen(LoginScreenContext());
     return;
   }
 

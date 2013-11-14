@@ -43,6 +43,25 @@ class NativeWindowDelegate;
 class User;
 struct UserContext;
 
+// Helper class to pass initial parameters to the login screen.
+class LoginScreenContext {
+ public:
+  LoginScreenContext();
+  explicit LoginScreenContext(const base::ListValue* args);
+
+  void set_email(const std::string& email) { email_ = email; }
+  const std::string& email() const { return email_; }
+
+  void set_oobe_ui(bool oobe_ui) { oobe_ui_ = oobe_ui; }
+  bool oobe_ui() const { return oobe_ui_; }
+
+ private:
+  void Init();
+
+  std::string email_;
+  bool oobe_ui_;
+};
+
 // An interface for WebUILoginDisplay to call SigninScreenHandler.
 class LoginDisplayWebUIHandler {
  public:
@@ -183,9 +202,8 @@ class SigninScreenHandler
       CoreOobeActor* core_oobe_actor);
   virtual ~SigninScreenHandler();
 
-  // Shows the sign in screen. |oobe_ui| indicates whether the signin
-  // screen is for OOBE or usual sign-in flow.
-  void Show(bool oobe_ui);
+  // Shows the sign in screen.
+  void Show(const LoginScreenContext& context);
 
   // Shows the login spinner UI for retail mode logins.
   void ShowRetailModeLoginSpinner();
@@ -229,6 +247,8 @@ class SigninScreenHandler
 
   friend class ReportDnsCacheClearedOnUIThread;
   friend class LocallyManagedUserCreationScreenHandler;
+
+  void ShowImpl();
 
   // Updates current UI of the signin screen according to |ui_state|
   // argument.  Optionally it can pass screen initialization data via
@@ -404,6 +424,9 @@ class SigninScreenHandler
   // continue kiosk enable flow. Kiosk enable flow is resumed when
   // |should_auto_enroll| is false.
   void ContinueKioskEnableFlow(bool should_auto_enroll);
+
+  // Shows signin screen for |email|.
+  void OnShowAddUser(const std::string& email);
 
   // Current UI state of the signin screen.
   UIState ui_state_;
