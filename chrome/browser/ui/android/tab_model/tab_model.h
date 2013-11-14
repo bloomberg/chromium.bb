@@ -53,9 +53,6 @@ class TabModel : public content::NotificationObserver,
   // Used for restoring tabs from synced foreign sessions.
   virtual void CreateTab(content::WebContents* web_contents) = 0;
 
-  // Used for creating a new tab with a given URL. DO NOT USE.
-  virtual content::WebContents* CreateTabForTesting(const GURL& url);
-
   // Used by Developer Tools to create a new tab with a given URL.
   // Replaces CreateTabForTesting.
   virtual content::WebContents* CreateNewTabForDevTools(const GURL& url) = 0;

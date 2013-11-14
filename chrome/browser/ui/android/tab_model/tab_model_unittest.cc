@@ -35,11 +35,8 @@ class TestTabModel : public TabModel {
     return NULL;
   }
   virtual void CreateTab(content::WebContents* web_contents) OVERRIDE {}
-  virtual content::WebContents* CreateTabForTesting(const GURL& url) OVERRIDE {
-    return NULL;
-  }
-  virtual content::WebContents* CreateNewTabForDevTools(const GURL& url)
-      OVERRIDE {
+  virtual content::WebContents* CreateNewTabForDevTools(
+      const GURL& url) OVERRIDE {
     return NULL;
   }
   virtual bool IsSessionRestoreInProgress() const OVERRIDE { return false; }
