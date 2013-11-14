@@ -153,7 +153,7 @@ class RemoteToLocalSyncer : public SyncTask {
 
   void HandleOfflineSolvable(const SyncStatusCallback& callback);
 
-  void SyncCompleted(const SyncStatusCallback& callback);
+  void SyncCompleted(const SyncStatusCallback& callback, SyncStatusCode status);
 
   void Prepare(const SyncStatusCallback& callback);
   void DidPrepare(const SyncStatusCallback& callback,
@@ -162,8 +162,6 @@ class RemoteToLocalSyncer : public SyncTask {
                   const FileChangeList& changes);
 
   void DeleteLocalFile(const SyncStatusCallback& callback);
-  void DidDeleteLocalFile(const SyncStatusCallback& callback,
-                          SyncStatusCode status);
   void DownloadFile(const SyncStatusCallback& callback);
   void DidCreateTemporaryFileForDownload(const SyncStatusCallback& callback,
                                          webkit_blob::ScopedFile file);
@@ -179,8 +177,6 @@ class RemoteToLocalSyncer : public SyncTask {
                         SyncStatusCode status);
 
   void CreateFolder(const SyncStatusCallback& callback);
-  void DidApplyCreateFolder(const SyncStatusCallback& callback,
-                            SyncStatusCode status);
 
   drive::DriveServiceInterface* drive_service();
   MetadataDatabase* metadata_database();

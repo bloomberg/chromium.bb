@@ -238,6 +238,9 @@ class MetadataDatabase {
                      const FileDetails& updated_details,
                      const SyncStatusCallback& callback);
 
+  // Changes the priority of the tracker to low.
+  void LowerTrackerPriority(int64 tracker_id);
+
   // Returns true if there is a normal priority dirty tracker.
   // Assigns the dirty tracker if exists and |tracker| is non-NULL.
   bool GetNormalPriorityDirtyTracker(FileTracker* tracker);

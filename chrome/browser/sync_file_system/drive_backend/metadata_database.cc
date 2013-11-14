@@ -909,6 +909,12 @@ void MetadataDatabase::UpdateTracker(int64 tracker_id,
   WriteToDatabase(batch.Pass(), callback);
 }
 
+void MetadataDatabase::LowerTrackerPriority(int64 tracker_id) {
+  // TODO(tzik): Move the tracker from |normal_priority_dirty_trackers_| to
+  // |low_priority_dirty_trackers|.
+  NOTIMPLEMENTED();
+}
+
 bool MetadataDatabase::GetNormalPriorityDirtyTracker(FileTracker* tracker) {
   // TODO(tzik): Split |dirty_trackers| to |normal_priority_dirty_trackers|
   // and |low_priority_dirty_trackers|.
