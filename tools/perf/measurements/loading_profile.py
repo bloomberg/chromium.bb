@@ -28,7 +28,8 @@ class LoadingProfile(page_measurement.PageMeasurement):
     if not perf_profiler.PerfProfiler.is_supported(browser_type='any'):
       raise Exception('This measurement is not supported on this platform')
 
-    perf_profiler.PerfProfiler.CustomizeBrowserOptions(options)
+    perf_profiler.PerfProfiler.CustomizeBrowserOptions(
+        browser_type='any', options=options)
 
   def WillNavigateToPage(self, page, tab):
     tab.browser.StartProfiling(perf_profiler.PerfProfiler.name(),
