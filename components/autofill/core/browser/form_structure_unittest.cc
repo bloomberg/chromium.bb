@@ -750,18 +750,17 @@ TEST(FormStructureTest, HeuristicsSample8) {
   // Last name.
   EXPECT_EQ(NAME_LAST, form_structure->field(1)->heuristic_type());
   // Address.
-  EXPECT_EQ(ADDRESS_BILLING_LINE1, form_structure->field(2)->heuristic_type());
+  EXPECT_EQ(ADDRESS_HOME_LINE1, form_structure->field(2)->heuristic_type());
   // Address.
-  EXPECT_EQ(ADDRESS_BILLING_LINE2, form_structure->field(3)->heuristic_type());
+  EXPECT_EQ(ADDRESS_HOME_LINE2, form_structure->field(3)->heuristic_type());
   // City.
-  EXPECT_EQ(ADDRESS_BILLING_CITY, form_structure->field(4)->heuristic_type());
+  EXPECT_EQ(ADDRESS_HOME_CITY, form_structure->field(4)->heuristic_type());
   // State.
-  EXPECT_EQ(ADDRESS_BILLING_STATE, form_structure->field(5)->heuristic_type());
+  EXPECT_EQ(ADDRESS_HOME_STATE, form_structure->field(5)->heuristic_type());
   // Zip.
-  EXPECT_EQ(ADDRESS_BILLING_ZIP, form_structure->field(6)->heuristic_type());
+  EXPECT_EQ(ADDRESS_HOME_ZIP, form_structure->field(6)->heuristic_type());
   // Country.
-  EXPECT_EQ(ADDRESS_BILLING_COUNTRY,
-      form_structure->field(7)->heuristic_type());
+  EXPECT_EQ(ADDRESS_HOME_COUNTRY, form_structure->field(7)->heuristic_type());
   // Phone.
   EXPECT_EQ(PHONE_HOME_WHOLE_NUMBER,
       form_structure->field(8)->heuristic_type());
@@ -1056,48 +1055,6 @@ TEST(FormStructureTest, ThreeAddressLines) {
   EXPECT_EQ(ADDRESS_HOME_CITY, form_structure->field(3)->heuristic_type());
 }
 
-// This test verifies that "addressLine1" and "addressLine2" matches heuristics.
-// This occured in https://www.gorillaclothing.com/.  http://crbug.com/52126.
-TEST(FormStructureTest, BillingAndShippingAddresses) {
-  scoped_ptr<FormStructure> form_structure;
-  FormData form;
-  form.method = ASCIIToUTF16("post");
-
-  FormFieldData field;
-  field.form_control_type = "text";
-
-  field.label = ASCIIToUTF16("Address Line1");
-  field.name = ASCIIToUTF16("shipping.address.addressLine1");
-  form.fields.push_back(field);
-
-  field.label = ASCIIToUTF16("Address Line2");
-  field.name = ASCIIToUTF16("shipping.address.addressLine2");
-  form.fields.push_back(field);
-
-  field.label = ASCIIToUTF16("Address Line1");
-  field.name = ASCIIToUTF16("billing.address.addressLine1");
-  form.fields.push_back(field);
-
-  field.label = ASCIIToUTF16("Address Line2");
-  field.name = ASCIIToUTF16("billing.address.addressLine2");
-  form.fields.push_back(field);
-
-  form_structure.reset(new FormStructure(form));
-  form_structure->DetermineHeuristicTypes(TestAutofillMetrics());
-  EXPECT_TRUE(form_structure->IsAutofillable(true));
-  ASSERT_EQ(4U, form_structure->field_count());
-  ASSERT_EQ(4U, form_structure->autofill_count());
-
-  // Address Line 1.
-  EXPECT_EQ(ADDRESS_HOME_LINE1, form_structure->field(0)->heuristic_type());
-  // Address Line 2.
-  EXPECT_EQ(ADDRESS_HOME_LINE2, form_structure->field(1)->heuristic_type());
-  // Address Line 1.
-  EXPECT_EQ(ADDRESS_BILLING_LINE1, form_structure->field(2)->heuristic_type());
-  // Address Line 2.
-  EXPECT_EQ(ADDRESS_BILLING_LINE2, form_structure->field(3)->heuristic_type());
-}
-
 // Numbered address lines after line two are ignored.
 TEST(FormStructureTest, SurplusAddressLinesIgnored) {
   scoped_ptr<FormStructure> form_structure;
@@ -1316,13 +1273,12 @@ TEST(FormStructureTest, HeuristicsWithBilling) {
   EXPECT_EQ(NAME_FIRST, form_structure->field(0)->heuristic_type());
   EXPECT_EQ(NAME_LAST, form_structure->field(1)->heuristic_type());
   EXPECT_EQ(COMPANY_NAME, form_structure->field(2)->heuristic_type());
-  EXPECT_EQ(ADDRESS_BILLING_LINE1, form_structure->field(3)->heuristic_type());
-  EXPECT_EQ(ADDRESS_BILLING_LINE2, form_structure->field(4)->heuristic_type());
-  EXPECT_EQ(ADDRESS_BILLING_CITY, form_structure->field(5)->heuristic_type());
-  EXPECT_EQ(ADDRESS_BILLING_STATE, form_structure->field(6)->heuristic_type());
-  EXPECT_EQ(ADDRESS_BILLING_COUNTRY,
-            form_structure->field(7)->heuristic_type());
-  EXPECT_EQ(ADDRESS_BILLING_ZIP, form_structure->field(8)->heuristic_type());
+  EXPECT_EQ(ADDRESS_HOME_LINE1, form_structure->field(3)->heuristic_type());
+  EXPECT_EQ(ADDRESS_HOME_LINE2, form_structure->field(4)->heuristic_type());
+  EXPECT_EQ(ADDRESS_HOME_CITY, form_structure->field(5)->heuristic_type());
+  EXPECT_EQ(ADDRESS_HOME_STATE, form_structure->field(6)->heuristic_type());
+  EXPECT_EQ(ADDRESS_HOME_COUNTRY, form_structure->field(7)->heuristic_type());
+  EXPECT_EQ(ADDRESS_HOME_ZIP, form_structure->field(8)->heuristic_type());
   EXPECT_EQ(PHONE_HOME_WHOLE_NUMBER,
             form_structure->field(9)->heuristic_type());
   EXPECT_EQ(EMAIL_ADDRESS, form_structure->field(10)->heuristic_type());
@@ -1415,7 +1371,7 @@ TEST(FormStructureTest, HeuristicsInfernoCC) {
   // Name on Card.
   EXPECT_EQ(CREDIT_CARD_NAME, form_structure->field(0)->heuristic_type());
   // Address.
-  EXPECT_EQ(ADDRESS_BILLING_LINE1, form_structure->field(1)->heuristic_type());
+  EXPECT_EQ(ADDRESS_HOME_LINE1, form_structure->field(1)->heuristic_type());
   // Card Number.
   EXPECT_EQ(CREDIT_CARD_NUMBER, form_structure->field(2)->heuristic_type());
   // Expiration Date.

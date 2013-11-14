@@ -1,11 +1,11 @@
 NAME_FIRST | user[billing][firstname] | First Name | 
 NAME_LAST | user[billing][lastname] | Last Name | 
-ADDRESS_BILLING_LINE1 | user[billing][address_first] | Billing Address | 
-ADDRESS_BILLING_LINE2 | user[billing][address_second] | Billing Suite/Apt # | 
-ADDRESS_BILLING_CITY | user[billing][city] | Billing City | 
-ADDRESS_BILLING_STATE | user[billing][state] | State/Province | CA
-ADDRESS_BILLING_ZIP | user[billing][zip] | Billing Postal Code | 94043
-ADDRESS_BILLING_COUNTRY | user[billing][country] | Billing Country | US
+ADDRESS_HOME_LINE1 | user[billing][address_first] | Billing Address | 
+ADDRESS_HOME_LINE2 | user[billing][address_second] | Billing Suite/Apt # | 
+ADDRESS_HOME_CITY | user[billing][city] | Billing City | 
+ADDRESS_HOME_STATE | user[billing][state] | State/Province | CA
+ADDRESS_HOME_ZIP | user[billing][zip] | Billing Postal Code | 94043
+ADDRESS_HOME_COUNTRY | user[billing][country] | Billing Country | US
 PHONE_HOME_WHOLE_NUMBER | user[phone_first] | Phone Number | 
 EMAIL_ADDRESS | user[email] | Email Address | 
 EMAIL_ADDRESS | user[email_confirm] | Confirm Email Address | 

@@ -1,11 +1,11 @@
 UNKNOWN_TYPE | Body$BillingIsShippingCheckboxB | Enter billing information (as it appears on your statement) | on
 NAME_FIRST | Body$BillingAddress$_firstName | First Name | 
 NAME_LAST | Body$BillingAddress$_lastName | Last Name | 
-ADDRESS_BILLING_LINE1 | Body$BillingAddress$_address1 | Address Line 1 | 
-ADDRESS_BILLING_LINE2 | Body$BillingAddress$_address2 | Address Line 2(optional) | 
-ADDRESS_BILLING_CITY | Body$BillingAddress$_city | City | 
-ADDRESS_BILLING_STATE | Body$BillingAddress$_state | State |   
-ADDRESS_BILLING_ZIP | Body$BillingAddress$_zipcode | Zip Code | 
+ADDRESS_HOME_LINE1 | Body$BillingAddress$_address1 | Address Line 1 | 
+ADDRESS_HOME_LINE2 | Body$BillingAddress$_address2 | Address Line 2(optional) | 
+ADDRESS_HOME_CITY | Body$BillingAddress$_city | City | 
+ADDRESS_HOME_STATE | Body$BillingAddress$_state | State |   
+ADDRESS_HOME_ZIP | Body$BillingAddress$_zipcode | Zip Code | 
 PHONE_HOME_WHOLE_NUMBER | Body$BillingAddress$_PrimaryPhone | Primary Phone | 
 UNKNOWN_TYPE | Body$BillingAddress$rdoPrimary |  | H
 UNKNOWN_TYPE | Body$BillingAddress$rdoPrimary |  | M

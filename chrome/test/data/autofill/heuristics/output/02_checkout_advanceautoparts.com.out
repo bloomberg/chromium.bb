@@ -1,11 +1,11 @@
 UNKNOWN_TYPE | billingShippingSame | Billing AddressUse form below for your billing address:* required fields*First Name: | false
 NAME_FIRST | billFirstName | *First Name: | 
 NAME_LAST | billLastName | *Last Name: | 
-ADDRESS_BILLING_LINE1 | billAddress1 | *Street Address 1: | 
-ADDRESS_BILLING_LINE2 | billAddress2 | Street Address 2: | 
-ADDRESS_BILLING_CITY | billCity | *City: | 
-ADDRESS_BILLING_STATE | billState | *State: | AL
-ADDRESS_BILLING_ZIP | billZipCode | *Zip Code: | 
+ADDRESS_HOME_LINE1 | billAddress1 | *Street Address 1: | 
+ADDRESS_HOME_LINE2 | billAddress2 | Street Address 2: | 
+ADDRESS_HOME_CITY | billCity | *City: | 
+ADDRESS_HOME_STATE | billState | *State: | AL
+ADDRESS_HOME_ZIP | billZipCode | *Zip Code: | 
 PHONE_HOME_CITY_CODE | billDayPhonePart1 | ( | 
 PHONE_HOME_NUMBER | billDayPhonePart2 | ) | 
 PHONE_HOME_NUMBER | billDayPhonePart3 | *Day Phone: | 

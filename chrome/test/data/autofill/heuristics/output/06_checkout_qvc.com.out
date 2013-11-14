@@ -5,12 +5,12 @@ UNKNOWN_TYPE | PinVerify | * Verify Your PIN: |
 UNKNOWN_TYPE | Prefix | * Title: | 06
 NAME_FIRST | BilltoFirstName | * First Name: | 
 NAME_LAST | BilltoLastName | * Last Name: | 
-ADDRESS_BILLING_LINE1 | BilltoAddress1 | * Address Line 1: | 
-ADDRESS_BILLING_LINE2 | BilltoAddress2 | Address Line 2: | 
-ADDRESS_BILLING_CITY | BilltoCity | City: | 
-ADDRESS_BILLING_STATE | BilltoState | State/Province: | AL
-ADDRESS_BILLING_ZIP | BilltoZipCode | * ZIP/Postal Code: | 
-ADDRESS_BILLING_COUNTRY | BilltoCountry | * Country: | US
+ADDRESS_HOME_LINE1 | BilltoAddress1 | * Address Line 1: | 
+ADDRESS_HOME_LINE2 | BilltoAddress2 | Address Line 2: | 
+ADDRESS_HOME_CITY | BilltoCity | City: | 
+ADDRESS_HOME_STATE | BilltoState | State/Province: | AL
+ADDRESS_HOME_ZIP | BilltoZipCode | * ZIP/Postal Code: | 
+ADDRESS_HOME_COUNTRY | BilltoCountry | * Country: | US
 PHONE_HOME_CITY_CODE | BilltoHpArea | * Home Phone: | 
 PHONE_HOME_NUMBER | BilltoHpExchange | * Home Phone: | 
 UNKNOWN_TYPE | BilltoHpExt | * Home Phone: | 

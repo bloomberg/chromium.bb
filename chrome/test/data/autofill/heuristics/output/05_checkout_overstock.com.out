@@ -1,10 +1,10 @@
 NAME_FIRST | BillingFirstName | First Name | David
 NAME_LAST | BillingLastName | Last Name | Yu
-ADDRESS_BILLING_LINE1 | BillingAddress1 | Address Line 1 | 7540 Donegal Dr
-ADDRESS_BILLING_LINE2 | BillingAddress2 | Address Line 2 | 
-ADDRESS_BILLING_CITY | BillingCity | City | Cupertino
-ADDRESS_BILLING_STATE | BillingState | State | CA
-ADDRESS_BILLING_ZIP | BillingZipCode | Zip | 95014
+ADDRESS_HOME_LINE1 | BillingAddress1 | Address Line 1 | 7540 Donegal Dr
+ADDRESS_HOME_LINE2 | BillingAddress2 | Address Line 2 | 
+ADDRESS_HOME_CITY | BillingCity | City | Cupertino
+ADDRESS_HOME_STATE | BillingState | State | CA
+ADDRESS_HOME_ZIP | BillingZipCode | Zip | 95014
 PHONE_HOME_WHOLE_NUMBER | BillingDaytimePhone | Day Phone | 4088737223
 PHONE_HOME_WHOLE_NUMBER | BillingEveningPhone | Evening Phone | 
 UNKNOWN_TYPE | checkbox2 | *Required Field | on

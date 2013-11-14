@@ -3,13 +3,13 @@ NAME_LAST | HT_Last_Name | Last Name |
 UNKNOWN_TYPE | HT_Password | Password | 
 UNKNOWN_TYPE | HT_Conf_Password | Re-enter Password | 
 EMAIL_ADDRESS | HT_email | Email | 
-ADDRESS_BILLING_LINE1 | HT_Bill_Address1 | Address 1 | 
-ADDRESS_BILLING_LINE2 | HT_Bill_Address2 | Address 2 | 
-ADDRESS_BILLING_CITY | HT_Bill_City | City | 
-ADDRESS_BILLING_STATE | HT_Bill_State | State/Province | 
-ADDRESS_BILLING_ZIP | HT_Bill_Zip | Zip/Postal Code | 
+ADDRESS_HOME_LINE1 | HT_Bill_Address1 | Address 1 | 
+ADDRESS_HOME_LINE2 | HT_Bill_Address2 | Address 2 | 
+ADDRESS_HOME_CITY | HT_Bill_City | City | 
+ADDRESS_HOME_STATE | HT_Bill_State | State/Province | 
+ADDRESS_HOME_ZIP | HT_Bill_Zip | Zip/Postal Code | 
 PHONE_HOME_WHOLE_NUMBER | HT_phone | Phone | 
-ADDRESS_BILLING_COUNTRY | HT_Bill_Country | Country | USA
+ADDRESS_HOME_COUNTRY | HT_Bill_Country | Country | USA
 NAME_FULL | HT_Ship_Name | Full Name | 
 ADDRESS_HOME_LINE1 | HT_Ship_Address1 | Address 1 | 
 ADDRESS_HOME_LINE2 | HT_Ship_Address2 | Address 2 | 

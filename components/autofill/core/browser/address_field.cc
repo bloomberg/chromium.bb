@@ -81,39 +81,11 @@ FormField* AddressField::Parse(AutofillScanner* scanner) {
     if (has_trailing_non_labeled_fields)
       scanner->RewindTo(begin_trailing_non_labeled_fields);
 
-    address_field->type_ = address_field->FindType();
     return address_field.release();
   }
 
   scanner->RewindTo(saved_cursor);
   return NULL;
-}
-
-AddressField::AddressType AddressField::FindType() const {
-  // First look at the field name, which itself will sometimes contain
-  // "bill" or "ship".
-  if (company_)
-    return AddressTypeFromText(company_->name);
-
-  if (address1_)
-    return AddressTypeFromText(address1_->name);
-
-  if (address2_)
-    return AddressTypeFromText(address2_->name);
-
-  if (city_)
-    return AddressTypeFromText(city_->name);
-
-  if (zip_)
-    return AddressTypeFromText(zip_->name);
-
-  if (state_)
-    return AddressTypeFromText(state_->name);
-
-  if (country_)
-    return AddressTypeFromText(country_->name);
-
-  return kGenericAddress;
 }
 
 AddressField::AddressField()
@@ -124,55 +96,17 @@ AddressField::AddressField()
       state_(NULL),
       zip_(NULL),
       zip4_(NULL),
-      country_(NULL),
-      type_(kGenericAddress) {
+      country_(NULL) {
 }
 
 bool AddressField::ClassifyField(ServerFieldTypeMap* map) const {
-  ServerFieldType address_company;
-  ServerFieldType address_line1;
-  ServerFieldType address_line2;
-  ServerFieldType address_city;
-  ServerFieldType address_state;
-  ServerFieldType address_zip;
-  ServerFieldType address_country;
-
-  switch (type_) {
-    case kShippingAddress:
-     // Fall through. Autofill does not support shipping addresses.
-    case kGenericAddress:
-      address_company = COMPANY_NAME;
-      address_line1 = ADDRESS_HOME_LINE1;
-      address_line2 = ADDRESS_HOME_LINE2;
-      address_city = ADDRESS_HOME_CITY;
-      address_state = ADDRESS_HOME_STATE;
-      address_zip = ADDRESS_HOME_ZIP;
-      address_country = ADDRESS_HOME_COUNTRY;
-      break;
-
-    case kBillingAddress:
-      address_company = COMPANY_NAME;
-      address_line1 = ADDRESS_BILLING_LINE1;
-      address_line2 = ADDRESS_BILLING_LINE2;
-      address_city = ADDRESS_BILLING_CITY;
-      address_state = ADDRESS_BILLING_STATE;
-      address_zip = ADDRESS_BILLING_ZIP;
-      address_country = ADDRESS_BILLING_COUNTRY;
-      break;
-
-    default:
-      NOTREACHED();
-      return false;
-  }
-
-  bool ok = AddClassification(company_, address_company, map);
-  ok = ok && AddClassification(address1_, address_line1, map);
-  ok = ok && AddClassification(address2_, address_line2, map);
-  ok = ok && AddClassification(city_, address_city, map);
-  ok = ok && AddClassification(state_, address_state, map);
-  ok = ok && AddClassification(zip_, address_zip, map);
-  ok = ok && AddClassification(country_, address_country, map);
-  return ok;
+  return AddClassification(company_, COMPANY_NAME, map) &&
+         AddClassification(address1_, ADDRESS_HOME_LINE1, map) &&
+         AddClassification(address2_, ADDRESS_HOME_LINE2, map) &&
+         AddClassification(city_, ADDRESS_HOME_CITY, map) &&
+         AddClassification(state_, ADDRESS_HOME_STATE, map) &&
+         AddClassification(zip_, ADDRESS_HOME_ZIP, map) &&
+         AddClassification(country_, ADDRESS_HOME_COUNTRY, map);
 }
 
 bool AddressField::ParseCompany(AutofillScanner* scanner) {
@@ -243,11 +177,6 @@ bool AddressField::ParseCountry(AutofillScanner* scanner) {
 bool AddressField::ParseZipCode(AutofillScanner* scanner) {
   // Parse a zip code.  On some UK pages (e.g. The China Shop2.html) this
   // is called a "post code".
-  //
-  // HACK: Just for the MapQuest driving directions page we match the
-  // exact name "1z", which MapQuest uses to label its zip code field.
-  // Hopefully before long we'll be smart enough to find the zip code
-  // on that page automatically.
   if (zip_)
     return false;
 
@@ -255,7 +184,6 @@ bool AddressField::ParseZipCode(AutofillScanner* scanner) {
   if (!ParseField(scanner, pattern, &zip_))
     return false;
 
-  type_ = kGenericAddress;
   // Look for a zip+4, whose field name will also often contain
   // the substring "zip".
   ParseField(scanner, UTF8ToUTF16(autofill::kZip4Re), &zip4_);
@@ -283,42 +211,6 @@ bool AddressField::ParseState(AutofillScanner* scanner) {
                              UTF8ToUTF16(autofill::kStateRe),
                              MATCH_DEFAULT | MATCH_SELECT,
                              &state_);
-}
-
-// static
-AddressField::AddressType AddressField::AddressTypeFromText(
-    const base::string16& text) {
-  std::string normalized_text = UTF16ToUTF8(StringToLowerASCII(text));
-
-  size_t same_as = normalized_text.find(autofill::kAddressTypeSameAsRe);
-  size_t use_shipping = normalized_text.find(autofill::kAddressTypeUseMyRe);
-  if (same_as != base::string16::npos || use_shipping != base::string16::npos) {
-    // This text could be a checkbox label such as "same as my billing
-    // address" or "use my shipping address".
-    // ++ It would help if we generally skipped all text that appears
-    // after a check box.
-    return kGenericAddress;
-  }
-
-  // Not all pages say "billing address" and "shipping address" explicitly;
-  // for example, Craft Catalog1.html has "Bill-to Address" and
-  // "Ship-to Address".
-  size_t bill = normalized_text.rfind(autofill::kBillingDesignatorRe);
-  size_t ship = normalized_text.rfind(autofill::kShippingDesignatorRe);
-
-  if (bill == base::string16::npos && ship == base::string16::npos)
-    return kGenericAddress;
-
-  if (bill != base::string16::npos && ship == base::string16::npos)
-    return kBillingAddress;
-
-  if (bill == base::string16::npos && ship != base::string16::npos)
-    return kShippingAddress;
-
-  if (bill > ship)
-    return kBillingAddress;
-
-  return kShippingAddress;
 }
 
 }  // namespace autofill

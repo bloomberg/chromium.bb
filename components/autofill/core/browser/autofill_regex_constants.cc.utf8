@@ -76,7 +76,7 @@ const char kCountryRe[] =
     "|国家"  // zh-CN
     "|국가|나라";  // ko-KR
 const char kZipCodeRe[] =
-    "zip|postal|post.*code|pcode|^1z$"
+    "zip|postal|post.*code|pcode"
     "|pin.?code"  // en-IN
     "|postleitzahl"  // de-DE
     "|\\bcp\\b"  // es
@@ -114,10 +114,6 @@ const char kStateRe[] =
     "|省"  // zh-CN
     "|地區"  // zh-TW
     "|^시[·・]?도";  // ko-KR
-const char kAddressTypeSameAsRe[] = "same as";
-const char kAddressTypeUseMyRe[] = "use my";
-const char kBillingDesignatorRe[] = "bill";
-const char kShippingDesignatorRe[] = "ship";
 
 /////////////////////////////////////////////////////////////////////////////
 // credit_card_field.cc

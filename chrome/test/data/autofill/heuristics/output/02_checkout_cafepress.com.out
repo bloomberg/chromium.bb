@@ -1,12 +1,12 @@
 NAME_FULL | BillName | Name on Account* | 
-ADDRESS_BILLING_COUNTRY | BillCountry | Country* | UNITED STATES
-ADDRESS_BILLING_LINE1 | BillStreet1 | Address * | 
-ADDRESS_BILLING_LINE2 | BillStreet2 | Address * | 
+ADDRESS_HOME_COUNTRY | BillCountry | Country* | UNITED STATES
+ADDRESS_HOME_LINE1 | BillStreet1 | Address * | 
+ADDRESS_HOME_LINE2 | BillStreet2 | Address * | 
 UNKNOWN_TYPE | ddlRedoClassification | Address * | 
-ADDRESS_BILLING_CITY | BillCity | Town/City* | 
-ADDRESS_BILLING_STATE | BillState | State/Province* | 
+ADDRESS_HOME_CITY | BillCity | Town/City* | 
+ADDRESS_HOME_STATE | BillState | State/Province* | 
 UNKNOWN_TYPE | BillStateOther | State/Province* | 
-ADDRESS_BILLING_ZIP | BillZip | Zip/Postal Code* | 
+ADDRESS_HOME_ZIP | BillZip | Zip/Postal Code* | 
 PHONE_HOME_WHOLE_NUMBER | BillPhone | Phone Number* | 
 EMAIL_ADDRESS | BillEmail | Email Address* | 
 UNKNOWN_TYPE | cbStoreSpecial |  | on

@@ -1,11 +1,11 @@
 NAME_FIRST | billingAddress.firstName | * | 
 NAME_LAST | billingAddress.lastName | * | 
-ADDRESS_BILLING_LINE1 | billingAddress.address1 | * | 
-ADDRESS_BILLING_LINE2 | billingAddress.address2 | Street address or P.O. box | 
-ADDRESS_BILLING_CITY | billingAddress.city | * | 
-ADDRESS_BILLING_STATE | billingAddress.stateCode | * | XX
-ADDRESS_BILLING_ZIP | billingAddress.postalCode | * | 
-ADDRESS_BILLING_COUNTRY | billingAddress.country | * | US
+ADDRESS_HOME_LINE1 | billingAddress.address1 | * | 
+ADDRESS_HOME_LINE2 | billingAddress.address2 | Street address or P.O. box | 
+ADDRESS_HOME_CITY | billingAddress.city | * | 
+ADDRESS_HOME_STATE | billingAddress.stateCode | * | XX
+ADDRESS_HOME_ZIP | billingAddress.postalCode | * | 
+ADDRESS_HOME_COUNTRY | billingAddress.country | * | US
 PHONE_HOME_WHOLE_NUMBER | billingAddress.phoneNumber | * | 
 EMAIL_ADDRESS | customer.emailAddress | * | 
 UNKNOWN_TYPE | customer.optIn | Yes, send me J&R's promotional email newsletter. | on

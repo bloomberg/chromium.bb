@@ -14,13 +14,13 @@ UNKNOWN_TYPE | billingIsShipping |  | true
 UNKNOWN_TYPE | defaultShipping |  | true
 NAME_FIRST | billingFirstName |  | First Name
 NAME_LAST | billingLastName |  | Last Name
-ADDRESS_BILLING_LINE1 | billingAddress |  | Street Address
+ADDRESS_HOME_LINE1 | billingAddress |  | Street Address
 UNKNOWN_TYPE | billingPobox |  | true
-ADDRESS_BILLING_LINE2 | billingAddress2 |  | Apt / Flr / Bldg (optional)
-ADDRESS_BILLING_CITY | billingCity |  | City
-ADDRESS_BILLING_STATE | billingStates |  | 
-ADDRESS_BILLING_ZIP | billingPostalCode |  | Postal Code
-ADDRESS_BILLING_COUNTRY | billingCountries |  | 
+ADDRESS_HOME_LINE2 | billingAddress2 |  | Apt / Flr / Bldg (optional)
+ADDRESS_HOME_CITY | billingCity |  | City
+ADDRESS_HOME_STATE | billingStates |  | 
+ADDRESS_HOME_ZIP | billingPostalCode |  | Postal Code
+ADDRESS_HOME_COUNTRY | billingCountries |  | 
 PHONE_HOME_WHOLE_NUMBER | billingPhone |  | Phone
 PHONE_HOME_WHOLE_NUMBER | altBillingPhone |  | Alternate Phone (optional)
 UNKNOWN_TYPE | defaultBilling |  | true
