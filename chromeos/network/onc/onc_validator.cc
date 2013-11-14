@@ -415,7 +415,7 @@ bool Validator::ValidateToplevelConfiguration(
   if (FieldExistsAndHasNoValidValue(*result, kType, kValidTypes))
     return false;
 
-  bool allRequiredExist = true;
+  bool all_required_exist = true;
 
   // Not part of the ONC spec yet:
   // We don't require the type field and default to UnencryptedConfiguration.
@@ -432,13 +432,13 @@ bool Validator::ValidateToplevelConfiguration(
       LOG(ERROR) << message;
     else
       LOG(WARNING) << message;
-    allRequiredExist = false;
+    all_required_exist = false;
   }
 
   if (IsGlobalNetworkConfigInUserImport(*result))
     return false;
 
-  return !error_on_missing_field_ || allRequiredExist;
+  return !error_on_missing_field_ || all_required_exist;
 }
 
 bool Validator::ValidateNetworkConfiguration(
@@ -456,13 +456,13 @@ bool Validator::ValidateNetworkConfiguration(
     return false;
   }
 
-  bool allRequiredExist = RequireField(*result, kGUID);
+  bool all_required_exist = RequireField(*result, kGUID);
 
   bool remove = false;
   result->GetBooleanWithoutPathExpansion(::onc::kRemove, &remove);
   if (!remove) {
-    allRequiredExist &= RequireField(*result, kName);
-    allRequiredExist &= RequireField(*result, kType);
+    all_required_exist &=
+        RequireField(*result, kName) && RequireField(*result, kType);
 
     std::string type;
     result->GetStringWithoutPathExpansion(kType, &type);
@@ -478,21 +478,22 @@ bool Validator::ValidateNetworkConfiguration(
       return false;
     }
 
-    if (type == ::onc::network_type::kWiFi)
-      allRequiredExist &= RequireField(*result, ::onc::network_config::kWiFi);
-    else if (type == ::onc::network_type::kEthernet)
-      allRequiredExist &= RequireField(*result,
-                                       ::onc::network_config::kEthernet);
-    else if (type == ::onc::network_type::kCellular)
-      allRequiredExist &= RequireField(*result,
-                                       ::onc::network_config::kCellular);
-    else if (type == ::onc::network_type::kVPN)
-      allRequiredExist &= RequireField(*result, ::onc::network_config::kVPN);
-    else if (!type.empty())
+    if (type == ::onc::network_type::kWiFi) {
+      all_required_exist &= RequireField(*result, ::onc::network_config::kWiFi);
+    } else if (type == ::onc::network_type::kEthernet) {
+      all_required_exist &=
+          RequireField(*result, ::onc::network_config::kEthernet);
+    } else if (type == ::onc::network_type::kCellular) {
+      all_required_exist &=
+          RequireField(*result, ::onc::network_config::kCellular);
+    } else if (type == ::onc::network_type::kVPN) {
+      all_required_exist &= RequireField(*result, ::onc::network_config::kVPN);
+    } else if (!type.empty()) {
       NOTREACHED();
+    }
   }
 
-  return !error_on_missing_field_ || allRequiredExist;
+  return !error_on_missing_field_ || all_required_exist;
 }
 
 bool Validator::ValidateEthernet(
@@ -501,18 +502,18 @@ bool Validator::ValidateEthernet(
   using namespace ::onc::ethernet;
 
   static const char* kValidAuthentications[] = { kNone, k8021X, NULL };
-  if (FieldExistsAndHasNoValidValue(*result, kAuthentication,
-                                    kValidAuthentications)) {
+  if (FieldExistsAndHasNoValidValue(
+          *result, kAuthentication, kValidAuthentications)) {
     return false;
   }
 
-  bool allRequiredExist = true;
+  bool all_required_exist = true;
   std::string auth;
   result->GetStringWithoutPathExpansion(kAuthentication, &auth);
   if (auth == k8021X)
-    allRequiredExist &= RequireField(*result, kEAP);
+    all_required_exist &= RequireField(*result, kEAP);
 
-  return !error_on_missing_field_ || allRequiredExist;
+  return !error_on_missing_field_ || all_required_exist;
 }
 
 bool Validator::ValidateIPConfig(
@@ -521,8 +522,8 @@ bool Validator::ValidateIPConfig(
   using namespace ::onc::ipconfig;
 
   static const char* kValidTypes[] = { kIPv4, kIPv6, NULL };
-  if (FieldExistsAndHasNoValidValue(*result, ::onc::ipconfig::kType,
-                                    kValidTypes))
+  if (FieldExistsAndHasNoValidValue(
+          *result, ::onc::ipconfig::kType, kValidTypes))
     return false;
 
   std::string type;
@@ -530,16 +531,16 @@ bool Validator::ValidateIPConfig(
   int lower_bound = 1;
   // In case of missing type, choose higher upper_bound.
   int upper_bound = (type == kIPv4) ? 32 : 128;
-  if (FieldExistsAndIsNotInRange(*result, kRoutingPrefix,
-                                 lower_bound, upper_bound)) {
+  if (FieldExistsAndIsNotInRange(
+          *result, kRoutingPrefix, lower_bound, upper_bound)) {
     return false;
   }
 
-  bool allRequiredExist = RequireField(*result, kIPAddress) &
-      RequireField(*result, kRoutingPrefix) &
-      RequireField(*result, ::onc::ipconfig::kType);
+  bool all_required_exist = RequireField(*result, kIPAddress) &&
+                            RequireField(*result, kRoutingPrefix) &&
+                            RequireField(*result, ::onc::ipconfig::kType);
 
-  return !error_on_missing_field_ || allRequiredExist;
+  return !error_on_missing_field_ || all_required_exist;
 }
 
 bool Validator::ValidateWiFi(
@@ -552,17 +553,17 @@ bool Validator::ValidateWiFi(
   if (FieldExistsAndHasNoValidValue(*result, kSecurity, kValidSecurities))
     return false;
 
-  bool allRequiredExist = RequireField(*result, kSecurity) &
-      RequireField(*result, kSSID);
+  bool all_required_exist =
+      RequireField(*result, kSecurity) && RequireField(*result, kSSID);
 
   std::string security;
   result->GetStringWithoutPathExpansion(kSecurity, &security);
   if (security == kWEP_8021X || security == kWPA_EAP)
-    allRequiredExist &= RequireField(*result, kEAP);
+    all_required_exist &= RequireField(*result, kEAP);
   else if (security == kWEP_PSK || security == kWPA_PSK)
-    allRequiredExist &= RequireField(*result, kPassphrase);
+    all_required_exist &= RequireField(*result, kPassphrase);
 
-  return !error_on_missing_field_ || allRequiredExist;
+  return !error_on_missing_field_ || all_required_exist;
 }
 
 bool Validator::ValidateVPN(
@@ -575,19 +576,19 @@ bool Validator::ValidateVPN(
   if (FieldExistsAndHasNoValidValue(*result, ::onc::vpn::kType, kValidTypes))
     return false;
 
-  bool allRequiredExist = RequireField(*result, ::onc::vpn::kType);
+  bool all_required_exist = RequireField(*result, ::onc::vpn::kType);
   std::string type;
   result->GetStringWithoutPathExpansion(::onc::vpn::kType, &type);
   if (type == kOpenVPN) {
-    allRequiredExist &= RequireField(*result, kOpenVPN);
+    all_required_exist &= RequireField(*result, kOpenVPN);
   } else if (type == kIPsec) {
-    allRequiredExist &= RequireField(*result, kIPsec);
+    all_required_exist &= RequireField(*result, kIPsec);
   } else if (type == kTypeL2TP_IPsec) {
-    allRequiredExist &= RequireField(*result, kIPsec) &
-        RequireField(*result, kL2TP);
+    all_required_exist &=
+        RequireField(*result, kIPsec) && RequireField(*result, kL2TP);
   }
 
-  return !error_on_missing_field_ || allRequiredExist;
+  return !error_on_missing_field_ || all_required_exist;
 }
 
 bool Validator::ValidateIPsec(
@@ -598,21 +599,20 @@ bool Validator::ValidateIPsec(
 
   static const char* kValidAuthentications[] = { kPSK, kCert, NULL };
   static const char* kValidCertTypes[] = { kRef, kPattern, NULL };
-  // Using strict bit-wise OR to check all conditions.
-  if (FieldExistsAndHasNoValidValue(*result, kAuthenticationType,
-                                    kValidAuthentications) |
-      FieldExistsAndHasNoValidValue(*result, ::onc::vpn::kClientCertType,
-                                    kValidCertTypes)) {
+  if (FieldExistsAndHasNoValidValue(
+          *result, kAuthenticationType, kValidAuthentications) ||
+      FieldExistsAndHasNoValidValue(
+          *result, ::onc::vpn::kClientCertType, kValidCertTypes)) {
     return false;
   }
 
-  bool allRequiredExist = RequireField(*result, kAuthenticationType) &
-      RequireField(*result, kIKEVersion);
+  bool all_required_exist = RequireField(*result, kAuthenticationType) &&
+                            RequireField(*result, kIKEVersion);
   std::string auth;
   result->GetStringWithoutPathExpansion(kAuthenticationType, &auth);
   if (auth == kCert) {
-    allRequiredExist &= RequireField(*result, ::onc::vpn::kClientCertType) &
-        RequireField(*result, kServerCARef);
+    all_required_exist &= RequireField(*result, ::onc::vpn::kClientCertType) &&
+                          RequireField(*result, kServerCARef);
   }
   std::string cert_type;
   result->GetStringWithoutPathExpansion(::onc::vpn::kClientCertType,
@@ -622,11 +622,11 @@ bool Validator::ValidateIPsec(
     return false;
 
   if (cert_type == kPattern)
-    allRequiredExist &= RequireField(*result, ::onc::vpn::kClientCertPattern);
+    all_required_exist &= RequireField(*result, ::onc::vpn::kClientCertPattern);
   else if (cert_type == kRef)
-    allRequiredExist &= RequireField(*result, ::onc::vpn::kClientCertRef);
+    all_required_exist &= RequireField(*result, ::onc::vpn::kClientCertRef);
 
-  return !error_on_missing_field_ || allRequiredExist;
+  return !error_on_missing_field_ || all_required_exist;
 }
 
 bool Validator::ValidateOpenVPN(
@@ -642,17 +642,16 @@ bool Validator::ValidateOpenVPN(
   static const char* kValidCertTlsValues[] =
       { ::onc::openvpn::kNone, ::onc::openvpn::kServer, NULL };
 
-  // Using strict bit-wise OR to check all conditions.
-  if (FieldExistsAndHasNoValidValue(*result, kAuthRetry,
-                                    kValidAuthRetryValues) |
-      FieldExistsAndHasNoValidValue(*result, ::onc::vpn::kClientCertType,
-                                    kValidCertTypes) |
-      FieldExistsAndHasNoValidValue(*result, kRemoteCertTLS,
-                                    kValidCertTlsValues)) {
+  if (FieldExistsAndHasNoValidValue(
+          *result, kAuthRetry, kValidAuthRetryValues) ||
+      FieldExistsAndHasNoValidValue(
+          *result, ::onc::vpn::kClientCertType, kValidCertTypes) ||
+      FieldExistsAndHasNoValidValue(
+          *result, kRemoteCertTLS, kValidCertTlsValues)) {
     return false;
   }
 
-  bool allRequiredExist = RequireField(*result, ::onc::vpn::kClientCertType);
+  bool all_required_exist = RequireField(*result, ::onc::vpn::kClientCertType);
   std::string cert_type;
   result->GetStringWithoutPathExpansion(::onc::vpn::kClientCertType,
                                         &cert_type);
@@ -661,11 +660,11 @@ bool Validator::ValidateOpenVPN(
     return false;
 
   if (cert_type == kPattern)
-    allRequiredExist &= RequireField(*result, ::onc::vpn::kClientCertPattern);
+    all_required_exist &= RequireField(*result, ::onc::vpn::kClientCertPattern);
   else if (cert_type == kRef)
-    allRequiredExist &= RequireField(*result, ::onc::vpn::kClientCertRef);
+    all_required_exist &= RequireField(*result, ::onc::vpn::kClientCertRef);
 
-  return !error_on_missing_field_ || allRequiredExist;
+  return !error_on_missing_field_ || all_required_exist;
 }
 
 bool Validator::ValidateVerifyX509(const base::DictionaryValue& onc_object,
@@ -678,9 +677,9 @@ bool Validator::ValidateVerifyX509(const base::DictionaryValue& onc_object,
   if (FieldExistsAndHasNoValidValue(*result, kType, kValidTypeValues))
     return false;
 
-  bool allRequiredExist = RequireField(*result, kName);
+  bool all_required_exist = RequireField(*result, kName);
 
-  return !error_on_missing_field_ || allRequiredExist;
+  return !error_on_missing_field_ || all_required_exist;
 }
 
 bool Validator::ValidateCertificatePattern(
@@ -688,11 +687,11 @@ bool Validator::ValidateCertificatePattern(
     base::DictionaryValue* result) {
   using namespace ::onc::certificate;
 
-  bool allRequiredExist = true;
+  bool all_required_exist = true;
   if (!result->HasKey(kSubject) && !result->HasKey(kIssuer) &&
       !result->HasKey(kIssuerCARef)) {
     error_or_warning_found_ = true;
-    allRequiredExist = false;
+    all_required_exist = false;
     std::string message = MessageHeader() + "None of the fields '" + kSubject +
         "', '" + kIssuer + "', and '" + kIssuerCARef +
         "' is present, but at least one is required.";
@@ -702,7 +701,7 @@ bool Validator::ValidateCertificatePattern(
       LOG(WARNING) << message;
   }
 
-  return !error_on_missing_field_ || allRequiredExist;
+  return !error_on_missing_field_ || all_required_exist;
 }
 
 bool Validator::ValidateProxySettings(const base::DictionaryValue& onc_object,
@@ -713,25 +712,25 @@ bool Validator::ValidateProxySettings(const base::DictionaryValue& onc_object,
   if (FieldExistsAndHasNoValidValue(*result, ::onc::proxy::kType, kValidTypes))
     return false;
 
-  bool allRequiredExist = RequireField(*result, ::onc::proxy::kType);
+  bool all_required_exist = RequireField(*result, ::onc::proxy::kType);
   std::string type;
   result->GetStringWithoutPathExpansion(::onc::proxy::kType, &type);
   if (type == kManual)
-    allRequiredExist &= RequireField(*result, kManual);
+    all_required_exist &= RequireField(*result, kManual);
   else if (type == kPAC)
-    allRequiredExist &= RequireField(*result, kPAC);
+    all_required_exist &= RequireField(*result, kPAC);
 
-  return !error_on_missing_field_ || allRequiredExist;
+  return !error_on_missing_field_ || all_required_exist;
 }
 
 bool Validator::ValidateProxyLocation(const base::DictionaryValue& onc_object,
                                       base::DictionaryValue* result) {
   using namespace ::onc::proxy;
 
-  bool allRequiredExist = RequireField(*result, kHost) &
-      RequireField(*result, kPort);
+  bool all_required_exist =
+      RequireField(*result, kHost) && RequireField(*result, kPort);
 
-  return !error_on_missing_field_ || allRequiredExist;
+  return !error_on_missing_field_ || all_required_exist;
 }
 
 bool Validator::ValidateEAP(const base::DictionaryValue& onc_object,
@@ -746,15 +745,14 @@ bool Validator::ValidateEAP(const base::DictionaryValue& onc_object,
         NULL };
   static const char* kValidCertTypes[] = { kRef, kPattern, NULL };
 
-  // Using strict bit-wise OR to check all conditions.
-  if (FieldExistsAndHasNoValidValue(*result, kInner, kValidInnerValues) |
-      FieldExistsAndHasNoValidValue(*result, kOuter, kValidOuterValues) |
-      FieldExistsAndHasNoValidValue(*result, kClientCertType,
-                                    kValidCertTypes)) {
+  if (FieldExistsAndHasNoValidValue(*result, kInner, kValidInnerValues) ||
+      FieldExistsAndHasNoValidValue(*result, kOuter, kValidOuterValues) ||
+      FieldExistsAndHasNoValidValue(
+          *result, kClientCertType, kValidCertTypes)) {
     return false;
   }
 
-  bool allRequiredExist = RequireField(*result, kOuter);
+  bool all_required_exist = RequireField(*result, kOuter);
   std::string cert_type;
   result->GetStringWithoutPathExpansion(kClientCertType, &cert_type);
 
@@ -762,11 +760,11 @@ bool Validator::ValidateEAP(const base::DictionaryValue& onc_object,
     return false;
 
   if (cert_type == kPattern)
-    allRequiredExist &= RequireField(*result, kClientCertPattern);
+    all_required_exist &= RequireField(*result, kClientCertPattern);
   else if (cert_type == kRef)
-    allRequiredExist &= RequireField(*result, kClientCertRef);
+    all_required_exist &= RequireField(*result, kClientCertRef);
 
-  return !error_on_missing_field_ || allRequiredExist;
+  return !error_on_missing_field_ || all_required_exist;
 }
 
 bool Validator::ValidateCertificate(
@@ -790,20 +788,20 @@ bool Validator::ValidateCertificate(
     return false;
   }
 
-  bool allRequiredExist = RequireField(*result, kGUID);
+  bool all_required_exist = RequireField(*result, kGUID);
 
   bool remove = false;
   result->GetBooleanWithoutPathExpansion(::onc::kRemove, &remove);
   if (!remove) {
-    allRequiredExist &= RequireField(*result, kType);
+    all_required_exist &= RequireField(*result, kType);
 
     if (type == kClient)
-      allRequiredExist &= RequireField(*result, kPKCS12);
+      all_required_exist &= RequireField(*result, kPKCS12);
     else if (type == kServer || type == kAuthority)
-      allRequiredExist &= RequireField(*result, kX509);
+      all_required_exist &= RequireField(*result, kX509);
   }
 
-  return !error_on_missing_field_ || allRequiredExist;
+  return !error_on_missing_field_ || all_required_exist;
 }
 
 std::string Validator::MessageHeader() {
