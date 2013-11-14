@@ -725,39 +725,6 @@ TEST_F(WindowManagerTest, UpdateCursorVisibility) {
   generator.ReleaseTouch();
   EXPECT_TRUE(cursor_manager->IsCursorVisible());
   EXPECT_TRUE(cursor_manager->IsMouseEventsEnabled());
-
-  // If someone else made cursor invisible keep it invisible even after it
-  // received mouse events.
-  cursor_manager->EnableMouseEvents();
-  cursor_manager->HideCursor();
-  generator.MoveMouseTo(gfx::Point(0, 0));
-  EXPECT_FALSE(cursor_manager->IsCursorVisible());
-  EXPECT_TRUE(cursor_manager->IsMouseEventsEnabled());
-  generator.PressTouch();
-  EXPECT_FALSE(cursor_manager->IsCursorVisible());
-  EXPECT_FALSE(cursor_manager->IsMouseEventsEnabled());
-  generator.MoveMouseTo(gfx::Point(0, 0));
-  EXPECT_FALSE(cursor_manager->IsCursorVisible());
-  EXPECT_TRUE(cursor_manager->IsMouseEventsEnabled());
-  generator.ReleaseTouch();
-  EXPECT_FALSE(cursor_manager->IsCursorVisible());
-  EXPECT_TRUE(cursor_manager->IsMouseEventsEnabled());
-
-  // Back to normal.
-  cursor_manager->EnableMouseEvents();
-  cursor_manager->ShowCursor();
-  generator.MoveMouseTo(gfx::Point(0, 0));
-  EXPECT_TRUE(cursor_manager->IsCursorVisible());
-  EXPECT_TRUE(cursor_manager->IsMouseEventsEnabled());
-  generator.PressTouch();
-  EXPECT_FALSE(cursor_manager->IsCursorVisible());
-  EXPECT_FALSE(cursor_manager->IsMouseEventsEnabled());
-  generator.MoveMouseTo(gfx::Point(0, 0));
-  EXPECT_TRUE(cursor_manager->IsCursorVisible());
-  EXPECT_TRUE(cursor_manager->IsMouseEventsEnabled());
-  generator.ReleaseTouch();
-  EXPECT_TRUE(cursor_manager->IsCursorVisible());
-  EXPECT_TRUE(cursor_manager->IsMouseEventsEnabled());
 }
 
 TEST_F(WindowManagerTest, UpdateCursorVisibilityOnKeyEvent) {

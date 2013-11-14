@@ -892,12 +892,6 @@ void Shell::Init() {
     cursor_manager_.HideCursor();
   cursor_manager_.SetCursor(ui::kCursorPointer);
 
-  if (!cursor_manager_.IsCursorVisible()) {
-    // Cursor might have been hidden by something other than chrome.
-    // Let the first mouse event show the cursor.
-    env_filter_->set_cursor_hidden_by_filter(true);
-  }
-
 #if defined(OS_CHROMEOS)
   // Set accelerator controller delegates.
   accelerator_controller_->SetBrightnessControlDelegate(
