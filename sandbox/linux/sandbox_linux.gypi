@@ -100,7 +100,6 @@
         'seccomp-bpf/errorcode.h',
         'seccomp-bpf/instruction.h',
         'seccomp-bpf/linux_seccomp.h',
-        'seccomp-bpf/port.h',
         'seccomp-bpf/sandbox_bpf.cc',
         'seccomp-bpf/sandbox_bpf.h',
         'seccomp-bpf/sandbox_bpf_policy.h',
@@ -120,6 +119,20 @@
       ],
       'include_dirs': [
         '../..',
+      ],
+    },
+    {
+      # A demonstration program for the seccomp-bpf sandbox.
+      'target_name': 'seccomp_bpf_demo',
+      'type': 'executable',
+      'sources': [
+        'seccomp-bpf/demo.cc',
+      ],
+      'dependencies': [
+        'seccomp_bpf',
+      ],
+      'include_dirs': [
+        '../../',
       ],
     },
     {

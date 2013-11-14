@@ -4,6 +4,7 @@
 
 #include "components/nacl/loader/nacl_sandbox_linux.h"
 
+#include <errno.h>
 #include <signal.h>
 #include <sys/ptrace.h>
 

@@ -9,6 +9,8 @@
 
 #include <string>
 
+#include "base/logging.h"
+#include "base/posix/eintr_wrapper.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/seccomp-bpf/syscall.h"
 
@@ -46,11 +48,7 @@ void Die::SandboxDie(const char* msg, const char* file, int line) {
   if (simple_exit_) {
     LogToStderr(msg, file, line);
   } else {
-#if defined(SECCOMP_BPF_STANDALONE)
-    Die::LogToStderr(msg, file, line);
-#else
     logging::LogMessage(file, line, logging::LOG_FATAL).stream() << msg;
-#endif
   }
   ExitGroup();
 }
@@ -64,11 +62,7 @@ void Die::RawSandboxDie(const char* msg) {
 
 void Die::SandboxInfo(const char* msg, const char* file, int line) {
   if (!suppress_info_) {
-#if defined(SECCOMP_BPF_STANDALONE)
-    Die::LogToStderr(msg, file, line);
-#else
     logging::LogMessage(file, line, logging::LOG_INFO).stream() << msg;
-#endif
   }
 }
 
@@ -80,8 +74,8 @@ void Die::LogToStderr(const char* msg, const char* file, int line) {
 
     // No need to loop. Short write()s are unlikely and if they happen we
     // probably prefer them over a loop that blocks.
-    if (HANDLE_EINTR(SandboxSyscall(__NR_write, 2, s.c_str(), s.length()))) {
-    }
+    ignore_result(
+        HANDLE_EINTR(SandboxSyscall(__NR_write, 2, s.c_str(), s.length())));
   }
 }
 

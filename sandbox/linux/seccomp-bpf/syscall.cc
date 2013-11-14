@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "sandbox/linux/seccomp-bpf/syscall.h"
+
 #include <asm/unistd.h>
 #include <errno.h>
 
-#include "sandbox/linux/seccomp-bpf/port.h"
-#include "sandbox/linux/seccomp-bpf/syscall.h"
-
+#include "base/basictypes.h"
 
 namespace playground2 {
 

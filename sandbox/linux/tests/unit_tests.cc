@@ -70,8 +70,7 @@ static void SigAlrmHandler(int) {
   const char failure_message[] = "Timeout reached!\n";
   // Make sure that we never block here.
   if (!fcntl(2, F_SETFL, O_NONBLOCK)) {
-    if (write(2, failure_message, sizeof(failure_message) - 1) < 0) {
-    }
+    ignore_result(write(2, failure_message, sizeof(failure_message) - 1));
   }
   _exit(kExitForTimeout);
 }

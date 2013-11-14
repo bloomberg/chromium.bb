@@ -42,6 +42,7 @@
 #endif
 
 #if defined(SECCOMP_BPF_SANDBOX)
+#include "base/posix/eintr_wrapper.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/services/linux_syscalls.h"
 

@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include "base/basictypes.h"
+
 namespace playground2 {
 
 // Iterates over the entire system call range from 0..0xFFFFFFFFu. This

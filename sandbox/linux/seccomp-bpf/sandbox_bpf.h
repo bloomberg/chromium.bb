@@ -20,7 +20,6 @@
 #include "sandbox/linux/seccomp-bpf/die.h"
 #include "sandbox/linux/seccomp-bpf/errorcode.h"
 #include "sandbox/linux/seccomp-bpf/linux_seccomp.h"
-#include "sandbox/linux/seccomp-bpf/port.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf_policy_forward.h"
 
 namespace playground2 {

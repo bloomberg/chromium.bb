@@ -26,6 +26,7 @@
 #include <time.h>
 #include <unistd.h>
 
+#include "base/posix/eintr_wrapper.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 
 using playground2::arch_seccomp_data;
@@ -221,7 +222,7 @@ intptr_t DefaultHandler(const struct arch_seccomp_data& data, void *) {
   char buf[sizeof(msg0) - 1 + 25 + sizeof(msg1)];
 
   *buf = '\000';
-  strncat(buf, msg0, sizeof(buf));
+  strncat(buf, msg0, sizeof(buf) - 1);
 
   char *ptr = strrchr(buf, '\000');
   itoa_r(data.nr, ptr, sizeof(buf) - (ptr - buf));
@@ -418,7 +419,7 @@ int main(int argc, char *argv[]) {
   }
   Sandbox sandbox;
   sandbox.set_proc_fd(proc_fd);
-  sandbox.SetSandboxPolicy(Evaluator, NULL);
+  sandbox.SetSandboxPolicyDeprecated(Evaluator, NULL);
   sandbox.StartSandbox();
 
   // Check that we can create threads

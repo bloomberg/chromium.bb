@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
+
 // Some headers on Android are missing cdefs: crbug.com/172337.
 // (We can't use OS_ANDROID here since build_config.h is not included).
 #if defined(ANDROID)
@@ -18,15 +20,11 @@
 #include <time.h>
 #include <unistd.h>
 
-#ifndef SECCOMP_BPF_STANDALONE
-#include "base/logging.h"
-#include "base/posix/eintr_wrapper.h"
-#endif
-
 #include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/posix/eintr_wrapper.h"
 #include "sandbox/linux/seccomp-bpf/codegen.h"
-#include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf_policy.h"
 #include "sandbox/linux/seccomp-bpf/syscall.h"
 #include "sandbox/linux/seccomp-bpf/syscall_iterator.h"
