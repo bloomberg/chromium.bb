@@ -268,6 +268,10 @@
           'sources': [
             'utility/chrome_content_utility_client.cc',
             'utility/chrome_content_utility_client.h',
+            'utility/cloud_print/bitmap_image.cc',
+            'utility/cloud_print/bitmap_image.h',
+            'utility/cloud_print/pwg_encoder.cc',
+            'utility/cloud_print/pwg_encoder.h',
             'utility/extensions/unpacker.cc',
             'utility/extensions/unpacker.h',
             'utility/importer/bookmark_html_reader.cc',

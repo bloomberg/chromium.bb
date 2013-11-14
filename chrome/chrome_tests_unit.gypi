@@ -1934,6 +1934,7 @@
         'tools/convert_dict/convert_dict_unittest.cc',
         'tools/profile_reset/jtl_compiler_unittest.cc',
         'tools/profile_reset/jtl_parser_unittest.cc',
+        'utility/cloud_print/pwg_encoder_unittest.cc',
         'utility/extensions/unpacker_unittest.cc',
         'utility/importer/bookmark_html_reader_unittest.cc',
         'utility/importer/bookmarks_file_importer_unittest.cc',
