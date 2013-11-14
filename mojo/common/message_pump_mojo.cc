@@ -184,7 +184,7 @@ void MessagePumpMojo::SignalControlPipe() {
 
 MessagePumpMojo::WaitState MessagePumpMojo::GetWaitState() const {
   WaitState wait_state;
-  wait_state.handles.push_back(run_state_->write_handle());
+  wait_state.handles.push_back(run_state_->read_handle());
   wait_state.wait_flags.push_back(MOJO_WAIT_FLAG_READABLE);
 
   for (HandleToHandler::const_iterator i = handlers_.begin();
