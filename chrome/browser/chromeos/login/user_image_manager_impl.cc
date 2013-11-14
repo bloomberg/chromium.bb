@@ -16,6 +16,8 @@
 #include "base/prefs/pref_service.h"
 #include "base/prefs/scoped_user_pref_update.h"
 #include "base/rand_util.h"
+#include "base/sequenced_task_runner.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "base/threading/worker_pool.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -179,12 +181,21 @@ void UserImageManager::RegisterPrefs(PrefRegistrySimple* registry) {
 }
 
 UserImageManagerImpl::UserImageManagerImpl()
-    : image_loader_(new UserImageLoader(ImageDecoder::ROBUST_JPEG_CODEC)),
-      unsafe_image_loader_(new UserImageLoader(ImageDecoder::DEFAULT_CODEC)),
-      last_image_set_async_(false),
+    : last_image_set_async_(false),
       downloaded_profile_image_data_url_(content::kAboutBlankURL),
       downloading_profile_image_(false),
       migrate_current_user_on_load_(false) {
+  base::SequencedWorkerPool* blocking_pool = BrowserThread::GetBlockingPool();
+  // Background task runner on which file I/O, image decoding and resizing are
+  // done.
+  scoped_refptr<base::SequencedTaskRunner> task_runner =
+      blocking_pool->GetSequencedTaskRunnerWithShutdownBehavior(
+          blocking_pool->GetSequenceToken(),
+          base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
+  image_loader_ = new UserImageLoader(ImageDecoder::ROBUST_JPEG_CODEC,
+                                      task_runner);
+  unsafe_image_loader_ = new UserImageLoader(ImageDecoder::DEFAULT_CODEC,
+                                             task_runner);
 }
 
 UserImageManagerImpl::~UserImageManagerImpl() {

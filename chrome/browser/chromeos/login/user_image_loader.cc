@@ -5,20 +5,18 @@
 #include "chrome/browser/chromeos/login/user_image_loader.h"
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/memory/scoped_ptr.h"
-#include "base/message_loop/message_loop.h"
-#include "base/threading/worker_pool.h"
+#include "base/message_loop/message_loop_proxy.h"
+#include "base/sequenced_task_runner.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/user_image.h"
-#include "content/public/browser/browser_thread.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/skbitmap_operations.h"
-
-using content::BrowserThread;
 
 namespace chromeos {
 
@@ -31,8 +29,11 @@ UserImageLoader::ImageInfo::ImageInfo(int size,
 UserImageLoader::ImageInfo::~ImageInfo() {
 }
 
-UserImageLoader::UserImageLoader(ImageDecoder::ImageCodec image_codec)
-    : target_message_loop_(NULL),
+UserImageLoader::UserImageLoader(
+    ImageDecoder::ImageCodec image_codec,
+    scoped_refptr<base::SequencedTaskRunner> background_task_runner)
+    : foreground_task_runner_(base::MessageLoopProxy::current()),
+      background_task_runner_(background_task_runner),
       image_codec_(image_codec) {
 }
 
@@ -42,78 +43,73 @@ UserImageLoader::~UserImageLoader() {
 void UserImageLoader::Start(const std::string& filepath,
                             int size,
                             const LoadedCallback& loaded_cb) {
-  base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
-  SequenceToken sequence_token = pool->GetSequenceToken();
-  Start(filepath, size, sequence_token, loaded_cb);
-}
-
-void UserImageLoader::Start(const std::string& filepath,
-                            int size,
-                            const SequenceToken& token,
-                            const LoadedCallback& loaded_cb) {
-  target_message_loop_ = base::MessageLoop::current();
-
-  ImageInfo image_info(size, loaded_cb);
-  base::SequencedWorkerPool* pool = BrowserThread::GetBlockingPool();
-  scoped_refptr<base::SequencedTaskRunner> task_runner = pool->
-      GetSequencedTaskRunnerWithShutdownBehavior(token,
-          base::SequencedWorkerPool::CONTINUE_ON_SHUTDOWN);
-  task_runner->PostTask(
+  background_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&UserImageLoader::LoadImage, this, filepath, image_info,
-                 task_runner));
+      base::Bind(&UserImageLoader::ReadAndDecodeImage,
+                 this,
+                 filepath,
+                 ImageInfo(size, loaded_cb)));
 }
 
-void UserImageLoader::LoadImage(
-    const std::string& filepath,
-    const ImageInfo& image_info,
-    scoped_refptr<base::SequencedTaskRunner> task_runner) {
-  DCHECK(task_runner->RunsTasksOnCurrentThread());
+void UserImageLoader::Start(scoped_ptr<std::string> data,
+                            int size,
+                            const LoadedCallback& loaded_cb) {
+  background_task_runner_->PostTask(FROM_HERE,
+                                    base::Bind(&UserImageLoader::DecodeImage,
+                                        this,
+                                        base::Passed(&data),
+                                        ImageInfo(size, loaded_cb)));
+}
 
-  std::string image_data;
-  base::ReadFileToString(base::FilePath(filepath), &image_data);
+void UserImageLoader::ReadAndDecodeImage(const std::string& filepath,
+                                         const ImageInfo& image_info) {
+  DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
+
+  scoped_ptr<std::string> data(new std::string);
+  base::ReadFileToString(base::FilePath(filepath), data.get());
+
+  DecodeImage(data.Pass(), image_info);
+}
+
+void UserImageLoader::DecodeImage(const scoped_ptr<std::string> data,
+                                  const ImageInfo& image_info) {
+  DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
 
   scoped_refptr<ImageDecoder> image_decoder =
-      new ImageDecoder(this, image_data, image_codec_);
-  {
-    base::AutoLock lock(lock_);
-    image_info_map_.insert(std::make_pair(image_decoder.get(), image_info));
-  }
-  image_decoder->Start(task_runner);
+      new ImageDecoder(this, *data, image_codec_);
+  image_info_map_.insert(std::make_pair(image_decoder.get(), image_info));
+  image_decoder->Start(background_task_runner_);
 }
 
 void UserImageLoader::OnImageDecoded(const ImageDecoder* decoder,
                                      const SkBitmap& decoded_image) {
-  ImageInfoMap::iterator info_it;
-  scoped_ptr<ImageInfo> image_info;
-  {
-    base::AutoLock lock(lock_);
-    info_it = image_info_map_.find(decoder);
-    if (info_it == image_info_map_.end()) {
-      NOTREACHED();
-      return;
-    }
-    image_info.reset(
-        new ImageInfo(info_it->second.size, info_it->second.loaded_cb));
-    image_info_map_.erase(info_it);
+  DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
+
+  ImageInfoMap::iterator it = image_info_map_.find(decoder);
+  if (it == image_info_map_.end()) {
+    NOTREACHED();
+    return;
   }
+  const int target_size = it->second.size;
+  const LoadedCallback loaded_cb = it->second.loaded_cb;
+  image_info_map_.erase(it);
 
   SkBitmap final_image = decoded_image;
 
-  if (image_info->size > 0) {
+  if (target_size > 0) {
     // Auto crop the image, taking the largest square in the center.
     int size = std::min(decoded_image.width(), decoded_image.height());
     int x = (decoded_image.width() - size) / 2;
     int y = (decoded_image.height() - size) / 2;
     SkBitmap cropped_image =
         SkBitmapOperations::CreateTiledBitmap(decoded_image, x, y, size, size);
-    if (size > image_info->size) {
+    if (size > target_size) {
       // Also downsize the image to save space and memory.
       final_image =
           skia::ImageOperations::Resize(cropped_image,
                                         skia::ImageOperations::RESIZE_LANCZOS3,
-                                        image_info->size,
-                                        image_info->size);
+                                        target_size,
+                                        target_size);
     } else {
       final_image = cropped_image;
     }
@@ -127,29 +123,23 @@ void UserImageLoader::OnImageDecoded(const ImageDecoder* decoder,
   UserImage user_image(final_image_skia, decoder->get_image_data());
   if (image_codec_ == ImageDecoder::ROBUST_JPEG_CODEC)
     user_image.MarkAsSafe();
-  target_message_loop_->PostTask(
-      FROM_HERE,
-      base::Bind(image_info->loaded_cb, user_image));
+  foreground_task_runner_->PostTask(FROM_HERE,
+                                    base::Bind(loaded_cb, user_image));
 }
 
 void UserImageLoader::OnDecodeImageFailed(const ImageDecoder* decoder) {
-  ImageInfoMap::iterator info_it;
-  scoped_ptr<ImageInfo> image_info;
-  {
-    base::AutoLock lock(lock_);
-    info_it = image_info_map_.find(decoder);
-    if (info_it == image_info_map_.end()) {
-      NOTREACHED();
-      return;
-    }
-    image_info.reset(
-        new ImageInfo(info_it->second.size, info_it->second.loaded_cb));
-    image_info_map_.erase(decoder);
-  }
+  DCHECK(background_task_runner_->RunsTasksOnCurrentThread());
 
-  target_message_loop_->PostTask(
-      FROM_HERE,
-      base::Bind(image_info->loaded_cb, UserImage()));
+  ImageInfoMap::iterator it = image_info_map_.find(decoder);
+  if (it == image_info_map_.end()) {
+    NOTREACHED();
+    return;
+  }
+  const LoadedCallback loaded_cb = it->second.loaded_cb;
+  image_info_map_.erase(it);
+
+  foreground_task_runner_->PostTask(FROM_HERE,
+                                    base::Bind(loaded_cb, UserImage()));
 }
 
 }  // namespace chromeos
