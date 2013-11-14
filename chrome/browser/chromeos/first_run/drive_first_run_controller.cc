@@ -42,7 +42,7 @@ const int kInitialDelaySeconds = 180;
 const int kWebContentsTimeoutSeconds = 15;
 
 // Google Drive offline opt-in endpoint.
-const char kDriveOfflineEndpointUrl[] = "http://drive.google.com";
+const char kDriveOfflineEndpointUrl[] = "https://drive.google.com/#offline";
 
 // Google Drive app id.
 const char kDriveHostedAppId[] = "apdfllckaahabafndbhieahigkjlhalf";
@@ -277,6 +277,7 @@ void DriveFirstRunController::EnableOfflineMode() {
       base::TimeDelta::FromSeconds(kInitialDelaySeconds),
       this,
       &DriveFirstRunController::EnableOfflineMode);
+    return;
   }
 
   if (!UserManager::Get()->IsLoggedInAsRegularUser()) {
