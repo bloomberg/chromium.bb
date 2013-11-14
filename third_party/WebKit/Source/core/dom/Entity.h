@@ -28,11 +28,7 @@ namespace WebCore {
 
 class Entity : public ContainerNode {
 private:
-    Entity() : ContainerNode(0)
-    {
-        ASSERT_NOT_REACHED();
-        ScriptWrappable::init(this);
-    }
+    Entity(); // Left unimplemented on purpose.
 };
 
 } // namespace WebCore
