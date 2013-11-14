@@ -67,8 +67,7 @@ class RulesRegistryService : public ProfileKeyedAPI,
   static RulesRegistryService* Get(Profile* profile);
 
   // Registers the default RulesRegistries used in Chromium.
-  void EnsureDefaultRulesRegistriesRegistered(
-      const WebViewKey& webview_key);
+  void EnsureDefaultRulesRegistriesRegistered(const WebViewKey& webview_key);
 
   // Registers a RulesRegistry and wraps it in an InitializingRulesRegistry.
   void RegisterRulesRegistry(scoped_refptr<RulesRegistry> rule_registry);

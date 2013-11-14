@@ -157,6 +157,17 @@ class RulesRegistry : public base::RefCountedThreadSafe<RulesRegistry> {
  protected:
   virtual ~RulesRegistry();
 
+  // The precondition for calling this method is that all rules have unique IDs.
+  // AddRules establishes this precondition and calls into this method.
+  // Stored rules already meet this precondition and so they avoid calling
+  // CheckAndFillInOptionalRules for improved performance.
+  //
+  // Returns an empty string if the function is successful or an error
+  // message otherwise.
+  std::string AddRulesNoFill(
+      const std::string& extension_id,
+      const std::vector<linked_ptr<RulesRegistry::Rule> >& rules);
+
   // These functions need to apply the rules to the browser, while the base
   // class will handle defaulting empty fields before calling *Impl, and will
   // automatically cache the rules and re-call *Impl on browser startup.

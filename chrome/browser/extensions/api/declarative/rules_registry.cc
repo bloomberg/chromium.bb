@@ -95,26 +95,23 @@ RulesRegistry::RulesRegistry(
   }
 }
 
-std::string RulesRegistry::AddRules(
+std::string RulesRegistry::AddRulesNoFill(
     const std::string& extension_id,
     const std::vector<linked_ptr<Rule> >& rules) {
   DCHECK(content::BrowserThread::CurrentlyOn(owner_thread()));
-
-  std::string error = CheckAndFillInOptionalRules(extension_id, rules);
-  if (!error.empty())
-    return error;
-  FillInOptionalPriorities(rules);
 
   // Verify that all rule IDs are new.
   for (std::vector<linked_ptr<Rule> >::const_iterator i =
       rules.begin(); i != rules.end(); ++i) {
     const RuleId& rule_id = *((*i)->id);
+    // Every rule should have a priority assigned.
+    DCHECK((*i)->priority);
     RulesDictionaryKey key(extension_id, rule_id);
     if (rules_.find(key) != rules_.end())
       return base::StringPrintf(kDuplicateRuleId, rule_id.c_str());
   }
 
-  error = AddRulesImpl(extension_id, rules);
+  std::string error = AddRulesImpl(extension_id, rules);
 
   if (!error.empty())
     return error;
@@ -129,6 +126,19 @@ std::string RulesRegistry::AddRules(
 
   MaybeProcessChangedRules(extension_id);
   return kSuccess;
+}
+
+std::string RulesRegistry::AddRules(
+    const std::string& extension_id,
+    const std::vector<linked_ptr<Rule> >& rules) {
+  DCHECK(content::BrowserThread::CurrentlyOn(owner_thread()));
+
+  std::string error = CheckAndFillInOptionalRules(extension_id, rules);
+  if (!error.empty())
+    return error;
+  FillInOptionalPriorities(rules);
+
+  return AddRulesNoFill(extension_id, rules);
 }
 
 std::string RulesRegistry::RemoveRules(
@@ -231,7 +241,7 @@ void RulesRegistry::DeserializeAndAddRules(
     scoped_ptr<base::Value> rules) {
   DCHECK(content::BrowserThread::CurrentlyOn(owner_thread()));
 
-  AddRules(extension_id, RulesFromValue(rules.get()));
+  AddRulesNoFill(extension_id, RulesFromValue(rules.get()));
 }
 
 RulesRegistry::~RulesRegistry() {
