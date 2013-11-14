@@ -24,7 +24,7 @@ extern "C" {
 #include "ui/gfx/x/x11_types.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_implementation.h"
-#include "ui/gl/vsync_provider.h"
+#include "ui/gl/sync_control_vsync_provider.h"
 
 namespace gfx {
 

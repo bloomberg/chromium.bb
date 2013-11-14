@@ -15,9 +15,9 @@
 #include "content/common/gpu/sync_point_manager.h"
 #include "content/common/gpu/texture_image_transport_surface.h"
 #include "gpu/command_buffer/service/gpu_scheduler.h"
+#include "ui/gfx/vsync_provider.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
-#include "ui/gl/vsync_provider.h"
 
 namespace content {
 

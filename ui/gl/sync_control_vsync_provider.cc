@@ -1,8 +1,8 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/gl/vsync_provider.h"
+#include "ui/gl/sync_control_vsync_provider.h"
 
 #include <math.h>
 
@@ -23,23 +23,15 @@ const double kRelativeIntervalDifferenceThreshold = 0.05;
 
 namespace gfx {
 
-VSyncProvider::VSyncProvider() {
-}
-
-VSyncProvider::~VSyncProvider() {
-}
-
 SyncControlVSyncProvider::SyncControlVSyncProvider()
-    : VSyncProvider(),
-      last_media_stream_counter_(0) {
+    : VSyncProvider(), last_media_stream_counter_(0) {
   // On platforms where we can't get an accurate reading on the refresh
   // rate we fall back to the assumption that we're displaying 60 frames
   // per second.
   last_good_interval_ = base::TimeDelta::FromSeconds(1) / 60;
 }
 
-SyncControlVSyncProvider::~SyncControlVSyncProvider() {
-}
+SyncControlVSyncProvider::~SyncControlVSyncProvider() {}
 
 void SyncControlVSyncProvider::GetVSyncParameters(
     const UpdateVSyncCallback& callback) {
@@ -56,9 +48,7 @@ void SyncControlVSyncProvider::GetVSyncParameters(
   int64 system_time;
   int64 media_stream_counter;
   int64 swap_buffer_counter;
-  if (!GetSyncValues(&system_time,
-                     &media_stream_counter,
-                     &swap_buffer_counter))
+  if (!GetSyncValues(&system_time, &media_stream_counter, &swap_buffer_counter))
     return;
 
   // Both Intel and Mali drivers will return TRUE for GetSyncValues
@@ -76,11 +66,11 @@ void SyncControlVSyncProvider::GetVSyncParameters(
   clock_gettime(CLOCK_MONOTONIC, &monotonic_time);
 
   int64 real_time_in_microseconds =
-    real_time.tv_sec * base::Time::kMicrosecondsPerSecond +
-    real_time.tv_nsec / base::Time::kNanosecondsPerMicrosecond;
+      real_time.tv_sec * base::Time::kMicrosecondsPerSecond +
+      real_time.tv_nsec / base::Time::kNanosecondsPerMicrosecond;
   int64 monotonic_time_in_microseconds =
-    monotonic_time.tv_sec * base::Time::kMicrosecondsPerSecond +
-    monotonic_time.tv_nsec / base::Time::kNanosecondsPerMicrosecond;
+      monotonic_time.tv_sec * base::Time::kMicrosecondsPerSecond +
+      monotonic_time.tv_nsec / base::Time::kNanosecondsPerMicrosecond;
 
   // We need the time according to CLOCK_MONOTONIC, so if we've been given
   // a time from CLOCK_REALTIME, we need to convert.
@@ -114,12 +104,11 @@ void SyncControlVSyncProvider::GetVSyncParameters(
 
   int32 numerator, denominator;
   if (GetMscRate(&numerator, &denominator)) {
-    last_computed_intervals_.push(
-        base::TimeDelta::FromSeconds(denominator) / numerator);
+    last_computed_intervals_.push(base::TimeDelta::FromSeconds(denominator) /
+                                  numerator);
   } else if (!last_timebase_.is_null()) {
     base::TimeDelta timebase_diff = timebase - last_timebase_;
-    int64 counter_diff = media_stream_counter -
-        last_media_stream_counter_;
+    int64 counter_diff = media_stream_counter - last_media_stream_counter_;
     if (counter_diff > 0 && timebase > last_timebase_)
       last_computed_intervals_.push(timebase_diff / counter_diff);
   }
@@ -136,14 +125,14 @@ void SyncControlVSyncProvider::GetVSyncParameters(
           new_interval.InMicroseconds() > kMaxVsyncIntervalUs) {
         LOG(FATAL) << "Calculated bogus refresh interval of "
                    << new_interval.InMicroseconds() << " us. "
-                   << "Last time base of "
-                   << last_timebase_.ToInternalValue() << " us. "
-                   << "Current time base of "
-                   << timebase.ToInternalValue() << " us. "
+                   << "Last time base of " << last_timebase_.ToInternalValue()
+                   << " us. "
+                   << "Current time base of " << timebase.ToInternalValue()
+                   << " us. "
                    << "Last media stream count of "
                    << last_media_stream_counter_ << ". "
-                   << "Current media stream count of "
-                   << media_stream_counter << ".";
+                   << "Current media stream count of " << media_stream_counter
+                   << ".";
       } else {
         last_good_interval_ = new_interval;
       }

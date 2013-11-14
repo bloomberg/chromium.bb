@@ -15,9 +15,9 @@
 #include "base/time/time.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/size.h"
+#include "ui/gfx/vsync_provider.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_surface.h"
-#include "ui/gl/vsync_provider.h"
 
 namespace gfx {
 

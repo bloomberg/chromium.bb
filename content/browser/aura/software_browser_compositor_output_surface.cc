@@ -12,7 +12,7 @@
 #include "content/browser/aura/browser_compositor_output_surface_proxy.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "ui/events/latency_info.h"
-#include "ui/gl/vsync_provider.h"
+#include "ui/gfx/vsync_provider.h"
 
 namespace content {
 

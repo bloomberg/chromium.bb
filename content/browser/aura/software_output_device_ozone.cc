@@ -8,7 +8,7 @@
 #include "ui/compositor/compositor.h"
 #include "ui/gfx/ozone/surface_factory_ozone.h"
 #include "ui/gfx/skia_util.h"
-#include "ui/gl/vsync_provider.h"
+#include "ui/gfx/vsync_provider.h"
 
 namespace content {
 

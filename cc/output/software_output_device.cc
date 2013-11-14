@@ -9,7 +9,7 @@
 #include "third_party/skia/include/core/SkBitmapDevice.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "ui/gfx/skia_util.h"
-#include "ui/gl/vsync_provider.h"
+#include "ui/gfx/vsync_provider.h"
 
 namespace cc {
 
