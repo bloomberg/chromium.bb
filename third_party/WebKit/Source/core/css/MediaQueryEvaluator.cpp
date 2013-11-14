@@ -138,7 +138,7 @@ bool MediaQueryEvaluator::eval(const MediaQuerySet* querySet, MediaQueryResultLi
             for (; j < expressions.size(); ++j) {
                 bool exprResult = eval(expressions.at(j).get());
                 if (viewportDependentMediaQueryResults && expressions.at(j)->isViewportDependent())
-                    viewportDependentMediaQueryResults->append(adoptPtr(new MediaQueryResult(*expressions.at(j), exprResult)));
+                    viewportDependentMediaQueryResults->append(adoptRef(new MediaQueryResult(*expressions.at(j), exprResult)));
                 if (!exprResult)
                     break;
             }

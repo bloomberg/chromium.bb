@@ -69,7 +69,10 @@ void ScopedStyleResolver::addRulesFromSheet(StyleSheetContents* sheet, const Med
 {
     if (!m_authorStyle)
         m_authorStyle = RuleSet::create();
-    m_authorStyle->addRulesFromSheet(sheet, medium, resolver);
+
+    bool hasDocumentSecurityOrigin = resolver->document().securityOrigin()->canRequest(sheet->baseURL());
+    m_authorStyle->addRulesFromSheet(sheet, medium, hasDocumentSecurityOrigin);
+    resolver->addMediaQueryResults(m_authorStyle->viewportDependentMediaQueryResults());
     resolver->processScopedRules(*m_authorStyle, sheet->baseURL(), &m_scopingNode);
 }
 

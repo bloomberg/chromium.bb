@@ -37,6 +37,8 @@ class MediaQueryResult;
 class MediaQuerySet;
 class RenderStyle;
 
+typedef Vector<RefPtr<MediaQueryResult> > MediaQueryResultList;
+
 /**
  * Class that evaluates css media queries as defined in
  * CSS3 Module "Media Queries" (http://www.w3.org/TR/css3-mediaqueries/)
@@ -73,7 +75,6 @@ public:
     bool mediaTypeMatch(const AtomicString& mediaTypeToMatch) const;
     bool mediaTypeMatchSpecific(const char* mediaTypeToMatch) const;
 
-    typedef Vector<OwnPtr<MediaQueryResult> > MediaQueryResultList;
     /** Evaluates a list of media queries */
     bool eval(const MediaQuerySet*, MediaQueryResultList* = 0) const;
 

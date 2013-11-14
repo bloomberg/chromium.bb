@@ -25,10 +25,11 @@
 
 #include "core/css/MediaQueryExp.h"
 #include "wtf/Noncopyable.h"
+#include "wtf/RefCounted.h"
 
 namespace WebCore {
 
-class MediaQueryResult {
+class MediaQueryResult : public RefCounted<MediaQueryResult> {
     WTF_MAKE_NONCOPYABLE(MediaQueryResult); WTF_MAKE_FAST_ALLOCATED;
 public:
     MediaQueryResult(const MediaQueryExp& expr, bool result)

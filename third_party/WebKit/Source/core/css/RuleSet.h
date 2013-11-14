@@ -23,8 +23,10 @@
 #define RuleSet_h
 
 #include "core/css/CSSKeyframesRule.h"
+#include "core/css/MediaQueryEvaluator.h"
 #include "core/css/RuleFeature.h"
 #include "core/css/StyleRule.h"
+#include "core/css/resolver/MediaQueryResult.h"
 #include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/LinkedStack.h"
@@ -46,7 +48,6 @@ enum PropertyWhitelistType {
 
 class CSSSelector;
 class MediaQueryEvaluator;
-class StyleResolver;
 class StyleRuleRegion;
 class StyleSheetContents;
 
@@ -121,7 +122,7 @@ class RuleSet {
 public:
     static PassOwnPtr<RuleSet> create() { return adoptPtr(new RuleSet); }
 
-    void addRulesFromSheet(StyleSheetContents*, const MediaQueryEvaluator&, StyleResolver* = 0);
+    void addRulesFromSheet(StyleSheetContents*, const MediaQueryEvaluator&, bool hasDocumentSecurityOrigin = false);
     void addStyleRule(StyleRule*, AddRuleFlags);
     void addRule(StyleRule*, unsigned selectorIndex, AddRuleFlags);
 
@@ -142,6 +143,7 @@ public:
     const Vector<StyleRuleHost*>& hostRules() const { return m_hostRules; }
     const Vector<MinimalRuleData>& treeBoundaryCrossingRules() const { return m_treeBoundaryCrossingRules; }
     const Vector<MinimalRuleData>& shadowDistributedRules() const { return m_shadowDistributedRules; }
+    const MediaQueryResultList& viewportDependentMediaQueryResults() const { return m_viewportDependentMediaQueryResults; }
 
     unsigned ruleCount() const { return m_ruleCount; }
 
@@ -179,7 +181,7 @@ private:
     void addHostRule(StyleRuleHost*);
     void addRegionRule(StyleRuleRegion*, bool hasDocumentSecurityOrigin);
 
-    void addChildRules(const Vector<RefPtr<StyleRuleBase> >&, const MediaQueryEvaluator& medium, StyleResolver*, bool hasDocumentSecurityOrigin, AddRuleFlags);
+    void addChildRules(const Vector<RefPtr<StyleRuleBase> >&, const MediaQueryEvaluator& medium, bool hasDocumentSecurityOrigin, AddRuleFlags);
     bool findBestRuleSetAndAdd(const CSSSelector*, RuleData&);
 
     void compactRules();
@@ -215,6 +217,8 @@ private:
     Vector<StyleRuleHost*> m_hostRules;
     Vector<MinimalRuleData> m_treeBoundaryCrossingRules;
     Vector<MinimalRuleData> m_shadowDistributedRules;
+
+    MediaQueryResultList m_viewportDependentMediaQueryResults;
 
     unsigned m_ruleCount;
     OwnPtr<PendingRuleMaps> m_pendingRules;

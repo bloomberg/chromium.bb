@@ -1417,10 +1417,15 @@ void StyleResolver::applyPropertiesToStyle(const CSSPropertyValue* properties, s
     }
 }
 
+void StyleResolver::addMediaQueryResults(const MediaQueryResultList& list)
+{
+    for (size_t i = 0; i < list.size(); ++i)
+        m_viewportDependentMediaQueryResults.append(list[i]);
+}
+
 bool StyleResolver::affectedByViewportChange() const
 {
-    unsigned s = m_viewportDependentMediaQueryResults.size();
-    for (unsigned i = 0; i < s; i++) {
+    for (unsigned i = 0; i < m_viewportDependentMediaQueryResults.size(); ++i) {
         if (m_medium->eval(&m_viewportDependentMediaQueryResults[i]->m_expression) != m_viewportDependentMediaQueryResults[i]->m_result)
             return true;
     }

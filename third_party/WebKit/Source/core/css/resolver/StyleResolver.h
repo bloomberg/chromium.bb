@@ -182,7 +182,7 @@ public:
     CSSFontSelector* fontSelector() const { return m_fontSelector.get(); }
     ViewportStyleResolver* viewportStyleResolver() { return m_viewportStyleResolver.get(); }
 
-    typedef Vector<OwnPtr<MediaQueryResult> > MediaQueryResultList;
+    void addMediaQueryResults(const MediaQueryResultList&);
     MediaQueryResultList* viewportDependentMediaQueryResults() { return &m_viewportDependentMediaQueryResults; }
     bool hasViewportDependentMediaQueries() const { return !m_viewportDependentMediaQueryResults.isEmpty(); }
     bool affectedByViewportChange() const;
