@@ -84,6 +84,21 @@ TranslatePrefs::TranslatePrefs(PrefService* user_prefs)
     : prefs_(user_prefs) {
 }
 
+void TranslatePrefs::ResetToDefaults() {
+  ClearBlockedLanguages();
+  ClearBlacklistedSites();
+  ClearWhitelistedLanguagePairs();
+
+  std::vector<std::string> languages;
+  GetLanguageList(&languages);
+  for (std::vector<std::string>::const_iterator it = languages.begin();
+      it != languages.end(); ++it) {
+    const std::string& language = *it;
+    ResetTranslationAcceptedCount(language);
+    ResetTranslationDeniedCount(language);
+  }
+}
+
 bool TranslatePrefs::IsBlockedLanguage(
     const std::string& original_language) const {
   return IsValueBlacklisted(kPrefTranslateBlockedLanguages,
@@ -169,11 +184,11 @@ void TranslatePrefs::RemoveLanguagePairFromWhitelist(
   dict->Remove(original_language, NULL);
 }
 
-bool TranslatePrefs::HasBlacklistedLanguages() const {
+bool TranslatePrefs::HasBlockedLanguages() const {
   return !IsListEmpty(kPrefTranslateBlockedLanguages);
 }
 
-void TranslatePrefs::ClearBlacklistedLanguages() {
+void TranslatePrefs::ClearBlockedLanguages() {
   prefs_->ClearPref(kPrefTranslateBlockedLanguages);
 }
 

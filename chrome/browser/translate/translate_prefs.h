@@ -37,6 +37,10 @@ class TranslatePrefs {
 
   explicit TranslatePrefs(PrefService* user_prefs);
 
+  // Resets the blocked languages list, the sites blacklist, the languages
+  // whitelist, and the accepted/denied counts.
+  void ResetToDefaults();
+
   bool IsBlockedLanguage(const std::string& original_language) const;
   void BlockLanguage(const std::string& original_language);
   void UnblockLanguage(const std::string& original_language);
@@ -51,7 +55,6 @@ class TranslatePrefs {
   void RemoveSiteFromBlacklist(const std::string& site);
 
   bool HasWhitelistedLanguagePairs() const;
-  void ClearWhitelistedLanguagePairs();
 
   bool IsLanguagePairWhitelisted(const std::string& original_language,
       const std::string& target_language);
@@ -61,12 +64,10 @@ class TranslatePrefs {
       const std::string& target_language);
 
   // Will return true if at least one language has been blacklisted.
-  bool HasBlacklistedLanguages() const;
-  void ClearBlacklistedLanguages();
+  bool HasBlockedLanguages() const;
 
   // Will return true if at least one site has been blacklisted.
   bool HasBlacklistedSites() const;
-  void ClearBlacklistedSites();
 
   // These methods are used to track how many times the user has denied the
   // translation for a specific language. (So we can present a UI to black-list
@@ -113,6 +114,9 @@ class TranslatePrefs {
       const std::vector<std::string>& blacklisted_languages,
       const std::vector<std::string>& accept_languages);
 
+  void ClearBlockedLanguages();
+  void ClearBlacklistedSites();
+  void ClearWhitelistedLanguagePairs();
   bool IsValueBlacklisted(const char* pref_id, const std::string& value) const;
   void BlacklistValue(const char* pref_id, const std::string& value);
   void RemoveValueFromBlacklist(const char* pref_id, const std::string& value);
