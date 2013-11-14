@@ -156,6 +156,7 @@ class BrowserProcessImpl : public BrowserProcess,
 
   void ApplyAllowCrossOriginAuthPromptPolicy();
   void ApplyDefaultBrowserPolicy();
+  void ApplyMetricsReportingPolicy();
 
   bool created_metrics_service_;
   scoped_ptr<MetricsService> metrics_service_;

@@ -110,6 +110,7 @@
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
 #include "chrome/browser/media_galleries/media_file_system_registry.h"
+#include "chrome/browser/ui/options/options_util.h"
 #endif
 
 #if defined(ENABLE_PLUGIN_INSTALLATION)
@@ -878,6 +879,16 @@ void BrowserProcessImpl::CreateLocalState() {
       base::Bind(&BrowserProcessImpl::ApplyDefaultBrowserPolicy,
                  base::Unretained(this)));
 
+  // This preference must be kept in sync with external values; update them
+  // whenever the preference or its controlling policy changes.
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
+  pref_change_registrar_.Add(
+      prefs::kMetricsReportingEnabled,
+      base::Bind(&BrowserProcessImpl::ApplyMetricsReportingPolicy,
+                 base::Unretained(this)));
+  ApplyMetricsReportingPolicy();
+#endif
+
   int max_per_proxy = local_state_->GetInteger(prefs::kMaxConnectionsPerProxy);
   net::ClientSocketPoolManager::set_max_sockets_per_proxy_server(
       net::HttpNetworkSession::NORMAL_SOCKET_POOL,
@@ -1026,6 +1037,13 @@ void BrowserProcessImpl::ApplyDefaultBrowserPolicy() {
 void BrowserProcessImpl::ApplyAllowCrossOriginAuthPromptPolicy() {
   bool value = local_state()->GetBoolean(prefs::kAllowCrossOriginAuthPrompt);
   ResourceDispatcherHost::Get()->SetAllowCrossOriginAuthPrompt(value);
+}
+
+void BrowserProcessImpl::ApplyMetricsReportingPolicy() {
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
+  OptionsUtil::ResolveMetricsReportingEnabled(
+      local_state()->GetBoolean(prefs::kMetricsReportingEnabled));
+#endif
 }
 
 // Mac is currently not supported.
