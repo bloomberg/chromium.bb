@@ -348,12 +348,30 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 	return 1;
 }
 
+/** Flush pending events to the client
+ *
+ * \param client The client object
+ *
+ * Events sent to clients are queued in a buffer and written to the
+ * socket later - typically when the compositor has handled all
+ * requests and goes back to block in the event loop.  This function
+ * flushes all queued up events for a client immediately.
+ * 
+ * \memberof wl_client
+ */
 WL_EXPORT void
 wl_client_flush(struct wl_client *client)
 {
 	wl_connection_flush(client->connection);
 }
 
+/** Get the display object for the given client
+ *
+ * \param client The client object
+ * \return The display object the client is associated with.
+ * 
+ * \memberof wl_client
+ */
 WL_EXPORT struct wl_display *
 wl_client_get_display(struct wl_client *client)
 {
@@ -364,6 +382,28 @@ static void
 bind_display(struct wl_client *client,
 	     void *data, uint32_t version, uint32_t id);
 
+/** Create a client for the given file descriptor
+ *
+ * \param display The display object
+ * \param fd The file descriptor for the socket to the client
+ * \return The new client object or NULL on failure.
+ *
+ * Given a file descriptor corresponding to one end of a socket, this
+ * function will create a wl_client struct and add the new client to
+ * the compositors client list.  At that point, the client is
+ * initialized and ready to run, as if the client had connected to the
+ * servers listening socket.  When the client eventually sends
+ * requests to the compositor, the wl_client argument to the request
+ * handler will be the wl_client returned from this function.
+ *
+ * The other end of the socket can be passed to
+ * wl_display_connect_to_fd() on the client side or used with the
+ * WAYLAND_SOCKET environment variable on the client side.
+ *
+ * On failure this function sets errno accordingly and returns NULL.
+ * 
+ * \memberof wl_display
+ */
 WL_EXPORT struct wl_client *
 wl_client_create(struct wl_display *display, int fd)
 {
@@ -417,6 +457,25 @@ err_client:
 	return NULL;
 }
 
+/** Return Unix credentials for the client
+ *
+ * \param client The display object
+ * \param pid Returns the process ID
+ * \param uid Returns the user ID
+ * \param gid Returns the group ID
+ *
+ * This function returns the process ID, the user ID and the group ID
+ * for the given client.  The credentials come from getsockopt() with
+ * SO_PEERCRED, on the client socket fd.  All the pointers can be
+ * NULL, if the caller is not interested in a particular ID.
+ *
+ * Be aware that for clients that a compositor forks and execs and
+ * then connects using socketpair(), this function will return the
+ * credentials for the compositor.  The credentials for the socketpair
+ * are set at creation time in the compositor.
+ * 
+ * \memberof wl_client
+ */
 WL_EXPORT void
 wl_client_get_credentials(struct wl_client *client,
 			  pid_t *pid, uid_t *uid, gid_t *gid)
@@ -429,6 +488,17 @@ wl_client_get_credentials(struct wl_client *client,
 		*gid = client->ucred.gid;
 }
 
+/** Look up an object in the client name space
+ *
+ * \param client The client object
+ * \param id The object id
+ * \return The object or NULL if there is not object for the given ID
+ *
+ * This looks up an object in the client object name space by its
+ * object ID.  
+ * 
+ * \memberof wl_client
+ */
 WL_EXPORT struct wl_resource *
 wl_client_get_object(struct wl_client *client, uint32_t id)
 {
@@ -522,6 +592,17 @@ wl_resource_find_for_client(struct wl_list *list, struct wl_client *client)
         return NULL;
 }
 
+/** Look up an object in the client name space
+ *
+ * \param client The client object
+ * \param id The object id
+ * \return The object or NULL if there is not object for the given ID
+ *
+ * This looks up an object in the client object name space by its
+ * object ID.  
+ * 
+ * \memberof wl_client
+ */
 WL_EXPORT struct wl_client *
 wl_resource_get_client(struct wl_resource *resource)
 {
@@ -833,12 +914,30 @@ wl_global_destroy(struct wl_global *global)
 	free(global);
 }
 
+/** Get the current serial number
+ *
+ * \param display The display object
+ *
+ * This function returns the most recent serial number, but does not
+ * increment it.
+ * 
+ * \memberof wl_display
+ */
 WL_EXPORT uint32_t
 wl_display_get_serial(struct wl_display *display)
 {
 	return display->serial;
 }
 
+/** Get the next serial number
+ *
+ * \param display The display object
+ *
+ * This function increments the display serial number and returns the
+ * new value.
+ * 
+ * \memberof wl_display
+ */
 WL_EXPORT uint32_t
 wl_display_next_serial(struct wl_display *display)
 {
@@ -1221,6 +1320,22 @@ wl_display_remove_global(struct wl_display *display, struct wl_global *global)
 	wl_global_destroy(global);
 }
 
+/** Add support for a wl_shm pixel format
+ *
+ * \param display The display object
+ * \param format The wl_shm pixel format to advertise
+ *
+ * Add the specified wl_shm format to the list of formats the wl_shm
+ * object advertises when a client binds to it.  Adding a format to
+ * the list means that clients will know that the compositor supports
+ * this format and may use it for creating wl_shm buffers.  The
+ * compositor must be able to handle the pixel format when a client 
+ *
+ * The compositor by default supports WL_SHM_FORMAT_ARGB8888 and
+ * WL_SHM_FORMAT_XRGB8888.
+ *
+ * \memberof wl_display
+ */
 WL_EXPORT void
 wl_display_add_shm_format(struct wl_display *display, uint32_t format)
 {
@@ -1230,6 +1345,21 @@ wl_display_add_shm_format(struct wl_display *display, uint32_t format)
 	*p = format;
 }
 
+/**
+ * Get list of additional wl_shm pixel formats
+ *
+ * \param display The display object
+ *
+ * This function returns the list of addition wl_shm pixel formats
+ * that the compositor supports.  WL_SHM_FORMAT_ARGB8888 and
+ * WL_SHM_FORMAT_XRGB8888 are always supported and not included in the
+ * array, but all formats added through wl_display_add_shm_format()
+ * will be in the array.
+ * 
+ * \sa wl_display_add_shm_format()
+ * 
+ * \memberof wl_display
+ */
 struct wl_array *
 wl_display_get_additional_shm_formats(struct wl_display *display)
 {
