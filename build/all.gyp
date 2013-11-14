@@ -72,6 +72,7 @@
             '../webkit/glue/webkit_glue.gyp:*',
             '../webkit/renderer/compositor_bindings/compositor_bindings_tests.gyp:*',
             '<(libjpeg_gyp_path):*',
+            '../native_client_sdk/native_client_sdk_untrusted.gyp:*',
           ],
         }, { #  'OS=="ios"'
           'dependencies': [

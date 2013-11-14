@@ -95,7 +95,9 @@
         "syscalls/listen.c",
         "syscalls/lstat.c",
         "syscalls/mkdir.c",
-        "syscalls/mount.c",
+        # Not called mount.c to avoid object file naming conflict with
+        # mount.cc.
+        "syscalls/syscall_mount.c",
         "syscalls/ntohl.c",
         "syscalls/ntohs.c",
         "syscalls/pipe.c",
