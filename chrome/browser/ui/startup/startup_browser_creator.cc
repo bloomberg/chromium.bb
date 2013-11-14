@@ -14,11 +14,13 @@
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/environment.h"
+#include "base/file_util.h"
 #include "base/files/file_path.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
+#include "base/metrics/statistics_recorder.h"
 #include "base/path_service.h"
 #include "base/prefs/pref_service.h"
 #include "base/strings/string_number_conversions.h"
@@ -226,6 +228,17 @@ class ProfileLaunchObserver : public content::NotificationObserver {
 
 base::LazyInstance<ProfileLaunchObserver> profile_launch_observer =
     LAZY_INSTANCE_INITIALIZER;
+
+// Dumps the current set of the browser process's histograms to |output_file|.
+// The file is overwritten if it exists. This function should only be called in
+// the blocking pool.
+void DumpBrowserHistograms(const base::FilePath& output_file) {
+  base::ThreadRestrictions::AssertIOAllowed();
+
+  std::string output_string(base::StatisticsRecorder::ToJSON(std::string()));
+  file_util::WriteFile(output_file, output_string.data(),
+                       static_cast<int>(output_string.size()));
+}
 
 }  // namespace
 
@@ -601,6 +614,20 @@ bool StartupBrowserCreator::ProcessCmdLineImpl(
 #if defined(TOOLKIT_VIEWS) && defined(USE_X11)
   ui::TouchFactory::SetTouchDeviceListFromCommandLine();
 #endif
+
+  if (!process_startup &&
+      command_line.HasSwitch(switches::kDumpBrowserHistograms)) {
+    // Only handle --dump-browser-histograms from a rendezvous. In this case, do
+    // not open a new browser window even if no output file was given.
+    base::FilePath output_file(
+        command_line.GetSwitchValuePath(switches::kDumpBrowserHistograms));
+    if (!output_file.empty()) {
+      BrowserThread::PostBlockingPoolTask(
+          FROM_HERE,
+          base::Bind(&DumpBrowserHistograms, output_file));
+    }
+    silent_launch = true;
+  }
 
   // If we don't want to launch a new browser window or tab (in the case
   // of an automation request), we are done here.

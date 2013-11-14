@@ -527,6 +527,10 @@ const char kDnsLogDetails[]                 = "dns-log-details";
 // Disables prefetching of DNS information.
 const char kDnsPrefetchDisable[]            = "dns-prefetch-disable";
 
+// Requests that a running browser process dump its collected histograms to a
+// given file. The file is overwritten if it exists.
+const char kDumpBrowserHistograms[]         = "dump-browser-histograms";
+
 // If set, Flash fullscreen widgets are embedded within the browser window and
 // with the same UX as HTML5 fullscreen.
 //

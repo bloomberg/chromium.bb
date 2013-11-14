@@ -158,6 +158,7 @@ extern const char kDiskCacheDir[];
 extern const char kDiskCacheSize[];
 extern const char kDnsLogDetails[];
 extern const char kDnsPrefetchDisable[];
+extern const char kDumpBrowserHistograms[];
 extern const char kEmbedFlashFullscreen[];
 extern const char kEnableAdview[];
 extern const char kEnableAdviewSrcAttribute[];

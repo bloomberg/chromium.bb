@@ -6,11 +6,13 @@
 
 #include "base/at_exit.h"
 #include "base/debug/leak_annotations.h"
+#include "base/json/string_escape.h"
 #include "base/logging.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
+#include "base/values.h"
 
 using std::list;
 using std::string;
@@ -160,6 +162,37 @@ void StatisticsRecorder::WriteGraph(const std::string& query,
     (*it)->WriteAscii(output);
     output->append("\n");
   }
+}
+
+// static
+std::string StatisticsRecorder::ToJSON(const std::string& query) {
+  if (!IsActive())
+    return std::string();
+
+  std::string output("{");
+  if (!query.empty()) {
+    output += "\"query\":";
+    JsonDoubleQuote(query, true, &output);
+    output += ",";
+  }
+
+  Histograms snapshot;
+  GetSnapshot(query, &snapshot);
+  output += "\"histograms\":[";
+  std::string json;
+  bool first_histogram = true;
+  for (Histograms::const_iterator it = snapshot.begin(); it != snapshot.end();
+       ++it) {
+    if (first_histogram)
+      first_histogram = false;
+    else
+      output += ",";
+    json.clear();
+    (*it)->WriteJSON(&json);
+    output += json;
+  }
+  output += "]}";
+  return output;
 }
 
 // static

@@ -4,9 +4,11 @@
 
 #include <vector>
 
+#include "base/json/json_reader.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -261,6 +263,66 @@ TEST_F(StatisticsRecorderTest, BucketRangesSharing) {
   ranges.clear();
   StatisticsRecorder::GetBucketRanges(&ranges);
   EXPECT_EQ(2u, ranges.size());
+}
+
+TEST_F(StatisticsRecorderTest, ToJSON) {
+  HISTOGRAM_COUNTS("TestHistogram1", 30);
+  HISTOGRAM_COUNTS("TestHistogram1", 40);
+  HISTOGRAM_COUNTS("TestHistogram2", 30);
+  HISTOGRAM_COUNTS("TestHistogram2", 40);
+
+  std::string json(StatisticsRecorder::ToJSON(std::string()));
+
+  // Check for valid JSON.
+  scoped_ptr<Value> root;
+  root.reset(JSONReader::Read(json));
+  ASSERT_TRUE(root.get());
+
+  DictionaryValue* root_dict = NULL;
+  ASSERT_TRUE(root->GetAsDictionary(&root_dict));
+
+  // No query should be set.
+  ASSERT_FALSE(root_dict->HasKey("query"));
+
+  ListValue* histogram_list = NULL;
+  ASSERT_TRUE(root_dict->GetList("histograms", &histogram_list));
+  ASSERT_EQ(2u, histogram_list->GetSize());
+
+  // Examine the first histogram.
+  DictionaryValue* histogram_dict = NULL;
+  ASSERT_TRUE(histogram_list->GetDictionary(0, &histogram_dict));
+
+  int sample_count;
+  ASSERT_TRUE(histogram_dict->GetInteger("count", &sample_count));
+  EXPECT_EQ(2, sample_count);
+
+  // Test the query filter.
+  std::string query("TestHistogram2");
+  json = StatisticsRecorder::ToJSON(query);
+
+  root.reset(JSONReader::Read(json));
+  ASSERT_TRUE(root.get());
+  ASSERT_TRUE(root->GetAsDictionary(&root_dict));
+
+  std::string query_value;
+  ASSERT_TRUE(root_dict->GetString("query", &query_value));
+  EXPECT_EQ(query, query_value);
+
+  ASSERT_TRUE(root_dict->GetList("histograms", &histogram_list));
+  ASSERT_EQ(1u, histogram_list->GetSize());
+
+  ASSERT_TRUE(histogram_list->GetDictionary(0, &histogram_dict));
+
+  std::string histogram_name;
+  ASSERT_TRUE(histogram_dict->GetString("name", &histogram_name));
+  EXPECT_EQ("TestHistogram2", histogram_name);
+
+  json.clear();
+  UninitializeStatisticsRecorder();
+
+  // No data should be returned.
+  json = StatisticsRecorder::ToJSON(query);
+  EXPECT_TRUE(json.empty());
 }
 
 }  // namespace base
