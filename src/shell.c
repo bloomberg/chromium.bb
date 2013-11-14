@@ -3052,8 +3052,7 @@ do_zoom(struct weston_seat *seat, uint32_t time, uint32_t key, uint32_t axis,
 			else if (output->zoom.level > output->zoom.max_level)
 				output->zoom.level = output->zoom.max_level;
 			else if (!output->zoom.active) {
-				output->zoom.active = 1;
-				output->disable_planes++;
+				weston_output_activate_zoom(output);
 			}
 
 			output->zoom.spring_z.target = output->zoom.level;

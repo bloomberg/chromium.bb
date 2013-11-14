@@ -712,9 +712,7 @@ weston_pointer_clamp(struct weston_pointer *pointer, wl_fixed_t *fx, wl_fixed_t 
 static void
 move_pointer(struct weston_seat *seat, wl_fixed_t x, wl_fixed_t y)
 {
-	struct weston_compositor *ec = seat->compositor;
 	struct weston_pointer *pointer = seat->pointer;
-	struct weston_output *output;
 	int32_t ix, iy;
 
 	weston_pointer_clamp (pointer, &x, &y);
@@ -724,12 +722,6 @@ move_pointer(struct weston_seat *seat, wl_fixed_t x, wl_fixed_t y)
 
 	ix = wl_fixed_to_int(x);
 	iy = wl_fixed_to_int(y);
-
-	wl_list_for_each(output, &ec->output_list, link)
-		if (output->zoom.active &&
-		    pixman_region32_contains_point(&output->region,
-						   ix, iy, NULL))
-			weston_output_update_zoom(output);
 
 	if (pointer->sprite) {
 		weston_view_set_position(pointer->sprite,

@@ -155,6 +155,7 @@ struct weston_output_zoom {
 	struct weston_fixed_point from;
 	struct weston_fixed_point to;
 	struct weston_fixed_point current;
+	struct wl_listener motion_listener;
 };
 
 /* bit compatible with drm definitions. */
@@ -1147,6 +1148,8 @@ void
 weston_output_init_zoom(struct weston_output *output);
 void
 weston_output_update_zoom(struct weston_output *output);
+void
+weston_output_activate_zoom(struct weston_output *output);
 void
 weston_output_update_matrix(struct weston_output *output);
 void

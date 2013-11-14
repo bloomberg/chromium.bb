@@ -45,6 +45,7 @@ weston_zoom_frame_z(struct weston_animation *animation,
 		if (output->zoom.active && output->zoom.level <= 0.0) {
 			output->zoom.active = 0;
 			output->disable_planes--;
+			wl_list_remove(&output->zoom.motion_listener.link);
 		}
 		output->zoom.spring_z.current = output->zoom.level;
 		wl_list_remove(&animation->link);
@@ -236,6 +237,31 @@ weston_output_update_zoom(struct weston_output *output)
 	weston_output_update_zoom_transform(output);
 }
 
+static void
+motion(struct wl_listener *listener, void *data)
+{
+	struct weston_output_zoom *zoom =
+		container_of(listener, struct weston_output_zoom, motion_listener);
+	struct weston_output *output =
+		container_of(zoom, struct weston_output, zoom);
+
+	weston_output_update_zoom(output);
+}
+
+WL_EXPORT void
+weston_output_activate_zoom(struct weston_output *output)
+{
+	struct weston_seat *seat = weston_zoom_pick_seat(output->compositor);
+
+	if (output->zoom.active)
+		return;
+
+	output->zoom.active = 1;
+	output->disable_planes++;
+	wl_signal_add(&seat->pointer->motion_signal,
+		      &output->zoom.motion_listener);
+}
+
 WL_EXPORT void
 weston_output_init_zoom(struct weston_output *output)
 {
@@ -253,4 +279,5 @@ weston_output_init_zoom(struct weston_output *output)
 	output->zoom.spring_xy.friction = 1000;
 	output->zoom.animation_xy.frame = weston_zoom_frame_xy;
 	wl_list_init(&output->zoom.animation_xy.link);
+	output->zoom.motion_listener.notify = motion;
 }
