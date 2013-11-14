@@ -68,7 +68,6 @@
         'win/lib/process_info.h',
         'win/lib/registry_util.cc',
         'win/lib/registry_util.h',
-        'win/lib/rlz_lib.h',
         'win/lib/rlz_lib_win.cc',
         'win/lib/rlz_value_store_registry.cc',
         'win/lib/rlz_value_store_registry.h',
@@ -111,10 +110,25 @@
       'msvs_disabled_warnings': [ 4267, ],
     },
     {
+      'target_name': 'test_support_rlz',
+      'type': 'static_library',
+      'dependencies': [
+        ':rlz_lib',
+        '../base/base.gyp:base',
+        '../base/base.gyp:test_support_base',
+        '../testing/gtest.gyp:gtest',
+      ],
+      'sources': [
+        'test/rlz_test_helpers.cc',
+        'test/rlz_test_helpers.h',
+      ],
+    },
+    {
       'target_name': 'rlz_unittests',
       'type': 'executable',
       'dependencies': [
         ':rlz_lib',
+        ':test_support_rlz',
         '../base/base.gyp:base',
         '../base/base.gyp:base_prefs',
         '../testing/gmock.gyp:gmock',
@@ -129,8 +143,6 @@
         'lib/machine_id_unittest.cc',
         'lib/rlz_lib_test.cc',
         'lib/string_utils_unittest.cc',
-        'test/rlz_test_helpers.cc',
-        'test/rlz_test_helpers.h',
         'test/rlz_unittest_main.cc',
         'win/lib/machine_deal_test.cc',
       ],

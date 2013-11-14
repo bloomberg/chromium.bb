@@ -14,20 +14,27 @@
 #include "base/files/scoped_temp_dir.h"
 #endif
 
+#if defined(OS_WIN)
+#include "base/test/test_reg_util_win.h"
+#endif
+
 class RlzLibTestNoMachineState : public ::testing::Test {
  protected:
   virtual void SetUp() OVERRIDE;
   virtual void TearDown() OVERRIDE;
 
-
 #if defined(OS_POSIX)
- base::ScopedTempDir temp_dir_;
+  base::ScopedTempDir temp_dir_;
+#endif
+
+#if defined(OS_WIN)
+  registry_util::RegistryOverrideManager override_manager_;
 #endif
 };
 
 class RlzLibTestBase : public RlzLibTestNoMachineState {
+ protected:
   virtual void SetUp() OVERRIDE;
 };
-
 
 #endif  // RLZ_TEST_RLZ_TEST_HELPERS_H

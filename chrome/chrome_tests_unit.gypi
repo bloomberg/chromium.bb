@@ -472,6 +472,7 @@
         '../content/content.gyp:content_app_both',
         '../net/net.gyp:net',
         '../net/net.gyp:net_test_support',
+        '../rlz/rlz.gyp:test_support_rlz',
         '../sync/sync.gyp:test_support_sync_api',
         '../sync/sync.gyp:test_support_sync_core',
         '../sync/sync.gyp:test_support_sync_internal_api',

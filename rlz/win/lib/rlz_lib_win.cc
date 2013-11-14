@@ -5,7 +5,7 @@
 // A library to manage RLZ information for access-points shared
 // across different client applications.
 
-#include "rlz/win/lib/rlz_lib.h"
+#include "rlz/lib/rlz_lib.h"
 
 #include <windows.h>
 #include <aclapi.h>
@@ -13,41 +13,10 @@
 
 #include "base/basictypes.h"
 #include "base/win/registry.h"
-#include "base/win/windows_version.h"
 #include "rlz/lib/assert.h"
 #include "rlz/lib/rlz_value_store.h"
 #include "rlz/win/lib/machine_deal.h"
 #include "rlz/win/lib/rlz_value_store_registry.h"
-
-namespace {
-
-// Path to recursively copy into the replacemment hives.  These are needed
-// to make sure certain win32 APIs continue to run correctly once the real
-// hives are replaced.
-const wchar_t* kHKLMAccessProviders =
-    L"System\\CurrentControlSet\\Control\\Lsa\\AccessProviders";
-
-// Helper functions
-
-void CopyRegistryTree(const base::win::RegKey& src, base::win::RegKey* dest) {
-  // First copy values.
-  for (base::win::RegistryValueIterator i(src.Handle(), L"");
-       i.Valid(); ++i) {
-    dest->WriteValue(i.Name(), reinterpret_cast<const void*>(i.Value()),
-                     i.ValueSize(), i.Type());
-  }
-
-  // Next copy subkeys recursively.
-  for (base::win::RegistryKeyIterator i(src.Handle(), L"");
-       i.Valid(); ++i) {
-    base::win::RegKey subkey(dest->Handle(), i.Name(), KEY_ALL_ACCESS);
-    CopyRegistryTree(base::win::RegKey(src.Handle(), i.Name(), KEY_READ),
-                     &subkey);
-  }
-}
-
-}  // namespace anonymous
-
 
 namespace rlz_lib {
 
@@ -235,26 +204,6 @@ bool GetMachineDealCode(char* dcc, size_t dcc_size) {
 
 bool SetMachineDealCodeFromPingResponse(const char* response) {
   return MachineDealCode::SetFromPingResponse(response);
-}
-
-void InitializeTempHivesForTesting(const base::win::RegKey& temp_hklm_key,
-                                   const base::win::RegKey& temp_hkcu_key) {
-  // For the moment, the HKCU hive requires no initialization.
-
-  if (base::win::GetVersion() >= base::win::VERSION_WIN7) {
-    // Copy the following HKLM subtrees to the temporary location so that the
-    // win32 APIs used by the tests continue to work:
-    //
-    //    HKLM\System\CurrentControlSet\Control\Lsa\AccessProviders
-    //
-    // This seems to be required since Win7.
-    base::win::RegKey dest(temp_hklm_key.Handle(), kHKLMAccessProviders,
-                           KEY_ALL_ACCESS);
-    CopyRegistryTree(base::win::RegKey(HKEY_LOCAL_MACHINE,
-                                       kHKLMAccessProviders,
-                                       KEY_READ),
-                     &dest);
-  }
 }
 
 }  // namespace rlz_lib

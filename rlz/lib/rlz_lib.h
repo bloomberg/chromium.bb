@@ -52,6 +52,22 @@ class URLRequestContextGetter;
 
 namespace rlz_lib {
 
+// All functions return true on success and false on error.
+// This implemenation is thread safe.
+//
+// Each prototype mentions the registry access requirements:
+//
+// HKLM read:  Will work from any process and at any privilege level on Vista.
+// HKCU read:  Calls made from the SYSTEM account must pass the current user's
+//             SID as the optional 'sid' param. Can be called from low integrity
+//             process on Vista.
+// HKCU write: Calls made from the SYSTEM account must pass the current user's
+//             SID as the optional 'sid' param. Calls require at least medium
+//             integrity on Vista (e.g. Toolbar will need to use their broker)
+// HKLM write: Calls must be made from an account with admin rights. No SID
+//             need be passed when running as SYSTEM.
+// Functions which do not access registry will be marked with "no restrictions".
+
 class ScopedRlzValueStoreLock;
 
 // The maximum length of an access points RLZ in bytes.
