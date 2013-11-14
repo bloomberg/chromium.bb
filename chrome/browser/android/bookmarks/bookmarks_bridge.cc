@@ -291,6 +291,9 @@ void BookmarksBridge::NotifyIfDoneLoading() {
 // ------------- Observer-related methods ------------- //
 
 void BookmarksBridge::BookmarkModelChanged() {
+  if (!IsLoaded())
+    return;
+
   // Called when there are changes to the bookmark model. It is most
   // likely changes to either managed or partner bookmarks.
   JNIEnv* env = AttachCurrentThread();
@@ -305,6 +308,9 @@ void BookmarksBridge::Loaded(BookmarkModel* model, bool ids_reassigned) {
 }
 
 void BookmarksBridge::BookmarkModelBeingDeleted(BookmarkModel* model) {
+  if (!IsLoaded())
+    return;
+
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = weak_java_ref_.get(env);
   if (obj.is_null())
@@ -317,6 +323,9 @@ void BookmarksBridge::BookmarkNodeMoved(BookmarkModel* model,
                                         int old_index,
                                         const BookmarkNode* new_parent,
                                         int new_index) {
+  if (!IsLoaded())
+    return;
+
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = weak_java_ref_.get(env);
   if (obj.is_null())
@@ -333,6 +342,9 @@ void BookmarksBridge::BookmarkNodeMoved(BookmarkModel* model,
 void BookmarksBridge::BookmarkNodeAdded(BookmarkModel* model,
                                         const BookmarkNode* parent,
                                         int index) {
+  if (!IsLoaded())
+    return;
+
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = weak_java_ref_.get(env);
   if (obj.is_null())
@@ -348,6 +360,9 @@ void BookmarksBridge::BookmarkNodeRemoved(BookmarkModel* model,
                                           const BookmarkNode* parent,
                                           int old_index,
                                           const BookmarkNode* node) {
+  if (!IsLoaded())
+    return;
+
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = weak_java_ref_.get(env);
   if (obj.is_null())
@@ -362,6 +377,9 @@ void BookmarksBridge::BookmarkNodeRemoved(BookmarkModel* model,
 
 void BookmarksBridge::BookmarkNodeChanged(BookmarkModel* model,
                                           const BookmarkNode* node) {
+  if (!IsLoaded())
+    return;
+
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = weak_java_ref_.get(env);
   if (obj.is_null())
@@ -374,6 +392,9 @@ void BookmarksBridge::BookmarkNodeChanged(BookmarkModel* model,
 
 void BookmarksBridge::BookmarkNodeChildrenReordered(BookmarkModel* model,
                                                     const BookmarkNode* node) {
+  if (!IsLoaded())
+    return;
+
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = weak_java_ref_.get(env);
   if (obj.is_null())
@@ -385,6 +406,9 @@ void BookmarksBridge::BookmarkNodeChildrenReordered(BookmarkModel* model,
 }
 
 void BookmarksBridge::ExtensiveBookmarkChangesBeginning(BookmarkModel* model) {
+  if (!IsLoaded())
+    return;
+
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = weak_java_ref_.get(env);
   if (obj.is_null())
@@ -393,6 +417,9 @@ void BookmarksBridge::ExtensiveBookmarkChangesBeginning(BookmarkModel* model) {
 }
 
 void BookmarksBridge::ExtensiveBookmarkChangesEnded(BookmarkModel* model) {
+  if (!IsLoaded())
+    return;
+
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = weak_java_ref_.get(env);
   if (obj.is_null())
@@ -401,10 +428,16 @@ void BookmarksBridge::ExtensiveBookmarkChangesEnded(BookmarkModel* model) {
 }
 
 void BookmarksBridge::OnManagedBookmarksChanged() {
+  if (!IsLoaded())
+    return;
+
   BookmarkModelChanged();
 }
 
 void BookmarksBridge::PartnerShimChanged(PartnerBookmarksShim* shim) {
+  if (!IsLoaded())
+    return;
+
   BookmarkModelChanged();
 }
 
