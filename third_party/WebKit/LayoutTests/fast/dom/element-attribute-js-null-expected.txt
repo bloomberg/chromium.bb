@@ -74,10 +74,12 @@ TEST SUCCEEDED: The value was the string 'null'. [tested HTMLButtonElement.value
 
 TEST SUCCEEDED: The value was the string 'null'. [tested HTMLDivElement.align]
 
-TEST SUCCEEDED: The value was the empty string. [tested HTMLEmbedElement.align]
-TEST SUCCEEDED: The value was the empty string. [tested HTMLEmbedElement.name]
-TEST SUCCEEDED: The value was the empty string. [tested HTMLEmbedElement.src]
-TEST SUCCEEDED: The value was the empty string. [tested HTMLEmbedElement.type]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLEmbedElement.align]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLEmbedElement.height]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLEmbedElement.name]
+TEST SUCCEEDED: The value was the string 'null' resolved as a URL. [tested HTMLEmbedElement.src]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLEmbedElement.type]
+TEST SUCCEEDED: The value was the string 'null'. [tested HTMLEmbedElement.width]
 
 TEST SUCCEEDED: The value was the empty string. [tested HTMLFontElement.color]
 TEST SUCCEEDED: The value was the empty string. [tested HTMLFontElement.face]

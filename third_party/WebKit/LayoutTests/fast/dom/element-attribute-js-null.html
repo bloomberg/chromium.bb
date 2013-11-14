@@ -220,10 +220,12 @@
                     type: 'HTMLEmbedElement',
                     elementToUse: document.createElement('embed'),
                     attributes: [
-                        {name: 'align', expectedNull: ''},
-                        {name: 'name', expectedNull: ''},
-                        {name: 'src', expectedNull: ''},
-                        {name: 'type', expectedNull: ''}
+                        {name: 'align', expectedNull: 'null'},
+                        {name: 'height', expectedNull: 'null'},
+                        {name: 'name', expectedNull: 'null'},
+                        {name: 'src', expectedNull: 'null', isUrl: true},
+                        {name: 'type', expectedNull: 'null'},
+                        {name: 'width', expectedNull: 'null'}
                     ]
                 },
 
