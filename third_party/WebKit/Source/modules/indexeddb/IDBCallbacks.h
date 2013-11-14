@@ -33,13 +33,13 @@
 #include "modules/indexeddb/IDBDatabaseBackendInterface.h"
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBKeyPath.h"
+#include "public/platform/WebIDBCursor.h"
 #include "public/platform/WebIDBTypes.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
 
 class DOMError;
-class IDBCursorBackendInterface;
 
 class IDBCallbacks : public WTF::RefCountedBase {
 public:
@@ -51,7 +51,7 @@ public:
     // From IDBFactory.webkitGetDatabaseNames()
     virtual void onSuccess(const Vector<String>&) = 0;
     // From IDBObjectStore/IDBIndex.openCursor(), IDBIndex.openKeyCursor()
-    virtual void onSuccess(PassRefPtr<IDBCursorBackendInterface>, PassRefPtr<IDBKey>, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer>) = 0;
+    virtual void onSuccess(PassOwnPtr<blink::WebIDBCursor>, PassRefPtr<IDBKey>, PassRefPtr<IDBKey> primaryKey, PassRefPtr<SharedBuffer>) = 0;
     // From IDBObjectStore.add()/put(), IDBIndex.getKey()
     virtual void onSuccess(PassRefPtr<IDBKey>) = 0;
     // From IDBObjectStore/IDBIndex.get()/count(), and various methods that yield null/undefined.

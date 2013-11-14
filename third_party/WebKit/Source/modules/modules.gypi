@@ -357,7 +357,6 @@
       'indexeddb/IDBCallbacks.h',
       'indexeddb/IDBCursor.cpp',
       'indexeddb/IDBCursor.h',
-      'indexeddb/IDBCursorBackendInterface.h',
       'indexeddb/IDBCursorWithValue.cpp',
       'indexeddb/IDBCursorWithValue.h',
       'indexeddb/IDBDatabase.cpp',

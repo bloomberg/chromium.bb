@@ -32,18 +32,19 @@
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/inspector/ScriptCallStack.h"
-#include "platform/SharedBuffer.h"
 #include "modules/indexeddb/IDBAny.h"
 #include "modules/indexeddb/IDBCallbacks.h"
-#include "modules/indexeddb/IDBCursorBackendInterface.h"
 #include "modules/indexeddb/IDBObjectStore.h"
 #include "modules/indexeddb/IDBRequest.h"
 #include "modules/indexeddb/IDBTracing.h"
+#include "platform/SharedBuffer.h"
+#include "public/platform/WebIDBCallbacks.h"
+#include "public/platform/WebIDBCursor.h"
 #include <limits>
 
 namespace WebCore {
 
-PassRefPtr<IDBCursor> IDBCursor::create(PassRefPtr<IDBCursorBackendInterface> backend, IndexedDB::CursorDirection direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
+PassRefPtr<IDBCursor> IDBCursor::create(PassOwnPtr<blink::WebIDBCursor> backend, IndexedDB::CursorDirection direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
 {
     return adoptRef(new IDBCursor(backend, direction, request, source, transaction));
 }
@@ -73,7 +74,7 @@ const AtomicString& IDBCursor::directionPrevUnique()
 }
 
 
-IDBCursor::IDBCursor(PassRefPtr<IDBCursorBackendInterface> backend, IndexedDB::CursorDirection direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
+IDBCursor::IDBCursor(PassOwnPtr<blink::WebIDBCursor> backend, IndexedDB::CursorDirection direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
     : m_backend(backend)
     , m_request(request)
     , m_direction(direction)
@@ -166,7 +167,7 @@ void IDBCursor::advance(unsigned long count, ExceptionState& es)
 
     m_request->setPendingCursor(this);
     m_gotValue = false;
-    m_backend->advance(count, m_request);
+    m_backend->advance(count, new blink::WebIDBCallbacks(m_request));
 }
 
 void IDBCursor::continueFunction(ExecutionContext* context, const ScriptValue& keyValue, ExceptionState& es)
@@ -222,7 +223,7 @@ void IDBCursor::continueFunction(PassRefPtr<IDBKey> key, ExceptionState& es)
     //        will be on the original context openCursor was called on. Is this right?
     m_request->setPendingCursor(this);
     m_gotValue = false;
-    m_backend->continueFunction(key, m_request);
+    m_backend->continueFunction(key, new blink::WebIDBCallbacks(m_request));
 }
 
 PassRefPtr<IDBRequest> IDBCursor::deleteFunction(ExecutionContext* context, ExceptionState& es)

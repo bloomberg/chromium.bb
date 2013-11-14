@@ -29,13 +29,13 @@
 #include "config.h"
 #include "public/platform/WebIDBCallbacks.h"
 
-#include "IDBCursorBackendProxy.h"
 #include "IDBDatabaseBackendProxy.h"
 #include "core/dom/DOMError.h"
 #include "modules/indexeddb/IDBCallbacks.h"
 #include "modules/indexeddb/IDBKey.h"
 #include "modules/indexeddb/IDBMetadata.h"
 #include "public/platform/WebData.h"
+#include "public/platform/WebIDBCursor.h"
 #include "public/platform/WebIDBDatabase.h"
 #include "public/platform/WebIDBDatabaseError.h"
 #include "public/platform/WebIDBKey.h"
@@ -70,7 +70,7 @@ void WebIDBCallbacks::onSuccess(const WebVector<WebString>& webStringList)
 
 void WebIDBCallbacks::onSuccess(WebIDBCursor* cursor, const WebIDBKey& key, const WebIDBKey& primaryKey, const WebData& value)
 {
-    m_private->onSuccess(IDBCursorBackendProxy::create(adoptPtr(cursor)), key, primaryKey, value);
+    m_private->onSuccess(adoptPtr(cursor), key, primaryKey, value);
 }
 
 void WebIDBCallbacks::onSuccess(WebIDBDatabase* webKitInstance, const WebIDBMetadata& metadata)

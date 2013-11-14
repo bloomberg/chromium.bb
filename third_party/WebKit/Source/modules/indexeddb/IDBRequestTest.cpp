@@ -29,7 +29,6 @@
 #include "core/dom/DOMError.h"
 #include "core/dom/Document.h"
 #include "core/events/EventQueue.h"
-#include "modules/indexeddb/IDBCursorBackendInterface.h"
 #include "modules/indexeddb/IDBDatabaseBackendInterface.h"
 #include "modules/indexeddb/IDBDatabaseCallbacksImpl.h"
 #include "modules/indexeddb/IDBKeyRange.h"
@@ -100,7 +99,7 @@ TEST_F(IDBRequestTest, EventsAfterStopping)
     // Ensure none of the following raise assertions in stopped state:
     request->onError(DOMError::create(AbortError, "Description goes here."));
     request->onSuccess(Vector<String>());
-    request->onSuccess(PassRefPtr<IDBCursorBackendInterface>(), IDBKey::createInvalid(), IDBKey::createInvalid(), 0);
+    request->onSuccess(nullptr, IDBKey::createInvalid(), IDBKey::createInvalid(), 0);
     request->onSuccess(IDBKey::createInvalid());
     request->onSuccess(PassRefPtr<SharedBuffer>(0));
     request->onSuccess(PassRefPtr<SharedBuffer>(0), IDBKey::createInvalid(), IDBKeyPath());

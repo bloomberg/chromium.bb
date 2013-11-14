@@ -26,17 +26,16 @@
 #include "config.h"
 #include "modules/indexeddb/IDBCursorWithValue.h"
 
-#include "modules/indexeddb/IDBCursorBackendInterface.h"
 #include "modules/indexeddb/IDBKey.h"
 
 namespace WebCore {
 
-PassRefPtr<IDBCursorWithValue> IDBCursorWithValue::create(PassRefPtr<IDBCursorBackendInterface> backend, IndexedDB::CursorDirection direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
+PassRefPtr<IDBCursorWithValue> IDBCursorWithValue::create(PassOwnPtr<blink::WebIDBCursor> backend, IndexedDB::CursorDirection direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
 {
     return adoptRef(new IDBCursorWithValue(backend, direction, request, source, transaction));
 }
 
-IDBCursorWithValue::IDBCursorWithValue(PassRefPtr<IDBCursorBackendInterface> backend, IndexedDB::CursorDirection direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
+IDBCursorWithValue::IDBCursorWithValue(PassOwnPtr<blink::WebIDBCursor> backend, IndexedDB::CursorDirection direction, IDBRequest* request, IDBAny* source, IDBTransaction* transaction)
     : IDBCursor(backend, direction, request, source, transaction)
 {
     ScriptWrappable::init(this);

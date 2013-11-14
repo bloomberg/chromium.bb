@@ -29,8 +29,10 @@
 #include "bindings/v8/ScriptValue.h"
 #include "bindings/v8/ScriptWrappable.h"
 #include "modules/indexeddb/IDBKey.h"
+#include "modules/indexeddb/IDBRequest.h"
 #include "modules/indexeddb/IDBTransaction.h"
 #include "modules/indexeddb/IndexedDB.h"
+#include "public/platform/WebIDBCursor.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -41,8 +43,6 @@ class DOMRequestState;
 class ExceptionState;
 class IDBAny;
 class IDBCallbacks;
-class IDBCursorBackendInterface;
-class IDBRequest;
 class ExecutionContext;
 class SharedBuffer;
 
@@ -56,7 +56,7 @@ public:
     static IndexedDB::CursorDirection stringToDirection(const String& modeString, ExceptionState&);
     static const AtomicString& directionToString(unsigned short mode);
 
-    static PassRefPtr<IDBCursor> create(PassRefPtr<IDBCursorBackendInterface>, IndexedDB::CursorDirection, IDBRequest*, IDBAny* source, IDBTransaction*);
+    static PassRefPtr<IDBCursor> create(PassOwnPtr<blink::WebIDBCursor>, IndexedDB::CursorDirection, IDBRequest*, IDBAny* source, IDBTransaction*);
     virtual ~IDBCursor();
 
     // Implement the IDL
@@ -93,7 +93,7 @@ public:
     }
 
 protected:
-    IDBCursor(PassRefPtr<IDBCursorBackendInterface>, IndexedDB::CursorDirection, IDBRequest*, IDBAny* source, IDBTransaction*);
+    IDBCursor(PassOwnPtr<blink::WebIDBCursor>, IndexedDB::CursorDirection, IDBRequest*, IDBAny* source, IDBTransaction*);
 
 private:
     PassRefPtr<IDBObjectStore> effectiveObjectStore();
@@ -101,7 +101,7 @@ private:
     void checkForReferenceCycle();
     bool isDeleted() const;
 
-    RefPtr<IDBCursorBackendInterface> m_backend;
+    OwnPtr<blink::WebIDBCursor> m_backend;
     RefPtr<IDBRequest> m_request;
     const IndexedDB::CursorDirection m_direction;
     RefPtr<IDBAny> m_source;

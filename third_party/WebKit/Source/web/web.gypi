@@ -49,8 +49,6 @@
       'GeolocationClientProxy.h',
       'GraphicsLayerFactoryChromium.cpp',
       'GraphicsLayerFactoryChromium.h',
-      'IDBCursorBackendProxy.cpp',
-      'IDBCursorBackendProxy.h',
       'IDBDatabaseBackendProxy.cpp',
       'IDBDatabaseBackendProxy.h',
       'IDBFactoryBackendProxy.cpp',

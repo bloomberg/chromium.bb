@@ -27,12 +27,19 @@
 #define IDBCursorWithValue_h
 
 #include "modules/indexeddb/IDBCursor.h"
+#include "modules/indexeddb/IndexedDB.h"
+#include "public/platform/WebIDBCursor.h"
+#include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
 
+class IDBAny;
+class IDBRequest;
+class IDBTransaction;
+
 class IDBCursorWithValue : public IDBCursor {
 public:
-    static PassRefPtr<IDBCursorWithValue> create(PassRefPtr<IDBCursorBackendInterface>, IndexedDB::CursorDirection, IDBRequest*, IDBAny* source, IDBTransaction*);
+    static PassRefPtr<IDBCursorWithValue> create(PassOwnPtr<blink::WebIDBCursor>, IndexedDB::CursorDirection, IDBRequest*, IDBAny* source, IDBTransaction*);
     virtual ~IDBCursorWithValue();
 
     // The value attribute defined in the IDL is simply implemented in IDBCursor (but not exposed via
@@ -42,7 +49,7 @@ public:
     virtual bool isCursorWithValue() const OVERRIDE { return true; }
 
 private:
-    IDBCursorWithValue(PassRefPtr<IDBCursorBackendInterface>, IndexedDB::CursorDirection, IDBRequest*, IDBAny* source, IDBTransaction*);
+    IDBCursorWithValue(PassOwnPtr<blink::WebIDBCursor>, IndexedDB::CursorDirection, IDBRequest*, IDBAny* source, IDBTransaction*);
 };
 
 inline IDBCursorWithValue* toIDBCursorWithValue(IDBCursor* cursor)
