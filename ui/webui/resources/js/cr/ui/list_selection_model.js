@@ -340,7 +340,7 @@ cr.define('cr.ui', function() {
         this.anchorIndex = permutation[oldAnchorIndex];
 
       if (oldSelectedItemsCount && !this.selectedIndexes.length &&
-          this.length_) {
+          this.length_ && oldLeadIndex != -1) {
         // All selected items are deleted. We move selection to next item of
         // last selected item.
         this.selectedIndexes = [Math.min(oldLeadIndex, this.length_ - 1)];
