@@ -109,6 +109,11 @@ public:
             floatingObject->setHeight(logicalWidth);
     }
 
+    LayoutUnit startAlignedOffsetForLine(LayoutUnit position, bool shouldIndentText);
+
+    void setStaticInlinePositionForChild(RenderBox*, LayoutUnit blockOffset, LayoutUnit inlinePosition);
+    void updateStaticInlinePositionForChild(RenderBox*, LayoutUnit logicalTop);
+
     static bool shouldSkipCreatingRunsForObject(RenderObject* obj)
     {
         return obj->isFloating() || (obj->isOutOfFlowPositioned() && !obj->style()->isOriginalDisplayInlineType() && !obj->container()->isRenderInline());
@@ -227,6 +232,8 @@ private:
     virtual void adjustForBorderFit(LayoutUnit x, LayoutUnit& left, LayoutUnit& right) const OVERRIDE; // Helper function for borderFitAdjust
 
     virtual RootInlineBox* createRootInlineBox() OVERRIDE;
+
+    void updateLogicalWidthForAlignment(const ETextAlign&, const RootInlineBox*, BidiRun* trailingSpaceRun, float& logicalLeft, float& totalLogicalWidth, float& availableLogicalWidth, int expansionOpportunityCount);
 public:
     struct FloatWithRect {
         FloatWithRect(RenderBox* f)
