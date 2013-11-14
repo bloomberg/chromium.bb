@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<!--
+This is a regression test for https://code.google.com/p/chromium/issues/detail?id=319069
+-->
+<head>
+<style>
+#padded-empty-polygon-0vertex { shape-inside: polygon(); shape-padding: 5px; }
+#padded-empty-polygon-1vertex { shape-inside: polygon(1px 2px); shape-padding: 5px; }
+#padded-empty-polygon-2vertex { shape-inside: polygon(1px 2px, 3px 4px); shape-padding: 5px; }
+</style>
+<body>
+  <div>This test should not crash.</div>
+  <div id="padded-empty-polygon-0vertex">Zero</div>
+  <div id="padded-empty-polygon-1vertex">One</div>
+  <div id="padded-empty-polygon-2vertex">Two</div>
+  <script>
+    if (window.testRunner)
+        testRunner.dumpAsText();
+  </script>
+</body>
+</html>
