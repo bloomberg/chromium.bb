@@ -893,7 +893,7 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE instance,
                                LPVOID reserved) {
   UNREFERENCED_PARAMETER(instance);
   if (reason == DLL_PROCESS_ATTACH) {
-#ifndef NDEBUG
+#if _ATL_VER < 0x0C00 && !defined(NDEBUG)
     // Silence traces from the ATL registrar to reduce the log noise.
     ATL::CTrace::s_trace.ChangeCategory(atlTraceRegistrar, 0,
                                         ATLTRACESTATUS_DISABLED);
