@@ -29,11 +29,11 @@
  */
 
 #include "config.h"
-#include "core/loader/archive/MHTMLParser.h"
+#include "platform/mhtml/MHTMLParser.h"
 
-#include "core/loader/archive/MHTMLArchive.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/SharedBufferChunkReader.h"
+#include "platform/mhtml/MHTMLArchive.h"
 #include "platform/network/ParsedContentType.h"
 #include "platform/text/QuotedPrintable.h"
 #include "wtf/HashMap.h"
@@ -300,24 +300,24 @@ PassRefPtr<ArchiveResource> MHTMLParser::parseNextPart(const MIMEHeader& mimeHea
         if (!m_lineReader.nextChunk(part)) {
             LOG_ERROR("Binary contents requires end of part");
             return 0;
-         }
-         content->append(part);
-         m_lineReader.setSeparator("\r\n");
-         Vector<char> nextChars;
-         if (m_lineReader.peek(nextChars, 2) != 2) {
-             LOG_ERROR("Invalid seperator.");
-             return 0;
-         }
-         endOfPartReached = true;
-         ASSERT(nextChars.size() == 2);
-         endOfArchiveReached = (nextChars[0] == '-' && nextChars[1] == '-');
-         if (!endOfArchiveReached) {
-             String line = m_lineReader.nextChunkAsUTF8StringWithLatin1Fallback();
-             if (!line.isEmpty()) {
-                 LOG_ERROR("No CRLF at end of binary section.");
-                 return 0;
-             }
-         }
+        }
+        content->append(part);
+        m_lineReader.setSeparator("\r\n");
+        Vector<char> nextChars;
+        if (m_lineReader.peek(nextChars, 2) != 2) {
+            LOG_ERROR("Invalid seperator.");
+            return 0;
+        }
+        endOfPartReached = true;
+        ASSERT(nextChars.size() == 2);
+        endOfArchiveReached = (nextChars[0] == '-' && nextChars[1] == '-');
+        if (!endOfArchiveReached) {
+            String line = m_lineReader.nextChunkAsUTF8StringWithLatin1Fallback();
+            if (!line.isEmpty()) {
+                LOG_ERROR("No CRLF at end of binary section.");
+                return 0;
+            }
+        }
     } else {
         String line;
         while (!(line = m_lineReader.nextChunkAsUTF8StringWithLatin1Fallback()).isNull()) {

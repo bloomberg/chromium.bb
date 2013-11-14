@@ -27,7 +27,7 @@
  */
 
 #include "config.h"
-#include "core/loader/archive/ArchiveResourceCollection.h"
+#include "platform/mhtml/ArchiveResourceCollection.h"
 
 #include "platform/weborigin/KURL.h"
 
@@ -53,9 +53,9 @@ void ArchiveResourceCollection::addAllResources(MHTMLArchive* archive)
         ASSERT(archive->mainResource());
 
         const String& frameName = archive->mainResource()->frameName();
-        if (!frameName.isNull())
+        if (!frameName.isNull()) {
             m_subframes.set(frameName, archive.get());
-        else {
+        } else {
             // In the MHTML case, frames don't have a name so we use the URL instead.
             m_subframes.set(archive->mainResource()->url().string(), archive.get());
         }

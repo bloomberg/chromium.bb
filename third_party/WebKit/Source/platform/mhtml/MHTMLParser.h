@@ -43,7 +43,7 @@ class MHTMLArchive;
 class MIMEHeader;
 class SharedBuffer;
 
-class MHTMLParser {
+class PLATFORM_EXPORT MHTMLParser {
 public:
     explicit MHTMLParser(SharedBuffer*);
 

@@ -37,7 +37,7 @@
 
 namespace WebCore {
 
-class ArchiveResource : public RefCounted<ArchiveResource> {
+class PLATFORM_EXPORT ArchiveResource : public RefCounted<ArchiveResource> {
 public:
     static PassRefPtr<ArchiveResource> create(PassRefPtr<SharedBuffer>, const KURL&, const ResourceResponse&);
     static PassRefPtr<ArchiveResource> create(PassRefPtr<SharedBuffer>, const KURL&,

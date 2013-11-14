@@ -29,13 +29,12 @@
  */
 
 #include "config.h"
+#include "platform/mhtml/MHTMLArchive.h"
 
-#include "core/loader/archive/MHTMLArchive.h"
-
-#include "core/loader/archive/MHTMLParser.h"
 #include "platform/MIMETypeRegistry.h"
 #include "platform/SerializedResource.h"
 #include "platform/SharedBuffer.h"
+#include "platform/mhtml/MHTMLParser.h"
 #include "platform/text/QuotedPrintable.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "wtf/CryptographicallyRandomNumber.h"

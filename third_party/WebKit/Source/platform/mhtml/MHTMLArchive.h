@@ -31,7 +31,7 @@
 #ifndef MHTMLArchive_h
 #define MHTMLArchive_h
 
-#include "core/loader/archive/ArchiveResource.h"
+#include "platform/mhtml/ArchiveResource.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
 #include "wtf/RefPtr.h"
@@ -45,7 +45,7 @@ class SharedBuffer;
 
 struct SerializedResource;
 
-class MHTMLArchive FINAL : public RefCounted<MHTMLArchive> {
+class PLATFORM_EXPORT MHTMLArchive FINAL : public RefCounted<MHTMLArchive> {
 public:
     static PassRefPtr<MHTMLArchive> create();
     static PassRefPtr<MHTMLArchive> create(const KURL&, SharedBuffer*);

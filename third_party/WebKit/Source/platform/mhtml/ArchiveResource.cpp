@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008 Apple Inc. All rights reserved.
+ * Copyright (C) 2008, 2010 Apple Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -26,34 +26,39 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ArchiveResourceCollection_h
-#define ArchiveResourceCollection_h
+#include "config.h"
+#include "platform/mhtml/ArchiveResource.h"
 
-#include "core/loader/archive/ArchiveResource.h"
-#include "core/loader/archive/MHTMLArchive.h"
-#include "wtf/HashMap.h"
-#include "wtf/text/WTFString.h"
+#include "platform/SharedBuffer.h"
 
 namespace WebCore {
 
-class KURL;
-
-class ArchiveResourceCollection {
-    WTF_MAKE_NONCOPYABLE(ArchiveResourceCollection); WTF_MAKE_FAST_ALLOCATED;
-public:
-    ArchiveResourceCollection();
-
-    void addResource(PassRefPtr<ArchiveResource>);
-    void addAllResources(MHTMLArchive*);
-
-    ArchiveResource* archiveResourceForURL(const KURL&);
-    PassRefPtr<MHTMLArchive> popSubframeArchive(const String& frameName, const KURL&);
-
-private:
-    HashMap<String, RefPtr<ArchiveResource> > m_subresources;
-    HashMap<String, RefPtr<MHTMLArchive> > m_subframes;
-};
-
+inline ArchiveResource::ArchiveResource(PassRefPtr<SharedBuffer> data, const KURL& url, const String& mimeType, const String& textEncoding, const String& frameName, const ResourceResponse& response)
+    : m_url(url)
+    , m_response(response)
+    , m_data(data)
+    , m_mimeType(mimeType)
+    , m_textEncoding(textEncoding)
+    , m_frameName(frameName)
+{
+    ASSERT(m_data);
 }
 
-#endif
+PassRefPtr<ArchiveResource> ArchiveResource::create(PassRefPtr<SharedBuffer> data, const KURL& url, const String& mimeType, const String& textEncoding, const String& frameName, const ResourceResponse& response)
+{
+    if (!data)
+        return 0;
+    if (response.isNull()) {
+        unsigned dataSize = data->size();
+        return adoptRef(new ArchiveResource(data, url, mimeType, textEncoding, frameName,
+            ResourceResponse(url, mimeType, dataSize, textEncoding, String())));
+    }
+    return adoptRef(new ArchiveResource(data, url, mimeType, textEncoding, frameName, response));
+}
+
+PassRefPtr<ArchiveResource> ArchiveResource::create(PassRefPtr<SharedBuffer> data, const KURL& url, const ResourceResponse& response)
+{
+    return create(data, url, response.mimeType(), response.textEncodingName(), String(), response);
+}
+
+}
