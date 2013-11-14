@@ -989,7 +989,7 @@
 
     # The default value for mac_strip in target_defaults. This cannot be
     # set there, per the comment about variable% in a target_defaults.
-    'mac_strip_release%': 1,
+    'mac_strip_release%': 0,
 
     # Set to 1 to enable code coverage.  In addition to build changes
     # (e.g. extra CFLAGS), also creates a new target in the src/chrome
@@ -1450,6 +1450,13 @@
       ['OS=="mac"', {
         # Enable clang on mac by default!
         'clang%': 1,
+        'conditions': [
+          # All Chrome builds have breakpad symbols, but only process the
+          # symbols from official builds.
+          ['(branding=="Chrome" and buildtype=="Official")', {
+            'mac_strip_release%': 1,
+          }],
+        ], 
       }],  # OS=="mac"
       ['OS=="mac" or OS=="ios"', {
         'variables': {
