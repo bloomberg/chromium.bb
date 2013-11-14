@@ -190,6 +190,11 @@
                   '|LayoutTests/fast/dom/DeviceMotion/' \
                   '|LayoutTests/fast/dom/DeviceOrientation/'
     },
+    'activity_logger': {
+      'filepath': 'public/web/WebDOMActivityLogger.h' \
+                  '|Source/bindings/scripts/code_generator_v8.pm' \
+                  '|Source/web/WebDOMActivityLogger.cpp'
+    },
   },
 
   'WATCHLISTS': {
@@ -264,12 +269,13 @@
     'quota': [ 'kinuko@chromium.org' ],
     'viewport_interaction': [ 'kenneth.christiansen@gmail.com' ],
     'css_regions': [ 'ChromiumBugTracker@adobe.com' ],
-    'web_idl': [ 'arv+blink@chromium.org', 'ch.dumez@samsung.com' ],
+    'web_idl': [ 'arv+blink@chromium.org', 'ch.dumez@samsung.com', 'watchdog-blink-watchlist@google.com' ],
     'webcomponents': [ 'webcomponents-bugzilla@chromium.org', 'dglazkov+blink@chromium.org' ],
     'mediastream': [ 'tommyw+watchlist@chromium.org' ],
     'geolocation': [ 'mvanouwerkerk@chromium.org' ],
     'vibration': [ 'mvanouwerkerk@chromium.org' ],
     'spellcheck' : [ 'groby+blinkspell@chromium.org' ],
     'device_orientation': [ 'timvolodine@chromium.org', 'mvanouwerkerk@chromium.org' ],
+    'activity_logger': [ 'watchdog-blink-watchlist@google.com' ],
   },
 }
