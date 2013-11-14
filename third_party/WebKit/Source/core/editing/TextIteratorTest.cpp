@@ -36,13 +36,10 @@
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/dom/Range.h"
-#include "core/frame/DOMWindow.h"
-#include "core/frame/Frame.h"
 #include "core/frame/FrameView.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLElement.h"
-#include "core/loader/EmptyClients.h"
-#include "core/page/Page.h"
+#include "core/testing/DummyPageHolder.h"
 #include "platform/geometry/IntSize.h"
 #include "wtf/Compiler.h"
 #include "wtf/OwnPtr.h"
@@ -59,7 +56,6 @@ namespace {
 class TextIteratorTest : public ::testing::Test {
 protected:
     virtual void SetUp() OVERRIDE;
-    virtual void TearDown() OVERRIDE;
 
     HTMLDocument& document() const;
 
@@ -67,34 +63,16 @@ protected:
     PassRefPtr<Range> getBodyRange() const;
 
 private:
-    Page::PageClients m_pageClients;
-    OwnPtr<Page> m_page;
-
-    EmptyFrameLoaderClient m_frameLoaderClient;
-    RefPtr<Frame> m_frame;
+    OwnPtr<DummyPageHolder> m_dummyPageHolder;
 
     HTMLDocument* m_document;
 };
 
 void TextIteratorTest::SetUp()
 {
-    // FIXME: Creation of fake frames should be factored out and should be done in one central place.
-    fillWithEmptyClients(m_pageClients);
-    m_page = adoptPtr(new Page(m_pageClients));
-
-    m_frame = Frame::create(FrameInit::create(0, m_page.get(), &m_frameLoaderClient));
-    m_frame->setView(FrameView::create(m_frame.get(), IntSize(800, 600)));
-    m_frame->init();
-
-    m_document = toHTMLDocument(m_frame->domWindow()->document());
+    m_dummyPageHolder = DummyPageHolder::create(IntSize(800, 600));
+    m_document = toHTMLDocument(&m_dummyPageHolder->document());
     ASSERT(m_document);
-}
-
-void TextIteratorTest::TearDown()
-{
-    m_document = 0;
-    m_frame.clear();
-    m_page.clear();
 }
 
 HTMLDocument& TextIteratorTest::document() const
@@ -105,7 +83,7 @@ HTMLDocument& TextIteratorTest::document() const
 void TextIteratorTest::setBodyInnerHTML(const char* bodyContent)
 {
     document().body()->setInnerHTML(String::fromUTF8(bodyContent), ASSERT_NO_EXCEPTION);
-    m_document->view()->layout(); // Force renderers to be created; TextIterator needs them.
+    document().view()->layout(); // Force renderers to be created; TextIterator needs them.
 }
 
 PassRefPtr<Range> TextIteratorTest::getBodyRange() const

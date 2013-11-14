@@ -3430,6 +3430,8 @@
         'webcore_test_support_files': [
             'testing/v8/WebCoreTestSupport.cpp',
             'testing/v8/WebCoreTestSupport.h',
+            'testing/DummyPageHolder.cpp',
+            'testing/DummyPageHolder.h',
             'testing/GCObservation.cpp',
             'testing/GCObservation.h',
             'testing/InspectorFrontendClientLocal.cpp',
