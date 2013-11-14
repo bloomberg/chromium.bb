@@ -185,10 +185,12 @@ void ZoomBubbleView::StopTimer() {
 }
 
 void ZoomBubbleView::OnMouseEntered(const ui::MouseEvent& event) {
+  set_use_focusless(false);
   StopTimer();
 }
 
 void ZoomBubbleView::OnMouseExited(const ui::MouseEvent& event) {
+  set_use_focusless(auto_close_);
   StartTimerIfNecessary();
 }
 
