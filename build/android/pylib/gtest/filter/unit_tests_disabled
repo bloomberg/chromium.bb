@@ -61,6 +61,7 @@ ExtensionServiceTestSimple.*
 ExtensionSourcePriorityTest.*
 ExtensionSpecialStoragePolicyTest.*
 ExternalPolicyProviderTest.*
+ExternalProviderImplTest.*
 MenuManagerTest.*
 PageActionControllerTest.*
 PermissionsUpdaterTest.*

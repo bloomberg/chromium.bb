@@ -21,10 +21,10 @@ namespace {
 
 const char kExternalAppId[] = "kekdneafjmhmndejhmbcadfiiofngffo";
 
-class ExternalProviderImplTest : public ExtensionServiceTestBase {
+class ExternalProviderImplChromeOSTest : public ExtensionServiceTestBase {
  public:
-  ExternalProviderImplTest() {}
-  virtual ~ExternalProviderImplTest() {}
+  ExternalProviderImplChromeOSTest() {}
+  virtual ~ExternalProviderImplChromeOSTest() {}
 
   void InitServiceWithExternalProviders() {
     InitializeEmptyExtensionService();
@@ -53,13 +53,13 @@ class ExternalProviderImplTest : public ExtensionServiceTestBase {
  private:
   scoped_ptr<base::ScopedPathOverride> external_externsions_overrides_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExternalProviderImplTest);
+  DISALLOW_COPY_AND_ASSIGN(ExternalProviderImplChromeOSTest);
 };
 
 }  // namespace
 
 // Normal mode, external app should be installed.
-TEST_F(ExternalProviderImplTest, Normal) {
+TEST_F(ExternalProviderImplChromeOSTest, Normal) {
   InitServiceWithExternalProviders();
 
   service_->CheckForExternalUpdates();
@@ -71,7 +71,7 @@ TEST_F(ExternalProviderImplTest, Normal) {
 }
 
 // App mode, no external app should be installed.
-TEST_F(ExternalProviderImplTest, AppMode) {
+TEST_F(ExternalProviderImplChromeOSTest, AppMode) {
   CommandLine* command = CommandLine::ForCurrentProcess();
   command->AppendSwitchASCII(switches::kForceAppMode, std::string());
   command->AppendSwitchASCII(switches::kAppId, std::string("app_id"));
