@@ -80,7 +80,7 @@ class MEDIA_EXPORT AudioOutputDispatcher
   AudioManager* audio_manager_;
   const scoped_refptr<base::MessageLoopProxy> message_loop_;
   const AudioParameters params_;
-  const std::string output_device_id_;
+  std::string output_device_id_;
   const std::string input_device_id_;
 
  private:

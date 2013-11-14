@@ -116,26 +116,27 @@ static void RecordFallbackStats(const AudioParameters& output_params) {
   }
 }
 
+// Converts low latency based |output_params| into high latency appropriate
+// output parameters in error situations.
+void AudioOutputResampler::SetupFallbackParams() {
 // Only Windows has a high latency output driver that is not the same as the low
 // latency path.
 #if defined(OS_WIN)
-// Converts low latency based |output_params| into high latency appropriate
-// output parameters in error situations.
-static AudioParameters SetupFallbackParams(
-    const AudioParameters& input_params, const AudioParameters& output_params) {
   // Choose AudioParameters appropriate for opening the device in high latency
   // mode.  |kMinLowLatencyFrameSize| is arbitrarily based on Pepper Flash's
   // MAXIMUM frame size for low latency.
   static const int kMinLowLatencyFrameSize = 2048;
   const int frames_per_buffer =
-      std::max(input_params.frames_per_buffer(), kMinLowLatencyFrameSize);
+      std::max(params_.frames_per_buffer(), kMinLowLatencyFrameSize);
 
-  return AudioParameters(
-      AudioParameters::AUDIO_PCM_LINEAR, input_params.channel_layout(),
-      input_params.sample_rate(), input_params.bits_per_sample(),
+  output_params_ = AudioParameters(
+      AudioParameters::AUDIO_PCM_LINEAR, params_.channel_layout(),
+      params_.sample_rate(), params_.bits_per_sample(),
       frames_per_buffer);
-}
+  output_device_id_ = "";
+  Initialize();
 #endif
+}
 
 AudioOutputResampler::AudioOutputResampler(AudioManager* audio_manager,
                                            const AudioParameters& input_params,
@@ -203,8 +204,7 @@ bool AudioOutputResampler::OpenStream() {
   DLOG(ERROR) << "Unable to open audio device in low latency mode.  Falling "
               << "back to high latency audio output.";
 
-  output_params_ = SetupFallbackParams(params_, output_params_);
-  Initialize();
+  SetupFallbackParams();
   if (dispatcher_->OpenStream()) {
     streams_opened_ = true;
     return true;
