@@ -1901,7 +1901,7 @@ function removeEntryFromView(entry) {
   }
 
   // If removing the last entry on a day, remove the entire day.
-  if (dayResults.querySelectorAll('.entry').length == 1) {
+  if (dayResults && dayResults.querySelectorAll('.entry').length == 1) {
     toRemove.push(dayResults.previousSibling);  // Remove the 'h3'.
     toRemove.push(dayResults);
   }
