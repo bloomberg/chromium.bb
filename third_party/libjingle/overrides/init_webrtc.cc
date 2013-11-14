@@ -10,6 +10,7 @@
 #include "base/native_library.h"
 #include "base/path_service.h"
 #include "talk/base/basictypes.h"
+#include "third_party/libjingle/overrides/talk/base/logging.h"
 
 const unsigned char* GetCategoryGroupEnabled(const char* category_group) {
   return TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(category_group);
@@ -95,13 +96,19 @@ bool InitializeWebRtcModule() {
   // the alloc/dealloc functions.
   // PS: This function is actually implemented in allocator_proxy.cc with the
   // new/delete overrides.
-  return initialize_module(*CommandLine::ForCurrentProcess(),
+  InitDiagnosticLoggingDelegateFunctionFunction init_diagnostic_logging = NULL;
+  bool init_ok = initialize_module(*CommandLine::ForCurrentProcess(),
 #if !defined(OS_MACOSX) && !defined(OS_ANDROID)
       &Allocate, &Dellocate,
 #endif
       logging::GetLogMessageHandler(),
       &GetCategoryGroupEnabled, &AddTraceEvent,
-      &g_create_webrtc_media_engine, &g_destroy_webrtc_media_engine);
+      &g_create_webrtc_media_engine, &g_destroy_webrtc_media_engine,
+      &init_diagnostic_logging);
+
+  if (init_ok)
+    talk_base::SetExtraLoggingInit(init_diagnostic_logging);
+  return init_ok;
 }
 
 cricket::MediaEngineInterface* CreateWebRtcMediaEngine(

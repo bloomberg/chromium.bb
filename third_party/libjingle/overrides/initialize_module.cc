@@ -9,6 +9,7 @@
 #include "init_webrtc.h"
 #include "talk/base/basictypes.h"
 #include "talk/media/webrtc/webrtcmediaengine.h"
+#include "third_party/libjingle/overrides/talk/base/logging.h"
 
 #if !defined(LIBPEERCONNECTION_IMPLEMENTATION) || defined(LIBPEERCONNECTION_LIB)
 #error "Only compile the allocator proxy with the shared_library implementation"
@@ -52,7 +53,9 @@ bool InitializeModule(const CommandLine& command_line,
                       webrtc::GetCategoryEnabledPtr trace_get_category_enabled,
                       webrtc::AddTraceEventPtr trace_add_trace_event,
                       CreateWebRtcMediaEngineFunction* create_media_engine,
-                      DestroyWebRtcMediaEngineFunction* destroy_media_engine) {
+                      DestroyWebRtcMediaEngineFunction* destroy_media_engine,
+                      InitDiagnosticLoggingDelegateFunctionFunction*
+                          init_diagnostic_logging) {
 #if !defined(OS_MACOSX) && !defined(OS_ANDROID)
   g_alloc = alloc;
   g_dealloc = dealloc;
@@ -60,6 +63,7 @@ bool InitializeModule(const CommandLine& command_line,
 
   *create_media_engine = &CreateWebRtcMediaEngine;
   *destroy_media_engine = &DestroyWebRtcMediaEngine;
+  *init_diagnostic_logging = &talk_base::InitDiagnosticLoggingDelegateFunction;
 
   if (CommandLine::Init(0, NULL)) {
 #if !defined(OS_WIN)

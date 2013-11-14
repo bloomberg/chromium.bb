@@ -31,6 +31,8 @@
 namespace talk_base {
 
 void (*g_logging_delegate_function)(const std::string&) = NULL;
+void (*g_extra_logging_init_function)(
+    void (*logging_delegate_function)(const std::string&)) = NULL;
 #ifndef NDEBUG
 COMPILE_ASSERT(sizeof(base::subtle::Atomic32) == sizeof(base::PlatformThreadId),
                atomic32_not_same_size_as_platformthreadid);
@@ -308,6 +310,16 @@ void InitDiagnosticLoggingDelegateFunction(
   IPAddress::set_strip_sensitive(true);
 #endif
   g_logging_delegate_function = delegate;
+
+  if (g_extra_logging_init_function)
+    g_extra_logging_init_function(delegate);
+}
+
+void SetExtraLoggingInit(
+    void (*function)(void (*delegate)(const std::string&))) {
+  CHECK(function);
+  CHECK(!g_extra_logging_init_function);
+  g_extra_logging_init_function = function;
 }
 
 }  // namespace talk_base

@@ -30,6 +30,9 @@ typedef cricket::MediaEngineInterface* (*CreateWebRtcMediaEngineFunction)(
 typedef void (*DestroyWebRtcMediaEngineFunction)(
     cricket::MediaEngineInterface* media_engine);
 
+typedef void (*InitDiagnosticLoggingDelegateFunctionFunction)(
+    void (*DelegateFunction)(const std::string&));
+
 // A typedef for the main initialize function in libpeerconnection.
 // This will initialize logging in the module with the proper arguments
 // as well as provide pointers back to a couple webrtc factory functions.
@@ -45,7 +48,8 @@ typedef bool (*InitializeModuleFunction)(
     webrtc::GetCategoryEnabledPtr trace_get_category_enabled,
     webrtc::AddTraceEventPtr trace_add_trace_event,
     CreateWebRtcMediaEngineFunction* create_media_engine,
-    DestroyWebRtcMediaEngineFunction* destroy_media_engine);
+    DestroyWebRtcMediaEngineFunction* destroy_media_engine,
+    InitDiagnosticLoggingDelegateFunctionFunction* init_diagnostic_logging);
 
 #if !defined(LIBPEERCONNECTION_IMPLEMENTATION)
 // Load and initialize the shared WebRTC module (libpeerconnection).

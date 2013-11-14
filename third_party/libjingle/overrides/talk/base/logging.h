@@ -151,9 +151,14 @@ void LogMultiline(LoggingSeverity level, const char* label, bool input,
                   const void* data, size_t len, bool hex_mode,
                   LogMultilineState* state);
 
+// TODO(grunell): Change name to InitDiagnosticLoggingDelegate or
+// InitDiagnosticLogging. Change also in init_webrtc.h/cc.
+// TODO(grunell): typedef the delegate function.
 void InitDiagnosticLoggingDelegateFunction(
     void (*delegate)(const std::string&));
 
+void SetExtraLoggingInit(
+    void (*function)(void (*delegate)(const std::string&)));
 }  // namespace talk_base
 
 //////////////////////////////////////////////////////////////////////
