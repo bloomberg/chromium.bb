@@ -345,7 +345,7 @@ struct weston_touch {
 };
 
 struct weston_pointer *
-weston_pointer_create(void);
+weston_pointer_create(struct weston_seat *seat);
 void
 weston_pointer_destroy(struct weston_pointer *pointer);
 void
@@ -363,6 +363,9 @@ weston_pointer_clamp(struct weston_pointer *pointer,
 void
 weston_pointer_move(struct weston_pointer *pointer,
 		    wl_fixed_t x, wl_fixed_t y);
+void
+weston_pointer_set_default_grab(struct weston_pointer *pointer,
+		const struct weston_pointer_grab_interface *interface);
 
 struct weston_keyboard *
 weston_keyboard_create(void);
@@ -585,6 +588,8 @@ struct weston_compositor {
 	struct wl_event_source *idle_source;
 	uint32_t idle_inhibit;
 	int idle_time;			/* timeout, s */
+
+	const struct weston_pointer_grab_interface *default_pointer_grab;
 
 	/* Repaint state. */
 	struct weston_plane primary_plane;
@@ -1072,6 +1077,10 @@ weston_compositor_run_debug_binding(struct weston_compositor *compositor,
 				    struct weston_seat *seat, uint32_t time,
 				    uint32_t key,
 				    enum wl_keyboard_key_state state);
+
+void
+weston_compositor_set_default_pointer_grab(struct weston_compositor *compositor,
+			const struct weston_pointer_grab_interface *interface);
 
 int
 weston_environment_get_fd(const char *env);

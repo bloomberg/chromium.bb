@@ -3405,6 +3405,21 @@ weston_compositor_shutdown(struct weston_compositor *ec)
 }
 
 WL_EXPORT void
+weston_compositor_set_default_pointer_grab(struct weston_compositor *ec,
+			const struct weston_pointer_grab_interface *interface)
+{
+	struct weston_seat *seat;
+
+	ec->default_pointer_grab = interface;
+	wl_list_for_each(seat, &ec->seat_list, link) {
+		if (seat->pointer) {
+			weston_pointer_set_default_grab(seat->pointer,
+							interface);
+		}
+	}
+}
+
+WL_EXPORT void
 weston_version(int *major, int *minor, int *micro)
 {
 	*major = WESTON_VERSION_MAJOR;
@@ -3847,6 +3862,7 @@ int main(int argc, char *argv[])
 	segv_compositor = ec;
 
 	ec->idle_time = idle_time;
+	ec->default_pointer_grab = NULL;
 
 	setenv("WAYLAND_DISPLAY", socket_name, 1);
 

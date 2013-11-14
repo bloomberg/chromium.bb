@@ -381,7 +381,7 @@ pointer_handle_sprite_destroy(struct wl_listener *listener, void *data)
 }
 
 WL_EXPORT struct weston_pointer *
-weston_pointer_create(void)
+weston_pointer_create(struct weston_seat *seat)
 {
 	struct weston_pointer *pointer;
 
@@ -391,7 +391,8 @@ weston_pointer_create(void)
 
 	wl_list_init(&pointer->resource_list);
 	wl_list_init(&pointer->focus_resource_list);
-	pointer->default_grab.interface = &default_pointer_grab_interface;
+	weston_pointer_set_default_grab(pointer,
+					seat->compositor->default_pointer_grab);
 	pointer->default_grab.pointer = pointer;
 	pointer->grab = &pointer->default_grab;
 	wl_signal_init(&pointer->focus_signal);
@@ -415,6 +416,17 @@ weston_pointer_destroy(struct weston_pointer *pointer)
 	/* XXX: What about pointer->resource_list? */
 
 	free(pointer);
+}
+
+void
+weston_pointer_set_default_grab(struct weston_pointer *pointer,
+		const struct weston_pointer_grab_interface *interface)
+{
+	if (interface)
+		pointer->default_grab.interface = interface;
+	else
+		pointer->default_grab.interface =
+			&default_pointer_grab_interface;
 }
 
 WL_EXPORT struct weston_keyboard *
@@ -1839,7 +1851,7 @@ weston_seat_init_pointer(struct weston_seat *seat)
 		return;
 	}
 
-	pointer = weston_pointer_create();
+	pointer = weston_pointer_create(seat);
 	if (pointer == NULL)
 		return;
 
