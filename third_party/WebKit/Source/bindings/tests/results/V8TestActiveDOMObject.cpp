@@ -108,7 +108,7 @@ static void excitingFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& in
         return;
     }
     TestActiveDOMObject* imp = V8TestActiveDOMObject::toNative(info.Holder());
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), exceptionState)) {
         exceptionState.throwIfNeeded();
         return;
@@ -306,7 +306,7 @@ static void TestActiveDOMObjectDomainSafeFunctionSetter(v8::Local<v8::String> na
     if (holder.IsEmpty())
         return;
     TestActiveDOMObject* imp = V8TestActiveDOMObject::toNative(holder);
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), exceptionState)) {
         exceptionState.throwIfNeeded();
         return;

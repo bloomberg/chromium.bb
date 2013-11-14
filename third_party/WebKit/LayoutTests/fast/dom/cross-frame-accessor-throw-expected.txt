@@ -1,0 +1,6 @@
+
+
+PASS Check that exception is created in called function's context. 
+PASS Check that DOM exception is created in setter's context. 
+PASS Check that native exception is created in setter's context. 
+

@@ -44,11 +44,12 @@ typedef int ExceptionCode;
 class ExceptionState {
     WTF_MAKE_NONCOPYABLE(ExceptionState);
 public:
-    explicit ExceptionState(v8::Isolate* isolate)
+    explicit ExceptionState(const v8::Handle<v8::Object>& creationContext, v8::Isolate* isolate)
         : m_code(0)
+        , m_creationContext(creationContext)
         , m_isolate(isolate) { }
 
-    virtual void throwDOMException(const ExceptionCode&,  const String& message);
+    virtual void throwDOMException(const ExceptionCode&, const String& message);
     virtual void throwTypeError(const String& message);
     virtual void throwSecurityError(const String& sanitizedMessage, const String& unsanitizedMessage = String());
 
@@ -80,12 +81,13 @@ private:
     void setException(v8::Handle<v8::Value>);
 
     ScopedPersistent<v8::Value> m_exception;
+    v8::Handle<v8::Object> m_creationContext;
     v8::Isolate* m_isolate;
 };
 
 class TrackExceptionState : public ExceptionState {
 public:
-    TrackExceptionState(): ExceptionState(0) { }
+    TrackExceptionState(): ExceptionState(v8::Handle<v8::Object>(), 0) { }
     virtual void throwDOMException(const ExceptionCode&, const String& message) OVERRIDE FINAL;
     virtual void throwTypeError(const String& message = String()) OVERRIDE FINAL;
     virtual void throwSecurityError(const String& sanitizedMessage, const String& unsanitizedMessage = String()) OVERRIDE FINAL;

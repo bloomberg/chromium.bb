@@ -108,7 +108,7 @@ void V8SQLTransaction::executeSqlMethodCustom(const v8::FunctionCallbackInfo<v8:
         errorCallback = V8SQLStatementErrorCallback::create(info[3], executionContext);
     }
 
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     transaction->executeSQL(statement, sqlValues, callback, errorCallback, exceptionState);
     exceptionState.throwIfNeeded();
 }

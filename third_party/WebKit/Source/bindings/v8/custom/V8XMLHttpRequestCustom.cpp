@@ -72,7 +72,7 @@ void V8XMLHttpRequest::constructorCustom(const v8::FunctionCallbackInfo<v8::Valu
 void V8XMLHttpRequest::responseTextAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     XMLHttpRequest* xmlHttpRequest = V8XMLHttpRequest::toNative(info.Holder());
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     ScriptValue text = xmlHttpRequest->responseText(exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
@@ -97,7 +97,7 @@ void V8XMLHttpRequest::responseAttributeGetterCustom(const v8::PropertyCallbackI
         {
             v8::Isolate* isolate = info.GetIsolate();
 
-            ExceptionState exceptionState(isolate);
+            ExceptionState exceptionState(info.Holder(), isolate);
             ScriptString jsonSource = xmlHttpRequest->responseJSONSource();
             if (exceptionState.throwIfNeeded())
                 return;
@@ -122,7 +122,7 @@ void V8XMLHttpRequest::responseAttributeGetterCustom(const v8::PropertyCallbackI
 
     case XMLHttpRequest::ResponseTypeDocument:
         {
-            ExceptionState exceptionState(info.GetIsolate());
+            ExceptionState exceptionState(info.Holder(), info.GetIsolate());
             Document* document = xmlHttpRequest->responseXML(exceptionState);
             if (exceptionState.throwIfNeeded())
                 return;
@@ -177,7 +177,7 @@ void V8XMLHttpRequest::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value
     ExecutionContext* context = getExecutionContext();
     KURL url = context->completeURL(urlstring);
 
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
 
     if (info.Length() >= 3) {
         bool async = info[2]->BooleanValue();
@@ -213,7 +213,7 @@ void V8XMLHttpRequest::sendMethodCustom(const v8::FunctionCallbackInfo<v8::Value
 
     InspectorInstrumentation::willSendXMLHttpRequest(xmlHttpRequest->executionContext(), xmlHttpRequest->url());
 
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     if (info.Length() < 1)
         xmlHttpRequest->send(exceptionState);
     else {

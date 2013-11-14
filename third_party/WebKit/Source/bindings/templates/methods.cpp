@@ -19,7 +19,7 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     {% endif %}
     {% if method.is_raises_exception %}
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     {% endif %}
     {% if method.is_check_security_for_node %}
     if (!BindingSecurity::shouldAllowAccessToNode(imp->{{method.name}}(exceptionState), exceptionState)) {

@@ -47,7 +47,7 @@ void V8HTMLFrameElement::locationAttributeSetterCustom(v8::Local<v8::Value> valu
     HTMLFrameElement* frame = V8HTMLFrameElement::toNative(info.Holder());
     String locationValue = toWebCoreStringWithNullCheck(value);
 
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     if (protocolIsJavaScript(stripLeadingAndTrailingHTMLSpaces(locationValue)) && !BindingSecurity::shouldAllowAccessToFrame(frame->contentFrame(), exceptionState)) {
         exceptionState.throwIfNeeded();
         return;

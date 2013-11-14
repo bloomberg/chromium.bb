@@ -60,7 +60,7 @@ namespace WebCore {
 void V8Document::evaluateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     RefPtr<Document> document = V8Document::toNative(info.Holder());
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, expression, info[0]);
     RefPtr<Node> contextNode;
     if (V8Node::hasInstance(info[1], info.GetIsolate(), worldType(info.GetIsolate())))

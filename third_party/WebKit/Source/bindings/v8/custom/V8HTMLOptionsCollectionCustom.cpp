@@ -80,7 +80,7 @@ void V8HTMLOptionsCollection::addMethodCustom(const v8::FunctionCallbackInfo<v8:
     HTMLOptionsCollection* imp = V8HTMLOptionsCollection::toNative(info.Holder());
     HTMLOptionElement* option = V8HTMLOptionElement::toNative(v8::Handle<v8::Object>(v8::Handle<v8::Object>::Cast(info[0])));
 
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     if (info.Length() < 2)
         imp->add(option, exceptionState);
     else {
@@ -100,7 +100,7 @@ void V8HTMLOptionsCollection::lengthAttributeSetterCustom(v8::Local<v8::Value> v
     HTMLOptionsCollection* imp = V8HTMLOptionsCollection::toNative(info.Holder());
     double v = value->NumberValue();
     unsigned newLength = 0;
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     if (!std::isnan(v) && !std::isinf(v)) {
         if (v < 0.0)
             exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToSet("length", "HTMLOptionsCollection", "The value provided (" + String::number(v) + ") is negative. Lengths must be greater than or equal to 0."));

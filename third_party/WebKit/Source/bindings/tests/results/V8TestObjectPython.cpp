@@ -1555,7 +1555,7 @@ static void callWithExecutionContextAnyAttributeAttributeSetterCallback(v8::Loca
 static void checkSecurityForNodeReadonlyDocumentAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     if (!BindingSecurity::shouldAllowAccessToNode(imp->checkSecurityForNodeReadonlyDocumentAttribute(), exceptionState)) {
         v8SetReturnValueNull(info);
         exceptionState.throwIfNeeded();
@@ -1922,7 +1922,7 @@ static void enforceRangeLongAttributeAttributeSetterCallback(v8::Local<v8::Strin
 static void getterRaisesExceptionLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     int jsValue = imp->getterRaisesExceptionLongAttribute(exceptionState);
     if (UNLIKELY(exceptionState.throwIfNeeded()))
         return;
@@ -2447,7 +2447,7 @@ static void activityLoggingGetterForIsolatedWorldsPerWorldBindingsLongAttributeA
 static void raisesExceptionLongAttributeAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     int jsValue = imp->raisesExceptionLongAttribute(exceptionState);
     if (UNLIKELY(exceptionState.throwIfNeeded()))
         return;
@@ -2465,7 +2465,7 @@ static void raisesExceptionLongAttributeAttributeSetter(v8::Local<v8::Value> jsV
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     imp->setRaisesExceptionLongAttribute(cppValue, exceptionState);
     exceptionState.throwIfNeeded();
 }
@@ -2944,7 +2944,7 @@ static void setterRaisesExceptionLongAttributeAttributeSetter(v8::Local<v8::Valu
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
     V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     imp->setSetterRaisesExceptionLongAttribute(cppValue, exceptionState);
     exceptionState.throwIfNeeded();
 }
@@ -5203,7 +5203,7 @@ static void addEventListenerMethod(const v8::FunctionCallbackInfo<v8::Value>& in
 {
     EventTarget* impl = V8TestObjectPython::toNative(info.Holder());
     if (DOMWindow* window = impl->toDOMWindow()) {
-        ExceptionState exceptionState(info.GetIsolate());
+        ExceptionState exceptionState(info.Holder(), info.GetIsolate());
         if (!BindingSecurity::shouldAllowAccessToFrame(window->frame(), exceptionState)) {
             exceptionState.throwIfNeeded();
             return;
@@ -5231,7 +5231,7 @@ static void removeEventListenerMethod(const v8::FunctionCallbackInfo<v8::Value>&
 {
     EventTarget* impl = V8TestObjectPython::toNative(info.Holder());
     if (DOMWindow* window = impl->toDOMWindow()) {
-        ExceptionState exceptionState(info.GetIsolate());
+        ExceptionState exceptionState(info.Holder(), info.GetIsolate());
         if (!BindingSecurity::shouldAllowAccessToFrame(window->frame(), exceptionState)) {
             exceptionState.throwIfNeeded();
             return;
@@ -5910,7 +5910,7 @@ static void perWorldBindingsVoidMethodTestInterfaceEmptyArgMethodCallbackForMain
 static void raisesExceptionVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     imp->raisesExceptionVoidMethod(exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
@@ -5926,7 +5926,7 @@ static void raisesExceptionVoidMethodMethodCallback(const v8::FunctionCallbackIn
 static void raisesExceptionVoidMethodOptionalLongArgMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObjectPython* imp = V8TestObjectPython::toNative(info.Holder());
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     if (UNLIKELY(info.Length() <= 0)) {
         imp->raisesExceptionVoidMethodOptionalLongArg(exceptionState);
         if (exceptionState.throwIfNeeded())

@@ -59,7 +59,7 @@ void V8MessagePort::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::V
     RefPtr<SerializedScriptValue> message = SerializedScriptValue::create(info[0], &portArray, &arrayBufferArray, didThrow, info.GetIsolate());
     if (didThrow)
         return;
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     messagePort->postMessage(message.release(), &portArray, exceptionState);
     exceptionState.throwIfNeeded();
 }

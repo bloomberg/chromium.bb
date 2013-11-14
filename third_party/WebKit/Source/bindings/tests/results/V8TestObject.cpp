@@ -851,7 +851,7 @@ static void typedArrayAttrAttributeSetterCallback(v8::Local<v8::String>, v8::Loc
 static void attrWithGetterExceptionAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     int jsValue = imp->attrWithGetterException(exceptionState);
     if (UNLIKELY(exceptionState.throwIfNeeded()))
         return;
@@ -896,7 +896,7 @@ static void attrWithSetterExceptionAttributeSetter(v8::Local<v8::Value> jsValue,
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     imp->setAttrWithSetterException(cppValue, exceptionState);
     exceptionState.throwIfNeeded();
 }
@@ -911,7 +911,7 @@ static void attrWithSetterExceptionAttributeSetterCallback(v8::Local<v8::String>
 static void stringAttrWithGetterExceptionAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     String jsValue = imp->stringAttrWithGetterException(exceptionState);
     if (UNLIKELY(exceptionState.throwIfNeeded()))
         return;
@@ -956,7 +956,7 @@ static void stringAttrWithSetterExceptionAttributeSetter(v8::Local<v8::Value> js
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     imp->setStringAttrWithSetterException(cppValue, exceptionState);
     exceptionState.throwIfNeeded();
 }
@@ -1078,7 +1078,7 @@ static void withActiveWindowAndFirstWindowAttributeAttributeSetterCallback(v8::L
 static void withScriptStateAttributeRaisesAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     ScriptState* currentState = ScriptState::current();
     if (!currentState)
         return v8Undefined();
@@ -1123,7 +1123,7 @@ static void withScriptStateAttributeRaisesAttributeSetterCallback(v8::Local<v8::
 static void withExecutionContextAttributeRaisesAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     ExecutionContext* scriptContext = getExecutionContext();
     RefPtr<TestObj> jsValue = imp->withExecutionContextAttributeRaises(scriptContext, exceptionState);
     if (UNLIKELY(exceptionState.throwIfNeeded()))
@@ -1195,7 +1195,7 @@ static void withExecutionContextAndScriptStateAttributeAttributeSetterCallback(v
 static void withExecutionContextAndScriptStateAttributeRaisesAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     ScriptState* currentState = ScriptState::current();
     if (!currentState)
         return v8Undefined();
@@ -1817,7 +1817,7 @@ static void messagePortArrayAttributeSetterCallback(v8::Local<v8::String>, v8::L
 static void contentDocumentAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     if (!BindingSecurity::shouldAllowAccessToNode(imp->contentDocument(), exceptionState)) {
         v8SetReturnValueNull(info);
         exceptionState.throwIfNeeded();
@@ -2074,7 +2074,7 @@ static void nullableLongSettableAttributeAttributeSetterCallback(v8::Local<v8::S
 static void nullableStringValueAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     bool isNull = false;
     int jsValue = imp->nullableStringValue(isNull, exceptionState);
     if (isNull) {
@@ -2803,7 +2803,7 @@ static void locationWithExceptionAttributeSetter(v8::Local<v8::Value> jsValue, c
     if (!imp)
         return;
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     imp->setHrefThrows(cppValue, exceptionState);
     exceptionState.throwIfNeeded();
 }
@@ -3001,7 +3001,7 @@ static void methodThatRequiresAllArgsAndThrowsMethod(const v8::FunctionCallbackI
         return;
     }
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[0]);
     V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::hasInstance(info[1], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(info[1])) : 0);
     RefPtr<TestObj> result = imp->methodThatRequiresAllArgsAndThrows(strArg, objArg, exceptionState);
@@ -3068,7 +3068,7 @@ static void optionsObjectMethodCallback(const v8::FunctionCallbackInfo<v8::Value
 static void methodWithExceptionMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     imp->methodWithException(exceptionState);
     if (exceptionState.throwIfNeeded())
         return;
@@ -3100,7 +3100,7 @@ static void addEventListenerMethod(const v8::FunctionCallbackInfo<v8::Value>& in
 {
     EventTarget* impl = V8TestObject::toNative(info.Holder());
     if (DOMWindow* window = impl->toDOMWindow()) {
-        ExceptionState exceptionState(info.GetIsolate());
+        ExceptionState exceptionState(info.Holder(), info.GetIsolate());
         if (!BindingSecurity::shouldAllowAccessToFrame(window->frame(), exceptionState)) {
             exceptionState.throwIfNeeded();
             return;
@@ -3128,7 +3128,7 @@ static void removeEventListenerMethod(const v8::FunctionCallbackInfo<v8::Value>&
 {
     EventTarget* impl = V8TestObject::toNative(info.Holder());
     if (DOMWindow* window = impl->toDOMWindow()) {
-        ExceptionState exceptionState(info.GetIsolate());
+        ExceptionState exceptionState(info.Holder(), info.GetIsolate());
         if (!BindingSecurity::shouldAllowAccessToFrame(window->frame(), exceptionState)) {
             exceptionState.throwIfNeeded();
             return;
@@ -3202,7 +3202,7 @@ static void withScriptStateObjMethodCallback(const v8::FunctionCallbackInfo<v8::
 static void withScriptStateVoidExceptionMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     ScriptState* currentState = ScriptState::current();
     if (!currentState)
         return;
@@ -3228,7 +3228,7 @@ static void withScriptStateVoidExceptionMethodCallback(const v8::FunctionCallbac
 static void withScriptStateObjExceptionMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     ScriptState* currentState = ScriptState::current();
     if (!currentState)
         return;
@@ -3293,7 +3293,7 @@ static void withExecutionContextAndScriptStateMethodCallback(const v8::FunctionC
 static void withExecutionContextAndScriptStateObjExceptionMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     ScriptState* currentState = ScriptState::current();
     if (!currentState)
         return;
@@ -4141,7 +4141,7 @@ static void stringArrayFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>&
         return;
     }
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     V8TRYCATCH_VOID(Vector<String>, values, toNativeArray<String>(info[0], 1, info.GetIsolate()));
     Vector<String> result = imp->stringArrayFunction(values, exceptionState);
     if (exceptionState.throwIfNeeded())
@@ -4163,7 +4163,7 @@ static void domStringListFunctionMethod(const v8::FunctionCallbackInfo<v8::Value
         return;
     }
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     V8TRYCATCH_VOID(DOMStringList*, values, V8DOMStringList::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8DOMStringList::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
     RefPtr<DOMStringList> result = imp->domStringListFunction(values, exceptionState);
     if (exceptionState.throwIfNeeded())
@@ -4181,7 +4181,7 @@ static void domStringListFunctionMethodCallback(const v8::FunctionCallbackInfo<v
 static void getSVGDocumentMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     if (!BindingSecurity::shouldAllowAccessToNode(imp->getSVGDocument(exceptionState), exceptionState)) {
         v8SetReturnValueNull(info);
         exceptionState.throwIfNeeded();
@@ -4292,7 +4292,7 @@ static void strictSVGPointMethodMethod(const v8::FunctionCallbackInfo<v8::Value>
         return;
     }
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     if (info.Length() > 0 && !isUndefinedOrNull(info[0]) && !V8SVGPoint::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate()))) {
         throwTypeError(ExceptionMessages::failedToExecute("strictSVGPointMethod", "TestObject", "parameter 1 is not of type 'SVGPoint'."), info.GetIsolate());
         return;
@@ -4336,7 +4336,7 @@ static void strictFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& info
         return;
     }
     TestObj* imp = V8TestObject::toNative(info.Holder());
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, str, info[0]);
     V8TRYCATCH_VOID(float, a, static_cast<float>(info[1]->NumberValue()));
     V8TRYCATCH_VOID(int, b, toInt32(info[2]));
@@ -4870,7 +4870,7 @@ static void namedPropertyGetterCallback(v8::Local<v8::String> name, const v8::Pr
 
 static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     TestObj* collection = V8TestObject::toNative(info.Holder());
     Vector<String> names;
     collection->namedPropertyEnumerator(names, exceptionState);
@@ -4886,7 +4886,7 @@ static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCal
 {
     TestObj* collection = V8TestObject::toNative(info.Holder());
     AtomicString propertyName = toWebCoreAtomicString(name);
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     bool result = collection->namedPropertyQuery(propertyName, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;

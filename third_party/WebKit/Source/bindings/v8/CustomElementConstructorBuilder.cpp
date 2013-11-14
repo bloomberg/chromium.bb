@@ -272,7 +272,7 @@ static void constructCustomElement(const v8::FunctionCallbackInfo<v8::Value>& in
     v8::Handle<v8::Value> maybeType = info.Callee()->GetHiddenValue(V8HiddenPropertyName::customElementType(isolate));
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, type, maybeType);
 
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     RefPtr<Element> element = document->createElementNS(namespaceURI, tagName, maybeType->IsNull() ? nullAtom : type, exceptionState);
     if (exceptionState.throwIfNeeded())

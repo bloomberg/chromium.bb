@@ -102,7 +102,7 @@ static void V8TestNamedConstructorConstructorCallback(const v8::FunctionCallback
         throwTypeError(ExceptionMessages::failedToExecute("NamedConstructor", "TestNamedConstructor", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, str1, info[0]);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, str2, info[1]);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, str3, argumentOrNull(info, 2));

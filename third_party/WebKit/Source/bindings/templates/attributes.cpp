@@ -28,7 +28,7 @@ static void {{attribute.name}}AttributeGetter{{world_suffix}}(const v8::Property
     {# Special cases #}
     {% if attribute.is_check_security_for_node %}
     {# FIXME: consider using a local variable to not call getter twice #}
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     if (!BindingSecurity::shouldAllowAccessToNode({{attribute.cpp_value}}, exceptionState)) {
         v8SetReturnValueNull(info);
         exceptionState.throwIfNeeded();
@@ -36,7 +36,7 @@ static void {{attribute.name}}AttributeGetter{{world_suffix}}(const v8::Property
     }
     {% endif %}
     {% if attribute.is_getter_raises_exception %}
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     {{attribute.cpp_type}} {{attribute.cpp_value}} = {{attribute.cpp_value_original}};
     if (UNLIKELY(exceptionState.throwIfNeeded()))
         return;
@@ -137,7 +137,7 @@ static void {{attribute.name}}AttributeSetter{{world_suffix}}(v8::Local<v8::Valu
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     {% endif %}
     {% if attribute.is_setter_raises_exception %}
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     {% endif %}
     {% if attribute.is_call_with_execution_context %}
     ExecutionContext* scriptContext = getExecutionContext();

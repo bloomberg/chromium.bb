@@ -67,12 +67,13 @@ namespace WebCore {
 
 v8::Handle<v8::Value> setDOMException(int exceptionCode, v8::Isolate* isolate)
 {
-    return V8ThrowException::throwDOMException(exceptionCode, isolate);
+    // FIXME: pass in an ExceptionState instead for better creationContext.
+    return V8ThrowException::throwDOMException(exceptionCode, v8::Handle<v8::Object>(), isolate);
 }
 
 v8::Handle<v8::Value> setDOMException(int exceptionCode, const String& message, v8::Isolate* isolate)
 {
-    return V8ThrowException::throwDOMException(exceptionCode, message, isolate);
+    return V8ThrowException::throwDOMException(exceptionCode, message, v8::Handle<v8::Object>(), isolate);
 }
 
 v8::Handle<v8::Value> throwError(V8ErrorType errorType, const String& message, v8::Isolate* isolate)

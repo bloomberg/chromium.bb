@@ -327,7 +327,7 @@ static void supplementalMethod2Method(const v8::FunctionCallbackInfo<v8::Value>&
         return;
     }
     SupportTestInterface* imp = V8SupportTestInterface::toNative(info.Holder());
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[0]);
     V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::hasInstance(info[1], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(info[1])) : 0);
     ExecutionContext* scriptContext = getExecutionContext();

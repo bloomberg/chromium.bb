@@ -564,7 +564,7 @@ static void implementsMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& i
         return;
     }
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[0]);
     V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::hasInstance(info[1], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(info[1])) : 0);
     ExecutionContext* scriptContext = getExecutionContext();
@@ -625,7 +625,7 @@ static void supplementalMethod2Method(const v8::FunctionCallbackInfo<v8::Value>&
         return;
     }
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[0]);
     V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::hasInstance(info[1], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(info[1])) : 0);
     ExecutionContext* scriptContext = getExecutionContext();
@@ -676,7 +676,7 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         throwTypeError(ExceptionMessages::failedToExecute("Constructor", "TestInterface", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, str1, info[0]);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, str2, info[1]);
 
@@ -736,7 +736,7 @@ static void namedPropertySetterCallback(v8::Local<v8::String> name, v8::Local<v8
 
 static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     TestInterface* collection = V8TestInterface::toNative(info.Holder());
     Vector<String> names;
     collection->namedPropertyEnumerator(names, exceptionState);
@@ -752,7 +752,7 @@ static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCal
 {
     TestInterface* collection = V8TestInterface::toNative(info.Holder());
     AtomicString propertyName = toWebCoreAtomicString(name);
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     bool result = collection->namedPropertyQuery(propertyName, exceptionState);
     if (exceptionState.throwIfNeeded())
         return;

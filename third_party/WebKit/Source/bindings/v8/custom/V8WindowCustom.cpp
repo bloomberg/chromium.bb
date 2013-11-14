@@ -160,7 +160,7 @@ void V8Window::eventAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Val
         return;
 
     Frame* frame = V8Window::toNative(holder)->frame();
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     if (!BindingSecurity::shouldAllowAccessToFrame(frame, exceptionState)) {
         exceptionState.throwIfNeeded();
         return;
@@ -185,7 +185,7 @@ void V8Window::eventAttributeSetterCustom(v8::Local<v8::Value> value, const v8::
         return;
 
     Frame* frame = V8Window::toNative(holder)->frame();
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     if (!BindingSecurity::shouldAllowAccessToFrame(frame, exceptionState)) {
         exceptionState.throwIfNeeded();
         return;
@@ -203,7 +203,7 @@ void V8Window::eventAttributeSetterCustom(v8::Local<v8::Value> value, const v8::
 void V8Window::openerAttributeSetterCustom(v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     DOMWindow* imp = V8Window::toNative(info.Holder());
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), exceptionState)) {
         exceptionState.throwIfNeeded();
         return;
@@ -277,7 +277,7 @@ void V8Window::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>
     if (didThrow)
         return;
 
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     window->postMessage(message.release(), &portArray, targetOrigin, source, exceptionState);
     exceptionState.throwIfNeeded();
 }
@@ -341,7 +341,7 @@ static void setUpDialog(DOMWindow* dialog, void* handler)
 void V8Window::showModalDialogMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     DOMWindow* impl = V8Window::toNative(info.Holder());
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     if (!BindingSecurity::shouldAllowAccessToFrame(impl->frame(), exceptionState)) {
         exceptionState.throwIfNeeded();
         return;
@@ -360,7 +360,7 @@ void V8Window::showModalDialogMethodCustom(const v8::FunctionCallbackInfo<v8::Va
 void V8Window::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     DOMWindow* impl = V8Window::toNative(info.Holder());
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     if (!BindingSecurity::shouldAllowAccessToFrame(impl->frame(), exceptionState)) {
         exceptionState.throwIfNeeded();
         return;
@@ -423,7 +423,7 @@ void V8Window::namedPropertyGetterCustom(v8::Local<v8::String> name, const v8::P
 
 void V8Window::setTimeoutMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     WindowSetTimeoutImpl(info, true, exceptionState);
     exceptionState.throwIfNeeded();
 }
@@ -431,7 +431,7 @@ void V8Window::setTimeoutMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&
 
 void V8Window::setIntervalMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     WindowSetTimeoutImpl(info, false, exceptionState);
     exceptionState.throwIfNeeded();
 }

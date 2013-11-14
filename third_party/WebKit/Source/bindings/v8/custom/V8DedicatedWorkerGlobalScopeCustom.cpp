@@ -59,7 +59,7 @@ void V8DedicatedWorkerGlobalScope::postMessageMethodCustom(const v8::FunctionCal
     RefPtr<SerializedScriptValue> message = SerializedScriptValue::create(info[0], &ports, &arrayBuffers, didThrow, info.GetIsolate());
     if (didThrow)
         return;
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
     workerGlobalScope->postMessage(message.release(), &ports, exceptionState);
     exceptionState.throwIfNeeded();
 }

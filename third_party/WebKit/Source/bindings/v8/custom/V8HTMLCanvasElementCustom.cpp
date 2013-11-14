@@ -130,7 +130,7 @@ void V8HTMLCanvasElement::toDataURLMethodCustom(const v8::FunctionCallbackInfo<v
 {
     v8::Handle<v8::Object> holder = info.Holder();
     HTMLCanvasElement* canvas = V8HTMLCanvasElement::toNative(holder);
-    ExceptionState exceptionState(info.GetIsolate());
+    ExceptionState exceptionState(info.Holder(), info.GetIsolate());
 
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, type, info[0]);
     double quality;
