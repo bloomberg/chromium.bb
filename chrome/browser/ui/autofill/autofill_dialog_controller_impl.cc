@@ -708,8 +708,8 @@ string16 AutofillDialogControllerImpl::AccountChooserText() const {
 string16 AutofillDialogControllerImpl::SignInLinkText() const {
   int ids = SignedInState() == NOT_CHECKED ?
       IDS_AUTOFILL_DIALOG_USE_WALLET_LINK :
-      signin_registrar_.IsEmpty() ? IDS_AUTOFILL_DIALOG_SIGN_IN :
-                                    IDS_AUTOFILL_DIALOG_CANCEL_SIGN_IN;
+      ShouldShowSignInWebView() ? IDS_AUTOFILL_DIALOG_CANCEL_SIGN_IN :
+                                  IDS_AUTOFILL_DIALOG_SIGN_IN;
 
   return l10n_util::GetStringUTF16(ids);
 }
@@ -3405,7 +3405,7 @@ void AutofillDialogControllerImpl::LogOnCancelMetrics() {
   GetMetricLogger().LogDialogUiEvent(AutofillMetrics::DIALOG_UI_CANCELED);
 
   AutofillMetrics::DialogDismissalState dismissal_state;
-  if (!signin_registrar_.IsEmpty())
+  if (ShouldShowSignInWebView())
     dismissal_state = AutofillMetrics::DIALOG_CANCELED_DURING_SIGNIN;
   else if (!IsManuallyEditingAnySection())
     dismissal_state = AutofillMetrics::DIALOG_CANCELED_NO_EDITS;
