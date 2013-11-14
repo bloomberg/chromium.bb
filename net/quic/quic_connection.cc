@@ -260,7 +260,7 @@ void QuicConnection::SetFromConfig(const QuicConfig& config) {
   SetIdleNetworkTimeout(config.idle_connection_state_lifetime());
   // Set the max packet length only when QUIC_VERSION_12 or later is supported,
   // with explicitly truncated acks.
-  if (version() > QUIC_VERSION_11) {
+  if (version() > QUIC_VERSION_11 && is_server_) {
     options()->max_packet_length = config.server_max_packet_size();
   }
   congestion_manager_.SetFromConfig(config, is_server_);

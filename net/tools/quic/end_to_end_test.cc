@@ -674,12 +674,11 @@ TEST_P(EndToEndTest, LimitMaxPacketSizeAndCongestionWindowAndRTT) {
       QuicConnectionPeer::GetCongestionManager(session->connection());
 
   EXPECT_EQ(kMaxPacketSize, client_negotiated_config->server_max_packet_size());
+  EXPECT_EQ(kDefaultMaxPacketSize,
+            client_->client()->options()->max_packet_length);
   if (negotiated_version_ > QUIC_VERSION_11) {
-    EXPECT_EQ(kMaxPacketSize, client_->client()->options()->max_packet_length);
     EXPECT_EQ(kMaxPacketSize, session->options()->max_packet_length);
   } else {
-    EXPECT_EQ(kDefaultMaxPacketSize,
-              client_->client()->options()->max_packet_length);
     EXPECT_EQ(kDefaultMaxPacketSize,
               session->options()->max_packet_length);
   }
