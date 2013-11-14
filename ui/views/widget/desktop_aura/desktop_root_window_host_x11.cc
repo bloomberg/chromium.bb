@@ -1163,6 +1163,8 @@ bool DesktopRootWindowHostX11::Dispatch(const base::NativeEvent& event) {
   switch (xev->type) {
     case EnterNotify:
     case LeaveNotify: {
+      if (!g_current_capture)
+        X11DesktopHandler::get()->ProcessXEvent(xev);
       ui::MouseEvent mouse_event(xev);
       DispatchMouseEvent(&mouse_event);
       break;

@@ -34,6 +34,11 @@ class VIEWS_EXPORT X11DesktopHandler : public base::MessageLoop::Dispatcher,
   // Checks if the current active window is |window|.
   bool IsActiveWindow(::Window window) const;
 
+  // Processes activation/focus related events. Some of these events are
+  // dispatched to the X11 window dispatcher, and not to the X11 root-window
+  // dispatcher. The window dispatcher sends these events to here.
+  void ProcessXEvent(const base::NativeEvent& event);
+
   // Overridden from MessageLoop::Dispatcher:
   virtual bool Dispatch(const base::NativeEvent& event) OVERRIDE;
 

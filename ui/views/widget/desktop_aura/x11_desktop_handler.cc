@@ -80,6 +80,23 @@ bool X11DesktopHandler::IsActiveWindow(::Window window) const {
   return window == current_window_;
 }
 
+void X11DesktopHandler::ProcessXEvent(const base::NativeEvent& event) {
+  switch (event->type) {
+    case EnterNotify:
+      if (event->xcrossing.focus == True &&
+          current_window_ != event->xcrossing.window)
+        OnActiveWindowChanged(event->xcrossing.window);
+      break;
+    case LeaveNotify:
+      if (event->xcrossing.focus == False &&
+          current_window_ == event->xcrossing.window)
+        OnActiveWindowChanged(None);
+      break;
+    default:
+      NOTREACHED();
+  }
+}
+
 bool X11DesktopHandler::Dispatch(const base::NativeEvent& event) {
   // Check for a change to the active window.
   switch (event->type) {
