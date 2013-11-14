@@ -6075,17 +6075,6 @@
    fun:_ZN3gpu13CommandParser14ProcessCommandEv
 }
 {
-   bug_282646
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN16sync_file_system21SyncFileSystemBackendC1EP7Profile
-   fun:_ZN6chrome26ChromeContentBrowserClient31GetAdditionalFileSystemBackendsEPN7content14BrowserContextERKN4base8FilePathEP12ScopedVectorIN7fileapi17FileSystemBackendEE
-   fun:_ZN7content23CreateFileSystemContextEPNS_14BrowserContextERKN4base8FilePathEbPN5quota17QuotaManagerProxyE
-   fun:_ZN7content20StoragePartitionImpl6CreateEPNS_14BrowserContextEbRKN4base8FilePathE
-   fun:_ZN7content23StoragePartitionImplMap3GetERKSsS2_b
-   fun:_ZN7content12_GLOBAL__N_129GetStoragePartitionFromConfigEPNS_14BrowserContextERKSsS4_b
-}
-{
    bug_288787
    Memcheck:Leak
    fun:_Znw*
