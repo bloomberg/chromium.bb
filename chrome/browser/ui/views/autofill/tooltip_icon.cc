@@ -11,6 +11,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/focus_border.h"
+#include "ui/views/mouse_watcher_view_host.h"
 
 namespace autofill {
 
@@ -68,14 +69,20 @@ const char* TooltipIcon::GetClassName() const {
 }
 
 void TooltipIcon::OnMouseEntered(const ui::MouseEvent& event) {
+  mouse_watcher_.reset();
   mouse_inside_ = true;
   ShowBubble();
 }
 
 void TooltipIcon::OnMouseExited(const ui::MouseEvent& event) {
-  mouse_inside_ = false;
-  hide_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(250), this,
-                    &TooltipIcon::HideBubble);
+  if (!bubble_)
+    return;
+
+  scoped_ptr<views::MouseWatcherHost> host;
+  views::View* frame = bubble_->GetWidget()->non_client_view()->frame_view();
+  host.reset(new views::MouseWatcherViewHost(frame, gfx::Insets()));
+  mouse_watcher_.reset(new views::MouseWatcher(host.release(), this));
+  mouse_watcher_->Start();
 }
 
 void TooltipIcon::OnBoundsChanged(const gfx::Rect& prev_bounds) {
@@ -92,12 +99,19 @@ void TooltipIcon::OnBlur() {
   HideBubble();
 }
 
+void TooltipIcon::MouseMovedOutOfHost() {
+  mouse_inside_ = false;
+  HideBubble();
+}
+
 void TooltipIcon::ChangeImageTo(int idr) {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   SetImage(rb.GetImageNamed(idr).ToImageSkia());
 }
 
 void TooltipIcon::ShowBubble() {
+  DCHECK(mouse_inside_ || HasFocus());
+
   hide_timer_.Stop();
 
   if (bubble_)
@@ -110,8 +124,6 @@ void TooltipIcon::ShowBubble() {
 }
 
 void TooltipIcon::HideBubble() {
-  hide_timer_.Stop();
-
   if (HasFocus() || mouse_inside_ || !bubble_)
     return;
 

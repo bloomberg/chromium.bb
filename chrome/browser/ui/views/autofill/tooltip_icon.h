@@ -7,16 +7,19 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_ptr.h"
 #include "base/strings/string16.h"
 #include "base/timer/timer.h"
 #include "ui/views/controls/image_view.h"
+#include "ui/views/mouse_watcher.h"
 
 namespace autofill {
 
 class InfoBubble;
 
 // A tooltip icon that shows a bubble on hover. Looks like (?).
-class TooltipIcon : public views::ImageView {
+class TooltipIcon : public views::ImageView,
+                    public views::MouseWatcherListener {
  public:
   explicit TooltipIcon(const base::string16& tooltip);
   virtual ~TooltipIcon();
@@ -30,6 +33,9 @@ class TooltipIcon : public views::ImageView {
   virtual void OnBoundsChanged(const gfx::Rect& prev_bounds) OVERRIDE;
   virtual void OnFocus() OVERRIDE;
   virtual void OnBlur() OVERRIDE;
+
+  // views::MouseWatcherListener:
+  virtual void MouseMovedOutOfHost() OVERRIDE;
 
  private:
   // Changes this view's image to the resource indicated by |idr|.
@@ -50,6 +56,9 @@ class TooltipIcon : public views::ImageView {
 
   // A bubble shown on hover. Weak; owns itself. NULL while hiding.
   InfoBubble* bubble_;
+
+  // A watcher that keeps |bubble_| open if the user's mouse enters it.
+  scoped_ptr<views::MouseWatcher> mouse_watcher_;
 
   // A timer to delay hiding |bubble_|.
   base::OneShotTimer<TooltipIcon> hide_timer_;
