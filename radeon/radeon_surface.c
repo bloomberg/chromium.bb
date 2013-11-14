@@ -1541,6 +1541,7 @@ static int si_surface_init_1d(struct radeon_surface_manager *surf_man,
                               uint64_t offset, unsigned start_level)
 {
     uint32_t xalign, yalign, zalign, slice_align;
+    unsigned alignment = MAX2(256, surf_man->hw_info.group_bytes);
     unsigned i;
 
     /* compute alignment */
@@ -1552,11 +1553,11 @@ static int si_surface_init_1d(struct radeon_surface_manager *surf_man,
         xalign = MAX2((bpe == 1) ? 64 : 32, xalign);
     }
 
-    if (!start_level) {
-        surf->bo_alignment = MAX2(256, surf_man->hw_info.group_bytes);
+    if (start_level <= 1) {
+        surf->bo_alignment = MAX2(surf->bo_alignment, alignment);
 
         if (offset) {
-            offset = ALIGN(offset, surf->bo_alignment);
+            offset = ALIGN(offset, alignment);
         }
     }
 
@@ -1567,7 +1568,7 @@ static int si_surface_init_1d(struct radeon_surface_manager *surf_man,
         /* level0 and first mipmap need to have alignment */
         offset = surf->bo_size;
         if ((i == 0)) {
-            offset = ALIGN(offset, surf->bo_alignment);
+            offset = ALIGN(offset, alignment);
         }
         if (surf->flags & RADEON_SURF_HAS_TILE_MODE_INDEX) {
             if (surf->level == level) {
@@ -1609,6 +1610,7 @@ static int si_surface_init_2d(struct radeon_surface_manager *surf_man,
                               uint64_t offset,
                               unsigned start_level)
 {
+    uint64_t aligned_offset = offset;
     unsigned tilew, tileh, tileb;
     unsigned mtilew, mtileh, mtileb;
     unsigned slice_pt;
@@ -1632,19 +1634,19 @@ static int si_surface_init_2d(struct radeon_surface_manager *surf_man,
     /* macro tile bytes */
     mtileb = (mtilew / tilew) * (mtileh / tileh) * tileb;
 
-    if (!start_level) {
+    if (start_level <= 1) {
         unsigned alignment = MAX2(256, mtileb);
         surf->bo_alignment = MAX2(surf->bo_alignment, alignment);
 
-        if (offset) {
-            offset = ALIGN(offset, alignment);
+        if (aligned_offset) {
+            aligned_offset = ALIGN(aligned_offset, alignment);
         }
     }
 
     /* build mipmap tree */
     for (i = start_level; i <= surf->last_level; i++) {
         level[i].mode = RADEON_SURF_MODE_2D;
-        si_surf_minify_2d(surf, level+i, bpe, i, slice_pt, mtilew, mtileh, 1, mtileb, offset);
+        si_surf_minify_2d(surf, level+i, bpe, i, slice_pt, mtilew, mtileh, 1, mtileb, aligned_offset);
         if (level[i].mode == RADEON_SURF_MODE_1D) {
             switch (tile_mode) {
             case SI_TILE_MODE_COLOR_2D_8BPP:
@@ -1669,9 +1671,9 @@ static int si_surface_init_2d(struct radeon_surface_manager *surf_man,
             return si_surface_init_1d(surf_man, surf, level, bpe, tile_mode, offset, i);
         }
         /* level0 and first mipmap need to have alignment */
-        offset = surf->bo_size;
+        aligned_offset = surf->bo_size;
         if ((i == 0)) {
-            offset = ALIGN(offset, surf->bo_alignment);
+            aligned_offset = ALIGN(aligned_offset, surf->bo_alignment);
         }
         if (surf->flags & RADEON_SURF_HAS_TILE_MODE_INDEX) {
             if (surf->level == level) {
