@@ -11,10 +11,7 @@
 namespace mojo {
 namespace {
 
-class SystemTest : public testing::Test {
-};
-
-TEST_F(SystemTest, Basic) {
+TEST(SystemTest, Basic) {
   Handle h_0;
   MojoWaitFlags wf;
   char buffer[10] = { 0 };
