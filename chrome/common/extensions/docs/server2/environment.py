@@ -6,8 +6,16 @@ import os
 import sys
 
 
+def _IsServerSoftware(name):
+  return os.environ.get('SERVER_SOFTWARE', '').find(name) == 0
+
+
 def IsDevServer():
-  return os.environ.get('SERVER_SOFTWARE', '').find('Development') == 0
+  return _IsServerSoftware('Development')
+
+
+def IsReleaseServer():
+  return _IsServerSoftware('Google App Engine')
 
 
 def IsPreviewServer():

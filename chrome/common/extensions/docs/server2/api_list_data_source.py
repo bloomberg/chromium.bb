@@ -72,23 +72,16 @@ class APIListDataSource(object):
       }
 
     def _GenerateAPIDict(self):
-
       documented_apis = self._cache.GetFromFileListing(PUBLIC_TEMPLATES).Get()
 
-      def GetChannelInfo(api_name):
+      def _GetChannelInfo(api_name):
         return self._availability_finder.GetApiAvailability(api_name)
 
-      def GetApiDescription(model):
-        try:
-          return model.Get().description if model.Get() else ''
-        except FileNotFoundError:
-          return ''
-
-      def GetApiPlatform(api_name):
+      def _GetApiPlatform(api_name):
         feature = self._features_bundle.GetAPIFeatures().Get()[api_name]
         return feature['platforms']
 
-      def MakeDictForPlatform(platform):
+      def _MakeDictForPlatform(platform):
         platform_dict = {
           'chrome': {'stable': [], 'beta': [], 'dev': [], 'trunk': []}
         }
@@ -98,12 +91,12 @@ class APIListDataSource(object):
         for api_name, api_model in self._api_models.IterModels():
           api = {
             'name': api_name,
-            'description': GetApiDescription(api_model),
-            'platforms': GetApiPlatform(api_name),
+            'description': api_model.description,
+            'platforms': _GetApiPlatform(api_name),
           }
           category = _GetAPICategory(api_name, documented_apis[platform])
           if category == 'chrome':
-            channel_info = GetChannelInfo(api_name)
+            channel_info = _GetChannelInfo(api_name)
             channel = channel_info.channel
             if channel == 'stable':
               api['version'] = channel_info.version
@@ -116,20 +109,20 @@ class APIListDataSource(object):
             private_apis.append(api)
 
         for channel, apis_by_channel in platform_dict['chrome'].iteritems():
-          apis_by_channel = sorted(apis_by_channel, key=itemgetter('name'))
+          apis_by_channel.sort(key=itemgetter('name'))
           utils.MarkLast(apis_by_channel)
           platform_dict['chrome'][channel] = apis_by_channel
 
         for key, apis in (('all', all_apis),
                           ('private', private_apis),
                           ('experimental', experimental_apis)):
-          apis = sorted(apis, key=itemgetter('name'))
+          apis.sort(key=itemgetter('name'))
           utils.MarkLast(apis)
           platform_dict[key] = apis
         return platform_dict
       return {
-        'apps': MakeDictForPlatform('apps'),
-        'extensions': MakeDictForPlatform('extensions'),
+        'apps': _MakeDictForPlatform('apps'),
+        'extensions': _MakeDictForPlatform('extensions'),
       }
 
     def Create(self):

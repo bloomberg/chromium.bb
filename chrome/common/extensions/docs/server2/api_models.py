@@ -75,5 +75,11 @@ class APIModels(object):
     return Future(delegate=Gettable(resolve))
 
   def IterModels(self):
-    return dict((name, self.GetModel(name))
-                 for name in self.GetNames()).iteritems()
+    future_models = [(name, self.GetModel(name)) for name in self.GetNames()]
+    for name, future_model in future_models:
+      try:
+        model = future_model.Get()
+      except FileNotFoundError:
+        continue
+      if model:
+        yield name, model

@@ -1,42 +1,31 @@
 <h1 class="page_title">Chrome Platform APIs</h1>
 <p class="doc-family apps">
-Chrome provides many special-purpose APIs like
-<code>chrome.runtime</code> and <code>chrome.alarms</code>
-to Chrome Apps.
+Chrome provides {{platform}}s with many special-purpose APIs like
+<code>chrome.runtime</code> and <code>chrome.alarms</code>.
 </p>
 
 {{?stable_apis}}
-<h2 id="stable_apis">
-Stable APIs
-</h2>
+<h2 id="stable_apis">Stable APIs</h2>
 <p>
-Here are the supported chrome.* APIs stable since the Chrome version.
-</p>
 {{+partials.api_table apis:stable_apis is_stable:true}}
-{{/}}
+</p>
+{{/stable_apis}}
 
 {{?beta_apis}}
-<h2 id="beta_apis">
-Beta APIs
-</h2>
-<p>
-Here are the supported chrome.* APIs available in Chrome Beta only.
-</p>
+<h2 id="beta_apis">Beta APIs</h2>
+<p>These APIs are only available in the Chrome Beta and Dev channels:
 {{+partials.api_table apis:beta_apis is_stable:false}}
-{{/}}
+</p>
+{{/beta_apis}}
 
 {{?dev_apis}}
-<h2 id="dev_apis">
-Dev APIs
-</h2>
-
-<p>
-Here are the supported chrome.* APIs available in Chrome Dev only.
-</p>
+<h2 id="dev_apis">Dev APIs</h2>
+<p>These APIs are only available in the Chrome Dev channel:
 {{+partials.api_table apis:dev_apis is_stable:false}}
-{{/}}
-<h2 id="experimental">Experimental APIs</h2>
+</p>
+{{/dev_apis}}
 
+<h2 id="experimental">Experimental APIs</h2>
 <p>
 Chrome also has
 <a href="experimental.html">experimental APIs</a>,
