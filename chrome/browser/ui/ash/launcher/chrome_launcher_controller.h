@@ -48,7 +48,7 @@ class TabContents;
 
 namespace ash {
 class LauncherItemDelegateManager;
-class LauncherModel;
+class ShelfModel;
 }
 
 namespace aura {
@@ -130,7 +130,7 @@ class ChromeLauncherController : public ash::LauncherDelegate,
     virtual void SetCurrentUser(Profile* profile) = 0;
   };
 
-  ChromeLauncherController(Profile* profile, ash::LauncherModel* model);
+  ChromeLauncherController(Profile* profile, ash::ShelfModel* model);
   virtual ~ChromeLauncherController();
 
   // Initializes this ChromeLauncherController.
@@ -138,7 +138,7 @@ class ChromeLauncherController : public ash::LauncherDelegate,
 
   // Creates an instance.
   static ChromeLauncherController* CreateInstance(Profile* profile,
-                                                  ash::LauncherModel* model);
+                                                  ash::ShelfModel* model);
 
   // Returns the single ChromeLauncherController instance.
   static ChromeLauncherController* instance() { return instance_; }
@@ -244,7 +244,7 @@ class ChromeLauncherController : public ash::LauncherDelegate,
   // id of the app.
   void PersistPinnedState();
 
-  ash::LauncherModel* model();
+  ash::ShelfModel* model();
 
   // Accessor to the currently loaded profile. Note that in multi profile use
   // cases this might change over time.
@@ -465,7 +465,7 @@ class ChromeLauncherController : public ash::LauncherDelegate,
 
   // Creates an app launcher to insert at |index|. Note that |index| may be
   // adjusted by the model to meet ordering constraints.
-  // The |launcher_item_type| will be set into the LauncherModel.
+  // The |launcher_item_type| will be set into the ShelfModel.
   ash::LauncherID InsertAppLauncherItem(
       LauncherItemController* controller,
       const std::string& app_id,
@@ -535,7 +535,7 @@ class ChromeLauncherController : public ash::LauncherDelegate,
 
   static ChromeLauncherController* instance_;
 
-  ash::LauncherModel* model_;
+  ash::ShelfModel* model_;
 
   ash::LauncherItemDelegateManager* item_delegate_manager_;
 

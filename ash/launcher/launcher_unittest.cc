@@ -5,7 +5,7 @@
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_button.h"
 #include "ash/launcher/launcher_item_delegate_manager.h"
-#include "ash/launcher/launcher_model.h"
+#include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -35,7 +35,7 @@ class LauncherTest : public ash::test::AshTestBase {
  public:
   LauncherTest() : launcher_(NULL),
                    shelf_view_(NULL),
-                   launcher_model_(NULL),
+                   shelf_model_(NULL),
                    item_delegate_manager_(NULL) {
   }
 
@@ -49,7 +49,7 @@ class LauncherTest : public ash::test::AshTestBase {
 
     ash::test::LauncherTestAPI test(launcher_);
     shelf_view_ = test.shelf_view();
-    launcher_model_ = shelf_view_->model();
+    shelf_model_ = shelf_view_->model();
     item_delegate_manager_ =
         Shell::GetInstance()->launcher_item_delegate_manager();
 
@@ -68,8 +68,8 @@ class LauncherTest : public ash::test::AshTestBase {
     return shelf_view_;
   }
 
-  LauncherModel* launcher_model() {
-    return launcher_model_;
+  ShelfModel* shelf_model() {
+    return shelf_model_;
   }
 
   LauncherItemDelegateManager* item_manager() {
@@ -83,7 +83,7 @@ class LauncherTest : public ash::test::AshTestBase {
  private:
   Launcher* launcher_;
   ShelfView* shelf_view_;
-  LauncherModel* launcher_model_;
+  ShelfModel* shelf_model_;
   LauncherItemDelegateManager* item_delegate_manager_;
   scoped_ptr<ash::test::ShelfViewTestAPI> test_;
 
@@ -99,13 +99,13 @@ TEST_F(LauncherTest, StatusReflection) {
   LauncherItem item;
   item.type = TYPE_PLATFORM_APP;
   item.status = STATUS_RUNNING;
-  int index = launcher_model()->Add(item);
+  int index = shelf_model()->Add(item);
   ASSERT_EQ(++button_count, test_api()->GetButtonCount());
   LauncherButton* button = test_api()->GetButton(index);
   EXPECT_EQ(LauncherButton::STATE_RUNNING, button->state());
 
   // Remove it.
-  launcher_model()->RemoveItemAt(index);
+  shelf_model()->RemoveItemAt(index);
   ASSERT_EQ(--button_count, test_api()->GetButtonCount());
 }
 
@@ -119,11 +119,11 @@ TEST_F(LauncherTest, checkHoverAfterMenu) {
   LauncherItem item;
   item.type = TYPE_PLATFORM_APP;
   item.status = STATUS_RUNNING;
-  int index = launcher_model()->Add(item);
+  int index = shelf_model()->Add(item);
 
   scoped_ptr<LauncherItemDelegate> delegate(
       new ash::test::TestLauncherItemDelegate(NULL));
-  item_manager()->SetLauncherItemDelegate(launcher_model()->items()[index].id,
+  item_manager()->SetLauncherItemDelegate(shelf_model()->items()[index].id,
                                           delegate.Pass());
 
   ASSERT_EQ(++button_count, test_api()->GetButtonCount());
@@ -133,11 +133,11 @@ TEST_F(LauncherTest, checkHoverAfterMenu) {
   EXPECT_FALSE(button->state() & LauncherButton::STATE_HOVERED);
 
   // Remove it.
-  launcher_model()->RemoveItemAt(index);
+  shelf_model()->RemoveItemAt(index);
 }
 
 TEST_F(LauncherTest, ShowOverflowBubble) {
-  LauncherID first_item_id = launcher_model()->next_id();
+  LauncherID first_item_id = shelf_model()->next_id();
 
   // Add platform app button until overflow.
   int items_added = 0;
@@ -145,7 +145,7 @@ TEST_F(LauncherTest, ShowOverflowBubble) {
     LauncherItem item;
     item.type = TYPE_PLATFORM_APP;
     item.status = STATUS_RUNNING;
-    launcher_model()->Add(item);
+    shelf_model()->Add(item);
 
     ++items_added;
     ASSERT_LT(items_added, 10000);
@@ -156,8 +156,7 @@ TEST_F(LauncherTest, ShowOverflowBubble) {
   EXPECT_TRUE(launcher()->IsShowingOverflowBubble());
 
   // Removes the first item in main shelf view.
-  launcher_model()->RemoveItemAt(
-      launcher_model()->ItemIndexByID(first_item_id));
+  shelf_model()->RemoveItemAt(shelf_model()->ItemIndexByID(first_item_id));
 
   // Waits for all transitions to finish and there should be no crash.
   test_api()->RunMessageLoopUntilAnimationsDone();

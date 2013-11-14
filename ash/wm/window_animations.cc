@@ -513,11 +513,10 @@ void SetTransformForScaleAnimation(ui::Layer* layer,
 
 gfx::Rect GetMinimizeAnimationTargetBoundsInScreen(aura::Window* window) {
   Launcher* launcher = Launcher::ForWindow(window);
-  // Launcher is created lazily and can be NULL.
+  // Shelf is created lazily and can be NULL.
   if (!launcher)
     return gfx::Rect();
-  gfx::Rect item_rect = launcher->
-      GetScreenBoundsOfItemIconForWindow(window);
+  gfx::Rect item_rect = launcher->GetScreenBoundsOfItemIconForWindow(window);
 
   // The launcher item is visible and has an icon.
   if (!item_rect.IsEmpty())

@@ -10,15 +10,15 @@
 
 namespace ash {
 
-class LauncherModel;
+class ShelfModel;
 
-// Return the index of the |type| from a given |launcher_model|.
+// Return the index of the |type| from a given |shelf_model|.
 // Note:
-//  * If there are many items for |type| in the |launcher_model|, an index of
+//  * If there are many items for |type| in the |shelf_model|, an index of
 //    first item will be returned.
 //  * If there is no item for |type|, -1 will be returned.
 ASH_EXPORT int GetShelfItemIndexForType(LauncherItemType type,
-                                        const LauncherModel& launcher_model);
+                                        const ShelfModel& shelf_model);
 
 }  // namespace ash
 

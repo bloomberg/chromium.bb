@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/launcher/launcher_model.h"
+#include "ash/shelf/shelf_model.h"
 
 #include <set>
 #include <string>
@@ -75,13 +75,13 @@ class TestShelfModelObserver : public ShelfModelObserver {
 
 }  // namespace
 
-class LauncherModelTest : public testing::Test {
+class ShelfModelTest : public testing::Test {
  public:
-  LauncherModelTest() {}
-  virtual ~LauncherModelTest() {}
+  ShelfModelTest() {}
+  virtual ~ShelfModelTest() {}
 
   virtual void SetUp() {
-    model_.reset(new LauncherModel);
+    model_.reset(new ShelfModel);
     observer_.reset(new TestShelfModelObserver);
     EXPECT_EQ(0, model_->item_count());
 
@@ -98,14 +98,14 @@ class LauncherModelTest : public testing::Test {
     model_.reset();
   }
 
-  scoped_ptr<LauncherModel> model_;
+  scoped_ptr<ShelfModel> model_;
   scoped_ptr<TestShelfModelObserver> observer_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(LauncherModelTest);
+  DISALLOW_COPY_AND_ASSIGN(ShelfModelTest);
 };
 
-TEST_F(LauncherModelTest, BasicAssertions) {
+TEST_F(ShelfModelTest, BasicAssertions) {
   // Add an item.
   LauncherItem item;
   item.type = TYPE_APP_SHORTCUT;
@@ -157,7 +157,7 @@ TEST_F(LauncherModelTest, BasicAssertions) {
 }
 
 // Assertions around where items are added.
-TEST_F(LauncherModelTest, AddIndices) {
+TEST_F(ShelfModelTest, AddIndices) {
   // Insert browser short cut at index 1.
   LauncherItem browser_shortcut;
   browser_shortcut.type = TYPE_BROWSER_SHORTCUT;
@@ -237,7 +237,7 @@ TEST_F(LauncherModelTest, AddIndices) {
 }
 
 // Assertions around where items are added.
-TEST_F(LauncherModelTest, AddIndicesForLegacyShelfLayout) {
+TEST_F(ShelfModelTest, AddIndicesForLegacyShelfLayout) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       ash::switches::kAshDisableAlternateShelfLayout);
 
@@ -320,7 +320,7 @@ TEST_F(LauncherModelTest, AddIndicesForLegacyShelfLayout) {
 }
 
 // Assertions around id generation and usage.
-TEST_F(LauncherModelTest, LauncherIDTests) {
+TEST_F(ShelfModelTest, LauncherIDTests) {
   // Get the next to use ID counter.
   LauncherID id = model_->next_id();
 
@@ -345,7 +345,7 @@ TEST_F(LauncherModelTest, LauncherIDTests) {
 // This verifies that converting an existing item into a lower weight category
 // (e.g. shortcut to running but not pinned app) will move it to the proper
 // location. See crbug.com/248769.
-TEST_F(LauncherModelTest, CorrectMoveItemsWhenStateChange) {
+TEST_F(ShelfModelTest, CorrectMoveItemsWhenStateChange) {
   // The first item is the app list and last item is the browser.
   LauncherItem browser_shortcut;
   browser_shortcut.type = TYPE_BROWSER_SHORTCUT;
@@ -372,7 +372,7 @@ TEST_F(LauncherModelTest, CorrectMoveItemsWhenStateChange) {
   EXPECT_EQ(TYPE_PLATFORM_APP, model_->items()[4].type);
 }
 
-TEST_F(LauncherModelTest, CorrectMoveItemsWhenStateChangeForLegacyShelfLayout) {
+TEST_F(ShelfModelTest, CorrectMoveItemsWhenStateChangeForLegacyShelfLayout) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       ash::switches::kAshDisableAlternateShelfLayout);
 

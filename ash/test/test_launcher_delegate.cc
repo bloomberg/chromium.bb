@@ -5,7 +5,7 @@
 #include "ash/test/test_launcher_delegate.h"
 
 #include "ash/launcher/launcher_item_delegate_manager.h"
-#include "ash/launcher/launcher_model.h"
+#include "ash/shelf/shelf_model.h"
 #include "ash/shell.h"
 #include "ash/test/test_launcher_item_delegate.h"
 #include "base/strings/string_util.h"
@@ -18,7 +18,7 @@ namespace test {
 
 TestLauncherDelegate* TestLauncherDelegate::instance_ = NULL;
 
-TestLauncherDelegate::TestLauncherDelegate(LauncherModel* model)
+TestLauncherDelegate::TestLauncherDelegate(ShelfModel* model)
     : model_(model) {
   CHECK(!instance_);
   instance_ = this;

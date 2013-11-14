@@ -11,10 +11,10 @@
 #include "ash/launcher/launcher_delegate.h"
 #include "ash/launcher/launcher_item_delegate.h"
 #include "ash/launcher/launcher_item_delegate_manager.h"
-#include "ash/launcher/launcher_model.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
 #include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_navigator.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"
@@ -41,7 +41,7 @@ namespace ash {
 
 const char Launcher::kNativeViewName[] = "ShelfView";
 
-Launcher::Launcher(LauncherModel* launcher_model,
+Launcher::Launcher(ShelfModel* shelf_model,
                    LauncherDelegate* launcher_delegate,
                    ShelfWidget* shelf_widget)
     : shelf_view_(NULL),
@@ -49,7 +49,7 @@ Launcher::Launcher(LauncherModel* launcher_model,
       delegate_(launcher_delegate),
       shelf_widget_(shelf_widget) {
   shelf_view_ = new internal::ShelfView(
-      launcher_model, delegate_, shelf_widget_->shelf_layout_manager());
+      shelf_model, delegate_, shelf_widget_->shelf_layout_manager());
   shelf_view_->Init();
   shelf_widget_->GetContentsView()->AddChildView(shelf_view_);
   shelf_widget_->GetNativeView()->SetName(kNativeViewName);
@@ -154,9 +154,9 @@ views::View* Launcher::GetAppListButtonView() const {
 }
 
 void Launcher::LaunchAppIndexAt(int item_index) {
-  LauncherModel* launcher_model = shelf_view_->model();
-  const LauncherItems& items = launcher_model->items();
-  int item_count = launcher_model->item_count();
+  ShelfModel* shelf_model = shelf_view_->model();
+  const LauncherItems& items = shelf_model->items();
+  int item_count = shelf_model->item_count();
   int indexes_left = item_index >= 0 ? item_index : item_count;
   int found_index = -1;
 

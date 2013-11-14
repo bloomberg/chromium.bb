@@ -121,8 +121,7 @@ app_list::AppListViewDelegate* ShellDelegateImpl::CreateAppListViewDelegate() {
   return ash::shell::CreateAppListViewDelegate();
 }
 
-ash::LauncherDelegate* ShellDelegateImpl::CreateLauncherDelegate(
-    ash::LauncherModel* model) {
+LauncherDelegate* ShellDelegateImpl::CreateLauncherDelegate(ShelfModel* model) {
   launcher_delegate_ = new LauncherDelegateImpl(watcher_);
   return launcher_delegate_;
 }

@@ -1,8 +1,8 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/launcher/launcher_model.h"
+#include "ash/shelf/shelf_model.h"
 
 #include <algorithm>
 
@@ -60,17 +60,17 @@ bool CompareByWeight(const LauncherItem& a, const LauncherItem& b) {
 
 }  // namespace
 
-LauncherModel::LauncherModel() : next_id_(1), status_(STATUS_NORMAL) {
+ShelfModel::ShelfModel() : next_id_(1), status_(STATUS_NORMAL) {
 }
 
-LauncherModel::~LauncherModel() {
+ShelfModel::~ShelfModel() {
 }
 
-int LauncherModel::Add(const LauncherItem& item) {
+int ShelfModel::Add(const LauncherItem& item) {
   return AddAt(items_.size(), item);
 }
 
-int LauncherModel::AddAt(int index, const LauncherItem& item) {
+int ShelfModel::AddAt(int index, const LauncherItem& item) {
   index = ValidateInsertionIndex(item.type, index);
   items_.insert(items_.begin() + index, item);
   items_[index].id = next_id_++;
@@ -78,7 +78,7 @@ int LauncherModel::AddAt(int index, const LauncherItem& item) {
   return index;
 }
 
-void LauncherModel::RemoveItemAt(int index) {
+void ShelfModel::RemoveItemAt(int index) {
   DCHECK(index >= 0 && index < item_count());
   // The app list and browser shortcut can't be removed.
   DCHECK(items_[index].type != TYPE_APP_LIST &&
@@ -89,7 +89,7 @@ void LauncherModel::RemoveItemAt(int index) {
                     ShelfItemRemoved(index, id));
 }
 
-void LauncherModel::Move(int index, int target_index) {
+void ShelfModel::Move(int index, int target_index) {
   if (index == target_index)
     return;
   // TODO: this needs to enforce valid ranges.
@@ -100,7 +100,7 @@ void LauncherModel::Move(int index, int target_index) {
                     ShelfItemMoved(index, target_index));
 }
 
-void LauncherModel::Set(int index, const LauncherItem& item) {
+void ShelfModel::Set(int index, const LauncherItem& item) {
   DCHECK(index >= 0 && index < item_count());
   int new_index = item.type == items_[index].type ?
       index : ValidateInsertionIndex(item.type, index);
@@ -126,12 +126,12 @@ void LauncherModel::Set(int index, const LauncherItem& item) {
   }
 }
 
-int LauncherModel::ItemIndexByID(LauncherID id) const {
+int ShelfModel::ItemIndexByID(LauncherID id) const {
   LauncherItems::const_iterator i = ItemByID(id);
   return i == items_.end() ? -1 : static_cast<int>(i - items_.begin());
 }
 
-LauncherItems::const_iterator LauncherModel::ItemByID(int id) const {
+LauncherItems::const_iterator ShelfModel::ItemByID(int id) const {
   for (LauncherItems::const_iterator i = items_.begin();
        i != items_.end(); ++i) {
     if (i->id == id)
@@ -140,14 +140,14 @@ LauncherItems::const_iterator LauncherModel::ItemByID(int id) const {
   return items_.end();
 }
 
-int LauncherModel::FirstPanelIndex() const {
+int ShelfModel::FirstPanelIndex() const {
   LauncherItem weight_dummy;
   weight_dummy.type = TYPE_APP_PANEL;
   return std::lower_bound(items_.begin(), items_.end(), weight_dummy,
                           CompareByWeight) - items_.begin();
 }
 
-void LauncherModel::SetStatus(Status status) {
+void ShelfModel::SetStatus(Status status) {
   if (status_ == status)
     return;
 
@@ -155,16 +155,15 @@ void LauncherModel::SetStatus(Status status) {
   FOR_EACH_OBSERVER(ShelfModelObserver, observers_, ShelfStatusChanged());
 }
 
-void LauncherModel::AddObserver(ShelfModelObserver* observer) {
+void ShelfModel::AddObserver(ShelfModelObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void LauncherModel::RemoveObserver(ShelfModelObserver* observer) {
+void ShelfModel::RemoveObserver(ShelfModelObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 
-int LauncherModel::ValidateInsertionIndex(LauncherItemType type,
-                                          int index) const {
+int ShelfModel::ValidateInsertionIndex(LauncherItemType type, int index) const {
   DCHECK(index >= 0 && index <= item_count() +
       (ash::switches::UseAlternateShelfLayout() ? 1 : 0));
 

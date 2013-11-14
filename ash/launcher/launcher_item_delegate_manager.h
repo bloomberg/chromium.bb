@@ -15,7 +15,7 @@
 
 namespace ash {
 class LauncherItemDelegate;
-class LauncherModel;
+class ShelfModel;
 
 namespace test {
 class LauncherItemDelegateManagerTestAPI;
@@ -28,7 +28,7 @@ class LauncherItemDelegateManagerTestAPI;
 // LauncherItemDelegates when the corresponding item from the model is removed.
 class ASH_EXPORT LauncherItemDelegateManager : public ShelfModelObserver {
  public:
-  explicit LauncherItemDelegateManager(ash::LauncherModel* model);
+  explicit LauncherItemDelegateManager(ShelfModel* model);
   virtual ~LauncherItemDelegateManager();
 
   // Set |item_delegate| for |id| and take an ownership.
@@ -58,7 +58,7 @@ class ASH_EXPORT LauncherItemDelegateManager : public ShelfModelObserver {
 
   // Clear all exsiting LauncherItemDelegate for test.
   // Not owned by LauncherItemDelegate.
-  ash::LauncherModel* model_;
+  ShelfModel* model_;
 
   LauncherIDToItemDelegateMap id_to_item_delegate_map_;
 

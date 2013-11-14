@@ -35,8 +35,8 @@ class ShelfViewTestAPI;
 class LauncherDelegate;
 struct LauncherItem;
 class LauncherItemDelegateManager;
-class LauncherModel;
 class ShelfIconObserver;
+class ShelfModel;
 
 namespace internal {
 
@@ -56,7 +56,7 @@ class ASH_EXPORT ShelfView : public views::View,
                              public views::BoundsAnimatorObserver,
                              public app_list::ApplicationDragAndDropHost {
  public:
-  ShelfView(LauncherModel* model,
+  ShelfView(ShelfModel* model,
             LauncherDelegate* delegate,
             ShelfLayoutManager* shelf_layout_manager);
   virtual ~ShelfView();
@@ -65,7 +65,7 @@ class ASH_EXPORT ShelfView : public views::View,
 
   ShelfLayoutManager* shelf_layout_manager() { return layout_manager_; }
 
-  LauncherModel* model() { return model_; }
+  ShelfModel* model() { return model_; }
 
   void Init();
 
@@ -318,7 +318,7 @@ class ASH_EXPORT ShelfView : public views::View,
   int CalculateShelfDistance(const gfx::Point& coordinate) const;
 
   // The model; owned by Launcher.
-  LauncherModel* model_;
+  ShelfModel* model_;
 
   // Delegate; owned by Launcher.
   LauncherDelegate* delegate_;

@@ -7,10 +7,10 @@
 #include "ash/ash_switches.h"
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_button.h"
-#include "ash/launcher/launcher_model.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
 #include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"
@@ -223,8 +223,7 @@ class PanelLayoutManagerTest : public test::AshTestBase {
     test::ShelfViewTestAPI test_api(shelf_view);
     test_api.SetAnimationDuration(1);
     test_api.RunMessageLoopUntilAnimationsDone();
-    LauncherModel* model =
-        test::ShellTestApi(Shell::GetInstance()).launcher_model();
+    ShelfModel* model = test::ShellTestApi(Shell::GetInstance()).shelf_model();
     test::TestLauncherDelegate* launcher_delegate =
         test::TestLauncherDelegate::instance();
     int index = model->ItemIndexByID(launcher_delegate->GetIDByWindow(window));

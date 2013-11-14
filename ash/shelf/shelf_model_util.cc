@@ -4,14 +4,14 @@
 
 #include "ash/shelf/shelf_model_util.h"
 
-#include "ash/launcher/launcher_model.h"
+#include "ash/shelf/shelf_model.h"
 
 namespace ash {
 
 int GetShelfItemIndexForType(LauncherItemType type,
-                             const LauncherModel& launcher_model) {
-  for (size_t i = 0; i < launcher_model.items().size(); i++) {
-    if (launcher_model.items()[i].type == type)
+                             const ShelfModel& shelf_model) {
+  for (size_t i = 0; i < shelf_model.items().size(); i++) {
+    if (shelf_model.items()[i].type == type)
       return i;
   }
   return -1;

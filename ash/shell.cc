@@ -32,7 +32,6 @@
 #include "ash/launcher/launcher_delegate.h"
 #include "ash/launcher/launcher_item_delegate.h"
 #include "ash/launcher/launcher_item_delegate_manager.h"
-#include "ash/launcher/launcher_model.h"
 #include "ash/magnifier/magnification_controller.h"
 #include "ash/magnifier/partial_magnification_controller.h"
 #include "ash/media_delegate.h"
@@ -42,6 +41,7 @@
 #include "ash/session_state_delegate.h"
 #include "ash/shelf/app_list_shelf_item_delegate.h"
 #include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_model_util.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell_delegate.h"
@@ -487,22 +487,21 @@ SystemTray* Shell::GetPrimarySystemTray() {
 
 LauncherDelegate* Shell::GetLauncherDelegate() {
   if (!launcher_delegate_) {
-    launcher_model_.reset(new LauncherModel);
+    shelf_model_.reset(new ShelfModel);
     // Creates LauncherItemDelegateManager before LauncherDelegate.
     launcher_item_delegate_manager_.reset(
-        new LauncherItemDelegateManager(launcher_model_.get()));
+        new LauncherItemDelegateManager(shelf_model_.get()));
 
     launcher_delegate_.reset(
-        delegate_->CreateLauncherDelegate(launcher_model_.get()));
+        delegate_->CreateLauncherDelegate(shelf_model_.get()));
     scoped_ptr<LauncherItemDelegate> controller(
         new internal::AppListShelfItemDelegate);
 
-    // Finding the launcher model's location of the app list and setting its
+    // Finding the shelf model's location of the app list and setting its
     // LauncherItemDelegate.
-    int app_list_index =
-        GetShelfItemIndexForType(ash::TYPE_APP_LIST, *launcher_model_);
+    int app_list_index = GetShelfItemIndexForType(TYPE_APP_LIST, *shelf_model_);
     DCHECK_GE(app_list_index, 0);
-    ash::LauncherID app_list_id = launcher_model_->items()[app_list_index].id;
+    LauncherID app_list_id = shelf_model_->items()[app_list_index].id;
     DCHECK(app_list_id);
     launcher_item_delegate_manager_->SetLauncherItemDelegate(
         app_list_id,
@@ -644,10 +643,10 @@ Shell::~Shell() {
   user_action_client_.reset();
   visibility_controller_.reset();
   launcher_delegate_.reset();
-  // |launcher_item_delegate_manager_| observes |launcher_model_|. It must be
-  // destroyed before |launcher_model_| is destroyed.
+  // |launcher_item_delegate_manager_| observes |shelf_model_|. It must be
+  // destroyed before |shelf_model_| is destroyed.
   launcher_item_delegate_manager_.reset();
-  launcher_model_.reset();
+  shelf_model_.reset();
   video_detector_.reset();
 
   power_button_controller_.reset();

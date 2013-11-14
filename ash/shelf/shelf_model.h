@@ -1,9 +1,9 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_LAUNCHER_LAUNCHER_MODEL_H_
-#define ASH_LAUNCHER_LAUNCHER_MODEL_H_
+#ifndef ASH_SHELF_SHELF_MODEL_H_
+#define ASH_SHELF_SHELF_MODEL_H_
 
 #include "ash/ash_export.h"
 #include "ash/launcher/launcher_types.h"
@@ -15,7 +15,7 @@ namespace ash {
 class ShelfModelObserver;
 
 // Model used by ShelfView.
-class ASH_EXPORT LauncherModel {
+class ASH_EXPORT ShelfModel {
  public:
   enum Status {
     STATUS_NORMAL,
@@ -23,8 +23,8 @@ class ASH_EXPORT LauncherModel {
     STATUS_LOADING,
   };
 
-  LauncherModel();
-  ~LauncherModel();
+  ShelfModel();
+  ~ShelfModel();
 
   // Adds a new item to the model. Returns the resulting index.
   int Add(const LauncherItem& item);
@@ -54,7 +54,7 @@ class ASH_EXPORT LauncherModel {
   // Returns the id assigned to the next item added.
   LauncherID next_id() const { return next_id_; }
 
-  // Returns a reserved id which will not be used by the |LauncherModel|.
+  // Returns a reserved id which will not be used by the |ShelfModel|.
   LauncherID reserve_external_id() { return next_id_++; }
 
   // Returns an iterator into items() for the item with the specified id, or
@@ -83,9 +83,9 @@ class ASH_EXPORT LauncherModel {
   Status status_;
   ObserverList<ShelfModelObserver> observers_;
 
-  DISALLOW_COPY_AND_ASSIGN(LauncherModel);
+  DISALLOW_COPY_AND_ASSIGN(ShelfModel);
 };
 
 }  // namespace ash
 
-#endif  // ASH_LAUNCHER_LAUNCHER_MODEL_H_
+#endif  // ASH_SHELF_SHELF_MODEL_H_

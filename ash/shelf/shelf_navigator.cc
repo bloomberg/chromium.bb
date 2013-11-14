@@ -4,7 +4,7 @@
 
 #include "ash/shelf/shelf_navigator.h"
 
-#include "ash/launcher/launcher_model.h"
+#include "ash/shelf/shelf_model.h"
 
 namespace ash {
 
@@ -21,7 +21,7 @@ bool ShouldSkip(ash::LauncherItemType type) {
 
 }  // namespace
 
-int GetNextActivatedItemIndex(const LauncherModel& model,
+int GetNextActivatedItemIndex(const ShelfModel& model,
                               CycleDirection direction) {
   const ash::LauncherItems& items = model.items();
   int item_count = model.item_count();

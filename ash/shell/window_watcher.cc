@@ -7,7 +7,7 @@
 #include "ash/display/display_controller.h"
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_item_delegate_manager.h"
-#include "ash/launcher/launcher_model.h"
+#include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/shell/window_watcher_launcher_item_delegate.h"
@@ -106,8 +106,8 @@ void WindowWatcher::OnWindowAdded(aura::Window* new_window) {
     return;
 
   static int image_count = 0;
-  ash::LauncherModel* model = Shell::GetInstance()->launcher_model();
-  ash::LauncherItem item;
+  ShelfModel* model = Shell::GetInstance()->shelf_model();
+  LauncherItem item;
   item.type = new_window->type() == aura::client::WINDOW_TYPE_PANEL ?
       ash::TYPE_APP_PANEL : ash::TYPE_PLATFORM_APP;
   ash::LauncherID id = model->next_id();
@@ -136,7 +136,7 @@ void WindowWatcher::OnWillRemoveWindow(aura::Window* window) {
   for (IDToWindow::iterator i = id_to_window_.begin();
        i != id_to_window_.end(); ++i) {
     if (i->second == window) {
-      ash::LauncherModel* model = Shell::GetInstance()->launcher_model();
+      ShelfModel* model = Shell::GetInstance()->shelf_model();
       int index = model->ItemIndexByID(i->first);
       DCHECK_NE(-1, index);
       model->RemoveItemAt(index);

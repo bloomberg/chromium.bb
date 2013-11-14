@@ -131,7 +131,7 @@
 
 #if defined(USE_ASH)
 #include "ash/launcher/launcher.h"
-#include "ash/launcher/launcher_model.h"
+#include "ash/shelf/shelf_model.h"
 #include "ash/shell.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #endif

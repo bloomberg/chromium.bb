@@ -45,8 +45,8 @@ AshNativeCursorManager* ShellTestApi::ash_native_cursor_manager() {
   return shell_->native_cursor_manager_;
 }
 
-LauncherModel* ShellTestApi::launcher_model() {
-  return shell_->launcher_model_.get();
+ShelfModel* ShellTestApi::shelf_model() {
+  return shell_->shelf_model_.get();
 }
 
 internal::DragDropController* ShellTestApi::drag_drop_controller() {

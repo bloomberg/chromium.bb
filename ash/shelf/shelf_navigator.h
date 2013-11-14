@@ -10,12 +10,12 @@
 
 namespace ash {
 
-class LauncherModel;
+class ShelfModel;
 
 // Scans the current shelf item and returns the index of the shelf item which
 // should be activated next for the specified |direction|. Returns -1 if fails
 // to find such item.
-ASH_EXPORT int GetNextActivatedItemIndex(const LauncherModel& model,
+ASH_EXPORT int GetNextActivatedItemIndex(const ShelfModel& model,
                                          CycleDirection direction);
 
 }  // namespace ash

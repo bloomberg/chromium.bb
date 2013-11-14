@@ -11,12 +11,12 @@
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_button.h"
 #include "ash/launcher/launcher_item_delegate_manager.h"
-#include "ash/launcher/launcher_model.h"
 #include "ash/launcher/launcher_types.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/overflow_bubble.h"
 #include "ash/shelf/shelf_icon_observer.h"
 #include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_tooltip_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -202,7 +202,7 @@ TEST_F(ShelfViewIconObserverTest, BoundsChanged) {
 // pinned.
 class TestLauncherDelegateForShelfView : public TestLauncherDelegate {
  public:
-  explicit TestLauncherDelegateForShelfView(LauncherModel* model)
+  explicit TestLauncherDelegateForShelfView(ShelfModel* model)
       : TestLauncherDelegate(model) {}
   virtual ~TestLauncherDelegateForShelfView() {}
 
@@ -225,7 +225,7 @@ class ShelfViewTest : public AshTestBase {
   virtual void SetUp() OVERRIDE {
     AshTestBase::SetUp();
     test::ShellTestApi test_api(Shell::GetInstance());
-    model_ = test_api.launcher_model();
+    model_ = test_api.shelf_model();
     Launcher* launcher = Launcher::ForPrimaryDisplay();
     shelf_view_ = test::LauncherTestAPI(launcher).shelf_view();
 
@@ -421,7 +421,7 @@ class ShelfViewTest : public AshTestBase {
     shelf_view_->tooltip_manager()->ShowInternal();
   }
 
-  LauncherModel* model_;
+  ShelfModel* model_;
   internal::ShelfView* shelf_view_;
   int browser_index_;
   LauncherItemDelegateManager* item_manager_;

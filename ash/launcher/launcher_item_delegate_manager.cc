@@ -5,15 +5,15 @@
 #include "ash/launcher/launcher_item_delegate_manager.h"
 
 #include "ash/launcher/launcher_item_delegate.h"
-#include "ash/launcher/launcher_model.h"
+#include "ash/shelf/shelf_model.h"
 #include "ash/shell.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 
 namespace ash {
 
-LauncherItemDelegateManager::LauncherItemDelegateManager(
-    ash::LauncherModel* model) : model_(model) {
+LauncherItemDelegateManager::LauncherItemDelegateManager(ShelfModel* model)
+    : model_(model) {
   DCHECK(model_);
   model_->AddObserver(this);
 }

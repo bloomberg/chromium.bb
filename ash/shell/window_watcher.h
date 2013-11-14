@@ -24,7 +24,7 @@ namespace shell {
 // TODO(sky): fix this class, its a bit broke with workspace2.
 
 // WindowWatcher is responsible for listening for newly created windows and
-// creating items on the Launcher for them.
+// creating items on the Shelf for them.
 class WindowWatcher : public aura::WindowObserver,
                       public gfx::DisplayObserver {
  public:

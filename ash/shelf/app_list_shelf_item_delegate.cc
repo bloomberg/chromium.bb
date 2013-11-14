@@ -4,7 +4,7 @@
 
 #include "ash/shelf/app_list_shelf_item_delegate.h"
 
-#include "ash/launcher/launcher_model.h"
+#include "ash/shelf/shelf_model.h"
 #include "ash/shell.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -15,7 +15,7 @@ namespace internal {
 AppListShelfItemDelegate::AppListShelfItemDelegate() {
   LauncherItem app_list;
   app_list.type = TYPE_APP_LIST;
-  Shell::GetInstance()->launcher_model()->Add(app_list);
+  Shell::GetInstance()->shelf_model()->Add(app_list);
 }
 
 AppListShelfItemDelegate::~AppListShelfItemDelegate() {
@@ -29,9 +29,9 @@ bool AppListShelfItemDelegate::ItemSelected(const ui::Event& event) {
 }
 
 base::string16 AppListShelfItemDelegate::GetTitle() {
-  LauncherModel* model = Shell::GetInstance()->launcher_model();
+  ShelfModel* model = Shell::GetInstance()->shelf_model();
   DCHECK(model);
-  return model->status() == LauncherModel::STATUS_LOADING ?
+  return model->status() == ShelfModel::STATUS_LOADING ?
       l10n_util::GetStringUTF16(IDS_AURA_APP_LIST_SYNCING_TITLE) :
       l10n_util::GetStringUTF16(IDS_AURA_APP_LIST_TITLE);
 }

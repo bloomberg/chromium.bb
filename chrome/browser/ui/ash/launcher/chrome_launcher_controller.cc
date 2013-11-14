@@ -10,10 +10,10 @@
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "ash/launcher/launcher.h"
 #include "ash/launcher/launcher_item_delegate_manager.h"
-#include "ash/launcher/launcher_model.h"
 #include "ash/multi_profile_uma.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_model_util.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -320,9 +320,8 @@ void ChromeLauncherControllerUserSwitchObserverChromeOS::AddUser(
 }
 #endif
 
-ChromeLauncherController::ChromeLauncherController(
-    Profile* profile,
-    ash::LauncherModel* model)
+ChromeLauncherController::ChromeLauncherController(Profile* profile,
+                                                   ash::ShelfModel* model)
     : model_(model),
       item_delegate_manager_(NULL),
       profile_(profile),
@@ -433,7 +432,7 @@ ChromeLauncherController::~ChromeLauncherController() {
 // static
 ChromeLauncherController* ChromeLauncherController::CreateInstance(
     Profile* profile,
-    ash::LauncherModel* model) {
+    ash::ShelfModel* model) {
   // We do not check here for re-creation of the ChromeLauncherController since
   // it appears that it might be intentional that the ChromeLauncherController
   // can be re-created.
@@ -881,7 +880,7 @@ void ChromeLauncherController::PersistPinnedState() {
                  base::Unretained(this)));
 }
 
-ash::LauncherModel* ChromeLauncherController::model() {
+ash::ShelfModel* ChromeLauncherController::model() {
   return model_;
 }
 
@@ -1255,9 +1254,9 @@ void ChromeLauncherController::OnIsSyncingChanged() {
 
 void ChromeLauncherController::OnAppSyncUIStatusChanged() {
   if (app_sync_ui_state_->status() == AppSyncUIState::STATUS_SYNCING)
-    model_->SetStatus(ash::LauncherModel::STATUS_LOADING);
+    model_->SetStatus(ash::ShelfModel::STATUS_LOADING);
   else
-    model_->SetStatus(ash::LauncherModel::STATUS_NORMAL);
+    model_->SetStatus(ash::ShelfModel::STATUS_NORMAL);
 }
 
 void ChromeLauncherController::ExtensionEnableFlowFinished() {
@@ -1469,7 +1468,7 @@ int ChromeLauncherController::PinRunningAppInternal(
          item.type == ash::TYPE_PLATFORM_APP);
   item.type = ash::TYPE_APP_SHORTCUT;
   model_->Set(running_index, item);
-  // The |LauncherModel|'s weight system might reposition the item to a
+  // The |ShelfModel|'s weight system might reposition the item to a
   // new index, so we get the index again.
   running_index = model_->ItemIndexByID(launcher_id);
   if (running_index < index)

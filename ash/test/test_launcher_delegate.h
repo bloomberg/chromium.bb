@@ -14,7 +14,7 @@
 
 namespace ash {
 
-class LauncherModel;
+class ShelfModel;
 
 namespace test {
 
@@ -23,7 +23,7 @@ namespace test {
 class TestLauncherDelegate : public LauncherDelegate,
                              public aura::WindowObserver {
  public:
-  explicit TestLauncherDelegate(LauncherModel* model);
+  explicit TestLauncherDelegate(ShelfModel* model);
   virtual ~TestLauncherDelegate();
 
   void AddLauncherItem(aura::Window* window);
@@ -54,7 +54,7 @@ class TestLauncherDelegate : public LauncherDelegate,
 
   static TestLauncherDelegate* instance_;
 
-  LauncherModel* model_;
+  ShelfModel* model_;
 
   // Maps from window to the id we gave it.
   WindowToID window_to_id_;

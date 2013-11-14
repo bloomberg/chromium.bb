@@ -42,15 +42,15 @@ class KeyboardControllerProxy;
 
 namespace ash {
 
+class AccessibilityDelegate;
 class CapsLockDelegate;
 class LauncherDelegate;
-class LauncherModel;
 struct LauncherItem;
 class MediaDelegate;
 class NewWindowDelegate;
 class RootWindowHostFactory;
-class AccessibilityDelegate;
 class SessionStateDelegate;
+class ShelfModel;
 class SystemTrayDelegate;
 class UserWallpaperDelegate;
 
@@ -152,8 +152,7 @@ class ASH_EXPORT ShellDelegate {
 
   // Creates a new LauncherDelegate. Shell takes ownership of the returned
   // value.
-  virtual LauncherDelegate* CreateLauncherDelegate(
-      ash::LauncherModel* model) = 0;
+  virtual LauncherDelegate* CreateLauncherDelegate(ShelfModel* model) = 0;
 
   // Creates a system-tray delegate. Shell takes ownership of the delegate.
   virtual SystemTrayDelegate* CreateSystemTrayDelegate() = 0;

@@ -13,7 +13,6 @@
 #include "ash/launcher/launcher_delegate.h"
 #include "ash/launcher/launcher_item_delegate.h"
 #include "ash/launcher/launcher_item_delegate_manager.h"
-#include "ash/launcher/launcher_model.h"
 #include "ash/root_window_controller.h"
 #include "ash/scoped_target_root_window.h"
 #include "ash/shelf/alternate_app_list_button.h"
@@ -22,6 +21,7 @@
 #include "ash/shelf/overflow_button.h"
 #include "ash/shelf/shelf_icon_observer.h"
 #include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_tooltip_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell_delegate.h"
@@ -375,7 +375,7 @@ class ShelfView::StartFadeAnimationDelegate
   DISALLOW_COPY_AND_ASSIGN(StartFadeAnimationDelegate);
 };
 
-ShelfView::ShelfView(LauncherModel* model,
+ShelfView::ShelfView(ShelfModel* model,
                      LauncherDelegate* delegate,
                      ShelfLayoutManager* shelf_layout_manager)
     : model_(model),
@@ -444,7 +444,7 @@ void ShelfView::OnShelfAlignmentChanged() {
   overflow_button_->OnShelfAlignmentChanged();
   LayoutToIdealBounds();
   for (int i=0; i < view_model_->view_size(); ++i) {
-    // TODO: remove when AppIcon is a Launcher Button.
+    // TODO: remove when AppIcon is a Shelf Button.
     if (TYPE_APP_LIST == model_->items()[i].type &&
         !ash::switches::UseAlternateShelfLayout()) {
       static_cast<AppListButton*>(view_model_->view_at(i))->SetImageAlignment(
@@ -1466,7 +1466,7 @@ void ShelfView::ShelfItemRemoved(int model_index, LauncherID id) {
   // When the overflow bubble is visible, the overflow range needs to be set
   // before CalculateIdealBounds() gets called. Otherwise CalculateIdealBounds()
   // could trigger a LauncherItemChanged() by hiding the overflow bubble and
-  // since the overflow bubble is not yet synced with the LauncherModel this
+  // since the overflow bubble is not yet synced with the ShelfModel this
   // could cause a crash.
   if (overflow_bubble_ && overflow_bubble_->IsShowing()) {
     last_hidden_index_ = std::min(last_hidden_index_,
@@ -1516,7 +1516,7 @@ void ShelfView::ShelfItemChanged(int model_index,
   views::View* view = view_model_->view_at(model_index);
   switch (item.type) {
     case TYPE_BROWSER_SHORTCUT:
-      // Fallthrough for the new Launcher since it needs to show the activation
+      // Fallthrough for the new Shelf since it needs to show the activation
       // change as well.
     case TYPE_APP_SHORTCUT:
     case TYPE_WINDOWED_APP:
@@ -1552,7 +1552,7 @@ void ShelfView::ShelfStatusChanged() {
     return;
   AppListButton* app_list_button =
       static_cast<AppListButton*>(GetAppListButtonView());
-  if (model_->status() == LauncherModel::STATUS_LOADING)
+  if (model_->status() == ShelfModel::STATUS_LOADING)
     app_list_button->StartLoadingAnimation();
   else
     app_list_button->StopLoadingAnimation();
@@ -1792,7 +1792,7 @@ void ShelfView::ShowMenu(scoped_ptr<views::MenuModelAdapter> menu_model_adapter,
     anchor_point.set_x(anchor_point.x() - offset.x());
     anchor_point.set_y(anchor_point.y() - offset.y());
 
-    // Launcher items can have an asymmetrical border for spacing reasons.
+    // Shelf items can have an asymmetrical border for spacing reasons.
     // Adjust anchor location for this.
     if (source->border())
       anchor_point.Inset(source->border()->GetInsets());

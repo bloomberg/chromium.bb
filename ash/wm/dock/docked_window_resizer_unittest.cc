@@ -6,10 +6,10 @@
 
 #include "ash/ash_switches.h"
 #include "ash/launcher/launcher.h"
-#include "ash/launcher/launcher_model.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_ash.h"
 #include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -46,7 +46,7 @@ class DockedWindowResizerTest
     AshTestBase::SetUp();
     UpdateDisplay("600x400");
     test::ShellTestApi test_api(Shell::GetInstance());
-    model_ = test_api.launcher_model();
+    model_ = test_api.shelf_model();
   }
 
   virtual void TearDown() OVERRIDE {
@@ -220,7 +220,7 @@ class DockedWindowResizerTest
 
  private:
   scoped_ptr<WindowResizer> resizer_;
-  LauncherModel* model_;
+  ShelfModel* model_;
   aura::client::WindowType window_type_;
   aura::test::TestWindowDelegate delegate_;
 

@@ -87,7 +87,6 @@ class Launcher;
 class LauncherDelegate;
 class LauncherItemDelegate;
 class LauncherItemDelegateManager;
-class LauncherModel;
 class LockStateController;
 class MagnificationController;
 class MediaDelegate;
@@ -99,6 +98,7 @@ class PowerButtonController;
 class RootWindowHostFactory;
 class ScreenAsh;
 class SessionStateDelegate;
+class ShelfModel;
 class ShellDelegate;
 class ShellObserver;
 class StickyKeys;
@@ -495,8 +495,8 @@ class ASH_EXPORT Shell
     return root_window_host_factory_.get();
   }
 
-  LauncherModel* launcher_model() {
-    return launcher_model_.get();
+  ShelfModel* shelf_model() {
+    return shelf_model_.get();
   }
 
   WindowPositioner* window_positioner() {
@@ -592,8 +592,8 @@ class ASH_EXPORT Shell
   scoped_ptr<LauncherDelegate> launcher_delegate_;
   scoped_ptr<LauncherItemDelegateManager> launcher_item_delegate_manager_;
 
-  scoped_ptr<LauncherModel> launcher_model_;
-  scoped_ptr<ash::WindowPositioner> window_positioner_;
+  scoped_ptr<ShelfModel> shelf_model_;
+  scoped_ptr<WindowPositioner> window_positioner_;
 
   scoped_ptr<internal::AppListController> app_list_controller_;
 

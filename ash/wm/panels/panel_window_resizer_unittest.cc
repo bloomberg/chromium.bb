@@ -5,9 +5,9 @@
 #include "ash/wm/panels/panel_window_resizer.h"
 
 #include "ash/launcher/launcher.h"
-#include "ash/launcher/launcher_model.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_types.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -39,7 +39,7 @@ class PanelWindowResizerTest : public test::AshTestBase {
     AshTestBase::SetUp();
     UpdateDisplay("600x400");
     test::ShellTestApi test_api(Shell::GetInstance());
-    model_ = test_api.launcher_model();
+    model_ = test_api.shelf_model();
     launcher_delegate_ = test::TestLauncherDelegate::instance();
   }
 
@@ -186,7 +186,7 @@ class PanelWindowResizerTest : public test::AshTestBase {
  private:
   scoped_ptr<WindowResizer> resizer_;
   internal::PanelLayoutManager* panel_layout_manager_;
-  LauncherModel* model_;
+  ShelfModel* model_;
   test::TestLauncherDelegate* launcher_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(PanelWindowResizerTest);

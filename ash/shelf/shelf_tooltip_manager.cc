@@ -80,7 +80,7 @@ ShelfTooltipManager::ShelfTooltipBubble::ShelfTooltipBubble(
                                    kArrowOffsetLeftRight,
                                    kArrowOffsetTopBottom,
                                    kArrowOffsetLeftRight);
-  // Launcher items can have an asymmetrical border for spacing reasons.
+  // Shelf items can have an asymmetrical border for spacing reasons.
   // Adjust anchor location for this.
   if (anchor->border())
     insets += anchor->border()->GetInsets();

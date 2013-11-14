@@ -98,8 +98,7 @@ app_list::AppListViewDelegate* TestShellDelegate::CreateAppListViewDelegate() {
   return NULL;
 }
 
-LauncherDelegate* TestShellDelegate::CreateLauncherDelegate(
-    ash::LauncherModel* model) {
+LauncherDelegate* TestShellDelegate::CreateLauncherDelegate(ShelfModel* model) {
   return new TestLauncherDelegate(model);
 }
 

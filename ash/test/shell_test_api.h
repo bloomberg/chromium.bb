@@ -16,7 +16,7 @@ class InputMethodEventFilter;
 namespace ash {
 class AshNativeCursorManager;
 class LauncherDelegate;
-class LauncherModel;
+class ShelfModel;
 class Shell;
 
 namespace internal {
@@ -41,7 +41,7 @@ public:
   internal::WorkspaceController* workspace_controller();
   internal::ScreenPositionController* screen_position_controller();
   AshNativeCursorManager* ash_native_cursor_manager();
-  LauncherModel* launcher_model();
+  ShelfModel* shelf_model();
   internal::DragDropController* drag_drop_controller();
   internal::AppListController* app_list_controller();
 

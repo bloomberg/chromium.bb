@@ -20,9 +20,6 @@ class View;
 
 namespace ash {
 
-class LauncherDelegate;
-class LauncherModel;
-
 namespace internal {
 
 class ShelfView;

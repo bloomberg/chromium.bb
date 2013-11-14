@@ -10,7 +10,7 @@
 
 #include "ash/ash_switches.h"
 #include "ash/launcher/launcher_item_delegate_manager.h"
-#include "ash/launcher/launcher_model.h"
+#include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_model_observer.h"
 #include "ash/shell.h"
 #include "ash/test/launcher_item_delegate_manager_test_api.h"
@@ -273,7 +273,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
   virtual void SetUp() OVERRIDE {
     BrowserWithTestWindowTest::SetUp();
 
-    model_.reset(new ash::LauncherModel);
+    model_.reset(new ash::ShelfModel);
     model_observer_.reset(new TestShelfModelObserver);
     model_->AddObserver(model_observer_.get());
 
@@ -593,7 +593,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
   scoped_refptr<Extension> extension8_;
   scoped_ptr<ChromeLauncherController> launcher_controller_;
   scoped_ptr<TestShelfModelObserver> model_observer_;
-  scoped_ptr<ash::LauncherModel> model_;
+  scoped_ptr<ash::ShelfModel> model_;
 
   // |item_delegate_manager_| owns |test_controller_|.
   LauncherItemController* test_controller_;
@@ -1622,7 +1622,7 @@ TEST_F(ChromeLauncherControllerTest, RestoreDefaultAndLockedAppsResyncOrder) {
 
   // Going back to a status where there is no requirement for app 2 to be pinned
   // should convert it back to locked but not pinned and state. The position
-  // is determined by the |LauncherModel|'s weight system. Since at the moment
+  // is determined by the |ShelfModel|'s weight system. Since at the moment
   // the weight of a running app has the same as a shortcut, it will remain
   // where it is. Surely note ideal, but since the sync process can shift around
   // locations - as well as many other edge cases - this gets nearly impossible
@@ -1679,7 +1679,7 @@ TEST_F(ChromeLauncherControllerTest,
 
   // Going back to a status where there is no requirement for app 2 to be pinned
   // should convert it back to running V2 app. Since the position is determined
-  // by the |LauncherModel|'s weight system, it will be after last pinned item.
+  // by the |ShelfModel|'s weight system, it will be after last pinned item.
   base::ListValue policy_value2;
   InsertPrefValue(&policy_value2, 0, extension3_->id());
   InsertPrefValue(&policy_value2, 1, extension1_->id());
@@ -2541,7 +2541,7 @@ TEST_F(ChromeLauncherControllerTest, PersistLauncherItemPositions) {
     ash::test::LauncherItemDelegateManagerTestAPI test(item_delegate_manager_);
     test.RemoveAllLauncherItemDelegateForTest();
   }
-  model_.reset(new ash::LauncherModel);
+  model_.reset(new ash::ShelfModel);
 
   AddAppListLauncherItem();
   launcher_controller_.reset(
@@ -2597,7 +2597,7 @@ TEST_F(ChromeLauncherControllerTest, PersistPinned) {
     ash::test::LauncherItemDelegateManagerTestAPI test(item_delegate_manager_);
     test.RemoveAllLauncherItemDelegateForTest();
   }
-  model_.reset(new ash::LauncherModel);
+  model_.reset(new ash::ShelfModel);
 
   AddAppListLauncherItem();
   launcher_controller_.reset(

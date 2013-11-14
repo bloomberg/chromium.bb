@@ -2421,7 +2421,7 @@ const char kShelfAlignmentLocal[] = "shelf_alignment_local";
 const char kShelfAutoHideBehavior[] = "auto_hide_behavior";
 const char kShelfAutoHideBehaviorLocal[] = "auto_hide_behavior_local";
 // This value stores chrome icon's index in the launcher. This should be handled
-// separately with app shortcut's index because of LauncherModel's backward
+// separately with app shortcut's index because of ShelfModel's backward
 // compatability. If we add chrome icon index to |kPinnedLauncherApps|, its
 // index is also stored in the |kPinnedLauncherApp| pref. It may causes
 // creating two chrome icons.

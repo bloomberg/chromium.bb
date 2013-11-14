@@ -14,7 +14,7 @@
 namespace ash {
 namespace internal {
 
-// Launcher overflow chevron button.
+// Shelf overflow chevron button.
 class OverflowButton : public views::CustomButton {
  public:
   explicit OverflowButton(views::ButtonListener* listener);

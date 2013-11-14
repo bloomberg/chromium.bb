@@ -21,7 +21,7 @@ class ASH_EXPORT ShelfModelObserver {
   // at.
   virtual void ShelfItemRemoved(int index, LauncherID id) = 0;
 
-  // Invoked after an item has been moved. See LauncherModel::Move() for details
+  // Invoked after an item has been moved. See ShelfModel::Move() for details
   // of the arguments.
   virtual void ShelfItemMoved(int start_index, int target_index) = 0;
 

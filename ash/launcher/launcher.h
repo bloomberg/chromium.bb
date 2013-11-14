@@ -42,15 +42,15 @@ class LauncherTestAPI;
 }
 
 class LauncherDelegate;
-class LauncherModel;
 class ShelfIconObserver;
+class ShelfModel;
 class ShelfWidget;
 
 class ASH_EXPORT Launcher {
  public:
   static const char kNativeViewName[];
 
-  Launcher(LauncherModel* launcher_model,
+  Launcher(ShelfModel* shelf_model,
            LauncherDelegate* launcher_delegate,
            ShelfWidget* shelf_widget);
   virtual ~Launcher();

@@ -6,8 +6,8 @@
 
 #include "ash/ash_switches.h"
 #include "ash/launcher/launcher.h"
-#include "ash/launcher/launcher_model.h"
 #include "ash/launcher/launcher_types.h"
+#include "ash/shelf/shelf_model.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,7 +22,7 @@ class LauncherNavigatorTest : public testing::Test {
 
  protected:
   virtual void SetUp() OVERRIDE {
-    model_.reset(new LauncherModel);
+    model_.reset(new ShelfModel);
 
     // Add APP_LIST for test.
     LauncherItem app_list;
@@ -40,7 +40,7 @@ class LauncherNavigatorTest : public testing::Test {
     model_->Add(browser_shortcut);
   }
 
-  void SetupMockLauncherModel(LauncherItemType* types,
+  void SetupMockShelfModel(LauncherItemType* types,
                               int types_length,
                               int focused_index) {
     for (int i = 0; i < types_length; ++i) {
@@ -61,10 +61,10 @@ class LauncherNavigatorTest : public testing::Test {
     }
   }
 
-  const LauncherModel& model() { return *model_.get(); }
+  const ShelfModel& model() { return *model_.get(); }
 
  private:
-  scoped_ptr<LauncherModel> model_;
+  scoped_ptr<ShelfModel> model_;
 
   DISALLOW_COPY_AND_ASSIGN(LauncherNavigatorTest);
 };
@@ -91,9 +91,9 @@ TEST_F(LauncherNavigatorTest, BasicCycle) {
   LauncherItemType types[] = {
     TYPE_APP_SHORTCUT, TYPE_PLATFORM_APP, TYPE_PLATFORM_APP, TYPE_PLATFORM_APP,
   };
-  // LauncherModel automatically adds BROWSER_SHORTCUT item at the
+  // ShelfModel automatically adds BROWSER_SHORTCUT item at the
   // beginning, so '3' refers the first TYPE_PLATFORM_APP item.
-  SetupMockLauncherModel(types, arraysize(types), 3);
+  SetupMockShelfModel(types, arraysize(types), 3);
 
   EXPECT_EQ(4, GetNextActivatedItemIndex(model(), CYCLE_FORWARD));
 
@@ -107,9 +107,9 @@ TEST_F(LauncherNavigatorLegacyShelfLayoutTest, BasicCycle) {
   LauncherItemType types[] = {
     TYPE_APP_SHORTCUT, TYPE_PLATFORM_APP, TYPE_PLATFORM_APP, TYPE_PLATFORM_APP,
   };
-  // LauncherModel automatically adds BROWSER_SHORTCUT item at the
+  // ShelfModel automatically adds BROWSER_SHORTCUT item at the
   // beginning, so '2' refers the first TYPE_PLATFORM_APP item.
-  SetupMockLauncherModel(types, arraysize(types), 2);
+  SetupMockShelfModel(types, arraysize(types), 2);
 
   EXPECT_EQ(3, GetNextActivatedItemIndex(model(), CYCLE_FORWARD));
 
@@ -122,7 +122,7 @@ TEST_F(LauncherNavigatorTest, WrapToBeginning) {
   LauncherItemType types[] = {
     TYPE_APP_SHORTCUT, TYPE_PLATFORM_APP, TYPE_PLATFORM_APP, TYPE_PLATFORM_APP,
   };
-  SetupMockLauncherModel(types, arraysize(types), 5);
+  SetupMockShelfModel(types, arraysize(types), 5);
 
   // Second one.  It skips the APP_LIST item at the end of the list,
   // wraps to the beginning, and skips BROWSER_SHORTCUT and APP_SHORTCUT
@@ -134,7 +134,7 @@ TEST_F(LauncherNavigatorLegacyShelfLayoutTest, WrapToBeginning) {
   LauncherItemType types[] = {
     TYPE_APP_SHORTCUT, TYPE_PLATFORM_APP, TYPE_PLATFORM_APP, TYPE_PLATFORM_APP,
   };
-  SetupMockLauncherModel(types, arraysize(types), 4);
+  SetupMockShelfModel(types, arraysize(types), 4);
 
   // Second one.  It skips the APP_LIST item at the end of the list,
   // wraps to the beginning, and skips BROWSER_SHORTCUT and APP_SHORTCUT
@@ -143,14 +143,14 @@ TEST_F(LauncherNavigatorLegacyShelfLayoutTest, WrapToBeginning) {
 }
 
 TEST_F(LauncherNavigatorTest, Empty) {
-  SetupMockLauncherModel(NULL, 0, -1);
+  SetupMockShelfModel(NULL, 0, -1);
   EXPECT_EQ(-1, GetNextActivatedItemIndex(model(), CYCLE_FORWARD));
   EXPECT_EQ(-1, GetNextActivatedItemIndex(model(), CYCLE_BACKWARD));
 }
 
 TEST_F(LauncherNavigatorTest, SingleEntry) {
   LauncherItemType type = TYPE_PLATFORM_APP;
-  SetupMockLauncherModel(&type, 1, 2);
+  SetupMockShelfModel(&type, 1, 2);
 
   // If there's only one item there and it is already active, there's no item
   // to be activated next.
@@ -160,7 +160,7 @@ TEST_F(LauncherNavigatorTest, SingleEntry) {
 
 TEST_F(LauncherNavigatorLegacyShelfLayoutTest, SingleEntry) {
   LauncherItemType type = TYPE_PLATFORM_APP;
-  SetupMockLauncherModel(&type, 1, 1);
+  SetupMockShelfModel(&type, 1, 1);
 
   // If there's only one item there and it is already active, there's no item
   // to be activated next.
@@ -173,7 +173,7 @@ TEST_F(LauncherNavigatorTest, NoActive) {
     TYPE_PLATFORM_APP, TYPE_PLATFORM_APP,
   };
   // Special case: no items are 'STATUS_ACTIVE'.
-  SetupMockLauncherModel(types, arraysize(types), -1);
+  SetupMockShelfModel(types, arraysize(types), -1);
 
   // If there are no active status, pick the first running item as a fallback.
   EXPECT_EQ(2, GetNextActivatedItemIndex(model(), CYCLE_FORWARD));
@@ -185,7 +185,7 @@ TEST_F(LauncherNavigatorLegacyShelfLayoutTest, NoActive) {
     TYPE_PLATFORM_APP, TYPE_PLATFORM_APP,
   };
   // Special case: no items are 'STATUS_ACTIVE'.
-  SetupMockLauncherModel(types, arraysize(types), -1);
+  SetupMockShelfModel(types, arraysize(types), -1);
 
   // If there are no active status, pick the first running item as a fallback.
   EXPECT_EQ(1, GetNextActivatedItemIndex(model(), CYCLE_FORWARD));

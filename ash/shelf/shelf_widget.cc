@@ -7,10 +7,10 @@
 #include "ash/ash_switches.h"
 #include "ash/focus_cycler.h"
 #include "ash/launcher/launcher_delegate.h"
-#include "ash/launcher/launcher_model.h"
 #include "ash/root_window_controller.h"
 #include "ash/session_state_delegate.h"
 #include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_model.h"
 #include "ash/shelf/shelf_navigator.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"
@@ -604,12 +604,12 @@ void ShelfWidget::CreateLauncher() {
     return;
 
   Shell* shell = Shell::GetInstance();
-  // This needs to be called before launcher_model().
+  // This needs to be called before shelf_model().
   LauncherDelegate* launcher_delegate = shell->GetLauncherDelegate();
   if (!launcher_delegate)
     return;  // Not ready to create Launcher
 
-  launcher_.reset(new Launcher(shell->launcher_model(),
+  launcher_.reset(new Launcher(shell->shelf_model(),
                                shell->GetLauncherDelegate(),
                                this));
   SetFocusCycler(shell->focus_cycler());
