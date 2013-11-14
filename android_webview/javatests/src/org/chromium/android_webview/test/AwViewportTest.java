@@ -7,6 +7,7 @@ package org.chromium.android_webview.test;
 import android.test.suitebuilder.annotation.MediumTest;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwSettings;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content.browser.test.util.CallbackHelper;
 import org.chromium.content.browser.test.util.Criteria;
@@ -222,8 +223,12 @@ public class AwViewportTest extends AwTestBase {
         assertEquals(pageWidth, width);
     }
 
-    @MediumTest
-    @Feature({"AndroidWebView"})
+    /*
+     * @MediumTest
+     * @Feature({"AndroidWebView"})
+     * http://crbug.com/319353
+     */
+    @DisabledTest
     public void testInitialScaleClobberQuirk() throws Throwable {
         final TestAwContentsClient contentClient = new TestAwContentsClient();
         final AwTestContainerView testContainerView =
