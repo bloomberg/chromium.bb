@@ -40,6 +40,9 @@ hb_ot_map_t::add_lookups (hb_face_t    *face,
 {
   unsigned int lookup_indices[32];
   unsigned int offset, len;
+  unsigned int table_lookup_count;
+
+  table_lookup_count = hb_ot_layout_table_get_lookup_count (face, table_tags[table_index]);
 
   offset = 0;
   do {
@@ -50,7 +53,10 @@ hb_ot_map_t::add_lookups (hb_face_t    *face,
 				      offset, &len,
 				      lookup_indices);
 
-    for (unsigned int i = 0; i < len; i++) {
+    for (unsigned int i = 0; i < len; i++)
+    {
+      if (lookup_indices[i] >= table_lookup_count)
+	continue;
       hb_ot_map_t::lookup_map_t *lookup = lookups[table_index].push ();
       if (unlikely (!lookup))
         return;
@@ -100,49 +106,6 @@ void hb_ot_map_builder_t::add_feature (hb_tag_t tag, unsigned int value,
   info->default_value = (flags & F_GLOBAL) ? value : 0;
   info->stage[0] = current_stage[0];
   info->stage[1] = current_stage[1];
-}
-
-inline void hb_ot_map_t::apply (unsigned int table_index,
-				const hb_ot_shape_plan_t *plan,
-				hb_font_t *font,
-				hb_buffer_t *buffer) const
-{
-  unsigned int i = 0;
-
-  for (unsigned int stage_index = 0; stage_index < stages[table_index].len; stage_index++) {
-    const stage_map_t *stage = &stages[table_index][stage_index];
-    for (; i < stage->last_lookup; i++)
-      switch (table_index)
-      {
-        case 0:
-	  hb_ot_layout_substitute_lookup (font, buffer, lookups[table_index][i].index,
-					  lookups[table_index][i].mask,
-					  lookups[table_index][i].auto_zwj);
-	  break;
-
-	case 1:
-	  hb_ot_layout_position_lookup (font, buffer, lookups[table_index][i].index,
-					lookups[table_index][i].mask,
-					lookups[table_index][i].auto_zwj);
-	  break;
-      }
-
-    if (stage->pause_func)
-    {
-      buffer->clear_output ();
-      stage->pause_func (plan, font, buffer);
-    }
-  }
-}
-
-void hb_ot_map_t::substitute (const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer) const
-{
-  apply (0, plan, font, buffer);
-}
-
-void hb_ot_map_t::position (const hb_ot_shape_plan_t *plan, hb_font_t *font, hb_buffer_t *buffer) const
-{
-  apply (1, plan, font, buffer);
 }
 
 
@@ -218,7 +181,7 @@ hb_ot_map_builder_t::compile (hb_ot_map_t &m)
       continue; /* Feature disabled, or not enough bits. */
 
 
-    bool found = false;
+    hb_bool_t found = false;
     unsigned int feature_index[2];
     for (unsigned int table_index = 0; table_index < 2; table_index++)
       found |= hb_ot_layout_language_find_feature (face,

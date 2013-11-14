@@ -1,6 +1,6 @@
 /*
  * Copyright © 2007,2008,2009,2010  Red Hat, Inc.
- * Copyright © 2010,2012  Google, Inc.
+ * Copyright © 2010,2012,2013  Google, Inc.
  *
  *  This is part of HarfBuzz, a text shaping library.
  *
@@ -272,8 +272,8 @@ struct Sequence
     TRACE_APPLY (this);
     if (unlikely (!substitute.len)) return TRACE_RETURN (false);
 
-    unsigned int klass = c->buffer->cur().glyph_props() &
-			 HB_OT_LAYOUT_GLYPH_PROPS_LIGATURE ? HB_OT_LAYOUT_GLYPH_PROPS_BASE_GLYPH : 0;
+    unsigned int klass = _hb_glyph_info_is_ligature (&c->buffer->cur()) ?
+			 HB_OT_LAYOUT_GLYPH_PROPS_BASE_GLYPH : 0;
     unsigned int count = substitute.len;
     if (count == 1) /* Special-case to make it in-place. */
     {
@@ -282,7 +282,7 @@ struct Sequence
     else
     {
       for (unsigned int i = 0; i < count; i++) {
-	set_lig_props_for_component (c->buffer->cur(), i);
+	_hb_glyph_info_set_lig_props_for_component (&c->buffer->cur(), i);
 	c->output_glyph (substitute.array[i], klass);
       }
       c->buffer->skip_glyph ();
@@ -626,27 +626,26 @@ struct Ligature
     unsigned int count = component.len;
     if (unlikely (count < 1)) return TRACE_RETURN (false);
 
-    unsigned int end_offset = 0;
     bool is_mark_ligature = false;
     unsigned int total_component_count = 0;
+
+    unsigned int match_length = 0;
+    unsigned int match_positions[MAX_CONTEXT_LENGTH];
 
     if (likely (!match_input (c, count,
 			      &component[1],
 			      match_glyph,
 			      NULL,
-			      &end_offset,
+			      &match_length,
+			      match_positions,
 			      &is_mark_ligature,
 			      &total_component_count)))
       return TRACE_RETURN (false);
 
-    /* Deal, we are forming the ligature. */
-    c->buffer->merge_clusters (c->buffer->idx, c->buffer->idx + end_offset);
-
     ligate_input (c,
 		  count,
-		  &component[1],
-		  match_glyph,
-		  NULL,
+		  match_positions,
+		  match_length,
 		  ligGlyph,
 		  is_mark_ligature,
 		  total_component_count);
@@ -989,7 +988,9 @@ struct ReverseChainSingleSubstFormat1
 			 1))
     {
       c->replace_glyph_inplace (substitute[index]);
-      c->buffer->idx--; /* Reverse! */
+      /* Note: We DON'T decrease buffer->idx.  The main loop does it
+       * for us.  This is useful for preventing surprises if someone
+       * calls us through a Context lookup. */
       return TRACE_RETURN (true);
     }
 
@@ -1152,7 +1153,7 @@ struct SubstLookup : Lookup
     return TRACE_RETURN (dispatch (c));
   }
 
-  inline hb_collect_glyphs_context_t::return_t collect_glyphs_lookup (hb_collect_glyphs_context_t *c) const
+  inline hb_collect_glyphs_context_t::return_t collect_glyphs (hb_collect_glyphs_context_t *c) const
   {
     TRACE_COLLECT_GLYPHS (this);
     c->set_recurse_func (dispatch_recurse_func<hb_collect_glyphs_context_t>);
@@ -1191,54 +1192,6 @@ struct SubstLookup : Lookup
   }
 
   static bool apply_recurse_func (hb_apply_context_t *c, unsigned int lookup_index);
-  inline bool apply_string (hb_apply_context_t *c, const hb_set_digest_t *digest) const
-  {
-    bool ret = false;
-
-    if (unlikely (!c->buffer->len || !c->lookup_mask))
-      return false;
-
-    c->set_recurse_func (apply_recurse_func);
-    c->set_lookup (*this);
-
-    if (likely (!is_reverse ()))
-    {
-      /* in/out forward substitution */
-      c->buffer->clear_output ();
-      c->buffer->idx = 0;
-
-      while (c->buffer->idx < c->buffer->len)
-      {
-	if (digest->may_have (c->buffer->cur().codepoint) &&
-	    (c->buffer->cur().mask & c->lookup_mask) &&
-	    apply_once (c))
-	  ret = true;
-	else
-	  c->buffer->next_glyph ();
-      }
-      if (ret)
-	c->buffer->swap_buffers ();
-    }
-    else
-    {
-      /* in-place backward substitution */
-      c->buffer->remove_output ();
-      c->buffer->idx = c->buffer->len - 1;
-      do
-      {
-	if (digest->may_have (c->buffer->cur().codepoint) &&
-	    (c->buffer->cur().mask & c->lookup_mask) &&
-	    apply_once (c))
-	  ret = true;
-	else
-	  c->buffer->idx--;
-
-      }
-      while ((int) c->buffer->idx >= 0);
-    }
-
-    return ret;
-  }
 
   inline SubstLookupSubTable& serialize_subtable (hb_serialize_context_t *c,
 						  unsigned int i)
@@ -1343,7 +1296,7 @@ typedef OffsetListOf<SubstLookup> SubstLookupList;
 
 struct GSUB : GSUBGPOS
 {
-  static const hb_tag_t Tag	= HB_OT_TAG_GSUB;
+  static const hb_tag_t tableTag	= HB_OT_TAG_GSUB;
 
   inline const SubstLookup& get_lookup (unsigned int i) const
   { return CastR<SubstLookup> (GSUBGPOS::get_lookup (i)); }
@@ -1365,15 +1318,15 @@ struct GSUB : GSUBGPOS
 void
 GSUB::substitute_start (hb_font_t *font, hb_buffer_t *buffer)
 {
-  HB_BUFFER_ALLOCATE_VAR (buffer, glyph_props);
-  HB_BUFFER_ALLOCATE_VAR (buffer, lig_props);
-  HB_BUFFER_ALLOCATE_VAR (buffer, syllable);
+  _hb_buffer_allocate_gsubgpos_vars (buffer);
 
   const GDEF &gdef = *hb_ot_layout_from_face (font->face)->gdef;
   unsigned int count = buffer->len;
-  for (unsigned int i = 0; i < count; i++) {
-    buffer->info[i].lig_props() = buffer->info[i].syllable() = 0;
-    buffer->info[i].glyph_props() = gdef.get_glyph_props (buffer->info[i].codepoint);
+  for (unsigned int i = 0; i < count; i++)
+  {
+    _hb_glyph_info_set_glyph_props (&buffer->info[i], gdef.get_glyph_props (buffer->info[i].codepoint));
+    _hb_glyph_info_clear_lig_props (&buffer->info[i]);
+    buffer->info[i].syllable() = 0;
   }
 }
 

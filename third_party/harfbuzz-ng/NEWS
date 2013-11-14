@@ -1,3 +1,133 @@
+Overview of changes leading to 0.9.24
+Tuesday, November 13, 2013
+=====================================
+
+- Misc compiler warning fixes with clang.
+- No functional changes.
+
+
+Overview of changes leading to 0.9.23
+Monday, October 28, 2013
+=====================================
+
+- "Udupi HarfBuzz Hackfest", Paris, October 14..18 2013.
+- Fix (Chain)Context recursion with non-monotone lookup positions.
+- Misc Indic bug fixes.
+- New Javanese / Buginese shaping, similar to Windows 8.1.
+
+
+Overview of changes leading to 0.9.22
+Thursday, October 3, 2013
+=====================================
+
+- Fix use-after-end-of-scope in hb_language_from_string().
+- Fix hiding of default_ignorables if font doesn't have space glyph.
+- Protect against out-of-range lookup indices.
+
+- API Changes:
+
+  * Added hb_ot_layout_table_get_lookup_count()
+
+
+Overview of changes leading to 0.9.21
+Monday, September 16, 2013
+=====================================
+
+- Rename gobject-introspection library name from harfbuzz to HarfBuzz.
+- Remove (long disabled) hb-old and hb-icu-le test shapers.
+- Misc gtk-doc and gobject-introspection annotations.
+- Misc fixes.
+- API changes:
+
+  * Add HB_SET_VALUE_INVALID
+
+Overview of changes leading to 0.9.20
+Thursday, August 29, 2013
+=====================================
+
+General:
+- Misc substitute_closure() fixes.
+- Build fixes.
+
+Documentation:
+- gtk-doc boilerplate integrated.  Docs are built now, but
+  contain no contents.  By next release hopefully we have
+  some content in.  Enable using --enable-gtk-doc.
+
+GObject and Introspection:
+- Added harfbuzz-gobject library (hb-gobject.h) that has type
+  bindings for all HarfBuzz objects and enums.  Enable using
+  --with-gobject.
+- Added gobject-introspection boilerplate.  Nothing useful
+  right now.  Work in progress.  Gets enabled automatically if
+  --with-gobject is used.  Override with --disable-introspection.
+
+OpenType shaper:
+- Apply 'mark' in Myanmar shaper.
+- Don't apply 'dlig' by default.
+
+Uniscribe shaper:
+- Support user features.
+- Fix loading of fonts that are also installed on the system.
+- Fix shaping of Arabic Presentation Forms.
+- Fix build with wide chars.
+
+CoreText shaper:
+- Support user features.
+
+Source changes:
+- hb_face_t code moved to hb-face.h / hb-face.cc.
+- Added hb-deprecated.h.
+
+API changes:
+- Added HB_DISABLE_DEPRECATED.
+- Deprecated HB_SCRIPT_CANADIAN_ABORIGINAL; replaced by
+  HB_SCRIPT_CANADIAN_SYLLABICS.
+- Deprecated HB_BUFFER_FLAGS_DEFAULT; replaced by
+  HB_BUFFER_FLAG_DEFAULT.
+- Deprecated HB_BUFFER_SERIALIZE_FLAGS_DEFAULT; replaced by
+  HB_BUFFER_SERIALIZE_FLAG_DEFAULT.
+
+
+Overview of changes leading to 0.9.19
+Tuesday, July 16, 2013
+=====================================
+
+- Build fixes.
+- Better handling of multiple variation selectors in a row.
+- Pass on variation selector to GSUB if not consumed by cmap.
+- Fix undefined memory access.
+- Add Javanese config to Indic shaper.
+- Misc bug fixes.
+
+Overview of changes leading to 0.9.18
+Tuesday, May 28, 2013
+=====================================
+
+New build system:
+
+- All unneeded code is all disabled by default,
+
+- Uniscribe and CoreText shapers can be enabled with their --with options,
+
+- icu_le and old shapers cannot be enabled for now,
+
+- glib, freetype, and cairo will be detected automatically.
+  They can be force on/off'ed with their --with options,
+
+- icu and graphite2 are default off, can be enabled with their --with
+  options,
+
+Moreover, ICU support is now build into a separate library:
+libharfbuzz-icu.so, and a new harfbuzz-icu.pc is shipped for it.
+Distros can enable ICU now without every application on earth
+getting linked to via libharfbuzz.so.
+
+For distros I recommend that they make sure they are building --with-glib
+--with-freetype --with-cairo, --with-icu, and optionally --with-graphite2;
+And package harfbuzz and harfbuzz-icu separately.
+
+
 Overview of changes leading to 0.9.17
 Monday, May 20, 2013
 =====================================

@@ -43,7 +43,6 @@ namespace OT {
 	(&c->debug_depth, c->get_name (), this, HB_FUNC, \
 	 "");
 
-
 #ifndef HB_DEBUG_CLOSURE
 #define HB_DEBUG_CLOSURE (HB_DEBUG+0)
 #endif
@@ -158,7 +157,13 @@ struct hb_collect_glyphs_context_t
 
     /* Note that GPOS sets recurse_func to NULL already, so it doesn't get
      * past the previous check.  For GSUB, we only want to collect the output
-     * glyphs in the recursion.  If output is not requested, we can go home now. */
+     * glyphs in the recursion.  If output is not requested, we can go home now.
+     *
+     * Note further, that the above is not exactly correct.  A recursed lookup
+     * is allowed to match input that is not matched in the context, but that's
+     * not how most fonts are built.  It's possible to relax that and recurse
+     * with all sets here if it proves to be an issue.
+     */
 
     if (output == hb_set_get_empty ())
       return HB_VOID;
@@ -272,14 +277,12 @@ struct hb_apply_context_t
 
   hb_apply_context_t (unsigned int table_index_,
 		      hb_font_t *font_,
-		      hb_buffer_t *buffer_,
-		      hb_mask_t lookup_mask_,
-		      bool auto_zwj_) :
+		      hb_buffer_t *buffer_) :
 			table_index (table_index_),
 			font (font_), face (font->face), buffer (buffer_),
 			direction (buffer_->props.direction),
-			lookup_mask (lookup_mask_),
-			auto_zwj (auto_zwj_),
+			lookup_mask (1),
+			auto_zwj (true),
 			recurse_func (NULL),
 			nesting_level_left (MAX_NESTING_LEVEL),
 			lookup_props (0),
@@ -287,6 +290,8 @@ struct hb_apply_context_t
 			has_glyph_classes (gdef.has_glyph_classes ()),
 			debug_depth (0) {}
 
+  inline void set_lookup_mask (hb_mask_t mask) { lookup_mask = mask; }
+  inline void set_auto_zwj (bool auto_zwj_) { auto_zwj = auto_zwj_; }
   inline void set_recurse_func (recurse_func_t func) { recurse_func = func; }
   inline void set_lookup_props (unsigned int lookup_props_) { lookup_props = lookup_props_; }
   inline void set_lookup (const Lookup &l) { lookup_props = l.get_props (); }
@@ -346,7 +351,7 @@ struct hb_apply_context_t
     {
       unsigned int property;
 
-      property = info.glyph_props();
+      property = _hb_glyph_info_get_glyph_props (&info);
 
       if (!c->match_properties (info.codepoint, property, lookup_props))
 	return SKIP_YES;
@@ -354,7 +359,7 @@ struct hb_apply_context_t
       if (unlikely (_hb_glyph_info_is_default_ignorable (&info) &&
 		    (ignore_zwnj || !_hb_glyph_info_is_zwnj (&info)) &&
 		    (ignore_zwj || !_hb_glyph_info_is_zwj (&info)) &&
-		    !is_a_ligature (info)))
+		    !_hb_glyph_info_ligated (&info)))
 	return SKIP_MAYBE;
 
       return SKIP_NO;
@@ -555,36 +560,47 @@ struct hb_apply_context_t
   {
     unsigned int property;
 
-    property = info->glyph_props();
+    property = _hb_glyph_info_get_glyph_props (info);
 
     return match_properties (info->codepoint, property, lookup_props);
   }
 
-  inline void set_class (hb_codepoint_t glyph_index, unsigned int class_guess) const
+  inline void _set_glyph_props (hb_codepoint_t glyph_index,
+			  unsigned int class_guess = 0,
+			  bool ligature = false) const
   {
+    unsigned int add_in = _hb_glyph_info_get_glyph_props (&buffer->cur()) &
+			  HB_OT_LAYOUT_GLYPH_PROPS_PRESERVE;
+    add_in |= HB_OT_LAYOUT_GLYPH_PROPS_SUBSTITUTED;
+    if (ligature)
+      add_in |= HB_OT_LAYOUT_GLYPH_PROPS_LIGATED;
     if (likely (has_glyph_classes))
-      buffer->cur().glyph_props() = gdef.get_glyph_props (glyph_index);
+      _hb_glyph_info_set_glyph_props (&buffer->cur(), add_in | gdef.get_glyph_props (glyph_index));
     else if (class_guess)
-      buffer->cur().glyph_props() = class_guess;
+      _hb_glyph_info_set_glyph_props (&buffer->cur(), add_in | class_guess);
   }
 
-  inline void output_glyph (hb_codepoint_t glyph_index,
-			    unsigned int class_guess = 0) const
+  inline void replace_glyph (hb_codepoint_t glyph_index) const
   {
-    set_class (glyph_index, class_guess);
-    buffer->output_glyph (glyph_index);
-  }
-  inline void replace_glyph (hb_codepoint_t glyph_index,
-			     unsigned int class_guess = 0) const
-  {
-    set_class (glyph_index, class_guess);
+    _set_glyph_props (glyph_index);
     buffer->replace_glyph (glyph_index);
   }
-  inline void replace_glyph_inplace (hb_codepoint_t glyph_index,
-				     unsigned int class_guess = 0) const
+  inline void replace_glyph_inplace (hb_codepoint_t glyph_index) const
   {
-    set_class (glyph_index, class_guess);
+    _set_glyph_props (glyph_index);
     buffer->cur().codepoint = glyph_index;
+  }
+  inline void replace_glyph_with_ligature (hb_codepoint_t glyph_index,
+					   unsigned int class_guess) const
+  {
+    _set_glyph_props (glyph_index, class_guess, true);
+    buffer->replace_glyph (glyph_index);
+  }
+  inline void output_glyph (hb_codepoint_t glyph_index,
+			    unsigned int class_guess) const
+  {
+    _set_glyph_props (glyph_index, class_guess);
+    buffer->output_glyph (glyph_index);
   }
 };
 
@@ -697,13 +713,18 @@ static inline bool match_input (hb_apply_context_t *c,
 				const USHORT input[], /* Array of input values--start with second glyph */
 				match_func_t match_func,
 				const void *match_data,
-				unsigned int *end_offset = NULL,
+				unsigned int *end_offset,
+				unsigned int match_positions[MAX_CONTEXT_LENGTH],
 				bool *p_is_mark_ligature = NULL,
 				unsigned int *p_total_component_count = NULL)
 {
   TRACE_APPLY (NULL);
 
-  hb_apply_context_t::skipping_forward_iterator_t skippy_iter (c, c->buffer->idx, count - 1);
+  if (unlikely (count > MAX_CONTEXT_LENGTH)) TRACE_RETURN (false);
+
+  hb_buffer_t *buffer = c->buffer;
+
+  hb_apply_context_t::skipping_forward_iterator_t skippy_iter (c, buffer->idx, count - 1);
   skippy_iter.set_match_func (match_func, match_data, input);
   if (skippy_iter.has_no_chance ()) return TRACE_RETURN (false);
 
@@ -725,20 +746,23 @@ static inline bool match_input (hb_apply_context_t *c,
    *   ligate with a conjunct...)
    */
 
-  bool is_mark_ligature = !!(c->buffer->cur().glyph_props() & HB_OT_LAYOUT_GLYPH_PROPS_MARK);
+  bool is_mark_ligature = _hb_glyph_info_is_mark (&buffer->cur());
 
   unsigned int total_component_count = 0;
-  total_component_count += get_lig_num_comps (c->buffer->cur());
+  total_component_count += _hb_glyph_info_get_lig_num_comps (&buffer->cur());
 
-  unsigned int first_lig_id = get_lig_id (c->buffer->cur());
-  unsigned int first_lig_comp = get_lig_comp (c->buffer->cur());
+  unsigned int first_lig_id = _hb_glyph_info_get_lig_id (&buffer->cur());
+  unsigned int first_lig_comp = _hb_glyph_info_get_lig_comp (&buffer->cur());
 
+  match_positions[0] = buffer->idx;
   for (unsigned int i = 1; i < count; i++)
   {
     if (!skippy_iter.next ()) return TRACE_RETURN (false);
 
-    unsigned int this_lig_id = get_lig_id (c->buffer->info[skippy_iter.idx]);
-    unsigned int this_lig_comp = get_lig_comp (c->buffer->info[skippy_iter.idx]);
+    match_positions[i] = skippy_iter.idx;
+
+    unsigned int this_lig_id = _hb_glyph_info_get_lig_id (&buffer->info[skippy_iter.idx]);
+    unsigned int this_lig_comp = _hb_glyph_info_get_lig_comp (&buffer->info[skippy_iter.idx]);
 
     if (first_lig_id && first_lig_comp) {
       /* If first component was attached to a previous ligature component,
@@ -754,12 +778,11 @@ static inline bool match_input (hb_apply_context_t *c,
 	return TRACE_RETURN (false);
     }
 
-    is_mark_ligature = is_mark_ligature && (c->buffer->info[skippy_iter.idx].glyph_props() & HB_OT_LAYOUT_GLYPH_PROPS_MARK);
-    total_component_count += get_lig_num_comps (c->buffer->info[skippy_iter.idx]);
+    is_mark_ligature = is_mark_ligature && _hb_glyph_info_is_mark (&buffer->info[skippy_iter.idx]);
+    total_component_count += _hb_glyph_info_get_lig_num_comps (&buffer->info[skippy_iter.idx]);
   }
 
-  if (end_offset)
-    *end_offset = skippy_iter.idx - c->buffer->idx + 1;
+  *end_offset = skippy_iter.idx - buffer->idx + 1;
 
   if (p_is_mark_ligature)
     *p_is_mark_ligature = is_mark_ligature;
@@ -770,17 +793,18 @@ static inline bool match_input (hb_apply_context_t *c,
   return TRACE_RETURN (true);
 }
 static inline void ligate_input (hb_apply_context_t *c,
-				 unsigned int count, /* Including the first glyph (not matched) */
-				 const USHORT input[], /* Array of input values--start with second glyph */
-				 match_func_t match_func,
-				 const void *match_data,
+				 unsigned int count, /* Including the first glyph */
+				 unsigned int match_positions[MAX_CONTEXT_LENGTH], /* Including the first glyph */
+				 unsigned int match_length,
 				 hb_codepoint_t lig_glyph,
 				 bool is_mark_ligature,
 				 unsigned int total_component_count)
 {
-  hb_apply_context_t::skipping_forward_iterator_t skippy_iter (c, c->buffer->idx, count - 1);
-  skippy_iter.set_match_func (match_func, match_data, input);
-  if (skippy_iter.has_no_chance ()) return;
+  TRACE_APPLY (NULL);
+
+  hb_buffer_t *buffer = c->buffer;
+
+  buffer->merge_clusters (buffer->idx, buffer->idx + match_length);
 
   /*
    * - If it *is* a mark ligature, we don't allocate a new ligature id, and leave
@@ -811,44 +835,49 @@ static inline void ligate_input (hb_apply_context_t *c,
    */
 
   unsigned int klass = is_mark_ligature ? 0 : HB_OT_LAYOUT_GLYPH_PROPS_LIGATURE;
-  unsigned int lig_id = is_mark_ligature ? 0 : allocate_lig_id (c->buffer);
-  unsigned int last_lig_id = get_lig_id (c->buffer->cur());
-  unsigned int last_num_components = get_lig_num_comps (c->buffer->cur());
+  unsigned int lig_id = is_mark_ligature ? 0 : _hb_allocate_lig_id (buffer);
+  unsigned int last_lig_id = _hb_glyph_info_get_lig_id (&buffer->cur());
+  unsigned int last_num_components = _hb_glyph_info_get_lig_num_comps (&buffer->cur());
   unsigned int components_so_far = last_num_components;
 
   if (!is_mark_ligature)
-    set_lig_props_for_ligature (c->buffer->cur(), lig_id, total_component_count);
-  c->replace_glyph (lig_glyph, klass);
+  {
+    _hb_glyph_info_set_lig_props_for_ligature (&buffer->cur(), lig_id, total_component_count);
+    if (_hb_glyph_info_get_general_category (&buffer->cur()) == HB_UNICODE_GENERAL_CATEGORY_NON_SPACING_MARK)
+    {
+      _hb_glyph_info_set_general_category (&buffer->cur(), HB_UNICODE_GENERAL_CATEGORY_OTHER_LETTER);
+      _hb_glyph_info_set_modified_combining_class (&buffer->cur(), 0);
+    }
+  }
+  c->replace_glyph_with_ligature (lig_glyph, klass);
 
   for (unsigned int i = 1; i < count; i++)
   {
-    if (!skippy_iter.next ()) return;
-
-    while (c->buffer->idx < skippy_iter.idx)
+    while (buffer->idx < match_positions[i])
     {
       if (!is_mark_ligature) {
 	unsigned int new_lig_comp = components_so_far - last_num_components +
-				    MIN (MAX (get_lig_comp (c->buffer->cur()), 1u), last_num_components);
-	set_lig_props_for_mark (c->buffer->cur(), lig_id, new_lig_comp);
+				    MIN (MAX (_hb_glyph_info_get_lig_comp (&buffer->cur()), 1u), last_num_components);
+	_hb_glyph_info_set_lig_props_for_mark (&buffer->cur(), lig_id, new_lig_comp);
       }
-      c->buffer->next_glyph ();
+      buffer->next_glyph ();
     }
 
-    last_lig_id = get_lig_id (c->buffer->cur());
-    last_num_components = get_lig_num_comps (c->buffer->cur());
+    last_lig_id = _hb_glyph_info_get_lig_id (&buffer->cur());
+    last_num_components = _hb_glyph_info_get_lig_num_comps (&buffer->cur());
     components_so_far += last_num_components;
 
     /* Skip the base glyph */
-    c->buffer->idx++;
+    buffer->idx++;
   }
 
   if (!is_mark_ligature && last_lig_id) {
     /* Re-adjust components for any marks following. */
-    for (unsigned int i = c->buffer->idx; i < c->buffer->len; i++) {
-      if (last_lig_id == get_lig_id (c->buffer->info[i])) {
+    for (unsigned int i = buffer->idx; i < buffer->len; i++) {
+      if (last_lig_id == _hb_glyph_info_get_lig_id (&buffer->info[i])) {
 	unsigned int new_lig_comp = components_so_far - last_num_components +
-				    MIN (MAX (get_lig_comp (c->buffer->info[i]), 1u), last_num_components);
-	set_lig_props_for_mark (c->buffer->info[i], lig_id, new_lig_comp);
+				    MIN (MAX (_hb_glyph_info_get_lig_comp (&buffer->info[i]), 1u), last_num_components);
+	_hb_glyph_info_set_lig_props_for_mark (&buffer->info[i], lig_id, new_lig_comp);
       } else
 	break;
     }
@@ -918,101 +947,86 @@ static inline void recurse_lookups (context_t *c,
 				    const LookupRecord lookupRecord[] /* Array of LookupRecords--in design order */)
 {
   for (unsigned int i = 0; i < lookupCount; i++)
-    c->recurse (lookupRecord->lookupListIndex);
+    c->recurse (lookupRecord[i].lookupListIndex);
 }
 
 static inline bool apply_lookup (hb_apply_context_t *c,
 				 unsigned int count, /* Including the first glyph */
-				 const USHORT input[], /* Array of input values--start with second glyph */
-				 match_func_t match_func,
-				 const void *match_data,
+				 unsigned int match_positions[MAX_CONTEXT_LENGTH], /* Including the first glyph */
 				 unsigned int lookupCount,
-				 const LookupRecord lookupRecord[] /* Array of LookupRecords--in design order */)
+				 const LookupRecord lookupRecord[], /* Array of LookupRecords--in design order */
+				 unsigned int match_length)
 {
   TRACE_APPLY (NULL);
 
-  unsigned int end = c->buffer->len;
-  if (unlikely (count == 0 || c->buffer->idx + count > end))
-    return TRACE_RETURN (false);
+  hb_buffer_t *buffer = c->buffer;
+  unsigned int end;
 
-  /* TODO We don't support lookupRecord arrays that are not increasing:
-   *      Should be easy for in_place ones at least. */
-
-  /* Note: If sublookup is reverse, it will underflow after the first loop
-   * and we jump out of it.  Not entirely disastrous.  So we don't check
-   * for reverse lookup here.
-   */
-
-  hb_apply_context_t::skipping_forward_iterator_t skippy_iter (c, c->buffer->idx, count - 1);
-  skippy_iter.set_match_func (match_func, match_data, input);
-  uint8_t syllable = c->buffer->cur().syllable();
-
-  unsigned int i = 0;
-  if (lookupCount && 0 == lookupRecord->sequenceIndex)
+  /* All positions are distance from beginning of *output* buffer.
+   * Adjust. */
   {
-    unsigned int old_pos = c->buffer->idx;
+    unsigned int bl = buffer->backtrack_len ();
+    end = bl + match_length;
 
-    /* Apply a lookup */
-    bool done = c->recurse (lookupRecord->lookupListIndex);
-
-    lookupRecord++;
-    lookupCount--;
-    /* Err, this is wrong if the lookup jumped over some glyphs */
-    i += c->buffer->idx - old_pos;
-
-    if (!done)
-      goto not_applied;
-    else
-    {
-      /* Reinitialize iterator. */
-      hb_apply_context_t::skipping_forward_iterator_t tmp (c, c->buffer->idx - 1, count - i);
-      tmp.set_syllable (syllable);
-      skippy_iter = tmp;
-    }
+    int delta = bl - buffer->idx;
+    /* Convert positions to new indexing. */
+    for (unsigned int j = 0; j < count; j++)
+      match_positions[j] += delta;
   }
-  else
-  {
-  not_applied:
-    /* No lookup applied for this index */
-    c->buffer->next_glyph ();
-    i++;
-  }
-  while (i < count)
-  {
-    if (!skippy_iter.next ()) return TRACE_RETURN (true);
-    while (c->buffer->idx < skippy_iter.idx)
-      c->buffer->next_glyph ();
 
-    if (lookupCount && i == lookupRecord->sequenceIndex)
+  for (unsigned int i = 0; i < lookupCount; i++)
+  {
+    unsigned int idx = lookupRecord[i].sequenceIndex;
+    if (idx >= count)
+      continue;
+
+    buffer->move_to (match_positions[idx]);
+
+    unsigned int orig_len = buffer->backtrack_len () + buffer->lookahead_len ();
+    if (!c->recurse (lookupRecord[i].lookupListIndex))
+      continue;
+
+    unsigned int new_len = buffer->backtrack_len () + buffer->lookahead_len ();
+    int delta = new_len - orig_len;
+
+    if (!delta)
+        continue;
+
+    /* Recursed lookup changed buffer len.  Adjust. */
+
+    /* end can't go back past the current match position. */
+    end = MAX ((int) match_positions[idx] + 1, int (end) + delta);
+
+    unsigned int next = idx + 1; /* next now is the position after the recursed lookup. */
+
+    if (delta > 0)
     {
-      unsigned int old_pos = c->buffer->idx;
-
-      /* Apply a lookup */
-      bool done = c->recurse (lookupRecord->lookupListIndex);
-
-      lookupRecord++;
-      lookupCount--;
-      /* Err, this is wrong if the lookup jumped over some glyphs */
-      i += c->buffer->idx - old_pos;
-
-      if (!done)
-	goto not_applied2;
-      else
-      {
-        /* Reinitialize iterator. */
-	hb_apply_context_t::skipping_forward_iterator_t tmp (c, c->buffer->idx - 1, count - i);
-	tmp.set_syllable (syllable);
-	skippy_iter = tmp;
-      }
+      if (unlikely (delta + count > MAX_CONTEXT_LENGTH))
+	break;
     }
     else
     {
-    not_applied2:
-      /* No lookup applied for this index */
-      c->buffer->next_glyph ();
-      i++;
+      /* NOTE: delta is negative. */
+      delta = MAX (delta, (int) next - (int) count);
+      next -= delta;
     }
+
+    /* Shift! */
+    memmove (match_positions + next + delta, match_positions + next,
+	     (count - next) * sizeof (match_positions[0]));
+    next += delta;
+    count += delta;
+
+    /* Fill in new entries. */
+    for (unsigned int j = idx + 1; j < next; j++)
+      match_positions[j] = match_positions[j - 1] + 1;
+
+    /* And fixup the rest. */
+    for (; next < count; next++)
+      match_positions[next] += delta;
   }
+
+  buffer->move_to (end);
 
   return TRACE_RETURN (true);
 }
@@ -1085,13 +1099,16 @@ static inline bool context_apply_lookup (hb_apply_context_t *c,
 					 const LookupRecord lookupRecord[],
 					 ContextApplyLookupContext &lookup_context)
 {
+  unsigned int match_length = 0;
+  unsigned int match_positions[MAX_CONTEXT_LENGTH];
   return match_input (c,
 		      inputCount, input,
-		      lookup_context.funcs.match, lookup_context.match_data)
+		      lookup_context.funcs.match, lookup_context.match_data,
+		      &match_length, match_positions)
       && apply_lookup (c,
-		       inputCount, input,
-		       lookup_context.funcs.match, lookup_context.match_data,
-		       lookupCount, lookupRecord);
+		       inputCount, match_positions,
+		       lookupCount, lookupRecord,
+		       match_length);
 }
 
 struct Rule
@@ -1554,7 +1571,7 @@ static inline void chain_context_closure_lookup (hb_closure_context_t *c,
    && intersects_array (c,
 			inputCount ? inputCount - 1 : 0, input,
 			lookup_context.funcs.intersects, lookup_context.intersects_data[1])
-  && intersects_array (c,
+   && intersects_array (c,
 		       lookaheadCount, lookahead,
 		       lookup_context.funcs.intersects, lookup_context.intersects_data[2]))
     recurse_lookups (c,
@@ -1613,22 +1630,23 @@ static inline bool chain_context_apply_lookup (hb_apply_context_t *c,
 					       const LookupRecord lookupRecord[],
 					       ChainContextApplyLookupContext &lookup_context)
 {
-  unsigned int lookahead_offset = 0;
+  unsigned int match_length = 0;
+  unsigned int match_positions[MAX_CONTEXT_LENGTH];
   return match_input (c,
 		      inputCount, input,
 		      lookup_context.funcs.match, lookup_context.match_data[1],
-		      &lookahead_offset)
+		      &match_length, match_positions)
       && match_backtrack (c,
 			  backtrackCount, backtrack,
 			  lookup_context.funcs.match, lookup_context.match_data[0])
       && match_lookahead (c,
 			  lookaheadCount, lookahead,
 			  lookup_context.funcs.match, lookup_context.match_data[2],
-			  lookahead_offset)
+			  match_length)
       && apply_lookup (c,
-		       inputCount, input,
-		       lookup_context.funcs.match, lookup_context.match_data[1],
-		       lookupCount, lookupRecord);
+		       inputCount, match_positions,
+		       lookupCount, lookupRecord,
+		       match_length);
 }
 
 struct ChainRule
