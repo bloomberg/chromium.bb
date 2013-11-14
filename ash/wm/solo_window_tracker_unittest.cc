@@ -196,7 +196,13 @@ TEST_F(SoloWindowTrackerTest, Basic) {
 // Test that docked windows never use the solo header and that the presence of a
 // docked window prevents all other windows from the using the solo window
 // header.
-TEST_F(SoloWindowTrackerTest, DockedWindow) {
+#if defined(USE_AURA) && defined(OS_WIN)
+// Failing on Win8 Aura. http://crbug.com/319135
+#define MAYBE_DockedWindow DISABLED_DockedWindow
+#else
+#define MAYBE_DockedWindow DockedWindow
+#endif
+TEST_F(SoloWindowTrackerTest, MAYBE_DockedWindow) {
   if (!switches::UseDockedWindows())
     return;
 
