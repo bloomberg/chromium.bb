@@ -132,7 +132,7 @@ TEST_F(BindingsConnectorTest, Basic_TwoMessages) {
 
   const char* kText[] = { "hello", "world" };
 
-  for (size_t i = 0; i < sizeof(kText) / sizeof(kText[0]); ++i) {
+  for (size_t i = 0; i < MOJO_ARRAYSIZE(kText); ++i) {
     Message message;
     AllocMessage(kText[i], &message);
 
@@ -144,7 +144,7 @@ TEST_F(BindingsConnectorTest, Basic_TwoMessages) {
 
   PumpMessages();
 
-  for (size_t i = 0; i < sizeof(kText) / sizeof(kText[0]); ++i) {
+  for (size_t i = 0; i < MOJO_ARRAYSIZE(kText); ++i) {
     ASSERT_FALSE(accumulator.IsEmpty());
 
     Message message_received;
