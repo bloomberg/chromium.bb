@@ -358,6 +358,23 @@ wl_shm_buffer_get_stride(struct wl_shm_buffer *buffer)
 	return buffer->stride;
 }
 
+
+/** Get a pointer to the memory for the SHM buffer
+ *
+ * \param buffer The buffer object
+ *
+ * Returns a pointer which can be used to read the data contained in
+ * the given SHM buffer.
+ *
+ * As this buffer is memory-mapped, reading it from may generate
+ * SIGBUS signals. This can happen if the client claims that the
+ * buffer is larger than it is or if something truncates the
+ * underlying file. To prevent this signal from causing the compositor
+ * to crash you should call wl_shm_buffer_begin_access and
+ * wl_shm_buffer_end_access around code that reads from the memory.
+ *
+ * \memberof wl_shm_buffer
+ */
 WL_EXPORT void *
 wl_shm_buffer_get_data(struct wl_shm_buffer *buffer)
 {
@@ -454,6 +471,42 @@ init_sigbus_data_key(void)
 	pthread_key_create(&wl_shm_sigbus_data_key, destroy_sigbus_data);
 }
 
+/** Mark that the given SHM buffer is about to be accessed
+ *
+ * \param buffer The SHM buffer
+ *
+ * An SHM buffer is a memory-mapped file given by the client.
+ * According to POSIX, reading from a memory-mapped region that
+ * extends off the end of the file will cause a SIGBUS signal to be
+ * generated. Normally this would cause the compositor to terminate.
+ * In order to make the compositor robust against clients that change
+ * the size of the underlying file or lie about its size, you should
+ * protect access to the buffer by calling this function before
+ * reading from the memory and call wl_shm_buffer_end_access
+ * afterwards. This will install a signal handler for SIGBUS which
+ * will prevent the compositor from crashing.
+ *
+ * After calling this function the signal handler will remain
+ * installed for the lifetime of the compositor process. Note that
+ * this function will not work properly if the compositor is also
+ * installing its own handler for SIGBUS.
+ *
+ * If a SIGBUS signal is received for an address within the range of
+ * the SHM pool of the given buffer then the client will be sent an
+ * error event when wl_shm_buffer_end_access is called. If the signal
+ * is for an address outside that range then the signal handler will
+ * reraise the signal which would will likely cause the compositor to
+ * terminate.
+ *
+ * It is safe to nest calls to these functions as long as the nested
+ * calls are all accessing the same buffer. The number of calls to
+ * wl_shm_buffer_end_access must match the number of calls to
+ * wl_shm_buffer_begin_access. These functions are thread-safe and it
+ * is allowed to simultaneously access different buffers or the same
+ * buffer from multiple threads.
+ *
+ * \memberof wl_shm_buffer
+ */
 WL_EXPORT void
 wl_shm_buffer_begin_access(struct wl_shm_buffer *buffer)
 {
@@ -480,6 +533,17 @@ wl_shm_buffer_begin_access(struct wl_shm_buffer *buffer)
 	sigbus_data->access_count++;
 }
 
+/** Ends the access to a buffer started by wl_shm_buffer_begin_access
+ *
+ * \param buffer The SHM buffer
+ *
+ * This should be called after wl_shm_buffer_begin_access once the
+ * buffer is no longer being accessed. If a SIGBUS signal was
+ * generated in-between these two calls then the resource for the
+ * given buffer will be sent an error.
+ *
+ * \memberof wl_shm_buffer
+ */
 WL_EXPORT void
 wl_shm_buffer_end_access(struct wl_shm_buffer *buffer)
 {

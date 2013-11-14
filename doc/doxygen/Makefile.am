@@ -14,7 +14,8 @@ scanned_src_files_client = 				\
 scanned_src_files_server = 				\
 	$(scanned_src_files_shared)			\
 	$(top_srcdir)/src/wayland-server.c	\
-	$(top_srcdir)/src/wayland-server.h
+	$(top_srcdir)/src/wayland-server.h	\
+	$(top_srcdir)/src/wayland-shm.c
 
 # find all man/man3/wl_foo.3 pages
 # for this to work, we need to create them before the man target (hence
