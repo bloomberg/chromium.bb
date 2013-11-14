@@ -214,16 +214,16 @@ void VideoLayerImpl::AppendQuads(QuadSink* quad_sink,
       DCHECK_EQ(frame_resources_.size(), 1u);
       if (frame_resources_.size() < 1u)
         break;
-      gfx::Transform transform(
-          provider_client_impl_->stream_texture_matrix());
-      transform.Scale(tex_width_scale, tex_height_scale);
+      gfx::Transform scale;
+      scale.Scale(tex_width_scale, tex_height_scale);
       scoped_ptr<StreamVideoDrawQuad> stream_video_quad =
           StreamVideoDrawQuad::Create();
-      stream_video_quad->SetNew(shared_quad_state,
-                                quad_rect,
-                                opaque_rect,
-                                frame_resources_[0],
-                                transform);
+      stream_video_quad->SetNew(
+          shared_quad_state,
+          quad_rect,
+          opaque_rect,
+          frame_resources_[0],
+          scale * provider_client_impl_->stream_texture_matrix());
       quad_sink->Append(stream_video_quad.PassAs<DrawQuad>(),
                         append_quads_data);
       break;

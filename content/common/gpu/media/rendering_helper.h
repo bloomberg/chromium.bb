@@ -69,8 +69,8 @@ class RenderingHelper {
                      uint32* texture_id,
                      base::WaitableEvent* done);
 
-  // Render |texture_id| to the screen.
-  void RenderTexture(uint32 texture_id);
+  // Render |texture_id| to the screen using target |texture_target|.
+  void RenderTexture(uint32 texture_target, uint32 texture_id);
 
   // Delete |texture_id|.
   void DeleteTexture(uint32 texture_id);

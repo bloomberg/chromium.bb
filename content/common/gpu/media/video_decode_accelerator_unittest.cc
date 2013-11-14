@@ -453,6 +453,7 @@ class GLRenderingVDAClient
   PictureBufferById picture_buffers_by_id_;
   base::TimeTicks initialize_done_ticks_;
   int profile_;
+  GLenum texture_target_;
   bool suppress_rendering_;
   std::vector<base::TimeTicks> frame_delivery_times_;
   int delay_reuse_after_frame_num_;
@@ -500,6 +501,7 @@ GLRenderingVDAClient::GLRenderingVDAClient(
       num_decoded_frames_(0),
       num_done_bitstream_buffers_(0),
       profile_(profile),
+      texture_target_(0),
       suppress_rendering_(suppress_rendering),
       delay_reuse_after_frame_num_(delay_reuse_after_frame_num),
       decode_calls_per_second_(decode_calls_per_second) {
@@ -576,12 +578,13 @@ void GLRenderingVDAClient::ProvidePictureBuffers(
     return;
   std::vector<media::PictureBuffer> buffers;
 
+  texture_target_ = texture_target;
   for (uint32 i = 0; i < requested_num_of_buffers; ++i) {
     uint32 id = picture_buffers_by_id_.size();
     uint32 texture_id;
     base::WaitableEvent done(false, false);
     rendering_helper_->CreateTexture(
-        rendering_window_id_, texture_target, &texture_id, &done);
+        rendering_window_id_, texture_target_, &texture_id, &done);
     done.Wait();
     CHECK(outstanding_texture_ids_.insert(texture_id).second);
     media::PictureBuffer* buffer =
@@ -636,7 +639,8 @@ void GLRenderingVDAClient::PictureReady(const media::Picture& picture) {
       picture_buffers_by_id_[picture.picture_buffer_id()];
   CHECK(picture_buffer);
   if (!suppress_rendering_) {
-    rendering_helper_->RenderTexture(picture_buffer->texture_id());
+    rendering_helper_->RenderTexture(texture_target_,
+                                     picture_buffer->texture_id());
   }
 
   if (num_decoded_frames() > delay_reuse_after_frame_num_) {
@@ -1517,9 +1521,7 @@ int main(int argc, char **argv) {
 #if defined(OS_WIN)
   content::DXVAVideoDecodeAccelerator::PreSandboxInitialization();
 #elif defined(OS_CHROMEOS)
-#if defined(ARCH_CPU_ARMEL)
-  content::ExynosVideoDecodeAccelerator::PreSandboxInitialization();
-#elif defined(ARCH_CPU_X86_FAMILY)
+#if defined(ARCH_CPU_X86_FAMILY)
   content::VaapiWrapper::PreSandboxInitialization();
 #endif  // ARCH_CPU_ARMEL
 #endif  // OS_CHROMEOS
