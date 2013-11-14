@@ -784,24 +784,22 @@ void HWNDMessageHandler::FrameTypeChanged() {
   // which will also trigger a redraw.
   ResetWindowRegion(true, false);
 
-  ::SetWindowPos(hwnd(), NULL, 0, 0, 0, 0,
-      SWP_NOMOVE | SWP_NOSIZE | SWP_FRAMECHANGED);
-
   // The non-client view needs to update too.
   delegate_->HandleFrameChanged();
 
-  // For some reason, we need to hide the window after we change the frame type.
-  // If we don't, the client area will be filled with black.  This is somehow
-  // related to an interaction between SetWindowRgn and Dwm, but it's not clear
-  // exactly what.
-  if (IsVisible()) {
-    SetWindowPos(hwnd(), NULL, 0, 0, 0, 0,
-        SWP_NOMOVE | SWP_NOSIZE | SWP_HIDEWINDOW);
-    SetWindowPos(hwnd(), NULL, 0, 0, 0, 0,
-        SWP_NOMOVE | SWP_NOSIZE | SWP_SHOWWINDOW);
-  }
+  if (IsVisible() && !delegate_->IsUsingCustomFrame()) {
+    // For some reason, we need to hide the window after we change from a custom
+    // frame to a native frame.  If we don't, the client area will be filled
+    // with black.  This seems to be related to an interaction between DWM and
+    // SetWindowRgn, but the details aren't clear. Additionally, we need to
+    // specify SWP_NOZORDER here, otherwise if you have multiple chrome windows
+    // open they will re-appear with a non-deterministic Z-order.
+    UINT flags = SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER;
+    SetWindowPos(hwnd(), NULL, 0, 0, 0, 0, flags | SWP_HIDEWINDOW);
+    SetWindowPos(hwnd(), NULL, 0, 0, 0, 0, flags | SWP_SHOWWINDOW);
 
-  UpdateWindow(hwnd());
+    UpdateWindow(hwnd());
+  }
 
   // WM_DWMCOMPOSITIONCHANGED is only sent to top level windows, however we want
   // to notify our children too, since we can have MDI child windows who need to
@@ -1090,7 +1088,7 @@ bool HWNDMessageHandler::GetClientAreaInsets(gfx::Insets* insets) const {
     return true;
   }
 
-  *insets = gfx::Insets(0, 0, 0, 0);
+  *insets = gfx::Insets();
   return true;
 }
 
