@@ -1798,6 +1798,7 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     this.dialogDom_.insertBefore(
         this.filePopup_, this.dialogDom_.querySelector('#iframe-drag-area'));
     this.filePopup_.focus();
+    this.document_.body.setAttribute('overlay-visible', '');
     this.document_.querySelector('#iframe-drag-area').hidden = false;
   };
 
