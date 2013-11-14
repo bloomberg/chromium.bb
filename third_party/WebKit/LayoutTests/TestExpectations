@@ -534,3 +534,6 @@ crbug.com/318953 [ Linux Android ] svg/W3C-I18N/text-anchor-inherited-dirRTL-anc
 crbug.com/318953 [ Linux Android ] svg/W3C-I18N/text-anchor-inherited-dirRTL-anchorMiddle.svg [ NeedsManualRebaseline ]
 crbug.com/318953 [ Linux Android ] svg/W3C-I18N/text-anchor-inherited-dirRTL-anchorStart.svg [ NeedsManualRebaseline ]
 crbug.com/318953 [ Linux Android ] svg/W3C-I18N/text-anchor-no-markup.svg [ NeedsManualRebaseline ]
+
+crbug.com/319198 [ Android ] media/video-autoplay.html [ Crash Pass ]
+crbug.com/319198 [ Android ] media/media-load-event.html [ Crash Pass ]
