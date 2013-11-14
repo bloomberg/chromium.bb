@@ -517,6 +517,10 @@ void FullscreenElementStack::removeFullScreenElementOfSubtree(Node* node, bool a
     if (!m_fullScreenElement)
         return;
 
+    // If the node isn't in a document it can't have a fullscreen'd child.
+    if (!node->inDocument())
+        return;
+
     bool elementInSubtree = false;
     if (amongChildrenOnly)
         elementInSubtree = m_fullScreenElement->isDescendantOf(node);

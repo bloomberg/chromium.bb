@@ -3256,6 +3256,10 @@ void Document::removeFocusedElementOfSubtree(Node* node, bool amongChildrenOnly)
     if (!m_focusedElement)
         return;
 
+    // We can't be focused if we're not in the document.
+    if (!node->inDocument())
+        return;
+
     Element* focusedElement = node->treeScope().adjustedFocusedElement();
     if (!focusedElement)
         return;
