@@ -123,7 +123,8 @@ FeatureInfo::FeatureFlags::FeatureFlags()
       ext_frag_depth(false),
       use_async_readpixels(false),
       map_buffer_range(false),
-      ext_discard_framebuffer(false) {
+      ext_discard_framebuffer(false),
+      angle_depth_texture(false) {
 }
 
 FeatureInfo::Workarounds::Workarounds() :
@@ -314,6 +315,8 @@ void FeatureInfo::InitializeFeatures() {
        extensions.Contains("GL_OES_depth_texture") ||
        extensions.Contains("GL_ANGLE_depth_texture"))) {
     enable_depth_texture = true;
+    feature_flags_.angle_depth_texture =
+        extensions.Contains("GL_ANGLE_depth_texture");
   }
 
   if (enable_depth_texture) {

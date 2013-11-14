@@ -56,6 +56,8 @@
          needs_glsl_built_in_function_emulation)             \
   GPU_OP(NEEDS_OFFSCREEN_BUFFER_WORKAROUND,                  \
          needs_offscreen_buffer_workaround)                  \
+  GPU_OP(RELEASE_IMAGE_AFTER_USE,                            \
+         release_image_after_use)                            \
   GPU_OP(RESTORE_SCISSOR_ON_FBO_CHANGE,                      \
          restore_scissor_on_fbo_change)                      \
   GPU_OP(REVERSE_POINT_SPRITE_COORD_ORIGIN,                  \
@@ -64,6 +66,8 @@
          set_texture_filter_before_generating_mipmap)        \
   GPU_OP(SWIZZLE_RGBA_FOR_ASYNC_READPIXELS,                  \
          swizzle_rgba_for_async_readpixels)                  \
+  GPU_OP(TEXSUBIMAGE2D_FASTER_THAN_TEXIMAGE2D,               \
+         texsubimage2d_faster_than_teximage2d)               \
   GPU_OP(UNBIND_FBO_ON_CONTEXT_SWITCH,                       \
          unbind_fbo_on_context_switch)                       \
   GPU_OP(UNFOLD_SHORT_CIRCUIT_AS_TERNARY_OPERATION,          \
@@ -80,8 +84,6 @@
          validate_multisample_buffer_allocation)             \
   GPU_OP(WAKE_UP_GPU_BEFORE_DRAWING,                         \
          wake_up_gpu_before_drawing)                         \
-  GPU_OP(RELEASE_IMAGE_AFTER_USE,                            \
-         release_image_after_use)                            \
 
 namespace gpu {
 

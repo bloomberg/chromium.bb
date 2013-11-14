@@ -117,6 +117,7 @@ TEST_F(FeatureInfoTest, Basic) {
   EXPECT_FALSE(info_->feature_flags().map_buffer_range);
   EXPECT_FALSE(info_->feature_flags().use_async_readpixels);
   EXPECT_FALSE(info_->feature_flags().ext_discard_framebuffer);
+  EXPECT_FALSE(info_->feature_flags().angle_depth_texture);
 
 #define GPU_OP(type, name) EXPECT_FALSE(info_->workarounds().name);
   GPU_DRIVER_BUG_WORKAROUNDS(GPU_OP)
@@ -637,6 +638,7 @@ TEST_F(FeatureInfoTest, InitializeANGLE_depth_texture) {
               HasSubstr("GL_CHROMIUM_depth_texture"));
   EXPECT_THAT(info_->extensions(),
               Not(HasSubstr("GL_ANGLE_depth_texture")));
+  EXPECT_TRUE(info_->feature_flags().angle_depth_texture);
   EXPECT_TRUE(info_->validators()->texture_internal_format.IsValid(
       GL_DEPTH_COMPONENT));
   EXPECT_TRUE(info_->validators()->texture_format.IsValid(GL_DEPTH_COMPONENT));

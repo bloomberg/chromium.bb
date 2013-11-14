@@ -4,6 +4,8 @@
 
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 
+#include "base/command_line.h"
+#include "base/strings/string_number_conversions.h"
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/id_allocator.h"
@@ -14,6 +16,7 @@
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gl_surface_mock.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_unittest_base.h"
+#include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/mocks.h"
@@ -80,18 +83,6 @@ class GLES2DecoderTestWithExtensions
   }
 };
 
-class GLES2DecoderANGLETest : public GLES2DecoderTestBase {
- public:
-  GLES2DecoderANGLETest()
-      : GLES2DecoderTestBase() {
-    GLES2Decoder::set_testing_force_is_angle(true);
-  }
-
-  virtual ~GLES2DecoderANGLETest() {
-    GLES2Decoder::set_testing_force_is_angle(false);
-  }
-};
-
 class GLES2DecoderWithShaderTest : public GLES2DecoderWithShaderTestBase {
  public:
   GLES2DecoderWithShaderTest()
@@ -144,13 +135,6 @@ class GLES2DecoderManualInitTest : public GLES2DecoderWithShaderTest {
  public:
   GLES2DecoderManualInitTest() { }
 
-  // Override default setup so nothing gets setup.
-  virtual void SetUp() {
-  }
-};
-
-class GLES2DecoderANGLEManualInitTest : public GLES2DecoderANGLETest {
- public:
   // Override default setup so nothing gets setup.
   virtual void SetUp() {
   }
@@ -6242,7 +6226,7 @@ TEST_F(GLES2DecoderTest, TexSubImage2DDoesNotClearAfterTexImage2DNULLThenData) {
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   DoTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                0, 0);
-  DoTexImage2DSameSize(
+  DoTexImage2D(
       GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE,
       kSharedMemoryId, kSharedMemoryOffset);
   EXPECT_CALL(*gl_, TexSubImage2D(
@@ -6264,14 +6248,49 @@ TEST_F(GLES2DecoderTest, TexSubImage2DDoesNotClearAfterTexImage2DNULLThenData) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
-TEST_F(GLES2DecoderANGLETest,
-       TexSubImage2DDoesNotClearAfterTexImage2DNULLThenData) {
+TEST_F(
+    GLES2DecoderManualInitTest,
+    TexSubImage2DDoesNotClearAfterTexImage2DNULLThenDataWithTexImage2DIsFaster) {
+  CommandLine command_line(0, NULL);
+  command_line.AppendSwitchASCII(
+      switches::kGpuDriverBugWorkarounds,
+      base::IntToString(gpu::TEXSUBIMAGE2D_FASTER_THAN_TEXIMAGE2D));
+  InitDecoderWithCommandLine(
+      "",     // extensions
+      false,  // has alpha
+      false,  // has depth
+      false,  // has stencil
+      false,  // request alpha
+      false,  // request depth
+      false,  // request stencil
+      true,   // bind generates resource
+      &command_line);
   DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
   DoTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE,
                0, 0);
-  DoTexImage2DSameSize(
-      GL_TEXTURE_2D, 0, GL_RGBA, 2, 2, 0, GL_RGBA, GL_UNSIGNED_BYTE,
-      kSharedMemoryId, kSharedMemoryOffset);
+
+  {
+    // Uses texSubimage internally because the above workaround is active and
+    // the update is for the full size of the texture.
+    EXPECT_CALL(*gl_,
+                TexSubImage2D(
+                    GL_TEXTURE_2D, 0, 0, 0, 2, 2, GL_RGBA, GL_UNSIGNED_BYTE, _))
+        .Times(1)
+        .RetiresOnSaturation();
+    cmds::TexImage2D cmd;
+    cmd.Init(GL_TEXTURE_2D,
+             0,
+             GL_RGBA,
+             2,
+             2,
+             0,
+             GL_RGBA,
+             GL_UNSIGNED_BYTE,
+             kSharedMemoryId,
+             kSharedMemoryOffset);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  }
+
   EXPECT_CALL(*gl_, TexSubImage2D(
       GL_TEXTURE_2D, 0, 1, 1, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE,
       shared_memory_address_))
@@ -7524,7 +7543,7 @@ TEST_F(GLES2DecoderManualInitTest, GenerateMipmapDepthTexture) {
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
-TEST_F(GLES2DecoderANGLEManualInitTest, DrawClearsDepthTexture) {
+TEST_F(GLES2DecoderManualInitTest, DrawClearsDepthTexture) {
   InitDecoder(
       "GL_ANGLE_depth_texture",      // extensions
       true,    // has alpha

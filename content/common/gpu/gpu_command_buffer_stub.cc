@@ -149,6 +149,7 @@ GpuCommandBufferStub::GpuCommandBufferStub(
         image_manager,
         new GpuCommandBufferMemoryTracker(channel),
         stream_texture_manager,
+        NULL,
         true);
   }
 

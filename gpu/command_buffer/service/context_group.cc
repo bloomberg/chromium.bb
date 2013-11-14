@@ -33,6 +33,7 @@ ContextGroup::ContextGroup(
     ImageManager* image_manager,
     MemoryTracker* memory_tracker,
     StreamTextureManager* stream_texture_manager,
+    FeatureInfo* feature_info,
     bool bind_generates_resource)
     : mailbox_manager_(mailbox_manager ? mailbox_manager : new MailboxManager),
       image_manager_(image_manager ? image_manager : new ImageManager),
@@ -51,7 +52,7 @@ ContextGroup::ContextGroup(
       max_color_attachments_(1u),
       max_draw_buffers_(1u),
       program_cache_(NULL),
-      feature_info_(new FeatureInfo()),
+      feature_info_(feature_info ? feature_info : new FeatureInfo),
       draw_buffer_(GL_BACK) {
   {
     TransferBufferManager* manager = new TransferBufferManager();

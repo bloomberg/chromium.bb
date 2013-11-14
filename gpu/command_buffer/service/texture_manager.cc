@@ -1472,7 +1472,7 @@ void TextureManager::DoTexImage2D(
     framebuffer_state->clear_state_dirty = true;
   }
 
-  if (!texture_state->teximage2d_faster_than_texsubimage2d &&
+  if (texture_state->texsubimage2d_faster_than_teximage2d &&
       level_is_same && args.pixels) {
     {
       ScopedTextureUploadTimer timer(texture_state);

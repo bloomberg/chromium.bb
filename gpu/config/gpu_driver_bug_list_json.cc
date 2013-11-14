@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "3.3",
+  "version": "3.4",
   "entries": [
     {
       "id": 1,
@@ -695,6 +695,20 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
       },
       "features": [
         "release_image_after_use"
+      ]
+    },
+    {
+      "id": 51,
+      "description": "TexSubImage2D() is faster for full uploads on ANGLE.",
+      "os": {
+        "type": "win"
+      },
+      "gl_renderer": {
+        "op": "beginwith",
+        "value": "ANGLE"
+      },
+      "features": [
+        "texsubimage2d_faster_than_teximage2d"
       ]
     }
   ]

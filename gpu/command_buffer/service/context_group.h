@@ -48,6 +48,7 @@ class GPU_EXPORT ContextGroup : public base::RefCounted<ContextGroup> {
       ImageManager* image_manager,
       MemoryTracker* memory_tracker,
       StreamTextureManager* stream_texture_manager,
+      FeatureInfo* feature_info,
       bool bind_generates_resource);
 
   // This should only be called by GLES2Decoder. This must be paired with a

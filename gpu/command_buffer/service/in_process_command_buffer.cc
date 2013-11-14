@@ -409,6 +409,7 @@ bool InProcessCommandBuffer::InitializeOnGpuThread(
                                               NULL,
                                               NULL,
                                               stream_texture_manager,
+                                              NULL,
                                               bind_generates_resource)));
 
   gpu_scheduler_.reset(

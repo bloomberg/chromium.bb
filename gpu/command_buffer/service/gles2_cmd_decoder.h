@@ -225,11 +225,6 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   // Lose this context.
   virtual void LoseContext(uint32 reset_status) = 0;
 
-  static bool IsAngle();
-
-  // Used for testing only
-  static void set_testing_force_is_angle(bool force);
-
   virtual Logger* GetLogger() = 0;
 
  protected:
@@ -239,7 +234,6 @@ class GPU_EXPORT GLES2Decoder : public base::SupportsWeakPtr<GLES2Decoder>,
   bool initialized_;
   bool debug_;
   bool log_commands_;
-  static bool testing_force_is_angle_;
 
   DISALLOW_COPY_AND_ASSIGN(GLES2Decoder);
 };

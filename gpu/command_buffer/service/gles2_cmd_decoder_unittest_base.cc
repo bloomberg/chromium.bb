@@ -88,6 +88,27 @@ void GLES2DecoderTestBase::InitDecoder(
     bool request_depth,
     bool request_stencil,
     bool bind_generates_resource) {
+  InitDecoderWithCommandLine(extensions,
+                             has_alpha,
+                             has_depth,
+                             has_stencil,
+                             request_alpha,
+                             request_depth,
+                             request_stencil,
+                             bind_generates_resource,
+                             NULL);
+}
+
+void GLES2DecoderTestBase::InitDecoderWithCommandLine(
+    const char* extensions,
+    bool has_alpha,
+    bool has_depth,
+    bool has_stencil,
+    bool request_alpha,
+    bool request_depth,
+    bool request_stencil,
+    bool bind_generates_resource,
+    const CommandLine* command_line) {
   Framebuffer::ClearFramebufferCompleteComboMap();
   gl_.reset(new StrictMock<MockGLInterface>());
   ::gfx::GLInterface::SetGLInterface(gl_.get());
@@ -98,11 +119,15 @@ void GLES2DecoderTestBase::InitDecoder(
   if (std::find(list.begin(), list.end(),
                 "GL_CHROMIUM_stream_texture") != list.end())
       stream_texture_manager_.reset(new StrictMock<MockStreamTextureManager>);
+  scoped_refptr<FeatureInfo> feature_info;
+  if (command_line)
+    feature_info = new FeatureInfo(*command_line);
   group_ = scoped_refptr<ContextGroup>(new ContextGroup(
       NULL,
       NULL,
       memory_tracker_,
       stream_texture_manager_.get(),
+      feature_info.get(),
       bind_generates_resource));
   // These two workarounds are always turned on.
   group_->feature_info(
@@ -819,34 +844,6 @@ void GLES2DecoderTestBase::DoCompressedTexImage2D(
   cmd.Init(
       target, level, format, width, height, border,
       bucket_id);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-}
-
-void GLES2DecoderTestBase::DoTexImage2DSameSize(
-    GLenum target, GLint level, GLenum internal_format,
-    GLsizei width, GLsizei height, GLint border,
-    GLenum format, GLenum type,
-    uint32 shared_memory_id, uint32 shared_memory_offset) {
-  if (GLES2Decoder::IsAngle()) {
-    EXPECT_CALL(*gl_, TexSubImage2D(
-        target, level, 0, 0, width, height, format, type, _))
-        .Times(1)
-        .RetiresOnSaturation();
-  } else {
-    EXPECT_CALL(*gl_, GetError())
-        .WillOnce(Return(GL_NO_ERROR))
-        .RetiresOnSaturation();
-    EXPECT_CALL(*gl_, TexImage2D(target, level, internal_format,
-                                 width, height, border, format, type, _))
-        .Times(1)
-        .RetiresOnSaturation();
-    EXPECT_CALL(*gl_, GetError())
-        .WillOnce(Return(GL_NO_ERROR))
-        .RetiresOnSaturation();
-  }
-  cmds::TexImage2D cmd;
-  cmd.Init(target, level, internal_format, width, height, border, format,
-           type, shared_memory_id, shared_memory_offset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 

@@ -52,6 +52,7 @@ class GPU_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
     bool use_async_readpixels;
     bool map_buffer_range;
     bool ext_discard_framebuffer;
+    bool angle_depth_texture;
   };
 
   struct Workarounds {

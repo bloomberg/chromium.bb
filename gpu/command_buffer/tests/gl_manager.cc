@@ -121,6 +121,7 @@ void GLManager::Initialize(const GLManager::Options& options) {
                                             options.image_manager,
                                             NULL,
                                             NULL,
+                                            NULL,
                                             options.bind_generates_resource);
   }
 

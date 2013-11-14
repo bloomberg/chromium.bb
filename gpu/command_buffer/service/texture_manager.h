@@ -447,10 +447,11 @@ class GPU_EXPORT TextureRef : public base::RefCounted<TextureRef> {
 struct DecoderTextureState {
   // total_texture_upload_time automatically initialized to 0 in default
   // constructor.
-  DecoderTextureState():
-      tex_image_2d_failed(false),
-      texture_upload_count(0),
-      teximage2d_faster_than_texsubimage2d(true) {}
+  DecoderTextureState(bool texsubimage2d_faster_than_teximage2d)
+      : tex_image_2d_failed(false),
+        texture_upload_count(0),
+        texsubimage2d_faster_than_teximage2d(
+            texsubimage2d_faster_than_teximage2d) {}
 
   // This indicates all the following texSubImage2D calls that are part of the
   // failed texImage2D call should be ignored.
@@ -460,9 +461,7 @@ struct DecoderTextureState {
   int texture_upload_count;
   base::TimeDelta total_texture_upload_time;
 
-  // This is really not per-decoder, but the logic to decide this value is in
-  // the decoder for now, so it is simpler to leave it there.
-  bool teximage2d_faster_than_texsubimage2d;
+  bool texsubimage2d_faster_than_teximage2d;
 };
 
 // This class keeps track of the textures and their sizes so we can do NPOT and

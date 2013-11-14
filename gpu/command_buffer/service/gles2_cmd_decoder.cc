@@ -500,21 +500,6 @@ GLES2Decoder::GLES2Decoder()
 GLES2Decoder::~GLES2Decoder() {
 }
 
-bool GLES2Decoder::testing_force_is_angle_;
-
-void GLES2Decoder::set_testing_force_is_angle(bool force) {
-  testing_force_is_angle_ = force;
-}
-
-bool GLES2Decoder::IsAngle() {
-#if defined(OS_WIN)
-  return testing_force_is_angle_ ||
-         gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2;
-#else
-  return testing_force_is_angle_;
-#endif
-}
-
 // This class implements GLES2Decoder so we don't have to expose all the GLES2
 // cmd stuff to outside this class.
 class GLES2DecoderImpl : public GLES2Decoder,
@@ -641,6 +626,8 @@ class GLES2DecoderImpl : public GLES2Decoder,
   // Overridden from FramebufferManager::TextureDetachObserver:
   virtual void OnTextureRefDetachedFromFramebuffer(
       TextureRef* texture) OVERRIDE;
+
+  static bool IsAngle();
 
  private:
   friend class ScopedFrameBufferBinder;
@@ -1817,7 +1804,7 @@ ScopedResolvedFrameBufferBinder::ScopedResolvedFrameBufferBinder(
   const int width = decoder_->offscreen_size_.width();
   const int height = decoder_->offscreen_size_.height();
   glDisable(GL_SCISSOR_TEST);
-  if (GLES2Decoder::IsAngle()) {
+  if (GLES2DecoderImpl::IsAngle()) {
     glBlitFramebufferANGLE(0, 0, width, height, 0, 0, width, height,
                            GL_COLOR_BUFFER_BIT, GL_NEAREST);
   } else {
@@ -1997,7 +1984,7 @@ bool BackRenderbuffer::AllocateStorage(const gfx::Size& size, GLenum format,
                              size.width(),
                              size.height());
   } else {
-    if (GLES2Decoder::IsAngle()) {
+    if (GLES2DecoderImpl::IsAngle()) {
       glRenderbufferStorageMultisampleANGLE(GL_RENDERBUFFER,
                                             samples,
                                             format,
@@ -2107,6 +2094,14 @@ GLES2Decoder* GLES2Decoder::Create(ContextGroup* group) {
   return new GLES2DecoderImpl(group);
 }
 
+bool GLES2DecoderImpl::IsAngle() {
+#if defined(OS_WIN)
+  return gfx::GetGLImplementation() == gfx::kGLImplementationEGLGLES2;
+#else
+  return false;
+#endif
+}
+
 GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
     : GLES2Decoder(),
       group_(group),
@@ -2147,6 +2142,9 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
           switches::kEnableGPUServiceLoggingGPU)),
       viewport_max_width_(0),
       viewport_max_height_(0),
+      texture_state_(group_->feature_info()
+                         ->workarounds()
+                         .texsubimage2d_faster_than_teximage2d),
       validation_texture_(0),
       validation_fbo_multisample_(0),
       validation_fbo_(0) {
@@ -2166,11 +2164,6 @@ GLES2DecoderImpl::GLES2DecoderImpl(ContextGroup* group)
       CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableGLSLTranslator)) {
     use_shader_translator_ = false;
-  }
-
-  // TODO(gman): Consider setting this based on GPU and/or driver.
-  if (IsAngle()) {
-    texture_state_.teximage2d_faster_than_texsubimage2d = false;
   }
 }
 
@@ -7525,7 +7518,8 @@ bool GLES2DecoderImpl::ClearLevel(
     int height,
     bool is_texture_immutable) {
   uint32 channels = GLES2Util::GetChannelsForFormat(format);
-  if (IsAngle() && (channels & GLES2Util::kDepth) != 0) {
+  if (feature_info_->feature_flags().angle_depth_texture &&
+      (channels & GLES2Util::kDepth) != 0) {
     // It's a depth format and ANGLE doesn't allow texImage2D or texSubImage2D
     // on depth formats.
     GLuint fb = 0;
@@ -8392,7 +8386,7 @@ error::Error GLES2DecoderImpl::DoTexSubImage2D(
     return error::kNoError;
   }
 
-  if (texture_state_.teximage2d_faster_than_texsubimage2d &&
+  if (!texture_state_.texsubimage2d_faster_than_teximage2d &&
       !texture->IsImmutable()) {
     ScopedTextureUploadTimer timer(&texture_state_);
     // NOTE: In OpenGL ES 2.0 border is always zero and format is always the
