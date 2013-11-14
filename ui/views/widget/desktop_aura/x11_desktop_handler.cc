@@ -4,6 +4,9 @@
 
 #include "ui/views/widget/desktop_aura/x11_desktop_handler.h"
 
+#include <X11/Xatom.h>
+#include <X11/Xlib.h>
+
 #include "base/message_loop/message_loop.h"
 #include "ui/aura/env.h"
 #include "ui/aura/root_window.h"
@@ -18,6 +21,7 @@ namespace {
 
 const char* kAtomsToCache[] = {
   "_NET_ACTIVE_WINDOW",
+  "_NET_SUPPORTED",
   NULL
 };
 
@@ -40,7 +44,8 @@ X11DesktopHandler::X11DesktopHandler()
     : xdisplay_(gfx::GetXDisplay()),
       x_root_window_(DefaultRootWindow(xdisplay_)),
       current_window_(None),
-      atom_cache_(xdisplay_, kAtomsToCache) {
+      atom_cache_(xdisplay_, kAtomsToCache),
+      wm_supports_active_window_(false) {
   base::MessagePumpX11::Current()->AddDispatcherForRootWindow(this);
   aura::Env::GetInstance()->AddObserver(this);
 
@@ -49,6 +54,18 @@ X11DesktopHandler::X11DesktopHandler()
   XSelectInput(xdisplay_, x_root_window_,
                attr.your_event_mask | PropertyChangeMask |
                StructureNotifyMask | SubstructureNotifyMask);
+
+  std::vector<Atom> atoms;
+  if (ui::GetAtomArrayProperty(x_root_window_, "_NET_ACTIVE_WINDOW", &atoms)) {
+    Atom active_window = atom_cache_.GetAtom("_NET_ACTIVE_WINDOW");
+    for (std::vector<Atom>::iterator iter = atoms.begin(); iter != atoms.end();
+         ++iter) {
+      if (*(iter) == active_window) {
+        wm_supports_active_window_ = true;
+        break;
+      }
+    }
+  }
 }
 
 X11DesktopHandler::~X11DesktopHandler() {
@@ -57,23 +74,28 @@ X11DesktopHandler::~X11DesktopHandler() {
 }
 
 void X11DesktopHandler::ActivateWindow(::Window window) {
-  DCHECK_EQ(gfx::GetXDisplay(), xdisplay_);
+  if (wm_supports_active_window_) {
+    DCHECK_EQ(gfx::GetXDisplay(), xdisplay_);
 
-  XEvent xclient;
-  memset(&xclient, 0, sizeof(xclient));
-  xclient.type = ClientMessage;
-  xclient.xclient.window = window;
-  xclient.xclient.message_type = atom_cache_.GetAtom("_NET_ACTIVE_WINDOW");
-  xclient.xclient.format = 32;
-  xclient.xclient.data.l[0] = 1;  // Specified we are an app.
-  xclient.xclient.data.l[1] = CurrentTime;
-  xclient.xclient.data.l[2] = None;
-  xclient.xclient.data.l[3] = 0;
-  xclient.xclient.data.l[4] = 0;
+    XEvent xclient;
+    memset(&xclient, 0, sizeof(xclient));
+    xclient.type = ClientMessage;
+    xclient.xclient.window = window;
+    xclient.xclient.message_type = atom_cache_.GetAtom("_NET_ACTIVE_WINDOW");
+    xclient.xclient.format = 32;
+    xclient.xclient.data.l[0] = 1;  // Specified we are an app.
+    xclient.xclient.data.l[1] = CurrentTime;
+    xclient.xclient.data.l[2] = None;
+    xclient.xclient.data.l[3] = 0;
+    xclient.xclient.data.l[4] = 0;
 
-  XSendEvent(xdisplay_, x_root_window_, False,
-             SubstructureRedirectMask | SubstructureNotifyMask,
-             &xclient);
+    XSendEvent(xdisplay_, x_root_window_, False,
+               SubstructureRedirectMask | SubstructureNotifyMask,
+               &xclient);
+  } else {
+    XRaiseWindow(xdisplay_, window);
+    OnActiveWindowChanged(window);
+  }
 }
 
 bool X11DesktopHandler::IsActiveWindow(::Window window) const {

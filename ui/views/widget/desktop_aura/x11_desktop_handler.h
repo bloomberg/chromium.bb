@@ -64,6 +64,8 @@ class VIEWS_EXPORT X11DesktopHandler : public base::MessageLoop::Dispatcher,
 
   ui::X11AtomCache atom_cache_;
 
+  bool wm_supports_active_window_;
+
   DISALLOW_COPY_AND_ASSIGN(X11DesktopHandler);
 };
 
