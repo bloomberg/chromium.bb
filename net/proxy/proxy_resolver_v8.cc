@@ -342,6 +342,7 @@ class ProxyResolverV8::Context {
 
   ~Context() {
     v8::Locker locked(isolate_);
+    v8::Isolate::Scope isolate_scope(isolate_);
 
     v8_this_.Dispose();
     v8_context_.Dispose();
@@ -353,6 +354,7 @@ class ProxyResolverV8::Context {
 
   int ResolveProxy(const GURL& query_url, ProxyInfo* results) {
     v8::Locker locked(isolate_);
+    v8::Isolate::Scope isolate_scope(isolate_);
     v8::HandleScope scope(isolate_);
 
     v8::Local<v8::Context> context =
@@ -406,6 +408,7 @@ class ProxyResolverV8::Context {
 
   int InitV8(const scoped_refptr<ProxyResolverScriptData>& pac_script) {
     v8::Locker locked(isolate_);
+    v8::Isolate::Scope isolate_scope(isolate_);
     v8::HandleScope scope(isolate_);
 
     v8_this_.Reset(isolate_, v8::External::New(this));
@@ -489,6 +492,7 @@ class ProxyResolverV8::Context {
 
   void PurgeMemory() {
     v8::Locker locked(isolate_);
+    v8::Isolate::Scope isolate_scope(isolate_);
     v8::V8::LowMemoryNotification();
   }
 
@@ -791,6 +795,7 @@ size_t ProxyResolverV8::GetTotalHeapSize() {
     return 0;
 
   v8::Locker locked(g_default_isolate_);
+  v8::Isolate::Scope isolate_scope(g_default_isolate_);
   v8::HeapStatistics heap_statistics;
   g_default_isolate_->GetHeapStatistics(&heap_statistics);
   return heap_statistics.total_heap_size();
@@ -802,6 +807,7 @@ size_t ProxyResolverV8::GetUsedHeapSize() {
     return 0;
 
   v8::Locker locked(g_default_isolate_);
+  v8::Isolate::Scope isolate_scope(g_default_isolate_);
   v8::HeapStatistics heap_statistics;
   g_default_isolate_->GetHeapStatistics(&heap_statistics);
   return heap_statistics.used_heap_size();
