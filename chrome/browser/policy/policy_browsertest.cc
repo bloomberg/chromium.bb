@@ -343,18 +343,16 @@ int CountScreenshots() {
 #endif
 
 // Checks if WebGL is enabled in the given WebContents.
-#if defined(OS_MACOSX)
 bool IsWebGLEnabled(content::WebContents* contents) {
   bool result = false;
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
       contents,
       "var canvas = document.createElement('canvas');"
-      "var context = canvas.getContext('experimental-webgl');"
+      "var context = canvas.getContext('webgl');"
       "domAutomationController.send(context != null);",
       &result));
   return result;
 }
-#endif  // defined(OS_MACOSX)
 
 bool IsJavascriptEnabled(content::WebContents* contents) {
   scoped_ptr<base::Value> value = content::ExecuteScriptAndGetValue(
@@ -1107,8 +1105,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, ReplaceSearchTerms) {
             location_bar->GetLocationEntry()->GetText());
 }
 
-// The linux and win  bots can't create a GL context. http://crbug.com/103379
-#if defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(PolicyTest, Disable3DAPIs) {
   ui_test_utils::NavigateToURL(browser(), GURL(content::kAboutBlankURL));
   // WebGL is enabled by default.
@@ -1132,7 +1128,6 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, Disable3DAPIs) {
   EXPECT_TRUE(chrome::ExecuteCommand(browser(), IDC_RELOAD));
   EXPECT_TRUE(IsWebGLEnabled(contents));
 }
-#endif
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, DisableSpdy) {
   // Verifies that SPDY can be disable by policy.
