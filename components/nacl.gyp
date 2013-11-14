@@ -193,6 +193,8 @@
                 '../components/nacl/broker/nacl_broker_listener.cc',
                 '../components/nacl/broker/nacl_broker_listener.h',
                 '../components/nacl/common/nacl_debug_exception_handler_win.cc',
+                '../components/nacl/loader/nacl_helper_win_64.cc',
+                '../components/nacl/loader/nacl_helper_win_64.h',
               ],
               'include_dirs': [
                 '..',
