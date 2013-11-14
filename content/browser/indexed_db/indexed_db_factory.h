@@ -68,7 +68,7 @@ class CONTENT_EXPORT IndexedDBFactory
   virtual scoped_refptr<IndexedDBBackingStore> OpenBackingStore(
       const GURL& origin_url,
       const base::FilePath& data_directory,
-      blink::WebIDBCallbacks::DataLoss* data_loss,
+      blink::WebIDBDataLoss* data_loss,
       std::string* data_loss_reason,
       bool* disk_full);
 

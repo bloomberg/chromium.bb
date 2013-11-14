@@ -109,7 +109,7 @@ void IndexedDBFactory::GetDatabaseNames(
     const base::FilePath& data_directory) {
   IDB_TRACE("IndexedDBFactory::GetDatabaseNames");
   // TODO(dgrogan): Plumb data_loss back to script eventually?
-  blink::WebIDBCallbacks::DataLoss data_loss;
+  blink::WebIDBDataLoss data_loss;
   std::string data_loss_message;
   bool disk_full;
   scoped_refptr<IndexedDBBackingStore> backing_store =
@@ -145,7 +145,7 @@ void IndexedDBFactory::DeleteDatabase(
   }
 
   // TODO(dgrogan): Plumb data_loss back to script eventually?
-  blink::WebIDBCallbacks::DataLoss data_loss;
+  blink::WebIDBDataLoss data_loss;
   std::string data_loss_message;
   bool disk_full = false;
   scoped_refptr<IndexedDBBackingStore> backing_store =
@@ -194,7 +194,7 @@ bool IndexedDBFactory::IsBackingStoreOpenForTesting(const GURL& origin_url)
 scoped_refptr<IndexedDBBackingStore> IndexedDBFactory::OpenBackingStore(
     const GURL& origin_url,
     const base::FilePath& data_directory,
-    blink::WebIDBCallbacks::DataLoss* data_loss,
+    blink::WebIDBDataLoss* data_loss,
     std::string* data_loss_message,
     bool* disk_full) {
   const bool open_in_memory = data_directory.empty();
@@ -244,8 +244,8 @@ void IndexedDBFactory::Open(
   scoped_refptr<IndexedDBDatabase> database;
   IndexedDBDatabase::Identifier unique_identifier(origin_url, name);
   IndexedDBDatabaseMap::iterator it = database_map_.find(unique_identifier);
-  blink::WebIDBCallbacks::DataLoss data_loss =
-      blink::WebIDBCallbacks::DataLossNone;
+  blink::WebIDBDataLoss data_loss =
+      blink::WebIDBDataLossNone;
   std::string data_loss_message;
   bool disk_full = false;
   if (it == database_map_.end()) {

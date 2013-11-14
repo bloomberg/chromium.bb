@@ -17,7 +17,6 @@
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
 #include "content/common/indexed_db/indexed_db_key.h"
 #include "content/common/indexed_db/indexed_db_key_path.h"
-#include "third_party/WebKit/public/platform/WebIDBCallbacks.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -62,7 +61,7 @@ class CONTENT_EXPORT IndexedDBCallbacks
       int64 old_version,
       scoped_ptr<IndexedDBConnection> connection,
       const content::IndexedDBDatabaseMetadata& metadata,
-      blink::WebIDBCallbacks::DataLoss data_loss,
+      blink::WebIDBDataLoss data_loss,
       std::string data_loss_message);
   virtual void OnSuccess(scoped_ptr<IndexedDBConnection> connection,
                          const content::IndexedDBDatabaseMetadata& metadata);

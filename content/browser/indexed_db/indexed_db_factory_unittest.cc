@@ -40,8 +40,8 @@ class MockIDBFactory : public IndexedDBFactory {
   scoped_refptr<IndexedDBBackingStore> TestOpenBackingStore(
       const GURL& origin,
       const base::FilePath& data_directory) {
-    blink::WebIDBCallbacks::DataLoss data_loss =
-        blink::WebIDBCallbacks::DataLossNone;
+    blink::WebIDBDataLoss data_loss =
+        blink::WebIDBDataLossNone;
     std::string data_loss_message;
     bool disk_full;
     scoped_refptr<IndexedDBBackingStore> backing_store =
@@ -50,7 +50,7 @@ class MockIDBFactory : public IndexedDBFactory {
                          &data_loss,
                          &data_loss_message,
                          &disk_full);
-    EXPECT_EQ(blink::WebIDBCallbacks::DataLossNone, data_loss);
+    EXPECT_EQ(blink::WebIDBDataLossNone, data_loss);
     return backing_store;
   }
 
@@ -187,7 +187,7 @@ class DiskFullFactory : public IndexedDBFactory {
   virtual scoped_refptr<IndexedDBBackingStore> OpenBackingStore(
       const GURL& origin_url,
       const base::FilePath& data_directory,
-      blink::WebIDBCallbacks::DataLoss* data_loss,
+      blink::WebIDBDataLoss* data_loss,
       std::string* data_loss_message,
       bool* disk_full) OVERRIDE {
     *disk_full = true;

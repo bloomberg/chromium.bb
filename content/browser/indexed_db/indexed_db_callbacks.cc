@@ -14,8 +14,6 @@
 #include "content/common/indexed_db/indexed_db_messages.h"
 #include "webkit/browser/quota/quota_manager.h"
 
-using blink::WebIDBCallbacks;
-
 namespace content {
 
 namespace {
@@ -107,7 +105,7 @@ void IndexedDBCallbacks::OnUpgradeNeeded(
     int64 old_version,
     scoped_ptr<IndexedDBConnection> connection,
     const IndexedDBDatabaseMetadata& metadata,
-    WebIDBCallbacks::DataLoss data_loss,
+    blink::WebIDBDataLoss data_loss,
     std::string data_loss_message) {
   DCHECK(dispatcher_host_.get());
 

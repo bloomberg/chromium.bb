@@ -23,8 +23,7 @@ IPC_ENUM_TRAITS(blink::WebIDBCursor::Direction)
 IPC_ENUM_TRAITS(blink::WebIDBDatabase::PutMode)
 IPC_ENUM_TRAITS(blink::WebIDBDatabase::TaskType)
 
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebIDBCallbacks::DataLoss,
-                          blink::WebIDBCallbacks::DataLossTotal)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebIDBDataLoss, blink::WebIDBDataLossTotal)
 
 // Used to enumerate indexed databases.
 IPC_STRUCT_BEGIN(IndexedDBHostMsg_FactoryGetDatabaseNames_Params)
@@ -288,7 +287,7 @@ IPC_STRUCT_BEGIN(IndexedDBMsg_CallbacksUpgradeNeeded_Params)
   IPC_STRUCT_MEMBER(int32, ipc_database_callbacks_id)
   IPC_STRUCT_MEMBER(int32, ipc_database_id)
   IPC_STRUCT_MEMBER(int64, old_version)
-  IPC_STRUCT_MEMBER(blink::WebIDBCallbacks::DataLoss, data_loss)
+  IPC_STRUCT_MEMBER(blink::WebIDBDataLoss, data_loss)
   IPC_STRUCT_MEMBER(std::string, data_loss_message)
   IPC_STRUCT_MEMBER(IndexedDBDatabaseMetadata, idb_metadata)
 IPC_STRUCT_END()

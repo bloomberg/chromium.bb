@@ -20,7 +20,6 @@ include_rules = [
   "+third_party/WebKit/public/platform/WebGamepads.h",
   "+third_party/WebKit/public/platform/WebGraphicsContext3D.h",
   "+third_party/WebKit/public/platform/WebHTTPBody.h",
-  "+third_party/WebKit/public/platform/WebIDBCallbacks.h",
   "+third_party/WebKit/public/platform/WebIDBCursor.h",
   "+third_party/WebKit/public/platform/WebIDBDatabase.h",
   "+third_party/WebKit/public/platform/WebIDBTypes.h",

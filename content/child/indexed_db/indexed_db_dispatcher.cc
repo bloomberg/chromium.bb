@@ -637,7 +637,7 @@ void IndexedDBDispatcher::OnUpgradeNeeded(
       p.old_version,
       databases_[p.ipc_database_id],
       metadata,
-      static_cast<WebIDBCallbacks::DataLoss>(p.data_loss),
+      static_cast<blink::WebIDBDataLoss>(p.data_loss),
       WebString::fromUTF8(p.data_loss_message));
 }
 

@@ -424,10 +424,10 @@ enum IndexedDBBackingStoreOpenResult {
 scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     const GURL& origin_url,
     const base::FilePath& path_base,
-    blink::WebIDBCallbacks::DataLoss* data_loss,
+    blink::WebIDBDataLoss* data_loss,
     std::string* data_loss_message,
     bool* disk_full) {
-  *data_loss = blink::WebIDBCallbacks::DataLossNone;
+  *data_loss = blink::WebIDBDataLossNone;
   DefaultLevelDBFactory leveldb_factory;
   return IndexedDBBackingStore::Open(origin_url,
                                      path_base,
@@ -477,13 +477,13 @@ static bool IsPathTooLong(const base::FilePath& leveldb_dir) {
 scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     const GURL& origin_url,
     const base::FilePath& path_base,
-    blink::WebIDBCallbacks::DataLoss* data_loss,
+    blink::WebIDBDataLoss* data_loss,
     std::string* data_loss_message,
     bool* is_disk_full,
     LevelDBFactory* leveldb_factory) {
   IDB_TRACE("IndexedDBBackingStore::Open");
   DCHECK(!path_base.empty());
-  *data_loss = blink::WebIDBCallbacks::DataLossNone;
+  *data_loss = blink::WebIDBDataLossNone;
   *data_loss_message = "";
   *is_disk_full = false;
 
@@ -516,7 +516,7 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
     if (leveldb_env::IndicatesDiskFull(status)) {
       *is_disk_full = true;
     } else if (leveldb_env::IsCorruption(status)) {
-      *data_loss = blink::WebIDBCallbacks::DataLossTotal;
+      *data_loss = blink::WebIDBDataLossTotal;
       *data_loss_message = leveldb_env::GetCorruptionMessage(status);
     }
   }
@@ -530,14 +530,14 @@ scoped_refptr<IndexedDBBackingStore> IndexedDBBackingStore::Open(
       HistogramOpenStatus(
           INDEXED_DB_BACKING_STORE_OPEN_FAILED_IO_ERROR_CHECKING_SCHEMA);
       db.reset();
-      *data_loss = blink::WebIDBCallbacks::DataLossTotal;
+      *data_loss = blink::WebIDBDataLossTotal;
       *data_loss_message = "I/O error checking schema";
     } else if (!is_schema_known) {
       LOG(ERROR) << "IndexedDB backing store had unknown schema, treating it "
                     "as failure to open";
       HistogramOpenStatus(INDEXED_DB_BACKING_STORE_OPEN_FAILED_UNKNOWN_SCHEMA);
       db.reset();
-      *data_loss = blink::WebIDBCallbacks::DataLossTotal;
+      *data_loss = blink::WebIDBDataLossTotal;
       *data_loss_message = "Unknown schema";
     }
   }
