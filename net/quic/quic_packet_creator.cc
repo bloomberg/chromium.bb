@@ -19,7 +19,7 @@ using std::vector;
 
 // If true, then QUIC handshake packets will be padded to the maximium packet
 // size.
-bool FLAGS_pad_quic_handshake_packets = false;
+bool FLAGS_pad_quic_handshake_packets = true;
 
 namespace net {
 
