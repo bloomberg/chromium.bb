@@ -378,7 +378,7 @@ NamedNodeMap* Element::attributes() const
 
 ActiveAnimations* Element::activeAnimations() const
 {
-    if (hasActiveAnimations())
+    if (hasRareData())
         return elementRareData()->activeAnimations();
     return 0;
 }

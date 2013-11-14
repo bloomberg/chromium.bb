@@ -60,6 +60,7 @@ protected:
     virtual bool applyEffects(bool previouslyInEffect);
     virtual void clearEffects();
     virtual bool updateChildrenAndEffects() const OVERRIDE FINAL;
+    virtual void didAttach() OVERRIDE FINAL;
     virtual void willDetach() OVERRIDE FINAL;
     virtual double calculateTimeToEffectChange(double inheritedTime, double activeTime, Phase) const OVERRIDE FINAL;
 

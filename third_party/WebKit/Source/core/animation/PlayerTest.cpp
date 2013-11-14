@@ -31,6 +31,7 @@
 #include "config.h"
 #include "core/animation/Player.h"
 
+#include "core/animation/ActiveAnimations.h"
 #include "core/animation/Animation.h"
 #include "core/animation/AnimationClock.h"
 #include "core/animation/DocumentTimeline.h"
@@ -299,6 +300,19 @@ TEST_F(CoreAnimationPlayerTest, PlayersReturnTimeToNextEffect)
 
     updateTimeline(3, &timeToNextEffect);
     EXPECT_EQ(std::numeric_limits<double>::infinity(), timeToNextEffect);
+}
+
+TEST_F(CoreAnimationPlayerTest, AttachedPlayers)
+{
+    RefPtr<Element> element = document->createElement("foo", ASSERT_NO_EXCEPTION);
+
+    Timing timing;
+    RefPtr<Animation> animation = Animation::create(element, 0, timing);
+    RefPtr<Player> player = Player::create(*timeline, animation.get());
+    ASSERT_EQ(1U, element->activeAnimations()->players().find(player.get())->value);
+
+    player.release();
+    ASSERT_TRUE(element->activeAnimations()->players().isEmpty());
 }
 
 }

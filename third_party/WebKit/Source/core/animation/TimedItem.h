@@ -99,10 +99,16 @@ private:
     // Returns whether style recalc was triggered.
     virtual bool updateChildrenAndEffects() const = 0;
     virtual double intrinsicIterationDuration() const { return 0; };
-    virtual void willDetach() = 0;
     virtual double calculateTimeToEffectChange(double inheritedTime, double activeTime, Phase) const = 0;
+    virtual void didAttach() { };
+    virtual void willDetach() { };
 
-    void attach(Player* player) { m_player = player; };
+    void attach(Player* player)
+    {
+        m_player = player;
+        didAttach();
+    };
+
     void detach()
     {
         ASSERT(m_player);

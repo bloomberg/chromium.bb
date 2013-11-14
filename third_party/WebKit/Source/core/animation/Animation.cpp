@@ -51,8 +51,17 @@ Animation::Animation(PassRefPtr<Element> target, PassRefPtr<AnimationEffect> eff
 {
 }
 
+void Animation::didAttach()
+{
+    if (m_target)
+        m_target->ensureActiveAnimations()->players().add(player());
+}
+
 void Animation::willDetach()
 {
+    if (m_target)
+        m_target->activeAnimations()->players().remove(player());
+
     if (m_activeInAnimationStack)
         clearEffects();
 }
