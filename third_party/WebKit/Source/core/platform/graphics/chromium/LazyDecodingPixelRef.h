@@ -47,15 +47,13 @@ class ScaledImageFragment;
 
 class LazyDecodingPixelRef : public LazyPixelRef {
 public:
-    LazyDecodingPixelRef(PassRefPtr<ImageFrameGenerator>, const SkISize& scaledSize, size_t index, const SkIRect& scaledSubset);
+    LazyDecodingPixelRef(PassRefPtr<ImageFrameGenerator>, size_t index);
     virtual ~LazyDecodingPixelRef();
 
     SK_DECLARE_UNFLATTENABLE_OBJECT()
 
     PassRefPtr<ImageFrameGenerator> frameGenerator() const { return m_frameGenerator; }
     size_t frameIndex() const { return m_frameIndex; }
-    bool isScaled(const SkISize& fullSize) const;
-    bool isClipped() const;
 
     // Returns true if the image might already be decoded in the cache.
     // Optimistic version of PrepareToDecode; requires less locking.
@@ -74,8 +72,6 @@ protected:
 private:
     RefPtr<ImageFrameGenerator> m_frameGenerator;
     size_t m_frameIndex;
-    SkISize m_scaledSize;
-    SkIRect m_scaledSubset;
 
     const ScaledImageFragment* m_lockedImageResource;
     PlatformInstrumentation::LazyPixelRefTracker m_objectTracker;

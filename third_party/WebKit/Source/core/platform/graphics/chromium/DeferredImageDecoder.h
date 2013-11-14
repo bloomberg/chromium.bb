@@ -48,8 +48,6 @@ public:
 
     static bool isLazyDecoded(const SkBitmap&);
 
-    static SkBitmap createResizedLazyDecodingBitmap(const SkBitmap&, const SkISize& scaledSize, const SkIRect& scaledSubset);
-
     static void setEnabled(bool);
 
     String filenameExtension() const;

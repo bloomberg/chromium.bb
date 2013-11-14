@@ -72,26 +72,6 @@ bool DeferredImageDecoder::isLazyDecoded(const SkBitmap& bitmap)
         && !memcmp(bitmap.pixelRef()->getURI(), labelLazyDecoded, sizeof(labelLazyDecoded));
 }
 
-SkBitmap DeferredImageDecoder::createResizedLazyDecodingBitmap(const SkBitmap& bitmap, const SkISize& scaledSize, const SkIRect& scaledSubset)
-{
-    LazyDecodingPixelRef* pixelRef = static_cast<LazyDecodingPixelRef*>(bitmap.pixelRef());
-
-    int rowBytes = 0;
-    rowBytes = SkBitmap::ComputeRowBytes(SkBitmap::kARGB_8888_Config, scaledSize.width());
-
-    SkBitmap resizedBitmap;
-    resizedBitmap.setConfig(SkBitmap::kARGB_8888_Config, scaledSubset.width(), scaledSubset.height(), rowBytes);
-
-    // FIXME: This code has the potential problem that multiple
-    // LazyDecodingPixelRefs are created even though they share the same
-    // scaled size and ImageFrameGenerator.
-    resizedBitmap.setPixelRef(new LazyDecodingPixelRef(pixelRef->frameGenerator(), scaledSize, pixelRef->frameIndex(), scaledSubset))->unref();
-
-    // See comments in createLazyDecodingBitmap().
-    resizedBitmap.setImmutable();
-    return resizedBitmap;
-}
-
 void DeferredImageDecoder::setEnabled(bool enabled)
 {
     s_enabled = enabled;
@@ -249,15 +229,14 @@ void DeferredImageDecoder::prepareLazyDecodedFrames()
 
 SkBitmap DeferredImageDecoder::createLazyDecodingBitmap(size_t index)
 {
-    SkISize fullSize = SkISize::Make(m_actualDecoder->decodedSize().width(), m_actualDecoder->decodedSize().height());
-    ASSERT(!fullSize.isEmpty());
-
-    SkIRect fullRect = SkIRect::MakeSize(fullSize);
+    IntSize decodedSize = m_actualDecoder->decodedSize();
+    ASSERT(decodedSize.width() > 0);
+    ASSERT(decodedSize.height() > 0);
 
     // Creates a lazily decoded SkPixelRef that references the entire image without scaling.
     SkBitmap bitmap;
-    bitmap.setConfig(SkBitmap::kARGB_8888_Config, fullSize.width(), fullSize.height());
-    bitmap.setPixelRef(new LazyDecodingPixelRef(m_frameGenerator, fullSize, index, fullRect))->unref();
+    bitmap.setConfig(SkBitmap::kARGB_8888_Config, decodedSize.width(), decodedSize.height());
+    bitmap.setPixelRef(new LazyDecodingPixelRef(m_frameGenerator, index))->unref();
 
     // Use the URI to identify this as a lazily decoded SkPixelRef of type LazyDecodingPixelRef.
     // FIXME: It would be more useful to give the actual image URI.

@@ -33,11 +33,9 @@
 
 namespace WebCore {
 
-LazyDecodingPixelRef::LazyDecodingPixelRef(PassRefPtr<ImageFrameGenerator> frameGenerator, const SkISize& scaledSize, size_t index, const SkIRect& scaledSubset)
+LazyDecodingPixelRef::LazyDecodingPixelRef(PassRefPtr<ImageFrameGenerator> frameGenerator, size_t index)
     : m_frameGenerator(frameGenerator)
     , m_frameIndex(index)
-    , m_scaledSize(scaledSize)
-    , m_scaledSubset(scaledSubset)
     , m_lockedImageResource(0)
     , m_objectTracker(this)
 {
@@ -47,22 +45,10 @@ LazyDecodingPixelRef::~LazyDecodingPixelRef()
 {
 }
 
-bool LazyDecodingPixelRef::isScaled(const SkISize& fullSize) const
-{
-    return fullSize != m_scaledSize;
-}
-
-bool LazyDecodingPixelRef::isClipped() const
-{
-    return m_scaledSize.width() != m_scaledSubset.width() || m_scaledSize.height() != m_scaledSubset.height();
-}
-
 SkData* LazyDecodingPixelRef::onRefEncodedData()
 {
     // If the image has been clipped or scaled, do not return the original encoded data, since
     // on playback it will not be known how the clipping/scaling was done.
-    if (isClipped() || isScaled(m_frameGenerator->getFullSize()))
-        return 0;
     RefPtr<SharedBuffer> buffer = 0;
     bool allDataReceived = false;
     m_frameGenerator->copyData(&buffer, &allDataReceived);
@@ -79,20 +65,21 @@ void* LazyDecodingPixelRef::onLockPixels(SkColorTable**)
 
     ASSERT(!m_lockedImageResource);
 
-    if (!ImageDecodingStore::instance()->lockCache(m_frameGenerator.get(), m_scaledSize, m_frameIndex, &m_lockedImageResource))
+    SkISize size = m_frameGenerator->getFullSize();
+    if (!ImageDecodingStore::instance()->lockCache(m_frameGenerator.get(), size, m_frameIndex, &m_lockedImageResource))
         m_lockedImageResource = 0;
 
     // Use ImageFrameGenerator to generate the image. It will lock the cache
     // entry for us.
     if (!m_lockedImageResource)
-        m_lockedImageResource = m_frameGenerator->decodeAndScale(m_scaledSize, m_frameIndex);
+        m_lockedImageResource = m_frameGenerator->decodeAndScale(size, m_frameIndex);
 
     if (!m_lockedImageResource)
         return 0;
 
     ASSERT(!m_lockedImageResource->bitmap().isNull());
-    ASSERT(m_lockedImageResource->scaledSize() == m_scaledSize);
-    return m_lockedImageResource->bitmap().getAddr(m_scaledSubset.x(), m_scaledSubset.y());
+    ASSERT(m_lockedImageResource->scaledSize() == size);
+    return m_lockedImageResource->bitmap().getAddr(0, 0);
 }
 
 void LazyDecodingPixelRef::onUnlockPixels()
@@ -112,7 +99,7 @@ bool LazyDecodingPixelRef::onLockPixelsAreWritable() const
 
 bool LazyDecodingPixelRef::MaybeDecoded()
 {
-    return ImageDecodingStore::instance()->isCached(m_frameGenerator.get(), m_scaledSize, m_frameIndex);
+    return ImageDecodingStore::instance()->isCached(m_frameGenerator.get(), m_frameGenerator->getFullSize(), m_frameIndex);
 }
 
 bool LazyDecodingPixelRef::PrepareToDecode(const LazyPixelRef::PrepareParams& params)
