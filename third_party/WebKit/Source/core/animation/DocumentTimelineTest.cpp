@@ -122,6 +122,14 @@ protected:
     }
 };
 
+TEST_F(CoreAnimationDocumentTimelineTest, HasStarted)
+{
+    timeline = DocumentTimeline::create(document.get());
+    EXPECT_FALSE(timeline->hasStarted());
+    timeline->setZeroTime(0);
+    EXPECT_TRUE(timeline->hasStarted());
+}
+
 TEST_F(CoreAnimationDocumentTimelineTest, EmptyKeyframeAnimation)
 {
     RefPtr<KeyframeAnimationEffect> effect = KeyframeAnimationEffect::create(KeyframeAnimationEffect::KeyframeVector());

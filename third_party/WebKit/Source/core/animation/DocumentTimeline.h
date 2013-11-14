@@ -66,6 +66,7 @@ public:
     // Called from setReadyState() in Document.cpp to set m_zeroTime to
     // performance.timing.domInteractive
     void setZeroTime(double);
+    bool hasStarted() const { return !isNull(m_zeroTime); }
     double currentTime();
     void pauseAnimationsForTesting(double);
     size_t numberOfActiveAnimationsForTesting() const;
