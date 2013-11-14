@@ -20147,6 +20147,15 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="WebCore.IndexedDB.BackingStore.OverlyLargeOriginLength"
+    units="characters">
+  <summary>
+    Length of leveldb directories that cause paths to not fit in the filesystem,
+    either because the individual component is too long or the overall path is
+    larger than MAX_PATH.
+  </summary>
+</histogram>
+
 <histogram name="WebCore.IndexedDB.BackingStore.ReadError"
     enum="IDBLevelDBBackingStoreInternalErrorType">
   <summary>
