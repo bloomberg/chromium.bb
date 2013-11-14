@@ -115,6 +115,7 @@ class RtpPacketizerTest : public ::testing::Test {
 
   virtual void SetUp() {
     video_frame_.key_frame = false;
+    video_frame_.frame_id = 0;
     video_frame_.last_referenced_frame_id = 255;
     video_frame_.data.assign(kFrameSize, 123);
   }

@@ -25,7 +25,6 @@ RtpPacketizer::RtpPacketizer(PacedPacketSender* transport,
       packet_storage_(packet_storage),
       sequence_number_(config_.sequence_number),
       rtp_timestamp_(config_.rtp_timestamp),
-      frame_id_(0),
       packet_id_(0),
       send_packets_count_(0),
       send_octet_count_(0) {
@@ -48,6 +47,7 @@ void RtpPacketizer::IncomingEncodedVideoFrame(
   time_last_sent_rtp_timestamp_ = capture_time;
 
   Cast(video_frame->key_frame,
+       video_frame->frame_id,
        video_frame->last_referenced_frame_id,
        rtp_timestamp_,
        video_frame->data);
@@ -61,7 +61,7 @@ void RtpPacketizer::IncomingEncodedAudioFrame(
 
   rtp_timestamp_ += audio_frame->samples;  // Timestamp is in samples for audio.
   time_last_sent_rtp_timestamp_ = recorded_time;
-  Cast(true, 0, rtp_timestamp_, audio_frame->data);
+  Cast(true, audio_frame->frame_id, 0, rtp_timestamp_, audio_frame->data);
 }
 
 uint16 RtpPacketizer::NextSequenceNumber() {
@@ -79,9 +79,10 @@ bool RtpPacketizer::LastSentTimestamp(base::TimeTicks* time_sent,
 }
 
 void RtpPacketizer::Cast(bool is_key,
+                         uint8 frame_id,
                          uint8 reference_frame_id,
                          uint32 timestamp,
-                         Packet data) {
+                         std::vector<uint8> data) {
   uint16 rtp_header_length = kCommonRtpHeaderLength + kCastRtpHeaderLength;
   uint16 max_length = config_.max_payload_length - rtp_header_length - 1;
 
@@ -106,7 +107,7 @@ void RtpPacketizer::Cast(bool is_key,
     // Build Cast header.
     packet.push_back(
         (is_key ? kCastKeyFrameBitMask : 0) | kCastReferenceFrameIdBitMask);
-    packet.push_back(frame_id_);
+    packet.push_back(frame_id);
     size_t start_size = packet.size();
     packet.resize(start_size + 4);
     net::BigEndianWriter big_endian_writer(&(packet[start_size]), 4);
@@ -118,7 +119,7 @@ void RtpPacketizer::Cast(bool is_key,
     packet.insert(packet.end(), data_iter, data_iter + payload_length);
 
     // Store packet.
-    packet_storage_->StorePacket(frame_id_, packet_id_, &packet);
+    packet_storage_->StorePacket(frame_id, packet_id_, &packet);
     ++packet_id_;
     data_iter += payload_length;
 
@@ -134,7 +135,6 @@ void RtpPacketizer::Cast(bool is_key,
 
   // Prepare for next frame.
   packet_id_ = 0;
-  frame_id_ = static_cast<uint8>(frame_id_ + 1);
 }
 
 void RtpPacketizer::BuildCommonRTPheader(
