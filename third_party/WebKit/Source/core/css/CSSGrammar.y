@@ -761,18 +761,17 @@ at_rule_header_end_maybe_space:
     }
     ;
 
+media_rule_start:
+    before_media_rule MEDIA_SYM maybe_space;
+
 media:
-    before_media_rule MEDIA_SYM maybe_space location_label media_list at_rule_header_end '{' at_rule_body_start maybe_space block_rule_body closing_brace {
-        $$ = parser->createMediaRule($5, $10);
+    media_rule_start media_list at_rule_header_end '{' at_rule_body_start maybe_space block_rule_body closing_brace {
+        $$ = parser->createMediaRule($2, $7);
     }
-    | before_media_rule MEDIA_SYM at_rule_header_end_maybe_space '{' at_rule_body_start maybe_space block_rule_body closing_brace {
-        $$ = parser->createMediaRule(0, $7);
+  | media_rule_start at_rule_header_end '{' at_rule_body_start maybe_space block_rule_body closing_brace {
+        $$ = parser->createMediaRule(0, $6);
     }
-    | before_media_rule MEDIA_SYM maybe_space location_label media_list semi_or_eof {
-        $$ = 0;
-        parser->endRuleBody(true);
-    }
-    | before_media_rule MEDIA_SYM at_rule_recovery {
+  | media_rule_start media_list semi_or_eof {
         $$ = 0;
         parser->endRuleBody(true);
     }
