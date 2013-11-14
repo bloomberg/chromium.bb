@@ -991,12 +991,6 @@
     # set there, per the comment about variable% in a target_defaults.
     'mac_strip_release%': 0,
 
-    # Set to 1 to enable code coverage.  In addition to build changes
-    # (e.g. extra CFLAGS), also creates a new target in the src/chrome
-    # project file called "coverage".
-    # Currently ignored on Windows.
-    'coverage%': 0,
-
     # Set to 1 to enable java code coverage. Instruments classes during build
     # to produce .ec files during runtime.
     'emma_coverage%': 0,
@@ -2262,55 +2256,6 @@
             'MEMORY_TOOL_REPLACES_ALLOCATOR',
         ],
       }],  # asan==1 and OS=="win"
-      ['coverage!=0', {
-        'conditions': [
-          ['OS=="mac" or OS=="ios"', {
-            'xcode_settings': {
-              'GCC_INSTRUMENT_PROGRAM_FLOW_ARCS': 'YES',  # -fprofile-arcs
-              'GCC_GENERATE_TEST_COVERAGE_FILES': 'YES',  # -ftest-coverage
-            },
-          }],
-          ['OS=="mac"', {
-            # Add -lgcov for types executable, shared_library, and
-            # loadable_module; not for static_library.
-            # This is a delayed conditional.
-            'target_conditions': [
-              ['_type!="static_library"', {
-                'xcode_settings': { 'OTHER_LDFLAGS': [ '-lgcov' ] },
-              }],
-            ],
-          }],
-          ['OS=="linux" or OS=="android"', {
-            'cflags': [ '-ftest-coverage',
-                        '-fprofile-arcs' ],
-            'link_settings': { 'libraries': [ '-lgcov' ] },
-          }],
-          ['OS=="win"', {
-            'variables': {
-              # Disable incremental linking for all modules.
-              # 0: inherit, 1: disabled, 2: enabled.
-              'msvs_debug_link_incremental': '1',
-              'msvs_large_module_debug_link_mode': '1',
-              # Disable RTC. Syzygy explicitly doesn't support RTC instrumented
-              # binaries for now.
-              'win_debug_RuntimeChecks': '0',
-            },
-            'defines': [
-              # Disable iterator debugging (huge speed boost without any
-              # change in coverage results).
-              '_HAS_ITERATOR_DEBUGGING=0',
-            ],
-            'msvs_settings': {
-              'VCLinkerTool': {
-                # Enable profile information (necessary for coverage
-                # instrumentation). This is incompatible with incremental
-                # linking.
-                'Profile': 'true',
-              },
-            }
-         }],  # OS==win
-        ],  # conditions for coverage
-      }],  # coverage!=0
       ['OS=="win"', {
         'defines': [
           '__STD_C',

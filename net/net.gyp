@@ -2179,31 +2179,6 @@
               # OS is not "linux" or "freebsd" or "openbsd".
               'socket/unix_domain_socket_posix_unittest.cc',
             ],
-            'conditions': [
-              ['coverage != 0', {
-                'sources!': [
-                  # These sources can't be built with coverage due to a
-                  # toolchain bug: http://openradar.appspot.com/radar?id=1499403
-                  'http/transport_security_state_unittest.cc',
-
-                  # These tests crash when run with coverage turned on due to an
-                  # issue with llvm_gcda_increment_indirect_counter:
-                  # http://crbug.com/156058
-                  'cookies/cookie_monster_unittest.cc',
-                  'cookies/cookie_store_unittest.h',
-                  'http/http_auth_controller_unittest.cc',
-                  'http/http_network_layer_unittest.cc',
-                  'http/http_network_transaction_unittest.cc',
-                  'spdy/spdy_http_stream_unittest.cc',
-                  'spdy/spdy_proxy_client_socket_unittest.cc',
-                  'spdy/spdy_session_unittest.cc',
-
-                  # These tests crash when run with coverage turned on:
-                  # http://crbug.com/177203
-                  'proxy/proxy_service_unittest.cc',
-                ],
-              }],
-            ],
         }],
         [ 'OS == "android"', {
             'dependencies': [
