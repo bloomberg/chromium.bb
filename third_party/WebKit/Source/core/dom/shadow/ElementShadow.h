@@ -82,7 +82,7 @@ private:
     void distribute();
     void clearDistribution();
 
-    void collectSelectFeatureSetFrom(ShadowRoot*);
+    void collectSelectFeatureSetFrom(ShadowRoot&);
     void distributeNodeChildrenTo(InsertionPoint*, ContainerNode*);
 
     bool needsSelectFeatureSet() const { return m_needsSelectFeatureSet; }

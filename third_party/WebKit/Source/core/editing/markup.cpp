@@ -93,13 +93,13 @@ private:
     String m_value;
 };
 
-static void completeURLs(DocumentFragment* fragment, const String& baseURL)
+static void completeURLs(DocumentFragment& fragment, const String& baseURL)
 {
     Vector<AttributeChange> changes;
 
     KURL parsedBaseURL(ParsedURLString, baseURL);
 
-    for (Element* element = ElementTraversal::firstWithin(fragment); element; element = ElementTraversal::next(*element, fragment)) {
+    for (Element* element = ElementTraversal::firstWithin(fragment); element; element = ElementTraversal::next(*element, &fragment)) {
         if (!element->hasAttributes())
             continue;
         unsigned length = element->attributeCount();
@@ -648,7 +648,7 @@ PassRefPtr<DocumentFragment> createFragmentFromMarkup(Document& document, const 
     fragment->parseHTML(markup, fakeBody.get(), parserContentPolicy);
 
     if (!baseURL.isEmpty() && baseURL != blankURL() && baseURL != document.baseURL())
-        completeURLs(fragment.get(), baseURL);
+        completeURLs(*fragment, baseURL);
 
     return fragment.release();
 }

@@ -302,11 +302,11 @@ ALWAYS_INLINE Node* LiveNodeListBase::itemBefore(Node* previous) const
 }
 
 template <class NodeListType>
-inline Element* firstMatchingElement(const NodeListType* nodeList, ContainerNode* root)
+inline Element* firstMatchingElement(const NodeListType* nodeList, ContainerNode& root)
 {
     Element* element = ElementTraversal::firstWithin(root);
     while (element && !isMatchingElement(nodeList, element))
-        element = ElementTraversal::next(*element, root);
+        element = ElementTraversal::next(*element, &root);
     return element;
 }
 
@@ -345,7 +345,7 @@ inline Node* LiveNodeListBase::traverseChildNodeListForwardToOffset(unsigned off
 }
 
 // FIXME: This should be in LiveNodeList
-inline Element* LiveNodeListBase::traverseLiveNodeListFirstElement(ContainerNode* root) const
+inline Element* LiveNodeListBase::traverseLiveNodeListFirstElement(ContainerNode& root) const
 {
     ASSERT(isNodeList(type()));
     ASSERT(type() != ChildNodeListType);
@@ -435,9 +435,9 @@ Node* LiveNodeListBase::item(unsigned offset) const
         if (type() == ChildNodeListType)
             firstItem = root->firstChild();
         else if (isNodeList(type()))
-            firstItem = traverseLiveNodeListFirstElement(root);
+            firstItem = traverseLiveNodeListFirstElement(*root);
         else
-            firstItem = static_cast<const HTMLCollection*>(this)->traverseFirstElement(offsetInArray, root);
+            firstItem = static_cast<const HTMLCollection*>(this)->traverseFirstElement(offsetInArray, *root);
 
         if (!firstItem) {
             setLengthCache(0);
@@ -525,11 +525,11 @@ bool HTMLCollection::checkForNameMatch(Element* element, bool checkName, const A
     return e->getNameAttribute() == name && e->getIdAttribute() != name;
 }
 
-inline Element* firstMatchingChildElement(const HTMLCollection* nodeList, ContainerNode* root)
+inline Element* firstMatchingChildElement(const HTMLCollection* nodeList, ContainerNode& root)
 {
     Element* element = ElementTraversal::firstWithin(root);
     while (element && !isMatchingElement(nodeList, element))
-        element = ElementTraversal::nextSkippingChildren(*element, root);
+        element = ElementTraversal::nextSkippingChildren(*element, &root);
     return element;
 }
 
@@ -542,7 +542,7 @@ inline Element* nextMatchingChildElement(const HTMLCollection* nodeList, Element
     return next;
 }
 
-inline Element* HTMLCollection::traverseFirstElement(unsigned& offsetInArray, ContainerNode* root) const
+inline Element* HTMLCollection::traverseFirstElement(unsigned& offsetInArray, ContainerNode& root) const
 {
     if (overridesItemAfter())
         return virtualItemAfter(offsetInArray, 0);
@@ -599,7 +599,7 @@ Node* HTMLCollection::namedItem(const AtomicString& name) const
 
     unsigned arrayOffset = 0;
     unsigned i = 0;
-    for (Element* element = traverseFirstElement(arrayOffset, root); element; element = traverseNextElement(arrayOffset, *element, root)) {
+    for (Element* element = traverseFirstElement(arrayOffset, *root); element; element = traverseNextElement(arrayOffset, *element, root)) {
         if (checkForNameMatch(element, /* checkName */ false, name)) {
             setItemCache(element, i, arrayOffset);
             return element;
@@ -608,7 +608,7 @@ Node* HTMLCollection::namedItem(const AtomicString& name) const
     }
 
     i = 0;
-    for (Element* element = traverseFirstElement(arrayOffset, root); element; element = traverseNextElement(arrayOffset, *element, root)) {
+    for (Element* element = traverseFirstElement(arrayOffset, *root); element; element = traverseNextElement(arrayOffset, *element, root)) {
         if (checkForNameMatch(element, /* checkName */ true, name)) {
             setItemCache(element, i, arrayOffset);
             return element;
@@ -629,7 +629,7 @@ void HTMLCollection::updateNameCache() const
         return;
 
     unsigned arrayOffset = 0;
-    for (Element* element = traverseFirstElement(arrayOffset, root); element; element = traverseNextElement(arrayOffset, *element, root)) {
+    for (Element* element = traverseFirstElement(arrayOffset, *root); element; element = traverseNextElement(arrayOffset, *element, root)) {
         const AtomicString& idAttrVal = element->getIdAttribute();
         if (!idAttrVal.isEmpty())
             appendIdCache(idAttrVal, element);

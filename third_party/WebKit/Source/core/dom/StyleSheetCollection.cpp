@@ -151,7 +151,7 @@ void StyleSheetCollection::analyzeStyleSheetChange(StyleResolverUpdateMode updat
     StyleInvalidationAnalysis invalidationAnalysis(addedSheets);
     if (invalidationAnalysis.dirtiesAllStyle())
         return;
-    invalidationAnalysis.invalidateStyle(document());
+    invalidationAnalysis.invalidateStyle(*document());
     requiresFullStyleRecalc = false;
 }
 

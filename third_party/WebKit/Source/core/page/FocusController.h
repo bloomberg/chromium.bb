@@ -112,7 +112,7 @@ private:
     Node* findNodeWithExactTabIndex(Node* start, int tabIndex, FocusDirection);
 
     bool advanceFocusDirectionallyInContainer(Node* container, const LayoutRect& startingRect, FocusDirection);
-    void findFocusCandidateInContainer(Node* container, const LayoutRect& startingRect, FocusDirection, FocusCandidate& closest);
+    void findFocusCandidateInContainer(Node& container, const LayoutRect& startingRect, FocusDirection, FocusCandidate& closest);
 
     Page* m_page;
     RefPtr<Frame> m_focusedFrame;

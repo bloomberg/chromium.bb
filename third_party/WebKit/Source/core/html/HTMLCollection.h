@@ -61,7 +61,7 @@ public:
 
     virtual Element* virtualItemAfter(unsigned& offsetInArray, Element*) const;
 
-    Element* traverseFirstElement(unsigned& offsetInArray, ContainerNode* root) const;
+    Element* traverseFirstElement(unsigned& offsetInArray, ContainerNode& root) const;
     Element* traverseForwardToOffset(unsigned offset, Element& currentElement, unsigned& currentOffset, unsigned& offsetInArray, ContainerNode* root) const;
 
 protected:

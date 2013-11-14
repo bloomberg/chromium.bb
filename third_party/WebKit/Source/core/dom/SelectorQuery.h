@@ -62,7 +62,7 @@ private:
     Element* findElementByClassName(Node& rootNode, const AtomicString& className) const;
     void collectElementsByTagName(Node& rootNode, const QualifiedName& tagName, Vector<RefPtr<Node> >&) const;
     Element* findElementByTagName(Node& rootNode, const QualifiedName& tagName) const;
-    PassOwnPtr<SimpleNodeList> findTraverseRoots(Node* rootNode, bool& matchTraverseRoots) const;
+    PassOwnPtr<SimpleNodeList> findTraverseRoots(Node& rootNode, bool& matchTraverseRoots) const;
     void executeSlowQueryAll(Node& rootNode, Vector<RefPtr<Node> >& matchedElements) const;
     void executeQueryAll(Node& rootNode, Vector<RefPtr<Node> >& matchedElements) const;
     Node* findTraverseRoot(Node& rootNode, bool& matchTraverseRoot) const;

@@ -322,17 +322,17 @@ const SelectRuleFeatureSet& ElementShadow::ensureSelectFeatureSet()
 
     m_selectFeatures.clear();
     for (ShadowRoot* root = oldestShadowRoot(); root; root = root->youngerShadowRoot())
-        collectSelectFeatureSetFrom(root);
+        collectSelectFeatureSetFrom(*root);
     m_needsSelectFeatureSet = false;
     return m_selectFeatures;
 }
 
-void ElementShadow::collectSelectFeatureSetFrom(ShadowRoot* root)
+void ElementShadow::collectSelectFeatureSetFrom(ShadowRoot& root)
 {
-    if (!root->containsShadowRoots() && !root->containsContentElements())
+    if (!root.containsShadowRoots() && !root.containsContentElements())
         return;
 
-    for (Element* element = ElementTraversal::firstWithin(root); element; element = ElementTraversal::next(*element, root)) {
+    for (Element* element = ElementTraversal::firstWithin(root); element; element = ElementTraversal::next(*element, &root)) {
         if (ElementShadow* shadow = element->shadow())
             m_selectFeatures.add(shadow->ensureSelectFeatureSet());
         if (!isHTMLContentElement(element))

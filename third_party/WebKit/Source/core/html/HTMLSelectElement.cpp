@@ -734,44 +734,44 @@ void HTMLSelectElement::recalcListItems(bool updateSelectedStates) const
 
     HTMLOptionElement* foundSelected = 0;
     HTMLOptionElement* firstOption = 0;
-    for (Element* currentElement = ElementTraversal::firstWithin(this); currentElement; ) {
+    for (Element* currentElement = ElementTraversal::firstWithin(*this); currentElement; ) {
         if (!currentElement->isHTMLElement()) {
             currentElement = ElementTraversal::nextSkippingChildren(*currentElement, this);
             continue;
         }
-        HTMLElement* current = toHTMLElement(currentElement);
+        HTMLElement& current = toHTMLElement(*currentElement);
 
         // optgroup tags may not nest. However, both FireFox and IE will
         // flatten the tree automatically, so we follow suit.
         // (http://www.w3.org/TR/html401/interact/forms.html#h-17.6)
         if (isHTMLOptGroupElement(current)) {
-            m_listItems.append(current);
+            m_listItems.append(&current);
             if (Element* nextElement = ElementTraversal::firstWithin(current)) {
                 currentElement = nextElement;
                 continue;
             }
         }
 
-        if (current->hasTagName(optionTag)) {
-            m_listItems.append(current);
+        if (current.hasTagName(optionTag)) {
+            m_listItems.append(&current);
 
             if (updateSelectedStates && !m_multiple) {
-                HTMLOptionElement* option = toHTMLOptionElement(current);
+                HTMLOptionElement& option = toHTMLOptionElement(current);
                 if (!firstOption)
-                    firstOption = option;
-                if (option->selected()) {
+                    firstOption = &option;
+                if (option.selected()) {
                     if (foundSelected)
                         foundSelected->setSelectedState(false);
-                    foundSelected = option;
-                } else if (m_size <= 1 && !foundSelected && !option->isDisabledFormControl()) {
-                    foundSelected = option;
+                    foundSelected = &option;
+                } else if (m_size <= 1 && !foundSelected && !option.isDisabledFormControl()) {
+                    foundSelected = &option;
                     foundSelected->setSelectedState(true);
                 }
             }
         }
 
-        if (current->hasTagName(hrTag))
-            m_listItems.append(current);
+        if (current.hasTagName(hrTag))
+            m_listItems.append(&current);
 
         // In conforming HTML code, only <optgroup> and <option> will be found
         // within a <select>. We call NodeTraversal::nextSkippingChildren so that we only step

@@ -55,7 +55,7 @@ private:
     virtual void childrenChanged(bool changedByParser, Node* beforeChange, Node* afterChange, int childCountDelta) OVERRIDE;
     virtual bool areAuthorShadowsAllowed() const OVERRIDE { return false; }
 
-    static void invalidateDisabledStateUnder(Element*);
+    static void invalidateDisabledStateUnder(Element&);
     void refreshElementsIfNeeded() const;
 
     mutable Vector<FormAssociatedElement*> m_associatedElements;

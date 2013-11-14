@@ -666,18 +666,18 @@ bool SVGUseElement::hasCycleUseReferencing(SVGUseElement* use, SVGElementInstanc
     return false;
 }
 
-static inline void removeDisallowedElementsFromSubtree(Element* subtree)
+static inline void removeDisallowedElementsFromSubtree(Element& subtree)
 {
-    ASSERT(!subtree->inDocument());
+    ASSERT(!subtree.inDocument());
     Element* element = ElementTraversal::firstWithin(subtree);
     while (element) {
         if (isDisallowedElement(element)) {
-            Element* next = ElementTraversal::nextSkippingChildren(*element, subtree);
+            Element* next = ElementTraversal::nextSkippingChildren(*element, &subtree);
             // The subtree is not in document so this won't generate events that could mutate the tree.
             element->parentNode()->removeChild(element);
             element = next;
         } else {
-            element = ElementTraversal::next(*element, subtree);
+            element = ElementTraversal::next(*element, &subtree);
         }
     }
 }
@@ -696,7 +696,7 @@ void SVGUseElement::buildShadowTree(SVGElement* target, SVGElementInstance* targ
     // Though if there are disallowed elements in the subtree, we have to remove them.
     // For instance: <use> on <g> containing <foreignObject> (indirect case).
     if (subtreeContainsDisallowedElement(newChild.get()))
-        removeDisallowedElementsFromSubtree(newChild.get());
+        removeDisallowedElementsFromSubtree(*newChild);
 
     userAgentShadowRoot()->appendChild(newChild.release());
 }
@@ -741,7 +741,7 @@ void SVGUseElement::expandUseElementsInShadowTree(Node* element)
         // Though if there are disallowed elements in the subtree, we have to remove them.
         // For instance: <use> on <g> containing <foreignObject> (indirect case).
         if (subtreeContainsDisallowedElement(cloneParent.get()))
-            removeDisallowedElementsFromSubtree(cloneParent.get());
+            removeDisallowedElementsFromSubtree(*cloneParent);
 
         RefPtr<Node> replacingElement(cloneParent.get());
 
@@ -787,7 +787,7 @@ void SVGUseElement::expandSymbolElementsInShadowTree(Node* element)
         // Though if there are disallowed elements in the subtree, we have to remove them.
         // For instance: <use> on <g> containing <foreignObject> (indirect case).
         if (subtreeContainsDisallowedElement(svgElement.get()))
-            removeDisallowedElementsFromSubtree(svgElement.get());
+            removeDisallowedElementsFromSubtree(*svgElement);
 
         RefPtr<Node> replacingElement(svgElement.get());
 

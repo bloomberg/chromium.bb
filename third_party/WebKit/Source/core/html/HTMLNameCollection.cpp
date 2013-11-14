@@ -54,7 +54,7 @@ Element* HTMLNameCollection::virtualItemAfter(unsigned& offsetInArray, Element* 
 
     Element* current;
     if (!previous)
-        current = ElementTraversal::firstWithin(ownerNode());
+        current = ElementTraversal::firstWithin(*ownerNode());
     else
         current = ElementTraversal::next(*previous, ownerNode());
 

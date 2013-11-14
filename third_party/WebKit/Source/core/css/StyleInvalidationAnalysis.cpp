@@ -204,7 +204,7 @@ static bool elementMatchesSelectorScopes(const Element* element, const HashSet<S
     return false;
 }
 
-void StyleInvalidationAnalysis::invalidateStyle(Document* document)
+void StyleInvalidationAnalysis::invalidateStyle(Document& document)
 {
     ASSERT(!m_dirtiesAllStyle);
 

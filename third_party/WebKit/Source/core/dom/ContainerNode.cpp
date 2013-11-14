@@ -892,7 +892,7 @@ PassRefPtr<HTMLCollection> ContainerNode::children()
 
 Element* ContainerNode::firstElementChild() const
 {
-    return ElementTraversal::firstWithin(this);
+    return ElementTraversal::firstWithin(*this);
 }
 
 Element* ContainerNode::lastElementChild() const
