@@ -3,10 +3,8 @@
 // found in the LICENSE file.
 
 #include "cc/test/cc_test_suite.h"
-#include "testing/gmock/include/gmock/gmock.h"
 
 int main(int argc, char** argv) {
-  ::testing::InitGoogleMock(&argc, argv);
   cc::CCTestSuite test_suite(argc, argv);
 
   // Always run the perf tests serially, to avoid distorting
