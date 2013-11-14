@@ -184,6 +184,7 @@ crbug.com/248938 virtual/threaded/animations/combo-transform-translate+scale.htm
 crbug.com/248938 virtual/threaded/animations/change-one-anim.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/animations/delay-start-event.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/animations/display-change-does-not-terminate-animation.html [ Pass Failure ]
+crbug.com/248938 virtual/threaded/animations/display-none-terminates-animation.html  [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/cancel-and-start-new.html [ Failure ]
 crbug.com/248938 virtual/threaded/transitions/transition-end-event-nested.html [ Pass Failure ]
 crbug.com/248938 virtual/threaded/transitions/interrupted-all-transition.html [ Pass Failure ]
@@ -510,9 +511,6 @@ crbug.com/318632 webaudio/audiobuffersource-multi-channels.html [ NeedsManualReb
 crbug.com/318632 webaudio/test-basic.html [ NeedsManualRebaseline ]
 
 crbug.com/61724 fast/css/first-letter-punctuation-follow.html [ NeedsRebaseline ]
-
-crbug.com/318777 virtual/threaded/animations/display-none-terminates-animation.html  [ Failure Pass ]
-crbug.com/318777 virtual/web-animations-css/animations/display-change-does-not-terminate-animation.html  [ Failure Pass ]
 
 #Needs rebaselining once the new harfbuzz version lands.
 crbug.com/318953 [ Linux Android ] fast/text/atsui-negative-spacing-features.html [ NeedsManualRebaseline ]

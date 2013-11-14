@@ -48,8 +48,10 @@
     }
 
     function checkLeftValue(previousValue, isLast) {
-      var pass = previousValue <= getComputedStyle(target).left;
-      log((pass ? 'PASS' : 'FAIL') + ': Left property was ' + (pass ? 'not ' : '') + 'reset');
+      var currentValue = getComputedStyle(target).left;
+      var pass = parseFloat(previousValue) <= parseFloat(currentValue);
+      log((pass ? 'PASS' : 'FAIL') + ': Left property was ' + (pass ? 'not ' : '') + 'reset' +
+          (pass ? '' : ' (saw change from ' + previousValue + ' to ' + currentValue + ')'));
       if (isLast && window.testRunner) {
         testRunner.notifyDone();
       }
