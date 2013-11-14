@@ -39,8 +39,6 @@ ImageResourceFetcher::ImageResourceFetcher(
 }
 
 ImageResourceFetcher::~ImageResourceFetcher() {
-  if (!fetcher_->completed())
-    fetcher_->Cancel();
 }
 
 void ImageResourceFetcher::OnURLFetchComplete(

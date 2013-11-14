@@ -29,17 +29,14 @@ AltErrorPageResourceFetcher::AltErrorPageResourceFetcher(
       callback_(callback),
       original_request_(original_request),
       original_error_(original_error) {
-  fetcher_.reset(new ResourceFetcherWithTimeout(
-      url, frame, WebURLRequest::TargetIsMainFrame, kDownloadTimeoutSec,
+  fetcher_.reset(new ResourceFetcher(
+      url, frame, WebURLRequest::TargetIsMainFrame,
       base::Bind(&AltErrorPageResourceFetcher::OnURLFetchComplete,
                  base::Unretained(this))));
+  fetcher_->SetTimeout(base::TimeDelta::FromSeconds(kDownloadTimeoutSec));
 }
 
 AltErrorPageResourceFetcher::~AltErrorPageResourceFetcher() {
-}
-
-void AltErrorPageResourceFetcher::Cancel() {
-  fetcher_->Cancel();
 }
 
 void AltErrorPageResourceFetcher::OnURLFetchComplete(

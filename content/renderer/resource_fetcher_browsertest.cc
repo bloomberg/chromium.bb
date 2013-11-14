@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
@@ -108,10 +109,13 @@ class EvilFetcherDelegate : public FetcherDelegate {
 
   virtual void OnURLFetchComplete(const WebURLResponse& response,
                                   const std::string& data) OVERRIDE {
-    // Destroy the ResourceFetcher here.  We are testing that upon returning
-    // to the ResourceFetcher that it does not crash.
-    fetcher_.reset();
     FetcherDelegate::OnURLFetchComplete(response, data);
+
+    // Destroy the ResourceFetcher here.  We are testing that upon returning
+    // to the ResourceFetcher that it does not crash.  This must be done after
+    // calling FetcherDelegate::OnURLFetchComplete, since deleting the fetcher
+    // invalidates |response| and |data|.
+    fetcher_.reset();
   }
 
  private:
@@ -186,9 +190,10 @@ class ResourceFetcherTests : public ContentBrowserTest {
     WebFrame* frame = GetRenderView()->GetWebView()->mainFrame();
 
     scoped_ptr<FetcherDelegate> delegate(new FetcherDelegate);
-    scoped_ptr<ResourceFetcher> fetcher(new ResourceFetcherWithTimeout(
+    scoped_ptr<ResourceFetcher> fetcher(new ResourceFetcher(
         url, frame, WebURLRequest::TargetIsMainFrame,
-        0, delegate->NewCallback()));
+        delegate->NewCallback()));
+    fetcher->SetTimeout(base::TimeDelta());
 
     delegate->WaitForResponse();
 
@@ -204,9 +209,10 @@ class ResourceFetcherTests : public ContentBrowserTest {
     WebFrame* frame = GetRenderView()->GetWebView()->mainFrame();
 
     scoped_ptr<EvilFetcherDelegate> delegate(new EvilFetcherDelegate);
-    scoped_ptr<ResourceFetcher> fetcher(new ResourceFetcherWithTimeout(
+    scoped_ptr<ResourceFetcher> fetcher(new ResourceFetcher(
         url, frame, WebURLRequest::TargetIsMainFrame,
-        0, delegate->NewCallback()));
+        delegate->NewCallback()));
+    fetcher->SetTimeout(base::TimeDelta());
     delegate->SetFetcher(fetcher.release());
 
     delegate->WaitForResponse();
