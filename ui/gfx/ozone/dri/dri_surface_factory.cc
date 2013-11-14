@@ -14,6 +14,7 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/ozone/dri/dri_skbitmap.h"
 #include "ui/gfx/ozone/dri/dri_surface.h"
+#include "ui/gfx/ozone/dri/dri_vsync_provider.h"
 #include "ui/gfx/ozone/dri/dri_wrapper.h"
 #include "ui/gfx/ozone/dri/hardware_display_controller.h"
 
@@ -41,8 +42,8 @@ void HandlePageFlipEvent(int fd,
                          unsigned int seconds,
                          unsigned int useconds,
                          void* controller) {
-  static_cast<HardwareDisplayController*>(controller)->get_surface()
-      ->SwapBuffers();
+  static_cast<HardwareDisplayController*>(controller)
+      ->OnPageFlipEvent(frame, seconds, useconds);
 }
 
 uint32_t GetDriProperty(int fd, drmModeConnector* connector, const char* name) {
@@ -238,7 +239,8 @@ SkCanvas* DriSurfaceFactory::GetCanvasForWidget(
 
 gfx::VSyncProvider* DriSurfaceFactory::GetVSyncProvider(
     gfx::AcceleratedWidget w) {
-  return NULL;
+  CHECK(state_ == INITIALIZED);
+  return new DriVSyncProvider(controller_.get());
 }
 
 ////////////////////////////////////////////////////////////////////////////////

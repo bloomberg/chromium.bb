@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/time/time.h"
 #include "ui/gfx/ozone/dri/dri_skbitmap.h"
 #include "ui/gfx/ozone/dri/dri_surface.h"
 #include "ui/gfx/ozone/dri/dri_wrapper.h"
@@ -16,14 +17,14 @@
 namespace gfx {
 
 HardwareDisplayController::HardwareDisplayController()
-  : drm_(NULL),
-    connector_id_(0),
-    crtc_id_(0),
-    mode_(),
-    saved_crtc_(NULL),
-    state_(UNASSOCIATED),
-    surface_() {
-}
+    : drm_(NULL),
+      connector_id_(0),
+      crtc_id_(0),
+      mode_(),
+      saved_crtc_(NULL),
+      state_(UNASSOCIATED),
+      surface_(),
+      time_of_last_flip_(0) {}
 
 void HardwareDisplayController::SetControllerInfo(
     DriWrapper* drm,
@@ -113,6 +114,16 @@ bool HardwareDisplayController::SchedulePageFlip() {
   }
 
   return true;
+}
+
+void HardwareDisplayController::OnPageFlipEvent(unsigned int frame,
+                                                unsigned int seconds,
+                                                unsigned int useconds) {
+  time_of_last_flip_ =
+      static_cast<uint64_t>(seconds) * base::Time::kMicrosecondsPerSecond +
+      useconds;
+
+  surface_->SwapBuffers();
 }
 
 }  // namespace gfx

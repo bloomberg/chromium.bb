@@ -67,7 +67,6 @@ class GFX_EXPORT DriSurfaceFactory : public SurfaceFactoryOzone {
   // Active output.
   scoped_ptr<HardwareDisplayController> controller_;
 
-
   DISALLOW_COPY_AND_ASSIGN(DriSurfaceFactory);
 };
 

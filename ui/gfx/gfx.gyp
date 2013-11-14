@@ -150,6 +150,8 @@
         'ozone/dri/dri_surface.h',
         'ozone/dri/dri_surface_factory.cc',
         'ozone/dri/dri_surface_factory.h',
+        'ozone/dri/dri_vsync_provider.cc',
+        'ozone/dri/dri_vsync_provider.h',
         'ozone/dri/dri_wrapper.cc',
         'ozone/dri/dri_wrapper.h',
         'ozone/dri/hardware_display_controller.cc',

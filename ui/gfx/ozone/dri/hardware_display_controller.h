@@ -134,6 +134,16 @@ class HardwareDisplayController {
   // Returns true if the page flip was successfully registered, false otherwise.
   bool SchedulePageFlip();
 
+  // Called when the page flip event occurred. The event is provided by the
+  // kernel when a VBlank event finished. This allows the controller to
+  // update internal state and propagate the update to the surface.
+  // The tuple (seconds, useconds) represents the event timestamp. |seconds|
+  // represents the number of seconds while |useconds| represents the
+  // microseconds (< 1 second) in the timestamp.
+  void OnPageFlipEvent(unsigned int frame,
+                       unsigned int seconds,
+                       unsigned int useconds);
+
   State get_state() const { return state_; };
 
   int get_fd() const { return drm_->get_fd(); };
@@ -141,6 +151,10 @@ class HardwareDisplayController {
   const drmModeModeInfo& get_mode() const { return mode_; };
 
   DriSurface* get_surface() const { return surface_.get(); };
+
+  uint64_t get_time_of_last_flip() const {
+    return time_of_last_flip_;
+  };
 
  private:
   // Object containing the connection to the graphics device and wraps the API
@@ -164,6 +178,8 @@ class HardwareDisplayController {
   State state_;
 
   scoped_ptr<DriSurface> surface_;
+
+  uint64_t time_of_last_flip_;
 
   DISALLOW_COPY_AND_ASSIGN(HardwareDisplayController);
 };
