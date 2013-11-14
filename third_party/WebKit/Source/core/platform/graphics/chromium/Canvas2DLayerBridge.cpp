@@ -66,10 +66,10 @@ static SkSurface* createSurface(GraphicsContext3D* context3D, const IntSize& siz
     if (!gr)
         return 0;
     gr->resetContext();
-    SkImage::Info info;
+    SkImageInfo info;
     info.fWidth = size.width();
     info.fHeight = size.height();
-    info.fColorType = SkImage::kPMColor_ColorType;
+    info.fColorType = kPMColor_SkColorType;
     info.fAlphaType = kPremul_SkAlphaType;
     return SkSurface::NewRenderTarget(gr, info,  msaaSampleCount);
 }
