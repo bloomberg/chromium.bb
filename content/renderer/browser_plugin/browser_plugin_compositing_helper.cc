@@ -186,6 +186,12 @@ void BrowserPluginCompositingHelper::OnContainerDestroy() {
     container_->setWebLayer(NULL);
   container_ = NULL;
 
+  if (resource_collection_) {
+    resource_collection_->LoseAllResources();
+    resource_collection_ = NULL;
+  }
+  ack_pending_ = false;
+  software_ack_pending_ = false;
   texture_layer_ = NULL;
   delegated_layer_ = NULL;
   background_layer_ = NULL;

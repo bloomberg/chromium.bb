@@ -447,6 +447,14 @@ void BrowserPlugin::OnGuestContentWindowReady(int guest_instance_id,
 void BrowserPlugin::OnGuestGone(int guest_instance_id) {
   guest_crashed_ = true;
 
+  // Turn off compositing so we can display the sad graphic. Changes to
+  // compositing state will show up at a later time after a layout and commit.
+  EnableCompositing(false);
+  if (compositing_helper_) {
+    compositing_helper_->OnContainerDestroy();
+    compositing_helper_ = NULL;
+  }
+
   // Queue up showing the sad graphic to give content embedders an opportunity
   // to fire their listeners and potentially overlay the webview with custom
   // behavior. If the BrowserPlugin is destroyed in the meantime, then the
@@ -745,8 +753,6 @@ void BrowserPlugin::ShowSadGraphic() {
   // NULL so we shouldn't attempt to access it.
   if (container_)
     container_->invalidate();
-  // Turn off compositing so we can display the sad graphic.
-  EnableCompositing(false);
 }
 
 void BrowserPlugin::ParseAttributes() {
