@@ -195,7 +195,8 @@ bool IsOpenInBrowserPreferreredForFile(const base::FilePath& path) {
 ChromeDownloadManagerDelegate::ChromeDownloadManagerDelegate(Profile* profile)
     : profile_(profile),
       next_download_id_(content::DownloadItem::kInvalidId),
-      download_prefs_(new DownloadPrefs(profile)) {
+      download_prefs_(new DownloadPrefs(profile)),
+      weak_ptr_factory_(this) {
 }
 
 ChromeDownloadManagerDelegate::~ChromeDownloadManagerDelegate() {
@@ -207,6 +208,7 @@ void ChromeDownloadManagerDelegate::SetDownloadManager(DownloadManager* dm) {
 
 void ChromeDownloadManagerDelegate::Shutdown() {
   download_prefs_.reset();
+  weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 void ChromeDownloadManagerDelegate::SetNextId(uint32 next_id) {
@@ -251,7 +253,7 @@ bool ChromeDownloadManagerDelegate::DetermineDownloadTarget(
     const content::DownloadTargetCallback& callback) {
   DownloadTargetDeterminer::CompletionCallback target_determined_callback =
       base::Bind(&ChromeDownloadManagerDelegate::OnDownloadTargetDetermined,
-                 this,
+                 weak_ptr_factory_.GetWeakPtr(),
                  download->GetId(),
                  callback);
   DownloadTargetDeterminer::Start(
@@ -310,7 +312,7 @@ bool ChromeDownloadManagerDelegate::IsDownloadReadyForCompletion(
           item,
           base::Bind(
               &ChromeDownloadManagerDelegate::CheckClientDownloadDone,
-              this,
+              weak_ptr_factory_.GetWeakPtr(),
               item->GetId()));
       return false;
     }
@@ -338,7 +340,7 @@ bool ChromeDownloadManagerDelegate::ShouldCompleteDownload(
     const base::Closure& user_complete_callback) {
   return IsDownloadReadyForCompletion(item, base::Bind(
       &ChromeDownloadManagerDelegate::ShouldCompleteDownloadInternal,
-      this, item->GetId(), user_complete_callback));
+      weak_ptr_factory_.GetWeakPtr(), item->GetId(), user_complete_callback));
 }
 
 bool ChromeDownloadManagerDelegate::ShouldOpenDownload(

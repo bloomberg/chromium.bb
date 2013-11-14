@@ -9,6 +9,7 @@
 #include "base/containers/hash_tables.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/download/download_path_reservation_tracker.h"
 #include "chrome/browser/download/download_target_determiner_delegate.h"
 #include "chrome/browser/download/download_target_info.h"
@@ -182,6 +183,8 @@ class ChromeDownloadManagerDelegate
   CrxInstallerMap crx_installers_;
 
   content::NotificationRegistrar registrar_;
+
+  base::WeakPtrFactory<ChromeDownloadManagerDelegate> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeDownloadManagerDelegate);
 };
