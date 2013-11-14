@@ -7,7 +7,7 @@ if (window.testRunner)
     testRunner.dumpAsText();
 
 test(function(){
-    var c1 = new TextTrackCue(0, 1, '<c>x\0');
+    var c1 = new VTTCue(0, 1, '<c>x\0');
     window.frag = c1.getCueAsHTML();
 }, document.title+', creating the cue');
 

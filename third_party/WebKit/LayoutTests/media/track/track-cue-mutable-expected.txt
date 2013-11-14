@@ -1,4 +1,4 @@
-Tests modifying attributes of a TextTrackCue
+Tests modifying attributes of a VTTCue
 
 ** Test initial values.
 RUN(textCue = cues.getCueById('1'))

@@ -1,4 +1,0 @@
- 
-PASS TextTrackCue.text, script-created cue 
-PASS TextTrackCue.text, parsed cue 
-

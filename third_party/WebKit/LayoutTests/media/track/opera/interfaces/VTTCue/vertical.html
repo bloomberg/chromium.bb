@@ -1,5 +1,5 @@
 <!doctype html>
-<title>TextTrackCue.vertical</title>
+<title>VTTCue.vertical</title>
 <script src=../../../../../resources/testharness.js></script>
 <script src=../../../../../resources/testharnessreport.js></script>
 <div id=log></div>
@@ -12,7 +12,7 @@ setup(function(){
 test(function(){
     var video = document.createElement('video');
     document.body.appendChild(video);
-    var c1 = new TextTrackCue(0, 1, 'text1');
+    var c1 = new VTTCue(0, 1, 'text1');
     assert_equals(c1.vertical, '');
     var track = document.createElement('track');
     var t = track.track;

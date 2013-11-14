@@ -16,7 +16,7 @@
             track = video.addTextTrack('captions');
 
             for(var i = 0; i < 3; i++) {
-                var cue = new TextTrackCue(0, 120, text[i]);
+                var cue = new VTTCue(0, 120, text[i]);
                 track.addCue(cue);
             }
         }

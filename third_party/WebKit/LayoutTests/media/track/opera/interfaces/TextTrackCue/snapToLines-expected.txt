@@ -1,4 +1,0 @@
- 
-PASS TextTrackCue.snapToLines, script-created cue 
-FAIL TextTrackCue.snapToLines, parsed cue assert_true: expected true got false
-
