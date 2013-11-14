@@ -112,7 +112,7 @@ IN_PROC_BROWSER_TEST_F(SigninBrowserTest, MAYBE_ProcessIsolation) {
   EXPECT_EQ(kOneClickSigninEnabled, signin->HasSigninProcess());
 
   // Navigating away should change the process.
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIOmniboxURL));
   EXPECT_FALSE(signin->HasSigninProcess());
 
   ui_test_utils::NavigateToURL(browser(), signin::GetPromoURL(
@@ -139,7 +139,7 @@ IN_PROC_BROWSER_TEST_F(SigninBrowserTest, MAYBE_ProcessIsolation) {
             signin->IsSigninProcess(active_tab_process_id));
 
   // Navigating away should change the process.
-  ui_test_utils::NavigateToURL(browser(), GURL(kNonSigninURL));
+  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
   EXPECT_FALSE(signin->IsSigninProcess(
       active_tab->GetRenderProcessHost()->GetID()));
 }
@@ -179,7 +179,8 @@ class BackOnNTPCommitObserver : public content::WebContentsObserver {
       const GURL& url,
       content::PageTransition transition_type,
       content::RenderViewHost* render_view_host) OVERRIDE {
-    if (url == GURL(chrome::kChromeUINewTabURL)) {
+    if (url == GURL(chrome::kChromeUINewTabURL) ||
+        url == GURL(chrome::kChromeSearchLocalNtpUrl)) {
       content::WindowedNotificationObserver observer(
           content::NOTIFICATION_NAV_ENTRY_COMMITTED,
           content::NotificationService::AllSources());
