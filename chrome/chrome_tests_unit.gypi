@@ -48,7 +48,6 @@
         'browser/android/bookmarks/partner_bookmarks_shim_unittest.cc',
         'browser/android/mock_google_location_settings_helper.cc',
         'browser/android/mock_google_location_settings_helper.h',
-        'browser/android/tab_android_test_stubs.cc',
         'browser/bookmarks/bookmark_test_helpers.cc',
         'browser/bookmarks/bookmark_test_helpers.h',
         'browser/browsing_data/mock_browsing_data_appcache_helper.cc',

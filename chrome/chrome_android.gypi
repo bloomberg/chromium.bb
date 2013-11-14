@@ -30,7 +30,6 @@
         "android/testshell/testshell_google_location_settings_helper.h",
         'android/testshell/testshell_tab.cc',
         'android/testshell/testshell_tab.h',
-        'android/testshell/testshell_stubs.cc',
       ],
       'include_dirs': [
         '<(SHARED_INTERMEDIATE_DIR)/chromium_testshell',

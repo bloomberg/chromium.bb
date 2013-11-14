@@ -1008,6 +1008,7 @@
             '../components/components.gyp:sessions',
             '../components/components.gyp:web_contents_delegate_android_java',
             '../content/content.gyp:content_java',
+            '../printing/printing.gyp:printing_java',
             '../sync/sync.gyp:sync_java',
             '../third_party/guava/guava.gyp:guava_javalib',
             '../ui/ui.gyp:ui_java',

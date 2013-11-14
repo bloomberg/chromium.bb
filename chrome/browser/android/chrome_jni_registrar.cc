@@ -55,6 +55,10 @@
 #include "components/navigation_interception/component_jni_registrar.h"
 #include "components/web_contents_delegate_android/component_jni_registrar.h"
 
+#if defined(ENABLE_PRINTING) && !defined(ENABLE_FULL_PRINTING)
+#include "printing/printing_context_android.h"
+#endif
+
 bool RegisterCertificateViewer(JNIEnv* env);
 
 namespace chrome {
@@ -130,6 +134,10 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
       ValidationMessageBubbleAndroid::Register },
   { "WebsiteSettingsPopupAndroid",
     WebsiteSettingsPopupAndroid::RegisterWebsiteSettingsPopupAndroid },
+#if defined(ENABLE_PRINTING) && !defined(ENABLE_FULL_PRINTING)
+  { "PrintingContext",
+      printing::PrintingContextAndroid::RegisterPrintingContext},
+#endif
 };
 
 bool RegisterJni(JNIEnv* env) {

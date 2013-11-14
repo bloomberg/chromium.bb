@@ -229,7 +229,14 @@
         }],
         ['OS=="android"', {
           'sources': [
+            'printing_context_android.cc',
             'printing_context_android.h',
+          ],
+	  'dependencies': [
+	    'printing_jni_headers',
+	  ],
+          'include_dirs': [
+            '<(SHARED_INTERMEDIATE_DIR)/printing',
           ],
         }],
       ],
@@ -321,4 +328,32 @@
       ],
     },
   ],
+  'conditions': [
+    ['OS == "android"', {
+      'targets': [
+        {
+          'target_name': 'printing_jni_headers',
+          'type': 'none',
+          'sources': [
+            'android/java/src/org/chromium/printing/PrintingContext.java',
+          ],
+          'variables': {
+            'jni_gen_package': 'printing',
+          },
+          'includes': [ '../build/jni_generator.gypi' ],
+        },
+	{
+	  'target_name': 'printing_java',
+          'type': 'none',
+          'variables': {
+            'java_in_dir': '../printing/android/java',
+          },
+          'dependencies': [
+            '../base/base.gyp:base_java',
+          ],
+          'includes': [ '../build/java.gypi'  ],
+	}
+      ]
+    }],
+  ]
 }
