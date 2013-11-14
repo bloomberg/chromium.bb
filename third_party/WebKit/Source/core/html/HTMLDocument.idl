@@ -29,7 +29,7 @@ interface HTMLDocument : Document {
     [CallWith=ActiveWindow, PerWorldBindings, ActivityLogging=ForIsolatedWorlds, CustomElementCallbacks] void writeln(DOMString... text);
 
     readonly attribute HTMLCollection embeds;
-    readonly attribute HTMLCollection plugins;
+    [ImplementedAs=embeds] readonly attribute HTMLCollection plugins;
     readonly attribute HTMLCollection scripts;
 
     // Extensions

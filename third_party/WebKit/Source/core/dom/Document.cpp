@@ -1008,11 +1008,6 @@ bool Document::regionBasedColumnsEnabled() const
     return settings() && settings()->regionBasedColumnsEnabled();
 }
 
-bool Document::cssCompositingEnabled() const
-{
-    return RuntimeEnabledFeatures::cssCompositingEnabled();
-}
-
 PassRefPtr<DOMNamedFlowCollection> Document::webkitGetNamedFlows()
 {
     if (!RuntimeEnabledFeatures::cssRegionsEnabled() || !renderView())
@@ -4243,12 +4238,6 @@ PassRefPtr<HTMLCollection> Document::applets()
 
 PassRefPtr<HTMLCollection> Document::embeds()
 {
-    return ensureCachedCollection(DocEmbeds);
-}
-
-PassRefPtr<HTMLCollection> Document::plugins()
-{
-    // This is an alias for embeds() required for the JS DOM bindings.
     return ensureCachedCollection(DocEmbeds);
 }
 
