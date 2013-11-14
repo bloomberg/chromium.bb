@@ -133,6 +133,10 @@ WebRtcLocalAudioTrack::WebRtcLocalAudioTrack(
       track_source_(track_source),
       need_audio_processing_(NeedsAudioProcessing(constraints)) {
   DCHECK(capturer.get() || webaudio_source);
+  if (!webaudio_source_) {
+    source_provider_.reset(new WebRtcLocalAudioSourceProvider());
+    AddSink(source_provider_.get());
+  }
   DVLOG(1) << "WebRtcLocalAudioTrack::WebRtcLocalAudioTrack()";
 }
 
@@ -208,8 +212,8 @@ void WebRtcLocalAudioTrack::Capture(media::AudioBus* audio_source,
 
 void WebRtcLocalAudioTrack::SetCaptureFormat(
     const media::AudioParameters& params) {
-  if (!params.IsValid())
-    return;
+  DVLOG(1) << "WebRtcLocalAudioTrack::SetCaptureFormat()";
+  DCHECK(params.IsValid());
 
   scoped_refptr<ConfiguredBuffer> new_buffer(new ConfiguredBuffer());
   new_buffer->Initialize(params);
@@ -269,7 +273,7 @@ void WebRtcLocalAudioTrack::AddSink(WebRtcAudioCapturerSink* sink) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DVLOG(1) << "WebRtcLocalAudioTrack::AddSink()";
   base::AutoLock auto_lock(lock_);
-  if (buffer_.get())
+  if (buffer_.get() && buffer_->params().IsValid())
     sink->SetCaptureFormat(buffer_->params());
 
   // Verify that |sink| is not already added to the list.
@@ -309,12 +313,7 @@ void WebRtcLocalAudioTrack::Start() {
     // If the track is hooking up with WebAudio, do NOT add the track to the
     // capturer as its sink otherwise two streams in different clock will be
     // pushed through the same track.
-    WebRtcLocalAudioSourceProvider* source_provider = NULL;
-    if (capturer_.get()) {
-      source_provider = static_cast<WebRtcLocalAudioSourceProvider*>(
-          capturer_->audio_source_provider());
-    }
-    webaudio_source_->Start(this, source_provider);
+     webaudio_source_->Start(this, capturer_.get());
     return;
   }
 
@@ -335,6 +334,8 @@ void WebRtcLocalAudioTrack::Stop() {
     // in such case and no need to call RemoveTrack().
     webaudio_source_->Stop();
   } else {
+    // It is necessary to call RemoveTrack on the |capturer_| to avoid getting
+    // audio callback after Stop().
     capturer_->RemoveTrack(this);
   }
 
@@ -343,7 +344,7 @@ void WebRtcLocalAudioTrack::Stop() {
   SinkList sinks;
   {
     base::AutoLock auto_lock(lock_);
-    sinks = sinks_;
+    sinks.swap(sinks_);
     webaudio_source_ = NULL;
     capturer_ = NULL;
   }

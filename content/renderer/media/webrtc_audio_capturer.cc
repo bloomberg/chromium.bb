@@ -201,11 +201,10 @@ WebRtcAudioCapturer::WebRtcAudioCapturer()
       hardware_buffer_size_(0),
       session_id_(0),
       volume_(0),
-      source_provider_(new WebRtcLocalAudioSourceProvider()),
       peer_connection_mode_(false),
       output_sample_rate_(0),
-      output_frames_per_buffer_(0) {
-  DCHECK(source_provider_.get());
+      output_frames_per_buffer_(0),
+      key_pressed_(false) {
   DVLOG(1) << "WebRtcAudioCapturer::WebRtcAudioCapturer()";
 }
 
@@ -229,7 +228,9 @@ void WebRtcAudioCapturer::AddTrack(WebRtcLocalAudioTrack* track) {
   DCHECK(std::find_if(tracks_.begin(), tracks_.end(),
                       TrackOwner::TrackWrapper(track)) == tracks_.end());
 
-  track->SetCaptureFormat(params_);
+  if (params_.IsValid())
+    track->SetCaptureFormat(params_);
+
   tracks_.push_back(new WebRtcAudioCapturer::TrackOwner(track));
 }
 
@@ -292,7 +293,6 @@ void WebRtcAudioCapturer::SetCapturerSource(
 
   // Make sure to grab the new parameters in case they were reconfigured.
   media::AudioParameters params = audio_parameters();
-  source_provider_->Initialize(params);
   if (source.get())
     source->Initialize(params, this, session_id_);
 
@@ -351,17 +351,24 @@ void WebRtcAudioCapturer::Start() {
 void WebRtcAudioCapturer::Stop() {
   DVLOG(1) << "WebRtcAudioCapturer::Stop()";
   scoped_refptr<media::AudioCapturerSource> source;
+  TrackList tracks;
   {
     base::AutoLock auto_lock(lock_);
     if (!running_)
       return;
 
     source = source_;
+    std::swap(tracks_, tracks);
     running_ = false;
   }
 
   if (source.get())
     source->Stop();
+
+  // Clear the delegate to ensure that no more capture callbacks will
+  // be sent to tracks.
+  for (TrackList::const_iterator it = tracks.begin(); it != tracks.end(); ++it)
+    (*it)->Reset();
 }
 
 void WebRtcAudioCapturer::SetVolume(int volume) {
@@ -412,13 +419,10 @@ void WebRtcAudioCapturer::Capture(media::AudioBus* audio_source,
     // volume is higher than 255.
     volume_ = static_cast<int>((volume * MaxVolume()) + 0.5);
     current_volume = volume_;
+    audio_delay_ = base::TimeDelta::FromMicroseconds(audio_delay_milliseconds);
+    key_pressed_ = key_pressed;
     tracks = tracks_;
   }
-
-  // Deliver captured data to source provider, which stores the data into FIFO
-  // for WebAudio to fetch.
-  source_provider_->DeliverData(audio_source, audio_delay_milliseconds,
-                                current_volume, key_pressed);
 
   // Feed the data to the tracks.
   for (TrackList::const_iterator it = tracks.begin();
@@ -469,6 +473,14 @@ int WebRtcAudioCapturer::GetBufferSize(int sample_rate) const {
   // WebRtc is running at a buffer size of 10ms data. Use a multiple of 10ms
   // as the buffer size to achieve the best performance for WebRtc.
   return (sample_rate / 100);
+}
+
+void WebRtcAudioCapturer::GetAudioProcessingParams(
+    base::TimeDelta* delay, int* volume, bool* key_pressed) {
+  base::AutoLock auto_lock(lock_);
+  *delay = audio_delay_;
+  *volume = volume_;
+  *key_pressed = key_pressed_;
 }
 
 }  // namespace content

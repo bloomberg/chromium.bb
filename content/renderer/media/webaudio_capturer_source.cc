@@ -5,7 +5,8 @@
 #include "content/renderer/media/webaudio_capturer_source.h"
 
 #include "base/logging.h"
-#include "content/renderer/media/webrtc_local_audio_source_provider.h"
+#include "base/time/time.h"
+#include "content/renderer/media/webrtc_audio_capturer.h"
 #include "content/renderer/media/webrtc_local_audio_track.h"
 
 using media::AudioBus;
@@ -21,7 +22,7 @@ namespace content {
 
 WebAudioCapturerSource::WebAudioCapturerSource()
     : track_(NULL),
-      source_provider_(NULL) {
+      capturer_(NULL) {
 }
 
 WebAudioCapturerSource::~WebAudioCapturerSource() {
@@ -62,26 +63,24 @@ void WebAudioCapturerSource::setFormat(
 }
 
 void WebAudioCapturerSource::Start(
-    WebRtcLocalAudioTrack* track,
-    WebRtcLocalAudioSourceProvider* source_provider) {
+    WebRtcLocalAudioTrack* track, WebRtcAudioCapturer* capturer) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(track);
-  // |source_provider| may be NULL if no getUserMedia has been called before
-  // calling CreateMediaStreamDestination.
   // The downstream client should be configured the same as what WebKit
   // is feeding it.
-  track->SetCaptureFormat(params_);
+  if (params_.IsValid())
+    track->SetCaptureFormat(params_);
 
   base::AutoLock auto_lock(lock_);
   track_ = track;
-  source_provider_ = source_provider;
+  capturer_ = capturer;
 }
 
 void WebAudioCapturerSource::Stop() {
   DCHECK(thread_checker_.CalledOnValidThread());
   base::AutoLock auto_lock(lock_);
   track_ = NULL;
-  source_provider_ = NULL;
+  capturer_ = NULL;
 }
 
 void WebAudioCapturerSource::consumeAudio(
@@ -109,16 +108,16 @@ void WebAudioCapturerSource::consumeAudio(
 
   fifo_->Push(wrapper_bus_.get());
   int capture_frames = params_.frames_per_buffer();
-  int delay_ms = 0;
+  base::TimeDelta delay;
   int volume = 0;
   bool key_pressed = false;
+  if (capturer_) {
+    capturer_->GetAudioProcessingParams(&delay, &volume, &key_pressed);
+  }
   while (fifo_->frames() >= capture_frames) {
-    if (source_provider_) {
-      source_provider_->GetAudioProcessingParams(
-          &delay_ms, &volume, &key_pressed);
-    }
     fifo_->Consume(capture_bus_.get(), 0, capture_frames);
-    track_->Capture(capture_bus_.get(), delay_ms, volume, key_pressed);
+    track_->Capture(capture_bus_.get(), delay.InMilliseconds(),
+                    volume, key_pressed);
   }
 }
 

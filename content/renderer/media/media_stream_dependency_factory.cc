@@ -439,11 +439,11 @@ bool MediaStreamDependencyFactory::AddNativeMediaStreamTrack(
                               &track_constraints));
     AddNativeTrackToBlinkTrack(audio_track.get(), track);
 
+    // Pass the pointer of the source provider to the blink audio track.
+    blink::WebMediaStreamTrack writable_track = track;
+    writable_track.setSourceProvider(static_cast<WebRtcLocalAudioTrack*>(
+        audio_track.get())->audio_source_provider());
     audio_track->set_enabled(track.isEnabled());
-    if (capturer.get()) {
-      blink::WebMediaStreamTrack writable_track = track;
-      writable_track.setSourceProvider(capturer->audio_source_provider());
-    }
     return native_stream->AddTrack(audio_track.get());
   } else {
     DCHECK(source.type() == blink::WebMediaStreamSource::TypeVideo);

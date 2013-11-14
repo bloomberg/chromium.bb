@@ -11,6 +11,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
 #include "content/renderer/media/webrtc_audio_device_impl.h"
+#include "content/renderer/media/webrtc_local_audio_source_provider.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediaconstraintsinterface.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreaminterface.h"
 #include "third_party/libjingle/source/talk/app/webrtc/mediastreamtrack.h"
@@ -75,6 +76,10 @@ class CONTENT_EXPORT WebRtcLocalAudioTrack
   // Can be called on different user threads.
   void SetCaptureFormat(const media::AudioParameters& params);
 
+  blink::WebAudioSourceProvider* audio_source_provider() const {
+    return source_provider_.get();
+  }
+
  protected:
   WebRtcLocalAudioTrack(
       const std::string& label,
@@ -129,6 +134,10 @@ class CONTENT_EXPORT WebRtcLocalAudioTrack
   // Allocated during initialization.
   class ConfiguredBuffer;
   scoped_refptr<ConfiguredBuffer> buffer_;
+
+  // The source provider to feed the track data to other clients like
+  // WebAudio.
+  scoped_ptr<WebRtcLocalAudioSourceProvider> source_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcLocalAudioTrack);
 };

@@ -10,6 +10,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
+#include "content/renderer/media/webrtc_audio_device_impl.h"
 #include "media/base/audio_converter.h"
 #include "third_party/WebKit/public/platform/WebAudioSourceProvider.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
@@ -38,28 +39,25 @@ namespace content {
 // All calls are protected by a lock.
 class CONTENT_EXPORT WebRtcLocalAudioSourceProvider
     : NON_EXPORTED_BASE(public media::AudioConverter::InputCallback),
-      NON_EXPORTED_BASE(public blink::WebAudioSourceProvider) {
+      NON_EXPORTED_BASE(public blink::WebAudioSourceProvider),
+      NON_EXPORTED_BASE(public WebRtcAudioCapturerSink) {
  public:
   static const size_t kWebAudioRenderBufferSize;
 
   WebRtcLocalAudioSourceProvider();
   virtual ~WebRtcLocalAudioSourceProvider();
 
-  // Initialize function for the souce provider. This can be called multiple
-  // times if the source format has changed.
-  void Initialize(const media::AudioParameters& source_params);
-
-  // Called by the WebRtcAudioCapturer to deliever captured data into fifo on
-  // the capture audio thread.
-  void DeliverData(media::AudioBus* audio_source,
-                   int audio_delay_milliseconds,
-                   int volume,
-                   bool key_pressed);
-
-  // Called by the WebAudioCapturerSource to get the audio processing params.
-  // This function is triggered by provideInput() on the WebAudio audio thread,
-  // so it has been under the protection of |lock_|.
-  void GetAudioProcessingParams(int* delay_ms, int* volume, bool* key_pressed);
+  // WebRtcAudioCapturerSink implementation.
+  virtual int CaptureData(const std::vector<int>& channels,
+                          const int16* audio_data,
+                          int sample_rate,
+                          int number_of_channels,
+                          int number_of_frames,
+                          int audio_delay_milliseconds,
+                          int current_volume,
+                          bool need_audio_processing,
+                          bool key_pressed) OVERRIDE;
+  virtual void SetCaptureFormat(const media::AudioParameters& params) OVERRIDE;
 
   // blink::WebAudioSourceProvider implementation.
   virtual void setClient(blink::WebAudioSourceProviderClient* client) OVERRIDE;
@@ -87,10 +85,8 @@ class CONTENT_EXPORT WebRtcLocalAudioSourceProvider
 
   scoped_ptr<media::AudioConverter> audio_converter_;
   scoped_ptr<media::AudioFifo> fifo_;
-  scoped_ptr<media::AudioBus> bus_wrapper_;
-  int audio_delay_ms_;
-  int volume_;
-  bool key_pressed_;
+  scoped_ptr<media::AudioBus> input_bus_;
+  scoped_ptr<media::AudioBus> output_wrapper_;
   bool is_enabled_;
   media::AudioParameters source_params_;
   media::AudioParameters sink_params_;
