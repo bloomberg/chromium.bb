@@ -462,6 +462,10 @@ void RuleSet::compactRules()
     m_pageRules.shrinkToFit();
     m_viewportRules.shrinkToFit();
     m_fontFaceRules.shrinkToFit();
+    m_keyframesRules.shrinkToFit();
+    m_hostRules.shrinkToFit();
+    m_treeBoundaryCrossingRules.shrinkToFit();
+    m_shadowDistributedRules.shrinkToFit();
 }
 
 } // namespace WebCore
