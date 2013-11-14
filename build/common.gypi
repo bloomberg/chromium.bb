@@ -32,6 +32,9 @@
 
             # Use a raw surface abstraction.
             'use_ozone%': 0,
+
+            # Configure the build for small devices. See crbug.com/318413
+            'embedded%': 0,
           },
           # Copy conditionally-set variables out one scope.
           'chromeos%': '<(chromeos)',
@@ -39,7 +42,7 @@
           'use_ash%': '<(use_ash)',
           'use_cras%': '<(use_cras)',
           'use_ozone%': '<(use_ozone)',
-          'use_ozone_evdev%': '<(use_ozone)',
+          'embedded%': '<(embedded)',
 
           # Whether we are using Views Toolkit
           'toolkit_views%': 0,
@@ -76,6 +79,11 @@
               'use_aura%': 1,
             }],
 
+            # Ozone uses Aura.
+            ['use_ozone==1', {
+              'use_aura%': 1,
+            }],
+
             # ToT Linux should be aura.
             #
             # TODO(erg): Merge this into the previous block once compiling with
@@ -102,6 +110,11 @@
               'host_arch%':
                 '<!(uname -m | sed -e "s/i.86/ia32/;s/x86_64/x64/;s/amd64/x64/;s/arm.*/arm/;s/i86pc/ia32/")',
             }],
+
+            # Embedded implies ozone.
+            ['embedded==1', {
+              'use_ozone%': 1,
+            }],
           ],
         },
         # Copy conditionally-set variables out one scope.
@@ -111,7 +124,7 @@
         'use_ash%': '<(use_ash)',
         'use_cras%': '<(use_cras)',
         'use_ozone%': '<(use_ozone)',
-        'use_ozone_evdev%': '<(use_ozone_evdev)',
+        'embedded%': '<(embedded)',
         'use_openssl%': '<(use_openssl)',
         'enable_viewport%': '<(enable_viewport)',
         'enable_hidpi%': '<(enable_hidpi)',
@@ -149,6 +162,13 @@
             'toolkit_views%': 0,
           }],
 
+          # Embedded builds use aura without ash or views.
+          ['embedded==1', {
+            'use_aura%': 1,
+            'use_ash%': 0,
+            'toolkit_views%': 0,
+          }],
+
           # Set toolkit_uses_gtk for the Chromium browser on Linux.
           ['desktop_linux==1 and use_aura==0 and use_ozone==0', {
             'toolkit_uses_gtk%': 1,
@@ -179,6 +199,12 @@
           }, {
             'use_default_render_theme%': 0,
           }],
+
+          ['use_ozone==1', {
+            'use_ozone_evdev%': 1,
+          }, {
+            'use_ozone_evdev%': 0,
+          }]
         ],
       },
 
@@ -194,6 +220,7 @@
       'use_cras%': '<(use_cras)',
       'use_ozone%': '<(use_ozone)',
       'use_ozone_evdev%': '<(use_ozone_evdev)',
+      'embedded%': '<(embedded)',
       'use_openssl%': '<(use_openssl)',
       'enable_viewport%': '<(enable_viewport)',
       'enable_hidpi%': '<(enable_hidpi)',
@@ -494,17 +521,22 @@
           'use_x11%': 1,
         }],
 
-        # Flags to use pango and glib on non-Mac POSIX platforms.
+        # Flags to use glib.
         ['OS=="win" or OS=="mac" or OS=="ios" or OS=="android"', {
           'use_glib%': 0,
-          'use_pango%': 0,
         }, {
           'use_glib%': 1,
+        }],
+
+        # Flags to use pango.
+        ['OS=="win" or OS=="mac" or OS=="ios" or OS=="android" or embedded==1', {
+          'use_pango%': 0,
+        }, {
           'use_pango%': 1,
         }],
 
         # DBus usage.
-        ['OS=="linux"', {
+        ['OS=="linux" and embedded==0', {
           'use_dbus%': 1,
         }, {
           'use_dbus%': 0,
@@ -634,7 +666,7 @@
           'enable_plugin_installation%': 1,
         }],
 
-        ['(OS=="android" and google_tv!=1) or OS=="ios"', {
+        ['(OS=="android" and google_tv!=1) or OS=="ios" or embedded==1', {
           'enable_plugins%': 0,
         }, {
           'enable_plugins%': 1,
@@ -753,6 +785,12 @@
           'v8_optimized_debug%': 1,
         }, {
           'v8_optimized_debug%': 2,
+        }],
+
+        # Disable various features by default on embedded.
+        ['embedded==1', {
+          'remoting%': 0,
+          'enable_printing%': 0,
         }],
       ],
 
@@ -1566,7 +1604,7 @@
 
       # Options controlling the use of GConf (the classic GNOME configuration
       # system) and GIO, which contains GSettings (the new GNOME config system).
-      ['chromeos==1', {
+      ['chromeos==1 or embedded==1', {
         'use_gconf%': 0,
         'use_gio%': 0,
       }, {
