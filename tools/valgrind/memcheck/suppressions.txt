@@ -6424,3 +6424,17 @@
    fun:_ZN5media16AudioOutputProxy4OpenEv
    fun:_ZN5media18AudioStreamHandler20AudioStreamContainer4PlayEv
 }
+{
+  bug_319242_a
+  Memcheck:Uninitialized
+  fun:_ZN7testing8internal11TuplePrefixILm2EE7Matches*
+  ...
+  fun:_ZN5media16AesDecryptorTest8KeyErrorEjNS_9MediaKeys8KeyErrorEi
+}
+{
+  bug_319242_b
+  Memcheck:Uninitialized
+  fun:_ZNK7testing8internal16TypedExpectationIFvjEE7Matches*
+  ...
+  fun:_ZN5media16AesDecryptorTest8KeyAddedEj
+}
