@@ -64,7 +64,7 @@ class BrowserPluginGuest::PermissionRequest :
  public:
   virtual void Respond(bool should_allow, const std::string& user_input) = 0;
   virtual bool AllowedByDefault() const {
-      return false;
+    return false;
   }
  protected:
   PermissionRequest() {
@@ -298,7 +298,7 @@ static std::string RetrieveDownloadURLFromRequestId(
       ResourceDispatcherHostImpl::Get()->GetURLRequest(global_id);
   if (url_request)
     return url_request->url().possibly_invalid_spec();
-  return std::string();
+  return "";
 }
 
 }  // namespace
@@ -335,9 +335,9 @@ class BrowserPluginGuest::EmbedderWebContentsObserver
 
 BrowserPluginGuest::BrowserPluginGuest(
     int instance_id,
+    bool has_render_view,
     WebContentsImpl* web_contents,
-    BrowserPluginGuest* opener,
-    bool has_render_view)
+    BrowserPluginGuest* opener)
     : WebContentsObserver(web_contents),
       weak_ptr_factory_(this),
       embedder_web_contents_(NULL),
@@ -388,13 +388,13 @@ void BrowserPluginGuest::DestroyUnattachedWindows() {
   }
   // All pending windows should be removed from the set after Destroy() is
   // called on all of them.
-  DCHECK_EQ(0ul, pending_new_windows_.size());
+  DCHECK(pending_new_windows_.empty());
 }
 
-void BrowserPluginGuest::LoadURLWithParams(WebContents* web_contents,
-                                           const GURL& url,
+void BrowserPluginGuest::LoadURLWithParams(const GURL& url,
                                            const Referrer& referrer,
-                                           PageTransition transition_type) {
+                                           PageTransition transition_type,
+                                           WebContents* web_contents) {
   NavigationController::LoadURLParams load_url_params(url);
   load_url_params.referrer = referrer;
   load_url_params.transition_type = transition_type;
@@ -478,11 +478,8 @@ BrowserPluginGuest* BrowserPluginGuest::CreateNewGuestWindow(
       std::make_pair(new_guest, NewWindowInfo(params.url, std::string())));
 
   // Request permission to show the new window.
-  RequestNewWindowPermission(
-      new_guest->GetWebContents(),
-      params.disposition,
-      gfx::Rect(),
-      params.user_gesture);
+  RequestNewWindowPermission(params.disposition, gfx::Rect(),
+                             params.user_gesture, new_guest->GetWebContents());
 
   return new_guest;
 }
@@ -536,8 +533,8 @@ bool BrowserPluginGuest::OnMessageReceivedFromEmbedder(
 }
 
 void BrowserPluginGuest::Initialize(
-    WebContentsImpl* embedder_web_contents,
-    const BrowserPluginHostMsg_Attach_Params& params) {
+    const BrowserPluginHostMsg_Attach_Params& params,
+    WebContentsImpl* embedder_web_contents) {
   focused_ = params.focused;
   guest_visible_ = params.visible;
   guest_window_rect_ = params.resize_guest_params.view_rect;
@@ -644,7 +641,7 @@ BrowserPluginGuest* BrowserPluginGuest::Create(
   if (factory_) {
     guest = factory_->CreateBrowserPluginGuest(instance_id, web_contents);
   } else {
-    guest = new BrowserPluginGuest(instance_id, web_contents, NULL, false);
+    guest = new BrowserPluginGuest(instance_id, false, web_contents, NULL);
   }
   guest->extra_attach_params_.reset(extra_params->DeepCopy());
   web_contents->SetBrowserPluginGuest(guest);
@@ -658,12 +655,12 @@ BrowserPluginGuest* BrowserPluginGuest::Create(
 // static
 BrowserPluginGuest* BrowserPluginGuest::CreateWithOpener(
     int instance_id,
+    bool has_render_view,
     WebContentsImpl* web_contents,
-    BrowserPluginGuest* opener,
-    bool has_render_view) {
+    BrowserPluginGuest* opener) {
   BrowserPluginGuest* guest =
       new BrowserPluginGuest(
-          instance_id, web_contents, opener, has_render_view);
+          instance_id, has_render_view, web_contents, opener);
   web_contents->SetBrowserPluginGuest(guest);
   BrowserPluginGuestDelegate* delegate = NULL;
   GetContentClient()->browser()->GuestWebContentsCreated(
@@ -702,8 +699,8 @@ void BrowserPluginGuest::AddNewContents(WebContents* source,
                                         bool* was_blocked) {
   if (was_blocked)
     *was_blocked = false;
-  RequestNewWindowPermission(static_cast<WebContentsImpl*>(new_contents),
-                             disposition, initial_pos, user_gesture);
+  RequestNewWindowPermission(disposition, initial_pos, user_gesture,
+                             static_cast<WebContentsImpl*>(new_contents));
 }
 
 void BrowserPluginGuest::CanDownload(
@@ -786,7 +783,7 @@ WebContents* BrowserPluginGuest::OpenURLFromTab(WebContents* source,
   }
   if (params.disposition == CURRENT_TAB) {
     // This can happen for cross-site redirects.
-    LoadURLWithParams(source, params.url, params.referrer, params.transition);
+    LoadURLWithParams(params.url, params.referrer, params.transition, source);
     return source;
   }
 
@@ -888,10 +885,10 @@ bool BrowserPluginGuest::InAutoSizeBounds(const gfx::Size& size) const {
 }
 
 void BrowserPluginGuest::RequestNewWindowPermission(
-    WebContentsImpl* new_contents,
     WindowOpenDisposition disposition,
     const gfx::Rect& initial_bounds,
-    bool user_gesture) {
+    bool user_gesture,
+    WebContentsImpl* new_contents) {
   BrowserPluginGuest* guest = new_contents->GetBrowserPluginGuest();
   PendingWindowMap::iterator it = pending_new_windows_.find(guest);
   if (it == pending_new_windows_.end())
@@ -1124,9 +1121,8 @@ bool BrowserPluginGuest::ShouldForwardToBrowserPluginGuest(
     case BrowserPluginHostMsg_UpdateRect_ACK::ID:
       return true;
     default:
-      break;
+      return false;
   }
-  return false;
 }
 
 bool BrowserPluginGuest::OnMessageReceived(const IPC::Message& message) {
@@ -1200,7 +1196,7 @@ void BrowserPluginGuest::Attach(
   if (!name_.empty())
     params.name.clear();
 
-  Initialize(embedder_web_contents, params);
+  Initialize(params, embedder_web_contents);
 
   SendQueuedMessages();
 
@@ -1377,8 +1373,8 @@ void BrowserPluginGuest::OnNavigateGuest(
   // normal web URLs are supported.  No protocol handlers are installed for
   // other schemes (e.g., WebUI or extensions), and no permissions or bindings
   // can be granted to the guest process.
-  LoadURLWithParams(GetWebContents(), validated_url, Referrer(),
-                    PAGE_TRANSITION_AUTO_TOPLEVEL);
+  LoadURLWithParams(validated_url, Referrer(), PAGE_TRANSITION_AUTO_TOPLEVEL,
+                    GetWebContents());
 }
 
 void BrowserPluginGuest::OnPluginDestroyed(int instance_id) {

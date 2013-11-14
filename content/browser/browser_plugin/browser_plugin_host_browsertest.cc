@@ -145,9 +145,9 @@ class TestShortHangTimeoutGuestFactory : public TestBrowserPluginHostFactory {
  public:
   virtual BrowserPluginGuest* CreateBrowserPluginGuest(
       int instance_id, WebContentsImpl* web_contents) OVERRIDE {
-    BrowserPluginGuest* guest =
+    TestBrowserPluginGuest* guest =
         new TestBrowserPluginGuest(instance_id, web_contents);
-    guest->set_guest_hang_timeout_for_testing(TestTimeouts::tiny_timeout());
+    guest->set_guest_hang_timeout(TestTimeouts::tiny_timeout());
     return guest;
   }
 

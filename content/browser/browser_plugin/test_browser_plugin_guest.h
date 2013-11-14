@@ -65,6 +65,10 @@ class TestBrowserPluginGuest : public BrowserPluginGuest {
   // Waits until UpdateRect with a particular |view_size| is observed.
   void WaitForViewSize(const gfx::Size& view_size);
 
+  void set_guest_hang_timeout(const base::TimeDelta& timeout) {
+    guest_hang_timeout_ = timeout;
+  }
+
  private:
   // Overridden methods from BrowserPluginGuest to intercept in test objects.
   virtual void SendMessageToEmbedder(IPC::Message* msg) OVERRIDE;

@@ -1305,8 +1305,10 @@ void WebContentsImpl::CreateNewWindow(
     int instance_id = GetBrowserPluginGuestManager()->get_next_instance_id();
     WebContentsImpl* new_contents_impl =
         static_cast<WebContentsImpl*>(new_contents);
-    BrowserPluginGuest::CreateWithOpener(instance_id, new_contents_impl,
-        GetBrowserPluginGuest(), !!new_contents_impl->opener());
+    BrowserPluginGuest::CreateWithOpener(instance_id,
+                                         new_contents_impl->opener() != NULL,
+                                         new_contents_impl,
+                                         GetBrowserPluginGuest());
   }
   if (params.disposition == NEW_BACKGROUND_TAB)
     create_params.initially_hidden = true;

@@ -203,7 +203,7 @@ void BrowserPluginEmbedder::OnAttach(
         guest->GetWebContents(),
         web_contents(),
         extra_params);
-    guest->Initialize(static_cast<WebContentsImpl*>(web_contents()), params);
+    guest->Initialize(params, static_cast<WebContentsImpl*>(web_contents()));
   }
 }
 
