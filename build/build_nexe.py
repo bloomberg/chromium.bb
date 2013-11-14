@@ -98,18 +98,34 @@ def IsStale(out_ts, src_ts, rebuilt=False):
   return out_ts <= src_ts
 
 
-def GetGomaPath(osname, arch, toolname):
+def GetGomaConfig(gomadir, osname, arch, toolname):
   """Returns full-path of gomacc if goma is available or None."""
   # Start goma support from os/arch/toolname that have been tested.
   # Set NO_NACL_GOMA=true to force to avoid using goma.
   if (osname != 'linux' or arch not in ['x86-32', 'x86-64']
       or toolname not in ['newlib', 'glibc']
-      or os.environ.get('NO_NACL_GOMA', None)):
-    return None
+      or os.environ.get('NO_NACL_GOMA')):
+    return {}
 
+  goma_config = {}
   try:
     gomacc_base = 'gomacc.exe' if os.name == 'nt' else 'gomacc'
-    for directory in os.environ.get('PATH', '').split(os.path.pathsep):
+    # Search order of gomacc:
+    # --gomadir command argument -> GOMA_DIR env. -> PATH env.
+    search_path = []
+    # 1. --gomadir in the command argument.
+    if gomadir:
+      search_path.append(gomadir)
+    # 2. Use GOMA_DIR environmental variable if exist.
+    goma_dir_env = os.environ.get('GOMA_DIR')
+    if goma_dir_env:
+      search_path.append(gomadir_env)
+    # 3. Append PATH env.
+    path_env = os.environ.get('PATH')
+    if path_env:
+      search_path.extend(path_env.split(os.path.pathsep))
+
+    for directory in search_path:
       gomacc = os.path.join(directory, gomacc_base)
       if os.path.isfile(gomacc):
         port = subprocess.Popen(
@@ -118,11 +134,17 @@ def GetGomaPath(osname, arch, toolname):
           status = urllib2.urlopen(
               'http://127.0.0.1:%s/healthz' % port).read().strip()
           if status == 'ok':
-            return gomacc
+            goma_config['gomacc'] = gomacc
+            break
   except Exception:
     # Anyway, fallbacks to non-goma mode.
     pass
-  return None
+
+  if goma_config:
+    goma_config['burst'] = False
+    if osname == 'linux' and not os.environ.get('NO_NACL_GOMA_BURST', None):
+      goma_config['burst'] = True
+  return goma_config
 
 
 class Builder(object):
@@ -223,7 +245,9 @@ class Builder(object):
     self.strip_all = options.strip_all
     self.strip_debug = options.strip_debug
     self.finalize_pexe = options.finalize_pexe and arch == 'pnacl'
-    self.gomacc = GetGomaPath(self.osname, arch, toolname)
+    goma_config = GetGomaConfig(options.gomadir, self.osname, arch, toolname)
+    self.gomacc = goma_config.get('gomacc', '')
+    self.goma_burst = goma_config.get('burst', False)
 
     # Use unoptimized native objects for debug IRT builds for faster compiles.
     if (self.is_pnacl_toolchain
@@ -697,6 +721,8 @@ def Main(argv):
                     help='Set the path for of the toolchains.')
   parser.add_option('--config-name', dest='build_config',
                     help='GYP build configuration name (Release/Debug)')
+  parser.add_option('--gomadir', dest='gomadir',
+                    help='Path of the goma directory.')
   options, files = parser.parse_args(argv[1:])
 
   if not argv:
@@ -731,7 +757,7 @@ def Main(argv):
       build.Translate(list(files)[0])
       return 0
 
-    if build.gomacc:  # use goma build.
+    if build.gomacc and build.goma_burst:  # execute gomacc as many as possible.
       returns = Queue.Queue()
       def CompileThread(filename, queue):
         try:
