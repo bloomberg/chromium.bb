@@ -114,23 +114,24 @@ void ClipboardMessageFilter::OnWriteObjectsSync(
 
 void ClipboardMessageFilter::OnWriteObjectsAsync(
     const ui::Clipboard::ObjectMap& objects) {
+  // This async message doesn't support shared-memory based bitmaps; they must
+  // be removed otherwise we might dereference a rubbish pointer.
+  scoped_ptr<ui::Clipboard::ObjectMap> sanitized_objects(
+      new ui::Clipboard::ObjectMap(objects));
+  sanitized_objects->erase(ui::Clipboard::CBF_SMBITMAP);
+
 #if defined(OS_WIN)
   // We cannot write directly from the IO thread, and cannot service the IPC
   // on the UI thread. We'll copy the relevant data and post a task to preform
   // the write on the UI thread.
-  ui::Clipboard::ObjectMap* long_living_objects =
-      new ui::Clipboard::ObjectMap(objects);
-
-  // This async message doesn't support shared-memory based bitmaps; they must
-  // be removed otherwise we might dereference a rubbish pointer.
-  long_living_objects->erase(ui::Clipboard::CBF_SMBITMAP);
-
   BrowserThread::PostTask(
       BrowserThread::UI,
       FROM_HERE,
-      base::Bind(&WriteObjectsOnUIThread, base::Owned(long_living_objects)));
+      base::Bind(
+          &WriteObjectsOnUIThread, base::Owned(sanitized_objects.release())));
 #else
-  GetClipboard()->WriteObjects(ui::CLIPBOARD_TYPE_COPY_PASTE, objects);
+  GetClipboard()->WriteObjects(
+      ui::CLIPBOARD_TYPE_COPY_PASTE, *sanitized_objects.get());
 #endif
 }
 
