@@ -153,8 +153,7 @@ void SyncEngine::GetOriginStatusMap(OriginStatusMap* status_map) {
 }
 
 scoped_ptr<base::ListValue> SyncEngine::DumpFiles(const GURL& origin) {
-  NOTIMPLEMENTED();
-  return make_scoped_ptr(new base::ListValue());
+  return metadata_database_->DumpFiles(origin.host());
 }
 
 void SyncEngine::SetSyncEnabled(bool enabled) {

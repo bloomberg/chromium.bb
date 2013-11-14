@@ -4,8 +4,6 @@
 
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_util.h"
 
-#include <string>
-
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/memory/scoped_vector.h"
@@ -116,6 +114,20 @@ webkit_blob::ScopedFile CreateTemporaryFile() {
       temp_file_path,
       webkit_blob::ScopedFile::DELETE_ON_SCOPE_OUT,
       base::MessageLoopProxy::current().get());
+}
+
+std::string FileKindToString(FileKind file_kind) {
+  switch (file_kind) {
+    case FILE_KIND_UNSUPPORTED:
+      return "unsupported";
+    case FILE_KIND_FILE:
+      return "file";
+    case FILE_KIND_FOLDER:
+      return "folder";
+  }
+
+  NOTREACHED();
+  return "unknown";
 }
 
 }  // namespace drive_backend

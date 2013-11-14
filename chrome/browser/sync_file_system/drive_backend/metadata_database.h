@@ -14,6 +14,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/scoped_vector.h"
 #include "base/memory/weak_ptr.h"
+#include "base/values.h"
 #include "chrome/browser/sync_file_system/drive_backend/tracker_set.h"
 #include "chrome/browser/sync_file_system/sync_callbacks.h"
 #include "chrome/browser/sync_file_system/sync_status_code.h"
@@ -125,6 +126,9 @@ class MetadataDatabase {
   int64 GetLargestFetchedChangeID() const;
   int64 GetSyncRootTrackerID() const;
   bool HasSyncRoot() const;
+
+  // Returns all file metadata for the given |app_id|.
+  scoped_ptr<base::ListValue> DumpFiles(const std::string& app_id);
 
   // Gets / updates the largest known change ID.
   // The largest known change ID is on-memory and not persist over restart.

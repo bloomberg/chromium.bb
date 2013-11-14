@@ -5,7 +5,10 @@
 #ifndef CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_DRIVE_BACKEND_UTIL_H_
 #define CHROME_BROWSER_SYNC_FILE_SYSTEM_DRIVE_BACKEND_DRIVE_BACKEND_UTIL_H_
 
+#include <string>
+
 #include "base/memory/scoped_ptr.h"
+#include "chrome/browser/sync_file_system/drive_backend/metadata_database.pb.h"
 #include "webkit/common/blob/scoped_file.h"
 
 namespace google_apis {
@@ -19,11 +22,6 @@ class WriteBatch;
 
 namespace sync_file_system {
 namespace drive_backend {
-
-class FileDetails;
-class FileMetadata;
-class FileTracker;
-class ServiceMetadata;
 
 void PutServiceMetadataToBatch(const ServiceMetadata& service_metadata,
                                leveldb::WriteBatch* batch);
@@ -42,6 +40,8 @@ scoped_ptr<FileMetadata> CreateFileMetadataFromChangeResource(
 // Creates a temporary file in |dir_path|.  This must be called on an
 // IO-allowed thread.
 webkit_blob::ScopedFile CreateTemporaryFile();
+
+std::string FileKindToString(FileKind file_kind);
 
 }  // namespace drive_backend
 }  // namespace sync_file_system

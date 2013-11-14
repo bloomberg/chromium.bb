@@ -969,5 +969,39 @@ TEST_F(MetadataDatabaseTest, PopulateInitialDataTest) {
   VerifyReloadConsistency();
 }
 
+TEST_F(MetadataDatabaseTest, DumpFiles) {
+  TrackedFile sync_root(CreateTrackedSyncRoot());
+  TrackedFile app_root(CreateTrackedAppRoot(sync_root, "app_id"));
+  app_root.tracker.set_app_id(app_root.metadata.details().title());
+
+  TrackedFile folder_0(CreateTrackedFolder(app_root, "folder_0"));
+  TrackedFile file_0(CreateTrackedFile(folder_0, "file_0"));
+
+  const TrackedFile* tracked_files[] = {
+    &sync_root, &app_root, &folder_0, &file_0
+  };
+
+  SetUpDatabaseByTrackedFiles(tracked_files, arraysize(tracked_files));
+  EXPECT_EQ(SYNC_STATUS_OK, InitializeMetadataDatabase());
+  VerifyTrackedFiles(tracked_files, arraysize(tracked_files));
+
+  scoped_ptr<base::ListValue> files =
+      metadata_database()->DumpFiles(app_root.tracker.app_id());
+  ASSERT_EQ(2u, files->GetSize());
+
+  base::DictionaryValue* file = NULL;
+  std::string str;
+
+  ASSERT_TRUE(files->GetDictionary(0, &file));
+  EXPECT_TRUE(file->GetString("title", &str) && str == "folder_0");
+  EXPECT_TRUE(file->GetString("type", &str) && str == "folder");
+  EXPECT_TRUE(file->HasKey("details"));
+
+  ASSERT_TRUE(files->GetDictionary(1, &file));
+  EXPECT_TRUE(file->GetString("title", &str) && str == "file_0");
+  EXPECT_TRUE(file->GetString("type", &str) && str == "file");
+  EXPECT_TRUE(file->HasKey("details"));
+}
+
 }  // namespace drive_backend
 }  // namespace sync_file_system

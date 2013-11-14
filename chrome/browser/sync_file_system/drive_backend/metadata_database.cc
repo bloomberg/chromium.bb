@@ -1503,5 +1503,62 @@ void MetadataDatabase::WriteToDatabase(scoped_ptr<leveldb::WriteBatch> batch,
       base::Bind(&AdaptLevelDBStatusToSyncStatusCode, callback));
 }
 
+scoped_ptr<base::ListValue> MetadataDatabase::DumpFiles(
+    const std::string& app_id) {
+  scoped_ptr<base::ListValue> files(new base::ListValue);
+
+  FileTracker app_root_tracker;
+  if (!FindAppRootTracker(app_id, &app_root_tracker))
+    return files.Pass();
+
+  std::vector<int64> stack;
+  PushChildTrackersToContainer(
+        trackers_by_parent_and_title_,
+        app_root_tracker.tracker_id(),
+        std::back_inserter(stack));
+  while (!stack.empty()) {
+    int64 tracker_id = stack.back();
+    stack.pop_back();
+    PushChildTrackersToContainer(
+        trackers_by_parent_and_title_, tracker_id, std::back_inserter(stack));
+
+    FileTracker* tracker = tracker_by_id_[tracker_id];
+    base::DictionaryValue* file = new DictionaryValue;
+
+    base::FilePath path;
+    if (tracker->active()) {
+      BuildPathForTracker(tracker->tracker_id(), &path);
+    } else {
+      BuildPathForTracker(tracker->parent_tracker_id(), &path);
+      if (tracker->has_synced_details()) {
+        path = path.Append(
+            base::FilePath::FromUTF8Unsafe(tracker->synced_details().title()));
+      } else {
+        path = path.Append(FILE_PATH_LITERAL("unknown"));
+      }
+    }
+    file->SetString("path", path.AsUTF8Unsafe());
+    if (tracker->has_synced_details()) {
+      file->SetString("title", tracker->synced_details().title());
+      file->SetString("type",
+                      FileKindToString(tracker->synced_details().file_kind()));
+    }
+
+    base::DictionaryValue* details = new DictionaryValue;
+    details->SetString("file_id", tracker->file_id());
+    if (tracker->has_synced_details() &&
+        tracker->synced_details().file_kind() == FILE_KIND_FILE)
+      details->SetString("md5",tracker->synced_details().md5());
+    details->SetString("active", tracker->active() ? "true" : "false");
+    details->SetString("dirty", tracker->dirty() ? "true" : "false");
+
+    file->Set("details", details);
+
+    files->Append(file);
+  }
+
+  return files.Pass();
+}
+
 }  // namespace drive_backend
 }  // namespace sync_file_system
