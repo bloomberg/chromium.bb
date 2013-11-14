@@ -203,6 +203,20 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
     pss->RegisterDataTypeController(
         new UIDataTypeController(syncer::ARTICLES, this, profile_, pss));
   }
+
+#if defined(ENABLE_MANAGED_USERS)
+  if (ManagedUserService::AreManagedUsersEnabled()) {
+    if (profile_->IsManaged()) {
+      pss->RegisterDataTypeController(
+          new UIDataTypeController(
+              syncer::MANAGED_USER_SETTINGS, this, profile_, pss));
+    } else {
+      pss->RegisterDataTypeController(
+          new UIDataTypeController(
+              syncer::MANAGED_USERS, this, profile_, pss));
+    }
+  }
+#endif
 }
 
 void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
@@ -277,20 +291,6 @@ void ProfileSyncComponentsFactoryImpl::RegisterDesktopDataTypes(
   if (!command_line_->HasSwitch(switches::kDisableSyncDictionary)) {
     pss->RegisterDataTypeController(
         new UIDataTypeController(syncer::DICTIONARY, this, profile_, pss));
-  }
-#endif
-
-#if defined(ENABLE_MANAGED_USERS)
-  if (ManagedUserService::AreManagedUsersEnabled()) {
-    if (profile_->IsManaged()) {
-      pss->RegisterDataTypeController(
-          new UIDataTypeController(
-              syncer::MANAGED_USER_SETTINGS, this, profile_, pss));
-    } else {
-      pss->RegisterDataTypeController(
-          new UIDataTypeController(
-              syncer::MANAGED_USERS, this, profile_, pss));
-    }
   }
 #endif
 }

@@ -14,6 +14,8 @@
 #include "chrome/browser/managed_mode/managed_user_service.h"
 #include "chrome/browser/managed_mode/managed_user_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/fake_profile_oauth2_token_service.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
@@ -67,15 +69,26 @@ class ManagedModeURLFilterObserver : public ManagedModeURLFilter::Observer {
 
 class ManagedUserServiceTest : public ::testing::Test {
  public:
-  ManagedUserServiceTest() {
-    managed_user_service_ = ManagedUserServiceFactory::GetForProfile(&profile_);
+  ManagedUserServiceTest() {}
+
+  virtual void SetUp() OVERRIDE {
+    TestingProfile::Builder builder;
+    builder.AddTestingFactory(ProfileOAuth2TokenServiceFactory::GetInstance(),
+                              FakeProfileOAuth2TokenService::Build);
+    profile_ = builder.Build();
+    managed_user_service_ =
+        ManagedUserServiceFactory::GetForProfile(profile_.get());
+  }
+
+  virtual void TearDown() OVERRIDE {
+    profile_.reset();
   }
 
   virtual ~ManagedUserServiceTest() {}
 
  protected:
   content::TestBrowserThreadBundle thread_bundle_;
-  TestingProfile profile_;
+  scoped_ptr<TestingProfile> profile_;
   ManagedUserService* managed_user_service_;
 };
 
@@ -88,7 +101,7 @@ TEST_F(ManagedUserServiceTest, GetManualExceptionsForHost) {
   GURL kBlurpURL("http://blurp.net/bla");
   GURL kMooseURL("http://moose.org/baz");
   {
-    DictionaryPrefUpdate update(profile_.GetPrefs(),
+    DictionaryPrefUpdate update(profile_->GetPrefs(),
                                 prefs::kManagedModeManualURLs);
     base::DictionaryValue* dict = update.Get();
     dict->SetBooleanWithoutPathExpansion(kExampleFooURL.spec(), true);
@@ -116,7 +129,7 @@ TEST_F(ManagedUserServiceTest, GetManualExceptionsForHost) {
   EXPECT_EQ(kExampleFooURL, exceptions[1]);
 
   {
-    DictionaryPrefUpdate update(profile_.GetPrefs(),
+    DictionaryPrefUpdate update(profile_->GetPrefs(),
                                 prefs::kManagedModeManualURLs);
     base::DictionaryValue* dict = update.Get();
     for (std::vector<GURL>::iterator it = exceptions.begin();
@@ -142,15 +155,15 @@ TEST_F(ManagedUserServiceTest, GetManualExceptionsForHost) {
 // DCHECK is hit when the service is destroyed, this test passed.
 TEST_F(ManagedUserServiceTest, ShutDownCustodianProfileDownloader) {
   CustodianProfileDownloaderService* downloader_service =
-      CustodianProfileDownloaderServiceFactory::GetForProfile(
-          &profile_);
+      CustodianProfileDownloaderServiceFactory::GetForProfile(profile_.get());
 
   // Emulate being logged in, then start to download a profile so a
   // ProfileDownloader gets created.
-  profile_.GetPrefs()->SetString(prefs::kGoogleServicesUsername, "Logged In");
+  profile_->GetPrefs()->SetString(prefs::kGoogleServicesUsername, "Logged In");
   downloader_service->DownloadProfile(base::Bind(&OnProfileDownloadedFail));
 }
 
+#if !defined(OS_ANDROID)
 class ManagedUserServiceExtensionTestBase : public ExtensionServiceTestBase {
  public:
   explicit ManagedUserServiceExtensionTestBase(bool is_managed)
@@ -383,3 +396,4 @@ TEST_F(ManagedUserServiceExtensionTest, InstallContentPacks) {
   EXPECT_EQ(ManagedModeURLFilter::ALLOW,
             url_filter->GetFilteringBehaviorForURL(moose_url));
 }
+#endif  // !defined(OS_ANDROID)

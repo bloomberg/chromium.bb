@@ -50,6 +50,10 @@
 #include "extensions/browser/view_type_utils.h"
 #include "jni/TabBase_jni.h"
 
+#if defined(ENABLE_MANAGED_USERS)
+#include "chrome/browser/managed_mode/managed_mode_navigation_observer.h"
+#endif
+
 namespace {
 
 const char kTabHelpersInitializedUserDataKey[] =
@@ -110,6 +114,11 @@ void BrowserTabContents::AttachTabHelpers(content::WebContents* contents) {
     predictors::ResourcePrefetchPredictorTabHelper::CreateForWebContents(
         contents);
   }
+
+#if defined(ENABLE_MANAGED_USERS)
+  if (profile->IsManaged())
+    ManagedModeNavigationObserver::CreateForWebContents(contents);
+#endif
 }
 
 // TODO(dtrainor): Refactor so we do not need this method.

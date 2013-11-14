@@ -141,3 +141,11 @@ void FakeProfileOAuth2TokenService::FetchOAuth2Token(
   pending_request.request = request->AsWeakPtr();
   pending_requests_.push_back(pending_request);
 }
+
+void FakeProfileOAuth2TokenService::InvalidateOAuth2Token(
+    const std::string& account_id,
+    const std::string& client_id,
+    const ScopeSet& scopes,
+    const std::string& access_token) {
+  // Do nothing, as we don't have a cache from which to remove the token.
+}

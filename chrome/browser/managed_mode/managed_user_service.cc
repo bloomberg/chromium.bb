@@ -144,7 +144,11 @@ void ManagedUserService::Shutdown() {
   did_shutdown_ = true;
   if (ProfileIsManaged()) {
     RecordProfileAndBrowserEventsHelper(kQuitBrowserKeyPrefix);
+#if !defined(OS_ANDROID)
+    // TODO(bauerb): Get rid of the platform-specific #ifdef here.
+    // http://crbug.com/313377
     BrowserList::RemoveObserver(this);
+#endif
   }
 
   if (!waiting_for_sync_initialization_)
@@ -570,7 +574,11 @@ void ManagedUserService::Init() {
       base::Bind(&ManagedUserService::UpdateManualURLs,
                  base::Unretained(this)));
 
+#if !defined(OS_ANDROID)
+  // TODO(bauerb): Get rid of the platform-specific #ifdef here.
+  // http://crbug.com/313377
   BrowserList::AddObserver(this);
+#endif
 
   // Initialize the filter.
   OnDefaultFilteringBehaviorChanged();

@@ -20,12 +20,6 @@
 #include "chrome/browser/managed_mode/managed_user_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_commands.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_list.h"
-#include "chrome/browser/ui/host_desktop.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
@@ -35,6 +29,15 @@
 #include "grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if !defined(OS_ANDROID)
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_commands.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/host_desktop.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#endif
+
 using base::Time;
 using content::NavigationEntry;
 
@@ -43,6 +46,9 @@ namespace {
 
 // Helpers --------------------------------------------------------------------
 
+#if !defined(OS_ANDROID)
+// TODO(bauerb): Get rid of the platform-specific #ifdef here.
+// http://crbug.com/313377
 void GoBackToSafety(content::WebContents* web_contents) {
   // For now, just go back one page (the user didn't retreat from that page,
   // so it should be okay).
@@ -68,7 +74,7 @@ void GoBackToSafety(content::WebContents* web_contents) {
 
   web_contents->GetDelegate()->CloseContents(web_contents);
 }
-
+#endif
 
 // ManagedModeWarningInfoBarDelegate ------------------------------------------
 
@@ -135,7 +141,13 @@ string16 ManagedModeWarningInfoBarDelegate::GetButtonLabel(
 }
 
 bool ManagedModeWarningInfoBarDelegate::Accept() {
+#if defined(OS_ANDROID)
+  // TODO(bauerb): Get rid of the platform-specific #ifdef here.
+  // http://crbug.com/313377
+  NOTIMPLEMENTED();
+#else
   GoBackToSafety(web_contents());
+#endif
 
   return false;
 }

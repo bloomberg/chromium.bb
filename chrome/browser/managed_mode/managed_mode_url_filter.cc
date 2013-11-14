@@ -208,6 +208,11 @@ bool ManagedModeURLFilter::HasStandardScheme(const GURL& url) {
   return false;
 }
 
+std::string GetHostnameHash(const GURL& url) {
+  std::string hash = base::SHA1HashString(url.host());
+  return base::HexEncode(hash.data(), hash.length());
+}
+
 // static
 bool ManagedModeURLFilter::HostMatchesPattern(const std::string& host,
                                               const std::string& pattern) {
@@ -286,9 +291,7 @@ ManagedModeURLFilter::GetFilteringBehaviorForURL(const GURL& url) const {
     return ALLOW;
 
   // Check the list of hostname hashes.
-  std::string hash = base::SHA1HashString(url.host());
-  std::string hash_hex = base::HexEncode(hash.data(), hash.length());
-  if (contents_->hash_site_map.count(hash_hex))
+  if (contents_->hash_site_map.count(GetHostnameHash(url)))
     return ALLOW;
 
   // Fall back to the default behavior.
@@ -311,10 +314,10 @@ void ManagedModeURLFilter::GetSites(
     sites->push_back(&contents_->sites[entry->second]);
   }
 
-  typedef base::hash_map<std::string, int>::const_iterator
+  typedef base::hash_multimap<std::string, int>::const_iterator
       hash_site_map_iterator;
   std::pair<hash_site_map_iterator, hash_site_map_iterator> bounds =
-      contents_->hash_site_map.equal_range(url.host());
+      contents_->hash_site_map.equal_range(GetHostnameHash(url));
   for (hash_site_map_iterator hash_it = bounds.first;
        hash_it != bounds.second; hash_it++) {
     sites->push_back(&contents_->sites[hash_it->second]);
