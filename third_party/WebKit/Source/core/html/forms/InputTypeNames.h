@@ -28,6 +28,8 @@ namespace WebCore {
 
 namespace InputTypeNames {
 
+// These functions should be called in the main thread.
+
 const AtomicString& button();
 const AtomicString& checkbox();
 const AtomicString& color();
