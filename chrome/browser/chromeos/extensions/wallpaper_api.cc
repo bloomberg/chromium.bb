@@ -6,17 +6,80 @@
 
 #include "ash/desktop_background/desktop_background_controller.h"
 #include "base/file_util.h"
+#include "base/lazy_instance.h"
 #include "base/path_service.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/worker_pool.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/user.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/browser/chromeos/login/wallpaper_manager.h"
 #include "chrome/common/chrome_paths.h"
+#include "net/base/load_flags.h"
+#include "net/url_request/url_fetcher.h"
+#include "net/url_request/url_fetcher_delegate.h"
+#include "url/gurl.h"
 
 using base::BinaryValue;
 using content::BrowserThread;
 
+typedef base::Callback<void(net::URLRequestStatus::Status, const std::string&)>
+    FetchCallback;
+
 namespace set_wallpaper = extensions::api::wallpaper::SetWallpaper;
+
+namespace {
+
+class WallpaperFetcher : public net::URLFetcherDelegate {
+ public:
+  WallpaperFetcher() {}
+
+  virtual ~WallpaperFetcher() {}
+
+  void FetchWallpaper(const GURL& url, FetchCallback callback) {
+    CancelPreviousFetch();
+    callback_ = callback;
+    url_fetcher_.reset(net::URLFetcher::Create(url,
+                                               net::URLFetcher::GET,
+                                               this));
+    url_fetcher_->SetRequestContext(
+        g_browser_process->system_request_context());
+    url_fetcher_->SetLoadFlags(net::LOAD_DISABLE_CACHE);
+    url_fetcher_->Start();
+  }
+
+ private:
+  // URLFetcherDelegate overrides:
+  virtual void OnURLFetchComplete(const net::URLFetcher* source) OVERRIDE {
+    net::URLRequestStatus::Status status = source->GetStatus().status();
+    std::string response;
+    if (status == net::URLRequestStatus::SUCCESS) {
+      url_fetcher_->GetResponseAsString(&response);
+    } else {
+      response = source->GetStatus().error();
+    }
+    url_fetcher_.reset();
+    callback_.Run(status, response);
+  }
+
+  void CancelPreviousFetch() {
+    if (url_fetcher_.get()) {
+      std::string error = base::StringPrintf(
+          "Downloading wallpaper %s is canceled.",
+          url_fetcher_->GetOriginalURL().ExtractFileName().c_str());
+      callback_.Run(net::URLRequestStatus::CANCELED, error);
+      url_fetcher_.reset();
+    }
+  }
+
+  scoped_ptr<net::URLFetcher> url_fetcher_;
+  FetchCallback callback_;
+};
+
+base::LazyInstance<WallpaperFetcher> g_wallpaper_fetcher =
+    LAZY_INSTANCE_INITIALIZER;
+
+}  // namespace
 
 WallpaperSetWallpaperFunction::WallpaperSetWallpaperFunction() {
 }
@@ -25,16 +88,28 @@ WallpaperSetWallpaperFunction::~WallpaperSetWallpaperFunction() {
 }
 
 bool WallpaperSetWallpaperFunction::RunImpl() {
-  params = set_wallpaper::Params::Create(*args_);
-  EXTENSION_FUNCTION_VALIDATE(params);
+  params_ = set_wallpaper::Params::Create(*args_);
+  EXTENSION_FUNCTION_VALIDATE(params_);
 
   // Gets email address and username hash while at UI thread.
   email_ = chromeos::UserManager::Get()->GetLoggedInUser()->email();
   user_id_hash_ =
       chromeos::UserManager::Get()->GetLoggedInUser()->username_hash();
 
-  StartDecode(params->details.wallpaper_data);
-
+  if (params_->details.wallpaper_data) {
+    StartDecode(*params_->details.wallpaper_data);
+  } else {
+    GURL wallpaper_url(*params_->details.url);
+    if (wallpaper_url.is_valid()) {
+    g_wallpaper_fetcher.Get().FetchWallpaper(
+        wallpaper_url,
+        base::Bind(&WallpaperSetWallpaperFunction::OnWallpaperFetched,
+                   this));
+    } else {
+      SetError("URL is invalid.");
+      SendResponse(false);
+    }
+  }
   return true;
 }
 
@@ -43,11 +118,13 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
   chromeos::WallpaperManager* wallpaper_manager =
       chromeos::WallpaperManager::Get();
   chromeos::UserImage::RawImage raw_image(
-      params->details.wallpaper_data.begin(),
-      params->details.wallpaper_data.end());
+      params_->details.wallpaper_data->begin(),
+      params_->details.wallpaper_data->end());
   chromeos::UserImage image(wallpaper, raw_image);
   base::FilePath thumbnail_path = wallpaper_manager->GetCustomWallpaperPath(
-      chromeos::kThumbnailWallpaperSubDir, user_id_hash_, params->details.name);
+      chromeos::kThumbnailWallpaperSubDir,
+      user_id_hash_,
+      params_->details.name);
 
   sequence_token_ = BrowserThread::GetBlockingPool()->
       GetNamedSequenceToken(chromeos::kWallpaperSequenceTokenName);
@@ -56,16 +133,16 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
           GetSequencedTaskRunnerWithShutdownBehavior(sequence_token_,
               base::SequencedWorkerPool::BLOCK_SHUTDOWN);
   ash::WallpaperLayout layout = wallpaper_api_util::GetLayoutEnum(
-      set_wallpaper::Params::Details::ToString(params->details.layout));
+      set_wallpaper::Params::Details::ToString(params_->details.layout));
   wallpaper_manager->SetCustomWallpaper(email_,
                                         user_id_hash_,
-                                        params->details.name,
+                                        params_->details.name,
                                         layout,
                                         chromeos::User::CUSTOMIZED,
                                         image);
   unsafe_wallpaper_decoder_ = NULL;
 
-  if (params->details.thumbnail) {
+  if (params_->details.thumbnail) {
     wallpaper.EnsureRepsForSupportedScales();
     scoped_ptr<gfx::ImageSkia> deep_copy(wallpaper.DeepCopy());
     // Generates thumbnail before call api function callback. We can then
@@ -107,4 +184,15 @@ void WallpaperSetWallpaperFunction::ThumbnailGenerated(
       reinterpret_cast<const char*>(data->front()), data->size());
   SetResult(result);
   SendResponse(true);
+}
+
+void WallpaperSetWallpaperFunction::OnWallpaperFetched(
+    net::URLRequestStatus::Status status, const std::string& response) {
+  if (status == net::URLRequestStatus::SUCCESS) {
+    params_->details.wallpaper_data.reset(new std::string(response));
+    StartDecode(*params_->details.wallpaper_data);
+  } else {
+    SetError(response);
+    SendResponse(false);
+  }
 }
