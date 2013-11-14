@@ -58,7 +58,7 @@
           "isApp": {
             "description": "True if this is an app.",
             "type": "boolean",
-            "nodoc": true
+            "deprecated": "Please use $ref:ExtensionInfo.type."
           },
           "type": {
             "description": "The type of this extension, app, or theme.",

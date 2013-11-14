@@ -16,7 +16,7 @@
           "index": {"type": "integer", "minimum": -1, "description": "The zero-based index of the tab within its window."},
           "windowId": {"type": "integer", "minimum": 0, "description": "The ID of the window the tab is contained within."},
           "openerTabId": {"type": "integer", "minimum": 0, "optional": true, "description": "The ID of the tab that opened this tab, if any. This property is only present if the opener tab still exists."},
-          "selected": {"type": "boolean", "description": "Whether the tab is selected.", "nodoc": true},
+          "selected": {"type": "boolean", "description": "Whether the tab is selected.", "deprecated": "Please use $ref:Tab.highlighted."},
           "highlighted": {"type": "boolean", "description": "Whether the tab is highlighted."},
           "active": {"type": "boolean", "description": "Whether the tab is active in its window. (Does not necessarily mean the window is focused.)"},
           "pinned": {"type": "boolean", "description": "Whether the tab is pinned."},
@@ -112,10 +112,10 @@
       },
       {
         "name": "sendRequest",
-        "nodoc": true,
+        "deprecated": "Please use $ref:runtime.sendMessage.",
         "nocompile": true,
         "type": "function",
-        "description": "Deprecated: Please use sendMessage.",
+        "description": "Sends a single request to the content script(s) in the specified tab, with an optional callback to run when a response is sent back.  The $ref:extension.onRequest event is fired in each content script running in the specified tab for the current extension.",
         "parameters": [
           {
             "type": "integer",
@@ -171,9 +171,9 @@
       },
       {
         "name": "getSelected",
-        "nodoc": true,
+        "deprecated": "Please use $ref:query <code>{active: true}</code>.",
         "type": "function",
-        "description": "Deprecated. Please use query({'active': true}). Gets the tab that is selected in the specified window.",
+        "description": "Gets the tab that is selected in the specified window.",
         "parameters": [
           {
             "type": "integer",
@@ -194,8 +194,8 @@
       {
         "name": "getAllInWindow",
         "type": "function",
-        "nodoc": true,
-        "description": "Deprecated. Please use query({'windowId': windowId}). Gets details about all tabs in the specified window.",
+        "deprecated": "Please use $ref:query <code>{windowId: windowId}</code>.",
+        "description": "Gets details about all tabs in the specified window.",
         "parameters": [
           {
             "type": "integer",
@@ -245,7 +245,7 @@
                 "description": "Whether the tab should become the active tab in the window. Does not affect whether the window is focused (see $ref:windows.update). Defaults to <var>true</var>."
               },
               "selected": {
-                "nodoc": true,
+                "deprecated": "Please use <em>active</em>.",
                 "type": "boolean",
                 "optional": true,
                 "description": "Whether the tab should become the selected tab in the window. Defaults to <var>true</var>"
@@ -457,7 +457,7 @@
                 "description": "Adds or removes the tab from the current selection."
               },
               "selected": {
-                "nodoc": true,
+                "deprecated": "Please use <em>highlighted</em>.",
                 "type": "boolean",
                 "optional": true,
                 "description": "Whether the tab should be selected."
@@ -760,9 +760,9 @@
       },
       {
         "name": "onSelectionChanged",
-        "nodoc": true,
+        "deprecated": "Please use $ref:onActivated.",
         "type": "function",
-        "description": "Deprecated. Please use onActivated.",
+        "description": "Fires when the selected tab in a window changes.",
         "parameters": [
           {
             "type": "integer",
@@ -785,9 +785,9 @@
       },
       {
         "name": "onActiveChanged",
-        "nodoc": true,
+        "deprecated": "Please use $ref:onActivated.",
         "type": "function",
-        "description": "Deprecated. Please use onActivated.",
+        "description": "Fires when the selected tab in a window changes. Note that the tab's URL may not be set at the time this event fired, but you can listen to $ref:onUpdated events to be notified when a URL is set.",
         "parameters": [
           {
             "type": "integer",
@@ -833,9 +833,9 @@
       },
       {
         "name": "onHighlightChanged",
+        "deprecated": "Please use $ref:onHighlighted.",
         "type": "function",
-        "nodoc": true,
-        "description": "Deprecated. Please use onHighlighted.",
+        "description": "Fired when the highlighted or selected tabs in a window changes.",
         "parameters": [
           {
             "type": "object",

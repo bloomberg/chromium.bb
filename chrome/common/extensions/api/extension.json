@@ -28,10 +28,10 @@
       {
         "name": "sendRequest",
         "nocompile": true,
-        "nodoc": true,
+        "deprecated": "Please use $ref:runtime.sendMessage.",
         "type": "function",
         "allowAmbiguousOptionalArguments": true,
-        "description": "Deprecated: Please use sendMessage.",
+        "description": "Sends a single request to other listeners within the extension. Similar to $ref:runtime.connect, but only sends a single request with an optional response. The $ref:onRequest event is fired in each page of the extension.",
         "parameters": [
           {"type": "string", "name": "extensionId", "optional": true, "description": "The extension ID of the extension you want to connect to. If omitted, default is your own extension."},
           { "type": "any", "name": "request" },
@@ -119,10 +119,10 @@
       {
         "name": "getExtensionTabs",
         "nocompile": true,
-        "nodoc": true,
+        "deprecated": "Please use $ref:getViews <code>{type: \"tab\"}</code>.",
         "type": "function",
         "maximumManifestVersion": 1,
-        "description": "Deprecated. Please use getViews({type: 'TAB'}). Returns an array of the JavaScript 'window' objects for each of the tabs running inside the current extension. If windowId is specified, returns only the 'window' objects of tabs attached to the specified window.",
+        "description": "Returns an array of the JavaScript 'window' objects for each of the tabs running inside the current extension. If <code>windowId</code> is specified, returns only the 'window' objects of tabs attached to the specified window.",
         "parameters": [
           {"type": "integer", "name": "windowId", "optional": true}
         ],
@@ -187,12 +187,12 @@
     "events": [
       {
         "name": "onRequest",
-        "nodoc": true,
+        "deprecated": "Please use $ref:runtime.onMessage.",
         "type": "function",
         "options": {
           "unmanaged": true
         },
-        "description": "Deprecated: please use onMessage.",
+        "description": "Fired when a request is sent from either an extension process or a content script.",
         "parameters": [
           {"name": "request", "type": "any", "optional": true, "description": "The request sent by the calling script."},
           {"name": "sender", "$ref": "runtime.MessageSender" },
@@ -201,12 +201,12 @@
       },
       {
         "name": "onRequestExternal",
-        "nodoc": true,
+        "deprecated": "Please use $ref:runtime.onMessageExternal.",
         "type": "function",
         "options": {
           "unmanaged": true
         },
-        "description": "Deprecated: please use onMessageExternal.",
+        "description": "Fired when a request is sent from another extension.",
         "parameters": [
           {"name": "request", "type": "any", "optional": true, "description": "The request sent by the calling script."},
           {"name": "sender", "$ref": "runtime.MessageSender" },

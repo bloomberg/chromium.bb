@@ -393,7 +393,7 @@
         "name": "onBrowserUpdateAvailable",
         "type": "function",
         "description": "Fired when a Chrome update is available, but isn't installed immediately because a browser restart is required.",
-        "nodoc": true,
+        "deprecated": "Please use $ref:onRestartRequired.",
         "parameters": []
       },
       {
