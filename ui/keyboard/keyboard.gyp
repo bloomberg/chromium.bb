@@ -103,6 +103,11 @@
             'ldflags': ['-rdynamic'],
           },
         }],
+        ['OS=="win" and win_use_allocator_shim==1', {
+          'dependencies': [
+            '<(DEPTH)/base/allocator/allocator.gyp:allocator',
+          ],
+        }],
       ],
     },
   ],
