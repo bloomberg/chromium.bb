@@ -340,15 +340,14 @@ void HTMLTreeBuilder::detach()
 
 HTMLTreeBuilder::FragmentParsingContext::FragmentParsingContext()
     : m_fragment(0)
-    , m_contextElement(0)
 {
 }
 
 HTMLTreeBuilder::FragmentParsingContext::FragmentParsingContext(DocumentFragment* fragment, Element* contextElement)
     : m_fragment(fragment)
-    , m_contextElement(contextElement)
 {
     ASSERT(!fragment->hasChildNodes());
+    m_contextElementStackItem = HTMLStackItem::create(contextElement, HTMLStackItem::ItemForContextElement);
 }
 
 HTMLTreeBuilder::FragmentParsingContext::~FragmentParsingContext()
@@ -378,10 +377,10 @@ void HTMLTreeBuilder::constructTree(AtomicHTMLToken* token)
     if (m_parser->tokenizer()) {
         bool inForeignContent = false;
         if (!m_tree.isEmpty()) {
-            RefPtr<HTMLStackItem> adjustedCurrentNode = adjustedCurrentStackItem();
+            HTMLStackItem* adjustedCurrentNode = adjustedCurrentStackItem();
             inForeignContent = !adjustedCurrentNode->isInHTMLNamespace()
-                && !HTMLElementStack::isHTMLIntegrationPoint(adjustedCurrentNode.get())
-                && !HTMLElementStack::isMathMLTextIntegrationPoint(adjustedCurrentNode.get());
+                && !HTMLElementStack::isHTMLIntegrationPoint(adjustedCurrentNode)
+                && !HTMLElementStack::isMathMLTextIntegrationPoint(adjustedCurrentNode);
         }
 
         m_parser->tokenizer()->setForceNullCharacterReplacement(m_insertionMode == TextMode || inForeignContent);
@@ -1003,11 +1002,11 @@ bool HTMLTreeBuilder::processColgroupEndTagForInColumnGroup()
 }
 
 // http://www.whatwg.org/specs/web-apps/current-work/#adjusted-current-node
-PassRefPtr<HTMLStackItem> HTMLTreeBuilder::adjustedCurrentStackItem() const
+HTMLStackItem* HTMLTreeBuilder::adjustedCurrentStackItem() const
 {
     ASSERT(!m_tree.isEmpty());
     if (isParsingFragment() && m_tree.openElements()->hasOnlyOneElement())
-        return HTMLStackItem::create(m_fragmentContext.contextElement(), HTMLStackItem::ItemForContextElement);
+        return m_fragmentContext.contextElementStackItem();
 
     return m_tree.currentStackItem();
 }
@@ -1624,7 +1623,7 @@ void HTMLTreeBuilder::resetInsertionModeAppropriately()
         if (item->node() == m_tree.openElements()->rootNode()) {
             last = true;
             if (isParsingFragment())
-                item = HTMLStackItem::create(m_fragmentContext.contextElement(), HTMLStackItem::ItemForContextElement);
+                item = m_fragmentContext.contextElementStackItem();
         }
         if (item->hasTagName(templateTag))
             return setInsertionMode(m_templateInsertionModes.last());
@@ -2692,11 +2691,11 @@ bool HTMLTreeBuilder::shouldProcessTokenInForeignContent(AtomicHTMLToken* token)
 {
     if (m_tree.isEmpty())
         return false;
-    RefPtr<HTMLStackItem> adjustedCurrentNode = adjustedCurrentStackItem();
+    HTMLStackItem* adjustedCurrentNode = adjustedCurrentStackItem();
 
     if (adjustedCurrentNode->isInHTMLNamespace())
         return false;
-    if (HTMLElementStack::isMathMLTextIntegrationPoint(adjustedCurrentNode.get())) {
+    if (HTMLElementStack::isMathMLTextIntegrationPoint(adjustedCurrentNode)) {
         if (token->type() == HTMLToken::StartTag
             && token->name() != MathMLNames::mglyphTag
             && token->name() != MathMLNames::malignmarkTag)
@@ -2708,7 +2707,7 @@ bool HTMLTreeBuilder::shouldProcessTokenInForeignContent(AtomicHTMLToken* token)
         && token->type() == HTMLToken::StartTag
         && token->name() == SVGNames::svgTag)
         return false;
-    if (HTMLElementStack::isHTMLIntegrationPoint(adjustedCurrentNode.get())) {
+    if (HTMLElementStack::isHTMLIntegrationPoint(adjustedCurrentNode)) {
         if (token->type() == HTMLToken::StartTag)
             return false;
         if (token->type() == HTMLToken::Character)
@@ -2730,7 +2729,7 @@ void HTMLTreeBuilder::processTokenInForeignContent(AtomicHTMLToken* token)
     }
 
     m_tree.flush();
-    RefPtr<HTMLStackItem> adjustedCurrentNode = adjustedCurrentStackItem();
+    HTMLStackItem* adjustedCurrentNode = adjustedCurrentStackItem();
 
     switch (token->type()) {
     case HTMLToken::Uninitialized:

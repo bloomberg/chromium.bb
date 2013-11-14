@@ -169,7 +169,7 @@ private:
     void defaultForAfterHead();
     void defaultForInTableText();
 
-    inline PassRefPtr<HTMLStackItem> adjustedCurrentStackItem() const;
+    inline HTMLStackItem* adjustedCurrentStackItem() const;
     inline bool shouldProcessTokenInForeignContent(AtomicHTMLToken*);
     void processTokenInForeignContent(AtomicHTMLToken*);
 
@@ -201,11 +201,12 @@ private:
         ~FragmentParsingContext();
 
         DocumentFragment* fragment() const { return m_fragment; }
-        Element* contextElement() const { ASSERT(m_fragment); return m_contextElement; }
+        Element* contextElement() const { ASSERT(m_fragment); return m_contextElementStackItem->element(); }
+        HTMLStackItem* contextElementStackItem() const { ASSERT(m_fragment); return m_contextElementStackItem.get(); }
 
     private:
         DocumentFragment* m_fragment;
-        Element* m_contextElement;
+        RefPtr<HTMLStackItem> m_contextElementStackItem;
     };
 
     bool m_framesetOk;
