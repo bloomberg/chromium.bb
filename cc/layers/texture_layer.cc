@@ -168,7 +168,8 @@ void TextureLayer::SetTextureMailbox(
 }
 
 void TextureLayer::WillModifyTexture() {
-  if (layer_tree_host() && (DrawsContent() || content_committed_)) {
+  if (!uses_mailbox_ && layer_tree_host() && (DrawsContent() ||
+      content_committed_)) {
     layer_tree_host()->AcquireLayerTextures();
     content_committed_ = false;
   }
@@ -269,8 +270,8 @@ void TextureLayer::PushPropertiesTo(LayerImpl* layer) {
     needs_set_mailbox_ = false;
   } else {
     texture_layer->set_texture_id(texture_id_);
+    content_committed_ = DrawsContent();
   }
-  content_committed_ = DrawsContent();
 }
 
 Region TextureLayer::VisibleContentOpaqueRegion() const {
