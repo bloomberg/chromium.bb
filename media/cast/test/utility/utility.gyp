@@ -12,6 +12,8 @@
       ],
       'dependencies': [
         '<(DEPTH)/testing/gtest.gyp:gtest',
+        '<(DEPTH)/third_party/libyuv/libyuv.gyp:libyuv',
+
       ],
       'sources': [
         'input_helper.cc',
