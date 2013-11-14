@@ -20,7 +20,7 @@
 interface HTMLFieldSetElement : HTMLElement {
     [Reflect] attribute boolean disabled;
     readonly attribute HTMLFormElement form;
-    [Reflect, TreatNullAs=NullString] attribute DOMString name;
+    [Reflect] attribute DOMString name;
 
     readonly attribute DOMString type;
 

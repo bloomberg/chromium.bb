@@ -228,10 +228,13 @@
                         {name: 'width', expectedNull: 'null'}
                     ]
                 },
-
-                // HTMLFieldSetElement
-                // NONE
-
+                {
+                    type: 'HTMLFieldSetElement',
+                    elementToUse: document.createElement('fieldset'),
+                    attributes: [
+                        {name: 'name', expectedNull: 'null'}
+                    ]
+                },
                 {
                     type: 'HTMLFontElement',
                     elementToUse: document.createElement('font'),
