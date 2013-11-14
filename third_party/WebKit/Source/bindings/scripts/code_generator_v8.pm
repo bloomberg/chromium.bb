@@ -1270,9 +1270,9 @@ static void ${implClassName}DomainSafeFunctionSetter(v8::Local<v8::String> name,
     if (holder.IsEmpty())
         return;
     ${implClassName}* imp = ${v8ClassName}::toNative(holder);
-    ExceptionState es(info.GetIsolate());
-    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), es)) {
-        es.throwIfNeeded();
+    ExceptionState exceptionState(info.GetIsolate());
+    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), exceptionState)) {
+        exceptionState.throwIfNeeded();
         return;
     }
 
@@ -1509,15 +1509,15 @@ END
     if ($useExceptions || $attribute->extendedAttributes->{"CheckSecurity"}) {
         AddToImplIncludes("bindings/v8/ExceptionMessages.h");
         AddToImplIncludes("bindings/v8/ExceptionState.h");
-        $code .= "    ExceptionState es(info.GetIsolate());\n";
+        $code .= "    ExceptionState exceptionState(info.GetIsolate());\n";
     }
 
     # Generate security checks if necessary
     if ($attribute->extendedAttributes->{"CheckSecurity"}) {
         AddToImplIncludes("bindings/v8/BindingSecurity.h");
-        $code .= "    if (!BindingSecurity::shouldAllowAccessToNode(imp->" . GetImplName($attribute) . "(), es)) {\n";
+        $code .= "    if (!BindingSecurity::shouldAllowAccessToNode(imp->" . GetImplName($attribute) . "(), exceptionState)) {\n";
         $code .= "        v8SetReturnValueNull(info);\n";
-        $code .= "        es.throwIfNeeded();\n";
+        $code .= "        exceptionState.throwIfNeeded();\n";
         $code .= "        return;\n";
         $code .= "    }\n";
     }
@@ -1533,7 +1533,7 @@ END
     my $getterString;
     my ($functionName, @arguments) = GetterExpression($interfaceName, $attribute);
     push(@arguments, "isNull") if $isNullable;
-    push(@arguments, "es") if $useExceptions;
+    push(@arguments, "exceptionState") if $useExceptions;
     if ($attribute->extendedAttributes->{"ImplementedBy"}) {
         my $implementedBy = $attribute->extendedAttributes->{"ImplementedBy"};
         my $implementedByImplName = GetImplNameFromImplementedBy($implementedBy);
@@ -1572,7 +1572,7 @@ END
 
         if ($useExceptions) {
             if ($useExceptions) {
-                $code .= "    if (UNLIKELY(es.throwIfNeeded()))\n";
+                $code .= "    if (UNLIKELY(exceptionState.throwIfNeeded()))\n";
                 $code .= "        return;\n";
             }
 
@@ -1778,9 +1778,9 @@ END
         AddToImplIncludes("bindings/v8/BindingSecurity.h");
         $code .= <<END;
     ${implClassName}* imp = ${v8ClassName}::toNative(info.Holder());
-    ExceptionState es(info.GetIsolate());
-    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), es)) {
-        es.throwIfNeeded();
+    ExceptionState exceptionState(info.GetIsolate());
+    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), exceptionState)) {
+        exceptionState.throwIfNeeded();
         return;
     }
 END
@@ -2012,7 +2012,7 @@ END
     if ($useExceptions) {
         AddToImplIncludes("bindings/v8/ExceptionMessages.h");
         AddToImplIncludes("bindings/v8/ExceptionState.h");
-        $code .= "    ExceptionState es(info.GetIsolate());\n";
+        $code .= "    ExceptionState exceptionState(info.GetIsolate());\n";
     }
 
     if ($attribute->type eq "EventHandler") {
@@ -2051,7 +2051,7 @@ END
     } else {
         my ($functionName, @arguments) = SetterExpression($interfaceName, $attribute);
         push(@arguments, $expression);
-        push(@arguments, "es") if $useExceptions;
+        push(@arguments, "exceptionState") if $useExceptions;
         if ($attribute->extendedAttributes->{"ImplementedBy"}) {
             my $implementedBy = $attribute->extendedAttributes->{"ImplementedBy"};
             my $implementedByImplName = GetImplNameFromImplementedBy($implementedBy);
@@ -2070,7 +2070,7 @@ END
     }
 
     if ($useExceptions) {
-        $code .= "    es.throwIfNeeded();\n";
+        $code .= "    exceptionState.throwIfNeeded();\n";
     }
 
     if (ExtendedAttributeContains($attribute->extendedAttributes->{"CallWith"}, "ScriptState")) {
@@ -2080,7 +2080,7 @@ END
 
     if ($svgNativeType) {
         if ($useExceptions) {
-            $code .= "    if (!es.hadException())\n";
+            $code .= "    if (!exceptionState.hadException())\n";
             $code .= "        wrapper->commitChange();\n";
         } else {
             $code .= "    wrapper->commitChange();\n";
@@ -2315,9 +2315,9 @@ sub GenerateFunction
         $code .= <<END;
     EventTarget* impl = ${v8ClassName}::toNative(info.Holder());
     if (DOMWindow* window = impl->toDOMWindow()) {
-        ExceptionState es(info.GetIsolate());
-        if (!BindingSecurity::shouldAllowAccessToFrame(window->frame(), es)) {
-            es.throwIfNeeded();
+        ExceptionState exceptionState(info.GetIsolate());
+        if (!BindingSecurity::shouldAllowAccessToFrame(window->frame(), exceptionState)) {
+            exceptionState.throwIfNeeded();
             return;
         }
         if (!window->document())
@@ -2382,7 +2382,7 @@ END
     if ($raisesExceptions) {
         AddToImplIncludes("bindings/v8/ExceptionMessages.h");
         AddToImplIncludes("bindings/v8/ExceptionState.h");
-        $code .= "    ExceptionState es(info.GetIsolate());\n";
+        $code .= "    ExceptionState exceptionState(info.GetIsolate());\n";
     }
 
     # Check domain security if needed
@@ -2390,8 +2390,8 @@ END
         # We have not find real use cases yet.
         AddToImplIncludes("bindings/v8/BindingSecurity.h");
         $code .= <<END;
-    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), es)) {
-        es.throwIfNeeded();
+    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), exceptionState)) {
+        exceptionState.throwIfNeeded();
         return;
     }
 END
@@ -2399,9 +2399,9 @@ END
 
     if ($function->extendedAttributes->{"CheckSecurity"}) {
         AddToImplIncludes("bindings/v8/BindingSecurity.h");
-        $code .= "    if (!BindingSecurity::shouldAllowAccessToNode(imp->" . GetImplName($function) . "(es), es)) {\n";
+        $code .= "    if (!BindingSecurity::shouldAllowAccessToNode(imp->" . GetImplName($function) . "(exceptionState), exceptionState)) {\n";
         $code .= "        v8SetReturnValueNull(info);\n";
-        $code .= "        es.throwIfNeeded();\n";
+        $code .= "        exceptionState.throwIfNeeded();\n";
         $code .= "        return;\n";
         $code .= "    }\n";
 END
@@ -2709,7 +2709,7 @@ END
     if ($raisesExceptions) {
         AddToImplIncludes("bindings/v8/ExceptionMessages.h");
         AddToImplIncludes("bindings/v8/ExceptionState.h");
-        $code .= "    ExceptionState es(info.GetIsolate());\n";
+        $code .= "    ExceptionState exceptionState(info.GetIsolate());\n";
     }
 
     # FIXME: Currently [Constructor(...)] does not yet support optional arguments without [Default=...]
@@ -2729,7 +2729,7 @@ END
     }
 
     if ($constructorRaisesException) {
-        push(@afterArgumentList, "es");
+        push(@afterArgumentList, "exceptionState");
     }
 
     my @argumentList;
@@ -2750,7 +2750,7 @@ END
     $code .= "    v8::Handle<v8::Object> wrapper = info.Holder();\n";
 
     if ($constructorRaisesException) {
-        $code .= "    if (es.throwIfNeeded())\n";
+        $code .= "    if (exceptionState.throwIfNeeded())\n";
         $code .= "        return;\n";
     }
 
@@ -2999,7 +2999,7 @@ END
     if ($raisesExceptions) {
         AddToImplIncludes("bindings/v8/ExceptionMessages.h");
         AddToImplIncludes("bindings/v8/ExceptionState.h");
-        $code .= "    ExceptionState es(info.GetIsolate());\n";
+        $code .= "    ExceptionState exceptionState(info.GetIsolate());\n";
     }
 
     my ($parameterCheckString, $paramIndex, %replacements) = GenerateParametersCheck($function, $interface);
@@ -3008,7 +3008,7 @@ END
     push(@beforeArgumentList, "*document");
 
     if ($constructorRaisesException) {
-        push(@afterArgumentList, "es");
+        push(@afterArgumentList, "exceptionState");
     }
 
     my @argumentList;
@@ -3029,7 +3029,7 @@ END
     $code .= "    v8::Handle<v8::Object> wrapper = info.Holder();\n";
 
     if ($constructorRaisesException) {
-        $code .= "    if (es.throwIfNeeded())\n";
+        $code .= "    if (exceptionState.throwIfNeeded())\n";
         $code .= "        return;\n";
     }
 
@@ -3503,11 +3503,11 @@ sub GenerateImplementationIndexedPropertyGetter
     $getterCode .= "    ASSERT(V8DOMWrapper::maybeDOMWrapper(info.Holder()));\n";
     $getterCode .= "    ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());\n";
     if ($raisesExceptions) {
-        $getterCode .= "    ExceptionState es(info.GetIsolate());\n";
+        $getterCode .= "    ExceptionState exceptionState(info.GetIsolate());\n";
     }
     $getterCode .= $methodCallCode . "\n";
     if ($raisesExceptions) {
-        $getterCode .= "    if (es.throwIfNeeded())\n";
+        $getterCode .= "    if (exceptionState.throwIfNeeded())\n";
         $getterCode .= "        return;\n";
     }
     if (IsUnionType($returnType)) {
@@ -3603,8 +3603,8 @@ sub GenerateImplementationIndexedPropertySetter
 
     my $extraArguments = "";
     if ($raisesExceptions) {
-        $code .= "    ExceptionState es(info.GetIsolate());\n";
-        $extraArguments = ", es";
+        $code .= "    ExceptionState exceptionState(info.GetIsolate());\n";
+        $extraArguments = ", exceptionState";
     }
     my @conditions = ();
     my @statements = ();
@@ -3623,7 +3623,7 @@ sub GenerateImplementationIndexedPropertySetter
     $code .= "    if (!result)\n";
     $code .= "        return;\n";
     if ($raisesExceptions) {
-        $code .= "    if (es.throwIfNeeded())\n";
+        $code .= "    if (exceptionState.throwIfNeeded())\n";
         $code .= "        return;\n";
     }
     $code .= "    v8SetReturnValue(info, jsValue);\n";
@@ -3812,7 +3812,7 @@ sub GenerateMethodCall
     my @arguments = ();
     push @arguments, $firstArgument;
     if ($raisesExceptions) {
-        push @arguments, "es";
+        push @arguments, "exceptionState";
     }
 
     if (IsUnionType($returnType)) {
@@ -3868,11 +3868,11 @@ sub GenerateImplementationNamedPropertyGetter
     $code .= "    ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());\n";
     $code .= "    AtomicString propertyName = toWebCoreAtomicString(name);\n";
     if ($raisesExceptions) {
-        $code .= "    ExceptionState es(info.GetIsolate());\n";
+        $code .= "    ExceptionState exceptionState(info.GetIsolate());\n";
     }
     $code .= $methodCallCode . "\n";
     if ($raisesExceptions) {
-        $code .= "    if (es.throwIfNeeded())\n";
+        $code .= "    if (exceptionState.throwIfNeeded())\n";
         $code .= "        return;\n";
     }
     if (IsUnionType($returnType)) {
@@ -3915,8 +3915,8 @@ sub GenerateImplementationNamedPropertySetter
     $code .= JSValueToNativeStatement($namedSetterFunction->parameters->[1]->type, $namedSetterFunction->extendedAttributes, $asSetterValue, "jsValue", "propertyValue", "    ", "info.GetIsolate()");
     my $extraArguments = "";
     if ($raisesExceptions) {
-        $code .= "    ExceptionState es(info.GetIsolate());\n";
-        $extraArguments = ", es";
+        $code .= "    ExceptionState exceptionState(info.GetIsolate());\n";
+        $extraArguments = ", exceptionState";
     }
 
     my @conditions = ();
@@ -3936,7 +3936,7 @@ sub GenerateImplementationNamedPropertySetter
     $code .= "    if (!result)\n";
     $code .= "        return;\n";
     if ($raisesExceptions) {
-        $code .= "    if (es.throwIfNeeded())\n";
+        $code .= "    if (exceptionState.throwIfNeeded())\n";
         $code .= "        return;\n";
     }
     $code .= "    v8SetReturnValue(info, jsValue);\n";
@@ -3959,12 +3959,12 @@ sub GenerateImplementationIndexedPropertyDeleter
     $code .= "    ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());\n";
     my $extraArguments = "";
     if ($raisesExceptions) {
-        $code .= "    ExceptionState es(info.GetIsolate());\n";
-        $extraArguments = ", es";
+        $code .= "    ExceptionState exceptionState(info.GetIsolate());\n";
+        $extraArguments = ", exceptionState";
     }
     $code .= "    bool result = collection->${methodName}(index$extraArguments);\n";
     if ($raisesExceptions) {
-        $code .= "    if (es.throwIfNeeded())\n";
+        $code .= "    if (exceptionState.throwIfNeeded())\n";
         $code .= "        return;\n";
     }
     $code .= "    return v8SetReturnValueBool(info, result);\n";
@@ -3988,12 +3988,12 @@ sub GenerateImplementationNamedPropertyDeleter
     $code .= "    AtomicString propertyName = toWebCoreAtomicString(name);\n";
     my $extraArguments = "";
     if ($raisesExceptions) {
-        $code .= "    ExceptionState es(info.GetIsolate());\n";
-        $extraArguments = ", es";
+        $code .= "    ExceptionState exceptionState(info.GetIsolate());\n";
+        $extraArguments = ", exceptionState";
     }
     $code .= "    bool result = collection->${methodName}(propertyName$extraArguments);\n";
     if ($raisesExceptions) {
-        $code .= "    if (es.throwIfNeeded())\n";
+        $code .= "    if (exceptionState.throwIfNeeded())\n";
         $code .= "        return;\n";
     }
     $code .= "    return v8SetReturnValueBool(info, result);\n";
@@ -4010,11 +4010,11 @@ sub GenerateImplementationNamedPropertyEnumerator
     $implementation{nameSpaceInternal}->add(<<END);
 static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
-    ExceptionState es(info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate());
     ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());
     Vector<String> names;
-    collection->namedPropertyEnumerator(names, es);
-    if (es.throwIfNeeded())
+    collection->namedPropertyEnumerator(names, exceptionState);
+    if (exceptionState.throwIfNeeded())
         return;
     v8::Handle<v8::Array> v8names = v8::Array::New(names.size());
     for (size_t i = 0; i < names.size(); ++i)
@@ -4036,9 +4036,9 @@ static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCal
 {
     ${implClassName}* collection = ${v8ClassName}::toNative(info.Holder());
     AtomicString propertyName = toWebCoreAtomicString(name);
-    ExceptionState es(info.GetIsolate());
-    bool result = collection->namedPropertyQuery(propertyName, es);
-    if (es.throwIfNeeded())
+    ExceptionState exceptionState(info.GetIsolate());
+    bool result = collection->namedPropertyQuery(propertyName, exceptionState);
+    if (exceptionState.throwIfNeeded())
         return;
     if (!result)
         return;
@@ -5152,7 +5152,7 @@ END
     }
 
     if ($function->extendedAttributes->{"RaisesException"}) {
-        push @arguments, "es";
+        push @arguments, "exceptionState";
     }
 
     my $functionString = "$functionName(" . join(", ", @arguments) . ")";
@@ -5175,7 +5175,7 @@ END
     }
 
     if ($function->extendedAttributes->{"RaisesException"}) {
-        $code .= $indent . "if (es.throwIfNeeded())\n";
+        $code .= $indent . "if (exceptionState.throwIfNeeded())\n";
         $code .= $indent . "    return;\n";
     }
 

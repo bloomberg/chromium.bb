@@ -28,17 +28,17 @@ static void {{attribute.name}}AttributeGetter{{world_suffix}}(const v8::Property
     {# Special cases #}
     {% if attribute.is_check_security_for_node %}
     {# FIXME: consider using a local variable to not call getter twice #}
-    ExceptionState es(info.GetIsolate());
-    if (!BindingSecurity::shouldAllowAccessToNode({{attribute.cpp_value}}, es)) {
+    ExceptionState exceptionState(info.GetIsolate());
+    if (!BindingSecurity::shouldAllowAccessToNode({{attribute.cpp_value}}, exceptionState)) {
         v8SetReturnValueNull(info);
-        es.throwIfNeeded();
+        exceptionState.throwIfNeeded();
         return;
     }
     {% endif %}
     {% if attribute.is_getter_raises_exception %}
-    ExceptionState es(info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate());
     {{attribute.cpp_type}} {{attribute.cpp_value}} = {{attribute.cpp_value_original}};
-    if (UNLIKELY(es.throwIfNeeded()))
+    if (UNLIKELY(exceptionState.throwIfNeeded()))
         return;
     {% endif %}
     {% if attribute.is_nullable %}
@@ -137,14 +137,14 @@ static void {{attribute.name}}AttributeSetter{{world_suffix}}(v8::Local<v8::Valu
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     {% endif %}
     {% if attribute.is_setter_raises_exception %}
-    ExceptionState es(info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate());
     {% endif %}
     {% if attribute.is_call_with_execution_context %}
     ExecutionContext* scriptContext = getExecutionContext();
     {% endif %}
     {{attribute.cpp_setter}};
     {% if attribute.is_setter_raises_exception %}
-    es.throwIfNeeded();
+    exceptionState.throwIfNeeded();
     {% endif %}
     {% if attribute.cached_attribute_validation_method %}
     info.Holder()->DeleteHiddenValue(v8::String::NewSymbol("{{attribute.name}}")); // Invalidate the cached value.

@@ -19,12 +19,12 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
     {% endif %}
     {% if method.is_raises_exception %}
-    ExceptionState es(info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate());
     {% endif %}
     {% if method.is_check_security_for_node %}
-    if (!BindingSecurity::shouldAllowAccessToNode(imp->{{method.name}}(es), es)) {
+    if (!BindingSecurity::shouldAllowAccessToNode(imp->{{method.name}}(exceptionState), exceptionState)) {
         v8SetReturnValueNull(info);
-        es.throwIfNeeded();
+        exceptionState.throwIfNeeded();
         return;
     }
     {% endif %}
@@ -104,9 +104,9 @@ static void {{method.name}}{{method.overload_index}}Method{{world_suffix}}(const
 %}
 EventTarget* impl = {{v8_class_name}}::toNative(info.Holder());
 if (DOMWindow* window = impl->toDOMWindow()) {
-    ExceptionState es(info.GetIsolate());
-    if (!BindingSecurity::shouldAllowAccessToFrame(window->frame(), es)) {
-        es.throwIfNeeded();
+    ExceptionState exceptionState(info.GetIsolate());
+    if (!BindingSecurity::shouldAllowAccessToFrame(window->frame(), exceptionState)) {
+        exceptionState.throwIfNeeded();
         return;
     }
     if (!window->document())
@@ -143,7 +143,7 @@ RefPtr<ScriptArguments> scriptArguments(createScriptArguments(info, {{method.num
 {{method.cpp_type}} result = {{cpp_value}};
 {% endif %}
 {% if method.is_raises_exception %}
-if (es.throwIfNeeded())
+if (exceptionState.throwIfNeeded())
     return;
 {% endif %}
 {% if method.is_call_with_script_state %}

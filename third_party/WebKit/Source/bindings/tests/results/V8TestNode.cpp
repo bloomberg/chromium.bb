@@ -119,9 +119,9 @@ static void hrefThrowsAttributeSetter(v8::Local<v8::Value> jsValue, const v8::Pr
 {
     TestNode* imp = V8TestNode::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
-    ExceptionState es(info.GetIsolate());
-    imp->setHrefThrows(cppValue, es);
-    es.throwIfNeeded();
+    ExceptionState exceptionState(info.GetIsolate());
+    imp->setHrefThrows(cppValue, exceptionState);
+    exceptionState.throwIfNeeded();
 }
 
 static void hrefThrowsAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)

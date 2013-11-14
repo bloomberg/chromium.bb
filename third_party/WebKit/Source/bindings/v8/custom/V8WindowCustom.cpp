@@ -73,7 +73,7 @@ namespace WebCore {
 
 // FIXME: There is a lot of duplication with SetTimeoutOrInterval() in V8WorkerGlobalScopeCustom.cpp.
 // We should refactor this.
-void WindowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& info, bool singleShot, ExceptionState& es)
+void WindowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& info, bool singleShot, ExceptionState& exceptionState)
 {
     int argumentCount = info.Length();
 
@@ -84,7 +84,7 @@ void WindowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& info, bool 
     ExecutionContext* scriptContext = static_cast<ExecutionContext*>(imp->document());
 
     if (!scriptContext) {
-        es.throwUninformativeAndGenericDOMException(InvalidAccessError);
+        exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
         return;
     }
 
@@ -109,7 +109,7 @@ void WindowSetTimeoutImpl(const v8::FunctionCallbackInfo<v8::Value>& info, bool 
             return;
     }
 
-    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), es))
+    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), exceptionState))
         return;
 
     OwnPtr<ScheduledAction> action;
@@ -160,9 +160,9 @@ void V8Window::eventAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Val
         return;
 
     Frame* frame = V8Window::toNative(holder)->frame();
-    ExceptionState es(info.GetIsolate());
-    if (!BindingSecurity::shouldAllowAccessToFrame(frame, es)) {
-        es.throwIfNeeded();
+    ExceptionState exceptionState(info.GetIsolate());
+    if (!BindingSecurity::shouldAllowAccessToFrame(frame, exceptionState)) {
+        exceptionState.throwIfNeeded();
         return;
     }
 
@@ -185,9 +185,9 @@ void V8Window::eventAttributeSetterCustom(v8::Local<v8::Value> value, const v8::
         return;
 
     Frame* frame = V8Window::toNative(holder)->frame();
-    ExceptionState es(info.GetIsolate());
-    if (!BindingSecurity::shouldAllowAccessToFrame(frame, es)) {
-        es.throwIfNeeded();
+    ExceptionState exceptionState(info.GetIsolate());
+    if (!BindingSecurity::shouldAllowAccessToFrame(frame, exceptionState)) {
+        exceptionState.throwIfNeeded();
         return;
     }
 
@@ -203,9 +203,9 @@ void V8Window::eventAttributeSetterCustom(v8::Local<v8::Value> value, const v8::
 void V8Window::openerAttributeSetterCustom(v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
 {
     DOMWindow* imp = V8Window::toNative(info.Holder());
-    ExceptionState es(info.GetIsolate());
-    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), es)) {
-        es.throwIfNeeded();
+    ExceptionState exceptionState(info.GetIsolate());
+    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), exceptionState)) {
+        exceptionState.throwIfNeeded();
         return;
     }
 
@@ -277,9 +277,9 @@ void V8Window::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::Value>
     if (didThrow)
         return;
 
-    ExceptionState es(info.GetIsolate());
-    window->postMessage(message.release(), &portArray, targetOrigin, source, es);
-    es.throwIfNeeded();
+    ExceptionState exceptionState(info.GetIsolate());
+    window->postMessage(message.release(), &portArray, targetOrigin, source, exceptionState);
+    exceptionState.throwIfNeeded();
 }
 
 // FIXME(fqian): returning string is cheating, and we should
@@ -341,9 +341,9 @@ static void setUpDialog(DOMWindow* dialog, void* handler)
 void V8Window::showModalDialogMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     DOMWindow* impl = V8Window::toNative(info.Holder());
-    ExceptionState es(info.GetIsolate());
-    if (!BindingSecurity::shouldAllowAccessToFrame(impl->frame(), es)) {
-        es.throwIfNeeded();
+    ExceptionState exceptionState(info.GetIsolate());
+    if (!BindingSecurity::shouldAllowAccessToFrame(impl->frame(), exceptionState)) {
+        exceptionState.throwIfNeeded();
         return;
     }
 
@@ -360,9 +360,9 @@ void V8Window::showModalDialogMethodCustom(const v8::FunctionCallbackInfo<v8::Va
 void V8Window::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     DOMWindow* impl = V8Window::toNative(info.Holder());
-    ExceptionState es(info.GetIsolate());
-    if (!BindingSecurity::shouldAllowAccessToFrame(impl->frame(), es)) {
-        es.throwIfNeeded();
+    ExceptionState exceptionState(info.GetIsolate());
+    if (!BindingSecurity::shouldAllowAccessToFrame(impl->frame(), exceptionState)) {
+        exceptionState.throwIfNeeded();
         return;
     }
 
@@ -423,17 +423,17 @@ void V8Window::namedPropertyGetterCustom(v8::Local<v8::String> name, const v8::P
 
 void V8Window::setTimeoutMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState es(info.GetIsolate());
-    WindowSetTimeoutImpl(info, true, es);
-    es.throwIfNeeded();
+    ExceptionState exceptionState(info.GetIsolate());
+    WindowSetTimeoutImpl(info, true, exceptionState);
+    exceptionState.throwIfNeeded();
 }
 
 
 void V8Window::setIntervalMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
-    ExceptionState es(info.GetIsolate());
-    WindowSetTimeoutImpl(info, false, es);
-    es.throwIfNeeded();
+    ExceptionState exceptionState(info.GetIsolate());
+    WindowSetTimeoutImpl(info, false, exceptionState);
+    exceptionState.throwIfNeeded();
 }
 
 bool V8Window::namedSecurityCheckCustom(v8::Local<v8::Object> host, v8::Local<v8::Value> key, v8::AccessType type, v8::Local<v8::Value>)

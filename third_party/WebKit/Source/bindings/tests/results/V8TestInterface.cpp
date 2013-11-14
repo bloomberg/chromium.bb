@@ -564,12 +564,12 @@ static void implementsMethod2Method(const v8::FunctionCallbackInfo<v8::Value>& i
         return;
     }
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    ExceptionState es(info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[0]);
     V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::hasInstance(info[1], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(info[1])) : 0);
     ExecutionContext* scriptContext = getExecutionContext();
-    RefPtr<TestObj> result = TestImplements::implementsMethod2(scriptContext, imp, strArg, objArg, es);
-    if (es.throwIfNeeded())
+    RefPtr<TestObj> result = TestImplements::implementsMethod2(scriptContext, imp, strArg, objArg, exceptionState);
+    if (exceptionState.throwIfNeeded())
         return;
     v8SetReturnValue(info, result.release());
 }
@@ -625,12 +625,12 @@ static void supplementalMethod2Method(const v8::FunctionCallbackInfo<v8::Value>&
         return;
     }
     TestInterface* imp = V8TestInterface::toNative(info.Holder());
-    ExceptionState es(info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, strArg, info[0]);
     V8TRYCATCH_VOID(TestObj*, objArg, V8TestObject::hasInstance(info[1], info.GetIsolate(), worldType(info.GetIsolate())) ? V8TestObject::toNative(v8::Handle<v8::Object>::Cast(info[1])) : 0);
     ExecutionContext* scriptContext = getExecutionContext();
-    RefPtr<TestObj> result = TestPartialInterface::supplementalMethod2(scriptContext, imp, strArg, objArg, es);
-    if (es.throwIfNeeded())
+    RefPtr<TestObj> result = TestPartialInterface::supplementalMethod2(scriptContext, imp, strArg, objArg, exceptionState);
+    if (exceptionState.throwIfNeeded())
         return;
     v8SetReturnValue(info, result.release());
 }
@@ -676,14 +676,14 @@ static void constructor(const v8::FunctionCallbackInfo<v8::Value>& info)
         throwTypeError(ExceptionMessages::failedToExecute("Constructor", "TestInterface", ExceptionMessages::notEnoughArguments(1, info.Length())), info.GetIsolate());
         return;
     }
-    ExceptionState es(info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, str1, info[0]);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, str2, info[1]);
 
     ExecutionContext* context = getExecutionContext();
-    RefPtr<TestInterface> impl = TestInterface::create(context, str1, str2, es);
+    RefPtr<TestInterface> impl = TestInterface::create(context, str1, str2, exceptionState);
     v8::Handle<v8::Object> wrapper = info.Holder();
-    if (es.throwIfNeeded())
+    if (exceptionState.throwIfNeeded())
         return;
 
     V8DOMWrapper::associateObjectWithWrapper<V8TestInterface>(impl.release(), &V8TestInterface::wrapperTypeInfo, wrapper, info.GetIsolate(), WrapperConfiguration::Dependent);
@@ -736,11 +736,11 @@ static void namedPropertySetterCallback(v8::Local<v8::String> name, v8::Local<v8
 
 static void namedPropertyEnumerator(const v8::PropertyCallbackInfo<v8::Array>& info)
 {
-    ExceptionState es(info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate());
     TestInterface* collection = V8TestInterface::toNative(info.Holder());
     Vector<String> names;
-    collection->namedPropertyEnumerator(names, es);
-    if (es.throwIfNeeded())
+    collection->namedPropertyEnumerator(names, exceptionState);
+    if (exceptionState.throwIfNeeded())
         return;
     v8::Handle<v8::Array> v8names = v8::Array::New(names.size());
     for (size_t i = 0; i < names.size(); ++i)
@@ -752,9 +752,9 @@ static void namedPropertyQuery(v8::Local<v8::String> name, const v8::PropertyCal
 {
     TestInterface* collection = V8TestInterface::toNative(info.Holder());
     AtomicString propertyName = toWebCoreAtomicString(name);
-    ExceptionState es(info.GetIsolate());
-    bool result = collection->namedPropertyQuery(propertyName, es);
-    if (es.throwIfNeeded())
+    ExceptionState exceptionState(info.GetIsolate());
+    bool result = collection->namedPropertyQuery(propertyName, exceptionState);
+    if (exceptionState.throwIfNeeded())
         return;
     if (!result)
         return;

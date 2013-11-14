@@ -70,7 +70,7 @@ bool CustomElementConstructorBuilder::isFeatureAllowed() const
     return !DOMWrapperWorld::isolatedWorld(m_context);
 }
 
-bool CustomElementConstructorBuilder::validateOptions(const AtomicString& type, QualifiedName& tagName, ExceptionState& es)
+bool CustomElementConstructorBuilder::validateOptions(const AtomicString& type, QualifiedName& tagName, ExceptionState& exceptionState)
 {
     ASSERT(m_prototype.IsEmpty());
 
@@ -78,7 +78,7 @@ bool CustomElementConstructorBuilder::validateOptions(const AtomicString& type, 
     if (m_options->get("prototype", prototypeScriptValue) && !prototypeScriptValue.isNull()) {
         m_prototype = prototypeScriptValue.v8Value().As<v8::Object>();
         if (m_prototype.IsEmpty()) {
-            CustomElementException::throwException(CustomElementException::PrototypeNotAnObject, type, es);
+            CustomElementException::throwException(CustomElementException::PrototypeNotAnObject, type, exceptionState);
             return false;
         }
     } else {
@@ -93,7 +93,7 @@ bool CustomElementConstructorBuilder::validateOptions(const AtomicString& type, 
 
     if (!V8PerContextData::from(m_context)) {
         // FIXME: This should generate an InvalidContext exception at a later point.
-        CustomElementException::throwException(CustomElementException::ContextDestroyedCheckingPrototype, type, es);
+        CustomElementException::throwException(CustomElementException::ContextDestroyedCheckingPrototype, type, exceptionState);
         return false;
     }
 
@@ -107,11 +107,11 @@ bool CustomElementConstructorBuilder::validateOptions(const AtomicString& type, 
         localName = extends.lower();
 
         if (!Document::isValidName(localName)) {
-            CustomElementException::throwException(CustomElementException::ExtendsIsInvalidName, type, es);
+            CustomElementException::throwException(CustomElementException::ExtendsIsInvalidName, type, exceptionState);
             return false;
         }
         if (CustomElement::isValidName(localName)) {
-            CustomElementException::throwException(CustomElementException::ExtendsIsCustomElementName, type, es);
+            CustomElementException::throwException(CustomElementException::ExtendsIsCustomElementName, type, exceptionState);
             return false;
         }
     } else {
@@ -157,7 +157,7 @@ v8::Handle<v8::Function> CustomElementConstructorBuilder::retrieveCallback(v8::I
     return value.As<v8::Function>();
 }
 
-bool CustomElementConstructorBuilder::createConstructor(Document* document, CustomElementDefinition* definition, ExceptionState& es)
+bool CustomElementConstructorBuilder::createConstructor(Document* document, CustomElementDefinition* definition, ExceptionState& exceptionState)
 {
     ASSERT(!m_prototype.IsEmpty());
     ASSERT(m_constructor.IsEmpty());
@@ -165,14 +165,14 @@ bool CustomElementConstructorBuilder::createConstructor(Document* document, Cust
 
     v8::Isolate* isolate = m_context->GetIsolate();
 
-    if (!prototypeIsValid(definition->descriptor().type(), es))
+    if (!prototypeIsValid(definition->descriptor().type(), exceptionState))
         return false;
 
     v8::Local<v8::FunctionTemplate> constructorTemplate = v8::FunctionTemplate::New();
     constructorTemplate->SetCallHandler(constructCustomElement);
     m_constructor = constructorTemplate->GetFunction();
     if (m_constructor.IsEmpty()) {
-        CustomElementException::throwException(CustomElementException::ContextDestroyedRegisteringDefinition, definition->descriptor().type(), es);
+        CustomElementException::throwException(CustomElementException::ContextDestroyedRegisteringDefinition, definition->descriptor().type(), exceptionState);
         return false;
     }
 
@@ -209,15 +209,15 @@ bool CustomElementConstructorBuilder::createConstructor(Document* document, Cust
     return true;
 }
 
-bool CustomElementConstructorBuilder::prototypeIsValid(const AtomicString& type, ExceptionState& es) const
+bool CustomElementConstructorBuilder::prototypeIsValid(const AtomicString& type, ExceptionState& exceptionState) const
 {
     if (m_prototype->InternalFieldCount() || !m_prototype->GetHiddenValue(V8HiddenPropertyName::customElementIsInterfacePrototypeObject(m_context->GetIsolate())).IsEmpty()) {
-        CustomElementException::throwException(CustomElementException::PrototypeInUse, type, es);
+        CustomElementException::throwException(CustomElementException::PrototypeInUse, type, exceptionState);
         return false;
     }
 
     if (m_prototype->GetPropertyAttributes(v8String("constructor", m_context->GetIsolate())) & v8::DontDelete) {
-        CustomElementException::throwException(CustomElementException::ConstructorPropertyNotConfigurable, type, es);
+        CustomElementException::throwException(CustomElementException::ConstructorPropertyNotConfigurable, type, exceptionState);
         return false;
     }
 
@@ -272,10 +272,10 @@ static void constructCustomElement(const v8::FunctionCallbackInfo<v8::Value>& in
     v8::Handle<v8::Value> maybeType = info.Callee()->GetHiddenValue(V8HiddenPropertyName::customElementType(isolate));
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, type, maybeType);
 
-    ExceptionState es(info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate());
     CustomElementCallbackDispatcher::CallbackDeliveryScope deliveryScope;
-    RefPtr<Element> element = document->createElementNS(namespaceURI, tagName, maybeType->IsNull() ? nullAtom : type, es);
-    if (es.throwIfNeeded())
+    RefPtr<Element> element = document->createElementNS(namespaceURI, tagName, maybeType->IsNull() ? nullAtom : type, exceptionState);
+    if (exceptionState.throwIfNeeded())
         return;
     v8SetReturnValueFast(info, element.release(), document);
 }

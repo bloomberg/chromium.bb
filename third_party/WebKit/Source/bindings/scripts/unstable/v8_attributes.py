@@ -155,7 +155,7 @@ def getter_expression(interface, attribute, contents):
     if attribute.is_nullable:
         arguments.append('isNull')
     if contents['is_getter_raises_exception']:
-        arguments.append('es')
+        arguments.append('exceptionState')
     if attribute.idl_type == 'EventHandler':
         arguments.append('isolatedWorldForIsolate(info.GetIsolate())')
     return '%s(%s)' % (getter_name, ', '.join(arguments))
@@ -250,7 +250,7 @@ def setter_expression(interface, attribute, contents):
     else:
         arguments.append('cppValue')
     if contents['is_setter_raises_exception']:
-        arguments.append('es')
+        arguments.append('exceptionState')
 
     return '%s(%s)' % (setter_name, ', '.join(arguments))
 

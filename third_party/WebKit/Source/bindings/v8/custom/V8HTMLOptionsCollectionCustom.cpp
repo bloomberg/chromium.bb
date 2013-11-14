@@ -80,19 +80,19 @@ void V8HTMLOptionsCollection::addMethodCustom(const v8::FunctionCallbackInfo<v8:
     HTMLOptionsCollection* imp = V8HTMLOptionsCollection::toNative(info.Holder());
     HTMLOptionElement* option = V8HTMLOptionElement::toNative(v8::Handle<v8::Object>(v8::Handle<v8::Object>::Cast(info[0])));
 
-    ExceptionState es(info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate());
     if (info.Length() < 2)
-        imp->add(option, es);
+        imp->add(option, exceptionState);
     else {
         bool ok;
         V8TRYCATCH_VOID(int, index, toInt32(info[1], ok));
         if (!ok)
-            es.throwDOMException(TypeMismatchError, ExceptionMessages::failedToExecute("add", "HTMLOptionsCollection", "The index provided could not be interpreted as an integer."));
+            exceptionState.throwDOMException(TypeMismatchError, ExceptionMessages::failedToExecute("add", "HTMLOptionsCollection", "The index provided could not be interpreted as an integer."));
         else
-            imp->add(option, index, es);
+            imp->add(option, index, exceptionState);
     }
 
-    es.throwIfNeeded();
+    exceptionState.throwIfNeeded();
 }
 
 void V8HTMLOptionsCollection::lengthAttributeSetterCustom(v8::Local<v8::Value> value, const v8::PropertyCallbackInfo<void>& info)
@@ -100,20 +100,20 @@ void V8HTMLOptionsCollection::lengthAttributeSetterCustom(v8::Local<v8::Value> v
     HTMLOptionsCollection* imp = V8HTMLOptionsCollection::toNative(info.Holder());
     double v = value->NumberValue();
     unsigned newLength = 0;
-    ExceptionState es(info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate());
     if (!std::isnan(v) && !std::isinf(v)) {
         if (v < 0.0)
-            es.throwDOMException(IndexSizeError, ExceptionMessages::failedToSet("length", "HTMLOptionsCollection", "The value provided (" + String::number(v) + ") is negative. Lengths must be greater than or equal to 0."));
+            exceptionState.throwDOMException(IndexSizeError, ExceptionMessages::failedToSet("length", "HTMLOptionsCollection", "The value provided (" + String::number(v) + ") is negative. Lengths must be greater than or equal to 0."));
         else if (v > static_cast<double>(UINT_MAX))
             newLength = UINT_MAX;
         else
             newLength = static_cast<unsigned>(v);
     }
 
-    if (es.throwIfNeeded())
+    if (exceptionState.throwIfNeeded())
         return;
 
-    imp->setLength(newLength, es);
+    imp->setLength(newLength, exceptionState);
 }
 
 } // namespace WebCore

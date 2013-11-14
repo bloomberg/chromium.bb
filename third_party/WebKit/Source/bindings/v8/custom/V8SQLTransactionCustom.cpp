@@ -108,9 +108,9 @@ void V8SQLTransaction::executeSqlMethodCustom(const v8::FunctionCallbackInfo<v8:
         errorCallback = V8SQLStatementErrorCallback::create(info[3], executionContext);
     }
 
-    ExceptionState es(info.GetIsolate());
-    transaction->executeSQL(statement, sqlValues, callback, errorCallback, es);
-    es.throwIfNeeded();
+    ExceptionState exceptionState(info.GetIsolate());
+    transaction->executeSQL(statement, sqlValues, callback, errorCallback, exceptionState);
+    exceptionState.throwIfNeeded();
 }
 
 } // namespace WebCore

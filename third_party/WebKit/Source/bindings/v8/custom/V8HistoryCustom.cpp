@@ -69,11 +69,11 @@ void V8History::pushStateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, title, info[1]);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, url, argumentOrNull(info, 2));
 
-    ExceptionState es(info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate());
     History* history = V8History::toNative(info.Holder());
-    history->stateObjectAdded(historyState.release(), title, url, SameDocumentNavigationPushState, es);
+    history->stateObjectAdded(historyState.release(), title, url, SameDocumentNavigationPushState, exceptionState);
     info.Holder()->DeleteHiddenValue(V8HiddenPropertyName::state(info.GetIsolate()));
-    es.throwIfNeeded();
+    exceptionState.throwIfNeeded();
 }
 
 void V8History::replaceStateMethodCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
@@ -86,11 +86,11 @@ void V8History::replaceStateMethodCustom(const v8::FunctionCallbackInfo<v8::Valu
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, title, info[1]);
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<WithUndefinedOrNullCheck>, url, argumentOrNull(info, 2));
 
-    ExceptionState es(info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate());
     History* history = V8History::toNative(info.Holder());
-    history->stateObjectAdded(historyState.release(), title, url, SameDocumentNavigationReplaceState, es);
+    history->stateObjectAdded(historyState.release(), title, url, SameDocumentNavigationReplaceState, exceptionState);
     info.Holder()->DeleteHiddenValue(V8HiddenPropertyName::state(info.GetIsolate()));
-    es.throwIfNeeded();
+    exceptionState.throwIfNeeded();
 }
 
 } // namespace WebCore

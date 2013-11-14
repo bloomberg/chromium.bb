@@ -137,9 +137,9 @@ static void immutableSerializedScriptValueAttributeSetterCallback(v8::Local<v8::
 static void attrWithGetterExceptionAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
-    ExceptionState es(info.GetIsolate());
-    int jsValue = imp->attrWithGetterException(es);
-    if (UNLIKELY(es.throwIfNeeded()))
+    ExceptionState exceptionState(info.GetIsolate());
+    int jsValue = imp->attrWithGetterException(exceptionState);
+    if (UNLIKELY(exceptionState.throwIfNeeded()))
         return;
     v8SetReturnValueInt(info, jsValue);
 }
@@ -182,9 +182,9 @@ static void attrWithSetterExceptionAttributeSetter(v8::Local<v8::Value> jsValue,
 {
     TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
     V8TRYCATCH_VOID(int, cppValue, toInt32(jsValue));
-    ExceptionState es(info.GetIsolate());
-    imp->setAttrWithSetterException(cppValue, es);
-    es.throwIfNeeded();
+    ExceptionState exceptionState(info.GetIsolate());
+    imp->setAttrWithSetterException(cppValue, exceptionState);
+    exceptionState.throwIfNeeded();
 }
 
 static void attrWithSetterExceptionAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -197,9 +197,9 @@ static void attrWithSetterExceptionAttributeSetterCallback(v8::Local<v8::String>
 static void stringAttrWithGetterExceptionAttributeGetter(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
-    ExceptionState es(info.GetIsolate());
-    String jsValue = imp->stringAttrWithGetterException(es);
-    if (UNLIKELY(es.throwIfNeeded()))
+    ExceptionState exceptionState(info.GetIsolate());
+    String jsValue = imp->stringAttrWithGetterException(exceptionState);
+    if (UNLIKELY(exceptionState.throwIfNeeded()))
         return;
     v8SetReturnValueString(info, jsValue, info.GetIsolate());
 }
@@ -242,9 +242,9 @@ static void stringAttrWithSetterExceptionAttributeSetter(v8::Local<v8::Value> js
 {
     TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, cppValue, jsValue);
-    ExceptionState es(info.GetIsolate());
-    imp->setStringAttrWithSetterException(cppValue, es);
-    es.throwIfNeeded();
+    ExceptionState exceptionState(info.GetIsolate());
+    imp->setStringAttrWithSetterException(cppValue, exceptionState);
+    exceptionState.throwIfNeeded();
 }
 
 static void stringAttrWithSetterExceptionAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
@@ -408,10 +408,10 @@ static void stringArrayFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>&
         return;
     }
     TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
-    ExceptionState es(info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate());
     V8TRYCATCH_VOID(Vector<String>, values, toNativeArray<String>(info[0], 1, info.GetIsolate()));
-    Vector<String> result = imp->stringArrayFunction(values, es);
-    if (es.throwIfNeeded())
+    Vector<String> result = imp->stringArrayFunction(values, exceptionState);
+    if (exceptionState.throwIfNeeded())
         return;
     v8SetReturnValue(info, v8Array(result, info.GetIsolate()));
 }
@@ -430,10 +430,10 @@ static void stringArrayFunction2Method(const v8::FunctionCallbackInfo<v8::Value>
         return;
     }
     TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
-    ExceptionState es(info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate());
     V8TRYCATCH_VOID(Vector<String>, values, toNativeArray<String>(info[0], 1, info.GetIsolate()));
-    Vector<String> result = imp->stringArrayFunction2(values, es);
-    if (es.throwIfNeeded())
+    Vector<String> result = imp->stringArrayFunction2(values, exceptionState);
+    if (exceptionState.throwIfNeeded())
         return;
     v8SetReturnValue(info, v8Array(result, info.GetIsolate()));
 }
@@ -448,9 +448,9 @@ static void stringArrayFunction2MethodCallback(const v8::FunctionCallbackInfo<v8
 static void methodWithExceptionMethod(const v8::FunctionCallbackInfo<v8::Value>& info)
 {
     TestTypedefs* imp = V8TestTypedefs::toNative(info.Holder());
-    ExceptionState es(info.GetIsolate());
-    imp->methodWithException(es);
-    if (es.throwIfNeeded())
+    ExceptionState exceptionState(info.GetIsolate());
+    imp->methodWithException(exceptionState);
+    if (exceptionState.throwIfNeeded())
         return;
 }
 

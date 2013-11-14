@@ -59,9 +59,9 @@ void V8MessagePort::postMessageMethodCustom(const v8::FunctionCallbackInfo<v8::V
     RefPtr<SerializedScriptValue> message = SerializedScriptValue::create(info[0], &portArray, &arrayBufferArray, didThrow, info.GetIsolate());
     if (didThrow)
         return;
-    ExceptionState es(info.GetIsolate());
-    messagePort->postMessage(message.release(), &portArray, es);
-    es.throwIfNeeded();
+    ExceptionState exceptionState(info.GetIsolate());
+    messagePort->postMessage(message.release(), &portArray, exceptionState);
+    exceptionState.throwIfNeeded();
 }
 
 } // namespace WebCore

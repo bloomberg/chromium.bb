@@ -55,13 +55,13 @@ static bool isDocumentAccessibleFromDOMWindow(Document* targetDocument, DOMWindo
     return false;
 }
 
-static bool canAccessDocument(Document* targetDocument, ExceptionState& es)
+static bool canAccessDocument(Document* targetDocument, ExceptionState& exceptionState)
 {
     DOMWindow* activeWindow = activeDOMWindow();
     if (isDocumentAccessibleFromDOMWindow(targetDocument, activeWindow))
         return true;
 
-    es.throwSecurityError(targetDocument->domWindow()->sanitizedCrossDomainAccessErrorMessage(activeWindow), targetDocument->domWindow()->crossDomainAccessErrorMessage(activeWindow));
+    exceptionState.throwSecurityError(targetDocument->domWindow()->sanitizedCrossDomainAccessErrorMessage(activeWindow), targetDocument->domWindow()->crossDomainAccessErrorMessage(activeWindow));
     return false;
 }
 
@@ -84,14 +84,14 @@ bool BindingSecurity::shouldAllowAccessToFrame(Frame* target, SecurityReportingO
     return target && canAccessDocument(target->document(), reportingOption);
 }
 
-bool BindingSecurity::shouldAllowAccessToFrame(Frame* target, ExceptionState& es)
+bool BindingSecurity::shouldAllowAccessToFrame(Frame* target, ExceptionState& exceptionState)
 {
-    return target && canAccessDocument(target->document(), es);
+    return target && canAccessDocument(target->document(), exceptionState);
 }
 
-bool BindingSecurity::shouldAllowAccessToNode(Node* target, ExceptionState& es)
+bool BindingSecurity::shouldAllowAccessToNode(Node* target, ExceptionState& exceptionState)
 {
-    return target && canAccessDocument(&target->document(), es);
+    return target && canAccessDocument(&target->document(), exceptionState);
 }
 
 }

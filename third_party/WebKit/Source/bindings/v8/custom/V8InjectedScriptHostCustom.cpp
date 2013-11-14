@@ -77,8 +77,8 @@ ScriptValue InjectedScriptHost::nodeAsScriptValue(ScriptState* state, Node* node
     v8::Local<v8::Context> context = state->context();
     v8::Context::Scope contextScope(context);
 
-    ExceptionState es(isolate);
-    if (!BindingSecurity::shouldAllowAccessToNode(node, es))
+    ExceptionState exceptionState(isolate);
+    if (!BindingSecurity::shouldAllowAccessToNode(node, exceptionState))
         return ScriptValue(v8::Null(isolate), isolate);
     return ScriptValue(toV8(node, v8::Handle<v8::Object>(), isolate), isolate);
 }

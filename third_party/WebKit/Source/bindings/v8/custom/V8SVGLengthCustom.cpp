@@ -44,10 +44,10 @@ void V8SVGLength::valueAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::
 {
     SVGPropertyTearOff<SVGLength>* wrapper = V8SVGLength::toNative(info.Holder());
     SVGLength& imp = wrapper->propertyReference();
-    ExceptionState es(info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate());
     SVGLengthContext lengthContext(wrapper->contextElement());
-    float value = imp.value(lengthContext, es);
-    if (es.throwIfNeeded())
+    float value = imp.value(lengthContext, exceptionState);
+    if (exceptionState.throwIfNeeded())
         return;
     v8SetReturnValue(info, value);
 }
@@ -66,10 +66,10 @@ void V8SVGLength::valueAttributeSetterCustom(v8::Local<v8::Value> value, const v
     }
 
     SVGLength& imp = wrapper->propertyReference();
-    ExceptionState es(info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate());
     SVGLengthContext lengthContext(wrapper->contextElement());
-    imp.setValue(static_cast<float>(value->NumberValue()), lengthContext, es);
-    if (es.throwIfNeeded())
+    imp.setValue(static_cast<float>(value->NumberValue()), lengthContext, exceptionState);
+    if (exceptionState.throwIfNeeded())
         return;
     wrapper->commitChange();
 }
@@ -88,11 +88,11 @@ void V8SVGLength::convertToSpecifiedUnitsMethodCustom(const v8::FunctionCallback
     }
 
     SVGLength& imp = wrapper->propertyReference();
-    ExceptionState es(info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate());
     V8TRYCATCH_VOID(int, unitType, toUInt32(info[0]));
     SVGLengthContext lengthContext(wrapper->contextElement());
-    imp.convertToSpecifiedUnits(unitType, lengthContext, es);
-    if (es.throwIfNeeded())
+    imp.convertToSpecifiedUnits(unitType, lengthContext, exceptionState);
+    if (exceptionState.throwIfNeeded())
         return;
     wrapper->commitChange();
 }

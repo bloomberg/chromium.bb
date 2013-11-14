@@ -72,9 +72,9 @@ void V8XMLHttpRequest::constructorCustom(const v8::FunctionCallbackInfo<v8::Valu
 void V8XMLHttpRequest::responseTextAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     XMLHttpRequest* xmlHttpRequest = V8XMLHttpRequest::toNative(info.Holder());
-    ExceptionState es(info.GetIsolate());
-    ScriptValue text = xmlHttpRequest->responseText(es);
-    if (es.throwIfNeeded())
+    ExceptionState exceptionState(info.GetIsolate());
+    ScriptValue text = xmlHttpRequest->responseText(exceptionState);
+    if (exceptionState.throwIfNeeded())
         return;
     if (text.hasNoValue()) {
         v8SetReturnValueString(info, emptyString(), info.GetIsolate());
@@ -97,9 +97,9 @@ void V8XMLHttpRequest::responseAttributeGetterCustom(const v8::PropertyCallbackI
         {
             v8::Isolate* isolate = info.GetIsolate();
 
-            ExceptionState es(isolate);
+            ExceptionState exceptionState(isolate);
             ScriptString jsonSource = xmlHttpRequest->responseJSONSource();
-            if (es.throwIfNeeded())
+            if (exceptionState.throwIfNeeded())
                 return;
 
             if (jsonSource.hasNoValue() || !jsonSource.v8Value()->IsString()) {
@@ -122,9 +122,9 @@ void V8XMLHttpRequest::responseAttributeGetterCustom(const v8::PropertyCallbackI
 
     case XMLHttpRequest::ResponseTypeDocument:
         {
-            ExceptionState es(info.GetIsolate());
-            Document* document = xmlHttpRequest->responseXML(es);
-            if (es.throwIfNeeded())
+            ExceptionState exceptionState(info.GetIsolate());
+            Document* document = xmlHttpRequest->responseXML(exceptionState);
+            if (exceptionState.throwIfNeeded())
                 return;
             v8SetReturnValueFast(info, document, xmlHttpRequest);
             return;
@@ -177,7 +177,7 @@ void V8XMLHttpRequest::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value
     ExecutionContext* context = getExecutionContext();
     KURL url = context->completeURL(urlstring);
 
-    ExceptionState es(info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate());
 
     if (info.Length() >= 3) {
         bool async = info[2]->BooleanValue();
@@ -187,18 +187,18 @@ void V8XMLHttpRequest::openMethodCustom(const v8::FunctionCallbackInfo<v8::Value
 
             if (info.Length() >= 5 && !info[4]->IsUndefined()) {
                 String passwd = toWebCoreStringWithNullCheck(info[4]);
-                xmlHttpRequest->open(method, url, async, user, passwd, es);
+                xmlHttpRequest->open(method, url, async, user, passwd, exceptionState);
             } else {
-                xmlHttpRequest->open(method, url, async, user, es);
+                xmlHttpRequest->open(method, url, async, user, exceptionState);
             }
         } else {
-            xmlHttpRequest->open(method, url, async, es);
+            xmlHttpRequest->open(method, url, async, exceptionState);
         }
     } else {
-        xmlHttpRequest->open(method, url, es);
+        xmlHttpRequest->open(method, url, exceptionState);
     }
 
-    es.throwIfNeeded();
+    exceptionState.throwIfNeeded();
 }
 
 static bool isDocumentType(v8::Handle<v8::Value> value, v8::Isolate* isolate, WrapperWorldType currentWorldType)
@@ -213,45 +213,45 @@ void V8XMLHttpRequest::sendMethodCustom(const v8::FunctionCallbackInfo<v8::Value
 
     InspectorInstrumentation::willSendXMLHttpRequest(xmlHttpRequest->executionContext(), xmlHttpRequest->url());
 
-    ExceptionState es(info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate());
     if (info.Length() < 1)
-        xmlHttpRequest->send(es);
+        xmlHttpRequest->send(exceptionState);
     else {
         v8::Handle<v8::Value> arg = info[0];
         WrapperWorldType currentWorldType = worldType(info.GetIsolate());
         if (isUndefinedOrNull(arg)) {
-            xmlHttpRequest->send(es);
+            xmlHttpRequest->send(exceptionState);
         } else if (isDocumentType(arg, info.GetIsolate(), currentWorldType)) {
             v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(arg);
             Document* document = V8Document::toNative(object);
             ASSERT(document);
-            xmlHttpRequest->send(document, es);
+            xmlHttpRequest->send(document, exceptionState);
         } else if (V8Blob::hasInstance(arg, info.GetIsolate(), currentWorldType)) {
             v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(arg);
             Blob* blob = V8Blob::toNative(object);
             ASSERT(blob);
-            xmlHttpRequest->send(blob, es);
+            xmlHttpRequest->send(blob, exceptionState);
         } else if (V8FormData::hasInstance(arg, info.GetIsolate(), currentWorldType)) {
             v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(arg);
             DOMFormData* domFormData = V8FormData::toNative(object);
             ASSERT(domFormData);
-            xmlHttpRequest->send(domFormData, es);
+            xmlHttpRequest->send(domFormData, exceptionState);
         } else if (V8ArrayBuffer::hasInstance(arg, info.GetIsolate(), currentWorldType)) {
             v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(arg);
             ArrayBuffer* arrayBuffer = V8ArrayBuffer::toNative(object);
             ASSERT(arrayBuffer);
-            xmlHttpRequest->send(arrayBuffer, es);
+            xmlHttpRequest->send(arrayBuffer, exceptionState);
         } else if (V8ArrayBufferView::hasInstance(arg, info.GetIsolate(), currentWorldType)) {
             v8::Handle<v8::Object> object = v8::Handle<v8::Object>::Cast(arg);
             ArrayBufferView* arrayBufferView = V8ArrayBufferView::toNative(object);
             ASSERT(arrayBufferView);
-            xmlHttpRequest->send(arrayBufferView, es);
+            xmlHttpRequest->send(arrayBufferView, exceptionState);
         } else {
-            xmlHttpRequest->send(toWebCoreStringWithNullCheck(arg), es);
+            xmlHttpRequest->send(toWebCoreStringWithNullCheck(arg), exceptionState);
         }
     }
 
-    es.throwIfNeeded();
+    exceptionState.throwIfNeeded();
 }
 
 } // namespace WebCore

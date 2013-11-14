@@ -135,9 +135,9 @@ static void failedAccessCheckCallbackInMainThread(v8::Local<v8::Object> host, v8
         return;
     DOMWindow* targetWindow = target->domWindow();
 
-    ExceptionState es(v8::Isolate::GetCurrent());
-    es.throwSecurityError(targetWindow->sanitizedCrossDomainAccessErrorMessage(activeDOMWindow()), targetWindow->crossDomainAccessErrorMessage(activeDOMWindow()));
-    es.throwIfNeeded();
+    ExceptionState exceptionState(v8::Isolate::GetCurrent());
+    exceptionState.throwSecurityError(targetWindow->sanitizedCrossDomainAccessErrorMessage(activeDOMWindow()), targetWindow->crossDomainAccessErrorMessage(activeDOMWindow()));
+    exceptionState.throwIfNeeded();
 }
 
 static bool codeGenerationCheckCallbackInMainThread(v8::Local<v8::Context> context)

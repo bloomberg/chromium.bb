@@ -130,7 +130,7 @@ void V8HTMLCanvasElement::toDataURLMethodCustom(const v8::FunctionCallbackInfo<v
 {
     v8::Handle<v8::Object> holder = info.Holder();
     HTMLCanvasElement* canvas = V8HTMLCanvasElement::toNative(holder);
-    ExceptionState es(info.GetIsolate());
+    ExceptionState exceptionState(info.GetIsolate());
 
     V8TRYCATCH_FOR_V8STRINGRESOURCE_VOID(V8StringResource<>, type, info[0]);
     double quality;
@@ -140,8 +140,8 @@ void V8HTMLCanvasElement::toDataURLMethodCustom(const v8::FunctionCallbackInfo<v
         qualityPtr = &quality;
     }
 
-    String result = canvas->toDataURL(type, qualityPtr, es);
-    es.throwIfNeeded();
+    String result = canvas->toDataURL(type, qualityPtr, exceptionState);
+    exceptionState.throwIfNeeded();
     v8SetReturnValueStringOrUndefined(info, result, info.GetIsolate());
 }
 

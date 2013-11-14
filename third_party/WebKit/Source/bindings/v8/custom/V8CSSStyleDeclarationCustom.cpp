@@ -232,10 +232,10 @@ void V8CSSStyleDeclaration::namedPropertySetterCustom(v8::Local<v8::String> name
 
     String propertyValue = toWebCoreStringWithNullCheck(value);
 
-    ExceptionState es(info.GetIsolate());
-    imp->setPropertyInternal(static_cast<CSSPropertyID>(propInfo->propID), propertyValue, false, es);
+    ExceptionState exceptionState(info.GetIsolate());
+    imp->setPropertyInternal(static_cast<CSSPropertyID>(propInfo->propID), propertyValue, false, exceptionState);
 
-    if (es.throwIfNeeded())
+    if (exceptionState.throwIfNeeded())
         return;
 
     v8SetReturnValue(info, value);

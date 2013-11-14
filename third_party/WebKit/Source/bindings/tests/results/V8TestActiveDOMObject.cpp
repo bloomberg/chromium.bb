@@ -108,9 +108,9 @@ static void excitingFunctionMethod(const v8::FunctionCallbackInfo<v8::Value>& in
         return;
     }
     TestActiveDOMObject* imp = V8TestActiveDOMObject::toNative(info.Holder());
-    ExceptionState es(info.GetIsolate());
-    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), es)) {
-        es.throwIfNeeded();
+    ExceptionState exceptionState(info.GetIsolate());
+    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), exceptionState)) {
+        exceptionState.throwIfNeeded();
         return;
     }
     V8TRYCATCH_VOID(Node*, nextChild, V8Node::hasInstance(info[0], info.GetIsolate(), worldType(info.GetIsolate())) ? V8Node::toNative(v8::Handle<v8::Object>::Cast(info[0])) : 0);
@@ -306,9 +306,9 @@ static void TestActiveDOMObjectDomainSafeFunctionSetter(v8::Local<v8::String> na
     if (holder.IsEmpty())
         return;
     TestActiveDOMObject* imp = V8TestActiveDOMObject::toNative(holder);
-    ExceptionState es(info.GetIsolate());
-    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), es)) {
-        es.throwIfNeeded();
+    ExceptionState exceptionState(info.GetIsolate());
+    if (!BindingSecurity::shouldAllowAccessToFrame(imp->frame(), exceptionState)) {
+        exceptionState.throwIfNeeded();
         return;
     }
 

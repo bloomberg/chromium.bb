@@ -88,9 +88,9 @@ void V8SQLTransactionSync::executeSqlMethodCustom(const v8::FunctionCallbackInfo
 
     SQLTransactionSync* transaction = V8SQLTransactionSync::toNative(info.Holder());
 
-    ExceptionState es(info.GetIsolate());
-    v8::Handle<v8::Value> result = toV8(transaction->executeSQL(statement, sqlValues, es), info.Holder(), info.GetIsolate());
-    if (es.throwIfNeeded())
+    ExceptionState exceptionState(info.GetIsolate());
+    v8::Handle<v8::Value> result = toV8(transaction->executeSQL(statement, sqlValues, exceptionState), info.Holder(), info.GetIsolate());
+    if (exceptionState.throwIfNeeded())
         return;
 
     v8SetReturnValue(info, result);
