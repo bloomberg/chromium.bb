@@ -1370,7 +1370,16 @@ other types of suffix sets.
   </summary>
 </histogram>
 
+<histogram name="Chrome.Browser.CrashedExecutionPhase" enum="ExecutionPhase">
+  <summary>
+    Indicates the execution phase the browser was in when the browser crashed.
+  </summary>
+</histogram>
+
 <histogram name="Chrome.Browser.ExecutionPhase" enum="ExecutionPhase">
+  <obsolete>
+    Deprecated as of 11/2013.
+  </obsolete>
   <summary>
     Indicates the execution phase the browser was in when browser didn't exit
     cleanly.
@@ -22802,13 +22811,14 @@ other types of suffix sets.
 </enum>
 
 <enum name="ExecutionPhase" type="int">
-  <int value="0" label="CLEAN_SHUTDOWN"/>
+  <int value="0" label="UNINITIALIZED_PHASE"/>
   <int value="100" label="START_METRICS_RECORDING"/>
   <int value="200" label="CREATE_PROFILE"/>
   <int value="300" label="STARTUP_TIMEBOMB_ARM"/>
   <int value="400" label="THREAD_WATCHER_START"/>
   <int value="500" label="MAIN_MESSAGE_LOOP_RUN"/>
   <int value="600" label="SHUTDOWN_TIMEBOMB_ARM"/>
+  <int value="700" label="SHUTDOWN_COMPLETE"/>
 </enum>
 
 <enum name="ExtensionBackgroundPageType" type="int">

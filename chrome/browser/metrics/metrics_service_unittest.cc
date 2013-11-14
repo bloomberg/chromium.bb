@@ -85,6 +85,7 @@ TEST_F(MetricsServiceTest, PermutedEntropyCacheClearedWhenLowEntropyReset) {
   {
     EXPECT_TRUE(low_entropy_pref->IsDefaultValue());
 
+    MetricsService::SetExecutionPhase(MetricsService::UNINITIALIZED_PHASE);
     MetricsService service;
     service.GetLowEntropySource();
 
@@ -98,6 +99,7 @@ TEST_F(MetricsServiceTest, PermutedEntropyCacheClearedWhenLowEntropyReset) {
   {
     GetLocalState()->SetString(kCachePrefName, "test");
 
+    MetricsService::SetExecutionPhase(MetricsService::UNINITIALIZED_PHASE);
     MetricsService service;
     service.GetLowEntropySource();
 
@@ -111,6 +113,7 @@ TEST_F(MetricsServiceTest, PermutedEntropyCacheClearedWhenLowEntropyReset) {
     CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kResetVariationState);
 
+    MetricsService::SetExecutionPhase(MetricsService::UNINITIALIZED_PHASE);
     MetricsService service;
     service.GetLowEntropySource();
 

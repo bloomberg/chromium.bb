@@ -76,13 +76,14 @@ class MetricsService
  public:
   // The execution phase of the browser.
   enum ExecutionPhase {
-    CLEAN_SHUTDOWN = 0,
+    UNINITIALIZED_PHASE = 0,
     START_METRICS_RECORDING = 100,
     CREATE_PROFILE = 200,
     STARTUP_TIMEBOMB_ARM = 300,
     THREAD_WATCHER_START = 400,
     MAIN_MESSAGE_LOOP_RUN = 500,
     SHUTDOWN_TIMEBOMB_ARM = 600,
+    SHUTDOWN_COMPLETE = 700,
   };
 
   MetricsService();
@@ -175,9 +176,8 @@ class MetricsService
   static void LogNeedForCleanShutdown();
 #endif  // defined(OS_ANDROID) || defined(OS_IOS)
 
-  static void SetExecutionPhase(ExecutionPhase execution_phase) {
-    execution_phase_ = execution_phase;
-  }
+  static void SetExecutionPhase(ExecutionPhase execution_phase);
+
   // Saves in the preferences if the crash report registration was successful.
   // This count is eventually send via UMA logs.
   void RecordBreakpadRegistration(bool success);

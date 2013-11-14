@@ -1125,7 +1125,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   // application is in the foreground or not. Do not start here.
 #if !defined(OS_ANDROID)
   // Now that the file thread has been started, start recording.
-  MetricsService::SetExecutionPhase(MetricsService::START_METRICS_RECORDING);
   StartMetricsRecording();
 #endif
 
