@@ -3218,12 +3218,12 @@ public class ContentViewCore
 
     @CalledByNative
     private ContentVideoViewClient getContentVideoViewClient() {
-        return mContentViewClient.getContentVideoViewClient();
+        return getContentViewClient().getContentVideoViewClient();
     }
 
     @CalledByNative
     private boolean shouldBlockMediaRequest(String url) {
-        return mContentViewClient.shouldBlockMediaRequest(url);
+        return getContentViewClient().shouldBlockMediaRequest(url);
     }
 
     private native void nativeOnJavaContentViewCoreDestroyed(int nativeContentViewCoreImpl);
