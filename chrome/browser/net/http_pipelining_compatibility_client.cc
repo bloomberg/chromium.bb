@@ -96,12 +96,12 @@ Request::Request(int request_id,
                                                       this)),
       info_(info),
       response_code_(0) {
-  url_request_->set_load_flags(net::LOAD_BYPASS_CACHE |
-                               net::LOAD_DISABLE_CACHE |
-                               net::LOAD_DO_NOT_SAVE_COOKIES |
-                               net::LOAD_DO_NOT_SEND_COOKIES |
-                               net::LOAD_DO_NOT_PROMPT_FOR_LOGIN |
-                               net::LOAD_DO_NOT_SEND_AUTH_DATA);
+  url_request_->SetLoadFlags(net::LOAD_BYPASS_CACHE |
+                             net::LOAD_DISABLE_CACHE |
+                             net::LOAD_DO_NOT_SAVE_COOKIES |
+                             net::LOAD_DO_NOT_SEND_COOKIES |
+                             net::LOAD_DO_NOT_PROMPT_FOR_LOGIN |
+                             net::LOAD_DO_NOT_SEND_AUTH_DATA);
 }
 
 void Request::Start() {

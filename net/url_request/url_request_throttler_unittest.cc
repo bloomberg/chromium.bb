@@ -203,7 +203,7 @@ const char* kHistogramNames[] = {
 };
 
 void URLRequestThrottlerEntryTest::SetUp() {
-  request_.set_load_flags(0);
+  request_.SetLoadFlags(0);
 
   now_ = TimeTicks::Now();
   entry_ = new MockURLRequestThrottlerEntry(&manager_);
@@ -270,7 +270,7 @@ TEST_F(URLRequestThrottlerEntryTest, InterfaceDuringExponentialBackoff) {
   EXPECT_TRUE(entry_->ShouldRejectRequest(request_));
 
   // Also end-to-end test the load flags exceptions.
-  request_.set_load_flags(LOAD_MAYBE_USER_GESTURE);
+  request_.SetLoadFlags(LOAD_MAYBE_USER_GESTURE);
   EXPECT_FALSE(entry_->ShouldRejectRequest(request_));
 
   CalculateHistogramDeltas();
@@ -407,7 +407,7 @@ class URLRequestThrottlerManagerTest : public testing::Test {
       : request_(GURL(), DEFAULT_PRIORITY, NULL, &context_) {}
 
   virtual void SetUp() {
-    request_.set_load_flags(0);
+    request_.SetLoadFlags(0);
   }
 
   // context_ must be declared before request_.

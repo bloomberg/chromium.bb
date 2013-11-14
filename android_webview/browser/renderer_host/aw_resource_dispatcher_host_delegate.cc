@@ -43,7 +43,7 @@ void SetCacheControlFlag(
   int load_flags = request->load_flags();
   load_flags &= ~all_cache_control_flags;
   load_flags |= flag;
-  request->set_load_flags(load_flags);
+  request->SetLoadFlags(load_flags);
 }
 
 }  // namespace
