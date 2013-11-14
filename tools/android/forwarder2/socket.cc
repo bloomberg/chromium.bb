@@ -287,19 +287,6 @@ int Socket::GetPort() {
   return port_;
 }
 
-bool Socket::IsFdInSet(const fd_set& fds) const {
-  if (IsClosed())
-    return false;
-  return FD_ISSET(socket_, &fds);
-}
-
-bool Socket::AddFdToSet(fd_set* fds) const {
-  if (IsClosed())
-    return false;
-  FD_SET(socket_, fds);
-  return true;
-}
-
 int Socket::ReadNumBytes(void* buffer, size_t num_bytes) {
   int bytes_read = 0;
   int ret = 1;
@@ -439,11 +426,6 @@ bool Socket::WaitForEvent(EventType type, int timeout_secs) {
     }
   }
   return !event_was_fired;
-}
-
-// static
-int Socket::GetHighestFileDescriptor(const Socket& s1, const Socket& s2) {
-  return std::max(s1.socket_, s2.socket_);
 }
 
 // static

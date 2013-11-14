@@ -6,7 +6,6 @@
 #define TOOLS_ANDROID_FORWARDER2_FORWARDER_H_
 
 #include "base/memory/scoped_ptr.h"
-#include "base/threading/thread.h"
 
 namespace forwarder2 {
 
