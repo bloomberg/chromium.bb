@@ -18,6 +18,7 @@
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "media/base/media_export.h"
+#include "media/base/video_frame.h"
 #include "media/video/capture/video_capture_types.h"
 
 namespace media {
@@ -109,14 +110,7 @@ class MEDIA_EXPORT VideoCaptureDevice {
   };
 
   // Manages a list of Name entries.
-  class MEDIA_EXPORT Names
-      : public NON_EXPORTED_BASE(std::list<Name>) {
-   public:
-    // Returns NULL if no entry was found by that ID.
-    Name* FindById(const std::string& id);
-
-    // Allow generated copy constructor and assignment.
-  };
+  typedef std::list<Name> Names;
 
   class MEDIA_EXPORT Client {
    public:

@@ -153,6 +153,10 @@ void VideoCaptureController::AddClient(
            << ", " << params.session_id
            << ")";
 
+  // If this is the first client added to the controller, cache the parameters.
+  if (!controller_clients_.size())
+    video_capture_format_ = params.requested_format;
+
   // Signal error in case device is already in error state.
   if (state_ == VIDEO_CAPTURE_STATE_ERROR) {
     event_handler->OnError(id);
@@ -227,6 +231,12 @@ void VideoCaptureController::ReturnBuffer(
   }
 
   buffer_pool_->RelinquishConsumerHold(buffer_id, 1);
+}
+
+const media::VideoCaptureFormat&
+VideoCaptureController::GetVideoCaptureFormat() const {
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  return video_capture_format_;
 }
 
 scoped_refptr<media::VideoFrame>
