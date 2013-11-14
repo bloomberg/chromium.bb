@@ -1090,7 +1090,7 @@ static bool parseKeywordValue(MutableStylePropertySet* declaration, CSSPropertyI
 }
 
 template <typename CharacterType>
-static bool parseTransformArguments(CSSTransformValue* transformValue, CharacterType* characters, unsigned length, unsigned start, unsigned expectedCount)
+static bool parseTransformTranslateArguments(CSSTransformValue* transformValue, CharacterType* characters, unsigned length, unsigned start, unsigned expectedCount)
 {
     while (expectedCount) {
         size_t end = WTF::find(characters, length, expectedCount == 1 ? ')' : ',', start);
@@ -1103,7 +1103,7 @@ static bool parseTransformArguments(CSSTransformValue* transformValue, Character
             return false;
         if (unit != CSSPrimitiveValue::CSS_PX && (number || unit != CSSPrimitiveValue::CSS_NUMBER))
             return false;
-        transformValue->append(cssValuePool().createValue(number, unit));
+        transformValue->append(cssValuePool().createValue(number, CSSPrimitiveValue::CSS_PX));
         start = end + 1;
         --expectedCount;
     }
@@ -1146,9 +1146,9 @@ static bool parseTranslateTransformValue(MutableStylePropertySet* properties, CS
     RefPtr<CSSTransformValue> transformValue = CSSTransformValue::create(transformType);
     bool success;
     if (string.is8Bit())
-        success = parseTransformArguments(transformValue.get(), string.characters8(), string.length(), argumentStart, expectedArgumentCount);
+        success = parseTransformTranslateArguments(transformValue.get(), string.characters8(), string.length(), argumentStart, expectedArgumentCount);
     else
-        success = parseTransformArguments(transformValue.get(), string.characters16(), string.length(), argumentStart, expectedArgumentCount);
+        success = parseTransformTranslateArguments(transformValue.get(), string.characters16(), string.length(), argumentStart, expectedArgumentCount);
     if (!success)
         return false;
     RefPtr<CSSValueList> result = CSSValueList::createSpaceSeparated();

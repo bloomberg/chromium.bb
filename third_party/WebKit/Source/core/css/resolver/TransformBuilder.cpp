@@ -53,7 +53,7 @@ TransformBuilder::~TransformBuilder()
 
 static Length convertToFloatLength(CSSPrimitiveValue* primitiveValue, const RenderStyle* style, const RenderStyle* rootStyle, double multiplier)
 {
-    return primitiveValue ? primitiveValue->convertToLength<FixedFloatConversion | PercentConversion | FractionConversion>(style, rootStyle, multiplier) : Length(Undefined);
+    return primitiveValue ? primitiveValue->convertToLength<FixedFloatConversion | PercentConversion>(style, rootStyle, multiplier) : Length(Undefined);
 }
 
 static TransformOperation::OperationType getTransformOperationType(CSSTransformValue::TransformOperationType type)

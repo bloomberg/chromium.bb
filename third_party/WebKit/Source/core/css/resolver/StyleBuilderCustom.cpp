@@ -91,7 +91,7 @@ namespace WebCore {
 
 static Length clipConvertToLength(StyleResolverState& state, CSSPrimitiveValue* value)
 {
-    return value->convertToLength<FixedIntegerConversion | PercentConversion | FractionConversion | AutoConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
+    return value->convertToLength<FixedIntegerConversion | PercentConversion | AutoConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
 }
 
 void StyleBuilderFunctions::applyInitialCSSPropertyClip(StyleResolverState& state)
@@ -692,7 +692,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyInternalMarqueeIncrement(StyleR
             break;
         }
     } else {
-        Length marqueeLength = primitiveValue ? primitiveValue->convertToLength<FixedIntegerConversion | PercentConversion | FractionConversion>(state.style(), state.rootElementStyle()) : Length(Undefined);
+        Length marqueeLength = primitiveValue ? primitiveValue->convertToLength<FixedIntegerConversion | PercentConversion>(state.style(), state.rootElementStyle()) : Length(Undefined);
         if (!marqueeLength.isUndefined())
             state.style()->setMarqueeIncrement(marqueeLength);
     }
