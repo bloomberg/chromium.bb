@@ -302,7 +302,7 @@ void RenderLayerCompositor::didChangeVisibleRect()
 
 bool RenderLayerCompositor::hasAnyAdditionalCompositedLayers(const RenderLayer* rootLayer) const
 {
-    return m_compositedLayerCount > (rootLayer->compositedLayerMapping() ? 1 : 0);
+    return m_compositedLayerCount > (rootLayer->hasCompositedLayerMapping() ? 1 : 0);
 }
 
 void RenderLayerCompositor::updateCompositingRequirementsState()
@@ -453,12 +453,9 @@ void RenderLayerCompositor::updateCompositingLayers(CompositingUpdateType update
         // Host the document layer in the RenderView's root layer.
         if (RuntimeEnabledFeatures::overlayFullscreenVideoEnabled() && isMainFrame()) {
             RenderVideo* video = findFullscreenVideoRenderer(&m_renderView->document());
-            if (video) {
-                CompositedLayerMapping* compositedLayerMapping = video->compositedLayerMapping();
-                if (compositedLayerMapping) {
-                    childList.clear();
-                    childList.append(compositedLayerMapping->mainGraphicsLayer());
-                }
+            if (video && video->hasCompositedLayerMapping()) {
+                childList.clear();
+                childList.append(video->compositedLayerMapping()->mainGraphicsLayer());
             }
         }
         // Even when childList is empty, don't drop out of compositing mode if there are
@@ -521,7 +518,7 @@ bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* l
     if (needsToBeComposited(layer)) {
         enableCompositingMode();
 
-        if (!layer->compositedLayerMapping()) {
+        if (!layer->hasCompositedLayerMapping()) {
             // If we need to repaint, do so before allocating the compositedLayerMapping
             repaintOnCompositingChange(layer);
 
@@ -543,15 +540,15 @@ bool RenderLayerCompositor::allocateOrClearCompositedLayerMapping(RenderLayer* l
         if (layer->compositedLayerMapping()->updateRequiresOwnBackingStoreForIntrinsicReasons())
             compositedLayerMappingChanged = true;
     } else {
-        if (layer->compositedLayerMapping()) {
+        if (layer->hasCompositedLayerMapping()) {
             // If we're removing the compositedLayerMapping from a reflection, clear the source GraphicsLayer's pointer to
             // its replica GraphicsLayer. In practice this should never happen because reflectee and reflection
             // are both either composited, or not composited.
             if (layer->isReflection()) {
                 RenderLayer* sourceLayer = toRenderLayerModelObject(layer->renderer()->parent())->layer();
-                if (CompositedLayerMapping* compositedLayerMapping = sourceLayer->compositedLayerMapping()) {
-                    ASSERT(compositedLayerMapping->mainGraphicsLayer()->replicaLayer() == layer->compositedLayerMapping()->mainGraphicsLayer());
-                    compositedLayerMapping->mainGraphicsLayer()->setReplicatedByLayer(0);
+                if (sourceLayer->hasCompositedLayerMapping()) {
+                    ASSERT(sourceLayer->compositedLayerMapping()->mainGraphicsLayer()->replicaLayer() == layer->compositedLayerMapping()->mainGraphicsLayer());
+                    sourceLayer->compositedLayerMapping()->mainGraphicsLayer()->setReplicatedByLayer(0);
                 }
             }
 
@@ -602,7 +599,7 @@ bool RenderLayerCompositor::updateLayerCompositingState(RenderLayer* layer)
 
     // See if we need content or clipping layers. Methods called here should assume
     // that the compositing state of descendant layers has not been updated yet.
-    if (layer->compositedLayerMapping() && layer->compositedLayerMapping()->updateGraphicsLayerConfiguration())
+    if (layer->hasCompositedLayerMapping() && layer->compositedLayerMapping()->updateGraphicsLayerConfiguration())
         layerChanged = true;
 
     return layerChanged;
@@ -661,7 +658,7 @@ void RenderLayerCompositor::layerWasAdded(RenderLayer* /*parent*/, RenderLayer* 
 
 void RenderLayerCompositor::layerWillBeRemoved(RenderLayer* parent, RenderLayer* child)
 {
-    if (!child->compositedLayerMapping() || parent->renderer()->documentBeingDestroyed())
+    if (!child->hasCompositedLayerMapping() || parent->renderer()->documentBeingDestroyed())
         return;
 
     removeViewportConstrainedLayer(child);
@@ -978,12 +975,12 @@ void RenderLayerCompositor::computeCompositingRequirements(RenderLayer* ancestor
 void RenderLayerCompositor::setCompositingParent(RenderLayer* childLayer, RenderLayer* parentLayer)
 {
     ASSERT(!parentLayer || childLayer->ancestorCompositingLayer() == parentLayer);
-    ASSERT(childLayer->compositedLayerMapping());
+    ASSERT(childLayer->hasCompositedLayerMapping());
 
     // It's possible to be called with a parent that isn't yet composited when we're doing
     // partial updates as required by painting or hit testing. Just bail in that case;
     // we'll do a full layer update soon.
-    if (!parentLayer || !parentLayer->compositedLayerMapping())
+    if (!parentLayer || !parentLayer->hasCompositedLayerMapping())
         return;
 
     if (parentLayer) {
@@ -998,7 +995,7 @@ void RenderLayerCompositor::setCompositingParent(RenderLayer* childLayer, Render
 
 void RenderLayerCompositor::removeCompositedChildren(RenderLayer* layer)
 {
-    ASSERT(layer->compositedLayerMapping());
+    ASSERT(layer->hasCompositedLayerMapping());
 
     GraphicsLayer* hostingLayer = layer->compositedLayerMapping()->parentForSublayers();
     hostingLayer->removeAllChildren();
@@ -1030,15 +1027,16 @@ void RenderLayerCompositor::rebuildCompositingLayerTree(RenderLayer* layer, Vect
         pixelsAddedByPromotingAllTransitions = 0.0;
     }
 
-    CompositedLayerMapping* currentCompositedLayerMapping = layer->compositedLayerMapping();
-    if (currentCompositedLayerMapping) {
+    const bool hasCompositedLayerMapping = layer->hasCompositedLayerMapping();
+    CompositedLayerMappingPtr currentCompositedLayerMapping = layer->compositedLayerMapping();
+    if (hasCompositedLayerMapping) {
         // The compositing state of all our children has been updated already, so now
         // we can compute and cache the composited bounds for this layer.
         currentCompositedLayerMapping->updateCompositedBounds();
 
         if (layer->reflectionInfo()) {
             RenderLayer* reflectionLayer = layer->reflectionInfo()->reflectionLayer();
-            if (reflectionLayer->compositedLayerMapping())
+            if (reflectionLayer->hasCompositedLayerMapping())
                 reflectionLayer->compositedLayerMapping()->updateCompositedBounds();
         }
 
@@ -1062,7 +1060,7 @@ void RenderLayerCompositor::rebuildCompositingLayerTree(RenderLayer* layer, Vect
     // If this layer has a compositedLayerMapping, then that is where we place subsequent children GraphicsLayers.
     // Otherwise children continue to append to the child list of the enclosing layer.
     Vector<GraphicsLayer*> layerChildren;
-    Vector<GraphicsLayer*>& childList = currentCompositedLayerMapping ? layerChildren : childLayersOfEnclosingLayer;
+    Vector<GraphicsLayer*>& childList = hasCompositedLayerMapping ? layerChildren : childLayersOfEnclosingLayer;
 
 #if !ASSERT_DISABLED
     LayerListMutationDetector mutationChecker(layer->stackingNode());
@@ -1074,7 +1072,7 @@ void RenderLayerCompositor::rebuildCompositingLayerTree(RenderLayer* layer, Vect
             rebuildCompositingLayerTree(curNode->layer(), childList, depth + 1);
 
         // If a negative z-order child is compositing, we get a foreground layer which needs to get parented.
-        if (currentCompositedLayerMapping && currentCompositedLayerMapping->foregroundLayer())
+        if (hasCompositedLayerMapping && currentCompositedLayerMapping->foregroundLayer())
             childList.append(currentCompositedLayerMapping->foregroundLayer());
     }
 
@@ -1082,7 +1080,7 @@ void RenderLayerCompositor::rebuildCompositingLayerTree(RenderLayer* layer, Vect
     while (RenderLayerStackingNode* curNode = iterator.next())
         rebuildCompositingLayerTree(curNode->layer(), childList, depth + 1);
 
-    if (currentCompositedLayerMapping) {
+    if (hasCompositedLayerMapping) {
         bool parented = false;
         if (layer->renderer()->isRenderPart())
             parented = parentFrameContentLayers(toRenderPart(layer->renderer()));
@@ -1265,10 +1263,10 @@ bool RenderLayerCompositor::parentFrameContentLayers(RenderPart* renderer)
         return false;
 
     RenderLayer* layer = renderer->layer();
-    if (!layer->compositedLayerMapping())
+    if (!layer->hasCompositedLayerMapping())
         return false;
 
-    CompositedLayerMapping* compositedLayerMapping = layer->compositedLayerMapping();
+    CompositedLayerMappingPtr compositedLayerMapping = layer->compositedLayerMapping();
     GraphicsLayer* hostingLayer = compositedLayerMapping->parentForSublayers();
     GraphicsLayer* rootLayer = innerCompositor->rootGraphicsLayer();
     if (hostingLayer->children().size() != 1 || hostingLayer->children()[0] != rootLayer) {
@@ -1281,14 +1279,15 @@ bool RenderLayerCompositor::parentFrameContentLayers(RenderPart* renderer)
 // This just updates layer geometry without changing the hierarchy.
 void RenderLayerCompositor::updateLayerTreeGeometry(RenderLayer* layer)
 {
-    if (CompositedLayerMapping* compositedLayerMapping = layer->compositedLayerMapping()) {
+    if (layer->hasCompositedLayerMapping()) {
+        CompositedLayerMappingPtr compositedLayerMapping = layer->compositedLayerMapping();
         // The compositing state of all our children has been updated already, so now
         // we can compute and cache the composited bounds for this layer.
         compositedLayerMapping->updateCompositedBounds();
 
         if (layer->reflectionInfo()) {
             RenderLayer* reflectionLayer = layer->reflectionInfo()->reflectionLayer();
-            if (reflectionLayer->compositedLayerMapping())
+            if (reflectionLayer->hasCompositedLayerMapping())
                 reflectionLayer->compositedLayerMapping()->updateCompositedBounds();
         }
 
@@ -1312,12 +1311,13 @@ void RenderLayerCompositor::updateLayerTreeGeometry(RenderLayer* layer)
 void RenderLayerCompositor::updateCompositingDescendantGeometry(RenderLayerStackingNode* compositingAncestor, RenderLayer* layer, bool compositedChildrenOnly)
 {
     if (layer->stackingNode() != compositingAncestor) {
-        if (CompositedLayerMapping* compositedLayerMapping = layer->compositedLayerMapping()) {
+        if (layer->hasCompositedLayerMapping()) {
+            CompositedLayerMappingPtr compositedLayerMapping = layer->compositedLayerMapping();
             compositedLayerMapping->updateCompositedBounds();
 
             if (layer->reflectionInfo()) {
                 RenderLayer* reflectionLayer = layer->reflectionInfo()->reflectionLayer();
-                if (reflectionLayer->compositedLayerMapping())
+                if (reflectionLayer->hasCompositedLayerMapping())
                     reflectionLayer->compositedLayerMapping()->updateCompositedBounds();
             }
 
@@ -1418,7 +1418,7 @@ void RenderLayerCompositor::clearMappingForRenderLayerIncludingDescendants(Rende
     if (!layer)
         return;
 
-    if (layer->compositedLayerMapping()) {
+    if (layer->hasCompositedLayerMapping()) {
         removeViewportConstrainedLayer(layer);
         layer->clearCompositedLayerMapping();
     }
@@ -1530,7 +1530,7 @@ CompositingReasons RenderLayerCompositor::directReasonsForCompositing(const Rend
 // but a sibling in the z-order hierarchy.
 bool RenderLayerCompositor::clippedByAncestor(const RenderLayer* layer) const
 {
-    if (!layer->compositedLayerMapping() || !layer->parent())
+    if (!layer->hasCompositedLayerMapping() || !layer->parent())
         return false;
 
     const RenderLayer* compositingAncestor = layer->ancestorCompositingLayer();
@@ -1635,7 +1635,7 @@ bool RenderLayerCompositor::requiresCompositingForPlugin(RenderObject* renderer)
     RenderWidget* pluginRenderer = toRenderWidget(renderer);
     // If we can't reliably know the size of the plugin yet, don't change compositing state.
     if (pluginRenderer->needsLayout())
-        return pluginRenderer->hasLayer() && pluginRenderer->layer()->compositedLayerMapping();
+        return pluginRenderer->hasLayer() && pluginRenderer->layer()->hasCompositedLayerMapping();
 
     // Don't go into compositing mode if height or width are zero, or size is 1x1.
     IntRect contentBox = pixelSnappedIntRect(pluginRenderer->contentBoxRect());
@@ -1661,7 +1661,7 @@ bool RenderLayerCompositor::requiresCompositingForFrame(RenderObject* renderer) 
 
     // If we can't reliably know the size of the iframe yet, don't change compositing state.
     if (renderer->needsLayout())
-        return frameRenderer->hasLayer() && frameRenderer->layer()->compositedLayerMapping();
+        return frameRenderer->hasLayer() && frameRenderer->layer()->hasCompositedLayerMapping();
 
     // Don't go into compositing mode if height or width are zero.
     IntRect contentBox = pixelSnappedIntRect(frameRenderer->contentBoxRect());
@@ -1828,7 +1828,7 @@ bool RenderLayerCompositor::requiresCompositingForPosition(RenderObject* rendere
     // Subsequent tests depend on layout. If we can't tell now, just keep things the way they are until layout is done.
     if (!m_inPostLayoutUpdate) {
         m_needsToRecomputeCompositingRequirements = true;
-        return layer->compositedLayerMapping();
+        return layer->hasCompositedLayerMapping();
     }
 
     bool paintsContent = layer->isVisuallyNonEmpty() || layer->hasVisibleDescendant();
@@ -2315,7 +2315,7 @@ static bool isRootmostFixedOrStickyLayer(RenderLayer* layer)
         return false;
 
     for (RenderLayerStackingNode* stackingContainerNode = layer->stackingNode()->ancestorStackingContainerNode(); stackingContainerNode; stackingContainerNode = stackingContainerNode->ancestorStackingContainerNode()) {
-        if (stackingContainerNode->layer()->compositedLayerMapping() && stackingContainerNode->layer()->renderer()->style()->position() == FixedPosition)
+        if (stackingContainerNode->layer()->hasCompositedLayerMapping() && stackingContainerNode->layer()->renderer()->style()->position() == FixedPosition)
             return false;
     }
 
@@ -2345,7 +2345,7 @@ void RenderLayerCompositor::removeViewportConstrainedLayer(RenderLayer* layer)
 
 FixedPositionViewportConstraints RenderLayerCompositor::computeFixedViewportConstraints(RenderLayer* layer) const
 {
-    ASSERT(layer->compositedLayerMapping());
+    ASSERT(layer->hasCompositedLayerMapping());
 
     FrameView* frameView = m_renderView->frameView();
     LayoutRect viewportRect = frameView->viewportConstrainedVisibleContentRect();
@@ -2383,7 +2383,7 @@ FixedPositionViewportConstraints RenderLayerCompositor::computeFixedViewportCons
 
 StickyPositionViewportConstraints RenderLayerCompositor::computeStickyViewportConstraints(RenderLayer* layer) const
 {
-    ASSERT(layer->compositedLayerMapping());
+    ASSERT(layer->hasCompositedLayerMapping());
 
     FrameView* frameView = m_renderView->frameView();
     LayoutRect viewportRect = frameView->viewportConstrainedVisibleContentRect();

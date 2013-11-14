@@ -1356,6 +1356,8 @@
             'rendering/ClipRect.cpp',
             'rendering/ClipRect.h',
             'rendering/CompositedLayerMapping.cpp',
+            'rendering/CompositedLayerMapping.h',
+            'rendering/CompositedLayerMappingPtr.h',
             'rendering/CompositingReasons.h',
             'rendering/CounterNode.cpp',
             'rendering/CounterNode.h',

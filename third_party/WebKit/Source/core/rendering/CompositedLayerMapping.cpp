@@ -53,6 +53,7 @@
 #include "core/rendering/RenderImage.h"
 #include "core/rendering/RenderLayer.h"
 #include "core/rendering/RenderLayerCompositor.h"
+#include "core/rendering/RenderLayerStackingNodeIterator.h"
 #include "core/rendering/RenderVideo.h"
 #include "core/rendering/RenderView.h"
 #include "core/rendering/animation/WebAnimationProvider.h"
@@ -464,7 +465,7 @@ bool CompositedLayerMapping::updateGraphicsLayerConfiguration()
         m_graphicsLayer->setContentsClippingMaskLayer(m_childClippingMaskLayer.get());
 
     if (m_owningLayer->reflectionInfo()) {
-        if (m_owningLayer->reflectionInfo()->reflectionLayer()->compositedLayerMapping()) {
+        if (m_owningLayer->reflectionInfo()->reflectionLayer()->hasCompositedLayerMapping()) {
             GraphicsLayer* reflectionLayer = m_owningLayer->reflectionInfo()->reflectionLayer()->compositedLayerMapping()->mainGraphicsLayer();
             m_graphicsLayer->setReplicatedByLayer(reflectionLayer);
         }
@@ -551,7 +552,7 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry()
     // We compute everything relative to the enclosing compositing layer.
     IntRect ancestorCompositingBounds;
     if (compAncestor) {
-        ASSERT(compAncestor->compositedLayerMapping());
+        ASSERT(compAncestor->hasCompositedLayerMapping());
         ancestorCompositingBounds = pixelSnappedIntRect(compAncestor->compositedLayerMapping()->compositedBounds());
     }
 
@@ -700,8 +701,8 @@ void CompositedLayerMapping::updateGraphicsLayerGeometry()
         m_backgroundLayer->setOffsetFromRenderer(m_graphicsLayer->offsetFromRenderer());
     }
 
-    if (m_owningLayer->reflectionInfo() && m_owningLayer->reflectionInfo()->reflectionLayer()->compositedLayerMapping()) {
-        CompositedLayerMapping* reflectionCompositedLayerMapping = m_owningLayer->reflectionInfo()->reflectionLayer()->compositedLayerMapping();
+    if (m_owningLayer->reflectionInfo() && m_owningLayer->reflectionInfo()->reflectionLayer()->hasCompositedLayerMapping()) {
+        CompositedLayerMappingPtr reflectionCompositedLayerMapping = m_owningLayer->reflectionInfo()->reflectionLayer()->compositedLayerMapping();
         reflectionCompositedLayerMapping->updateGraphicsLayerGeometry();
 
         // The reflection layer has the bounds of m_owningLayer->reflectionLayer(),
@@ -1348,40 +1349,23 @@ static bool hasVisibleNonCompositingDescendant(RenderLayer* parent)
     LayerListMutationDetector mutationChecker(parent->stackingNode());
 #endif
 
-    if (Vector<RenderLayerStackingNode*>* normalFlowList = parent->stackingNode()->normalFlowList()) {
-        size_t listSize = normalFlowList->size();
-        for (size_t i = 0; i < listSize; ++i) {
-            RenderLayer* curLayer = normalFlowList->at(i)->layer();
-            if (!curLayer->compositedLayerMapping()
-                && (curLayer->hasVisibleContent() || hasVisibleNonCompositingDescendant(curLayer)))
-                return true;
-        }
+    RenderLayerStackingNodeIterator normalFlowIterator(*parent->stackingNode(), NormalFlowChildren);
+    while (RenderLayerStackingNode* curNode = normalFlowIterator.next()) {
+        RenderLayer* curLayer = curNode->layer();
+        if (!curLayer->hasCompositedLayerMapping()
+            && (curLayer->hasVisibleContent() || hasVisibleNonCompositingDescendant(curLayer)))
+            return true;
     }
 
-    if (parent->stackingNode()->isStackingContainer()) {
-        if (!parent->hasVisibleDescendant())
-            return false;
+    if (!parent->hasVisibleDescendant())
+        return false;
 
-        // Use the m_hasCompositingDescendant bit to optimize?
-        if (Vector<RenderLayerStackingNode*>* negZOrderList = parent->stackingNode()->negZOrderList()) {
-            size_t listSize = negZOrderList->size();
-            for (size_t i = 0; i < listSize; ++i) {
-                RenderLayer* curLayer = negZOrderList->at(i)->layer();
-                if (!curLayer->compositedLayerMapping()
-                    && (curLayer->hasVisibleContent() || hasVisibleNonCompositingDescendant(curLayer)))
-                    return true;
-            }
-        }
-
-        if (Vector<RenderLayerStackingNode*>* posZOrderList = parent->stackingNode()->posZOrderList()) {
-            size_t listSize = posZOrderList->size();
-            for (size_t i = 0; i < listSize; ++i) {
-                RenderLayer* curLayer = posZOrderList->at(i)->layer();
-                if (!curLayer->compositedLayerMapping()
-                    && (curLayer->hasVisibleContent() || hasVisibleNonCompositingDescendant(curLayer)))
-                    return true;
-            }
-        }
+    RenderLayerStackingNodeIterator zOrderIterator(*parent->stackingNode(), NegativeZOrderChildren | PositiveZOrderChildren);
+    while (RenderLayerStackingNode* curNode = zOrderIterator.next()) {
+        RenderLayer* curLayer = curNode->layer();
+        if (!curLayer->hasCompositedLayerMapping()
+            && (curLayer->hasVisibleContent() || hasVisibleNonCompositingDescendant(curLayer)))
+            return true;
     }
 
     return false;

@@ -289,7 +289,7 @@ void RenderLayer::updateLayerPositions(RenderGeometryMap* geometryMap, UpdateLay
 
     // Clear the IsCompositingUpdateRoot flag once we've found the first compositing layer in this update.
     bool isUpdateRoot = (flags & IsCompositingUpdateRoot);
-    if (compositedLayerMapping())
+    if (hasCompositedLayerMapping())
         flags &= ~IsCompositingUpdateRoot;
 
     if (useRegionBasedColumns() && renderer()->isInFlowRenderFlowThread()) {
@@ -303,7 +303,7 @@ void RenderLayer::updateLayerPositions(RenderGeometryMap* geometryMap, UpdateLay
     for (RenderLayer* child = firstChild(); child; child = child->nextSibling())
         child->updateLayerPositions(geometryMap, flags);
 
-    if ((flags & UpdateCompositingLayers) && compositedLayerMapping()) {
+    if ((flags & UpdateCompositingLayers) && hasCompositedLayerMapping()) {
         CompositedLayerMapping::UpdateAfterLayoutFlags updateFlags = CompositedLayerMapping::CompositingChildrenOnly;
         if (flags & NeedsFullRepaintInBacking)
             updateFlags |= CompositedLayerMapping::NeedsFullRepaint;
@@ -535,7 +535,7 @@ void RenderLayer::updateBlendMode()
         if (!hadBlendMode || !hasBlendMode())
             dirtyAncestorChainBlendedDescendantStatus();
 
-        if (compositedLayerMapping())
+        if (hasCompositedLayerMapping())
             compositedLayerMapping()->setBlendMode(newBlendMode);
     }
 }
@@ -642,7 +642,7 @@ void RenderLayer::updatePagination()
     m_isPaginated = false;
     m_enclosingPaginationLayer = 0;
 
-    if (compositedLayerMapping() || !parent())
+    if (hasCompositedLayerMapping() || !parent())
         return; // FIXME: We will have to deal with paginated compositing layers someday.
                 // FIXME: For now the RenderView can't be paginated.  Eventually printing will move to a model where it is though.
 
@@ -993,7 +993,7 @@ bool RenderLayer::updateLayerPosition()
             localPoint += offset;
         }
     } else if (parent()) {
-        if (compositedLayerMapping()) {
+        if (hasCompositedLayerMapping()) {
             // FIXME: Composited layers ignore pagination, so about the best we can do is make sure they're offset into the appropriate column.
             // They won't split across columns properly.
             LayoutSize columnOffset;
@@ -1113,11 +1113,11 @@ static inline const RenderLayer* compositingContainer(const RenderLayer* layer)
 // enclosingCompositingLayerForRepaint().
 RenderLayer* RenderLayer::enclosingCompositingLayer(bool includeSelf) const
 {
-    if (includeSelf && compositedLayerMapping())
+    if (includeSelf && hasCompositedLayerMapping())
         return const_cast<RenderLayer*>(this);
 
     for (const RenderLayer* curr = compositingContainer(this); curr; curr = compositingContainer(curr)) {
-        if (curr->compositedLayerMapping())
+        if (curr->hasCompositedLayerMapping())
             return const_cast<RenderLayer*>(curr);
     }
 
@@ -1191,7 +1191,7 @@ bool RenderLayer::hasAncestorWithFilterOutsets() const
 
 RenderLayer* RenderLayer::clippingRootForPainting() const
 {
-    if (compositedLayerMapping())
+    if (hasCompositedLayerMapping())
         return const_cast<RenderLayer*>(this);
 
     const RenderLayer* current = this;
@@ -1230,11 +1230,11 @@ bool RenderLayer::isTransparent() const
 
 RenderLayer* RenderLayer::transparentPaintingAncestor()
 {
-    if (compositedLayerMapping())
+    if (hasCompositedLayerMapping())
         return 0;
 
     for (RenderLayer* curr = parent(); curr; curr = curr->parent()) {
-        if (curr->compositedLayerMapping())
+        if (curr->hasCompositedLayerMapping())
             return 0;
         if (curr->isTransparent())
             return curr;
@@ -1764,8 +1764,8 @@ void RenderLayer::updateScrollableArea()
 
 PassOwnPtr<Vector<FloatRect> > RenderLayer::collectTrackedRepaintRects() const
 {
-    if (CompositedLayerMapping* mapping = compositedLayerMapping())
-        return mapping->collectTrackedRepaintRects();
+    if (hasCompositedLayerMapping())
+        return compositedLayerMapping()->collectTrackedRepaintRects();
     return nullptr;
 }
 
@@ -3583,7 +3583,7 @@ IntRect RenderLayer::calculateLayerBounds(const RenderLayer* ancestorLayer, cons
 
     if (m_reflectionInfo) {
         RenderLayer* reflectionLayer = m_reflectionInfo->reflectionLayer();
-        if (!reflectionLayer->compositedLayerMapping()) {
+        if (!reflectionLayer->hasCompositedLayerMapping()) {
             IntRect childUnionBounds = reflectionLayer->calculateLayerBounds(this, 0, descendantFlags);
             unionBounds.unite(childUnionBounds);
         }
@@ -3600,7 +3600,7 @@ IntRect RenderLayer::calculateLayerBounds(const RenderLayer* ancestorLayer, cons
     // This applies to all z-order lists below.
     RenderLayerStackingNodeIterator iterator(*m_stackingNode.get(), AllChildren);
     while (RenderLayerStackingNode* node = iterator.next()) {
-        if (flags & IncludeCompositedDescendants || !node->layer()->compositedLayerMapping()) {
+        if (flags & IncludeCompositedDescendants || !node->layer()->hasCompositedLayerMapping()) {
             IntRect childUnionBounds = node->layer()->calculateLayerBounds(this, 0, descendantFlags);
             unionBounds.unite(childUnionBounds);
         }
@@ -3643,7 +3643,7 @@ CompositingState RenderLayer::compositingState() const
     return PaintsIntoOwnBacking;
 }
 
-CompositedLayerMapping* RenderLayer::ensureCompositedLayerMapping()
+CompositedLayerMappingPtr RenderLayer::ensureCompositedLayerMapping()
 {
     if (!m_compositedLayerMapping) {
         m_compositedLayerMapping = adoptPtr(new CompositedLayerMapping(this));
@@ -3730,7 +3730,7 @@ bool RenderLayer::listBackgroundIsKnownToBeOpaqueInRect(const Vector<RenderLayer
 
     for (Vector<RenderLayerStackingNode*>::const_reverse_iterator iter = list->rbegin(); iter != list->rend(); ++iter) {
         const RenderLayer* childLayer = (*iter)->layer();
-        if (childLayer->compositedLayerMapping())
+        if (childLayer->hasCompositedLayerMapping())
             continue;
 
         if (!childLayer->canUseConvertToLayerCoords())
@@ -3903,7 +3903,7 @@ inline bool RenderLayer::needsCompositingLayersRebuiltForClip(const RenderStyle*
 inline bool RenderLayer::needsCompositingLayersRebuiltForOverflow(const RenderStyle* oldStyle, const RenderStyle* newStyle) const
 {
     ASSERT(newStyle);
-    return !compositedLayerMapping() && oldStyle && (oldStyle->overflowX() != newStyle->overflowX()) && m_stackingNode->ancestorStackingContainerNode()->layer()->hasCompositingDescendant();
+    return !hasCompositedLayerMapping() && oldStyle && (oldStyle->overflowX() != newStyle->overflowX()) && m_stackingNode->ancestorStackingContainerNode()->layer()->hasCompositingDescendant();
 }
 
 inline bool RenderLayer::needsCompositingLayersRebuiltForFilters(const RenderStyle* oldStyle, const RenderStyle* newStyle, bool didPaintWithFilters) const
@@ -3947,7 +3947,7 @@ void RenderLayer::updateFilters(const RenderStyle* oldStyle, const RenderStyle* 
     updateOrRemoveFilterClients();
     // During an accelerated animation, both WebKit and the compositor animate properties.
     // However, WebKit shouldn't ask the compositor to update its filters if the compositor is performing the animation.
-    bool shouldUpdateFilters = compositedLayerMapping() && !renderer()->animation().isRunningAcceleratedAnimationOnRenderer(renderer(), CSSPropertyWebkitFilter);
+    bool shouldUpdateFilters = hasCompositedLayerMapping() && !renderer()->animation().isRunningAcceleratedAnimationOnRenderer(renderer(), CSSPropertyWebkitFilter);
     if (shouldUpdateFilters)
         compositedLayerMapping()->updateFilters(renderer()->style());
     updateOrRemoveFilterEffectRenderer();
@@ -3986,7 +3986,7 @@ void RenderLayer::styleChanged(StyleDifference, const RenderStyle* oldStyle)
         || needsCompositingLayersRebuiltForOverflow(oldStyle, newStyle)
         || needsCompositingLayersRebuiltForFilters(oldStyle, newStyle, didPaintWithFilters))
         compositor()->setCompositingLayersNeedRebuild();
-    else if (compositedLayerMapping())
+    else if (hasCompositedLayerMapping())
         compositedLayerMapping()->updateGraphicsLayerGeometry();
 }
 

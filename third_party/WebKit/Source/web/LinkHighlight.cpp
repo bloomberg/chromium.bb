@@ -131,7 +131,7 @@ RenderLayer* LinkHighlight::computeEnclosingCompositingLayer()
 
     if (!newGraphicsLayer->drawsContent()) {
         if (renderLayer->scrollableArea()->usesCompositedScrolling()) {
-            ASSERT(renderLayer->compositedLayerMapping() && renderLayer->compositedLayerMapping()->scrollingContentsLayer());
+            ASSERT(renderLayer->hasCompositedLayerMapping() && renderLayer->compositedLayerMapping()->scrollingContentsLayer());
             newGraphicsLayer = renderLayer->compositedLayerMapping()->scrollingContentsLayer();
         } else
             ASSERT_NOT_REACHED();

@@ -150,22 +150,22 @@ ScrollableArea* RenderLayerScrollableArea::enclosingScrollableArea() const
 
 GraphicsLayer* RenderLayerScrollableArea::layerForScrolling() const
 {
-    return m_box->compositedLayerMapping() ? m_box->compositedLayerMapping()->scrollingContentsLayer() : 0;
+    return m_box->hasCompositedLayerMapping() ? m_box->compositedLayerMapping()->scrollingContentsLayer() : 0;
 }
 
 GraphicsLayer* RenderLayerScrollableArea::layerForHorizontalScrollbar() const
 {
-    return m_box->compositedLayerMapping() ? m_box->compositedLayerMapping()->layerForHorizontalScrollbar() : 0;
+    return m_box->hasCompositedLayerMapping() ? m_box->compositedLayerMapping()->layerForHorizontalScrollbar() : 0;
 }
 
 GraphicsLayer* RenderLayerScrollableArea::layerForVerticalScrollbar() const
 {
-    return m_box->compositedLayerMapping() ? m_box->compositedLayerMapping()->layerForVerticalScrollbar() : 0;
+    return m_box->hasCompositedLayerMapping() ? m_box->compositedLayerMapping()->layerForVerticalScrollbar() : 0;
 }
 
 GraphicsLayer* RenderLayerScrollableArea::layerForScrollCorner() const
 {
-    return m_box->compositedLayerMapping() ? m_box->compositedLayerMapping()->layerForScrollCorner() : 0;
+    return m_box->hasCompositedLayerMapping() ? m_box->compositedLayerMapping()->layerForScrollCorner() : 0;
 }
 
 void RenderLayerScrollableArea::invalidateScrollbarRect(Scrollbar* scrollbar, const IntRect& rect)
@@ -887,7 +887,7 @@ void RenderLayerScrollableArea::positionOverflowControls(const IntSize& offsetFr
     // FIXME, this should eventually be removed, once we are certain that composited
     // controls get correctly positioned on a compositor update. For now, conservatively
     // leaving this unchanged.
-    if (m_box->compositedLayerMapping())
+    if (m_box->hasCompositedLayerMapping())
         m_box->compositedLayerMapping()->positionOverflowControlsLayers(offsetFromRoot);
 }
 
@@ -1439,7 +1439,7 @@ bool RenderLayerScrollableArea::usesCompositedScrolling() const
     if (m_box && (m_box->isIntristicallyScrollable(VerticalScrollbar) || m_box->isIntristicallyScrollable(HorizontalScrollbar)))
         return false;
 
-    return m_box->compositedLayerMapping() && m_box->compositedLayerMapping()->scrollingLayer();
+    return m_box->hasCompositedLayerMapping() && m_box->compositedLayerMapping()->scrollingLayer();
 }
 
 bool RenderLayerScrollableArea::adjustForForceCompositedScrollingMode(bool value) const

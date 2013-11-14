@@ -2068,7 +2068,7 @@ bool FrameView::isTransparent() const
 void FrameView::setTransparent(bool isTransparent)
 {
     m_isTransparent = isTransparent;
-    if (renderView() && renderView()->layer()->compositedLayerMapping())
+    if (renderView() && renderView()->layer()->hasCompositedLayerMapping())
         renderView()->layer()->compositedLayerMapping()->updateContentsOpaque();
 }
 
@@ -2089,7 +2089,8 @@ void FrameView::setBaseBackgroundColor(const Color& backgroundColor)
     else
         m_baseBackgroundColor = backgroundColor;
 
-    if (CompositedLayerMapping* compositedLayerMapping = renderView() ? renderView()->layer()->compositedLayerMapping() : 0) {
+    if (renderView() && renderView()->layer()->hasCompositedLayerMapping()) {
+        CompositedLayerMappingPtr compositedLayerMapping = renderView()->layer()->compositedLayerMapping();
         compositedLayerMapping->updateContentsOpaque();
         if (compositedLayerMapping->mainGraphicsLayer())
             compositedLayerMapping->mainGraphicsLayer()->setNeedsDisplay();

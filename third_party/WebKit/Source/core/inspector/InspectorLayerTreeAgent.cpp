@@ -154,6 +154,7 @@ void InspectorLayerTreeAgent::didPaint(RenderObject*, const GraphicsLayer* graph
     // Should only happen for FrameView paints when compositing is off. Consider different instrumentation method for that.
     if (!graphicsLayer)
         return;
+
     RefPtr<TypeBuilder::DOM::Rect> domRect = TypeBuilder::DOM::Rect::create()
         .setX(rect.x())
         .setY(rect.y())
@@ -176,7 +177,7 @@ PassRefPtr<TypeBuilder::Array<TypeBuilder::LayerTree::Layer> > InspectorLayerTre
 
 void InspectorLayerTreeAgent::buildLayerIdToNodeIdMap(RenderLayer* root, LayerIdToNodeIdMap& layerIdToNodeIdMap)
 {
-    if (root->compositedLayerMapping()) {
+    if (root->hasCompositedLayerMapping()) {
         if (Node* node = root->renderer()->generatingNode()) {
             GraphicsLayer* graphicsLayer = root->compositedLayerMapping()->childForSuperlayers();
             layerIdToNodeIdMap.set(graphicsLayer->platformLayer()->id(), idForNode(node));

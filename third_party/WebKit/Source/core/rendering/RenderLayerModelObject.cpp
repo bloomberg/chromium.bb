@@ -202,9 +202,14 @@ void RenderLayerModelObject::addLayerHitTestRects(LayerHitTestRects& rects, cons
     }
 }
 
-CompositedLayerMapping* RenderLayerModelObject::compositedLayerMapping() const
+CompositedLayerMappingPtr RenderLayerModelObject::compositedLayerMapping() const
 {
     return m_layer ? m_layer->compositedLayerMapping() : 0;
+}
+
+bool RenderLayerModelObject::hasCompositedLayerMapping() const
+{
+    return m_layer ? m_layer->hasCompositedLayerMapping() : false;
 }
 
 } // namespace WebCore

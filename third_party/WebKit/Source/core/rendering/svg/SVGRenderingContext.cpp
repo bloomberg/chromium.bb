@@ -228,7 +228,9 @@ void SVGRenderingContext::calculateTransformationToOutermostCoordinateSystem(con
         // We can stop at compositing layers, to match the backing resolution.
         // FIXME: should we be computing the transform to the nearest composited layer,
         // or the nearest composited layer that does not paint into its ancestor?
-        if (layer->compositedLayerMapping())
+        // I think this is the nearest composited ancestor since we will inherit its
+        // transforms in the composited layer tree.
+        if (layer->hasCompositedLayerMapping())
             break;
 
         layer = layer->parent();

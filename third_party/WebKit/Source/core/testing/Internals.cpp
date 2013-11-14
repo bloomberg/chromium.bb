@@ -1300,7 +1300,7 @@ unsigned Internals::touchEventHandlerCount(Document* document, ExceptionState& e
 
 static RenderLayer* findRenderLayerForGraphicsLayer(RenderLayer* searchRoot, GraphicsLayer* graphicsLayer, String* layerType)
 {
-    if (searchRoot->compositedLayerMapping() && graphicsLayer == searchRoot->compositedLayerMapping()->mainGraphicsLayer())
+    if (searchRoot->hasCompositedLayerMapping() && graphicsLayer == searchRoot->compositedLayerMapping()->mainGraphicsLayer())
         return searchRoot;
 
     GraphicsLayer* layerForScrolling = searchRoot->scrollableArea() ? searchRoot->scrollableArea()->layerForScrolling() : 0;
@@ -1783,7 +1783,7 @@ String Internals::elementLayerTreeAsText(Element* element, unsigned flags, Excep
 
     RenderLayer* layer = toRenderBox(renderer)->layer();
     if (!layer
-        || !layer->compositedLayerMapping()
+        || !layer->hasCompositedLayerMapping()
         || !layer->compositedLayerMapping()->mainGraphicsLayer()) {
         // Don't raise exception in these cases which may be normally used in tests.
         return String();

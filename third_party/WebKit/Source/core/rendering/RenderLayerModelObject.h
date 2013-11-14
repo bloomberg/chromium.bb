@@ -23,6 +23,7 @@
 #ifndef RenderLayerModelObject_h
 #define RenderLayerModelObject_h
 
+#include "core/rendering/CompositedLayerMappingPtr.h"
 #include "core/rendering/RenderObject.h"
 
 namespace WebCore {
@@ -56,7 +57,8 @@ public:
     // This is null for anonymous renderers.
     ContainerNode* node() const { return toContainerNode(RenderObject::node()); }
 
-    CompositedLayerMapping* compositedLayerMapping() const;
+    CompositedLayerMappingPtr compositedLayerMapping() const;
+    bool hasCompositedLayerMapping() const;
 
 protected:
     void createLayer();

@@ -160,9 +160,9 @@ static WebLayer* webLayerFromElement(Element* element)
     RenderLayer* layer = toRenderBoxModelObject(renderer)->layer();
     if (!layer)
         return 0;
-    CompositedLayerMapping* compositedLayerMapping = layer->compositedLayerMapping();
-    if (!compositedLayerMapping)
+    if (!layer->hasCompositedLayerMapping())
         return 0;
+    CompositedLayerMappingPtr compositedLayerMapping = layer->compositedLayerMapping();
     GraphicsLayer* graphicsLayer = compositedLayerMapping->mainGraphicsLayer();
     if (!graphicsLayer)
         return 0;
@@ -306,7 +306,7 @@ TEST_F(ScrollingCoordinatorChromiumTest, overflowScrolling)
     ASSERT_TRUE(box->usesCompositedScrolling());
     ASSERT_EQ(PaintsIntoOwnBacking, box->layer()->compositingState());
 
-    CompositedLayerMapping* compositedLayerMapping = box->layer()->compositedLayerMapping();
+    CompositedLayerMappingPtr compositedLayerMapping = box->layer()->compositedLayerMapping();
     ASSERT_TRUE(compositedLayerMapping->hasScrollingLayer());
     ASSERT(compositedLayerMapping->scrollingContentsLayer());
 
@@ -346,7 +346,7 @@ TEST_F(ScrollingCoordinatorChromiumTest, overflowHidden)
     ASSERT_TRUE(box->usesCompositedScrolling());
     ASSERT_EQ(PaintsIntoOwnBacking, box->layer()->compositingState());
 
-    CompositedLayerMapping* compositedLayerMapping = box->layer()->compositedLayerMapping();
+    CompositedLayerMappingPtr compositedLayerMapping = box->layer()->compositedLayerMapping();
     ASSERT_TRUE(compositedLayerMapping->hasScrollingLayer());
     ASSERT(compositedLayerMapping->scrollingContentsLayer());
 

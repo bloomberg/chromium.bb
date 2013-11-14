@@ -45,6 +45,7 @@
 #ifndef RenderLayer_h
 #define RenderLayer_h
 
+#include "core/rendering/CompositedLayerMappingPtr.h"
 #include "core/rendering/CompositingReasons.h"
 #include "core/rendering/LayerPaintingInfo.h"
 #include "core/rendering/PaintInfo.h"
@@ -345,10 +346,13 @@ public:
 
     CompositingState compositingState() const;
 
-    // NOTE: If you are accessing the CompositedLayerMapping as a boolean condition to determine the state of compositing for this layer,
+    CompositedLayerMappingPtr compositedLayerMapping() const { return m_compositedLayerMapping.get(); }
+    CompositedLayerMappingPtr ensureCompositedLayerMapping();
+
+    // NOTE: If you are using hasCompositedLayerMapping to determine the state of compositing for this layer,
+    // (and not just to do bookkeeping related to the mapping like, say, allocating or deallocating a mapping),
     // then you may have incorrect logic. Use compositingState() instead.
-    CompositedLayerMapping* compositedLayerMapping() const { return m_compositedLayerMapping.get(); }
-    CompositedLayerMapping* ensureCompositedLayerMapping();
+    bool hasCompositedLayerMapping() const { return m_compositedLayerMapping.get(); }
     void clearCompositedLayerMapping(bool layerBeingDestroyed = false);
 
     bool hasCompositedMask() const;
