@@ -314,6 +314,9 @@ void AudioOutputController::DoSwitchOutputDevice(
   if (state_ == kClosed)
     return;
 
+  if (output_device_id == output_device_id_)
+    return;
+
   output_device_id_ = output_device_id;
 
   // If output is currently diverted, we must not call OnDeviceChange
