@@ -2938,6 +2938,13 @@
             'browser/ui/app_list/test/fake_profile_store.h',
             'browser/ui/app_list/test/fast_show_pickler_unittest.cc',
           ],
+          'conditions': [
+            ['OS=="win"', {
+              'sources': [
+                'browser/ui/views/app_list/win/app_list_win_unittest.cc',
+              ],
+            }],  # 'OS=="win"'
+          ],
         },
       ],
     }],

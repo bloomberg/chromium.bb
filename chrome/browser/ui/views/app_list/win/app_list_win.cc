@@ -119,17 +119,19 @@ gfx::Point FindReferencePoint(const gfx::Display& display,
   }
 }
 
+}  // namespace
+
 gfx::Point FindAnchorPoint(
     const gfx::Size view_size,
     const gfx::Display& display,
-    const gfx::Point& cursor) {
+    const gfx::Point& cursor,
+    const gfx::Rect& taskbar_rect) {
   gfx::Rect bounds_rect(display.work_area());
   // Always subtract the taskbar area since work_area() will not subtract it
   // if the taskbar is set to auto-hide, and the app list should never overlap
   // the taskbar.
-  gfx::Rect taskbar_rect;
   ScreenEdge taskbar_edge = SCREEN_EDGE_UNKNOWN;
-  if (GetTaskbarRect(&taskbar_rect)) {
+  if (!taskbar_rect.IsEmpty()) {
     bounds_rect.Subtract(taskbar_rect);
     // Find which edge of the screen the taskbar is attached to.
     taskbar_edge = FindTaskbarEdge(display, taskbar_rect);
@@ -144,8 +146,6 @@ gfx::Point FindAnchorPoint(
   anchor.SetToMin(bounds_rect.bottom_right());
   return anchor;
 }
-
-}  // namespace
 
 AppListWin::AppListWin(app_list::AppListView* view,
                        const base::Closure& on_should_dismiss)
@@ -178,8 +178,10 @@ void AppListWin::MoveNearCursor() {
   gfx::Display display = screen->GetDisplayNearestPoint(cursor);
 
   view_->SetBubbleArrow(views::BubbleBorder::FLOAT);
-  view_->SetAnchorPoint(FindAnchorPoint(
-      view_->GetPreferredSize(), display, cursor));
+  gfx::Rect taskbar_rect;
+  GetTaskbarRect(&taskbar_rect);
+  view_->SetAnchorPoint(FindAnchorPoint(view_->GetPreferredSize(), display,
+                                        cursor, taskbar_rect));
 }
 
 bool AppListWin::IsVisible() {
