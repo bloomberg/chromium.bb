@@ -392,6 +392,7 @@ weston_pointer_create(void)
 	pointer->default_grab.pointer = pointer;
 	pointer->grab = &pointer->default_grab;
 	wl_signal_init(&pointer->focus_signal);
+	wl_signal_init(&pointer->motion_signal);
 
 	pointer->sprite_destroy_listener.notify = pointer_handle_sprite_destroy;
 
@@ -736,6 +737,8 @@ move_pointer(struct weston_seat *seat, wl_fixed_t x, wl_fixed_t y)
 					 iy - pointer->hotspot_y);
 		weston_view_schedule_repaint(pointer->sprite);
 	}
+
+	wl_signal_emit(&pointer->motion_signal, pointer);
 }
 
 WL_EXPORT void

@@ -307,6 +307,7 @@ struct weston_pointer {
 	struct weston_view *focus;
 	uint32_t focus_serial;
 	struct wl_signal focus_signal;
+	struct wl_signal motion_signal;
 
 	struct weston_view *sprite;
 	struct wl_listener sprite_destroy_listener;
