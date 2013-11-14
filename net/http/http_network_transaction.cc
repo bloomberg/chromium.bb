@@ -129,7 +129,8 @@ HttpNetworkTransaction::HttpNetworkTransaction(RequestPriority priority,
       request_headers_(),
       read_buf_len_(0),
       next_state_(STATE_NONE),
-      establishing_tunnel_(false) {
+      establishing_tunnel_(false),
+      websocket_handshake_stream_base_create_helper_(NULL) {
   session->ssl_config_service()->GetSSLConfig(&server_ssl_config_);
   if (session->http_stream_factory()->has_next_protos()) {
     server_ssl_config_.next_protos =
@@ -429,6 +430,11 @@ void HttpNetworkTransaction::SetPriority(RequestPriority priority) {
     stream_->SetPriority(priority);
 }
 
+void HttpNetworkTransaction::SetWebSocketHandshakeStreamCreateHelper(
+    WebSocketHandshakeStreamBase::CreateHelper* create_helper) {
+  websocket_handshake_stream_base_create_helper_ = create_helper;
+}
+
 void HttpNetworkTransaction::OnStreamReady(const SSLConfig& used_ssl_config,
                                            const ProxyInfo& used_proxy_info,
                                            HttpStreamBase* stream) {
@@ -451,7 +457,7 @@ void HttpNetworkTransaction::OnWebSocketHandshakeStreamReady(
     const SSLConfig& used_ssl_config,
     const ProxyInfo& used_proxy_info,
     WebSocketHandshakeStreamBase* stream) {
-  NOTREACHED() << "This function should never be called.";
+  OnStreamReady(used_ssl_config, used_proxy_info, stream);
 }
 
 void HttpNetworkTransaction::OnStreamFailed(int result,
@@ -657,14 +663,27 @@ int HttpNetworkTransaction::DoLoop(int result) {
 int HttpNetworkTransaction::DoCreateStream() {
   next_state_ = STATE_CREATE_STREAM_COMPLETE;
 
-  stream_request_.reset(
-      session_->http_stream_factory()->RequestStream(
-          *request_,
-          priority_,
-          server_ssl_config_,
-          proxy_ssl_config_,
-          this,
-          net_log_));
+  if (ForWebSocketHandshake()) {
+    stream_request_.reset(
+        session_->websocket_handshake_stream_factory()
+            ->RequestWebSocketHandshakeStream(
+                  *request_,
+                  priority_,
+                  server_ssl_config_,
+                  proxy_ssl_config_,
+                  this,
+                  websocket_handshake_stream_base_create_helper_,
+                  net_log_));
+  } else {
+    stream_request_.reset(
+        session_->http_stream_factory()->RequestStream(
+            *request_,
+            priority_,
+            server_ssl_config_,
+            proxy_ssl_config_,
+            this,
+            net_log_));
+  }
   DCHECK(stream_request_.get());
   return ERR_IO_PENDING;
 }
@@ -1000,7 +1019,9 @@ int HttpNetworkTransaction::DoReadHeadersComplete(int result) {
   // need to skip over it.
   // We treat any other 1xx in this same way (although in practice getting
   // a 1xx that isn't a 100 is rare).
-  if (response_.headers->response_code() / 100 == 1) {
+  // Unless this is a WebSocket request, in which case we pass it on up.
+  if (response_.headers->response_code() / 100 == 1 &&
+      !ForWebSocketHandshake()) {
     response_.headers = new HttpResponseHeaders(std::string());
     next_state_ = STATE_READ_HEADERS;
     return OK;
@@ -1485,6 +1506,11 @@ GURL HttpNetworkTransaction::AuthURL(HttpAuth::Target target) const {
     default:
      return GURL();
   }
+}
+
+bool HttpNetworkTransaction::ForWebSocketHandshake() const {
+  return (websocket_handshake_stream_base_create_helper_ &&
+              (request_->url.SchemeIs("ws") || request_->url.SchemeIs("wss")));
 }
 
 #define STATE_CASE(s) \

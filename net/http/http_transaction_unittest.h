@@ -162,6 +162,7 @@ class MockNetworkLayer;
 class MockNetworkTransaction
     : public net::HttpTransaction,
       public base::SupportsWeakPtr<MockNetworkTransaction> {
+  typedef net::WebSocketHandshakeStreamBase::CreateHelper CreateHelper;
  public:
   MockNetworkTransaction(net::RequestPriority priority,
                          MockNetworkLayer* factory);
@@ -205,6 +206,12 @@ class MockNetworkTransaction
 
   virtual void SetPriority(net::RequestPriority priority) OVERRIDE;
 
+  virtual void SetWebSocketHandshakeStreamCreateHelper(
+      CreateHelper* create_helper) OVERRIDE;
+
+  CreateHelper* websocket_handshake_stream_create_helper() {
+    return websocket_handshake_stream_create_helper_;
+  }
   net::RequestPriority priority() const { return priority_; }
 
  private:
@@ -217,6 +224,7 @@ class MockNetworkTransaction
   int data_cursor_;
   int test_mode_;
   net::RequestPriority priority_;
+  CreateHelper* websocket_handshake_stream_create_helper_;
   base::WeakPtr<MockNetworkLayer> transaction_factory_;
 
   // NetLog ID of the fake / non-existent underlying socket used by the

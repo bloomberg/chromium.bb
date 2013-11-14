@@ -130,6 +130,8 @@ class HttpCache::Transaction : public HttpTransaction {
   virtual bool GetLoadTimingInfo(
       LoadTimingInfo* load_timing_info) const OVERRIDE;
   virtual void SetPriority(RequestPriority priority) OVERRIDE;
+  virtual void SetWebSocketHandshakeStreamCreateHelper(
+      net::WebSocketHandshakeStreamBase::CreateHelper* create_helper) OVERRIDE;
 
  private:
   static const size_t kNumValidationHeaders = 2;

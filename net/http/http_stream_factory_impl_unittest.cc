@@ -308,7 +308,7 @@ void PreconnectHelperForURL(int num_streams,
   HttpNetworkSessionPeer peer(session);
   MockHttpStreamFactoryImplForPreconnect* mock_factory =
       new MockHttpStreamFactoryImplForPreconnect(session, false);
-  peer.SetHttpStreamFactory(mock_factory);
+  peer.SetHttpStreamFactory(scoped_ptr<HttpStreamFactory>(mock_factory));
   SSLConfig ssl_config;
   session->ssl_config_service()->GetSSLConfig(&ssl_config);
 
@@ -458,11 +458,12 @@ TEST_P(HttpStreamFactoryTest, PreconnectDirect) {
         new CapturePreconnectsSSLSocketPool(
             session_deps.host_resolver.get(),
             session_deps.cert_verifier.get());
-    MockClientSocketPoolManager* mock_pool_manager =
-        new MockClientSocketPoolManager;
+    scoped_ptr<MockClientSocketPoolManager> mock_pool_manager(
+        new MockClientSocketPoolManager);
     mock_pool_manager->SetTransportSocketPool(transport_conn_pool);
     mock_pool_manager->SetSSLSocketPool(ssl_conn_pool);
-    peer.SetClientSocketPoolManager(mock_pool_manager);
+    peer.SetClientSocketPoolManager(
+        mock_pool_manager.PassAs<ClientSocketPoolManager>());
     PreconnectHelper(kTests[i], session.get());
     if (kTests[i].ssl)
       EXPECT_EQ(kTests[i].num_streams, ssl_conn_pool->last_num_streams());
@@ -487,11 +488,12 @@ TEST_P(HttpStreamFactoryTest, PreconnectHttpProxy) {
         new CapturePreconnectsSSLSocketPool(
             session_deps.host_resolver.get(),
             session_deps.cert_verifier.get());
-    MockClientSocketPoolManager* mock_pool_manager =
-        new MockClientSocketPoolManager;
+    scoped_ptr<MockClientSocketPoolManager> mock_pool_manager(
+        new MockClientSocketPoolManager);
     mock_pool_manager->SetSocketPoolForHTTPProxy(proxy_host, http_proxy_pool);
     mock_pool_manager->SetSocketPoolForSSLWithProxy(proxy_host, ssl_conn_pool);
-    peer.SetClientSocketPoolManager(mock_pool_manager);
+    peer.SetClientSocketPoolManager(
+        mock_pool_manager.PassAs<ClientSocketPoolManager>());
     PreconnectHelper(kTests[i], session.get());
     if (kTests[i].ssl)
       EXPECT_EQ(kTests[i].num_streams, ssl_conn_pool->last_num_streams());
@@ -516,11 +518,12 @@ TEST_P(HttpStreamFactoryTest, PreconnectSocksProxy) {
         new CapturePreconnectsSSLSocketPool(
             session_deps.host_resolver.get(),
             session_deps.cert_verifier.get());
-    MockClientSocketPoolManager* mock_pool_manager =
-        new MockClientSocketPoolManager;
+    scoped_ptr<MockClientSocketPoolManager> mock_pool_manager(
+        new MockClientSocketPoolManager);
     mock_pool_manager->SetSocketPoolForSOCKSProxy(proxy_host, socks_proxy_pool);
     mock_pool_manager->SetSocketPoolForSSLWithProxy(proxy_host, ssl_conn_pool);
-    peer.SetClientSocketPoolManager(mock_pool_manager);
+    peer.SetClientSocketPoolManager(
+        mock_pool_manager.PassAs<ClientSocketPoolManager>());
     PreconnectHelper(kTests[i], session.get());
     if (kTests[i].ssl)
       EXPECT_EQ(kTests[i].num_streams, ssl_conn_pool->last_num_streams());
@@ -551,11 +554,12 @@ TEST_P(HttpStreamFactoryTest, PreconnectDirectWithExistingSpdySession) {
         new CapturePreconnectsSSLSocketPool(
             session_deps.host_resolver.get(),
             session_deps.cert_verifier.get());
-    MockClientSocketPoolManager* mock_pool_manager =
-        new MockClientSocketPoolManager;
+    scoped_ptr<MockClientSocketPoolManager> mock_pool_manager(
+        new MockClientSocketPoolManager);
     mock_pool_manager->SetTransportSocketPool(transport_conn_pool);
     mock_pool_manager->SetSSLSocketPool(ssl_conn_pool);
-    peer.SetClientSocketPoolManager(mock_pool_manager);
+    peer.SetClientSocketPoolManager(
+        mock_pool_manager.PassAs<ClientSocketPoolManager>());
     PreconnectHelper(kTests[i], session.get());
     // We shouldn't be preconnecting if we have an existing session, which is
     // the case for https://www.google.com.
@@ -582,10 +586,11 @@ TEST_P(HttpStreamFactoryTest, PreconnectUnsafePort) {
       new CapturePreconnectsTransportSocketPool(
           session_deps.host_resolver.get(),
           session_deps.cert_verifier.get());
-  MockClientSocketPoolManager* mock_pool_manager =
-      new MockClientSocketPoolManager;
+  scoped_ptr<MockClientSocketPoolManager> mock_pool_manager(
+      new MockClientSocketPoolManager);
   mock_pool_manager->SetTransportSocketPool(transport_conn_pool);
-  peer.SetClientSocketPoolManager(mock_pool_manager);
+  peer.SetClientSocketPoolManager(
+      mock_pool_manager.PassAs<ClientSocketPoolManager>());
 
   PreconnectHelperForURL(1, GURL("http://www.google.com:7"), session.get());
 

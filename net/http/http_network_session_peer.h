@@ -6,6 +6,7 @@
 #define NET_HTTP_HTTP_NETWORK_SESSION_PEER_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_ptr.h"
 #include "net/base/net_export.h"
 
 namespace net {
@@ -22,13 +23,13 @@ class NET_EXPORT_PRIVATE HttpNetworkSessionPeer {
   ~HttpNetworkSessionPeer();
 
   void SetClientSocketPoolManager(
-      ClientSocketPoolManager* socket_pool_manager);
+      scoped_ptr<ClientSocketPoolManager> socket_pool_manager);
 
   void SetProxyService(ProxyService* proxy_service);
 
-  void SetHttpStreamFactory(HttpStreamFactory* http_stream_factory);
-  void SetWebSocketStreamFactory(
-      HttpStreamFactory* websocket_handshake_stream_factory);
+  void SetHttpStreamFactory(scoped_ptr<HttpStreamFactory> http_stream_factory);
+  void SetWebSocketHandshakeStreamFactory(
+      scoped_ptr<HttpStreamFactory> websocket_handshake_stream_factory);
 
  private:
   const scoped_refptr<HttpNetworkSession> session_;

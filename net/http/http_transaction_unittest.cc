@@ -228,6 +228,7 @@ MockNetworkTransaction::MockNetworkTransaction(
     : weak_factory_(this),
       data_cursor_(0),
       priority_(priority),
+      websocket_handshake_stream_create_helper_(NULL),
       transaction_factory_(factory->AsWeakPtr()),
       socket_log_id_(net::NetLog::Source::kInvalidId) {
 }
@@ -373,6 +374,11 @@ bool MockNetworkTransaction::GetLoadTimingInfo(
 
 void MockNetworkTransaction::SetPriority(net::RequestPriority priority) {
   priority_ = priority;
+}
+
+void MockNetworkTransaction::SetWebSocketHandshakeStreamCreateHelper(
+    net::WebSocketHandshakeStreamBase::CreateHelper* create_helper) {
+  websocket_handshake_stream_create_helper_ = create_helper;
 }
 
 void MockNetworkTransaction::CallbackLater(

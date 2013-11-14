@@ -32,6 +32,7 @@
 #include "net/http/http_util.h"
 #include "net/http/mock_http_cache.h"
 #include "net/ssl/ssl_cert_request_info.h"
+#include "net/websockets/websocket_handshake_stream_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;
@@ -572,6 +573,21 @@ struct Context {
   int result;
   net::TestCompletionCallback callback;
   scoped_ptr<net::HttpTransaction> trans;
+};
+
+class FakeWebSocketHandshakeStreamCreateHelper
+    : public net::WebSocketHandshakeStreamBase::CreateHelper {
+ public:
+  virtual ~FakeWebSocketHandshakeStreamCreateHelper() {}
+  virtual net::WebSocketHandshakeStreamBase* CreateBasicStream(
+      net::ClientSocketHandle* connect, bool using_proxy) OVERRIDE {
+    return NULL;
+  }
+  virtual net::WebSocketHandshakeStreamBase* CreateSpdyStream(
+      const base::WeakPtr<net::SpdySession>& session,
+      bool use_relative_url) OVERRIDE {
+    return NULL;
+  }
 };
 
 }  // namespace
@@ -6295,6 +6311,35 @@ TEST(HttpCache, SetPriority) {
               cache.network_layer()->last_transaction()->priority());
   }
 
+  EXPECT_EQ(net::OK, callback.WaitForResult());
+}
+
+// Make sure that calling SetWebSocketHandshakeStreamCreateHelper on a cache
+// transaction passes on its argument to the underlying network transaction.
+TEST(HttpCache, SetWebSocketHandshakeStreamCreateHelper) {
+  MockHttpCache cache;
+
+  FakeWebSocketHandshakeStreamCreateHelper create_helper;
+  scoped_ptr<net::HttpTransaction> trans;
+  EXPECT_EQ(net::OK, cache.http_cache()->CreateTransaction(
+      net::IDLE, &trans, NULL));
+  ASSERT_TRUE(trans.get());
+
+  EXPECT_FALSE(cache.network_layer()->last_transaction());
+
+  net::HttpRequestInfo info;
+  info.url = GURL(kSimpleGET_Transaction.url);
+  net::TestCompletionCallback callback;
+  EXPECT_EQ(net::ERR_IO_PENDING,
+            trans->Start(&info, callback.callback(), net::BoundNetLog()));
+
+  ASSERT_TRUE(cache.network_layer()->last_transaction());
+  EXPECT_FALSE(cache.network_layer()->last_transaction()->
+               websocket_handshake_stream_create_helper());
+  trans->SetWebSocketHandshakeStreamCreateHelper(&create_helper);
+  EXPECT_EQ(&create_helper,
+            cache.network_layer()->last_transaction()->
+            websocket_handshake_stream_create_helper());
   EXPECT_EQ(net::OK, callback.WaitForResult());
 }
 

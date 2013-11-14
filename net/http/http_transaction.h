@@ -10,6 +10,7 @@
 #include "net/base/net_export.h"
 #include "net/base/request_priority.h"
 #include "net/base/upload_progress.h"
+#include "net/websockets/websocket_handshake_stream_base.h"
 
 namespace net {
 
@@ -134,6 +135,12 @@ class NET_EXPORT_PRIVATE HttpTransaction {
 
   // Called when the priority of the parent job changes.
   virtual void SetPriority(RequestPriority priority) = 0;
+
+  // Set the WebSocketHandshakeStreamBase::CreateHelper to be used for the
+  // request.  Only relevant to WebSocket transactions. Must be called before
+  // Start(). Ownership of |create_helper| remains with the caller.
+  virtual void SetWebSocketHandshakeStreamCreateHelper(
+      WebSocketHandshakeStreamBase::CreateHelper* create_helper) = 0;
 };
 
 }  // namespace net

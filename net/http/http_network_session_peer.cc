@@ -21,8 +21,8 @@ HttpNetworkSessionPeer::HttpNetworkSessionPeer(
 HttpNetworkSessionPeer::~HttpNetworkSessionPeer() {}
 
 void HttpNetworkSessionPeer::SetClientSocketPoolManager(
-    ClientSocketPoolManager* socket_pool_manager) {
-  session_->normal_socket_pool_manager_.reset(socket_pool_manager);
+    scoped_ptr<ClientSocketPoolManager> socket_pool_manager) {
+  session_->normal_socket_pool_manager_.swap(socket_pool_manager);
 }
 
 void HttpNetworkSessionPeer::SetProxyService(ProxyService* proxy_service) {
@@ -30,13 +30,13 @@ void HttpNetworkSessionPeer::SetProxyService(ProxyService* proxy_service) {
 }
 
 void HttpNetworkSessionPeer::SetHttpStreamFactory(
-    HttpStreamFactory* http_stream_factory) {
-  session_->http_stream_factory_.reset(http_stream_factory);
+    scoped_ptr<HttpStreamFactory> http_stream_factory) {
+  session_->http_stream_factory_.swap(http_stream_factory);
 }
 
-void HttpNetworkSessionPeer::SetWebSocketStreamFactory(
-    HttpStreamFactory* http_stream_factory) {
-  session_->websocket_handshake_stream_factory_.reset(http_stream_factory);
+void HttpNetworkSessionPeer::SetWebSocketHandshakeStreamFactory(
+    scoped_ptr<HttpStreamFactory> http_stream_factory) {
+  session_->websocket_handshake_stream_factory_.swap(http_stream_factory);
 }
 
 }  // namespace net

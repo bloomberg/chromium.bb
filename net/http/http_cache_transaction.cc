@@ -533,6 +533,12 @@ void HttpCache::Transaction::SetPriority(RequestPriority priority) {
     network_trans_->SetPriority(priority_);
 }
 
+void HttpCache::Transaction::SetWebSocketHandshakeStreamCreateHelper(
+    WebSocketHandshakeStreamBase::CreateHelper* create_helper) {
+  if (network_trans_)
+    network_trans_->SetWebSocketHandshakeStreamCreateHelper(create_helper);
+}
+
 //-----------------------------------------------------------------------------
 
 void HttpCache::Transaction::DoCallback(int rv) {
