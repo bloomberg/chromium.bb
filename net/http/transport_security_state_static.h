@@ -194,6 +194,10 @@ static const char kSPKIHash_GTECyberTrustGlobalRoot[] =
     "\x59\x79\x12\xde\x61\x75\xd6\x6f\xc4\x23"
     "\xb7\x77\x13\x74\xc7\x96\xde\x6f\x88\x72";
 
+static const char kSPKIHash_BaltimoreCyberTrustRoot[] =
+    "\x30\xa4\xe6\x4f\xde\x76\x8a\xfc\xed\x5a"
+    "\x90\x84\x28\x30\x46\x79\x2c\x29\x15\x70";
+
 static const char kSPKIHash_Tor2web[] =
     "\x19\xe5\xb5\x87\x1b\xd4\x83\x2e\xc8\xf5"
     "\x94\x97\xfe\xc6\x5e\xfb\x48\xe3\x33\xb1";
@@ -320,6 +324,7 @@ static const char* const kTwitterCDNAcceptableCerts[] = {
   kSPKIHash_UTNUSERFirstHardware,
   kSPKIHash_UTNUSERFirstObject,
   kSPKIHash_GTECyberTrustGlobalRoot,
+  kSPKIHash_BaltimoreCyberTrustRoot,
   NULL,
 };
 #define kTwitterCDNPins { \
