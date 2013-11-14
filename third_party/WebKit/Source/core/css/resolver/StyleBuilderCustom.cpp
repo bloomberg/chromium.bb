@@ -91,7 +91,7 @@ namespace WebCore {
 
 static Length clipConvertToLength(StyleResolverState& state, CSSPrimitiveValue* value)
 {
-    return value->convertToLength<FixedIntegerConversion | PercentConversion | AutoConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
+    return value->convertToLength<FixedConversion | PercentConversion | AutoConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
 }
 
 void StyleBuilderFunctions::applyInitialCSSPropertyClip(StyleResolverState& state)
@@ -541,7 +541,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyTextIndent(StyleResolverState& 
 
     CSSValueList* valueList = toCSSValueList(value);
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(valueList->itemWithoutBoundsCheck(0));
-    Length lengthOrPercentageValue = primitiveValue->convertToLength<FixedIntegerConversion | PercentConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
+    Length lengthOrPercentageValue = primitiveValue->convertToLength<FixedConversion | PercentConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
     ASSERT(!lengthOrPercentageValue.isUndefined());
     state.style()->setTextIndent(lengthOrPercentageValue);
 
@@ -564,7 +564,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyVerticalAlign(StyleResolverStat
     if (primitiveValue->getValueID())
         return state.style()->setVerticalAlign(*primitiveValue);
 
-    state.style()->setVerticalAlignLength(primitiveValue->convertToLength<FixedIntegerConversion | PercentConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom()));
+    state.style()->setVerticalAlignLength(primitiveValue->convertToLength<FixedConversion | PercentConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom()));
 }
 
 static void resetEffectiveZoom(StyleResolverState& state)
@@ -692,7 +692,7 @@ void StyleBuilderFunctions::applyValueCSSPropertyInternalMarqueeIncrement(StyleR
             break;
         }
     } else {
-        Length marqueeLength = primitiveValue ? primitiveValue->convertToLength<FixedIntegerConversion | PercentConversion>(state.style(), state.rootElementStyle()) : Length(Undefined);
+        Length marqueeLength = primitiveValue ? primitiveValue->convertToLength<FixedConversion | PercentConversion>(state.style(), state.rootElementStyle()) : Length(Undefined);
         if (!marqueeLength.isUndefined())
             state.style()->setMarqueeIncrement(marqueeLength);
     }
@@ -831,7 +831,7 @@ String StyleBuilderConverter::convertFragmentIdentifier(StyleResolverState& stat
 Length StyleBuilderConverter::convertLength(StyleResolverState& state, CSSValue* value)
 {
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    Length result = primitiveValue->convertToLength<FixedIntegerConversion | PercentConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
+    Length result = primitiveValue->convertToLength<FixedConversion | PercentConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
     ASSERT(!result.isUndefined());
     result.setQuirk(primitiveValue->isQuirkValue());
     return result;
@@ -840,7 +840,7 @@ Length StyleBuilderConverter::convertLength(StyleResolverState& state, CSSValue*
 Length StyleBuilderConverter::convertLengthOrAuto(StyleResolverState& state, CSSValue* value)
 {
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
-    Length result = primitiveValue->convertToLength<FixedIntegerConversion | PercentConversion | AutoConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
+    Length result = primitiveValue->convertToLength<FixedConversion | PercentConversion | AutoConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
     ASSERT(!result.isUndefined());
     result.setQuirk(primitiveValue->isQuirkValue());
     return result;
@@ -884,8 +884,8 @@ LengthPoint StyleBuilderConverter::convertLengthPoint(StyleResolverState& state,
 {
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
     Pair* pair = primitiveValue->getPairValue();
-    Length x = pair->first()->convertToLength<FixedIntegerConversion | PercentConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
-    Length y = pair->second()->convertToLength<FixedIntegerConversion | PercentConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
+    Length x = pair->first()->convertToLength<FixedConversion | PercentConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
+    Length y = pair->second()->convertToLength<FixedConversion | PercentConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
     return LengthPoint(x, y);
 }
 
@@ -902,8 +902,8 @@ LengthSize StyleBuilderConverter::convertRadius(StyleResolverState& state, CSSVa
 {
     CSSPrimitiveValue* primitiveValue = toCSSPrimitiveValue(value);
     Pair* pair = primitiveValue->getPairValue();
-    Length radiusWidth = pair->first()->convertToLength<FixedIntegerConversion | PercentConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
-    Length radiusHeight = pair->second()->convertToLength<FixedIntegerConversion | PercentConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
+    Length radiusWidth = pair->first()->convertToLength<FixedConversion | PercentConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
+    Length radiusHeight = pair->second()->convertToLength<FixedConversion | PercentConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
     float width = radiusWidth.value();
     float height = radiusHeight.value();
     ASSERT(width >= 0 && height >= 0);
@@ -1005,7 +1005,7 @@ static bool createGridTrackBreadth(CSSPrimitiveValue* primitiveValue, const Styl
         return true;
     }
 
-    workingLength = primitiveValue->convertToLength<FixedIntegerConversion | PercentConversion | AutoConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
+    workingLength = primitiveValue->convertToLength<FixedConversion | PercentConversion | AutoConversion>(state.style(), state.rootElementStyle(), state.style()->effectiveZoom());
     if (workingLength.length().isUndefined())
         return false;
 
@@ -1524,7 +1524,7 @@ void StyleBuilder::oldApplyProperty(CSSPropertyID id, StyleResolverState& state,
         RefPtr<StyleReflection> reflection = StyleReflection::create();
         reflection->setDirection(*reflectValue->direction());
         if (reflectValue->offset())
-            reflection->setOffset(reflectValue->offset()->convertToLength<FixedIntegerConversion | PercentConversion>(state.style(), state.rootElementStyle(), zoomFactor));
+            reflection->setOffset(reflectValue->offset()->convertToLength<FixedConversion | PercentConversion>(state.style(), state.rootElementStyle(), zoomFactor));
         NinePieceImage mask;
         mask.setMaskDefaults();
         state.styleMap().mapNinePieceImage(state.style(), id, reflectValue->mask(), mask);

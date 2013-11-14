@@ -52,7 +52,7 @@ namespace WebCore {
 
 static Length convertToFloatLength(CSSPrimitiveValue* primitiveValue, const RenderStyle* style, const RenderStyle* rootStyle, double multiplier)
 {
-    return primitiveValue ? primitiveValue->convertToLength<FixedFloatConversion | PercentConversion>(style, rootStyle, multiplier) : Length(Undefined);
+    return primitiveValue ? primitiveValue->convertToLength<FixedConversion | PercentConversion>(style, rootStyle, multiplier) : Length(Undefined);
 }
 
 static FilterOperation::OperationType filterOperationForType(CSSFilterValue::FilterOperationType type)

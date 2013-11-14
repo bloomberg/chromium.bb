@@ -4430,28 +4430,25 @@ template<> inline CSSPrimitiveValue::CSSPrimitiveValue(GridAutoFlow flow)
 
 enum LengthConversion {
     AnyConversion = ~0,
-    FixedIntegerConversion = 1 << 0,
-    FixedFloatConversion = 1 << 1,
-    AutoConversion = 1 << 2,
-    PercentConversion = 1 << 3,
+    FixedConversion = 1 << 0,
+    AutoConversion = 1 << 1,
+    PercentConversion = 1 << 2,
 };
 
 template<int supported> Length CSSPrimitiveValue::convertToLength(const RenderStyle* style, const RenderStyle* rootStyle, double multiplier, bool computingFontSize)
 {
     ASSERT(!hasVariableReference());
-    if ((supported & (FixedIntegerConversion | FixedFloatConversion)) && isFontRelativeLength() && (!style || !rootStyle))
+    if ((supported & FixedConversion) && isFontRelativeLength() && (!style || !rootStyle))
         return Length(Undefined);
-    if ((supported & FixedIntegerConversion) && isLength())
+    if ((supported & FixedConversion) && isLength())
         return computeLength<Length>(style, rootStyle, multiplier, computingFontSize);
-    if ((supported & FixedFloatConversion) && isLength())
-        return Length(computeLength<double>(style, rootStyle, multiplier), Fixed);
     if ((supported & PercentConversion) && isPercentage())
         return Length(getDoubleValue(), Percent);
     if ((supported & AutoConversion) && getValueID() == CSSValueAuto)
         return Length(Auto);
-    if ((supported & (FixedIntegerConversion | FixedFloatConversion)) && (supported & PercentConversion) && isCalculated())
+    if ((supported & FixedConversion) && (supported & PercentConversion) && isCalculated())
         return Length(cssCalcValue()->toCalcValue(style, rootStyle, multiplier));
-    if ((supported & (FixedIntegerConversion | FixedFloatConversion)) && isViewportPercentageLength())
+    if ((supported & FixedConversion) && isViewportPercentageLength())
         return viewportPercentageLength();
     return Length(Undefined);
 }
