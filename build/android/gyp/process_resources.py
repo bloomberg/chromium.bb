@@ -113,7 +113,7 @@ def main():
               'crunch',
               '-S', options.crunch_input_dir,
               '-C', options.crunch_output_dir]
-  build_utils.CheckCallDie(aapt_cmd, suppress_output=True)
+  build_utils.CheckCallDie(aapt_cmd, suppress_output=True, fail_if_stderr=True)
 
   MoveImagesToNonMdpiFolders(options.crunch_output_dir)
 

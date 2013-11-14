@@ -83,16 +83,20 @@ def ReadJson(path):
 # This call will directly exit on a failure in the subprocess so that no python
 # stacktrace is printed after the output of the failed command (and will
 # instead print a python stack trace before the output of the failed command)
-def CheckCallDie(args, suppress_output=False, cwd=None):
+def CheckCallDie(args, suppress_output=False, cwd=None, fail_if_stderr=False):
   if not cwd:
     cwd = os.getcwd()
 
   child = subprocess.Popen(args,
-      stdout=subprocess.PIPE, stderr=subprocess.STDOUT, cwd=cwd)
+      stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=cwd)
 
-  stdout, _ = child.communicate()
+  stdout, stderr = child.communicate()
 
-  if child.returncode:
+  returncode = child.returncode
+  if fail_if_stderr and stderr and returncode == 0:
+    returncode = 1
+
+  if returncode:
     stacktrace = traceback.extract_stack()
     print >> sys.stderr, ''.join(traceback.format_list(stacktrace))
     # A user should be able to simply copy and paste the command that failed
@@ -104,14 +108,19 @@ def CheckCallDie(args, suppress_output=False, cwd=None):
 
     if stdout:
       print stdout,
+    if stderr:
+      print >> sys.stderr, stderr,
 
     # Directly exit to avoid printing stacktrace.
-    sys.exit(child.returncode)
+    sys.exit(returncode)
 
   else:
-    if stdout and not suppress_output:
-      print stdout,
-    return stdout
+    if not suppress_output:
+      if stdout:
+        print stdout,
+      if stderr:
+        print >> sys.stderr, stderr,
+    return stdout + stderr
 
 
 def GetModifiedTime(path):
