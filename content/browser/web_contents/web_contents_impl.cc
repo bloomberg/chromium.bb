@@ -2510,16 +2510,15 @@ void WebContentsImpl::SetIsLoading(RenderViewHost* render_view_host,
     delegate_->LoadingStateChanged(this);
   NotifyNavigationStateChanged(INVALIDATE_TYPE_LOAD);
 
-  const char* url =
-      (details ? details->url.possibly_invalid_spec().c_str() : "NULL");
+  std::string url = (details ? details->url.possibly_invalid_spec() : "NULL");
   if (is_loading) {
-    TRACE_EVENT_ASYNC_BEGIN1(
-        "browser", "WebContentsImpl Loading", this, "URL", TRACE_STR_COPY(url));
+    TRACE_EVENT_ASYNC_BEGIN1("browser", "WebContentsImpl Loading", this,
+                             "URL", url);
     FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                       DidStartLoading(render_view_host));
   } else {
-    TRACE_EVENT_ASYNC_END1(
-        "browser", "WebContentsImpl Loading", this, "URL", TRACE_STR_COPY(url));
+    TRACE_EVENT_ASYNC_END1("browser", "WebContentsImpl Loading", this,
+                           "URL", url);
     FOR_EACH_OBSERVER(WebContentsObserver, observers_,
                       DidStopLoading(render_view_host));
   }
