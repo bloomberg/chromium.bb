@@ -679,6 +679,7 @@
             'css/CSSPageRule.cpp',
             'css/CSSPageRule.h',
             'css/CSSParser.h',
+            'css/CSSParserMode.cpp',
             'css/CSSParserMode.h',
             'css/CSSParserValues.cpp',
             'css/CSSPrimitiveValue.cpp',

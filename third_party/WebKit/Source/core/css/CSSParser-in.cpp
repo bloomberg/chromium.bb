@@ -183,38 +183,6 @@ private:
     bool m_hasSeenAnimationPropertyKeyword;
 };
 
-const CSSParserContext& strictCSSParserContext()
-{
-    DEFINE_STATIC_LOCAL(CSSParserContext, strictContext, (HTMLStandardMode));
-    return strictContext;
-}
-
-CSSParserContext::CSSParserContext(CSSParserMode mode, const KURL& baseURL)
-    : baseURL(baseURL)
-    , mode(mode)
-    , isHTMLDocument(false)
-    , useLegacyBackgroundSizeShorthandBehavior(false)
-{
-}
-
-CSSParserContext::CSSParserContext(const Document& document, const KURL& baseURL, const String& charset)
-    : baseURL(baseURL.isNull() ? document.baseURL() : baseURL)
-    , charset(charset)
-    , mode(document.inQuirksMode() ? HTMLQuirksMode : HTMLStandardMode)
-    , isHTMLDocument(document.isHTMLDocument())
-    , useLegacyBackgroundSizeShorthandBehavior(document.settings() ? document.settings()->useLegacyBackgroundSizeShorthandBehavior() : false)
-{
-}
-
-bool operator==(const CSSParserContext& a, const CSSParserContext& b)
-{
-    return a.baseURL == b.baseURL
-        && a.charset == b.charset
-        && a.mode == b.mode
-        && a.isHTMLDocument == b.isHTMLDocument
-        && a.useLegacyBackgroundSizeShorthandBehavior == b.useLegacyBackgroundSizeShorthandBehavior;
-}
-
 CSSParser::CSSParser(const CSSParserContext& context, UseCounter* counter)
     : m_context(context)
     , m_important(false)
