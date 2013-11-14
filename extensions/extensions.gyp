@@ -166,6 +166,8 @@
         'browser/pref_names.h',
         'browser/process_manager.cc',
         'browser/process_manager.h',
+        'browser/process_map.cc',
+        'browser/process_map.h',
         'browser/quota_service.cc',
         'browser/quota_service.h',
         'browser/view_type_utils.cc',

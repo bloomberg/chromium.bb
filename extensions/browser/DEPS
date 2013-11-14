@@ -16,7 +16,6 @@ include_rules = [
   "+chrome/browser/extensions/extension_service.h",
   "+chrome/browser/extensions/extension_system.h",
   "+chrome/browser/extensions/extension_util.h",
-  "+chrome/browser/extensions/process_map.h",
   "+chrome/browser/renderer_host/chrome_render_message_filter.h",
   "+chrome/common/extensions/extension.h",
   "+chrome/common/extensions/extension_messages.h",

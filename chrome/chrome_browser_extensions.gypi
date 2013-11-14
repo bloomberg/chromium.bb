@@ -835,8 +835,6 @@
         'browser/extensions/permissions_updater.h',
         'browser/extensions/plugin_manager.cc',
         'browser/extensions/plugin_manager.h',
-        'browser/extensions/process_map.cc',
-        'browser/extensions/process_map.h',
         'browser/extensions/requirements_checker.cc',
         'browser/extensions/requirements_checker.h',
         'browser/extensions/sandboxed_unpacker.cc',

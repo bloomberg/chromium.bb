@@ -11,8 +11,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/time/time.h"
-#include "chrome/browser/extensions/process_map.h"
 #include "chrome/common/extensions/extension_set.h"
+#include "extensions/browser/process_map.h"
 #include "extensions/browser/quota_service.h"
 
 namespace extensions {

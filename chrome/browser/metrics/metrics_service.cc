@@ -174,7 +174,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/process_map.h"
 #include "chrome/browser/io_thread.h"
 #include "chrome/browser/memory_details.h"
 #include "chrome/browser/metrics/compression_utils.h"
@@ -210,6 +209,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/process_type.h"
 #include "content/public/common/webplugininfo.h"
+#include "extensions/browser/process_map.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_fetcher.h"
 
