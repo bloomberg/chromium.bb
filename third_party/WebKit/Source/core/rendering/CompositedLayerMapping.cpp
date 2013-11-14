@@ -324,6 +324,10 @@ bool CompositedLayerMapping::shouldClipCompositedBounds() const
 
 void CompositedLayerMapping::updateCompositedBounds()
 {
+    // We need to know if we draw content in order to update our bounds (this has an effect
+    // on whether or not descendands will paint into our backing). Update this value now.
+    updateDrawsContent(isSimpleContainerCompositingLayer());
+
     IntRect layerBounds = compositor()->calculateCompositedBounds(m_owningLayer, m_owningLayer);
 
     // Clip to the size of the document or enclosing overflow-scroll layer.
