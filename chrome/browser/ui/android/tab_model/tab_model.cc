@@ -124,6 +124,8 @@ void TabModel::Observe(
   }
 }
 
-content::WebContents* TabModel::CreateNewTabForDevTools(const GURL& url) {
+// http://crbug.com/265806. TODO(mnaganov): Remove after code will be removed
+// from the Chrome for Android implementation class.
+content::WebContents* TabModel::CreateTabForTesting(const GURL& url) {
   return 0;
 }

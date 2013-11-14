@@ -298,7 +298,7 @@ class DevToolsServerDelegate : public content::DevToolsHttpHandlerDelegate {
     TabModel* tab_model = TabModelList::GetTabModelWithProfile(profile);
     if (!tab_model)
       return scoped_ptr<content::DevToolsTarget>();
-    WebContents* web_contents = tab_model->CreateTabForTesting(url);
+    WebContents* web_contents = tab_model->CreateNewTabForDevTools(url);
     if (!web_contents)
       return scoped_ptr<content::DevToolsTarget>();
 
