@@ -91,7 +91,8 @@ int ki_tcsetattr(int fd, int optional_actions,
                  const struct termios *termios_p);
 int ki_kill(pid_t pid, int sig);
 int ki_killpg(pid_t pid, int sig);
-int ki_sigaction(int, const struct sigaction*, struct sigaction*);
+int ki_sigaction(int signum, const struct sigaction* action,
+                 struct sigaction* oaction);
 int ki_sigpause(int sigmask);
 int ki_sigpending(sigset_t* set);
 int ki_sigsuspend(const sigset_t* set);

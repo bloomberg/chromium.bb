@@ -50,9 +50,9 @@ namespace nacl_io {
 
 
 KernelProxy::KernelProxy() : dev_(0), ppapi_(NULL),
-                             sigwinch_handler_(SIG_DFL),
                              signal_emitter_(new EventEmitter) {
-
+   memset(&sigwinch_handler_, 0, sizeof(sigwinch_handler_));
+   sigwinch_handler_.sa_handler = SIG_DFL;
 }
 
 KernelProxy::~KernelProxy() {
@@ -890,8 +890,10 @@ int KernelProxy::kill(pid_t pid, int sig) {
   signal_emitter_->RaiseEvents_Locked(POLLERR);
   switch (sig) {
     case SIGWINCH:
-      if (sigwinch_handler_ != SIG_IGN && sigwinch_handler_ != SIG_DFL)
-        sigwinch_handler_(SIGWINCH);
+      if (sigwinch_handler_.sa_handler != SIG_IGN &&
+          sigwinch_handler_.sa_handler != SIG_DFL) {
+        sigwinch_handler_.sa_handler(SIGWINCH);
+      }
       break;
 
     case SIGUSR1:
@@ -905,19 +907,28 @@ int KernelProxy::kill(pid_t pid, int sig) {
   return 0;
 }
 
-sighandler_t KernelProxy::sigset(int signum, sighandler_t handler) {
+int KernelProxy::sigaction(int signum, const struct sigaction* action,
+                           struct sigaction* oaction) {
+  if (action && action->sa_flags & SA_SIGINFO) {
+    // We don't support SA_SIGINFO (sa_sigaction field) yet
+    errno = EINVAL;
+    return -1;
+  }
+
   switch (signum) {
     // Handled signals.
     case SIGWINCH: {
-      sighandler_t old_value = sigwinch_handler_;
-      sigwinch_handler_ = handler;
-      return old_value;
+      if (oaction)
+        *oaction = sigwinch_handler_;
+      if (action) {
+        sigwinch_handler_ = *action;
+      }
+      return 0;
     }
 
     // Known signals
     case SIGHUP:
     case SIGINT:
-    case SIGKILL:
     case SIGPIPE:
     case SIGPOLL:
     case SIGPROF:
@@ -929,13 +940,29 @@ sighandler_t KernelProxy::sigset(int signum, sighandler_t handler) {
     case SIGQUIT:
     case SIGSEGV:
     case SIGTRAP:
-      if (handler == SIG_DFL)
-        return SIG_DFL;
-      break;
+      if (action && action->sa_handler != SIG_DFL) {
+        // Trying to set this action to anything other than SIG_DFL
+        // is not yet supported.
+        errno = EINVAL;
+        return -1;
+      }
+
+      if (oaction) {
+        memset(oaction, 0, sizeof(*oaction));
+        oaction->sa_handler = SIG_DFL;
+      }
+      return 0;
+
+    // KILL and STOP cannot be handled
+    case SIGKILL:
+    case SIGSTOP:
+      errno = EINVAL;
+      return -1;
   }
 
+  // Unknown signum
   errno = EINVAL;
-  return SIG_ERR;
+  return -1;
 }
 
 #ifdef PROVIDES_SOCKET_API

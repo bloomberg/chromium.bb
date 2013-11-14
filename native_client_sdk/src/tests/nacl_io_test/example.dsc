@@ -38,7 +38,6 @@
         'pepper_interface_mock.cc',
         'pepper_interface_mock.h',
         'socket_test.cc',
-        'syscalls_test.cc',
       ],
       'DEPS': ['ppapi_simple', 'nacl_io'],
       # Order matters here: gtest has a "main" function that will be used if

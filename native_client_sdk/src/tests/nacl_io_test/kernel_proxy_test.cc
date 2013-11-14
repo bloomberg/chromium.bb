@@ -127,6 +127,112 @@ TEST_F(KernelProxyTest, FileLeak) {
   ASSERT_EQ(0, root->ChildCount());
 }
 
+static bool g_handler_called = false;
+static void sighandler(int) {
+  g_handler_called = true;
+}
+
+TEST_F(KernelProxyTest, Sigaction) {
+  struct sigaction action;
+  struct sigaction oaction;
+  memset(&action, 0, sizeof(action));
+
+  // Invalid signum
+  ASSERT_EQ(-1, ki_sigaction(-1, NULL, &oaction));
+  ASSERT_EQ(-1, ki_sigaction(SIGSTOP, NULL, &oaction));
+  ASSERT_EQ(EINVAL, errno);
+
+  // Get existing handler
+  memset(&oaction, 0, sizeof(oaction));
+  ASSERT_EQ(0, ki_sigaction(SIGINT, NULL, &oaction));
+  ASSERT_EQ(SIG_DFL, oaction.sa_handler);
+
+  // Attempt to set handler for unsupported signum
+  action.sa_handler = sighandler;
+  ASSERT_EQ(-1, ki_sigaction(SIGINT, &action, NULL));
+  ASSERT_EQ(EINVAL, errno);
+
+  // Attempt to set handler for supported signum
+  action.sa_handler = sighandler;
+  ASSERT_EQ(0, ki_sigaction(SIGWINCH, &action, NULL));
+
+  memset(&oaction, 0, sizeof(oaction));
+  ASSERT_EQ(0, ki_sigaction(SIGWINCH, NULL, &oaction));
+  ASSERT_EQ((sighandler_t*)sighandler, (sighandler_t*)oaction.sa_handler);
+}
+
+TEST_F(KernelProxyTest, KillSignals) {
+  // SIGSEGV can't be sent via kill(2)
+  ASSERT_EQ(-1, ki_kill(0, SIGSEGV)) << "kill(SEGV) failed to return an error";
+  ASSERT_EQ(EINVAL, errno) << "kill(SEGV) failed to set errno to EINVAL";
+
+  // Our implemenation should understand SIGWINCH
+  ASSERT_EQ(0, ki_kill(0, SIGWINCH)) << "kill(SIGWINCH) failed: " << errno;
+
+  // And USR1/USR2
+  ASSERT_EQ(0, ki_kill(0, SIGUSR1)) << "kill(SIGUSR1) failed: " << errno;
+  ASSERT_EQ(0, ki_kill(0, SIGUSR2)) << "kill(SIGUSR2) failed: " << errno;
+}
+
+TEST_F(KernelProxyTest, KillPIDValues) {
+  // Any PID other than 0, -1 and getpid() should yield ESRCH
+  // since there is only one valid process under NaCl
+  int mypid = getpid();
+  ASSERT_EQ(0, ki_kill(0, SIGWINCH));
+  ASSERT_EQ(0, ki_kill(-1, SIGWINCH));
+  ASSERT_EQ(0, ki_kill(mypid, SIGWINCH));
+
+  // Don't use mypid + 1 since getpid() actually returns -1
+  // when the IRT interface is missing (e.g. within chrome),
+  // and 0 is always a valid PID when calling kill().
+  int invalid_pid = mypid + 10;
+  ASSERT_EQ(-1, ki_kill(invalid_pid, SIGWINCH));
+  ASSERT_EQ(ESRCH, errno);
+}
+
+TEST_F(KernelProxyTest, SignalValues) {
+  ASSERT_EQ(ki_signal(SIGSEGV, sighandler), SIG_ERR)
+      << "registering SEGV handler didn't fail";
+  ASSERT_EQ(errno, EINVAL) << "signal(SEGV) failed to set errno to EINVAL";
+
+  ASSERT_EQ(ki_signal(-1, sighandler), SIG_ERR)
+      << "registering handler for invalid signal didn't fail";
+  ASSERT_EQ(errno, EINVAL) << "signal(-1) failed to set errno to EINVAL";
+}
+
+TEST_F(KernelProxyTest, SignalHandlerValues) {
+  // Unsupported signal.
+  ASSERT_NE(SIG_ERR, ki_signal(SIGSEGV, SIG_DFL));
+  ASSERT_EQ(SIG_ERR, ki_signal(SIGSEGV, SIG_IGN));
+  ASSERT_EQ(SIG_ERR, ki_signal(SIGSEGV, sighandler));
+
+  // Supported signal.
+  ASSERT_NE(SIG_ERR, ki_signal(SIGWINCH, SIG_DFL));
+  ASSERT_NE(SIG_ERR, ki_signal(SIGWINCH, SIG_IGN));
+  ASSERT_NE(SIG_ERR, ki_signal(SIGWINCH, sighandler));
+}
+
+TEST_F(KernelProxyTest, SignalSigwinch) {
+  g_handler_called = false;
+
+  // Register WINCH handler
+  sighandler_t newsig = sighandler;
+  sighandler_t oldsig = ki_signal(SIGWINCH, newsig);
+  ASSERT_NE(oldsig, SIG_ERR);
+
+  // Send signal.
+  ki_kill(0, SIGWINCH);
+
+  // Verify that handler was called
+  EXPECT_TRUE(g_handler_called);
+
+  // Restore existing handler
+  oldsig = ki_signal(SIGWINCH, oldsig);
+
+  // Verify the our newsig was returned as previous handler
+  ASSERT_EQ(oldsig, newsig);
+}
+
 TEST_F(KernelProxyTest, Rename) {
   // Create a dummy file
   int file1 = ki_open("/test1.txt", O_RDWR | O_CREAT);

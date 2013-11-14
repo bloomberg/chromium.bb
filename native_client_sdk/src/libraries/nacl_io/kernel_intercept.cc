@@ -5,6 +5,7 @@
 #include "nacl_io/kernel_intercept.h"
 
 #include <errno.h>
+#include <string.h>
 
 #include "nacl_io/kernel_proxy.h"
 #include "nacl_io/kernel_wrap.h"
@@ -327,9 +328,10 @@ int ki_killpg(pid_t pid, int sig) {
   return -1;
 }
 
-int ki_sigaction(int, const struct sigaction*, struct sigaction*) {
-  errno = ENOSYS;
-  return -1;
+int ki_sigaction(int signum, const struct sigaction* action,
+                 struct sigaction* oaction) {
+  ON_NOSYS_RETURN(-1);
+  return s_kp->sigaction(signum, action, oaction);
 }
 
 int ki_sigpause(int sigmask) {
@@ -348,13 +350,21 @@ int ki_sigsuspend(const sigset_t* set) {
 }
 
 sighandler_t ki_signal(int signum, sighandler_t handler) {
-  ON_NOSYS_RETURN(SIG_ERR);
-  return s_kp->sigset(signum, handler);
+  return ki_sigset(signum, handler);
 }
 
 sighandler_t ki_sigset(int signum, sighandler_t handler) {
   ON_NOSYS_RETURN(SIG_ERR);
-  return s_kp->sigset(signum, handler);
+  // Implement sigset(2) in terms of sigaction(2).
+  struct sigaction action;
+  struct sigaction oaction;
+  memset(&action, 0, sizeof(action));
+  memset(&oaction, 0, sizeof(oaction));
+  action.sa_handler = handler;
+  int rtn = s_kp->sigaction(signum, &action, &oaction);
+  if (rtn)
+    return SIG_ERR;
+  return oaction.sa_handler;
 }
 
 #ifdef PROVIDES_SOCKET_API

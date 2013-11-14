@@ -139,7 +139,8 @@ class KernelProxy : protected KernelObject {
                            const struct termios *termios_p);
 
   virtual int kill(pid_t pid, int sig);
-  virtual sighandler_t sigset(int signum, sighandler_t handler);
+  virtual int sigaction(int signum, const struct sigaction* action,
+                        struct sigaction* oaction);
 
 #ifdef PROVIDES_SOCKET_API
   virtual int select(int nfds, fd_set* readfds, fd_set* writefds,
@@ -195,7 +196,7 @@ class KernelProxy : protected KernelObject {
   int dev_;
   PepperInterface* ppapi_;
   static KernelProxy *s_instance_;
-  sighandler_t sigwinch_handler_;
+  struct sigaction sigwinch_handler_;
 #ifdef PROVIDES_SOCKET_API
   HostResolver host_resolver_;
 #endif

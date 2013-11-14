@@ -14,7 +14,7 @@ extern "C" {
 
 typedef unsigned long sigset_t;
 
-#if defined(__rtems__)
+#if defined(__rtems__) || defined(__native_client__)
 
 #if defined(_POSIX_REALTIME_SIGNALS)
 

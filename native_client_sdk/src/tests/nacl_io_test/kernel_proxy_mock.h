@@ -56,7 +56,7 @@ class KernelProxyMock : public nacl_io::KernelProxy {
   MOCK_METHOD1(remove, int(const char*));
   MOCK_METHOD2(rename, int(const char*, const char*));
   MOCK_METHOD1(rmdir, int(const char*));
-  MOCK_METHOD2(sigset, sighandler_t(int, sighandler_t));
+  MOCK_METHOD3(sigaction, int(int, const struct sigaction*, struct sigaction*));
   MOCK_METHOD2(stat, int(const char*, struct stat*));
   MOCK_METHOD2(symlink, int(const char*, const char*));
   MOCK_METHOD2(tcflush, int(int, int));

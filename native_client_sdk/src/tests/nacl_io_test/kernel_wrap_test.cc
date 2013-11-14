@@ -431,19 +431,26 @@ TEST_F(KernelWrapTest, rmdir) {
 }
 
 static void new_handler(int) {}
-static void old_handler(int) {}
+
+TEST_F(KernelWrapTest, sigaction) {
+  struct sigaction action;
+  struct sigaction oaction;
+  EXPECT_CALL(mock, sigaction(kDummyInt, &action, &oaction))
+      .WillOnce(Return(0));
+  EXPECT_EQ(0, sigaction(kDummyInt, &action, &oaction));
+}
 
 TEST_F(KernelWrapTest, sigset) {
-  EXPECT_CALL(mock, sigset(kDummyInt, new_handler))
-      .WillOnce(Return(old_handler));
-  EXPECT_EQ(&old_handler, sigset(kDummyInt, new_handler));
+  EXPECT_CALL(mock, sigaction(kDummyInt, _, _))
+      .WillOnce(Return(0));
+  EXPECT_EQ(NULL, sigset(kDummyInt, new_handler));
 }
 
 TEST_F(KernelWrapTest, signal) {
   // KernelIntercept forwards calls to signal to KernelProxy::sigset.
-  EXPECT_CALL(mock, sigset(kDummyInt, new_handler))
-      .WillOnce(Return(old_handler));
-  EXPECT_EQ(&old_handler, signal(kDummyInt, new_handler));
+  EXPECT_CALL(mock, sigaction(kDummyInt, _, _))
+      .WillOnce(Return(0));
+  EXPECT_EQ(NULL, signal(kDummyInt, new_handler));
 }
 
 TEST_F(KernelWrapTest, stat) {
