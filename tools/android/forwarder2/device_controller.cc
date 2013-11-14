@@ -15,6 +15,7 @@
 #include "tools/android/forwarder2/command.h"
 #include "tools/android/forwarder2/device_listener.h"
 #include "tools/android/forwarder2/socket.h"
+#include "tools/android/forwarder2/util.h"
 
 namespace forwarder2 {
 
@@ -87,8 +88,7 @@ void DeviceController::AcceptHostCommandInternal() {
       if (listener != NULL) {
         LOG(WARNING) << "Already forwarding port " << port
                      << ". Attempting to restart the listener.\n";
-        // Note that this deletes the listener object.
-        listeners_.erase(listener_it);
+        DeleteRefCountedValueInMapFromIterator(listener_it, &listeners_);
       }
       scoped_ptr<DeviceListener> new_listener(
           DeviceListener::Create(
@@ -125,7 +125,7 @@ void DeviceController::AcceptHostCommandInternal() {
         SendCommand(command::UNLISTEN_ERROR, port, socket.get());
         break;
       }
-      listeners_.erase(listener_it);
+      DeleteRefCountedValueInMapFromIterator(listener_it, &listeners_);
       SendCommand(command::UNLISTEN_SUCCESS, port, socket.get());
       break;
     default:
@@ -147,10 +147,7 @@ void DeviceController::DeleteListener(
       listener_port);
   if (listener_it == controller->listeners_.end())
     return;
-  const linked_ptr<DeviceListener> listener = listener_it->second;
-  // Note that the listener is removed from the map before it gets destroyed in
-  // case its destructor would access the map.
-  controller->listeners_.erase(listener_it);
+  DeleteRefCountedValueInMapFromIterator(listener_it, &controller->listeners_);
 }
 
 }  // namespace forwarder

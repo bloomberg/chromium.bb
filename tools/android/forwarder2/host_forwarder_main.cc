@@ -42,6 +42,7 @@
 #include "tools/android/forwarder2/host_controller.h"
 #include "tools/android/forwarder2/pipe_notifier.h"
 #include "tools/android/forwarder2/socket.h"
+#include "tools/android/forwarder2/util.h"
 
 namespace forwarder2 {
 namespace {
@@ -149,9 +150,10 @@ class HostControllersManager {
     }
     DCHECK(manager->thread_->message_loop_proxy()->RunsTasksOnCurrentThread());
     // Note that this will delete |controller| which is owned by the map.
-    manager->controllers_->erase(
-        MakeHostControllerMapKey(controller->adb_port(),
-                                 controller->device_port()));
+    DeleteRefCountedValueInMap(
+        MakeHostControllerMapKey(
+            controller->adb_port(), controller->device_port()),
+        manager->controllers_.get());
   }
 
   void HandleRequestOnInternalThread(const std::string& device_serial,
@@ -170,10 +172,10 @@ class HostControllersManager {
       // Remove the previously created host controller.
       const std::string controller_key = MakeHostControllerMapKey(
           adb_port, -device_port);
-      const HostControllerMap::size_type removed_elements = controllers_->erase(
-          controller_key);
+      const bool controller_did_exist = DeleteRefCountedValueInMap(
+          controller_key, controllers_.get());
       SendMessage(
-          !removed_elements ? "ERROR: could not unmap port" : "OK",
+          !controller_did_exist ? "ERROR: could not unmap port" : "OK",
           client_socket.get());
 
       RemoveAdbPortForDeviceIfNeeded(device_serial);
