@@ -897,7 +897,6 @@ void FrameView::performLayout(RenderObject* rootForThisLayout, bool inSubtreeLay
         m_inLayout = true;
 
         forceLayoutParentViewIfNeeded();
-        renderView()->updateConfiguration();
 
         // Text Autosizing requires two-pass layout which is incompatible with partial layout.
         // If enabled, only do partial layout for the second layout.

@@ -27,7 +27,6 @@
 #include "core/rendering/LayoutIndicator.h"
 #include "core/rendering/LayoutState.h"
 #include "core/rendering/RenderBlockFlow.h"
-#include "core/rendering/RenderingConfiguration.h"
 #include "platform/PODFreeListArena.h"
 #include "wtf/OwnPtr.h"
 
@@ -99,14 +98,6 @@ public:
     IntRect selectionBounds(bool clipToVisibleContent = true) const;
     void selectionStartEnd(int& startPos, int& endPos) const;
     void repaintSelection() const;
-
-    void updateConfiguration();
-    const RenderingConfiguration& configuration()
-    {
-        // If we're not inLayout(), then the configuration might be out of date.
-        ASSERT(LayoutIndicator::inLayout());
-        return m_configuration;
-    }
 
     virtual void absoluteRects(Vector<IntRect>&, const LayoutPoint& accumulatedOffset) const;
     virtual void absoluteQuads(Vector<FloatQuad>&, bool* wasFixed) const;
@@ -284,9 +275,6 @@ private:
 
     RenderObject* m_selectionStart;
     RenderObject* m_selectionEnd;
-
-    // Please use the configuration() accessor instead of accessing this member directly.
-    RenderingConfiguration m_configuration;
 
     int m_selectionStartPos;
     int m_selectionEndPos;

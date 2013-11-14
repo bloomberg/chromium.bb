@@ -303,7 +303,7 @@ void RenderView::layoutContentInAutoLogicalHeightRegions(const LayoutState& stat
 
 void RenderView::layout()
 {
-    if (!configuration().paginated())
+    if (!document().paginated())
         setPageLogicalHeight(0);
 
     if (shouldUsePrintingLayout())
@@ -943,11 +943,6 @@ void RenderView::selectionStartEnd(int& startPos, int& endPos) const
 {
     startPos = m_selectionStartPos;
     endPos = m_selectionEndPos;
-}
-
-void RenderView::updateConfiguration()
-{
-    m_configuration.update(document());
 }
 
 bool RenderView::shouldUsePrintingLayout() const
