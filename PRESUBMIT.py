@@ -155,6 +155,8 @@ def GetPreferredTrySlaves(_, change):
       'nacl-win64_newlib_dbg',
       'nacl-win64_newlib_opt',
       'nacl-win64_glibc_opt',
+      'nacl-win8-64_newlib_dbg',
+      'nacl-win8-64_newlib_opt',
       'nacl-arm_opt_panda',
       # arm-nacl-gcc bots
       'nacl-win7_64_arm_newlib_opt',
