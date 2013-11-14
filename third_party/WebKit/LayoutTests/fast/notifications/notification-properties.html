@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+    <head>
+        <script src="../../resources/js-test.js"></script>
+    </head>
+    <body>
+        <div id="description"></div>
+        <div id="console"></div>
+        <script>
+            description("Checks that the {title, dir, lang, body, tag, icon} properties are set on the Notification object.");
+            if (window.testRunner) {
+                testRunner.grantWebNotificationPermission("file://");
+                testRunner.dumpAsText();
+            }
+      
+            var notification = new Notification("My Notification", {
+                dir: "rtl",
+                lang: "nl-NL",
+                body: "Hallo, wereld!",
+                tag: "notification",
+                icon: "http://localhost/my_icon.png"
+            });
+
+            shouldBeEqualToString("notification.title", "My Notification");
+            shouldBeEqualToString("notification.dir", "rtl");
+            shouldBeEqualToString("notification.lang", "nl-NL");
+            shouldBeEqualToString("notification.body", "Hallo, wereld!");
+            shouldBeEqualToString("notification.tag", "notification");
+            shouldBeEqualToString("notification.icon", "http://localhost/my_icon.png");
+
+            var successfullyParsed = true;
+        </script>
+    </body>
+</html>

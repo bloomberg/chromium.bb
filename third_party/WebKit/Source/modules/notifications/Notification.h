@@ -77,40 +77,38 @@ public:
 #endif
     void close();
 
-    KURL iconURL() const { return m_icon; }
-    void setIconURL(const KURL& url) { m_icon = url; }
-
     String title() const { return m_title; }
-    String body() const { return m_body; }
-
-    String lang() const { return m_lang; }
-    void setLang(const String& lang) { m_lang = lang; }
-
     String dir() const { return m_direction; }
+    String lang() const { return m_lang; }
+    String body() const { return m_body; }
+    String tag() const { return m_tag; }
+    String icon() const { return m_icon; }
+
+    // FIXME: Make setDir and setTag private once we switch the properties
+    // to being readonly, as the specification dictates.
     void setDir(const String& dir) { m_direction = dir; }
+    void setTag(const String& tag) { m_tag = tag; }
 
 #if ENABLE(LEGACY_NOTIFICATIONS)
     String replaceId() const { return tag(); }
     void setReplaceId(const String& replaceId) { setTag(replaceId); }
 #endif
 
-    String tag() const { return m_tag; }
-    void setTag(const String& tag) { m_tag = tag; }
-
     TextDirection direction() const { return dir() == "rtl" ? RTL : LTR; }
+    KURL iconURL() const { return m_icon; }
 
-#if ENABLE(LEGACY_NOTIFICATIONS)
-    DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(display, show);
-#endif
+    DEFINE_ATTRIBUTE_EVENT_LISTENER(click);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(show);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(error);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(close);
-    DEFINE_ATTRIBUTE_EVENT_LISTENER(click);
+#if ENABLE(LEGACY_NOTIFICATIONS)
+    DEFINE_MAPPED_ATTRIBUTE_EVENT_LISTENER(display, show);
+#endif
 
     void dispatchClickEvent();
-    void dispatchCloseEvent();
-    void dispatchErrorEvent();
     void dispatchShowEvent();
+    void dispatchErrorEvent();
+    void dispatchCloseEvent();
 
     // EventTarget interface
     virtual const AtomicString& interfaceName() const OVERRIDE;
@@ -132,7 +130,9 @@ private:
 
     void finalize();
 
+    void setLang(const String& lang) { m_lang = lang; }
     void setBody(const String& body) { m_body = body; }
+    void setIcon(const KURL& url) { m_icon = url; }
 
     void showSoon();
 

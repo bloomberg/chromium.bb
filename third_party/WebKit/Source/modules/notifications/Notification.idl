@@ -35,21 +35,27 @@
     ConstructorCallWith=ExecutionContext,
     RuntimeEnabled=notifications
 ] interface Notification : EventTarget {
-    void show();
-    [Conditional=LEGACY_NOTIFICATIONS] void cancel();
-    void close();
-
-
     [CallWith=ExecutionContext] static readonly attribute DOMString permission;
     [CallWith=ExecutionContext] static void requestPermission(optional NotificationPermissionCallback callback);
 
+    attribute EventHandler onclick;
     attribute EventHandler onshow;
-    [Conditional=LEGACY_NOTIFICATIONS] attribute EventHandler ondisplay;
     attribute EventHandler onerror;
     attribute EventHandler onclose;
-    attribute EventHandler onclick;
+    [Conditional=LEGACY_NOTIFICATIONS] attribute EventHandler ondisplay;
 
-    [Conditional=LEGACY_NOTIFICATIONS] attribute DOMString dir;
+    // FIXME: The "dir" and "tag" attributes should be readonly, but the legacy
+    // notification API depends on these to be writable.
+    readonly attribute DOMString title;
+             attribute DOMString dir;
+    readonly attribute DOMString lang;
+    readonly attribute DOMString body;
+             attribute DOMString tag;
+    readonly attribute DOMString icon;
     [Conditional=LEGACY_NOTIFICATIONS] attribute DOMString replaceId;
-    attribute DOMString tag;
+
+    [Conditional=LEGACY_NOTIFICATIONS] void cancel();
+    void close();
+
+    void show();
 };

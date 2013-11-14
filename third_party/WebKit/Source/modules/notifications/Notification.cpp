@@ -123,7 +123,7 @@ PassRefPtr<Notification> Notification::create(ExecutionContext* context, const S
     if (options.get("icon", argument)) {
         KURL iconURI = argument.isEmpty() ? KURL() : context->completeURL(argument);
         if (!iconURI.isEmpty() && iconURI.isValid())
-            notification->setIconURL(iconURI);
+            notification->setIcon(iconURI);
     }
 
     notification->suspendIfNeeded();
