@@ -228,7 +228,7 @@ sdk_build_init() {
     export ANDROID_NDK_ROOT="${CHROME_SRC}/third_party/android_tools/ndk/"
   fi
   if [[ -z "${ANDROID_SDK_VERSION}" ]]; then
-    export ANDROID_SDK_VERSION=18
+    export ANDROID_SDK_VERSION=19
   else
     sdk_defines+=" android_sdk_version=${ANDROID_SDK_VERSION}"
   fi
@@ -240,7 +240,7 @@ sdk_build_init() {
     sdk_defines+=" android_sdk_root=${ANDROID_SDK_ROOT}"
   fi
   if [[ -z "${ANDROID_SDK_BUILD_TOOLS_VERSION}" ]]; then
-    export ANDROID_SDK_BUILD_TOOLS_VERSION=18.0.1
+    export ANDROID_SDK_BUILD_TOOLS_VERSION=19.0.0
   fi
 
   unset ANDROID_BUILD_TOP
