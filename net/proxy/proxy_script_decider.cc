@@ -240,7 +240,7 @@ int ProxyScriptDecider::DoWaitComplete(int result) {
     net_log_.EndEventWithNetErrorCode(NetLog::TYPE_PROXY_SCRIPT_DECIDER_WAIT,
                                       result);
   }
-  next_state_ = STATE_QUICK_CHECK;
+  next_state_ = GetStartState();
   return OK;
 }
 
