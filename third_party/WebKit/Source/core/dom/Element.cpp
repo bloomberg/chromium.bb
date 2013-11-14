@@ -1444,31 +1444,38 @@ void Element::detach(const AttachContext& context)
     ContainerNode::detach(context);
 }
 
-bool Element::pseudoStyleCacheIsInvalid(const PseudoStyleCache* pseudoStyleCache, RenderStyle* newStyle)
+bool Element::pseudoStyleCacheIsInvalid(const RenderStyle* currentStyle, RenderStyle* newStyle)
 {
+    ASSERT(currentStyle == renderStyle());
+    ASSERT(renderer());
+
+    if (!currentStyle)
+        return false;
+
+    const PseudoStyleCache* pseudoStyleCache = currentStyle->cachedPseudoStyles();
     if (!pseudoStyleCache)
         return false;
 
-    for (PseudoStyleCache::const_iterator it = pseudoStyleCache->begin(); it != pseudoStyleCache->end(); ++it) {
-        RenderStyle& oldPseudoStyle = **it;
-        PseudoId pseudoId = oldPseudoStyle.styleType();
+    size_t cacheSize = pseudoStyleCache->size();
+    for (size_t i = 0; i < cacheSize; ++i) {
         RefPtr<RenderStyle> newPseudoStyle;
+        PseudoId pseudoId = pseudoStyleCache->at(i)->styleType();
         if (pseudoId == FIRST_LINE || pseudoId == FIRST_LINE_INHERITED)
             newPseudoStyle = renderer()->uncachedFirstLineStyle(newStyle);
         else
             newPseudoStyle = renderer()->getUncachedPseudoStyle(PseudoStyleRequest(pseudoId), newStyle, newStyle);
         if (!newPseudoStyle)
             return true;
-        // To avoid having to compute the pseudo style again later we add it to the newStyle's cache.
-        if (pseudoId < FIRST_INTERNAL_PSEUDOID)
-            newStyle->setHasPseudoStyle(pseudoId);
-        newStyle->addCachedPseudoStyle(newPseudoStyle);
-        if (*newPseudoStyle != oldPseudoStyle) {
-            // FIXME: We should do an actual diff to determine whether a repaint vs. layout
-            // is needed, but for now just assume a layout will be required. The diff code
-            // in RenderObject::setStyle would need to be factored out so that it could be reused.
-            if (pseudoId == FIRST_LINE || pseudoId == FIRST_LINE_INHERITED)
+        if (*newPseudoStyle != *pseudoStyleCache->at(i)) {
+            if (pseudoId < FIRST_INTERNAL_PSEUDOID)
+                newStyle->setHasPseudoStyle(pseudoId);
+            newStyle->addCachedPseudoStyle(newPseudoStyle);
+            if (pseudoId == FIRST_LINE || pseudoId == FIRST_LINE_INHERITED) {
+                // FIXME: We should do an actual diff to determine whether a repaint vs. layout
+                // is needed, but for now just assume a layout will be required. The diff code
+                // in RenderObject::setStyle would need to be factored out so that it could be reused.
                 renderer()->setNeedsLayoutAndPrefWidthsRecalc();
+            }
             return true;
         }
     }
@@ -1550,7 +1557,7 @@ StyleRecalcChange Element::recalcOwnStyle(StyleRecalcChange change)
         updateCallbackSelectors(oldStyle.get(), newStyle.get());
 
     if (RenderObject* renderer = this->renderer()) {
-        if (localChange != NoChange || pseudoStyleCacheIsInvalid(oldStyle->cachedPseudoStyles(), newStyle.get()) || shouldNotifyRendererWithIdenticalStyles()) {
+        if (localChange != NoChange || pseudoStyleCacheIsInvalid(oldStyle.get(), newStyle.get()) || shouldNotifyRendererWithIdenticalStyles()) {
             renderer->setAnimatableStyle(newStyle.get());
         } else {
             // Although no change occurred, we use the new style so that the cousin style sharing code won't get
