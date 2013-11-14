@@ -703,7 +703,7 @@ inline void Node::setStyleChange(StyleChangeType changeType)
     m_nodeFlags = (m_nodeFlags & ~StyleChangeMask) | changeType;
 }
 
-inline void Node::markAncestorsWithChildNeedsStyleRecalc()
+void Node::markAncestorsWithChildNeedsStyleRecalc()
 {
     for (ContainerNode* p = parentOrShadowHostNode(); p && !p->childNeedsStyleRecalc(); p = p->parentOrShadowHostNode())
         p->setChildNeedsStyleRecalc();
@@ -732,19 +732,6 @@ void Node::setNeedsStyleRecalc(StyleChangeType changeType, StyleChangeSource sou
 bool Node::inActiveDocument() const
 {
     return inDocument() && document().isActive();
-}
-
-void Node::lazyAttach()
-{
-    markAncestorsWithChildNeedsStyleRecalc();
-    for (Node* node = this; node; node = NodeTraversal::next(*node, this)) {
-        node->setAttached();
-        node->setStyleChange(NeedsReattachStyleChange);
-        if (node->isContainerNode())
-            node->setChildNeedsStyleRecalc();
-        for (ShadowRoot* root = node->youngestShadowRoot(); root; root = root->olderShadowRoot())
-            root->lazyAttach();
-    }
 }
 
 Node* Node::focusDelegate()
@@ -950,7 +937,6 @@ void Node::attach(const AttachContext&)
     ASSERT(needsAttach());
     ASSERT(!renderer() || (renderer()->style() && (renderer()->parent() || renderer()->isRenderView())));
 
-    setAttached();
     clearNeedsStyleRecalc();
 
     if (Document* doc = documentInternal()) {
@@ -992,7 +978,8 @@ void Node::detach(const AttachContext& context)
         }
     }
 
-    clearFlag(IsAttachedFlag);
+    setStyleChange(NeedsReattachStyleChange);
+    setChildNeedsStyleRecalc();
 
 #ifndef NDEBUG
     detachingNode = 0;

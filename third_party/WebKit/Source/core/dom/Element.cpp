@@ -1368,7 +1368,7 @@ void Element::attach(const AttachContext& context)
 
     StyleResolverParentPusher parentPusher(*this);
 
-    // We've already been through detach when doing a lazyAttach, but we might
+    // We've already been through detach when doing a lazy attach, but we might
     // need to clear any state that's been added since then.
     if (hasRareData() && styleChangeType() == NeedsReattachStyleChange) {
         ElementRareData* data = elementRareData();

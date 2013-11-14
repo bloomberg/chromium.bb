@@ -224,14 +224,6 @@ inline void ChildNodeInsertionNotifier::notify(Node& node)
     else if (node.isContainerNode())
         notifyNodeInsertedIntoTree(toContainerNode(node));
 
-    // Script runs in didNotifySubtreeInsertions so we should lazy attach before
-    // to ensure that triggering a style recalc in script attaches all nodes that
-    // were inserted.
-    // FIXME: We should merge the lazy attach logic into the tree traversal in
-    // notifyNodeInsertedIntoDocument.
-    if (!node.confusingAndOftenMisusedAttached() && node.parentOrShadowHostNode() && node.parentOrShadowHostNode()->confusingAndOftenMisusedAttached())
-        node.lazyAttach();
-
     for (size_t i = 0; i < m_postInsertionNotificationTargets.size(); ++i) {
         Node* targetNode = m_postInsertionNotificationTargets[i].get();
         if (targetNode->inDocument())

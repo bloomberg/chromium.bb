@@ -2031,7 +2031,8 @@ void Document::detach(const AttachContext& context)
             view->detachCustomScrollbars();
     }
 
-    // indicate destruction mode, i.e. confusingAndOftenMisusedAttached() but renderer == 0
+    // Indicate destruction mode by setting the renderer to null.
+    // FIXME: Don't do this and use m_lifecycle.state() == Stopping instead.
     setRenderer(0);
     m_renderView = 0;
 

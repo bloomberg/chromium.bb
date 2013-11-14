@@ -481,8 +481,7 @@ void ContainerNode::removeBetween(Node* previousChild, Node* nextChild, Node& ol
 
     ASSERT(oldChild.parentNode() == this);
 
-    // Remove from rendering tree
-    if (oldChild.confusingAndOftenMisusedAttached())
+    if (!oldChild.needsAttach())
         oldChild.detach();
 
     if (nextChild)
@@ -676,6 +675,10 @@ void ContainerNode::childrenChanged(bool changedByParser, Node*, Node*, int chil
     if (!changedByParser && childCountDelta)
         document().updateRangesAfterChildrenChanged(this);
     invalidateNodeListCachesInAncestors();
+    if (childCountDelta > 0 && inActiveDocument()) {
+        setChildNeedsStyleRecalc();
+        markAncestorsWithChildNeedsStyleRecalc();
+    }
 }
 
 void ContainerNode::cloneChildNodes(ContainerNode *clone)

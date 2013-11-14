@@ -363,9 +363,7 @@ public:
     bool hovered() const { return isUserActionElement() && isUserActionElementHovered(); }
     bool focused() const { return isUserActionElement() && isUserActionElementFocused(); }
 
-    bool needsAttach() const { return !getFlag(IsAttachedFlag) || styleChangeType() == NeedsReattachStyleChange; }
-    bool confusingAndOftenMisusedAttached() const { return getFlag(IsAttachedFlag); }
-    void setAttached() { setFlag(IsAttachedFlag); }
+    bool needsAttach() const { return styleChangeType() == NeedsReattachStyleChange; }
     bool needsStyleRecalc() const { return styleChangeType() != NoStyleChange; }
     StyleChangeType styleChangeType() const { return static_cast<StyleChangeType>(m_nodeFlags & StyleChangeMask); }
     bool childNeedsStyleRecalc() const { return getFlag(ChildNeedsStyleRecalcFlag); }
@@ -405,8 +403,6 @@ public:
 
     bool isV8CollectableDuringMinorGC() const { return getFlag(V8CollectableDuringMinorGCFlag); }
     void setV8CollectableDuringMinorGC(bool flag) { setFlag(flag, V8CollectableDuringMinorGCFlag); }
-
-    void lazyAttach();
 
     virtual void setFocus(bool flag);
     virtual void setActive(bool flag = true);
@@ -710,7 +706,8 @@ private:
         IsElementFlag = 1 << 2,
         IsHTMLFlag = 1 << 3,
         IsSVGFlag = 1 << 4,
-        IsAttachedFlag = 1 << 5,
+
+        ChildNeedsDistributionRecalc = 1 << 5,
         ChildNeedsStyleRecalcFlag = 1 << 6,
         InDocumentFlag = 1 << 7,
         IsLinkFlag = 1 << 8,
@@ -743,13 +740,12 @@ private:
         CustomElementWaitingForParserOrIsUpgraded = 1 << 27,
         CustomElementWaitingForUpgradeOrIsUpgraded = 1 << 28,
 
-        ChildNeedsDistributionRecalc = 1 << 29,
-        AlreadySpellCheckedFlag = 1 << 30,
+        AlreadySpellCheckedFlag = 1 << 29,
 
-        DefaultNodeFlags = IsParsingChildrenFinishedFlag
+        DefaultNodeFlags = IsParsingChildrenFinishedFlag | ChildNeedsStyleRecalcFlag | NeedsReattachStyleChange
     };
 
-    // 2 bits remaining
+    // 3 bits remaining.
 
     bool getFlag(NodeFlags mask) const { return m_nodeFlags & mask; }
     void setFlag(bool f, NodeFlags mask) const { m_nodeFlags = (m_nodeFlags & ~mask) | (-(int32_t)f & mask); }
@@ -808,6 +804,8 @@ protected:
     Document* documentInternal() const { return treeScope().documentScope(); }
     void setTreeScope(TreeScope* scope) { m_treeScope = scope; }
 
+    void markAncestorsWithChildNeedsStyleRecalc();
+
 private:
     friend class TreeShared<Node>;
 
@@ -830,9 +828,6 @@ private:
     bool isUserActionElementFocused() const;
 
     void setStyleChange(StyleChangeType);
-
-    // Used to share code between lazyAttach and setNeedsStyleRecalc.
-    void markAncestorsWithChildNeedsStyleRecalc();
 
     virtual RenderStyle* nonRendererStyle() const { return 0; }
 
@@ -908,7 +903,7 @@ inline void Node::lazyReattachIfAttached()
     context.performingReattach = true;
 
     detach(context);
-    lazyAttach();
+    markAncestorsWithChildNeedsStyleRecalc();
 }
 
 inline bool shouldRecalcStyle(StyleRecalcChange change, const Node* node)
