@@ -57,17 +57,21 @@ Client module calls back to the browser) and ``PPB_InputEvent`` and
 
 .. naclcode::
 
+  #include <stdlib.h>
+  #include <string.h>
+  #include "ppapi/c/pp_errors.h"
+  #include "ppapi/c/ppp.h"
   // Include the interface headers.
   // PPB APIs describe calls from the module to the browser.
   // PPP APIs describe calls from the browser to the functions defined in your module.
   #include "ppapi/c/ppb_instance.h"
   #include "ppapi/c/ppp_instance.h"
-  #include "ppapi/c/ppb_InputEvent.h"
-  #include "ppapi/c/ppp_InputEvent.h"
+  #include "ppapi/c/ppb_input_event.h"
+  #include "ppapi/c/ppp_input_event.h"
 
   // Create pointers for each PPB interface that your module uses.
   static PPB_Instance* ppb_instance_interface = NULL;
-  static PPB_Instance* ppb_input_event_interface = NULL;
+  static PPB_InputEvent* ppb_input_event_interface = NULL;
 
   // Define all the functions for each PPP interface that your module uses.
   // Here is a stub for the first function in PPP_Instance.
@@ -87,7 +91,7 @@ Client module calls back to the browser) and ``PPB_InputEvent`` and
           // Create structs for each PPP interface.
           // Assign the interface functions to the data fields.
            if (strcmp(interface_name, PPP_INSTANCE_INTERFACE) == 0) {
-                  static struct PPP_Instance instance_interface = {
+                  static PPP_Instance instance_interface = {
                           &Instance_DidCreate,
                           // The definitions of these functions are not shown
                           &Instance_DidDestroy,
@@ -99,7 +103,7 @@ Client module calls back to the browser) and ``PPB_InputEvent`` and
            }
 
            if (strcmp(interface_name, PPP_INPUT_EVENT_INTERFACE) == 0) {
-                  static struct PPP_InputEvent input_interface = {
+                  static PPP_InputEvent input_interface = {
                           // The definition of this function is not shown.
                           &Instance_HandleInput,
                   };
@@ -113,7 +117,7 @@ Client module calls back to the browser) and ``PPB_InputEvent`` and
   // Retrieve the API for the browser-side (PPB) interfaces you will use.
   PP_EXPORT int32_t PPP_InitializeModule(PP_Module a_module_id, PPB_GetInterface get_browser) {
           ppb_instance_interface = (PPB_Instance*)(get_browser(PPB_INSTANCE_INTERFACE));
-          ppb_input_event_interface = (PPB_Instance*)(get_browser(PPB_INPUT_EVENT_INTERFACE));
+          ppb_input_event_interface = (PPB_InputEvent*)(get_browser(PPB_INPUT_EVENT_INTERFACE));
           return PP_OK;
   }
 
