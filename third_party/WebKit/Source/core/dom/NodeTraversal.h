@@ -41,10 +41,10 @@ Node* next(const ContainerNode&);
 Node* next(const ContainerNode&, const Node* stayWithin);
 
 // Like next, but skips children and starts with the next sibling.
-Node* nextSkippingChildren(const Node*);
-Node* nextSkippingChildren(const Node*, const Node* stayWithin);
-Node* nextSkippingChildren(const ContainerNode*);
-Node* nextSkippingChildren(const ContainerNode*, const Node* stayWithin);
+Node* nextSkippingChildren(const Node&);
+Node* nextSkippingChildren(const Node&, const Node* stayWithin);
+Node* nextSkippingChildren(const ContainerNode&);
+Node* nextSkippingChildren(const ContainerNode&, const Node* stayWithin);
 
 // Does a reverse pre-order traversal to find the node that comes before the current one in document order
 Node* previous(const Node&, const Node* stayWithin = 0);
@@ -53,7 +53,7 @@ Node* previous(const Node&, const Node* stayWithin = 0);
 Node* previousSkippingChildren(const Node&, const Node* stayWithin = 0);
 
 // Like next, but visits parents after their children.
-Node* nextPostOrder(const Node*, const Node* stayWithin = 0);
+Node* nextPostOrder(const Node&, const Node* stayWithin = 0);
 
 // Like previous/previousSkippingChildren, but visits parents before their children.
 Node* previousPostOrder(const Node&, const Node* stayWithin = 0);
@@ -61,8 +61,8 @@ Node* previousSkippingChildrenPostOrder(const Node&, const Node* stayWithin = 0)
 
 // Pre-order traversal including the pseudo-elements.
 Node* previousIncludingPseudo(const Node&, const Node* stayWithin = 0);
-Node* nextIncludingPseudo(const Node*, const Node* stayWithin = 0);
-Node* nextIncludingPseudoSkippingChildren(const Node*, const Node* stayWithin = 0);
+Node* nextIncludingPseudo(const Node&, const Node* stayWithin = 0);
+Node* nextIncludingPseudoSkippingChildren(const Node&, const Node* stayWithin = 0);
 
 Node* nextAncestorSibling(const Node&);
 Node* nextAncestorSibling(const Node&, const Node* stayWithin);

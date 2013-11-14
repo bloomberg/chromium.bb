@@ -60,7 +60,7 @@ PassRefPtr<Node> Text::mergeNextSiblingNodesIfPossible()
     // Remove empty text nodes.
     if (!length()) {
         // Care must be taken to get the next node before removing the current node.
-        RefPtr<Node> nextNode(NodeTraversal::nextPostOrder(this));
+        RefPtr<Node> nextNode(NodeTraversal::nextPostOrder(*this));
         remove(IGNORE_EXCEPTION);
         return nextNode.release();
     }
@@ -94,7 +94,7 @@ PassRefPtr<Node> Text::mergeNextSiblingNodesIfPossible()
         nextText->remove(IGNORE_EXCEPTION);
     }
 
-    return NodeTraversal::nextPostOrder(this);
+    return NodeTraversal::nextPostOrder(*this);
 }
 
 PassRefPtr<Text> Text::splitText(unsigned offset, ExceptionState& es)

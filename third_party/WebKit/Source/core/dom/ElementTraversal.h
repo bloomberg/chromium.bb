@@ -50,8 +50,8 @@ Element* nextSkippingChildren(const ContainerNode&, const Node* stayWithin);
 
 // Pre-order traversal including the pseudo-elements.
 Element* previousIncludingPseudo(const Node&, const Node* stayWithin = 0);
-Element* nextIncludingPseudo(const Node*, const Node* stayWithin = 0);
-Element* nextIncludingPseudoSkippingChildren(const Node*, const Node* stayWithin = 0);
+Element* nextIncludingPseudo(const Node&, const Node* stayWithin = 0);
+Element* nextIncludingPseudoSkippingChildren(const Node&, const Node* stayWithin = 0);
 
 // Utility function to traverse only the element and pseudo-element siblings of a node.
 Element* pseudoAwarePreviousSibling(const Node&);
@@ -120,19 +120,19 @@ inline Element* previousIncludingPseudo(const Node& current, const Node* stayWit
     return toElement(node);
 }
 
-inline Element* nextIncludingPseudo(const Node* current, const Node* stayWithin)
+inline Element* nextIncludingPseudo(const Node& current, const Node* stayWithin)
 {
     Node* node = NodeTraversal::nextIncludingPseudo(current, stayWithin);
     while (node && !node->isElementNode())
-        node = NodeTraversal::nextIncludingPseudo(node, stayWithin);
+        node = NodeTraversal::nextIncludingPseudo(*node, stayWithin);
     return toElement(node);
 }
 
-inline Element* nextIncludingPseudoSkippingChildren(const Node* current, const Node* stayWithin)
+inline Element* nextIncludingPseudoSkippingChildren(const Node& current, const Node* stayWithin)
 {
     Node* node = NodeTraversal::nextIncludingPseudoSkippingChildren(current, stayWithin);
     while (node && !node->isElementNode())
-        node = NodeTraversal::nextIncludingPseudoSkippingChildren(node, stayWithin);
+        node = NodeTraversal::nextIncludingPseudoSkippingChildren(*node, stayWithin);
     return toElement(node);
 }
 

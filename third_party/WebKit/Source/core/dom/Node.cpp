@@ -505,7 +505,7 @@ void Node::normalize()
         if (type == TEXT_NODE)
             node = toText(node)->mergeNextSiblingNodesIfPossible();
         else
-            node = NodeTraversal::nextPostOrder(node.get());
+            node = NodeTraversal::nextPostOrder(*node);
     }
 }
 

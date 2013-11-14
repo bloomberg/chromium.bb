@@ -126,12 +126,13 @@ static RenderListItem* nextListItem(const Node* listNode, const RenderListItem* 
         return 0;
 
     const Node* current = item ? item->node() : listNode;
-    current = ElementTraversal::nextIncludingPseudo(current, listNode);
+    ASSERT(current);
+    current = ElementTraversal::nextIncludingPseudo(*current, listNode);
 
     while (current) {
         if (isList(current)) {
             // We've found a nested, independent list: nothing to do here.
-            current = ElementTraversal::nextIncludingPseudoSkippingChildren(current, listNode);
+            current = ElementTraversal::nextIncludingPseudoSkippingChildren(*current, listNode);
             continue;
         }
 
@@ -140,7 +141,7 @@ static RenderListItem* nextListItem(const Node* listNode, const RenderListItem* 
             return toRenderListItem(renderer);
 
         // FIXME: Can this be optimized to skip the children of the elements without a renderer?
-        current = ElementTraversal::nextIncludingPseudo(current, listNode);
+        current = ElementTraversal::nextIncludingPseudo(*current, listNode);
     }
 
     return 0;
@@ -164,7 +165,7 @@ static RenderListItem* previousListItem(const Node* listNode, const RenderListIt
         // be a list item itself. We need to examine it, so we do this to counteract
         // the previousIncludingPseudo() that will be done by the loop.
         if (otherList)
-            current = ElementTraversal::nextIncludingPseudo(otherList);
+            current = ElementTraversal::nextIncludingPseudo(*otherList);
     }
     return 0;
 }

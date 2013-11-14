@@ -2047,7 +2047,7 @@ void RenderObject::styleDidChange(StyleDifference diff, const RenderStyle* oldSt
         return;
 
     if (diff == StyleDifferenceLayout || diff == StyleDifferenceSimplifiedLayout) {
-        RenderCounter::rendererStyleChanged(this, oldStyle, m_style.get());
+        RenderCounter::rendererStyleChanged(*this, oldStyle, m_style.get());
 
         // If the object already needs layout, then setNeedsLayout won't do
         // any work. But if the containing block has changed, then we may need
@@ -2580,7 +2580,7 @@ void RenderObject::willBeDestroyed()
     // this renderer had no parent at the time remove() was called.
 
     if (hasCounterNodeMap())
-        RenderCounter::destroyCounterNodes(this);
+        RenderCounter::destroyCounterNodes(*this);
 
     setAncestorLineBoxDirty(false);
 
