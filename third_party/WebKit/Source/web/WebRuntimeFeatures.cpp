@@ -359,16 +359,16 @@ bool WebRuntimeFeatures::isTouchEnabled()
     return RuntimeEnabledFeatures::touchEnabled();
 }
 
-void WebRuntimeFeatures::enableWebAnimationsCSS()
+void WebRuntimeFeatures::enableWebAnimationsCSS(bool enable)
 {
-    RuntimeEnabledFeatures::setWebAnimationsEnabled(true);
-    RuntimeEnabledFeatures::setWebAnimationsCSSEnabled(true);
+    RuntimeEnabledFeatures::setWebAnimationsEnabled(enable || RuntimeEnabledFeatures::webAnimationsSVGEnabled());
+    RuntimeEnabledFeatures::setWebAnimationsCSSEnabled(enable);
 }
 
-void WebRuntimeFeatures::enableWebAnimationsSVG()
+void WebRuntimeFeatures::enableWebAnimationsSVG(bool enable)
 {
-    RuntimeEnabledFeatures::setWebAnimationsEnabled(true);
-    RuntimeEnabledFeatures::setWebAnimationsSVGEnabled(true);
+    RuntimeEnabledFeatures::setWebAnimationsEnabled(enable || RuntimeEnabledFeatures::webAnimationsCSSEnabled());
+    RuntimeEnabledFeatures::setWebAnimationsSVGEnabled(enable);
 }
 
 void WebRuntimeFeatures::enableWebAudio(bool enable)
