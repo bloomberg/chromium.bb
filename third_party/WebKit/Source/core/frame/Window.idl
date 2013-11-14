@@ -110,7 +110,7 @@
     attribute DOMString status;
     attribute DOMString defaultStatus;
     // This attribute is an alias of defaultStatus and is necessary for legacy uses.
-    attribute DOMString defaultstatus;
+    [ImplementedAs=defaultStatus] attribute DOMString defaultstatus;
 
     // Self referential attributes
     [Replaceable, DoNotCheckSecurity=Getter] readonly attribute Window self;
