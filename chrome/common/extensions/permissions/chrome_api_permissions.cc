@@ -284,6 +284,7 @@ std::vector<APIPermissionInfo*> ChromeAPIPermissions::GetAllPermissions()
     { APIPermission::kAppCurrentWindowInternal, "app.currentWindowInternal" },
     { APIPermission::kAppRuntime, "app.runtime" },
     { APIPermission::kAppWindow, "app.window" },
+    { APIPermission::kAlwaysOnTopWindows, "alwaysOnTopWindows" },
     { APIPermission::kAudioCapture, "audioCapture",
       APIPermissionInfo::kFlagNone,
       IDS_EXTENSION_PROMPT_WARNING_AUDIO_CAPTURE,

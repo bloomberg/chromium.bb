@@ -39,6 +39,7 @@ class APIPermission {
     kActivityLogPrivate,
     kAdView,
     kAlarms,
+    kAlwaysOnTopWindows,
     kAppCurrentWindowInternal,
     kAppRuntime,
     kAppWindow,
