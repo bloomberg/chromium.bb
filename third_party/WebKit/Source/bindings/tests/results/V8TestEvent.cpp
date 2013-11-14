@@ -84,6 +84,10 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestEventTemplate(v8::Handle<
         0, 0,
         isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);
+    v8::Local<v8::ObjectTemplate> instance = desc->InstanceTemplate();
+    v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
+    UNUSED_PARAM(instance);
+    UNUSED_PARAM(proto);
 
     // Custom toString template
     desc->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());

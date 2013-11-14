@@ -92,7 +92,6 @@ def generate_interface(interface):
                for method in interface.operations]
     generate_overloads(methods)
     template_contents.update({
-        'has_non_per_context_enabled_methods': any(not method['per_context_enabled_function_name'] for method in methods),
         'has_per_context_enabled_methods': any(method['per_context_enabled_function_name'] for method in methods),
         'methods': methods,
     })

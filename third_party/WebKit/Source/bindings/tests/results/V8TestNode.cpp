@@ -176,6 +176,10 @@ static v8::Handle<v8::FunctionTemplate> ConfigureV8TestNodeTemplate(v8::Handle<v
     UNUSED_PARAM(defaultSignature);
     desc->SetCallHandler(V8TestNode::constructorCallback);
     desc->SetLength(0);
+    v8::Local<v8::ObjectTemplate> instance = desc->InstanceTemplate();
+    v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
+    UNUSED_PARAM(instance);
+    UNUSED_PARAM(proto);
 
     // Custom toString template
     desc->Set(v8::String::NewSymbol("toString"), V8PerIsolateData::current()->toStringTemplate());

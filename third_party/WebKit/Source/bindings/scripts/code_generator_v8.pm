@@ -4415,14 +4415,12 @@ END
         $code .= "    desc->SetLength(${interfaceLength});\n";
     }
 
-    if ($accessCheck or @runtimeEnabledAttributes or @normalFunctions or $hasConstants) {
         $code .=  <<END;
     v8::Local<v8::ObjectTemplate> instance = desc->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
     UNUSED_PARAM(instance);
     UNUSED_PARAM(proto);
 END
-    }
 
     if ($accessCheck) {
         $code .=  "    $accessCheck\n";

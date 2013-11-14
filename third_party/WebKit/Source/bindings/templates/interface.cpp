@@ -109,13 +109,10 @@ static v8::Handle<v8::FunctionTemplate> Configure{{v8_class_name}}Template(v8::H
         {%+ if methods %}{{v8_class_name}}Methods, WTF_ARRAY_LENGTH({{v8_class_name}}Methods){% else %}0, 0{% endif %},
         isolate, currentWorldType);
     UNUSED_PARAM(defaultSignature);
-    {% if constants or has_runtime_enabled_attributes or
-          has_non_per_context_enabled_methods %}
     v8::Local<v8::ObjectTemplate> instance = desc->InstanceTemplate();
     v8::Local<v8::ObjectTemplate> proto = desc->PrototypeTemplate();
     UNUSED_PARAM(instance);
     UNUSED_PARAM(proto);
-    {% endif %}
     {% for attribute in attributes if attribute.runtime_enabled_function_name %}
     {% filter conditional(attribute.conditional_string) %}
     if ({{attribute.runtime_enabled_function_name}}()) {
