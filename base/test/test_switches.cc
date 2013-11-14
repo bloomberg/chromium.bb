@@ -22,6 +22,9 @@ const char switches::kTestLauncherJobs[] = "test-launcher-jobs";
 // Path to test results file in our custom test launcher format.
 const char switches::kTestLauncherOutput[] = "test-launcher-output";
 
+// Maximum number of times to retry a test after failure.
+const char switches::kTestLauncherRetryLimit[] = "test-launcher-retry-limit";
+
 // Path to test results file with all the info from the test launcher.
 const char switches::kTestLauncherSummaryOutput[] =
     "test-launcher-summary-output";

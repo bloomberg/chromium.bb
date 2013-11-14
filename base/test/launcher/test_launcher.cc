@@ -340,7 +340,7 @@ TestLauncher::TestLauncher(TestLauncherDelegate* launcher_delegate,
       test_success_count_(0),
       test_broken_count_(0),
       retry_count_(0),
-      retry_limit_(3),  // TODO(phajdan.jr): Make a flag control this.
+      retry_limit_(3),
       run_result_(true),
       watchdog_timer_(FROM_HERE,
                       TimeDelta::FromSeconds(kOutputTimeoutSeconds),
@@ -638,6 +638,19 @@ bool TestLauncher::Init() {
                    &cycles_)) {
     LOG(ERROR) << "Invalid value for " << kGTestRepeatFlag;
     return false;
+  }
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kTestLauncherRetryLimit)) {
+    int retry_limit = -1;
+    if (!StringToInt(CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+                         switches::kTestLauncherRetryLimit), &retry_limit) ||
+        retry_limit < 0) {
+      LOG(ERROR) << "Invalid value for " << switches::kTestLauncherRetryLimit;
+      return false;
+    }
+
+    retry_limit_ = retry_limit;
   }
 
   // Split --gtest_filter at '-', if there is one, to separate into

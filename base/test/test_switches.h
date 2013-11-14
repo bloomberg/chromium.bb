@@ -14,6 +14,7 @@ extern const char kTestLauncherBatchLimit[];
 extern const char kTestLauncherDeveloperMode[];
 extern const char kTestLauncherJobs[];
 extern const char kTestLauncherOutput[];
+extern const char kTestLauncherRetryLimit[];
 extern const char kTestLauncherSummaryOutput[];
 extern const char kTestLauncherPrintTestStdio[];
 extern const char kTestLauncherShardIndex[];
