@@ -219,6 +219,7 @@
             'v8/custom/V8SVGPathSegCustom.cpp',
             'v8/custom/V8StyleSheetCustom.cpp',
             'v8/custom/V8TextCustom.cpp',
+            'v8/custom/V8TextTrackCueCustom.cpp',
             'v8/custom/V8TrackEventCustom.cpp',
             'v8/custom/V8TypedArrayCustom.h',
             'v8/custom/V8Uint8ArrayCustom.h',

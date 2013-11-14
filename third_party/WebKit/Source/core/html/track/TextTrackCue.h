@@ -32,10 +32,8 @@
 #ifndef TextTrackCue_h
 #define TextTrackCue_h
 
-#include "bindings/v8/ScriptWrappable.h"
 #include "core/events/EventTarget.h"
 #include "core/html/HTMLDivElement.h"
-#include "core/frame/UseCounter.h"
 #include "wtf/RefCounted.h"
 
 namespace WebCore {
@@ -71,15 +69,9 @@ protected:
 
 // ----------------------------
 
-class TextTrackCue : public RefCounted<TextTrackCue>, public ScriptWrappable, public EventTargetWithInlineData {
+class TextTrackCue : public RefCounted<TextTrackCue>, public EventTargetWithInlineData {
     REFCOUNTED_EVENT_TARGET(TextTrackCue);
 public:
-    static PassRefPtr<TextTrackCue> create(Document& document, double start, double end, const String& content)
-    {
-        UseCounter::count(document, UseCounter::TextTrackCueConstructor);
-        return adoptRef(new TextTrackCue(document, start, end, content));
-    }
-
     static const AtomicString& cueShadowPseudoId()
     {
         DEFINE_STATIC_LOCAL(const AtomicString, cue, ("cue", AtomicString::ConstructFromLiteral));
@@ -190,9 +182,10 @@ public:
     DEFINE_ATTRIBUTE_EVENT_LISTENER(enter);
     DEFINE_ATTRIBUTE_EVENT_LISTENER(exit);
 
-private:
+protected:
     TextTrackCue(Document&, double start, double end, const String& content);
 
+private:
     Document& document() const;
 
     PassRefPtr<TextTrackCueBox> displayTreeInternal();

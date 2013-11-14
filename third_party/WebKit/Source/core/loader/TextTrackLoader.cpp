@@ -170,7 +170,7 @@ void TextTrackLoader::fileFailedToParse()
     cancelLoad();
 }
 
-void TextTrackLoader::getNewCues(Vector<RefPtr<TextTrackCue> >& outputCues)
+void TextTrackLoader::getNewCues(Vector<RefPtr<VTTCue> >& outputCues)
 {
     ASSERT(m_cueParser);
     if (m_cueParser)

@@ -62,7 +62,7 @@ public:
     enum State { Idle, Loading, Finished, Failed };
     State loadState() { return m_state; }
 
-    void getNewCues(Vector<RefPtr<TextTrackCue> >& outputCues);
+    void getNewCues(Vector<RefPtr<VTTCue> >& outputCues);
     void getNewRegions(Vector<RefPtr<VTTRegion> >& outputRegions);
 private:
 

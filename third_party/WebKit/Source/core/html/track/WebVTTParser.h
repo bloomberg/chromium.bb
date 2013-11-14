@@ -36,7 +36,7 @@
 #include "core/dom/DocumentFragment.h"
 #include "core/fetch/TextResourceDecoder.h"
 #include "core/html/track/BufferedLineReader.h"
-#include "core/html/track/TextTrackCue.h"
+#include "core/html/track/VTTCue.h"
 #include "core/html/track/VTTRegion.h"
 #include "core/html/track/WebVTTTokenizer.h"
 #include "wtf/PassOwnPtr.h"
@@ -109,7 +109,7 @@ public:
     void flush();
 
     // Transfers ownership of last parsed cues to caller.
-    void getNewCues(Vector<RefPtr<TextTrackCue> >&);
+    void getNewCues(Vector<RefPtr<VTTCue> >&);
     void getNewRegions(Vector<RefPtr<VTTRegion> >&);
 
 private:
@@ -144,7 +144,7 @@ private:
 
     WebVTTParserClient* m_client;
 
-    Vector<RefPtr<TextTrackCue> > m_cuelist;
+    Vector<RefPtr<VTTCue> > m_cuelist;
 
     Vector<RefPtr<VTTRegion> > m_regionList;
 };

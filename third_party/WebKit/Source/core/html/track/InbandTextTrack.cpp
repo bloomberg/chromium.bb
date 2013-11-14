@@ -27,7 +27,7 @@
 #include "core/html/track/InbandTextTrack.h"
 
 #include "bindings/v8/ExceptionStatePlaceholder.h"
-#include "core/html/track/TextTrackCue.h"
+#include "core/html/track/VTTCue.h"
 #include "platform/Logging.h"
 #include "public/platform/WebInbandTextTrack.h"
 #include "public/platform/WebString.h"
@@ -95,7 +95,7 @@ void InbandTextTrack::trackRemoved()
 
 void InbandTextTrack::addWebVTTCue(double start, double end, const WebString& id, const WebString& content, const WebString& settings)
 {
-    RefPtr<TextTrackCue> cue = TextTrackCue::create(document(), start, end, content);
+    RefPtr<VTTCue> cue = VTTCue::create(document(), start, end, content);
     cue->setId(id);
     cue->setCueSettings(settings);
 

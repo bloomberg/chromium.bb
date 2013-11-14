@@ -97,7 +97,7 @@ void LoadableTextTrack::newCuesAvailable(TextTrackLoader* loader)
 {
     ASSERT_UNUSED(loader, m_loader == loader);
 
-    Vector<RefPtr<TextTrackCue> > newCues;
+    Vector<RefPtr<VTTCue> > newCues;
     m_loader->getNewCues(newCues);
 
     if (!m_cues)

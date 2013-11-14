@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>TextTrackCue constructor</title>
+        <script src="../../resources/testharness.js"></script>
+        <script src="../../resources/testharnessreport.js"></script>
+    </head>
+    <body>
+        <div id="log"></div>
+        <script>
+            test(function()
+            {
+                assert_not_equals(TextTrackCue, VTTCue);
+            }, "TextTrackCue and VTTCue are separate interfaces");
+            test(function()
+            {
+	        var cue = new TextTrackCue(0, 0, "");
+                assert_true(cue instanceof TextTrackCue);
+                assert_true(cue instanceof VTTCue);
+            }, "TextTrackCue constructor returns a VTTCue");
+        </script>
+    </body>
+</html>

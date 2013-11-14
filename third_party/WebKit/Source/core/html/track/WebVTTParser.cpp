@@ -120,7 +120,7 @@ WebVTTParser::WebVTTParser(WebVTTParserClient* client, Document& document)
 {
 }
 
-void WebVTTParser::getNewCues(Vector<RefPtr<TextTrackCue> >& outputCues)
+void WebVTTParser::getNewCues(Vector<RefPtr<VTTCue> >& outputCues)
 {
     outputCues = m_cuelist;
     m_cuelist.clear();
@@ -372,7 +372,7 @@ PassRefPtr<DocumentFragment> WebVTTParser::createDocumentFragmentFromCueText(Doc
 
 void WebVTTParser::createNewCue()
 {
-    RefPtr<TextTrackCue> cue = TextTrackCue::create(*m_document, m_currentStartTime, m_currentEndTime, m_currentContent.toString());
+    RefPtr<VTTCue> cue = VTTCue::create(*m_document, m_currentStartTime, m_currentEndTime, m_currentContent.toString());
     cue->setId(m_currentId);
     cue->setCueSettings(m_currentSettings);
 

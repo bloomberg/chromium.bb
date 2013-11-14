@@ -224,7 +224,6 @@ TextTrackCue::TextTrackCue(Document& document, double start, double end, const S
     , m_displayDirection(CSSValueLtr)
     , m_notifyRegion(true)
 {
-    ScriptWrappable::init(this);
 }
 
 TextTrackCue::~TextTrackCue()
