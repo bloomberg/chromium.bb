@@ -1031,6 +1031,70 @@ TEST_F(SearchProviderTest, SuggestRelevance) {
   EXPECT_TRUE(match_a3.allowed_to_be_default_match);
 }
 
+// Verifies that the default provider abandons suggested relevance scores
+// when in keyword mode.  This should happen regardless of whether the
+// keyword provider returns suggested relevance scores.
+TEST_F(SearchProviderTest, DefaultProviderNoSuggestRelevanceInKeywordMode) {
+  struct {
+    const std::string default_provider_json;
+    const std::string keyword_provider_json;
+    const std::string matches[5];
+  } cases[] = {
+    // First, try an input where the keyword provider does not deliver
+    // suggested relevance scores.
+    { "[\"k a\",[\"k adefault-query\", \"adefault.com\"],[],[],"
+      "{\"google:verbatimrelevance\":9700,"
+      "\"google:suggesttype\":[\"QUERY\", \"NAVIGATION\"],"
+      "\"google:suggestrelevance\":[9900, 9800]}]",
+      "[\"a\",[\"akeyword-query\"],[],[],{\"google:suggesttype\":[\"QUERY\"]}]",
+      { "a", "akeyword-query", "k a", "adefault.com", "k adefault-query" } },
+
+    // Now try with keyword provider suggested relevance scores.
+    { "[\"k a\",[\"k adefault-query\", \"adefault.com\"],[],[],"
+      "{\"google:verbatimrelevance\":9700,"
+      "\"google:suggesttype\":[\"QUERY\", \"NAVIGATION\"],"
+      "\"google:suggestrelevance\":[9900, 9800]}]",
+      "[\"a\",[\"akeyword-query\"],[],[],{\"google:suggesttype\":[\"QUERY\"],"
+      "\"google:verbatimrelevance\":9500,"
+      "\"google:suggestrelevance\":[9600]}]",
+      { "akeyword-query", "a", "k a", "adefault.com", "k adefault-query" } }
+  };
+
+  for (size_t i = 0; i < ARRAYSIZE_UNSAFE(cases); i++) {
+    QueryForInput(ASCIIToUTF16("k a"), false, true);
+    net::TestURLFetcher* default_fetcher =
+        test_factory_.GetFetcherByID(
+            SearchProvider::kDefaultProviderURLFetcherID);
+    ASSERT_TRUE(default_fetcher);
+    default_fetcher->set_response_code(200);
+    default_fetcher->SetResponseString(cases[i].default_provider_json);
+    default_fetcher->delegate()->OnURLFetchComplete(default_fetcher);
+    net::TestURLFetcher* keyword_fetcher =
+        test_factory_.GetFetcherByID(
+            SearchProvider::kKeywordProviderURLFetcherID);
+    ASSERT_TRUE(keyword_fetcher);
+    keyword_fetcher->set_response_code(200);
+    keyword_fetcher->SetResponseString(cases[i].keyword_provider_json);
+    keyword_fetcher->delegate()->OnURLFetchComplete(keyword_fetcher);
+    RunTillProviderDone();
+
+    const std::string description = "for input with default_provider_json=" +
+        cases[i].default_provider_json + " and keyword_provider_json=" +
+        cases[i].keyword_provider_json;
+    const ACMatches& matches = provider_->matches();
+    ASSERT_LE(matches.size(), ARRAYSIZE_UNSAFE(cases[i].matches));
+    size_t j = 0;
+    // Ensure that the returned matches equal the expectations.
+    for (; j < matches.size(); ++j) {
+      EXPECT_EQ(ASCIIToUTF16(cases[i].matches[j]), matches[j].contents) <<
+          description;
+    }
+    // Ensure that no expected matches are missing.
+    for (; j < ARRAYSIZE_UNSAFE(cases[i].matches); ++j)
+      EXPECT_EQ(std::string(), cases[i].matches[j]) << description;
+  }
+}
+
 // Verifies that suggest results with relevance scores are added
 // properly when using the default fetcher.  When adding a new test
 // case to this test, please consider adding it to the tests in
@@ -1279,6 +1343,7 @@ TEST_F(SearchProviderTest, DefaultFetcherSuggestRelevance) {
               matches[0].inline_autocompletion) << description;
     EXPECT_GE(matches[0].relevance, 1300) << description;
 
+    ASSERT_LE(matches.size(), ARRAYSIZE_UNSAFE(cases[i].matches));
     size_t j = 0;
     // Ensure that the returned matches equal the expectations.
     for (; j < matches.size(); ++j) {
@@ -1544,6 +1609,7 @@ TEST_F(SearchProviderTest, DefaultFetcherSuggestRelevanceWithReorder) {
     EXPECT_EQ(ASCIIToUTF16(cases[i].inline_autocompletion),
               matches[0].inline_autocompletion) << description;
 
+    ASSERT_LE(matches.size(), ARRAYSIZE_UNSAFE(cases[i].matches));
     size_t j = 0;
     // Ensure that the returned matches equal the expectations.
     for (; j < matches.size(); ++j) {
@@ -2020,6 +2086,7 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevance) {
               matches[0].inline_autocompletion) << description;
     EXPECT_GE(matches[0].relevance, 1300) << description;
 
+    ASSERT_LE(matches.size(), ARRAYSIZE_UNSAFE(cases[i].matches));
     size_t j = 0;
     // Ensure that the returned matches equal the expectations.
     for (; j < matches.size(); ++j) {
@@ -2495,6 +2562,7 @@ TEST_F(SearchProviderTest, KeywordFetcherSuggestRelevanceWithReorder) {
     EXPECT_EQ(ASCIIToUTF16(cases[i].inline_autocompletion),
               matches[0].inline_autocompletion) << description;
 
+    ASSERT_LE(matches.size(), ARRAYSIZE_UNSAFE(cases[i].matches));
     size_t j = 0;
     // Ensure that the returned matches equal the expectations.
     for (; j < matches.size(); ++j) {
@@ -2601,7 +2669,7 @@ TEST_F(SearchProviderTest, LocalAndRemoteRelevances) {
     const ACMatches& matches = provider_->matches();
 
     // Ensure no extra matches are present.
-    ASSERT_LE(matches.size(), 6U);
+    ASSERT_LE(matches.size(), ARRAYSIZE_UNSAFE(cases[i].matches));
 
     size_t j = 0;
     // Ensure that the returned matches equal the expectations.
@@ -2704,6 +2772,7 @@ TEST_F(SearchProviderTest, DefaultProviderSuggestRelevanceScoringUrlInput) {
 
     size_t j = 0;
     const ACMatches& matches = provider_->matches();
+    ASSERT_LE(matches.size(), ARRAYSIZE_UNSAFE(cases[i].output));
     // Ensure that the returned matches equal the expectations.
     for (; j < matches.size(); ++j) {
       EXPECT_EQ(ASCIIToUTF16(cases[i].output[j].match_contents),
@@ -2837,6 +2906,7 @@ TEST_F(SearchProviderTest,
 
     size_t j = 0;
     const ACMatches& matches = provider_->matches();
+    ASSERT_LE(matches.size(), ARRAYSIZE_UNSAFE(cases[i].output));
     // Ensure that the returned matches equal the expectations.
     for (; j < matches.size(); ++j) {
       EXPECT_EQ(ASCIIToUTF16(cases[i].output[j].match_contents),
@@ -3384,6 +3454,7 @@ TEST_F(SearchProviderTest, ParseEntitySuggestion) {
 
     SCOPED_TRACE("for input with json = " + cases[i].response_json);
 
+    ASSERT_LE(matches.size(), ARRAYSIZE_UNSAFE(cases[i].matches));
     size_t j = 0;
     // Ensure that the returned matches equal the expectations.
     for (; j < matches.size(); ++j) {
@@ -3490,6 +3561,7 @@ TEST_F(SearchProviderTest, SearchHistorySuppressesEntitySuggestion) {
     ASSERT_FALSE(matches.empty());
     SCOPED_TRACE("for case: " + base::IntToString(i));
 
+    ASSERT_LE(matches.size(), ARRAYSIZE_UNSAFE(cases[i].matches));
     size_t j = 0;
     // Ensure that the returned matches equal the expectations.
     for (; j < matches.size(); ++j) {
@@ -3634,6 +3706,7 @@ TEST_F(SearchProviderTest, PrefetchMetadataParsing) {
     ASSERT_FALSE(matches.empty());
     EXPECT_GE(matches[0].relevance, 1300);
 
+    ASSERT_LE(matches.size(), ARRAYSIZE_UNSAFE(cases[i].matches));
     // Ensure that the returned matches equal the expectations.
     for (size_t j = 0; j < matches.size(); ++j) {
       SCOPED_TRACE(description);
@@ -3718,6 +3791,7 @@ TEST_F(SearchProviderTest, XSSIGuardedJSONParsing) {
     EXPECT_GE(matches[0].relevance, 1300);
 
     SCOPED_TRACE("for case: " + base::IntToString(i));
+    ASSERT_LE(matches.size(), ARRAYSIZE_UNSAFE(cases[i].matches));
     size_t j = 0;
     // Ensure that the returned matches equal the expectations.
     for (; j < matches.size(); ++j) {

@@ -940,7 +940,7 @@ bool SearchProvider::CanSendURL(
     const GURL& suggest_url,
     const TemplateURL* template_url,
     AutocompleteInput::PageClassification page_classification,
-    Profile* profile){
+    Profile* profile) {
   if (!current_page_url.is_valid())
     return false;
 
@@ -1150,11 +1150,21 @@ bool SearchProvider::ParseSuggestResults(Value* root_val, bool is_keyword) {
     }
   }
 
-  // Apply calculated relevance scores if a valid list was not provided.
-  if (relevances == NULL) {
+  // Ignore suggested scores for non-keyword matches in keyword mode; if the
+  // server is allowed to score these, it could interfere with the user's
+  // ability to get good keyword results.
+  const bool abandon_suggested_scores =
+      !is_keyword && !providers_.keyword_provider().empty();
+  // Apply calculated relevance scores to suggestions if a valid list was
+  // not provided or we're abandoning suggested scores entirely.
+  if ((relevances == NULL) || abandon_suggested_scores) {
     ApplyCalculatedSuggestRelevance(&results->suggest_results);
     ApplyCalculatedNavigationRelevance(&results->navigation_results);
+    // If abandoning scores entirely, also abandon the verbatim score.
+    if (abandon_suggested_scores)
+      results->verbatim_relevance = -1;
   }
+
   // Keep the result lists sorted.
   const CompareScoredResults comparator = CompareScoredResults();
   std::stable_sort(results->suggest_results.begin(),
