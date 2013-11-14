@@ -56,9 +56,6 @@ class AutofillDialogViewDelegate {
 
   // State ---------------------------------------------------------------------
 
-  // Whether the sign-in link should be disabled.
-  virtual bool ShouldDisableSignInLink() const = 0;
-
   // Whether a loading animation should be shown (e.g. while signing in,
   // retreiving Wallet data, etc.).
   virtual bool ShouldShowSpinner() const = 0;

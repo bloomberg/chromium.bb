@@ -2678,7 +2678,6 @@ TEST_F(AutofillDialogControllerTest, DontGetWalletTillNecessary) {
   profile()->GetPrefs()->SetBoolean(
       ::prefs::kAutofillDialogPayWithoutWallet, true);
   ResetControllerWithFormData(DefaultFormData());
-  EXPECT_FALSE(controller()->ShouldDisableSignInLink());
   base::string16 use_wallet_text = controller()->SignInLinkText();
   EXPECT_EQ(TestAutofillDialogController::NOT_CHECKED,
             controller()->SignedInState());
@@ -2693,7 +2692,6 @@ TEST_F(AutofillDialogControllerTest, DontGetWalletTillNecessary) {
   controller()->OnDidGetWalletItems(CompleteAndValidWalletItems());
   controller()->OnPassiveSigninFailure(GoogleServiceAuthError(
       GoogleServiceAuthError::CONNECTION_FAILED));
-  EXPECT_FALSE(controller()->ShouldDisableSignInLink());
   EXPECT_NE(use_wallet_text, controller()->SignInLinkText());
 }
 

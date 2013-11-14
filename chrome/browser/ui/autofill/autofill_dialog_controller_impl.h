@@ -106,7 +106,6 @@ class AutofillDialogControllerImpl : public AutofillDialogViewDelegate,
   virtual string16 SaveLocallyText() const OVERRIDE;
   virtual string16 SaveLocallyTooltip() const OVERRIDE;
   virtual string16 LegalDocumentsText() OVERRIDE;
-  virtual bool ShouldDisableSignInLink() const OVERRIDE;
   virtual bool ShouldShowSpinner() const OVERRIDE;
   virtual bool ShouldShowSignInWebView() const OVERRIDE;
   virtual GURL SignInUrl() const OVERRIDE;
