@@ -668,7 +668,6 @@
       'webdatabase/DatabaseError.h',
       'webdatabase/DatabaseManager.cpp',
       'webdatabase/DatabaseManager.h',
-      'webdatabase/DatabaseObserver.h',
       'webdatabase/DatabaseServer.cpp',
       'webdatabase/DatabaseServer.h',
       'webdatabase/DatabaseSync.cpp',

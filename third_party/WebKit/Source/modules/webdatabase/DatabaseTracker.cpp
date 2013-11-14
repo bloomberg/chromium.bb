@@ -36,14 +36,13 @@
 #include "modules/webdatabase/DatabaseBackendBase.h"
 #include "modules/webdatabase/DatabaseClient.h"
 #include "modules/webdatabase/DatabaseContext.h"
-#include "modules/webdatabase/DatabaseObserver.h"
 #include "modules/webdatabase/QuotaTracker.h"
 #include "modules/webdatabase/sqlite/SQLiteFileSystem.h"
 #include "platform/weborigin/DatabaseIdentifier.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "platform/weborigin/SecurityOriginHash.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebPlatformDatabaseObserver.h"
+#include "public/platform/WebDatabaseObserver.h"
 #include "wtf/Assertions.h"
 #include "wtf/StdLibExtras.h"
 
@@ -55,9 +54,6 @@ static void databaseClosed(DatabaseBackendBase* database)
         blink::Platform::current()->databaseObserver()->databaseClosed(
             createDatabaseIdentifierFromSecurityOrigin(database->securityOrigin()),
             database->stringIdentifier());
-    } else {
-        // FIXME: Deprecate this.
-        DatabaseObserver::databaseClosed(database);
     }
 }
 
@@ -179,9 +175,6 @@ void DatabaseTracker::prepareToOpenDatabase(DatabaseBackendBase* database)
             database->stringIdentifier(),
             database->displayName(),
             database->estimatedSize());
-    } else {
-        // FIXME: Deprecate this.
-        DatabaseObserver::databaseOpened(database);
     }
 }
 

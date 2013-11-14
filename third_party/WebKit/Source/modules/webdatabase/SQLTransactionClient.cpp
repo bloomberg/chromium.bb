@@ -35,11 +35,10 @@
 #include "core/dom/ExecutionContextTask.h"
 #include "modules/webdatabase/DatabaseBackendBase.h"
 #include "modules/webdatabase/DatabaseContext.h"
-#include "modules/webdatabase/DatabaseObserver.h"
 #include "platform/weborigin/DatabaseIdentifier.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebPlatformDatabaseObserver.h"
+#include "public/platform/WebDatabaseObserver.h"
 
 namespace WebCore {
 
@@ -49,9 +48,6 @@ static void databaseModified(DatabaseBackendBase* database)
         blink::Platform::current()->databaseObserver()->databaseModified(
             createDatabaseIdentifierFromSecurityOrigin(database->securityOrigin()),
             database->stringIdentifier());
-    } else {
-        // FIXME: Deprecate this.
-        DatabaseObserver::databaseModified(database);
     }
 }
 

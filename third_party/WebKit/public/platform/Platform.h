@@ -58,6 +58,7 @@ class WebClipboard;
 class WebCompositorSupport;
 class WebCookieJar;
 class WebCrypto;
+class WebDatabaseObserver;
 class WebDeviceMotionListener;
 class WebDeviceOrientationListener;
 class WebDiscardableMemory;
@@ -75,7 +76,6 @@ class WebMediaStreamCenter;
 class WebMediaStreamCenterClient;
 class WebMessagePortChannel;
 class WebMimeRegistry;
-class WebPlatformDatabaseObserver;
 class WebPluginListBuilder;
 class WebPrescientNetworking;
 class WebPublicSuffixList;
@@ -97,6 +97,12 @@ class WebWorkerRunLoop;
 struct WebFloatPoint;
 struct WebLocalizedString;
 struct WebSize;
+
+// FIXME: Remove this typedef once chromium side's switch is over.
+#ifndef WebPlatformDatabaseObserverType
+#define WebPlatformDatabaseObserverType
+typedef WebDatabaseObserver WebPlatformDatabaseObserver;
+#endif
 
 class Platform {
 public:
@@ -607,7 +613,7 @@ public:
 
     // WebDatabase --------------------------------------------------------
 
-    virtual WebPlatformDatabaseObserver* databaseObserver() { return 0; }
+    virtual WebDatabaseObserver* databaseObserver() { return 0; }
 
 
 protected:

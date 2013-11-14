@@ -36,14 +36,13 @@
 #include "modules/webdatabase/DatabaseBase.h"
 #include "modules/webdatabase/DatabaseContext.h"
 #include "modules/webdatabase/DatabaseManager.h"
-#include "modules/webdatabase/DatabaseObserver.h"
 #include "modules/webdatabase/DatabaseTracker.h"
 #include "modules/webdatabase/sqlite/SQLiteStatement.h"
 #include "modules/webdatabase/sqlite/SQLiteTransaction.h"
 #include "platform/weborigin/DatabaseIdentifier.h"
 #include "platform/weborigin/SecurityOrigin.h"
 #include "public/platform/Platform.h"
-#include "public/platform/WebPlatformDatabaseObserver.h"
+#include "public/platform/WebDatabaseObserver.h"
 #include "wtf/HashMap.h"
 #include "wtf/HashSet.h"
 #include "wtf/PassRefPtr.h"
@@ -613,9 +612,6 @@ void DatabaseBackendBase::reportOpenDatabaseResult(int errorSite, int webSqlErro
             createDatabaseIdentifierFromSecurityOrigin(securityOrigin()),
             stringIdentifier(), isSyncDatabase(),
             errorSite, webSqlErrorCode, sqliteErrorCode);
-    } else {
-        // FIXME: Deprecate this.
-        DatabaseObserver::reportOpenDatabaseResult(this, errorSite, webSqlErrorCode, sqliteErrorCode);
     }
 }
 
@@ -626,9 +622,6 @@ void DatabaseBackendBase::reportChangeVersionResult(int errorSite, int webSqlErr
             createDatabaseIdentifierFromSecurityOrigin(securityOrigin()),
             stringIdentifier(), isSyncDatabase(),
             errorSite, webSqlErrorCode, sqliteErrorCode);
-    } else {
-        // FIXME: Deprecate this.
-        DatabaseObserver::reportChangeVersionResult(this, errorSite, webSqlErrorCode, sqliteErrorCode);
     }
 }
 
@@ -639,9 +632,6 @@ void DatabaseBackendBase::reportStartTransactionResult(int errorSite, int webSql
             createDatabaseIdentifierFromSecurityOrigin(securityOrigin()),
             stringIdentifier(), isSyncDatabase(),
             errorSite, webSqlErrorCode, sqliteErrorCode);
-    } else {
-        // FIXME: Deprecate this.
-        DatabaseObserver::reportStartTransactionResult(this, errorSite, webSqlErrorCode, sqliteErrorCode);
     }
 }
 
@@ -652,9 +642,6 @@ void DatabaseBackendBase::reportCommitTransactionResult(int errorSite, int webSq
             createDatabaseIdentifierFromSecurityOrigin(securityOrigin()),
             stringIdentifier(), isSyncDatabase(),
             errorSite, webSqlErrorCode, sqliteErrorCode);
-    } else {
-        // FIXME: Deprecate this.
-        DatabaseObserver::reportCommitTransactionResult(this, errorSite, webSqlErrorCode, sqliteErrorCode);
     }
 }
 
@@ -665,9 +652,6 @@ void DatabaseBackendBase::reportExecuteStatementResult(int errorSite, int webSql
             createDatabaseIdentifierFromSecurityOrigin(securityOrigin()),
             stringIdentifier(), isSyncDatabase(),
             errorSite, webSqlErrorCode, sqliteErrorCode);
-    } else {
-        // FIXME: Deprecate this.
-        DatabaseObserver::reportExecuteStatementResult(this, errorSite, webSqlErrorCode, sqliteErrorCode);
     }
 }
 
@@ -677,9 +661,6 @@ void DatabaseBackendBase::reportVacuumDatabaseResult(int sqliteErrorCode)
         blink::Platform::current()->databaseObserver()->reportVacuumDatabaseResult(
             createDatabaseIdentifierFromSecurityOrigin(securityOrigin()),
             stringIdentifier(), isSyncDatabase(), sqliteErrorCode);
-    } else {
-        // FIXME: Deprecate this.
-        DatabaseObserver::reportVacuumDatabaseResult(this, sqliteErrorCode);
     }
 }
 

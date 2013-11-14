@@ -31,58 +31,15 @@
 #ifndef WebPlatformDatabaseObserver_h
 #define WebPlatformDatabaseObserver_h
 
+#include "WebDatabaseObserver.h"
+
 namespace blink {
 
-class WebString;
-
-// FIXME: Rename this to WebDatabaseObserver once the other WebDatabaseObserver
-// interface in public/web is deprecated.
-class WebPlatformDatabaseObserver {
-public:
-    virtual void databaseOpened(
-        const WebString& databaseIdentifier,
-        const WebString& databaseName,
-        const WebString& databaseDisplayName,
-        unsigned long estimatedSize) = 0;
-    virtual void databaseModified(
-        const WebString& databaseIdentifier,
-        const WebString& databaseName) = 0;
-    virtual void databaseClosed(
-        const WebString& databaseIdentifier,
-        const WebString& databaseName) = 0;
-    virtual void reportOpenDatabaseResult(
-        const WebString& databaseIdentifier,
-        const WebString& databaseName,
-        bool isSyncDatabase,
-        int errorSite, int webSqlErrorCode, int sqliteErrorCode) { }
-    virtual void reportChangeVersionResult(
-        const WebString& databaseIdentifier,
-        const WebString& databaseName,
-        bool isSyncDatabase,
-        int errorSite, int webSqlErrorCode, int sqliteErrorCode) { }
-    virtual void reportStartTransactionResult(
-        const WebString& databaseIdentifier,
-        const WebString& databaseName,
-        bool isSyncDatabase,
-        int errorSite, int webSqlErrorCode, int sqliteErrorCode) { }
-    virtual void reportCommitTransactionResult(
-        const WebString& databaseIdentifier,
-        const WebString& databaseName,
-        bool isSyncDatabase,
-        int errorSite, int webSqlErrorCode, int sqliteErrorCode) { }
-    virtual void reportExecuteStatementResult(
-        const WebString& databaseIdentifier,
-        const WebString& databaseName,
-        bool isSyncDatabase,
-        int errorSite, int webSqlErrorCode, int sqliteErrorCode) { }
-    virtual void reportVacuumDatabaseResult(
-        const WebString& databaseIdentifier,
-        const WebString& databaseName,
-        bool isSyncDatabase, int sqliteErrorCode) { }
-
-protected:
-    ~WebPlatformDatabaseObserver() { }
-};
+// FIXME: Remove this typedef once chromium side's switch is over.
+#ifndef WebPlatformDatabaseObserverType
+#define WebPlatformDatabaseObserverType
+typedef WebDatabaseObserver WebPlatformDatabaseObserver;
+#endif
 
 } // namespace blink
 

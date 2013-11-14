@@ -34,7 +34,6 @@
 #include "public/platform/WebString.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefPtr.h"
-#include "WebDatabaseObserver.h"
 #include "modules/webdatabase/DatabaseBackendBase.h"
 #include "modules/webdatabase/DatabaseManager.h"
 #include "modules/webdatabase/QuotaTracker.h"
@@ -43,8 +42,6 @@
 using namespace WebCore;
 
 namespace blink {
-
-static WebDatabaseObserver* databaseObserver = 0;
 
 WebString WebDatabase::name() const
 {
@@ -74,16 +71,6 @@ bool WebDatabase::isSyncDatabase() const
 {
     ASSERT(m_database);
     return m_database->isSyncDatabase();
-}
-
-void WebDatabase::setObserver(WebDatabaseObserver* observer)
-{
-    databaseObserver = observer;
-}
-
-WebDatabaseObserver* WebDatabase::observer()
-{
-    return databaseObserver;
 }
 
 void WebDatabase::updateDatabaseSize(const WebString& originIdentifier, const WebString& name, long long size)
