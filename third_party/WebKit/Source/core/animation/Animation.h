@@ -62,7 +62,7 @@ protected:
     virtual bool updateChildrenAndEffects() const OVERRIDE FINAL;
     virtual void didAttach() OVERRIDE FINAL;
     virtual void willDetach() OVERRIDE FINAL;
-    virtual double calculateTimeToEffectChange(double inheritedTime, double activeTime, Phase) const OVERRIDE FINAL;
+    virtual double calculateTimeToEffectChange(double inheritedTime, double timeToNextIteration) const OVERRIDE FINAL;
 
 private:
     Animation(PassRefPtr<Element>, PassRefPtr<AnimationEffect>, const Timing&, Priority, PassOwnPtr<EventDelegate>);

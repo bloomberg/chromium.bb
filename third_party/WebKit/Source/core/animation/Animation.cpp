@@ -112,11 +112,13 @@ bool Animation::updateChildrenAndEffects() const
     return false;
 }
 
-double Animation::calculateTimeToEffectChange(double inheritedTime, double activeTime, Phase phase) const
+double Animation::calculateTimeToEffectChange(double localTime, double) const
 {
-    switch (phase) {
+    const double activeStartTime = startTime() + specified().startDelay;
+
+    switch (phase()) {
     case PhaseBefore:
-        return activeTime - inheritedTime;
+        return activeStartTime - localTime;
     case PhaseActive:
         return 0;
     case PhaseAfter:

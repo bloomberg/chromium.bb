@@ -65,6 +65,7 @@ bool TimedItem::updateInheritedTime(double inheritedTime) const
 
     double currentIteration = nullValue();
     double timeFraction = nullValue();
+    double timeToNextIteration = nullValue();
     ASSERT(iterationDuration >= 0);
     if (iterationDuration) {
         const double startOffset = m_specified.iterationStart * iterationDuration;
@@ -73,6 +74,7 @@ bool TimedItem::updateInheritedTime(double inheritedTime) const
 
         currentIteration = calculateCurrentIteration(iterationDuration, iterationTime, scaledActiveTime, m_specified);
         timeFraction = calculateTransformedTime(currentIteration, iterationDuration, iterationTime, m_specified) / iterationDuration;
+        timeToNextIteration = (iterationDuration - iterationTime) / abs(m_specified.playbackRate);
     } else {
         const double iterationDuration = 1;
         const double repeatedDuration = iterationDuration * m_specified.iterationCount;
@@ -108,7 +110,10 @@ bool TimedItem::updateInheritedTime(double inheritedTime) const
     // FIXME: This probably shouldn't be recursive.
     bool didTriggerStyleRecalc = updateChildrenAndEffects();
 
-    m_calculated.timeToEffectChange = calculateTimeToEffectChange(localTime, m_startTime + m_specified.startDelay, m_calculated.phase);
+    if (activeDuration - activeTime < timeToNextIteration)
+        timeToNextIteration = nullValue();
+
+    m_calculated.timeToEffectChange = calculateTimeToEffectChange(localTime, timeToNextIteration);
     return didTriggerStyleRecalc;
 }
 

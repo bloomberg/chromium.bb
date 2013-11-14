@@ -99,7 +99,7 @@ private:
     // Returns whether style recalc was triggered.
     virtual bool updateChildrenAndEffects() const = 0;
     virtual double intrinsicIterationDuration() const { return 0; };
-    virtual double calculateTimeToEffectChange(double inheritedTime, double activeTime, Phase) const = 0;
+    virtual double calculateTimeToEffectChange(double localTime, double timeToNextIteration) const = 0;
     virtual void didAttach() { };
     virtual void willDetach() { };
 

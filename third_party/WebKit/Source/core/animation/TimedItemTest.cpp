@@ -75,10 +75,29 @@ public:
         TimedItem::updateInheritedTime(time);
     }
 
-    bool updateChildrenAndEffects() const FINAL OVERRIDE { return false; }
+    bool updateChildrenAndEffects() const OVERRIDE { return false; }
     void willDetach() { }
     TestTimedItemEventDelegate* eventDelegate() { return m_eventDelegate; }
-    double calculateTimeToEffectChange(double inheritedTime, double activeTime, Phase) const FINAL OVERRIDE { return -1; }
+    double calculateTimeToEffectChange(double localTime, double timeToNextIteration) const OVERRIDE
+    {
+        m_localTime = localTime;
+        m_timeToNextIteration = timeToNextIteration;
+        return -1;
+    }
+
+    double takeLocalTime()
+    {
+        const double result = m_localTime;
+        m_localTime = nullValue();
+        return result;
+    }
+
+    double takeTimeToNextIteration()
+    {
+        const double result = m_timeToNextIteration;
+        m_timeToNextIteration = nullValue();
+        return result;
+    }
 
 private:
     TestTimedItem(const Timing& specified, TestTimedItemEventDelegate* eventDelegate)
@@ -88,6 +107,8 @@ private:
     }
 
     TestTimedItemEventDelegate* m_eventDelegate;
+    mutable double m_localTime;
+    mutable double m_timeToNextIteration;
 };
 
 TEST(CoreAnimationTimedItemTest, Sanity)
@@ -574,4 +595,43 @@ TEST(CoreAnimationTimedItemTest, Events)
     timedItem->updateInheritedTime(3.6);
     ASSERT_FALSE(timedItem->eventDelegate()->eventTriggered());
 }
+
+TEST(CoreAnimationTimedItemTest, TimeToEffectChange)
+{
+    Timing timing;
+    timing.hasIterationDuration = true;
+    timing.iterationDuration = 1;
+    timing.iterationStart = 0.2;
+    timing.iterationCount = 2.5;
+    timing.startDelay = 1;
+    timing.direction = Timing::PlaybackDirectionAlternate;
+    RefPtr<TestTimedItem> timedItem = TestTimedItem::create(timing);
+
+    timedItem->updateInheritedTime(0);
+    EXPECT_EQ(0, timedItem->takeLocalTime());
+    EXPECT_TRUE(isNull(timedItem->takeTimeToNextIteration()));
+
+    // Normal iteration.
+    timedItem->updateInheritedTime(1.75);
+    EXPECT_EQ(1.75, timedItem->takeLocalTime());
+    EXPECT_NEAR(0.05, timedItem->takeTimeToNextIteration(), 0.000000000000001);
+
+    // Reverse iteration.
+    timedItem->updateInheritedTime(2.75);
+    EXPECT_EQ(2.75, timedItem->takeLocalTime());
+    EXPECT_NEAR(0.05, timedItem->takeTimeToNextIteration(), 0.000000000000001);
+
+    // Item ends before iteration finishes.
+    timedItem->updateInheritedTime(3.4);
+    ASSERT_EQ(TimedItem::PhaseActive, timedItem->phase());
+    EXPECT_EQ(3.4, timedItem->takeLocalTime());
+    EXPECT_TRUE(isNull(timedItem->takeTimeToNextIteration()));
+
+    // Item has finished.
+    timedItem->updateInheritedTime(3.5);
+    ASSERT_EQ(TimedItem::PhaseAfter, timedItem->phase());
+    EXPECT_EQ(3.5, timedItem->takeLocalTime());
+    EXPECT_TRUE(isNull(timedItem->takeTimeToNextIteration()));
+}
+
 }
