@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_PASSWORD_PASSWORD_UI_VIEW_H_
-#define CHROME_BROWSER_UI_PASSWORD_PASSWORD_UI_VIEW_H_
+#ifndef CHROME_BROWSER_UI_PASSWORDS_PASSWORD_UI_VIEW_H_
+#define CHROME_BROWSER_UI_PASSWORDS_PASSWORD_UI_VIEW_H_
 
 #include "base/memory/scoped_vector.h"
 
@@ -12,8 +12,6 @@ struct PasswordForm;
 }
 
 class Profile;
-
-namespace passwords_ui {
 
 // An interface for a passwords UI View. A UI view is responsible for
 // displaying passwords in the UI and routing UI commands to the
@@ -43,6 +41,4 @@ class PasswordUIView {
       const ScopedVector<autofill::PasswordForm>& password_exception_list) = 0;
 };
 
-}  // namespace passwords_ui
-
-#endif  // CHROME_BROWSER_UI_PASSWORD_PASSWORD_UI_VIEW_H_
+#endif  // CHROME_BROWSER_UI_PASSWORDS_PASSWORD_UI_VIEW_H_

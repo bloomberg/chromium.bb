@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/options/password_manager_presenter.h"
+#include "chrome/browser/ui/passwords/password_manager_presenter.h"
 
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -11,17 +11,15 @@
 #include "base/values.h"
 #include "chrome/browser/password_manager/password_manager_util.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
-#include "chrome/browser/ui/password/password_ui_view.h"
+#include "chrome/browser/ui/passwords/password_ui_view.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "components/autofill/core/common/password_form.h"
 #include "content/public/browser/user_metrics.h"
 
-namespace options {
-
 PasswordManagerPresenter::PasswordManagerPresenter(
-    passwords_ui::PasswordUIView* password_view)
+    PasswordUIView* password_view)
     : populater_(this),
       exception_populater_(this),
       password_view_(password_view) {
@@ -74,17 +72,17 @@ void PasswordManagerPresenter::UpdatePasswordLists() {
   exception_populater_.Populate();
 }
 
-void PasswordManagerPresenter::HandleRemoveSavedPassword(size_t index) {
+void PasswordManagerPresenter::RemoveSavedPassword(size_t index) {
   DCHECK_LT(index, password_list_.size());
   PasswordStore* store = GetPasswordStore();
   if (!store)
     return;
   store->RemoveLogin(*password_list_[index]);
   content::RecordAction(
-      content::UserMetricsAction("PasswordManager_HandleRemoveSavedPassword"));
+      content::UserMetricsAction("PasswordManager_RemoveSavedPassword"));
 }
 
-void PasswordManagerPresenter::HandleRemovePasswordException(size_t index) {
+void PasswordManagerPresenter::RemovePasswordException(size_t index) {
   DCHECK_LT(index, password_exception_list_.size());
   PasswordStore* store = GetPasswordStore();
   if (!store)
@@ -92,10 +90,10 @@ void PasswordManagerPresenter::HandleRemovePasswordException(size_t index) {
   store->RemoveLogin(*password_exception_list_[index]);
   content::RecordAction(
       content::UserMetricsAction(
-          "PasswordManager_HandleRemovePasswordException"));
+          "PasswordManager_RemovePasswordException"));
 }
 
-void PasswordManagerPresenter::HandleRequestShowPassword(size_t index) {
+void PasswordManagerPresenter::RequestShowPassword(size_t index) {
   DCHECK_LT(index, password_list_.size());
   if (IsAuthenticationRequired()) {
     if (password_manager_util::AuthenticateUser())
@@ -222,5 +220,3 @@ void PasswordManagerPresenter::PasswordExceptionListPopulater::
   // PasswordStore::GetAutofillableLogins and PasswordStore::GetBlacklistLogins.
   NOTIMPLEMENTED();
 }
-
-}  // namespace options

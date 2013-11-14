@@ -5,8 +5,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/password_manager/mock_password_store.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
-#include "chrome/browser/ui/password/password_ui_view.h"
-#include "chrome/browser/ui/webui/options/password_manager_presenter.h"
+#include "chrome/browser/ui/passwords/password_manager_presenter.h"
+#include "chrome/browser/ui/passwords/password_ui_view.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -15,7 +15,7 @@ using base::ASCIIToUTF16;
 using testing::Eq;
 using testing::Property;
 
-class MockPasswordUIView : public passwords_ui::PasswordUIView {
+class MockPasswordUIView : public PasswordUIView {
  public:
   explicit MockPasswordUIView(Profile* profile)
       : profile_(profile), password_manager_presenter_(this) {
@@ -28,20 +28,18 @@ class MockPasswordUIView : public passwords_ui::PasswordUIView {
                void(const ScopedVector<autofill::PasswordForm>&, bool));
   MOCK_METHOD1(SetPasswordExceptionList,
                void(const ScopedVector<autofill::PasswordForm>&));
-  options::PasswordManagerPresenter* GetPasswordManagerPresenter() {
+  PasswordManagerPresenter* GetPasswordManagerPresenter() {
     return &password_manager_presenter_;
   }
 
  private:
   Profile* profile_;
-  options::PasswordManagerPresenter password_manager_presenter_;
+  PasswordManagerPresenter password_manager_presenter_;
 
   DISALLOW_COPY_AND_ASSIGN(MockPasswordUIView);
 };
 
 Profile* MockPasswordUIView::GetProfile() { return profile_; }
-
-namespace options {
 
 class PasswordManagerPresenterTest : public testing::Test {
  protected:
@@ -137,4 +135,3 @@ TEST_F(PasswordManagerPresenterTest, UIControllerIsCalled) {
 }
 
 }  // namespace
-}  // namespace options

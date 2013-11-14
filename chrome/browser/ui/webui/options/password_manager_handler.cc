@@ -90,8 +90,7 @@ void PasswordManagerHandler::HandleRemoveSavedPassword(const ListValue* args) {
   std::string string_value = UTF16ToUTF8(ExtractStringValue(args));
   int index;
   if (base::StringToInt(string_value, &index) && index >= 0) {
-    password_manager_presenter_.HandleRemoveSavedPassword(
-        static_cast<size_t>(index));
+    password_manager_presenter_.RemoveSavedPassword(static_cast<size_t>(index));
   }
 }
 
@@ -100,7 +99,7 @@ void PasswordManagerHandler::HandleRemovePasswordException(
   std::string string_value = UTF16ToUTF8(ExtractStringValue(args));
   int index;
   if (base::StringToInt(string_value, &index) && index >= 0) {
-    password_manager_presenter_.HandleRemovePasswordException(
+    password_manager_presenter_.RemovePasswordException(
         static_cast<size_t>(index));
   }
 }
@@ -110,8 +109,7 @@ void PasswordManagerHandler::HandleRequestShowPassword(const ListValue* args) {
   if (!ExtractIntegerValue(args, &index))
     NOTREACHED();
 
-  password_manager_presenter_.HandleRequestShowPassword(
-      static_cast<size_t>(index));
+  password_manager_presenter_.RequestShowPassword(static_cast<size_t>(index));
 }
 
 void PasswordManagerHandler::ShowPassword(size_t index,

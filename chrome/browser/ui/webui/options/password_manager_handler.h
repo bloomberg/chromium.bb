@@ -9,15 +9,15 @@
 #include <vector>
 
 #include "base/prefs/pref_member.h"
-#include "chrome/browser/ui/password/password_ui_view.h"
+#include "chrome/browser/ui/passwords/password_manager_presenter.h"
+#include "chrome/browser/ui/passwords/password_ui_view.h"
 #include "chrome/browser/ui/webui/options/options_ui.h"
-#include "chrome/browser/ui/webui/options/password_manager_presenter.h"
 
 namespace options {
 
 // The WebUI based PasswordUIView. Displays passwords in the web ui.
 class PasswordManagerHandler : public OptionsPageUIHandler,
-                               public passwords_ui::PasswordUIView {
+                               public PasswordUIView {
  public:
   PasswordManagerHandler();
   virtual ~PasswordManagerHandler();
@@ -59,7 +59,7 @@ class PasswordManagerHandler : public OptionsPageUIHandler,
   std::string languages_;
 
   // The PasswordManagerPresenter object owned by the this view.
-  options::PasswordManagerPresenter password_manager_presenter_;
+  PasswordManagerPresenter password_manager_presenter_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordManagerHandler);
 };
