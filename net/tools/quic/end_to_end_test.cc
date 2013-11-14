@@ -533,6 +533,27 @@ TEST_P(EndToEndTest, DISABLED_LargePostFEC) {
   EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));
 }
 
+TEST_P(EndToEndTest, LargePostLargeBuffer) {
+  ASSERT_TRUE(Initialize());
+  SetPacketSendDelay(QuicTime::Delta::FromMicroseconds(1));
+  // 1Mbit per second with a 128k buffer from server to client.  Wireless
+  // clients commonly have larger buffers, but our max CWND is 200.
+  server_writer_->set_max_bandwidth_and_buffer_size(
+      QuicBandwidth::FromBytesPerSecond(256 * 1024), 128 * 1024);
+
+  client_->client()->WaitForCryptoHandshakeConfirmed();
+
+  // 1 Mb body.
+  string body;
+  GenerateBody(&body, 1024 * 1024);
+
+  HTTPMessage request(HttpConstants::HTTP_1_1,
+                      HttpConstants::POST, "/foo");
+  request.AddBody(body, true);
+
+  EXPECT_EQ(kFooResponseBody, client_->SendCustomSynchronousRequest(request));
+}
+
 // Enable once FLAGS_quic_allow_oversized_packets_for_test is added.
 TEST_P(EndToEndTest, DISABLED_PacketTooLarge) {
   //FLAGS_quic_allow_oversized_packets_for_test = true;

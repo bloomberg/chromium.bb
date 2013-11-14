@@ -84,7 +84,8 @@ void MovePackets(PacketSavingConnection* source_conn,
     for (vector<QuicStreamFrame>::const_iterator
          i =  framer.stream_frames().begin();
          i != framer.stream_frames().end(); ++i) {
-      ASSERT_TRUE(crypto_framer.ProcessInput(i->data));
+      scoped_ptr<string> frame_data(i->GetDataAsString());
+      ASSERT_TRUE(crypto_framer.ProcessInput(*frame_data));
       ASSERT_FALSE(crypto_visitor.error());
     }
   }

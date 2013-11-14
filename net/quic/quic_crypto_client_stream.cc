@@ -171,6 +171,22 @@ void QuicCryptoClientStream::DoHandshakeLoop(
         if (!cached->IsComplete(session()->connection()->clock()->WallNow())) {
           crypto_config_->FillInchoateClientHello(
               server_hostname_, cached, &crypto_negotiated_params_, &out);
+          // Pad the inchoate client hello to fill up a packet.
+          const size_t kFramingOverhead = 50;  // A rough estimate.
+          const size_t max_packet_size =
+              session()->connection()->options()->max_packet_length;
+          if (max_packet_size <= kFramingOverhead) {
+            DLOG(DFATAL) << "max_packet_length (" << max_packet_size
+                         << ") has no room for framing overhead.";
+            CloseConnection(QUIC_INTERNAL_ERROR);
+            return;
+          }
+          if (kClientHelloMinimumSize > max_packet_size - kFramingOverhead) {
+            DLOG(DFATAL) << "Client hello won't fit in a single packet.";
+            CloseConnection(QUIC_INTERNAL_ERROR);
+            return;
+          }
+          out.set_minimum_size(max_packet_size - kFramingOverhead);
           next_state_ = STATE_RECV_REJ;
           DVLOG(1) << "Client: Sending " << out.DebugString();
           SendHandshakeMessage(out);

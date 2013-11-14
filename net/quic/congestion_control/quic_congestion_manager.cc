@@ -138,7 +138,13 @@ void QuicCongestionManager::OnIncomingAckFrame(const QuicAckFrame& frame,
     }
   }
   if (new_packet_loss_reported) {
-    send_algorithm_->OnIncomingLoss(ack_receive_time);
+    // TODO(ianswett): OnIncomingLoss is also called from TCPCubicSender when
+    // an FEC packet is lost, but FEC loss information should be shared among
+    // congestion managers.  Additionally, if it's expected the FEC packet may
+    // repair the loss, it should be recorded as a loss to the congestion
+    // manager, but not retransmitted until it's known whether the FEC packet
+    // arrived.
+    send_algorithm_->OnIncomingLoss(largest_missing_, ack_receive_time);
   }
 }
 

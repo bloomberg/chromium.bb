@@ -73,21 +73,6 @@ uint64 SimpleRandom::RandUint64() {
   return seed_;
 }
 
-MockQuicSessionOwner::MockQuicSessionOwner() {
-}
-
-MockQuicSessionOwner::~MockQuicSessionOwner() {
-}
-
-bool TestDecompressorVisitor::OnDecompressedData(StringPiece data) {
-  data.AppendToString(&data_);
-  return true;
-}
-
-void TestDecompressorVisitor::OnDecompressionError() {
-  error_ = true;
-}
-
 TestSession::TestSession(QuicConnection* connection,
                          const QuicConfig& config,
                          bool is_server)
@@ -105,16 +90,31 @@ QuicCryptoStream* TestSession::GetCryptoStream() {
   return crypto_stream_;
 }
 
-MockAckNotifierDelegate::MockAckNotifierDelegate() {
-}
-
-MockAckNotifierDelegate::~MockAckNotifierDelegate() {
-}
-
 MockPacketWriter::MockPacketWriter() {
 }
 
 MockPacketWriter::~MockPacketWriter() {
+}
+
+MockQuicSessionOwner::MockQuicSessionOwner() {
+}
+
+MockQuicSessionOwner::~MockQuicSessionOwner() {
+}
+
+bool TestDecompressorVisitor::OnDecompressedData(StringPiece data) {
+  data.AppendToString(&data_);
+  return true;
+}
+
+void TestDecompressorVisitor::OnDecompressionError() {
+  error_ = true;
+}
+
+MockAckNotifierDelegate::MockAckNotifierDelegate() {
+}
+
+MockAckNotifierDelegate::~MockAckNotifierDelegate() {
 }
 
 }  // namespace test

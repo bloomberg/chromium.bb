@@ -59,7 +59,8 @@ TEST_F(QuicSpdyServerStreamTest, InvalidHeadersWithFin) {
     0x54, 0x54, 0x50, 0x2f,  // TTP/
     0x31, 0x2e, 0x31,        // 1.1
   };
-  QuicStreamFrame frame(1, true, 0, StringPiece(arr, arraysize(arr)));
+  QuicStreamFrame frame(
+      1, true, 0, MakeIOVector(StringPiece(arr, arraysize(arr))));
   // Verify that we don't crash when we get a invalid headers in stream frame.
   stream_.OnStreamFrame(frame);
 }

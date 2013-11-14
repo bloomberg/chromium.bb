@@ -76,7 +76,8 @@ class QuicPacketCreatorTest : public ::testing::TestWithParam<bool> {
     EXPECT_EQ(STREAM_FRAME, frame.type);
     ASSERT_TRUE(frame.stream_frame);
     EXPECT_EQ(stream_id, frame.stream_frame->stream_id);
-    EXPECT_EQ(data, frame.stream_frame->data);
+    scoped_ptr<string> frame_data(frame.stream_frame->GetDataAsString());
+    EXPECT_EQ(data, *frame_data);
     EXPECT_EQ(offset, frame.stream_frame->offset);
     EXPECT_EQ(fin, frame.stream_frame->fin);
   }
@@ -120,10 +121,8 @@ class QuicPacketCreatorTest : public ::testing::TestWithParam<bool> {
 
 TEST_F(QuicPacketCreatorTest, SerializeFrames) {
   frames_.push_back(QuicFrame(new QuicAckFrame(0u, QuicTime::Zero(), 0u)));
-  frames_.push_back(QuicFrame(new QuicStreamFrame(
-      0u, false, 0u, StringPiece(""))));
-  frames_.push_back(QuicFrame(new QuicStreamFrame(
-      0u, true, 0u, StringPiece(""))));
+  frames_.push_back(QuicFrame(new QuicStreamFrame(0u, false, 0u, IOVector())));
+  frames_.push_back(QuicFrame(new QuicStreamFrame(0u, true, 0u, IOVector())));
   SerializedPacket serialized = creator_.SerializeAllFrames(frames_);
   delete frames_[0].ack_frame;
   delete frames_[1].stream_frame;
@@ -146,8 +145,7 @@ TEST_F(QuicPacketCreatorTest, SerializeWithFEC) {
   creator_.options()->max_packets_per_fec_group = 6;
   ASSERT_FALSE(creator_.ShouldSendFec(false));
 
-  frames_.push_back(QuicFrame(new QuicStreamFrame(
-      0u, false, 0u, StringPiece(""))));
+  frames_.push_back(QuicFrame(new QuicStreamFrame(0u, false, 0u, IOVector())));
   SerializedPacket serialized = creator_.SerializeAllFrames(frames_);
   delete frames_[0].stream_frame;
 
@@ -270,8 +268,7 @@ TEST_F(QuicPacketCreatorTest, ReserializeFramesWithSequenceNumberLength) {
       PACKET_4BYTE_SEQUENCE_NUMBER;
   QuicPacketCreatorPeer::SetSequenceNumberLength(&creator_,
                                                  PACKET_2BYTE_SEQUENCE_NUMBER);
-  frames_.push_back(QuicFrame(new QuicStreamFrame(
-      0u, false, 0u, StringPiece(""))));
+  frames_.push_back(QuicFrame(new QuicStreamFrame(0u, false, 0u, IOVector())));
   SerializedPacket serialized =
       creator_.ReserializeAllFrames(frames_, PACKET_1BYTE_SEQUENCE_NUMBER);
   EXPECT_EQ(PACKET_4BYTE_SEQUENCE_NUMBER,
@@ -342,7 +339,8 @@ TEST_F(QuicPacketCreatorTest, SerializeConnectionClose) {
 
 TEST_F(QuicPacketCreatorTest, CreateStreamFrame) {
   QuicFrame frame;
-  size_t consumed = creator_.CreateStreamFrame(1u, "test", 0u, false, &frame);
+  size_t consumed = creator_.CreateStreamFrame(1u, MakeIOVector("test"), 0u,
+                                               false, &frame);
   EXPECT_EQ(4u, consumed);
   CheckStreamFrame(frame, 1u, "test", 0u, false);
   delete frame.stream_frame;
@@ -350,7 +348,8 @@ TEST_F(QuicPacketCreatorTest, CreateStreamFrame) {
 
 TEST_F(QuicPacketCreatorTest, CreateStreamFrameFin) {
   QuicFrame frame;
-  size_t consumed = creator_.CreateStreamFrame(1u, "test", 10u, true, &frame);
+  size_t consumed = creator_.CreateStreamFrame(1u, MakeIOVector("test"), 10u,
+                                               true, &frame);
   EXPECT_EQ(4u, consumed);
   CheckStreamFrame(frame, 1u, "test", 10u, true);
   delete frame.stream_frame;
@@ -358,7 +357,8 @@ TEST_F(QuicPacketCreatorTest, CreateStreamFrameFin) {
 
 TEST_F(QuicPacketCreatorTest, CreateStreamFrameFinOnly) {
   QuicFrame frame;
-  size_t consumed = creator_.CreateStreamFrame(1u, "", 0u, true, &frame);
+  size_t consumed = creator_.CreateStreamFrame(1u, IOVector(), 0u, true,
+                                               &frame);
   EXPECT_EQ(0u, consumed);
   CheckStreamFrame(frame, 1u, string(), 0u, true);
   delete frame.stream_frame;
@@ -374,7 +374,7 @@ TEST_F(QuicPacketCreatorTest, CreateAllFreeBytesForStreamFrames) {
     if (should_have_room) {
       QuicFrame frame;
       size_t bytes_consumed = creator_.CreateStreamFrame(
-          kStreamId, "testdata", kOffset, false, &frame);
+          kStreamId, MakeIOVector("testdata"), kOffset, false, &frame);
       EXPECT_LT(0u, bytes_consumed);
       ASSERT_TRUE(creator_.AddSavedFrame(frame));
       SerializedPacket serialized_packet = creator_.SerializePacket();
@@ -396,7 +396,7 @@ TEST_F(QuicPacketCreatorTest, StreamFrameConsumption) {
     size_t bytes_free = delta > 0 ? 0 : 0 - delta;
     QuicFrame frame;
     size_t bytes_consumed = creator_.CreateStreamFrame(
-        kStreamId, data, kOffset, false, &frame);
+        kStreamId, MakeIOVector(data), kOffset, false, &frame);
     EXPECT_EQ(capacity - bytes_free, bytes_consumed);
 
     ASSERT_TRUE(creator_.AddSavedFrame(frame));
@@ -426,7 +426,7 @@ TEST_F(QuicPacketCreatorTest, CryptoStreamFramePacketPadding) {
 
     QuicFrame frame;
     size_t bytes_consumed = creator_.CreateStreamFrame(
-        kStreamId, data, kOffset, false, &frame);
+        kStreamId, MakeIOVector(data), kOffset, false, &frame);
     EXPECT_LT(0u, bytes_consumed);
     ASSERT_TRUE(creator_.AddSavedFrame(frame));
     SerializedPacket serialized_packet = creator_.SerializePacket();
@@ -462,7 +462,7 @@ TEST_F(QuicPacketCreatorTest, NonCryptoStreamFramePacketNonPadding) {
 
     QuicFrame frame;
     size_t bytes_consumed = creator_.CreateStreamFrame(
-        kStreamId + 2, data, kOffset, false, &frame);
+        kStreamId + 2, MakeIOVector(data), kOffset, false, &frame);
     EXPECT_LT(0u, bytes_consumed);
     ASSERT_TRUE(creator_.AddSavedFrame(frame));
     SerializedPacket serialized_packet = creator_.SerializePacket();
@@ -549,8 +549,7 @@ TEST_P(QuicPacketCreatorTest, SerializeFrame) {
   if (!GetParam()) {
     creator_.StopSendingVersion();
   }
-  frames_.push_back(QuicFrame(new QuicStreamFrame(
-      0u, false, 0u, StringPiece(""))));
+  frames_.push_back(QuicFrame(new QuicStreamFrame(0u, false, 0u, IOVector())));
   SerializedPacket serialized = creator_.SerializeAllFrames(frames_);
   delete frames_[0].stream_frame;
 
@@ -581,7 +580,7 @@ TEST_P(QuicPacketCreatorTest, CreateStreamFrameTooLarge) {
   QuicFrame frame;
   const string too_long_payload(payload_length * 2, 'a');
   size_t consumed = creator_.CreateStreamFrame(
-      1u, too_long_payload, 0u, true, &frame);
+      1u, MakeIOVector(too_long_payload), 0u, true, &frame);
   EXPECT_EQ(payload_length, consumed);
   const string payload(payload_length, 'a');
   CheckStreamFrame(frame, 1u, payload, 0u, false);
@@ -613,7 +612,8 @@ TEST_P(QuicPacketCreatorTest, AddFrameAndSerialize) {
   EXPECT_TRUE(creator_.HasPendingFrames());
 
   QuicFrame frame;
-  size_t consumed = creator_.CreateStreamFrame(1u, "test", 0u, false, &frame);
+  size_t consumed = creator_.CreateStreamFrame(
+      1u, MakeIOVector("test"), 0u, false, &frame);
   EXPECT_EQ(4u, consumed);
   ASSERT_TRUE(frame.stream_frame);
   EXPECT_TRUE(creator_.AddSavedFrame(frame));

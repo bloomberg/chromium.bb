@@ -191,7 +191,7 @@ class QuicNetworkTransactionTest : public PlatformTest {
       QuicStreamOffset offset,
       base::StringPiece data) {
     InitializeHeader(sequence_number, should_include_version);
-    QuicStreamFrame frame(stream_id, fin, offset, data);
+    QuicStreamFrame frame(stream_id, fin, offset, MakeIOVector(data));
     return ConstructPacket(header_, QuicFrame(&frame)).release();
   }
 

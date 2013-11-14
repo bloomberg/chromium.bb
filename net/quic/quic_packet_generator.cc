@@ -68,7 +68,7 @@ void QuicPacketGenerator::AddControlFrame(const QuicFrame& frame) {
 }
 
 QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
-                                                  StringPiece data,
+                                                  const IOVector& data_to_write,
                                                   QuicStreamOffset offset,
                                                   bool fin,
                                                   QuicAckNotifier* notifier) {
@@ -84,6 +84,9 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
   if (!packet_creator_->HasRoomForStreamFrame(id, offset)) {
     SerializeAndSendPacket();
   }
+
+  IOVector data = data_to_write;
+  size_t data_size = data.TotalBufferSize();
   while (delegate_->ShouldGeneratePacket(NOT_RETRANSMISSION,
                                          HAS_RETRANSMITTABLE_DATA, handshake)) {
     QuicFrame frame;
@@ -91,10 +94,10 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
     if (notifier != NULL) {
       // We want to track which packet this stream frame ends up in.
       bytes_consumed = packet_creator_->CreateStreamFrameWithNotifier(
-        id, data, offset + total_bytes_consumed, fin, notifier, &frame);
+          id, data, offset + total_bytes_consumed, fin, notifier, &frame);
     } else {
       bytes_consumed = packet_creator_->CreateStreamFrame(
-        id, data, offset + total_bytes_consumed, fin, &frame);
+          id, data, offset + total_bytes_consumed, fin, &frame);
     }
     if (!AddFrame(frame)) {
       LOG(DFATAL) << "Failed to add stream frame.";
@@ -105,16 +108,16 @@ QuicConsumedData QuicPacketGenerator::ConsumeData(QuicStreamId id,
     }
 
     total_bytes_consumed += bytes_consumed;
-    fin_consumed = fin && bytes_consumed == data.size();
-    data.remove_prefix(bytes_consumed);
-    DCHECK(data.empty() || packet_creator_->BytesFree() == 0u);
+    fin_consumed = fin && total_bytes_consumed == data_size;
+    data.Consume(bytes_consumed);
+    DCHECK(data.Empty() || packet_creator_->BytesFree() == 0u);
 
     // TODO(ianswett): Restore packet reordering.
     if (!InBatchMode() || !packet_creator_->HasRoomForStreamFrame(id, offset)) {
       SerializeAndSendPacket();
     }
 
-    if (data.empty()) {
+    if (data.Empty()) {
       // We're done writing the data. Exit the loop.
       // We don't make this a precondition because we could have 0 bytes of data
       // if we're simply writing a fin.

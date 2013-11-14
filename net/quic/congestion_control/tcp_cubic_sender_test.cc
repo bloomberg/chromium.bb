@@ -199,7 +199,7 @@ TEST_F(TcpCubicSenderTest, SlowStartPacketLoss) {
       (kDefaultTCPMSS * 2 * kNumberOfAck);
   EXPECT_EQ(expected_send_window, sender_->SendWindow());
 
-  sender_->OnIncomingLoss(clock_.Now());
+  sender_->OnIncomingLoss(acked_sequence_number_ + 1, clock_.Now());
 
   // Make sure that we should not send right now.
   EXPECT_TRUE(sender_->TimeUntilSend(clock_.Now(), NOT_RETRANSMISSION,
@@ -262,6 +262,10 @@ TEST_F(TcpCubicSenderTest, RetransmissionDelay) {
   EXPECT_NEAR(expected_delay.ToMilliseconds(),
               sender_->RetransmissionDelay().ToMilliseconds(),
               1);
+  EXPECT_EQ(static_cast<int64>(
+                sender_->GetCongestionWindow() * kNumMicrosPerSecond /
+                sender_->SmoothedRtt().ToMicroseconds()),
+            sender_->BandwidthEstimate().ToBytesPerSecond());
 }
 
 TEST_F(TcpCubicSenderTest, SlowStartMaxSendWindow) {
@@ -313,7 +317,7 @@ TEST_F(TcpCubicSenderTest, TcpRenoMaxCongestionWindow) {
   SendAvailableSendWindow();
   AckNPackets(2);
   // Make sure we fall out of slow start.
-  sender_->OnIncomingLoss(clock_.Now());
+  sender_->OnIncomingLoss(acked_sequence_number_ + 1, clock_.Now());
 
   for (int i = 0; i < kNumberOfAck; ++i) {
     // Send our full send window.
@@ -347,7 +351,7 @@ TEST_F(TcpCubicSenderTest, TcpCubicMaxCongestionWindow) {
   SendAvailableSendWindow();
   AckNPackets(2);
   // Make sure we fall out of slow start.
-  sender_->OnIncomingLoss(clock_.Now());
+  sender_->OnIncomingLoss(acked_sequence_number_ + 1, clock_.Now());
 
   for (int i = 0; i < kNumberOfAck; ++i) {
     // Send our full send window.
@@ -358,6 +362,22 @@ TEST_F(TcpCubicSenderTest, TcpCubicMaxCongestionWindow) {
   QuicByteCount expected_send_window =
       kMaxCongestionWindowTCP * kDefaultTCPMSS;
   EXPECT_EQ(expected_send_window, sender_->SendWindow());
+}
+
+TEST_F(TcpCubicSenderTest, MultipleLossesInOneWindow) {
+  SendAvailableSendWindow();
+  const QuicByteCount initial_window = sender_->GetCongestionWindow();
+  sender_->OnIncomingLoss(acked_sequence_number_ + 1, clock_.Now());
+  const QuicByteCount post_loss_window = sender_->GetCongestionWindow();
+  EXPECT_GT(initial_window, post_loss_window);
+  sender_->OnIncomingLoss(acked_sequence_number_ + 3, clock_.Now());
+  EXPECT_EQ(post_loss_window, sender_->GetCongestionWindow());
+  sender_->OnIncomingLoss(sequence_number_ - 1, clock_.Now());
+  EXPECT_EQ(post_loss_window, sender_->GetCongestionWindow());
+
+  // Lose a later packet and ensure the window decreases.
+  sender_->OnIncomingLoss(sequence_number_, clock_.Now());
+  EXPECT_GT(post_loss_window, sender_->GetCongestionWindow());
 }
 
 TEST_F(TcpCubicSenderTest, SendWindowNotAffectedByAcks) {

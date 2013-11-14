@@ -106,7 +106,7 @@ class NET_EXPORT_PRIVATE QuicPacketGenerator {
   // QuicAckNotifier is owned by the QuicConnection. |notifier| may
   // be NULL.
   QuicConsumedData ConsumeData(QuicStreamId id,
-                               base::StringPiece data,
+                               const IOVector& data,
                                QuicStreamOffset offset,
                                bool fin,
                                QuicAckNotifier* notifier);

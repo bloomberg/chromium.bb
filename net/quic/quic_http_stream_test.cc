@@ -262,7 +262,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<bool> {
       QuicStreamOffset offset,
       base::StringPiece data) {
     InitializeHeader(sequence_number, should_include_version);
-    QuicStreamFrame frame(3, fin, offset, data);
+    QuicStreamFrame frame(3, fin, offset,  MakeIOVector(data));
     return ConstructPacket(header_, QuicFrame(&frame));
   }
 

@@ -37,22 +37,20 @@ class QuicStreamSequencerPeer : public QuicStreamSequencer {
       : QuicStreamSequencer(max_mem, stream) {
   }
 
-  virtual bool OnFinFrame(QuicStreamOffset byte_offset,
-                          const char* data) {
+  virtual bool OnFinFrame(QuicStreamOffset byte_offset, const char* data) {
     QuicStreamFrame frame;
     frame.stream_id = 1;
     frame.offset = byte_offset;
-    frame.data = StringPiece(data);
+    frame.data.Append(const_cast<char*>(data), strlen(data));
     frame.fin = true;
     return OnStreamFrame(frame);
   }
 
-  virtual bool OnFrame(QuicStreamOffset byte_offset,
-                       const char* data) {
+  virtual bool OnFrame(QuicStreamOffset byte_offset, const char* data) {
     QuicStreamFrame frame;
     frame.stream_id = 1;
     frame.offset = byte_offset;
-    frame.data = StringPiece(data);
+    frame.data.Append(const_cast<char*>(data), strlen(data));
     frame.fin = false;
     return OnStreamFrame(frame);
   }

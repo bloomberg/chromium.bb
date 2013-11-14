@@ -11,8 +11,7 @@ using std::string;
 
 namespace net {
 
-NullDecrypter::NullDecrypter(bool use_short_hash)
-    : use_short_hash_(use_short_hash) {}
+NullDecrypter::NullDecrypter() {}
 
 bool NullDecrypter::SetKey(StringPiece key) { return key.empty(); }
 
@@ -74,10 +73,6 @@ StringPiece NullDecrypter::GetKey() const { return StringPiece(); }
 StringPiece NullDecrypter::GetNoncePrefix() const { return StringPiece(); }
 
 bool NullDecrypter::ReadHash(QuicDataReader* reader, uint128* hash) {
-  if (!use_short_hash_) {
-    return reader->ReadUInt128(hash);
-  }
-
   uint64 lo;
   uint32 hi;
   if (!reader->ReadUInt64(&lo) ||
@@ -92,11 +87,9 @@ bool NullDecrypter::ReadHash(QuicDataReader* reader, uint128* hash) {
 
 uint128 NullDecrypter::ComputeHash(const string& data) const {
   uint128 correct_hash = QuicUtils::FNV1a_128_Hash(data.data(), data.length());
-  if (use_short_hash_) {
-    uint128 mask(GG_UINT64_C(0x0), GG_UINT64_C(0xffffffff));
-    mask <<= 96;
-    correct_hash &= ~mask;
-  }
+  uint128 mask(GG_UINT64_C(0x0), GG_UINT64_C(0xffffffff));
+  mask <<= 96;
+  correct_hash &= ~mask;
   return correct_hash;
 }
 

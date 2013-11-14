@@ -45,7 +45,8 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
   virtual void OnIncomingAck(QuicPacketSequenceNumber acked_sequence_number,
                              QuicByteCount acked_bytes,
                              QuicTime::Delta rtt) OVERRIDE;
-  virtual void OnIncomingLoss(QuicTime ack_receive_time) OVERRIDE;
+  virtual void OnIncomingLoss(QuicPacketSequenceNumber largest_loss,
+                              QuicTime ack_receive_time) OVERRIDE;
   virtual bool OnPacketSent(
       QuicTime sent_time,
       QuicPacketSequenceNumber sequence_number,
@@ -98,6 +99,15 @@ class NET_EXPORT_PRIVATE TcpCubicSender : public SendAlgorithmInterface {
   // We need to keep track of the end sequence number of each RTT "burst".
   bool update_end_sequence_number_;
   QuicPacketSequenceNumber end_sequence_number_;
+
+  // Track the largest packet that has been sent.
+  QuicPacketSequenceNumber largest_sent_sequence_number_;
+
+  // Track the largest packet that has been acked.
+  QuicPacketSequenceNumber largest_acked_sequence_number_;
+
+  // Track the largest sequence number outstanding when a CWND cutback occurs.
+  QuicPacketSequenceNumber largest_sent_at_last_cutback_;
 
   // Congestion window in packets.
   QuicTcpCongestionWindow congestion_window_;

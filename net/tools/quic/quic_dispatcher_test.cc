@@ -372,7 +372,6 @@ TEST_F(QuicWriteBlockedListTest, TestWriteLimits) {
   dispatcher_.OnCanWrite();
 }
 
-
 }  // namespace
 }  // namespace test
 }  // namespace tools

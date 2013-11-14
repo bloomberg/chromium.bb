@@ -636,15 +636,9 @@ QuicErrorCode QuicCryptoServerConfig::EvaluateClientHello(
     const uint8* orbit,
     ClientHelloInfo* info,
     string* error_details) const {
-  if (client_hello.size() < kClientHelloMinimumSize) {
+  if (client_hello.size() < kClientHelloMinimumSizeOld) {
     *error_details = "Client hello too small";
     return QUIC_CRYPTO_INVALID_VALUE_LENGTH;
-  }
-
-  StringPiece srct;
-  if (client_hello.GetStringPiece(kSourceAddressTokenTag, &srct) &&
-      ValidateSourceAddressToken(srct, info->client_ip, info->now)) {
-    info->valid_source_address_token = true;
   }
 
   if (client_hello.GetStringPiece(kSNI, &info->sni) &&
@@ -653,48 +647,57 @@ QuicErrorCode QuicCryptoServerConfig::EvaluateClientHello(
     return QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER;
   }
 
-  // The client nonce is used first to try and establish uniqueness.
-  bool unique_by_strike_register = false;
+  StringPiece srct;
+  if (client_hello.GetStringPiece(kSourceAddressTokenTag, &srct) &&
+      ValidateSourceAddressToken(srct, info->client_ip, info->now)) {
+    info->valid_source_address_token = true;
+  } else {
+    // No valid source address token.
+    return QUIC_NO_ERROR;
+  }
 
   if (client_hello.GetStringPiece(kNONC, &info->client_nonce) &&
       info->client_nonce.size() == kNonceSize) {
     info->client_nonce_well_formed = true;
-    if (replay_protection_) {
-      base::AutoLock auto_lock(strike_register_lock_);
+  } else {
+    // Invalid client nonce.
+    DLOG(INFO) << "Invalid client nonce.";
+    return QUIC_NO_ERROR;
+  }
 
-      if (strike_register_.get() == NULL) {
-        strike_register_.reset(new StrikeRegister(
-            strike_register_max_entries_,
-            static_cast<uint32>(info->now.ToUNIXSeconds()),
-            strike_register_window_secs_,
-            orbit,
-            strike_register_no_startup_period_ ?
-            StrikeRegister::NO_STARTUP_PERIOD_NEEDED :
-            StrikeRegister::DENY_REQUESTS_AT_STARTUP));
-      }
-
-      unique_by_strike_register = strike_register_->Insert(
-          reinterpret_cast<const uint8*>(info->client_nonce.data()),
-          static_cast<uint32>(info->now.ToUNIXSeconds()));
-    }
+  if (!replay_protection_) {
+    info->unique = true;
+    DLOG(INFO) << "No replay protection.";
+    return QUIC_NO_ERROR;
   }
 
   client_hello.GetStringPiece(kServerNonceTag, &info->server_nonce);
+  if (!info->server_nonce.empty()) {
+    // If the server nonce is present, use it establish uniqueness.
+    info->unique = ValidateServerNonce(info->server_nonce, info->now);
+    DLOG(INFO) << "Using server nonce, unique: " << info->unique;
+    return QUIC_NO_ERROR;
+  } else {
+    // Use the client nonce to establish uniqueness.
+    base::AutoLock auto_lock(strike_register_lock_);
 
-  // If the client nonce didn't establish uniqueness then an echoed server
-  // nonce may.
-  bool unique_by_server_nonce = false;
-  if (replay_protection_ &&
-      !unique_by_strike_register &&
-      !info->server_nonce.empty()) {
-    unique_by_server_nonce = ValidateServerNonce(info->server_nonce, info->now);
+    if (strike_register_.get() == NULL) {
+      strike_register_.reset(new StrikeRegister(
+          strike_register_max_entries_,
+          static_cast<uint32>(info->now.ToUNIXSeconds()),
+          strike_register_window_secs_,
+          orbit,
+          strike_register_no_startup_period_ ?
+          StrikeRegister::NO_STARTUP_PERIOD_NEEDED :
+          StrikeRegister::DENY_REQUESTS_AT_STARTUP));
+    }
+
+    info->unique = strike_register_->Insert(
+        reinterpret_cast<const uint8*>(info->client_nonce.data()),
+        static_cast<uint32>(info->now.ToUNIXSeconds()));
+    DLOG(INFO) << "Using client nonce, unique: " << info->unique;
+    return QUIC_NO_ERROR;
   }
-
-  info->unique = !replay_protection_ ||
-                 unique_by_strike_register ||
-                 unique_by_server_nonce;
-
-  return QUIC_NO_ERROR;
 }
 
 void QuicCryptoServerConfig::BuildRejection(
@@ -772,7 +775,7 @@ void QuicCryptoServerConfig::BuildRejection(
   // token.
   const size_t max_unverified_size =
       client_hello.size() * kMultiplier - kREJOverheadBytes;
-  COMPILE_ASSERT(kClientHelloMinimumSize * kMultiplier >= kREJOverheadBytes,
+  COMPILE_ASSERT(kClientHelloMinimumSizeOld * kMultiplier >= kREJOverheadBytes,
                  overhead_calculation_may_underflow);
   if (info.valid_source_address_token ||
       signature.size() + compressed.size() < max_unverified_size) {

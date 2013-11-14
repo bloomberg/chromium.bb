@@ -114,7 +114,7 @@ size_t QuicPacketCreator::StreamFramePacketOverhead(
 }
 
 size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
-                                            StringPiece data,
+                                            const IOVector& data,
                                             QuicStreamOffset offset,
                                             bool fin,
                                             QuicFrame* frame) {
@@ -129,17 +129,18 @@ size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
                     framer_->version(), id, offset, true);
   }
 
-  if (data.size() == 0) {
+  if (data.Empty()) {
     if (!fin) {
       LOG(DFATAL) << "Creating a stream frame with no data or fin.";
     }
     // Create a new packet for the fin, if necessary.
-    *frame = QuicFrame(new QuicStreamFrame(id, true, offset, ""));
+    *frame = QuicFrame(new QuicStreamFrame(id, true, offset, data));
     return 0;
   }
 
   const size_t free_bytes = BytesFree();
   size_t bytes_consumed = 0;
+  const size_t data_size = data.TotalBufferSize();
 
   // When a STREAM frame is the last frame in a packet, it consumes two fewer
   // bytes of framing overhead.
@@ -152,27 +153,29 @@ size_t QuicPacketCreator::CreateStreamFrame(QuicStreamId id,
   size_t min_frame_size = QuicFramer::GetMinStreamFrameSize(
       framer_->version(), id, offset, false);
   // Check if it's the last frame in the packet.
-  if (data.size() + min_frame_size > free_bytes) {
+  if (data_size + min_frame_size > free_bytes) {
     // The minimum frame size(0 bytes of data) if it is the last frame.
     size_t min_last_frame_size = QuicFramer::GetMinStreamFrameSize(
         framer_->version(), id, offset, true);
     bytes_consumed =
-        min<size_t>(free_bytes - min_last_frame_size, data.size());
+        min<size_t>(free_bytes - min_last_frame_size, data_size);
   } else {
-    DCHECK_LT(data.size(), BytesFree());
-    bytes_consumed = data.size();
+    DCHECK_LT(data_size, BytesFree());
+    bytes_consumed = data_size;
   }
 
-  bool set_fin = fin && bytes_consumed == data.size();  // Last frame.
-  StringPiece data_frame(data.data(), bytes_consumed);
-  *frame = QuicFrame(new QuicStreamFrame(id, set_fin, offset, data_frame));
-
+  bool set_fin = fin && bytes_consumed == data_size;  // Last frame.
+  IOVector frame_data;
+  frame_data.AppendIovecAtMostBytes(data.iovec(), data.Size(),
+                                    bytes_consumed);
+  DCHECK_EQ(frame_data.TotalBufferSize(), bytes_consumed);
+  *frame = QuicFrame(new QuicStreamFrame(id, set_fin, offset, frame_data));
   return bytes_consumed;
 }
 
 size_t QuicPacketCreator::CreateStreamFrameWithNotifier(
     QuicStreamId id,
-    StringPiece data,
+    const IOVector& data,
     QuicStreamOffset offset,
     bool fin,
     QuicAckNotifier* notifier,

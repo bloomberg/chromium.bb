@@ -122,10 +122,12 @@ bool FramerVisitorCapturingFrames::OnPacketHeader(
 bool FramerVisitorCapturingFrames::OnStreamFrame(const QuicStreamFrame& frame) {
   // Make a copy of the frame and store a copy of underlying string, since
   // frame.data may not exist outside this callback.
-  stream_data_.push_back(new string(frame.data.as_string()));
+  stream_data_.push_back(frame.GetDataAsString());
   QuicStreamFrame frame_copy = frame;
+  frame_copy.data.Clear();
+  frame_copy.data.Append(const_cast<char*>(stream_data_.back()->data()),
+                         stream_data_.back()->size());
   stream_frames_.push_back(frame_copy);
-  stream_frames_.back().data = *(stream_data_.back());
   ++frame_count_;
   return true;
 }
@@ -405,7 +407,7 @@ static QuicPacket* ConstructPacketFromHandshakeMessage(
   header.fec_group = 0;
 
   QuicStreamFrame stream_frame(kCryptoStreamId, false, 0,
-                               data->AsStringPiece());
+                               MakeIOVector(data->AsStringPiece()));
 
   QuicFrame frame(&stream_frame);
   QuicFrames frames;
@@ -427,11 +429,11 @@ size_t GetPacketLengthForOneStream(
     size_t* payload_length) {
   *payload_length = 1;
   const size_t stream_length =
-      NullEncrypter(false).GetCiphertextSize(*payload_length) +
+      NullEncrypter().GetCiphertextSize(*payload_length) +
       QuicPacketCreator::StreamFramePacketOverhead(
           version, PACKET_8BYTE_GUID, include_version,
           sequence_number_length, is_in_fec_group);
-  const size_t ack_length = NullEncrypter(false).GetCiphertextSize(
+  const size_t ack_length = NullEncrypter().GetCiphertextSize(
       QuicFramer::GetMinAckFrameSize(
           version, sequence_number_length, PACKET_1BYTE_SEQUENCE_NUMBER)) +
       GetPacketHeaderSize(PACKET_8BYTE_GUID, include_version,
@@ -440,7 +442,7 @@ size_t GetPacketLengthForOneStream(
     *payload_length = 1 + ack_length - stream_length;
   }
 
-  return NullEncrypter(false).GetCiphertextSize(*payload_length) +
+  return NullEncrypter().GetCiphertextSize(*payload_length) +
       QuicPacketCreator::StreamFramePacketOverhead(
           version, PACKET_8BYTE_GUID, include_version,
           sequence_number_length, is_in_fec_group);

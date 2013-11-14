@@ -231,7 +231,9 @@ void InterArrivalSender::OnIncomingAck(
   state_machine_->set_rtt(smoothed_rtt_);
 }
 
-void InterArrivalSender::OnIncomingLoss(QuicTime ack_receive_time) {
+void InterArrivalSender::OnIncomingLoss(
+    QuicPacketSequenceNumber /*largest_loss*/,
+    QuicTime ack_receive_time) {
   // Packet loss was reported.
   if (!probing_) {
     if (!state_machine_->PacketLossEvent()) {

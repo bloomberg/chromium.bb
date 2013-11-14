@@ -20,6 +20,7 @@
 #include "base/strings/string_piece.h"
 #include "net/base/int128.h"
 #include "net/base/net_export.h"
+#include "net/quic/iovector.h"
 #include "net/quic/quic_bandwidth.h"
 #include "net/quic/quic_time.h"
 
@@ -225,7 +226,6 @@ enum QuicVersion {
   // Special case to indicate unknown/unsupported QUIC version.
   QUIC_VERSION_UNSUPPORTED = 0,
 
-  QUIC_VERSION_10 = 10,
   QUIC_VERSION_11 = 11,
   QUIC_VERSION_12 = 12,  // Current version.
 };
@@ -503,15 +503,20 @@ struct NET_EXPORT_PRIVATE QuicPaddingFrame {
 
 struct NET_EXPORT_PRIVATE QuicStreamFrame {
   QuicStreamFrame();
+  QuicStreamFrame(const QuicStreamFrame& frame);
   QuicStreamFrame(QuicStreamId stream_id,
                   bool fin,
                   QuicStreamOffset offset,
-                  base::StringPiece data);
+                  IOVector data);
+
+  // Returns a copy of the IOVector |data| as a heap-allocated string.
+  // Caller must take ownership of the returned string.
+  std::string* GetDataAsString() const;
 
   QuicStreamId stream_id;
   bool fin;
   QuicStreamOffset offset;  // Location of this data in the stream.
-  base::StringPiece data;
+  IOVector data;
 
   // If this is set, then when this packet is ACKed the AckNotifier will be
   // informed.

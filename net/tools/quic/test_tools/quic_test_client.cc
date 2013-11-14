@@ -181,6 +181,7 @@ void QuicTestClient::Initialize(IPEndPoint address,
   connect_attempted_ = false;
   secure_ = secure;
   auto_reconnect_ = false;
+  buffer_body_ = true;
   proof_verifier_ = NULL;
   ExpectCertificates(secure_);
 }
@@ -386,7 +387,10 @@ void QuicTestClient::OnClose(ReliableQuicStream* stream) {
   if (stream_ != stream) {
     return;
   }
-  response_ = stream_->data();
+  if (buffer_body()) {
+    // TODO(fnk): The stream still buffers the whole thing. Fix that.
+    response_ = stream_->data();
+  }
   headers_.CopyFrom(stream_->headers());
   stream_error_ = stream_->stream_error();
   bytes_read_ = stream_->stream_bytes_read();

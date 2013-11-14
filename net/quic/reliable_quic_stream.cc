@@ -88,7 +88,7 @@ bool ReliableQuicStream::OnStreamFrame(const QuicStreamFrame& frame) {
     return true;
   }
   // Note: This count include duplicate data received.
-  stream_bytes_read_ += frame.data.length();
+  stream_bytes_read_ += frame.data.TotalBufferSize();
 
   bool accepted = sequencer_.OnStreamFrame(frame);
 

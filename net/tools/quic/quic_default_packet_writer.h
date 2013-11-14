@@ -20,7 +20,7 @@ namespace tools {
 class QuicDefaultPacketWriter : public QuicPacketWriter {
  public:
   explicit QuicDefaultPacketWriter(int fd);
-  virtual ~QuicDefaultPacketWriter() {}
+  virtual ~QuicDefaultPacketWriter();
 
   // QuicPacketWriter
   virtual WriteResult WritePacket(

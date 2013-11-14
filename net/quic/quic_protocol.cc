@@ -95,15 +95,34 @@ QuicPacketHeader::QuicPacketHeader(const QuicPacketPublicHeader& header)
 
 QuicStreamFrame::QuicStreamFrame() {}
 
+QuicStreamFrame::QuicStreamFrame(const QuicStreamFrame& frame)
+    : stream_id(frame.stream_id),
+      fin(frame.fin),
+      offset(frame.offset),
+      data(frame.data),
+      notifier(frame.notifier) {
+}
+
 QuicStreamFrame::QuicStreamFrame(QuicStreamId stream_id,
                                  bool fin,
                                  QuicStreamOffset offset,
-                                 StringPiece data)
+                                 IOVector data)
     : stream_id(stream_id),
       fin(fin),
       offset(offset),
       data(data),
       notifier(NULL) {
+}
+
+string* QuicStreamFrame::GetDataAsString() const {
+  string* data_string = new string();
+  data_string->reserve(data.TotalBufferSize());
+  for (size_t i = 0; i < data.Size(); ++i) {
+    data_string->append(static_cast<char*>(data.iovec()[i].iov_base),
+                        data.iovec()[i].iov_len);
+  }
+  DCHECK_EQ(data_string->size(), data.TotalBufferSize());
+  return data_string;
 }
 
 uint32 MakeQuicTag(char a, char b, char c, char d) {
@@ -123,8 +142,6 @@ QuicVersionVector QuicSupportedVersions() {
 
 QuicTag QuicVersionToQuicTag(const QuicVersion version) {
   switch (version) {
-    case QUIC_VERSION_10:
-      return MakeQuicTag('Q', '0', '1', '0');
     case QUIC_VERSION_11:
       return MakeQuicTag('Q', '0', '1', '1');
     case QUIC_VERSION_12:
@@ -155,7 +172,6 @@ return #x
 
 string QuicVersionToString(const QuicVersion version) {
   switch (version) {
-    RETURN_STRING_LITERAL(QUIC_VERSION_10);
     RETURN_STRING_LITERAL(QUIC_VERSION_11);
     RETURN_STRING_LITERAL(QUIC_VERSION_12);
     default:
@@ -390,12 +406,12 @@ RetransmittableFrames::~RetransmittableFrames() {
 
 const QuicFrame& RetransmittableFrames::AddStreamFrame(
     QuicStreamFrame* stream_frame) {
-  // Make an owned copy of the StringPiece.
-  string* stream_data = new string(stream_frame->data.data(),
-                                   stream_frame->data.size());
-  // Ensure the frame's StringPiece points to the owned copy of the data.
-  stream_frame->data = StringPiece(*stream_data);
-  stream_data_.push_back(stream_data);
+  // Make an owned copy of the stream frame's data.
+  stream_data_.push_back(stream_frame->GetDataAsString());
+  // Ensure the stream frame's IOVector points to the owned copy of the data.
+  stream_frame->data.Clear();
+  stream_frame->data.Append(const_cast<char*>(stream_data_.back()->data()),
+                            stream_data_.back()->size());
   frames_.push_back(QuicFrame(stream_frame));
   return frames_.back();
 }

@@ -210,20 +210,14 @@ class NET_EXPORT_PRIVATE QuicConnection
   // indicating if the fin bit was consumed.  This does not indicate the data
   // has been sent on the wire: it may have been turned into a packet and queued
   // if the socket was unexpectedly blocked.
+  // If |delegate| is provided, then it will be informed once ACKs have been
+  // received for all the packets written in this call.
+  // The |delegate| is not owned by the QuicConnection and must outlive it.
   QuicConsumedData SendStreamData(QuicStreamId id,
                                   const IOVector& data,
                                   QuicStreamOffset offset,
-                                  bool fin);
-
-  // Same as SendStreamData, except the provided delegate will be informed
-  // once ACKs have been received for all the packets written.
-  // The |delegate| is not owned by the QuicConnection and must outlive it.
-  QuicConsumedData SendStreamDataAndNotifyWhenAcked(
-      QuicStreamId id,
-      const IOVector& data,
-      QuicStreamOffset offset,
-      bool fin,
-      QuicAckNotifier::DelegateInterface* delegate);
+                                  bool fin,
+                                  QuicAckNotifier::DelegateInterface* delegate);
 
   // Send a stream reset frame to the peer.
   virtual void SendRstStream(QuicStreamId id,
@@ -578,14 +572,6 @@ class NET_EXPORT_PRIVATE QuicConnection
                               std::vector<RetransmissionTime>,
                               RetransmissionTimeComparator>
       RetransmissionTimeouts;
-
-  // Inner helper function for SendStreamData and
-  // SendStreamDataAndNotifyWhenAcked.
-  QuicConsumedData SendStreamDataInner(QuicStreamId id,
-                                       const IOVector& data,
-                                       QuicStreamOffset offset,
-                                       bool fin,
-                                       QuicAckNotifier *notifier);
 
   // Sends a version negotiation packet to the peer.
   void SendVersionNegotiationPacket();

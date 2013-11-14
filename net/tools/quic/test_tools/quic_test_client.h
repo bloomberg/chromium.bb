@@ -75,6 +75,8 @@ class QuicTestClient :  public ReliableQuicStream::Visitor {
   int response_size() const;
   size_t bytes_read() const;
   size_t bytes_written() const;
+  bool buffer_body() const { return buffer_body_; }
+  void set_buffer_body(bool buffer_body) { buffer_body_ = buffer_body; }
 
   // From ReliableQuicStream::Visitor
   virtual void OnClose(ReliableQuicStream* stream) OVERRIDE;
@@ -127,6 +129,8 @@ class QuicTestClient :  public ReliableQuicStream::Visitor {
   // something causes a connection reset, it will not automatically reconnect
   // unless auto_reconnect_ is true.
   bool auto_reconnect_;
+  // Should we buffer the response body? Defaults to true.
+  bool buffer_body_;
 
   // proof_verifier_ points to a RecordingProofVerifier that is owned by
   // client_.

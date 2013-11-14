@@ -110,10 +110,6 @@ QuicPacketSequenceNumber ClosestTo(QuicPacketSequenceNumber target,
   return (Delta(target, a) < Delta(target, b)) ? a : b;
 }
 
-QuicTag GetNullTag(QuicVersion version) {
-  return version >= QUIC_VERSION_11 ? kNULN : kNULL;
-}
-
 }  // namespace
 
 QuicFramer::QuicFramer(const QuicVersionVector& supported_versions,
@@ -131,9 +127,9 @@ QuicFramer::QuicFramer(const QuicVersionVector& supported_versions,
       creation_time_(creation_time) {
   DCHECK(!supported_versions.empty());
   quic_version_ = supported_versions_[0];
-  decrypter_.reset(QuicDecrypter::Create(GetNullTag(quic_version_)));
+  decrypter_.reset(QuicDecrypter::Create(kNULL));
   encrypter_[ENCRYPTION_NONE].reset(
-      QuicEncrypter::Create(GetNullTag(quic_version_)));
+      QuicEncrypter::Create(kNULL));
 }
 
 QuicFramer::~QuicFramer() {}
@@ -1177,16 +1173,22 @@ bool QuicFramer::ProcessStreamFrame(uint8 frame_type,
     return false;
   }
 
+  StringPiece frame_data;
   if (has_data_length) {
-    if (!reader_->ReadStringPiece16(&frame->data)) {
+    if (!reader_->ReadStringPiece16(&frame_data)) {
       set_detailed_error("Unable to read frame data.");
       return false;
     }
   } else {
-    if (!reader_->ReadStringPiece(&frame->data, reader_->BytesRemaining())) {
+    if (!reader_->ReadStringPiece(&frame_data, reader_->BytesRemaining())) {
       set_detailed_error("Unable to read frame data.");
       return false;
     }
+  }
+  // Point frame to the right data.
+  frame->data.Clear();
+  if (!frame_data.empty()) {
+    frame->data.Append(const_cast<char*>(frame_data.data()), frame_data.size());
   }
 
   return true;
@@ -1632,11 +1634,8 @@ QuicEncryptedPacket* QuicFramer::EncryptPacket(
 
 size_t QuicFramer::GetMaxPlaintextSize(size_t ciphertext_size) {
   // In order to keep the code simple, we don't have the current encryption
-  // level to hand. At the moment, the NullEncrypter has a tag length of 16
-  // bytes and AES-GCM has a tag length of 12. We take the minimum plaintext
-  // length just to be safe.
-  // TODO(rtenneti): remove '- 16' after we delete QUIC_VERSION_10.
-  size_t min_plaintext_size = ciphertext_size - 16;
+  // level to hand. Both the NullEncrypter and AES-GCM have a tag length of 12.
+  size_t min_plaintext_size = ciphertext_size;
 
   for (int i = ENCRYPTION_NONE; i < NUM_ENCRYPTION_LEVELS; i++) {
     if (encrypter_[i].get() != NULL) {
@@ -1726,7 +1725,7 @@ size_t QuicFramer::ComputeFrameLength(
                                    frame.stream_frame->stream_id,
                                    frame.stream_frame->offset,
                                    last_frame_in_packet) +
-          frame.stream_frame->data.size();
+          frame.stream_frame->data.TotalBufferSize();
     case ACK_FRAME: {
       return GetAckFrameSize(*frame.ack_frame, sequence_number_length);
     }
@@ -1889,11 +1888,12 @@ bool QuicFramer::AppendStreamFramePayload(
     return false;
   }
   if (!last_frame_in_packet) {
-    if (!writer->WriteUInt16(frame.data.size())) {
+    if (!writer->WriteUInt16(frame.data.TotalBufferSize())) {
       return false;
     }
   }
-  if (!writer->WriteBytes(frame.data.data(), frame.data.size())) {
+
+  if (!writer->WriteIOVector(frame.data)) {
     return false;
   }
   return true;
@@ -1918,17 +1918,6 @@ QuicPacketSequenceNumber QuicFramer::CalculateLargestObserved(
 
 void QuicFramer::set_version(const QuicVersion version) {
   DCHECK(IsSupportedVersion(version));
-  // Handle version incompatibility between QUIC_VERSION_10 and QUIC_VERSION_11
-  // because of introduction of a new QUIC null encryption format in
-  // QUIC_VERSION_11.
-  if ((quic_version_ > QUIC_VERSION_10 && version <= QUIC_VERSION_10) ||
-      (quic_version_ <= QUIC_VERSION_10 && version > QUIC_VERSION_10)) {
-    // TODO(rtenneti): remove the following code after we delete
-    // QUIC_VERSION_10.
-    decrypter_.reset(QuicDecrypter::Create(GetNullTag(version)));
-    encrypter_[ENCRYPTION_NONE].reset(
-        QuicEncrypter::Create(GetNullTag(version)));
-  }
   quic_version_ = version;
 }
 

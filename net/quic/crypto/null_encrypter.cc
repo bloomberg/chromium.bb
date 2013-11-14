@@ -11,11 +11,9 @@ using std::string;
 
 namespace net {
 
-const size_t kHashSize = 16;  // size of uint128 serialized
 const size_t kHashSizeShort = 12;  // size of uint128 serialized short
 
-NullEncrypter::NullEncrypter(bool use_short_hash)
-    : use_short_hash_(use_short_hash) {}
+NullEncrypter::NullEncrypter() {}
 
 bool NullEncrypter::SetKey(StringPiece key) { return key.empty(); }
 
@@ -31,11 +29,7 @@ bool NullEncrypter::Encrypt(
   string buffer = associated_data.as_string();
   plaintext.AppendToString(&buffer);
   uint128 hash = QuicUtils::FNV1a_128_Hash(buffer.data(), buffer.length());
-  if (use_short_hash_) {
-    QuicUtils::SerializeUint128Short(hash, output);
-  } else {
-    QuicUtils::SerializeUint128(hash, output);
-  }
+  QuicUtils::SerializeUint128Short(hash, output);
   memcpy(output + GetHashLength(), plaintext.data(), plaintext.size());
   return true;
 }
@@ -67,7 +61,7 @@ StringPiece NullEncrypter::GetKey() const { return StringPiece(); }
 StringPiece NullEncrypter::GetNoncePrefix() const { return StringPiece(); }
 
 size_t NullEncrypter::GetHashLength() const {
-  return (use_short_hash_ ? kHashSizeShort : kHashSize);
+  return kHashSizeShort;
 }
 
 }  // namespace net

@@ -22,7 +22,6 @@ QuicDefaultPacketWriter::QuicDefaultPacketWriter(DatagramClientSocket* socket)
 
 QuicDefaultPacketWriter::~QuicDefaultPacketWriter() {}
 
-// QuicPacketWriter
 WriteResult QuicDefaultPacketWriter::WritePacket(
     const char* buffer, size_t buf_len,
     const net::IPAddressNumber& self_address,

@@ -39,7 +39,7 @@ QuicStreamSequencer::~QuicStreamSequencer() {
 
 bool QuicStreamSequencer::WillAcceptStreamFrame(
     const QuicStreamFrame& frame) const {
-  size_t data_len = frame.data.size();
+  size_t data_len = frame.data.TotalBufferSize();
   DCHECK_LE(data_len, max_frame_memory_);
 
   if (IsDuplicate(frame)) {
@@ -75,9 +75,7 @@ bool QuicStreamSequencer::OnStreamFrame(const QuicStreamFrame& frame) {
   }
 
   QuicStreamOffset byte_offset = frame.offset;
-  const char* data = frame.data.data();
-  size_t data_len = frame.data.size();
-
+  size_t data_len = frame.data.TotalBufferSize();
   if (data_len == 0 && !frame.fin) {
     // Stream frames must have data or a fin flag.
     stream_->CloseConnectionWithDetails(QUIC_INVALID_STREAM_FRAME,
@@ -86,17 +84,23 @@ bool QuicStreamSequencer::OnStreamFrame(const QuicStreamFrame& frame) {
   }
 
   if (frame.fin) {
-    CloseStreamAtOffset(frame.offset + frame.data.size());
+    CloseStreamAtOffset(frame.offset + data_len);
     if (data_len == 0) {
       return true;
     }
   }
 
+  IOVector data;
+  data.AppendIovec(frame.data.iovec(), frame.data.Size());
   if (byte_offset == num_bytes_consumed_) {
     DVLOG(1) << "Processing byte offset " << byte_offset;
-    size_t bytes_consumed = stream_->ProcessRawData(data, data_len);
+    size_t bytes_consumed = 0;
+    for (size_t i = 0; i < data.Size(); ++i) {
+      bytes_consumed += stream_->ProcessRawData(
+          static_cast<char*>(data.iovec()[i].iov_base),
+          data.iovec()[i].iov_len);
+    }
     num_bytes_consumed_ += bytes_consumed;
-
     if (MaybeCloseStream()) {
       return true;
     }
@@ -109,12 +113,17 @@ bool QuicStreamSequencer::OnStreamFrame(const QuicStreamFrame& frame) {
     } else {
       // Set ourselves up to buffer what's left
       data_len -= bytes_consumed;
-      data += bytes_consumed;
+      data.Consume(bytes_consumed);
       byte_offset += bytes_consumed;
     }
   }
-  DVLOG(1) << "Buffering packet at offset " << byte_offset;
-  frames_.insert(make_pair(byte_offset, string(data, data_len)));
+  for (size_t i = 0; i < data.Size(); ++i) {
+    DVLOG(1) << "Buffering stream data at offset " << byte_offset;
+    frames_.insert(make_pair(byte_offset, string(
+        static_cast<char*>(data.iovec()[i].iov_base),
+        data.iovec()[i].iov_len)));
+    byte_offset += data.iovec()[i].iov_len;
+  }
   return true;
 }
 

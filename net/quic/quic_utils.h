@@ -77,6 +77,13 @@ class NET_EXPORT_PRIVATE QuicUtils {
   }
 };
 
+// Utility function that returns an IOVector object wrapped around |str|.
+inline IOVector MakeIOVector(base::StringPiece str) {
+  IOVector iov;
+  iov.Append(const_cast<char*>(str.data()), str.size());
+  return iov;
+}
+
 }  // namespace net
 
 #endif  // NET_QUIC_QUIC_UTILS_H_

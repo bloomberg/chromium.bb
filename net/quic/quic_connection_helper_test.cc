@@ -82,7 +82,7 @@ class QuicConnectionHelperTest : public ::testing::Test {
       : guid_(2),
         framer_(QuicSupportedVersions(), QuicTime::Zero(), false),
         net_log_(BoundNetLog()),
-        frame_(1, false, 0, kData) {
+        frame_(1, false, 0, MakeIOVector(kData)) {
     Initialize();
   }
 
@@ -365,7 +365,7 @@ TEST_F(QuicConnectionHelperTest, TestRTORetransmission) {
   EXPECT_CALL(visitor_, HasPendingHandshake()).Times(AnyNumber());
   IOVector data;
   data.Append(buffer, 3);
-  connection_->SendStreamData(1, data, 0, false);
+  connection_->SendStreamData(1, data, 0, false, NULL);
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, 2, _, RTO_RETRANSMISSION, _));
   // Since no ack was received, the retransmission alarm will fire and
   // retransmit it.
@@ -398,7 +398,7 @@ TEST_F(QuicConnectionHelperTest, TestMultipleRTORetransmission) {
 
   IOVector data;
   data.Append(buffer, 3);
-  connection_->SendStreamData(1, data, 0, false);
+  connection_->SendStreamData(1, data, 0, false, NULL);
   EXPECT_CALL(*send_algorithm_, OnPacketSent(_, 2, _, RTO_RETRANSMISSION, _));
   // Since no ack was received, the retransmission alarm will fire and
   // retransmit it.

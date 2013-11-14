@@ -55,6 +55,7 @@ class QuicCryptoServerStreamTest : public ::testing::Test {
     connection_->AdvanceTime(QuicTime::Delta::FromSeconds(100000));
     // TODO(rtenneti): Enable testing of ProofSource.
     // crypto_config_.SetProofSource(CryptoTestUtils::ProofSourceForTesting());
+    crypto_config_.set_strike_register_no_startup_period();
 
     CryptoTestUtils::SetupCryptoServerConfigForTest(
         connection_->clock(), connection_->random_generator(),

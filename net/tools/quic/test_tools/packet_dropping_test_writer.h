@@ -79,6 +79,18 @@ class PacketDroppingTestWriter : public net::test::QuicTestWriter {
     fake_packet_delay_  = fake_packet_delay;
   }
 
+  // The maximum bandwidth and buffer size of the connection.  When these are
+  // set, packets will be delayed until a connection with that bandwidth would
+  // transmit it.  Once the |buffer_size| is reached, all new packets are
+  // dropped.
+  void set_max_bandwidth_and_buffer_size(QuicBandwidth fake_bandwidth,
+                                         QuicByteCount buffer_size) {
+    DCHECK(clock_);
+    base::AutoLock locked(config_mutex_);
+    fake_bandwidth_ = fake_bandwidth;
+    buffer_size_ = buffer_size;
+  }
+
   void set_seed(uint64 seed) {
     simple_random_.set_seed(seed);
   }
@@ -107,13 +119,17 @@ class PacketDroppingTestWriter : public net::test::QuicTestWriter {
   scoped_ptr<QuicAlarm> delay_alarm_;
   QuicBlockedWriterInterface* blocked_writer_;
   SimpleRandom simple_random_;
+  // Stored packets delayed by fake packet delay or bandwidth restrictions.
   DelayedPacketList delayed_packets_;
+  QuicByteCount cur_buffer_size_;
 
   base::Lock config_mutex_;
   int32 fake_packet_loss_percentage_;
   int32 fake_blocked_socket_percentage_;
   int32 fake_packet_reorder_percentage_;
   QuicTime::Delta fake_packet_delay_;
+  QuicBandwidth fake_bandwidth_;
+  QuicByteCount buffer_size_;
 
   DISALLOW_COPY_AND_ASSIGN(PacketDroppingTestWriter);
 };

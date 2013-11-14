@@ -18,7 +18,7 @@ class QuicDataReader;
 // verify a hash (fnv128) over both the payload and associated data.
 class NET_EXPORT_PRIVATE NullDecrypter : public QuicDecrypter {
  public:
-  explicit NullDecrypter(bool use_short_hash);
+  NullDecrypter();
   virtual ~NullDecrypter() {}
 
   // QuicDecrypter implementation
@@ -38,7 +38,6 @@ class NET_EXPORT_PRIVATE NullDecrypter : public QuicDecrypter {
  private:
   bool ReadHash(QuicDataReader* reader, uint128* hash);
   uint128 ComputeHash(const std::string& data) const;
-  bool use_short_hash_;
 };
 
 }  // namespace net

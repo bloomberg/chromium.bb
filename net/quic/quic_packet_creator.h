@@ -86,7 +86,7 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
   // If data is empty and fin is true, the expected behavior is to consume the
   // fin but return 0.
   size_t CreateStreamFrame(QuicStreamId id,
-                           base::StringPiece data,
+                           const IOVector& data,
                            QuicStreamOffset offset,
                            bool fin,
                            QuicFrame* frame);
@@ -96,7 +96,7 @@ class NET_EXPORT_PRIVATE QuicPacketCreator : public QuicFecBuilderInterface {
   // The |notifier| is not owned by the QuicPacketGenerator and must outlive the
   // generated packet.
   size_t CreateStreamFrameWithNotifier(QuicStreamId id,
-                                       base::StringPiece data,
+                                       const IOVector& data,
                                        QuicStreamOffset offset,
                                        bool fin,
                                        QuicAckNotifier* notifier,

@@ -399,6 +399,12 @@ class QuicFramerTest : public ::testing::TestWithParam<QuicVersion> {
     EXPECT_EQ(error_code, framer_.error()) << "len: " << len;
   }
 
+  // Checks if the supplied string matches data in the supplied StreamFrame.
+  void CheckStreamFrameData(string str, QuicStreamFrame* frame) {
+    scoped_ptr<string> frame_data(frame->GetDataAsString());
+    EXPECT_EQ(str, *frame_data);
+  }
+
   void CheckStreamFrameBoundaries(unsigned char* packet,
                                   size_t stream_id_size,
                                   bool include_version) {
@@ -1233,7 +1239,7 @@ TEST_P(QuicFramerTest, StreamFrame) {
   EXPECT_TRUE(visitor_.stream_frames_[0]->fin);
   EXPECT_EQ(GG_UINT64_C(0xBA98FEDC32107654),
             visitor_.stream_frames_[0]->offset);
-  EXPECT_EQ("hello world!", visitor_.stream_frames_[0]->data);
+  CheckStreamFrameData("hello world!", visitor_.stream_frames_[0]);
 
   // Now test framing boundaries
   CheckStreamFrameBoundaries(packet, kQuicMaxStreamIdSize, !kIncludeVersion);
@@ -1281,7 +1287,7 @@ TEST_P(QuicFramerTest, StreamFrame3ByteStreamId) {
   EXPECT_TRUE(visitor_.stream_frames_[0]->fin);
   EXPECT_EQ(GG_UINT64_C(0xBA98FEDC32107654),
             visitor_.stream_frames_[0]->offset);
-  EXPECT_EQ("hello world!", visitor_.stream_frames_[0]->data);
+  CheckStreamFrameData("hello world!", visitor_.stream_frames_[0]);
 
   // Now test framing boundaries
   const size_t stream_id_size = 3;
@@ -1330,7 +1336,7 @@ TEST_P(QuicFramerTest, StreamFrame2ByteStreamId) {
   EXPECT_TRUE(visitor_.stream_frames_[0]->fin);
   EXPECT_EQ(GG_UINT64_C(0xBA98FEDC32107654),
             visitor_.stream_frames_[0]->offset);
-  EXPECT_EQ("hello world!", visitor_.stream_frames_[0]->data);
+  CheckStreamFrameData("hello world!", visitor_.stream_frames_[0]);
 
   // Now test framing boundaries
   const size_t stream_id_size = 2;
@@ -1379,7 +1385,7 @@ TEST_P(QuicFramerTest, StreamFrame1ByteStreamId) {
   EXPECT_TRUE(visitor_.stream_frames_[0]->fin);
   EXPECT_EQ(GG_UINT64_C(0xBA98FEDC32107654),
             visitor_.stream_frames_[0]->offset);
-  EXPECT_EQ("hello world!", visitor_.stream_frames_[0]->data);
+  CheckStreamFrameData("hello world!", visitor_.stream_frames_[0]);
 
   // Now test framing boundaries
   const size_t stream_id_size = 1;
@@ -1432,7 +1438,7 @@ TEST_P(QuicFramerTest, StreamFrameWithVersion) {
   EXPECT_TRUE(visitor_.stream_frames_[0]->fin);
   EXPECT_EQ(GG_UINT64_C(0xBA98FEDC32107654),
             visitor_.stream_frames_[0]->offset);
-  EXPECT_EQ("hello world!", visitor_.stream_frames_[0]->data);
+  CheckStreamFrameData("hello world!", visitor_.stream_frames_[0]);
 
   // Now test framing boundaries
   CheckStreamFrameBoundaries(packet, kQuicMaxStreamIdSize, kIncludeVersion);
@@ -1532,7 +1538,7 @@ TEST_P(QuicFramerTest, RevivedStreamFrame) {
   EXPECT_TRUE(visitor_.stream_frames_[0]->fin);
   EXPECT_EQ(GG_UINT64_C(0xBA98FEDC32107654),
             visitor_.stream_frames_[0]->offset);
-  EXPECT_EQ("hello world!", visitor_.stream_frames_[0]->data);
+  CheckStreamFrameData("hello world!", visitor_.stream_frames_[0]);
 }
 
 TEST_P(QuicFramerTest, StreamFrameInFecGroup) {
@@ -1586,7 +1592,7 @@ TEST_P(QuicFramerTest, StreamFrameInFecGroup) {
   EXPECT_TRUE(visitor_.stream_frames_[0]->fin);
   EXPECT_EQ(GG_UINT64_C(0xBA98FEDC32107654),
             visitor_.stream_frames_[0]->offset);
-  EXPECT_EQ("hello world!", visitor_.stream_frames_[0]->data);
+  CheckStreamFrameData("hello world!", visitor_.stream_frames_[0]);
 }
 
 TEST_P(QuicFramerTest, DISABLED_AckFramev11) {
@@ -2594,11 +2600,10 @@ TEST_P(QuicFramerTest, BuildPaddingFramePacket) {
       framer_.BuildUnsizedDataPacket(header, frames).packet);
   ASSERT_TRUE(data != NULL);
 
-  // TODO(rtenneti): remove "- 16" when we remove QUIC_VERSION_10.
   test::CompareCharArraysWithHexError("constructed packet",
                                       data->data(), data->length(),
                                       AsChars(packet),
-                                      arraysize(packet) - 16);
+                                      arraysize(packet));
 }
 
 TEST_P(QuicFramerTest, Build4ByteSequenceNumberPaddingFramePacket) {
@@ -2642,11 +2647,10 @@ TEST_P(QuicFramerTest, Build4ByteSequenceNumberPaddingFramePacket) {
       framer_.BuildUnsizedDataPacket(header, frames).packet);
   ASSERT_TRUE(data != NULL);
 
-  // TODO(rtenneti): remove "- 16" when we remove QUIC_VERSION_10.
   test::CompareCharArraysWithHexError("constructed packet",
                                       data->data(), data->length(),
                                       AsChars(packet),
-                                      arraysize(packet) - 16);
+                                      arraysize(packet));
 }
 
 TEST_P(QuicFramerTest, Build2ByteSequenceNumberPaddingFramePacket) {
@@ -2690,11 +2694,10 @@ TEST_P(QuicFramerTest, Build2ByteSequenceNumberPaddingFramePacket) {
       framer_.BuildUnsizedDataPacket(header, frames).packet);
   ASSERT_TRUE(data != NULL);
 
-  // TODO(rtenneti): remove "- 16" when we remove QUIC_VERSION_10.
   test::CompareCharArraysWithHexError("constructed packet",
                                       data->data(), data->length(),
                                       AsChars(packet),
-                                      arraysize(packet) - 16);
+                                      arraysize(packet));
 }
 
 TEST_P(QuicFramerTest, Build1ByteSequenceNumberPaddingFramePacket) {
@@ -2738,11 +2741,10 @@ TEST_P(QuicFramerTest, Build1ByteSequenceNumberPaddingFramePacket) {
       framer_.BuildUnsizedDataPacket(header, frames).packet);
   ASSERT_TRUE(data != NULL);
 
-  // TODO(rtenneti): remove "- 16" when we remove QUIC_VERSION_10.
   test::CompareCharArraysWithHexError("constructed packet",
                                       data->data(), data->length(),
                                       AsChars(packet),
-                                      arraysize(packet) - 16);
+                                      arraysize(packet));
 }
 
 TEST_P(QuicFramerTest, BuildStreamFramePacket) {
@@ -2759,7 +2761,7 @@ TEST_P(QuicFramerTest, BuildStreamFramePacket) {
   stream_frame.stream_id = 0x01020304;
   stream_frame.fin = true;
   stream_frame.offset = GG_UINT64_C(0xBA98FEDC32107654);
-  stream_frame.data = "hello world!";
+  stream_frame.data = MakeIOVector("hello world!");
 
   QuicFrames frames;
   frames.push_back(QuicFrame(&stream_frame));
@@ -2812,7 +2814,7 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketWithVersionFlag) {
   stream_frame.stream_id = 0x01020304;
   stream_frame.fin = true;
   stream_frame.offset = GG_UINT64_C(0xBA98FEDC32107654);
-  stream_frame.data = "hello world!";
+  stream_frame.data = MakeIOVector("hello world!");
 
   QuicFrames frames;
   frames.push_back(QuicFrame(&stream_frame));

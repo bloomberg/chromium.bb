@@ -80,7 +80,7 @@ base::Value* NetLogQuicStreamFrameCallback(const QuicStreamFrame* frame,
   dict->SetInteger("stream_id", frame->stream_id);
   dict->SetBoolean("fin", frame->fin);
   dict->SetString("offset", base::Uint64ToString(frame->offset));
-  dict->SetInteger("length", frame->data.length());
+  dict->SetInteger("length", frame->data.Size());
   return dict;
 }
 

@@ -65,7 +65,8 @@ void FixRateSender::OnIncomingAck(
   latest_rtt_ = rtt;
 }
 
-void FixRateSender::OnIncomingLoss(QuicTime /*ack_receive_time*/) {
+void FixRateSender::OnIncomingLoss(QuicPacketSequenceNumber /*largest_loss*/,
+                                   QuicTime /*ack_receive_time*/) {
   // Ignore losses for fix rate sender.
 }
 

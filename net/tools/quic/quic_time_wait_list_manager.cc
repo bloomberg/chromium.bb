@@ -94,16 +94,12 @@ QuicTimeWaitListManager::QuicTimeWaitListManager(
     QuicPacketWriter* writer,
     EpollServer* epoll_server,
     const QuicVersionVector& supported_versions)
-    : framer_(supported_versions,
-              QuicTime::Zero(),  // unused
-              true),
-      epoll_server_(epoll_server),
+    : epoll_server_(epoll_server),
       kTimeWaitPeriod_(QuicTime::Delta::FromSeconds(kTimeWaitSeconds)),
       guid_clean_up_alarm_(new GuidCleanUpAlarm(this)),
       clock_(epoll_server),
       writer_(writer),
       is_write_blocked_(false) {
-  framer_.set_visitor(this);
   SetGuidCleanUpAlarm();
 }
 
@@ -136,11 +132,18 @@ void QuicTimeWaitListManager::ProcessPacket(
   server_address_ = server_address;
   client_address_ = client_address;
 
-  // Set the framer to the appropriate version for this GUID, before processing.
-  QuicVersion version = GetQuicVersionFromGuid(guid);
-  framer_.set_version(version);
-
-  framer_.ProcessPacket(packet);
+  // TODO(satyamshekhar): Think about handling packets from different client
+  // addresses.
+  GuidMapIterator it = guid_map_.find(guid);
+  DCHECK(it != guid_map_.end());
+  // Increment the received packet count.
+  ++((it->second).num_packets);
+  if (ShouldSendPublicReset((it->second).num_packets)) {
+    // We don't need the packet anymore. Just tell the client what sequence
+    // number we rejected.
+    // TODO(ianswett): Parse the sequence number and populate it.
+    SendPublicReset(server_address_, client_address_, guid, 1);
+  }
 }
 
 QuicVersion QuicTimeWaitListManager::GetQuicVersionFromGuid(QuicGuid guid) {
@@ -161,62 +164,6 @@ bool QuicTimeWaitListManager::OnCanWrite() {
   }
 
   return !is_write_blocked_;
-}
-
-void QuicTimeWaitListManager::OnError(QuicFramer* framer) {
-  DLOG(INFO) << QuicUtils::ErrorToString(framer->error());
-}
-
-bool QuicTimeWaitListManager::OnProtocolVersionMismatch(
-    QuicVersion received_version) {
-  // Drop such packets whose version don't match.
-  return false;
-}
-
-bool QuicTimeWaitListManager::OnStreamFrame(const QuicStreamFrame& frame) {
-  return false;
-}
-
-bool QuicTimeWaitListManager::OnAckFrame(const QuicAckFrame& frame) {
-  return false;
-}
-
-bool QuicTimeWaitListManager::OnCongestionFeedbackFrame(
-    const QuicCongestionFeedbackFrame& frame) {
-  return false;
-}
-
-bool QuicTimeWaitListManager::OnRstStreamFrame(
-    const QuicRstStreamFrame& frame) {
-  return false;
-}
-
-bool QuicTimeWaitListManager::OnConnectionCloseFrame(
-    const QuicConnectionCloseFrame & frame) {
-  return false;
-}
-
-bool QuicTimeWaitListManager::OnGoAwayFrame(const QuicGoAwayFrame& frame) {
-  return false;
-}
-
-bool QuicTimeWaitListManager::OnPacketHeader(const QuicPacketHeader& header) {
-  // TODO(satyamshekhar): Think about handling packets from different client
-  // addresses.
-  GuidMapIterator it = guid_map_.find(header.public_header.guid);
-  DCHECK(it != guid_map_.end());
-  // Increment the received packet count.
-  ++((it->second).num_packets);
-  if (ShouldSendPublicReset((it->second).num_packets)) {
-    // We don't need the packet anymore. Just tell the client what sequence
-    // number we rejected.
-    SendPublicReset(server_address_,
-                    client_address_,
-                    header.public_header.guid,
-                    header.packet_sequence_number);
-  }
-  // Never process the body of the packet in time wait state.
-  return false;
 }
 
 // Returns true if the number of packets received for this guid is a power of 2
@@ -240,7 +187,7 @@ void QuicTimeWaitListManager::SendPublicReset(
   QueuedPacket* queued_packet = new QueuedPacket(
       server_address,
       client_address,
-      framer_.BuildPublicResetPacket(packet));
+      QuicFramer::BuildPublicResetPacket(packet));
   // Takes ownership of the packet.
   SendOrQueuePacket(queued_packet);
 }

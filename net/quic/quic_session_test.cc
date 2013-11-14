@@ -350,11 +350,13 @@ TEST_F(QuicSessionTest, OutOfOrderHeaders) {
 
   // Create frame with headers for stream2.
   string compressed_headers1 = compressor.CompressHeaders(headers_);
-  QuicStreamFrame frame1(stream2->id(), false, 0, compressed_headers1);
+  QuicStreamFrame frame1(
+      stream2->id(), false, 0, MakeIOVector(compressed_headers1));
 
   // Create frame with headers for stream4.
   string compressed_headers2 = compressor.CompressHeaders(headers_);
-  QuicStreamFrame frame2(stream4->id(), true, 0, compressed_headers2);
+  QuicStreamFrame frame2(
+      stream4->id(), true, 0, MakeIOVector(compressed_headers2));
 
   // Process the second frame first.  This will cause the headers to
   // be queued up and processed after the first frame is processed.
@@ -416,7 +418,8 @@ TEST_F(QuicSessionTest, ZombieStream) {
   // Create frame with headers for stream2.
   QuicSpdyCompressor compressor;
   string compressed_headers1 = compressor.CompressHeaders(headers_);
-  QuicStreamFrame frame1(stream3->id(), false, 0, compressed_headers1);
+  QuicStreamFrame frame1(
+      stream3->id(), false, 0, MakeIOVector(compressed_headers1));
 
   // Process the second frame first.  This will cause the headers to
   // be queued up and processed after the first frame is processed.

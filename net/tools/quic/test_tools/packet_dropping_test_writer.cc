@@ -51,11 +51,14 @@ class DelayAlarm : public QuicAlarm::Delegate {
 PacketDroppingTestWriter::PacketDroppingTestWriter()
     : clock_(NULL),
       blocked_writer_(NULL),
+      cur_buffer_size_(0),
       config_mutex_(),
       fake_packet_loss_percentage_(0),
       fake_blocked_socket_percentage_(0),
       fake_packet_reorder_percentage_(0),
-      fake_packet_delay_(QuicTime::Delta::Zero()) {
+      fake_packet_delay_(QuicTime::Delta::Zero()),
+      fake_bandwidth_(QuicBandwidth::Zero()),
+      buffer_size_(0) {
   uint32 seed = base::RandInt(0, std::numeric_limits<int32>::max());
   LOG(INFO) << "Seeding packet loss with " << seed;
   simple_random_.set_seed(seed);
@@ -98,11 +101,28 @@ WriteResult PacketDroppingTestWriter::WritePacket(
     return WriteResult(WRITE_STATUS_BLOCKED, EAGAIN);
   }
 
-  if (!fake_packet_delay_.IsZero()) {
+  if (!fake_packet_delay_.IsZero() || !fake_bandwidth_.IsZero()) {
+    if (buffer_size_ > 0 && buf_len + cur_buffer_size_ > buffer_size_) {
+      // Drop packets which do not fit into the buffer.
+      DLOG(INFO) << "Dropping packet because the buffer is full.";
+      return WriteResult(WRITE_STATUS_OK, buf_len);
+    }
+
     // Queue it to be sent.
     QuicTime send_time = clock_->ApproximateNow().Add(fake_packet_delay_);
+    if (!fake_bandwidth_.IsZero()) {
+      // Calculate a time the bandwidth limit would impose.
+      QuicTime::Delta bandwidth_delay = QuicTime::Delta::FromMicroseconds(
+          (buf_len * kNumMicrosPerSecond) /
+          fake_bandwidth_.ToBytesPerSecond());
+      send_time = delayed_packets_.empty() ?
+          send_time.Add(bandwidth_delay) :
+          delayed_packets_.back().send_time.Add(bandwidth_delay);
+    }
     delayed_packets_.push_back(DelayedWrite(buffer, buf_len, self_address,
                                             peer_address, send_time));
+    cur_buffer_size_ += buf_len;
+
     // Set the alarm if it's not yet set.
     if (!delay_alarm_->IsSet()) {
       delay_alarm_->Set(send_time);
@@ -140,6 +160,8 @@ QuicTime PacketDroppingTestWriter::ReleaseNextPacket() {
   // Grab the next one off the queue and send it.
   writer()->WritePacket(iter->buffer.data(), iter->buffer.length(),
                         iter->self_address, iter->peer_address, NULL);
+  DCHECK_GE(cur_buffer_size_, iter->buffer.length());
+  cur_buffer_size_ -= iter->buffer.length();
   delayed_packets_.erase(iter);
 
   // If there are others, find the time for the next to be sent.

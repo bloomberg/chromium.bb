@@ -539,7 +539,7 @@ TEST_F(InterArrivalSenderTest, MinBitrateDueToLoss) {
     send_clock_.AdvanceTime(time_until_send);
     EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(),
         NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
-    sender_.OnIncomingLoss(send_clock_.Now());
+    sender_.OnIncomingLoss(acked_sequence_number_ - 1, send_clock_.Now());
     sender_.OnIncomingAck(acked_sequence_number_, kDefaultMaxPacketSize, rtt_);
     acked_sequence_number_ += 2;  // Create a loss by not acking both packets.
     SendFeedbackMessageNPackets(2, nine_ms_, nine_ms_);
@@ -554,7 +554,7 @@ TEST_F(InterArrivalSenderTest, MinBitrateDueToLoss) {
     send_clock_.AdvanceTime(time_until_send);
     EXPECT_TRUE(sender_.TimeUntilSend(send_clock_.Now(),
         NOT_RETRANSMISSION, HAS_RETRANSMITTABLE_DATA, NOT_HANDSHAKE).IsZero());
-    sender_.OnIncomingLoss(send_clock_.Now());
+    sender_.OnIncomingLoss(acked_sequence_number_ - 1, send_clock_.Now());
     sender_.OnIncomingAck(acked_sequence_number_, kDefaultMaxPacketSize, rtt_);
     acked_sequence_number_ += 2;  // Create a loss by not acking both packets.
     SendFeedbackMessageNPackets(2, nine_ms_, nine_ms_);

@@ -55,7 +55,10 @@ class NET_EXPORT_PRIVATE SendAlgorithmInterface {
                              QuicByteCount acked_bytes,
                              QuicTime::Delta rtt) = 0;
 
-  virtual void OnIncomingLoss(QuicTime ack_receive_time) = 0;
+  // Indicates a loss event of one or more packets. |largest_loss| is the
+  // largest packet lost in this event.
+  virtual void OnIncomingLoss(QuicPacketSequenceNumber largest_loss,
+                              QuicTime ack_receive_time) = 0;
 
   // Inform that we sent x bytes to the wire, and if that was a retransmission.
   // Returns true if the packet should be tracked by the congestion manager,

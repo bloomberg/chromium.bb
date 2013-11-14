@@ -194,10 +194,12 @@ class QuicPacketGeneratorTest : public ::testing::Test {
     EXPECT_EQ(fec_group, simple_framer_.fec_data().fec_group);
   }
 
-  StringPiece CreateData(size_t len) {
+  IOVector CreateData(size_t len) {
     data_array_.reset(new char[len]);
     memset(data_array_.get(), '?', len);
-    return StringPiece(data_array_.get(), len);
+    IOVector data;
+    data.Append(data_array_.get(), len);
+    return data;
   }
 
   QuicFramer framer_;
@@ -349,7 +351,8 @@ TEST_F(QuicPacketGeneratorTest, AddControlFrame_WritableAndShouldFlush) {
 TEST_F(QuicPacketGeneratorTest, ConsumeData_NotWritable) {
   delegate_.SetCanNotWrite();
 
-  QuicConsumedData consumed = generator_.ConsumeData(1, "foo", 2, true, NULL);
+  QuicConsumedData consumed = generator_.ConsumeData(1, MakeIOVector("foo"), 2,
+                                                     true, NULL);
   EXPECT_EQ(0u, consumed.bytes_consumed);
   EXPECT_FALSE(consumed.fin_consumed);
   EXPECT_FALSE(generator_.HasQueuedFrames());
@@ -359,7 +362,8 @@ TEST_F(QuicPacketGeneratorTest, ConsumeData_WritableAndShouldNotFlush) {
   delegate_.SetCanWriteAnything();
   generator_.StartBatchOperations();
 
-  QuicConsumedData consumed = generator_.ConsumeData(1, "foo", 2, true, NULL);
+  QuicConsumedData consumed = generator_.ConsumeData(1, MakeIOVector("foo"), 2,
+                                                     true, NULL);
   EXPECT_EQ(3u, consumed.bytes_consumed);
   EXPECT_TRUE(consumed.fin_consumed);
   EXPECT_TRUE(generator_.HasQueuedFrames());
@@ -370,7 +374,8 @@ TEST_F(QuicPacketGeneratorTest, ConsumeData_WritableAndShouldFlush) {
 
   EXPECT_CALL(delegate_, OnSerializedPacket(_)).WillOnce(
       DoAll(SaveArg<0>(&packet_), Return(true)));
-  QuicConsumedData consumed = generator_.ConsumeData(1, "foo", 2, true, NULL);
+  QuicConsumedData consumed = generator_.ConsumeData(1, MakeIOVector("foo"), 2,
+                                                     true, NULL);
   EXPECT_EQ(3u, consumed.bytes_consumed);
   EXPECT_TRUE(consumed.fin_consumed);
   EXPECT_FALSE(generator_.HasQueuedFrames());
@@ -385,8 +390,9 @@ TEST_F(QuicPacketGeneratorTest,
   delegate_.SetCanWriteAnything();
   generator_.StartBatchOperations();
 
-  generator_.ConsumeData(1, "foo", 2, true, NULL);
-  QuicConsumedData consumed = generator_.ConsumeData(3, "quux", 7, false, NULL);
+  generator_.ConsumeData(1, MakeIOVector("foo"), 2, true, NULL);
+  QuicConsumedData consumed = generator_.ConsumeData(3, MakeIOVector("quux"), 7,
+                                                     false, NULL);
   EXPECT_EQ(4u, consumed.bytes_consumed);
   EXPECT_FALSE(consumed.fin_consumed);
   EXPECT_TRUE(generator_.HasQueuedFrames());
@@ -396,8 +402,9 @@ TEST_F(QuicPacketGeneratorTest, ConsumeData_BatchOperations) {
   delegate_.SetCanWriteAnything();
   generator_.StartBatchOperations();
 
-  generator_.ConsumeData(1, "foo", 2, true, NULL);
-  QuicConsumedData consumed = generator_.ConsumeData(3, "quux", 7, false, NULL);
+  generator_.ConsumeData(1, MakeIOVector("foo"), 2, true, NULL);
+  QuicConsumedData consumed = generator_.ConsumeData(3, MakeIOVector("quux"), 7,
+                                                     false, NULL);
   EXPECT_EQ(4u, consumed.bytes_consumed);
   EXPECT_FALSE(consumed.fin_consumed);
   EXPECT_TRUE(generator_.HasQueuedFrames());
@@ -482,7 +489,7 @@ TEST_F(QuicPacketGeneratorTest, ConsumeData_FramesPreviouslyQueued) {
   // Set the packet size be enough for two stream frames with 0 stream offset,
   // but not enough for a stream frame of 0 offset and one with non-zero offset.
   creator_.options()->max_packet_length =
-      NullEncrypter(false).GetCiphertextSize(0) +
+      NullEncrypter().GetCiphertextSize(0) +
       GetPacketHeaderSize(creator_.options()->send_guid_length,
                           true,
                           creator_.options()->send_sequence_number_length,
@@ -502,7 +509,8 @@ TEST_F(QuicPacketGeneratorTest, ConsumeData_FramesPreviouslyQueued) {
   generator_.StartBatchOperations();
   // Queue enough data to prevent a stream frame with a non-zero offset from
   // fitting.
-  QuicConsumedData consumed = generator_.ConsumeData(1, "foo", 0, false, NULL);
+  QuicConsumedData consumed = generator_.ConsumeData(1, MakeIOVector("foo"), 0,
+                                                     false, NULL);
   EXPECT_EQ(3u, consumed.bytes_consumed);
   EXPECT_FALSE(consumed.fin_consumed);
   EXPECT_TRUE(generator_.HasQueuedFrames());
@@ -510,7 +518,7 @@ TEST_F(QuicPacketGeneratorTest, ConsumeData_FramesPreviouslyQueued) {
   // This frame will not fit with the existing frame, causing the queued frame
   // to be serialized, and it will not fit with another frame like it, so it is
   // serialized by itself.
-  consumed = generator_.ConsumeData(1, "bar", 3, true, NULL);
+  consumed = generator_.ConsumeData(1, MakeIOVector("bar"), 3, true, NULL);
   EXPECT_EQ(3u, consumed.bytes_consumed);
   EXPECT_TRUE(consumed.fin_consumed);
   EXPECT_FALSE(generator_.HasQueuedFrames());
@@ -539,7 +547,7 @@ TEST_F(QuicPacketGeneratorTest, NotWritableThenBatchOperations) {
       Return(CreateFeedbackFrame()));
 
   // Send some data and a control frame
-  generator_.ConsumeData(3, "quux", 7, false, NULL);
+  generator_.ConsumeData(3, MakeIOVector("quux"), 7, false, NULL);
   generator_.AddControlFrame(QuicFrame(CreateGoAwayFrame()));
 
   // All five frames will be flushed out in a single packet.

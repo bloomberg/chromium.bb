@@ -270,13 +270,6 @@ void QuicCryptoClientConfig::FillInchoateClientHello(
     } else {
       out->SetTaglist(kPDMD, kX509, 0);
     }
-
-    if (!cached->proof_valid()) {
-      // If we are expecting a certificate chain, double the size of the client
-      // hello so that the response from the server can be larger - hopefully
-      // including the whole certificate chain.
-      out->set_minimum_size(kClientHelloMinimumSize * 2);
-    }
   }
 
   if (common_cert_sets) {

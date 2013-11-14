@@ -33,7 +33,8 @@ class NET_EXPORT_PRIVATE FixRateSender : public SendAlgorithmInterface {
   virtual void OnIncomingAck(QuicPacketSequenceNumber acked_sequence_number,
                              QuicByteCount acked_bytes,
                              QuicTime::Delta rtt) OVERRIDE;
-  virtual void OnIncomingLoss(QuicTime ack_receive_time) OVERRIDE;
+  virtual void OnIncomingLoss(QuicPacketSequenceNumber largest_loss,
+                              QuicTime ack_receive_time) OVERRIDE;
   virtual bool OnPacketSent(
       QuicTime sent_time,
       QuicPacketSequenceNumber equence_number,

@@ -743,7 +743,8 @@ void QuicConnection::OnPacketComplete() {
     received_packet_manager_.RecordPacketReceived(
         last_header_, time_of_last_received_packet_);
     for (size_t i = 0; i < last_stream_frames_.size(); ++i) {
-      stats_.stream_bytes_received += last_stream_frames_[i].data.length();
+      stats_.stream_bytes_received +=
+          last_stream_frames_[i].data.TotalBufferSize();
     }
   }
 
@@ -875,65 +876,7 @@ void QuicConnection::SendVersionNegotiationPacket() {
   pending_version_negotiation_packet_ = true;
 }
 
-QuicConsumedData QuicConnection::SendStreamDataInner(
-    QuicStreamId id,
-    const IOVector& data,
-    QuicStreamOffset offset,
-    bool fin,
-    QuicAckNotifier* notifier) {
-  // TODO(ianswett): Further improve sending by passing the iovec down
-  // instead of batching into multiple stream frames in a single packet.
-
-  // Opportunistically bundle an ack with this outgoing packet.
-  ScopedPacketBundler ack_bundler(this, true);
-  size_t bytes_written = 0;
-  bool fin_consumed = false;
-
-  for (size_t i = 0; i < data.Size(); ++i) {
-    bool send_fin = fin && (i == data.Size() - 1);
-    if (!send_fin && data.iovec()[i].iov_len == 0) {
-      LOG(DFATAL) << "Attempt to send empty stream frame";
-    }
-
-    StringPiece data_piece(static_cast<char*>(data.iovec()[i].iov_base),
-                           data.iovec()[i].iov_len);
-    int currentOffset = offset + bytes_written;
-    QuicConsumedData consumed_data =
-        packet_generator_.ConsumeData(id,
-                                      data_piece,
-                                      currentOffset,
-                                      send_fin,
-                                      notifier);
-
-    DCHECK_LE(consumed_data.bytes_consumed, numeric_limits<uint32>::max());
-    bytes_written += consumed_data.bytes_consumed;
-    fin_consumed = consumed_data.fin_consumed;
-    // If no bytes were consumed, bail now, because the stream can not write
-    // more data.
-    if (consumed_data.bytes_consumed < data.iovec()[i].iov_len) {
-      break;
-    }
-  }
-  // Handle the 0 byte write properly.
-  if (data.Empty()) {
-    DCHECK(fin);
-    QuicConsumedData consumed_data = packet_generator_.ConsumeData(
-        id, StringPiece(), offset, fin, NULL);
-    fin_consumed = consumed_data.fin_consumed;
-  }
-
-  stats_.stream_bytes_sent += bytes_written;
-  return QuicConsumedData(bytes_written, fin_consumed);
-}
-
-QuicConsumedData QuicConnection::SendStreamData(QuicStreamId id,
-                                                const IOVector& data,
-                                                QuicStreamOffset offset,
-                                                bool fin) {
-  return SendStreamDataInner(id, data, offset, fin, NULL);
-}
-
-QuicConsumedData QuicConnection::SendStreamDataAndNotifyWhenAcked(
+QuicConsumedData QuicConnection::SendStreamData(
     QuicStreamId id,
     const IOVector& data,
     QuicStreamOffset offset,
@@ -945,11 +888,17 @@ QuicConsumedData QuicConnection::SendStreamDataAndNotifyWhenAcked(
 
   // This notifier will be owned by the AckNotifierManager (or deleted below if
   // no data was consumed).
-  QuicAckNotifier* notifier = new QuicAckNotifier(delegate);
-  QuicConsumedData consumed_data =
-      SendStreamDataInner(id, data, offset, fin, notifier);
+  QuicAckNotifier* notifier = NULL;
+  if (delegate) {
+    notifier = new QuicAckNotifier(delegate);
+  }
 
-  if (consumed_data.bytes_consumed == 0) {
+  // Opportunistically bundle an ack with this outgoing packet.
+  ScopedPacketBundler ack_bundler(this, true);
+  QuicConsumedData consumed_data =
+      packet_generator_.ConsumeData(id, data, offset, fin, notifier);
+
+  if (notifier && consumed_data.bytes_consumed == 0) {
     // No data was consumed, delete the notifier.
     delete notifier;
   }
@@ -1411,7 +1360,7 @@ bool QuicConnection::ShouldDiscardPacket(
       // the peer has not yet ACK'd the data.  We need the subsequent
       // retransmission to be sent.
       DLOG(INFO) << ENDPOINT << "Dropping packet: " << sequence_number
-          << " since it has already been retransmitted.";
+                 << " since it has already been retransmitted.";
       return true;
     }
 

@@ -83,7 +83,7 @@ TEST_F(QuicClientStreamTest, DISABLED_TestFramingExtraData) {
 }
 
 TEST_F(QuicClientStreamTest, TestNoBidirectionalStreaming) {
-  QuicStreamFrame frame(3, false, 3, "asd");
+  QuicStreamFrame frame(3, false, 3, MakeIOVector("asd"));
 
   EXPECT_FALSE(stream_->write_side_closed());
   EXPECT_TRUE(stream_->OnStreamFrame(frame));
