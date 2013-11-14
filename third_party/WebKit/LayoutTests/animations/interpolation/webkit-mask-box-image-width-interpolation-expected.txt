@@ -6,4 +6,12 @@ FAIL: -webkit-mask-box-image-width from [0px] to [20px] was [5px] at 1, expected
 FAIL: -webkit-mask-box-image-width from [0px] to [20px] was [5px] at 1.5, expected [30px]
 FAIL: -webkit-mask-box-image-width from [0px] to [20px] was [5px] at 5, expected [100px]
 FAIL: -webkit-mask-box-image-width from [0px] to [20px] was [5px] at 10, expected [200px]
+FAIL: -webkit-mask-box-image-width from [0] to [20] was [5px] at -0.3, expected [0]
+FAIL: -webkit-mask-box-image-width from [0] to [20] was [5px] at 0, expected [0]
+FAIL: -webkit-mask-box-image-width from [0] to [20] was [5px] at 0.3, expected [6]
+FAIL: -webkit-mask-box-image-width from [0] to [20] was [5px] at 0.6, expected [12]
+FAIL: -webkit-mask-box-image-width from [0] to [20] was [5px] at 1, expected [20]
+FAIL: -webkit-mask-box-image-width from [0] to [20] was [5px] at 1.5, expected [30]
+FAIL: -webkit-mask-box-image-width from [0] to [20] was [5px] at 5, expected [100]
+FAIL: -webkit-mask-box-image-width from [0] to [20] was [5px] at 10, expected [200]
 

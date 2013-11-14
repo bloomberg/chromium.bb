@@ -31,5 +31,19 @@ assertInterpolation({
   {at: 5, is: '100px'},
   {at: 10, is: '200px'}
 ]);
+assertInterpolation({
+  property: '-webkit-mask-box-image-width',
+  from: '0',
+  to: '20'
+}, [
+  {at: -0.3, is: '0'}, // CSS -webkit-mask-box-image-width can't be negative.
+  {at: 0, is: '0'},
+  {at: 0.3, is: '6'},
+  {at: 0.6, is: '12'},
+  {at: 1, is: '20'},
+  {at: 1.5, is: '30'},
+  {at: 5, is: '100'},
+  {at: 10, is: '200'}
+]);
 </script>
 </body>

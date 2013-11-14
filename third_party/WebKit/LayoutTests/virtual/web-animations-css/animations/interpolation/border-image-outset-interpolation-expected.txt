@@ -12,4 +12,18 @@ PASS: border-image-outset from [0px] to [5px] was [4.5px] at 0.9
 PASS: border-image-outset from [0px] to [5px] was [5px] at 1
 PASS: border-image-outset from [0px] to [5px] was [7.5px] at 1.5
 PASS: border-image-outset from [0px] to [5px] was [50px] at 10
+PASS: border-image-outset from [0] to [5] was [0] at -0.3
+PASS: border-image-outset from [0] to [5] was [0] at 0
+PASS: border-image-outset from [0] to [5] was [0.5] at 0.1
+PASS: border-image-outset from [0] to [5] was [1] at 0.2
+PASS: border-image-outset from [0] to [5] was [1.5] at 0.3
+PASS: border-image-outset from [0] to [5] was [2] at 0.4
+PASS: border-image-outset from [0] to [5] was [2.5] at 0.5
+PASS: border-image-outset from [0] to [5] was [3] at 0.6
+PASS: border-image-outset from [0] to [5] was [3.5] at 0.7
+PASS: border-image-outset from [0] to [5] was [4] at 0.8
+PASS: border-image-outset from [0] to [5] was [4.5] at 0.9
+PASS: border-image-outset from [0] to [5] was [5] at 1
+PASS: border-image-outset from [0] to [5] was [7.5] at 1.5
+PASS: border-image-outset from [0] to [5] was [50] at 10
 
