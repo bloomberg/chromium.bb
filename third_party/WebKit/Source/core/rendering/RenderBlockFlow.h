@@ -142,6 +142,9 @@ public:
         m_rareData->m_lineGridBox = box;
     }
     void layoutLineGridBox();
+
+    GapRects inlineSelectionGaps(RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock,
+        LayoutUnit& lastLogicalTop, LayoutUnit& lastLogicalLeft, LayoutUnit& lastLogicalRight, const PaintInfo*);
 protected:
     // Only used by RenderSVGText, which explicitly overrides RenderBlock::layoutBlock(), do NOT use for anything else.
     void forceLayoutInlineChildren()
@@ -223,6 +226,7 @@ private:
 
     virtual void adjustForBorderFit(LayoutUnit x, LayoutUnit& left, LayoutUnit& right) const OVERRIDE; // Helper function for borderFitAdjust
 
+    virtual RootInlineBox* createRootInlineBox() OVERRIDE;
 public:
     struct FloatWithRect {
         FloatWithRect(RenderBox* f)

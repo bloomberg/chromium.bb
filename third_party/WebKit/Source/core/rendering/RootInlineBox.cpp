@@ -25,7 +25,7 @@
 #include "core/rendering/HitTestResult.h"
 #include "core/rendering/InlineTextBox.h"
 #include "core/rendering/PaintInfo.h"
-#include "core/rendering/RenderBlock.h"
+#include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderFlowThread.h"
 #include "core/rendering/RenderInline.h"
 #include "core/rendering/RenderView.h"
@@ -47,7 +47,7 @@ COMPILE_ASSERT(sizeof(RootInlineBox) == sizeof(SameSizeAsRootInlineBox), RootInl
 typedef WTF::HashMap<const RootInlineBox*, EllipsisBox*> EllipsisBoxMap;
 static EllipsisBoxMap* gEllipsisBoxMap = 0;
 
-RootInlineBox::RootInlineBox(RenderBlock* block)
+RootInlineBox::RootInlineBox(RenderBlockFlow* block)
     : InlineFlowBox(block)
     , m_lineBreakPos(0)
     , m_lineBreakObj(0)
@@ -596,9 +596,9 @@ int RootInlineBox::blockDirectionPointInLine() const
     return !block()->style()->isFlippedBlocksWritingMode() ? max(lineTop(), selectionTop()) : min(lineBottom(), selectionBottom());
 }
 
-RenderBlock* RootInlineBox::block() const
+RenderBlockFlow* RootInlineBox::block() const
 {
-    return toRenderBlock(renderer());
+    return toRenderBlockFlow(renderer());
 }
 
 static bool isEditableLeaf(InlineBox* leaf)

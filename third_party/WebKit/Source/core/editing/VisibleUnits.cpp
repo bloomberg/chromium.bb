@@ -40,7 +40,7 @@
 #include "core/editing/VisiblePosition.h"
 #include "core/editing/htmlediting.h"
 #include "core/rendering/InlineTextBox.h"
-#include "core/rendering/RenderBlock.h"
+#include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RenderObject.h"
 #include "platform/text/TextBoundaries.h"
 
@@ -913,7 +913,7 @@ bool isEndOfLine(const VisiblePosition &p)
 static inline IntPoint absoluteLineDirectionPointToLocalPointInBlock(RootInlineBox* root, int lineDirectionPoint)
 {
     ASSERT(root);
-    RenderBlock* containingBlock = root->block();
+    RenderBlockFlow* containingBlock = root->block();
     FloatPoint absoluteBlockPoint = containingBlock->localToAbsolute(FloatPoint());
     if (containingBlock->hasOverflowClip())
         absoluteBlockPoint -= containingBlock->scrolledContentOffset();

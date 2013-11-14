@@ -166,7 +166,7 @@ void SVGRootInlineBox::layoutChildBoxes(InlineFlowBox* start, FloatRect* childRe
 
 void SVGRootInlineBox::layoutRootBox(const FloatRect& childRect)
 {
-    RenderBlock* parentBlock = block();
+    RenderBlockFlow* parentBlock = block();
     ASSERT(parentBlock);
 
     // Finally, assign the root block position, now that all content is laid out.

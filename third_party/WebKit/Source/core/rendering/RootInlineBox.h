@@ -28,6 +28,7 @@ namespace WebCore {
 
 class EllipsisBox;
 class HitTestResult;
+class RenderBlockFlow;
 class RenderRegion;
 
 struct BidiStatus;
@@ -35,7 +36,7 @@ struct GapRects;
 
 class RootInlineBox : public InlineFlowBox {
 public:
-    explicit RootInlineBox(RenderBlock*);
+    explicit RootInlineBox(RenderBlockFlow*);
 
     virtual void destroy() OVERRIDE FINAL;
 
@@ -128,7 +129,7 @@ public:
 
     GapRects lineSelectionGap(RenderBlock* rootBlock, const LayoutPoint& rootBlockPhysicalPosition, const LayoutSize& offsetFromRootBlock, LayoutUnit selTop, LayoutUnit selHeight, const PaintInfo*);
 
-    RenderBlock* block() const;
+    RenderBlockFlow* block() const;
 
     InlineBox* closestLeafChildForPoint(const IntPoint&, bool onlyEditableLeaves);
     InlineBox* closestLeafChildForLogicalLeftPosition(int, bool onlyEditableLeaves = false);

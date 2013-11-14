@@ -22,7 +22,7 @@
 
 #include "core/rendering/InlineFlowBox.h"
 #include "core/rendering/PaintInfo.h"
-#include "core/rendering/RenderBlock.h"
+#include "core/rendering/RenderBlockFlow.h"
 #include "core/rendering/RootInlineBox.h"
 #include "platform/Partitions.h"
 #include "platform/fonts/FontMetrics.h"
@@ -316,7 +316,7 @@ FloatPoint InlineBox::locationIncludingFlipping()
 {
     if (!renderer()->style()->isFlippedBlocksWritingMode())
         return FloatPoint(x(), y());
-    RenderBlock* block = root()->block();
+    RenderBlockFlow* block = root()->block();
     if (block->style()->isHorizontalWritingMode())
         return FloatPoint(x(), block->height() - height() - y());
     else
