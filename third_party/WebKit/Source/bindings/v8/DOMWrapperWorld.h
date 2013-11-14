@@ -103,10 +103,10 @@ public:
 
     int worldId() const { return m_worldId; }
     int extensionGroup() const { return m_extensionGroup; }
-    DOMDataStore* isolatedWorldDOMDataStore() const
+    DOMDataStore& isolatedWorldDOMDataStore() const
     {
         ASSERT(isIsolatedWorld());
-        return m_domDataStore.get();
+        return *m_domDataStore;
     }
     v8::Handle<v8::Context> context(ScriptController&);
 
