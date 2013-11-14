@@ -61,6 +61,8 @@ C++11 header ``<atomic>``.
 
 The PNaCl toolchain supports concurrent memory accesses through legacy
 GCC-style ``__sync_*`` builtins, as well as through C11/C++11 atomic
+primitives and the underlying `GCCMM
+<http://gcc.gnu.org/wiki/Atomic/GCCMM>`_ ``__atomic_*``
 primitives. ``volatile`` memory accesses can also be used, though these
 are discouraged. See `Volatile Memory Accesses`_.
 
