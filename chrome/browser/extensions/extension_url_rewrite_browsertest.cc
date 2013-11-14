@@ -6,6 +6,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/search/search.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/omnibox/location_bar.h"
@@ -78,8 +79,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionURLRewriteBrowserTest, NewTabPageURL) {
   // Navigate to chrome://newtab and check that the location bar text is blank.
   GURL url(chrome::kChromeUINewTabURL);
   TestURLNotShown(url);
-  // Check that the actual URL corresponds to chrome://newtab.
-  EXPECT_EQ(url, GetNavigationEntry()->GetURL());
+  // Check that the actual URL corresponds to the new tab URL.
+  EXPECT_TRUE(chrome::IsNTPURL(GetNavigationEntry()->GetURL(), profile()));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionURLRewriteBrowserTest, NewTabPageURLOverride) {
