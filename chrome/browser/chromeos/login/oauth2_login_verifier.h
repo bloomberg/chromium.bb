@@ -99,7 +99,6 @@ class OAuth2LoginVerifier : public base::SupportsWeakPtr<OAuth2LoginVerifier>,
   OAuth2LoginVerifier::Delegate* delegate_;
   scoped_refptr<net::URLRequestContextGetter> system_request_context_;
   scoped_refptr<net::URLRequestContextGetter> user_request_context_;
-  scoped_ptr<GaiaAuthFetcher> gaia_system_fetcher_;
   scoped_ptr<GaiaAuthFetcher> gaia_fetcher_;
   std::string access_token_;
   std::string gaia_token_;

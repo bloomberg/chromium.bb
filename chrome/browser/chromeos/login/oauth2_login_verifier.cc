@@ -97,11 +97,11 @@ void OAuth2LoginVerifier::StartFetchingOAuthLoginAccessToken(Profile* profile) {
 
 void OAuth2LoginVerifier::StartOAuthLoginForUberToken() {
   // No service will fetch us uber auth token.
-  gaia_system_fetcher_.reset(
+  gaia_fetcher_.reset(
       new GaiaAuthFetcher(this,
                           std::string(GaiaConstants::kChromeOSSource),
-                          system_request_context_.get()));
-  gaia_system_fetcher_->StartTokenFetchForUberAuthExchange(access_token_);
+                          user_request_context_.get()));
+  gaia_fetcher_->StartTokenFetchForUberAuthExchange(access_token_);
 }
 
 
@@ -127,11 +127,11 @@ void OAuth2LoginVerifier::OnUberAuthTokenFailure(
 
 void OAuth2LoginVerifier::StartOAuthLoginForGaiaCredentials() {
   // No service will fetch us uber auth token.
-  gaia_system_fetcher_.reset(
+  gaia_fetcher_.reset(
       new GaiaAuthFetcher(this,
                           std::string(GaiaConstants::kChromeOSSource),
-                          system_request_context_.get()));
-  gaia_system_fetcher_->StartOAuthLogin(access_token_, EmptyString());
+                          user_request_context_.get()));
+  gaia_fetcher_->StartOAuthLogin(access_token_, EmptyString());
 }
 
 void OAuth2LoginVerifier::OnClientLoginSuccess(

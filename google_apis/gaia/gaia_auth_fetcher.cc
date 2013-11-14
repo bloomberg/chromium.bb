@@ -220,8 +220,8 @@ net::URLFetcher* GaiaAuthFetcher::CreateGaiaFetcher(
   // The Gaia token exchange requests do not require any cookie-based
   // identification as part of requests.  We suppress sending any cookies to
   // maintain a separation between the user's browsing and Chrome's internal
-  // services.  Where such mixing is desired (MergeSession), it will be done
-  // explicitly.
+  // services.  Where such mixing is desired (MergeSession or OAuthLogin), it
+  // will be done explicitly.
   to_return->SetLoadFlags(load_flags);
 
   // Fetchers are sometimes cancelled because a network change was detected,
@@ -637,7 +637,7 @@ void GaiaAuthFetcher::StartTokenFetchForUberAuthExchange(
                                    std::string(),
                                    authentication_header,
                                    uberauth_token_gurl_,
-                                   kLoadFlagsIgnoreCookies,
+                                   net::LOAD_NORMAL,
                                    this));
   fetch_pending_ = true;
   fetcher_->Start();
@@ -654,7 +654,7 @@ void GaiaAuthFetcher::StartOAuthLogin(const std::string& access_token,
                                    request_body_,
                                    authentication_header,
                                    oauth_login_gurl_,
-                                   kLoadFlagsIgnoreCookies,
+                                   net::LOAD_NORMAL,
                                    this));
   fetch_pending_ = true;
   fetcher_->Start();
