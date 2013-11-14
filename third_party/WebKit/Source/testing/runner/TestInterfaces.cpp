@@ -197,7 +197,13 @@ const vector<WebTestProxyBase*>& TestInterfaces::windowList()
 WebThemeEngine* TestInterfaces::themeEngine()
 {
 #if defined(USE_DEFAULT_RENDER_THEME) || !(defined(WIN32) || defined(__APPLE__))
+#if defined(USE_AURA)
+    if (!m_themeEngine.get())
+        m_themeEngine.reset(new WebTestThemeEngineMock());
+    return m_themeEngine.get();
+#else
     return 0;
+#endif
 #elif defined(WIN32)
     if (!m_themeEngine.get())
         m_themeEngine.reset(new WebTestThemeEngineWin());

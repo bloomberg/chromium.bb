@@ -93,6 +93,8 @@
       'WebTestThemeControlWin.h',
       'WebTestThemeEngineMac.mm',
       'WebTestThemeEngineMac.h',
+      'WebTestThemeEngineMock.cpp',
+      'WebTestThemeEngineMock.h',
       'WebTestThemeEngineWin.cpp',
       'WebTestThemeEngineWin.h',
       'WebUserMediaClientMock.cpp',

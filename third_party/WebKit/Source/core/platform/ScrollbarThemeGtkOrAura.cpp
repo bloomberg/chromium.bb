@@ -20,8 +20,8 @@
  * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
  * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
  * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
- * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
- * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT{
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,{
  * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
  * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
@@ -34,6 +34,7 @@
 #include "RuntimeEnabledFeatures.h"
 #include "core/platform/ScrollbarThemeOverlay.h"
 #include "core/platform/graphics/GraphicsContext.h"
+#include "platform/LayoutTestSupport.h"
 #include "platform/PlatformMouseEvent.h"
 #include "platform/scroll/ScrollbarThemeClient.h"
 #include "public/platform/Platform.h"
@@ -41,6 +42,14 @@
 #include "public/platform/default/WebThemeEngine.h"
 
 namespace WebCore {
+
+static bool useMockTheme()
+{
+#if defined(USE_AURA)
+    return isRunningLayoutTest();
+#endif
+    return false;
+}
 
 ScrollbarTheme* ScrollbarTheme::nativeTheme()
 {
@@ -63,9 +72,14 @@ int ScrollbarThemeGtkOrAura::scrollbarThickness(ScrollbarControlSize controlSize
 void ScrollbarThemeGtkOrAura::paintTrackPiece(GraphicsContext* gc, ScrollbarThemeClient* scrollbar, const IntRect& rect, ScrollbarPart partType)
 {
     blink::WebThemeEngine::State state = scrollbar->hoveredPart() == partType ? blink::WebThemeEngine::StateHover : blink::WebThemeEngine::StateNormal;
+
+    if (useMockTheme() && !scrollbar->enabled())
+        state = blink::WebThemeEngine::StateDisabled;
+
     IntRect alignRect = trackRect(scrollbar, false);
     blink::WebThemeEngine::ExtraParams extraParams;
     blink::WebCanvas* canvas = gc->canvas();
+    extraParams.scrollbarTrack.isBack = (partType == BackTrackPart);
     extraParams.scrollbarTrack.trackX = alignRect.x();
     extraParams.scrollbarTrack.trackY = alignRect.y();
     extraParams.scrollbarTrack.trackWidth = alignRect.width();
@@ -80,10 +94,13 @@ void ScrollbarThemeGtkOrAura::paintButton(GraphicsContext* gc, ScrollbarThemeCli
     blink::WebCanvas* canvas = gc->canvas();
     bool checkMin = false;
     bool checkMax = false;
+
     if (scrollbar->orientation() == HorizontalScrollbar) {
         if (part == BackButtonStartPart) {
             paintPart = blink::WebThemeEngine::PartScrollbarLeftArrow;
             checkMin = true;
+        } else if (useMockTheme() && part != ForwardButtonEndPart) {
+            return;
         } else {
             paintPart = blink::WebThemeEngine::PartScrollbarRightArrow;
             checkMax = true;
@@ -92,13 +109,17 @@ void ScrollbarThemeGtkOrAura::paintButton(GraphicsContext* gc, ScrollbarThemeCli
         if (part == BackButtonStartPart) {
             paintPart = blink::WebThemeEngine::PartScrollbarUpArrow;
             checkMin = true;
+        } else if (useMockTheme() && part != ForwardButtonEndPart) {
+            return;
         } else {
             paintPart = blink::WebThemeEngine::PartScrollbarDownArrow;
             checkMax = true;
         }
     }
-    if ((checkMin && (scrollbar->currentPos() <= 0))
-        || (checkMax && scrollbar->currentPos() == scrollbar->maximum())) {
+    if (useMockTheme() && !scrollbar->enabled()) {
+        state = blink::WebThemeEngine::StateDisabled;
+    } else if (!useMockTheme() && ((checkMin && (scrollbar->currentPos() <= 0))
+        || (checkMax && scrollbar->currentPos() == scrollbar->maximum()))) {
         state = blink::WebThemeEngine::StateDisabled;
     } else {
         if (part == scrollbar->pressedPart())

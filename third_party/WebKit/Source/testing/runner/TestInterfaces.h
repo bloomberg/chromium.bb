@@ -36,7 +36,9 @@
 #include <memory>
 #include <vector>
 
-#if defined(WIN32)
+#if defined(USE_DEFAULT_RENDER_THEME)
+#include "WebTestThemeEngineMock.h"
+#elif defined(WIN32)
 #include "WebTestThemeEngineWin.h"
 #elif defined(__APPLE__)
 #include "WebTestThemeEngineMac.h"
@@ -93,12 +95,12 @@ private:
     WebTestProxyBase* m_proxy;
 
     std::vector<WebTestProxyBase*> m_windowList;
-#if !defined(USE_DEFAULT_RENDER_THEME)
-#if defined(WIN32)
+#if defined(USE_DEFAULT_RENDER_THEME)
+    std::auto_ptr<WebTestThemeEngineMock> m_themeEngine;
+#elif defined(WIN32)
     std::auto_ptr<WebTestThemeEngineWin> m_themeEngine;
 #elif defined(__APPLE__)
     std::auto_ptr<WebTestThemeEngineMac> m_themeEngine;
-#endif
 #endif
 };
 

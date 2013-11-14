@@ -32,12 +32,22 @@
 #include "core/rendering/PaintInfo.h"
 #include "core/rendering/RenderObject.h"
 #include "core/rendering/RenderProgress.h"
+#include "platform/LayoutTestSupport.h"
 #include "platform/graphics/Color.h"
 #include "public/platform/default/WebThemeEngine.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebRect.h"
 
+
 namespace WebCore {
+
+static bool useMockTheme()
+{
+#if defined(USE_AURA)
+    return isRunningLayoutTest();
+#endif
+    return false;
+}
 
 unsigned RenderThemeChromiumDefault::m_activeSelectionBackgroundColor =
     0xff1e90ff;
@@ -56,8 +66,12 @@ static blink::WebThemeEngine::State getWebThemeState(const RenderTheme* theme, c
 {
     if (!theme->isEnabled(o))
         return blink::WebThemeEngine::StateDisabled;
+    if (useMockTheme() && theme->isReadOnlyControl(o))
+        return blink::WebThemeEngine::StateReadonly;
     if (theme->isPressed(o))
         return blink::WebThemeEngine::StatePressed;
+    if (useMockTheme() && theme->isFocused(o))
+        return blink::WebThemeEngine::StateFocused;
     if (theme->isHovered(o))
         return blink::WebThemeEngine::StateHover;
 
@@ -87,13 +101,28 @@ RenderThemeChromiumDefault::~RenderThemeChromiumDefault()
 {
 }
 
+bool RenderThemeChromiumDefault::supportsFocusRing(const RenderStyle* style) const
+{
+    if (useMockTheme()) {
+        // Don't use focus rings for buttons when mocking controls.
+        return style->appearance() == ButtonPart
+            || style->appearance() == PushButtonPart
+            || style->appearance() == SquareButtonPart;
+    }
+
+    return RenderThemeChromiumSkia::supportsFocusRing(style);
+}
+
 Color RenderThemeChromiumDefault::systemColor(CSSValueID cssValueId) const
 {
     static const Color defaultButtonGrayColor(0xffdddddd);
     static const Color defaultMenuColor(0xfff7f7f7);
 
-    if (cssValueId == CSSValueButtonface)
+    if (cssValueId == CSSValueButtonface) {
+        if (useMockTheme())
+            return Color(0xc0, 0xc0, 0xc0);
         return defaultButtonGrayColor;
+    }
     if (cssValueId == CSSValueMenu)
         return defaultMenuColor;
     return RenderTheme::systemColor(cssValueId);
@@ -138,38 +167,52 @@ Color RenderThemeChromiumDefault::inactiveListBoxSelectionForegroundColor() cons
 
 Color RenderThemeChromiumDefault::platformActiveSelectionBackgroundColor() const
 {
+    if (useMockTheme())
+        return Color(0x00, 0x00, 0xff); // Royal blue.
     return m_activeSelectionBackgroundColor;
 }
 
 Color RenderThemeChromiumDefault::platformInactiveSelectionBackgroundColor() const
 {
+    if (useMockTheme())
+        return Color(0x99, 0x99, 0x99); // Medium gray.
     return m_inactiveSelectionBackgroundColor;
 }
 
 Color RenderThemeChromiumDefault::platformActiveSelectionForegroundColor() const
 {
+    if (useMockTheme())
+        return Color(0xff, 0xff, 0xcc); // Pale yellow.
     return m_activeSelectionForegroundColor;
 }
 
 Color RenderThemeChromiumDefault::platformInactiveSelectionForegroundColor() const
 {
+    if (useMockTheme())
+        return Color::white;
     return m_inactiveSelectionForegroundColor;
 }
 
 IntSize RenderThemeChromiumDefault::sliderTickSize() const
 {
+    if (useMockTheme())
+        return IntSize(1, 3);
     return IntSize(1, 6);
 }
 
 int RenderThemeChromiumDefault::sliderTickOffsetFromTrackCenter() const
 {
+    if (useMockTheme())
+        return 11;
     return -16;
 }
 
 void RenderThemeChromiumDefault::adjustSliderThumbSize(RenderStyle* style, Element* element) const
 {
     IntSize size = blink::Platform::current()->themeEngine()->getSize(blink::WebThemeEngine::PartSliderThumb);
-    float zoomLevel = style->effectiveZoom();
+
+    // FIXME: Mock theme doesn't handle zoomed sliders.
+    float zoomLevel = useMockTheme() ? 1 : style->effectiveZoom();
     if (style->appearance() == SliderThumbHorizontalPart) {
         style->setWidth(Length(size.width() * zoomLevel, Fixed));
         style->setHeight(Length(size.height() * zoomLevel, Fixed));
@@ -270,7 +313,7 @@ bool RenderThemeChromiumDefault::paintButton(RenderObject* o, const PaintInfo& i
     blink::WebThemeEngine::ExtraParams extraParams;
     blink::WebCanvas* canvas = i.context->canvas();
     extraParams.button.hasBorder = true;
-    extraParams.button.backgroundColor = defaultButtonBackgroundColor;
+    extraParams.button.backgroundColor = useMockTheme() ? 0xffc0c0c0 : defaultButtonBackgroundColor;
     if (o->hasBackground())
         extraParams.button.backgroundColor = o->resolveColor(CSSPropertyBackgroundColor).rgb();
 
@@ -310,16 +353,35 @@ bool RenderThemeChromiumDefault::paintMenuList(RenderObject* o, const PaintInfo&
     const int middle = rect.y() + rect.height() / 2;
 
     blink::WebThemeEngine::ExtraParams extraParams;
-    extraParams.menuList.arrowX = (o->style()->direction() == RTL) ? rect.x() + 7 : right - 13;
     extraParams.menuList.arrowY = middle;
     const RenderBox* box = toRenderBox(o);
     // Match Chromium Win behaviour of showing all borders if any are shown.
     extraParams.menuList.hasBorder = box->borderRight() || box->borderLeft() || box->borderTop() || box->borderBottom();
     extraParams.menuList.hasBorderRadius = o->style()->hasBorderRadius();
     // Fallback to transparent if the specified color object is invalid.
-    extraParams.menuList.backgroundColor = Color::transparent;
+    Color backgroundColor(Color::transparent);
     if (o->hasBackground())
-        extraParams.menuList.backgroundColor = o->resolveColor(CSSPropertyBackgroundColor).rgb();
+        backgroundColor = o->resolveColor(CSSPropertyBackgroundColor);
+    extraParams.menuList.backgroundColor = backgroundColor.rgb();
+
+    // If we have a background image, don't fill the content area to expose the
+    // parent's background. Also, we shouldn't fill the content area if the
+    // alpha of the color is 0. The API of Windows GDI ignores the alpha.
+    // FIXME: the normal Aura theme doesn't care about this, so we should
+    // investigate if we really need fillContentArea.
+    extraParams.menuList.fillContentArea = !o->style()->hasBackgroundImage() && backgroundColor.alpha();
+
+    if (useMockTheme()) {
+        // The size and position of the drop-down button is different between
+        // the mock theme and the regular aura theme.
+        int spacingTop = box->borderTop() + box->paddingTop();
+        int spacingBottom = box->borderBottom() + box->paddingBottom();
+        int spacingRight = box->borderRight() + box->paddingRight();
+        extraParams.menuList.arrowX = (o->style()->direction() == RTL) ? rect.x() + 4 + spacingRight: right - 13 - spacingRight;
+        extraParams.menuList.arrowHeight = rect.height() - spacingBottom - spacingTop;
+    } else {
+        extraParams.menuList.arrowX = (o->style()->direction() == RTL) ? rect.x() + 7 : right - 13;
+    }
 
     blink::WebCanvas* canvas = i.context->canvas();
 
@@ -335,7 +397,8 @@ bool RenderThemeChromiumDefault::paintSliderTrack(RenderObject* o, const PaintIn
 
     paintSliderTicks(o, i, rect);
 
-    float zoomLevel = o->style()->effectiveZoom();
+    // FIXME: Mock theme doesn't handle zoomed sliders.
+    float zoomLevel = useMockTheme() ? 1 : o->style()->effectiveZoom();
     GraphicsContextStateSaver stateSaver(*i.context);
     IntRect unzoomedRect = rect;
     if (zoomLevel != 1) {
@@ -358,7 +421,8 @@ bool RenderThemeChromiumDefault::paintSliderThumb(RenderObject* o, const PaintIn
     extraParams.slider.vertical = o->style()->appearance() == SliderThumbVerticalPart;
     extraParams.slider.inDrag = isPressed(o);
 
-    float zoomLevel = o->style()->effectiveZoom();
+    // FIXME: Mock theme doesn't handle zoomed sliders.
+    float zoomLevel = useMockTheme() ? 1 : o->style()->effectiveZoom();
     GraphicsContextStateSaver stateSaver(*i.context);
     IntRect unzoomedRect = rect;
     if (zoomLevel != 1) {
@@ -416,6 +480,17 @@ bool RenderThemeChromiumDefault::paintProgressBar(RenderObject* o, const PaintIn
 bool RenderThemeChromiumDefault::shouldOpenPickerWithF4Key() const
 {
     return true;
+}
+
+bool RenderThemeChromiumDefault::shouldUseFallbackTheme(RenderStyle* style) const
+{
+    if (useMockTheme()) {
+        // The mock theme can't handle zoomed controls, so we fall back to the "fallback" theme.
+        ControlPart part = style->appearance();
+        if (part == CheckboxPart || part == RadioPart)
+            return style->effectiveZoom() != 1;
+    }
+    return RenderTheme::shouldUseFallbackTheme(style);
 }
 
 } // namespace WebCore

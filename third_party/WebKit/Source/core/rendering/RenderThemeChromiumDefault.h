@@ -43,6 +43,8 @@ public:
     // A method asking if the control changes its tint when the window has focus or not.
     virtual bool controlSupportsTints(const RenderObject*) const;
 
+    virtual bool supportsFocusRing(const RenderStyle*) const OVERRIDE;
+
     // List Box selection color
     virtual Color activeListBoxSelectionBackgroundColor() const;
     virtual Color activeListBoxSelectionForegroundColor() const;
@@ -87,6 +89,7 @@ public:
 protected:
     RenderThemeChromiumDefault();
     virtual ~RenderThemeChromiumDefault();
+    virtual bool shouldUseFallbackTheme(RenderStyle*) const OVERRIDE;
 
 private:
     // A general method asking if any control tinting is supported at all.
