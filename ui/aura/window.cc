@@ -1163,13 +1163,23 @@ base::Closure Window::PrepareForLayerBoundsChange() {
 }
 
 bool Window::CanAcceptEvent(const ui::Event& event) {
+  if (!IsVisible())
+    return false;
+
   // The client may forbid certain windows from receiving events at a given
   // point in time.
   client::EventClient* client = client::GetEventClient(GetRootWindow());
   if (client && !client->CanProcessEventsWithinSubtree(this))
     return false;
 
-  return IsVisible() && (!parent_ || parent_->CanAcceptEvent(event));
+  // The top-most window can always process an event.
+  if (!parent_)
+    return true;
+
+  // For located events (i.e. mouse, touch etc.), an assumption is made that
+  // windows that don't have a delegate cannot process the event (see more in
+  // GetWindowForPoint()). This assumption is not made for key events.
+  return event.IsKeyEvent() || delegate_;
 }
 
 ui::EventTarget* Window::GetParentTarget() {

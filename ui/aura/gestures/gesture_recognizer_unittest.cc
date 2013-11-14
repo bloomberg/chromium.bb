@@ -2377,12 +2377,14 @@ TEST_F(GestureRecognizerTest, CaptureSendsGestureEnd) {
 // released or cancelled), do not receive extra synthetic cancels upon change of
 // capture.
 TEST_F(GestureRecognizerTest, CaptureDoesNotCancelFinishedTouches) {
+  scoped_ptr<GestureEventConsumeDelegate> delegate(
+      new GestureEventConsumeDelegate());
   scoped_ptr<TestEventHandler> handler(new TestEventHandler);
   root_window()->AddPreTargetHandler(handler.get());
 
   // Create a window and set it as the capture window.
-  scoped_ptr<aura::Window> window1(CreateTestWindowWithBounds(
-      gfx::Rect(10, 10, 300, 300), root_window()));
+  scoped_ptr<aura::Window> window1(CreateTestWindowWithDelegate(delegate.get(),
+      -1234, gfx::Rect(10, 10, 300, 300), root_window()));
   window1->SetCapture();
 
   EventGenerator generator(root_window());

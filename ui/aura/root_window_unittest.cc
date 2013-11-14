@@ -344,6 +344,21 @@ TEST_F(RootWindowTest, IgnoreUnknownKeys) {
   EXPECT_EQ(1, filter->num_key_events());
 }
 
+TEST_F(RootWindowTest, NoDelegateWindowReceivesKeyEvents) {
+  scoped_ptr<Window> w1(CreateNormalWindow(1, root_window(), NULL));
+  w1->Show();
+  w1->Focus();
+
+  test::TestEventHandler handler;
+  w1->AddPreTargetHandler(&handler);
+  ui::KeyEvent key_press(ui::ET_KEY_PRESSED, ui::VKEY_A, 0, false);
+  EXPECT_TRUE(dispatcher()->AsRootWindowHostDelegate()->OnHostKeyEvent(
+      &key_press));
+  EXPECT_EQ(1, handler.num_key_events());
+
+  w1->RemovePreTargetHandler(&handler);
+}
+
 // Tests that touch-events that are beyond the bounds of the root-window do get
 // propagated to the event filters correctly with the root as the target.
 TEST_F(RootWindowTest, TouchEventsOutsideBounds) {
