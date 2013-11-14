@@ -1291,14 +1291,13 @@ var BOTTOM_MARGIN_FOR_PREVIEW_PANEL_PX = 52;
     }
 
     var options = this.fileTypeSelector_.querySelectorAll('option');
-    if (options.length < 2) {
-      // There is in fact no choice, hide the selector.
-      this.fileTypeSelector_.hidden = true;
-      return;
-    }
+    if (options.length >= 2) {
+      // There is in fact no choice, show the selector.
+      this.fileTypeSelector_.hidden = false;
 
-    this.fileTypeSelector_.addEventListener('change',
-        this.updateFileTypeFilter_.bind(this));
+      this.fileTypeSelector_.addEventListener('change',
+          this.updateFileTypeFilter_.bind(this));
+    }
   };
 
   /**
