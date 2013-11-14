@@ -13,6 +13,7 @@
 #include "base/memory/scoped_ptr.h"
 #include "base/threading/thread.h"
 #include "tools/android/forwarder2/pipe_notifier.h"
+#include "tools/android/forwarder2/self_deleter_helper.h"
 #include "tools/android/forwarder2/socket.h"
 
 namespace base {
@@ -40,15 +41,14 @@ class Forwarder;
 // not to be running anymore once the object is deleted.
 class DeviceListener {
  public:
-  // Callback that is used for self-deletion as a way to let the device
+  // Callback that is used for self-deletion on error to let the device
   // controller perform some additional cleanup work (e.g. removing the device
   // listener instance from its internal map before deleting it).
-  typedef base::Callback<void (int /* listener port */)> DeleteCallback;
+  typedef base::Callback<void (scoped_ptr<DeviceListener>)> ErrorCallback;
 
-  static scoped_ptr<DeviceListener> Create(
-      scoped_ptr<Socket> host_socket,
-      int port,
-      const DeleteCallback& delete_callback);
+  static scoped_ptr<DeviceListener> Create(scoped_ptr<Socket> host_socket,
+                                           int port,
+                                           const ErrorCallback& error_callback);
 
   ~DeviceListener();
 
@@ -63,7 +63,7 @@ class DeviceListener {
                  scoped_ptr<Socket> listener_socket,
                  scoped_ptr<Socket> host_socket,
                  int port,
-                 const DeleteCallback& delete_callback);
+                 const ErrorCallback& error_callback);
 
   // Pushes an AcceptClientOnInternalThread() task to the internal thread's
   // message queue in order to wait for a new client soon.
@@ -74,14 +74,9 @@ class DeviceListener {
   void OnAdbDataSocketReceivedOnInternalThread(
       scoped_ptr<Socket> adb_data_socket);
 
-  void SelfDelete();
+  void OnInternalThreadError();
 
-  // Note that this can be called after the DeviceListener instance gets deleted
-  // which is why this method is static.
-  static void SelfDeleteOnDeletionTaskRunner(
-      const DeleteCallback& delete_callback,
-      int listener_port);
-
+  SelfDeleterHelper<DeviceListener> self_deleter_helper_;
   // Used for the listener thread to be notified on destruction. We have one
   // notifier per Listener thread since each Listener thread may be requested to
   // exit for different reasons independently from each other and independent
@@ -100,7 +95,6 @@ class DeviceListener {
   // the forwarder. Ownership transferred to the Forwarder.
   scoped_ptr<Socket> adb_data_socket_;
   const int listener_port_;
-  const DeleteCallback delete_callback_;
   // Task runner used for deletion set at construction time (i.e. the object is
   // deleted on the same thread it is created on).
   scoped_refptr<base::SingleThreadTaskRunner> deletion_task_runner_;

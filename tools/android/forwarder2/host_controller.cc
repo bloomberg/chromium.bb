@@ -22,7 +22,7 @@ scoped_ptr<HostController> HostController::Create(
     int host_port,
     int adb_port,
     int exit_notifier_fd,
-    const DeletionCallback& deletion_callback) {
+    const ErrorCallback& error_callback) {
   scoped_ptr<HostController> host_controller;
   scoped_ptr<PipeNotifier> delete_controller_notifier(new PipeNotifier());
   scoped_ptr<Socket> adb_control_socket(new Socket());
@@ -48,7 +48,7 @@ scoped_ptr<HostController> HostController::Create(
   host_controller.reset(
       new HostController(
           device_port_allocated, host_port, adb_port, exit_notifier_fd,
-          deletion_callback, adb_control_socket.Pass(),
+          error_callback, adb_control_socket.Pass(),
           delete_controller_notifier.Pass()));
   return host_controller.Pass();
 }
@@ -72,14 +72,14 @@ HostController::HostController(
     int host_port,
     int adb_port,
     int exit_notifier_fd,
-    const DeletionCallback& deletion_callback,
+    const ErrorCallback& error_callback,
     scoped_ptr<Socket> adb_control_socket,
     scoped_ptr<PipeNotifier> delete_controller_notifier)
-    : device_port_(device_port),
+    : self_deleter_helper_(this, error_callback),
+      device_port_(device_port),
       host_port_(host_port),
       adb_port_(adb_port),
       global_exit_notifier_fd_(exit_notifier_fd),
-      deletion_callback_(deletion_callback),
       adb_control_socket_(adb_control_socket.Pass()),
       delete_controller_notifier_(delete_controller_notifier.Pass()),
       deletion_task_runner_(base::MessageLoopProxy::current()),
@@ -97,7 +97,7 @@ void HostController::ReadCommandOnInternalThread() {
   if (!ReceivedCommand(command::ACCEPT_SUCCESS, adb_control_socket_.get())) {
     LOG(ERROR) << "Did not receive ACCEPT_SUCCESS for port: "
                << host_port_;
-    SelfDelete();
+    OnInternalThreadError();
     return;
   }
   // Try to connect to host server.
@@ -115,7 +115,7 @@ void HostController::ReadCommandOnInternalThread() {
       return;
     }
     LOG(ERROR) << "Will delete host controller: " << host_port_;
-    SelfDelete();
+    OnInternalThreadError();
     return;
   }
   LOG(INFO) << "Will send HOST_SERVER_SUCCESS: " << host_port_;
@@ -130,7 +130,7 @@ void HostController::StartForwarder(
   scoped_ptr<Socket> adb_data_socket(CreateSocket());
   if (!adb_data_socket->ConnectTcp("", adb_port_)) {
     LOG(ERROR) << "Could not connect AdbDataSocket on port: " << adb_port_;
-    SelfDelete();
+    OnInternalThreadError();
     return;
   }
   // Open the Adb data connection, and send a command with the
@@ -143,7 +143,7 @@ void HostController::StartForwarder(
   if (!ReceivedCommand(command::ADB_DATA_SOCKET_SUCCESS,
                        adb_control_socket_.get())) {
     LOG(ERROR) << "Device could not handle the new Adb Data Connection.";
-    SelfDelete();
+    OnInternalThreadError();
     return;
   }
   forwarder2::StartForwarder(
@@ -157,14 +157,12 @@ scoped_ptr<Socket> HostController::CreateSocket() {
   return socket.Pass();
 }
 
-void HostController::SelfDelete() {
-  scoped_ptr<HostController> self_deleter(this);
-  deletion_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&HostController::SelfDeleteOnDeletionTaskRunner,
-                 deletion_callback_, base::Passed(&self_deleter)));
-  // Tell the device to delete its corresponding controller instance before we
-  // self-delete.
+void HostController::OnInternalThreadError() {
+  UnmapPortOnDevice();
+  self_deleter_helper_.MaybeSelfDeleteSoon();
+}
+
+void HostController::UnmapPortOnDevice() {
   Socket socket;
   if (!socket.ConnectTcp("", adb_port_)) {
     LOG(ERROR) << "Could not connect to device on port " << adb_port_;
@@ -178,13 +176,6 @@ void HostController::SelfDelete() {
     LOG(ERROR) << "Unamp command failed for port " << device_port_;
     return;
   }
-}
-
-// static
-void HostController::SelfDeleteOnDeletionTaskRunner(
-    const DeletionCallback& deletion_callback,
-    scoped_ptr<HostController> controller) {
-  deletion_callback.Run(controller.Pass());
 }
 
 }  // namespace forwarder2

@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/basictypes.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
@@ -92,8 +93,9 @@ void DeviceController::AcceptHostCommandInternal() {
       }
       scoped_ptr<DeviceListener> new_listener(
           DeviceListener::Create(
-              socket.Pass(), port, base::Bind(&DeviceController::DeleteListener,
-                                              weak_ptr_factory_.GetWeakPtr())));
+              socket.Pass(), port,
+              base::Bind(&DeviceController::DeleteListenerOnError,
+                         weak_ptr_factory_.GetWeakPtr())));
       if (!new_listener)
         return;
       new_listener->Start();
@@ -136,18 +138,20 @@ void DeviceController::AcceptHostCommandInternal() {
 }
 
 // static
-void DeviceController::DeleteListener(
+void DeviceController::DeleteListenerOnError(
       const base::WeakPtr<DeviceController>& device_controller_ptr,
-      int listener_port) {
+      scoped_ptr<DeviceListener> device_listener) {
   DeviceController* const controller = device_controller_ptr.get();
-  if (!controller)
+  if (!controller) {
+    // |device_listener| was already deleted by the controller that did have
+    // its ownership.
+    ignore_result(device_listener.release());
     return;
+  }
   DCHECK(controller->construction_task_runner_->RunsTasksOnCurrentThread());
-  const ListenersMap::iterator listener_it = controller->listeners_.find(
-      listener_port);
-  if (listener_it == controller->listeners_.end())
-    return;
-  DeleteRefCountedValueInMapFromIterator(listener_it, &controller->listeners_);
+  bool listener_did_exist = DeleteRefCountedValueInMap(
+      device_listener->listener_port(), &controller->listeners_);
+  DCHECK(listener_did_exist);
 }
 
 }  // namespace forwarder
