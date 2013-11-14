@@ -828,6 +828,8 @@
             'css/resolver/MediaQueryResult.h',
             'css/resolver/ScopedStyleResolver.cpp',
             'css/resolver/ScopedStyleResolver.h',
+            'css/resolver/ScopedStyleTree.cpp',
+            'css/resolver/ScopedStyleTree.h',
             'css/resolver/SharedStyleFinder.cpp',
             'css/resolver/SharedStyleFinder.h',
             'css/resolver/StyleAdjuster.cpp',

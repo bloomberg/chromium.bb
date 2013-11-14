@@ -27,20 +27,15 @@
 #ifndef ScopedStyleResolver_h
 #define ScopedStyleResolver_h
 
-#include "core/css/CSSKeyframesRule.h"
 #include "core/css/ElementRuleCollector.h"
 #include "core/css/RuleSet.h"
 #include "core/dom/ContainerNode.h"
-#include "core/dom/Element.h"
-#include "wtf/Forward.h"
 #include "wtf/HashMap.h"
 #include "wtf/OwnPtr.h"
 #include "wtf/PassOwnPtr.h"
-#include "wtf/Vector.h"
 
 namespace WebCore {
 
-class ElementRuleCollector;
 class MediaQueryEvaluator;
 class PageRuleCollector;
 class ShadowRoot;
@@ -93,75 +88,6 @@ private:
     typedef HashMap<const StringImpl*, RefPtr<StyleRuleKeyframes> > KeyframesRuleMap;
     KeyframesRuleMap m_keyframesRuleMap;
 };
-
-class ScopedStyleTree {
-    WTF_MAKE_NONCOPYABLE(ScopedStyleTree); WTF_MAKE_FAST_ALLOCATED;
-public:
-    ScopedStyleTree() : m_scopedResolverForDocument(0), m_buildInDocumentOrder(true) { }
-
-    ScopedStyleResolver* ensureScopedStyleResolver(ContainerNode& scopingNode);
-    ScopedStyleResolver* lookupScopedStyleResolverFor(const ContainerNode* scopingNode)
-    {
-        HashMap<const ContainerNode*, OwnPtr<ScopedStyleResolver> >::iterator it = m_authorStyles.find(scopingNode);
-        return it != m_authorStyles.end() ? it->value.get() : 0;
-    }
-
-    ScopedStyleResolver* scopedStyleResolverFor(const ContainerNode& scopingNode);
-    ScopedStyleResolver* addScopedStyleResolver(ContainerNode& scopingNode, bool& isNewEntry);
-    void clear();
-
-    // for fast-path.
-    bool hasOnlyScopedResolverForDocument() const { return m_scopedResolverForDocument && m_authorStyles.size() == 1; }
-    ScopedStyleResolver* scopedStyleResolverForDocument() const { return m_scopedResolverForDocument; }
-
-    void resolveScopedStyles(const Element*, Vector<ScopedStyleResolver*, 8>&);
-    void collectScopedResolversForHostedShadowTrees(const Element*, Vector<ScopedStyleResolver*, 8>&);
-    void resolveScopedKeyframesRules(const Element*, Vector<ScopedStyleResolver*, 8>&);
-    ScopedStyleResolver* scopedResolverFor(const Element*);
-
-    void remove(const ContainerNode* scopingNode);
-
-    void pushStyleCache(const ContainerNode& scopingNode, const ContainerNode* parent);
-    void popStyleCache(const ContainerNode& scopingNode);
-
-    void collectFeaturesTo(RuleFeatureSet& features);
-    void setBuildInDocumentOrder(bool enabled) { m_buildInDocumentOrder = enabled; }
-    bool buildInDocumentOrder() const { return m_buildInDocumentOrder; }
-
-private:
-    void setupScopedStylesTree(ScopedStyleResolver* target);
-
-    bool cacheIsValid(const ContainerNode* parent) const { return parent && parent == m_cache.nodeForScopedStyles; }
-    void resolveStyleCache(const ContainerNode* scopingNode);
-    ScopedStyleResolver* enclosingScopedStyleResolverFor(const ContainerNode* scopingNode);
-
-    void reparentNodes(const ScopedStyleResolver* oldParent, ScopedStyleResolver* newParent);
-
-private:
-    HashMap<const ContainerNode*, OwnPtr<ScopedStyleResolver> > m_authorStyles;
-    ScopedStyleResolver* m_scopedResolverForDocument;
-    bool m_buildInDocumentOrder;
-
-    struct ScopedStyleCache {
-        ScopedStyleResolver* scopedResolver;
-        const ContainerNode* nodeForScopedStyles;
-
-        void clear()
-        {
-            scopedResolver = 0;
-            nodeForScopedStyles = 0;
-        }
-    };
-    ScopedStyleCache m_cache;
-};
-
-inline ScopedStyleResolver* ScopedStyleTree::scopedResolverFor(const Element* element)
-{
-    if (!cacheIsValid(element))
-        resolveStyleCache(element);
-
-    return m_cache.scopedResolver;
-}
 
 } // namespace WebCore
 
