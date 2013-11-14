@@ -1063,7 +1063,9 @@ void AutofillDialogControllerImpl::ConstructLegalDocumentsText() {
     link_names.push_back(documents[i]->display_name());
   }
 
-  const bool new_user = wallet_items_->HasRequiredAction(wallet::SETUP_WALLET);
+  // TODO(estade): Replace this with a more permanent solution. See
+  // http://crbug.com/319049 and http://crbug.com/316045
+  const bool new_user = true;
   int resource_id = 0;
   switch (documents.size()) {
     case 2U:
