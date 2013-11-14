@@ -143,7 +143,7 @@ void PageScaleConstraintsSet::adjustForAndroidWebViewQuirks(const ViewportDescri
     if (!loadWithOverviewMode) {
         bool resetInitialScale = false;
         if (description.zoom == -1) {
-            if (description.maxWidth.isAuto())
+            if (description.maxWidth.isAuto() || description.maxWidth.type() == ExtendToZoom)
                 resetInitialScale = true;
             if (useWideViewport || description.maxWidth == Length(100, ViewportPercentageWidth))
                 resetInitialScale = true;
@@ -176,7 +176,7 @@ void PageScaleConstraintsSet::adjustForAndroidWebViewQuirks(const ViewportDescri
             const float nonWideScale = description.zoom < 1 && !description.maxWidth.isViewportPercentage() ? -1 : oldInitialScale;
             adjustedLayoutSizeWidth = getLayoutWidthForNonWideViewport(viewSize, nonWideScale) / targetDensityDPIFactor;
             float newInitialScale = targetDensityDPIFactor;
-            if (m_userAgentConstraints.initialScale != -1 && (description.maxWidth == Length(100, ViewportPercentageWidth) || (description.maxWidth.isAuto() && description.zoom == -1))) {
+            if (m_userAgentConstraints.initialScale != -1 && (description.maxWidth == Length(100, ViewportPercentageWidth) || ((description.maxWidth.isAuto() || description.maxWidth.type() == ExtendToZoom) && description.zoom == -1))) {
                 adjustedLayoutSizeWidth /= m_userAgentConstraints.initialScale;
                 newInitialScale = m_userAgentConstraints.initialScale;
             }
