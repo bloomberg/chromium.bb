@@ -1,36 +1,40 @@
 <h1 class="page_title">Chrome Platform APIs</h1>
-{{?is_apps}}
 <p class="doc-family apps">
 Chrome provides many special-purpose APIs like
 <code>chrome.runtime</code> and <code>chrome.alarms</code>
 to Chrome Apps.
 </p>
-{{:is_apps}}
-<p class="doc-family extensions">
-Chrome provides APIs such as
-<code>chrome.bookmarks</code> and <code>chrome.tab</code>
-so that extensions can interact with the browser.
-</p>
-{{/is_apps}}
 
-<h2 id="supported">Supported APIs</h2>
+{{?stable_apis}}
+<h2 id="stable_apis">
+Stable APIs
+</h2>
+<p>
+Here are the supported chrome.* APIs stable since the Chrome version.
+</p>
+{{+partials.api_table apis:stable_apis is_stable:true}}
+{{/}}
+
+{{?beta_apis}}
+<h2 id="beta_apis">
+Beta APIs
+</h2>
+<p>
+Here are the supported chrome.* APIs available in Chrome Beta only.
+</p>
+{{+partials.api_table apis:beta_apis is_stable:false}}
+{{/}}
+
+{{?dev_apis}}
+<h2 id="dev_apis">
+Dev APIs
+</h2>
 
 <p>
-Here are the supported chrome.* APIs:
+Here are the supported chrome.* APIs available in Chrome Dev only.
 </p>
-
-<ul>
-  {{?is_apps}}
-  {{#api_list.apps.chrome}}
-  <li><a href="{{name}}.html">{{name}}</a></li>
-  {{/api_list.apps.chrome}}
-  {{:is_apps}}
-  {{#api_list.extensions.chrome}}
-  <li><a href="{{name}}.html">{{name}}</a></li>
-  {{/api_list.extensions.chrome}}
-  {{/is_apps}}
-</ul>
-
+{{+partials.api_table apis:dev_apis is_stable:false}}
+{{/}}
 <h2 id="experimental">Experimental APIs</h2>
 
 <p>

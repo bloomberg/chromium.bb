@@ -1,0 +1,15 @@
+<table>
+  <tr><th>Name</th><th>Description</th>{{?is_stable}}<th>Since</th>{{/}}</tr>
+  {{#apis}}
+   <tr>
+     <td><a href="{{name}}.html">{{name}}</a></td>
+     <td>{{{description}}}</td>
+     {{?is_stable}}
+     <td>{{version}}</td>
+     {{/}}
+   </tr>
+  {{/apis}}
+</table>
+
+
+

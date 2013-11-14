@@ -19,6 +19,7 @@ def _CreateAPIModel(path, data):
   schema = ProcessSchema(path, data)
   if os.path.splitext(path)[1] == '.json':
     schema = schema[0]
+  if not schema: return None
   return Namespace(schema, schema['namespace'])
 
 
@@ -72,3 +73,7 @@ class APIModels(object):
       # Propagate the first FileNotFoundError if neither were found.
       futures[0].Get()
     return Future(delegate=Gettable(resolve))
+
+  def IterModels(self):
+    return dict((name, self.GetModel(name))
+                 for name in self.GetNames()).iteritems()
