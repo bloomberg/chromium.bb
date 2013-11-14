@@ -746,7 +746,8 @@ def _CheckNoAbbreviationInPngFileName(input_api, output_api):
 def _DepsFilesToCheck(re, changed_lines):
   """Helper method for _CheckAddedDepsHaveTargetApprovals. Returns
   a set of DEPS entries that we should look up."""
-  results = set()
+  # We ignore deps entries on auto-generated directories.
+  AUTO_GENERATED_DIRS = ['grit', 'jni']
 
   # This pattern grabs the path without basename in the first
   # parentheses, and the basename (if present) in the second. It
@@ -754,11 +755,12 @@ def _DepsFilesToCheck(re, changed_lines):
   # be a header file ending in ".h".
   pattern = re.compile(
       r"""['"]\+([^'"]+?)(/[a-zA-Z0-9_]+\.h)?['"].*""")
+  results = set()
   for changed_line in changed_lines:
     m = pattern.match(changed_line)
     if m:
       path = m.group(1)
-      if not (path.startswith('grit/') or path == 'grit'):
+      if path.split('/')[0] not in AUTO_GENERATED_DIRS:
         results.add('%s/DEPS' % m.group(1))
   return results
 
