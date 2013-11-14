@@ -1331,7 +1331,8 @@ IN_PROC_BROWSER_TEST_F(PolicyTest, DeveloperToolsDisabled) {
   EXPECT_FALSE(DevToolsWindow::GetDockedInstanceForInspectedTab(contents));
 }
 
-IN_PROC_BROWSER_TEST_F(PolicyTest, WebStoreIconHidden) {
+// TODO(samarth): remove along with rest of NTP4 code.
+IN_PROC_BROWSER_TEST_F(PolicyTest, DISABLED_WebStoreIconHidden) {
 #if defined(OS_WIN) && defined(USE_ASH)
   // Disable this test in Metro+Ash for now (http://crbug.com/262796).
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kAshBrowserTests))

@@ -179,7 +179,8 @@ IN_PROC_BROWSER_TEST_F(DesktopCaptureApiTest, MAYBE_ChooseDesktopMedia) {
   ASSERT_TRUE(RunExtensionTest("desktop_capture")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(DesktopCaptureApiTest, Delegation) {
+// Does not work with Instant Extended. http://crbug.com/305391.
+IN_PROC_BROWSER_TEST_F(DesktopCaptureApiTest, DISABLED_Delegation) {
   // Initialize test server.
   base::FilePath test_data;
   EXPECT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data));

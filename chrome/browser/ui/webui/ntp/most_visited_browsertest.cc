@@ -23,6 +23,7 @@ class MostVisitedWebUITest : public WebUIBrowserTest {
   }
 };
 
-WEB_UI_UNITTEST_F(MostVisitedWebUITest, refreshDataBasic);
-WEB_UI_UNITTEST_F(MostVisitedWebUITest, refreshDataOrdering);
-WEB_UI_UNITTEST_F(MostVisitedWebUITest, refreshDataPinning);
+// TODO(samarth): delete along with the rest of the NTP4 code.
+WEB_UI_UNITTEST_F(MostVisitedWebUITest, DISABLED_refreshDataBasic);
+WEB_UI_UNITTEST_F(MostVisitedWebUITest, DISABLED_refreshDataOrdering);
+WEB_UI_UNITTEST_F(MostVisitedWebUITest, DISABLED_refreshDataPinning);

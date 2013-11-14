@@ -142,8 +142,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
   InstallThemeAndVerify("theme", "camo theme");
 }
 
+// TODO(samarth): remove along with NTP4 code.
 IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
-                       AppInstallConfirmation) {
+                       DISABLED_AppInstallConfirmation) {
   int num_tabs = browser()->tab_strip_model()->count();
 
   base::FilePath app_dir = test_data_dir_.AppendASCII("app");
@@ -161,8 +162,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
   }
 }
 
+// TODO(samarth): remove along with NTP4 code.
 IN_PROC_BROWSER_TEST_F(ExtensionInstallUIBrowserTest,
-                       AppInstallConfirmation_Incognito) {
+                       DISABLED_AppInstallConfirmation_Incognito) {
   Browser* incognito_browser = CreateIncognitoBrowser();
 
   int num_incognito_tabs = incognito_browser->tab_strip_model()->count();
@@ -211,12 +213,9 @@ class NewTabUISortingBrowserTest : public ExtensionInstallUIBrowserTest,
   DISALLOW_COPY_AND_ASSIGN(NewTabUISortingBrowserTest);
 };
 
-#if defined(OS_WIN)
-#define MAYBE_ReorderDuringInstall DISABLED_ReorderDuringInstall
-#else
-#define MAYBE_ReorderDuringInstall ReorderDuringInstall
-#endif
-IN_PROC_BROWSER_TEST_F(NewTabUISortingBrowserTest, MAYBE_ReorderDuringInstall) {
+// TODO(samarth): remove along with NTP4 code.
+IN_PROC_BROWSER_TEST_F(NewTabUISortingBrowserTest,
+                       DISABLED_ReorderDuringInstall) {
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
   ExtensionService* service = extensions::ExtensionSystem::Get(
       browser()->profile())->extension_service();

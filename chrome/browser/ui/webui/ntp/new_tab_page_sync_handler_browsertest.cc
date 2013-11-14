@@ -32,8 +32,9 @@ class MockNewTabPageSyncHandler : public NewTabPageSyncHandler {
   }
 };
 
+// TODO(samarth): Delete along with the rest of the NTP4 code.
 IN_PROC_BROWSER_TEST_F(NewTabPageSyncHandlerBrowserTest,
-                       ChangeSigninAllowedToFalse) {
+                       DISABLED_ChangeSigninAllowedToFalse) {
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUINewTabURL));
   content::WebUI* web_ui =
       browser()->tab_strip_model()->GetActiveWebContents()->GetWebUI();

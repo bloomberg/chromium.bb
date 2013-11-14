@@ -2454,15 +2454,16 @@ IN_PROC_BROWSER_TEST_F(ClickModifierTest, HrefShiftMiddleClickTest) {
   RunTest(browser(), GetHrefURL(), modifiers, button, disposition);
 }
 
-// TODO(sail): enable this for MAC when
-// BrowserWindowCocoa::GetRenderViewHeightInsetWithDetachedBookmarkBar
-// is fixed.
-#if defined(OS_MACOSX)
-#define MAYBE_GetSizeForNewRenderView DISABLED_GetSizeForNewRenderView
-#else
-#define MAYBE_GetSizeForNewRenderView GetSizeForNewRenderView
-#endif
-IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_GetSizeForNewRenderView) {
+// Does not work with Instant Extended. http://crbug.com/317760.
+// // TODO(sail): enable this for MAC when
+// // BrowserWindowCocoa::GetRenderViewHeightInsetWithDetachedBookmarkBar
+// // is fixed.
+// #if defined(OS_MACOSX)
+// #define MAYBE_GetSizeForNewRenderView DISABLED_GetSizeForNewRenderView
+// #else
+// #define MAYBE_GetSizeForNewRenderView GetSizeForNewRenderView
+// #endif
+IN_PROC_BROWSER_TEST_F(BrowserTest, DISABLED_GetSizeForNewRenderView) {
   ASSERT_TRUE(test_server()->Start());
   // Create an HTTPS server for cross-site transition.
   net::SpawnedTestServer https_test_server(net::SpawnedTestServer::TYPE_HTTPS,
