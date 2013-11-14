@@ -78,6 +78,9 @@ class SSLClientCertificateSelector : public SSLClientAuthObserver,
  private:
   void CreateCertTable();
 
+  // Callback after unlocking certificate slot.
+  void Unlocked(net::X509Certificate* cert);
+
   scoped_ptr<CertificateSelectorTableModel> model_;
 
   content::WebContents* web_contents_;

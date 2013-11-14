@@ -357,10 +357,12 @@ void SSLClientCertificateSelector::OnOkClicked(GtkWidget* button) {
   // ourself before the Unlocked callback gets called.
   StopObserving();
 
+  GtkWidget* toplevel = gtk_widget_get_toplevel(root_widget_.get());
   chrome::UnlockCertSlotIfNecessary(
       cert,
       chrome::kCryptoModulePasswordClientAuth,
       cert_request_info()->host_and_port,
+      GTK_WINDOW(toplevel),
       base::Bind(&SSLClientCertificateSelector::Unlocked,
                  base::Unretained(this)));
 }

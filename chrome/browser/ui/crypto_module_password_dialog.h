@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
+#include "ui/gfx/native_widget_types.h"
 
 namespace crypto {
 class CryptoModuleBlockingPasswordDelegate;
@@ -44,6 +45,7 @@ void ShowCryptoModulePasswordDialog(
     bool retry,
     CryptoModulePasswordReason reason,
     const std::string& server,
+    gfx::NativeWindow parent,
     const CryptoModulePasswordCallback& callback);
 
 // Returns a CryptoModuleBlockingPasswordDelegate to open a dialog and block
@@ -58,6 +60,7 @@ crypto::CryptoModuleBlockingPasswordDelegate*
 void UnlockSlotsIfNecessary(const net::CryptoModuleList& modules,
                             CryptoModulePasswordReason reason,
                             const std::string& server,
+                            gfx::NativeWindow parent,
                             const base::Closure& callback);
 
 // Asynchronously unlock the |cert|'s module, if necessary.  |callback| is
@@ -66,6 +69,7 @@ void UnlockSlotsIfNecessary(const net::CryptoModuleList& modules,
 void UnlockCertSlotIfNecessary(net::X509Certificate* cert,
                                CryptoModulePasswordReason reason,
                                const std::string& server,
+                               gfx::NativeWindow parent,
                                const base::Closure& callback);
 
 }  // namespace chrome

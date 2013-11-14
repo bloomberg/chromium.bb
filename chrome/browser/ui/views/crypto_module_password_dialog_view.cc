@@ -153,10 +153,11 @@ void ShowCryptoModulePasswordDialog(
     bool retry,
     CryptoModulePasswordReason reason,
     const std::string& server,
+    gfx::NativeWindow parent,
     const CryptoModulePasswordCallback& callback) {
   CryptoModulePasswordDialogView* dialog =
       new CryptoModulePasswordDialogView(slot_name, reason, server, callback);
-  views::DialogDelegate::CreateDialogWidget(dialog, NULL, NULL)->Show();
+  views::DialogDelegate::CreateDialogWidget(dialog, NULL, parent)->Show();
 }
 
 }  // namespace chrome

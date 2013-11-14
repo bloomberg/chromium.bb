@@ -26,6 +26,7 @@ class CryptoModulePasswordDialog {
       bool retry,
       chrome::CryptoModulePasswordReason reason,
       const std::string& server,
+      gfx::NativeWindow parent,
       const chrome::CryptoModulePasswordCallback& callback);
 
   ~CryptoModulePasswordDialog() {}
@@ -49,11 +50,12 @@ CryptoModulePasswordDialog::CryptoModulePasswordDialog(
     bool retry,
     chrome::CryptoModulePasswordReason reason,
     const std::string& server,
+    gfx::NativeWindow parent,
     const chrome::CryptoModulePasswordCallback& callback)
     : callback_(callback) {
   dialog_ = gtk_dialog_new_with_buttons(
       l10n_util::GetStringUTF8(IDS_CRYPTO_MODULE_AUTH_DIALOG_TITLE).c_str(),
-      NULL,
+      parent,
       GTK_DIALOG_NO_SEPARATOR,
       NULL);  // Populate the buttons later, for control over the OK button.
   gtk_dialog_add_button(GTK_DIALOG(dialog_),
@@ -157,9 +159,10 @@ void ShowCryptoModulePasswordDialog(
     bool retry,
     CryptoModulePasswordReason reason,
     const std::string& server,
+    gfx::NativeWindow parent,
     const CryptoModulePasswordCallback& callback) {
-  (new CryptoModulePasswordDialog(slot_name, retry, reason, server,
-                                  callback))->Show();
+  (new CryptoModulePasswordDialog(
+       slot_name, retry, reason, server, parent, callback))->Show();
 }
 
 }  // namespace chrome

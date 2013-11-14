@@ -63,7 +63,11 @@ class CryptoModuleBlockingDialogDelegate
                   bool retry) {
     DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
     ShowCryptoModulePasswordDialog(
-        slot_name, retry, reason_, server_,
+        slot_name,
+        retry,
+        reason_,
+        server_,
+        NULL,  // TODO(mattm): Supply parent window.
         base::Bind(&CryptoModuleBlockingDialogDelegate::GotPassword,
                    // We block on event_ until the task completes, so
                    // there's no need to ref-count.

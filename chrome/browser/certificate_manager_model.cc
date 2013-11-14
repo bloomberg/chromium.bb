@@ -31,23 +31,24 @@ CertificateManagerModel::~CertificateManagerModel() {
 }
 
 void CertificateManagerModel::Refresh() {
-  VLOG(1) << "refresh started";
+  DVLOG(1) << "refresh started";
   net::CryptoModuleList modules;
   cert_db_->ListModules(&modules, false);
-  VLOG(1) << "refresh waiting for unlocking...";
+  DVLOG(1) << "refresh waiting for unlocking...";
   chrome::UnlockSlotsIfNecessary(
       modules,
       chrome::kCryptoModulePasswordListCerts,
       std::string(),  // unused.
+      NULL, // TODO(mattm): supply parent window.
       base::Bind(&CertificateManagerModel::RefreshSlotsUnlocked,
                  base::Unretained(this)));
 }
 
 void CertificateManagerModel::RefreshSlotsUnlocked() {
-  VLOG(1) << "refresh listing certs...";
+  DVLOG(1) << "refresh listing certs...";
   cert_db_->ListCerts(&cert_list_);
   observer_->CertificatesRefreshed();
-  VLOG(1) << "refresh finished";
+  DVLOG(1) << "refresh finished";
 }
 
 void CertificateManagerModel::FilterAndBuildOrgGroupingMap(
