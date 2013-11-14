@@ -7,10 +7,10 @@ import os
 import posixpath
 
 from compiled_file_system import SingleFile
+from extensions_paths import API
 from file_system import FileNotFoundError
 from future import Gettable, Future
 from schema_util import ProcessSchema
-from svn_constants import API_PATH
 from third_party.json_schema_compiler.model import Namespace, UnixName
 
 
@@ -46,24 +46,23 @@ class APIModels(object):
     # Callers sometimes specify a filename which includes .json or .idl - if
     # so, believe them. They may even include the 'api/' prefix.
     if os.path.splitext(api_name)[1] in ('.json', '.idl'):
-      if not api_name.startswith(API_PATH + '/'):
-        api_name = posixpath.join(API_PATH, api_name)
+      if not api_name.startswith(API + '/'):
+        api_name = posixpath.join(API, api_name)
       return self._model_cache.GetFromFile(api_name)
 
-    assert not api_name.startswith(API_PATH)
+    assert not api_name.startswith(API)
 
     # API names are given as declarativeContent and app.window but file names
     # will be declarative_content and app_window.
     file_name = UnixName(api_name).replace('.', '_')
-    # Devtools APIs are in API_PATH/devtools/ not API_PATH/, and have their
+    # Devtools APIs are in API/devtools/ not API/, and have their
     # "devtools" names removed from the file names.
     basename = posixpath.basename(file_name)
     if basename.startswith('devtools_'):
       file_name = posixpath.join(
           'devtools', file_name.replace(basename, basename[len('devtools_'):]))
 
-    futures = [self._model_cache.GetFromFile('%s/%s.%s' %
-                                             (API_PATH, file_name, ext))
+    futures = [self._model_cache.GetFromFile('%s/%s.%s' % (API, file_name, ext))
                for ext in ('json', 'idl')]
     def resolve():
       for future in futures:

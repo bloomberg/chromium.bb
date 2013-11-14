@@ -19,10 +19,10 @@ from object_store_creator import ObjectStoreCreator
 from path_canonicalizer import PathCanonicalizer
 from reference_resolver import ReferenceResolver
 from samples_data_source import SamplesDataSource
-import svn_constants
 from template_renderer import TemplateRenderer
 from test_branch_utility import TestBranchUtility
 from test_object_store import TestObjectStore
+
 
 class ServerInstance(object):
 
@@ -94,7 +94,6 @@ class ServerInstance(object):
     self.api_data_source_factory = APIDataSource.Factory(
         self.compiled_fs_factory,
         host_fs_at_trunk,
-        svn_constants.API_PATH,
         self.availability_finder,
         branch_utility)
 
@@ -120,7 +119,6 @@ class ServerInstance(object):
         app_samples_fs,
         CompiledFileSystem.Factory(object_store_creator),
         self.ref_resolver_factory,
-        svn_constants.EXAMPLES_PATH,
         base_path)
 
     self.api_data_source_factory.SetSamplesDataSourceFactory(
@@ -129,8 +127,7 @@ class ServerInstance(object):
     self.intro_data_source_factory = IntroDataSource.Factory(
         self.compiled_fs_factory,
         host_fs_at_trunk,
-        self.ref_resolver_factory,
-        [svn_constants.INTRO_PATH, svn_constants.ARTICLE_PATH])
+        self.ref_resolver_factory)
 
     self.path_canonicalizer = PathCanonicalizer(
         self.compiled_fs_factory,
@@ -145,10 +142,6 @@ class ServerInstance(object):
     # then factor out the DataSource creation into a factory method, so that
     # the entire ServerInstance doesn't need to be passed in here.
     self.template_renderer = TemplateRenderer(self)
-
-    self.strings_json_path = svn_constants.STRINGS_JSON_PATH
-    self.manifest_json_path = svn_constants.MANIFEST_JSON_PATH
-    self.manifest_features_path = svn_constants.MANIFEST_FEATURES_PATH
 
   @staticmethod
   def ForTest(file_system, base_path='/'):

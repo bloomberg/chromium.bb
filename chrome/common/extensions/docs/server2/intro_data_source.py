@@ -7,15 +7,17 @@ import logging
 import os
 import re
 
+from extensions_paths import INTROS_TEMPLATES, ARTICLES_TEMPLATES
 from docs_server_utils import FormatKey
 from file_system import FileNotFoundError
 from third_party.handlebar import Handlebar
 
-# TODO(kalman): rename this HTMLDataSource or other, then have separate intro
-# article data sources created as instances of it.
 
 _H1_REGEX = re.compile('<h1[^>.]*?>.*?</h1>', flags=re.DOTALL)
 
+
+# TODO(kalman): rename this HTMLDataSource or other, then have separate intro
+# article data sources created as instances of it.
 class _IntroParser(HTMLParser):
   ''' An HTML parser which will parse table of contents and page title info out
   of an intro.
@@ -63,16 +65,11 @@ class IntroDataSource(object):
   of contents dictionary is created, which contains the headings in the intro.
   '''
   class Factory(object):
-    def __init__(self,
-                 compiled_fs_factory,
-                 file_system,
-                 ref_resolver_factory,
-                 base_paths):
+    def __init__(self, compiled_fs_factory, file_system, ref_resolver_factory):
       self._cache = compiled_fs_factory.Create(file_system,
                                                self._MakeIntroDict,
                                                IntroDataSource)
       self._ref_resolver = ref_resolver_factory.Create()
-      self._base_paths = base_paths
 
     def _MakeIntroDict(self, intro_path, intro):
       # Guess the name of the API from the path to the intro.
@@ -106,22 +103,22 @@ class IntroDataSource(object):
       }
 
     def Create(self):
-      return IntroDataSource(self._cache, self._base_paths)
+      return IntroDataSource(self._cache)
 
-  def __init__(self, cache, base_paths):
+  def __init__(self, cache):
     self._cache = cache
-    self._base_paths = base_paths
 
   def get(self, key):
     path = FormatKey(key)
     def get_from_base_path(base_path):
       return self._cache.GetFromFile('%s/%s' % (base_path, path)).Get()
-    for base_path in self._base_paths:
+    base_paths = (INTROS_TEMPLATES, ARTICLES_TEMPLATES)
+    for base_path in base_paths:
       try:
         return get_from_base_path(base_path)
       except FileNotFoundError:
         continue
     # Not found. Do the first operation again so that we get a stack trace - we
     # know that it'll fail.
-    get_from_base_path(self._base_paths[0])
+    get_from_base_path(base_paths[0])
     raise AssertionError()

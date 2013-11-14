@@ -7,6 +7,7 @@ import json
 import unittest
 
 from api_list_data_source import APIListDataSource
+from extensions_paths import EXTENSIONS
 from server_instance import ServerInstance
 from test_file_system import TestFileSystem
 
@@ -75,7 +76,8 @@ _TEST_DATA = {
 
 class APIListDataSourceTest(unittest.TestCase):
   def setUp(self):
-    server_instance = ServerInstance.ForTest(TestFileSystem(_TEST_DATA))
+    server_instance = ServerInstance.ForTest(
+        TestFileSystem(_TEST_DATA, relative_to=EXTENSIONS))
     self._factory = APIListDataSource.Factory(
         server_instance.compiled_fs_factory,
         server_instance.host_file_system_provider.GetTrunk(),

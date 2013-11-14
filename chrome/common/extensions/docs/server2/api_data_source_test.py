@@ -203,8 +203,8 @@ class APIDataSourceTest(unittest.TestCase):
       },
       { 'title': 'Availability',
         'content': [
-          { 'partial': 'handlebar docs/templates/private/' +
-                       'intro_tables/stable_message.html',
+          { 'partial': 'handlebar chrome/common/extensions/docs/' +
+                       'templates/private/intro_tables/stable_message.html',
             'version': 5
           }
         ]
@@ -267,6 +267,7 @@ class APIDataSourceTest(unittest.TestCase):
                       self._json_cache,
                       _FakeTemplateCache(),
                       self._FakeLoadAddRulesSchema).ToDict()
+
     # Check that the first event has the addRulesFunction defined.
     self.assertEquals('tester', dict_['name'])
     self.assertEquals('rules', dict_['events'][0]['name'])

@@ -4,6 +4,9 @@
 
 import logging
 
+from extensions_paths import APP_YAML
+
+
 _APP_YAML_CONTAINER = '''
 application: chrome-apps-doc
 version: %s
@@ -12,15 +15,14 @@ api_version: 1
 threadsafe: false
 '''
 
+
 class AppYamlHelper(object):
   '''Parses the app.yaml file, and is able to step back in the host file
   system's revision history to find when it changed to some given version.
   '''
   def __init__(self,
-               app_yaml_path,
                object_store_creator,
                host_file_system_provider):
-    self._app_yaml_path = app_yaml_path
     self._store = object_store_creator.Create(
         AppYamlHelper,
         category=host_file_system_provider.GetTrunk().GetIdentity(),
@@ -72,8 +74,7 @@ class AppYamlHelper(object):
     checked into the host file system.
     '''
     checked_in_app_version = AppYamlHelper.ExtractVersion(
-        self._host_file_system_provider.GetTrunk().ReadSingle(
-            self._app_yaml_path).Get())
+        self._host_file_system_provider.GetTrunk().ReadSingle(APP_YAML).Get())
     if app_version == checked_in_app_version:
       return True
     if AppYamlHelper.IsGreater(app_version, checked_in_app_version):
@@ -100,11 +101,11 @@ class AppYamlHelper(object):
 
   def _GetFirstRevisionGreaterThanImpl(self, app_version):
     def get_app_yaml_revision(file_system):
-      return int(file_system.Stat(self._app_yaml_path).version)
+      return int(file_system.Stat(APP_YAML).version)
 
     def has_greater_app_version(file_system):
       app_version_in_file_system = AppYamlHelper.ExtractVersion(
-          file_system.ReadSingle(self._app_yaml_path).Get())
+          file_system.ReadSingle(APP_YAML).Get())
       return AppYamlHelper.IsGreater(app_version_in_file_system, app_version)
 
     found = None

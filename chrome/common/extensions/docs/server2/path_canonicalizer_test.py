@@ -7,7 +7,7 @@ import unittest
 
 from path_canonicalizer import PathCanonicalizer
 from server_instance import ServerInstance
-import svn_constants
+
 
 class PathCanonicalizerTest(unittest.TestCase):
   def setUp(self):

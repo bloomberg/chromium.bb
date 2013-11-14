@@ -6,10 +6,11 @@ from itertools import ifilter
 from operator import itemgetter
 
 from data_source import DataSource
+from extensions_paths import PRIVATE_TEMPLATES
 import features_utility as features
 from future import Gettable, Future
-from svn_constants import PRIVATE_TEMPLATE_PATH
 from third_party.json_schema_compiler.json_parse import Parse
+
 
 def _ListifyPermissions(permissions):
   '''Filter out any permissions that do not have a description or with a name
@@ -21,6 +22,7 @@ def _ListifyPermissions(permissions):
   return sorted(
       ifilter(filter_permissions, permissions.values()),
       key=itemgetter('name'))
+
 
 def _AddDependencyDescriptions(permissions, api_features):
   '''Use |api_features| to determine the dependencies APIs have on permissions.
@@ -63,7 +65,7 @@ class PermissionsDataSource(DataSource):
           permission['anchor'] = permission['name']
         if 'partial' in permission:
           permission['description'] = self._template_cache.GetFromFile('%s/%s' %
-              (PRIVATE_TEMPLATE_PATH, permission['partial'])).Get()
+              (PRIVATE_TEMPLATES, permission['partial'])).Get()
           del permission['partial']
 
       def filter_for_platform(permissions, platform):

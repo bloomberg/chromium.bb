@@ -4,8 +4,11 @@
 
 import json
 
+from extensions_paths import EXTENSIONS
+from test_file_system import MoveAllTo
 
-TABS_SCHEMA_BRANCHES = {
+
+TABS_SCHEMA_BRANCHES = MoveAllTo(EXTENSIONS, {
   'trunk': {
     'api': {
       '_api_features.json': "{}",
@@ -1105,4 +1108,4 @@ TABS_SCHEMA_BRANCHES = {
       'extension_api.json': "{}"
     }
   }
-}
+})

@@ -5,6 +5,7 @@
 
 import unittest
 
+from extensions_paths import EXAMPLES, PUBLIC_TEMPLATES, STATIC_DOCS
 from local_file_system import LocalFileSystem
 from render_servlet import RenderServlet
 from server_instance import ServerInstance
@@ -68,7 +69,7 @@ class RenderServletTest(unittest.TestCase):
     self.assertTrue(response.headers['Content-Type'] in (
         'application/javascript; charset=utf-8',
         'application/x-javascript; charset=utf-8'))
-    self.assertEqual(ReadFile('docs/examples/%s' % sample_file),
+    self.assertEqual(ReadFile('%s/%s' % (EXAMPLES, sample_file)),
                      response.content.ToString())
 
   def testSampleZip(self):
@@ -83,7 +84,7 @@ class RenderServletTest(unittest.TestCase):
     self.assertEqual(200, response.status)
     self.assertEqual('text/css; charset=utf-8',
                      response.headers['Content-Type'])
-    self.assertEqual(ReadFile('docs/static/%s' % static_file),
+    self.assertEqual(ReadFile('%s/%s' % (STATIC_DOCS, static_file)),
                      response.content.ToString())
 
   def testHtmlTemplate(self):
@@ -94,7 +95,7 @@ class RenderServletTest(unittest.TestCase):
                      response.headers.get('Content-Type'))
     # Can't really test rendering all that well.
     self.assertTrue(len(response.content) >
-                    len(ReadFile('docs/templates/public/%s' % html_file)))
+                    len(ReadFile('%s/%s' % (PUBLIC_TEMPLATES, html_file))))
 
   def testDevelopersGoogleComRedirect(self):
     def assert_redirect(request_path):

@@ -5,7 +5,7 @@
 
 from copy import deepcopy
 from file_system import FileNotFoundError, StatInfo
-from test_file_system import TestFileSystem, _MoveTo
+from test_file_system import TestFileSystem, MoveTo
 import unittest
 
 
@@ -144,11 +144,11 @@ class TestFileSystemTest(unittest.TestCase):
 
   def testMoveTo(self):
     self.assertEqual({'foo': {'a': 'b', 'c': 'd'}},
-                     _MoveTo('foo', {'a': 'b', 'c': 'd'}))
+                     MoveTo('foo', {'a': 'b', 'c': 'd'}))
     self.assertEqual({'foo': {'bar': {'a': 'b', 'c': 'd'}}},
-                     _MoveTo('foo/bar', {'a': 'b', 'c': 'd'}))
+                     MoveTo('foo/bar', {'a': 'b', 'c': 'd'}))
     self.assertEqual({'foo': {'bar': {'baz': {'a': 'b'}}}},
-                     _MoveTo('foo/bar/baz', {'a': 'b'}))
+                     MoveTo('foo/bar/baz', {'a': 'b'}))
 
 
 if __name__ == '__main__':

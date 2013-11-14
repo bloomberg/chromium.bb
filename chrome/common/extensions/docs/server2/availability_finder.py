@@ -7,8 +7,8 @@ from collections import Mapping
 
 from api_schema_graph import APISchemaGraph
 from branch_utility import BranchUtility
+from extensions_paths import API
 from file_system import FileNotFoundError
-from svn_constants import API_PATH
 from third_party.json_schema_compiler import idl_schema, idl_parser
 from third_party.json_schema_compiler.model import UnixName
 
@@ -16,13 +16,12 @@ from third_party.json_schema_compiler.model import UnixName
 _EXTENSION_API = 'extension_api.json'
 
 
-def _GetChannelFromFeatures(api_name, json_fs, path):
-  '''Finds API channel information within _features.json files at the given
-  |path| for the given |json_fs|. Returns None if channel information for the
-  API cannot be located.
+def _GetChannelFromFeatures(api_name, json_fs, file_name):
+  '''Finds API channel information from the features |file_name| within the the
+  given |json_fs|. Returns None if channel information for the API cannot be
+  located.
   '''
-  feature = json_fs.GetFromFile(path).Get().get(api_name)
-
+  feature = json_fs.GetFromFile('%s/%s' % (API, file_name)).Get().get(api_name)
   if feature is None:
     return None
   if isinstance(feature, Mapping):
@@ -34,22 +33,17 @@ def _GetChannelFromFeatures(api_name, json_fs, path):
 
 
 def _GetChannelFromApiFeatures(api_name, json_fs):
-  return _GetChannelFromFeatures(api_name,
-                                 json_fs,
-                                 '%s/_api_features.json' % API_PATH)
+  return _GetChannelFromFeatures(api_name, json_fs, '_api_features.json')
 
 
 def _GetChannelFromManifestFeatures(api_name, json_fs):
-  return _GetChannelFromFeatures(#_manifest_features uses unix_style API names
-                                 UnixName(api_name),
-                                 json_fs,
-                                 '%s/_manifest_features.json' % API_PATH)
+  # _manifest_features.json uses unix_style API names.
+  api_name = UnixName(api_name)
+  return _GetChannelFromFeatures(api_name, json_fs, '_manifest_features.json')
 
 
 def _GetChannelFromPermissionFeatures(api_name, json_fs):
-  return _GetChannelFromFeatures(api_name,
-                                 json_fs,
-                                 '%s/_permission_features.json' % API_PATH)
+  return _GetChannelFromFeatures(api_name, json_fs, '_permission_features.json')
 
 
 def _GetApiSchemaFilename(api_name, schema_fs):
@@ -58,7 +52,7 @@ def _GetApiSchemaFilename(api_name, schema_fs):
   single _EXTENSION_API file which all APIs share in older versions of Chrome.
   '''
   def under_api_path(path):
-    return '%s/%s' % (API_PATH, path)
+    return '%s/%s' % (API, path)
 
   try:
     # Prior to Chrome version 18, _EXTENSION_API contained all API schema

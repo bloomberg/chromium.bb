@@ -52,6 +52,11 @@ def _ReplaceLogging(name, replacement):
   return decorator
 
 
-def ReadFile(*path):
-  with open(os.path.join(sys.path[0], '..', '..', *path)) as f:
+def ChromiumPath(*path):
+  return os.path.join(
+      sys.path[0], '..', '..', '..', '..', '..', *path)
+
+
+def ReadFile(*path, **read_args):
+  with open(ChromiumPath(*path), **read_args) as f:
     return f.read()

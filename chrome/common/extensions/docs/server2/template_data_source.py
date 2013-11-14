@@ -8,16 +8,16 @@ import traceback
 
 from data_source import DataSource
 from docs_server_utils import FormatKey
+from extensions_paths import PRIVATE_TEMPLATES
 from file_system import FileNotFoundError
 from future import Future
-from svn_constants import PRIVATE_TEMPLATE_PATH
 
 
 class TemplateDataSource(DataSource):
   '''Provides a DataSource interface for compiled templates.
   '''
 
-  def __init__(self, server_instance, _, partial_dir=PRIVATE_TEMPLATE_PATH):
+  def __init__(self, server_instance, _, partial_dir=PRIVATE_TEMPLATES):
     self._template_cache = server_instance.compiled_fs_factory.ForTemplates(
         server_instance.host_file_system_provider.GetTrunk())
     self._partial_dir = partial_dir

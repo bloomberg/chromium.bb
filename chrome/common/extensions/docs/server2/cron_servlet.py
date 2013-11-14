@@ -13,6 +13,7 @@ from compiled_file_system import CompiledFileSystem
 from data_source_registry import CreateDataSources
 from empty_dir_file_system import EmptyDirFileSystem
 from environment import IsDevServer
+from extensions_paths import EXAMPLES, PUBLIC_TEMPLATES, SERVER2, STATIC_DOCS
 from file_system_util import CreateURLsFromPaths
 from future import Gettable, Future
 from github_file_system_provider import GithubFileSystemProvider
@@ -21,8 +22,8 @@ from object_store_creator import ObjectStoreCreator
 from render_servlet import RenderServlet
 from server_instance import ServerInstance
 from servlet import Servlet, Request, Response
-import svn_constants
 from timer import Timer, TimerClosure
+
 
 class _SingletonRenderServletDelegate(RenderServlet.Delegate):
   def __init__(self, server_instance):
@@ -188,25 +189,24 @@ class CronServlet(Servlet):
 
       # Rendering the public templates will also pull in all of the private
       # templates.
-      results.append(request_files_in_dir(svn_constants.PUBLIC_TEMPLATE_PATH))
+      results.append(request_files_in_dir(PUBLIC_TEMPLATES))
 
       # Rendering the public templates will have pulled in the .js and
       # manifest.json files (for listing examples on the API reference pages),
       # but there are still images, CSS, etc.
-      results.append(request_files_in_dir(svn_constants.STATIC_PATH,
-                                          prefix='static/'))
+      results.append(request_files_in_dir(STATIC_DOCS, prefix='static'))
 
       # Samples are too expensive to run on the dev server, where there is no
       # parallel fetch.
       if not IsDevServer():
         # Fetch each individual sample file.
-        results.append(request_files_in_dir(svn_constants.EXAMPLES_PATH,
-                                            prefix='extensions/examples/'))
+        results.append(request_files_in_dir(EXAMPLES,
+                                            prefix='extensions/examples'))
 
         # Fetch the zip file of each example (contains all the individual
         # files).
         example_zips = []
-        for root, _, files in trunk_fs.Walk(svn_constants.EXAMPLES_PATH):
+        for root, _, files in trunk_fs.Walk(EXAMPLES):
           example_zips.extend(
               root + '.zip' for name in files if name == 'manifest.json')
         results.append(_RequestEachItem(
@@ -252,7 +252,6 @@ class CronServlet(Servlet):
         self._GetMostRecentRevision())
 
     app_yaml_handler = AppYamlHelper(
-        svn_constants.APP_YAML_PATH,
         server_instance_near_head.object_store_creator,
         server_instance_near_head.host_file_system_provider)
 
@@ -276,7 +275,7 @@ class CronServlet(Servlet):
     '''
     head_fs = (
         self._CreateServerInstance(None).host_file_system_provider.GetTrunk())
-    return head_fs.Stat('/').version
+    return head_fs.Stat('').version
 
   def _CreateServerInstance(self, revision):
     '''Creates a ServerInstance pinned to |revision|, or HEAD if None.

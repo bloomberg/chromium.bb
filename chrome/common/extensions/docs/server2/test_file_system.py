@@ -6,9 +6,9 @@ from file_system import FileSystem, FileNotFoundError, StatInfo
 from future import Future
 
 
-def _MoveTo(base, obj):
+def MoveTo(base, obj):
   '''Returns an object as |obj| moved to |base|. That is,
-  _MoveTo('foo/bar', {'a': 'b'}) -> {'foo': {'bar': {'a': 'b'}}}
+  MoveTo('foo/bar', {'a': 'b'}) -> {'foo': {'bar': {'a': 'b'}}}
   '''
   result = {}
   leaf = result
@@ -16,6 +16,15 @@ def _MoveTo(base, obj):
     leaf[k] = {}
     leaf = leaf[k]
   leaf.update(obj)
+  return result
+
+
+def MoveAllTo(base, obj):
+  '''Moves every value in |obj| to |base|. See MoveTo.
+  '''
+  result = {}
+  for key, value in obj.iteritems():
+    result[key] = MoveTo(base, value)
   return result
 
 
@@ -28,7 +37,7 @@ class TestFileSystem(FileSystem):
 
   def __init__(self, obj, relative_to=None, identity=None):
     assert obj is not None
-    self._obj = obj if relative_to is None else _MoveTo(relative_to, obj)
+    self._obj = obj if relative_to is None else MoveTo(relative_to, obj)
     self._identity = identity or type(self).__name__
     self._path_stats = {}
     self._global_stat = 0

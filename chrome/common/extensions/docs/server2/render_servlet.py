@@ -13,7 +13,6 @@ from data_source_registry import CreateDataSources
 from file_system import FileNotFoundError
 from redirector import Redirector
 from servlet import Servlet, Response
-from svn_constants import DOCS_PATH, PUBLIC_TEMPLATE_PATH
 from third_party.handlebar import Handlebar
 
 

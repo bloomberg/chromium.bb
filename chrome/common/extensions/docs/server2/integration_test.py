@@ -16,13 +16,15 @@ import time
 import unittest
 
 from branch_utility import BranchUtility
+from chroot_file_system import ChrootFileSystem
+from extensions_paths import EXTENSIONS, PUBLIC_TEMPLATES
 from link_error_detector import LinkErrorDetector, StringifyBrokenLinks
 from local_file_system import LocalFileSystem
 from local_renderer import LocalRenderer
 from fake_fetchers import ConfigureFakeFetchers
 from handler import Handler
 from servlet import Request
-from test_util import EnableLogging, DisableLogging
+from test_util import EnableLogging, DisableLogging, ChromiumPath
 
 # Arguments set up if __main__ specifies them.
 _EXPLICIT_TEST_FILES = None
@@ -33,7 +35,7 @@ def _ToPosixPath(os_path):
 def _GetPublicFiles():
   '''Gets all public files mapped to their contents.
   '''
-  public_path = os.path.join(sys.path[0], os.pardir, 'templates', 'public')
+  public_path = ChromiumPath(PUBLIC_TEMPLATES)
   public_files = {}
   for path, dirs, files in os.walk(public_path, topdown=True):
     dirs[:] = [d for d in dirs if d != '.svn']
@@ -58,7 +60,7 @@ class IntegrationTest(unittest.TestCase):
     print('Running cron...')
     start_time = time.time()
     try:
-      response = Handler(Request.ForTest('/_cron/stable')).Get()
+      response = Handler(Request.ForTest('/_cron')).Get()
       self.assertEqual(200, response.status)
       self.assertEqual('Success', response.content.ToString())
     finally:
@@ -67,7 +69,8 @@ class IntegrationTest(unittest.TestCase):
     print("Checking for broken links...")
     start_time = time.time()
     link_error_detector = LinkErrorDetector(
-        LocalFileSystem(os.path.join(sys.path[0], os.pardir, os.pardir)),
+        # TODO(kalman): Use of ChrootFileSystem here indicates a hack. Fix.
+        ChrootFileSystem(LocalFileSystem.Create(), EXTENSIONS),
         lambda path: Handler(Request.ForTest(path)).Get(),
         'templates/public',
         ('extensions/index.html', 'apps/about_apps.html'))

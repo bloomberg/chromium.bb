@@ -9,7 +9,7 @@ from StringIO import StringIO
 from file_system import FileNotFoundError, ToUnicode
 from future import Future
 from patcher import Patcher
-import svn_constants
+
 
 _CHROMIUM_REPO_BASEURLS = [
   'https://src.chromium.org/svn/trunk/src/',
@@ -19,11 +19,6 @@ _CHROMIUM_REPO_BASEURLS = [
   'http://git.chromium.org/chromium/src.git@master',
 ]
 
-_DOCS_PATHS = [
-  svn_constants.API_PATH,
-  svn_constants.TEMPLATE_PATH,
-  svn_constants.STATIC_PATH
-]
 
 class RietveldPatcherError(Exception):
   def __init__(self, message):
@@ -31,13 +26,11 @@ class RietveldPatcherError(Exception):
 
 class _AsyncFetchFuture(object):
   def __init__(self,
-               base_path,
                issue,
                patchset,
                files,
                binary,
                fetcher):
-    self._base_path = base_path
     self._issue = issue
     self._patchset = patchset
     self._files = files
@@ -60,10 +53,7 @@ class _AsyncFetchFuture(object):
 
     self._value = {}
     for path in self._files:
-      if self._base_path:
-        tar_path = 'b/%s/%s' % (self._base_path, path)
-      else:
-        tar_path = 'b/%s' % path
+      tar_path = 'b/%s' % path
 
       patched_file = None
       try:
@@ -94,10 +84,8 @@ class RietveldPatcher(Patcher):
   ''' Class to fetch resources from a patchset in Rietveld.
   '''
   def __init__(self,
-               base_path,
                issue,
                fetcher):
-    self._base_path = base_path
     self._issue = issue
     self._fetcher = fetcher
     self._cache = None
@@ -145,31 +133,25 @@ class RietveldPatcher(Patcher):
     added = []
     deleted = []
     modified = []
-    for key in files:
-      if not key.startswith(self._base_path + '/'):
-        continue
-
-      f = key.split(self._base_path + '/', 1)[1]
-      if any(f.startswith(path) for path in _DOCS_PATHS):
-        status = (files[key].get('status') or 'M')
-        # status can be 'A   ' or 'A + '
-        if 'A' in status:
-          added.append(f)
-        elif 'D' in status:
-          deleted.append(f)
-        elif 'M' in status:
-          modified.append(f)
-        else:
-          raise RietveldPatcherError('Unknown file status for file %s: "%s."' %
-                                                                  (key, status))
+    for f in files:
+      status = (files[f].get('status') or 'M')
+      # status can be 'A   ' or 'A + '
+      if 'A' in status:
+        added.append(f)
+      elif 'D' in status:
+        deleted.append(f)
+      elif 'M' in status:
+        modified.append(f)
+      else:
+        raise RietveldPatcherError('Unknown file status for file %s: "%s."' %
+                                                                (key, status))
 
     return (added, deleted, modified)
 
   def Apply(self, paths, file_system, binary, version=None):
     if version is None:
       version = self.GetVersion()
-    return Future(delegate=_AsyncFetchFuture(self._base_path,
-                                             self._issue,
+    return Future(delegate=_AsyncFetchFuture(self._issue,
                                              version,
                                              paths,
                                              binary,

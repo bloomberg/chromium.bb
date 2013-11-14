@@ -9,6 +9,7 @@ from operator import itemgetter
 import unittest
 
 from compiled_file_system import CompiledFileSystem
+from extensions_paths import EXTENSIONS
 from object_store_creator import ObjectStoreCreator
 from permissions_data_source import PermissionsDataSource
 from server_instance import ServerInstance
@@ -146,7 +147,7 @@ class PermissionsDataSourceTest(unittest.TestCase):
           },
         }
       }
-    })
+    }, relative_to=EXTENSIONS)
 
     permissions_data_source = PermissionsDataSource(
         ServerInstance.ForTest(test_file_system), None)
@@ -169,6 +170,7 @@ class PermissionsDataSourceTest(unittest.TestCase):
 
     self.assertEqual(expected_extensions, actual_extensions)
     self.assertEqual(expected_apps, actual_apps)
+
 
 if __name__ == '__main__':
   unittest.main()

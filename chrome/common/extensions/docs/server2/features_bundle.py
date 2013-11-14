@@ -2,9 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from extensions_paths import (
+    API_FEATURES, JSON_TEMPLATES, MANIFEST_FEATURES, PERMISSION_FEATURES)
 import features_utility
 from future import Gettable, Future
-import svn_constants
 from third_party.json_schema_compiler.json_parse import Parse
 
 
@@ -64,17 +65,17 @@ class FeaturesBundle(object):
     self._api_cache = _FeaturesCache(
         file_system,
         compiled_fs_factory,
-        svn_constants.API_FEATURES_PATH)
+        API_FEATURES)
     self._manifest_cache = _FeaturesCache(
         file_system,
         compiled_fs_factory,
-        svn_constants.MANIFEST_FEATURES_PATH,
-        svn_constants.MANIFEST_JSON_PATH)
+        MANIFEST_FEATURES,
+        '%s/manifest.json' % JSON_TEMPLATES)
     self._permission_cache = _FeaturesCache(
         file_system,
         compiled_fs_factory,
-        svn_constants.PERMISSION_FEATURES_PATH,
-        svn_constants.PERMISSIONS_JSON_PATH)
+        PERMISSION_FEATURES,
+        '%s/permissions.json' % JSON_TEMPLATES)
     self._object_store = object_store_creator.Create(_FeaturesCache, 'features')
 
   def GetPermissionFeatures(self):

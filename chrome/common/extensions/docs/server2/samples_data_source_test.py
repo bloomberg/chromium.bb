@@ -25,7 +25,7 @@ class SamplesDataSourceTest(unittest.TestCase):
     return json.loads(self._ReadLocalFile(key))
 
   def testFilterSamples(self):
-    sds = SamplesDataSource({}, {}, 'fake_path', '.', Request.ForTest('/'))
+    sds = SamplesDataSource({}, {}, '.', Request.ForTest('/'))
     sds.get = self._FakeGet
     self.assertEquals(json.loads(self._ReadLocalFile('expected.json')),
                       sds.FilterSamples('samples.json', 'bobaloo'))

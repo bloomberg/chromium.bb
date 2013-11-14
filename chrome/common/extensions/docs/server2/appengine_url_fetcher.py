@@ -3,9 +3,11 @@
 # found in the LICENSE file.
 
 import base64
+import posixpath
 
 from appengine_wrappers import urlfetch
 from future import Future
+
 
 class _AsyncFetchDelegate(object):
   def __init__(self, rpc):
@@ -14,6 +16,7 @@ class _AsyncFetchDelegate(object):
   def Get(self):
     return self._rpc.get_result()
 
+
 def _MakeHeaders(username, password):
   headers = { 'Cache-Control': 'max-age=0' }
   if username is not None and password is not None:
@@ -21,25 +24,31 @@ def _MakeHeaders(username, password):
         '%s:%s' % (username, password))
   return headers
 
+
 class AppEngineUrlFetcher(object):
   """A wrapper around the App Engine urlfetch module that allows for easy
   async fetches.
   """
   def __init__(self, base_path=None):
+    assert base_path is None or not base_path.endswith('/')
     self._base_path = base_path
 
   def Fetch(self, url, username=None, password=None):
     """Fetches a file synchronously.
     """
-    if self._base_path is not None:
-      url = '%s/%s' % (self._base_path, url)
-    return urlfetch.fetch(url, headers=_MakeHeaders(username, password))
+    return urlfetch.fetch(self._FromBasePath(url),
+                          headers=_MakeHeaders(username, password))
 
   def FetchAsync(self, url, username=None, password=None):
     """Fetches a file asynchronously, and returns a Future with the result.
     """
-    if self._base_path is not None:
-      url = '%s/%s' % (self._base_path, url)
     rpc = urlfetch.create_rpc()
-    urlfetch.make_fetch_call(rpc, url, headers=_MakeHeaders(username, password))
+    urlfetch.make_fetch_call(rpc,
+                             self._FromBasePath(url),
+                             headers=_MakeHeaders(username, password))
     return Future(delegate=_AsyncFetchDelegate(rpc))
+
+  def _FromBasePath(self, url):
+    if self._base_path is not None:
+      url = posixpath.join(self._base_path, url) if url else self._base_path
+    return url

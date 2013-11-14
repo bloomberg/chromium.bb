@@ -9,7 +9,8 @@ import os
 from collections import defaultdict, Mapping
 
 from environment import IsPreviewServer
-import svn_constants
+from extensions_paths import (
+    API, API_FEATURES, JSON_TEMPLATES, PRIVATE_TEMPLATES)
 import third_party.json_schema_compiler.json_parse as json_parse
 import third_party.json_schema_compiler.model as model
 import third_party.json_schema_compiler.idl_schema as idl_schema
@@ -84,11 +85,10 @@ class _JSCModel(object):
     self._availability_finder = availability_finder
     self._branch_utility = branch_utility
     self._api_availabilities = parse_cache.GetFromFile(
-        '%s/api_availabilities.json' % svn_constants.JSON_PATH)
+        '%s/api_availabilities.json' % JSON_TEMPLATES)
     self._intro_tables = parse_cache.GetFromFile(
-        '%s/intro_tables.json' % svn_constants.JSON_PATH)
-    self._api_features = parse_cache.GetFromFile(
-        '%s/_api_features.json' % svn_constants.API_PATH)
+        '%s/intro_tables.json' % JSON_TEMPLATES)
+    self._api_features = parse_cache.GetFromFile(API_FEATURES)
     self._template_cache = template_cache
     self._event_byname_function = event_byname_function
     clean_json = copy.deepcopy(json)
@@ -401,7 +401,7 @@ class _JSCModel(object):
       'content': [{
         'partial': self._template_cache.GetFromFile(
                        '%s/intro_tables/%s_message.html' %
-                           (svn_constants.PRIVATE_TEMPLATE_PATH, status)).Get(),
+                           (PRIVATE_TEMPLATES, status)).Get(),
         'version': version
       }]
     }
@@ -474,7 +474,7 @@ class _JSCModel(object):
         # converted to a Handlebar object, transform it to a template.
         if 'partial' in node:
           node['partial'] = self._template_cache.GetFromFile('%s/%s' %
-              (svn_constants.PRIVATE_TEMPLATE_PATH, node['partial'])).Get()
+              (PRIVATE_TEMPLATES, node['partial'])).Get()
       misc_rows.append({ 'title': category, 'content': content })
     return misc_rows
 
@@ -501,7 +501,6 @@ class APIDataSource(object):
     def __init__(self,
                  compiled_fs_factory,
                  file_system,
-                 base_path,
                  availability_finder,
                  branch_utility):
       def create_compiled_fs(fn, category):
@@ -528,7 +527,6 @@ class APIDataSource(object):
       self._idl_names_cache = create_compiled_fs(self._GetIDLNames, 'idl-names')
       self._names_cache = create_compiled_fs(self._GetAllNames, 'names')
 
-      self._base_path = base_path
       self._availability_finder = availability_finder
       self._branch_utility = branch_utility
 
@@ -566,7 +564,6 @@ class APIDataSource(object):
                            self._idl_cache_no_refs,
                            self._names_cache,
                            self._idl_names_cache,
-                           self._base_path,
                            samples)
 
     def _LoadEventByName(self):
@@ -574,8 +571,7 @@ class APIDataSource(object):
       from Event in events.json.
       """
       if self._event_byname is None:
-        events_json = self._json_cache.GetFromFile(
-            '%s/events.json' % self._base_path).Get()
+        events_json = self._json_cache.GetFromFile('%s/events.json' % API).Get()
         self._event_byname = _GetEventByNameFromEvents(events_json)
       return self._event_byname
 
@@ -620,9 +616,7 @@ class APIDataSource(object):
                idl_cache_no_refs,
                names_cache,
                idl_names_cache,
-               base_path,
                samples):
-    self._base_path = base_path
     self._json_cache = json_cache
     self._idl_cache = idl_cache
     self._json_cache_no_refs = json_cache_no_refs
@@ -655,8 +649,8 @@ class APIDataSource(object):
     else:
       path = key
     unix_name = model.UnixName(path)
-    idl_names = self._idl_names_cache.GetFromFileListing(self._base_path).Get()
-    names = self._names_cache.GetFromFileListing(self._base_path).Get()
+    idl_names = self._idl_names_cache.GetFromFileListing(API).Get()
+    names = self._names_cache.GetFromFileListing(API).Get()
     if unix_name not in names and self._GetAsSubdirectory(unix_name) in names:
       unix_name = self._GetAsSubdirectory(unix_name)
 
@@ -668,4 +662,4 @@ class APIDataSource(object):
       cache, ext = ((self._idl_cache, '.idl') if (unix_name in idl_names) else
                     (self._json_cache, '.json'))
     return self._GenerateHandlebarContext(
-        cache.GetFromFile('%s/%s%s' % (self._base_path, unix_name, ext)).Get())
+        cache.GetFromFile('%s/%s%s' % (API, unix_name, ext)).Get())

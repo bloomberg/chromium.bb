@@ -104,13 +104,13 @@ class SubversionFileSystemTest(unittest.TestCase):
     self.assertEqual('dir/file?p=42', file_fetcher.last_fetched)
     # Stat() will always stat directories.
     self.assertRaises(FileSystemError, svn_file_system.Stat, 'dir/file')
-    self.assertEqual('dir/?pathrev=42', stat_fetcher.last_fetched)
+    self.assertEqual('dir?pathrev=42', stat_fetcher.last_fetched)
 
     self.assertRaises(FileSystemError,
                       svn_file_system.ReadSingle('dir/').Get)
     self.assertEqual('dir/?p=42', file_fetcher.last_fetched)
     self.assertRaises(FileSystemError, svn_file_system.Stat, 'dir/')
-    self.assertEqual('dir/?pathrev=42', stat_fetcher.last_fetched)
+    self.assertEqual('dir?pathrev=42', stat_fetcher.last_fetched)
 
   def testDirectoryVersionOnDeletion(self):
     '''Tests the case when the most recent operation on a directory is the

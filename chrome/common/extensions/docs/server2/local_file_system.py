@@ -69,7 +69,8 @@ class LocalFileSystem(FileSystem):
 
   @staticmethod
   def Create():
-    return LocalFileSystem(os.path.join(sys.path[0], os.pardir, os.pardir))
+    return LocalFileSystem(
+        os.path.join(sys.path[0], '..', '..', '..', '..', '..'))
 
   def Read(self, paths, binary=False):
     result = {}

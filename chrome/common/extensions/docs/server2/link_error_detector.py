@@ -10,13 +10,15 @@ import posixpath
 from urlparse import urlsplit
 
 from file_system_util import CreateURLsFromPaths
-import svn_constants
+
 
 Page = namedtuple('Page', 'status, links, anchors, anchor_refs')
+
 
 def _SplitAnchor(url):
   components = urlsplit(url)
   return components.path, components.fragment
+
 
 def _Process(path, renderer):
   '''Render the page at |path| using a |renderer| and process the contents of
@@ -78,6 +80,7 @@ def _Process(path, renderer):
 
   return Page(200, edges, anchors, anchor_refs)
 
+
 class _ContentParser(HTMLParser):
   '''Parse an html file pulling out all links and anchor_refs, where an
   anchor_ref is a link that contains an anchor.
@@ -105,6 +108,7 @@ class _ContentParser(HTMLParser):
       self.anchors.add(attrs['id'])
     if attrs.get('name'):
       self.anchors.add(attrs['name'])
+
 
 class LinkErrorDetector(object):
   '''Finds link errors on the doc server. This includes broken links, those with
@@ -137,9 +141,9 @@ class LinkErrorDetector(object):
     processing the resultant html to pull out all links and anchors.
     '''
     top_level_directories = (
-      (svn_constants.PUBLIC_TEMPLATE_PATH, ''),
-      (svn_constants.STATIC_PATH, 'static/'),
-      (svn_constants.EXAMPLES_PATH, 'extensions/examples/'),
+      ('docs/templates/public', ''),
+      ('docs/static', 'static/'),
+      ('docs/examples', 'extensions/examples/'),
     )
 
     for dirpath, urlprefix in top_level_directories:
@@ -268,6 +272,7 @@ class LinkErrorDetector(object):
         [url for url, page in self._pages.iteritems() if page.status == 200])
 
     return [url for url in all_urls - found if url.endswith('.html')]
+
 
 def StringifyBrokenLinks(broken_links):
   '''Prints out broken links in a more readable format.

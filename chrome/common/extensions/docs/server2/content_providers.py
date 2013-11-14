@@ -8,12 +8,9 @@ import posixpath
 
 from chroot_file_system import ChrootFileSystem
 from content_provider import ContentProvider
+from extensions_paths import CONTENT_PROVIDERS
 from future import Gettable, Future
-from svn_constants import JSON_PATH
 from third_party.json_schema_compiler.memoize import memoize
-
-
-_CONFIG_PATH = '%s/content_providers.json' % JSON_PATH
 
 
 class ContentProviders(object):
@@ -69,7 +66,7 @@ class ContentProviders(object):
     return None, path
 
   def _GetConfig(self):
-    return self._cache.GetFromFile(_CONFIG_PATH).Get()
+    return self._cache.GetFromFile(CONTENT_PROVIDERS).Get()
 
   def _CreateContentProvider(self, name, config):
     supports_templates = config.get('supportsTemplates', False)

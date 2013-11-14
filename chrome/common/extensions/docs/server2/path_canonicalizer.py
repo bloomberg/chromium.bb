@@ -9,9 +9,10 @@ import traceback
 
 from branch_utility import BranchUtility
 from compiled_file_system import CompiledFileSystem, SingleFile
+from extensions_paths import PUBLIC_TEMPLATES
 from file_system import FileNotFoundError
 from third_party.json_schema_compiler.model import UnixName
-import svn_constants
+
 
 def _SimplifyFileName(file_name):
   return (posixpath.splitext(file_name)[0]
@@ -19,6 +20,7 @@ def _SimplifyFileName(file_name):
       .replace('.', '')
       .replace('-', '')
       .replace('_', ''))
+
 
 class PathCanonicalizer(object):
   '''Transforms paths into their canonical forms. Since the dev server has had
@@ -82,9 +84,9 @@ class PathCanonicalizer(object):
 
     try:
       apps_public = self._public_apis.GetFromFileListing(
-          '/'.join((svn_constants.PUBLIC_TEMPLATE_PATH, 'apps'))).Get()
+          '%s/apps' % PUBLIC_TEMPLATES).Get()
       extensions_public = self._public_apis.GetFromFileListing(
-          '/'.join((svn_constants.PUBLIC_TEMPLATE_PATH, 'extensions'))).Get()
+          '%s/extensions' % PUBLIC_TEMPLATES).Get()
     except FileNotFoundError:
       # Probably offline.
       logging.warning(traceback.format_exc())

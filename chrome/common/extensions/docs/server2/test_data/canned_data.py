@@ -3,7 +3,10 @@
 # found in the LICENSE file.
 
 import json
+
+from extensions_paths import EXTENSIONS
 from third_party.json_schema_compiler.json_parse import OrderedDict
+from test_file_system import MoveAllTo, MoveTo
 
 
 CANNED_CHANNELS = OrderedDict([
@@ -43,7 +46,7 @@ CANNED_BRANCHES = OrderedDict([
 ])
 
 
-CANNED_TEST_FILE_SYSTEM_DATA = {
+CANNED_TEST_FILE_SYSTEM_DATA = MoveTo(EXTENSIONS, {
   'api': {
     '_api_features.json': json.dumps({
       'ref_test': { 'dependencies': ['permission:ref_test'] },
@@ -104,10 +107,10 @@ CANNED_TEST_FILE_SYSTEM_DATA = {
       }
     }
   }
-}
+})
 
 
-CANNED_API_FILE_SYSTEM_DATA = {
+CANNED_API_FILE_SYSTEM_DATA = MoveAllTo(EXTENSIONS, {
   'trunk': {
     'api': {
       '_api_features.json': json.dumps({
@@ -791,4 +794,4 @@ CANNED_API_FILE_SYSTEM_DATA = {
       ])
     }
   }
-}
+})

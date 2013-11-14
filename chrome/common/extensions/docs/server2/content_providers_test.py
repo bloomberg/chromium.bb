@@ -8,6 +8,7 @@ import unittest
 
 from compiled_file_system import CompiledFileSystem
 from content_providers import ContentProviders
+from extensions_paths import EXTENSIONS
 from object_store_creator import ObjectStoreCreator
 from test_file_system import TestFileSystem
 from test_util import DisableLogging
@@ -19,19 +20,20 @@ _HOST = 'https://developer.chrome.com'
 _CONTENT_PROVIDERS = {
   'apples': {
     'chromium': {
-      'dir': 'apples'
+      'dir': 'chrome/common/extensions/apples'
     },
     'serveFrom': 'apples-dir',
   },
   'bananas': {
     'serveFrom': '',
     'chromium': {
-      'dir': ''
+      'dir': 'chrome/common/extensions'
     },
   },
   'github-provider': {
     'serveFrom': 'gh',
     'github': {
+      'dir': 'chrome/common/extensions',
       'owner': 'GoogleChrome',
       'repo': 'hello-world',
     },
@@ -39,7 +41,7 @@ _CONTENT_PROVIDERS = {
   'github-provider-with-dir': {
     'serveFrom': 'gh2',
     'github': {
-      'dir': 'tomatoes/are/a',
+      'dir': 'chrome/common/extensions/tomatoes/are/a',
       'owner': 'SomeOwner',
       'repo': 'some-repo',
     },
@@ -47,7 +49,7 @@ _CONTENT_PROVIDERS = {
   'tomatoes': {
     'serveFrom': 'tomatoes-dir/are/a',
     'chromium': {
-      'dir': 'tomatoes/are/a'
+      'dir': 'chrome/common/extensions/tomatoes/are/a'
     },
   },
 }
@@ -101,7 +103,7 @@ class _MockGithubFileSystemProvider(object):
 
 class ContentProvidersTest(unittest.TestCase):
   def setUp(self):
-    test_file_system = TestFileSystem(_FILE_SYSTEM_DATA)
+    test_file_system = TestFileSystem(_FILE_SYSTEM_DATA, relative_to=EXTENSIONS)
     self._github_fs_provider = _MockGithubFileSystemProvider(test_file_system)
     self._content_providers = ContentProviders(
         CompiledFileSystem.Factory(ObjectStoreCreator.ForTest()),
@@ -127,7 +129,7 @@ class ContentProvidersTest(unittest.TestCase):
         'cherry tomatoes',
         provider.GetContentAndType(_HOST, 'fruit/cherry.txt').Get().content)
 
-  def testEmptyRootPath(self):
+  def testParentRootPath(self):
     provider = self._content_providers.GetByName('bananas')
     self.assertEqual(
         'gala apples',

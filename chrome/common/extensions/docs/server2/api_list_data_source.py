@@ -6,8 +6,8 @@ from operator import itemgetter
 import os
 import posixpath
 
-from svn_constants import PUBLIC_TEMPLATE_PATH
 import docs_server_utils as utils
+from extensions_paths import PUBLIC_TEMPLATES
 
 def _GetAPICategory(api, documented_apis):
   name = api['name']
@@ -51,7 +51,7 @@ class APIListDataSource(object):
       def GetDocumentedAPIsForPlatform(names, platform):
         public_templates = []
         for root, _, files in self._file_system.Walk(posixpath.join(
-            PUBLIC_TEMPLATE_PATH, platform)):
+            PUBLIC_TEMPLATES, platform)):
           public_templates.extend(
               ('%s/%s' % (root, name)).lstrip('/') for name in files)
         template_names = set(os.path.splitext(name)[0]
@@ -64,8 +64,7 @@ class APIListDataSource(object):
       }
 
     def _GenerateAPIDict(self):
-      documented_apis = self._cache.GetFromFileListing(
-          PUBLIC_TEMPLATE_PATH).Get()
+      documented_apis = self._cache.GetFromFileListing(PUBLIC_TEMPLATES).Get()
       api_features = self._features_bundle.GetAPIFeatures().Get()
 
       def FilterAPIs(platform):

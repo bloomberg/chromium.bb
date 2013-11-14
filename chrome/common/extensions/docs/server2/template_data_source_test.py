@@ -8,6 +8,7 @@ import os
 import sys
 import unittest
 
+from extensions_paths import SERVER2
 from server_instance import ServerInstance
 from template_data_source import TemplateDataSource
 from test_util import DisableLogging, ReadFile
@@ -25,8 +26,8 @@ class TemplateDataSourceTest(unittest.TestCase):
     return TemplateDataSource(
         ServerInstance.ForLocal(),
         None,  # Request
-        partial_dir='docs/server2/test_data/template_data_source/%s' %
-                    partial_dir)
+        partial_dir='%s/test_data/template_data_source/%s' %
+                    (SERVER2, partial_dir))
 
   def testSimple(self):
     template_data_source = self._CreateTemplateDataSource('simple')

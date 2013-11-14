@@ -43,21 +43,21 @@
 {
   "cr-extensions-examples": {
     "chromium": {
-      "dir": "docs/examples"
+      "dir": "chrome/common/extensions/docs/examples"
     },
     "serveFrom": "extensions/examples",
     "supportsZip": true
   },
   "cr-public": {
     "chromium": {
-      "dir": "docs/templates/public"
+      "dir": "chrome/common/extensions/docs/templates/public"
     },
     "serveFrom": "",
     "supportsTemplates": true
   },
   "cr-static": {
     "chromium": {
-      "dir": "docs/static"
+      "dir": "chrome/common/extensions/docs/static"
     },
     "serveFrom": "static"
   },

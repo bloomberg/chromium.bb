@@ -13,8 +13,8 @@ from docs_server_utils import StringIdentity
 from file_system import (
     FileNotFoundError, FileSystem, FileSystemError, StatInfo, ToUnicode)
 from future import Future
-import svn_constants
 import url_constants
+
 
 def _ParseHTML(html):
   '''Unfortunately, the viewvc page has a stray </div> tag, so this takes care
@@ -144,9 +144,9 @@ class SubversionFileSystem(FileSystem):
   @staticmethod
   def Create(branch='trunk', revision=None):
     if branch == 'trunk':
-      svn_path = 'trunk/src/%s' % svn_constants.EXTENSIONS_PATH
+      svn_path = 'trunk/src'
     else:
-      svn_path = 'branches/%s/src/%s' % (branch, svn_constants.EXTENSIONS_PATH)
+      svn_path = 'branches/%s/src' % branch
     return SubversionFileSystem(
         AppEngineUrlFetcher('%s/%s' % (url_constants.SVN_URL, svn_path)),
         AppEngineUrlFetcher('%s/%s' % (url_constants.VIEWVC_URL, svn_path)),
@@ -174,7 +174,6 @@ class SubversionFileSystem(FileSystem):
 
   def Stat(self, path):
     directory, filename = posixpath.split(path)
-    directory += '/'
     if self._revision is not None:
       # |stat_fetch| uses viewvc which uses pathrev= for version.
       directory += '?pathrev=%s' % self._revision
@@ -195,7 +194,7 @@ class SubversionFileSystem(FileSystem):
     stat_info = _CreateStatInfo(result.content)
     if stat_info.version is None:
       raise FileSystemError('Failed to find version of dir %s' % directory)
-    if path.endswith('/'):
+    if path == '' or path.endswith('/'):
       return stat_info
     if filename not in stat_info.child_versions:
       raise FileNotFoundError(

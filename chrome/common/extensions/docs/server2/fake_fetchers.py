@@ -11,51 +11,50 @@ import re
 import sys
 
 import appengine_wrappers
+from extensions_paths import SERVER2
+from test_util import ReadFile, ChromiumPath
 import url_constants
 
 
+# TODO(kalman): Investigate why logging in this class implies that the server
+# isn't properly caching some fetched files; often it fetches the same file
+# 10+ times. This may be a test anomaly.
+
+
+def _ReadTestData(*path, **read_args):
+  return ReadFile(SERVER2, 'test_data', *path, **read_args)
+
+
 class _FakeFetcher(object):
-  def __init__(self, base_path):
-    self._base_path = base_path
-
-  def _ReadFile(self, path, mode='rb'):
-    with open(os.path.join(self._base_path, path), mode) as f:
-      return f.read()
-
   def _ListDir(self, path):
-    return os.listdir(os.path.join(self._base_path, path))
+    return os.listdir(path)
 
   def _IsDir(self, path):
-    return os.path.isdir(os.path.join(self._base_path, path))
+    return os.path.isdir(path)
 
   def _Stat(self, path):
-    return int(os.stat(os.path.join(self._base_path, path)).st_mtime)
+    return int(os.stat(path).st_mtime)
 
 
-class FakeOmahaProxy(_FakeFetcher):
+class _FakeOmahaProxy(_FakeFetcher):
   def fetch(self, url):
-    return self._ReadFile(os.path.join('server2',
-                                       'test_data',
-                                       'branch_utility',
-                                       'first.json'))
+    return _ReadTestData('branch_utility', 'first.json')
 
 
-class FakeOmahaHistory(_FakeFetcher):
+class _FakeOmahaHistory(_FakeFetcher):
   def fetch(self, url):
-    return self._ReadFile(os.path.join('server2',
-                                       'test_data',
-                                       'branch_utility',
-                                       'second.json'))
+    return _ReadTestData('branch_utility', 'second.json')
 
 
-class FakeSubversionServer(_FakeFetcher):
-  def __init__(self, base_path):
-    _FakeFetcher.__init__(self, base_path)
-    self._base_pattern = re.compile(r'.*chrome/common/extensions/(.*)')
+_SVN_URL_TO_PATH_PATTERN = re.compile(
+    r'^.*chrome/.*(trunk|branches/.*)/src/?([^?]*).*?')
+def _ExtractPathFromSvnUrl(url):
+  return _SVN_URL_TO_PATH_PATTERN.match(url).group(2)
 
+
+class _FakeSubversionServer(_FakeFetcher):
   def fetch(self, url):
-    url = url.rsplit('?', 1)[0]
-    path = os.path.join(os.pardir, self._base_pattern.match(url).group(1))
+    path = ChromiumPath(_ExtractPathFromSvnUrl(url))
     if self._IsDir(path):
       html = ['<html>Revision 000000']
       try:
@@ -71,19 +70,14 @@ class FakeSubversionServer(_FakeFetcher):
       except OSError as e:
         return None
     try:
-      return self._ReadFile(path)
-    except IOError as e:
+      return ReadFile(path)
+    except IOError:
       return None
 
 
-class FakeViewvcServer(_FakeFetcher):
-  def __init__(self, base_path):
-    _FakeFetcher.__init__(self, base_path)
-    self._base_pattern = re.compile(r'.*chrome/common/extensions/+(.*)')
-
+class _FakeViewvcServer(_FakeFetcher):
   def fetch(self, url):
-    url = url.rsplit('?', 1)[0]
-    path = os.path.join(os.pardir, self._base_pattern.match(url).group(1))
+    path = ChromiumPath(_ExtractPathFromSvnUrl(url))
     if self._IsDir(path):
       html = ['<table><tbody><tr>...</tr>']
       # The version of the directory.
@@ -99,80 +93,57 @@ class FakeViewvcServer(_FakeFetcher):
         html.append('<tr>')
         html.append('  <td><a>%s%s</a></td>' % (
             f, '/' if self._IsDir(os.path.join(path, f)) else ''))
-        stat = self._Stat(os.path.join(path, f))
-        html.append('  <td><a><strong>%s</strong></a></td>' % stat)
+        html.append('  <td><a><strong>%s</strong></a></td>' %
+                    self._Stat(os.path.join(path, f)))
         html.append('<td></td><td></td><td></td>')
         html.append('</tr>')
       html.append('</tbody></table>')
       return '\n'.join(html)
     try:
-      return self._ReadFile(path)
-    except IOError as e:
+      return ReadFile(path)
+    except IOError:
       return None
 
 
-class FakeGithubStat(_FakeFetcher):
+class _FakeGithubStat(_FakeFetcher):
   def fetch(self, url):
     return '{ "commit": { "tree": { "sha": 0} } }'
 
 
-class FakeGithubZip(_FakeFetcher):
+class _FakeGithubZip(_FakeFetcher):
   def fetch(self, url):
-    try:
-      return self._ReadFile(os.path.join('server2',
-                                         'test_data',
-                                         'github_file_system',
-                                         'apps_samples.zip'),
-                            mode='rb')
-    except IOError:
-      return None
+    return _ReadTestData('github_file_system', 'apps_samples.zip', mode='rb')
 
 
-class FakeRietveldAPI(_FakeFetcher):
-  def __init__(self, base_path):
-    _FakeFetcher.__init__(self, base_path)
+class _FakeRietveldAPI(_FakeFetcher):
+  def __init__(self):
     self._base_pattern = re.compile(r'.*/(api/.*)')
 
   def fetch(self, url):
-    try:
-      return self._ReadFile(
-          os.path.join('server2',
-                       'test_data',
-                       'rietveld_patcher',
-                       self._base_pattern.match(url).group(1),
-                       'json'))
-    except IOError:
-      return None
+    return _ReadTestData(
+        'rietveld_patcher', self._base_pattern.match(url).group(1), 'json')
 
 
-class FakeRietveldTarball(_FakeFetcher):
-  def __init__(self, base_path):
-    _FakeFetcher.__init__(self, base_path)
+class _FakeRietveldTarball(_FakeFetcher):
+  def __init__(self):
     self._base_pattern = re.compile(r'.*/(tarball/\d+/\d+)')
 
   def fetch(self, url):
-    try:
-      return self._ReadFile(
-          os.path.join('server2',
-                       'test_data',
-                       'rietveld_patcher',
-                       self._base_pattern.match(url).group(1) + '.tar.bz2'))
-    except IOError:
-      return None
+    return _ReadTestData(
+        'rietveld_patcher', self._base_pattern.match(url).group(1) + '.tar.bz2',
+        mode='rb')
 
 
 def ConfigureFakeFetchers():
   '''Configure the fake fetcher paths relative to the docs directory.
   '''
-  docs = '/'.join((sys.path[0], os.pardir))
   appengine_wrappers.ConfigureFakeUrlFetch({
-    url_constants.OMAHA_PROXY_URL: FakeOmahaProxy(docs),
-    re.escape(url_constants.OMAHA_DEV_HISTORY): FakeOmahaHistory(docs),
-    '%s/.*' % url_constants.SVN_URL: FakeSubversionServer(docs),
-    '%s/.*' % url_constants.VIEWVC_URL: FakeViewvcServer(docs),
-    '%s/.*/commits/.*' % url_constants.GITHUB_REPOS: FakeGithubStat(docs),
-    '%s/.*/zipball' % url_constants.GITHUB_REPOS: FakeGithubZip(docs),
-    '%s/api/.*' % url_constants.CODEREVIEW_SERVER: FakeRietveldAPI(docs),
-    '%s/tarball/.*' % url_constants.CODEREVIEW_SERVER:
-        FakeRietveldTarball(docs),
+    url_constants.OMAHA_PROXY_URL: _FakeOmahaProxy(),
+    re.escape(url_constants.OMAHA_DEV_HISTORY): _FakeOmahaHistory(),
+    '%s/.*' % url_constants.SVN_URL: _FakeSubversionServer(),
+    '%s/.*' % url_constants.VIEWVC_URL: _FakeViewvcServer(),
+    '%s/.*/commits/.*' % url_constants.GITHUB_REPOS: _FakeGithubStat(),
+    '%s/.*/zipball' % url_constants.GITHUB_REPOS: _FakeGithubZip(),
+    '%s/api/.*' % url_constants.CODEREVIEW_SERVER: _FakeRietveldAPI(),
+    '%s/tarball/.*' % url_constants.CODEREVIEW_SERVER: _FakeRietveldTarball(),
   })
