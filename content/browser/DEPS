@@ -32,6 +32,7 @@ include_rules = [
   # No inclusion of WebKit from the browser, other than strictly enum/POD,
   # header-only types, and some selected common code.
   "-third_party/WebKit",
+  "+third_party/WebKit/public/platform/WebCursorInfo.h",
   "+third_party/WebKit/public/platform/WebGamepads.h",
   "+third_party/WebKit/public/platform/WebGraphicsContext3D.h",
   "+third_party/WebKit/public/platform/WebIDBDatabaseException.h",
@@ -44,7 +45,6 @@ include_rules = [
   "+third_party/WebKit/public/web/WebAXEnums.h",
   "+third_party/WebKit/public/web/WebCompositionUnderline.h",
   "+third_party/WebKit/public/web/WebConsoleMessage.h",
-  "+third_party/WebKit/public/web/WebCursorInfo.h",
   "+third_party/WebKit/public/web/WebDragOperation.h",
   "+third_party/WebKit/public/web/WebDragStatus.h",
   "+third_party/WebKit/public/web/WebFindOptions.h",
@@ -54,7 +54,6 @@ include_rules = [
   "+third_party/WebKit/public/web/WebPageSerializerClient.h",
   "+third_party/WebKit/public/web/WebPluginAction.h",
   "+third_party/WebKit/public/web/WebPopupType.h",
-  "+third_party/WebKit/public/web/WebScreenInfo.h",
   "+third_party/WebKit/public/web/WebSerializedScriptValueVersion.h",
   "+third_party/WebKit/public/web/WebTextDirection.h",
 

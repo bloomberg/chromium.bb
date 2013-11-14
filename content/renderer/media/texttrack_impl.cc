@@ -5,8 +5,8 @@
 #include "content/renderer/media/texttrack_impl.h"
 
 #include "content/renderer/media/webinbandtexttrack_impl.h"
-#include "third_party/WebKit/public/web/WebInbandTextTrackClient.h"
-#include "third_party/WebKit/public/web/WebMediaPlayerClient.h"
+#include "third_party/WebKit/public/platform/WebInbandTextTrackClient.h"
+#include "third_party/WebKit/public/platform/WebMediaPlayerClient.h"
 
 namespace content {
 

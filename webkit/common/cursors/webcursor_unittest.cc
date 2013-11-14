@@ -4,7 +4,7 @@
 
 #include "base/pickle.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/public/web/WebCursorInfo.h"
+#include "third_party/WebKit/public/platform/WebCursorInfo.h"
 #include "webkit/common/cursors/webcursor.h"
 
 using blink::WebCursorInfo;

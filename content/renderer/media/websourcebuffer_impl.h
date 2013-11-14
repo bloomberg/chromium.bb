@@ -9,7 +9,7 @@
 
 #include "base/basictypes.h"
 #include "base/compiler_specific.h"
-#include "third_party/WebKit/public/web/WebSourceBuffer.h"
+#include "third_party/WebKit/public/platform/WebSourceBuffer.h"
 
 namespace media {
 class ChunkDemuxer;

@@ -10,7 +10,7 @@
 
 #include <vector>
 
-#include "third_party/WebKit/public/web/WebScreenInfo.h"
+#include "third_party/WebKit/public/platform/WebScreenInfo.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/gfx/gtk_compat.h"
 #include "ui/gfx/rect.h"

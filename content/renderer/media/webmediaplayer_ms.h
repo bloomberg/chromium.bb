@@ -13,7 +13,7 @@
 #include "cc/layers/video_frame_provider.h"
 #include "media/filters/skcanvas_video_renderer.h"
 #include "skia/ext/platform_canvas.h"
-#include "third_party/WebKit/public/web/WebMediaPlayer.h"
+#include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "url/gurl.h"
 
 namespace blink {

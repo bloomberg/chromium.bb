@@ -11,8 +11,8 @@
 #include "content/child/quota_message_filter.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/quota_messages.h"
-#include "third_party/WebKit/public/web/WebStorageQuotaCallbacks.h"
-#include "third_party/WebKit/public/web/WebStorageQuotaType.h"
+#include "third_party/WebKit/public/platform/WebStorageQuotaCallbacks.h"
+#include "third_party/WebKit/public/platform/WebStorageQuotaType.h"
 #include "url/gurl.h"
 
 using quota::QuotaStatusCode;

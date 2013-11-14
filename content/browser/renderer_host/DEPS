@@ -23,8 +23,8 @@ specific_include_rules = {
     "+media/filters",
   ],
   "render_sandbox_host_linux\.cc": [
+    "+third_party/WebKit/public/platform/linux/WebFontInfo.h",
     "+third_party/WebKit/public/web/WebKit.h",
-    "+third_party/WebKit/public/web/linux/WebFontInfo.h",
   ],
   "render_process_host_impl\.cc": [
     "+content/browser/frame_host/render_frame_message_filter.h",

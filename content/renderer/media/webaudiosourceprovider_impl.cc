@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "base/logging.h"
-#include "third_party/WebKit/public/web/WebAudioSourceProviderClient.h"
+#include "third_party/WebKit/public/platform/WebAudioSourceProviderClient.h"
 
 using blink::WebVector;
 

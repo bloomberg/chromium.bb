@@ -7,7 +7,7 @@
 #include <math.h>
 
 #include "media/base/media_keys.h"
-#include "third_party/WebKit/public/web/WebMediaPlayerClient.h"
+#include "third_party/WebKit/public/platform/WebMediaPlayerClient.h"
 
 namespace content {
 

@@ -8,8 +8,8 @@
 #include "base/time/time.h"
 #include "media/base/pipeline_status.h"
 #include "media/base/ranges.h"
+#include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "third_party/WebKit/public/platform/WebTimeRange.h"
-#include "third_party/WebKit/public/web/WebMediaPlayer.h"
 
 namespace content {
 

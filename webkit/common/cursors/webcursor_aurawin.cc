@@ -6,7 +6,7 @@
 
 #include <windows.h>
 
-#include "third_party/WebKit/public/web/WebCursorInfo.h"
+#include "third_party/WebKit/public/platform/WebCursorInfo.h"
 #include "ui/gfx/icon_util.h"
 
 const ui::PlatformCursor WebCursor::GetPlatformCursor() {

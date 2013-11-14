@@ -6,7 +6,7 @@
 #define WEBKIT_COMMON_CURSORS_WEBCURSOR_H_
 
 #include "base/basictypes.h"
-#include "third_party/WebKit/public/web/WebCursorInfo.h"
+#include "third_party/WebKit/public/platform/WebCursorInfo.h"
 #include "ui/gfx/display.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/point.h"

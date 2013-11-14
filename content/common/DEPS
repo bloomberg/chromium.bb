@@ -40,7 +40,6 @@ include_rules = [
   "+third_party/WebKit/public/web/WebMediaPlayerAction.h",
   "+third_party/WebKit/public/web/WebPluginAction.h",
   "+third_party/WebKit/public/web/WebPopupType.h",
-  "+third_party/WebKit/public/web/WebScreenInfo.h",
   "+third_party/WebKit/public/web/WebTextDirection.h",
   "+third_party/WebKit/public/web/WebWindowFeatures.h",
 ]

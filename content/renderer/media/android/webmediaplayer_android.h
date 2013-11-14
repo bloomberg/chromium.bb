@@ -26,9 +26,9 @@
 #include "media/base/demuxer_stream.h"
 #include "media/base/media_keys.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
+#include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
-#include "third_party/WebKit/public/web/WebMediaPlayer.h"
 #include "ui/gfx/rect_f.h"
 
 namespace media {

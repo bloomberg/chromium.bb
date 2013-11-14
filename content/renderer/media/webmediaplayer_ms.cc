@@ -18,11 +18,11 @@
 #include "content/renderer/media/webmediaplayer_util.h"
 #include "media/base/media_log.h"
 #include "media/base/video_frame.h"
+#include "third_party/WebKit/public/platform/WebMediaPlayerClient.h"
 #include "third_party/WebKit/public/platform/WebRect.h"
 #include "third_party/WebKit/public/platform/WebSize.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
-#include "third_party/WebKit/public/web/WebMediaPlayerClient.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "webkit/renderer/compositor_bindings/web_layer_impl.h"
 

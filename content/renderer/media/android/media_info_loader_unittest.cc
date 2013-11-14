@@ -7,10 +7,10 @@
 #include "content/renderer/media/android/media_info_loader.h"
 #include "content/test/mock_webframeclient.h"
 #include "content/test/mock_weburlloader.h"
+#include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "third_party/WebKit/public/platform/WebURLError.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebURLResponse.h"
-#include "third_party/WebKit/public/web/WebMediaPlayer.h"
 #include "third_party/WebKit/public/web/WebView.h"
 
 using ::testing::_;

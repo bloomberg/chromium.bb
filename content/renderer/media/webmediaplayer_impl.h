@@ -39,8 +39,8 @@
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/public/platform/WebAudioSourceProvider.h"
 #include "third_party/WebKit/public/platform/WebGraphicsContext3D.h"
-#include "third_party/WebKit/public/web/WebMediaPlayer.h"
-#include "third_party/WebKit/public/web/WebMediaPlayerClient.h"
+#include "third_party/WebKit/public/platform/WebMediaPlayer.h"
+#include "third_party/WebKit/public/platform/WebMediaPlayerClient.h"
 #include "url/gurl.h"
 
 class RenderAudioSourceProvider;

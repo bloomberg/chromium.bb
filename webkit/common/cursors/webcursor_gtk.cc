@@ -8,7 +8,7 @@
 #include <gtk/gtk.h>
 
 #include "base/logging.h"
-#include "third_party/WebKit/public/web/WebCursorInfo.h"
+#include "third_party/WebKit/public/platform/WebCursorInfo.h"
 #include "ui/gfx/gtk_util.h"
 
 using blink::WebCursorInfo;

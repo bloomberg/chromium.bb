@@ -5,8 +5,8 @@
 #ifndef CONTENT_RENDERER_MEDIA_WEBINBANDTEXTTRACK_IMPL_H_
 #define CONTENT_RENDERER_MEDIA_WEBINBANDTEXTTRACK_IMPL_H_
 
+#include "third_party/WebKit/public/platform/WebInbandTextTrack.h"
 #include "third_party/WebKit/public/platform/WebString.h"
-#include "third_party/WebKit/public/web/WebInbandTextTrack.h"
 
 namespace content {
 

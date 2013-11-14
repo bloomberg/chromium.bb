@@ -7,7 +7,7 @@
 #include "content/common/view_messages.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/render_widget.h"
-#include "third_party/WebKit/public/web/WebScreenInfo.h"
+#include "third_party/WebKit/public/platform/WebScreenInfo.h"
 
 namespace content {
 

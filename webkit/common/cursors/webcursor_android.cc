@@ -5,7 +5,7 @@
 #include "webkit/common/cursors/webcursor.h"
 
 #include "base/logging.h"
-#include "third_party/WebKit/public/web/WebCursorInfo.h"
+#include "third_party/WebKit/public/platform/WebCursorInfo.h"
 
 void WebCursor::InitPlatformData() {
 }
