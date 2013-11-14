@@ -30,6 +30,8 @@
 #include "core/platform/graphics/BitmapImage.h"
 #include "core/platform/graphics/ImageBuffer.h"
 #include "core/platform/graphics/skia/NativeImageSkia.h"
+#include "platform/graphics/DisplayList.h"
+#include "third_party/skia/include/core/SkBitmapDevice.h"
 #include <gtest/gtest.h>
 
 using namespace WebCore;
@@ -1078,6 +1080,44 @@ TEST(GraphicsContextTest, PreserveOpaqueOnlyMattersForFirstLayer)
     context.endLayer();
     EXPECT_EQ_RECT(IntRect(), context.opaqueRegion().asRect());
     EXPECT_PIXELS_MATCH_EXACT(bitmap, context.opaqueRegion().asRect());
+}
+
+#define DISPATCH(c1, c2, op, params) do { c1.op(params); c2.op(params); } while (0);
+
+TEST(GraphicsContextTest, RecordingTotalMatrix)
+{
+    SkBitmap bitmap;
+    bitmap.setConfig(SkBitmap::kARGB_8888_Config, 400, 400);
+    bitmap.allocPixels();
+    bitmap.eraseColor(0);
+    SkCanvas canvas(bitmap);
+    GraphicsContext context(&canvas);
+
+    SkBitmapDevice controlDevice(SkBitmap::kNo_Config, 400, 400);
+    SkCanvas controlCanvas(&controlDevice);
+    GraphicsContext controlContext(&controlCanvas);
+
+    EXPECT_EQ(context.getCTM(), controlContext.getCTM());
+    DISPATCH(context, controlContext, scale, FloatSize(2, 2));
+    EXPECT_EQ(context.getCTM(), controlContext.getCTM());
+
+    controlContext.save();
+    context.beginRecording(FloatRect(0, 0, 200, 200));
+    DISPATCH(context, controlContext, translate, FloatSize(10, 10));
+    EXPECT_EQ(context.getCTM(), controlContext.getCTM());
+
+    controlContext.save();
+    context.beginRecording(FloatRect(10, 10, 100, 100));
+    DISPATCH(context, controlContext, rotate, 45);
+    EXPECT_EQ(context.getCTM(), controlContext.getCTM());
+
+    controlContext.restore();
+    context.endRecording();
+    EXPECT_EQ(context.getCTM(), controlContext.getCTM());
+
+    controlContext.restore();
+    context.endRecording();
+    EXPECT_EQ(context.getCTM(), controlContext.getCTM());
 }
 
 } // namespace

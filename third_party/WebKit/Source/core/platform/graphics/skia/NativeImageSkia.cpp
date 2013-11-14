@@ -339,10 +339,11 @@ void NativeImageSkia::draw(GraphicsContext* context, const SkRect& srcRect, cons
     } else {
         // Take into account scale applied to the canvas when computing sampling mode (e.g. CSS scale or page scale).
         SkRect destRectTarget = destRect;
-        if (!(context->getTotalMatrix().getType() & (SkMatrix::kAffine_Mask | SkMatrix::kPerspective_Mask)))
-            context->getTotalMatrix().mapRect(&destRectTarget, destRect);
+        SkMatrix totalMatrix = context->getTotalMatrix();
+        if (!(totalMatrix.getType() & (SkMatrix::kAffine_Mask | SkMatrix::kPerspective_Mask)))
+            totalMatrix.mapRect(&destRectTarget, destRect);
 
-        resampling = computeResamplingMode(context->getTotalMatrix(),
+        resampling = computeResamplingMode(totalMatrix,
             SkScalarToFloat(srcRect.width()), SkScalarToFloat(srcRect.height()),
             SkScalarToFloat(destRectTarget.width()), SkScalarToFloat(destRectTarget.height()));
     }

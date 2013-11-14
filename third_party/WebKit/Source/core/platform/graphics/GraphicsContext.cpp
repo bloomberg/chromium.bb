@@ -66,14 +66,16 @@ struct GraphicsContext::DeferredSaveState {
 };
 
 struct GraphicsContext::RecordingState {
-    RecordingState(SkCanvas* oldCanvas, PassRefPtr<DisplayList> displayList)
-        : m_savedCanvas(oldCanvas)
+    RecordingState(SkCanvas* currentCanvas, const SkMatrix& currentMatrix, PassRefPtr<DisplayList> displayList)
+        : m_savedCanvas(currentCanvas)
         , m_displayList(displayList)
+        , m_savedMatrix(currentMatrix)
     {
     }
 
     SkCanvas* m_savedCanvas;
     RefPtr<DisplayList> m_displayList;
+    const SkMatrix m_savedMatrix;
 };
 
 GraphicsContext::GraphicsContext(SkCanvas* canvas)
@@ -348,11 +350,19 @@ bool GraphicsContext::getTransformedClipBounds(FloatRect* bounds) const
     return true;
 }
 
-const SkMatrix& GraphicsContext::getTotalMatrix() const
+SkMatrix GraphicsContext::getTotalMatrix() const
 {
     if (paintingDisabled())
         return SkMatrix::I();
-    return m_canvas->getTotalMatrix();
+
+    if (!isRecording())
+        return m_canvas->getTotalMatrix();
+
+    const RecordingState& recordingState = m_recordingStateStack.last();
+    SkMatrix totalMatrix = recordingState.m_savedMatrix;
+    totalMatrix.preConcat(m_canvas->getTotalMatrix());
+
+    return totalMatrix;
 }
 
 bool GraphicsContext::isPrintingDevice() const
@@ -482,15 +492,23 @@ void GraphicsContext::endLayer()
 void GraphicsContext::beginRecording(const FloatRect& bounds)
 {
     RefPtr<DisplayList> displayList = adoptRef(new DisplayList(bounds));
-    m_recordingStateStack.append(RecordingState(m_canvas, displayList));
 
-    IntRect recordingRect = enclosingIntRect(displayList->bounds());
-    m_canvas = displayList->picture()->beginRecording(recordingRect.width(), recordingRect.height());
+    SkCanvas* savedCanvas = m_canvas;
+    SkMatrix savedMatrix = getTotalMatrix();
+
+    IntRect recordingRect = enclosingIntRect(bounds);
+    m_canvas = displayList->picture()->beginRecording(recordingRect.width(), recordingRect.height(),
+        SkPicture::kUsePathBoundsForClip_RecordingFlag);
 
     // We want the bounds offset mapped to (0, 0), such that the display list content
     // is fully contained within the SkPictureRecord's bounds.
-    if (bounds.x() || bounds.y())
+    if (!toFloatSize(bounds.location()).isZero()) {
         m_canvas->translate(-bounds.x(), -bounds.y());
+        // To avoid applying the offset repeatedly in getTotalMatrix(), we pre-apply it here.
+        savedMatrix.preTranslate(bounds.x(), bounds.y());
+    }
+
+    m_recordingStateStack.append(RecordingState(savedCanvas, savedMatrix, displayList));
 }
 
 PassRefPtr<DisplayList> GraphicsContext::endRecording()
@@ -505,6 +523,11 @@ PassRefPtr<DisplayList> GraphicsContext::endRecording()
     m_canvas = recording.m_savedCanvas;
 
     return recording.m_displayList.release();
+}
+
+bool GraphicsContext::isRecording() const
+{
+    return !m_recordingStateStack.isEmpty();
 }
 
 void GraphicsContext::drawDisplayList(DisplayList* displayList)
@@ -1585,7 +1608,7 @@ AffineTransform GraphicsContext::getCTM(IncludeDeviceScale) const
     if (paintingDisabled())
         return AffineTransform();
 
-    const SkMatrix& m = getTotalMatrix();
+    SkMatrix m = getTotalMatrix();
     return AffineTransform(SkScalarToDouble(m.getScaleX()),
                            SkScalarToDouble(m.getSkewY()),
                            SkScalarToDouble(m.getSkewX()),
