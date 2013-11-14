@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_list.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/extension.h"
@@ -722,6 +723,34 @@ class WebContentsDestroyedWatcher : public content::WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(WebContentsDestroyedWatcher);
 };
 
+// A V1 windowed application.
+class V1App {
+ public:
+  V1App(Profile* profile, const std::string& app_name) {
+    Browser::CreateParams params = Browser::CreateParams::CreateForApp(
+        Browser::TYPE_POPUP,
+        kCrxAppPrefix + app_name,
+        gfx::Rect(),
+        profile,
+        chrome::HOST_DESKTOP_TYPE_ASH);
+    browser_.reset(chrome::CreateBrowserWithTestWindowForParams(&params));
+    chrome::AddBlankTabAt(browser_.get(), 0, true);
+  }
+
+  virtual ~V1App() {
+    // close all tabs. Note that we do not need to destroy the browser itself.
+    browser_->tab_strip_model()->CloseAllTabs();
+  }
+
+  Browser* browser() { return browser_.get(); }
+
+ private:
+  // The associated browser with this app.
+  scoped_ptr<Browser> browser_;
+
+  DISALLOW_COPY_AND_ASSIGN(V1App);
+};
+
 // A V2 application which gets created with an |extension| and for a |profile|.
 // Upon destruction it will properly close the application.
 class V2App {
@@ -860,17 +889,14 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest
     return browser;
   }
 
-  // Creates a browser with a |profile| and load a tab with a |title| and |url|.
-  Browser* CreateV1AppBrowserWithProfile(Profile* profile,
-                                         const std::string& app_name) {
-    Browser::CreateParams params = Browser::CreateParams::CreateForApp(
-        Browser::TYPE_POPUP,
-        kCrxAppPrefix + app_name,
-        gfx::Rect(),
-        profile,
-        chrome::HOST_DESKTOP_TYPE_ASH);
-    Browser* browser = chrome::CreateBrowserWithTestWindowForParams(&params);
-    return browser;
+  // Creates a running V1 application.
+  V1App* CreateRunningV1App(Profile* profile,
+                            const std::string& app_name,
+                            const std::string& url) {
+    V1App* v1_app = new V1App(profile, app_name);
+    NavigateAndCommitActiveTabWithTitle(
+        v1_app->browser(), GURL(url), ASCIIToUTF16(""));
+    return v1_app;
   }
 
   ash::test::TestSessionStateDelegate*
@@ -1435,9 +1461,8 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
   EXPECT_EQ(2, model_->item_count());
   {
     // Create a "windowed gmail app".
-    scoped_ptr<Browser> browser(CreateV1AppBrowserWithProfile(
-        profile(),
-        extension_misc::kGmailAppId));
+    scoped_ptr<V1App> v1_app(CreateRunningV1App(
+        profile(), extension_misc::kGmailAppId, gmail_url));
     EXPECT_EQ(3, model_->item_count());
 
     // After switching to a second user the item should be gone.
@@ -1465,9 +1490,8 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
   TestingProfile* profile2 = CreateMultiUserProfile(user2);
   {
     // Create a "windowed gmail app".
-    scoped_ptr<Browser> browser(CreateV1AppBrowserWithProfile(
-        profile2,
-        extension_misc::kGmailAppId));
+    scoped_ptr<V1App> v1_app(CreateRunningV1App(
+        profile2, extension_misc::kGmailAppId, gmail_url));
     EXPECT_EQ(2, model_->item_count());
 
     // However - switching to the user should show it.

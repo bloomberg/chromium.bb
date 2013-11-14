@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/host_desktop.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/browser/process_manager.h"
 #include "ui/aura/window.h"
@@ -201,7 +202,8 @@ AppShortcutLauncherItemController::GetRunningApplications() {
     TabStripModel* tab_strip = browser->tab_strip_model();
     for (int index = 0; index < tab_strip->count(); index++) {
       content::WebContents* web_contents = tab_strip->GetWebContentsAt(index);
-      if (WebContentMatchesApp(extension, refocus_pattern, web_contents))
+      if (WebContentMatchesApp(
+              extension, refocus_pattern, web_contents, browser->is_app()))
         items.push_back(web_contents);
     }
   }
@@ -276,7 +278,8 @@ content::WebContents* AppShortcutLauncherItemController::GetLRUApplication() {
     for (int index = 0; index < tab_strip->count(); index++) {
       content::WebContents* web_contents = tab_strip->GetWebContentsAt(
           (index + active_index) % tab_strip->count());
-      if (WebContentMatchesApp(extension, refocus_pattern, web_contents))
+      if (WebContentMatchesApp(
+              extension, refocus_pattern, web_contents, browser->is_app()))
         return web_contents;
     }
   }
@@ -291,7 +294,8 @@ content::WebContents* AppShortcutLauncherItemController::GetLRUApplication() {
     TabStripModel* tab_strip = browser->tab_strip_model();
     for (int index = 0; index < tab_strip->count(); index++) {
       content::WebContents* web_contents = tab_strip->GetWebContentsAt(index);
-      if (WebContentMatchesApp(extension, refocus_pattern, web_contents))
+      if (WebContentMatchesApp(
+              extension, refocus_pattern, web_contents, browser->is_app()))
         return web_contents;
     }
   }
@@ -301,8 +305,13 @@ content::WebContents* AppShortcutLauncherItemController::GetLRUApplication() {
 bool AppShortcutLauncherItemController::WebContentMatchesApp(
     const extensions::Extension* extension,
     const URLPattern& refocus_pattern,
-    content::WebContents* web_contents) {
-  const GURL tab_url = web_contents->GetURL();
+    content::WebContents* web_contents,
+    bool is_app) {
+  // Note: We can come here when the initial navigation isn't completed and
+  // no entry was yet created.
+  const GURL tab_url = is_app && web_contents->GetController().GetEntryCount() ?
+      web_contents->GetController().GetEntryAtIndex(0)->GetURL() :
+      web_contents->GetURL();
   // There are three ways to identify the association of a URL with this
   // extension:
   // - The refocus pattern is matched (needed for apps like drive).

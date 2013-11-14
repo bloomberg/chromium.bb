@@ -65,10 +65,13 @@ class AppShortcutLauncherItemController : public LauncherItemController {
 
   // Returns true if this app matches the given |web_contents|. To accelerate
   // the matching, the app managing |extension| as well as the parsed
-  // |refocus_pattern| get passed.
+  // |refocus_pattern| get passed. If |is_app| is true, the application gets
+  // first checked against its original URL since a windowed app might have
+  // navigated away from its app domain.
   bool WebContentMatchesApp(const extensions::Extension* extension,
                             const URLPattern& refocus_pattern,
-                            content::WebContents* web_contents);
+                            content::WebContents* web_contents,
+                            bool is_app);
 
   // Activate the browser with the given |content| and show the associated tab.
   void ActivateContent(content::WebContents* content);

@@ -1880,3 +1880,50 @@ IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, OverflowBubble) {
   test.RunMessageLoopUntilAnimationsDone();
   EXPECT_FALSE(launcher_->IsShowingOverflowBubble());
 }
+
+// Check that a windowed V1 application can navigate away from its domain, but
+// still gets detected properly.
+IN_PROC_BROWSER_TEST_F(LauncherAppBrowserTest, V1AppNavigation) {
+  // We assume that the web store is always there (which it apparently is).
+  controller_->PinAppWithID(extension_misc::kWebStoreAppId);
+  ash::LauncherID id = controller_->GetLauncherIDForAppID(
+      extension_misc::kWebStoreAppId);
+  ASSERT_NE(0, id);
+  EXPECT_EQ(ash::STATUS_CLOSED, model_->ItemByID(id)->status);
+
+  // Create a windowed application.
+  AppLaunchParams params(
+      profile(),
+      controller_->GetExtensionForAppID(extension_misc::kWebStoreAppId),
+      0,
+      chrome::HOST_DESKTOP_TYPE_ASH);
+  params.container = extensions::LAUNCH_WINDOW;
+  OpenApplication(params);
+  EXPECT_EQ(ash::STATUS_ACTIVE, model_->ItemByID(id)->status);
+
+  // Find the browser which holds our app.
+  Browser* app_browser = NULL;
+  const BrowserList* ash_browser_list =
+      BrowserList::GetInstance(chrome::HOST_DESKTOP_TYPE_ASH);
+  for (BrowserList::const_reverse_iterator it =
+           ash_browser_list->begin_last_active();
+       it != ash_browser_list->end_last_active() && !app_browser; ++it) {
+    if ((*it)->is_app()) {
+      app_browser = *it;
+      break;
+    }
+  }
+  ASSERT_TRUE(app_browser);
+
+  // After navigating away in the app, we should still be active.
+  ui_test_utils::NavigateToURL(app_browser,
+                               GURL("http://www.foo.com/bar.html"));
+  // Make sure the navigation was entirely performed.
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(ash::STATUS_ACTIVE, model_->ItemByID(id)->status);
+  app_browser->tab_strip_model()->CloseWebContentsAt(0,
+                                                     TabStripModel::CLOSE_NONE);
+  // Make sure that the app is really gone.
+  base::MessageLoop::current()->RunUntilIdle();
+  EXPECT_EQ(ash::STATUS_CLOSED, model_->ItemByID(id)->status);
+}

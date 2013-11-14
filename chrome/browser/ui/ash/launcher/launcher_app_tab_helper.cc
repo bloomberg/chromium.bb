@@ -10,7 +10,9 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/browser_finder.h"
 #include "chrome/common/extensions/extension.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 
 namespace {
@@ -20,7 +22,12 @@ const extensions::Extension* GetExtensionForTab(Profile* profile,
   ExtensionService* extension_service = profile->GetExtensionService();
   if (!extension_service || !extension_service->extensions_enabled())
     return NULL;
-  return extension_service->GetInstalledApp(tab->GetURL());
+  Browser* browser = chrome::FindBrowserWithWebContents(tab);
+  DCHECK(browser);
+  GURL url = tab->GetURL();
+  if (browser->is_app() && tab->GetController().GetEntryCount())
+    url = tab->GetController().GetEntryAtIndex(0)->GetURL();
+  return extension_service->GetInstalledApp(url);
 }
 
 const extensions::Extension* GetExtensionByID(Profile* profile,
