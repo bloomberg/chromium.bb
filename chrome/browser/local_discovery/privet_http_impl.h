@@ -180,7 +180,7 @@ class PrivetLocalPrintOperationImpl
                                 int http_code,
                                 const base::DictionaryValue* value) OVERRIDE;
  private:
-  typedef base::Callback<void(const base::DictionaryValue* value)>
+  typedef base::Callback<void(bool, const base::DictionaryValue* value)>
       ResponseCallback;
 
   void StartInitialRequest();
@@ -188,9 +188,12 @@ class PrivetLocalPrintOperationImpl
   void DoCreatejob();
   void DoSubmitdoc();
 
-  void OnCapabilitiesResponse(const base::DictionaryValue* value);
-  void OnSubmitdocResponse(const base::DictionaryValue* value);
-  void OnCreatejobResponse(const base::DictionaryValue* value);
+  void OnCapabilitiesResponse(bool has_error,
+                              const base::DictionaryValue* value);
+  void OnSubmitdocResponse(bool has_error,
+                           const base::DictionaryValue* value);
+  void OnCreatejobResponse(bool has_error,
+                           const base::DictionaryValue* value);
 
   PrivetHTTPClientImpl* privet_client_;
   PrivetLocalPrintOperation::Delegate* delegate_;
@@ -211,8 +214,12 @@ class PrivetLocalPrintOperationImpl
 
   std::string jobid_;
 
+  int invalid_job_retries_;
+
   scoped_ptr<PrivetURLFetcher> url_fetcher_;
   scoped_ptr<PrivetInfoOperation> info_operation_;
+
+  base::WeakPtrFactory<PrivetLocalPrintOperationImpl> weak_factory_;
 };
 
 class PrivetHTTPClientImpl : public PrivetHTTPClient,

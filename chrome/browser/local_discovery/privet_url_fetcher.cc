@@ -131,8 +131,7 @@ void PrivetURLFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
     if (error == kPrivetErrorInvalidXPrivetToken) {
       RequestTokenRefresh();
       return;
-    } else if (PrivetErrorTransient(error) ||
-        dictionary_value->HasKey(kPrivetKeyTimeout)) {
+    } else if (PrivetErrorTransient(error)) {
       if (!do_not_retry_on_transient_error_) {
         int timeout_seconds;
         if (!dictionary_value->GetInteger(kPrivetKeyTimeout,
@@ -180,7 +179,8 @@ void PrivetURLFetcher::RefreshToken(const std::string& token) {
 
 bool PrivetURLFetcher::PrivetErrorTransient(const std::string& error) {
   return (error == kPrivetErrorDeviceBusy) ||
-      (error == kPrivetErrorPendingUserAction);
+         (error == kPrivetErrorPendingUserAction) ||
+         (error == kPrivetErrorPrinterBusy);
 }
 
 PrivetURLFetcherFactory::PrivetURLFetcherFactory(

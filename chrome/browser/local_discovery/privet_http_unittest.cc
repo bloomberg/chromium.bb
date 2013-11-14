@@ -162,6 +162,11 @@ const char kSampleCapabilitiesResponsePWGOnly[] = "{"
     "}"
     "}";
 
+const char kSampleErrorResponsePrinterBusy[] = "{"
+    "\"error\": \"invalid_print_job\","
+    "\"timeout\": 1 "
+    "}";
+
 const char kSampleCreatejobResponse[] = "{ \"job_id\": \"1234\" }";
 
 class MockTestURLFetcherFactoryDelegate
@@ -219,6 +224,20 @@ class PrivetHTTPTest : public ::testing::Test {
     fetcher->set_response_code(200);
     fetcher->delegate()->OnURLFetchComplete(fetcher);
     return true;
+  }
+
+  void RunFor(base::TimeDelta time_period) {
+    base::CancelableCallback<void()> callback(base::Bind(
+        &PrivetHTTPTest::Stop, base::Unretained(this)));
+    base::MessageLoop::current()->PostDelayedTask(
+        FROM_HERE, callback.callback(), time_period);
+
+    base::MessageLoop::current()->Run();
+    callback.Cancel();
+  }
+
+  void Stop() {
+    base::MessageLoop::current()->Quit();
   }
 
  protected:
@@ -460,20 +479,6 @@ class PrivetRegisterTest : public PrivetHTTPTest {
     fetcher->set_response_code(200);
     fetcher->delegate()->OnURLFetchComplete(fetcher);
     return true;
-  }
-
-  void RunFor(base::TimeDelta time_period) {
-    base::CancelableCallback<void()> callback(base::Bind(
-        &PrivetRegisterTest::Stop, base::Unretained(this)));
-    base::MessageLoop::current()->PostDelayedTask(
-        FROM_HERE, callback.callback(), time_period);
-
-    base::MessageLoop::current()->Run();
-    callback.Cancel();
-  }
-
-  void Stop() {
-    base::MessageLoop::current()->Quit();
   }
 
   scoped_ptr<PrivetInfoOperation> info_operation_;
@@ -836,6 +841,42 @@ TEST_F(PrivetLocalPrintTest, SuccessfulLocalPrintWithCreatejob) {
            "user=sample%40gmail.com&jobname=Sample+job+name&job_id=1234"),
       "Sample print data",
       kSampleLocalPrintResponse));
+};
+
+TEST_F(PrivetLocalPrintTest, LocalPrintRetryOnInvalidJobID) {
+  local_print_operation_->SetUsername("sample@gmail.com");
+  local_print_operation_->SetJobname("Sample job name");
+  local_print_operation_->SetTicket("Sample print ticket");
+  local_print_operation_->Start();
+
+  EXPECT_TRUE(SuccessfulResponseToURL(
+      GURL("http://10.0.0.8:6006/privet/info"),
+      kSampleInfoResponseWithCreatejob));
+
+  EXPECT_CALL(local_print_delegate_, OnPrivetPrintingRequestPDFInternal());
+
+  EXPECT_TRUE(SuccessfulResponseToURL(
+      GURL("http://10.0.0.8:6006/privet/capabilities"),
+      kSampleCapabilitiesResponse));
+
+  local_print_operation_->SendData("Sample print data");
+
+  EXPECT_TRUE(SuccessfulResponseToURLAndData(
+      GURL("http://10.0.0.8:6006/privet/printer/createjob"),
+      "Sample print ticket",
+      kSampleCreatejobResponse));
+
+  EXPECT_TRUE(SuccessfulResponseToURLAndData(
+      GURL("http://10.0.0.8:6006/privet/printer/submitdoc?"
+           "user=sample%40gmail.com&jobname=Sample+job+name&job_id=1234"),
+      "Sample print data",
+      kSampleErrorResponsePrinterBusy));
+
+  RunFor(base::TimeDelta::FromSeconds(3));
+
+  EXPECT_TRUE(SuccessfulResponseToURL(
+      GURL("http://10.0.0.8:6006/privet/printer/createjob"),
+      kSampleCreatejobResponse));
 };
 
 

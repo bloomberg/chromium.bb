@@ -24,6 +24,8 @@ const char kPrivetSubmitdocPath[] = "/privet/printer/submitdoc";
 const char kPrivetCreatejobPath[] = "/privet/printer/createjob";
 
 const char kPrivetErrorDeviceBusy[] = "device_busy";
+const char kPrivetErrorPrinterBusy[] = "printer_busy";
+const char kPrivetErrorInvalidPrintJob[] = "invalid_print_job";
 const char kPrivetErrorPendingUserAction[] = "pending_user_action";
 const char kPrivetErrorInvalidXPrivetToken[] = "invalid_x_privet_token";
 const char kPrivetErrorTimeout[] = "confirmation_timeout";

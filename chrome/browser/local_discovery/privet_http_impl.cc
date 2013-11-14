@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/message_loop/message_loop.h"
+#include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/local_discovery/privet_constants.h"
 #include "net/base/url_util.h"
@@ -35,6 +36,10 @@ const char kPrivetCDDKeyContentType[] = "content_type";
 const char kPrivetKeyJobID[] = "job_id";
 
 const int kPrivetCancelationTimeoutSeconds = 3;
+
+const int kPrivetLocalPrintMaxRetries = 2;
+
+const int kPrivetLocalPrintDefaultTimeout = 5;
 
 GURL CreatePrivetURL(const std::string& path) {
   GURL url(kUrlPlaceHolder);
@@ -359,7 +364,8 @@ PrivetLocalPrintOperationImpl::PrivetLocalPrintOperationImpl(
     PrivetLocalPrintOperation::Delegate* delegate)
     : privet_client_(privet_client), delegate_(delegate),
       use_pdf_(false), has_capabilities_(false), has_extended_workflow_(false),
-      started_(false), offline_(false) {
+      started_(false), offline_(false), invalid_job_retries_(0),
+      weak_factory_(this) {
 }
 
 PrivetLocalPrintOperationImpl::~PrivetLocalPrintOperationImpl() {
@@ -489,7 +495,13 @@ void PrivetLocalPrintOperationImpl::DoSubmitdoc() {
 }
 
 void PrivetLocalPrintOperationImpl::OnCapabilitiesResponse(
+    bool has_error,
     const base::DictionaryValue* value) {
+  if (has_error) {
+    delegate_->OnPrivetPrintingError(this, 200);
+    return;
+  }
+
   const base::ListValue* supported_content_types;
   use_pdf_ = false;
 
@@ -516,15 +528,52 @@ void PrivetLocalPrintOperationImpl::OnCapabilitiesResponse(
 }
 
 void PrivetLocalPrintOperationImpl::OnSubmitdocResponse(
+    bool has_error,
     const base::DictionaryValue* value) {
+  std::string error;
+  // This error is only relevant in the case of extended workflow:
+  // If the print job ID is invalid, retry createjob and submitdoc,
+  // rather than simply retrying the current request.
+  if (has_error) {
+    if (has_extended_workflow_ &&
+        value->GetString(kPrivetKeyError, &error) &&
+        error == kPrivetErrorInvalidPrintJob &&
+        invalid_job_retries_ < kPrivetLocalPrintMaxRetries) {
+      invalid_job_retries_++;
+
+      int timeout = kPrivetLocalPrintDefaultTimeout;
+      value->GetInteger(kPrivetKeyTimeout, &timeout);
+
+      double random_scaling_factor =
+          1 + base::RandDouble() * kPrivetMaximumTimeRandomAddition;
+
+      timeout = static_cast<int>(timeout * random_scaling_factor);
+
+      base::MessageLoop::current()->PostDelayedTask(
+          FROM_HERE, base::Bind(&PrivetLocalPrintOperationImpl::DoCreatejob,
+                                weak_factory_.GetWeakPtr()),
+          base::TimeDelta::FromSeconds(timeout));
+    } else {
+      delegate_->OnPrivetPrintingError(this, 200);
+    }
+
+    return;
+  }
+
+
   // If we've gotten this far, there are no errors, so we've effectively
   // succeeded.
-
   delegate_->OnPrivetPrintingDone(this);
 }
 
 void PrivetLocalPrintOperationImpl::OnCreatejobResponse(
+    bool has_error,
     const base::DictionaryValue* value) {
+  if (has_error) {
+    delegate_->OnPrivetPrintingError(this, 200);
+    return;
+  }
+
   // Try to get job ID from value. If not, jobid_ will be empty and we will use
   // simple printing.
   value->GetString(kPrivetKeyJobID, &jobid_);
@@ -546,13 +595,8 @@ void PrivetLocalPrintOperationImpl::OnParsedJson(
     PrivetURLFetcher* fetcher,
     const base::DictionaryValue* value,
     bool has_error) {
-  std::string error;
-  if (has_error) {
-    delegate_->OnPrivetPrintingError(this, -1);
-  } else {
-    DCHECK(!current_response_.is_null());
-    current_response_.Run(value);
-  }
+  DCHECK(!current_response_.is_null());
+  current_response_.Run(has_error, value);
 }
 
 void PrivetLocalPrintOperationImpl::OnNeedPrivetToken(
