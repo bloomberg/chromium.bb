@@ -88,6 +88,7 @@ class CC_EXPORT FrameRateController {
 
   // Members for unthrottled frame-rate.
   bool is_time_source_throttling_;
+  bool manual_tick_pending_;
   base::SingleThreadTaskRunner* task_runner_;
   base::WeakPtrFactory<FrameRateController> weak_factory_;
 

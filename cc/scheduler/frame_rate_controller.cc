@@ -44,6 +44,7 @@ FrameRateController::FrameRateController(scoped_refptr<TimeSource> timer)
       time_source_(timer),
       active_(false),
       is_time_source_throttling_(true),
+      manual_tick_pending_(false),
       task_runner_(NULL),
       weak_factory_(this) {
   time_source_client_adapter_ =
@@ -59,6 +60,7 @@ FrameRateController::FrameRateController(
       interval_(BeginFrameArgs::DefaultInterval()),
       active_(false),
       is_time_source_throttling_(false),
+      manual_tick_pending_(false),
       task_runner_(task_runner),
       weak_factory_(this) {}
 
@@ -81,10 +83,12 @@ BeginFrameArgs FrameRateController::SetActive(bool active) {
           missed_tick_time, deadline + deadline_adjustment_, interval_);
     }
   } else {
-    if (active)
+    if (active) {
       PostManualTick();
-    else
+    } else {
       weak_factory_.InvalidateWeakPtrs();
+      manual_tick_pending_ = false;
+    }
   }
 
   return BeginFrameArgs();
@@ -129,7 +133,8 @@ void FrameRateController::OnTimerTick() {
 }
 
 void FrameRateController::PostManualTick() {
-  if (active_) {
+  if (active_ && !manual_tick_pending_) {
+    manual_tick_pending_ = true;
     task_runner_->PostTask(FROM_HERE,
                            base::Bind(&FrameRateController::ManualTick,
                                       weak_factory_.GetWeakPtr()));
@@ -137,6 +142,7 @@ void FrameRateController::PostManualTick() {
 }
 
 void FrameRateController::ManualTick() {
+  manual_tick_pending_ = false;
   OnTimerTick();
 }
 

@@ -15,16 +15,17 @@ class FakeFrameRateControllerClient : public cc::FrameRateControllerClient {
  public:
   FakeFrameRateControllerClient() { Reset(); }
 
-  void Reset() { began_frame_ = false; }
-  bool BeganFrame() const { return began_frame_; }
+  void Reset() { frame_count_ = 0; }
+  bool BeganFrame() const { return frame_count_ > 0; }
+  int frame_count() const { return frame_count_; }
 
   virtual void FrameRateControllerTick(
       bool throttled, const BeginFrameArgs& args) OVERRIDE {
-    began_frame_ = !throttled;
+    frame_count_ += throttled ? 0 : 1;
   }
 
  protected:
-  bool began_frame_;
+  int frame_count_;
 };
 
 TEST(FrameRateControllerTest, TestFrameThrottling_ImmediateAck) {
@@ -180,6 +181,30 @@ TEST(FrameRateControllerTest, TestFrameThrottling_Unthrottled) {
   controller.DidSwapBuffersComplete();
   task_runner->RunPendingTasks();
   EXPECT_TRUE(client.BeganFrame());
+}
+
+TEST(FrameRateControllerTest, TestFrameThrottling_NoDoubleTicking) {
+  scoped_refptr<base::TestSimpleTaskRunner> task_runner =
+      new base::TestSimpleTaskRunner;
+  FakeFrameRateControllerClient client;
+  FrameRateController controller(task_runner.get());
+  controller.SetClient(&client);
+
+  // SetActive triggers 1st frame and queues another tick task since the time
+  // source isn't throttling.
+  controller.SetActive(true);
+  task_runner->RunPendingTasks();
+  EXPECT_TRUE(client.BeganFrame());
+  client.Reset();
+  EXPECT_TRUE(task_runner->HasPendingTask());
+
+  // Simulate a frame swap. This shouldn't queue a second tick task.
+  controller.DidSwapBuffers();
+  controller.DidSwapBuffersComplete();
+
+  // The client should only be ticked once.
+  task_runner->RunPendingTasks();
+  EXPECT_EQ(1, client.frame_count());
 }
 
 }  // namespace
