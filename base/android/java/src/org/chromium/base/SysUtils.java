@@ -104,7 +104,7 @@ public class SysUtils {
         if (sLowEndDevice == null) {
             int ramSizeKB = amountOfPhysicalMemoryKB();
             sLowEndDevice = (ramSizeKB > 0 &&
-                    ramSizeKB * 1024 < ANDROID_LOW_MEMORY_DEVICE_THRESHOLD_MB);
+                    ramSizeKB / 1024 < ANDROID_LOW_MEMORY_DEVICE_THRESHOLD_MB);
         }
 
         return sLowEndDevice.booleanValue();
