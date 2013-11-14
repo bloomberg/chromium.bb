@@ -18,17 +18,11 @@ const char kDisableTouchDragDrop[] = "disable-touch-drag-drop";
 // Disables controls that support touch base text editing.
 const char kDisableTouchEditing[] = "disable-touch-editing";
 
-// Disables the Views textfield on Windows.
-const char kDisableViewsTextfield[] = "disable-views-textfield";
-
 // Enables touch event based drag and drop.
 const char kEnableTouchDragDrop[] = "enable-touch-drag-drop";
 
 // Enables controls that support touch base text editing.
 const char kEnableTouchEditing[] = "enable-touch-editing";
-
-// Enables the Views textfield on Windows.
-const char kEnableViewsTextfield[] = "enable-views-textfield";
 
 // If a resource is requested at a scale factor at which it is not available
 // or the resource is the incorrect size (based on the size of the 1x resource),

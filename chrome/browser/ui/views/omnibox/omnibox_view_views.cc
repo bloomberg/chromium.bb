@@ -681,11 +681,6 @@ int OmniboxViewViews::GetMaxEditWidth(int entry_width) const {
   return entry_width;
 }
 
-views::View* OmniboxViewViews::AddToView(views::View* parent) {
-  parent->AddChildView(this);
-  return this;
-}
-
 int OmniboxViewViews::OnPerformDrop(const ui::DropTargetEvent& event) {
   NOTIMPLEMENTED();
   return ui::DragDropTypes::DRAG_NONE;

@@ -53,9 +53,6 @@ class VIEWS_EXPORT Textfield : public View {
     STYLE_LOWERCASE = 1 << 1
   };
 
-  // Returns true if the build or commandline dictates NativeTextfieldViews use.
-  static bool IsViewsTextfieldEnabled();
-
   // Returns the text cursor blink time in milliseconds, or 0 for no blinking.
   static size_t GetCaretBlinkMs();
 

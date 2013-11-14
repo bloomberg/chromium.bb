@@ -401,16 +401,6 @@ void FindBarView::ButtonPressed(
 ////////////////////////////////////////////////////////////////////////////////
 // FindBarView, views::TextfieldController implementation:
 
-void FindBarView::ContentsChanged(views::Textfield* sender,
-                                  const string16& new_contents) {
-  // TextfieldController::OnAfterUserAction() is supported only by Views
-  // implementation, and NativeTextfieldWin doesn't call OnAfterUserAction().
-  // Call Find() here.
-  // TODO(yukishiino): Remove this code after the migration to Views.
-  if (!views::Textfield::IsViewsTextfieldEnabled())
-    Find(new_contents);
-}
-
 bool FindBarView::HandleKeyEvent(views::Textfield* sender,
                                  const ui::KeyEvent& key_event) {
   // If the dialog is not visible, there is no reason to process keyboard input.
@@ -441,11 +431,7 @@ bool FindBarView::HandleKeyEvent(views::Textfield* sender,
 void FindBarView::OnAfterUserAction(views::Textfield* sender) {
   // The composition text wouldn't be what the user is really looking for.
   // We delay the search until the user commits the composition text.
-  if (sender->IsIMEComposing() || sender->text() == last_searched_text_)
-    return;
-
-  // TODO(yukishiino): Remove this condition check after the migration to Views.
-  if (views::Textfield::IsViewsTextfieldEnabled())
+  if (!sender->IsIMEComposing() && sender->text() != last_searched_text_)
     Find(sender->text());
 }
 

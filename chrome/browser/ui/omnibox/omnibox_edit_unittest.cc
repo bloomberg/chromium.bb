@@ -74,7 +74,6 @@ class TestingOmniboxView : public OmniboxView {
   virtual int GetMaxEditWidth(int entry_width) const OVERRIDE {
     return entry_width;
   }
-  virtual views::View* AddToView(views::View* parent) OVERRIDE { return NULL; }
   virtual int OnPerformDrop(const ui::DropTargetEvent& event) OVERRIDE {
     return 0;
   }

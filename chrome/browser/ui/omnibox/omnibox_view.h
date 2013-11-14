@@ -224,10 +224,6 @@ class OmniboxView {
 #if defined(TOOLKIT_VIEWS)
   virtual int GetMaxEditWidth(int entry_width) const = 0;
 
-  // Adds the autocomplete edit view to view hierarchy and
-  // returns the views::View of the edit view.
-  virtual views::View* AddToView(views::View* parent) = 0;
-
   // Performs the drop of a drag and drop operation on the view.
   virtual int OnPerformDrop(const ui::DropTargetEvent& event) = 0;
 #endif

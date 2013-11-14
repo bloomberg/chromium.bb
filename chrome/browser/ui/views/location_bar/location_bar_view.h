@@ -20,17 +20,13 @@
 #include "chrome/browser/ui/views/dropdown_bar_host.h"
 #include "chrome/browser/ui/views/dropdown_bar_host_delegate.h"
 #include "chrome/browser/ui/views/extensions/extension_popup.h"
+#include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/rect.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/controls/native/native_view_host.h"
 #include "ui/views/drag_controller.h"
-
-#if defined(USE_AURA)
-#include "ui/compositor/layer_animation_observer.h"
-#endif
 
 class ActionBoxButtonView;
 class CommandUpdater;
@@ -213,13 +209,6 @@ class LocationBarView : public LocationBar,
   // Returns the current gray text autocompletion.
   string16 GetGrayTextAutocompletion() const;
 
-  // Sets whether the location entry can accept focus.
-  void SetLocationEntryFocusable(bool focusable);
-
-  // Returns true if the location entry is focusable and visible in
-  // the root view.
-  bool IsLocationEntryFocusableInRootView() const;
-
   // Sizing functions
   virtual gfx::Size GetPreferredSize() OVERRIDE;
 
@@ -239,14 +228,6 @@ class LocationBarView : public LocationBar,
   // in the toolbar in full keyboard accessibility mode.
   virtual void SelectAll();
 
-#if defined(OS_WIN) && !defined(USE_AURA)
-  // Event Handlers
-  virtual bool OnMousePressed(const ui::MouseEvent& event) OVERRIDE;
-  virtual bool OnMouseDragged(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseReleased(const ui::MouseEvent& event) OVERRIDE;
-  virtual void OnMouseCaptureLost() OVERRIDE;
-#endif
-
   views::ImageView* GetLocationIconView();
   const views::ImageView* GetLocationIconView() const;
 
@@ -256,7 +237,7 @@ class LocationBarView : public LocationBar,
   // The point will be returned in the coordinates of the LocationBarView.
   gfx::Point GetLocationBarAnchorPoint() const;
 
-  views::View* location_entry_view() const { return location_entry_view_; }
+  views::View* omnibox_view() { return omnibox_view_; }
 
   views::View* generated_credit_card_view();
 
@@ -271,8 +252,6 @@ class LocationBarView : public LocationBar,
 
   // views::View:
   virtual const char* GetClassName() const OVERRIDE;
-  virtual bool SkipDefaultKeyEventProcessing(
-      const ui::KeyEvent& event) OVERRIDE;
   virtual void GetAccessibleState(ui::AccessibleViewState* state) OVERRIDE;
   virtual bool HasFocus() const OVERRIDE;
   virtual void OnBoundsChanged(const gfx::Rect& previous_bounds) OVERRIDE;
@@ -417,11 +396,6 @@ class LocationBarView : public LocationBar,
   // Shows the manage passwords bubble if there is a savable password.
   void ShowManagePasswordsBubbleIfNeeded();
 
-#if !defined(USE_AURA)
-  // Helper for the Mouse event handlers that does all the real work.
-  void OnMouseEvent(const ui::MouseEvent& event, UINT msg);
-#endif
-
   // Returns true if the suggest text is valid.
   bool HasValidSuggestText() const;
 
@@ -442,8 +416,7 @@ class LocationBarView : public LocationBar,
   // window, so this may be NULL.
   Browser* browser_;
 
-  // The Autocomplete Edit field.
-  scoped_ptr<OmniboxView> location_entry_;
+  OmniboxViewViews* omnibox_view_;
 
   // The profile which corresponds to this View.
   Profile* profile_;
@@ -460,9 +433,6 @@ class LocationBarView : public LocationBar,
 
   // A bubble displayed for EV HTTPS sites.
   EVBubbleView* ev_bubble_view_;
-
-  // Location_entry view
-  views::View* location_entry_view_;
 
   // A view to show inline autocompletion when an IME is active.  In this case,
   // we shouldn't change the text or selection inside the OmniboxView itself,

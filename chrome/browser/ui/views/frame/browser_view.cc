@@ -76,7 +76,6 @@
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
-#include "chrome/browser/ui/views/omnibox/omnibox_views.h"
 #include "chrome/browser/ui/views/password_generation_bubble_view.h"
 #include "chrome/browser/ui/views/profile_chooser_view.h"
 #include "chrome/browser/ui/views/status_bubble_views.h"
@@ -141,7 +140,6 @@
 #include "ui/gfx/screen.h"
 #elif defined(OS_WIN)  // !defined(USE_AURA)
 #include "chrome/browser/jumplist_win.h"
-#include "chrome/browser/ui/views/omnibox/omnibox_view_win.h"
 #include "ui/views/widget/native_widget_win.h"
 #include "ui/views/win/scoped_fullscreen_visibility.h"
 #endif
@@ -1036,12 +1034,11 @@ void BrowserView::SetFocusToLocationBar(bool select_all) {
           ImmersiveModeController::ANIMATE_REVEAL_YES));
 
   LocationBarView* location_bar = GetLocationBarView();
-  if (location_bar->IsLocationEntryFocusableInRootView()) {
+  if (location_bar->omnibox_view()->IsFocusable()) {
     // Location bar got focus.
     location_bar->FocusLocation(select_all);
   } else {
-    // If none of location bar got focus,
-    // then clear focus.
+    // If none of location bar got focus, then clear focus.
     views::FocusManager* focus_manager = GetFocusManager();
     DCHECK(focus_manager);
     focus_manager->ClearFocus();
@@ -1399,27 +1396,15 @@ void BrowserView::Cut() {
   // Omnibox is focused, send a Ctrl+x key event to Chrome. Using RWH interface
   // rather than the fake key event for a WebContent is important since the fake
   // event might be consumed by the web content (crbug.com/137908).
-  DoCutCopyPaste(&content::RenderWidgetHost::Cut,
-#if defined(OS_WIN)
-                 WM_CUT,
-#endif
-                 IDS_APP_CUT);
+  DoCutCopyPaste(&content::RenderWidgetHost::Cut, IDS_APP_CUT);
 }
 
 void BrowserView::Copy() {
-  DoCutCopyPaste(&content::RenderWidgetHost::Copy,
-#if defined(OS_WIN)
-                 WM_COPY,
-#endif
-                 IDS_APP_COPY);
+  DoCutCopyPaste(&content::RenderWidgetHost::Copy, IDS_APP_COPY);
 }
 
 void BrowserView::Paste() {
-  DoCutCopyPaste(&content::RenderWidgetHost::Paste,
-#if defined(OS_WIN)
-                 WM_PASTE,
-#endif
-                 IDS_APP_PASTE);
+  DoCutCopyPaste(&content::RenderWidgetHost::Paste, IDS_APP_PASTE);
 }
 
 WindowOpenDisposition BrowserView::GetDispositionForPopupBounds(
@@ -1818,7 +1803,7 @@ void BrowserView::Layout() {
   views::View::Layout();
 
   // TODO(jamescook): Why was this in the middle of layout code?
-  toolbar_->location_bar()->SetLocationEntryFocusable(IsToolbarVisible());
+  toolbar_->location_bar()->omnibox_view()->set_focusable(IsToolbarVisible());
 
   // The status bubble position requires that all other layout finish first.
   LayoutStatusBubble();
@@ -2269,10 +2254,6 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
   //   * Ignoring all intervening Layout() calls, which resize the webpage and
   //     thus are slow and look ugly (enforced via |in_process_fullscreen_|).
   LocationBarView* location_bar = GetLocationBarView();
-#if defined(OS_WIN) && !defined(USE_AURA)
-  OmniboxViewWin* omnibox_win =
-      GetOmniboxViewWin(location_bar->GetLocationEntry());
-#endif
 
   if (type == FOR_METRO || !fullscreen) {
     // Hide the fullscreen bubble as soon as possible, since the mode toggle can
@@ -2287,18 +2268,6 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
     // Look for focus in the location bar itself or any child view.
     if (location_bar->Contains(focus_manager->GetFocusedView()))
       focus_manager->ClearFocus();
-
-#if defined(OS_WIN) && !defined(USE_AURA)
-    if (omnibox_win) {
-      // If we don't hide the edit and force it to not show until we come out of
-      // fullscreen, then if the user was on the New Tab Page, the edit contents
-      // will appear atop the web contents once we go into fullscreen mode. This
-      // has something to do with how we move the main window while it's hidden;
-      // if we don't hide the main window below, we don't get this problem.
-      omnibox_win->set_force_hidden(true);
-      ShowWindow(omnibox_win->m_hWnd, SW_HIDE);
-    }
-#endif
   }
 #if defined(OS_WIN) && !defined(USE_AURA)
   views::ScopedFullscreenVisibility visibility(frame_->GetNativeView());
@@ -2321,18 +2290,8 @@ void BrowserView::ProcessFullscreen(bool fullscreen,
 
   browser_->WindowFullscreenStateChanged();
 
-  if (fullscreen) {
-    if (!chrome::IsRunningInAppMode() && type != FOR_METRO)
-      UpdateFullscreenExitBubbleContent(url, bubble_type);
-  } else {
-#if defined(OS_WIN) && !defined(USE_AURA)
-    if (omnibox_win) {
-      // Show the edit again since we're no longer in fullscreen mode.
-      omnibox_win->set_force_hidden(false);
-      ShowWindow(omnibox_win->m_hWnd, SW_SHOW);
-    }
-#endif
-  }
+  if (fullscreen && !chrome::IsRunningInAppMode() && type != FOR_METRO)
+    UpdateFullscreenExitBubbleContent(url, bubble_type);
 
   // Undo our anti-jankiness hacks and force a re-layout. We also need to
   // recompute the height of the infobar top arrow because toggling in and out
@@ -2616,9 +2575,6 @@ int BrowserView::GetRenderViewHeightInsetWithDetachedBookmarkBar() {
 }
 
 void BrowserView::DoCutCopyPaste(void (content::RenderWidgetHost::*method)(),
-#if defined(OS_WIN)
-                                 int windows_msg_id,
-#endif
                                  int command_id) {
   WebContents* contents = browser_->tab_strip_model()->GetActiveWebContents();
   if (!contents)
@@ -2640,16 +2596,7 @@ void BrowserView::DoCutCopyPaste(void (content::RenderWidgetHost::*method)(),
        !strcmp(focused->GetClassName(), OmniboxViewViews::kViewClassName))) {
     views::Textfield* textfield = static_cast<views::Textfield*>(focused);
     textfield->ExecuteCommand(command_id);
-    return;
   }
-
-#if defined(OS_WIN) && !defined(USE_AURA)
-  OmniboxView* omnibox_view = GetLocationBarView()->GetLocationEntry();
-  if (omnibox_view->model()->has_focus()) {
-    OmniboxViewWin* omnibox_win = GetOmniboxViewWin(omnibox_view);
-    ::SendMessage(omnibox_win->GetNativeView(), windows_msg_id, 0, 0);
-  }
-#endif
 }
 
 bool BrowserView::DoCutCopyPasteForWebContents(

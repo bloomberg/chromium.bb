@@ -574,12 +574,7 @@ class BrowserView : public BrowserWindow,
   // Calls |method| which is either RenderWidgetHost::Cut, ::Copy, or ::Paste,
   // first trying the content WebContents, then the devtools WebContents, and
   // lastly the Views::Textfield if one is focused.
-  // |windows_msg_id| is temporary until Win Aura is the default on Windows,
-  // since until then the omnibox doesn't use Views::Textfield.
   void DoCutCopyPaste(void (content::RenderWidgetHost::*method)(),
-#if defined(OS_WIN)
-                      int windows_msg_id,
-#endif
                       int command_id);
 
   // Calls |method| which is either RenderWidgetHost::Cut, ::Copy, or ::Paste on

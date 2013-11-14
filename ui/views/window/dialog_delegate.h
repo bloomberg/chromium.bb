@@ -33,6 +33,7 @@ class VIEWS_EXPORT DialogDelegate : public ui::DialogModel,
 
   // Returns whether to use the new dialog style in general.
   // See UseNewStyleForThisDialog() for dialog-specific styling.
+  // TODO(msw): Remove this. The new dialog style is always on by default.
   static bool UseNewStyle();
 
   // Create a |dialog| window Widget with the specified |context| or |parent|.

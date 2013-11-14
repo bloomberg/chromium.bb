@@ -1137,14 +1137,6 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kMultiProfiles),
   },
 #endif  // defined(OS_CHROMEOS)
-  {
-    "views-textfield",
-    IDS_FLAGS_VIEWS_TEXTFIELD_NAME,
-    IDS_FLAGS_VIEWS_TEXTFIELD_DESCRIPTION,
-    kOsWin,
-    ENABLE_DISABLE_VALUE_TYPE(switches::kEnableViewsTextfield,
-                              switches::kDisableViewsTextfield),
-  },
   { "disable-accelerated-video-decode",
     IDS_FLAGS_DISABLE_ACCELERATED_VIDEO_DECODE_NAME,
     IDS_FLAGS_DISABLE_ACCELERATED_VIDEO_DECODE_DESCRIPTION,

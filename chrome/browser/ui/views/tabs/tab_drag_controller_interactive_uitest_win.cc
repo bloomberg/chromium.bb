@@ -349,8 +349,7 @@ IN_PROC_BROWSER_TEST_F(TabDragControllerTest,
 
   // Cancel the drag.
   // TODO(msw): Fix this on "XP Tests (1)"; see http://crbug.com/227444
-  if (base::win::GetVersion() == base::win::VERSION_XP &&
-      views::Textfield::IsViewsTextfieldEnabled()) {
+  if (base::win::GetVersion() == base::win::VERSION_XP) {
     LOG(INFO) << "Try SendKeyPressToWindowSync [esc]; maybe this works???";
     ASSERT_TRUE(ui_test_utils::SendKeyPressToWindowSync(
         browser2->window()->GetNativeWindow(), ui::VKEY_ESCAPE,

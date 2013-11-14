@@ -11,7 +11,6 @@
 #include "chrome/browser/ui/omnibox/omnibox_popup_model.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
-#include "chrome/browser/ui/views/omnibox/omnibox_views.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "grit/generated_resources.h"
@@ -113,11 +112,7 @@ class OmniboxViewViewsTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(OmniboxViewViewsTest, PasteAndGoDoesNotLeavePopupOpen) {
   OmniboxView* view = browser()->window()->GetLocationBar()->GetLocationEntry();
-  OmniboxViewViews* omnibox_view_views = GetOmniboxViewViews(view);
-  // This test is only relevant when OmniboxViewViews is present and is using
-  // the native textfield wrapper.
-  if (!omnibox_view_views)
-    return;
+  OmniboxViewViews* omnibox_view_views = static_cast<OmniboxViewViews*>(view);
   views::NativeTextfieldWrapper* native_textfield_wrapper =
       static_cast<views::NativeTextfieldWrapper*>(
           omnibox_view_views->GetNativeWrapperForTesting());

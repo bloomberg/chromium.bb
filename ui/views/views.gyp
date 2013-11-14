@@ -218,8 +218,6 @@
         'controls/table/table_view_row_background_painter.h',
         'controls/textfield/native_textfield_views.cc',
         'controls/textfield/native_textfield_views.h',
-        'controls/textfield/native_textfield_win.cc',
-        'controls/textfield/native_textfield_win.h',
         'controls/textfield/native_textfield_wrapper.h',
         'controls/textfield/textfield.cc',
         'controls/textfield/textfield.h',

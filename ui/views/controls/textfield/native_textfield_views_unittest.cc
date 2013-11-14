@@ -167,10 +167,6 @@ class NativeTextfieldViewsTest : public ViewsTestBase,
   }
 
   void InitTextfields(Textfield::StyleFlags style, int count) {
-    // Append kEnableViewsTextfield to use NativeTextfieldViews on Windows.
-    CommandLine* command_line = CommandLine::ForCurrentProcess();
-    command_line->AppendSwitch(switches::kEnableViewsTextfield);
-
     ASSERT_FALSE(textfield_);
     textfield_ = new TestTextfield(style);
     textfield_->SetController(this);
