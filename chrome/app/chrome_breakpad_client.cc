@@ -362,8 +362,16 @@ bool ChromeBreakpadClient::GetCollectStatsConsent() {
 
   if (is_guest_session && is_stable_channel)
     return false;
-#endif
+#endif  // defined(OS_CHROMEOS)
+
+#if defined(OS_ANDROID)
+  // TODO(jcivelli): we should not initialize the crash-reporter when it was not
+  // enabled. Right now if it is disabled we still generate the minidumps but we
+  // do not upload them.
+  return is_chrome_build;
+#else  // !defined(OS_ANDROID)
   return is_chrome_build && GoogleUpdateSettings::GetCollectStatsConsent();
+#endif  // defined(OS_ANDROID)
 }
 
 #if defined(OS_ANDROID)
