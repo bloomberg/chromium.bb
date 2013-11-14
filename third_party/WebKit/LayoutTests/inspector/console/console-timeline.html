@@ -32,6 +32,29 @@ function startStopMultiple()
     console.timeStamp("timestamp 5");
 }
 
+function startMultiple()
+{
+    console.timeStamp("timestamp 0");
+    console.timeline("one");
+    console.timeStamp("timestamp 1");
+    console.timeline("two");
+    console.timeStamp("timestamp 2");
+}
+
+function stopTwo()
+{
+    console.timeStamp("timestamp 3");
+    console.timelineEnd("two");
+    console.timeStamp("timestamp 4");
+}
+
+function stopOne()
+{
+    console.timeStamp("timestamp 5");
+    console.timelineEnd("one");
+    console.timeStamp("timestamp 6 - FAIL");
+}
+
 function stopUnknown()
 {
     console.timeStamp("timestamp 0");
@@ -67,6 +90,30 @@ function test()
         function testStartStopMultiple(next)
         {
             InspectorTest.evaluateInPage("startStopMultiple()", next);
+        },
+
+        function testStartMultipleStopInsideEvals(next)
+        {
+            var panel = WebInspector.panel("timeline");
+            panel._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStopped, recordingStopped);
+
+            InspectorTest.evaluateInPage("startMultiple()", step2);
+
+            function step2()
+            {
+                InspectorTest.evaluateInPage("stopTwo()", step3);
+            }
+
+            function step3()
+            {
+                InspectorTest.evaluateInPage("stopOne()", function() {});
+            }
+            
+            function recordingStopped()
+            {
+                panel._model.removeEventListener(WebInspector.TimelineModel.Events.RecordingStopped, recordingStopped);
+                next();
+            }
         },
 
         function testStopUnknown(next)

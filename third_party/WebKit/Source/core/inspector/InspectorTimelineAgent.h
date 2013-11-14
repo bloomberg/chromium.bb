@@ -268,6 +268,7 @@ private:
     void pushGCEventRecords();
 
     void didCompleteCurrentRecord(const String& type);
+    void unwindRecordStack();
 
     void commitFrameRecord();
 

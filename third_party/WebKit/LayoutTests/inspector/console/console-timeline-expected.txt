@@ -9,6 +9,10 @@ CONSOLE DEBUG: Timeline 'one' finished.
 CONSOLE DEBUG: Timeline 'two' finished.
 CONSOLE DEBUG: Timeline 'one' finished.
 CONSOLE DEBUG: Timeline 'one' started.
+CONSOLE DEBUG: Timeline 'two' started.
+CONSOLE DEBUG: Timeline 'two' finished.
+CONSOLE DEBUG: Timeline 'one' finished.
+CONSOLE DEBUG: Timeline 'one' started.
 CONSOLE DEBUG: Timeline 'two' was not started.
 CONSOLE DEBUG: Timeline 'one' finished.
 CONSOLE DEBUG: Timeline 'one' started.
@@ -48,6 +52,19 @@ Timeline 'one' finished.
 timestamp 3
 Timeline 'two' finished.
 timestamp 4
+Timeline 'one' finished.
+Timeline stopped from console.
+
+Running: testStartMultipleStopInsideEvals
+Timeline started from console.
+Timeline 'one' started.
+timestamp 1
+Timeline 'two' started.
+timestamp 2
+timestamp 3
+Timeline 'two' finished.
+timestamp 4
+timestamp 5
 Timeline 'one' finished.
 Timeline stopped from console.
 

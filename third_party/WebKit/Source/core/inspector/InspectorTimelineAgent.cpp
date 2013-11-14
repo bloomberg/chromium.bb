@@ -701,8 +701,10 @@ void InspectorTimelineAgent::consoleTimelineEnd(ExecutionContext* context, const
     String message = String::format("Timeline '%s' finished.", title.utf8().data());
     appendRecord(TimelineRecordFactory::createTimeStampData(message), TimelineRecordType::TimeStamp, true, frameForExecutionContext(context));
     m_consoleTimelines.remove(index);
-    if (!m_consoleTimelines.size() && isStarted() && !m_state->getBoolean(TimelineAgentState::startedFromProtocol))
+    if (!m_consoleTimelines.size() && isStarted() && !m_state->getBoolean(TimelineAgentState::startedFromProtocol)) {
+        unwindRecordStack();
         innerStop(true);
+    }
     page()->console().addMessage(ConsoleAPIMessageSource, DebugMessageLevel, message, String(), 0, 0, 0, state);
 }
 
@@ -794,7 +796,6 @@ void InspectorTimelineAgent::addRecordToTimeline(PassRefPtr<JSONObject> record)
 void InspectorTimelineAgent::innerAddRecordToTimeline(PassRefPtr<JSONObject> prpRecord)
 {
     RefPtr<TypeBuilder::Timeline::TimelineEvent> record = TypeBuilder::Timeline::TimelineEvent::runtimeCast(prpRecord);
-
     if (m_recordStack.isEmpty()) {
         sendEvent(record.release());
     } else {
@@ -869,6 +870,14 @@ void InspectorTimelineAgent::didCompleteCurrentRecord(const String& type)
         if (usedHeapSizeDelta)
             entry.record->setNumber("usedHeapSizeDelta", usedHeapSizeDelta);
         addRecordToTimeline(entry.record);
+    }
+}
+
+void InspectorTimelineAgent::unwindRecordStack()
+{
+    while (!m_recordStack.isEmpty()) {
+        TimelineRecordEntry& entry = m_recordStack.last();
+        didCompleteCurrentRecord(entry.type);
     }
 }
 
