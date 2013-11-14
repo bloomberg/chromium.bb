@@ -40,6 +40,7 @@ enum WebIDBDatabaseException {
     WebIDBDatabaseExceptionVersionError = 28,
     WebIDBDatabaseExceptionAbortError = 17,
     WebIDBDatabaseExceptionQuotaError = 19,
+    WebIDBDatabaseExceptionTimeoutError = 20,
 };
 
 } // namespace blink

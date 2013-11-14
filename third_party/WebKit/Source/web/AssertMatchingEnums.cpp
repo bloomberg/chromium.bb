@@ -496,6 +496,7 @@ COMPILE_ASSERT_MATCHING_ENUM(WebIDBDatabaseExceptionDataError, DataError);
 COMPILE_ASSERT_MATCHING_ENUM(WebIDBDatabaseExceptionVersionError, VersionError);
 COMPILE_ASSERT_MATCHING_ENUM(WebIDBDatabaseExceptionAbortError, AbortError);
 COMPILE_ASSERT_MATCHING_ENUM(WebIDBDatabaseExceptionQuotaError, QuotaExceededError);
+COMPILE_ASSERT_MATCHING_ENUM(WebIDBDatabaseExceptionTimeoutError, TimeoutError);
 
 COMPILE_ASSERT_MATCHING_ENUM(WebIDBKeyTypeInvalid, IDBKey::InvalidType);
 COMPILE_ASSERT_MATCHING_ENUM(WebIDBKeyTypeArray, IDBKey::ArrayType);
