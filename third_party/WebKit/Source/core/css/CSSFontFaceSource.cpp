@@ -128,7 +128,7 @@ void CSSFontFaceSource::fontLoaded(FontResource*)
         m_face->fontLoaded(this);
 }
 
-PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(const FontDescription& fontDescription, bool syntheticBold, bool syntheticItalic, CSSFontSelector* fontSelector)
+PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(const FontDescription& fontDescription, CSSFontSelector* fontSelector)
 {
     // If the font hasn't loaded or an error occurred, then we've got nothing.
     if (!isValid())
@@ -145,7 +145,7 @@ PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(const FontDescription&
     // See if we have a mapping in our FontData cache.
     AtomicString emptyFontFamily = "";
     FontCacheKey key = fontDescription.cacheKey(emptyFontFamily);
-    key.setSynthetic(syntheticBold, syntheticItalic);
+    key.setSynthetic(fontDescription.isSyntheticBold(), fontDescription.isSyntheticItalic());
 
     RefPtr<SimpleFontData>& fontData = m_fontDataTable.add(key.hash(), 0).iterator->value;
     if (fontData)
@@ -190,7 +190,9 @@ PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(const FontDescription&
 
                     fontData = SimpleFontData::create(
                         SVGFontData::create(fontFaceElement),
-                        fontDescription.effectiveFontSize(), syntheticBold, syntheticItalic);
+                        fontDescription.effectiveFontSize(),
+                        fontDescription.isSyntheticBold(),
+                        fontDescription.isSyntheticItalic());
                 }
             } else
 #endif
@@ -200,7 +202,8 @@ PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(const FontDescription&
                     return 0;
 
                 fontData = SimpleFontData::create(
-                    m_font->platformDataFromCustomData(fontDescription.effectiveFontSize(), syntheticBold, syntheticItalic,
+                    m_font->platformDataFromCustomData(fontDescription.effectiveFontSize(),
+                        fontDescription.isSyntheticBold(), fontDescription.isSyntheticItalic(),
                         fontDescription.orientation(), fontDescription.widthVariant()), CustomFontData::create(false));
             }
         } else {
@@ -210,8 +213,8 @@ PassRefPtr<SimpleFontData> CSSFontFaceSource::getFontData(const FontDescription&
                 fontData = SimpleFontData::create(
                     SVGFontData::create(m_svgFontFaceElement.get()),
                     fontDescription.effectiveFontSize(),
-                    syntheticBold,
-                    syntheticItalic);
+                    fontDescription.isSyntheticBold(),
+                    fontDescription.isSyntheticItalic());
             }
 #endif
         }

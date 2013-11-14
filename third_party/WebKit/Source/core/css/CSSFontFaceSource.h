@@ -60,7 +60,7 @@ public:
     virtual void didStartFontLoad(FontResource*) OVERRIDE;
     virtual void fontLoaded(FontResource*);
 
-    PassRefPtr<SimpleFontData> getFontData(const FontDescription&, bool syntheticBold, bool syntheticItalic, CSSFontSelector*);
+    PassRefPtr<SimpleFontData> getFontData(const FontDescription&, CSSFontSelector*);
 
     void pruneTable();
 

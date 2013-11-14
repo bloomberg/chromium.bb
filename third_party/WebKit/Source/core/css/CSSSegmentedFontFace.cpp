@@ -122,13 +122,14 @@ PassRefPtr<FontData> CSSSegmentedFontFace::getFontData(const FontDescription& fo
     if (!fontData)
         fontData = SegmentedFontData::create();
 
-    bool syntheticBold = !(m_traitsMask & (FontWeight600Mask | FontWeight700Mask | FontWeight800Mask | FontWeight900Mask)) && (desiredTraitsMask & (FontWeight600Mask | FontWeight700Mask | FontWeight800Mask | FontWeight900Mask));
-    bool syntheticItalic = !(m_traitsMask & FontStyleItalicMask) && (desiredTraitsMask & FontStyleItalicMask);
+    FontDescription requestedFontDescription(fontDescription);
+    requestedFontDescription.setSyntheticBold(!(m_traitsMask & (FontWeight600Mask | FontWeight700Mask | FontWeight800Mask | FontWeight900Mask)) && (desiredTraitsMask & (FontWeight600Mask | FontWeight700Mask | FontWeight800Mask | FontWeight900Mask)));
+    requestedFontDescription.setSyntheticItalic(!(m_traitsMask & FontStyleItalicMask) && (desiredTraitsMask & FontStyleItalicMask));
 
     for (int i = m_fontFaces.size() - 1; i >= 0; --i) {
         if (!m_fontFaces[i]->isValid())
             continue;
-        if (RefPtr<SimpleFontData> faceFontData = m_fontFaces[i]->getFontData(fontDescription, syntheticBold, syntheticItalic)) {
+        if (RefPtr<SimpleFontData> faceFontData = m_fontFaces[i]->getFontData(requestedFontDescription)) {
             ASSERT(!faceFontData->isSegmented());
 #if ENABLE(SVG_FONTS)
             // For SVG Fonts that specify that they only support the "normal" variant, we will assume they are incapable
@@ -187,7 +188,7 @@ void CSSSegmentedFontFace::loadFont(const FontDescription& fontDescription, cons
     unsigned size = m_fontFaces.size();
     for (unsigned i = 0; i < size; i++) {
         if (m_fontFaces[i]->loadStatus() == FontFace::Unloaded && m_fontFaces[i]->ranges().intersectsWith(text)) {
-            RefPtr<SimpleFontData> fontData = m_fontFaces[i]->getFontData(fontDescription, false, false);
+            RefPtr<SimpleFontData> fontData = m_fontFaces[i]->getFontData(fontDescription);
             if (fontData->customFontData())
                 fontData->customFontData()->beginLoadIfNeeded();
         }
