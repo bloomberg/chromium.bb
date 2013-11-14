@@ -95,7 +95,9 @@ void V8Blob::constructorCustom(const v8::FunctionCallbackInfo<v8::Value>& info)
     v8::Local<v8::Object> blobParts = v8::Local<v8::Object>::Cast(info[0]);
     for (uint32_t i = 0; i < length; ++i) {
         v8::Local<v8::Value> item = blobParts->Get(v8::Uint32::New(i, info.GetIsolate()));
-        ASSERT(!item.IsEmpty());
+        if (item.IsEmpty())
+            return;
+
         if (V8ArrayBuffer::hasInstance(item, info.GetIsolate(), worldType(info.GetIsolate()))) {
             ArrayBuffer* arrayBuffer = V8ArrayBuffer::toNative(v8::Handle<v8::Object>::Cast(item));
             ASSERT(arrayBuffer);
