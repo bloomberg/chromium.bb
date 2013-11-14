@@ -10,6 +10,7 @@ import android.os.Build;
 import android.view.View;
 import android.view.ViewGroup.MarginLayoutParams;
 import android.view.ViewTreeObserver;
+import android.widget.RemoteViews;
 
 /**
  * Utility class to use new APIs that were added after ICS (API level 14).
@@ -99,6 +100,18 @@ public class ApiCompatibilityUtils {
         }
     }
 
+    /**
+     * @see android.widget.RemoteViews#setContentDescription(int, CharSequence)
+     */
+    public static void setContentDescriptionForRemoteView(RemoteViews remoteViews, int viewId,
+            CharSequence contentDescription) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
+            remoteViews.setContentDescription(viewId, contentDescription);
+        } else {
+            // setContentDescription() is unavailable in earlier versions.
+        }
+    }
+
     // These methods have a new name, and the old name is deprecated.
 
     /**
@@ -123,18 +136,6 @@ public class ApiCompatibilityUtils {
             view.getViewTreeObserver().removeOnGlobalLayoutListener(listener);
         } else {
             view.getViewTreeObserver().removeGlobalOnLayoutListener(listener);
-        }
-    }
-
-    /**
-     * @see android.app.Notification.Builder#build()
-     */
-    @SuppressWarnings("deprecation")
-    public static Notification buildNotification(Notification.Builder builder) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            return builder.build();
-        } else {
-            return builder.getNotification();
         }
     }
 }
