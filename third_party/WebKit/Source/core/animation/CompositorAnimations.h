@@ -32,26 +32,13 @@
 #define CompositorAnimations_h
 
 #include "core/animation/AnimationEffect.h"
-#include "core/animation/KeyframeAnimationEffect.h"
 #include "core/animation/Timing.h"
 #include "core/platform/animation/TimingFunction.h"
-#include "public/platform/WebAnimation.h"
-#include "public/platform/WebAnimationCurve.h"
-#include "public/platform/WebCompositorSupport.h"
-#include "public/platform/WebFilterAnimationCurve.h"
-#include "public/platform/WebFilterKeyframe.h"
-#include "public/platform/WebFilterOperations.h"
-#include "public/platform/WebFloatAnimationCurve.h"
-#include "public/platform/WebFloatKeyframe.h"
-#include "public/platform/WebTransformAnimationCurve.h"
-#include "public/platform/WebTransformKeyframe.h"
-#include "public/platform/WebTransformOperations.h"
 #include "wtf/Vector.h"
 
 namespace WebCore {
 
 class Element;
-class AnimationEffect;
 
 // Given an input timing function between keyframe at 0 and keyframe at 1.0, we
 // need a timing function such that the behavior with the keyframes swapped is
@@ -78,6 +65,8 @@ public:
 
 protected:
     CompositorAnimations() { }
+
+private:
     static CompositorAnimations* instance(CompositorAnimations* newInstance)
     {
         static CompositorAnimations* instance = new CompositorAnimations();

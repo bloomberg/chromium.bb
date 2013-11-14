@@ -28,6 +28,12 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include "core/animation/AnimationEffect.h"
+#include "core/animation/KeyframeAnimationEffect.h"
+#include "core/animation/Timing.h"
+#include "core/platform/animation/TimingFunction.h"
+#include "public/platform/WebAnimation.h"
+
 namespace WebCore {
 
 class CompositorAnimationsKeyframeEffectHelper {
@@ -35,20 +41,28 @@ private:
     typedef Vector<std::pair<double, const AnimationEffect::CompositableValue*> > KeyframeValues;
 
     static PassOwnPtr<Vector<CSSPropertyID> > getProperties(const KeyframeAnimationEffect*);
-    static PassOwnPtr<KeyframeValues> getKeyframeValuesForProperty(const KeyframeAnimationEffect*, CSSPropertyID, double zero, double scale, bool reverse = false);
-    static PassOwnPtr<KeyframeValues> getKeyframeValuesForProperty(const KeyframeAnimationEffect::PropertySpecificKeyframeGroup*, double zero, double scale, bool reverse);
+    static PassOwnPtr<KeyframeValues> getKeyframeValuesForProperty(const KeyframeAnimationEffect*, CSSPropertyID, double scale, bool reverse = false);
+    static PassOwnPtr<KeyframeValues> getKeyframeValuesForProperty(const KeyframeAnimationEffect::PropertySpecificKeyframeGroup*, double scale, bool reverse);
 
     friend class CompositorAnimationsImpl;
 };
 
 class CompositorAnimationsImpl {
 private:
+    struct CompositorTiming {
+        bool reverse;
+        bool alternate;
+        double scaledDuration;
+        double scaledTimeOffset;
+        int adjustedIterationCount;
+    };
 
+    static bool convertTimingForCompositor(const Timing&, CompositorTiming& out);
 
     static bool isCandidateForCompositor(const Keyframe&);
     static bool isCandidateForCompositor(const KeyframeAnimationEffect&);
     static bool isCandidateForCompositor(const Timing&, const KeyframeAnimationEffect::KeyframeVector&);
-    static bool isCandidateForCompositor(const TimingFunction&, const KeyframeAnimationEffect::KeyframeVector&, double frameOffset = 0);
+    static bool isCandidateForCompositor(const TimingFunction&, const KeyframeAnimationEffect::KeyframeVector*, bool isNestedCall = false);
     static void getCompositorAnimations(const Timing&, const KeyframeAnimationEffect&, Vector<OwnPtr<blink::WebAnimation> >& animations);
 
     template<typename PlatformAnimationCurveType, typename PlatformAnimationKeyframeType>

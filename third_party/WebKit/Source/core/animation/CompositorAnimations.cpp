@@ -43,16 +43,11 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebAnimation.h"
 #include "public/platform/WebCompositorSupport.h"
-#include "public/platform/WebFilterAnimationCurve.h"
 #include "public/platform/WebFloatAnimationCurve.h"
 #include "public/platform/WebFloatKeyframe.h"
-#include "public/platform/WebTransformAnimationCurve.h"
-#include "public/platform/WebTransformKeyframe.h"
-#include "public/platform/WebTransformOperations.h"
 
 #include <algorithm>
 #include <cmath>
-
 
 namespace WebCore {
 
@@ -174,14 +169,14 @@ PassOwnPtr<Vector<CSSPropertyID> > CompositorAnimationsKeyframeEffectHelper::get
 }
 
 PassOwnPtr<CompositorAnimationsKeyframeEffectHelper::KeyframeValues> CompositorAnimationsKeyframeEffectHelper::getKeyframeValuesForProperty(
-    const KeyframeAnimationEffect* effect, CSSPropertyID id, double zero, double scale, bool reverse)
+    const KeyframeAnimationEffect* effect, CSSPropertyID id, double scale, bool reverse)
 {
     const_cast<KeyframeAnimationEffect*>(effect)->ensureKeyframeGroups();
-    return getKeyframeValuesForProperty(effect->m_keyframeGroups->get(id), zero, scale, reverse);
+    return getKeyframeValuesForProperty(effect->m_keyframeGroups->get(id), scale, reverse);
 }
 
 PassOwnPtr<CompositorAnimationsKeyframeEffectHelper::KeyframeValues> CompositorAnimationsKeyframeEffectHelper::getKeyframeValuesForProperty(
-    const KeyframeAnimationEffect::PropertySpecificKeyframeGroup* group, double zero, double scale, bool reverse)
+    const KeyframeAnimationEffect::PropertySpecificKeyframeGroup* group, double scale, bool reverse)
 {
     OwnPtr<CompositorAnimationsKeyframeEffectHelper::KeyframeValues> values = adoptPtr(
         new CompositorAnimationsKeyframeEffectHelper::KeyframeValues());
@@ -189,10 +184,7 @@ PassOwnPtr<CompositorAnimationsKeyframeEffectHelper::KeyframeValues> CompositorA
     for (size_t i = 0; i < group->m_keyframes.size(); i++) {
         KeyframeAnimationEffect::PropertySpecificKeyframe* frame = group->m_keyframes[i].get();
 
-        double offset = zero + frame->offset() * scale;
-        if (reverse)
-            offset = zero + (1 - frame->offset()) * scale;
-
+        double offset = (reverse ? (1 - frame->offset()) : frame->offset()) * scale;
         values->append(std::make_pair(offset, frame->value()));
     }
     if (reverse)
@@ -218,7 +210,7 @@ bool CompositorAnimationsImpl::isCandidateForCompositor(const Keyframe& keyframe
         case CSSPropertyOpacity:
         case CSSPropertyWebkitFilter: // FIXME: What about CSSPropertyFilter?
         case CSSPropertyWebkitTransform:
-            return true;
+            continue;
         default:
             return false;
         }
@@ -238,29 +230,15 @@ bool CompositorAnimationsImpl::isCandidateForCompositor(const KeyframeAnimationE
 
 bool CompositorAnimationsImpl::isCandidateForCompositor(const Timing& timing, const KeyframeAnimationEffect::KeyframeVector& frames)
 {
-    // FIXME: Support more then FillModeNone.
-    if (timing.fillMode != Timing::FillModeNone)
+
+    CompositorTiming out;
+    if (!convertTimingForCompositor(timing, out))
         return false;
 
-    if (!timing.hasIterationDuration)
-        return false;
-
-    // FIXME: Support non-zero iteration start.
-    if (timing.iterationStart != 0.0)
-        return false;
-
-    // FIXME: Compositor only supports integer iteration counts.
-    if (!std::isfinite(timing.iterationCount) || (timing.iterationCount < 0) || (std::floor(timing.iterationCount) != timing.iterationCount))
-        return false;
-
-    // FIXME: Support positive startDelay and iterations.
-    if (timing.iterationCount != 1 && timing.startDelay > 0.0)
-        return false;
-
-    return isCandidateForCompositor(*timing.timingFunction.get(), frames);
+    return isCandidateForCompositor(*timing.timingFunction.get(), &frames);
 }
 
-bool CompositorAnimationsImpl::isCandidateForCompositor(const TimingFunction& timingFunction, const KeyframeAnimationEffect::KeyframeVector& frames, double frameOffset)
+bool CompositorAnimationsImpl::isCandidateForCompositor(const TimingFunction& timingFunction, const KeyframeAnimationEffect::KeyframeVector* frames, bool isNestedCall)
 {
     switch (timingFunction.type()) {
     case TimingFunction::LinearFunction:
@@ -268,11 +246,10 @@ bool CompositorAnimationsImpl::isCandidateForCompositor(const TimingFunction& ti
 
     case TimingFunction::CubicBezierFunction:
         // Can have a cubic if we don't have to split it (IE only have two frames).
-        if (frames.size() != 2)
+        if (!(isNestedCall || (frames && frames->size() == 2)))
             return false;
 
-        if (frames[0]->offset() - frameOffset)
-            return false;
+        ASSERT(!frames || (frames->at(0)->offset() == 0.0 && frames->at(1)->offset() == 1.0));
 
         return true;
 
@@ -284,26 +261,22 @@ bool CompositorAnimationsImpl::isCandidateForCompositor(const TimingFunction& ti
         // generates. These chained segments are only one level deep and have
         // one timing function per frame.
         const ChainedTimingFunction* chained = static_cast<const ChainedTimingFunction*>(&timingFunction);
-        if (frameOffset)
+        if (isNestedCall)
             return false;
 
         if (!chained->m_segments.size())
             return false;
 
-        if (frames.size() != chained->m_segments.size() + 1)
+        if (frames->size() != chained->m_segments.size() + 1)
             return false;
 
         for (size_t timeIndex = 0; timeIndex < chained->m_segments.size(); timeIndex++) {
             const ChainedTimingFunction::Segment& segment = chained->m_segments[timeIndex];
 
-            if (frames[timeIndex]->offset() != segment.m_min || frames[timeIndex + 1]->offset() != segment.m_max)
+            if (frames->at(timeIndex)->offset() != segment.m_min || frames->at(timeIndex + 1)->offset() != segment.m_max)
                 return false;
 
-            KeyframeAnimationEffect::KeyframeVector timingFrames;
-            timingFrames.append(frames[timeIndex]);
-            timingFrames.append(frames[timeIndex + 1]);
-
-            if (!isCandidateForCompositor(*(segment.m_timingFunction.get()), timingFrames, segment.m_min))
+            if (!isCandidateForCompositor(*segment.m_timingFunction.get(), 0, true))
                 return false;
         }
         return true;
@@ -314,6 +287,60 @@ bool CompositorAnimationsImpl::isCandidateForCompositor(const TimingFunction& ti
     return false;
 }
 
+bool CompositorAnimationsImpl::convertTimingForCompositor(const Timing& timing, CompositorTiming& out)
+{
+    timing.assertValid();
+
+    // FIXME: Support positive startDelay
+    if (timing.startDelay > 0.0)
+        return false;
+
+    // All fill modes are supported (the calling code handles them).
+
+    // FIXME: Support non-zero iteration start.
+    if (timing.iterationStart)
+        return false;
+
+    // FIXME: Compositor only supports finite, non-zero, integer iteration
+    // counts.
+    if (!std::isfinite(timing.iterationCount) || (std::floor(timing.iterationCount) != timing.iterationCount) || !timing.iterationCount)
+        return false;
+
+    if (!timing.iterationDuration)
+        return false;
+
+    // FIXME: Support other playback rates
+    if (timing.playbackRate != 1)
+        return false;
+
+    // All directions are supported.
+
+    // Now attempt an actual conversion
+    out.scaledDuration = timing.iterationDuration;
+    ASSERT(out.scaledDuration > 0);
+
+    double scaledStartDelay = timing.startDelay;
+    ASSERT(scaledStartDelay <= 0);
+
+    int skippedIterations = std::floor(std::abs(scaledStartDelay) / out.scaledDuration);
+    ASSERT(skippedIterations >= 0);
+    if (skippedIterations >= timing.iterationCount)
+        return false;
+
+    out.reverse = (timing.direction == Timing::PlaybackDirectionReverse
+        || timing.direction == Timing::PlaybackDirectionAlternateReverse);
+    out.alternate = (timing.direction == Timing::PlaybackDirectionAlternate
+        || timing.direction == Timing::PlaybackDirectionAlternateReverse);
+    if (out.alternate && (skippedIterations % 2))
+        out.reverse = !out.reverse;
+
+    out.adjustedIterationCount = std::floor(timing.iterationCount) - skippedIterations;
+    ASSERT(out.adjustedIterationCount > 0);
+
+    out.scaledTimeOffset = scaledStartDelay + skippedIterations * out.scaledDuration;
+    ASSERT(out.scaledTimeOffset <= 0);
+    return true;
+}
 
 namespace {
 
@@ -407,7 +434,7 @@ void CompositorAnimationsImpl::addKeyframesToCurve(PlatformAnimationCurveType& c
                 const ChainedTimingFunction* chained = static_cast<const ChainedTimingFunction*>(&timingFunction);
                 // ChainedTimingFunction criteria was checked in isCandidate,
                 // assert it is valid.
-                ASSERT(values.size() == chained->m_segments.size()+1);
+                ASSERT(values.size() == chained->m_segments.size() + 1);
                 ASSERT(values[i].first == chained->m_segments[i].m_min);
 
                 keyframeTimingFunction = chained->m_segments[i].m_timingFunction.get();
@@ -429,24 +456,19 @@ void CompositorAnimationsImpl::addKeyframesToCurve(PlatformAnimationCurveType& c
 void CompositorAnimationsImpl::getCompositorAnimations(
     const Timing& timing, const KeyframeAnimationEffect& effect, Vector<OwnPtr<blink::WebAnimation> >& animations)
 {
-
-    bool reverse = (timing.direction == Timing::PlaybackDirectionReverse
-        || timing.direction == Timing::PlaybackDirectionAlternateReverse);
+    CompositorTiming compositorTiming;
+    bool timingValid = convertTimingForCompositor(timing, compositorTiming);
+    ASSERT_UNUSED(timingValid, timingValid);
 
     RefPtr<TimingFunction> timingFunction = timing.timingFunction;
-    if (reverse) {
+    if (compositorTiming.reverse)
         timingFunction = CompositorAnimationsTimingFunctionReverser::reverse(timingFunction.get());
-    }
 
     OwnPtr<Vector<CSSPropertyID> > properties = CompositorAnimationsKeyframeEffectHelper::getProperties(&effect);
     for (size_t i = 0; i < properties->size(); i++) {
-        double iterationDuration = timing.iterationDuration / timing.playbackRate;
-
-        double zero = timing.startDelay / timing.playbackRate;
-        double keyframeZero = std::max(0.0, zero);
 
         OwnPtr<CompositorAnimationsKeyframeEffectHelper::KeyframeValues> values = CompositorAnimationsKeyframeEffectHelper::getKeyframeValuesForProperty(
-            &effect, properties->at(i), keyframeZero, iterationDuration, reverse);
+            &effect, properties->at(i), compositorTiming.scaledDuration, compositorTiming.reverse);
 
         blink::WebAnimation::TargetProperty targetProperty;
         OwnPtr<blink::WebAnimationCurve> curve;
@@ -479,20 +501,9 @@ void CompositorAnimationsImpl::getCompositorAnimations(
         OwnPtr<blink::WebAnimation> animation = adoptPtr(
             blink::Platform::current()->compositorSupport()->createAnimation(*curve, targetProperty));
 
-        ASSERT(std::floor(timing.iterationCount) == timing.iterationCount);
-        ASSERT(std::isfinite(timing.iterationCount));
-        double iterationCount = std::floor(timing.iterationCount);
-        if (zero < 0) {
-            int pastIterations = std::floor(std::abs(zero) / iterationDuration);
-
-            iterationCount = iterationCount - pastIterations;
-            animation->setTimeOffset(zero + pastIterations * iterationDuration);
-        }
-        animation->setIterations(iterationCount);
-
-        // PlaybackDirection direction
-        animation->setAlternatesDirection(
-            timing.direction == Timing::PlaybackDirectionAlternate || timing.direction == Timing::PlaybackDirectionAlternateReverse);
+        animation->setIterations(compositorTiming.adjustedIterationCount);
+        animation->setTimeOffset(compositorTiming.scaledTimeOffset);
+        animation->setAlternatesDirection(compositorTiming.alternate);
 
         animations.append(animation.release());
     }

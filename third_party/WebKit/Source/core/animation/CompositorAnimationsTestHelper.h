@@ -27,6 +27,9 @@
 
 #include "core/animation/CompositorAnimations.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebCompositorSupport.h"
+#include "public/platform/WebFloatAnimationCurve.h"
+#include "public/platform/WebFloatKeyframe.h"
 #include "wtf/PassOwnPtr.h"
 
 #include <gmock/gmock.h>
