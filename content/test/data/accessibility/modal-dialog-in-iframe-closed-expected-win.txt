@@ -1,0 +1,8 @@
+ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE
+    IA2_ROLE_SECTION READONLY
+        ROLE_SYSTEM_TEXT name='Test for modal dialog closed in an iframe. ' READONLY
+        ROLE_SYSTEM_CLIENT FOCUSABLE
+            IA2_ROLE_SCROLL_PANE
+                ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE
+                    IA2_ROLE_SECTION READONLY
+                        ROLE_SYSTEM_PUSHBUTTON name='I am a non-inert button!' FOCUSABLE

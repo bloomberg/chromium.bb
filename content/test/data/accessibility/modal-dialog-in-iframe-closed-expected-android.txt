@@ -1,0 +1,8 @@
+android.view.View focusable focused scrollable
+    android.view.View
+        android.view.View clickable name='Test for modal dialog closed in an iframe.'
+        android.view.View
+            android.view.View
+                android.view.View scrollable
+                    android.view.View
+                        android.widget.Button clickable focusable name='I am a non-inert button!'

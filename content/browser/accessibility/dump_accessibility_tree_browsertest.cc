@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/path_service.h"
@@ -20,6 +21,7 @@
 #include "content/port/browser/render_widget_host_view_port.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_paths.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/accessibility_browser_test_utils.h"
@@ -117,6 +119,13 @@ class DumpAccessibilityTreeTest : public ContentBrowserTest {
                                   Filter::DENY));
       }
     }
+  }
+
+  virtual void SetUpCommandLine(CommandLine* command_line) OVERRIDE {
+    ContentBrowserTest::SetUpCommandLine(command_line);
+    // Enable <dialog>, which is used in some tests.
+    CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kEnableExperimentalWebPlatformFeatures);
   }
 
   void RunTest(const base::FilePath::CharType* file_path);
@@ -408,6 +417,31 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityLabel) {
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityListMarkers) {
   RunTest(FILE_PATH_LITERAL("list-markers.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityModalDialogClosed) {
+  RunTest(FILE_PATH_LITERAL("modal-dialog-closed.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityModalDialogOpened) {
+  RunTest(FILE_PATH_LITERAL("modal-dialog-opened.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityModalDialogInIframeClosed) {
+  RunTest(FILE_PATH_LITERAL("modal-dialog-in-iframe-closed.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityModalDialogInIframeOpened) {
+  RunTest(FILE_PATH_LITERAL("modal-dialog-in-iframe-opened.html"));
+}
+
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
+                       AccessibilityModalDialogStack) {
+  RunTest(FILE_PATH_LITERAL("modal-dialog-stack.html"));
 }
 
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityP) {

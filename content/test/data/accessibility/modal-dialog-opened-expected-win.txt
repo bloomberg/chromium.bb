@@ -1,0 +1,8 @@
+ROLE_SYSTEM_DOCUMENT READONLY FOCUSABLE
+    IA2_ROLE_SECTION READONLY
+    IA2_ROLE_SECTION READONLY
+    IA2_ROLE_SECTION READONLY
+    ROLE_SYSTEM_DIALOG READONLY
+        ROLE_SYSTEM_TEXT name='The dialog subtree should be the only text content in the accessibility tree. ' READONLY
+        ROLE_SYSTEM_LINK name='Link inside the dialog.' FOCUSABLE
+            ROLE_SYSTEM_TEXT name='Link inside the dialog.' READONLY

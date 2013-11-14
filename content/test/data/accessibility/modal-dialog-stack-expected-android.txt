@@ -1,0 +1,6 @@
+android.view.View focusable focused scrollable
+    android.view.View
+    android.view.View
+    android.view.View
+        android.view.View clickable name='This is the now active dialog. Of course it should be in the tree.'
+        android.widget.Button clickable focusable name='This is in the active dialog and should be in the tree.'

@@ -1,3 +1,0 @@
-android.view.View focusable focused scrollable
-    android.view.View
-        android.view.View clickable name='Text in dialog'
