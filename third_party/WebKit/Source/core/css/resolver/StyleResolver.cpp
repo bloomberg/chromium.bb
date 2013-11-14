@@ -594,9 +594,6 @@ void StyleResolver::matchAllRules(StyleResolverState& state, ElementRuleCollecto
         // Now check SMIL animation override style.
         if (includeSMILProperties && state.element()->isSVGElement())
             collector.addElementStyleProperties(toSVGElement(state.element())->animatedSMILStyleProperties(), false /* isCacheable */);
-
-        if (state.element()->hasActiveAnimations())
-            collector.matchedResult().isCacheable = false;
     }
 }
 
@@ -1053,13 +1050,29 @@ void StyleResolver::collectPseudoRulesForElement(Element* element, ElementRuleCo
 // -------------------------------------------------------------------------------------
 // this is mostly boring stuff on how to apply a certain rule to the renderstyle...
 
+void StyleResolver::applyAnimatedProperties(StyleResolverState& state, Element* animatingElement)
+{
+    // animatingElement may be null, for example if we're calculating the
+    // style for a potential pseudo element that has yet to be created.
+    if (!RuntimeEnabledFeatures::webAnimationsCSSEnabled() || !animatingElement)
+        return;
+    state.setAnimationUpdate(CSSAnimations::calculateUpdate(animatingElement, *state.style(), this));
+    if (!state.animationUpdate())
+        return;
+    const AnimationEffect::CompositableValueMap& compositableValuesForAnimations = state.animationUpdate()->compositableValuesForAnimations();
+    const AnimationEffect::CompositableValueMap& compositableValuesForTransitions = state.animationUpdate()->compositableValuesForTransitions();
+    applyAnimatedProperties<HighPriorityProperties>(state, compositableValuesForAnimations);
+    applyAnimatedProperties<HighPriorityProperties>(state, compositableValuesForTransitions);
+    applyAnimatedProperties<LowPriorityProperties>(state, compositableValuesForAnimations);
+    applyAnimatedProperties<LowPriorityProperties>(state, compositableValuesForTransitions);
+}
+
 template <StyleResolver::StyleApplicationPass pass>
-bool StyleResolver::applyAnimatedProperties(StyleResolverState& state, const AnimationEffect::CompositableValueMap& compositableValues)
+void StyleResolver::applyAnimatedProperties(StyleResolverState& state, const AnimationEffect::CompositableValueMap& compositableValues)
 {
     ASSERT(RuntimeEnabledFeatures::webAnimationsCSSEnabled());
     ASSERT(pass != VariableDefinitions);
     ASSERT(pass != AnimationProperties);
-    bool didApply = false;
 
     for (AnimationEffect::CompositableValueMap::const_iterator iter = compositableValues.begin(); iter != compositableValues.end(); ++iter) {
         CSSPropertyID property = iter->key;
@@ -1068,9 +1081,7 @@ bool StyleResolver::applyAnimatedProperties(StyleResolverState& state, const Ani
         ASSERT_WITH_MESSAGE(!iter->value->dependsOnUnderlyingValue(), "Web Animations not yet implemented: An interface for compositing onto the underlying value.");
         RefPtr<AnimatableValue> animatableValue = iter->value->compositeOnto(0);
         AnimatedStyleBuilder::applyProperty(property, state, animatableValue.get());
-        didApply = true;
     }
-    return didApply;
 }
 
 // http://dev.w3.org/csswg/css3-regions/#the-at-region-style-rule
@@ -1259,6 +1270,12 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
 
             // Unfortunately the link status is treated like an inherited property. We need to explicitly restore it.
             state.style()->setInsideLink(linkStatus);
+
+            if (RuntimeEnabledFeatures::webAnimationsCSSEnabled()
+                && (animatingElement->hasActiveAnimations()
+                    || (state.style()->transitions() && !state.style()->transitions()->isEmpty())
+                    || (state.style()->animations() && !state.style()->animations()->isEmpty())))
+                applyAnimatedProperties(state, animatingElement);
             return;
         }
         applyInheritedOnly = true;
@@ -1320,43 +1337,17 @@ void StyleResolver::applyMatchedProperties(StyleResolverState& state, const Matc
     applyMatchedProperties<LowPriorityProperties>(state, matchResult, true, matchResult.ranges.firstUserRule, matchResult.ranges.lastUserRule, applyInheritedOnly);
     applyMatchedProperties<LowPriorityProperties>(state, matchResult, true, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
 
-    // animatingElement may be null, for example if we're calculating the
-    // style for a potential pseudo element that has yet to be created.
-    if (RuntimeEnabledFeatures::webAnimationsEnabled() && animatingElement) {
-        state.setAnimationUpdate(CSSAnimations::calculateUpdate(animatingElement, *state.style(), this));
-        if (state.animationUpdate()) {
-            ASSERT(!applyInheritedOnly);
-            const AnimationEffect::CompositableValueMap& compositableValuesForAnimations = state.animationUpdate()->compositableValuesForAnimations();
-            const AnimationEffect::CompositableValueMap& compositableValuesForTransitions = state.animationUpdate()->compositableValuesForTransitions();
-            // Apply animated properties, then reapply any rules marked important.
-            if (applyAnimatedProperties<HighPriorityProperties>(state, compositableValuesForAnimations)) {
-                bool important = true;
-                applyMatchedProperties<HighPriorityProperties>(state, matchResult, important, matchResult.ranges.firstAuthorRule, matchResult.ranges.lastAuthorRule, applyInheritedOnly);
-                applyMatchedProperties<HighPriorityProperties>(state, matchResult, important, matchResult.ranges.firstUserRule, matchResult.ranges.lastUserRule, applyInheritedOnly);
-                applyMatchedProperties<HighPriorityProperties>(state, matchResult, important, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
-            }
-            applyAnimatedProperties<HighPriorityProperties>(state, compositableValuesForTransitions);
-            if (applyAnimatedProperties<LowPriorityProperties>(state, compositableValuesForAnimations)) {
-                bool important = true;
-                applyMatchedProperties<LowPriorityProperties>(state, matchResult, important, matchResult.ranges.firstAuthorRule, matchResult.ranges.lastAuthorRule, applyInheritedOnly);
-                applyMatchedProperties<LowPriorityProperties>(state, matchResult, important, matchResult.ranges.firstUserRule, matchResult.ranges.lastUserRule, applyInheritedOnly);
-                applyMatchedProperties<LowPriorityProperties>(state, matchResult, important, matchResult.ranges.firstUARule, matchResult.ranges.lastUARule, applyInheritedOnly);
-            }
-            applyAnimatedProperties<LowPriorityProperties>(state, compositableValuesForTransitions);
-        }
-    }
-
     // Start loading resources referenced by this style.
     m_styleResourceLoader.loadPendingResources(state.style(), state.elementStyleResources());
 
-    ASSERT(!state.fontBuilder().fontDirty());
+    if (!cachedMatchedProperties && cacheHash && MatchedPropertiesCache::isCacheable(element, state.style(), state.parentStyle())) {
+        INCREMENT_STYLE_STATS_COUNTER(*this, matchedPropertyCacheAdded);
+        m_matchedPropertiesCache.add(state.style(), state.parentStyle(), cacheHash, matchResult);
+    }
 
-    if (cachedMatchedProperties || !cacheHash)
-        return;
-    if (!MatchedPropertiesCache::isCacheable(element, state.style(), state.parentStyle()))
-        return;
-    INCREMENT_STYLE_STATS_COUNTER(*this, matchedPropertyCacheAdded);
-    m_matchedPropertiesCache.add(state.style(), state.parentStyle(), cacheHash, matchResult);
+    applyAnimatedProperties(state, animatingElement);
+
+    ASSERT(!state.fontBuilder().fontDirty());
 }
 
 CSSPropertyValue::CSSPropertyValue(CSSPropertyID id, const StylePropertySet& propertySet)
