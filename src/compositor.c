@@ -695,6 +695,7 @@ weston_view_damage_below(struct weston_view *view)
 		pixman_region32_union(&view->plane->damage,
 				      &view->plane->damage, &damage);
 	pixman_region32_fini(&damage);
+	weston_view_schedule_repaint(view);
 }
 
 static void
@@ -1234,8 +1235,6 @@ weston_view_unmap(struct weston_view *view)
 	wl_list_init(&view->layer_link);
 	wl_list_remove(&view->link);
 	wl_list_init(&view->link);
-	/* We need to do this before torching the output mask */
-	weston_view_schedule_repaint(view);
 	view->output_mask = 0;
 	weston_surface_assign_output(view->surface);
 
