@@ -650,6 +650,17 @@ ScopedJavaLocalRef<jobject> ContentViewCoreImpl::GetContext() {
   return Java_ContentViewCore_getContext(env, obj.obj());
 }
 
+bool ContentViewCoreImpl::ShouldBlockMediaRequest(const GURL& url) {
+  JNIEnv* env = AttachCurrentThread();
+
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return true;
+  ScopedJavaLocalRef<jstring> j_url = ConvertUTF8ToJavaString(env, url.spec());
+  return Java_ContentViewCore_shouldBlockMediaRequest(env, obj.obj(),
+                                                      j_url.obj());
+}
+
 gfx::Size ContentViewCoreImpl::GetPhysicalBackingSize() const {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_obj = java_ref_.get(env);

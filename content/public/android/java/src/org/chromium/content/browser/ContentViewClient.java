@@ -182,4 +182,13 @@ public class ContentViewClient {
     public ContentVideoViewClient getContentVideoViewClient() {
         return null;
     }
+
+    /**
+     * Called when BrowserMediaPlayerManager wants to load a media resource.
+     * @param url the URL of media resource to load.
+     * @return true to prevent the resource from being loaded.
+     */
+    public boolean shouldBlockMediaRequest(String url) {
+        return false;
+    }
 }

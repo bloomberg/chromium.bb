@@ -11,6 +11,7 @@
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/web_contents/web_contents_view_android.h"
 #include "content/common/media/media_player_messages_android.h"
+#include "content/public/browser/android/content_view_core.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -65,7 +66,13 @@ MediaPlayerAndroid* BrowserMediaPlayerManager::CreateMediaPlayer(
     case MEDIA_PLAYER_TYPE_URL: {
       MediaPlayerBridge* media_player_bridge = new MediaPlayerBridge(
           player_id, url, first_party_for_cookies, hide_url_log, manager);
-      media_player_bridge->Initialize();
+      BrowserMediaPlayerManager* browser_media_player_manager =
+          static_cast<BrowserMediaPlayerManager*>(manager);
+      ContentViewCoreImpl* content_view_core_impl =
+          static_cast<ContentViewCoreImpl*>(ContentViewCore::FromWebContents(
+              browser_media_player_manager->web_contents_));
+      if (!content_view_core_impl->ShouldBlockMediaRequest(url))
+        media_player_bridge->Initialize();
       return media_player_bridge;
     }
 

@@ -14,6 +14,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import android.util.Pair;
 import android.view.MotionEvent;
 import android.view.WindowManager;
+import android.webkit.JavascriptInterface;
 import android.webkit.WebSettings;
 
 import org.apache.http.Header;
@@ -1921,6 +1922,71 @@ public class AwSettingsTest extends AwTestBase {
             assertEquals("img_onload_fired", getTitleOnUiThread(awContents));
         } finally {
             if (fileName != null) TestFileUtil.deleteFile(fileName);
+            if (webServer != null) webServer.shutdown();
+        }
+    }
+
+    public static class AudioEvent {
+        private CallbackHelper mCallback;
+        public AudioEvent(CallbackHelper callback) {
+            mCallback = callback;
+        }
+
+        @JavascriptInterface
+        public void onCanPlay() {
+            mCallback.notifyCalled();
+        }
+
+        @JavascriptInterface
+        public void onError() {
+            mCallback.notifyCalled();
+        }
+    }
+
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
+    public void testBlockNetworkLoadsWithAudio() throws Throwable {
+        final TestAwContentsClient contentClient = new TestAwContentsClient();
+        final AwTestContainerView testContainer =
+                createAwTestContainerViewOnMainSync(contentClient);
+        final AwContents awContents = testContainer.getAwContents();
+        final AwSettings awSettings = getAwSettingsOnUiThread(awContents);
+        CallbackHelper callback = new CallbackHelper();
+        awSettings.setJavaScriptEnabled(true);
+
+        TestWebServer webServer = null;
+        try {
+            webServer = new TestWebServer(false);
+            final String httpPath = "/audio.mp3";
+            // Don't care about the response is correct or not, just want
+            // to know whether Url is accessed.
+            final String audioUrl = webServer.setResponse(httpPath, "1", null);
+
+            String pageHtml ="<html><body><audio controls src='" + audioUrl + "' " +
+                    "oncanplay=\"AudioEvent.onCanPlay();\" " +
+                    "onerror=\"AudioEvent.onError();\" /> </body></html>";
+            // Actual test. Blocking should trigger onerror handler.
+            awSettings.setBlockNetworkLoads(true);
+            awContents.addPossiblyUnsafeJavascriptInterface(
+                    new AudioEvent(callback), "AudioEvent", null);
+            int count = callback.getCallCount();
+            loadDataSync(awContents, contentClient.getOnPageFinishedHelper(), pageHtml,
+                    "text/html", false);
+            callback.waitForCallback(count, 1);
+            assertEquals(0, webServer.getRequestCount(httpPath));
+
+            // The below test failed in Nexus Galaxy.
+            // See https://code.google.com/p/chromium/issues/detail?id=313463
+            // Unblock should load normally.
+            /*
+            awSettings.setBlockNetworkLoads(false);
+            count = callback.getCallCount();
+            loadDataSync(awContents, contentClient.getOnPageFinishedHelper(), pageHtml,
+                    "text/html", false);
+            callback.waitForCallback(count, 1);
+            assertTrue(0 != webServer.getRequestCount(httpPath));
+            */
+        } finally {
             if (webServer != null) webServer.shutdown();
         }
     }

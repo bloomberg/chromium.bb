@@ -4,29 +4,19 @@
 
 package org.chromium.android_webview;
 
-import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.graphics.Bitmap;
 import android.graphics.Picture;
-import android.graphics.Rect;
-import android.graphics.RectF;
 import android.net.http.SslError;
-import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.webkit.ConsoleMessage;
 import android.webkit.GeolocationPermissions;
-import android.webkit.SslErrorHandler;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 
-import org.chromium.content.browser.ContentVideoView;
-import org.chromium.content.browser.ContentVideoViewClient;
-import org.chromium.content.browser.ContentVideoViewControls;
-import org.chromium.content.browser.ContentViewClient;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content.browser.WebContentsObserverAndroid;
 import org.chromium.net.NetError;
@@ -46,8 +36,6 @@ public abstract class AwContentsClient {
     private final AwContentsClientCallbackHelper mCallbackHelper;
 
     private AwWebContentsObserver mWebContentsObserver;
-
-    private AwContentViewClient mContentViewClient = new AwContentViewClient();
 
     // Last background color reported from the renderer. Holds the sentinal value INVALID_COLOR
     // if not valid.
@@ -101,36 +89,6 @@ public abstract class AwContentsClient {
 
     }
 
-    private class AwContentViewClient extends ContentViewClient {
-        @Override
-        public void onBackgroundColorChanged(int color) {
-            // Avoid storing the sentinal INVALID_COLOR (note that both 0 and 1 are both
-            // fully transparent so this transpose makes no visible difference).
-            mCachedRendererBackgroundColor = color == INVALID_COLOR ? 1 : color;
-        }
-
-        @Override
-        public void onStartContentIntent(Context context, String contentUrl) {
-            //  Callback when detecting a click on a content link.
-            AwContentsClient.this.shouldOverrideUrlLoading(contentUrl);
-        }
-
-        @Override
-        public void onUpdateTitle(String title) {
-            AwContentsClient.this.onReceivedTitle(title);
-        }
-
-        @Override
-        public boolean shouldOverrideKeyEvent(KeyEvent event) {
-            return AwContentsClient.this.shouldOverrideKeyEvent(event);
-        }
-
-        @Override
-        final public ContentVideoViewClient getContentVideoViewClient() {
-            return new AwContentVideoViewClient();
-        }
-    }
-
     final void installWebContentsObserver(ContentViewCore contentViewCore) {
         if (mWebContentsObserver != null) {
             mWebContentsObserver.detachFromWebContents();
@@ -138,42 +96,8 @@ public abstract class AwContentsClient {
         mWebContentsObserver = new AwWebContentsObserver(contentViewCore);
     }
 
-    private class AwContentVideoViewClient implements ContentVideoViewClient {
-        @Override
-        public void onShowCustomView(View view) {
-            WebChromeClient.CustomViewCallback cb = new WebChromeClient.CustomViewCallback() {
-                @Override
-                public void onCustomViewHidden() {
-                    ContentVideoView contentVideoView = ContentVideoView.getContentVideoView();
-                    if (contentVideoView != null)
-                        contentVideoView.exitFullscreen(false);
-                }
-            };
-            AwContentsClient.this.onShowCustomView(view, cb);
-        }
-
-        @Override
-        public void onDestroyContentVideoView() {
-            AwContentsClient.this.onHideCustomView();
-        }
-
-        @Override
-        public View getVideoLoadingProgressView() {
-            return AwContentsClient.this.getVideoLoadingProgressView();
-        }
-
-        @Override
-        public ContentVideoViewControls createControls() {
-            return null;
-        }
-    }
-
     final AwContentsClientCallbackHelper getCallbackHelper() {
         return mCallbackHelper;
-    }
-
-    final ContentViewClient getContentViewClient() {
-        return mContentViewClient;
     }
 
     final int getCachedRendererBackgroundColor() {
@@ -183,6 +107,12 @@ public abstract class AwContentsClient {
 
     final boolean isCachedRendererBackgroundColorValid() {
         return mCachedRendererBackgroundColor != INVALID_COLOR;
+    }
+
+    final void onBackgroundColorChanged(int color) {
+        // Avoid storing the sentinal INVALID_COLOR (note that both 0 and 1 are both
+        // fully transparent so this transpose makes no visible difference).
+        mCachedRendererBackgroundColor = color == INVALID_COLOR ? 1 : color;
     }
 
     //--------------------------------------------------------------------------------------------

@@ -304,6 +304,9 @@ class ContentViewCoreImpl : public ContentViewCore,
   // typically be an Activity context for an on screen view.
   base::android::ScopedJavaLocalRef<jobject> GetContext();
 
+  // Returns True if the given media should be blocked to load.
+  bool ShouldBlockMediaRequest(const GURL& url);
+
   // --------------------------------------------------------------------------
   // Methods called from native code
   // --------------------------------------------------------------------------
