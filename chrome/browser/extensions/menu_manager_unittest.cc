@@ -15,6 +15,7 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/event_names.h"
 #include "chrome/browser/extensions/event_router.h"
+#include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_system_factory.h"
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/extensions/test_extension_prefs.h"
@@ -48,7 +49,7 @@ class MenuManagerTest : public testing::Test {
   MenuManagerTest()
       : ui_thread_(BrowserThread::UI, &message_loop_),
         file_thread_(BrowserThread::FILE, &message_loop_),
-        manager_(&profile_),
+        manager_(&profile_, ExtensionSystem::Get(&profile_)->state_store()),
         prefs_(message_loop_.message_loop_proxy().get()),
         next_id_(1) {}
 

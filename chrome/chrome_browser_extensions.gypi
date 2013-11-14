@@ -819,6 +819,8 @@
         'browser/extensions/management_policy.h',
         'browser/extensions/menu_manager.cc',
         'browser/extensions/menu_manager.h',
+        'browser/extensions/menu_manager_factory.cc',
+        'browser/extensions/menu_manager_factory.h',
         'browser/extensions/navigation_observer.cc',
         'browser/extensions/navigation_observer.h',
         'browser/extensions/pack_extension_job.cc',

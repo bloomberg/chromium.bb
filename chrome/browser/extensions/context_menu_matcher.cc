@@ -135,12 +135,11 @@ bool ContextMenuMatcher::IsCommandIdEnabled(int command_id) const {
 void ContextMenuMatcher::ExecuteCommand(int command_id,
     content::WebContents* web_contents,
     const content::ContextMenuParams& params) {
-  MenuManager* manager = extensions::ExtensionSystem::Get(profile_)->
-      extension_service()->menu_manager();
   MenuItem* item = GetExtensionMenuItem(command_id);
   if (!item)
     return;
 
+  MenuManager* manager = MenuManager::Get(profile_);
   manager->ExecuteCommand(profile_, web_contents, params, item->id());
 }
 
@@ -151,13 +150,13 @@ bool ContextMenuMatcher::GetRelevantExtensionTopLevelItems(
     MenuItem::List& items) {
   ExtensionService* service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
-  MenuManager* manager = service->menu_manager();
   *extension = service->GetExtensionById(extension_id, false);
 
   if (!*extension)
     return false;
 
   // Find matching items.
+  MenuManager* manager = MenuManager::Get(profile_);
   const MenuItem::List* all_items = manager->MenuItems(extension_id);
   if (!all_items || all_items->empty())
     return false;
@@ -247,8 +246,7 @@ void ContextMenuMatcher::RecursivelyAppendExtensionItems(
 }
 
 MenuItem* ContextMenuMatcher::GetExtensionMenuItem(int id) const {
-  MenuManager* manager = extensions::ExtensionSystem::Get(profile_)->
-      extension_service()->menu_manager();
+  MenuManager* manager = MenuManager::Get(profile_);
   std::map<int, MenuItem::Id>::const_iterator i =
       extension_item_map_.find(id);
   if (i != extension_item_map_.end()) {
@@ -260,9 +258,7 @@ MenuItem* ContextMenuMatcher::GetExtensionMenuItem(int id) const {
 }
 
 void ContextMenuMatcher::SetExtensionIcon(const std::string& extension_id) {
-  ExtensionService* service =
-      extensions::ExtensionSystem::Get(profile_)->extension_service();
-  MenuManager* menu_manager = service->menu_manager();
+  MenuManager* menu_manager = MenuManager::Get(profile_);
 
   int index = menu_model_->GetItemCount() - 1;
   DCHECK_GE(index, 0);

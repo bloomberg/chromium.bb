@@ -9,7 +9,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/context_menus.h"
@@ -176,8 +175,7 @@ bool ContextMenusCreateFunction::RunImpl() {
   if (params->create_properties.title.get())
     title = *params->create_properties.title;
 
-  MenuManager* menu_manager =
-      GetProfile()->GetExtensionService()->menu_manager();
+  MenuManager* menu_manager = MenuManager::Get(GetProfile());
 
   if (menu_manager->GetItemById(id)) {
     error_ = ErrorUtils::FormatErrorMessage(kDuplicateIDError,
@@ -261,8 +259,7 @@ bool ContextMenusUpdateFunction::RunImpl() {
   else
     NOTREACHED();
 
-  ExtensionService* service = GetProfile()->GetExtensionService();
-  MenuManager* manager = service->menu_manager();
+  MenuManager* manager = MenuManager::Get(GetProfile());
   MenuItem* item = manager->GetItemById(item_id);
   if (!item || item->extension_id() != extension_id()) {
     error_ = ErrorUtils::FormatErrorMessage(
@@ -357,8 +354,7 @@ bool ContextMenusRemoveFunction::RunImpl() {
   scoped_ptr<Remove::Params> params(Remove::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
-  ExtensionService* service = GetProfile()->GetExtensionService();
-  MenuManager* manager = service->menu_manager();
+  MenuManager* manager = MenuManager::Get(GetProfile());
 
   MenuItem::Id id(GetProfile()->IsOffTheRecord(), extension_id());
   if (params->menu_item_id.as_string)
@@ -383,8 +379,7 @@ bool ContextMenusRemoveFunction::RunImpl() {
 }
 
 bool ContextMenusRemoveAllFunction::RunImpl() {
-  ExtensionService* service = GetProfile()->GetExtensionService();
-  MenuManager* manager = service->menu_manager();
+  MenuManager* manager = MenuManager::Get(GetProfile());
   manager->RemoveAllContextItems(GetExtension()->id());
   manager->WriteToStorage(GetExtension());
   return true;

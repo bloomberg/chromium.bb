@@ -18,6 +18,7 @@
 #include "base/strings/string16.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_icon_manager.h"
+#include "components/browser_context_keyed_service/browser_context_keyed_service.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "extensions/common/url_pattern_set.h"
@@ -33,6 +34,7 @@ struct ContextMenuParams;
 
 namespace extensions {
 class Extension;
+class StateStore;
 
 // Represents a menu item added by an extension.
 class MenuItem {
@@ -243,10 +245,14 @@ class MenuItem {
 
 // This class keeps track of menu items added by extensions.
 class MenuManager : public content::NotificationObserver,
-                    public base::SupportsWeakPtr<MenuManager> {
+                    public base::SupportsWeakPtr<MenuManager>,
+                    public BrowserContextKeyedService {
  public:
-  explicit MenuManager(Profile* profile);
+  MenuManager(Profile* profile, StateStore* store_);
   virtual ~MenuManager();
+
+  // Convenience function to get the MenuManager for a Profile.
+  static MenuManager* Get(Profile* profile);
 
   // Returns the ids of extensions which have menu items registered.
   std::set<std::string> ExtensionIds();
@@ -350,6 +356,9 @@ class MenuManager : public content::NotificationObserver,
   ExtensionIconManager icon_manager_;
 
   Profile* profile_;
+
+  // Owned by ExtensionSystem.
+  StateStore* store_;
 
   DISALLOW_COPY_AND_ASSIGN(MenuManager);
 };

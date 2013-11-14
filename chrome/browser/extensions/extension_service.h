@@ -25,7 +25,6 @@
 #include "chrome/browser/extensions/extension_sync_service.h"
 #include "chrome/browser/extensions/external_provider_interface.h"
 #include "chrome/browser/extensions/management_policy.h"
-#include "chrome/browser/extensions/menu_manager.h"
 #include "chrome/browser/extensions/pending_enables.h"
 #include "chrome/browser/extensions/pending_extension_manager.h"
 #include "chrome/browser/extensions/update_observer.h"
@@ -456,8 +455,6 @@ class ExtensionService
 
   extensions::QuotaService* quota_service() { return &quota_service_; }
 
-  extensions::MenuManager* menu_manager() { return &menu_manager_; }
-
   // Sets the name, id and icon resource path of the given extension into the
   // returned dictionary. Returns an empty dictionary if the given extension id
   // is not found.
@@ -795,9 +792,6 @@ class ExtensionService
 
   // Keeps track of loading and unloading component extensions.
   scoped_ptr<extensions::ComponentLoader> component_loader_;
-
-  // Keeps track of menu items added by extensions.
-  extensions::MenuManager menu_manager_;
 
   // A collection of external extension providers.  Each provider reads
   // a source of external extension information.  Examples include the

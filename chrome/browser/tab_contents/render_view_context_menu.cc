@@ -513,7 +513,10 @@ void RenderViewContextMenu::AppendAllExtensionItems() {
       extensions::ExtensionSystem::Get(profile_)->extension_service();
   if (!service)
     return;  // In unit-tests, we may not have an ExtensionService.
-  MenuManager* menu_manager = service->menu_manager();
+
+  MenuManager* menu_manager = MenuManager::Get(profile_);
+  if (!menu_manager)
+    return;
 
   string16 printable_selection_text = PrintableSelectionText();
   EscapeAmpersands(&printable_selection_text);

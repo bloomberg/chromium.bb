@@ -18,12 +18,14 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/extensions/extension_tab_util.h"
+#include "chrome/browser/extensions/menu_manager_factory.h"
 #include "chrome/browser/extensions/state_store.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/context_menus.h"
 #include "chrome/common/extensions/extension.h"
 #include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/context_menu_params.h"
@@ -292,16 +294,16 @@ bool MenuItem::PopulateURLPatterns(
   return true;
 }
 
-MenuManager::MenuManager(Profile* profile)
-    : profile_(profile) {
+MenuManager::MenuManager(Profile* profile, StateStore* store)
+    : profile_(profile), store_(store) {
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_LOADED,
                  content::Source<Profile>(profile));
   registrar_.Add(this, chrome::NOTIFICATION_EXTENSION_UNLOADED,
                  content::Source<Profile>(profile));
-
-  StateStore* store = ExtensionSystem::Get(profile_)->state_store();
-  if (store)
-    store->RegisterKey(kContextMenusKey);
+  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
+                 content::NotificationService::AllSources());
+  if (store_)
+    store_->RegisterKey(kContextMenusKey);
 }
 
 MenuManager::~MenuManager() {
@@ -309,6 +311,11 @@ MenuManager::~MenuManager() {
   for (i = context_items_.begin(); i != context_items_.end(); ++i) {
     STLDeleteElements(&(i->second));
   }
+}
+
+// static
+MenuManager* MenuManager::Get(Profile* profile) {
+  return MenuManagerFactory::GetForProfile(profile);
 }
 
 std::set<std::string> MenuManager::ExtensionIds() {
@@ -760,10 +767,9 @@ void MenuManager::WriteToStorage(const Extension* extension) {
     }
   }
 
-  StateStore* store = ExtensionSystem::Get(profile_)->state_store();
-  if (store)
-    store->SetExtensionValue(extension->id(), kContextMenusKey,
-                             MenuItemsToValue(all_items));
+  if (store_)
+    store_->SetExtensionValue(extension->id(), kContextMenusKey,
+                              MenuItemsToValue(all_items));
 }
 
 void MenuManager::ReadFromStorage(const std::string& extension_id,
@@ -793,22 +799,40 @@ void MenuManager::ReadFromStorage(const std::string& extension_id,
 void MenuManager::Observe(int type,
                           const content::NotificationSource& source,
                           const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_EXTENSION_UNLOADED) {
-    // Remove menu items for disabled/uninstalled extensions.
-    const Extension* extension =
-        content::Details<UnloadedExtensionInfo>(details)->extension;
-    if (ContainsKey(context_items_, extension->id())) {
-      RemoveAllContextItems(extension->id());
+  switch (type) {
+    case chrome::NOTIFICATION_EXTENSION_UNLOADED: {
+      // Remove menu items for disabled/uninstalled extensions.
+      const Extension* extension =
+          content::Details<UnloadedExtensionInfo>(details)->extension;
+      if (ContainsKey(context_items_, extension->id())) {
+        RemoveAllContextItems(extension->id());
+      }
+      break;
     }
-  } else if (type == chrome::NOTIFICATION_EXTENSION_LOADED) {
-    const Extension* extension =
-        content::Details<const Extension>(details).ptr();
-    StateStore* store = ExtensionSystem::Get(profile_)->state_store();
-    if (store && BackgroundInfo::HasLazyBackgroundPage(extension)) {
-      store->GetExtensionValue(extension->id(), kContextMenusKey,
-          base::Bind(&MenuManager::ReadFromStorage,
-                     AsWeakPtr(), extension->id()));
+    case chrome::NOTIFICATION_EXTENSION_LOADED: {
+      const Extension* extension =
+          content::Details<const Extension>(details).ptr();
+      if (store_ && BackgroundInfo::HasLazyBackgroundPage(extension)) {
+        store_->GetExtensionValue(extension->id(), kContextMenusKey,
+            base::Bind(&MenuManager::ReadFromStorage,
+                       AsWeakPtr(), extension->id()));
+      }
+      break;
     }
+    case chrome::NOTIFICATION_PROFILE_DESTROYED: {
+      Profile* profile = content::Source<Profile>(source).ptr();
+      // We cannot use profile_->HasOffTheRecordProfile as it may already be
+      // false at this point, if for example the incognito profile was destroyed
+      // using DestroyOffTheRecordProfile.
+      if (profile->GetOriginalProfile() == profile_ &&
+          profile->GetOriginalProfile() != profile) {
+        RemoveAllIncognitoContextItems();
+      }
+      break;
+    }
+    default:
+      NOTREACHED();
+      break;
   }
 }
 

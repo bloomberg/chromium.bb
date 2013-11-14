@@ -127,7 +127,7 @@ class ExtensionContextMenuBrowserTest : public ExtensionBrowserTest {
 
   // Shortcut to return the current MenuManager.
   extensions::MenuManager* menu_manager() {
-    return browser()->profile()->GetExtensionService()->menu_manager();
+    return extensions::MenuManager::Get(browser()->profile());
   }
 
   // Returns a pointer to the currently loaded extension with |name|, or null

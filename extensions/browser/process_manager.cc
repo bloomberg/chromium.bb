@@ -83,7 +83,7 @@ class IncognitoProcessManager : public ProcessManager {
  public:
   IncognitoProcessManager(BrowserContext* incognito_context,
                           BrowserContext* original_context);
-  virtual ~IncognitoProcessManager();
+  virtual ~IncognitoProcessManager() {}
   virtual ExtensionHost* CreateBackgroundHost(const Extension* extension,
                                               const GURL& url) OVERRIDE;
   virtual SiteInstance* GetSiteInstanceForURL(const GURL& url) OVERRIDE;
@@ -790,15 +790,6 @@ IncognitoProcessManager::IncognitoProcessManager(
                     content::Source<BrowserContext>(original_context));
   registrar_.Remove(this, chrome::NOTIFICATION_PROFILE_CREATED,
                     content::Source<BrowserContext>(original_context));
-}
-
-IncognitoProcessManager::~IncognitoProcessManager() {
-  // TODO(yoz): This cleanup code belongs in the MenuManager.
-  // Remove "incognito" "split" mode context menu items.
-  ExtensionService* service = ExtensionSystem::GetForBrowserContext(
-      GetBrowserContext())->extension_service();
-  if (service)
-    service->menu_manager()->RemoveAllIncognitoContextItems();
 }
 
 ExtensionHost* IncognitoProcessManager::CreateBackgroundHost(
