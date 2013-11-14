@@ -237,7 +237,7 @@ blink::WebFrame* RenderFrameImpl::createChildFrame(
   }
 
   blink::WebFrame* web_frame = WebFrame::create(child_render_frame,
-                                                 child_frame_identifier);
+                                                child_frame_identifier);
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess)) {
     g_child_frame_map.Get().insert(
@@ -252,6 +252,18 @@ void RenderFrameImpl::didDisownOpener(blink::WebFrame* frame) {
 }
 
 void RenderFrameImpl::frameDetached(blink::WebFrame* frame) {
+  // NOTE: This function is called on the frame that is being detached and not
+  // the parent frame.  This is different from createChildFrame() which is
+  // called on the parent frame.
+  CHECK(!is_detaching_);
+
+  int64 parent_frame_id = -1;
+  if (frame->parent())
+    parent_frame_id = frame->parent()->identifier();
+
+  Send(new FrameHostMsg_Detach(GetRoutingID(), parent_frame_id,
+                               frame->identifier()));
+
   // Currently multiple WebCore::Frames can send frameDetached to a single
   // RenderFrameImpl. This is legacy behavior from when RenderViewImpl served
   // as a shared WebFrameClient for multiple Webcore::Frame objects. It also
@@ -259,31 +271,32 @@ void RenderFrameImpl::frameDetached(blink::WebFrame* frame) {
   // even though one WebCore::Frame may have detached itself, others will
   // still need to use this object.
   if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess)) {
-    // TODO(ajwong): Add CHECK(!is_detaching_) once we guarantee each
-    // RenderFrameImpl is only used by one WebCore::Frame.
+    // The |is_detaching_| flag disables Send(). FrameHostMsg_Detach must be
+    // sent before setting |is_detaching_| to true. In contrast, Observers
+    // should only be notified afterwards so they cannot call back into and
+    // have IPCs fired off.
     is_detaching_ = true;
   }
-
-  int64 parent_frame_id = -1;
-  if (frame->parent())
-    parent_frame_id = frame->parent()->identifier();
-
-  render_view_->Send(new FrameHostMsg_Detach(GetRoutingID(), parent_frame_id,
-                                             frame->identifier()));
 
   // Call back to RenderViewImpl for observers to be notified.
   // TODO(nasko): Remove once we have RenderFrameObserver.
   render_view_->frameDetached(frame);
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess)) {
-    FrameMap::iterator it = g_child_frame_map.Get().find(frame);
-    DCHECK(it != g_child_frame_map.Get().end());
-    DCHECK_EQ(it->second, this);
-    delete it->second;
-    g_child_frame_map.Get().erase(it);
-  }
-
   frame->close();
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kSitePerProcess)) {
+    // If the frame does not have a parent, it is the main frame. The main
+    // frame is owned by the containing RenderViewHost so it does not require
+    // any cleanup here.
+    if (frame->parent()) {
+      FrameMap::iterator it = g_child_frame_map.Get().find(frame);
+      DCHECK(it != g_child_frame_map.Get().end());
+      DCHECK_EQ(it->second, this);
+      g_child_frame_map.Get().erase(it);
+      delete this;
+      // Object is invalid after this point.
+    }
+  }
 }
 
 void RenderFrameImpl::willClose(blink::WebFrame* frame) {
