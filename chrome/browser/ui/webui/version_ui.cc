@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/webui/version_ui.h"
 
 #include "base/command_line.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/version_handler.h"
@@ -18,6 +19,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/google_chrome_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "v8/include/v8.h"
 #include "webkit/common/user_agent/user_agent_util.h"
 
@@ -78,7 +80,12 @@ content::WebUIDataSource* CreateVersionUIDataSource(Profile* profile) {
 #endif  // defined(OS_ANDROID)
 
   html_source->AddLocalizedString("company", IDS_ABOUT_VERSION_COMPANY_NAME);
-  html_source->AddLocalizedString("copyright", IDS_ABOUT_VERSION_COPYRIGHT);
+  base::Time::Exploded exploded_time;
+  base::Time::Now().LocalExplode(&exploded_time);
+  html_source->AddString(
+      "copyright",
+      l10n_util::GetStringFUTF16(IDS_ABOUT_VERSION_COPYRIGHT,
+                                 base::IntToString16(exploded_time.year)));
   html_source->AddString("cl", version_info.LastChange());
   html_source->AddLocalizedString("official",
       version_info.IsOfficialBuild() ? IDS_ABOUT_VERSION_OFFICIAL :

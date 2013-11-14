@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
@@ -155,7 +156,6 @@ void HelpHandler::GetLocalizedValues(content::WebUIDataSource* source) {
     { "relaunchAndPowerwash", IDS_RELAUNCH_AND_POWERWASH_BUTTON },
 #endif
     { "productName", IDS_PRODUCT_NAME },
-    { "productCopyright", IDS_ABOUT_VERSION_COPYRIGHT },
     { "updateCheckStarted", IDS_UPGRADE_CHECK_STARTED },
     { "upToDate", IDS_UPGRADE_UP_TO_DATE },
     { "updating", IDS_UPGRADE_UPDATING },
@@ -220,6 +220,13 @@ void HelpHandler::GetLocalizedValues(content::WebUIDataSource* source) {
       "browserVersion",
       l10n_util::GetStringFUTF16(IDS_ABOUT_PRODUCT_VERSION,
                                  BuildBrowserVersionString()));
+
+  base::Time::Exploded exploded_time;
+  base::Time::Now().LocalExplode(&exploded_time);
+  source->AddString(
+      "productCopyright",
+       l10n_util::GetStringFUTF16(IDS_ABOUT_VERSION_COPYRIGHT,
+                                  base::IntToString16(exploded_time.year)));
 
   string16 license = l10n_util::GetStringFUTF16(
       IDS_ABOUT_VERSION_LICENSE,

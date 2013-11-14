@@ -15,8 +15,11 @@
 #include "base/files/file_path.h"
 #include "base/mac/scoped_nsautorelease_pool.h"
 #include "base/memory/scoped_ptr.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
+#include "base/strings/string_util.h"
+#include "base/strings/sys_string_conversions.h"
 #include "grit/chromium_strings.h"
 #include "ui/base/resource/data_pack.h"
 
@@ -246,10 +249,19 @@ int main(int argc, char* const argv[]) {
     NSString* short_name =
           LoadStringFromDataPack(branded_data_pack.get(), cur_lang,
                                  short_name_id, short_name_id_str);
-    NSString* copyright =
+    NSString* copyright_format =
         LoadStringFromDataPack(branded_data_pack.get(), cur_lang,
                                IDS_ABOUT_VERSION_COPYRIGHT,
                                "IDS_ABOUT_VERSION_COPYRIGHT");
+
+    base::Time::Exploded exploded_time;
+    base::Time::Now().LocalExplode(&exploded_time);
+    std::vector<string16> replacements;
+    replacements.push_back(base::IntToString16(exploded_time.year));
+    NSString* copyright = base::SysUTF16ToNSString(
+        ReplaceStringPlaceholders(base::SysNSStringToUTF16(copyright_format),
+                                  replacements,
+                                  NULL));
 
     // For now, assume this is ok for all languages. If we need to, this could
     // be moved into generated_resources.grd and fetched.
