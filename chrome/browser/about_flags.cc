@@ -1585,8 +1585,7 @@ const Experiment kExperiments[] = {
     SINGLE_VALUE_TYPE(switches::kEnableSimplifiedFullscreen)
   },
 #endif
-#if defined(OS_CHROMEOS) || defined(OS_WIN) || \
-    (defined(OS_LINUX) && defined(TOOLKIT_VIEWS))
+#if defined(TOOLKIT_VIEWS)
   {
     "omnibox-auto-completion-for-ime",
     IDS_FLAGS_ENABLE_OMNIBOX_AUTO_COMPLETION_FOR_IME_NAME,
