@@ -14,7 +14,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/dbus/ibus/ibus_engine_factory_service.h"
 #include "chromeos/dbus/ibus/ibus_engine_service.h"
 #include "chromeos/dbus/ibus/ibus_text.h"
 #include "chromeos/ime/candidate_window.h"
@@ -43,6 +42,7 @@ InputMethodEngineIBus::InputMethodEngineIBus()
       active_(false),
       context_id_(0),
       next_context_id_(1),
+      is_create_engine_handler_called_(false),
       aux_text_(new IBusText()),
       aux_text_visible_(false),
       observer_(NULL),
@@ -50,17 +50,14 @@ InputMethodEngineIBus::InputMethodEngineIBus()
       preedit_cursor_(0),
       candidate_window_(new input_method::CandidateWindow()),
       window_visible_(false),
-      ibus_engine_factory_service_(IBusEngineFactoryService::Create()),
       weak_ptr_factory_(this) {}
 
 InputMethodEngineIBus::~InputMethodEngineIBus() {
   input_method::InputMethodManager::Get()->RemoveInputMethodExtension(ibus_id_);
 
-  // Do not unset engine before removing input method extension, above function
-  // may call reset function of engine object.
-  // TODO(nona): Call Reset manually here and remove relevant code from
-  //             InputMethodManager once ibus-daemon is gone. (crbug.com/158273)
-  if (!object_path_.value().empty()) {
+  // Do not unset engine before removing input method extension, above
+  // function may call reset function of engine object.
+  if (is_create_engine_handler_called_) {
     GetCurrentService()->UnsetEngine(this);
     ibus_engine_service_.reset();
   }
@@ -580,20 +577,17 @@ void InputMethodEngineIBus::OnDisconnected() {
 }
 
 void InputMethodEngineIBus::RegisterComponent() {
-  ibus_engine_factory_service_->SetCreateEngineHandler(
+  IBusBridge::Get()->SetCreateEngineHandler(
       ibus_id_,
       base::Bind(&InputMethodEngineIBus::CreateEngineHandler,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-void InputMethodEngineIBus::CreateEngineHandler(
-    const IBusEngineFactoryService::CreateEngineResponseSender& sender) {
+void InputMethodEngineIBus::CreateEngineHandler() {
   GetCurrentService()->UnsetEngine(this);
   ibus_engine_service_.reset();
-  object_path_ = ibus_engine_factory_service_->GenerateUniqueObjectPath();
-
   GetCurrentService()->SetEngine(this);
-  sender.Run(object_path_);
+  is_create_engine_handler_called_ = true;
 }
 
 }  // namespace chromeos

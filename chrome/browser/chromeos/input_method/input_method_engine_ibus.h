@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 #include <vector>
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/input_method/input_method_engine.h"
 #include "chromeos/ime/ibus_bridge.h"
 #include "dbus/object_path.h"
@@ -16,7 +17,6 @@ namespace chromeos {
 
 class IBusText;
 
-class IBusEngineFactoryService;
 class IBusEngineService;
 
 namespace input_method {
@@ -109,10 +109,9 @@ class InputMethodEngineIBus : public InputMethodEngine,
   // Registers the engine component.
   void RegisterComponent();
 
-  // Called when the ibus-daemon sends CreateEngine message with corresponding
-  // engine id.
-  void CreateEngineHandler(
-      const IBusEngineFactoryService::CreateEngineResponseSender& sender);
+  // Called when the IBusBrige executes CreateEngine with
+  // corresponding engine id.
+  void CreateEngineHandler();
 
   // Returns current IBusEngineService, if there is no available service, this
   // function returns NULL.
@@ -136,8 +135,8 @@ class InputMethodEngineIBus : public InputMethodEngine,
   // This IME ID in ibus.
   std::string ibus_id_;
 
-  // The current object path.
-  dbus::ObjectPath object_path_;
+  // Flag whether CreateEngineHandler is called or not.
+  bool is_create_engine_handler_called_;
 
   // The current auxialy text and it's visiblity.
   scoped_ptr<IBusText> aux_text_;
@@ -166,7 +165,6 @@ class InputMethodEngineIBus : public InputMethodEngine,
   std::map<int, int> candidate_indexes_;
 
   scoped_ptr<IBusEngineService> ibus_engine_service_;
-  scoped_ptr<IBusEngineFactoryService> ibus_engine_factory_service_;
 
   // Used for making callbacks.
   base::WeakPtrFactory<InputMethodEngineIBus> weak_ptr_factory_;

@@ -10,10 +10,6 @@
 
 namespace chromeos {
 
-namespace {
-void NoOpCreateEngineReply(const dbus::ObjectPath& unused_path) {}
-}  // namespace
-
 static IBusBridge* g_ibus_bridge = NULL;
 
 // An implementation of IBusBridge.
@@ -77,7 +73,7 @@ class IBusBridgeImpl : public IBusBridge {
 
   virtual void SetCreateEngineHandler(
       const std::string& engine_id,
-      const IBusEngineFactoryService::CreateEngineHandler& handler) OVERRIDE {
+      const CreateEngineHandler& handler) OVERRIDE {
     create_engine_handler_map_[engine_id] = handler;
   }
 
@@ -92,8 +88,7 @@ class IBusBridgeImpl : public IBusBridge {
     // migrated to extension IME.
     if (create_engine_handler_map_[engine_id].is_null())
       return;
-    create_engine_handler_map_[engine_id].Run(
-        base::Bind(&NoOpCreateEngineReply));
+    create_engine_handler_map_[engine_id].Run();
   }
 
  private:
@@ -101,8 +96,7 @@ class IBusBridgeImpl : public IBusBridge {
   IBusEngineHandlerInterface* engine_handler_;
   IBusPanelCandidateWindowHandlerInterface* candidate_window_handler_;
   IBusPanelPropertyHandlerInterface* panel_handler_;
-  std::map<std::string, IBusEngineFactoryService::CreateEngineHandler>
-      create_engine_handler_map_;
+  std::map<std::string, CreateEngineHandler> create_engine_handler_map_;
 
   DISALLOW_COPY_AND_ASSIGN(IBusBridgeImpl);
 };

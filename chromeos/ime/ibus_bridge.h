@@ -8,8 +8,8 @@
 
 #include <string>
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "chromeos/chromeos_export.h"
-#include "chromeos/dbus/ibus/ibus_engine_factory_service.h"
 #include "chromeos/ime/ime_constants.h"
 #include "chromeos/ime/input_method_property.h"
 
@@ -176,6 +176,8 @@ class CHROMEOS_EXPORT IBusPanelPropertyHandlerInterface {
 // or EngineService) directly by using this class.
 class IBusBridge {
  public:
+  typedef base::Callback<void()> CreateEngineHandler;
+
   virtual ~IBusBridge();
 
   // Allocates the global instance. Must be called before any calls to Get().
@@ -227,7 +229,7 @@ class IBusBridge {
   // and |handler| must not be null.
   virtual void SetCreateEngineHandler(
       const std::string& engine_id,
-      const IBusEngineFactoryService::CreateEngineHandler& handler) = 0;
+      const CreateEngineHandler& handler) = 0;
 
   // Unsets create engine handler for |engine_id|. |engine_id| must not be
   // empty.
