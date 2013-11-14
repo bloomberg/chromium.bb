@@ -55,9 +55,10 @@ public:
 #if ENABLE(Condition)
     static void conditionalConditionCustomVoidMethodMethodCustom(const v8::FunctionCallbackInfo<v8::Value>&);
 #endif // ENABLE(Condition)
-    static void customLongAttributeAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>&);
-    static void customLongAttributeAttributeSetterCustom(v8::Local<v8::Value>, const v8::PropertyCallbackInfo<void>&);
+    static void customObjectAttributeAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>&);
+    static void customObjectAttributeAttributeSetterCustom(v8::Local<v8::Value>, const v8::PropertyCallbackInfo<void>&);
     static void customGetterLongAttributeAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>&);
+    static void customGetterReadonlyObjectAttributeAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>&);
     static void customSetterLongAttributeAttributeSetterCustom(v8::Local<v8::Value>, const v8::PropertyCallbackInfo<void>&);
 #if ENABLE(Condition)
     static void customLongAttributeAttributeGetterCustom(const v8::PropertyCallbackInfo<v8::Value>&);

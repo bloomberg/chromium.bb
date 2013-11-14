@@ -75,7 +75,7 @@ enum XMLHttpRequestResponseType {
     [RaisesException=Getter] readonly attribute Document responseXML;
 
     [RaisesException=Setter] attribute XMLHttpRequestResponseType responseType;
-    [Custom=Getter, RaisesException=Getter] readonly attribute Object response;
+    [Custom=Getter, RaisesException=Getter] readonly attribute object response;
 
     [RaisesException=Getter] readonly attribute unsigned short status;
     [RaisesException=Getter] readonly attribute DOMString statusText;

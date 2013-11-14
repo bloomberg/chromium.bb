@@ -45,9 +45,9 @@
     readonly attribute long sourceID;
     readonly attribute long line;
     readonly attribute long column;
-    [Custom=Getter] readonly attribute Array scopeChain;
+    [Custom=Getter] readonly attribute object scopeChain;
     [Custom] unsigned short scopeType(long scopeIndex);
-    [Custom=Getter] readonly attribute Object thisObject;
+    [Custom=Getter] readonly attribute object thisObject;
     readonly attribute DOMString stepInPositions;
     readonly attribute DOMString functionName;
     [Custom=Getter] readonly attribute DOMString type;

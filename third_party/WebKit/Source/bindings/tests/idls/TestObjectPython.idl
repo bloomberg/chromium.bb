@@ -110,8 +110,9 @@ interface TestObjectPython {
     [Conditional=Condition] attribute long conditionalLongAttribute;
     [Conditional=Condition1&Condition2] attribute long conditionalAndLongAttribute;
     [Conditional=Condition1|Condition2] attribute long conditionalOrLongAttribute;
-    [Custom] attribute long customLongAttribute;
+    [Custom] attribute object customObjectAttribute;
     [Custom=Getter] attribute long customGetterLongAttribute;
+    [Custom=Getter] readonly attribute object customGetterReadonlyObjectAttribute;
     [Custom=Setter] attribute long customSetterLongAttribute;
     [Conditional=Condition, Custom] attribute long customLongAttribute;
     [CustomElementCallbacks] readonly attribute long customElementsCallbacksReadonlyLongAttribute;

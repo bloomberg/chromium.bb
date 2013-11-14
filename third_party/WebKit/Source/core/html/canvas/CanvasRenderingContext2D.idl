@@ -154,8 +154,8 @@ interface CanvasRenderingContext2D : CanvasRenderingContext {
     [RaisesException] ImageData createImageData(ImageData? imagedata);
     [RaisesException] ImageData createImageData(float sw, float sh);
 
-    [Custom] attribute custom strokeStyle;
-    [Custom] attribute custom fillStyle;
+    [Custom] attribute object strokeStyle;
+    [Custom] attribute object fillStyle;
 
     // pixel manipulation
     [RaisesException] ImageData getImageData(float sx, float sy, float sw, float sh);

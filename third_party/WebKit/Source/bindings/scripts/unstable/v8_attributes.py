@@ -45,11 +45,35 @@ def generate_attribute(interface, attribute):
     idl_type = attribute.idl_type
     extended_attributes = attribute.extended_attributes
 
+    v8_types.add_includes_for_type(idl_type)
+
+    # [CheckSecurity]
+    is_check_security_for_node = 'CheckSecurity' in extended_attributes
+    if is_check_security_for_node:
+        includes.add('bindings/v8/BindingSecurity.h')
+    # [Custom]
     has_custom_getter = ('Custom' in extended_attributes and
                          extended_attributes['Custom'] in [None, 'Getter'])
     has_custom_setter = (not attribute.is_read_only and
                          'Custom' in extended_attributes and
                          extended_attributes['Custom'] in [None, 'Setter'])
+    # [RaisesException]
+    is_getter_raises_exception = (
+        'RaisesException' in extended_attributes and
+        extended_attributes['RaisesException'] in [None, 'Getter'])
+    if is_check_security_for_node or is_getter_raises_exception:
+        includes.update(set(['bindings/v8/ExceptionMessages.h',
+                             'bindings/v8/ExceptionState.h']))
+    # [Reflect]
+    is_reflect = 'Reflect' in extended_attributes
+    if is_reflect:
+        includes.add('core/dom/custom/CustomElementCallbackDispatcher.h')
+
+    if (idl_type == 'EventHandler' and
+        interface.name in ['Window', 'WorkerGlobalScope'] and
+        attribute.name == 'onerror'):
+        includes.add('bindings/v8/V8ErrorHandler.h')
+
     contents = {
         'access_control_list': access_control_list(attribute),
         'activity_logging_world_list_for_getter': v8_utilities.activity_logging_world_list(attribute, 'Getter'),  # [ActivityLogging]
@@ -57,12 +81,20 @@ def generate_attribute(interface, attribute):
         'cached_attribute_validation_method': extended_attributes.get('CachedAttribute'),
         'conditional_string': v8_utilities.conditional_string(attribute),
         'cpp_type': v8_types.cpp_type(idl_type),
+        'deprecate_as': v8_utilities.deprecate_as(attribute),  # [DeprecateAs]
+        'enum_validation_expression':
+            v8_utilities.enum_validation_expression(idl_type),
         'getter_callback_name': getter_callback_name(interface, attribute),
-        'getter_callback_name_for_main_world': getter_callback_name_for_main_world(interface, attribute),
+        'getter_callback_name_for_main_world':
+            getter_callback_name_for_main_world(interface, attribute),
         'has_custom_getter': has_custom_getter,
         'has_custom_setter': has_custom_setter,
+        'has_strict_type_checking': (
+            'StrictTypeChecking' in extended_attributes and
+            v8_types.is_interface_type(idl_type)),
         'idl_type': idl_type,
         'is_call_with_execution_context': v8_utilities.has_extended_attribute_value(attribute, 'CallWith', 'ExecutionContext'),
+        'is_check_security_for_node': is_check_security_for_node,
         'is_constructor': is_constructor_attribute(attribute),
         'is_getter_raises_exception': (
             'RaisesException' in extended_attributes and
@@ -70,11 +102,14 @@ def generate_attribute(interface, attribute):
         'is_keep_alive_for_gc': is_keep_alive_for_gc(attribute),
         'is_nullable': attribute.is_nullable,
         'is_read_only': attribute.is_read_only,
+        'is_reflect': is_reflect,
         'is_replaceable': 'Replaceable' in attribute.extended_attributes,
         'is_setter_raises_exception': (
             'RaisesException' in extended_attributes and
             extended_attributes['RaisesException'] in [None, 'Setter']),
         'is_static': attribute.is_static,
+        'is_unforgeable': 'Unforgeable' in extended_attributes,
+        'measure_as': v8_utilities.measure_as(attribute),  # [MeasureAs]
         'name': attribute.name,
         'per_context_enabled_function_name': v8_utilities.per_context_enabled_function_name(attribute),  # [PerContextEnabled]
         'property_attributes': property_attributes(attribute),
@@ -82,16 +117,22 @@ def generate_attribute(interface, attribute):
         'setter_callback_name_for_main_world': setter_callback_name_for_main_world(interface, attribute),
         'v8_type': v8_types.v8_type(idl_type),
         'runtime_enabled_function_name': v8_utilities.runtime_enabled_function_name(attribute),  # [RuntimeEnabled]
-        'world_suffixes': ['', 'ForMainWorld'] if 'PerWorldBindings' in extended_attributes else [''],  # [PerWorldBindings]
+        'world_suffixes': ['', 'ForMainWorld']
+                          if 'PerWorldBindings' in extended_attributes
+                          else [''],  # [PerWorldBindings]
         'wrapper_type_info': wrapper_type_info(attribute),
     }
+
     if is_constructor_attribute(attribute):
-        includes.update(v8_types.includes_for_type(idl_type))
         return contents
     if not has_custom_getter:
         generate_getter(interface, attribute, contents)
-    if not attribute.is_read_only and not has_custom_setter:
-        generate_setter(interface, attribute, contents)
+    if not(attribute.is_read_only or has_custom_setter):
+        contents.update({
+            'cpp_setter': setter_expression(interface, attribute, contents),
+            'v8_value_to_local_cpp_value': v8_types.v8_value_to_local_cpp_value(
+                idl_type, extended_attributes, 'jsValue', 'cppValue'),
+        })
 
     return contents
 
@@ -100,7 +141,6 @@ def generate_attribute(interface, attribute):
 
 def generate_getter(interface, attribute, contents):
     idl_type = attribute.idl_type
-    v8_types.add_includes_for_type(idl_type)
     extended_attributes = attribute.extended_attributes
 
     cpp_value = getter_expression(interface, attribute, contents)
@@ -116,33 +156,16 @@ def generate_getter(interface, attribute, contents):
         contents['is_getter_raises_exception']):
         contents['cpp_value_original'] = cpp_value
         cpp_value = 'jsValue'
-    contents['cpp_value'] = cpp_value
 
     if contents['is_keep_alive_for_gc']:
         v8_set_return_value_statement = 'v8SetReturnValue(info, wrapper)'
         includes.add('bindings/v8/V8HiddenPropertyName.h')
     else:
         v8_set_return_value_statement = v8_types.v8_set_return_value(idl_type, cpp_value, extended_attributes=extended_attributes, script_wrappable='imp')
-    contents['v8_set_return_value'] = v8_set_return_value_statement
-
-    if (idl_type == 'EventHandler' and
-        interface.name in ['Window', 'WorkerGlobalScope'] and
-        attribute.name == 'onerror'):
-        includes.add('bindings/v8/V8ErrorHandler.h')
-
-    # [CheckSecurity]
-    is_check_security_for_node = 'CheckSecurity' in extended_attributes
-    if is_check_security_for_node:
-        includes.add('bindings/v8/BindingSecurity.h')
-    if is_check_security_for_node or contents['is_getter_raises_exception']:
-        includes.update(set(['bindings/v8/ExceptionMessages.h',
-                             'bindings/v8/ExceptionState.h']))
 
     contents.update({
-        'deprecate_as': v8_utilities.deprecate_as(attribute),  # [DeprecateAs]
-        'is_check_security_for_node': is_check_security_for_node,
-        'is_unforgeable': 'Unforgeable' in extended_attributes,
-        'measure_as': v8_utilities.measure_as(attribute),  # [MeasureAs]
+        'cpp_value': cpp_value,
+        'v8_set_return_value': v8_set_return_value_statement,
     })
 
 
@@ -210,26 +233,6 @@ def is_keep_alive_for_gc(attribute):
 
 # Setter
 
-def generate_setter(interface, attribute, contents):
-    idl_type = attribute.idl_type
-    extended_attributes = attribute.extended_attributes
-    if v8_types.is_interface_type(idl_type) and not v8_types.array_type(idl_type):
-        cpp_value = 'WTF::getPtr(cppValue)'
-    else:
-        cpp_value = 'cppValue'
-    is_reflect = 'Reflect' in extended_attributes
-    if is_reflect:
-        includes.add('core/dom/custom/CustomElementCallbackDispatcher.h')
-    contents.update({
-        'cpp_setter': setter_expression(interface, attribute, contents),
-        'enum_validation_expression': v8_utilities.enum_validation_expression(idl_type),
-        'has_strict_type_checking': 'StrictTypeChecking' in extended_attributes and v8_types.is_interface_type(idl_type),
-        'is_reflect': is_reflect,
-        'v8_value_to_local_cpp_value': v8_types.v8_value_to_local_cpp_value(
-            idl_type, extended_attributes, 'jsValue', 'cppValue'),
-    })
-
-
 def setter_expression(interface, attribute, contents):
     arguments = v8_utilities.call_with_arguments(attribute, attribute.extended_attributes.get('SetterCallWith'))
 
@@ -238,8 +241,6 @@ def setter_expression(interface, attribute, contents):
 
     idl_type = attribute.idl_type
     if idl_type == 'EventHandler':
-        # FIXME: move V8EventListenerList.h to INCLUDES_FOR_TYPE
-        includes.add('bindings/v8/V8EventListenerList.h')
         # FIXME: pass the isolate instead of the isolated world
         isolated_world = 'isolatedWorldForIsolate(info.GetIsolate())'
         arguments.extend(['V8EventListenerList::getEventListener(jsValue, true, ListenerFindOrCreate)', isolated_world])
@@ -289,7 +290,7 @@ def scoped_name(interface, attribute, base_name):
 # Attribute configuration
 
 def getter_callback_name(interface, attribute):
-    if attribute.idl_type.endswith('Constructor'):
+    if is_constructor_attribute(attribute):
         return '{0}V8Internal::{0}ConstructorGetter'.format(cpp_name(interface))
     return '%sV8Internal::%sAttributeGetterCallback' % (cpp_name(interface), attribute.name)
 
@@ -298,7 +299,7 @@ def getter_callback_name(interface, attribute):
 def setter_callback_name(interface, attribute):
     cpp_class_name = cpp_name(interface)
     if ('Replaceable' in attribute.extended_attributes or
-        attribute.idl_type.endswith('Constructor')):
+        is_constructor_attribute(attribute)):
         # FIXME: rename to ForceSetAttributeOnThisCallback, since also used for Constructors
         return '{0}V8Internal::{0}ReplaceableAttributeSetterCallback'.format(cpp_class_name)
     # FIXME: support [PutForwards]

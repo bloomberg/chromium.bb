@@ -1676,17 +1676,17 @@ static void conditionalOrLongAttributeAttributeSetterCallback(v8::Local<v8::Stri
 }
 #endif // ENABLE(Condition1) || ENABLE(Condition2)
 
-static void customLongAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+static void customObjectAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
-    V8TestObjectPython::customLongAttributeAttributeGetterCustom(info);
+    V8TestObjectPython::customObjectAttributeAttributeGetterCustom(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
-static void customLongAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
+static void customObjectAttributeAttributeSetterCallback(v8::Local<v8::String>, v8::Local<v8::Value> jsValue, const v8::PropertyCallbackInfo<void>& info)
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
-    V8TestObjectPython::customLongAttributeAttributeSetterCustom(jsValue, info);
+    V8TestObjectPython::customObjectAttributeAttributeSetterCustom(jsValue, info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -1708,6 +1708,13 @@ static void customGetterLongAttributeAttributeSetterCallback(v8::Local<v8::Strin
 {
     TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMSetter");
     TestObjectPythonV8Internal::customGetterLongAttributeAttributeSetter(jsValue, info);
+    TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
+}
+
+static void customGetterReadonlyObjectAttributeAttributeGetterCallback(v8::Local<v8::String>, const v8::PropertyCallbackInfo<v8::Value>& info)
+{
+    TRACE_EVENT_SET_SAMPLING_STATE("Blink", "DOMGetter");
+    V8TestObjectPython::customGetterReadonlyObjectAttributeAttributeGetterCustom(info);
     TRACE_EVENT_SET_SAMPLING_STATE("V8", "Execution");
 }
 
@@ -6131,8 +6138,9 @@ static const V8DOMConfiguration::AttributeConfiguration V8TestObjectPythonAttrib
 #if ENABLE(Condition1) || ENABLE(Condition2)
     {"conditionalOrLongAttribute", TestObjectPythonV8Internal::conditionalOrLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::conditionalOrLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 #endif // ENABLE(Condition1) || ENABLE(Condition2)
-    {"customLongAttribute", TestObjectPythonV8Internal::customLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::customLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"customObjectAttribute", TestObjectPythonV8Internal::customObjectAttributeAttributeGetterCallback, TestObjectPythonV8Internal::customObjectAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"customGetterLongAttribute", TestObjectPythonV8Internal::customGetterLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::customGetterLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
+    {"customGetterReadonlyObjectAttribute", TestObjectPythonV8Internal::customGetterReadonlyObjectAttributeAttributeGetterCallback, 0, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
     {"customSetterLongAttribute", TestObjectPythonV8Internal::customSetterLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::customSetterLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},
 #if ENABLE(Condition)
     {"customLongAttribute", TestObjectPythonV8Internal::customLongAttributeAttributeGetterCallback, TestObjectPythonV8Internal::customLongAttributeAttributeSetterCallback, 0, 0, 0, static_cast<v8::AccessControl>(v8::DEFAULT), static_cast<v8::PropertyAttribute>(v8::None), 0 /* on instance */},

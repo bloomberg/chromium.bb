@@ -425,7 +425,7 @@ sub AddIncludesForType
 {
     my $type = shift;
 
-    return if IsPrimitiveType($type) or IsEnumType($type);
+    return if IsPrimitiveType($type) or IsEnumType($type) or $type eq "object";
 
     # Default includes
     if ($type eq "SerializedScriptValue") {
@@ -1527,9 +1527,6 @@ END
         $code .= "    bool isNull = false;\n";
     }
 
-    my $returnType = $attribute->type;
-    AddIncludesForType($returnType);
-
     my $getterString;
     my ($functionName, @arguments) = GetterExpression($interfaceName, $attribute);
     push(@arguments, "isNull") if $isNullable;
@@ -1585,16 +1582,16 @@ END
         }
 
         $expression = "jsValue";
-        $expression .= ".release()" if (IsRefPtrType($returnType));
+        $expression .= ".release()" if (IsRefPtrType($attrType));
     } else {
         # Can inline the function call into the return statement to avoid overhead of using a Ref<> temporary
         $expression = $getterString;
         # Fix amigious conversion problem, by casting to the base type first ($getterString returns a type that inherits from SVGAnimatedEnumeration, not the base class directly).
-        $expression = "static_pointer_cast<SVGAnimatedEnumeration>($expression)" if $returnType eq "SVGAnimatedEnumeration";
+        $expression = "static_pointer_cast<SVGAnimatedEnumeration>($expression)" if $attrType eq "SVGAnimatedEnumeration";
     }
 
-    if (ShouldKeepAttributeAlive($interface, $attribute, $returnType)) {
-        my $arrayType = GetArrayType($returnType);
+    if (ShouldKeepAttributeAlive($interface, $attribute, $attrType)) {
+        my $arrayType = GetArrayType($attrType);
         if ($arrayType) {
             $code .= "    v8SetReturnValue(info, v8Array(${getterString}, info.GetIsolate()));\n";
             $code .= "}\n\n";
@@ -1605,8 +1602,8 @@ END
         AddToImplIncludes("bindings/v8/V8HiddenPropertyName.h");
         # Check for a wrapper in the wrapper cache. If there is one, we know that a hidden reference has already
         # been created. If we don't find a wrapper, we create both a wrapper and a hidden reference.
-        my $nativeReturnType = GetNativeType($returnType);
-        my $v8ReturnType = "V8" . $returnType;
+        my $nativeReturnType = GetNativeType($attrType);
+        my $v8ReturnType = "V8" . $attrType;
         $code .= "    $nativeReturnType result = ${getterString};\n";
         if ($forMainWorldSuffix) {
             $code .= "    if (result && DOMDataStore::setReturnValueFromWrapper${forMainWorldSuffix}<${v8ReturnType}>(info.GetReturnValue(), result.get()))\n";
@@ -4164,6 +4161,8 @@ END
             }
             next;
         }
+
+        AddIncludesForType($attrType);
 
         if ($attrType eq "EventHandler" && $interfaceName eq "Window") {
             $attrExt->{"OnProto"} = 1;

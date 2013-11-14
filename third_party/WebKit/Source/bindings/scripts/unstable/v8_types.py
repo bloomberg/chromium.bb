@@ -305,6 +305,7 @@ def includes_for_cpp_class(class_name, relative_dir_posix):
 
 INCLUDES_FOR_TYPE = {
     'any': set(['bindings/v8/ScriptValue.h']),
+    'object': set(),
     'EventHandler': set(['bindings/v8/V8AbstractEventListener.h',
                          'bindings/v8/V8EventListenerList.h']),
     'EventListener': set(['bindings/v8/BindingSecurity.h',
