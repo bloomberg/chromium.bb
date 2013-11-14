@@ -325,9 +325,8 @@ def CreateResourceInputFile(
 # |insert_before|.
 def CopyAndAugmentManifest(build_dir, output_dir, manifest_name,
                            inserted_string, insert_before):
-  manifest_file = open(os.path.join(build_dir, manifest_name), 'r')
-  manifest_lines = manifest_file.readlines()
-  manifest_file.close()
+  with open(os.path.join(build_dir, manifest_name), 'r') as manifest_file:
+    manifest_lines = manifest_file.readlines()
 
   insert_line = -1
   insert_pos = -1
@@ -340,13 +339,12 @@ def CopyAndAugmentManifest(build_dir, output_dir, manifest_name,
     raise ValueError('Could not find {0} in the manifest:\n{1}'.format(
         insert_before, ''.join(manifest_lines)))
   old = manifest_lines[insert_line]
-  manifest_lines[insert_line] = (old[:insert_pos] + inserted_string +
-                                 old[insert_pos:])
+  manifest_lines[insert_line] = (old[:insert_pos] + '\n' + inserted_string +
+                                 '\n' + old[insert_pos:])
 
-  modified_manifest_file = open(
-      os.path.join(output_dir, manifest_name), 'w')
-  modified_manifest_file.write(''.join(manifest_lines))
-  modified_manifest_file.close()
+  with open(os.path.join(output_dir, manifest_name),
+            'w') as modified_manifest_file :
+    modified_manifest_file.write(''.join(manifest_lines))
 
 
 def CopyIfChanged(src, target_dir):
@@ -445,85 +443,51 @@ def DoComponentBuildTasks(staging_dir, build_dir, target_arch, current_version):
   # as a dependency in the exe manifests generated below.
   CopyVisualStudioRuntimeDLLs(build_dir, target_arch)
 
-  # Copy all the DLLs in |build_dir| to the version directory. Simultaneously
-  # build a list of their names to mark them as dependencies of chrome.exe and
-  # setup.exe later.
-  dlls = glob.glob(os.path.join(build_dir, '*.dll'))
-  dll_names = []
-  for dll in dlls:
+  # Stage all the component DLLs found in |build_dir|. These are all the DLLs
+  # which have not already been added to the staged |version_dir| by virtue of
+  # chrome.release.
+  build_dlls = glob.glob(os.path.join(build_dir, '*.dll'))
+  staged_dll_basenames = [os.path.basename(staged_dll) for staged_dll in \
+                              glob.glob(os.path.join(version_dir, '*.dll'))]
+  component_dll_filenames = []
+  for component_dll in [dll for dll in build_dlls if \
+                            os.path.basename(dll) not in staged_dll_basenames]:
     # remoting_*.dll's don't belong in the archive (it doesn't depend on them
     # in gyp). Trying to copy them causes a build race when creating the
     # installer archive in component mode. See: crbug.com/180996
-    if os.path.basename(dll).startswith('remoting_'):
+    if os.path.basename(component_dll).startswith('remoting_'):
       continue
-    shutil.copy(dll, version_dir)
-    dll_names.append(os.path.splitext(os.path.basename(dll))[0])
+    # Copy them to the version_dir (for the version assembly to be able to refer
+    # to them below and thus for chrome.exe to be able to load them at runtime).
+    shutil.copy(component_dll, version_dir)
+    # Also copy them directly to the Installer directory for the installed
+    # setup.exe to be able to run (as it doesn't statically link in component
+    # DLLs).
+    # TODO(gab): This makes the archive ~278MB instead of ~185MB; consider
+    # copying the DLLs over from the installer.
+    shutil.copy(component_dll, installer_dir)
+    component_dll_filenames.append(os.path.basename(component_dll))
 
-  exe_config = (
-      "<configuration>\n"
-      "  <windows>\n"
-      "    <assemblyBinding xmlns='urn:schemas-microsoft-com:asm.v1'>\n"
-      "        <probing privatePath='{rel_path}'/>\n"
-      "    </assemblyBinding>\n"
-      "  </windows>\n"
-      "</configuration>")
+  # Copy chrome.exe.manifest as-is. It is required, among other things, to
+  # declare a dependency on the version dir assembly.
+  shutil.copy(os.path.join(build_dir, 'chrome.exe.manifest'), chrome_dir)
 
-  # Write chrome.exe.config to point to the version directory.
-  chrome_exe_config_file = open(
-      os.path.join(chrome_dir, 'chrome.exe.config'), 'w')
-  chrome_exe_config_file.write(exe_config.format(rel_path=current_version))
-  chrome_exe_config_file.close()
+  # Also copy setup.exe.manifest as-is. It is required, among other things, to
+  # let setup.exe UAC when it wants to, by specifying that it handles elevation
+  # "asInvoker", rather than have Windows auto-elevate it when launched.
+  shutil.copy(os.path.join(build_dir, 'setup.exe.manifest'), installer_dir)
 
-  # Write setup.exe.config to point to the version directory (which is one
-  # level up from setup.exe post-install).
-  setup_exe_config_file = open(
-      os.path.join(installer_dir, 'setup.exe.config'), 'w')
-  setup_exe_config_file.write(exe_config.format(rel_path='..'))
-  setup_exe_config_file.close()
-
-  # Add a dependency for each DLL in |dlls| to the existing manifests for
-  # chrome.exe and setup.exe. Some of these DLLs are not actually used by
-  # either process, but listing them all as dependencies doesn't hurt as it
-  # only makes them visible to the exes, just like they already are in the
-  # build output directory.
-  exe_manifest_dependencies_list = []
-  for name in dll_names:
-    exe_manifest_dependencies_list.append(
-        "<dependency>"
-        "<dependentAssembly>"
-        "<assemblyIdentity type='win32' name='chrome.{dll_name}' "
-        "version='0.0.0.0' language='*'/>"
-        "</dependentAssembly>"
-        "</dependency>".format(dll_name=name))
-
-  exe_manifest_dependencies = ''.join(exe_manifest_dependencies_list)
-
-  # Write a modified chrome.exe.manifest beside chrome.exe.
-  CopyAndAugmentManifest(build_dir, chrome_dir, 'chrome.exe.manifest',
-                         exe_manifest_dependencies, '</assembly>')
-
-  # Write a modified setup.exe.manifest beside setup.exe in
-  # |version_dir|/Installer.
-  CopyAndAugmentManifest(build_dir, installer_dir, 'setup.exe.manifest',
-                         exe_manifest_dependencies, '</assembly>')
-
-  # Generate assembly manifests for each DLL in |dlls|. These do not interfere
-  # with the private manifests potentially embedded in each DLL. They simply
-  # allow chrome.exe and setup.exe to see those DLLs although they are in a
-  # separate directory post-install.
-  for name in dll_names:
-    dll_manifest = (
-        "<assembly\n"
-        "    xmlns='urn:schemas-microsoft-com:asm.v1' manifestVersion='1.0'>\n"
-        "  <assemblyIdentity name='chrome.{dll_name}' version='0.0.0.0'\n"
-        "      type='win32'/>\n"
-        "  <file name='{dll_name}.dll'/>\n"
-        "</assembly>".format(dll_name=name))
-
-    dll_manifest_file = open(os.path.join(
-        version_dir, "chrome.{dll_name}.manifest".format(dll_name=name)), 'w')
-    dll_manifest_file.write(dll_manifest)
-    dll_manifest_file.close()
+  # Augment {version}.manifest to include all component DLLs as part of the
+  # assembly it constitutes which will allow dependents of this assembly to
+  # find these DLLs.
+  version_assembly_dll_additions = []
+  for dll_filename in component_dll_filenames:
+    version_assembly_dll_additions.append(
+        "  <file name='{dll_filename}'/>".format(dll_filename=dll_filename))
+  CopyAndAugmentManifest(build_dir, version_dir,
+                         '{version}.manifest'.format(version=current_version),
+                         '\n'.join(version_assembly_dll_additions),
+                         '</assembly>')
 
 
 def main(options):

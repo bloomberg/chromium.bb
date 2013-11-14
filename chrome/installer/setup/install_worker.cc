@@ -534,19 +534,12 @@ void AddChromeWorkItems(const InstallationState& original_state,
         temp_path);
   }
 
-  // For the component build to work with the installer, we need to drop a
-  // config file and a manifest by chrome.exe. These files are only found in
-  // the archive if this is a component build.
+  // For the component build to work with the installer, we need to also drop
+  // chrome.exe.manifest (other manifests are already contained in the version
+  // directory in the archive so no explicit work is required for them).
 #if defined(COMPONENT_BUILD)
-  static const base::FilePath::CharType kChromeExeConfig[] =
-      FILE_PATH_LITERAL("chrome.exe.config");
   static const base::FilePath::CharType kChromeExeManifest[] =
       FILE_PATH_LITERAL("chrome.exe.manifest");
-  install_list->AddMoveTreeWorkItem(
-      src_path.Append(kChromeExeConfig).value(),
-      target_path.Append(kChromeExeConfig).value(),
-      temp_path.value(),
-      WorkItem::ALWAYS_MOVE);
   install_list->AddMoveTreeWorkItem(
       src_path.Append(kChromeExeManifest).value(),
       target_path.Append(kChromeExeManifest).value(),
