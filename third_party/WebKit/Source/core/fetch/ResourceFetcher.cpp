@@ -1082,7 +1082,7 @@ void ResourceFetcher::requestPreload(Resource::Type type, FetchRequest& request,
     ResourcePtr<Resource> resource = requestResource(type, request);
     if (!resource || (m_preloads && m_preloads->contains(resource.get())))
         return;
-    TRACE_EVENT_ASYNC_STEP0("net", "Resource", resource.get(), "Preload");
+    TRACE_EVENT_ASYNC_STEP_INTO0("net", "Resource", resource.get(), "Preload");
     resource->increasePreloadCount();
 
     if (!m_preloads)
@@ -1150,7 +1150,7 @@ void ResourceFetcher::didFinishLoading(const Resource* resource, double finishTi
 
 void ResourceFetcher::didChangeLoadingPriority(const Resource* resource, ResourceLoadPriority loadPriority)
 {
-    TRACE_EVENT_ASYNC_STEP1("net", "Resource", resource, "ChangePriority", "priority", loadPriority);
+    TRACE_EVENT_ASYNC_STEP_INTO1("net", "Resource", resource, "ChangePriority", "priority", loadPriority);
     context().dispatchDidChangeResourcePriority(resource->identifier(), loadPriority);
 }
 

@@ -93,7 +93,7 @@ void GenericEventQueue::timerFired(Timer<GenericEventQueue>*)
         Event* event = pendingEvents[i].get();
         EventTarget* target = event->target() ? event->target() : m_owner;
         CString type(event->type().string().ascii());
-        TRACE_EVENT_ASYNC_STEP1("event", "GenericEventQueue:enqueueEvent", event, "dispatch", "type", type);
+        TRACE_EVENT_ASYNC_STEP_INTO1("event", "GenericEventQueue:enqueueEvent", event, "dispatch", "type", type);
         target->dispatchEvent(pendingEvents[i].release());
         TRACE_EVENT_ASYNC_END1("event", "GenericEventQueue:enqueueEvent", event, "type", type);
     }

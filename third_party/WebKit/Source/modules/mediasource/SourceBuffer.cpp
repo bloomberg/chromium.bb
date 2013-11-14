@@ -446,14 +446,14 @@ void SourceBuffer::appendBufferInternal(const unsigned char* data, unsigned size
     // 10. Asynchronously run the buffer append algorithm.
     m_appendBufferAsyncPartRunner.runAsync();
 
-    TRACE_EVENT_ASYNC_STEP0("media", "SourceBuffer::appendBuffer", this, "waiting");
+    TRACE_EVENT_ASYNC_STEP_INTO0("media", "SourceBuffer::appendBuffer", this, "waiting");
 }
 
 void SourceBuffer::appendBufferAsyncPart()
 {
     ASSERT(m_updating);
 
-    TRACE_EVENT_ASYNC_STEP0("media", "SourceBuffer::appendBuffer", this, "appending");
+    TRACE_EVENT_ASYNC_STEP_INTO0("media", "SourceBuffer::appendBuffer", this, "appending");
 
     // Section 3.5.4 Buffer Append Algorithm
     // https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#sourcebuffer-buffer-append
