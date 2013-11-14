@@ -1153,8 +1153,6 @@ void WebMediaPlayerImpl::StartPipeline() {
         new media::GpuVideoDecoder(gpu_factories_, media_log_));
   }
 
-  // TODO(phajdan.jr): Remove ifdefs when libvpx with vp9 support is released
-  // (http://crbug.com/174287) .
 #if !defined(MEDIA_DISABLE_LIBVPX)
   video_decoders.push_back(new media::VpxVideoDecoder(media_loop_));
 #endif  // !defined(MEDIA_DISABLE_LIBVPX)
