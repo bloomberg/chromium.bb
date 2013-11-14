@@ -88,3 +88,13 @@ int ashmem_get_size_region(int fd)
 {
   return ioctl(fd, ASHMEM_GET_SIZE, NULL);
 }
+
+int ashmem_purge_all(void)
+{
+  const int fd = open(ASHMEM_DEVICE, O_RDWR);
+  if (fd < 0)
+    return fd;
+  const int ret = ioctl(fd, ASHMEM_PURGE_ALL_CACHES, 0);
+  close(fd);
+  return ret;
+}

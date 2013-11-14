@@ -10,9 +10,10 @@
       'target_name': 'android_tools',
       'type': 'none',
       'dependencies': [
+        'adb_reboot/adb_reboot.gyp:adb_reboot',
         'forwarder2/forwarder.gyp:forwarder2',
         'md5sum/md5sum.gyp:md5sum',
-        'adb_reboot/adb_reboot.gyp:adb_reboot',
+        'purge_ashmem/purge_ashmem.gyp:purge_ashmem',
       ],
     },
     {
