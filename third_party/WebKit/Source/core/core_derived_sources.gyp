@@ -495,6 +495,24 @@
           ],
         },
         {
+          'action_name': 'InputTypeNames',
+          'inputs': [
+            '<@(make_names_files)',
+            'html/forms/InputTypeNames.in',
+          ],
+          'outputs': [
+            '<(SHARED_INTERMEDIATE_DIR)/blink/InputTypeNames.cpp',
+            '<(SHARED_INTERMEDIATE_DIR)/blink/InputTypeNames.h',
+          ],
+          'action': [
+            'python',
+            '../build/scripts/make_names.py',
+            'html/forms/InputTypeNames.in',
+            '--output_dir',
+            '<(SHARED_INTERMEDIATE_DIR)/blink',
+          ],
+        },
+        {
           'action_name': 'XLinkNames',
           'inputs': [
             '<@(make_qualified_names_files)',

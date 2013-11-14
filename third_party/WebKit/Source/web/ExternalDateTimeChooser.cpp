@@ -28,10 +28,10 @@
 #include "ExternalDateTimeChooser.h"
 
 #include "ChromeClientImpl.h"
+#include "InputTypeNames.h"
 #include "WebDateTimeChooserCompletion.h"
 #include "WebDateTimeChooserParams.h"
 #include "WebViewClient.h"
-#include "core/html/forms/InputTypeNames.h"
 #include "platform/DateTimeChooserClient.h"
 #include "wtf/text/AtomicString.h"
 
@@ -84,17 +84,17 @@ PassRefPtr<ExternalDateTimeChooser> ExternalDateTimeChooser::create(ChromeClient
 
 static WebDateTimeInputType toWebDateTimeInputType(const AtomicString& source)
 {
-    if (source == InputTypeNames::date())
+    if (source == InputTypeNames::date)
         return WebDateTimeInputTypeDate;
-    if (source == InputTypeNames::datetime())
+    if (source == InputTypeNames::datetime)
         return WebDateTimeInputTypeDateTime;
-    if (source == InputTypeNames::datetimelocal())
+    if (source == InputTypeNames::datetime_local)
         return WebDateTimeInputTypeDateTimeLocal;
-    if (source == InputTypeNames::month())
+    if (source == InputTypeNames::month)
         return WebDateTimeInputTypeMonth;
-    if (source == InputTypeNames::time())
+    if (source == InputTypeNames::time)
         return WebDateTimeInputTypeTime;
-    if (source == InputTypeNames::week())
+    if (source == InputTypeNames::week)
         return WebDateTimeInputTypeWeek;
     return WebDateTimeInputTypeNone;
 }

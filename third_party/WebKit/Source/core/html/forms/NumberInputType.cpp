@@ -32,18 +32,18 @@
 #include "config.h"
 #include "core/html/forms/NumberInputType.h"
 
-#include <limits>
 #include "HTMLNames.h"
+#include "InputTypeNames.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/html/HTMLInputElement.h"
-#include "core/html/forms/InputTypeNames.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/rendering/RenderTextControl.h"
 #include "platform/text/PlatformLocale.h"
 #include "wtf/MathExtras.h"
 #include "wtf/PassOwnPtr.h"
+#include <limits>
 
 namespace WebCore {
 
@@ -106,7 +106,7 @@ void NumberInputType::countUsage()
 
 const AtomicString& NumberInputType::formControlType() const
 {
-    return InputTypeNames::number();
+    return InputTypeNames::number;
 }
 
 void NumberInputType::setValue(const String& sanitizedValue, bool valueChanged, TextFieldEventBehavior eventBehavior)

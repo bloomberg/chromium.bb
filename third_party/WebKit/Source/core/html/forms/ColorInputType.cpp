@@ -32,6 +32,7 @@
 #include "core/html/forms/ColorInputType.h"
 
 #include "CSSPropertyNames.h"
+#include "InputTypeNames.h"
 #include "RuntimeEnabledFeatures.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "bindings/v8/ScriptController.h"
@@ -41,7 +42,6 @@
 #include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLOptionElement.h"
-#include "core/html/forms/InputTypeNames.h"
 #include "core/page/Chrome.h"
 #include "core/rendering/RenderView.h"
 #include "platform/UserGestureIndicator.h"
@@ -94,7 +94,7 @@ bool ColorInputType::isColorControl() const
 
 const AtomicString& ColorInputType::formControlType() const
 {
-    return InputTypeNames::color();
+    return InputTypeNames::color;
 }
 
 bool ColorInputType::supportsRequired() const

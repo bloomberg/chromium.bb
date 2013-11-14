@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/html/forms/ButtonInputType.h"
 
-#include "core/html/forms/InputTypeNames.h"
+#include "InputTypeNames.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
@@ -43,7 +43,7 @@ PassRefPtr<InputType> ButtonInputType::create(HTMLInputElement& element)
 
 const AtomicString& ButtonInputType::formControlType() const
 {
-    return InputTypeNames::button();
+    return InputTypeNames::button;
 }
 
 bool ButtonInputType::supportsValidation() const

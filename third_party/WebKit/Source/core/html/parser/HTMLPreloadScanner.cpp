@@ -29,9 +29,9 @@
 #include "core/html/parser/HTMLPreloadScanner.h"
 
 #include "HTMLNames.h"
+#include "InputTypeNames.h"
 #include "RuntimeEnabledFeatures.h"
 #include "core/html/LinkRelAttribute.h"
-#include "core/html/forms/InputTypeNames.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/HTMLSrcsetParser.h"
 #include "core/html/parser/HTMLTokenizer.h"
@@ -179,7 +179,7 @@ private:
             if (match(attributeName, srcAttr))
                 setUrlToLoad(attributeValue, DisallowURLReplacement);
             else if (match(attributeName, typeAttr))
-                m_inputIsImage = equalIgnoringCase(attributeValue, "image");
+                m_inputIsImage = equalIgnoringCase(attributeValue, InputTypeNames::image);
         }
     }
 

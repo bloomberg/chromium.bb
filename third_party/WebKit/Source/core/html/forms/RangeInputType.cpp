@@ -33,6 +33,7 @@
 #include "core/html/forms/RangeInputType.h"
 
 #include "HTMLNames.h"
+#include "InputTypeNames.h"
 #include "bindings/v8/ExceptionStatePlaceholder.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/events/KeyboardEvent.h"
@@ -46,7 +47,6 @@
 #include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLOptionElement.h"
-#include "core/html/forms/InputTypeNames.h"
 #include "core/html/forms/StepRange.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/ShadowElementNames.h"
@@ -97,7 +97,7 @@ bool RangeInputType::isRangeControl() const
 
 const AtomicString& RangeInputType::formControlType() const
 {
-    return InputTypeNames::range();
+    return InputTypeNames::range;
 }
 
 double RangeInputType::valueAsDouble() const

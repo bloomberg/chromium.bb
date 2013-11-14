@@ -32,9 +32,9 @@
 #include "config.h"
 #include "core/html/forms/CheckboxInputType.h"
 
+#include "InputTypeNames.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/html/HTMLInputElement.h"
-#include "core/html/forms/InputTypeNames.h"
 #include "platform/text/PlatformLocale.h"
 #include "wtf/PassOwnPtr.h"
 
@@ -47,7 +47,7 @@ PassRefPtr<InputType> CheckboxInputType::create(HTMLInputElement& element)
 
 const AtomicString& CheckboxInputType::formControlType() const
 {
-    return InputTypeNames::checkbox();
+    return InputTypeNames::checkbox;
 }
 
 bool CheckboxInputType::valueMissing(const String&) const

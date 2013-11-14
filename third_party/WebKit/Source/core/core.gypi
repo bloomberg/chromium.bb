@@ -2479,8 +2479,6 @@
             'html/forms/ImageInputType.h',
             'html/forms/InputType.cpp',
             'html/forms/InputType.h',
-            'html/forms/InputTypeNames.cpp',
-            'html/forms/InputTypeNames.h',
             'html/forms/InputTypeView.cpp',
             'html/forms/InputTypeView.h',
             'html/forms/MonthInputType.cpp',

@@ -34,9 +34,9 @@
 
 #include "CalendarPicker.h"
 #include "ChromeClientImpl.h"
+#include "InputTypeNames.h"
 #include "PickerCommon.h"
 #include "WebViewImpl.h"
-#include "core/html/forms/InputTypeNames.h"
 #include "core/frame/FrameView.h"
 #include "core/rendering/RenderTheme.h"
 #include "platform/DateComponents.h"
@@ -85,10 +85,10 @@ void DateTimeChooserImpl::writeDocument(WebCore::DocumentWriter& writer)
 {
     WebCore::DateComponents minDate;
     WebCore::DateComponents maxDate;
-    if (m_parameters.type == WebCore::InputTypeNames::month()) {
+    if (m_parameters.type == WebCore::InputTypeNames::month) {
         minDate.setMonthsSinceEpoch(m_parameters.minimum);
         maxDate.setMonthsSinceEpoch(m_parameters.maximum);
-    } else if (m_parameters.type == WebCore::InputTypeNames::week()) {
+    } else if (m_parameters.type == WebCore::InputTypeNames::week) {
         minDate.setMillisecondsSinceEpochForWeek(m_parameters.minimum);
         maxDate.setMillisecondsSinceEpochForWeek(m_parameters.maximum);
     } else {
@@ -100,10 +100,10 @@ void DateTimeChooserImpl::writeDocument(WebCore::DocumentWriter& writer)
     IntRect anchorRectInScreen = m_chromeClient->rootViewToScreen(m_parameters.anchorRectInRootView);
     String todayLabelString;
     String otherDateLabelString;
-    if (m_parameters.type == WebCore::InputTypeNames::month()) {
+    if (m_parameters.type == WebCore::InputTypeNames::month) {
         todayLabelString = locale().queryString(WebLocalizedString::ThisMonthButtonLabel);
         otherDateLabelString = locale().queryString(WebLocalizedString::OtherMonthLabel);
-    } else if (m_parameters.type == WebCore::InputTypeNames::week()) {
+    } else if (m_parameters.type == WebCore::InputTypeNames::week) {
         todayLabelString = locale().queryString(WebLocalizedString::ThisWeekButtonLabel);
         otherDateLabelString = locale().queryString(WebLocalizedString::OtherWeekLabel);
     } else {

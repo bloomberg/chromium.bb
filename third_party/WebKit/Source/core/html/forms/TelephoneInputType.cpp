@@ -31,7 +31,7 @@
 #include "config.h"
 #include "core/html/forms/TelephoneInputType.h"
 
-#include "core/html/forms/InputTypeNames.h"
+#include "InputTypeNames.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
@@ -48,7 +48,7 @@ void TelephoneInputType::countUsage()
 
 const AtomicString& TelephoneInputType::formControlType() const
 {
-    return InputTypeNames::telephone();
+    return InputTypeNames::tel;
 }
 
 bool TelephoneInputType::shouldRespectSpeechAttribute()

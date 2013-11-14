@@ -38,7 +38,7 @@ def _symbol(entry):
     # FIXME: Remove this special case for the ugly x-webkit-foo attributes.
     if entry['name'].startswith('-webkit-'):
         return entry['name'].replace('-', '_')[1:]
-    return name_utilities.cpp_name(entry)
+    return name_utilities.cpp_name(entry).replace('-', '_')
 
 
 class MakeNamesWriter(in_generator.Writer):

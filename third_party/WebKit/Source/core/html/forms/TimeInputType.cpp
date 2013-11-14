@@ -32,9 +32,9 @@
 #include "core/html/forms/TimeInputType.h"
 
 #include "HTMLNames.h"
+#include "InputTypeNames.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/DateTimeFieldsState.h"
-#include "core/html/forms/InputTypeNames.h"
 #include "platform/DateComponents.h"
 #include "platform/text/PlatformLocale.h"
 #include "wtf/CurrentTime.h"
@@ -68,7 +68,7 @@ void TimeInputType::countUsage()
 
 const AtomicString& TimeInputType::formControlType() const
 {
-    return InputTypeNames::time();
+    return InputTypeNames::time;
 }
 
 DateComponents::Type TimeInputType::dateType() const

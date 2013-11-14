@@ -37,6 +37,7 @@
 #include "FetchInitiatorTypeNames.h"
 #include "FontFamilyNames.h"
 #include "HTMLNames.h"
+#include "InputTypeNames.h"
 #include "MathMLNames.h"
 #include "SVGNames.h"
 #include "XLinkNames.h"
@@ -71,6 +72,7 @@ void init()
     EventTypeNames::init();
     FetchInitiatorTypeNames::init();
     FontFamilyNames::init();
+    InputTypeNames::init();
     MediaFeatureNames::init();
     WTF::StringStatics::init();
     QualifiedName::init();

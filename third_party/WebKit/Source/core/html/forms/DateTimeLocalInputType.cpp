@@ -32,10 +32,10 @@
 #include "core/html/forms/DateTimeLocalInputType.h"
 
 #include "HTMLNames.h"
+#include "InputTypeNames.h"
 #include "bindings/v8/ExceptionState.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/DateTimeFieldsState.h"
-#include "core/html/forms/InputTypeNames.h"
 #include "platform/DateComponents.h"
 #include "platform/text/PlatformLocale.h"
 #include "wtf/PassOwnPtr.h"
@@ -62,7 +62,7 @@ void DateTimeLocalInputType::countUsage()
 
 const AtomicString& DateTimeLocalInputType::formControlType() const
 {
-    return InputTypeNames::datetimelocal();
+    return InputTypeNames::datetime_local;
 }
 
 DateComponents::Type DateTimeLocalInputType::dateType() const

@@ -34,10 +34,10 @@
 
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
+#include "InputTypeNames.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/FormController.h"
-#include "core/html/forms/InputTypeNames.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
@@ -93,7 +93,7 @@ void PasswordInputType::createShadowSubtree()
 
 const AtomicString& PasswordInputType::formControlType() const
 {
-    return InputTypeNames::password();
+    return InputTypeNames::password;
 }
 
 bool PasswordInputType::shouldSaveAndRestoreFormControlState() const

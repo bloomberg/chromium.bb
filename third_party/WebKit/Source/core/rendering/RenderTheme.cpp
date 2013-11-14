@@ -24,6 +24,7 @@
 
 #include "CSSValueKeywords.h"
 #include "HTMLNames.h"
+#include "InputTypeNames.h"
 #include "RuntimeEnabledFeatures.h"
 #include "core/dom/Document.h"
 #include "core/dom/shadow/ElementShadow.h"
@@ -34,7 +35,6 @@
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLMeterElement.h"
 #include "core/html/HTMLOptionElement.h"
-#include "core/html/forms/InputTypeNames.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/MediaControlElements.h"
 #include "core/html/shadow/ShadowElementNames.h"
@@ -1172,26 +1172,26 @@ bool RenderTheme::shouldOpenPickerWithF4Key() const
 
 bool RenderTheme::supportsDataListUI(const AtomicString& type) const
 {
-    return type == InputTypeNames::text() || type == InputTypeNames::search() || type == InputTypeNames::url()
-        || type == InputTypeNames::telephone() || type == InputTypeNames::email() || type == InputTypeNames::number()
-        || type == InputTypeNames::color()
-        || type == InputTypeNames::date()
-        || type == InputTypeNames::datetime()
-        || type == InputTypeNames::datetimelocal()
-        || type == InputTypeNames::month()
-        || type == InputTypeNames::week()
-        || type == InputTypeNames::time()
-        || type == InputTypeNames::range();
+    return type == InputTypeNames::text || type == InputTypeNames::search || type == InputTypeNames::url
+        || type == InputTypeNames::tel || type == InputTypeNames::email || type == InputTypeNames::number
+        || type == InputTypeNames::color
+        || type == InputTypeNames::date
+        || type == InputTypeNames::datetime
+        || type == InputTypeNames::datetime_local
+        || type == InputTypeNames::month
+        || type == InputTypeNames::week
+        || type == InputTypeNames::time
+        || type == InputTypeNames::range;
 }
 
 #if ENABLE(INPUT_MULTIPLE_FIELDS_UI)
 bool RenderTheme::supportsCalendarPicker(const AtomicString& type) const
 {
-    return type == InputTypeNames::date()
-        || type == InputTypeNames::datetime()
-        || type == InputTypeNames::datetimelocal()
-        || type == InputTypeNames::month()
-        || type == InputTypeNames::week();
+    return type == InputTypeNames::date
+        || type == InputTypeNames::datetime
+        || type == InputTypeNames::datetime_local
+        || type == InputTypeNames::month
+        || type == InputTypeNames::week;
 }
 #endif
 

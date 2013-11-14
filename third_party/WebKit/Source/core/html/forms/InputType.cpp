@@ -28,6 +28,7 @@
 #include "config.h"
 #include "core/html/forms/InputType.h"
 
+#include "InputTypeNames.h"
 #include "RuntimeEnabledFeatures.h"
 #include "core/accessibility/AXObjectCache.h"
 #include "core/dom/NodeRenderStyle.h"
@@ -46,7 +47,6 @@
 #include "core/html/forms/FormController.h"
 #include "core/html/forms/HiddenInputType.h"
 #include "core/html/forms/ImageInputType.h"
-#include "core/html/forms/InputTypeNames.h"
 #include "core/html/forms/MonthInputType.h"
 #include "core/html/forms/NumberInputType.h"
 #include "core/html/forms/PasswordInputType.h"
@@ -79,29 +79,29 @@ typedef HashMap<AtomicString, InputTypeFactoryFunction, CaseFoldingHash> InputTy
 static PassOwnPtr<InputTypeFactoryMap> createInputTypeFactoryMap()
 {
     OwnPtr<InputTypeFactoryMap> map = adoptPtr(new InputTypeFactoryMap);
-    map->add(InputTypeNames::button(), ButtonInputType::create);
-    map->add(InputTypeNames::checkbox(), CheckboxInputType::create);
+    map->add(InputTypeNames::button, ButtonInputType::create);
+    map->add(InputTypeNames::checkbox, CheckboxInputType::create);
     if (RuntimeEnabledFeatures::inputTypeColorEnabled())
-        map->add(InputTypeNames::color(), ColorInputType::create);
-    map->add(InputTypeNames::date(), DateInputType::create);
-    map->add(InputTypeNames::datetimelocal(), DateTimeLocalInputType::create);
-    map->add(InputTypeNames::email(), EmailInputType::create);
-    map->add(InputTypeNames::file(), FileInputType::create);
-    map->add(InputTypeNames::hidden(), HiddenInputType::create);
-    map->add(InputTypeNames::image(), ImageInputType::create);
-    map->add(InputTypeNames::month(), MonthInputType::create);
-    map->add(InputTypeNames::number(), NumberInputType::create);
-    map->add(InputTypeNames::password(), PasswordInputType::create);
-    map->add(InputTypeNames::radio(), RadioInputType::create);
-    map->add(InputTypeNames::range(), RangeInputType::create);
-    map->add(InputTypeNames::reset(), ResetInputType::create);
-    map->add(InputTypeNames::search(), SearchInputType::create);
-    map->add(InputTypeNames::submit(), SubmitInputType::create);
-    map->add(InputTypeNames::telephone(), TelephoneInputType::create);
-    map->add(InputTypeNames::time(), TimeInputType::create);
-    map->add(InputTypeNames::url(), URLInputType::create);
+        map->add(InputTypeNames::color, ColorInputType::create);
+    map->add(InputTypeNames::date, DateInputType::create);
+    map->add(InputTypeNames::datetime_local, DateTimeLocalInputType::create);
+    map->add(InputTypeNames::email, EmailInputType::create);
+    map->add(InputTypeNames::file, FileInputType::create);
+    map->add(InputTypeNames::hidden, HiddenInputType::create);
+    map->add(InputTypeNames::image, ImageInputType::create);
+    map->add(InputTypeNames::month, MonthInputType::create);
+    map->add(InputTypeNames::number, NumberInputType::create);
+    map->add(InputTypeNames::password, PasswordInputType::create);
+    map->add(InputTypeNames::radio, RadioInputType::create);
+    map->add(InputTypeNames::range, RangeInputType::create);
+    map->add(InputTypeNames::reset, ResetInputType::create);
+    map->add(InputTypeNames::search, SearchInputType::create);
+    map->add(InputTypeNames::submit, SubmitInputType::create);
+    map->add(InputTypeNames::tel, TelephoneInputType::create);
+    map->add(InputTypeNames::time, TimeInputType::create);
+    map->add(InputTypeNames::url, URLInputType::create);
     if (RuntimeEnabledFeatures::inputTypeWeekEnabled())
-        map->add(InputTypeNames::week(), WeekInputType::create);
+        map->add(InputTypeNames::week, WeekInputType::create);
     // No need to register "text" because it is the default type.
     return map.release();
 }
@@ -128,9 +128,9 @@ PassRefPtr<InputType> InputType::createText(HTMLInputElement& element)
 const AtomicString& InputType::normalizeTypeName(const AtomicString& typeName)
 {
     if (typeName.isEmpty())
-        return InputTypeNames::text();
+        return InputTypeNames::text;
     InputTypeFactoryMap::const_iterator it = factoryMap()->find(typeName);
-    return it == factoryMap()->end() ? InputTypeNames::text() : it->key;
+    return it == factoryMap()->end() ? InputTypeNames::text : it->key;
 }
 
 bool InputType::canChangeFromAnotherType(const AtomicString& normalizedTypeName)
@@ -140,7 +140,7 @@ bool InputType::canChangeFromAnotherType(const AtomicString& normalizedTypeName)
     // field's value to something like /etc/passwd and then change it to a file
     // input. I don't think this would actually occur in Blink, but this rule
     // still may be important for compatibility.
-    return normalizedTypeName != InputTypeNames::file();
+    return normalizedTypeName != InputTypeNames::file;
 }
 
 InputType::~InputType()

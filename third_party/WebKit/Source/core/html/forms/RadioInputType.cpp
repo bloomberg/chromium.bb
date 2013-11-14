@@ -23,11 +23,11 @@
 #include "core/html/forms/RadioInputType.h"
 
 #include "HTMLNames.h"
+#include "InputTypeNames.h"
 #include "core/dom/NodeTraversal.h"
 #include "core/events/KeyboardEvent.h"
 #include "core/events/MouseEvent.h"
 #include "core/html/HTMLInputElement.h"
-#include "core/html/forms/InputTypeNames.h"
 #include "core/page/SpatialNavigation.h"
 #include "platform/text/PlatformLocale.h"
 #include "wtf/PassOwnPtr.h"
@@ -43,7 +43,7 @@ PassRefPtr<InputType> RadioInputType::create(HTMLInputElement& element)
 
 const AtomicString& RadioInputType::formControlType() const
 {
-    return InputTypeNames::radio();
+    return InputTypeNames::radio;
 }
 
 bool RadioInputType::valueMissing(const String&) const

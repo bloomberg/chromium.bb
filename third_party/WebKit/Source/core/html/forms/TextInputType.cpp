@@ -31,8 +31,8 @@
 #include "config.h"
 #include "core/html/forms/TextInputType.h"
 
+#include "InputTypeNames.h"
 #include "core/html/HTMLInputElement.h"
-#include "core/html/forms/InputTypeNames.h"
 #include "wtf/PassOwnPtr.h"
 
 namespace WebCore {
@@ -50,15 +50,15 @@ void TextInputType::countUsage()
     if (element().fastHasAttribute(maxlengthAttr))
         countUsageIfVisible(UseCounter::InputTypeTextMaxLength);
     const AtomicString& type = element().fastGetAttribute(typeAttr);
-    if (equalIgnoringCase(type, InputTypeNames::datetime()))
+    if (equalIgnoringCase(type, InputTypeNames::datetime))
         countUsageIfVisible(UseCounter::InputTypeDateTimeFallback);
-    else if (equalIgnoringCase(type, InputTypeNames::week()))
+    else if (equalIgnoringCase(type, InputTypeNames::week))
         countUsageIfVisible(UseCounter::InputTypeWeekFallback);
 }
 
 const AtomicString& TextInputType::formControlType() const
 {
-    return InputTypeNames::text();
+    return InputTypeNames::text;
 }
 
 bool TextInputType::shouldRespectSpeechAttribute()

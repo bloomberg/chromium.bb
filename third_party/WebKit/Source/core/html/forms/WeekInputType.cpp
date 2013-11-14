@@ -32,9 +32,9 @@
 #include "core/html/forms/WeekInputType.h"
 
 #include "HTMLNames.h"
+#include "InputTypeNames.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/forms/DateTimeFieldsState.h"
-#include "core/html/forms/InputTypeNames.h"
 #include "platform/DateComponents.h"
 #include "platform/text/PlatformLocale.h"
 #include "wtf/PassOwnPtr.h"
@@ -60,7 +60,7 @@ void WeekInputType::countUsage()
 
 const AtomicString& WeekInputType::formControlType() const
 {
-    return InputTypeNames::week();
+    return InputTypeNames::week;
 }
 
 DateComponents::Type WeekInputType::dateType() const

@@ -24,9 +24,8 @@
 #include "config.h"
 #include "core/html/forms/EmailInputType.h"
 
-#include <unicode/uidna.h>
+#include "InputTypeNames.h"
 #include "core/html/HTMLInputElement.h"
-#include "core/html/forms/InputTypeNames.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/page/Chrome.h"
 #include "core/page/ChromeClient.h"
@@ -35,6 +34,7 @@
 #include "public/platform/Platform.h"
 #include "wtf/PassOwnPtr.h"
 #include "wtf/text/StringBuilder.h"
+#include <unicode/uidna.h>
 
 namespace WebCore {
 
@@ -153,7 +153,7 @@ void EmailInputType::countUsage()
 
 const AtomicString& EmailInputType::formControlType() const
 {
-    return InputTypeNames::email();
+    return InputTypeNames::email;
 }
 
 // The return value is an invalid email address string if the specified string
