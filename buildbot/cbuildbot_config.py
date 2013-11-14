@@ -546,7 +546,7 @@ class HWTestConfig(object):
     """Returns a default list of HWTestConfig's for a CQ build,
     with overrides for optional args."""
     default_dict = dict(pool=constants.HWTEST_PALADIN_POOL, timeout=120 * 60,
-                        fatal_timeouts=True, file_bugs=False)
+                        file_bugs=False)
     # Allows dargs overrides to default_dict for cq.
     default_dict.update(dargs)
     return [cls(cls.DEFAULT_HW_TEST, **default_dict)]
@@ -554,7 +554,7 @@ class HWTestConfig(object):
   def __init__(self, suite, num=constants.HWTEST_DEFAULT_NUM,
                pool=constants.HWTEST_MACH_POOL, copy_perf_results=False,
                timeout=DEFAULT_HW_TEST_TIMEOUT, async=False, critical=False,
-               fatal_timeouts=False, file_bugs=False):
+               fatal_timeouts=True, file_bugs=False):
     """Constructor -- see members above."""
     self.suite = suite
     self.num = num
