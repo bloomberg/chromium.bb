@@ -233,7 +233,8 @@ struct weston_output {
 struct weston_pointer_grab;
 struct weston_pointer_grab_interface {
 	void (*focus)(struct weston_pointer_grab *grab);
-	void (*motion)(struct weston_pointer_grab *grab, uint32_t time);
+	void (*motion)(struct weston_pointer_grab *grab, uint32_t time,
+		       wl_fixed_t x, wl_fixed_t y);
 	void (*button)(struct weston_pointer_grab *grab,
 		       uint32_t time, uint32_t button, uint32_t state);
 	void (*cancel)(struct weston_pointer_grab *grab);
@@ -359,6 +360,9 @@ weston_pointer_end_grab(struct weston_pointer *pointer);
 void
 weston_pointer_clamp(struct weston_pointer *pointer,
 			    wl_fixed_t *fx, wl_fixed_t *fy);
+void
+weston_pointer_move(struct weston_pointer *pointer,
+		    wl_fixed_t x, wl_fixed_t y);
 
 struct weston_keyboard *
 weston_keyboard_create(void);

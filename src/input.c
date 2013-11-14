@@ -111,12 +111,15 @@ default_grab_pointer_focus(struct weston_pointer_grab *grab)
 }
 
 static void
-default_grab_pointer_motion(struct weston_pointer_grab *grab, uint32_t time)
+default_grab_pointer_motion(struct weston_pointer_grab *grab, uint32_t time,
+			    wl_fixed_t x, wl_fixed_t y)
 {
 	struct weston_pointer *pointer = grab->pointer;
 	wl_fixed_t sx, sy;
 	struct wl_list *resource_list;
 	struct wl_resource *resource;
+
+	weston_pointer_move(pointer, x, y);
 
 	resource_list = &pointer->focus_resource_list;
 	wl_resource_for_each(resource, resource_list) {
@@ -709,10 +712,9 @@ weston_pointer_clamp(struct weston_pointer *pointer, wl_fixed_t *fx, wl_fixed_t 
 }
 
 /* Takes absolute values */
-static void
-move_pointer(struct weston_seat *seat, wl_fixed_t x, wl_fixed_t y)
+WL_EXPORT void
+weston_pointer_move(struct weston_pointer *pointer, wl_fixed_t x, wl_fixed_t y)
 {
-	struct weston_pointer *pointer = seat->pointer;
 	int32_t ix, iy;
 
 	weston_pointer_clamp (pointer, &x, &y);
@@ -730,6 +732,7 @@ move_pointer(struct weston_seat *seat, wl_fixed_t x, wl_fixed_t y)
 		weston_view_schedule_repaint(pointer->sprite);
 	}
 
+	pointer->grab->interface->focus(pointer->grab);
 	wl_signal_emit(&pointer->motion_signal, pointer);
 }
 
@@ -741,11 +744,7 @@ notify_motion(struct weston_seat *seat,
 	struct weston_pointer *pointer = seat->pointer;
 
 	weston_compositor_wake(ec);
-
-	move_pointer(seat, pointer->x + dx, pointer->y + dy);
-
-	pointer->grab->interface->focus(pointer->grab);
-	pointer->grab->interface->motion(pointer->grab, time);
+	pointer->grab->interface->motion(pointer->grab, time, pointer->x + dx, pointer->y + dy);
 }
 
 WL_EXPORT void
@@ -756,11 +755,7 @@ notify_motion_absolute(struct weston_seat *seat,
 	struct weston_pointer *pointer = seat->pointer;
 
 	weston_compositor_wake(ec);
-
-	move_pointer(seat, x, y);
-
-	pointer->grab->interface->focus(pointer->grab);
-	pointer->grab->interface->motion(pointer->grab, time);
+	pointer->grab->interface->motion(pointer->grab, time, x, y);
 }
 
 WL_EXPORT void
@@ -1095,7 +1090,7 @@ notify_pointer_focus(struct weston_seat *seat, struct weston_output *output,
 		     wl_fixed_t x, wl_fixed_t y)
 {
 	if (output) {
-		move_pointer(seat, x, y);
+		weston_pointer_move(seat->pointer, x, y);
 	} else {
 		/* FIXME: We should call weston_pointer_set_focus(seat,
 		 * NULL) here, but somehow that breaks re-entry... */
