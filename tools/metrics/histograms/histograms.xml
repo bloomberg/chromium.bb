@@ -20152,7 +20152,16 @@ other types of suffix sets.
   <summary>
     Count of the different success and failure modes when opening an IndexedDB
     backing store - clean open, successful open with recovery, failed recovery,
-    etc.
+    etc. Includes all hosts.
+  </summary>
+</histogram>
+
+<histogram name="WebCore.IndexedDB.BackingStore.OpenStatus.Docs"
+    enum="IDBLevelDBBackingStoreOpenResult">
+  <summary>
+    Count of the different success and failure modes when opening an IndexedDB
+    backing store - clean open, successful open with recovery, failed recovery,
+    etc. Only for docs.google.com.
   </summary>
 </histogram>
 
