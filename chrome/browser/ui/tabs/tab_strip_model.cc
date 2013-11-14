@@ -277,9 +277,6 @@ void TabStripModel::AppendWebContents(WebContents* contents,
 void TabStripModel::InsertWebContentsAt(int index,
                                         WebContents* contents,
                                         int add_types) {
-  // TODO(sky): nuke, used in isolating 297118.
-  CHECK(!contents->IsBeingDestroyed());
-
   delegate_->WillAddWebContents(contents);
 
   bool active = add_types & ADD_ACTIVE;
