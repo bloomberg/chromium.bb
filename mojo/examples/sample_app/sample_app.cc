@@ -3,12 +3,7 @@
 // found in the LICENSE file.
 
 #include <stdio.h>
-#include <string>
 
-#include "base/message_loop/message_loop.h"
-#include "mojo/common/bindings_support_impl.h"
-#include "mojo/examples/sample_app/hello_world_client_impl.h"
-#include "mojo/public/bindings/lib/bindings_support.h"
 #include "mojo/public/system/core.h"
 #include "mojo/public/system/macros.h"
 
@@ -22,40 +17,59 @@
 #define SAMPLE_APP_EXPORT __attribute__((visibility("default")))
 #endif
 
-namespace mojo {
-namespace examples {
-
-static HelloWorldClientImpl* g_client = 0;
-
-void SayHello(mojo::Handle pipe) {
-  g_client = new HelloWorldClientImpl(pipe);
-
-  mojo::ScratchBuffer buf;
-  const std::string kGreeting("hello, world!");
-  mojo::String* greeting = mojo::String::NewCopyOf(&buf, kGreeting);
-
-  g_client->service()->Greeting(greeting);
+char* ReadStringFromPipe(mojo::Handle pipe) {
+  uint32_t len = 0;
+  char* buf = NULL;
+  MojoResult result = mojo::ReadMessage(pipe, buf, &len, NULL, NULL,
+                                        MOJO_READ_MESSAGE_FLAG_NONE);
+  if (result == MOJO_RESULT_RESOURCE_EXHAUSTED) {
+    buf = new char[len];
+    result = mojo::ReadMessage(pipe, buf, &len, NULL, NULL,
+                               MOJO_READ_MESSAGE_FLAG_NONE);
+  }
+  if (result < MOJO_RESULT_OK) {
+    // Failure..
+    if (buf)
+      delete[] buf;
+    return NULL;
+  }
+  return buf;
 }
 
-}  // examples
-}  // mojo
+class SampleMessageWaiter {
+ public:
+  explicit SampleMessageWaiter(mojo::Handle pipe) : pipe_(pipe) {}
+  ~SampleMessageWaiter() {}
+
+  void Read() {
+    char* string = ReadStringFromPipe(pipe_);
+    if (string) {
+      printf("Read string from pipe: %s\n", string);
+      delete[] string;
+      string = NULL;
+    }
+  }
+
+  void WaitAndRead() {
+    for (int i = 0; i < 100;) {
+      MojoResult result = mojo::Wait(pipe_, MOJO_WAIT_FLAG_READABLE, 100);
+      if (result < MOJO_RESULT_OK) {
+        // Failure...
+        continue;
+      }
+      ++i;
+      Read();
+    }
+  }
+
+ private:
+  mojo::Handle pipe_;
+
+  MOJO_DISALLOW_COPY_AND_ASSIGN(SampleMessageWaiter);
+};
 
 extern "C" SAMPLE_APP_EXPORT MojoResult CDECL MojoMain(
     mojo::Handle pipe) {
-  // Create a message loop on this thread for processing incoming messages.
-  // This creates a dependency on base that we'll be removing soon.
-  base::MessageLoop loop;
-
-  // Set the global bindings support.
-  mojo::common::BindingsSupportImpl bindings_support;
-  mojo::BindingsSupport::Set(&bindings_support);
-
-  // Send message out.
-  mojo::examples::SayHello(pipe);
-
-  // Run loop to receieve Ack.
-  loop.Run();
-
-  mojo::BindingsSupport::Set(NULL);
+  SampleMessageWaiter(pipe).WaitAndRead();
   return MOJO_RESULT_OK;
 }

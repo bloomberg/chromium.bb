@@ -8,7 +8,6 @@
 #include "base/basictypes.h"
 #include "base/memory/scoped_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "mojo/examples/hello_world_service/hello_world_service_impl.h"
 #include "mojo/public/system/core.h"
 #include "mojo/shell/loader.h"
 
@@ -43,8 +42,10 @@ class AppContainer : public Loader::Delegate {
   Context* context_;
   scoped_ptr<Loader::Job> request_;
   scoped_ptr<base::Thread> thread_;
-  scoped_ptr<examples::HelloWorldServiceImpl> hello_world_service_;
   scoped_ptr<services::NativeViewportController> native_viewport_controller_;
+
+  // Following members are valid only on app thread.
+  Handle shell_handle_;
 
   base::WeakPtrFactory<AppContainer> weak_factory_;
 

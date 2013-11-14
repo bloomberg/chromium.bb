@@ -233,7 +233,6 @@
         'mojo_system',
         'mojo_utility',
         'native_viewport',
-        'hello_world_service_impl',
       ],
       'sources': [
         'shell/app_container.cc',
@@ -316,47 +315,12 @@
       'type': 'shared_library',
       'dependencies': [
         '../ui/gl/gl.gyp:gl',
-        'hello_world_service',
-        'mojo_common_lib',
         'mojo_system',
       ],
       'sources': [
-        'examples/sample_app/hello_world_client_impl.cc',
-        'examples/sample_app/hello_world_client_impl.h',
         'examples/sample_app/sample_app.cc',
         'examples/sample_app/spinning_cube.cc',
         'examples/sample_app/spinning_cube.h',
-      ],
-    },
-    {
-      'target_name': 'hello_world_service',
-      'type': 'static_library',
-      'dependencies': [
-        'mojo_bindings',
-        'mojo_system',
-      ],
-      'export_dependent_settings': [
-        'mojo_bindings',
-        'mojo_system',
-      ],
-      'sources': [
-        'examples/hello_world_service/hello_world_service.mojom',
-      ],
-      'includes': [ 'public/bindings/mojom_bindings_generator.gypi' ],
-    },
-    {
-      'target_name': 'hello_world_service_impl',
-      'type': 'static_library',
-      'sources': [
-        'examples/hello_world_service/hello_world_service_impl.cc',
-        'examples/hello_world_service/hello_world_service_impl.h',
-      ],
-      'export_dependent_settings': [
-        'hello_world_service',
-      ],
-      'dependencies': [
-        '../base/base.gyp:base',
-        'hello_world_service',
       ],
     },
     {
