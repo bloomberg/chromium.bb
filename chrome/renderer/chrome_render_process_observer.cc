@@ -23,6 +23,7 @@
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/chrome_version_info.h"
 #include "chrome/common/metrics/variations/variations_util.h"
 #include "chrome/common/net/net_resource_provider.h"
 #include "chrome/common/render_messages.h"
@@ -266,8 +267,19 @@ ChromeRenderProcessObserver::ChromeRenderProcessObserver(
   }
 
 #if defined(ENABLE_AUTOFILL_DIALOG)
+#if defined(OS_MACOSX)
+  bool enable_autofill = command_line.HasSwitch(
+      autofill::switches::kEnableInteractiveAutocomplete);
+  chrome::VersionInfo::Channel channel = chrome::VersionInfo::GetChannel();
+  if (channel != chrome::VersionInfo::CHANNEL_BETA &&
+      channel != chrome::VersionInfo::CHANNEL_STABLE) {
+    enable_autofill = !command_line.HasSwitch(
+        autofill::switches::kDisableInteractiveAutocomplete);
+  }
+#else
   bool enable_autofill = !command_line.HasSwitch(
       autofill::switches::kDisableInteractiveAutocomplete);
+#endif
   WebRuntimeFeatures::enableRequestAutocomplete(
       enable_autofill ||
       command_line.HasSwitch(switches::kEnableExperimentalWebPlatformFeatures));
