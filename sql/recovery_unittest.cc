@@ -48,6 +48,7 @@ std::string GetSchema(sql::Connection* db) {
   return ExecuteWithResults(db, kSql, "|", "\n");
 }
 
+#if !defined(USE_SYSTEM_SQLITE)
 int GetPageSize(sql::Connection* db) {
   sql::Statement s(db->GetUniqueStatement("PRAGMA page_size"));
   EXPECT_TRUE(s.Step());
@@ -90,6 +91,7 @@ bool WritePage(const base::FilePath& path, size_t page_no,
     return false;
   return true;
 }
+#endif  // !defined(USE_SYSTEM_SQLITE)
 
 class SQLRecoveryTest : public testing::Test {
  public:

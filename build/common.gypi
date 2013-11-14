@@ -4278,8 +4278,8 @@
             # Don't die on dtoa code that uses a char as an array index.
             # This is required solely for base/third_party/dmg_fp/dtoa.cc.
             '-Wno-char-subscripts',
-            # Clang spots more unused functions. TODO: remove, crbug.com/315884
-            '-Wno-unused-function',
+            # See comment in the mac clang section above for this flag.
+            '-Wno-unneeded-internal-declaration',
             # Match OS X clang C++11 warning settings.
             '-Wno-c++11-narrowing',
           ],

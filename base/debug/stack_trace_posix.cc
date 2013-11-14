@@ -179,6 +179,7 @@ void PrintToStderr(const char* output) {
   ignore_result(HANDLE_EINTR(write(STDERR_FILENO, output, strlen(output))));
 }
 
+#if !defined(OS_IOS)
 void StackDumpSignalHandler(int signal, siginfo_t* info, void* void_context) {
   // NOTE: This code MUST be async-signal safe.
   // NO malloc or stdio is allowed here.
@@ -371,6 +372,7 @@ void StackDumpSignalHandler(int signal, siginfo_t* info, void* void_context) {
 #endif  // defined(OS_MACOSX)
   _exit(1);
 }
+#endif  // !defined(OS_IOS)
 
 class PrintBacktraceOutputHandler : public BacktraceOutputHandler {
  public:
@@ -401,6 +403,7 @@ class StreamBacktraceOutputHandler : public BacktraceOutputHandler {
   DISALLOW_COPY_AND_ASSIGN(StreamBacktraceOutputHandler);
 };
 
+#if !defined(OS_IOS)
 void WarmUpBacktrace() {
   // Warm up stack trace infrastructure. It turns out that on the first
   // call glibc initializes some internal data structures using pthread_once,
@@ -433,6 +436,7 @@ void WarmUpBacktrace() {
   // #22 <signal handler called>
   StackTrace stack_trace;
 }
+#endif  // !defined(OS_IOS)
 
 }  // namespace
 

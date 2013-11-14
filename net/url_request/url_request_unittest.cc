@@ -161,6 +161,26 @@ void TestLoadTimingReusedWithProxy(
 
 // Tests load timing information in the case of a cache hit, when no cache
 // validation request was sent over the wire.
+base::StringPiece TestNetResourceProvider(int key) {
+  return "header";
+}
+
+void FillBuffer(char* buffer, size_t len) {
+  static bool called = false;
+  if (!called) {
+    called = true;
+    int seed = static_cast<int>(Time::Now().ToInternalValue());
+    srand(seed);
+  }
+
+  for (size_t i = 0; i < len; i++) {
+    buffer[i] = static_cast<char>(rand());
+    if (!buffer[i])
+      buffer[i] = 'g';
+  }
+}
+
+#if !defined(OS_IOS)
 void TestLoadTimingCacheHitNoNetwork(
     const net::LoadTimingInfo& load_timing_info) {
   EXPECT_FALSE(load_timing_info.socket_reused);
@@ -198,10 +218,6 @@ void TestLoadTimingNoHttpResponse(
   EXPECT_TRUE(load_timing_info.receive_headers_end.is_null());
 }
 
-base::StringPiece TestNetResourceProvider(int key) {
-  return "header";
-}
-
 // Do a case-insensitive search through |haystack| for |needle|.
 bool ContainsString(const std::string& haystack, const char* needle) {
   std::string::const_iterator it =
@@ -211,21 +227,6 @@ bool ContainsString(const std::string& haystack, const char* needle) {
                   needle + strlen(needle),
                   base::CaseInsensitiveCompare<char>());
   return it != haystack.end();
-}
-
-void FillBuffer(char* buffer, size_t len) {
-  static bool called = false;
-  if (!called) {
-    called = true;
-    int seed = static_cast<int>(Time::Now().ToInternalValue());
-    srand(seed);
-  }
-
-  for (size_t i = 0; i < len; i++) {
-    buffer[i] = static_cast<char>(rand());
-    if (!buffer[i])
-      buffer[i] = 'g';
-  }
 }
 
 UploadDataStream* CreateSimpleUploadData(const char* data) {
@@ -277,6 +278,7 @@ bool FingerprintsEqual(const HashValueVector& a, const HashValueVector& b) {
 
   return true;
 }
+#endif  // !defined(OS_IOS)
 
 // A network delegate that allows the user to choose a subset of request stages
 // to block in. When blocking, the delegate can do one of the following:
