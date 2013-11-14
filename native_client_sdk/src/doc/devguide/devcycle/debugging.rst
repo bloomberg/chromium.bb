@@ -214,20 +214,6 @@ whether built using newlib or glibc for x86-32, x86-64 or ARM.  In the SDK,
 ``i686-nacl-gdb`` is an alias for ``x86_64-nacl-gdb``, and the ``newlib``
 and ``glibc`` toolchains both contain the same version of GDB.
 
-.. Note::
-  :class: note
-
-  **Prerequisites for using nacl-gdb**:
-
-  * You must use the pepper_23 bundle (or greater) in the SDK.
-  * Your version of Chrome must be greater than or equal to the Pepper bundle
-    that you are using. For example, if you are using the pepper_23 bundle, you
-    must use Chrome 23 or greater. Type about:chrome in the Chrome address bar
-    to find out what version of Chrome you have. You may want to install and
-    use Chrome Canary on Windows and Mac OS; it's the newest version of Chrome
-    that's available, and it runs side-by-side with your current version of
-    Chrome.
-
 Before you start using nacl-gdb, make sure you can :doc:`build <building>` your
 module and :doc:`run <running>` your application normally. This will verify
 that you have created all the required :doc:`application parts
