@@ -100,9 +100,6 @@ class AccountChooserModel : public ui::SimpleMenuModel,
   // Returns true if the selected account is an Online Wallet account.
   bool WalletIsSelected() const;
 
-  // Returns the command id of the current selection.
-  int checked_item() const { return checked_item_; }
-
  protected:
   // Command IDs of the items in this menu; protected for the tests.
   // kAutofillItemId is "Pay without the Wallet" (local autofill data).

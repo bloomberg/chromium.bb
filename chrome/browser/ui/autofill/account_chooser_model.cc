@@ -156,14 +156,11 @@ bool AccountChooserModel::WalletIsSelected() const {
 
 void AccountChooserModel::ReconstructMenuItems() {
   Clear();
-  const gfx::Image& wallet_icon =
-      ui::ResourceBundle::GetSharedInstance().GetImageNamed(IDR_WALLET_ICON);
 
   if (!wallet_accounts_.empty()) {
     for (size_t i = 0; i < wallet_accounts_.size(); ++i) {
       int item_id = kWalletAccountsStartId + i;
       AddCheckItem(item_id, UTF8ToUTF16(wallet_accounts_[i]));
-      SetIcon(GetIndexOfCommandId(item_id), wallet_icon);
     }
   } else if (checked_item_ == kWalletAccountsStartId) {
     // A selected active Wallet account without account names means

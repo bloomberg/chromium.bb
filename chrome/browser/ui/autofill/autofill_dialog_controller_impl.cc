@@ -1359,21 +1359,12 @@ ui::MenuModel* AutofillDialogControllerImpl::MenuModelForAccountChooser() {
 }
 
 gfx::Image AutofillDialogControllerImpl::AccountChooserImage() {
-  if (!MenuModelForAccountChooser()) {
-    if (signin_registrar_.IsEmpty()) {
-      return ui::ResourceBundle::GetSharedInstance().GetImageNamed(
-          IDR_WALLET_ICON);
-    }
-
-    return gfx::Image();
+  if (!MenuModelForAccountChooser() && !ShouldShowSignInWebView()) {
+    return ui::ResourceBundle::GetSharedInstance().GetImageNamed(
+        IDR_WALLET_ICON);
   }
 
-  gfx::Image icon;
-  account_chooser_model_.GetIconAt(
-      account_chooser_model_.GetIndexOfCommandId(
-          account_chooser_model_.checked_item()),
-      &icon);
-  return icon;
+  return gfx::Image();
 }
 
 gfx::Image AutofillDialogControllerImpl::ButtonStripImage() const {
