@@ -54,6 +54,11 @@ class CONTENT_EXPORT PPB_ImageData_Impl
   PPB_ImageData_Impl(PP_Instance instance,
                      PPB_ImageData_Shared::ImageDataType type);
 
+  // Constructor used for unittests. The ImageData is always allocated locally.
+  struct ForTest {};
+  PPB_ImageData_Impl(PP_Instance instance,
+                     ForTest);
+
   bool Init(PP_ImageDataFormat format,
             int width, int height,
             bool init_to_zero);
@@ -102,7 +107,9 @@ class CONTENT_EXPORT PPB_ImageData_Impl
 
 class ImageDataPlatformBackend : public PPB_ImageData_Impl::Backend {
  public:
-  ImageDataPlatformBackend();
+  // |is_browser_allocated| indicates whether the backing shared memory should
+  // be allocated by the browser process.
+  ImageDataPlatformBackend(bool is_browser_allocated);
   virtual ~ImageDataPlatformBackend();
 
   // PPB_ImageData_Impl::Backend implementation.
@@ -123,6 +130,8 @@ class ImageDataPlatformBackend : public PPB_ImageData_Impl::Backend {
   int width_;
   int height_;
   scoped_ptr<TransportDIB> dib_;
+
+  bool is_browser_allocated_;
 
   // When the device is mapped, this is the image. Null when umapped.
   scoped_ptr<SkCanvas> mapped_canvas_;

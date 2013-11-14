@@ -36,11 +36,13 @@ class CONTENT_EXPORT PepperGraphics2DHost
     : public ppapi::host::ResourceHost,
       public base::SupportsWeakPtr<PepperGraphics2DHost> {
  public:
-  static PepperGraphics2DHost* Create(RendererPpapiHost* host,
-                                      PP_Instance instance,
-                                      PP_Resource resource,
-                                      const PP_Size& size,
-                                      PP_Bool is_always_opaque);
+  static PepperGraphics2DHost* Create(
+      RendererPpapiHost* host,
+      PP_Instance instance,
+      PP_Resource resource,
+      const PP_Size& size,
+      PP_Bool is_always_opaque,
+      scoped_refptr<PPB_ImageData_Impl> backing_store);
 
   virtual ~PepperGraphics2DHost();
 
@@ -82,7 +84,10 @@ class CONTENT_EXPORT PepperGraphics2DHost
                        PP_Instance instance,
                        PP_Resource resource);
 
-  bool Init(int width, int height, bool is_always_opaque);
+  bool Init(int width,
+            int height,
+            bool is_always_opaque,
+            scoped_refptr<PPB_ImageData_Impl> backing_store);
 
   int32_t OnHostMsgPaintImageData(ppapi::host::HostMessageContext* context,
                                   const ppapi::HostResource& image_data,

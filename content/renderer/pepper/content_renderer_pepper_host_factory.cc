@@ -19,11 +19,13 @@
 #include "content/renderer/pepper/pepper_video_destination_host.h"
 #include "content/renderer/pepper/pepper_video_source_host.h"
 #include "content/renderer/pepper/pepper_websocket_host.h"
+#include "content/renderer/pepper/ppb_image_data_impl.h"
 #include "content/renderer/pepper/renderer_ppapi_host_impl.h"
 #include "ppapi/host/resource_host.h"
 #include "ppapi/proxy/ppapi_message_utils.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/serialized_structs.h"
+#include "ppapi/shared_impl/ppb_image_data_shared.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebElement.h"
@@ -107,9 +109,11 @@ scoped_ptr<ResourceHost> ContentRendererPepperHostFactory::CreateResourceHost(
         NOTREACHED();
         return scoped_ptr<ResourceHost>();
       }
+      scoped_refptr<PPB_ImageData_Impl> image_data(new PPB_ImageData_Impl(
+          instance, ppapi::PPB_ImageData_Shared::PLATFORM));
       return scoped_ptr<ResourceHost>(
           PepperGraphics2DHost::Create(host_, instance, params.pp_resource(),
-                                       size, is_always_opaque));
+                                       size, is_always_opaque, image_data));
     }
     case PpapiHostMsg_URLLoader_Create::ID:
       return scoped_ptr<ResourceHost>(new PepperURLLoaderHost(

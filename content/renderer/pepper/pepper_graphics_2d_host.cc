@@ -163,15 +163,18 @@ struct PepperGraphics2DHost::QueuedOperation {
 };
 
 // static
-PepperGraphics2DHost* PepperGraphics2DHost::Create(RendererPpapiHost* host,
-                                                   PP_Instance instance,
-                                                   PP_Resource resource,
-                                                   const PP_Size& size,
-                                                   PP_Bool is_always_opaque) {
+PepperGraphics2DHost* PepperGraphics2DHost::Create(
+    RendererPpapiHost* host,
+    PP_Instance instance,
+    PP_Resource resource,
+    const PP_Size& size,
+    PP_Bool is_always_opaque,
+    scoped_refptr<PPB_ImageData_Impl> backing_store) {
   PepperGraphics2DHost* resource_host =
       new PepperGraphics2DHost(host, instance, resource);
   if (!resource_host->Init(size.width, size.height,
-                           PP_ToBool(is_always_opaque))) {
+                           PP_ToBool(is_always_opaque),
+                           backing_store)) {
     delete resource_host;
     return NULL;
   }
@@ -197,10 +200,13 @@ PepperGraphics2DHost::~PepperGraphics2DHost() {
     bound_instance_->BindGraphics(bound_instance_->pp_instance(), 0);
 }
 
-bool PepperGraphics2DHost::Init(int width, int height, bool is_always_opaque) {
+bool PepperGraphics2DHost::Init(
+    int width,
+    int height,
+    bool is_always_opaque,
+    scoped_refptr<PPB_ImageData_Impl> backing_store) {
   // The underlying PPB_ImageData_Impl will validate the dimensions.
-  image_data_ = new PPB_ImageData_Impl(pp_instance(),
-                                       PPB_ImageData_Impl::PLATFORM);
+  image_data_ = backing_store;
   if (!image_data_->Init(PPB_ImageData_Impl::GetNativeImageDataFormat(),
                          width, height, true) ||
       !image_data_->Map()) {
