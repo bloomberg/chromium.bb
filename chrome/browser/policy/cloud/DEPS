@@ -71,17 +71,4 @@ specific_include_rules = {
   r"user_cloud_policy_manager_factory\.cc": [
     "+content/public/browser/browser_context.h",
   ],
-
-  r"user_cloud_policy_store\.cc": [
-    "+chrome/browser/signin/signin_manager.h",
-    "+chrome/browser/signin/signin_manager_factory.h",
-  ],
-
-  r"user_cloud_policy_store_unittest\.cc": [
-    "+chrome/browser/signin/fake_signin_manager.h",
-    "+chrome/browser/signin/signin_manager.h",
-    "+chrome/browser/signin/signin_manager_factory.h",
-    "+chrome/common/pref_names.h",
-    "+chrome/test/base/testing_profile.h",
-  ],
 }

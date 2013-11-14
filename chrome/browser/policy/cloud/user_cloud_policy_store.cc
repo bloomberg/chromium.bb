@@ -10,8 +10,6 @@
 #include "base/task_runner_util.h"
 #include "chrome/browser/policy/proto/cloud/device_management_backend.pb.h"
 #include "chrome/browser/policy/proto/cloud/device_management_local.pb.h"
-#include "chrome/browser/signin/signin_manager.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
 #include "policy/policy_constants.h"
 #include "policy/proto/cloud_policy.pb.h"
 
