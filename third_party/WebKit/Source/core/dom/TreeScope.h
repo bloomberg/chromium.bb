@@ -55,7 +55,7 @@ public:
     TreeScope* parentTreeScope() const { return m_parentTreeScope; }
     void setParentTreeScope(TreeScope*);
 
-    Element* adjustedFocusedElement();
+    Element* adjustedFocusedElement() const;
     Element* getElementById(const AtomicString&) const;
     bool hasElementWithId(StringImpl* id) const;
     bool containsMultipleElementsWithId(const AtomicString& id) const;

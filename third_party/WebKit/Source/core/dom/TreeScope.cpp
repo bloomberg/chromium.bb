@@ -354,7 +354,7 @@ static Element* focusedFrameOwnerElement(Frame* focusedFrame, Frame* currentFram
     return 0;
 }
 
-Element* TreeScope::adjustedFocusedElement()
+Element* TreeScope::adjustedFocusedElement() const
 {
     Document& document = rootNode()->document();
     Element* element = document.focusedElement();

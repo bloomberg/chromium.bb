@@ -153,9 +153,7 @@ private:
 
 inline Element* ShadowRoot::activeElement() const
 {
-    if (Element* element = treeScope().adjustedFocusedElement())
-        return element;
-    return 0;
+    return adjustedFocusedElement();
 }
 
 inline const ShadowRoot* toShadowRoot(const Node* node)
