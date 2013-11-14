@@ -57,11 +57,11 @@ class TooltipIcon : public views::ImageView,
   // A bubble shown on hover. Weak; owns itself. NULL while hiding.
   InfoBubble* bubble_;
 
+  // A timer to delay showing |bubble_|.
+  base::OneShotTimer<TooltipIcon> show_timer_;
+
   // A watcher that keeps |bubble_| open if the user's mouse enters it.
   scoped_ptr<views::MouseWatcher> mouse_watcher_;
-
-  // A timer to delay hiding |bubble_|.
-  base::OneShotTimer<TooltipIcon> hide_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(TooltipIcon);
 };

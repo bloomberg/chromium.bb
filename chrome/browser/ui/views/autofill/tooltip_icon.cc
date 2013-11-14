@@ -71,10 +71,13 @@ const char* TooltipIcon::GetClassName() const {
 void TooltipIcon::OnMouseEntered(const ui::MouseEvent& event) {
   mouse_watcher_.reset();
   mouse_inside_ = true;
-  ShowBubble();
+  show_timer_.Start(FROM_HERE, base::TimeDelta::FromMilliseconds(150), this,
+                    &TooltipIcon::ShowBubble);
 }
 
 void TooltipIcon::OnMouseExited(const ui::MouseEvent& event) {
+  show_timer_.Stop();
+
   if (!bubble_)
     return;
 
@@ -111,8 +114,6 @@ void TooltipIcon::ChangeImageTo(int idr) {
 
 void TooltipIcon::ShowBubble() {
   DCHECK(mouse_inside_ || HasFocus());
-
-  hide_timer_.Stop();
 
   if (bubble_)
     return;
