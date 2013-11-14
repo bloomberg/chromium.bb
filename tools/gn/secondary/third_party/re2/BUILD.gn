@@ -7,6 +7,7 @@ config("re2_config") {
 }
 
 gyp_file = "re2.gyp"
+external = true
 
 static_library("re2") {
   sources = [

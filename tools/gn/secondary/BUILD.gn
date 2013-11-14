@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 gyp_file = "root.gyp"
+external = true
 
 group("root") {
   deps = [

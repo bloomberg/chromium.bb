@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 gyp_file = "gn.gyp"
+external = true
 
 # Not defined when doing a GYP build, this lets the code key off of GN-specific
 # features (the last change target). This can be removed when the last change
