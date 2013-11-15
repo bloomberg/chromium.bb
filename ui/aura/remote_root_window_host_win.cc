@@ -132,7 +132,6 @@ RemoteRootWindowHostWin* RemoteRootWindowHostWin::Create(
 
 RemoteRootWindowHostWin::RemoteRootWindowHostWin(const gfx::Rect& bounds)
     : remote_window_(NULL),
-      delegate_(NULL),
       host_(NULL),
       ignore_mouse_moves_until_set_cursor_ack_(false),
       event_flags_(0) {

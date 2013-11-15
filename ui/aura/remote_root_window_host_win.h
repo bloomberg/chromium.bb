@@ -232,7 +232,6 @@ class AURA_EXPORT RemoteRootWindowHostWin : public RootWindowHost {
   }
 
   HWND remote_window_;
-  RootWindowHostDelegate* delegate_;
   IPC::Sender* host_;
   scoped_ptr<ui::ViewProp> prop_;
 
