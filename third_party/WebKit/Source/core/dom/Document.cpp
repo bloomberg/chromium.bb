@@ -3054,7 +3054,7 @@ bool Document::childTypeAllowed(NodeType type) const
     return false;
 }
 
-bool Document::canReplaceChild(Node& newChild, Node& oldChild)
+bool Document::canReplaceChild(const Node& newChild, const Node& oldChild) const
 {
     if (oldChild.nodeType() == newChild.nodeType())
         return true;
