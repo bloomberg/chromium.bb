@@ -886,30 +886,11 @@ void MetadataDatabase::UpdateTracker(int64 tracker_id,
     return;
   }
 
-  // Check if the tracker's parent is still in |parent_tracker_ids|.
-  // If not, there should exist another tracker for the new parent, so delete
-  // old tracker.
-  DCHECK(ContainsKey(tracker_by_id_, tracker->parent_tracker_id()));
-  FileTracker* parent_tracker = tracker_by_id_[tracker->parent_tracker_id()];
-  if (!HasFileAsParent(updated_details, parent_tracker->file_id())) {
-    RemoveTracker(tracker->tracker_id(), batch.get());
-    WriteToDatabase(batch.Pass(), callback);
-    return;
-  }
-
-  if (tracker->has_synced_details()) {
-    // Check if the tracker was retitled.  If it was, there should exist another
-    // tracker for the new title, so delete old tracker.
-    if (tracker->synced_details().title() != updated_details.title()) {
-      RemoveTracker(tracker->tracker_id(), batch.get());
-      WriteToDatabase(batch.Pass(), callback);
-      return;
-    }
-  } else {
-    int64 parent_tracker_id = parent_tracker->tracker_id();
-    const std::string& title = updated_details.title();
-    trackers_by_parent_and_title_[parent_tracker_id][title].Insert(
-        parent_tracker);
+  // Check if the tracker was retitled.  If it was, update the title and its
+  // index in advance.
+  if (!tracker->has_synced_details() ||
+      tracker->synced_details().title() != updated_details.title()) {
+    UpdateTrackerTitle(tracker, updated_details.title(), batch.get());
   }
 
   *tracker->mutable_synced_details() = updated_details;
@@ -1235,22 +1216,14 @@ void MetadataDatabase::RemoveTrackerInternal(
 void MetadataDatabase::MaybeAddTrackersForNewFile(
     const FileMetadata& file,
     leveldb::WriteBatch* batch) {
-  std::set<int64> parents_to_exclude;
+  std::set<int64> known_parents;
   TrackersByFileID::iterator found = trackers_by_file_id_.find(file.file_id());
   if (found != trackers_by_file_id_.end()) {
     for (TrackerSet::const_iterator itr = found->second.begin();
          itr != found->second.end(); ++itr) {
-      const FileTracker& tracker = **itr;
-      int64 parent_tracker_id = tracker.parent_tracker_id();
-      if (!parent_tracker_id)
-        continue;
-
-      // Exclude |parent_tracker_id| if it already has a tracker that has
-      // unknown title or has the same title with |file|.
-      if (!tracker.has_synced_details() ||
-          tracker.synced_details().title() == file.details().title()) {
-        parents_to_exclude.insert(parent_tracker_id);
-      }
+      int64 parent_tracker_id = (*itr)->parent_tracker_id();
+      if (parent_tracker_id)
+        known_parents.insert(parent_tracker_id);
     }
   }
 
@@ -1268,7 +1241,7 @@ void MetadataDatabase::MaybeAddTrackersForNewFile(
       if (!parent_tracker->active())
         continue;
 
-      if (ContainsKey(parents_to_exclude, parent_tracker_id))
+      if (ContainsKey(known_parents, parent_tracker_id))
         continue;
 
       CreateTrackerForParentAndFileID(*parent_tracker, file.file_id(), batch);
@@ -1361,8 +1334,11 @@ void MetadataDatabase::MarkTrackersDirtyByPath(int64 parent_tracker_id,
                                                leveldb::WriteBatch* batch) {
   TrackersByParentAndTitle::iterator found =
       trackers_by_parent_and_title_.find(parent_tracker_id);
-  if (found == trackers_by_parent_and_title_.end())
+  if (found == trackers_by_parent_and_title_.end()) {
+    NOTREACHED() << "parent: " << parent_tracker_id
+                 << ", title: " << title;
     return;
+  }
 
   TrackersByTitle::iterator itr = found->second.find(title);
   if (itr != found->second.end())
@@ -1472,6 +1448,47 @@ bool MetadataDatabase::HasActiveTrackerForPath(int64 parent_tracker_id,
   const TrackersByTitle& trackers_by_title = found_by_parent->second;
   TrackersByTitle::const_iterator found = trackers_by_title.find(title);
   return found != trackers_by_title.end() && found->second.has_active();
+}
+
+void MetadataDatabase::UpdateTrackerTitle(FileTracker* tracker,
+                                          const std::string& new_title,
+                                          leveldb::WriteBatch* batch) {
+  int64 parent_id = tracker->parent_tracker_id();
+  std::string old_title = GetTrackerTitle(*tracker);
+  DCHECK_NE(old_title, new_title);
+  DCHECK(!new_title.empty());
+
+  TrackersByTitle* trackers_by_title =
+      &trackers_by_parent_and_title_[parent_id];
+  TrackerSet* old_siblings = &(*trackers_by_title)[old_title];
+  TrackerSet* new_siblings = &(*trackers_by_title)[new_title];
+
+  old_siblings->Erase(tracker);
+  if (old_siblings->empty())
+    trackers_by_title->erase(old_title);
+  else
+    MarkTrackerSetDirty(old_siblings, batch);
+
+  if (tracker->active() && new_siblings->has_active()) {
+    // Inactivate existing active tracker.
+    FileTracker* obstacle = new_siblings->active_tracker();
+    new_siblings->Inactivate(obstacle);
+    DCHECK_EQ(TRACKER_KIND_REGULAR, obstacle->tracker_kind());
+
+    TrackerSet* same_file_id_trackers_to_obstacle =
+        &trackers_by_file_id_[obstacle->file_id()];
+    same_file_id_trackers_to_obstacle->Inactivate(obstacle);
+    MarkTrackerSetDirty(same_file_id_trackers_to_obstacle, batch);
+
+    obstacle->set_active(false);
+    PutTrackerToBatch(*obstacle, batch);
+
+    RemoveAllDescendantTrackers(obstacle->tracker_id(), batch);
+  }
+
+  tracker->mutable_synced_details()->set_title(new_title);
+  new_siblings->Insert(tracker);
+  PutTrackerToBatch(*tracker, batch);
 }
 
 void MetadataDatabase::WriteToDatabase(scoped_ptr<leveldb::WriteBatch> batch,

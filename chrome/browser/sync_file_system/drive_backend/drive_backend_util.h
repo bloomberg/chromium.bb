@@ -43,8 +43,6 @@ webkit_blob::ScopedFile CreateTemporaryFile();
 
 std::string FileKindToString(FileKind file_kind);
 
-bool HasFileAsParent(const FileDetails& details, const std::string& file_id);
-
 }  // namespace drive_backend
 }  // namespace sync_file_system
 

@@ -886,13 +886,12 @@ TEST_F(MetadataDatabaseTest, PopulateFolderTest_DisabledAppRoot) {
   VerifyReloadConsistency();
 }
 
-// TODO(tzik): Fix expectation and re-enable this test.
-TEST_F(MetadataDatabaseTest, DISABLED_UpdateTrackerTest) {
+TEST_F(MetadataDatabaseTest, UpdateTrackerTest) {
   TrackedFile sync_root(CreateTrackedSyncRoot());
   TrackedFile app_root(CreateTrackedAppRoot(sync_root, "app_root"));
   TrackedFile file(CreateTrackedFile(app_root, "file"));
   file.tracker.set_dirty(true);
-  file.metadata.mutable_details()->set_title("renamed file");
+  file.metadata.mutable_details()->set_title("renamed file");;
 
   TrackedFile inactive_file(CreateTrackedFile(app_root, "inactive_file"));
   inactive_file.tracker.set_active(false);
