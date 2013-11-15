@@ -141,7 +141,7 @@ float RunOneInverseTest(int fft_log_size, int signal_type,
 /*
  * Run all FFT tests, as specified by |info|
  */
-void RunAllTests(const struct TestInfo* info);
+int RunAllTests(const struct TestInfo* info);
 
 /*
  * Returns the program name, for debugging.

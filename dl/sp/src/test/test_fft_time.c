@@ -23,29 +23,57 @@
 #define MAX_FFT_ORDER TWIDDLE_TABLE_ORDER
 #define MAX_FFT_ORDER_FIXED_POINT 12
 
+#define ENABLE_FIXED_POINT_FFT_TESTS
+
+#if defined(FLOAT_ONLY) || defined(ARM_VFP_TEST)
+/*
+ * Fixed-point FFTs are disabled if we only want float tests or if
+ * we're building for non-NEON tests.
+ */
+#undef ENABLE_FIXED_POINT_FFT_TESTS
+#endif
+
+#if defined(ARM_VFP_TEST)
+#define FORWARD_FLOAT_FFT   omxSP_FFTFwd_CToC_FC32_Sfs_vfp
+#define INVERSE_FLOAT_FFT   omxSP_FFTInv_CToC_FC32_Sfs_vfp
+#define FORWARD_FLOAT_RFFT  omxSP_FFTFwd_RToCCS_F32_Sfs_vfp
+#define INVERSE_FLOAT_RFFT  omxSP_FFTInv_CCSToR_F32_Sfs_vfp
+#else
+#define FORWARD_FLOAT_FFT   omxSP_FFTFwd_CToC_FC32_Sfs
+#define INVERSE_FLOAT_FFT   omxSP_FFTInv_CToC_FC32_Sfs
+#define FORWARD_FLOAT_RFFT  omxSP_FFTFwd_RToCCS_F32_Sfs
+#define INVERSE_FLOAT_RFFT  omxSP_FFTInv_CCSToR_F32_Sfs
+#endif
+
 typedef enum {
   S16,
   S32,
 } s16_s32;
 
+#if defined(__arm__)
 void TimeOneFloatFFT(int count, int fft_log_size, float signal_value,
                      int signal_type);
 void TimeFloatFFT(int count, float signal_value, int signal_type);
+#endif
+
 void TimeOneFloatRFFT(int count, int fft_log_size, float signal_value,
                       int signal_type);
 void TimeFloatRFFT(int count, float signal_value, int signal_type);
-void TimeOneSC32FFT(int count, int fft_log_size, float signal_value,
-                    int signal_type);
-void TimeSC32FFT(int count, float signal_value, int signal_type);
+
+#ifdef ENABLE_FIXED_POINT_FFT_TESTS
 void TimeOneSC16FFT(int count, int fft_log_size, float signal_value,
                     int signal_type);
 void TimeSC16FFT(int count, float signal_value, int signal_type);
 void TimeOneRFFT16(int count, int fft_log_size, float signal_value,
                    int signal_type, s16_s32 s16s32);
 void TimeRFFT16(int count, float signal_value, int signal_type);
+void TimeOneSC32FFT(int count, int fft_log_size, float signal_value,
+                    int signal_type);
+void TimeSC32FFT(int count, float signal_value, int signal_type);
 void TimeOneRFFT32(int count, int fft_log_size, float signal_value,
                    int signal_type);
 void TimeRFFT32(int count, float signal_value, int signal_type);
+#endif
 
 static int verbose = 1;
 static int include_conversion = 0;
@@ -62,7 +90,11 @@ void TimeFFTUsage(const char* prog) {
       "    [-m minFFTsize] [-M maxFFTsize]\n",
           ProgramName(prog));
   fprintf(stderr, 
-      "Simple FFT timing tests\n"
+#ifndef ARM_VFP_TEST
+      "Simple FFT timing tests (NEON)\n"
+#else
+      "Simple FFT timing tests (non-NEON)\n"
+#endif
       "  -h          This help\n"
       "  -v level    Verbose output level (default = 1)\n"
       "  -F          Skip forward FFT tests\n"
@@ -79,11 +111,16 @@ void TimeFFTUsage(const char* prog) {
       "  -T          Run just one FFT timing test\n"
       "  -f          FFT type:\n"
       "              0 - Complex Float\n"
+#if defined(__arm__)
       "              1 - Real Float\n"
+#endif
+#ifdef ENABLE_FIXED_POINT_FFT_TESTS
       "              2 - Complex 16-bit\n"
       "              3 - Real 16-bit\n"
       "              4 - Complex 32-bit\n"
       "              5 - Real 32-bit\n"
+#else
+#endif
       "  -n logsize  Log2 of FFT size\n"
       "  -s scale    Scale factor for forward FFT (default = 0)\n"
       "  -S signal   Base value for the test signal (default = 1024)\n"
@@ -179,20 +216,27 @@ void main(int argc, char* argv[]) {
     printf("Warning:  -f ignored when -T not specified\n");
 
   if (test_mode) {
+#if defined(__arm__)
     TimeFloatFFT(count, signal_value, signal_type);
+#endif
     TimeFloatRFFT(count, signal_value, signal_type);
+#ifdef ENABLE_FIXED_POINT_FFT_TESTS
     TimeSC16FFT(count, signal_value, signal_type);
     TimeRFFT16(count, signal_value, signal_type);
     TimeSC32FFT(count, signal_value, signal_type);
     TimeRFFT32(count, signal_value, signal_type);
+#endif
   } else {
     switch (fft_type) {
+#if defined(__arm__)
       case 0:
         TimeOneFloatFFT(count, fft_log_size, signal_value, signal_type);
         break;
+#endif
       case 1:
         TimeOneFloatRFFT(count, fft_log_size, signal_value, signal_type);
         break;
+#ifdef ENABLE_FIXED_POINT_FFT_TESTS
       case 2:
         TimeOneSC16FFT(count, fft_log_size, signal_value, signal_type);
         break;
@@ -206,6 +250,7 @@ void main(int argc, char* argv[]) {
       case 5:
         TimeOneRFFT32(count, fft_log_size, signal_value, signal_type);
         break;
+#endif
       default:
         fprintf(stderr, "Unknown FFT type: %d\n", fft_type);
         break;
@@ -227,6 +272,17 @@ double TimeDifference(const struct timeval * start,
   end_time = end->tv_sec + end->tv_usec * 1e-6;
 
   return end_time - start_time;
+}
+
+void PrintShortHeader(const char* message) {
+  if (do_forward_test && do_inverse_test) {
+    /* Do nothing if both forward and inverse tests are being run. */
+  } else if (do_forward_test) {
+    printf("Forward ");
+  } else {
+    printf("Inverse ");
+  }
+  printf("%s\n", message);
 }
 
 void PrintResult(const char* prefix, int fft_log_size, double elapsed_time,
@@ -263,7 +319,8 @@ int ComputeCount(int nominal_count, int fft_log_size) {
 
   return count;
 }
-
+
+#if defined(__arm__)
 void TimeOneFloatFFT(int count, int fft_log_size, float signal_value,
                      int signal_type) {
   struct AlignedPtr* x_aligned;
@@ -308,7 +365,7 @@ void TimeOneFloatFFT(int count, int fft_log_size, float signal_value,
   if (do_forward_test) {
     GetUserTime(&start_time);
     for (n = 0; n < count; ++n) {
-      omxSP_FFTFwd_CToC_FC32_Sfs(x, y, fft_fwd_spec);
+      FORWARD_FLOAT_FFT(x, y, fft_fwd_spec);
     }
     GetUserTime(&end_time);
 
@@ -320,7 +377,7 @@ void TimeOneFloatFFT(int count, int fft_log_size, float signal_value,
   if (do_inverse_test) {
     GetUserTime(&start_time);
     for (n = 0; n < count; ++n) {
-      omxSP_FFTInv_CToC_FC32_Sfs(y, z, fft_inv_spec);
+      INVERSE_FLOAT_FFT(y, z, fft_inv_spec);
     }
     GetUserTime(&end_time);
 
@@ -341,13 +398,14 @@ void TimeFloatFFT(int count, float signal_value, int signal_type) {
   int k;
 
   if (verbose == 0)
-    printf("Float FFT\n");
+    PrintShortHeader("Float FFT");
 
   for (k = min_fft_order; k <= max_fft_order; ++k) {
     int testCount = ComputeCount(count, k);
     TimeOneFloatFFT(testCount, k, signal_value, signal_type);
   }
 }
+#endif
 
 void GenerateRealFloatSignal(OMX_F32* x, OMX_FC32* fft, int size,
                              int signal_type, float signal_value)
@@ -427,7 +485,7 @@ void TimeOneFloatRFFT(int count, int fft_log_size, float signal_value,
   if (do_forward_test) {
     GetUserTime(&start_time);
     for (n = 0; n < count; ++n) {
-      omxSP_FFTFwd_RToCCS_F32_Sfs(x, y, fft_fwd_spec);
+      FORWARD_FLOAT_RFFT(x, y, fft_fwd_spec);
     }
     GetUserTime(&end_time);
 
@@ -439,7 +497,7 @@ void TimeOneFloatRFFT(int count, int fft_log_size, float signal_value,
   if (do_inverse_test) {
     GetUserTime(&start_time);
     for (n = 0; n < count; ++n) {
-      omxSP_FFTInv_CCSToR_F32_Sfs(y, z, fft_inv_spec);
+      INVERSE_FLOAT_RFFT(y, z, fft_inv_spec);
     }
     GetUserTime(&end_time);
 
@@ -459,14 +517,15 @@ void TimeFloatRFFT(int count, float signal_value, int signal_type) {
   int k;
 
   if (verbose == 0)
-    printf("Float RFFT\n");
-
+    PrintShortHeader("Float RFFT");
+  
   for (k = min_fft_order; k <= max_fft_order; ++k) {
     int testCount = ComputeCount(count, k);
     TimeOneFloatRFFT(testCount, k, signal_value, signal_type);
   }
 }
 
+#ifdef ENABLE_FIXED_POINT_FFT_TESTS
 void generateSC32Signal(OMX_SC32* x, OMX_SC32* fft, int size, int signal_type,
                         float signal_value) {
   int k;
@@ -641,7 +700,7 @@ void TimeSC32FFT(int count, float signal_value, int signal_type) {
       ? MAX_FFT_ORDER_FIXED_POINT : max_fft_order;
 
   if (verbose == 0)
-    printf("SC32 FFT\n");
+    PrintShortHeader("SC32 FFT");
 
   for (k = min_fft_order; k <= max_order; ++k) {
     int testCount = ComputeCount(count, k);
@@ -823,7 +882,7 @@ void TimeSC16FFT(int count, float signal_value, int signal_type) {
       ? MAX_FFT_ORDER_FIXED_POINT : max_fft_order;
 
   if (verbose == 0)
-    printf("SC16 FFT\n");
+    PrintShortHeader("SC16 FFT");
 
   for (k = min_fft_order; k <= max_order; ++k) {
     int testCount = ComputeCount(count, k);
@@ -998,10 +1057,12 @@ void TimeOneRFFT16(int count, int fft_log_size, float signal_value,
     elapsed_time = TimeDifference(&start_time, &end_time);
 
     if(s16s32 == S32) {
-      PrintResult("Forward RFFT16 (with S32)", fft_log_size, elapsed_time, count);
+      PrintResult("Forward RFFT16 (with S32)",
+		  fft_log_size, elapsed_time, count);
     }
     else {
-      PrintResult("Forward RFFT16 (with S16)", fft_log_size, elapsed_time, count);
+      PrintResult("Forward RFFT16 (with S16)",
+		  fft_log_size, elapsed_time, count);
     }
   }
 
@@ -1059,10 +1120,12 @@ void TimeOneRFFT16(int count, int fft_log_size, float signal_value,
     elapsed_time = TimeDifference(&start_time, &end_time);
 
     if(s16s32 == S32) {
-      PrintResult("Inverse RFFT16 (with S32)", fft_log_size, elapsed_time, count);
+      PrintResult("Inverse RFFT16 (with S32)",
+		  fft_log_size, elapsed_time, count);
     }
     else {
-      PrintResult("Inverse RFFT16 (with S16)", fft_log_size, elapsed_time, count);
+      PrintResult("Inverse RFFT16 (with S16)",
+		  fft_log_size, elapsed_time, count);
     }
   }
 
@@ -1082,14 +1145,16 @@ void TimeRFFT16(int count, float signal_value, int signal_type) {
       ? MAX_FFT_ORDER_FIXED_POINT : max_fft_order;
 
   if (verbose == 0)
-    printf("RFFT16 (with S32)\n");
+    PrintShortHeader("RFFT16 (with S32)");
+
   for (k = min_fft_order; k <= max_order; ++k) {
     int testCount = ComputeCount(count, k);
     TimeOneRFFT16(testCount, k, signal_value, signal_type, 1);
   }
 
   if (verbose == 0)
-    printf("RFFT16 (with S16)\n");
+    PrintShortHeader("RFFT16 (with S16)");
+
   for (k = min_fft_order; k <= max_order; ++k) {
     int testCount = ComputeCount(count, k);
     TimeOneRFFT16(testCount, k, signal_value, signal_type, 0);
@@ -1309,10 +1374,11 @@ void TimeRFFT32(int count, float signal_value, int signal_type) {
       ? MAX_FFT_ORDER_FIXED_POINT : max_fft_order;
 
   if (verbose == 0)
-    printf("RFFT32\n");
+    PrintShortHeader("RFFT32");
 
   for (k = min_fft_order; k <= max_order; ++k) {
     int testCount = ComputeCount(count, k);
     TimeOneRFFT32(testCount, k, signal_value, signal_type);
   }
 }
+#endif

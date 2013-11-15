@@ -29,19 +29,30 @@
  */
 int verbose;
 
-void main(int argc, char* argv[]) {
+extern const char* UsageMessage();
+extern void FinishedMessage();
+extern void SetThresholds(struct TestInfo *info);
+extern OMXResult ForwardRFFT(OMX_F32* x,
+                             OMX_F32* y,
+                             OMXFFTSpec_R_F32 *fft_fwd_spec);
+extern OMXResult InverseRFFT(OMX_F32* y,
+                             OMX_F32* z,
+                             OMXFFTSpec_R_F32 *fft_inv_spec);
+void TestFloatFFT(int fft_log_size, int sigtype, float signal_value);
+
+int main(int argc, char* argv[]) {
   struct Options options;
   struct TestInfo info;
+  int failed_count = 0;
 
   SetDefaultOptions(&options, 1, MAX_FFT_ORDER);
 
-  ProcessCommandLine(&options, argc, argv,
-                     "Test forward and inverse real floating-point FFT\n");
+  ProcessCommandLine(&options,
+                     argc,
+                     argv,
+                     UsageMessage());
 
   verbose = options.verbose_;
-
-  if (verbose > 255)
-    DumpOptions(stderr, &options);
 
   info.real_only_ = options.real_only_;
   info.min_fft_order_ = options.min_fft_order_;
@@ -50,26 +61,14 @@ void main(int argc, char* argv[]) {
   info.do_inverse_tests_ = options.do_inverse_tests_;
   /* No known failures */
   info.known_failures_ = 0;
-#ifdef BIG_FFT_TABLE
-#if defined(__arm__)
-  info.forward_threshold_ = 136.07;
-  info.inverse_threshold_ = 140.76;
-#else
-  info.forward_threshold_ = 135.97;
-  info.inverse_threshold_ = 140.76;
-#endif
-#else
-#if defined(__arm__)
-  info.forward_threshold_ = 136.07;
-  info.inverse_threshold_ = 142.41;
-#else
-  info.forward_threshold_ = 135.97;
-  info.inverse_threshold_ = 142.69;
-#endif
-#endif
+
+  SetThresholds(&info);
+
+  if (verbose > 255)
+    DumpOptions(stderr, &options);
 
   if (options.test_mode_) {
-    RunAllTests(&info);
+    failed_count = RunAllTests(&info);
   } else {
     TestOneFFT(options.fft_log_size_,
                options.signal_type_,
@@ -77,15 +76,21 @@ void main(int argc, char* argv[]) {
                &info,
                "Float Real FFT");
   }
+  FinishedMessage();
+
+  return failed_count > 0 ? 1 : 0;
 }
 
 /* Briefly print out the contents of the FFT spec */
 void DumpFFTSpec(OMXFFTSpec_R_F32* pSpec) {
   ARMsFFTSpec_R_FC32* p = (ARMsFFTSpec_R_FC32*) pSpec;
+  printf("FFTSpec %p:\n", (void*) pSpec);
   printf(" N = %d\n", p->N);
   printf(" pBitRev  = %p\n", p->pBitRev);
-  printf(" pTwiddle = %p\n", p->pTwiddle);
-  printf(" pBuf     = %p\n", p->pBuf);
+  /* See omxSP_FFTGetBufSize_R_S32 for the size of the twiddle table. */
+  printf(" pTwiddle = %p - %p\n", p->pTwiddle, p->pTwiddle + (5 * p->N / 8));
+  /* See omxSP_FFTGetBufSize_R_S32 for the size of pBuf. */
+  printf(" pBuf     = %p - %p\n", p->pBuf, p->pBuf + (p->N << 1));
 }
 
 /*
@@ -157,15 +162,21 @@ float RunOneForwardTest(int fft_log_size, int signal_type, float signal_value,
 
   GenerateSignal(x, y_true, fft_size, signal_type, signal_value);
 
+  if (verbose > 255) {
+    printf("input  = %p - %p\n", x, x + fft_size);
+    printf("output = %p - %p\n", y, y + fft_size / 2 + 1);
+    DumpFFTSpec(fft_fwd_spec);
+  }
+
   if (verbose > 63) {
     printf("Signal\n");
     DumpArrayFloat("x", fft_size, x);
 
     printf("Expected FFT output\n");
-    DumpArrayComplexFloat("y", fft_size / 2, y_true);
+    DumpArrayComplexFloat("y", 1 + fft_size / 2, y_true);
   }
 
-  status = omxSP_FFTFwd_RToCCS_F32_Sfs(x, (OMX_F32*) y, fft_fwd_spec);
+  status = ForwardRFFT(x, (OMX_F32*) y, fft_fwd_spec);
   if (status) {
     fprintf(stderr, "Forward FFT failed: status = %d\n", status);
     exit(1);
@@ -173,7 +184,7 @@ float RunOneForwardTest(int fft_log_size, int signal_type, float signal_value,
 
   if (verbose > 63) {
     printf("FFT Output\n");
-    DumpArrayComplexFloat("y", fft_size / 2, y);
+    DumpArrayComplexFloat("y", 1 + fft_size / 2, y);
   }
 
   CompareComplexFloat(snr, y, y_true, fft_size / 2 + 1);
@@ -231,15 +242,21 @@ float RunOneInverseTest(int fft_log_size, int signal_type, float signal_value,
 
   GenerateSignal(x, yTrue, fft_size, signal_type, signal_value);
 
+  if (verbose > 255) {
+    printf("input  = %p - %p\n", yTrue, yTrue + fft_size / 2 + 1);
+    printf("output = %p - %p\n", z, z + fft_size);
+    DumpFFTSpec(fft_inv_spec);
+  }
+
   if (verbose > 63) {
     printf("Inverse FFT Input Signal\n");
-    DumpArrayComplexFloat("y", fft_size / 2, yTrue);
+    DumpArrayComplexFloat("y", 1 + fft_size / 2, yTrue);
 
     printf("Expected Inverse FFT output\n");
     DumpArrayFloat("x", fft_size, x);
   }
 
-  status = omxSP_FFTInv_CCSToR_F32_Sfs((OMX_F32 *) yTrue, z, fft_inv_spec);
+  status = InverseRFFT((OMX_F32 *) yTrue, z, fft_inv_spec);
   if (status) {
     fprintf(stderr, "Inverse FFT failed: status = %d\n", status);
     exit(1);

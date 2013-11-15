@@ -2253,7 +2253,27 @@ OMXResult omxSP_FFTFwd_RToCCS_F32_Sfs(
     const OMXFFTSpec_R_F32* pFFTSpec
 );
 
+#ifdef __arm__
+/*
+ * Non-NEON version of omxSP_FFTFwd_RToCCS_F32_Sfs
+ */    
+OMXResult omxSP_FFTFwd_RToCCS_F32_Sfs_vfp(
+    const OMX_F32* pSrc,
+    OMX_F32* pDst,
+    const OMXFFTSpec_R_F32* pFFTSpec
+);
 
+/*
+ * Just like omxSP_FFTFwd_RToCCS_F32_Sfs, but automatically detects
+ * whether NEON is available or not and chooses the appropriate
+ * routine.
+ */    
+extern OMXResult (*omxSP_FFTFwd_RToCCS_F32)(
+    const OMX_F32* pSrc,
+    OMX_F32* pDst,
+    const OMXFFTSpec_R_F32* pFFTSpec
+);
+#endif
 
 /**
  * Function:  omxSP_FFTInv_CCSToR_S32S16_Sfs   (2.2.4.4.4)
@@ -2445,7 +2465,26 @@ OMXResult omxSP_FFTInv_CCSToR_F32_Sfs(
     const OMXFFTSpec_R_F32* pFFTSpec
 );
 
+#ifdef __arm__
+/*
+ * Non-NEON version of omxSP_FFTInv_CCSToR_F32_Sfs
+ */    
+OMXResult omxSP_FFTInv_CCSToR_F32_Sfs_vfp(
+    const OMX_F32* pSrc,
+    OMX_F32* pDst,
+    const OMXFFTSpec_R_F32* pFFTSpec
+);
 
+/*
+ * Just like omxSP_FFTInv_CCSToR_F32_Sfs, but automatically detects
+ * whether NEON is available or not and chooses the appropriate
+ * routine.
+ */    
+extern OMXResult (*omxSP_FFTInv_CCSToR_F32)(
+    const OMX_F32* pSrc,
+    OMX_F32* pDst,
+    const OMXFFTSpec_R_F32* pFFTSpec);
+#endif
 
 #ifdef __cplusplus
 }

@@ -332,6 +332,13 @@ void RunForwardTests(struct TestResult* result, const struct TestInfo* info,
   RunTests(result, RunOneForwardTest, "FwdFFT", 0, info, snr_threshold);
 }
 
+void initializeTestResult(struct TestResult *result) {
+  result->failed_count_ = 0;
+  result->test_count_ = 0;
+  result->expected_failure_count_ = 0;
+  result->min_snr_ = 1000;
+}
+
 /*
  * For all FFT orders and signal types, run the inverse FFT.
  * runOneInverseTest must be defined to compute the forward FFT and
@@ -349,13 +356,16 @@ void RunInverseTests(struct TestResult* result, const struct TestInfo* info,
  * Run all forward and inverse FFT tests, printing a summary of the
  * results.
  */
-void RunAllTests(const struct TestInfo* info) {
+int RunAllTests(const struct TestInfo* info) {
   int failed;
   int total;
   float min_forward_snr;
   float min_inverse_snr;
   struct TestResult forward_results;
   struct TestResult inverse_results;
+
+  initializeTestResult(&forward_results);
+  initializeTestResult(&inverse_results);
 
   if (info->do_forward_tests_)
     RunForwardTests(&forward_results, info, info->forward_threshold_);
@@ -392,6 +402,8 @@ void RunAllTests(const struct TestInfo* info) {
   } else {
     printf("No tests run\n");
   }
+
+  return failed;
 }
 
 /*
