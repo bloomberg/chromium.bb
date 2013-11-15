@@ -148,14 +148,14 @@ PassRefPtr<TimeRanges> MediaSourceBase::buffered() const
     return intersectionRanges.release();
 }
 
-void MediaSourceBase::setDuration(double duration, ExceptionState& es)
+void MediaSourceBase::setDuration(double duration, ExceptionState& exceptionState)
 {
     if (duration < 0.0 || std::isnan(duration)) {
-        es.throwUninformativeAndGenericDOMException(InvalidAccessError);
+        exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
         return;
     }
     if (!isOpen()) {
-        es.throwUninformativeAndGenericDOMException(InvalidStateError);
+        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
 
@@ -186,7 +186,7 @@ void MediaSourceBase::setReadyState(const AtomicString& state)
     onReadyStateChange(oldState, state);
 }
 
-void MediaSourceBase::endOfStream(const AtomicString& error, ExceptionState& es)
+void MediaSourceBase::endOfStream(const AtomicString& error, ExceptionState& exceptionState)
 {
     DEFINE_STATIC_LOCAL(const AtomicString, network, ("network", AtomicString::ConstructFromLiteral));
     DEFINE_STATIC_LOCAL(const AtomicString, decode, ("decode", AtomicString::ConstructFromLiteral));
@@ -195,7 +195,7 @@ void MediaSourceBase::endOfStream(const AtomicString& error, ExceptionState& es)
     // 1. If the readyState attribute is not in the "open" state then throw an
     // InvalidStateError exception and abort these steps.
     if (!isOpen()) {
-        es.throwUninformativeAndGenericDOMException(InvalidStateError);
+        exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
         return;
     }
 
@@ -208,7 +208,7 @@ void MediaSourceBase::endOfStream(const AtomicString& error, ExceptionState& es)
     } else if (error == decode) {
         eosStatus = WebMediaSource::EndOfStreamStatusDecodeError;
     } else {
-        es.throwUninformativeAndGenericDOMException(InvalidAccessError);
+        exceptionState.throwUninformativeAndGenericDOMException(InvalidAccessError);
         return;
     }
 
@@ -267,7 +267,7 @@ void MediaSourceBase::stop()
     m_webMediaSource.clear();
 }
 
-PassOwnPtr<WebSourceBuffer> MediaSourceBase::createWebSourceBuffer(const String& type, const Vector<String>& codecs, ExceptionState& es)
+PassOwnPtr<WebSourceBuffer> MediaSourceBase::createWebSourceBuffer(const String& type, const Vector<String>& codecs, ExceptionState& exceptionState)
 {
     WebSourceBuffer* webSourceBuffer = 0;
     switch (m_webMediaSource->addSourceBuffer(type, codecs, &webSourceBuffer)) {
@@ -279,14 +279,14 @@ PassOwnPtr<WebSourceBuffer> MediaSourceBase::createWebSourceBuffer(const String&
         // Step 2: If type contains a MIME type ... that is not supported with the types
         // specified for the other SourceBuffer objects in sourceBuffers, then throw
         // a NotSupportedError exception and abort these steps.
-        es.throwUninformativeAndGenericDOMException(NotSupportedError);
+        exceptionState.throwUninformativeAndGenericDOMException(NotSupportedError);
         return nullptr;
     case WebMediaSource::AddStatusReachedIdLimit:
         ASSERT(!webSourceBuffer);
         // 2.2 https://dvcs.w3.org/hg/html-media/raw-file/default/media-source/media-source.html#widl-MediaSource-addSourceBuffer-SourceBuffer-DOMString-type
         // Step 3: If the user agent can't handle any more SourceBuffer objects then throw
         // a QuotaExceededError exception and abort these steps.
-        es.throwUninformativeAndGenericDOMException(QuotaExceededError);
+        exceptionState.throwUninformativeAndGenericDOMException(QuotaExceededError);
         return nullptr;
     }
 

@@ -96,32 +96,32 @@ IDBCursor::~IDBCursor()
 {
 }
 
-PassRefPtr<IDBRequest> IDBCursor::update(ScriptState* state, ScriptValue& value, ExceptionState& es)
+PassRefPtr<IDBRequest> IDBCursor::update(ScriptState* state, ScriptValue& value, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBCursor::update");
 
     if (!m_gotValue) {
-        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("update", "IDBCursor", IDBDatabase::noValueErrorMessage));
+        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("update", "IDBCursor", IDBDatabase::noValueErrorMessage));
         return 0;
     }
     if (isKeyCursor()) {
-        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("update", "IDBCursor", IDBDatabase::isKeyCursorErrorMessage));
+        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("update", "IDBCursor", IDBDatabase::isKeyCursorErrorMessage));
         return 0;
     }
     if (isDeleted()) {
-        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("update", "IDBCursor", IDBDatabase::sourceDeletedErrorMessage));
+        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("update", "IDBCursor", IDBDatabase::sourceDeletedErrorMessage));
         return 0;
     }
     if (m_transaction->isFinished()) {
-        es.throwDOMException(TransactionInactiveError, ExceptionMessages::failedToExecute("update", "IDBCursor", IDBDatabase::transactionFinishedErrorMessage));
+        exceptionState.throwDOMException(TransactionInactiveError, ExceptionMessages::failedToExecute("update", "IDBCursor", IDBDatabase::transactionFinishedErrorMessage));
         return 0;
     }
     if (!m_transaction->isActive()) {
-        es.throwDOMException(TransactionInactiveError, ExceptionMessages::failedToExecute("update", "IDBCursor", IDBDatabase::transactionInactiveErrorMessage));
+        exceptionState.throwDOMException(TransactionInactiveError, ExceptionMessages::failedToExecute("update", "IDBCursor", IDBDatabase::transactionInactiveErrorMessage));
         return 0;
     }
     if (m_transaction->isReadOnly()) {
-        es.throwDOMException(ReadOnlyError, ExceptionMessages::failedToExecute("update", "IDBCursor", "The record may not be updated inside a read-only transaction."));
+        exceptionState.throwDOMException(ReadOnlyError, ExceptionMessages::failedToExecute("update", "IDBCursor", "The record may not be updated inside a read-only transaction."));
         return 0;
     }
 
@@ -131,37 +131,37 @@ PassRefPtr<IDBRequest> IDBCursor::update(ScriptState* state, ScriptValue& value,
     if (usesInLineKeys) {
         RefPtr<IDBKey> keyPathKey = createIDBKeyFromScriptValueAndKeyPath(m_request->requestState(), value, keyPath);
         if (!keyPathKey || !keyPathKey->isEqual(m_primaryKey.get())) {
-            es.throwDOMException(DataError, ExceptionMessages::failedToExecute("update", "IDBCursor", "The effective object store of this cursor uses in-line keys and evaluating the key path of the value parameter results in a different value than the cursor's effective key."));
+            exceptionState.throwDOMException(DataError, ExceptionMessages::failedToExecute("update", "IDBCursor", "The effective object store of this cursor uses in-line keys and evaluating the key path of the value parameter results in a different value than the cursor's effective key."));
             return 0;
         }
     }
 
-    return objectStore->put(IDBDatabaseBackendInterface::CursorUpdate, IDBAny::create(this), state, value, m_primaryKey, es);
+    return objectStore->put(IDBDatabaseBackendInterface::CursorUpdate, IDBAny::create(this), state, value, m_primaryKey, exceptionState);
 }
 
-void IDBCursor::advance(unsigned long count, ExceptionState& es)
+void IDBCursor::advance(unsigned long count, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBCursor::advance");
     if (!m_gotValue) {
-        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("advance", "IDBCursor", IDBDatabase::noValueErrorMessage));
+        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("advance", "IDBCursor", IDBDatabase::noValueErrorMessage));
         return;
     }
     if (isDeleted()) {
-        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("advance", "IDBCursor", IDBDatabase::sourceDeletedErrorMessage));
+        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("advance", "IDBCursor", IDBDatabase::sourceDeletedErrorMessage));
         return;
     }
 
     if (m_transaction->isFinished()) {
-        es.throwDOMException(TransactionInactiveError, ExceptionMessages::failedToExecute("advance", "IDBCursor", IDBDatabase::transactionFinishedErrorMessage));
+        exceptionState.throwDOMException(TransactionInactiveError, ExceptionMessages::failedToExecute("advance", "IDBCursor", IDBDatabase::transactionFinishedErrorMessage));
         return;
     }
     if (!m_transaction->isActive()) {
-        es.throwDOMException(TransactionInactiveError, ExceptionMessages::failedToExecute("advance", "IDBCursor", IDBDatabase::transactionInactiveErrorMessage));
+        exceptionState.throwDOMException(TransactionInactiveError, ExceptionMessages::failedToExecute("advance", "IDBCursor", IDBDatabase::transactionInactiveErrorMessage));
         return;
     }
 
     if (!count) {
-        es.throwUninformativeAndGenericTypeError();
+        exceptionState.throwUninformativeAndGenericTypeError();
         return;
     }
 
@@ -170,37 +170,37 @@ void IDBCursor::advance(unsigned long count, ExceptionState& es)
     m_backend->advance(count, new blink::WebIDBCallbacks(m_request));
 }
 
-void IDBCursor::continueFunction(ExecutionContext* context, const ScriptValue& keyValue, ExceptionState& es)
+void IDBCursor::continueFunction(ExecutionContext* context, const ScriptValue& keyValue, ExceptionState& exceptionState)
 {
     DOMRequestState requestState(context);
     RefPtr<IDBKey> key = keyValue.isUndefined() ? 0 : scriptValueToIDBKey(&requestState, keyValue);
-    continueFunction(key.release(), es);
+    continueFunction(key.release(), exceptionState);
 }
 
-void IDBCursor::continueFunction(PassRefPtr<IDBKey> key, ExceptionState& es)
+void IDBCursor::continueFunction(PassRefPtr<IDBKey> key, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBCursor::continue");
     if (key && !key->isValid()) {
-        es.throwDOMException(DataError, ExceptionMessages::failedToExecute("continue", "IDBCursor", IDBDatabase::notValidKeyErrorMessage));
+        exceptionState.throwDOMException(DataError, ExceptionMessages::failedToExecute("continue", "IDBCursor", IDBDatabase::notValidKeyErrorMessage));
         return;
     }
 
     if (m_transaction->isFinished()) {
-        es.throwDOMException(TransactionInactiveError, ExceptionMessages::failedToExecute("continue", "IDBCursor", IDBDatabase::transactionFinishedErrorMessage));
+        exceptionState.throwDOMException(TransactionInactiveError, ExceptionMessages::failedToExecute("continue", "IDBCursor", IDBDatabase::transactionFinishedErrorMessage));
         return;
     }
     if (!m_transaction->isActive()) {
-        es.throwDOMException(TransactionInactiveError, ExceptionMessages::failedToExecute("continue", "IDBCursor", IDBDatabase::transactionInactiveErrorMessage));
+        exceptionState.throwDOMException(TransactionInactiveError, ExceptionMessages::failedToExecute("continue", "IDBCursor", IDBDatabase::transactionInactiveErrorMessage));
         return;
     }
 
     if (!m_gotValue) {
-        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("continue", "IDBCursor", IDBDatabase::noValueErrorMessage));
+        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("continue", "IDBCursor", IDBDatabase::noValueErrorMessage));
         return;
     }
 
     if (isDeleted()) {
-        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("continue", "IDBCursor", IDBDatabase::sourceDeletedErrorMessage));
+        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("continue", "IDBCursor", IDBDatabase::sourceDeletedErrorMessage));
         return;
     }
 
@@ -208,12 +208,12 @@ void IDBCursor::continueFunction(PassRefPtr<IDBKey> key, ExceptionState& es)
         ASSERT(m_key);
         if (m_direction == IndexedDB::CursorNext || m_direction == IndexedDB::CursorNextNoDuplicate) {
             if (!m_key->isLessThan(key.get())) {
-                es.throwDOMException(DataError, ExceptionMessages::failedToExecute("continue", "IDBCursor", "The parameter is less than or equal to this cursor's position."));
+                exceptionState.throwDOMException(DataError, ExceptionMessages::failedToExecute("continue", "IDBCursor", "The parameter is less than or equal to this cursor's position."));
                 return;
             }
         } else {
             if (!key->isLessThan(m_key.get())) {
-                es.throwDOMException(DataError, ExceptionMessages::failedToExecute("continue", "IDBCursor", "The parameter is greater than or equal to this cursor's position."));
+                exceptionState.throwDOMException(DataError, ExceptionMessages::failedToExecute("continue", "IDBCursor", "The parameter is greater than or equal to this cursor's position."));
                 return;
             }
         }
@@ -226,37 +226,37 @@ void IDBCursor::continueFunction(PassRefPtr<IDBKey> key, ExceptionState& es)
     m_backend->continueFunction(key, new blink::WebIDBCallbacks(m_request));
 }
 
-PassRefPtr<IDBRequest> IDBCursor::deleteFunction(ExecutionContext* context, ExceptionState& es)
+PassRefPtr<IDBRequest> IDBCursor::deleteFunction(ExecutionContext* context, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBCursor::delete");
     if (m_transaction->isFinished()) {
-        es.throwDOMException(TransactionInactiveError, ExceptionMessages::failedToExecute("delete", "IDBCursor", IDBDatabase::transactionFinishedErrorMessage));
+        exceptionState.throwDOMException(TransactionInactiveError, ExceptionMessages::failedToExecute("delete", "IDBCursor", IDBDatabase::transactionFinishedErrorMessage));
         return 0;
     }
     if (!m_transaction->isActive()) {
-        es.throwDOMException(TransactionInactiveError, ExceptionMessages::failedToExecute("delete", "IDBCursor", IDBDatabase::transactionInactiveErrorMessage));
+        exceptionState.throwDOMException(TransactionInactiveError, ExceptionMessages::failedToExecute("delete", "IDBCursor", IDBDatabase::transactionInactiveErrorMessage));
         return 0;
     }
     if (m_transaction->isReadOnly()) {
-        es.throwDOMException(ReadOnlyError, ExceptionMessages::failedToExecute("delete", "IDBCursor", "The record may not be deleted inside a read-only transaction."));
+        exceptionState.throwDOMException(ReadOnlyError, ExceptionMessages::failedToExecute("delete", "IDBCursor", "The record may not be deleted inside a read-only transaction."));
         return 0;
     }
 
     if (!m_gotValue) {
-        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("delete", "IDBCursor", IDBDatabase::noValueErrorMessage));
+        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("delete", "IDBCursor", IDBDatabase::noValueErrorMessage));
         return 0;
     }
     if (isKeyCursor()) {
-        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("delete", "IDBCursor", IDBDatabase::isKeyCursorErrorMessage));
+        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("delete", "IDBCursor", IDBDatabase::isKeyCursorErrorMessage));
         return 0;
     }
     if (isDeleted()) {
-        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("delete", "IDBCursor", IDBDatabase::sourceDeletedErrorMessage));
+        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("delete", "IDBCursor", IDBDatabase::sourceDeletedErrorMessage));
         return 0;
     }
 
-    RefPtr<IDBKeyRange> keyRange = IDBKeyRange::only(m_primaryKey, es);
-    ASSERT(!es.hadException());
+    RefPtr<IDBKeyRange> keyRange = IDBKeyRange::only(m_primaryKey, exceptionState);
+    ASSERT(!exceptionState.hadException());
 
     RefPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
     m_transaction->backendDB()->deleteRange(m_transaction->id(), effectiveObjectStore()->id(), keyRange, request);
@@ -356,7 +356,7 @@ bool IDBCursor::isDeleted() const
     return m_source->idbIndex()->isDeleted();
 }
 
-IndexedDB::CursorDirection IDBCursor::stringToDirection(const String& directionString, ExceptionState& es)
+IndexedDB::CursorDirection IDBCursor::stringToDirection(const String& directionString, ExceptionState& exceptionState)
 {
     if (directionString.isNull() || directionString == IDBCursor::directionNext())
         return IndexedDB::CursorNext;
@@ -367,7 +367,7 @@ IndexedDB::CursorDirection IDBCursor::stringToDirection(const String& directionS
     if (directionString == IDBCursor::directionPrevUnique())
         return IndexedDB::CursorPrevNoDuplicate;
 
-    es.throwUninformativeAndGenericTypeError();
+    exceptionState.throwUninformativeAndGenericTypeError();
     return IndexedDB::CursorNext;
 }
 

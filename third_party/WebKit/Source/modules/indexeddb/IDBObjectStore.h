@@ -71,8 +71,8 @@ public:
     PassRefPtr<IDBRequest> deleteFunction(ExecutionContext*, const ScriptValue& key, ExceptionState&);
     PassRefPtr<IDBRequest> clear(ExecutionContext*, ExceptionState&);
 
-    PassRefPtr<IDBIndex> createIndex(ExecutionContext* context, const String& name, const String& keyPath, const Dictionary& options, ExceptionState& es) { return createIndex(context, name, IDBKeyPath(keyPath), options, es); }
-    PassRefPtr<IDBIndex> createIndex(ExecutionContext* context, const String& name, const Vector<String>& keyPath, const Dictionary& options, ExceptionState& es) { return createIndex(context, name, IDBKeyPath(keyPath), options, es); }
+    PassRefPtr<IDBIndex> createIndex(ExecutionContext* context, const String& name, const String& keyPath, const Dictionary& options, ExceptionState& exceptionState) { return createIndex(context, name, IDBKeyPath(keyPath), options, exceptionState); }
+    PassRefPtr<IDBIndex> createIndex(ExecutionContext* context, const String& name, const Vector<String>& keyPath, const Dictionary& options, ExceptionState& exceptionState) { return createIndex(context, name, IDBKeyPath(keyPath), options, exceptionState); }
     PassRefPtr<IDBIndex> index(const String& name, ExceptionState&);
     void deleteIndex(const String& name, ExceptionState&);
 

@@ -338,13 +338,13 @@ void AudioBufferSourceNode::reset()
     m_lastGain = gain()->value();
 }
 
-void AudioBufferSourceNode::setBuffer(AudioBuffer* buffer, ExceptionState& es)
+void AudioBufferSourceNode::setBuffer(AudioBuffer* buffer, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
     // FIXME: It does not look like we should throw if the buffer is null as
     // the attribute is nullable in the specification.
     if (!buffer) {
-        es.throwTypeError("buffer cannot be null");
+        exceptionState.throwTypeError("buffer cannot be null");
         return;
     }
 
@@ -359,7 +359,7 @@ void AudioBufferSourceNode::setBuffer(AudioBuffer* buffer, ExceptionState& es)
         unsigned numberOfChannels = buffer->numberOfChannels();
 
         if (numberOfChannels > AudioContext::maxNumberOfChannels()) {
-            es.throwTypeError("number of input channels (" + String::number(numberOfChannels)
+            exceptionState.throwTypeError("number of input channels (" + String::number(numberOfChannels)
                 + ") exceeds maximum ("
                 + String::number(AudioContext::maxNumberOfChannels()) + ").");
             return;
@@ -383,32 +383,32 @@ unsigned AudioBufferSourceNode::numberOfChannels()
     return output(0)->numberOfChannels();
 }
 
-void AudioBufferSourceNode::start(ExceptionState& es)
+void AudioBufferSourceNode::start(ExceptionState& exceptionState)
 {
-    startPlaying(false, 0, 0, buffer() ? buffer()->duration() : 0, es);
+    startPlaying(false, 0, 0, buffer() ? buffer()->duration() : 0, exceptionState);
 }
 
-void AudioBufferSourceNode::start(double when, ExceptionState& es)
+void AudioBufferSourceNode::start(double when, ExceptionState& exceptionState)
 {
-    startPlaying(false, when, 0, buffer() ? buffer()->duration() : 0, es);
+    startPlaying(false, when, 0, buffer() ? buffer()->duration() : 0, exceptionState);
 }
 
-void AudioBufferSourceNode::start(double when, double grainOffset, ExceptionState& es)
+void AudioBufferSourceNode::start(double when, double grainOffset, ExceptionState& exceptionState)
 {
-    startPlaying(true, when, grainOffset, buffer() ? buffer()->duration() : 0, es);
+    startPlaying(true, when, grainOffset, buffer() ? buffer()->duration() : 0, exceptionState);
 }
 
-void AudioBufferSourceNode::start(double when, double grainOffset, double grainDuration, ExceptionState& es)
+void AudioBufferSourceNode::start(double when, double grainOffset, double grainDuration, ExceptionState& exceptionState)
 {
-    startPlaying(true, when, grainOffset, grainDuration, es);
+    startPlaying(true, when, grainOffset, grainDuration, exceptionState);
 }
 
-void AudioBufferSourceNode::startPlaying(bool isGrain, double when, double grainOffset, double grainDuration, ExceptionState& es)
+void AudioBufferSourceNode::startPlaying(bool isGrain, double when, double grainOffset, double grainDuration, ExceptionState& exceptionState)
 {
     ASSERT(isMainThread());
 
     if (m_playbackState != UNSCHEDULED_STATE) {
-        es.throwDOMException(
+        exceptionState.throwDOMException(
             InvalidStateError,
             ExceptionMessages::failedToExecute(
                 "start",
@@ -447,12 +447,12 @@ void AudioBufferSourceNode::startPlaying(bool isGrain, double when, double grain
     m_playbackState = SCHEDULED_STATE;
 }
 
-void AudioBufferSourceNode::noteGrainOn(double when, double grainOffset, double grainDuration, ExceptionState& es)
+void AudioBufferSourceNode::noteGrainOn(double when, double grainOffset, double grainDuration, ExceptionState& exceptionState)
 {
     // Handle unspecified duration where 0 means the rest of the buffer.
     if (!grainDuration && buffer())
         grainDuration = buffer()->duration();
-    startPlaying(true, when, grainOffset, grainDuration, es);
+    startPlaying(true, when, grainOffset, grainDuration, exceptionState);
 }
 
 double AudioBufferSourceNode::totalPitchRate()

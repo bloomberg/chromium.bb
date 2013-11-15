@@ -45,11 +45,11 @@ PassRefPtr<SpeechRecognition> SpeechRecognition::create(ExecutionContext* contex
     return speechRecognition.release();
 }
 
-void SpeechRecognition::start(ExceptionState& es)
+void SpeechRecognition::start(ExceptionState& exceptionState)
 {
     ASSERT(m_controller);
     if (m_started) {
-        es.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("start", "SpeechRecognition", "recognition has already started."));
+        exceptionState.throwDOMException(InvalidStateError, ExceptionMessages::failedToExecute("start", "SpeechRecognition", "recognition has already started."));
         return;
     }
 

@@ -57,13 +57,13 @@ public:
     static PassRefPtr<NotificationCenter> create(ExecutionContext*, NotificationClient*);
 
 #if ENABLE(LEGACY_NOTIFICATIONS)
-    PassRefPtr<Notification> createNotification(const String& iconURI, const String& title, const String& body, ExceptionState& es)
+    PassRefPtr<Notification> createNotification(const String& iconURI, const String& title, const String& body, ExceptionState& exceptionState)
     {
         if (!client()) {
-            es.throwUninformativeAndGenericDOMException(InvalidStateError);
+            exceptionState.throwUninformativeAndGenericDOMException(InvalidStateError);
             return 0;
         }
-        return Notification::create(title, body, iconURI, executionContext(), es, this);
+        return Notification::create(title, body, iconURI, executionContext(), exceptionState, this);
     }
 #endif
 

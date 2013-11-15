@@ -40,11 +40,11 @@
 
 namespace WebCore {
 
-PassRefPtr<MediaConstraintsImpl> MediaConstraintsImpl::create(const Dictionary& constraints, ExceptionState& es)
+PassRefPtr<MediaConstraintsImpl> MediaConstraintsImpl::create(const Dictionary& constraints, ExceptionState& exceptionState)
 {
     RefPtr<MediaConstraintsImpl> object = adoptRef(new MediaConstraintsImpl());
     if (!object->initialize(constraints)) {
-        es.throwUninformativeAndGenericDOMException(TypeMismatchError);
+        exceptionState.throwUninformativeAndGenericDOMException(TypeMismatchError);
         return 0;
     }
     return object.release();

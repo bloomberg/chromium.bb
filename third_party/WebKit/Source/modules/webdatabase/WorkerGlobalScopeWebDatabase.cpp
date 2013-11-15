@@ -42,7 +42,7 @@
 
 namespace WebCore {
 
-PassRefPtr<Database> WorkerGlobalScopeWebDatabase::openDatabase(WorkerGlobalScope* context, const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassRefPtr<DatabaseCallback> creationCallback, ExceptionState& es)
+PassRefPtr<Database> WorkerGlobalScopeWebDatabase::openDatabase(WorkerGlobalScope* context, const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassRefPtr<DatabaseCallback> creationCallback, ExceptionState& exceptionState)
 {
     DatabaseManager& dbManager = DatabaseManager::manager();
     RefPtr<Database> database;
@@ -52,15 +52,15 @@ PassRefPtr<Database> WorkerGlobalScopeWebDatabase::openDatabase(WorkerGlobalScop
         database = dbManager.openDatabase(context, name, version, displayName, estimatedSize, creationCallback, error, errorMessage);
         ASSERT(database || error != DatabaseError::None);
         if (error != DatabaseError::None)
-            DatabaseManager::throwExceptionForDatabaseError("openDatabase", "WorkerGlobalScope", error, errorMessage, es);
+            DatabaseManager::throwExceptionForDatabaseError("openDatabase", "WorkerGlobalScope", error, errorMessage, exceptionState);
     } else {
-        es.throwSecurityError(ExceptionMessages::failedToExecute("openDatabase", "WorkerGlobalScope", "Access to the WebDatabase API is denied in this context."));
+        exceptionState.throwSecurityError(ExceptionMessages::failedToExecute("openDatabase", "WorkerGlobalScope", "Access to the WebDatabase API is denied in this context."));
     }
 
     return database.release();
 }
 
-PassRefPtr<DatabaseSync> WorkerGlobalScopeWebDatabase::openDatabaseSync(WorkerGlobalScope* context, const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassRefPtr<DatabaseCallback> creationCallback, ExceptionState& es)
+PassRefPtr<DatabaseSync> WorkerGlobalScopeWebDatabase::openDatabaseSync(WorkerGlobalScope* context, const String& name, const String& version, const String& displayName, unsigned long estimatedSize, PassRefPtr<DatabaseCallback> creationCallback, ExceptionState& exceptionState)
 {
     DatabaseManager& dbManager = DatabaseManager::manager();
     RefPtr<DatabaseSync> database;
@@ -70,9 +70,9 @@ PassRefPtr<DatabaseSync> WorkerGlobalScopeWebDatabase::openDatabaseSync(WorkerGl
         database = dbManager.openDatabaseSync(context, name, version, displayName, estimatedSize, creationCallback, error, errorMessage);
         ASSERT(database || error != DatabaseError::None);
         if (error != DatabaseError::None)
-            DatabaseManager::throwExceptionForDatabaseError("openDatabaseSync", "WorkerGlobalScope", error, errorMessage, es);
+            DatabaseManager::throwExceptionForDatabaseError("openDatabaseSync", "WorkerGlobalScope", error, errorMessage, exceptionState);
     } else {
-        es.throwSecurityError(ExceptionMessages::failedToExecute("openDatabaseSync", "WorkerGlobalScope", "Access to the WebDatabase API is denied in this context."));
+        exceptionState.throwSecurityError(ExceptionMessages::failedToExecute("openDatabaseSync", "WorkerGlobalScope", "Access to the WebDatabase API is denied in this context."));
     }
 
     return database.release();

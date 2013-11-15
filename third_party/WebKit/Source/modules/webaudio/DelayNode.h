@@ -36,9 +36,9 @@ class ExceptionState;
 
 class DelayNode : public AudioBasicProcessorNode {
 public:
-    static PassRefPtr<DelayNode> create(AudioContext* context, float sampleRate, double maxDelayTime, ExceptionState& es)
+    static PassRefPtr<DelayNode> create(AudioContext* context, float sampleRate, double maxDelayTime, ExceptionState& exceptionState)
     {
-        return adoptRef(new DelayNode(context, sampleRate, maxDelayTime, es));
+        return adoptRef(new DelayNode(context, sampleRate, maxDelayTime, exceptionState));
     }
 
     AudioParam* delayTime();

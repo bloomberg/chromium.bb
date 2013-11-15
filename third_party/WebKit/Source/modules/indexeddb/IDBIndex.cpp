@@ -51,27 +51,27 @@ IDBIndex::~IDBIndex()
 {
 }
 
-PassRefPtr<IDBRequest> IDBIndex::openCursor(ExecutionContext* context, const ScriptValue& range, const String& directionString, ExceptionState& es)
+PassRefPtr<IDBRequest> IDBIndex::openCursor(ExecutionContext* context, const ScriptValue& range, const String& directionString, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBIndex::openCursor");
     if (isDeleted()) {
-        es.throwDOMException(InvalidStateError, IDBDatabase::indexDeletedErrorMessage);
+        exceptionState.throwDOMException(InvalidStateError, IDBDatabase::indexDeletedErrorMessage);
         return 0;
     }
     if (m_transaction->isFinished()) {
-        es.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
+        exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
         return 0;
     }
     if (!m_transaction->isActive()) {
-        es.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
+        exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
         return 0;
     }
-    IndexedDB::CursorDirection direction = IDBCursor::stringToDirection(directionString, es);
-    if (es.hadException())
+    IndexedDB::CursorDirection direction = IDBCursor::stringToDirection(directionString, exceptionState);
+    if (exceptionState.hadException())
         return 0;
 
-    RefPtr<IDBKeyRange> keyRange = IDBKeyRange::fromScriptValue(context, range, es);
-    if (es.hadException())
+    RefPtr<IDBKeyRange> keyRange = IDBKeyRange::fromScriptValue(context, range, exceptionState);
+    if (exceptionState.hadException())
         return 0;
 
     return openCursor(context, keyRange, direction);
@@ -85,24 +85,24 @@ PassRefPtr<IDBRequest> IDBIndex::openCursor(ExecutionContext* context, PassRefPt
     return request;
 }
 
-PassRefPtr<IDBRequest> IDBIndex::count(ExecutionContext* context, const ScriptValue& range, ExceptionState& es)
+PassRefPtr<IDBRequest> IDBIndex::count(ExecutionContext* context, const ScriptValue& range, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBIndex::count");
     if (isDeleted()) {
-        es.throwDOMException(InvalidStateError, IDBDatabase::indexDeletedErrorMessage);
+        exceptionState.throwDOMException(InvalidStateError, IDBDatabase::indexDeletedErrorMessage);
         return 0;
     }
     if (m_transaction->isFinished()) {
-        es.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
+        exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
         return 0;
     }
     if (!m_transaction->isActive()) {
-        es.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
+        exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
         return 0;
     }
 
-    RefPtr<IDBKeyRange> keyRange = IDBKeyRange::fromScriptValue(context, range, es);
-    if (es.hadException())
+    RefPtr<IDBKeyRange> keyRange = IDBKeyRange::fromScriptValue(context, range, exceptionState);
+    if (exceptionState.hadException())
         return 0;
 
     RefPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
@@ -110,27 +110,27 @@ PassRefPtr<IDBRequest> IDBIndex::count(ExecutionContext* context, const ScriptVa
     return request;
 }
 
-PassRefPtr<IDBRequest> IDBIndex::openKeyCursor(ExecutionContext* context, const ScriptValue& range, const String& directionString, ExceptionState& es)
+PassRefPtr<IDBRequest> IDBIndex::openKeyCursor(ExecutionContext* context, const ScriptValue& range, const String& directionString, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBIndex::openKeyCursor");
     if (isDeleted()) {
-        es.throwDOMException(InvalidStateError, IDBDatabase::indexDeletedErrorMessage);
+        exceptionState.throwDOMException(InvalidStateError, IDBDatabase::indexDeletedErrorMessage);
         return 0;
     }
     if (m_transaction->isFinished()) {
-        es.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
+        exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
         return 0;
     }
     if (!m_transaction->isActive()) {
-        es.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
+        exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
         return 0;
     }
-    IndexedDB::CursorDirection direction = IDBCursor::stringToDirection(directionString, es);
-    if (es.hadException())
+    IndexedDB::CursorDirection direction = IDBCursor::stringToDirection(directionString, exceptionState);
+    if (exceptionState.hadException())
         return 0;
 
-    RefPtr<IDBKeyRange> keyRange = IDBKeyRange::fromScriptValue(context, range, es);
-    if (es.hadException())
+    RefPtr<IDBKeyRange> keyRange = IDBKeyRange::fromScriptValue(context, range, exceptionState);
+    if (exceptionState.hadException())
         return 0;
 
     RefPtr<IDBRequest> request = IDBRequest::create(context, IDBAny::create(this), m_transaction.get());
@@ -139,27 +139,27 @@ PassRefPtr<IDBRequest> IDBIndex::openKeyCursor(ExecutionContext* context, const 
     return request;
 }
 
-PassRefPtr<IDBRequest> IDBIndex::get(ExecutionContext* context, const ScriptValue& key, ExceptionState& es)
+PassRefPtr<IDBRequest> IDBIndex::get(ExecutionContext* context, const ScriptValue& key, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBIndex::get");
     if (isDeleted()) {
-        es.throwDOMException(InvalidStateError, IDBDatabase::indexDeletedErrorMessage);
+        exceptionState.throwDOMException(InvalidStateError, IDBDatabase::indexDeletedErrorMessage);
         return 0;
     }
     if (m_transaction->isFinished()) {
-        es.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
+        exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
         return 0;
     }
     if (!m_transaction->isActive()) {
-        es.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
+        exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
         return 0;
     }
 
-    RefPtr<IDBKeyRange> keyRange = IDBKeyRange::fromScriptValue(context, key, es);
-    if (es.hadException())
+    RefPtr<IDBKeyRange> keyRange = IDBKeyRange::fromScriptValue(context, key, exceptionState);
+    if (exceptionState.hadException())
         return 0;
     if (!keyRange) {
-        es.throwDOMException(DataError, IDBDatabase::noKeyOrKeyRangeErrorMessage);
+        exceptionState.throwDOMException(DataError, IDBDatabase::noKeyOrKeyRangeErrorMessage);
         return 0;
     }
 
@@ -168,27 +168,27 @@ PassRefPtr<IDBRequest> IDBIndex::get(ExecutionContext* context, const ScriptValu
     return request;
 }
 
-PassRefPtr<IDBRequest> IDBIndex::getKey(ExecutionContext* context, const ScriptValue& key, ExceptionState& es)
+PassRefPtr<IDBRequest> IDBIndex::getKey(ExecutionContext* context, const ScriptValue& key, ExceptionState& exceptionState)
 {
     IDB_TRACE("IDBIndex::getKey");
     if (isDeleted()) {
-        es.throwDOMException(InvalidStateError, IDBDatabase::indexDeletedErrorMessage);
+        exceptionState.throwDOMException(InvalidStateError, IDBDatabase::indexDeletedErrorMessage);
         return 0;
     }
     if (m_transaction->isFinished()) {
-        es.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
+        exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionFinishedErrorMessage);
         return 0;
     }
     if (!m_transaction->isActive()) {
-        es.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
+        exceptionState.throwDOMException(TransactionInactiveError, IDBDatabase::transactionInactiveErrorMessage);
         return 0;
     }
 
-    RefPtr<IDBKeyRange> keyRange = IDBKeyRange::fromScriptValue(context, key, es);
-    if (es.hadException())
+    RefPtr<IDBKeyRange> keyRange = IDBKeyRange::fromScriptValue(context, key, exceptionState);
+    if (exceptionState.hadException())
         return 0;
     if (!keyRange) {
-        es.throwDOMException(DataError, IDBDatabase::noKeyOrKeyRangeErrorMessage);
+        exceptionState.throwDOMException(DataError, IDBDatabase::noKeyOrKeyRangeErrorMessage);
         return 0;
     }
 

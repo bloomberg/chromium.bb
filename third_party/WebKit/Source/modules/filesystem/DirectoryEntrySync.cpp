@@ -51,36 +51,36 @@ PassRefPtr<DirectoryReaderSync> DirectoryEntrySync::createReader()
     return DirectoryReaderSync::create(m_fileSystem, m_fullPath);
 }
 
-PassRefPtr<FileEntrySync> DirectoryEntrySync::getFile(const String& path, const Dictionary& options, ExceptionState& es)
+PassRefPtr<FileEntrySync> DirectoryEntrySync::getFile(const String& path, const Dictionary& options, ExceptionState& exceptionState)
 {
     FileSystemFlags flags(options);
     EntrySyncCallbackHelper helper;
     if (!m_fileSystem->getFile(this, path, flags, helper.successCallback(), helper.errorCallback(), DOMFileSystemBase::Synchronous)) {
-        es.throwDOMException(InvalidModificationError, ExceptionMessages::failedToExecute("getFile", "DirectoryEntrySync"));
+        exceptionState.throwDOMException(InvalidModificationError, ExceptionMessages::failedToExecute("getFile", "DirectoryEntrySync"));
         return 0;
     }
-    return static_pointer_cast<FileEntrySync>(helper.getResult(es));
+    return static_pointer_cast<FileEntrySync>(helper.getResult(exceptionState));
 }
 
-PassRefPtr<DirectoryEntrySync> DirectoryEntrySync::getDirectory(const String& path, const Dictionary& options, ExceptionState& es)
+PassRefPtr<DirectoryEntrySync> DirectoryEntrySync::getDirectory(const String& path, const Dictionary& options, ExceptionState& exceptionState)
 {
     FileSystemFlags flags(options);
     EntrySyncCallbackHelper helper;
     if (!m_fileSystem->getDirectory(this, path, flags, helper.successCallback(), helper.errorCallback(), DOMFileSystemBase::Synchronous)) {
-        es.throwDOMException(InvalidModificationError, ExceptionMessages::failedToExecute("getDirectory", "DirectoryEntrySync"));
+        exceptionState.throwDOMException(InvalidModificationError, ExceptionMessages::failedToExecute("getDirectory", "DirectoryEntrySync"));
         return 0;
     }
-    return static_pointer_cast<DirectoryEntrySync>(helper.getResult(es));
+    return static_pointer_cast<DirectoryEntrySync>(helper.getResult(exceptionState));
 }
 
-void DirectoryEntrySync::removeRecursively(ExceptionState& es)
+void DirectoryEntrySync::removeRecursively(ExceptionState& exceptionState)
 {
     VoidSyncCallbackHelper helper;
     if (!m_fileSystem->removeRecursively(this, helper.successCallback(), helper.errorCallback(), DOMFileSystemBase::Synchronous)) {
-        es.throwDOMException(InvalidModificationError, ExceptionMessages::failedToExecute("removeRecursively", "DirectoryEntrySync"));
+        exceptionState.throwDOMException(InvalidModificationError, ExceptionMessages::failedToExecute("removeRecursively", "DirectoryEntrySync"));
         return;
     }
-    helper.getResult(es);
+    helper.getResult(exceptionState);
 }
 
 }
