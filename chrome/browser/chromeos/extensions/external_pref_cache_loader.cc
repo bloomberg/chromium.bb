@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/singleton.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/sequenced_worker_pool.h"
 #include "base/values.h"
@@ -29,13 +28,19 @@ namespace {
 // Directory where the extensions are cached.
 const char kPreinstalledAppsCacheDir[] = "/var/cache/external_cache";
 
-// Singleton class that holds ExternalCache and dispatches cache update events
+}  // namespace
+
+// Ref-counted class that holds ExternalCache and dispatches cache update events
 // to per-profile instances of ExternalPrefCacheLoader. This multiplexing
 // is required for multi-profile case.
-class ExternalCacheDispatcher : public ExternalCache::Delegate {
+class ExternalCacheDispatcher
+    : public ExternalCache::Delegate,
+      public base::RefCounted<ExternalCacheDispatcher> {
  public:
   static ExternalCacheDispatcher* GetInstance() {
-    return Singleton<ExternalCacheDispatcher>::get();
+    if (!ExternalCacheDispatcher::instance_)
+      ExternalCacheDispatcher::instance_ = new ExternalCacheDispatcher;
+    return instance_;
   }
 
   // Implementation of ExternalCache::Delegate:
@@ -100,7 +105,7 @@ class ExternalCacheDispatcher : public ExternalCache::Delegate {
   }
 
  private:
-  friend struct DefaultSingletonTraits<ExternalCacheDispatcher>;
+  friend class base::RefCounted<ExternalCacheDispatcher>;
 
   typedef std::map<ExternalPrefCacheLoader*, Profile*> LoadersMap;
 
@@ -117,6 +122,11 @@ class ExternalCacheDispatcher : public ExternalCache::Delegate {
                       true),
       base_path_id_(0),
       is_extensions_list_ready_(false) {
+    DCHECK(!ExternalCacheDispatcher::instance_);
+  }
+
+  virtual ~ExternalCacheDispatcher() {
+    ExternalCacheDispatcher::instance_ = NULL;
   }
 
   ExternalCache external_cache_;
@@ -124,20 +134,22 @@ class ExternalCacheDispatcher : public ExternalCache::Delegate {
   int base_path_id_;
   bool is_extensions_list_ready_;
 
+  static ExternalCacheDispatcher* instance_;
+
   DISALLOW_COPY_AND_ASSIGN(ExternalCacheDispatcher);
 };
 
-}  // namespace
+ExternalCacheDispatcher* ExternalCacheDispatcher::instance_ = NULL;
 
 ExternalPrefCacheLoader::ExternalPrefCacheLoader(int base_path_id,
                                                  Profile* profile)
   : ExternalPrefLoader(base_path_id, ExternalPrefLoader::NONE),
-    profile_(profile) {
+    profile_(profile),
+    cache_dispatcher_(ExternalCacheDispatcher::GetInstance()) {
 }
 
 ExternalPrefCacheLoader::~ExternalPrefCacheLoader() {
-  ExternalCacheDispatcher::GetInstance()->UnregisterExternalPrefCacheLoader(
-      this);
+  cache_dispatcher_->UnregisterExternalPrefCacheLoader(this);
 }
 
 void ExternalPrefCacheLoader::OnExtensionListsUpdated(
@@ -147,7 +159,7 @@ void ExternalPrefCacheLoader::OnExtensionListsUpdated(
 }
 
 void ExternalPrefCacheLoader::StartLoading() {
-  if (!ExternalCacheDispatcher::GetInstance()->RegisterExternalPrefCacheLoader(
+  if (!cache_dispatcher_->RegisterExternalPrefCacheLoader(
           this, base_path_id_, profile_)) {
     // ExternalCacheDispatcher doesn't know list of extensions load it.
     ExternalPrefLoader::StartLoading();
@@ -155,7 +167,7 @@ void ExternalPrefCacheLoader::StartLoading() {
 }
 
 void ExternalPrefCacheLoader::LoadFinished() {
-  ExternalCacheDispatcher::GetInstance()->UpdateExtensionsList(prefs_.Pass());
+  cache_dispatcher_->UpdateExtensionsList(prefs_.Pass());
 }
 
 }  // namespace chromeos

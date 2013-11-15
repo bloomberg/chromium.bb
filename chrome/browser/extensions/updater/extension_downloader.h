@@ -196,7 +196,7 @@ class ExtensionDownloader : public net::URLFetcherDelegate {
   ExtensionDownloaderDelegate* delegate_;
 
   // The request context to use for the URLFetchers.
-  net::URLRequestContextGetter* request_context_;
+  scoped_refptr<net::URLRequestContextGetter> request_context_;
 
   // Used to create WeakPtrs to |this|.
   base::WeakPtrFactory<ExtensionDownloader> weak_ptr_factory_;

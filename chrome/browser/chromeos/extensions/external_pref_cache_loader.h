@@ -5,11 +5,14 @@
 #ifndef CHROME_BROWSER_CHROMEOS_EXTENSIONS_EXTERNAL_PREF_CACHE_LOADER_H_
 #define CHROME_BROWSER_CHROMEOS_EXTENSIONS_EXTERNAL_PREF_CACHE_LOADER_H_
 
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/external_pref_loader.h"
 
 class Profile;
 
 namespace chromeos {
+
+class ExternalCacheDispatcher;
 
 // A specialization of the ExternalPrefLoader that caches crx files for external
 // extensions with update URL in a common place for all users on the machine.
@@ -32,6 +35,7 @@ class ExternalPrefCacheLoader : public extensions::ExternalPrefLoader {
   virtual void LoadFinished() OVERRIDE;
 
   Profile* profile_;
+  scoped_refptr<ExternalCacheDispatcher> cache_dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalPrefCacheLoader);
 };
