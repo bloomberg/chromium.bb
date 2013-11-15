@@ -650,18 +650,17 @@ void AutofillDialogControllerImpl::Show() {
 
   SubmitButtonDelayBegin();
 
+  if (account_chooser_model_.WalletIsSelected())
+    FetchWalletCookie();
+
   // TODO(estade): don't show the dialog if the site didn't specify the right
   // fields. First we must figure out what the "right" fields are.
   view_.reset(CreateView());
   view_->Show();
   GetManager()->AddObserver(this);
 
-  if (!account_chooser_model_.WalletIsSelected()) {
+  if (!account_chooser_model_.WalletIsSelected())
     LogDialogLatencyToShow();
-  } else {
-    // TODO(aruslan): UMA metrics for sign-in.
-    FetchWalletCookie();
-  }
 }
 
 void AutofillDialogControllerImpl::Hide() {
