@@ -165,9 +165,6 @@ void WindowModalityController::OnWindowVisibilityChanged(
       ui::MODAL_TYPE_NONE) {
     ui::GestureRecognizer::Get()->TransferEventsTo(
         window->transient_parent(), NULL);
-  }
-  if (visible && window->GetProperty(aura::client::kModalKey) ==
-      ui::MODAL_TYPE_WINDOW) {
     // Make sure no other window has capture, otherwise |window| won't get mouse
     // events.
     aura::Window* capture_window = aura::client::GetCaptureWindow(window);
