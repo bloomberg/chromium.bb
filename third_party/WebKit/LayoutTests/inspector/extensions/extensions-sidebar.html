@@ -37,8 +37,9 @@ function extension_sidebarSetPage(panelName, nextTest)
     {
         output("Sidebar created");
         dumpObject(sidebar);
-        function onShown()
+        function onShown(win)
         {
+            output("sidebar height " + win.document.documentElement.getBoundingClientRect().height);
             sidebar.onShown.removeListener(onShown);
             nextTest();
         }

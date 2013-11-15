@@ -44,6 +44,7 @@ Sidebar created
     setObject : <function>
     setPage : <function>
 }
+sidebar height 150
 RUNNING TEST: extension_testSourcesSidebarPageReplacedWithObject
 Got onShown(), frame defined
 Got onShown(), frame not defined
@@ -87,5 +88,6 @@ Sidebar created
     setObject : <function>
     setPage : <function>
 }
+sidebar height 150
 All tests done.
 
