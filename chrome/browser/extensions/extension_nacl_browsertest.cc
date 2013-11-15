@@ -189,7 +189,8 @@ IN_PROC_BROWSER_TEST_F(NaClExtensionTest, DISABLED_UnpackedExtension) {
 
 // Test that the NaCl plugin is blocked for non chrome-extension urls, except
 // if it's a content (MIME type) handler.
-IN_PROC_BROWSER_TEST_F(NaClExtensionTest, NonExtensionScheme) {
+// Disabled: http://crbug.com/319892
+IN_PROC_BROWSER_TEST_F(NaClExtensionTest, DISABLED_NonExtensionScheme) {
   ASSERT_TRUE(test_server()->Start());
 
   const Extension* extension = InstallExtension(INSTALL_TYPE_FROM_WEBSTORE);
