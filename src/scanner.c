@@ -76,6 +76,7 @@ struct message {
 	struct wl_list arg_list;
 	struct wl_list link;
 	int arg_count;
+	int new_id_count;
 	int type_index;
 	int all_null;
 	int destructor;
@@ -353,6 +354,7 @@ start_element(void *data, const char *element_name, const char **atts)
 		message->uppercase_name = uppercase_dup(name);
 		wl_list_init(&message->arg_list);
 		message->arg_count = 0;
+		message->new_id_count = 0;
 		message->description = NULL;
 
 		if (strcmp(element_name, "request") == 0)
@@ -411,6 +413,10 @@ start_element(void *data, const char *element_name, const char **atts)
 
 		switch (arg->type) {
 		case NEW_ID:
+			ctx->message->new_id_count++;
+
+			/* Fall through to OBJECT case. */
+
 		case OBJECT:
 			if (interface_name)
 				arg->interface_name = xstrdup(interface_name);
@@ -620,6 +626,14 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 		return;
 
 	wl_list_for_each(m, message_list, link) {
+		if (m->new_id_count > 1) {
+			fprintf(stderr,
+				"warning: %s::%s has more than "
+				"one new_id arg, not emitting stub\n",
+				interface->name, m->name);
+			continue;
+		}
+
 		ret = NULL;
 		wl_list_for_each(a, &m->arg_list, link) {
 			if (a->type == NEW_ID)
