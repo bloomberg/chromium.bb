@@ -1,4 +1,4 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,7 +18,7 @@ const char kRuleId[] = "foo";
 
 namespace extensions {
 
-TEST(InitializingRulesRegistryTest, FillOptionalIdentifiers) {
+TEST(RulesRegistryTest, FillOptionalIdentifiers) {
   base::MessageLoopForUI message_loop;
   content::TestBrowserThread thread(content::BrowserThread::UI, &message_loop);
 
@@ -134,7 +134,7 @@ TEST(InitializingRulesRegistryTest, FillOptionalIdentifiers) {
   message_loop.RunUntilIdle();
 }
 
-TEST(InitializingRulesRegistryTest, FillOptionalPriority) {
+TEST(RulesRegistryTest, FillOptionalPriority) {
   base::MessageLoopForUI message_loop;
   content::TestBrowserThread thread(content::BrowserThread::UI, &message_loop);
 
