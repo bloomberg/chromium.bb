@@ -1856,10 +1856,12 @@ void Document::recalcStyleForLayoutIgnoringPendingStylesheets()
 // stylesheets are loaded. Doing a layout ignoring the pending stylesheets
 // lets us get reasonable answers. The long term solution to this problem is
 // to instead suspend JavaScript execution.
-void Document::updateLayoutIgnorePendingStylesheets()
+void Document::updateLayoutIgnorePendingStylesheets(Document::RunPostLayoutTasks runPostLayoutTasks)
 {
     recalcStyleForLayoutIgnoringPendingStylesheets();
     updateLayout();
+    if (runPostLayoutTasks == RunPostLayoutTasksSynchronously && view())
+        view()->flushAnyPendingPostLayoutTasks();
 }
 
 void Document::partialUpdateLayoutIgnorePendingStylesheets(Node* stopLayoutAtNode)

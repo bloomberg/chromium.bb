@@ -306,7 +306,10 @@ void HTMLPlugInElement::defaultEventHandler(Event* event)
 
 RenderWidget* HTMLPlugInElement::renderWidgetForJSBindings() const
 {
-    document().updateLayoutIgnorePendingStylesheets();
+    // Needs to load the plugin immediatedly because this function is called
+    // when JavaScript code accesses the plugin.
+    // FIXME: Check if dispatching events here is safe.
+    document().updateLayoutIgnorePendingStylesheets(Document::RunPostLayoutTasksSynchronously);
     return existingRenderWidget();
 }
 

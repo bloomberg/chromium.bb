@@ -169,6 +169,7 @@ FrameView::FrameView(Frame* frame)
     , m_layoutRoot(0)
     , m_inSynchronousPostLayout(false)
     , m_postLayoutTasksTimer(this, &FrameView::postLayoutTimerFired)
+    , m_updateWidgetsTimer(this, &FrameView::updateWidgetsTimerFired)
     , m_isTransparent(false)
     , m_baseBackgroundColor(Color::white)
     , m_mediaType("screen")
@@ -265,6 +266,7 @@ void FrameView::reset()
     m_layoutCount = 0;
     m_nestedLayoutCount = 0;
     m_postLayoutTasksTimer.stop();
+    m_updateWidgetsTimer.stop();
     m_firstLayout = true;
     m_firstLayoutCallbackPending = false;
     m_wasScrolledByUser = false;
@@ -2246,18 +2248,30 @@ bool FrameView::updateWidgets()
     return m_widgetUpdateSet->isEmpty();
 }
 
+void FrameView::updateWidgetsTimerFired(Timer<FrameView>*)
+{
+    RefPtr<FrameView> protect(this);
+    m_updateWidgetsTimer.stop();
+    for (unsigned i = 0; i < maxUpdateWidgetsIterations; ++i) {
+        if (updateWidgets())
+            return;
+    }
+}
+
 void FrameView::flushAnyPendingPostLayoutTasks()
 {
-    if (!m_postLayoutTasksTimer.isActive())
-        return;
-
-    performPostLayoutTasks();
+    if (m_postLayoutTasksTimer.isActive())
+        performPostLayoutTasks();
+    if (m_updateWidgetsTimer.isActive())
+        updateWidgetsTimerFired(0);
 }
 
 void FrameView::performPostLayoutTasks()
 {
     TRACE_EVENT0("webkit", "FrameView::performPostLayoutTasks");
-    // updateWidgets() call below can blow us away from underneath.
+    // FontFaceSet::didLayout() and resumeOverflowEvents() calls below can blow
+    // us away from underneath.
+    // FIXME: We should not run any JavaScript code in this function.
     RefPtr<FrameView> protect(this);
 
     m_postLayoutTasksTimer.stop();
@@ -2290,10 +2304,7 @@ void FrameView::performPostLayoutTasks()
     if (renderView)
         renderView->updateWidgetPositions();
 
-    for (unsigned i = 0; i < maxUpdateWidgetsIterations; i++) {
-        if (updateWidgets())
-            break;
-    }
+    m_updateWidgetsTimer.startOneShot(0);
 
     if (Page* page = m_frame->page()) {
         if (ScrollingCoordinator* scrollingCoordinator = page->scrollingCoordinator())

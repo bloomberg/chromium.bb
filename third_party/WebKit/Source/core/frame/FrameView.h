@@ -436,6 +436,7 @@ private:
     void updateDeferredRepaintDelayAfterRepaint();
     double adjustedDeferredRepaintDelay() const;
 
+    void updateWidgetsTimerFired(Timer<FrameView>*);
     bool updateWidgets();
     void updateWidget(RenderObject*);
     void scrollToAnchor();
@@ -485,6 +486,7 @@ private:
     int m_layoutCount;
     unsigned m_nestedLayoutCount;
     Timer<FrameView> m_postLayoutTasksTimer;
+    Timer<FrameView> m_updateWidgetsTimer;
     bool m_firstLayoutCallbackPending;
 
     bool m_firstLayout;

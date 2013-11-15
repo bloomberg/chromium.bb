@@ -76,6 +76,7 @@
 #include "core/frame/DOMPoint.h"
 #include "core/frame/Frame.h"
 #include "core/history/HistoryItem.h"
+#include "core/html/HTMLIFrameElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLSelectElement.h"
@@ -2081,6 +2082,27 @@ void Internals::stopTrackingRepaints(Document* document, ExceptionState& es)
 
     FrameView* frameView = document->view();
     frameView->setTracksRepaints(false);
+}
+
+void Internals::updateLayoutIgnorePendingStylesheetsAndRunPostLayoutTasks(ExceptionState& exceptionState)
+{
+    updateLayoutIgnorePendingStylesheetsAndRunPostLayoutTasks(0, exceptionState);
+}
+
+void Internals::updateLayoutIgnorePendingStylesheetsAndRunPostLayoutTasks(Node* node, ExceptionState& exceptionState)
+{
+    Document* document;
+    if (!node) {
+        document = contextDocument();
+    } else if (node->isDocumentNode()) {
+        document = toDocument(node);
+    } else if (node->hasTagName(HTMLNames::iframeTag)) {
+        document = toHTMLIFrameElement(node)->contentDocument();
+    } else {
+        exceptionState.throwUninformativeAndGenericDOMException(TypeError);
+        return;
+    }
+    document->updateLayoutIgnorePendingStylesheets(Document::RunPostLayoutTasksSynchronously);
 }
 
 PassRefPtr<ClientRectList> Internals::draggableRegions(Document* document, ExceptionState& es)
