@@ -262,7 +262,7 @@ static bool VerifyCodec(
 #endif
       if (codec_info->tag == CodecInfo::HISTOGRAM_OPUS) {
         const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
-        if (cmd_line->HasSwitch(switches::kDisableOpusPlayback))
+        if (!cmd_line->HasSwitch(switches::kEnableOpusPlayback))
           return false;
       }
       if (audio_codecs)

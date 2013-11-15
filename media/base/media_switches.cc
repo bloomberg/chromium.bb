@@ -12,8 +12,8 @@ const char kAudioBufferSize[] = "audio-buffer-size";
 // Enable EAC3 playback in MSE.
 const char kEnableEac3Playback[] = "enable-eac3-playback";
 
-// Disables Opus playback in media elements.
-const char kDisableOpusPlayback[] = "disable-opus-playback";
+// Enables Opus playback in media elements.
+const char kEnableOpusPlayback[] = "enable-opus-playback";
 
 // Disables VP8 Alpha playback in media elements.
 const char kDisableVp8AlphaPlayback[] = "disable-vp8-alpha-playback";
