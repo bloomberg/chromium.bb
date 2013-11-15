@@ -67,9 +67,6 @@ class BrowserInstantController : public SearchModelObserver,
   // Sets the stored omnibox bounds.
   void SetOmniboxBounds(const gfx::Rect& bounds);
 
-  // Notifies |instant_| to toggle voice search.
-  void ToggleVoiceSearch();
-
  private:
   // Overridden from search::SearchModelObserver:
   virtual void ModelChanged(const SearchModel::State& old_state,

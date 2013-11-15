@@ -40,9 +40,6 @@ class InstantIPCSender : public content::WebContentsObserver {
   // Tells the page that user input started or stopped.
   virtual void SetInputInProgress(bool input_in_progress) {}
 
-  // Tells the page to toggle voice search.
-  virtual void ToggleVoiceSearch() {}
-
  protected:
   InstantIPCSender() {}
 

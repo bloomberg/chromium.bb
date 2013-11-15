@@ -95,6 +95,7 @@ class SearchIPCRouter : public content::WebContentsObserver {
     virtual bool ShouldSendSetSuggestionToPrefetch() = 0;
     virtual bool ShouldSendMostVisitedItems() = 0;
     virtual bool ShouldSendThemeBackgroundInfo() = 0;
+    virtual bool ShouldSendToggleVoiceSearch() = 0;
     virtual bool ShouldSubmitQuery() = 0;
   };
 
@@ -107,24 +108,27 @@ class SearchIPCRouter : public content::WebContentsObserver {
   // received.
   void DetermineIfPageSupportsInstant();
 
+  // Tells the renderer about the result of the Chrome identity check.
+  void SendChromeIdentityCheckResult(const string16& identity,
+                                     bool identity_match);
+
   // Tells the renderer information it needs to display promos.
   void SetPromoInformation(bool is_app_launcher_enabled);
 
   // Tells the renderer whether to display the Instant results.
   void SetDisplayInstantResults();
 
+  // Tells the page the suggestion to be prefetched if any.
+  void SetSuggestionToPrefetch(const InstantSuggestion& suggestion);
+
   // Tells the renderer about the most visited items.
   void SendMostVisitedItems(const std::vector<InstantMostVisitedItem>& items);
-
-  // Tells the renderer about the result of the Chrome identity check.
-  void SendChromeIdentityCheckResult(const string16& identity,
-                                     bool identity_match);
 
   // Tells the renderer about the current theme background.
   void SendThemeBackgroundInfo(const ThemeBackgroundInfo& theme_info);
 
-  // Tells the page the suggestion to be prefetched if any.
-  void SetSuggestionToPrefetch(const InstantSuggestion& suggestion);
+  // Tells the page to toggle voice search.
+  void ToggleVoiceSearch();
 
   // Tells the page that the user pressed Enter in the omnibox.
   void Submit(const string16& text);
@@ -136,6 +140,7 @@ class SearchIPCRouter : public content::WebContentsObserver {
   void OnTabDeactivated();
 
  private:
+  friend class SearchIPCRouterPolicyTest;
   friend class SearchIPCRouterTest;
   FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
                            DetermineIfPageSupportsInstant_Local);
@@ -143,79 +148,11 @@ class SearchIPCRouter : public content::WebContentsObserver {
                            DetermineIfPageSupportsInstant_NonLocal);
   FRIEND_TEST_ALL_PREFIXES(SearchTabHelperTest,
                            PageURLDoesntBelongToInstantRenderer);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
-                           ProcessVoiceSearchSupportMsg);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest, ProcessLogEvent);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest, DoNotProcessLogEvent);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
-                           ProcessChromeIdentityCheck);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
-                           DoNotProcessChromeIdentityCheck);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
-                           SendSetDisplayInstantResults);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
-                           SendSetSuggestionToPrefetch);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
-                           DoNotSendSetMessagesForIncognitoPage);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest, SendMostVisitedItems);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
-                           DoNotSendMostVisitedItems);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest, SendThemeBackgroundInfo);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
-                           DoNotSendThemeBackgroundInfo);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest, SubmitQuery);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
-                           AppropriateMessagesSentToIncognitoPages);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest, ProcessFocusOmnibox);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest, DoNotProcessFocusOmnibox);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest, SendSetPromoInformation);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
-                           DoNotSendSetPromoInformation);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest, ProcessNavigateToURL);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
-                           ProcessDeleteMostVisitedItem);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
-                           ProcessUndoMostVisitedDeletion);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
-                           ProcessUndoAllMostVisitedDeletions);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
-                           ProcessPasteIntoOmniboxMsg);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
-                           DoNotProcessPasteIntoOmniboxMsg);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
-                           DoNotProcessMessagesForIncognitoPage);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
-                           DoNotProcessMessagesForInactiveTab);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, ProcessVoiceSearchSupportMsg);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, IgnoreVoiceSearchSupportMsg);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, ProcessFocusOmniboxMsg);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, IgnoreFocusOmniboxMsg);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, HandleTabChangedEvents);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, SendSetPromoInformationMsg);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
-                           DoNotSendSetPromoInformationMsg);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, ProcessLogEventMsg);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, IgnoreLogEventMsg);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, ProcessChromeIdentityCheckMsg);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, IgnoreChromeIdentityCheckMsg);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, ProcessNavigateToURLMsg);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, IgnoreNavigateToURLMsg);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
-                           ProcessDeleteMostVisitedItemMsg);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
-                           IgnoreDeleteMostVisitedItemMsg);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
-                           ProcessUndoMostVisitedDeletionMsg);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
-                           IgnoreUndoMostVisitedDeletionMsg);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
-                           ProcessUndoAllMostVisitedDeletionsMsg);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
-                           IgnoreUndoAllMostVisitedDeletionsMsg);
   FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
                            IgnoreMessageIfThePageIsNotActive);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, ProcessPasteAndOpenDropdownMsg);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, IgnorePasteAndOpenDropdownMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest,
+                           DoNotSendSetDisplayInstantResultsMsg);
+  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterTest, HandleTabChangedEvents);
 
   // Overridden from contents::WebContentsObserver:
   virtual bool OnMessageReceived(const IPC::Message& message) OVERRIDE;

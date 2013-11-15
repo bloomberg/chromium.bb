@@ -59,9 +59,6 @@ class InstantController : public InstantPage::Delegate {
   // Sends the current SearchProvider suggestion to the Instant page if any.
   void SetSuggestionToPrefetch(const InstantSuggestion& suggestion);
 
-  // Notifies |instant_Tab_| to toggle voice search.
-  void ToggleVoiceSearch();
-
   // Called if the browser is navigating to a search URL for |search_terms| with
   // search-term-replacement enabled. If |instant_tab_| can be used to process
   // the search, this does so and returns true. Else, returns false.

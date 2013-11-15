@@ -165,8 +165,6 @@ TEST_F(InstantPageTest, AppropriateMessagesSentToIncognitoPages) {
   // Incognito pages should get these messages.
   page->sender()->SetOmniboxBounds(gfx::Rect());
   EXPECT_TRUE(MessageWasSent(ChromeViewMsg_SearchBoxMarginChange::ID));
-  page->sender()->ToggleVoiceSearch();
-  EXPECT_TRUE(MessageWasSent(ChromeViewMsg_SearchBoxToggleVoiceSearch::ID));
 
   // Incognito pages should not get any others.
   page->sender()->FocusChanged(

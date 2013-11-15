@@ -160,10 +160,6 @@ void BrowserInstantController::SetOmniboxBounds(const gfx::Rect& bounds) {
   instant_.SetOmniboxBounds(bounds);
 }
 
-void BrowserInstantController::ToggleVoiceSearch() {
-  instant_.ToggleVoiceSearch();
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserInstantController, SearchModelObserver implementation:
 

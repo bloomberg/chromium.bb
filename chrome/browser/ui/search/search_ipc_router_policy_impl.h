@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_UI_SEARCH_SEARCH_IPC_ROUTER_POLICY_IMPL_H_
 #define CHROME_BROWSER_UI_SEARCH_SEARCH_IPC_ROUTER_POLICY_IMPL_H_
 
-#include "base/gtest_prod_util.h"
 #include "chrome/browser/ui/search/search_ipc_router.h"
 
 namespace content {
@@ -19,16 +18,7 @@ class SearchIPCRouterPolicyImpl : public SearchIPCRouter::Policy {
   virtual ~SearchIPCRouterPolicyImpl();
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
-                           ProcessVoiceSearchSupportMsg);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
-                           SendSetDisplayInstantResults);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
-                           DoNotSendSetMessagesForIncognitoPage);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
-                           AppropriateMessagesSentToIncognitoPages);
-  FRIEND_TEST_ALL_PREFIXES(SearchIPCRouterPolicyTest,
-                           DoNotProcessMessagesForIncognitoPage);
+  friend class SearchIPCRouterPolicyTest;
 
   // Overridden from SearchIPCRouter::Policy:
   virtual bool ShouldProcessSetVoiceSearchSupport() OVERRIDE;
@@ -45,6 +35,7 @@ class SearchIPCRouterPolicyImpl : public SearchIPCRouter::Policy {
   virtual bool ShouldSendSetSuggestionToPrefetch() OVERRIDE;
   virtual bool ShouldSendMostVisitedItems() OVERRIDE;
   virtual bool ShouldSendThemeBackgroundInfo() OVERRIDE;
+  virtual bool ShouldSendToggleVoiceSearch() OVERRIDE;
   virtual bool ShouldSubmitQuery() OVERRIDE;
 
   // Used by unit tests.

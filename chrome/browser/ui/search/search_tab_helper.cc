@@ -223,6 +223,10 @@ void SearchTabHelper::OnTabDeactivated() {
   ipc_router_.OnTabDeactivated();
 }
 
+void SearchTabHelper::ToggleVoiceSearch() {
+  ipc_router_.ToggleVoiceSearch();
+}
+
 void SearchTabHelper::Observe(
     int type,
     const content::NotificationSource& source,

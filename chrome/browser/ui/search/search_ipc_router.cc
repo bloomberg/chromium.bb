@@ -25,6 +25,15 @@ void SearchIPCRouter::DetermineIfPageSupportsInstant() {
   Send(new ChromeViewMsg_DetermineIfPageSupportsInstant(routing_id()));
 }
 
+void SearchIPCRouter::SendChromeIdentityCheckResult(const string16& identity,
+                                                    bool identity_match) {
+  if (!policy_->ShouldProcessChromeIdentityCheck())
+    return;
+
+  Send(new ChromeViewMsg_ChromeIdentityCheckResult(routing_id(), identity,
+                                                   identity_match));
+}
+
 void SearchIPCRouter::SetPromoInformation(bool is_app_launcher_enabled) {
   if (!policy_->ShouldSendSetPromoInformation())
     return;
@@ -43,6 +52,23 @@ void SearchIPCRouter::SetDisplayInstantResults() {
        is_search_results_page && chrome::ShouldPrefetchSearchResultsOnSRP()));
 }
 
+void SearchIPCRouter::SetSuggestionToPrefetch(
+    const InstantSuggestion& suggestion) {
+  if (!policy_->ShouldSendSetSuggestionToPrefetch())
+    return;
+
+  Send(new ChromeViewMsg_SearchBoxSetSuggestionToPrefetch(routing_id(),
+                                                          suggestion));
+}
+
+void SearchIPCRouter::SendMostVisitedItems(
+    const std::vector<InstantMostVisitedItem>& items) {
+  if (!policy_->ShouldSendMostVisitedItems())
+    return;
+
+  Send(new ChromeViewMsg_SearchBoxMostVisitedItemsChanged(routing_id(), items));
+}
+
 void SearchIPCRouter::SendThemeBackgroundInfo(
     const ThemeBackgroundInfo& theme_info) {
   if (!policy_->ShouldSendThemeBackgroundInfo())
@@ -51,34 +77,11 @@ void SearchIPCRouter::SendThemeBackgroundInfo(
   Send(new ChromeViewMsg_SearchBoxThemeChanged(routing_id(), theme_info));
 }
 
-void SearchIPCRouter::SendMostVisitedItems(
-    const std::vector<InstantMostVisitedItem>& items) {
-  if (!policy_->ShouldSendMostVisitedItems())
+void SearchIPCRouter::ToggleVoiceSearch() {
+  if (!policy_->ShouldSendToggleVoiceSearch())
     return;
 
-  Send(new ChromeViewMsg_SearchBoxMostVisitedItemsChanged(
-      routing_id(), items));
-}
-
-void SearchIPCRouter::SendChromeIdentityCheckResult(
-    const string16& identity,
-    bool identity_match) {
-  if (!policy_->ShouldProcessChromeIdentityCheck())
-    return;
-
-  Send(new ChromeViewMsg_ChromeIdentityCheckResult(
-      routing_id(),
-      identity,
-      identity_match));
-}
-
-void SearchIPCRouter::SetSuggestionToPrefetch(
-    const InstantSuggestion& suggestion) {
-  if (!policy_->ShouldSendSetSuggestionToPrefetch())
-    return;
-
-  Send(new ChromeViewMsg_SearchBoxSetSuggestionToPrefetch(routing_id(),
-                                                          suggestion));
+  Send(new ChromeViewMsg_SearchBoxToggleVoiceSearch(routing_id()));
 }
 
 void SearchIPCRouter::Submit(const string16& text) {

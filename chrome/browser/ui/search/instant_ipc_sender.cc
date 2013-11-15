@@ -30,10 +30,6 @@ class InstantIPCSenderImpl : public InstantIPCSender {
         routing_id(), input_in_progress));
   }
 
-  virtual void ToggleVoiceSearch() OVERRIDE {
-    Send(new ChromeViewMsg_SearchBoxToggleVoiceSearch(routing_id()));
-  }
-
   DISALLOW_COPY_AND_ASSIGN(InstantIPCSenderImpl);
 };
 
@@ -47,10 +43,6 @@ class IncognitoInstantIPCSenderImpl : public InstantIPCSender {
   virtual void SetOmniboxBounds(const gfx::Rect& bounds) OVERRIDE {
     Send(new ChromeViewMsg_SearchBoxMarginChange(
         routing_id(), bounds.x(), bounds.width()));
-  }
-
-  virtual void ToggleVoiceSearch() OVERRIDE {
-    Send(new ChromeViewMsg_SearchBoxToggleVoiceSearch(routing_id()));
   }
 
   DISALLOW_COPY_AND_ASSIGN(IncognitoInstantIPCSenderImpl);

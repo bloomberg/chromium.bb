@@ -79,6 +79,10 @@ bool SearchIPCRouterPolicyImpl::ShouldSendThemeBackgroundInfo() {
   return !is_incognito_ && chrome::IsInstantNTP(web_contents_);
 }
 
+bool SearchIPCRouterPolicyImpl::ShouldSendToggleVoiceSearch() {
+  return true;
+}
+
 bool SearchIPCRouterPolicyImpl::ShouldSubmitQuery() {
   return true;
 }

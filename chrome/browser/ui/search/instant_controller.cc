@@ -104,11 +104,6 @@ void InstantController::SetSuggestionToPrefetch(
   }
 }
 
-void InstantController::ToggleVoiceSearch() {
-  if (instant_tab_)
-    instant_tab_->sender()->ToggleVoiceSearch();
-}
-
 void InstantController::InstantPageLoadFailed(content::WebContents* contents) {
   if (!chrome::ShouldPreferRemoteNTPOnStartup()) {
     // We only need to fall back on errors if we're showing the online page
