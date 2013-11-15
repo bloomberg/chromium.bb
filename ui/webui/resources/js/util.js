@@ -321,3 +321,43 @@ function ensureTransitionEndEvent(el, timeOut) {
       cr.dispatchSimpleEvent(el, 'webkitTransitionEnd');
   }, timeOut);
 }
+
+/**
+ * Alias for document.scrollTop getter.
+ * @param {!HTMLDocument} doc The document node where information will be
+ *     queried from.
+ * @return {number} The Y document scroll offset.
+ */
+function scrollTopForDocument(doc) {
+  return doc.documentElement.scrollTop || doc.body.scrollTop;
+}
+
+/**
+ * Alias for document.scrollTop setter.
+ * @param {!HTMLDocument} doc The document node where information will be
+ *     queried from.
+ * @param {number} value The target Y scroll offset.
+ */
+function setScrollTopForDocument(doc, value) {
+  doc.documentElement.scrollTop = doc.body.scrollTop = value;
+}
+
+/**
+ * Alias for document.scrollLeft getter.
+ * @param {!HTMLDocument} doc The document node where information will be
+ *     queried from.
+ * @return {number} The X document scroll offset.
+ */
+function scrollLeftForDocument(doc) {
+  return doc.documentElement.scrollLeft || doc.body.scrollLeft;
+}
+
+/**
+ * Alias for document.scrollLeft setter.
+ * @param {!HTMLDocument} doc The document node where information will be
+ *     queried from.
+ * @param {number} value The target X scroll offset.
+ */
+function setScrollLeftForDocument(doc, value) {
+  doc.documentElement.scrollLeft = doc.body.scrollLeft = value;
+}

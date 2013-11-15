@@ -115,13 +115,14 @@ cr.define('help', function() {
      * @private
      */
     freeze_: function(freeze) {
+      var scrollLeft = scrollLeftForDocument(document);
       if (freeze) {
-        this.lastScrollTop = document.documentElement.scrollTop;
+        this.lastScrollTop = scrollTopForDocument(document);
         document.body.style.overflow = 'hidden';
-        window.scroll(document.documentElement.scrollLeft, 0);
+        window.scroll(scrollLeft, 0);
       } else {
         document.body.style.overflow = 'auto';
-        window.scroll(document.documentElement.scrollLeft, this.lastScrollTop);
+        window.scroll(scrollLeft, this.lastScrollTop);
       }
     },
 

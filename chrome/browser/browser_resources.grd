@@ -85,7 +85,7 @@
       </if>
       <include name="IDR_ABOUT_FLASH_HTML" file="resources\about_flash.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_ABOUT_FLASH_JS" file="resources\about_flash.js" type="BINDATA" />
-      <include name="IDR_ABOUT_MEMORY_JS" file="resources\about_memory.js" type="BINDATA" />
+      <include name="IDR_ABOUT_MEMORY_JS" file="resources\about_memory.js" flattenhtml="true" type="BINDATA" />
       <include name="IDR_ABOUT_NACL_HTML" file="resources\about_nacl.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
       <include name="IDR_ABOUT_NACL_CSS" file="resources\about_nacl.css" flattenhtml="true" type="chrome_html" />
       <include name="IDR_ABOUT_NACL_JS" file="resources\about_nacl.js" type="BINDATA" />
