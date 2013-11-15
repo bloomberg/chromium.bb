@@ -497,7 +497,7 @@ weston_wm_window_get_frame_size(struct weston_wm_window *window,
 	if (window->fullscreen) {
 		*width = window->width;
 		*height = window->height;
-	} else if (window->decorate) {
+	} else if (window->decorate && window->frame) {
 		*width = frame_width(window->frame);
 		*height = frame_height(window->frame);
 	} else {
@@ -515,7 +515,7 @@ weston_wm_window_get_child_position(struct weston_wm_window *window,
 	if (window->fullscreen) {
 		*x = 0;
 		*y = 0;
-	} else if (window->decorate) {
+	} else if (window->decorate && window->frame) {
 		frame_interior(window->frame, x, y, NULL, NULL);
 	} else {
 		*x = t->margin;
