@@ -31,7 +31,6 @@
 #include "config.h"
 #include "WebPagePopupImpl.h"
 
-#include "WebCursorInfo.h"
 #include "WebInputEventConversion.h"
 #include "WebSettingsImpl.h"
 #include "WebViewClient.h"
@@ -49,6 +48,7 @@
 #include "core/page/Page.h"
 #include "core/page/PagePopupClient.h"
 #include "core/page/Settings.h"
+#include "public/platform/WebCursorInfo.h"
 
 using namespace WebCore;
 using namespace std;

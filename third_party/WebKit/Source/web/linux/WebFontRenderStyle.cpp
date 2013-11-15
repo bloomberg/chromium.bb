@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebFontRenderStyle.h"
+#include "public/platform/linux/WebFontRenderStyle.h"
 
 #include "platform/fonts/FontRenderStyle.h"
 

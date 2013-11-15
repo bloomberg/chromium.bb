@@ -31,10 +31,10 @@
 #ifndef WebMediaPlayerClientImpl_h
 #define WebMediaPlayerClientImpl_h
 
-#include "WebAudioSourceProviderClient.h"
-#include "WebMediaPlayerClient.h"
 #include "platform/audio/AudioSourceProvider.h"
 #include "platform/graphics/media/MediaPlayer.h"
+#include "public/platform/WebAudioSourceProviderClient.h"
+#include "public/platform/WebMediaPlayerClient.h"
 #if OS(ANDROID)
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkRefCnt.h"

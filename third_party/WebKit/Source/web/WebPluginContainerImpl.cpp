@@ -33,7 +33,6 @@
 
 #include "ChromeClientImpl.h"
 #include "ScrollbarGroup.h"
-#include "WebCursorInfo.h"
 #include "WebDataSourceImpl.h"
 #include "WebElement.h"
 #include "WebInputEvent.h"
@@ -80,6 +79,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebClipboard.h"
 #include "public/platform/WebCompositorSupport.h"
+#include "public/platform/WebCursorInfo.h"
 #include "public/platform/WebDragData.h"
 #include "public/platform/WebExternalTextureLayer.h"
 #include "public/platform/WebRect.h"

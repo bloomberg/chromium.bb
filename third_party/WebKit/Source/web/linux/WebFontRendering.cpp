@@ -29,12 +29,12 @@
  */
 
 #include "config.h"
-#include "WebFontRendering.h"
+#include "public/web/linux/WebFontRendering.h"
 
 #include "core/platform/graphics/FontPlatformData.h"
 
 #if OS(LINUX)
-#include "WebFontInfo.h"
+#include "public/platform/linux/WebFontInfo.h"
 #endif
 
 using WebCore::FontPlatformData;

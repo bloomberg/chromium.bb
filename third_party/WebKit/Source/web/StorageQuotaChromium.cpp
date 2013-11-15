@@ -33,7 +33,6 @@
 
 #include "WebFrameClient.h"
 #include "WebFrameImpl.h"
-#include "WebStorageQuotaType.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
@@ -41,6 +40,7 @@
 #include "modules/quota/StorageQuotaCallback.h"
 #include "modules/quota/StorageUsageCallback.h"
 #include "modules/quota/WebStorageQuotaCallbacksImpl.h"
+#include "public/platform/WebStorageQuotaType.h"
 #include "wtf/Threading.h"
 
 using namespace blink;

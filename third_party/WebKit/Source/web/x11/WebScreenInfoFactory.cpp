@@ -31,7 +31,7 @@
 #include "config.h"
 #include "WebScreenInfoFactory.h"
 
-#include "WebScreenInfo.h"
+#include "public/platform/WebScreenInfo.h"
 #include <X11/Xlib.h>
 
 namespace blink {

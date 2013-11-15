@@ -29,7 +29,7 @@
  */
 
 #include "config.h"
-#include "WebCursorInfo.h"
+#include "public/platform/WebCursorInfo.h"
 
 #include "core/platform/Cursor.h"
 
