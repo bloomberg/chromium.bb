@@ -35,9 +35,6 @@ namespace WebCore {
 class RenderBlockFlow;
 class RenderBox;
 
-// FIXME this should be removed once RenderBlockFlow::nextFloatLogicalBottomBelow doesn't need it anymore. (Bug 123931)
-enum ShapeOutsideFloatOffsetMode { ShapeOutsideFloatShapeOffset, ShapeOutsideFloatMarginBoxOffset };
-
 class FloatingObject {
     WTF_MAKE_NONCOPYABLE(FloatingObject); WTF_MAKE_FAST_ALLOCATED;
 public:
@@ -130,7 +127,7 @@ typedef HashMap<RenderBox*, FloatingObject*> RendererToFloatInfoMap;
 class FloatingObjects {
     WTF_MAKE_NONCOPYABLE(FloatingObjects); WTF_MAKE_FAST_ALLOCATED;
 public:
-    FloatingObjects(const RenderBlockFlow*, bool horizontalWritingMode);
+    FloatingObjects(const RenderBlockFlow*);
     ~FloatingObjects();
 
     void clear();
@@ -153,6 +150,9 @@ public:
     LayoutUnit logicalRightOffsetForPositioningFloat(LayoutUnit fixedOffset, LayoutUnit logicalTop, LayoutUnit* heightRemaining);
 
     LayoutUnit lowestFloatLogicalBottom(FloatingObject::Type);
+
+    LayoutUnit findNextFloatLogicalBottomBelow(LayoutUnit logicalHeight);
+    LayoutUnit findNextFloatLogicalBottomBelowIgnoringShape(LayoutUnit logicalHeight);
 
 private:
     bool hasLowestFloatLogicalBottomCached(bool isHorizontal, FloatingObject::Type floatType) const;
