@@ -91,7 +91,8 @@ v8::Local<v8::Value> V8WorkerGlobalScopeEventListener::callListenerFunction(Exec
         int lineNumber = 1;
         v8::ScriptOrigin origin = handlerFunction->GetScriptOrigin();
         if (!origin.ResourceName().IsEmpty()) {
-            resourceName = toWebCoreString(origin.ResourceName());
+            V8TRYCATCH_FOR_V8STRINGRESOURCE_RETURN(V8StringResource<>, stringResourceName, origin.ResourceName(), v8::Local<v8::Value>());
+            resourceName = stringResourceName;
             lineNumber = handlerFunction->GetScriptLineNumber() + 1;
         }
         cookie = InspectorInstrumentation::willCallFunction(context, resourceName, lineNumber);
