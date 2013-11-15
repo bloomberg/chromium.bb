@@ -1,9 +1,10 @@
 When selecting from non-anchor Node to anchor node in ShadowDOM, client should not cause page jump.
 
-Selecting from a node to another node in ShadowDOM. This should not fire click event
+Selecting from a node to another node in ShadowDOM. This should fire click event on the host.
+PASS lastClickTarget is host
 
 Clicking a node in ShadowDOM.
-PASS click should be fired.
+PASS lastClickTarget is host
 
 PASS successfullyParsed is true
 

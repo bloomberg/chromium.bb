@@ -498,6 +498,7 @@ public:
     bool contains(const Node*) const;
     bool containsIncludingShadowDOM(const Node*) const;
     bool containsIncludingHostElements(const Node&) const;
+    Node* commonAncestorOverShadowBoundary(const Node&);
 
     // FIXME: Remove this when crbug.com/265716 cleans up contains semantics.
     bool bindingsContains(const Node* node) const { return containsIncludingShadowDOM(node); }

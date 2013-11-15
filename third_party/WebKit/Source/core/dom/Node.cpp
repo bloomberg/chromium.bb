@@ -920,6 +920,43 @@ bool Node::containsIncludingHostElements(const Node& node) const
     return false;
 }
 
+Node* Node::commonAncestorOverShadowBoundary(const Node& other)
+{
+    if (this == other)
+        return this;
+    if (document() != other.document())
+        return 0;
+    int thisDepth = 0;
+    for (Node* node = this; node; node = node->parentOrShadowHostNode()) {
+        if (node == &other)
+            return node;
+        thisDepth++;
+    }
+    int otherDepth = 0;
+    for (const Node* node = &other; node; node = node->parentOrShadowHostNode()) {
+        if (node == this)
+            return this;
+        otherDepth++;
+    }
+    Node* thisIterator = this;
+    const Node* otherIterator = &other;
+    if (thisDepth > otherDepth) {
+        for (int i = thisDepth; i > otherDepth; --i)
+            thisIterator = thisIterator->parentOrShadowHostNode();
+    } else if (otherDepth > thisDepth) {
+        for (int i = otherDepth; i > thisDepth; --i)
+            otherIterator = otherIterator->parentOrShadowHostNode();
+    }
+    while (thisIterator) {
+        if (thisIterator == otherIterator)
+            return thisIterator;
+        thisIterator = thisIterator->parentOrShadowHostNode();
+        otherIterator = otherIterator->parentOrShadowHostNode();
+    }
+    ASSERT(!otherIterator);
+    return 0;
+}
+
 void Node::reattach(const AttachContext& context)
 {
     AttachContext reattachContext(context);
