@@ -5,12 +5,12 @@
 #ifndef COMPONENTS_DOM_DISTILLER_CORE_DOM_DISTILLER_SERVICE_H_
 #define COMPONENTS_DOM_DISTILLER_CORE_DOM_DISTILLER_SERVICE_H_
 
-#include <string>
-#include <vector>
-
+#include "base/memory/scoped_ptr.h"
+#include "base/memory/scoped_vector.h"
+#include "base/memory/weak_ptr.h"
 #include "components/dom_distiller/core/article_entry.h"
-#include "components/dom_distiller/core/distiller.h"
-#include "url/gurl.h"
+
+class GURL;
 
 namespace syncer {
 class SyncableService;
@@ -18,20 +18,12 @@ class SyncableService;
 
 namespace dom_distiller {
 
+class DistilledPageProto;
 class DistillerFactory;
 class DomDistillerStoreInterface;
-class ViewerContext;
-
-// A handle to a request to view a DOM distiller entry or URL. The request will
-// be cancelled when the handle is destroyed.
-class ViewerHandle {
- public:
-  ViewerHandle();
-  ~ViewerHandle();
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(ViewerHandle);
-};
+class TaskTracker;
+class ViewRequestDelegate;
+class ViewerHandle;
 
 // Provide a view of the article list and ways of interacting with it.
 class DomDistillerService {
@@ -50,16 +42,34 @@ class DomDistillerService {
   std::vector<ArticleEntry> GetEntries() const;
 
   // Request to view an article by entry id. Returns a null pointer if no entry
-  // with |entry_id| exists.
-  scoped_ptr<ViewerHandle> ViewEntry(ViewerContext* context,
+  // with |entry_id| exists. The ViewerHandle should be destroyed before the
+  // ViewRequestDelegate. The request will be cancelled when the handle is
+  // destroyed (or when this service is destroyed).
+  scoped_ptr<ViewerHandle> ViewEntry(ViewRequestDelegate* delegate,
                                      const std::string& entry_id);
 
   // Request to view an article by url.
-  scoped_ptr<ViewerHandle> ViewUrl(ViewerContext* context, const GURL& url);
+  scoped_ptr<ViewerHandle> ViewUrl(ViewRequestDelegate* delegate,
+                                   const GURL& url);
 
  private:
+  void CancelTask(TaskTracker* task);
+  void AddDistilledPageToList(const ArticleEntry& entry,
+                              DistilledPageProto* proto);
+
+  TaskTracker* CreateTaskTracker(const ArticleEntry& entry);
+
+  // Gets the task tracker for the given |url| or |entry|. If no appropriate
+  // tracker exists, this will create one, initialize it, and add it to
+  // |tasks_|.
+  TaskTracker* GetTaskTrackerForUrl(const GURL& url);
+  TaskTracker* GetTaskTrackerForEntry(const ArticleEntry& entry);
+
   scoped_ptr<DomDistillerStoreInterface> store_;
   scoped_ptr<DistillerFactory> distiller_factory_;
+
+  typedef ScopedVector<TaskTracker> TaskList;
+  TaskList tasks_;
 
   DISALLOW_COPY_AND_ASSIGN(DomDistillerService);
 };

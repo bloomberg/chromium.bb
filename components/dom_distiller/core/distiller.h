@@ -33,21 +33,25 @@ class Distiller {
                            const DistillerCallback& callback) = 0;
 };
 
-
-// Factory for creating a Distiller.
 class DistillerFactory {
  public:
-  DistillerFactory(
+  virtual scoped_ptr<Distiller> CreateDistiller() = 0;
+  virtual ~DistillerFactory() {}
+};
+
+// Factory for creating a Distiller.
+class DistillerFactoryImpl : public DistillerFactory {
+ public:
+  DistillerFactoryImpl(
       scoped_ptr<DistillerPageFactory> distiller_page_factory,
       scoped_ptr<DistillerURLFetcherFactory> distiller_url_fetcher_factory);
-  virtual ~DistillerFactory();
-  virtual Distiller* CreateDistiller();
+  virtual ~DistillerFactoryImpl();
+  virtual scoped_ptr<Distiller> CreateDistiller() OVERRIDE;
 
  private:
   scoped_ptr<DistillerPageFactory> distiller_page_factory_;
   scoped_ptr<DistillerURLFetcherFactory> distiller_url_fetcher_factory_;
 };
-
 
 // Distills a article from a page and associated pages.
 class DistillerImpl : public Distiller,

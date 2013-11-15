@@ -96,6 +96,8 @@
             'dom_distiller/core/dom_distiller_service.h',
             'dom_distiller/core/dom_distiller_store.cc',
             'dom_distiller/core/dom_distiller_store.h',
+            'dom_distiller/core/task_tracker.cc',
+            'dom_distiller/core/task_tracker.h',
           ],
         },
         {

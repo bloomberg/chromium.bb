@@ -44,9 +44,8 @@ BrowserContextKeyedService* DomDistillerServiceFactory::BuildServiceInstanceFor(
       new DistillerPageWebContentsFactory(profile));
   scoped_ptr<DistillerURLFetcherFactory> distiller_url_fetcher_factory(
       new DistillerURLFetcherFactory(profile->GetRequestContext()));
-  scoped_ptr<DistillerFactory> distiller_factory(
-      new DistillerFactory(distiller_page_factory.Pass(),
-                           distiller_url_fetcher_factory.Pass()));
+  scoped_ptr<DistillerFactory> distiller_factory(new DistillerFactoryImpl(
+      distiller_page_factory.Pass(), distiller_url_fetcher_factory.Pass()));
   return new DomDistillerContextKeyedService(dom_distiller_store.Pass(),
                                              distiller_factory.Pass());
 }

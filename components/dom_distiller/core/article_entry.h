@@ -18,6 +18,7 @@ namespace dom_distiller {
 typedef sync_pb::ArticleSpecifics ArticleEntry;
 typedef sync_pb::ArticlePage ArticleEntryPage;
 
+// A valid entry has an entry_id and all its pages have a URL.
 bool IsEntryValid(const ArticleEntry& entry);
 
 bool AreEntriesEqual(const ArticleEntry& left, const ArticleEntry& right);
@@ -28,7 +29,6 @@ ArticleEntry EntryFromSpecifics(const sync_pb::EntitySpecifics& specifics);
 ArticleEntry GetEntryFromChange(const syncer::SyncChange& change);
 std::string GetEntryIdFromSyncData(const syncer::SyncData& data);
 syncer::SyncData CreateLocalData(const ArticleEntry& entry);
-
 
 }  // namespace dom_distiller
 

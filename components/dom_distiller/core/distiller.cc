@@ -21,17 +21,17 @@
 
 namespace dom_distiller {
 
-DistillerFactory::DistillerFactory(
+DistillerFactoryImpl::DistillerFactoryImpl(
     scoped_ptr<DistillerPageFactory> distiller_page_factory,
     scoped_ptr<DistillerURLFetcherFactory> distiller_url_fetcher_factory)
   : distiller_page_factory_(distiller_page_factory.Pass()),
     distiller_url_fetcher_factory_(distiller_url_fetcher_factory.Pass()) {}
 
-DistillerFactory::~DistillerFactory() {}
+DistillerFactoryImpl::~DistillerFactoryImpl() {}
 
-Distiller* DistillerFactory::CreateDistiller() {
-  return new DistillerImpl(*distiller_page_factory_,
-                           *distiller_url_fetcher_factory_);
+scoped_ptr<Distiller> DistillerFactoryImpl::CreateDistiller() {
+  return scoped_ptr<Distiller>(new DistillerImpl(
+      *distiller_page_factory_, *distiller_url_fetcher_factory_));
 }
 
 DistillerImpl::DistillerImpl(
