@@ -20,11 +20,9 @@ static const uint8 kCastReferenceFrameIdBitMask = 0x40;
 RtpParser::RtpParser(RtpData* incoming_payload_callback,
                      const RtpParserConfig parser_config)
     : data_callback_(incoming_payload_callback),
-      parser_config_(parser_config) {
-}
+      parser_config_(parser_config) {}
 
-RtpParser::~RtpParser() {
-}
+RtpParser::~RtpParser() {}
 
 bool RtpParser::ParsePacket(const uint8* packet, size_t length,
                             RtpCastHeader* rtp_header) {
@@ -85,14 +83,15 @@ bool RtpParser::ParseCast(const uint8* packet,
   size_t data_length = length;
   rtp_header->is_key_frame = (data_ptr[0] & kCastKeyFrameBitMask);
   rtp_header->is_reference = (data_ptr[0] & kCastReferenceFrameIdBitMask);
-  rtp_header->frame_id = data_ptr[1];
+  rtp_header->frame_id = frame_id_wrap_helper_.MapTo32bitsFrameId(data_ptr[1]);
 
   net::BigEndianReader big_endian_reader(data_ptr + 2, 4);
   big_endian_reader.ReadU16(&rtp_header->packet_id);
   big_endian_reader.ReadU16(&rtp_header->max_packet_id);
 
   if (rtp_header->is_reference) {
-    rtp_header->reference_frame_id = data_ptr[6];
+    rtp_header->reference_frame_id =
+        reference_frame_id_wrap_helper_.MapTo32bitsFrameId(data_ptr[6]);
     data_ptr += kRtpCastHeaderLength;
     data_length -= kRtpCastHeaderLength;
   } else {

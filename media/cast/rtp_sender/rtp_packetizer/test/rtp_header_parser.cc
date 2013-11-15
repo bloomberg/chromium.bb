@@ -39,9 +39,7 @@ bool RtpHeaderParser::ParseCommon(RtpCastHeader* parsed_packet) const {
 
   const uint8 num_csrcs = rtp_data_begin_[0] & 0x0f;
   const bool marker = ((rtp_data_begin_[1] & 0x80) == 0) ? false : true;
-
   const uint8 payload_type = rtp_data_begin_[1] & 0x7f;
-
   const uint16 sequence_number = (rtp_data_begin_[2] << 8) +
       rtp_data_begin_[3];
 
@@ -72,14 +70,15 @@ bool RtpHeaderParser::ParseCast(RtpCastHeader* parsed_packet) const {
   const uint8* data = rtp_data_begin_ + kRtpCommonHeaderLength;
   parsed_packet->is_key_frame = (data[0] & kCastKeyFrameBitMask);
   parsed_packet->is_reference = (data[0] & kCastReferenceFrameIdBitMask);
-  parsed_packet->frame_id = data[1];
+  parsed_packet->frame_id = frame_id_wrap_helper_.MapTo32bitsFrameId(data[1]);
 
   net::BigEndianReader big_endian_reader(data + 2, 8);
   big_endian_reader.ReadU16(&parsed_packet->packet_id);
   big_endian_reader.ReadU16(&parsed_packet->max_packet_id);
 
   if (parsed_packet->is_reference) {
-    parsed_packet->reference_frame_id = data[6];
+    parsed_packet->reference_frame_id =
+        reference_frame_id_wrap_helper_.MapTo32bitsFrameId(data[6]);
   }
   return true;
 }

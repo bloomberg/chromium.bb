@@ -23,13 +23,13 @@ LoggingRaw::~LoggingRaw() {}
 
 void LoggingRaw::InsertFrameEvent(CastLoggingEvent event,
                                   uint32 rtp_timestamp,
-                                  uint8 frame_id) {
+                                  uint32 frame_id) {
   InsertBaseFrameEvent(event, frame_id, rtp_timestamp);
 }
 
 void LoggingRaw::InsertFrameEventWithSize(CastLoggingEvent event,
                                           uint32 rtp_timestamp,
-                                          uint8 frame_id,
+                                          uint32 frame_id,
                                           int size) {
   InsertBaseFrameEvent(event, frame_id, rtp_timestamp);
   // Now insert size.
@@ -40,7 +40,7 @@ void LoggingRaw::InsertFrameEventWithSize(CastLoggingEvent event,
 
 void LoggingRaw::InsertFrameEventWithDelay(CastLoggingEvent event,
                                            uint32 rtp_timestamp,
-                                           uint8 frame_id,
+                                           uint32 frame_id,
                                            base::TimeDelta delay) {
   InsertBaseFrameEvent(event, frame_id, rtp_timestamp);
   // Now insert delay.
@@ -49,7 +49,7 @@ void LoggingRaw::InsertFrameEventWithDelay(CastLoggingEvent event,
   it->second.delay_delta = delay;
 }
 void LoggingRaw::InsertBaseFrameEvent(CastLoggingEvent event,
-                                      uint8 frame_id,
+                                      uint32 frame_id,
                                       uint32 rtp_timestamp) {
   // Is this a new event?
   FrameRawMap::iterator it = frame_map_.find(event);
@@ -69,7 +69,7 @@ void LoggingRaw::InsertBaseFrameEvent(CastLoggingEvent event,
 
 void LoggingRaw::InsertPacketEvent(CastLoggingEvent event,
                                    uint32 rtp_timestamp,
-                                   uint8 frame_id,
+                                   uint32 frame_id,
                                    uint16 packet_id,
                                    uint16 max_packet_id,
                                    int size) {

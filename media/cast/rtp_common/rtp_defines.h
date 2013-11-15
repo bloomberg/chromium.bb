@@ -26,12 +26,12 @@ struct RtpCastHeader {
   }
   webrtc::WebRtcRTPHeader webrtc;
   bool is_key_frame;
-  uint8 frame_id;
+  uint32 frame_id;
   uint16 packet_id;
   uint16 max_packet_id;
   bool is_reference;  // Set to true if the previous frame is not available,
                       // and the reference frame id  is available.
-  uint8 reference_frame_id;
+  uint32 reference_frame_id;
 };
 
 class RtpPayloadFeedback {

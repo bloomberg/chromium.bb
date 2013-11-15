@@ -40,7 +40,7 @@ TEST_F(TestLogging, BasicFrameLogging) {
   base::TimeTicks start_time = testing_clock_.NowTicks();
   base::TimeDelta time_interval = testing_clock_.NowTicks() - start_time;
   uint32 rtp_timestamp = 0;
-  uint8 frame_id = 0;
+  uint32 frame_id = 0;
   do {
     logging_.InsertFrameEvent(kAudioFrameCaptured, rtp_timestamp, frame_id);
     testing_clock_.Advance(
@@ -73,7 +73,7 @@ TEST_F(TestLogging, FrameLoggingWithSize) {
   base::TimeTicks start_time = testing_clock_.NowTicks();
   base::TimeDelta time_interval = testing_clock_.NowTicks() - start_time;
   uint32 rtp_timestamp = 0;
-  uint8 frame_id = 0;
+  uint32 frame_id = 0;
   do {
     int size = kBaseFrameSizeBytes +
         base::RandInt(-kRandomSizeInterval, kRandomSizeInterval);
@@ -110,7 +110,7 @@ TEST_F(TestLogging, FrameLoggingWithDelay) {
   base::TimeTicks start_time = testing_clock_.NowTicks();
   base::TimeDelta time_interval = testing_clock_.NowTicks() - start_time;
   uint32 rtp_timestamp = 0;
-  uint8 frame_id = 0;
+  uint32 frame_id = 0;
   do {
     int delay = kPlayoutDelayMs +
         base::RandInt(-kRandomSizeInterval, kRandomSizeInterval);
@@ -145,7 +145,7 @@ TEST_F(TestLogging, MultipleEventFrameLogging) {
   base::TimeTicks start_time = testing_clock_.NowTicks();
   base::TimeDelta time_interval = testing_clock_.NowTicks() - start_time;
   uint32 rtp_timestamp = 0;
-  uint8 frame_id = 0;
+  uint32 frame_id = 0;
   do {
     logging_.InsertFrameEvent(kAudioFrameCaptured, rtp_timestamp, frame_id);
     if (frame_id % 2) {
@@ -178,7 +178,7 @@ TEST_F(TestLogging, PacketLogging) {
   base::TimeTicks start_time = testing_clock_.NowTicks();
   base::TimeDelta time_interval = testing_clock_.NowTicks() - start_time;
   uint32 rtp_timestamp = 0;
-  uint8 frame_id = 0;
+  uint32 frame_id = 0;
   do {
     for (int i = 0; i < kNumPacketsPerFrame; ++i) {
       int size = kBaseSize + base::RandInt(-kSizeInterval, kSizeInterval);

@@ -29,13 +29,13 @@ void LoggingStats::Reset() {
 
 void LoggingStats::InsertFrameEvent(CastLoggingEvent event,
                                     uint32 rtp_timestamp,
-                                    uint8 frame_id) {
+                                    uint32 frame_id) {
   InsertBaseFrameEvent(event, frame_id, rtp_timestamp);
 }
 
 void LoggingStats::InsertFrameEventWithSize(CastLoggingEvent event,
                                             uint32 rtp_timestamp,
-                                            uint8 frame_id,
+                                            uint32 frame_id,
                                             int frame_size) {
   InsertBaseFrameEvent(event, frame_id, rtp_timestamp);
   // Update size.
@@ -46,7 +46,7 @@ void LoggingStats::InsertFrameEventWithSize(CastLoggingEvent event,
 
 void LoggingStats::InsertFrameEventWithDelay(CastLoggingEvent event,
                                              uint32 rtp_timestamp,
-                                             uint8 frame_id,
+                                             uint32 frame_id,
                                              base::TimeDelta delay) {
   InsertBaseFrameEvent(event, frame_id, rtp_timestamp);
   // Update size.
@@ -63,7 +63,7 @@ void LoggingStats::InsertFrameEventWithDelay(CastLoggingEvent event,
 }
 
 void LoggingStats::InsertBaseFrameEvent(CastLoggingEvent event,
-                                        uint8 frame_id,
+                                        uint32 frame_id,
                                         uint32 rtp_timestamp) {
   // Does this belong to an existing event?
   FrameStatsMap::iterator it = frame_stats_.find(event);
@@ -79,7 +79,7 @@ void LoggingStats::InsertBaseFrameEvent(CastLoggingEvent event,
 
 void LoggingStats::InsertPacketEvent(CastLoggingEvent event,
                                      uint32 rtp_timestamp,
-                                     uint8 frame_id,
+                                     uint32 frame_id,
                                      uint16 packet_id,
                                      uint16 max_packet_id,
                                      int size) {

@@ -22,7 +22,7 @@ class MockRtpSender : public RtpSender {
                bool(const EncodedAudioFrame& frame, int64 recorded_time));
 
   MOCK_METHOD3(ResendPacket,
-               bool(bool is_audio, uint8 frame_id, uint16 packet_id));
+               bool(bool is_audio, uint32 frame_id, uint16 packet_id));
 
   MOCK_METHOD0(RtpStatistics, void());
 };

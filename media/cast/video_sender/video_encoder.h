@@ -44,7 +44,7 @@ class VideoEncoder : public VideoEncoderController,
 
   struct CodecDynamicConfig {
     bool key_frame_requested;
-    uint8 latest_frame_id_to_reference;
+    uint32 latest_frame_id_to_reference;
     int bit_rate;
   };
 
@@ -60,7 +60,7 @@ class VideoEncoder : public VideoEncoderController,
   virtual void SetBitRate(int new_bit_rate) OVERRIDE;
   virtual void SkipNextFrame(bool skip_next_frame) OVERRIDE;
   virtual void GenerateKeyFrame() OVERRIDE;
-  virtual void LatestFrameIdToReference(uint8 frame_id) OVERRIDE;
+  virtual void LatestFrameIdToReference(uint32 frame_id) OVERRIDE;
   virtual int NumberOfSkippedFrames() const OVERRIDE;
 
  private:

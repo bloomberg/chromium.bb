@@ -35,7 +35,7 @@ class Vp8Encoder {
   // Set the next frame to be a key frame.
   void GenerateKeyFrame();
 
-  void LatestFrameIdToReference(uint8 frame_id);
+  void LatestFrameIdToReference(uint32 frame_id);
 
  private:
   enum Vp8Buffers {
@@ -54,7 +54,7 @@ class Vp8Encoder {
   Vp8Buffers GetNextBufferToUpdate();
 
   // Calculate which previous frame to reference.
-  uint8 GetLatestFrameIdToReference();
+  uint32 GetLatestFrameIdToReference();
 
   // Get encoder flags for our referenced encoder buffers.
   void GetCodecReferenceFlags(vpx_codec_flags_t* flags);
@@ -74,8 +74,8 @@ class Vp8Encoder {
 
   bool key_frame_requested_;
   int64 timestamp_;
-  uint8 last_encoded_frame_id_;
-  uint8 used_buffers_frame_id_[kNumberOfVp8VideoBuffers];
+  uint32 last_encoded_frame_id_;
+  uint32 used_buffers_frame_id_[kNumberOfVp8VideoBuffers];
   bool acked_frame_buffers_[kNumberOfVp8VideoBuffers];
   Vp8Buffers last_used_vp8_buffer_;
   int number_of_repeated_buffers_;

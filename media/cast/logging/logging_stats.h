@@ -25,21 +25,21 @@ class LoggingStats {
 
   void InsertFrameEvent(CastLoggingEvent event,
                         uint32 rtp_timestamp,
-                        uint8 frame_id);
+                        uint32 frame_id);
 
   void InsertFrameEventWithSize(CastLoggingEvent event,
                                 uint32 rtp_timestamp,
-                                uint8 frame_id,
+                                uint32 frame_id,
                                 int frame_size);
 
   void InsertFrameEventWithDelay(CastLoggingEvent event,
                                  uint32 rtp_timestamp,
-                                 uint8 frame_id,
+                                 uint32 frame_id,
                                  base::TimeDelta delay);
 
   void InsertPacketEvent(CastLoggingEvent event,
                          uint32 rtp_timestamp,
-                         uint8 frame_id,
+                         uint32 frame_id,
                          uint16 packet_id,
                          uint16 max_packet_id,
                          int size);
@@ -56,7 +56,7 @@ class LoggingStats {
 
  private:
   void InsertBaseFrameEvent(CastLoggingEvent event,
-                            uint8 frame_id,
+                            uint32 frame_id,
                             uint32 rtp_timestamp);
   FrameStatsMap frame_stats_;
   PacketStatsMap packet_stats_;

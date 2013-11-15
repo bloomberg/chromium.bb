@@ -152,8 +152,8 @@ struct EncodedVideoFrame {
 
   VideoCodec codec;
   bool key_frame;
-  uint8 frame_id;
-  uint8 last_referenced_frame_id;
+  uint32 frame_id;
+  uint32 last_referenced_frame_id;
   std::vector<uint8> data;
 };
 
@@ -173,7 +173,7 @@ struct EncodedAudioFrame {
   ~EncodedAudioFrame();
 
   AudioCodec codec;
-  uint8 frame_id;  // Needed to release the frame. Not used send side.
+  uint32 frame_id;  // Needed to release the frame.
   int samples;  // Needed send side to advance the RTP timestamp.
                 // Not used receive side.
   std::vector<uint8> data;
@@ -225,7 +225,7 @@ class VideoEncoderController {
   virtual void GenerateKeyFrame() = 0;
 
   // Inform the encoder to only reference frames older or equal to frame_id;
-  virtual void LatestFrameIdToReference(uint8 frame_id) = 0;
+  virtual void LatestFrameIdToReference(uint32 frame_id) = 0;
 
   // Query the codec about how many frames it has skipped due to slow ACK.
   virtual int NumberOfSkippedFrames() const = 0;

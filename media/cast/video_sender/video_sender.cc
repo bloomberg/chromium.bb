@@ -204,7 +204,7 @@ void VideoSender::ResendCheck() {
         DCHECK_GE(255, last_acked_frame_id_);
         DCHECK_LE(0, last_acked_frame_id_);
 
-        uint8 frame_id = static_cast<uint8>(last_acked_frame_id_ + 1);
+        uint32 frame_id = static_cast<uint32>(last_acked_frame_id_ + 1);
         VLOG(1) << "ACK timeout resend frame:" << static_cast<int>(frame_id);
         ResendFrame(frame_id);
       }
@@ -263,7 +263,7 @@ void VideoSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
     video_encoder_controller_->LatestFrameIdToReference(
         cast_feedback.ack_frame_id_);
 
-    if (static_cast<uint8>(last_acked_frame_id_ + 1) ==
+    if (static_cast<uint32>(last_acked_frame_id_ + 1) ==
         cast_feedback.ack_frame_id_) {
       uint32 new_bitrate = 0;
       if (congestion_control_.OnAck(rtt, &new_bitrate)) {
@@ -279,14 +279,14 @@ void VideoSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
     }
     if (duplicate_ack_ >= 2 && duplicate_ack_ % 3 == 2) {
       // Resend last ACK + 1 frame.
-      resend_frame = static_cast<uint8>(last_acked_frame_id_ + 1);
+      resend_frame = static_cast<uint32>(last_acked_frame_id_ + 1);
     }
     if (resend_frame != -1) {
       DCHECK_GE(255, resend_frame);
       DCHECK_LE(0, resend_frame);
       VLOG(1) << "Received duplicate ACK for frame:"
               << static_cast<int>(resend_frame);
-      ResendFrame(static_cast<uint8>(resend_frame));
+      ResendFrame(static_cast<uint32>(resend_frame));
     }
   } else {
     rtp_sender_->ResendPackets(cast_feedback.missing_frames_and_packets_);
@@ -300,7 +300,7 @@ void VideoSender::OnReceivedCastFeedback(const RtcpCastMessage& cast_feedback) {
   ReceivedAck(cast_feedback.ack_frame_id_);
 }
 
-void VideoSender::ReceivedAck(uint8 acked_frame_id) {
+void VideoSender::ReceivedAck(uint32 acked_frame_id) {
   VLOG(1) << "ReceivedAck:" << static_cast<int>(acked_frame_id);
   last_acked_frame_id_ = acked_frame_id;
   UpdateFramesInFlight();
@@ -310,12 +310,12 @@ void VideoSender::UpdateFramesInFlight() {
   if (last_sent_frame_id_ != -1) {
     DCHECK_GE(255, last_sent_frame_id_);
     DCHECK_LE(0, last_sent_frame_id_);
-    uint8 frames_in_flight;
+    uint32 frames_in_flight;
     if (last_acked_frame_id_ != -1) {
       DCHECK_GE(255, last_acked_frame_id_);
       DCHECK_LE(0, last_acked_frame_id_);
-      frames_in_flight = static_cast<uint8>(last_sent_frame_id_) -
-                         static_cast<uint8>(last_acked_frame_id_);
+      frames_in_flight = static_cast<uint32>(last_sent_frame_id_) -
+                         static_cast<uint32>(last_acked_frame_id_);
     } else {
       frames_in_flight = last_sent_frame_id_ + 1;
     }
@@ -329,7 +329,7 @@ void VideoSender::UpdateFramesInFlight() {
   video_encoder_controller_->SkipNextFrame(false);
 }
 
-void VideoSender::ResendFrame(uint8 resend_frame_id) {
+void VideoSender::ResendFrame(uint32 resend_frame_id) {
   MissingFramesAndPacketsMap missing_frames_and_packets;
   PacketIdSet missing;
   missing_frames_and_packets.insert(std::make_pair(resend_frame_id, missing));

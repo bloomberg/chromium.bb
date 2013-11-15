@@ -58,52 +58,15 @@ void RtpSender::IncomingEncodedAudioFrame(const EncodedAudioFrame* audio_frame,
 
 void RtpSender::ResendPackets(
     const MissingFramesAndPacketsMap& missing_frames_and_packets) {
-  // Iterate over all frames in the list.
-  for (MissingFramesAndPacketsMap::const_iterator it =
-       missing_frames_and_packets.begin();
-       it != missing_frames_and_packets.end(); ++it) {
-    PacketList packets_to_resend;
-    uint8 frame_id = it->first;
-    const PacketIdSet& packets_set = it->second;
-    bool success = false;
+  PacketList packets_to_resend =
+      storage_->GetPackets(missing_frames_and_packets);
 
-    if (packets_set.empty()) {
-      VLOG(1) << "Missing all packets in frame " << static_cast<int>(frame_id);
-
-      uint16 packet_id = 0;
-      do {
-        // Get packet from storage.
-        success = storage_->GetPacket(frame_id, packet_id, &packets_to_resend);
-
-        // Resend packet to the network.
-        if (success) {
-          VLOG(1) << "Resend " << static_cast<int>(frame_id)
-                  << ":" << packet_id;
-          // Set a unique incremental sequence number for every packet.
-          Packet& packet = packets_to_resend.back();
-          UpdateSequenceNumber(&packet);
-          // Set the size as correspond to each frame.
-          ++packet_id;
-        }
-      } while (success);
-    } else {
-      // Iterate over all of the packets in the frame.
-      for (PacketIdSet::const_iterator set_it = packets_set.begin();
-          set_it != packets_set.end(); ++set_it) {
-        uint16 packet_id = *set_it;
-        success = storage_->GetPacket(frame_id, packet_id, &packets_to_resend);
-
-        // Resend packet to the network.
-        if (success) {
-          VLOG(1) << "Resend " << static_cast<int>(frame_id)
-                  << ":" << packet_id;
-          Packet& packet = packets_to_resend.back();
-          UpdateSequenceNumber(&packet);
-        }
-      }
-    }
-    transport_->ResendPackets(packets_to_resend);
+  PacketList::iterator it = packets_to_resend.begin();
+  for (; it != packets_to_resend.end(); ++it) {
+    Packet& packet = *it;
+    UpdateSequenceNumber(&packet);
   }
+  transport_->ResendPackets(packets_to_resend);
 }
 
 void RtpSender::UpdateSequenceNumber(Packet* packet) {

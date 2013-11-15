@@ -18,7 +18,7 @@ namespace cast {
 
 const int64 kDontShowTimeoutMs = 33;
 const float kDefaultCongestionControlBackOff = 0.875f;
-const uint8 kStartFrameId = 255;
+const uint32 kStartFrameId = GG_UINT32_C(0xffffffff);
 const uint32 kVideoFrequency = 90000;
 const int64 kSkippedFramesCheckPeriodkMs = 10000;
 
@@ -65,12 +65,12 @@ static const int64 kUnixEpochInNtpSeconds = GG_INT64_C(2208988800);
 // fractional NTP seconds.
 static const double kMagicFractionalUnit = 4.294967296E3;
 
-inline bool IsNewerFrameId(uint8 frame_id, uint8 prev_frame_id) {
+inline bool IsNewerFrameId(uint32 frame_id, uint32 prev_frame_id) {
   return (frame_id != prev_frame_id) &&
-      static_cast<uint8>(frame_id - prev_frame_id) < 0x80;
+      static_cast<uint32>(frame_id - prev_frame_id) < 0x80000000;
 }
 
-inline bool IsOlderFrameId(uint8 frame_id, uint8 prev_frame_id) {
+inline bool IsOlderFrameId(uint32 frame_id, uint32 prev_frame_id) {
   return (frame_id == prev_frame_id) || IsNewerFrameId(prev_frame_id, frame_id);
 }
 
@@ -131,6 +131,41 @@ inline base::TimeTicks ConvertNtpToTimeTicks(uint32 ntp_seconds,
           (kUnixEpochInNtpSeconds * base::Time::kMicrosecondsPerSecond));
   return base::TimeTicks::UnixEpoch() + elapsed_since_unix_epoch;
 }
+
+class FrameIdWrapHelper {
+ public:
+  FrameIdWrapHelper()
+      : first_(true),
+        can_we_wrap_(false),
+        frame_id_wrap_count_(0) {}
+
+  uint32 MapTo32bitsFrameId(const uint8 over_the_wire_frame_id) {
+    if (first_) {
+      first_ = false;
+      if (over_the_wire_frame_id == 0xff) {
+        // Special case for startup.
+        return kStartFrameId;
+      }
+    }
+    if (can_we_wrap_) {
+      if (over_the_wire_frame_id < 0x0f) {
+        // Disable wrap check until we are closer to the max of uint8.
+        can_we_wrap_ = false;
+      }
+    } else {
+      if (over_the_wire_frame_id > 0xf0) {
+        // Enable wrap check until we have wrapped.
+        can_we_wrap_ = true;
+      }
+    }
+    return (frame_id_wrap_count_ << 8) + over_the_wire_frame_id;
+  }
+
+ private:
+  bool first_;
+  bool can_we_wrap_;
+  uint32 frame_id_wrap_count_;
+};
 
 }  // namespace cast
 }  // namespace media

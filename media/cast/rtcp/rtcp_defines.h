@@ -21,7 +21,7 @@ class RtcpCastMessage {
   ~RtcpCastMessage();
 
   uint32 media_ssrc_;
-  uint8 ack_frame_id_;
+  uint32 ack_frame_id_;
   MissingFramesAndPacketsMap missing_frames_and_packets_;
 };
 

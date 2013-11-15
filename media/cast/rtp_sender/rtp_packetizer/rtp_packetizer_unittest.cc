@@ -55,8 +55,7 @@ class TestRtpPacketTransport : public PacedPacketSender {
     EXPECT_EQ(expected_packet_id_, rtp_header.packet_id);
     EXPECT_EQ(expected_number_of_packets_ - 1, rtp_header.max_packet_id);
     EXPECT_TRUE(rtp_header.is_reference);
-    EXPECT_EQ(static_cast<uint8>(expected_frame_id_ - 1),
-        rtp_header.reference_frame_id);
+    EXPECT_EQ(expected_frame_id_ - 1u, rtp_header.reference_frame_id);
   }
 
   virtual bool SendPackets(const PacketList& packets) OVERRIDE {
@@ -94,7 +93,7 @@ class TestRtpPacketTransport : public PacedPacketSender {
   int expected_number_of_packets_;
   // Assuming packets arrive in sequence.
   int expected_packet_id_;
-  int expected_frame_id_;
+  uint32 expected_frame_id_;
 };
 
 class RtpPacketizerTest : public ::testing::Test {
@@ -116,7 +115,7 @@ class RtpPacketizerTest : public ::testing::Test {
   virtual void SetUp() {
     video_frame_.key_frame = false;
     video_frame_.frame_id = 0;
-    video_frame_.last_referenced_frame_id = 255;
+    video_frame_.last_referenced_frame_id = kStartFrameId;
     video_frame_.data.assign(kFrameSize, 123);
   }
 

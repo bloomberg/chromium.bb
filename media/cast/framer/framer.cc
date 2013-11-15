@@ -56,7 +56,7 @@ bool Framer::InsertPacket(const uint8* payload_data,
 bool Framer::GetEncodedAudioFrame(EncodedAudioFrame* audio_frame,
                                   uint32* rtp_timestamp,
                                   bool* next_frame) {
-  uint8 frame_id;
+  uint32 frame_id;
   // Find frame id.
   if (frame_id_map_.NextContinuousFrame(&frame_id)) {
     // We have our next frame.
@@ -79,7 +79,7 @@ bool Framer::GetEncodedAudioFrame(EncodedAudioFrame* audio_frame,
 bool Framer::GetEncodedVideoFrame(EncodedVideoFrame* video_frame,
                                   uint32* rtp_timestamp,
                                   bool* next_frame) {
-  uint8 frame_id;
+  uint32 frame_id;
   // Find frame id.
   if (frame_id_map_.NextContinuousFrame(&frame_id)) {
     // We have our next frame.
@@ -107,7 +107,7 @@ void Framer::Reset() {
   cast_msg_builder_->Reset();
 }
 
-void Framer::ReleaseFrame(uint8 frame_id) {
+void Framer::ReleaseFrame(uint32 frame_id) {
   frame_id_map_.RemoveOldFrames(frame_id);
   frames_.erase(frame_id);
 

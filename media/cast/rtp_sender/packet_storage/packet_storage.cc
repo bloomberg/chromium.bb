@@ -96,12 +96,13 @@ void PacketStorage::CleanupOldPackets(base::TimeTicks now) {
   }
 }
 
-void PacketStorage::StorePacket(uint8 frame_id, uint16 packet_id,
+void PacketStorage::StorePacket(uint32 frame_id, uint16 packet_id,
                                 const Packet* packet) {
   base::TimeTicks now = clock_->NowTicks();
   CleanupOldPackets(now);
 
-  uint32 index = (static_cast<uint32>(frame_id) << 16) + packet_id;
+  // Internally we only use the 8 LSB of the frame id.
+  uint32 index = ((0xff & frame_id) << 16) + packet_id;
   PacketMapIterator it = stored_packets_.find(index);
   if (it != stored_packets_.end()) {
     // We have already saved this.
@@ -122,15 +123,50 @@ void PacketStorage::StorePacket(uint8 frame_id, uint16 packet_id,
   time_to_packet_map_.insert(std::make_pair(now, index));
 }
 
+PacketList PacketStorage::GetPackets(
+    const MissingFramesAndPacketsMap& missing_frames_and_packets) {
+  PacketList packets_to_resend;
+
+  // Iterate over all frames in the list.
+  for (MissingFramesAndPacketsMap::const_iterator it =
+       missing_frames_and_packets.begin();
+       it != missing_frames_and_packets.end(); ++it) {
+    uint8 frame_id = it->first;
+    const PacketIdSet& packets_set = it->second;
+    bool success = false;
+
+    if (packets_set.empty()) {
+      VLOG(1) << "Missing all packets in frame " << static_cast<int>(frame_id);
+
+      uint16 packet_id = 0;
+      do {
+        // Get packet from storage.
+        success = GetPacket(frame_id, packet_id, &packets_to_resend);
+        ++packet_id;
+      } while (success);
+    } else {
+      // Iterate over all of the packets in the frame.
+      for (PacketIdSet::const_iterator set_it = packets_set.begin();
+          set_it != packets_set.end(); ++set_it) {
+        GetPacket(frame_id, *set_it, &packets_to_resend);
+      }
+    }
+  }
+  return packets_to_resend;
+}
+
 bool PacketStorage::GetPacket(uint8 frame_id,
                               uint16 packet_id,
                               PacketList* packets) {
+  // Internally we only use the 8 LSB of the frame id.
   uint32 index = (static_cast<uint32>(frame_id) << 16) + packet_id;
   PacketMapIterator it = stored_packets_.find(index);
   if (it == stored_packets_.end()) {
     return false;
   }
   it->second->GetCopy(packets);
+  VLOG(1) << "Resend " << static_cast<int>(frame_id)
+          << ":" << packet_id;
   return true;
 }
 

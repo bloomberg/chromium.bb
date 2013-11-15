@@ -30,9 +30,13 @@ class PacketStorage {
   PacketStorage(base::TickClock* clock, int max_time_stored_ms);
   virtual ~PacketStorage();
 
-  void StorePacket(uint8 frame_id, uint16 packet_id, const Packet* packet);
+  void StorePacket(uint32 frame_id, uint16 packet_id, const Packet* packet);
 
-  // Copies packet into the buffer pointed to by rtp_buffer.
+  // Copies all missing packets into the packet list.
+  PacketList GetPackets(
+      const MissingFramesAndPacketsMap& missing_frames_and_packets);
+
+  // Copies packet into the packet list.
   bool GetPacket(uint8 frame_id, uint16 packet_id, PacketList* packets);
 
  private:

@@ -478,7 +478,7 @@ void RtcpSender::BuildCast(const RtcpCastMessage* cast,
   big_endian_writer.WriteU32(ssrc_);  // Add our own SSRC.
   big_endian_writer.WriteU32(cast->media_ssrc_);  // Remote SSRC.
   big_endian_writer.WriteU32(kCast);
-  big_endian_writer.WriteU8(cast->ack_frame_id_);
+  big_endian_writer.WriteU8(static_cast<uint8>(cast->ack_frame_id_));
   size_t cast_loss_field_pos = start_size + 17;  // Save loss field position.
   big_endian_writer.WriteU8(0);  // Overwritten with number_of_loss_fields.
   big_endian_writer.WriteU8(0);  // Reserved.
@@ -499,7 +499,7 @@ void RtcpSender::BuildCast(const RtcpCastMessage* cast,
       start_size = packet->size();
       packet->resize(start_size + 4);
       net::BigEndianWriter big_endian_nack_writer(&((*packet)[start_size]), 4);
-      big_endian_nack_writer.WriteU8(frame_it->first);
+      big_endian_nack_writer.WriteU8(static_cast<uint8>(frame_it->first));
       big_endian_nack_writer.WriteU16(kRtcpCastAllPacketsLost);
       big_endian_nack_writer.WriteU8(0);
       ++number_of_loss_fields;
@@ -514,7 +514,7 @@ void RtcpSender::BuildCast(const RtcpCastMessage* cast,
             &((*packet)[start_size]), 4);
 
         // Write frame and packet id to buffer before calculating bitmask.
-        big_endian_nack_writer.WriteU8(frame_it->first);
+        big_endian_nack_writer.WriteU8(static_cast<uint8>(frame_it->first));
         big_endian_nack_writer.WriteU16(packet_id);
 
         uint8 bitmask = 0;

@@ -97,6 +97,8 @@ class RtcpReceiver {
   RtcpReceiverFeedback* const receiver_feedback_;
   RtcpRttFeedback* const rtt_feedback_;
 
+  FrameIdWrapHelper ack_frame_id_wrap_helper_;
+
   DISALLOW_COPY_AND_ASSIGN(RtcpReceiver);
 };
 

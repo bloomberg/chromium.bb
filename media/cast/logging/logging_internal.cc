@@ -13,27 +13,27 @@ FrameLogData::FrameLogData(base::TickClock* clock)
 
 FrameLogData::~FrameLogData() {}
 
-void FrameLogData::Insert(uint32 rtp_timestamp, uint8 frame_id) {
+void FrameLogData::Insert(uint32 rtp_timestamp, uint32 frame_id) {
   FrameEvent info;
   InsertBase(rtp_timestamp, frame_id, info);
 }
 
 void FrameLogData::InsertWithSize(
-      uint32 rtp_timestamp, uint8 frame_id, int size) {
+      uint32 rtp_timestamp, uint32 frame_id, int size) {
   FrameEvent info;
   info.size = size;
   InsertBase(rtp_timestamp, frame_id, info);
 }
 
 void FrameLogData::InsertWithDelay(
-    uint32 rtp_timestamp, uint8 frame_id, base::TimeDelta delay) {
+    uint32 rtp_timestamp, uint32 frame_id, base::TimeDelta delay) {
   FrameEvent info;
   info.delay_delta = delay;
   InsertBase(rtp_timestamp, frame_id, info);
 }
 
 void FrameLogData::InsertBase(
-    uint32 rtp_timestamp, uint8 frame_id, FrameEvent info) {
+    uint32 rtp_timestamp, uint32 frame_id, FrameEvent info) {
   info.timestamp = clock_->NowTicks();
   info.frame_id = frame_id;
   frame_map_.insert(std::make_pair(rtp_timestamp, info));
@@ -46,7 +46,7 @@ PacketLogData::PacketLogData(base::TickClock* clock)
 PacketLogData::~PacketLogData() {}
 
 void PacketLogData::Insert(uint32 rtp_timestamp,
-    uint8 frame_id, uint16 packet_id, uint16 max_packet_id, int size) {
+    uint32 frame_id, uint16 packet_id, uint16 max_packet_id, int size) {
   PacketEvent info;
   info.size = size;
   info.max_packet_id = max_packet_id;

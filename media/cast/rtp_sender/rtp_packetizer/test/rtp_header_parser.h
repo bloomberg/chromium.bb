@@ -23,6 +23,9 @@ class RtpHeaderParser {
   const uint8* const rtp_data_begin_;
   size_t length_;
 
+  mutable FrameIdWrapHelper frame_id_wrap_helper_;
+  mutable FrameIdWrapHelper reference_frame_id_wrap_helper_;
+
   DISALLOW_COPY_AND_ASSIGN(RtpHeaderParser);
 };
 

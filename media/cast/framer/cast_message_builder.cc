@@ -32,7 +32,7 @@ CastMessageBuilder::CastMessageBuilder(
 
 CastMessageBuilder::~CastMessageBuilder() {}
 
-void CastMessageBuilder::CompleteFrameReceived(uint8 frame_id,
+void CastMessageBuilder::CompleteFrameReceived(uint32 frame_id,
                                                bool is_key_frame) {
   if (last_update_time_.is_null()) {
     // Our first update.
@@ -83,7 +83,7 @@ bool CastMessageBuilder::UpdateAckMessage() {
       // time; and it's not needed since we can skip frames to catch up.
     }
   } else {
-    uint8 frame_id = frame_id_map_->LastContinuousFrame();
+    uint32 frame_id = frame_id_map_->LastContinuousFrame();
 
     // Is it a new frame?
     if (last_acked_frame_id_ == frame_id) return false;
@@ -153,9 +153,8 @@ void CastMessageBuilder::BuildPacketList() {
   // Are we missing packets?
   if (frame_id_map_->Empty()) return;
 
-  uint8 newest_frame_id = frame_id_map_->NewestFrameId();
-  uint8 next_expected_frame_id =
-      static_cast<uint8>(cast_msg_.ack_frame_id_ + 1);
+  uint32 newest_frame_id = frame_id_map_->NewestFrameId();
+  uint32 next_expected_frame_id = cast_msg_.ack_frame_id_ + 1;
 
   // Iterate over all frames.
   for (; !IsNewerFrameId(next_expected_frame_id, newest_frame_id);

@@ -23,7 +23,7 @@ LoggingImpl::~LoggingImpl() {}
 
 void LoggingImpl::InsertFrameEvent(CastLoggingEvent event,
                                    uint32 rtp_timestamp,
-                                   uint8 frame_id) {
+                                   uint32 frame_id) {
   if (enable_data_collection_) {
     raw_.InsertFrameEvent(event, rtp_timestamp, frame_id);
     stats_.InsertFrameEvent(event, rtp_timestamp, frame_id);
@@ -38,7 +38,7 @@ void LoggingImpl::InsertFrameEvent(CastLoggingEvent event,
 
 void LoggingImpl::InsertFrameEventWithSize(CastLoggingEvent event,
                                            uint32 rtp_timestamp,
-                                           uint8 frame_id,
+                                           uint32 frame_id,
                                            int frame_size) {
   if (enable_data_collection_) {
     raw_.InsertFrameEventWithSize(event, rtp_timestamp, frame_id, frame_size);
@@ -58,7 +58,7 @@ void LoggingImpl::InsertFrameEventWithSize(CastLoggingEvent event,
 
 void LoggingImpl::InsertFrameEventWithDelay(CastLoggingEvent event,
                                             uint32 rtp_timestamp,
-                                            uint8 frame_id,
+                                            uint32 frame_id,
                                             base::TimeDelta delay) {
   if (enable_data_collection_) {
     raw_.InsertFrameEventWithDelay(event, rtp_timestamp, frame_id, delay);
@@ -77,7 +77,7 @@ void LoggingImpl::InsertFrameEventWithDelay(CastLoggingEvent event,
 
 void LoggingImpl::InsertPacketEvent(CastLoggingEvent event,
                                     uint32 rtp_timestamp,
-                                    uint8 frame_id,
+                                    uint32 frame_id,
                                     uint16 packet_id,
                                     uint16 max_packet_id,
                                     int size) {

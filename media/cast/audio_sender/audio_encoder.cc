@@ -108,8 +108,8 @@ class AudioEncoder::ImplBase {
   // call.
   int buffer_fill_end_;
 
-  // A rotating counter used to label EncodedAudioFrames.
-  uint8 frame_id_;
+  // A counter used to label EncodedAudioFrames.
+  uint32 frame_id_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ImplBase);

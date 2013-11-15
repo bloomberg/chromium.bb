@@ -376,7 +376,8 @@ void RtcpReceiver::HandlePayloadSpecificCastItem(RtcpParser* rtcp_parser) {
   const RtcpField& rtcp_field = rtcp_parser->Field();
 
   RtcpCastMessage cast_message(remote_ssrc_);
-  cast_message.ack_frame_id_ = rtcp_field.cast_item.last_frame_id;
+  cast_message.ack_frame_id_ = ack_frame_id_wrap_helper_.MapTo32bitsFrameId(
+      rtcp_field.cast_item.last_frame_id);
 
   RtcpFieldTypes packet_type = rtcp_parser->Iterate();
   while (packet_type == kRtcpPayloadSpecificCastNackItemCode) {

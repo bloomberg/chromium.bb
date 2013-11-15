@@ -101,7 +101,7 @@ void VideoEncoder::GenerateKeyFrame() {
 }
 
 // Inform the encoder to only reference frames older or equal to frame_id;
-void VideoEncoder::LatestFrameIdToReference(uint8 frame_id) {
+void VideoEncoder::LatestFrameIdToReference(uint32 frame_id) {
   dynamic_config_.latest_frame_id_to_reference = frame_id;
 }
 

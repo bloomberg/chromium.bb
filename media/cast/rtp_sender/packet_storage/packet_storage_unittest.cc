@@ -33,7 +33,7 @@ class PacketStorageTest : public ::testing::Test {
 TEST_F(PacketStorageTest, TimeOut) {
   Packet test_123(100, 123);  // 100 insertions of the value 123.
   PacketList packets;
-  for (uint8 frame_id = 0; frame_id < 30; ++frame_id) {
+  for (uint32 frame_id = 0; frame_id < 30; ++frame_id) {
     for (uint16 packet_id = 0; packet_id < 10; ++packet_id) {
       packet_storage_.StorePacket(frame_id, packet_id, &test_123);
     }
@@ -41,14 +41,14 @@ TEST_F(PacketStorageTest, TimeOut) {
   }
 
   // All packets belonging to the first 14 frames is expected to be expired.
-  for (uint8 frame_id = 0; frame_id < 14; ++frame_id) {
+  for (uint32 frame_id = 0; frame_id < 14; ++frame_id) {
     for (uint16 packet_id = 0; packet_id < 10; ++packet_id) {
       Packet packet;
       EXPECT_FALSE(packet_storage_.GetPacket(frame_id, packet_id, &packets));
     }
   }
   // All packets belonging to the next 15 frames is expected to be valid.
-  for (uint8 frame_id = 14; frame_id < 30; ++frame_id) {
+  for (uint32 frame_id = 14; frame_id < 30; ++frame_id) {
     for (uint16 packet_id = 0; packet_id < 10; ++packet_id) {
       EXPECT_TRUE(packet_storage_.GetPacket(frame_id, packet_id, &packets));
       EXPECT_TRUE(packets.front() == test_123);
@@ -60,7 +60,7 @@ TEST_F(PacketStorageTest, MaxNumberOfPackets) {
   Packet test_123(100, 123);  // 100 insertions of the value 123.
   PacketList packets;
 
-  uint8 frame_id = 0;
+  uint32 frame_id = 0;
   for (uint16 packet_id = 0; packet_id <= PacketStorage::kMaxStoredPackets;
       ++packet_id) {
     packet_storage_.StorePacket(frame_id, packet_id, &test_123);
@@ -81,7 +81,7 @@ TEST_F(PacketStorageTest, PacketContent) {
   Packet test_234(200, 234);  // 200 insertions of the value 234.
   PacketList packets;
 
-  for (uint8 frame_id = 0; frame_id < 10; ++frame_id) {
+  for (uint32 frame_id = 0; frame_id < 10; ++frame_id) {
     for (uint16 packet_id = 0; packet_id < 10; ++packet_id) {
       // Every other packet.
       if (packet_id % 2 == 0) {
@@ -92,7 +92,7 @@ TEST_F(PacketStorageTest, PacketContent) {
     }
     testing_clock_.Advance(kDeltaBetweenFrames);
   }
-  for (uint8 frame_id = 0; frame_id < 10; ++frame_id) {
+  for (uint32 frame_id = 0; frame_id < 10; ++frame_id) {
     for (uint16 packet_id = 0; packet_id < 10; ++packet_id) {
       EXPECT_TRUE(packet_storage_.GetPacket(frame_id, packet_id, &packets));
       // Every other packet.

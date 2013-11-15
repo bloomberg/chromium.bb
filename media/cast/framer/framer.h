@@ -21,7 +21,7 @@
 namespace media {
 namespace cast {
 
-typedef std::map<uint8, linked_ptr<FrameBuffer> > FrameList;
+typedef std::map<uint32, linked_ptr<FrameBuffer> > FrameList;
 
 class Framer {
  public:
@@ -50,7 +50,7 @@ class Framer {
                             uint32* rtp_timestamp,
                             bool* next_frame);
 
-  void ReleaseFrame(uint8 frame_id);
+  void ReleaseFrame(uint32 frame_id);
 
   // Reset framer state to original state and flush all pending buffers.
   void Reset();

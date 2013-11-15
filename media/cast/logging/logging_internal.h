@@ -18,14 +18,14 @@ namespace cast {
 
 // TODO(mikhal): Consider storing only the delta time and not absolute time.
 struct FrameEvent {
-  uint8 frame_id;
+  uint32 frame_id;
   int size;
   base::TimeTicks timestamp;
   base::TimeDelta delay_delta;  // render/playout delay.
 };
 
 struct PacketEvent {
-  uint8 frame_id;
+  uint32 frame_id;
   int max_packet_id;
   int size;
   base::TimeTicks timestamp;
@@ -40,16 +40,16 @@ class FrameLogData {
  public:
   explicit FrameLogData(base::TickClock* clock);
   ~FrameLogData();
-  void Insert(uint32 rtp_timestamp, uint8 frame_id);
+  void Insert(uint32 rtp_timestamp, uint32 frame_id);
   // Include size for encoded images (compute bitrate),
-  void InsertWithSize(uint32 rtp_timestamp, uint8 frame_id, int size);
+  void InsertWithSize(uint32 rtp_timestamp, uint32 frame_id, int size);
   // Include playout/render delay info.
   void InsertWithDelay(
-      uint32 rtp_timestamp, uint8 frame_id, base::TimeDelta delay);
+      uint32 rtp_timestamp, uint32 frame_id, base::TimeDelta delay);
   void Reset();
 
  private:
-  void InsertBase(uint32 rtp_timestamp, uint8 frame_id, FrameEvent info);
+  void InsertBase(uint32 rtp_timestamp, uint32 frame_id, FrameEvent info);
 
   base::TickClock* const clock_;  // Not owned by this class.
   FrameMap frame_map_;
@@ -62,7 +62,7 @@ class PacketLogData {
  public:
   explicit PacketLogData(base::TickClock* clock);
   ~PacketLogData();
-  void Insert(uint32 rtp_timestamp, uint8 frame_id, uint16 packet_id,
+  void Insert(uint32 rtp_timestamp, uint32 frame_id, uint16 packet_id,
       uint16 max_packet_id, int size);
   void Reset();
 

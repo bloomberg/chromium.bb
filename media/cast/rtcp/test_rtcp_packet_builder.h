@@ -44,9 +44,9 @@ static const uint64 kPictureId = 0x1234567890;
 static const int kMissingPacket = 34567;
 
 // CAST.
-static const int kAckFrameId = 17;
-static const int kLostFrameId = 18;
-static const int kFrameIdWithLostPackets = 19;
+static const uint32 kAckFrameId = 17;
+static const uint32 kLostFrameId = 18;
+static const uint32 kFrameIdWithLostPackets = 19;
 static const int kLostPacketId1 = 3;
 static const int kLostPacketId2 = 5;
 static const int kLostPacketId3 = 12;

@@ -45,6 +45,8 @@ class RtpParser {
 
   RtpData* data_callback_;
   RtpParserConfig parser_config_;
+  FrameIdWrapHelper frame_id_wrap_helper_;
+  FrameIdWrapHelper reference_frame_id_wrap_helper_;
 };
 
 }  // namespace cast

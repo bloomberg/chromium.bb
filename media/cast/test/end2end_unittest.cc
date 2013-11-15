@@ -96,7 +96,7 @@ class LoopBackTransport : public PacketSender {
     for (size_t i = 0; i < packets.size(); ++i) {
       const Packet& packet = packets[i];
       if (drop_packets_belonging_to_odd_frames_) {
-        uint8 frame_id = packet[13];
+        uint32 frame_id = packet[13];
         if (frame_id % 2 == 1) continue;
       }
       uint8* packet_copy = new uint8[packet.size()];

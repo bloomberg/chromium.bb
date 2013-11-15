@@ -29,7 +29,7 @@ void FrameBuffer::InsertPacket(const uint8* payload_data,
     if (rtp_header.is_reference) {
       last_referenced_frame_id_ = rtp_header.reference_frame_id;
     } else {
-      last_referenced_frame_id_ = static_cast<uint8>(rtp_header.frame_id - 1);
+      last_referenced_frame_id_ = rtp_header.frame_id - 1;
     }
 
     rtp_timestamp_ = rtp_header.webrtc.header.timestamp;

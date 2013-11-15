@@ -50,7 +50,7 @@ struct FrameEvent {
   FrameEvent();
   ~FrameEvent();
 
-  uint8 frame_id;
+  uint32 frame_id;
   int size;  // Encoded size only.
   std::vector<base::TimeTicks> timestamp;
   std::vector<CastLoggingEvent> type;
@@ -72,7 +72,7 @@ typedef std::map<uint16, BasePacketInfo> BasePacketMap;
 struct PacketEvent {
   PacketEvent();
   ~PacketEvent();
-  uint8 frame_id;
+  uint32 frame_id;
   int max_packet_id;
   BasePacketMap packet_map;
 };

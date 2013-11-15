@@ -79,10 +79,10 @@ bool RtpPacketizer::LastSentTimestamp(base::TimeTicks* time_sent,
 }
 
 void RtpPacketizer::Cast(bool is_key,
-                         uint8 frame_id,
-                         uint8 reference_frame_id,
+                         uint32 frame_id,
+                         uint32 reference_frame_id,
                          uint32 timestamp,
-                         std::vector<uint8> data) {
+                         Packet data) {
   uint16 rtp_header_length = kCommonRtpHeaderLength + kCastRtpHeaderLength;
   uint16 max_length = config_.max_payload_length - rtp_header_length - 1;
 
@@ -113,7 +113,7 @@ void RtpPacketizer::Cast(bool is_key,
     net::BigEndianWriter big_endian_writer(&(packet[start_size]), 4);
     big_endian_writer.WriteU16(packet_id_);
     big_endian_writer.WriteU16(static_cast<uint16>(num_packets - 1));
-    packet.push_back(reference_frame_id);
+    packet.push_back(static_cast<uint8>(reference_frame_id));
 
     // Copy payload data.
     packet.insert(packet.end(), data_iter, data_iter + payload_length);

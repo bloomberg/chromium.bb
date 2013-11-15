@@ -230,7 +230,7 @@ void Vp8Encoder::GetCodecReferenceFlags(vpx_codec_flags_t* flags) {
   }
 }
 
-uint8 Vp8Encoder::GetLatestFrameIdToReference() {
+uint32 Vp8Encoder::GetLatestFrameIdToReference() {
   if (!use_multiple_video_buffers_) return last_encoded_frame_id_;
 
   int latest_frame_id_to_reference = -1;
@@ -258,7 +258,7 @@ uint8 Vp8Encoder::GetLatestFrameIdToReference() {
     }
   }
   DCHECK(latest_frame_id_to_reference != -1) << "Invalid state";
-  return static_cast<uint8>(latest_frame_id_to_reference);
+  return static_cast<uint32>(latest_frame_id_to_reference);
 }
 
 Vp8Encoder::Vp8Buffers Vp8Encoder::GetNextBufferToUpdate() {
@@ -333,7 +333,7 @@ void Vp8Encoder::UpdateRates(uint32 new_bitrate) {
   }
 }
 
-void Vp8Encoder::LatestFrameIdToReference(uint8 frame_id) {
+void Vp8Encoder::LatestFrameIdToReference(uint32 frame_id) {
   if (!use_multiple_video_buffers_) return;
 
   VLOG(1) << "VP8 ok to reference frame:" << static_cast<int>(frame_id);

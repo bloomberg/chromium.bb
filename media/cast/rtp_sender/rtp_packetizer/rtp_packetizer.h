@@ -49,9 +49,8 @@ class RtpPacketizer {
   size_t send_octet_count() { return send_octet_count_; }
 
  private:
-  void Cast(bool is_key,
-            uint8 frame_id,
-            uint8 reference_frame_id,
+  void Cast(bool is_key, uint32 frame_id,
+            uint32 reference_frame_id,
             uint32 timestamp,
             std::vector<uint8> data);
   void BuildCommonRTPheader(std::vector<uint8>* packet, bool marker_bit,
