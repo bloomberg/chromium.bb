@@ -117,7 +117,6 @@ class ManagedUserRegistrationUtilityTest : public ::testing::Test {
 
   base::MessageLoop message_loop_;
   base::RunLoop run_loop_;
-  base::WeakPtrFactory<ManagedUserRegistrationUtilityTest> weak_ptr_factory_;
   TestingProfile profile_;
   ManagedUserSyncService* service_;
   scoped_ptr<ManagedUserRegistrationUtility> registration_utility_;
@@ -134,14 +133,16 @@ class ManagedUserRegistrationUtilityTest : public ::testing::Test {
   // Hold the registration result (either an error, or a token).
   GoogleServiceAuthError error_;
   std::string token_;
+
+  base::WeakPtrFactory<ManagedUserRegistrationUtilityTest> weak_ptr_factory_;
 };
 
 ManagedUserRegistrationUtilityTest::ManagedUserRegistrationUtilityTest()
-    : weak_ptr_factory_(this),
-      change_processor_(NULL),
+    : change_processor_(NULL),
       sync_data_id_(0),
       received_callback_(false),
-      error_(GoogleServiceAuthError::NUM_STATES) {
+      error_(GoogleServiceAuthError::NUM_STATES),
+      weak_ptr_factory_(this) {
   service_ = ManagedUserSyncServiceFactory::GetForProfile(&profile_);
 }
 

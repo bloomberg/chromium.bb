@@ -19,10 +19,10 @@ ManagedModeResourceThrottle::ManagedModeResourceThrottle(
     const net::URLRequest* request,
     bool is_main_frame,
     const ManagedModeURLFilter* url_filter)
-    : weak_ptr_factory_(this),
-      request_(request),
+    : request_(request),
       is_main_frame_(is_main_frame),
-      url_filter_(url_filter) {}
+      url_filter_(url_filter),
+      weak_ptr_factory_(this) {}
 
 ManagedModeResourceThrottle::~ManagedModeResourceThrottle() {}
 

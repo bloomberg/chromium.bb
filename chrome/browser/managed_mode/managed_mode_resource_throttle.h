@@ -34,10 +34,10 @@ class ManagedModeResourceThrottle : public content::ResourceThrottle {
                                 bool* defer);
   void OnInterstitialResult(bool continue_request);
 
-  base::WeakPtrFactory<ManagedModeResourceThrottle> weak_ptr_factory_;
   const net::URLRequest* request_;
   bool is_main_frame_;
   const ManagedModeURLFilter* url_filter_;
+  base::WeakPtrFactory<ManagedModeResourceThrottle> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagedModeResourceThrottle);
 };

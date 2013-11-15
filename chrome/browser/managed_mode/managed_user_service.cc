@@ -128,12 +128,12 @@ void ManagedUserService::URLFilterContext::SetManualURLs(
 }
 
 ManagedUserService::ManagedUserService(Profile* profile)
-    : weak_ptr_factory_(this),
-      profile_(profile),
+    : profile_(profile),
       waiting_for_sync_initialization_(false),
       is_profile_active_(false),
       elevated_for_testing_(false),
-      did_shutdown_(false) {
+      did_shutdown_(false),
+      weak_ptr_factory_(this) {
 }
 
 ManagedUserService::~ManagedUserService() {

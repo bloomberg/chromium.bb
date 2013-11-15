@@ -85,7 +85,6 @@ class ManagedUserRegistrationUtilityImpl
   // callback or reporting an error.
   void CancelPendingRegistration();
 
-  base::WeakPtrFactory<ManagedUserRegistrationUtilityImpl> weak_ptr_factory_;
   PrefService* prefs_;
   scoped_ptr<ManagedUserRefreshTokenFetcher> token_fetcher_;
 
@@ -98,6 +97,8 @@ class ManagedUserRegistrationUtilityImpl
   bool is_existing_managed_user_;
   bool avatar_updated_;
   RegistrationCallback callback_;
+
+  base::WeakPtrFactory<ManagedUserRegistrationUtilityImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagedUserRegistrationUtilityImpl);
 };
@@ -178,13 +179,13 @@ ManagedUserRegistrationUtilityImpl::ManagedUserRegistrationUtilityImpl(
     PrefService* prefs,
     scoped_ptr<ManagedUserRefreshTokenFetcher> token_fetcher,
     ManagedUserSyncService* service)
-    : weak_ptr_factory_(this),
-      prefs_(prefs),
+    : prefs_(prefs),
       token_fetcher_(token_fetcher.Pass()),
       managed_user_sync_service_(service),
       pending_managed_user_acknowledged_(false),
       is_existing_managed_user_(false),
-      avatar_updated_(false) {
+      avatar_updated_(false),
+      weak_ptr_factory_(this) {
   managed_user_sync_service_->AddObserver(this);
 }
 

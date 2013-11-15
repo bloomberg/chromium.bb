@@ -38,11 +38,11 @@ class SupervisedUserPrefStore : public PrefStore {
 
   void OnNewSettingsAvailable(const base::DictionaryValue* settings);
 
-  base::WeakPtrFactory<SupervisedUserPrefStore> weak_ptr_factory_;
-
   scoped_ptr<PrefValueMap> prefs_;
 
   ObserverList<PrefStore::Observer, true> observers_;
+
+  base::WeakPtrFactory<SupervisedUserPrefStore> weak_ptr_factory_;
 };
 
 #endif  // CHROME_BROWSER_MANAGED_MODE_SUPERVISED_USER_PREF_STORE_H_

@@ -238,8 +238,6 @@ class ManagedUserService : public BrowserContextKeyedService,
   // Each entry is a dictionary which has the timestamp of the event.
   void RecordProfileAndBrowserEventsHelper(const char* key_prefix);
 
-  base::WeakPtrFactory<ManagedUserService> weak_ptr_factory_;
-
   // Owns us via the BrowserContextKeyedService mechanism.
   Profile* profile_;
 
@@ -259,6 +257,8 @@ class ManagedUserService : public BrowserContextKeyedService,
   bool did_shutdown_;
 
   URLFilterContext url_filter_context_;
+
+  base::WeakPtrFactory<ManagedUserService> weak_ptr_factory_;
 };
 
 #endif  // CHROME_BROWSER_MANAGED_MODE_MANAGED_USER_SERVICE_H_
