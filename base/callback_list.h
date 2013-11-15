@@ -105,7 +105,7 @@ class CallbackListBase {
   // Add a callback to the list. The callback will remain registered until the
   // returned Subscription is destroyed, which must occur before the
   // CallbackList is destroyed.
-  scoped_ptr<Subscription> Add(const CallbackType& cb) {
+  scoped_ptr<Subscription> Add(const CallbackType& cb) WARN_UNUSED_RESULT {
     DCHECK(!cb.is_null());
     return scoped_ptr<Subscription>(
         new Subscription(this, callbacks_.insert(callbacks_.end(), cb)));

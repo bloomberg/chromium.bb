@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_test_notification_observer.h"
 
+#include "base/callback_list.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_system.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -33,6 +34,84 @@ bool HasExtensionPageActionVisibilityReachedTarget(
           << location_bar->PageActionVisibleCount();
   return location_bar->PageActionVisibleCount() ==
          target_visible_page_action_count;
+}
+
+bool HaveAllExtensionRenderViewHostsFinishedLoading(
+    extensions::ProcessManager* manager) {
+  extensions::ProcessManager::ViewSet all_views = manager->GetAllViews();
+  for (extensions::ProcessManager::ViewSet::const_iterator iter =
+           all_views.begin();
+       iter != all_views.end(); ++iter) {
+    if ((*iter)->IsLoading())
+      return false;
+  }
+  return true;
+}
+
+class NotificationSet : public content::NotificationObserver {
+ public:
+  void Add(int type, const content::NotificationSource& source);
+  void Add(int type);
+
+  // Notified any time an Add()ed notification is received.
+  // The details of the notification are dropped.
+  base::CallbackList<void()>& callback_list() {
+    return callback_list_;
+  }
+
+ private:
+  // content::NotificationObserver:
+  virtual void Observe(int type,
+                       const content::NotificationSource& source,
+                       const content::NotificationDetails& details) OVERRIDE;
+
+  content::NotificationRegistrar notification_registrar_;
+  base::CallbackList<void()> callback_list_;
+};
+
+void NotificationSet::Add(
+    int type,
+    const content::NotificationSource& source) {
+  notification_registrar_.Add(this, type, source);
+}
+
+void NotificationSet::Add(int type) {
+  Add(type, content::NotificationService::AllSources());
+}
+
+void NotificationSet::Observe(
+    int type,
+    const content::NotificationSource& source,
+    const content::NotificationDetails& details) {
+  callback_list_.Notify();
+}
+
+void MaybeQuit(content::MessageLoopRunner* runner,
+               const base::Callback<bool(void)>& condition) {
+  if (condition.Run())
+    runner->Quit();
+}
+
+void WaitForCondition(
+    const base::Callback<bool(void)>& condition,
+    NotificationSet* notification_set) {
+  if (condition.Run())
+    return;
+
+  scoped_refptr<content::MessageLoopRunner> runner(
+      new content::MessageLoopRunner);
+  scoped_ptr<base::CallbackList<void()>::Subscription> subscription =
+      notification_set->callback_list().Add(
+          base::Bind(&MaybeQuit, base::Unretained(runner.get()), condition));
+  runner->Run();
+}
+
+void WaitForCondition(
+    const base::Callback<bool(void)>& condition,
+    int type) {
+  NotificationSet notification_set;
+  notification_set.Add(type);
+  WaitForCondition(condition, &notification_set);
 }
 
 }  // namespace
@@ -74,57 +153,33 @@ bool ExtensionTestNotificationObserver::WaitForPageActionCountChangeTo(
     int count) {
   LocationBarTesting* location_bar =
       browser_->window()->GetLocationBar()->GetLocationBarForTesting();
-  if (!HasExtensionPageActionCountReachedTarget(location_bar, count)) {
-    content::WindowedNotificationObserver(
-        chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_COUNT_CHANGED,
-        base::Bind(
-            &HasExtensionPageActionCountReachedTarget, location_bar, count))
-        .Wait();
-  }
-  return HasExtensionPageActionCountReachedTarget(location_bar, count);
+  WaitForCondition(
+      base::Bind(
+          &HasExtensionPageActionCountReachedTarget, location_bar, count),
+      chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_COUNT_CHANGED);
+  return true;
 }
 
 bool ExtensionTestNotificationObserver::WaitForPageActionVisibilityChangeTo(
     int count) {
   LocationBarTesting* location_bar =
       browser_->window()->GetLocationBar()->GetLocationBarForTesting();
-  if (!HasExtensionPageActionVisibilityReachedTarget(location_bar, count)) {
-    content::WindowedNotificationObserver(
-        chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
-        base::Bind(&HasExtensionPageActionVisibilityReachedTarget,
-                   location_bar,
-                   count)).Wait();
-  }
-  return HasExtensionPageActionVisibilityReachedTarget(location_bar, count);
+  WaitForCondition(
+      base::Bind(
+          &HasExtensionPageActionVisibilityReachedTarget, location_bar, count),
+      chrome::NOTIFICATION_EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED);
+  return true;
 }
 
 bool ExtensionTestNotificationObserver::WaitForExtensionViewsToLoad() {
   extensions::ProcessManager* manager =
-    extensions::ExtensionSystem::Get(GetProfile())->process_manager();
-  extensions::ProcessManager::ViewSet all_views = manager->GetAllViews();
-  for (extensions::ProcessManager::ViewSet::const_iterator iter =
-         all_views.begin();
-       iter != all_views.end();) {
-    if (!(*iter)->IsLoading()) {
-      ++iter;
-    } else {
-      // Wait for all the extension render view hosts that exist to finish
-      // loading.
-      content::WindowedNotificationObserver observer(
-          content::NOTIFICATION_LOAD_STOP,
-          content::NotificationService::AllSources());
-      observer.AddNotificationType(
-                                   content::NOTIFICATION_WEB_CONTENTS_DESTROYED,
-                                   content::NotificationService::AllSources());
-      observer.Wait();
-
-      // Test activity may have modified the set of extension processes during
-      // message processing, so re-start the iteration to catch added/removed
-      // processes.
-      all_views = manager->GetAllViews();
-      iter = all_views.begin();
-    }
-  }
+      extensions::ExtensionSystem::Get(GetProfile())->process_manager();
+  NotificationSet notification_set;
+  notification_set.Add(content::NOTIFICATION_WEB_CONTENTS_DESTROYED);
+  notification_set.Add(content::NOTIFICATION_LOAD_STOP);
+  WaitForCondition(
+      base::Bind(&HaveAllExtensionRenderViewHostsFinishedLoading, manager),
+      &notification_set);
   return true;
 }
 
