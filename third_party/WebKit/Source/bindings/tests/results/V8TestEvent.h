@@ -63,7 +63,7 @@ public:
         return static_cast<TestEvent*>(V8Event::fromInternalPointer(object));
     }
     static void installPerContextEnabledProperties(v8::Handle<v8::Object>, TestEvent*, v8::Isolate*) { }
-    static void installPerContextEnabledPrototypeProperties(v8::Handle<v8::Object>, v8::Isolate*) { }
+    static void installPerContextEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*) { }
 
 private:
     friend v8::Handle<v8::Object> wrap(TestEvent*, v8::Handle<v8::Object> creationContext, v8::Isolate*);

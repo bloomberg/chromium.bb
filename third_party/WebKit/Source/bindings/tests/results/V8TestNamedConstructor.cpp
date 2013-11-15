@@ -69,7 +69,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestNamedConstructor*
 }
 
 namespace WebCore {
-const WrapperTypeInfo V8TestNamedConstructor::wrapperTypeInfo = { V8TestNamedConstructor::GetTemplate, V8TestNamedConstructor::derefObject, V8TestNamedConstructor::toActiveDOMObject, 0, 0, V8TestNamedConstructor::installPerContextEnabledPrototypeProperties, 0, WrapperTypeObjectPrototype };
+const WrapperTypeInfo V8TestNamedConstructor::wrapperTypeInfo = { V8TestNamedConstructor::GetTemplate, V8TestNamedConstructor::derefObject, V8TestNamedConstructor::toActiveDOMObject, 0, 0, V8TestNamedConstructor::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
 
 namespace TestNamedConstructorV8Internal {
 
@@ -77,7 +77,7 @@ template <typename T> void V8_USE(T) { }
 
 } // namespace TestNamedConstructorV8Internal
 
-const WrapperTypeInfo V8TestNamedConstructorConstructor::wrapperTypeInfo = { V8TestNamedConstructorConstructor::GetTemplate, V8TestNamedConstructor::derefObject, V8TestNamedConstructor::toActiveDOMObject, 0, 0, V8TestNamedConstructor::installPerContextEnabledPrototypeProperties, 0, WrapperTypeObjectPrototype };
+const WrapperTypeInfo V8TestNamedConstructorConstructor::wrapperTypeInfo = { V8TestNamedConstructorConstructor::GetTemplate, V8TestNamedConstructor::derefObject, V8TestNamedConstructor::toActiveDOMObject, 0, 0, V8TestNamedConstructor::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
 
 static void V8TestNamedConstructorConstructorCallback(const v8::FunctionCallbackInfo<v8::Value>& info)
 {

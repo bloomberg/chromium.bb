@@ -101,7 +101,7 @@ void webCoreInitializeScriptWrappableForInterface(WebCore::TestObj* object)
 }
 
 namespace WebCore {
-const WrapperTypeInfo V8TestObject::wrapperTypeInfo = { V8TestObject::GetTemplate, V8TestObject::derefObject, 0, V8TestObject::toEventTarget, 0, V8TestObject::installPerContextEnabledPrototypeProperties, &V8EventTarget::wrapperTypeInfo, WrapperTypeObjectPrototype };
+const WrapperTypeInfo V8TestObject::wrapperTypeInfo = { V8TestObject::GetTemplate, V8TestObject::derefObject, 0, V8TestObject::toEventTarget, 0, V8TestObject::installPerContextEnabledMethods, &V8EventTarget::wrapperTypeInfo, WrapperTypeObjectPrototype };
 
 namespace TestObjV8Internal {
 
@@ -5244,7 +5244,7 @@ void V8TestObject::installPerContextEnabledProperties(v8::Handle<v8::Object> ins
     }
 }
 
-void V8TestObject::installPerContextEnabledPrototypeProperties(v8::Handle<v8::Object> proto, v8::Isolate* isolate)
+void V8TestObject::installPerContextEnabledMethods(v8::Handle<v8::Object> proto, v8::Isolate* isolate)
 {
     UNUSED_PARAM(proto);
     v8::Local<v8::Signature> defaultSignature = v8::Signature::New(GetTemplate(isolate, worldType(isolate)));

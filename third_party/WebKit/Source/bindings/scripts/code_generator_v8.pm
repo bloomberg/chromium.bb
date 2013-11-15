@@ -830,11 +830,11 @@ END
 
     if (@perContextEnabledFunctions) {
         $header{classPublic}->add(<<END);
-    static void installPerContextEnabledPrototypeProperties(v8::Handle<v8::Object>, v8::Isolate*);
+    static void installPerContextEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*);
 END
     } else {
         $header{classPublic}->add(<<END);
-    static void installPerContextEnabledPrototypeProperties(v8::Handle<v8::Object>, v8::Isolate*) { }
+    static void installPerContextEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*) { }
 END
     }
 
@@ -2969,7 +2969,7 @@ sub GenerateNamedConstructor
     }
 
     $implementation{nameSpaceWebCore}->add(<<END);
-const WrapperTypeInfo ${v8ClassName}Constructor::wrapperTypeInfo = { ${v8ClassName}Constructor::GetTemplate, ${v8ClassName}::derefObject, $toActiveDOMObject, $toEventTarget, 0, ${v8ClassName}::installPerContextEnabledPrototypeProperties, 0, WrapperTypeObjectPrototype };
+const WrapperTypeInfo ${v8ClassName}Constructor::wrapperTypeInfo = { ${v8ClassName}Constructor::GetTemplate, ${v8ClassName}::derefObject, $toActiveDOMObject, $toEventTarget, 0, ${v8ClassName}::installPerContextEnabledMethods, 0, WrapperTypeObjectPrototype };
 
 END
 
@@ -4141,7 +4141,7 @@ END
     }
 
     my $code = "const WrapperTypeInfo ${v8ClassName}::wrapperTypeInfo = { ${v8ClassName}::GetTemplate, ${v8ClassName}::derefObject, $toActiveDOMObject, $toEventTarget, ";
-    $code .= "$resolveWrapperReachability, ${v8ClassName}::installPerContextEnabledPrototypeProperties, $parentClassInfo, $WrapperTypePrototype };\n";
+    $code .= "$resolveWrapperReachability, ${v8ClassName}::installPerContextEnabledMethods, $parentClassInfo, $WrapperTypePrototype };\n";
     $implementation{nameSpaceWebCore}->addHeader($code);
 
     $implementation{nameSpaceInternal}->add("template <typename T> void V8_USE(T) { }\n\n");
@@ -4596,7 +4596,7 @@ END
     if (@perContextEnabledFunctions) {
         my $code = "";
         $code .= <<END;
-void ${v8ClassName}::installPerContextEnabledPrototypeProperties(v8::Handle<v8::Object> proto, v8::Isolate* isolate)
+void ${v8ClassName}::installPerContextEnabledMethods(v8::Handle<v8::Object> proto, v8::Isolate* isolate)
 {
     UNUSED_PARAM(proto);
 END

@@ -107,10 +107,10 @@ namespace WebCore {
                 derefObjectFunction(object);
         }
 
-        void installPerContextEnabledPrototypeProperties(v8::Handle<v8::Object> proto, v8::Isolate* isolate) const
+        void installPerContextEnabledMethods(v8::Handle<v8::Object> proto, v8::Isolate* isolate) const
         {
-            if (installPerContextEnabledPrototypePropertiesFunction)
-                installPerContextEnabledPrototypePropertiesFunction(proto, isolate);
+            if (installPerContextEnabledMethodsFunction)
+                installPerContextEnabledMethodsFunction(proto, isolate);
         }
 
         ActiveDOMObject* toActiveDOMObject(v8::Handle<v8::Object> object) const
@@ -140,7 +140,7 @@ namespace WebCore {
         const ToActiveDOMObjectFunction toActiveDOMObjectFunction;
         const ToEventTargetFunction toEventTargetFunction;
         const ResolveWrapperReachabilityFunction resolveWrapperReachabilityFunction;
-        const InstallPerContextEnabledPrototypePropertiesFunction installPerContextEnabledPrototypePropertiesFunction;
+        const InstallPerContextEnabledPrototypePropertiesFunction installPerContextEnabledMethodsFunction;
         const WrapperTypeInfo* parentClass;
         const WrapperTypePrototype wrapperTypePrototype;
     };

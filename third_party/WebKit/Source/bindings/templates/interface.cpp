@@ -266,7 +266,7 @@ void {{v8_class_name}}::installPerContextEnabledProperties(v8::Handle<v8::Object
 {##############################################################################}
 {% block install_per_context_methods %}
 {% if has_per_context_enabled_methods %}
-void {{v8_class_name}}::installPerContextEnabledPrototypeProperties(v8::Handle<v8::Object> proto, v8::Isolate* isolate)
+void {{v8_class_name}}::installPerContextEnabledMethods(v8::Handle<v8::Object> proto, v8::Isolate* isolate)
 {
     UNUSED_PARAM(proto);
     {# Define per-context enabled operations #}

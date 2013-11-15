@@ -62,7 +62,7 @@ public:
         return static_cast<TestInterfaceEmpty*>(object);
     }
     static void installPerContextEnabledProperties(v8::Handle<v8::Object>, TestInterfaceEmpty*, v8::Isolate*) { }
-    static void installPerContextEnabledPrototypeProperties(v8::Handle<v8::Object>, v8::Isolate*) { }
+    static void installPerContextEnabledMethods(v8::Handle<v8::Object>, v8::Isolate*) { }
 
 private:
     friend v8::Handle<v8::Object> wrap(TestInterfaceEmpty*, v8::Handle<v8::Object> creationContext, v8::Isolate*);
